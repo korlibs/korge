@@ -75,11 +75,13 @@ internal fun ViewsContainer.installFpsDebugOverlay() {
             ctx.drawText(debugBmpFont, fontSize, text, x = x, y = y, colMul = ctx.debugExtraFontColor, filtering = false, m = matrix, blendMode = BlendMode.INVERT)
         }
 
+        //val stats = ctx.ag.getStats()
         drawTextWithShadow("FPS: " +
             "${shortWindow.avgFps.roundDecimalPlaces(1)}"
             + ", batchCount=$batchCount, vertexCount=$vertexCount, instanceCount=$instanceCount"
             + ", (${Platform.rawPlatformName})"
             //+ ", range: [${mediumWindow.minFps.roundDecimalPlaces(1)}-${mediumWindow.maxFps.roundDecimalPlaces(1)}]"
+            //+ ", $stats"
             ,
             0, 0
         )

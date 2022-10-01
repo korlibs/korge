@@ -31,7 +31,7 @@ import java.nio.file.Paths
 import java.nio.file.StandardWatchEventKinds
 import java.nio.file.WatchEvent
 
-internal open class BaseLocalVfsJvm : LocalVfsV2() {
+internal open class BaseLocalVfsJvm : LocalVfs() {
     val that = this
     override val absolutePath: String = ""
 
@@ -168,7 +168,7 @@ internal open class BaseLocalVfsJvm : LocalVfsV2() {
         val file = resolveFile(path)
         val fullpath = "$path/${file.name}"
         if (file.exists()) {
-            val lastModified = DateTime.fromUnix(file.lastModified())
+            val lastModified = DateTime.fromUnixMillis(file.lastModified())
             createExistsStat(
                 fullpath,
                 isDirectory = file.isDirectory,
@@ -190,9 +190,6 @@ internal open class BaseLocalVfsJvm : LocalVfsV2() {
         }
     }.flowOn(IOContext)
     */
-
-    override suspend fun listSimple(path: String): List<VfsFile> =
-        (File(path).listFiles() ?: emptyArray<File>()).map { that.file("$path/${it.name}") }
 
     override suspend fun listFlow(path: String): kotlinx.coroutines.flow.Flow<VfsFile> = flow {
         for (it in (File(path).listFiles() ?: emptyArray<File>())) {

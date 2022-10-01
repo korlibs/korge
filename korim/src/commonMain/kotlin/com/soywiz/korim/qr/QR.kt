@@ -175,7 +175,7 @@ enum class QRErrorCorrectLevel(val id: Int) {
 }
 
 private fun QRCodeModel.toBitmap(dark: RGBA, light: RGBA): Bitmap32 =
-    Bitmap32(moduleCount, moduleCount, premultiplied = false) { col, row -> if (isDark(row, col)) dark else light }
+    Bitmap32(moduleCount, moduleCount) { col, row -> if (isDark(row, col)) dark else light }
 
 private class QR8bitByte(parsedDataS: ByteArray) {
     var mode = QRMode.MODE_8BIT_BYTE

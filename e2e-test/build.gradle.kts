@@ -45,9 +45,15 @@ korge {
     targetIos()
     targetAndroidIndirect() // targetAndroidDirect()
 
-    entrypoint("CheckReferences", "CheckReferences")
-    entrypoint("HelloWorld", "HelloWorld")
+    enableKorgeResourceProcessing = false
+
+    jvmMainClassName = "RefMainKt"
+
+    //entrypoint("CheckReferences", "CheckReferences")
+    //entrypoint("HelloWorld", "HelloWorld")
 }
+
+//println(BuildVersions.KORGE)
 
 // Use MESA OpenGL 32 since Windows Server doesn't have a proper OpenGL implementation on GitHub Actions
 // @see: https://amiralizadeh9480.medium.com/how-to-run-opengl-based-tests-on-github-actions-60f270b1ea2c
@@ -74,13 +80,33 @@ tasks {
     runJvm.workingDir = File(buildDir, "bin/jvm").also { it.mkdirs() }
     runJvm.environment("OUTPUT_DIR", File(buildDir, "screenshots/jvm"))
 
-    afterEvaluate {
-        val runJvmCheckReferences = getByName("runJvmCheckReferences") as KorgeJavaExec
+    val checkReferencesNative by creating(Task::class) {
+        doLast {
+            CheckReferences.main(project.projectDir)
+        }
+    }
 
-        for (target in listOf("mingwX64", "linuxX64", "macosX64")) {
+    val checkReferencesJvm by creating(Task::class) {
+        doLast {
+            CheckReferences.main(project.projectDir)
+        }
+        dependsOn("runJvm")
+    }
+
+    val updateReferencesJvm by creating(Task::class) {
+        doLast {
+            CheckReferences.main(project.projectDir, update = true)
+        }
+        dependsOn("runJvm")
+    }
+
+    afterEvaluate {
+        val isArm = com.soywiz.kmem.Platform.arch == com.soywiz.kmem.Arch.ARM64
+        for (target in listOf("mingwX64", "linuxX64", if (isArm) "macosArm64" else "macosX64")) {
+        //for (target in listOf("mingwX64", "linuxX64", "macosX64")) {
             val runTask = (findByName("runNative${target.capitalize()}Debug") as? Exec?) ?: continue
             runTask.environment("OUTPUT_DIR", File(buildDir, "screenshots/${target.toLowerCase()}"))
-            runJvmCheckReferences.dependsOn(runTask)
+            checkReferencesNative.dependsOn(runTask)
         }
     }
 }

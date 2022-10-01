@@ -20,6 +20,8 @@ abstract class Camera3D : View3D() {
     private var height: Double = 0.0
     protected var dirty = true
 
+    override var root: View3D = this
+
     protected inline fun dirty(cond: () -> Boolean, callback: () -> Unit) {
         if (cond()) {
             this.dirty = true
@@ -102,6 +104,7 @@ abstract class Camera3D : View3D() {
         val ty = position.y + front.y
         val tz = position.z + front.z
         this.transform.setTranslationAndLookAt(position.x, position.y, position.z, tx, ty, tz)
+        invalidateRender()
     }
 
     fun setPosition(x: Float = 0f, y: Float = 0f, z: Float = 0f) {

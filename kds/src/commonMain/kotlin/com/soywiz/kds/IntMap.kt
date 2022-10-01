@@ -155,9 +155,9 @@ class IntMap<T> internal constructor(private var nbits: Int, private val loadFac
         }
     }
 
-    inline fun getOrPut(key: Int, callback: () -> T): T {
+    inline fun getOrPut(key: Int, callback: (Int) -> T): T {
         val res = get(key)
-        if (res == null) set(key, callback())
+        if (res == null) set(key, callback(key))
         return get(key)!!
     }
 
@@ -379,6 +379,8 @@ class IntFloatMap {
 class IntIntMap internal constructor(private var nbits: Int, private val loadFactor: Double, dummy: Boolean) {
     constructor(initialCapacity: Int = 16, loadFactor: Double = 0.75) : this(max(4, ilog2Ceil(initialCapacity)), loadFactor, true)
 
+    override fun toString(): String = this.toMap().toString()
+
     companion object {
         @PublishedApi
         internal const val EOF = Int.MAX_VALUE - 1
@@ -400,6 +402,11 @@ class IntIntMap internal constructor(private var nbits: Int, private val loadFac
     private val stashStart get() = _keys.size - stashSize
     private var growSize: Int = (capacity * loadFactor).toInt()
     var size: Int = 0; private set
+
+    fun toMap(out: MutableMap<Int, Int> = linkedHashMapOf()): Map<Int, Int> {
+        fastForEach { key, value -> out[key] = value }
+        return out
+    }
 
     private fun grow() {
         val inc = if (nbits < 20) 3 else 1

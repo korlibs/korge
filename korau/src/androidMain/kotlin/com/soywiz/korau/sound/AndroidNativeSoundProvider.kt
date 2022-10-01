@@ -24,8 +24,6 @@ class AndroidNativeSoundProvider : NativeSoundProvider() {
 
     override val target: String = "android"
 
-    override val audioFormats: AudioFormats = AudioFormats(MP3Decoder) + defaultAudioFormats
-
     private var audioManager: AudioManager? = null
     val audioSessionId: Int by lazy {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP)
@@ -87,6 +85,7 @@ class AndroidNativeSoundProvider : NativeSoundProvider() {
                     val temp = AudioSamplesInterleaved(2, bufferSamples)
                     //val tempEmpty = ShortArray(1024)
                     var paused = true
+                    var lastVolume = Float.NaN
                     while (running) {
                         val readCount = deque.read(temp)
                         if (at.state == AudioTrack.STATE_UNINITIALIZED) {
@@ -106,12 +105,15 @@ class AndroidNativeSoundProvider : NativeSoundProvider() {
                                     at.playbackParams.speed = props.pitch.toFloat()
                                 }
                                 val vol = props.volume.toFloat()
-                                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
-                                    at.setVolume(vol)
-                                } else {
-                                    @Suppress("DEPRECATION")
-                                    at.setStereoVolume(vol, vol)
+                                if (lastVolume != vol) {
+                                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+                                        at.setVolume(vol)
+                                    } else {
+                                        @Suppress("DEPRECATION")
+                                        at.setStereoVolume(vol, vol)
+                                    }
                                 }
+                                lastVolume = vol
                                 at.write(temp.data, 0, readCount * 2)
                             }
                         } else {
@@ -149,7 +151,7 @@ class AndroidNativeSoundProvider : NativeSoundProvider() {
         }
     }
 
-    override fun createAudioStream(coroutineContext: CoroutineContext, freq: Int): PlatformAudioOutput {
+    override fun createPlatformAudioOutput(coroutineContext: CoroutineContext, freq: Int): PlatformAudioOutput {
         ensureAudioManager(coroutineContext)
 
         return object : PlatformAudioOutput(coroutineContext, freq) {
@@ -161,6 +163,7 @@ class AndroidNativeSoundProvider : NativeSoundProvider() {
 
             override suspend fun add(samples: AudioSamples, offset: Int, size: Int) {
                 while (thread == null) delay(10.milliseconds)
+                while (threadDeque!!.availableRead >= 44100) delay(1.milliseconds)
                 threadDeque!!.write(samples, offset, size)
             }
 

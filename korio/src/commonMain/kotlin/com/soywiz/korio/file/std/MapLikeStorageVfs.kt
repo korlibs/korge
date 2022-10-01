@@ -7,10 +7,10 @@ import com.soywiz.kmem.arraycopy
 import com.soywiz.korio.async.AsyncThread2
 import com.soywiz.korio.file.PathInfo
 import com.soywiz.korio.file.SimpleStorage
+import com.soywiz.korio.file.Vfs
 import com.soywiz.korio.file.VfsFile
 import com.soywiz.korio.file.VfsOpenMode
 import com.soywiz.korio.file.VfsStat
-import com.soywiz.korio.file.VfsV2
 import com.soywiz.korio.file.folder
 import com.soywiz.korio.internal.divCeil
 import com.soywiz.korio.internal.without
@@ -30,7 +30,7 @@ import kotlin.math.min
 fun SimpleStorage.toVfs(): VfsFile = MapLikeStorageVfs(this).root
 fun SimpleStorage.toVfs(timeProvider: TimeProvider): VfsFile = MapLikeStorageVfs(this).also { it.timeProvider = timeProvider }.root
 
-class MapLikeStorageVfs(val storage: SimpleStorage) : VfsV2() {
+class MapLikeStorageVfs(val storage: SimpleStorage) : Vfs() {
     var timeProvider: TimeProvider = TimeProvider
 
     private fun now() = timeProvider.now()
@@ -224,10 +224,10 @@ private class StorageFiles(val storage: SimpleStorage, val timeProvider: () -> T
 		return EntryInfo(
             fullPath = fileName,
             isFile = di[EntryInfo::isFile.name]!! as Boolean,
-			size = (di[EntryInfo::size.name]!! as Number).toLong(),
-			children = (di[EntryInfo::children.name] as Iterable<String>).toList(),
-			createdTime = (DateTime.fromUnix((di[EntryInfo::createdTime.name] as Number).toDouble())),
-			modifiedTime = (DateTime.fromUnix((di[EntryInfo::modifiedTime.name] as Number).toDouble())),
+            size = (di[EntryInfo::size.name]!! as Number).toLong(),
+            children = (di[EntryInfo::children.name] as Iterable<String>).toList(),
+            createdTime = (DateTime.fromUnixMillis((di[EntryInfo::createdTime.name] as Number).toDouble())),
+            modifiedTime = (DateTime.fromUnixMillis((di[EntryInfo::modifiedTime.name] as Number).toDouble())),
         )
 	}
 

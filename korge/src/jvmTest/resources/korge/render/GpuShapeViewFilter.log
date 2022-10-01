@@ -25,6 +25,7 @@ uboSet.uniform: Uniform(u_ProgramType) = 0.0
 uboSet.uniform: Uniform(u_Color) = (1, 1, 1)
 uboSet.uniform: Uniform(u_GlobalAlpha) = 1.0
 uboSet.uniform: Uniform(u_GlobalPixelScale) = 0.6
+uboSet.uniform: Uniform(u_InputPre) = 0.0
 uboSet.uniform: Uniform(u_OutputPre) = true
 uboUse: 2
 uboDelete: 2

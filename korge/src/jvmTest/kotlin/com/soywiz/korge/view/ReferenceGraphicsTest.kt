@@ -74,7 +74,7 @@ class ReferenceGraphicsTest : ViewsForTesting(
     fun testFSprites4() = testFSpritesN(4)
 
     fun testFSpritesN(N: Int) = viewsTest {
-        val bmp = Bitmap32(32, 32, Colors.RED).slice()
+        val bmp = Bitmap32(32, 32, Colors.RED.premultiplied).slice()
         val sprites = FSprites(16)
         val anchorsX = listOf(.5f, .5f, .5f, .0f)
         val anchorsY = listOf(.5f, 1f, .0f, 1f)

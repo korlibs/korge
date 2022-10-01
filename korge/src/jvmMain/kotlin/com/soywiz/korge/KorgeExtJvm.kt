@@ -1,12 +1,13 @@
 package com.soywiz.korge
 
 import com.soywiz.klock.milliseconds
-import com.soywiz.korge.awt.*
-import com.soywiz.korge.time.*
-import com.soywiz.korge.view.*
-import com.soywiz.korui.*
-import com.soywiz.korui.native.*
-import kotlinx.coroutines.*
+import com.soywiz.korge.awt.ViewsDebuggerComponent
+import com.soywiz.korge.time.timers
+import com.soywiz.korge.view.Views
+import com.soywiz.korge.view.views
+import com.soywiz.korui.UiApplication
+import com.soywiz.korui.native.DEFAULT_UI_FACTORY
+import kotlinx.coroutines.runBlocking
 import java.awt.Container
 
 internal actual fun completeViews(views: Views) {
@@ -21,7 +22,7 @@ internal actual fun completeViews(views: Views) {
         frame.add(debugger)
         views.stage.timers.interval(500.milliseconds) {
             if (views.gameWindow.debug) {
-                debugger.update()
+                debugger.updateTimer()
             }
         }
         debugger

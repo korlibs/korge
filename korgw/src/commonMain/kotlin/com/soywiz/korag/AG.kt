@@ -9,6 +9,7 @@ import com.soywiz.kds.Pool
 import com.soywiz.kds.fastArrayListOf
 import com.soywiz.kds.fastCastTo
 import com.soywiz.kds.hashCode
+import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.klock.measureTime
 import com.soywiz.klogger.Console
 import com.soywiz.kmem.FBuffer
@@ -34,6 +35,7 @@ import com.soywiz.korim.bitmap.Bitmaps
 import com.soywiz.korim.bitmap.ForcedTexId
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
+import com.soywiz.korim.color.RGBAPremultiplied
 import com.soywiz.korim.color.RGBAf
 import com.soywiz.korio.annotations.KorIncomplete
 import com.soywiz.korio.async.runBlockingNoJs
@@ -460,11 +462,19 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
             generated = false
         }
 
+        private fun checkBitmaps(bmp: Bitmap) {
+            if (!bmp.premultiplied) {
+                Console.error("Trying to upload a non-premultiplied bitmap: $bmp. This will cause rendering artifacts")
+            }
+        }
+
         fun upload(list: List<Bitmap>, width: Int, height: Int): Texture {
+            list.fastForEach { checkBitmaps(it) }
             return upload(SyncBitmapSourceList(rgba = true, width = width, height = height, depth = list.size) { list })
         }
 
         fun upload(bmp: Bitmap?, mipmaps: Boolean = false): Texture {
+            bmp?.let { checkBitmaps(it) }
             this.forcedTexId = (bmp as? ForcedTexId?)
             return upload(
                 if (bmp != null) SyncBitmapSource(
@@ -1394,10 +1404,13 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
     }
 
     // @TODO: Rename to Sync and add Suspend versions
-    fun readPixel(x: Int, y: Int): RGBA = Bitmap32(1, 1).also { readColor(it, x, y) }.data[0]
+    fun readPixel(x: Int, y: Int): RGBA {
+        val rawColor = Bitmap32(1, 1, premultiplied = isRenderingToTexture).also { readColor(it, x, y) }.ints[0]
+        return if (isRenderingToTexture) RGBAPremultiplied(rawColor).depremultiplied else RGBA(rawColor)
+    }
 
     open fun readColor(bitmap: Bitmap32, x: Int = 0, y: Int = 0) {
-        commandsSync { it.readPixels(x, y, bitmap.width, bitmap.height, bitmap.data.ints, ReadKind.COLOR) }
+        commandsSync { it.readPixels(x, y, bitmap.width, bitmap.height, bitmap.ints, ReadKind.COLOR) }
     }
     open fun readDepth(width: Int, height: Int, out: FloatArray) {
         commandsSync { it.readPixels(0, 0, width, height, out, ReadKind.DEPTH) }
@@ -1407,8 +1420,8 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
     }
     fun readDepth(out: FloatArray2): Unit = readDepth(out.width, out.height, out.data)
     open fun readColorTexture(texture: Texture, x: Int = 0, y: Int = 0, width: Int = backWidth, height: Int = backHeight): Unit = TODO()
-    fun readColor() = Bitmap32(backWidth, backHeight).apply { readColor(this) }
-    fun readDepth() = FloatArray2(backWidth, backHeight) { 0f }.apply { readDepth(this) }
+    fun readColor(): Bitmap32 = Bitmap32(backWidth, backHeight, premultiplied = isRenderingToTexture).apply { readColor(this) }
+    fun readDepth(): FloatArray2 = FloatArray2(backWidth, backHeight) { 0f }.apply { readDepth(this) }
 
     inner class TextureDrawer {
         val VERTEX_COUNT = 4

@@ -24,7 +24,7 @@ fun transferBitmap32CGContext(bmp: Bitmap32, ctx: CGContextRef?, toBitmap: Boole
     val pixels = CGBitmapContextGetData(ctx)?.reinterpret<IntVar>() ?: error("Can't get pixels!")
     val minWidth = min(ctxWidth, bmp.width)
     val minHeight = min(ctxHeight, bmp.height)
-    val out = bmp.data.ints
+    val out = bmp.ints
     out.usePinned { outPin ->
         val outStart = outPin.addressOf(0)
         val widthInBytes: size_t = (minWidth * 4).convert()
@@ -40,6 +40,7 @@ fun transferBitmap32CGContext(bmp: Bitmap32, ctx: CGContextRef?, toBitmap: Boole
 }
 
 class CoreGraphicsNativeImage(bitmap: Bitmap32) : BitmapNativeImage(bitmap) {
+    override val name: String get() = "CoreGraphicsNativeImage"
     override fun toBMP32(): Bitmap32 = bitmap.clone()
     override fun getContext2d(antialiasing: Boolean): Context2d = Context2d(CoreGraphicsRenderer(bitmap, antialiasing))
 }
@@ -88,11 +89,11 @@ class CoreGraphicsRenderer(val bmp: Bitmap32, val antialiasing: Boolean) : com.s
     }
 
     override fun flushCommands(commands: List<RenderCommand>) {
-        if (bmp.data.size == 0) return
+        if (bmp.ints.size == 0) return
         bmp.flipY() // @TODO: This shouldn't be required, can we do an affine transform somewhere?
         Releases { releases ->
             autoreleasepool {
-                bmp.data.ints.usePinned { dataPin ->
+                bmp.ints.usePinned { dataPin ->
                     //val colorSpace = CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB)
                     val colorSpace = CGColorSpaceCreateDeviceRGB()
                     try {

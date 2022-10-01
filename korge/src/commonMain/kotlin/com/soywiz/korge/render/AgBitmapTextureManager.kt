@@ -33,8 +33,6 @@ import com.soywiz.korma.geom.Rectangle
 class AgBitmapTextureManager(
     val ag: AG
 ) {
-
-
 	private val referencedBitmapsSinceGC = AgFastSet<Bitmap>()
 	private var referencedBitmaps = FastArrayList<Bitmap>()
 

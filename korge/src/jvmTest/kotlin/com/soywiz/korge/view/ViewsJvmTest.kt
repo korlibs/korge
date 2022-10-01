@@ -69,8 +69,8 @@ class ViewsJvmTest : ViewsForTesting(log = true) {
         val font = resourcesVfs["Pacifico.ttf"].readFont()
         run {
             val text = text("WTF is going on", 64.0)
-            //assertEquals(RectangleInt(0, 0, 417, 71), text.globalBounds.toInt())
-            assertEquals(RectangleInt(0, 15, 417, 56), text.globalBounds.toInt())
+            assertEquals(RectangleInt(0, 0, 420, 71), text.globalBounds.toInt())
+            //assertEquals(RectangleInt(0, 15, 417, 56), text.globalBounds.toInt())
         }
 
         run {
@@ -86,7 +86,9 @@ class ViewsJvmTest : ViewsForTesting(log = true) {
                 nativeRendering = useNativeRendering,
                 drawBorder = true
             )
-            assertEquals(Size(450, 121), textResult.bmp.size)
+            //textResult.bmp.showImageAndWait()
+            assertEquals(Size(453, 121), textResult.bmp.size)
+            //assertEquals(Size(450, 240), textResult.bmp.size)
         }
     }
 

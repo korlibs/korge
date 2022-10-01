@@ -4,7 +4,7 @@ createRenderBuffer():1
 RenderBuffer[1].setSize(200, 200)
 RenderBuffer[1].set()
 clear(#00000000, 1.0, 0, true, true, true)
-createBuffer():6
+createBuffer():5
 programCreate: 1, Program(name=GpuShapeViewPrograms.Combined, attributes=[a_Pos, a_Dist, a_MaxDist], uniforms=[u_ProjMat, u_ViewMat, u_ProgramType, u_Color, u_Tex, u_Transform, u_Gradientp0, u_Gradientp1, u_ColorMul, u_GlobalAlpha, u_GlobalPixelScale, u_OutputPre]), ProgramConfig(externalTextureSampler=false)
 programCreate.fragment:#version 100 compatibility
 #ifdef GL_ES
@@ -30,7 +30,6 @@ uniform bool u_OutputPre;
 varying mediump float v_Dist;
 varying mediump float v_MaxDist;
 varying mediump vec2 v_Tex;
-varying lowp float v_InputPre;
 void main() {
 	vec2 temp3;
 	vec4 temp0;
@@ -79,11 +78,7 @@ void main() {
 			}
 		}
 	}
-	if ((v_InputPre == 0.0)) {
-		gl_FragColor.rgb = (gl_FragColor.rgb * gl_FragColor.a);
-	}
-	gl_FragColor = (gl_FragColor * u_ColorMul);
-	gl_FragColor.rgba = ((gl_FragColor.rgba * u_GlobalAlpha) * (1.0 - smoothstep(((v_MaxDist * u_GlobalPixelScale) - 1.5), (v_MaxDist * u_GlobalPixelScale), abs((v_Dist * u_GlobalPixelScale)))));
+	gl_FragColor = (((gl_FragColor * u_ColorMul) * u_GlobalAlpha) * (1.0 - smoothstep(((v_MaxDist * u_GlobalPixelScale) - 1.5), (v_MaxDist * u_GlobalPixelScale), abs((v_Dist * u_GlobalPixelScale)))));
 	if ((!(u_OutputPre))) {
 		gl_FragColor.rgb = (gl_FragColor.rgb / gl_FragColor.a);
 	}
@@ -116,10 +111,10 @@ void main() {
 }
 
 programUse: 1
-bufferCreate: 7
-Buffer[6].afterSetMem(mem[32768])
+bufferCreate: 6
+Buffer[5].afterSetMem(mem[32768])
 vaoCreate: 1
-vaoSet: 1, VertexArrayObject(list=[VertexData(_buffer=Buffer[6], layout=VertexLayout[a_Pos, a_Dist, a_MaxDist])])
+vaoSet: 1, VertexArrayObject(list=[VertexData(_buffer=Buffer[5], layout=VertexLayout[a_Pos, a_Dist, a_MaxDist])])
 vaoUse: 1
 uboCreate: 1
 uboSet: 1
@@ -152,6 +147,7 @@ scissor: -788, -1188, 536, 536
 uboSet: 2
 uboSet.uniform: Uniform(u_ProgramType) = 5.0
 uboSet.uniform: Uniform(u_GlobalPixelScale) = 2.0
+uboSet.uniform: Uniform(u_InputPre) = 0.0
 uboSet.uniform: Uniform(u_OutputPre) = true
 uboUse: 2
 enable: STENCIL
@@ -175,6 +171,7 @@ draw: TRIANGLE_FAN, offset=0, count=7, instances=1, indexType=null
 uboSet: 2
 uboSet.uniform: Uniform(u_ProgramType) = 5.0
 uboSet.uniform: Uniform(u_GlobalPixelScale) = 2.0
+uboSet.uniform: Uniform(u_InputPre) = 0.0
 uboSet.uniform: Uniform(u_OutputPre) = true
 uboUse: 2
 enable: STENCIL
@@ -198,6 +195,7 @@ draw: TRIANGLE_FAN, offset=0, count=7, instances=1, indexType=null
 uboSet: 2
 uboSet.uniform: Uniform(u_ProgramType) = 5.0
 uboSet.uniform: Uniform(u_GlobalPixelScale) = 2.0
+uboSet.uniform: Uniform(u_InputPre) = 0.0
 uboSet.uniform: Uniform(u_OutputPre) = true
 uboUse: 2
 enable: STENCIL
@@ -221,6 +219,7 @@ draw: TRIANGLE_FAN, offset=7, count=7, instances=1, indexType=null
 uboSet: 2
 uboSet.uniform: Uniform(u_ProgramType) = 5.0
 uboSet.uniform: Uniform(u_GlobalPixelScale) = 2.0
+uboSet.uniform: Uniform(u_InputPre) = 0.0
 uboSet.uniform: Uniform(u_OutputPre) = true
 uboUse: 2
 enable: STENCIL
@@ -247,6 +246,7 @@ uboSet.uniform: Uniform(u_ProgramType) = 0.0
 uboSet.uniform: Uniform(u_Color) = (0, 0, 1)
 uboSet.uniform: Uniform(u_GlobalAlpha) = 1.0
 uboSet.uniform: Uniform(u_GlobalPixelScale) = 2.0
+uboSet.uniform: Uniform(u_InputPre) = 0.0
 uboSet.uniform: Uniform(u_OutputPre) = true
 uboUse: 2
 enable: STENCIL
@@ -276,6 +276,7 @@ uboSet.uniform: Uniform(u_ProgramType) = 0.0
 uboSet.uniform: Uniform(u_Color) = (0, 0, 1)
 uboSet.uniform: Uniform(u_GlobalAlpha) = 1.0
 uboSet.uniform: Uniform(u_GlobalPixelScale) = 2.0
+uboSet.uniform: Uniform(u_InputPre) = 0.0
 uboSet.uniform: Uniform(u_OutputPre) = true
 uboUse: 2
 enable: STENCIL
@@ -305,6 +306,7 @@ uboSet.uniform: Uniform(u_ProgramType) = 0.0
 uboSet.uniform: Uniform(u_Color) = (0, 0, 1)
 uboSet.uniform: Uniform(u_GlobalAlpha) = 1.0
 uboSet.uniform: Uniform(u_GlobalPixelScale) = 2.0
+uboSet.uniform: Uniform(u_InputPre) = 0.0
 uboSet.uniform: Uniform(u_OutputPre) = true
 uboUse: 2
 enable: STENCIL
@@ -332,6 +334,7 @@ uboSet.uniform: Uniform(u_ProgramType) = 0.0
 uboSet.uniform: Uniform(u_Color) = (1, 1, 0)
 uboSet.uniform: Uniform(u_GlobalAlpha) = 1.0
 uboSet.uniform: Uniform(u_GlobalPixelScale) = 2.0
+uboSet.uniform: Uniform(u_InputPre) = 0.0
 uboSet.uniform: Uniform(u_OutputPre) = true
 uboUse: 2
 disable: STENCIL
@@ -907,6 +910,7 @@ uboSet.uniform: Uniform(u_ProgramType) = 0.0
 uboSet.uniform: Uniform(u_Color) = (1, 0, 0)
 uboSet.uniform: Uniform(u_GlobalAlpha) = 1.0
 uboSet.uniform: Uniform(u_GlobalPixelScale) = 2.0
+uboSet.uniform: Uniform(u_InputPre) = 0.0
 uboSet.uniform: Uniform(u_OutputPre) = true
 uboUse: 2
 disable: STENCIL
@@ -949,6 +953,7 @@ uboSet.uniform: Uniform(u_Transform) = Matrix3D(
 uboSet.uniform: Uniform(u_GlobalAlpha) = 0.75
 uboSet.uniform: Uniform(u_Tex) = TextureUnit(texture=Texture[0], linear=true, trilinear=null)
 uboSet.uniform: Uniform(u_GlobalPixelScale) = 2.0
+uboSet.uniform: Uniform(u_InputPre) = 1.0
 uboSet.uniform: Uniform(u_OutputPre) = true
 uboUse: 2
 disable: STENCIL
@@ -978,6 +983,7 @@ scissor: -1900, -780, 808, 800
 uboSet: 2
 uboSet.uniform: Uniform(u_ProgramType) = 5.0
 uboSet.uniform: Uniform(u_GlobalPixelScale) = 2.0
+uboSet.uniform: Uniform(u_InputPre) = 0.0
 uboSet.uniform: Uniform(u_OutputPre) = true
 uboUse: 2
 enable: STENCIL
@@ -1001,6 +1007,7 @@ draw: TRIANGLE_FAN, offset=624, count=7, instances=1, indexType=null
 uboSet: 2
 uboSet.uniform: Uniform(u_ProgramType) = 5.0
 uboSet.uniform: Uniform(u_GlobalPixelScale) = 2.0
+uboSet.uniform: Uniform(u_InputPre) = 0.0
 uboSet.uniform: Uniform(u_OutputPre) = true
 uboUse: 2
 enable: STENCIL
@@ -1024,6 +1031,7 @@ draw: TRIANGLE_FAN, offset=624, count=7, instances=1, indexType=null
 uboSet: 2
 uboSet.uniform: Uniform(u_ProgramType) = 5.0
 uboSet.uniform: Uniform(u_GlobalPixelScale) = 2.0
+uboSet.uniform: Uniform(u_InputPre) = 0.0
 uboSet.uniform: Uniform(u_OutputPre) = true
 uboUse: 2
 enable: STENCIL
@@ -1741,6 +1749,7 @@ draw: TRIANGLE_FAN, offset=631, count=701, instances=1, indexType=null
 uboSet: 2
 uboSet.uniform: Uniform(u_ProgramType) = 5.0
 uboSet.uniform: Uniform(u_GlobalPixelScale) = 2.0
+uboSet.uniform: Uniform(u_InputPre) = 0.0
 uboSet.uniform: Uniform(u_OutputPre) = true
 uboUse: 2
 enable: STENCIL
@@ -2471,6 +2480,7 @@ uboSet.uniform: Uniform(u_Gradientp1) = (100, 100, 0)
 uboSet.uniform: Uniform(u_GlobalAlpha) = 0.9
 uboSet.uniform: Uniform(u_Tex) = TextureUnit(texture=Texture[1], linear=true, trilinear=null)
 uboSet.uniform: Uniform(u_GlobalPixelScale) = 2.0
+uboSet.uniform: Uniform(u_InputPre) = 1.0
 uboSet.uniform: Uniform(u_OutputPre) = true
 uboUse: 2
 enable: STENCIL
@@ -2509,6 +2519,7 @@ uboSet.uniform: Uniform(u_Gradientp1) = (130, 180, 70)
 uboSet.uniform: Uniform(u_GlobalAlpha) = 0.9
 uboSet.uniform: Uniform(u_Tex) = TextureUnit(texture=Texture[2], linear=true, trilinear=null)
 uboSet.uniform: Uniform(u_GlobalPixelScale) = 2.0
+uboSet.uniform: Uniform(u_InputPre) = 1.0
 uboSet.uniform: Uniform(u_OutputPre) = true
 uboUse: 2
 disable: STENCIL
@@ -2549,6 +2560,7 @@ uboSet.uniform: Uniform(u_Gradientp1) = (0, 0, 0)
 uboSet.uniform: Uniform(u_GlobalAlpha) = 0.9
 uboSet.uniform: Uniform(u_Tex) = TextureUnit(texture=Texture[3], linear=true, trilinear=null)
 uboSet.uniform: Uniform(u_GlobalPixelScale) = 2.0
+uboSet.uniform: Uniform(u_InputPre) = 1.0
 uboSet.uniform: Uniform(u_OutputPre) = true
 uboUse: 2
 disable: STENCIL
@@ -2583,11 +2595,10 @@ createTexture():4
 Buffer[0].afterSetMem(mem[393216])
 Buffer[1].afterSetMem(mem[4])
 Buffer[2].afterSetMem(mem[4])
-Buffer[3].afterSetMem(mem[4])
-Buffer[4].afterSetMem(mem[49152])
+Buffer[3].afterSetMem(mem[49152])
 enable: SCISSOR
 scissor: 0, 0, 200, 200
-programCreate: 2, Program(name=BatchBuilder2D.Tinted.NoAdd, attributes=[a_Tex, a_TexIndex, a_InputPre, a_Wrap, a_Col, a_Col2, a_Pos], uniforms=[u_ProjMat, u_ViewMat, u_Tex0, u_Tex1, u_Tex2, u_Tex3, u_OutputPre]), ProgramConfig(externalTextureSampler=false)
+programCreate: 2, Program(name=BatchBuilder2D.Tinted.NoAdd, attributes=[a_Tex, a_TexIndex, a_Wrap, a_Col, a_Col2, a_Pos], uniforms=[u_ProjMat, u_ViewMat, u_Tex0, u_Tex1, u_Tex2, u_Tex3, u_OutputPre]), ProgramConfig(externalTextureSampler=false)
 programCreate.fragment:#version 100 compatibility
 #ifdef GL_ES
 	precision highp float;
@@ -2607,7 +2618,6 @@ uniform bool u_OutputPre;
 varying lowp float v_Wrap;
 varying mediump vec2 v_Tex;
 varying lowp float v_TexIndex;
-varying lowp float v_InputPre;
 varying vec4 v_Col;
 void main() {
 	vec4 temp0;
@@ -2633,9 +2643,6 @@ void main() {
 			gl_FragColor = texture2D(u_Tex3, temp0.xy);
 		}
 	}
-	if ((v_InputPre == 0.0)) {
-		gl_FragColor.rgb = (gl_FragColor.rgb * gl_FragColor.a);
-	}
 	gl_FragColor = (gl_FragColor * v_Col);
 	if ((gl_FragColor.a <= 0.0)) {
 		discard;
@@ -2658,7 +2665,6 @@ programCreate.vertex:#version 100 compatibility
 #endif
 attribute mediump vec2 a_Tex;
 attribute lowp float a_TexIndex;
-attribute lowp float a_InputPre;
 attribute lowp float a_Wrap;
 attribute lowp vec4 a_Col;
 attribute vec4 a_Col2;
@@ -2667,14 +2673,12 @@ uniform mat4 u_ProjMat;
 uniform mat4 u_ViewMat;
 varying mediump vec2 v_Tex;
 varying lowp float v_TexIndex;
-varying lowp float v_InputPre;
 varying lowp float v_Wrap;
 varying vec4 v_Col;
 varying vec4 v_Col2;
 void main() {
 	v_Tex = a_Tex;
 	v_TexIndex = a_TexIndex;
-	v_InputPre = a_InputPre;
 	v_Wrap = a_Wrap;
 	v_Col = vec4((a_Col.rgb * a_Col.a), a_Col.a);
 	v_Col2 = a_Col2;
@@ -2683,7 +2687,7 @@ void main() {
 
 programUse: 2
 vaoCreate: 1
-vaoSet: 1, VertexArrayObject(list=[VertexData(_buffer=Buffer[0], layout=VertexLayout[a_Pos, a_Tex, a_Col, a_Col2]), VertexData(_buffer=Buffer[1], layout=VertexLayout[a_TexIndex]), VertexData(_buffer=Buffer[2], layout=VertexLayout[a_InputPre]), VertexData(_buffer=Buffer[3], layout=VertexLayout[a_Wrap])])
+vaoSet: 1, VertexArrayObject(list=[VertexData(_buffer=Buffer[0], layout=VertexLayout[a_Pos, a_Tex, a_Col, a_Col2]), VertexData(_buffer=Buffer[1], layout=VertexLayout[a_TexIndex]), VertexData(_buffer=Buffer[2], layout=VertexLayout[a_Wrap])])
 vaoUse: 1
 uboSet: 1
 uboSet.uniform: Uniform(u_ProjMat) = Matrix3D(
@@ -2716,11 +2720,11 @@ disable: STENCIL
 stencilMask: 0
 draw: TRIANGLES, offset=0, count=6, instances=1, indexType=USHORT
 ::draw.indices: [0, 1, 2, 3, 0, 2]
-::draw.attributes[4]: [Attribute(a_Pos), Attribute(a_Tex), Attribute(a_Col), Attribute(a_Col2), Attribute(a_TexIndex), Attribute(a_InputPre), Attribute(a_Wrap)]
-::draw.vertex[0]: a_Pos[0,0], a_Tex[0,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_InputPre[1], a_Wrap[0]
-::draw.vertex[1]: a_Pos[100,0], a_Tex[1,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_InputPre[1], a_Wrap[0]
-::draw.vertex[2]: a_Pos[100,100], a_Tex[1,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_InputPre[1], a_Wrap[0]
-::draw.vertex[3]: a_Pos[0,100], a_Tex[0,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_InputPre[1], a_Wrap[0]
+::draw.attributes[3]: [Attribute(a_Pos), Attribute(a_Tex), Attribute(a_Col), Attribute(a_Col2), Attribute(a_TexIndex), Attribute(a_Wrap)]
+::draw.vertex[0]: a_Pos[0,0], a_Tex[0,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_Wrap[0]
+::draw.vertex[1]: a_Pos[100,0], a_Tex[1,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_Wrap[0]
+::draw.vertex[2]: a_Pos[100,100], a_Tex[1,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_Wrap[0]
+::draw.vertex[3]: a_Pos[0,100], a_Tex[0,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_Wrap[0]
 vaoUse: 0
 vaoDelete: 1
 disposeTemporalPerFrameStuff()

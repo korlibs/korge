@@ -23,9 +23,6 @@ class SpriteSystem : IteratingSystem(
     private val positions = Inject.componentMapper<Position>()
     private val sprites = Inject.componentMapper<Sprite>()
 
-    override fun onInit() {
-    }
-
     override fun onTickEntity(entity: Entity) {
 
         val sprite = sprites[entity]

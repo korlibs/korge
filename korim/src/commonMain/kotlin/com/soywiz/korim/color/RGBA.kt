@@ -5,8 +5,6 @@ import com.soywiz.kds.GenericSubList
 import com.soywiz.kmem.arraycopy
 import com.soywiz.kmem.clamp01
 import com.soywiz.kmem.extract8
-import com.soywiz.kmem.fill
-import com.soywiz.korim.internal.clamp0_255
 import com.soywiz.korim.internal.d2i
 import com.soywiz.korim.internal.f2i
 import com.soywiz.korim.internal.packIntClamped
@@ -16,7 +14,11 @@ import com.soywiz.korim.paint.Paint
 import com.soywiz.korio.util.niceStr
 import com.soywiz.korma.interpolation.Interpolable
 import com.soywiz.korma.interpolation.interpolate
+import com.soywiz.kmem.clampUByte
 import com.soywiz.krypto.encoding.appendHexByte
+import kotlin.jvm.JvmName
+import kotlin.math.pow
+import kotlin.math.roundToInt
 
 inline class RGBA(val value: Int) : Comparable<RGBA>, Interpolable<RGBA>, Paint {
     override fun clone(): Paint = this
@@ -46,13 +48,13 @@ inline class RGBA(val value: Int) : Comparable<RGBA>, Interpolable<RGBA>, Paint 
         out[index + 3] = af
     }
 
-	fun withR(v: Int): RGBA = RGBA((value and (0xFF shl 0).inv()) or (v.clamp0_255() shl RED_OFFSET))
-	fun withG(v: Int): RGBA = RGBA((value and (0xFF shl 8).inv()) or (v.clamp0_255() shl GREEN_OFFSET))
-	fun withB(v: Int): RGBA = RGBA((value and (0xFF shl 16).inv()) or (v.clamp0_255() shl BLUE_OFFSET))
-	fun withA(v: Int): RGBA = RGBA((value and (0xFF shl 24).inv()) or (v.clamp0_255() shl ALPHA_OFFSET))
+	fun withR(v: Int): RGBA = RGBA((value and (0xFF shl 0).inv()) or (v.clampUByte() shl RED_OFFSET))
+	fun withG(v: Int): RGBA = RGBA((value and (0xFF shl 8).inv()) or (v.clampUByte() shl GREEN_OFFSET))
+	fun withB(v: Int): RGBA = RGBA((value and (0xFF shl 16).inv()) or (v.clampUByte() shl BLUE_OFFSET))
+	fun withA(v: Int): RGBA = RGBA((value and (0xFF shl 24).inv()) or (v.clampUByte() shl ALPHA_OFFSET))
     //fun withRGB(r: Int, g: Int, b: Int) = withR(r).withG(g).withB(b)
     fun withRGB(r: Int, g: Int, b: Int): RGBA =
-        RGBA((value and 0x00FFFFFF.inv()) or (r.clamp0_255() shl RED_OFFSET) or (g.clamp0_255() shl GREEN_OFFSET) or (b.clamp0_255() shl BLUE_OFFSET))
+        RGBA((value and 0x00FFFFFF.inv()) or (r.clampUByte() shl RED_OFFSET) or (g.clampUByte() shl GREEN_OFFSET) or (b.clampUByte() shl BLUE_OFFSET))
 	fun withRGB(rgb: Int): RGBA = RGBA(rgb, a)
 
     fun withRGBUnclamped(r: Int, g: Int, b: Int): RGBA =
@@ -78,7 +80,7 @@ inline class RGBA(val value: Int) : Comparable<RGBA>, Interpolable<RGBA>, Paint 
         else -> r
     }
 
-    fun getComponent(c: Char): Int = when (c.toLowerCase()) {
+    fun getComponent(c: Char): Int = when (c.lowercaseChar()) {
         'r' -> r
         'g' -> g
         'b' -> b
@@ -112,15 +114,33 @@ inline class RGBA(val value: Int) : Comparable<RGBA>, Interpolable<RGBA>, Paint 
     override operator fun compareTo(other: RGBA): Int = this.value.compareTo(other.value)
     override fun interpolateWith(ratio: Double, other: RGBA): RGBA = RGBA.interpolate(this, other, ratio)
 
-    val premultiplied: RGBAPremultiplied get() {
+    fun premultipliedValue(premultiplied: Boolean): Int = if (premultiplied) this.premultiplied.value else this.value
+
+    val premultiplied: RGBAPremultiplied get() = premultipliedFast
+
+    val premultipliedFast: RGBAPremultiplied get() {
         val A = a + 1
+        if (A >= 0xFF) return RGBAPremultiplied(value)
+        if (A <= 1) return RGBAPremultiplied(0)
         val RB = (((value and 0x00FF00FF) * A) ushr 8) and 0x00FF00FF
         val G = (((value and 0x0000FF00) * A) ushr 8) and 0x0000FF00
         return RGBAPremultiplied((value and 0x00FFFFFF.inv()) or RB or G)
     }
 
+    val premultipliedSlow: RGBAPremultiplied get() {
+        val A = a
+        val R = (r * A) / 255
+        val G = (g * A) / 255
+        val B = (b * A) / 255
+        return RGBAPremultiplied(R, G, B, A)
+    }
+
     infix fun mix(dst: RGBA): RGBA = RGBA.mix(this, dst)
     operator fun times(other: RGBA): RGBA = RGBA.multiply(this, other)
+
+    fun applyGamma(d: Float): RGBA = RGBA.float(rf.pow(d), gf.pow(d), bf.pow(d), af)
+    fun linearRGBToSRGB(): RGBA = applyGamma(1.0f / 2.2f)
+    fun SRGBtoLinearRGB(): RGBA = applyGamma(2.2f)
 
     companion object : ColorFormat32() {
         internal const val RED_OFFSET = 0
@@ -179,7 +199,7 @@ inline class RGBA(val value: Int) : Comparable<RGBA>, Interpolable<RGBA>, Paint 
             return when (srcA) {
                 0x000 -> dst
                 0xFF -> src
-                else -> RGBA(mixRgbFactor256(dst, src, srcA + 1).rgb, (srcA + (dst.a * iSrcA) / 255).clamp0_255())
+                else -> RGBA(mixRgbFactor256(dst, src, srcA + 1).rgb, (srcA + (dst.a * iSrcA) / 255).clampUByte())
             }
         }
 
@@ -252,9 +272,12 @@ inline class RGBAPremultiplied(val value: Int) {
         val Rp = r
         val Gp = g
         val Bp = b
-        val R = (Rp * iAf).toInt()
-        val G = (Gp * iAf).toInt()
-        val B = (Bp * iAf).toInt()
+        //val R = (Rp * iAf).toInt()
+        //val G = (Gp * iAf).toInt()
+        //val B = (Bp * iAf).toInt()
+        val R = (Rp * iAf).roundToInt()
+        val G = (Gp * iAf).roundToInt()
+        val B = (Bp * iAf).roundToInt()
         return RGBA.invoke(R, G, B, A)
     }
 
@@ -323,9 +346,11 @@ inline class RGBAPremultiplied(val value: Int) {
 
 fun RGBA.asPremultiplied() = RGBAPremultiplied(value)
 fun RGBAPremultiplied.asNonPremultiplied() = RGBA(value)
+fun RGBAPremultiplied.asStraight() = RGBA(value)
 
 fun RgbaArray.asPremultiplied() = RgbaPremultipliedArray(ints)
 fun RgbaPremultipliedArray.asNonPremultiplied() = RgbaArray(ints)
+fun RgbaPremultipliedArray.asStraight() = RgbaArray(ints)
 
 inline class RgbaPremultipliedArray(val ints: IntArray) {
     companion object {
@@ -340,8 +365,8 @@ inline class RgbaPremultipliedArray(val ints: IntArray) {
 
     fun fill(value: RGBAPremultiplied, start: Int = 0, end: Int = this.size): Unit = ints.fill(value.value, start, end)
 
-    fun premultiply(start: Int = 0, end: Int = size): RgbaArray {
-        for (n in start until end) this[n] = this[n].asNonPremultiplied().premultiplied
+    fun depremultiplyInplace(start: Int = 0, end: Int = size): RgbaArray {
+        for (n in start until end) this.ints[n] = this[n].depremultiplied.value
         return this.asNonPremultiplied()
     }
 
@@ -400,6 +425,8 @@ infix fun RGBAPremultiplied.mix(src: RGBAPremultiplied): RGBAPremultiplied {
 
 inline class RgbaArray(val ints: IntArray) : List<RGBA> {
     companion object {
+        @JvmName("invokeRgba")
+        inline operator fun <T : RGBA> invoke(vararg colors: T): RgbaArray = RgbaArray(colors.size) { colors[it] }
         operator fun invoke(colors: Array<RGBA>): RgbaArray = RgbaArray(colors.map { it.value }.toIntArray())
         operator fun invoke(size: Int): RgbaArray = RgbaArray(IntArray(size))
         inline operator fun invoke(size: Int, callback: (index: Int) -> RGBA): RgbaArray = RgbaArray(IntArray(size)).apply { for (n in 0 until size) this[n] = callback(n) }
@@ -420,8 +447,8 @@ inline class RgbaArray(val ints: IntArray) : List<RGBA> {
 	operator fun set(index: Int, color: RGBA) { ints[index] = color.value }
 	fun fill(value: RGBA, start: Int = 0, end: Int = this.size): Unit = ints.fill(value.value, start, end)
 
-    fun depremultiply(start: Int = 0, end: Int = size): RgbaPremultipliedArray {
-        for (n in start until end) this[n] = this[n].asPremultiplied().depremultiplied
+    fun premultiplyInplace(start: Int = 0, end: Int = size): RgbaPremultipliedArray {
+        for (n in start until end) this.ints[n] = this[n].premultiplied.value
         return this.asPremultiplied()
     }
 
@@ -433,5 +460,6 @@ fun RGBA.mix(other: RGBA, ratio: Double) = RGBA.mixRgba(this, other, ratio)
 fun List<RGBA>.toRgbaArray(): RgbaArray = RgbaArray(IntArray(this.size) { this@toRgbaArray[it].value })
 
 fun arraycopy(src: RgbaArray, srcPos: Int, dst: RgbaArray, dstPos: Int, size: Int): Unit = arraycopy(src.ints, srcPos, dst.ints, dstPos, size)
+fun arraycopy(src: RgbaPremultipliedArray, srcPos: Int, dst: RgbaPremultipliedArray, dstPos: Int, size: Int): Unit = arraycopy(src.ints, srcPos, dst.ints, dstPos, size)
 
 fun Array<RGBA>.toRgbaArray() = RgbaArray(this.size) { this@toRgbaArray[it] }

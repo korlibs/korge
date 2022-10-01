@@ -81,23 +81,43 @@ object AndroidNativeImageFormatProvider : NativeImageFormatProvider() {
 
         return NativeImageResult(
             image = AndroidNativeImage(
-                Dispatchers.Default { BitmapFactory.decodeByteArray(
-                    data, 0, data.size,
-                    BitmapFactory.Options().also {
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                            it.inPremultiplied = props.premultiplied
+                Dispatchers.Default {
+                    for (setPremult in listOf(true, false)) {
+                        val bmp = BitmapFactory.decodeByteArray(
+                            data, 0, data.size,
+                            BitmapFactory.Options().also {
+                                if (setPremult) {
+                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                                        it.inPremultiplied = when {
+                                            props.asumePremultiplied -> false
+                                            props.premultipliedSure -> true
+                                            else -> false
+                                        }
+                                    }
+                                }
+                                it.inSampleSize = props.getSampleSize(originalSize.width, originalSize.height)
+                            }
+                        )
+                        if (bmp != null) {
+                            return@Default bmp
                         }
-                        it.inSampleSize = props.getSampleSize(originalSize.width, originalSize.height)
                     }
-                ) }
-            ),
+                    error("Couldn't decode image")
+                }
+            ).also {
+               if (props.asumePremultiplied) it.asumePremultiplied()
+            },
             originalWidth = info.width,
             originalHeight = info.height
         )
     }
 
-	override fun create(width: Int, height: Int, premultiplied: Boolean?): NativeImage {
-		val bmp = android.graphics.Bitmap.createBitmap(width.coerceAtLeast(1), height.coerceAtLeast(1), android.graphics.Bitmap.Config.ARGB_8888)
+    override fun create(width: Int, height: Int, premultiplied: Boolean?): NativeImage {
+		val bmp = android.graphics.Bitmap.createBitmap(
+            width.coerceAtLeast(1),
+            height.coerceAtLeast(1),
+            android.graphics.Bitmap.Config.ARGB_8888,
+        )
 		//bmp.setPixels()
 		return AndroidNativeImage(bmp)
 	}
@@ -126,12 +146,13 @@ suspend fun androidQuestionAlert(message: String, title: String = "Warning"): Bo
 
  */
 
+// @TODO: PRemultiplied
 fun Bitmap.toAndroidBitmap(): android.graphics.Bitmap {
     if (this is AndroidNativeImage) return this.androidBitmap
     val bmp32 = this.toBMP32()
     bmp32.updateColors { RGBA(it.toAndroidColor()) }
     return android.graphics.Bitmap.createBitmap(
-        bmp32.data.ints,
+        bmp32.ints,
         0,
         bmp32.width,
         bmp32.width,
@@ -140,21 +161,35 @@ fun Bitmap.toAndroidBitmap(): android.graphics.Bitmap {
     )
 }
 
-class AndroidNativeImage(val androidBitmap: android.graphics.Bitmap) :
-    NativeImage(androidBitmap.width, androidBitmap.height, androidBitmap, premultiplied = when {
-        Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1 -> androidBitmap.isPremultiplied
-        else -> false
-    }) {
-    override val name: String = "AndroidNativeImage"
+private fun android.graphics.Bitmap.isPremultipliedSafe(): Boolean = when {
+    Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1 -> isPremultiplied
+    else -> true
+}
 
-    override fun readPixelsUnsafe(x: Int, y: Int, width: Int, height: Int, out: RgbaArray, offset: Int) {
-        androidBitmap.getPixels(out.ints, offset, width, x, y, width, height)
-        AndroidColor.androidToRgba(out, offset, width * height)
+class AndroidNativeImage(
+    val androidBitmap: android.graphics.Bitmap,
+    val originalPremultiplied: Boolean = androidBitmap.isPremultipliedSafe()
+) : NativeImage(androidBitmap.width, androidBitmap.height, androidBitmap, premultiplied = originalPremultiplied) {
+    override val name: String get() = "AndroidNativeImage"
+
+    override fun readPixelsUnsafe(x: Int, y: Int, width: Int, height: Int, out: IntArray, offset: Int) {
+        val outRgba = RgbaArray(out)
+        androidBitmap.getPixels(out, offset, width, x, y, width, height) // This returns values in straight alpha
+        val count = width * height
+        AndroidColor.androidToRgba(RgbaArray(out), offset, count)
+        if (originalPremultiplied) {
+            for (n in offset until offset + count) out[n] = outRgba[n].premultiplied.value
+        }
     }
-    override fun writePixelsUnsafe(x: Int, y: Int, width: Int, height: Int, out: RgbaArray, offset: Int) {
-        AndroidColor.rgbaToAndroid(out, offset, width * height)
-        androidBitmap.setPixels(out.ints, offset, width, x, y, width, height)
-        AndroidColor.androidToRgba(out, offset, width * height)
+    override fun writePixelsUnsafe(x: Int, y: Int, width: Int, height: Int, out: IntArray, offset: Int) {
+        val outRgba = RgbaArray(out)
+        val count = width * height
+        val temp = RgbaArray(IntArray(count + offset))
+        AndroidColor.rgbaToAndroid(outRgba, offset, count, temp)
+        if (originalPremultiplied) {
+            for (n in offset until offset + count) out[n] = outRgba[n].asPremultiplied().depremultiplied.value
+        }
+        androidBitmap.setPixels(temp.ints, 0, width, x, y, width, height) // This expects values in straight alpha
     }
 
     override fun getContext2d(antialiasing: Boolean): Context2d = Context2d(AndroidContext2dRenderer(androidBitmap, antialiasing))
@@ -308,6 +343,8 @@ class AndroidContext2dRenderer(val bmp: android.graphics.Bitmap, val antialiasin
             }
 
             paint.style = if (fill) Paint.Style.FILL else android.graphics.Paint.Style.STROKE
+            paint.strokeCap = state.lineCap.toAndroid()
+            paint.strokeJoin = state.lineJoin.toAndroid()
             convertPaint(state.fillOrStrokeStyle(fill), state.transform, paint, state.globalAlpha.clamp01())
             paint.pathEffect = when {
                 state.lineDash != null -> DashPathEffect(state.lineDash!!.mapFloat { it.toFloat() }.toFloatArray(), state.lineDashOffset.toFloat())
@@ -326,3 +363,14 @@ class AndroidContext2dRenderer(val bmp: android.graphics.Bitmap, val antialiasin
     }
 }
 
+fun LineCap.toAndroid(): Paint.Cap = when (this) {
+    LineCap.BUTT -> Paint.Cap.BUTT
+    LineCap.SQUARE -> Paint.Cap.SQUARE
+    LineCap.ROUND -> Paint.Cap.ROUND
+}
+
+fun LineJoin.toAndroid(): Paint.Join = when (this) {
+    LineJoin.BEVEL -> Paint.Join.BEVEL
+    LineJoin.ROUND -> Paint.Join.ROUND
+    LineJoin.MITER -> Paint.Join.MITER
+}

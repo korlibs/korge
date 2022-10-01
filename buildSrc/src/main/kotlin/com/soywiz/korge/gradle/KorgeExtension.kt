@@ -146,6 +146,20 @@ class KorgeExtension(val project: Project) {
     }
 
     /**
+     * Configure Desktop cross-targets:
+     *
+     * - Lima
+     * - Wine
+     */
+    fun targetDesktopCross() {
+        target("desktop-cross") {
+            if (supportKotlinNative) {
+                project.configureNativeDesktopCross()
+            }
+        }
+    }
+
+    /**
      * Configures Android indirect. Alias for [targetAndroidIndirect]
      */
     fun targetAndroid() {
@@ -245,7 +259,6 @@ class KorgeExtension(val project: Project) {
     //val DEFAULT_JVM_TARGET = "1.6"
 	var jvmTarget: String = project.findProject("jvm.target")?.toString() ?: DEFAULT_JVM_TARGET
     var useMimalloc = true
-    var useNewMemoryModel = KorgeDefaults.USE_NEW_MEMORY_MANAGER_BY_DEFAULT
 	var androidLibrary: Boolean = project.findProperty("android.library") == "true"
     var overwriteAndroidFiles: Boolean = project.findProperty("overwrite.android.files") == "false"
     var id: String = "com.unknown.unknownapp"
@@ -289,6 +302,10 @@ class KorgeExtension(val project: Project) {
     val newAndroidDirectEnabled get() = project.findProperty("korge.enable.android.direct") == "true" || System.getenv("KORGE_ENABLE_ANDROID_DIRECT") == "true"
     val newIosEnabled get() = project.findProperty("korge.enable.ios") == "true" || System.getenv("KORGE_ENABLE_IOS") == "true"
     val newJsEnabled get() = project.findProperty("korge.enable.js") == "true" || System.getenv("KORGE_ENABLE_JS") == "true"
+
+    var searchResourceProcessorsInMainSourceSet: Boolean = false
+    var enableKorgeResourceProcessing: Boolean = true
+    //var enableKorgeResourceProcessing: Boolean = false
 
     var icon: File? = project.projectDir["icon.png"]
     var banner: File? = project.projectDir["banner.png"]

@@ -100,10 +100,11 @@ abstract class DXT(val format: String, val premultiplied: Boolean, val blockSize
 
 		val aa = IntArray(8)
 		val cc = RgbaArray(4)
+        val rgba = RgbaArray(out.ints)
 
 		for (y in 0 until blockHeight) {
 			for (x in 0 until blockWidth) {
-				decodeRow(bytes, offset, out.data, out.index(x * 4, y * 4), out.width, aa, cc)
+				decodeRow(bytes, offset, rgba, out.index(x * 4, y * 4), out.width, aa, cc)
 				offset += blockSize
 			}
 		}

@@ -34,7 +34,8 @@ class TweenComponent(
     val easing: Easing = DEFAULT_EASING,
     val callback: (Double) -> Unit,
     val c: CancellableContinuation<Unit>?,
-    val waitTime: TimeSpan = TimeSpan.NIL
+    val waitTime: TimeSpan = TimeSpan.NIL,
+    val autoInvalidate: Boolean = true
 ) : UpdateComponent {
 	var elapsed = 0.0.milliseconds
 	val hrtime = if (time != TimeSpan.NIL) time else (vs.map { it.endTime.nanoseconds }.maxOrNull() ?: 0.0).nanoseconds
@@ -65,6 +66,10 @@ class TweenComponent(
     }
 
 	override fun update(dt: TimeSpan) {
+        if (autoInvalidate) {
+            view.invalidateRender()
+        }
+
         if (cancelled) {
             //println(" --> cancelled")
             return completeOnce()
@@ -123,6 +128,7 @@ suspend fun BaseView?.tween(
     easing: Easing = DEFAULT_EASING,
     waitTime: TimeSpan = TimeSpan.NIL,
     timeout: Boolean = false,
+    autoInvalidate: Boolean = true,
     callback: (Double) -> Unit = { }
 ) {
 	if (this != null) {
@@ -132,7 +138,7 @@ suspend fun BaseView?.tween(
 				suspendCancellableCoroutine<Unit> { c ->
 					val view = this@tween
 					//println("STARTED TWEEN at thread $currentThreadId")
-					tc = TweenComponent(view, vs.toList(), time, easing, callback, c, waitTime).also { it.attach() }
+					tc = TweenComponent(view, vs.toList(), time, easing, callback, c, waitTime, autoInvalidate).also { it.attach() }
 				}
 			}
 		} catch (e: TimeoutCancellationException) {

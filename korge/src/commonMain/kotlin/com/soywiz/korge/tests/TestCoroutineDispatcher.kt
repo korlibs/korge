@@ -1,7 +1,7 @@
 package com.soywiz.korge.tests
 
 import com.soywiz.kds.*
-import com.soywiz.kds.lock.Lock
+import com.soywiz.kds.lock.NonRecursiveLock
 import com.soywiz.klock.TimeSpan
 import com.soywiz.klock.milliseconds
 import kotlinx.coroutines.CancellableContinuation
@@ -27,7 +27,7 @@ class TestCoroutineDispatcher(val frameTime: TimeSpan = 16.milliseconds) :
 	}
 
 	private val tasks = PriorityQueue<TimedTask>(Comparator { a, b -> a.time.compareTo(b.time) })
-    private val lock = Lock()
+    private val lock = NonRecursiveLock()
 
 	//override fun <T> interceptContinuation(continuation: Continuation<T>): Continuation<T> {
 	//	return object : Continuation<T> {

@@ -55,6 +55,9 @@ class SkeletonView(val skeleton: Skeleton, val animationState: AnimationState?) 
     fun update(delta: TimeSpan) {
         if (running) {
             animationState?.update(delta.seconds.toFloat())
+            if (delta != 0.milliseconds) {
+                invalidate() // @TODO: We should check if we updated something, to mark the view as invalidated
+            }
         }
         animationState?.apply(skeleton)
     }

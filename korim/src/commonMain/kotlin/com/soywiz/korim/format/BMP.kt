@@ -5,6 +5,7 @@ import com.soywiz.korim.bitmap.Bitmap8
 import com.soywiz.korim.color.BGR
 import com.soywiz.korim.color.BGRA
 import com.soywiz.korim.color.RGBA
+import com.soywiz.korim.color.RgbaArray
 import com.soywiz.korim.color.decode
 import com.soywiz.korim.color.encode
 import com.soywiz.korio.stream.SyncStream
@@ -76,7 +77,7 @@ object BMP : ImageFormat("bmp") {
 			}
 			24, 32 -> {
 				val bytesPerRow = h.width * h.bitsPerPixel / 8
-				val out = Bitmap32(h.width, h.height)
+				val out = Bitmap32(h.width, h.height, premultiplied = false)
 				val row = ByteArray(bytesPerRow)
 				val format = if (h.bitsPerPixel == 24) BGR else BGRA
 				val padding = 4 - (bytesPerRow % 4)
@@ -84,7 +85,7 @@ object BMP : ImageFormat("bmp") {
 				for (n in 0 until h.height) {
 					val y = if (h.flipY) h.height - n - 1 else n
 					s.read(row)
-					format.decode(row, 0, out.data, out.index(0, y), h.width)
+					format.decode(row, 0, RgbaArray(out.ints), out.index(0, y), h.width)
 					if (padding != 4) {
 						s.skip(padding)
 					}
@@ -119,7 +120,7 @@ object BMP : ImageFormat("bmp") {
         //s.writeBytes(BGRA.encode(bmp.data))
         for (n in 0 until bmp.height) {
             val y = bmp.height - 1 - n
-            s.writeBytes(BGRA.encode(bmp.data, y * bmp.width, bmp.width, littleEndian = true))
+            s.writeBytes(BGRA.encode(RgbaArray(bmp.ints), y * bmp.width, bmp.width, littleEndian = true))
         }
     }
 }

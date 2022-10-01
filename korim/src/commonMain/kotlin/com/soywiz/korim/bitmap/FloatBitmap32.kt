@@ -11,14 +11,14 @@ class FloatBitmap32(
 ) : Bitmap(width, height, 32, premultiplied, data) {
     private fun index4(x: Int, y: Int) = index(x, y) * 4
 
-    override fun setRgba(x: Int, y: Int, v: RGBA) {
+    override fun setRgbaRaw(x: Int, y: Int, v: RGBA) {
         val rindex = index4(x, y)
         data[rindex + 0] = v.rf
         data[rindex + 1] = v.gf
         data[rindex + 2] = v.bf
         data[rindex + 3] = v.af
     }
-    override fun getRgba(x: Int, y: Int): RGBA {
+    override fun getRgbaRaw(x: Int, y: Int): RGBA {
         val rindex = index4(x, y)
         return RGBA.float(data[rindex + 0], data[rindex + 1], data[rindex + 2], data[rindex + 3])
     }
@@ -48,7 +48,7 @@ class FloatBitmap32(
 fun Bitmap.toFloatBMP32(out: FloatBitmap32 = FloatBitmap32(width, height, premultiplied = premultiplied)): FloatBitmap32 {
     for (y in 0 until height) {
         for (x in 0 until width) {
-            val col = this.getRgba(x ,y)
+            val col = this.getRgbaRaw(x ,y)
             out.setRgbaf(x, y, col.rf, col.gf, col.bf, col.af)
         }
     }

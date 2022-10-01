@@ -9,7 +9,10 @@ import com.soywiz.kmem.toIntCeil
 import com.soywiz.kmem.toIntFloor
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
+import com.soywiz.korim.color.RGBAPremultiplied
 import com.soywiz.korim.color.RgbaArray
+import com.soywiz.korim.color.asNonPremultiplied
+import com.soywiz.korim.color.asPremultiplied
 import com.soywiz.korim.vector.Context2d
 import com.soywiz.korio.lang.invalidOp
 import com.soywiz.korma.geom.ISizeInt
@@ -22,14 +25,23 @@ abstract class Bitmap(
     override val width: Int,
     override val height: Int,
     val bpp: Int,
-    var premultiplied: Boolean,
+    premultiplied: Boolean,
     val backingArray: Any?
 ) : Sizeable, ISizeInt, Extra by Extra.Mixin() {
+
+    var premultiplied: Boolean = premultiplied
+        set(value) {
+            field = value
+            //printStackTrace("Changed premultiplied! $value")
+        }
+
+    var asumePremultiplied: Boolean = false
     //override fun getOrNull() = this
     //override suspend fun get() = this
 
     //@ThreadLocal
-    protected val tempRgba: RgbaArray by lazy { RgbaArray(width * 2) }
+    protected val tempInts: IntArray by lazy { IntArray(width * 2) }
+    protected val tempRgba: RgbaArray get() = RgbaArray(tempInts)
 
     /** Version of the content. lock+unlock mutates this version to allow for example to re-upload the bitmap to the GPU when synchronizing bitmaps into textures */
     var contentVersion: Int = 0
@@ -83,24 +95,50 @@ abstract class Bitmap(
         }
     }
 
-    open fun readPixelsUnsafe(x: Int, y: Int, width: Int, height: Int, out: RgbaArray, offset: Int = 0) {
+    open fun readPixelsUnsafe(x: Int, y: Int, width: Int, height: Int, out: IntArray, offset: Int = 0) {
         var n = offset
-        for (y0 in 0 until height) for (x0 in 0 until width) out[n++] = getRgba(x0 + x, y0 + y)
+        for (y0 in 0 until height) for (x0 in 0 until width) out[n++] = getRgbaRaw(x0 + x, y0 + y).value
     }
-    open fun writePixelsUnsafe(x: Int, y: Int, width: Int, height: Int, out: RgbaArray, offset: Int = 0) {
+    open fun writePixelsUnsafe(x: Int, y: Int, width: Int, height: Int, out: IntArray, offset: Int = 0) {
         var n = offset
-        for (y0 in 0 until height) for (x0 in 0 until width) setRgba(x0 + x, y0 + y, out[n++])
+        for (y0 in 0 until height) for (x0 in 0 until width) setRgbaRaw(x0 + x, y0 + y, RGBA(out[n++]))
     }
 
-    open fun setRgba(x: Int, y: Int, v: RGBA): Unit = TODO()
-    open fun getRgba(x: Int, y: Int): RGBA = Colors.TRANSPARENT_BLACK
+    //open fun readRgbaUnsafe(x: Int, y: Int, width: Int, height: Int, out: RgbaArray, offset: Int = 0) {
+    //    readPixelsUnsafe(x, y, width, height, out.ints, offset)
+    //    if (premultiplied) RgbaPremultipliedArray(out.ints).depremultiplyInplace(offset, offset + width * height)
+    //}
+    //open fun writeRgbaUnsafe(x: Int, y: Int, width: Int, height: Int, out: RgbaArray, offset: Int = 0) {
+    //    TODO()
+    //}
 
+    /** UNSAFE: Sets the color [v] in the [x], [y] coordinates in the internal format of this Bitmap (either premultiplied or not) */
+    open fun setRgbaRaw(x: Int, y: Int, v: RGBA): Unit = TODO()
+    /** UNSAFE: Gets the color [v] in the [x], [y] coordinates in the internal format of this Bitmap (either premultiplied or not) */
+    open fun getRgbaRaw(x: Int, y: Int): RGBA = Colors.TRANSPARENT_BLACK
+
+    /** Sets the color [v] in the [x], [y] coordinates in [RGBA] non-premultiplied */
+    open fun setRgba(x: Int, y: Int, v: RGBA): Unit {
+        if (premultiplied) setRgbaRaw(x, y, v.premultiplied.asNonPremultiplied()) else setRgbaRaw(x, y, v)
+    }
+    /** Sets the color [v] in the [x], [y] coordinates in [RGBAPremultiplied] */
+    open fun setRgba(x: Int, y: Int, v: RGBAPremultiplied): Unit {
+        if (premultiplied) setRgbaRaw(x, y, v.asNonPremultiplied()) else setRgbaRaw(x, y, v.depremultiplied)
+    }
+
+    /** Gets the color [v] in the [x], [y] coordinates in [RGBA] non-premultiplied */
+    open fun getRgba(x: Int, y: Int): RGBA = if (premultiplied) getRgbaRaw(x, y).asPremultiplied().depremultiplied else getRgbaRaw(x, y)
+    /** Gets the color [v] in the [x], [y] coordinates in [RGBAPremultiplied] */
+    open fun getRgbaPremultiplied(x: Int, y: Int): RGBAPremultiplied = if (premultiplied) getRgbaRaw(x, y).asPremultiplied() else getRgbaRaw(x, y).premultiplied
+
+    /** UNSAFE: Sets the color [color] in the [x], [y] coordinates in the internal format of this Bitmap */
 	open fun setInt(x: Int, y: Int, color: Int): Unit = Unit
+    /** UNSAFE: Gets the color in the [x], [y] coordinates in the internal format of this Bitmap */
 	open fun getInt(x: Int, y: Int): Int = 0
 
-	fun getRgbaClamped(x: Int, y: Int): RGBA = if (inBounds(x, y)) getRgba(x, y) else Colors.TRANSPARENT_BLACK
+	fun getRgbaClamped(x: Int, y: Int): RGBA = if (inBounds(x, y)) getRgbaRaw(x, y) else Colors.TRANSPARENT_BLACK
 
-    fun getRgbaClampedBorder(x: Int, y: Int): RGBA = getRgba(x.clamp(0, width - 1), y.clamp(0, height - 1))
+    fun getRgbaClampedBorder(x: Int, y: Int): RGBA = getRgbaRaw(x.clamp(0, width - 1), y.clamp(0, height - 1))
 
     @Deprecated("Use float version")
     fun getRgbaSampled(x: Double, y: Double): RGBA = getRgbaSampled(x.toFloat(), y.toFloat())
@@ -115,10 +153,10 @@ abstract class Bitmap(
         val y1Inside = y1 < height - 1
         val xratio = fract(x)
 		val yratio = fract(y)
-		val c00 = getRgba(x0, y0)
-		val c10 = if (x1Inside) getRgba(x1, y0) else c00
-		val c01 = if (y1Inside) getRgba(x0, y1) else c00
-		val c11 = if (x1Inside && y1Inside) getRgba(x1, y1) else c01
+		val c00 = getRgbaRaw(x0, y0)
+		val c10 = if (x1Inside) getRgbaRaw(x1, y0) else c00
+		val c01 = if (y1Inside) getRgbaRaw(x0, y1) else c00
+		val c11 = if (x1Inside && y1Inside) getRgbaRaw(x1, y1) else c01
 		return RGBA.mixRgba4(c00, c10, c01, c11, xratio, yratio)
 	}
 
@@ -154,8 +192,8 @@ abstract class Bitmap(
 
 	open fun copyUnchecked(srcX: Int, srcY: Int, dst: Bitmap, dstX: Int, dstY: Int, width: Int, height: Int) {
 		for (y in 0 until height) {
-            readPixelsUnsafe(srcX, srcY + y, width, 1, tempRgba, 0)
-            dst.writePixelsUnsafe(dstX, dstY + y, width, 1, tempRgba, 0)
+            readPixelsUnsafe(srcX, srcY + y, width, 1, tempInts, 0)
+            dst.writePixelsUnsafe(dstX, dstY + y, width, 1, tempInts, 0)
 		}
 	}
 
@@ -213,7 +251,7 @@ abstract class Bitmap(
 	open fun createWithThisFormat(width: Int, height: Int): Bitmap = invalidOp("Unsupported createWithThisFormat ($this)")
 
 	open fun toBMP32(): Bitmap32 = Bitmap32(width, height, premultiplied = premultiplied).also { out ->
-        this.readPixelsUnsafe(0, 0, width, height, out.data, 0)
+        this.readPixelsUnsafe(0, 0, width, height, out.ints, 0)
     }
 
     fun toBMP32IfRequired(): Bitmap32 = if (this is Bitmap32) this else this.toBMP32()
@@ -222,7 +260,7 @@ abstract class Bitmap(
         if (this.width != other.width) return false
         if (this.height != other.height) return false
         for (y in 0 until height) for (x in 0 until width) {
-            if (this.getRgba(x, y) != other.getRgba(x, y)) return false
+            if (this.getRgbaRaw(x, y) != other.getRgbaRaw(x, y)) return false
         }
         return true
     }
@@ -234,8 +272,8 @@ abstract class Bitmap(
     }
 }
 
-fun Bitmap.readPixelsUnsafe(x: Int, y: Int, width: Int, height: Int): RgbaArray {
-    val out = RgbaArray(width * height)
+fun Bitmap.readPixelsUnsafe(x: Int, y: Int, width: Int, height: Int): IntArray {
+    val out = IntArray(width * height)
     readPixelsUnsafe(x, y, width, height, out, 0)
     return out
 }
@@ -249,7 +287,7 @@ fun <T : Bitmap> T.extract(x: Int, y: Int, width: Int, height: Int): T {
 }
 
 fun Bitmap32Context2d(width: Int, height: Int, antialiased: Boolean = true, block: Context2d.() -> Unit): Bitmap32 {
-    return Bitmap32(width, height).context2d(antialiased = antialiased, doLock = false) { block() }
+    return Bitmap32(width, height, premultiplied = true).context2d(antialiased = antialiased, doLock = false) { block() }
 }
 
 inline fun <T : Bitmap> T.context2d(antialiased: Boolean = true, doLock: Boolean = true, callback: Context2d.() -> Unit): T {
@@ -273,6 +311,8 @@ fun <T : Bitmap> T.checkMatchDimensions(other: T): T {
 fun <T : Bitmap> T.mipmaps(enable: Boolean = true): T = this.apply { this.mipmaps = enable }
 
 
-fun <T : Bitmap> T.asumePremultiplied(): T = this.apply {
+fun <T : Bitmap> T.asumePremultiplied(): T {
     this.premultiplied = true
+    this.asumePremultiplied = true
+    return this
 }

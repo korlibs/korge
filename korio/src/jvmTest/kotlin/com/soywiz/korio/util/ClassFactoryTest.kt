@@ -45,4 +45,19 @@ class ClassFactoryTest {
 		)
 	}
 
+    @Test
+    fun testDoNotSerialize() {
+        data class A(val a: Int, val b: String) {
+            var c: Int = 10
+            @ObjectMapper.DoNotSerialize
+            var d: Int = 20
+        }
+
+        val mapper = ObjectMapper()
+        mapper.jvmFallback()
+        assertEquals(
+            mapOf("a" to 10, "b" to "test", "c" to 10),
+            mapper.toUntyped(A(10, "test"))
+        )
+    }
 }

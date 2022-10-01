@@ -488,6 +488,13 @@ data class Program(val vertex: VertexShader, val fragment: FragmentShader, val n
         infix fun Operand.le(that: Operand): Operand = Binop(this, "<=", that)
         infix fun Operand.gt(that: Operand): Operand = Binop(this, ">", that)
         infix fun Operand.ge(that: Operand): Operand = Binop(this, ">=", that)
+
+        infix fun Operand.and(that: Operand): Operand = Binop(this, "&&", that)
+        infix fun Operand.or(that: Operand): Operand = Binop(this, "||", that)
+
+        fun Operand.inRange(low: Operand, high: Operand): Operand {
+            return (this ge low) and (this lt high)
+        }
     }
 
 	// http://mew.cx/glsl_quickref.pdf
@@ -541,6 +548,18 @@ data class Program(val vertex: VertexShader, val fragment: FragmentShader, val n
         }
 
         operator fun FuncRef.invoke(vararg operands: Operand): CustomFunc = CustomFunc(this, operands.toList())
+
+        // infix // Single value parameter
+        @Deprecated("Experimental, doesn't work yet")
+        fun Stm.If.ELSE_IF(cond: Operand, callback: Builder.() -> Unit): Stm.If {
+            val body = createChildBuilder()
+            body.callback()
+            val ifBody = IF(cond) {
+                callback()
+            }
+            this.fbody = ifBody
+            return ifBody
+        }
 
 		infix fun Stm.If.ELSE(callback: Builder.() -> Unit) {
 			val body = createChildBuilder()

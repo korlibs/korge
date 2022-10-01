@@ -10,7 +10,7 @@ object PSNR {
         val area = a.area
         var sum = 0.0
         for (n in 0 until area) {
-            val v = c.extract(a.data[n]) - c.extract(b.data[n])
+            val v = c.extract(a.getRgbaAtIndex(n)) - c.extract(b.getRgbaAtIndex(n))
             sum += v * v
         }
         return sum / area.toDouble()

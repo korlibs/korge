@@ -3,6 +3,7 @@ package com.soywiz.korim.font
 import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.korim.vector.Context2d
 import com.soywiz.korio.lang.WStringReader
+import com.soywiz.korio.lang.keep
 
 interface VectorFont : Font {
     fun getGlyphPath(size: Double, codePoint: Int, path: GlyphPath = GlyphPath(), reader: WStringReader? = null): GlyphPath?
@@ -13,19 +14,34 @@ interface VectorFont : Font {
         codePoint: Int,
         x: Double,
         y: Double,
-        fill: Boolean,
+        fill: Boolean?,
         metrics: GlyphMetrics,
         reader: WStringReader?,
-    ) {
-        getGlyphMetrics(size, codePoint, metrics)
+        beforeDraw: (() -> Unit)?
+    ): Boolean {
+        reader.keep {
+            getGlyphMetrics(size, codePoint, metrics, reader)
+        }
         val g = getGlyphPath(size, codePoint, reader = reader)
         if (g != null) {
+            if (fill != null) {
+                ctx.beginPath()
+            }
+            if (!g.isOnlyPath) {
+                beforeDraw?.invoke()
+            }
             ctx.keepTransform {
                 ctx.translate(x, y)
                 g.draw(ctx)
             }
-            if (fill) ctx.fill() else ctx.stroke()
+            when (fill) {
+                true -> ctx.fill()
+                false -> ctx.stroke()
+                null -> Unit
+            }
+            return !g.isOnlyPath
         }
+        return false
     }
 }
 
@@ -51,13 +67,13 @@ data class VectorFontList(val list: List<VectorFont>) : VectorFont {
     override fun getFontMetrics(size: Double, metrics: FontMetrics): FontMetrics =
         list.first().getFontMetrics(size, metrics)
 
-    override fun getGlyphMetrics(size: Double, codePoint: Int, metrics: GlyphMetrics): GlyphMetrics {
+    override fun getGlyphMetrics(size: Double, codePoint: Int, metrics: GlyphMetrics, reader: WStringReader?): GlyphMetrics {
         list.fastForEach { font ->
-            if (font.getGlyphPath(size, codePoint, temp) != null) {
-                return font.getGlyphMetrics(size, codePoint, metrics)
+            if (font.getGlyphPath(size, codePoint, temp, reader) != null) {
+                return font.getGlyphMetrics(size, codePoint, metrics, reader)
             }
         }
-        return list.first().getGlyphMetrics(size, codePoint, metrics)
+        return list.first().getGlyphMetrics(size, codePoint, metrics, reader)
     }
 
     override fun getKerning(size: Double, leftCodePoint: Int, rightCodePoint: Int): Double =

@@ -9,7 +9,6 @@ import com.soywiz.kmem.ByteArrayBuilder
 import com.soywiz.kmem.Endian
 import com.soywiz.kmem.arraycopy
 import com.soywiz.kmem.clamp
-import com.soywiz.kmem.fill
 import com.soywiz.kmem.nextAlignedTo
 import com.soywiz.kmem.readCharArrayBE
 import com.soywiz.kmem.readCharArrayLE
@@ -125,7 +124,7 @@ interface AsyncPositionStream : AsyncGetPositionStream {
 }
 
 interface AsyncGetLengthStream : AsyncBaseStream {
-    suspend fun hasLength() = try { getLength(); true } catch (t: UnsupportedOperationException) { false }
+    suspend fun hasLength() = try { getLength() >= 0L } catch (t: UnsupportedOperationException) { false }
 	suspend fun getLength(): Long = throw UnsupportedOperationException()
 }
 
@@ -302,6 +301,10 @@ class SliceAsyncStreamBase(
 	internal val baseEnd: Long,
 	internal val closeParent: Boolean
 ) : AsyncStreamBase() {
+    init {
+        //check(baseStart < 0) { "baseStart negative: $baseStart" }
+        //check(baseEnd < baseStart) { "Invalid baseEnd=$baseEnd" }
+    }
 	//init {
 	//	base.refCount++
 	//}
@@ -436,20 +439,24 @@ suspend fun AsyncStream.slice(range: IntRange, closeParent: Boolean = false): As
 suspend fun AsyncStream.slice(range: LongRange, closeParent: Boolean = false): AsyncStream = sliceWithBounds(range.start, (range.endInclusive + 1), closeParent)
 
 suspend fun AsyncStream.sliceWithBounds(start: Long, end: Long, closeParent: Boolean = false): AsyncStream {
-	val len = this.getLength()
+	val rlen = if (this.hasLength()) this.getLength() else end
+    val len = if (rlen >= 0L) rlen else end
 	val clampedStart = start.clamp(0, len)
 	val clampedEnd = end.clamp(0, len)
 
-	return if (this.base is SliceAsyncStreamBase) {
-		SliceAsyncStreamBase(
-			this.base.base,
-			this.base.baseStart + clampedStart,
-			this.base.baseStart + clampedEnd,
-			closeParent
-		).toAsyncStream()
-	} else {
-		SliceAsyncStreamBase(this.base, clampedStart, clampedEnd, closeParent).toAsyncStream()
-	}
+	return when (this.base) {
+        is SliceAsyncStreamBase -> {
+            SliceAsyncStreamBase(
+                this.base.base,
+                this.base.baseStart + clampedStart,
+                this.base.baseStart + clampedEnd,
+                closeParent
+            )
+        }
+        else -> {
+            SliceAsyncStreamBase(this.base, clampedStart, clampedEnd, closeParent)
+        }
+    }.toAsyncStream()
 }
 
 suspend fun AsyncStream.sliceStart(start: Long = 0L, closeParent: Boolean = false): AsyncStream = sliceWithBounds(start, this.getLength(), closeParent)

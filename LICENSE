@@ -7,7 +7,7 @@ JavaMP3 alternate MP3 decoder released under MIT: https://github.com/kevinstadle
 OGG vorbis decoding on native targets use stb_vorbis from MIT/public domain: http://nothings.org/stb_vorbis/
 stb_image on native targets for image decoding from public domain: https://github.com/nothings/stb/blob/master/stb_image.h
 webaudio-mod-player to decode XM, ST3 & MOD audio tracks from MIT license: Copyright (c) 2012-2021 Noora Halme et al. (see AUTHORS) https://github.com/electronoora/webaudio-mod-player/blob/master/LICENSE
-
+JSMpeg to decode MPEG1/MP2, MIT License by Dominic Szablewski https://github.com/phoboslab/jsmpeg/blob/master/LICENSE
 
 --------------------
 

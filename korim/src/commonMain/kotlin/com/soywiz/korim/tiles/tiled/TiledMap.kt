@@ -8,6 +8,7 @@ import com.soywiz.klogger.Logger
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
+import com.soywiz.korim.text.TextAlignment
 import com.soywiz.korim.tiles.TileMapObjectAlignment
 import com.soywiz.korim.tiles.TileMapOrientation
 import com.soywiz.korim.tiles.TileMapRenderOrder
@@ -19,7 +20,7 @@ import com.soywiz.korim.tiles.TileShapeInfo
 import com.soywiz.korio.lang.invalidArgument
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.shape.Shape2d
-import com.soywiz.korma.geom.shape.buildPath
+import com.soywiz.korma.geom.shape.buildVectorPath
 import com.soywiz.korma.geom.shape.toShape2dNew
 import com.soywiz.korma.geom.vector.VectorPath
 import com.soywiz.korma.geom.vector.applyTransform
@@ -262,21 +263,32 @@ class TiledMap constructor(
             open fun toShape2d(): Shape2d = toVectorPath().toShape2dNew()
 
             data class Rectangle(val width: Double, val height: Double) : Shape() {
-                override fun toVectorPath(): VectorPath = buildPath { rect(0.0, 0.0, width, height) }
+                override fun toVectorPath(): VectorPath = buildVectorPath(VectorPath(), fun VectorPath.() {
+                    rect(0.0, 0.0, width, height)
+                })
+
                 override fun toShape2d(): Shape2d = Shape2d.Rectangle(0.0, 0.0, width, height)
             }
             data class Ellipse(val width: Double, val height: Double) : Shape() {
-                override fun toVectorPath(): VectorPath = buildPath { ellipse(0.0, 0.0, width, height) }
+                override fun toVectorPath(): VectorPath = buildVectorPath(VectorPath(), fun VectorPath.() {
+                    ellipse(0.0, 0.0, width, height)
+                })
+
                 override fun toShape2d() = Shape2d.EllipseOrCircle(0.0, 0.0, width, height)
             }
             object PPoint : Shape() {
-                override fun toVectorPath(): VectorPath = buildPath {  }
+                override fun toVectorPath(): VectorPath = buildVectorPath(VectorPath(), fun VectorPath.() {
+                })
             }
             data class Polygon(val points: List<Point>) : Shape() {
-                override fun toVectorPath(): VectorPath = buildPath { polygon(points) }
+                override fun toVectorPath(): VectorPath = buildVectorPath(VectorPath(), fun VectorPath.() {
+                    polygon(points)
+                })
             }
             data class Polyline(val points: List<Point>) : Shape() {
-                override fun toVectorPath(): VectorPath = buildPath { polygon(points) }
+                override fun toVectorPath(): VectorPath = buildVectorPath(VectorPath(), fun VectorPath.() {
+                    polygon(points)
+                })
             }
             data class Text(
                 val fontFamily: String,
@@ -288,20 +300,14 @@ class TiledMap constructor(
                 val underline: Boolean,
                 val strikeout: Boolean,
                 val kerning: Boolean,
-                val hAlign: TextHAlignment,
-                val vAlign: TextVAlignment
+                val align: TextAlignment,
             ) : Shape() {
-                override fun toVectorPath(): VectorPath = buildPath {  }
+                val hAlign get() = align.horizontal
+                val vAlign get() = align.vertical
+                override fun toVectorPath(): VectorPath = buildVectorPath(VectorPath(), fun VectorPath.() {
+                })
             }
         }
-    }
-
-    enum class TextHAlignment(val value: String) {
-        LEFT("left"), CENTER("center"), RIGHT("right"), JUSTIFY("justify")
-    }
-
-    enum class TextVAlignment(val value: String) {
-        TOP("top"), CENTER("center"), BOTTOM("bottom")
     }
 
     sealed class Image(val width: Int, val height: Int, val transparent: RGBA? = null) {
@@ -411,7 +417,7 @@ class TiledMap constructor(
         abstract fun clone(): Layer
 
         class Tiles(
-            var map: Bitmap32 = Bitmap32(0, 0),
+            var map: Bitmap32 = Bitmap32(0, 0, premultiplied = true),
             var encoding: Encoding = Encoding.XML,
             var compression: Compression = Compression.NO
         ) : Layer() {

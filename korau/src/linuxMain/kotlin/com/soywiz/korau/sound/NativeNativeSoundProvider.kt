@@ -4,12 +4,16 @@ import com.soywiz.klock.TimeSpan
 import com.soywiz.klock.milliseconds
 import com.soywiz.klock.seconds
 import com.soywiz.korau.format.AudioDecodingProps
-import com.soywiz.korau.format.AudioFormats
-import com.soywiz.korau.format.WAV
 import com.soywiz.korio.async.delay
 import com.soywiz.korio.async.launchImmediately
-import com.soywiz.korio.util.redirected
-import kotlinx.cinterop.*
+import kotlinx.cinterop.addressOf
+import kotlinx.cinterop.alloc
+import kotlinx.cinterop.convert
+import kotlinx.cinterop.invoke
+import kotlinx.cinterop.memScoped
+import kotlinx.cinterop.ptr
+import kotlinx.cinterop.usePinned
+import kotlinx.cinterop.value
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlin.coroutines.ContinuationInterceptor
@@ -46,8 +50,6 @@ class OpenALNativeSoundProvider : NativeSoundProvider() {
         AL.alcMakeContextCurrent(context)
     }
 
-    override val audioFormats: AudioFormats = AudioFormats(WAV, com.soywiz.korau.format.mp3.MP3Decoder, NativeOggVorbisDecoderFormat)
-
     override suspend fun createSound(data: ByteArray, streaming: Boolean, props: AudioDecodingProps, name: String): Sound {
         return if (streaming) {
             super.createSound(data, streaming, props, name)
@@ -56,7 +58,7 @@ class OpenALNativeSoundProvider : NativeSoundProvider() {
         }
     }
 
-    override fun createAudioStream(coroutineContext: CoroutineContext, freq: Int): PlatformAudioOutput {
+    override fun createPlatformAudioOutput(coroutineContext: CoroutineContext, freq: Int): PlatformAudioOutput {
         return OpenALPlatformAudioOutput(this, coroutineContext, freq)
     }
 }
@@ -70,9 +72,9 @@ class OpenALPlatformAudioOutput(
     val sourceProv = JnaSoundPropsProvider(sourceProvider)
     override var availableSamples: Int = 0
 
-    override var pitch: Double by sourceProv::pitch.redirected()
-    override var volume: Double by sourceProv::volume.redirected()
-    override var panning: Double by sourceProv::panning.redirected()
+    override var pitch: Double by sourceProv::pitch
+    override var volume: Double by sourceProv::volume
+    override var panning: Double by sourceProv::panning
 
     var source: ALuint
         get() = sourceProvider.source
@@ -96,7 +98,7 @@ class OpenALPlatformAudioOutput(
         try {
             memScoped {
                 provider.makeCurrent()
-                var tempBuffers = alloc<ALuintVar>()
+                val tempBuffers = alloc<ALuintVar>()
                 ensureSource()
                 while (true) {
                     //val buffer = al.alGetSourcei(source, AL.AL_BUFFER)

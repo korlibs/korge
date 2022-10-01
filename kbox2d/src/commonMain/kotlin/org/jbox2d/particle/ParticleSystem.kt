@@ -1168,7 +1168,7 @@ class ParticleSystem(internal var m_world: World) {
                     m_flagsBuffer!!.data!![newCount] = m_flagsBuffer.data!![i]
                     m_positionBuffer.data!![newCount].set(m_positionBuffer.data!![i])
                     m_velocityBuffer.data!![newCount].set(m_velocityBuffer.data!![i])
-                    particleGroupBuffer!!.set(newCount, particleGroupBuffer!![i]!!)
+                    particleGroupBuffer!![newCount] = particleGroupBuffer!![i]!!
                     if (m_depthBuffer != null) {
                         m_depthBuffer!![newCount] = m_depthBuffer!![i]
                     }
@@ -1647,7 +1647,7 @@ class ParticleSystem(internal var m_world: World) {
             if (obj == null) return false
             if (this::class != obj::class) return false
             val other = obj as Proxy?
-            return if (tag != other!!.tag) false else true
+            return tag == other!!.tag
         }
     }
 
@@ -2055,14 +2055,14 @@ class ParticleSystem(internal var m_world: World) {
 
         // reallocate a buffer
         internal fun <T : Any> reallocateBuffer(buffer: ParticleBuffer<T>, oldCapacity: Int, newCapacity: Int,
-                                          deferred: Boolean): Array<T>? {
+                                          deferred: Boolean): Array<T> {
             assert(newCapacity > oldCapacity)
             return BufferUtils.reallocateBuffer(buffer.dataClass, buffer.data, buffer.userSuppliedCapacity,
                     oldCapacity, newCapacity, deferred)
         }
 
         internal fun reallocateBuffer(buffer: ParticleBufferInt, oldCapacity: Int, newCapacity: Int,
-                                      deferred: Boolean): IntArray? {
+                                      deferred: Boolean): IntArray {
             assert(newCapacity > oldCapacity)
             return BufferUtils.reallocateBuffer(buffer.data, buffer.userSuppliedCapacity, oldCapacity,
                     newCapacity, deferred)

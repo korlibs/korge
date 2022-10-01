@@ -6,13 +6,18 @@
 package com.soywiz.korau.mod
 
 import com.soywiz.kds.IntDeque
+import com.soywiz.klock.measureTime
 import com.soywiz.kmem.Uint8Buffer
 import com.soywiz.kmem.Uint8BufferAlloc
 import com.soywiz.kmem.toInt
+import com.soywiz.kmem.toUint8Buffer
 import com.soywiz.korau.sound.NativeSoundProvider
 import com.soywiz.korau.sound.Sound
 import com.soywiz.korau.sound.nativeSoundProvider
 import com.soywiz.korio.file.VfsFile
+import com.soywiz.korio.stream.AsyncStream
+import com.soywiz.korio.stream.readBytesExact
+import com.soywiz.korio.stream.sliceStart
 import kotlin.math.pow
 import kotlin.random.Random
 
@@ -34,6 +39,20 @@ import kotlin.random.Random
 
   Greets to Guru, Alfred and CCR for their work figuring out the .xm format. :)
 */
+
+object XM : BaseModuleTracker.Format("xm") {
+    override fun createTracker(): BaseModuleTracker = Fasttracker()
+    override suspend fun fastValidate(data: AsyncStream): Boolean {
+        val buffer = data.readBytesExact(60).toUint8Buffer()
+        val signature = CharArray(17) { buffer[it].toChar() }.concatToString()
+        if (signature != "Extended Module: ") return false
+        if (buffer[37] != 0x1a) return false
+        val trackerversion = le_word(buffer, 58)
+        if (trackerversion < 0x0104) return false // older versions not currently supported
+        return true
+    }
+}
+
 suspend fun VfsFile.readXM(soundProvider: NativeSoundProvider = nativeSoundProvider): Sound =
     Fasttracker().createSoundFromFile(this)
 
@@ -593,14 +612,58 @@ class Fasttracker : BaseModuleTracker() {
 
         chvu = FloatArray(channels) { 0.0.toFloat() }
 
+        val computeTime = measureTime {
+            totalLengthInSamples = computeTime().toLong()
+        }
+        println("COMPUTED LENGTH IN: $computeTime, totalLengthInSamples=$totalLengthInSamples")
+
         return true
     }
 
-    @Deprecated("", ReplaceWith("this != 0"))
-    fun Int.toBool(): Boolean = this != 0
+    // 5:27
+    fun computeTime(): Int {
+        var samples = 0
+        //playing = false
+        var position = 0
+        var row = 0
+        val songlen = this.songlen
+        val channels = this.channels
+        var bpm = this.bpm
+        var speed = this.speed
+        val samplerate = samplerate
+        initialize()
+        while (position < songlen) {
+            // calculate playback position
+            val p = patterntable[position]
+            val pat = pattern[p]
+            for (ch in 0 until channels) {
+                val pp = row * 5 * channels + ch * 5
+                // save old volume if ramping is needed
+                val command = pat[pp + 3]
+                val data = pat[pp + 4]
 
-    @Deprecated("", ReplaceWith("(this and v) != 0"))
-    infix fun Int.andBool(v: Int): Boolean = (this and v) != 0
+                if (command == 0x0f) {
+                    when {
+                        data > 32 -> bpm = data
+                        data != 0 -> speed = data
+                    }
+                }
+            }
+            val stt = kotlin.math.floor((125.0 / bpm.toDouble()) * (1 / 50.0) * samplerate).toInt() // 50Hz
+            samples += stt * speed
+            //println("tick=$tick, speed=$speed, bpm=$bpm, stt=$stt, row=$row, position=$position, songlen=$songlen, samples=$samples")
+
+            row++
+            if (row >= patternlen[p]) {
+                row = 0
+                position++
+            }
+        }
+        initialize()
+        return samples
+    }
+
+
     fun pow(a: Double, b: Double): Double = a.pow(b)
     fun pow(a: Int, b: Int): Int = a.toDouble().pow(b.toDouble()).toInt() // @TODO: 2.pow(y) --> bit shifting (1 << y)
 

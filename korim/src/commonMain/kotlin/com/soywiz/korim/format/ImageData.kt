@@ -18,7 +18,12 @@ open class ImageData constructor(
     val name: String? = null,
 ) : Extra by Extra.Mixin() {
     companion object {
-        operator fun invoke(simple: Bitmap): ImageData = ImageData(listOf(ImageFrame(simple)))
+        // Creates an ImageData with a single Bitmap frame.
+        // When `returnBitmapInPlace` is set to true, `mainBitmap` will return the same Bitmap that
+        // was provided here. Otherwise, it MAY return a new copy of the bitmap instead.
+        operator fun invoke(simple: Bitmap): ImageData = ImageData(listOf(
+            ImageFrame(simple)
+        ))
 
         operator fun invoke(
             loopCount: Int = 0,
@@ -33,7 +38,7 @@ open class ImageData constructor(
     val animationsByName = animations.associateBy { it.name }
     val area: Int get() = frames.area
     val framesByName = frames.associateBy { it.name }
-    val framesSortedByPriority = frames.sortedByDescending {
+    private val framesSortedByPriority = frames.sortedByDescending {
         if (it.main) {
             Int.MAX_VALUE
         } else {

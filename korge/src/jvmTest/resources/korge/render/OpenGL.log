@@ -10,7 +10,6 @@ uniform bool u_OutputPre;
 varying float v_Wrap;
 varying vec2 v_Tex;
 varying float v_TexIndex;
-varying float v_InputPre;
 varying vec4 v_Col;
 void main() {
 	vec4 temp0;
@@ -36,9 +35,6 @@ void main() {
 			gl_FragColor = texture2D(u_Tex3, temp0.xy);
 		}
 	}
-	if ((v_InputPre == 0.0)) {
-		gl_FragColor.rgb = (gl_FragColor.rgb * gl_FragColor.a);
-	}
 	gl_FragColor = (gl_FragColor * v_Col);
 	if ((gl_FragColor.a <= 0.0)) {
 		discard;
@@ -54,7 +50,6 @@ getError() = 0
 createShader(35633) = 2002
 shaderSource(2002, """attribute vec2 a_Tex;
 attribute float a_TexIndex;
-attribute float a_InputPre;
 attribute float a_Wrap;
 attribute vec4 a_Col;
 attribute vec4 a_Col2;
@@ -63,14 +58,12 @@ uniform mat4 u_ProjMat;
 uniform mat4 u_ViewMat;
 varying vec2 v_Tex;
 varying float v_TexIndex;
-varying float v_InputPre;
 varying float v_Wrap;
 varying vec4 v_Col;
 varying vec4 v_Col2;
 void main() {
 	v_Tex = a_Tex;
 	v_TexIndex = a_TexIndex;
-	v_InputPre = a_InputPre;
 	v_Wrap = a_Wrap;
 	v_Col = vec4((a_Col.rgb * a_Col.a), a_Col.a);
 	v_Col2 = a_Col2;
@@ -109,15 +102,9 @@ vertexAttribPointer(8005, 1, 5121, false, 1, 0)
 genBuffers(1, [3003])
 bindBuffer(34962, 3003)
 bufferData(34962, 4, FBuffer(size=4), 35044)
-getAttribLocation(1001, "a_InputPre") = 8006
+getAttribLocation(1001, "a_Wrap") = 8006
 enableVertexAttribArray(8006)
 vertexAttribPointer(8006, 1, 5121, false, 1, 0)
-genBuffers(1, [3004])
-bindBuffer(34962, 3004)
-bufferData(34962, 4, FBuffer(size=4), 35044)
-getAttribLocation(1001, "a_Wrap") = 8007
-enableVertexAttribArray(8007)
-vertexAttribPointer(8007, 1, 5121, false, 1, 0)
 getUniformLocation(1001, "u_ProjMat") = 7001
 uniformMatrix4fv(7001, 1, false, FBuffer(size=65536))
 getUniformLocation(1001, "u_ViewMat") = 7002
@@ -156,8 +143,8 @@ disable(2929)
 colorMask(true, true, true, true)
 disable(2960)
 stencilMask(0)
-genBuffers(1, [3005])
-bindBuffer(34963, 3005)
+genBuffers(1, [3004])
+bindBuffer(34963, 3004)
 bufferData(34963, 12, FBuffer(size=49152), 35044)
 drawElements(4, 6, 5123, 0)
 disableVertexAttribArray(8001)
@@ -166,4 +153,3 @@ disableVertexAttribArray(8003)
 disableVertexAttribArray(8004)
 disableVertexAttribArray(8005)
 disableVertexAttribArray(8006)
-disableVertexAttribArray(8007)

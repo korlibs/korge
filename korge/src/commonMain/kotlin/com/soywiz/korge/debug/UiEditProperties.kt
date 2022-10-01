@@ -11,17 +11,22 @@ import com.soywiz.korui.scrollPanel
 
 class UiEditProperties(app: UiApplication, view: View?, val views: Views) : UiContainer(app) {
     val propsContainer = scrollPanel(xbar = false)
+    var currentView: View? = null
 
     fun setView(view: View?) {
-        propsContainer.removeChildren()
-
-        view?.buildDebugComponent(views, this@UiEditProperties.propsContainer)
+        setViewBase(view)
 
         root?.updateUI()
         root?.relayout()
         root?.repaintAll()
 
         update()
+    }
+
+    fun setViewBase(view: View?) {
+        propsContainer.removeChildren()
+        currentView = view
+        view?.buildDebugComponent(views, this@UiEditProperties.propsContainer)
     }
 
     private val registeredProperties = WeakMap<ObservableProperty<*>, Boolean>()

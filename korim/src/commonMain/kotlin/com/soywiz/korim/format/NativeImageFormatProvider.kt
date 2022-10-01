@@ -4,11 +4,11 @@ import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.bitmap.BmpSlice
 import com.soywiz.korim.bitmap.NativeImage
+import com.soywiz.korim.bitmap.asumePremultiplied
 import com.soywiz.korim.bitmap.context2d
 import com.soywiz.korim.bitmap.ensureNative
 import com.soywiz.korim.bitmap.extract
 import com.soywiz.korim.color.RGBA
-import com.soywiz.korim.color.RgbaArray
 import com.soywiz.korim.vector.Context2d
 import com.soywiz.korim.vector.SizedDrawable
 import com.soywiz.korim.vector.render
@@ -28,9 +28,9 @@ data class NativeImageResult(
     val originalHeight: Int = image.height,
 )
 
-abstract class NativeImageFormatProvider {
+abstract class NativeImageFormatProvider : ImageFormatDecoder {
     protected open suspend fun decodeHeaderInternal(data: ByteArray): ImageInfo {
-        val result = decodeInternal(data, ImageDecodingProps())
+        val result = decodeInternal(data, ImageDecodingProps.DEFAULT)
         return ImageInfo().also {
             it.width = result.originalWidth
             it.height = result.originalHeight
@@ -40,7 +40,12 @@ abstract class NativeImageFormatProvider {
     protected abstract suspend fun decodeInternal(data: ByteArray, props: ImageDecodingProps): NativeImageResult
     protected open suspend fun decodeInternal(vfs: Vfs, path: String, props: ImageDecodingProps): NativeImageResult = decodeInternal(vfs.file(path).readBytes(), props)
 
-    protected fun NativeImage.result() = NativeImageResult(this)
+    protected fun NativeImage.result(props: ImageDecodingProps): NativeImageResult {
+        return NativeImageResult(when {
+            props.asumePremultiplied -> this.asumePremultiplied()
+            else -> this
+        })
+    }
 
     suspend fun decodeHeader(data: ByteArray): ImageInfo = decodeHeaderInternal(data)
     suspend fun decodeHeaderOrNull(data: ByteArray): ImageInfo? = try {
@@ -51,18 +56,19 @@ abstract class NativeImageFormatProvider {
     }
 
     suspend fun decode(vfs: Vfs, path: String, props: ImageDecodingProps): NativeImage = decodeInternal(vfs, path, props).image
-    suspend fun decode(data: ByteArray, props: ImageDecodingProps): NativeImage = decodeInternal(data, props).image
+    suspend fun decode(data: ByteArray, props: ImageDecodingProps = ImageDecodingProps.DEFAULT): NativeImage = decodeInternal(data, props).image
+    override suspend fun decodeSuspend(data: ByteArray, props: ImageDecodingProps): NativeImage = decodeInternal(data, props).image
     suspend fun decode(file: FinalVfsFile, props: ImageDecodingProps): Bitmap = decodeInternal(file.vfs, file.path, props).image
-    suspend fun decode(file: VfsFile, props: ImageDecodingProps): Bitmap = decode(file.getUnderlyingUnscapedFile(), props)
+    override suspend fun decode(file: VfsFile, props: ImageDecodingProps): Bitmap = decode(file.getUnderlyingUnscapedFile(), props)
 
     suspend fun decode(vfs: Vfs, path: String, premultiplied: Boolean = true): NativeImage = decode(vfs, path, ImageDecodingProps.DEFAULT(premultiplied))
-    suspend fun decode(data: ByteArray, premultiplied: Boolean = true): NativeImage = decode(data, ImageDecodingProps.DEFAULT(premultiplied))
+    suspend fun decode(data: ByteArray, premultiplied: Boolean): NativeImage = decode(data, ImageDecodingProps.DEFAULT(premultiplied))
     suspend fun decode(file: FinalVfsFile, premultiplied: Boolean = true): Bitmap = decode(file, ImageDecodingProps.DEFAULT(premultiplied))
-    suspend fun decode(file: VfsFile, premultiplied: Boolean = true): Bitmap = decode(file, ImageDecodingProps.DEFAULT(premultiplied))
+    suspend fun decode(file: VfsFile, premultiplied: Boolean): Bitmap = decode(file, ImageDecodingProps.DEFAULT(premultiplied))
 
     abstract suspend fun display(bitmap: Bitmap, kind: Int): Unit
     abstract fun create(width: Int, height: Int, premultiplied: Boolean? = null): NativeImage
-    open fun create(width: Int, height: Int, pixels: RgbaArray, premultiplied: Boolean? = null): NativeImage {
+    open fun create(width: Int, height: Int, pixels: IntArray, premultiplied: Boolean? = null): NativeImage {
         val image = create(width, height, premultiplied)
         image.writePixelsUnsafe(0, 0, width, height, pixels)
         return image
@@ -90,12 +96,18 @@ open class BaseNativeImageFormatProvider : NativeImageFormatProvider() {
 
     override suspend fun decodeInternal(data: ByteArray, props: ImageDecodingProps): NativeImageResult = wrapNative(formats.decode(data, props), props)
 
-    protected open fun createBitmapNativeImage(bmp: Bitmap) = BitmapNativeImage(bmp)
+    protected open fun createBitmapNativeImage(bmp: Bitmap): BitmapNativeImage = BitmapNativeImage(bmp)
     protected open fun wrapNative(bmp: Bitmap, props: ImageDecodingProps): NativeImageResult {
-        val bmp32: Bitmap32 = bmp.toBMP32()
+        val bmp32: Bitmap32 = bmp.toBMP32IfRequired()
         //bmp32.premultiplyInPlace()
         //return BitmapNativeImage(bmp32)
-        return NativeImageResult(createBitmapNativeImage(if (props.premultiplied) bmp32.premultipliedIfRequired() else bmp32.depremultipliedIfRequired()))
+        return NativeImageResult(createBitmapNativeImage(
+            when {
+                props.asumePremultiplied -> bmp32.asumePremultiplied()
+                props.premultipliedSure -> bmp32.premultipliedIfRequired()
+                else -> bmp32.depremultipliedIfRequired()
+            }
+        ))
     }
     protected fun Bitmap.wrapNativeExt(props: ImageDecodingProps = ImageDecodingProps.DEFAULT_PREMULT) = wrapNative(this, props)
 
@@ -109,13 +121,14 @@ open class BaseNativeImageFormatProvider : NativeImageFormatProvider() {
 }
 
 open class BitmapNativeImage(val bitmap: Bitmap32) : NativeImage(bitmap.width, bitmap.height, bitmap, bitmap.premultiplied) {
+    override val name: String get() = "BitmapNativeImage"
     @Suppress("unused")
-    val intData: IntArray = bitmap.data.ints
-    constructor(bitmap: Bitmap) : this(bitmap.toBMP32())
+    val intData: IntArray = bitmap.ints
+    constructor(bitmap: Bitmap) : this(bitmap.toBMP32IfRequired())
     override fun getContext2d(antialiasing: Boolean): Context2d = bitmap.getContext2d(antialiasing)
     override fun toBMP32(): Bitmap32 = bitmap
-    override fun readPixelsUnsafe(x: Int, y: Int, width: Int, height: Int, out: RgbaArray, offset: Int) = bitmap.readPixelsUnsafe(x, y, width, height, out, offset)
-    override fun writePixelsUnsafe(x: Int, y: Int, width: Int, height: Int, out: RgbaArray, offset: Int) = bitmap.writePixelsUnsafe(x, y, width, height, out, offset)
-    override fun setRgba(x: Int, y: Int, v: RGBA) = bitmap.setRgba(x, y, v)
-    override fun getRgba(x: Int, y: Int): RGBA = bitmap.getRgba(x, y)
+    override fun readPixelsUnsafe(x: Int, y: Int, width: Int, height: Int, out: IntArray, offset: Int) = bitmap.readPixelsUnsafe(x, y, width, height, out, offset)
+    override fun writePixelsUnsafe(x: Int, y: Int, width: Int, height: Int, out: IntArray, offset: Int) = bitmap.writePixelsUnsafe(x, y, width, height, out, offset)
+    override fun setRgbaRaw(x: Int, y: Int, v: RGBA) = bitmap.setRgbaRaw(x, y, v)
+    override fun getRgbaRaw(x: Int, y: Int): RGBA = bitmap.getRgbaRaw(x, y)
 }

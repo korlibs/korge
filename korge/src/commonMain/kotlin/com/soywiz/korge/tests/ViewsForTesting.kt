@@ -269,12 +269,13 @@ open class ViewsForTesting(
         frameTime: TimeSpan = this.frameTime,
         cond: () -> Boolean = { OS.isJvm && !OS.isAndroid },
         //devicePixelRatio: Double = defaultDevicePixelRatio,
+        forceRenderEveryFrame: Boolean = true,
         block: suspend Stage.() -> Unit
     ): Unit = suspendTest(timeout = timeout, cond = cond) {
         viewsLog.init()
         this@ViewsForTesting.devicePixelRatio = devicePixelRatio
         //suspendTest(timeout = timeout, cond = { !OS.isAndroid && !OS.isJs && !OS.isNative }) {
-        Korge.prepareViewsBase(views, gameWindow, fixedSizeStep = frameTime)
+        Korge.prepareViewsBase(views, gameWindow, fixedSizeStep = frameTime, forceRenderEveryFrame = forceRenderEveryFrame)
 
 		injector.mapInstance<Module>(object : Module() {
 			override val title = "KorgeViewsForTesting"
@@ -373,11 +374,7 @@ open class ViewsForTesting(
             //println("invokeOnTimeout: $timeMillis")
             val task = TimedTask2(time + timeMillis.toDouble().milliseconds, null, block)
             lock { timedTasks2.add(task) }
-            return object : DisposableHandle {
-                override fun dispose() {
-                    lock { timedTasks2.remove(task) }
-                }
-            }
+            return DisposableHandle { lock { timedTasks2.remove(task) } }
         }
 
         override fun scheduleResumeAfterDelay(timeMillis: Long, continuation: CancellableContinuation<Unit>) {

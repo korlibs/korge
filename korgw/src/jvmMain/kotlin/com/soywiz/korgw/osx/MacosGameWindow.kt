@@ -202,17 +202,27 @@ class MacGameWindow(val checkGl: Boolean, val logGl: Boolean) : GameWindow() {
         }
         //println(backingScaleFactor)
 
-        glCtx?.makeCurrent()
-        GL.glViewport(0, 0, width, height)
-        //GL.glClearColor(.3f, .7f, 1f, 1f)
-        GL.glClearColor(.3f, .3f, .3f, 1f)
-        GL.glClear(GL.GL_COLOR_BUFFER_BIT)
+        var doRender = !update
+        if (update) {
+            frame(doUpdate = true, doRender = false)
+            if (mustTriggerRender) {
+                doRender = true
+            }
+        }
 
-        //println("RENDER")
+        if (doRender) {
+            glCtx?.makeCurrent()
+            GL.glViewport(0, 0, width, height)
+            //GL.glClearColor(.3f, .7f, 1f, 1f)
+            GL.glClearColor(.3f, .3f, .3f, 1f)
+            GL.glClear(GL.GL_COLOR_BUFFER_BIT)
 
-        frame(update)
+            //println("RENDER")
 
-        glCtx?.swapBuffers()
+            frame(update)
+
+            glCtx?.swapBuffers()
+        }
     }
 
     val windowDidResize = ObjcCallbackVoid { self, _sel, notification ->

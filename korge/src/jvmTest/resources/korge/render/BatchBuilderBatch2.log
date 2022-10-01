@@ -14,20 +14,15 @@ createBuffer():6
 bufferCreate: 7
 createBuffer():7
 bufferCreate: 8
-createBuffer():8
-bufferCreate: 9
-createBuffer():9
-bufferCreate: 10
 textureCreate: 1
 createTexture():0
 RenderBuffer[0].setSize(16, 16)
 createMainRenderBuffer():0
-Buffer[5].afterSetMem(mem[393216])
+Buffer[4].afterSetMem(mem[393216])
+Buffer[5].afterSetMem(mem[8])
 Buffer[6].afterSetMem(mem[8])
-Buffer[7].afterSetMem(mem[8])
-Buffer[8].afterSetMem(mem[8])
-Buffer[9].afterSetMem(mem[49152])
-programCreate: 1, Program(name=BatchBuilder2D.Tinted.NoAdd, attributes=[a_Tex, a_TexIndex, a_InputPre, a_Wrap, a_Col, a_Col2, a_Pos], uniforms=[u_ProjMat, u_ViewMat, u_Tex0, u_Tex1, u_Tex2, u_Tex3, u_OutputPre]), ProgramConfig(externalTextureSampler=false)
+Buffer[7].afterSetMem(mem[49152])
+programCreate: 1, Program(name=BatchBuilder2D.Tinted.NoAdd, attributes=[a_Tex, a_TexIndex, a_Wrap, a_Col, a_Col2, a_Pos], uniforms=[u_ProjMat, u_ViewMat, u_Tex0, u_Tex1, u_Tex2, u_Tex3, u_OutputPre]), ProgramConfig(externalTextureSampler=false)
 programCreate.fragment:#version 100 compatibility
 #ifdef GL_ES
 	precision highp float;
@@ -47,7 +42,6 @@ uniform bool u_OutputPre;
 varying lowp float v_Wrap;
 varying mediump vec2 v_Tex;
 varying lowp float v_TexIndex;
-varying lowp float v_InputPre;
 varying vec4 v_Col;
 void main() {
 	vec4 temp0;
@@ -73,9 +67,6 @@ void main() {
 			gl_FragColor = texture2D(u_Tex3, temp0.xy);
 		}
 	}
-	if ((v_InputPre == 0.0)) {
-		gl_FragColor.rgb = (gl_FragColor.rgb * gl_FragColor.a);
-	}
 	gl_FragColor = (gl_FragColor * v_Col);
 	if ((gl_FragColor.a <= 0.0)) {
 		discard;
@@ -98,7 +89,6 @@ programCreate.vertex:#version 100 compatibility
 #endif
 attribute mediump vec2 a_Tex;
 attribute lowp float a_TexIndex;
-attribute lowp float a_InputPre;
 attribute lowp float a_Wrap;
 attribute lowp vec4 a_Col;
 attribute vec4 a_Col2;
@@ -107,14 +97,12 @@ uniform mat4 u_ProjMat;
 uniform mat4 u_ViewMat;
 varying mediump vec2 v_Tex;
 varying lowp float v_TexIndex;
-varying lowp float v_InputPre;
 varying lowp float v_Wrap;
 varying vec4 v_Col;
 varying vec4 v_Col2;
 void main() {
 	v_Tex = a_Tex;
 	v_TexIndex = a_TexIndex;
-	v_InputPre = a_InputPre;
 	v_Wrap = a_Wrap;
 	v_Col = vec4((a_Col.rgb * a_Col.a), a_Col.a);
 	v_Col2 = a_Col2;
@@ -123,7 +111,7 @@ void main() {
 
 programUse: 1
 vaoCreate: 1
-vaoSet: 1, VertexArrayObject(list=[VertexData(_buffer=Buffer[5], layout=VertexLayout[a_Pos, a_Tex, a_Col, a_Col2]), VertexData(_buffer=Buffer[6], layout=VertexLayout[a_TexIndex]), VertexData(_buffer=Buffer[7], layout=VertexLayout[a_InputPre]), VertexData(_buffer=Buffer[8], layout=VertexLayout[a_Wrap])])
+vaoSet: 1, VertexArrayObject(list=[VertexData(_buffer=Buffer[4], layout=VertexLayout[a_Pos, a_Tex, a_Col, a_Col2]), VertexData(_buffer=Buffer[5], layout=VertexLayout[a_TexIndex]), VertexData(_buffer=Buffer[6], layout=VertexLayout[a_Wrap])])
 vaoUse: 1
 uboCreate: 1
 uboSet: 1
@@ -157,14 +145,14 @@ disable: STENCIL
 stencilMask: 0
 draw: TRIANGLES, offset=0, count=12, instances=1, indexType=USHORT
 ::draw.indices: [0, 1, 2, 3, 0, 2, 4, 5, 6, 7, 4, 6]
-::draw.attributes[4]: [Attribute(a_Pos), Attribute(a_Tex), Attribute(a_Col), Attribute(a_Col2), Attribute(a_TexIndex), Attribute(a_InputPre), Attribute(a_Wrap)]
-::draw.vertex[0]: a_Pos[0,0], a_Tex[0,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_InputPre[1], a_Wrap[0]
-::draw.vertex[1]: a_Pos[100,0], a_Tex[1,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_InputPre[1], a_Wrap[0]
-::draw.vertex[2]: a_Pos[100,100], a_Tex[1,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_InputPre[1], a_Wrap[0]
-::draw.vertex[3]: a_Pos[0,100], a_Tex[0,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_InputPre[1], a_Wrap[0]
-::draw.vertex[4]: a_Pos[100,0], a_Tex[0,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_InputPre[1], a_Wrap[0]
-::draw.vertex[5]: a_Pos[200,0], a_Tex[1,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_InputPre[1], a_Wrap[0]
-::draw.vertex[6]: a_Pos[200,100], a_Tex[1,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_InputPre[1], a_Wrap[0]
-::draw.vertex[7]: a_Pos[100,100], a_Tex[0,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_InputPre[1], a_Wrap[0]
+::draw.attributes[3]: [Attribute(a_Pos), Attribute(a_Tex), Attribute(a_Col), Attribute(a_Col2), Attribute(a_TexIndex), Attribute(a_Wrap)]
+::draw.vertex[0]: a_Pos[0,0], a_Tex[0,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_Wrap[0]
+::draw.vertex[1]: a_Pos[100,0], a_Tex[1,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_Wrap[0]
+::draw.vertex[2]: a_Pos[100,100], a_Tex[1,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_Wrap[0]
+::draw.vertex[3]: a_Pos[0,100], a_Tex[0,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_Wrap[0]
+::draw.vertex[4]: a_Pos[100,0], a_Tex[0,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_Wrap[0]
+::draw.vertex[5]: a_Pos[200,0], a_Tex[1,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_Wrap[0]
+::draw.vertex[6]: a_Pos[200,100], a_Tex[1,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_Wrap[0]
+::draw.vertex[7]: a_Pos[100,100], a_Tex[0,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_Wrap[0]
 vaoUse: 0
 vaoDelete: 1

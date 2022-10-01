@@ -1,8 +1,7 @@
 package com.soywiz.korim.vector
 
-import com.soywiz.korma.geom.shape.buildPath
-import com.soywiz.korma.geom.vector.moveTo
-import com.soywiz.korma.geom.vector.quadTo
+import com.soywiz.korma.geom.shape.*
+import com.soywiz.korma.geom.vector.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -10,7 +9,7 @@ class VectorPathCrossModuleTest {
     @Test
     fun testVisitEdgesSimplified() {
         val log = arrayListOf<String>()
-        buildPath {
+        buildVectorPath(VectorPath()) {
             moveTo(100, 100)
             quadTo(100, 200, 200, 200)
             close()

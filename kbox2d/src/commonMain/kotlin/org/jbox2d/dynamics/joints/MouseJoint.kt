@@ -45,7 +45,7 @@ class MouseJoint constructor(argWorld: IWorldPool, def: MouseJointDef) : Joint(a
     private val m_localAnchorB = Vec2()
     var target = Vec2()
         set(target) {
-            if (bodyB!!.isAwake == false) {
+            if (!bodyB!!.isAwake) {
                 bodyB!!.isAwake = true
             }
             this.target.set(target)

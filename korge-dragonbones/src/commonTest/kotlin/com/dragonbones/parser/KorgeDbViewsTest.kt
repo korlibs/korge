@@ -13,9 +13,9 @@ class KorgeDbViewsTest {
 	@Test
 	fun test() = suspendTest({ doIOTest }) {
 		val factory = KorgeDbFactory()
-		val data = factory.parseDragonBonesData(Json.parse(resourcesVfs["Dragon/Dragon_ske.json"].readString())!!)
+		val data = factory.parseDragonBonesData(Json.parseFast(resourcesVfs["Dragon/Dragon_ske.json"].readString())!!)
 		val atlas = factory.parseTextureAtlasData(
-			Json.parse(resourcesVfs["Dragon/Dragon_tex.json"].readString())!!,
+			Json.parseFast(resourcesVfs["Dragon/Dragon_tex.json"].readString())!!,
 			//MyResourcesVfs["Dragon/Dragon_tex.png"].readBitmapOptimized().toBMP32()
 			resourcesVfs["Dragon/Dragon_tex.png"].readBitmap(PNG).toBMP32()
 		)

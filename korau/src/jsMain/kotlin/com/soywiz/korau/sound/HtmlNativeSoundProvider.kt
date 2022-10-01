@@ -14,11 +14,11 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
 
 class HtmlNativeSoundProvider : NativeSoundProvider() {
-    override fun init() {
+    init {
         HtmlSimpleSound.ensureUnlockStart()
     }
 
-	override fun createAudioStream(coroutineContext: CoroutineContext, freq: Int): PlatformAudioOutput = JsPlatformAudioOutput(coroutineContext, freq)
+	override fun createPlatformAudioOutput(coroutineContext: CoroutineContext, freq: Int): PlatformAudioOutput = JsPlatformAudioOutput(coroutineContext, freq)
 
 	override suspend fun createSound(data: ByteArray, streaming: Boolean, props: AudioDecodingProps, name: String): Sound =
         AudioBufferSound(AudioBufferOrHTMLMediaElement(HtmlSimpleSound.loadSound(data)), "#bytes", coroutineContext, name)

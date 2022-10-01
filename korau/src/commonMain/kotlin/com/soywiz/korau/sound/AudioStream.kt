@@ -66,10 +66,10 @@ val DEFAULT_MAX_SAMPLES = 15 * 60 * 44100
 
 suspend fun AudioStream.toData(maxSamples: Int = DEFAULT_MAX_SAMPLES): AudioData {
     val out = AudioSamplesDeque(channels)
-    val buffer = AudioSamples(channels, 16 * 4096)
+    val buffer = AudioSamples(channels, min(maxSamples, 16 * 4096))
     try {
         while (!finished) {
-            val read = read(buffer, 0, buffer.totalSamples)
+            val read = read(buffer, 0, min(maxSamples - out.availableRead, buffer.totalSamples))
             if (read <= 0) break
             val mread = min(read, maxSamples - out.availableRead)
             out.write(buffer, 0, mread)

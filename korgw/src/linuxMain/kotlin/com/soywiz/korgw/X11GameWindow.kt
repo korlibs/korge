@@ -30,6 +30,7 @@ import com.soywiz.korev.Key
 import com.soywiz.korev.MouseButton
 import com.soywiz.korev.MouseEvent
 import com.soywiz.korim.bitmap.Bitmap
+import com.soywiz.korim.color.RGBA
 import com.soywiz.korio.lang.TimedCache
 import kotlinx.cinterop.*
 import platform.posix.fflush
@@ -214,7 +215,7 @@ class X11GameWindow : EventLoopGameWindow() {
                 bytes.write32LE(VSIZE, bmp.height)
                 for (n in 0 until bmp.area) {
                     val pos = VSIZE * (2 + n)
-                    val c = bmp.data[n]
+                    val c = bmp.getRgbaAtIndex(n)
                     bytes[pos + 0] = c.r.toByte()
                     bytes[pos + 1] = c.g.toByte()
                     bytes[pos + 2] = c.b.toByte()

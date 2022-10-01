@@ -1,6 +1,14 @@
 package com.soywiz.korim.format
 
-import com.soywiz.kds.*
+import com.soywiz.kds.FastArrayList
+import com.soywiz.kds.FastIntMap
+import com.soywiz.kds.IntArray2
+import com.soywiz.kds.IntMap
+import com.soywiz.kds.get
+import com.soywiz.kds.getExtra
+import com.soywiz.kds.getExtraTyped
+import com.soywiz.kds.set
+import com.soywiz.kds.toLinkedMap
 import com.soywiz.klock.milliseconds
 import com.soywiz.kmem.clamp
 import com.soywiz.kmem.extract
@@ -91,7 +99,7 @@ object ASE : ImageFormatWithContainer("ase") {
         val bitmask90CWFlip: Int,
         override val x: Int, override val y: Int, override val opacity: Int,
     ) : AseEntity by AseEntity(), AseCell {
-        override val bmp: Bitmap = Bitmap32(1, 1)
+        override val bmp: Bitmap = Bitmap32(1, 1, premultiplied = true)
     }
 
     open class AseLayer(
@@ -564,7 +572,15 @@ object ASE : ImageFormatWithContainer("ase") {
                     maskRotate = resolved.bitmask90CWFlip,
                 )
             }
-            return ImageFrameLayer(layer, resolved.bmp.slice(), resolved.x, resolved.y, main = false, includeInAtlas = true, tilemap = tilemap)
+            return ImageFrameLayer(
+                layer,
+                resolved.bmp.slice(),
+                resolved.x,
+                resolved.y,
+                main = false,
+                includeInAtlas = true,
+                tilemap = tilemap
+            )
         }
 
         val frames = image.frames.mapNotNull { frame ->
@@ -619,7 +635,7 @@ object ASE : ImageFormatWithContainer("ase") {
                         it.layer, it.slice.slice(sliceFrame, it.slice.name),
                         (if (props.useSlicePosition()) sliceKey.sliceFrame.x else it.targetX) - sliceKey.pivotX,
                         (if (props.useSlicePosition()) sliceKey.sliceFrame.y else it.targetY) - sliceKey.pivotY,
-                        it.main, it.includeInAtlas, null
+                        it.main, it.includeInAtlas
                     )
                 }
                 if (layerData.isNotEmpty()) {

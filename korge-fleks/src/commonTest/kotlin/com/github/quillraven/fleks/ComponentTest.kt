@@ -1,37 +1,38 @@
 package com.github.quillraven.fleks
 
-import com.soywiz.korio.async.*
+import kotlin.reflect.KClass
 import kotlin.test.*
 
-private data class ComponentTestComponent(var x: Int = 0)
-
-private class ComponentTestComponentListener : ComponentListener<ComponentTestComponent> {
-    var numAddCalls = 0
-    var numRemoveCalls = 0
-    lateinit var cmpCalled: ComponentTestComponent
-    var entityCalled = Entity(-1)
-    var lastCall = ""
-
-    override fun onComponentAdded(entity: Entity, component: ComponentTestComponent) {
-        numAddCalls++
-        cmpCalled = component
-        entityCalled = entity
-        lastCall = "add"
-    }
-
-    override fun onComponentRemoved(entity: Entity, component: ComponentTestComponent) {
-        numRemoveCalls++
-        cmpCalled = component
-        entityCalled = entity
-        lastCall = "remove"
-    }
-}
-
 internal class ComponentTest {
-    private val componentFactory = mutableMapOf<String, () -> Any>()
+
+    private data class ComponentTestComponent(var x: Int = 0)
+
+    private class ComponentTestComponentListener : ComponentListener<ComponentTestComponent> {
+        var numAddCalls = 0
+        var numRemoveCalls = 0
+        lateinit var cmpCalled: ComponentTestComponent
+        var entityCalled = Entity(-1)
+        var lastCall = ""
+
+        override fun onComponentAdded(entity: Entity, component: ComponentTestComponent) {
+            numAddCalls++
+            cmpCalled = component
+            entityCalled = entity
+            lastCall = "add"
+        }
+
+        override fun onComponentRemoved(entity: Entity, component: ComponentTestComponent) {
+            numRemoveCalls++
+            cmpCalled = component
+            entityCalled = entity
+            lastCall = "remove"
+        }
+    }
+
+    private val componentFactory = mutableMapOf<KClass<*>, () -> Any>()
 
     private inline fun <reified T : Any> initComponentFactory(noinline compFactory: () -> T) {
-        val compType = T::class.simpleName ?: throw FleksInjectableTypeHasNoName(T::class)
+        val compType = T::class
 
         if (compType in componentFactory) {
             throw FleksComponentAlreadyAddedException(compType)
@@ -102,15 +103,6 @@ internal class ComponentTest {
     }
 
     @Test
-    fun cannotRemoveNonExistingEntityFromMapperWithInsufficientCapacity() = suspendTestNoJs {
-        val cmpService = ComponentService(componentFactory)
-        val mapper = cmpService.mapper<ComponentTestComponent>()
-        val entity = Entity(10_000)
-
-        assertFailsWith<IndexOutOfBoundsException> { mapper.removeInternal(entity) }
-    }
-
-    @Test
     fun getComponentOfExistingEntity() {
         val cmpService = ComponentService(componentFactory)
         val mapper = cmpService.mapper<ComponentTestComponent>()
@@ -129,6 +121,40 @@ internal class ComponentTest {
         val entity = Entity(0)
 
         assertFailsWith<FleksNoSuchEntityComponentException> { mapper[entity] }
+    }
+
+    @Test
+    fun getComponentOfNonExistingEntityWithSufficientCapacity() {
+        val cmpService = ComponentService(componentFactory)
+        val mapper = cmpService.mapper<ComponentTestComponent>()
+        val entity = Entity(0)
+
+        val cmp = mapper.getOrNull(entity)
+
+        assertNull(cmp)
+    }
+
+    @Test
+    fun getComponentOfNonExistingEntityWithoutSufficientCapacity() {
+        val cmpService = ComponentService(componentFactory)
+        val mapper = cmpService.mapper<ComponentTestComponent>()
+        val entity = Entity(2048)
+
+        val cmp = mapper.getOrNull(entity)
+
+        assertNull(cmp)
+    }
+
+    @Test
+    fun getComponentOfExistingEntityViaGetOrNull() {
+        val cmpService = ComponentService(componentFactory)
+        val mapper = cmpService.mapper<ComponentTestComponent>()
+        val entity = Entity(0)
+        mapper.addInternal(entity) { x = 2 }
+
+        val cmp = mapper.getOrNull(entity)
+
+        assertEquals(2, cmp?.x)
     }
 
     @Test

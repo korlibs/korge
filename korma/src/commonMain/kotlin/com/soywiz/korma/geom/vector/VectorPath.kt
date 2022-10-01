@@ -59,11 +59,11 @@ class VectorPath(
     }
 
     interface Visitor {
-        fun close()
-        fun moveTo(x: Double, y: Double)
-        fun lineTo(x: Double, y: Double)
-        fun quadTo(cx: Double, cy: Double, ax: Double, ay: Double)
-        fun cubicTo(cx1: Double, cy1: Double, cx2: Double, cy2: Double, ax: Double, ay: Double)
+        fun close() = Unit
+        fun moveTo(x: Double, y: Double) = Unit
+        fun lineTo(x: Double, y: Double) = Unit
+        fun quadTo(cx: Double, cy: Double, ax: Double, ay: Double) = Unit
+        fun cubicTo(cx1: Double, cy1: Double, cx2: Double, cy2: Double, ax: Double, ay: Double) = Unit
     }
 
     inline fun visitCmds(
@@ -441,13 +441,25 @@ class VectorPath(
     }.trimEnd()
     override fun toString(): String = "VectorPath(${toSvgString()})"
 
-    fun scale(sx: Double, sy: Double = sx): VectorPath {
+    @PublishedApi
+    internal val tempPoint = Point()
+
+    inline fun transformPoints(transform: (p: Point) -> IPoint): VectorPath {
+        val point = tempPoint
         for (n in 0 until data.size step 2) {
-            data[n + 0] *= sx
-            data[n + 1] *= sy
+            point.setTo(data[n + 0], data[n + 1])
+            val p = transform(point)
+            data[n + 0] = p.x
+            data[n + 1] = p.y
         }
         version++
         return this
+    }
+
+    fun scale(sx: Double, sy: Double = sx): VectorPath {
+        return transformPoints { p ->
+            p.setTo(p.x * sx, p.y * sy)
+        }
     }
 
     fun floor(): VectorPath {
@@ -527,7 +539,15 @@ fun VectorBuilder.write(path: VectorPath, m: Matrix?) {
 }
 
 fun BoundsBuilder.add(path: VectorPath, transform: Matrix? = null) {
-    path.getCurvesList().fastForEach { curves ->
+    val curvesList = path.getCurvesList()
+    if (curvesList.isEmpty() && path.isNotEmpty()) {
+        path.visit(object : VectorPath.Visitor {
+            override fun moveTo(x: Double, y: Double) {
+                add(x, y)
+            }
+        })
+    }
+    curvesList.fastForEach { curves ->
         curves.beziers.fastForEach { bezier ->
             addEvenEmpty(bezier.getBounds(this.tempRect, transform))
         }
@@ -536,17 +556,9 @@ fun BoundsBuilder.add(path: VectorPath, transform: Matrix? = null) {
     //println("BoundsBuilder.add.path: " + bb.getBounds())
 }
 
-fun VectorPath.applyTransform(m: Matrix?): VectorPath {
-    if (m != null) {
-        @Suppress("ReplaceManualRangeWithIndicesCalls")
-        for (n in 0 until data.size step 2) {
-            val x = data.getAt(n + 0)
-            val y = data.getAt(n + 1)
-            data[n + 0] = m.transformX(x, y)
-            data[n + 1] = m.transformY(x, y)
-        }
-    }
-    return this
+fun VectorPath.applyTransform(m: Matrix?): VectorPath = when {
+    m != null -> transformPoints { m.transform(it, it) }
+    else -> this
 }
 
 @ThreadLocal

@@ -6,9 +6,8 @@ import com.soywiz.korge.annotations.KorgeExperimental
 import com.soywiz.korge.render.RenderContext
 import com.soywiz.korge.view.internal.InternalViewAutoscaling
 import com.soywiz.korim.bitmap.Bitmap
-import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.bitmap.Bitmaps
-import com.soywiz.korim.bitmap.NativeImage
+import com.soywiz.korim.bitmap.NativeImageOrBitmap32
 import com.soywiz.korim.bitmap.context2d
 import com.soywiz.korim.bitmap.slice
 import com.soywiz.korim.vector.Context2d
@@ -35,10 +34,6 @@ abstract class BaseGraphics(
             if (value) TODO()
             field = value
         }
-
-    private fun createImage(width: Int, height: Int, premultiplied: Boolean? = null): Bitmap {
-        return if (useNativeRendering) NativeImage(width, height, premultiplied) else Bitmap32(width, height, premultiplied = premultiplied ?: true)
-    }
 
     @PublishedApi
     internal val bitmapsToRemove = arrayListOf<Bitmap>()
@@ -88,6 +83,8 @@ abstract class BaseGraphics(
 
         val boundsWithShapes = boundsUnsafe(strokes = true)
 
+        //println("boundsWithShapes=$boundsWithShapes")
+
         // Removes old image
         run {
             bitmapsToRemove.add(this.bitmap.base)
@@ -96,17 +93,21 @@ abstract class BaseGraphics(
         run {
             //println("Regenerate image: bounds=${bounds}, renderedAtScale=${renderedAtScaleX},${renderedAtScaleY}, sLeft=$sLeft, sTop=$sTop, bwidth=$bwidth, bheight=$bheight")
 
+            //println("autoscaling.renderedAtScaleX=${autoscaling.renderedAtScaleX}")
+
             val imageWidth = (boundsWithShapes.width * autoscaling.renderedAtScaleX).toIntCeil().coerceAtLeast(1)
             val imageHeight = (boundsWithShapes.height * autoscaling.renderedAtScaleY).toIntCeil().coerceAtLeast(1)
             //val imageWidth = boundsWithShapes.width.toIntCeil()
             //val imageHeight = boundsWithShapes.height.toIntCeil()
-            val image = createImage(
+
+            val image = NativeImageOrBitmap32(
                 imageWidth + EXTRA_PIXELS,
-                imageHeight + EXTRA_PIXELS
+                imageHeight + EXTRA_PIXELS,
+                useNativeRendering, premultiplied = true
             )
             //println("bounds=$boundsWithShapes, scale=${autoscaling.renderedAtScaleX},${autoscaling.renderedAtScaleY}, image=$image")
-            realImageScaleX = imageWidth / imageWidth.toDouble()
-            realImageScaleY = imageHeight / imageHeight.toDouble()
+            realImageScaleX = autoscaling.renderedAtScaleX
+            realImageScaleY = autoscaling.renderedAtScaleY
 
             //realImageScaleX = 1.0
             //realImageScaleY = 1.0
@@ -131,23 +132,26 @@ abstract class BaseGraphics(
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+    private val renderBoundsStrokes = true
+    //private val renderBoundsStrokes = false
+
     //val fillWidth get() = (bitmap.width - EXTRA_PIXELS).toDouble() / realImageScaleX
     //val fillHeight get() = (bitmap.height - EXTRA_PIXELS).toDouble() / realImageScaleY
-    val fillWidth get() = _getLocalBoundsInternal().width
-    val fillHeight get() = _getLocalBoundsInternal().height
+    val fillWidth get() = _getLocalBoundsInternal(strokes = renderBoundsStrokes).width
+    val fillHeight get() = _getLocalBoundsInternal(strokes = renderBoundsStrokes).height
 
     private val bitmapWidth: Double get() = bitmap.width.toDouble()
     private val bitmapHeight: Double get() = bitmap.height.toDouble()
 
-    final override val bwidth: Double get() = bitmapWidth
-    final override val bheight: Double get() = bitmapHeight
-    final override val frameWidth: Double get() = bitmapWidth
-    final override val frameHeight: Double get() = bitmapHeight
+    final override val bwidth: Double get() = bitmapWidth / realImageScaleX
+    final override val bheight: Double get() = bitmapHeight / realImageScaleY
+    final override val frameWidth: Double get() = bwidth
+    final override val frameHeight: Double get() = bheight
 
     final override val anchorDispX: Double get() = (anchorX * bwidth)
     final override val anchorDispY: Double get() = (anchorY * bheight)
-    override val sLeft: Double get() = _getLocalBoundsInternal().x
-    override val sTop: Double get() = _getLocalBoundsInternal().y
+    override val sLeft: Double get() = _getLocalBoundsInternal(strokes = renderBoundsStrokes).x
+    override val sTop: Double get() = _getLocalBoundsInternal(strokes = renderBoundsStrokes).y
 
     internal val _sLeft get() = sLeft
     internal val _sTop get() = sTop
@@ -157,8 +161,10 @@ abstract class BaseGraphics(
     }
 
     private val __localBounds: Rectangle = Rectangle()
-    private fun _getLocalBoundsInternal(out: Rectangle = __localBounds): Rectangle {
-        val bounds = boundsUnsafe(strokes = false)
+    //var boundsIncludeStrokes = false
+    var boundsIncludeStrokes = true
+    private fun _getLocalBoundsInternal(out: Rectangle = __localBounds, strokes: Boolean = this.boundsIncludeStrokes): Rectangle {
+        val bounds = boundsUnsafe(strokes = strokes)
         out.setTo(bounds.x - anchorDispX, bounds.y - anchorDispY, bounds.width, bounds.height)
         return out
     }

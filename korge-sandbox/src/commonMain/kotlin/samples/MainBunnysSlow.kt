@@ -119,6 +119,7 @@ class MainBunnysSlow : ScaledScene(800, 600) {
                     bunny.yf = minY
                 }
             }
+            invalidate()
         }
 
     }

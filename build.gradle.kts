@@ -4,12 +4,11 @@ import com.soywiz.korge.gradle.targets.*
 import com.soywiz.korge.gradle.targets.android.AndroidSdk
 import com.soywiz.korge.gradle.targets.ios.configureNativeIos
 import com.soywiz.korge.gradle.targets.jvm.JvmAddOpens
+import com.soywiz.korge.gradle.targets.native.commandLineCross
 import org.gradle.kotlin.dsl.kotlin
 import java.io.File
 import java.nio.file.Files
 import org.jetbrains.kotlin.gradle.tasks.KotlinNativeLink
-import com.soywiz.korge.gradle.KorgeDefaults
-import java.net.URL
 import java.net.URLClassLoader
 
 buildscript {
@@ -51,6 +50,7 @@ plugins {
 
 //val headlessTests = true
 val headlessTests = System.getenv("NON_HEADLESS_TESTS") != "true"
+//val headlessTests = false
 val useMimalloc = true
 //val useMimalloc = false
 
@@ -147,7 +147,7 @@ subprojects {
             }
         }
 
-        if (isSample && doEnableKotlinNative && com.soywiz.korge.gradle.targets.isMacos) {
+        if (isSample && doEnableKotlinNative && isMacos) {
             configureNativeIos()
         }
 
@@ -237,6 +237,7 @@ subprojects {
                     testTask {
                         useKarma {
                             useChromeHeadless()
+                            useConfigDirectory(File(rootDir, "karma.config.d"))
                         }
                     }
                 }
@@ -263,13 +264,11 @@ subprojects {
                         if (useMimalloc && !target.name.contains("Arm32Hfp")) add("-Xallocator=mimalloc")
                         add("-Xoverride-konan-properties=clangFlags.mingw_x64=-cc1 -emit-obj -disable-llvm-passes -x ir -target-cpu x86-64")
                     }
-                    if (KorgeDefaults.USE_NEW_MEMORY_MANAGER_BY_DEFAULT) {
-                        kotlinOptions.freeCompilerArgs += listOf(
-                            "-Xbinary=memoryModel=experimental",
-                            // @TODO: https://youtrack.jetbrains.com/issue/KT-49234#focus=Comments-27-5293935.0-0
-                            //"-Xdisable-phases=RemoveRedundantCallsToFileInitializersPhase",
-                        )
-                    }
+                    kotlinOptions.freeCompilerArgs += listOf(
+                        "-Xbinary=memoryModel=experimental",
+                        // @TODO: https://youtrack.jetbrains.com/issue/KT-49234#focus=Comments-27-5293935.0-0
+                        //"-Xdisable-phases=RemoveRedundantCallsToFileInitializersPhase",
+                    )
                     kotlinOptions.suppressWarnings = true
                 }
             }
@@ -455,7 +454,17 @@ subprojects {
                             if (target == "mingwX64") {
                                 afterEvaluate {
                                     afterEvaluate {
-                                        tasks.findByName("mingwX64WineTest")?.let {
+                                        tasks.findByName("mingwX64TestWine")?.let {
+                                            //println("***************++")
+                                            it?.dependsOn(taskName)
+                                        }
+                                    }
+                                }
+                            }
+                            if (target == "linuxX64") {
+                                afterEvaluate {
+                                    afterEvaluate {
+                                        tasks.findByName("linuxX64TestLima")?.let {
                                             //println("***************++")
                                             it?.dependsOn(taskName)
                                         }
@@ -743,7 +752,9 @@ samples {
                     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
                     from(project.tasks.getByName("jsProcessResources").outputs.files)
                     afterEvaluate {
-                        from(project.tasks.getByName("korgeProcessedResourcesJsMain").outputs.files)
+                        project.tasks.findByName("korgeProcessedResourcesJsMain")?.outputs?.files?.let {
+                            from(it)
+                        }
                     }
                     //for (sourceSet in gkotlin.js().compilations.flatMap { it.kotlinSourceSets }) from(sourceSet.resources)
                     into(wwwFolder)
@@ -813,25 +824,18 @@ samples {
             group = "run"
             dependsOnNativeTask("Release")
         }
-        if (!com.soywiz.korge.gradle.targets.isWindows) {
+        if (!isWindows) {
             afterEvaluate {
-                if (project.tasks.findByName("linkReleaseExecutableMingwX64") != null) {
-                    val linkReleaseExecutableMingwX64 by getting(KotlinNativeLink::class)
-                    val linkDebugExecutableMingwX64 by getting(KotlinNativeLink::class)
-
-                    fun Exec.configureLink(link: KotlinNativeLink) {
-                        dependsOn(link)
-                        commandLine("wine64", link.binary.outputFile)
-                        workingDir = link.binary.outputDirectory
-                    }
-
-                    val runNativeWineDebug by creating(Exec::class) {
-                        group = "run"
-                        configureLink(linkDebugExecutableMingwX64)
-                    }
-                    val runNativeWineRelease by creating(Exec::class) {
-                        group = "run"
-                        configureLink(linkReleaseExecutableMingwX64)
+                for (type in CrossExecType.VALID_LIST) {
+                    for (deb in listOf("Debug", "Release")) {
+                        val linkTask = project.tasks.findByName("link${deb}Executable${type.nameWithArchCapital}") as? KotlinNativeLink? ?: continue
+                        tasks.create("runNative${deb}${type.interpCapital}", Exec::class.java) {
+                            group = "run"
+                            dependsOn(linkTask)
+                            commandLineCross(linkTask.binary.outputFile.absolutePath, type = type)
+                            this.environment("WINEDEBUG", "-all")
+                            workingDir = linkTask.binary.outputDirectory
+                        }
                     }
                 }
             }
@@ -1242,7 +1246,8 @@ subprojects {
                 }
             }
         }
-        tasks.withType(Test::class.java).all {
+        //tasks.withType(Test::class.java).all {
+        tasks.withType(AbstractTestTask::class.java).all {
             testLogging {
                 //setEvents(setOf("passed", "skipped", "failed", "standardOut", "standardError"))
                 setEvents(setOf("skipped", "failed", "standardError"))
@@ -1250,23 +1255,29 @@ subprojects {
             }
         }
         tasks {
-            if (!com.soywiz.korge.gradle.targets.isWindows) {
-                afterEvaluate {
-                    val linkDebugTestMingwX64 = project.tasks.findByName("linkDebugTestMingwX64") as? KotlinNativeLink?
-                    if (linkDebugTestMingwX64 != null) {
-                        fun Exec.configureLink(link: KotlinNativeLink) {
-                            dependsOn(link)
-                            commandLine("wine64", link.binary.outputFile)
-                            workingDir = link.binary.outputDirectory
-                        }
+            afterEvaluate {
+                for (type in CrossExecType.VALID_LIST) {
+                    val linkDebugTest = project.tasks.findByName("linkDebugTest${type.nameWithArchCapital}") as? KotlinNativeLink?
+                    if (linkDebugTest != null) {
+                        tasks.create("${type.nameWithArch}Test${type.interpCapital}", com.soywiz.korge.gradle.targets.native.KotlinNativeCrossTest::class.java, Action {
+                            val link = linkDebugTest
+                            val testResultsDir = project.buildDir.resolve(TestingBasePlugin.TEST_RESULTS_DIR_NAME)
+                            val testReportsDir = project.extensions.getByType(ReportingExtension::class.java).baseDir.resolve(TestingBasePlugin.TESTS_DIR_NAME)
+                            //this.configureConventions()
 
-                        val mingwX64WineTest by creating(Exec::class) {
-                            val link = linkDebugTestMingwX64
+                            val htmlReport = org.gradle.api.internal.plugins.DslObject(reports.html)
+                            val xmlReport = org.gradle.api.internal.plugins.DslObject(reports.junitXml)
+                            xmlReport.conventionMapping.map("destination") { testResultsDir.resolve(name) }
+                            htmlReport.conventionMapping.map("destination") { testReportsDir.resolve(name) }
+
+                            this.type = type
+                            this.executable = link.binary.outputFile
+                            this.workingDir = link.binary.outputDirectory.absolutePath
+                            this.binaryResultsDirectory.set(testResultsDir.resolve("$name/binary"))
+                            this.environment("WINEDEBUG", "-all")
                             group = "verification"
                             dependsOn(link)
-                            commandLine("wine64", link.binary.outputFile)
-                            workingDir = link.binary.outputDirectory
-                        }
+                        })
                     }
                 }
             }
@@ -1325,3 +1336,14 @@ afterEvaluate {
 //} catch (e: Throwable) {
 //    e.printStackTrace()
 //}
+
+// @TODO: $catalog.json
+//afterEvaluate {
+//    val jsTestTestDevelopmentExecutableCompileSync = tasks.findByPath(":korim:jsTestTestDevelopmentExecutableCompileSync")
+//    if (jsTestTestDevelopmentExecutableCompileSync != null) {
+//        val copy = jsTestTestDevelopmentExecutableCompileSync as Copy
+//        //copy.from(File(""))
+//    }
+//}
+
+//println(tasks.findByPath(":korim:jsTestTestDevelopmentExecutableCompileSync")!!::class)

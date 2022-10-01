@@ -1,0 +1,13 @@
+plugins {
+    id "org.gradle.kotlin.kotlin-dsl" version "2.3.3"
+}
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+    google()
+}
+
+dependencies {
+    implementation("com.soywiz.korlibs.korim:korim-jvm:3.0.0")
+}

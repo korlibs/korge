@@ -80,6 +80,7 @@ import platform.windows.SelectObject
 import platform.windows.SetDIBits
 
 class GdiNativeImage(bitmap: Bitmap32) : BitmapNativeImage(bitmap) {
+    override val name: String get() = "GdiNativeImage"
     // @TODO: Enable this once ready!
     //override fun getContext2d(antialiasing: Boolean): Context2d = Context2d(GdiRenderer(bitmap, antialiasing))
 }
@@ -151,7 +152,7 @@ class GdiRenderer(val bitmap: Bitmap32, val antialiasing: Boolean) : BufferedRen
     override fun flushCommands(commands: List<RenderCommand>) {
         bitmap.flipY()
         memScoped {
-            bitmap.intData.usePinned {  dataPin ->
+            bitmap.ints.usePinned {  dataPin ->
                 val dataPtr = dataPin.addressOf(0)
                 val bmpInfo = alloc<BITMAPINFO>()
                 initGdiPlusOnce()
@@ -216,7 +217,7 @@ class GdiRenderer(val bitmap: Bitmap32, val antialiasing: Boolean) : BufferedRen
                                 //val transform = style.transform
                                 GdipSetMatrixElements(matrix, transform.af, transform.bf, transform.cf, transform.df, transform.txf, transform.tyf)
                                 val bmp = style.bmp32
-                                bmp.intData.usePinned { bmpPin ->
+                                bmp.ints.usePinned { bmpPin ->
                                     val ptr = bmpPin.addressOf(0)
                                     GdipCreateBitmapFromScan0(bmp.width, bmp.height, 4 * bmp.width, if (bmp.premultiplied) PixelFormat32bppARGB else PixelFormat32bppPARGB, ptr.reinterpret(), pbitmap)
                                 }

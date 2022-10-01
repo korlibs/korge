@@ -120,7 +120,7 @@ class AngleTest {
 
     @Test
     fun testFrom() {
-        assertTrue { Angle(PI) == (Angle.fromDegrees(180.0)) }
+        assertTrue { Angle.fromRadians(PI) == (Angle.fromDegrees(180.0)) }
         assertTrue { Angle.fromRadians(PI) == (Angle.fromDegrees(180.0)) }
         assertTrue { Angle.fromRatio(0.5) == (Angle.fromDegrees(180.0)) }
     }

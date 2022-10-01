@@ -7,8 +7,11 @@ class CacheMapTest {
     @Test
     fun test() {
         val freeLog = arrayListOf<String>()
-        val cache = CacheMap<String, Int>(maxSize = 2) { k, v ->
-            freeLog += "$k:$v"
+        val cache = object : CacheMap<String, Int>(maxSize = 2) {
+            override fun freed(key: String, value: Int) {
+                super.freed(key, value)
+                freeLog += "$key:$value"
+            }
         }
         cache["a"] = 1
         cache["b"] = 2

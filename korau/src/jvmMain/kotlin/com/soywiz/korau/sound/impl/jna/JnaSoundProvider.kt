@@ -19,7 +19,6 @@ import com.soywiz.korau.sound.SoundChannelState
 import com.soywiz.korau.sound.SoundProps
 import com.soywiz.korau.sound.copyOfRange
 import com.soywiz.korau.sound.copySoundPropsFromCombined
-import com.soywiz.korau.sound.nativeAudioFormats
 import com.soywiz.korau.sound.playingOrPaused
 import com.soywiz.korio.async.delay
 import com.soywiz.korio.async.launchImmediately
@@ -76,15 +75,13 @@ class JnaOpenALNativeSoundProvider : NativeSoundProvider() {
         })
     }
 
-    override val audioFormats = nativeAudioFormats
-
     override suspend fun createNonStreamingSound(data: AudioData, name: String): Sound {
         if (!AL.loaded) return super.createNonStreamingSound(data, name)
         return OpenALSoundNoStream(this, coroutineContext, data, name = name)
     }
 
-    override fun createAudioStream(coroutineContext: CoroutineContext, freq: Int): PlatformAudioOutput {
-        if (!AL.loaded) return super.createAudioStream(coroutineContext, freq)
+    override fun createPlatformAudioOutput(coroutineContext: CoroutineContext, freq: Int): PlatformAudioOutput {
+        if (!AL.loaded) return super.createPlatformAudioOutput(coroutineContext, freq)
         return OpenALPlatformAudioOutput(this, coroutineContext, freq)
     }
 }
@@ -333,7 +330,7 @@ class OpenALSoundNoStream(
             var times = params.times
             var startTime = params.startTime
             try {
-                while (times.hasMore) {
+                while (times.hasMore && !stopped) {
                     times = times.oneLess
                     channel.reset()
                     AL.alSourcef(source, AL.AL_SEC_OFFSET, startTime.seconds.toFloat())

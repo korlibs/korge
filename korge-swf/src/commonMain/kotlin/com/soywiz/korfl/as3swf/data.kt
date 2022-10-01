@@ -13,6 +13,13 @@ import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.LineScaleMode
 import kotlin.collections.set
 import kotlin.math.*
+import kotlin.native.concurrent.ThreadLocal
+
+@ThreadLocal
+private val SWFActionValue_ba = FlashByteArray().also {
+    it.endian = Endian.LITTLE_ENDIAN
+    it.length = 8
+}
 
 class SWFActionValue {
 	var type: Int = 0
@@ -24,14 +31,7 @@ class SWFActionValue {
 	var constant: Int = 0
 
 	companion object {
-		private var ba = SWFActionValue.initTmpBuffer()
-
-		private fun initTmpBuffer(): FlashByteArray {
-			val baTmp = FlashByteArray()
-			baTmp.endian = Endian.LITTLE_ENDIAN
-			baTmp.length = 8
-			return baTmp
-		}
+        private val ba get() = SWFActionValue_ba
 	}
 
 	fun parse(data: SWFData) {

@@ -5,6 +5,7 @@ import com.soywiz.korge.render.RenderContext
 import com.soywiz.korim.color.Colors
 import com.soywiz.korio.async.suspendTest
 import com.soywiz.korio.util.OS
+import com.soywiz.korio.util.niceStr
 import com.soywiz.korma.geom.Anchor
 import com.soywiz.korma.geom.Point
 import com.soywiz.korma.geom.Rectangle
@@ -13,6 +14,7 @@ import com.soywiz.korma.geom.bezier.Bezier
 import com.soywiz.korma.geom.vector.StrokeInfo
 import com.soywiz.korma.geom.vector.circle
 import com.soywiz.korma.geom.vector.cubic
+import com.soywiz.korma.geom.vector.line
 import com.soywiz.korma.geom.vector.lineTo
 import com.soywiz.korma.geom.vector.moveTo
 import com.soywiz.korma.geom.vector.rect
@@ -22,22 +24,22 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class GraphicsTest {
-	@Test
-	fun test() = suspendTest({ !OS.isAndroid }) {
-		val g = CpuGraphics().updateShape(redrawNow = true) {
-			fill(Colors.RED) {
-				rect(-50, -50, 100, 100)
-			}
-		}
-		val bmp = g.bitmap.base.toBMP32()
-		assertEquals(Size(101, 101), bmp.size)
-		//assertEquals("#ff0000ff", bmp[0, 0].hexString)
-		//assertEquals("#ff0000ff", bmp[99, 99].hexString)
+    @Test
+    fun test() = suspendTest({ !OS.isAndroid }) {
+        val g = CpuGraphics().updateShape(redrawNow = true) {
+            fill(Colors.RED) {
+                rect(-50, -50, 100, 100)
+            }
+        }
+        val bmp = g.bitmap.base.toBMP32()
+        assertEquals(Size(101, 101), bmp.size)
+        //assertEquals("#ff0000ff", bmp[0, 0].hexString)
+        //assertEquals("#ff0000ff", bmp[99, 99].hexString)
         assertEquals("#ff0000ff", bmp[1, 1].hexString)
         assertEquals("#ff0000ff", bmp[98, 98].hexString)
-		assertEquals(-50.0, g._sLeft)
-		assertEquals(-50.0, g._sTop)
-	}
+        assertEquals(-50.0, g._sLeft)
+        assertEquals(-50.0, g._sTop)
+    }
 
     @Test
     fun testEmptyGraphics() = suspendTest({ !OS.isAndroid }) {
@@ -181,7 +183,75 @@ class GraphicsTest {
                 cubic(cubic3)
             }
         }
-        assertEquals(Rectangle(25, 49, 209, 201), g.getLocalBounds())
+        // assertEquals(Rectangle(25, 49, 209, 201), g.getLocalBounds()) // strokes = false
+        assertEquals(Rectangle(24.5, 47.0, 211.5, 203.5), g.getLocalBounds())
+    }
+
+    @Test
+    fun testScale() {
+        val container = Container()
+        container.scale = 2.0
+        val graphics = CpuGraphics(autoScaling = true).addTo(container)
+        graphics.updateShape(redrawNow = true) { fill(Colors.RED) { rect(50, 50, 100, 100) } }
+        graphics.anchor(Anchor(0.75, 0.5))
+        assertEquals(
+            """
+                sLeft,sTop=-25.375,-0.25
+                fillWidth,fillHeight=100,100
+                frameWH=100.5,100.5
+                frameOffsetXY=0,0
+                anchorDispXY=75.375,50.25
+                anchorDispXYNoOffset=75.375,50.25
+                bounds=Rectangle(x=-25.375, y=-0.25, width=100, height=100)
+                size=201x201
+            """.trimIndent(),
+            """
+                sLeft,sTop=${graphics._sLeft.niceStr},${graphics._sTop.niceStr}
+                fillWidth,fillHeight=${graphics.fillWidth.niceStr},${graphics.fillHeight.niceStr}
+                frameWH=${graphics.frameWidth.niceStr},${graphics.frameHeight.niceStr}
+                frameOffsetXY=${graphics.frameOffsetX.niceStr},${graphics.frameOffsetY.niceStr}
+                anchorDispXY=${graphics.anchorDispX.niceStr},${graphics.anchorDispY.niceStr}
+                anchorDispXYNoOffset=${graphics.anchorDispXNoOffset.niceStr},${graphics.anchorDispYNoOffset.niceStr}
+                bounds=${graphics.getLocalBounds()}
+                size=${graphics.bitmap.sizeString}
+            """.trimIndent()
+        )
+    }
+
+    @Test
+    fun testStrokePositioning() {
+        val container = Container()
+        val graphics = container.graphics {
+            it.renderer = GraphicsRenderer.SYSTEM
+            it.antialiased = true
+            this.stroke(Colors.YELLOW, info = StrokeInfo(50.0)) {
+                line(100.0, 100.0, 200.0, 200.0)
+            }
+            this.circle(100.0, 100.0, 5.0)
+            fill(Colors.BLUE)
+        }
+
+        val posCircle = container.circle(25.0, fill = Colors.ORANGE) {
+            anchor(Anchor.CENTER)
+            position(graphics.pos)
+        }
+
+        val posCircle2 = container.circle(5.0, fill = Colors.RED) {
+            anchor(Anchor.CENTER)
+            position(100.0, 100.0)
+        }
+
+        val g = (graphics.rendererView as CpuGraphics)
+        assertEquals(
+            """
+                leftTop=75, 75
+                fillSize=150, 150
+            """.trimIndent(),
+            """
+                leftTop=${g._sLeft.niceStr}, ${g._sTop.niceStr}
+                fillSize=${g.fillWidth.niceStr}, ${g.fillHeight.niceStr}
+            """.trimIndent()
+        )
     }
 }
 

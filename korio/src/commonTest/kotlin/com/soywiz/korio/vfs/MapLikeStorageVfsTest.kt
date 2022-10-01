@@ -16,7 +16,7 @@ class MapLikeStorageVfsTest {
     @Test
     fun testDeleteFile() = suspendTest {
         val storage = MySimpleStorage()
-        val root = storage.toVfs(TimeProvider { DateTime.fromUnix(0L) })
+        val root = storage.toVfs(TimeProvider { DateTime.fromUnixMillis(0L) })
 
         root["demo"].mkdir()
         root["demo/test.txt"].writeString("hello")

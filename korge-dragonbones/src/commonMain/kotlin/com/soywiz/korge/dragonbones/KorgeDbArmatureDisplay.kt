@@ -66,6 +66,7 @@ class KorgeDbArmatureDisplay : Container(), IArmatureProxy {
 			//_armature?.advanceTimeForChildren(it.toDouble() / 1000.0)
 			_armature?.advanceTime(it.seconds)
 			dispatchQueuedEvents()
+            invalidate() // TODO: Check if we changed something
 		}
 	}
 

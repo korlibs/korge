@@ -1,6 +1,5 @@
 package com.soywiz.korim.vector
 
-import com.soywiz.kds.IDoubleArrayList
 import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.korim.bitmap.toUri
 import com.soywiz.korim.color.RGBA
@@ -18,26 +17,18 @@ import com.soywiz.korim.vector.format.SVG
 import com.soywiz.korim.vector.format.SvgPath
 import com.soywiz.korio.serialization.xml.Xml
 import com.soywiz.korio.util.niceStr
-import com.soywiz.korio.util.toStringDecimal
 import com.soywiz.korma.geom.BoundsBuilder
-import com.soywiz.korma.geom.IPointArrayList
 import com.soywiz.korma.geom.Matrix
 import com.soywiz.korma.geom.Rectangle
-import com.soywiz.korma.geom.bezier.Bezier
 import com.soywiz.korma.geom.bezier.Curves
 import com.soywiz.korma.geom.bezier.isConvex
 import com.soywiz.korma.geom.contains
-import com.soywiz.korma.geom.vector.LineCap
-import com.soywiz.korma.geom.vector.LineJoin
-import com.soywiz.korma.geom.vector.LineScaleMode
 import com.soywiz.korma.geom.vector.StrokeInfo
 import com.soywiz.korma.geom.vector.VectorPath
 import com.soywiz.korma.geom.vector.add
 import com.soywiz.korma.geom.vector.applyTransform
 import com.soywiz.korma.geom.vector.strokeToFill
-import com.soywiz.korma.geom.vector.toCurves
 import com.soywiz.korma.geom.vector.toCurvesList
-import com.soywiz.korma.math.roundDecimalPlaces
 import kotlin.math.max
 import kotlin.math.round
 
@@ -142,8 +133,19 @@ sealed interface Shape : BoundsDrawable {
     fun getPath(path: VectorPath = VectorPath()): VectorPath = path
 
     // Unoptimized version
-    override val bounds: Rectangle get() = BoundsBuilder().also { addBounds(it) }.getBounds()
+    fun getBounds(includeStrokes: Boolean): Rectangle = BoundsBuilder().also { addBounds(it, includeStrokes = includeStrokes) }.getBounds()
+    override val bounds: Rectangle get() = getBounds(includeStrokes = true)
 	fun containsPoint(x: Double, y: Double): Boolean = bounds.contains(x, y)
+}
+
+fun Shape.optimize(): Shape {
+    return when (this) {
+        is CompoundShape -> {
+            val comps = this.components.filter { it !is EmptyShape }
+            if (comps.size == 1) comps.first() else CompoundShape(comps)
+        }
+        else -> this
+    }
 }
 
 fun Shape.getBounds(out: Rectangle = Rectangle(), bb: BoundsBuilder = BoundsBuilder(), includeStrokes: Boolean = false): Rectangle {
@@ -372,19 +374,21 @@ data class PolylineShape constructor(
     override fun addBounds(bb: BoundsBuilder, includeStrokes: Boolean) {
         tempBB.reset()
         tempBB.add(path)
-        tempBB.getBounds(tempRect)
+        val bounds = tempBB.getBoundsOrNull(tempRect)
+
+        //println("PolylineShape.addBounds: bounds=bounds, path=$path")
 
         //println("TEMP_RECT: ${tempRect}")
 
         if (includeStrokes) {
             val halfThickness = max(strokeInfo.thickness / 2.0, 0.0)
-            tempRect.inflate(halfThickness, halfThickness)
+            bounds?.inflate(halfThickness, halfThickness)
         }
 
         //println("  TEMP_RECT AFTER INFLATE: ${tempRect}")
 
         //println("PolylineShape.addBounds: thickness=$thickness, rect=$tempRect")
-        bb.add(tempRect)
+        bb.addEvenEmpty(bounds)
     }
 
     override fun drawInternal(c: Context2d) {
@@ -409,7 +413,7 @@ data class PolylineShape constructor(
 	)
 }
 
-class CompoundShape(
+open class CompoundShape(
 	val components: List<Shape>
 ) : Shape {
 	override fun addBounds(bb: BoundsBuilder, includeStrokes: Boolean) { components.fastForEach { it.addBounds(bb, includeStrokes)}  }
@@ -491,3 +495,15 @@ class TextShape(
         )
     }
 }
+
+fun Shape.transformedShape(m: Matrix): Shape = when (this) {
+    is EmptyShape -> EmptyShape
+    is CompoundShape -> CompoundShape(components.map { it.transformedShape(m) })
+    is FillShape -> FillShape(path.applyTransform(m), clip?.applyTransform(m), paint, Matrix().multiply(transform, m), globalAlpha)
+    is PolylineShape -> PolylineShape(path.applyTransform(m), clip?.applyTransform(m), paint, Matrix().multiply(transform, m), strokeInfo, globalAlpha)
+    is TextShape -> TextShape(text, x, y, font, fontSize, clip?.applyTransform(m), fill, stroke, halign, valign, Matrix().multiply(transform, m), globalAlpha)
+    else -> TODO()
+}
+
+fun Shape.scaledShape(sx: Double, sy: Double = sx): Shape = transformedShape(Matrix().scale(sx, sy))
+fun Shape.translatedShape(x: Double = 0.0, y: Double = 0.0): Shape = transformedShape(Matrix().translate(x, y))

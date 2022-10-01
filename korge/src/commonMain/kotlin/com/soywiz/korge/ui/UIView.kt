@@ -22,7 +22,17 @@ private val View._defaultUiSkin: UISkin get() = extraCache("_defaultUiSkin") { U
 
 var View.uiSkin: UISkin?
     get() = getExtra("uiSkin") as? UISkin?
-    set(value) { setExtra("uiSkin", value) }
+    set(value) {
+        setExtra("uiSkin", value)
+        invalidateRender()
+    }
+
+var View.uiSkinSure: UISkin
+    get() {
+        if (!hasExtra("uiSkin")) setExtra("uiSkin", UISkin())
+        return uiSkin!!
+    }
+    set(value) { uiSkin = value }
 
 val View.realUiSkin: UISkin get() = uiSkin ?: parent?.realUiSkin ?: root._defaultUiSkin
 
@@ -30,9 +40,11 @@ open class UIView(
 	width: Double = 90.0,
 	height: Double = 32.0
 ) : FixedSizeContainer(width, height), UISkinable {
-    private val skinProps = FastStringMap<Any?>()
-    override fun <T> setSkinProperty(property: String, value: T) { skinProps[property] = value }
-    override fun <T> getSkinPropertyOrNull(property: String): T? = (skinProps[property] as? T?) ?: realUiSkin.getSkinPropertyOrNull(property)
+    override fun <T> setSkinProperty(property: String, value: T) {
+        uiSkinSure.setSkinProperty(property, value)
+        invalidateRender()
+    }
+    override fun <T> getSkinPropertyOrNull(property: String): T? = (uiSkin?.getSkinPropertyOrNull(property) as? T?) ?: realUiSkin.getSkinPropertyOrNull(property)
 
 	override var width: Double by uiObservable(width) { onSizeChanged() }
 	override var height: Double by uiObservable(height) { onSizeChanged() }
@@ -59,7 +71,12 @@ open class UIView(
 	protected open fun onSizeChanged() {
 	}
 
-	open fun updateState() {
+    override fun onParentChanged() {
+        updateState()
+    }
+
+    open fun updateState() {
+        invalidate()
 	}
 
 	override fun renderInternal(ctx: RenderContext) {

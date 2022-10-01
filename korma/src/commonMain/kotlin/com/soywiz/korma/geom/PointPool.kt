@@ -2,7 +2,7 @@ package com.soywiz.korma.geom
 
 import com.soywiz.kds.FastArrayList
 import com.soywiz.korma.internal.umod
-import com.soywiz.korma.math.clamp
+import com.soywiz.kmem.clamp
 import kotlin.jvm.JvmName
 import kotlin.math.min
 import kotlin.math.max

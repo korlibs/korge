@@ -68,6 +68,8 @@ class HttpClientBrowserJs : HttpClient() {
         xhr.open(method.name, url, true)
         xhr.responseType = XMLHttpRequestResponseType.ARRAYBUFFER
 
+        //println("HttpClientBrowserJs.requestInternal: $method, $url, $headers, $content")
+
         xhr.onload = { e ->
             //val u8array = Uint8Array(xhr.response as ArrayBuffer)
             //val out = ByteArray(u8array.length)

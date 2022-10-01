@@ -38,7 +38,7 @@ import kotlin.math.round
 import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFalse
+import kotlin.test.assertNotEquals
 
 /**
  * @author Daniel Murphy
@@ -108,7 +108,7 @@ class MathTest {
         val v2 = v.add(Vec2(1f, 1f))
         assertEquals(-9f, v2.x)
         assertEquals(-8f, v2.y)
-        assertFalse(v == v2)
+        assertNotEquals(v, v2)
     }
 
     fun testMat22Unsafes() {

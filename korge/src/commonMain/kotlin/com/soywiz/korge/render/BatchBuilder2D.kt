@@ -133,7 +133,6 @@ class BatchBuilder2D constructor(
 
 	private val vertexBuffer = ag.createVertexBuffer()
     private val texIndexVertexBuffer = ag.createVertexBuffer()
-    private val texPremultipliedVertexBuffer = ag.createVertexBuffer()
     private val texWrapVertexBuffer = ag.createVertexBuffer()
 	private val indexBuffer = ag.createIndexBuffer()
 
@@ -730,11 +729,9 @@ class BatchBuilder2D constructor(
 
         val a_TexIndex: Attribute = Attribute("a_TexIndex", VarType.UByte1, normalized = false, precision = Precision.LOW)
         val a_Wrap: Attribute = Attribute("a_Wrap", VarType.UByte1, normalized = false, precision = Precision.LOW)
-        val a_InputPre: Attribute = Attribute("a_InputPre", VarType.UByte1, normalized = false, precision = Precision.LOW)
 
         val v_TexIndex: Varying = Varying("v_TexIndex", VarType.Float1, precision = Precision.LOW)
         val v_Wrap: Varying = Varying("v_Wrap", VarType.Float1, precision = Precision.LOW)
-        val v_InputPre: Varying = Varying("v_InputPre", VarType.Float1, precision = Precision.LOW)
         //val u_Tex0 = Uniform("u_Tex0", VarType.TextureUnit)
 
         //val u_DoWrap: Uniform = Uniform("u_DoWrap", VarType.Bool1)
@@ -742,48 +739,19 @@ class BatchBuilder2D constructor(
         val u_OutputPre: Uniform = Uniform("u_OutputPre", VarType.Bool1)
         val u_TexN: Array<Uniform> = Array(BB_MAX_TEXTURES) { Uniform("u_Tex$it", VarType.Sampler2D) }
 
-        fun DO_INPUT_ENSURE_TO(builder: Program.Builder, out: Operand, premultiplied: Boolean) {
+        fun DO_OUTPUT_FROM(builder: Program.Builder, out: Operand, u_OutputPre: Operand = BatchBuilder2D.u_OutputPre) {
             builder.apply {
-                if (premultiplied) {
-                    // We want premultiplied, but input was straight
-                    IF(v_InputPre eq 0f.lit) {
-                        SET(out["rgb"], out["rgb"] * out["a"])
-                    }
-                } else {
-                    // We want straight, but input was premultiplied
-                    IF(v_InputPre ne 0f.lit) {
-                        SET(out["rgb"], out["rgb"] / out["a"])
-                    }
-                }
-            }
-        }
-
-        fun DO_OUTPUT_FROM(builder: Program.Builder, out: Operand, premultiplied: Boolean) {
-            builder.apply {
-                if (premultiplied) {
-                    // We come from premultiplied, but output wants straight
-                    IF(u_OutputPre.not()) {
-                        SET(out["rgb"], out["rgb"] / out["a"])
-                    }
-                } else {
-                    // We come from straight, but output wants premultiplied
-                    IF(u_OutputPre) {
-                        SET(out["rgb"], out["rgb"] * out["a"])
-                    }
+                // We come from premultiplied, but output wants straight
+                IF(u_OutputPre.not()) {
+                    SET(out["rgb"], out["rgb"] / out["a"])
                 }
             }
         }
 
         fun DO_INPUT_OUTPUT(builder: Program.Builder, out: Operand) {
-            //DO_INPUT_PREMULTIPLIED(builder, out)
-            //DO_OUTPUT_PREMULTIPLIED(builder, out)
             builder.apply {
-                IF(int(v_InputPre) ne int(u_OutputPre)) {
-                    IF(u_OutputPre) {
-                        SET(out["rgb"], out["rgb"] * out["a"])
-                    } ELSE {
-                        SET(out["rgb"], out["rgb"] / out["a"])
-                    }
+                IF(u_OutputPre.not()) {
+                    SET(out["rgb"], out["rgb"] / out["a"])
                 }
             }
         }
@@ -798,14 +766,11 @@ class BatchBuilder2D constructor(
         @KorgeInternal
         val LAYOUT_TEX_INDEX = VertexLayout(a_TexIndex)
         @KorgeInternal
-        val LAYOUT_INPUT_PRE = VertexLayout(a_InputPre)
-        @KorgeInternal
         val LAYOUT_WRAP = VertexLayout(a_Wrap)
         @KorgeInternal
 		val VERTEX = VertexShaderDefault {
             SET(v_Tex, a_Tex)
             SET(v_TexIndex, a_TexIndex)
-            SET(v_InputPre, a_InputPre)
             SET(v_Wrap, a_Wrap)
             SET(v_ColMul, vec4(a_ColMul["rgb"] * a_ColMul["a"], a_ColMul["a"])) // premultiplied colorMul
             SET(v_ColAdd, a_ColAdd)
@@ -872,7 +837,6 @@ class BatchBuilder2D constructor(
             IF_ELSE_BINARY_LOOKUP(v_TexIndex, 0, BB_MAX_TEXTURES - 1) { n ->
                 SET(out, texture2D(u_TexN[n], t_Temp0["xy"]))
             }
-            DO_INPUT_ENSURE_TO(this, out, premultiplied = true)
             if (add == AddType.NO_ADD) {
                 SET(out, out * v_ColMul)
             } else {
@@ -883,7 +847,7 @@ class BatchBuilder2D constructor(
                 }
             }
             IF(out["a"] le 0f.lit) { DISCARD() }
-            DO_OUTPUT_FROM(this, out, premultiplied = true)
+            DO_OUTPUT_FROM(this, out)
         }
 
 		//init { println(PROGRAM_PRE.fragment.toGlSl()) }
@@ -895,7 +859,6 @@ class BatchBuilder2D constructor(
     fun uploadVertices() {
         vertexBuffer.upload(vertices, 0, vertexPos * 4)
         texIndexVertexBuffer.upload(verticesTexIndex, 0, vertexPos / 6)
-        texPremultipliedVertexBuffer.upload(verticesPremultiplied, 0, vertexPos / 6)
         texWrapVertexBuffer.upload(verticesWrap, 0, vertexPos / 6)
     }
 
@@ -906,7 +869,6 @@ class BatchBuilder2D constructor(
     private val vertexData = fastArrayListOf(
         AG.VertexData(vertexBuffer, LAYOUT),
         AG.VertexData(texIndexVertexBuffer, LAYOUT_TEX_INDEX),
-        AG.VertexData(texPremultipliedVertexBuffer, LAYOUT_INPUT_PRE),
         AG.VertexData(texWrapVertexBuffer, LAYOUT_WRAP),
     )
 

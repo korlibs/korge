@@ -34,7 +34,7 @@ import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.bitmap.BitmapSlice
 import com.soywiz.korim.bitmap.slice
 import com.soywiz.korim.color.ColorTransform
-import com.soywiz.korim.format.readBitmapOptimized
+import com.soywiz.korim.format.readBitmap
 import com.soywiz.korio.file.VfsFile
 import com.soywiz.korio.lang.invalidOp
 import com.soywiz.korio.serialization.json.Json
@@ -65,7 +65,7 @@ suspend fun VfsFile.readAni(context: AnLibrary.Context, content: FastByteArrayIn
         context.copy(coroutineContext = coroutineContext),
 		externalReaders = AnLibraryDeserializer.ExternalReaders(
 			atlasReader = { index ->
-				file.withExtension("ani.$index.png").readBitmapOptimized(context.imageFormats)
+				file.withExtension("ani.$index.png").readBitmap(context.imageFormats)
 			},
 			readSound = { index ->
 				file.withExtension("ani.$index.mp3").readSound()

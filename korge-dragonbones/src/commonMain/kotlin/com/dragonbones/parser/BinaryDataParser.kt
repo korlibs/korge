@@ -401,7 +401,7 @@ class BinaryDataParser(pool: BaseObjectPool = BaseObjectPool())  :  ObjectDataPa
 
         val headerLength = data.getInt(8)
 		val headerString = this._decodeUTF8(NewUint8Buffer(rawData, 8 + 4, headerLength))
-		val header = Json.parse(headerString, Json.Context(optimizedNumericLists = true))
+		val header = Json.parseFast(headerString)
 		//
 		this._binaryOffset = 8 + 4 + headerLength
 		this._binary = rawData

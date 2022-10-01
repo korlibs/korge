@@ -1,6 +1,7 @@
 package com.soywiz.korim.paint
 
 import com.soywiz.kds.DoubleArrayList
+import com.soywiz.kds.IDoubleArrayList
 import com.soywiz.kds.IntArrayList
 import com.soywiz.kmem.clamp
 import com.soywiz.korim.bitmap.Bitmap
@@ -15,12 +16,42 @@ import com.soywiz.korma.geom.Point
 import com.soywiz.korma.geom.degrees
 import com.soywiz.korma.geom.div
 import com.soywiz.korma.geom.unaryMinus
+import com.soywiz.korma.geom.vector.LineCap
+import com.soywiz.korma.geom.vector.LineJoin
+import com.soywiz.korma.geom.vector.LineScaleMode
+import com.soywiz.korma.geom.vector.StrokeInfo
 import com.soywiz.korma.geom.vector.VectorPath
 import kotlin.math.sqrt
 
 interface Paint {
     fun clone(): Paint
 }
+
+data class Stroke(val paint: Paint, val info: StrokeInfo) {
+    constructor(
+        paint: Paint,
+        thickness: Double = 1.0,
+        pixelHinting: Boolean = false,
+        scaleMode: LineScaleMode = LineScaleMode.NORMAL,
+        startCap: LineCap = LineCap.BUTT,
+        endCap: LineCap = LineCap.BUTT,
+        join: LineJoin = LineJoin.MITER,
+        miterLimit: Double = 20.0,
+        dash: IDoubleArrayList? = null,
+        dashOffset: Double = 0.0
+    ) : this(paint, StrokeInfo(
+        thickness = thickness,
+        pixelHinting = pixelHinting,
+        scaleMode = scaleMode,
+        startCap = startCap,
+        endCap = endCap,
+        join = join,
+        miterLimit = miterLimit,
+        dash = dash,
+        dashOffset = dashOffset,
+    ))
+}
+fun StrokeInfo.withPaint(paint: Paint): Stroke = Stroke(paint, this)
 
 object NonePaint : Paint {
     override fun clone(): Paint = this
@@ -233,6 +264,30 @@ inline fun RadialGradientPaint(x0: Number, y0: Number, r0: Number, x1: Number, y
 @Deprecated("Only available on Android or Bitmap32")
 inline fun SweepGradientPaint(x0: Number, y0: Number, transform: Matrix = Matrix(), block: GradientPaint.() -> Unit = {}) = GradientPaint(GradientKind.SWEEP, x0.toDouble(), y0.toDouble(), 0.0, 0.0, 0.0, 0.0, transform = transform).also(block)
 inline fun ConicGradientPaint(startAngle: Angle, x0: Number, y0: Number, transform: Matrix = Matrix(), block: GradientPaint.() -> Unit = {}) = GradientPaint(GradientKind.CONIC, x0.toDouble(), y0.toDouble(), 0.0, 0.0, 0.0, 0.0, startAngle = startAngle, transform = transform).also(block)
+
+/** Adds color stops to the gradient in the [pairs] list being the left of the pair the ratio between 0.0 and 1.0, and the right of the pair the [Color] */
+fun GradientPaint.add(vararg pairs: Pair<Double, RGBA>): GradientPaint {
+    for ((ratio, color) in pairs) add(ratio, color)
+    return this
+}
+
+/** Adds colors [c0] and [c1] to the gradient equidistantly */
+fun GradientPaint.add(c0: RGBA, c1: RGBA) = add(0.0, c0).add(1.0, c1)
+/** Adds colors [c0], [c1] and [c2] to the gradient equidistantly */
+fun GradientPaint.add(c0: RGBA, c1: RGBA, c2: RGBA) = add(0.0, c0).add(0.5, c1).add(1.0, c2)
+/** Adds colors [c0], [c1], [c2] and [c3] to the gradient equidistantly */
+fun GradientPaint.add(c0: RGBA, c1: RGBA, c2: RGBA, c3: RGBA) = add(0.0, c0).add(1.0 / 3.0, c1).add(2.0 / 3.0, c2).add(1.0, c3)
+/** Adds [colors] to the gradient equidistantly */
+inline fun <T : RGBA> GradientPaint.add(vararg colors: T): GradientPaint = add(RgbaArray(colors.size) { colors[it] })
+/** Adds [colors] to the gradient equidistantly */
+fun GradientPaint.add(colors: RgbaArray): GradientPaint {
+    val size = (colors.size - 1).coerceAtLeast(1).toDouble()
+    for (n in 0 until colors.size) {
+        val ratio = n.toDouble() / size
+        add(ratio, colors[n])
+    }
+    return this
+}
 
 fun Bitmap.toPaint(
     transform: Matrix = Matrix(),

@@ -4,19 +4,29 @@ import com.soywiz.kds.ByteArrayDeque
 import com.soywiz.kmem.startAddressOf
 import com.soywiz.korau.format.AudioDecodingProps
 import com.soywiz.korau.format.AudioFormat
-import com.soywiz.korau.format.MP3
-import com.soywiz.korau.format.MP3Base
 import com.soywiz.korau.format.OGG
 import com.soywiz.korau.format.mp3.minimp3.BaseMinimp3AudioFormat
-import com.soywiz.korau.format.mp3.minimp3.MiniMp3Program
-import com.soywiz.korau.format.mp3.minimp3.mp3dec_frame_info_t__SIZE_BYTES
-import com.soywiz.korau.format.mp3.minimp3.mp3dec_t__SIZE_BYTES
 import com.soywiz.korau.internal.SampleConvert
 import com.soywiz.korio.lang.portableSimpleName
 import com.soywiz.korio.stream.AsyncStream
 import com.soywiz.korio.stream.read
-import kotlinx.cinterop.*
-import minimp3.MINIMP3_MAX_SAMPLES_PER_FRAME
+import kotlinx.cinterop.Arena
+import kotlinx.cinterop.ByteVar
+import kotlinx.cinterop.CPointer
+import kotlinx.cinterop.CPointerVar
+import kotlinx.cinterop.FloatVar
+import kotlinx.cinterop.IntVar
+import kotlinx.cinterop.ShortVar
+import kotlinx.cinterop.addressOf
+import kotlinx.cinterop.alloc
+import kotlinx.cinterop.get
+import kotlinx.cinterop.memScoped
+import kotlinx.cinterop.ptr
+import kotlinx.cinterop.reinterpret
+import kotlinx.cinterop.set
+import kotlinx.cinterop.useContents
+import kotlinx.cinterop.usePinned
+import kotlinx.cinterop.value
 import minimp3.mp3dec_decode_frame
 import minimp3.mp3dec_frame_info_t
 import minimp3.mp3dec_init
@@ -28,10 +38,6 @@ import stb_vorbis.stb_vorbis_decode_frame_pushdata
 import stb_vorbis.stb_vorbis_get_info
 import stb_vorbis.stb_vorbis_open_pushdata
 import stb_vorbis.stb_vorbis_stream_length_in_samples
-
-@kotlin.native.concurrent.ThreadLocal
-actual val knNativeAudioFormats: List<AudioFormat> = listOf(NativeOggVorbisDecoderFormat, NativeMp3DecoderAudioFormat)
-//val knNativeAudioFormats: List<AudioFormat> = listOf(NativeOggVorbisDecoderFormat, NativeMp3DecoderAudioFormat)
 
 open class NativeAudioDecoder(val data: AsyncStream, val maxSamples: Int, val maxChannels: Int = 2) {
     val scope = Arena()

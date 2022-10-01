@@ -1,19 +1,19 @@
 package com.soywiz.korma.triangle
 
-import com.soywiz.korma.geom.shape.buildPath
-import com.soywiz.korma.geom.vector.rect
-import com.soywiz.korma.geom.vector.rectHole
+import com.soywiz.korma.geom.shape.*
+import com.soywiz.korma.geom.vector.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class EarCutTriangulatorTest {
     @Test
     fun test() {
-        val path = buildPath {
-            rect(0, 0, 10, 10)
-            rectHole(2, 2, 6, 6)
-            //rect(200, 0, 100, 100)
-        }
+        val path = //rect(200, 0, 100, 100)
+            buildVectorPath(VectorPath()) {
+                rect(0, 0, 10, 10)
+                rectHole(2, 2, 6, 6)
+                //rect(200, 0, 100, 100)
+            }
 
         val triangles = path.triangulateEarCut()
 

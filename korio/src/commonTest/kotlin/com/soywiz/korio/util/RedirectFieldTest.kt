@@ -10,9 +10,9 @@ class RedirectFieldTest {
 	}
 
 	class B(val a: A) {
-		var z: Int by a::z.redirected()
-		val y: Int by this::z.redirected()
-		val i: Int by a::i.redirected()
+		var z: Int by a::z
+		val y: Int by this::z
+		val i: Int by a::i
 		val l: Int by { a::i }.redirected()
 		val r: Int by { a::z }.redirected()
 	}

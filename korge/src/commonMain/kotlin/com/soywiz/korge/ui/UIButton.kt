@@ -85,8 +85,6 @@ open class UIButton(
     //protected val textShadowView = text("", 16.0)
     protected val textView = text("", 16.0)
     protected val iconView = image(Bitmaps.transparent)
-    //private val textAndShadow = fastArrayListOf(textView, textShadowView)
-    private val textAndShadow = fastArrayListOf(textView)
 	protected var bover = false
 	protected var bpressing = false
 
@@ -115,14 +113,12 @@ open class UIButton(
             val text = text
             val textSize = skin.textSize
 
-            textAndShadow.fastForEach { textView ->
-                textView.setTextBounds(Rectangle(0.0, 0.0, width, height))
-                textView.visible = true
-                textView.text = text
-                textView.alignment = alignment
-                textView.font = font
-                textView.textSize = textSize
-            }
+            textView.setTextBounds(Rectangle(0.0, 0.0, width, height))
+            textView.visible = true
+            textView.text = text
+            textView.alignment = alignment
+            textView.font = font
+            textView.textSize = textSize
 
             textView.color = skin.textColor
             //textShadowView.color = skin.shadowColor
@@ -135,23 +131,33 @@ open class UIButton(
     }
 
     fun simulateOver() {
+        if (bover) return
 		bover = true
+        invalidate()
 	}
 
 	fun simulateOut() {
+        if (!bover) return
 		bover = false
+        invalidate()
 	}
 
 	fun simulatePressing(value: Boolean) {
+        if (bpressing == value) return
 		bpressing = value
+        invalidate()
 	}
 
 	fun simulateDown() {
+        if (bpressing) return
 		bpressing = true
+        invalidate()
 	}
 
 	fun simulateUp() {
+        if (!bpressing) return
 		bpressing = false
+        invalidate()
 	}
 
     val onPress = Signal<TouchEvents.Info>()

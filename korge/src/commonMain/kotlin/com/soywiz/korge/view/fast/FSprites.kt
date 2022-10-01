@@ -7,6 +7,7 @@ import com.soywiz.kmem.*
 import com.soywiz.korag.AG
 import com.soywiz.korag.DefaultShaders
 import com.soywiz.korag.FragmentShaderDefault
+import com.soywiz.korag.VertexShaderDefault
 import com.soywiz.korag.shader.Attribute
 import com.soywiz.korag.shader.FragmentShader
 import com.soywiz.korag.shader.Operand
@@ -27,6 +28,7 @@ import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korma.geom.Angle
 import com.soywiz.korma.geom.Matrix
+import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.geom.radians
 
 @PublishedApi
@@ -133,7 +135,7 @@ open class FSprites(val maxSize: Int) {
         // @TODO: fallback version when instanced rendering is not supported
         override fun renderInternal(ctx: RenderContext) {
             texs.copyInto(info.texs)
-            FSprites.render(ctx, sprites, info, smoothing, globalMatrix, BlendMode.NORMAL.factors)
+            render(ctx, sprites, info, smoothing, globalMatrix, renderBlendMode)
         }
     }
 
@@ -146,7 +148,7 @@ open class FSprites(val maxSize: Int) {
             info: FViewInfo,
             smoothing: Boolean,
             globalMatrix: Matrix,
-            blending: AG.Blending
+            blending: BlendMode
         ) {
             if (!ctx.isInstancedSupported) {
                 println("WARNING: FSprites without instanced rendering support not implemented yet.")
@@ -171,22 +173,23 @@ open class FSprites(val maxSize: Int) {
                 }
                 //batch.setTemporalUniform(u_i_texSizeN[0], u_i_texSizeDataN[0]) {
                 batch.setTemporalUniforms(u_i_texSizeN, u_i_texSizeDataN, texs.size, olds) { uniforms ->
-                    batch.setViewMatrixTemp(globalMatrix) {
-                        //ctx.batch.setStateFast()
-                        sprites.uploadVertices(ctx)
-                        ctx.xyBuffer.buffer.upload(xyData)
-                        ctx.ag.drawV2(
-                            vertexData = ctx.buffers,
-                            program = program,
-                            type = AG.DrawType.TRIANGLE_FAN,
-                            vertexCount = 4,
-                            instances = sprites.size,
-                            uniforms = uniforms,
-                            //renderState = AG.RenderState(depthFunc = AG.CompareMode.LESS),
-                            blending = blending
-                        )
-                        sprites.unloadVertices(ctx)
-
+                    batch.setTemporalUniform(BatchBuilder2D.u_OutputPre, ctx.ag.isRenderingToTexture) {
+                        batch.setViewMatrixTemp(globalMatrix) {
+                            //ctx.batch.setStateFast()
+                            sprites.uploadVertices(ctx)
+                            ctx.xyBuffer.buffer.upload(xyData)
+                            ctx.ag.drawV2(
+                                vertexData = ctx.buffers,
+                                program = program,
+                                type = AG.DrawType.TRIANGLE_FAN,
+                                vertexCount = 4,
+                                instances = sprites.size,
+                                uniforms = uniforms,
+                                //renderState = AG.RenderState(depthFunc = AG.CompareMode.LESS),
+                                blending = blending.factors(ctx.ag.isRenderingToTexture)
+                            )
+                            sprites.unloadVertices(ctx)
+                        }
                     }
                 }
                 batch.onInstanceCount(sprites.size)
@@ -233,41 +236,42 @@ open class FSprites(val maxSize: Int) {
                 IF_ELSE_BINARY_LOOKUP(ref, 0, maxTexs - 1, block)
             }
 
-            return Program(VertexShader {
-                DefaultShaders.apply {
-                    //SET(out, (u_ProjMat * u_ViewMat) * vec4(vec2(a_x, a_y), 0f.lit, 1f.lit))
-                    //SET(v_color, texture2D(u_Tex, vec2(vec1(id) / 4f.lit, 0f.lit)))
-                    val baseSize = t_Temp1["xy"]
-                    val texSize = t_Temp1["zw"]
-                    SET(baseSize, a_uv1 - a_uv0)
-                    SET(v_Col, a_colMul)
-                    SET(v_TexId, a_texId)
+            return Program(VertexShaderDefault {
+                //SET(out, (u_ProjMat * u_ViewMat) * vec4(vec2(a_x, a_y), 0f.lit, 1f.lit))
+                //SET(v_color, texture2D(u_Tex, vec2(vec1(id) / 4f.lit, 0f.lit)))
+                val baseSize = t_Temp1["xy"]
+                val texSize = t_Temp1["zw"]
+                SET(baseSize, a_uv1 - a_uv0)
+                SET(v_Col, a_colMul)
+                SET(v_TexId, a_texId)
 
-                    //SET(texSize, u_i_texSizeN[0])
-                    blockN(a_texId) { SET(texSize, u_i_texSizeN[it]) }
+                //SET(texSize, u_i_texSizeN[0])
+                blockN(a_texId) { SET(texSize, u_i_texSizeN[it]) }
 
-                    SET(v_Tex, vec2(
-                        mix(a_uv0.x, a_uv1.x, a_xy.x),
-                        mix(a_uv0.y, a_uv1.y, a_xy.y),
-                    ) * texSize)
-                    val cos = t_Temp0["x"]
-                    val sin = t_Temp0["y"]
-                    SET(cos, cos(a_angle))
-                    SET(sin, sin(a_angle))
-                    SET(t_TempMat2, mat2(
-                        cos, -sin,
-                        sin, cos,
-                    ))
-                    val size = t_Temp0["zw"]
-                    val localPos = t_Temp0["xy"]
+                SET(v_Tex, vec2(
+                    mix(a_uv0.x, a_uv1.x, a_xy.x),
+                    mix(a_uv0.y, a_uv1.y, a_xy.y),
+                ) * texSize)
+                val cos = t_Temp0["x"]
+                val sin = t_Temp0["y"]
+                SET(cos, cos(a_angle))
+                SET(sin, sin(a_angle))
+                SET(t_TempMat2, mat2(
+                    cos, -sin,
+                    sin, cos,
+                ))
+                val size = t_Temp0["zw"]
+                val localPos = t_Temp0["xy"]
 
-                    SET(size, baseSize * a_scale)
-                    SET(localPos, t_TempMat2 * ((a_xy - a_anchor) * size))
-                    SET(out, (u_ProjMat * u_ViewMat) * vec4(localPos + vec2(a_pos.x, a_pos.y), 0f.lit, 1f.lit))
-                }
+                SET(size, baseSize * a_scale)
+                SET(localPos, t_TempMat2 * ((a_xy - a_anchor) * size))
+                SET(out, (u_ProjMat * u_ViewMat) * vec4(localPos + vec2(a_pos.x, a_pos.y), 0f.lit, 1f.lit))
             }, FragmentShaderDefault {
                 blockN(v_TexId) { SET(out, texture2D(BatchBuilder2D.u_TexN[it], v_Tex["xy"])) }
+                SET(out, out * v_Col)
                 IF(out["a"] le 0f.lit) { DISCARD() }
+                //SET(out, vec4(1f.lit, 0f.lit, 0f.lit, 1f.lit))
+                BatchBuilder2D.DO_OUTPUT_FROM(this, out)
             }, name = "FSprites$maxTexs")
         }
 

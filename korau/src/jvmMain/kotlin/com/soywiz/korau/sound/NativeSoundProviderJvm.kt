@@ -11,14 +11,7 @@ import com.soywiz.korau.sound.impl.jna.OpenALException
 import com.soywiz.korio.time.traceTime
 import java.util.*
 
-internal val nativeAudioFormats = AudioFormats(WAV, MP3Decoder, OGG) + AudioFormats(try {
-        ServiceLoader.load(AudioFormat::class.java).toList()
-    } catch (e: Throwable) {
-        e.printStackTrace()
-        listOf<AudioFormat>()
-    })
-
-private val dummyNativeSoundProvider by lazy { DummyNativeSoundProvider(nativeAudioFormats) }
+private val dummyNativeSoundProvider by lazy { DummyNativeSoundProvider() }
 
 private val nativeSoundProviderDeferred by lazy {
     try {
@@ -36,11 +29,9 @@ private val nativeSoundProviderDeferred by lazy {
     }
 }
 
-actual val nativeSoundProvider: NativeSoundProvider = LazyNativeSoundProvider(prepareInit = {
-    //println("nativeSoundProvider")
+actual val nativeSoundProvider: NativeSoundProvider by lazy {
     Thread { nativeSoundProviderDeferred }.apply { isDaemon = true }.start()
-}) {
-    nativeSoundProviderDeferred
+    LazyNativeSoundProvider { nativeSoundProviderDeferred }
 }
 //actual val nativeSoundProvider: NativeSoundProvider by lazy { JogampNativeSoundProvider() }
 //actual val nativeSoundProvider: NativeSoundProvider by lazy { AwtNativeSoundProvider() }

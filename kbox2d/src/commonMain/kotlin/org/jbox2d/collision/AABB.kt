@@ -308,9 +308,7 @@ class AABB {
                 return false
             }
 
-            return if (a.lowerBound.x - b.upperBound.x > 0.0f || a.lowerBound.y - b.upperBound.y > 0.0f) {
-                false
-            } else true
+            return !(a.lowerBound.x - b.upperBound.x > 0.0f || a.lowerBound.y - b.upperBound.y > 0.0f)
 
         }
     }

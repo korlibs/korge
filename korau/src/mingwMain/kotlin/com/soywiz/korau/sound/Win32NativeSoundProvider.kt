@@ -26,16 +26,11 @@ private val Win32NativeSoundProvider_WaveOutProcess = Pool<WaveOutProcess> {
 }
 
 object Win32NativeSoundProvider : NativeSoundProvider(), Disposable {
-    override val audioFormats: AudioFormats by lazy { AudioFormats(WAV, *knNativeAudioFormats.toTypedArray(), com.soywiz.korau.format.mp3.MP3Decoder) }
-    //override val audioFormats: AudioFormats = AudioFormats(WAV, NativeMp3DecoderFormat, NativeOggVorbisDecoderFormat)
-    //override val audioFormats: AudioFormats = AudioFormats(WAV, NativeMp3DecoderAudioFormat, PureJavaMp3DecoderAudioFormat, NativeOggVorbisDecoderFormat)
-    //override val audioFormats: AudioFormats = AudioFormats(WAV, MP3Decoder, NativeOggVorbisDecoderFormat)
-    //override val audioFormats: AudioFormats = AudioFormats(WAV, NativeMp3DecoderAudioFormat, NativeOggVorbisDecoderFormat)
 
     //val workerPool get() = Win32NativeSoundProvider_workerPool
     val workerPool get() = Win32NativeSoundProvider_WaveOutProcess
 
-    override fun createAudioStream(coroutineContext: CoroutineContext, freq: Int): PlatformAudioOutput =
+    override fun createPlatformAudioOutput(coroutineContext: CoroutineContext, freq: Int): PlatformAudioOutput =
         Win32PlatformAudioOutput(Win32NativeSoundProvider, coroutineContext, freq)
 
     override fun dispose() {

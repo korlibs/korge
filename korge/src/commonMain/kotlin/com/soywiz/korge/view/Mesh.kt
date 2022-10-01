@@ -33,7 +33,7 @@ open class Mesh(
 		dirtyVertices = true
 	}
 
-	private var tva = TexturedVertexArray.EMPTY
+	private var tva: TexturedVertexArray? = null
 	private val bb = BoundsBuilder()
 	private val localBounds = Rectangle()
 
@@ -47,28 +47,41 @@ open class Mesh(
 		val cadd = this.renderColorAdd
 		val vcount = vertices.size / 2
 		val isize = indices.size
-		tva = if (vcount > tva.initialVcount || isize > tva.indices.size) TexturedVertexArray(vcount, ShortArray(isize)) else tva
-		tva.vcount = vcount
-		tva.icount = isize
 
 		bb.reset()
-        val pivotXf = pivotX.toFloat()
-        val pivotYf = pivotY.toFloat()
-		for (n in 0 until tva.icount) tva.indices[n] = indices[n].toShort()
-		for (n in 0 until tva.vcount) {
-			val x = vertices[n * 2 + 0] + pivotXf
-			val y = vertices[n * 2 + 1] + pivotYf
 
-            tva.quadV(n, m.transformXf(x, y), m.transformYf(x, y), uvs[n * 2 + 0], uvs[n * 2 + 1], cmul, cadd)
-			bb.add(x, y)
-		}
+        if (vcount > 0 || isize > 0) {
+            val tva = when {
+                tva == null || vcount > tva!!.initialVcount || isize > tva!!.indices.size -> {
+                    TexturedVertexArray(vcount, ShortArray(isize))
+                }
+                else -> tva
+            }
+            this.tva = tva!!
+            tva.vcount = vcount
+            tva.icount = isize
+
+            val pivotXf = pivotX.toFloat()
+            val pivotYf = pivotY.toFloat()
+            for (n in 0 until tva.icount) tva.indices[n] = indices[n].toShort()
+            for (n in 0 until tva.vcount) {
+                val x = vertices[n * 2 + 0] + pivotXf
+                val y = vertices[n * 2 + 1] + pivotYf
+
+                tva.quadV(n, m.transformXf(x, y), m.transformYf(x, y), uvs[n * 2 + 0], uvs[n * 2 + 1], cmul, cadd)
+                bb.add(x, y)
+            }
+        }
 		bb.getBounds(localBounds)
 	}
 
 	override fun renderInternal(ctx: RenderContext) {
 		recomputeVerticesIfRequired()
-        ctx.useBatcher { batch ->
-            batch.drawVertices(tva, ctx.getTex(textureNN).base, true, renderBlendMode, premultiplied = textureNN.base.premultiplied, wrap = false)
+        tva?.let { tva ->
+            ctx.useBatcher { batch ->
+                //println("premultiplied=${textureNN.base.premultiplied}, renderBlendMode=$renderBlendMode")
+                batch.drawVertices(tva, ctx.getTex(textureNN).base, true, renderBlendMode)
+            }
         }
 	}
 

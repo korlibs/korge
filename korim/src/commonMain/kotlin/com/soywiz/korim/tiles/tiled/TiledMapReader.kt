@@ -10,6 +10,9 @@ import com.soywiz.korim.atlas.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.format.*
+import com.soywiz.korim.text.HorizontalAlign
+import com.soywiz.korim.text.TextAlignment
+import com.soywiz.korim.text.VerticalAlign
 import com.soywiz.korim.tiles.TileMapObjectAlignment
 import com.soywiz.korim.tiles.TileMapOrientation
 import com.soywiz.korim.tiles.TileMapRenderOrder
@@ -84,20 +87,21 @@ suspend fun TileSetData.toTiledSet(
 	var bmp = try {
 		when (tileset.image) {
 			is Image.Embedded -> TODO()
-			is Image.External -> folder[tileset.image.source].readBitmapOptimized()
+			is Image.External -> folder[tileset.image.source].readBitmap()
                 .let { if (atlas != null) it.toBMP32IfRequired() else it }
-			null -> Bitmap32(0, 0)
+			null -> Bitmap32.EMPTY
 		}
 	} catch (e: Throwable) {
 		e.printStackTrace()
-		Bitmap32(tileset.width, tileset.height)
+		Bitmap32(tileset.width, tileset.height, premultiplied = true)
 	}
 
 	// @TODO: Preprocess this, so in JS we don't have to do anything!
 	if (hasTransparentColor) {
 		bmp = bmp.toBMP32()
+        val bmp: Bitmap32 = bmp
 		for (n in 0 until bmp.area) {
-			if (bmp.data[n] == transparentColor) bmp.data[n] = Colors.TRANSPARENT_BLACK
+			if (bmp.getRgbaAtIndex(n) == transparentColor) bmp.ints[n] = 0
 		}
 	}
 
@@ -456,7 +460,7 @@ private fun Xml.parseTileLayer(infinite: Boolean): Layer.Tiles {
 	val compression: Compression
 
 	if (data == null) {
-		map = Bitmap32(width, height)
+		map = Bitmap32(width, height, premultiplied = true)
 		encoding = Encoding.CSV
 		compression = Compression.NO
 	} else {
@@ -569,12 +573,10 @@ private fun Xml.parseObjectLayer(): Layer.Objects {
 				underline = text.int("underline") == 1,
 				strikeout = text.int("strikeout") == 1,
 				kerning = text.int("kerning", 1) == 1,
-				hAlign = text.str("halign", "left").let { align ->
-					TextHAlignment.values().find { it.value == align } ?: TextHAlignment.LEFT
-				},
-				vAlign = text.str("valign", "top").let { align ->
-					TextVAlignment.values().find { it.value == align } ?: TextVAlignment.TOP
-				}
+				align = TextAlignment(
+                    HorizontalAlign(text.str("halign", "left")),
+                    VerticalAlign(text.str("valign", "top")),
+                ),
 			)
 			else -> Object.Shape.Rectangle(objInstance.bounds.width, objInstance.bounds.height)
 		}
@@ -645,7 +647,7 @@ private fun Xml.parseImage(): Image? {
 		val encoding = Encoding.values().find { it.value == enc } ?: Encoding.XML
 		val compression = Compression.values().find { it.value == com } ?: Compression.NO
 		//TODO: read embedded image (png, jpg, etc.) and convert to bitmap
-		val bitmap = Bitmap32(width, height)
+		val bitmap = Bitmap32(width, height, premultiplied = true)
 		Image.Embedded(
 			format = image.str("format"),
 			image = bitmap,

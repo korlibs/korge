@@ -1,12 +1,37 @@
 package com.soywiz.korge.view.filter
 
+import com.soywiz.kds.Extra
 import com.soywiz.kds.extraPropertyThis
-import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.kmem.clamp
+import com.soywiz.kmem.toIntCeil
+import com.soywiz.korge.debug.uiCollapsibleSection
+import com.soywiz.korge.debug.uiEditableValue
 import com.soywiz.korge.render.RenderContext
 import com.soywiz.korge.view.View
 import com.soywiz.korge.view.ViewRenderPhase
+import com.soywiz.korge.view.addDebugExtraComponent
+import com.soywiz.korio.lang.portableSimpleName
 import kotlin.native.concurrent.ThreadLocal
+
+private class FilterDebugExtra(val view: View) {
+    var enable = true
+    init {
+        view.addDebugExtraComponent("") { views ->
+            if (enable) {
+                for (filter in view.filter?.allFilters ?: emptyList()) {
+                    uiCollapsibleSection(filter::class.portableSimpleName) {
+                        uiEditableValue(view::filterScale, min = 0.0, max = 1.0, clamp = true)
+                        filter.buildDebugComponent(views, this)
+                    }
+                }
+            }
+            // @TODO: Add filter button?
+        }
+    }
+}
+
+@ThreadLocal
+private var View.filterDebugExtra by Extra.PropertyThis { FilterDebugExtra(this) }
 
 /**
  * An optional [Filter] attached to this view.
@@ -16,11 +41,14 @@ import kotlin.native.concurrent.ThreadLocal
 var View.filter: Filter?
     get() = getRenderPhaseOfTypeOrNull<ViewRenderPhaseFilter>()?.filter
     set(value) {
-        if (value != null) {
+        val enabled = value != null
+        filterDebugExtra.enable = enabled
+        if (enabled) {
             getOrCreateAndAddRenderPhase { ViewRenderPhaseFilter(value) }.filter = value
         } else {
             removeRenderPhaseOfType<ViewRenderPhaseFilter>()
         }
+        invalidate()
     }
 
 class ViewRenderPhaseFilter(var filter: Filter? = null) : ViewRenderPhase {
@@ -42,6 +70,9 @@ class ViewRenderPhaseFilter(var filter: Filter? = null) : ViewRenderPhase {
 @ThreadLocal
 var View.filterScale: Double by extraPropertyThis(transform = { Filter.discretizeFilterScale(it) }) { 1.0 }
 
+//internal const val VIEW_FILTER_TRANSPARENT_EDGE = true
+internal const val VIEW_FILTER_TRANSPARENT_EDGE = false
+
 fun View.renderFiltered(ctx: RenderContext, filter: Filter, first: Boolean = true) {
     val bounds = getLocalBoundsOptimizedAnchored(includeFilters = false)
 
@@ -55,11 +86,18 @@ fun View.renderFiltered(ctx: RenderContext, filter: Filter, first: Boolean = tru
 
         val realFilterScale = (texWidthNoBorder.toDouble() / bounds.width).clamp(0.03125, 1.0)
 
-        val texWidth = texWidthNoBorder
-        val texHeight = texHeightNoBorder
+        // This edge is meant to keep the edge pixels transparent, since we are using clamping to edge wrapping
+        // so for example the blur filter that reads outside [0, 1] bounds can read transparent pixels.
+        val edgeSize = when (VIEW_FILTER_TRANSPARENT_EDGE) {
+            true -> (1.0 / filterScale).toIntCeil().clamp(1, 8)
+            false -> 0
+        }
 
-        val addx = -bounds.x
-        val addy = -bounds.y
+        val texWidth = texWidthNoBorder + (edgeSize * 2)
+        val texHeight = texHeightNoBorder + (edgeSize * 2)
+
+        val addx = -bounds.x + edgeSize
+        val addy = -bounds.y + edgeSize
 
         //println("FILTER: $texWidth, $texHeight : $globalMatrixInv, $globalMatrix, addx=$addx, addy=$addy, renderColorAdd=$renderColorAdd, renderColorMulInt=$renderColorMulInt, blendMode=$blendMode")
         //println("FILTER($this): $texWidth, $texHeight : bounds=${bounds} addx=$addx, addy=$addy, renderColorAdd=$renderColorAdd, renderColorMul=$renderColorMul, blendMode=$blendMode")

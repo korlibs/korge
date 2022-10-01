@@ -8,7 +8,6 @@ import com.soywiz.klock.milliseconds
 import com.soywiz.klogger.Console
 import com.soywiz.klogger.Logger
 import com.soywiz.korag.log.PrintAG
-import com.soywiz.korau.sound.nativeSoundProvider
 import com.soywiz.korev.DestroyEvent
 import com.soywiz.korev.DropFileEvent
 import com.soywiz.korev.EventDispatcher
@@ -18,6 +17,7 @@ import com.soywiz.korev.KeyEvent
 import com.soywiz.korev.MouseButton
 import com.soywiz.korev.MouseEvent
 import com.soywiz.korev.PauseEvent
+import com.soywiz.korev.RenderEvent
 import com.soywiz.korev.ReshapeEvent
 import com.soywiz.korev.ResumeEvent
 import com.soywiz.korev.StopEvent
@@ -49,7 +49,7 @@ import com.soywiz.korim.format.ImageFormat
 import com.soywiz.korim.format.ImageFormats
 import com.soywiz.korim.format.RegisteredImageFormats
 import com.soywiz.korim.format.plus
-import com.soywiz.korim.format.readBitmapOptimized
+import com.soywiz.korim.format.readBitmap
 import com.soywiz.korinject.AsyncInjector
 import com.soywiz.korinject.AsyncInjectorContext
 import com.soywiz.korio.async.delay
@@ -69,7 +69,6 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.coroutineScope
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
-import kotlin.jvm.JvmStatic
 import kotlin.reflect.KClass
 
 /**
@@ -112,6 +111,7 @@ object Korge {
             settingsFolder = config.settingsFolder,
             batchMaxQuads = config.batchMaxQuads,
             multithreaded = config.multithreaded,
+            forceRenderEveryFrame = config.forceRenderEveryFrame,
             entry = {
                 //println("Korge views prepared for Config")
                 RegisteredImageFormats.register(*module.imageFormats.toTypedArray())
@@ -168,6 +168,7 @@ object Korge {
         settingsFolder: String? = null,
         batchMaxQuads: Int = BatchBuilder2D.DEFAULT_BATCH_QUADS,
         multithreaded: Boolean? = null,
+        forceRenderEveryFrame: Boolean = true,
         entry: suspend Stage.() -> Unit
 	) {
         if (!OS.isJsBrowser) {
@@ -189,7 +190,7 @@ object Korge {
                     // Do nothing
                     when {
                         //iconDrawable != null -> this.icon = iconDrawable.render()
-                        iconPath != null -> this.icon = resourcesVfs[iconPath!!].readBitmapOptimized(imageFormats)
+                        iconPath != null -> this.icon = resourcesVfs[iconPath!!].readBitmap(imageFormats)
                         else -> Unit
                     }
                 } catch (e: Throwable) {
@@ -241,12 +242,9 @@ object Korge {
             //Korge.prepareViews(views, gameWindow, bgcolor != null, bgcolor ?: Colors.TRANSPARENT_BLACK)
 
             gameWindow.registerTime("prepareViews") {
-                prepareViews(views, gameWindow, bgcolor != null, bgcolor ?: Colors.TRANSPARENT_BLACK, waitForFirstRender = true)
+                prepareViews(views, gameWindow, bgcolor != null, bgcolor ?: Colors.TRANSPARENT_BLACK, waitForFirstRender = true, forceRenderEveryFrame = forceRenderEveryFrame)
             }
 
-            gameWindow.registerTime("nativeSoundProvider") {
-                nativeSoundProvider.initOnce()
-            }
             gameWindow.registerTime("completeViews") {
                 completeViews(views)
             }
@@ -284,7 +282,8 @@ object Korge {
         eventDispatcher: EventDispatcher,
         clearEachFrame: Boolean = true,
         bgcolor: RGBA = Colors.TRANSPARENT_BLACK,
-        fixedSizeStep: TimeSpan = TimeSpan.NIL
+        fixedSizeStep: TimeSpan = TimeSpan.NIL,
+        forceRenderEveryFrame: Boolean = true
     ): CompletableDeferred<Unit> {
         KorgeReload.registerEventDispatcher(eventDispatcher)
 
@@ -308,6 +307,7 @@ object Korge {
         var upTime = DateTime.EPOCH
         var moveMouseOutsideInNextFrame = false
         val mouseTouchId = -1
+        views.forceRenderEveryFrame = forceRenderEveryFrame
 
         val tempXY: Point = Point()
         // devicePixelRatio might change at runtime by changing the resolution or changing the screen of the window
@@ -516,28 +516,43 @@ object Korge {
         views.clearEachFrame = clearEachFrame
         views.clearColor = bgcolor
         val firstRenderDeferred = CompletableDeferred<Unit>()
-        views.gameWindow.onRenderEvent {
-            //println("RenderEvent: $it")
-            views.ag.doRender {
-                if (!renderShown) {
-                    //println("!!!!!!!!!!!!! views.gameWindow.addEventListener<RenderEvent>")
-                    renderShown = true
-                    firstRenderDeferred.complete(Unit)
-                }
-                try {
-                    views.frameUpdateAndRender(fixedSizeStep = fixedSizeStep)
 
-                    views.input.mouseOutside = false
-                    if (moveMouseOutsideInNextFrame) {
-                        moveMouseOutsideInNextFrame = false
-                        views.input.mouseOutside = true
-                        views.input.mouseInside = false
-                        views.mouseUpdated()
+        fun renderBlock(event: RenderEvent) {
+            try {
+                views.frameUpdateAndRender(
+                    fixedSizeStep = fixedSizeStep,
+                    forceRender = views.forceRenderEveryFrame,
+                    doUpdate = event.update,
+                    doRender = event.render,
+                )
+
+                views.input.mouseOutside = false
+                if (moveMouseOutsideInNextFrame) {
+                    moveMouseOutsideInNextFrame = false
+                    views.input.mouseOutside = true
+                    views.input.mouseInside = false
+                    views.mouseUpdated()
+                }
+            } catch (e: Throwable) {
+                Console.error("views.gameWindow.onRenderEvent:")
+                e.printStackTrace()
+                if (views.rethrowRenderError) throw e
+            }
+        }
+
+        views.gameWindow.onRenderEvent { event ->
+            //println("RenderEvent: $it")
+            if (!event.render) {
+                renderBlock(event)
+
+            } else {
+                views.ag.doRender {
+                    if (!renderShown) {
+                        //println("!!!!!!!!!!!!! views.gameWindow.addEventListener<RenderEvent>")
+                        renderShown = true
+                        firstRenderDeferred.complete(Unit)
                     }
-                } catch (e: Throwable) {
-                    Console.error("views.gameWindow.onRenderEvent:")
-                    e.printStackTrace()
-                    if (views.rethrowRenderError) throw e
+                    renderBlock(event)
                 }
             }
         }
@@ -547,14 +562,15 @@ object Korge {
 
     @KorgeInternal
     suspend fun prepareViews(
-            views: Views,
-            eventDispatcher: EventDispatcher,
-            clearEachFrame: Boolean = true,
-            bgcolor: RGBA = Colors.TRANSPARENT_BLACK,
-            fixedSizeStep: TimeSpan = TimeSpan.NIL,
-            waitForFirstRender: Boolean = true
+        views: Views,
+        eventDispatcher: EventDispatcher,
+        clearEachFrame: Boolean = true,
+        bgcolor: RGBA = Colors.TRANSPARENT_BLACK,
+        fixedSizeStep: TimeSpan = TimeSpan.NIL,
+        waitForFirstRender: Boolean = true,
+        forceRenderEveryFrame: Boolean = true
     ) {
-        val firstRenderDeferred = prepareViewsBase(views, eventDispatcher, clearEachFrame, bgcolor, fixedSizeStep)
+        val firstRenderDeferred = prepareViewsBase(views, eventDispatcher, clearEachFrame, bgcolor, fixedSizeStep, forceRenderEveryFrame)
         if (waitForFirstRender) {
             firstRenderDeferred.await()
         }
@@ -588,6 +604,7 @@ object Korge {
         val quality: GameWindow.Quality? = null,
         val icon: String? = null,
         val multithreaded: Boolean? = null,
+        val forceRenderEveryFrame: Boolean = true,
         val main: (suspend Stage.() -> Unit)? = module.main,
         val constructedScene: Scene.(Views) -> Unit = module.constructedScene,
         val constructedViews: (Views) -> Unit = module.constructedViews,

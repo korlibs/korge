@@ -163,6 +163,7 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
     val input get() = views.input
 
     //var cursor: GameWindow.ICursor? = null
+    val downImmediate = Signal<MouseEvents>()
     val click = Signal<MouseEvents>()
     val over = Signal<MouseEvents>()
     val out = Signal<MouseEvents>()
@@ -432,6 +433,11 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
                 //this.lastEventDown = event
                 downPosTime = PerformanceCounter.reference
                 downPosGlobal.copyFrom(views.input.mouse)
+                if (downImmediate.hasListeners) {
+                    if (isOver) {
+                        downImmediate(this@MouseEvents)
+                    }
+                }
             }
             MouseEvent.Type.SCROLL -> {
                 //this.lastEventScroll = event
@@ -558,11 +564,7 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
 
 @ThreadLocal // @TODO: Is this required?
 val View.mouse by Extra.PropertyThis<View, MouseEvents> {
-    this.getOrCreateComponentMouse<MouseEvents> {
-        MouseEvents(
-            this
-        )
-    }
+    this.getOrCreateComponentMouse<MouseEvents> { MouseEvents(this) }
 }
 
 inline fun View.newMouse(callback: MouseEvents.() -> Unit): MouseEvents {

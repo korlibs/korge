@@ -11,7 +11,7 @@ import com.soywiz.korag.shader.VertexLayout
 import com.soywiz.korag.shader.VertexShader
 import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.MultiBitmap
-import com.soywiz.korim.format.readBitmapOptimized
+import com.soywiz.korim.format.readBitmap
 import com.soywiz.korio.async.async
 import com.soywiz.korio.file.VfsFile
 import com.soywiz.korio.file.std.resourcesVfs
@@ -41,12 +41,12 @@ suspend fun cubeMapFromResourceDirectory(directory: String, ext: String): CubeMa
 suspend fun VfsFile.readCubeMap(ext: String): CubeMap {
     val file = this
     return coroutineScope {
-        val rightImage = async { file["right.$ext"].readBitmapOptimized() }
-        val leftImage = async { file["left.$ext"].readBitmapOptimized() }
-        val topImage = async { file["top.$ext"].readBitmapOptimized() }
-        val bottomImage = async { file["bottom.$ext"].readBitmapOptimized() }
-        val backImage = async { file["back.$ext"].readBitmapOptimized() }
-        val frontImage = async { file["front.$ext"].readBitmapOptimized() }
+        val rightImage = async { file["right.$ext"].readBitmap() }
+        val leftImage = async { file["left.$ext"].readBitmap() }
+        val topImage = async { file["top.$ext"].readBitmap() }
+        val bottomImage = async { file["bottom.$ext"].readBitmap() }
+        val backImage = async { file["back.$ext"].readBitmap() }
+        val frontImage = async { file["front.$ext"].readBitmap() }
         CubeMap(
             rightImage.await(), leftImage.await(), topImage.await(),
             bottomImage.await(), backImage.await(), frontImage.await()

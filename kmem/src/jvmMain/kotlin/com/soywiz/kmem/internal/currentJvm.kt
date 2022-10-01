@@ -32,6 +32,7 @@ internal actual val currentArch: Arch by lazy {
         else -> Arch.UNKNOWN
     }
 }
+internal actual val multithreadedSharedHeap: Boolean = true
 
 internal actual val currentIsDebug: Boolean by lazy {
     val inputArguments = ManagementFactory.getRuntimeMXBean().inputArguments

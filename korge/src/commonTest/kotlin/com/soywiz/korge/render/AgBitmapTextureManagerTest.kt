@@ -54,7 +54,9 @@ class AgBitmapTextureManagerTest {
         class FixedNativeImage(
             override val forcedTexId: Int = 100,
             override val forcedTexTarget: Int = KmlGl.TEXTURE_EXTERNAL_OES,
-        ) : ForcedTexNativeImage(100, 100, false)
+        ) : ForcedTexNativeImage(100, 100, false) {
+            override val name: String get() = "FixedNativeImage"
+        }
 
         val image1 = Bitmap32(1, 1, Colors.RED)
         val fixedNativeImage = FixedNativeImage(100)

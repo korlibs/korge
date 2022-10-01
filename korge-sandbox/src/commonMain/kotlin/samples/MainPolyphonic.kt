@@ -4,14 +4,11 @@ import com.soywiz.kmem.arraycopy
 import com.soywiz.kmem.clamp
 import com.soywiz.korau.sound.AudioSamples
 import com.soywiz.korau.sound.nativeSoundProvider
-import com.soywiz.korge.Korge
 import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.ui.uiVerticalStack
 import com.soywiz.korge.view.SContainer
 import com.soywiz.korge.view.text
 import com.soywiz.korio.async.launchImmediately
-import kotlin.native.concurrent.SharedImmutable
-import kotlin.native.concurrent.ThreadLocal
 
 class MainPolyphonic : Scene() {
     // https://github.com/pspdev/pspsdk/blob/master/src/samples/audio/polyphonic/main.c
@@ -43,7 +40,7 @@ class MainPolyphonic : Scene() {
             //for (nchannel in 0 until 1) {
             launchImmediately {
                 //AudioTone.generate(0.25.seconds, 440.0).playAndWait()
-                val stream = nativeSoundProvider.createAudioStream(44100)
+                val stream = nativeSoundProvider.createPlatformAudioOutput(44100)
                 stream.start()
                 while (true) {
                     //val samples = AudioSamples(1, 44100 * 6)

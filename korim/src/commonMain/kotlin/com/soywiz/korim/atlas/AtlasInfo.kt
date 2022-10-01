@@ -13,8 +13,8 @@ data class AtlasInfo(
     val meta: Meta = Meta(),
     val pages: List<Page> = listOf()
 ) {
-    val frames = pages.flatMap { it.regions }
-    val framesMap = frames.associateBy { it.name }
+    val frames: List<Region> = pages.flatMap { it.regions }
+    val framesMap: Map<String, Region> = frames.associateBy { it.name }
 
     constructor(
         frames: List<Region>,
@@ -35,10 +35,13 @@ data class AtlasInfo(
         val rect get() = Rectangle(x, y, w, h)
 
         fun toRectangleInt() : RectangleInt = RectangleInt(x, y, w, h)
+        fun toMap() = mapOf("x" to x, "y" to y, "w" to w, "h" to h)
     }
 
     data class Size(val width: Int, val height: Int) {
         val size get() = com.soywiz.korma.geom.Size(width, height)
+
+        fun toMap() = mapOf("w" to width, "h" to height)
     }
 
     data class Meta(
@@ -98,10 +101,8 @@ data class AtlasInfo(
         val virtFrame: Rect? = null,
         val imageOrientation: ImageOrientation = ImageOrientation.ORIGINAL,
     ) {
-
-        val srcWidth = if (imageOrientation.isRotatedDeg90CwOrCcw) frame.h else frame.w
-
-        val srcHeight = if (imageOrientation.isRotatedDeg90CwOrCcw) frame.w else frame.h
+        val srcWidth get() = if (imageOrientation.isRotatedDeg90CwOrCcw) frame.h else frame.w
+        val srcHeight get() = if (imageOrientation.isRotatedDeg90CwOrCcw) frame.w else frame.h
 
         @Deprecated("Use primary constructor")
         constructor(
@@ -124,47 +125,29 @@ data class AtlasInfo(
                 else -> null
             },
             imageOrientation = if (rotated) ImageOrientation.ROTATE_90 else ImageOrientation.ORIGINAL
-        ) {
-            @Suppress("DEPRECATION")
-            this.rotated = rotated
-            @Suppress("DEPRECATION")
-            this.sourceSize = sourceSize
-            @Suppress("DEPRECATION")
-            this.spriteSourceSize = spriteSourceSize
-            @Suppress("DEPRECATION")
-            this.trimmed = trimmed
-            @Suppress("DEPRECATION")
-            this.orig = orig
-            @Suppress("DEPRECATION")
-            this.offset = offset
-        }
+        )
 
         @Deprecated("Use imageOrientation", ReplaceWith("imageOrientation == ImageOrientation.ROTATE_90", imports = ["com.soywiz.korim.format.ImageOrientation"]))
-        var rotated: Boolean = imageOrientation.isRotatedDeg90CwOrCcw
-            private set
+        val rotated: Boolean get() = imageOrientation.isRotatedDeg90CwOrCcw
 
         @Deprecated("Use virtFrame", ReplaceWith("Size(virtFrame?.w ?: frame.w, virtFrame?.h ?: frame.h)"))
-        var sourceSize: Size = Size(virtFrame?.w ?: frame.w, virtFrame?.h ?: frame.h)
-            private set
+        val sourceSize: Size get() = Size(virtFrame?.w ?: frame.w, virtFrame?.h ?: frame.h)
 
         @Deprecated("Use virtFrame", ReplaceWith("if (virtFrame == null) frame else Rect(virtFrame.x, virtFrame.y, frame.w, frame.h)"))
-        var spriteSourceSize: Rect = if (virtFrame == null) frame else Rect(virtFrame.x, virtFrame.y, frame.w, frame.h)
-            private set
+        val spriteSourceSize: Rect get() = if (virtFrame == null) frame else Rect(virtFrame.x, virtFrame.y, frame.w, frame.h)
 
         @Deprecated("Use virtFrame", ReplaceWith("virtFrame != null"))
-        var trimmed: Boolean = virtFrame != null
-            private set
+        val trimmed: Boolean get() = virtFrame != null
 
         @Deprecated("Use virtFrame", ReplaceWith("Size(virtFrame?.w ?: frame.w, virtFrame?.h ?: frame.h)"))
         @Suppress("DEPRECATION")
-        var orig: Size = sourceSize
-            private set
+        val orig: Size get() = sourceSize
 
         @Deprecated("Use virtFrame", ReplaceWith("Point(virtFrame?.x ?: 0, virtFrame?.y ?: 0)"))
-        var offset: Point = Point(virtFrame?.x ?: 0, virtFrame?.y ?: 0)
-            private set
+        val offset: Point get() = Point(virtFrame?.x ?: 0, virtFrame?.y ?: 0)
 
         // @TODO: Rename to path or name
+        //@IgnoreSerialization
         val filename get() = name
 
         fun applyRotation() = if (imageOrientation == ImageOrientation.ROTATE_90) {
@@ -188,6 +171,28 @@ data class AtlasInfo(
     val scale: Double get() = meta.scale
     val size: Size get() = meta.size
     val version: String get() = meta.version
+
+    fun toJsonString(): String = Json.stringify(toMap(), pretty = true)
+
+    fun toMap(): Map<String, Any?> = mapOf(
+        "meta" to mapOf(
+            "app" to app,
+            "version" to version,
+            "image" to image,
+            "format" to format,
+            "size" to size.toMap(),
+            "scale" to scale.toString(),
+        ),
+        "frames" to framesMap.entries.associate { (key, value) ->
+            key to mapOf(
+                "frame" to value.frame.toMap(),
+                "rotated" to value.rotated,
+                "trimmed" to value.trimmed,
+                "spriteSourceSize" to value.spriteSourceSize.toMap(),
+                "sourceSize" to value.sourceSize.toMap(),
+            )
+        }
+    )
 
     companion object {
         private fun Any?.toRect() = KDynamic(this) { Rect(it["x"].int, it["y"].int, it["w"].int, it["h"].int) }

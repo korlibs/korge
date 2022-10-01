@@ -31,7 +31,7 @@ abstract class CircleStack<E>(private val size: Int, argContainerSize: Int) : IO
 
     private val pool: Array<Any> = Array(size) { newInstance() as Any }
     private var index: Int = 0
-    private val container: Array<Any> = Array(argContainerSize) { Unit }
+    private val container: Array<Any> = Array(argContainerSize) { }
 
     override fun pop(): E {
         index++

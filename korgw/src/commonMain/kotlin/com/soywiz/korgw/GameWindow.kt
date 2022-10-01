@@ -1,7 +1,7 @@
 package com.soywiz.korgw
 
 import com.soywiz.kds.*
-import com.soywiz.kds.lock.Lock
+import com.soywiz.kds.lock.NonRecursiveLock
 import com.soywiz.klock.PerformanceCounter
 import com.soywiz.klock.TimeSpan
 import com.soywiz.klock.blockingSleep
@@ -77,6 +77,7 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.startCoroutine
 import kotlin.native.concurrent.ThreadLocal
+import kotlin.properties.Delegates
 
 @ThreadLocal
 var GLOBAL_CHECK_GL = false
@@ -107,7 +108,7 @@ open class GameWindowCoroutineDispatcher : CoroutineDispatcher(), Delay, Closeab
 
     @PublishedApi internal val tasks = Queue<Runnable>()
     @PublishedApi internal val timedTasks = PriorityQueue<TimedTask> { a, b -> a.time.compareTo(b.time) }
-    val lock = Lock()
+    val lock = NonRecursiveLock()
 
     fun hasTasks() = tasks.isNotEmpty()
 
@@ -544,14 +545,24 @@ open class GameWindow :
     var renderTime = 0.milliseconds
     var updateTime = 0.milliseconds
 
-    fun frame(doUpdate: Boolean = true, frameStartTime: TimeSpan = PerformanceCounter.reference): TimeSpan {
+    var onContinuousRenderModeUpdated: ((Boolean) -> Unit)? = null
+    open var continuousRenderMode: Boolean by Delegates.observable(true) { prop, old, new ->
+        onContinuousRenderModeUpdated?.invoke(new)
+    }
+
+    fun frame(doUpdate: Boolean = true, doRender: Boolean = true, frameStartTime: TimeSpan = PerformanceCounter.reference): TimeSpan {
         val startTime = PerformanceCounter.reference
-        renderTime = measureTime {
-            frameRender()
+        if (doRender) {
+            renderTime = measureTime {
+                frameRender(doUpdate = doUpdate, doRender = true)
+            }
         }
         //println("renderTime=$renderTime")
         if (doUpdate) {
             updateTime = measureTime {
+                if (!doRender) {
+                    frameRender(doUpdate = true, doRender = false)
+                }
                 frameUpdate(frameStartTime)
             }
             //println("updateTime=$updateTime")
@@ -560,15 +571,17 @@ open class GameWindow :
         return endTime - startTime
     }
 
-    fun frameRender() {
-        if (contextLost) {
-            contextLost = false
-            ag.contextLost()
-        }
-        if (surfaceChanged) {
-            surfaceChanged = false
-            ag.mainRenderBuffer.setSize(surfaceX, surfaceY, surfaceWidth, surfaceHeight)
-            dispatchReshapeEvent(surfaceX, surfaceY, surfaceWidth, surfaceHeight)
+    fun frameRender(doUpdate: Boolean = true, doRender: Boolean = true) {
+        if (doRender) {
+            if (contextLost) {
+                contextLost = false
+                ag.contextLost()
+            }
+            if (surfaceChanged) {
+                surfaceChanged = false
+                ag.mainRenderBuffer.setSize(surfaceX, surfaceY, surfaceWidth, surfaceHeight)
+                dispatchReshapeEvent(surfaceX, surfaceY, surfaceWidth, surfaceHeight)
+            }
         }
         if (doInitialize) {
             doInitialize = false
@@ -577,7 +590,7 @@ open class GameWindow :
             dispatch(initEvent)
         }
         try {
-            dispatchRenderEvent(update = false)
+            dispatchRenderEvent(update = doUpdate, render = doRender)
         } catch (e: Throwable) {
             println("ERROR GameWindow.frameRender:")
             println(e)
@@ -594,6 +607,18 @@ open class GameWindow :
     private var doInitialize = false
     private var initialized = false
     private var contextLost = false
+
+    var updatedSinceFrame: Int = 0
+
+    val mustTriggerRender: Boolean get() = continuousRenderMode || updatedSinceFrame > 0
+
+    fun startFrame() {
+        updatedSinceFrame = 0
+    }
+
+    fun invalidatedView() {
+        updatedSinceFrame++
+    }
 
     fun handleContextLost() {
         println("---------------- handleContextLost --------------")
@@ -627,6 +652,7 @@ open class GameWindow :
             val remaining = (counterTimePerFrame - consumed) - 2.milliseconds // Do not push too much so give two extra milliseconds just in case
             val timeForTasks = coroutineDispatcher.maxAllocatedTimeForTasksPerFrame ?: remaining
             val finalTimeForTasks = max(timeForTasks, 4.milliseconds) // Avoid having 0 milliseconds or even negative
+            //println("         - frameUpdate: finalTimeForTasks=$finalTimeForTasks, startTime=$startTime, now=$now")
             coroutineDispatcher.executePending(finalTimeForTasks)
         } catch (e: Throwable) {
             println("ERROR GameWindow.frameRender:")
@@ -647,7 +673,10 @@ open class GameWindow :
     fun dispatchStopEvent() = dispatch(stopEvent)
     fun dispatchDestroyEvent() = dispatch(destroyEvent)
     fun dispatchDisposeEvent() = dispatch(disposeEvent)
-    fun dispatchRenderEvent(update: Boolean = true) = dispatch(renderEvent.also { it.update = update })
+    fun dispatchRenderEvent(update: Boolean = true, render: Boolean = true) = dispatch(renderEvent.also {
+        it.update = update
+        it.render = render
+    })
     fun dispatchDropfileEvent(type: DropFileEvent.Type, files: List<VfsFile>?) = dispatch(dropFileEvent.also {
         it.type = type
         it.files = files
@@ -887,9 +916,21 @@ open class EventLoopGameWindow : GameWindow() {
     internal fun renderInternal(doUpdate: Boolean, frameStartTime: TimeSpan = PerformanceCounter.reference) {
         coroutineDispatcher.currentTime = PerformanceCounter.reference
         doInitRender()
-        frame(doUpdate, frameStartTime = frameStartTime)
+
+        var doRender = !doUpdate
+        if (doUpdate) {
+            frame(doUpdate = true, doRender = false, frameStartTime = frameStartTime)
+            if (mustTriggerRender) {
+                doRender = true
+            }
+        }
+        if (doRender) {
+            frame(doUpdate = false, doRender = true, frameStartTime = frameStartTime)
+        }
         lastRenderTime = PerformanceCounter.reference
-        doSwapBuffers()
+        if (doRender) {
+            doSwapBuffers()
+        }
     }
 
     fun sleepNextFrame() {

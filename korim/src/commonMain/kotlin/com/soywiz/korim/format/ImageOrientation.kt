@@ -47,19 +47,18 @@ fun <T : ISizeInt> BmpCoordsWithT<T>.withImageOrientation(orientation: ImageOrie
     var result = this
     if (orientation.flipX) result = result.flippedX()
     if (orientation.flipY) result = result.flippedY()
-    when (orientation.rotation) {
-        ImageOrientation.Rotation.R0 -> result = result
-        ImageOrientation.Rotation.R90 -> result = result.rotatedRight()
-        ImageOrientation.Rotation.R180 -> result = result.rotatedRight().rotatedRight()
-        ImageOrientation.Rotation.R270 -> result = result.rotatedRight().rotatedRight().rotatedRight()
+    return when (orientation.rotation) {
+        ImageOrientation.Rotation.R0 -> result
+        ImageOrientation.Rotation.R90 -> result.rotatedRight()
+        ImageOrientation.Rotation.R180 -> result.rotatedRight().rotatedRight()
+        ImageOrientation.Rotation.R270 -> result.rotatedRight().rotatedRight().rotatedRight()
     }
-    return result
 }
 
-suspend fun VfsFile.readBitmapSliceWithOrientation(premultiplied: Boolean = true, name: String? = null, atlas: MutableAtlasUnit? = null): BitmapCoords {
+suspend fun VfsFile.readBitmapSliceWithOrientation(props: ImageDecodingProps = ImageDecodingProps.DEFAULT, name: String? = null, atlas: MutableAtlasUnit? = null): BitmapCoords {
     // @TODO: Support other formats providing orientation information in addition to EXIF?
     val result = kotlin.runCatching { EXIF.readExifFromJpeg(this) }
-    val slice = readBitmapSlice(premultiplied, name, atlas)
+    val slice = readBitmapSlice(name, atlas, props)
     return if (result.isSuccess) {
         slice.withImageOrientation(result.getOrThrow().orientationSure)
     } else {

@@ -4,6 +4,8 @@ import com.soywiz.kmem.*
 import com.soywiz.korio.stream.*
 import com.soywiz.korio.util.*
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.asFlow
 import org.khronos.webgl.*
 import org.w3c.files.*
 import kotlin.math.*
@@ -45,11 +47,11 @@ fun File.toVfs(): VfsFile {
         override val absolutePath: String = file.name
         // @TODO: Check path
         override suspend fun open(path: String, mode: VfsOpenMode): AsyncStream = file.openAsync()
-        override suspend fun listSimple(path: String): List<VfsFile> {
+        override suspend fun listFlow(path: String): Flow<VfsFile> {
             return if (path == "/" || path == "") {
-                listOf(this[file.name])
+                listOf(this[file.name]).asFlow()
             } else {
-                listOf()
+                listOf<VfsFile>().asFlow()
             }
         }
     }[file.name]

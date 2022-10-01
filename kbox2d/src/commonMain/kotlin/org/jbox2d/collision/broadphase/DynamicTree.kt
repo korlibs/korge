@@ -74,7 +74,7 @@ class DynamicTree : BroadPhaseStrategy {
                     continue
                 }
 
-                assert(node.child1 == null == false)
+                assert(!(node.child1 == null))
 
                 val child1 = node.child1
                 val child2 = node.child2

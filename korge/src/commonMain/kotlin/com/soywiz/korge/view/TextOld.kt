@@ -48,17 +48,28 @@ class TextOld : View(), IText, IHtml {
 	var document: Html.Document? = null
 	private var _format: Html.Format = Html.Format()
 	var filtering = true
-    var smoothing: Boolean
-        get() = filtering
         set(value) {
-            filtering = value
+            if (field != value) {
+                field = value
+                invalidateRender()
+            }
         }
+    var smoothing: Boolean by ::filtering
 	var autoSize = true
 		set(value) {
-			field = value
-			recalculateBoundsWhenRequired()
+            if (field != value) {
+                field = value
+                recalculateBoundsWhenRequired()
+                invalidateRender()
+            }
 		}
 	var bgcolor = Colors.TRANSPARENT_BLACK
+        set(value) {
+            if (field != value) {
+                field = value
+                invalidateRender()
+            }
+        }
 
 	fun setTextBounds(rect: Rectangle) {
 		this.textBounds.copyFrom(rect)
@@ -81,15 +92,24 @@ class TextOld : View(), IText, IHtml {
 
     var font: Font?
         get() = format.computedFace
-        set(value) { format.face = value }
+        set(value) {
+            format.face = value
+            invalidateRender()
+        }
 
     var color: RGBA
         get() = format.computedColor
-        set(value) { format.color = value }
+        set(value) {
+            format.color = value
+            invalidateRender()
+        }
 
     var textSize: Double
         get() = format.computedSize.toDouble()
-        set(value) { format.size = value.toInt() }
+        set(value) {
+            format.size = value.toInt()
+            invalidateRender()
+        }
 
 	override var text: String
 		get() = if (document != null) document?.xml?.text ?: "" else _text
@@ -98,6 +118,7 @@ class TextOld : View(), IText, IHtml {
 			_html = ""
 			document = null
 			recalculateBoundsWhenRequired()
+            invalidateRender()
 		}
 	override var html: String
 		get() = if (document != null) _html else _text
@@ -108,10 +129,12 @@ class TextOld : View(), IText, IHtml {
 			_text = ""
 			_html = value
 			_format = document!!.firstFormat.consolidate()
+            invalidateRender()
 		}
 
 	fun relayout() {
 		document?.doPositioning(fontsCatalog, textBounds)
+        invalidateRender()
 	}
 
     //override fun hitTest(x: Double, y: Double): View? {

@@ -289,7 +289,7 @@ class MathUtils : PlatformMathUtils() {
             var theta = theta
             theta %= TWOPI
             if (abs(theta) > PI) {
-                theta = theta - TWOPI
+                theta -= TWOPI
             }
             if (abs(theta) > HALF_PI) {
                 theta = PI - theta

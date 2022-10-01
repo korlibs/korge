@@ -1,8 +1,8 @@
 package com.soywiz.korim.vector
 
+import com.soywiz.kmem.clampUByte
 import com.soywiz.korim.color.RgbaPremultipliedArray
 import com.soywiz.korim.color.mix
-import com.soywiz.korim.internal.clamp0_255
 
 // https://drafts.fxtf.org/compositing-1/
 interface CompositeOperation {
@@ -55,7 +55,7 @@ enum class CompositeMode(val op: CompositeOperation) : CompositeOperation by op 
         for (n in 0 until count) {
             val d = dst[dstN + n]
             val s = src[srcN + n]
-            dst[dstN + n] = d.depremultiplied.withA((d.a - s.a).clamp0_255()).premultiplied
+            dst[dstN + n] = d.depremultiplied.withA((d.a - s.a).clampUByte()).premultiplied
         }
     }),
     COPY(CompositeOperation.UNIMPLEMENTED),

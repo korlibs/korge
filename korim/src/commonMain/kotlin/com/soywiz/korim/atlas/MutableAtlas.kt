@@ -134,7 +134,7 @@ class MutableAtlas<T>(
             entriesByName[rname] = entry
 
             return entry
-        } catch (e: Throwable) {
+        } catch (e: BinPacker.ImageDoNotFitException) {
             if (!allowToGrow) throw e
             growAtlas(bmp)
             return this.add(bmp, data, name)

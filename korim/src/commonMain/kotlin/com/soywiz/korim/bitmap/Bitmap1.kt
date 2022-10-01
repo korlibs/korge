@@ -20,7 +20,7 @@ inline fun Bitmap32.toBitmap1(func: (value: RGBA) -> Boolean): Bitmap1 {
     var n = 0
     for (y in 0 until height) {
         for (x in 0 until width) {
-            out[x, y] = if (func(data[n++])) 1 else 0
+            out[x, y] = if (func(getRgbaAtIndex(n++))) 1 else 0
         }
     }
     return out

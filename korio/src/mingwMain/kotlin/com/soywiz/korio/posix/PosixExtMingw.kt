@@ -14,6 +14,12 @@ actual fun posixReadlink(path: String): String? = null
 
 actual fun posixRealpath(path: String): String = path
 
+actual fun posixGetcwd(): String = memScoped {
+    val temp = allocArray<ByteVar>(PATH_MAX + 1)
+    getcwd(temp, PATH_MAX)
+    temp.toKString()
+}
+
 actual fun posixMkdir(path: String, attr: Int): Int {
     return platform.posix.mkdir(path)
 }

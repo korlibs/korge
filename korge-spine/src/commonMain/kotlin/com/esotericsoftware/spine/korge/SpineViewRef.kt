@@ -6,6 +6,7 @@ import com.soywiz.korge.debug.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.atlas.*
+import com.soywiz.korim.format.ImageDecodingProps
 import com.soywiz.korio.file.*
 import com.soywiz.korui.*
 
@@ -20,7 +21,7 @@ class SpineViewRef() : Container(), ViewLeaf, ViewFileRef by ViewFileRef.Mixin()
         val file = currentVfs["$sourceFile"]
         val atlas = file.parent.listSimple().firstOrNull { it.baseName.endsWith(".atlas") }
             ?: error("Can't find atlas in ${file.parent}")
-        val skeletonData = file.readSkeletonBinary(atlas.readAtlas(asumePremultiplied = true))
+        val skeletonData = file.readSkeletonBinary(atlas.readAtlas(ImageDecodingProps(asumePremultiplied = true)))
         val skeleton = Skeleton(skeletonData)
         val stateData = AnimationStateData(skeletonData)
         val state = AnimationState(stateData)

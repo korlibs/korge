@@ -22,6 +22,7 @@ import com.soywiz.korio.stream.openAsync
 import com.soywiz.korio.stream.readAll
 import com.soywiz.korio.stream.toAsyncStream
 import com.soywiz.korio.util.LONG_ZERO_TO_MAX_RANGE
+import kotlinx.coroutines.flow.Flow
 import kotlin.coroutines.coroutineContext
 
 fun UrlVfs(url: String, client: HttpClient = createHttpClient(), failFromStatus: Boolean = true): VfsFile =
@@ -175,8 +176,8 @@ class UrlVfs(
 		}
 	}
 
-    override suspend fun listSimple(path: String): List<VfsFile> {
-        TODO()
+    override suspend fun listFlow(path: String): Flow<VfsFile> {
+        unsupported()
     }
 
     override fun toString(): String = "UrlVfs"

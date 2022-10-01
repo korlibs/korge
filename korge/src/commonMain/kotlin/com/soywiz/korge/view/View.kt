@@ -212,7 +212,14 @@ abstract class View internal constructor(
     /** Parent [Container] of [this] View if any, or null */
     var parent: Container?
         get() = _parent
-        internal set(value) { _parent = value }
+        internal set(value) {
+            if (_parent !== value) {
+                _parent = value
+                onParentChanged()
+            }
+        }
+
+    override val baseParent: Container? get() = parent
 
     /** Optional name of this view */
     var name: String? = null
@@ -512,6 +519,12 @@ abstract class View internal constructor(
 
     /** Determines if the view will be displayed or not. It is different to alpha=0, since the render method won't be executed. Usually giving better performance. But also not receiving events. */
     open var visible: Boolean = true
+        set(value) {
+            if (field != value) {
+                field = value
+                invalidate()
+            }
+        }
 
     /** Sets the local transform matrix that includes [x], [y], [scaleX], [scaleY], [rotation], [skewX] and [skewY] encoded into a [Matrix] */
     fun setMatrix(matrix: Matrix) {
@@ -758,12 +771,21 @@ abstract class View internal constructor(
         this._version++
         _requireInvalidate = false
         dirtyVertices = true
+        invalidateRender()
+    }
+
+    open fun onParentChanged() {
+    }
+
+    override fun invalidateRender() {
+        stage?.views?.invalidatedView(this)
     }
 
     open fun invalidateColorTransform() {
         this._versionColor++
         _requireInvalidateColor = false
         dirtyVertices = true
+        invalidateRender()
     }
 
     var debugAnnotate: Boolean = false
@@ -1397,6 +1419,14 @@ abstract class View internal constructor(
         return _getBounds(this.getConcatMatrix(target ?: this, boundsTemp, inclusive), out, doAnchoring, includeFilters)
     }
 
+    ///** Kind of bounds we are checking */
+    //enum class BoundsKind {
+    //    /** The bounds including pixels, so all the non-transparent pixels will be instead. For filters, etc. */
+    //    PIXELS,
+    //    /** For hit boxes and physics */
+    //    SHAPE
+    //}
+
     /**
      * **NOTE:** that if [out] is not provided, the [Rectangle] returned shouldn't stored and modified since it is owned by this class.
      */
@@ -1405,7 +1435,7 @@ abstract class View internal constructor(
     fun getLocalBoundsOptimizedAnchored(includeFilters: Boolean = true): Rectangle = getLocalBounds(_localBounds, doAnchoring = true, includeFilters = includeFilters)
 
     @Deprecated("Allocates")
-    fun getLocalBounds(doAnchoring: Boolean = true, includeFilters: Boolean = true) = getLocalBounds(Rectangle(), doAnchoring, includeFilters)
+    fun getLocalBounds(doAnchoring: Boolean = true, includeFilters: Boolean = true): Rectangle = getLocalBounds(Rectangle(), doAnchoring, includeFilters)
 
     private val tempMutableMargin: MutableMarginInt = MutableMarginInt()
 
@@ -1482,13 +1512,6 @@ abstract class View internal constructor(
 
         extraBuildDebugComponent?.invoke(views, view, container)
 
-        if (filter != null) {
-            container.uiCollapsibleSection("Filter") {
-                uiEditableValue(view::filterScale, min = 0.0, max = 1.0, clamp = true)
-                filter!!.buildDebugComponent(views, this)
-            }
-        }
-
         container.uiCollapsibleSection("View") {
             addChild(UiRowEditableValue(app, "type", UiLabel(app).also { it.text = view::class.simpleName ?: "Unknown" }))
             uiEditableValue(view::name)
@@ -1504,6 +1527,7 @@ abstract class View internal constructor(
             uiEditableValue(view::rotation, name = "rotation")
             uiEditableValue(Pair(view::skewX, view::skewY), name = "skew")
             uiEditableValue(view::visible)
+            uiEditableValue(view::zIndex)
         }
 
         views.viewExtraBuildDebugComponent.fastForEach {
@@ -1641,16 +1665,17 @@ fun View?.commonAncestor(ancestor: View?): View? {
 fun View.replaceWith(view: View): Boolean = this.parent?.replaceChild(this, view) ?: false
 
 /** Adds a block that will be executed per frame to this view. As parameter the block will receive a [TimeSpan] with the time elapsed since the previous frame. */
-fun <T : View> T.addUpdater(updatable: T.(dt: TimeSpan) -> Unit): Cancellable {
+fun <T : View> T.addUpdater(first: Boolean = true, updatable: T.(dt: TimeSpan) -> Unit): Cancellable {
     val component = object : UpdateComponent {
         override val view: View get() = this@addUpdater
         override fun update(dt: TimeSpan) {
             updatable(this@addUpdater, dt)
         }
     }.attach()
-    component.update(TimeSpan.ZERO)
+    if (first) component.update(TimeSpan.ZERO)
     return Cancellable { component.detach() }
 }
+fun <T : View> T.addUpdater(updatable: T.(dt: TimeSpan) -> Unit): Cancellable = addUpdater(true, updatable)
 
 fun <T : View> T.addUpdaterWithViews(updatable: T.(views: Views, dt: TimeSpan) -> Unit): Cancellable {
     val component = object : UpdateComponentWithViews {
@@ -2125,6 +2150,13 @@ fun <T : View> T.alpha(alpha: Double): T {
 }
 fun <T : View> T.alpha(alpha: Float): T = alpha(alpha.toDouble())
 fun <T : View> T.alpha(alpha: Int): T = alpha(alpha.toDouble())
+
+fun <T : View> T.zIndex(index: Float): T = zIndex(index.toDouble())
+fun <T : View> T.zIndex(index: Int): T = zIndex(index.toDouble())
+fun <T : View> T.zIndex(index: Double): T {
+    this.zIndex = index
+    return this
+}
 
 typealias ViewDslMarker = com.soywiz.korma.annotations.ViewDslMarker
 // @TODO: This causes issues having to put some explicit this@ when it shouldn't be required

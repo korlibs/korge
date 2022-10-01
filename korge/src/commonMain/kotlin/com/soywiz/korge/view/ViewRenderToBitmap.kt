@@ -15,6 +15,8 @@ import kotlinx.coroutines.completeWith
 suspend fun View.renderToBitmap(views: Views, region: Rectangle? = null, scale: Double = 1.0, outPoint: Point = Point()): Bitmap32 {
 	val done = CompletableDeferred<Bitmap32>()
 
+    // This will help to trigger a re-rendering in the case nothing else changed
+    views.stage.invalidateRender()
     views.onBeforeRender.once { ctx ->
         done.completeWith(kotlin.runCatching {
             unsafeRenderToBitmapSync(ctx, region, scale, outPoint).also {

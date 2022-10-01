@@ -3,11 +3,12 @@
 package com.soywiz.korio.file
 
 import com.soywiz.klock.DateTime
+import com.soywiz.klogger.Console
 import com.soywiz.korio.async.AsyncCloseable
+import com.soywiz.korio.async.async
 import com.soywiz.korio.async.launchImmediately
 import com.soywiz.korio.async.toChannel
 import com.soywiz.korio.async.use
-
 import com.soywiz.korio.async.useIt
 import com.soywiz.korio.experimental.KorioExperimentalApi
 import com.soywiz.korio.file.std.localVfs
@@ -23,6 +24,7 @@ import com.soywiz.korio.stream.copyTo
 import com.soywiz.korio.stream.openAsync
 import com.soywiz.korio.stream.readBytesUpTo
 import com.soywiz.korio.stream.writeBytes
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.emptyFlow
@@ -146,8 +148,8 @@ abstract class Vfs : AsyncCloseable {
 
 	open suspend fun stat(path: String): VfsStat = createNonExistsStat(path)
 
-	open suspend fun listSimple(path: String): List<VfsFile> = listFlow(path).toList()
-    open suspend fun listFlow(path: String): Flow<VfsFile> = flow { emitAll(listSimple(path).toChannel()) }
+	suspend fun listSimple(path: String): List<VfsFile> = this.listFlow(path).toList()
+    open suspend fun listFlow(path: String): Flow<VfsFile> = unsupported()
 
 	open suspend fun mkdir(path: String, attributes: List<Attribute>): Boolean = unsupported()
     open suspend fun mkdirs(path: String, attributes: List<Attribute>): Boolean {
@@ -189,16 +191,23 @@ abstract class Vfs : AsyncCloseable {
 		protected open suspend fun init() {
 		}
 
-		var initialized = false
-		private suspend fun initOnce(): Proxy {
-			if (!initialized) {
-				initialized = true
-				init()
+        private var initialized: Deferred<Unit>? = null
+		protected suspend fun initOnce(): Proxy {
+			if (initialized == null) {
+                initialized = async(coroutineContext) {
+                    try {
+                        init()
+                    } catch (e: Throwable) {
+                        Console.error("Error initializing $this")
+                        e.printStackTrace()
+                    }
+                }
 			}
+            initialized!!.await()
 			return this
 		}
 
-		override suspend fun exec(
+        override suspend fun exec(
 			path: String,
 			cmdAndArgs: List<String>,
 			env: Map<String, String>,
@@ -215,7 +224,6 @@ abstract class Vfs : AsyncCloseable {
 
 		override suspend fun setSize(path: String, size: Long): Unit = initOnce().access(path).setSize(size)
 		override suspend fun stat(path: String): VfsStat = initOnce().access(path).stat().copy(file = file(path))
-		override suspend fun listSimple(path: String) = initOnce().access(path).listSimple()
         override suspend fun listFlow(path: String): Flow<VfsFile> = flow {
             initOnce()
             access(path).list().collect { emit(it.transform()) }
@@ -265,10 +273,6 @@ abstract class Vfs : AsyncCloseable {
 	override fun toString(): String = this::class.portableSimpleName
 }
 
-abstract class VfsV2 : Vfs() {
-    override suspend fun listFlow(path: String): Flow<VfsFile> = emptyFlow()
-}
-
 enum class VfsOpenMode(
 	val cmode: String,
 	val write: Boolean,
@@ -314,10 +318,6 @@ data class VfsStat(
     val id: String? = null
 ) : Path by file {
     val enrichedFile: VfsFile get() = file.copy().also { it.cachedStat = this }
-
-    //@Deprecated("Use file instead")
-    //val enrichedFile: VfsFile get() = file
-    //init { file.cachedStat = this }
 
 	fun toString(showFile: Boolean): String = "VfsStat(" + ArrayList<String>(16).also { al ->
 		if (showFile) al.add("file=$file") else al.add("file=${file.absolutePath}")

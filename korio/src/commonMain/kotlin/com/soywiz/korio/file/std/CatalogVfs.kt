@@ -3,6 +3,7 @@ package com.soywiz.korio.file.std
 import com.soywiz.kds.FastStringMap
 import com.soywiz.kds.getOrPut
 import com.soywiz.klock.DateTime
+import com.soywiz.klogger.Console
 import com.soywiz.korio.dynamic.dyn
 import com.soywiz.korio.file.PathInfo
 import com.soywiz.korio.file.Vfs
@@ -55,14 +56,15 @@ open class CatalogVfs(val parent: VfsFile) : Vfs.Proxy() {
             return createExistsStat("/", isDirectory = true, size = 0L, cache = true)
         }
         val baseName = PathInfo(normalizedPath).baseName
-        val info = cachedListSimpleStatsOrNull(PathInfo(normalizedPath).parent.fullPath) ?: return null
-        return info[baseName] ?: createNonExistsStat(normalizedPath, cache = true)
+        val info = cachedListSimpleStatsOrNull(PathInfo(normalizedPath).parent.fullPath)
+            ?: return cacheSingle.getOrPut(path) { this@CatalogVfs.parent[path].stat() }
+        return info[baseName]
+            ?: createNonExistsStat(normalizedPath, cache = true)
     }
 
-    override suspend fun listFlow(path: String): Flow<VfsFile> = listSimple(path).asFlow()
+    private val cacheSingle = LinkedHashMap<String, VfsStat>()
 
-    override suspend fun listSimple(path: String): List<VfsFile> =
-        cachedListSimpleStats(path).map { it.value.enrichedFile }
+    override suspend fun listFlow(path: String): Flow<VfsFile> = cachedListSimpleStats(path).map { it.value.enrichedFile }.asFlow()
 
     private val catalogCache = FastStringMap<Map<String, VfsStat>?>()
 
@@ -78,7 +80,8 @@ open class CatalogVfs(val parent: VfsFile) : Vfs.Proxy() {
     suspend fun listSimpleStatsOrNull(path: String): Map<String, VfsStat>? {
         val catalogJsonString = try {
             parent[path]["\$catalog.json"].readString()
-        } catch (e: FileNotFoundException) {
+        } catch (e: Throwable) {
+            if (e !is FileNotFoundException) Console.error(e)
             return null
         }
         val data = Json.parse(catalogJsonString).dyn
@@ -89,8 +92,8 @@ open class CatalogVfs(val parent: VfsFile) : Vfs.Proxy() {
                 path = "$path/$localName",
                 isDirectory = it["isDirectory"].bool,
                 size = it["size"].long,
-                createTime = DateTime.fromUnix(it["createTime"].long),
-                modifiedTime = DateTime.fromUnix(it["modifiedTime"].long),
+                createTime = DateTime.fromUnixMillis(it["createTime"].long),
+                modifiedTime = DateTime.fromUnixMillis(it["modifiedTime"].long),
                 cache = true
             )
         }.associateBy { it.baseName }

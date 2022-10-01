@@ -18,6 +18,7 @@ class MainTerminalEmulator : Scene() {
             val glyphs = resourcesVfs["cp437.png"]
                 .readBitmap()
                 .toBMP32()
+                .premultipliedIfRequired()
                 .apply { updateColors { if (it == Colors.BLACK) Colors.TRANSPARENT_BLACK else it } }
                 .slice()
                 .split(16, 16)
@@ -40,12 +41,14 @@ class MainTerminalEmulator : Scene() {
                 terminalEmulatorView.setString(0, 1, "Hello WORLD", Colors.WHITE, Colors.GREEN, false, true)
                 terminalEmulatorView.setString(0, 2, "Hello WORLD", Colors.WHITE, Colors.BLUE, true, false)
                 terminalEmulatorView.setString(0, 3, "Hello WORLD", Colors.WHITE, Colors.PURPLE, false, false)
+
+                invalidate()
             }
         }
     }
 
     class TerminalEmulatorView(val columns: Int, val rows: Int, val glyphs: Array<out BmpSlice>) : Container() {
-        private val bgBitmap = Bitmap32(16, 16, Colors.WHITE).slice()
+        private val bgBitmap = Bitmap32(16, 16, Colors.WHITE.premultiplied).slice()
 
         private val bgFSprites = FSprites(columns * rows)
         private val bgView = bgFSprites.createView(bgBitmap.bmp).addTo(this)
@@ -69,7 +72,7 @@ class MainTerminalEmulator : Scene() {
         }
 
         fun setString(col: Int, row: Int, string: String, fgcolor: RGBA, bgcolor: RGBA = Colors.BLACK, flipX: Boolean = false, flipY: Boolean = false) {
-            for (n in 0 until string.length) setGlyph(col + n, row, string[n], fgcolor, bgcolor, flipX, flipY)
+            for (n in string.indices) setGlyph(col + n, row, string[n], fgcolor, bgcolor, flipX, flipY)
         }
 
         init {

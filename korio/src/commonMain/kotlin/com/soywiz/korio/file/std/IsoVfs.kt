@@ -2,10 +2,10 @@ package com.soywiz.korio.file.std
 
 import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.korio.async.AsyncCloseable
+import com.soywiz.korio.file.Vfs
 import com.soywiz.korio.file.VfsFile
 import com.soywiz.korio.file.VfsOpenMode
 import com.soywiz.korio.file.VfsStat
-import com.soywiz.korio.file.VfsV2
 import com.soywiz.korio.file.useVfs
 import com.soywiz.korio.lang.ASCII
 import com.soywiz.korio.lang.format
@@ -42,7 +42,7 @@ suspend fun VfsFile.openAsIso() = IsoVfs(this)
 suspend fun <R> AsyncStream.openAsIso(callback: suspend (VfsFile) -> R): R = openAsIso().useVfs(callback)
 suspend fun <R> VfsFile.openAsIso(callback: suspend (VfsFile) -> R): R = openAsIso().useVfs(callback)
 
-class IsoVfs(val iso: ISO.IsoFile, val closeStream: Boolean) : VfsV2() {
+class IsoVfs(val iso: ISO.IsoFile, val closeStream: Boolean) : Vfs() {
 	val vfs = this
 	val isoFile = iso
 

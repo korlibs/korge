@@ -20,14 +20,14 @@ fun RGBA.Companion.fromAndroidColor(color: Int): RGBA {
 }
 
 object AndroidColor {
-    fun rgbaToAndroid(array: RgbaArray, offset: Int, count: Int) {
+    fun rgbaToAndroid(array: RgbaArray, offset: Int, count: Int, out: RgbaArray = array) {
         for (n in offset until offset + count) {
-            array.ints[n] = array[n].toAndroidColor()
+            out.ints[n] = array[n].toAndroidColor()
         }
     }
-    fun androidToRgba(array: RgbaArray, offset: Int, count: Int) {
+    fun androidToRgba(array: RgbaArray, offset: Int, count: Int, out: RgbaArray = array) {
         for (n in offset until offset + count) {
-            array[n] = RGBA.fromAndroidColor(array.ints[n])
+            out[n] = RGBA.fromAndroidColor(array.ints[n])
         }
     }
 }

@@ -1,19 +1,11 @@
 package com.soywiz.korim.format
 
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.*
-import com.soywiz.korim.format.cg.*
-import com.soywiz.korio.async.*
-import kotlinx.cinterop.*
-import platform.CoreGraphics.*
-import platform.Foundation.*
-import platform.UIKit.*
-import platform.posix.*
-import kotlin.native.concurrent.*
+import com.soywiz.korim.format.cg.CGNativeImageFormatProvider
 
-@ThreadLocal
 //actual val nativeImageFormatProvider: NativeImageFormatProvider = UIImageNativeImageFormatProvider
-actual val nativeImageFormatProvider: NativeImageFormatProvider = CGNativeImageFormatProvider
+actual val nativeImageFormatProvider: NativeImageFormatProvider get() = CGNativeImageFormatProvider
+//actual val nativeImageFormatProvider: NativeImageFormatProvider get() = CGBaseNativeImageFormatProvider
+
 
 /*
 object UIImageNativeImageFormatProvider : BaseNativeImageFormatProvider() {
@@ -21,7 +13,7 @@ object UIImageNativeImageFormatProvider : BaseNativeImageFormatProvider() {
     //override fun createBitmapNativeImage(bmp: Bitmap) = BitmapNativeImage(bmp.toBMP32().premultipliedIfRequired())
 
     override suspend fun decodeInternal(data: ByteArray, props: ImageDecodingProps): NativeImageResult {
-        val premultiplied = props.premultiplied
+        val premultiplied = props.premultipliedSure
         data class Info(val data: ByteArray, val premultiplied: Boolean)
 
         return executeInImageIOWorker { worker ->

@@ -1,3 +1,4 @@
+/*
 package com.soywiz.korau.sound
 
 import com.soywiz.korau.format.*
@@ -19,11 +20,9 @@ class CoreAudioNativeSoundProvider : NativeSoundProvider() {
         appleInitAudio()
     }
 
-    override val audioFormats: AudioFormats = AudioFormats(WAV, *knNativeAudioFormats.toTypedArray(), com.soywiz.korau.format.mp3.MP3Decoder)
-
     //override suspend fun createSound(data: ByteArray, streaming: Boolean, props: AudioDecodingProps): NativeSound = AVFoundationNativeSoundNoStream(CoroutineScope(coroutineContext), audioFormats.decode(data))
 
-    override fun createAudioStream(coroutineContext: CoroutineContext, freq: Int): PlatformAudioOutput = CoreAudioPlatformAudioOutput(coroutineContext, freq)
+    override fun createPlatformAudioOutput(coroutineContext: CoroutineContext, freq: Int): PlatformAudioOutput = CoreAudioPlatformAudioOutput(coroutineContext, freq)
 }
 
 class CoreAudioPlatformAudioOutput(
@@ -167,3 +166,4 @@ class CoreAudioGenerator(
 
     override fun generateOutput(data: CPointer<ShortVar>, dataSize: Int) = generatorCore(this, data, dataSize)
 }
+*/

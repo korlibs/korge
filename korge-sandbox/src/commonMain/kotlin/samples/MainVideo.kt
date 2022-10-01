@@ -28,11 +28,12 @@ import com.soywiz.korio.lang.cancel
 import com.soywiz.korio.util.OS
 import com.soywiz.korvi.BaseKorviSeekable
 import com.soywiz.korvi.KorviVideo
+import kotlinx.coroutines.CoroutineScope
 
 class MainVideo : ScaledScene(1280, 720) {
     override suspend fun SContainer.sceneMain() {
         //addUpdaterOnce {
-        val view = korviView(views, resourcesVfs["video.mp4"])
+        val view = korviView(this@MainVideo, resourcesVfs["video.mp4"])
         if (OS.isJs) {
             val text = textOld("Click to start playing the video...")
             mouse.click.once {
@@ -54,16 +55,16 @@ class MainVideo : ScaledScene(1280, 720) {
         }
     }
 
-    inline fun Container.korviView(views: Views, video: KorviVideo, callback: KorviView.() -> Unit = {}): KorviView = KorviView(views, video).also { addChild(it) }.also { callback(it) }
-    suspend inline fun Container.korviView(views: Views, video: VfsFile, autoPlay: Boolean = true, callback: KorviView.() -> Unit = {}): KorviView = KorviView(views, video, autoPlay).also { addChild(it) }.also { callback(it) }
-    class KorviView(val views: Views, val video: KorviVideo) : BaseImage(Bitmaps.transparent), AsyncCloseable, BaseKorviSeekable by video {
+    inline fun Container.korviView(coroutineScope: CoroutineScope, video: KorviVideo, callback: KorviView.() -> Unit = {}): KorviView = KorviView(coroutineScope, video).also { addChild(it) }.also { callback(it) }
+    suspend inline fun Container.korviView(coroutineScope: CoroutineScope, video: VfsFile, autoPlay: Boolean = true, callback: KorviView.() -> Unit = {}): KorviView = KorviView(coroutineScope, video, autoPlay).also { addChild(it) }.also { callback(it) }
+    class KorviView(val coroutineScope: CoroutineScope, val video: KorviVideo) : BaseImage(Bitmaps.transparent), AsyncCloseable, BaseKorviSeekable by video {
         val onPrepared = Signal<Unit>()
         val onCompleted = Signal<Unit>()
         var autoLoop = true
 
         companion object {
-            suspend operator fun invoke(views: Views, file: VfsFile, autoPlay: Boolean = true): KorviView {
-                return KorviView(views, KorviVideo(file)).also {
+            suspend operator fun invoke(coroutineScope: CoroutineScope, file: VfsFile, autoPlay: Boolean = true): KorviView {
+                return KorviView(coroutineScope, KorviVideo(file)).also {
                     if (autoPlay) {
                         it.play()
                     }
@@ -95,7 +96,7 @@ class MainVideo : ScaledScene(1280, 720) {
 
         fun play() {
             if (video.running) return
-            views.launchImmediately {
+            coroutineScope.launchImmediately {
                 ensurePrepared()
                 video.play()
             }
@@ -118,15 +119,15 @@ class MainVideo : ScaledScene(1280, 720) {
                         bitmap = bmp.slice()
                     }
 
-                    if (!itData.data.ints.contentEquals(bmp.data.ints)) {
+                    if (!itData.ints.contentEquals(bmp.ints)) {
                         bmp.lock {
-                            arraycopy(itData.data, 0, bmp.data, 0, bmp.area)
+                            com.soywiz.kmem.arraycopy(itData.ints, 0, bmp.ints, 0, bmp.area)
                         }
                     }
                 }
             }
             video.onComplete {
-                views.launchImmediately {
+                coroutineScope.launchImmediately {
                     if (autoLoop) {
                         seek(0L)
                         video.play()

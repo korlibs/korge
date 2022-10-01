@@ -27,7 +27,12 @@ fun getKorgeProcessResourcesTaskName(targetName: String, compilationName: String
     "korgeProcessedResources${targetName.capitalize()}${compilationName.capitalize()}"
 
 fun Project.addGenResourcesTasks(): Project {
-    val jvmMainClasses by lazy { (tasks["jvmMainClasses"]) }
+    tasks.withType(Copy::class.java).all {
+        //this.duplicatesStrategy = org.gradle.api.file.DuplicatesStrategy.WARN
+        this.duplicatesStrategy = org.gradle.api.file.DuplicatesStrategy.EXCLUDE
+        //println("Task $this")
+    }
+
     val runJvm by lazy { (tasks["runJvm"] as KorgeJavaExec) }
 
     tasks.create("listKorgeTargets", Task::class.java) {
@@ -39,7 +44,9 @@ fun Project.addGenResourcesTasks(): Project {
 
     tasks.create("listKorgePlugins", Task::class.java) {
         group = GROUP_KORGE_LIST
-        dependsOn("jvmMainClasses")
+        if (korge.searchResourceProcessorsInMainSourceSet) {
+            dependsOn("jvmMainClasses")
+        }
         doLast {
             //URLClassLoader(prepareResourceProcessingClasses.outputs.files.toList().map { it.toURL() }.toTypedArray(), ClassLoader.getSystemClassLoader()).use { classLoader ->
 
@@ -65,7 +72,9 @@ fun Project.addGenResourcesTasks(): Project {
                 )
             ).also { task ->
                 task.group = GROUP_KORGE_RESOURCES
-                task.dependsOn("jvmMainClasses")
+                if (korge.searchResourceProcessorsInMainSourceSet) {
+                    task.dependsOn("jvmMainClasses")
+                }
                 task.outputs.dirs(processedResourcesFolder)
                 task.folders = folders.map { File(it) }
                 task.processedResourcesFolder = processedResourcesFolder

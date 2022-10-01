@@ -1,6 +1,10 @@
 package com.soywiz.korim.awt
 
 import com.soywiz.kds.mapFloat
+import com.soywiz.kmem.MemBufferAlloc
+import com.soywiz.kmem.clearSafe
+import com.soywiz.kmem.flipSafe
+import com.soywiz.kmem.positionSafe
 import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.NativeImage
 import com.soywiz.korim.bitmap.ensureNative
@@ -8,6 +12,7 @@ import com.soywiz.korim.color.BGRA
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.color.RgbaArray
+import com.soywiz.korim.color.arraycopy
 import com.soywiz.korim.paint.BitmapPaint
 import com.soywiz.korim.paint.ColorPaint
 import com.soywiz.korim.paint.GradientFiller
@@ -35,11 +40,14 @@ import java.awt.Rectangle
 import java.awt.RenderingHints
 import java.awt.RenderingHints.*
 import java.awt.Transparency
+import java.awt.color.ColorSpace
 import java.awt.geom.AffineTransform
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
 import java.awt.image.BufferedImage
+import java.awt.image.ColorConvertOp
 import java.awt.image.ColorModel
+import java.awt.image.DataBufferByte
 import java.awt.image.DataBufferInt
 import java.awt.image.Raster
 import java.awt.image.WritableRaster
@@ -50,16 +58,50 @@ import java.nio.ByteBuffer
 const val AWT_INTERNAL_IMAGE_TYPE_PRE = BufferedImage.TYPE_INT_ARGB_PRE
 const val AWT_INTERNAL_IMAGE_TYPE = BufferedImage.TYPE_INT_ARGB
 
+fun BufferedImage.cloneIfRequired(
+    width: Int = this.width,
+    height: Int = this.height,
+    type: Int = AWT_INTERNAL_IMAGE_TYPE_PRE
+): BufferedImage {
+    if (this.width == width && this.height == height && this.type == type) return this
+    return clone(width, height, type)
+}
+
 fun BufferedImage.clone(
     width: Int = this.width,
     height: Int = this.height,
     type: Int = AWT_INTERNAL_IMAGE_TYPE_PRE
 ): BufferedImage {
 	val out = BufferedImage(width, height, type)
-	//println("BufferedImage.clone:${this.type} -> ${out.type}")
-	val g = out.createGraphics(false)
-	g.drawImage(this, 0, 0, width, height, null)
-	g.dispose()
+    when {
+        this.raster.dataBuffer.dataType == out.raster.dataBuffer.dataType -> {
+            val src = (this.raster.dataBuffer as DataBufferInt).data
+            val dst = (out.raster.dataBuffer as DataBufferInt).data
+            com.soywiz.kmem.arraycopy(src, 0, dst, 0, dst.size)
+        }
+        //this.type == BufferedImage.TYPE_4BYTE_ABGR && out.type == AWT_INTERNAL_IMAGE_TYPE -> {
+        //    val src = (this.raster.dataBuffer as DataBufferByte).data
+        //    val dst = (out.raster.dataBuffer as DataBufferInt).data
+        //    for (n in 0 until width * height) {
+        //        val a = src[n * 4 + 0].toInt() and 0xFF
+        //        val b = src[n * 4 + 1].toInt() and 0xFF
+        //        val g = src[n * 4 + 2].toInt() and 0xFF
+        //        val r = src[n * 4 + 3].toInt() and 0xFF
+        //        dst[n] = RGBA.pack(b, g, r, a)
+        //    }
+        //    //val temp = MemBufferAlloc(width * height * 4)
+        //    //temp.buffer.put(src)
+        //    //temp.ibuffer.get(dst)
+        //    //com.soywiz.kmem.arraycopy(src, 0, dst, 0, dst.size)
+        //    println("src=$src, dst=$dst")
+        //}
+        else -> {
+            ColorConvertOp(this.colorModel.colorSpace, null).filter(this, out)
+            //val g = out.createGraphics(false)
+            //g.drawImage(this, 0, 0, null)
+            //g.dispose()
+        }
+    }
 	return out
 }
 
@@ -73,37 +115,37 @@ fun Image.toBufferedImage(premultiplied: Boolean = true): BufferedImage {
 
 fun BufferedImage.toAwtNativeImage() = AwtNativeImage(this)
 
-class AwtNativeImage private constructor(val awtImage: BufferedImage, val dummy: Boolean) : NativeImage(awtImage.width, awtImage.height, awtImage, premultiplied = (awtImage.type == BufferedImage.TYPE_INT_ARGB_PRE)) {
+class AwtNativeImage private constructor(val awtImage: BufferedImage, dummy: Unit) : NativeImage(awtImage.width, awtImage.height, awtImage, premultiplied = (awtImage.type == BufferedImage.TYPE_INT_ARGB_PRE)) {
     init {
         check((awtImage.type == BufferedImage.TYPE_INT_ARGB_PRE) || (awtImage.type == BufferedImage.TYPE_INT_ARGB))
     }
     val dataBuffer = awtImage.raster.dataBuffer as DataBufferInt
     val awtData = dataBuffer.data
-    constructor(awtImage: BufferedImage) : this(awtConvertImageIfRequired(awtImage), true)
-	override val name: String = "AwtNativeImage"
+    constructor(awtImage: BufferedImage) : this(awtConvertImageIfRequired(awtImage), Unit)
+	override val name: String get() = "AwtNativeImage"
 
 	override fun getContext2d(antialiasing: Boolean): Context2d = Context2d(AwtContext2dRender(awtImage, antialiasing))
 
-    override fun readPixelsUnsafe(x: Int, y: Int, width: Int, height: Int, out: RgbaArray, offset: Int) {
+    override fun readPixelsUnsafe(x: Int, y: Int, width: Int, height: Int, out: IntArray, offset: Int) {
         for (y0 in 0 until height) {
             val iindex = index(x, y0 + y)
             val oindex = offset + (y0 * width)
-            com.soywiz.kmem.arraycopy(awtData, iindex, out.ints, oindex, width)
-            conv(out.ints, oindex, width)
+            com.soywiz.kmem.arraycopy(awtData, iindex, out, oindex, width)
+            conv(out, oindex, width)
         }
     }
 
-    override fun writePixelsUnsafe(x: Int, y: Int, width: Int, height: Int, out: RgbaArray, offset: Int) {
+    override fun writePixelsUnsafe(x: Int, y: Int, width: Int, height: Int, out: IntArray, offset: Int) {
         for (y0 in 0 until height) {
             val iindex = index(x, y0 + y)
             val oindex = offset + (y0 * width)
-            com.soywiz.kmem.arraycopy(out.ints, oindex, awtData, iindex, width)
+            com.soywiz.kmem.arraycopy(out, oindex, awtData, iindex, width)
             conv(awtData, iindex, width)
         }
     }
 
-    override fun setRgba(x: Int, y: Int, v: RGBA) { awtData[index(x, y)] = conv(v.value) }
-    override fun getRgba(x: Int, y: Int): RGBA = RGBA(conv(awtData[index(x, y)]))
+    override fun setRgbaRaw(x: Int, y: Int, v: RGBA) { awtData[index(x, y)] = conv(v.value) }
+    override fun getRgbaRaw(x: Int, y: Int): RGBA = RGBA(conv(awtData[index(x, y)]))
 
     private val rbufferData: ByteBuffer by lazy { ByteBuffer.allocateDirect(width * height * 4) }
 
@@ -112,12 +154,12 @@ class AwtNativeImage private constructor(val awtImage: BufferedImage, val dummy:
         if (rbufferVersion != contentVersion) {
             rbufferVersion = contentVersion
             rbufferData.also { buf ->
-                buf.clear()
+                buf.clearSafe()
                 val ib = buf.asIntBuffer()
                 ib.put(dataBuffer.data)
                 for (n in 0 until area) ib.put(n, argb2rgba(ib.get(n)))
-                buf.position(width * height * 4)
-                buf.flip()
+                buf.positionSafe(width * height * 4)
+                buf.flipSafe()
             }
         }
         return rbufferData
@@ -444,58 +486,59 @@ class AwtContext2dRender(val awtImage: BufferedImage, val antialiasing: Boolean 
 			}
 		}
 	}
-}
 
-class AwtKorimGradientPaint(
-    val paint: GradientPaint,
-    val stateTransform: AffineTransform
-) : java.awt.Paint {
-    val filler = GradientFiller().set(paint, Context2d.State(transform = stateTransform.toMatrix()))
 
-    override fun getTransparency(): Int = Transparency.TRANSLUCENT
+    class AwtKorimGradientPaint(
+        val paint: GradientPaint,
+        val stateTransform: AffineTransform
+    ) : java.awt.Paint {
+        val filler = GradientFiller().set(paint, Context2d.State(transform = stateTransform.toMatrix()))
 
-    override fun createContext(
-        cm: ColorModel?,
-        deviceBounds: Rectangle?,
-        userBounds: Rectangle2D?,
-        xform: AffineTransform?,
-        hints: RenderingHints?
-    ): PaintContext {
-        //println("userBounds=$userBounds, deviceBounds=$deviceBounds, xform=$xform")
+        override fun getTransparency(): Int = Transparency.TRANSLUCENT
 
-        return object : PaintContext {
-            val _colorModel = cm ?: ColorModel.getRGBdefault()
+        override fun createContext(
+            cm: ColorModel?,
+            deviceBounds: Rectangle?,
+            userBounds: Rectangle2D?,
+            xform: AffineTransform?,
+            hints: RenderingHints?
+        ): PaintContext {
+            //println("userBounds=$userBounds, deviceBounds=$deviceBounds, xform=$xform")
 
-            override fun dispose() = Unit
-            override fun getColorModel(): ColorModel = _colorModel
+            return object : PaintContext {
+                val _colorModel = cm ?: ColorModel.getRGBdefault()
 
-            var rasterSide = 0
-            lateinit var raster: WritableRaster
-            lateinit var out: IntArray
+                override fun dispose() = Unit
+                override fun getColorModel(): ColorModel = _colorModel
 
-            override fun getRaster(x: Int, y: Int, w: Int, h: Int): Raster {
-                val maxSide = kotlin.math.max(kotlin.math.max(w, h), 32)
-                if (rasterSide < maxSide) {
-                    rasterSide = maxSide
-                    raster = _colorModel.createCompatibleWritableRaster(rasterSide, rasterSide)
-                    out = IntArray(rasterSide * rasterSide * 4)
-                }
-                //val raster = _colorModel.createCompatibleWritableRaster(w, h)
-                //val out = IntArray(w * h * 4)
+                var rasterSide = 0
+                lateinit var raster: WritableRaster
+                lateinit var out: IntArray
 
-                var n = 0
-                for (py in 0 until h) {
-                    for (px in 0 until w) {
-                        val col = filler.getColor((x + px).toDouble(), (y + py).toDouble())
-                        //val col = Colors.RED
-                        out[n++] = col.r
-                        out[n++] = col.g
-                        out[n++] = col.b
-                        out[n++] = col.a
+                override fun getRaster(x: Int, y: Int, w: Int, h: Int): Raster {
+                    val maxSide = kotlin.math.max(kotlin.math.max(w, h), 32)
+                    if (rasterSide < maxSide) {
+                        rasterSide = maxSide
+                        raster = _colorModel.createCompatibleWritableRaster(rasterSide, rasterSide)
+                        out = IntArray(rasterSide * rasterSide * 4)
                     }
+                    //val raster = _colorModel.createCompatibleWritableRaster(w, h)
+                    //val out = IntArray(w * h * 4)
+
+                    var n = 0
+                    for (py in 0 until h) {
+                        for (px in 0 until w) {
+                            val col = filler.getColor((x + px).toDouble(), (y + py).toDouble())
+                            //val col = Colors.RED
+                            out[n++] = col.r
+                            out[n++] = col.g
+                            out[n++] = col.b
+                            out[n++] = col.a
+                        }
+                    }
+                    raster.setPixels(0, 0, w, h, out)
+                    return raster
                 }
-                raster.setPixels(0, 0, w, h, out)
-                return raster
             }
         }
     }

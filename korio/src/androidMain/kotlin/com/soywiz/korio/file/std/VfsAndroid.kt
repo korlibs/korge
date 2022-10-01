@@ -6,6 +6,7 @@ import com.soywiz.korio.android.androidContext
 import com.soywiz.korio.file.Vfs
 import com.soywiz.korio.file.VfsFile
 import com.soywiz.korio.file.VfsOpenMode
+import com.soywiz.korio.file.VfsStat
 import com.soywiz.korio.net.doIo
 import com.soywiz.korio.stream.AsyncStream
 import com.soywiz.korio.stream.openAsync
@@ -13,8 +14,11 @@ import com.soywiz.korio.util.LONG_ZERO_TO_MAX_RANGE
 import com.soywiz.korio.util.endExclusiveClamped
 import java.io.ByteArrayOutputStream
 import java.io.File
+import java.io.IOException
 import java.net.URL
 import kotlin.math.min
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.asFlow
 
 private val absoluteCwd by lazy { File(".").absolutePath }
 val tmpdir: String by lazy { System.getProperty("java.io.tmpdir") }
@@ -69,7 +73,38 @@ class AndroidResourcesVfs : Vfs() {
 	override suspend fun open(path: String, mode: VfsOpenMode): AsyncStream =
         readRange(path, LONG_ZERO_TO_MAX_RANGE).openAsync(mode.cmode)
 
-	override suspend fun readRange(path: String, range: LongRange): ByteArray {
+    override suspend fun listFlow(path: String): Flow<VfsFile> {
+        val context = androidContext()
+        return doIo {
+            val rpath = path.trim('/')
+            val files = context.assets.list(rpath)?.toList() ?: emptyList()
+            //println("AndroidResourcesVfs.listSimple: path=$path, rpath=$rpath")
+            //println(" -> $files")
+            files.map { file(it) }
+        }.asFlow()
+    }
+
+    override suspend fun stat(path: String): VfsStat {
+        val context = androidContext()
+        return doIo {
+            val rpath = path.trim('/')
+
+            try {
+                val files = context.assets.list(rpath) ?: emptyArray()
+                if (files.isNotEmpty()) {
+                    createExistsStat(path, isDirectory = true, size = 0L)
+                } else {
+                    context.assets.openFd(rpath).use {
+                        createExistsStat(path, isDirectory = false, size = it.length)
+                    }
+                }
+            } catch (e: IOException) {
+                createNonExistsStat(path)
+            }
+        }
+    }
+
+    override suspend fun readRange(path: String, range: LongRange): ByteArray {
         val context = androidContext()
         return doIo {
 

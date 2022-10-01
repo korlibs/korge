@@ -1,8 +1,10 @@
 package com.soywiz.korau.sound
 
+import com.soywiz.kds.lock.NonRecursiveLock
 import com.soywiz.klock.milliseconds
 import com.soywiz.kmem.clamp
 import com.soywiz.kmem.clamp01
+import com.soywiz.kmem.toShortClamped
 import com.soywiz.korio.async.delay
 import com.soywiz.korio.lang.Disposable
 import kotlin.coroutines.CoroutineContext
@@ -40,6 +42,7 @@ open class DequeBasedPlatformAudioOutput(
     companion object {
         const val nchannels = 2
     }
+    private val lock = NonRecursiveLock()
     private val deque = AudioSamplesDeque(nchannels)
 
     override var pitch: Double = 1.0 ; set(value) { field = value; updateProps() }
@@ -55,12 +58,25 @@ open class DequeBasedPlatformAudioOutput(
         volumes[1] = (volume * rratio).toFloat()
     }
 
-    protected val availableRead get() = deque.availableRead
-    protected fun readFloat(channel: Int): Float = if (deque.availableRead >= 1) (deque.readFloat(channel) * volumes[channel]).clamp(-1f, +1f) else 0f
-    protected fun readShort(channel: Int): Short = (readFloat(channel) * Short.MAX_VALUE).toInt().toShort()
+    protected val availableRead get() = lock { deque.availableRead }
+    private fun _readFloat(channel: Int): Float = if (deque.availableRead >= 1) (deque.readFloat(channel) * volumes[channel]).clamp(-1f, +1f) else 0f
+    private fun _readShort(channel: Int): Short = if (deque.availableRead >= 1) (deque.read(channel) * volumes[channel]).toInt().toShortClamped() else 0
+    protected fun readFloat(channel: Int): Float = lock { _readFloat(channel) }
+    protected fun readShort(channel: Int): Short = lock { _readShort(channel) }
 
-    final override val availableSamples: Int get() = deque.availableRead
+    protected fun readFloats(channel: Int, out: FloatArray, offset: Int = 0, count: Int = out.size - offset) {
+        lock {
+            for (n in 0 until count) out[offset + n] = _readFloat(channel)
+        }
+    }
+    protected fun readShorts(channel: Int, out: ShortArray, offset: Int = 0, count: Int = out.size - offset) {
+        lock {
+            for (n in 0 until count) out[offset + n] = _readShort(channel)
+        }
+    }
+
+    final override val availableSamples: Int get() = lock { deque.availableRead }
     final override suspend fun add(samples: AudioSamples, offset: Int, size: Int) {
-        deque.write(samples, offset, size)
+        lock { deque.write(samples, offset, size) }
     }
 }

@@ -32,14 +32,6 @@ class TtfFontTest {
     }
 
     @Test
-    fun testBounds() {
-        assertEquals(
-            "Rectangle(x=-3, y=-12, width=342, height=56)",
-            DefaultTtfFont.getTextBounds(64.0, "jHello : Worljg").bounds.int.toString()
-        )
-    }
-
-    @Test
     fun testColorFont() = suspendTest {
         println(SystemFont.getEmojiFont().name)
         val smileyGlyph = SystemFont.getEmojiFont().ttf[WString("😀")[0]]

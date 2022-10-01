@@ -1,5 +1,4 @@
 package com.soywiz.korio.concurrent.lock
 
-expect class Lock() {
-	inline operator fun <T> invoke(callback: () -> T): T
-}
+@Deprecated("", replaceWith = ReplaceWith("com.soywiz.kds.lock.Lock"))
+typealias Lock = com.soywiz.kds.lock.Lock

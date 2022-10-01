@@ -1992,23 +1992,21 @@ object SevenZip {
 
 			internal const val kIfinityPrice = 0xFFFFFFF
 
-			private var g_FastPos = ByteArray(1 shl 11)
-
-			init {
-				val kFastSlots = 22
-				var c = 2
-				g_FastPos[0] = 0
-				g_FastPos[1] = 1
-				for (slotFast in 2 until kFastSlots) {
-					val k = 1 shl (slotFast shr 1) - 1
-					var j = 0
-					while (j < k) {
-						g_FastPos[c] = slotFast.toByte()
-						j++
-						c++
-					}
-				}
-			}
+			private val g_FastPos = ByteArray(1 shl 11).also { g_FastPos ->
+                val kFastSlots = 22
+                var c = 2
+                g_FastPos[0] = 0
+                g_FastPos[1] = 1
+                for (slotFast in 2 until kFastSlots) {
+                    val k = 1 shl (slotFast shr 1) - 1
+                    var j = 0
+                    while (j < k) {
+                        g_FastPos[c] = slotFast.toByte()
+                        j++
+                        c++
+                    }
+                }
+            }
 
 			internal fun getPosSlot(pos: Int): Int {
 				if (pos < 1 shl 11)
