@@ -24,6 +24,8 @@ import androidx.compose.runtime.RecomposeScope
 import androidx.compose.runtime.Stable
 import kotlin.jvm.functions.FunctionN
 
+private const val SLOTS_PER_INT = 10
+
 @Stable
 internal class ComposableLambdaNImpl(
     val key: Int,

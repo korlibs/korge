@@ -17,32 +17,31 @@
 package androidx.compose.runtime.snapshots
 
 import androidx.compose.runtime.TestOnly
-import androidx.compose.runtime.collection.IdentityArrayMap
-import androidx.compose.runtime.collection.IdentityArraySet
 import androidx.compose.runtime.collection.IdentityScopeMap
 import androidx.compose.runtime.collection.mutableVectorOf
 import androidx.compose.runtime.synchronized
 import androidx.compose.runtime.createSynchronizedObject
 
-/**
- * Helper class to efficiently observe snapshot state reads. See [observeReads] for more details.
- *
- * NOTE: This class is not thread-safe, so implementations should not reuse observer between
- * different threads to avoid race conditions.
- */
 @Suppress("NotCloseable") // we can't implement AutoCloseable from commonMain
 class SnapshotStateObserver(private val onChangedExecutor: (callback: () -> Unit) -> Unit) {
     private val applyObserver: (Set<Any>, Snapshot) -> Unit = { applied, _ ->
         var hasValues = false
 
-        forEachScopeMap { scopeMap ->
-            hasValues = scopeMap.recordInvalidation(applied) || hasValues
+        synchronized(applyMapsLock) {
+            applyMaps.forEach { applyMap ->
+                val invalidated = applyMap.invalidated
+                val map = applyMap.map
+                for (value in applied) {
+                    map.forEachScopeOf(value) { scope ->
+                        invalidated += scope
+                        hasValues = true
+                    }
+                }
+            }
         }
         if (hasValues) {
             onChangedExecutor {
-                forEachScopeMap { scopeMap ->
-                    scopeMap.notifyInvalidatedScopes()
-                }
+                callOnChanged()
             }
         }
     }
@@ -52,31 +51,19 @@ class SnapshotStateObserver(private val onChangedExecutor: (callback: () -> Unit
      */
     private val readObserver: (Any) -> Unit = { state ->
         if (!isPaused) {
-            synchronized(observedScopeMapsLock) {
-                currentMap!!.recordRead(state)
+            synchronized(applyMapsLock) {
+                currentMap!!.addValue(state)
             }
         }
     }
 
     /**
-     * List of all [ObservedScopeMap]s. When [observeReads] is called, there will be a
-     * [ObservedScopeMap] associated with its [ObservedScopeMap.onChanged] callback in this list.
-     * The list only grows.
+     * List of all [ApplyMap]s. When [observeReads] is called, there will be a [ApplyMap]
+     * associated with its `onChanged` callback in this list. The list only grows.
      */
-    private val observedScopeMaps = mutableVectorOf<ObservedScopeMap>()
+    private val applyMaps = mutableVectorOf<ApplyMap<*>>()
 
-    /**
-     * Helper for synchronized iteration over [observedScopeMaps]. All observed reads should
-     * happen on the same thread, but snapshots can be applied on a different thread, requiring
-     * synchronization.
-     */
-    private inline fun forEachScopeMap(block: (ObservedScopeMap) -> Unit) {
-        synchronized(observedScopeMapsLock) {
-            observedScopeMaps.forEach(block)
-        }
-    }
-
-    private val observedScopeMapsLock = createSynchronizedObject()
+    private val applyMapsLock = createSynchronizedObject()
 
     /**
      * Method to call when unsubscribing from the apply observer.
@@ -84,53 +71,50 @@ class SnapshotStateObserver(private val onChangedExecutor: (callback: () -> Unit
     private var applyUnsubscribe: ObserverHandle? = null
 
     /**
-     * `true` when [withNoObservations] is called and read observations should not
-     * be considered invalidations for the current scope.
+     * `true` when [withNoObservations] is called and read observations should no
+     * longer be considered invalidations for the `onCommit` callback.
      */
     private var isPaused = false
 
     /**
-     * The [ObservedScopeMap] that should be added to when a model is read during [observeReads].
+     * The [ApplyMap] that should be added to when a model is read during [observeReads].
      */
-    private var currentMap: ObservedScopeMap? = null
+    private var currentMap: ApplyMap<*>? = null
 
     /**
      * Executes [block], observing state object reads during its execution.
      *
      * The [scope] and [onValueChangedForScope] are associated with any values that are read so
-     * that when those values change, [onValueChangedForScope] will be called with the [scope]
+     * that when those values change, [onValueChangedForScope] can be called with the [scope]
      * parameter.
      *
-     * Observation can be paused with [Snapshot.withoutReadObservation].
+     * Observation for [scope] will be paused when a new [observeReads] call is made or when
+     * [withNoObservations] is called.
      *
-     * @param scope value associated with the observed scope.
-     * @param onValueChangedForScope is called with the [scope] when value read within [block]
-     * has been changed. For repeated observations, it is more performant to pass the same instance
-     * of the callback, as [observedScopeMaps] grows with each new callback instance.
-     * @param block to observe reads within.
+     * Any previous observation with the given [scope] and [onValueChangedForScope] will be
+     * cleared when the [onValueChangedForScope] is called for [scope]. The
+     * [onValueChangedForScope] should trigger a new [observeReads] call to resubscribe to
+     * changes. They may also be cleared using [clearIf] or [clear].
      */
     fun <T : Any> observeReads(scope: T, onValueChangedForScope: (T) -> Unit, block: () -> Unit) {
-        val scopeMap = synchronized(observedScopeMapsLock) {
+        val oldMap = currentMap
+        val oldPaused = isPaused
+        val applyMap = synchronized(applyMapsLock) {
             ensureMap(onValueChangedForScope).also {
-                it.clearScopeObservations(scope)
+                it.map.removeScope(scope)
             }
         }
+        val oldScope = applyMap.currentScope
 
-        val oldPaused = isPaused
-        val oldMap = currentMap
-        val oldScope = scopeMap.currentScope
+        applyMap.currentScope = scope
+        currentMap = applyMap
+        isPaused = false
 
-        try {
-            isPaused = false
-            currentMap = scopeMap
-            scopeMap.currentScope = scope
+        Snapshot.observe(readObserver, null, block)
 
-            Snapshot.observe(readObserver, null, block)
-        } finally {
-            scopeMap.currentScope = oldScope
-            currentMap = oldMap
-            isPaused = oldPaused
-        }
+        currentMap = oldMap
+        applyMap.currentScope = oldScope
+        isPaused = oldPaused
     }
 
     /**
@@ -155,22 +139,28 @@ class SnapshotStateObserver(private val onChangedExecutor: (callback: () -> Unit
     }
 
     /**
-     * Clears all state read observations for a given [scope]. This clears values for all
-     * `onValueChangedForScope` callbacks passed in [observeReads].
+     * Clears all model read observations for a given [scope]. This clears values for all
+     * `onCommit` methods passed in [observeReads].
      */
     fun clear(scope: Any) {
-        forEachScopeMap {
-            it.clearScopeObservations(scope)
+        synchronized(applyMapsLock) {
+            applyMaps.forEach { commitMap ->
+                commitMap.map.removeValueIf {
+                    it === scope
+                }
+            }
         }
     }
 
     /**
-     * Remove observations using [predicate] to identify scopes to be removed. This is
+     * Remove observations using [predicate] to identify scope scopes to be removed. This is
      * used when a scope is no longer in the hierarchy and should not receive any callbacks.
      */
     fun clearIf(predicate: (scope: Any) -> Boolean) {
-        forEachScopeMap { scopeMap ->
-            scopeMap.removeScopeIf(predicate)
+        synchronized(applyMapsLock) {
+            applyMaps.forEach { applyMap ->
+                applyMap.map.removeValueIf(predicate)
+            }
         }
     }
 
@@ -201,114 +191,79 @@ class SnapshotStateObserver(private val onChangedExecutor: (callback: () -> Unit
      * Remove all observations.
      */
     fun clear() {
-        forEachScopeMap { scopeMap ->
-            scopeMap.clear()
+        synchronized(applyMapsLock) {
+            applyMaps.forEach { applyMap ->
+                applyMap.map.clear()
+            }
         }
     }
 
     /**
-     * Returns the [ObservedScopeMap] within [observedScopeMaps] associated with [onChanged] or a newly-
+     * Calls the `onChanged` callback for the given scopes.
+     */
+    private fun callOnChanged() {
+        applyMaps.forEach { applyMap ->
+            val scopes = applyMap.invalidated
+            if (scopes.isNotEmpty()) {
+                applyMap.callOnChanged(scopes)
+                scopes.clear()
+            }
+        }
+    }
+
+    /**
+     * Returns the [ApplyMap] within [applyMaps] associated with [onChanged] or a newly-
      * inserted one if it doesn't exist.
      *
      * Must be called inside a synchronized block.
      */
-    @Suppress("UNCHECKED_CAST")
-    private fun <T : Any> ensureMap(onChanged: (T) -> Unit): ObservedScopeMap {
-        val scopeMap = observedScopeMaps.firstOrNull { it.onChanged === onChanged }
-        if (scopeMap == null) {
-            val map = ObservedScopeMap(onChanged as ((Any) -> Unit))
-            observedScopeMaps += map
-            return map
+    private fun <T : Any> ensureMap(onChanged: (T) -> Unit): ApplyMap<T> {
+        val index = applyMaps.indexOfFirst { it.onChanged === onChanged }
+        if (index == -1) {
+            val commitMap = ApplyMap(onChanged)
+            applyMaps += commitMap
+            return commitMap
         }
-        return scopeMap
+        @Suppress("UNCHECKED_CAST")
+        return applyMaps[index] as ApplyMap<T>
     }
 
     /**
-     * Connects observed values to scopes for each [onChanged] callback.
+     * Used to tie an [onChanged] to its scope by type. This works around some difficulties in
+     * unchecked casts with kotlin.
      */
     @Suppress("UNCHECKED_CAST")
-    private class ObservedScopeMap(val onChanged: (Any) -> Unit) {
+    private class ApplyMap<T : Any>(val onChanged: (T) -> Unit) {
         /**
-         * Currently observed scope.
+         * Map (key = model, value = scope). These are the models that have been
+         * read during the scope's [SnapshotStateObserver.observeReads].
          */
-        var currentScope: Any? = null
+        val map = IdentityScopeMap<T>()
 
         /**
-         * Values that have been read during the scope's [SnapshotStateObserver.observeReads].
+         * Scopes that were invalidated. This and cleared during the [applyObserver] call.
          */
-        private val valueToScopes = IdentityScopeMap<Any>()
+        val invalidated = hashSetOf<Any>()
 
         /**
-         * Reverse index (scope -> values) for faster scope invalidation.
+         * Current scope that adds to [map] will use.
          */
-        private val scopeToValues: IdentityArrayMap<Any, IdentityArraySet<Any>> =
-            IdentityArrayMap()
+        var currentScope: T? = null
 
         /**
-         * Scopes that were invalidated during previous apply step.
+         * Adds [value]/[currentScope] to the [map].
          */
-        private val invalidated = hashSetOf<Any>()
-
-        /**
-         * Record that [value] was read in [currentScope].
-         */
-        fun recordRead(value: Any) {
-            val scope = currentScope!!
-            valueToScopes.add(value, scope)
-            val recordedValues = scopeToValues[scope]
-                ?: IdentityArraySet<Any>().also { scopeToValues[scope] = it }
-
-            recordedValues.add(value)
+        fun addValue(value: Any) {
+            map.add(value, currentScope!!)
         }
 
         /**
-         * Clear observations for [scope].
+         * Calls the `onCommit` callback for scopes affected by the given committed values.
          */
-        fun clearScopeObservations(scope: Any) {
-            val recordedValues = scopeToValues[scope] ?: return
-            recordedValues.forEach {
-                valueToScopes.remove(it, scope)
+        fun callOnChanged(scopes: Collection<Any>) {
+            scopes.forEach { scope ->
+                onChanged(scope as T)
             }
-            scopeToValues.remove(scope)
-        }
-
-        /**
-         * Remove observations in scopes matching [predicate].
-         */
-        inline fun removeScopeIf(predicate: (scope: Any) -> Boolean) {
-            valueToScopes.removeValueIf(predicate)
-            scopeToValues.removeIf { scope, _ -> predicate(scope) }
-        }
-
-        /**
-         * Clear all observations.
-         */
-        fun clear() {
-            valueToScopes.clear()
-            scopeToValues.clear()
-        }
-
-        /**
-         * Record scope invalidation for given set of values.
-         * @return whether any scopes observe changed values
-         */
-        fun recordInvalidation(changes: Set<Any>): Boolean {
-            var hasValues = false
-            for (value in changes) {
-                valueToScopes.forEachScopeOf(value) { scope ->
-                    invalidated += scope
-                    hasValues = true
-                }
-            }
-            return hasValues
-        }
-
-        /**
-         * Call [onChanged] for previously invalidated scopes.
-         */
-        fun notifyInvalidatedScopes() {
-            invalidated.forEach(onChanged)
-            invalidated.clear()
         }
     }
 }

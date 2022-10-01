@@ -15,8 +15,8 @@ closure-compiler = "v20210808"
 
 # https://androidx.dev/storage/compose-compiler/repository
 # https://github.com/JetBrains/compose-jb/issues/2108#issuecomment-1157978869
-kotlinx-compose = "1.2.0-alpha01-dev748"
-androidx-compose-compiler = "1.2.0-alpha01-dev748"
+kotlinx-compose = "1.2.0-beta02"
+androidx-compose-compiler = "1.4.0-dev-k1.7.20-RC-a143c065804"
 
 [libraries]
 jna-core = { module = "net.java.dev.jna:jna", version.ref = "jna" }
