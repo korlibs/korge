@@ -1,15 +1,14 @@
-import com.soywiz.korlibs.modules.*
-import com.soywiz.korge.gradle.util.*
 import com.soywiz.korge.gradle.targets.*
 import com.soywiz.korge.gradle.targets.android.AndroidSdk
 import com.soywiz.korge.gradle.targets.ios.configureNativeIos
 import com.soywiz.korge.gradle.targets.jvm.JvmAddOpens
-import org.gradle.kotlin.dsl.kotlin
-import java.io.File
-import java.nio.file.Files
-import org.jetbrains.kotlin.gradle.tasks.KotlinNativeLink
+import com.soywiz.korge.gradle.util.*
+import com.soywiz.korlibs.modules.*
+import kotlinx.kover.api.IntellijEngine
 import org.gradle.configurationcache.extensions.capitalized
+import org.jetbrains.kotlin.gradle.tasks.KotlinNativeLink
 import java.net.URLClassLoader
+import java.nio.file.Files
 
 buildscript {
     val kotlinVersion: String = libs.versions.kotlin.get()
@@ -133,6 +132,11 @@ subprojects {
         // AppData\Local\Android\Sdk\tools\bin>sdkmanager --licenses
         apply(plugin = "kotlin-multiplatform")
         apply(plugin = "kover")
+
+        extensions.getByType(kotlinx.kover.api.KoverProjectConfig::class.java).apply {
+            engine.set(IntellijEngine("1.0.683"))
+        }
+        //kover { engine.set(IntellijEngine("1.0.683")) }
 
         if (hasAndroid) {
             if (isSample) {
