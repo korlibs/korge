@@ -17,7 +17,10 @@ import com.soywiz.korio.lang.Closeable
  * Component with [added] and [removed] methods that are executed
  * once the view is going to be displayed, and when the view has been removed
  */
-interface StageComponent : Component {
+interface StageComponent : TypedComponent<StageComponent> {
+    companion object : ComponentType<StageComponent>
+    override val type get() = Companion
+
     fun added(views: Views)
     fun removed(views: Views)
 }
@@ -92,13 +95,11 @@ fun Views.registerStageComponent() {
         val stagedViews = getAllDescendantViews(stage, tempViews)
 
         stagedViews.fastForEach { view ->
-            view._components?.eother?.fastForEach {
-                if (it is StageComponent) {
-                    componentsInStageCur += it
-                    if (it !in componentsInStage) {
-                        componentsInStage += it
-                        it.added(views)
-                    }
+            view.getComponentsOfType(StageComponent)?.fastForEach {
+                componentsInStageCur += it
+                if (it !in componentsInStage) {
+                    componentsInStage += it
+                    it.added(views)
                 }
             }
         }

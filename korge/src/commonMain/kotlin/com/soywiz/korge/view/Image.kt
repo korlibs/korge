@@ -46,15 +46,20 @@ open class BaseImage(
     var bitmap: BaseBmpSlice
         get() = baseBitmap
         set(value) {
+            if (baseBitmap == value) return
             setBitmapSource = true
             baseBitmap = value
+            //invalidate() // Already done in baseBitmap
         }
 
+    // @TODO: We might want to repaint when the source has been loaded
     var bitmapSrc: Resourceable<out BaseBmpSlice> = bitmap
         set(value) {
+            if (field == value) return
             setBitmapSource = false
             field = value
             trySetSource()
+            invalidate()
         }
 
     fun trySetSource() {

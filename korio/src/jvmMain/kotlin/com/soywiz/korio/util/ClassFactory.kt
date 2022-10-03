@@ -105,7 +105,9 @@ object JvmTyper {
 				val out = LinkedHashMap<String, Any?>()
 				val cf = ClassFactory.getForInstance(obj)
 				cf.fields.fastForEach { field ->
-					out[field.name] = untype(field.get(obj))
+                    if (field.getAnnotation(ObjectMapper.DoNotSerialize::class.java) == null) {
+                        out[field.name] = untype(field.get(obj))
+                    }
 				}
 				out
 			}

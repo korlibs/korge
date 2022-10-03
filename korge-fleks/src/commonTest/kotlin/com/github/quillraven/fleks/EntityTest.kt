@@ -1,7 +1,11 @@
 package com.github.quillraven.fleks
 
 import com.github.quillraven.fleks.collection.BitArray
-import kotlin.test.*
+import kotlin.reflect.KClass
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 private class EntityTestListener : EntityListener {
     var numCalls = 0
@@ -13,15 +17,20 @@ private class EntityTestListener : EntityListener {
         entityReceived = entity
         cmpMaskReceived = compMask
     }
+
+    override fun onEntityRemoved(entity: Entity) {
+        ++numCalls
+        entityReceived = entity
+    }
 }
 
 private data class EntityTestComponent(var x: Float = 0f)
 
 internal class EntityTest {
-    private val componentFactory = mutableMapOf<String, () -> Any>()
+    private val componentFactory = mutableMapOf<KClass<*>, () -> Any>()
 
     private inline fun <reified T : Any> initComponentFactory(noinline compFactory: () -> T) {
-        val compType = T::class.simpleName ?: throw FleksInjectableTypeHasNoName(T::class)
+        val compType = T::class
 
         if (compType in componentFactory) {
             throw FleksComponentAlreadyAddedException(compType)
@@ -141,7 +150,7 @@ internal class EntityTest {
     }
 
     @Test
-    fun removeEntityWithAComponentImmediatelyWithCustomListener() {
+    fun removeEntityWithComponentImmediatelyWithCustomListener() {
         val cmpService = ComponentService(componentFactory)
         val entityService = EntityService(32, cmpService)
         val listener = EntityTestListener()
@@ -153,7 +162,6 @@ internal class EntityTest {
 
         assertEquals(1, listener.numCalls)
         assertEquals(expectedEntity, listener.entityReceived)
-        assertFalse(listener.cmpMaskReceived[0])
         assertFalse(expectedEntity in mapper)
     }
 
@@ -266,5 +274,18 @@ internal class EntityTest {
 
         assertEquals(1, entityService.recycledEntities.size)
         assertEquals(1, listener.numCalls)
+    }
+
+    @Test
+    fun testContainsEntity() {
+        val service = EntityService(32, ComponentService(componentFactory))
+        val e1 = service.create { }
+        val e2 = service.create { }
+        service.remove(e2)
+        val e3 = Entity(2)
+
+        assertTrue(e1 in service)
+        assertFalse(e2 in service)
+        assertFalse(e3 in service)
     }
 }

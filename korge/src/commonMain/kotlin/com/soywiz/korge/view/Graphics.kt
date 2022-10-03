@@ -1,11 +1,14 @@
 package com.soywiz.korge.view
 
+import com.soywiz.korge.debug.uiCollapsibleSection
+import com.soywiz.korge.debug.uiEditableValue
 import com.soywiz.korge.view.vector.GpuShapeView
 import com.soywiz.korge.view.vector.gpuGraphics
 import com.soywiz.korim.vector.EmptyShape
 import com.soywiz.korim.vector.Shape
 import com.soywiz.korim.vector.ShapeBuilder
 import com.soywiz.korim.vector.buildShape
+import com.soywiz.korui.UiContainer
 
 inline fun Container.graphics(
     renderer: GraphicsRenderer = GraphicsRenderer.SYSTEM,
@@ -51,20 +54,28 @@ class Graphics(
         set(value) {
             softGraphics?.boundsIncludeStrokes = value
             gpuGraphics?.boundsIncludeStrokes = value
+            invalidateRender()
         }
 
     override var anchorX: Double
         get() = anchorable?.anchorX ?: 0.0
-        set(value) { anchorable?.anchorX = value }
+        set(value) {
+            anchorable?.anchorX = value
+            invalidateRender()
+        }
     override var anchorY: Double
         get() = anchorable?.anchorY ?: 0.0
-        set(value) { anchorable?.anchorY = value }
+        set(value) {
+            anchorable?.anchorY = value
+            invalidateRender()
+        }
     var antialiased: Boolean = true
         set(value) {
             if (field == value) return
             field = value
             softGraphics?.antialiased = true
             gpuGraphics?.antialiased = true
+            invalidateRender()
         }
     var smoothing: Boolean = true
         set(value) {
@@ -72,6 +83,7 @@ class Graphics(
             field = value
             softGraphics?.smoothing = true
             gpuGraphics?.smoothing = true
+            invalidateRender()
         }
     var autoScaling: Boolean = true
         set(value) {
@@ -79,6 +91,7 @@ class Graphics(
             field = value
             softGraphics?.autoScaling = true
             gpuGraphics?.autoScaling = true
+            invalidateRender()
         }
 
     var shape: Shape = EmptyShape
@@ -88,6 +101,7 @@ class Graphics(
             ensure()
             softGraphics?.shape = value
             gpuGraphics?.shape = value
+            invalidateRender()
         }
     var renderer: GraphicsRenderer = renderer
         set(value) {
@@ -139,5 +153,18 @@ class Graphics(
 
     init {
         this.shape = shape
+    }
+
+    override fun buildDebugComponent(views: Views, container: UiContainer) {
+        val view = this
+        container.uiCollapsibleSection("Graphics") {
+            uiEditableValue(Pair(view::anchorX, view::anchorY), min = 0.0, max = 1.0, clamp = false, name = "anchor")
+            uiEditableValue(view::renderer)
+            uiEditableValue(view::boundsIncludeStrokes)
+            uiEditableValue(view::antialiased)
+            uiEditableValue(view::smoothing)
+            uiEditableValue(view::autoScaling)
+        }
+        super.buildDebugComponent(views, container)
     }
 }

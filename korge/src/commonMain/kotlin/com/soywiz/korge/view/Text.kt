@@ -18,8 +18,10 @@ import com.soywiz.korim.font.FontMetrics
 import com.soywiz.korim.font.TextMetrics
 import com.soywiz.korim.font.TextMetricsResult
 import com.soywiz.korim.font.getTextBounds
-import com.soywiz.korim.font.measureTextGlyphs
+import com.soywiz.korim.font.getTextBoundsWithGlyphs
 import com.soywiz.korim.font.readFont
+import com.soywiz.korim.paint.Paint
+import com.soywiz.korim.paint.Stroke
 import com.soywiz.korim.text.CurveTextRenderer
 import com.soywiz.korim.text.DefaultStringTextRenderer
 import com.soywiz.korim.text.HorizontalAlign
@@ -33,7 +35,6 @@ import com.soywiz.korim.text.withSpacing
 import com.soywiz.korio.async.launchImmediately
 import com.soywiz.korio.file.VfsFile
 import com.soywiz.korio.file.extensionLC
-import com.soywiz.korio.lang.printStackTrace
 import com.soywiz.korio.resources.Resourceable
 import com.soywiz.korma.geom.Matrix
 import com.soywiz.korma.geom.Rectangle
@@ -62,19 +63,19 @@ inline fun Container.text(
     alignment: TextAlignment = TextAlignment.TOP_LEFT,
     renderer: TextRenderer<String> = DefaultStringTextRenderer,
     autoScaling: Boolean = Text.DEFAULT_AUTO_SCALING,
+    fill: Paint? = null, stroke: Stroke? = null,
     block: @ViewDslMarker Text.() -> Unit = {}
 ): Text
-    = Text(text, textSize, color, font, alignment, renderer, autoScaling).addTo(this, block)
+    = Text(text, textSize, color, font, alignment, renderer, autoScaling, fill, stroke).addTo(this, block)
 
 open class Text(
     text: String, textSize: Double = DEFAULT_TEXT_SIZE,
     color: RGBA = Colors.WHITE, font: Resourceable<out Font> = DefaultTtfFont,
     alignment: TextAlignment = TextAlignment.TOP_LEFT,
     renderer: TextRenderer<String> = DefaultStringTextRenderer,
-    autoScaling: Boolean = DEFAULT_AUTO_SCALING
-) : Container(), IText
-    //, ViewLeaf
-{
+    autoScaling: Boolean = DEFAULT_AUTO_SCALING,
+    fill: Paint? = null, stroke: Stroke? = null,
+) : Container(), IText, ViewLeaf {
     companion object {
         val DEFAULT_TEXT_SIZE = 16.0
         val DEFAULT_AUTO_SCALING = true
@@ -92,6 +93,7 @@ open class Text(
         field = value;
         updateLineCount()
         version++
+        invalidate()
     } }
     private fun updateLineCount() {
         lineCount = text.count { it == '\n' } + 1
@@ -99,18 +101,49 @@ open class Text(
     init {
         updateLineCount()
     }
-    var color: RGBA = color; set(value) { if (field != value) { field = value; version++ } }
+    var fillStyle: Paint? = fill ?: color; set(value) { if (field != value) { field = value; version++ } }
+    var stroke: Stroke? = stroke; set(value) { if (field != value) { field = value; version++ } }
+
+    var color: RGBA
+        get() = (fillStyle as? RGBA?) ?: Colors.WHITE
+        set(value) { fillStyle = value }
+
     var font: Resourceable<out Font> = font; set(value) {
-        if (field != value) { field = value; version++ }
+        if (field != value) {
+            field = value
+            version++
+            invalidate()
+        }
         //printStackTrace("setfont=$field")
     }
-    var textSize: Double = textSize; set(value) { if (field != value) { field = value; version++ } }
-    var fontSize: Double
-        get() = textSize
-        set(value) {
-            textSize = value
+    var textSize: Double = textSize; set(value) {
+        if (field != value) {
+            field = value
+            version++
+            invalidate()
         }
-    var renderer: TextRenderer<String> = renderer; set(value) { if (field != value) { field = value; version++ } }
+    }
+    var fontSize: Double by ::textSize
+
+    var renderer: TextRenderer<String> = renderer; set(value) {
+        if (field != value) {
+            field = value
+            version++
+            invalidate()
+        }
+    }
+
+    //private var cachedRendererVersionInvalidated: Int = -1
+    //init {
+    //    addUpdater {
+    //        val version = renderer.version
+    //        if (version != cachedRendererVersionInvalidated) {
+    //            cachedRendererVersionInvalidated = version
+    //            //println("renderer.version: $version != $cachedVersionRenderer")
+    //            invalidate()
+    //        }
+    //    }
+    //}
 
     var alignment: TextAlignment = alignment
         set(value) {
@@ -118,6 +151,7 @@ open class Text(
             field = value
             //println("Text.alignment=$field")
             version++
+            invalidate()
         }
     var horizontalAlign: HorizontalAlign
         get() = alignment.horizontal
@@ -131,15 +165,21 @@ open class Text(
     private val bitmapFontActions = Text2TextRendererActions()
     private var fontLoaded: Boolean = false
     var autoScaling = autoScaling
+        set(value) {
+            field = value
+            invalidate()
+        }
     var preciseAutoscaling = false
         set(value) {
             field = value
             if (value) autoScaling = true
+            invalidate()
         }
     var fontSource: String? = null
         set(value) {
             field = value
             fontLoaded = false
+            invalidate()
         }
 
     // @TODO: Use, font: Resourceable<out Font>
@@ -177,6 +217,7 @@ open class Text(
         autoSize = false
         boundsVersion++
         version++
+        invalidate()
     }
 
     fun unsetTextBounds() {
@@ -184,6 +225,7 @@ open class Text(
         autoSize = true
         boundsVersion++
         version++
+        invalidate()
     }
 
     override fun getLocalBoundsInternal(out: Rectangle) {
@@ -224,7 +266,7 @@ open class Text(
         _renderInternal(null)
         if (cachedVersionGlyphMetrics != version) {
             cachedVersionGlyphMetrics = version
-            _textMetricsResult = font.getOrNull()?.measureTextGlyphs(fontSize, text, renderer)
+            _textMetricsResult = font.getOrNull()?.getTextBoundsWithGlyphs(fontSize, text, renderer)
         }
         return _textMetricsResult ?: error("Must ensure font is resolved before calling getGlyphMetrics")
     }
@@ -255,13 +297,13 @@ open class Text(
             }
         }
         //container.colorMul = color
-        val font = this.font.getOrNull()
+        val font: Font? = this.font.getOrNull()
 
         //println("font=$font")
 
         if (autoSize && font is Font && boundsVersion != version) {
             boundsVersion = version
-            val metrics = font.getTextBounds(textSize, text, out = textMetrics, renderer = renderer)
+            val metrics = font.getTextBounds(textSize, text, out = textMetrics, renderer = renderer, align = alignment)
             _textBounds.copyFrom(metrics.bounds)
             _textBounds.height = font.getFontMetrics(textSize, metrics = fontMetrics).lineHeight * lineCount
             _textBounds.x = -alignment.horizontal.getOffsetX(_textBounds.width) + metrics.left
@@ -348,27 +390,47 @@ open class Text(
                         _staticGraphics?.autoScaling = true
                     }
 
+                    //println("alignment=$alignment")
                     val metrics = _staticGraphics!!.updateShape {
+                        //if (fill != null) {
+                        //    fillStroke(fill, stroke) {
+                        //        this.text(
+                        //            text = this@Text.text,
+                        //            x = 0.0, y = 0.0,
+                        //            textSize = realTextSize,
+                        //            font = font as VectorFont,
+                        //            renderer = this@Text.renderer,
+                        //            align = this@Text.alignment,
+                        //        )
+                        //    }
+                        //}
                         drawText(
-                            text = text,
+                            text = this@Text.text,
                             x = 0.0, y = 0.0,
                             size = realTextSize,
                             font = font,
-                            paint = color,
+                            paint = this@Text.color,
                             renderer = this@Text.renderer,
-                            valign = VerticalAlign.TOP,
-                            outMetrics = TextMetricsResult()
+                            //align = TextAlignment.TOP_LEFT,
+                            align = this@Text.alignment,
+                            outMetrics = TextMetricsResult(),
+                            //outMetrics = this@Text._textMetricsResult ?: TextMetricsResult(),
+                            fillStyle = this@Text.fillStyle,
+                            stroke = this@Text.stroke,
                         )
                     }
+                    // Optimize since we already have the metrics to avoid recomputing them later
                     cachedVersionGlyphMetrics = version
                     _textMetricsResult = metrics
 
-                    val met = metrics!!.metrics
-                    val x = -horizontalAlign.getOffsetX(met.width)// + met.left
-                    val y = verticalAlign.getOffsetY(met.lineHeight, -(met.ascent))
+                    //val met = metrics!!.metrics
+                    //val x = -horizontalAlign.getOffsetX(met.width)// + met.left
+                    //val y = verticalAlign.getOffsetY(met.lineHeight, -(met.ascent))
                     //setContainerPosition(x * 1.0, y * 1.0, font.getFontMetrics(fontSize, fontMetrics).baseline)
                     //println("alignment=$alignment, horizontalAlign=$horizontalAlign, verticalAlign=$verticalAlign")
-                    setContainerPosition(x, y, font.getFontMetrics(fontSize, fontMetrics).baseline)
+                    //setContainerPosition(x, y, font.getFontMetrics(fontSize, fontMetrics).baseline)
+                    setContainerPosition(0.0, 0.0, font.getFontMetrics(fontSize, fontMetrics).baseline)
+
                 }
                 //_staticImage?.smoothing = smoothing
                 _staticGraphics?.smoothing = smoothing
@@ -383,6 +445,8 @@ open class Text(
             setRealContainerPosition(x, y)
         } else {
             //staticImage?.position(x + alignment.horizontal.getOffsetX(textBounds.width), y + alignment.vertical.getOffsetY(textBounds.height, font.getFontMetrics(fontSize).baseline))
+
+            // @TODO: Fix this!
             setRealContainerPosition(x + alignment.horizontal.getOffsetX(_textBounds.width), y - alignment.vertical.getOffsetY(_textBounds.height, baseline))
         }
     }
@@ -397,8 +461,8 @@ open class Text(
         container.uiCollapsibleSection("Text") {
             uiEditableValue(::text)
             uiEditableValue(::textSize, min= 1.0, max = 300.0)
-            uiEditableValue(::verticalAlign, values = { listOf(VerticalAlign.TOP, VerticalAlign.MIDDLE, VerticalAlign.BASELINE, VerticalAlign.BOTTOM) })
-            uiEditableValue(::horizontalAlign, values = { listOf(HorizontalAlign.LEFT, HorizontalAlign.CENTER, HorizontalAlign.RIGHT, HorizontalAlign.JUSTIFY) })
+            uiEditableValue(::verticalAlign, VerticalAlign.ALL)
+            uiEditableValue(::horizontalAlign, HorizontalAlign.ALL)
             uiEditableValue(::fontSource, UiTextEditableValue.Kind.FILE(views.currentVfs) {
                 it.extensionLC == "ttf" || it.extensionLC == "fnt"
             })

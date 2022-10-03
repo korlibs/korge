@@ -8,6 +8,7 @@ import com.soywiz.klogger.Logger
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
+import com.soywiz.korim.text.TextAlignment
 import com.soywiz.korim.tiles.TileMapObjectAlignment
 import com.soywiz.korim.tiles.TileMapOrientation
 import com.soywiz.korim.tiles.TileMapRenderOrder
@@ -18,7 +19,9 @@ import com.soywiz.korim.tiles.TileSetTileInfo
 import com.soywiz.korim.tiles.TileShapeInfo
 import com.soywiz.korio.lang.invalidArgument
 import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.shape.*
+import com.soywiz.korma.geom.shape.Shape2d
+import com.soywiz.korma.geom.shape.buildVectorPath
+import com.soywiz.korma.geom.shape.toShape2dNew
 import com.soywiz.korma.geom.vector.VectorPath
 import com.soywiz.korma.geom.vector.applyTransform
 import com.soywiz.korma.geom.vector.ellipse
@@ -297,21 +300,14 @@ class TiledMap constructor(
                 val underline: Boolean,
                 val strikeout: Boolean,
                 val kerning: Boolean,
-                val hAlign: TextHAlignment,
-                val vAlign: TextVAlignment
+                val align: TextAlignment,
             ) : Shape() {
+                val hAlign get() = align.horizontal
+                val vAlign get() = align.vertical
                 override fun toVectorPath(): VectorPath = buildVectorPath(VectorPath(), fun VectorPath.() {
                 })
             }
         }
-    }
-
-    enum class TextHAlignment(val value: String) {
-        LEFT("left"), CENTER("center"), RIGHT("right"), JUSTIFY("justify")
-    }
-
-    enum class TextVAlignment(val value: String) {
-        TOP("top"), CENTER("center"), BOTTOM("bottom")
     }
 
     sealed class Image(val width: Int, val height: Int, val transparent: RGBA? = null) {

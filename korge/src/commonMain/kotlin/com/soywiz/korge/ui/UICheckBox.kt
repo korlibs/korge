@@ -6,6 +6,7 @@ import com.soywiz.korge.debug.uiEditableValue
 import com.soywiz.korge.input.mouse
 import com.soywiz.korge.render.RenderContext
 import com.soywiz.korge.view.Container
+import com.soywiz.korge.view.View
 import com.soywiz.korge.view.ViewDslMarker
 import com.soywiz.korge.view.ViewLeaf
 import com.soywiz.korge.view.Views
@@ -55,6 +56,7 @@ open class UIBaseCheckBox<T>(
         set(value) {
             field = value
             onChange(thisAsT)
+            invalidate()
         }
 
     private val background = solidRect(width, height, Colors.TRANSPARENT_BLACK)
@@ -68,6 +70,17 @@ open class UIBaseCheckBox<T>(
     private val textBounds = Rectangle()
 
     override fun renderInternal(ctx: RenderContext) {
+       updateState()
+        super.renderInternal(ctx)
+    }
+
+    override fun onSizeChanged() {
+        super.onSizeChanged()
+        updateState()
+    }
+
+    override fun updateState() {
+        super.updateState()
         textView.setFormat(
             face = textFont,
             size = textSize.toInt(),
@@ -85,7 +98,6 @@ open class UIBaseCheckBox<T>(
 
         fitIconInRect(icon, checkBoxIcon, box.width, box.height, Anchor.MIDDLE_CENTER)
         icon.visible = checked
-        super.renderInternal(ctx)
     }
 
     open fun getNinePatch(over: Boolean): NinePatchBmpSlice {

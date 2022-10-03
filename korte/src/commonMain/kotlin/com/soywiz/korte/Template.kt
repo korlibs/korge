@@ -110,38 +110,38 @@ class Template internal constructor(
         fun getBlock(name: String): BlockInTemplateEval =
             getBlockOrNull(name) ?: BlockInTemplateEval(name, DefaultBlocks.BlockText(""), this)
 
-        class WithArgs(val context: TemplateEvalContext, val args: Any?, val mapper: ObjectMapper2) :
+        class WithArgs(val context: TemplateEvalContext, val args: Any?, val mapper: ObjectMapper2, val parentScope: Template.Scope? = null) :
             AsyncTextWriterContainer {
             override suspend fun write(writer: suspend (String) -> Unit) {
-                context.exec2(args, mapper, writer)
+                context.exec2(args, mapper, parentScope, writer)
             }
         }
 
-        fun withArgs(args: Any?, mapper: ObjectMapper2 = Mapper2) = WithArgs(this, args, mapper)
+        fun withArgs(args: Any?, mapper: ObjectMapper2 = Mapper2, parentScope: Template.Scope? = null) = WithArgs(this, args, mapper, parentScope)
 
-        suspend fun exec2(args: Any?, mapper: ObjectMapper2, writer: suspend (String) -> Unit): Template.EvalContext {
-            val scope = Scope(args, mapper)
+        suspend fun exec2(args: Any?, mapper: ObjectMapper2, parentScope: Template.Scope? = null, writer: suspend (String) -> Unit): Template.EvalContext {
+            val scope = Scope(args, mapper, parentScope)
             if (template.frontMatter != null) for ((k, v) in template.frontMatter!!) scope.set(k, v)
             val context = Template.EvalContext(this, scope, template.config, mapper = mapper, write = writer)
             eval(context)
             return context
         }
 
-        suspend fun exec(args: Any?, mapper: ObjectMapper2 = Mapper2): ExecResult {
+        suspend fun exec(args: Any?, mapper: ObjectMapper2 = Mapper2, parentScope: Template.Scope? = null): ExecResult {
             val str = StringBuilder()
-            val scope = Scope(args, mapper)
+            val scope = Scope(args, mapper, parentScope)
             if (template.frontMatter != null) for ((k, v) in template.frontMatter!!) scope.set(k, v)
             val context = Template.EvalContext(this, scope, template.config, mapper, write = { str.append(it) })
             eval(context)
             return ExecResult(context, str.toString())
         }
 
-        suspend fun exec(vararg args: Pair<String, Any?>, mapper: ObjectMapper2 = Mapper2): ExecResult =
-            exec(hashMapOf(*args), mapper)
+        suspend fun exec(vararg args: Pair<String, Any?>, mapper: ObjectMapper2 = Mapper2, parentScope: Template.Scope? = null): ExecResult =
+            exec(hashMapOf(*args), mapper, parentScope)
 
-        operator suspend fun invoke(args: Any?, mapper: ObjectMapper2 = Mapper2): String = exec(args, mapper).str
-        operator suspend fun invoke(vararg args: Pair<String, Any?>, mapper: ObjectMapper2 = Mapper2): String =
-            exec(hashMapOf(*args), mapper).str
+        operator suspend fun invoke(args: Any?, mapper: ObjectMapper2 = Mapper2, parentScope: Template.Scope? = null): String = exec(args, mapper, parentScope).str
+        operator suspend fun invoke(vararg args: Pair<String, Any?>, mapper: ObjectMapper2 = Mapper2, parentScope: Template.Scope? = null): String =
+            exec(hashMapOf(*args), mapper, parentScope).str
 
         suspend fun eval(context: Template.EvalContext) {
             try {
@@ -225,6 +225,24 @@ class Template internal constructor(
     suspend fun prender(args: Any?, mapper: ObjectMapper2 = Mapper2): AsyncTextWriterContainer {
         return createEvalContext().withArgs(args, mapper)
     }
+}
+
+suspend fun Template(
+    template: String,
+    templates: Templates,
+    includes: NewTemplateProvider = templates.includes,
+    layouts: NewTemplateProvider = templates.layouts,
+    config: TemplateConfig = templates.config,
+    cache: Boolean = templates.cache,
+): Template {
+    val root = TemplateProvider(mapOf("template" to template))
+    return Templates(
+        root = root,
+        includes = includes,
+        layouts = layouts,
+        config = config,
+        cache = cache,
+    ).get("template")
 }
 
 suspend fun Template(template: String, config: TemplateConfig = TemplateConfig()): Template = Templates(

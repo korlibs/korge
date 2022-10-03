@@ -183,7 +183,8 @@ class GraphicsTest {
                 cubic(cubic3)
             }
         }
-        assertEquals(Rectangle(25, 49, 209, 201), g.getLocalBounds())
+        // assertEquals(Rectangle(25, 49, 209, 201), g.getLocalBounds()) // strokes = false
+        assertEquals(Rectangle(24.5, 47.0, 211.5, 203.5), g.getLocalBounds())
     }
 
     @Test

@@ -420,10 +420,22 @@ class DateTimeTest {
 
     @Test
     fun testBug103() {
-        assertEquals("Fri, 15 Oct -0249 19:33:20 UTC", DateTime.fromUnix(-70000000000000L).toStringDefault())
-        assertEquals("Mon, 01 Jan 0001 00:00:00 UTC", DateTime.fromUnix(-62135596800000L).toStringDefault())
-        assertEquals("Sat, 11 Aug -0027 08:00:00 UTC", DateTime.fromUnix(-63000000000000L).toStringDefault())
-        assertEquals("Sun, 31 Dec 0000 23:59:59 UTC", DateTime.fromUnix(-62135596800000L - 1L).toStringDefault())
+        assertEquals(
+            "Fri, 15 Oct -0249 19:33:20 UTC",
+            DateTime.fromUnixMillis(-70000000000000L).toStringDefault()
+        )
+        assertEquals(
+            "Mon, 01 Jan 0001 00:00:00 UTC",
+            DateTime.fromUnixMillis(-62135596800000L).toStringDefault()
+        )
+        assertEquals(
+            "Sat, 11 Aug -0027 08:00:00 UTC",
+            DateTime.fromUnixMillis(-63000000000000L).toStringDefault()
+        )
+        assertEquals(
+            "Sun, 31 Dec 0000 23:59:59 UTC",
+            DateTime.fromUnixMillis(-62135596800000L - 1L).toStringDefault()
+        )
     }
 
     @Test

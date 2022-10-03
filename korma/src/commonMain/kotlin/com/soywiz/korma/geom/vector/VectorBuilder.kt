@@ -10,8 +10,9 @@ import com.soywiz.korma.geom.IPointArrayList
 import com.soywiz.korma.geom.IRectangle
 import com.soywiz.korma.geom.IRectangleInt
 import com.soywiz.korma.geom.Matrix
-import com.soywiz.korma.geom.Point
 import com.soywiz.korma.geom.PointArrayList
+import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.bezier.Arc
 import com.soywiz.korma.geom.bezier.Bezier
 import com.soywiz.korma.geom.bezier.Curves
 import com.soywiz.korma.geom.bezier.toVectorPath
@@ -22,10 +23,6 @@ import com.soywiz.korma.geom.plus
 import com.soywiz.korma.geom.sine
 import com.soywiz.korma.geom.times
 import com.soywiz.korma.geom.unaryMinus
-import com.soywiz.korma.geom.unit
-import kotlin.math.PI
-import kotlin.math.sin
-import com.soywiz.korma.geom.bezier.Arc
 import kotlin.jvm.JvmName
 
 @KorDslMarker
@@ -166,6 +163,34 @@ internal fun VectorBuilder._regularPolygonStar(points: Int, radiusSmall: Double 
     close()
 }
 
+
+/**
+ * Creates a parallelogram where the inner part is within [bounds].
+ *
+ * An [angle] of 0.degrees, creates a rectangle. While an [angle] of 90 creates a shape with a line of 45 degrees.
+ * Negative angles create a parallelogram those bounds instead of being inner, are outer.
+ *
+ * [direction] = true
+ *    __________
+ *   /        /
+ *  /________/
+ *
+ * [direction] = false
+ * _________
+ * \        \
+ *  \________\
+ *
+ * */
+fun VectorBuilder.parallelogram(bounds: Rectangle, angle: Angle = 30.degrees, direction: Boolean = true) {
+    val dx = angle.sine * bounds.height
+    val dx0 = if (direction) 0.0 else dx
+    val dx1 = if (direction) dx else 0.0
+    moveTo(bounds.left - dx0, bounds.top)
+    lineTo(bounds.right + dx1, bounds.top)
+    lineTo(bounds.right + dx0, bounds.bottom)
+    lineTo(bounds.left - dx1, bounds.bottom)
+}
+
 fun VectorBuilder.moveTo(p: IPoint) = moveTo(p.x, p.y)
 fun VectorBuilder.lineTo(p: IPoint) = lineTo(p.x, p.y)
 fun VectorBuilder.quadTo(c: IPoint, a: IPoint) = quadTo(c.x, c.y, a.x, a.y)
@@ -212,6 +237,9 @@ fun VectorBuilder.lineToV(y: Int) = lineToV(y.toDouble())
 fun VectorBuilder.rLineToV(y: Double) = rLineTo(0.0, y)
 fun VectorBuilder.rLineToV(y: Float) = rLineToV(y.toDouble())
 fun VectorBuilder.rLineToV(y: Int) = rLineToV(y.toDouble())
+
+fun VectorBuilder.rMoveToHV(value: Double, horizontal: Boolean) = if (horizontal) rMoveToH(value) else rMoveToV(value)
+fun VectorBuilder.rLineToHV(value: Double, horizontal: Boolean) = if (horizontal) rLineToH(value) else rLineToV(value)
 
 fun VectorBuilder.rMoveTo(x: Double, y: Double) = moveTo(this.lastX + x, this.lastY + y)
 fun VectorBuilder.rMoveTo(x: Float, y: Float) = rMoveTo(x.toDouble(), y.toDouble())

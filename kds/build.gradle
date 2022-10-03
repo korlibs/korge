@@ -16,3 +16,16 @@ dependencies {
     //add("jvmTestApi", "org.fuin:units4j:0.8.4")
     //add("jvmTestApi", "org.ow2.asm:asm:8.0.1")
 }
+
+//com.soywiz.korge.gradle.generate.TemplateGenerator.synchronize(new File(projectDir, "template"))
+
+def doGenerateKdsTemplates() {
+    com.soywiz.korge.gradle.generate.TemplateGenerator.synchronizeNew(new File(projectDir, "src/commonMain/kotlin/com/soywiz/kds/Deque.kt"))
+    com.soywiz.korge.gradle.generate.TemplateGenerator.synchronizeNew(new File(projectDir, "src/commonMain/kotlin/com/soywiz/kds/Stack.kt"), false)
+}
+
+// Run only with the generate task
+task generate { doLast { doGenerateKdsTemplates() } }
+
+// Run on every gradle run
+afterEvaluate { doGenerateKdsTemplates() }

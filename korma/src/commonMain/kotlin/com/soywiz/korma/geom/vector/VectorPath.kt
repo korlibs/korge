@@ -441,13 +441,25 @@ class VectorPath(
     }.trimEnd()
     override fun toString(): String = "VectorPath(${toSvgString()})"
 
-    fun scale(sx: Double, sy: Double = sx): VectorPath {
+    @PublishedApi
+    internal val tempPoint = Point()
+
+    inline fun transformPoints(transform: (p: Point) -> IPoint): VectorPath {
+        val point = tempPoint
         for (n in 0 until data.size step 2) {
-            data[n + 0] *= sx
-            data[n + 1] *= sy
+            point.setTo(data[n + 0], data[n + 1])
+            val p = transform(point)
+            data[n + 0] = p.x
+            data[n + 1] = p.y
         }
         version++
         return this
+    }
+
+    fun scale(sx: Double, sy: Double = sx): VectorPath {
+        return transformPoints { p ->
+            p.setTo(p.x * sx, p.y * sy)
+        }
     }
 
     fun floor(): VectorPath {
@@ -544,16 +556,9 @@ fun BoundsBuilder.add(path: VectorPath, transform: Matrix? = null) {
     //println("BoundsBuilder.add.path: " + bb.getBounds())
 }
 
-fun VectorPath.applyTransform(m: Matrix?): VectorPath {
-    if (m != null) {
-        for (n in 0 until data.size step 2) {
-            val x = data.getAt(n + 0)
-            val y = data.getAt(n + 1)
-            data[n + 0] = m.transformX(x, y)
-            data[n + 1] = m.transformY(x, y)
-        }
-    }
-    return this
+fun VectorPath.applyTransform(m: Matrix?): VectorPath = when {
+    m != null -> transformPoints { m.transform(it, it) }
+    else -> this
 }
 
 @ThreadLocal

@@ -1,6 +1,7 @@
 package com.soywiz.kds
 
 import com.soywiz.kds.iterators.fastForEach
+import kotlin.math.min
 
 // @TODO: ArrayList that prevents isObject + jsInstanceOf on getter on Kotlin/JS
 // @TODO: This class should be temporal until Kotlin/JS fixes this issue
@@ -56,3 +57,14 @@ fun <T> List<T>.toFastList(): List<T> = FastArrayList<T>(this.size).also { out -
 fun <T> Array<T>.toFastList(): List<T> = FastArrayList<T>(this.size).also { out -> fastForEach { out.add(it) } }
 
 inline fun <T> buildFastList(block: FastArrayList<T>.() -> Unit): FastArrayList<T> = FastArrayList<T>().apply(block)
+
+fun <T> List<T>.toFastList(out: FastArrayList<T> = FastArrayList()): List<T> {
+    // Copy the elements we can
+    val minSize = min(this.size, out.size)
+    for (n in 0 until minSize) out[n] = this[n]
+    // Add new elements
+    for (n in minSize  until this.size) out.add(this[n])
+    // Remove extra elements
+    while (out.size > this.size) out.removeLast()
+    return this
+}

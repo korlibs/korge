@@ -113,7 +113,8 @@ open class GpuShapeView(
     /** Use for compatibility with [BaseGraphics] */
     var smoothing: Boolean = true
     /** Use for compatibility with [BaseGraphics] */
-    var boundsIncludeStrokes: Boolean = false
+    //var boundsIncludeStrokes: Boolean = false
+    var boundsIncludeStrokes: Boolean = true
 
     private val gpuShapeViewCommands = GpuShapeViewCommands()
     private val bb = BoundsBuilder()
@@ -172,6 +173,7 @@ open class GpuShapeView(
         validShapeBounds = false
         validShapeBoundsStrokes = false
         //strokeCache.clear()
+        invalidateRender()
     }
 
     private fun requireShape() {

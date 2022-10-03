@@ -1,125 +1,33 @@
 import com.soywiz.korge.Korge
 import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.scene.sceneContainer
+import com.soywiz.korge.ui.uiCheckBox
 import com.soywiz.korge.ui.uiComboBox
 import com.soywiz.korge.view.Stage
+import com.soywiz.korge.view.alignLeftToRightOf
 import com.soywiz.korge.view.xy
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.mix
 import com.soywiz.korio.async.launchImmediately
 import com.soywiz.korio.lang.portableSimpleName
-import samples.MainAnimations
-import samples.MainArc
-import samples.MainAseParallaxSample
-import samples.MainAseprite
-import samples.MainAtlas
-import samples.MainBVH
-import samples.MainBezier
-import samples.MainBezierSample
-import samples.MainBlending
-import samples.MainBlur
-import samples.MainBmpFont
-import samples.MainBox2d
-import samples.MainBunnymark
-import samples.MainBunnysSlow
-import samples.MainCircleColor
-import samples.MainCircles
-import samples.MainClipping
-import samples.MainColorPicker
-import samples.MainColorTransformFilter
-import samples.MainCoroutine
-import samples.MainCustomSolidRectShader
-import samples.MainDpi
-import samples.MainDraggable
-import samples.MainDragonbones
-import samples.MainEasing
-import samples.MainEditor
-import samples.MainEmoji
-import samples.MainEmojiColrv1
-import samples.MainExifTest
-import samples.MainFilterScale
-import samples.MainFilterSwitch
-import samples.MainFilters
-import samples.MainFiltersRenderToBitmap
-import samples.MainFiltersSample
-import samples.MainFlag
-import samples.MainGestures
-import samples.MainGifAnimation
-import samples.MainGpuVectorRendering
-import samples.MainGpuVectorRendering2
-import samples.MainGpuVectorRendering3
-import samples.MainHaptic
-import samples.MainHelloWorld
-import samples.MainImageTrace
-import samples.MainInput
-import samples.MainJSMpeg
-import samples.MainKTree
-import samples.MainKorviSample
-import samples.MainLipSync
-import samples.MainLua
-import samples.MainMasks
-import samples.MainMipmaps
-import samples.MainMutableAtlasTest
-import samples.MainNinePatch
-import samples.MainOldMask
-import samples.MainOnScreenController
-import samples.MainParticles
-import samples.MainPolyphonic
-import samples.MainRenderText
-import samples.MainRotateCircle
-import samples.MainRotatedAtlas
-import samples.MainRotatedTexture
-import samples.MainSDF
-import samples.MainSWF
-import samples.MainScenes
-import samples.MainShapes
-import samples.MainSkybox
-import samples.MainSound
-import samples.MainSpine
-import samples.MainSpriteAnim
-import samples.MainSprites10k
-import samples.MainStage3d
-import samples.MainStrokesExperiment
-import samples.MainStrokesExperiment2
-import samples.MainStrokesExperiment3
-import samples.MainSvgAnimation
-import samples.MainTerminalEmulator
-import samples.MainText
-import samples.MainTextInput
-import samples.MainTextMetrics
-import samples.MainTextureIssue
-import samples.MainTiledBackground
-import samples.MainTilemapTest
-import samples.MainTilemapWithScroll
-import samples.MainTransition
-import samples.MainTriangulation
-import samples.MainTrimmedAtlas
-import samples.MainTweenPoint
-import samples.MainTweens
-import samples.MainUI
-import samples.MainUIImageTester
-import samples.MainUITreeView
-import samples.MainVampire
-import samples.MainVector
-import samples.MainVectorFill
-import samples.MainVectorRendering
-import samples.MainVideo
-import samples.MainXM
-import samples.MainZIndex
+import samples.*
 import samples.asteroids.MainAsteroids
 import samples.connect4.MainConnect4
 import samples.fleks.MainFleksSample
 import samples.minesweeper.MainMineSweeper
 import samples.pong.MainPong
-import samples.tictactoeswf.MainTicTacToeSwf
 import samples.rpg.MainRpgScene
+import samples.tictactoeswf.MainTicTacToeSwf
+
+val DEFAULT_KORGE_BG_COLOR = Colors.DARKCYAN.mix(Colors.BLACK, 0.8)
 
 suspend fun main() = Korge(
-    bgcolor = Colors.DARKCYAN.mix(Colors.BLACK, 0.8),
+    bgcolor = DEFAULT_KORGE_BG_COLOR,
     clipBorders = false,
     //scaleMode = ScaleMode.EXACT,
-    //debug = true,
+    debug = true,
     multithreaded = true,
+    forceRenderEveryFrame = false // Newly added optimization!
     //debugAg = true,
 ) {
     //uiButton("HELLO WORLD!", width = 300.0).position(100, 100); return@Korge
@@ -127,8 +35,16 @@ suspend fun main() = Korge(
 
     demoSelector(
         //Demo(::MainJSMpeg),
-        Demo(::MainRpgScene),
+        //Demo(::MainGraphicsText),
+        Demo(::MainTextBounds),
+        //Demo(::MainEditor),
+        //Demo(::MainStage3d),
+        //Demo(::MainInput),
+        //Demo(::MainSvgAnimation),
+        //Demo(::MainVectorNinePatch),
         listOf(
+            Demo(::MainVectorNinePatch),
+            Demo(::MainGraphicsText),
             Demo(::MainRpgScene),
             Demo(::MainJSMpeg),
             Demo(::MainSDF),
@@ -248,17 +164,26 @@ suspend fun Stage.demoSelector(default: Demo, all: List<Demo>) {
     suspend fun setDemo(demo: Demo?) {
         //container.removeChildren()
         if (demo != null) {
+            views.clearColor = DEFAULT_KORGE_BG_COLOR
             container.changeTo({ injector ->
                 demo.sceneBuilder().also { it.init(injector) }
             })
         }
     }
 
-    uiComboBox(width = 300.0, items = (listOf(default) + all).distinctBy { it.name }.sortedBy { it.name }) {
+    val comboBox = uiComboBox(width = 300.0, items = (listOf(default) + all).distinctBy { it.name }.sortedBy { it.name }) {
         this.viewportHeight = 600
         this.onSelectionUpdate.add {
             println(it)
             launchImmediately { setDemo(it.selectedItem!!) }
+        }
+    }
+    uiCheckBox(width = 300.0, text = "forceRenderEveryFrame", checked = views.forceRenderEveryFrame) {
+        //x = 300.0
+        alignLeftToRightOf(comboBox, padding = 16.0)
+        //alignRightToLeftOf(comboBox)
+        onChange {
+            views.forceRenderEveryFrame = it.checked
         }
     }
     setDemo(default)

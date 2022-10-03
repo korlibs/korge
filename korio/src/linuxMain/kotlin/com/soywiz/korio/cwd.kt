@@ -1,8 +1,7 @@
 package com.soywiz.korio
 
-import com.soywiz.korio.posix.*
-import kotlinx.cinterop.*
-import platform.posix.*
+import com.soywiz.korio.posix.posixReadlink
+import com.soywiz.korio.posix.posixRealpath
 
 fun getCurrentExe(): String? = posixReadlink("/proc/self/exe")
 	?: posixReadlink("/proc/curproc/file")

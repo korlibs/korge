@@ -223,15 +223,21 @@ object KRA : ImageFormat("kra") {
                                         layerPartialBitmap,
                                         targetX = layerX,
                                         targetY = layerY,
-                                        name = layerName,
-                                        main = false
+                                        main = false,
+                                        name = layerName
                                     )
                                 )
                             } else {
                                 frames.add(
                                     ImageFrame(
-                                        Bitmap32(width, height, premultiplied = true).also { it.put(layerPartialBitmap, layerX, layerY) },
-                                        name = layerName, main = false
+                                        Bitmap32(width, height, premultiplied = true).also {
+                                            it.put(
+                                                layerPartialBitmap,
+                                                layerX,
+                                                layerY
+                                            )
+                                        },
+                                        main = false, name = layerName
                                     )
                                 )
                             }

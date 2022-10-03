@@ -87,7 +87,7 @@ public actual open class FastArrayList<E> internal constructor(
         val index = indexOf(element)
         if (index < 0) return false
         removeAt(index)
-        return false
+        return true
     }
 
     actual override fun removeAt(index: Int): E {

@@ -3,6 +3,7 @@ package com.soywiz.korge.debug
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.color.RGBAf
+import com.soywiz.korio.lang.EnumLike
 import com.soywiz.korma.geom.Angle
 import com.soywiz.korma.geom.Point
 import com.soywiz.korma.geom.degrees
@@ -19,6 +20,29 @@ fun <T> UiContainer.uiEditableValue(
     val obs = ObservableProperty(name, internalSet = { prop.set(it) }, internalGet = { prop.get() })
     return UiRowEditableValue(app, name, UiListEditableValue<T>(app, values, obs)).also { addChild(it) }
 }
+
+@JvmName("uiEditableValueEnum")
+inline fun <reified T : Enum<T>> UiContainer.uiEditableValue(
+    prop: KMutableProperty0<T>,
+    name: String = prop.name,
+): UiRowEditableValue {
+    return uiEditableValue(prop, { enumValues<T>().toList() }, name)
+}
+
+@JvmName("uiEditableValueEnumLike")
+inline fun <reified T : EnumLike<T>> UiContainer.uiEditableValue(
+    prop: KMutableProperty0<T>,
+    name: String = prop.name,
+): UiRowEditableValue {
+    return uiEditableValue(prop, { EnumLike.getValues(prop.get()) }, name)
+}
+
+@JvmName("uiEditableValueGeneric")
+fun <T> UiContainer.uiEditableValue(
+    prop: KMutableProperty0<T>,
+    values: List<T>,
+    name: String = prop.name,
+): UiRowEditableValue = uiEditableValue(prop, { values }, name)
 
 @JvmName("uiEditableValueRGBA")
 fun UiContainer.uiEditableValue(

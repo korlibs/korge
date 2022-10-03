@@ -16,6 +16,7 @@ import com.soywiz.korma.interpolation.Interpolable
 import com.soywiz.korma.interpolation.interpolate
 import com.soywiz.kmem.clampUByte
 import com.soywiz.krypto.encoding.appendHexByte
+import kotlin.jvm.JvmName
 import kotlin.math.pow
 import kotlin.math.roundToInt
 
@@ -424,6 +425,8 @@ infix fun RGBAPremultiplied.mix(src: RGBAPremultiplied): RGBAPremultiplied {
 
 inline class RgbaArray(val ints: IntArray) : List<RGBA> {
     companion object {
+        @JvmName("invokeRgba")
+        inline operator fun <T : RGBA> invoke(vararg colors: T): RgbaArray = RgbaArray(colors.size) { colors[it] }
         operator fun invoke(colors: Array<RGBA>): RgbaArray = RgbaArray(colors.map { it.value }.toIntArray())
         operator fun invoke(size: Int): RgbaArray = RgbaArray(IntArray(size))
         inline operator fun invoke(size: Int, callback: (index: Int) -> RGBA): RgbaArray = RgbaArray(IntArray(size)).apply { for (n in 0 until size) this[n] = callback(n) }

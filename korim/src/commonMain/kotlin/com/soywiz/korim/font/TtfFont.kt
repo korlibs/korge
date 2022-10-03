@@ -1,6 +1,7 @@
 package com.soywiz.korim.font
 
 import com.soywiz.kds.DoubleArrayList
+import com.soywiz.kds.Extra
 import com.soywiz.kds.IntArrayList
 import com.soywiz.kds.IntIntMap
 import com.soywiz.kds.IntMap
@@ -57,6 +58,43 @@ import com.soywiz.korma.geom.vector.quadTo
 import com.soywiz.krypto.encoding.hex
 import kotlin.collections.set
 
+class TtfFont(
+    d: ByteArray,
+    freeze: Boolean = false,
+    extName: String? = null,
+    onlyReadMetadata: Boolean = false,
+) : BaseTtfFont(d, freeze, extName, onlyReadMetadata) {
+    private val tablesByName = LinkedHashMap<String, Table>()
+
+    init {
+        doInit()
+    }
+
+    override fun readHeaderTables() {
+        tablesByName.putAll(readHeaderTables(s.sliceStart()))
+    }
+
+    override fun getTable(name: String): Table? = tablesByName[name]
+    override fun getTableNames(): Set<String> = tablesByName.keys
+
+    companion object {
+        suspend fun readNames(s: AsyncInputOpenable): NamesInfo = s.openUse {
+            readNames(it as AsyncStream)
+        }
+
+        suspend fun readNames(s: AsyncStream): NamesInfo {
+            s.setPosition(0L)
+            //s.readAll()
+            val header = s.readBytesUpTo(0x400)
+            val table = readHeaderTables(header.openFastStream())
+            val tableName = table["name"]!!
+            s.setPosition(tableName.offset.toLong())
+            val nameBytes = s.readBytesUpTo(tableName.length)
+            return NamesInfo().also { readNamesSection(nameBytes.openFastStream(), it) }
+        }
+    }
+}
+
 @Suppress("MemberVisibilityCanBePrivate", "UNUSED_VARIABLE", "LocalVariableName", "unused")
 // Used information from:
 // - https://www.sweetscape.com/010editor/repository/files/TTF.bt
@@ -66,12 +104,12 @@ import kotlin.collections.set
 // - http://stevehanov.ca/blog/index.php?id=143 (Let's read a Truetype font file from scratch)
 // - http://chanae.walon.org/pub/ttf/ttf_glyphs.htm
 @OptIn(KorimInternal::class)
-class TtfFont(
-    private val s: FastByteArrayInputStream,
-    private val freeze: Boolean = false,
-    private val extName: String? = null,
-    private val onlyReadMetadata: Boolean = false,
-) : VectorFont {
+abstract class BaseTtfFont(
+    protected val s: FastByteArrayInputStream,
+    protected val freeze: Boolean = false,
+    protected val extName: String? = null,
+    protected val onlyReadMetadata: Boolean = false,
+) : VectorFont, Extra by Extra.Mixin() {
     constructor(
         d: ByteArray,
         freeze: Boolean = false,
@@ -85,8 +123,8 @@ class TtfFont(
     override fun getFontMetrics(size: Double, metrics: FontMetrics): FontMetrics =
         metrics.copyFromNewSize(this.fontMetrics1px, size)
 
-    override fun getGlyphMetrics(size: Double, codePoint: Int, metrics: GlyphMetrics): GlyphMetrics =
-        metrics.copyFromNewSize(getGlyphByCodePoint(codePoint)?.metrics1px ?: nonExistantGlyphMetrics1px, size, codePoint)
+    override fun getGlyphMetrics(size: Double, codePoint: Int, metrics: GlyphMetrics, reader: WStringReader?): GlyphMetrics =
+        metrics.copyFromNewSize(getGlyphByReader(reader, codePoint)?.metrics1px ?: nonExistantGlyphMetrics1px, size, codePoint)
 
     override fun getKerning(
         size: Double,
@@ -98,26 +136,12 @@ class TtfFont(
     }
 
     override fun getGlyphPath(size: Double, codePoint: Int, path: GlyphPath, reader: WStringReader?): GlyphPath? {
-        var g = getGlyphByCodePoint(codePoint) ?: return null
+        val spos = reader?.position
+        val codePointPeek = reader?.peek(0)
+        val g = getGlyphByReader(reader, codePoint, cache = true) ?: return null
 
-        val subs = substitutionsCodePoints[codePoint]
-        if (reader != null && subs != null) {
-            //for (v in subs.map) println(v.key.toCodePointIntArray().toList())
-            for (count in kotlin.math.min(reader.available, subs.maxSequence) downTo 2) {
-                val sub = reader.substr(0, count)
-                val replacement = subs.map[sub]
-                //println("sub=${sub.toCodePointIntArray().toList()}")
-                if (replacement != null) {
-                    //println("replacement=$replacement")
-                    reader.skip(sub.length)
-                    g = getGlyphByIndex(replacement.first()) ?: break
-                    break
-                }
-            }
-            //println("maxSequence: " + subs.maxSequence)
-            //println("getGlyphPath: codePoint=$codePoint, glyphID=${g.index}, subs=${subs}")
-        }
-
+        //println("getGlyphPath: codePoint['${codePoint.toChar()}']=${codePoint}, codePointPeek=$codePointPeek, pos=$spos -> ${reader?.position}")
+        //println("stack=${currentStackTrace()}")
 
         val scale = getTextScale(size)
         //println("unitsPerEm = $unitsPerEm")
@@ -138,6 +162,9 @@ class TtfFont(
                 scaleX,
                 scaleY,
             )
+            //path.advanceWidth = g.advanceWidth.toDouble() * scale * scaleX
+        } else {
+            //path.advanceWidth = g.advanceWidth.toDouble() * scale
         }
         path.transform.identity()
         //path.transform.scale(scale, -scale)
@@ -146,7 +173,7 @@ class TtfFont(
         return path
     }
 
-    private fun getTextScale(size: Double) = size / unitsPerEm.toDouble()
+    protected fun getTextScale(size: Double) = size / unitsPerEm.toDouble()
 
     class NamesInfo {
         internal val names = arrayOfNulls<String>(NameId.MAX_ID)
@@ -174,97 +201,133 @@ class TtfFont(
 
         fun getName(nameId: NameId): String? = getName(nameId.id)
 
-        fun toMap() = NameId.values().map { it to getName(it) }.toMap()
+        fun toMap() = NameId.values().associateWith { getName(it) }
 
         override fun toString(): String = "NamesInfo(${toMap()})"
     }
 
-    private val namesi = NamesInfo()
-    private val tempContours = Array(3) { Contour() }
-    private val lineHeight get() = yMax - yMin
+    protected val namesi = NamesInfo()
+    protected val tempContours = Array(3) { Contour() }
+    protected val lineHeight get() = yMax - yMin
 
-    var numGlyphs = 0; private set
-    var maxPoints = 0; private set
-    var maxContours = 0; private set
-    var maxCompositePoints = 0; private set
-    var maxCompositeContours = 0; private set
-    var maxZones = 0; private set
-    var maxTwilightPoints = 0; private set
-    var maxStorage = 0; private set
-    var maxFunctionDefs = 0; private set
-    var maxInstructionDefs = 0; private set
-    var maxStackElements = 0; private set
-    var maxSizeOfInstructions = 0; private set
-    var maxComponentElements = 0; private set
-    var maxComponentDepth = 0; private set
+    var numGlyphs = 0; protected set
+    var maxPoints = 0; protected set
+    var maxContours = 0; protected set
+    var maxCompositePoints = 0; protected set
+    var maxCompositeContours = 0; protected set
+    var maxZones = 0; protected set
+    var maxTwilightPoints = 0; protected set
+    var maxStorage = 0; protected set
+    var maxFunctionDefs = 0; protected set
+    var maxInstructionDefs = 0; protected set
+    var maxStackElements = 0; protected set
+    var maxSizeOfInstructions = 0; protected set
+    var maxComponentElements = 0; protected set
+    var maxComponentDepth = 0; protected set
 
-    private var hheaVersion = Fixed(0, 0)
-    var ascender = 0; private set
-    var descender = 0; private set
-    var lineGap = 0; private set
-    var advanceWidthMax = 0; private set
-    var minLeftSideBearing = 0; private set
-    var minRightSideBearing = 0; private set
-    var xMaxExtent = 0; private set
-    var caretSlopeRise = 0; private set
-    var caretSlopeRun = 0; private set
-    var caretOffset = 0; private set
-    var metricDataFormat = 0; private set
-    var numberOfHMetrics = 0; private set
+    protected var hheaVersion = Fixed(0, 0)
+    var ascender = 0; protected set
+    var descender = 0; protected set
+    var lineGap = 0; protected set
+    var advanceWidthMax = 0; protected set
+    var minLeftSideBearing = 0; protected set
+    var minRightSideBearing = 0; protected set
+    var xMaxExtent = 0; protected set
+    var caretSlopeRise = 0; protected set
+    var caretSlopeRun = 0; protected set
+    var caretOffset = 0; protected set
+    var metricDataFormat = 0; protected set
+    var numberOfHMetrics = 0; protected set
 
-    private var locs = IntArray(0)
+    protected var locs = IntArray(0)
 
-    private var fontRev = Fixed(0, 0)
-    var unitsPerEm = 128; private set
+    protected var fontRev = Fixed(0, 0)
+    var unitsPerEm = 128; protected set
     // Coordinates have to be divided between unitsPerEm and multiplied per font size
-    private var xMin = 0
-    private var yMin = 0
-    private var xMax = 0
-    private var yMax = 0
-    private var macStyle = 0
-    private var lowestRecPPEM = 0
-    private var fontDirectionHint = 0
+    protected var xMin = 0
+    protected var yMin = 0
+    protected var xMax = 0
+    protected var yMax = 0
+    protected var macStyle = 0
+    protected var lowestRecPPEM = 0
+    protected var fontDirectionHint = 0
 
-    private var indexToLocFormat = 0
-    private var glyphDataFormat = 0
+    protected var indexToLocFormat = 0
+    protected var glyphDataFormat = 0
 
-    private var horMetrics = listOf<HorMetric>()
+    protected var horMetrics = listOf<HorMetric>()
     @KorimInternal
     val characterMaps = LinkedHashMap<Int, Int>()
     @KorimInternal
     val characterMapsReverse = LinkedHashMap<Int, Int>()
-    private val tablesByName = LinkedHashMap<String, Table>()
-    private val glyphCache = IntMap<Glyph>(512)
-    private fun getCharacterMapOrNull(key: Int): Int? = characterMaps[key]
+    protected val glyphCache = IntMap<Glyph>(512)
+    protected fun getCharacterMapOrNull(key: Int): Int? = characterMaps[key]
 
-    private fun addCharacterMap(codePoint: Int, index: Int) {
-        characterMaps[codePoint] = index
-        characterMapsReverse[index] = codePoint
+    protected fun addCharacterMap(codePoint: Int, glyphID: Int) {
+        characterMaps[codePoint] = glyphID
+        characterMapsReverse[glyphID] = codePoint
+    }
+
+    protected fun addCharacterMapOld(codePoint: Int, glyphID: Int) {
+        //println("addCharacterMapOld: $codePoint -> $glyphID")
     }
 
     // Bitmap extension
     var bitmapGlyphInfos = LinkedHashMap<Int, BitmapGlyphInfo>()
 
     // Color extension
-    private var colrv0LayerInfos = arrayOf<ColrLayerInfo>()
-    private val colrGlyphInfos = IntMap<ColrGlyphInfo>()
+    protected var colrv0LayerInfos = arrayOf<ColrLayerInfo>()
+    protected val colrGlyphInfos = IntMap<ColrGlyphInfo>()
     var palettes = listOf<Palette>()
-    private var colrv1: COLRv1 = COLRv1()
+    protected var colrv1: COLRv1 = COLRv1()
 
-    private var frozen = false
+    protected var frozen = false
 
     class SubstitutionInfo(val maxSequence: Int, val map: Map<WString, IntArray>)
 
     //val substitutionsGlyphIds = IntMap<Map<List<Int>, List<Int>>>()
+    /** GlyphID -> GlyphID */
+    val glyphSubstitution = IntIntMap()
+
     val substitutionsCodePoints = IntMap<SubstitutionInfo>()
 
-    init {
+    lateinit var fontMetrics1px: FontMetrics; private set
+    protected val nonExistantGlyphMetrics1px = GlyphMetrics(1.0, false, 0, Rectangle(), 0.0)
+    var isOpenType = false
+
+    val ttfName: String get() = namesi.ttfName
+    val ttfCompleteName: String get() = namesi.ttfCompleteName
+    override val name: String get() = extName ?: ttfName
+
+    var _cff: TtfCIDFont.CFF.CFFResult? = null
+
+    fun doInit() {
         readHeaderTables()
         readHead()
         readMaxp()
         readHhea()
         readNames()
+
         if (!onlyReadMetadata) {
+            // OpenType fonts with TrueType outlines use a glyph index to specify and access glyphs within a font;
+            // e.g., to index within the 'loca' table and thereby access glyph data in the 'glyf' table.
+            // This concept is retained in OpenType CFF fonts, except that glyph data is accessed through
+            // the CharStrings INDEX of the 'CFF ' table.
+            if (getTable("CFF ") != null && getTable("glyf") == null) {
+
+                // Disabled for now!
+                //unsupported("Unsupported OTF/CFF")
+
+                runTableUnit("CFF ") {
+                    TtfCIDFont.CFF.apply {
+                        this@BaseTtfFont._cff = this@runTableUnit.readCFF()
+                    }
+                }
+            }
+
+            // this.glyphCache[index]
+
+            //println("$name: " + getTableNames())
             readLoca()
             readCmap()
             readHmtx()
@@ -301,30 +364,27 @@ class TtfFont(
         //    //println("substitution: $fromCodePoints -> $to")
         //    substitutionsCodePoints[fromCodePoint] = SubstitutionInfo(maxSeq, map)
         //}
-    }
 
-    val ttfName: String get() = namesi.ttfName
-    val ttfCompleteName: String get() = namesi.ttfCompleteName
-    override val name: String get() = extName ?: ttfName
+        fontMetrics1px = FontMetrics().also {
+            val scale = getTextScale(1.0)
+            it.size = 1.0
+            it.top = (this.yMax) * scale
+            it.ascent = this.ascender * scale
+            it.baseline = 0.0 * scale
+            it.descent = this.descender * scale
+            it.bottom = (this.yMin) * scale
+            it.leading = this.lineGap * scale
+            it.maxWidth = this.advanceWidthMax *scale
+        }
+    }
 
     override fun toString(): String = "TtfFont(name=$name)"
 
-    private val fontMetrics1px = FontMetrics().also {
-        val scale = getTextScale(1.0)
-        it.size = 1.0
-        it.top = (this.yMax) * scale
-        it.ascent = this.ascender * scale
-        it.baseline = 0.0 * scale
-        it.descent = this.descender * scale
-        it.bottom = (this.yMin) * scale
-        it.leading = this.lineGap * scale
-        it.maxWidth = this.advanceWidthMax *scale
-    }
+    data class Table(val id: String, val checksum: Int, val offset: Int, val length: Int) {
+		var s: (() -> FastByteArrayInputStream)? = null
+        private val ss: FastByteArrayInputStream by lazy { s!!() }
 
-    private data class Table(val id: String, val checksum: Int, val offset: Int, val length: Int) {
-		lateinit var s: FastByteArrayInputStream
-
-		fun open() = s.clone()
+		fun open(): FastByteArrayInputStream = ss.clone()
 	}
 
 	@Suppress("unused")
@@ -347,30 +407,16 @@ class TtfFont(
     internal fun FastByteArrayInputStream.readFixed2(): Fixed = Fixed(readS32BE())
 	data class HorMetric(val advanceWidth: Int, val lsb: Int)
 
+    abstract fun getTable(name: String): Table?
+    abstract fun getTableNames(): Set<String>
+
     @PublishedApi
-	internal fun openTable(name: String) = tablesByName[name]?.open()
+	internal fun openTable(name: String): FastByteArrayInputStream? = getTable(name)?.open()
 
-    var isOpenType = false
 
-	private fun readHeaderTables() {
-        tablesByName.putAll(readHeaderTables(s.sliceStart()))
-	}
+    protected abstract fun readHeaderTables()
+
     companion object {
-        suspend fun readNames(s: AsyncInputOpenable): NamesInfo = s.openUse {
-            readNames(it as AsyncStream)
-        }
-
-        suspend fun readNames(s: AsyncStream): NamesInfo {
-            s.setPosition(0L)
-            //s.readAll()
-            val header = s.readBytesUpTo(0x400)
-            val table = readHeaderTables(header.openFastStream())
-            val tableName = table["name"]!!
-            s.setPosition(tableName.offset.toLong())
-            val nameBytes = s.readBytesUpTo(tableName.length)
-            return NamesInfo().also { readNamesSection(nameBytes.openFastStream(), it) }
-        }
-
         fun readNamesSection(s: FastByteArrayInputStream, info: NamesInfo) = s.run {
             val format = readU16BE()
             val count = readU16BE()
@@ -400,7 +446,7 @@ class TtfFont(
             }
         }
 
-        private fun readHeaderTables(s: FastByteArrayInputStream): Map<String, Table> = s.run {
+        fun readHeaderTables(s: FastByteArrayInputStream): Map<String, Table> = s.run {
             // https://docs.microsoft.com/en-us/typography/opentype/spec/otff#collections
             // ttcf
             if (readS32BE() == 0x74746366) {
@@ -432,7 +478,7 @@ class TtfFont(
             val tablesByName = LinkedHashMap<String, Table>()
 
             for (table in tables) {
-                table.s = sliceWithSize(table.offset, table.length)
+                table.s = { sliceWithSize(table.offset, table.length) }
                 tablesByName[table.id] = table
             }
 
@@ -440,11 +486,14 @@ class TtfFont(
         }
     }
 
-    private inline fun runTableUnit(name: String, callback: FastByteArrayInputStream.() -> Unit) {
+    protected inline fun runTableUnit(name: String, callback: FastByteArrayInputStream.() -> Unit) {
 		openTable(name)?.callback()
 	}
 
-    private inline fun <T> runTable(name: String, callback: FastByteArrayInputStream.(Table) -> T): T? = openTable(name)?.let { callback(it, tablesByName[name]!!) }
+    protected inline fun <T> runTable(name: String, callback: FastByteArrayInputStream.(Table) -> T): T? {
+        val table = getTable(name) ?: return null
+        return callback(table.open(), table)
+    }
 
     enum class NameId(val id: Int) {
         COPYRIGHT(0),
@@ -482,14 +531,14 @@ class TtfFont(
     fun getName(nameId: Int): String? = namesi.getName(nameId)
     fun getName(nameId: NameId): String? = getName(nameId.id)
 
-    private fun readNames() = runTableUnit("name") {
+    protected fun readNames() = runTableUnit("name") {
         readNamesSection(this, namesi)
 	}
 
     data class NameInfo(val offset: Int, val length: Int, val charset: Charset)
 
-    private fun readLoca() = runTableUnit("loca") {
-        //println("readLoca! $name")
+    // https://docs.microsoft.com/en-us/typography/opentype/spec/loca
+    protected fun readLoca() = runTableUnit("loca") {
 		val bytesPerEntry = when (indexToLocFormat) {
 			0 -> 2
 			1 -> 4
@@ -500,9 +549,10 @@ class TtfFont(
 		val data = readBytesExact(bytesPerEntry * (numGlyphs + 1))
 
 		locs = FastByteArrayInputStream(data).run {
+
 			when (indexToLocFormat) {
-				0 -> IntArray(numGlyphs + 1) { readU16BE() * 2 }
-				1 -> IntArray(numGlyphs + 1) { readS32BE() }
+				0 -> readCharArrayBE(numGlyphs + 1).mapInt { it.code * 2 }
+				1 -> readIntArrayBE(numGlyphs + 1)
 				else -> invalidOp
 			}
 		}
@@ -510,7 +560,7 @@ class TtfFont(
 		//println("locs: ${locs.toList()}")
 	}
 
-    private fun readHead() = runTableUnit("head") {
+    protected fun readHead() = runTableUnit("head") {
 		readU16BE().apply { if (this != 1) invalidOp("Invalid TTF") }
 		readU16BE().apply { if (this != 0) invalidOp("Invalid TTF") }
 		fontRev = readFixed()
@@ -536,7 +586,7 @@ class TtfFont(
 		//println("bounds: ($xMin, $yMin)-($xMax, $yMax)")
 	}
 
-    private fun readMaxp() = runTableUnit("maxp") {
+    protected fun readMaxp() = runTableUnit("maxp") {
 		val version = readFixed()
 		numGlyphs = readU16BE()
 		maxPoints = readU16BE()
@@ -554,7 +604,7 @@ class TtfFont(
 		maxComponentDepth = readU16BE()
 	}
 
-    private fun readHhea() = runTableUnit("hhea") {
+    protected fun readHhea() = runTableUnit("hhea") {
 		hheaVersion = readFixed()
 		ascender = readS16BE()
 		descender = readS16BE()
@@ -574,7 +624,7 @@ class TtfFont(
 		numberOfHMetrics = readU16BE()
 	}
 
-    private fun readHmtx() = runTableUnit("hmtx") {
+    protected fun readHmtx() = runTableUnit("hmtx") {
 		val firstMetrics = (0 until numberOfHMetrics).map {
             HorMetric(
                 readU16BE(),
@@ -592,7 +642,7 @@ class TtfFont(
 		horMetrics = firstMetrics + compressedMetrics
 	}
 
-    private fun readCpal() = runTableUnit("CPAL") {
+    protected fun readCpal() = runTableUnit("CPAL") {
         val version = readU16BE()
         when (version) {
             0, 1 -> {
@@ -621,7 +671,7 @@ class TtfFont(
         }
     }
 
-    //private fun readPost() = runTableUnit("post") {
+    //protected fun readPost() = runTableUnit("post") {
     //    val versionHi = readU16BE()
     //    val versionLo = readU16BE()
     //    when (versionHi) {
@@ -677,7 +727,7 @@ class TtfFont(
         val pad2: Int = 0,
     )
 
-    private fun FastByteArrayInputStream.readSibLineMetrics(): SbitLineMetrics = SbitLineMetrics(
+    protected fun FastByteArrayInputStream.readSibLineMetrics(): SbitLineMetrics = SbitLineMetrics(
         readS8(), readS8(), readU8(), readS8(), readS8(), readS8(),
         readS8(), readS8(), readS8(), readS8(), readS8(), readS8()
     )
@@ -719,7 +769,7 @@ class TtfFont(
     //fun ColorGlyphInfo.getBytes(): FastByteArrayInputStream = tablesByName["CBDT"]!!.open().sliceWithSize(offset, size)
 
     // https://docs.microsoft.com/en-us/typography/opentype/spec/eblc
-    private fun readCblc() = runTableUnit("CBLC") { // Color Bitmap Location Table
+    protected fun readCblc() = runTableUnit("CBLC") { // Color Bitmap Location Table
         val majorVersion = readU16BE()
         val minorVersion = readU16BE()
         when (majorVersion) {
@@ -787,7 +837,7 @@ class TtfFont(
         }
     }
 
-    private fun readCbdt() = runTableUnit("CBDT") { // Color Bitmap Data Table
+    protected fun readCbdt() = runTableUnit("CBDT") { // Color Bitmap Data Table
         //println("readCbdt")
         val majorVersion = readU16BE()
         val minorVersion = readU16BE()
@@ -821,7 +871,7 @@ class TtfFont(
     }
 
     // https://docs.microsoft.com/en-us/typography/opentype/spec/sbix
-    private fun readSbix() = runTableUnit("sbix") { // Standard Bitmap Graphics Table
+    protected fun readSbix() = runTableUnit("sbix") { // Standard Bitmap Graphics Table
         val version = readU16BE()
         val flags = readU16BE()
         val numStrikes = readS32BE()
@@ -927,7 +977,7 @@ class TtfFont(
     class ColorStop(var stopOffset: Double, var paletteIndex: Int, var alpha: Double)
 
     // https://docs.microsoft.com/en-us/typography/opentype/spec/colr
-    private fun interpretColrv1(glyphID: Int, s: FastByteArrayInputStream, c: Context2d, pal: Int, level: Int) {
+    protected fun interpretColrv1(glyphID: Int, s: FastByteArrayInputStream, c: Context2d, pal: Int, level: Int) {
         val nodeFormat = s.readU8()
         val isVar = nodeFormat % 2 == 1
         val indent = "  ".repeat(level)
@@ -1163,6 +1213,7 @@ class TtfFont(
         }
     }
 
+    /*
     object CompositeModes {
         // Porter-Duff modes
         // https://www.w3.org/TR/compositing-1/#porterduffcompositingoperators
@@ -1201,6 +1252,7 @@ class TtfFont(
         const val COMPOSITE_HSL_COLOR      = 26  // https://www.w3.org/TR/compositing-1/#blendingcolor
         const val COMPOSITE_HSL_LUMINOSITY = 27  // https://www.w3.org/TR/compositing-1/#blendingluminosity
     }
+    */
 
     data class Clip(
         val startGlyphID: Int,
@@ -1219,9 +1271,91 @@ class TtfFont(
         val glyphIDToClipOffset = IntIntMap()
     }
 
+    /*
+    class CoverageTable {
+        val glyphIDs = IntArrayList()
 
+        fun addOne(glyphID: Int, index: Int = -1) {
+            glyphIDs.add(glyphID)
+        }
+        fun addMultiple(glyphIDs: IntArray, index: Int = -1) {
+            for (id in glyphIDs) addOne(id)
+        }
+        fun addRange(startGlyphID: Int, endGlyphID: Int, index: Int = -1) {
+            for (id in startGlyphID..endGlyphID) {
+                addOne(id, if (index < 0) -1 else index + (id - startGlyphID))
+            }
+        }
 
-    private fun readGsub() = runTableUnit("GSUB") {
+        override fun toString(): String = "CoverageTable(${glyphIDs})"
+    }
+
+    protected fun FastByteArrayInputStream.readCoverageTable(): CoverageTable {
+        //https://docs.microsoft.com/en-us/typography/opentype/spec/chapter2#coverage-table
+        val coverageFormat = readU16BE()
+        val out = CoverageTable()
+        when (coverageFormat) {
+            1 -> {
+                val glyphCount = readU16BE()
+                val glyphArray = readCharArrayBE(glyphCount).mapInt { it.code }
+                println("  readCoverageTable[$glyphCount]: ${glyphArray.toList()}")
+                out.addMultiple(glyphArray)
+            }
+            2 -> {
+                val rangeCount = readU16BE()
+                for (n in 0 until rangeCount) {
+                    val startGlyphID = readU16BE()
+                    val endGlyphID = readU16BE()
+                    val startCoverageIndex = readU16BE()
+                    println("  readCoverageTable[$rangeCount]: $startGlyphID-$endGlyphID  :: $startCoverageIndex")
+                    out.addRange(startGlyphID, endGlyphID, startCoverageIndex)
+                }
+            }
+        }
+        return out
+    }
+
+     */
+
+    //https://docs.microsoft.com/en-us/typography/opentype/spec/chapter2#coverage-table
+    //fun FastByteArrayInputStream.readCoverage(count: Int): IntArray {
+    fun FastByteArrayInputStream.readCoverage(hintedCount: Int = -1): IntArray {
+        val coverageFormat = readU16BE()
+        when (coverageFormat) {
+            1 -> {
+                val glyphCount = readU16BE()
+                //if (count != glyphCount) error("Invalid coverage count count=$count != glyphCount=$glyphCount")
+                return readCharArrayBE(glyphCount).mapInt { it.code }
+                //println("glyphArray[${glyphArray.size}]=${glyphArray.toList()}")
+            }
+            2 -> {
+                data class RangeInfo(val start: Int, val endInclusive: Int, val index: Int) {
+                    val count: Int = endInclusive - start + 1
+                }
+                val rangeCount = readU16BE()
+                val ranges = (0 until rangeCount).map {
+                    RangeInfo(start = readU16BE(), endInclusive = readU16BE(), index = readU16BE())
+                }
+                val glyphCount = ranges.maxOf { it.index + it.count }
+                //if (count != glyphCount) error("Invalid coverage count count=$count != glyphCount=$glyphCount")
+
+                val glyphArray = IntArray(glyphCount)
+                for (range in ranges) {
+                    for (glyphID in range.start..range.endInclusive) {
+                        val offset = glyphID - range.start
+                        glyphArray[range.index + offset] = glyphID
+                    }
+                    //println("startGlyphID=$startGlyphID, endGlyphID=$endGlyphID, startCoverageIndex=$startCoverageIndex")
+                }
+                return glyphArray
+                //println("UNSUPPORTED coverageFormat=$coverageFormat")
+                //return@runTableUnit
+            }
+            else -> TODO("coverageFormat=$coverageFormat")
+        }
+    }
+
+    protected fun readGsub() = runTableUnit("GSUB") {
         val totalLength = length
         val majorVersion = readU16BE()
         val minorVersion = readU16BE()
@@ -1252,67 +1386,70 @@ class TtfFont(
             }
         }
 
-        fun FastByteArrayInputStream.readCoverage(count: Int): IntArray {
-            val coverageFormat = readU16BE()
-            when (coverageFormat) {
-                1 -> {
-                    val glyphCount = readU16BE()
-                    return readCharArrayBE(glyphCount).mapInt { it.code }
-                    //println("glyphArray[${glyphArray.size}]=${glyphArray.toList()}")
-                }
-                2 -> {
-                    val glyphArray = IntArray(count)
-                    val rangeCount = readU16BE()
-                    repeat(rangeCount) {
-                        val startGlyphID = readU16BE()
-                        val endGlyphID = readU16BE()
-                        val startCoverageIndex = readU16BE()
-                        for (glyphID in startGlyphID..endGlyphID) {
-                            val offset = glyphID - startGlyphID
-                            glyphArray[startCoverageIndex + offset] = glyphID
-                        }
-                        //println("startGlyphID=$startGlyphID, endGlyphID=$endGlyphID, startCoverageIndex=$startCoverageIndex")
-                    }
-                    return glyphArray
-                    //println("UNSUPPORTED coverageFormat=$coverageFormat")
-                    //return@runTableUnit
-                }
-                else -> TODO("coverageFormat=$coverageFormat")
-            }
-        }
-
         // https://docs.microsoft.com/en-us/typography/opentype/spec/chapter2#lulTbl
         sliceStart(lookupListOffset).apply {
             val lookupCount = readU16BE()
-            //println("lookupCount=$lookupCount")
-            for (n in 0 until lookupCount) {
-                val lookupOffset = readOffset16()
-                //println("lookup=$lookupOffset")
+            val lookups = (0 until lookupCount).mapInt { readOffset16() }
+            //println("lookupCount=$lookupCount : $lookups")
+            for (lookupOffset in lookups) {
                 sliceStart(lookupOffset).apply {
                     val lookupType = readU16BE()
                     val lookupFlag = readU16BE()
                     val subTableCount = readU16BE()
                     val subtableOffsets = readShortArrayBE(subTableCount).mapInt { it.toInt() and 0xFFFF }
                     val markFilteringSet = readU16BE()
-                    //println("   - lookupType=$lookupType, lookupFlag=$lookupFlag, subTableCount=$subTableCount")
+                    //println(" - lookupType=$lookupType, lookupFlag=$lookupFlag, subTableCount=$subTableCount, length=${this.length}")
+                    //println("  - subtableOffsets=" + subtableOffsets.toList())
+
                     for (offset in subtableOffsets) {
                         sliceStart(offset).apply {
                             val subsTable = this
                             when (lookupType) {
+                                1 -> { // https://docs.microsoft.com/en-us/typography/opentype/spec/gsub#lookuptype-1-single-substitution-subtable
+                                    val substFormat = readU16BE()
+                                    val coverageOffset = readOffset16() // https://docs.microsoft.com/en-us/typography/opentype/spec/chapter2#coverage-table
+                                    //println("   - substFormat=$substFormat, coverageOffset=$coverageOffset")
+                                    when (substFormat) {
+                                        1 -> {
+                                            val deltaGlyphID = readS16BE()
+                                            val coverageTable = sliceStart(coverageOffset).readCoverage()
+
+                                            //println("   - deltaGlyphID=$deltaGlyphID, coverageTable=${coverageTable.toList()}")
+                                            //val glyph = (glyphID + deltaGlyphID) and 0xFFFF
+
+                                            for (glyphID in coverageTable) {
+                                                glyphSubstitution[glyphID] = glyphID + deltaGlyphID
+                                            }
+                                        }
+                                        2 -> {
+                                            val glyphCount = readU16BE()
+                                            val coverageTable = sliceStart(coverageOffset).readCoverage()
+                                            val substituteGlyphIDs = readCharArrayBE(glyphCount).mapInt { it.code }
+
+                                            repeat(glyphCount) {
+                                                glyphSubstitution[coverageTable[it]] = substituteGlyphIDs[it]
+                                            }
+
+                                            //println("   - substituteGlyphIDs=${substituteGlyphIDs.toList()}, coverageTable=${coverageTable.toList()}")
+                                        }
+                                        else -> {
+                                            error("Unsupported lookupType=1, substFormat=$substFormat")
+                                        }
+                                    }
+                                }
                                 4 -> { // https://docs.microsoft.com/en-us/typography/opentype/spec/gsub#LS
                                     val substFormat = readU16BE()
+                                    // LigatureSubstFormat1
+                                    if (substFormat != 1) error("For lookType=4 only substFormat=1 is supported")
                                     val coverageOffset = readOffset16() // https://docs.microsoft.com/en-us/typography/opentype/spec/chapter2#coverage-table
                                     val ligatureSetCount = readU16BE()
                                     val ligatureSetOffsets = readCharArrayBE(ligatureSetCount).mapInt { it.code }
                                     val glyphArray = sliceStart(coverageOffset).readCoverage(ligatureSetCount)
+
                                     //println("   - substFormat=$substFormat")
                                     //println("   - coverageOffset=$coverageOffset")
                                     //println("   - ligatureSetCount=$ligatureSetCount")
-                                    val coverageTable = sliceStart(coverageOffset)
-                                    val glyphIDs = sliceStart(coverageOffset).let {
-                                        it.readCharArrayBE(ligatureSetCount).mapInt { it.code }
-                                    }
-                                    //println("glyphIDs=${glyphIDs.toList()}")
+                                    //println("   - ligatureSetOffsets=${ligatureSetOffsets.toList()}")
                                     //println("----")
                                     for (n in ligatureSetOffsets.indices) {
                                         val glyphID = glyphArray[n]
@@ -1331,16 +1468,21 @@ class TtfFont(
                                                 sliceStart(offset).apply {
                                                     val ligatureGlyph = readU16BE()
                                                     val componentCount = readU16BE()
-                                                    maxComponentCount = kotlin.math.max(maxComponentCount, componentCount + 1)
-                                                    val componentCodePoints = readCharArrayBE(componentCount - 1).mapInt { getCodePointFromCharIndexOrElse(it.code) }
+                                                    maxComponentCount =
+                                                        kotlin.math.max(maxComponentCount, componentCount + 1)
+                                                    val componentCodePoints =
+                                                        readCharArrayBE(componentCount - 1).mapInt {
+                                                            getCodePointFromCharIndexOrElse(it.code)
+                                                        }
                                                     val ligature = WString(codePointIntArray + componentCodePoints)
                                                     map[ligature] = intArrayOf(ligatureGlyph)
 
-                                                    //println("            - ${listOf(glyphID) + componentGlyphIDs.toList()} -> $ligatureGlyph")
+                                                    //println("            - ligature: $ligature -> ligatureGlyph=$ligatureGlyph")
                                                 }
                                             }
                                         }
-                                        substitutionsCodePoints[codePoint] = SubstitutionInfo(maxComponentCount, map)
+                                        substitutionsCodePoints[codePoint] =
+                                            SubstitutionInfo(maxComponentCount, map)
                                     }
                                 }
                                 else -> {
@@ -1349,12 +1491,15 @@ class TtfFont(
                             }
                         }
                     }
+
                 }
             }
         }
+
+        //println("glyphSubstitution=$glyphSubstitution")
     }
 
-    private fun readColr() = runTableUnit("COLR") {
+    protected fun readColr() = runTableUnit("COLR") {
         val version = readU16BE()
         when (version) {
             0, 1 -> { // COLRv0, COLRv1
@@ -1434,7 +1579,7 @@ class TtfFont(
         }
     }
 
-	private fun readCmap() = runTableUnit("cmap") {
+	protected fun readCmap() = runTableUnit("cmap") {
 		data class EncodingRecord(val platformId: Int, val encodingId: Int, val offset: Int)
 
 		val version = readU16BE()
@@ -1446,135 +1591,154 @@ class TtfFont(
         for (table in tables) {
 			sliceStart(table.offset).run {
 				val format = readU16BE()
-                //println("TABLE FORMAT[${this@TtfFont}]: $format")
-				when (format) {
-				    0 -> { // Byte encoding table
-                        println("UNSUPPORTED CMAP format = $format")
-				    }
-                    2 -> { // High-byte mapping through table
-                        println("UNSUPPORTED CMAP format = $format")
-                    }
-					4 -> { // Segment mapping to delta values
-						val length = readU16BE()
-						//s.readStream(length - 4).run {
-						val language = readU16BE()
-						val segCount = readU16BE() / 2
-						val searchRangeS = readU16BE()
-						val entrySelector = readU16BE()
-						val rangeShift = readU16BE()
-						val endCount = readCharArrayBE(segCount)
-						readU16BE() // reserved
-						val startCount = readCharArrayBE(segCount)
-						val idDelta = readShortArrayBE(segCount)
-						val rangeOffsetPos = position.toInt()
-						val idRangeOffset = readCharArrayBE(segCount)
-						//val glyphIdArray = readCharArrayBE(idRangeOffset.maxOrNull()?.toInt() ?: 0)
+                try {
+                    //println("TABLE FORMAT[${this@BaseTtfFont}]: $format")
+                    when (format) {
+                        // https://docs.microsoft.com/en-us/typography/opentype/spec/cmap#format-0-byte-encoding-table
+                        // Format 0 was the standard mapping subtable used on older Macintosh platforms but is not required on newer Apple platforms.
+                        0 -> { // Byte encoding table
+                            val length = readU16BE()
+                            val language = readU16BE()
+                            val glyphIdArray = readBytesExact(256).mapInt { it.toInt() and 0xFF }
+                            for (n in 0 until 256) addCharacterMapOld(n, glyphIdArray[n])
+                        }
+                        // This subtable format was created for “double-byte” encodings following the national
+                        // character code standards used for Japanese, Chinese, and Korean characters.
+                        // These code standards use a mixed 8-/16-bit encoding.
+                        // This format is not commonly used today.
+                        2 -> { // High-byte mapping through table
+                            println("UNSUPPORTED CMAP format = $format")
+                        }
 
-						//println("$language")
+                        4 -> { // Segment mapping to delta values
+                            val length = readU16BE()
+                            //s.readStream(length - 4).run {
+                            val language = readU16BE()
+                            val segCount = readU16BE() / 2
+                            val searchRangeS = readU16BE()
+                            val entrySelector = readU16BE()
+                            val rangeShift = readU16BE()
+                            val endCount = readCharArrayBE(segCount)
+                            readU16BE() // reserved
+                            val startCount = readCharArrayBE(segCount)
+                            val idDelta = readShortArrayBE(segCount)
+                            val rangeOffsetPos = position.toInt()
+                            val idRangeOffset = readCharArrayBE(segCount)
+                            //val glyphIdArray = readCharArrayBE(idRangeOffset.maxOrNull()?.toInt() ?: 0)
 
-						for (n in 0 until segCount) {
-							val ec = endCount[n].toInt()
-							val sc = startCount[n].toInt()
-							val delta = idDelta[n].toInt()
-							val iro = idRangeOffset[n].toInt()
-							//println("%04X-%04X : %d : %d".format(sc, ec, delta, iro))
-							for (c in sc..ec) {
-								if (iro != 0) {
-									var glyphIndexOffset = rangeOffsetPos + n * 2
-									glyphIndexOffset += iro
-									glyphIndexOffset += (c - sc) * 2
-									index = sliceStart(glyphIndexOffset).readU16BE()
-									if (index != 0) {
-										index += delta
-									}
-								} else {
-									index = c + delta
-								}
-                                //index = index and 0xFFFF
-                                addCharacterMap(c, index and 0xFFFF)
-								//println("%04X --> %d".format(c, index and 0xFFFF))
-							}
-						}
+                            //println("$language")
 
-						//for ((c, index) in characterMaps) println("\\u%04X -> %d".format(c.toInt(), index))
-					}
-                    6 -> { // Trimmed table mapping
-                        val length = readU16BE()
-                        val language = readU16BE()
-                        val firstCode = readU16BE()
-                        val entryCount = readU16BE()
-                        for (n in 0 until entryCount) {
-                            val codePoint = firstCode + n
-                            //if (codePoint in characterMaps) println("For codePoint=$codePoint, old=${characterMaps[codePoint]}, new=$n")
-                            addCharacterMap(codePoint, readU16BE())
+                            for (n in 0 until segCount) {
+                                val ec = endCount[n].toInt()
+                                val sc = startCount[n].toInt()
+                                val delta = idDelta[n].toInt()
+                                val iro = idRangeOffset[n].toInt()
+                                //println("%04X-%04X : %d : %d".format(sc, ec, delta, iro))
+                                for (c in sc..ec) {
+                                    if (iro != 0) {
+                                        var glyphIndexOffset = rangeOffsetPos + n * 2
+                                        glyphIndexOffset += iro
+                                        glyphIndexOffset += (c - sc) * 2
+                                        index = sliceStart(glyphIndexOffset).readU16BE()
+                                        if (index != 0) {
+                                            index += delta
+                                        }
+                                    } else {
+                                        index = c + delta
+                                    }
+                                    //index = index and 0xFFFF
+                                    addCharacterMap(c, index and 0xFFFF)
+                                    //println("%04X --> %d".format(c, index and 0xFFFF))
+                                }
+                            }
+
+                            //for ((c, index) in characterMaps) println("\\u%04X -> %d".format(c.toInt(), index))
+                        }
+
+                        6 -> { // Trimmed table mapping
+                            val length = readU16BE()
+                            val language = readU16BE()
+                            val firstCode = readU16BE()
+                            val entryCount = readU16BE()
+                            for (n in 0 until entryCount) {
+                                val codePoint = firstCode + n
+                                //if (codePoint in characterMaps) println("For codePoint=$codePoint, old=${characterMaps[codePoint]}, new=$n")
+                                addCharacterMap(codePoint, readU16BE())
+                            }
+                        }
+
+                        8 -> { // mixed 16-bit and 32-bit coverage
+                            println("UNSUPPORTED CMAP format = $format")
+                        }
+
+                        10 -> { // Trimmed array
+                            println("UNSUPPORTED CMAP format = $format")
+                        }
+
+                        12 -> { // Segmented coverage
+                            readU16BE() // reserved
+                            val length = readS32BE()
+                            val language = readS32BE()
+                            val numGroups = readS32BE()
+
+                            for (n in 0 until numGroups) {
+                                val startCharCode = readS32BE()
+                                val endCharCode = readS32BE()
+                                val startGlyphId = readS32BE()
+
+                                for (c in startCharCode..endCharCode) {
+                                    val m = c - startCharCode
+                                    addCharacterMap(c, startGlyphId + m)
+                                    //println(" - $c -> $glyphId")
+                                }
+                            }
+                        }
+
+                        13 -> { // Many-to-one range mappings
+                            println("UNSUPPORTED CMAP format = $format")
+                        }
+                        //14 -> {
+                        //    println("UNSUPPORTED CMAP format = $format")
+                        //}
+                        //14 -> { // Unicode Variation Sequences
+                        //    val length = readS32BE()
+                        //    val numVarSelectorRecords = readS32BE()
+                        //    data class VarSelectorRecord(val varSelector: Int, val defaultUVSOffset: Int, val nonDefaultUVSOffset: Int)
+                        //    val records = Array(numVarSelectorRecords) { VarSelectorRecord(readU24BE(), readS32BE(), readS32BE()) }
+                        //    var glyphId = 0
+                        //    for (record in records) {
+                        //        run {
+                        //            position = record.defaultUVSOffset
+                        //            val numUnicodeValueRanges = readS32BE()
+                        //            for (n in 0 until numUnicodeValueRanges) {
+                        //                val startUnicodeValue = readU24BE()
+                        //                val additionalCount = readU8()
+                        //                val count = 1 + additionalCount
+                        //                //println("startUnicodeValue=$startUnicodeValue, additionalCount=$additionalCount")
+                        //                for (m in 0 until count) {
+                        //                    //addCharacterMap(startUnicodeValue + m, glyphId++)
+                        //                }
+                        //            }
+                        //        }
+                        //        run {
+                        //            position = record.nonDefaultUVSOffset
+                        //            val numUVSMappings = readS32BE()
+                        //            for (n in 0 until numUVSMappings) {
+                        //                val unicodeValue = readU24BE()
+                        //                val glyphID = readU16BE()
+                        //                //println("startUnicodeValue=$unicodeValue, glyphID=$glyphID")
+                        //            }
+                        //        }
+                        //    }
+                        //    //println(characterMaps)
+                        //}
+                        else -> { // Ignored
+                            println("UNSUPPORTED CMAP format = $format")
                         }
                     }
-                    8 -> { // mixed 16-bit and 32-bit coverage
-                        println("UNSUPPORTED CMAP format = $format")
-                    }
-                    10 -> { // Trimmed array
-                        println("UNSUPPORTED CMAP format = $format")
-                    }
-					12 -> { // Segmented coverage
-						readU16BE() // reserved
-						val length = readS32BE()
-						val language = readS32BE()
-						val numGroups = readS32BE()
-
-						for (n in 0 until numGroups) {
-							val startCharCode = readS32BE()
-							val endCharCode = readS32BE()
-							val startGlyphId = readS32BE()
-
-							for (c in startCharCode..endCharCode) {
-                                val m = c - startCharCode
-                                addCharacterMap(c, startGlyphId + m)
-                                //println(" - $c -> $glyphId")
-							}
-						}
-					}
-                    13 -> { // Many-to-one range mappings
-                        println("UNSUPPORTED CMAP format = $format")
-                    }
-                    //14 -> {
-                    //    println("UNSUPPORTED CMAP format = $format")
-                    //}
-                    //14 -> { // Unicode Variation Sequences
-                    //    val length = readS32BE()
-                    //    val numVarSelectorRecords = readS32BE()
-                    //    data class VarSelectorRecord(val varSelector: Int, val defaultUVSOffset: Int, val nonDefaultUVSOffset: Int)
-                    //    val records = Array(numVarSelectorRecords) { VarSelectorRecord(readU24BE(), readS32BE(), readS32BE()) }
-                    //    var glyphId = 0
-                    //    for (record in records) {
-                    //        run {
-                    //            position = record.defaultUVSOffset
-                    //            val numUnicodeValueRanges = readS32BE()
-                    //            for (n in 0 until numUnicodeValueRanges) {
-                    //                val startUnicodeValue = readU24BE()
-                    //                val additionalCount = readU8()
-                    //                val count = 1 + additionalCount
-                    //                //println("startUnicodeValue=$startUnicodeValue, additionalCount=$additionalCount")
-                    //                for (m in 0 until count) {
-                    //                    //addCharacterMap(startUnicodeValue + m, glyphId++)
-                    //                }
-                    //            }
-                    //        }
-                    //        run {
-                    //            position = record.nonDefaultUVSOffset
-                    //            val numUVSMappings = readS32BE()
-                    //            for (n in 0 until numUVSMappings) {
-                    //                val unicodeValue = readU24BE()
-                    //                val glyphID = readU16BE()
-                    //                //println("startUnicodeValue=$unicodeValue, glyphID=$glyphID")
-                    //            }
-                    //        }
-                    //    }
-                    //    //println(characterMaps)
-                    //}
-					else -> { // Ignored
-                        println("UNSUPPORTED CMAP format = $format")
-					}
-				}
+                } catch (e: Throwable) {
+                    e.printStackTrace()
+                }
 				//println("cmap.table.format: $format")
 			}
 		}
@@ -1589,7 +1753,32 @@ class TtfFont(
     fun getCharIndexFromChar(char: Char): Int? = getCharacterMapOrNull(char.code)
     fun getCharIndexFromWChar(char: WChar): Int? = getCharacterMapOrNull(char.code)
 
-    fun getGlyphByCodePoint(codePoint: Int, cache: Boolean = true): Glyph? = getCharacterMapOrNull(codePoint)?.let { getGlyphByIndex(it, cache, codePoint) }
+    fun getGlyphByReader(reader: WStringReader?, codePoint: Int, cache: Boolean = true): Glyph? {
+        var g = getGlyphByCodePoint(codePoint)
+        var skipCount = 1
+        if (g != null) {
+            val subs = substitutionsCodePoints[codePoint]
+            if (reader != null && subs != null) {
+                //for (v in subs.map) println(v.key.toCodePointIntArray().toList())
+                for (count in kotlin.math.min(reader.available, subs.maxSequence) downTo 2) {
+                    val sub = reader.substr(0, count)
+                    val replacement = subs.map[sub]
+                    //println("sub=${sub.toCodePointIntArray().toList()}")
+                    if (replacement != null) {
+                        //println("replacement=$replacement")
+                        skipCount = sub.length
+                        g = getGlyphByIndex(replacement.first()) ?: break
+                        break
+                    }
+                }
+            }
+        }
+        reader?.skip(skipCount)
+        return g
+    }
+    fun getGlyphByCodePoint(codePoint: Int, cache: Boolean = true): Glyph? = getCharacterMapOrNull(codePoint)?.let {
+        getGlyphByIndex(it, cache, codePoint)
+    }
     fun getGlyphByWChar(char: WChar, cache: Boolean = true): Glyph? = getGlyphByCodePoint(char.code, cache)
     fun getGlyphByChar(char: Char, cache: Boolean = true): Glyph? = getGlyphByCodePoint(char.code, cache)
 
@@ -1599,10 +1788,17 @@ class TtfFont(
 
     fun getGlyphByIndex(index: Int, cache: Boolean = true, codePoint: Int = -1): Glyph? {
         //val finalCodePoint = if (codePoint < 0) getCodePointFromCharIndex(index) ?: -1 else codePoint
+        val cff = _cff
+        if (cff != null) {
+            return this.glyphCache.getOrPut(index) {
+                val gvector = cff.getGlyphVector(index)
+                CFFGlyph(index, 0, 0, 0, 0, gvector.advanceWidth.toInt(), GlyphGraphicsPath(index, gvector.path))
+            }
+        }
         val start = locs.getOrNull(index) ?: 0
         val end = locs.getOrNull(index + 1) ?: start
         val size = end - start
-        //println("GLYPH INDEX: $index")
+        //println("getGlyphByIndex: index=$index, cache=$cache, start=$start, end=$end, locs=${locs.toList()}")
         val glyph = when {
             size != 0 -> this.glyphCache[index] ?: runTable("glyf") { table ->
                 //println("READ GLYPH[$index]: start=$start, end=$end, size=$size, table=$table")
@@ -1612,7 +1808,7 @@ class TtfFont(
             }
             else -> {
                 //println("EMPTY GLYPH: SIZE: $size, index=$index")
-                SimpleGlyph(index, 0, 0, 0, 0, intArrayOf(), intArrayOf(), intArrayOf(), intArrayOf(), horMetrics[index].advanceWidth).also {
+                SimpleGlyph(index, 0, 0, 0, 0, intArrayOf(), intArrayOf(), intArrayOf(), intArrayOf(), horMetrics[index].advanceWidth, dummy = true).also {
                     //it.codePoint = finalCodePoint
                 }
             }
@@ -1623,9 +1819,7 @@ class TtfFont(
 
     fun getAllGlyphs(cache: Boolean = false) = (0 until numGlyphs).mapNotNull { getGlyphByIndex(it, cache) }
 
-    private val nonExistantGlyphMetrics1px = GlyphMetrics(1.0, false, 0, Rectangle(), 0.0)
-
-    private data class Contour(var x: Int = 0, var y: Int = 0, var onCurve: Boolean = false) {
+    data class Contour(var x: Int = 0, var y: Int = 0, var onCurve: Boolean = false) {
 		fun copyFrom(that: Contour) {
 			this.x = that.x
 			this.y = that.y
@@ -1683,7 +1877,7 @@ class TtfFont(
         val glpyhIndex: Int,
         val path: VectorPath
     ) : IVectorPath by path {
-        override fun toString(): String = "GraphicsPath(glpyhIndex=$glpyhIndex, \"${this.path.toSvgPathString()}\")"
+        override fun toString(): String = "GlyphGraphicsPath(glpyhIndex=$glpyhIndex, \"${this.path.toSvgPathString()}\")"
     }
 
     abstract inner class Glyph(
@@ -1766,7 +1960,17 @@ class TtfFont(
         }
     }
 
-    inner class SimpleGlyph(
+    inner class CFFGlyph constructor(
+        index: Int,
+        xMin: Int, yMin: Int,
+        xMax: Int, yMax: Int,
+        advanceWidth: Int,
+        override val path: GlyphGraphicsPath
+    ) : Glyph(index, xMin, yMin, xMax, yMax, advanceWidth) {
+        override val paths = listOf(path)
+    }
+
+    inner class SimpleGlyph constructor(
         index: Int,
 		xMin: Int, yMin: Int,
 		xMax: Int, yMax: Int,
@@ -1774,12 +1978,13 @@ class TtfFont(
 		val flags: IntArray,
 		val xPos: IntArray,
 		val yPos: IntArray,
-		advanceWidth: Int
+		advanceWidth: Int,
+        val dummy: Boolean = false
 	) : Glyph(index, xMin, yMin, xMax, yMax, advanceWidth) {
-        override fun toString(): String = "SimpleGlyph[$advanceWidth]($index) : $path"
+        override fun toString(): String = "SimpleGlyph${if (dummy) "Dummy" else ""}[$index](advance=$advanceWidth) : $path"
         val npoints: Int get() = xPos.size
-        private fun onCurve(n: Int) = (flags[n] and 1) != 0
-		private fun contour(n: Int, out: Contour = Contour()) = out.apply {
+        protected fun onCurve(n: Int) = (flags[n] and 1) != 0
+		protected fun contour(n: Int, out: Contour = Contour()) = out.apply {
 			x = xPos[n]
 			y = yPos[n]
 			onCurve = onCurve(n)
@@ -1847,7 +2052,7 @@ class TtfFont(
 
         override val paths = listOf(path)
 
-        private inline fun forEachContour(block: (cstart: Int, cend: Int, csize: Int) -> Unit) {
+        protected inline fun forEachContour(block: (cstart: Int, cend: Int, csize: Int) -> Unit) {
             for (n in 0 until contoursIndices.size - 1) {
                 val cstart = contoursIndices[n] + 1
                 val cend = contoursIndices[n + 1]
@@ -1857,14 +2062,14 @@ class TtfFont(
         }
     }
 
-    private fun FastByteArrayInputStream.readF2DOT14(): Float {
+    protected fun FastByteArrayInputStream.readF2DOT14(): Float {
 		val v = readS16BE()
 		val i = v.extractSigned(14, 2)
 		val f = v.extract(0, 14)
 		return i.toFloat() + f.toFloat() / 16384f
 	}
 
-    private fun FastByteArrayInputStream.readFIXED3(): Float {
+    protected fun FastByteArrayInputStream.readFIXED3(): Float {
         val v = readS32BE()
         val i = v.extractSigned(16, 16)
         val f = v.extract(0, 16)
@@ -1872,7 +2077,7 @@ class TtfFont(
     }
 
 	@Suppress("FunctionName")
-    private fun FastByteArrayInputStream.readMixBE(signed: Boolean, word: Boolean): Int {
+    protected fun FastByteArrayInputStream.readMixBE(signed: Boolean, word: Boolean): Int {
 		return when {
 			!word && signed -> readS8()
 			!word && !signed -> readU8()
@@ -1882,7 +2087,7 @@ class TtfFont(
 		}
 	}
 
-    private fun FastByteArrayInputStream.readGlyph(index: Int): Glyph {
+    protected fun FastByteArrayInputStream.readGlyph(index: Int): Glyph {
 		val ncontours = readS16BE()
 		val xMin = readS16BE()
 		val yMin = readS16BE()
@@ -1891,7 +2096,9 @@ class TtfFont(
 
         //println("glyph[$index]: ncontours=$ncontours [${ncontours.hex}], xMin=$xMin, yMin=$yMin -- xMax=$xMax, yMax=$yMax")
 
-		if (ncontours < 0) {
+        val advanceWidth = horMetrics[index].advanceWidth
+
+        return if (ncontours < 0) {
 			//println("WARNING: readCompositeGlyph not implemented")
 
 			val ARG_1_AND_2_ARE_WORDS = 0x0001
@@ -1949,7 +2156,7 @@ class TtfFont(
 				references += ref
 			} while ((flags and MORE_COMPONENTS) != 0)
 
-			return CompositeGlyph(index, xMin, yMin, xMax, yMax, references, horMetrics[index].advanceWidth)
+            CompositeGlyph(index, xMin, yMin, xMax, yMax, references, advanceWidth)
 		} else {
 			val contoursIndices = IntArray(ncontours + 1)
 			contoursIndices[0] = -1
@@ -1996,19 +2203,21 @@ class TtfFont(
 				}
 			}
 
-			//println("$ncontours, $xMin, $yMax, $xMax, $yMax, ${endPtsOfContours.toList()}, $numPoints, ${flags.toList()}")
+
 			//println(xPos.toList())
 			//println(yPos.toList())
-			return SimpleGlyph(
+			SimpleGlyph(
                 index,
 				xMin, yMin,
 				xMax, yMax,
 				contoursIndices,
 				flags.toIntArray(),
 				xPos, yPos,
-				horMetrics[index].advanceWidth
+                advanceWidth
 			)
-		}
+		}.also {
+            //println("GLYPH[$index]: ncontours=$ncontours, xyminmax=[$xMin, $yMax, $xMax, $yMax], advanceWidth=$advanceWidth, glyph=${it}")
+        }
 	}
 }
 
@@ -2038,17 +2247,4 @@ internal inline class Fixed(val data: Int) {
 suspend fun VfsFile.readTtfFont(
     preload: Boolean = false,
     onlyReadMetadata: Boolean = false,
-) = TtfFont(this.readAll(), freeze = preload, extName = this.baseName, onlyReadMetadata = onlyReadMetadata)
-
-// @TODO: Move to KorMA
-private fun VectorPath.write(path: VectorPath, transform: Matrix) {
-    this.commands += path.commands
-    for (n in 0 until path.data.size step 2) {
-        val x = path.data.getAt(n + 0)
-        val y = path.data.getAt(n + 1)
-        this.data += transform.transformX(x, y)
-        this.data += transform.transformY(x, y)
-    }
-    this.lastX = transform.transformX(path.lastX, path.lastY)
-    this.lastY = transform.transformY(path.lastX, path.lastY)
-}
+): TtfFont = TtfFont(this.readAll(), freeze = preload, extName = this.baseName, onlyReadMetadata = onlyReadMetadata)

@@ -1,5 +1,6 @@
 package samples
 
+import com.soywiz.korge.input.mouse
 import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.view.SContainer
 import com.soywiz.korge.view.addUpdater
@@ -19,9 +20,13 @@ class MainColorPicker : Scene() {
 
         val magnifier = image(Bitmaps.white).xy(720, 200).scale(10, 10).apply { smoothing = false }
 
+        mouse {
+            move {
+                val bmp = stage!!.unsafeRenderToBitmapSync(views!!.renderContext, Rectangle(views.stage.mouseX - 5.0, views.stage.mouseY - 5.0, 10.0, 10.0), views!!.globalToWindowScaleAvg)
+                magnifier.bitmap = bmp.slice()
+            }
+        }
         addUpdater {
-            val bmp = stage!!.unsafeRenderToBitmapSync(views!!.renderContext, Rectangle(views.stage.mouseX - 5.0, views.stage.mouseY - 5.0, 10.0, 10.0), views!!.globalToWindowScaleAvg)
-            magnifier.bitmap = bmp.slice()
         }
     }
 }

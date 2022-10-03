@@ -242,9 +242,9 @@ class ParticleEmitterView(
                 clamp = false,
                 name = "emitterPos"
             )
-            uiEditableValue(particle::emitterType, values = { ParticleEmitter.Type.values().toList() })
-            uiEditableValue(particle::blendFuncSource, values = { AG.BlendFactor.values().toList() })
-            uiEditableValue(particle::blendFuncDestination, values = { AG.BlendFactor.values().toList() })
+            uiEditableValue(particle::emitterType)
+            uiEditableValue(particle::blendFuncSource)
+            uiEditableValue(particle::blendFuncDestination)
             uiCollapsibleSection("Angle") {
                 uiEditableValue(listOf(particle::angle, particle::angleVariance))
             }

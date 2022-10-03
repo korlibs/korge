@@ -1,6 +1,9 @@
 package com.github.quillraven.fleks.collection
 
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 internal class BitArrayTest {
     @Test
@@ -144,38 +147,46 @@ internal class BitArrayTest {
     }
 
     @Test
-    fun bitArrayEqualsToIncompatibleTypeObject() {
-        val bits = BitArray(42)
-        bits.set(3)
-        val otherBits = 42
+    fun testNumBits() {
+        val bits = BitArray()
 
-        assertEquals(false, bits.equals(otherBits))
-        assertEquals(false, bits.equals(null))
-    }
-
-    @Test
-    fun bitArrayEqualsToSameObject() {
-        val bits = BitArray(42)
-        bits.set(3)
-
-        assertEquals(true, bits == bits)
-    }
-
-    @Test
-    fun bitArrayEqualsToOtherBitArray() {
-        val bits = BitArray(42)
         bits.set(4)
-        val otherBits = BitArray(44)
-        otherBits.set(4)
-        val bits42 = BitArray(42)
-        bits42.set(4)
 
-        assertEquals(true, bits == otherBits, "bitArray equals to another bitArray with different size")
-        assertEquals(true, bits == bits42, "bitArray equals to another bitArray with equal size")
+        assertEquals(1, bits.numBits())
+        assertEquals(5, bits.length())
+    }
 
-        otherBits.set(7)
-        bits42.set(7)
-        assertEquals(false, bits == otherBits, "bitArray equals not to another bitArray with different size")
-        assertEquals(false, bits == bits42, "bitArray equals not to another bitArray with equal size")
+    @Test
+    fun testIsEmpty() {
+        val bits = BitArray()
+        assertTrue(bits.isEmpty)
+        assertFalse(bits.isNotEmpty)
+
+        bits.set(0)
+        assertFalse(bits.isEmpty)
+        assertTrue(bits.isNotEmpty)
+    }
+
+    @Test
+    fun testToString() {
+        val bits0 = BitArray()
+        val bits1 = BitArray().apply { set(0) }
+        val bits2 = BitArray().apply { set(3) }
+        val bits3 = BitArray().apply { set(100) }
+        val bits4 = BitArray().apply {
+            set(3)
+            set(100)
+        }
+        val expected0 = "0"
+        val expected1 = "1"
+        val expected2 = "0001"
+        val expected3 = "0".repeat(100) + "1"
+        val expected4 = "0".repeat(3) + "1" + "0".repeat(96) + "1"
+
+        assertEquals(expected0, bits0.toString())
+        assertEquals(expected1, bits1.toString())
+        assertEquals(expected2, bits2.toString())
+        assertEquals(expected3, bits3.toString())
+        assertEquals(expected4, bits4.toString())
     }
 }

@@ -1,6 +1,5 @@
 package com.github.quillraven.fleks
 
-import com.github.quillraven.fleks.collection.BitArray
 import com.github.quillraven.fleks.collection.EntityComparator
 import kotlin.native.concurrent.ThreadLocal
 import kotlin.reflect.KClass
@@ -37,10 +36,8 @@ abstract class IntervalSystem(
 ) {
     /**
      * Returns the [world][World] to which this system belongs.
-     * This reference gets updated by the [SystemService] when the system gets created via reflection.
      */
-    lateinit var world: World
-        internal set
+    val world: World = World.CURRENT_WORLD
 
     private var accumulator: Float = 0.0f
 
@@ -53,12 +50,6 @@ abstract class IntervalSystem(
      */
     val deltaTime: Float
         get() = if (interval is Fixed) interval.step else world.deltaTime
-
-    /**
-     * Optional function for any initialization logic that requires access to the [world].
-     * This is necessary because the normal init block does not have an initialized [world] yet.
-     */
-    open fun onInit() = Unit
 
     /**
      * Updates the system according to its [interval]. This function gets called from [World.update] when
@@ -124,7 +115,7 @@ object Manual : SortingType
 /**
  * An [IntervalSystem] of a [world][World] with a context to [entities][Entity].
  *
- * It must have at least one of [allOf], [anyOf] or [noneOf] objects defined.
+ * It must have at least one of allOfComponents, anyOfComponent or noneOfComponents objects defined.
  * These objects define a [Family] of entities for which the [IteratingSystem] will get active.
  * The [IteratingSystem] will use those components which are part of the family config for
  * any specific processing within this system.
@@ -139,9 +130,9 @@ object Manual : SortingType
  * @param enabled defines if the system gets updated when the [world][World] gets updated. Default is true.
  */
 abstract class IteratingSystem(
-    val allOfComponents: Array<KClass<*>>? = null,
-    val noneOfComponents: Array<KClass<*>>? = null,
-    val anyOfComponents: Array<KClass<*>>? = null,
+    allOfComponents: Array<KClass<*>>? = null,
+    noneOfComponents: Array<KClass<*>>? = null,
+    anyOfComponents: Array<KClass<*>>? = null,
     private val comparator: EntityComparator = EMPTY_COMPARATOR,
     private val sortingType: SortingType = Automatic,
     interval: Interval = EachFrame,
@@ -149,16 +140,14 @@ abstract class IteratingSystem(
 ) : IntervalSystem(interval, enabled) {
     /**
      * Returns the [family][Family] of this system.
-     * This reference gets updated by the [SystemService] when the system gets created via the SystemFactory.
      */
-    internal lateinit var family: Family
+    val family: Family = world.family(allOfComponents, noneOfComponents, anyOfComponents)
 
     /**
      * Returns the [entityService][EntityService] of this system.
-     * This reference gets updated by the [SystemService] when the system gets created via the SystemFactory.
      */
     @PublishedApi
-    internal lateinit var entityService: EntityService
+    internal val entityService: EntityService = world.entityService
 
     /**
      * Flag that defines if sorting of [entities][Entity] will be performed the next time [onTick] is called.
@@ -179,28 +168,14 @@ abstract class IteratingSystem(
     /**
      * Updates the [family] if needed and calls [onTickEntity] for each [entity][Entity] of the [family].
      * If [doSort] is true then [entities][Entity] are sorted using the [comparator] before calling [onTickEntity].
-     *
-     * **Important note**: There is a potential risk when iterating over entities and one of those entities
-     * gets removed. Removing the entity immediately and cleaning up its components could
-     * cause problems because if you access a component which is mandatory for the family, you will get
-     * a FleksNoSuchComponentException. To avoid that you could check if an entity really has the component
-     * before accessing it but that is redundant in context of a family.
-     *
-     * To avoid these kinds of problems, entity removals are delayed until the end of the iteration. This also means
-     * that a removed entity of this family will still be part of the [onTickEntity] for the current iteration.
      */
     override fun onTick() {
-        if (family.isDirty) {
-            family.updateActiveEntities()
-        }
         if (doSort) {
             doSort = sortingType == Automatic
             family.sort(comparator)
         }
 
-        entityService.delayRemoval = true
         family.forEach { onTickEntity(it) }
-        entityService.cleanupDelays()
     }
 
     /**
@@ -215,13 +190,7 @@ abstract class IteratingSystem(
      * @param alpha a value between 0 (inclusive) and 1 (exclusive) that describes the progress between two ticks.
      */
     override fun onAlpha(alpha: Float) {
-        if (family.isDirty) {
-            family.updateActiveEntities()
-        }
-
-        entityService.delayRemoval = true
         family.forEach { onAlphaEntity(it, alpha) }
-        entityService.cleanupDelays()
     }
 
     /**
@@ -243,87 +212,31 @@ abstract class IteratingSystem(
  * constructor dependency injection. It also stores [systems] and updates [enabled][IntervalSystem.enabled] systems
  * each time [update] is called.
  *
- * @param world the [world][World] the service belongs to.
  * @param systemFactory the factory methods to create the [systems][IntervalSystem].
- * @param injectables the required dependencies to create the [systems][IntervalSystem].
  */
 class SystemService(
-    world: World,
     systemFactory: MutableMap<KClass<*>, () -> IntervalSystem>,
-    injectables: MutableMap<String, Injectable>
 ) {
     @PublishedApi
     internal val systems: Array<IntervalSystem>
 
     init {
-        // Configure injector before instantiating systems
-        val compService = world.componentService
-        Inject.injectObjects = injectables
-        Inject.mapperObjects = compService.mappers
         // Create systems
-        val entityService = world.entityService
-        val allFamilies = mutableListOf<Family>()
         val systemList = systemFactory.toList()
         systems = Array(systemFactory.size) { sysIdx ->
-            val newSystem = systemList[sysIdx].second.invoke()
-
-            // Set world reference of newly created system
-            newSystem.world = world
-
-            // Set family and entity service reference of newly created iterating system
-            if (newSystem is IteratingSystem) {
-                newSystem.family = family(newSystem, entityService, compService, allFamilies)
-                newSystem.entityService = entityService
+            val (sysType, factory) = systemList[sysIdx]
+            try {
+                factory.invoke()
+            } catch (e: Exception) {
+                if (e is FleksFamilyException) {
+                    throw FleksSystemCreationException(
+                        sysType,
+                        "IteratingSystem must define at least one of AllOf, NoneOf or AnyOf"
+                    )
+                }
+                throw e
             }
-
-            newSystem.apply { onInit() }
         }
-    }
-
-    /**
-     * Creates or returns an already created [family][Family] for the given [IteratingSystem]
-     * by analyzing the system's "allOfComponents", "anyOfComponents" and "noneOfComponents" properties.
-     *
-     * @throws [FleksSystemCreationException] if the [IteratingSystem] does not contain at least one
-     * "allOfComponents", "anyOfComponents" and "noneOfComponents" property.
-     *
-     * @throws [FleksNoSuchComponentException] if the component of the given type from the family does not exist in the
-     * world configuration.
-     */
-    private fun family(
-        system: IteratingSystem,
-        entityService: EntityService,
-        compService: ComponentService,
-        allFamilies: MutableList<Family>
-    ): Family {
-        val allOfComps = system.allOfComponents?.map {
-            val type = it.simpleName ?: throw FleksInjectableTypeHasNoName(it)
-            compService.mapper(type) }
-        val noneOfComps = system.noneOfComponents?.map {
-            val type = it.simpleName ?: throw FleksInjectableTypeHasNoName(it)
-            compService.mapper(type) }
-        val anyOfComps = system.anyOfComponents?.map {
-            val type = it.simpleName ?: throw FleksInjectableTypeHasNoName(it)
-            compService.mapper(type) }
-
-        if ((allOfComps == null || allOfComps.isEmpty())
-            && (noneOfComps == null || noneOfComps.isEmpty())
-            && (anyOfComps == null || anyOfComps.isEmpty())
-        ) {
-            throw FleksSystemCreationException(system)
-        }
-
-        val allBs = if (allOfComps == null) null else BitArray().apply { allOfComps.forEach { this.set(it.id) } }
-        val noneBs = if (noneOfComps == null) null else BitArray().apply { noneOfComps.forEach { this.set(it.id) } }
-        val anyBs = if (anyOfComps == null) null else BitArray().apply { anyOfComps.forEach { this.set(it.id) } }
-
-        var family = allFamilies.find { it.allOf == allBs && it.noneOf == noneBs && it.anyOf == anyBs }
-        if (family == null) {
-            family = Family(allBs, noneBs, anyBs)
-            entityService.addEntityListener(family)
-            allFamilies.add(family)
-        }
-        return family
     }
 
     /**
@@ -373,8 +286,9 @@ class SystemService(
 object Inject {
     @PublishedApi
     internal lateinit var injectObjects: Map<String, Injectable>
+
     @PublishedApi
-    internal lateinit var mapperObjects: Map<String, ComponentMapper<*>>
+    internal lateinit var mapperObjects: Map<KClass<*>, ComponentMapper<*>>
 
     inline fun <reified T : Any> dependency(): T {
         val injectType = T::class.simpleName ?: throw FleksInjectableTypeHasNoName(T::class)
@@ -393,9 +307,8 @@ object Inject {
 
     @Suppress("UNCHECKED_CAST")
     inline fun <reified T : Any> componentMapper(): ComponentMapper<T> {
-        val injectType = T::class.simpleName ?: throw FleksInjectableTypeHasNoName(T::class)
-        return if (injectType in mapperObjects) {
-            mapperObjects[injectType]!! as ComponentMapper<T>
-        } else throw FleksSystemComponentInjectException(injectType)
+        val type = T::class
+        val mapper = mapperObjects[type] ?: FleksSystemComponentInjectException(type)
+        return mapper as ComponentMapper<T>
     }
 }

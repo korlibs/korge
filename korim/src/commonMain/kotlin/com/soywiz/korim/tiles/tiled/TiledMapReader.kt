@@ -10,6 +10,9 @@ import com.soywiz.korim.atlas.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.format.*
+import com.soywiz.korim.text.HorizontalAlign
+import com.soywiz.korim.text.TextAlignment
+import com.soywiz.korim.text.VerticalAlign
 import com.soywiz.korim.tiles.TileMapObjectAlignment
 import com.soywiz.korim.tiles.TileMapOrientation
 import com.soywiz.korim.tiles.TileMapRenderOrder
@@ -570,12 +573,10 @@ private fun Xml.parseObjectLayer(): Layer.Objects {
 				underline = text.int("underline") == 1,
 				strikeout = text.int("strikeout") == 1,
 				kerning = text.int("kerning", 1) == 1,
-				hAlign = text.str("halign", "left").let { align ->
-					TextHAlignment.values().find { it.value == align } ?: TextHAlignment.LEFT
-				},
-				vAlign = text.str("valign", "top").let { align ->
-					TextVAlignment.values().find { it.value == align } ?: TextVAlignment.TOP
-				}
+				align = TextAlignment(
+                    HorizontalAlign(text.str("halign", "left")),
+                    VerticalAlign(text.str("valign", "top")),
+                ),
 			)
 			else -> Object.Shape.Rectangle(objInstance.bounds.width, objInstance.bounds.height)
 		}

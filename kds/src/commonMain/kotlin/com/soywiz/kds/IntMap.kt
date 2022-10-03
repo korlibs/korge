@@ -155,9 +155,9 @@ class IntMap<T> internal constructor(private var nbits: Int, private val loadFac
         }
     }
 
-    inline fun getOrPut(key: Int, callback: () -> T): T {
+    inline fun getOrPut(key: Int, callback: (Int) -> T): T {
         val res = get(key)
-        if (res == null) set(key, callback())
+        if (res == null) set(key, callback(key))
         return get(key)!!
     }
 
@@ -378,6 +378,8 @@ class IntFloatMap {
 
 class IntIntMap internal constructor(private var nbits: Int, private val loadFactor: Double, dummy: Boolean) {
     constructor(initialCapacity: Int = 16, loadFactor: Double = 0.75) : this(max(4, ilog2Ceil(initialCapacity)), loadFactor, true)
+
+    override fun toString(): String = this.toMap().toString()
 
     companion object {
         @PublishedApi
