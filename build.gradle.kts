@@ -41,7 +41,7 @@ buildscript {
 plugins {
 	java
     kotlin("multiplatform")
-    id("org.jetbrains.kotlinx.kover") version "0.6.0" apply false
+    id("org.jetbrains.kotlinx.kover") version "0.6.1" apply false
     id("org.jetbrains.dokka") version "1.6.10" apply false
     signing
     `maven-publish`
@@ -133,9 +133,9 @@ subprojects {
         apply(plugin = "kotlin-multiplatform")
         apply(plugin = "kover")
 
-        extensions.getByType(kotlinx.kover.api.KoverProjectConfig::class.java).apply {
-            engine.set(IntellijEngine("1.0.683"))
-        }
+        //extensions.getByType(kotlinx.kover.api.KoverProjectConfig::class.java).apply {
+        //    engine.set(IntellijEngine("1.0.683"))
+        //}
         //kover { engine.set(IntellijEngine("1.0.683")) }
 
         if (hasAndroid) {
