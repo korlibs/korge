@@ -14,11 +14,12 @@ internal actual val multithreadedSharedHeap: Boolean = true
 // @TODO:
 //System.getProperty("os.arch")
 internal actual val currentArch: Arch by lazy {
-    val androidArchs = when {
+    val androidArchs: Array<String?>? = when {
         Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP -> Build.SUPPORTED_ABIS
         else -> arrayOf(Build.CPU_ABI)
-    }
-    for (androidArch in androidArchs) {
+    } ?: return@lazy Arch.UNKNOWN
+    for (androidArch in androidArchs!!) {
+        if (androidArch == null) continue
         when {
             androidArch.contains("arm64") -> return@lazy Arch.ARM64 // "arm64-v8a"
             androidArch.contains("arm") -> return@lazy Arch.ARM32 // "armeabi-v7a"

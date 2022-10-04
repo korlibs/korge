@@ -89,6 +89,31 @@ jobs:
     - { name: Publish to maven local, run: ./gradlew publishJvmLocal }
     - { name: e2e test, uses: GabrielBB/xvfb-action@v1, with: { working-directory: e2e-test, run: ./gradlew checkReferencesJvm } }
 
+  test-coverage:
+    needs: changes
+    if: ${{ needs.changes.outputs.testJvm == 'true' }}
+    timeout-minutes: 120
+    runs-on: ubuntu-latest
+    steps:
+      - { uses: actions/checkout@v3 }
+      - { name: Set up JDK 1.8, uses: actions/setup-java@v1, with: { java-version: 1.8 } }
+      - { name: Install freeglut3 & openal, run: sudo apt-get update && sudo apt-get -y install freeglut3-dev libopenal-dev }
+      - { name: Gradle cache, uses: ./.github/actions/gradle-cache }
+      - { name: Grant execute permission for gradlew, run: chmod +x gradlew }
+      - { name: Start gradle, run: ./gradlew }
+      #- { name: Kover Merged HTML Reports, run: ./gradlew koverMergedHtmlReport koverMergedXmlReport }
+      #- uses: actions/upload-artifact@v3
+      #  with:
+      #    name: coverage-results
+      #    path: build/reports/kover/merged/html/
+      - { name: Kover Merged XML Reports, run: ./gradlew koverMergedXmlReport }
+      - uses: codecov/codecov-action@v3
+        with:
+          files: ./build/reports/kover/merged/xml/report.xml
+          flags: unittests # optional
+          name: codecov-kover # optional
+          fail_ci_if_error: false # optional (default = false)
+          verbose: true # optional (default = false)
   test-js:
     needs: changes
     if: ${{ needs.changes.outputs.testJs == 'true' }}

@@ -1,9 +1,11 @@
-import com.soywiz.korlibs.modules.*
-import com.soywiz.korge.gradle.util.*
 import com.soywiz.korge.gradle.targets.*
 import com.soywiz.korge.gradle.targets.android.AndroidSdk
 import com.soywiz.korge.gradle.targets.ios.configureNativeIos
 import com.soywiz.korge.gradle.targets.jvm.JvmAddOpens
+import com.soywiz.korge.gradle.util.*
+import com.soywiz.korlibs.modules.*
+import kotlinx.kover.api.IntellijEngine
+import org.gradle.configurationcache.extensions.capitalized
 import com.soywiz.korge.gradle.targets.native.commandLineCross
 import org.gradle.kotlin.dsl.kotlin
 import java.io.File
@@ -42,7 +44,8 @@ buildscript {
 plugins {
 	java
     kotlin("multiplatform")
-    id("org.jetbrains.kotlinx.kover") version "0.5.0" apply false
+    //id("org.jetbrains.kotlinx.kover") version "0.6.1" apply false
+    id("org.jetbrains.kotlinx.kover") version "0.6.1" apply true
     id("org.jetbrains.dokka") version "1.6.10" apply false
     signing
     `maven-publish`
@@ -121,6 +124,10 @@ rootProject.plugins.withType<org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJ
     rootProject.the<org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension>().nodeVersion = nodeVersion
 }
 
+koverMerged {
+    enable()
+}
+
 subprojects {
     val doConfigure = mustAutoconfigureKMM()
 
@@ -132,6 +139,11 @@ subprojects {
 
         // AppData\Local\Android\Sdk\tools\bin>sdkmanager --licenses
         apply(plugin = "kotlin-multiplatform")
+
+        //extensions.getByType(kotlinx.kover.api.KoverProjectConfig::class.java).apply {
+        //    engine.set(IntellijEngine("1.0.683"))
+        //}
+        //kover { engine.set(IntellijEngine("1.0.683")) }
 
         if (hasAndroid) {
             if (isSample) {
@@ -465,6 +477,10 @@ subprojects {
             }
         }
     }
+}
+
+subprojects {
+    apply(plugin = "kover")
 }
 
 fun Project.samples(block: Project.() -> Unit) {
