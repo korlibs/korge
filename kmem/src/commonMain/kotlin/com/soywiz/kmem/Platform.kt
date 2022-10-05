@@ -67,3 +67,27 @@ interface Platform {
         override val hasMultithreadedSharedHeap: Boolean
     ) : Platform
 }
+
+
+val Platform.isWindows: Boolean get() = os.isWindows
+val Platform.isUnix: Boolean get() = os.isPosix
+val Platform.isPosix: Boolean get() = os.isPosix
+val Platform.isLinux: Boolean get() = os.isLinux
+val Platform.isMac: Boolean get() = os.isMac
+
+val Platform.isIos: Boolean get() = os.isIos
+val Platform.isAndroid: Boolean get() = os.isAndroid
+val Platform.isWatchos: Boolean get() = os.isWatchos
+val Platform.isTvos: Boolean get() = os.isTvos
+
+val Platform.isJs: Boolean get() = runtime.isJs
+val Platform.isNative: Boolean get() = runtime.isNative
+val Platform.isNativeDesktop: Boolean get() = isNative && os.isDesktop
+val Platform.isJvm: Boolean get() = runtime.isJvm
+
+val Platform.isJsShell: Boolean get() = rawPlatformName == "js-shell"
+val Platform.isJsNodeJs: Boolean get() = rawPlatformName == "js-node"
+val Platform.isJsDenoJs: Boolean get() = rawPlatformName == "js-deno"
+val Platform.isJsBrowser: Boolean get() = rawPlatformName == "js-web"
+val Platform.isJsWorker: Boolean get() = rawPlatformName == "js-worker"
+val Platform.isJsBrowserOrWorker: Boolean get() = isJsBrowser || isJsWorker
