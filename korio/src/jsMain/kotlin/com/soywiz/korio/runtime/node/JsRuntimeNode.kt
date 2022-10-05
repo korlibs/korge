@@ -20,6 +20,7 @@ import com.soywiz.korio.runtime.JsRuntime
 import com.soywiz.korio.stream.*
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.suspendCancellableCoroutine
 import org.khronos.webgl.ArrayBuffer
 import org.khronos.webgl.Int8Array
@@ -103,16 +104,24 @@ private class NodeJsAsyncClient(val coroutineContext: CoroutineContext) : AsyncC
     override var connected: Boolean = false; private set
     private val task = AsyncQueue().withContext(coroutineContext)
 
+    fun setConnection(connection: dynamic) {
+        this.connection = connection
+        connected = true
+        connection?.pause()
+        connection?.on("data") { it ->
+            val bytes = it.unsafeCast<ByteArray>().copyOf()
+            task {
+                input.write(bytes)
+            }
+        }
+        connection?.on("error") { it ->
+            console.error(it)
+        }
+    }
+
     override suspend fun connect(host: String, port: Int): Unit = suspendCancellableCoroutine { c ->
         connection = net.createConnection(port, host) {
-            connected = true
-            connection?.pause()
-            connection?.on("data") { it ->
-                val bytes = it.unsafeCast<ByteArray>().copyOf()
-                task {
-                    input.write(bytes)
-                }
-            }
+            setConnection(connection)
             c.resume(Unit)
         }
         c.invokeOnCancellation {
@@ -142,28 +151,59 @@ private class NodeJsAsyncClient(val coroutineContext: CoroutineContext) : AsyncC
     }
 
     override suspend fun close() {
-        connection?.close()
+        if (connection != null) {
+            val deferred = CompletableDeferred<Unit>()
+            connection.end { deferred.complete(Unit) }
+            deferred.await()
+            connection.destroy()
+        }
+        connection = null
     }
 }
 
 private class NodeJsAsyncServer : AsyncServer {
-    override val requestPort: Int
-        get() = TODO("not implemented")
-    override val host: String
-        get() = TODO("not implemented")
-    override val backlog: Int
-        get() = TODO("not implemented")
-    override val port: Int
-        get() = TODO("not implemented")
+    private val net = require_node("net")
+    private var server: dynamic = null
+    override var requestPort: Int = -1; private set
+    override var host: String = ""; private set
+    override var backlog: Int = -1; private set
+    override var port: Int = -1; private set
+
+    private val clientFlow: Channel<dynamic> = Channel(Channel.UNLIMITED)
 
     override suspend fun accept(): AsyncClient {
-        TODO("not implemented")
+        val connection = clientFlow.receive()
+        return NodeJsAsyncClient(coroutineContext).also {
+            it.setConnection(connection)
+        }
     }
 
-    suspend fun init(port: Int, host: String, backlog: Int): AsyncServer = this.apply {
+    suspend fun init(port: Int, host: String, backlog: Int): AsyncServer {
+        server = net.createServer(jsObject(
+        )) { connection ->
+            clientFlow.trySend(connection)
+        }
+        clientFlow.invokeOnClose {
+            server.close()
+        }
+        val deferred = CompletableDeferred<Unit>()
+        server.on("error") { err ->
+            console.error(err)
+        }
+        server.listen(port, host, backlog) {
+            deferred.complete(Unit)
+        }
+        deferred.await()
+        this.backlog = backlog
+        this.requestPort = port
+        this.host = host
+        this.port = server.address().port
+        return this
     }
 
-    override suspend fun close() = Unit
+    override suspend fun close() {
+        clientFlow.cancel()
+    }
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
