@@ -138,11 +138,7 @@ open class GameWindowCoroutineDispatcher : CoroutineDispatcher(), Delay, Closeab
     override fun invokeOnTimeout(timeMillis: Long, block: Runnable, context: CoroutineContext): DisposableHandle {
         val task = TimedTask(now() + timeMillis.toDouble().milliseconds, null, block)
         lock { timedTasks.add(task) }
-        return object : DisposableHandle {
-            override fun dispose() {
-                lock { timedTasks.remove(task) }
-            }
-        }
+        return DisposableHandle { lock { timedTasks.remove(task) } }
     }
 
     var timedTasksTime = 0.milliseconds
@@ -369,6 +365,13 @@ open class GameWindow :
     }
 
     open var cursor: ICursor = Cursor.DEFAULT
+
+    /**
+     * Flag to keep the screen on, even when there is no user input and the user is idle
+     */
+    open var keepScreenOn: Boolean
+        set(value) = Unit
+        get() = false
 
     override val key: CoroutineContext.Key<*> get() = CoroutineKey
     companion object CoroutineKey : CoroutineContext.Key<GameWindow> {
