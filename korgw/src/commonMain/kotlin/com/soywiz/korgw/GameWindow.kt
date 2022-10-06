@@ -138,11 +138,7 @@ open class GameWindowCoroutineDispatcher : CoroutineDispatcher(), Delay, Closeab
     override fun invokeOnTimeout(timeMillis: Long, block: Runnable, context: CoroutineContext): DisposableHandle {
         val task = TimedTask(now() + timeMillis.toDouble().milliseconds, null, block)
         lock { timedTasks.add(task) }
-        return object : DisposableHandle {
-            override fun dispose() {
-                lock { timedTasks.remove(task) }
-            }
-        }
+        return DisposableHandle { lock { timedTasks.remove(task) } }
     }
 
     var timedTasksTime = 0.milliseconds
