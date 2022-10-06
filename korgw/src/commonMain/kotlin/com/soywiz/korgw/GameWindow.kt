@@ -366,6 +366,13 @@ open class GameWindow :
 
     open var cursor: ICursor = Cursor.DEFAULT
 
+    /**
+     * Flag to keep the screen on, even when there is no user input and the user is idle
+     */
+    open var keepScreenOn: Boolean
+        set(value) = Unit
+        get() = false
+
     override val key: CoroutineContext.Key<*> get() = CoroutineKey
     companion object CoroutineKey : CoroutineContext.Key<GameWindow> {
         val MenuItemSeparatror = MenuItem(null)
