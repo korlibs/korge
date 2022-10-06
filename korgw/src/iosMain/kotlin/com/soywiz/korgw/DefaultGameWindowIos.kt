@@ -538,6 +538,12 @@ open class IosGameWindow(
     override val isSoftKeyboardVisible: Boolean get() = super.isSoftKeyboardVisible
     lateinit var textField: MyUITextComponent
 
+    override var keepScreenOn: Boolean
+        set(value) {
+            UIApplication.sharedApplication.idleTimerDisabled = value
+        }
+        get() = UIApplication.sharedApplication.isIdleTimerDisabled()
+
     class MyUITextComponent(val gw: IosGameWindow,  rect: CValue<CGRect>) : UIView(rect), UITextInputProtocol, UITextInputTraitsProtocol {
         override fun canBecomeFirstResponder(): Boolean = true
         override fun canBecomeFocused(): Boolean = true
