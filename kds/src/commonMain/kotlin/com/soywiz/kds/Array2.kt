@@ -29,8 +29,10 @@ inline fun DoubleArray2.map2(gen: (x: Int, y: Int, v: Double) -> Double): Double
     }
 
 @Suppress("NOTHING_TO_INLINE", "RemoveExplicitTypeArguments")
-data class Array2<TGen>(override val width: Int, override val height: Int, val data: Array<TGen>) :
-    IArray2<TGen> {
+data class Array2<TGen>(override val width: Int, override val height: Int, val data: Array<TGen>) : IArray2<TGen> {
+    init {
+        IArray2.checkArraySize(width, height, data.size)
+    }
     companion object {
         inline operator fun <TGen : Any> invoke(width: Int, height: Int, fill: TGen): Array2<TGen> =
             Array2<TGen>(width, height, Array<Any>(width * height) { fill } as Array<TGen>)
