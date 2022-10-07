@@ -1,5 +1,6 @@
 package com.soywiz.korgw.awt
 
+import com.soywiz.kds.*
 import com.soywiz.kgl.*
 import com.soywiz.klock.*
 import com.soywiz.kmem.*
@@ -10,12 +11,14 @@ import com.soywiz.korgw.osx.*
 import com.soywiz.korgw.platform.*
 import com.soywiz.korgw.win32.*
 import com.soywiz.korgw.x11.*
+import com.soywiz.korim.awt.*
 import com.soywiz.korim.color.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korio.net.URL
 import com.soywiz.korio.util.*
+import com.soywiz.korma.geom.*
 import com.sun.jna.*
 import kotlinx.coroutines.*
 import java.awt.*
@@ -53,28 +56,45 @@ abstract class BaseAwtGameWindow(val config: GameWindowCreationConfig) : GameWin
     }
     val windowOrComponent get() = window ?: component
 
+    val Cursor.jvmCursor: java.awt.Cursor get() = java.awt.Cursor(when (this) {
+        Cursor.DEFAULT -> java.awt.Cursor.DEFAULT_CURSOR
+        Cursor.CROSSHAIR -> java.awt.Cursor.CROSSHAIR_CURSOR
+        Cursor.TEXT -> java.awt.Cursor.TEXT_CURSOR
+        Cursor.HAND -> java.awt.Cursor.HAND_CURSOR
+        Cursor.MOVE -> java.awt.Cursor.MOVE_CURSOR
+        Cursor.WAIT -> java.awt.Cursor.WAIT_CURSOR
+        Cursor.RESIZE_EAST -> java.awt.Cursor.E_RESIZE_CURSOR
+        Cursor.RESIZE_SOUTH -> java.awt.Cursor.S_RESIZE_CURSOR
+        Cursor.RESIZE_WEST -> java.awt.Cursor.W_RESIZE_CURSOR
+        Cursor.RESIZE_NORTH -> java.awt.Cursor.N_RESIZE_CURSOR
+        Cursor.RESIZE_NORTH_EAST -> java.awt.Cursor.NE_RESIZE_CURSOR
+        Cursor.RESIZE_NORTH_WEST -> java.awt.Cursor.NW_RESIZE_CURSOR
+        Cursor.RESIZE_SOUTH_EAST -> java.awt.Cursor.SE_RESIZE_CURSOR
+        Cursor.RESIZE_SOUTH_WEST -> java.awt.Cursor.SW_RESIZE_CURSOR
+        else -> java.awt.Cursor.DEFAULT_CURSOR
+    })
+
+    val CustomCursor.jvmCursor: java.awt.Cursor by extraPropertyThis {
+        val toolkit = Toolkit.getDefaultToolkit()
+        val size = toolkit.getBestCursorSize(bounds.width.toIntCeil(), bounds.height.toIntCeil())
+        val result = this.createBitmap(Size(size.width, size.height))
+        //println("BITMAP SIZE=${result.bitmap.size}, hotspot=${result.hotspot}")
+        val hotspotX = result.hotspot.x.toInt().coerceIn(0, result.bitmap.width - 1)
+        val hotspotY = result.hotspot.y.toInt().coerceIn(0, result.bitmap.height - 1)
+        toolkit.createCustomCursor(result.bitmap.toAwt(), java.awt.Point(hotspotX, hotspotY), name).also {
+            //println("CUSTOM CURSOR: $it")
+        }
+    }
+
     override var cursor: ICursor = Cursor.DEFAULT
         set(value) {
             if (field == value) return
             field = value
-            val awtCursor = when (value) {
-                Cursor.DEFAULT -> java.awt.Cursor.DEFAULT_CURSOR
-                Cursor.CROSSHAIR -> java.awt.Cursor.CROSSHAIR_CURSOR
-                Cursor.TEXT -> java.awt.Cursor.TEXT_CURSOR
-                Cursor.HAND -> java.awt.Cursor.HAND_CURSOR
-                Cursor.MOVE -> java.awt.Cursor.MOVE_CURSOR
-                Cursor.WAIT -> java.awt.Cursor.WAIT_CURSOR
-                Cursor.RESIZE_EAST -> java.awt.Cursor.E_RESIZE_CURSOR
-                Cursor.RESIZE_SOUTH -> java.awt.Cursor.S_RESIZE_CURSOR
-                Cursor.RESIZE_WEST -> java.awt.Cursor.W_RESIZE_CURSOR
-                Cursor.RESIZE_NORTH -> java.awt.Cursor.N_RESIZE_CURSOR
-                Cursor.RESIZE_NORTH_EAST -> java.awt.Cursor.NE_RESIZE_CURSOR
-                Cursor.RESIZE_NORTH_WEST -> java.awt.Cursor.NW_RESIZE_CURSOR
-                Cursor.RESIZE_SOUTH_EAST -> java.awt.Cursor.SE_RESIZE_CURSOR
-                Cursor.RESIZE_SOUTH_WEST -> java.awt.Cursor.SW_RESIZE_CURSOR
-                else -> java.awt.Cursor.DEFAULT_CURSOR
+            component.cursor = when (value) {
+                is Cursor -> value.jvmCursor
+                is CustomCursor -> value.jvmCursor
+                else -> java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR)
             }
-            component.cursor = java.awt.Cursor(awtCursor)
         }
 
     fun MenuItem?.toJMenuItem(): JComponent {

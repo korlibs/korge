@@ -41,13 +41,13 @@ import com.soywiz.korev.TouchBuilder
 import com.soywiz.korev.TouchEvent
 import com.soywiz.korev.addEventListener
 import com.soywiz.korev.dispatch
-import com.soywiz.korgw.GameWindow.Quality.PERFORMANCE
-import com.soywiz.korgw.GameWindow.Quality.QUALITY
+import com.soywiz.korgw.GameWindow.Quality.*
 import com.soywiz.korgw.internal.IntTimedCache
 import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.vector.Shape
+import com.soywiz.korim.vector.renderWithHotspot
 import com.soywiz.korio.Korio
 import com.soywiz.korio.async.Signal
 import com.soywiz.korio.async.delay
@@ -58,6 +58,8 @@ import com.soywiz.korio.file.VfsFile
 import com.soywiz.korio.lang.Closeable
 import com.soywiz.korma.geom.Anchor
 import com.soywiz.korma.geom.Angle
+import com.soywiz.korma.geom.IRectangle
+import com.soywiz.korma.geom.ISize
 import com.soywiz.korma.geom.Point
 import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.geom.absoluteValue
@@ -274,7 +276,10 @@ open class GameWindow :
 
     override val dialogInterface: DialogInterface get() = DialogInterface.Unsupported
 
-    data class CustomCursor(val shape: Shape) : ICursor, Extra by Extra.Mixin()
+    data class CustomCursor(val shape: Shape, val name: String = "custom") : ICursor, Extra by Extra.Mixin() {
+        val bounds: IRectangle = this.shape.bounds
+        fun createBitmap(size: ISize? = null, native: Boolean = true) = shape.renderWithHotspot(fit = size, native = native)
+    }
 
     enum class Cursor : ICursor {
         DEFAULT, CROSSHAIR, TEXT, HAND, MOVE, WAIT,

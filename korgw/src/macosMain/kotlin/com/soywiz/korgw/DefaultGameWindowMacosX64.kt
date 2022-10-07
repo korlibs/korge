@@ -1,12 +1,14 @@
 package com.soywiz.korgw
 
+import com.soywiz.kds.*
 import com.soywiz.klock.*
 import com.soywiz.kmem.*
 import com.soywiz.korag.*
 import com.soywiz.korag.gl.*
 import com.soywiz.korev.*
 import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.format.PNG
+import com.soywiz.korim.format.*
+import com.soywiz.korim.format.ns.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korma.geom.*
 import kotlinx.cinterop.*
@@ -15,10 +17,7 @@ import platform.AppKit.*
 import platform.CoreGraphics.*
 import platform.CoreVideo.*
 import platform.Foundation.*
-import platform.JavaRuntimeSupport.javaResizeNECursor
-import platform.JavaRuntimeSupport.javaResizeNWCursor
-import platform.JavaRuntimeSupport.javaResizeSECursor
-import platform.JavaRuntimeSupport.javaResizeSWCursor
+import platform.JavaRuntimeSupport.*
 import platform.darwin.*
 import kotlin.native.SharedImmutable
 import kotlin.native.concurrent.*
@@ -49,6 +48,15 @@ class MyNSOpenGLView(
     fun getHeight() = bounds.height
 
     var lastModifierFlags: Int = 0
+
+    //var customCursor: NSCursor? = null
+
+    override fun resetCursorRects() {
+        val cursor = defaultGameWindow.cursor
+        val nsCursor = cursor.nsCursor
+        addCursorRect(bounds, nsCursor)
+        println("MyNSOpenGLView.resetCursorRects: bounds=${bounds.toRectangle()}, cursor=$cursor, nsCursor=$nsCursor")
+    }
 
     fun dispatchFlagIfRequired(event: NSEvent, mask: Int, key: Key) {
         val old = (lastModifierFlags and mask) != 0
@@ -399,24 +407,7 @@ class MyDefaultGameWindow : GameWindow() {
         set(value) {
             if (field == value) return
             field = value
-            val nsCursor = when (value) {
-                Cursor.DEFAULT -> NSCursor.arrowCursor
-                Cursor.CROSSHAIR -> NSCursor.crosshairCursor
-                Cursor.TEXT -> NSCursor.IBeamCursor
-                Cursor.HAND -> NSCursor.pointingHandCursor
-                Cursor.MOVE -> NSCursor.closedHandCursor
-                Cursor.WAIT -> NSCursor.dragCopyCursor
-                Cursor.RESIZE_EAST -> NSCursor.resizeRightCursor
-                Cursor.RESIZE_SOUTH -> NSCursor.resizeDownCursor
-                Cursor.RESIZE_WEST -> NSCursor.resizeLeftCursor
-                Cursor.RESIZE_NORTH -> NSCursor.resizeUpCursor
-                Cursor.RESIZE_NORTH_EAST -> NSCursor.javaResizeNECursor() ?: NSCursor.arrowCursor
-                Cursor.RESIZE_NORTH_WEST -> NSCursor.javaResizeNWCursor() ?: NSCursor.arrowCursor
-                Cursor.RESIZE_SOUTH_EAST -> NSCursor.javaResizeSECursor() ?: NSCursor.arrowCursor
-                Cursor.RESIZE_SOUTH_WEST -> NSCursor.javaResizeSWCursor() ?: NSCursor.arrowCursor
-                else -> NSCursor.arrowCursor
-            }
-            nsCursor.set()
+            window.contentView?.let { window.invalidateCursorRectsForView(it) }
         }
 
     private fun doWindowDidResize() {
@@ -716,3 +707,34 @@ val NSEvent.meta get() = (modifierFlags and NSCommandKeyMask) != 0uL
 
 inline val Int.cg: CGFloat get() = this.toDouble()
 inline val Double.cg: CGFloat get() = this.toDouble()
+
+
+val GameWindow.Cursor.nsCursor: NSCursor get() = when (this) {
+    GameWindow.Cursor.DEFAULT -> NSCursor.arrowCursor
+    GameWindow.Cursor.CROSSHAIR -> NSCursor.crosshairCursor
+    GameWindow.Cursor.TEXT -> NSCursor.IBeamCursor
+    GameWindow.Cursor.HAND -> NSCursor.pointingHandCursor
+    GameWindow.Cursor.MOVE -> NSCursor.closedHandCursor
+    GameWindow.Cursor.WAIT -> NSCursor.dragCopyCursor
+    GameWindow.Cursor.RESIZE_EAST -> NSCursor.resizeRightCursor
+    GameWindow.Cursor.RESIZE_SOUTH -> NSCursor.resizeDownCursor
+    GameWindow.Cursor.RESIZE_WEST -> NSCursor.resizeLeftCursor
+    GameWindow.Cursor.RESIZE_NORTH -> NSCursor.resizeUpCursor
+    GameWindow.Cursor.RESIZE_NORTH_EAST -> NSCursor.javaResizeNECursor() ?: NSCursor.arrowCursor
+    GameWindow.Cursor.RESIZE_NORTH_WEST -> NSCursor.javaResizeNWCursor() ?: NSCursor.arrowCursor
+    GameWindow.Cursor.RESIZE_SOUTH_EAST -> NSCursor.javaResizeSECursor() ?: NSCursor.arrowCursor
+    GameWindow.Cursor.RESIZE_SOUTH_WEST -> NSCursor.javaResizeSWCursor() ?: NSCursor.arrowCursor
+    else -> NSCursor.arrowCursor
+}
+
+val GameWindow.CustomCursor.nsCursor: NSCursor by extraPropertyThis {
+    val result = createBitmap()
+    val image = result.bitmap.toBMP32IfRequired().toNSImage()
+    NSCursor(image, result.hotspot.toNSPoint())
+}
+
+val GameWindow.ICursor.nsCursor: NSCursor get() = when (this) {
+    is GameWindow.Cursor -> this.nsCursor
+    is GameWindow.CustomCursor -> this.nsCursor
+    else -> NSCursor.arrowCursor
+}

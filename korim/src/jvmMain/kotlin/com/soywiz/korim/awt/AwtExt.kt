@@ -7,6 +7,8 @@ import com.soywiz.korim.format.ImageDecoderNotFoundException
 import com.soywiz.korim.format.ImageDecodingProps
 import com.soywiz.korio.async.*
 import com.soywiz.korma.geom.Anchor
+import com.soywiz.korma.geom.IPoint
+import com.soywiz.korma.geom.ISize
 import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.geom.ScaleMode
 import com.soywiz.korma.geom.Size
@@ -31,6 +33,8 @@ fun Bitmap32.toAwt(
 	return out
 }
 
+fun IPoint.toAwt(): java.awt.Point = Point(x.toIntRound(), y.toIntRound())
+
 fun Bitmap.toAwt(
 	out: BufferedImage = BufferedImage(
 		width.coerceAtLeast(1),
@@ -51,6 +55,9 @@ suspend fun awtShowImageAndWait(image: BufferedImage): Unit = suspendCancellable
 
 fun awtShowImage(image: BufferedImage): JFrame {
 	//println("Showing: $image")
+    if (GraphicsEnvironment.isHeadless()) {
+        throw HeadlessException("If on tests, try NON_HEADLESS_TESTS=true")
+    }
 	val frame = object : JFrame("Image (${image.width}x${image.height})") {
         override fun paint(g: Graphics) {
             //super.paint(g)
