@@ -17,6 +17,29 @@ interface TEvent<T : TEvent<T>> {
 
 interface EventType<T: TEvent<T>>
 
+data class GestureEvent(
+    override var type: Type = Type.MAGNIFY,
+    var id: Int = 0,
+    var amountX: Double = 0.0,
+    var amountY: Double = 0.0,
+) : Event(), TEvent<GestureEvent> {
+    var amount: Double
+        get() = amountX
+        set(value) {
+            amountX = value
+            amountY = value
+        }
+
+    enum class Type : EventType<GestureEvent> { MAGNIFY, ROTATE, SWIPE, SMART_MAGNIFY }
+
+    fun copyFrom(other: GestureEvent) {
+        this.type = other.type
+        this.id = other.id
+        this.amountX = other.amountX
+        this.amountY = other.amountY
+    }
+}
+
 /** [x] and [y] positions are window-based where 0,0 is the top-left position in the window client area */
 data class MouseEvent(
     override var type: Type = Type.MOVE,

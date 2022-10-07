@@ -13,6 +13,7 @@ import com.soywiz.korev.DropFileEvent
 import com.soywiz.korev.EventDispatcher
 import com.soywiz.korev.GamePadConnectionEvent
 import com.soywiz.korev.GamePadUpdateEvent
+import com.soywiz.korev.GestureEvent
 import com.soywiz.korev.KeyEvent
 import com.soywiz.korev.MouseButton
 import com.soywiz.korev.MouseEvent
@@ -418,7 +419,10 @@ object Korge {
             logger.trace { "eventDispatcher.addEventListener<KeyEvent>:$e" }
             views.dispatch(e)
         }
-
+        eventDispatcher.addEventListener<GestureEvent> { e ->
+            logger.trace { "eventDispatcher.addEventListener<GestureEvent>:$e" }
+            views.dispatch(e)
+        }
 
         eventDispatcher.addEventListener<DropFileEvent> { e -> views.dispatch(e) }
         eventDispatcher.addEventListener<ResumeEvent> { e -> views.dispatch(e) }

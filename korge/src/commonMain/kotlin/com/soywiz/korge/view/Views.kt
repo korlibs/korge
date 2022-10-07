@@ -17,6 +17,7 @@ import com.soywiz.korev.EventDispatcher
 import com.soywiz.korev.EventResult
 import com.soywiz.korev.GamePadConnectionEvent
 import com.soywiz.korev.GamePadUpdateEvent
+import com.soywiz.korev.GestureEvent
 import com.soywiz.korev.Key
 import com.soywiz.korev.KeyEvent
 import com.soywiz.korev.MouseEvent
@@ -31,6 +32,7 @@ import com.soywiz.korge.baseview.BaseView
 import com.soywiz.korge.component.Component
 import com.soywiz.korge.component.EventComponent
 import com.soywiz.korge.component.GamepadComponent
+import com.soywiz.korge.component.GestureComponent
 import com.soywiz.korge.component.KeyComponent
 import com.soywiz.korge.component.MouseComponent
 import com.soywiz.korge.component.ResizeComponent
@@ -87,9 +89,6 @@ import com.soywiz.korui.UiApplication
 import com.soywiz.korui.UiContainer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.cancel
-import kotlin.collections.arrayListOf
-import kotlin.collections.hashMapOf
-import kotlin.collections.plusAssign
 import kotlin.collections.set
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
@@ -335,6 +334,8 @@ class Views constructor(
                 this.stage.dispatch(clazz, event)
                 //val stagedViews = getAllDescendantViews(stage, tempViews, true)
                 when (e) {
+                    is GestureEvent ->
+                        stage.forEachComponentOfTypeRecursive(GestureComponent, tempComps) { it.onGestureEvent(views, e) }
                     is MouseEvent ->
                         stage.forEachComponentOfTypeRecursive(MouseComponent, tempComps) { it.onMouseEvent(views, e) }
                     is TouchEvent ->
