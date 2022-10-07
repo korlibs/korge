@@ -1,8 +1,10 @@
 package com.soywiz.kds
 
 @Suppress("NOTHING_TO_INLINE", "RemoveExplicitTypeArguments")
-data class FloatArray2(override val width: Int, override val height: Int, val data: FloatArray) :
-    IArray2<Float> {
+data class FloatArray2(override val width: Int, override val height: Int, val data: FloatArray) : IArray2<Float> {
+    init {
+        IArray2.checkArraySize(width, height, data.size)
+    }
     companion object {
         inline operator fun invoke(width: Int, height: Int, fill: Float): FloatArray2 =
             FloatArray2(width, height, FloatArray(width * height) { fill })

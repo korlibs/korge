@@ -2,8 +2,10 @@ package com.soywiz.kds
 
 
 @Suppress("NOTHING_TO_INLINE", "RemoveExplicitTypeArguments")
-data class LongArray2(override val width: Int, override val height: Int, val data: LongArray) :
-    IArray2<Long> {
+data class LongArray2(override val width: Int, override val height: Int, val data: LongArray) : IArray2<Long> {
+    init {
+        IArray2.checkArraySize(width, height, data.size)
+    }
     companion object {
         inline operator fun invoke(width: Int, height: Int, fill: Long): LongArray2 =
             LongArray2(width, height, LongArray(width * height) { fill } as LongArray)

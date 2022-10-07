@@ -1,8 +1,11 @@
 package com.soywiz.kds
 
 @Suppress("NOTHING_TO_INLINE", "RemoveExplicitTypeArguments")
-data class BooleanArray2(override val width: Int, override val height: Int, val data: BooleanArray) :
-    IArray2<Boolean> {
+data class BooleanArray2(override val width: Int, override val height: Int, val data: BooleanArray) : IArray2<Boolean> {
+    init {
+        IArray2.checkArraySize(width, height, data.size)
+    }
+
     companion object {
         inline operator fun invoke(width: Int, height: Int, fill: Boolean): BooleanArray2 =
             BooleanArray2(width, height, BooleanArray(width * height) { fill } as BooleanArray)

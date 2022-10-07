@@ -2,8 +2,11 @@ package com.soywiz.kds
 
 
 @Suppress("NOTHING_TO_INLINE", "RemoveExplicitTypeArguments")
-data class CharArray2(override val width: Int, override val height: Int, val data: CharArray) :
-    IArray2<Char> {
+data class CharArray2(override val width: Int, override val height: Int, val data: CharArray) : IArray2<Char> {
+    init {
+        IArray2.checkArraySize(width, height, data.size)
+    }
+
     companion object {
         inline operator fun invoke(width: Int, height: Int, fill: Char): CharArray2 =
             CharArray2(width, height, CharArray(width * height) { fill } as CharArray)
