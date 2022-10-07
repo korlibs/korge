@@ -16,10 +16,10 @@ class ScaleMode(
     fun transformW(item: Size, container: Size) = transformW(item.width, item.height, container.width, container.height)
     fun transformH(item: Size, container: Size) = transformH(item.width, item.height, container.width, container.height)
 
-    operator fun invoke(item: Size, container: Size, target: Size = Size()): Size =
+    operator fun invoke(item: ISize, container: ISize, target: Size = Size()): Size =
         transform(item.width, item.height, container.width, container.height, target)
 
-    operator fun invoke(item: SizeInt, container: SizeInt, target: SizeInt = SizeInt()): SizeInt = target.setTo(
+    operator fun invoke(item: ISizeInt, container: ISizeInt, target: SizeInt = SizeInt()): SizeInt = target.setTo(
         transformW(item.width.toDouble(), item.height.toDouble(), container.width.toDouble(), container.height.toDouble()).toInt(),
         transformH(item.width.toDouble(), item.height.toDouble(), container.width.toDouble(), container.height.toDouble()).toInt()
     )
