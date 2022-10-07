@@ -36,8 +36,8 @@ suspend fun main() = Korge(
     //solidRect(100, 100, Colors.RED).xy(300, 300).filters(BlurFilter()); return@Korge
 
     demoSelector(
-        Demo(::MainTilemapTest),
-        //Demo(::MainLDTKSampleScene),
+        //Demo(::MainTilemapTest),
+        Demo(::MainLDTKSampleScene),
         //Demo(::MainJSMpeg),
         //Demo(::MainGraphicsText),
         //Demo(::MainTextBounds),
