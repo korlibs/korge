@@ -106,9 +106,18 @@ open class FSprites(val maxSize: Int) {
         this.scaleY = sy
     }
 
+    fun FSprite.setTex(left: Int, top: Int, right: Int, bottom: Int, texId: Int = this.texId) {
+        this.tex0Raw = left or (top shl 16)
+        this.tex1Raw = right or (bottom shl 16)
+        this.texId = texId
+    }
+
+    fun FSprite.setTexSize(x: Int, y: Int, width: Int, height: Int, texId: Int = this.texId) {
+        setTex(x, y, x + width, y + height, texId)
+    }
+
     fun FSprite.setTex(tex: BmpSlice) {
-        tex0Raw = tex.left or (tex.top shl 16)
-        tex1Raw = tex.right or (tex.bottom shl 16)
+        setTex(tex.left, tex.top, tex.right, tex.bottom)
     }
 
     fun createView(tex: Bitmap) = FView(this, tex)
