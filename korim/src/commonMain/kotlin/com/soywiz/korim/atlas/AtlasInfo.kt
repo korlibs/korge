@@ -32,10 +32,14 @@ data class AtlasInfo(
     )
 
     data class Rect(val x: Int, val y: Int, val w: Int, val h: Int) {
-        val rect get() = Rectangle(x, y, w, h)
+        constructor(rect: RectangleInt) : this(rect.x, rect.y, rect.width, rect.height)
+        companion object {
+            operator fun invoke(rect: Rectangle): Rect = Rect(rect.asInt())
+        }
+        val rect: Rectangle get() = Rectangle(x, y, w, h)
 
-        fun toRectangleInt() : RectangleInt = RectangleInt(x, y, w, h)
-        fun toMap() = mapOf("x" to x, "y" to y, "w" to w, "h" to h)
+        fun toRectangleInt(): RectangleInt = RectangleInt(x, y, w, h)
+        fun toMap(): Map<String, Int> = mapOf("x" to x, "y" to y, "w" to w, "h" to h)
     }
 
     data class Size(val width: Int, val height: Int) {
@@ -134,7 +138,7 @@ data class AtlasInfo(
         val sourceSize: Size get() = Size(virtFrame?.w ?: frame.w, virtFrame?.h ?: frame.h)
 
         @Deprecated("Use virtFrame", ReplaceWith("if (virtFrame == null) frame else Rect(virtFrame.x, virtFrame.y, frame.w, frame.h)"))
-        val spriteSourceSize: Rect get() = if (virtFrame == null) frame else Rect(virtFrame.x, virtFrame.y, frame.w, frame.h)
+        val spriteSourceSize: Rect get() = if (virtFrame == null) Rect(0, 0, frame.w, frame.h) else Rect(virtFrame.x, virtFrame.y, virtFrame.w, virtFrame.h)
 
         @Deprecated("Use virtFrame", ReplaceWith("virtFrame != null"))
         val trimmed: Boolean get() = virtFrame != null

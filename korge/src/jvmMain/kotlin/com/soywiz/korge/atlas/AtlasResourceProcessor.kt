@@ -3,6 +3,7 @@ package com.soywiz.korge.atlas
 import com.soywiz.korge.resources.ResourceProcessor
 import com.soywiz.korim.atlas.*
 import com.soywiz.korim.bitmap.slice
+import com.soywiz.korim.bitmap.trimmed
 import com.soywiz.korim.format.ImageEncodingProps
 import com.soywiz.korim.format.PNG
 import com.soywiz.korim.format.readBitmap
@@ -33,7 +34,8 @@ open class AtlasResourceProcessor : ResourceProcessor("atlas") {
 
         if (files.isNotEmpty()) {
 
-            val bitmaps = files.map { it.readBitmap().slice(name = it.baseName) }
+            val bitmaps = files.map { it.readBitmap().slice(name = it.baseName).trimmed() }
+            //val bitmaps = files.map { it.readBitmap().slice(name = it.baseName) }
 
             val outputImageFile = outputFile.withCompoundExtension("atlas.png")
 

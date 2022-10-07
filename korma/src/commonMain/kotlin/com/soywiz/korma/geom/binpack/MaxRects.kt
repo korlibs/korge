@@ -7,6 +7,11 @@ class MaxRects(
     maxWidth: Double,
     maxHeight: Double
 ) : BinPacker.Algo {
+    companion object : BinPacker.AlgoFactory {
+        override fun create(maxWidth: Double, maxHeight: Double): BinPacker.Algo {
+            return MaxRects(maxWidth, maxHeight)
+        }
+    }
     var freeRectangles = fastArrayListOf<Rectangle>(Rectangle(0.0, 0.0, maxWidth, maxHeight))
 
     override fun add(width: Double, height: Double): Rectangle? = quickInsert(width, height)

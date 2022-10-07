@@ -3,7 +3,6 @@ package com.soywiz.korim.atlas
 import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.BitmapSlice
 import com.soywiz.korim.bitmap.BmpSlice
-import com.soywiz.korim.bitmap.asumePremultiplied
 import com.soywiz.korim.bitmap.virtFrame
 import com.soywiz.korim.format.ImageDecodingProps
 import com.soywiz.korim.format.readBitmapSlice

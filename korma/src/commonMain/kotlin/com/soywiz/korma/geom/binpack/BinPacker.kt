@@ -16,7 +16,13 @@ import kotlin.collections.set
 import kotlin.collections.sortedByDescending
 import kotlin.collections.toList
 
-class BinPacker(val width: Double, val height: Double, val algo: Algo = MaxRects(width, height)) {
+class BinPacker(val width: Double, val height: Double, val algoFactory: AlgoFactory = MaxRects) {
+    val algo = algoFactory.create(width, height)
+
+    interface AlgoFactory {
+        fun create(maxWidth: Double, maxHeight: Double): Algo
+    }
+
     interface Algo {
         fun add(width: Double, height: Double): Rectangle?
     }
@@ -61,9 +67,9 @@ class BinPacker(val width: Double, val height: Double, val algo: Algo = MaxRects
     fun addBatch(items: Iterable<Size>): List<Rectangle?> = algo.addBatch(items) { it }.map { it.second }
 
     companion object {
-        operator fun invoke(width: Double, height: Double, algo: Algo = MaxRects(width, height)) = BinPacker(width, height, algo)
-        operator fun invoke(width: Int, height: Int, algo: Algo = MaxRects(width.toDouble(), height.toDouble())) = BinPacker(width.toDouble(), height.toDouble(), algo)
-        operator fun invoke(width: Float, height: Float, algo: Algo = MaxRects(width.toDouble(), height.toDouble())) = BinPacker(width.toDouble(), height.toDouble(), algo)
+        operator fun invoke(width: Double, height: Double, algo: AlgoFactory = MaxRects) = BinPacker(width, height, algo)
+        operator fun invoke(width: Int, height: Int, algo: AlgoFactory = MaxRects) = BinPacker(width.toDouble(), height.toDouble(), algo)
+        operator fun invoke(width: Float, height: Float, algo: AlgoFactory = MaxRects) = BinPacker(width.toDouble(), height.toDouble(), algo)
 
         fun <T> pack(width: Double, height: Double, items: Iterable<T>, getSize: (T) -> Size): Result<T> = BinPacker(width, height).addBatch(items, getSize)
         fun <T> pack(width: Int, height: Int, items: Iterable<T>, getSize: (T) -> Size): Result<T> = pack(width.toDouble(), height.toDouble(), items, getSize)
