@@ -1,3 +1,7 @@
+plugins {
+    alias(libs.plugins.kotlin.serialization) apply true
+}
+
 description = "Multiplatform Game Engine written in Kotlin"
 
 project.ext.props = [
@@ -13,10 +17,12 @@ dependencies {
 	add("commonMainApi", project(":korgw"))
 	add("commonMainApi", project(":korau"))
 	add("commonMainApi", project(":korinject"))
+    add("commonMainApi", libs.kotlinx.serialization.core)
+    add("commonMainApi", libs.kotlinx.serialization.json)
     commonMainApi(project(":korte"))
     jvmMainApi("org.jetbrains.kotlin:kotlin-reflect")
-    jvmMainApi("com.fasterxml.jackson.core:jackson-databind:2.13.3")
-    jvmMainApi("com.fasterxml.jackson.module:jackson-module-kotlin:2.13.3")
+    jvmMainApi(libs.jackson.databind)
+    jvmMainApi(libs.jackson.kotlin)
 
     //add("jvmMainApi", project(":korte"))
 

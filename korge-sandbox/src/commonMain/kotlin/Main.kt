@@ -1,3 +1,4 @@
+
 import com.soywiz.korge.Korge
 import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.scene.sceneContainer
@@ -28,15 +29,18 @@ suspend fun main() = Korge(
     debug = true,
     multithreaded = true,
     forceRenderEveryFrame = false // Newly added optimization!
+    //forceRenderEveryFrame = true
     //debugAg = true,
 ) {
     //uiButton("HELLO WORLD!", width = 300.0).position(100, 100); return@Korge
     //solidRect(100, 100, Colors.RED).xy(300, 300).filters(BlurFilter()); return@Korge
 
     demoSelector(
+        Demo(::MainTilemapTest),
+        //Demo(::MainLDTKSampleScene),
         //Demo(::MainJSMpeg),
         //Demo(::MainGraphicsText),
-        Demo(::MainTextBounds),
+        //Demo(::MainTextBounds),
         //Demo(::MainEditor),
         //Demo(::MainStage3d),
         //Demo(::MainInput),

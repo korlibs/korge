@@ -1,9 +1,13 @@
 import com.soywiz.korlibs.modules.KorgeJavaExec
 
+plugins {
+    alias(libs.plugins.kotlin.serialization) apply true
+}
+
 description = "Multiplatform Game Engine written in Kotlin"
 
 dependencies {
-	add("commonMainApi", project(":korge"))
+    add("commonMainApi", project(":korge"))
     add("commonMainApi", project(":korvi"))
     add("commonMainApi", project(":korge-dragonbones"))
     add("commonMainApi", project(":korge-spine"))
