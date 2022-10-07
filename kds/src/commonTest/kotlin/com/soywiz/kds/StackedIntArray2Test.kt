@@ -8,9 +8,9 @@ class StackedIntArray2Test {
     fun test() {
         val value = StackedIntArray2(2, 2)
         assertEquals(-1, value.getFirst(0, 0))
-        value.add(0, 0, 1)
-        value.add(0, 0, 2)
-        value.add(0, 0, 3)
+        value.push(0, 0, 1)
+        value.push(0, 0, 2)
+        value.push(0, 0, 3)
 
         assertEquals(3, value.getStackLevel(0, 0))
         assertEquals(1, value.getFirst(0, 0))
