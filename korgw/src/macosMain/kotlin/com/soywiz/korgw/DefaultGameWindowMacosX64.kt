@@ -79,6 +79,54 @@ class MyNSOpenGLView(
         lastModifierFlags = event.modifierFlags.toInt()
     }
 
+    private val gestureEvent = GestureEvent()
+    override fun magnifyWithEvent(event: NSEvent) {
+        defaultGameWindow.dispatch(gestureEvent.also {
+            it.type = GestureEvent.Type.MAGNIFY
+            it.id = 0
+            it.amount = event.magnification()
+        })
+        //println("magnifyWithEvent:event=$event")
+        super.magnifyWithEvent(event)
+    }
+
+    // https://developer.apple.com/documentation/appkit/nsevent
+    override fun rotateWithEvent(event: NSEvent) {
+        defaultGameWindow.dispatch(gestureEvent.also {
+            it.type = GestureEvent.Type.ROTATE
+            it.id = 0
+            it.amount = event.rotation.toDouble()
+        })
+
+        super.rotateWithEvent(event)
+    }
+
+    override fun swipeWithEvent(event: NSEvent) {
+        defaultGameWindow.dispatch(gestureEvent.also {
+            it.type = GestureEvent.Type.SWIPE
+            it.id = 0
+            it.amountX = event.deltaX.toDouble()
+            it.amountY = event.deltaY.toDouble()
+        })
+        //println("swipeWithEvent:event=$event")
+        super.swipeWithEvent(event)
+    }
+
+    override fun smartMagnifyWithEvent(event: NSEvent) {
+        defaultGameWindow.dispatch(gestureEvent.also {
+            it.type = GestureEvent.Type.SMART_MAGNIFY
+            it.id = 0
+            it.amount = 1.0
+        })
+        //println("smartMagnifyWithEvent:event=$event")
+        super.smartMagnifyWithEvent(event)
+    }
+
+    override fun scrollWheel(event: NSEvent): Unit {
+        //println("scrollWheel:event=$event")
+        mouseEvent(MouseEvent.Type.SCROLL, event)
+    }
+
     override fun mouseUp(event: NSEvent) = mouseEvent(MouseEvent.Type.UP, event)
     override fun rightMouseUp(event: NSEvent) = mouseEvent(MouseEvent.Type.UP, event)
     override fun otherMouseUp(event: NSEvent) = mouseEvent(MouseEvent.Type.UP, event)
@@ -90,8 +138,6 @@ class MyNSOpenGLView(
     override fun mouseDragged(event: NSEvent) = mouseEvent(MouseEvent.Type.DRAG, event)
     override fun rightMouseDragged(event: NSEvent) = mouseEvent(MouseEvent.Type.DRAG, event)
     override fun otherMouseDragged(event: NSEvent) = mouseEvent(MouseEvent.Type.DRAG, event)
-
-    override fun scrollWheel(event: NSEvent) = mouseEvent(MouseEvent.Type.SCROLL, event)
 
     override fun mouseMoved(event: NSEvent) = mouseEvent(MouseEvent.Type.MOVE, event)
 

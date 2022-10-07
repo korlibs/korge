@@ -5,6 +5,7 @@ import com.soywiz.klock.milliseconds
 import com.soywiz.korev.Event
 import com.soywiz.korev.GamePadConnectionEvent
 import com.soywiz.korev.GamePadUpdateEvent
+import com.soywiz.korev.GestureEvent
 import com.soywiz.korev.KeyEvent
 import com.soywiz.korev.MouseEvent
 import com.soywiz.korev.TouchEvent
@@ -83,6 +84,13 @@ interface MouseComponent : TypedComponent<MouseComponent> {
     override val type get() = Companion
 
     fun onMouseEvent(views: Views, event: MouseEvent)
+}
+
+interface GestureComponent : TypedComponent<GestureComponent> {
+    companion object : ComponentType<GestureComponent>
+    override val type get() = Companion
+
+    fun onGestureEvent(views: Views, event: GestureEvent)
 }
 
 /**

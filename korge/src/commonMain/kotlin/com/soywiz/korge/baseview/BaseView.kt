@@ -4,13 +4,13 @@ import com.soywiz.kds.FastArrayList
 import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.klock.TimeSpan
 import com.soywiz.korev.Event
-import com.soywiz.korev.EventListener
 import com.soywiz.korev.EventListenerFastMap
 import com.soywiz.korev.EventResult
 import com.soywiz.korge.component.Component
 import com.soywiz.korge.component.ComponentType
 import com.soywiz.korge.component.EventComponent
 import com.soywiz.korge.component.GamepadComponent
+import com.soywiz.korge.component.GestureComponent
 import com.soywiz.korge.component.KeyComponent
 import com.soywiz.korge.component.MouseComponent
 import com.soywiz.korge.component.ResizeComponent
@@ -134,6 +134,7 @@ open class BaseView {
             ?: (addComponent(gen(this)) as TR)
     }
 
+    inline fun <reified T : GestureComponent> getOrCreateComponentGesture(gen: (BaseView) -> T): T = getOrCreateComponentTyped(GestureComponent, gen) as T
     inline fun <reified T : MouseComponent> getOrCreateComponentMouse(gen: (BaseView) -> T): T = getOrCreateComponentTyped(MouseComponent, gen) as T
     inline fun <reified T : KeyComponent> getOrCreateComponentKey(gen: (BaseView) -> T): T = getOrCreateComponentTyped(KeyComponent, gen)
     inline fun <reified T : GamepadComponent> getOrCreateComponentGamepad(gen: (BaseView) -> T): T = getOrCreateComponentTyped(GamepadComponent, gen)

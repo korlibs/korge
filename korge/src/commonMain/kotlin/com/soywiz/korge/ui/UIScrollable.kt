@@ -170,18 +170,28 @@ open class UIScrollable(width: Double, height: Double) : UIView(width, height) {
             scroll {
                 overflowEnabled = false
                 showScrollBar()
-                val info = when {
+                val axisY = when {
                     !horizontal.shouldBeVisible -> vertical
                     !vertical.shouldBeVisible -> horizontal
                     it.isAltDown -> horizontal
                     else -> vertical
                 }
+                //val axisX = if (axisY == vertical) horizontal else vertical
+                val axisX = if (it.isAltDown) vertical else horizontal
+
                 //println(it.lastEvent.scrollDeltaMode)
                 //val infoAlt = if (it.isAltDown) vertical else horizontal
-                info.position = (info.position + it.scrollDeltaYPixels * (info.size / 16.0))
-                //infoAlt.position = (info.position + it.scrollDeltaX * (info.size / 16.0))
-                if (it.scrollDeltaYPixels != 0.0) info.pixelSpeed = 0.0
-                //if (it.scrollDeltaX != 0.0) infoAlt.pixelSpeed = 0.0
+                if (axisX.shouldBeVisible) {
+                    axisX.position = (axisX.position + it.scrollDeltaXPixels * (axisY.size / 16.0))
+                    //infoAlt.position = (info.position + it.scrollDeltaX * (info.size / 16.0))
+                    if (it.scrollDeltaXPixels != 0.0) axisX.pixelSpeed = 0.0
+                }
+                if (axisY.shouldBeVisible) {
+                    axisY.position = (axisY.position + it.scrollDeltaYPixels * (axisY.size / 16.0))
+                    //infoAlt.position = (info.position + it.scrollDeltaX * (info.size / 16.0))
+                    if (it.scrollDeltaYPixels != 0.0) axisY.pixelSpeed = 0.0
+                    //if (it.scrollDeltaX != 0.0) infoAlt.pixelSpeed = 0.0
+                }
                 it.stopPropagation()
             }
         }

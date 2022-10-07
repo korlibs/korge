@@ -25,6 +25,7 @@ import com.soywiz.korev.FullScreenEvent
 import com.soywiz.korev.GamePadConnectionEvent
 import com.soywiz.korev.GamePadUpdateEvent
 import com.soywiz.korev.GamepadMapping
+import com.soywiz.korev.GestureEvent
 import com.soywiz.korev.ISoftKeyboardConfig
 import com.soywiz.korev.InitEvent
 import com.soywiz.korev.Key
@@ -400,6 +401,7 @@ open class GameWindow :
     private val reshapeEvent = ReshapeEvent()
     protected val keyEvent = KeyEvent()
     protected val mouseEvent = MouseEvent()
+    protected val gestureEvent = GestureEvent()
     protected val touchBuilder = TouchBuilder()
     protected val touchEvent get() = touchBuilder.new
     protected val dropFileEvent = DropFileEvent()

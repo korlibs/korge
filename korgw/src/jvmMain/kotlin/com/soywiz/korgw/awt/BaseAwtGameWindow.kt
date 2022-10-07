@@ -5,6 +5,7 @@ import com.soywiz.klock.*
 import com.soywiz.kmem.*
 import com.soywiz.korev.*
 import com.soywiz.korgw.*
+import com.soywiz.korgw.internal.MicroDynamic
 import com.soywiz.korgw.osx.*
 import com.soywiz.korgw.platform.*
 import com.soywiz.korgw.win32.*
@@ -461,6 +462,7 @@ abstract class BaseAwtGameWindow(val config: GameWindowCreationConfig) : GameWin
                 }
                 val scrollDelta = e.preciseWheelRotation * osfactor
 
+                val isShiftDown = modifiers hasFlags MouseEvent.SHIFT_DOWN_MASK
                 dispatchMouseEvent(
                     type = ev,
                     id = 0,
@@ -468,11 +470,11 @@ abstract class BaseAwtGameWindow(val config: GameWindowCreationConfig) : GameWin
                     y = sy.toInt(),
                     button = button,
                     buttons = 0,
-                    scrollDeltaX = 0.0,
-                    scrollDeltaY = scrollDelta,
+                    scrollDeltaX = if (isShiftDown) scrollDelta else 0.0,
+                    scrollDeltaY = if (isShiftDown) 0.0 else scrollDelta,
                     scrollDeltaZ = 0.0,
                     scrollDeltaMode = com.soywiz.korev.MouseEvent.ScrollDeltaMode.PIXEL,
-                    isShiftDown = modifiers hasFlags MouseEvent.SHIFT_DOWN_MASK,
+                    isShiftDown = isShiftDown,
                     isCtrlDown = modifiers hasFlags MouseEvent.CTRL_DOWN_MASK,
                     isAltDown = modifiers hasFlags MouseEvent.ALT_DOWN_MASK,
                     isMetaDown = modifiers hasFlags MouseEvent.META_DOWN_MASK,
@@ -608,7 +610,77 @@ abstract class BaseAwtGameWindow(val config: GameWindowCreationConfig) : GameWin
             println("NOT Using DisplayLink")
         }
 
-        println("running: ${Thread.currentThread()}")
+        println("running: ${Thread.currentThread()}, fvsync=$fvsync")
+
+        if (OS.isMac) {
+            println("MacOS registering gesture listener...")
+
+            val gestureListener = java.lang.reflect.Proxy.newProxyInstance(
+                ClassLoader.getSystemClassLoader(),
+                arrayOf(
+                    Class.forName("com.apple.eawt.event.GestureListener"),
+                    Class.forName("com.apple.eawt.event.MagnificationListener"),
+                    Class.forName("com.apple.eawt.event.RotationListener"),
+                    Class.forName("com.apple.eawt.event.SwipeListener"),
+                )
+            ) { proxy, method, args ->
+                when (method.name) {
+                    "magnify" -> {
+                        val magnification = MicroDynamic { args[0].invoke("getMagnification") } as Double
+                        //println("magnify: $magnification")
+                        queue {
+                            dispatch(gestureEvent.also {
+                                it.type = GestureEvent.Type.MAGNIFY
+                                it.id = 0
+                                it.amount = magnification
+                            })
+                        }
+                    }
+                    "rotate" -> {
+                        val rotation = MicroDynamic { args[0].invoke("getRotation") } as Double
+                        //println("rotate: $rotation")
+                        queue {
+                            dispatch(gestureEvent.also {
+                                it.type = GestureEvent.Type.ROTATE
+                                it.id = 0
+                                it.amount = rotation
+                            })
+                        }
+                    }
+                    "swipedUp", "swipedDown", "swipedLeft", "swipedRight" -> {
+                        queue {
+                            dispatch(gestureEvent.also {
+                                it.type = GestureEvent.Type.SWIPE
+                                it.id = 0
+                                it.amountX = 0.0
+                                it.amountY = 0.0
+                                when (method.name) {
+                                    "swipedUp" -> it.amountY = -1.0
+                                    "swipedDown" -> it.amountY = +1.0
+                                    "swipedLeft" -> it.amountX = -1.0
+                                    "swipedRight" -> it.amountX = +1.0
+                                }
+                            })
+                        }
+                    }
+                    else -> {
+                        //println("gestureListener: $method, ${args.toList()}")
+                    }
+                }
+                MicroDynamic { args[0].invoke("consume") }
+            }
+
+            MicroDynamic {
+                val clazz = getClass("com.apple.eawt.event.GestureUtilities")
+                println(" -- GestureUtilities=$clazz")
+                clazz.invoke("addGestureListenerTo", contentComponent, gestureListener)
+            }
+
+            //val value = (contentComponent as JComponent).getClientProperty("com.apple.eawt.event.internalGestureHandler");
+            //println("value $value");
+            //GestureUtilities.addGestureListenerTo(p, ga);
+        }
+
 
         while (running) {
             if (fvsync) {
