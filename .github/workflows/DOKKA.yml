@@ -44,7 +44,7 @@ jobs:
       - name: Commit & Push changes
         uses: actions-js/push@5f565701a8b9f9aa6b7efc25f28994eabfcf5312
         with:
-          repository: korlibs/dokka.korge.org.git
+          repository: korlibs/dokka.korge.org
           directory: ./dokka.korge.org
           branch: master
           github_token: ${{ secrets.GITHUB_TOKEN }}
