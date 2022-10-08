@@ -46,7 +46,7 @@ plugins {
     kotlin("multiplatform")
     //id("org.jetbrains.kotlinx.kover") version "0.6.1" apply false
     id("org.jetbrains.kotlinx.kover") version "0.6.1" apply true
-    id("org.jetbrains.dokka") version "1.6.10" apply false
+    id("org.jetbrains.dokka") version "1.7.10" apply true
     signing
     `maven-publish`
 }
