@@ -1,0 +1,44 @@
+on:
+  workflow_dispatch:
+    inputs:
+      forced_version:
+        description: 'Version'
+        required: true
+        type: string
+
+jobs:
+  sync-dokka:
+    runs-on: macos-11
+    timeout-minutes: 120
+    env:
+      CI: true
+      FORCED_VERSION: ${{ inputs.forced_version }}
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          persist-credentials: false # otherwise, the token used is the GITHUB_TOKEN, instead of your personal token
+          fetch-depth: 0 # otherwise, you will failed to push refs to dest repo
+
+      - uses: actions/checkout@v3
+        with:
+          repository: git@github.com:korlibs/dokka.korge.org.git
+          path: ../dokka.korge.org
+          persist-credentials: false # otherwise, the token used is the GITHUB_TOKEN, instead of your personal token
+          fetch-depth: 0 # otherwise, you will failed to push refs to dest repo
+
+      - name: Generate dokka
+        run: ./gradlew dokkaCopy
+
+      - name: Copy
+        run: cp -rf ./build/dokka-all/ ../dokka.korge.org/
+
+      # https://github.com/actions-js/push#readme
+      - name: Commit & Push changes
+        uses: actions-js/push@5f565701a8b9f9aa6b7efc25f28994eabfcf5312
+        with:
+          repository: git@github.com:korlibs/dokka.korge.org.git
+          directory: ../dokka.korge.org
+          branch: master
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
