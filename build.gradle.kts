@@ -1,17 +1,15 @@
+
 import com.soywiz.korge.gradle.targets.*
-import com.soywiz.korge.gradle.targets.android.AndroidSdk
-import com.soywiz.korge.gradle.targets.ios.configureNativeIos
-import com.soywiz.korge.gradle.targets.jvm.JvmAddOpens
+import com.soywiz.korge.gradle.targets.android.*
+import com.soywiz.korge.gradle.targets.ios.*
+import com.soywiz.korge.gradle.targets.jvm.*
+import com.soywiz.korge.gradle.targets.native.*
 import com.soywiz.korge.gradle.util.*
 import com.soywiz.korlibs.modules.*
-import kotlinx.kover.api.IntellijEngine
-import org.gradle.configurationcache.extensions.capitalized
-import com.soywiz.korge.gradle.targets.native.commandLineCross
-import org.gradle.kotlin.dsl.kotlin
-import java.io.File
-import java.nio.file.Files
-import org.jetbrains.kotlin.gradle.tasks.KotlinNativeLink
-import java.net.URLClassLoader
+import com.soywiz.korlibs.modules.KorgeJavaExec
+import org.jetbrains.kotlin.gradle.tasks.*
+import java.net.*
+import java.nio.file.*
 
 buildscript {
     val kotlinVersion: String = libs.versions.kotlin.get()
@@ -46,7 +44,7 @@ plugins {
     kotlin("multiplatform")
     //id("org.jetbrains.kotlinx.kover") version "0.6.1" apply false
     id("org.jetbrains.kotlinx.kover") version "0.6.1" apply true
-    id("org.jetbrains.dokka") version "1.6.10" apply false
+    id("org.jetbrains.dokka") version "1.7.10" apply true
     signing
     `maven-publish`
 }
@@ -164,19 +162,28 @@ subprojects {
         if (!isSample && rootProject.plugins.hasPlugin("org.jetbrains.dokka")) {
             apply(plugin = "org.jetbrains.dokka")
 
+            tasks.dokkaHtml.configure {
+                offlineMode.set(true)
+            }
+
+            //dokkaHtml {
+            //    // Used to prevent resolving package-lists online. When this option is set to true, only local files are resolved
+            //    offlineMode.set(true)
+            //}
+
             tasks {
-                val dokkaCopy by creating(Task::class) {
-                    dependsOn("dokkaHtml")
-                    doLast {
-                        val ffrom = File(project.buildDir, "dokka/html")
-                        val finto = File(project.rootProject.projectDir, "build/dokka-all/${project.name}")
-                        copy {
-                            from(ffrom)
-                            into(finto)
-                        }
-                        File(finto, "index.html").writeText("<meta http-equiv=\"refresh\" content=\"0; url=${project.name}\">\n")
-                    }
-                }
+                //val dokkaCopy by creating(Task::class) {
+                //    dependsOn("dokkaHtml")
+                //    doLast {
+                //        val ffrom = File(project.buildDir, "dokka/html")
+                //        val finto = File(project.rootProject.projectDir, "build/dokka-all/${project.name}")
+                //        copy {
+                //            from(ffrom)
+                //            into(finto)
+                //        }
+                //        File(finto, "index-redirect.html").writeText("<meta http-equiv=\"refresh\" content=\"0; url=${project.name}\">\n")
+                //    }
+                //}
             }
         }
 
