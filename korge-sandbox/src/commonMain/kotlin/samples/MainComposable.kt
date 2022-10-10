@@ -28,6 +28,7 @@ import com.soywiz.korge.compose.padding
 import com.soywiz.korge.compose.setComposeContent
 import com.soywiz.korge.compose.size
 import com.soywiz.korge.scene.Scene
+import com.soywiz.korge.view.SContainer
 import com.soywiz.korge.view.Container
 import com.soywiz.korim.bitmap.BmpSlice
 import com.soywiz.korim.color.Colors
@@ -40,7 +41,7 @@ import com.soywiz.korma.geom.vector.roundRect
 import kotlin.coroutines.cancellation.CancellationException
 
 class MainComposable : Scene() {
-    override suspend fun Container.sceneMain() {
+    override suspend fun SContainer.sceneMain() {
         setComposeContent(this) {
             MainApp()
         }

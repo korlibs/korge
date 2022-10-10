@@ -2,7 +2,7 @@
 jna = "5.12.1"
 jcodec = "0.2.5"
 proguard-gradle = "7.2.2"
-kotlin = "1.7.20"
+kotlin = "1.7.10"
 kotlinx-coroutines = "1.6.4"
 kotlinx-serialization = "1.4.0"
 kotlinx-atomicfu = "0.18.3"
@@ -15,8 +15,8 @@ closure-compiler = "v20210808"
 
 # https://androidx.dev/storage/compose-compiler/repository
 # https://github.com/JetBrains/compose-jb/issues/2108#issuecomment-1157978869
-kotlinx-compose = "1.2.0-beta02"
-androidx-compose-compiler = "1.4.0-dev-k1.7.20-RC-a143c065804"
+kotlinx-compose = "1.2.0-rc01"
+#androidx-compose-compiler = "1.4.0-dev-k1.7.20-RC-a143c065804"
 
 [libraries]
 jna-core = { module = "net.java.dev.jna:jna", version.ref = "jna" }
@@ -27,7 +27,7 @@ kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-c
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinx-coroutines" }
 kotlinx-compose-gradle-plugin = { module = "org.jetbrains.compose:org.jetbrains.compose.gradle.plugin", version.ref = "kotlinx-compose" }
 kotlinx-compose-runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "kotlinx-compose" }
-androidx-compose-compiler = { module = "androidx.compose.compiler:compiler", version.ref = "androidx-compose-compiler" }
+#androidx-compose-compiler = { module = "androidx.compose.compiler:compiler", version.ref = "androidx-compose-compiler" }
 android-build-gradle = { module = "com.android.tools.build:gradle", version.ref = "android-build-gradle" }
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 gradle-publish-plugin = { module = "com.gradle.publish:plugin-publish-plugin", version.ref = "gradle-publish-plugin" }

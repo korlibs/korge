@@ -4,7 +4,7 @@ import com.soywiz.korge.input.mouse
 import com.soywiz.korge.view.Circle
 import com.soywiz.korge.view.Container
 import com.soywiz.korge.view.View
-import com.soywiz.korge.view.mask
+import com.soywiz.korge.view.mask.mask
 import com.soywiz.korge.view.position
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korma.geom.Anchor
