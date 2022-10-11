@@ -11,6 +11,7 @@ dependencies {
     add("commonMainApi", project(":korge-swf"))
     //add("commonMainApi", project(":luak"))
     add("commonMainApi", project(":korge-compose"))
+    add("commonMainApi", libs.kotlinx.compose.runtime)
     add("commonMainApi", project(":korge-box2d"))
     add("commonMainApi", project(":luak"))
 

@@ -1,15 +1,28 @@
-import com.soywiz.korlibs.modules.*
-import com.soywiz.korge.gradle.util.*
+
 import com.soywiz.korge.gradle.targets.*
 import com.soywiz.korge.gradle.targets.android.AndroidSdk
 import com.soywiz.korge.gradle.targets.ios.configureNativeIos
 import com.soywiz.korge.gradle.targets.jvm.JvmAddOpens
 import com.soywiz.korge.gradle.targets.native.commandLineCross
-import org.gradle.kotlin.dsl.kotlin
-import java.io.File
-import java.nio.file.Files
+import com.soywiz.korge.gradle.util.DecoratedHttpServer
+import com.soywiz.korge.gradle.util.KorgeReloadNotifier
+import com.soywiz.korge.gradle.util.LDLibraries
+import com.soywiz.korge.gradle.util.create
+import com.soywiz.korge.gradle.util.get
+import com.soywiz.korlibs.modules.KorgeJavaExec
+import com.soywiz.korlibs.modules.allNativeTargets
+import com.soywiz.korlibs.modules.configureMavenCentralRelease
+import com.soywiz.korlibs.modules.configurePublishing
+import com.soywiz.korlibs.modules.configureSigning
+import com.soywiz.korlibs.modules.currentPlatformNativeTarget
+import com.soywiz.korlibs.modules.doEnableKotlinAndroid
+import com.soywiz.korlibs.modules.doEnableKotlinMobile
+import com.soywiz.korlibs.modules.doEnableKotlinNative
+import com.soywiz.korlibs.modules.mobileTargets
+import com.soywiz.korlibs.modules.nativeTargets
 import org.jetbrains.kotlin.gradle.tasks.KotlinNativeLink
 import java.net.URLClassLoader
+import java.nio.file.Files
 
 buildscript {
     val kotlinVersion: String = libs.versions.kotlin.get()
@@ -228,6 +241,7 @@ subprojects {
                     //kotlinOptions.useIR = true
                 }
             }
+            /*
             js(org.jetbrains.kotlin.gradle.plugin.KotlinJsCompilerType.IR) {
                 browser {
                     compilations.all {
@@ -247,6 +261,8 @@ subprojects {
                     }
                 }
             }
+
+             */
             if (hasAndroid) {
                 apply(from = "${rootProject.rootDir}/build.android.srcset.gradle")
             }
@@ -345,6 +361,7 @@ subprojects {
                     }
                 }
 
+                /*
                 val js = createPairSourceSet("js", common) { test ->
                     dependencies {
                         if (test) {
@@ -354,6 +371,7 @@ subprojects {
                         }
                     }
                 }
+                */
 
                 if (doEnableKotlinNative) {
                     val native by lazy { createPairSourceSet("native", concurrent) }
@@ -677,6 +695,7 @@ samples {
         }
 
         // esbuild
+        /*
         run {
             fun runServer(blocking: Boolean) {
                 if (_webServer == null) {
@@ -800,6 +819,7 @@ samples {
             //dependsOn("jsBrowserDevelopmentRun")
             dependsOn("jsBrowserProductionRun")
         }
+        */
 
         fun runNativeTaskNameWin(kind: String): String {
             return "run${kind}ExecutableMingwX64"
@@ -856,6 +876,7 @@ samples {
     kotlin {
         jvm {
         }
+        /*
         js {
             browser {
                 binaries.executable()
@@ -904,6 +925,7 @@ samples {
                 )
             }
         }
+        */
 
         if (doEnableKotlinNative) {
             for (target in nativeTargets(project)) {
@@ -1286,11 +1308,14 @@ subprojects {
 }
 
 // https://youtrack.jetbrains.com/issue/KT-48273
+/*
 afterEvaluate {
     rootProject.extensions.configure<org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension> {
         versions.webpackDevServer.version = "4.0.0"
     }
 }
+
+ */
 
 if (isLinux) {
     project.logger.info("LD folders: ${LDLibraries.ldFolders}")
