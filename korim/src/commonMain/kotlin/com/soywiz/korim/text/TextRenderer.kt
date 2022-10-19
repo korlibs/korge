@@ -327,6 +327,7 @@ open class TransformedTextRenderer<T>(
         original.invoke(transformation(this), text, size, defaultFont)
 }
 
+inline fun <T> TextRenderer<T>.aroundPath(out: VectorPath = VectorPath(), block: VectorPath.() -> Unit): CurveTextRenderer<T> = aroundPath(out.apply(block))
 fun <T> TextRenderer<T>.aroundPath(path: VectorPath): CurveTextRenderer<T> = CurveTextRenderer(this, path, path.getCurves())
 fun <T> TextRenderer<T>.aroundPath(curve: Curve): CurveTextRenderer<T> = CurveTextRenderer(this, curve.toVectorPath(), curve)
 
