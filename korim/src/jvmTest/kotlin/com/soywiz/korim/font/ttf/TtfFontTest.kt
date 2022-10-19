@@ -1,15 +1,11 @@
 package com.soywiz.korim.font.ttf
 
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.*
 import com.soywiz.korim.font.*
-import com.soywiz.korim.format.*
+import com.soywiz.korim.vector.format.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korio.lang.*
-import com.soywiz.korio.stream.*
-import com.soywiz.korma.geom.*
 import kotlin.test.*
 
 class TtfFontTest {
@@ -39,6 +35,14 @@ class TtfFontTest {
         //println("smileyGlyph=${smileyGlyph?.codePoint},$smileyGlyph")
         //println(smileyGlyph?.colorEntry)
         //for (path in smileyGlyph!!.paths) println("path = $path")
+    }
+
+    @Test
+    fun testScaleOrder() = suspendTest {
+        assertEquals(
+            "M675 -800L475 -800L475 -1000L675 -1000L675 -800ZM200 0Q200 104, 288 177Q376 250, 500 250Q666 250, 783 177Q814 158, 836 136L940 240Q917 262, 889 283Q728 400, 500 400Q314 400, 182 283Q50 166, 50 0Q50 -230, 275 -340Q500 -450, 500 -600L650 -600Q650 -370, 425 -260Q200 -150, 200 0Z",
+            DefaultTtfFont.getGlyphPath(16.0, '¿'.code)!!.path.toSvgPathString()
+        )
     }
 
     //@Test
