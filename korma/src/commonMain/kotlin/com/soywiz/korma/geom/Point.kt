@@ -30,6 +30,9 @@ interface IPoint {
     }
 }
 
+val IPoint.niceStr: String get() = "(${x.niceStr}, ${y.niceStr})"
+fun IPoint.niceStr(decimalPlaces: Int): String = "(${x.niceStr(decimalPlaces)}, ${y.niceStr(decimalPlaces)})"
+
 interface XY : IPoint {
     override var x: Double
     override var y: Double
