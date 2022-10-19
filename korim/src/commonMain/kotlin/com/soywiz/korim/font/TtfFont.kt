@@ -1938,8 +1938,8 @@ abstract class BaseTtfFont(
             val gpath = ref.glyph.path.path
             GlyphGraphicsPath(ref.glyph.index, VectorPath(IntArrayList(gpath.commands.size), DoubleArrayList(gpath.data.size))).also { out ->
                 val m = Matrix()
-                m.translate(ref.x, -ref.y)
                 m.scale(ref.scaleX, ref.scaleY)
+                m.translate(ref.x, -ref.y)
                 out.path.write(ref.glyph.path.path, m)
             }
         }
