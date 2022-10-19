@@ -21,7 +21,7 @@ dependencies {
 
 def doGenerateKdsTemplates() {
     com.soywiz.korge.gradle.generate.TemplateGenerator.synchronizeNew(new File(projectDir, "src/commonMain/kotlin/com/soywiz/kds/Deque.kt"))
-    com.soywiz.korge.gradle.generate.TemplateGenerator.synchronizeNew(new File(projectDir, "src/commonMain/kotlin/com/soywiz/kds/Array2.kt"))
+    com.soywiz.korge.gradle.generate.TemplateGenerator.synchronizeNew(new File(projectDir, "src/commonMain/kotlin/com/soywiz/kds/Array2.kt"), true, true, true, true, true, true, true, true)
     com.soywiz.korge.gradle.generate.TemplateGenerator.synchronizeNew(new File(projectDir, "src/commonMain/kotlin/com/soywiz/kds/Stack.kt"), false)
 }
 
