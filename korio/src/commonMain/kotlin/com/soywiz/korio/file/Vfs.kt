@@ -2,38 +2,18 @@
 
 package com.soywiz.korio.file
 
-import com.soywiz.klock.DateTime
-import com.soywiz.klogger.Console
-import com.soywiz.korio.async.AsyncCloseable
-import com.soywiz.korio.async.async
-import com.soywiz.korio.async.launchImmediately
-import com.soywiz.korio.async.toChannel
-import com.soywiz.korio.async.use
-import com.soywiz.korio.async.useIt
-import com.soywiz.korio.experimental.KorioExperimentalApi
-import com.soywiz.korio.file.std.localVfs
-import com.soywiz.korio.lang.Closeable
-import com.soywiz.korio.lang.DummyCloseable
-import com.soywiz.korio.lang.Environment
-import com.soywiz.korio.lang.IOException
-import com.soywiz.korio.lang.portableSimpleName
-import com.soywiz.korio.lang.unsupported
-import com.soywiz.korio.stream.AsyncInputStream
-import com.soywiz.korio.stream.AsyncStream
-import com.soywiz.korio.stream.copyTo
-import com.soywiz.korio.stream.openAsync
-import com.soywiz.korio.stream.readBytesUpTo
-import com.soywiz.korio.stream.writeBytes
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.emitAll
-import kotlinx.coroutines.flow.emptyFlow
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.toList
-import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.coroutineContext
+import com.soywiz.klock.*
+import com.soywiz.klogger.*
+import com.soywiz.korio.async.*
+import com.soywiz.korio.experimental.*
+import com.soywiz.korio.file.std.*
+import com.soywiz.korio.lang.*
+import com.soywiz.korio.stream.*
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.*
+import kotlin.coroutines.*
 import kotlin.math.min
-import kotlin.reflect.KClass
+import kotlin.reflect.*
 
 abstract class Vfs : AsyncCloseable {
 	protected open val absolutePath: String get() = ""
@@ -154,14 +134,11 @@ abstract class Vfs : AsyncCloseable {
 	open suspend fun mkdir(path: String, attributes: List<Attribute>): Boolean = unsupported()
     open suspend fun mkdirs(path: String, attributes: List<Attribute>): Boolean {
         if (path == "") return false
-        if (stat(path).exists) return false // Already exists and it is a directory
+        if (stat(path).exists) return false // Already exists, and it is a directory
         //println("mkdirs: $path")
-        if (!mkdir(path, attributes)) {
-            val parent = PathInfo(path).parent.fullPath
-            //println("::mkdirs: $parent")
-            mkdirs(parent, attributes)
-        }
-        //println("##retrying mkdir: $path")
+        if (mkdir(path, attributes)) return true
+        //println("::mkdirs: $parent")
+        mkdirs(PathInfo(path).parent.fullPath, attributes)
         return mkdir(path, attributes)
     }
 	open suspend fun rmdir(path: String): Boolean = delete(path) // For compatibility
