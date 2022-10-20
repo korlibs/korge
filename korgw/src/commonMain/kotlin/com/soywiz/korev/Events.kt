@@ -60,7 +60,8 @@ data class MouseEvent(
     var isMetaDown: Boolean = false,
     var scaleCoords: Boolean = true,
     /** Not direct user mouse input. Maybe event generated from touch events? */
-    var emulated: Boolean = false
+    var emulated: Boolean = false,
+    var scrollDeltaMode: ScrollDeltaMode = ScrollDeltaMode.LINE
 ) : Event(), TEvent<MouseEvent> {
     //companion object : EventType<MouseEvent>
 
@@ -96,7 +97,6 @@ data class MouseEvent(
         this.scrollDeltaMode = other.scrollDeltaMode
     }
 
-    var scrollDeltaMode: ScrollDeltaMode = ScrollDeltaMode.LINE
     enum class ScrollDeltaMode(val scale: Double) {
         PIXEL(1.0),
         LINE(10.0),
