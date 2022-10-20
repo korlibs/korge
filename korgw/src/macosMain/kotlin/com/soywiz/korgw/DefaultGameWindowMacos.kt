@@ -427,6 +427,8 @@ class MyDefaultGameWindow : GameWindow() {
     internal val backingScaleFactor: Double get() = window.backingScaleFactor.toDouble()
     internal var lastBackingScaleFactor = 0.0
 
+    val darwinGamePad = DarwinGamePad()
+
     fun doRender(update: Boolean) {
         //println("doRender[0]")
         val frameStartTime = PerformanceCounter.reference
@@ -446,6 +448,7 @@ class MyDefaultGameWindow : GameWindow() {
 
         var doRender = !update
         if (update) {
+            darwinGamePad.updateGamepads(gameWindow)
             frame(doUpdate = true, doRender = false, frameStartTime = frameStartTime)
             if (mustTriggerRender) {
                 doRender = true
