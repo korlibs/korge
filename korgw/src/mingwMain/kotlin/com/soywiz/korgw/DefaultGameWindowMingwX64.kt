@@ -427,7 +427,7 @@ class WindowsGameWindow : EventLoopGameWindow() {
             this.scrollDeltaX = scrollDeltaX
             this.scrollDeltaY = scrollDeltaY
             this.scrollDeltaZ = scrollDeltaZ
-            this.scrollDeltaMode = MouseEvent.ScrollDeltaMode.LINE
+            this.scrollDeltaMode = scrollDeltaMode
             //this.scaleCoords = false
         })
     }
@@ -517,9 +517,9 @@ fun WndProc(hWnd: HWND?, message: UINT, wParam: WPARAM, lParam: LPARAM): LRESULT
             // @TODO: and is expressed in a multiple of WHEEL_DELTA. A positive value indicates a rotation forward
             // @TODO: and a negative value indicates a rotation backward.
             // @TODO: https://docs.microsoft.com/en-us/windows/win32/inputmsg/wm-pointerhwheel
-            val intWheelDelta = wParam.toInt().extract(16, 16).toShort().toInt()
-            val scrollDelta = (-intWheelDelta.toDouble() / 120) * 3
-            //println("vertical=$vertical, scrollDelta=$scrollDelta, intWheelDelta=$intWheelDelta")
+            val intWheelDelta = wParam.toInt().extract16(16).toShort().toInt()
+            val scrollDelta = -intWheelDelta.toDouble() / (120 * 3)
+            // println("vertical=$vertical, scrollDelta=$scrollDelta, intWheelDelta=$intWheelDelta")
             windowsGameWindow.mouseEvent(
                 type, mouseX, mouseY, 8, wParam.toInt(),
                 scrollDeltaX = if (!vertical) scrollDelta else 0.0,
