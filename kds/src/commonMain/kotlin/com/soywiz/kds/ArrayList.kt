@@ -14,7 +14,7 @@ import kotlin.math.max
  */
 @Suppress("UNCHECKED_CAST")
 class IntArrayList(capacity: Int = 7) : Collection<Int> {
-    companion object
+    companion object { }
     var data: IntArray = IntArray(capacity) as IntArray; private set
     internal val capacity: Int get() = data.size
     private var length: Int = 0
@@ -210,7 +210,7 @@ class IntArrayList(capacity: Int = 7) : Collection<Int> {
 
 fun buildIntArray(block: IntArrayList.() -> Unit): IntArray = IntArrayList().also(block).toIntArray()
 fun intArrayListOf(vararg values: Int) = IntArrayList(*values)
-fun IntArray.toIntArrayList() = IntArrayList(*this)
+fun IntArray.toIntArrayList(): IntArrayList = IntArrayList(*this)
 
 
 // Double
