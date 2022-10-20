@@ -215,7 +215,7 @@ enum class GameButton {
 	}
 }
 
-class GamepadInfo(
+class GamepadInfo constructor(
     var index: Int = 0,
     var connected: Boolean = false,
     var name: String = "unknown",
@@ -226,18 +226,31 @@ class GamepadInfo(
     var axesLength: Int = 0,
     var buttonsLength: Int = 0,
     var batteryLevel: Double = 1.0,
+    var name2: String = DEFAULT_NAME2,
+    var playerIndex: Int = index,
+    var batteryStatus: BatteryStatus = BatteryStatus.UNKNOWN,
 ) {
+    enum class BatteryStatus { CHARGING, DISCHARGING, FULL, UNKNOWN }
+
+    companion object {
+        val DEFAULT_NAME2 = "Wireless Controller"
+    }
     private val axesData: Array<Point> = Array(2) { Point() }
+
+    val fullName: String get() = "$name - $name2"
 
 	fun copyFrom(that: GamepadInfo) {
 		this.index = that.index
 		this.name = that.name
+        this.name2 = that.name2
 		this.mapping = that.mapping
         this.rawButtonsPressed = that.rawButtonsPressed
 		this.connected = that.connected
         this.axesLength = that.axesLength
         this.buttonsLength = that.buttonsLength
         this.batteryLevel = that.batteryLevel
+        this.playerIndex = that.playerIndex
+        this.batteryStatus = that.batteryStatus
         arraycopy(that.axesData, 0, this.axesData, 0, min(this.axesData.size, that.axesData.size))
         arraycopy(that.rawButtonsPressure, 0, this.rawButtonsPressure, 0, min(this.rawButtonsPressure.size, that.rawButtonsPressure.size))
 		arraycopy(that.rawAxes, 0, this.rawAxes, 0, min(this.rawAxes.size, that.rawAxes.size))
@@ -268,7 +281,7 @@ class GamepadInfo(
         GameStick.LEFT -> get(GameButton.LY)
         GameStick.RIGHT -> get(GameButton.RY)
     }
-	override fun toString(): String = "Gamepad[$index][$name]" + mapping.toString(this)
+	override fun toString(): String = "Gamepad[$index][$fullName]" + mapping.toString(this)
 }
 
 abstract class GamepadMapping {

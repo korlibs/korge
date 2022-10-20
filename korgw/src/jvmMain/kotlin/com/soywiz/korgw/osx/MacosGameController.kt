@@ -15,6 +15,14 @@ interface FrameworkInt : Library {
 
 }
 
+@PublishedApi
+internal inline fun <T> getValueOrNull(obj: ObjcRef, property: KProperty<*>, gen: (Long) -> T): T? =
+    obj.id.msgSend(property.name).takeIf { it != 0L }?.let { gen(it) }
+
+@PublishedApi
+internal inline fun <T> getValue(obj: ObjcRef, property: KProperty<*>, gen: (Long) -> T): T =
+    obj.id.msgSend(property.name).let { gen(it) }
+
 inline class GCControllerButtonInput(val id: Long) {
     val analog: Boolean get() = id.msgSendInt(sel_isAnalog) != 0
     val touched: Boolean get() = id.msgSendInt(sel_isTouched) != 0
@@ -33,7 +41,8 @@ inline class GCControllerButtonInput(val id: Long) {
         val sel_isPressed = ObjcSel("isPressed")
         val sel_value = ObjcSel("value")
 
-        inline operator fun getValue(obj: ObjcRef, property: KProperty<*>): GCControllerButtonInput = GCControllerButtonInput(obj.id.msgSend(property.name))
+        inline operator fun getValue(obj: ObjcRef, property: KProperty<*>): GCControllerButtonInput =
+            getValue(obj, property) { GCControllerButtonInput(it) }
     }
 }
 
@@ -62,7 +71,8 @@ class GCControllerDirectionPad(id: Long) : ObjcRef(id) {
     val point: IPoint get() = _point.setTo(x, y)
 
     companion object {
-        inline operator fun getValue(obj: ObjcRef, property: KProperty<*>): GCControllerDirectionPad = GCControllerDirectionPad(obj.id.msgSend(property.name))
+        inline operator fun getValue(obj: ObjcRef, property: KProperty<*>): GCControllerDirectionPad =
+            getValue(obj, property) { GCControllerDirectionPad(it) }
     }
 
     override fun toString(): String = "DPad(${up.nice}, ${right.nice}, ${down.nice}, ${left.nice})"
@@ -76,7 +86,7 @@ open class GCMicroGamepad(id: Long) : ObjcRef(id) {
 
     companion object {
         inline operator fun getValue(obj: ObjcRef, property: KProperty<*>): GCMicroGamepad? =
-            obj.id.msgSend(property.name).takeIf { it != 0L }?.let { GCMicroGamepad(it) }
+            getValueOrNull(obj, property) { GCMicroGamepad(it) }
     }
 }
 
@@ -88,7 +98,7 @@ open class GCGamepad(id: Long) : GCMicroGamepad(id) {
 
     companion object {
         inline operator fun getValue(obj: ObjcRef, property: KProperty<*>): GCGamepad? =
-            obj.id.msgSend(property.name).takeIf { it != 0L }?.let { GCGamepad(it) }
+            getValueOrNull(obj, property) { GCGamepad(it) }
     }
 }
 
@@ -102,19 +112,58 @@ class GCExtendedGamepad(id: Long) : GCGamepad(id) {
     @Keep val leftThumbstickButton by GCControllerButtonInput
     @Keep val rightThumbstickButton by GCControllerButtonInput
 
-
     companion object {
         inline operator fun getValue(obj: ObjcRef, property: KProperty<*>): GCExtendedGamepad? =
-            obj.id.msgSend(property.name).takeIf { it != 0L }?.let { GCExtendedGamepad(it) }
+            getValueOrNull(obj, property) { GCExtendedGamepad(it) }
     }
 
     override fun toString(): String = "GCExtendedGamepad(dpad=$dpad, LR=[${leftThumbstick.point.niceStr(2)}, ${rightThumbstick.point.niceStr(2)}] [A=${buttonA.nice}, B=${buttonB.nice}, X=${buttonX.nice}, Y=${buttonY.nice}], L=[${leftShoulder.nice}, ${leftTrigger.nice}, ${leftThumbstickButton.nice}], R=[${rightShoulder.nice}, ${rightTrigger.nice}, ${rightThumbstickButton.nice}], SYS=[${buttonMenu.nice}, ${buttonOptions.nice}, ${buttonHome.nice}])"
 }
 
+//class GCDevice(id: Long) : ObjcRef(id) {
+//    val vendorName: String by lazy { NSString(id.msgSend("vendorName")).toString() }
+//    val productCategory: String by lazy { NSString(id.msgSend("productCategory")).toString() }
+//    companion object {
+//        inline operator fun getValue(obj: ObjcRef, property: KProperty<*>): GCDevice =
+//            getValue(obj, property) { GCDevice(it) }
+//    }
+//}
+
+//class GCPhysicalInputProfile(id: Long) : ObjcRef(id) {
+//    val device: GCDevice by GCDevice
+//   companion object {
+//       inline operator fun getValue(obj: ObjcRef, property: KProperty<*>): GCPhysicalInputProfile =
+//           getValue(obj, property) { GCPhysicalInputProfile(it) }
+//   }
+//}
+
+class GCDeviceBattery(id: Long) : ObjcRef(id) {
+    val batteryLevel: Float get() = id.msgSendFloat("batteryLevel")
+    val batteryState: Int get() = id.msgSendInt("batteryState")
+
+    companion object {
+        inline operator fun getValue(obj: ObjcRef, property: KProperty<*>): GCDeviceBattery? =
+            getValueOrNull(obj, property) { GCDeviceBattery(it) }
+    }
+}
+
+/**
+ * https://developer.apple.com/documentation/gamecontroller/gccontroller?language=objc
+ */
 class GCController(id: Long) : ObjcRef(id) {
+    val isAttachedToDevice: Boolean get() = id.msgSendInt("isAttachedToDevice") != 0
+    val playerIndex: Int get() = id.msgSendInt("playerIndex")
+    //val physicalInputProfile: GCPhysicalInputProfile by GCPhysicalInputProfile
     val extendedGamepad: GCExtendedGamepad? by GCExtendedGamepad
     val gamepad: GCGamepad? by GCGamepad
     val microGamepad: GCMicroGamepad? by GCMicroGamepad
+
+    val battery: GCDeviceBattery? by GCDeviceBattery
+
+    val vendorName: String by lazy { NSString(id.msgSend("vendorName")).toString() }
+
+    /** https://developer.apple.com/documentation/gamecontroller/gcdevice/product_category_constants?language=objc */
+    val productCategory: String by lazy { NSString(id.msgSend("productCategory")).toString() }
 
     companion object {
         fun controllers(): NSArray = NSArray(NSClass("GCController").msgSend("controllers"))
@@ -205,12 +254,22 @@ internal class MacosGamepadEventAdapter {
                         gamepad.rawAxes[3] = ex.rightThumbstick.y
                     }
                     gamepad.rawButtonsPressed = buttons
+                    gamepad.batteryLevel = ctrl.battery?.batteryLevel?.toDouble() ?: 1.0
+                    //println("ctrl.battery?.batteryState=${ctrl.battery?.batteryState}")
+                    gamepad.batteryStatus = when (ctrl.battery?.batteryState) {
+                        0 -> GamepadInfo.BatteryStatus.DISCHARGING
+                        1 -> GamepadInfo.BatteryStatus.CHARGING
+                        2 -> GamepadInfo.BatteryStatus.FULL
+                        else -> GamepadInfo.BatteryStatus.UNKNOWN
+                    }
 
                     connectedCount++
                 }
                 if (prevConnected != connected) {
                     if (connected && ctrl != null) {
-                        gamepad.name = "Standard Gamepad"
+                        gamepad.playerIndex = ctrl.playerIndex
+                        gamepad.name = ctrl.productCategory
+                        gamepad.name2 = ctrl.vendorName
                     }
 
                     //println("n=$n, prevConnected=$prevConnected, connected=$connected")

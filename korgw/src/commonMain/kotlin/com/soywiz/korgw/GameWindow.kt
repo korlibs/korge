@@ -748,7 +748,10 @@ open class GameWindow :
         rawButtonsPressed: Int,
         mapping: GamepadMapping,
         name: String?,
-        batteryLevel: Double
+        batteryLevel: Double,
+        name2: String? = null,
+        playerIndex: Int = -1,
+        batteryStatus: com.soywiz.korev.GamepadInfo.BatteryStatus? = null,
     ) {
         val index = gamePadUpdateEvent.gamepadsLength++
         val pad = gamePadUpdateEvent.gamepads[index]
@@ -761,7 +764,10 @@ open class GameWindow :
         pad.rawAxes[3] = rightStick.y
         pad.rawButtonsPressed = rawButtonsPressed
         pad.name = name ?: "unknown"
+        pad.name2 = name2 ?: "unknown"
         pad.batteryLevel = batteryLevel
+        pad.batteryStatus = batteryStatus ?: com.soywiz.korev.GamepadInfo.BatteryStatus.UNKNOWN
+        pad.playerIndex = playerIndex.takeIf { it >= 0 } ?: index
     }
 
     fun dispatchGamepadUpdateEnd() {
