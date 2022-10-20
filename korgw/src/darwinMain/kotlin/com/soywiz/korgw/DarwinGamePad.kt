@@ -2,7 +2,9 @@ package com.soywiz.korgw
 
 import com.soywiz.korev.*
 import com.soywiz.korma.geom.*
+import platform.CoreHaptics.*
 import platform.GameController.*
+import kotlin.native.internal.*
 
 class DarwinGamePad {
     val knownControllers = mutableSetOf<GCController>()
@@ -17,6 +19,13 @@ class DarwinGamePad {
             knownControllers.addAll(controllers)
             for (controller in addedControllers) {
                 gameWindow.dispatchGamepadConnectionEvent(GamePadConnectionEvent.Type.CONNECTED, controller.playerIndex.toInt())
+                //println("supportedLocalities: " + controller.haptics?.supportedLocalities)
+                //val engine: CHHapticEngine? = controller.haptics?.createEngineWithLocality("Default") as? CHHapticEngine?
+                //val pattern = CHHapticPattern(
+                //    listOf(CHHapticEvent(CHHapticEventTypeHapticTransient))
+                //)
+                //pattern.
+                //engine!!.createAdvancedPlayerWithPattern(pattern)
             }
             for (controller in removedControllers) {
                 gameWindow.dispatchGamepadConnectionEvent(
@@ -50,58 +59,49 @@ class DarwinGamePad {
                 val gamepad = controller.gamepad
                 val extendedGamepad = controller.extendedGamepad
 
-                when {
-                    extendedGamepad != null -> {
-                        button(GameButton.SYSTEM, extendedGamepad.buttonHome)
-                        button(GameButton.START, extendedGamepad.buttonMenu)
-                        button(GameButton.SELECT, extendedGamepad.buttonOptions)
-                        button(GameButton.UP, extendedGamepad.dpad.up)
-                        button(GameButton.DOWN, extendedGamepad.dpad.down)
-                        button(GameButton.LEFT, extendedGamepad.dpad.left)
-                        button(GameButton.RIGHT, extendedGamepad.dpad.right)
-                        button(GameButton.GENERIC_BUTTON_UP, extendedGamepad.buttonY)
-                        button(GameButton.GENERIC_BUTTON_RIGHT, extendedGamepad.buttonB)
-                        button(GameButton.GENERIC_BUTTON_DOWN, extendedGamepad.buttonA)
-                        button(GameButton.GENERIC_BUTTON_LEFT, extendedGamepad.buttonX)
-                        button(GameButton.L1, extendedGamepad.leftShoulder)
-                        button(GameButton.L2, extendedGamepad.leftTrigger)
-                        button(GameButton.R1, extendedGamepad.rightShoulder)
-                        button(GameButton.R2, extendedGamepad.rightTrigger)
-                        button(GameButton.L3, extendedGamepad.leftThumbstickButton)
-                        button(GameButton.R3, extendedGamepad.rightThumbstickButton)
-                        stick(leftStick, extendedGamepad.leftThumbstick)
-                        stick(rightStick, extendedGamepad.rightThumbstick)
-                    }
-                    gamepad != null -> {
-                        button(GameButton.UP, gamepad.dpad.up)
-                        button(GameButton.DOWN, gamepad.dpad.down)
-                        button(GameButton.LEFT, gamepad.dpad.left)
-                        button(GameButton.RIGHT, gamepad.dpad.right)
-                        button(GameButton.GENERIC_BUTTON_UP, gamepad.buttonY)
-                        button(GameButton.GENERIC_BUTTON_RIGHT, gamepad.buttonB)
-                        button(GameButton.GENERIC_BUTTON_DOWN, gamepad.buttonA)
-                        button(GameButton.GENERIC_BUTTON_LEFT, gamepad.buttonX)
-                        button(GameButton.L1, gamepad.leftShoulder)
-                        button(GameButton.R1, gamepad.rightShoulder)
-                    }
-                    microGamepad != null -> {
-                        button(GameButton.START, microGamepad.buttonMenu)
-                        button(GameButton.UP, microGamepad.dpad.up)
-                        button(GameButton.DOWN, microGamepad.dpad.down)
-                        button(GameButton.LEFT, microGamepad.dpad.left)
-                        button(GameButton.RIGHT, microGamepad.dpad.right)
-                        button(GameButton.GENERIC_BUTTON_DOWN, microGamepad.buttonA)
-                        button(GameButton.GENERIC_BUTTON_LEFT, microGamepad.buttonX)
-                        stick(leftStick, microGamepad.dpad)
-                    }
+                if (microGamepad != null) {
+                    button(GameButton.START, microGamepad.buttonMenu)
+                    button(GameButton.UP, microGamepad.dpad.up)
+                    button(GameButton.DOWN, microGamepad.dpad.down)
+                    button(GameButton.LEFT, microGamepad.dpad.left)
+                    button(GameButton.RIGHT, microGamepad.dpad.right)
+                    button(GameButton.XBOX_A, microGamepad.buttonA)
+                    button(GameButton.XBOX_X, microGamepad.buttonX)
+                    stick(leftStick, microGamepad.dpad)
+                }
+
+                if (gamepad != null) {
+                    button(GameButton.XBOX_Y, gamepad.buttonY)
+                    button(GameButton.XBOX_B, gamepad.buttonB)
+                    button(GameButton.L1, gamepad.leftShoulder)
+                    button(GameButton.R1, gamepad.rightShoulder)
+                }
+
+                if (extendedGamepad != null) {
+                    button(GameButton.SYSTEM, extendedGamepad.buttonHome)
+                    button(GameButton.SELECT, extendedGamepad.buttonOptions)
+                    button(GameButton.R1, extendedGamepad.rightShoulder)
+                    button(GameButton.R2, extendedGamepad.rightTrigger)
+                    button(GameButton.L3, extendedGamepad.leftThumbstickButton)
+                    button(GameButton.R3, extendedGamepad.rightThumbstickButton)
+                    stick(leftStick, extendedGamepad.leftThumbstick)
+                    stick(rightStick, extendedGamepad.rightThumbstick)
                 }
 
                 gameWindow.dispatchGamepadUpdateAdd(
                     leftStick, rightStick,
                     buttonMask,
                     mapping,
+                    controller.productCategory,
+                    controller.battery?.batteryLevel?.toDouble() ?: 1.0,
                     controller.vendorName,
-                    controller.battery?.batteryLevel?.toDouble() ?: 1.0
+                    controller.playerIndex.toInt(), // -1 - unknown, 0 - first player, 1 - second player...
+                    when (controller.battery?.batteryState) {
+                        GCDeviceBatteryStateCharging -> GamepadInfo.BatteryStatus.CHARGING
+                        GCDeviceBatteryStateDischarging -> GamepadInfo.BatteryStatus.DISCHARGING
+                        GCDeviceBatteryStateFull -> GamepadInfo.BatteryStatus.FULL
+                        else -> GamepadInfo.BatteryStatus.UNKNOWN
+                    }
                 )
             }
             gameWindow.dispatchGamepadUpdateEnd()
