@@ -82,4 +82,14 @@ class SegmentIntToTrapezoidIntListTest {
             }
         )
     }
+
+    //@Test
+    //fun testRectWithHoleBench() {
+    //    for (n in 0 until 100000) {
+    //        trapezoids {
+    //            rect(0, 0, 100, 100)
+    //            rectHole(20, 20, 60, 60)
+    //        }
+    //    }
+    //}
 }
