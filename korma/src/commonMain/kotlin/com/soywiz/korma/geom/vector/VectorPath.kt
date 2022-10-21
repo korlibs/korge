@@ -505,12 +505,12 @@ class VectorPathTrapezoids(val version: Int, val path: VectorPath, val scale: In
     val segments = path.toSegments(scale)
     val trapezoidsEvenOdd by lazy { SegmentIntToTrapezoidIntList.convert(segments, Winding.EVEN_ODD) }
     val trapezoidsNonZero by lazy { SegmentIntToTrapezoidIntList.convert(segments, Winding.NON_ZERO) }
-    fun containsPoint(x: Double, y: Double, winding: Winding = path.winding): Boolean =
-        _containsPoint((x * scale).toIntRound(), (y * scale).toIntRound(), winding)
-    private fun _containsPoint(x: Int, y: Int, winding: Winding = path.winding): Boolean = when (winding) {
-        Winding.EVEN_ODD -> trapezoidsEvenOdd.containsPoint(x, y)
-        Winding.NON_ZERO -> trapezoidsNonZero.containsPoint(x, y)
+    fun trapezoids(winding: Winding = path.winding): FTrapezoidsInt = when (winding) {
+        Winding.EVEN_ODD -> trapezoidsEvenOdd
+        Winding.NON_ZERO -> trapezoidsNonZero
     }
+    fun containsPoint(x: Double, y: Double, winding: Winding = path.winding): Boolean =
+        trapezoids(winding).containsPoint((x * scale).toIntRound(), (y * scale).toIntRound())
 }
 
 fun VectorBuilder.path(path: VectorPath?) {

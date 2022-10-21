@@ -9,6 +9,7 @@ class SegmentIntToTrapezoidIntListTest {
         buildVectorPath(winding = winding) { block() }.toTrapezoids(scale)
 
     fun trapezoidsStr(winding: Winding = Winding.NON_ZERO, scale: Int = 1, block: VectorBuilder.() -> Unit): String = trapezoids(winding, scale, block).toTrapezoidIntList().joinToString("\n")
+    fun trapezoidsDrawing(width: Int, height: Int, drawScale: Int = 1, winding: Winding = Winding.NON_ZERO, scale: Int = 1, block: VectorBuilder.() -> Unit): String = trapezoids(winding, scale, block).toInsideString(width, height, drawScale)
 
     @Test
     fun testSimpleRect() {
@@ -79,6 +80,102 @@ class SegmentIntToTrapezoidIntListTest {
             trapezoidsStr(Winding.EVEN_ODD) {
                 rect(0, 0, 100, 100)
                 rect(50, 0, 100, 100)
+            }
+        )
+    }
+
+    @Test
+    fun testShapeRectWithHole() {
+        assertEquals(
+            """
+                ###########.
+                ###########.
+                ###########.
+                ###.....###.
+                ###.....###.
+                ###.....###.
+                ###.....###.
+                ###.....###.
+                ###########.
+                ###########.
+                ###########.
+                ............
+            """.trimIndent(),
+            trapezoidsDrawing(12, 12) {
+                rect(0, 0, 10, 10)
+                rectHole(2, 2, 6, 6)
+            }
+        )
+    }
+
+    @Test
+    fun testShapeCircle() {
+        assertEquals(
+            """
+                ....####....
+                ..########..
+                .##########.
+                .##########.
+                ############
+                ############
+                ############
+                ############
+                .##########.
+                .##########.
+                ..########..
+                ....####....
+            """.trimIndent(),
+            trapezoidsDrawing(12, 12, drawScale = 10) {
+                circle(60, 60, 60)
+            }
+        )
+    }
+
+    @Test
+    fun testShapeCircleWithHoleEvenOdd() {
+        assertEquals(
+            """
+                ....####....
+                ..########..
+                .###....###.
+                .##......##.
+                ##........##
+                ##........##
+                ##........##
+                ##........##
+                .##......##.
+                .###....###.
+                ..########..
+                ....####....
+            """.trimIndent(),
+            trapezoidsDrawing(12, 12, drawScale = 10, winding = Winding.EVEN_ODD) {
+                circle(60, 60, 60)
+                //circleHole(60, 60, 40)
+                circle(60, 60, 40)
+            }
+        )
+    }
+
+    @Test
+    fun testShapeCircleWithHoleNonZero() {
+        assertEquals(
+            """
+                ....####....
+                ..########..
+                .###....###.
+                .##......##.
+                ##........##
+                ##........##
+                ##........##
+                ##........##
+                .##......##.
+                .###....###.
+                ..########..
+                ....####....
+            """.trimIndent(),
+            trapezoidsDrawing(12, 12, drawScale = 10, winding = Winding.NON_ZERO) {
+                circle(60, 60, 60)
+                circleHole(60, 60, 40)
             }
         )
     }

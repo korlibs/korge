@@ -131,6 +131,12 @@ class FTrapezoidsInt(capacity: Int = 5) {
     fun add(v: Item): Item = add(v.x0a, v.x0b, v.y0, v.x1a, v.x1b, v.y1)
     fun add(v: TrapezoidInt): Item = add(v.x0a, v.x0b, v.y0, v.x1a, v.x1b, v.y1)
 
+    fun toInsideString(width: Int, height: Int, scale: Int = 1, inside: Char = '#', outside: Char = '.'): String {
+        return Array(height) { y ->
+            CharArray(width) { x -> if (containsPoint(((x + 0.5) * scale).toInt(), ((y + 0.5) * scale).toInt())) inside else outside }.concatToString()
+        }.joinToString("\n")
+    }
+
     @JvmInline
     value class Item(val index: Int) {
         inline fun <T> use(parallelograms: FTrapezoidsInt, block: FTrapezoidsInt.(Item) -> T): T = block(parallelograms, this)
