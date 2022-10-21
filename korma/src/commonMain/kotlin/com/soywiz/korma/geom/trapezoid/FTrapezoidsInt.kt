@@ -2,6 +2,8 @@ package com.soywiz.korma.geom.trapezoid
 
 import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
+import com.soywiz.kmem.*
+import com.soywiz.korma.geom.vector.*
 import kotlin.jvm.*
 import kotlin.math.*
 
@@ -17,17 +19,82 @@ class FTrapezoidsInt(capacity: Int = 5) {
     private val data = IntArrayList(capacity * 7)
     val size: Int get() = data.size / 6
 
+    fun clear() { data.clear() }
     operator fun get(index: Int): Item = Item(index)
     inline fun fastForEach(block: FTrapezoidsInt.(Item) -> Unit) { for (n in 0 until size) this.block(this[n]) }
     inline fun <T> map(block: FTrapezoidsInt.(Item) -> T): List<T> = fastArrayListOf<T>().also { out -> fastForEach { out.add(block(it)) } }
     fun toTrapezoidIntList(): List<TrapezoidInt> = map { it.toTrapezoidInt() }
 
+    override fun toString(): String = "FTrapezoidsInt[$size]"
+
+    fun containsPoint(x: Int, y: Int, assumeSorted: Boolean = this.assumeSorted): Boolean = pointInside(x, y, assumeSorted)
+
+    data class PointInsideStats(
+        var found: Boolean = false,
+        var iterations: Int = 0,
+        var iterations2: Int = 0,
+        var total: Int = 0,
+    )
+
     // @TODO: Optimize for [assumeSorted] = true
-    fun pointInside(x: Int, y: Int, assumeSorted: Boolean = this.assumeSorted): Item? {
-        fastForEach {
-            if (it.inside(x, y)) return it
+    inline fun pointInside(
+        x: Int,
+        y: Int,
+        assumeSorted: Boolean = this.assumeSorted,
+        out: FTrapezoidsInt.(Item) -> Unit = { },
+        stats: PointInsideStats? = null
+    ): Boolean {
+        //println("x=$x, y=$y")
+        //println(this.map { it.toStringDefault() })
+        var iterations = 0
+        var iterations2 = 0
+        var found = false
+        if (assumeSorted) {
+            val size = this.size
+            val result = genericBinarySearchResult(0, size - 1, check = {
+                iterations2++
+                Item(it).y0.compareTo(y)
+            })
+            var index = result.nearIndex
+            //println("xy=($x,$y), nearIndex=$index")
+
+            while (index in 0 until size) {
+                val item = Item(index)
+                if (y > item.y1) break
+                iterations++
+                index--
+            }
+            index++
+            for (n in index until size) {
+                iterations++
+                val item = Item(n)
+                val inside = item.inside(x, y)
+                //println("xy=($x,$y), inside=$inside, index=$n : ${item.toStringDefault()}")
+                if (inside) {
+                    found = true
+                    break
+                }
+                if (item.y0 > y) break
+            }
+        } else {
+            for (n in 0 until size) {
+                iterations++
+                val it = this[n]
+                if (it.inside(x, y)) {
+                    found = true
+                    this.out(it)
+                    break
+                }
+            }
         }
-        return null
+        if (stats != null) {
+            stats.iterations = iterations
+            stats.iterations2 = iterations2
+            stats.total = size
+            stats.found = found
+        }
+        //println("found=$found, iterations2=$iterations2, iterations=$iterations, total=$size")
+        return found
     }
 
     companion object {
@@ -50,6 +117,8 @@ class FTrapezoidsInt(capacity: Int = 5) {
     var Item.x1b: Int; get() = data[index * 6 + 4]; set(value) { data[index * 6 + 4] = value }
     /** Bottom coordinate */
     var Item.y1: Int; get() = data[index * 6 + 5]; set(value) { data[index * 6 + 5] = value }
+
+    fun Item.containsY(y: Int): Boolean = y in y0..y1
 
     fun Item.toTrapezoidInt(): TrapezoidInt = TrapezoidInt(x0a, x0b, y0, x1a, x1b, y1)
 

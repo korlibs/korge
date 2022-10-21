@@ -5,6 +5,7 @@ import com.soywiz.kds.Extra
 import com.soywiz.kds.IntArrayList
 import com.soywiz.kds.extraProperty
 import com.soywiz.kds.iterators.fastForEach
+import com.soywiz.kmem.*
 import com.soywiz.korma.annotations.KormaExperimental
 import com.soywiz.korma.geom.BoundsBuilder
 import com.soywiz.korma.geom.IPoint
@@ -17,6 +18,7 @@ import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.geom.bezier.Bezier
 import com.soywiz.korma.geom.bezier.Curves
 import com.soywiz.korma.geom.bezier.toCurves
+import com.soywiz.korma.geom.trapezoid.*
 import com.soywiz.korma.internal.niceStr
 import com.soywiz.korma.math.isAlmostEquals
 import com.soywiz.korma.math.roundDecimalPlaces
@@ -129,6 +131,7 @@ class VectorPath(
         )
     }
 
+    @Deprecated("Use trapezoids instead")
     fun getAllLines(): List<Line> = scanline.getAllLines()
 
     inline fun visitEdgesSimple(
@@ -293,14 +296,24 @@ class VectorPath(
     // https://www.particleincell.com/2013/cubic-line-intersection/
     // I run a semi-infinite ray horizontally (increasing x, fixed y) out from the test point, and count how many edges it crosses.
     // At each crossing, the ray switches between inside and outside. This is called the Jordan curve theorem.
+    fun containsPoint(x: Double, y: Double): Boolean = trapezoids.containsPoint(x, y, this.winding)
     fun containsPoint(p: Point): Boolean = containsPoint(p.x, p.y, this.winding)
-    fun containsPoint(x: Double, y: Double): Boolean = containsPoint(x, y, this.winding)
     fun containsPoint(x: Int, y: Int): Boolean = containsPoint(x.toDouble(), y.toDouble())
     fun containsPoint(x: Float, y: Float): Boolean = containsPoint(x.toDouble(), y.toDouble())
 
-    private var _scanline: PolygonScanline? = null
-
+    private var _trapezoids: VectorPathTrapezoids? = null
     @KormaExperimental
+    val trapezoids: VectorPathTrapezoids get() {
+        if (_trapezoids == null || _trapezoids!!.version != this.version) {
+            _trapezoids = VectorPathTrapezoids(this.version, this)
+        }
+        return _trapezoids!!
+    }
+
+    @Deprecated("Use trapezoids instead")
+    private var _scanline: PolygonScanline? = null
+    @KormaExperimental
+    @Deprecated("Use trapezoids instead")
     val scanline: PolygonScanline get() {
         if (_scanline == null) _scanline = PolygonScanline()
         val scanline = _scanline!!
@@ -313,12 +326,13 @@ class VectorPath(
 
         return _scanline!!
     }
-    fun containsPoint(x: Double, y: Double, winding: Winding): Boolean = scanline.containsPoint(x, y, winding)
+    fun containsPoint(x: Double, y: Double, winding: Winding): Boolean = trapezoids.containsPoint(x, y, winding)
     fun containsPoint(x: Int, y: Int, winding: Winding): Boolean = containsPoint(x.toDouble(), y.toDouble(), winding)
     fun containsPoint(x: Float, y: Float, winding: Winding): Boolean = containsPoint(x.toDouble(), y.toDouble(), winding)
 
     fun intersectsWith(right: VectorPath): Boolean = intersectsWith(identityMatrix, right, identityMatrix)
 
+    // @TODO: Use trapezoids instead
     fun intersectsWith(leftMatrix: Matrix, right: VectorPath, rightMatrix: Matrix): Boolean {
         val left = this
         val leftScanline = left.scanline
@@ -484,6 +498,18 @@ class VectorPath(
         for (n in 0 until data.size) data[n] = kotlin.math.ceil(data[n])
         version++
         return this
+    }
+}
+
+class VectorPathTrapezoids(val version: Int, val path: VectorPath, val scale: Int = 100) {
+    val segments = path.toSegments(scale)
+    val trapezoidsEvenOdd by lazy { SegmentIntToTrapezoidIntList.convert(segments, Winding.EVEN_ODD) }
+    val trapezoidsNonZero by lazy { SegmentIntToTrapezoidIntList.convert(segments, Winding.NON_ZERO) }
+    fun containsPoint(x: Double, y: Double, winding: Winding = path.winding): Boolean =
+        _containsPoint((x * scale).toIntRound(), (y * scale).toIntRound(), winding)
+    private fun _containsPoint(x: Int, y: Int, winding: Winding = path.winding): Boolean = when (winding) {
+        Winding.EVEN_ODD -> trapezoidsEvenOdd.containsPoint(x, y)
+        Winding.NON_ZERO -> trapezoidsNonZero.containsPoint(x, y)
     }
 }
 

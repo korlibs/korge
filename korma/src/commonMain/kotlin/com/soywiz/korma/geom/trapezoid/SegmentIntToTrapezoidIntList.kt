@@ -9,12 +9,12 @@ import com.soywiz.korma.geom.vector.*
 import kotlin.math.*
 
 object SegmentIntToTrapezoidIntList {
-    fun convert(path: VectorPath, scale: Int = 1): FTrapezoidsInt = convert(path.toSegments(scale), path.winding)
+    fun convert(path: VectorPath, scale: Int = 1, winding: Winding = path.winding, out: FTrapezoidsInt = FTrapezoidsInt()): FTrapezoidsInt = convert(path.toSegments(scale), winding, out)
 
-    fun convert(segments: List<SegmentInt>, winding: Winding = Winding.EVEN_ODD): FTrapezoidsInt {
+    fun convert(segments: List<SegmentInt>, winding: Winding = Winding.EVEN_ODD, trapezoids: FTrapezoidsInt = FTrapezoidsInt()): FTrapezoidsInt {
         //segments.fastForEach { println("seg=$it") }
+        trapezoids.assumeSorted = true
         val (allY, allSegmentsInY) = segmentLookups(segments)
-        val trapezoids = FTrapezoidsInt()
         for (n in 0 until allY.size - 1) {
             val y0 = allY[n]
             val y1 = allY[n + 1]
@@ -157,8 +157,8 @@ fun VectorPath.toSegments(scale: Int = 1): List<SegmentInt> {
     return segments
 }
 
-fun VectorPath.toTrapezoids(scale: Int = 1): FTrapezoidsInt =
-    SegmentIntToTrapezoidIntList.convert(this, scale)
+fun VectorPath.toTrapezoids(scale: Int = 1, winding: Winding = this.winding, out: FTrapezoidsInt = FTrapezoidsInt()): FTrapezoidsInt =
+    SegmentIntToTrapezoidIntList.convert(this, scale, winding, out)
 
 fun List<TrapezoidInt>.triangulate(out: FTrianglesInt = FTrianglesInt()): FTrianglesInt {
     fastForEach { it.triangulate(out) }
