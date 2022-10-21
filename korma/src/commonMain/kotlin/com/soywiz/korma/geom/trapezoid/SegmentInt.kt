@@ -1,10 +1,20 @@
-package com.soywiz.korma.geom.parallelogram
+package com.soywiz.korma.geom.trapezoid
 
 import com.soywiz.kmem.*
 
 data class SegmentInt(
-    val x0: Int, val y0: Int, val x1: Int, val y1: Int
+    var x0: Int, var y0: Int,
+    var x1: Int, var y1: Int
 ) {
+    constructor() : this(0, 0, 0, 0)
+
+    fun setTo(x0: Int, y0: Int, x1: Int, y1: Int) {
+        this.x0 = x0
+        this.y0 = y0
+        this.x1 = x1
+        this.y1 = y1
+    }
+
     val dx: Int get() = x1 - x0 // run
     val dy: Int get() = y1 - y0 // rise
     val slope: Double get() = dy.toDouble() / dx.toDouble()
@@ -17,6 +27,7 @@ data class SegmentInt(
     fun y(x: Int): Int = y0 + (slope * (x - x0)).toIntRound()
     fun containsX(x: Int): Boolean = x in xMin..xMax
     fun containsY(y: Int): Boolean = y in yMin..yMax
+    fun getIntersectY(other: SegmentInt): Int = SegmentInt.getIntersectY(this, other)
 
     companion object {
         inline fun getIntersectXY(Ax: Int, Ay: Int, Bx: Int, By: Int, Cx: Int, Cy: Int, Dx: Int, Dy: Int, out: (x: Int, y: Int) -> Unit): Boolean {
@@ -42,7 +53,11 @@ data class SegmentInt(
             getIntersectXY(a, b) { x, y -> outY = y }
             return outY
         }
-    }
 
-    fun getIntersectY(other: SegmentInt): Int = SegmentInt.getIntersectY(this, other)
+        fun getIntersectY(Ax: Int, Ay: Int, Bx: Int, By: Int, Cx: Int, Cy: Int, Dx: Int, Dy: Int): Int {
+            var outY = Int.MIN_VALUE
+            getIntersectXY(Ax, Ay, Bx, By, Cx, Cy, Dx, Dy) { x, y -> outY = y }
+            return outY
+        }
+    }
 }

@@ -1,4 +1,4 @@
-package com.soywiz.korma.geom.parallelogram
+package com.soywiz.korma.geom.trapezoid
 
 import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
@@ -8,13 +8,13 @@ import com.soywiz.korma.geom.bezier.*
 import com.soywiz.korma.geom.vector.*
 import kotlin.math.*
 
-object SegmentIntToParallelogramIntList {
-    fun convert(path: VectorPath, scale: Int = 1): List<ParallelogramInt> = convert(path.toSegments(scale), path.winding)
+object SegmentIntToTrapezoidIntList {
+    fun convert(path: VectorPath, scale: Int = 1): FTrapezoidsInt = convert(path.toSegments(scale), path.winding)
 
-    fun convert(segments: List<SegmentInt>, winding: Winding = Winding.EVEN_ODD): List<ParallelogramInt> {
+    fun convert(segments: List<SegmentInt>, winding: Winding = Winding.EVEN_ODD): FTrapezoidsInt {
         //segments.fastForEach { println("seg=$it") }
         val (allY, allSegmentsInY) = segmentLookups(segments)
-        val parallelograms = arrayListOf<ParallelogramInt>()
+        val trapezoids = FTrapezoidsInt()
         for (n in 0 until allY.size - 1) {
             val y0 = allY[n]
             val y1 = allY[n + 1]
@@ -55,16 +55,16 @@ object SegmentIntToParallelogramIntList {
                 if (x1b < x1a) {
                     val intersectY = SegmentInt.getIntersectY(s0, s1)
                     val intersectX = s0.x(intersectY)
-                    parallelograms += ParallelogramInt(
+                    trapezoids.add(
                         x0a = x0a, x0b = x0b, y0 = y0,
                         x1a = intersectX, x1b = intersectX, y1 = intersectY,
                     )
-                    parallelograms += ParallelogramInt(
+                    trapezoids.add(
                         x0a = intersectX, x0b = intersectX, y0 = intersectY,
                         x1a = x1a, x1b = x1b, y1 = y1,
                     )
                 } else {
-                    parallelograms += ParallelogramInt(
+                    trapezoids.add(
                         x0a = x0a, x0b = x0b, y0 = y0,
                         x1a = x1a, x1b = x1b, y1 = y1,
                     )
@@ -72,7 +72,7 @@ object SegmentIntToParallelogramIntList {
             }
         }
         //parallelograms.fastForEach { println(it) }
-        return parallelograms
+        return trapezoids
     }
 
     private fun segmentLookups(segments: List<SegmentInt>): Pair<IntArray, List<List<SegmentInt>>> {
@@ -157,10 +157,15 @@ fun VectorPath.toSegments(scale: Int = 1): List<SegmentInt> {
     return segments
 }
 
-fun VectorPath.toParallelograms(scale: Int = 1): List<ParallelogramInt> =
-    SegmentIntToParallelogramIntList.convert(this, scale)
+fun VectorPath.toTrapezoids(scale: Int = 1): FTrapezoidsInt =
+    SegmentIntToTrapezoidIntList.convert(this, scale)
 
-fun List<ParallelogramInt>.triangulate(out: MutableList<TriangleInt> = fastArrayListOf()): List<TriangleInt> {
+fun List<TrapezoidInt>.triangulate(out: FTrianglesInt = FTrianglesInt()): FTrianglesInt {
+    fastForEach { it.triangulate(out) }
+    return out
+}
+
+fun FTrapezoidsInt.triangulate(out: FTrianglesInt = FTrianglesInt()): FTrianglesInt {
     fastForEach { it.triangulate(out) }
     return out
 }
