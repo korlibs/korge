@@ -1,6 +1,7 @@
 package com.soywiz.korge.view
 
 import com.soywiz.korge.debug.*
+import com.soywiz.korge.internal.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.paint.*
 import com.soywiz.korma.geom.vector.*
@@ -31,6 +32,9 @@ open class ShapeView(
 
     override var anchorX: Double by shapeView::anchorX
     override var anchorY: Double by shapeView::anchorY
+    @KorgeInternal override val anchorDispX: Double get() = shapeView.anchorDispX
+    @KorgeInternal override val anchorDispY: Double get() = shapeView.anchorDispY
+
     var autoScaling: Boolean by shapeView::autoScaling
     var renderer: GraphicsRenderer by shapeView::renderer
     var smoothing: Boolean by shapeView::smoothing

@@ -19,23 +19,8 @@ import com.soywiz.korge.ui.UIProgressBar
 import com.soywiz.korge.ui.UIRadioButton
 import com.soywiz.korge.ui.UITextButton
 import com.soywiz.korge.ui.textSize
-import com.soywiz.korge.view.AnimationViewRef
-import com.soywiz.korge.view.BlendMode
-import com.soywiz.korge.view.Container
-import com.soywiz.korge.view.Ellipse
-import com.soywiz.korge.view.FixedSizeContainer
-import com.soywiz.korge.view.Image
-import com.soywiz.korge.view.NinePatchEx
-import com.soywiz.korge.view.RectBase
-import com.soywiz.korge.view.SolidRect
-import com.soywiz.korge.view.Text
-import com.soywiz.korge.view.VectorImage
-import com.soywiz.korge.view.View
-import com.soywiz.korge.view.ViewFileRef
-import com.soywiz.korge.view.ViewLeaf
-import com.soywiz.korge.view.Views
+import com.soywiz.korge.view.*
 import com.soywiz.korge.view.grid.OrthographicGrid
-import com.soywiz.korge.view.views
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
@@ -327,9 +312,11 @@ open class KTreeSerializer(val views: Views) : KTreeSerializerHolder, Extra by E
         double(view::scaleY, 1.0)
         angleDegrees(view::skewX, 0.degrees)
         angleDegrees(view::skewY, 0.degrees)
-        if (view is RectBase) {
+        if (view is Anchorable) {
             double(view::anchorX, 0.0)
             double(view::anchorY, 0.0)
+        }
+        if (view is RectBase) {
             double(view::width, 100.0)
             double(view::height, 100.0)
         }

@@ -2,6 +2,7 @@ package com.soywiz.korge.view
 
 import com.soywiz.korge.debug.uiCollapsibleSection
 import com.soywiz.korge.debug.uiEditableValue
+import com.soywiz.korge.internal.*
 import com.soywiz.korge.view.vector.GpuShapeView
 import com.soywiz.korge.view.vector.gpuGraphics
 import com.soywiz.korim.vector.EmptyShape
@@ -46,9 +47,9 @@ class Graphics(
     private var softGraphics: CpuGraphics? = null
     private var gpuGraphics: GpuShapeView? = null
 
-    private val anchorable: Anchorable? get() = softGraphics ?: gpuGraphics
+    private val anchorable: Anchorable get() = (softGraphics ?: gpuGraphics)!!
+    val rendererView: View get() = (softGraphics ?: gpuGraphics)!!
 
-    val rendererView: View? get() = softGraphics ?: gpuGraphics
     var boundsIncludeStrokes: Boolean
         get() = softGraphics?.boundsIncludeStrokes ?: gpuGraphics?.boundsIncludeStrokes ?: false
         set(value) {
@@ -58,17 +59,20 @@ class Graphics(
         }
 
     override var anchorX: Double
-        get() = anchorable?.anchorX ?: 0.0
+        get() = anchorable.anchorX
         set(value) {
-            anchorable?.anchorX = value
+            anchorable.anchorX = value
             invalidateRender()
         }
     override var anchorY: Double
-        get() = anchorable?.anchorY ?: 0.0
+        get() = anchorable.anchorY
         set(value) {
-            anchorable?.anchorY = value
+            anchorable.anchorY = value
             invalidateRender()
         }
+    @KorgeInternal override val anchorDispX: Double get() = rendererView.anchorDispX
+    @KorgeInternal override val anchorDispY: Double get() = rendererView.anchorDispY
+
     var antialiased: Boolean = true
         set(value) {
             if (field == value) return
