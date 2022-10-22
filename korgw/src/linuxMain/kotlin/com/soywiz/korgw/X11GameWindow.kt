@@ -377,7 +377,10 @@ class X11GameWindow : EventLoopGameWindow() {
         super<EventLoopGameWindow>.close(exitCode)
     }
 
+    private val linuxJoyEventAdapter = com.soywiz.korgw.x11.LinuxJoyEventAdapter()
+
     override fun doHandleEvents() = memScoped {
+        linuxJoyEventAdapter.updateGamepads(this@X11GameWindow)
         //println("doHandleEvents")
         val e = alloc<XEvent>()
         loop@ while (running) {
