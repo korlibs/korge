@@ -47,9 +47,9 @@ class Graphics(
     private var softGraphics: CpuGraphics? = null
     private var gpuGraphics: GpuShapeView? = null
 
-    private val anchorable: Anchorable? get() = softGraphics ?: gpuGraphics
+    private val anchorable: Anchorable get() = (softGraphics ?: gpuGraphics)!!
+    val rendererView: View get() = (softGraphics ?: gpuGraphics)!!
 
-    val rendererView: View? get() = softGraphics ?: gpuGraphics
     var boundsIncludeStrokes: Boolean
         get() = softGraphics?.boundsIncludeStrokes ?: gpuGraphics?.boundsIncludeStrokes ?: false
         set(value) {
@@ -59,19 +59,19 @@ class Graphics(
         }
 
     override var anchorX: Double
-        get() = anchorable?.anchorX ?: 0.0
+        get() = anchorable.anchorX
         set(value) {
-            anchorable?.anchorX = value
+            anchorable.anchorX = value
             invalidateRender()
         }
     override var anchorY: Double
-        get() = anchorable?.anchorY ?: 0.0
+        get() = anchorable.anchorY
         set(value) {
-            anchorable?.anchorY = value
+            anchorable.anchorY = value
             invalidateRender()
         }
-    @KorgeInternal override val anchorDispX: Double get() = rendererView?.anchorDispX ?: 0.0
-    @KorgeInternal override val anchorDispY: Double get() = rendererView?.anchorDispY ?: 0.0
+    @KorgeInternal override val anchorDispX: Double get() = rendererView.anchorDispX
+    @KorgeInternal override val anchorDispY: Double get() = rendererView.anchorDispY
 
     var antialiased: Boolean = true
         set(value) {
