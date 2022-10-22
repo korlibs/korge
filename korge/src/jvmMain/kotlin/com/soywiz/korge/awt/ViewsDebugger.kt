@@ -1,6 +1,6 @@
 package com.soywiz.korge.awt
 
-import com.soywiz.kds.Extra
+import com.soywiz.kds.*
 import com.soywiz.korev.Event
 import com.soywiz.korge.debug.UiEditProperties
 import com.soywiz.korge.internal.KorgeInternal
@@ -9,8 +9,10 @@ import com.soywiz.korge.view.View
 import com.soywiz.korge.view.ViewLeaf
 import com.soywiz.korge.view.Views
 import com.soywiz.korio.async.launchImmediately
+import com.soywiz.korma.geom.*
 import com.soywiz.korui.UiApplication
 import com.soywiz.korui.layout.UiFillLayout
+import kotlinx.coroutines.*
 import java.awt.EventQueue
 import java.awt.GridLayout
 import java.awt.event.KeyAdapter
@@ -23,8 +25,10 @@ import javax.swing.JPanel
 import javax.swing.JTree
 import javax.swing.SwingUtilities
 import javax.swing.tree.DefaultTreeModel
+import javax.swing.tree.TreeModel
 import javax.swing.tree.TreeNode
 import javax.swing.tree.TreePath
+import kotlin.collections.AbstractList
 import kotlin.coroutines.CoroutineContext
 
 val View.treeNode: ViewNode by Extra.PropertyThis { ViewNode(this) }
@@ -57,6 +61,52 @@ class ViewNode(val view: View?) : TreeNode {
 
 class ViewDebuggerChanged(val view: View?) : Event()
 
+fun TreePath.withTree(tree: JTree): TreePathWithTree = TreePathWithTree(this, tree)
+
+class TreePathWithTree(val path: TreePath, val tree: JTree) : AbstractList<TreePathWithTree>() {
+    val model: TreeModel get() = tree.model
+    val node: Any? get() = path.lastPathComponent
+    val parent: TreePathWithTree? by lazy {
+        if (path.path.size >= 2) {
+            path.parentPath.withTree(tree)
+        } else {
+            null
+        }
+    }
+    val expanded: Boolean get() = tree.isExpanded(path)
+    val index: Int get() = model.getIndexOfChild(parent!!.node, node)
+    override val size: Int get() = model.getChildCount(node)
+    override fun get(index: Int): TreePathWithTree {
+        if (index !in indices) throw IndexOutOfBoundsException()
+        val newNode = model.getChild(node, index)
+        return TreePath(arrayOf(*path.path, newNode)).withTree(tree)
+    }
+    fun siblingOffset(offset: Int): TreePathWithTree? {
+        val parent = this.parent ?: return null
+        val nextIndex = index + offset
+        return if (nextIndex in 0 until parent.size) parent[nextIndex] else null
+    }
+    val prevSibling: TreePathWithTree? get() = siblingOffset(-1)
+    val nextSibling: TreePathWithTree? get() = siblingOffset(+1)
+    val firstChild: TreePathWithTree? get() = if (isNotEmpty()) this[0] else null
+    val nextSiblingOrNext: TreePathWithTree? get() = nextSibling ?: parent?.nextSiblingOrNext
+    val next: TreePathWithTree? get() = firstChild ?: nextSiblingOrNext
+
+    fun scroll(top: Boolean = false) {
+        val bounds = tree.getPathBounds(path) ?: return
+        if (top) bounds.height = tree.visibleRect.height
+        tree.scrollRectToVisible(bounds)
+    }
+
+    fun select() {
+        tree.selectionPath = path
+    }
+
+    fun selectAndScroll() {
+        select()
+        scroll()
+    }
+}
 
 class ViewsDebuggerComponent constructor(
     val views: Views,
@@ -124,6 +174,12 @@ class ViewsDebuggerComponent constructor(
         }
         addKeyListener(object : KeyAdapter() {
             override fun keyPressed(e: KeyEvent) {
+                if (e.keyCode == KeyEvent.VK_RIGHT) {
+                    val selectionPath = tree.selectionPath?.withTree(tree)
+                    if (selectionPath != null && (selectionPath.expanded || selectionPath.isEmpty())) {
+                        selectionPath.next?.selectAndScroll()
+                    }
+                }
                 if (e.keyCode == KeyEvent.VK_DELETE) {
                     actions.removeCurrentNode()
                 }
@@ -138,7 +194,6 @@ class ViewsDebuggerComponent constructor(
                     val isContainer = view is Container
 
                     if (view != null) {
-
                         val popupMenu = myComponentFactory.createPopupMenu()
 
                         val subMenuAdd = JMenu("Add")
