@@ -1,5 +1,6 @@
 package com.soywiz.korio.runtime.node
 
+import com.soywiz.klock.*
 import com.soywiz.korio.*
 import com.soywiz.korio.async.AsyncByteArrayDeque
 import com.soywiz.korio.async.AsyncQueue
@@ -18,10 +19,8 @@ import com.soywiz.korio.net.http.HttpClient
 import com.soywiz.korio.net.http.HttpServer
 import com.soywiz.korio.runtime.JsRuntime
 import com.soywiz.korio.stream.*
-import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.suspendCancellableCoroutine
 import org.khronos.webgl.ArrayBuffer
 import org.khronos.webgl.Int8Array
 import org.khronos.webgl.Uint8Array
@@ -211,7 +210,23 @@ private class NodeJsAsyncServer : AsyncServer {
 private external interface NodeFD
 
 private external interface NodeFileStat {
+    val dev: Double
+    val ino: Double
+    val mode: Double
+    val nlinks: Double
+    val uid: Double
+    val gid: Double
+    val rdev: Double
     val size: Double
+    val blkSize: Int
+    val blocks: Double
+    val atimeMs: Double
+    val mtimeMs: Double
+    val ctimeMs: Double
+    fun isDirectory(): Boolean
+    fun isFile(): Boolean
+    fun isSocket(): Boolean
+    fun isSymbolicLink(): Boolean
 }
 
 private external interface NodeFS {
@@ -219,7 +234,7 @@ private external interface NodeFS {
     fun rename(src: String, dst: String, callback: (Error?) -> Unit)
     fun unlink(path: String, callback: (Error?) -> Unit)
     fun rmdir(path: String, callback: (Error?) -> Unit)
-
+    fun stat(path: String, callback: (Error?, NodeFileStat) -> Unit)
     fun open(path: String, cmode: String, callback: (Error?, NodeFD?) -> Unit)
     fun read(fd: NodeFD?, buffer: NodeJsBuffer, offset: Int, len: Int, position: Double, callback: (Error?, Int, NodeJsBuffer) -> Unit)
     fun write(fd: NodeFD?, buffer: NodeJsBuffer, offset: Int, len: Int, position: Double, callback: (Error?, Int, NodeJsBuffer) -> Unit)
@@ -235,7 +250,31 @@ private class NodeJsLocalVfs : LocalVfs() {
         return path.pathInfo.normalize()
     }
 
+    fun NodeFileStat?.toVfsStat(path: String): VfsStat {
+        val stats = this ?: return createNonExistsStat(path)
+        return createExistsStat(
+            path, stats.isDirectory(), stats.size.toLong(),
+            stats.dev.toLong(), stats.ino.toLong(),
+            stats.mode.toInt(),
+            createTime = DateTime.Companion.fromUnixMillis(stats.ctimeMs),
+            modifiedTime = DateTime.Companion.fromUnixMillis(stats.mtimeMs),
+            lastAccessTime = DateTime.Companion.fromUnixMillis(stats.atimeMs),
+        )
+    }
+
+    override suspend fun stat(path: String): VfsStat {
+        val deferred = CompletableDeferred<VfsStat>()
+        nodeFS.stat(path) { err, stats ->
+            //println("err=$err")
+            //println("stats=$stats")
+            deferred.completeWith(kotlin.runCatching { stats.toVfsStat(path) })
+        }
+        return deferred.await()
+    }
+
     override suspend fun exec(path: String, cmdAndArgs: List<String>, env: Map<String, String>, handler: VfsProcessHandler): Int {
+        checkExecFolder(path, cmdAndArgs)
+
         // @TODO: This fails on windows with characters like '&'
         val realCmdAndArgs = ShellArgs.buildShellExecCommandLineArrayForNodeSpawn(cmdAndArgs)
 
