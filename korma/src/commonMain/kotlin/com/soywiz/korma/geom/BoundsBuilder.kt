@@ -1,9 +1,13 @@
 package com.soywiz.korma.geom
 
+import com.soywiz.kds.*
+
 class BoundsBuilder {
     val tempRect = Rectangle()
 
     companion object {
+        val POOL: ConcurrentPool<BoundsBuilder> = ConcurrentPool<BoundsBuilder>({ it.reset() }) { BoundsBuilder() }
+
         private val MIN = Double.NEGATIVE_INFINITY
         private val MAX = Double.POSITIVE_INFINITY
     }
