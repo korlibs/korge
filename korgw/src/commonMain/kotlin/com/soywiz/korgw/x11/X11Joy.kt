@@ -1,32 +1,26 @@
 package com.soywiz.korgw.x11
 
-import com.soywiz.kds.iterators.fastForEach
-import com.soywiz.kgl.internal.*
+import com.soywiz.kds.iterators.*
 import com.soywiz.kmem.*
 import com.soywiz.korev.*
-import java.io.RandomAccessFile
+import com.soywiz.korio.concurrent.*
+import com.soywiz.korio.file.sync.*
+import com.soywiz.korio.lang.*
+import kotlinx.coroutines.*
+import kotlin.coroutines.*
 import kotlin.math.*
 
-/*
-fun main() {
-    Thread { X11JoystickReader(0).threadMain() }
-        .also { it.isDaemon = true }
-        .also { it.start() }
-
-    Thread.sleep(1000000000L)
-}
-*/
-
-internal class LinuxJoyEventAdapter {
+internal class LinuxJoyEventAdapter : Closeable {
     companion object {
         //val MAX_COUNT = 4
         val MAX_COUNT = 1
     }
-    val readers by lazy { Array(MAX_COUNT) { X11JoystickReader(it).also { it.startThread() } } }
+    val readers by lazy { Array(MAX_COUNT) { X11JoystickReader(it) } }
     private val gamePadUpdateEvent = GamePadUpdateEvent()
     private val gamePadConnectionEvent = GamePadConnectionEvent()
 
     fun updateGamepads(dispatcher: EventDispatcher) {
+        Dispatchers.createSingleThreadedDispatcher("joystick")
         //println("LINUX")
         var connectedCount = 0
         readers.fastForEach { reader ->
@@ -48,9 +42,13 @@ internal class LinuxJoyEventAdapter {
             dispatcher.dispatch(gamePadUpdateEvent)
         }
     }
+
+    override fun close() {
+        readers.fastForEach { it.connected }
+    }
 }
 
-internal class X11JoystickReader(val index: Int) {
+internal class X11JoystickReader(val index: Int) : Closeable {
     companion object {
         const val JS_EVENT_BUTTON = 0x01    /* button pressed/released */
         const val JS_EVENT_AXIS = 0x02    /* joystick moved */
@@ -75,17 +73,15 @@ internal class X11JoystickReader(val index: Int) {
         arraycopy(axes, 0, gamepad.rawAxes, 0, 16)
     }
 
-    fun startThread(): Thread {
-        return Thread { threadMain() }
-            .also { it.isDaemon = true }
-            .also { it.start() }
+    val dispatcher = Dispatchers.createSingleThreadedDispatcher("index").also {
+        it.dispatch(EmptyCoroutineContext, Runnable { threadMain() })
     }
 
     fun threadMain() {
         while (true) {
             try {
                 connected = false
-                val raf = RandomAccessFile("/dev/input/js$index", "r")
+                val raf = platformSyncIO.open("/dev/input/js$index", "r")
                 connected = true
                 val packet = ByteArray(8)
                 val isLittleEndian = Endian.NATIVE == Endian.LITTLE_ENDIAN
@@ -111,10 +107,14 @@ internal class X11JoystickReader(val index: Int) {
                 }
             } catch (e: Throwable) {
                 //e.printStackTrace()
-                Thread.sleep(1000L)
+                Thread_sleep(1000L)
             } finally {
                 connected = false
             }
         }
+    }
+
+    override fun close() {
+        dispatcher.close()
     }
 }
