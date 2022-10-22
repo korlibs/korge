@@ -553,7 +553,7 @@ class Views constructor(
         gameWindow.startFrame()
     }
 
-    fun invalidatedView(view: BaseView) {
+    fun invalidatedView(view: BaseView?) {
         //println("invalidatedView: $view")
         gameWindow.invalidatedView()
     }
