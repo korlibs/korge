@@ -1,10 +1,10 @@
 package com.soywiz.korge.view
 
-import com.soywiz.korim.color.Colors
-import com.soywiz.korim.paint.Paint
-import com.soywiz.korma.geom.vector.StrokeInfo
-import com.soywiz.korma.geom.vector.VectorPath
-import com.soywiz.korma.geom.vector.isNotEmpty
+import com.soywiz.korge.debug.*
+import com.soywiz.korim.color.*
+import com.soywiz.korim.paint.*
+import com.soywiz.korma.geom.vector.*
+import com.soywiz.korui.*
 
 inline fun Container.shapeView(
     shape: VectorPath? = null,
@@ -23,7 +23,7 @@ open class ShapeView(
     autoScaling: Boolean = true,
     //renderer: GraphicsRenderer = GraphicsRenderer.SYSTEM
     renderer: GraphicsRenderer = GraphicsRenderer.GPU
-) : Container(), Anchorable {
+) : Container(), Anchorable, ViewLeaf {
     internal val shapeView = Graphics(renderer = renderer).addTo(this)
     init {
         shapeView.autoScaling = autoScaling
@@ -97,5 +97,13 @@ open class ShapeView(
                 }
             }
         }
+    }
+
+    override fun buildDebugComponent(views: Views, container: UiContainer) {
+        val view = this
+        container.uiCollapsibleSection("ShapeView") {
+            buildAnchorableComponents(views, view)
+        }
+        super.buildDebugComponent(views, container)
     }
 }
