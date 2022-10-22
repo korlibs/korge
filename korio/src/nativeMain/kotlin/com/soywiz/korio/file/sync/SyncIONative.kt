@@ -5,7 +5,7 @@ import com.soywiz.korio.posix.*
 import kotlinx.cinterop.*
 import platform.posix.*
 
-actual val platformSyncIO: SyncIO = object : SyncIO() {
+actual val platformSyncIO: SyncIO = object : SyncIO {
     override fun realpath(path: String): String = posixRealpath(path)
     override fun readlink(path: String): String? = posixReadlink(path)
 
