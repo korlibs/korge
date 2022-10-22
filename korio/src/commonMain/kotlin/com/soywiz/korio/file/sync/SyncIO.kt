@@ -4,7 +4,9 @@ import com.soywiz.korio.lang.*
 
 expect val platformSyncIO: SyncIO
 
-open class SyncIO {
+interface SyncIO {
+    companion object : SyncIO by platformSyncIO
+
     open fun realpath(path: String): String = path
     open fun readlink(path: String): String? = null
     open fun open(path: String, mode: String): SyncIOFD = TODO()

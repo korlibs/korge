@@ -181,7 +181,9 @@ enum class GameButton {
 	L3, R3,
 	LX, LY,
 	RX, RY,
-	BUTTON4, BUTTON5, BUTTON6, BUTTON7, BUTTON8, RECORD;
+	BUTTON4, BUTTON5, BUTTON6, BUTTON7, BUTTON8, RECORD,
+    DPADX, DPADY
+    ;
 
     val index: Int get() = ordinal
     val bitMask: Int get() = 1 shl ordinal
@@ -189,6 +191,9 @@ enum class GameButton {
 	companion object {
 		val BUTTONS = values()
 		val MAX = 32
+
+        val LEFT_SHOULDER get() = L1
+        val RIGHT_SHOULDER get() = R1
 
         val LEFT_TRIGGER get() = L2
         val RIGHT_TRIGGER get() = R2
@@ -296,6 +301,10 @@ abstract class GamepadMapping {
         GameButton.LY -> 1
         GameButton.RX -> 2
         GameButton.RY -> 3
+        GameButton.LEFT_TRIGGER, GameButton.L2 -> 4
+        GameButton.RIGHT_TRIGGER, GameButton.R2 -> 5
+        GameButton.DPADX -> 5
+        GameButton.DPADY -> 6
         else -> 0
     }
     open fun get(button: GameButton, info: GamepadInfo): Double = when (button) {

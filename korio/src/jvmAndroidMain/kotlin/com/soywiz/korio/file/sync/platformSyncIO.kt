@@ -4,12 +4,11 @@ import java.io.*
 import java.nio.file.*
 import kotlin.io.path.*
 
-actual val platformSyncIO: SyncIO = object : SyncIO() {
+actual val platformSyncIO: SyncIO = object : SyncIO {
     override fun realpath(path: String): String = File(path).canonicalPath
     override fun readlink(path: String): String? = kotlin.runCatching {
         Files.readSymbolicLink(File(path).toPath())?.absolutePathString()
     }.getOrNull()
-
 
     override fun open(path: String, mode: String): SyncIOFD {
         val file = File(path)
