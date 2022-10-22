@@ -276,7 +276,7 @@ class AsyncInjectorTest {
     @Test
     fun testGetSyncSuspending() {
         val injector = AsyncInjector()
-        injector.mapPrototype { delay(1L); 0 }
+        injector.mapPrototype { delay(5000L); 0 }
         val error = assertFailsWith<RuntimeException> { injector.getSync<Int>() }
         assertTrue { error.message!!.contains("synchronously") }
     }

@@ -2,6 +2,7 @@
 
 package com.soywiz.korma.geom
 
+import com.soywiz.kds.*
 import com.soywiz.korma.internal.niceStr
 import com.soywiz.korma.interpolation.Interpolable
 import com.soywiz.korma.interpolation.MutableInterpolable
@@ -133,6 +134,8 @@ data class Point(
     fun setToRight() = setTo(+1.0, 0.0)
 
     companion object {
+        val POOL: ConcurrentPool<Point> = ConcurrentPool<Point>({ it.setTo(0.0, 0.0) }) { Point() }
+
         val Zero: IPoint = IPoint(0.0, 0.0)
         val One: IPoint = IPoint(1.0, 1.0)
         val Up: IPoint = IPoint(0.0, -1.0)

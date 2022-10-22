@@ -2,6 +2,7 @@
 
 package com.soywiz.korma.geom
 
+import com.soywiz.kds.*
 import com.soywiz.korma.interpolation.Interpolable
 import com.soywiz.korma.interpolation.MutableInterpolable
 import com.soywiz.korma.interpolation.interpolate
@@ -23,6 +24,8 @@ data class Matrix(
     var ty: Double = 0.0
 ) : MutableInterpolable<Matrix>, Interpolable<Matrix> {
     companion object {
+        val POOL: ConcurrentPool<Matrix> = ConcurrentPool<Matrix>({ it.identity() }) { Matrix() }
+
         inline operator fun invoke(a: Float, b: Float = 0f, c: Float = 0f, d: Float = 1f, tx: Float = 0f, ty: Float = 0f) =
             Matrix(a.toDouble(), b.toDouble(), c.toDouble(), d.toDouble(), tx.toDouble(), ty.toDouble())
 

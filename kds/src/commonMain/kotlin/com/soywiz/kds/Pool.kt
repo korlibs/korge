@@ -83,6 +83,30 @@ open class Pool<T : Any>(private val reset: (T) -> Unit = {}, preallocate: Int =
         }
     }
 
+    inline fun <R> alloc2(callback: (T, T) -> R): R {
+        val temp1 = alloc()
+        val temp2 = alloc()
+        try {
+            return callback(temp1, temp2)
+        } finally {
+            free(temp2)
+            free(temp1)
+        }
+    }
+
+    inline fun <R> alloc3(callback: (T, T, T) -> R): R {
+        val temp1 = alloc()
+        val temp2 = alloc()
+        val temp3 = alloc()
+        try {
+            return callback(temp1, temp2, temp3)
+        } finally {
+            free(temp3)
+            free(temp2)
+            free(temp1)
+        }
+    }
+
     inline fun <R> allocMultiple(count: Int, temp: FastArrayList<T> = FastArrayList(), callback: (FastArrayList<T>) -> R): R {
         temp.clear()
         for (n in 0 until count) temp.add(alloc())

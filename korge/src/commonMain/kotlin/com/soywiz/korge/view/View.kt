@@ -240,9 +240,9 @@ abstract class View internal constructor(
     protected var _y: Double = 0.0
     private var _scaleX: Double = 1.0
     private var _scaleY: Double = 1.0
-    private var _skewX: Angle = 0.0.radians
-    private var _skewY: Angle = 0.0.radians
-    private var _rotation: Angle = 0.0.radians
+    private var _skewX: Angle = Angle.ZERO
+    private var _skewY: Angle = Angle.ZERO
+    private var _rotation: Angle = Angle.ZERO
 
     private val _pos = Point()
 
@@ -665,7 +665,7 @@ abstract class View internal constructor(
             }
         }
 
-    private val _renderColorTransform = ColorTransform(1.0, 1.0, 1.0, 1.0, 0, 0, 0, 0)
+    private val _renderColorTransform: ColorTransform = ColorTransform(1.0, 1.0, 1.0, 1.0, 0, 0, 0, 0)
     private var _renderColorTransformVersion = -1
 
     private fun updateRenderColorTransform() {
@@ -1003,10 +1003,10 @@ abstract class View internal constructor(
     }
 
     /** Converts the local point [x], [y] into a X coordinate in window coordinates. */
-    fun localToWindowX(views: Views, x: Double, y: Double): Double = localToWindowXY(views, x, y, tempPoint).x
+    fun localToWindowX(views: Views, x: Double, y: Double): Double = Point.POOL { localToWindowXY(views, x, y, it).x }
 
     /** Converts the local point [x], [y] into a Y coordinate in window coordinates. */
-    fun localToWindowY(views: Views, x: Double, y: Double): Double = localToWindowXY(views, x, y, tempPoint).y
+    fun localToWindowY(views: Views, x: Double, y: Double): Double = Point.POOL { localToWindowXY(views, x, y, it).y }
 
     var hitTestEnabled = true
 
@@ -1057,7 +1057,9 @@ abstract class View internal constructor(
                 }
             }
         }
-        val res = hitTestShapeInternal(view.hitShape2d, view.getGlobalMatrixWithAnchor(tempMatrix1), direction)
+        val res = Matrix.POOL.alloc { tempMatrix1 ->
+            hitTestShapeInternal(view.hitShape2d, view.getGlobalMatrixWithAnchor(tempMatrix1), direction)
+        }
         if (res != null) return res
         return if (this is Stage) this else null
     }
@@ -1077,15 +1079,10 @@ abstract class View internal constructor(
         return if (this is Stage) this else null
     }
 
-    private val tempMatrix1 = Matrix()
-    private val tempMatrix2 = Matrix()
-    private val tempMatrix = Matrix()
-    private val tempPoint = Point()
-
     open val customHitShape get() = false
-    open protected fun hitTestShapeInternal(shape: Shape2d, matrix: Matrix, direction: HitTestDirection): View? {
+    protected open fun hitTestShapeInternal(shape: Shape2d, matrix: Matrix, direction: HitTestDirection): View? {
         //println("View.hitTestShapeInternal: $this, $shape")
-        if (Shape2d.intersects(this.hitShape2d, getGlobalMatrixWithAnchor(tempMatrix2), shape, matrix, tempMatrix)) {
+        if (Matrix.POOL.alloc2 { tempMatrix2, tempMatrix -> Shape2d.intersects(this.hitShape2d, getGlobalMatrixWithAnchor(tempMatrix2), shape, matrix, tempMatrix) }) {
             //println(" -> true")
             return this
         }
@@ -1105,35 +1102,37 @@ abstract class View internal constructor(
             }
         }
         if (!mouseEnabled) return null
-        hitTestInternal(x, y)?.let {
+        hitTestInternal(x, y)?.let { view ->
 
             // @TODO: This should not be required if we compute bounds
-            val area = getClippingAreaInternal()
-            if (area != null && !area.contains(x, y)) return null
-
-            return it
+            Rectangle.POOL { tempRect ->
+                val area = getClippingAreaInternal(tempRect)
+                if (area != null && !area.contains(x, y)) return null
+                return view
+            }
         }
         return if (this is Stage) this else null
     }
 
-    private val _localBounds2: Rectangle = Rectangle()
-
     @KorgeInternal
-    fun getClippingAreaInternal(): Rectangle? {
-        this._localBounds2.setTo(Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY)
+    fun getClippingAreaInternal(out: Rectangle): Rectangle? {
+        out.setTo(Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY)
         var count = 0
-        forEachAscendant(true) {
-            if (it !is Stage && it is FixedSizeContainer && it.clip) {
-                it.getGlobalBounds(this._localBounds)
-                if (count == 0) {
-                    this._localBounds2.copyFrom(this._localBounds)
-                } else {
-                    this._localBounds2.setToIntersection(this._localBounds2, this._localBounds)
+        Rectangle.POOL { _localBounds ->
+            forEachAscendant(true) {
+                if (it !is Stage && it is FixedSizeContainer && it.clip) {
+                    it.getGlobalBounds(_localBounds)
+                    if (count == 0) {
+                        out.copyFrom(_localBounds)
+                    } else {
+                        out.setToIntersection(out, _localBounds)
+                    }
+                    count++
                 }
-                count++
             }
         }
-        return if (count == 0) null else this._localBounds2
+
+        return if (count == 0) null else out
     }
 
     fun mouseHitTest(x: Float, y: Float): View? = hitTest(x.toDouble(), y.toDouble())
@@ -1381,9 +1380,6 @@ abstract class View internal constructor(
     //fun getRect(target: View? = this, out: Rectangle = Rectangle()): Rectangle = TODO()
 
     /** Get the bounds of this view, using the [target] view as coordinate system. Not providing a [target] will return the local bounds. Allows to specify [out] [Rectangle] to prevent allocations. */
-    private val boundsTemp = Matrix()
-    private val bb = BoundsBuilder()
-
     fun getBoundsNoAnchoring(target: View? = this, out: Rectangle = Rectangle(), inclusive: Boolean = false, includeFilters: Boolean = true): Rectangle {
         return getBounds(target, out, false, inclusive, includeFilters)
     }
@@ -1404,19 +1400,19 @@ abstract class View internal constructor(
             val p4x = out.left
             val p4y = out.bottom
 
-            bb.reset()
-            bb.add(concat.transformX(p1x, p1y), concat.transformY(p1x, p1y))
-            bb.add(concat.transformX(p2x, p2y), concat.transformY(p2x, p2y))
-            bb.add(concat.transformX(p3x, p3y), concat.transformY(p3x, p3y))
-            bb.add(concat.transformX(p4x, p4y), concat.transformY(p4x, p4y))
-
-            bb.getBounds(out)
+            BoundsBuilder.POOL { bb ->
+                bb.add(concat.transformX(p1x, p1y), concat.transformY(p1x, p1y))
+                bb.add(concat.transformX(p2x, p2y), concat.transformY(p2x, p2y))
+                bb.add(concat.transformX(p3x, p3y), concat.transformY(p3x, p3y))
+                bb.add(concat.transformX(p4x, p4y), concat.transformY(p4x, p4y))
+                bb.getBounds(out)
+            }
         }
         return out
     }
 
     fun getBounds(target: View? = this, out: Rectangle = Rectangle(), doAnchoring: Boolean = true, inclusive: Boolean = false, includeFilters: Boolean = true): Rectangle {
-        return _getBounds(this.getConcatMatrix(target ?: this, boundsTemp, inclusive), out, doAnchoring, includeFilters)
+        return Matrix.POOL { boundsTemp -> _getBounds(this.getConcatMatrix(target ?: this, boundsTemp, inclusive), out, doAnchoring, includeFilters) }
     }
 
     ///** Kind of bounds we are checking */
@@ -1437,8 +1433,6 @@ abstract class View internal constructor(
     @Deprecated("Allocates")
     fun getLocalBounds(doAnchoring: Boolean = true, includeFilters: Boolean = true): Rectangle = getLocalBounds(Rectangle(), doAnchoring, includeFilters)
 
-    private val tempMutableMargin: MutableMarginInt = MutableMarginInt()
-
     /**
      * Get local bounds of the view. Allows to specify [out] [Rectangle] if you want to reuse an object.
      */
@@ -1450,13 +1444,13 @@ abstract class View internal constructor(
             it.y += anchorDispY
         }
         if (includeFilters) {
-            filter?.expandBorderRectangle(out, tempMutableMargin)
+            filter?.expandBorderRectangle(out)
         }
         return it
     }
 
     private val _localBounds: Rectangle = Rectangle()
-    open fun getLocalBoundsInternal(out: Rectangle = _localBounds) {
+    open fun getLocalBoundsInternal(out: Rectangle) {
         out.clear()
     }
 
