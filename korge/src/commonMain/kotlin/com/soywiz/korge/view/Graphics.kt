@@ -2,6 +2,7 @@ package com.soywiz.korge.view
 
 import com.soywiz.korge.debug.uiCollapsibleSection
 import com.soywiz.korge.debug.uiEditableValue
+import com.soywiz.korge.internal.*
 import com.soywiz.korge.view.vector.GpuShapeView
 import com.soywiz.korge.view.vector.gpuGraphics
 import com.soywiz.korim.vector.EmptyShape
@@ -69,6 +70,9 @@ class Graphics(
             anchorable?.anchorY = value
             invalidateRender()
         }
+    @KorgeInternal override val anchorDispX: Double get() = rendererView?.anchorDispX ?: 0.0
+    @KorgeInternal override val anchorDispY: Double get() = rendererView?.anchorDispY ?: 0.0
+
     var antialiased: Boolean = true
         set(value) {
             if (field == value) return
