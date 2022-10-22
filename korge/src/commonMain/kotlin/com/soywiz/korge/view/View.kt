@@ -1050,7 +1050,7 @@ abstract class View internal constructor(
         if (!visible) return null
         if (_hitShape2d == null) {
             _children?.fastForEachReverse { child ->
-                if (child != view) {
+                if (child !== view) {
                     child.hitTestView(view, direction)?.let {
                         return it
                     }
