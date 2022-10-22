@@ -273,6 +273,8 @@ private class NodeJsLocalVfs : LocalVfs() {
     }
 
     override suspend fun exec(path: String, cmdAndArgs: List<String>, env: Map<String, String>, handler: VfsProcessHandler): Int {
+        checkExecFolder(path, cmdAndArgs)
+
         // @TODO: This fails on windows with characters like '&'
         val realCmdAndArgs = ShellArgs.buildShellExecCommandLineArrayForNodeSpawn(cmdAndArgs)
 

@@ -26,6 +26,7 @@ class LogVfs(val parent: VfsFile) : Vfs.Proxy() {
 		env: Map<String, String>,
 		handler: VfsProcessHandler
 	): Int {
+        checkExecFolder(path, cmdAndArgs)
 		log += "exec($path, $cmdAndArgs, $env, $handler)"
 		return super.exec(path, cmdAndArgs, env, handler)
 	}

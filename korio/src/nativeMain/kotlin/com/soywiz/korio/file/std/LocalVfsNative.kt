@@ -72,7 +72,10 @@ open class LocalVfsNativeBase(val async: Boolean = true) : LocalVfs() {
 
     override suspend fun exec(
 		path: String, cmdAndArgs: List<String>, env: Map<String, String>, handler: VfsProcessHandler
-	): Int = posixExec(path, cmdAndArgs, env, handler)
+	): Int {
+        checkExecFolder(path, cmdAndArgs)
+        return posixExec(path, cmdAndArgs, env, handler)
+    }
 
 	override suspend fun readRange(path: String, range: LongRange): ByteArray {
         val rpath = resolve(path)

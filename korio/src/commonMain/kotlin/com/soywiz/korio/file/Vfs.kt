@@ -69,7 +69,10 @@ abstract class Vfs : AsyncCloseable {
 		cmdAndArgs: List<String>,
 		env: Map<String, String>,
 		handler: VfsProcessHandler = VfsProcessHandler()
-	): Int = unsupported()
+	): Int {
+        checkExecFolder(path, cmdAndArgs)
+        unsupported()
+    }
 
 	open suspend fun open(path: String, mode: VfsOpenMode): AsyncStream = unsupported()
 
