@@ -49,6 +49,7 @@ internal open class BaseLocalVfsJvm : LocalVfs() {
         env: Map<String, String>,
         handler: VfsProcessHandler
     ): Int = executeIo {
+        checkExecFolder(path, cmdAndArgs)
         val actualCmd = ShellArgs.buildShellExecCommandLineArrayForProcessBuilder(cmdAndArgs)
         val pb = ProcessBuilder(actualCmd)
         pb.environment().putAll(LinkedHashMap())

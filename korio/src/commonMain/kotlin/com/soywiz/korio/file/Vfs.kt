@@ -56,12 +56,23 @@ abstract class Vfs : AsyncCloseable {
 		handler: VfsProcessHandler = VfsProcessHandler()
 	): Int = exec(path, cmdAndArgs, Environment.getAll(), handler)
 
+    protected suspend fun checkExecFolder(path: String, cmdAndArgs: List<String>) {
+        val stat = stat(path)
+        //println("stat=$stat")
+        if (!stat.isDirectory) {
+            throw FileNotFoundException("'$path' is not a directory, to execute '${cmdAndArgs.first()}'")
+        }
+    }
+
 	open suspend fun exec(
 		path: String,
 		cmdAndArgs: List<String>,
 		env: Map<String, String>,
 		handler: VfsProcessHandler = VfsProcessHandler()
-	): Int = unsupported()
+	): Int {
+        checkExecFolder(path, cmdAndArgs)
+        unsupported()
+    }
 
 	open suspend fun open(path: String, mode: VfsOpenMode): AsyncStream = unsupported()
 
