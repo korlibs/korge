@@ -240,9 +240,9 @@ abstract class View internal constructor(
     protected var _y: Double = 0.0
     private var _scaleX: Double = 1.0
     private var _scaleY: Double = 1.0
-    private var _skewX: Angle = 0.0.radians
-    private var _skewY: Angle = 0.0.radians
-    private var _rotation: Angle = 0.0.radians
+    private var _skewX: Angle = Angle.ZERO
+    private var _skewY: Angle = Angle.ZERO
+    private var _rotation: Angle = Angle.ZERO
 
     private val _pos = Point()
 
