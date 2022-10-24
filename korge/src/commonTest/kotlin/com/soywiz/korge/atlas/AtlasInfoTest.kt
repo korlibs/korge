@@ -1,5 +1,6 @@
 package com.soywiz.korge.atlas
 
+import com.soywiz.kmem.*
 import com.soywiz.korim.atlas.Atlas
 import com.soywiz.korim.atlas.AtlasInfo
 import com.soywiz.korim.atlas.readAtlas
@@ -8,7 +9,6 @@ import com.soywiz.korio.async.suspendTest
 import com.soywiz.korio.file.std.resourcesVfs
 import com.soywiz.korio.lang.assert
 import com.soywiz.korio.lang.substr
-import com.soywiz.korio.util.OS
 import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.geom.RectangleInt
 import com.soywiz.korma.geom.Size
@@ -17,7 +17,7 @@ import kotlin.test.assertEquals
 
 class AtlasInfoTest {
     @Test
-    fun name() = suspendTest({ OS.isJvm }) {
+    fun name() = suspendTest({ Platform.isJvm }) {
         val atlas = AtlasInfo.loadJsonSpriter(resourcesVfs["demo.json"].readString())
         assertEquals("Spriter", atlas.app)
         assertEquals("r10", atlas.version)
@@ -37,17 +37,17 @@ class AtlasInfoTest {
     }
 
     @Test
-    fun atlasTestXml() = suspendTest({ OS.isJvm }) {
+    fun atlasTestXml() = suspendTest({ Platform.isJvm }) {
         testAtlas(resourcesVfs["atlas-test.xml"].readAtlas())
     }
 
     @Test
-    fun atlasTestJson() = suspendTest({ OS.isJvm }) {
+    fun atlasTestJson() = suspendTest({ Platform.isJvm }) {
         testAtlas(resourcesVfs["atlas-test.json"].readAtlas(), ".png")
     }
 
     @Test
-    fun atlasTestTxt() = suspendTest({ OS.isJvm }) {
+    fun atlasTestTxt() = suspendTest({ Platform.isJvm }) {
         testAtlas(resourcesVfs["atlas-test-spine.atlas.txt"].readAtlas())
     }
 
@@ -97,7 +97,7 @@ class AtlasInfoTest {
     fun testExtract(slice: BmpSlice, r: Boolean, g: Boolean, b: Boolean, xOffset: Int, yOffset: Int) {
         val bmp = slice.extract()
 
-        if (slice.name == "1") {
+        if (slice.name?.startsWith("1") == true) {
             assert(bmp.width == 32, { "Extracted slice ${slice.name} failed on width" })
             assert(bmp.height == 46, { "Extracted slice ${slice.name} failed on height" })
         } else {
