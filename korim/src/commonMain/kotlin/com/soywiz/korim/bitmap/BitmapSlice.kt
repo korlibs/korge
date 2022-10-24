@@ -517,17 +517,29 @@ abstract class BmpSlice(
         val reverseX = width > 1 && if (rotated) tl_y > br_y else tl_x > br_x
         val reverseY = height > 1 && if (rotated) tl_x > br_x else tl_y > br_y
 
-        val out: T = if (frameOffsetX == 0 && frameOffsetY == 0 && frameWidth == width && frameHeight == height) {
+        val offsetX = if (reverseX) {
+            frameWidth - width - frameOffsetX
+        } else {
+            frameOffsetX
+        }
+
+        val offsetY = if (reverseY) {
+            frameHeight - height - frameOffsetY
+        } else {
+            frameOffsetY
+        }
+
+        val out: T = if (!rotated && offsetX == 0 && offsetY == 0 && frameWidth == width && frameHeight == height) {
             base.extract(x, y, width, height)
         } else {
             base.createWithThisFormatTyped(frameWidth, frameHeight).also { out ->
                 if (!rotated) {
-                    bmp.copyUnchecked(x, y, out, frameOffsetX, frameOffsetY, width, height)
+                    bmp.copyUnchecked(x, y, out, offsetX, offsetY, width, height)
                 } else {
                     val rgbaArray = IntArray(width)
                     for (x0 in 0 until height) {
                         bmp.readPixelsUnsafe(x + x0, y, 1, width, rgbaArray)
-                        out.writePixelsUnsafe(frameOffsetX, frameOffsetY + x0, width, 1, rgbaArray)
+                        out.writePixelsUnsafe(offsetX, offsetY + x0, width, 1, rgbaArray)
                     }
                 }
             }
