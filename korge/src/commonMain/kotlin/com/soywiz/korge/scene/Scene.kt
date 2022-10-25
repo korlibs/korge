@@ -192,6 +192,14 @@ abstract class OldScaledScene : Scene() {
 	)
 }
 
+abstract class PixelatedScene(
+    sceneWidth: Int,
+    sceneHeight: Int,
+    sceneScaleMode: ScaleMode = ScaleMode.SHOW_ALL,
+    sceneAnchor: Anchor = Anchor.CENTER,
+    sceneSmoothing: Boolean = false,
+) : ScaledScene(sceneWidth, sceneHeight, sceneScaleMode, sceneAnchor, sceneSmoothing = sceneSmoothing)
+
 /**
  * A Scene where the effective container has a fixed size [sceneWidth] and [sceneHeight],
  * and scales and positions its SceneContainer based on [sceneScaleMode] and [sceneAnchor].
