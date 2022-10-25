@@ -27,6 +27,10 @@ android {
         main {
             assets.srcDirs = [
                 'src/commonMain/resources',
+            ]
+        }
+        test {
+            assets.srcDirs = [
                 'src/commonTest/resources',
             ]
         }
