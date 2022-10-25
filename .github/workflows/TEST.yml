@@ -13,6 +13,7 @@ concurrency:
 env:
   CI: true
   SKIP_KORGE_SAMPLES: true
+  ANDROID_TESTS: true
 
 jobs:
   changes:
