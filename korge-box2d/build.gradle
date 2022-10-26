@@ -1,6 +1,0 @@
-description = "Multiplatform Game Engine written in Kotlin"
-
-dependencies {
-    add("commonMainApi", project(":kbox2d"))
-	add("commonMainApi", project(":korge"))
-}
