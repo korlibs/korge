@@ -49,7 +49,12 @@ you can make experiments there:
 ./gradlew :korge-sandbox:runIosDeviceRelease
 ```
 
-## About KorGE Modules
+## KorGE Samples
+
+* <https://github.com/korlibs/korge-samples>
+* <https://github.com/korlibs/korge-samples-ext>
+
+## KorGE Modules
 
 Traditionally all the KorGE modules were published to central and their source code was available here,
 now they are available via kproject in these repositories:
