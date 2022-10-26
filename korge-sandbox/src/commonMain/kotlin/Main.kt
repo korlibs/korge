@@ -13,11 +13,9 @@ import com.soywiz.korio.lang.portableSimpleName
 import samples.*
 import samples.asteroids.MainAsteroids
 import samples.connect4.MainConnect4
-import samples.fleks.MainFleksSample
 import samples.minesweeper.MainMineSweeper
 import samples.pong.MainPong
 import samples.rpg.MainRpgScene
-import samples.tictactoeswf.MainTicTacToeSwf
 
 val DEFAULT_KORGE_BG_COLOR = Colors.DARKCYAN.mix(Colors.BLACK, 0.8)
 
@@ -64,7 +62,6 @@ suspend fun main() = Korge(
             Demo(::MainFilters),
             Demo(::MainCoroutine),
             Demo(::MainVideo),
-            Demo(::MainTicTacToeSwf),
             Demo(::MainPong),
             Demo(::MainUI),
             Demo(::MainLua),
@@ -78,13 +75,9 @@ suspend fun main() = Korge(
             Demo(::MainHelloWorld),
             Demo(::MainFlag),
             Demo(::MainAsteroids),
-            Demo(::MainBox2d),
             Demo(::MainEmojiColrv1),
             Demo(::MainRotatedAtlas),
             Demo(::MainConnect4),
-            Demo(::MainSWF),
-            Demo(::MainSpine),
-            Demo(::MainDragonbones),
             Demo(::MainMutableAtlasTest),
             Demo(::MainTerminalEmulator),
             Demo(::MainParticles),
@@ -106,7 +99,6 @@ suspend fun main() = Korge(
             Demo(::MainSprites10k),
             Demo(::MainCustomSolidRectShader),
             Demo(::MainStage3d),
-            Demo(::MainFleksSample),
             Demo(::MainBlur),
             Demo(::MainFiltersRenderToBitmap),
             Demo(::MainColorPicker),
