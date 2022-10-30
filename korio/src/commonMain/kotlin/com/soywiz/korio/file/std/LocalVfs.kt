@@ -15,7 +15,13 @@ abstract class LocalVfs : Vfs() {
 		operator fun get(base: String) = localVfs(base)
 	}
 
-	override fun toString(): String = "LocalVfs"
+    override suspend fun getAttributes(path: String): List<Attribute> {
+        val stat = stat(path)
+        if (!stat.exists) return emptyList()
+        return listOf(UnixPermissionsAttribute(stat.mode))
+    }
+
+    override fun toString(): String = "LocalVfs"
 }
 
 var resourcesVfsDebug = false

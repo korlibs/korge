@@ -1,5 +1,6 @@
 package com.soywiz.korio.file.std
 
+import com.soywiz.kds.iterators.*
 import com.soywiz.klock.DateTime
 import com.soywiz.korio.file.VfsFile
 import com.soywiz.korio.file.VfsOpenMode
@@ -26,10 +27,12 @@ import java.io.InputStream
 import java.io.InputStreamReader
 import java.io.RandomAccessFile
 import java.nio.file.FileSystems
+import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.nio.file.StandardWatchEventKinds
 import java.nio.file.WatchEvent
+import java.nio.file.attribute.PosixFilePermission
 
 internal open class BaseLocalVfsJvm : LocalVfs() {
     val that = this
@@ -38,6 +41,39 @@ internal open class BaseLocalVfsJvm : LocalVfs() {
     protected suspend fun <T> executeIo(callback: suspend CoroutineScope.() -> T): T = withContext(Dispatchers.IO, callback)
     protected suspend fun <T> doIo(callback: suspend () -> T): T = withContext(Dispatchers.IO) { callback() }
     //private suspend inline fun <T> executeIo(callback: suspend () -> T): T = callback()
+
+    fun UnixPermissionsAttribute.toSet(): Set<PosixFilePermission> = buildList<PosixFilePermission> {
+        val it = this@toSet
+        if (it.owner.writable) add(PosixFilePermission.OWNER_WRITE)
+        if (it.owner.readable) add(PosixFilePermission.OWNER_READ)
+        if (it.owner.executable) add(PosixFilePermission.OWNER_EXECUTE)
+        if (it.other.writable) add(PosixFilePermission.OTHERS_WRITE)
+        if (it.other.readable) add(PosixFilePermission.OTHERS_READ)
+        if (it.other.executable) add(PosixFilePermission.OTHERS_EXECUTE)
+        if (it.group.writable) add(PosixFilePermission.GROUP_WRITE)
+        if (it.group.readable) add(PosixFilePermission.GROUP_READ)
+        if (it.group.executable) add(PosixFilePermission.GROUP_EXECUTE)
+    }.toSet()
+
+    fun Set<PosixFilePermission>.toUnixPermissionsAttribute(): UnixPermissionsAttribute {
+        return UnixPermissionsAttribute(
+            owner = UnixPermission(this.contains(PosixFilePermission.OWNER_READ), this.contains(PosixFilePermission.OWNER_WRITE), this.contains(PosixFilePermission.OWNER_EXECUTE)),
+            group = UnixPermission(this.contains(PosixFilePermission.GROUP_READ), this.contains(PosixFilePermission.GROUP_WRITE), this.contains(PosixFilePermission.GROUP_EXECUTE)),
+            other = UnixPermission(this.contains(PosixFilePermission.OTHERS_READ), this.contains(PosixFilePermission.OTHERS_WRITE), this.contains(PosixFilePermission.OTHERS_EXECUTE)),
+        )
+    }
+
+    override suspend fun setAttributes(path: String, attributes: List<Attribute>): Unit = executeIo {
+        val file = resolveFile(path)
+        attributes.getOrNull<UnixPermissionsAttribute>()?.let {
+            Files.setPosixFilePermissions(file.toPath(), it.toSet())
+        }
+    }
+
+    override suspend fun getAttributes(path: String): List<Attribute> = executeIo {
+        val file = resolveFile(path)
+        listOf(Files.getPosixFilePermissions(file.toPath()).toUnixPermissionsAttribute())
+    }
 
     fun resolve(path: String) = path
     fun resolvePath(path: String) = Paths.get(resolve(path))

@@ -235,6 +235,7 @@ private external interface NodeFS {
     fun unlink(path: String, callback: (Error?) -> Unit)
     fun rmdir(path: String, callback: (Error?) -> Unit)
     fun stat(path: String, callback: (Error?, NodeFileStat) -> Unit)
+    fun chmod(path: String, value: Int, callback: (Error?) -> Unit)
     fun open(path: String, cmode: String, callback: (Error?, NodeFD?) -> Unit)
     fun read(fd: NodeFD?, buffer: NodeJsBuffer, offset: Int, len: Int, position: Double, callback: (Error?, Int, NodeJsBuffer) -> Unit)
     fun write(fd: NodeFD?, buffer: NodeJsBuffer, offset: Int, len: Int, position: Double, callback: (Error?, Int, NodeJsBuffer) -> Unit)
@@ -260,6 +261,16 @@ private class NodeJsLocalVfs : LocalVfs() {
             modifiedTime = DateTime.Companion.fromUnixMillis(stats.mtimeMs),
             lastAccessTime = DateTime.Companion.fromUnixMillis(stats.atimeMs),
         )
+    }
+
+    override suspend fun setAttributes(path: String, attributes: List<Attribute>) {
+        val deferred = CompletableDeferred<Unit>()
+        attributes.getOrNull<UnixPermissionsAttribute>()?.let {
+            nodeFS.chmod(path, it.rbits) { err ->
+                if (err != null) deferred.completeExceptionally(err) else deferred.complete(Unit)
+            }
+        }
+        return deferred.await()
     }
 
     override suspend fun stat(path: String): VfsStat {

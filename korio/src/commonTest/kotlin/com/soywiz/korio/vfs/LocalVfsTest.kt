@@ -1,7 +1,8 @@
 package com.soywiz.korio.vfs
 
+import com.soywiz.kmem.*
 import com.soywiz.korio.async.*
-import com.soywiz.korio.file.VfsOpenMode
+import com.soywiz.korio.file.*
 import com.soywiz.korio.file.std.localCurrentDirVfs
 import com.soywiz.korio.file.std.tempVfs
 import com.soywiz.korio.lang.FileNotFoundException
@@ -85,4 +86,19 @@ class LocalVfsTest {
 		}
 	}
 
+    @Test
+    fun testUnixPermissions() = suspendTest({ (Platform.isJvm && Platform.isUnix) || Platform.isMac || Platform.isLinux || (Platform.isJsNodeJs) }) {
+        val chmod = "0713".toInt(8)
+        val file = tempVfs["korio-temp123.bin"]
+        file.delete()
+        try {
+            file.writeString("123")
+            println("testUnixPermissions[before]:attribute=${file.getAttribute<Vfs.UnixPermissionsAttribute>()}")
+            file.setAttributes(Vfs.UnixPermissionsAttribute(chmod))
+            println("testUnixPermissions[after]:attribute=${file.getAttribute<Vfs.UnixPermissionsAttribute>()}")
+            assertEquals(chmod, file.getAttribute<Vfs.UnixPermissionsAttribute>()!!.rbits)
+        } finally {
+            file.delete()
+        }
+    }
 }
