@@ -27,10 +27,9 @@ Jon-Carlos Rivera - imbcmdth@hotmail.com
  ******************************************************************************/
 @file:Suppress("LocalVariableName", "FunctionName")
 
-package com.soywiz.korma.geom.ds
+package com.soywiz.kds.ds
 
-import com.soywiz.kds.FastArrayList
-import com.soywiz.kds.fastArrayListOf
+import com.soywiz.kds.*
 import kotlin.collections.HashMap
 import kotlin.collections.List
 import kotlin.collections.contains
@@ -55,7 +54,7 @@ class BVH<T>(
     val dimensions: Int = 2,
     width: Int = dimensions * 3,
     val allowUpdateObjects: Boolean = true
-) {
+) : Iterable<BVH.Node<T>> {
     // Variables to control tree
     // Number of "interval pairs" per node
     // Maximum width of any node before a split
@@ -111,6 +110,11 @@ class BVH<T>(
         id = "root",
         nodes = fastArrayListOf()
     )
+
+    fun isEmpty(): Boolean {
+        val nodes = root.nodes ?: return true
+        return nodes.isEmpty()
+    }
 
     /* expands intervals A to include intervals B, intervals B is untouched
 	 * [ rectangle a ] = expand_rectangle(rectangle a, rectangle b)
@@ -735,6 +739,35 @@ class BVH<T>(
         )
     }
 
+    override fun iterator(): Iterator<Node<T>> = iterator<Node<T>> {
+        val deque = Deque<Node<T>>()
+        deque.addLast(root)
+        while (deque.isNotEmpty()) {
+            val node = deque.removeFirst()
+            yield(node)
+            node.nodes?.let { deque.addAll(it) }
+        }
+    }
+
+    fun findAll(): List<Node<T>> {
+        return this.toList()
+    }
+
+    fun findAllValues(): List<T> {
+        return findAll().mapNotNull { it.value }
+    }
+
+    fun searchValues(
+        intervals: BVHIntervals,
+        comparators: Comparators = Comparators,
+    ): List<T> {
+        return _search_subtree(
+            intervals = intervals,
+            root = this.root,
+            comparators = comparators
+        ).mapNotNull { it.value }
+    }
+
     /* non-recursive insert function
 	 * [] = NTree.insert(intervals, object to insert)
 	 */
@@ -804,12 +837,19 @@ class BVH<T>(
     }
 }
 
+/**
+ * In the format:
+ *
+ * [x, width, y, height]
+ * [x, width, y, height, z, depth]
+ */
 @Suppress("INLINE_CLASS_DEPRECATED")
 inline class BVHIntervals(val data: DoubleArray) {
     constructor(dimensions: Int) : this(DoubleArray(dimensions * 2))
 
     companion object {
-        operator fun invoke(vararg values: Double) = BVHIntervals(values)
+        operator fun invoke(vararg values: Double): BVHIntervals = BVHIntervals(values)
+        operator fun invoke(vararg values: Int): BVHIntervals = BVHIntervals(DoubleArray(values.size) { values[it].toDouble() })
     }
 
     fun checkDimensions(dimensions: Int) {
