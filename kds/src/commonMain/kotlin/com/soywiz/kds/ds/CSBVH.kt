@@ -1,4 +1,4 @@
-/*
+package com.soywiz.kds.ds/*
 // Copyright(C) David W. Jeske, 2014, and released to the public domain.
 //
 // Dynamic BVH (Bounding Volume Hierarchy) using incremental refit and tree-rotations
