@@ -1,13 +1,8 @@
 package com.soywiz.korge.view.tiles
 
-import com.soywiz.kds.FastArrayList
-import com.soywiz.kds.FastIdentityCacheMap
-import com.soywiz.kds.IntArray2
-import com.soywiz.kds.Pool
-import com.soywiz.kds.StackedIntArray2
+import com.soywiz.kds.*
 import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.kds.iterators.fastForEachWithIndex
-import com.soywiz.kds.toStacked
 import com.soywiz.klock.milliseconds
 import com.soywiz.kmem.clamp
 import com.soywiz.kmem.extract
@@ -44,7 +39,7 @@ import com.soywiz.korma.math.min
 import com.soywiz.korma.math.max
 
 inline fun Container.tileMap(
-    map: StackedIntArray2,
+    map: IStackedIntArray2,
     tileset: TileSet,
     repeatX: TileMapRepeat = TileMapRepeat.NONE,
     repeatY: TileMapRepeat = repeatX,
@@ -69,6 +64,7 @@ inline fun Container.tileMap(
     callback: @ViewDslMarker TileMap.() -> Unit = {},
 ) = TileMap(map, tileset, smoothing, orientation, staggerAxis, staggerIndex, tileSize).repeat(repeatX, repeatY).addTo(this, callback)
 
+@Deprecated("Use IStackedIntArray2 or IntArray2 as the map data")
 inline fun Container.tileMap(
     map: Bitmap32,
     tileset: TileSet,
@@ -117,20 +113,20 @@ inline class TileInfo(val data: Int) {
 }
 
 abstract class BaseTileMap(
-    stackedIntMap: StackedIntArray2,
+    stackedIntMap: IStackedIntArray2,
     var smoothing: Boolean = true,
     val staggerAxis: TileMapStaggerAxis? = null,
     val staggerIndex: TileMapStaggerIndex? = null,
     var tileSize: Size = Size()
 ) : View() {
-    var stackedIntMap: StackedIntArray2 = stackedIntMap
+    var stackedIntMap: IStackedIntArray2 = stackedIntMap
 
     @Deprecated("Use stackedIntMap instead")
     var intMap: IntArray2
-        get() = stackedIntMap.data.first()
+        get() = (stackedIntMap as StackedIntArray2).data.first()
         set(value) {
             lock {
-                stackedIntMap.setLayer(0, value)
+                (stackedIntMap as StackedIntArray2).setLayer(0, value)
             }
         }
 
@@ -303,10 +299,10 @@ abstract class BaseTileMap(
 
         //if (false) {
         if (true) {
-            ymin2 = if (doRepeatAny) ymin else ymin.clamp(0, stackedIntMap.height)
-            ymax2 = if (doRepeatAny) ymax else ymax.clamp(0, stackedIntMap.height)
-            xmin2 = if (doRepeatAny) xmin else xmin.clamp(0, stackedIntMap.width)
-            xmax2 = if (doRepeatAny) xmax else xmax.clamp(0, stackedIntMap.width)
+            ymin2 = if (doRepeatAny) ymin else ymin.clamp(stackedIntMap.startY, stackedIntMap.endY)
+            ymax2 = if (doRepeatAny) ymax else ymax.clamp(stackedIntMap.startY, stackedIntMap.endY)
+            xmin2 = if (doRepeatAny) xmin else xmin.clamp(stackedIntMap.startX, stackedIntMap.endX)
+            xmax2 = if (doRepeatAny) xmax else xmax.clamp(stackedIntMap.startX, stackedIntMap.endX)
         } else {
             ymin2 = 0
             ymax2 = stackedIntMap.height
@@ -344,6 +340,8 @@ abstract class BaseTileMap(
         val invTileWidth = 1.0 / tileWidth
         val invTileHeight = 1.0 / tileHeight
 
+        //println("TILE RANGE: ($xmin,$ymin)-($xmax,$ymax)  :: ($xmin2,$ymin2)-($xmax2,$ymax2) :: (${stackedIntMap.startX},${stackedIntMap.startY})-(${stackedIntMap.endX},${stackedIntMap.endY})")
+
         // @TODO: Try to reduce xy/min/max so we reduce continue. Maybe we can do a bisect or something, to allow huge out scalings
         for (y in ymin2 until ymax2) {
             // interlace rows when staggered on X to ensure proper z-index
@@ -354,8 +352,8 @@ abstract class BaseTileMap(
                     val rx = repeatX.get(x, stackedIntMap.width)
                     val ry = repeatY.get(y, stackedIntMap.height)
 
-                    if (rx < 0 || rx >= stackedIntMap.width) continue
-                    if (ry < 0 || ry >= stackedIntMap.height) continue
+                    if (rx < stackedIntMap.startX || rx >= stackedIntMap.endX) continue
+                    if (ry < stackedIntMap.startY || ry >= stackedIntMap.endY) continue
                     if (staggerAxis == TileMapStaggerAxis.X) {
                         val firstPass = staggerIndex == TileMapStaggerIndex.ODD && rx.isEven ||
                             staggerIndex == TileMapStaggerIndex.EVEN && rx.isOdd
@@ -515,7 +513,7 @@ abstract class BaseTileMap(
 
 @OptIn(KorgeInternal::class)
 open class TileMap(
-    intMap: StackedIntArray2 = StackedIntArray2(1, 1, 0),
+    intMap: IStackedIntArray2 = StackedIntArray2(1, 1, 0),
     tileset: TileSet = TileSet.EMPTY,
     smoothing: Boolean = true,
     val orientation: TileMapOrientation? = null,
