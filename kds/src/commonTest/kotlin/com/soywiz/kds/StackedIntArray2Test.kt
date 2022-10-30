@@ -1,7 +1,6 @@
 package com.soywiz.kds
 
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import kotlin.test.*
 
 class StackedIntArray2Test {
     @Test
@@ -34,5 +33,12 @@ class StackedIntArray2Test {
 
         assertEquals(-1, value.getFirst(1, 0))
         assertEquals(0, value.getStackLevel(1, 0))
+    }
+
+    @Test
+    fun testInitialSetLevel() {
+        val s = StackedIntArray2(IntArray2(2, 2, intArrayOf(10, 20, 30, 40)))
+        assertEquals(1, s.getStackLevel(0, 0))
+        assertEquals(1, s.getStackLevel(1, 1))
     }
 }
