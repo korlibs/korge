@@ -444,43 +444,6 @@ class KorgeExtension(val project: Project) {
 		androidPermission("android.permission.VIBRATE")
 	}
 
-	fun supportSwf() {
-		dependencyMulti("com.soywiz.korlibs.korge2:korge-swf:${BuildVersions.KORGE}", registerPlugin = false)
-	}
-
-    fun supportShape() {
-        //dependencyMulti("com.soywiz.korlibs.korma:korma-shape:${BuildVersions.KORMA}", registerPlugin = false)
-    }
-
-    fun supportShapeOps() = supportShape()
-	fun supportTriangulation() = supportShape()
-
-	fun supportDragonbones() {
-		dependencyMulti("com.soywiz.korlibs.korge2:korge-dragonbones:${BuildVersions.KORGE}", registerPlugin = false)
-	}
-
-    fun supportSpine() {
-        dependencyMulti("com.soywiz.korlibs.korge2:korge-spine:${BuildVersions.KORGE}", registerPlugin = false)
-    }
-
-    fun supportFleks() {
-        dependencyMulti("com.soywiz.korlibs.korge2:korge-fleks:${BuildVersions.KORGE}", registerPlugin = false)
-    }
-
-    fun supportBox2d() {
-        // https://awesome.korge.org/
-        //bundle("https://github.com/korlibs/korge-bundles.git::korge-box2d::7439e5c7de7442f2cd33a1944846d44aea31af0a##9fd9d54abd8abc4736fd3439f0904141d9b6a26e9e2f1e1f8e2ed10c51f490fd")
-        dependencyMulti("com.soywiz.korlibs.korge2:korge-box2d:${BuildVersions.KORGE}", registerPlugin = false)
-	}
-
-    fun supportVideo() {
-        dependencyMulti("com.soywiz.korlibs.korge2:korge-korvi:${BuildVersions.KORGE}", registerPlugin = false)
-    }
-
-    fun supportKorvi() {
-        supportVideo()
-    }
-
     fun admob(ADMOB_APP_ID: String) {
         bundle("https://github.com/korlibs/korge-bundles.git::korge-admob::4ac7fcee689e1b541849cedd1e017016128624b9##2ca2bf24ab19e4618077f57092abfc8c5c8fba50b2797a9c6d0e139cd24d8b35")
         config("ADMOB_APP_ID", ADMOB_APP_ID)
