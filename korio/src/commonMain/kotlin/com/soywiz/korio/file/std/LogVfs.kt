@@ -100,7 +100,13 @@ class LogVfs(val parent: VfsFile) : Vfs.Proxy() {
 		super.setAttributes(path, attributes)
 	}
 
-	override suspend fun mkdir(path: String, attributes: List<Attribute>): Boolean {
+    override suspend fun chmod(path: String, mode: UnixPermissions) {
+        modifiedFiles += path
+        log += "chmod($path, $mode)"
+        super.chmod(path, mode)
+    }
+
+    override suspend fun mkdir(path: String, attributes: List<Attribute>): Boolean {
 		modifiedFiles += path
 		log += "mkdir($path, $attributes)"
 		return super.mkdir(path, attributes)

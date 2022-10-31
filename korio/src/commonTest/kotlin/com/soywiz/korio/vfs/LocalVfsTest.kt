@@ -93,10 +93,11 @@ class LocalVfsTest {
         file.delete()
         try {
             file.writeString("123")
-            println("testUnixPermissions[before]:attribute=${file.getAttribute<Vfs.UnixPermissionsAttribute>()}")
-            file.setAttributes(Vfs.UnixPermissionsAttribute(chmod))
-            println("testUnixPermissions[after]:attribute=${file.getAttribute<Vfs.UnixPermissionsAttribute>()}")
-            assertEquals(chmod, file.getAttribute<Vfs.UnixPermissionsAttribute>()!!.rbits)
+            println("testUnixPermissions[before]:attribute=${file.getAttribute<Vfs.UnixPermissions>()}")
+            file.chmod(Vfs.UnixPermissions(chmod))
+            println("testUnixPermissions[after]:attribute=${file.getAttribute<Vfs.UnixPermissions>()}")
+            assertEquals(chmod, file.getAttribute<Vfs.UnixPermissions>()!!.rbits)
+            assertEquals(chmod, file.stat().permissions.rbits)
         } finally {
             file.delete()
         }

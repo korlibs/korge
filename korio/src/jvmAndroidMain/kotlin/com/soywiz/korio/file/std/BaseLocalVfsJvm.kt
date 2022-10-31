@@ -42,7 +42,7 @@ internal open class BaseLocalVfsJvm : LocalVfs() {
     protected suspend fun <T> doIo(callback: suspend () -> T): T = withContext(Dispatchers.IO) { callback() }
     //private suspend inline fun <T> executeIo(callback: suspend () -> T): T = callback()
 
-    fun UnixPermissionsAttribute.toSet(): Set<PosixFilePermission> = buildList<PosixFilePermission> {
+    fun UnixPermissions.toSet(): Set<PosixFilePermission> = buildList<PosixFilePermission> {
         val it = this@toSet
         if (it.owner.writable) add(PosixFilePermission.OWNER_WRITE)
         if (it.owner.readable) add(PosixFilePermission.OWNER_READ)
@@ -55,19 +55,17 @@ internal open class BaseLocalVfsJvm : LocalVfs() {
         if (it.group.executable) add(PosixFilePermission.GROUP_EXECUTE)
     }.toSet()
 
-    fun Set<PosixFilePermission>.toUnixPermissionsAttribute(): UnixPermissionsAttribute {
-        return UnixPermissionsAttribute(
-            owner = UnixPermission(this.contains(PosixFilePermission.OWNER_READ), this.contains(PosixFilePermission.OWNER_WRITE), this.contains(PosixFilePermission.OWNER_EXECUTE)),
-            group = UnixPermission(this.contains(PosixFilePermission.GROUP_READ), this.contains(PosixFilePermission.GROUP_WRITE), this.contains(PosixFilePermission.GROUP_EXECUTE)),
-            other = UnixPermission(this.contains(PosixFilePermission.OTHERS_READ), this.contains(PosixFilePermission.OTHERS_WRITE), this.contains(PosixFilePermission.OTHERS_EXECUTE)),
+    fun Set<PosixFilePermission>.toUnixPermissionsAttribute(): UnixPermissions {
+        return UnixPermissions(
+            owner = UnixPermission(contains(PosixFilePermission.OWNER_READ), contains(PosixFilePermission.OWNER_WRITE), contains(PosixFilePermission.OWNER_EXECUTE)),
+            group = UnixPermission(contains(PosixFilePermission.GROUP_READ), contains(PosixFilePermission.GROUP_WRITE), contains(PosixFilePermission.GROUP_EXECUTE)),
+            other = UnixPermission(contains(PosixFilePermission.OTHERS_READ), contains(PosixFilePermission.OTHERS_WRITE), contains(PosixFilePermission.OTHERS_EXECUTE)),
         )
     }
 
-    override suspend fun setAttributes(path: String, attributes: List<Attribute>): Unit = executeIo {
+    override suspend fun chmod(path: String, mode: UnixPermissions): Unit = executeIo {
         val file = resolveFile(path)
-        attributes.getOrNull<UnixPermissionsAttribute>()?.let {
-            Files.setPosixFilePermissions(file.toPath(), it.toSet())
-        }
+        Files.setPosixFilePermissions(file.toPath(), mode.toSet())
     }
 
     override suspend fun getAttributes(path: String): List<Attribute> = executeIo {
@@ -212,7 +210,8 @@ internal open class BaseLocalVfsJvm : LocalVfs() {
                 size = file.length(),
                 createTime = lastModified,
                 modifiedTime = lastModified,
-                lastAccessTime = lastModified
+                lastAccessTime = lastModified,
+                mode = Files.getPosixFilePermissions(file.toPath()).toUnixPermissionsAttribute().bits
             )
         } else {
             createNonExistsStat(fullpath)

@@ -3,9 +3,7 @@ package com.soywiz.korio.posix
 import kotlinx.cinterop.*
 import platform.posix.*
 
-actual val POSIX: BasePosix = BasePosixPosix()
-
-open class BasePosixPosix : BasePosix() {
+abstract class BasePosixPosix : BasePosix() {
     override fun posixFopen(filename: String, mode: String): CPointer<FILE>? {
         return fopen(filename, mode)
     }
@@ -30,13 +28,6 @@ open class BasePosixPosix : BasePosix() {
 
     override fun posixMkdir(path: String, attr: Int): Int {
         return platform.posix.mkdir(path, attr.convert())
-    }
-
-    override fun ioctlSocketFionRead(sockfd: Int): Int {
-        val v = intArrayOf(0)
-        //#define FIONREAD        0x541B
-        ioctl(sockfd.convert(), 0x541B.convert(), v.refTo(0))
-        return v[0]
     }
 
     override fun posixChmod(rpath: String, value: Int) {

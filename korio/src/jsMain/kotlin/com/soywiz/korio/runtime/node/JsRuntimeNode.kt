@@ -256,7 +256,7 @@ private class NodeJsLocalVfs : LocalVfs() {
         return createExistsStat(
             path, stats.isDirectory(), stats.size.toLong(),
             stats.dev.toLong(), stats.ino.toLong(),
-            stats.mode.toInt(),
+            mode = stats.mode.toInt(),
             createTime = DateTime.Companion.fromUnixMillis(stats.ctimeMs),
             modifiedTime = DateTime.Companion.fromUnixMillis(stats.mtimeMs),
             lastAccessTime = DateTime.Companion.fromUnixMillis(stats.atimeMs),
@@ -264,11 +264,15 @@ private class NodeJsLocalVfs : LocalVfs() {
     }
 
     override suspend fun setAttributes(path: String, attributes: List<Attribute>) {
+        attributes.getOrNull<UnixPermissions>()?.let {
+            chmod(path, it)
+        }
+    }
+
+    override suspend fun chmod(path: String, mode: UnixPermissions) {
         val deferred = CompletableDeferred<Unit>()
-        attributes.getOrNull<UnixPermissionsAttribute>()?.let {
-            nodeFS.chmod(path, it.rbits) { err ->
-                if (err != null) deferred.completeExceptionally(err) else deferred.complete(Unit)
-            }
+        nodeFS.chmod(path, mode.rbits) { err ->
+            if (err != null) deferred.completeExceptionally(err) else deferred.complete(Unit)
         }
         return deferred.await()
     }

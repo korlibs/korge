@@ -6,9 +6,6 @@ import com.soywiz.korio.file.VfsFile
 import com.soywiz.korio.file.withOnce
 import com.soywiz.korio.lang.Environment
 import com.soywiz.korio.lang.expand
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.emptyFlow
-import kotlinx.coroutines.flow.toList
 
 abstract class LocalVfs : Vfs() {
 	companion object {
@@ -18,7 +15,7 @@ abstract class LocalVfs : Vfs() {
     override suspend fun getAttributes(path: String): List<Attribute> {
         val stat = stat(path)
         if (!stat.exists) return emptyList()
-        return listOf(UnixPermissionsAttribute(stat.mode))
+        return listOf(UnixPermissions(stat.mode))
     }
 
     override fun toString(): String = "LocalVfs"

@@ -77,14 +77,12 @@ open class LocalVfsNativeBase(val async: Boolean = true) : LocalVfs() {
         return posixExec(path, cmdAndArgs, env, handler)
     }
 
-    override suspend fun setAttributes(path: String, attributes: List<Attribute>) {
-        attributes.getOrNull<UnixPermissionsAttribute>()?.let {
-            posixChmod(path, it.bits)
-        }
+    override suspend fun getAttributes(path: String): List<Attribute> {
+        return listOf(UnixPermissions(posixStat(path)!!.mode))
     }
 
-    override suspend fun getAttributes(path: String): List<Attribute> {
-        return listOf(UnixPermissionsAttribute(posixStat(path)!!.mode))
+    override suspend fun chmod(path: String, mode: UnixPermissions) {
+        posixChmod(path, mode.rbits)
     }
 
     override suspend fun readRange(path: String, range: LongRange): ByteArray {
@@ -229,7 +227,7 @@ open class LocalVfsNativeBase(val async: Boolean = true) : LocalVfs() {
 		val rpath = resolve(path)
         val statInfo = posixStat(rpath)
         return when {
-            statInfo != null -> createExistsStat(rpath, statInfo.isDirectory, statInfo.size)
+            statInfo != null -> createExistsStat(rpath, statInfo.isDirectory, statInfo.size, mode = statInfo.mode)
             else -> createNonExistsStat(rpath)
         }
 	}

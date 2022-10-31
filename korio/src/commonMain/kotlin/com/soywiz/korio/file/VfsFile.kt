@@ -116,6 +116,7 @@ data class VfsFile(
 	suspend fun setAttributes(vararg attributes: Vfs.Attribute) = vfs.setAttributes(this.path, attributes.toList())
     suspend fun getAttributes(): List<Vfs.Attribute> = vfs.getAttributes(this.path)
     suspend inline fun <reified T : Vfs.Attribute> getAttribute(): T? = getAttributes().filterIsInstance<T>().firstOrNull()
+    suspend fun chmod(mode: Vfs.UnixPermissions): Unit = vfs.chmod(this.path, mode)
 
 	suspend fun mkdir(attributes: List<Vfs.Attribute>) = vfs.mkdir(this.path, attributes)
 	suspend fun mkdir(vararg attributes: Vfs.Attribute) = mkdir(attributes.toList())
@@ -289,8 +290,8 @@ data class VfsFile(
 	override fun toString(): String = "$vfs[${this.path}]"
 }
 
-suspend inline fun VfsFile.setUnixPermission(permissions: Vfs.UnixPermissionsAttribute): Unit = setAttributes(permissions)
-suspend inline fun VfsFile.getUnixPermission(): Vfs.UnixPermissionsAttribute = getAttribute<Vfs.UnixPermissionsAttribute>() ?: Vfs.UnixPermissionsAttribute(0b111111111)
+suspend inline fun VfsFile.setUnixPermission(permissions: Vfs.UnixPermissions): Unit = setAttributes(permissions)
+suspend inline fun VfsFile.getUnixPermission(): Vfs.UnixPermissions = getAttribute<Vfs.UnixPermissions>() ?: Vfs.UnixPermissions(0b111111111)
 
 /**
  * Deletes all the files in this folder recursively.

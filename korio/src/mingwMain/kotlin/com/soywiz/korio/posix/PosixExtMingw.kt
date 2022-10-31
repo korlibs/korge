@@ -3,7 +3,9 @@ package com.soywiz.korio.posix
 import kotlinx.cinterop.*
 import platform.posix.*
 
-actual val POSIX: BasePosix = object : BasePosix() {
+actual val POSIX: BasePosix = PosixMingw
+
+object PosixMingw : BasePosix() {
     override fun posixFopen(filename: String, mode: String): CPointer<FILE>? {
         return memScoped {
             //setlocale(LC_ALL, ".UTF-8") // On Windows 10 : https://docs.microsoft.com/en-us/cpp/c-runtime-library/reference/setlocale-wsetlocale?redirectedfrom=MSDN&view=msvc-160#utf-8-support
@@ -30,5 +32,4 @@ actual val POSIX: BasePosix = object : BasePosix() {
         ioctlsocket(sockfd.convert(), FIONREAD, v.refTo(0))
         return v[0].toInt()
     }
-
 }
