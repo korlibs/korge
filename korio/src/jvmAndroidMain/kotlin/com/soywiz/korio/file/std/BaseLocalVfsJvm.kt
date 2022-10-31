@@ -1,5 +1,6 @@
 package com.soywiz.korio.file.std
 
+import com.soywiz.kds.iterators.*
 import com.soywiz.klock.DateTime
 import com.soywiz.korio.file.VfsFile
 import com.soywiz.korio.file.VfsOpenMode
@@ -26,10 +27,12 @@ import java.io.InputStream
 import java.io.InputStreamReader
 import java.io.RandomAccessFile
 import java.nio.file.FileSystems
+import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.nio.file.StandardWatchEventKinds
 import java.nio.file.WatchEvent
+import java.nio.file.attribute.PosixFilePermission
 
 internal open class BaseLocalVfsJvm : LocalVfs() {
     val that = this
@@ -38,6 +41,32 @@ internal open class BaseLocalVfsJvm : LocalVfs() {
     protected suspend fun <T> executeIo(callback: suspend CoroutineScope.() -> T): T = withContext(Dispatchers.IO, callback)
     protected suspend fun <T> doIo(callback: suspend () -> T): T = withContext(Dispatchers.IO) { callback() }
     //private suspend inline fun <T> executeIo(callback: suspend () -> T): T = callback()
+
+    fun UnixPermissions.toSet(): Set<PosixFilePermission> = buildList<PosixFilePermission> {
+        val it = this@toSet
+        if (it.owner.writable) add(PosixFilePermission.OWNER_WRITE)
+        if (it.owner.readable) add(PosixFilePermission.OWNER_READ)
+        if (it.owner.executable) add(PosixFilePermission.OWNER_EXECUTE)
+        if (it.other.writable) add(PosixFilePermission.OTHERS_WRITE)
+        if (it.other.readable) add(PosixFilePermission.OTHERS_READ)
+        if (it.other.executable) add(PosixFilePermission.OTHERS_EXECUTE)
+        if (it.group.writable) add(PosixFilePermission.GROUP_WRITE)
+        if (it.group.readable) add(PosixFilePermission.GROUP_READ)
+        if (it.group.executable) add(PosixFilePermission.GROUP_EXECUTE)
+    }.toSet()
+
+    fun Set<PosixFilePermission>.toUnixPermissionsAttribute(): UnixPermissions {
+        return UnixPermissions(
+            owner = UnixPermission(contains(PosixFilePermission.OWNER_READ), contains(PosixFilePermission.OWNER_WRITE), contains(PosixFilePermission.OWNER_EXECUTE)),
+            group = UnixPermission(contains(PosixFilePermission.GROUP_READ), contains(PosixFilePermission.GROUP_WRITE), contains(PosixFilePermission.GROUP_EXECUTE)),
+            other = UnixPermission(contains(PosixFilePermission.OTHERS_READ), contains(PosixFilePermission.OTHERS_WRITE), contains(PosixFilePermission.OTHERS_EXECUTE)),
+        )
+    }
+
+    override suspend fun chmod(path: String, mode: UnixPermissions): Unit = executeIo {
+        val file = resolveFile(path)
+        Files.setPosixFilePermissions(file.toPath(), mode.toSet())
+    }
 
     fun resolve(path: String) = path
     fun resolvePath(path: String) = Paths.get(resolve(path))
@@ -176,7 +205,8 @@ internal open class BaseLocalVfsJvm : LocalVfs() {
                 size = file.length(),
                 createTime = lastModified,
                 modifiedTime = lastModified,
-                lastAccessTime = lastModified
+                lastAccessTime = lastModified,
+                mode = kotlin.runCatching { Files.getPosixFilePermissions(file.toPath()).toUnixPermissionsAttribute().bits }.getOrNull() ?: 511
             )
         } else {
             createNonExistsStat(fullpath)

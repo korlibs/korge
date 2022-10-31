@@ -4,6 +4,7 @@ package com.soywiz.korio.file
 
 import com.soywiz.klock.*
 import com.soywiz.klogger.*
+import com.soywiz.kmem.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.experimental.*
 import com.soywiz.korio.file.std.*
@@ -85,6 +86,38 @@ abstract class Vfs : AsyncCloseable {
 
 	interface Attribute
 
+    inline fun <reified T : Attribute> List<Attribute>.getOrNull(): T? = filterIsInstance<T>().firstOrNull()
+
+    inline class UnixPermission(val bits: Int) {
+        constructor(readable: Boolean = true, writable: Boolean = true, executable: Boolean = false) : this(
+            0.insert(readable, 2).insert(writable, 1).insert(executable, 0)
+        )
+        val executable: Boolean get() = bits.extract(0)
+        val writable: Boolean get() = bits.extract(1)
+        val readable: Boolean get() = bits.extract(2)
+    }
+
+    inline class UnixPermissions(val bits: Int) : Attribute {
+        override fun toString(): String = ("0000" + bits.toString(8)).substr(-4)
+
+        constructor(owner: UnixPermission, group: UnixPermission = owner, other: UnixPermission = UnixPermission(0), extra: Int = 0) : this(
+            0.insert(owner.bits, 6, 3).insert(group.bits, 3, 3).insert(other.bits, 0, 3).insert(extra, 9, 7)
+        )
+
+        fun copy(
+            owner: UnixPermission = this.owner,
+            group: UnixPermission = this.group,
+            other: UnixPermission = this.other,
+            extra: Int = 0,
+        ): UnixPermissions = UnixPermissions(owner, group, other, extra)
+
+        val extra: Int get() = bits.extract(9, 7)
+        val rbits: Int get() = bits.extract(0, 9)
+        val owner: UnixPermission get() = UnixPermission(bits.extract(6, 3))
+        val group: UnixPermission get() = UnixPermission(bits.extract(3, 3))
+        val other: UnixPermission get() = UnixPermission(bits.extract(0, 3))
+    }
+
     interface FileKind : Attribute {
         val name: String
 
@@ -135,7 +168,17 @@ abstract class Vfs : AsyncCloseable {
 		open(path, mode = VfsOpenMode.CREATE).use { this.setLength(size) }
 	}
 
-	open suspend fun setAttributes(path: String, attributes: List<Attribute>): Unit = Unit
+	open suspend fun setAttributes(path: String, attributes: List<Attribute>): Unit {
+        attributes.getOrNull<UnixPermissions>()?.let {
+            chmod(path, it)
+        }
+    }
+    open suspend fun getAttributes(path: String): List<Attribute> = emptyList()
+
+    /**
+     * Change Unix Permissions for [path] to [mode]
+     */
+    open suspend fun chmod(path: String, mode: UnixPermissions): Unit = Unit
 
 	open suspend fun stat(path: String): VfsStat = createNonExistsStat(path)
 
@@ -220,8 +263,13 @@ abstract class Vfs : AsyncCloseable {
         override suspend fun delete(path: String): Boolean = initOnce().access(path).delete()
 		override suspend fun setAttributes(path: String, attributes: List<Attribute>) =
 			initOnce().access(path).setAttributes(*attributes.toTypedArray())
+        override suspend fun getAttributes(path: String) =
+            initOnce().access(path).getAttributes()
 
-		override suspend fun mkdir(path: String, attributes: List<Attribute>): Boolean =
+        override suspend fun chmod(path: String, mode: Vfs.UnixPermissions) =
+            initOnce().access(path).chmod(mode)
+
+        override suspend fun mkdir(path: String, attributes: List<Attribute>): Boolean =
 			initOnce().access(path).mkdir(*attributes.toTypedArray())
 
 		override suspend fun touch(path: String, time: DateTime, atime: DateTime): Unit =
@@ -305,6 +353,11 @@ data class VfsStat(
     val kind: Vfs.FileKind? = null,
     val id: String? = null
 ) : Path by file {
+    /**
+     * Gets the unix-like permissions inverse of [VfsFile.chmod]
+     */
+    val permissions: Vfs.UnixPermissions get() = Vfs.UnixPermissions(mode)
+
     val enrichedFile: VfsFile get() = file.copy().also { it.cachedStat = this }
 
 	fun toString(showFile: Boolean): String = "VfsStat(" + ArrayList<String>(16).also { al ->

@@ -397,6 +397,7 @@ subprojects {
                         }
                     }
 
+                    /*
                     for (baseName in listOf(
                         "nativeInteropMain",
                         "posixInteropMain",
@@ -429,6 +430,7 @@ subprojects {
                             }
                         }
                     }
+                    */
 
                     // Copy test resources
                     afterEvaluate {
