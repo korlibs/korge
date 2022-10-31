@@ -68,11 +68,6 @@ internal open class BaseLocalVfsJvm : LocalVfs() {
         Files.setPosixFilePermissions(file.toPath(), mode.toSet())
     }
 
-    override suspend fun getAttributes(path: String): List<Attribute> = executeIo {
-        val file = resolveFile(path)
-        listOf(Files.getPosixFilePermissions(file.toPath()).toUnixPermissionsAttribute())
-    }
-
     fun resolve(path: String) = path
     fun resolvePath(path: String) = Paths.get(resolve(path))
     fun resolveFile(path: String) = File(resolve(path))
@@ -211,7 +206,7 @@ internal open class BaseLocalVfsJvm : LocalVfs() {
                 createTime = lastModified,
                 modifiedTime = lastModified,
                 lastAccessTime = lastModified,
-                mode = Files.getPosixFilePermissions(file.toPath()).toUnixPermissionsAttribute().bits
+                mode = kotlin.runCatching { Files.getPosixFilePermissions(file.toPath()).toUnixPermissionsAttribute().bits }.getOrNull() ?: 511
             )
         } else {
             createNonExistsStat(fullpath)
