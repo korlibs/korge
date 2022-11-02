@@ -600,22 +600,24 @@ class MyDefaultGameWindow : GameWindow() {
             val arena = Arena()
             val displayLink = arena.alloc<CVDisplayLinkRefVar>()
 
+            private fun checkDisplayLink(code: Int) {
+                if (code != kCVReturnSuccess) internalException(code)
+            }
+
             fun createDisplayLink(): Boolean {
                 //println("createDisplayLink[1]")
-                val displayID = CGMainDisplayID()
-                val error = CVDisplayLinkCreateWithCGDisplay(displayID, displayLink.ptr)
-                //println("createDisplayLink[2]")
-                if (error == kCVReturnSuccess) {
-                    //println("createDisplayLink[3]")
-
-                    CVDisplayLinkSetOutputCallback(displayLink.value, staticCFunction(::displayCallback), gameWindowStableRef.asCPointer())
-                    CVDisplayLinkStart(displayLink.value)
-                    //println("createDisplayLink[4]")
-                    return true
-                } else {
-                    return false
+                return try {
+                    checkDisplayLink(CVDisplayLinkCreateWithCGDisplay(CGMainDisplayID(), displayLink.ptr))
+                    checkDisplayLink(CVDisplayLinkSetOutputCallback(displayLink.value, staticCFunction(::displayCallback), gameWindowStableRef.asCPointer()))
+                    checkDisplayLink(CVDisplayLinkStart(displayLink.value))
+                    true
+                } catch (e: InternalException) {
+                    if (displayLink.value != null) {
+                        CVDisplayLinkRelease(displayLink.value)
+                    }
+                    e.printStackTrace()
+                    false
                 }
-                //println("createDisplayLink[5]")
             }
 
             private fun timer(timer: NSTimer?) {
@@ -645,7 +647,7 @@ class MyDefaultGameWindow : GameWindow() {
     override suspend fun clipboardRead(): ClipboardData? {
         val pasteboard = NSPasteboard.generalPasteboard
         val items = pasteboard.pasteboardItems as? List<NSPasteboardItem>?
-        if (items == null || items.isEmpty()) return null
+        if (items.isNullOrEmpty()) return null
         return items.last().stringForType(NSPasteboardTypeString)?.let { TextClipboardData(it) }
     }
 }
@@ -656,8 +658,13 @@ private val atomicDisplayLinkContext = AtomicReference<COpaquePointer?>(null)
 
 @SharedImmutable
 val doDisplayCallbackRender: () -> Unit = {
-    val gameWindow = atomicDisplayLinkContext.value?.asStableRef<MyDefaultGameWindow>()
-    gameWindow?.get()?.doRender(update = true)
+    try {
+        initRuntimeIfNeeded()
+        val gameWindow = atomicDisplayLinkContext.value?.asStableRef<MyDefaultGameWindow>()
+        gameWindow?.get()?.doRender(update = true)
+    } catch (e: Throwable) {
+        e.printStackTrace()
+    }
 }
 
 @Suppress("UNUSED_PARAMETER")
