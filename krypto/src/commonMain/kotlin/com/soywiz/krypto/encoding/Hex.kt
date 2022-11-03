@@ -76,7 +76,15 @@ val String.unhexIgnoreSpaces: ByteArray get() = buildString {
 val String.unhex get() = Hex.decode(this)
 val ByteArray.hex get() = Hex.encodeLower(this)
 
+/**
+ * Returns this number as a hexadecimal string in the format:
+ * 0xWWXXYYZZ
+ */
 val Int.hex: String get() = "0x$shex"
+/**
+ * Returns this number as a hexadecimal string in the format:
+ * WWXXYYZZ
+ */
 val Int.shex: String
     get() = buildString(8) {
         for (n in 0 until 8) {
