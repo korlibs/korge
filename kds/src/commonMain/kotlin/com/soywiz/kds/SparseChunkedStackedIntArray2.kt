@@ -5,6 +5,11 @@ import com.soywiz.kds.iterators.*
 import kotlin.math.*
 
 class SparseChunkedStackedIntArray2(override var empty: Int = -1) : IStackedIntArray2 {
+
+    constructor(vararg layers: IStackedIntArray2, empty: Int = -1) : this(empty) {
+        layers.fastForEach { putChunk(it) }
+    }
+
     var minX = 0
     var minY = 0
     var maxX = 0
@@ -59,6 +64,8 @@ class SparseChunkedStackedIntArray2(override var empty: Int = -1) : IStackedIntA
         lastSearchChunk = bvh.searchValues(BVHIntervals(x, 1, y, 1)).firstOrNull()
         return lastSearchChunk
     }
+
+    override fun inside(x: Int, y: Int): Boolean = getChunkAt(x, y) != null
 
     override fun set(x: Int, y: Int, level: Int, value: Int) {
         getChunkAt(x, y)?.let { chunk ->

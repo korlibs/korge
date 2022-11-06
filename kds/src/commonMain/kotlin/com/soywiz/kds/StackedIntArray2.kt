@@ -53,6 +53,9 @@ interface IStackedIntArray2 {
         if (level == 0) return empty
         return get(x, y, level - 1)
     }
+
+    /** Checks if [x] and [y] are inside this array in the range x=0 until [width] and y=0 until [height] ignoring startX and startY */
+    fun inside(x: Int, y: Int): Boolean = x >= 0 && y >= 0 && x < width && y < height
 }
 
 /** Shortcut for [IStackedIntArray2.startX] + [IStackedIntArray2.width] */
