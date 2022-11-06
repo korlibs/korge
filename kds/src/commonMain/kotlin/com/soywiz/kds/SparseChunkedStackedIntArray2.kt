@@ -65,6 +65,8 @@ class SparseChunkedStackedIntArray2(override var empty: Int = -1) : IStackedIntA
         return lastSearchChunk
     }
 
+    override fun inside(x: Int, y: Int): Boolean = getChunkAt(x, y) != null
+
     override fun set(x: Int, y: Int, level: Int, value: Int) {
         getChunkAt(x, y)?.let { chunk ->
             chunk[chunk.chunkX(x), chunk.chunkY(y), level] = value

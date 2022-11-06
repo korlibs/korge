@@ -121,12 +121,12 @@ abstract class BaseTileMap(
 ) : View() {
     var stackedIntMap: IStackedIntArray2 = stackedIntMap
 
-    @Deprecated("Use stackedIntMap instead")
+    @Deprecated("Use stackedIntMap instead", level = DeprecationLevel.HIDDEN)
     var intMap: IntArray2
         get() = (stackedIntMap as StackedIntArray2).data.first()
         set(value) {
             lock {
-                (stackedIntMap as StackedIntArray2).setLayer(0, value)
+                stackedIntMap = StackedIntArray2(value)
             }
         }
 
@@ -574,8 +574,8 @@ open class TileMap(
     fun pixelHitTest(tileX: Int, tileY: Int, x: Int, y: Int, direction: HitTestDirection): Boolean {
         //println("pixelHitTestByte: tileX=$tileX, tileY=$tileY, x=$x, y=$y")
         //println(tileset.collisions.toList())
-        if (!intMap.inside(tileX, tileY)) return true
-        val tile = intMap[tileX, tileY]
+        if (!stackedIntMap.inside(tileX, tileY)) return true
+        val tile = stackedIntMap.getLast(tileX, tileY)
         val collision = tileset.collisions[tile] ?: return false
         return collision.hitTestAny(x.toDouble(), y.toDouble(), direction)
     }

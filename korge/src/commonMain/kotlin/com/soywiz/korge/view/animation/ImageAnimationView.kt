@@ -1,12 +1,7 @@
 package com.soywiz.korge.view.animation
 
-import com.soywiz.kds.FastStringMap
-import com.soywiz.kds.IntArray2
-import com.soywiz.kds.fastArrayListOf
-import com.soywiz.kds.get
-import com.soywiz.kds.getCyclicOrNull
+import com.soywiz.kds.*
 import com.soywiz.kds.iterators.fastForEach
-import com.soywiz.kds.set
 import com.soywiz.klock.milliseconds
 import com.soywiz.kmem.umod
 import com.soywiz.korge.view.Container
@@ -102,10 +97,10 @@ open class ImageAnimationView<T: SmoothedBmpSlice>(
                         image as TileMap
                         val tilemap = it.tilemap
                         if (tilemap == null) {
-                            image.intMap = IntArray2(1, 1, 0)
+                            image.stackedIntMap = StackedIntArray2(IntArray2(1, 1, 0))
                             image.tileset = TileSet.EMPTY
                         } else {
-                            image.intMap = tilemap.data
+                            image.stackedIntMap = StackedIntArray2(tilemap.data)
                             image.tileset = tilemap.tileSet ?: TileSet.EMPTY
                         }
                     }
