@@ -34,9 +34,8 @@ class TileMapTest {
             1 to com.soywiz.korim.tiles.TileShapeInfoImpl(HitTestDirectionFlags.NONE, Shape2d.Empty, Matrix()),
             2 to com.soywiz.korim.tiles.TileShapeInfoImpl(HitTestDirectionFlags.ALL, Shape2d.Empty, Matrix()),
             3 to com.soywiz.korim.tiles.TileShapeInfoImpl(HitTestDirectionFlags.ALL, Shape2d.Rectangle(0, 0, 16, 16), Matrix()),
-        )
-        )
-        val map = TileMap(StackedIntArray2(IntArray2(2, 2, intArrayOf(0, 1, 2, 3))), tileSet)
+        ))
+        val map = TileMap(SparseChunkedStackedIntArray2(StackedIntArray2(IntArray2(2, 2, intArrayOf(0, 1, 2, 3)))), tileSet)
         assertEquals(false, map.pixelHitTest(5, 5, HitTestDirection.DOWN))
         assertEquals(false, map.pixelHitTest(16 + 5, 5, HitTestDirection.DOWN))
         assertEquals(false, map.pixelHitTest(5, 16 + 5, HitTestDirection.DOWN))
