@@ -507,3 +507,33 @@ fun Shape.transformedShape(m: Matrix): Shape = when (this) {
 
 fun Shape.scaledShape(sx: Double, sy: Double = sx): Shape = transformedShape(Matrix().scale(sx, sy))
 fun Shape.translatedShape(x: Double = 0.0, y: Double = 0.0): Shape = transformedShape(Matrix().translate(x, y))
+
+fun Shape.mapShape(map: (Shape) -> Shape): Shape {
+    val result = map(this)
+    return if (result is CompoundShape) {
+        CompoundShape(
+            result.components
+                .map { it.mapShape(map) }
+                .filter { it !is EmptyShape }
+        )
+    } else {
+        result
+    }
+}
+
+fun Shape.filterShape(filter: (Shape) -> Boolean): Shape = when {
+    filter(this) -> {
+        when (this) {
+            is CompoundShape -> {
+                CompoundShape(
+                    this.components
+                        .map { it.filterShape(filter) }
+                        .filter { it !is EmptyShape }
+                )
+            }
+
+            else -> this
+        }
+    }
+    else -> EmptyShape
+}

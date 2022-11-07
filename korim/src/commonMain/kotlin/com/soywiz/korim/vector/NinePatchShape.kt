@@ -37,29 +37,16 @@ class NinePatchShape(val shape: Shape, val slices: NinePatchSlices2D) {
 fun Shape.ninePatch(slices: NinePatchSlices2D): NinePatchShape = NinePatchShape(this, slices)
 fun Shape.ninePatch(x: NinePatchSlices, y: NinePatchSlices): NinePatchShape = NinePatchShape(this, NinePatchSlices2D(x, y))
 
-
 fun Shape.toNinePatchFromGuides(guideColor: RGBA = Colors.FUCHSIA, optimizeShape: Boolean = true): NinePatchShape {
     val guides = fastArrayListOf<VectorPath>()
-    fun Shape.getShapeWithoutGuidesAndPopulateGuides(): Shape {
-        return when (this) {
-            is CompoundShape -> CompoundShape(
-                this.components
-                    .map { it.getShapeWithoutGuidesAndPopulateGuides() }
-                    .filter { it !is EmptyShape }
-            )
-            is PolylineShape -> {
-                if (this.paint == guideColor) {
-                    guides += this.path
-                    EmptyShape
-                } else {
-                    this
-                }
-            }
-            else -> this
+    val shapeWithoutGuides = filterShape {
+        if (it is PolylineShape && it.paint == guideColor) {
+            guides += it.path
+            false
+        } else {
+            true
         }
-    }
-
-    val shapeWithoutGuides = getShapeWithoutGuidesAndPopulateGuides().let { if (optimizeShape) it.optimize() else it }
+    }.let { if (optimizeShape) it.optimize() else it }
     val guidesBounds = guides.map { it.getBounds() }
     val horizontalSlices = guidesBounds.filter { it.height > it.width }.map { it.x }.sorted().toDoubleArray()
     val verticalSlices = guidesBounds.filter { it.width > it.height }.map { it.y }.sorted().toDoubleArray()
