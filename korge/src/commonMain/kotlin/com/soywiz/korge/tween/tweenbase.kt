@@ -44,6 +44,12 @@ data class V2<V>(
         "V2(key=${key.name}, range=[$initial-$end], startTime=$startTime, duration=$duration)"
 }
 
+private object V2CallbackSupport {
+    var dummy: Unit = Unit
+}
+
+fun V2Callback(callback: (Double) -> Unit): V2<Unit> = V2(V2CallbackSupport::dummy, Unit, Unit, { ratio, _, _ -> callback(ratio) }, true)
+
 @JvmName("getInt")
 operator fun KMutableProperty0<Int>.get(end: Int) = V2(this, this.get(), end, ::_interpolateInt, includeStart = false)
 @JvmName("getInt")
