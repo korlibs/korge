@@ -1659,27 +1659,22 @@ fun View?.commonAncestor(ancestor: View?): View? {
 fun View.replaceWith(view: View): Boolean = this.parent?.replaceChild(this, view) ?: false
 
 /** Adds a block that will be executed per frame to this view. As parameter the block will receive a [TimeSpan] with the time elapsed since the previous frame. */
-fun <T : View> T.addUpdater(first: Boolean = true, updatable: T.(dt: TimeSpan) -> Unit): Cancellable {
-    val component = object : UpdateComponent {
-        override val view: View get() = this@addUpdater
-        override fun update(dt: TimeSpan) {
-            updatable(this@addUpdater, dt)
-        }
-    }.attach()
-    if (first) component.update(TimeSpan.ZERO)
-    return Cancellable { component.detach() }
+fun <T : View> T.addUpdater(first: Boolean = true, updatable: T.(dt: TimeSpan) -> Unit): Cancellable = object : UpdateComponent {
+    override val view: View get() = this@addUpdater
+    override fun update(dt: TimeSpan) {
+        updatable(this@addUpdater, dt)
+    }
+}.attach().also {
+    if (first) it.update(TimeSpan.ZERO)
 }
 fun <T : View> T.addUpdater(updatable: T.(dt: TimeSpan) -> Unit): Cancellable = addUpdater(true, updatable)
 
-fun <T : View> T.addUpdaterWithViews(updatable: T.(views: Views, dt: TimeSpan) -> Unit): Cancellable {
-    val component = object : UpdateComponentWithViews {
-        override val view: View get() = this@addUpdaterWithViews
-        override fun update(views: Views, dt: TimeSpan) {
-            updatable(this@addUpdaterWithViews, views, dt)
-        }
-    }.attach()
-    return Cancellable { component.detach() }
-}
+fun <T : View> T.addUpdaterWithViews(updatable: T.(views: Views, dt: TimeSpan) -> Unit): Cancellable = object : UpdateComponentWithViews {
+    override val view: View get() = this@addUpdaterWithViews
+    override fun update(views: Views, dt: TimeSpan) {
+        updatable(this@addUpdaterWithViews, views, dt)
+    }
+}.attach()
 
 fun <T : View> T.addOptFixedUpdater(time: TimeSpan = TimeSpan.NIL, updatable: T.(dt: TimeSpan) -> Unit): Cancellable = when (time) {
     TimeSpan.NIL -> addUpdater(updatable)
@@ -1703,50 +1698,46 @@ fun <T : View> T.addFixedUpdater(
     initial: Boolean = true,
     limitCallsPerFrame: Int = 16,
     updatable: T.() -> Unit
-): Cancellable {
+): Cancellable = object : UpdateComponent {
     var accum = 0.0.milliseconds
-    val component = object : UpdateComponent {
-        override val view: View get() = this@addFixedUpdater
-        override fun update(dt: TimeSpan) {
-            accum += dt
-            //println("UPDATE: accum=$accum, tickTime=$tickTime")
-            var calls = 0
-            while (accum >= time * 0.75) {
-                accum -= time
-                updatable(this@addFixedUpdater)
-                calls++
-                if (calls >= limitCallsPerFrame) {
-                    // We do not accumulate for the next frame in this case
-                    accum = 0.0.milliseconds
-                    break
-                }
-            }
-            if (calls > 0) {
-                // Do not accumulate for small fractions since this would cause hiccups!
-                if (accum < time * 0.25) {
-                    accum = 0.0.milliseconds
-                }
+    override val view: View get() = this@addFixedUpdater
+    override fun update(dt: TimeSpan) {
+        accum += dt
+        //println("UPDATE: accum=$accum, tickTime=$tickTime")
+        var calls = 0
+        while (accum >= time * 0.75) {
+            accum -= time
+            updatable(this@addFixedUpdater)
+            calls++
+            if (calls >= limitCallsPerFrame) {
+                // We do not accumulate for the next frame in this case
+                accum = 0.0.milliseconds
+                break
             }
         }
-    }.attach()
+        if (calls > 0) {
+            // Do not accumulate for small fractions since this would cause hiccups!
+            if (accum < time * 0.25) {
+                accum = 0.0.milliseconds
+            }
+        }
+    }
+}.attach().also {
     if (initial) {
         updatable(this@addFixedUpdater)
     }
-    return Cancellable { component.detach() }
 }
 
 @Deprecated("Use addUpdater instead", ReplaceWith("addUpdater(updatable)"))
 inline fun <T : View> T.onFrame(noinline updatable: T.(dt: TimeSpan) -> Unit): Cancellable = addUpdater(updatable)
 
-fun <T : View> T.onNextFrame(updatable: T.(views: Views) -> Unit): UpdateComponentWithViews {
-    return object : UpdateComponentWithViews {
-        override val view: View get() = this@onNextFrame
-        override fun update(views: Views, dt: TimeSpan) {
-            removeFromView()
-            updatable(this@onNextFrame, views)
-        }
-    }.attach()
-}
+fun <T : View> T.onNextFrame(updatable: T.(views: Views) -> Unit): UpdateComponentWithViews = object : UpdateComponentWithViews {
+    override val view: View get() = this@onNextFrame
+    override fun update(views: Views, dt: TimeSpan) {
+        removeFromView()
+        updatable(this@onNextFrame, views)
+    }
+}.attach()
 
 
 /**

@@ -10,6 +10,10 @@ import kotlin.coroutines.cancellation.CancellationException
 class CancellableGroup : CloseableCancellable {
 	private val cancellables = arrayListOf<Cancellable>()
 
+    operator fun plusAssign(c: CloseableCancellable) {
+        cancellables += c
+    }
+
 	operator fun plusAssign(c: Cancellable) {
 		cancellables += c
 	}

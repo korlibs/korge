@@ -21,11 +21,15 @@ interface ComponentType<T : Component>
  * An interface that allows to control the behaviour of a [View] after some events.
  * The most common case of Component is the [UpdateComponent]
  */
-interface Component : Closeable {
+interface Component : CloseableCancellable {
     val view: BaseView
     val type: ComponentType<out Component>
 
     override fun close() {
+        this.view.removeComponent(this)
+    }
+
+    override fun cancel(e: Throwable) {
         this.view.removeComponent(this)
     }
 }

@@ -110,6 +110,11 @@ open class BaseView {
         }
     }
 
+    /** Checks if a [component] is part of a view */
+    fun hasComponent(component: Component): Boolean {
+        return (__components?.getValue(component.type)?.contains(component) == true)
+    }
+
     /** Removes all the components attached to this view of component [clazz] */
     fun removeAllComponentsOfType(type: ComponentType<*>) {
         val components = getComponentsOfType(type)?.toList() ?: return
