@@ -13,14 +13,14 @@ inline fun Container.ninePatchShapeView(
 class NinePatchShapeView(
     shape: NinePatchShape,
     renderer: GraphicsRenderer,
-) : UIView(shape.size.width, shape.size.height) {
+) : UIView(shape.size.width, shape.size.height), Anchorable {
     private val graphics = graphics(shape.shape, renderer = renderer)
     var boundsIncludeStrokes: Boolean by graphics::boundsIncludeStrokes
     var antialiased: Boolean by graphics::antialiased
     var smoothing: Boolean by graphics::smoothing
     var autoScaling: Boolean by graphics::autoScaling
-    var anchorX: Double by graphics::anchorX
-    var anchorY: Double by graphics::anchorY
+    override var anchorX: Double by graphics::anchorX
+    override var anchorY: Double by graphics::anchorY
     var renderer: GraphicsRenderer by graphics::renderer
 
     var shape: NinePatchShape = shape
