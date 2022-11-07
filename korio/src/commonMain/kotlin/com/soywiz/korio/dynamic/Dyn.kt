@@ -96,6 +96,8 @@ inline class Dyn(val value: Any?) : Comparable<Dyn> {
     infix fun gt(r: Dyn): Boolean = compare(this, r) > 0
     /** Greater or Equal */
     infix fun ge(r: Dyn): Boolean = compare(this, r) >= 0
+    operator fun contains(r: String): Boolean = contains(r.dyn)
+    operator fun contains(r: Number): Boolean = contains(r.dyn)
     operator fun contains(r: Dyn): Boolean {
         val collection = this
         val element = r
@@ -103,6 +105,7 @@ inline class Dyn(val value: Any?) : Comparable<Dyn> {
         return when (collection.value) {
             is String -> collection.value.contains(element.value.toString())
             is Set<*> -> element.value in collection.value
+            is Map<*, *> -> element.value in collection.value
             else -> element.value in collection.toListAny()
         }
     }
