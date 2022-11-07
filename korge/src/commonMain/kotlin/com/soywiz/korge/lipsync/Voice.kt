@@ -1,5 +1,6 @@
 package com.soywiz.korge.lipsync
 
+import com.soywiz.kds.iterators.*
 import com.soywiz.klock.TimeSpan
 import com.soywiz.klock.milliseconds
 import com.soywiz.klock.seconds
@@ -7,11 +8,10 @@ import com.soywiz.korau.sound.Sound
 import com.soywiz.korau.sound.readSound
 import com.soywiz.korev.Event
 import com.soywiz.korev.dispatch
-import com.soywiz.korge.animate.play
 import com.soywiz.korge.baseview.BaseView
 import com.soywiz.korge.component.EventComponent
-import com.soywiz.korge.view.View
-import com.soywiz.korge.view.Views
+import com.soywiz.korge.view.*
+import com.soywiz.korge.view.animation.*
 import com.soywiz.korio.file.VfsFile
 
 class LipSync(val lipsync: String) {
@@ -67,10 +67,11 @@ class LipSyncComponent(override val view: BaseView) : EventComponent {
 	override fun onEvent(event: Event) {
 		if (event is LipSyncEvent) {
 			val name = view.getPropString("lipsync")
-			if (event.name == name) {
-                (view as? View?)?.play("${event.lip}")
-			}
-		}
+            if (event.name != name) return
+            (view as View?)?.descendantsOfType<PlayableWithName>()?.fastForEach {
+                it.play("${event.lip}")
+            }
+        }
 	}
 }
 

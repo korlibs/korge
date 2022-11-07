@@ -40,7 +40,7 @@ open class ImageAnimationView<T: SmoothedBmpSlice>(
     animation: ImageAnimation? = null,
     direction: ImageAnimation.Direction? = null,
     val createImage: () -> T
-) : Container() {
+) : Container(), Playable {
     private var nframes: Int = 1
 
     fun createTilemap(): TileMap = TileMap()
@@ -165,9 +165,9 @@ open class ImageAnimationView<T: SmoothedBmpSlice>(
     }
 
     private var running = true
-    fun play() { running = true }
-    fun stop() { running = false }
-    fun rewind() { setFirstFrame() }
+    override fun play() { running = true }
+    override fun stop() { running = false }
+    override fun rewind() { setFirstFrame() }
 
     init {
         didSetAnimation()

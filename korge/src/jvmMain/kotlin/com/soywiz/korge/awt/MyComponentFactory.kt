@@ -54,7 +54,6 @@ open class MyComponentFactory {
         list.add(ViewFactory("Container") { Container() })
         list.add(ViewFactory("TreeViewRef") { TreeViewRef() })
         list.add(ViewFactory("ParticleEmitter") { ParticleEmitterView(ParticleEmitter()) })
-        list.add(ViewFactory("AnimationViewRef") { AnimationViewRef() })
         list.add(ViewFactory("TiledMapViewRef") { TiledMapViewRef() })
         list.add(ViewFactory("9-Patch") { NinePatchEx(NinePatchBitmap32(Bitmap32(62, 62))) })
         for (registration in views.ktreeSerializer.registrationsExt) {
