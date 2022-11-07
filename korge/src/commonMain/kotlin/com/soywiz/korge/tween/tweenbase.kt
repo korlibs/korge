@@ -49,6 +49,15 @@ private object V2CallbackSupport {
 }
 
 fun V2Callback(callback: (Double) -> Unit): V2<Unit> = V2(V2CallbackSupport::dummy, Unit, Unit, { ratio, _, _ -> callback(ratio) }, true)
+fun <T> V2CallbackT(callback: (Double) -> Unit): V2<T> = V2Callback { callback(it) } as V2<T>
+
+fun <T> V2Lazy(callback: () -> V2<T>): V2<T> {
+    var value: V2<T>? = null
+    return V2CallbackT {
+        if (value == null) value = callback()
+        value!!.set(it)
+    }
+}
 
 @JvmName("getInt")
 operator fun KMutableProperty0<Int>.get(end: Int) = V2(this, this.get(), end, ::_interpolateInt, includeStart = false)
