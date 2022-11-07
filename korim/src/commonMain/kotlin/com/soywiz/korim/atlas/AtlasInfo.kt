@@ -1,8 +1,9 @@
 package com.soywiz.korim.atlas
 
 import com.soywiz.kds.ListReader
+import com.soywiz.korim.atlas.AtlasInfo.Companion.toRect
 import com.soywiz.korim.format.ImageOrientation
-import com.soywiz.korio.dynamic.KDynamic
+import com.soywiz.korio.dynamic.*
 import com.soywiz.korio.serialization.json.Json
 import com.soywiz.korio.serialization.xml.Xml
 import com.soywiz.korma.geom.*
@@ -195,9 +196,9 @@ data class AtlasInfo(
     )
 
     companion object {
-        private fun Any?.toRect() = KDynamic(this) { Rect(it["x"].int, it["y"].int, it["w"].int, it["h"].int) }
-        private fun Any?.toSize() = KDynamic(this) { Size(it["w"].int, it["h"].int) }
-        private fun KDynamic.createEntry(name: String, it: Any?): Region {
+        private fun Dyn.toRect(): Rect = Rect(this["x"].int, this["y"].int, this["w"].int, this["h"].int)
+        private fun Dyn.toSize(): Size = Size(this["w"].int, this["h"].int)
+        private fun createEntry(name: String, it: Dyn): Region {
             val rotated = it["rotated"].bool
             val sourceSize = it["sourceSize"].toSize()
             val spriteSourceSize = it["spriteSourceSize"].toRect()
@@ -209,16 +210,18 @@ data class AtlasInfo(
 
         // @TODO: kotlinx-serialization?
         fun loadJsonSpriter(json: String): AtlasInfo {
-            val info = KDynamic(Json.parse(json)) {
+            val it = Json.parse(json).dyn
+            val info =
                 AtlasInfo(
-                    frames = it["frames"].let { frames ->
+                    frames = it["frames"].let { framesDyn ->
+                        val frames = framesDyn.value
                         when (frames) {
                             // Hash-based
-                            is Map<*, *> -> frames.keys.map { createEntry(it.str, frames[it.str]) }
+                            is Map<*, *> -> frames.keys.map { createEntry(it.dyn.str, framesDyn[it.dyn.str]) }
                             // Array-based
-                            else -> frames.list.map {
+                            else -> framesDyn.list.map {
                                 createEntry(
-                                    it["name"]?.str ?: it["filename"]?.str ?: "unknown",
+                                    it["name"].orNull?.str ?: it["filename"].orNull?.str ?: "unknown",
                                     it
                                 )
                             }
@@ -232,8 +235,9 @@ data class AtlasInfo(
                             scale = it["scale"].double,
                             size = it["size"].toSize(),
                             version = it["version"].str,
-                            frameTags = it["frameTags"].let { frameTags ->
-                                if (frameTags is List<*>) frameTags.list.map {
+                            frameTags = it["frameTags"].let { frameTagsDyn ->
+                                val frameTags = frameTagsDyn.value
+                                if (frameTags is List<*>) frameTagsDyn.list.map {
                                     FrameTag(
                                         name = it["name"].str,
                                         from = it["from"].int,
@@ -243,8 +247,9 @@ data class AtlasInfo(
                                 }
                                 else listOf()
                             },
-                            layers = it["layers"].let { layers ->
-                                if (layers is List<*>) layers.list.map {
+                            layers = it["layers"].let { layersDyn ->
+                                val layers = layersDyn.value
+                                if (layers is List<*>) layersDyn.list.map {
                                     Layer(
                                         name = it["name"].str,
                                         opacity = it["opacity"].int,
@@ -253,13 +258,15 @@ data class AtlasInfo(
                                 }
                                 else listOf()
                             },
-                            slices = it["slices"].let { slices ->
-                                if (slices is List<*>) slices.list.map {
+                            slices = it["slices"].let { slicesDyn ->
+                                val slices = slicesDyn.value
+                                if (slices is List<*>) slicesDyn.list.map {
                                     Slice(
                                         name = it["name"].str,
                                         color = it["color"].str,
-                                        keys = it["keys"].let { keys ->
-                                            if (keys is List<*>) keys.list.map {
+                                        keys = it["keys"].let { keysDyn ->
+                                            val keys = keysDyn.value
+                                            if (keys is List<*>) keysDyn.list.map {
                                                 Key(
                                                     frame = it["frame"].int,
                                                     bounds = it["bounds"].toRect()
@@ -274,7 +281,7 @@ data class AtlasInfo(
                         )
                     }
                 )
-            }
+
             return info.copy(pages = info.pages.map { it.copy(regions = it.regions.map { it.apply { } }) })
         }
 

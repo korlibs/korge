@@ -230,6 +230,8 @@ inline class Dyn(val value: Any?) : Comparable<Dyn> {
 
     operator fun get(key: Dyn): Dyn = get(key.value)
     operator fun get(key: Any?): Dyn = _getOrThrow(key, doThrow = false)
+
+    fun getOrNull(key: Any?): Dyn? = _getOrThrow(key, doThrow = false).orNull
     fun getOrThrow(key: Any?): Dyn = _getOrThrow(key, doThrow = true)
 
     private fun _getOrThrow(key: Any?, doThrow: Boolean): Dyn = when (value) {
@@ -257,6 +259,7 @@ inline class Dyn(val value: Any?) : Comparable<Dyn> {
         else -> dynApi.suspendGet(value, key.toString()).dyn
     }
 
+    val orNull: Dyn? get() = value?.dyn
     val mapAny: Map<Any?, Any?> get() = if (value is Map<*, *>) value as Map<Any?, Any?> else LinkedHashMap()
     val listAny: List<Any?> get() = if (value == null) listOf() else if (value is List<*>) value else if (value is Iterable<*>) value.toList() else listOf(value)
     val keysAny: List<Any?> get() = if (value is Map<*, *>) keys.toList() else listOf()
