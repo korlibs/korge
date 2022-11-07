@@ -101,24 +101,29 @@ class ParticleEmitterView(
     //    }
     //}
 
+    var autoInvalidateRenderer: Boolean = true
+
     init {
-        addUpdater { dt ->
-//            if (!this.localCoords) {
+        addUpdater { step(it) }
+    }
+
+    fun step(dt: TimeSpan) {
+        //            if (!this.localCoords) {
 //                simulator.emitterPos.setTo(x, y)
 //            }
-            if (dt > 0.milliseconds) {
-                val gx = globalX / stage!!.scaleX
-                val gy = globalY / stage!!.scaleY
+        if (dt > 0.milliseconds) {
+            val gx = globalX / stage!!.scaleX
+            val gy = globalY / stage!!.scaleY
 
-                val dx = if (this.localCoords) 0.0 else lastPosition.x - gx
-                val dy = if (this.localCoords) 0.0 else lastPosition.y - gy
+            val dx = if (this.localCoords) 0.0 else lastPosition.x - gx
+            val dy = if (this.localCoords) 0.0 else lastPosition.y - gy
 //                val dx = 0.0
 //                val dy = 0.0
 
-                simulator.simulate(dt, dx, dy)
+            simulator.simulate(dt, dx, dy)
 
-                lastPosition.setTo(gx, gy)
-            }
+            lastPosition.setTo(gx, gy)
+            if (autoInvalidateRenderer) invalidateRender()
         }
     }
 

@@ -588,6 +588,7 @@ class ViewsLog constructor(
 	val views = Views(coroutineContext + AsyncInjectorContext(injector), ag, injector, input, timeProvider, stats, gameWindow).also {
 	    it.rethrowRenderError = true
     }
+    val stage: Stage get() = views.stage
     private var initialized = false
     suspend fun init() {
         if (!initialized) {
