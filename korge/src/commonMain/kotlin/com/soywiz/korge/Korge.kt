@@ -7,6 +7,7 @@ import com.soywiz.klock.TimeSpan
 import com.soywiz.klock.milliseconds
 import com.soywiz.klogger.Console
 import com.soywiz.klogger.Logger
+import com.soywiz.kmem.*
 import com.soywiz.korag.log.PrintAG
 import com.soywiz.korev.DestroyEvent
 import com.soywiz.korev.DropFileEvent
@@ -55,7 +56,7 @@ import com.soywiz.korinject.AsyncInjector
 import com.soywiz.korinject.AsyncInjectorContext
 import com.soywiz.korio.async.delay
 import com.soywiz.korio.async.launchImmediately
-import com.soywiz.korio.dynamic.KDynamic
+import com.soywiz.korio.dynamic.*
 import com.soywiz.korio.file.std.localCurrentDirVfs
 import com.soywiz.korio.file.std.resourcesVfs
 import com.soywiz.korio.resources.Resources
@@ -221,7 +222,9 @@ object Korge {
                 it.init()
             }
 
-            if (OS.isJsBrowser) KDynamic { global["views"] = views }
+            if (Platform.isJsBrowser) {
+                Dyn.global["views"] = views
+            }
             injector
                 .mapInstance(ModuleArgs(args))
                 .mapInstance(GameWindow::class, gameWindow)

@@ -30,7 +30,7 @@ import com.soywiz.korim.paint.DefaultPaint
 import com.soywiz.korim.paint.Paint
 import com.soywiz.korim.text.TextAlignment
 import com.soywiz.korim.vector.Context2d
-import com.soywiz.korio.dynamic.KDynamic
+import com.soywiz.korio.dynamic.*
 import com.soywiz.korio.file.VfsFile
 import com.soywiz.korio.file.baseName
 import com.soywiz.korio.file.baseNameWithoutExtension
@@ -274,18 +274,17 @@ private suspend fun readBitmapFontTxt(
 				//id=54 x=158 y=88 width=28 height=42 xoffset=2 yoffset=8 xadvance=28 page=0 chnl=0
 				val page = map["page"]?.toIntOrNull() ?: 0
 				val texture = textures[page] ?: textures.values.first()
-				glyphs += KDynamic {
-                    val id = map["id"].int
-                    BitmapFont.Glyph(
-                        fontSize = fontSize,
-                        id = id,
-                        xoffset = map["xoffset"].int,
-                        yoffset = map["yoffset"].int,
-                        xadvance = map["xadvance"].int,
-                        texture = atlas?.add(texture.sliceWithSize(map["x"].int, map["y"].int, map["width"].int, map["height"].int, "glyph-${id.toChar()}") as BmpSlice, Unit)?.slice
-                            ?: texture.sliceWithSize(map["x"].int, map["y"].int, map["width"].int, map["height"].int, "glyph-${id.toChar()}")
-                    )
-				}
+                val dmap = map.dyn
+                val id = dmap["id"].int
+				glyphs += BitmapFont.Glyph(
+                    fontSize = fontSize,
+                    id = id,
+                    xoffset = dmap["xoffset"].int,
+                    yoffset = dmap["yoffset"].int,
+                    xadvance = dmap["xadvance"].int,
+                    texture = atlas?.add(texture.sliceWithSize(dmap["x"].int, dmap["y"].int, dmap["width"].int, dmap["height"].int, "glyph-${id.toChar()}") as BmpSlice, Unit)?.slice
+                        ?: texture.sliceWithSize(dmap["x"].int, dmap["y"].int, dmap["width"].int, dmap["height"].int, "glyph-${id.toChar()}")
+                )
 			}
 			line.startsWith("kerning ") -> {
 				kernings += BitmapFont.Kerning(
