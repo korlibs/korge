@@ -245,7 +245,6 @@ open class KTreeSerializer(val views: Views) : KTreeSerializerHolder, Extra by E
             "vectorimage" -> view = VectorImage.createDefault()
             "treeviewref" -> view = TreeViewRef()
             "particle" -> view = ParticleEmitterView(ParticleEmitter())
-            "animation" -> view = AnimationViewRef()
             "tiledmapref" -> view = TiledMapViewRef()
             "ninepatch" -> view = NinePatchEx(NinePatchBitmap32(Bitmap32(62, 62)))
             "ktree" -> view = KTreeRoot(100.0, 100.0)
@@ -414,7 +413,6 @@ open class KTreeSerializer(val views: Views) : KTreeSerializerHolder, Extra by E
                 is KTreeRoot -> Xml("ktree", mapOf("width" to view.width, "height" to view.height, "gridWidth" to view.grid.width, "gridHeight" to view.grid.height)) {
                     view.forEachChild { this@Xml.node(viewTreeToKTree(it, currentVfs, level + 1)) }
                 }
-                is AnimationViewRef -> Xml("animation", rproperties)
                 is ParticleEmitterView -> Xml("particle", rproperties)
                 is SolidRect -> Xml("solidrect", rproperties)
                 is Ellipse -> Xml("ellipse", rproperties)
