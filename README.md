@@ -29,7 +29,7 @@ KorGE and all the other korlibs in a single monorepo.
 
 To use this version in other projects,
 you have to publish it locally to mavenLocal,
-and then use `2.0.0.999` as version: 
+and then use `999.0.0.999` as version: 
 
 ```shell script
 ./gradlew publishToMavenLocal
