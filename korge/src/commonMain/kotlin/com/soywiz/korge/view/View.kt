@@ -1659,7 +1659,7 @@ fun View?.commonAncestor(ancestor: View?): View? {
 fun View.replaceWith(view: View): Boolean = this.parent?.replaceChild(this, view) ?: false
 
 /** Adds a block that will be executed per frame to this view. As parameter the block will receive a [TimeSpan] with the time elapsed since the previous frame. */
-fun <T : View> T.addUpdater(first: Boolean = true, updatable: T.(dt: TimeSpan) -> Unit): UpdateComponent = object : UpdateComponent {
+fun <T : View> T.addUpdater(first: Boolean = true, updatable: T.(dt: TimeSpan) -> Unit): Cancellable = object : UpdateComponent {
     override val view: View get() = this@addUpdater
     override fun update(dt: TimeSpan) {
         updatable(this@addUpdater, dt)
@@ -1667,9 +1667,9 @@ fun <T : View> T.addUpdater(first: Boolean = true, updatable: T.(dt: TimeSpan) -
 }.attach().also {
     if (first) it.update(TimeSpan.ZERO)
 }
-fun <T : View> T.addUpdater(updatable: T.(dt: TimeSpan) -> Unit): UpdateComponent = addUpdater(true, updatable)
+fun <T : View> T.addUpdater(updatable: T.(dt: TimeSpan) -> Unit): Cancellable = addUpdater(true, updatable)
 
-fun <T : View> T.addUpdaterWithViews(updatable: T.(views: Views, dt: TimeSpan) -> Unit): UpdateComponentWithViews = object : UpdateComponentWithViews {
+fun <T : View> T.addUpdaterWithViews(updatable: T.(views: Views, dt: TimeSpan) -> Unit): Cancellable = object : UpdateComponentWithViews {
     override val view: View get() = this@addUpdaterWithViews
     override fun update(views: Views, dt: TimeSpan) {
         updatable(this@addUpdaterWithViews, views, dt)

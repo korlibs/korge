@@ -66,7 +66,7 @@ open class NewAnimator(
             updater = view.addUpdater {
                 currentTime += it
                 update(currentTime)
-            }
+            } as UpdateComponent
         }
     }
 
@@ -114,6 +114,8 @@ open class NewAnimator(
 
     /** Suspends until this animation has been completed */
     suspend fun awaitComplete() {
+        if (updater == null) return
+        if (currentNode == null && nodes.isEmpty()) return
         onComplete.waitOne()
     }
 
