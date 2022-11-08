@@ -27,18 +27,25 @@ data class V2<V>(
     var initial: V,
     val end: V,
     val interpolator: (Double, V, V) -> V,
-    val includeStart: Boolean,
+    private var includeStart: Boolean,
     val startTime: TimeSpan = 0.nanoseconds,
     val duration: TimeSpan = TimeSpan.NIL
 ) {
     val endTime = startTime + duration.coalesce { 0.nanoseconds }
 
-    fun init() {
+    @Deprecated("This will be removed as this is not used anymore")
+    fun init(): Unit = Unit
+
+    private fun ensureInit() {
         if (!includeStart) {
             initial = key.get()
+            includeStart = true
         }
     }
-    fun set(ratio: Double) = key.set(interpolator(ratio, initial, end))
+    fun set(ratio: Double): Unit {
+        ensureInit()
+        key.set(interpolator(ratio, initial, end))
+    }
 
     override fun toString(): String =
         "V2(key=${key.name}, range=[$initial-$end], startTime=$startTime, duration=$duration)"
