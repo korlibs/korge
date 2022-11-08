@@ -8,6 +8,8 @@ import kotlin.reflect.full.hasAnnotation
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.jvm.jvmErasure
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.soywiz.klogger.*
+import kotlin.system.*
 
 internal actual val KorgeReloadInternal: KorgeReloadInternalImpl = object : KorgeReloadInternalImpl() {
     override fun <T : Any> getReloadedClass(clazz: KClass<T>, context: ReloadClassContext): KClass<T> {
@@ -56,8 +58,12 @@ class KorgeReloadClassLoader(
         .filter { !it.name.endsWith(".jar") }
     , parent: ClassLoader? = null
 ) : ClassLoader(parent ?: ClassLoader.getSystemClassLoader()) {
+    companion object {
+        val logger = Logger("KorgeReloadClassLoader")
+    }
+
     init {
-        println("KorgeReloadClassLoader:\n${folders.joinToString("\n")}")
+        logger.info { "KorgeReloadClassLoader:\n${folders.joinToString("\n")}" }
     }
 
     override fun loadClass(name: String, resolve: Boolean): Class<*> {
@@ -73,8 +79,12 @@ class KorgeReloadClassLoader(
                 val rname = File(folder, "${name.replace('.', '/')}.class")
                 if (rname.exists()) {
                     val bytes = rname.readBytes()
-                    println("Reloaded class=$rname")
-                    return defineClass(name, bytes, 0, bytes.size)
+                    val clazz: Class<*>
+                    val time = measureNanoTime {
+                        clazz = defineClass(name, bytes, 0, bytes.size)
+                    }
+                    logger.debug { "KorgeReload: reloaded class=$rname... size: ${bytes.size} bytes, time: ${time.toDouble() / 1_000_000.0} ms" }
+                    return clazz
                 }
             }
             return super.loadClass(name, resolve)
