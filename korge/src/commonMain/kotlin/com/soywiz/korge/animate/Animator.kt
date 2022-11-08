@@ -5,9 +5,7 @@ import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.klock.TimeSpan
 import com.soywiz.klock.milliseconds
 import com.soywiz.klock.seconds
-import com.soywiz.korge.tween.V2
-import com.soywiz.korge.tween.get
-import com.soywiz.korge.tween.tween
+import com.soywiz.korge.tween.*
 import com.soywiz.korge.view.View
 import com.soywiz.korio.async.launchImmediately
 import com.soywiz.korma.geom.Angle

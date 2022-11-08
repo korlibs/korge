@@ -11,7 +11,6 @@ import com.soywiz.korim.color.ColorAdd
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.bezier.getEquidistantPoints
-import com.soywiz.korma.geom.bezier.getPoints
 import com.soywiz.korma.geom.vector.VectorPath
 import com.soywiz.korma.geom.vector.getCurves
 import com.soywiz.korma.interpolation.Easing
@@ -21,35 +20,59 @@ import com.soywiz.korma.math.isAlmostEquals
 import kotlin.jvm.JvmName
 import kotlin.reflect.KMutableProperty0
 
-@Suppress("UNCHECKED_CAST")
-data class V2<V>(
-    val key: KMutableProperty0<V>,
-    var initial: V,
-    val end: V,
-    val interpolator: (Double, V, V) -> V,
-    val includeStart: Boolean,
-    val startTime: TimeSpan = 0.nanoseconds,
-    val duration: TimeSpan = TimeSpan.NIL
-) {
-    val endTime = startTime + duration.coalesce { 0.nanoseconds }
+interface V2<V> {
+    val startTime: TimeSpan get() = TimeSpan.ZERO
+    val duration: TimeSpan get() = TimeSpan.NIL
+    val endTime: TimeSpan get() = startTime + duration.coalesce { 0.nanoseconds }
+    val initial: V
+    val end: V
+    fun set(ratio: Double): Unit
+    fun get(): V
+}
 
-    fun init() {
+@Suppress("UNCHECKED_CAST")
+data class V2Prop<V>(
+    val key: KMutableProperty0<V>,
+    private var _initial: V,
+    override val end: V,
+    val interpolator: (Double, V, V) -> V,
+    var includeStart: Boolean,
+    override val startTime: TimeSpan = TimeSpan.ZERO,
+    override val duration: TimeSpan = TimeSpan.NIL
+) : V2<V> {
+    private fun ensureInitialized() {
         if (!includeStart) {
-            initial = key.get()
+            includeStart = true
+            _initial = key.get()
         }
     }
-    fun set(ratio: Double) = key.set(interpolator(ratio, initial, end))
+    override val initial: V get() {
+        ensureInitialized()
+        return _initial
+    }
+
+    override fun set(ratio: Double): Unit {
+        key.set(interpolator(ratio, initial, end))
+    }
+
+    override fun get(): V {
+        return key.get()
+    }
 
     override fun toString(): String =
         "V2(key=${key.name}, range=[$initial-$end], startTime=$startTime, duration=$duration)"
 }
 
-private object V2CallbackSupport {
-    var dummy: Unit = Unit
+class V2Callback(val callback: (Double) -> Unit) : V2<Unit> {
+    override val initial: Unit get() = Unit
+    override val end: Unit get() = Unit
+    override fun get(): Unit = Unit
+    override fun set(ratio: Double) {
+        callback(ratio)
+    }
 }
 
-fun V2Callback(callback: (Double) -> Unit): V2<Unit> = V2(V2CallbackSupport::dummy, Unit, Unit, { ratio, _, _ -> callback(ratio) }, true)
-fun <T> V2CallbackT(callback: (Double) -> Unit): V2<T> = V2Callback { callback(it) } as V2<T>
+fun <T> V2CallbackT(callback: (Double) -> Unit): V2<T> = V2Callback(callback) as V2<T>
 
 fun <T> V2Lazy(callback: () -> V2<T>): V2<T> {
     var value: V2<T>? = null
@@ -59,15 +82,41 @@ fun <T> V2Lazy(callback: () -> V2<T>): V2<T> {
     }
 }
 
+private inline fun <T : Any> KMutableProperty0<T>._incr(crossinline interpolate: (Double, T) -> T): V2<Unit> {
+    lateinit var start: T
+    var set = false
+    return V2Callback {
+        if (!set) {
+            set = true
+            start = this.get()
+        }
+
+        this.set(interpolate(it, start))
+    }
+}
+
+fun KMutableProperty0<IPoint>.incr(dx: Double, dy: Double): V2<Unit> {
+    val point: Point = Point(0, 0)
+    return _incr { it, start ->
+        point.setTo(it.interpolate(start.x, start.x + dx), it.interpolate(point.y, start.y + dy))
+        point
+    }
+}
+fun KMutableProperty0<IPoint>.incr(dx: Number, dy: Number): V2<Unit> = incr(dx.toDouble(), dy.toDouble())
+fun KMutableProperty0<IPoint>.incr(incr: IPoint): V2<Unit> = incr(incr.x, incr.y)
+
+fun KMutableProperty0<Double>.incr(incr: Number): V2<Unit> = _incr { it, start -> it.interpolate(start, start + incr.toDouble()) }
+fun KMutableProperty0<Angle>.incr(incr: Angle): V2<Unit> = _incr { it, start -> it.interpolateAngleDenormalized(start, start + incr) }
+
 @JvmName("getInt")
-operator fun KMutableProperty0<Int>.get(end: Int) = V2(this, this.get(), end, ::_interpolateInt, includeStart = false)
+operator fun KMutableProperty0<Int>.get(end: Int) = V2Prop(this, this.get(), end, ::_interpolateInt, includeStart = false)
 @JvmName("getInt")
-operator fun KMutableProperty0<Int>.get(initial: Int, end: Int) = V2(this, initial, end, ::_interpolateInt, includeStart = true)
+operator fun KMutableProperty0<Int>.get(initial: Int, end: Int) = V2Prop(this, initial, end, ::_interpolateInt, includeStart = true)
 
 @JvmName("getMutableProperty")
-operator fun <V : Interpolable<V>> KMutableProperty0<V>.get(end: V) = V2(this, this.get(), end, ::_interpolateInterpolable, includeStart = false)
+operator fun <V : Interpolable<V>> KMutableProperty0<V>.get(end: V) = V2Prop(this, this.get(), end, ::_interpolateInterpolable, includeStart = false)
 @JvmName("getMutableProperty")
-operator fun <V : Interpolable<V>> KMutableProperty0<V>.get(initial: V, end: V) = V2(this, initial, end, ::_interpolateInterpolable, includeStart = true)
+operator fun <V : Interpolable<V>> KMutableProperty0<V>.get(initial: V, end: V) = V2Prop(this, initial, end, ::_interpolateInterpolable, includeStart = true)
 
 @PublishedApi
 internal fun _interpolate(ratio: Double, l: Double, r: Double): Double = ratio.interpolate(l, r)
@@ -119,7 +168,7 @@ inline operator fun KMutableProperty0<IPoint>.get(path: VectorPath, includeLastP
 
 inline operator fun KMutableProperty0<IPoint>.get(range: IPointArrayList): V2<IPoint> {
     val temp = Point()
-    return V2(
+    return V2Prop(
         this, temp, temp, { ratio, _, _ ->
             val ratioIndex = ratio * (range.size - 1)
             val index = ratioIndex.toIntFloor()
@@ -134,12 +183,12 @@ inline operator fun KMutableProperty0<IPoint>.get(range: IPointArrayList): V2<IP
 }
 
 @JvmName("getFloat")
-inline operator fun KMutableProperty0<Float>.get(end: Float) = V2(this, this.get(), end, ::_interpolateFloat, includeStart = false)
+inline operator fun KMutableProperty0<Float>.get(end: Float) = V2Prop(this, this.get(), end, ::_interpolateFloat, includeStart = false)
 @JvmName("getFloat")
-inline operator fun KMutableProperty0<Float>.get(initial: Float, end: Float) = V2(this, initial, end, ::_interpolateFloat, true)
+inline operator fun KMutableProperty0<Float>.get(initial: Float, end: Float) = V2Prop(this, initial, end, ::_interpolateFloat, true)
 
-inline operator fun KMutableProperty0<Double>.get(end: Double) = V2(this, this.get(), end, ::_interpolate, includeStart = false)
-inline operator fun KMutableProperty0<Double>.get(initial: Double, end: Double) = V2(this, initial, end, ::_interpolate, true)
+inline operator fun KMutableProperty0<Double>.get(end: Double) = V2Prop(this, this.get(), end, ::_interpolate, includeStart = false)
+inline operator fun KMutableProperty0<Double>.get(initial: Double, end: Double) = V2Prop(this, initial, end, ::_interpolate, true)
 
 inline operator fun KMutableProperty0<Double>.get(end: Int) = get(end.toDouble())
 inline operator fun KMutableProperty0<Double>.get(initial: Int, end: Int) = get(initial.toDouble(), end.toDouble())
@@ -153,60 +202,74 @@ inline operator fun KMutableProperty0<Double>.get(initial: Long, end: Float) = g
 inline operator fun KMutableProperty0<Double>.get(end: Number) = get(end.toDouble())
 inline operator fun KMutableProperty0<Double>.get(initial: Number, end: Number) = get(initial.toDouble(), end.toDouble())
 
-inline operator fun KMutableProperty0<RGBA>.get(end: RGBA) = V2(this, this.get(), end, ::_interpolateColor, includeStart = false)
-inline operator fun KMutableProperty0<RGBA>.get(initial: RGBA, end: RGBA) = V2(this, initial, end, ::_interpolateColor, includeStart = true)
+inline operator fun KMutableProperty0<RGBA>.get(end: RGBA) = V2Prop(this, this.get(), end, ::_interpolateColor, includeStart = false)
+inline operator fun KMutableProperty0<RGBA>.get(initial: RGBA, end: RGBA) = V2Prop(this, initial, end, ::_interpolateColor, includeStart = true)
 
-inline operator fun KMutableProperty0<ColorAdd>.get(end: ColorAdd) = V2(this, this.get(), end, ::_interpolateColorAdd, includeStart = false)
-inline operator fun KMutableProperty0<ColorAdd>.get(initial: ColorAdd, end: ColorAdd) = V2(this, initial, end, ::_interpolateColorAdd, includeStart = true)
+inline operator fun KMutableProperty0<ColorAdd>.get(end: ColorAdd) = V2Prop(this, this.get(), end, ::_interpolateColorAdd, includeStart = false)
+inline operator fun KMutableProperty0<ColorAdd>.get(initial: ColorAdd, end: ColorAdd) = V2Prop(this, initial, end, ::_interpolateColorAdd, includeStart = true)
 
-inline operator fun KMutableProperty0<Angle>.get(end: Angle) = V2(this, this.get(), end, ::_interpolateAngle, includeStart = false)
-inline operator fun KMutableProperty0<Angle>.get(initial: Angle, end: Angle) = V2(this, initial, end, ::_interpolateAngle, includeStart = true)
+inline operator fun KMutableProperty0<Angle>.get(end: Angle) = V2Prop(this, this.get(), end, ::_interpolateAngle, includeStart = false)
+inline operator fun KMutableProperty0<Angle>.get(initial: Angle, end: Angle) = V2Prop(this, initial, end, ::_interpolateAngle, includeStart = true)
 
-fun V2<Angle>.denormalized(): V2<Angle> = this.copy(interpolator = ::_interpolateAngleDenormalized)
+fun V2Prop<Angle>.denormalized(): V2Prop<Angle> = this.copy(interpolator = ::_interpolateAngleDenormalized)
 
-inline operator fun KMutableProperty0<TimeSpan>.get(end: TimeSpan) = V2(this, this.get(), end, ::_interpolateTimeSpan, includeStart = false)
-inline operator fun KMutableProperty0<TimeSpan>.get(initial: TimeSpan, end: TimeSpan) = V2(this, initial, end, ::_interpolateTimeSpan, includeStart = true)
+inline operator fun KMutableProperty0<TimeSpan>.get(end: TimeSpan) = V2Prop(this, this.get(), end, ::_interpolateTimeSpan, includeStart = false)
+inline operator fun KMutableProperty0<TimeSpan>.get(initial: TimeSpan, end: TimeSpan) = V2Prop(this, initial, end, ::_interpolateTimeSpan, includeStart = true)
 
-fun <V> V2<V>.clamped(): V2<V> = copy(interpolator = { ratio, l, r -> this.interpolator(ratio.clamp01(), l, r) })
-fun <V> V2<V>.easing(easing: Easing): V2<V> = this.copy(interpolator = { ratio, a, b -> this.interpolator(easing(ratio), a, b) })
+fun <V> V2<V>.transformed(callback: V2<V>.(Double) -> Unit): V2<V> = object : V2<V> by this {
+    override fun set(ratio: Double) {
+        callback(this@transformed, ratio)
+    }
+}
 
-inline fun <V> V2<V>.delay(startTime: TimeSpan) = this.copy(startTime = startTime)
-inline fun <V> V2<V>.duration(duration: TimeSpan) = this.copy(duration = duration)
+fun <V> V2<V>.transformed(startTime: TimeSpan = this.startTime, duration: TimeSpan = this.duration, callback: V2<V>.(Double) -> Unit = { this.set(it) }): V2<V> = object : V2<V> by this {
+    override val startTime: TimeSpan get() = startTime
+    override val duration: TimeSpan get() = duration
+    override fun set(ratio: Double) {
+        callback(this@transformed, ratio)
+    }
+}
 
-inline fun <V> V2<V>.linear() = this
-inline fun <V> V2<V>.smooth() = this.easing(Easing.SMOOTH)
+fun <V> V2<V>.clamped(): V2<V> = transformed { this.set(it.clamp01()) }
+fun <V> V2<V>.easing(easing: Easing): V2<V> = transformed { this.set(easing(it)) }
 
-inline fun <V> V2<V>.ease() = this.easing(Easing.EASE)
-inline fun <V> V2<V>.easeIn() = this.easing(Easing.EASE_IN)
-inline fun <V> V2<V>.easeOut() = this.easing(Easing.EASE_OUT)
-inline fun <V> V2<V>.easeInOut() = this.easing(Easing.EASE_IN_OUT)
+fun <V> V2<V>.delay(startTime: TimeSpan): V2<V> = transformed(startTime = startTime)
+fun <V> V2<V>.duration(duration: TimeSpan): V2<V> = transformed(duration = duration)
 
-inline fun <V> V2<V>.easeInOld() = this.easing(Easing.EASE_IN_OLD)
-inline fun <V> V2<V>.easeOutOld() = this.easing(Easing.EASE_OUT_OLD)
-inline fun <V> V2<V>.easeInOutOld() = this.easing(Easing.EASE_IN_OUT_OLD)
-inline fun <V> V2<V>.easeOutInOld() = this.easing(Easing.EASE_OUT_IN_OLD)
+inline fun <V> V2<V>.linear(): V2<V> = this
+inline fun <V> V2<V>.smooth(): V2<V> = this.easing(Easing.SMOOTH)
 
-inline fun <V> V2<V>.easeInBack() = this.easing(Easing.EASE_IN_BACK)
-inline fun <V> V2<V>.easeOutBack() = this.easing(Easing.EASE_OUT_BACK)
-inline fun <V> V2<V>.easeInOutBack() = this.easing(Easing.EASE_IN_OUT_BACK)
-inline fun <V> V2<V>.easeOutInBack() = this.easing(Easing.EASE_OUT_IN_BACK)
+inline fun <V> V2<V>.ease(): V2<V> = this.easing(Easing.EASE)
+inline fun <V> V2<V>.easeIn(): V2<V> = this.easing(Easing.EASE_IN)
+inline fun <V> V2<V>.easeOut(): V2<V> = this.easing(Easing.EASE_OUT)
+inline fun <V> V2<V>.easeInOut(): V2<V> = this.easing(Easing.EASE_IN_OUT)
 
-inline fun <V> V2<V>.easeInElastic() = this.easing(Easing.EASE_IN_ELASTIC)
-inline fun <V> V2<V>.easeOutElastic() = this.easing(Easing.EASE_OUT_ELASTIC)
-inline fun <V> V2<V>.easeInOutElastic() = this.easing(Easing.EASE_IN_OUT_ELASTIC)
-inline fun <V> V2<V>.easeOutInElastic() = this.easing(Easing.EASE_OUT_IN_ELASTIC)
+inline fun <V> V2<V>.easeInOld(): V2<V> = this.easing(Easing.EASE_IN_OLD)
+inline fun <V> V2<V>.easeOutOld(): V2<V> = this.easing(Easing.EASE_OUT_OLD)
+inline fun <V> V2<V>.easeInOutOld(): V2<V> = this.easing(Easing.EASE_IN_OUT_OLD)
+inline fun <V> V2<V>.easeOutInOld(): V2<V> = this.easing(Easing.EASE_OUT_IN_OLD)
 
-inline fun <V> V2<V>.easeInBounce() = this.easing(Easing.EASE_IN_BOUNCE)
-inline fun <V> V2<V>.easeOutBounce() = this.easing(Easing.EASE_OUT_BOUNCE)
-inline fun <V> V2<V>.easeInOutBounce() = this.easing(Easing.EASE_IN_OUT_BOUNCE)
-inline fun <V> V2<V>.easeOutInBounce() = this.easing(Easing.EASE_OUT_IN_BOUNCE)
+inline fun <V> V2<V>.easeInBack(): V2<V> = this.easing(Easing.EASE_IN_BACK)
+inline fun <V> V2<V>.easeOutBack(): V2<V> = this.easing(Easing.EASE_OUT_BACK)
+inline fun <V> V2<V>.easeInOutBack(): V2<V> = this.easing(Easing.EASE_IN_OUT_BACK)
+inline fun <V> V2<V>.easeOutInBack(): V2<V> = this.easing(Easing.EASE_OUT_IN_BACK)
 
-inline fun <V> V2<V>.easeInQuad() = this.easing(Easing.EASE_IN_QUAD)
-inline fun <V> V2<V>.easeOutQuad() = this.easing(Easing.EASE_OUT_QUAD)
-inline fun <V> V2<V>.easeInOutQuad() = this.easing(Easing.EASE_IN_OUT_QUAD)
+inline fun <V> V2<V>.easeInElastic(): V2<V> = this.easing(Easing.EASE_IN_ELASTIC)
+inline fun <V> V2<V>.easeOutElastic(): V2<V> = this.easing(Easing.EASE_OUT_ELASTIC)
+inline fun <V> V2<V>.easeInOutElastic(): V2<V> = this.easing(Easing.EASE_IN_OUT_ELASTIC)
+inline fun <V> V2<V>.easeOutInElastic(): V2<V> = this.easing(Easing.EASE_OUT_IN_ELASTIC)
 
-inline fun <V> V2<V>.easeSine() = this.easing(Easing.EASE_SINE)
+inline fun <V> V2<V>.easeInBounce(): V2<V> = this.easing(Easing.EASE_IN_BOUNCE)
+inline fun <V> V2<V>.easeOutBounce(): V2<V> = this.easing(Easing.EASE_OUT_BOUNCE)
+inline fun <V> V2<V>.easeInOutBounce(): V2<V> = this.easing(Easing.EASE_IN_OUT_BOUNCE)
+inline fun <V> V2<V>.easeOutInBounce(): V2<V> = this.easing(Easing.EASE_OUT_IN_BOUNCE)
 
-inline fun <V> V2<V>.easeClampStart() = this.easing(Easing.EASE_CLAMP_START)
-inline fun <V> V2<V>.easeClampEnd() = this.easing(Easing.EASE_CLAMP_END)
-inline fun <V> V2<V>.easeClampMiddle() = this.easing(Easing.EASE_CLAMP_MIDDLE)
+inline fun <V> V2<V>.easeInQuad(): V2<V> = this.easing(Easing.EASE_IN_QUAD)
+inline fun <V> V2<V>.easeOutQuad(): V2<V> = this.easing(Easing.EASE_OUT_QUAD)
+inline fun <V> V2<V>.easeInOutQuad(): V2<V> = this.easing(Easing.EASE_IN_OUT_QUAD)
+
+inline fun <V> V2<V>.easeSine(): V2<V> = this.easing(Easing.EASE_SINE)
+
+inline fun <V> V2<V>.easeClampStart(): V2<V> = this.easing(Easing.EASE_CLAMP_START)
+inline fun <V> V2<V>.easeClampEnd(): V2<V> = this.easing(Easing.EASE_CLAMP_END)
+inline fun <V> V2<V>.easeClampMiddle(): V2<V> = this.easing(Easing.EASE_CLAMP_MIDDLE)

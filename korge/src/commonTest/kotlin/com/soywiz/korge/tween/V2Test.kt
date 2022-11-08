@@ -89,7 +89,7 @@ class V2Test {
         return (0..10).map {
             val ratio = it.toDouble() / 10.0
             v2.set(ratio)
-            v2.key.get()
+            v2.get()
         }
 
     }

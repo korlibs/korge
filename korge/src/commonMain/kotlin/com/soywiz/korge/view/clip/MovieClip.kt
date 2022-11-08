@@ -9,7 +9,7 @@ import com.soywiz.klock.TimeSpan
 import com.soywiz.klock.milliseconds
 import com.soywiz.klock.seconds
 import com.soywiz.korge.annotations.KorgeExperimental
-import com.soywiz.korge.tween.V2
+import com.soywiz.korge.tween.*
 import com.soywiz.korge.view.Container
 import com.soywiz.korge.view.addUpdater
 import kotlin.collections.LinkedHashMap
