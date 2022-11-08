@@ -66,6 +66,32 @@ fun <T> V2Lazy(callback: () -> V2<T>): V2<T> {
     }
 }
 
+private inline fun <T : Any> KMutableProperty0<T>._incr(crossinline interpolate: (Double, T) -> T): V2<Unit> {
+    lateinit var start: T
+    var set = false
+    return V2Callback {
+        if (!set) {
+            set = true
+            start = this.get()
+        }
+
+        this.set(interpolate(it, start))
+    }
+}
+
+fun KMutableProperty0<IPoint>.incr(dx: Double, dy: Double): V2<Unit> {
+    val point: Point = Point(0, 0)
+    return _incr { it, start ->
+        point.setTo(it.interpolate(start.x, start.x + dx), it.interpolate(point.y, start.y + dy))
+        point
+    }
+}
+fun KMutableProperty0<IPoint>.incr(dx: Number, dy: Number): V2<Unit> = incr(dx.toDouble(), dy.toDouble())
+fun KMutableProperty0<IPoint>.incr(incr: IPoint): V2<Unit> = incr(incr.x, incr.y)
+
+fun KMutableProperty0<Double>.incr(incr: Number): V2<Unit> = _incr { it, start -> it.interpolate(start, start + incr.toDouble()) }
+fun KMutableProperty0<Angle>.incr(incr: Angle): V2<Unit> = _incr { it, start -> it.interpolateAngleDenormalized(start, start + incr) }
+
 @JvmName("getInt")
 operator fun KMutableProperty0<Int>.get(end: Int) = V2(this, this.get(), end, ::_interpolateInt, includeStart = false)
 @JvmName("getInt")
