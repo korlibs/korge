@@ -156,7 +156,7 @@ value class TimeSpan(
 
         /**
          * Represents an invalid TimeSpan.
-         * Useful to represent an alternative "null" time lapse
+         * Useful to represent an alternative "null" time-lapse
          * avoiding the boxing of a nullable type.
          */
         val NIL = TimeSpan(Double.NaN)
