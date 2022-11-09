@@ -200,7 +200,7 @@ class NewAnimatorTest {
         animator.onComplete.add { log += "complete" }
         val lines = arrayListOf<String>()
         fun logLine() {
-            lines += "view1[${view1.pos.niceStr}, ${view1.alpha}], view2[${view2.pos.niceStr}, ${view2.alpha}], log=${log.joinToString("")}"
+            lines += "view1[${view1.pos.niceStr}, ${view1.alpha.niceStr(1)}], view2[${view2.pos.niceStr}, ${view2.alpha.niceStr(1)}], log=${log.joinToString("")}"
         }
         for (n in 0 until 24) {
             executorView.updateSingleView(0.25.seconds)
@@ -208,30 +208,30 @@ class NewAnimatorTest {
         }
         assertEquals(
             """
-                view1[(25, 0), 1.0], view2[(0, 25), 1.0], log=0
-                view1[(50, 0), 1.0], view2[(0, 50), 1.0], log=0
-                view1[(75, 0), 1.0], view2[(0, 75), 1.0], log=0
-                view1[(100, 0), 1.0], view2[(0, 100), 1.0], log=0
-                view1[(125, 0), 1.0], view2[(0, 125), 1.0], log=0
-                view1[(150, 0), 1.0], view2[(0, 150), 1.0], log=0
-                view1[(175, 0), 1.0], view2[(0, 175), 1.0], log=0
-                view1[(200, 0), 1.0], view2[(0, 200), 1.0], log=0
-                view1[(200, 50), 1.0], view2[(50, 200), 1.0], log=01
-                view1[(200, 100), 1.0], view2[(100, 200), 1.0], log=01
-                view1[(200, 150), 1.0], view2[(150, 200), 1.0], log=01
-                view1[(200, 200), 1.0], view2[(200, 200), 1.0], log=01
-                view1[(200, 200), 0.75], view2[(200, 200), 0.75], log=012
+                view1[(25, 0), 1], view2[(0, 25), 1], log=0
+                view1[(50, 0), 1], view2[(0, 50), 1], log=0
+                view1[(75, 0), 1], view2[(0, 75), 1], log=0
+                view1[(100, 0), 1], view2[(0, 100), 1], log=0
+                view1[(125, 0), 1], view2[(0, 125), 1], log=0
+                view1[(150, 0), 1], view2[(0, 150), 1], log=0
+                view1[(175, 0), 1], view2[(0, 175), 1], log=0
+                view1[(200, 0), 1], view2[(0, 200), 1], log=0
+                view1[(200, 50), 1], view2[(50, 200), 1], log=01
+                view1[(200, 100), 1], view2[(100, 200), 1], log=01
+                view1[(200, 150), 1], view2[(150, 200), 1], log=01
+                view1[(200, 200), 1], view2[(200, 200), 1], log=01
+                view1[(200, 200), 0.8], view2[(200, 200), 0.8], log=012
                 view1[(200, 200), 0.5], view2[(200, 200), 0.5], log=012
-                view1[(200, 200), 0.25], view2[(200, 200), 0.25], log=012
-                view1[(200, 200), 0.0], view2[(200, 200), 0.0], log=012
+                view1[(200, 200), 0.2], view2[(200, 200), 0.2], log=012
+                view1[(200, 200), 0], view2[(200, 200), 0], log=012
                 view1[(0, 0), 0.5], view2[(0, 0), 0.5], log=01234
-                view1[(0, 0), 1.0], view2[(0, 0), 1.0], log=01234
-                view1[(0, 0), 1.0], view2[(0, 0), 1.0], log=012345
-                view1[(0, 0), 1.0], view2[(0, 0), 1.0], log=012345
-                view1[(0, 0), 1.0], view2[(0, 0), 1.0], log=0123456complete
-                view1[(0, 0), 1.0], view2[(0, 0), 1.0], log=0123456complete
-                view1[(0, 0), 1.0], view2[(0, 0), 1.0], log=0123456complete
-                view1[(0, 0), 1.0], view2[(0, 0), 1.0], log=0123456complete
+                view1[(0, 0), 1], view2[(0, 0), 1], log=01234
+                view1[(0, 0), 1], view2[(0, 0), 1], log=012345
+                view1[(0, 0), 1], view2[(0, 0), 1], log=012345
+                view1[(0, 0), 1], view2[(0, 0), 1], log=0123456complete
+                view1[(0, 0), 1], view2[(0, 0), 1], log=0123456complete
+                view1[(0, 0), 1], view2[(0, 0), 1], log=0123456complete
+                view1[(0, 0), 1], view2[(0, 0), 1], log=0123456complete
             """.trimIndent(),
             lines.joinToString("\n")
         )
