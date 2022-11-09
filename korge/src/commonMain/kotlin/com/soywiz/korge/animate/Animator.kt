@@ -400,5 +400,5 @@ private val IPointArrayList.length: Double get() {
     return sum
 }
 
-class AnimateCancellationException(val completeOnCancel: Boolean? = null) : CancellationException(null)
+class AnimateCancellationException(val completeOnCancel: Boolean? = null) : CancellationException("AnimateCancellationException")
 
