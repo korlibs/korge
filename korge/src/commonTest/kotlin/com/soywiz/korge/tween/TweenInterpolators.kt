@@ -16,6 +16,7 @@ class TweenInterpolators {
         val view = DummyView().xy(30, 30)
         val v2 = view::pos[path]
         assertEquals(Point(30, 30), view.pos)
+        v2.init()
         v2.set(0.0)
         assertEquals(Point(0, 0), view.pos)
         v2.set(0.5)

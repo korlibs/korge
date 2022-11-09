@@ -1,7 +1,7 @@
 package samples
 
 import com.soywiz.klock.*
-import com.soywiz.korge.animate.animateParallel
+import com.soywiz.korge.animate.*
 import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.tween.get
 import com.soywiz.korge.view.*
@@ -61,7 +61,7 @@ class MainFiltersSample : Scene() {
 
         //addUpdater { invalidate() }
 
-        animateParallel {
+        newAnimate(parallel = true) {
             sequence(looped = true) {
                 tween(wave::time[1.seconds], time = 1.seconds, easing = Easing.EASE_IN_OUT)
                 tween(wave::time[0.seconds], time = 1.seconds, easing = Easing.EASE_IN_OUT)

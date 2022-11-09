@@ -27,23 +27,30 @@ data class V2<V>(
     var initial: V,
     val end: V,
     val interpolator: (Double, V, V) -> V,
-    private var includeStart: Boolean,
+    val includeStart: Boolean,
     val startTime: TimeSpan = 0.nanoseconds,
     val duration: TimeSpan = TimeSpan.NIL
 ) {
     val endTime = startTime + duration.coalesce { 0.nanoseconds }
 
-    @Deprecated("This will be removed as this is not used anymore")
-    fun init(): Unit = Unit
+    fun duration(default: TimeSpan): TimeSpan = if (duration == TimeSpan.NIL) default else duration
+    fun endTime(default: TimeSpan): TimeSpan = if (duration == TimeSpan.NIL) default else endTime
 
-    private fun ensureInit() {
+    fun init(): Unit {
         if (!includeStart) {
             initial = key.get()
-            includeStart = true
+            //includeStart = true
         }
     }
+
+    //private fun ensureInit() {
+    //    if (!includeStart) {
+    //        initial = key.get()
+    //        includeStart = true
+    //    }
+    //}
     fun set(ratio: Double): Unit {
-        ensureInit()
+        //ensureInit()
         key.set(interpolator(ratio, initial, end))
     }
 

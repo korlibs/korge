@@ -1,7 +1,7 @@
 package samples
 
 import com.soywiz.klock.seconds
-import com.soywiz.korge.animate.animate
+import com.soywiz.korge.animate.*
 import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.tween.get
 import com.soywiz.korge.view.SContainer
@@ -68,14 +68,14 @@ class MainMasks : Scene() {
             val path = buildVectorPath(VectorPath()) {
                 circle(width * 0.5, height * 0.5, 300.0)
             }
-            animate(looped = true) {
+            newAnimate(looped = true) {
                 tween(circle3::pos[path], time = 2.seconds, easing = Easing.LINEAR)
             }
         }
 
 
         launchImmediately {
-            animate(looped = true) {
+            newAnimate(looped = true) {
                 //parallel {
                 tween(maskView::radius[150.0], time = 1.seconds)
                 tween(maskView::radius[10.0], time = 1.seconds)

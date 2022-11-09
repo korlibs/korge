@@ -10,13 +10,14 @@ import com.soywiz.korge.tween.get
 import com.soywiz.korge.tween.tween
 import com.soywiz.korge.view.View
 import com.soywiz.korio.async.launchImmediately
-import com.soywiz.korma.geom.Angle
-import com.soywiz.korma.geom.plus
+import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.vector.*
 import com.soywiz.korma.interpolation.Easing
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.joinAll
 import kotlin.coroutines.coroutineContext
+import kotlin.jvm.*
 import kotlin.math.hypot
 
 @DslMarker
@@ -198,13 +199,11 @@ open class Animator(
         override fun executeImmediately() = computedVs.fastForEach { it.set(1.0) }
     }
 
-    @PublishedApi
-    internal fun __tween(vararg vs: V2<*>, lazyVs: Array<out () -> V2<*>>? = null, time: TimeSpan = this.time, lazyTime: (() -> TimeSpan)? = null, easing: Easing = this.easing) {
+    protected fun __tween(vararg vs: V2<*>, lazyVs: Array<out () -> V2<*>>? = null, time: TimeSpan = this.time, lazyTime: (() -> TimeSpan)? = null, easing: Easing = this.easing) {
         nodes.add(TweenNode(root, *vs, lazyVs = lazyVs, time = time, lazyTime = lazyTime, easing = easing))
     }
 
-    @PublishedApi
-    internal fun __tween(vararg vs: () -> V2<*>, time: TimeSpan = this.time, lazyTime: (() -> TimeSpan)? = null, easing: Easing = this.easing) {
+    protected fun __tween(vararg vs: () -> V2<*>, time: TimeSpan = this.time, lazyTime: (() -> TimeSpan)? = null, easing: Easing = this.easing) {
         nodes.add(TweenNode(root, lazyVs = vs, time = time, lazyTime = lazyTime, easing = easing))
     }
 
@@ -214,35 +213,110 @@ open class Animator(
     fun tween(vararg vs: () -> V2<*>, time: TimeSpan = this.time, easing: Easing = this.easing) = __tween(*vs, time = time, easing = easing)
     fun tween(vararg vs: () -> V2<*>, time: () -> TimeSpan = { this.time }, easing: Easing = this.easing) = __tween(*vs, lazyTime = time, easing = easing)
 
+    ////////////////////////
+
+    @JvmName("scaleBy2")
     fun View.scaleBy(scaleX: Double, scaleY: Double = scaleX, time: TimeSpan = this@Animator.time, easing: Easing = this@Animator.easing) = __tween({ this::scaleX[this.scaleX + scaleX] }, { this::scaleY[this.scaleY + scaleY] }, time = time, easing = easing)
+    @JvmName("rotateBy2")
     fun View.rotateBy(rotation: Angle, time: TimeSpan = this@Animator.time, easing: Easing = this@Animator.easing) = __tween({ this::rotation[this.rotation + rotation] }, time = time, easing = easing)
+    @JvmName("moveBy2")
     fun View.moveBy(x: Double = 0.0, y: Double = 0.0, time: TimeSpan = this@Animator.time, easing: Easing = this@Animator.easing) = __tween({ this::x[this.x + x] }, { this::y[this.y + y] }, time = time, easing = easing)
+    @JvmName("moveByWithSpeed2")
     fun View.moveByWithSpeed(x: Double = 0.0, y: Double = 0.0, speed: Double = this@Animator.speed, easing: Easing = this@Animator.easing) = __tween({ this::x[this.x + x] }, { this::y[this.y + y] }, lazyTime = { (hypot(x, y) / speed.toDouble()).seconds }, easing = easing)
 
+    @JvmName("scaleTo2")
     fun View.scaleTo(scaleX: () -> Number, scaleY: () -> Number = scaleX, time: TimeSpan = this@Animator.time, lazyTime: (() -> TimeSpan)? = null, easing: Easing = this@Animator.easing) = __tween({ this::scaleX[scaleX()] }, { this::scaleY[scaleY()] }, time = time, lazyTime = lazyTime, easing = easing)
+    @JvmName("scaleTo2")
     fun View.scaleTo(scaleX: Double, scaleY: Double = scaleX, time: TimeSpan = this@Animator.time, easing: Easing = this@Animator.easing) = __tween(this::scaleX[scaleX], this::scaleY[scaleY], time = time, easing = easing)
+    @JvmName("scaleTo2")
     fun View.scaleTo(scaleX: Float, scaleY: Float = scaleX, time: TimeSpan = this@Animator.time, easing: Easing = this@Animator.easing) = scaleTo(scaleX.toDouble(), scaleY.toDouble(), time, easing)
+    @JvmName("scaleTo2")
     fun View.scaleTo(scaleX: Int, scaleY: Int = scaleX, time: TimeSpan = this@Animator.time, easing: Easing = this@Animator.easing) = scaleTo(scaleX.toDouble(), scaleY.toDouble(), time, easing)
 
+    @JvmName("moveTo2")
     fun View.moveTo(x: () -> Number = { this.x }, y: () -> Number = { this.y }, time: TimeSpan = this@Animator.time, lazyTime: (() -> TimeSpan)? = null, easing: Easing = this@Animator.easing) = __tween({ this::x[x()] }, { this::y[y()] }, time = time, lazyTime = lazyTime, easing = easing)
+    @JvmName("moveTo2")
     fun View.moveTo(x: Double, y: Double, time: TimeSpan = this@Animator.time, easing: Easing = this@Animator.easing) = __tween(this::x[x], this::y[y], time = time, easing = easing)
+    @JvmName("moveTo2")
     fun View.moveTo(x: Float, y: Float, time: TimeSpan = this@Animator.time, easing: Easing = this@Animator.easing) = moveTo(x.toDouble(), y.toDouble(), time, easing)
+    @JvmName("moveTo2")
     fun View.moveTo(x: Int, y: Int, time: TimeSpan = this@Animator.time, easing: Easing = this@Animator.easing) = moveTo(x.toDouble(), y.toDouble(), time, easing)
 
+    @JvmName("moveToWithSpeed2")
     fun View.moveToWithSpeed(x: () -> Number = { this.x }, y: () -> Number = { this.y }, speed: () -> Number = { this@Animator.speed }, easing: Easing = this@Animator.easing) = __tween({ this::x[x()] }, { this::y[y()] }, lazyTime = { (hypot(this.x - x().toDouble(), this.y - y().toDouble()) / speed().toDouble()).seconds }, easing = easing)
+    @JvmName("moveToWithSpeed2")
     fun View.moveToWithSpeed(x: Double, y: Double, speed: Double = this@Animator.speed, easing: Easing = this@Animator.easing) = __tween(this::x[x], this::y[y], lazyTime = { (hypot(this.x - x, this.y - y) / speed.toDouble()).seconds }, easing = easing)
+    @JvmName("moveToWithSpeed2")
     fun View.moveToWithSpeed(x: Float, y: Float, speed: Number = this@Animator.speed, easing: Easing = this@Animator.easing) = moveToWithSpeed(x.toDouble(), y.toDouble(), speed.toDouble(), easing)
+    @JvmName("moveToWithSpeed2")
     fun View.moveToWithSpeed(x: Int, y: Int, speed: Number = this@Animator.speed, easing: Easing = this@Animator.easing) = moveToWithSpeed(x.toDouble(), y.toDouble(), speed.toDouble(), easing)
 
+    @JvmName("alpha2")
     fun View.alpha(alpha: Double, time: TimeSpan = this@Animator.time, easing: Easing = this@Animator.easing) = __tween(this::alpha[alpha], time = time, easing = easing)
+    @JvmName("alpha2")
     fun View.alpha(alpha: Float, time: TimeSpan = this@Animator.time, easing: Easing = this@Animator.easing) = alpha(alpha.toDouble(), time, easing)
+    @JvmName("alpha2")
     fun View.alpha(alpha: Int, time: TimeSpan = this@Animator.time, easing: Easing = this@Animator.easing) = alpha(alpha.toDouble(), time, easing)
 
+    @JvmName("rotateTo2")
     fun View.rotateTo(angle: Angle, time: TimeSpan = this@Animator.time, easing: Easing = this@Animator.easing) = __tween(this::rotation[angle], time = time, easing = easing)
+    @JvmName("rotateTo2")
     fun View.rotateTo(rotation: () -> Angle, time: TimeSpan = this@Animator.time, lazyTime: (() -> TimeSpan)? = null, easing: Easing = this@Animator.easing) = __tween({ this::rotation[rotation()] }, time = time, lazyTime = lazyTime, easing = easing)
 
+    @JvmName("show2")
     fun View.show(time: TimeSpan = this@Animator.time, easing: Easing = this@Animator.easing) = alpha(1.0, time, easing)
+    @JvmName("hide2")
     fun View.hide(time: TimeSpan = this@Animator.time, easing: Easing = this@Animator.easing) = alpha(0.0, time, easing)
+
+    ////////////////////////
+
+    fun scaleBy(view: View, scaleX: Double, scaleY: Double = scaleX, time: TimeSpan = this.time, easing: Easing = this.easing) = __tween({ view::scaleX[view.scaleX + scaleX] }, { view::scaleY[view.scaleY + scaleY] }, time = time, easing = easing)
+    fun rotateBy(view: View, rotation: Angle, time: TimeSpan = this.time, easing: Easing = this.easing) = __tween({ view::rotation[view.rotation + rotation] }, time = time, easing = easing)
+    fun moveBy(view: View, x: Double = 0.0, y: Double = 0.0, time: TimeSpan = this.time, easing: Easing = this.easing) = __tween({ view::x[view.x + x] }, { view::y[view.y + y] }, time = time, easing = easing)
+    fun moveByWithSpeed(view: View, x: Double = 0.0, y: Double = 0.0, speed: Double = this.speed, easing: Easing = this.easing) = __tween({ view::x[view.x + x] }, { view::y[view.y + y] }, lazyTime = { (hypot(x, y) / speed.toDouble()).seconds }, easing = easing)
+
+    fun moveBy(view: View, x: Number = 0.0, y: Number = 0.0, time: TimeSpan = this.time, easing: Easing = this.easing) = moveBy(view, x.toDouble(), y.toDouble(), time, easing)
+    fun moveByWithSpeed(view: View, x: Number = 0.0, y: Number = 0.0, speed: Double = this.speed, easing: Easing = this.easing) = moveByWithSpeed(view, x.toDouble(), y.toDouble(), speed, easing)
+
+    fun scaleTo(view: View, scaleX: () -> Number, scaleY: () -> Number = scaleX, time: TimeSpan = this.time, lazyTime: (() -> TimeSpan)? = null, easing: Easing = this.easing) = __tween({ view::scaleX[scaleX()] }, { view::scaleY[scaleY()] }, time = time, lazyTime = lazyTime, easing = easing)
+    fun scaleTo(view: View, scaleX: Double, scaleY: Double = scaleX, time: TimeSpan = this.time, easing: Easing = this.easing) = __tween(view::scaleX[scaleX], view::scaleY[scaleY], time = time, easing = easing)
+    fun scaleTo(view: View, scaleX: Float, scaleY: Float = scaleX, time: TimeSpan = this.time, easing: Easing = this.easing) = scaleTo(view, scaleX.toDouble(), scaleY.toDouble(), time, easing)
+    fun scaleTo(view: View, scaleX: Int, scaleY: Int = scaleX, time: TimeSpan = this.time, easing: Easing = this.easing) = scaleTo(view, scaleX.toDouble(), scaleY.toDouble(), time, easing)
+
+    fun moveTo(view: View, x: () -> Number = { view.x }, y: () -> Number = { view.y }, time: TimeSpan = this.time, lazyTime: (() -> TimeSpan)? = null, easing: Easing = this.easing) = __tween({ view::x[x()] }, { view::y[y()] }, time = time, lazyTime = lazyTime, easing = easing)
+    fun moveTo(view: View, x: Double, y: Double, time: TimeSpan = this.time, easing: Easing = this.easing) = __tween(view::x[x], view::y[y], time = time, easing = easing)
+    fun moveTo(view: View, x: Float, y: Float, time: TimeSpan = this.time, easing: Easing = this.easing) = moveTo(view, x.toDouble(), y.toDouble(), time, easing)
+    fun moveTo(view: View, x: Int, y: Int, time: TimeSpan = this.time, easing: Easing = this.easing) = moveTo(view, x.toDouble(), y.toDouble(), time, easing)
+
+    fun moveToWithSpeed(view: View, x: () -> Number = { view.x }, y: () -> Number = { view.y }, speed: () -> Number = { this.speed }, easing: Easing = this.easing) = __tween({ view::x[x()] }, { view::y[y()] }, lazyTime = { (hypot(view.x - x().toDouble(), view.y - y().toDouble()) / speed().toDouble()).seconds }, easing = easing)
+    fun moveToWithSpeed(view: View, x: Double, y: Double, speed: Double = this.speed, easing: Easing = this.easing) = __tween(view::x[x], view::y[y], lazyTime = { (hypot(view.x - x, view.y - y) / speed.toDouble()).seconds }, easing = easing)
+    fun moveToWithSpeed(view: View, x: Float, y: Float, speed: Number = this.speed, easing: Easing = this.easing) = moveToWithSpeed(view, x.toDouble(), y.toDouble(), speed.toDouble(), easing)
+    fun moveToWithSpeed(view: View, x: Int, y: Int, speed: Number = this.speed, easing: Easing = this.easing) = moveToWithSpeed(view, x.toDouble(), y.toDouble(), speed.toDouble(), easing)
+
+    fun moveInPath(view: View, path: VectorPath, includeLastPoint: Boolean = true, time: TimeSpan = this.time, lazyTime: (() -> TimeSpan)? = null, easing: Easing = this.easing) = __tween({ view::pos.get(path, includeLastPoint = includeLastPoint) }, time = time, lazyTime = lazyTime, easing = easing)
+    fun moveInPath(view: View, points: IPointArrayList, time: TimeSpan = this.time, lazyTime: (() -> TimeSpan)? = null, easing: Easing = this.easing) = __tween({ view::pos[points] }, time = time, lazyTime = lazyTime, easing = easing)
+
+    fun moveInPathWithSpeed(view: View, path: VectorPath, includeLastPoint: Boolean = true, speed: () -> Number = { this.speed }, easing: Easing = this.easing) = __tween({ view::pos.get(path, includeLastPoint = includeLastPoint) }, lazyTime = { (path.length / speed().toDouble()).seconds }, easing = easing)
+    fun moveInPathWithSpeed(view: View, points: IPointArrayList, speed: () -> Number = { this.speed }, easing: Easing = this.easing) = __tween({ view::pos[points] }, lazyTime = { (points.length / speed().toDouble()).seconds }, easing = easing)
+
+    fun alpha(view: View, alpha: Double, time: TimeSpan = this.time, easing: Easing = this.easing) = __tween(view::alpha[alpha], time = time, easing = easing)
+    fun alpha(view: View, alpha: Float, time: TimeSpan = this.time, easing: Easing = this.easing) = alpha(view, alpha.toDouble(), time, easing)
+    fun alpha(view: View, alpha: Int, time: TimeSpan = this.time, easing: Easing = this.easing) = alpha(view, alpha.toDouble(), time, easing)
+
+    fun rotateTo(view: View, angle: Angle, time: TimeSpan = this.time, easing: Easing = this.easing) = __tween(view::rotation[angle], time = time, easing = easing)
+    fun rotateTo(view: View, rotation: () -> Angle, time: TimeSpan = this.time, lazyTime: (() -> TimeSpan)? = null, easing: Easing = this.easing) = __tween({ view::rotation[rotation()] }, time = time, lazyTime = lazyTime, easing = easing)
+
+    fun show(view: View, time: TimeSpan = this.time, easing: Easing = this.easing) = alpha(view, 1.0, time, easing)
+    fun hide(view: View, time: TimeSpan = this.time, easing: Easing = this.easing) = alpha(view, 0.0, time, easing)
+
+    private val VectorPath.length: Double get() = getCurves().length
+    private val IPointArrayList.length: Double get() {
+        var sum = 0.0
+        for (n in 1 until size) sum += Point.distance(getX(n - 1), getY(n - 1), getX(n), getY(n))
+        return sum
+    }
+
+    ////////////////////////
 
     fun wait(time: TimeSpan = this.time) = __tween(time = time)
     fun wait(time: () -> TimeSpan) = __tween(lazyTime = time)

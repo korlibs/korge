@@ -3,14 +3,17 @@ package com.soywiz.korge.animate
 import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
 import com.soywiz.klock.*
+import com.soywiz.kmem.*
 import com.soywiz.korge.component.*
 import com.soywiz.korge.tween.*
 import com.soywiz.korge.view.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.lang.*
+import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
 import com.soywiz.korma.interpolation.*
+import kotlinx.coroutines.*
 import kotlin.math.*
 
 @DslMarker
@@ -18,24 +21,37 @@ import kotlin.math.*
 annotation class NewAnimatorDslMarker
 
 fun View.newAnimator(
-    time: TimeSpan = NewAnimator.DEFAULT_TIME,
-    speed: Double = NewAnimator.DEFAULT_SPEED,
-    easing: Easing = NewAnimator.DEFAULT_EASING,
+    defaultTime: TimeSpan = NewAnimator.DEFAULT_TIME,
+    defaultSpeed: Double = NewAnimator.DEFAULT_SPEED,
+    defaultEasing: Easing = NewAnimator.DEFAULT_EASING,
     parallel: Boolean = false,
     looped: Boolean = false,
     block: @NewAnimatorDslMarker NewAnimator.() -> Unit = {}
-): NewAnimator = NewAnimator(this, time, speed, easing, parallel, looped, parent = null).apply(block)
+): NewAnimator = NewAnimator(this, defaultTime, defaultSpeed, defaultEasing, parallel, looped, parent = null).apply(block)
+
+suspend fun View.newAnimate(
+    defaultTime: TimeSpan = NewAnimator.DEFAULT_TIME,
+    defaultSpeed: Double = NewAnimator.DEFAULT_SPEED,
+    defaultEasing: Easing = NewAnimator.DEFAULT_EASING,
+    parallel: Boolean = false,
+    looped: Boolean = false,
+    completeOnCancel: Boolean = false,
+    block: @NewAnimatorDslMarker NewAnimator.() -> Unit = {}
+): NewAnimator = NewAnimator(this, defaultTime, defaultSpeed, defaultEasing, parallel, looped, parent = null).apply(block).also { it.await(completeOnCancel = completeOnCancel) }
 
 open class NewAnimator(
     @PublishedApi internal val root: View,
-    @PublishedApi internal val time: TimeSpan = DEFAULT_TIME,
-    @PublishedApi internal val speed: Double = DEFAULT_SPEED,
-    @PublishedApi internal val easing: Easing = DEFAULT_EASING,
+    @PublishedApi internal val defaultTime: TimeSpan = DEFAULT_TIME,
+    @PublishedApi internal val defaultSpeed: Double = DEFAULT_SPEED,
+    @PublishedApi internal val defaultEasing: Easing = DEFAULT_EASING,
     private val parallel: Boolean = false,
     private val looped: Boolean = false,
-    private val parent: NewAnimator? = null,
-    private var lazyInit: (NewAnimator.() -> Unit)? = null
+    private val parent: NewAnimator?,
+    private var lazyInit: (NewAnimator.() -> Unit)? = null,
+    @PublishedApi internal val level: Int = 0,
 ) : CloseableCancellable {
+    //private val indent: String get() = Indenter.INDENTS[level]
+
     companion object {
         val DEFAULT_TIME = 500.milliseconds
         val DEFAULT_SPEED = 128.0 // Points per second
@@ -45,6 +61,7 @@ open class NewAnimator(
     val onComplete = Signal<Unit>()
 
     private val nodes = Deque<NewAnimatorNode>()
+    var speed: Double = 1.0
 
     @PublishedApi
     internal fun addNode(node: NewAnimatorNode) {
@@ -52,15 +69,24 @@ open class NewAnimator(
         ensure()
     }
 
-    private var currentTime: TimeSpan = 0.seconds
     private var updater: UpdateComponent? = null
+    var autoInvalidateView = false
 
     private fun ensure() {
         if (parent != null) return parent.ensure()
         if (!(root.getComponentsOfType(UpdateComponent) ?: emptyList()).contains(updater)) {
-            updater = root.addUpdater2 {
-                currentTime += it
-                rootAnimationNode.update(currentTime)
+        //if (updater == null) {
+            //println("!!!!!!!!!!!!! ADD NEW UPDATER : updater=$updater, this=$this, parent=$parent")
+            updater = root.addUpdater2(first = false) {
+                if (autoInvalidateView) root.invalidateRender()
+                //println("****")
+                if (rootAnimationNode.update(it) >= 0.seconds) {
+                    if (looped) {
+                        onComplete()
+                    } else {
+                        cancel()
+                    }
+                }
             }
         }
     }
@@ -76,12 +102,10 @@ open class NewAnimator(
         return component
     }
 
-    private var currentNode: NewAnimatorNode? = null
-
     private fun ensureInit() {
-        val init = lazyInit ?: return
+        val linit = lazyInit ?: return
         lazyInit = null
-        init(this)
+        linit(this)
     }
 
     private var parallelStarted = false
@@ -89,10 +113,20 @@ open class NewAnimator(
     @PublishedApi internal val rootAnimationNode = RootAnimationNode()
 
     /** Suspends until this animation has been completed */
-    suspend fun awaitComplete() {
-        if (updater == null) return
-        if (currentNode == null && nodes.isEmpty()) return
-        onComplete.waitOne()
+    suspend fun awaitComplete(completeOnCancel: Boolean = false) {
+        try {
+            if (updater == null) return
+
+            if (rootAnimationNode.isEmpty()) return
+            onComplete.waitOne()
+        } catch (e: CancellationException) {
+            if (completeOnCancel) complete() else cancel()
+        }
+    }
+
+    /** Suspends until this animation has been completed */
+    suspend fun await(completeOnCancel: Boolean = false) {
+        awaitComplete(completeOnCancel)
     }
 
     override fun close() {
@@ -108,8 +142,7 @@ open class NewAnimator(
      */
     fun cancel() {
         //println("---- CANCEL: looped=$looped, currentTime=$currentTime, totalTime=$totalTime")
-        currentTime = 0.seconds
-        currentNode = null
+        rootAnimationNode.reset()
         nodes.clear()
         updater?.close()
         updater = null
@@ -125,158 +158,95 @@ open class NewAnimator(
     }
 
     inline fun parallel(
-        time: TimeSpan = this.time, speed: Double = this.speed, easing: Easing = this.easing, looped: Boolean = false,
+        time: TimeSpan = this.defaultTime, speed: Double = this.defaultSpeed, easing: Easing = this.defaultEasing, looped: Boolean = false,
         callback: @NewAnimatorDslMarker NewAnimator.() -> Unit
-    ): NewAnimator = NewAnimator(root, time, speed, easing, true, looped).also(callback).also { addNode(it.rootAnimationNode) }
+    ): NewAnimator = NewAnimator(root, time, speed, easing, true, looped, level = level + 1, parent = this).also { callback(it) }.also { addNode(it.rootAnimationNode) }
 
     inline fun sequence(
-        time: TimeSpan = this.time, speed: Double = this.speed, easing: Easing = this.easing, looped: Boolean = false,
+        defaultTime: TimeSpan = this.defaultTime, defaultSpeed: Double = this.defaultSpeed, easing: Easing = this.defaultEasing, looped: Boolean = false,
         callback: @NewAnimatorDslMarker NewAnimator.() -> Unit
-    ): NewAnimator = NewAnimator(root, time, speed, easing, false, looped).also(callback).also { addNode(it.rootAnimationNode) }
+    ): NewAnimator = NewAnimator(root, defaultTime, defaultSpeed, easing, false, looped, level = level + 1, parent = this).also { callback(it) }.also { addNode(it.rootAnimationNode) }
 
     fun parallelLazy(
-        time: TimeSpan = this.time, speed: Double = this.speed, easing: Easing = this.easing, looped: Boolean = false,
+        time: TimeSpan = this.defaultTime, speed: Double = this.defaultSpeed, easing: Easing = this.defaultEasing, looped: Boolean = false,
         init: @NewAnimatorDslMarker NewAnimator.() -> Unit
-    ): NewAnimator = NewAnimator(root, time, speed, easing, true, looped, lazyInit = init).also { addNode(it.rootAnimationNode) }
+    ): NewAnimator = NewAnimator(root, time, speed, easing, true, looped, lazyInit = init, level = level + 1, parent = this).also { addNode(it.rootAnimationNode) }
 
     fun sequenceLazy(
-        time: TimeSpan = this.time, speed: Double = this.speed, easing: Easing = this.easing, looped: Boolean = false,
+        time: TimeSpan = this.defaultTime, speed: Double = this.defaultSpeed, easing: Easing = this.defaultEasing, looped: Boolean = false,
         init: @NewAnimatorDslMarker NewAnimator.() -> Unit
-    ): NewAnimator = NewAnimator(root, time, speed, easing, false, looped, lazyInit = init).also { addNode(it.rootAnimationNode) }
+    ): NewAnimator = NewAnimator(root, time, speed, easing, false, looped, lazyInit = init, level = level + 1, parent = this).also { addNode(it.rootAnimationNode) }
 
-    private fun __tween(vararg vs: V2<*>, lazyVs: Array<out () -> V2<*>>? = null, time: TimeSpan = this.time, lazyTime: (() -> TimeSpan)? = null, easing: Easing = this.easing, name: String? = null) {
+    @PublishedApi internal fun __tween(vararg vs: V2<*>, lazyVs: Array<out () -> V2<*>>? = null, time: TimeSpan = this.defaultTime, lazyTime: (() -> TimeSpan)? = null, easing: Easing = this.defaultEasing, name: String?) {
         //println("__tween=time=$time")
         addNode(TweenNode(*vs, lazyVs = lazyVs, time = time, lazyTime = lazyTime, easing = easing, name = name))
     }
 
-    private fun __tween(vararg vs: () -> V2<*>, time: TimeSpan = this.time, lazyTime: (() -> TimeSpan)? = null, easing: Easing = this.easing, name: String? = null) {
+    @PublishedApi internal fun __tween(vararg vs: () -> V2<*>, time: TimeSpan = this.defaultTime, lazyTime: (() -> TimeSpan)? = null, easing: Easing = this.defaultEasing, name: String?) {
         addNode(TweenNode(lazyVs = vs, time = time, lazyTime = lazyTime, easing = easing, name = name))
     }
 
-    fun tween(vararg vs: V2<*>, time: TimeSpan = this.time, easing: Easing = this.easing, name: String? = null): Unit = __tween(*vs, time = time, easing = easing, name = name)
-    fun tweenLazyTime(vararg vs: V2<*>, time: () -> TimeSpan = { this.time }, easing: Easing = this.easing, name: String? = null) = __tween(*vs, lazyTime = time, easing = easing, name = name)
-
-    fun tweenLazy(vararg vs: () -> V2<*>, time: TimeSpan = this.time, easing: Easing = this.easing, name: String? = null) = __tween(*vs, time = time, easing = easing, name = name)
-    fun tweenLazyLazyTime(vararg vs: () -> V2<*>, time: () -> TimeSpan = { this.time }, easing: Easing = this.easing, name: String? = null) = __tween(*vs, lazyTime = time, easing = easing, name = name)
-
-    fun wait(time: TimeSpan = this.time) = __tween(time = time, name = "wait")
-    fun waitLazy(time: () -> TimeSpan) = __tween(lazyTime = time, name = "wait")
-
-    fun block(name: String? = null, callback: () -> Unit) {
-        addNode(BlockNode(name, callback))
-    }
-
-    ////////////////////////
-
-    fun scaleBy(view: View, scaleX: Double, scaleY: Double = scaleX, time: TimeSpan = this.time, easing: Easing = this.easing) = __tween({ view::scaleX[view.scaleX + scaleX] }, { view::scaleY[view.scaleY + scaleY] }, time = time, easing = easing)
-    fun rotateBy(view: View, rotation: Angle, time: TimeSpan = this.time, easing: Easing = this.easing) = __tween({ view::rotation[view.rotation + rotation] }, time = time, easing = easing)
-    fun moveBy(view: View, x: Double = 0.0, y: Double = 0.0, time: TimeSpan = this.time, easing: Easing = this.easing) = __tween({ view::x[view.x + x] }, { view::y[view.y + y] }, time = time, easing = easing)
-    fun moveByWithSpeed(view: View, x: Double = 0.0, y: Double = 0.0, speed: Double = this.speed, easing: Easing = this.easing) = __tween({ view::x[view.x + x] }, { view::y[view.y + y] }, lazyTime = { (hypot(x, y) / speed.toDouble()).seconds }, easing = easing)
-
-    fun moveBy(view: View, x: Number = 0.0, y: Number = 0.0, time: TimeSpan = this.time, easing: Easing = this.easing) = moveBy(view, x.toDouble(), y.toDouble(), time, easing)
-    fun moveByWithSpeed(view: View, x: Number = 0.0, y: Number = 0.0, speed: Double = this.speed, easing: Easing = this.easing) = moveByWithSpeed(view, x.toDouble(), y.toDouble(), speed, easing)
-
-    fun scaleTo(view: View, scaleX: () -> Number, scaleY: () -> Number = scaleX, time: TimeSpan = this.time, lazyTime: (() -> TimeSpan)? = null, easing: Easing = this.easing) = __tween({ view::scaleX[scaleX()] }, { view::scaleY[scaleY()] }, time = time, lazyTime = lazyTime, easing = easing)
-    fun scaleTo(view: View, scaleX: Double, scaleY: Double = scaleX, time: TimeSpan = this.time, easing: Easing = this.easing) = __tween(view::scaleX[scaleX], view::scaleY[scaleY], time = time, easing = easing)
-    fun scaleTo(view: View, scaleX: Float, scaleY: Float = scaleX, time: TimeSpan = this.time, easing: Easing = this.easing) = scaleTo(view, scaleX.toDouble(), scaleY.toDouble(), time, easing)
-    fun scaleTo(view: View, scaleX: Int, scaleY: Int = scaleX, time: TimeSpan = this.time, easing: Easing = this.easing) = scaleTo(view, scaleX.toDouble(), scaleY.toDouble(), time, easing)
-
-    fun moveTo(view: View, x: () -> Number = { view.x }, y: () -> Number = { view.y }, time: TimeSpan = this.time, lazyTime: (() -> TimeSpan)? = null, easing: Easing = this.easing) = __tween({ view::x[x()] }, { view::y[y()] }, time = time, lazyTime = lazyTime, easing = easing)
-    fun moveTo(view: View, x: Double, y: Double, time: TimeSpan = this.time, easing: Easing = this.easing) = __tween(view::x[x], view::y[y], time = time, easing = easing)
-    fun moveTo(view: View, x: Float, y: Float, time: TimeSpan = this.time, easing: Easing = this.easing) = moveTo(view, x.toDouble(), y.toDouble(), time, easing)
-    fun moveTo(view: View, x: Int, y: Int, time: TimeSpan = this.time, easing: Easing = this.easing) = moveTo(view, x.toDouble(), y.toDouble(), time, easing)
-
-    fun moveToWithSpeed(view: View, x: () -> Number = { view.x }, y: () -> Number = { view.y }, speed: () -> Number = { this.speed }, easing: Easing = this.easing) = __tween({ view::x[x()] }, { view::y[y()] }, lazyTime = { (hypot(view.x - x().toDouble(), view.y - y().toDouble()) / speed().toDouble()).seconds }, easing = easing)
-    fun moveToWithSpeed(view: View, x: Double, y: Double, speed: Double = this.speed, easing: Easing = this.easing) = __tween(view::x[x], view::y[y], lazyTime = { (hypot(view.x - x, view.y - y) / speed.toDouble()).seconds }, easing = easing)
-    fun moveToWithSpeed(view: View, x: Float, y: Float, speed: Number = this.speed, easing: Easing = this.easing) = moveToWithSpeed(view, x.toDouble(), y.toDouble(), speed.toDouble(), easing)
-    fun moveToWithSpeed(view: View, x: Int, y: Int, speed: Number = this.speed, easing: Easing = this.easing) = moveToWithSpeed(view, x.toDouble(), y.toDouble(), speed.toDouble(), easing)
-
-    fun moveInPath(view: View, path: VectorPath, includeLastPoint: Boolean = true, time: TimeSpan = this.time, lazyTime: (() -> TimeSpan)? = null, easing: Easing = this.easing) = __tween({ view::pos.get(path, includeLastPoint = includeLastPoint) }, time = time, lazyTime = lazyTime, easing = easing)
-    fun moveInPath(view: View, points: IPointArrayList, time: TimeSpan = this.time, lazyTime: (() -> TimeSpan)? = null, easing: Easing = this.easing) = __tween({ view::pos[points] }, time = time, lazyTime = lazyTime, easing = easing)
-
-    fun moveInPathWithSpeed(view: View, path: VectorPath, includeLastPoint: Boolean = true, speed: () -> Number = { this.speed }, easing: Easing = this.easing) = __tween({ view::pos.get(path, includeLastPoint = includeLastPoint) }, lazyTime = { (path.length / speed().toDouble()).seconds }, easing = easing)
-    fun moveInPathWithSpeed(view: View, points: IPointArrayList, speed: () -> Number = { this.speed }, easing: Easing = this.easing) = __tween({ view::pos[points] }, lazyTime = { (points.length / speed().toDouble()).seconds }, easing = easing)
-
-    fun alpha(view: View, alpha: Double, time: TimeSpan = this.time, easing: Easing = this.easing) = __tween(view::alpha[alpha], time = time, easing = easing)
-    fun alpha(view: View, alpha: Float, time: TimeSpan = this.time, easing: Easing = this.easing) = alpha(view, alpha.toDouble(), time, easing)
-    fun alpha(view: View, alpha: Int, time: TimeSpan = this.time, easing: Easing = this.easing) = alpha(view, alpha.toDouble(), time, easing)
-
-    fun rotateTo(view: View, angle: Angle, time: TimeSpan = this.time, easing: Easing = this.easing) = __tween(view::rotation[angle], time = time, easing = easing)
-    fun rotateTo(view: View, rotation: () -> Angle, time: TimeSpan = this.time, lazyTime: (() -> TimeSpan)? = null, easing: Easing = this.easing) = __tween({ view::rotation[rotation()] }, time = time, lazyTime = lazyTime, easing = easing)
-
-    fun show(view: View, time: TimeSpan = this.time, easing: Easing = this.easing) = alpha(view, 1.0, time, easing)
-    fun hide(view: View, time: TimeSpan = this.time, easing: Easing = this.easing) = alpha(view, 0.0, time, easing)
-
-    private val VectorPath.length: Double get() = getCurves().length
-    private val IPointArrayList.length: Double get() {
-        var sum = 0.0
-        for (n in 1 until size) sum += Point.distance(getX(n - 1), getY(n - 1), getX(n), getY(n))
-        return sum
-    }
-
-    ////////////////////////
-
     inner class RootAnimationNode : NewAnimatorNode {
-
         /**
          * Note that getting this field, won't return time for lazy nodes.
          */
-        override val totalTime: TimeSpan get() = when {
-            parallel -> if (nodes.isNotEmpty()) nodes.maxOf { it.totalTime } else 0.seconds
-            else -> {
-                var sum = 0.seconds
-                currentNode?.let { sum += it.totalTime - currentTime }
-                for (node in nodes) sum += node.totalTime
-                sum
-            }
+        //override val totalTime: TimeSpan get() = when {
+        //    parallel -> if (nodes.isNotEmpty()) nodes.maxOf { it.totalTime } else 0.seconds
+        //    else -> {
+        //        var sum = 0.seconds
+        //        currentNode?.let { sum += it.totalTime - currentTime }
+        //        for (node in nodes) sum += node.totalTime
+        //        sum
+        //    }
+        //}
+
+        private var currentNode: NewAnimatorNode? = null
+        override fun reset() {
+            currentNode = null
         }
 
-        override fun update(time: TimeSpan) {
+        override fun update(dt: TimeSpan): TimeSpan {
+            var dt = dt * speed
+
+            //println("${indent}|UPDATE!!")
             ensureInit()
-            var rtime = time
-            var completed = false
-            when (parallel) {
-                false -> {
-                    if (currentNode == null) {
-                        currentNode = if (nodes.isNotEmpty()) nodes.removeFirst() else null
-                        if (looped) currentNode?.let { nodes.addLast(it) }
-                        rtime = 0.seconds
-                        //println("UPDATE: $time, size=${nodes.size}, time=$time, currentNode=$currentNode")
-                    }
-                    currentNode?.let { node ->
-                        val nodeTotalTime = node.totalTime
-                        val nodeTime = (rtime).clamp(0.seconds, nodeTotalTime)
-                        node.update(nodeTime)
-                        val newNodeTotalTime = node.totalTime // Might be updated if node is lazy!
-                        //println("## time=$time, nodeTime=$nodeTime, currentTime=$currentTime, node.totalTime=${node.totalTime}")
-                        if (nodeTime >= newNodeTotalTime) {
-                            currentTime -= nodeTotalTime
-                            //totalTime -= node.totalTime
-                            currentNode = null
-                            if (nodes.isEmpty()) completed = true
-                        }
-                    }
+
+            if (parallel) {
+                var completedTime = 0.seconds
+                nodes.forEachIndexed { index, it ->
+                    val result = it.update(dt)
+                    completedTime = if (index == 0) result else min(completedTime, result)
+                    //println(" - $result")
                 }
-                true -> {
-                    val maxTotalTime = totalTime
-                    val ptime = if (!parallelStarted) 0.seconds else rtime
-                    nodes.forEach {
-                        val pptime = rtime.clamp(0.seconds, it.totalTime)
-                        it.update(pptime)
-                    }
-                    parallelStarted = true
-                    completed = rtime >= maxTotalTime
-                }
+                parallelStarted = true
+                return completedTime
             }
-            //if (rtime >= totalTime && ((currentNode == null && nodes.isEmpty()) || parallel || looped)) {
-            if (completed) {
-                //println("---- COMPLETED: looped=$looped, rtime=$rtime, totalTime=$totalTime, nodes=${nodes.size}, currentNode=$currentNode")
-                if (looped) {
-                    currentTime = 0.seconds
-                    onComplete()
-                } else {
-                    cancel()
+
+            while (true) {
+                if (currentNode == null) {
+                    currentNode = if (nodes.isNotEmpty()) nodes.removeFirst() else null
+                    currentNode?.reset()
+                    //println("${indent}|LOADNODE!! ${currentNode}")
+                    if (looped) {
+                        currentNode?.let { nodes.addLast(it) }
+                    }
                 }
+                if (currentNode != null) {
+                    val node = currentNode!!
+                    //println("${indent}UPDATE[dt=$dt]: $node")
+                    val extraTime = node.update(dt)
+                    if (extraTime >= TimeSpan.ZERO) {
+                        //println("${indent}|COMPLETENODE!! ${currentNode}")
+                        currentNode = null
+                        dt = extraTime
+                    }
+                    // Continue running other nodes
+                    if (extraTime > TimeSpan.ZERO) {
+                        continue
+                    }
+                }
+                //println("${indent}->completed")
+                return if (nodes.isNotEmpty() || currentNode != null) (-1).seconds else TimeSpan.ZERO
             }
         }
 
@@ -290,6 +260,10 @@ open class NewAnimator(
             cancel()
         }
 
+        override fun toString(): String = "RootAnimationNode(${this@NewAnimator})"
+        fun isEmpty(): Boolean {
+            return currentNode == null && nodes.isEmpty()
+        }
     }
 
     class TweenNode(
@@ -300,20 +274,34 @@ open class NewAnimator(
         val easing: Easing,
         val name: String? = null
     ) : NewAnimatorNode {
-        val computedVs by lazy {
-            if (lazyVs != null) Array(lazyVs.size) { lazyVs[it]() } else vs
+        val computedVs by lazy { if (lazyVs != null) Array(lazyVs.size) { lazyVs[it]() } else vs }
+        private val totalTime: TimeSpan by lazy { lazyTime?.invoke() ?: time }
+
+        override fun toString(): String = "TweenNode(totalTime=$totalTime, name=$name, ${computedVs.toList()})"
+
+        private var currentTime: TimeSpan = 0.seconds
+        override fun reset() {
+            currentTime = 0.seconds
         }
 
-        override val totalTime: TimeSpan by lazy {
-            lazyTime?.invoke() ?: time
-        }
-
-        override fun toString(): String = "TweenNode(totalTime=$totalTime, name=$name)"
-
-        override fun update(time: TimeSpan) {
-            computedVs.fastForEach {
-                it.set(easing.invoke(if (totalTime == TimeSpan.ZERO) 1.0 else time / this.totalTime))
+        override fun update(dt: TimeSpan): TimeSpan {
+            if (currentTime == 0.seconds) {
+                computedVs.fastForEach {
+                    it.init()
+                }
             }
+            currentTime += dt
+            computedVs.fastForEach {
+                val ratio = when {
+                    totalTime == TimeSpan.ZERO -> 1.0
+                    else -> currentTime.seconds.convertRange(it.startTime.seconds, it.endTime(totalTime).seconds, 0.0, 1.0)
+                }
+
+                if (ratio >= 0.0) {
+                    it.set(easing.invoke(ratio.clamp01()))
+                }
+            }
+            return currentTime - totalTime
         }
 
         override fun complete() {
@@ -322,12 +310,15 @@ open class NewAnimator(
     }
 
     class BlockNode(val name: String? = null, val callback: () -> Unit) : NewAnimatorNode {
-        override fun toString(): String = "BaseAnimatorNode.Block(name=$name)"
+        override fun toString(): String = "BlockNode(name=$name)"
 
         var executed = false
-        override val totalTime: TimeSpan get() = 0.seconds
 
-        override fun update(time: TimeSpan) = complete()
+        override fun reset() = Unit
+        override fun update(dt: TimeSpan): TimeSpan {
+            complete()
+            return dt
+        }
         override fun complete() {
             if (executed) return
             executed = true
@@ -337,7 +328,72 @@ open class NewAnimator(
 }
 interface NewAnimatorNode {
     //fun reset()
-    val totalTime: TimeSpan
-    fun update(time: TimeSpan)
+    //val totalTime: TimeSpan
+    fun reset()
+    /** Sets this node to the specified [dt] (Delta Time), returns the exceeded time of completion, 0 if completed, less than zero if not completed. */
+    fun update(dt: TimeSpan): TimeSpan
     fun complete()
+}
+
+////////////////////////
+
+fun NewAnimator.tween(vararg vs: V2<*>, time: TimeSpan = this.defaultTime, easing: Easing = this.defaultEasing, name: String? = null): Unit = __tween(*vs, time = time, easing = easing, name = name)
+fun NewAnimator.tweenLazyTime(vararg vs: V2<*>, time: () -> TimeSpan = { this.defaultTime }, easing: Easing = this.defaultEasing, name: String? = null) = __tween(*vs, lazyTime = time, easing = easing, name = name)
+
+fun NewAnimator.tweenLazy(vararg vs: () -> V2<*>, time: TimeSpan = this.defaultTime, easing: Easing = this.defaultEasing, name: String? = null) = __tween(*vs, time = time, easing = easing, name = name)
+fun NewAnimator.tweenLazyLazyTime(vararg vs: () -> V2<*>, time: () -> TimeSpan = { this.defaultTime }, easing: Easing = this.defaultEasing, name: String? = null) = __tween(*vs, lazyTime = time, easing = easing, name = name)
+
+fun NewAnimator.wait(time: TimeSpan = this.defaultTime) = __tween(time = time, name = "wait")
+fun NewAnimator.waitLazy(time: () -> TimeSpan) = __tween(lazyTime = time, name = "wait")
+
+fun NewAnimator.block(name: String? = null, callback: () -> Unit) {
+    addNode(NewAnimator.BlockNode(name, callback))
+}
+
+////////////////////////
+
+fun NewAnimator.scaleBy(view: View, scaleX: Double, scaleY: Double = scaleX, time: TimeSpan = this.defaultTime, easing: Easing = this.defaultEasing) = __tween(view::scaleX.incr(scaleX), view::scaleY.incr(scaleY), time = time, easing = easing, name = "scaleBy")
+fun NewAnimator.rotateBy(view: View, rotation: Angle, time: TimeSpan = this.defaultTime, easing: Easing = this.defaultEasing) = __tween(view::rotation.incr(rotation), time = time, easing = easing, name = "rotateBy")
+fun NewAnimator.moveBy(view: View, x: Double = 0.0, y: Double = 0.0, time: TimeSpan = this.defaultTime, easing: Easing = this.defaultEasing) = __tween(view::x.incr(x), view::y.incr(y), time = time, easing = easing, name = "moveBy")
+fun NewAnimator.moveByWithSpeed(view: View, x: Double = 0.0, y: Double = 0.0, speed: Double = this.defaultSpeed, easing: Easing = this.defaultEasing) = __tween(view::x.incr(x), view::y.incr(y), lazyTime = { (hypot(x, y) / speed.toDouble()).seconds }, easing = easing, name = "moveByWithSpeed")
+
+fun NewAnimator.moveBy(view: View, x: Number = 0.0, y: Number = 0.0, time: TimeSpan = this.defaultTime, easing: Easing = this.defaultEasing) = moveBy(view, x.toDouble(), y.toDouble(), time, easing)
+fun NewAnimator.moveByWithSpeed(view: View, x: Number = 0.0, y: Number = 0.0, speed: Double = this.defaultSpeed, easing: Easing = this.defaultEasing) = moveByWithSpeed(view, x.toDouble(), y.toDouble(), speed, easing)
+
+fun NewAnimator.scaleTo(view: View, scaleX: () -> Number, scaleY: () -> Number = scaleX, time: TimeSpan = this.defaultTime, lazyTime: (() -> TimeSpan)? = null, easing: Easing = this.defaultEasing) = __tween({ view::scaleX[scaleX()] }, { view::scaleY[scaleY()] }, time = time, lazyTime = lazyTime, easing = easing, name = "scaleTo")
+fun NewAnimator.scaleTo(view: View, scaleX: Double, scaleY: Double = scaleX, time: TimeSpan = this.defaultTime, easing: Easing = this.defaultEasing) = __tween(view::scaleX[scaleX], view::scaleY[scaleY], time = time, easing = easing, name = "scaleTo")
+fun NewAnimator.scaleTo(view: View, scaleX: Float, scaleY: Float = scaleX, time: TimeSpan = this.defaultTime, easing: Easing = this.defaultEasing) = scaleTo(view, scaleX.toDouble(), scaleY.toDouble(), time, easing)
+fun NewAnimator.scaleTo(view: View, scaleX: Int, scaleY: Int = scaleX, time: TimeSpan = this.defaultTime, easing: Easing = this.defaultEasing) = scaleTo(view, scaleX.toDouble(), scaleY.toDouble(), time, easing)
+
+fun NewAnimator.moveTo(view: View, x: () -> Number = { view.x }, y: () -> Number = { view.y }, time: TimeSpan = this.defaultTime, lazyTime: (() -> TimeSpan)? = null, easing: Easing = this.defaultEasing) = __tween({ view::x[x()] }, { view::y[y()] }, time = time, lazyTime = lazyTime, easing = easing, name = "moveTo")
+fun NewAnimator.moveTo(view: View, x: Double, y: Double, time: TimeSpan = this.defaultTime, easing: Easing = this.defaultEasing) = __tween(view::x[x], view::y[y], time = time, easing = easing, name = "moveTo")
+fun NewAnimator.moveTo(view: View, x: Float, y: Float, time: TimeSpan = this.defaultTime, easing: Easing = this.defaultEasing) = moveTo(view, x.toDouble(), y.toDouble(), time, easing)
+fun NewAnimator.moveTo(view: View, x: Int, y: Int, time: TimeSpan = this.defaultTime, easing: Easing = this.defaultEasing) = moveTo(view, x.toDouble(), y.toDouble(), time, easing)
+
+fun NewAnimator.moveToWithSpeed(view: View, x: () -> Number = { view.x }, y: () -> Number = { view.y }, speed: () -> Number = { this.defaultSpeed }, easing: Easing = this.defaultEasing) = __tween({ view::x[x()] }, { view::y[y()] }, lazyTime = { (hypot(view.x - x().toDouble(), view.y - y().toDouble()) / speed().toDouble()).seconds }, easing = easing, name = "moveToWithSpeed")
+fun NewAnimator.moveToWithSpeed(view: View, x: Double, y: Double, speed: Double = this.defaultSpeed, easing: Easing = this.defaultEasing) = __tween(view::x[x], view::y[y], lazyTime = { (hypot(view.x - x, view.y - y) / speed.toDouble()).seconds }, easing = easing, name = "moveToWithSpeed")
+fun NewAnimator.moveToWithSpeed(view: View, x: Float, y: Float, speed: Number = this.defaultSpeed, easing: Easing = this.defaultEasing) = moveToWithSpeed(view, x.toDouble(), y.toDouble(), speed.toDouble(), easing)
+fun NewAnimator.moveToWithSpeed(view: View, x: Int, y: Int, speed: Number = this.defaultSpeed, easing: Easing = this.defaultEasing) = moveToWithSpeed(view, x.toDouble(), y.toDouble(), speed.toDouble(), easing)
+
+fun NewAnimator.moveInPath(view: View, path: VectorPath, includeLastPoint: Boolean = true, time: TimeSpan = this.defaultTime, lazyTime: (() -> TimeSpan)? = null, easing: Easing = this.defaultEasing) = __tween({ view::pos.get(path, includeLastPoint = includeLastPoint) }, time = time, lazyTime = lazyTime, easing = easing, name = "moveInPath")
+fun NewAnimator.moveInPath(view: View, points: IPointArrayList, time: TimeSpan = this.defaultTime, lazyTime: (() -> TimeSpan)? = null, easing: Easing = this.defaultEasing) = __tween({ view::pos[points] }, time = time, lazyTime = lazyTime, easing = easing, name = "moveInPath")
+
+fun NewAnimator.moveInPathWithSpeed(view: View, path: VectorPath, includeLastPoint: Boolean = true, speed: () -> Number = { this.defaultSpeed }, easing: Easing = this.defaultEasing) = __tween({ view::pos.get(path, includeLastPoint = includeLastPoint) }, lazyTime = { (path.length / speed().toDouble()).seconds }, easing = easing, name = "moveInPathWithSpeed")
+fun NewAnimator.moveInPathWithSpeed(view: View, points: IPointArrayList, speed: () -> Number = { this.defaultSpeed }, easing: Easing = this.defaultEasing) = __tween({ view::pos[points] }, lazyTime = { (points.length / speed().toDouble()).seconds }, easing = easing, name = "moveInPathWithSpeed")
+
+fun NewAnimator.alpha(view: View, alpha: Double, time: TimeSpan = this.defaultTime, easing: Easing = this.defaultEasing) = __tween(view::alpha[alpha], time = time, easing = easing, name = "alpha")
+fun NewAnimator.alpha(view: View, alpha: Float, time: TimeSpan = this.defaultTime, easing: Easing = this.defaultEasing) = alpha(view, alpha.toDouble(), time, easing)
+fun NewAnimator.alpha(view: View, alpha: Int, time: TimeSpan = this.defaultTime, easing: Easing = this.defaultEasing) = alpha(view, alpha.toDouble(), time, easing)
+
+fun NewAnimator.rotateTo(view: View, angle: Angle, time: TimeSpan = this.defaultTime, easing: Easing = this.defaultEasing) = __tween(view::rotation[angle], time = time, easing = easing, name = "rotateTo")
+fun NewAnimator.rotateTo(view: View, rotation: () -> Angle, time: TimeSpan = this.defaultTime, lazyTime: (() -> TimeSpan)? = null, easing: Easing = this.defaultEasing) = __tween({ view::rotation[rotation()] }, time = time, lazyTime = lazyTime, easing = easing, name = "rotateTo")
+
+fun NewAnimator.show(view: View, time: TimeSpan = this.defaultTime, easing: Easing = this.defaultEasing) = alpha(view, 1.0, time, easing)
+fun NewAnimator.hide(view: View, time: TimeSpan = this.defaultTime, easing: Easing = this.defaultEasing) = alpha(view, 0.0, time, easing)
+
+private val VectorPath.length: Double get() = getCurves().length
+private val IPointArrayList.length: Double get() {
+    var sum = 0.0
+    for (n in 1 until size) sum += Point.distance(getX(n - 1), getY(n - 1), getX(n), getY(n))
+    return sum
 }

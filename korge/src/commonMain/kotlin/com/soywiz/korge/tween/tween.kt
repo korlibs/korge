@@ -95,6 +95,11 @@ class TweenComponent(
 	}
 
 	fun setTo(elapsed: TimeSpan) {
+        if (elapsed == 0.milliseconds) {
+            vs.fastForEach { v ->
+                v.init()
+            }
+        }
 		vs.fastForEach { v ->
 			val durationInTween = v.duration.coalesce { (hrtime - v.startTime) }
 			val elapsedInTween = (elapsed - v.startTime).clamp(0.0.milliseconds, durationInTween)

@@ -1,7 +1,7 @@
 package samples
 
 import com.soywiz.klock.seconds
-import com.soywiz.korge.animate.animateParallel
+import com.soywiz.korge.animate.*
 import com.soywiz.korge.scene.ScaledScene
 import com.soywiz.korge.tween.get
 import com.soywiz.korge.view.SContainer
@@ -68,7 +68,9 @@ class MainFilters : ScaledScene(768, 512) {
             filter = swizzle
         }
 
-        animateParallel {
+        newAnimate(parallel = true) {
+            autoInvalidateView = true
+        //animateParallel {
             sequence(looped = true) {
                 tween(wave::time[1.seconds], time = 1.seconds, easing = Easing.EASE_IN_OUT)
                 tween(wave::time[0.seconds], time = 1.seconds, easing = Easing.EASE_IN_OUT)
