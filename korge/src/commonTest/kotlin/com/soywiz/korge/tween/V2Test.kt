@@ -15,21 +15,31 @@ class V2Test {
         val instance = MyClass(v = 10.0)
         val v2 = instance::v[20.0]
         v2.init()
-        v2.set(0.0)
-        assertEquals(10.0, instance.v)
-        v2.set(0.5)
-        assertEquals(15.0, instance.v)
-        v2.set(1.0)
-        assertEquals(20.0, instance.v)
+        v2.set(0.0); assertEquals(10.0, instance.v)
+        v2.set(0.5); assertEquals(15.0, instance.v)
+        v2.set(1.0); assertEquals(20.0, instance.v)
         instance.v = 30.0
         v2.init()
-        v2.set(0.0)
-        assertEquals(30.0, instance.v)
-        v2.set(0.5)
-        assertEquals(25.0, instance.v)
-        v2.set(1.0)
-        assertEquals(20.0, instance.v)
+        v2.set(0.0); assertEquals(30.0, instance.v)
+        v2.set(0.5); assertEquals(25.0, instance.v)
+        v2.set(1.0); assertEquals(20.0, instance.v)
     }
+
+    @Test
+    fun testReusingIncrementalV2() {
+        val instance = MyClass(v = 10.0)
+        val v2 = instance::v.incr(10.0)
+        v2.init()
+        v2.set(0.0); assertEquals(10.0, instance.v)
+        v2.set(0.5); assertEquals(15.0, instance.v)
+        v2.set(1.0); assertEquals(20.0, instance.v)
+        instance.v = 30.0
+        v2.init()
+        v2.set(0.0); assertEquals(30.0, instance.v)
+        v2.set(0.5); assertEquals(35.0, instance.v)
+        v2.set(1.0); assertEquals(40.0, instance.v)
+    }
+
 
     @Test
     fun test() {

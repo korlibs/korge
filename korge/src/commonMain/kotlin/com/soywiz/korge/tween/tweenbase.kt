@@ -29,7 +29,8 @@ data class V2<V>(
     val interpolator: (Double, V, V) -> V,
     val includeStart: Boolean,
     val startTime: TimeSpan = 0.nanoseconds,
-    val duration: TimeSpan = TimeSpan.NIL
+    val duration: TimeSpan = TimeSpan.NIL,
+    private val initialization: (() -> Unit)? = null,
 ) {
     val endTime = startTime + duration.coalesce { 0.nanoseconds }
 
@@ -41,6 +42,7 @@ data class V2<V>(
             initial = key.get()
             //includeStart = true
         }
+        initialization?.invoke()
     }
 
     //private fun ensureInit() {
@@ -62,8 +64,8 @@ private object V2CallbackSupport {
     var dummy: Unit = Unit
 }
 
-fun V2Callback(callback: (Double) -> Unit): V2<Unit> = V2(V2CallbackSupport::dummy, Unit, Unit, { ratio, _, _ -> callback(ratio) }, true)
-fun <T> V2CallbackT(callback: (Double) -> Unit): V2<T> = V2Callback { callback(it) } as V2<T>
+fun V2Callback(init: () -> Unit = {}, callback: (Double) -> Unit): V2<Unit> = V2(V2CallbackSupport::dummy, Unit, Unit, { ratio, _, _ -> callback(ratio) }, true, initialization = init)
+fun <T> V2CallbackT(init: () -> Unit = {}, callback: (Double) -> Unit): V2<T> = V2Callback(init) { callback(it) } as V2<T>
 
 fun <T> V2Lazy(callback: () -> V2<T>): V2<T> {
     var value: V2<T>? = null
@@ -75,13 +77,9 @@ fun <T> V2Lazy(callback: () -> V2<T>): V2<T> {
 
 private inline fun <T : Any> KMutableProperty0<T>._incr(crossinline interpolate: (Double, T) -> T): V2<Unit> {
     lateinit var start: T
-    var set = false
-    return V2Callback {
-        if (!set) {
-            set = true
-            start = this.get()
-        }
-
+    return V2Callback({
+        start = this.get()
+    }) {
         this.set(interpolate(it, start))
     }
 }
