@@ -8,6 +8,29 @@ import kotlin.test.assertEquals
 class V2Test {
     var x: Double = 50.0
 
+    class MyClass(var v: Double)
+
+    @Test
+    fun testReusingV2WithoutInitial() {
+        val instance = MyClass(v = 10.0)
+        val v2 = instance::v[20.0]
+        v2.init()
+        v2.set(0.0)
+        assertEquals(10.0, instance.v)
+        v2.set(0.5)
+        assertEquals(15.0, instance.v)
+        v2.set(1.0)
+        assertEquals(20.0, instance.v)
+        instance.v = 30.0
+        v2.init()
+        v2.set(0.0)
+        assertEquals(30.0, instance.v)
+        v2.set(0.5)
+        assertEquals(25.0, instance.v)
+        v2.set(1.0)
+        assertEquals(20.0, instance.v)
+    }
+
     @Test
     fun test() {
         val out = arrayListOf<String>()
