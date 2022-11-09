@@ -132,7 +132,6 @@ object QOI : ImageFormat("qoi") {
                    Requires a pre-allocated array of at least $maxSize bytes.
                    You provided a pre-allocated array with ${props.preAllocatedArrayForQOI!!.size} bytes.
                 """.trimIndent()
-                ""
             }
             props.preAllocatedArrayForQOI!!
         }
@@ -235,7 +234,7 @@ object QOI : ImageFormat("qoi") {
     }
 
     /**
-     * Calculates the maximum encoding size (# bytes) of a bitmap when using QOI.
+     * Calculates the maximum encoding size (# bytes) of image with width and height when using QOI.
      */
     fun calculateMaxSize(width: Int, height: Int): Int {
         return QOI_HEADER_SIZE + (width * height * (4 + 1)) + QOI_PADDING_SIZE
