@@ -23,10 +23,29 @@ inline fun Container.ninePatch(
 
 class NinePatchEx(
 	ninePatch: NinePatchBmpSlice?,
-	override var width: Double = ninePatch?.width?.toDouble() ?: 16.0,
-	override var height: Double = ninePatch?.height?.toDouble() ?: 16.0
+	width: Double = ninePatch?.width?.toDouble() ?: 16.0,
+	height: Double = ninePatch?.height?.toDouble() ?: 16.0
 ) : View(), ViewFileRef by ViewFileRef.Mixin() {
+
+    override var width: Double = width
+        set(value) {
+            if (field == value) return
+            field = value
+            invalidateRender()
+        }
+    override var height: Double = height
+        set(value) {
+            if (field == value) return
+            field = value
+            invalidateRender()
+        }
+
     var ninePatch: NinePatchBmpSlice? = ninePatch
+        set(value) {
+            if (field === value) return
+            field = value
+            invalidateRender()
+        }
 	var smoothing = true
 
 	private val bounds = RectangleInt()

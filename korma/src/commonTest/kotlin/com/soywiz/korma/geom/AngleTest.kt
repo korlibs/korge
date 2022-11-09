@@ -140,4 +140,22 @@ class AngleTest {
     private fun assertEquals(l: Double, r: Double, epsilon: Double = 0.00001) {
         assertTrue(abs(l - r) < epsilon, message = "$l != $r :: delta=$epsilon")
     }
+
+    @Test
+    fun testInterpolate() {
+        //        0 360 -360
+        //  -90 /+--+\
+        // 270 |     | 90 -270
+        //      \+--+/
+        //        180
+        //        -180
+
+        assertEquals(202.5.degrees, 0.25.interpolateAngleNormalized(180.degrees, (-90).degrees))
+        assertEquals(0.degrees, 0.5.interpolateAngleNormalized(350.degrees, (10).degrees))
+        assertEquals(0.degrees, 0.5.interpolateAngleNormalized(10.degrees, (350).degrees))
+
+        assertEquals(112.5.degrees, 0.25.interpolateAngleDenormalized(180.degrees, (-90).degrees))
+        assertEquals(180.degrees, 0.5.interpolateAngleDenormalized(350.degrees, (10).degrees))
+        assertEquals(180.degrees, 0.5.interpolateAngleDenormalized(10.degrees, (350).degrees))
+    }
 }

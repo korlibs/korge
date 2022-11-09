@@ -1,15 +1,15 @@
-import com.soywiz.korlibs.modules.*
-import com.soywiz.korge.gradle.util.*
+
 import com.soywiz.korge.gradle.targets.*
-import com.soywiz.korge.gradle.targets.android.AndroidSdk
-import com.soywiz.korge.gradle.targets.ios.configureNativeIos
-import com.soywiz.korge.gradle.targets.jvm.JvmAddOpens
-import org.gradle.kotlin.dsl.kotlin
-import java.io.File
-import java.nio.file.Files
-import org.jetbrains.kotlin.gradle.tasks.KotlinNativeLink
-import org.gradle.configurationcache.extensions.capitalized
-import java.net.URLClassLoader
+import com.soywiz.korge.gradle.targets.android.*
+import com.soywiz.korge.gradle.targets.ios.*
+import com.soywiz.korge.gradle.targets.jvm.*
+import com.soywiz.korge.gradle.targets.native.*
+import com.soywiz.korge.gradle.util.*
+import com.soywiz.korlibs.modules.*
+import com.soywiz.korlibs.modules.KorgeJavaExec
+import org.jetbrains.kotlin.gradle.tasks.*
+import java.net.*
+import java.nio.file.*
 
 buildscript {
     val kotlinVersion: String = libs.versions.kotlin.get()
@@ -42,8 +42,9 @@ buildscript {
 plugins {
 	java
     kotlin("multiplatform")
-    id("org.jetbrains.kotlinx.kover") version "0.5.0" apply false
-    id("org.jetbrains.dokka") version "1.6.10" apply false
+    //id("org.jetbrains.kotlinx.kover") version "0.6.1" apply false
+    id("org.jetbrains.kotlinx.kover") version "0.6.1" apply true
+    id("org.jetbrains.dokka") version "1.7.10" apply true
     signing
     `maven-publish`
 }
@@ -121,6 +122,10 @@ rootProject.plugins.withType<org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJ
     rootProject.the<org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension>().nodeVersion = nodeVersion
 }
 
+koverMerged {
+    enable()
+}
+
 subprojects {
     val doConfigure = mustAutoconfigureKMM()
 
@@ -132,6 +137,11 @@ subprojects {
 
         // AppData\Local\Android\Sdk\tools\bin>sdkmanager --licenses
         apply(plugin = "kotlin-multiplatform")
+
+        //extensions.getByType(kotlinx.kover.api.KoverProjectConfig::class.java).apply {
+        //    engine.set(IntellijEngine("1.0.683"))
+        //}
+        //kover { engine.set(IntellijEngine("1.0.683")) }
 
         if (hasAndroid) {
             if (isSample) {
@@ -152,19 +162,28 @@ subprojects {
         if (!isSample && rootProject.plugins.hasPlugin("org.jetbrains.dokka")) {
             apply(plugin = "org.jetbrains.dokka")
 
+            tasks.dokkaHtml.configure {
+                offlineMode.set(true)
+            }
+
+            //dokkaHtml {
+            //    // Used to prevent resolving package-lists online. When this option is set to true, only local files are resolved
+            //    offlineMode.set(true)
+            //}
+
             tasks {
-                val dokkaCopy by creating(Task::class) {
-                    dependsOn("dokkaHtml")
-                    doLast {
-                        val ffrom = File(project.buildDir, "dokka/html")
-                        val finto = File(project.rootProject.projectDir, "build/dokka-all/${project.name}")
-                        copy {
-                            from(ffrom)
-                            into(finto)
-                        }
-                        File(finto, "index.html").writeText("<meta http-equiv=\"refresh\" content=\"0; url=${project.name}\">\n")
-                    }
-                }
+                //val dokkaCopy by creating(Task::class) {
+                //    dependsOn("dokkaHtml")
+                //    doLast {
+                //        val ffrom = File(project.buildDir, "dokka/html")
+                //        val finto = File(project.rootProject.projectDir, "build/dokka-all/${project.name}")
+                //        copy {
+                //            from(ffrom)
+                //            into(finto)
+                //        }
+                //        File(finto, "index-redirect.html").writeText("<meta http-equiv=\"refresh\" content=\"0; url=${project.name}\">\n")
+                //    }
+                //}
             }
         }
 
@@ -378,6 +397,7 @@ subprojects {
                         }
                     }
 
+                    /*
                     for (baseName in listOf(
                         "nativeInteropMain",
                         "posixInteropMain",
@@ -410,6 +430,7 @@ subprojects {
                             }
                         }
                     }
+                    */
 
                     // Copy test resources
                     afterEvaluate {
@@ -465,6 +486,10 @@ subprojects {
             }
         }
     }
+}
+
+subprojects {
+    apply(plugin = "kover")
 }
 
 fun Project.samples(block: Project.() -> Unit) {
@@ -646,21 +671,28 @@ samples {
                 KorgeReloadNotifier.afterBuild(timeBeforeCompilationFile, httpPort)
             }
         }
-        val runJvmAutoreload by creating(KorgeJavaExec::class) {
-            dependsOn(":korge-reload-agent:jar", "compileKotlinJvm")
-            group = "run"
-            mainClass.set("MainKt")
-            afterEvaluate {
-                val agentJarTask: Jar = project(":korge-reload-agent").tasks.findByName("jar") as Jar
-                val outputJar = agentJarTask.outputs.files.files.first()
-                //println("agentJarTask=$outputJar")
-                val compileKotlinJvm = tasks.findByName("compileKotlinJvm") as org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-                val args = compileKotlinJvm.outputs.files.toList().joinToString(":::") { it.absolutePath }
-                //val gradlewCommand = if (isWindows) "gradlew.bat" else "gradlew"
-                //val continuousCommand = "${rootProject.rootDir}/$gradlewCommand --no-daemon --warn --project-dir=${rootProject.rootDir} --configuration-cache -t ${project.path}:compileKotlinJvmAndNotify"
-                val continuousCommand = "-classpath ${rootProject.rootDir}/gradle/wrapper/gradle-wrapper.jar org.gradle.wrapper.GradleWrapperMain --no-daemon --warn --project-dir=${rootProject.rootDir} --configuration-cache -t ${project.path}:compileKotlinJvmAndNotify"
-                jvmArgs("-javaagent:$outputJar=$httpPort:::$continuousCommand:::$args")
-                environment("KORGE_AUTORELOAD", "true")
+        for (enableRedefinition in listOf(false, true)) {
+            val taskName = when (enableRedefinition) {
+                false -> "runJvmAutoreload"
+                true -> "runJvmAutoreloadWithRedefinition"
+            }
+            create(taskName, KorgeJavaExec::class) {
+                dependsOn(":korge-reload-agent:jar", "compileKotlinJvm")
+                group = "run"
+                mainClass.set("MainKt")
+                afterEvaluate {
+                    val agentJarTask: Jar = project(":korge-reload-agent").tasks.findByName("jar") as Jar
+                    val outputJar = agentJarTask.outputs.files.files.first()
+                    //println("agentJarTask=$outputJar")
+                    val compileKotlinJvm = tasks.findByName("compileKotlinJvm") as org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+                    val args = compileKotlinJvm.outputs.files.toList().joinToString(":::") { it.absolutePath }
+                    //val gradlewCommand = if (isWindows) "gradlew.bat" else "gradlew"
+                    //val continuousCommand = "${rootProject.rootDir}/$gradlewCommand --no-daemon --warn --project-dir=${rootProject.rootDir} --configuration-cache -t ${project.path}:compileKotlinJvmAndNotify"
+                    val continuousCommand =
+                        "-classpath ${rootProject.rootDir}/gradle/wrapper/gradle-wrapper.jar org.gradle.wrapper.GradleWrapperMain --no-daemon --warn --project-dir=${rootProject.rootDir} --configuration-cache -t ${project.path}:compileKotlinJvmAndNotify"
+                    jvmArgs("-javaagent:$outputJar=$httpPort:::$continuousCommand:::$enableRedefinition:::$args")
+                    environment("KORGE_AUTORELOAD", "true")
+                }
             }
         }
 
@@ -1135,75 +1167,6 @@ allprojects {
 
 val currentJavaVersion = com.soywiz.korlibs.currentJavaVersion()
 
-enum class CrossExecType(val cname: String, val interp: String) {
-    WINDOWS("mingw", "wine"),
-    LINUX("linux", "lima");
-
-    val valid: Boolean get() = when (this) {
-        WINDOWS -> !isWindows
-        LINUX -> !com.soywiz.korge.gradle.targets.isLinux
-    }
-
-    val interpCapital = interp.capitalized()
-    val nameWithArch = "${cname}X64"
-    val nameWithArchCapital = nameWithArch.capitalized()
-
-    fun commands(vararg args: String): Array<String> {
-        return ArrayList<String>().apply {
-            when (this@CrossExecType) {
-                WINDOWS -> {
-                    if (isArm && !isMacos) add("box64") // wine on macos can run x64 apps via rosetta, but linux needs box64 emulator
-                    add("wine64")
-                }
-                LINUX -> {
-                    // @TODO: WSL
-                    if (isWindows) add("wsl") else add("lima")
-                    if (isArm) add("box64")
-                }
-            }
-            addAll(args)
-        }.toTypedArray()
-    }
-
-    companion object {
-        val VALID_LIST: List<CrossExecType> = values().filter { it.valid }
-    }
-}
-
-open class KotlinNativeCrossTest : org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeTest() {
-    @Input
-    @Option(option = "type", description = "Sets the executable cross type")
-    lateinit var type: CrossExecType
-
-    @Internal
-    var debugMode = false
-
-    @get:Internal
-    override val testCommand: TestCommand = object : TestCommand() {
-        val commands get() = type.commands()
-
-        override val executable: String
-            get() = commands.first()
-
-        override fun cliArgs(
-            testLogger: String?,
-            checkExitCode: Boolean,
-            testGradleFilter: Set<String>,
-            testNegativeGradleFilter: Set<String>,
-            userArgs: List<String>
-        ): List<String> =
-            listOfNotNull(
-                *commands.drop(1).toTypedArray(),
-                this@KotlinNativeCrossTest.executable.absolutePath,
-            ) +
-                testArgs(testLogger, checkExitCode, testGradleFilter, testNegativeGradleFilter, userArgs)
-    }
-}
-
-fun Exec.commandLineCross(vararg args: String, type: CrossExecType) {
-    commandLine(*type.commands(*args))
-}
-
 subprojects {
     afterEvaluate {
         tasks {
@@ -1316,7 +1279,7 @@ subprojects {
                 for (type in CrossExecType.VALID_LIST) {
                     val linkDebugTest = project.tasks.findByName("linkDebugTest${type.nameWithArchCapital}") as? KotlinNativeLink?
                     if (linkDebugTest != null) {
-                        tasks.create("${type.nameWithArch}Test${type.interpCapital}", KotlinNativeCrossTest::class.java, Action {
+                        tasks.create("${type.nameWithArch}Test${type.interpCapital}", com.soywiz.korge.gradle.targets.native.KotlinNativeCrossTest::class.java, Action {
                             val link = linkDebugTest
                             val testResultsDir = project.buildDir.resolve(TestingBasePlugin.TEST_RESULTS_DIR_NAME)
                             val testReportsDir = project.extensions.getByType(ReportingExtension::class.java).baseDir.resolve(TestingBasePlugin.TESTS_DIR_NAME)

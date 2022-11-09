@@ -1,8 +1,8 @@
 [versions]
-jna = "5.11.0"
+jna = "5.12.1"
 jcodec = "0.2.5"
 proguard-gradle = "7.2.2"
-kotlin = "1.7.20-Beta"
+kotlin = "1.7.20"
 kotlinx-coroutines = "1.6.4"
 kotlinx-serialization = "1.4.0"
 kotlinx-atomicfu = "0.18.3"

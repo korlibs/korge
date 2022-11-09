@@ -1,8 +1,6 @@
 package com.soywiz.korim.tiles.tiled
 
-import com.soywiz.kds.FastArrayList
-import com.soywiz.kds.IntMap
-import com.soywiz.kds.associateByInt
+import com.soywiz.kds.*
 import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.klogger.Logger
 import com.soywiz.korim.bitmap.Bitmap32
@@ -417,15 +415,15 @@ class TiledMap constructor(
         abstract fun clone(): Layer
 
         class Tiles(
-            var map: Bitmap32 = Bitmap32(0, 0, premultiplied = true),
+            var map: IStackedIntArray2 = StackedIntArray2(0, 0),
             var encoding: Encoding = Encoding.XML,
             var compression: Compression = Compression.NO
         ) : Layer() {
             val width: Int get() = map.width
             val height: Int get() = map.height
             val area: Int get() = width * height
-            operator fun set(x: Int, y: Int, value: Int) { map.setInt(x, y, value) }
-            operator fun get(x: Int, y: Int): Int = map.getInt(x, y)
+            operator fun set(x: Int, y: Int, value: Int) { map.setFirst(x, y, value) }
+            operator fun get(x: Int, y: Int): Int = map.getFirst(x, y)
             override fun clone(): Tiles = Tiles(map.clone(), encoding, compression).also { it.copyFrom(this) }
         }
 

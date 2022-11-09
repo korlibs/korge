@@ -170,6 +170,11 @@ class RenderContext constructor(
     val views: Views? = bp as? Views?
 
     var debugAnnotateView: View? = null
+        set(value) {
+            views?.invalidatedView(field)
+            field = value
+            views?.invalidatedView(field)
+        }
     var debugExtraFontScale : Double = 1.0
     var debugExtraFontColor : RGBA = Colors.WHITE
 

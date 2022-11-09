@@ -46,7 +46,7 @@ class WoffFont(
             val metaOrigLength = s.readS32BE() // Uncompressed size of metadata block.
             val privOffset = s.readS32BE() // Offset to private data block, from beginning of WOFF file.
             val privLength = s.readS32BE() // Length of private data block.
-            println("numTables=$numTables")
+            //println("numTables=$numTables")
             val tablesByName = linkedHashMapOf<String, Table>()
             repeat(numTables) {
                 val tag = s.readStringz(4, LATIN1) // 4-byte sfnt table identifier.

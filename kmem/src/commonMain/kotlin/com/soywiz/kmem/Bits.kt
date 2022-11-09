@@ -194,6 +194,7 @@ public fun Int.insertScaledFF(value: Int, offset: Int, count: Int): Int = if (co
 public infix fun Int.hasFlags(bits: Int): Boolean = (this and bits) == bits
 public infix fun Int.hasBits(bits: Int): Boolean = (this and bits) == bits
 
+/** Check if a specific bit at [index] is set */
 public infix fun Int.hasBitSet(index: Int): Boolean = ((this ushr index) and 1) != 0
 
 public infix fun Long.hasFlags(bits: Long): Boolean = (this and bits) == bits

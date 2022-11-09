@@ -1,34 +1,14 @@
 package com.soywiz.korio.vfs
 
-import com.soywiz.klock.milliseconds
-import com.soywiz.klock.seconds
-import com.soywiz.korio.async.delay
-import com.soywiz.korio.async.launchImmediately
-import com.soywiz.korio.async.suspendTest
-import com.soywiz.korio.file.PathInfo
-import com.soywiz.korio.file.Vfs
-import com.soywiz.korio.file.VfsFile
-import com.soywiz.korio.file.VfsStat
-import com.soywiz.korio.file.baseName
-import com.soywiz.korio.file.fullName
-import com.soywiz.korio.file.fullPathWithExtension
-import com.soywiz.korio.file.std.JailVfs
-import com.soywiz.korio.file.std.LogVfs
-import com.soywiz.korio.file.std.MemoryVfs
-import com.soywiz.korio.file.std.MemoryVfsMix
-import com.soywiz.korio.file.std.UrlVfs
-import com.soywiz.korio.file.std.localCurrentDirVfs
-import com.soywiz.korio.file.toFile
-import com.soywiz.korio.file.withOnce
-import com.soywiz.korio.lang.UTF8
-import com.soywiz.korio.lang.portableSimpleName
-import com.soywiz.korio.lang.toString
-import com.soywiz.korio.util.OS
-import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.toList
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import com.soywiz.klock.*
+import com.soywiz.korio.async.*
+import com.soywiz.korio.file.*
+import com.soywiz.korio.file.std.*
+import com.soywiz.korio.lang.*
+import com.soywiz.korio.util.*
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.*
+import kotlin.test.*
 
 class VfsFileTest {
     @Test
@@ -224,5 +204,26 @@ class VfsFileTest {
         assertEquals("test", mem["world.txt"].readString())
         assertEquals("test", mem["world.txt"].readString())
         assertEquals("NodeVfs[/hello]", log.joinToString("\n"))
+    }
+
+    @Test
+    fun testDeleteRecursively() = suspendTest {
+        val vfs = MemoryVfs().root
+        val folder = vfs["test/demo/lol"].also { it.mkdirs() }
+        val folder2 = vfs["test/demo2/lol2"].also { it.mkdirs() }
+        folder["test.txt"].writeString("hello")
+        folder2["demo.txt"].writeString("demo")
+
+        suspend fun list() = vfs.listRecursive().toList().map { it.path }.sorted()
+
+        assertEquals(
+            "/test, /test/demo, /test/demo/lol, /test/demo/lol/test.txt, /test/demo2, /test/demo2/lol2, /test/demo2/lol2/demo.txt",
+            list().joinToString(", ")
+        )
+        vfs["test/demo"].deleteRecursively()
+        assertEquals(
+            "/test, /test/demo2, /test/demo2/lol2, /test/demo2/lol2/demo.txt",
+            list().joinToString(", ")
+        )
     }
 }

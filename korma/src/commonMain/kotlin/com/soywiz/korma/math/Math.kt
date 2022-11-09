@@ -1,12 +1,6 @@
 package com.soywiz.korma.math
 
-import kotlin.math.abs
-import kotlin.math.absoluteValue
-import kotlin.math.ln
-import kotlin.math.log
-import kotlin.math.max
-import kotlin.math.min
-import kotlin.math.pow
+import kotlin.math.*
 
 fun Double.betweenInclusive(min: Double, max: Double): Boolean = (this >= min) && (this <= max)
 
@@ -15,6 +9,12 @@ fun almostZero(a: Float) = abs(a) <= 0.0000001
 
 fun almostEquals(a: Double, b: Double) = almostZero(a - b)
 fun almostZero(a: Double) = abs(a) <= 0.0000001
+
+fun Float.roundDecimalPlaces(places: Int): Float {
+    if (places < 0) return this
+    val placesFactor: Float = 10f.pow(places.toFloat())
+    return round(this * placesFactor) / placesFactor
+}
 
 fun Double.roundDecimalPlaces(places: Int): Double {
     if (places < 0) return this

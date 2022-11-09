@@ -3,21 +3,24 @@ package com.soywiz.korge.render
 import com.soywiz.kds.FastArrayList
 
 // @TODO: Use HashSet if items.size increases
-internal class AgFastSet<T> {
+internal class AgFastSet<T> : AbstractMutableSet<T>() {
     val items = FastArrayList<T>()
+    override val size: Int get() = items.size
+    override fun iterator(): MutableIterator<T> = items.iterator()
 
-    fun add(item: T) {
-        if (item in items) return
-        items.add(item)
+    override fun add(element: T): Boolean {
+        if (element in items) return false
+        items.add(element)
+        return true
     }
 
-    fun remove(item: T) {
-        items.remove(item)
+    override fun remove(element: T): Boolean {
+        return items.remove(element)
     }
 
-    inline operator fun contains(item: T): Boolean = item in items
+    override operator fun contains(element: T): Boolean = element in items
 
-    fun clear() {
+    override fun clear() {
         items.clear()
     }
 

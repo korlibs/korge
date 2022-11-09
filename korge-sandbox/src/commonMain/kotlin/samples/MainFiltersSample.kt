@@ -59,6 +59,8 @@ class MainFiltersSample : Scene() {
             filter = swizzle
         }
 
+        //addUpdater { invalidate() }
+
         animateParallel {
             sequence(looped = true) {
                 tween(wave::time[1.seconds], time = 1.seconds, easing = Easing.EASE_IN_OUT)

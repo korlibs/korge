@@ -303,6 +303,7 @@ class TextEditController(
         caret.scaledWidth = endX - startX + (if (range.isEmpty()) 2.0 else 0.0)
         */
         caret.visible = focused
+        textView.invalidateRender()
     }
 
     fun moveToIndex(selection: Boolean, index: Int) {

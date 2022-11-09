@@ -16,6 +16,7 @@ class MainCustomSolidRectShader : Scene() {
         addUpdater {
             solidRect.programUniforms[timeUniform] = time.seconds.toFloat()
             time += it
+            invalidateRender()
         }
 
         solidRect.program = views.getDefaultProgram()

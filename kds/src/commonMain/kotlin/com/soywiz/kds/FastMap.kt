@@ -116,6 +116,8 @@ val <K, V> FastIdentityMap<K, V>.keys: List<K> get() = keys()
 val <K, V> FastIdentityMap<K, V>.values: List<V> get() = values()
 fun <K, V> FastIdentityMap<K, V>.getAndRemove(key: K): V? = get(key).also { remove(key) }
 
+fun <K, V> FastIdentityMap<K, V>.toMap(): Map<K, V> = keys.associateWith { this[it] as V }
+
 inline fun <K, V : Any?> FastIdentityMap<K, V>.fastValueForEachNullable(callback: (value: V?) -> Unit) {
     fastKeyForEach { callback(this[it]) }
 }

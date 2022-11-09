@@ -76,13 +76,13 @@ class MaxRects(
             }
         }
         if (usedNode.y < freeNode.bottom && usedNode.bottom > freeNode.y) {
-            // New node at the left side of the used node.
+            // New node on the left side of the used node.
             if (usedNode.x > freeNode.x && usedNode.x < freeNode.right) {
                 newNode = freeNode.clone()
                 newNode.width = usedNode.x - newNode.x
                 freeRectangles.add(newNode)
             }
-            // New node at the right side of the used node.
+            // New node on the right side of the used node.
             if (usedNode.right < freeNode.right) {
                 newNode = freeNode.clone()
                 newNode.x = usedNode.right

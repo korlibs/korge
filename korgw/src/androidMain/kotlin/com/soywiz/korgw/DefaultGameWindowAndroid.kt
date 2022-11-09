@@ -1,5 +1,6 @@
 package com.soywiz.korgw
 
+import android.app.Activity
 import android.content.*
 import android.view.*
 import android.view.inputmethod.*
@@ -7,7 +8,9 @@ import com.soywiz.korag.*
 import com.soywiz.korev.ISoftKeyboardConfig
 import com.soywiz.korev.SoftKeyboardConfig
 import com.soywiz.korim.bitmap.*
+import com.soywiz.korio.async.Signal
 import kotlin.coroutines.*
+import kotlin.properties.Delegates
 
 actual fun CreateDefaultGameWindow(config: GameWindowCreationConfig): GameWindow = TODO()
 
@@ -18,10 +21,23 @@ abstract class BaseAndroidGameWindow(
     abstract val androidView: View
     val context get() = androidContext
     var coroutineContext: CoroutineContext? = null
+    val Context?.activity: Activity? get() = when (this) {
+        is Activity -> this
+        is ContextWrapper -> this.baseContext.activity
+        else -> null
+    }
+    val _activity: Activity? get() = context.activity
 
     val inputMethodManager get() = androidContext.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
     override val dialogInterface = DialogInterfaceAndroid { androidContext }
     override var isSoftKeyboardVisible: Boolean = false
+
+    override var keepScreenOn: Boolean
+        set(value) {
+            val flags = WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
+            _activity?.window?.setFlags(if (value) -1 else 0, flags)
+        }
+        get() = ((_activity?.window?.attributes?.flags ?: 0) and WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON) != 0
 
     override fun showSoftKeyboard(force: Boolean, config: ISoftKeyboardConfig?) {
         isSoftKeyboardVisible = true

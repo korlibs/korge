@@ -1,10 +1,15 @@
 package com.soywiz.korge.gradle.targets.native
 
+import com.android.build.gradle.internal.crash.afterEvaluate
 import com.soywiz.korge.gradle.*
+import com.soywiz.korge.gradle.targets.CrossExecType
 import com.soywiz.korge.gradle.util.*
 import org.gradle.api.*
 import org.gradle.api.internal.project.*
+import org.gradle.api.reporting.ReportingExtension
+import org.gradle.api.tasks.Exec
 import org.gradle.kotlin.dsl.*
+import org.gradle.testing.base.plugins.TestingBasePlugin
 import org.jetbrains.kotlin.gradle.plugin.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import org.jetbrains.kotlin.gradle.targets.native.tasks.*

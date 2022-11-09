@@ -1,5 +1,6 @@
 package com.soywiz.korim.tiles.tiled
 
+import com.soywiz.kds.*
 import com.soywiz.kmem.toInt
 import com.soywiz.korim.tiles.tiled.TiledMap.Encoding
 import com.soywiz.korim.tiles.tiled.TiledMap.Image
@@ -192,7 +193,13 @@ private fun TileData.toXml(): Xml {
 	}
 }
 
-private class Chunk(val x: Int, val y: Int, val ids: IntArray)
+private fun IStackedIntArray2.toFinalChunks(): List<StackedIntArray2> {
+    return when (this) {
+        is SparseChunkedStackedIntArray2 -> this.findAllChunks().flatMap { it.toFinalChunks() }
+        is StackedIntArray2 -> listOf(this)
+        else -> emptyList()
+    }
+}
 
 private fun XmlBuilder.tileLayerToXml(
 	layer: Layer.Tiles,
@@ -216,18 +223,19 @@ private fun XmlBuilder.tileLayerToXml(
 		propertiesToXml(layer.properties)
 		node("data", "encoding" to layer.encoding.value, "compression" to layer.compression.value) {
 			if (infinite) {
-				val chunks = divideIntoChunks(layer.map.ints, chunkWidth, chunkHeight, layer.width)
+                val chunks = layer.map.toFinalChunks()
 				chunks.forEach { chunk ->
+                    val chunkIds = chunk.data.first().data
 					node(
 						"chunk",
-						"x" to chunk.x,
-						"y" to chunk.y,
+						"x" to chunk.startX,
+						"y" to chunk.startY,
 						"width" to chunkWidth,
 						"height" to chunkHeight
 					) {
 						when (layer.encoding) {
 							Encoding.XML -> {
-								chunk.ids.forEach { gid ->
+                                chunkIds.forEach { gid ->
 									node("tile", "gid" to gid.toUInt().takeIf { it != 0u })
 								}
 							}
@@ -236,7 +244,7 @@ private fun XmlBuilder.tileLayerToXml(
 									append("\n")
 									for (y in 0 until chunkHeight) {
 										for (x in 0 until chunkWidth) {
-											append(chunk.ids[x + y * chunkWidth].toUInt())
+											append(chunkIds[x + y * chunkWidth].toUInt())
 											if (y != chunkHeight - 1 || x != chunkWidth - 1) append(',')
 										}
 										append("\n")
@@ -252,7 +260,8 @@ private fun XmlBuilder.tileLayerToXml(
 			} else {
 				when (layer.encoding) {
 					Encoding.XML -> {
-						layer.map.ints.forEach { gid ->
+                        val tileIds = (layer.map as StackedIntArray2).data.first().data
+                        tileIds.forEach { gid ->
 							node("tile", "gid" to gid.toUInt().takeIf { it != 0u })
 						}
 					}
@@ -261,7 +270,7 @@ private fun XmlBuilder.tileLayerToXml(
 							append("\n")
 							for (y in 0 until layer.height) {
 								for (x in 0 until layer.width) {
-									append(layer.map[x, y].value.toUInt())
+									append(layer.map[x, y, 0].toUInt())
 									if (y != layer.height - 1 || x != layer.width - 1) append(',')
 								}
 								append("\n")
@@ -274,20 +283,6 @@ private fun XmlBuilder.tileLayerToXml(
 				}
 			}
 		}
-	}
-}
-
-private fun divideIntoChunks(array: IntArray, width: Int, height: Int, totalWidth: Int): Array<Chunk> {
-	val columns = totalWidth / width
-	val rows = array.size / columns
-	return Array(rows * columns) { i ->
-		val cx = i % rows
-		val cy = i / rows
-		Chunk(cx * width, cy * height, IntArray(width * height) { j ->
-			val tx = j % width
-			val ty = j / width
-			array[(cx * width + tx) + (cy * height + ty) * totalWidth]
-		})
 	}
 }
 

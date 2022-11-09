@@ -2,11 +2,11 @@ package com.soywiz.kds.sync
 
 import com.soywiz.kds.BaseMutableList
 import com.soywiz.kds.BaseSubMutableList
-import com.soywiz.kds.lock.Lock
+import com.soywiz.kds.lock.NonRecursiveLock
 
 open class SynchronizedList<T>(
     protected val base: MutableList<T>,
-    protected val lock: Lock = Lock()
+    protected val lock: NonRecursiveLock = NonRecursiveLock()
 ) : BaseMutableList<T> {
     override fun clear() = lock { base.clear() }
     override fun add(index: Int, element: T) { lock { base.add(index, element) } }

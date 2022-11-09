@@ -11,9 +11,38 @@ import com.soywiz.korio.util.OS
 import com.soywiz.korio.util.niceStr
 import kotlin.jvm.JvmOverloads
 
+interface TEvent<T : TEvent<T>> {
+    val type: EventType<T>
+}
+
+interface EventType<T: TEvent<T>>
+
+data class GestureEvent(
+    override var type: Type = Type.MAGNIFY,
+    var id: Int = 0,
+    var amountX: Double = 0.0,
+    var amountY: Double = 0.0,
+) : Event(), TEvent<GestureEvent> {
+    var amount: Double
+        get() = amountX
+        set(value) {
+            amountX = value
+            amountY = value
+        }
+
+    enum class Type : EventType<GestureEvent> { MAGNIFY, ROTATE, SWIPE, SMART_MAGNIFY }
+
+    fun copyFrom(other: GestureEvent) {
+        this.type = other.type
+        this.id = other.id
+        this.amountX = other.amountX
+        this.amountY = other.amountY
+    }
+}
+
 /** [x] and [y] positions are window-based where 0,0 is the top-left position in the window client area */
 data class MouseEvent(
-    var type: Type = Type.MOVE,
+    override var type: Type = Type.MOVE,
     var id: Int = 0,
     var x: Int = 0,
     var y: Int = 0,
@@ -31,11 +60,14 @@ data class MouseEvent(
     var isMetaDown: Boolean = false,
     var scaleCoords: Boolean = true,
     /** Not direct user mouse input. Maybe event generated from touch events? */
-    var emulated: Boolean = false
-) : Event() {
+    var emulated: Boolean = false,
+    var scrollDeltaMode: ScrollDeltaMode = ScrollDeltaMode.LINE
+) : Event(), TEvent<MouseEvent> {
+    //companion object : EventType<MouseEvent>
+
     var component: Any? = null
 
-	enum class Type { MOVE, DRAG, UP, DOWN, CLICK, ENTER, EXIT, SCROLL }
+	enum class Type : EventType<MouseEvent> { MOVE, DRAG, UP, DOWN, CLICK, ENTER, EXIT, SCROLL }
 
     val typeMove get() = type == Type.MOVE
     val typeDrag get() = type == Type.DRAG
@@ -65,7 +97,6 @@ data class MouseEvent(
         this.scrollDeltaMode = other.scrollDeltaMode
     }
 
-    var scrollDeltaMode: ScrollDeltaMode = ScrollDeltaMode.LINE
     enum class ScrollDeltaMode(val scale: Double) {
         PIXEL(1.0),
         LINE(10.0),
@@ -101,9 +132,9 @@ data class MouseEvent(
 }
 
 data class FocusEvent(
-    var type: Type = Type.FOCUS
-) {
-    enum class Type { FOCUS, BLUR }
+    override var type: Type = Type.FOCUS
+) : Event(), TEvent<FocusEvent> {
+    enum class Type : EventType<FocusEvent> { FOCUS, BLUR }
     val typeFocus get() = type == Type.FOCUS
     val typeBlur get() = type == Type.BLUR
 }
@@ -231,12 +262,14 @@ class TouchBuilder {
 }
 
 data class TouchEvent(
-    var type: Type = Type.START,
+    override var type: Type = Type.START,
     var screen: Int = 0,
     var currentTime: DateTime = DateTime.EPOCH,
     var scaleCoords: Boolean = true,
     var emulated: Boolean = false
-) : Event() {
+) : Event(), TEvent<TouchEvent> {
+    enum class Type : EventType<TouchEvent> { START, END, MOVE, HOVER, UNKNOWN }
+
     companion object {
         val MAX_TOUCHES = 10
     }
@@ -319,12 +352,10 @@ data class TouchEvent(
 
     val isStart get() = type == Type.START
     val isEnd get() = type == Type.END
-
-    enum class Type { START, END, MOVE, HOVER, UNKNOWN }
 }
 
 data class KeyEvent constructor(
-    var type: Type = Type.UP,
+    override var type: Type = Type.UP,
     var id: Int = 0,
     var key: Key = Key.UP,
     var keyCode: Int = 0,
@@ -335,7 +366,10 @@ data class KeyEvent constructor(
     var alt: Boolean = false,
     var meta: Boolean = false,
     var str: String? = null,
-) : Event() {
+) : Event(), TEvent<KeyEvent> {
+    //companion object : EventType<KeyEvent>
+    enum class Type : EventType<KeyEvent> { UP, DOWN, TYPE }
+
     var deltaTime = TimeSpan.ZERO
 
     val typeType get() = type == Type.TYPE
@@ -345,8 +379,6 @@ data class KeyEvent constructor(
     val ctrlOrMeta: Boolean get() = if (OS.isMac) meta else ctrl
 
     fun characters(): String = str ?: "$character"
-
-	enum class Type { UP, DOWN, TYPE }
 
     fun copyFrom(other: KeyEvent) {
         this.type = other.type
@@ -363,8 +395,12 @@ data class KeyEvent constructor(
     }
 }
 
-data class GamePadConnectionEvent(var type: Type = Type.CONNECTED, var gamepad: Int = 0) : Event() {
-	enum class Type { CONNECTED, DISCONNECTED }
+data class GamePadConnectionEvent(
+    override var type: Type = Type.CONNECTED,
+    var gamepad: Int = 0
+) : Event(), TEvent<GamePadConnectionEvent> {
+
+	enum class Type : EventType<GamePadConnectionEvent> { CONNECTED, DISCONNECTED }
 
     fun copyFrom(other: GamePadConnectionEvent) {
         this.type = other.type
@@ -376,7 +412,10 @@ data class GamePadConnectionEvent(var type: Type = Type.CONNECTED, var gamepad: 
 data class GamePadUpdateEvent @JvmOverloads constructor(
     var gamepadsLength: Int = 0,
     val gamepads: Array<GamepadInfo> = Array(8) { GamepadInfo(it) }
-) : Event() {
+) : Event(), TEvent<GamePadUpdateEvent> {
+    override val type: EventType<GamePadUpdateEvent> get() = GamePadUpdateEvent
+    companion object : EventType<GamePadUpdateEvent>
+
     fun copyFrom(that: GamePadUpdateEvent) {
         this.gamepadsLength = that.gamepadsLength
         for (n in 0 until gamepads.size) {
@@ -388,12 +427,14 @@ data class GamePadUpdateEvent @JvmOverloads constructor(
 }
 
 data class GamePadButtonEvent @JvmOverloads constructor(
-    var type: Type = Type.DOWN,
+    override var type: Type = Type.DOWN,
     var gamepad: Int = 0,
     var button: GameButton = GameButton.BUTTON0,
     var value: Double = 0.0
-) : Event() {
-	enum class Type { UP, DOWN }
+) : Event(), TEvent<GamePadButtonEvent> {
+    //companion object : EventType<GamePadButtonEvent>
+
+	enum class Type : EventType<GamePadButtonEvent> { UP, DOWN }
 
     fun copyFrom(other: GamePadButtonEvent) {
         this.type = other.type
@@ -409,7 +450,9 @@ data class GamePadStickEvent(
     var stick: GameStick = GameStick.LEFT,
     var x: Double = 0.0,
     var y: Double = 0.0
-) : Event() {
+) : TypedEvent<GamePadStickEvent>(GamePadStickEvent) {
+    companion object : EventType<GamePadStickEvent>
+
     fun copyFrom(other: GamePadStickEvent) {
         this.gamepad = other.gamepad
         this.stick = other.stick
@@ -418,14 +461,18 @@ data class GamePadStickEvent(
     }
 }
 
-data class ChangeEvent(var oldValue: Any? = null, var newValue: Any? = null) : Event() {
+data class ChangeEvent(var oldValue: Any? = null, var newValue: Any? = null) : TypedEvent<ChangeEvent>(ChangeEvent) {
+    companion object : EventType<ChangeEvent>
+
     fun copyFrom(other: ChangeEvent) {
         this.oldValue = other.oldValue
         this.newValue = other.newValue
     }
 }
 
-data class ReshapeEvent(var x: Int = 0, var y: Int = 0, var width: Int = 0, var height: Int = 0) : Event() {
+data class ReshapeEvent(var x: Int = 0, var y: Int = 0, var width: Int = 0, var height: Int = 0) : TypedEvent<ReshapeEvent>(ReshapeEvent) {
+    companion object : EventType<ReshapeEvent>
+
     fun copyFrom(other: ReshapeEvent) {
         this.x = other.x
         this.y = other.y
@@ -434,51 +481,70 @@ data class ReshapeEvent(var x: Int = 0, var y: Int = 0, var width: Int = 0, var 
     }
 }
 
-data class FullScreenEvent(var fullscreen: Boolean = false) : Event() {
+data class FullScreenEvent(var fullscreen: Boolean = false) : TypedEvent<FullScreenEvent>(FullScreenEvent) {
+    companion object : EventType<FullScreenEvent>
+
     fun copyFrom(other: FullScreenEvent) {
         this.fullscreen = other.fullscreen
     }
 }
 
-class RenderEvent() : Event() {
+class RenderEvent() : Event(), TEvent<RenderEvent> {
+    companion object : EventType<RenderEvent>
+    override val type: EventType<RenderEvent> get() = RenderEvent
+
     var update: Boolean = true
+    var render: Boolean = true
     fun copyFrom(other: RenderEvent) {
         this.update = other.update
+        this.render = other.render
     }
 }
 
-class InitEvent() : Event() {
+class InitEvent() : TypedEvent<InitEvent>(InitEvent) {
+    companion object : EventType<InitEvent>
+
     fun copyFrom(other: InitEvent) {
     }
 }
 
-class ResumeEvent() : Event() {
+class ResumeEvent() : TypedEvent<ResumeEvent>(ResumeEvent) {
+    companion object : EventType<ResumeEvent>
+
     fun copyFrom(other: ResumeEvent) {
     }
 }
 
-class PauseEvent() : Event() {
+class PauseEvent() : TypedEvent<PauseEvent>(PauseEvent) {
+    companion object : EventType<PauseEvent>
+
     fun copyFrom(other: PauseEvent) {
     }
 }
 
-class StopEvent() : Event() {
+class StopEvent() : TypedEvent<StopEvent>(StopEvent) {
+    companion object : EventType<StopEvent>
+
     fun copyFrom(other: StopEvent) {
     }
 }
 
-class DestroyEvent() : Event() {
+class DestroyEvent() : TypedEvent<DestroyEvent>(DestroyEvent) {
+    companion object : EventType<DestroyEvent>
+
     fun copyFrom(other: DestroyEvent) {
     }
 }
 
-class DisposeEvent() : Event() {
+class DisposeEvent() : TypedEvent<DisposeEvent>(DisposeEvent) {
+    companion object : EventType<DisposeEvent>
+
     fun copyFrom(other: DisposeEvent) {
     }
 }
 
-data class DropFileEvent(var type: Type = Type.START, var files: List<VfsFile>? = null) : Event() {
-	enum class Type { START, END, DROP }
+data class DropFileEvent(override var type: Type = Type.START, var files: List<VfsFile>? = null) : Event(), TEvent<DropFileEvent> {
+	enum class Type : EventType<DropFileEvent> { START, END, DROP }
 
     fun copyFrom(other: DropFileEvent) {
         this.type = other.type

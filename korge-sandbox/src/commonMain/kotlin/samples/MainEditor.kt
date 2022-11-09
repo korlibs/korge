@@ -12,6 +12,7 @@ class MainEditor : Scene() {
     override suspend fun SContainer.sceneMain() {
 
         val font2 = DefaultTtfFont.toBitmapFont(16.0, CharacterSet.LATIN_ALL + CharacterSet.CYRILLIC)
+        //val font2 = DefaultTtfFont
 
         for (n in 0 until 10) {
             text("HELLO АБВГДЕЖ HELLO АБВГДЕЖ HELLO АБВГДЕЖ HELLO АБВГДЕЖ", font = font2, renderer = DefaultStringTextRenderer).xy(100, 100 + n * 2)
@@ -27,6 +28,7 @@ class MainEditor : Scene() {
         //return@Korge
 
         val font = DefaultTtfFont.toBitmapFont(16.0)
+        //val font = DefaultTtfFont
         uiSkin = UISkin {
             this.textFont = font
         }
@@ -57,6 +59,12 @@ class MainEditor : Scene() {
         //deferred(deferred = false) {
         //deferred(deferred = true) {
         //container {
+        uiVerticalStack {
+            xy(400, 200)
+            val group = UIRadioButtonGroup()
+            uiRadioButton(group = group)
+            uiRadioButton(group = group)
+        }
         uiVerticalStack {
             xy(400, 200)
             val group = UIRadioButtonGroup()

@@ -204,6 +204,7 @@ open class PointArrayList(capacity: Int = 7) : IPointArrayList, Extra by Extra.M
     }
     fun setXY(index: Int, x: Int, y: Int) = setXY(index, x.toDouble(), y.toDouble())
     fun setXY(index: Int, x: Float, y: Float) = setXY(index, x.toDouble(), y.toDouble())
+    fun setXY(index: Int, p: IPoint) = setXY(index, p.x, p.y)
 
     fun transform(matrix: Matrix) {
         for (n in 0 until size) {

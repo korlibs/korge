@@ -212,7 +212,14 @@ abstract class View internal constructor(
     /** Parent [Container] of [this] View if any, or null */
     var parent: Container?
         get() = _parent
-        internal set(value) { _parent = value }
+        internal set(value) {
+            if (_parent !== value) {
+                _parent = value
+                onParentChanged()
+            }
+        }
+
+    override val baseParent: Container? get() = parent
 
     /** Optional name of this view */
     var name: String? = null
@@ -233,9 +240,9 @@ abstract class View internal constructor(
     protected var _y: Double = 0.0
     private var _scaleX: Double = 1.0
     private var _scaleY: Double = 1.0
-    private var _skewX: Angle = 0.0.radians
-    private var _skewY: Angle = 0.0.radians
-    private var _rotation: Angle = 0.0.radians
+    private var _skewX: Angle = Angle.ZERO
+    private var _skewY: Angle = Angle.ZERO
+    private var _rotation: Angle = Angle.ZERO
 
     private val _pos = Point()
 
@@ -512,6 +519,12 @@ abstract class View internal constructor(
 
     /** Determines if the view will be displayed or not. It is different to alpha=0, since the render method won't be executed. Usually giving better performance. But also not receiving events. */
     open var visible: Boolean = true
+        set(value) {
+            if (field != value) {
+                field = value
+                invalidate()
+            }
+        }
 
     /** Sets the local transform matrix that includes [x], [y], [scaleX], [scaleY], [rotation], [skewX] and [skewY] encoded into a [Matrix] */
     fun setMatrix(matrix: Matrix) {
@@ -652,7 +665,7 @@ abstract class View internal constructor(
             }
         }
 
-    private val _renderColorTransform = ColorTransform(1.0, 1.0, 1.0, 1.0, 0, 0, 0, 0)
+    private val _renderColorTransform: ColorTransform = ColorTransform(1.0, 1.0, 1.0, 1.0, 0, 0, 0, 0)
     private var _renderColorTransformVersion = -1
 
     private fun updateRenderColorTransform() {
@@ -758,12 +771,21 @@ abstract class View internal constructor(
         this._version++
         _requireInvalidate = false
         dirtyVertices = true
+        invalidateRender()
+    }
+
+    open fun onParentChanged() {
+    }
+
+    override fun invalidateRender() {
+        stage?.views?.invalidatedView(this)
     }
 
     open fun invalidateColorTransform() {
         this._versionColor++
         _requireInvalidateColor = false
         dirtyVertices = true
+        invalidateRender()
     }
 
     var debugAnnotate: Boolean = false
@@ -981,10 +1003,10 @@ abstract class View internal constructor(
     }
 
     /** Converts the local point [x], [y] into a X coordinate in window coordinates. */
-    fun localToWindowX(views: Views, x: Double, y: Double): Double = localToWindowXY(views, x, y, tempPoint).x
+    fun localToWindowX(views: Views, x: Double, y: Double): Double = Point.POOL { localToWindowXY(views, x, y, it).x }
 
     /** Converts the local point [x], [y] into a Y coordinate in window coordinates. */
-    fun localToWindowY(views: Views, x: Double, y: Double): Double = localToWindowXY(views, x, y, tempPoint).y
+    fun localToWindowY(views: Views, x: Double, y: Double): Double = Point.POOL { localToWindowXY(views, x, y, it).y }
 
     var hitTestEnabled = true
 
@@ -1028,14 +1050,16 @@ abstract class View internal constructor(
         if (!visible) return null
         if (_hitShape2d == null) {
             _children?.fastForEachReverse { child ->
-                if (child != view) {
+                if (child !== view) {
                     child.hitTestView(view, direction)?.let {
                         return it
                     }
                 }
             }
         }
-        val res = hitTestShapeInternal(view.hitShape2d, view.getGlobalMatrixWithAnchor(tempMatrix1), direction)
+        val res = Matrix.POOL.alloc { tempMatrix1 ->
+            hitTestShapeInternal(view.hitShape2d, view.getGlobalMatrixWithAnchor(tempMatrix1), direction)
+        }
         if (res != null) return res
         return if (this is Stage) this else null
     }
@@ -1055,15 +1079,10 @@ abstract class View internal constructor(
         return if (this is Stage) this else null
     }
 
-    private val tempMatrix1 = Matrix()
-    private val tempMatrix2 = Matrix()
-    private val tempMatrix = Matrix()
-    private val tempPoint = Point()
-
     open val customHitShape get() = false
-    open protected fun hitTestShapeInternal(shape: Shape2d, matrix: Matrix, direction: HitTestDirection): View? {
+    protected open fun hitTestShapeInternal(shape: Shape2d, matrix: Matrix, direction: HitTestDirection): View? {
         //println("View.hitTestShapeInternal: $this, $shape")
-        if (Shape2d.intersects(this.hitShape2d, getGlobalMatrixWithAnchor(tempMatrix2), shape, matrix, tempMatrix)) {
+        if (Matrix.POOL.alloc2 { tempMatrix2, tempMatrix -> Shape2d.intersects(this.hitShape2d, getGlobalMatrixWithAnchor(tempMatrix2), shape, matrix, tempMatrix) }) {
             //println(" -> true")
             return this
         }
@@ -1083,35 +1102,37 @@ abstract class View internal constructor(
             }
         }
         if (!mouseEnabled) return null
-        hitTestInternal(x, y)?.let {
+        hitTestInternal(x, y)?.let { view ->
 
             // @TODO: This should not be required if we compute bounds
-            val area = getClippingAreaInternal()
-            if (area != null && !area.contains(x, y)) return null
-
-            return it
+            Rectangle.POOL { tempRect ->
+                val area = getClippingAreaInternal(tempRect)
+                if (area != null && !area.contains(x, y)) return null
+                return view
+            }
         }
         return if (this is Stage) this else null
     }
 
-    private val _localBounds2: Rectangle = Rectangle()
-
     @KorgeInternal
-    fun getClippingAreaInternal(): Rectangle? {
-        this._localBounds2.setTo(Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY)
+    fun getClippingAreaInternal(out: Rectangle): Rectangle? {
+        out.setTo(Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY)
         var count = 0
-        forEachAscendant(true) {
-            if (it !is Stage && it is FixedSizeContainer && it.clip) {
-                it.getGlobalBounds(this._localBounds)
-                if (count == 0) {
-                    this._localBounds2.copyFrom(this._localBounds)
-                } else {
-                    this._localBounds2.setToIntersection(this._localBounds2, this._localBounds)
+        Rectangle.POOL { _localBounds ->
+            forEachAscendant(true) {
+                if (it !is Stage && it is FixedSizeContainer && it.clip) {
+                    it.getGlobalBounds(_localBounds)
+                    if (count == 0) {
+                        out.copyFrom(_localBounds)
+                    } else {
+                        out.setToIntersection(out, _localBounds)
+                    }
+                    count++
                 }
-                count++
             }
         }
-        return if (count == 0) null else this._localBounds2
+
+        return if (count == 0) null else out
     }
 
     fun mouseHitTest(x: Float, y: Float): View? = hitTest(x.toDouble(), y.toDouble())
@@ -1359,9 +1380,6 @@ abstract class View internal constructor(
     //fun getRect(target: View? = this, out: Rectangle = Rectangle()): Rectangle = TODO()
 
     /** Get the bounds of this view, using the [target] view as coordinate system. Not providing a [target] will return the local bounds. Allows to specify [out] [Rectangle] to prevent allocations. */
-    private val boundsTemp = Matrix()
-    private val bb = BoundsBuilder()
-
     fun getBoundsNoAnchoring(target: View? = this, out: Rectangle = Rectangle(), inclusive: Boolean = false, includeFilters: Boolean = true): Rectangle {
         return getBounds(target, out, false, inclusive, includeFilters)
     }
@@ -1382,19 +1400,19 @@ abstract class View internal constructor(
             val p4x = out.left
             val p4y = out.bottom
 
-            bb.reset()
-            bb.add(concat.transformX(p1x, p1y), concat.transformY(p1x, p1y))
-            bb.add(concat.transformX(p2x, p2y), concat.transformY(p2x, p2y))
-            bb.add(concat.transformX(p3x, p3y), concat.transformY(p3x, p3y))
-            bb.add(concat.transformX(p4x, p4y), concat.transformY(p4x, p4y))
-
-            bb.getBounds(out)
+            BoundsBuilder.POOL { bb ->
+                bb.add(concat.transformX(p1x, p1y), concat.transformY(p1x, p1y))
+                bb.add(concat.transformX(p2x, p2y), concat.transformY(p2x, p2y))
+                bb.add(concat.transformX(p3x, p3y), concat.transformY(p3x, p3y))
+                bb.add(concat.transformX(p4x, p4y), concat.transformY(p4x, p4y))
+                bb.getBounds(out)
+            }
         }
         return out
     }
 
     fun getBounds(target: View? = this, out: Rectangle = Rectangle(), doAnchoring: Boolean = true, inclusive: Boolean = false, includeFilters: Boolean = true): Rectangle {
-        return _getBounds(this.getConcatMatrix(target ?: this, boundsTemp, inclusive), out, doAnchoring, includeFilters)
+        return Matrix.POOL { boundsTemp -> _getBounds(this.getConcatMatrix(target ?: this, boundsTemp, inclusive), out, doAnchoring, includeFilters) }
     }
 
     ///** Kind of bounds we are checking */
@@ -1415,8 +1433,6 @@ abstract class View internal constructor(
     @Deprecated("Allocates")
     fun getLocalBounds(doAnchoring: Boolean = true, includeFilters: Boolean = true): Rectangle = getLocalBounds(Rectangle(), doAnchoring, includeFilters)
 
-    private val tempMutableMargin: MutableMarginInt = MutableMarginInt()
-
     /**
      * Get local bounds of the view. Allows to specify [out] [Rectangle] if you want to reuse an object.
      */
@@ -1428,13 +1444,13 @@ abstract class View internal constructor(
             it.y += anchorDispY
         }
         if (includeFilters) {
-            filter?.expandBorderRectangle(out, tempMutableMargin)
+            filter?.expandBorderRectangle(out)
         }
         return it
     }
 
     private val _localBounds: Rectangle = Rectangle()
-    open fun getLocalBoundsInternal(out: Rectangle = _localBounds) {
+    open fun getLocalBoundsInternal(out: Rectangle) {
         out.clear()
     }
 
@@ -1643,26 +1659,22 @@ fun View?.commonAncestor(ancestor: View?): View? {
 fun View.replaceWith(view: View): Boolean = this.parent?.replaceChild(this, view) ?: false
 
 /** Adds a block that will be executed per frame to this view. As parameter the block will receive a [TimeSpan] with the time elapsed since the previous frame. */
-fun <T : View> T.addUpdater(updatable: T.(dt: TimeSpan) -> Unit): Cancellable {
-    val component = object : UpdateComponent {
-        override val view: View get() = this@addUpdater
-        override fun update(dt: TimeSpan) {
-            updatable(this@addUpdater, dt)
-        }
-    }.attach()
-    component.update(TimeSpan.ZERO)
-    return Cancellable { component.detach() }
+fun <T : View> T.addUpdater(first: Boolean = true, updatable: T.(dt: TimeSpan) -> Unit): Cancellable = object : UpdateComponent {
+    override val view: View get() = this@addUpdater
+    override fun update(dt: TimeSpan) {
+        updatable(this@addUpdater, dt)
+    }
+}.attach().also {
+    if (first) it.update(TimeSpan.ZERO)
 }
+fun <T : View> T.addUpdater(updatable: T.(dt: TimeSpan) -> Unit): Cancellable = addUpdater(true, updatable)
 
-fun <T : View> T.addUpdaterWithViews(updatable: T.(views: Views, dt: TimeSpan) -> Unit): Cancellable {
-    val component = object : UpdateComponentWithViews {
-        override val view: View get() = this@addUpdaterWithViews
-        override fun update(views: Views, dt: TimeSpan) {
-            updatable(this@addUpdaterWithViews, views, dt)
-        }
-    }.attach()
-    return Cancellable { component.detach() }
-}
+fun <T : View> T.addUpdaterWithViews(updatable: T.(views: Views, dt: TimeSpan) -> Unit): Cancellable = object : UpdateComponentWithViews {
+    override val view: View get() = this@addUpdaterWithViews
+    override fun update(views: Views, dt: TimeSpan) {
+        updatable(this@addUpdaterWithViews, views, dt)
+    }
+}.attach()
 
 fun <T : View> T.addOptFixedUpdater(time: TimeSpan = TimeSpan.NIL, updatable: T.(dt: TimeSpan) -> Unit): Cancellable = when (time) {
     TimeSpan.NIL -> addUpdater(updatable)
@@ -1686,50 +1698,46 @@ fun <T : View> T.addFixedUpdater(
     initial: Boolean = true,
     limitCallsPerFrame: Int = 16,
     updatable: T.() -> Unit
-): Cancellable {
+): Cancellable = object : UpdateComponent {
     var accum = 0.0.milliseconds
-    val component = object : UpdateComponent {
-        override val view: View get() = this@addFixedUpdater
-        override fun update(dt: TimeSpan) {
-            accum += dt
-            //println("UPDATE: accum=$accum, tickTime=$tickTime")
-            var calls = 0
-            while (accum >= time * 0.75) {
-                accum -= time
-                updatable(this@addFixedUpdater)
-                calls++
-                if (calls >= limitCallsPerFrame) {
-                    // We do not accumulate for the next frame in this case
-                    accum = 0.0.milliseconds
-                    break
-                }
-            }
-            if (calls > 0) {
-                // Do not accumulate for small fractions since this would cause hiccups!
-                if (accum < time * 0.25) {
-                    accum = 0.0.milliseconds
-                }
+    override val view: View get() = this@addFixedUpdater
+    override fun update(dt: TimeSpan) {
+        accum += dt
+        //println("UPDATE: accum=$accum, tickTime=$tickTime")
+        var calls = 0
+        while (accum >= time * 0.75) {
+            accum -= time
+            updatable(this@addFixedUpdater)
+            calls++
+            if (calls >= limitCallsPerFrame) {
+                // We do not accumulate for the next frame in this case
+                accum = 0.0.milliseconds
+                break
             }
         }
-    }.attach()
+        if (calls > 0) {
+            // Do not accumulate for small fractions since this would cause hiccups!
+            if (accum < time * 0.25) {
+                accum = 0.0.milliseconds
+            }
+        }
+    }
+}.attach().also {
     if (initial) {
         updatable(this@addFixedUpdater)
     }
-    return Cancellable { component.detach() }
 }
 
 @Deprecated("Use addUpdater instead", ReplaceWith("addUpdater(updatable)"))
 inline fun <T : View> T.onFrame(noinline updatable: T.(dt: TimeSpan) -> Unit): Cancellable = addUpdater(updatable)
 
-fun <T : View> T.onNextFrame(updatable: T.(views: Views) -> Unit): UpdateComponentWithViews {
-    return object : UpdateComponentWithViews {
-        override val view: View get() = this@onNextFrame
-        override fun update(views: Views, dt: TimeSpan) {
-            removeFromView()
-            updatable(this@onNextFrame, views)
-        }
-    }.attach()
-}
+fun <T : View> T.onNextFrame(updatable: T.(views: Views) -> Unit): UpdateComponentWithViews = object : UpdateComponentWithViews {
+    override val view: View get() = this@onNextFrame
+    override fun update(views: Views, dt: TimeSpan) {
+        removeFromView()
+        updatable(this@onNextFrame, views)
+    }
+}.attach()
 
 
 /**
