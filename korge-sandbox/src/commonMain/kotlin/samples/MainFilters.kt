@@ -68,7 +68,7 @@ class MainFilters : ScaledScene(768, 512) {
             filter = swizzle
         }
 
-        newAnimate(parallel = true) {
+        animate(parallel = true) {
             autoInvalidateView = true
         //animateParallel {
             sequence(looped = true) {

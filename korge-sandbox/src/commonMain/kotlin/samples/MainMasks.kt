@@ -68,14 +68,14 @@ class MainMasks : Scene() {
             val path = buildVectorPath(VectorPath()) {
                 circle(width * 0.5, height * 0.5, 300.0)
             }
-            newAnimate(looped = true) {
+            animate(looped = true) {
                 tween(circle3::pos[path], time = 2.seconds, easing = Easing.LINEAR)
             }
         }
 
 
         launchImmediately {
-            newAnimate(looped = true) {
+            animate(looped = true) {
                 //parallel {
                 tween(maskView::radius[150.0], time = 1.seconds)
                 tween(maskView::radius[10.0], time = 1.seconds)

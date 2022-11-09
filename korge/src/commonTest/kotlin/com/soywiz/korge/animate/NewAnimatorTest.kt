@@ -11,7 +11,7 @@ class NewAnimatorTest {
     @Test
     fun testBasic() {
         val view = DummyView()
-        val animator = view.newAnimator(defaultTime = 1.seconds, defaultEasing = Easing.LINEAR) {
+        val animator = view.animator(defaultTime = 1.seconds, defaultEasing = Easing.LINEAR) {
             moveTo(view, 10, 0)
         }
         val log = arrayListOf<String>()
@@ -39,7 +39,7 @@ class NewAnimatorTest {
     fun testSequences() {
         val view = DummyView()
         var log = ""
-        val animator = view.newAnimator(defaultTime = 1.seconds, defaultEasing = Easing.LINEAR) {
+        val animator = view.animator(defaultTime = 1.seconds, defaultEasing = Easing.LINEAR) {
             block(name = "0") { log += "0" }
             block { log += "1" }
             sequence {
@@ -107,7 +107,7 @@ class NewAnimatorTest {
     @Test
     fun testParallel() {
         val view = DummyView()
-        val animator = view.newAnimator(defaultTime = 1.seconds, defaultEasing = Easing.LINEAR, parallel = true) {
+        val animator = view.animator(defaultTime = 1.seconds, defaultEasing = Easing.LINEAR, parallel = true) {
             moveTo(view, 10, 0)
             alpha(view, 0.0, time = 1.2.seconds)
         }
@@ -144,7 +144,7 @@ class NewAnimatorTest {
         val view1 = DummyView()
         val view2 = DummyView()
         val log = arrayListOf<String>()
-        val animator = executorView.newAnimator(defaultEasing = Easing.LINEAR) {
+        val animator = executorView.animator(defaultEasing = Easing.LINEAR) {
             sequence(defaultTime = 1.seconds, defaultSpeed = 100.0) {
                 //wait(0.25.seconds)
                 block {

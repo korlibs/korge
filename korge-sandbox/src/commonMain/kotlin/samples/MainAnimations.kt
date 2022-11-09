@@ -41,7 +41,7 @@ class MainAnimations : ScaledScene(512, 512) {
             println("START!")
             time.start()
             job = launchImmediately {
-                newAnimate(completeOnCancel = false) {
+                animate(completeOnCancel = false) {
                 //animate(completeOnCancel = false) {
                     //animate(completeOnCancel = true) {
                     //animate {

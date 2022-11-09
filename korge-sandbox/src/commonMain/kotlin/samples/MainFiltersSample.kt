@@ -61,7 +61,7 @@ class MainFiltersSample : Scene() {
 
         //addUpdater { invalidate() }
 
-        newAnimate(parallel = true) {
+        animate(parallel = true) {
             sequence(looped = true) {
                 tween(wave::time[1.seconds], time = 1.seconds, easing = Easing.EASE_IN_OUT)
                 tween(wave::time[0.seconds], time = 1.seconds, easing = Easing.EASE_IN_OUT)
