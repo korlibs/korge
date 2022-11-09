@@ -81,5 +81,6 @@ class UIText(
     }
 
     override fun updateState() {
+        super.updateState()
     }
 }

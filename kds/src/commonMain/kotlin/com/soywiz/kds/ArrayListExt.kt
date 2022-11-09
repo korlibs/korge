@@ -1,14 +1,16 @@
 package com.soywiz.kds
 
-import com.soywiz.kds.iterators.fastForEach
+import com.soywiz.kds.iterators.*
 
-inline fun IntRange.toIntList(): IntArrayList = IntArrayList(this.endInclusive - this.start).also { for (v in this.start .. this.endInclusive) it.add(v) }
+inline fun IntRange.toIntList(): IntArrayList = IntArrayList((this.endInclusive - this.start).coerceAtLeast(0)).also { for (v in this.start .. this.endInclusive) it.add(v) }
 
 inline fun Iterable<Int>.toIntList(): IntArrayList = IntArrayList().also { for (v in this) it.add(v) }
 inline fun Iterable<Float>.toFloatList(): FloatArrayList = FloatArrayList().also { for (v in this) it.add(v) }
 inline fun Iterable<Double>.toDoubleList(): DoubleArrayList = DoubleArrayList().also { for (v in this) it.add(v) }
 
 //  MAP
+inline fun IntRange.mapInt(callback: (Int) -> Int): IntArrayList = IntArrayList((this.endInclusive - this.start).coerceAtLeast(0) / this.step + 1).also { for (v in this.start .. this.endInclusive step this.step) it.add(callback(v)) }
+inline fun IntArrayList.mapInt(callback: (Int) -> Int): IntArrayList = IntArrayList(size).also { out -> this.fastForEach { out.add(callback(it)) } }
 inline fun <T> Iterable<T>.mapInt(callback: (T) -> Int): IntArrayList = IntArrayList().also { for (v in this) it.add(callback(v)) }
 inline fun <T> Iterable<T>.mapFloat(callback: (T) -> Float): FloatArrayList = FloatArrayList().also { for (v in this) it.add(callback(v)) }
 inline fun <T> Iterable<T>.mapDouble(callback: (T) -> Double): DoubleArrayList = DoubleArrayList().also { for (v in this) it.add(callback(v)) }
@@ -93,13 +95,16 @@ fun DoubleArrayList.reverse(start: Int = 0, end: Int = size)
 fun FloatArrayList.reverse(start: Int = 0, end: Int = size)
     = FloatArrayListSortOps.reverse(this, start, end - 1)
 
+fun IntArrayList.toIntArrayList(): IntArrayList = IntArrayList(this)
+fun DoubleArrayList.toDoubleArrayList(): DoubleArrayList = DoubleArrayList(this)
+
 fun DoubleArrayList.toIntArrayList(): IntArrayList {
     val out = IntArrayList(this.size)
     this.fastForEach { out.add(it.toInt()) }
     return out
 }
 
-fun IntArrayList.toIntArrayList(): DoubleArrayList {
+fun IntArrayList.toDoubleArrayList(): DoubleArrayList {
     val out = DoubleArrayList(this.size)
     this.fastForEach { out.add(it.toDouble()) }
     return out

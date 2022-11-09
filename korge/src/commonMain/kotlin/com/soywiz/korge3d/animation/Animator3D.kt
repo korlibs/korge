@@ -71,6 +71,7 @@ class Animator3D(val animation: Animation3D, val rootView: View3D, var playbackP
 							ftransforms.getCyclic(n + 1),
 							ratio.toDouble()
 						)
+                        aview.invalidateRender()
 					}
 				}
 				"location.X", "location.Y", "location.Z", "scale.X", "scale.Y", "scale.Z", "rotationX.ANGLE", "rotationY.ANGLE", "rotationZ.ANGLE" -> {

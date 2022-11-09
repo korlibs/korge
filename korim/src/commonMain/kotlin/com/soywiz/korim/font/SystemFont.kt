@@ -28,8 +28,8 @@ class SystemFont constructor(override val name: String, val coroutineContext: Co
     override fun getFontMetrics(size: Double, metrics: FontMetrics): FontMetrics =
         metrics.also { nativeSystemFontProvider.getSystemFontMetrics(this, size, metrics) }
 
-    override fun getGlyphMetrics(size: Double, codePoint: Int, metrics: GlyphMetrics): GlyphMetrics =
-        metrics.also { nativeSystemFontProvider.getSystemFontGlyphMetrics(this, size, codePoint, metrics) }
+    override fun getGlyphMetrics(size: Double, codePoint: Int, metrics: GlyphMetrics, reader: WStringReader?): GlyphMetrics =
+        metrics.also { nativeSystemFontProvider.getSystemFontGlyphMetrics(this, size, codePoint, metrics, reader) }
 
     override fun getKerning(
         size: Double,

@@ -1,5 +1,7 @@
 package com.soywiz.korge.view
 
+import com.soywiz.klock.milliseconds
+import com.soywiz.korge.component.UpdateComponent
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -135,5 +137,25 @@ internal class ContainerTest {
         }
         assertEquals(listOf("a", "b", "d", "e"), c.children.map { it.name })
         validateIndices()
+    }
+
+    @Test
+    fun testComponents() {
+        val container1 = Container().name("container1")
+        val container2 = Container().name("container2")
+        var log = ""
+        assertEquals(0, container1.getComponentCountInDescendants(UpdateComponent))
+        assertEquals(0, container2.getComponentCountInDescendants(UpdateComponent))
+        container2.addUpdater(first = false) { log += "a" }
+        assertEquals(0, container1.getComponentCountInDescendants(UpdateComponent))
+        assertEquals(1, container2.getComponentCountInDescendants(UpdateComponent))
+        container1.addChild(container2)
+        assertEquals(1, container1.getComponentCountInDescendants(UpdateComponent))
+        assertEquals(1, container2.getComponentCountInDescendants(UpdateComponent))
+        assertEquals("", log)
+        container1.forEachComponentOfTypeRecursive(UpdateComponent) {
+            it.update(0.milliseconds)
+        }
+        assertEquals("a", log)
     }
 }

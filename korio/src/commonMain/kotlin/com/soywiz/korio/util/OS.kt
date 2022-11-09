@@ -1,37 +1,38 @@
 package com.soywiz.korio.util
 
 import com.soywiz.kmem.Platform
+import com.soywiz.kmem.*
 
 @Deprecated("Use com.soywiz.kmem.Platform instead")
 object OS {
-	val rawName get() = Platform.rawOsName
-	val rawNameLC by lazy { rawName.lowercase() }
+	val rawName: String get() = Platform.rawOsName
+	val rawNameLC: String by lazy { rawName.lowercase() }
 
-	val platformName get() = Platform.rawPlatformName
-	val platformNameLC by lazy { platformName.lowercase() }
+	val platformName: String get() = Platform.rawPlatformName
+	val platformNameLC: String by lazy { platformName.lowercase() }
 
-	val isWindows: Boolean get() = Platform.os.isWindows
-	val isUnix: Boolean get() = Platform.os.isPosix
-	val isPosix: Boolean get() = Platform.os.isPosix
-	val isLinux: Boolean get() = Platform.os.isLinux
-	val isMac: Boolean get() = Platform.os.isMac
+	val isWindows: Boolean get() = Platform.isWindows
+	val isUnix: Boolean get() = Platform.isPosix
+	val isPosix: Boolean get() = Platform.isPosix
+	val isLinux: Boolean get() = Platform.isLinux
+	val isMac: Boolean get() = Platform.isMac
 
-	val isIos: Boolean get() = Platform.os.isIos
-	val isAndroid: Boolean get() = Platform.os.isAndroid
-    val isWatchos: Boolean get() = Platform.os.isWatchos
-    val isTvos: Boolean get() = Platform.os.isTvos
+	val isIos: Boolean get() = Platform.isIos
+	val isAndroid: Boolean get() = Platform.isAndroid
+    val isWatchos: Boolean get() = Platform.isWatchos
+    val isTvos: Boolean get() = Platform.isTvos
 
-	val isJs: Boolean get() = Platform.runtime.isJs
-	val isNative: Boolean get() = Platform.runtime.isNative
-    val isNativeDesktop : Boolean get() = isNative && Platform.os.isDesktop
-	val isJvm: Boolean get() = Platform.runtime.isJvm
+	val isJs: Boolean get() = Platform.isJs
+	val isNative: Boolean get() = Platform.isNative
+    val isNativeDesktop: Boolean get() = Platform.isNativeDesktop
+	val isJvm: Boolean get() = Platform.isJvm
 
-	val isJsShell get() = Platform.rawPlatformName == "js-shell"
-	val isJsNodeJs get() = Platform.rawPlatformName == "js-node"
-    val isJsDenoJs get() = Platform.rawPlatformName == "js-deno"
-	val isJsBrowser get() = Platform.rawPlatformName == "js-web"
-	val isJsWorker get() = Platform.rawPlatformName == "js-worker"
-	val isJsBrowserOrWorker get() = isJsBrowser || isJsWorker
+	val isJsShell: Boolean get() = Platform.isJsShell
+	val isJsNodeJs: Boolean get() = Platform.isJsNodeJs
+    val isJsDenoJs: Boolean get() = Platform.isJsDenoJs
+	val isJsBrowser: Boolean get() = Platform.isJsBrowser
+	val isJsWorker: Boolean get() = Platform.isJsWorker
+	val isJsBrowserOrWorker: Boolean get() = Platform.isJsBrowserOrWorker
 
     val isDebug: Boolean get() = Platform.isDebug
     val isRelease: Boolean get() = Platform.isRelease

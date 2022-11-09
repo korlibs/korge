@@ -62,4 +62,26 @@ class DynTest {
         assertEquals("false", Dyn(false).toStringOrNull())
         assertEquals(null, Dyn(null).toStringOrNull())
     }
+
+    @Test
+    fun testContains() {
+        val list = listOf("a", "b")
+        val set = setOf("a", "b")
+        val map = mapOf("a" to 1, "b" to 2)
+
+        assertEquals(true, "hello".dyn.contains("ll"))
+        assertEquals(false, "hello".dyn.contains("le"))
+
+        assertEquals(true, map.dyn.contains("a"))
+        assertEquals(true, map.dyn.contains("b"))
+        assertEquals(false, map.dyn.contains("c"))
+
+        assertEquals(true, set.dyn.contains("a"))
+        assertEquals(true, set.dyn.contains("b"))
+        assertEquals(false, set.dyn.contains("c"))
+
+        assertEquals(true, list.dyn.contains("a"))
+        assertEquals(true, list.dyn.contains("b"))
+        assertEquals(false, list.dyn.contains("c"))
+    }
 }

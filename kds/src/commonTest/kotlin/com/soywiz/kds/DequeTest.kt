@@ -135,4 +135,23 @@ class DequeTest {
         deque.addAllFirst(listOf(1, 2, 3, 4))
         assertEquals(listOf(1, 2, 3, 4, 5, 6, 7, 8), deque.toList())
     }
+
+    @Test
+    fun testAddAllArray() {
+        val deque = IntDeque(1)
+        deque.addAll(intArrayOf(+1, +2))
+        deque.addAllFirst(intArrayOf(-2, -1))
+        deque.addAll(intArrayOf(+3))
+        deque.addAllFirst(intArrayOf(-3))
+        assertEquals("-3,-2,-1,1,2,3", deque.joinToString(","))
+    }
+
+    @Test
+    fun testAddOverflow() {
+        val deque = IntDeque(4)
+        deque.addAll(IntArray(1000))
+        assertEquals(1000, deque.size)
+        deque.addAll(IntArray(1000))
+        assertEquals(2000, deque.size)
+    }
 }

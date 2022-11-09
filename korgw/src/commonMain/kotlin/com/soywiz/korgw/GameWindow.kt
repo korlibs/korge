@@ -1,7 +1,7 @@
 package com.soywiz.korgw
 
 import com.soywiz.kds.*
-import com.soywiz.kds.lock.Lock
+import com.soywiz.kds.lock.NonRecursiveLock
 import com.soywiz.klock.PerformanceCounter
 import com.soywiz.klock.TimeSpan
 import com.soywiz.klock.blockingSleep
@@ -25,6 +25,7 @@ import com.soywiz.korev.FullScreenEvent
 import com.soywiz.korev.GamePadConnectionEvent
 import com.soywiz.korev.GamePadUpdateEvent
 import com.soywiz.korev.GamepadMapping
+import com.soywiz.korev.GestureEvent
 import com.soywiz.korev.ISoftKeyboardConfig
 import com.soywiz.korev.InitEvent
 import com.soywiz.korev.Key
@@ -40,13 +41,13 @@ import com.soywiz.korev.TouchBuilder
 import com.soywiz.korev.TouchEvent
 import com.soywiz.korev.addEventListener
 import com.soywiz.korev.dispatch
-import com.soywiz.korgw.GameWindow.Quality.PERFORMANCE
-import com.soywiz.korgw.GameWindow.Quality.QUALITY
+import com.soywiz.korgw.GameWindow.Quality.*
 import com.soywiz.korgw.internal.IntTimedCache
 import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.vector.Shape
+import com.soywiz.korim.vector.renderWithHotspot
 import com.soywiz.korio.Korio
 import com.soywiz.korio.async.Signal
 import com.soywiz.korio.async.delay
@@ -57,6 +58,8 @@ import com.soywiz.korio.file.VfsFile
 import com.soywiz.korio.lang.Closeable
 import com.soywiz.korma.geom.Anchor
 import com.soywiz.korma.geom.Angle
+import com.soywiz.korma.geom.IRectangle
+import com.soywiz.korma.geom.ISize
 import com.soywiz.korma.geom.Point
 import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.geom.absoluteValue
@@ -77,6 +80,7 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.startCoroutine
 import kotlin.native.concurrent.ThreadLocal
+import kotlin.properties.Delegates
 
 @ThreadLocal
 var GLOBAL_CHECK_GL = false
@@ -107,7 +111,7 @@ open class GameWindowCoroutineDispatcher : CoroutineDispatcher(), Delay, Closeab
 
     @PublishedApi internal val tasks = Queue<Runnable>()
     @PublishedApi internal val timedTasks = PriorityQueue<TimedTask> { a, b -> a.time.compareTo(b.time) }
-    val lock = Lock()
+    val lock = NonRecursiveLock()
 
     fun hasTasks() = tasks.isNotEmpty()
 
@@ -137,11 +141,7 @@ open class GameWindowCoroutineDispatcher : CoroutineDispatcher(), Delay, Closeab
     override fun invokeOnTimeout(timeMillis: Long, block: Runnable, context: CoroutineContext): DisposableHandle {
         val task = TimedTask(now() + timeMillis.toDouble().milliseconds, null, block)
         lock { timedTasks.add(task) }
-        return object : DisposableHandle {
-            override fun dispose() {
-                lock { timedTasks.remove(task) }
-            }
-        }
+        return DisposableHandle { lock { timedTasks.remove(task) } }
     }
 
     var timedTasksTime = 0.milliseconds
@@ -276,7 +276,10 @@ open class GameWindow :
 
     override val dialogInterface: DialogInterface get() = DialogInterface.Unsupported
 
-    data class CustomCursor(val shape: Shape) : ICursor, Extra by Extra.Mixin()
+    data class CustomCursor(val shape: Shape, val name: String = "custom") : ICursor, Extra by Extra.Mixin() {
+        val bounds: IRectangle = this.shape.bounds
+        fun createBitmap(size: ISize? = null, native: Boolean = true) = shape.renderWithHotspot(fit = size, native = native)
+    }
 
     enum class Cursor : ICursor {
         DEFAULT, CROSSHAIR, TEXT, HAND, MOVE, WAIT,
@@ -369,6 +372,13 @@ open class GameWindow :
 
     open var cursor: ICursor = Cursor.DEFAULT
 
+    /**
+     * Flag to keep the screen on, even when there is no user input and the user is idle
+     */
+    open var keepScreenOn: Boolean
+        set(value) = Unit
+        get() = false
+
     override val key: CoroutineContext.Key<*> get() = CoroutineKey
     companion object CoroutineKey : CoroutineContext.Key<GameWindow> {
         val MenuItemSeparatror = MenuItem(null)
@@ -396,6 +406,7 @@ open class GameWindow :
     private val reshapeEvent = ReshapeEvent()
     protected val keyEvent = KeyEvent()
     protected val mouseEvent = MouseEvent()
+    protected val gestureEvent = GestureEvent()
     protected val touchBuilder = TouchBuilder()
     protected val touchEvent get() = touchBuilder.new
     protected val dropFileEvent = DropFileEvent()
@@ -544,14 +555,24 @@ open class GameWindow :
     var renderTime = 0.milliseconds
     var updateTime = 0.milliseconds
 
-    fun frame(doUpdate: Boolean = true, frameStartTime: TimeSpan = PerformanceCounter.reference): TimeSpan {
+    var onContinuousRenderModeUpdated: ((Boolean) -> Unit)? = null
+    open var continuousRenderMode: Boolean by Delegates.observable(true) { prop, old, new ->
+        onContinuousRenderModeUpdated?.invoke(new)
+    }
+
+    fun frame(doUpdate: Boolean = true, doRender: Boolean = true, frameStartTime: TimeSpan = PerformanceCounter.reference): TimeSpan {
         val startTime = PerformanceCounter.reference
-        renderTime = measureTime {
-            frameRender()
+        if (doRender) {
+            renderTime = measureTime {
+                frameRender(doUpdate = doUpdate, doRender = true)
+            }
         }
         //println("renderTime=$renderTime")
         if (doUpdate) {
             updateTime = measureTime {
+                if (!doRender) {
+                    frameRender(doUpdate = true, doRender = false)
+                }
                 frameUpdate(frameStartTime)
             }
             //println("updateTime=$updateTime")
@@ -560,15 +581,17 @@ open class GameWindow :
         return endTime - startTime
     }
 
-    fun frameRender() {
-        if (contextLost) {
-            contextLost = false
-            ag.contextLost()
-        }
-        if (surfaceChanged) {
-            surfaceChanged = false
-            ag.mainRenderBuffer.setSize(surfaceX, surfaceY, surfaceWidth, surfaceHeight)
-            dispatchReshapeEvent(surfaceX, surfaceY, surfaceWidth, surfaceHeight)
+    fun frameRender(doUpdate: Boolean = true, doRender: Boolean = true) {
+        if (doRender) {
+            if (contextLost) {
+                contextLost = false
+                ag.contextLost()
+            }
+            if (surfaceChanged) {
+                surfaceChanged = false
+                ag.mainRenderBuffer.setSize(surfaceX, surfaceY, surfaceWidth, surfaceHeight)
+                dispatchReshapeEvent(surfaceX, surfaceY, surfaceWidth, surfaceHeight)
+            }
         }
         if (doInitialize) {
             doInitialize = false
@@ -577,7 +600,7 @@ open class GameWindow :
             dispatch(initEvent)
         }
         try {
-            dispatchRenderEvent(update = false)
+            dispatchRenderEvent(update = doUpdate, render = doRender)
         } catch (e: Throwable) {
             println("ERROR GameWindow.frameRender:")
             println(e)
@@ -594,6 +617,18 @@ open class GameWindow :
     private var doInitialize = false
     private var initialized = false
     private var contextLost = false
+
+    var updatedSinceFrame: Int = 0
+
+    val mustTriggerRender: Boolean get() = continuousRenderMode || updatedSinceFrame > 0
+
+    fun startFrame() {
+        updatedSinceFrame = 0
+    }
+
+    fun invalidatedView() {
+        updatedSinceFrame++
+    }
 
     fun handleContextLost() {
         println("---------------- handleContextLost --------------")
@@ -627,6 +662,7 @@ open class GameWindow :
             val remaining = (counterTimePerFrame - consumed) - 2.milliseconds // Do not push too much so give two extra milliseconds just in case
             val timeForTasks = coroutineDispatcher.maxAllocatedTimeForTasksPerFrame ?: remaining
             val finalTimeForTasks = max(timeForTasks, 4.milliseconds) // Avoid having 0 milliseconds or even negative
+            //println("         - frameUpdate: finalTimeForTasks=$finalTimeForTasks, startTime=$startTime, now=$now")
             coroutineDispatcher.executePending(finalTimeForTasks)
         } catch (e: Throwable) {
             println("ERROR GameWindow.frameRender:")
@@ -647,7 +683,10 @@ open class GameWindow :
     fun dispatchStopEvent() = dispatch(stopEvent)
     fun dispatchDestroyEvent() = dispatch(destroyEvent)
     fun dispatchDisposeEvent() = dispatch(disposeEvent)
-    fun dispatchRenderEvent(update: Boolean = true) = dispatch(renderEvent.also { it.update = update })
+    fun dispatchRenderEvent(update: Boolean = true, render: Boolean = true) = dispatch(renderEvent.also {
+        it.update = update
+        it.render = render
+    })
     fun dispatchDropfileEvent(type: DropFileEvent.Type, files: List<VfsFile>?) = dispatch(dropFileEvent.also {
         it.type = type
         it.files = files
@@ -709,7 +748,10 @@ open class GameWindow :
         rawButtonsPressed: Int,
         mapping: GamepadMapping,
         name: String?,
-        batteryLevel: Double
+        batteryLevel: Double,
+        name2: String? = null,
+        playerIndex: Int = -1,
+        batteryStatus: com.soywiz.korev.GamepadInfo.BatteryStatus? = null,
     ) {
         val index = gamePadUpdateEvent.gamepadsLength++
         val pad = gamePadUpdateEvent.gamepads[index]
@@ -722,7 +764,10 @@ open class GameWindow :
         pad.rawAxes[3] = rightStick.y
         pad.rawButtonsPressed = rawButtonsPressed
         pad.name = name ?: "unknown"
+        pad.name2 = name2 ?: "unknown"
         pad.batteryLevel = batteryLevel
+        pad.batteryStatus = batteryStatus ?: com.soywiz.korev.GamepadInfo.BatteryStatus.UNKNOWN
+        pad.playerIndex = playerIndex.takeIf { it >= 0 } ?: index
     }
 
     fun dispatchGamepadUpdateEnd() {
@@ -887,9 +932,21 @@ open class EventLoopGameWindow : GameWindow() {
     internal fun renderInternal(doUpdate: Boolean, frameStartTime: TimeSpan = PerformanceCounter.reference) {
         coroutineDispatcher.currentTime = PerformanceCounter.reference
         doInitRender()
-        frame(doUpdate, frameStartTime = frameStartTime)
+
+        var doRender = !doUpdate
+        if (doUpdate) {
+            frame(doUpdate = true, doRender = false, frameStartTime = frameStartTime)
+            if (mustTriggerRender) {
+                doRender = true
+            }
+        }
+        if (doRender) {
+            frame(doUpdate = false, doRender = true, frameStartTime = frameStartTime)
+        }
         lastRenderTime = PerformanceCounter.reference
-        doSwapBuffers()
+        if (doRender) {
+            doSwapBuffers()
+        }
     }
 
     fun sleepNextFrame() {

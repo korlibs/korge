@@ -564,11 +564,7 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
 
 @ThreadLocal // @TODO: Is this required?
 val View.mouse by Extra.PropertyThis<View, MouseEvents> {
-    this.getOrCreateComponentMouse<MouseEvents> {
-        MouseEvents(
-            this
-        )
-    }
+    this.getOrCreateComponentMouse<MouseEvents> { MouseEvents(this) }
 }
 
 inline fun View.newMouse(callback: MouseEvents.() -> Unit): MouseEvents {

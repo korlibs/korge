@@ -1,5 +1,7 @@
 package com.soywiz.kds
 
+import com.soywiz.kds.fakemutable.*
+
 /**
  * A [Set] structure representing a set of [Int] without boxing.
  *
@@ -11,14 +13,7 @@ class IntSet : MutableSet<Int> {
 
     override fun containsAll(elements: Collection<Int>): Boolean = elements.all { it in data }
     override fun isEmpty(): Boolean = size == 0
-    override fun iterator(): MutableIterator<Int> {
-        val iterator = data.keys.iterator()
-        return object : MutableIterator<Int> {
-            override fun hasNext(): Boolean = iterator.hasNext()
-            override fun next(): Int = iterator.next()
-            override fun remove() = TODO()
-        }
-    }
+    override fun iterator(): MutableIterator<Int> = data.keys.iterator().asFakeMutable()
 
     fun clear(maxCapacity: Int) = clear()
     override fun clear() { data.clear() }

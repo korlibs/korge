@@ -9,22 +9,9 @@ import com.soywiz.kmem.fract
 import com.soywiz.kmem.toIntFloor
 import com.soywiz.korim.color.ColorAdd
 import com.soywiz.korim.color.RGBA
-import com.soywiz.korma.geom.Angle
-import com.soywiz.korma.geom.IPoint
-import com.soywiz.korma.geom.IPointArrayList
-import com.soywiz.korma.geom.Point
-import com.soywiz.korma.geom.PointArrayList
-import com.soywiz.korma.geom.absoluteValue
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.bezier.getEquidistantPoints
 import com.soywiz.korma.geom.bezier.getPoints
-import com.soywiz.korma.geom.degrees
-import com.soywiz.korma.geom.firstX
-import com.soywiz.korma.geom.firstY
-import com.soywiz.korma.geom.lastX
-import com.soywiz.korma.geom.lastY
-import com.soywiz.korma.geom.minus
-import com.soywiz.korma.geom.normalized
-import com.soywiz.korma.geom.plus
 import com.soywiz.korma.geom.vector.VectorPath
 import com.soywiz.korma.geom.vector.getCurves
 import com.soywiz.korma.interpolation.Easing
@@ -55,6 +42,21 @@ data class V2<V>(
 
     override fun toString(): String =
         "V2(key=${key.name}, range=[$initial-$end], startTime=$startTime, duration=$duration)"
+}
+
+private object V2CallbackSupport {
+    var dummy: Unit = Unit
+}
+
+fun V2Callback(callback: (Double) -> Unit): V2<Unit> = V2(V2CallbackSupport::dummy, Unit, Unit, { ratio, _, _ -> callback(ratio) }, true)
+fun <T> V2CallbackT(callback: (Double) -> Unit): V2<T> = V2Callback { callback(it) } as V2<T>
+
+fun <T> V2Lazy(callback: () -> V2<T>): V2<T> {
+    var value: V2<T>? = null
+    return V2CallbackT {
+        if (value == null) value = callback()
+        value!!.set(it)
+    }
 }
 
 @JvmName("getInt")
@@ -91,21 +93,10 @@ internal fun _interpolateColorAdd(ratio: Double, l: ColorAdd, r: ColorAdd): Colo
 )
 
 @PublishedApi
-internal fun _interpolateAngle(ratio: Double, l: Angle, r: Angle): Angle = _interpolateAngleAny(ratio, l, r, minimizeAngle = true)
+internal fun _interpolateAngle(ratio: Double, l: Angle, r: Angle): Angle = ratio.interpolateAngleNormalized(l, r)
 
 @PublishedApi
-internal fun _interpolateAngleDenormalized(ratio: Double, l: Angle, r: Angle): Angle = _interpolateAngleAny(ratio, l, r, minimizeAngle = false)
-
-internal fun _interpolateAngleAny(ratio: Double, l: Angle, r: Angle, minimizeAngle: Boolean = true): Angle {
-    if (!minimizeAngle) return Angle.fromRatio(_interpolate(ratio, l.ratio, r.ratio))
-    val ln = l.normalized
-    val rn = r.normalized
-    return when {
-        (rn - ln).absoluteValue <= 180.degrees -> Angle.fromRadians(_interpolate(ratio, ln.radians, rn.radians))
-        ln < rn -> Angle.fromRadians(_interpolate(ratio, (ln + 360.degrees).radians, rn.radians)).normalized
-        else -> Angle.fromRadians(_interpolate(ratio, ln.radians, (rn + 360.degrees).radians)).normalized
-    }
-}
+internal fun _interpolateAngleDenormalized(ratio: Double, l: Angle, r: Angle): Angle = ratio.interpolateAngleDenormalized(l, r)
 
 @PublishedApi
 internal fun _interpolateTimeSpan(ratio: Double, l: TimeSpan, r: TimeSpan): TimeSpan = _interpolate(ratio, l.milliseconds, r.milliseconds).milliseconds

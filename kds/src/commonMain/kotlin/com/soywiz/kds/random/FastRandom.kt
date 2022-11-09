@@ -15,7 +15,7 @@ open class FastRandom private constructor(
     private var v: Int,
     private var addend: Int
 ) : Random() {
-    companion object : Random() {
+    companion object : FastRandom() {
         val Default get() = LocalFastRandom
         override fun nextBits(bitCount: Int): Int = LocalFastRandom.nextBits(bitCount)
     }

@@ -40,7 +40,7 @@ open class ImageAnimationView<T: SmoothedBmpSlice>(
     animation: ImageAnimation? = null,
     direction: ImageAnimation.Direction? = null,
     val createImage: () -> T
-) : Container() {
+) : Container(), Playable {
     private var nframes: Int = 1
 
     fun createTilemap(): TileMap = TileMap()
@@ -97,15 +97,11 @@ open class ImageAnimationView<T: SmoothedBmpSlice>(
                         image as TileMap
                         val tilemap = it.tilemap
                         if (tilemap == null) {
-                            image.intMap = IntArray2(1, 1, 0)
+                            image.stackedIntMap = StackedIntArray2(IntArray2(1, 1, 0))
                             image.tileset = TileSet.EMPTY
                         } else {
-                            image.intMap = tilemap.data
+                            image.stackedIntMap = StackedIntArray2(tilemap.data)
                             image.tileset = tilemap.tileSet ?: TileSet.EMPTY
-                            image.maskData = tilemap.maskData
-                            image.maskFlipX = tilemap.maskFlipX
-                            image.maskFlipY = tilemap.maskFlipY
-                            image.maskRotate = tilemap.maskRotate
                         }
                     }
                 }
@@ -169,9 +165,9 @@ open class ImageAnimationView<T: SmoothedBmpSlice>(
     }
 
     private var running = true
-    fun play() { running = true }
-    fun stop() { running = false }
-    fun rewind() { setFirstFrame() }
+    override fun play() { running = true }
+    override fun stop() { running = false }
+    override fun rewind() { setFirstFrame() }
 
     init {
         didSetAnimation()

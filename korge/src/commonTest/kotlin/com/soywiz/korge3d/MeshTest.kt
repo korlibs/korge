@@ -1,6 +1,7 @@
 package com.soywiz.korge3d
 
 import com.soywiz.korge.view.Mesh
+import com.soywiz.korma.geom.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -16,6 +17,6 @@ class MeshTest {
 
     @Test
     fun testEmpty() {
-        assertEquals(Unit, Mesh().getLocalBoundsInternal(), "Doesn't throw with mutability exception")
+        assertEquals(Unit, Mesh().getLocalBoundsInternal(Rectangle()), "Doesn't throw with mutability exception")
     }
 }

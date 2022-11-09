@@ -1,7 +1,8 @@
 package com.soywiz.korio.vfs
 
-import com.soywiz.korio.async.suspendTestNoBrowser
-import com.soywiz.korio.file.VfsOpenMode
+import com.soywiz.kmem.*
+import com.soywiz.korio.async.*
+import com.soywiz.korio.file.*
 import com.soywiz.korio.file.std.localCurrentDirVfs
 import com.soywiz.korio.file.std.tempVfs
 import com.soywiz.korio.lang.FileNotFoundException
@@ -11,8 +12,7 @@ import com.soywiz.korio.stream.readAll
 import com.soywiz.korio.stream.slice
 import com.soywiz.korio.util.OS
 import com.soywiz.korio.util.expectException
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import kotlin.test.*
 
 class LocalVfsTest {
 	val temp by lazy { tempVfs }
@@ -37,7 +37,7 @@ class LocalVfsTest {
 	}
 
 	@Test
-	fun execTest() = suspendTestNoBrowser {
+	fun testExec() = suspendTestNoBrowser {
         if (OS.isAndroid) return@suspendTestNoBrowser
         if (OS.isIos) return@suspendTestNoBrowser
         //val str = ">hello< '1^&) \" $ \\ \n \r \t \$test (|&,; 2" // @TODO: Couldn't get line breaks working on windows
@@ -50,7 +50,17 @@ class LocalVfsTest {
 		}
 	}
 
-	@Test
+    @Test
+    fun testExecNonExistant() = suspendTestNoBrowser {
+        if (OS.isAndroid) return@suspendTestNoBrowser
+        if (OS.isIos) return@suspendTestNoBrowser
+        val message = assertFailsWith<FileNotFoundException> {
+            localCurrentDirVfs["directory-that-does-not-exist"].execToString("echo", "1")
+        }
+        assertTrue { message.message!!.contains("is not a directory, to execute 'echo'") }
+    }
+
+    @Test
 	fun ensureParent() = suspendTestNoBrowser {
 		temp["korio.temp.folder/test.txt"].ensureParents().writeString("HELLO")
 		temp["korio.temp.folder/test.txt"].delete()
@@ -76,4 +86,20 @@ class LocalVfsTest {
 		}
 	}
 
+    @Test
+    fun testUnixPermissions() = suspendTest({ (Platform.isJvm && Platform.isUnix) || Platform.isMac || Platform.isLinux || (Platform.isJsNodeJs) }) {
+        val chmod = "0713".toInt(8)
+        val file = tempVfs["korio-temp123.bin"]
+        file.delete()
+        try {
+            file.writeString("123")
+            println("testUnixPermissions[before]:attribute=${file.getAttribute<Vfs.UnixPermissions>()}")
+            file.chmod(Vfs.UnixPermissions(chmod))
+            println("testUnixPermissions[after]:attribute=${file.getAttribute<Vfs.UnixPermissions>()}")
+            assertEquals(chmod, file.getAttribute<Vfs.UnixPermissions>()!!.rbits)
+            assertEquals(chmod, file.stat().permissions.rbits)
+        } finally {
+            file.delete()
+        }
+    }
 }

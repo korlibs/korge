@@ -37,11 +37,12 @@ open class RectBase(
             if (field !== v) {
                 field = v
                 dirtyVertices = true
+                invalidateRender()
             }
         }
 
-	override var anchorX: Double = anchorX; set(v) { if (field != v) { field = v; dirtyVertices = true } }
-    override var anchorY: Double = anchorY; set(v) { if (field != v) { field = v; dirtyVertices = true } }
+	override var anchorX: Double = anchorX; set(v) { if (field != v) { field = v; dirtyVertices = true; invalidateRender() } }
+    override var anchorY: Double = anchorY; set(v) { if (field != v) { field = v; dirtyVertices = true; invalidateRender() } }
 
     protected open val bwidth get() = 0.0
 	protected open val bheight get() = 0.0
@@ -124,13 +125,7 @@ open class RectBase(
     override fun buildDebugComponent(views: Views, container: UiContainer) {
         val view = this
         container.uiCollapsibleSection("RectBase") {
-            uiEditableValue(Pair(view::anchorX, view::anchorY), min = 0.0, max = 1.0, clamp = false, name = "anchor")
-            button("Center").onClick {
-                views.undoable("Change anchor", view) {
-                    view.anchorX = 0.5
-                    view.anchorY = 0.5
-                }
-            }
+            buildAnchorableComponents(views, view)
         }
         super.buildDebugComponent(views, container)
     }

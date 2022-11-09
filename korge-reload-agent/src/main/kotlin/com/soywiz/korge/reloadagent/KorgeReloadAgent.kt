@@ -3,9 +3,12 @@ package com.soywiz.korge.reloadagent
 import com.sun.net.httpserver.HttpServer
 import java.io.File
 import java.lang.instrument.ClassDefinition
+import java.lang.instrument.ClassFileTransformer
 import java.lang.instrument.Instrumentation
 import java.net.InetSocketAddress
+import java.security.*
 import java.util.concurrent.Executors
+import kotlin.system.*
 
 // https://www.baeldung.com/java-instrumentation
 object KorgeReloadAgent {
@@ -26,13 +29,16 @@ object KorgeReloadAgent {
         val args = agentArgs.split(":::")
         val httpPort = args[0].toIntOrNull() ?: 22011
         val continuousCommand = args[1]
-        val rootFolders = args.drop(2)
+        val enableRedefinition = args[2].toBoolean()
+        val rootFolders = args.drop(3)
+
         println("[KorgeReloadAgent] In $type method")
         println("[KorgeReloadAgent] - httpPort=$httpPort")
         println("[KorgeReloadAgent] - continuousCommand=$continuousCommand")
+        println("[KorgeReloadAgent] - enableRedefinition=$enableRedefinition")
         println("[KorgeReloadAgent] - rootFolders=$rootFolders")
 
-        val processor = KorgeReloaderProcessor(rootFolders, inst)
+        val processor = KorgeReloaderProcessor(rootFolders, inst, enableRedefinition)
         val taskExecutor = Executors.newSingleThreadExecutor()
 
         Runtime.getRuntime().addShutdownHook(Thread {
@@ -107,10 +113,58 @@ object KorgeReloadAgent {
     }
 }
 
-class KorgeReloaderProcessor(val rootFolders: List<String>, val inst: Instrumentation) {
+object ClassUtils {
+    inline class ByteArrayInt(val data: ByteArray) {
+        operator fun get(index: Int): Int = data[index].toInt() and 0xFF
+        operator fun set(index: Int, value: Int) { data[index] = value.toByte() }
+    }
+
+    fun getCanonicalClassNameFromBytes(data: ByteArray): String? {
+        val u = ByteArrayInt(data)
+        if (u[0] != 0xCA) return null
+        if (u[1] != 0xFE) return null
+        if (u[2] != 0xBA) return null
+        if (u[3] != 0xBE) return null
+        if (u[10] != 1) return null
+        val classNameSize = (u[11] shl 8) or (u[12] and 0xFF)
+        return u.data.sliceArray(13 until 13 + classNameSize).decodeToString()
+    }
+}
+
+class KorgeReloaderProcessor(val rootFolders: List<String>, val inst: Instrumentation, val enableRedefinition: Boolean) {
     val cannonicalRootFolders = rootFolders.map {
         File(it).canonicalPath.replace("\\", "/").trimEnd('/') + "/"
     }
+
+    val classNameToBytes = LinkedHashMap<String, ByteArray>()
+
+    init {
+        if (enableRedefinition) {
+            for (file in getAllClassFiles()) {
+                val classBytes = file.readBytes()
+                val className = ClassUtils.getCanonicalClassNameFromBytes(classBytes)?.let { getCanonicalClassName(it) } ?: continue
+                if (className.endsWith(file.nameWithoutExtension)) {
+                    classNameToBytes[className] = classBytes
+                    //println("KorgeReloaderProcessor.className=$className")
+                }
+            }
+            inst.addTransformer(object : ClassFileTransformer {
+                override fun transform(
+                    loader: ClassLoader,
+                    className: String,
+                    classBeingRedefined: Class<*>,
+                    protectionDomain: ProtectionDomain,
+                    classfileBuffer: ByteArray
+                ): ByteArray? {
+                    classNameToBytes[getCanonicalClassName(className)] = classfileBuffer
+                    //println("ClassFileTransformer: className=$className, classfileBuffer=${classfileBuffer.size}")
+                    return null
+                }
+            })
+        }
+    }
+
+    fun getCanonicalClassName(className: String): String = className.replace('/', '.')
 
     fun getPathRelativeToRoot(path: String): String? {
         for (root in cannonicalRootFolders) {
@@ -148,35 +202,48 @@ class KorgeReloaderProcessor(val rootFolders: List<String>, val inst: Instrument
             }
         }
 
-        if (modifiedClassNames.isNotEmpty()) {
+        if (modifiedClassNames.isEmpty()) {
+            println("[KorgeReloadAgent] modifiedClassNames=$modifiedClassNames [EMPTY] STOPPING")
+        } else {
             println("[KorgeReloadAgent] modifiedClassNames=$modifiedClassNames")
-            val classesByName = inst.allLoadedClasses.associateBy { it.name }
-            try {
-                val definitions: List<ClassDefinition> = modifiedClassNames.mapNotNull { info ->
-                    val clazz = classesByName[info.className] ?: return@mapNotNull null
-                    if (!info.path.exists()) return@mapNotNull null
-                    ClassDefinition(clazz, info.path.readBytes())
-                }
-                //inst.redefineClasses(*definitions.toTypedArray())
-                val workedDefinitions = arrayListOf<ClassDefinition>()
-                var success = true
-                for (def in definitions) {
-                    try {
-                        inst.redefineClasses(def)
-                        workedDefinitions += def
-                    } catch (e: java.lang.UnsupportedOperationException) {
-                        success = false
-                    } catch (e: Throwable) {
-                        e.printStackTrace()
-                        success = false
+            var successRedefinition = true
+            val changedDefinitions = arrayListOf<ClassDefinition>()
+            val times = arrayListOf<Long>()
+            if (enableRedefinition) {
+                val classesByName = inst.allLoadedClasses.associateBy { it.name }
+                try {
+                    val definitions: List<ClassDefinition> = modifiedClassNames.mapNotNull { info ->
+                        val clazz = classesByName[info.className] ?: return@mapNotNull null
+                        if (!info.path.exists()) return@mapNotNull null
+                        ClassDefinition(clazz, info.path.readBytes())
                     }
+                    //inst.redefineClasses(*definitions.toTypedArray())
+                    for (def in definitions) {
+                        times += measureTimeMillis {
+                            try {
+                                val canonicalClassName = getCanonicalClassName(def.definitionClass.name)
+                                if (classNameToBytes[canonicalClassName]?.contentEquals(def.definitionClassFile) != true) {
+                                    //println("def.definitionClass.name: canonicalClassName=${canonicalClassName}, classfileBuffer=${def.definitionClassFile.size}, classNameToBytes[canonicalClassName]=${classNameToBytes[canonicalClassName]?.size}")
+                                    inst.redefineClasses(def)
+                                    changedDefinitions += def
+                                }
+                            } catch (e: java.lang.UnsupportedOperationException) {
+                                successRedefinition = false
+                            } catch (e: Throwable) {
+                                e.printStackTrace()
+                                successRedefinition = false
+                            }
+                        }
+                    }
+                } catch (e: Throwable) {
+                    e.printStackTrace()
                 }
-                println("[KorgeReloadAgent] reload success=$success")
-                val triggerReload = Class.forName("com.soywiz.korge.KorgeReload").getMethod("triggerReload", java.util.List::class.java, java.lang.Boolean.TYPE)
-                triggerReload.invoke(null, workedDefinitions.map { it.definitionClass.name }, success)
-            } catch (e: Throwable) {
-                e.printStackTrace()
+            } else {
+                successRedefinition = false
             }
+            println("[KorgeReloadAgent] reload enableRedefinition=$enableRedefinition, successRedefinition=$successRedefinition, changedDefinitions=${changedDefinitions.size}, classNameToBytes=${classNameToBytes.size}, times[${times.size}]=${times.sum()}ms")
+            val triggerReload = Class.forName("com.soywiz.korge.KorgeReload").getMethod("triggerReload", java.util.List::class.java, java.lang.Boolean.TYPE)
+            triggerReload.invoke(null, changedDefinitions.map { it.definitionClass.name }, successRedefinition)
         }
     }
 

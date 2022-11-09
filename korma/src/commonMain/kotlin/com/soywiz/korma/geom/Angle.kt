@@ -177,4 +177,21 @@ val Float.radians: Angle get() = Angle.fromRadians(this)
 
 val Angle.normalized: Angle get() = Angle.fromRatio(ratio umod 1.0)
 
-fun Double.interpolate(l: Angle, r: Angle): Angle = Angle.fromRatio(this.interpolate(l.ratio, r.ratio))
+@Deprecated("", ReplaceWith("this.interpolateAngleDenormalized(l, r)"))
+fun Double.interpolate(l: Angle, r: Angle): Angle = this.interpolateAngleDenormalized(l, r)
+fun Double.interpolateAngle(l: Angle, r: Angle): Angle = interpolateAngle(l, r, minimizeAngle = true)
+fun Double.interpolateAngleNormalized(l: Angle, r: Angle): Angle = interpolateAngle(l, r, minimizeAngle = true)
+fun Double.interpolateAngleDenormalized(l: Angle, r: Angle): Angle = interpolateAngle(l, r, minimizeAngle = false)
+
+fun Double.interpolateAngle(l: Angle, r: Angle, minimizeAngle: Boolean): Angle = _interpolateAngleAny(this, l, r, minimizeAngle)
+
+private fun _interpolateAngleAny(ratio: Double, l: Angle, r: Angle, minimizeAngle: Boolean = true): Angle {
+    if (!minimizeAngle) return Angle.fromRatio(ratio.interpolate(l.ratio, r.ratio))
+    val ln = l.normalized
+    val rn = r.normalized
+    return when {
+        (rn - ln).absoluteValue <= 180.degrees -> Angle.fromRadians(ratio.interpolate(ln.radians, rn.radians))
+        ln < rn -> Angle.fromRadians(ratio.interpolate((ln + 360.degrees).radians, rn.radians)).normalized
+        else -> Angle.fromRadians(ratio.interpolate(ln.radians, (rn + 360.degrees).radians)).normalized
+    }
+}

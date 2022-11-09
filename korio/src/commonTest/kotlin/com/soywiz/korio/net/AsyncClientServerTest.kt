@@ -22,7 +22,7 @@ class AsyncClientServerTest {
 	}
 
     @Test
-	fun testClientServer() = suspendTest({ OS.isJvm || OS.isNativeDesktop }) {
+	fun testClientServer() = suspendTest({ OS.isJvm || OS.isNativeDesktop || OS.isJsNodeJs }) {
         val server = AsyncServer(port = 0)
         //val server = AsyncServer(port = 29_999)
 

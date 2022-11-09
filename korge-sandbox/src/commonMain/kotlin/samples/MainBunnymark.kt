@@ -149,6 +149,7 @@ class Bunny(tex: BmpSlice) : FastSprite(tex) {
                     bunny.y = minY
                 }
             }
+            invalidate()
         }
     }
 

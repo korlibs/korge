@@ -2,12 +2,12 @@ package com.soywiz.korio.lang
 
 import com.soywiz.kds.IntIntMap
 import com.soywiz.kds.iterators.fastForEach
+import com.soywiz.kds.lock.NonRecursiveLock
 import com.soywiz.kmem.ByteArrayBuilder
 import com.soywiz.kmem.extract
 import com.soywiz.kmem.insert
 import com.soywiz.kmem.readS16
 import com.soywiz.kmem.write16
-import com.soywiz.kds.lock.Lock
 import kotlin.math.min
 import kotlin.native.concurrent.SharedImmutable
 import kotlin.native.concurrent.ThreadLocal
@@ -21,7 +21,7 @@ expect val platformCharsetProvider: CharsetProvider
 @ThreadLocal
 private val CHARSET_PROVIDERS = arrayListOf<CharsetProvider>()
 @ThreadLocal
-private val CHARSET_PROVIDERS_LOCK = Lock()
+private val CHARSET_PROVIDERS_LOCK = NonRecursiveLock()
 
 
 abstract class Charset(val name: String) {

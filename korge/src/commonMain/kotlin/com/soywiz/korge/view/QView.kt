@@ -1,7 +1,6 @@
 package com.soywiz.korge.view
 
 import com.soywiz.kds.iterators.fastForEach
-import com.soywiz.korge.animate.play
 import com.soywiz.korge.input.EventsDslMarker
 import com.soywiz.korge.input.MouseEvents
 import com.soywiz.korge.input.onClick
@@ -75,16 +74,10 @@ class QView(val views: List<View>) : List<View> by views, BView {
     var colorMul: RGBA
         get() = firstOrNull?.colorMul ?: Colors.WHITE
         set(value) = fastForEach { it.colorMul = value }
-
-    /** Sets the state (if available) of all the views in this query */
-    fun state(name: String) {
-        fastForEach { it.play(name) }
-    }
 }
 
 fun QView.visible(value: Boolean) { visible = value }
 fun QView.alpha(value: Double) { alpha = value }
-fun QView.play(name: String) = fastForEach { it.play(name) }
 fun QView.onClick(handler: @EventsDslMarker suspend (MouseEvents) -> Unit) = fastForEach { it.onClick(handler) }
 inline fun <reified T : View> QView.castTo(): T? = firstOrNull as? T?
 

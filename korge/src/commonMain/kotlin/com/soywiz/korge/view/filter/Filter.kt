@@ -217,8 +217,8 @@ fun Filter.renderToTextureWithBorderUnsafe(
     return result
 }
 
-fun Filter.expandBorderRectangle(out: Rectangle, temp: MutableMarginInt = MutableMarginInt()) {
-    out.expand(getBorder(out.width.toIntCeil(), out.height.toIntCeil(), temp))
+fun Filter.expandBorderRectangle(out: Rectangle) {
+    MutableMarginInt.POOL { temp -> out.expand(getBorder(out.width.toIntCeil(), out.height.toIntCeil(), temp)) }
 }
 
 @ThreadLocal

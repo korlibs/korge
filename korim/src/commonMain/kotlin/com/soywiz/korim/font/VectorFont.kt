@@ -3,6 +3,7 @@ package com.soywiz.korim.font
 import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.korim.vector.Context2d
 import com.soywiz.korio.lang.WStringReader
+import com.soywiz.korio.lang.keep
 
 interface VectorFont : Font {
     fun getGlyphPath(size: Double, codePoint: Int, path: GlyphPath = GlyphPath(), reader: WStringReader? = null): GlyphPath?
@@ -18,7 +19,9 @@ interface VectorFont : Font {
         reader: WStringReader?,
         beforeDraw: (() -> Unit)?
     ): Boolean {
-        getGlyphMetrics(size, codePoint, metrics)
+        reader.keep {
+            getGlyphMetrics(size, codePoint, metrics, reader)
+        }
         val g = getGlyphPath(size, codePoint, reader = reader)
         if (g != null) {
             if (fill != null) {
@@ -64,13 +67,13 @@ data class VectorFontList(val list: List<VectorFont>) : VectorFont {
     override fun getFontMetrics(size: Double, metrics: FontMetrics): FontMetrics =
         list.first().getFontMetrics(size, metrics)
 
-    override fun getGlyphMetrics(size: Double, codePoint: Int, metrics: GlyphMetrics): GlyphMetrics {
+    override fun getGlyphMetrics(size: Double, codePoint: Int, metrics: GlyphMetrics, reader: WStringReader?): GlyphMetrics {
         list.fastForEach { font ->
-            if (font.getGlyphPath(size, codePoint, temp) != null) {
-                return font.getGlyphMetrics(size, codePoint, metrics)
+            if (font.getGlyphPath(size, codePoint, temp, reader) != null) {
+                return font.getGlyphMetrics(size, codePoint, metrics, reader)
             }
         }
-        return list.first().getGlyphMetrics(size, codePoint, metrics)
+        return list.first().getGlyphMetrics(size, codePoint, metrics, reader)
     }
 
     override fun getKerning(size: Double, leftCodePoint: Int, rightCodePoint: Int): Double =

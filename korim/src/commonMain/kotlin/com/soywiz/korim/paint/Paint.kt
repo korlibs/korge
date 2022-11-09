@@ -105,6 +105,10 @@ data class GradientPaint(
     override val units: GradientUnits = GradientUnits.OBJECT_BOUNDING_BOX,
     val startAngle: Angle = Angle.ZERO,
 ) : TransformedPaint {
+    val isLinear: Boolean get() = kind == GradientKind.LINEAR
+    val isRadial: Boolean get() = kind == GradientKind.RADIAL
+    val isSweep: Boolean get() = kind == GradientKind.SWEEP
+
     @Deprecated("")
     fun x0(m: Matrix) = m.transformX(x0, y0)
     @Deprecated("")

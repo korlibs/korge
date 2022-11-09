@@ -1,6 +1,9 @@
 package com.soywiz.korge.view
 
+import com.soywiz.korge.debug.*
 import com.soywiz.korma.geom.Anchor
+import com.soywiz.korui.*
+import com.soywiz.korui.layout.*
 
 interface Anchorable {
     /** Normally in the range [0.0, 1.0] */
@@ -22,3 +25,19 @@ fun <T : Anchorable> T.anchor(anchor: Anchor): T = anchor(anchor.sx, anchor.sy)
 
 fun <T : Anchorable> T.center(): T = anchor(0.5, 0.5)
 val <T : Anchorable> T.centered: T get() = anchor(0.5, 0.5)
+
+fun UiContainer.buildAnchorableComponents(views: Views, view: Anchorable) {
+    uiEditableValue(Pair(view::anchorX, view::anchorY), min = 0.0, max = 1.0, clamp = false, name = "anchor")
+    horizontal {
+        button("TL").onClick {
+            views.undoable("Change anchor", view as View) {
+                view.anchor(Anchor.TOP_LEFT)
+            }
+        }
+        button("Center").onClick {
+            views.undoable("Change anchor", view as View) {
+                view.anchor(Anchor.CENTER)
+            }
+        }
+    }
+}
