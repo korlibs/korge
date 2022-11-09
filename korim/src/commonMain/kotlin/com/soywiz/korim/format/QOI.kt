@@ -5,6 +5,7 @@ import com.soywiz.kmem.extract2
 import com.soywiz.kmem.extract4
 import com.soywiz.kmem.extract6
 import com.soywiz.kmem.write32BE
+import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.color.RgbaArray
@@ -70,12 +71,14 @@ object QOI : ImageFormat("qoi") {
                     g = bytes[p++]
                     b = bytes[p++]
                 }
+
                 QOI_OP_RGBA -> {
                     r = bytes[p++]
                     g = bytes[p++]
                     b = bytes[p++]
                     a = bytes[p++]
                 }
+
                 else -> {
                     when (b1.extract2(6)) {
                         QOI_SOP_INDEX -> {
@@ -85,11 +88,13 @@ object QOI : ImageFormat("qoi") {
                             b = col.b
                             a = col.a
                         }
+
                         QOI_SOP_DIFF -> {
                             r = (r + (b1.extract2(4) - 2)) and 0xFF
                             g = (g + (b1.extract2(2) - 2)) and 0xFF
                             b = (b + (b1.extract2(0) - 2)) and 0xFF
                         }
+
                         QOI_SOP_LUMA -> {
                             val b2 = bytes[p++]
                             val vg = (b1.extract6(0)) - 32
@@ -97,6 +102,7 @@ object QOI : ImageFormat("qoi") {
                             g = (g + (vg)) and 0xFF
                             b = (b + (vg - 8 + b2.extract4(0))) and 0xFF
                         }
+
                         QOI_SOP_RUN -> {
                             val np = b1.extract6(0) + 1
                             for (n in 0 until np) outp[o++] = lastCol
@@ -117,98 +123,122 @@ object QOI : ImageFormat("qoi") {
         val bitmap = image.mainBitmap.toBMP32IfRequired()
         val pixels = RgbaArray(bitmap.ints)
         val index = RgbaArray(64)
-        val maxSize = QOI_HEADER_SIZE + (bitmap.width * bitmap.height * (4 + 1)) + QOI_PADDING_SIZE
-        val bytes = UByteArrayInt(maxSize)
+        val maxSize = calculateMaxSize(bitmap)
+        val bytes = if (props.preAllocatedArrayForQOI == null) {
+            UByteArrayInt(maxSize)
+        } else {
+            require(props.preAllocatedArrayForQOI!!.size >= maxSize) {
+                """
+                   Requires a pre-allocated array of at least $maxSize bytes.
+                   You provided a pre-allocated array with ${props.preAllocatedArrayForQOI!!.size} bytes.
+                """.trimIndent()
+                ""
+            }
+            props.preAllocatedArrayForQOI!!
+        }
         val sbytes = bytes.bytes
-        var o = 0
-        var p = 0
+        var currentIndex = 0
+        var bytesUsed = 0
+
+        bytes[bytesUsed++] = 'q'.code
+        bytes[bytesUsed++] = 'o'.code
+        bytes[bytesUsed++] = 'i'.code
+        bytes[bytesUsed++] = 'f'.code
+        sbytes.write32BE(bytesUsed, bitmap.width); bytesUsed += 4
+        sbytes.write32BE(bytesUsed, bitmap.height); bytesUsed += 4
+        bytes[bytesUsed++] = 4
+        bytes[bytesUsed++] = QOI_LINEAR
+
+        var previousPixel = RGBA(0, 0, 0, 0xFF)
+        var previousR = 0
+        var previousG = 0
+        var previousB = 0
+        var previousA = 0xFF
+
         var run = 0
+        while (currentIndex < pixels.size) {
+            val currentPixel = pixels[currentIndex++]
+            val currentR = currentPixel.r
+            val currentG = currentPixel.g
+            val currentB = currentPixel.b
+            val currentA = currentPixel.a
 
-        bytes[p++] = 'q'.code
-        bytes[p++] = 'o'.code
-        bytes[p++] = 'i'.code
-        bytes[p++] = 'f'.code
-        sbytes.write32BE(p, bitmap.width); p += 4
-        sbytes.write32BE(p, bitmap.height); p += 4
-        bytes[p++] = 4
-        bytes[p++] = QOI_LINEAR
-
-        var px_prev = RGBA(0, 0, 0, 0xFF)
-        var pr = 0
-        var pg = 0
-        var pb = 0
-        var pa = 0xFF
-
-        while (o < pixels.size) {
-            val px = pixels[o++]
-            val cr = px.r
-            val cg = px.g
-            val cb = px.b
-            val ca = px.a
-
-            if (px == px_prev) {
+            if (currentPixel == previousPixel) {
                 run++
-                if (run == 62 || o >= pixels.size) {
-                    bytes[p++] = QUI_SOP(QOI_SOP_RUN) or (run - 1)
+                if (run == 62 || currentIndex >= pixels.size) {
+                    bytes[bytesUsed++] = QUI_SOP(QOI_SOP_RUN) or (run - 1)
                     run = 0
                 }
             } else {
                 if (run > 0) {
-                    bytes[p++] = QUI_SOP(QOI_SOP_RUN) or (run - 1)
+                    bytes[bytesUsed++] = QUI_SOP(QOI_SOP_RUN) or (run - 1)
                     run = 0
                 }
 
-                val index_pos = QOI_COLOR_HASH(cr, cg, cb, ca) % 64
+                val index_pos = QOI_COLOR_HASH(currentR, currentG, currentB, currentA) % 64
 
-                if (index[index_pos] == px) {
-                    bytes[p++] = QUI_SOP(QOI_SOP_INDEX) or index_pos
+                if (index[index_pos] == currentPixel) {
+                    bytes[bytesUsed++] = QUI_SOP(QOI_SOP_INDEX) or index_pos
                 } else {
-                    index[index_pos] = px
+                    index[index_pos] = currentPixel
 
-                    if (ca == pa) {
-                        val vr = cr - pr
-                        val vg = cg - pg
-                        val vb = cb - pb
+                    if (currentA == previousA) {
+                        val vr = currentR - previousR
+                        val vg = currentG - previousG
+                        val vb = currentB - previousB
 
                         val vg_r = vr - vg
                         val vg_b = vb - vg
 
                         when {
                             vr > -3 && vr < 2 && vg > -3 && vg < 2 && vb > -3 && vb < 2 -> {
-                                bytes[p++] =
+                                bytes[bytesUsed++] =
                                     QUI_SOP(QOI_SOP_DIFF) or ((vr + 2) shl 4) or ((vg + 2) shl 2) or (vb + 2)
                             }
+
                             vg_r > -9 && vg_r < 8 && vg > -33 && vg < 32 && vg_b > -9 && vg_b < 8 -> {
-                                bytes[p++] = QUI_SOP(QOI_SOP_LUMA) or (vg + 32)
-                                bytes[p++] = ((vg_r + 8) shl 4) or (vg_b + 8)
+                                bytes[bytesUsed++] = QUI_SOP(QOI_SOP_LUMA) or (vg + 32)
+                                bytes[bytesUsed++] = ((vg_r + 8) shl 4) or (vg_b + 8)
                             }
+
                             else -> {
-                                bytes[p++] = QOI_OP_RGB
-                                bytes[p++] = cr
-                                bytes[p++] = cg
-                                bytes[p++] = cb
+                                bytes[bytesUsed++] = QOI_OP_RGB
+                                bytes[bytesUsed++] = currentR
+                                bytes[bytesUsed++] = currentG
+                                bytes[bytesUsed++] = currentB
                             }
                         }
                     } else {
-                        bytes[p++] = QOI_OP_RGBA
-                        bytes[p++] = cr
-                        bytes[p++] = cg
-                        bytes[p++] = cb
-                        bytes[p++] = ca
+                        bytes[bytesUsed++] = QOI_OP_RGBA
+                        bytes[bytesUsed++] = currentR
+                        bytes[bytesUsed++] = currentG
+                        bytes[bytesUsed++] = currentB
+                        bytes[bytesUsed++] = currentA
                     }
                 }
             }
 
-            px_prev = px
-            pr = cr
-            pg = cg
-            pb = cb
-            pa = ca
+            previousPixel = currentPixel
+            previousR = currentR
+            previousG = currentG
+            previousB = currentB
+            previousA = currentA
         }
 
-        for (n in 0 until QOI_PADDING.size) sbytes[p++] = QOI_PADDING[n]
+        for (n in 0 until QOI_PADDING.size) sbytes[bytesUsed++] = QOI_PADDING[n]
 
-        s.writeBytes(sbytes, 0, p)
+        s.writeBytes(sbytes, 0, bytesUsed)
+    }
+
+    fun calculateMaxSize(bitmap: Bitmap): Int {
+        return calculateMaxSize(bitmap.width, bitmap.height)
+    }
+
+    /**
+     * Calculates the maximum encoding size (# bytes) of a bitmap when using QOI.
+     */
+    fun calculateMaxSize(width: Int, height: Int): Int {
+        return QOI_HEADER_SIZE + (width * height * (4 + 1)) + QOI_PADDING_SIZE
     }
 
     private const val QOI_SRGB = 0
