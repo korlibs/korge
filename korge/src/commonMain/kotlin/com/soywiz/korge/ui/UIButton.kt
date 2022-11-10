@@ -22,6 +22,9 @@ import com.soywiz.korma.geom.Anchor
 import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.interpolation.*
 import com.soywiz.korui.UiContainer
+import com.soywiz.korui.layout.*
+import com.soywiz.korui.layout.HorizontalUiLayout.percent
+import com.soywiz.korui.layout.HorizontalUiLayout.pt
 import kotlin.math.*
 import kotlin.reflect.*
 
@@ -81,12 +84,24 @@ open class UIButton(
     var skin: UISkin? get() = uiSkin ; set(value) { uiSkin = value }
 
 	var forcePressed = false
-    var borderRadius = 4.0
+    var radius = 5.pt
+    //var radius = 100.percent
+
+    private fun radiusWidth(width: Double): Double {
+        return radius.calc(Length.Context().setSize(width.toInt() / 2)).toDouble()
+    }
+
+    private fun radiusHeight(height: Double): Double {
+        return radius.calc(Length.Context().setSize(height.toInt() / 2)).toDouble()
+    }
+
+    //val radiusRatioHalf get() = radiusRatio * 0.5
     val bgColorOut = Colors["#1976d2"]
     val bgColorOver = Colors["#1B5AB3"]
     val bgColorDisabled = Colors["#00000033"]
     //protected val rect: NinePatchEx = ninePatch(null, width, height)
-    protected val background = roundRect(width, height, borderRadius, borderRadius, bgColorOut)
+    protected val background = roundRect(
+        width, height, radiusWidth(width), radiusHeight(height), bgColorOut)
         .filters(DropshadowFilter(0.0, 3.0, shadowColor = Colors.BLACK.withAd(0.126)))
         .also { it.mouseEnabled = false }
     var bgcolor: RGBA
@@ -121,15 +136,23 @@ open class UIButton(
         val width = width
         val height = height
         background.setSize(width, height)
+        background.rx = radiusWidth(width)
+        background.ry = radiusHeight(height)
         textView.setSize(width, height)
         textView.alignment = TextAlignment.CENTER
-        effects.forEachChild { it.setSize(width, height) }
+        effects.forEachChild {
+            it.setSize(width, height)
+            if (it is RoundRect) {
+                it.rx = background.rx
+                it.ry = background.ry
+            }
+        }
     }
 
     fun addCircleHighlight(px: Double, py: Double) {
         val radius = hypot(width, height)
         animatorEffects.sequence(easing = Easing.EASE_IN) {
-            val effect = effects.roundRect(width, height, borderRadius, borderRadius, fill = Colors.TRANSPARENT_BLACK)
+            val effect = effects.roundRect(width, height, radiusWidth(width), radiusHeight(height), fill = Colors.TRANSPARENT_BLACK)
             tween(V2Callback {
                 val color = Colors.WHITE.premultiplied.mix(Colors.TRANSPARENT_BLACK.premultiplied, it.interpolate(0.4, 0.4))
                 effect.fill = RadialGradientPaint(

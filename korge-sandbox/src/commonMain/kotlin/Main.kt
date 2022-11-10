@@ -43,6 +43,7 @@ suspend fun main() = Korge(
         //Demo(::MainAnimations),
         //Demo(::MainCache),
         Demo(::MainEditor),
+        //Demo(::MainGestures),
         //Demo(::MainSvgAnimation),
         //Demo(::MainVectorNinePatch),
         listOf(
