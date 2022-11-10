@@ -211,7 +211,6 @@ class RenderContext constructor(
     val rectPool = Pool(reset = { it.setTo(0, 0, 0, 0) }, preallocate = 8) { Rectangle() }
 
     val tempMargin: MutableMarginInt = MutableMarginInt()
-    val tempMatrix: Matrix = Matrix()
 
     val identityMatrix = Matrix()
 
