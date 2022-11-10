@@ -88,6 +88,7 @@ var GLOBAL_CHECK_GL = false
 data class GameWindowCreationConfig(
     val multithreaded: Boolean? = null,
     val hdr: Boolean? = null,
+    val msaa: Int? = null,
 )
 
 expect fun CreateDefaultGameWindow(config: GameWindowCreationConfig): GameWindow
