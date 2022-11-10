@@ -1,6 +1,7 @@
 package com.soywiz.korge.animate
 
 import com.soywiz.klock.*
+import com.soywiz.korge.component.*
 import com.soywiz.korge.view.*
 import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
@@ -10,46 +11,72 @@ import kotlin.test.*
 class NewAnimatorTest {
     @Test
     fun testBasic() {
-        val view = DummyView()
-        val animator = view.animator(defaultTime = 1.seconds, defaultEasing = Easing.LINEAR) {
-            moveTo(view, 10, 0)
+        fun generateLines(startImmediately: Boolean): List<String> {
+            val view = DummyView()
+            val lines = arrayListOf<String>()
+            val log = arrayListOf<String>()
+            var _animator: Animator? = null
+
+            fun logLine() {
+                lines += "${view.pos.niceStr} : ${_animator?.nodes?.size} : ${view.getComponentsOfType(UpdateComponent)?.size} : ${log.joinToString(",")}"
+            }
+
+            logLine()
+            val animator = view.animator(defaultTime = 1.seconds, defaultEasing = Easing.LINEAR, startImmediately = startImmediately) {
+                moveTo(view, 10, 0)
+            }
+            _animator = animator
+            animator.onComplete.add { log += "complete" }
+
+            logLine()
+            view.updateSingleView(0.milliseconds); logLine()
+            view.updateSingleView(100.milliseconds); logLine()
+            view.updateSingleView(900.milliseconds); logLine()
+
+            // Add a new node to the animator (even if completed)
+            animator.moveBy(view, 0, 10); logLine()
+            view.updateSingleView(100.milliseconds); logLine()
+            view.updateSingleView(100.milliseconds); logLine()
+            view.updateSingleView(800.milliseconds); logLine()
+            return lines
         }
-        val log = arrayListOf<String>()
-        animator.onComplete.add { log += "complete" }
-
-        val lines = arrayListOf<String>()
-        fun logLine() {
-            lines += "${view.pos.niceStr} : ${animator.nodes.size} : ${log.joinToString(",")}"
-        }
-
-        view.updateSingleView(0.milliseconds); logLine()
-        view.updateSingleView(100.milliseconds); logLine()
-        view.updateSingleView(900.milliseconds); logLine()
-
-        // Add a new node to the animator (even if completed)
-        animator.moveBy(view, 0, 10); logLine()
-        view.updateSingleView(100.milliseconds); logLine()
-        view.updateSingleView(100.milliseconds); logLine()
-        view.updateSingleView(800.milliseconds); logLine()
 
         assertEquals(
             """
-                (0, 0) : 0 : 
-                (1, 0) : 0 : 
-                (10, 0) : 0 : complete
-                (10, 0) : 1 : complete
-                (10, 1) : 0 : complete
-                (10, 2) : 0 : complete
-                (10, 10) : 0 : complete,complete
+                (0, 0) : null : null : 
+                (0, 0) : 1 : 1 : 
+                (0, 0) : 0 : 1 : 
+                (1, 0) : 0 : 1 : 
+                (10, 0) : 0 : 0 : complete
+                (10, 0) : 1 : 1 : complete
+                (10, 1) : 0 : 1 : complete
+                (10, 2) : 0 : 1 : complete
+                (10, 10) : 0 : 0 : complete,complete
+                ---
+                (0, 0) : null : null : 
+                (0, 0) : 0 : 1 : 
+                (0, 0) : 0 : 1 : 
+                (1, 0) : 0 : 1 : 
+                (10, 0) : 0 : 0 : complete
+                (10, 0) : 0 : 1 : complete
+                (10, 1) : 0 : 1 : complete
+                (10, 2) : 0 : 1 : complete
+                (10, 10) : 0 : 0 : complete,complete
             """.trimIndent(),
-            lines.joinToString("\n")
+            (generateLines(startImmediately = false) + "---" + generateLines(startImmediately = true)).joinToString("\n")
         )
+
     }
 
     @Test
     fun testSequences() {
         val view = DummyView()
         var log = ""
+        val lines = arrayListOf<String>()
+        fun logLine() {
+            lines += "${view.pos.niceStr}, ${view.alpha.niceStr(1)} : $log"
+        }
+        logLine()
         val animator = view.animator(defaultTime = 1.seconds, defaultEasing = Easing.LINEAR) {
             block(name = "0") { log += "0" }
             block { log += "1" }
@@ -64,10 +91,6 @@ class NewAnimatorTest {
             }
             block { log += "3" }
         }
-        val lines = arrayListOf<String>()
-        fun logLine() {
-            lines += "${view.pos.niceStr}, ${view.alpha.niceStr(1)} : $log"
-        }
         logLine()
         for (n in 0 until 34) {
             view.updateSingleView(0.1.seconds)
@@ -76,6 +99,7 @@ class NewAnimatorTest {
         assertEquals(
             """
                 (0, 0), 1 : 
+                (0, 0), 1 : 01
                 (1, 0), 1 : 01
                 (2, 0), 1 : 01
                 (3, 0), 1 : 01

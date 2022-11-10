@@ -25,8 +25,9 @@ fun View.animator(
     defaultEasing: Easing = Animator.DEFAULT_EASING,
     parallel: Boolean = false,
     looped: Boolean = false,
+    startImmediately: Boolean = Animator.DEFAULT_START_IMMEDIATELY,
     block: @AnimatorDslMarker Animator.() -> Unit = {}
-): Animator = Animator(this, defaultTime, defaultSpeed, defaultEasing, parallel, looped, parent = null).apply(block)
+): Animator = Animator(this, defaultTime, defaultSpeed, defaultEasing, parallel, looped, parent = null, startImmediately = startImmediately, level = 0).apply(block)
 
 suspend fun View.animate(
     defaultTime: TimeSpan = Animator.DEFAULT_TIME,
@@ -35,19 +36,21 @@ suspend fun View.animate(
     parallel: Boolean = false,
     looped: Boolean = false,
     completeOnCancel: Boolean = false,
+    startImmediately: Boolean = Animator.DEFAULT_START_IMMEDIATELY,
     block: @AnimatorDslMarker Animator.() -> Unit = {}
-): Animator = Animator(this, defaultTime, defaultSpeed, defaultEasing, parallel, looped, parent = null).apply(block).also { it.await(completeOnCancel = completeOnCancel) }
+): Animator = Animator(this, defaultTime, defaultSpeed, defaultEasing, parallel, looped, parent = null, startImmediately = startImmediately, level = 0).apply(block).also { it.await(completeOnCancel = completeOnCancel) }
 
-open class Animator(
+open class Animator @PublishedApi internal constructor(
     @PublishedApi internal val root: View,
-    @PublishedApi internal val defaultTime: TimeSpan = DEFAULT_TIME,
-    @PublishedApi internal val defaultSpeed: Double = DEFAULT_SPEED,
-    @PublishedApi internal val defaultEasing: Easing = DEFAULT_EASING,
+    @PublishedApi internal val defaultTime: TimeSpan,
+    @PublishedApi internal val defaultSpeed: Double,
+    @PublishedApi internal val defaultEasing: Easing,
     private val parallel: Boolean = false,
     private val looped: Boolean = false,
     private val parent: Animator?,
     private var lazyInit: (Animator.() -> Unit)? = null,
-    @PublishedApi internal val level: Int = 0,
+    @PublishedApi internal val level: Int,
+    @PublishedApi internal val startImmediately: Boolean,
 ) : CloseableCancellable {
     //private val indent: String get() = Indenter.INDENTS[level]
 
@@ -55,6 +58,8 @@ open class Animator(
         val DEFAULT_TIME = 500.milliseconds
         val DEFAULT_SPEED = 128.0 // Points per second
         val DEFAULT_EASING = Easing.EASE
+        val DEFAULT_START_IMMEDIATELY = true
+        //val DEFAULT_START_IMMEDIATELY = false
     }
 
     val onComplete = Signal<Unit>()
@@ -74,23 +79,30 @@ open class Animator(
     private fun ensure() {
         if (parent != null) return parent.ensure()
 
-        val updateComponents = root.getComponentsOfType(UpdateComponent) ?: emptyList()
         //println("updateComponents=${updateComponents.size}, updateComponents.contains(updater)=${updateComponents.contains(updater)}, updater=$updater : $updateComponents")
-        if (updateComponents.contains(updater)) return
+        if (updater != null && (root.getComponentsOfType(UpdateComponent) ?: emptyList()).contains(updater)) return
         //if (updater != null) return
 
         //println("!!!!!!!!!!!!! ADD NEW UPDATER : updater=$updater, this=$this, parent=$parent")
-        updater = root.addUpdater(first = false) {
-            if (autoInvalidateView) root.invalidateRender()
-            //println("****")
-            if (rootAnimationNode.update(it) >= 0.seconds) {
-                if (looped) {
-                    onComplete()
-                } else {
-                    cancel()
+
+        object : UpdateComponent {
+            override val view: View get() = this@Animator.root
+            override fun update(dt: TimeSpan) {
+                if (this@Animator.autoInvalidateView) this@Animator.root.invalidateRender()
+                //println("****")
+                if (this@Animator.rootAnimationNode.update(dt) >= TimeSpan.ZERO) {
+                    if (this@Animator.looped) {
+                        this@Animator.onComplete()
+                    } else {
+                        this@Animator.cancel()
+                    }
                 }
             }
-        } as Closeable
+        }.also {
+            updater = it
+            it.attach()
+            if (startImmediately) it.update(TimeSpan.ZERO)
+        }
     }
 
     private fun ensureInit() {
@@ -152,24 +164,24 @@ open class Animator(
     }
 
     inline fun parallel(
-        time: TimeSpan = this.defaultTime, speed: Double = this.defaultSpeed, easing: Easing = this.defaultEasing, looped: Boolean = false,
+        time: TimeSpan = this.defaultTime, speed: Double = this.defaultSpeed, easing: Easing = this.defaultEasing, looped: Boolean = false, startImmediately: Boolean = this.startImmediately,
         callback: @AnimatorDslMarker Animator.() -> Unit
-    ): Animator = Animator(root, time, speed, easing, true, looped, level = level + 1, parent = this).also { callback(it) }.also { addNode(it.rootAnimationNode) }
+    ): Animator = Animator(root, time, speed, easing, true, looped, level = level + 1, parent = this, startImmediately = startImmediately).also { callback(it) }.also { addNode(it.rootAnimationNode) }
 
     inline fun sequence(
-        defaultTime: TimeSpan = this.defaultTime, defaultSpeed: Double = this.defaultSpeed, easing: Easing = this.defaultEasing, looped: Boolean = false,
+        defaultTime: TimeSpan = this.defaultTime, defaultSpeed: Double = this.defaultSpeed, easing: Easing = this.defaultEasing, looped: Boolean = false, startImmediately: Boolean = this.startImmediately,
         callback: @AnimatorDslMarker Animator.() -> Unit
-    ): Animator = Animator(root, defaultTime, defaultSpeed, easing, false, looped, level = level + 1, parent = this).also { callback(it) }.also { addNode(it.rootAnimationNode) }
+    ): Animator = Animator(root, defaultTime, defaultSpeed, easing, false, looped, level = level + 1, parent = this, startImmediately = startImmediately).also { callback(it) }.also { addNode(it.rootAnimationNode) }
 
     fun parallelLazy(
-        time: TimeSpan = this.defaultTime, speed: Double = this.defaultSpeed, easing: Easing = this.defaultEasing, looped: Boolean = false,
+        time: TimeSpan = this.defaultTime, speed: Double = this.defaultSpeed, easing: Easing = this.defaultEasing, looped: Boolean = false, startImmediately: Boolean = this.startImmediately,
         init: @AnimatorDslMarker Animator.() -> Unit
-    ): Animator = Animator(root, time, speed, easing, true, looped, lazyInit = init, level = level + 1, parent = this).also { addNode(it.rootAnimationNode) }
+    ): Animator = Animator(root, time, speed, easing, true, looped, lazyInit = init, level = level + 1, parent = this, startImmediately = startImmediately).also { addNode(it.rootAnimationNode) }
 
     fun sequenceLazy(
-        time: TimeSpan = this.defaultTime, speed: Double = this.defaultSpeed, easing: Easing = this.defaultEasing, looped: Boolean = false,
+        time: TimeSpan = this.defaultTime, speed: Double = this.defaultSpeed, easing: Easing = this.defaultEasing, looped: Boolean = false, startImmediately: Boolean = this.startImmediately,
         init: @AnimatorDslMarker Animator.() -> Unit
-    ): Animator = Animator(root, time, speed, easing, false, looped, lazyInit = init, level = level + 1, parent = this).also { addNode(it.rootAnimationNode) }
+    ): Animator = Animator(root, time, speed, easing, false, looped, lazyInit = init, level = level + 1, parent = this, startImmediately = startImmediately).also { addNode(it.rootAnimationNode) }
 
     @PublishedApi internal fun __tween(vararg vs: V2<*>, lazyVs: Array<out () -> V2<*>>? = null, time: TimeSpan = this.defaultTime, lazyTime: (() -> TimeSpan)? = null, easing: Easing = this.defaultEasing, name: String?) {
         //println("__tween=time=$time")
