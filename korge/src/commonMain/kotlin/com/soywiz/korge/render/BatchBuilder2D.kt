@@ -21,9 +21,7 @@ import com.soywiz.korag.shader.Varying
 import com.soywiz.korag.shader.VertexLayout
 import com.soywiz.korge.internal.KorgeInternal
 import com.soywiz.korge.view.BlendMode
-import com.soywiz.korim.bitmap.Bitmap
-import com.soywiz.korim.bitmap.Bitmaps
-import com.soywiz.korim.bitmap.BmpSlice
+import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.ColorAdd
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
@@ -259,7 +257,7 @@ class BatchBuilder2D constructor(
 		x1: Float, y1: Float,
 		x2: Float, y2: Float,
 		x3: Float, y3: Float,
-		tex: TextureCoords,
+		tex: BmpCoords,
 		colorMul: RGBA, colorAdd: ColorAdd,
         texIndex: Int = currentTexIndex,
         premultiplied: Boolean = tex.premultiplied,
@@ -687,20 +685,31 @@ class BatchBuilder2D constructor(
         wrap: Boolean = false,
         unit: Unit = Unit,
 	) {
+        setStateFast(tex.base, filtering, blendMode, program, icount = 6, vcount = 4)
+        drawQuadFast(x, y, width, height, m, tex, colorMul, colorAdd, premultiplied, wrap)
+	}
+
+    fun drawQuadFast(
+        x: Float, y: Float, width: Float, height: Float,
+        m: Matrix,
+        tex: BmpCoords,
+        colorMul: RGBA, colorAdd: ColorAdd,
+        premultiplied: Boolean = tex.premultiplied,
+        wrap: Boolean = false
+    ) {
         val x0 = x
         val x1 = (x + width)
         val y0 = y
         val y1 = (y + height)
-        setStateFast(tex.base, filtering, blendMode, program, icount = 6, vcount = 4)
         drawQuadFast(
             m.transformXf(x0, y0), m.transformYf(x0, y0),
             m.transformXf(x1, y0), m.transformYf(x1, y0),
             m.transformXf(x1, y1), m.transformYf(x1, y1),
             m.transformXf(x0, y1), m.transformYf(x0, y1),
-        	tex, colorMul, colorAdd,
+            tex, colorMul, colorAdd,
             premultiplied = premultiplied, wrap = wrap
         )
-	}
+    }
 
     enum class AddType(val index: Int) {
         NO_ADD(0),

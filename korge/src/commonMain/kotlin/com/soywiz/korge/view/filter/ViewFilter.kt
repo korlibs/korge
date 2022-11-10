@@ -7,9 +7,7 @@ import com.soywiz.kmem.toIntCeil
 import com.soywiz.korge.debug.uiCollapsibleSection
 import com.soywiz.korge.debug.uiEditableValue
 import com.soywiz.korge.render.RenderContext
-import com.soywiz.korge.view.View
-import com.soywiz.korge.view.ViewRenderPhase
-import com.soywiz.korge.view.addDebugExtraComponent
+import com.soywiz.korge.view.*
 import com.soywiz.korio.lang.portableSimpleName
 import kotlin.native.concurrent.ThreadLocal
 
@@ -73,7 +71,10 @@ var View.filterScale: Double by extraPropertyThis(transform = { Filter.discretiz
 //internal const val VIEW_FILTER_TRANSPARENT_EDGE = true
 internal const val VIEW_FILTER_TRANSPARENT_EDGE = false
 
-fun View.renderFiltered(ctx: RenderContext, filter: Filter, first: Boolean = true) {
+fun View.renderFiltered(
+    ctx: RenderContext, filter: Filter,
+    first: Boolean = true,
+) {
     val bounds = getLocalBoundsOptimizedAnchored(includeFilters = false)
 
     if (bounds.width <= 0.0 || bounds.height <= 0.0) return

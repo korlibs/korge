@@ -4,6 +4,7 @@ import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.korag.AG
 import com.soywiz.korag.annotation.KoragExperimental
 import com.soywiz.korev.EventDispatcher
+import com.soywiz.korge.baseview.*
 import com.soywiz.korge.debug.findObservableProperties
 import com.soywiz.korge.debug.uiCollapsibleSection
 import com.soywiz.korge.debug.uiEditableValue
@@ -31,6 +32,7 @@ class Stage(override val views: Views) : FixedSizeContainer()
     , ViewsContainer
     , ResourcesContainer
     , BoundsProvider by views.bp
+    , InvalidateNotifier
 {
     override var clip: Boolean by views::clipBorders
     override var width: Double by views::virtualWidthDouble
@@ -41,8 +43,13 @@ class Stage(override val views: Views) : FixedSizeContainer()
     val injector: AsyncInjector get() = views.injector
     val ag: AG get() = views.ag
     val gameWindow: GameWindow get() = views.gameWindow
-    override val stage: Stage = this
     override val resources get() = views.resources
+    override val stage: Stage get() = this
+
+    init {
+        this._stage = this
+        this._invalidateNotifier = this
+    }
 
     @KoragExperimental
     fun <T> runBlockingNoJs(block: suspend () -> T): T =
@@ -89,6 +96,10 @@ class Stage(override val views: Views) : FixedSizeContainer()
             }
         }
         super.buildDebugComponent(views, container)
+    }
+
+    override fun invalidatedView(view: BaseView?) {
+        views.invalidatedView(view)
     }
 
     override fun toString(): String = "Stage"

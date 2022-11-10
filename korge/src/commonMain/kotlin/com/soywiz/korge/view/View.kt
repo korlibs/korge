@@ -209,14 +209,33 @@ abstract class View internal constructor(
     /** Ratio speed of this node, affecting all the [UpdateComponent] */
     var speed: Double = 1.0
 
+    internal var _stage: Stage? = null
+        set(value) {
+            if (field === value) return
+            field = value
+            forEachChild { it._stage = value }
+        }
+
+    internal var _invalidateNotifier: InvalidateNotifier? = null
+        set(value) {
+            if (field === value) return
+            field = value
+            forEachChild { it._invalidateNotifier = value }
+        }
+
+    protected open fun setInvalidateNotifier() {
+        _invalidateNotifier = _parent?._invalidateNotifier
+    }
+
     /** Parent [Container] of [this] View if any, or null */
     var parent: Container?
         get() = _parent
         internal set(value) {
-            if (_parent !== value) {
-                _parent = value
-                onParentChanged()
-            }
+            if (_parent === value) return
+            _parent = value
+            _stage = _parent?._stage
+            setInvalidateNotifier()
+            onParentChanged()
         }
 
     override val baseParent: Container? get() = parent
@@ -510,7 +529,7 @@ abstract class View internal constructor(
     val root: View get() = parent?.root ?: this
 
     /** When included in the tree, this returns the stage. When not attached yet, this will return null. */
-    open val stage: Stage? get() = root as? Stage?
+    open val stage: Stage? get() = _stage
 
     /** Determines if mouse events will be handled for this view and its children */
     //open var mouseEnabled: Boolean = true
@@ -778,7 +797,8 @@ abstract class View internal constructor(
     }
 
     override fun invalidateRender() {
-        stage?.views?.invalidatedView(this)
+        _invalidateNotifier?.invalidatedView(this)
+        //stage?.views?.invalidatedView(this)
     }
 
     open fun invalidateColorTransform() {
@@ -2185,7 +2205,7 @@ val Stage.lastTreeView: View
                 return view
             }
         }
-        return view ?: stage
+        return view ?: stage!!
     }
 
 fun View.nextView(): View? {
