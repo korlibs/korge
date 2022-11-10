@@ -59,7 +59,7 @@ open class Animator(
 
     val onComplete = Signal<Unit>()
 
-    private val nodes = Deque<NewAnimatorNode>()
+    internal val nodes = Deque<NewAnimatorNode>()
     var speed: Double = 1.0
 
     @PublishedApi
@@ -68,37 +68,29 @@ open class Animator(
         ensure()
     }
 
-    private var updater: UpdateComponent? = null
+    private var updater: Closeable? = null
     var autoInvalidateView = false
 
     private fun ensure() {
         if (parent != null) return parent.ensure()
-        if (!(root.getComponentsOfType(UpdateComponent) ?: emptyList()).contains(updater)) {
-        //if (updater == null) {
-            //println("!!!!!!!!!!!!! ADD NEW UPDATER : updater=$updater, this=$this, parent=$parent")
-            updater = root.addUpdater2(first = false) {
-                if (autoInvalidateView) root.invalidateRender()
-                //println("****")
-                if (rootAnimationNode.update(it) >= 0.seconds) {
-                    if (looped) {
-                        onComplete()
-                    } else {
-                        cancel()
-                    }
+
+        val updateComponents = root.getComponentsOfType(UpdateComponent) ?: emptyList()
+        //println("updateComponents=${updateComponents.size}, updateComponents.contains(updater)=${updateComponents.contains(updater)}, updater=$updater : $updateComponents")
+        if (updateComponents.contains(updater)) return
+        //if (updater != null) return
+
+        //println("!!!!!!!!!!!!! ADD NEW UPDATER : updater=$updater, this=$this, parent=$parent")
+        updater = root.addUpdater(first = false) {
+            if (autoInvalidateView) root.invalidateRender()
+            //println("****")
+            if (rootAnimationNode.update(it) >= 0.seconds) {
+                if (looped) {
+                    onComplete()
+                } else {
+                    cancel()
                 }
             }
-        }
-    }
-
-    private fun <T : View> T.addUpdater2(first: Boolean = true, updatable: T.(dt: TimeSpan) -> Unit): UpdateComponent {
-        val component = object : UpdateComponent {
-            override val view: View get() = this@addUpdater2
-            override fun update(dt: TimeSpan) {
-                updatable(this@addUpdater2, dt)
-            }
-        }.attach()
-        if (first) component.update(TimeSpan.ZERO)
-        return component
+        } as Closeable
     }
 
     private fun ensureInit() {
@@ -210,7 +202,7 @@ open class Animator(
         override fun update(dt: TimeSpan): TimeSpan {
             var dt = dt * speed
 
-            //println("${indent}|UPDATE!!")
+            //println("UPDATE!!: dt=$dt")
             ensureInit()
 
             if (parallel) {
@@ -281,13 +273,13 @@ open class Animator(
 
         override fun toString(): String = "TweenNode(totalTime=$totalTime, name=$name, ${computedVs.toList()})"
 
-        private var currentTime: TimeSpan = 0.seconds
+        private var currentTime: TimeSpan = TimeSpan.ZERO
         override fun reset() {
-            currentTime = 0.seconds
+            currentTime = TimeSpan.ZERO
         }
 
         override fun update(dt: TimeSpan): TimeSpan {
-            if (currentTime == 0.seconds) {
+            if (currentTime == TimeSpan.ZERO) {
                 computedVs.fastForEach {
                     it.init()
                 }
@@ -298,6 +290,8 @@ open class Animator(
                     totalTime == TimeSpan.ZERO -> 1.0
                     else -> currentTime.seconds.convertRange(it.startTime.seconds, it.endTime(totalTime).seconds, 0.0, 1.0)
                 }
+
+                //println("dt=$dt, currentTime=$currentTime, totalTime=$totalTime, ratio=$ratio, it.startTime=${it.startTime}, it.endTime(totalTime)=${it.endTime(totalTime)}")
 
                 if (ratio >= 0.0) {
                     it.set(easing.invoke(ratio.clamp01()))

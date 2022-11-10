@@ -16,23 +16,34 @@ class NewAnimatorTest {
         }
         val log = arrayListOf<String>()
         animator.onComplete.add { log += "complete" }
-        view.updateSingleView(0.milliseconds)
-        assertEquals("(0, 0)", view.pos.niceStr)
-        view.updateSingleView(100.milliseconds)
-        assertEquals("(1, 0)", view.pos.niceStr)
-        assertEquals("", log.joinToString(","))
-        view.updateSingleView(900.milliseconds)
-        assertEquals("(10, 0)", view.pos.niceStr)
-        assertEquals("complete", log.joinToString(","))
+
+        val lines = arrayListOf<String>()
+        fun logLine() {
+            lines += "${view.pos.niceStr} : ${animator.nodes.size} : ${log.joinToString(",")}"
+        }
+
+        view.updateSingleView(0.milliseconds); logLine()
+        view.updateSingleView(100.milliseconds); logLine()
+        view.updateSingleView(900.milliseconds); logLine()
 
         // Add a new node to the animator (even if completed)
-        animator.moveBy(view, 0, 10)
-        view.updateSingleView(100.milliseconds)
-        assertEquals("(10, 1)", view.pos.niceStr)
-        assertEquals("complete", log.joinToString(","))
-        view.updateSingleView(900.milliseconds)
-        assertEquals("(10, 10)", view.pos.niceStr)
-        assertEquals("complete,complete", log.joinToString(","))
+        animator.moveBy(view, 0, 10); logLine()
+        view.updateSingleView(100.milliseconds); logLine()
+        view.updateSingleView(100.milliseconds); logLine()
+        view.updateSingleView(800.milliseconds); logLine()
+
+        assertEquals(
+            """
+                (0, 0) : 0 : 
+                (1, 0) : 0 : 
+                (10, 0) : 0 : complete
+                (10, 0) : 1 : complete
+                (10, 1) : 0 : complete
+                (10, 2) : 0 : complete
+                (10, 10) : 0 : complete,complete
+            """.trimIndent(),
+            lines.joinToString("\n")
+        )
     }
 
     @Test
