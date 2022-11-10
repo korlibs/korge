@@ -5,10 +5,7 @@ import com.soywiz.kds.IDoubleArrayList
 import com.soywiz.kds.IntArrayList
 import com.soywiz.kmem.clamp
 import com.soywiz.korim.bitmap.Bitmap
-import com.soywiz.korim.color.Colors
-import com.soywiz.korim.color.RGBA
-import com.soywiz.korim.color.RgbaArray
-import com.soywiz.korim.color.RgbaPremultipliedArray
+import com.soywiz.korim.color.*
 import com.soywiz.korim.vector.CycleMethod
 import com.soywiz.korma.geom.Angle
 import com.soywiz.korma.geom.Matrix
@@ -181,10 +178,13 @@ data class GradientPaint(
     fun addColorStop(stop: Double, color: RGBA): GradientPaint = add(stop, color)
     inline fun addColorStop(stop: Number, color: RGBA): GradientPaint = add(stop.toDouble(), color)
 
-    fun add(stop: Double, color: RGBA): GradientPaint = this.apply {
+    fun add(stop: Double, color: RGBA): GradientPaint {
         stops += stop
         colors += color.value
         return this
+    }
+    fun add(stop: Double, color: RGBAPremultiplied): GradientPaint {
+        return add(stop, color.depremultipliedAccurate)
     }
 
     val untransformedGradientMatrix = Matrix().apply {

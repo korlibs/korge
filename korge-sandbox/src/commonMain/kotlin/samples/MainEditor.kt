@@ -74,6 +74,12 @@ class MainEditor : Scene() {
             uiSpacing()
             uiRadioButton(group = group)
         }
+        uiVerticalStack(padding = 4.0) {
+            xy(800, 100)
+            uiButton("BUTTON")
+            uiButton("NAME")
+            uiButton("TEST").disable()
+        }
         /*
         uiContainer {
             //append(UIContainer(200.0, 200.0)) {

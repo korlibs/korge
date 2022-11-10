@@ -146,7 +146,7 @@ open class Animator @PublishedApi internal constructor(
     /**
      * Cancels and clears all the pending animations keeping the properties as they are when executing this function.
      */
-    fun cancel() {
+    fun cancel(): Animator {
         //println("---- CANCEL: looped=$looped, currentTime=$currentTime, totalTime=$totalTime")
         rootAnimationNode.reset()
         nodes.clear()
@@ -154,13 +154,15 @@ open class Animator @PublishedApi internal constructor(
         updater = null
         parallelStarted = false
         onComplete()
+        return this
     }
 
     /**
      * Finishes all the pending animations and sets all the properties to their final state.
      */
-    fun complete() {
+    fun complete(): Animator {
         rootAnimationNode.complete()
+        return this
     }
 
     inline fun parallel(

@@ -1,6 +1,7 @@
 package com.soywiz.korge.ui
 
-import com.soywiz.kds.fastArrayListOf
+import com.soywiz.klock.*
+import com.soywiz.korge.animate.*
 import com.soywiz.korge.debug.uiCollapsibleSection
 import com.soywiz.korge.debug.uiEditableValue
 import com.soywiz.korge.input.TouchEvents
@@ -8,22 +9,22 @@ import com.soywiz.korge.input.mouse
 import com.soywiz.korge.input.onClick
 import com.soywiz.korge.input.singleTouch
 import com.soywiz.korge.render.RenderContext
-import com.soywiz.korge.view.Container
-import com.soywiz.korge.view.NinePatchEx
-import com.soywiz.korge.view.ViewDslMarker
-import com.soywiz.korge.view.Views
-import com.soywiz.korge.view.addTo
-import com.soywiz.korge.view.image
-import com.soywiz.korge.view.ninePatch
-import com.soywiz.korge.view.position
-import com.soywiz.korge.view.text
+import com.soywiz.korge.tween.*
+import com.soywiz.korge.view.*
+import com.soywiz.korge.view.filter.*
 import com.soywiz.korim.bitmap.Bitmaps
 import com.soywiz.korim.bitmap.BmpSlice
+import com.soywiz.korim.color.*
 import com.soywiz.korim.font.Font
+import com.soywiz.korim.paint.*
+import com.soywiz.korim.text.*
 import com.soywiz.korio.async.Signal
 import com.soywiz.korma.geom.Anchor
 import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.interpolation.*
 import com.soywiz.korui.UiContainer
+import kotlin.math.*
+import kotlin.reflect.*
 
 inline fun Container.uiButton(
     label: String,
@@ -81,26 +82,77 @@ open class UIButton(
     var skin: UISkin? get() = uiSkin ; set(value) { uiSkin = value }
 
 	var forcePressed = false
-    protected val rect: NinePatchEx = ninePatch(null, width, height)
+    var borderRadius = 4.0
+    val bgColorOut = Colors["#1976d2"]
+    val bgColorOver = Colors["#1B5AB3"]
+    val bgColorDisabled = Colors["#00000033"]
+    //protected val rect: NinePatchEx = ninePatch(null, width, height)
+    protected val background = roundRect(width, height, borderRadius, borderRadius, bgColorOut)
+        .filters(DropshadowFilter(0.0, 3.0, shadowColor = Colors.BLACK.withAd(0.126)))
+        .also { it.mouseEnabled = false }
+    var bgcolor: RGBA
+        get() = background.fill as RGBA
+        set(value) {
+            background.fill = value
+        }
+    protected val effects = container()
     //protected val textShadowView = text("", 16.0)
     protected val textView = text("", 16.0)
     protected val iconView = image(Bitmaps.transparent)
 	protected var bover = false
 	protected var bpressing = false
+    val animator = animator(parallel = true, defaultEasing = Easing.LINEAR)
+    val animatorEffects = animator(parallel = true, defaultEasing = Easing.LINEAR)
+
+    init {
+    }
+
+    override fun updateState() {
+        super.updateState()
+        val bgcolor = when {
+            !enabled -> bgColorDisabled
+            bover ->  bgColorOver
+            else -> bgColorOut
+        }
+        animator.cancel().tween(this::bgcolor[bgcolor], time = 0.25.seconds)
+    }
+
+    override fun onSizeChanged() {
+        val width = width
+        val height = height
+        background.setSize(width, height)
+        textView.setSize(width, height)
+        textView.alignment = TextAlignment.CENTER
+        effects.forEachChild { it.setSize(width, height) }
+    }
+
+    fun addCircleHighlight(px: Double, py: Double) {
+        val radius = hypot(width, height)
+        animatorEffects.sequence(easing = Easing.EASE_IN) {
+            val effect = effects.roundRect(width, height, borderRadius, borderRadius, fill = Colors.TRANSPARENT_BLACK)
+            tween(V2Callback {
+                val color = Colors.WHITE.premultiplied.mix(Colors.TRANSPARENT_BLACK.premultiplied, it.interpolate(0.6, 0.0))
+                effect.fill = RadialGradientPaint(
+                    px, py, 0.0, px, py, it.interpolate(0.1, radius)
+                ).add(0.0, color).add(0.90, color).add(1.0, Colors.TRANSPARENT_BLACK)
+            }, time = 0.3.seconds)
+            block { effect.removeFromParent() }
+        }
+    }
 
     override fun renderInternal(ctx: RenderContext) {
         val skin = realUiSkin
         //println("UIButton: skin=$skin")
-        rect.ninePatch = when {
-            !enabled -> skin.buttonDisabled
-            bpressing || forcePressed -> skin.buttonDown
-            bover -> skin.buttonOver
-            else -> skin.buttonNormal
-        }
-        rect.width = width
-        rect.height = height
+        //rect.ninePatch = when {
+        //    !enabled -> skin.buttonDisabled
+        //    bpressing || forcePressed -> skin.buttonDown
+        //    bover -> skin.buttonOver
+        //    else -> skin.buttonNormal
+        //}
+        //rect.width = width
+        //rect.height = height
 
-        fitIconInRect(iconView, icon ?: Bitmaps.transparent, rect.width, rect.height, Anchor.MIDDLE_CENTER)
+        fitIconInRect(iconView, icon ?: Bitmaps.transparent, width, height, Anchor.MIDDLE_CENTER)
         iconView.alpha = when {
             !enabled -> 0.5
             bover -> 1.0
@@ -133,31 +185,32 @@ open class UIButton(
     fun simulateOver() {
         if (bover) return
 		bover = true
-        invalidate()
+        updateState()
 	}
 
 	fun simulateOut() {
         if (!bover) return
 		bover = false
-        invalidate()
+        updateState()
 	}
 
 	fun simulatePressing(value: Boolean) {
         if (bpressing == value) return
 		bpressing = value
-        invalidate()
+        updateState()
 	}
 
-	fun simulateDown() {
+	fun simulateDown(x: Double = width * 0.5, y: Double = height * 0.5) {
         if (bpressing) return
 		bpressing = true
-        invalidate()
+        updateState()
+        if (enabled) addCircleHighlight(x, y)
 	}
 
 	fun simulateUp() {
         if (!bpressing) return
 		bpressing = false
-        invalidate()
+        updateState()
 	}
 
     val onPress = Signal<TouchEvents.Info>()
@@ -166,7 +219,8 @@ open class UIButton(
         singleTouch {
             start {
                 //println("singleTouch.start")
-                simulateDown()
+
+                simulateDown(it.localX, it.localY)
             }
             endAnywhere {
                 //println("singleTouch.endAnywhere")

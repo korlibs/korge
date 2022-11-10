@@ -53,7 +53,7 @@ open class UIView(
         out.setTo(0.0, 0.0, width, height)
     }
 
-    var enabled
+    open var enabled
 		get() = mouseEnabled
 		set(value) {
 			mouseEnabled = value

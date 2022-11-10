@@ -1,11 +1,15 @@
 package samples
 
 import com.soywiz.klock.*
+import com.soywiz.korge.animate.*
 import com.soywiz.korge.scene.*
 import com.soywiz.korge.time.*
+import com.soywiz.korge.tween.*
 import com.soywiz.korge.ui.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.color.*
+import com.soywiz.korim.paint.*
+import com.soywiz.korma.interpolation.*
 import com.soywiz.korma.random.*
 import kotlin.random.*
 

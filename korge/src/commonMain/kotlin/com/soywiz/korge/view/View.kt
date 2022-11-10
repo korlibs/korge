@@ -1446,9 +1446,9 @@ abstract class View internal constructor(
     /**
      * **NOTE:** that if [out] is not provided, the [Rectangle] returned shouldn't stored and modified since it is owned by this class.
      */
-    fun getLocalBoundsOptimized(includeFilters: Boolean = true): Rectangle = getLocalBounds(_localBounds, includeFilters = includeFilters)
+    fun getLocalBoundsOptimized(includeFilters: Boolean = false): Rectangle = getLocalBounds(_localBounds, includeFilters = includeFilters)
 
-    fun getLocalBoundsOptimizedAnchored(includeFilters: Boolean = true): Rectangle = getLocalBounds(_localBounds, doAnchoring = true, includeFilters = includeFilters)
+    fun getLocalBoundsOptimizedAnchored(includeFilters: Boolean = false): Rectangle = getLocalBounds(_localBounds, doAnchoring = true, includeFilters = includeFilters)
 
     @Deprecated("Allocates")
     fun getLocalBounds(doAnchoring: Boolean = true, includeFilters: Boolean = true): Rectangle = getLocalBounds(Rectangle(), doAnchoring, includeFilters)

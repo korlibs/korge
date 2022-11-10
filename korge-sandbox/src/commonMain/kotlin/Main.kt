@@ -23,7 +23,8 @@ suspend fun main() = Korge(
     bgcolor = DEFAULT_KORGE_BG_COLOR,
     clipBorders = false,
     //scaleMode = ScaleMode.EXACT,
-    debug = true,
+    //debug = true,
+    debug = false,
     multithreaded = true,
     forceRenderEveryFrame = false // Newly added optimization!
     //forceRenderEveryFrame = true
@@ -40,7 +41,8 @@ suspend fun main() = Korge(
         //Demo(::MainStage3d),
         //Demo(::MainInput),
         //Demo(::MainAnimations),
-        Demo(::MainCache),
+        //Demo(::MainCache),
+        Demo(::MainEditor),
         //Demo(::MainSvgAnimation),
         //Demo(::MainVectorNinePatch),
         listOf(
