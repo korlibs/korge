@@ -142,6 +142,9 @@ value class TimeSpan(
     operator fun rem(other: TimeSpan): TimeSpan = (this.milliseconds % other.milliseconds).milliseconds
     infix fun umod(other: TimeSpan): TimeSpan = (this.milliseconds umod other.milliseconds).milliseconds
 
+    /** Return true if [TimeSpan.NIL] */
+    val isNil: Boolean get() = milliseconds.isNaN()
+
     companion object {
         @Suppress("MayBeConstant", "unused")
         private const val serialVersionUID = 1L
