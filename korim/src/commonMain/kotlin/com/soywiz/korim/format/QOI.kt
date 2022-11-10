@@ -1,5 +1,6 @@
 package com.soywiz.korim.format
 
+import com.soywiz.kds.*
 import com.soywiz.kmem.UByteArrayInt
 import com.soywiz.kmem.extract2
 import com.soywiz.kmem.extract4
@@ -16,6 +17,13 @@ import com.soywiz.korio.stream.readS32BE
 import com.soywiz.korio.stream.readStringz
 import com.soywiz.korio.stream.readU8
 import com.soywiz.korio.stream.writeBytes
+
+// You may provide a pre-allocated array as an optimization for QOI encoding.
+// Useful if you know you will be encoding a lot of times, so you can just re-use the same
+// array to avoid allocating a new array for each computation.
+// A requirement is that the provided array must be at least `QOI.calculateMaxSize` in size,
+// for the bitmap that you'll be encoding.
+var ImageEncodingProps.preAllocatedArrayForQOI: UByteArrayInt? by extraProperty { null }
 
 object QOI : ImageFormat("qoi") {
     override fun decodeHeader(s: SyncStream, props: ImageDecodingProps): ImageInfo? {

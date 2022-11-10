@@ -76,13 +76,15 @@ class QOITest {
         //AtlasPacker.pack(listOf(output.slice(), expected.slice())).atlases.first().tex.showImageAndWait()
 
         assertEquals(0, output.matchContentsDistinctCount(expected))
+        val props = ImageEncodingProps()
+        props.preAllocatedArrayForQOI = preallocatedArray
 
         for (imageName in listOf("dice.qoi", "testcard_rgba.qoi", "kodim23.qoi")) {
             val original = QOI.decode(resourcesVfs[imageName])
             val reencoded = QOI.decode(
                 QOI.encode(
                     original,
-                    ImageEncodingProps(preAllocatedArrayForQOI = preallocatedArray)
+                    props
                 )
             )
             assertEquals(0, reencoded.matchContentsDistinctCount(original))
@@ -166,10 +168,12 @@ class QOITest {
     fun providingSmallPreAllocatedArrayResultsInError() = suspendTestNoBrowser {
         val original = QOI.decode(resourcesVfs["dice.qoi"])
         val preallocatedArray = UByteArrayInt(4)
+        val props = ImageEncodingProps()
+        props.preAllocatedArrayForQOI = preallocatedArray
         assertFailsWith<IllegalArgumentException> {
             QOI.encode(
                 original,
-                ImageEncodingProps(preAllocatedArrayForQOI = preallocatedArray)
+                props
             )
         }
     }

@@ -166,12 +166,6 @@ fun ImageFormat.toProps(props: ImageDecodingProps = ImageDecodingProps.DEFAULT):
 data class ImageEncodingProps(
     val filename: String = "",
     val quality: Double = 0.81,
-    // You may provide a pre-allocated array as an optimization for QOI encoding.
-    // Useful if you know you will be encoding a lot of times, so you can just re-use the same
-    // array to avoid allocating a new array for each computation.
-    // A requirement is that the provided array must be at least `QOI.calculateMaxSize` in size,
-    // for the bitmap that you'll be encoding.
-    var preAllocatedArrayForQOI: UByteArrayInt? = null,
     override var extra: ExtraType = null
 ) : Extra
 
