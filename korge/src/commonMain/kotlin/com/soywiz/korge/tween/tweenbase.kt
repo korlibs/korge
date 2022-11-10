@@ -19,6 +19,7 @@ import com.soywiz.korma.interpolation.Interpolable
 import com.soywiz.korma.interpolation.interpolate
 import com.soywiz.korma.math.isAlmostEquals
 import kotlin.jvm.JvmName
+import kotlin.native.concurrent.*
 import kotlin.reflect.KMutableProperty0
 
 @Suppress("UNCHECKED_CAST")
@@ -29,35 +30,78 @@ data class V2<V>(
     val interpolator: (Double, V, V) -> V,
     val includeStart: Boolean,
     val startTime: TimeSpan = 0.nanoseconds,
-    val duration: TimeSpan = TimeSpan.NIL
+    val duration: TimeSpan = TimeSpan.NIL,
+    private val initialization: (() -> Unit)? = null,
 ) {
     val endTime = startTime + duration.coalesce { 0.nanoseconds }
 
-    fun init() {
+    fun duration(default: TimeSpan): TimeSpan = if (duration.isNil) default else duration
+    fun endTime(default: TimeSpan): TimeSpan = if (duration.isNil) default else endTime
+
+    fun init(): Unit {
         if (!includeStart) {
             initial = key.get()
+            //includeStart = true
         }
+        initialization?.invoke()
     }
-    fun set(ratio: Double) = key.set(interpolator(ratio, initial, end))
+
+    //private fun ensureInit() {
+    //    if (!includeStart) {
+    //        initial = key.get()
+    //        includeStart = true
+    //    }
+    //}
+    fun set(ratio: Double): Unit {
+        //ensureInit()
+        key.set(interpolator(ratio, initial, end))
+    }
 
     override fun toString(): String =
         "V2(key=${key.name}, range=[$initial-$end], startTime=$startTime, duration=$duration)"
 }
 
+@ThreadLocal
 private object V2CallbackSupport {
     var dummy: Unit = Unit
 }
 
-fun V2Callback(callback: (Double) -> Unit): V2<Unit> = V2(V2CallbackSupport::dummy, Unit, Unit, { ratio, _, _ -> callback(ratio) }, true)
-fun <T> V2CallbackT(callback: (Double) -> Unit): V2<T> = V2Callback { callback(it) } as V2<T>
+private class V2CallbackTSupport<T>(var dummy: T)
 
-fun <T> V2Lazy(callback: () -> V2<T>): V2<T> {
-    var value: V2<T>? = null
-    return V2CallbackT {
+fun V2Callback(init: () -> Unit = {}, callback: (Double) -> Unit): V2<Unit> = V2(V2CallbackSupport::dummy, Unit, Unit, { ratio, _, _ -> callback(ratio) }, true, initialization = init)
+fun <T> V2CallbackT(initial: T, init: () -> Unit = {}, callback: (Double) -> T): V2<T> {
+    return V2(V2CallbackTSupport<T>(initial)::dummy, initial, initial, { ratio, _, _ -> callback(ratio) }, true, initialization = init)
+}
+
+fun V2Lazy(callback: () -> V2<*>): V2<Unit> {
+    var value: V2<*>? = null
+    return V2CallbackT(Unit) {
         if (value == null) value = callback()
         value!!.set(it)
     }
 }
+
+fun KMutableProperty0<IPoint>.incr(dx: Double, dy: Double): V2<IPoint> {
+    val start: Point = Point(0, 0)
+    val value: Point = Point(0, 0)
+    return V2(this, start, value, { it, _, _ ->
+        value.setTo(start.x + dx, start.y + dy)
+        value
+    }, includeStart = false, initialization = {
+        start.copyFrom(this.get())
+    })
+}
+fun KMutableProperty0<IPoint>.incr(dx: Number, dy: Number): V2<IPoint> = incr(dx.toDouble(), dy.toDouble())
+fun KMutableProperty0<IPoint>.incr(incr: IPoint): V2<IPoint> = incr(incr.x, incr.y)
+
+inline fun KMutableProperty0<Double>.incr(incr: Number): V2<Double> = incr(incr.toDouble())
+fun KMutableProperty0<Double>.incr(incr: Double): V2<Double> = V2(this, 0.0, 0.0, interpolator = { it, start, _ ->
+    //println("INTERPOLATE: it=$it, start=$start, incr=$incr")
+    it.interpolate(start, start + incr)
+}, includeStart = false)
+fun KMutableProperty0<Angle>.incr(incr: Angle): V2<Angle> = V2(this, Angle.ZERO, Angle.ZERO, interpolator = { it, start, _ ->
+    it.interpolateAngleDenormalized(start, start + incr)
+}, includeStart = false)
 
 @JvmName("getInt")
 operator fun KMutableProperty0<Int>.get(end: Int) = V2(this, this.get(), end, ::_interpolateInt, includeStart = false)

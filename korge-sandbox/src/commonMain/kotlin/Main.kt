@@ -37,7 +37,8 @@ suspend fun main() = Korge(
         //Demo(::MainTextBounds),
         //Demo(::MainEditor),
         //Demo(::MainStage3d),
-        Demo(::MainInput),
+        //Demo(::MainInput),
+        Demo(::MainAnimations),
         //Demo(::MainSvgAnimation),
         //Demo(::MainVectorNinePatch),
         listOf(

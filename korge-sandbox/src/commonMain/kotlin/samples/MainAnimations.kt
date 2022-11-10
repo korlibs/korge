@@ -1,16 +1,15 @@
 package samples
 
-import com.soywiz.klock.seconds
-import com.soywiz.korge.animate.AnimateCancellationException
-import com.soywiz.korge.animate.animate
-import com.soywiz.korge.input.onClick
+import com.soywiz.klock.*
+import com.soywiz.korev.*
+import com.soywiz.korge.animate.*
+import com.soywiz.korge.input.*
 import com.soywiz.korge.scene.ScaledScene
-import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.view.SContainer
 import com.soywiz.korge.view.position
 import com.soywiz.korge.view.solidRect
 import com.soywiz.korim.color.Colors
-import com.soywiz.korio.async.launchImmediately
+import com.soywiz.korio.async.*
 import kotlinx.coroutines.Job
 
 class MainAnimations : ScaledScene(512, 512) {
@@ -30,28 +29,53 @@ class MainAnimations : ScaledScene(512, 512) {
             }
         }
 
+        val signal = Signal<Unit>()
+
+        keys {
+            down(Key.RETURN) { signal.invoke() }
+        }
+
+        val time = Stopwatch()
+
         while (true) {
+            println("START!")
+            time.start()
             job = launchImmediately {
                 animate(completeOnCancel = false) {
+                //animate(completeOnCancel = false) {
                     //animate(completeOnCancel = true) {
                     //animate {
-                    sequence(time = 1.seconds, speed = 256.0) {
+                    sequence(defaultTime = 1.seconds, defaultSpeed = 256.0) {
                         //wait(0.25.seconds)
-                        parallel {
-                            //rect1.moveTo(0, 150)
-                            rect1.moveToWithSpeed(width - 100, 0.0)
-                            rect2.moveToWithSpeed(0.0, height - 100 - 100)
-                            //rect1.moveTo(0, height - 100)
+                        block {
+                            println("[0] ${time.elapsed}")
                         }
                         parallel {
                             //rect1.moveTo(0, 150)
-                            rect1.moveTo(width - 100, height - 100)
-                            rect2.moveTo(width - 100, height - 100)
+                            moveToWithSpeed(rect1, width - 100, 0.0)
+                            moveToWithSpeed(rect2, 0.0, height - 100 - 100)
                             //rect1.moveTo(0, height - 100)
+                        }
+                        block {
+                            println("[1] ${time.elapsed}")
+                        }
+                        parallel {
+                            //rect1.moveTo(0, 150)
+                            moveTo(rect1, width - 100, height - 100)
+                            moveTo(rect2, width - 100, height - 100)
+                            //rect1.moveTo(0, height - 100)
+                        }
+                        block {
+                            println("[2] ${time.elapsed}")
                         }
                         parallel(time = 1.seconds) {
-                            rect1.hide()
-                            rect2.hide()
+                            //alpha(rect1, 0.5)
+                            //alpha(rect2, 0.5)
+                            hide(rect1)
+                            hide(rect2)
+                        }
+                        block {
+                            println("[3] ${time.elapsed}")
                         }
                         block {
                             //printStackTrace()
@@ -59,15 +83,25 @@ class MainAnimations : ScaledScene(512, 512) {
                             rect1.position(0, 0)
                             rect2.position(0, 0)
                         }
+                        block {
+                            println("[4] ${time.elapsed}")
+                        }
                         parallel(time = 0.5.seconds) {
-                            rect1.show()
-                            rect2.show()
+                            show(rect1)
+                            show(rect2)
+                        }
+                        block {
+                            println("[5] ${time.elapsed}")
                         }
                         wait(0.25.seconds)
+                        block {
+                            println("[6] ${time.elapsed}")
+                        }
                     }
                 }
             }
             job.join()
+            //signal.waitOne()
             //println("[a]")
             //delay(1.seconds)
             //println("[b]")

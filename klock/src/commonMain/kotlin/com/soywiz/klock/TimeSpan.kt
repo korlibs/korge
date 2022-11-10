@@ -142,6 +142,9 @@ value class TimeSpan(
     operator fun rem(other: TimeSpan): TimeSpan = (this.milliseconds % other.milliseconds).milliseconds
     infix fun umod(other: TimeSpan): TimeSpan = (this.milliseconds umod other.milliseconds).milliseconds
 
+    /** Return true if [TimeSpan.NIL] */
+    val isNil: Boolean get() = milliseconds.isNaN()
+
     companion object {
         @Suppress("MayBeConstant", "unused")
         private const val serialVersionUID = 1L
@@ -156,7 +159,7 @@ value class TimeSpan(
 
         /**
          * Represents an invalid TimeSpan.
-         * Useful to represent an alternative "null" time lapse
+         * Useful to represent an alternative "null" time-lapse
          * avoiding the boxing of a nullable type.
          */
         val NIL = TimeSpan(Double.NaN)
