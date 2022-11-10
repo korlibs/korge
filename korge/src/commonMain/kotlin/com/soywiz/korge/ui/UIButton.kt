@@ -1,17 +1,16 @@
 package com.soywiz.korge.ui
 
+import com.soywiz.kds.iterators.*
 import com.soywiz.klock.*
 import com.soywiz.korge.animate.*
 import com.soywiz.korge.debug.uiCollapsibleSection
 import com.soywiz.korge.debug.uiEditableValue
-import com.soywiz.korge.input.TouchEvents
-import com.soywiz.korge.input.mouse
-import com.soywiz.korge.input.onClick
-import com.soywiz.korge.input.singleTouch
+import com.soywiz.korge.input.*
 import com.soywiz.korge.render.RenderContext
 import com.soywiz.korge.tween.*
 import com.soywiz.korge.view.*
 import com.soywiz.korge.view.filter.*
+import com.soywiz.korgw.*
 import com.soywiz.korim.bitmap.Bitmaps
 import com.soywiz.korim.bitmap.BmpSlice
 import com.soywiz.korim.color.*
@@ -105,6 +104,7 @@ open class UIButton(
     val animatorEffects = animator(parallel = true, defaultEasing = Easing.LINEAR)
 
     init {
+        this.cursor = GameWindow.Cursor.HAND
     }
 
     override fun updateState() {
@@ -131,12 +131,20 @@ open class UIButton(
         animatorEffects.sequence(easing = Easing.EASE_IN) {
             val effect = effects.roundRect(width, height, borderRadius, borderRadius, fill = Colors.TRANSPARENT_BLACK)
             tween(V2Callback {
-                val color = Colors.WHITE.premultiplied.mix(Colors.TRANSPARENT_BLACK.premultiplied, it.interpolate(0.6, 0.0))
+                val color = Colors.WHITE.premultiplied.mix(Colors.TRANSPARENT_BLACK.premultiplied, it.interpolate(0.4, 0.4))
                 effect.fill = RadialGradientPaint(
                     px, py, 0.0, px, py, it.interpolate(0.1, radius)
                 ).add(0.0, color).add(0.90, color).add(1.0, Colors.TRANSPARENT_BLACK)
             }, time = 0.3.seconds)
-            block { effect.removeFromParent() }
+            //block { effect.removeFromParent() }
+        }
+    }
+
+    fun removeCircleHighlights() {
+        animatorEffects.sequence(easing = Easing.EASE_IN) {
+            val children = effects.children.toList()
+            parallel { children.fastForEach { hide(it, time = 0.2.seconds) } }
+            parallel { children.fastForEach { block { it.removeFromParent() } } }
         }
     }
 
@@ -211,6 +219,7 @@ open class UIButton(
         if (!bpressing) return
 		bpressing = false
         updateState()
+        removeCircleHighlights()
 	}
 
     val onPress = Signal<TouchEvents.Info>()
