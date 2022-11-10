@@ -50,10 +50,8 @@ object QOI : ImageFormat("qoi") {
         val bytes = UByteArrayInt(s.readAvailable())
         val index = RgbaArray(64)
         val out = props.out
-        var returnInPlace = false
         val outBmp =
             if (out != null && out.width == header.width && out.height == header.height && out is Bitmap32) {
-                returnInPlace = true
                 out.premultiplied = false
                 out
             } else {
