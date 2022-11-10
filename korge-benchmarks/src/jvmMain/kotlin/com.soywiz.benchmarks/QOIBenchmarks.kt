@@ -39,27 +39,27 @@ class QOIBenchmarks {
         }
     }
 
-//    @Benchmark
-//    fun decodeBitmap(): Bitmap {
-//        // 1207.829 ±(99.9%) 9.497 us/op [Average]
-//        //  (min, avg, max) = (1175.562, 1207.829, 1290.125), stdev = 28.001
-//        //  CI (99.9%): [1198.332, 1217.325] (assumes normal distribution)
-//        return QOI.decode(qoiBytes)
-//    }
-//
-//    @Benchmark
-//    fun decodeToOutputBitmap(): Bitmap {
-//        // 1024.693 ±(99.9%) 8.932 us/op [Average]
-//        //  (min, avg, max) = (1002.131, 1024.693, 1212.177), stdev = 26.335
-//        //  CI (99.9%): [1015.761, 1033.624] (assumes normal distribution)
-//        return QOI.decode(qoiBytes, decodePropToOutputBitmap)
-//    }
+    @Benchmark
+    fun decodeBitmap(): Bitmap {
+        // 1207.829 ±(99.9%) 9.497 us/op [Average]
+        //  (min, avg, max) = (1175.562, 1207.829, 1290.125), stdev = 28.001
+        //  CI (99.9%): [1198.332, 1217.325] (assumes normal distribution)
+        return QOI.decode(qoiBytes)
+    }
+
+    @Benchmark
+    fun decodeToOutputBitmap(): Bitmap {
+        // 1024.693 ±(99.9%) 8.932 us/op [Average]
+        //  (min, avg, max) = (1002.131, 1024.693, 1212.177), stdev = 26.335
+        //  CI (99.9%): [1015.761, 1033.624] (assumes normal distribution)
+        return QOI.decode(qoiBytes, decodePropToOutputBitmap)
+    }
 
     @Benchmark
     fun encodeBitmap(): ByteArray {
         //2257.462 ±(99.9%) 49.785 us/op [Average]
         //(min, avg, max) = (2109.371, 2257.462, 2735.280), stdev = 146.792
-        //CI (99.9%): [2207.677, 2307.247] (assumes normal distribution)
+       ubled //CI (99.9%): [2207.677, 2307.247] (assumes normal distribution)
         return QOI.encode(bitmapImage)
     }
 

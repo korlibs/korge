@@ -39,7 +39,7 @@ include(":korge-reload-agent")
 include(":korge-sandbox")
 
 if (!inCI) {
-    include(":korge-benchmarks")
+    // include(":korge-benchmarks")
 }
 
 if (!disabledExtraKorgeLibs) {
