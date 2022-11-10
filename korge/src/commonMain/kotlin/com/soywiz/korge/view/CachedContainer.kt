@@ -1,10 +1,7 @@
 package com.soywiz.korge.view
 
-import com.soywiz.kmem.*
 import com.soywiz.korge.baseview.*
 import com.soywiz.korge.render.*
-import com.soywiz.korge.view.filter.*
-import com.soywiz.korim.bitmap.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korma.geom.*
 
@@ -52,29 +49,22 @@ class CachedContainer(cache: Boolean = true) : Container(), InvalidateNotifier {
         val cache = _cacheTex!!
         ctx.refGcCloseable(cache)
 
-        // @TODO: Do this only when required so it is cached
-        //dirty = true
         if (dirty) {
             lbounds.copyFrom(getLocalBoundsOptimizedAnchored(includeFilters = false))
             dirty = false
             val texWidth = (lbounds.width).toInt().coerceAtLeast(1)
             val texHeight = (lbounds.height).toInt().coerceAtLeast(1)
-            //println("texWidth=$texWidth, texHeight=$texHeight")
             cache.resize(texWidth, texHeight)
             ctx.renderToFrameBuffer(cache.rb) {
-                @Suppress("DEPRECATION")
-                ctx.batch.setViewMatrixTemp(tempMat2d.also {
+                ctx.setViewMatrixTemp(tempMat2d.also {
                     it.copyFrom(globalMatrixInv)
                     it.translate(-lbounds.x, -lbounds.y)
                 }) {
-                    renderChildrenInternal(ctx)
+                    super.renderInternal(ctx)
                 }
             }
         }
 
-        //println("cache.tex=${cache.tex}")
-
-        ctx.flush()
         ctx.useBatcher { batch ->
             batch.drawQuad(
                 cache.tex,
@@ -87,7 +77,6 @@ class CachedContainer(cache: Boolean = true) : Container(), InvalidateNotifier {
                 blendMode = blendMode,
             )
         }
-        ctx.flush()
     }
 
     override fun setInvalidateNotifier() {
