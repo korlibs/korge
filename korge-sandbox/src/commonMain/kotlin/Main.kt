@@ -26,6 +26,7 @@ suspend fun main() = Korge(
     debug = true,
     multithreaded = true,
     forceRenderEveryFrame = false // Newly added optimization!
+    //forceRenderEveryFrame = true
     //debugAg = true,
 ) {
     //uiButton("HELLO WORLD!", width = 300.0).position(100, 100); return@Korge
@@ -38,13 +39,15 @@ suspend fun main() = Korge(
         //Demo(::MainEditor),
         //Demo(::MainStage3d),
         //Demo(::MainInput),
-        Demo(::MainAnimations),
+        //Demo(::MainAnimations),
+        Demo(::MainCache),
         //Demo(::MainSvgAnimation),
         //Demo(::MainVectorNinePatch),
         listOf(
             Demo(::MainVectorNinePatch),
             Demo(::MainGraphicsText),
             Demo(::MainRpgScene),
+            Demo(::MainCache),
             Demo(::MainJSMpeg),
             Demo(::MainSDF),
             Demo(::MainTextInput),

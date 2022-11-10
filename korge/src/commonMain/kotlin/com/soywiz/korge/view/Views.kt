@@ -28,7 +28,7 @@ import com.soywiz.korev.dispatch
 import com.soywiz.korge.Korge
 import com.soywiz.korge.KorgeReload
 import com.soywiz.korge.annotations.KorgeExperimental
-import com.soywiz.korge.baseview.BaseView
+import com.soywiz.korge.baseview.*
 import com.soywiz.korge.component.Component
 import com.soywiz.korge.component.EventComponent
 import com.soywiz.korge.component.GamepadComponent
@@ -120,7 +120,8 @@ class Views constructor(
 	BoundsProvider by bp,
     DialogInterfaceProvider by gameWindow,
     Closeable,
-    ResourcesContainer
+    ResourcesContainer,
+    InvalidateNotifier
 {
     override val views = this
 
@@ -553,7 +554,7 @@ class Views constructor(
         gameWindow.startFrame()
     }
 
-    fun invalidatedView(view: BaseView?) {
+    override fun invalidatedView(view: BaseView?) {
         //println("invalidatedView: $view")
         gameWindow.invalidatedView()
     }

@@ -10,6 +10,7 @@ import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korio.async.*
+import com.soywiz.korio.lang.*
 import com.soywiz.korma.geom.*
 import kotlin.coroutines.*
 
@@ -39,7 +40,7 @@ class RenderContext constructor(
 	val stats: Stats = Stats(),
 	val coroutineContext: CoroutineContext = EmptyCoroutineContext,
     val batchMaxQuads: Int = BatchBuilder2D.DEFAULT_BATCH_QUADS
-) : Extra by Extra.Mixin(), BoundsProvider by bp, AGFeatures by ag {
+) : Extra by Extra.Mixin(), BoundsProvider by bp, AGFeatures by ag, Closeable {
     val projectionMatrixTransform = Matrix()
     val projectionMatrixTransformInv = Matrix()
     private val projMat: Matrix3D = Matrix3D()
@@ -161,6 +162,7 @@ class RenderContext constructor(
         }
     }
 
+    val agAutoFreeManager = AgAutoFreeManager()
 	val agBitmapTextureManager = AgBitmapTextureManager(ag)
     val agBufferManager = AgBufferManager(ag)
 
@@ -211,7 +213,6 @@ class RenderContext constructor(
     val rectPool = Pool(reset = { it.setTo(0, 0, 0, 0) }, preallocate = 8) { Rectangle() }
 
     val tempMargin: MutableMarginInt = MutableMarginInt()
-    val tempMatrix: Matrix = Matrix()
 
     val identityMatrix = Matrix()
 
@@ -327,9 +328,19 @@ class RenderContext constructor(
      */
     fun getTex(bmp: Bitmap): TextureBase = agBitmapTextureManager.getTextureBase(bmp)
 
+    /**
+     * References a [closeable] for this frame that will be tracked in next frames.
+     * If after a period of time, this closeable has not been referenced in between frames,
+     * the [Closeable.close] method will be called so the object can be freed.
+     *
+     * This can be use for example to automatically manage temporal/cached textures.
+     */
+    fun refGcCloseable(closeable: Closeable) = agAutoFreeManager.reference(closeable)
+
     internal fun afterRender() {
         flush()
         finish()
+        agAutoFreeManager.afterRender()
         agBitmapTextureManager.afterRender()
         agBufferManager.afterRender()
     }
@@ -340,6 +351,11 @@ class RenderContext constructor(
             currentBatcher = batcher
         }
         block(batcher)
+    }
+
+    override fun close() {
+        agBitmapTextureManager.close()
+        agAutoFreeManager.close()
     }
 }
 

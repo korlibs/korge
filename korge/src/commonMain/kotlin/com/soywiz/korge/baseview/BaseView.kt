@@ -27,6 +27,10 @@ import com.soywiz.korio.lang.CloseableCancellable
 import kotlin.collections.set
 import kotlin.jvm.JvmName
 
+interface InvalidateNotifier {
+    fun invalidatedView(view: BaseView?)
+}
+
 //open class BaseView : BaseEventListener() {
 open class BaseView {
     protected open val baseParent: BaseView? get() = null
