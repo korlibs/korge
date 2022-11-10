@@ -12,13 +12,14 @@ import kotlinx.coroutines.completeWith
  * Asynchronously renders this [View] (with the provided [views]) to a [Bitmap32] and returns it.
  * The rendering will happen before the next frame.
  */
-suspend fun View.renderToBitmap(views: Views, region: Rectangle? = null, scale: Double = 1.0, outPoint: Point = Point()): Bitmap32 {
+suspend fun View.renderToBitmap(views: Views, region: Rectangle? = null, scale: Double = 1.0, outPoint: Point = Point(), includeBackground: Boolean = false): Bitmap32 {
 	val done = CompletableDeferred<Bitmap32>()
 
     // This will help to trigger a re-rendering in the case nothing else changed
     views.stage.invalidateRender()
     views.onBeforeRender.once { ctx ->
         done.completeWith(kotlin.runCatching {
+            if (includeBackground) ctx.ag.clear(views.clearColor)
             unsafeRenderToBitmapSync(ctx, region, scale, outPoint).also {
                 //println("/renderToBitmap")
             }
