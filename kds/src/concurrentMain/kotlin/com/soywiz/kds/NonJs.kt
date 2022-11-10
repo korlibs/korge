@@ -11,6 +11,7 @@ public actual open class FastArrayList<E> internal constructor(
     @PublishedApi internal var _size: Int = array.size,
     @PublishedApi internal var arrayCapacity: Int = array.size
 ) : AbstractMutableList<E>(), MutableList<E>, RandomAccess {
+//) : MutableList<E>, RandomAccess {
     private var isReadOnly: Boolean = false
 
     /**
@@ -111,9 +112,25 @@ public actual open class FastArrayList<E> internal constructor(
         _removeRange(0, size)
     }
 
-    // @TODO: This is checking nulls too since backing array is bigger, should we do a plain for?
-    actual override fun indexOf(element: E): Int = array.indexOf(element)
-    actual override fun lastIndexOf(element: E): Int = array.lastIndexOf(element)
+    actual override fun contains(element: E): Boolean = indexOf(element) >= 0
+
+    actual override fun indexOf(element: E): Int {
+        for (index in 0 until size) {
+            if (this[index] == element) {
+                return index
+            }
+        }
+        return -1
+    }
+    actual override fun lastIndexOf(element: E): Int {
+        for (index in 0 until size) {
+            val i = size - index - 1
+            if (this[i] == element) {
+                return i
+            }
+        }
+        return -1
+    }
 
     override fun toString(): String {
         val sb = StringBuilder()
