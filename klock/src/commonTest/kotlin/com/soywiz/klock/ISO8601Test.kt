@@ -162,4 +162,17 @@ class ISO8601Test {
         assertEquals(time, ISO8601.IsoTimeFormat("hhmmss,ss", "hh:mm:ss,ss").parse("15:30:12,16"))
         assertEquals(time, ISO8601.IsoTimeFormat("hhmmss.sss", "hh:mm:ss.sss").parse("15:30:12.160"))
     }
+
+    @Test
+    fun testTimeZoneParsing() {
+        val string1 = "2022-10-06T19:57:29.285+02:00"
+        val string2 = "2022-10-06T17:57:29.285+00:00"
+
+        val parsed1 = ISO8601.DATETIME_UTC_COMPLETE_FRACTION.parse(string1)
+        val parsed2 = ISO8601.DATETIME_UTC_COMPLETE_FRACTION.parse(string2)
+
+        assertEquals(string1, ISO8601.DATETIME_UTC_COMPLETE_FRACTION.format(parsed1))
+        assertEquals(string2.removeSuffix("+00:00") + "Z", ISO8601.DATETIME_UTC_COMPLETE_FRACTION.format(parsed2))
+        assertEquals(parsed1.utc, parsed2.utc)
+    }
 }
