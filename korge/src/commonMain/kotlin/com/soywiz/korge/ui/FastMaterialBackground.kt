@@ -4,36 +4,38 @@ import com.soywiz.korag.*
 import com.soywiz.korag.shader.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
+import com.soywiz.korim.color.*
 import com.soywiz.korma.geom.*
+
+inline fun Container.fastMaterialBackground(
+    width: Double = UI_DEFAULT_WIDTH,
+    height: Double = UI_DEFAULT_HEIGHT,
+    block: @ViewDslMarker FastMaterialBackground.() -> Unit = {}
+): FastMaterialBackground = FastMaterialBackground(width, height).addTo(this).apply(block)
 
 class FastMaterialBackground(
     width: Double = 100.0,
     height: Double = 100.0
 ) : ShadedView(PROGRAM, width, height, CoordsType.D_W_H) {
-    var radius = 8.0
-        set(value) {
-            field = value
-            invalidateRender()
-        }
-    var highlightPos = Point(0.5, 0.5)
-        set(value) {
-            field = value
-            invalidateRender()
-        }
-    var highlightRadius = 0.0
-        set(value) {
-            field = value
-            invalidateRender()
-        }
-    var highlightAlpha = 1.0
-        set(value) {
-            field = value
-            invalidateRender()
-        }
+    var borderColor: RGBA = Colors.BLACK
+    var borderSize: Double = 0.0; set(value) { field = value; invalidateRender() }
+    var radius = 0.0 ; set(value) { field = value; invalidateRender() }
+    var highlightPos = Point(0.5, 0.5) ; set(value) { field = value; invalidateRender() }
+    var highlightRadius = 0.0; set(value) { field = value; invalidateRender() }
+    var highlightAlpha = 1.0; set(value) { field = value; invalidateRender() }
+
+    var shadowColor: RGBA = Colors.BLACK.withAd(0.3); set(value) { field = value; invalidateRender() }
+    var shadowRadius: Double = 10.0; set(value) { field = value; invalidateRender() }
+    var shadowOffsetX: Double = 0.0; set(value) { field = value; invalidateRender() }
+    var shadowOffsetY: Double = 0.0; set(value) { field = value; invalidateRender() }
+
+    override fun invalidateRender() {
+        super.invalidateRender()
+        setPadding(shadowRadius)
+    }
 
     init {
-        setPadding(12.0)
-        //computeVertices()
+        invalidateRender()
     }
 
     override fun updateUniforms(uniforms: AG.UniformValues, ctx: RenderContext) {
@@ -43,11 +45,17 @@ class FastMaterialBackground(
         uniforms[u_HighlightPos] = Point(highlightPos.x * width, highlightPos.y * height)
         uniforms[u_HighlightRadius] = highlightRadius * kotlin.math.max(width, height) * 1.25
         uniforms[u_highlightAlpha] = highlightAlpha
+        uniforms[u_backgroundColor] = shadowColor.premultipliedFast
+        uniforms[u_backgroundOffset] = Point(shadowOffsetX, shadowOffsetY)
+        uniforms[u_backgroundRadius] = shadowRadius
     }
 
     // https://www.shadertoy.com/view/WtdSDs
     // https://iquilezles.org/articles/distfunctions2d/#:~:text=length(p)%20%2D%20r%3B%0A%7D-,Rounded%20Box%20%2D%20exact,-(https%3A//www
     companion object {
+        val u_backgroundColor = Uniform("u_backgroundColor", VarType.Float4)
+        val u_backgroundRadius = Uniform("u_backgroundRadius", VarType.Float1)
+        val u_backgroundOffset = Uniform("u_backgroundOffset", VarType.Float2)
         val u_HighlightPos = Uniform("u_HighlightPos", VarType.Float2)
         val u_HighlightRadius = Uniform("u_HighlightRadius", VarType.Float1)
         val u_Size = Uniform("u_Size", VarType.Float2)
@@ -62,13 +70,6 @@ class FastMaterialBackground(
                 SET(r.x, TERNARY(p.y gt 0f.lit, r.x, r.y))
                 val q = abs(p) - b + r.x
                 RETURN(min(max(q.x, q.y), 0f.lit) + length(max(q, 0f.lit)) - r.x)
-
-                //val pos = ARG("pos", VarType.Float2)
-                //val size = ARG("size", VarType.Float2)
-                //val radius = ARG("radius", VarType.Float1)
-                //RETURN(length(max(abs(pos) - size + radius, 0f.lit)) - radius)
-                //RETURN(centerPosition.x)
-                //RETURN(1.0.lit)
             }
 
             // The pixel space scale of the rectangle.
@@ -92,13 +93,13 @@ class FastMaterialBackground(
 
             // Apply a drop shadow effect.
             IF(smoothedAlpha lt 0.05f.lit) {
-                val shadowSoftness = 10.0f.lit
-                val shadowOffset = vec2(0.0f.lit, -3.0f.lit)
+                val shadowSoftness = u_backgroundRadius
+                val shadowOffset = u_backgroundOffset
                 val shadowDistance = roundedBoxSDF(v_Tex["xy"] + shadowOffset - (size / 2.0f.lit), size / 2.0f.lit, vec4(radius))
                 val shadowAlpha = 1.0f.lit - smoothstep(-shadowSoftness, shadowSoftness, shadowDistance)
-                val shadowColor = vec4(0.0f.lit, 0.0f.lit, 0.0f.lit, 1.0f.lit)
+                val shadowColor = u_backgroundColor
 
-                SET(out, mix(out, shadowColor, (shadowAlpha - smoothedAlpha) * 0.3.lit))
+                SET(out, mix(out, shadowColor, (shadowAlpha - smoothedAlpha)))
             }
         }
 

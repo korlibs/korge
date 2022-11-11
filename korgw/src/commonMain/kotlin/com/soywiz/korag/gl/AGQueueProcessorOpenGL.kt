@@ -40,8 +40,7 @@ import com.soywiz.korim.bitmap.Bitmap8
 import com.soywiz.korim.bitmap.FloatBitmap32
 import com.soywiz.korim.bitmap.ForcedTexId
 import com.soywiz.korim.bitmap.NativeImage
-import com.soywiz.korim.color.RGBA
-import com.soywiz.korim.color.RGBAf
+import com.soywiz.korim.color.*
 import com.soywiz.korim.vector.BitmapVector
 import com.soywiz.korio.annotations.KorIncomplete
 import com.soywiz.korio.annotations.KorInternal
@@ -559,6 +558,12 @@ class AGQueueProcessorOpenGL(
                         }
                         is RGBAf -> tempBuffer.setFloats(0, value.data, 0, stride)
                         is RGBA -> {
+                            if (stride >= 1) tempBuffer.setFloat(0, value.rf)
+                            if (stride >= 2) tempBuffer.setFloat(1, value.gf)
+                            if (stride >= 3) tempBuffer.setFloat(2, value.bf)
+                            if (stride >= 4) tempBuffer.setFloat(3, value.af)
+                        }
+                        is RGBAPremultiplied -> {
                             if (stride >= 1) tempBuffer.setFloat(0, value.rf)
                             if (stride >= 2) tempBuffer.setFloat(1, value.gf)
                             if (stride >= 3) tempBuffer.setFloat(2, value.bf)

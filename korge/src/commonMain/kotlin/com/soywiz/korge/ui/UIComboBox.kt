@@ -18,6 +18,7 @@ import com.soywiz.korge.view.solidRect
 import com.soywiz.korim.color.Colors
 import com.soywiz.korio.async.Signal
 import com.soywiz.korma.geom.Point
+import com.soywiz.korui.layout.HorizontalUiLayout.pt
 import kotlin.native.concurrent.ThreadLocal
 
 inline fun <T> Container.uiComboBox(
@@ -54,12 +55,22 @@ open class UIComboBox<T>(
     var viewportHeight by uiObservable(196) { onSizeChanged() }
 
     private val itemsView = uiScrollable(width, height = 128.0)
+    private val itemsViewBackground = itemsView.fastMaterialBackground(width, height = 128.0) {
+        radius = 12.0
+        zIndex = -1000.0
+    }
     private val verticalList = itemsView.container.uiVerticalList(object : UIVerticalList.Provider {
         override val numItems: Int = items.size
         override val fixedHeight: Double = itemHeight
         override fun getItemHeight(index: Int): Double = fixedHeight
         override fun getItemView(index: Int, vlist: UIVerticalList): View {
-            val it = UIButton(text = items[index].toString(), width = width, height = itemHeight)
+            val it = UIButton(text = items[index].toString(), width = width, height = itemHeight).apply {
+                this.radius = 0.pt
+                this.textColor = Colors.BLACK
+                this.bgColorOut = Colors["#fff"]
+                this.bgColorOver = Colors["#ddd"]
+                this.elevation = false
+            }
             it.onClick {
                 this@UIComboBox.selectedIndex = index
                 this@UIComboBox.close()
@@ -110,6 +121,7 @@ open class UIComboBox<T>(
 
         //itemsView.size(width, viewportHeight.toDouble()).position(0.0, height)
         itemsView.size(width, viewportHeight.toDouble()).setGlobalXY(localToGlobal(Point(0.0, height)))
+        itemsViewBackground.size(width, itemsView.height)
         verticalList.size(width, verticalList.height)
 
         verticalList.invalidateList()

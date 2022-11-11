@@ -72,8 +72,8 @@ typealias IconButton = UIButton
 open class UIButton(
 	width: Double = 128.0,
 	height: Double = 32.0,
-    var text: String = "",
-    var icon: BmpSlice? = null,
+    text: String = "",
+    icon: BmpSlice? = null,
 ) : UIView(width, height) {
     companion object {
         const val DEFAULT_WIDTH = UI_DEFAULT_WIDTH
@@ -84,7 +84,11 @@ open class UIButton(
     var skin: UISkin? get() = uiSkin ; set(value) { uiSkin = value }
 
 	var forcePressed = false
-    var radius = 5.pt
+    var radius = 4.pt
+        set(value) {
+            field = value
+            setInitialState()
+        }
     //var radius = 100.percent
 
     private fun radiusWidth(width: Double): Double {
@@ -95,10 +99,25 @@ open class UIButton(
         return radius.calc(Length.Context().setSize(height.toInt() / 2)).toDouble()
     }
 
+    var bgcolor: RGBA
+        get() = background.colorMul
+        set(value) {
+            background.colorMul = value
+        }
+
     //val radiusRatioHalf get() = radiusRatio * 0.5
-    val bgColorOut = Colors["#1976d2"]
-    val bgColorOver = Colors["#1B5AB3"]
-    val bgColorDisabled = Colors["#00000033"]
+    var bgColorOut = Colors["#1976d2"]
+        set(value) {
+            field = value
+            bgcolor = value
+        }
+    var bgColorOver = Colors["#1B5AB3"]
+    var elevation = true
+        set(value) {
+            field = value
+            setInitialState()
+        }
+    var bgColorDisabled = Colors["#00000033"]
     //protected val rect: NinePatchEx = ninePatch(null, width, height)
     //protected val background = roundRect(
     //    width, height, radiusWidth(width), radiusHeight(height), bgColorOut)
@@ -106,23 +125,19 @@ open class UIButton(
     //    //.filters(DropshadowFilter(0.0, 3.0, shadowColor = Colors.BLACK.withAd(0.126)))
     //    .also { it.mouseEnabled = false }
 
-    var bgcolor: RGBA
-        get() = background.colorMul
-        set(value) {
-            background.colorMul = value
-        }
-
     protected val background = FastMaterialBackground(width, height).addTo(this)
         .also { it.colorMul = bgColorOut }
         .also { it.mouseEnabled = false }
 
     //protected val textShadowView = text("", 16.0)
-    protected val textView = text("", 16.0)
+    protected val textView = text(text, 16.0)
     protected val iconView = image(Bitmaps.transparent)
 	protected var bover = false
 	protected var bpressing = false
     val animator = animator(parallel = true, defaultEasing = Easing.LINEAR)
     val animatorEffects = animator(parallel = true, defaultEasing = Easing.LINEAR)
+
+    var textColor: RGBA by textView::color
 
     init {
         this.cursor = GameWindow.Cursor.HAND
@@ -138,14 +153,41 @@ open class UIButton(
         animator.cancel().tween(this::bgcolor[bgcolor], time = 0.25.seconds)
     }
 
-    override fun onSizeChanged() {
+    var text: String by textView::text
+
+    private fun setInitialState() {
         val width = width
         val height = height
         background.setSize(width, height)
-        background.radius = radiusWidth(width) / width
-        background.radius = radiusHeight(height) / height
+        background.radius = radiusWidth(width)
+        background.shadowRadius = if (elevation) 10.0 else 0.0
         //textView.setSize(width, height)
-        textView.alignment = TextAlignment.CENTER
+
+        textView.setTextBounds(Rectangle(0.0, 0.0, width, height))
+        textView.text = text
+        textView.alignment = TextAlignment.MIDDLE_CENTER
+
+        fitIconInRect(iconView, icon ?: Bitmaps.transparent, width, height, Anchor.MIDDLE_CENTER)
+        iconView.alpha = when {
+            !enabled -> 0.5
+            bover -> 1.0
+            else -> 1.0
+        }
+        invalidateRender()
+    }
+
+    var icon = icon
+        set(value) {
+            field = value
+            setInitialState()
+        }
+
+    override fun onSizeChanged() {
+        setInitialState()
+    }
+
+    init {
+        setInitialState()
     }
 
     fun addCircleHighlight(px: Double, py: Double) {
@@ -158,55 +200,6 @@ open class UIButton(
 
     fun removeCircleHighlights() {
         animatorEffects.tween(background::highlightAlpha[0.0], time = 0.2.seconds)
-    }
-
-    override fun renderInternal(ctx: RenderContext) {
-        val skin = realUiSkin
-        //println("UIButton: skin=$skin")
-        //rect.ninePatch = when {
-        //    !enabled -> skin.buttonDisabled
-        //    bpressing || forcePressed -> skin.buttonDown
-        //    bover -> skin.buttonOver
-        //    else -> skin.buttonNormal
-        //}
-        //rect.width = width
-        //rect.height = height
-
-        textView.setTextBounds(Rectangle(0.0, 0.0, width, height))
-        textView.text = text
-        textView.alignment = TextAlignment.MIDDLE_CENTER
-
-        fitIconInRect(iconView, icon ?: Bitmaps.transparent, width, height, Anchor.MIDDLE_CENTER)
-        iconView.alpha = when {
-            !enabled -> 0.5
-            bover -> 1.0
-            else -> 1.0
-        }
-
-        /*
-
-        if (text.isNotEmpty()) {
-            val alignment = skin.buttonTextAlignment
-            val font = skin.textFont
-            val text = text
-            val textSize = skin.textSize
-
-            textView.setTextBounds(Rectangle(0.0, 0.0, width, height))
-            textView.visible = true
-            textView.text = text
-            textView.alignment = alignment
-            textView.font = font
-            textView.textSize = textSize
-
-            textView.color = skin.textColor
-            //textShadowView.color = skin.shadowColor
-            //textShadowView.position(skin.shadowPosition)
-        } else {
-            textView.visible = false
-            //textShadowView.visible = false
-        }
-        */
-        super.renderInternal(ctx)
     }
 
     fun simulateOver() {

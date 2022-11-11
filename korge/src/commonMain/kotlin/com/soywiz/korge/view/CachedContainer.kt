@@ -8,7 +8,7 @@ import com.soywiz.korma.geom.*
 inline fun Container.cachedContainer(cache: Boolean = true, callback: @ViewDslMarker CachedContainer.() -> Unit = {}) =
     CachedContainer(cache).addTo(this, callback)
 
-class CachedContainer(cache: Boolean = true) : Container(), InvalidateNotifier {
+open class CachedContainer(cache: Boolean = true) : Container(), InvalidateNotifier {
     inner class CacheTexture(val ctx: RenderContext) : Closeable {
         val rb = ctx.ag.unsafeAllocateFrameRenderBuffer(16, 16, onlyThisFrame = false)
         val texBase = TextureBase(rb.tex, 16, 16)
