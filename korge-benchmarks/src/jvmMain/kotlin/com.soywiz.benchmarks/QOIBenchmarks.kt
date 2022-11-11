@@ -27,7 +27,7 @@ class QOIBenchmarks {
 
     var bitmapImage = Bitmap32(1, 1, true)
     val preAllocatedArrayForEncoding = UByteArrayInt(QOI.calculateMaxSize(800, 600))
-    val encodePropWithPreAllocatedArray = ImageEncodingProps().apply {
+    val encodePropWithPreAllocatedArray = ImageEncodingProps {
         preAllocatedArrayForQOI = preAllocatedArrayForEncoding
     }
 
@@ -59,7 +59,7 @@ class QOIBenchmarks {
     fun encodeBitmap(): ByteArray {
         //2257.462 ±(99.9%) 49.785 us/op [Average]
         //(min, avg, max) = (2109.371, 2257.462, 2735.280), stdev = 146.792
-       ubled //CI (99.9%): [2207.677, 2307.247] (assumes normal distribution)
+        //CI (99.9%): [2207.677, 2307.247] (assumes normal distribution)
         return QOI.encode(bitmapImage)
     }
 

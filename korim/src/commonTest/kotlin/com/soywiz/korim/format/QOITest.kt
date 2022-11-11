@@ -1,6 +1,5 @@
 package com.soywiz.korim.format
 
-import com.soywiz.kds.identityHashCode
 import com.soywiz.klock.measureTimeWithResult
 import com.soywiz.kmem.UByteArrayInt
 import com.soywiz.korim.bitmap.Bitmap32
@@ -9,7 +8,6 @@ import com.soywiz.korio.async.suspendTestNoBrowser
 import com.soywiz.korio.file.std.resourcesVfs
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFails
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertNotSame
@@ -76,8 +74,9 @@ class QOITest {
         //AtlasPacker.pack(listOf(output.slice(), expected.slice())).atlases.first().tex.showImageAndWait()
 
         assertEquals(0, output.matchContentsDistinctCount(expected))
-        val props = ImageEncodingProps()
-        props.preAllocatedArrayForQOI = preallocatedArray
+        val props = ImageEncodingProps {
+            preAllocatedArrayForQOI = preallocatedArray
+        }
 
         for (imageName in listOf("dice.qoi", "testcard_rgba.qoi", "kodim23.qoi")) {
             val original = QOI.decode(resourcesVfs[imageName])
@@ -168,8 +167,9 @@ class QOITest {
     fun providingSmallPreAllocatedArrayResultsInError() = suspendTestNoBrowser {
         val original = QOI.decode(resourcesVfs["dice.qoi"])
         val preallocatedArray = UByteArrayInt(4)
-        val props = ImageEncodingProps()
-        props.preAllocatedArrayForQOI = preallocatedArray
+        val props = ImageEncodingProps {
+            preAllocatedArrayForQOI = preallocatedArray
+        }
         assertFailsWith<IllegalArgumentException> {
             QOI.encode(
                 original,

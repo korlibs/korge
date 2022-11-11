@@ -166,6 +166,11 @@ fun ImageFormat.toProps(props: ImageDecodingProps = ImageDecodingProps.DEFAULT):
 data class ImageEncodingProps(
     val filename: String = "",
     val quality: Double = 0.81,
-    override var extra: ExtraType = null
-) : Extra
+    override var extra: ExtraType = null,
+    val init: (ImageEncodingProps.() -> Unit)? = null
+) : Extra {
+    init {
+        init?.invoke(this)
+    }
+}
 
