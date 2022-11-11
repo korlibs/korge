@@ -100,16 +100,22 @@ open class UIButton(
     val bgColorOver = Colors["#1B5AB3"]
     val bgColorDisabled = Colors["#00000033"]
     //protected val rect: NinePatchEx = ninePatch(null, width, height)
-    protected val background = roundRect(
-        width, height, radiusWidth(width), radiusHeight(height), bgColorOut)
-        .filters(DropshadowFilter(0.0, 3.0, shadowColor = Colors.BLACK.withAd(0.126)))
-        .also { it.mouseEnabled = false }
+    //protected val background = roundRect(
+    //    width, height, radiusWidth(width), radiusHeight(height), bgColorOut)
+    //    .also { it.renderer = GraphicsRenderer.SYSTEM }
+    //    //.filters(DropshadowFilter(0.0, 3.0, shadowColor = Colors.BLACK.withAd(0.126)))
+    //    .also { it.mouseEnabled = false }
+
     var bgcolor: RGBA
-        get() = background.fill as RGBA
+        get() = background.colorMul
         set(value) {
-            background.fill = value
+            background.colorMul = value
         }
-    protected val effects = container()
+
+    protected val background = FastMaterialBackground(width, height).addTo(this)
+        .also { it.colorMul = bgColorOut }
+        .also { it.mouseEnabled = false }
+
     //protected val textShadowView = text("", 16.0)
     protected val textView = text("", 16.0)
     protected val iconView = image(Bitmaps.transparent)
@@ -136,39 +142,22 @@ open class UIButton(
         val width = width
         val height = height
         background.setSize(width, height)
-        background.rx = radiusWidth(width)
-        background.ry = radiusHeight(height)
-        textView.setSize(width, height)
+        background.radius = radiusWidth(width) / width
+        background.radius = radiusHeight(height) / height
+        //textView.setSize(width, height)
         textView.alignment = TextAlignment.CENTER
-        effects.forEachChild {
-            it.setSize(width, height)
-            if (it is RoundRect) {
-                it.rx = background.rx
-                it.ry = background.ry
-            }
-        }
     }
 
     fun addCircleHighlight(px: Double, py: Double) {
-        val radius = hypot(width, height)
-        animatorEffects.sequence(easing = Easing.EASE_IN) {
-            val effect = effects.roundRect(width, height, radiusWidth(width), radiusHeight(height), fill = Colors.TRANSPARENT_BLACK)
-            tween(V2Callback {
-                val color = Colors.WHITE.premultiplied.mix(Colors.TRANSPARENT_BLACK.premultiplied, it.interpolate(0.4, 0.4))
-                effect.fill = RadialGradientPaint(
-                    px, py, 0.0, px, py, it.interpolate(0.1, radius)
-                ).add(0.0, color).add(0.90, color).add(1.0, Colors.TRANSPARENT_BLACK)
-            }, time = 0.3.seconds)
-            //block { effect.removeFromParent() }
-        }
+        animatorEffects.cancel()
+        background.highlightRadius = 0.0
+        background.highlightAlpha = 1.0
+        background.highlightPos.setTo(px / width, py / height)
+        animatorEffects.tween(background::highlightRadius[1.0], time = 0.3.seconds, easing = Easing.EASE_IN)
     }
 
     fun removeCircleHighlights() {
-        animatorEffects.sequence(easing = Easing.EASE_IN) {
-            val children = effects.children.toList()
-            parallel { children.fastForEach { hide(it, time = 0.2.seconds) } }
-            parallel { children.fastForEach { block { it.removeFromParent() } } }
-        }
+        animatorEffects.tween(background::highlightAlpha[0.0], time = 0.2.seconds)
     }
 
     override fun renderInternal(ctx: RenderContext) {
@@ -183,12 +172,18 @@ open class UIButton(
         //rect.width = width
         //rect.height = height
 
+        textView.setTextBounds(Rectangle(0.0, 0.0, width, height))
+        textView.text = text
+        textView.alignment = TextAlignment.MIDDLE_CENTER
+
         fitIconInRect(iconView, icon ?: Bitmaps.transparent, width, height, Anchor.MIDDLE_CENTER)
         iconView.alpha = when {
             !enabled -> 0.5
             bover -> 1.0
             else -> 1.0
         }
+
+        /*
 
         if (text.isNotEmpty()) {
             val alignment = skin.buttonTextAlignment
@@ -210,6 +205,7 @@ open class UIButton(
             textView.visible = false
             //textShadowView.visible = false
         }
+        */
         super.renderInternal(ctx)
     }
 

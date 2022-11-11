@@ -21,6 +21,7 @@ val DEFAULT_KORGE_BG_COLOR = Colors.DARKCYAN.mix(Colors.BLACK, 0.8)
 
 suspend fun main() = Korge(
     bgcolor = DEFAULT_KORGE_BG_COLOR,
+    //bgcolor = Colors.WHITE,
     clipBorders = false,
     //scaleMode = ScaleMode.EXACT,
     //debug = true,

@@ -4,7 +4,6 @@ import com.soywiz.kmem.*
 import com.soywiz.korag.*
 import com.soywiz.korag.shader.*
 import com.soywiz.korge.render.*
-import com.soywiz.korim.bitmap.*
 
 open class ShadedView(
     program: Program,

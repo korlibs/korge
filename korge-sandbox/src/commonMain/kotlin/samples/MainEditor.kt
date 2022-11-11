@@ -10,6 +10,7 @@ import com.soywiz.korma.geom.*
 
 class MainEditor : Scene() {
     override suspend fun SContainer.sceneMain() {
+        solidRect(width, height, Colors.WHITE)
 
         val font2 = DefaultTtfFont.toBitmapFont(16.0, CharacterSet.LATIN_ALL + CharacterSet.CYRILLIC)
         //val font2 = DefaultTtfFont
