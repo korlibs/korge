@@ -111,7 +111,7 @@ class Graphics(
         set(value) {
             if (field === value) return
             field = value
-            ensure()
+            redrawIfRequired()
         }
 
     inline fun <T> updateShape(block: ShapeBuilder.(Graphics) -> T): T {
@@ -122,6 +122,7 @@ class Graphics(
 
     fun redrawIfRequired() {
         ensure()
+        softGraphics?.dirty()
         softGraphics?.redrawIfRequired()
     }
 
@@ -137,6 +138,7 @@ class Graphics(
                     gpuGraphics?.antialiased = antialiased
                     gpuGraphics?.autoScaling = autoScaling
                     gpuGraphics?.smoothing = smoothing
+                    gpuGraphics?.shape = shape
                 }
             }
             else -> {
@@ -149,6 +151,7 @@ class Graphics(
                     softGraphics?.antialiased = antialiased
                     softGraphics?.autoScaling = autoScaling
                     softGraphics?.smoothing = smoothing
+                    softGraphics?.shape = shape
                 }
                 softGraphics?.useNativeRendering = (renderer == GraphicsRenderer.SYSTEM)
             }
