@@ -27,7 +27,7 @@ import com.soywiz.korge.view.text
 import com.soywiz.korge.view.xy
 import com.soywiz.korgw.GameWindow
 import com.soywiz.korim.color.Colors
-import com.soywiz.korma.geom.Anchor
+import com.soywiz.korma.geom.*
 import com.soywiz.korui.layout.HorizontalUiLayout.percent
 import com.soywiz.korui.layout.HorizontalUiLayout.pt
 
@@ -55,7 +55,7 @@ class UIWindow(title: String, width: Double = 256.0, height: Double = 256.0) : U
     var maxHeight = 4096.0
 
     private val bgMaterial = fastMaterialBackground(width, height) {
-        radius = 10.0
+        radius = RectCorners(10.0)
         colorMul = Colors["#999"]
         shadowColor = Colors.BLACK.withAd(0.9)
         shadowRadius = 20.0

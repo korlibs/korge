@@ -17,7 +17,7 @@ import com.soywiz.korge.view.size
 import com.soywiz.korge.view.solidRect
 import com.soywiz.korim.color.Colors
 import com.soywiz.korio.async.Signal
-import com.soywiz.korma.geom.Point
+import com.soywiz.korma.geom.*
 import com.soywiz.korui.layout.HorizontalUiLayout.pt
 import kotlin.native.concurrent.ThreadLocal
 
@@ -56,7 +56,7 @@ open class UIComboBox<T>(
 
     private val itemsView = uiScrollable(width, height = 128.0)
     private val itemsViewBackground = itemsView.fastMaterialBackground(width, height = 128.0) {
-        radius = 12.0
+        radius = RectCorners(12.0)
         zIndex = -1000.0
     }
     private val verticalList = itemsView.container.uiVerticalList(object : UIVerticalList.Provider {

@@ -1,5 +1,6 @@
 package samples
 
+import com.soywiz.korge.render.*
 import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.ui.*
 import com.soywiz.korge.view.*
@@ -10,7 +11,7 @@ import com.soywiz.korma.geom.*
 
 class MainEditor : Scene() {
     override suspend fun SContainer.sceneMain() {
-        solidRect(width, height, Colors.WHITE)
+        //solidRect(width, height, Colors.WHITE)
 
         val font2 = DefaultTtfFont.toBitmapFont(16.0, CharacterSet.LATIN_ALL + CharacterSet.CYRILLIC)
         //val font2 = DefaultTtfFont
@@ -129,6 +130,9 @@ class MainEditor : Scene() {
             uiTextInput("LOL").position(0.0, 128.0)
         }
 
+        renderableView(width, height) {
+            ctx2d.materialRoundRect(0.0, 0.0, 64.0, 64.0, radius = RectCorners(32.0, 16.0, 8.0, 0.0))
+        }.xy(500, 500)
 
         /*
         uiScrollable {

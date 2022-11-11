@@ -4,6 +4,7 @@ import com.soywiz.kmem.*
 import com.soywiz.korag.*
 import com.soywiz.korag.shader.*
 import com.soywiz.korge.render.*
+import com.soywiz.korma.geom.*
 
 open class ShadedView(
     program: Program,
@@ -24,28 +25,12 @@ open class ShadedView(
         this.program = program
     }
 
-    protected var paddingLeft: Double = 0.0; set(value) { field = value; dirtyVertices = true }
-    protected var paddingRight: Double = 0.0; set(value) {  field = value; dirtyVertices = true }
-    protected var paddingTop: Double = 0.0; set(value) { field = value; dirtyVertices = true }
-    protected var paddingBottom: Double = 0.0; set(value) {  field = value; dirtyVertices = true }
+    var padding: Margin = Margin(0.0)
+        set(value) {
+            field = value
+            dirtyVertices = true
+        }
 
-    protected val paddingLeftPlusRight: Double get() = paddingLeft + paddingRight
-    protected val paddingTopPlusBottom: Double get() = paddingTop + paddingBottom
-
-    protected fun setPadding(top: Double, right: Double, bottom: Double, left: Double) {
-        paddingTop = top
-        paddingRight = right
-        paddingBottom = bottom
-        paddingLeft = left
-    }
-
-    protected fun setPadding(vertical: Double, horizontal: Double) {
-        setPadding(vertical, horizontal, vertical, horizontal)
-    }
-
-    protected fun setPadding(padding: Double) {
-        setPadding(padding, padding)
-    }
 
     enum class CoordsType {
         D_0_1,
@@ -61,20 +46,15 @@ open class ShadedView(
         }
 
     protected override fun computeVertices() {
-        var l: Float = 0f
-        var r: Float = 0f
-        var t: Float = 0f
-        var b: Float = 0f
+        val L = (sLeft - padding.left).toFloat()
+        val T = (sTop - padding.top).toFloat()
+        val R = (bwidth + padding.leftPlusRight).toFloat()
+        val B = (bheight + padding.topPlusBottom).toFloat()
 
-        val L = (sLeft - paddingLeft).toFloat()
-        val T = (sTop - paddingTop).toFloat()
-        val R = (bwidth + paddingLeftPlusRight).toFloat()
-        val B = (bheight + paddingTopPlusBottom).toFloat()
-
-        l = -paddingLeft.toFloat()
-        t = -paddingTop.toFloat()
-        r = (bwidth + paddingRight).toFloat()
-        b = (bheight + paddingBottom).toFloat()
+        var l = -padding.left.toFloat()
+        var t = -padding.top.toFloat()
+        var r = (bwidth + padding.right).toFloat()
+        var b = (bheight + padding.bottom).toFloat()
 
         val lmin = when (coordsType) {
             CoordsType.D_0_1 -> 0f

@@ -18,8 +18,7 @@ import com.soywiz.korim.font.Font
 import com.soywiz.korim.paint.*
 import com.soywiz.korim.text.*
 import com.soywiz.korio.async.Signal
-import com.soywiz.korma.geom.Anchor
-import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.interpolation.*
 import com.soywiz.korui.UiContainer
 import com.soywiz.korui.layout.*
@@ -159,7 +158,7 @@ open class UIButton(
         val width = width
         val height = height
         background.setSize(width, height)
-        background.radius = radiusWidth(width)
+        background.radius = RectCorners(radiusWidth(width))
         background.shadowRadius = if (elevation) 10.0 else 0.0
         //textView.setSize(width, height)
 
