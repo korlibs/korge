@@ -213,6 +213,8 @@ open class Animator @PublishedApi internal constructor(
             currentNode = null
         }
 
+        private val toRemove = fastArrayListOf<NewAnimatorNode>()
+
         override fun update(dt: TimeSpan): TimeSpan {
             var dt = dt * speed
 
@@ -221,11 +223,17 @@ open class Animator @PublishedApi internal constructor(
 
             if (parallel) {
                 var completedTime = 0.seconds
+                toRemove.clear()
                 nodes.forEachIndexed { index, it ->
                     val result = it.update(dt)
+                    if (result >= 0.seconds) {
+                        toRemove.add(it)
+                    }
                     completedTime = if (index == 0) result else min(completedTime, result)
                     //println(" - $result")
                 }
+                if (toRemove.isNotEmpty()) nodes.removeAll(toRemove)
+                toRemove.clear()
                 parallelStarted = true
                 return completedTime
             }
