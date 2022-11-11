@@ -1639,6 +1639,11 @@ class ViewTransform(var view: View) {
 }
 */
 
+inline fun <T2 : View, T> extraViewProp(
+    name: String? = null,
+    noinline default: T2.() -> T
+): Extra.PropertyThis<T2, T> = extraPropertyThis(name, transform = { invalidateRender(); it}, default)
+
 interface ViewRenderPhase {
     val priority: Int get() = 0
     fun render(view: View, ctx: RenderContext) = view.renderNextPhase(ctx)

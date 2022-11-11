@@ -83,26 +83,16 @@ open class UIButton(
     var skin: UISkin? get() = uiSkin ; set(value) { uiSkin = value }
 
 	var forcePressed = false
-    var radius = 4.pt
+    var radius = 6.pt
         set(value) {
             field = value
             setInitialState()
         }
     //var radius = 100.percent
 
-    private fun radiusWidth(width: Double): Double {
-        return radius.calc(Length.Context().setSize(width.toInt() / 2)).toDouble()
+    fun radiusPoints(): Double {
+        return radius.calc(Length.Context().setSize(min(width, height).toInt() / 2)).toDouble()
     }
-
-    private fun radiusHeight(height: Double): Double {
-        return radius.calc(Length.Context().setSize(height.toInt() / 2)).toDouble()
-    }
-
-    var bgcolor: RGBA
-        get() = background.colorMul
-        set(value) {
-            background.colorMul = value
-        }
 
     //val radiusRatioHalf get() = radiusRatio * 0.5
     var bgColorOut = Colors["#1976d2"]
@@ -117,6 +107,14 @@ open class UIButton(
             setInitialState()
         }
     var bgColorDisabled = Colors["#00000033"]
+
+    var bgcolor: RGBA = bgColorOut
+        set(value) {
+            field = value
+            invalidateRender()
+        }
+
+
     //protected val rect: NinePatchEx = ninePatch(null, width, height)
     //protected val background = roundRect(
     //    width, height, radiusWidth(width), radiusHeight(height), bgColorOut)
@@ -124,9 +122,14 @@ open class UIButton(
     //    //.filters(DropshadowFilter(0.0, 3.0, shadowColor = Colors.BLACK.withAd(0.126)))
     //    .also { it.mouseEnabled = false }
 
-    protected val background = FastMaterialBackground(width, height).addTo(this)
-        .also { it.colorMul = bgColorOut }
-        .also { it.mouseEnabled = false }
+    var newSkin: NewUIButtonSkin = DefaultUISkin
+
+    val canvas = renderableView {
+        newSkin.renderUIButton(this, this@UIButton)
+    }
+    //internal val background = FastMaterialBackground(width, height).addTo(this)
+    //    .also { it.colorMul = bgColorOut }
+    //    .also { it.mouseEnabled = false }
 
     //protected val textShadowView = text("", 16.0)
     protected val textView = text(text, 16.0)
@@ -137,29 +140,15 @@ open class UIButton(
     val animatorEffects = animator(parallel = true, defaultEasing = Easing.LINEAR)
 
     var textColor: RGBA by textView::color
-
-    init {
-        this.cursor = GameWindow.Cursor.HAND
-    }
-
-    override fun updateState() {
-        super.updateState()
-        val bgcolor = when {
-            !enabled -> bgColorDisabled
-            bover ->  bgColorOver
-            else -> bgColorOut
-        }
-        animator.cancel().tween(this::bgcolor[bgcolor], time = 0.25.seconds)
-    }
-
     var text: String by textView::text
 
     private fun setInitialState() {
         val width = width
         val height = height
-        background.setSize(width, height)
-        background.radius = RectCorners(radiusWidth(width))
-        background.shadowRadius = if (elevation) 10.0 else 0.0
+        canvas.setSize(width, height)
+        //background.setSize(width, height)
+        //background.radius = RectCorners(radiusWidth(width))
+        //background.shadowRadius = if (elevation) 10.0 else 0.0
         //textView.setSize(width, height)
 
         textView.setTextBounds(Rectangle(0.0, 0.0, width, height))
@@ -185,52 +174,33 @@ open class UIButton(
         setInitialState()
     }
 
-    init {
-        setInitialState()
-    }
-
-    fun addCircleHighlight(px: Double, py: Double) {
-        animatorEffects.cancel()
-        background.highlightRadius = 0.0
-        background.highlightAlpha = 1.0
-        background.highlightPos.setTo(px / width, py / height)
-        animatorEffects.tween(background::highlightRadius[1.0], time = 0.3.seconds, easing = Easing.EASE_IN)
-    }
-
-    fun removeCircleHighlights() {
-        animatorEffects.tween(background::highlightAlpha[0.0], time = 0.2.seconds)
-    }
-
     fun simulateOver() {
         if (bover) return
 		bover = true
-        updateState()
+        newSkin.updatedUIButton(this, over = true)
 	}
 
 	fun simulateOut() {
         if (!bover) return
 		bover = false
-        updateState()
+        newSkin.updatedUIButton(this, over = false)
 	}
 
 	fun simulatePressing(value: Boolean) {
         if (bpressing == value) return
 		bpressing = value
-        updateState()
 	}
 
 	fun simulateDown(x: Double = width * 0.5, y: Double = height * 0.5) {
         if (bpressing) return
 		bpressing = true
-        updateState()
-        if (enabled) addCircleHighlight(x, y)
+        newSkin.updatedUIButton(this, down = true, px = x, py = y)
 	}
 
 	fun simulateUp() {
         if (!bpressing) return
 		bpressing = false
-        updateState()
-        removeCircleHighlights()
+        newSkin.updatedUIButton(this, down = false)
 	}
 
     val onPress = Signal<TouchEvents.Info>()
@@ -267,7 +237,14 @@ open class UIButton(
                 }
 			}
 		}
-	}
+        this.cursor = GameWindow.Cursor.HAND
+        setInitialState()
+    }
+
+    override fun updateState() {
+        super.updateState()
+        newSkin.updatedUIButton(this)
+    }
 
     override fun buildDebugComponent(views: Views, container: UiContainer) {
         container.uiCollapsibleSection(UIButton::class.simpleName!!) {
