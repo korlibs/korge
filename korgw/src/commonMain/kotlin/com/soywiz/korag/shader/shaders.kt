@@ -534,15 +534,20 @@ data class Program(val vertex: VertexShader, val fragment: FragmentShader, val n
 		//}
 
         class FuncBuilder(parent: Builder) : Builder(parent) {
-            fun ARG(name: String, type: VarType): Operand = Arg(name, type)
+            val args = arrayListOf<Arg>()
+
+            fun ARG(name: String, type: VarType): Operand {
+                return Arg(name, type).also { args += it }
+            }
 
             //fun RETURN(expr: Operand) {
             //    outputStms.add(Stm.Return(expr))
             //}
         }
 
-        fun FUNC(name: String, rettype: VarType, vararg args: Pair<String, VarType>, block: FuncBuilder.() -> Unit): FuncRef {
-            val decl = FuncDecl(name, rettype, args.toList(), createChildFuncBuilder().apply(block)._build())
+        fun FUNC(name: String, rettype: VarType, block: FuncBuilder.() -> Unit): FuncRef {
+            val funcBuild = createChildFuncBuilder().apply(block)
+            val decl = FuncDecl(name, rettype, funcBuild.args.map { it.name to it.type }, funcBuild._build())
             context.outputFuncs.add(decl)
             return decl.ref
         }
