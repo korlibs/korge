@@ -206,6 +206,29 @@ data class Xml(
 
 	enum class Type { NODE, TEXT, COMMENT }
 
+    object Encode {
+        fun encodeOpenTag(name: String, map: Map<String, Any?>, selfClose: Boolean = false): String = buildString {
+            append("<")
+            append(name)
+            if (map.isNotEmpty()) {
+                append(" ")
+                append(quoteParams(map))
+            }
+            if (selfClose) {
+                append("/")
+            }
+            append(">")
+        }
+        fun encodeCloseTag(name: String): String = "</$name>"
+        fun quoteParams(map: Map<String, Any?>): String = map.entries.joinToString(" ") { it.key + "=" + quote(it.value) }
+
+        fun quote(value: Any?): String = when (value) {
+            is Number, is Boolean -> value.toString()
+            else -> value?.toString()?.let { quote(it) } ?: "\"\""
+        }
+        fun quote(str: String): String = "\"${Entities.encode(str)}\""
+    }
+
 	object Entities {
 		// Predefined entities in XML 1.0
 		private val charToEntity = linkedMapOf('"' to "&quot;", '\'' to "&apos;", '<' to "&lt;", '>' to "&gt;", '&' to "&amp;")
