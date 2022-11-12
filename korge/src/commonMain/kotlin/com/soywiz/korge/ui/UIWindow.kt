@@ -55,7 +55,7 @@ class UIWindow(title: String, width: Double = 256.0, height: Double = 256.0) : U
     var maxHeight = 4096.0
 
     private val bgMaterial = fastMaterialBackground(width, height) {
-        radius = RectCorners(10.0)
+        radius = RectCorners(12.0)
         colorMul = Colors["#999"]
         shadowColor = Colors.BLACK.withAd(0.9)
         shadowRadius = 20.0
@@ -112,12 +112,12 @@ class UIWindow(title: String, width: Double = 256.0, height: Double = 256.0) : U
             }
         }
 
-        private fun getExpectedX() = window.width * anchor.sx + when (anchor.sx) {
+        private fun getExpectedX(): Double = window.width * anchor.sx + when (anchor.sx) {
             0.0 -> -2.0
             1.0 -> +2.0
             else -> 0.0
         }
-        private fun getExpectedY() = window.height * anchor.sy + when (anchor.sy) {
+        private fun getExpectedY(): Double = window.height * anchor.sy + when (anchor.sy) {
             0.0 -> -2.0
             1.0 -> +2.0
             else -> 0.0

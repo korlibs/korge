@@ -119,7 +119,7 @@ class MainEditor : Scene() {
                 println(skewProp.getVisibleGlobalArea())
 
             }
-        }
+        }.xy(100, 150)
 
         //text("HELLO", font = font)
         uiContainer {

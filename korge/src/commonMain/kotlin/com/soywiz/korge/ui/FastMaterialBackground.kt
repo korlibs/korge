@@ -40,7 +40,10 @@ class FastMaterialBackground(
 
     override fun updateUniforms(uniforms: AG.UniformValues, ctx: RenderContext) {
         //uniforms[u_Radius] = height / 2.0
-        uniforms[MaterialRender.u_Radius] = radius
+        uniforms[MaterialRender.u_Radius] = floatArrayOf(
+            radius.bottomRight.toFloat(), radius.topRight.toFloat(),
+            radius.bottomLeft.toFloat(), radius.topLeft.toFloat(),
+        )
         uniforms[MaterialRender.u_Size] = Point(width, height)
         uniforms[MaterialRender.u_HighlightPos] = Point(highlightPos.x * width, highlightPos.y * height)
         uniforms[MaterialRender.u_HighlightRadius] = highlightRadius * kotlin.math.max(width, height) * 1.25
