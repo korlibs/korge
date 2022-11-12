@@ -26,17 +26,24 @@ data class RichTextData(
     //data class Line(val nodes: List<Node>) : List<RichTextData.Node> by nodes, Extra by Extra.Mixin() {
     data class Line(val nodes: List<Node>) : Extra by Extra.Mixin() {
         constructor(vararg nodes: Node) : this(nodes.toList())
-        val defaultNodeStyle: Node by lazy {
-            nodes.firstOrNull() ?: Node("", textSize = 16.0, font = DefaultTtfFont)
+        val defaultTextStyle: TextNode by lazy {
+            nodes.filterIsInstance<TextNode>().firstOrNull() ?: TextNode("", textSize = 16.0, font = DefaultTtfFont)
         }
-        val text: String by lazy { nodes.joinToString("") { it.text } }
-        val width: Double by lazy { nodes.sumOf { it.bounds.width } }
-        val maxLineHeight: Double by lazy { nodes.maxOf { it.bounds.lineHeight } }
-        val maxHeight: Double by lazy { nodes.maxOf { it.bounds.height } }
+        val text: String by lazy { nodes.joinToString("") { it.text ?: "" } }
+        val width: Double by lazy { nodes.sumOf { it.width } }
+        val maxLineHeight: Double by lazy { nodes.maxOf { it.lineHeight } }
+        val maxHeight: Double by lazy { nodes.maxOf { it.height } }
     }
 
-    data class Node(
-        val text: String,
+    interface Node {
+        val text: String?
+        val width: Double
+        val height: Double
+        val lineHeight: Double get() = height
+    }
+
+    data class TextNode(
+        override val text: String,
         val textSize: Double,
         val font: Font,
         val italic: Boolean = false,
@@ -44,12 +51,15 @@ data class RichTextData(
         val underline: Boolean = false,
         val color: RGBA = Colors.BLACK,
         val canBreak: Boolean = true,
-    ) : Extra by Extra.Mixin() {
+    ) : Node, Extra by Extra.Mixin() {
         init {
             require(!text.contains('\n')) { "Single RichTextData nodes cannot have line breaks" }
         }
 
-        val bounds by lazy { font.getTextBounds(textSize, text) }
+        val bounds: TextMetrics by lazy { font.getTextBounds(textSize, text) }
+        override val width: Double get() = bounds.width
+        override val lineHeight: Double get() = bounds.lineHeight
+        override val height: Double get() = bounds.height
     }
 
     fun limit(maxLineWidth: Double = Double.POSITIVE_INFINITY, maxHeight: Double = Double.POSITIVE_INFINITY, includePartialLines: Boolean = true, ellipsis: String? = null): RichTextData {
@@ -65,7 +75,7 @@ data class RichTextData(
         }
         if (maxLineWidth != Double.POSITIVE_INFINITY && ellipsis != null && removedWords && out.lines.isNotEmpty()) {
             val line = out.lines.last()
-            val lastLine = fitEllipsis(maxLineWidth, out.lines.last(), line.defaultNodeStyle.copy(text = ellipsis))
+            val lastLine = fitEllipsis(maxLineWidth, out.lines.last(), line.defaultTextStyle.copy(text = ellipsis))
             out = RichTextData(out.dropLast(1) + lastLine)
         }
         return out
@@ -94,14 +104,15 @@ data class RichTextData(
         val currentLine = arrayListOf<Node>()
 
         fun addNode(node: Node) {
+            val lastNode = currentLine.lastOrNull()
             // Merge
-            if (currentLine.isNotEmpty() && currentLine.last().copy(text = node.text) == node && node.canBreak) {
-                val lastNode = currentLine.removeLast()
+            if (currentLine.isNotEmpty() && node is TextNode && lastNode is TextNode && lastNode.copy(text = node.text) == node && node.canBreak) {
+                currentLine.removeLast()
                 currentLineWidth -= lastNode.bounds.width
-                return addNode(lastNode.copy(text = lastNode.text + node.text))
+                return addNode(node.copy(text = lastNode.text + node.text))
             } else {
                 currentLine.add(node)
-                currentLineWidth += node.bounds.width
+                currentLineWidth += node.width
             }
         }
 
@@ -116,7 +127,7 @@ data class RichTextData(
             val deque = Deque<Node>().also { it.addAll(line.nodes) }
             while (deque.isNotEmpty()) {
                 val node = deque.removeFirst()
-                val width = node.bounds.width
+                val width = node.width
 
                 if (currentLineWidth >= maxLineWidth) {
                     finishLine()
@@ -127,7 +138,7 @@ data class RichTextData(
 
                 when {
                     // Node doesn't fit the area, so we will have to split into smaller chunks
-                    node.canBreak && (!fullyFitsInLine || splitLetters) -> {
+                    node is TextNode && (node.canBreak && (!fullyFitsInLine || splitLetters)) -> {
                     //node.canBreak && !fullyFitsInLine -> {
                         val division = divide(node.text)
                         // No more divisions possible, let's add it even if overflows (possibly only a single letter)
@@ -158,8 +169,10 @@ data class RichTextData(
     }
 
     companion object {
-        internal fun fitEllipsis(maxLineWidth: Double, line: Line, addNode: Node = line.defaultNodeStyle.copy("...")): Line {
-            val chunk = RichTextData(Line(listOf(addNode.copy(canBreak = false)) + line.nodes)).wordWrap(maxLineWidth, splitLetters = true)
+        internal fun Node.nonBreakable(): Node = if (this is TextNode) this.copy(canBreak = false) else this
+
+        internal fun fitEllipsis(maxLineWidth: Double, line: Line, addNode: Node = line.defaultTextStyle.copy("...")): Line {
+            val chunk = RichTextData(Line(listOf(addNode.nonBreakable()) + line.nodes)).wordWrap(maxLineWidth, splitLetters = true)
             val nodes = chunk.lines.first().nodes
             return Line(nodes.drop(1) + nodes.first())
         }
@@ -173,7 +186,7 @@ data class RichTextData(
             underline: Boolean = false,
             color: RGBA = Colors.BLACK,
         ): RichTextData {
-            return RichTextData(text.split("\n").map { Line(Node(it, textSize, font, italic, bold, underline, color)) })
+            return RichTextData(text.split("\n").map { Line(TextNode(it, textSize, font, italic, bold, underline, color)) })
         }
 
         //fun Char.isSymbol(): Boolean {
