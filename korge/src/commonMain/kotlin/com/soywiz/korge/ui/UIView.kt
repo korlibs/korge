@@ -40,10 +40,12 @@ open class UIView(
 	width: Double = 90.0,
 	height: Double = 32.0
 ) : FixedSizeContainer(width, height), UISkinable {
+    @Deprecated("Do not use the old skinning")
     override fun <T> setSkinProperty(property: String, value: T) {
         uiSkinSure.setSkinProperty(property, value)
         invalidateRender()
     }
+    @Deprecated("Do not use the old skinning")
     override fun <T> getSkinPropertyOrNull(property: String): T? = (uiSkin?.getSkinPropertyOrNull(property) as? T?) ?: realUiSkin.getSkinPropertyOrNull(property)
 
     private var _width: Double = width

@@ -4,25 +4,13 @@ import com.soywiz.kds.fastCastTo
 import com.soywiz.korge.debug.uiCollapsibleSection
 import com.soywiz.korge.debug.uiEditableValue
 import com.soywiz.korge.input.mouse
-import com.soywiz.korge.render.RenderContext
-import com.soywiz.korge.view.Container
-import com.soywiz.korge.view.View
-import com.soywiz.korge.view.ViewDslMarker
-import com.soywiz.korge.view.ViewLeaf
-import com.soywiz.korge.view.Views
-import com.soywiz.korge.view.addTo
-import com.soywiz.korge.view.image
-import com.soywiz.korge.view.ninePatch
-import com.soywiz.korge.view.position
-import com.soywiz.korge.view.size
-import com.soywiz.korge.view.solidRect
-import com.soywiz.korge.view.text
+import com.soywiz.korge.render.*
+import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.NinePatchBmpSlice
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.text.TextAlignment
 import com.soywiz.korio.async.Signal
-import com.soywiz.korma.geom.Anchor
-import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.*
 import com.soywiz.korui.UiContainer
 
 inline fun Container.uiCheckBox(
@@ -42,7 +30,7 @@ open class UICheckBox(
 
 }
 
-open class UIBaseCheckBox<T>(
+open class UIBaseCheckBox<T : UIBaseCheckBox<T>>(
     width: Double = UI_DEFAULT_WIDTH,
     height: Double = UI_DEFAULT_HEIGHT,
     checked: Boolean = false,
@@ -60,6 +48,11 @@ open class UIBaseCheckBox<T>(
         }
 
     private val background = solidRect(width, height, Colors.TRANSPARENT_BLACK)
+    val canvas = renderableView {
+        ctx2d.materialRoundRect(
+            0.0, 0.0, height, height, radius = RectCorners(height * 0.5),
+        )
+    }
     private val box = ninePatch(buttonNormal, height, height)
     private val icon = image(checkBoxIcon)
     private val textView = text(text)

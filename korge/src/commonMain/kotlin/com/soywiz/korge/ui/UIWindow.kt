@@ -56,7 +56,7 @@ class UIWindow(title: String, width: Double = 256.0, height: Double = 256.0) : U
 
     private val bgMaterial = fastMaterialBackground(width, height) {
         radius = RectCorners(12.0)
-        colorMul = Colors["#999"]
+        colorMul = if (isFocused) Colors["#394674"] else Colors["#999"]
         shadowColor = Colors.BLACK.withAd(0.9)
         shadowRadius = 20.0
     }

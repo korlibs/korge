@@ -62,10 +62,13 @@ class MainEditor : Scene() {
         //deferred(deferred = true) {
         //container {
         uiVerticalStack {
-            xy(400, 200)
+            xy(600, 200)
             val group = UIRadioButtonGroup()
             uiRadioButton(group = group)
             uiRadioButton(group = group)
+            uiSpacing()
+            uiCheckBox(checked = false)
+            uiCheckBox(checked = true)
         }
         uiVerticalStack {
             xy(400, 200)
@@ -82,6 +85,7 @@ class MainEditor : Scene() {
             uiButton("NAME")
             uiButton("TEST").disable()
         }
+
         /*
         uiContainer {
             //append(UIContainer(200.0, 200.0)) {

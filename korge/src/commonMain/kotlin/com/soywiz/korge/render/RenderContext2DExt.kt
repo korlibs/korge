@@ -1,6 +1,7 @@
 package com.soywiz.korge.render
 
 import com.soywiz.korag.shader.*
+import com.soywiz.korge.annotations.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.color.*
 import com.soywiz.korma.geom.*
@@ -59,6 +60,7 @@ object MaterialRender {
     }
 }
 
+@KorgeExperimental
 fun RenderContext2D.materialRoundRect(
     x: Double,
     y: Double,
