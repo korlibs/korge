@@ -19,13 +19,13 @@ class RichTextDataRendererText {
                 rect(textBounds)
             }
             drawRichText(
-                RichTextData("hello world this is a long test", textSize = 32.0, font = DefaultTtfFont),
+                RichTextData.fromHTML("hello world<br /><br /> this is a long test", style = RichTextData.Style.DEFAULT.copy(textSize = 24.0)),
                 bounds = textBounds,
                 ellipsis = "...",
                 fill = Colors.RED,
                 //align = TextAlignment.RIGHT,
                 //align = TextAlignment.CENTER,
-                align = TextAlignment.JUSTIFIED,
+                align = TextAlignment.MIDDLE_CENTER,
             )
         }
         //nativeImage.showImageAndWait()

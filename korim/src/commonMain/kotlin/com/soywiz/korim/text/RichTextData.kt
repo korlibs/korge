@@ -27,14 +27,14 @@ data class RichTextData(
     }
 
     //data class Line(val nodes: List<Node>) : List<RichTextData.Node> by nodes, Extra by Extra.Mixin() {
-    data class Line(val nodes: List<Node>) : Extra by Extra.Mixin() {
+    data class Line(val nodes: List<Node>, val defaultLineStyle: Style? = null) : Extra by Extra.Mixin() {
         constructor(vararg nodes: Node) : this(nodes.toList())
-        val defaultStyle: Style by lazy { nodes.filterIsInstance<TextNode>().firstOrNull()?.style ?: Style.DEFAULT }
-        val defaultLastStyle: Style by lazy { nodes.filterIsInstance<TextNode>().lastOrNull()?.style ?: Style.DEFAULT }
+        val defaultStyle: Style by lazy { nodes.filterIsInstance<TextNode>().firstOrNull()?.style ?: defaultLineStyle ?: Style.DEFAULT }
+        val defaultLastStyle: Style by lazy { nodes.filterIsInstance<TextNode>().lastOrNull()?.style ?: defaultLineStyle ?: Style.DEFAULT }
         val text: String by lazy { nodes.joinToString("") { it.text ?: "" } }
-        val width: Double by lazy { nodes.sumOf { it.width } }
-        val maxLineHeight: Double by lazy { nodes.maxOf { it.lineHeight } }
-        val maxHeight: Double by lazy { nodes.maxOf { it.height } }
+        val width: Double by lazy { if (nodes.isNotEmpty()) nodes.sumOf { it.width } else 0.0 }
+        val maxLineHeight: Double by lazy { if (nodes.isNotEmpty()) nodes.maxOf { it.lineHeight } else TextNode("", defaultStyle).lineHeight }
+        val maxHeight: Double by lazy { if (nodes.isNotEmpty()) nodes.maxOf { it.height } else TextNode("", defaultStyle).height }
 
         fun trimSpaces(): Line {
             val out = nodes.toDeque()
@@ -103,7 +103,7 @@ data class RichTextData(
         val bounds: TextMetrics by lazy { style.font.getTextBounds(style.textSize, text) }
         override val width: Double get() = bounds.width
         override val lineHeight: Double get() = bounds.lineHeight
-        override val height: Double get() = bounds.height
+        override val height: Double get() = bounds.ascent //- bounds.descent
     }
 
     fun trimSpaces(): RichTextData = RichTextData(lines.map { it.trimSpaces() })

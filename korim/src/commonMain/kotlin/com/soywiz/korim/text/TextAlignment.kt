@@ -76,6 +76,7 @@ data class TextAlignment(
 
 inline class VerticalAlign(val ratio: Double) : EnumLike<VerticalAlign> {
     val ratioFake get() = if (this == BASELINE) 1.0 else ratio
+    val ratioFake0 get() = if (this == BASELINE) 0.0 else ratio
 
     companion object {
         val TOP = VerticalAlign(0.0)

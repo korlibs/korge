@@ -14,13 +14,15 @@ fun RichTextData.Companion.fromHTML(
 ): RichTextData {
     val lines = fastArrayListOf<RichTextData.Line>()
     val nodes = fastArrayListOf<RichTextData.Node>()
-    fun flushLine() {
-        if (nodes.isEmpty()) return
+    fun flushLine(force: Boolean = false) {
+        if (nodes.isEmpty() && !force) return
         lines.add(RichTextData.Line(nodes.toList()))
+        nodes.clear()
     }
     fun processNode(node: Xml, style: RichTextData.Style) {
         if (node.nameLC == "br") {
-            flushLine()
+            nodes.add(RichTextData.TextNode("", style))
+            flushLine(force = true)
             return
         }
         if (node.isText) {

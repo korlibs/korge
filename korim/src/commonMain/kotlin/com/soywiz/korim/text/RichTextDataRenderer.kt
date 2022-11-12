@@ -26,9 +26,11 @@ fun Context2d.drawRichText(
         trimSpaces = true
     )
     //var y = bounds.y + rtext.lines.first().maxHeight
-    var y = bounds.y
+    val totalHeight = rtext.lines.dropLast(1).sumOf { it.maxLineHeight } + rtext.lines.last().maxHeight
+
+    var y = bounds.y + ((bounds.height - totalHeight) * align.vertical.ratioFake0)
+
     for (line in rtext.lines) {
-        if (line.nodes.isEmpty()) continue
         var x = bounds.x - align.horizontal.getOffsetX(line.width) + align.horizontal.getOffsetX(bounds.width)
         val wordSpacing = if (align.horizontal == HorizontalAlign.JUSTIFY) (bounds.width - line.width).toDouble() / (line.nodes.size.toDouble() - 1) else 0.0
         y += line.maxHeight
@@ -47,10 +49,10 @@ fun Context2d.drawRichText(
                         )
                     }
                     keepTransform {
-                        if (node.style.italic) {
-                            skew(12.degrees)
-                            translate(8.0, 0.0)
-                        }
+                        //if (node.style.italic) {
+                        //    translate(8.0, 0.0)
+                        //    skew(12.degrees)
+                        //}
                         if (node.style.bold) {
                             render(1.0, 0.0)
                         }
