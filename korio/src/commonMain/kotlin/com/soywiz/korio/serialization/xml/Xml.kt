@@ -300,6 +300,7 @@ data class Xml(
 								r.skipSpaces()
 								val argsQuote = r.matchStringOrId()
 								attributes[key] = when {
+                                    argsQuote != null && !(argsQuote.startsWith("'") || argsQuote.startsWith("\"")) -> argsQuote
 									argsQuote != null -> Xml.Entities.decode(argsQuote.substring(1, argsQuote.length - 1))
 									else -> Xml.Entities.decode(r.matchIdentifier()!!)
 								}
@@ -366,7 +367,11 @@ operator fun Sequence<Xml>.get(name: String): Sequence<Xml> = this.children(name
 
 fun String.toXml(): Xml = Xml.parse(this)
 
-fun Xml(str: String): Xml = Xml.parse(str)
+// language=html
+fun Xml(
+    // language=html
+    str: String
+): Xml = Xml.parse(str)
 
 fun Xml.descendants(name: String) = descendants.filter { it.name.equals(name, ignoreCase = true) }
 fun Xml.firstDescendant(name: String) = descendants(name).firstOrNull()
