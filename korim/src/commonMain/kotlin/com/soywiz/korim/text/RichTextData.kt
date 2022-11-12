@@ -33,6 +33,40 @@ data class RichTextData(
         val width: Double by lazy { nodes.sumOf { it.width } }
         val maxLineHeight: Double by lazy { nodes.maxOf { it.lineHeight } }
         val maxHeight: Double by lazy { nodes.maxOf { it.height } }
+
+        fun trimSpaces(): Line {
+            val out = nodes.toDeque()
+            while (true) {
+                val first = out.firstOrNull()
+                val last = out.lastOrNull()
+                if (first is TextNode) {
+                    if (first.text.isBlank()) {
+                        out.removeFirst()
+                        continue
+                    }
+                    val trimmed = first.text.trimStart()
+                    if (trimmed != first.text) {
+                        out.removeFirst()
+                        out.addFirst(first.copy(text = trimmed))
+                        continue
+                    }
+                }
+                if (last is TextNode) {
+                    if (last.text.isBlank()) {
+                        out.removeLast()
+                        continue
+                    }
+                    val trimmed = last.text.trimEnd()
+                    if (trimmed != last.text) {
+                        out.removeLast()
+                        out.addLast(last.copy(text = trimmed))
+                        continue
+                    }
+                }
+                break
+            }
+            return Line(out.toList())
+        }
     }
 
     interface Node {
@@ -62,7 +96,15 @@ data class RichTextData(
         override val height: Double get() = bounds.height
     }
 
-    fun limit(maxLineWidth: Double = Double.POSITIVE_INFINITY, maxHeight: Double = Double.POSITIVE_INFINITY, includePartialLines: Boolean = true, ellipsis: String? = null): RichTextData {
+    fun trimSpaces(): RichTextData = RichTextData(lines.map { it.trimSpaces() })
+
+    fun limit(
+        maxLineWidth: Double = Double.POSITIVE_INFINITY,
+        maxHeight: Double = Double.POSITIVE_INFINITY,
+        includePartialLines: Boolean = true,
+        ellipsis: String? = null,
+        trimSpaces: Boolean = false,
+    ): RichTextData {
         var out = this
         var removedWords = false
         if (maxLineWidth != Double.POSITIVE_INFINITY) {
@@ -77,6 +119,9 @@ data class RichTextData(
             val line = out.lines.last()
             val lastLine = fitEllipsis(maxLineWidth, out.lines.last(), line.defaultTextStyle.copy(text = ellipsis))
             out = RichTextData(out.dropLast(1) + lastLine)
+        }
+        if (trimSpaces) {
+            out = out.trimSpaces()
         }
         return out
     }
@@ -106,7 +151,7 @@ data class RichTextData(
         fun addNode(node: Node) {
             val lastNode = currentLine.lastOrNull()
             // Merge
-            if (currentLine.isNotEmpty() && node is TextNode && lastNode is TextNode && lastNode.copy(text = node.text) == node && node.canBreak) {
+            if (currentLine.isNotEmpty() && node is TextNode && lastNode is TextNode && lastNode.copy(text = node.text) == node && node.canBreak && node.text.isNotBlank() && lastNode.text.isNotBlank()) {
                 currentLine.removeLast()
                 currentLineWidth -= lastNode.bounds.width
                 return addNode(node.copy(text = lastNode.text + node.text))

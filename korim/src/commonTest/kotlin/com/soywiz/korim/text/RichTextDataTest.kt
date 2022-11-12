@@ -1,7 +1,6 @@
 package com.soywiz.korim.text
 
 import com.soywiz.korim.font.*
-import com.soywiz.korma.geom.*
 import kotlin.test.*
 
 class RichTextDataTest {
