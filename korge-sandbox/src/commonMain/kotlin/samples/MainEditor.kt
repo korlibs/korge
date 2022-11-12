@@ -1,7 +1,10 @@
 package samples
 
+import com.soywiz.klock.*
+import com.soywiz.korge.animate.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.scene.Scene
+import com.soywiz.korge.tween.*
 import com.soywiz.korge.ui.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.color.*
@@ -137,6 +140,16 @@ class MainEditor : Scene() {
         renderableView(width, height) {
             ctx2d.materialRoundRect(0.0, 0.0, 64.0, 64.0, radius = RectCorners(32.0, 16.0, 8.0, 0.0))
         }.xy(500, 500)
+
+        val textBlock = textBlock(RichTextData("hello world, this is a long test to see how rich text works! And see if this is going to show ellipsis if the text is too long", textSize = 16.0, font = DefaultTtfFont)) {
+            align = TextAlignment.TOP_JUSTIFIED
+            xy(600, 500)
+        }
+
+        textBlock.simpleAnimator.sequence(looped = true) {
+            tween(textBlock::width[300.0], time = 5.seconds)
+            tween(textBlock::width[1.0], time = 5.seconds)
+        }
 
         /*
         uiScrollable {

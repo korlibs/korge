@@ -20,6 +20,10 @@ import kotlin.reflect.*
 @Target(AnnotationTarget.CLASS, AnnotationTarget.TYPE)
 annotation class AnimatorDslMarker
 
+val View.simpleAnimator: Animator by Extra.PropertyThis {
+    animator(parallel = true)
+}
+
 fun View.animator(
     defaultTime: TimeSpan = Animator.DEFAULT_TIME,
     defaultSpeed: Double = Animator.DEFAULT_SPEED,
