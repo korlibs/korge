@@ -4,11 +4,10 @@ import com.soywiz.kds.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.font.*
 import com.soywiz.korio.lang.*
-import com.soywiz.korma.geom.*
 
 data class RichTextData(
     val lines: List<Line>
-) {
+) : List<RichTextData.Line> by lines, Extra by Extra.Mixin() {
     constructor(vararg lines: Line) : this(lines.toList())
 
     val text: String by lazy { lines.joinToString("\n") { it.text } }
@@ -17,20 +16,23 @@ data class RichTextData(
     //constructor(vararg node: Node) : this(node.toList())
 
     operator fun plus(other: RichTextData): RichTextData {
-        if (lines.isEmpty()) return other
+        if (this.lines.isEmpty()) return other
         if (other.lines.isEmpty()) return this
         return RichTextData(
-            lines.dropLast(1) + Line(lines.last().nodes + other.lines.first().nodes) + other.lines.drop(1),
+            this.lines.dropLast(1) + Line(this.lines.last().nodes + other.lines.first().nodes) + other.lines.drop(1),
         )
     }
 
-    data class Line(val nodes: List<Node>) {
+    //data class Line(val nodes: List<Node>) : List<RichTextData.Node> by nodes, Extra by Extra.Mixin() {
+    data class Line(val nodes: List<Node>) : Extra by Extra.Mixin() {
         constructor(vararg nodes: Node) : this(nodes.toList())
-
-        val text: String by lazy { nodes.joinToString("") { it.text } }
-        val maxHeight: Double by lazy {
-            nodes.maxOf { it.bounds.height }
+        val defaultNodeStyle: Node by lazy {
+            nodes.firstOrNull() ?: Node("", textSize = 16.0, font = DefaultTtfFont)
         }
+        val text: String by lazy { nodes.joinToString("") { it.text } }
+        val width: Double by lazy { nodes.sumOf { it.bounds.width } }
+        val maxLineHeight: Double by lazy { nodes.maxOf { it.bounds.lineHeight } }
+        val maxHeight: Double by lazy { nodes.maxOf { it.bounds.height } }
     }
 
     data class Node(
@@ -41,7 +43,8 @@ data class RichTextData(
         val bold: Boolean = false,
         val underline: Boolean = false,
         val color: RGBA = Colors.BLACK,
-    ) {
+        val canBreak: Boolean = true,
+    ) : Extra by Extra.Mixin() {
         init {
             require(!text.contains('\n')) { "Single RichTextData nodes cannot have line breaks" }
         }
@@ -49,14 +52,50 @@ data class RichTextData(
         val bounds by lazy { font.getTextBounds(textSize, text) }
     }
 
-    fun wordWrap(size: ISize, overflowEllipsis: Boolean = false): RichTextData {
+    fun limit(maxLineWidth: Double = Double.POSITIVE_INFINITY, maxHeight: Double = Double.POSITIVE_INFINITY, includePartialLines: Boolean = true, ellipsis: String? = null): RichTextData {
+        var out = this
+        var removedWords = false
+        if (maxLineWidth != Double.POSITIVE_INFINITY) {
+            out = out.wordWrap(maxLineWidth)
+        }
+        if (maxHeight != Double.POSITIVE_INFINITY) {
+            out = out.limitHeight(maxHeight, includePartialLines = includePartialLines).also {
+                if (it != out) removedWords = true
+            }
+        }
+        if (maxLineWidth != Double.POSITIVE_INFINITY && ellipsis != null && removedWords && out.lines.isNotEmpty()) {
+            val line = out.lines.last()
+            val lastLine = fitEllipsis(maxLineWidth, out.lines.last(), line.defaultNodeStyle.copy(text = ellipsis))
+            out = RichTextData(out.dropLast(1) + lastLine)
+        }
+        return out
+    }
+
+    fun limitHeight(maxHeight: Double, includePartialLines: Boolean = true): RichTextData {
+        var currentHeight: Double = 0.0
+        val outLines = arrayListOf<Line>()
+        for (line in lines) {
+            currentHeight += line.maxLineHeight
+            if (currentHeight >= maxHeight) {
+                if (includePartialLines) {
+                    outLines += line
+                }
+                break
+            }
+            outLines += line
+        }
+        return RichTextData(outLines)
+    }
+
+    fun wordWrap(maxLineWidth: Double, splitLetters: Boolean = false): RichTextData {
+        val maxLineWidth = maxLineWidth.coerceAtLeast(0.1)
         val outLines = arrayListOf<Line>()
         var currentLineWidth: Double = 0.0
         val currentLine = arrayListOf<Node>()
 
         fun addNode(node: Node) {
             // Merge
-            if (currentLine.isNotEmpty() && currentLine.last().copy(text = node.text) == node) {
+            if (currentLine.isNotEmpty() && currentLine.last().copy(text = node.text) == node && node.canBreak) {
                 val lastNode = currentLine.removeLast()
                 currentLineWidth -= lastNode.bounds.width
                 return addNode(lastNode.copy(text = lastNode.text + node.text))
@@ -73,26 +112,36 @@ data class RichTextData(
             currentLineWidth = 0.0
         }
 
-        for (line in lines) {
+        done@for (line in lines) {
             val deque = Deque<Node>().also { it.addAll(line.nodes) }
             while (deque.isNotEmpty()) {
                 val node = deque.removeFirst()
                 val width = node.bounds.width
 
+                if (currentLineWidth >= maxLineWidth) {
+                    finishLine()
+                }
+
+                val fullyFitsInLine = width <= maxLineWidth
+                val fitsInRemainingLine = currentLineWidth + width <= maxLineWidth
+
                 when {
                     // Node doesn't fit the area, so we will have to split into smaller chunks
-                    width > size.width -> {
+                    node.canBreak && (!fullyFitsInLine || splitLetters) -> {
+                    //node.canBreak && !fullyFitsInLine -> {
                         val division = divide(node.text)
                         // No more divisions possible, let's add it even if overflows (possibly only a single letter)
                         if (division.size == 1) {
+                            if (!fitsInRemainingLine) {
+                                finishLine()
+                            }
                             addNode(node)
-                            finishLine()
                         } else {
                             deque.addAllFirst(division.map { node.copy(text = it) })
                         }
                     }
                     // Node doesn't fit the available space in line, but will fit in the next one
-                    currentLineWidth + width > size.width -> {
+                    !fitsInRemainingLine -> {
                         finishLine()
                         addNode(node)
                     }
@@ -109,6 +158,12 @@ data class RichTextData(
     }
 
     companion object {
+        internal fun fitEllipsis(maxLineWidth: Double, line: Line, addNode: Node = line.defaultNodeStyle.copy("...")): Line {
+            val chunk = RichTextData(Line(listOf(addNode.copy(canBreak = false)) + line.nodes)).wordWrap(maxLineWidth, splitLetters = true)
+            val nodes = chunk.lines.first().nodes
+            return Line(nodes.drop(1) + nodes.first())
+        }
+
         operator fun invoke(
             text: String,
             textSize: Double,
