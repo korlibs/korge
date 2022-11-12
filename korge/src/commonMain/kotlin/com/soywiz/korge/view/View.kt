@@ -400,8 +400,10 @@ abstract class View internal constructor(
     }
 
     open fun setSizeScaled(width: Double, height: Double) {
-        this.scaledWidth = width
-        this.scaledHeight = height
+        this.setSize(
+            if (scaleX == 0.0) width else width / scaleX,
+            if (scaleY == 0.0) height else height / scaleY,
+        )
     }
 
     /**
@@ -1401,7 +1403,7 @@ abstract class View internal constructor(
     fun setGlobalBounds(bounds: IRectangle) {
         val transform = parent!!.globalMatrix.toTransform()
         setGlobalXY(bounds.left, bounds.top)
-        setSize(
+        setSizeScaled(
             bounds.width * transform.scaleX,
             bounds.height * transform.scaleY,
         )

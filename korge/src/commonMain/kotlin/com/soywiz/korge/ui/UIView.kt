@@ -46,8 +46,20 @@ open class UIView(
     }
     override fun <T> getSkinPropertyOrNull(property: String): T? = (uiSkin?.getSkinPropertyOrNull(property) as? T?) ?: realUiSkin.getSkinPropertyOrNull(property)
 
-	override var width: Double by uiObservable(width) { onSizeChanged() }
-	override var height: Double by uiObservable(height) { onSizeChanged() }
+    private var _width: Double = width
+    private var _height: Double = height
+	override var width: Double
+        get() = _width
+        set(value) { if (_width != value) { _width = value; onSizeChanged() } }
+	override var height: Double
+        get() = _height
+        set(value) { if (_height != value) { _height = value; onSizeChanged() } }
+
+    override fun setSize(width: Double, height: Double) {
+        _width = width
+        _height = height
+        onSizeChanged()
+    }
 
     override fun getLocalBoundsInternal(out: Rectangle) {
         out.setTo(0.0, 0.0, width, height)
