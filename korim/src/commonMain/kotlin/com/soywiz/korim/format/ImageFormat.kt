@@ -2,6 +2,7 @@ package com.soywiz.korim.format
 
 import com.soywiz.kds.Extra
 import com.soywiz.kds.ExtraType
+import com.soywiz.kmem.UByteArrayInt
 import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korio.async.runBlockingNoSuspensionsNullable
 import com.soywiz.korio.file.VfsFile
@@ -165,6 +166,11 @@ fun ImageFormat.toProps(props: ImageDecodingProps = ImageDecodingProps.DEFAULT):
 data class ImageEncodingProps(
     val filename: String = "",
     val quality: Double = 0.81,
-    override var extra: ExtraType = null
-) : Extra
+    override var extra: ExtraType = null,
+    val init: (ImageEncodingProps.() -> Unit)? = null
+) : Extra {
+    init {
+        init?.invoke(this)
+    }
+}
 
