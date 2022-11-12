@@ -1396,6 +1396,17 @@ abstract class View internal constructor(
     //fun getGlobalBounds(out: Rectangle = Rectangle()): Rectangle = getBounds(root, out, inclusive = false)
     fun getGlobalBounds(out: Rectangle = Rectangle()): Rectangle = getBounds(root, out, inclusive = true)
 
+    /** Tries to set the global bounds of the object. If there are rotations in the ancestors, this might not work as expected. */
+    @KorgeUntested
+    fun setGlobalBounds(bounds: IRectangle) {
+        val transform = parent!!.globalMatrix.toTransform()
+        setGlobalXY(bounds.left, bounds.top)
+        setSize(
+            bounds.width * transform.scaleX,
+            bounds.height * transform.scaleY,
+        )
+    }
+
     // @TODO: Would not include strokes
     //fun getRect(target: View? = this, out: Rectangle = Rectangle()): Rectangle = TODO()
 

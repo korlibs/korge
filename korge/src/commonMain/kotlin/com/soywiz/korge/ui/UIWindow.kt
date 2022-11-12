@@ -92,23 +92,35 @@ class UIWindow(title: String, width: Double = 256.0, height: Double = 256.0) : U
             cursor = GameWindow.Cursor.fromAnchorResize(anchor)
             // @TODO: clamping shouldn't affect (we should use it.start and get initial values to compute based on start and not on deltas)
             sh.draggable {
-                sh.x = getExpectedX()
-                sh.y = getExpectedY()
-
-                val widthSign = if (anchor.sx < 0.5) +1 else -1
-                val heightSign = if (anchor.sy < 0.5) +1 else -1
-
-                val newWidth = (window.scaledWidth + it.deltaDx * widthSign).clamp(window.minWidth, window.maxWidth)
-                val deltaWidth = window.scaledWidth - newWidth
-                val newHeight = (window.scaledHeight + it.deltaDy * heightSign).clamp(window.minHeight, window.maxHeight)
-                val deltaHeight = window.scaledHeight - newHeight
-
-                if (anchor.sy == 0.0) window.y += deltaHeight
-                if (anchor.sy != 0.5) window.scaledHeight = newHeight
-
-                if (anchor.sx == 0.0) window.x += deltaWidth
-                if (anchor.sx != 0.5) window.scaledWidth = newWidth
-                ////this@UIWindow.scaledWidth = sh.x
+                val obounds = window.getGlobalBounds().clone()
+                val bounds = obounds.clone()
+                when {
+                    anchor.sx < 0.5 -> {
+                        bounds.leftKeepingRight = it.cx
+                        if (bounds.width !in window.minWidth..window.maxWidth) {
+                            bounds.leftKeepingRight = obounds.leftKeepingRight
+                        }
+                    }
+                    anchor.sx > 0.5 -> {
+                        bounds.right = it.cx
+                        bounds.width = bounds.width.clamp(window.minWidth, window.maxWidth)
+                    }
+                    else -> Unit
+                }
+                when {
+                    anchor.sy < 0.5 -> {
+                        bounds.topKeepingBottom = it.cy
+                        if (bounds.height !in window.minHeight..window.maxHeight) {
+                            bounds.topKeepingBottom = obounds.topKeepingBottom
+                        }
+                    }
+                    anchor.sy > 0.5 -> {
+                        bounds.bottom = it.cy
+                        bounds.height = bounds.height.clamp(window.minHeight, window.maxHeight)
+                    }
+                    else -> Unit
+                }
+                window.setGlobalBounds(bounds)
             }
         }
 
