@@ -50,7 +50,7 @@ internal fun ViewsContainer.installFpsDebugOverlay() {
     }
 
     views.addDebugRenderer { ctx ->
-        val scale = kotlin.math.round(ctx.ag.computedPixelRatio * ctx.debugExtraFontScale).coerceAtLeast(1.0)
+        val scale = ctx.debugOverlayScale
 
         //println("scale=$scale")
 

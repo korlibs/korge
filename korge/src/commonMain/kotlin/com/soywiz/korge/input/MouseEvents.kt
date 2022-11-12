@@ -75,7 +75,7 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
         fun installDebugExtensionOnce(views: Views) {
             views.mouseDebugHandlerOnce {
                 views.debugHandlers += { ctx ->
-                    val scale = ctx.ag.computedPixelRatio * ctx.debugExtraFontScale
+                    val scale = ctx.debugOverlayScale
                     //val scale = 2.0
 
                     val space = max(1 * scale, 2.0)

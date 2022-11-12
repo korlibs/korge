@@ -180,6 +180,8 @@ class RenderContext constructor(
     var debugExtraFontScale : Double = 1.0
     var debugExtraFontColor : RGBA = Colors.WHITE
 
+    val debugOverlayScale: Double get() = kotlin.math.round(ag.computedPixelRatio * debugExtraFontScale).coerceAtLeast(1.0)
+
     var stencilIndex: Int = 0
 
     /** Allows to draw quads, sprites and nine patches using a precomputed global matrix or raw vertices */
