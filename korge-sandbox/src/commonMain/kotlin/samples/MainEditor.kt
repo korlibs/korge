@@ -141,7 +141,7 @@ class MainEditor : Scene() {
             ctx2d.materialRoundRect(0.0, 0.0, 64.0, 64.0, radius = RectCorners(32.0, 16.0, 8.0, 0.0))
         }.xy(500, 500)
 
-        val richTextData = RichTextData.fromHTML("hello world, this is a long test to see how <font size=24><b><i>rich text</i></b></font> works! And see if this is going to show ellipsis if the text is too long")
+        val richTextData = RichTextData.fromHTML("hello world, this is a long test to see how <font size=24 color='red'><b><i>rich text</i></b></font> <b color=yellow>works</b>! And <i>see</i> if this is going to show ellipsis if the text is too long")
         //println("richTextData=${richTextData.toHTML()}")
         val textBlock = textBlock(
             richTextData

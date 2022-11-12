@@ -355,3 +355,5 @@ object ColorsExt {
 
 fun Colors.getName(color: RGBA): String? = ColorsExt.namesByColor[color.value]
 fun Colors.getNameOrHex(color: RGBA): String = ColorsExt.namesByColor[color.value] ?: color.hexString
+
+fun RGBA.toHtmlNamedString(): String = Colors.getNameOrHex(this)

@@ -26,15 +26,14 @@ fun RichTextData.Companion.fromHTML(
         if (node.isText) {
             nodes += RichTextData.TextNode(node.text, style)
         }
-        var rstyle = style
-        when (node.nameLC) {
-            "b", "strong" -> rstyle = rstyle.copy(bold = true)
-            "i", "em" -> rstyle = rstyle.copy(italic = true)
-            "font", "span" -> {
-                val textSize = node.doubleNull("size")
-                rstyle = rstyle.copy(textSize = textSize ?: rstyle.textSize)
-            }
-        }
+        val rstyle = style.copy(
+            bold = if (node.nameLC == "b" || node.nameLC == "strong") true else style.bold,
+            italic = if (node.nameLC == "i" || node.nameLC == "em") true else style.italic,
+            underline = if (node.nameLC == "u") true else style.underline,
+            textSize = node.doubleNull("size") ?: style.textSize,
+            color = node.strNull("color")?.let { Colors[it] } ?: style.color,
+        )
+
         for (child in node.allChildrenNoComments) {
             processNode(child, rstyle)
         }
@@ -54,9 +53,12 @@ fun RichTextData.toHTML(): String {
     fun openTagsForStyle(style: RichTextData.Style) {
         val removeTags = arrayListOf<String>()
         val tags = LinkedHashMap<String, Map<String, Any?>>()
-        if (style.textSize != currentStyle.textSize) {
+        if (style.textSize != currentStyle.textSize || style.color != currentStyle.color) {
             removeTags += "font"
-            tags += "font" to mapOf("size" to currentStyle.textSize.niceStr)
+            tags += "font" to buildMap {
+                if (style.textSize != currentStyle.textSize) put("size", style.textSize.toInt())
+                style.color?.let { put("color", it.toHtmlNamedString()) }
+            }
         }
         if (style.bold != currentStyle.bold) {
             removeTags += "b"
@@ -65,6 +67,10 @@ fun RichTextData.toHTML(): String {
         if (style.italic != currentStyle.italic) {
             removeTags += "i"
             if (style.italic) tags += "i" to emptyMap()
+        }
+        if (style.underline != currentStyle.underline) {
+            removeTags += "u"
+            if (style.underline) tags += "u" to emptyMap()
         }
         // To open a new tag of the same type, we have to close other tags first
         for (key in removeTags.reversed()) {

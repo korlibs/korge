@@ -1,5 +1,6 @@
 package com.soywiz.korim.text
 
+import com.soywiz.korim.color.*
 import com.soywiz.korim.font.*
 import com.soywiz.korim.paint.*
 import com.soywiz.korim.vector.*
@@ -35,7 +36,15 @@ fun Context2d.drawRichText(
             when (node) {
                 is RichTextData.TextNode -> {
                     fun render(dx: Double, dy: Double) {
-                        drawText(node.text, x + dx, y + dy, size = node.style.textSize, font = node.style.font, outMetrics = TextMetricsResult(), fillStyle = fill, stroke = stroke)
+                        drawText(
+                            node.text,
+                            x + dx, y + dy,
+                            size = node.style.textSize,
+                            font = node.style.font,
+                            outMetrics = TextMetricsResult(),
+                            fillStyle = node.style.color ?: fill,
+                            stroke = stroke
+                        )
                     }
                     keepTransform {
                         if (node.style.italic) {

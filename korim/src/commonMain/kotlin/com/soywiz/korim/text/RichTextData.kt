@@ -3,6 +3,7 @@ package com.soywiz.korim.text
 import com.soywiz.kds.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.font.*
+import com.soywiz.korim.paint.*
 import com.soywiz.korio.lang.*
 
 data class RichTextData(
@@ -83,7 +84,7 @@ data class RichTextData(
         val italic: Boolean = false,
         val bold: Boolean = false,
         val underline: Boolean = false,
-        val color: RGBA = Colors.BLACK,
+        val color: RGBA? = null,
         val canBreak: Boolean = true,
     ) {
         companion object {
