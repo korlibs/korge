@@ -38,19 +38,34 @@ object DefaultUISkin : NewUISkin {
 
     override fun updatedUIButton(button: UIButton, down: Boolean?, over: Boolean?, px: Double, py: Double) {
         if (!button.enabled) {
-            button.animatorEffects.cancel()
+            //button.animStateManager.set(
+            //    AnimState(
+            //        button::bgcolor[button.bgColorDisabled]
+            //))
+            //button.animatorEffects.cancel()
             button.bgcolor = button.bgColorDisabled
             button.invalidateRender()
             return
         }
         //println("UPDATED: down=$down, over=$over, px=$px, py=$py")
         if (down == true) {
-            button.highlightRadius = 0.0
-            button.highlightAlpha = 1.0
+            //button.animStateManager.set(
+            //    AnimState(
+            //        button::highlightRadius[0.0, 1.0],
+            //        button::highlightAlpha[1.0],
+            //        button::highlightPos[Point(px / button.width, py / button.height), Point(px / button.width, py / button.height)],
+            //    ))
             button.highlightPos.setTo(px / button.width, py / button.height)
-            button.animatorEffects.cancel().tween(button::highlightRadius[1.0], time = 0.3.seconds, easing = Easing.EASE_IN)
+            button.animatorEffects.tween(
+                button::highlightRadius[0.0, 1.0],
+                button::highlightAlpha[1.0, 1.0],
+                time = 0.5.seconds, easing = Easing.EASE_IN
+            )
         }
         if (down == false) {
+            //button.animStateManager.set(
+            //    AnimState(button::highlightAlpha[0.0])
+            //)
             button.animatorEffects.tween(button::highlightAlpha[0.0], time = 0.2.seconds)
         }
         if (over != null) {
@@ -59,7 +74,12 @@ object DefaultUISkin : NewUISkin {
                 over -> button.bgColorOver
                 else -> button.bgColorOut
             }
-            button.animator.cancel().tween(button::bgcolor[bgcolor], time = 0.25.seconds)
+            //button.animStateManager.set(
+            //    AnimState(
+            //        button::bgcolor[bgcolor]
+            //    )
+            //)
+            button.animator.tween(button::bgcolor[bgcolor], time = 0.25.seconds)
         }
     }
 }

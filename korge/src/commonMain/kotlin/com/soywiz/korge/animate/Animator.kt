@@ -14,6 +14,7 @@ import com.soywiz.korma.geom.vector.*
 import com.soywiz.korma.interpolation.*
 import kotlinx.coroutines.*
 import kotlin.math.*
+import kotlin.reflect.*
 
 @DslMarker
 @Target(AnnotationTarget.CLASS, AnnotationTarget.TYPE)
@@ -66,6 +67,14 @@ open class Animator @PublishedApi internal constructor(
 
     internal val nodes = Deque<NewAnimatorNode>()
     var speed: Double = 1.0
+
+    internal fun removeProps(props: Set<KMutableProperty0<*>>) {
+        for (node in nodes) {
+            if (node is TweenNode) {
+                node.computedVs.retainAll { it.key !in props }
+            }
+        }
+    }
 
     @PublishedApi
     internal fun addNode(node: NewAnimatorNode) {
@@ -185,8 +194,11 @@ open class Animator @PublishedApi internal constructor(
         init: @AnimatorDslMarker Animator.() -> Unit
     ): Animator = Animator(root, time, speed, easing, false, looped, lazyInit = init, level = level + 1, parent = this, startImmediately = startImmediately).also { addNode(it.rootAnimationNode) }
 
-    @PublishedApi internal fun __tween(vararg vs: V2<*>, lazyVs: Array<out () -> V2<*>>? = null, time: TimeSpan = this.defaultTime, lazyTime: (() -> TimeSpan)? = null, easing: Easing = this.defaultEasing, name: String?) {
+    @PublishedApi internal fun __tween(vararg vs: V2<*>, lazyVs: Array<out () -> V2<*>>? = null, time: TimeSpan = this.defaultTime, lazyTime: (() -> TimeSpan)? = null, easing: Easing = this.defaultEasing, name: String?, replace: Boolean = true) {
         //println("__tween=time=$time")
+        if (replace && parallel) {
+            removeProps(vs.map { it.key }.toSet())
+        }
         addNode(TweenNode(*vs, lazyVs = lazyVs, time = time, lazyTime = lazyTime, easing = easing, name = name))
     }
 
@@ -290,7 +302,7 @@ open class Animator @PublishedApi internal constructor(
         val easing: Easing,
         val name: String? = null
     ) : NewAnimatorNode {
-        val computedVs by lazy { if (lazyVs != null) Array(lazyVs.size) { lazyVs[it]() } else vs }
+        val computedVs by lazy { (lazyVs?.map { it() } ?: vs.toList()).toMutableList() }
         private val totalTime: TimeSpan by lazy { lazyTime?.invoke() ?: time }
 
         override fun toString(): String = "TweenNode(totalTime=$totalTime, name=$name, ${computedVs.toList()})"
@@ -355,8 +367,8 @@ interface NewAnimatorNode {
 
 ////////////////////////
 
-fun Animator.tween(vararg vs: V2<*>, time: TimeSpan = this.defaultTime, easing: Easing = this.defaultEasing, name: String? = null): Unit = __tween(*vs, time = time, easing = easing, name = name)
-fun Animator.tweenLazyTime(vararg vs: V2<*>, time: () -> TimeSpan = { this.defaultTime }, easing: Easing = this.defaultEasing, name: String? = null) = __tween(*vs, lazyTime = time, easing = easing, name = name)
+fun Animator.tween(vararg vs: V2<*>, time: TimeSpan = this.defaultTime, easing: Easing = this.defaultEasing, name: String? = null, replace: Boolean = true): Unit = __tween(*vs, time = time, easing = easing, name = name, replace = replace)
+fun Animator.tweenLazyTime(vararg vs: V2<*>, time: () -> TimeSpan = { this.defaultTime }, easing: Easing = this.defaultEasing, name: String? = null, replace: Boolean = true) = __tween(*vs, lazyTime = time, easing = easing, name = name, replace = replace)
 
 fun Animator.tweenLazy(vararg vs: () -> V2<*>, time: TimeSpan = this.defaultTime, easing: Easing = this.defaultEasing, name: String? = null) = __tween(*vs, time = time, easing = easing, name = name)
 fun Animator.tweenLazyLazyTime(vararg vs: () -> V2<*>, time: () -> TimeSpan = { this.defaultTime }, easing: Easing = this.defaultEasing, name: String? = null) = __tween(*vs, lazyTime = time, easing = easing, name = name)

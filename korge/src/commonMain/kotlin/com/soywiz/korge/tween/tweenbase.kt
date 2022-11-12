@@ -57,6 +57,10 @@ data class V2<V>(
         key.set(interpolator(ratio, initial, end))
     }
 
+    fun get(): V {
+        return key.get()
+    }
+
     override fun toString(): String =
         "V2(key=${key.name}, range=[$initial-$end], startTime=$startTime, duration=$duration)"
 }
