@@ -4,11 +4,9 @@ import com.soywiz.kmem.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.ui.*
 import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.*
 import com.soywiz.korim.font.*
 import com.soywiz.korim.paint.*
 import com.soywiz.korim.text.*
-import com.soywiz.korio.resources.*
 import com.soywiz.korma.geom.*
 
 inline fun Container.textBlock(
@@ -27,7 +25,7 @@ class TextBlock(
     height: Double = 100.0,
 ) : UIView(width, height) {
     private var dirty = true
-    var text: RichTextData = text; set(value) { field = value; invalidProps() }
+    var text: RichTextData = text; set(value) { field = value; invalidateText() }
     var align: TextAlignment = align; set(value) { field = value; invalidProps() }
     var includePartialLines: Boolean = false; set(value) { field = value; invalidProps() }
     var fill: Paint? = colorMul; set(value) { field = value; invalidProps() }
@@ -35,7 +33,15 @@ class TextBlock(
     var wordWrap: Boolean = true; set(value) { field = value; invalidProps() }
     var ellipsis: String? = "..."; set(value) { field = value; invalidProps() }
     var padding: Margin = Margin.EMPTY; set(value) { field = value; invalidProps() }
+    var autoSize: Boolean = false; set(value) { field = value; invalidateText() }
     private var image = image(Bitmaps.transparent)
+
+    private fun invalidateText() {
+        invalidProps()
+        if (autoSize) {
+            setSize(text.width, text.height)
+        }
+    }
     
     private fun invalidProps() {
         dirty = true

@@ -141,8 +141,13 @@ class MainEditor : Scene() {
             ctx2d.materialRoundRect(0.0, 0.0, 64.0, 64.0, radius = RectCorners(32.0, 16.0, 8.0, 0.0))
         }.xy(500, 500)
 
-        val textBlock = textBlock(RichTextData("hello world, this is a long test to see how rich text works! And see if this is going to show ellipsis if the text is too long", textSize = 16.0, font = DefaultTtfFont)) {
+        val richTextData = RichTextData.fromHTML("hello world, this is a long test to see how <font size=24><b><i>rich text</i></b></font> works! And see if this is going to show ellipsis if the text is too long")
+        //println("richTextData=${richTextData.toHTML()}")
+        val textBlock = textBlock(
+            richTextData
+        ) {
             align = TextAlignment.TOP_JUSTIFIED
+            //autoSize = true
             xy(600, 500)
         }
 

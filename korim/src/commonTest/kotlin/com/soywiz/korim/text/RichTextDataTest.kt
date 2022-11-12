@@ -5,6 +5,8 @@ import kotlin.test.*
 
 class RichTextDataTest {
     //val data = RichTextData(RichTextData.Node("hello, world", 16.0, DefaultTtfFont))
+    val style = RichTextData.Style(16.0, DefaultTtfFont)
+
 
     @Test
     fun testTokenize() {
@@ -24,7 +26,7 @@ class RichTextDataTest {
 
     @Test
     fun testLimit() {
-        val data = RichTextData(RichTextData.Line(RichTextData.TextNode("hello, world", 16.0, DefaultTtfFont)))
+        val data = RichTextData(RichTextData.Line(RichTextData.TextNode("hello, world")))
         assertEquals("hello, world", data.text)
         assertEquals("hello, \nworld", data.wordWrap(40.0).text)
     }
@@ -70,7 +72,7 @@ class RichTextDataTest {
 
     @Test
     fun testFitEllipsis() {
-        val line = RichTextData.Line(RichTextData.TextNode("hello", 16.0, DefaultTtfFont))
+        val line = RichTextData.Line(RichTextData.TextNode("hello", style))
         assertEquals("hello...", RichTextData.fitEllipsis(40.0, line).text)
         assertEquals("hell...", RichTextData.fitEllipsis(32.0, line).text)
         assertEquals("hel...", RichTextData.fitEllipsis(30.0, line).text)

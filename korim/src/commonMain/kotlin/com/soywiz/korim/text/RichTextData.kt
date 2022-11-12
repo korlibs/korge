@@ -11,7 +11,9 @@ data class RichTextData(
     constructor(vararg lines: Line) : this(lines.toList())
 
     val text: String by lazy { lines.joinToString("\n") { it.text } }
-
+    val width: Double by lazy { lines.maxOf { it.width } }
+    val height: Double by lazy { lines.sumOf { it.maxLineHeight } }
+    val defaultStyle: Style get() = lines.firstOrNull()?.defaultStyle ?: Style.DEFAULT
     // @TODO: For now, only plain text is supported
     //constructor(vararg node: Node) : this(node.toList())
 
@@ -26,9 +28,8 @@ data class RichTextData(
     //data class Line(val nodes: List<Node>) : List<RichTextData.Node> by nodes, Extra by Extra.Mixin() {
     data class Line(val nodes: List<Node>) : Extra by Extra.Mixin() {
         constructor(vararg nodes: Node) : this(nodes.toList())
-        val defaultTextStyle: TextNode by lazy {
-            nodes.filterIsInstance<TextNode>().firstOrNull() ?: TextNode("", textSize = 16.0, font = DefaultTtfFont)
-        }
+        val defaultStyle: Style by lazy { nodes.filterIsInstance<TextNode>().firstOrNull()?.style ?: Style.DEFAULT }
+        val defaultLastStyle: Style by lazy { nodes.filterIsInstance<TextNode>().lastOrNull()?.style ?: Style.DEFAULT }
         val text: String by lazy { nodes.joinToString("") { it.text ?: "" } }
         val width: Double by lazy { nodes.sumOf { it.width } }
         val maxLineHeight: Double by lazy { nodes.maxOf { it.lineHeight } }
@@ -76,8 +77,7 @@ data class RichTextData(
         val lineHeight: Double get() = height
     }
 
-    data class TextNode(
-        override val text: String,
+    data class Style(
         val textSize: Double,
         val font: Font,
         val italic: Boolean = false,
@@ -85,12 +85,21 @@ data class RichTextData(
         val underline: Boolean = false,
         val color: RGBA = Colors.BLACK,
         val canBreak: Boolean = true,
+    ) {
+        companion object {
+            val DEFAULT = Style(textSize = 16.0, font = DefaultTtfFont)
+        }
+    }
+
+    data class TextNode(
+        override val text: String,
+        val style: Style = Style.DEFAULT,
     ) : Node, Extra by Extra.Mixin() {
         init {
             require(!text.contains('\n')) { "Single RichTextData nodes cannot have line breaks" }
         }
 
-        val bounds: TextMetrics by lazy { font.getTextBounds(textSize, text) }
+        val bounds: TextMetrics by lazy { style.font.getTextBounds(style.textSize, text) }
         override val width: Double get() = bounds.width
         override val lineHeight: Double get() = bounds.lineHeight
         override val height: Double get() = bounds.height
@@ -117,7 +126,7 @@ data class RichTextData(
         }
         if (maxLineWidth != Double.POSITIVE_INFINITY && ellipsis != null && removedWords && out.lines.isNotEmpty()) {
             val line = out.lines.last()
-            val lastLine = fitEllipsis(maxLineWidth, out.lines.last(), line.defaultTextStyle.copy(text = ellipsis))
+            val lastLine = fitEllipsis(maxLineWidth, out.lines.last(), TextNode(ellipsis, line.defaultLastStyle))
             out = RichTextData(out.dropLast(1) + lastLine)
         }
         if (trimSpaces) {
@@ -151,7 +160,7 @@ data class RichTextData(
         fun addNode(node: Node) {
             val lastNode = currentLine.lastOrNull()
             // Merge
-            if (currentLine.isNotEmpty() && node is TextNode && lastNode is TextNode && lastNode.copy(text = node.text) == node && node.canBreak && node.text.isNotBlank() && lastNode.text.isNotBlank()) {
+            if (currentLine.isNotEmpty() && node is TextNode && lastNode is TextNode && lastNode.copy(text = node.text) == node && node.style.canBreak && node.text.isNotBlank() && lastNode.text.isNotBlank()) {
                 currentLine.removeLast()
                 currentLineWidth -= lastNode.bounds.width
                 return addNode(node.copy(text = lastNode.text + node.text))
@@ -183,7 +192,7 @@ data class RichTextData(
 
                 when {
                     // Node doesn't fit the area, so we will have to split into smaller chunks
-                    node is TextNode && (node.canBreak && (!fullyFitsInLine || splitLetters)) -> {
+                    node is TextNode && (node.style.canBreak && (!fullyFitsInLine || splitLetters)) -> {
                     //node.canBreak && !fullyFitsInLine -> {
                         val division = divide(node.text)
                         // No more divisions possible, let's add it even if overflows (possibly only a single letter)
@@ -214,9 +223,9 @@ data class RichTextData(
     }
 
     companion object {
-        internal fun Node.nonBreakable(): Node = if (this is TextNode) this.copy(canBreak = false) else this
+        internal fun Node.nonBreakable(): Node = if (this is TextNode) this.copy(style = style.copy(canBreak = false)) else this
 
-        internal fun fitEllipsis(maxLineWidth: Double, line: Line, addNode: Node = line.defaultTextStyle.copy("...")): Line {
+        internal fun fitEllipsis(maxLineWidth: Double, line: Line, addNode: Node = TextNode("...", line.defaultLastStyle)): Line {
             val chunk = RichTextData(Line(listOf(addNode.nonBreakable()) + line.nodes)).wordWrap(maxLineWidth, splitLetters = true)
             val nodes = chunk.lines.first().nodes
             return Line(nodes.drop(1) + nodes.first())
@@ -231,7 +240,7 @@ data class RichTextData(
             underline: Boolean = false,
             color: RGBA = Colors.BLACK,
         ): RichTextData {
-            return RichTextData(text.split("\n").map { Line(TextNode(it, textSize, font, italic, bold, underline, color)) })
+            return RichTextData(text.split("\n").map { Line(TextNode(it, style = Style(textSize, font, italic, bold, underline, color))) })
         }
 
         //fun Char.isSymbol(): Boolean {
