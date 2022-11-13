@@ -39,6 +39,26 @@ fun transferBitmap32CGContext(bmp: Bitmap32, ctx: CGContextRef?, toBitmap: Boole
     }
 }
 
+/**
+ * Returned image must be deallocated with [CGImageRelease]
+ */
+fun transferBitmap32ToCGImage(bmp: Bitmap32, colorSpace: CPointer<CGColorSpace>? = null): CGImageRef? {
+    val allocColorSpace = if (colorSpace == null) CGColorSpaceCreateDeviceRGB() else null
+
+    val imageCtx: CPointer<CGContext>? = CGBitmapContextCreate(
+        null, bmp.width.convert(), bmp.height.convert(),
+        8.convert(), 0.convert(), colorSpace ?: allocColorSpace,
+        CGImageAlphaInfo.kCGImageAlphaPremultipliedLast.value
+    )
+    try {
+        transferBitmap32CGContext(bmp, imageCtx, toBitmap = false)
+        return CGBitmapContextCreateImage(imageCtx)
+    } finally {
+        CGContextRelease(imageCtx)
+        if (allocColorSpace != null) CGColorSpaceRelease(allocColorSpace)
+    }
+}
+
 class CoreGraphicsNativeImage(bitmap: Bitmap32) : BitmapNativeImage(bitmap) {
     override val name: String get() = "CoreGraphicsNativeImage"
     override fun toBMP32(): Bitmap32 = bitmap.clone()
@@ -62,29 +82,18 @@ class CoreGraphicsRenderer(val bmp: Bitmap32, val antialiasing: Boolean) : com.s
     fun Matrix.toCGAffineTransform() = CGAffineTransformMake(a.cg, b.cg, c.cg, d.cg, tx.cg, ty.cg)
 
     private fun cgDrawBitmap(bmp: Bitmap32, ctx: CGContextRef?, colorSpace: CPointer<CGColorSpace>?, tiled: Boolean = false) {
-        val imageCtx = CGBitmapContextCreate(
-            null, bmp.width.convert(), bmp.height.convert(),
-            8.convert(), 0.convert(), colorSpace,
-            CGImageAlphaInfo.kCGImageAlphaPremultipliedLast.value
-        )
+        val image = transferBitmap32ToCGImage(bmp, colorSpace)
         try {
-            transferBitmap32CGContext(bmp, imageCtx, toBitmap = false)
-            val image = CGBitmapContextCreateImage(imageCtx)
-            try {
-                val rect = CGRectMake(0.cg, 0.cg, bmp.width.cg, bmp.height.cg)
+            val rect = CGRectMake(0.cg, 0.cg, bmp.width.cg, bmp.height.cg)
 
-                if (tiled) {
-                    CGContextDrawTiledImage(ctx, rect, image)
-                } else {
-                    //println("CGContextDrawImage: $ctx, ${bmp.size}")
-                    CGContextDrawImage(ctx, rect, image)
-                }
-                //println("MACOS: imageCtx=$imageCtx, image=$image")
-            } finally {
-                CGImageRelease(image)
+            if (tiled) {
+                CGContextDrawTiledImage(ctx, rect, image)
+            } else {
+                //println("CGContextDrawImage: $ctx, ${bmp.size}")
+                CGContextDrawImage(ctx, rect, image)
             }
         } finally {
-            CGContextRelease(imageCtx)
+            CGImageRelease(image)
         }
     }
 
