@@ -6,8 +6,8 @@ import kotlinx.cinterop.*
 import platform.CoreGraphics.*
 import platform.UIKit.*
 
-fun Bitmap32.toUIImage(): UIImage {
-    val cgImage = transferBitmap32ToCGImage(this)
+fun Bitmap.toUIImage(): UIImage {
+    val cgImage = transferBitmap32ToCGImage(this.toBMP32IfRequired())
     try {
         return UIImage(cGImage = cgImage)
     } finally {
