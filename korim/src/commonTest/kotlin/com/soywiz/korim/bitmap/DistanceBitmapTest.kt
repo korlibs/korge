@@ -81,6 +81,8 @@ class DistanceBitmapTest {
             this.circle(5, 5, 5)
         }
         val sdf = path.sdf(10, 10)
+        val msdf = path.msdf(10, 10)
         println(sdf)
+        println(msdf)
     }
 }
