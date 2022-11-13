@@ -50,8 +50,8 @@ plugins {
 }
 
 //val headlessTests = true
-val headlessTests = System.getenv("NON_HEADLESS_TESTS") != "true"
-//val headlessTests = false
+//val headlessTests = System.getenv("NON_HEADLESS_TESTS") != "true"
+val headlessTests = System.getenv("CI") == "true" || System.getenv("HEADLESS_TESTS") == "true"
 val useMimalloc = true
 //val useMimalloc = false
 

@@ -52,16 +52,32 @@ data class Rectangle(
     val isEmpty: Boolean get() = area == 0.0
     val isNotEmpty: Boolean get() = area != 0.0
     val area: Double get() = width * height
+    @Deprecated("Use x or leftKeepingRight")
     var left: Double
         get() = x
         set(value) {
             x = value
         }
+    @Deprecated("Use y or topKeepingBottom")
     var top: Double
         get() = y
         set(value) {
             y = value
         }
+
+    var leftKeepingRight: Double
+        get() = x
+        set(value) {
+            width += (x - value)
+            x = value
+        }
+    var topKeepingBottom: Double
+        get() = y
+        set(value) {
+            height += (y - value)
+            y = value
+        }
+
     var right: Double
         get() = x + width
         set(value) {

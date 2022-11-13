@@ -4,16 +4,13 @@ import com.soywiz.kds.Extra
 import com.soywiz.kds.Pool
 import com.soywiz.klogger.Logger
 import com.soywiz.korag.AG
+import com.soywiz.korag.shader.*
 import com.soywiz.korge.internal.KorgeInternal
 import com.soywiz.korge.view.BlendMode
 import com.soywiz.korim.bitmap.Bitmaps
 import com.soywiz.korim.bitmap.BmpSlice
-import com.soywiz.korim.color.ColorTransform
-import com.soywiz.korim.color.Colors
-import com.soywiz.korim.color.RGBA
-import com.soywiz.korma.geom.Angle
-import com.soywiz.korma.geom.Matrix
-import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korim.color.*
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.shape.*
 import com.soywiz.korma.geom.triangle.TriangleList
 import com.soywiz.korma.geom.vector.VectorPath
@@ -53,6 +50,8 @@ class RenderContext2D(
 
     @KorgeInternal
 	val mpool = Pool<Matrix> { Matrix() }
+
+    val _tempProgramUniforms = AG.UniformValues()
 
 	init { logger.trace { "RenderContext2D[1]" } }
 
@@ -209,6 +208,55 @@ class RenderContext2D(
     fun texturedVertexArray(texturedVertexArray: TexturedVertexArray, filtering: Boolean = this.filtering) {
         batch.setStateFast(Bitmaps.white, filtering, blendMode, null, icount = texturedVertexArray.icount, vcount = texturedVertexArray.vcount)
         batch.drawVertices(texturedVertexArray, m, premultiplied = Bitmaps.white.premultiplied, wrap = false)
+    }
+
+    fun quadPaddedCustomProgram(
+        x: Double,
+        y: Double,
+        width: Double,
+        height: Double,
+        program: Program,
+        uniforms: AG.UniformValues,
+        padding: Margin = Margin.EMPTY,
+    ) {
+        val ctx = batch.ctx
+        //programUniforms
+        ctx.useBatcher { batch ->
+            //batch.texture1212
+            batch.setTemporalUniforms(uniforms) {
+                //batch.drawQuad(
+                //    vertices, ctx.getTex(baseBitmap).base, smoothing, renderBlendMode,
+                //    program = FastMaterialBackground.PROGRAM,
+                //    premultiplied = baseBitmap.base.premultiplied, wrap = wrapTexture
+                //)
+
+                val L = (x - padding.left).toFloat()
+                val T = (y - padding.top).toFloat()
+                val R = (width + padding.leftPlusRight).toFloat()
+                val B = (height + padding.topPlusBottom).toFloat()
+
+                var l = -padding.left.toFloat()
+                var t = -padding.top.toFloat()
+                var r = (width + padding.right).toFloat()
+                var b = (height + padding.bottom).toFloat()
+
+                val vertices = TexturedVertexArray(6, TexturedVertexArray.QUAD_INDICES)
+                vertices.quad(
+                    0,
+                    L, T, R, B,
+                    m,
+                    l, t,
+                    r, t,
+                    l, b,
+                    r, b,
+                    multiplyColor,
+                    ColorAdd.NEUTRAL
+                )
+                batch.setStateFast(Bitmaps.white, filtering, blendMode, program, icount = 6, vcount = 4)
+                batch.drawVertices(vertices, null, premultiplied = true, wrap = true)
+
+            }
+        }
     }
 
     /** Renders a [texture] with the [blendMode] at [x], [y] scaling it by [scale].

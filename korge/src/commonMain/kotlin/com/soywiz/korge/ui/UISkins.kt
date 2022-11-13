@@ -33,6 +33,7 @@ import com.soywiz.korma.geom.vector.roundRect
 import kotlin.native.concurrent.ThreadLocal
 import kotlin.reflect.KProperty
 
+@Deprecated("Do not use the old skinning")
 class BoxUISkin(
     var bgColor: RGBA = Colors["#c3c3c3"],
     var borderColor: RGBA = Colors["#1f1f1f"],
@@ -60,6 +61,7 @@ class BoxUISkin(
     }
 }
 
+@Deprecated("Do not use the old skinning")
 interface UISkinable {
     fun <T> setSkinProperty(property: String, value: T)
     fun <T> getSkinPropertyOrNull(property: String): T?

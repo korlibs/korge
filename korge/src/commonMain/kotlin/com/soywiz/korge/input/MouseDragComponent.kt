@@ -17,6 +17,10 @@ open class MouseDragInfo(
     var end: Boolean = false,
     var startTime: DateTime = DateTime.EPOCH,
     var time: DateTime = DateTime.EPOCH,
+    var sx: Double = 0.0,
+    var sy: Double = 0.0,
+    var cx: Double = 0.0,
+    var cy: Double = 0.0,
 ) {
     lateinit var mouseEvents: MouseEvents
     val elapsed: TimeSpan get() = time - startTime
@@ -40,11 +44,19 @@ open class MouseDragInfo(
         deltaDy = 0.0
         dx = 0.0
         dy = 0.0
+        sx = 0.0
+        sy = 0.0
+        cx = 0.0
+        cy = 0.0
     }
 
-    fun set(dx: Double, dy: Double, start: Boolean, end: Boolean, time: DateTime): MouseDragInfo {
+    fun set(dx: Double, dy: Double, start: Boolean, end: Boolean, time: DateTime, sx: Double, sy: Double, cx: Double, cy: Double): MouseDragInfo {
         this.dx = dx
         this.dy = dy
+        this.sx = sx
+        this.sy = sy
+        this.cx = cx
+        this.cy = cy
         if (!lastDx.isNaN() && !lastDy.isNaN()) {
             this.deltaDx = lastDx - dx
             this.deltaDy = lastDy - dy
@@ -123,7 +135,7 @@ private fun <T : View> T.onMouseDragInternal(
         cy = mousePos.y
         val dx = cx - sx
         val dy = cy - sy
-        callback(views(), info.set(dx, dy, state.isStart, state.isEnd, timeProvider.now()))
+        callback(views(), info.set(dx, dy, state.isStart, state.isEnd, timeProvider.now(), sx, sy, cx, cy))
     }
 
     lateinit var onDownCloseable: Closeable

@@ -400,8 +400,10 @@ abstract class View internal constructor(
     }
 
     open fun setSizeScaled(width: Double, height: Double) {
-        this.scaledWidth = width
-        this.scaledHeight = height
+        this.setSize(
+            if (scaleX == 0.0) width else width / scaleX,
+            if (scaleY == 0.0) height else height / scaleY,
+        )
     }
 
     /**
@@ -1394,17 +1396,28 @@ abstract class View internal constructor(
 
     /** Returns the global bounds of this object. Allows to specify an [out] [Rectangle] to prevent allocations. */
     //fun getGlobalBounds(out: Rectangle = Rectangle()): Rectangle = getBounds(root, out, inclusive = false)
-    fun getGlobalBounds(out: Rectangle = Rectangle()): Rectangle = getBounds(root, out, inclusive = true)
+    fun getGlobalBounds(out: Rectangle = Rectangle(), includeFilters: Boolean = false): Rectangle = getBounds(root, out, inclusive = true, includeFilters = includeFilters)
+
+    /** Tries to set the global bounds of the object. If there are rotations in the ancestors, this might not work as expected. */
+    @KorgeUntested
+    fun setGlobalBounds(bounds: IRectangle) {
+        val transform = parent!!.globalMatrix.toTransform()
+        setGlobalXY(bounds.left, bounds.top)
+        setSizeScaled(
+            bounds.width * transform.scaleX,
+            bounds.height * transform.scaleY,
+        )
+    }
 
     // @TODO: Would not include strokes
     //fun getRect(target: View? = this, out: Rectangle = Rectangle()): Rectangle = TODO()
 
     /** Get the bounds of this view, using the [target] view as coordinate system. Not providing a [target] will return the local bounds. Allows to specify [out] [Rectangle] to prevent allocations. */
-    fun getBoundsNoAnchoring(target: View? = this, out: Rectangle = Rectangle(), inclusive: Boolean = false, includeFilters: Boolean = true): Rectangle {
+    fun getBoundsNoAnchoring(target: View? = this, out: Rectangle = Rectangle(), inclusive: Boolean = false, includeFilters: Boolean = false): Rectangle {
         return getBounds(target, out, false, inclusive, includeFilters)
     }
 
-    protected fun _getBounds(concat: Matrix?, out: Rectangle = Rectangle(), doAnchoring: Boolean = true, includeFilters: Boolean = true): Rectangle {
+    protected fun _getBounds(concat: Matrix?, out: Rectangle = Rectangle(), doAnchoring: Boolean = true, includeFilters: Boolean = false): Rectangle {
         getLocalBounds(out, doAnchoring, includeFilters)
 
         if (concat != null && !concat.isIdentity()) {
@@ -1431,7 +1444,7 @@ abstract class View internal constructor(
         return out
     }
 
-    fun getBounds(target: View? = this, out: Rectangle = Rectangle(), doAnchoring: Boolean = true, inclusive: Boolean = false, includeFilters: Boolean = true): Rectangle {
+    fun getBounds(target: View? = this, out: Rectangle = Rectangle(), doAnchoring: Boolean = true, inclusive: Boolean = false, includeFilters: Boolean = false): Rectangle {
         return Matrix.POOL { boundsTemp -> _getBounds(this.getConcatMatrix(target ?: this, boundsTemp, inclusive), out, doAnchoring, includeFilters) }
     }
 
@@ -1446,17 +1459,17 @@ abstract class View internal constructor(
     /**
      * **NOTE:** that if [out] is not provided, the [Rectangle] returned shouldn't stored and modified since it is owned by this class.
      */
-    fun getLocalBoundsOptimized(includeFilters: Boolean = true): Rectangle = getLocalBounds(_localBounds, includeFilters = includeFilters)
+    fun getLocalBoundsOptimized(includeFilters: Boolean = false): Rectangle = getLocalBounds(_localBounds, includeFilters = includeFilters)
 
-    fun getLocalBoundsOptimizedAnchored(includeFilters: Boolean = true): Rectangle = getLocalBounds(_localBounds, doAnchoring = true, includeFilters = includeFilters)
+    fun getLocalBoundsOptimizedAnchored(includeFilters: Boolean = false): Rectangle = getLocalBounds(_localBounds, doAnchoring = true, includeFilters = includeFilters)
 
     @Deprecated("Allocates")
-    fun getLocalBounds(doAnchoring: Boolean = true, includeFilters: Boolean = true): Rectangle = getLocalBounds(Rectangle(), doAnchoring, includeFilters)
+    fun getLocalBounds(doAnchoring: Boolean = true, includeFilters: Boolean = false): Rectangle = getLocalBounds(Rectangle(), doAnchoring, includeFilters)
 
     /**
      * Get local bounds of the view. Allows to specify [out] [Rectangle] if you want to reuse an object.
      */
-    fun getLocalBounds(out: Rectangle, doAnchoring: Boolean = true, includeFilters: Boolean = true): Rectangle {
+    fun getLocalBounds(out: Rectangle, doAnchoring: Boolean = true, includeFilters: Boolean = false): Rectangle {
         getLocalBoundsInternal(out)
         val it = out
         if (!doAnchoring) {
@@ -1638,6 +1651,11 @@ class ViewTransform(var view: View) {
 	}
 }
 */
+
+inline fun <T2 : View, T> extraViewProp(
+    name: String? = null,
+    noinline default: T2.() -> T
+): Extra.PropertyThis<T2, T> = extraPropertyThis(name, transform = { invalidateRender(); it}, default)
 
 interface ViewRenderPhase {
     val priority: Int get() = 0

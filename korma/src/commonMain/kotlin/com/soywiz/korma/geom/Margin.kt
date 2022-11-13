@@ -9,6 +9,8 @@ interface Margin {
     val left: Double
 
     companion object {
+        val EMPTY: Margin = MutableMargin()
+
         operator fun invoke(top: Double, right: Double, bottom: Double, left: Double): Margin = MutableMargin(top, right, bottom, left)
         operator fun invoke(vertical: Double, horizontal: Double): Margin = MutableMargin(vertical, horizontal)
         operator fun invoke(margin: Double): Margin = MutableMargin(margin)

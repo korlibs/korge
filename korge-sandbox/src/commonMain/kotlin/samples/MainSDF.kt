@@ -8,9 +8,7 @@ import com.soywiz.korag.shader.VarType
 import com.soywiz.korge.render.BatchBuilder2D
 import com.soywiz.korge.render.RenderContext
 import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.view.RectBase
-import com.soywiz.korge.view.SContainer
-import com.soywiz.korge.view.skew
+import com.soywiz.korge.view.*
 import com.soywiz.korge.view.vector.GpuShapeViewPrograms
 import com.soywiz.korma.geom.Point
 import com.soywiz.korma.geom.degrees
@@ -47,27 +45,6 @@ open class CircleSDFView(width: Double = 100.0, height: Double = 100.0) : Shaded
             val dist = t_Temp0.x
             SET(dist, smoothstep(u_Radius, u_Radius + u_Feather, length(v_Tex - u_Center)))
             SET(out, vec4(v_Col["rgb"], 1f.lit - dist))
-        }
-    }
-}
-
-open class ShadedView(program: Program, width: Double = 100.0, height: Double = 100.0) : RectBase(0.0, 0.0) {
-    override var width: Double = width; set(v) { field = v; dirtyVertices = true }
-    override var height: Double = height; set(v) { field = v; dirtyVertices = true }
-
-    override val bwidth: Double get() = width
-    override val bheight: Double get() = height
-
-    init {
-        this.program = program
-    }
-
-    companion object {
-        inline fun buildShader(callback: ProgramBuilderDefault.() -> Unit): Program {
-            return BatchBuilder2D.PROGRAM.copy(fragment = FragmentShaderDefault {
-                callback()
-                BatchBuilder2D.DO_OUTPUT_FROM(this, out)
-            })
         }
     }
 }

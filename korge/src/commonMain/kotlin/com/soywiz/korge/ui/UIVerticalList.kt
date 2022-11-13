@@ -117,6 +117,7 @@ open class UIVerticalList(provider: Provider, width: Double = 200.0) : UIView(wi
                         .position(0.0, provider.getItemY(index))
                         .size(width, itemHeight.toDouble())
                 }
+                view.zIndex = index.toDouble()
                 toIndex = index
 
                 //val localViewY = view.localToGlobalY(0.0, view.height)

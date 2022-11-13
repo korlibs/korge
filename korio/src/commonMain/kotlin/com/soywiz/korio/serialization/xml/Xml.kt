@@ -206,6 +206,29 @@ data class Xml(
 
 	enum class Type { NODE, TEXT, COMMENT }
 
+    object Encode {
+        fun encodeOpenTag(name: String, map: Map<String, Any?>, selfClose: Boolean = false): String = buildString {
+            append("<")
+            append(name)
+            if (map.isNotEmpty()) {
+                append(" ")
+                append(quoteParams(map))
+            }
+            if (selfClose) {
+                append("/")
+            }
+            append(">")
+        }
+        fun encodeCloseTag(name: String): String = "</$name>"
+        fun quoteParams(map: Map<String, Any?>): String = map.entries.joinToString(" ") { it.key + "=" + quote(it.value) }
+
+        fun quote(value: Any?): String = when (value) {
+            is Number, is Boolean -> value.toString()
+            else -> value?.toString()?.let { quote(it) } ?: "\"\""
+        }
+        fun quote(str: String): String = "\"${Entities.encode(str)}\""
+    }
+
 	object Entities {
 		// Predefined entities in XML 1.0
 		private val charToEntity = linkedMapOf('"' to "&quot;", '\'' to "&apos;", '<' to "&lt;", '>' to "&gt;", '&' to "&amp;")
@@ -300,6 +323,7 @@ data class Xml(
 								r.skipSpaces()
 								val argsQuote = r.matchStringOrId()
 								attributes[key] = when {
+                                    argsQuote != null && !(argsQuote.startsWith("'") || argsQuote.startsWith("\"")) -> argsQuote
 									argsQuote != null -> Xml.Entities.decode(argsQuote.substring(1, argsQuote.length - 1))
 									else -> Xml.Entities.decode(r.matchIdentifier()!!)
 								}
@@ -366,7 +390,11 @@ operator fun Sequence<Xml>.get(name: String): Sequence<Xml> = this.children(name
 
 fun String.toXml(): Xml = Xml.parse(this)
 
-fun Xml(str: String): Xml = Xml.parse(str)
+// language=html
+fun Xml(
+    // language=html
+    str: String
+): Xml = Xml.parse(str)
 
 fun Xml.descendants(name: String) = descendants.filter { it.name.equals(name, ignoreCase = true) }
 fun Xml.firstDescendant(name: String) = descendants(name).firstOrNull()

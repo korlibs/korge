@@ -1,29 +1,31 @@
 package com.soywiz.korge.ui
 
-import com.soywiz.kds.fastArrayListOf
+import com.soywiz.kds.iterators.*
+import com.soywiz.klock.*
+import com.soywiz.korge.animate.*
 import com.soywiz.korge.debug.uiCollapsibleSection
 import com.soywiz.korge.debug.uiEditableValue
-import com.soywiz.korge.input.TouchEvents
-import com.soywiz.korge.input.mouse
-import com.soywiz.korge.input.onClick
-import com.soywiz.korge.input.singleTouch
+import com.soywiz.korge.input.*
 import com.soywiz.korge.render.RenderContext
-import com.soywiz.korge.view.Container
-import com.soywiz.korge.view.NinePatchEx
-import com.soywiz.korge.view.ViewDslMarker
-import com.soywiz.korge.view.Views
-import com.soywiz.korge.view.addTo
-import com.soywiz.korge.view.image
-import com.soywiz.korge.view.ninePatch
-import com.soywiz.korge.view.position
-import com.soywiz.korge.view.text
+import com.soywiz.korge.tween.*
+import com.soywiz.korge.view.*
+import com.soywiz.korge.view.filter.*
+import com.soywiz.korgw.*
 import com.soywiz.korim.bitmap.Bitmaps
 import com.soywiz.korim.bitmap.BmpSlice
+import com.soywiz.korim.color.*
 import com.soywiz.korim.font.Font
+import com.soywiz.korim.paint.*
+import com.soywiz.korim.text.*
 import com.soywiz.korio.async.Signal
-import com.soywiz.korma.geom.Anchor
-import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.*
+import com.soywiz.korma.interpolation.*
 import com.soywiz.korui.UiContainer
+import com.soywiz.korui.layout.*
+import com.soywiz.korui.layout.HorizontalUiLayout.percent
+import com.soywiz.korui.layout.HorizontalUiLayout.pt
+import kotlin.math.*
+import kotlin.reflect.*
 
 inline fun Container.uiButton(
     label: String,
@@ -69,8 +71,8 @@ typealias IconButton = UIButton
 open class UIButton(
 	width: Double = 128.0,
 	height: Double = 32.0,
-    var text: String = "",
-    var icon: BmpSlice? = null,
+    text: String = "",
+    icon: BmpSlice? = null,
 ) : UIView(width, height) {
     companion object {
         const val DEFAULT_WIDTH = UI_DEFAULT_WIDTH
@@ -81,83 +83,124 @@ open class UIButton(
     var skin: UISkin? get() = uiSkin ; set(value) { uiSkin = value }
 
 	var forcePressed = false
-    protected val rect: NinePatchEx = ninePatch(null, width, height)
+    var radius = 6.pt
+        set(value) {
+            field = value
+            setInitialState()
+        }
+    //var radius = 100.percent
+
+    fun radiusPoints(): Double {
+        return radius.calc(Length.Context().setSize(min(width, height).toInt() / 2)).toDouble()
+    }
+
+    //val radiusRatioHalf get() = radiusRatio * 0.5
+    var bgColorOut = Colors["#1976d2"]
+        set(value) {
+            field = value
+            bgcolor = value
+        }
+    var bgColorOver = Colors["#1B5AB3"]
+    var elevation = true
+        set(value) {
+            field = value
+            setInitialState()
+        }
+    var bgColorDisabled = Colors["#00000033"]
+
+    var bgcolor: RGBA = bgColorOut
+        set(value) {
+            field = value
+            invalidateRender()
+        }
+
+
+    //protected val rect: NinePatchEx = ninePatch(null, width, height)
+    //protected val background = roundRect(
+    //    width, height, radiusWidth(width), radiusHeight(height), bgColorOut)
+    //    .also { it.renderer = GraphicsRenderer.SYSTEM }
+    //    //.filters(DropshadowFilter(0.0, 3.0, shadowColor = Colors.BLACK.withAd(0.126)))
+    //    .also { it.mouseEnabled = false }
+
+    var newSkin: NewUIButtonSkin = DefaultUISkin
+
+    val canvas = renderableView {
+        newSkin.renderUIButton(this, this@UIButton)
+    }
+    //internal val background = FastMaterialBackground(width, height).addTo(this)
+    //    .also { it.colorMul = bgColorOut }
+    //    .also { it.mouseEnabled = false }
+
     //protected val textShadowView = text("", 16.0)
-    protected val textView = text("", 16.0)
+    protected val textView = text(text, 16.0)
     protected val iconView = image(Bitmaps.transparent)
 	protected var bover = false
 	protected var bpressing = false
+    val animator = animator(parallel = true, defaultEasing = Easing.LINEAR)
+    val animatorEffects = animator(parallel = true, defaultEasing = Easing.LINEAR)
 
-    override fun renderInternal(ctx: RenderContext) {
-        val skin = realUiSkin
-        //println("UIButton: skin=$skin")
-        rect.ninePatch = when {
-            !enabled -> skin.buttonDisabled
-            bpressing || forcePressed -> skin.buttonDown
-            bover -> skin.buttonOver
-            else -> skin.buttonNormal
-        }
-        rect.width = width
-        rect.height = height
+    var textColor: RGBA by textView::color
+    var text: String by textView::text
 
-        fitIconInRect(iconView, icon ?: Bitmaps.transparent, rect.width, rect.height, Anchor.MIDDLE_CENTER)
+    private fun setInitialState() {
+        val width = width
+        val height = height
+        canvas.setSize(width, height)
+        //background.setSize(width, height)
+        //background.radius = RectCorners(radiusWidth(width))
+        //background.shadowRadius = if (elevation) 10.0 else 0.0
+        //textView.setSize(width, height)
+
+        textView.setTextBounds(Rectangle(0.0, 0.0, width, height))
+        textView.text = text
+        textView.alignment = TextAlignment.MIDDLE_CENTER
+
+        fitIconInRect(iconView, icon ?: Bitmaps.transparent, width, height, Anchor.MIDDLE_CENTER)
         iconView.alpha = when {
             !enabled -> 0.5
             bover -> 1.0
             else -> 1.0
         }
+        invalidateRender()
+    }
 
-        if (text.isNotEmpty()) {
-            val alignment = skin.buttonTextAlignment
-            val font = skin.textFont
-            val text = text
-            val textSize = skin.textSize
-
-            textView.setTextBounds(Rectangle(0.0, 0.0, width, height))
-            textView.visible = true
-            textView.text = text
-            textView.alignment = alignment
-            textView.font = font
-            textView.textSize = textSize
-
-            textView.color = skin.textColor
-            //textShadowView.color = skin.shadowColor
-            //textShadowView.position(skin.shadowPosition)
-        } else {
-            textView.visible = false
-            //textShadowView.visible = false
+    var icon = icon
+        set(value) {
+            field = value
+            setInitialState()
         }
-        super.renderInternal(ctx)
+
+    override fun onSizeChanged() {
+        setInitialState()
     }
 
     fun simulateOver() {
         if (bover) return
 		bover = true
-        invalidate()
+        newSkin.updatedUIButton(this, over = true)
 	}
 
 	fun simulateOut() {
         if (!bover) return
 		bover = false
-        invalidate()
+        newSkin.updatedUIButton(this, over = false)
 	}
 
 	fun simulatePressing(value: Boolean) {
         if (bpressing == value) return
 		bpressing = value
-        invalidate()
 	}
 
-	fun simulateDown() {
+	fun simulateDown(x: Double = width * 0.5, y: Double = height * 0.5) {
         if (bpressing) return
 		bpressing = true
-        invalidate()
+        newSkin.updatedUIButton(this, down = true, px = x, py = y)
 	}
 
 	fun simulateUp() {
         if (!bpressing) return
 		bpressing = false
-        invalidate()
+        newSkin.updatedUIButton(this, down = false)
 	}
 
     val onPress = Signal<TouchEvents.Info>()
@@ -166,7 +209,8 @@ open class UIButton(
         singleTouch {
             start {
                 //println("singleTouch.start")
-                simulateDown()
+
+                simulateDown(it.localX, it.localY)
             }
             endAnywhere {
                 //println("singleTouch.endAnywhere")
@@ -193,7 +237,14 @@ open class UIButton(
                 }
 			}
 		}
-	}
+        this.cursor = GameWindow.Cursor.HAND
+        setInitialState()
+    }
+
+    override fun updateState() {
+        super.updateState()
+        newSkin.updatedUIButton(this)
+    }
 
     override fun buildDebugComponent(views: Views, container: UiContainer) {
         container.uiCollapsibleSection(UIButton::class.simpleName!!) {

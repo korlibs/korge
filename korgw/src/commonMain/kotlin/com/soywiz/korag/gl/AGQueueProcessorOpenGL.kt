@@ -40,8 +40,7 @@ import com.soywiz.korim.bitmap.Bitmap8
 import com.soywiz.korim.bitmap.FloatBitmap32
 import com.soywiz.korim.bitmap.ForcedTexId
 import com.soywiz.korim.bitmap.NativeImage
-import com.soywiz.korim.color.RGBA
-import com.soywiz.korim.color.RGBAf
+import com.soywiz.korim.color.*
 import com.soywiz.korim.vector.BitmapVector
 import com.soywiz.korio.annotations.KorIncomplete
 import com.soywiz.korio.annotations.KorInternal
@@ -51,11 +50,7 @@ import com.soywiz.korio.lang.currentThreadName
 import com.soywiz.korio.lang.invalidOp
 import com.soywiz.korio.lang.printStackTrace
 import com.soywiz.korio.lang.unsupported
-import com.soywiz.korma.geom.MajorOrder
-import com.soywiz.korma.geom.Matrix3D
-import com.soywiz.korma.geom.Point
-import com.soywiz.korma.geom.Vector3D
-import com.soywiz.korma.geom.copyToFloatWxH
+import com.soywiz.korma.geom.*
 import kotlin.math.min
 
 @OptIn(KorIncomplete::class, KorInternal::class)
@@ -558,7 +553,25 @@ class AGQueueProcessorOpenGL(
                             tempBuffer.setFloat(1, value.yf)
                         }
                         is RGBAf -> tempBuffer.setFloats(0, value.data, 0, stride)
+                        is Margin -> {
+                            if (stride >= 1) tempBuffer.setFloat(0, value.top.toFloat())
+                            if (stride >= 2) tempBuffer.setFloat(1, value.right.toFloat())
+                            if (stride >= 3) tempBuffer.setFloat(2, value.bottom.toFloat())
+                            if (stride >= 4) tempBuffer.setFloat(3, value.left.toFloat())
+                        }
+                        is RectCorners -> {
+                            if (stride >= 1) tempBuffer.setFloat(0, value.topLeft.toFloat())
+                            if (stride >= 2) tempBuffer.setFloat(1, value.topRight.toFloat())
+                            if (stride >= 3) tempBuffer.setFloat(2, value.bottomRight.toFloat())
+                            if (stride >= 4) tempBuffer.setFloat(3, value.bottomLeft.toFloat())
+                        }
                         is RGBA -> {
+                            if (stride >= 1) tempBuffer.setFloat(0, value.rf)
+                            if (stride >= 2) tempBuffer.setFloat(1, value.gf)
+                            if (stride >= 3) tempBuffer.setFloat(2, value.bf)
+                            if (stride >= 4) tempBuffer.setFloat(3, value.af)
+                        }
+                        is RGBAPremultiplied -> {
                             if (stride >= 1) tempBuffer.setFloat(0, value.rf)
                             if (stride >= 2) tempBuffer.setFloat(1, value.gf)
                             if (stride >= 3) tempBuffer.setFloat(2, value.bf)

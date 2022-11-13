@@ -2,9 +2,7 @@ package com.soywiz.korim.color
 
 import com.soywiz.kds.GenericListIterator
 import com.soywiz.kds.GenericSubList
-import com.soywiz.kmem.arraycopy
-import com.soywiz.kmem.clamp01
-import com.soywiz.kmem.extract8
+import com.soywiz.kmem.*
 import com.soywiz.korim.internal.d2i
 import com.soywiz.korim.internal.f2i
 import com.soywiz.korim.internal.packIntClamped
@@ -14,7 +12,6 @@ import com.soywiz.korim.paint.Paint
 import com.soywiz.korio.util.niceStr
 import com.soywiz.korma.interpolation.Interpolable
 import com.soywiz.korma.interpolation.interpolate
-import com.soywiz.kmem.clampUByte
 import com.soywiz.krypto.encoding.appendHexByte
 import kotlin.jvm.JvmName
 import kotlin.math.pow
@@ -322,6 +319,17 @@ inline class RGBAPremultiplied(val value: Int) {
 
         operator fun invoke(rgba: RGBA): RGBAPremultiplied = rgba.premultiplied
 
+        fun mixRgba(c1: RGBAPremultiplied, c2: RGBAPremultiplied, factor: Double): RGBAPremultiplied {
+            val factor = factor.clamp01()
+            val ifactor = 1.0 - factor
+            return RGBAPremultiplied(
+                (c1.r * factor + c2.r * ifactor).toIntRound(),
+                (c1.g * factor + c2.g * ifactor).toIntRound(),
+                (c1.b * factor + c2.b * ifactor).toIntRound(),
+                (c1.a * factor + c2.a * ifactor).toIntRound(),
+            )
+        }
+
         fun blendAlpha(dst: RGBAPremultiplied, src: RGBAPremultiplied): RGBAPremultiplied =
             RGBAPremultiplied(sumPacked4MulR(src.value, dst.value, 256 - src.a))
 
@@ -456,6 +464,7 @@ inline class RgbaArray(val ints: IntArray) : List<RGBA> {
 }
 
 fun RGBA.mix(other: RGBA, ratio: Double) = RGBA.mixRgba(this, other, ratio)
+fun RGBAPremultiplied.mix(other: RGBAPremultiplied, ratio: Double) = RGBAPremultiplied.mixRgba(this, other, ratio)
 
 fun List<RGBA>.toRgbaArray(): RgbaArray = RgbaArray(IntArray(this.size) { this@toRgbaArray[it].value })
 

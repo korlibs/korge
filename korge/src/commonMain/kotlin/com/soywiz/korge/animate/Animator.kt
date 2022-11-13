@@ -14,10 +14,15 @@ import com.soywiz.korma.geom.vector.*
 import com.soywiz.korma.interpolation.*
 import kotlinx.coroutines.*
 import kotlin.math.*
+import kotlin.reflect.*
 
 @DslMarker
 @Target(AnnotationTarget.CLASS, AnnotationTarget.TYPE)
 annotation class AnimatorDslMarker
+
+val View.simpleAnimator: Animator by Extra.PropertyThis {
+    animator(parallel = true)
+}
 
 fun View.animator(
     defaultTime: TimeSpan = Animator.DEFAULT_TIME,
@@ -66,6 +71,14 @@ open class Animator @PublishedApi internal constructor(
 
     internal val nodes = Deque<NewAnimatorNode>()
     var speed: Double = 1.0
+
+    internal fun removeProps(props: Set<KMutableProperty0<*>>) {
+        for (node in nodes) {
+            if (node is TweenNode) {
+                node.computedVs.retainAll { it.key !in props }
+            }
+        }
+    }
 
     @PublishedApi
     internal fun addNode(node: NewAnimatorNode) {
@@ -146,7 +159,7 @@ open class Animator @PublishedApi internal constructor(
     /**
      * Cancels and clears all the pending animations keeping the properties as they are when executing this function.
      */
-    fun cancel() {
+    fun cancel(): Animator {
         //println("---- CANCEL: looped=$looped, currentTime=$currentTime, totalTime=$totalTime")
         rootAnimationNode.reset()
         nodes.clear()
@@ -154,13 +167,15 @@ open class Animator @PublishedApi internal constructor(
         updater = null
         parallelStarted = false
         onComplete()
+        return this
     }
 
     /**
      * Finishes all the pending animations and sets all the properties to their final state.
      */
-    fun complete() {
+    fun complete(): Animator {
         rootAnimationNode.complete()
+        return this
     }
 
     inline fun parallel(
@@ -183,8 +198,11 @@ open class Animator @PublishedApi internal constructor(
         init: @AnimatorDslMarker Animator.() -> Unit
     ): Animator = Animator(root, time, speed, easing, false, looped, lazyInit = init, level = level + 1, parent = this, startImmediately = startImmediately).also { addNode(it.rootAnimationNode) }
 
-    @PublishedApi internal fun __tween(vararg vs: V2<*>, lazyVs: Array<out () -> V2<*>>? = null, time: TimeSpan = this.defaultTime, lazyTime: (() -> TimeSpan)? = null, easing: Easing = this.defaultEasing, name: String?) {
+    @PublishedApi internal fun __tween(vararg vs: V2<*>, lazyVs: Array<out () -> V2<*>>? = null, time: TimeSpan = this.defaultTime, lazyTime: (() -> TimeSpan)? = null, easing: Easing = this.defaultEasing, name: String?, replace: Boolean = true) {
         //println("__tween=time=$time")
+        if (replace && parallel) {
+            removeProps(vs.map { it.key }.toSet())
+        }
         addNode(TweenNode(*vs, lazyVs = lazyVs, time = time, lazyTime = lazyTime, easing = easing, name = name))
     }
 
@@ -211,6 +229,8 @@ open class Animator @PublishedApi internal constructor(
             currentNode = null
         }
 
+        private val toRemove = fastArrayListOf<NewAnimatorNode>()
+
         override fun update(dt: TimeSpan): TimeSpan {
             var dt = dt * speed
 
@@ -219,11 +239,17 @@ open class Animator @PublishedApi internal constructor(
 
             if (parallel) {
                 var completedTime = 0.seconds
+                toRemove.clear()
                 nodes.forEachIndexed { index, it ->
                     val result = it.update(dt)
+                    if (result >= 0.seconds) {
+                        toRemove.add(it)
+                    }
                     completedTime = if (index == 0) result else min(completedTime, result)
                     //println(" - $result")
                 }
+                if (toRemove.isNotEmpty()) nodes.removeAll(toRemove)
+                toRemove.clear()
                 parallelStarted = true
                 return completedTime
             }
@@ -280,7 +306,7 @@ open class Animator @PublishedApi internal constructor(
         val easing: Easing,
         val name: String? = null
     ) : NewAnimatorNode {
-        val computedVs by lazy { if (lazyVs != null) Array(lazyVs.size) { lazyVs[it]() } else vs }
+        val computedVs by lazy { (lazyVs?.map { it() } ?: vs.toList()).toMutableList() }
         private val totalTime: TimeSpan by lazy { lazyTime?.invoke() ?: time }
 
         override fun toString(): String = "TweenNode(totalTime=$totalTime, name=$name, ${computedVs.toList()})"
@@ -345,8 +371,8 @@ interface NewAnimatorNode {
 
 ////////////////////////
 
-fun Animator.tween(vararg vs: V2<*>, time: TimeSpan = this.defaultTime, easing: Easing = this.defaultEasing, name: String? = null): Unit = __tween(*vs, time = time, easing = easing, name = name)
-fun Animator.tweenLazyTime(vararg vs: V2<*>, time: () -> TimeSpan = { this.defaultTime }, easing: Easing = this.defaultEasing, name: String? = null) = __tween(*vs, lazyTime = time, easing = easing, name = name)
+fun Animator.tween(vararg vs: V2<*>, time: TimeSpan = this.defaultTime, easing: Easing = this.defaultEasing, name: String? = null, replace: Boolean = true): Unit = __tween(*vs, time = time, easing = easing, name = name, replace = replace)
+fun Animator.tweenLazyTime(vararg vs: V2<*>, time: () -> TimeSpan = { this.defaultTime }, easing: Easing = this.defaultEasing, name: String? = null, replace: Boolean = true) = __tween(*vs, lazyTime = time, easing = easing, name = name, replace = replace)
 
 fun Animator.tweenLazy(vararg vs: () -> V2<*>, time: TimeSpan = this.defaultTime, easing: Easing = this.defaultEasing, name: String? = null) = __tween(*vs, time = time, easing = easing, name = name)
 fun Animator.tweenLazyLazyTime(vararg vs: () -> V2<*>, time: () -> TimeSpan = { this.defaultTime }, easing: Easing = this.defaultEasing, name: String? = null) = __tween(*vs, lazyTime = time, easing = easing, name = name)

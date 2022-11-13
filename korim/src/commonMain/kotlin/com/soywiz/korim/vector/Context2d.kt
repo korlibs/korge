@@ -290,10 +290,12 @@ open class Context2d constructor(
     inline fun rotate(angle: Int) = rotate(angle.toDouble())
     inline fun rotateDeg(degs: Int) = rotateDeg(degs.toDouble())
 
+    inline fun skew(skewX: Angle = Angle.ZERO, skewY: Angle = Angle.ZERO, block: () -> Unit) = keep { skew(skewX, skewY).also { block() } }
     inline fun scale(sx: Double, sy: Double = sx, block: () -> Unit) = keep { scale(sx, sy).also { block() } }
     inline fun rotate(angle: Angle, block: () -> Unit) = keep { rotate(angle).also { block() } }
     inline fun translate(tx: Double, ty: Double, block: () -> Unit) = keep { translate(tx, ty).also { block() } }
 
+    fun skew(skewX: Angle = 0.degrees, skewY: Angle = 0.degrees) { state.transform.preskew(skewX, skewY) }
 	fun scale(sx: Double, sy: Double = sx) { state.transform.prescale(sx, sy) }
     fun rotate(angle: Angle) { state.transform.prerotate(angle) }
 	fun rotate(angle: Double) { state.transform.prerotate(angle.radians) }
