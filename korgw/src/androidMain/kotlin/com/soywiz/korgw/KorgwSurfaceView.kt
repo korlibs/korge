@@ -2,24 +2,7 @@ package com.soywiz.korgw
 
 import android.content.Context
 import android.content.pm.FeatureInfo
-import android.opengl.EGL14.EGL_ALPHA_SIZE
-import android.opengl.EGL14.EGL_BIND_TO_TEXTURE_RGB
-import android.opengl.EGL14.EGL_BIND_TO_TEXTURE_RGBA
-import android.opengl.EGL14.EGL_BLUE_SIZE
-import android.opengl.EGL14.EGL_CONFIG_CAVEAT
-import android.opengl.EGL14.EGL_CONFIG_ID
-import android.opengl.EGL14.EGL_CONTEXT_CLIENT_VERSION
-import android.opengl.EGL14.EGL_DEPTH_SIZE
-import android.opengl.EGL14.EGL_GREEN_SIZE
-import android.opengl.EGL14.EGL_LEVEL
-import android.opengl.EGL14.EGL_MAX_PBUFFER_HEIGHT
-import android.opengl.EGL14.EGL_MAX_PBUFFER_WIDTH
-import android.opengl.EGL14.EGL_MAX_SWAP_INTERVAL
-import android.opengl.EGL14.EGL_MIN_SWAP_INTERVAL
-import android.opengl.EGL14.EGL_RED_SIZE
-import android.opengl.EGL14.EGL_RENDERABLE_TYPE
-import android.opengl.EGL14.EGL_STENCIL_SIZE
-import android.opengl.EGL14.EGL_SURFACE_TYPE
+import android.opengl.EGL14.*
 import android.opengl.EGL14.eglGetCurrentContext
 import android.opengl.EGL14.eglGetCurrentDisplay
 import android.opengl.EGL14.eglQueryContext
@@ -61,6 +44,7 @@ open class KorgwSurfaceView constructor(
     val viewOrActivity: Any?,
     context: Context,
     val gameWindow: BaseAndroidGameWindow,
+    val config: GameWindowCreationConfig = gameWindow.config,
 ) : GLSurfaceView(context), GLSurfaceView.Renderer {
     val view = this
 
@@ -76,9 +60,9 @@ open class KorgwSurfaceView constructor(
     init {
         println("KorgwActivity: Created GLSurfaceView $this for ${viewOrActivity}")
 
-        println("OpenGL ES Version (requested): $requestedClientVersion")
+        println("OpenGL ES Version (requested): $requestedClientVersion, config=$config")
         setEGLContextClientVersion(getVersionFromPackageManager(context))
-        setEGLConfigChooser(AndroidConfigChooser(hdr = gameWindow.config.hdr))
+        setEGLConfigChooser(AndroidConfigChooser(config))
         setRenderer(this)
         //renderMode = RENDERMODE_WHEN_DIRTY
     }
@@ -392,35 +376,42 @@ private fun getVersionFromPackageManager(context: Context): Int {
 
 // https://kotlinlang.slack.com/archives/CJEF0LB6Y/p1630391858001400
 class AndroidConfigChooser(
-    val hdr: Boolean? = null
+    val config: GameWindowCreationConfig,
 ) : GLSurfaceView.EGLConfigChooser {
     /**
      * Gets called by the GLSurfaceView class to return the best config
      */
     override fun chooseConfig(egl: EGL10, display: EGLDisplay): EGLConfig? {
         //val configs = getAllConfigs(egl, display)
-        for (attribs in sequence {
-            if (hdr == true) {
-                yield(createAttribList(red = 16, green = 16, blue = 16, depth = 24, stencil = 8, gles3 = true))
+        for (rconfig in sequence {
+            if (config.hdr == true) {
+                yield(GLRequestConfig(red = 16, green = 16, blue = 16, depth = 24, stencil = 8, gles3 = true, msaa = config.msaa))
+                yield(GLRequestConfig(red = 16, green = 16, blue = 16, depth = 24, stencil = 8, gles3 = true, msaa = null))
             }
-            yield(createAttribList(red = 8, green = 8, blue = 8, alpha = 8, depth = 24, stencil = 8, gles3 = true))
-            yield(createAttribList(red = 8, green = 8, blue = 8, alpha = 8, depth = 16, stencil = 8, gles3 = true))
-            yield(createAttribList(red = 8, green = 8, blue = 8, alpha = 8, depth = 24, stencil = 8, gles2 = true))
-            yield(createAttribList(red = 8, green = 8, blue = 8, alpha = 8, depth = 16, stencil = 8, gles2 = true))
-            yield(createAttribList(stencil = 8, gles3 = true))
-            yield(createAttribList(stencil = 8, gles2 = true))
-            yield(createAttribList(gles3 = true))
-            yield(createAttribList(gles2 = true))
-            yield(createAttribList())
-        }) {
-            val configs = getConfigs(egl, display, attribs)
-            if (configs.isNotEmpty()) {
-                println("AndroidConfigChooser.chooseConfig=${configs.size} : attribs=${attribs.toIntArrayList()}")
-                for ((index, config) in configs.withIndex()) {
-                    val mark = if (index == 0) " [Chosen]" else ""
-                    println(" - [$index] $config$mark")
+            for (msaa in listOf(config.msaa, null)) {
+                for (gles3 in listOf(true, true)) {
+                    for (depth in listOf(24, 16)) {
+                        yield(GLRequestConfig(red = 8, green = 8, blue = 8, alpha = 8, depth = depth, stencil = 8, gles3 = gles3, gles2 = !gles3, msaa = msaa))
+                    }
                 }
-                return configs.first().config
+            }
+            yield(GLRequestConfig(stencil = 8, gles3 = true))
+            yield(GLRequestConfig(stencil = 8, gles2 = true))
+            yield(GLRequestConfig(gles3 = true))
+            yield(GLRequestConfig(gles2 = true))
+            yield(GLRequestConfig())
+        }) {
+            val attribs = rconfig.createAttribList()
+            val configsWithScore = getConfigs(egl, display, attribs).map { it to rconfig.matchScore(it) }
+            if (configsWithScore.isNotEmpty()) {
+                println("AndroidConfigChooser.chooseConfig=${configsWithScore.size} : config.msaa=${config.msaa}, config=$rconfig")
+                for ((index, configWithScore) in configsWithScore.withIndex()) {
+                    val config = configWithScore.first
+                    val score = configWithScore.second
+                    val mark = if (index == 0) " [Chosen]" else ""
+                    println(" - [$index] [score=$score] $config$mark")
+                }
+                return configsWithScore.first().first.config
             }
         }
 
@@ -438,31 +429,48 @@ class AndroidConfigChooser(
         emptyList()
     }
 
-    private fun createAttribList(
-        red: Int? = null,
-        green: Int? = null,
-        blue: Int? = null,
-        alpha: Int? = null,
-        depth: Int? = null,
-        stencil: Int? = null,
-        gles2: Boolean? = null,
-        gles3: Boolean? = null,
-    ): IntArray = buildIntArray {
-        when {
-            gles3 != null -> add(EGL10.EGL_RENDERABLE_TYPE, EGL_OPENGL_ES3_BIT)
-            gles2 != null -> add(EGL10.EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT)
+    data class GLRequestConfig(
+        val red: Int? = null,
+        val green: Int? = null,
+        val blue: Int? = null,
+        val alpha: Int? = null,
+        val depth: Int? = null,
+        val stencil: Int? = null,
+        val gles2: Boolean? = null,
+        val gles3: Boolean? = null,
+        val msaa: Int? = null,
+    ) {
+        fun matchScore(config: EGLFullConfig): Double {
+            var score = 0.0
+            if (config.depth == depth) score += 10.0
+            if (config.stencil == stencil) score += 5.0
+            if (config.samples == msaa) score += 3.0
+            return score
         }
-        if (red != null) add(EGL10.EGL_RED_SIZE, red)
-        if (green != null) add(EGL10.EGL_GREEN_SIZE, green)
-        if (blue != null) add(EGL10.EGL_BLUE_SIZE, blue)
-        if (alpha != null) add(EGL10.EGL_ALPHA_SIZE, alpha)
-        if (depth != null) add(EGL10.EGL_DEPTH_SIZE, depth)
-        if (stencil != null) add(EGL10.EGL_STENCIL_SIZE, stencil)
-        add(EGL10.EGL_NONE)
+
+        fun createAttribList(): IntArray = buildIntArray {
+            add(EGL10.EGL_LEVEL, 0)
+            when {
+                gles3 != null -> add(EGL10.EGL_RENDERABLE_TYPE, EGL_OPENGL_ES3_BIT)
+                gles2 != null -> add(EGL10.EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT)
+            }
+            if (red != null) add(EGL10.EGL_RED_SIZE, red)
+            if (green != null) add(EGL10.EGL_GREEN_SIZE, green)
+            if (blue != null) add(EGL10.EGL_BLUE_SIZE, blue)
+            if (alpha != null) add(EGL10.EGL_ALPHA_SIZE, alpha)
+            if (depth != null) add(EGL10.EGL_DEPTH_SIZE, depth)
+            if (stencil != null) add(EGL10.EGL_STENCIL_SIZE, stencil)
+            if (msaa != null) {
+                add(EGL10.EGL_COLOR_BUFFER_TYPE, EGL10.EGL_RGB_BUFFER)
+                add(EGL10.EGL_SAMPLE_BUFFERS, 1)
+                add(EGL10.EGL_SAMPLES, msaa)
+            }
+            add(EGL10.EGL_NONE)
+        }
     }
 
     private fun getAllConfigs(egl: EGL10, display: EGLDisplay): List<EGLFullConfig> {
-        return getConfigs(egl, display, createAttribList())
+        return getConfigs(egl, display, GLRequestConfig().createAttribList())
         //val numConfigs = IntArray(1)
         //egl.eglGetConfigs(display, null, 0, numConfigs)
         //val configs = arrayOfNulls<EGLConfig>(numConfigs[0])
@@ -492,17 +500,37 @@ class AndroidConfigChooser(
         val bindRgba: Int by lazy { eglGetConfigAttribSafe(EGL_BIND_TO_TEXTURE_RGBA) }
         val level: Int by lazy { eglGetConfigAttribSafe(EGL_LEVEL) }
         val surfaceType: Int by lazy { eglGetConfigAttribSafe(EGL_SURFACE_TYPE) }
+        val samples: Int by lazy { eglGetConfigAttribSafe(EGL_SAMPLES) }
 
         val gles2: Boolean by lazy { renderableType.hasBits(EGL_OPENGL_ES2_BIT) }
         val gles3: Boolean by lazy { renderableType.hasBits(EGL_OPENGL_ES3_BIT) }
 
+        val surfaceTypeMultisampleResolveBoxBit get() = surfaceType.hasBits(EGL_MULTISAMPLE_RESOLVE_BOX_BIT)
+        val surfaceTypePBufferBit get() = surfaceType.hasBits(EGL_PBUFFER_BIT)
+        val surfaceTypePixmapBit get() = surfaceType.hasBits(EGL_PIXMAP_BIT)
+        val surfaceTypeSwapBehaviourPreservedBit get() = surfaceType.hasBits(EGL_SWAP_BEHAVIOR_PRESERVED_BIT)
+        val surfaceTypeVgAlphaFormatPre8Bit get() = surfaceType.hasBits(EGL_VG_ALPHA_FORMAT_PRE_BIT)
+        val surfaceTypeVgColorSpaceLinearBit get() = surfaceType.hasBits(EGL_VG_COLORSPACE_LINEAR_BIT)
+        val surfaceTypeWindowBit get() = surfaceType.hasBits(EGL_WINDOW_BIT)
+
+        fun surfaceTypeString(): String = buildList {
+            if (surfaceTypeMultisampleResolveBoxBit) add("MULTISAMPLE")
+            if (surfaceTypePBufferBit) add("PBUFFER")
+            if (surfaceTypePixmapBit) add("PIXMAP")
+            if (surfaceTypeSwapBehaviourPreservedBit) add("SWAP")
+            if (surfaceTypeVgAlphaFormatPre8Bit) add("VGALPHA")
+            if (surfaceTypeVgColorSpaceLinearBit) add("VGCOLOR")
+            if (surfaceTypeWindowBit) add("WINDOW")
+        }.joinToString("-")
+
         private fun eglGetConfigAttribSafe(attribute: Int): Int {
+
             val value = IntArray(1)
             if (!egl.eglGetConfigAttrib(display, config, attribute, value)) throw AssertionError()
             return value[0]
         }
 
-        override fun toString(): String = "EGLFullConfig[$configId]($red, $green, $blue, $alpha, depth=$depth, stencil=$stencil, renderableType=$renderableType, gles2=$gles2, gles3=$gles3, caveat=$caveat, maxWidth=$maxWidth, maxHeight=$maxHeight, swapInternval=$minSwapInterval-$maxSwapInterval, level=$level, bindRgb/a=$bindRgb,$bindRgba, surfaceType=$surfaceType)"
+        override fun toString(): String = "EGLFullConfig[$configId]($red, $green, $blue, $alpha, depth=$depth, stencil=$stencil, renderableType=$renderableType, gles2=$gles2, gles3=$gles3, caveat=$caveat, maxWidth=$maxWidth, maxHeight=$maxHeight, swapInterval=$minSwapInterval-$maxSwapInterval, level=$level, bindRgb/a=$bindRgb,$bindRgba, surfaceType=$surfaceType(${surfaceTypeString()}), samples=$samples)"
     }
 
     companion object {

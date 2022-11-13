@@ -89,7 +89,7 @@ abstract class BaseAndroidGameWindow(
     //}
 }
 
-class AndroidGameWindow(val activity: KorgwActivity) : BaseAndroidGameWindow(activity.config) {
+class AndroidGameWindow(val activity: KorgwActivity, config: GameWindowCreationConfig = activity.config) : BaseAndroidGameWindow(config) {
     override val androidContext get() = activity
     override val androidView: View get() = activity.mGLView ?: error("Can't find mGLView")
 

@@ -396,6 +396,7 @@ class KorgeExtension(val project: Project) {
     val androidGradleClasspaths = LinkedHashSet<String>()
 	val androidManifestApplicationChunks = LinkedHashSet<String>()
 	val androidManifestChunks = LinkedHashSet<String>()
+    var androidMsaa: Int? = null
 
     fun plugin(name: String, args: Map<String, String> = mapOf()) {
 		dependencyMulti(name, registerPlugin = false)
