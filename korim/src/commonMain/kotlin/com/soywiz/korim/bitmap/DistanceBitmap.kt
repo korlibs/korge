@@ -1,5 +1,6 @@
 package com.soywiz.korim.bitmap
 
+import com.soywiz.kds.*
 import com.soywiz.kmem.clamp01
 import com.soywiz.kmem.convertRange
 import com.soywiz.korim.color.RGBA
@@ -7,6 +8,8 @@ import com.soywiz.korim.color.RgbaArray
 import com.soywiz.korio.lang.assert
 import kotlin.math.max
 import kotlin.math.min
+
+typealias SDFBitmap = DistanceBitmap
 
 // http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.102.7988&rep=rep1&type=pdf
 // Dead Reckoning Algorithm
@@ -28,6 +31,8 @@ class DistanceBitmap(
     fun inBoundsY(y: Int) = (y >= 0) && (y < height)
     fun inBounds(x: Int, y: Int) = inBoundsX(x) && inBoundsY(y)
     fun index(x: Int, y: Int) = y * width + x
+
+    fun toFloatArray2(): FloatArray2 = FloatArray2(width, height, d)
 
     //fun getRealDist(x: Int, y: Int): Float = if (inBounds(x, y)) kotlin.math.hypot((x - this.px[index(x, y)]).toDouble(), (y - this.py[index(x, y)]).toDouble()).toFloat().withSign(getDist(x, y)) else Float.POSITIVE_INFINITY
     fun getDist(x: Int, y: Int): Float = if (inBounds(x, y)) this.d[index(x, y)] else Float.POSITIVE_INFINITY
@@ -154,3 +159,4 @@ class DistanceBitmap(
 }
 
 fun Bitmap.distanceMap(out: DistanceBitmap = DistanceBitmap(width, height), thresold: Double = 0.5): DistanceBitmap = out.also { it.setFromBitmap(this, thresold) }
+fun Bitmap.sdf(out: DistanceBitmap = DistanceBitmap(width, height), thresold: Double = 0.5): DistanceBitmap = out.also { it.setFromBitmap(this, thresold) }

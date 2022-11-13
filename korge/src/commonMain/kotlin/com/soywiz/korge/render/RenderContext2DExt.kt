@@ -48,6 +48,7 @@ object MaterialRender {
         SET(out, out + (vec4(.7f.lit) * highlightAlpha * smoothedAlpha))
 
         // Apply a drop shadow effect.
+        //IF(distance gt 0f.lit) {
         IF(smoothedAlpha lt 0.05f.lit) {
             val shadowSoftness = u_ShadowRadius
             val shadowOffset = u_ShadowOffset
