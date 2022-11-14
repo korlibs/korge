@@ -7,14 +7,7 @@ import com.soywiz.korge.input.onOut
 import com.soywiz.korge.input.onOver
 import com.soywiz.korge.input.onUp
 import com.soywiz.korge.render.RenderContext
-import com.soywiz.korge.view.Container
-import com.soywiz.korge.view.View
-import com.soywiz.korge.view.ViewDslMarker
-import com.soywiz.korge.view.Views
-import com.soywiz.korge.view.addTo
-import com.soywiz.korge.view.position
-import com.soywiz.korge.view.size
-import com.soywiz.korge.view.solidRect
+import com.soywiz.korge.view.*
 import com.soywiz.korim.color.Colors
 import com.soywiz.korio.async.Signal
 import com.soywiz.korma.geom.*
@@ -54,9 +47,13 @@ open class UIComboBox<T>(
     val itemHeight get() = height
     var viewportHeight by uiObservable(196) { onSizeChanged() }
 
+    private val selectedButton = uiButton(width - height, height, "")
+    private val expandButton = uiButton(height, height, icon = comboBoxExpandIcon).position(width - height, 0.0)
+    private val invisibleRect = solidRect(width, height, Colors.TRANSPARENT_BLACK)
+
     private val itemsView = uiScrollable(width, height = 128.0)
     private val itemsViewBackground = itemsView.fastMaterialBackground(width, height = 128.0) {
-        radius = RectCorners(12.0)
+        radius = RectCorners(0.0, 0.0, 12.0, 12.0)
         zIndex = -1000.0
     }
     private val verticalList = itemsView.container.uiVerticalList(object : UIVerticalList.Provider {
@@ -78,9 +75,6 @@ open class UIComboBox<T>(
             return it
         }
     }, width = width)
-    private val selectedButton = uiButton(width - height, height, "")
-    private val expandButton = uiButton(height, height, icon = comboBoxExpandIcon).position(width - height, 0.0)
-    private val invisibleRect = solidRect(width, height, Colors.TRANSPARENT_BLACK)
     private var showItems = false
 
     init {
@@ -120,9 +114,14 @@ open class UIComboBox<T>(
         containerRoot.addChild(itemsView)
 
         //itemsView.size(width, viewportHeight.toDouble()).position(0.0, height)
-        itemsView.size(width, viewportHeight.toDouble()).setGlobalXY(localToGlobal(Point(0.0, height)))
-        itemsViewBackground.size(width, itemsView.height)
-        verticalList.size(width, verticalList.height)
+        itemsView
+            .size(width, viewportHeight.toDouble())
+            .setGlobalXY(localToGlobal(Point(0.0, height + 8.0)))
+        itemsViewBackground
+            .xy(0, -8)
+            .size(width, itemsView.height + 16)
+        verticalList
+            .size(width, verticalList.height)
 
         verticalList.invalidateList()
 
