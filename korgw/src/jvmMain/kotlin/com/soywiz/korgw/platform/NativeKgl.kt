@@ -105,7 +105,6 @@ open class NativeKgl(private val gl: INativeGL) : KmlGlWithExtensions() {
     override fun sampleCoverage(value: Float, invert: Boolean): Unit = gl.glSampleCoverage(value, invert.toByte())
     override fun scissor(x: Int, y: Int, width: Int, height: Int): Unit = gl.glScissor(x, y, width, height)
     override fun shaderBinary(count: Int, shaders: FBuffer, binaryformat: Int, binary: FBuffer, length: Int): Unit = gl.glShaderBinary(count, shaders.nioIntBuffer, binaryformat, binary.nioBuffer, length)
-    //override fun shaderSource(shader: Int, string: String): Unit = gl.glShaderSource(shader, 1, arrayOf(string), intArrayOf(string.length))
     override fun shaderSource(shader: Int, string: String): Unit = gl.glShaderSource(shader, 1, arrayOf(string), intArrayOf(string.length))
     override fun stencilFunc(func: Int, ref: Int, mask: Int): Unit = gl.glStencilFunc(func, ref, mask)
     override fun stencilFuncSeparate(face: Int, func: Int, ref: Int, mask: Int): Unit = gl.glStencilFuncSeparate(face, func, ref, mask)

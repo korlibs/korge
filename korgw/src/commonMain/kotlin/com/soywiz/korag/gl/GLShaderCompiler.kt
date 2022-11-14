@@ -88,7 +88,7 @@ internal object GLShaderCompiler {
     private fun createShader(gl: KmlGl, type: Int, str: String, debugName: String?): Int {
         val shaderId = gl.createShader(type)
 
-        gl.shaderSource(shaderId, str)
+        gl.shaderSourceWithExt(shaderId, str)
         gl.compileShader(shaderId)
 
         val out = gl.getShaderiv(shaderId, gl.COMPILE_STATUS)
