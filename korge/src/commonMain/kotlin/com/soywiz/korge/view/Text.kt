@@ -13,15 +13,7 @@ import com.soywiz.korge.view.filter.filter
 import com.soywiz.korim.bitmap.Bitmaps
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
-import com.soywiz.korim.font.BitmapFont
-import com.soywiz.korim.font.DefaultTtfFont
-import com.soywiz.korim.font.Font
-import com.soywiz.korim.font.FontMetrics
-import com.soywiz.korim.font.TextMetrics
-import com.soywiz.korim.font.TextMetricsResult
-import com.soywiz.korim.font.getTextBounds
-import com.soywiz.korim.font.getTextBoundsWithGlyphs
-import com.soywiz.korim.font.readFont
+import com.soywiz.korim.font.*
 import com.soywiz.korim.paint.Paint
 import com.soywiz.korim.paint.Stroke
 import com.soywiz.korim.text.CurveTextRenderer
@@ -38,8 +30,7 @@ import com.soywiz.korio.async.launchImmediately
 import com.soywiz.korio.file.VfsFile
 import com.soywiz.korio.file.extensionLC
 import com.soywiz.korio.resources.Resourceable
-import com.soywiz.korma.geom.Matrix
-import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.VectorPath
 import com.soywiz.korui.UiContainer
 
@@ -61,7 +52,7 @@ text2("Hello World!", color = Colors.RED, font = font, renderer = CreateStringTe
 */
 inline fun Container.text(
     text: String, textSize: Double = Text.DEFAULT_TEXT_SIZE,
-    color: RGBA = Colors.WHITE, font: Resourceable<out Font> = DefaultTtfFont,
+    color: RGBA = Colors.WHITE, font: Resourceable<out Font> = DefaultTtfFontMsdf,
     alignment: TextAlignment = TextAlignment.TOP_LEFT,
     renderer: TextRenderer<String> = DefaultStringTextRenderer,
     autoScaling: Boolean = Text.DEFAULT_AUTO_SCALING,
@@ -72,7 +63,7 @@ inline fun Container.text(
 
 open class Text(
     text: String, textSize: Double = DEFAULT_TEXT_SIZE,
-    color: RGBA = Colors.WHITE, font: Resourceable<out Font> = DefaultTtfFont,
+    color: RGBA = Colors.WHITE, font: Resourceable<out Font> = DefaultTtfFontMsdf,
     alignment: TextAlignment = TextAlignment.TOP_LEFT,
     renderer: TextRenderer<String> = DefaultStringTextRenderer,
     autoScaling: Boolean = DEFAULT_AUTO_SCALING,
@@ -203,7 +194,7 @@ open class Text(
         }
 
     fun setFormat(face: Resourceable<out Font>? = this.font, size: Int = this.textSize.toInt(), color: RGBA = this.color, align: TextAlignment = this.alignment) {
-        this.font = face ?: DefaultTtfFont
+        this.font = face ?: DefaultTtfFontMsdf
         this.textSize = size.toDouble()
         this.color = color
         this.alignment = align
@@ -213,7 +204,7 @@ open class Text(
         setFormat(format.computedFace, format.computedSize, format.computedColor, format.computedAlign)
     }
 
-    fun setTextBounds(rect: Rectangle) {
+    fun setTextBounds(rect: IRectangle) {
         if (this._textBounds == rect && !autoSize) return
         this._textBounds.copyFrom(rect)
         autoSize = false

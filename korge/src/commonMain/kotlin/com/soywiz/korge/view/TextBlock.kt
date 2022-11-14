@@ -10,7 +10,7 @@ import com.soywiz.korim.text.*
 import com.soywiz.korma.geom.*
 
 inline fun Container.textBlock(
-    text: RichTextData = RichTextData("", textSize = 16.0, font = DefaultTtfFont),
+    text: RichTextData = RichTextData("", textSize = 16.0, font = DefaultTtfFontMsdf),
     align: TextAlignment = TextAlignment.TOP_LEFT,
     width: Double = 100.0,
     height: Double = 100.0,
@@ -19,7 +19,7 @@ inline fun Container.textBlock(
     = TextBlock(text, align, width, height).addTo(this, block)
 
 class TextBlock(
-    text: RichTextData = RichTextData("", textSize = 16.0, font = DefaultTtfFont),
+    text: RichTextData = RichTextData("", textSize = 16.0, font = DefaultTtfFontMsdf),
     align: TextAlignment = TextAlignment.TOP_LEFT,
     width: Double = 100.0,
     height: Double = 100.0,
@@ -35,12 +35,14 @@ class TextBlock(
     var padding: Margin = Margin.EMPTY; set(value) { field = value; invalidProps() }
     var autoSize: Boolean = false; set(value) { field = value; invalidateText() }
     private var image = image(Bitmaps.transparent)
+    private var allBitmap: Boolean = true
 
     private fun invalidateText() {
         invalidProps()
         if (autoSize) {
             setSize(text.width, text.height)
         }
+        allBitmap = text.allFonts.all { it is BitmapFont }
     }
     
     private fun invalidProps() {
@@ -50,6 +52,10 @@ class TextBlock(
 
     override fun onSizeChanged() {
         invalidProps()
+    }
+
+    init {
+        invalidateText()
     }
 
     private fun ensureTexture() {
@@ -70,7 +76,16 @@ class TextBlock(
     }
 
     override fun renderInternal(ctx: RenderContext) {
-        ensureTexture()
+        if (allBitmap) {
+            ctx.useCtx2d {
+                it.keep {
+                    it.setMatrix(globalMatrix)
+                    it.drawText(text, padding.left, padding.top, width - padding.right, height - padding.bottom, wordWrap, includePartialLines, ellipsis, fill, stroke, align)
+                }
+            }
+        } else {
+            ensureTexture()
+        }
         super.renderInternal(ctx)
     }
 }

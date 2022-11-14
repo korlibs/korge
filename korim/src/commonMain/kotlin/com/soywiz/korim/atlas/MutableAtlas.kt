@@ -80,7 +80,7 @@ class MutableAtlas<T>(
         }
     }
 
-    fun add(bmp: Bitmap32, data: T, name: String? = "Slice$size") = add(bmp.slice(name = name), data, name)
+    fun add(bmp: Bitmap32, data: T, name: String? = "Slice$size"): Entry<T> = add(bmp.slice(name = name), data, name)
 
     @Suppress("UNCHECKED_CAST")
     fun add(bmp: BmpSlice, data: T, name: String? = bmp.name): Entry<T> = when {

@@ -28,7 +28,31 @@ class MainEditor : Scene() {
         if (true) {
             //val font1 = resourcesVfs["msdf/SaniTrixieSans.fnt"].readBitmapFont()
             //val font1 = resourcesVfs["msdf/SaniTrixieSans.json"].readBitmapFont()
-            val font1 = resourcesVfs["msdf/SaniTrixieSans.json"].readBitmapFont()
+            val font1 = DefaultTtfFontMsdf
+
+            font1.get('A')
+            font1.get('a')
+            font1.get('0')
+
+            for (n in 0 until 2) {
+                container {
+                    xy(400, 200 + 150 * n)
+                    solidRect(300, 100, Colors.DARKGREY)
+                    if (n == 0 ){
+                        text("HELLO WORLD", textSize = 32.0).also {
+                            it.setTextBounds(Rectangle(0, 0, 300, 100))
+                            it.alignment = TextAlignment.MIDDLE_CENTER
+                        }
+                    } else {
+                        textBlock(RichTextData("HELLO WORLD áéíóúñ", font = DefaultTtfFontMsdf, textSize = 32.0)).also {
+                            it.setSize(300.0, 100.0)
+                            it.align = TextAlignment.MIDDLE_CENTER
+                        }
+                    }
+                }
+            }
+
+            image(font1.baseBmp).xy(200, 200)
 
             renderableView(viewRenderer = ViewRenderer {
                 ctx2d.rect(0.0, 0.0, 100.0, 100.0, Colors.RED)

@@ -1,6 +1,6 @@
 package com.soywiz.korim.font
 
-import com.soywiz.kds.FastArrayList
+import com.soywiz.kds.*
 import com.soywiz.kmem.toIntCeil
 import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.Bitmap32
@@ -38,7 +38,7 @@ import com.soywiz.korma.geom.vector.applyTransform
 import com.soywiz.korma.geom.vector.getCurves
 import com.soywiz.korma.geom.vector.rect
 
-interface Font : Resourceable<Font> {
+interface Font : Resourceable<Font>, Extra {
     override fun getOrNull() = this
     override suspend fun get() = this
 

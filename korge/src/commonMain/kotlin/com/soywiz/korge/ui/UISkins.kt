@@ -17,8 +17,7 @@ import com.soywiz.korim.bitmap.sliceWithSize
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.color.mix
-import com.soywiz.korim.font.DefaultTtfFont
-import com.soywiz.korim.font.Font
+import com.soywiz.korim.font.*
 import com.soywiz.korim.paint.*
 import com.soywiz.korim.text.TextAlignment
 import com.soywiz.korma.geom.IPoint
@@ -175,7 +174,7 @@ fun UISkin(
 
 val DefaultUIFont get() = DefaultUIVectorFont
 val DefaultUIBitmapFont get() = debugBmpFontSync
-val DefaultUIVectorFont get() = DefaultTtfFont
+val DefaultUIVectorFont get() = DefaultTtfFontMsdf
 
 @ThreadLocal
 private var DEFAULT_UI_SKIN_IMG_OR_NULL: Bitmap32? = null

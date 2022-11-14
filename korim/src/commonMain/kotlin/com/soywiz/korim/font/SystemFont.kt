@@ -1,5 +1,6 @@
 package com.soywiz.korim.font
 
+import com.soywiz.kds.*
 import com.soywiz.korio.lang.WStringReader
 import com.soywiz.korio.resources.Resourceable
 import kotlin.coroutines.CoroutineContext
@@ -8,7 +9,7 @@ import kotlin.coroutines.coroutineContext
 
 suspend fun SystemFont(name: String): SystemFont = SystemFont(name, coroutineContext)
 
-class SystemFont constructor(override val name: String, val coroutineContext: CoroutineContext) : VectorFont, Resourceable<Font> {
+class SystemFont constructor(override val name: String, val coroutineContext: CoroutineContext) : VectorFont, Resourceable<Font>, Extra by Extra.Mixin() {
     override fun hashCode(): Int = name.hashCode()
     override fun equals(other: Any?): Boolean = other is SystemFont && this.name == other.name
     override fun toString(): String = "SystemFont(name=$name)"

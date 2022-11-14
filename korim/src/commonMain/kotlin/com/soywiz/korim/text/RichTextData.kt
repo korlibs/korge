@@ -16,6 +16,12 @@ data class RichTextData(
     val height: Double by lazy { lines.sumOf { it.maxLineHeight } }
     val defaultStyle: Style get() = lines.firstOrNull()?.defaultStyle ?: Style.DEFAULT
 
+    val allFonts: Set<Font> by lazy {
+        mutableSetOf<Font>().also {
+            for (line in lines) it.addAll(line.allFonts)
+        }
+    }
+
     // @TODO: For now, only plain text is supported
     //constructor(vararg node: Node) : this(node.toList())
 
@@ -36,7 +42,13 @@ data class RichTextData(
         val width: Double by lazy { if (nodes.isNotEmpty()) nodes.sumOf { it.width } else 0.0 }
         val maxLineHeight: Double by lazy { if (nodes.isNotEmpty()) nodes.maxOf { it.lineHeight } else TextNode("", defaultStyle).lineHeight }
         val maxHeight: Double by lazy { if (nodes.isNotEmpty()) nodes.maxOf { it.height } else TextNode("", defaultStyle).height }
-
+        val allFonts: Set<Font> by lazy {
+            mutableSetOf<Font>().also {
+                for (node in nodes) {
+                    if (node is TextNode) it.add(node.style.font)
+                }
+            }
+        }
         fun trimSpaces(): Line {
             val out = nodes.toDeque()
             while (true) {
@@ -235,7 +247,7 @@ data class RichTextData(
 
         operator fun invoke(
             text: String,
-            font: Font,
+            font: Font = DefaultTtfFontMsdf,
             textSize: Double = 16.0,
             italic: Boolean = false,
             bold: Boolean = false,
