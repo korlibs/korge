@@ -335,7 +335,7 @@ open class Text(
                     val textWidth = bounds.width
                     val textHeight = bounds.height
 
-                    println("Text.BitmapFont: bounds=$bounds, firstBounds=$firstBounds, textWidth=$textWidth, textHeight=$textHeight, verticalAlign=$verticalAlign")
+                    //println("Text.BitmapFont: bounds=$bounds, firstBounds=$firstBounds, textWidth=$textWidth, textHeight=$textHeight, verticalAlign=$verticalAlign")
 
                     val dx = (textBounds.width - textWidth) * horizontalAlign.ratio
                     //val dx = 0.0

@@ -30,6 +30,14 @@ class MainEditor : Scene() {
             val font2 = resourcesVfs["msdf/SaniTrixieSans.json"].readBitmapFont()
             val font1 = DefaultTtfFontMsdf
 
+            val shape = buildShape {
+                fill(Colors.WHITE) {
+                    write(DefaultTtfFont.get('A')?.path?.path!!)
+                }
+            }
+
+            println(shape.toSvg())
+
             font1.get('A')
             font1.get('a')
             font1.get('0')
