@@ -832,6 +832,8 @@ class AGQueueProcessorOpenGL(
                     prepareTexImage2D()
                     val internalFormat = when {
                         isFloat && (gl.webgl2 || !gl.webgl) -> KmlGl.RGBA32F
+                        //isFloat && (gl.webgl) -> KmlGl.FLOAT
+                        //isFloat && (gl.webgl) -> KmlGl.RGBA
                         else -> type
                     }
                     val format = type

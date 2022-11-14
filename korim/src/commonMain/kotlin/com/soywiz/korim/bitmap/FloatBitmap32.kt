@@ -1,7 +1,9 @@
 package com.soywiz.korim.bitmap
 
+import com.soywiz.kmem.*
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.color.RGBAf
+import kotlin.math.*
 
 class FloatBitmap32(
     width: Int,
@@ -23,6 +25,24 @@ class FloatBitmap32(
         return RGBA.float(data[rindex + 0], data[rindex + 1], data[rindex + 2], data[rindex + 3])
     }
 
+    fun getRed(x: Int, y: Int): Float = data[index4(x, y) + 0]
+    fun getGreen(x: Int, y: Int): Float = data[index4(x, y) + 1]
+    fun getBlue(x: Int, y: Int): Float = data[index4(x, y) + 2]
+    fun getAlpha(x: Int, y: Int): Float = data[index4(x, y) + 3]
+
+    fun setRed(x: Int, y: Int, r: Float) {
+        data[index4(x, y) + 0] = r
+    }
+    fun setGreen(x: Int, y: Int, g: Float) {
+        data[index4(x, y) + 1] = g
+    }
+    fun setBlue(x: Int, y: Int, b: Float) {
+        data[index4(x, y) + 2] = b
+    }
+    fun setAlpha(x: Int, y: Int, a: Float) {
+        data[index4(x, y) + 3] = a
+    }
+
     fun setRgbaf(x: Int, y: Int, r: Float, g: Float, b: Float, a: Float) {
         val rindex = index4(x, y)
         data[rindex + 0] = r
@@ -42,6 +62,58 @@ class FloatBitmap32(
         out.b = data[rindex + 2]
         out.a = data[rindex + 3]
         return out
+    }
+
+    fun getMinMax(out: FloatArray = FloatArray(2)): FloatArray {
+        var min = Float.POSITIVE_INFINITY
+        var max = Float.NEGATIVE_INFINITY
+        val temp = RGBAf()
+        forEach { n, x, y ->
+            val c = getRgbaf(x, y, temp)
+            min = com.soywiz.korma.math.min(min, c.r, c.g, c.b, c.a)
+            max = com.soywiz.korma.math.max(max, c.r, c.g, c.b, c.a)
+        }
+        out[0] = min
+        out[1] = max
+        return out
+    }
+
+    fun convertRange(minSrc: Float, maxSrc: Float, minDst: Float = 0f, maxDst: Float = 1f): Unit {
+        val out = RGBAf()
+        forEach { n, x, y ->
+            val rgbaf = getRgbaf(x, y, out)
+            setRgbaf(x, y,
+                rgbaf.r.convertRange(minSrc, maxSrc, minDst, maxDst),
+                rgbaf.g.convertRange(minSrc, maxSrc, minDst, maxDst),
+                rgbaf.b.convertRange(minSrc, maxSrc, minDst, maxDst),
+                rgbaf.a.convertRange(minSrc, maxSrc, minDst, maxDst),
+            )
+        }
+    }
+
+    fun normalize(): Unit {
+        val (min, max) = getMinMax()
+        convertRange(min, max, 0f, 1f)
+    }
+
+    fun normalizeUniform() {
+        val (min, max) = getMinMax()
+        val range = max(min.absoluteValue, max.absoluteValue)
+        convertRange(-range, +range)
+    }
+
+    fun scale(scale: Float): Unit = scale(scale, scale, scale, scale)
+
+    fun scale(scaleRed: Float = 1f, scaleGreen: Float = 1f, scaleBlue: Float = 1f, scaleAlpha: Float = 1f): Unit {
+        forEach { n, x, y ->
+            setRgbaf(
+                x, y,
+                getRed(x, y) * scaleRed,
+                getGreen(x, y) * scaleGreen,
+                getBlue(x, y) * scaleBlue,
+                getAlpha(x, y) * scaleAlpha,
+            )
+        }
     }
 }
 

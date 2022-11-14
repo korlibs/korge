@@ -88,6 +88,10 @@ fun min(a: Int, b: Int, c: Int, d: Int) = min(min(min(a, b), c), d)
 fun min(a: Float, b: Float, c: Float, d: Float) = min(min(min(a, b), c), d)
 fun min(a: Double, b: Double, c: Double, d: Double) = min(min(min(a, b), c), d)
 
+fun min(a: Int, b: Int, c: Int, d: Int, e: Int) = min(min(min(min(a, b), c), d), e)
+fun min(a: Float, b: Float, c: Float, d: Float, e: Float) = min(min(min(min(a, b), c), d), e)
+fun min(a: Double, b: Double, c: Double, d: Double, e: Double) = min(min(min(min(a, b), c), d), e)
+
 fun max(a: Int, b: Int, c: Int) = max(max(a, b), c)
 fun max(a: Float, b: Float, c: Float) = max(max(a, b), c)
 fun max(a: Double, b: Double, c: Double) = max(max(a, b), c)
@@ -95,3 +99,7 @@ fun max(a: Double, b: Double, c: Double) = max(max(a, b), c)
 fun max(a: Int, b: Int, c: Int, d: Int) = max(max(max(a, b), c), d)
 fun max(a: Float, b: Float, c: Float, d: Float) = max(max(max(a, b), c), d)
 fun max(a: Double, b: Double, c: Double, d: Double) = max(max(max(a, b), c), d)
+
+fun max(a: Int, b: Int, c: Int, d: Int, e: Int) = max(max(max(max(a, b), c), d), e)
+fun max(a: Float, b: Float, c: Float, d: Float, e: Float) = max(max(max(max(a, b), c), d), e)
+fun max(a: Double, b: Double, c: Double, d: Double, e: Double) = max(max(max(max(a, b), c), d), e)

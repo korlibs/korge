@@ -58,6 +58,7 @@ class TextBlock(
         val bmp = NativeImage(width.toIntCeil(), height.toIntCeil())
         //println("ensureTexture: bmp=$bmp")
         image.bitmap = bmp.slice()
+        image.program = (text.defaultStyle.font as? BitmapFont?)?.agProgram
         bmp.context2d {
             drawRichText(
                 text,

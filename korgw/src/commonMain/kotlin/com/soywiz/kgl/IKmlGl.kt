@@ -162,5 +162,18 @@ interface IKmlGl {
     fun vertexAttribDivisor(index: Int, divisor: Int): Unit = unsupported()
     fun renderbufferStorageMultisample(target: Int, samples: Int, internalformat: Int, width: Int, height: Int): Unit = unsupported("Not supported MSAA")
     fun texImage2DMultisample(target: Int, samples: Int, internalformat: Int, width: Int, height: Int, fixedsamplelocations: Boolean): Unit = unsupported("Not supported MSAA")
+
+    fun shaderSourceWithExt(shader: Int, string: String) {
+        val stringLines = string.lines()
+        shaderSource(shader, listOf(
+            // @TODO: This shouldn't be necessary. Just do not include it in the shader source code, and include it here
+            *stringLines.filter { it.startsWith("#version") }.toTypedArray(),
+            "#extension GL_OES_standard_derivatives : enable",
+            "#ifdef GL_ES",
+            "precision mediump float;",
+            "#endif",
+            *stringLines.filter { !it.startsWith("#version") }.toTypedArray(),
+        ).joinToString("\n"))
+    }
 }
 

@@ -15,6 +15,7 @@ data class RichTextData(
     val width: Double by lazy { lines.maxOf { it.width } }
     val height: Double by lazy { lines.sumOf { it.maxLineHeight } }
     val defaultStyle: Style get() = lines.firstOrNull()?.defaultStyle ?: Style.DEFAULT
+
     // @TODO: For now, only plain text is supported
     //constructor(vararg node: Node) : this(node.toList())
 
@@ -79,8 +80,8 @@ data class RichTextData(
     }
 
     data class Style(
-        val textSize: Double,
         val font: Font,
+        val textSize: Double = 16.0,
         val italic: Boolean = false,
         val bold: Boolean = false,
         val underline: Boolean = false,
@@ -234,14 +235,14 @@ data class RichTextData(
 
         operator fun invoke(
             text: String,
-            textSize: Double,
             font: Font,
+            textSize: Double = 16.0,
             italic: Boolean = false,
             bold: Boolean = false,
             underline: Boolean = false,
             color: RGBA = Colors.BLACK,
         ): RichTextData {
-            return RichTextData(text.split("\n").map { Line(TextNode(it, style = Style(textSize, font, italic, bold, underline, color))) })
+            return RichTextData(text.split("\n").map { Line(TextNode(it, style = Style(font, textSize, italic, bold, underline, color))) })
         }
 
         //fun Char.isSymbol(): Boolean {

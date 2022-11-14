@@ -3,6 +3,7 @@ package com.soywiz.korim.font
 import com.soywiz.kds.Extra
 import com.soywiz.kds.IntMap
 import com.soywiz.kds.associateByInt
+import com.soywiz.kds.iterators.*
 import com.soywiz.kds.toIntMap
 import com.soywiz.kds.toMap
 import com.soywiz.kmem.insert
@@ -36,6 +37,7 @@ import com.soywiz.korio.file.baseName
 import com.soywiz.korio.file.baseNameWithoutExtension
 import com.soywiz.korio.lang.WStringReader
 import com.soywiz.korio.lang.substr
+import com.soywiz.korio.serialization.json.*
 import com.soywiz.korio.serialization.xml.Xml
 import com.soywiz.korio.serialization.xml.get
 import com.soywiz.korio.util.unquote
@@ -52,18 +54,19 @@ class BitmapFont(
     val base: Double,
     val glyphs: IntMap<Glyph>,
     val kernings: IntMap<Kerning>,
-    val atlas: Bitmap = glyphs.values.iterator().next()?.texture?.bmpBase ?: Bitmaps.transparent.bmpBase,
-    override val name: String = "BitmapFont"
+    override val name: String = "BitmapFont",
+    val distanceField: String? = null,
 ) : Font, Extra by Extra.Mixin() {
     override fun getOrNull() = this
     override suspend fun get() = this
 
+    val naturalDescent = lineHeight - base
+
     private val naturalFontMetrics by lazy {
         val ascent = base
         val baseline = 0.0
-        val descent = lineHeight - base
         FontMetrics(
-            fontSize, ascent, ascent, baseline, -descent, -descent, 0.0,
+            fontSize, ascent, ascent, baseline, -naturalDescent, -naturalDescent, 0.0,
             maxWidth = run {
                 var width = 0.0
                 for (glyph in glyphs.values) if (glyph != null) width = max(width, glyph.texture.width.toDouble())
@@ -118,12 +121,12 @@ class BitmapFont(
             bmpFill
         }
         beforeDraw?.invoke()
-        ctx.drawImage(bmp, texX, texY - metrics.height, swidth, sheight)
+        ctx.drawImage(bmp, texX, texY - metrics.bottom, swidth, sheight)
         //ctx.drawImage(g.bmp, texX, texY, swidth, sheight)
         return true
     }
 
-    private fun getTextScale(size: Double) = size.toDouble() / fontSize.toDouble()
+    fun getTextScale(size: Double) = size.toDouble() / fontSize.toDouble()
 
 	fun measureWidth(text: String): Int {
 		var x = 0
@@ -147,7 +150,6 @@ class BitmapFont(
         }
     }
 
-
 	data class Glyph(
         val fontSize: Double,
 		val id: Int,
@@ -156,6 +158,8 @@ class BitmapFont(
 		val yoffset: Int,
 		val xadvance: Int
 	) {
+        val texWidth: Int get() = texture.width
+        val texHeight: Int get() = texture.height
         val bmp: Bitmap32 by lazy { texture.extract().toBMP32() }
 
         internal val naturalMetrics = GlyphMetrics(
@@ -165,14 +169,17 @@ class BitmapFont(
         )
     }
 
-	val dummyGlyph by lazy { Glyph(fontSize, -1, Bitmaps.transparent, 0, 0, 0) }
-	val anyGlyph: Glyph by lazy { glyphs[glyphs.keys.iterator().next()] ?: dummyGlyph }
+	val anyGlyph: Glyph by lazy { glyphs[glyphs.keys.iterator().next()] ?: invalidGlyph }
 	val baseBmp: Bitmap by lazy { anyGlyph.texture.bmpBase }
+    val invalidGlyph by lazy { Glyph(fontSize, -1, Bitmaps.transparent, 0, 0, 0) }
 
-	operator fun get(charCode: Int): Glyph = glyphs[charCode] ?: glyphs[32] ?: dummyGlyph
+	operator fun get(charCode: Int): Glyph = glyphs[charCode] ?: glyphs[32] ?: anyGlyph
 	operator fun get(char: Char): Glyph = this[char.toInt()]
 
-	companion object {
+    fun getGlyph(codePoint: Int): Glyph = this[codePoint]
+    fun getGlyph(char: Char): Glyph = this[char]
+
+    companion object {
         /**
          * Creates a new [BitmapFont] of [fontSize] using an existing [Font] ([SystemFont] is valid).
          * Just creates the glyphs specified in [chars].
@@ -201,7 +208,7 @@ class BitmapFont(
                 matlas.add(result.bmp.toBMP32().premultipliedIfRequired(), result)
             }
             val fm = matlas.entries.first().data.fmetrics
-            val atlas = matlas.bitmap
+            val atlas = matlas.bitmap.mipmaps(mipmaps)
             return BitmapFont(
                 fontSize = fontSize,
                 lineHeight = fmetrics.lineHeight,
@@ -214,7 +221,6 @@ class BitmapFont(
                     g.codePoint to Glyph(fontSize, g.codePoint, slice, -border, (border - m.height - m.top).toInt() + fm.ascent.toInt(), m.xadvance.toIntCeil())
                 }.toIntMap(),
                 kernings = IntMap(),
-                atlas = atlas.mipmaps(mipmaps),
                 name = fontName
             )
         }
@@ -232,9 +238,70 @@ suspend fun VfsFile.readBitmapFont(
 
     return when {
         content.startsWith('<') -> readBitmapFontXml(content, fntFile, textures, props, mipmaps, atlas)
+        content.startsWith('{') -> readBitmapFontJson(content, fntFile, textures, props, mipmaps, atlas)
         content.startsWith("info") -> readBitmapFontTxt(content, fntFile, textures, props, mipmaps, atlas)
         else -> TODO("Unsupported font type starting with ${content.substr(0, 16)}")
     }
+}
+
+private suspend fun readBitmapFontJson(
+    content: String,
+    fntFile: VfsFile,
+    textures: HashMap<Int, BitmapSlice<Bitmap>>,
+    props: ImageDecodingProps = ImageDecodingProps.DEFAULT,
+    mipmaps: Boolean = true,
+    atlas: MutableAtlasUnit? = null
+): BitmapFont {
+    val json = Json.parseDyn(content)
+
+    val fontSize = json["info"]["size"].toDoubleDefault(16.0)
+    val lineHeight = json["common"]["lineHeight"].toDoubleDefault(16.0)
+    val base = json["common"]["base"].toDoubleDefault(16.0)
+    val distanceField = json["distanceField"]["fieldType"].toStringOrNull()
+
+    json["pages"].toList().fastForEachWithIndex { id, page ->
+        val file = page.toString()
+        val texFile = fntFile.parent[file]
+        val tex = texFile.readBitmap(props).mipmaps(mipmaps).slice()
+        textures[id] = tex
+    }
+
+    val glyphs = json["chars"].toList().map {
+        val page = it["page"].int
+        val texture = textures[page] ?: textures.values.first()
+        BitmapFont.Glyph(
+            fontSize = fontSize,
+            id = it["id"].int,
+            texture = atlas?.add(texture.sliceWithSize(it["x"].int, it["y"].int, it["width"].int, it["height"].int) as BmpSlice, Unit)?.slice
+                ?: texture.sliceWithSize(it["x"].int, it["y"].int, it["width"].int, it["height"].int),
+            xoffset = it["xoffset"].int,
+            yoffset = it["yoffset"].int,
+            xadvance = it["xadvance"].int,
+        )
+    }
+
+
+    val kernings = json["kernings"].toList().map {
+        BitmapFont.Kerning(
+            first = it["first"].int,
+            second = it["second"].int,
+            amount = it["amount"].int,
+        )
+    }
+
+    return BitmapFont(
+        fontSize = fontSize,
+        lineHeight = lineHeight,
+        base = base,
+        glyphs = glyphs.map { it.id to it }.toMap().toIntMap(),
+        kernings = kernings.map {
+            BitmapFont.Kerning.buildKey(
+                it.first,
+                it.second
+            ) to it
+        }.toMap().toIntMap(),
+        distanceField = distanceField
+    )
 }
 
 private suspend fun readBitmapFontTxt(
@@ -296,7 +363,6 @@ private suspend fun readBitmapFontTxt(
 		}
 	}
 	return BitmapFont(
-        atlas = atlas?.bitmap ?: textures.values.first().bmpBase,
         fontSize = fontSize,
         lineHeight = lineHeight,
         base = base ?: lineHeight,
@@ -320,6 +386,7 @@ private suspend fun readBitmapFontXml(
 	val fontSize = xml["info"].firstOrNull()?.double("size", 16.0) ?: 16.0
 	val lineHeight = xml["common"].firstOrNull()?.double("lineHeight", 16.0) ?: 16.0
 	val base = xml["common"].firstOrNull()?.double("base", 16.0) ?: 16.0
+    val distanceField = xml["distanceField"].firstOrNull()?.strNull("fieldType")
 
 	for (page in xml["pages"]["page"]) {
 		val id = page.int("id")
@@ -352,7 +419,6 @@ private suspend fun readBitmapFontXml(
 	}
 
 	return BitmapFont(
-        atlas = atlas?.bitmap ?: textures.values.first().bmpBase,
         fontSize = fontSize,
         lineHeight = lineHeight,
         base = base,
@@ -362,7 +428,8 @@ private suspend fun readBitmapFontXml(
                 it.first,
                 it.second
             ) to it
-        }.toMap().toIntMap()
+        }.toMap().toIntMap(),
+        distanceField = distanceField
     )
 }
 
@@ -382,13 +449,13 @@ fun Bitmap32.drawText(
 }
 
 fun Font.toBitmapFont(
-        fontSize: Number,
-        chars: CharacterSet = CharacterSet.LATIN_ALL,
-        fontName: String = this.name,
-        paint: Paint = Colors.WHITE,
-        mipmaps: Boolean = true,
-        effect: BitmapEffect? = null,
-) = BitmapFont(this, fontSize, chars, fontName, paint, mipmaps, effect)
+    fontSize: Number,
+    chars: CharacterSet = CharacterSet.LATIN_ALL,
+    fontName: String = this.name,
+    paint: Paint = Colors.WHITE,
+    mipmaps: Boolean = true,
+    effect: BitmapEffect? = null,
+): BitmapFont = BitmapFont(this, fontSize, chars, fontName, paint, mipmaps, effect)
 
 suspend fun BitmapFont.writeToFile(out: VfsFile, writeBitmap: Boolean = true) {
     val font = this

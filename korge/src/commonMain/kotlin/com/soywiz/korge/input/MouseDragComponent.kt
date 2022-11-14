@@ -22,6 +22,8 @@ open class MouseDragInfo(
     var cx: Double = 0.0,
     var cy: Double = 0.0,
 ) {
+    override fun toString(): String = "MouseDragInfo(start=$start, end=$end, sx=$sx, sy=$sy, cx=$cx, cy=$cy)"
+
     lateinit var mouseEvents: MouseEvents
     val elapsed: TimeSpan get() = time - startTime
 

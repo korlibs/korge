@@ -27,7 +27,7 @@ class KmlGlProgram(val gl: KmlGl, val program: Int, val vertex: Int, val fragmen
 
 private fun KmlGl.createShader(type: Int, source: String): Int {
 	val shader = createShader(type)
-	shaderSource(shader, source)
+	shaderSourceWithExt(shader, source)
 	compileShaderAndCheck(shader)
 	return shader
 }

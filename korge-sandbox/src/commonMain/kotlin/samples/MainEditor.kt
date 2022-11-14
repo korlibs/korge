@@ -1,20 +1,83 @@
 package samples
 
 import com.soywiz.klock.*
+import com.soywiz.korev.*
 import com.soywiz.korge.animate.*
+import com.soywiz.korge.input.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.scene.Scene
+import com.soywiz.korge.text.*
 import com.soywiz.korge.tween.*
 import com.soywiz.korge.ui.*
 import com.soywiz.korge.view.*
+import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.font.*
+import com.soywiz.korim.format.*
 import com.soywiz.korim.text.*
+import com.soywiz.korim.vector.*
+import com.soywiz.korio.file.std.*
 import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.vector.*
+import kotlin.math.*
 
 class MainEditor : Scene() {
     override suspend fun SContainer.sceneMain() {
         //solidRect(width, height, Colors.WHITE)
+
+        if (true) {
+            //val font1 = resourcesVfs["msdf/SaniTrixieSans.fnt"].readBitmapFont()
+            //val font1 = resourcesVfs["msdf/SaniTrixieSans.json"].readBitmapFont()
+            val font1 = resourcesVfs["msdf/SaniTrixieSans.json"].readBitmapFont()
+
+            renderableView(viewRenderer = ViewRenderer {
+                ctx2d.rect(0.0, 0.0, 100.0, 100.0, Colors.RED)
+                //ctx2d.drawText("HELLO WORLD!", font1, textSize = 128.0)
+                ctx2d.drawText(RichTextData.fromHTML("HELLO, World! <b>this</b> ia test!", RichTextData.Style(textSize = 64.0, font = font1, color = Colors.WHITE)))
+            })
+
+            //textBlock(RichTextData("hello world!", 128.0, font1, color = Colors.WHITE), width = 1024.0, height = 1024.0)
+            return
+
+            val image = text("HELLO, World! this ia test!", font = font1, color = Colors.WHITE)
+
+            //val image = image(resourcesVfs["msdf/SaniTrixieSans.png"].readBitmap().mipmaps()).scale(0.25).also {
+            //    it.program = MsdfRender.PROGRAM_MSDF_I
+            //}
+
+            /*
+        val rfont = DefaultTtfFont
+        val size = 48.0
+        val codePoint = 'e'.code
+        val metrics = rfont.getGlyphMetrics(size, codePoint)
+        val glyph = rfont.getGlyphPath(size, codePoint)
+
+        //val metrics = glyph.metrics1px
+        println("metrics=$metrics, DefaultTtfFont.unitsPerEm=${DefaultTtfFont.unitsPerEm}")
+        println("glyph!!.path.path=${glyph!!.path.toSvgString()}")
+        val msdf = glyph!!.path.clone().applyTransform(glyph.transform * Matrix().translate(0.0 + size / 4, metrics.height + size / 4)).msdf(size.toInt(), size.toInt())
+        msdf.normalizeUniform()
+
+        val image = image(msdf.toBMP32().mipmaps().slice()).xy(100, 100).scale(0.24).also {
+            //it.program = MsdfRender.PROGRAM_MSDF
+            it.program = MsdfRender.PROGRAM_SDF_A
+        }
+         */
+
+            keys {
+                down(Key.RETURN) {
+                    //image.program = if (image.program == MsdfRender.PROGRAM_SDF_A) MsdfRender.PROGRAM_MSDF else MsdfRender.PROGRAM_SDF_A
+                    //println("TOGGLED PROGRAM!: ${image.program?.name}")
+                }
+            }
+
+            image.simpleAnimator.sequence(looped = true) {
+                tween(image::scale[10.0], time = 3.seconds)
+                tween(image::scale[0.25], time = 3.seconds)
+            }
+
+            return
+        }
 
         val font2 = DefaultTtfFont.toBitmapFont(16.0, CharacterSet.LATIN_ALL + CharacterSet.CYRILLIC)
         //val font2 = DefaultTtfFont

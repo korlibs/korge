@@ -59,7 +59,7 @@ typealias ColorPaint = RGBA
 /**
  * Paints a default color. For BitmapFonts, draw the original Bitmap without tinting.
  */
-val DefaultPaint get() = Colors.BLACK
+val DefaultPaint: RGBA get() = Colors.BLACK
 
 interface TransformedPaint : Paint {
     val transform: Matrix
