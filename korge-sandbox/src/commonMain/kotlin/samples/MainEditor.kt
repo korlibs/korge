@@ -26,7 +26,8 @@ class MainEditor : Scene() {
         //solidRect(width, height, Colors.WHITE)
 
         //val font1 = resourcesVfs["msdf/SaniTrixieSans.fnt"].readBitmapFont()
-        val font1 = resourcesVfs["msdf/SaniTrixieSans.json"].readBitmapFont()
+        //val font1 = resourcesVfs["msdf/SaniTrixieSans.json"].readBitmapFont()
+        val font1 = resourcesVfs["sdf/SaniTrixieSans.json"].readBitmapFont()
 
         val image = text("HELLO, World! this ia test!", font = font1)
 

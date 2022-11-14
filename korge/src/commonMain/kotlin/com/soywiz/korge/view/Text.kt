@@ -285,6 +285,8 @@ open class Text(
 
     val BitmapFont.program: Program? get() = when (distanceField) {
         "msdf" -> MsdfRender.PROGRAM_MSDF
+        "psdf" -> MsdfRender.PROGRAM_SDF_A
+        "sdf" -> MsdfRender.PROGRAM_SDF_A
         else -> null
     }
 
