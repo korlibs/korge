@@ -4,8 +4,8 @@ import com.soywiz.korim.font.*
 import kotlin.test.*
 
 class RichTextDataTest {
-    //val data = RichTextData(RichTextData.Node("hello, world", 16.0, DefaultTtfFont))
-    val style = RichTextData.Style(16.0, DefaultTtfFont)
+    //val data = RichTextData(RichTextData.Node("hello, world", DefaultTtfFont, 16.0))
+    val style = RichTextData.Style(DefaultTtfFont, 16.0)
 
 
     @Test
@@ -33,26 +33,26 @@ class RichTextDataTest {
 
     @Test
     fun testConstructSingle() {
-        val data2 = RichTextData("hello\nworld!", 16.0, DefaultTtfFont)
+        val data2 = RichTextData("hello\nworld!", DefaultTtfFont, 16.0)
         assertEquals("hello\nworld!", data2.text)
     }
 
     @Test
     fun testLimitEx() {
-        val data = RichTextData("hello\nworld!", 16.0, DefaultTtfFont)
+        val data = RichTextData("hello\nworld!", DefaultTtfFont, 16.0)
         assertEquals("hello\nworld!", data.text)
         assertEquals("hello\nworl\nd!", data.wordWrap(32.0).text)
     }
 
     @Test
     fun testCombine() {
-        val data = RichTextData("hello\nworld!", 16.0, DefaultTtfFont) + RichTextData("demo\ntest", 16.0, DefaultTtfFont)
+        val data = RichTextData("hello\nworld!", DefaultTtfFont, 16.0) + RichTextData("demo\ntest", DefaultTtfFont, 16.0)
         assertEquals("hello\nworld!demo\ntest", data.text)
     }
 
     @Test
     fun testLimitHeight() {
-        val data = RichTextData("hello\nworld!", 16.0, DefaultTtfFont)
+        val data = RichTextData("hello\nworld!", DefaultTtfFont, 16.0)
         assertEquals("hello", data.limitHeight(16.0,).text)
         assertEquals("hello\nworld!", data.limitHeight(24.0, includePartialLines = true).text)
         assertEquals("hello", data.limitHeight(24.0, includePartialLines = false).text)
@@ -60,7 +60,7 @@ class RichTextDataTest {
 
     @Test
     fun testLimitAll() {
-        val data = RichTextData("hello\nworld!", 16.0, DefaultTtfFont)
+        val data = RichTextData("hello\nworld!", DefaultTtfFont, 16.0)
         assertEquals("hello...", data.limit(64.0, 16.0, ellipsis = "...").text)
         assertEquals("hell...", data.limit(32.0, 16.0, ellipsis = "...").text)
         assertEquals("h...", data.limit(24.0, 16.0, ellipsis = "...").text)
