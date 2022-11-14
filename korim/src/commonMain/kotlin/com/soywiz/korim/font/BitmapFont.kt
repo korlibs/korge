@@ -3,6 +3,7 @@ package com.soywiz.korim.font
 import com.soywiz.kds.Extra
 import com.soywiz.kds.IntMap
 import com.soywiz.kds.associateByInt
+import com.soywiz.kds.iterators.*
 import com.soywiz.kds.toIntMap
 import com.soywiz.kds.toMap
 import com.soywiz.kmem.insert
@@ -36,6 +37,7 @@ import com.soywiz.korio.file.baseName
 import com.soywiz.korio.file.baseNameWithoutExtension
 import com.soywiz.korio.lang.WStringReader
 import com.soywiz.korio.lang.substr
+import com.soywiz.korio.serialization.json.*
 import com.soywiz.korio.serialization.xml.Xml
 import com.soywiz.korio.serialization.xml.get
 import com.soywiz.korio.util.unquote
@@ -233,9 +235,72 @@ suspend fun VfsFile.readBitmapFont(
 
     return when {
         content.startsWith('<') -> readBitmapFontXml(content, fntFile, textures, props, mipmaps, atlas)
+        content.startsWith('{') -> readBitmapFontJson(content, fntFile, textures, props, mipmaps, atlas)
         content.startsWith("info") -> readBitmapFontTxt(content, fntFile, textures, props, mipmaps, atlas)
         else -> TODO("Unsupported font type starting with ${content.substr(0, 16)}")
     }
+}
+
+private suspend fun readBitmapFontJson(
+    content: String,
+    fntFile: VfsFile,
+    textures: HashMap<Int, BitmapSlice<Bitmap>>,
+    props: ImageDecodingProps = ImageDecodingProps.DEFAULT,
+    mipmaps: Boolean = true,
+    atlas: MutableAtlasUnit? = null
+): BitmapFont {
+    val json = Json.parse(content).dyn
+
+
+    val fontSize = json["info"]["size"].toDoubleDefault(16.0)
+    val lineHeight = json["common"]["lineHeight"].toDoubleDefault(16.0)
+    val base = json["common"]["base"].toDoubleDefault(16.0)
+    val distanceField = json["distanceField"]["fieldType"].toStringOrNull()
+
+    json["pages"].toList().fastForEachWithIndex { id, page ->
+        val file = page.toString()
+        val texFile = fntFile.parent[file]
+        val tex = texFile.readBitmap(props).mipmaps(mipmaps).slice()
+        textures[id] = tex
+    }
+
+    val glyphs = json["chars"].toList().map {
+        val page = it["page"].int
+        val texture = textures[page] ?: textures.values.first()
+        BitmapFont.Glyph(
+            fontSize = fontSize,
+            id = it["id"].int,
+            texture = atlas?.add(texture.sliceWithSize(it["x"].int, it["y"].int, it["width"].int, it["height"].int) as BmpSlice, Unit)?.slice
+                ?: texture.sliceWithSize(it["x"].int, it["y"].int, it["width"].int, it["height"].int),
+            xoffset = it["xoffset"].int,
+            yoffset = it["yoffset"].int,
+            xadvance = it["xadvance"].int,
+        )
+    }
+
+
+    val kernings = json["kernings"].toList().map {
+        BitmapFont.Kerning(
+            first = it["first"].int,
+            second = it["second"].int,
+            amount = it["amount"].int,
+        )
+    }
+
+    return BitmapFont(
+        atlas = atlas?.bitmap ?: textures.values.first().bmpBase,
+        fontSize = fontSize,
+        lineHeight = lineHeight,
+        base = base,
+        glyphs = glyphs.map { it.id to it }.toMap().toIntMap(),
+        kernings = kernings.map {
+            BitmapFont.Kerning.buildKey(
+                it.first,
+                it.second
+            ) to it
+        }.toMap().toIntMap(),
+        distanceField = distanceField
+    )
 }
 
 private suspend fun readBitmapFontTxt(
