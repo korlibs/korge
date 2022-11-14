@@ -63,7 +63,7 @@ abstract class ImageFormat(vararg exts: String) : ImageFormatDecoder {
 
 	suspend fun read(file: VfsFile) = this.read(file.readAsSyncStream(), file.baseName)
 	//fun read(file: File) = this.read(file.openSync(), file.name)
-	fun read(s: ByteArray, filename: String = "unknown"): Bitmap = read(s.openSync(), filename)
+	fun read(s: ByteArray, filename: String): Bitmap = read(s.openSync(), filename)
 
 	fun read(s: SyncStream, props: ImageDecodingProps = ImageDecodingProps.DEFAULT): Bitmap = readImage(s, props).mainBitmap
 	//fun read(file: File, props: ImageDecodingProps = ImageDecodingProps()) = this.read(file.openSync(), props.copy(filename = file.name))
