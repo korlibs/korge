@@ -1,11 +1,13 @@
 package com.soywiz.korge.view
 
+import com.soywiz.korag.shader.*
 import com.soywiz.korge.debug.UiTextEditableValue
 import com.soywiz.korge.debug.uiCollapsibleSection
 import com.soywiz.korge.debug.uiEditableValue
 import com.soywiz.korge.html.Html
 import com.soywiz.korge.render.RenderContext
 import com.soywiz.korge.render.TexturedVertexArray
+import com.soywiz.korge.text.*
 import com.soywiz.korge.view.filter.backdropFilter
 import com.soywiz.korge.view.filter.filter
 import com.soywiz.korim.bitmap.Bitmaps
@@ -250,8 +252,9 @@ open class Text(
             tempMatrix.copyFrom(globalMatrix)
             tempMatrix.pretranslate(container.x, container.y)
             ctx.useBatcher { batch ->
-                val tex = (font as BitmapFont).baseBmp
-                batch.setStateFast(tex, smoothing, renderBlendMode, null, icount = tva.icount, vcount = tva.vcount)
+                val bmpfont = font as BitmapFont
+                val tex = bmpfont.baseBmp
+                batch.setStateFast(tex, smoothing, renderBlendMode, bmpfont.program, icount = tva.icount, vcount = tva.vcount)
                 batch.drawVertices(tva, tempMatrix, premultiplied = tex.premultiplied, wrap = false)
             }
         } else {
@@ -279,6 +282,11 @@ open class Text(
     private var lastNativeRendering: Boolean? = null
     private var tva: TexturedVertexArray? = null
     private val identityMat = Matrix()
+
+    val BitmapFont.program: Program? get() = when (distanceField) {
+        "msdf" -> MsdfRender.PROGRAM_MSDF
+        else -> null
+    }
 
     var graphicsRenderer: GraphicsRenderer = GraphicsRenderer.SYSTEM
         set(value) {
@@ -348,12 +356,14 @@ open class Text(
                         this.tva = TexturedVertexArray.forQuads(bitmapFontActions.size)
                     }
 
+                    val program = font.program
                     for (n in 0 until bitmapFontActions.size) {
                         val entry = bitmapFontActions.read(n, tempBmpEntry)
                         if (newTvaRenderer) {
                             tva?.quad(n * 4, entry.x + dx, entry.y, entry.tex.width * entry.sx, entry.tex.height * entry.sy, identityMat, entry.tex, renderColorMul, renderColorAdd)
                         } else {
                             val it = (container[n] as Image)
+                            it.program = program
                             it.colorMul = color // @TODO: When doing black, all colors are lost even if the glyph is a colorized image
                             it.anchor(0, 0)
                             it.smoothing = smoothing

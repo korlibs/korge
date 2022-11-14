@@ -53,7 +53,8 @@ class BitmapFont(
     val glyphs: IntMap<Glyph>,
     val kernings: IntMap<Kerning>,
     val atlas: Bitmap = glyphs.values.iterator().next()?.texture?.bmpBase ?: Bitmaps.transparent.bmpBase,
-    override val name: String = "BitmapFont"
+    override val name: String = "BitmapFont",
+    val distanceField: String? = null,
 ) : Font, Extra by Extra.Mixin() {
     override fun getOrNull() = this
     override suspend fun get() = this
@@ -320,6 +321,7 @@ private suspend fun readBitmapFontXml(
 	val fontSize = xml["info"].firstOrNull()?.double("size", 16.0) ?: 16.0
 	val lineHeight = xml["common"].firstOrNull()?.double("lineHeight", 16.0) ?: 16.0
 	val base = xml["common"].firstOrNull()?.double("base", 16.0) ?: 16.0
+    val distanceField = xml["distanceField"].firstOrNull()?.strNull("fieldType")
 
 	for (page in xml["pages"]["page"]) {
 		val id = page.int("id")
@@ -362,7 +364,8 @@ private suspend fun readBitmapFontXml(
                 it.first,
                 it.second
             ) to it
-        }.toMap().toIntMap()
+        }.toMap().toIntMap(),
+        distanceField = distanceField
     )
 }
 
@@ -382,13 +385,13 @@ fun Bitmap32.drawText(
 }
 
 fun Font.toBitmapFont(
-        fontSize: Number,
-        chars: CharacterSet = CharacterSet.LATIN_ALL,
-        fontName: String = this.name,
-        paint: Paint = Colors.WHITE,
-        mipmaps: Boolean = true,
-        effect: BitmapEffect? = null,
-) = BitmapFont(this, fontSize, chars, fontName, paint, mipmaps, effect)
+    fontSize: Number,
+    chars: CharacterSet = CharacterSet.LATIN_ALL,
+    fontName: String = this.name,
+    paint: Paint = Colors.WHITE,
+    mipmaps: Boolean = true,
+    effect: BitmapEffect? = null,
+): BitmapFont = BitmapFont(this, fontSize, chars, fontName, paint, mipmaps, effect)
 
 suspend fun BitmapFont.writeToFile(out: VfsFile, writeBitmap: Boolean = true) {
     val font = this

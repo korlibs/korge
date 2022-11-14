@@ -416,6 +416,16 @@ data class Program(val vertex: VertexShader, val fragment: FragmentShader, val n
         fun max(a: Operand, b: Operand): Operand = Func("max", a, b)
         fun mod(a: Operand, b: Operand): Operand = Func("mod", a, b)
 
+        // https://learnwebgl.brown37.net/12_shader_language/documents/webgl-reference-card-1_0.pdf
+        // #extension GL_OES_standard_derivatives : enable
+        // https://stackoverflow.com/questions/68573364/enable-extension-and-fwidth-in-glsl
+        fun fwidth(a: Operand): Operand = Func("fwidth", a)
+        fun dFdx(a: Operand): Operand = Func("dFdx", a)
+        fun dFdy(a: Operand): Operand = Func("dFdy", a)
+
+        //lessThan
+
+
         //@JvmName("modInfix") infix fun Operand.mod(that: Operand): Operand = mod(this, that)
 
         fun mix(a: Operand, b: Operand, step: Operand): Operand =

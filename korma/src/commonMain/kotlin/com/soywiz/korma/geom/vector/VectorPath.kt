@@ -326,7 +326,8 @@ class VectorPath(
 
         return _scanline!!
     }
-    fun containsPoint(x: Double, y: Double, winding: Winding): Boolean = trapezoids.containsPoint(x, y, winding)
+    fun containsPoint(x: Double, y: Double, winding: Winding): Boolean = scanline.containsPoint(x, y, winding)
+    //fun containsPoint(x: Double, y: Double, winding: Winding): Boolean = trapezoids.containsPoint(x, y, winding) // @TODO: This is not working properly!
     fun containsPoint(x: Int, y: Int, winding: Winding): Boolean = containsPoint(x.toDouble(), y.toDouble(), winding)
     fun containsPoint(x: Float, y: Float, winding: Winding): Boolean = containsPoint(x.toDouble(), y.toDouble(), winding)
 

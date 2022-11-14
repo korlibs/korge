@@ -29,12 +29,18 @@ import kotlin.math.min
 class KmlGlJsCanvas(val canvas: HTMLCanvasElement, val glOpts: dynamic) : KmlGlWithExtensions() {
     var webglVersion = 1
     val gl = (null
-            ?: canvas.getContext("webgl2", glOpts)?.also { webglVersion = 2 }
+            //?: canvas.getContext("webgl2", glOpts)?.also { webglVersion = 2 }
             ?: canvas.getContext("webgl", glOpts)
             ?: canvas.getContext("experimental-webgl", glOpts)
         ).unsafeCast<WebGLRenderingContext?>()
         ?.also {
             println("Created WebGL version=$webglVersion, opts=${JSON.stringify(glOpts)}")
+        }
+        ?.also {
+            it.getExtension("OES_standard_derivatives")
+            it.getExtension("OES_texture_float")
+            it.getExtension("OES_texture_float_linear")
+            Unit
         }
         ?: run {
             try {
@@ -180,7 +186,15 @@ class KmlGlJsCanvas(val canvas: HTMLCanvasElement, val glOpts: dynamic) : KmlGlW
     override fun sampleCoverage(value: Float, invert: Boolean): Unit = gl.sampleCoverage(value, invert)
     override fun scissor(x: Int, y: Int, width: Int, height: Int): Unit = gl.scissor(x, y, width, height)
     override fun shaderBinary(count: Int, shaders: FBuffer, binaryformat: Int, binary: FBuffer, length: Int): Unit = throw KmlGlException("shaderBinary not implemented in Webgl")
-    override fun shaderSource(shader: Int, string: String) { gl.shaderSource(shader.get(), "#ifdef GL_ES\nprecision mediump float;\n#endif\n$string") }
+    override fun shaderSource(shader: Int, string: String) {
+        gl.shaderSource(shader.get(), listOf(
+            "#extension GL_OES_standard_derivatives : enable",
+            "#ifdef GL_ES",
+            "precision mediump float;",
+            "#endif",
+            string
+        ).joinToString("\n"))
+    }
     override fun stencilFunc(func: Int, ref: Int, mask: Int): Unit = gl.stencilFunc(func, ref, mask)
     override fun stencilFuncSeparate(face: Int, func: Int, ref: Int, mask: Int): Unit = gl.stencilFuncSeparate(face, func, ref, mask)
     override fun stencilMask(mask: Int): Unit = gl.stencilMask(mask)

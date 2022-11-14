@@ -114,7 +114,15 @@ class KmlGlAndroid(val clientVersion: () -> Int) : KmlGlWithExtensions() {
     override fun sampleCoverage(value: Float, invert: Boolean): Unit = glSampleCoverage(value, invert)
     override fun scissor(x: Int, y: Int, width: Int, height: Int): Unit = glScissor(x, y, width, height)
     override fun shaderBinary(count: Int, shaders: FBuffer, binaryformat: Int, binary: FBuffer, length: Int): Unit = glShaderBinary(count, shaders.nioIntBuffer, binaryformat, binary.nioBuffer, length)
-    override fun shaderSource(shader: Int, string: String): Unit = glShaderSource(shader, string)
+    override fun shaderSource(shader: Int, string: String): Unit {
+        glShaderSource(shader, listOf(
+            "#extension GL_OES_standard_derivatives : enable",
+            "#ifdef GL_ES",
+            "precision mediump float;",
+            "#endif",
+            string
+        ).joinToString("\n"))
+    }
     override fun stencilFunc(func: Int, ref: Int, mask: Int): Unit = glStencilFunc(func, ref, mask)
     override fun stencilFuncSeparate(face: Int, func: Int, ref: Int, mask: Int): Unit = glStencilFuncSeparate(face, func, ref, mask)
     override fun stencilMask(mask: Int): Unit = glStencilMask(mask)
