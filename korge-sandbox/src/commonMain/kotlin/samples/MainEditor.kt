@@ -16,6 +16,7 @@ import com.soywiz.korim.font.*
 import com.soywiz.korim.format.*
 import com.soywiz.korim.text.*
 import com.soywiz.korim.vector.*
+import com.soywiz.korim.vector.format.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
@@ -24,6 +25,39 @@ import kotlin.math.*
 class MainEditor : Scene() {
     override suspend fun SContainer.sceneMain() {
         //solidRect(width, height, Colors.WHITE)
+
+        val Apath = resourcesVfs["A.svg"].readSVG().toShape().getPath()
+        println(Apath.toSvgString())
+
+        val msdf = Apath.msdf(64, 64)
+        msdf.scale(-1f)
+        msdf.normalizeUniform()
+        val msdfBitmap = msdf.toBMP32()
+
+        image(resourcesVfs["output.png"].readBitmap().mipmaps()) {
+            xy(196 * 0, 0)
+            scale = 3.0
+        }
+
+        image(resourcesVfs["output.png"].readBitmap().mipmaps()) {
+            xy(196 * 1, 0)
+            scale = 3.0
+            program = MsdfRender.PROGRAM_MSDF
+        }
+
+        image(msdfBitmap) {
+            xy(196 * 2, 0)
+            scale = 3.0
+        }
+
+        image(msdfBitmap) {
+            xy(196 * 3, 0)
+            scale = 3.0
+            program = MsdfRender.PROGRAM_MSDF
+        }
+
+
+        return
 
         if (true) {
             //val font1 = resourcesVfs["msdf/SaniTrixieSans.fnt"].readBitmapFont()
