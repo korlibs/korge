@@ -217,6 +217,7 @@ open class UIScrollable(width: Double, height: Double) : UIView(width, height) {
 
         contentContainer.onMouseDrag {
             overflowEnabled = true
+            //println("DRAG: $it")
             if (it.start) {
                 showScrollBar()
                 dragging = true

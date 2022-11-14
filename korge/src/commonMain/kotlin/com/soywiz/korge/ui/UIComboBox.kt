@@ -117,7 +117,8 @@ open class UIComboBox<T>(
             views?.openedComboBox = this
         }
 
-        containerRoot.addChild(itemsView)
+        itemsView.visible = true
+        //containerRoot.addChild(itemsView)
 
         //itemsView.size(width, viewportHeight.toDouble()).position(0.0, height)
         itemsView.size(width, viewportHeight.toDouble()).setGlobalXY(localToGlobal(Point(0.0, height)))
@@ -138,7 +139,8 @@ open class UIComboBox<T>(
             }
         }
 
-        itemsView.removeFromParent()
+        //itemsView.removeFromParent()
+        itemsView.visible = false
         showItems = false
         updateProps()
     }
