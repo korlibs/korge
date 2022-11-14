@@ -119,7 +119,16 @@ actual class KmlGlNative constructor(override val gles: Boolean) : NativeBaseKml
         memScoped {
             val lengths = allocArray<IntVar>(1)
             val strings = allocArray<CPointerVar<ByteVar>>(1)
-            strings[0] = string.cstr.placeTo(this)
+            val stringLines = string.lines()
+            val str = listOf(
+                *stringLines.filter { it.startsWith("#version") }.toTypedArray(),
+                "#extension GL_OES_standard_derivatives : enable",
+                //"#ifdef GL_ES",
+                //"precision mediump float;",
+                //"#endif",
+                *stringLines.filter { !it.startsWith("#version") }.toTypedArray()
+            ).joinToString("\n")
+            strings[0] = str.cstr.placeTo(this)
             lengths[0] = strlen(strings[0]).convert()
             glShaderSource(shader.convert(), 1.convert(), strings.reinterpret(), lengths.reinterpret())
         }
