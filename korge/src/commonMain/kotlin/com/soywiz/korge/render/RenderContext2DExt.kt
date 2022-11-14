@@ -1,9 +1,13 @@
 package com.soywiz.korge.render
 
+import com.soywiz.kds.iterators.*
 import com.soywiz.korag.shader.*
 import com.soywiz.korge.annotations.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.color.*
+import com.soywiz.korim.font.*
+import com.soywiz.korim.paint.*
+import com.soywiz.korim.text.*
 import com.soywiz.korma.geom.*
 
 // https://www.shadertoy.com/view/WtdSDs
@@ -92,5 +96,55 @@ fun RenderContext2D.materialRoundRect(
         _tempProgramUniforms[MaterialRender.u_ShadowOffset] = Point(shadowOffset.x, shadowOffset.y)
         _tempProgramUniforms[MaterialRender.u_ShadowRadius] = shadowRadius
         quadPaddedCustomProgram(x, y, width, height, MaterialRender.PROGRAM, _tempProgramUniforms, Margin(shadowRadius + shadowOffset.length))
+    }
+}
+
+@KorgeExperimental
+fun RenderContext2D.drawText(
+    text: RichTextData,
+    x: Double = 0.0,
+    y: Double = 0.0,
+    width: Double = 10000.0,
+    height: Double = 10000.0,
+    wordWrap: Boolean = true,
+    includePartialLines: Boolean = false,
+    ellipsis: String? = null,
+    fill: Paint? = null,
+    stroke: Stroke? = null,
+    align: TextAlignment = TextAlignment.TOP_LEFT,
+) {
+    val placements = text.place(Rectangle(x, y, width, height), wordWrap, includePartialLines, ellipsis, fill, stroke, align)
+    placements.fastForEach { it ->
+        val bmpFont = it.font as? BitmapFont?
+        if (bmpFont != null) {
+            drawText(it.text, bmpFont, it.size, it.x, it.y, (it.fillStyle as? RGBA?) ?: Colors.WHITE, baseline = true)
+        }
+    }
+}
+
+@KorgeExperimental
+fun RenderContext2D.drawText(
+    text: String,
+    font: BitmapFont,
+    textSize: Double = 16.0,
+    x: Double = 0.0,
+    y: Double = 0.0,
+    color: RGBA = Colors.WHITE,
+    baseline: Boolean = false
+    //stroke: Stroke?,
+) {
+    val scale = font.getTextScale(textSize)
+    var sx = x
+    val sy = y + if (baseline) -font.base * scale else 0.0
+    for (char in text) {
+        val glyph = font.getGlyph(char)
+        rect(
+            sx + glyph.xoffset * scale,
+            sy + glyph.yoffset * scale,
+            glyph.texWidth.toDouble() * scale,
+            glyph.texHeight.toDouble() * scale,
+            color, true, glyph.texture, font.agProgram,
+        )
+        sx += glyph.xadvance * scale
     }
 }

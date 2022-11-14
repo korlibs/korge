@@ -145,9 +145,9 @@ class RenderContext2D(
 	}
 
     /** Renders a colored rectangle with the [multiplyColor] with the [blendMode] at [x], [y] of size [width]x[height] */
-    fun rect(x: Double, y: Double, width: Double, height: Double, color: RGBA = this.multiplyColor, filtering: Boolean = this.filtering) {
+    fun rect(x: Double, y: Double, width: Double, height: Double, color: RGBA = this.multiplyColor, filtering: Boolean = this.filtering, bmp: BmpSlice = Bitmaps.white, program: Program? = null) {
         batch.drawQuad(
-            getTexture(Bitmaps.white),
+            getTexture(bmp),
             x.toFloat(),
             y.toFloat(),
             width.toFloat(),
@@ -156,8 +156,9 @@ class RenderContext2D(
             m = m,
             colorMul = color,
             blendMode = blendMode,
-            premultiplied = Bitmaps.white.premultiplied,
+            premultiplied = bmp.premultiplied,
             wrap = false,
+            program = program,
         )
     }
 

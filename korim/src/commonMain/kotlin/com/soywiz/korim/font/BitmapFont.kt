@@ -54,19 +54,19 @@ class BitmapFont(
     val base: Double,
     val glyphs: IntMap<Glyph>,
     val kernings: IntMap<Kerning>,
-    val atlas: Bitmap = glyphs.values.iterator().next()?.texture?.bmpBase ?: Bitmaps.transparent.bmpBase,
     override val name: String = "BitmapFont",
     val distanceField: String? = null,
 ) : Font, Extra by Extra.Mixin() {
     override fun getOrNull() = this
     override suspend fun get() = this
 
+    val naturalDescent = lineHeight - base
+
     private val naturalFontMetrics by lazy {
         val ascent = base
         val baseline = 0.0
-        val descent = lineHeight - base
         FontMetrics(
-            fontSize, ascent, ascent, baseline, -descent, -descent, 0.0,
+            fontSize, ascent, ascent, baseline, -naturalDescent, -naturalDescent, 0.0,
             maxWidth = run {
                 var width = 0.0
                 for (glyph in glyphs.values) if (glyph != null) width = max(width, glyph.texture.width.toDouble())
@@ -121,12 +121,12 @@ class BitmapFont(
             bmpFill
         }
         beforeDraw?.invoke()
-        ctx.drawImage(bmp, texX, texY - metrics.height, swidth, sheight)
+        ctx.drawImage(bmp, texX, texY - metrics.bottom, swidth, sheight)
         //ctx.drawImage(g.bmp, texX, texY, swidth, sheight)
         return true
     }
 
-    private fun getTextScale(size: Double) = size.toDouble() / fontSize.toDouble()
+    fun getTextScale(size: Double) = size.toDouble() / fontSize.toDouble()
 
 	fun measureWidth(text: String): Int {
 		var x = 0
@@ -150,7 +150,6 @@ class BitmapFont(
         }
     }
 
-
 	data class Glyph(
         val fontSize: Double,
 		val id: Int,
@@ -159,6 +158,8 @@ class BitmapFont(
 		val yoffset: Int,
 		val xadvance: Int
 	) {
+        val texWidth: Int get() = texture.width
+        val texHeight: Int get() = texture.height
         val bmp: Bitmap32 by lazy { texture.extract().toBMP32() }
 
         internal val naturalMetrics = GlyphMetrics(
@@ -168,14 +169,17 @@ class BitmapFont(
         )
     }
 
-	val dummyGlyph by lazy { Glyph(fontSize, -1, Bitmaps.transparent, 0, 0, 0) }
-	val anyGlyph: Glyph by lazy { glyphs[glyphs.keys.iterator().next()] ?: dummyGlyph }
+	val anyGlyph: Glyph by lazy { glyphs[glyphs.keys.iterator().next()] ?: invalidGlyph }
 	val baseBmp: Bitmap by lazy { anyGlyph.texture.bmpBase }
+    val invalidGlyph by lazy { Glyph(fontSize, -1, Bitmaps.transparent, 0, 0, 0) }
 
-	operator fun get(charCode: Int): Glyph = glyphs[charCode] ?: glyphs[32] ?: dummyGlyph
+	operator fun get(charCode: Int): Glyph = glyphs[charCode] ?: glyphs[32] ?: anyGlyph
 	operator fun get(char: Char): Glyph = this[char.toInt()]
 
-	companion object {
+    fun getGlyph(codePoint: Int): Glyph = this[codePoint]
+    fun getGlyph(char: Char): Glyph = this[char]
+
+    companion object {
         /**
          * Creates a new [BitmapFont] of [fontSize] using an existing [Font] ([SystemFont] is valid).
          * Just creates the glyphs specified in [chars].
@@ -204,7 +208,7 @@ class BitmapFont(
                 matlas.add(result.bmp.toBMP32().premultipliedIfRequired(), result)
             }
             val fm = matlas.entries.first().data.fmetrics
-            val atlas = matlas.bitmap
+            val atlas = matlas.bitmap.mipmaps(mipmaps)
             return BitmapFont(
                 fontSize = fontSize,
                 lineHeight = fmetrics.lineHeight,
@@ -217,7 +221,6 @@ class BitmapFont(
                     g.codePoint to Glyph(fontSize, g.codePoint, slice, -border, (border - m.height - m.top).toInt() + fm.ascent.toInt(), m.xadvance.toIntCeil())
                 }.toIntMap(),
                 kernings = IntMap(),
-                atlas = atlas.mipmaps(mipmaps),
                 name = fontName
             )
         }
@@ -287,7 +290,6 @@ private suspend fun readBitmapFontJson(
     }
 
     return BitmapFont(
-        atlas = atlas?.bitmap ?: textures.values.first().bmpBase,
         fontSize = fontSize,
         lineHeight = lineHeight,
         base = base,
@@ -361,7 +363,6 @@ private suspend fun readBitmapFontTxt(
 		}
 	}
 	return BitmapFont(
-        atlas = atlas?.bitmap ?: textures.values.first().bmpBase,
         fontSize = fontSize,
         lineHeight = lineHeight,
         base = base ?: lineHeight,
@@ -418,7 +419,6 @@ private suspend fun readBitmapFontXml(
 	}
 
 	return BitmapFont(
-        atlas = atlas?.bitmap ?: textures.values.first().bmpBase,
         fontSize = fontSize,
         lineHeight = lineHeight,
         base = base,

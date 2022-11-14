@@ -254,7 +254,7 @@ open class Text(
             ctx.useBatcher { batch ->
                 val bmpfont = font as BitmapFont
                 val tex = bmpfont.baseBmp
-                batch.setStateFast(tex, smoothing, renderBlendMode, bmpfont.program, icount = tva.icount, vcount = tva.vcount)
+                batch.setStateFast(tex, smoothing, renderBlendMode, bmpfont.agProgram, icount = tva.icount, vcount = tva.vcount)
                 batch.drawVertices(tva, tempMatrix, premultiplied = tex.premultiplied, wrap = false)
             }
         } else {
@@ -282,13 +282,6 @@ open class Text(
     private var lastNativeRendering: Boolean? = null
     private var tva: TexturedVertexArray? = null
     private val identityMat = Matrix()
-
-    val BitmapFont.program: Program? get() = when (distanceField) {
-        "msdf" -> MsdfRender.PROGRAM_MSDF
-        "psdf" -> MsdfRender.PROGRAM_SDF_A
-        "sdf" -> MsdfRender.PROGRAM_SDF_A
-        else -> null
-    }
 
     var graphicsRenderer: GraphicsRenderer = GraphicsRenderer.SYSTEM
         set(value) {
@@ -358,7 +351,7 @@ open class Text(
                         this.tva = TexturedVertexArray.forQuads(bitmapFontActions.size)
                     }
 
-                    val program = font.program
+                    val program = font.agProgram
                     for (n in 0 until bitmapFontActions.size) {
                         val entry = bitmapFontActions.read(n, tempBmpEntry)
                         if (newTvaRenderer) {
@@ -513,3 +506,11 @@ var <T : Text> T.aroundPath: VectorPath?
             renderer = currentRenderer.aroundPath(value)
         }
     }
+
+
+val BitmapFont.agProgram: Program? get() = when (distanceField) {
+    "msdf" -> MsdfRender.PROGRAM_MSDF
+    "psdf" -> MsdfRender.PROGRAM_SDF_A
+    "sdf" -> MsdfRender.PROGRAM_SDF_A
+    else -> null
+}

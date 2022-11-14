@@ -25,17 +25,27 @@ class MainEditor : Scene() {
     override suspend fun SContainer.sceneMain() {
         //solidRect(width, height, Colors.WHITE)
 
-        //val font1 = resourcesVfs["msdf/SaniTrixieSans.fnt"].readBitmapFont()
-        //val font1 = resourcesVfs["msdf/SaniTrixieSans.json"].readBitmapFont()
-        val font1 = resourcesVfs["sdf/SaniTrixieSans.json"].readBitmapFont()
+        if (true) {
+            //val font1 = resourcesVfs["msdf/SaniTrixieSans.fnt"].readBitmapFont()
+            //val font1 = resourcesVfs["msdf/SaniTrixieSans.json"].readBitmapFont()
+            val font1 = resourcesVfs["msdf/SaniTrixieSans.json"].readBitmapFont()
 
-        val image = text("HELLO, World! this ia test!", font = font1)
+            renderableView(viewRenderer = ViewRenderer {
+                ctx2d.rect(0.0, 0.0, 100.0, 100.0, Colors.RED)
+                //ctx2d.drawText("HELLO WORLD!", font1, textSize = 128.0)
+                ctx2d.drawText(RichTextData.fromHTML("HELLO, World! <b>this</b> ia test!", RichTextData.Style(textSize = 64.0, font = font1, color = Colors.WHITE)))
+            })
 
-        //val image = image(resourcesVfs["msdf/SaniTrixieSans.png"].readBitmap().mipmaps()).scale(0.25).also {
-        //    it.program = MsdfRender.PROGRAM_MSDF_I
-        //}
+            //textBlock(RichTextData("hello world!", 128.0, font1, color = Colors.WHITE), width = 1024.0, height = 1024.0)
+            return
 
-        /*
+            val image = text("HELLO, World! this ia test!", font = font1, color = Colors.WHITE)
+
+            //val image = image(resourcesVfs["msdf/SaniTrixieSans.png"].readBitmap().mipmaps()).scale(0.25).also {
+            //    it.program = MsdfRender.PROGRAM_MSDF_I
+            //}
+
+            /*
         val rfont = DefaultTtfFont
         val size = 48.0
         val codePoint = 'e'.code
@@ -54,19 +64,20 @@ class MainEditor : Scene() {
         }
          */
 
-        keys {
-            down(Key.RETURN) {
-                //image.program = if (image.program == MsdfRender.PROGRAM_SDF_A) MsdfRender.PROGRAM_MSDF else MsdfRender.PROGRAM_SDF_A
-                //println("TOGGLED PROGRAM!: ${image.program?.name}")
+            keys {
+                down(Key.RETURN) {
+                    //image.program = if (image.program == MsdfRender.PROGRAM_SDF_A) MsdfRender.PROGRAM_MSDF else MsdfRender.PROGRAM_SDF_A
+                    //println("TOGGLED PROGRAM!: ${image.program?.name}")
+                }
             }
-        }
 
-        image.simpleAnimator.sequence(looped = true) {
-            tween(image::scale[10.0], time = 3.seconds)
-            tween(image::scale[0.25], time = 3.seconds)
-        }
+            image.simpleAnimator.sequence(looped = true) {
+                tween(image::scale[10.0], time = 3.seconds)
+                tween(image::scale[0.25], time = 3.seconds)
+            }
 
-        return
+            return
+        }
 
         val font2 = DefaultTtfFont.toBitmapFont(16.0, CharacterSet.LATIN_ALL + CharacterSet.CYRILLIC)
         //val font2 = DefaultTtfFont
