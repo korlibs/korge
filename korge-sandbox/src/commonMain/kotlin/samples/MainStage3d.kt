@@ -11,15 +11,8 @@ import com.soywiz.korge.scene.SceneContainer
 import com.soywiz.korge.scene.sceneContainer
 import com.soywiz.korge.tween.get
 import com.soywiz.korge.tween.tween
-import com.soywiz.korge.view.Container
-import com.soywiz.korge.view.CpuGraphics
-import com.soywiz.korge.view.SContainer
-import com.soywiz.korge.view.Text
-import com.soywiz.korge.view.addUpdater
-import com.soywiz.korge.view.alpha
-import com.soywiz.korge.view.anchor
-import com.soywiz.korge.view.image
-import com.soywiz.korge.view.position
+import com.soywiz.korge.ui.*
+import com.soywiz.korge.view.*
 import com.soywiz.korge3d.Camera3D
 import com.soywiz.korge3d.Korge3DExperimental
 import com.soywiz.korge3d.Material3D
@@ -74,8 +67,12 @@ class MainStage3d : Scene() {
     }
 
     inline fun <reified T : Scene> Container.sceneButton(title: String, x: Int) {
-        this += Button(title) { contentSceneContainer.changeToDisablingButtons<T>(this) }
-            .position(8 + x * 200, views.virtualHeight - 120)
+        uiButton(title)
+            .xy(8 + x * 200, views.virtualHeight - 120)
+            .onClick { contentSceneContainer.changeToDisablingButtons<T>(this) }
+
+        //this += Button(title) { contentSceneContainer.changeToDisablingButtons<T>(this) }
+        //    .position(8 + x * 200, views.virtualHeight - 120)
     }
 
     @Korge3DExperimental
@@ -208,6 +205,7 @@ class MainStage3d : Scene() {
         }
     }
 
+    /*
     class Button(text: String, handler: suspend () -> Unit) : Container() {
         val textField = Text(text, textSize = 32.0).apply { smoothing = false }
         private val bounds = textField.textBounds
@@ -252,19 +250,19 @@ class MainStage3d : Scene() {
             updateState()
         }
     }
-
+    */
 
     suspend inline fun <reified T : Scene> SceneContainer.changeToDisablingButtons(buttonContainer: Container) {
-        for (child in buttonContainer.children.filterIsInstance<Button>()) {
+        for (child in buttonContainer.children.filterIsInstance<UIButton>()) {
             //println("DISABLE BUTTON: $child")
-            child.enabledButton = false
+            child.enabled = false
         }
         try {
             changeTo<T>()
         } finally {
-            for (child in buttonContainer.children.filterIsInstance<Button>()) {
+            for (child in buttonContainer.children.filterIsInstance<UIButton>()) {
                 //println("ENABLE BUTTON: $child")
-                child.enabledButton = true
+                child.enabled = true
             }
         }
     }

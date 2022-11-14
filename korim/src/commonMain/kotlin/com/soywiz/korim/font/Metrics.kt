@@ -3,12 +3,30 @@ package com.soywiz.korim.font
 import com.soywiz.kmem.toIntRound
 import com.soywiz.korio.util.niceStr
 import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.math.*
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToInt
 
+/**
+ *                              ... [top] (Positive)
+ *
+ *           ##                 --- [ascent] (Positive)
+ *
+ *         ######       ##
+ *        ##   ##
+ *       ########       ##
+ *      ##     ##       ##
+ *     ##      ##       ##      ---- [baseline] (Always 0)
+ *                 ##  ##
+ *                  ####        ---- [descent] (Negative)
+ *
+ *                              ---- [bottom] (Negative)
+ *
+ *     .......................  ---- [bottom] - [lineGap] (Negative)
+ */
 data class FontMetrics(
-    /** size of the font metric */
+    /** size of the font metric, typically [top] - [bottom] */
     var size: Double = 0.0,
     /** maximum top for any character like É  */
     var top: Double = 0.0,
@@ -18,47 +36,51 @@ data class FontMetrics(
     var baseline: Double = 0.0, // Should be 0.0
     /** lower part of 'j' */
     var descent: Double = 0.0,
-    /** descent + linegap */
+    /** lowest part without the gap */
     var bottom: Double = 0.0,
-    /** extra height */
-    var leading: Double = 0.0,
+    /** extra height, line-gap */
+    var lineGap: Double = 0.0,
     /** maximum number of width */
-    var maxWidth: Double = 0.0
+    var maxWidth: Double = 0.0,
+    /** units per EM (historically 'M' width) */
+    var unitsPerEm: Double = 0.0,
 ) {
-    val rtop get() = max(ascent, top)
-    val rbottom get() = min(descent, bottom)
+    /** Top-most part of the glyphs */
+    val rtop: Double get() = max(ascent, top)
+    /** Bottom-most part of the glyphs (without the [lineGap] between lines) */
+    val rbottom: Double get() = min(descent, bottom)
 
-    /* 'E' height */
-    val emHeight get() = ascent - descent
-    /* 'É' + 'j' + linegap */
-    //val lineHeight get() = top - bottom
-    val lineHeight get() = rtop - rbottom
+    /** Total size of a line including from [top] to [bottom] + [lineGap] */
+    val lineHeight: Double get() = rtop - rbottom + lineGap // Including gap!
 
-    fun copyFrom(other: FontMetrics) = this.copyFromScaled(other, 1.0)
-    fun copyFromNewSize(other: FontMetrics, size: Double) = this.copyFromScaled(other, size / other.size)
+    fun copyFrom(other: FontMetrics): FontMetrics = this.copyFromScaled(other, 1.0)
+    fun copyFromNewSize(other: FontMetrics, size: Double): FontMetrics = this.copyFromScaled(other, size / other.size)
 
-    fun copyFromScaled(other: FontMetrics, scale: Double) = this.apply {
+    fun copyFromScaled(other: FontMetrics, scale: Double): FontMetrics {
         this.size = other.size * scale
         this.top = other.top * scale
         this.ascent = other.ascent * scale
         this.baseline = other.baseline * scale
         this.descent = other.descent * scale
         this.bottom = other.bottom * scale
-        this.leading = other.leading * scale
+        this.lineGap = other.lineGap * scale
+        this.unitsPerEm = other.unitsPerEm * scale
         this.maxWidth = other.maxWidth * scale
+        return this
     }
 
     override fun toString(): String = buildString {
         append("FontMetrics(")
-        append("size=${size.toIntRound()}, ")
-        append("top=${top.toIntRound()}, ")
-        append("ascent=${ascent.toIntRound()}, ")
-        append("baseline=${baseline.toIntRound()}, ")
-        append("descent=${descent.toIntRound()}, ")
-        append("bottom=${bottom.toIntRound()}, ")
-        append("leading=${leading.toIntRound()}, ")
-        append("emHeight=${emHeight.toIntRound()}, ")
-        append("lineHeight=${lineHeight.toIntRound()}")
+        append("size=${size.niceStr(1)}, ")
+        append("top=${top.niceStr(1)}, ")
+        append("ascent=${ascent.niceStr(1)}, ")
+        append("baseline=${baseline.niceStr(1)}, ")
+        append("descent=${descent.niceStr(1)}, ")
+        append("bottom=${bottom.niceStr(1)}, ")
+        append("lineGap=${lineGap.niceStr(1)}, ")
+        append("unitsPerEm=${unitsPerEm.niceStr(1)}, ")
+        append("maxWidth=${maxWidth.niceStr(1)}, ")
+        append("lineHeight=${lineHeight.niceStr(1)}")
         append(")")
     }
 
@@ -66,6 +88,8 @@ data class FontMetrics(
     }
 
     fun clone(): FontMetrics = copy()
+    fun cloneScaled(scale: Double): FontMetrics = copy().copyFromScaled(this, scale)
+    fun cloneWithNewSize(size: Double): FontMetrics = copy().copyFromNewSize(this, size)
 }
 
 data class GlyphMetrics(

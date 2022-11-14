@@ -48,43 +48,47 @@ import kotlin.collections.set
 import kotlin.math.max
 import kotlin.math.sqrt
 
-class BitmapFont(
-    val fontSize: Double,
-    val lineHeight: Double,
-    val base: Double,
-    val glyphs: IntMap<Glyph>,
-    val kernings: IntMap<Kerning>,
-    override val name: String = "BitmapFont",
-    val distanceField: String? = null,
-) : Font, Extra by Extra.Mixin() {
-    override fun getOrNull() = this
-    override suspend fun get() = this
+interface BitmapFont : Font {
+    val fontSize: Double
+    val lineHeight: Double
+    val base: Double
+    val distanceField: String?
 
-    val naturalDescent = lineHeight - base
+    // @TODO: Only for generating
+    val glyphs: IntMap<Glyph>
+    val kernings: IntMap<Kerning>
 
-    private val naturalFontMetrics by lazy {
-        val ascent = base
-        val baseline = 0.0
-        FontMetrics(
-            fontSize, ascent, ascent, baseline, -naturalDescent, -naturalDescent, 0.0,
-            maxWidth = run {
-                var width = 0.0
-                for (glyph in glyphs.values) if (glyph != null) width = max(width, glyph.texture.width.toDouble())
-                width
-            }
-        )
-    }
+    val baseBmp: Bitmap get() = anyGlyph.texture.bmpBase
+    val anyGlyph: Glyph
+    val invalidGlyph: Glyph
+
+    val naturalFontMetrics: FontMetrics
+    val naturalNonExistantGlyphMetrics: GlyphMetrics
 
     override fun getFontMetrics(size: Double, metrics: FontMetrics): FontMetrics =
         metrics.copyFromNewSize(naturalFontMetrics, size)
 
     override fun getGlyphMetrics(size: Double, codePoint: Int, metrics: GlyphMetrics, reader: WStringReader?): GlyphMetrics =
-        metrics.copyFromNewSize(glyphs[codePoint]?.naturalMetrics ?: naturalNonExistantGlyphMetrics, size, codePoint)
+        metrics.copyFromNewSize(getOrNull(codePoint)?.naturalMetrics ?: naturalNonExistantGlyphMetrics, size, codePoint)
 
-    private val naturalNonExistantGlyphMetrics = GlyphMetrics(fontSize, false, 0, Rectangle(), 0.0)
+    fun getKerning(first: Int, second: Int): Kerning?
+    fun getTextScale(size: Double): Double = size / fontSize
+    fun getOrNull(codePoint: Int): Glyph?
 
-    override fun getKerning(size: Double, leftCodePoint: Int, rightCodePoint: Int): Double =
-        getTextScale(size) * (getKerning(leftCodePoint, rightCodePoint)?.amount?.toDouble() ?: 0.0)
+    operator fun get(charCode: Int): Glyph = getOrNull(charCode) ?: getOrNull(32) ?: anyGlyph
+    fun getKerning(first: Char, second: Char): Kerning? = getKerning(first.code, second.code)
+    operator fun get(char: Char): Glyph = this[char.code]
+    fun getGlyph(codePoint: Int): Glyph = this[codePoint]
+    fun getGlyph(char: Char): Glyph = this[char]
+
+    fun measureWidth(text: String): Int {
+        var x = 0
+        for (c in text) {
+            val glyph = this[c.code]
+            x += glyph.xadvance
+        }
+        return x
+    }
 
     override fun renderGlyph(
         ctx: Context2d,
@@ -126,60 +130,26 @@ class BitmapFont(
         return true
     }
 
-    fun getTextScale(size: Double) = size.toDouble() / fontSize.toDouble()
-
-	fun measureWidth(text: String): Int {
-		var x = 0
-		for (c in text) {
-			val glyph = glyphs[c.toInt()]
-			if (glyph != null) x += glyph.xadvance
-		}
-		return x
-	}
-
-	fun getKerning(first: Char, second: Char): Kerning? = getKerning(first.toInt(), second.toInt())
-	fun getKerning(first: Int, second: Int): Kerning? = kernings[Kerning.buildKey(first, second)]
-
-	class Kerning(
-		val first: Int,
-		val second: Int,
-		val amount: Int
-	) {
-        companion object {
-            fun buildKey(f: Int, s: Int) = 0.insert(f, 0, 16).insert(s, 16, 16)
-        }
-    }
-
-	data class Glyph(
-        val fontSize: Double,
-		val id: Int,
-		val texture: BitmapSlice<Bitmap>,
-		val xoffset: Int,
-		val yoffset: Int,
-		val xadvance: Int
-	) {
-        val texWidth: Int get() = texture.width
-        val texHeight: Int get() = texture.height
-        val bmp: Bitmap32 by lazy { texture.extract().toBMP32() }
-
-        internal val naturalMetrics = GlyphMetrics(
-            fontSize, true, -1,
-            Rectangle(xoffset, yoffset, texture.width, texture.height),
-            xadvance.toDouble()
-        )
-    }
-
-	val anyGlyph: Glyph by lazy { glyphs[glyphs.keys.iterator().next()] ?: invalidGlyph }
-	val baseBmp: Bitmap by lazy { anyGlyph.texture.bmpBase }
-    val invalidGlyph by lazy { Glyph(fontSize, -1, Bitmaps.transparent, 0, 0, 0) }
-
-	operator fun get(charCode: Int): Glyph = glyphs[charCode] ?: glyphs[32] ?: anyGlyph
-	operator fun get(char: Char): Glyph = this[char.toInt()]
-
-    fun getGlyph(codePoint: Int): Glyph = this[codePoint]
-    fun getGlyph(char: Char): Glyph = this[char]
+    override fun getKerning(size: Double, leftCodePoint: Int, rightCodePoint: Int): Double =
+        getTextScale(size) * (getKerning(leftCodePoint, rightCodePoint)?.amount?.toDouble() ?: 0.0)
 
     companion object {
+        operator fun invoke(
+            fontSize: Double,
+            lineHeight: Double,
+            base: Double,
+            glyphs: IntMap<Glyph>,
+            kernings: IntMap<Kerning>,
+            name: String = "BitmapFont",
+            distanceField: String? = null,
+        ): BitmapFont = BitmapFontImpl(fontSize,
+            lineHeight,
+            base,
+            glyphs,
+            kernings,
+            name,
+            distanceField)
+
         /**
          * Creates a new [BitmapFont] of [fontSize] using an existing [Font] ([SystemFont] is valid).
          * Just creates the glyphs specified in [chars].
@@ -224,7 +194,72 @@ class BitmapFont(
                 name = fontName
             )
         }
-	}
+    }
+
+
+    class Kerning(
+        val first: Int,
+        val second: Int,
+        val amount: Int
+    ) {
+        companion object {
+            fun buildKey(f: Int, s: Int) = 0.insert(f, 0, 16).insert(s, 16, 16)
+        }
+    }
+
+    data class Glyph(
+        val fontSize: Double,
+        val id: Int,
+        val texture: BitmapSlice<Bitmap>,
+        val xoffset: Int,
+        val yoffset: Int,
+        val xadvance: Int
+    ) {
+        val texWidth: Int get() = texture.width
+        val texHeight: Int get() = texture.height
+        val bmp: Bitmap32 by lazy { texture.extract().toBMP32() }
+
+        internal val naturalMetrics = GlyphMetrics(
+            fontSize, true, -1,
+            Rectangle(xoffset, yoffset, texture.width, texture.height),
+            xadvance.toDouble()
+        )
+    }
+}
+
+private class BitmapFontImpl constructor(
+    override val fontSize: Double,
+    override val lineHeight: Double,
+    override val base: Double,
+    override val glyphs: IntMap<BitmapFont.Glyph>,
+    override val kernings: IntMap<BitmapFont.Kerning>,
+    override val name: String = "BitmapFont",
+    override val distanceField: String? = null,
+) : BitmapFont, Extra by Extra.Mixin() {
+    override fun getOrNull() = this
+    override suspend fun get() = this
+
+    val naturalDescent = lineHeight - base
+
+    override val naturalFontMetrics: FontMetrics by lazy {
+        val ascent = base
+        val baseline = 0.0
+        FontMetrics(
+            fontSize, ascent, ascent, baseline, -naturalDescent, -naturalDescent, 0.0,
+            maxWidth = run {
+                var width = 0.0
+                for (glyph in glyphs.values) if (glyph != null) width = max(width, glyph.texture.width.toDouble())
+                width
+            }
+        )
+    }
+    override val naturalNonExistantGlyphMetrics: GlyphMetrics = GlyphMetrics(fontSize, false, 0, Rectangle(), 0.0)
+
+	override fun getKerning(first: Int, second: Int): BitmapFont.Kerning? = kernings[BitmapFont.Kerning.buildKey(first, second)]
+    override fun getOrNull(codePoint: Int): BitmapFont.Glyph? = glyphs[codePoint]
+
+    override val anyGlyph: BitmapFont.Glyph by lazy { glyphs[glyphs.keys.iterator().next()] ?: invalidGlyph }
+    override val invalidGlyph: BitmapFont.Glyph by lazy { BitmapFont.Glyph(fontSize, -1, Bitmaps.transparent, 0, 0, 0) }
 }
 
 suspend fun VfsFile.readBitmapFont(

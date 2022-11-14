@@ -1,5 +1,6 @@
 package com.soywiz.korim.font
 
+import com.soywiz.kds.*
 import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.korim.vector.Context2d
 import com.soywiz.korio.lang.WStringReader
@@ -54,7 +55,7 @@ fun VectorFont.withFallback(vararg other: VectorFont?): VectorFontList = when (t
 /** When getting glyphs, it first tries to resolve with [first], then this [this] */
 fun VectorFont.asFallbackOf(first: VectorFont): VectorFontList = first.withFallback(this)
 
-data class VectorFontList(val list: List<VectorFont>) : VectorFont {
+data class VectorFontList(val list: List<VectorFont>) : VectorFont, Extra by Extra.Mixin() {
     constructor(vararg fonts: VectorFont?) : this(fonts.filterNotNull())
 
     override val name: String = list.joinToString(", ") { it.name }

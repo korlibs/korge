@@ -173,7 +173,10 @@ abstract class BaseTtfFont(
         return path
     }
 
-    protected fun getTextScale(size: Double) = size / unitsPerEm.toDouble()
+    protected fun getTextScale(size: Double): Double {
+        //return size / (yMax - yMin).toDouble()
+        return size / unitsPerEm.toDouble()
+    }
 
     class NamesInfo {
         internal val names = arrayOfNulls<String>(NameId.MAX_ID)
@@ -373,8 +376,9 @@ abstract class BaseTtfFont(
             it.baseline = 0.0 * scale
             it.descent = this.descender * scale
             it.bottom = (this.yMin) * scale
-            it.leading = this.lineGap * scale
-            it.maxWidth = this.advanceWidthMax *scale
+            it.lineGap = this.lineGap * scale
+            it.maxWidth = this.advanceWidthMax * scale
+            it.unitsPerEm = this.unitsPerEm * scale
         }
     }
 

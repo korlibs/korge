@@ -41,8 +41,8 @@ class MutableAtlas<T>(
         growMethod: GrowMethod = GrowMethod.NEW_IMAGES
     ) : this(BinPacker(width, height), border, premultiplied, allowToGrow, growMethod)
 
-    val width get() = binPacker.width.toInt()
-    val height get() = binPacker.height.toInt()
+    val width: Int get() = binPacker.width.toInt()
+    val height: Int get() = binPacker.height.toInt()
 
     enum class GrowMethod { GROW_IMAGE, NEW_IMAGES }
 
@@ -80,7 +80,7 @@ class MutableAtlas<T>(
         }
     }
 
-    fun add(bmp: Bitmap32, data: T, name: String? = "Slice$size") = add(bmp.slice(name = name), data, name)
+    fun add(bmp: Bitmap32, data: T, name: String? = "Slice$size"): Entry<T> = add(bmp.slice(name = name), data, name)
 
     @Suppress("UNCHECKED_CAST")
     fun add(bmp: BmpSlice, data: T, name: String? = bmp.name): Entry<T> = when {

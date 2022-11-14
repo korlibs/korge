@@ -14,7 +14,7 @@ import com.soywiz.korgw.*
 import com.soywiz.korim.bitmap.Bitmaps
 import com.soywiz.korim.bitmap.BmpSlice
 import com.soywiz.korim.color.*
-import com.soywiz.korim.font.Font
+import com.soywiz.korim.font.*
 import com.soywiz.korim.paint.*
 import com.soywiz.korim.text.*
 import com.soywiz.korio.async.Signal
@@ -132,15 +132,33 @@ open class UIButton(
     //    .also { it.mouseEnabled = false }
 
     //protected val textShadowView = text("", 16.0)
-    protected val textView = text(text, 16.0)
+    var textSize = 16.0
+        set(value) {
+            field = value
+            updateRichText()
+        }
+
+    protected val textView = textBlock(RichTextData(text, textSize = textSize, font = DefaultTtfFontMsdf))
     protected val iconView = image(Bitmaps.transparent)
 	protected var bover = false
 	protected var bpressing = false
     val animator = animator(parallel = true, defaultEasing = Easing.LINEAR)
     val animatorEffects = animator(parallel = true, defaultEasing = Easing.LINEAR)
 
-    var textColor: RGBA by textView::color
-    var text: String by textView::text
+    var textColor: RGBA = Colors.WHITE
+        set(value) {
+            field = value
+            updateRichText()
+        }
+    var text: String = text
+        set(value) {
+            field = value
+            updateRichText()
+        }
+
+    private fun updateRichText() {
+        textView.text = RichTextData(text, textSize = textSize, font = DefaultTtfFontMsdf, color = textColor)
+    }
 
     private fun setInitialState() {
         val width = width
@@ -151,9 +169,9 @@ open class UIButton(
         //background.shadowRadius = if (elevation) 10.0 else 0.0
         //textView.setSize(width, height)
 
-        textView.setTextBounds(Rectangle(0.0, 0.0, width, height))
-        textView.text = text
-        textView.alignment = TextAlignment.MIDDLE_CENTER
+        textView.setSize(width, height)
+        textView.align = TextAlignment.MIDDLE_CENTER
+        updateRichText()
 
         fitIconInRect(iconView, icon ?: Bitmaps.transparent, width, height, Anchor.MIDDLE_CENTER)
         iconView.alpha = when {
