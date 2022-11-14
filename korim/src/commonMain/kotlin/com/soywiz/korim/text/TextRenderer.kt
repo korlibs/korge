@@ -16,16 +16,9 @@ import com.soywiz.korio.lang.WString
 import com.soywiz.korio.lang.WStringReader
 import com.soywiz.korio.lang.keep
 import com.soywiz.korio.util.niceStr
-import com.soywiz.korma.geom.Angle
-import com.soywiz.korma.geom.BoundsBuilder
-import com.soywiz.korma.geom.Matrix
-import com.soywiz.korma.geom.Rectangle
-import com.soywiz.korma.geom.angle
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.bezier.Curve
 import com.soywiz.korma.geom.bezier.toVectorPath
-import com.soywiz.korma.geom.degrees
-import com.soywiz.korma.geom.minus
-import com.soywiz.korma.geom.radians
 import com.soywiz.korma.geom.vector.VectorBuilder
 import com.soywiz.korma.geom.vector.VectorPath
 import com.soywiz.korma.geom.vector.getCurves
@@ -198,8 +191,10 @@ class BoundBuilderTextRendererActions : TextRendererActions() {
 }
 
 class Text2TextRendererActions : TextRendererActions() {
-    var verticalAlign: VerticalAlign = VerticalAlign.TOP
-    var horizontalAlign: HorizontalAlign = HorizontalAlign.LEFT
+    var align: TextAlignment = TextAlignment.TOP_LEFT
+
+    val verticalAlign: VerticalAlign get() = align.vertical
+    val horizontalAlign: HorizontalAlign get() = align.horizontal
     private val arrayTex = arrayListOf<BmpSlice>()
     private val arrayX = doubleArrayListOf()
     private val arrayY = doubleArrayListOf()
@@ -208,6 +203,40 @@ class Text2TextRendererActions : TextRendererActions() {
     private val arrayRot = doubleArrayListOf()
     private val tr = Matrix.Transform()
     val size get() = arrayX.size
+
+    fun getGlyphBounds(n: Int, out: Rectangle = Rectangle()): IRectangle {
+        if (n >= size) {
+            out.setTo(0, 0, 0, 0)
+        } else {
+            out.setToBounds(
+                arrayX[n],
+                arrayY[n],
+                arrayX[n] + arrayTex[n].width * arraySX[n],
+                arrayY[n] + arrayTex[n].height * arraySY[n]
+            )
+        }
+        return out
+    }
+
+    fun getBounds(out: Rectangle = Rectangle()): IRectangle {
+        if (size == 0) {
+            out.setTo(0, 0, 0, 0)
+            return out
+        }
+        var xmin = Double.POSITIVE_INFINITY
+        var xmax = Double.NEGATIVE_INFINITY
+        var ymin = Double.POSITIVE_INFINITY
+        var ymax = Double.NEGATIVE_INFINITY
+        for (n in 0 until size) {
+            val temp = getGlyphBounds(n, out)
+            xmin = kotlin.math.min(xmin, temp.left)
+            xmax = kotlin.math.max(xmin, temp.right)
+            ymin = kotlin.math.min(ymin, temp.top)
+            ymax = kotlin.math.max(ymin, temp.bottom)
+        }
+        out.setToBounds(xmin, ymin, xmax, ymax)
+        return out
+    }
 
     data class Entry(
         var tex: BmpSlice = Bitmaps.transparent,
@@ -240,6 +269,8 @@ class Text2TextRendererActions : TextRendererActions() {
     }
 
     fun mreset() {
+        x = 0.0
+        y = 0.0
         arrayTex.clear()
         arrayX.clear()
         arrayY.clear()

@@ -6,7 +6,7 @@ import com.soywiz.korim.paint.*
 import com.soywiz.korim.vector.*
 import com.soywiz.korma.geom.*
 
-class RichTextDataPlacements(
+data class RichTextDataPlacements(
     val placements: FastArrayList<Placement> = fastArrayListOf()
 ) : List<RichTextDataPlacements.Placement> by placements {
     data class Placement(

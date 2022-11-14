@@ -6,10 +6,7 @@ import com.soywiz.kmem.*
 import com.soywiz.korim.atlas.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
-import com.soywiz.korim.vector.*
-import com.soywiz.korio.lang.*
 import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.vector.*
 import kotlin.math.*
 
 class LazyBitmapFont(
@@ -17,29 +14,35 @@ class LazyBitmapFont(
     override val fontSize: Double,
     override val distanceField: String? = null,
 ) : BitmapFont, Extra by Extra.Mixin() {
-    private val vectorFontMetrics = font.getFontMetrics(fontSize)
-    private val atlas = MutableAtlasUnit()
+    private val atlas = MutableAtlasUnit(border = 2, width = 1024, height = 1024).also {
+        it.bitmap.mipmaps()
+    }
 
-    override val lineHeight: Double = vectorFontMetrics.lineHeight
-    override val base: Double = vectorFontMetrics.baseline
-    override val glyphs: IntMap<BitmapFont.Glyph> = IntMap<BitmapFont.Glyph>()
-    override val kernings: IntMap<BitmapFont.Kerning> = IntMap<BitmapFont.Kerning>()
-    override val anyGlyph: BitmapFont.Glyph by lazy { glyphs[glyphs.keys.iterator().next()] ?: invalidGlyph }
+    private val vfontMetrics = font.getFontMetrics(fontSize)
+
+    override val lineHeight: Double = vfontMetrics.lineHeight
+    override val base: Double = vfontMetrics.baseline
+    override val glyphs: IntMap<BitmapFont.Glyph> = IntMap()
+    override val kernings: IntMap<BitmapFont.Kerning> = IntMap()
+    override val anyGlyph: BitmapFont.Glyph by lazy {
+        ensureCodePoints(SPACE)
+        glyphs[glyphs.keys.iterator().next()] ?: invalidGlyph
+    }
     override val invalidGlyph: BitmapFont.Glyph by lazy { BitmapFont.Glyph(fontSize, -1, Bitmaps.transparent, 0, 0, 0) }
     override val name: String get() = font.name
-    val naturalDescent = lineHeight - base
 
     override val naturalFontMetrics: FontMetrics by lazy {
-        ensureCodePoints(intArrayOf(32))
-        val ascent = base
-        val baseline = 0.0
+        val descent = (vfontMetrics.descent - vfontMetrics.lineGap)
         FontMetrics(
-            fontSize, ascent, ascent, baseline, -naturalDescent, -naturalDescent, 0.0,
-            maxWidth = run {
-                var width = 0.0
-                for (glyph in glyphs.values) if (glyph != null) width = max(width, glyph.texture.width.toDouble())
-                width
-            }
+            size = vfontMetrics.size,
+            top = vfontMetrics.top,
+            ascent = vfontMetrics.ascent,
+            baseline = vfontMetrics.baseline,
+            descent = descent,
+            bottom = descent,
+            lineGap = 0.0,
+            unitsPerEm = 0.0,
+            maxWidth = vfontMetrics.maxWidth,
         )
     }
     override val naturalNonExistantGlyphMetrics: GlyphMetrics = GlyphMetrics(fontSize, false, 0, Rectangle(), 0.0)
@@ -73,18 +76,35 @@ class LazyBitmapFont(
             // @TODO: precompute all glyph images to try to add first the bigger ones to better optimize space
             codePoints.fastForEach { codePoint ->
                 glyphs.getOrPut(codePoint) { codePoint ->
-                    val result = font.renderGlyphToBitmap(fontSize, codePoint, paint = Colors.WHITE, fill = true, border = 1, effect = null)
-                    val entry = atlas.add(result.bmp.toBMP32(), Unit)
-                    val fm = result.fmetrics
-                    val m = result.glyphs.first().metrics
+                    val border = 1
+                    val result = font.renderGlyphToBitmap(fontSize, codePoint, paint = Colors.WHITE, fill = true, border = border, effect = null)
+                    val bmp = result.bmp.toBMP32()
+                    val entry = atlas.add(bmp, Unit)
+                    val slice = entry.slice
+                    //val slice = bmp.slice()
+                    //val fm = result.fmetrics
+                    val g = result.glyphs.first()
+                    //val fm = it.data.fmetrics
+                    val m = g.metrics
                     val xadvance = m.xadvance
 
-                    //println("codePoint=$codePoint, xadvance=${xadvance}, height=${m.height}, top=${m.top}, ascent=${fm.ascent}")
+                    //println("codePoint=$codePoint, char='${codePoint.toChar()}', xadvance=${xadvance}, height=${m.height}, top=${m.top}, ascent=${fm.ascent}, slice=$slice")
                     //BitmapFont.Glyph(fontSize, codePoint, entry.slice, 0, (m.height - m.top + fm.ascent).toInt(), xadvance.toInt())
-                    BitmapFont.Glyph(fontSize, codePoint, entry.slice, 0, (-m.bottom + fm.ascent).toIntRound(), xadvance.toInt())
+                    BitmapFont.Glyph(
+                        fontSize, codePoint, slice,
+                        //-border,
+                        //(border - m.height - m.top + fm.ascent).toIntRound(), xadvance.toIntRound()
+                        -g.x.toIntRound(),
+                        -g.y.toIntRound(),
+                        xadvance.toIntRound(),
+                    )
                 }
             }
         }
+    }
+
+    companion object {
+        private val SPACE = intArrayOf(' '.code)
     }
 }
 

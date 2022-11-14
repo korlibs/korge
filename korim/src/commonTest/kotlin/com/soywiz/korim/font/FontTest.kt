@@ -137,9 +137,14 @@ class FontTest {
     fun testDefaultFont() {
         val font = DefaultTtfFont
         val fmetrics = font.getFontMetrics(16.0)
-        assertEquals("FontMetrics(size=16, top=15, ascent=15, baseline=0, descent=-3, bottom=-3, leading=0, emHeight=18, lineHeight=18)", fmetrics.toString())
-        val gmetrics = font.getGlyphMetrics(16.0, 'k'.toInt())
-        assertEquals("GlyphMetrics(codePoint=107 ('k'), existing=true, xadvance=7, bounds=Rectangle(x=0, y=0, width=6, height=10))", gmetrics.toString())
+        val gmetrics = font.getGlyphMetrics(16.0, 'k'.code)
+        assertEquals(
+            """
+                FontMetrics(size=16, top=14.8, ascent=14.8, baseline=0, descent=-3.1, bottom=-3.1, lineGap=0.4, unitsPerEm=16, maxWidth=21.5, lineHeight=18.4)
+                GlyphMetrics(codePoint=107 ('k'), existing=true, xadvance=7, bounds=Rectangle(x=0, y=0, width=6, height=10))
+            """.trimIndent(),
+            "$fmetrics\n$gmetrics"
+        )
     }
 
     @Test
@@ -177,11 +182,11 @@ class FontTest {
                 [1]middle:   TextMetrics[-1, -9, 79, 18][1, 9]
                 [1]baseline: TextMetrics[-1, -15, 79, 18][1, 3]
                 [1]bottom:   TextMetrics[-1, -18, 79, 18][1, 0]
-                [2]left:     TextMetrics[-1, 0, 79, 36][1, 18]
-                [2]middle:   TextMetrics[-1, -18, 79, 36][1, 0]
-                [2]baseline: TextMetrics[-1, -15, 79, 36][1, 3]
-                [2]bottom:   TextMetrics[-1, -36, 79, 36][1, -18]
-                Rectangle(x=3, y=0, width=342, height=71)
+                [2]left:     TextMetrics[-1, 0, 79, 37][1, 18]
+                [2]middle:   TextMetrics[-1, -18, 79, 37][1, 0]
+                [2]baseline: TextMetrics[-1, -15, 79, 37][1, 3]
+                [2]bottom:   TextMetrics[-1, -37, 79, 37][1, -19]
+                Rectangle(x=3, y=0, width=342, height=73)
             """.trimIndent(),
             """
                 [0]left:     ${metrics(text0, TextAlignment.TOP_LEFT)}

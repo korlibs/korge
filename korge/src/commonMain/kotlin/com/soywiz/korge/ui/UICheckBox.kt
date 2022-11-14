@@ -8,7 +8,7 @@ import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.NinePatchBmpSlice
 import com.soywiz.korim.color.Colors
-import com.soywiz.korim.text.TextAlignment
+import com.soywiz.korim.text.*
 import com.soywiz.korio.async.Signal
 import com.soywiz.korma.geom.*
 import com.soywiz.korui.UiContainer
@@ -55,7 +55,7 @@ open class UIBaseCheckBox<T : UIBaseCheckBox<T>>(
     }
     private val box = ninePatch(buttonNormal, height, height)
     private val icon = image(checkBoxIcon)
-    private val textView = text(text)
+    private val textView = textBlock(RichTextData(text))
 
     private var over by uiObservable(false) { updateState() }
     private var pressing by uiObservable(false) { updateState() }
@@ -74,20 +74,21 @@ open class UIBaseCheckBox<T : UIBaseCheckBox<T>>(
 
     override fun updateState() {
         super.updateState()
-        textView.setFormat(
-            face = textFont,
-            size = textSize.toInt(),
+        val width = this.width
+        val height = this.height
+
+        textView.text = RichTextData(textView.text.text, RichTextData.Style(
+            font = textFont,
+            textSize = textSize,
             color = textColor,
-            align = TextAlignment.MIDDLE_LEFT
-        )
-        textView.text = text
+        ))
+        textView.align = TextAlignment.MIDDLE_LEFT
         textView.position(height + 8.0, 0.0)
-        textView.setTextBounds(textBounds)
+        textView.setSize(width - height - 8.0, height)
 
         background.size(width, height)
         box.ninePatch = getNinePatch(this@UIBaseCheckBox.over)
         box.size(height, height)
-        textBounds.setTo(0.0, 0.0, width - height - 8.0, height)
 
         fitIconInRect(icon, checkBoxIcon, box.width, box.height, Anchor.MIDDLE_CENTER)
         icon.visible = checked

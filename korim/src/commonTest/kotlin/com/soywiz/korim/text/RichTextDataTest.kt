@@ -7,7 +7,6 @@ class RichTextDataTest {
     //val data = RichTextData(RichTextData.Node("hello, world", DefaultTtfFont, 16.0))
     val style = RichTextData.Style(DefaultTtfFont, 16.0)
 
-
     @Test
     fun testTokenize() {
         assertEquals(

@@ -245,17 +245,18 @@ data class RichTextData(
             return Line(nodes.drop(1) + nodes.first())
         }
 
+        operator fun invoke(text: String, style: Style): RichTextData = RichTextData(text.split("\n").map { Line(TextNode(it, style = style)) })
+
         operator fun invoke(
             text: String,
-            font: Font = DefaultTtfFontMsdf,
-            textSize: Double = 16.0,
-            italic: Boolean = false,
-            bold: Boolean = false,
-            underline: Boolean = false,
-            color: RGBA = Colors.BLACK,
-        ): RichTextData {
-            return RichTextData(text.split("\n").map { Line(TextNode(it, style = Style(font, textSize, italic, bold, underline, color))) })
-        }
+            font: Font = Style.DEFAULT.font,
+            textSize: Double = Style.DEFAULT.textSize,
+            italic: Boolean = Style.DEFAULT.italic,
+            bold: Boolean = Style.DEFAULT.bold,
+            underline: Boolean = Style.DEFAULT.underline,
+            color: RGBA? = Style.DEFAULT.color,
+            canBreak: Boolean = Style.DEFAULT.canBreak,
+        ): RichTextData = RichTextData(text, style = Style(font, textSize, italic, bold, underline, color, canBreak))
 
         //fun Char.isSymbol(): Boolean {
         //    return when (this) {

@@ -27,7 +27,7 @@ class MainEditor : Scene() {
 
         if (true) {
             //val font1 = resourcesVfs["msdf/SaniTrixieSans.fnt"].readBitmapFont()
-            //val font1 = resourcesVfs["msdf/SaniTrixieSans.json"].readBitmapFont()
+            val font2 = resourcesVfs["msdf/SaniTrixieSans.json"].readBitmapFont()
             val font1 = DefaultTtfFontMsdf
 
             font1.get('A')
@@ -39,14 +39,27 @@ class MainEditor : Scene() {
                     xy(400, 200 + 150 * n)
                     solidRect(300, 100, Colors.DARKGREY)
                     if (n == 0 ){
-                        text("HELLO WORLD", textSize = 32.0).also {
+                        text("HELLO WORLD áéúóúñ cooool", textSize = 32.0, font = font1).also {
                             it.setTextBounds(Rectangle(0, 0, 300, 100))
                             it.alignment = TextAlignment.MIDDLE_CENTER
                         }
                     } else {
-                        textBlock(RichTextData("HELLO WORLD áéíóúñ", font = DefaultTtfFontMsdf, textSize = 32.0)).also {
+                        //textBlock(RichTextData("HELLO WORLD aeioun coooool", font = font2, textSize = 32.0)).also {
+                        val tb = textBlock(RichTextData("HELLO WORLD áéúóúñ cooool", font = font2, textSize = 32.0)).also {
                             it.setSize(300.0, 100.0)
                             it.align = TextAlignment.MIDDLE_CENTER
+                        }
+
+                        keys {
+                            var toggle = true
+                            down(Key.RETURN) {
+                                tb.text = if (toggle) {
+                                    RichTextData("HELLO WORLD", font = font1, textSize = 32.0)
+                                } else {
+                                    RichTextData("HELLO WORLD", font = font2, textSize = 32.0)
+                                }
+                                toggle = !toggle
+                            }
                         }
                     }
                 }
@@ -57,13 +70,18 @@ class MainEditor : Scene() {
             renderableView(viewRenderer = ViewRenderer {
                 ctx2d.rect(0.0, 0.0, 100.0, 100.0, Colors.RED)
                 //ctx2d.drawText("HELLO WORLD!", font1, textSize = 128.0)
-                ctx2d.drawText(RichTextData.fromHTML("HELLO, World! <b>this</b> ia test!", RichTextData.Style(textSize = 64.0, font = font1, color = Colors.WHITE)))
+                ctx2d.drawText(RichTextData.fromHTML("HELLO, World! <b>this</b> is a test!", RichTextData.Style(textSize = 64.0, font = font2, color = Colors.WHITE)))
             })
+
+            //val image = text("HELLO, World!\nthis is test!", font = font2, color = Colors.WHITE)
+//
+            //image.simpleAnimator.sequence(looped = true) {
+            //    tween(image::scale[15.0], time = 3.seconds)
+            //    tween(image::scale[1.0], time = 3.seconds)
+            //}
 
             //textBlock(RichTextData("hello world!", 128.0, font1, color = Colors.WHITE), width = 1024.0, height = 1024.0)
             return
-
-            val image = text("HELLO, World! this ia test!", font = font1, color = Colors.WHITE)
 
             //val image = image(resourcesVfs["msdf/SaniTrixieSans.png"].readBitmap().mipmaps()).scale(0.25).also {
             //    it.program = MsdfRender.PROGRAM_MSDF_I
@@ -93,11 +111,6 @@ class MainEditor : Scene() {
                     //image.program = if (image.program == MsdfRender.PROGRAM_SDF_A) MsdfRender.PROGRAM_MSDF else MsdfRender.PROGRAM_SDF_A
                     //println("TOGGLED PROGRAM!: ${image.program?.name}")
                 }
-            }
-
-            image.simpleAnimator.sequence(looped = true) {
-                tween(image::scale[10.0], time = 3.seconds)
-                tween(image::scale[0.25], time = 3.seconds)
             }
 
             return

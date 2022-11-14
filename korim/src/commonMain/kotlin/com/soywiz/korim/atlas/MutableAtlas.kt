@@ -41,8 +41,8 @@ class MutableAtlas<T>(
         growMethod: GrowMethod = GrowMethod.NEW_IMAGES
     ) : this(BinPacker(width, height), border, premultiplied, allowToGrow, growMethod)
 
-    val width get() = binPacker.width.toInt()
-    val height get() = binPacker.height.toInt()
+    val width: Int get() = binPacker.width.toInt()
+    val height: Int get() = binPacker.height.toInt()
 
     enum class GrowMethod { GROW_IMAGE, NEW_IMAGES }
 

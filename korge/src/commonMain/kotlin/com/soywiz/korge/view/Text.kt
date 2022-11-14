@@ -317,12 +317,8 @@ open class Text(
                         _staticGraphics = null
                         container.removeChildren()
                     }
-                    bitmapFontActions.x = 0.0
-                    bitmapFontActions.y = 0.0
-
                     bitmapFontActions.mreset()
-                    bitmapFontActions.verticalAlign = verticalAlign
-                    bitmapFontActions.horizontalAlign = horizontalAlign
+                    bitmapFontActions.align = TextAlignment.BASELINE_LEFT
                     renderer.invoke(bitmapFontActions, text, textSize, font)
                     while (container.numChildren < bitmapFontActions.size) {
                         container.image(Bitmaps.transparent)
@@ -334,19 +330,32 @@ open class Text(
                     //println(font.glyphs['a'.toInt()])
                     //println(font.glyphs['g'.toInt()])
 
-                    val textWidth = bitmapFontActions.x
+                    val bounds = bitmapFontActions.getBounds()
+                    val firstBounds = bitmapFontActions.getGlyphBounds(0)
+                    val textWidth = bounds.width
+                    val textHeight = bounds.height
 
-                    val dx = -textWidth * horizontalAlign.ratio
+                    println("Text.BitmapFont: bounds=$bounds, firstBounds=$firstBounds, textWidth=$textWidth, textHeight=$textHeight, verticalAlign=$verticalAlign")
+
+                    val dx = (textBounds.width - textWidth) * horizontalAlign.ratio
+                    //val dx = 0.0
+                    val dy = when (verticalAlign) {
+                        VerticalAlign.BASELINE -> 0.0
+                        //VerticalAlign.MIDDLE -> +textHeight * 0.5 + font.getFontMetrics(textSize).ascent * 0.5
+                        //VerticalAlign.MIDDLE -> 0.0
+                        else -> (textBounds.height - textHeight) * verticalAlign.ratioFake - firstBounds.y
+                    }
 
                     if (newTvaRenderer) {
                         this.tva = TexturedVertexArray.forQuads(bitmapFontActions.size)
                     }
 
                     val program = font.agProgram
+                    //val program = null
                     for (n in 0 until bitmapFontActions.size) {
                         val entry = bitmapFontActions.read(n, tempBmpEntry)
                         if (newTvaRenderer) {
-                            tva?.quad(n * 4, entry.x + dx, entry.y, entry.tex.width * entry.sx, entry.tex.height * entry.sy, identityMat, entry.tex, renderColorMul, renderColorAdd)
+                            tva?.quad(n * 4, entry.x + dx, entry.y + dy, entry.tex.width * entry.sx, entry.tex.height * entry.sy, identityMat, entry.tex, renderColorMul, renderColorAdd)
                         } else {
                             val it = (container[n] as Image)
                             it.program = program
@@ -355,14 +364,14 @@ open class Text(
                             it.smoothing = smoothing
                             it.bitmap = entry.tex
                             it.x = entry.x + dx
-                            it.y = entry.y
+                            it.y = entry.y + dy
                             it.scaleX = entry.sx
                             it.scaleY = entry.sy
                             it.rotation = entry.rot
                         }
                     }
 
-                    setContainerPosition(0.0, 0.0, font.base)
+                    //setContainerPosition(0.0, 0.0, font.base)
                 }
             }
             else -> {
