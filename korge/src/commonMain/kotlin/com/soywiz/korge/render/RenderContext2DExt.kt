@@ -14,34 +14,24 @@ import com.soywiz.korma.geom.*
 // https://iquilezles.org/articles/distfunctions
 // https://iquilezles.org/articles/distfunctions2d/#:~:text=length(p)%20%2D%20r%3B%0A%7D-,Rounded%20Box%20%2D%20exact,-(https%3A//www
 object MaterialRender {
-    val u_ShadowColor = Uniform("u_ShadowColor", VarType.Float4)
-    val u_ShadowRadius = Uniform("u_ShadowRadius", VarType.Float1)
-    val u_ShadowOffset = Uniform("u_ShadowOffset", VarType.Float2)
-    val u_HighlightPos = Uniform("u_HighlightPos", VarType.Float2)
-    val u_HighlightRadius = Uniform("u_HighlightRadius", VarType.Float1)
-    val u_Size = Uniform("u_Size", VarType.Float2)
-    val u_Radius = Uniform("u_Radius", VarType.Float4)
-    val u_HighlightAlpha = Uniform("u_HighlightAlpha", VarType.Float1)
-    val PROGRAM = ShadedView.buildShader {
-        val roundedBoxSDF = FUNC("roundedBoxSDF", VarType.Float1) {
-            val p = ARG("p", VarType.Float2)
-            val b = ARG("b", VarType.Float2)
-            val r = ARG("r", VarType.Float4)
-            SET(r["xy"], TERNARY(p.x gt 0f.lit, r["xy"], r["zw"]))
-            SET(r["x"], TERNARY(p.y gt 0f.lit, r["x"], r["y"]))
-            val q = abs(p) - b + r.x
-            RETURN(min(max(q.x, q.y), 0f.lit) + length(max(q, 0f.lit)) - r.x)
-        }
+    val u_ShadowColor by Uniform(VarType.Float4)
+    val u_ShadowRadius by Uniform(VarType.Float1)
+    val u_ShadowOffset by Uniform(VarType.Float2)
+    val u_HighlightPos by Uniform(VarType.Float2)
+    val u_HighlightRadius by Uniform(VarType.Float1)
+    val u_Size by Uniform(VarType.Float2)
+    val u_Radius by Uniform(VarType.Float4)
+    val u_HighlightAlpha by Uniform(VarType.Float1)
 
+    val PROGRAM = ShadedView.buildShader {
         // The pixel space scale of the rectangle.
         val size = u_Size
-        // How soft the edges should be (in pixels). Higher values could be used to simulate a drop shadow.
-        val edgeSoftness = 1.0f.lit
         // Calculate distance to edge.
-        val distance = roundedBoxSDF(v_Tex["xy"] - (size / 2.0f.lit), size / 2.0f.lit, u_Radius)
+        val distance = SDFShaders.roundedBox(v_Tex["xy"] - (size / 2.0f.lit), size / 2.0f.lit, u_Radius)
         // Smooth the result (free antialiasing).
         val smoothedAlpha = t_Temp0.x
-        SET(smoothedAlpha, 1.0f.lit - smoothstep(0.0f.lit, edgeSoftness * 2.0f.lit, distance))
+        //SET(smoothedAlpha, 1.0f.lit - smoothstep(0.0f.lit, edgeSoftness * 2.0f.lit, distance))
+        SET(smoothedAlpha, SDFShaders.computeAAAlphaFromDist(distance))
 
         val highlightAlpha = t_Temp0.y
         SET(highlightAlpha, smoothstep(u_HighlightRadius, u_HighlightRadius - 1f.lit, length(v_Tex - u_HighlightPos)) * u_HighlightAlpha)
@@ -52,15 +42,15 @@ object MaterialRender {
         SET(out, out + (vec4(.7f.lit) * highlightAlpha * smoothedAlpha))
 
         // Apply a drop shadow effect.
-        //IF(distance gt 0f.lit) {
-        IF(smoothedAlpha lt 0.05f.lit) {
+        IF((distance ge (-.1f).lit) and (u_ShadowRadius gt 0f.lit)) {
+        //IF((smoothedAlpha lt .1f.lit) and (u_ShadowRadius gt 0f.lit)) {
             val shadowSoftness = u_ShadowRadius
             val shadowOffset = u_ShadowOffset
-            val shadowDistance = roundedBoxSDF(v_Tex["xy"] + shadowOffset - (size / 2.0f.lit), size / 2.0f.lit, u_Radius)
+            val shadowDistance = SDFShaders.roundedBox(v_Tex["xy"] + shadowOffset - (size / 2.0f.lit), size / 2.0f.lit, u_Radius)
             val shadowAlpha = 1.0f.lit - smoothstep(-shadowSoftness, shadowSoftness, shadowDistance)
-            val shadowColor = u_ShadowColor
 
-            SET(out, mix(out, shadowColor, (shadowAlpha - smoothedAlpha)))
+            SET(out, SDFShaders.mixPremultipliedColor(u_ShadowColor * shadowAlpha, out))
+            //SET(out, mix(out, shadowColor, (shadowAlpha + smoothedAlpha)))
         }
     }
 }
