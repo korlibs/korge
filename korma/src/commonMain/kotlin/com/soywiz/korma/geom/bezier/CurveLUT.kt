@@ -7,12 +7,10 @@ import com.soywiz.korma.geom.IPoint
 import com.soywiz.korma.geom.Point
 import com.soywiz.korma.geom.PointArrayList
 import com.soywiz.korma.geom.getPoint
-import com.soywiz.korma.geom.lastX
-import com.soywiz.korma.geom.lastY
 import com.soywiz.korma.interpolation.interpolate
-import com.soywiz.korma.math.convertRange
+import com.soywiz.korma.math.*
 
-data class CurveLUT(val curve: Curve, val points: PointArrayList, val ts: DoubleArrayList, val estimatedLengths: DoubleArrayList) {
+data class CurveLUT(val curve: Curve, val points: PointArrayList, val ts: DoubleArrayList, private val _estimatedLengths: DoubleArrayList) {
     constructor(curve: Curve, capacity: Int) : this(
         curve,
         PointArrayList(capacity),
@@ -20,48 +18,57 @@ data class CurveLUT(val curve: Curve, val points: PointArrayList, val ts: Double
         DoubleArrayList(capacity)
     )
 
+    val estimatedLengths: DoubleArrayList get() {
+        if (_estimatedLengths.isEmpty()) {
+            _estimatedLengths.add(0.0)
+        }
+        while (_estimatedLengths.size < size) {
+            val pos = _estimatedLengths.size
+            val prev = _estimatedLengths.last()
+            _estimatedLengths.add(prev + Point.distance(points.getX(pos - 1), points.getY(pos - 1), points.getX(pos), points.getY(pos)))
+        }
+        return _estimatedLengths
+    }
     val estimatedLength: Double get() = estimatedLengths.last()
     val steps: Int get() = points.size - 1
     val size: Int get() = points.size
     val temp = Point()
-    private var accumulatedLength: Double = 0.0
 
     fun clear() {
         points.clear()
         ts.clear()
-        estimatedLengths.clear()
-        accumulatedLength = 0.0
+        _estimatedLengths.clear()
     }
 
     fun add(t: Double, p: IPoint) {
-        accumulatedLength += if (points.isNotEmpty()) kotlin.math.hypot(
-            p.x - points.lastX,
-            p.y - points.lastY
-        ) else 0.0
-        estimatedLengths.add(accumulatedLength)
         points.add(p)
         ts.add(t)
     }
 
-    class ClosestResult(val mdist: Double, val mpos: Int)
+    class ClosestResult(val mdistSq: Double, val mpos: Int) {
+        val mdist: Double get() = kotlin.math.sqrt(mdistSq)
+    }
 
     fun closest(point: IPoint): ClosestResult {
-        var mdist: Double = Double.POSITIVE_INFINITY
+        var mdistSq: Double = Double.POSITIVE_INFINITY
         var mpos: Int = 0
         for (n in 0 until size) {
-            val d = Point.distance(this.points.getX(n), this.points.getY(n), point.x, point.y)
-            if (d < mdist) {
-                mdist = d
+            val d = Point.distanceSquared(this.points.getX(n), this.points.getY(n), point.x, point.y)
+            if (d < mdistSq) {
+                mdistSq = d
                 mpos = n
             }
         }
-        return ClosestResult(mdist = mdist, mpos = mpos)
+        return ClosestResult(mdistSq = mdistSq, mpos = mpos)
     }
 
-    data class Estimation(var point: Point = Point(), var ratio: Double = 0.0, var length: Double = 0.0)
+    data class Estimation(var point: Point = Point(), var ratio: Double = 0.0, var length: Double = 0.0) {
+        fun roundDecimalDigits(places: Int): Estimation = Estimation(point.copy().setToRoundDecimalPlaces(places), ratio.roundDecimalPlaces(places), length.roundDecimalPlaces(places))
+    }
 
     fun Estimation.setAtIndexRatio(index: Int, ratio: Double): Estimation {
         val ratio0 = ts[index]
+        //println("estimatedLengths=$estimatedLengths")
         val length0 = estimatedLengths[index]
         val pointX0 = points.getX(index)
         val pointY0 = points.getY(index)

@@ -1,17 +1,26 @@
 package com.soywiz.korma.geom.bezier
 
-import com.soywiz.kds.doubleArrayListOf
+import com.soywiz.kds.*
 import com.soywiz.korma.geom.Line
 import com.soywiz.korma.geom.Point
 import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.geom.clone
 import com.soywiz.korma.geom.mutable
 import com.soywiz.korma.geom.pointArrayListOf
-import com.soywiz.korma.math.roundDecimalPlaces
-import kotlin.test.Test
+import com.soywiz.korma.math.*
+import kotlin.test.*
 import kotlin.test.assertEquals
 
 class BezierCurveTest {
+    @Test
+    fun testBezierSimple() {
+        val curve = Bezier(Point(0, 0), Point(-50, -200), Point(150, 150), Point(110, 120))
+        assertEquals(
+            Bezier.ProjectedPoint(p=Point(-6.66, -31.89), t=0.06, dSq=181.61),
+            curve.project(Point(-20, -30)).roundDecimalPlaces(2)
+        )
+    }
+
     @Test
     fun testBezier() {
         //val curve = Bezier(PointArrayList(Point(0, 0), Point(100, 100), Point(150, 150), Point(250, 300)))
@@ -51,7 +60,7 @@ class BezierCurveTest {
             curve.hull(0.5)
         )
         assertEquals(
-            Bezier.ProjectedPoint(p=Point(-6.66, -31.89), t=0.06, d=13.48),
+            Bezier.ProjectedPoint(p=Point(-6.66, -31.89), t=0.06, dSq=181.61),
             curve.project(Point(-20, -30)).roundDecimalPlaces(2)
         )
         assertEquals(
@@ -113,11 +122,31 @@ class BezierCurveTest {
         val curve = Bezier(100, 25, 10, 90, 110, 100, 150, 195)
         assertEquals(101, curve.lut.size)
         assertEquals(213.86206312975315, curve.length, 0.00001)
-        assertEquals(curve.lut.estimateAtLength(-10.0), CurveLUT.Estimation(point=Point(100, 25), ratio=0.0, length=0.0))
-        assertEquals(curve.lut.estimateAtLength(10.0), CurveLUT.Estimation(point=Point(91.9902598047208, 30.988058641418167), ratio=0.03139852512330205, length=10.0))
-        assertEquals(curve.lut.estimateAtLength(100.0), CurveLUT.Estimation(point=Point(81.66306609423552, 104.91335975767849), ratio=0.5449255066963016, length=100.0))
-        assertEquals(curve.lut.estimateAtLength(200.0), CurveLUT.Estimation(point=Point(144.15932033939768, 182.4364734733693), ratio=0.954162296103267, length=200.0))
-        assertEquals(curve.lut.estimateAtLength(10000.0), CurveLUT.Estimation(point=Point(150, 195), ratio=1.0, length=213.8574065019019))
+
+        println(curve.lut.estimatedLengths.toString())
+        assertEquals(
+            """
+                Estimation(point=(100, 25), ratio=0.0, length=0.0)
+                Estimation(point=(91.99, 30.99), ratio=0.03, length=10.0)
+                Estimation(point=(81.66, 104.91), ratio=0.54, length=100.0)
+                Estimation(point=(144.16, 182.44), ratio=0.95, length=200.0)
+                Estimation(point=(150, 195), ratio=1.0, length=213.86)
+            """.trimIndent(),
+            //listOf(
+            //    CurveLUT.Estimation(point=Point(100, 25), ratio=0.0, length=0.0),
+            //    CurveLUT.Estimation(point=Point(91.9902598047208, 30.988058641418167), ratio=0.03139852512330205, length=10.0),
+            //    CurveLUT.Estimation(point=Point(81.66306609423552, 104.91335975767849), ratio=0.5449255066963016, length=100.0),
+            //    CurveLUT.Estimation(point=Point(144.15932033939768, 182.4364734733693), ratio=0.954162296103267, length=200.0),
+            //    CurveLUT.Estimation(point=Point(150, 195), ratio=1.0, length=213.8574065019019),
+            //),
+            listOf(
+                curve.lut.estimateAtLength(-10.0),
+                curve.lut.estimateAtLength(10.0),
+                curve.lut.estimateAtLength(100.0),
+                curve.lut.estimateAtLength(200.0),
+                curve.lut.estimateAtLength(10000.0),
+            ).map { it.roundDecimalDigits(2) }.joinToString("\n")
+        )
     }
 
     @Test
@@ -221,7 +250,7 @@ class BezierCurveTest {
     fun testProjectsOntoTheCorrectOnCurvePoint() {
         val b = Bezier(0, 0, 100, 0, 100, 100)
         assertEquals(
-            Bezier.ProjectedPoint(p = Point(75, 25), t = 0.5, d = 7.0710678118654755),
+            Bezier.ProjectedPoint(p = Point(75, 25), t = 0.5, dSq = 50.0),
             b.project(Point(80, 20))
         )
     }
