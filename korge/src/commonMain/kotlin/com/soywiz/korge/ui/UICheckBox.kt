@@ -63,7 +63,7 @@ open class UIBaseCheckBox<T : UIBaseCheckBox<T>>(
     private val textBounds = Rectangle()
 
     override fun renderInternal(ctx: RenderContext) {
-       updateState()
+        updateState()
         super.renderInternal(ctx)
     }
 

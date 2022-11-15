@@ -10,7 +10,7 @@ import com.soywiz.korim.text.*
 import com.soywiz.korma.geom.*
 
 inline fun Container.textBlock(
-    text: RichTextData = RichTextData("", textSize = 16.0, font = DefaultTtfFontMsdf),
+    text: RichTextData = RichTextData("", textSize = 16.0, font = DefaultTtfFontAsBitmap),
     align: TextAlignment = TextAlignment.TOP_LEFT,
     width: Double = 100.0,
     height: Double = 100.0,
@@ -19,7 +19,7 @@ inline fun Container.textBlock(
     = TextBlock(text, align, width, height).addTo(this, block)
 
 class TextBlock(
-    text: RichTextData = RichTextData("", textSize = 16.0, font = DefaultTtfFontMsdf),
+    text: RichTextData = RichTextData("", textSize = 16.0, font = DefaultTtfFontAsBitmap),
     align: TextAlignment = TextAlignment.TOP_LEFT,
     width: Double = 100.0,
     height: Double = 100.0,
@@ -34,6 +34,11 @@ class TextBlock(
     var ellipsis: String? = "..."; set(value) { field = value; invalidProps() }
     var padding: Margin = Margin.EMPTY; set(value) { field = value; invalidProps() }
     var autoSize: Boolean = false; set(value) { field = value; invalidateText() }
+    var plainText: String
+        get() = text.text
+        set(value) {
+            text = RichTextData(value, style = text.defaultStyle)
+        }
     private var image = image(Bitmaps.transparent)
     private var allBitmap: Boolean = true
 

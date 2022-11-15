@@ -5,23 +5,12 @@ import com.soywiz.korge.input.onClick
 import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.tween.get
 import com.soywiz.korge.tween.tween
-import com.soywiz.korge.ui.UISkin
-import com.soywiz.korge.ui.buttonBackColor
-import com.soywiz.korge.ui.textFont
-import com.soywiz.korge.ui.uiButton
-import com.soywiz.korge.ui.uiCheckBox
-import com.soywiz.korge.ui.uiComboBox
-import com.soywiz.korge.ui.uiProgressBar
-import com.soywiz.korge.ui.uiScrollBar
-import com.soywiz.korge.ui.uiScrollableArea
-import com.soywiz.korge.ui.uiSkin
-import com.soywiz.korge.ui.uiSkinBitmap
-import com.soywiz.korge.view.SContainer
-import com.soywiz.korge.view.position
-import com.soywiz.korim.color.ColorTransform
-import com.soywiz.korim.color.transform
+import com.soywiz.korge.ui.*
+import com.soywiz.korge.view.*
+import com.soywiz.korim.color.*
 import com.soywiz.korim.font.readBitmapFont
 import com.soywiz.korio.file.std.resourcesVfs
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.interpolation.Easing
 
 class MainUI : Scene() {
@@ -52,20 +41,7 @@ class MainUI : Scene() {
             enable()
         }
 
-        uiScrollBar(256.0, 32.0, 0.0, 32.0, 64.0) {
-            position(64, 64)
-            onChange {
-                println(it.ratio)
-            }
-        }
-        uiScrollBar(32.0, 256.0, 0.0, 16.0, 64.0) {
-            position(64, 128)
-            onChange {
-                println(it.ratio)
-            }
-        }
-
-        uiCheckBox {
+        uiCheckBox(text = "HELLO WORLD!") {
             position(128, 128 + 64)
         }
 
@@ -73,11 +49,19 @@ class MainUI : Scene() {
             position(128, 128 + 64 + 32)
         }
 
-        uiScrollableArea(config = {
-            position(480, 128)
-        }) {
+        //uiMaterialLayer(50.0, 50.0) {
+        //    xy(128, 260)
+        //    bgColor = Colors.RED
+        //    radius = RectCorners(25.0)
+        //    borderColor = Colors.YELLOW
+        //    borderSize = 2.0
+        //    //addHighlight(Point(0.5, 0.5))
+        //}
+
+        uiScrollable {
+            it.position(480, 128)
             for (n in 0 until 16) {
-                uiButton(text = "HELLO $n").position(0, n * 64)
+                uiButton(text = "HELLO $n").position(n * 16, n * 32)
             }
         }
 

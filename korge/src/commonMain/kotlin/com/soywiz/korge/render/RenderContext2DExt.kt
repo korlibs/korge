@@ -25,7 +25,7 @@ object MaterialRender {
     val u_Size by Uniform(VarType.Float2)
     val u_Radius by Uniform(VarType.Float4)
 
-    val u_BorderSize by Uniform(VarType.Float1)
+    val u_BorderSizeHalf by Uniform(VarType.Float1)
     val u_BorderColor by Uniform(VarType.Float4)
 
     val PROGRAM = ShadedView.buildShader {
@@ -51,8 +51,8 @@ object MaterialRender {
         }
 
         // Render border
-        IF(u_BorderSize gt 0f) {
-            SET(borderDist, SDFShaders.opBorder(roundedDist, u_BorderSize))
+        IF(u_BorderSizeHalf gt 0f) {
+            SET(borderDist, SDFShaders.opBorder(roundedDist, u_BorderSizeHalf))
             SET(borderAlpha, SDFShaders.opAA(borderDist))
             IF(borderAlpha gt 0f) {
                 SET(out, SDFShaders.opCombinePremultipliedColors(out, u_BorderColor * borderAlpha))
@@ -105,7 +105,7 @@ fun RenderContext2D.materialRoundRect(
         _tempProgramUniforms[MaterialRender.u_HighlightRadius] = highlightRadius * kotlin.math.max(width, height) * 1.25
         _tempProgramUniforms[MaterialRender.u_HighlightColor] = highlightColor.premultipliedFast
 
-        _tempProgramUniforms[MaterialRender.u_BorderSize] = borderSize
+        _tempProgramUniforms[MaterialRender.u_BorderSizeHalf] = borderSize * 0.5
         _tempProgramUniforms[MaterialRender.u_BorderColor] = borderColor.premultipliedFast
 
         _tempProgramUniforms[MaterialRender.u_ShadowColor] = shadowColor.premultipliedFast

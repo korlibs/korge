@@ -52,7 +52,7 @@ text2("Hello World!", color = Colors.RED, font = font, renderer = CreateStringTe
 */
 inline fun Container.text(
     text: String, textSize: Double = Text.DEFAULT_TEXT_SIZE,
-    color: RGBA = Colors.WHITE, font: Resourceable<out Font> = DefaultTtfFontMsdf,
+    color: RGBA = Colors.WHITE, font: Resourceable<out Font> = DefaultTtfFontAsBitmap,
     alignment: TextAlignment = TextAlignment.TOP_LEFT,
     renderer: TextRenderer<String> = DefaultStringTextRenderer,
     autoScaling: Boolean = Text.DEFAULT_AUTO_SCALING,
@@ -63,7 +63,7 @@ inline fun Container.text(
 
 open class Text(
     text: String, textSize: Double = DEFAULT_TEXT_SIZE,
-    color: RGBA = Colors.WHITE, font: Resourceable<out Font> = DefaultTtfFontMsdf,
+    color: RGBA = Colors.WHITE, font: Resourceable<out Font> = DefaultTtfFontAsBitmap,
     alignment: TextAlignment = TextAlignment.TOP_LEFT,
     renderer: TextRenderer<String> = DefaultStringTextRenderer,
     autoScaling: Boolean = DEFAULT_AUTO_SCALING,
@@ -194,7 +194,7 @@ open class Text(
         }
 
     fun setFormat(face: Resourceable<out Font>? = this.font, size: Int = this.textSize.toInt(), color: RGBA = this.color, align: TextAlignment = this.alignment) {
-        this.font = face ?: DefaultTtfFontMsdf
+        this.font = face ?: DefaultTtfFontAsBitmap
         this.textSize = size.toDouble()
         this.color = color
         this.alignment = align

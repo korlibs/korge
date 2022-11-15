@@ -57,6 +57,13 @@ open class UIView(
         get() = _height
         set(value) { if (_height != value) { _height = value; onSizeChanged() } }
 
+    //var preferredWidth: Double = 100.0
+    //var preferredHeight: Double = 100.0
+    //var minWidth: Double = 100.0
+    //var minHeight: Double = 100.0
+    //var maxWidth: Double = 100.0
+    //var maxHeight: Double = 100.0
+
     override fun setSize(width: Double, height: Double) {
         _width = width
         _height = height
@@ -122,7 +129,6 @@ open class UIView(
             iconView.anchor(anchor)
             iconView.position(width * anchor.sx, height * anchor.sy)
             iconView.scale(iconScale, iconScale)
-
         }
     }
 }

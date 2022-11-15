@@ -6,7 +6,7 @@ import com.soywiz.klogger.Logger
 import com.soywiz.korag.AG
 import com.soywiz.korag.shader.*
 import com.soywiz.korge.internal.KorgeInternal
-import com.soywiz.korge.view.BlendMode
+import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.Bitmaps
 import com.soywiz.korim.bitmap.BmpSlice
 import com.soywiz.korim.color.*
@@ -45,6 +45,8 @@ class RenderContext2D(
     val agBitmapTextureManager: AgBitmapTextureManager
 ) : Extra by Extra.Mixin() {
 	init { logger.trace { "RenderContext2D[0]" } }
+
+    val ctx: RenderContext get() = batch.ctx
 
     inline fun getTexture(slice: BmpSlice): TextureCoords = agBitmapTextureManager.getTexture(slice)
 
@@ -340,4 +342,14 @@ class RenderContext2D(
 
     @PublishedApi
     internal val tempScissor: AG.Scissor = AG.Scissor()
+}
+
+inline fun View.renderCtx2d(ctx: RenderContext, crossinline block: (RenderContext2D) -> Unit) {
+    ctx.useCtx2d { context ->
+        context.keep {
+            context.blendMode = blendMode
+            context.setMatrix(globalMatrix)
+            block(context)
+        }
+    }
 }

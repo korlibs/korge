@@ -1,215 +1,21 @@
 package samples
 
 import com.soywiz.klock.*
-import com.soywiz.korev.*
 import com.soywiz.korge.animate.*
-import com.soywiz.korge.input.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.text.*
 import com.soywiz.korge.tween.*
 import com.soywiz.korge.ui.*
 import com.soywiz.korge.view.*
-import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.font.*
-import com.soywiz.korim.format.*
 import com.soywiz.korim.text.*
-import com.soywiz.korim.vector.*
-import com.soywiz.korim.vector.format.*
-import com.soywiz.korio.file.std.*
 import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.vector.*
-import kotlin.math.*
 
 class MainEditor : Scene() {
     override suspend fun SContainer.sceneMain() {
-        //solidRect(width, height, Colors.WHITE)
-
-        val Apath = resourcesVfs["A.svg"].readSVG().toShape().getPath()
-        println(Apath.toSvgString())
-
-        val msdfBitmap = Apath.msdfBmp(64, 64)
-
-        //val outputPng = resourcesVfs["output.png"].readBitmap().mipmaps()
-        val outputPng = resourcesVfs["output.png"].readBitmap()
-
-        image(outputPng) {
-            xy(196 * 0, 0)
-            scale = 3.0
-        }
-
-        image(outputPng) {
-            xy(196 * 1, 0)
-            scale = 3.0
-            program = MsdfRender.PROGRAM_MSDF
-        }
-        image(outputPng) {
-            xy(196 * 1, 50)
-            scale = 1.5
-            program = MsdfRender.PROGRAM_MSDF
-        }
-        image(outputPng) {
-            xy(196 * 1, 100)
-            scale = 0.5
-            program = MsdfRender.PROGRAM_MSDF
-        }
-        image(outputPng) {
-            xy(196 * 1, 150)
-            scale = 0.25
-            program = MsdfRender.PROGRAM_MSDF
-        }
-        image(outputPng) {
-            xy(196 * 1, 175)
-            scale = 0.15
-            program = MsdfRender.PROGRAM_MSDF
-        }
-        image(outputPng) {
-            xy(196 * 1, 200)
-            scale = 0.1
-            program = MsdfRender.PROGRAM_MSDF
-        }
-
-        image(msdfBitmap) {
-            xy(196 * 2, 0)
-            scale = 3.0
-        }
-
-        image(msdfBitmap) {
-            xy(196 * 3, 0)
-            scale = 3.0
-            program = MsdfRender.PROGRAM_MSDF
-        }
-
-        image(DefaultTtfFontMsdf.atlas.bitmap) {
-            xy(196 * 0, 256)
-            scale = 2.0
-            program = MsdfRender.PROGRAM_MSDF
-        }
-
-        image(DefaultTtfFontMsdf.atlas.bitmap) {
-            xy(196 * 2, 256)
-            scale = 0.5
-            program = MsdfRender.PROGRAM_MSDF
-        }
-
-        image(DefaultTtfFontMsdf.atlas.bitmap) {
-            xy(196 * 3, 256)
-            scale = 0.25
-            program = MsdfRender.PROGRAM_MSDF
-        }
-
-        image(DefaultTtfFontMsdf.atlas.bitmap) {
-            xy(196 * 4, 256)
-            scale = 2.0
-        }
-
-        return
-
-        if (true) {
-            //val font1 = resourcesVfs["msdf/SaniTrixieSans.fnt"].readBitmapFont()
-            val font2 = resourcesVfs["msdf/SaniTrixieSans.json"].readBitmapFont()
-            val font1 = DefaultTtfFontMsdf
-
-            val shape = buildShape {
-                fill(Colors.WHITE) {
-                    write(DefaultTtfFont.get('A')?.path?.path!!)
-                }
-            }
-
-            println(shape.toSvg())
-
-            font1.get('A')
-            font1.get('a')
-            font1.get('0')
-
-            for (n in 0 until 2) {
-                container {
-                    xy(400, 200 + 150 * n)
-                    solidRect(300, 100, Colors.DARKGREY)
-                    if (n == 0 ){
-                        text("HELLO WORLD áéúóúñ cooool", textSize = 32.0, font = font1).also {
-                            it.setTextBounds(Rectangle(0, 0, 300, 100))
-                            it.alignment = TextAlignment.MIDDLE_CENTER
-                        }
-                    } else {
-                        //textBlock(RichTextData("HELLO WORLD aeioun coooool", font = font2, textSize = 32.0)).also {
-                        val tb = textBlock(RichTextData("HELLO WORLD áéúóúñ cooool", font = font2, textSize = 32.0)).also {
-                            it.setSize(300.0, 100.0)
-                            it.align = TextAlignment.MIDDLE_CENTER
-                        }
-
-                        keys {
-                            var toggle = true
-                            down(Key.RETURN) {
-                                tb.text = if (toggle) {
-                                    RichTextData("HELLO WORLD", font = font1, textSize = 32.0)
-                                } else {
-                                    RichTextData("HELLO WORLD", font = font2, textSize = 32.0)
-                                }
-                                toggle = !toggle
-                            }
-                        }
-                    }
-                }
-            }
-
-            image(font1.baseBmp).xy(200, 200)
-
-            renderableView(viewRenderer = ViewRenderer {
-                ctx2d.rect(0.0, 0.0, 100.0, 100.0, Colors.RED)
-                //ctx2d.drawText("HELLO WORLD!", font1, textSize = 128.0)
-                ctx2d.drawText(RichTextData.fromHTML("HELLO, World! <b>this</b> is a test!", RichTextData.Style(textSize = 64.0, font = font2, color = Colors.WHITE)))
-            })
-
-            //val image = text("HELLO, World!\nthis is test!", font = font2, color = Colors.WHITE)
-//
-            //image.simpleAnimator.sequence(looped = true) {
-            //    tween(image::scale[15.0], time = 3.seconds)
-            //    tween(image::scale[1.0], time = 3.seconds)
-            //}
-
-            //textBlock(RichTextData("hello world!", 128.0, font1, color = Colors.WHITE), width = 1024.0, height = 1024.0)
-            return
-
-            //val image = image(resourcesVfs["msdf/SaniTrixieSans.png"].readBitmap().mipmaps()).scale(0.25).also {
-            //    it.program = MsdfRender.PROGRAM_MSDF_I
-            //}
-
-            /*
-        val rfont = DefaultTtfFont
-        val size = 48.0
-        val codePoint = 'e'.code
-        val metrics = rfont.getGlyphMetrics(size, codePoint)
-        val glyph = rfont.getGlyphPath(size, codePoint)
-
-        //val metrics = glyph.metrics1px
-        println("metrics=$metrics, DefaultTtfFont.unitsPerEm=${DefaultTtfFont.unitsPerEm}")
-        println("glyph!!.path.path=${glyph!!.path.toSvgString()}")
-        val msdf = glyph!!.path.clone().applyTransform(glyph.transform * Matrix().translate(0.0 + size / 4, metrics.height + size / 4)).msdf(size.toInt(), size.toInt())
-        msdf.normalizeUniform()
-
-        val image = image(msdf.toBMP32().mipmaps().slice()).xy(100, 100).scale(0.24).also {
-            //it.program = MsdfRender.PROGRAM_MSDF
-            it.program = MsdfRender.PROGRAM_SDF_A
-        }
-         */
-
-            keys {
-                down(Key.RETURN) {
-                    //image.program = if (image.program == MsdfRender.PROGRAM_SDF_A) MsdfRender.PROGRAM_MSDF else MsdfRender.PROGRAM_SDF_A
-                    //println("TOGGLED PROGRAM!: ${image.program?.name}")
-                }
-            }
-
-            return
-        }
-
-        val font2 = DefaultTtfFont.toBitmapFont(16.0, CharacterSet.LATIN_ALL + CharacterSet.CYRILLIC)
-        //val font2 = DefaultTtfFont
-
         for (n in 0 until 10) {
-            text("HELLO АБВГДЕЖ HELLO АБВГДЕЖ HELLO АБВГДЕЖ HELLO АБВГДЕЖ", font = font2, renderer = DefaultStringTextRenderer).xy(100, 100 + n * 2)
+            text("HELLO АБВГДЕЖ HELLO АБВГДЕЖ HELLO АБВГДЕЖ HELLO АБВГДЕЖ", font = DefaultTtfFontAsBitmap, renderer = DefaultStringTextRenderer).xy(100, 100 + n * 2)
         }
 
         //return@Korge
@@ -221,10 +27,9 @@ class MainEditor : Scene() {
         //image(resourcesVfs["korio-128.png"].readBitmap()).xy(128, 128)
         //return@Korge
 
-        val font = DefaultTtfFont.toBitmapFont(16.0)
         //val font = DefaultTtfFont
         uiSkin = UISkin {
-            this.textFont = font
+            this.textFont = DefaultTtfFontAsBitmap
         }
         //solidRect(100, 100, Colors.RED).xy(0, 0)
         ////solidRect(100, 100, Colors.BLUE).xy(50, 50)
@@ -296,7 +101,7 @@ class MainEditor : Scene() {
             //it.isCloseable = false
             it.container.mobileBehaviour = false
             it.container.overflowRate = 0.0
-            uiVerticalStack(300.0) {
+            uiVerticalStack(300.0, padding = 4.0) {
                 uiText("Properties") { textColor = Colors.RED }
                 uiPropertyNumberRow("Alpha", *UIEditableNumberPropsList(solidRect::alpha))
                 uiPropertyNumberRow("Position", *UIEditableNumberPropsList(solidRect::x, solidRect::y, min = -1024.0, max = +1024.0, clamped = false))

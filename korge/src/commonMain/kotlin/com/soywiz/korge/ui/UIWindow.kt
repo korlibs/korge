@@ -12,24 +12,12 @@ import com.soywiz.korge.input.onClick
 import com.soywiz.korge.render.RenderContext
 import com.soywiz.korge.tween.get
 import com.soywiz.korge.tween.tween
-import com.soywiz.korge.view.Container
-import com.soywiz.korge.view.ViewDslMarker
-import com.soywiz.korge.view.ViewRenderer
-import com.soywiz.korge.view.addTo
-import com.soywiz.korge.view.anchor
-import com.soywiz.korge.view.bringToTop
-import com.soywiz.korge.view.fixedSizeContainer
-import com.soywiz.korge.view.position
-import com.soywiz.korge.view.renderableView
-import com.soywiz.korge.view.size
-import com.soywiz.korge.view.solidRect
-import com.soywiz.korge.view.text
-import com.soywiz.korge.view.xy
+import com.soywiz.korge.view.*
 import com.soywiz.korgw.GameWindow
 import com.soywiz.korim.color.Colors
+import com.soywiz.korim.text.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korui.layout.HorizontalUiLayout.percent
-import com.soywiz.korui.layout.HorizontalUiLayout.pt
 
 @KorgeExperimental
 inline fun Container.uiWindow(
@@ -54,7 +42,7 @@ class UIWindow(title: String, width: Double = 256.0, height: Double = 256.0) : U
     var maxWidth = 4096.0
     var maxHeight = 4096.0
 
-    private val bgMaterial = fastMaterialBackground(width, height) {
+    private val bgMaterial = uiMaterialLayer(width, height) {
         radius = RectCorners(12.0)
         colorMul = if (isFocused) Colors["#394674"] else Colors["#999"]
         shadowColor = Colors.BLACK.withAd(0.9)
@@ -69,13 +57,13 @@ class UIWindow(title: String, width: Double = 256.0, height: Double = 256.0) : U
         //ctx2d.rectOutline(-borderSize, -borderSize, this@UIWindow.width + borderSize * 2, this@UIWindow.height + borderSize * 2, borderSize, borderColor.withAd(renderAlpha))
     })
     private val titleContainer = fixedSizeContainer(width, titleHeight)
-    private val titleView = titleContainer.text(title).position(6, 6)
+    private val titleView = titleContainer.textBlock(RichTextData(title), align = TextAlignment.MIDDLE_LEFT).xy(6, 0).size(width, titleHeight)
     private val closeButton = titleContainer.uiButton("X", width = titleHeight - buttonSeparation * 2, height = titleHeight - buttonSeparation * 2) {
         radius = 100.percent
         colorMul = Colors["#b2434e"]
         onClick { closeAnimated() }
     }
-    var title: String by titleView::text
+    var title: String by titleView::plainText
     val container = uiScrollable(width, height - titleHeight).position(0.0, titleHeight)
     var isCloseable: Boolean = true
         set(value) {

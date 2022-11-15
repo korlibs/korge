@@ -9,6 +9,7 @@ import com.soywiz.korge.view.solidRect
 import com.soywiz.korge.view.text
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
+import com.soywiz.korim.font.*
 import com.soywiz.korma.geom.Rectangle
 
 inline fun Container.uiText(
@@ -27,7 +28,7 @@ class UIText(
     protected var bpressing by uiObservable(false) { updateState() }
 
     private val background = solidRect(width, height, Colors.TRANSPARENT_BLACK)
-    private val textView = text(text)
+    private val textView = text(text, font = DefaultTtfFont)
     var bgcolor: RGBA = Colors.TRANSPARENT_BLACK
 
     init {

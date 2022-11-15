@@ -63,7 +63,7 @@ class MainBVH : Scene() {
         val center = Point(width / 2, height / 2)
         val dir = Point(-1, -1)
         val ray = Ray(center, dir)
-        val statusText = text("", font = DefaultTtfFontMsdf)
+        val statusText = text("", font = DefaultTtfFontAsBitmap)
         var selectedRectangle = Rectangle(Point(100, 100) - Point(50, 50), Size(100, 100))
         val rayLine = line(center, center + (dir * 1000), Colors.WHITE)
         val selectedRect = outline(buildVectorPath(VectorPath()) {

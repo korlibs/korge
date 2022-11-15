@@ -6,7 +6,6 @@ import com.soywiz.korge.animate.*
 import com.soywiz.korge.debug.uiCollapsibleSection
 import com.soywiz.korge.debug.uiEditableValue
 import com.soywiz.korge.input.*
-import com.soywiz.korge.render.RenderContext
 import com.soywiz.korge.tween.*
 import com.soywiz.korge.view.*
 import com.soywiz.korge.view.filter.*
@@ -22,7 +21,6 @@ import com.soywiz.korma.geom.*
 import com.soywiz.korma.interpolation.*
 import com.soywiz.korui.UiContainer
 import com.soywiz.korui.layout.*
-import com.soywiz.korui.layout.HorizontalUiLayout.percent
 import com.soywiz.korui.layout.HorizontalUiLayout.pt
 import kotlin.math.*
 import kotlin.reflect.*
@@ -98,7 +96,7 @@ open class UIButton(
     var bgColorOut = Colors["#1976d2"]
         set(value) {
             field = value
-            bgcolor = value
+            background.bgColor = value
         }
     var bgColorOver = Colors["#1B5AB3"]
     var elevation = true
@@ -106,14 +104,7 @@ open class UIButton(
             field = value
             setInitialState()
         }
-    var bgColorDisabled = Colors["#00000033"]
-
-    var bgcolor: RGBA = bgColorOut
-        set(value) {
-            field = value
-            invalidateRender()
-        }
-
+    var bgColorDisabled = Colors["#777777ff"]
 
     //protected val rect: NinePatchEx = ninePatch(null, width, height)
     //protected val background = roundRect(
@@ -122,10 +113,10 @@ open class UIButton(
     //    //.filters(DropshadowFilter(0.0, 3.0, shadowColor = Colors.BLACK.withAd(0.126)))
     //    .also { it.mouseEnabled = false }
 
-    var newSkin: NewUIButtonSkin = DefaultUISkin
+    //var newSkin: NewUIButtonSkin = DefaultUISkin
 
-    val canvas = renderableView {
-        newSkin.renderUIButton(this, this@UIButton)
+    val background = uiMaterialLayer(width, height) {
+        radius = RectCorners(5.0)
     }
     //internal val background = FastMaterialBackground(width, height).addTo(this)
     //    .also { it.colorMul = bgColorOut }
@@ -138,7 +129,7 @@ open class UIButton(
             updateRichText()
         }
 
-    protected val textView = textBlock(RichTextData(text, textSize = textSize, font = DefaultTtfFontMsdf))
+    protected val textView = textBlock(RichTextData(text, textSize = textSize, font = DefaultTtfFontAsBitmap))
     protected val iconView = image(Bitmaps.transparent)
 	protected var bover = false
 	protected var bpressing = false
@@ -157,16 +148,16 @@ open class UIButton(
         }
 
     private fun updateRichText() {
-        textView.text = RichTextData(text, textSize = textSize, font = DefaultTtfFontMsdf, color = textColor)
+        textView.text = RichTextData(text, textSize = textSize, font = DefaultTtfFontAsBitmap, color = textColor)
     }
 
     private fun setInitialState() {
         val width = width
         val height = height
-        canvas.setSize(width, height)
+        background.setSize(width, height)
         //background.setSize(width, height)
         //background.radius = RectCorners(radiusWidth(width))
-        //background.shadowRadius = if (elevation) 10.0 else 0.0
+        background.shadowRadius = if (elevation) 10.0 else 0.0
         //textView.setSize(width, height)
 
         textView.setSize(width, height)
@@ -195,13 +186,13 @@ open class UIButton(
     fun simulateOver() {
         if (bover) return
 		bover = true
-        newSkin.updatedUIButton(this, over = true)
+        updatedUIButton(over = true)
 	}
 
 	fun simulateOut() {
         if (!bover) return
 		bover = false
-        newSkin.updatedUIButton(this, over = false)
+        updatedUIButton( over = false)
 	}
 
 	fun simulatePressing(value: Boolean) {
@@ -209,16 +200,16 @@ open class UIButton(
 		bpressing = value
 	}
 
-	fun simulateDown(x: Double = width * 0.5, y: Double = height * 0.5) {
+	fun simulateDown(x: Double = 0.5, y: Double = 0.5) {
         if (bpressing) return
 		bpressing = true
-        newSkin.updatedUIButton(this, down = true, px = x, py = y)
+        updatedUIButton(down = true, px = x, py = y)
 	}
 
 	fun simulateUp() {
         if (!bpressing) return
 		bpressing = false
-        newSkin.updatedUIButton(this, down = false)
+        updatedUIButton(down = false)
 	}
 
     val onPress = Signal<TouchEvents.Info>()
@@ -228,7 +219,7 @@ open class UIButton(
             start {
                 //println("singleTouch.start")
 
-                simulateDown(it.localX, it.localY)
+                simulateDown(it.localX / scaledWidth, it.localY / scaledHeight)
             }
             endAnywhere {
                 //println("singleTouch.endAnywhere")
@@ -259,10 +250,6 @@ open class UIButton(
         setInitialState()
     }
 
-    override fun updateState() {
-        super.updateState()
-        newSkin.updatedUIButton(this)
-    }
 
     override fun buildDebugComponent(views: Views, container: UiContainer) {
         container.uiCollapsibleSection(UIButton::class.simpleName!!) {
@@ -270,6 +257,71 @@ open class UIButton(
             uiEditableValue(::textSize, min = 1.0, max = 300.0)
         }
         super.buildDebugComponent(views, container)
+    }
+
+    open fun updatedUIButton(down: Boolean? = null, over: Boolean? = null, px: Double = 0.0, py: Double = 0.0, immediate: Boolean = false) {
+        val button = this
+        if (!button.enabled) {
+            //button.animStateManager.set(
+            //    AnimState(
+            //        button::bgcolor[button.bgColorDisabled]
+            //))
+            //button.animatorEffects.cancel()
+            background.bgColor = button.bgColorDisabled
+            button.invalidateRender()
+            return
+        }
+        //println("UPDATED: down=$down, over=$over, px=$px, py=$py")
+        if (down == true) {
+            //button.animStateManager.set(
+            //    AnimState(
+            //        button::highlightRadius[0.0, 1.0],
+            //        button::highlightAlpha[1.0],
+            //        button::highlightPos[Point(px / button.width, py / button.height), Point(px / button.width, py / button.height)],
+            //    ))
+            background.addHighlight(Point(px, py))
+                /*
+            button.highlightPos.setTo(px / button.width, py / button.height)
+            button.animatorEffects.tween(
+                button::highlightRadius[0.0, 1.0],
+                button::highlightColor[Colors.WHITE.withAd(0.5), Colors.WHITE.withAd(0.5)],
+                time = 0.5.seconds, easing = Easing.EASE_IN
+            )
+            */
+        }
+        if (down == false) {
+            //button.animStateManager.set(
+            //    AnimState(button::highlightAlpha[0.0])
+            //)
+            background.removeHighlights()
+            //button.animatorEffects.tween(button::highlightColor[Colors.TRANSPARENT_BLACK], time = 0.2.seconds)
+        }
+        if (over != null) {
+            val bgcolor = when {
+                !button.enabled -> button.bgColorDisabled
+                over -> button.bgColorOver
+                else -> button.bgColorOut
+            }
+            //button.animStateManager.set(
+            //    AnimState(
+            //        button::bgcolor[bgcolor]
+            //    )
+            //)
+            if (immediate) {
+                background.bgColor = bgcolor
+            } else {
+                button.animator.tween(background::bgColor[bgcolor], time = 0.25.seconds)
+            }
+        }
+    }
+
+    override fun updateState() {
+        super.updateState()
+        updatedUIButton(immediate = true)
+    }
+
+    init {
+        updatedUIButton(down = false, over = false, immediate = true)
     }
 }
 

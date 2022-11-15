@@ -174,7 +174,7 @@ fun UISkin(
 
 val DefaultUIFont get() = DefaultUIVectorFont
 val DefaultUIBitmapFont get() = debugBmpFontSync
-val DefaultUIVectorFont get() = DefaultTtfFontMsdf
+val DefaultUIVectorFont get() = DefaultTtfFontAsBitmap
 
 @ThreadLocal
 private var DEFAULT_UI_SKIN_IMG_OR_NULL: Bitmap32? = null

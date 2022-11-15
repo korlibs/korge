@@ -52,7 +52,7 @@ open class UIComboBox<T>(
     private val invisibleRect = solidRect(width, height, Colors.TRANSPARENT_BLACK)
 
     private val itemsView = uiScrollable(width, height = 128.0)
-    private val itemsViewBackground = itemsView.fastMaterialBackground(width, height = 128.0) {
+    private val itemsViewBackground = itemsView.uiMaterialLayer(width, height = 128.0) {
         radius = RectCorners(0.0, 0.0, 12.0, 12.0)
         zIndex = -1000.0
     }

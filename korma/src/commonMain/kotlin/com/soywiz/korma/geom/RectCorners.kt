@@ -15,6 +15,13 @@ interface RectCorners {
             bottomRight: Double = topLeft,
             bottomLeft: Double = topRight,
         ): RectCorners = MutableRectCorners(topLeft, topRight, bottomRight, bottomLeft)
+
+        operator fun invoke(
+            topLeft: Int,
+            topRight: Int = topLeft,
+            bottomRight: Int = topLeft,
+            bottomLeft: Int = topRight,
+        ): RectCorners = MutableRectCorners(topLeft.toDouble(), topRight.toDouble(), bottomRight.toDouble(), bottomLeft.toDouble())
     }
 }
 
