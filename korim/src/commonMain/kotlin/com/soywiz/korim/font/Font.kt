@@ -19,7 +19,7 @@ import com.soywiz.korim.text.TextRenderer
 import com.soywiz.korim.text.TextRendererActions
 import com.soywiz.korim.text.invoke
 import com.soywiz.korim.text.measure
-import com.soywiz.korim.vector.Context2d
+import com.soywiz.korim.vector.*
 import com.soywiz.korio.lang.WStringReader
 import com.soywiz.korio.resources.Resourceable
 import com.soywiz.korma.geom.BoundsBuilder
@@ -68,7 +68,8 @@ data class TextToBitmapResult(
     override val fmetrics: FontMetrics,
     override val metrics: TextMetrics,
     override val glyphs: List<PlacedGlyphMetrics>,
-    override val glyphsPerLine: List<List<PlacedGlyphMetrics>>
+    override val glyphsPerLine: List<List<PlacedGlyphMetrics>>,
+    val shape: Shape? = null
 ) : BaseTextMetricsResult
 
 data class TextMetricsResult(
@@ -155,7 +156,7 @@ fun Font.renderGlyphToBitmap(
     effect: BitmapEffect? = null,
     border: Int = 1,
     nativeRendering: Boolean = true,
-    reader: WStringReader? = null
+    reader: WStringReader? = null,
 ): TextToBitmapResult {
     val font = this
     val fmetrics = getFontMetrics(size)
@@ -166,14 +167,21 @@ fun Font.renderGlyphToBitmap(
     val iwidth = gmetrics.width.toIntCeil() + border2
     val iheight = gmetrics.height.toIntCeil() + border2
     val image = if (nativeRendering) NativeImage(iwidth, iheight) else Bitmap32(iwidth, iheight, premultiplied = true)
-    image.context2d {
+
+    fun Context2d.renderGlyph() {
         fillStyle = paint
         font.renderGlyph(this, size, codePoint, gx + border, gy + border, fill = true, metrics = gmetrics)
         if (fill) fill() else stroke()
     }
+
+    image.context2d {
+        renderGlyph()
+    }
     val imageOut = image.toBMP32IfRequired().applyEffect(effect)
     val glyph = PlacedGlyphMetrics(codePoint, gx + border, gy + border, gmetrics, fmetrics, Matrix(), 0, 0)
-    return TextToBitmapResult(imageOut, fmetrics, TextMetrics(), listOf(glyph), listOf(listOf(glyph)))
+    return TextToBitmapResult(imageOut, fmetrics, TextMetrics(), listOf(glyph), listOf(listOf(glyph)), buildShape(iwidth, iheight) {
+        renderGlyph()
+    })
 }
 
 // @TODO: Fix metrics

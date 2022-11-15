@@ -115,6 +115,24 @@ class FloatBitmap32(
             )
         }
     }
+
+    fun clamp(min: Float, max: Float): Unit {
+        updateComponent { _, value ->
+            value.clamp(min, max)
+        }
+    }
+
+    fun updateComponent(block: (component: Int, value: Float) -> Float): Unit {
+        forEach { n, x, y ->
+            setRgbaf(
+                x, y,
+                block(0, getRed(x, y)),
+                block(1, getGreen(x, y)),
+                block(2, getBlue(x, y)),
+                block(3, getAlpha(x, y)),
+            )
+        }
+    }
 }
 
 fun Bitmap.toFloatBMP32(out: FloatBitmap32 = FloatBitmap32(width, height, premultiplied = premultiplied)): FloatBitmap32 {

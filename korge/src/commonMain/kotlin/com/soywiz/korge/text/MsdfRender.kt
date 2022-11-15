@@ -11,10 +11,7 @@ object MsdfRender {
     val PROGRAM_SDF_A = createProgram(msdf = false, sdf = "a", inverted = false)
 
     fun createProgram(msdf: Boolean, sdf: String = "a", inverted: Boolean = false): Program = ShadedView.buildShader(name = "PROGRAM_msdf=${msdf},sdf=$sdf,inverted=$inverted") {
-        val median = FUNC("median", Float1) {
-            val a = ARG("a", Float1)
-            val b = ARG("b", Float1)
-            val c = ARG("c", Float1)
+        val median by FUNC(Float1, Float1, Float1, Float1) { a, b, c ->
             RETURN(max(min(a, b), min(max(a, b), c)))
         }
 

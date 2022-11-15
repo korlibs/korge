@@ -29,19 +29,44 @@ class MainEditor : Scene() {
         val Apath = resourcesVfs["A.svg"].readSVG().toShape().getPath()
         println(Apath.toSvgString())
 
-        val msdf = Apath.msdf(64, 64)
-        msdf.scale(-1f)
-        msdf.normalizeUniform()
-        val msdfBitmap = msdf.toBMP32()
+        val msdfBitmap = Apath.msdfBmp(64, 64)
 
-        image(resourcesVfs["output.png"].readBitmap().mipmaps()) {
+        //val outputPng = resourcesVfs["output.png"].readBitmap().mipmaps()
+        val outputPng = resourcesVfs["output.png"].readBitmap()
+
+        image(outputPng) {
             xy(196 * 0, 0)
             scale = 3.0
         }
 
-        image(resourcesVfs["output.png"].readBitmap().mipmaps()) {
+        image(outputPng) {
             xy(196 * 1, 0)
             scale = 3.0
+            program = MsdfRender.PROGRAM_MSDF
+        }
+        image(outputPng) {
+            xy(196 * 1, 50)
+            scale = 1.5
+            program = MsdfRender.PROGRAM_MSDF
+        }
+        image(outputPng) {
+            xy(196 * 1, 100)
+            scale = 0.5
+            program = MsdfRender.PROGRAM_MSDF
+        }
+        image(outputPng) {
+            xy(196 * 1, 150)
+            scale = 0.25
+            program = MsdfRender.PROGRAM_MSDF
+        }
+        image(outputPng) {
+            xy(196 * 1, 175)
+            scale = 0.15
+            program = MsdfRender.PROGRAM_MSDF
+        }
+        image(outputPng) {
+            xy(196 * 1, 200)
+            scale = 0.1
             program = MsdfRender.PROGRAM_MSDF
         }
 
@@ -56,6 +81,28 @@ class MainEditor : Scene() {
             program = MsdfRender.PROGRAM_MSDF
         }
 
+        image(DefaultTtfFontMsdf.atlas.bitmap) {
+            xy(196 * 0, 256)
+            scale = 2.0
+            program = MsdfRender.PROGRAM_MSDF
+        }
+
+        image(DefaultTtfFontMsdf.atlas.bitmap) {
+            xy(196 * 2, 256)
+            scale = 0.5
+            program = MsdfRender.PROGRAM_MSDF
+        }
+
+        image(DefaultTtfFontMsdf.atlas.bitmap) {
+            xy(196 * 3, 256)
+            scale = 0.25
+            program = MsdfRender.PROGRAM_MSDF
+        }
+
+        image(DefaultTtfFontMsdf.atlas.bitmap) {
+            xy(196 * 4, 256)
+            scale = 2.0
+        }
 
         return
 

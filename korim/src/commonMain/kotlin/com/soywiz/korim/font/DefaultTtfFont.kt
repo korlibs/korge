@@ -34,5 +34,8 @@ val DefaultTtfFont: TtfFont get() {
 }
 
 val DefaultTtfFontMsdf: LazyBitmapFont by lazy {
-    DefaultTtfFont.toLazyBitmapFont(32.0)
+    DefaultTtfFont.toLazyBitmapFont(32.0, distanceField = null)
+    //DefaultTtfFont.toLazyBitmapFont(42.0, distanceField = "msdf")
+    //DefaultTtfFont.toLazyBitmapFont(16.0, distanceField = "msdf")
+    //DefaultTtfFont.toLazyBitmapFont(32.0, distanceField = "msdf")
 }

@@ -6,6 +6,7 @@ import com.soywiz.kmem.*
 import com.soywiz.korim.atlas.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
+import com.soywiz.korim.vector.*
 import com.soywiz.korma.geom.*
 import kotlin.math.*
 
@@ -14,8 +15,8 @@ class LazyBitmapFont(
     override val fontSize: Double,
     override val distanceField: String? = null,
 ) : BitmapFont, Extra by Extra.Mixin() {
-    private val atlas = MutableAtlasUnit(border = 2, width = 1024, height = 1024).also {
-        it.bitmap.mipmaps()
+    val atlas = MutableAtlasUnit(border = 2, width = 1024, height = 1024).also {
+        if (distanceField != null) it.bitmap else it.bitmap.mipmaps()
     }
 
     private val vfontMetrics = font.getFontMetrics(fontSize)
@@ -25,7 +26,7 @@ class LazyBitmapFont(
     override val glyphs: IntMap<BitmapFont.Glyph> = IntMap()
     override val kernings: IntMap<BitmapFont.Kerning> = IntMap()
     override val anyGlyph: BitmapFont.Glyph by lazy {
-        ensureCodePoints(SPACE)
+        //ensureCodePoints(SPACE)
         glyphs[glyphs.keys.iterator().next()] ?: invalidGlyph
     }
     override val invalidGlyph: BitmapFont.Glyph by lazy { BitmapFont.Glyph(fontSize, -1, Bitmaps.transparent, 0, 0, 0) }
@@ -79,7 +80,25 @@ class LazyBitmapFont(
                     val border = 1
                     val result = font.renderGlyphToBitmap(fontSize, codePoint, paint = Colors.WHITE, fill = true, border = border, effect = null)
                     val bmp = result.bmp.toBMP32()
-                    val entry = atlas.add(bmp, Unit)
+
+                    val rbmp: Bitmap32 = when (distanceField) {
+                        "msdf" -> {
+                            //for (n in 0 until 10000) {
+                            //    val path = result.shape!!.getPath()
+                            //    val msdf = path.msdf(bmp.width, bmp.height)
+                            //    msdf.scale(-1f)
+                            //    msdf.clamp(-2f, +2f)
+                            //    //msdf.updateComponent { component, value -> if (component == 3) 2f else value }
+                            //    msdf.normalizeUniform()
+                            //    msdf.toBMP32()
+                            //}
+
+                            result.shape!!.getPath().msdfBmp(bmp.width, bmp.height)
+                        }
+                        else -> bmp
+                    }
+
+                    val entry = atlas.add(rbmp, Unit)
                     val slice = entry.slice
                     //val slice = bmp.slice()
                     //val fm = result.fmetrics
