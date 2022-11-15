@@ -126,11 +126,11 @@ class BezierCurveTest {
         println(curve.lut.estimatedLengths.toString())
         assertEquals(
             """
-                Estimation(point=(100, 25), ratio=0.0, length=0.0)
-                Estimation(point=(91.99, 30.99), ratio=0.03, length=10.0)
-                Estimation(point=(81.66, 104.91), ratio=0.54, length=100.0)
-                Estimation(point=(144.16, 182.44), ratio=0.95, length=200.0)
-                Estimation(point=(150, 195), ratio=1.0, length=213.86)
+                Estimation(point=(100, 25), ratio=0, length=0)
+                Estimation(point=(91.99, 30.99), ratio=0.03, length=10)
+                Estimation(point=(81.66, 104.91), ratio=0.54, length=100)
+                Estimation(point=(144.16, 182.44), ratio=0.95, length=200)
+                Estimation(point=(150, 195), ratio=1, length=213.86)
             """.trimIndent(),
             //listOf(
             //    CurveLUT.Estimation(point=Point(100, 25), ratio=0.0, length=0.0),

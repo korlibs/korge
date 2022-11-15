@@ -3,10 +3,8 @@ package com.soywiz.korma.geom.bezier
 import com.soywiz.kds.DoubleArrayList
 import com.soywiz.kds.binarySearch
 import com.soywiz.kds.forEachRatio01
-import com.soywiz.korma.geom.IPoint
-import com.soywiz.korma.geom.Point
-import com.soywiz.korma.geom.PointArrayList
-import com.soywiz.korma.geom.getPoint
+import com.soywiz.korma.geom.*
+import com.soywiz.korma.internal.*
 import com.soywiz.korma.interpolation.interpolate
 import com.soywiz.korma.math.*
 
@@ -64,6 +62,7 @@ data class CurveLUT(val curve: Curve, val points: PointArrayList, val ts: Double
 
     data class Estimation(var point: Point = Point(), var ratio: Double = 0.0, var length: Double = 0.0) {
         fun roundDecimalDigits(places: Int): Estimation = Estimation(point.copy().setToRoundDecimalPlaces(places), ratio.roundDecimalPlaces(places), length.roundDecimalPlaces(places))
+        override fun toString(): String = "Estimation(point=${point.niceStr}, ratio=${ratio.niceStr}, length=${length.niceStr})"
     }
 
     fun Estimation.setAtIndexRatio(index: Int, ratio: Double): Estimation {
