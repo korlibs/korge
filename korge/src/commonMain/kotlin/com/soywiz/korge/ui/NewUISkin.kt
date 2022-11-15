@@ -18,8 +18,11 @@ interface NewUISkin : NewUIButtonSkin {
 }
 
 private var UIButton.highlightRadius: Double by extraViewProp { 0.0 }
-private var UIButton.highlightAlpha: Double by extraViewProp { 1.0 }
+private var UIButton.highlightColor: RGBA by extraViewProp { Colors.WHITE }
 private var UIButton.highlightPos: Point by extraViewProp { Point() }
+
+private var UIButton.borderSize: Double by extraViewProp { 0.0 }
+private var UIButton.borderColor: RGBA by extraViewProp { Colors.WHITE }
 
 object DefaultUISkin : NewUISkin {
 
@@ -30,9 +33,11 @@ object DefaultUISkin : NewUISkin {
             shadowColor = Colors.BLACK.withAd(0.7),
             shadowOffset = if (button.elevation) Point(0.0, -3.0) else Point(0.0, 0.0),
             shadowRadius = if (button.elevation) 6.0 else 0.0,
-            highlightAlpha = button.highlightAlpha,
             highlightRadius = button.highlightRadius,
+            highlightColor = button.highlightColor,
             highlightPos = button.highlightPos,
+            borderSize = button.borderSize,
+            borderColor = button.borderColor,
         )
     }
 
@@ -58,7 +63,7 @@ object DefaultUISkin : NewUISkin {
             button.highlightPos.setTo(px / button.width, py / button.height)
             button.animatorEffects.tween(
                 button::highlightRadius[0.0, 1.0],
-                button::highlightAlpha[1.0, 1.0],
+                button::highlightColor[Colors.WHITE.withAd(0.5), Colors.WHITE.withAd(0.5)],
                 time = 0.5.seconds, easing = Easing.EASE_IN
             )
         }
@@ -66,7 +71,7 @@ object DefaultUISkin : NewUISkin {
             //button.animStateManager.set(
             //    AnimState(button::highlightAlpha[0.0])
             //)
-            button.animatorEffects.tween(button::highlightAlpha[0.0], time = 0.2.seconds)
+            button.animatorEffects.tween(button::highlightColor[Colors.TRANSPARENT_BLACK], time = 0.2.seconds)
         }
         if (over != null) {
             val bgcolor = when {

@@ -466,8 +466,7 @@ data class Program(val vertex: VertexShader, val fragment: FragmentShader, val n
         fun fract(v: Operand): Operand = Func("fract", v)
 
         fun clamp01(v: Operand): Operand = clamp(v, 0f.lit, 1f.lit)
-        fun clamp(v: Operand, min: Operand, max: Operand): Operand =
-            Func("clamp", v, min, max)
+        fun clamp(v: Operand, min: Operand, max: Operand): Operand = Func("clamp", v, min, max)
         fun min(a: Operand, b: Operand): Operand = Func("min", a, b)
         fun max(a: Operand, b: Operand): Operand = Func("max", a, b)
         fun mod(a: Operand, b: Operand): Operand = Func("mod", a, b)
@@ -509,13 +508,20 @@ data class Program(val vertex: VertexShader, val fragment: FragmentShader, val n
         val Boolean.lit: BoolLiteral get() = BoolLiteral(this)
         //val Number.lit: Operand get() = this // @TODO: With Kotlin.JS you cannot differentiate Int, Float, Double with 'is'. Since it generates typeof $receiver === 'number' for all of them
         fun lit(type: VarType, vararg ops: Operand): Operand = Vector(type, ops)
+
         fun vec1(vararg ops: Operand): Operand = Vector(VarType.Float1, ops)
         fun vec2(vararg ops: Operand): Operand = Vector(VarType.Float2, ops)
         fun vec3(vararg ops: Operand): Operand = Vector(VarType.Float3, ops)
         fun vec4(vararg ops: Operand): Operand = Vector(VarType.Float4, ops)
+
         fun mat2(vararg ops: Operand): Operand = Vector(VarType.Mat2, ops)
         fun mat3(vararg ops: Operand): Operand = Vector(VarType.Mat3, ops)
         fun mat4(vararg ops: Operand): Operand = Vector(VarType.Mat4, ops)
+
+        fun vec1(vararg ops: Float): Operand = Vector(VarType.Float1, Array(ops.size) { ops[it].lit })
+        fun vec2(vararg ops: Float): Operand = Vector(VarType.Float2, Array(ops.size) { ops[it].lit })
+        fun vec3(vararg ops: Float): Operand = Vector(VarType.Float3, Array(ops.size) { ops[it].lit })
+        fun vec4(vararg ops: Float): Operand = Vector(VarType.Float4, Array(ops.size) { ops[it].lit })
 
         //fun Operand.swizzle(swizzle: String): Operand = Swizzle(this, swizzle)
         operator fun Operand.get(index: Int): Operand {
@@ -556,6 +562,25 @@ data class Program(val vertex: VertexShader, val fragment: FragmentShader, val n
         infix fun Operand.le(that: Operand): Operand = Binop(this, "<=", that)
         infix fun Operand.gt(that: Operand): Operand = Binop(this, ">", that)
         infix fun Operand.ge(that: Operand): Operand = Binop(this, ">=", that)
+
+        operator fun Float.minus(that: Operand): Operand = this.lit.minus(that)
+        operator fun Float.plus(that: Operand): Operand = this.lit.plus(that)
+        operator fun Float.times(that: Operand): Operand = this.lit.times(that)
+        operator fun Float.div(that: Operand): Operand = this.lit.div(that)
+        operator fun Float.rem(that: Operand): Operand = this.lit.rem(that)
+
+        operator fun Operand.minus(that: Float): Operand = this.minus(that.lit)
+        operator fun Operand.plus(that: Float): Operand = this.plus(that.lit)
+        operator fun Operand.times(that: Float): Operand = this.times(that.lit)
+        operator fun Operand.div(that: Float): Operand = this.div(that.lit)
+        operator fun Operand.rem(that: Float): Operand = this.rem(that.lit)
+
+        infix fun Operand.eq(that: Float): Operand = this.eq(that.lit)
+        infix fun Operand.ne(that: Float): Operand = this.ne(that.lit)
+        infix fun Operand.lt(that: Float): Operand = this.lt(that.lit)
+        infix fun Operand.le(that: Float): Operand = this.le(that.lit)
+        infix fun Operand.gt(that: Float): Operand = this.gt(that.lit)
+        infix fun Operand.ge(that: Float): Operand = this.ge(that.lit)
 
         infix fun Operand.and(that: Operand): Operand = Binop(this, "&&", that)
         infix fun Operand.or(that: Operand): Operand = Binop(this, "||", that)
@@ -638,13 +663,32 @@ data class Program(val vertex: VertexShader, val fragment: FragmentShader, val n
             }
         }
 
-        fun FUNCN(rettype: VarType, block: FuncBuilder.() -> Unit): FuncProvider<FuncRefN> = FuncProvider(rettype, emptyList(), this) { block() }
-        fun FUNC(rettype: VarType, block: FuncBuilder.() -> Unit): FuncProvider<FuncRef0> = FuncProvider(rettype, listOf(), this) { block() }
-        fun FUNC(rettype: VarType, p0: VarType, block: FuncBuilder.(p0: Arg) -> Unit): FuncProvider<FuncRef1> = FuncProvider(rettype, listOf(p0), this) { block(it[0]) }
-        fun FUNC(rettype: VarType, p0: VarType, p1: VarType, block: FuncBuilder.(p0: Arg, p1: Arg) -> Unit): FuncProvider<FuncRef2> = FuncProvider(rettype, listOf(p0, p1), this) { block(it[0], it[1]) }
-        fun FUNC(rettype: VarType, p0: VarType, p1: VarType, p2: VarType, block: FuncBuilder.(p0: Arg, p1: Arg, p2: Arg) -> Unit): FuncProvider<FuncRef3> = FuncProvider(rettype, listOf(p0, p1, p2), this) { block(it[0], it[1], it[2]) }
-        fun FUNC(rettype: VarType, p0: VarType, p1: VarType, p2: VarType, p3: VarType, block: FuncBuilder.(p0: Arg, p1: Arg, p2: Arg, p3: Arg) -> Unit): FuncProvider<FuncRef4> = FuncProvider(rettype, listOf(p0, p1, p2, p3), this) { block(it[0], it[1], it[2], it[3]) }
-        fun FUNC(rettype: VarType, p0: VarType, p1: VarType, p2: VarType, p3: VarType, p4: VarType, block: FuncBuilder.(p0: Arg, p1: Arg, p2: Arg, p3: Arg, p4: Arg) -> Unit): FuncProvider<FuncRef5> = FuncProvider(rettype, listOf(p0, p1, p2, p3, p4), this) { block(it[0], it[1], it[2], it[3], it[4]) }
+        // NOTE: dummy: Unit = Unit is there to force returns to be a named argument
+
+        fun FUNCN(returns: VarType, block: FuncBuilder.() -> Unit): FuncProvider<FuncRefN> = FuncProvider(returns, emptyList(), this) { block() }
+        fun FUNC(dummy: Unit = Unit, returns: VarType, block: FuncBuilder.() -> Unit): FuncProvider<FuncRef0> = FuncProvider(returns, listOf(), this) { block() }
+        fun FUNC(p0: VarType, dummy: Unit = Unit, returns: VarType, block: FuncBuilder.(p0: Arg) -> Unit): FuncProvider<FuncRef1> = FuncProvider(returns, listOf(p0), this) { block(it[0]) }
+        fun FUNC(p0: VarType, p1: VarType, dummy: Unit = Unit, returns: VarType, block: FuncBuilder.(p0: Arg, p1: Arg) -> Unit): FuncProvider<FuncRef2> = FuncProvider(returns, listOf(p0, p1), this) { block(it[0], it[1]) }
+        fun FUNC(p0: VarType, p1: VarType, p2: VarType, dummy: Unit = Unit, returns: VarType, block: FuncBuilder.(p0: Arg, p1: Arg, p2: Arg) -> Unit): FuncProvider<FuncRef3> = FuncProvider(returns, listOf(p0, p1, p2), this) { block(it[0], it[1], it[2]) }
+        fun FUNC(
+            p0: VarType,
+            p1: VarType,
+            p2: VarType,
+            p3: VarType,
+            dummy: Unit = Unit,
+            returns: VarType,
+            block: FuncBuilder.(p0: Arg, p1: Arg, p2: Arg, p3: Arg) -> Unit
+        ): FuncProvider<FuncRef4> = FuncProvider(returns, listOf(p0, p1, p2, p3), this) { block(it[0], it[1], it[2], it[3]) }
+        fun FUNC(
+            p0: VarType,
+            p1: VarType,
+            p2: VarType,
+            p3: VarType,
+            p4: VarType,
+            dummy: Unit = Unit,
+            returns: VarType,
+            block: FuncBuilder.(p0: Arg, p1: Arg, p2: Arg, p3: Arg, p4: Arg) -> Unit
+        ): FuncProvider<FuncRef5> = FuncProvider(returns, listOf(p0, p1, p2, p3, p4), this) { block(it[0], it[1], it[2], it[3], it[4]) }
 
         fun TEMP(type: VarType): Temp = Temp(context.tempLastId++, type)
 

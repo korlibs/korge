@@ -22,7 +22,7 @@ class FastMaterialBackground(
     var radius: RectCorners = RectCorners.EMPTY ; set(value) { field = value; invalidateRender() }
     var highlightPos = Point(0.5, 0.5) ; set(value) { field = value; invalidateRender() }
     var highlightRadius = 0.0; set(value) { field = value; invalidateRender() }
-    var highlightAlpha = 1.0; set(value) { field = value; invalidateRender() }
+    var highlightColor = Colors.WHITE; set(value) { field = value; invalidateRender() }
 
     var shadowColor: RGBA = Colors.BLACK.withAd(0.3); set(value) { field = value; invalidateRender() }
     var shadowRadius: Double = 10.0; set(value) { field = value; invalidateRender() }
@@ -45,11 +45,16 @@ class FastMaterialBackground(
             radius.bottomLeft.toFloat(), radius.topLeft.toFloat(),
         )
         uniforms[MaterialRender.u_Size] = Point(width, height)
+
         uniforms[MaterialRender.u_HighlightPos] = Point(highlightPos.x * width, highlightPos.y * height)
         uniforms[MaterialRender.u_HighlightRadius] = highlightRadius * kotlin.math.max(width, height) * 1.25
-        uniforms[MaterialRender.u_HighlightAlpha] = highlightAlpha
-        uniforms[MaterialRender.u_ShadowColor] = shadowColor.premultipliedFast
+        uniforms[MaterialRender.u_HighlightColor] = highlightColor.premultipliedFast
+
+        uniforms[MaterialRender.u_BorderSize] = borderSize
+        uniforms[MaterialRender.u_BorderColor] = borderColor.premultipliedFast
+
         uniforms[MaterialRender.u_ShadowOffset] = Point(shadowOffsetX, shadowOffsetY)
         uniforms[MaterialRender.u_ShadowRadius] = shadowRadius
+        uniforms[MaterialRender.u_ShadowColor] = shadowColor.premultipliedFast
     }
 }

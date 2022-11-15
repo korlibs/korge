@@ -87,11 +87,11 @@ class ShadersTest {
         assertEqualsShader(FragmentShader {
             DefaultShaders.apply {
                 // This is discarded
-                val demo2 by FUNC(Float1, Float1, Float1) { x, y ->
+                val demo2 by FUNC(Float1, Float1, returns = Float1) { x, y ->
                     RETURN(x + y * 2.lit)
                 }
                 // Latest function with this name is used
-                val demo by FUNC(Float1, Float1, Float1) { x, y ->
+                val demo by FUNC(Float1, Float1, returns = Float1) { x, y ->
                     RETURN(x + y + 2.lit)
                 }
 

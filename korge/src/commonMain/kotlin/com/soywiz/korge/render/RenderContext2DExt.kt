@@ -17,39 +17,58 @@ object MaterialRender {
     val u_ShadowColor by Uniform(VarType.Float4)
     val u_ShadowRadius by Uniform(VarType.Float1)
     val u_ShadowOffset by Uniform(VarType.Float2)
+
     val u_HighlightPos by Uniform(VarType.Float2)
     val u_HighlightRadius by Uniform(VarType.Float1)
+    val u_HighlightColor by Uniform(VarType.Float4)
+
     val u_Size by Uniform(VarType.Float2)
     val u_Radius by Uniform(VarType.Float4)
-    val u_HighlightAlpha by Uniform(VarType.Float1)
+
+    val u_BorderSize by Uniform(VarType.Float1)
+    val u_BorderColor by Uniform(VarType.Float4)
 
     val PROGRAM = ShadedView.buildShader {
+        val roundedDist = TEMP(Float1)
+        val borderDist = TEMP(Float1)
+        val highlightDist = TEMP(Float1)
+        val borderAlpha = TEMP(Float1)
+        val highlightAlpha = TEMP(Float1)
+
         // The pixel space scale of the rectangle.
         val size = u_Size
-        // Calculate distance to edge.
-        val distance = SDFShaders.roundedBox(v_Tex["xy"] - (size / 2.0f.lit), size / 2.0f.lit, u_Radius)
-        // Smooth the result (free antialiasing).
-        val smoothedAlpha = t_Temp0.x
-        //SET(smoothedAlpha, 1.0f.lit - smoothstep(0.0f.lit, edgeSoftness * 2.0f.lit, distance))
-        SET(smoothedAlpha, SDFShaders.computeAAAlphaFromDist(distance))
 
-        val highlightAlpha = t_Temp0.y
-        SET(highlightAlpha, smoothstep(u_HighlightRadius, u_HighlightRadius - 1f.lit, length(v_Tex - u_HighlightPos)) * u_HighlightAlpha)
+        SET(roundedDist, SDFShaders.roundedBox(v_Tex - (size / 2f), size / 2f, u_Radius))
+        SET(out, v_Col * SDFShaders.opAA(roundedDist))
 
-        SET(out, v_Col * smoothedAlpha)
+        // Render circle highlight
+        IF(u_HighlightRadius gt 0f) {
+            SET(highlightDist, SDFShaders.opIntersect(roundedDist, SDFShaders.circle(v_Tex - u_HighlightPos, u_HighlightRadius)))
+            SET(highlightAlpha, SDFShaders.opAA(highlightDist))
+            IF(highlightAlpha gt 0f) {
+                SET(out, SDFShaders.opCombinePremultipliedColors(out, u_HighlightColor * highlightAlpha))
+            }
+        }
 
-        // Return the resultant shape.
-        SET(out, out + (vec4(.7f.lit) * highlightAlpha * smoothedAlpha))
+        // Render border
+        IF(u_BorderSize gt 0f) {
+            SET(borderDist, SDFShaders.opBorder(roundedDist, u_BorderSize))
+            SET(borderAlpha, SDFShaders.opAA(borderDist))
+            IF(borderAlpha gt 0f) {
+                SET(out, SDFShaders.opCombinePremultipliedColors(out, u_BorderColor * borderAlpha))
+            }
+        }
 
         // Apply a drop shadow effect.
-        IF((distance ge (-.1f).lit) and (u_ShadowRadius gt 0f.lit)) {
+        //IF((roundedDist ge -.1f) and (u_ShadowRadius gt 0f)) {
+        IF((u_ShadowRadius gt 0f)) {
         //IF((smoothedAlpha lt .1f.lit) and (u_ShadowRadius gt 0f.lit)) {
             val shadowSoftness = u_ShadowRadius
             val shadowOffset = u_ShadowOffset
-            val shadowDistance = SDFShaders.roundedBox(v_Tex["xy"] + shadowOffset - (size / 2.0f.lit), size / 2.0f.lit, u_Radius)
-            val shadowAlpha = 1.0f.lit - smoothstep(-shadowSoftness, shadowSoftness, shadowDistance)
+            val shadowDistance = SDFShaders.roundedBox(v_Tex["xy"] + shadowOffset - (size / 2f), size / 2f, u_Radius)
+            val shadowAlpha = 1f - smoothstep(-shadowSoftness, shadowSoftness, shadowDistance)
 
-            SET(out, SDFShaders.mixPremultipliedColor(u_ShadowColor * shadowAlpha, out))
+            SET(out, SDFShaders.opCombinePremultipliedColors(u_ShadowColor * shadowAlpha, out))
             //SET(out, mix(out, shadowColor, (shadowAlpha + smoothedAlpha)))
         }
     }
@@ -69,7 +88,9 @@ fun RenderContext2D.materialRoundRect(
     shadowRadius: Double = 0.0,
     highlightPos: IPoint = IPoint.ZERO,
     highlightRadius: Double = 0.0,
-    highlightAlpha: Double = 1.0,
+    highlightColor: RGBA = Colors.WHITE,
+    borderSize: Double = 0.0,
+    borderColor: RGBA = Colors.WHITE,
 ) {
     keepColor {
         this.multiplyColor = color
@@ -79,12 +100,18 @@ fun RenderContext2D.materialRoundRect(
             radius.bottomLeft.toFloat(), radius.topLeft.toFloat(),
         )
         _tempProgramUniforms[MaterialRender.u_Size] = Point(width, height)
+
         _tempProgramUniforms[MaterialRender.u_HighlightPos] = Point(highlightPos.x * width, highlightPos.y * height)
         _tempProgramUniforms[MaterialRender.u_HighlightRadius] = highlightRadius * kotlin.math.max(width, height) * 1.25
-        _tempProgramUniforms[MaterialRender.u_HighlightAlpha] = highlightAlpha
+        _tempProgramUniforms[MaterialRender.u_HighlightColor] = highlightColor.premultipliedFast
+
+        _tempProgramUniforms[MaterialRender.u_BorderSize] = borderSize
+        _tempProgramUniforms[MaterialRender.u_BorderColor] = borderColor.premultipliedFast
+
         _tempProgramUniforms[MaterialRender.u_ShadowColor] = shadowColor.premultipliedFast
         _tempProgramUniforms[MaterialRender.u_ShadowOffset] = Point(shadowOffset.x, shadowOffset.y)
         _tempProgramUniforms[MaterialRender.u_ShadowRadius] = shadowRadius
+
         quadPaddedCustomProgram(x, y, width, height, MaterialRender.PROGRAM, _tempProgramUniforms, Margin(shadowRadius + shadowOffset.length))
     }
 }

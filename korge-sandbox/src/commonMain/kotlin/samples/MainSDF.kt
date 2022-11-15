@@ -55,13 +55,13 @@ open class CircleSDFView(width: Double = 100.0, height: Double = 100.0) : Shaded
             SET(d,
                 SDF.opInterpolate(
                     SDF.circle(v_Tex - u_Center, u_Radius),
-                    SDF.opOnion(SDF.box(v_Tex - u_Center + vec2(.1f.lit, 0f.lit), vec2(u_Radius * .4.lit, u_Radius * .4.lit)), .02f.lit),
+                    SDF.opBorder(SDF.box(v_Tex - u_Center + vec2(.1f.lit, 0f.lit), vec2(u_Radius * .4.lit, u_Radius * .4.lit)), .02f.lit),
                     clamp(u_Time, 0f.lit, 1f.lit)
                 )
             )
 
             //SET(alpha, SDF.computeAAAlphaFromDist(d))
-            SET(out, v_Col * SDF.computeAAAlphaFromDist(d))
+            SET(out, v_Col * SDF.opAA(d))
         }
     }
 }
