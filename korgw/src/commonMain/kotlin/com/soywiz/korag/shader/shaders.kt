@@ -6,20 +6,26 @@
 
 package com.soywiz.korag.shader
 
-import com.soywiz.kds.mapInt
-import com.soywiz.kds.toFastList
+import com.soywiz.kds.*
 import com.soywiz.kmem.nextAlignedTo
 import com.soywiz.korag.annotation.KoragExperimental
 import com.soywiz.korio.lang.Closeable
 import com.soywiz.korio.lang.invalidOp
+import kotlin.reflect.*
 
 enum class VarKind(val bytesSize: Int) {
     //BYTE(1), UNSIGNED_BYTE(1), SHORT(2), UNSIGNED_SHORT(2), INT(4), FLOAT(4) // @TODO: This cause problems on Kotlin/Native Objective-C header.h
     TBOOL(1), TBYTE(1), TUNSIGNED_BYTE(1), TSHORT(2), TUNSIGNED_SHORT(2), TINT(4), TFLOAT(4)
 }
 
-data class FuncDecl(val name: String, val rettype: VarType, val args: List<Pair<String, VarType>>, val stm: Program.Stm) {
-    val ref: Program.FuncRef = Program.FuncRef(name, rettype, args)
+data class FuncDecl(
+    override val name: String,
+    override val rettype: VarType,
+    override val args: List<Pair<String, VarType>>,
+    val stm: Program.Stm
+    ) : Program.FuncRef, Program.FuncRef0, Program.FuncRef1, Program.FuncRef2, Program.FuncRef3, Program.FuncRef4, Program.FuncRef5, Program.FuncRefN {
+    val ref: Program.FuncRef = this
+    operator fun getValue(thisRef: Any?, property: KProperty<*>): FuncDecl = this
 }
 
 interface VarTypeAccessor {
@@ -195,7 +201,12 @@ open class Attribute(
     val divisor: Int = 0,
     val fixedLocation: Int? = null
 ) : Variable(name, type, precision) {
-	constructor(name: String, type: VarType, normalized: Boolean, precision: Precision = Precision.DEFAULT) : this(name, type, normalized, null, true, precision)
+	constructor(
+        name: String,
+        type: VarType,
+        normalized: Boolean,
+        precision: Precision = Precision.DEFAULT
+    ) : this(name, type, normalized, null, true, precision)
 
     fun copy(
         name: String = this.name,
@@ -218,21 +229,44 @@ open class Attribute(
         out *= 7; out += active.hashCode()
         return out
     }
+
+    operator fun getValue(thisRef: Any?, property: KProperty<*>): Attribute = this
+
+    class Provider(val type: VarType, val normalized: Boolean, val precision: Precision = Precision.DEFAULT) {
+        operator fun provideDelegate(thisRef: Any?, property: KProperty<*>): Attribute = Attribute(property.name, type, normalized, precision)
+    }
 }
+fun Attribute(
+    type: VarType,
+    normalized: Boolean,
+    precision: Precision = Precision.DEFAULT
+): Attribute.Provider = Attribute.Provider(type, normalized, precision)
 
 open class Varying(name: String, type: VarType, arrayCount: Int, precision: Precision = Precision.DEFAULT) : Variable(name, type, arrayCount, precision) {
     constructor(name: String, type: VarType, precision: Precision = Precision.DEFAULT) : this(name, type, 1, precision)
 	override fun toString(): String = "Varying($name)"
     override fun equals(other: Any?): Boolean = mequals<Varying>(other)
     override fun hashCode(): Int = mhashcode()
+    operator fun getValue(thisRef: Any?, property: KProperty<*>): Varying = this
+
+    class Provider(val type: VarType, val arrayCount: Int, val precision: Precision = Precision.DEFAULT) {
+        operator fun provideDelegate(thisRef: Any?, property: KProperty<*>): Varying = Varying(property.name, type, arrayCount, precision)
+    }
 }
+fun Varying(type: VarType, arrayCount: Int = 1, precision: Precision = Precision.DEFAULT): Varying.Provider = Varying.Provider(type, arrayCount, precision)
 
 open class Uniform(name: String, type: VarType, arrayCount: Int, precision: Precision = Precision.DEFAULT) : Variable(name, type, arrayCount, precision) {
     constructor(name: String, type: VarType, precision: Precision = Precision.DEFAULT) : this(name, type, 1, precision)
 	override fun toString(): String = "Uniform($name)"
     override fun equals(other: Any?): Boolean = mequals<Uniform>(other)
     override fun hashCode(): Int = mhashcode()
+    operator fun getValue(thisRef: Any?, property: KProperty<*>): Uniform = this
+
+    class Provider(val type: VarType, val arrayCount: Int, val precision: Precision = Precision.DEFAULT) {
+        operator fun provideDelegate(thisRef: Any?, property: KProperty<*>): Uniform = Uniform(property.name, type, arrayCount, precision)
+    }
 }
+fun Uniform(type: VarType, arrayCount: Int = 1, precision: Precision = Precision.DEFAULT): Uniform.Provider = Uniform.Provider(type, arrayCount, precision)
 
 open class Temp(id: Int, type: VarType, arrayCount: Int, precision: Precision = Precision.DEFAULT) : Variable("temp$id", type, arrayCount, precision) {
     constructor(id: Int, type: VarType, precision: Precision = Precision.DEFAULT) : this(id, type, 1, precision)
@@ -245,6 +279,7 @@ open class Arg(name: String, type: VarType, arrayCount: Int = 1, precision: Prec
     override fun toString(): String = "Arg($name)"
     override fun equals(other: Any?): Boolean = mequals<Arg>(other)
     override fun hashCode(): Int = mhashcode()
+    operator fun getValue(thisRef: Any?, property: KProperty<*>): Arg = this
 }
 
 object Output : Varying("out", VarType.Float4) {
@@ -324,11 +359,32 @@ data class Program(val vertex: VertexShader, val fragment: FragmentShader, val n
 		constructor(name: String, vararg ops: Operand, type: VarType = VarType.Float1) : this(name, ops.toList(), type)
 	}
 
-    data class CustomFunc(val ref: FuncRef, override val ops: List<Operand>) : BaseFunc(ref.rettype) {
+    open class CustomFunc(open val ref: FuncRef, override val ops: List<Operand>) : BaseFunc(ref.rettype) {
         override val name: String get() = ref.name
+
     }
 
-    data class FuncRef(val name: String, val rettype: VarType, val args: List<Pair<String, VarType>>)
+    data class CustomFunc0(override val ref: FuncRef) : CustomFunc(ref, listOf())
+    data class CustomFunc1(override val ref: FuncRef, val p0: Operand) : CustomFunc(ref, listOf(p0))
+    data class CustomFunc2(override val ref: FuncRef, val p0: Operand, val p1: Operand) : CustomFunc(ref, listOf(p0, p1))
+    data class CustomFunc3(override val ref: FuncRef, val p0: Operand, val p1: Operand, val p2: Operand) : CustomFunc(ref, listOf(p0, p1, p2))
+    data class CustomFunc4(override val ref: FuncRef, val p0: Operand, val p1: Operand, val p2: Operand, val p3: Operand) : CustomFunc(ref, listOf(p0, p1, p2, p3))
+    data class CustomFunc5(override val ref: FuncRef, val p0: Operand, val p1: Operand, val p2: Operand, val p3: Operand, val p4: Operand) : CustomFunc(ref, listOf(p0, p1, p2, p3, p4))
+    data class CustomFuncN(override val ref: FuncRef, override val ops: List<Operand>) : CustomFunc(ref, ops)
+
+    interface FuncRef {
+        val name: String
+        val rettype: VarType
+        val args: List<Pair<String, VarType>>
+    }
+
+    interface FuncRef0 : FuncRef
+    interface FuncRef1 : FuncRef
+    interface FuncRef2 : FuncRef
+    interface FuncRef3 : FuncRef
+    interface FuncRef4 : FuncRef
+    interface FuncRef5 : FuncRef
+    interface FuncRefN : FuncRef
 
 	sealed class Stm {
 		data class Stms(val stms: List<Stm>) : Stm()
@@ -415,6 +471,8 @@ data class Program(val vertex: VertexShader, val fragment: FragmentShader, val n
         fun min(a: Operand, b: Operand): Operand = Func("min", a, b)
         fun max(a: Operand, b: Operand): Operand = Func("max", a, b)
         fun mod(a: Operand, b: Operand): Operand = Func("mod", a, b)
+
+        //fun lerp(a: Operand, b: Operand, c: Operand): Operand = Func("lerp", a, b, c)
 
         // https://learnwebgl.brown37.net/12_shader_language/documents/webgl-reference-card-1_0.pdf
         // #extension GL_OES_standard_derivatives : enable
@@ -524,7 +582,18 @@ data class Program(val vertex: VertexShader, val fragment: FragmentShader, val n
         fun createChildBuilder(): Builder = Builder(this)
         fun createChildFuncBuilder(): FuncBuilder = FuncBuilder(this)
         fun _build(): Stm = Stm.Stms(outputStms.toList())
-        fun _funcs(): List<FuncDecl> = context.outputFuncs.toList()
+        fun _funcs(): List<FuncDecl> {
+            val funcs = LinkedHashMap<String, FuncDecl>()
+            object : Visitor<Unit>(Unit) {
+                override fun visit(func: CustomFunc) {
+                    funcs[func.name] = func.ref as FuncDecl
+                }
+            }.visit(outputStms)
+            for (func in context.outputFuncs) {
+                funcs[func.name] = func
+            }
+            return funcs.values.toList()
+        }
         fun _buildFuncs(): Pair<Stm, List<FuncDecl>> = _build() to _funcs()
 
 		//inner class BuildIf(val stmIf: Stm.If) {
@@ -546,8 +615,15 @@ data class Program(val vertex: VertexShader, val fragment: FragmentShader, val n
         class FuncBuilder(parent: Builder) : Builder(parent) {
             val args = arrayListOf<Arg>()
 
-            fun ARG(name: String, type: VarType): Operand {
+            fun ARG(name: String, type: VarType): Arg {
                 return Arg(name, type).also { args += it }
+            }
+
+            fun ARG(type: VarType): ArgProvider = ArgProvider(type, this)
+
+            class ArgProvider(val type: VarType, val builder: FuncBuilder) {
+                operator fun provideDelegate(thisRef: Any?, property: KProperty<*>): Arg =
+                    Arg(property.name, type).also { builder.args += it }
             }
 
             //fun RETURN(expr: Operand) {
@@ -555,14 +631,43 @@ data class Program(val vertex: VertexShader, val fragment: FragmentShader, val n
             //}
         }
 
-        fun FUNC(name: String, rettype: VarType, block: FuncBuilder.() -> Unit): FuncRef {
+        fun FUNC(name: String, rettype: VarType, block: FuncBuilder.() -> Unit): FuncRefN {
             val funcBuild = createChildFuncBuilder().apply(block)
-            val decl = FuncDecl(name, rettype, funcBuild.args.map { it.name to it.type }, funcBuild._build())
-            context.outputFuncs.add(decl)
-            return decl.ref
+            return FuncDecl(name, rettype, funcBuild.args.map { it.name to it.type }, funcBuild._build()).also {
+                context.outputFuncs += it
+            }
         }
 
-        operator fun FuncRef.invoke(vararg operands: Operand): CustomFunc = CustomFunc(this, operands.toList())
+        fun FUNCN(rettype: VarType, block: FuncBuilder.() -> Unit): FuncProvider<FuncRefN> = FuncProvider(rettype, emptyList(), this) { block() }
+        fun FUNC(rettype: VarType, block: FuncBuilder.() -> Unit): FuncProvider<FuncRef0> = FuncProvider(rettype, listOf(), this) { block() }
+        fun FUNC(rettype: VarType, p0: VarType, block: FuncBuilder.(p0: Arg) -> Unit): FuncProvider<FuncRef1> = FuncProvider(rettype, listOf(p0), this) { block(it[0]) }
+        fun FUNC(rettype: VarType, p0: VarType, p1: VarType, block: FuncBuilder.(p0: Arg, p1: Arg) -> Unit): FuncProvider<FuncRef2> = FuncProvider(rettype, listOf(p0, p1), this) { block(it[0], it[1]) }
+        fun FUNC(rettype: VarType, p0: VarType, p1: VarType, p2: VarType, block: FuncBuilder.(p0: Arg, p1: Arg, p2: Arg) -> Unit): FuncProvider<FuncRef3> = FuncProvider(rettype, listOf(p0, p1, p2), this) { block(it[0], it[1], it[2]) }
+        fun FUNC(rettype: VarType, p0: VarType, p1: VarType, p2: VarType, p3: VarType, block: FuncBuilder.(p0: Arg, p1: Arg, p2: Arg, p3: Arg) -> Unit): FuncProvider<FuncRef4> = FuncProvider(rettype, listOf(p0, p1, p2, p3), this) { block(it[0], it[1], it[2], it[3]) }
+        fun FUNC(rettype: VarType, p0: VarType, p1: VarType, p2: VarType, p3: VarType, p4: VarType, block: FuncBuilder.(p0: Arg, p1: Arg, p2: Arg, p3: Arg, p4: Arg) -> Unit): FuncProvider<FuncRef5> = FuncProvider(rettype, listOf(p0, p1, p2, p3, p4), this) { block(it[0], it[1], it[2], it[3], it[4]) }
+
+        fun TEMP(type: VarType): Temp = Temp(context.tempLastId++, type)
+
+        class FuncDeclGetter<T : FuncRef>(val decl: FuncDecl) {
+            operator fun getValue(thisRef: Any?, property: KProperty<*>): T = decl as T
+        }
+
+        class FuncProvider<T : Program.FuncRef>(val rettype: VarType, val varTypes: List<VarType>, val builder: Program.Builder, val block: FuncBuilder.(args: List<Arg>) -> Unit) {
+            operator fun provideDelegate(thisRef: Any?, property: KProperty<*>): FuncDeclGetter<T> {
+                return FuncDeclGetter(builder.FUNC(property.name, rettype) {
+                    val args = varTypes.mapIndexed { index, type -> ARG("p$index", type) }
+                    block(this, args)
+                } as FuncDecl)
+            }
+        }
+
+        operator fun FuncRefN.invoke(vararg operands: Operand): CustomFunc = CustomFunc(this, operands.toList())
+        operator fun FuncRef0.invoke(): CustomFunc = CustomFunc(this, listOf())
+        operator fun FuncRef1.invoke(p0: Operand): CustomFunc = CustomFunc(this, listOf(p0))
+        operator fun FuncRef2.invoke(p0: Operand, p1: Operand): CustomFunc = CustomFunc(this, listOf(p0, p1))
+        operator fun FuncRef3.invoke(p0: Operand, p1: Operand, p2: Operand): CustomFunc = CustomFunc(this, listOf(p0, p1, p2))
+        operator fun FuncRef4.invoke(p0: Operand, p1: Operand, p2: Operand, p3: Operand): CustomFunc = CustomFunc(this, listOf(p0, p1, p2, p3))
+        operator fun FuncRef5.invoke(p0: Operand, p1: Operand, p2: Operand, p3: Operand, p4: Operand): CustomFunc = CustomFunc(this, listOf(p0, p1, p2, p3, p4))
 
         // infix // Single value parameter
         @Deprecated("Experimental, doesn't work yet")
@@ -672,6 +777,10 @@ data class Program(val vertex: VertexShader, val fragment: FragmentShader, val n
 	open class Visitor<E>(val default: E) {
         open fun visit(func: FuncDecl) {
             visit(func.stm)
+        }
+
+        open fun visit(stms: List<Stm?>) {
+            for (stm in stms) visit(stm)
         }
 
 		open fun visit(stm: Stm?) = when (stm) {

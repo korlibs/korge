@@ -52,9 +52,11 @@ class ShadersTest {
         assertEquals("hello", vs.toNewGlslString(GlslConfig()))
     }
 
-    val fs = FragmentShader {
-        DefaultShaders.apply {
-            out setTo vec4(1.lit, 0.lit, 0.lit, 1.lit)
+    val fs by lazy {
+        FragmentShader {
+            DefaultShaders.apply {
+                SET(out, vec4(1.lit, 0.lit, 0.lit, 1.lit))
+            }
         }
     }
 
@@ -85,21 +87,19 @@ class ShadersTest {
         assertEqualsShader(FragmentShader {
             DefaultShaders.apply {
                 // This is discarded
-                FUNC("demo", Float1) {
-                    RETURN(ARG("x", Float1) + ARG("y", Float1) * 2.lit)
+                val demo2 by FUNC(Float1, Float1, Float1) { x, y ->
+                    RETURN(x + y * 2.lit)
                 }
                 // Latest function with this name is used
-                val demo = FUNC("demo", Float1) {
-                    val x = ARG("x", Float1)
-                    val y = ARG("y", Float1)
+                val demo by FUNC(Float1, Float1, Float1) { x, y ->
                     RETURN(x + y + 2.lit)
                 }
 
                 SET(out, vec4(1.lit, 0.lit, 0.lit, demo(0.lit, 1.lit)))
             }
         }, version = 330) {
-            line("float demo(float x, float y)") {
-                line("return ((x + y) + 2);")
+            line("float demo(float p0, float p1)") {
+                line("return ((p0 + p1) + 2);")
             }
             line("void main()") {
                 line("gl_FragColor = vec4(1, 0, 0, demo(0, 1));")
@@ -116,7 +116,9 @@ class ShadersTest {
         val fragment = FragmentShader {
             // This is discarded
             val demo = FUNC("demo", Float1) {
-                RETURN(ARG("x", Float1) + ARG("y", Float1) * 2.lit)
+                val x = ARG("x", Float1)
+                val y = ARG("y", Float1)
+                RETURN(x + y * 2.lit)
             }
             SET(out, vec4(1.lit, 0.lit, 0.lit, demo(0.lit, 1.lit)))
         }.appending {
