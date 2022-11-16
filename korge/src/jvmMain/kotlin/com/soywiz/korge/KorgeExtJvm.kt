@@ -2,10 +2,8 @@ package com.soywiz.korge
 
 import com.soywiz.klock.*
 import com.soywiz.korge.awt.*
-import com.soywiz.korge.debug.*
 import com.soywiz.korge.time.*
 import com.soywiz.korge.view.*
-import com.soywiz.korui.*
 import kotlinx.coroutines.*
 import java.awt.Container
 

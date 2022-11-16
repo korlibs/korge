@@ -2,7 +2,6 @@ package com.soywiz.korge.awt
 
 import com.soywiz.kds.*
 import com.soywiz.korev.Event
-import com.soywiz.korge.debug.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.particle.*
 import com.soywiz.korge.scene.*

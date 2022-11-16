@@ -1,4 +1,4 @@
-package com.soywiz.korui
+package com.soywiz.korge.awt
 
 import com.soywiz.kds.*
 import com.soywiz.korev.*
