@@ -39,8 +39,8 @@ suspend fun main() = Korge(
         //Demo(::MainInput),
         //Demo(::MainAnimations),
         //Demo(::MainCache),
-        //Demo(::MainEditor),
-        Demo(::MainUI),
+        Demo(::MainEditor),
+        //Demo(::MainUI),
         //Demo(::MainBunnymark),
         //Demo(::MainBlur),
         //Demo(::MainSDF),
@@ -162,9 +162,12 @@ class Demo(val sceneBuilder: () -> Scene, val name: String = sceneBuilder()::cla
 suspend fun Stage.demoSelector(default: Demo, all: List<Demo>) {
     val container = sceneContainer(width = width, height = height - 48.0) { }.xy(0, 48)
 
+    lateinit var comboBox: UIComboBox<Demo>
+
     suspend fun setDemo(demo: Demo?) {
         //container.removeChildren()
         if (demo != null) {
+            comboBox.selectedItem = demo
             views.clearColor = DEFAULT_KORGE_BG_COLOR
             container.changeTo({ injector ->
                 demo.sceneBuilder().also { it.init(injector) }
@@ -172,7 +175,7 @@ suspend fun Stage.demoSelector(default: Demo, all: List<Demo>) {
         }
     }
 
-    val comboBox = uiComboBox(width = 200.0, items = (listOf(default) + all).distinctBy { it.name }.sortedBy { it.name }) {
+    comboBox = uiComboBox<Demo>(width = 200.0, items = (listOf(default) + all).distinctBy { it.name }.sortedBy { it.name }) {
         this.viewportHeight = 600
         this.onSelectionUpdate.add {
             println(it)

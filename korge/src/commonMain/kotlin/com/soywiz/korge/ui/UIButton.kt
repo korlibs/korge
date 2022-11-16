@@ -98,8 +98,22 @@ open class UIButton(
         }
     @ViewProperty
     var bgColorOver = MaterialColors.BLUE_800
+        set(value) {
+            field = value
+            updatedUIButton(immediate = true)
+        }
+    @ViewProperty
+    var bgColorSelected = MaterialColors.BLUE_900
+        set(value) {
+            field = value
+            updatedUIButton(immediate = true)
+        }
     @ViewProperty
     var bgColorDisabled = Colors["#777777ff"]
+        set(value) {
+            field = value
+            updatedUIButton(immediate = true)
+        }
     @ViewProperty
     var elevation = true
         set(value) {
@@ -302,6 +316,7 @@ open class UIButton(
             val bgcolor = when {
                 !button.enabled -> button.bgColorDisabled
                 over -> button.bgColorOver
+                selected -> button.bgColorSelected
                 else -> button.bgColorOut
             }
             //button.animStateManager.set(
@@ -316,6 +331,12 @@ open class UIButton(
             }
         }
     }
+
+    var selected: Boolean = false
+        set(value) {
+            field = value
+            updatedUIButton(immediate = true, over = false)
+        }
 
     override fun updateState() {
         super.updateState()

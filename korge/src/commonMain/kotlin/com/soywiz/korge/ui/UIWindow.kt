@@ -52,10 +52,12 @@ class UIWindow(title: String, width: Double = 256.0, height: Double = 256.0) : U
         //ctx2d.rectOutline(-borderSize, -borderSize, this@UIWindow.width + borderSize * 2, this@UIWindow.height + borderSize * 2, borderSize, borderColor.withAd(renderAlpha))
     })
     private val titleContainer = fixedSizeContainer(width, titleHeight)
-    private val titleView = titleContainer.textBlock(RichTextData(title), align = TextAlignment.MIDDLE_LEFT).xy(6, 0).size(width, titleHeight)
+    private val titleView = titleContainer.textBlock(RichTextData(title), align = TextAlignment.MIDDLE_LEFT).xy(12, 0).size(width, titleHeight)
     private val closeButton = titleContainer.uiButton("X", width = titleHeight - buttonSeparation * 2, height = titleHeight - buttonSeparation * 2) {
         radius = 100.percent
-        colorMul = Colors["#b2434e"]
+        elevation = false
+        bgColorOut = MaterialColors.RED_600
+        bgColorOver = MaterialColors.RED_800
         onClick { closeAnimated() }
     }
     var title: String by titleView::plainText

@@ -12,8 +12,9 @@ inline fun Container.shapeView(
     stroke: Paint = Colors.WHITE,
     strokeThickness: Double = 1.0,
     autoScaling: Boolean = true,
+    renderer: GraphicsRenderer = GraphicsRenderer.GPU,
     callback: @ViewDslMarker ShapeView.() -> Unit = {}
-): ShapeView = ShapeView(shape, fill, stroke, strokeThickness, autoScaling).addTo(this, callback)
+): ShapeView = ShapeView(shape, fill, stroke, strokeThickness, autoScaling, renderer = renderer).addTo(this, callback)
 
 open class ShapeView(
     shape: VectorPath? = null,

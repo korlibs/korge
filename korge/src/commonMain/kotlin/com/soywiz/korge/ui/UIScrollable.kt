@@ -1,32 +1,21 @@
 package com.soywiz.korge.ui
 
-import com.soywiz.kds.iterators.fastForEach
-import com.soywiz.klock.seconds
-import com.soywiz.kmem.clamp
-import com.soywiz.korge.annotations.KorgeExperimental
-import com.soywiz.korge.component.decorateOutOverAlpha
-import com.soywiz.korge.input.mouse
-import com.soywiz.korge.input.onMouseDrag
-import com.soywiz.korge.internal.KorgeInternal
-import com.soywiz.korge.render.RenderContext
-import com.soywiz.korge.view.Container
-import com.soywiz.korge.view.SolidRect
-import com.soywiz.korge.view.ViewDslMarker
-import com.soywiz.korge.view.addFixedUpdater
-import com.soywiz.korge.view.addTo
-import com.soywiz.korge.view.addUpdater
-import com.soywiz.korge.view.container
-import com.soywiz.korge.view.fixedSizeContainer
-import com.soywiz.korge.view.position
-import com.soywiz.korge.view.size
-import com.soywiz.korge.view.solidRect
-import com.soywiz.korim.bitmap.Bitmaps
-import com.soywiz.korim.color.Colors
-import com.soywiz.korim.color.RGBA
-import com.soywiz.korio.async.Signal
-import com.soywiz.korma.interpolation.interpolate
-import kotlin.math.absoluteValue
-import kotlin.math.max
+import com.soywiz.kds.iterators.*
+import com.soywiz.klock.*
+import com.soywiz.kmem.*
+import com.soywiz.korge.annotations.*
+import com.soywiz.korge.component.*
+import com.soywiz.korge.input.*
+import com.soywiz.korge.internal.*
+import com.soywiz.korge.render.*
+import com.soywiz.korge.view.*
+import com.soywiz.korge.view.property.*
+import com.soywiz.korim.bitmap.*
+import com.soywiz.korim.color.*
+import com.soywiz.korio.async.*
+import com.soywiz.korma.geom.*
+import com.soywiz.korma.interpolation.*
+import kotlin.math.*
 
 @KorgeExperimental
 inline fun Container.uiScrollable(
@@ -72,6 +61,7 @@ open class UIScrollable(width: Double, height: Double) : UIView(width, height) {
         val totalSize get() = (container.getLocalBoundsOptimized().let { if (isHorizontal) max(scrollable.width, it.right) else max(scrollable.height, it.bottom) })
             //.also { println("totalSize=$it") }
         val scrollArea get() = totalSize - size
+        val positionEnd: Double get() = position + size
         var position: Double
             get() = -containerPos
             set(value) {
@@ -95,6 +85,12 @@ open class UIScrollable(width: Double, height: Double) : UIView(width, height) {
             val d = scrollArea
             if (d == 0.0) return 0.0
             return (pos / d) * (size - scaledSize)
+        }
+
+        fun ensurePositionIsVisible(position: Double, anchor: Double = 0.5) {
+            if (position !in this.position..this.positionEnd) {
+                this.position = position - size * anchor
+            }
         }
 
         var positionRatio: Double
@@ -134,7 +130,9 @@ open class UIScrollable(width: Double, height: Double) : UIView(width, height) {
     var scrollTop: Double by vertical::position
     var scrollTopRatio: Double by vertical::positionRatio
 
+    @ViewProperty
     var frictionRate = 0.75
+    @ViewProperty
     var overflowRate = 0.1
     val overflowPixelsVertical get() = height * overflowRate
     val overflowPixelsHorizontal get() = width * overflowRate
@@ -142,10 +140,19 @@ open class UIScrollable(width: Double, height: Double) : UIView(width, height) {
     val overflowPixelsBottom get() = overflowPixelsVertical
     val overflowPixelsLeft get() = overflowPixelsHorizontal
     val overflowPixelsRight get() = overflowPixelsHorizontal
+    @ViewProperty
+    var containerX: Double by container::x
+    @ViewProperty
+    var containerY: Double by container::y
+    @ViewProperty
     var timeScrollBar = 0.seconds
+    @ViewProperty
     var autohideScrollBar = false
+    @ViewProperty
     var scrollBarAlpha = 0.75
+    @ViewProperty
     var backgroundColor: RGBA = Colors["#161a1d"]
+    @ViewProperty
     var mobileBehaviour = true
 
     private fun showScrollBar() {
@@ -159,6 +166,11 @@ open class UIScrollable(width: Double, height: Double) : UIView(width, height) {
             batch.drawQuad(ctx.getTex(Bitmaps.white), 0f, 0f, width.toFloat(), height.toFloat(), globalMatrix, colorMul = backgroundColor * renderColorMul)
         }
         super.renderInternal(ctx)
+    }
+
+    fun ensurePointIsVisible(x: Double, y: Double, anchor: Anchor = Anchor.CENTER) {
+        horizontal.ensurePositionIsVisible(x, anchor.sx)
+        vertical.ensurePositionIsVisible(y, anchor.sy)
     }
 
     init {
@@ -299,6 +311,7 @@ open class UIScrollable(width: Double, height: Double) : UIView(width, height) {
         contentContainer.size(this.width, this.height)
         vertical.view.position(width - 10.0, 0.0)
         horizontal.view.position(0.0, height - 10.0)
+        //println(vertical.overflowPixelsEnd)
         //background.size(width, height)
         super.onSizeChanged()
     }

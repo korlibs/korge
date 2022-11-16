@@ -11,6 +11,8 @@ import com.soywiz.korim.color.*
 import com.soywiz.korim.text.*
 import com.soywiz.korio.async.*
 import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.shape.*
+import com.soywiz.korma.geom.vector.*
 import com.soywiz.korma.interpolation.*
 import com.soywiz.korma.length.LengthExtensions.Companion.pt
 import kotlin.native.concurrent.*
@@ -36,6 +38,7 @@ open class UIComboBox<T>(
 
     var selectedIndex by uiObservable(selectedIndex) {
         updateState()
+        ensureSelectedIsInVisibleArea()
         onSelectionUpdate(this)
     }
     var selectedItem: T?
@@ -58,8 +61,14 @@ open class UIComboBox<T>(
         it.textColor = MaterialColors.GRAY_800
         it.background.borderColor = MaterialColors.GRAY_400
         it.background.borderSize = 1.0
+
     }
-    private val expandButtonIcon = uiImage(height, height, scaleMode = ScaleMode.FIT).position(width - height, 0.0)
+    private val expandButtonIcon = shapeView(buildVectorPath {
+        moveTo(0, 0)
+        lineTo(20, 0)
+        lineTo(10, 10)
+        close()
+    }, fill = MaterialColors.GRAY_700, renderer = GraphicsRenderer.SYSTEM).centered.position(width - 16.0, height * 0.5).scale(1.0, +1.0)
     //private val expandButton = uiButton(height, height, icon = comboBoxExpandIcon).position(width - height, 0.0)
     private val invisibleRect = solidRect(width, height, Colors.TRANSPARENT_BLACK)
 
@@ -78,8 +87,11 @@ open class UIComboBox<T>(
                 this.textView.padding = Margin(0.0, 8.0)
                 this.radius = 0.pt
                 this.textColor = Colors.BLACK
-                this.bgColorOut = Colors["#fff"]
-                this.bgColorOver = Colors["#ddd"]
+                this.bgColorOut = MaterialColors.GRAY_50
+                this.bgColorOver = MaterialColors.GRAY_400
+                this.bgColorSelected = MaterialColors.LIGHT_BLUE_A100
+                //println("selectedIndex == index : ${this@UIComboBox.selectedIndex} == $index : '${this.text}'")
+                this.selected = this@UIComboBox.selectedIndex == index
                 this.elevation = false
             }
             it.onClick {
@@ -90,6 +102,11 @@ open class UIComboBox<T>(
         }
     }, width = width)
     private var showItems = false
+
+    private fun ensureSelectedIsInVisibleArea() {
+        verticalList.updateList()
+        itemsView.ensurePointIsVisible(0.0, verticalList.provider.getItemY(selectedIndex))
+    }
 
     init {
         updateItems()
@@ -111,12 +128,12 @@ open class UIComboBox<T>(
         }
         invisibleRect.onClick {
             showItems = !showItems
-            onSizeChanged()
+            toggleOpenClose(immediate = false)
         }
         onSizeChanged()
     }
 
-    fun open() {
+    fun open(immediate: Boolean = false) {
         val views = stage?.views
         if (views != null) {
             if (views.openedComboBox != this) {
@@ -125,14 +142,29 @@ open class UIComboBox<T>(
             views?.openedComboBox = this
         }
 
-        itemsView.visible = true
-        simpleAnimator.cancel().sequence {
-            tween(
-                itemsView::alpha[0.0, 1.0],
-                itemsView::scaleY[0.0, 1.0],
-                time = 0.1.seconds,
-                easing = Easing.EASE
-            )
+        if (!itemsView.visible) {
+            itemsView.visible = true
+            if (immediate) {
+                itemsView.alpha = 1.0
+                itemsView.scaleY = 1.0
+                expandButtonIcon.scaleY = -1.0
+                selectedButton.background.borderColor = MaterialColors.BLUE_300
+                selectedButton.background.borderSize = 2.0
+            } else {
+                itemsView.alpha = 0.0
+                itemsView.scaleY = 0.0
+                simpleAnimator.cancel().sequence {
+                    tween(
+                        itemsView::alpha[0.0, 1.0],
+                        itemsView::scaleY[0.0, 1.0],
+                        expandButtonIcon::scaleY[-1.0],
+                        selectedButton.background::borderColor[MaterialColors.BLUE_300],
+                        selectedButton.background::borderSize[2.0],
+                        time = 0.25.seconds,
+                        easing = Easing.EASE
+                    )
+                }
+            }
         }
         //containerRoot.addChild(itemsView)
 
@@ -152,7 +184,7 @@ open class UIComboBox<T>(
         updateProps()
     }
 
-    fun close() {
+    fun close(immediate: Boolean = false) {
         val views = stage?.views
         if (views != null) {
             if (views.openedComboBox == this) {
@@ -162,14 +194,26 @@ open class UIComboBox<T>(
 
         //itemsView.removeFromParent()
         if (itemsView.visible) {
-            simpleAnimator.cancel().sequence {
-                tween(
-                    itemsView::alpha[0.0],
-                    itemsView::scaleY[0.0],
-                    time = 0.1.seconds,
-                    easing = Easing.EASE
-                )
-                block { itemsView.visible = false }
+            if (immediate) {
+                itemsView.alpha = 0.0
+                itemsView.scaleY = 0.0
+                expandButtonIcon.scaleY = +1.0
+                selectedButton.background.borderColor = MaterialColors.GRAY_400
+                selectedButton.background.borderSize = 1.0
+                itemsView.visible = false
+            } else {
+                simpleAnimator.cancel().sequence {
+                    tween(
+                        itemsView::alpha[0.0],
+                        itemsView::scaleY[0.0],
+                        expandButtonIcon::scaleY[+1.0],
+                        selectedButton.background::borderColor[MaterialColors.GRAY_400],
+                        selectedButton.background::borderSize[1.0],
+                        time = 0.25.seconds,
+                        easing = Easing.EASE
+                    )
+                    block { itemsView.visible = false }
+                }
             }
         }
         showItems = false
@@ -209,10 +253,14 @@ open class UIComboBox<T>(
 
     override fun onSizeChanged() {
         super.onSizeChanged()
+        toggleOpenClose(immediate = true)
+    }
+
+    fun toggleOpenClose(immediate: Boolean) {
         if (showItems) {
-            open()
+            open(immediate = immediate)
         } else {
-            close()
+            close(immediate = immediate)
         }
     }
 
@@ -220,7 +268,7 @@ open class UIComboBox<T>(
         selectedButton.simulatePressing(showItems)
         //expandButton.simulatePressing(showItems)
         //expandButton.icon = if (showItems) comboBoxShrinkIcon else comboBoxExpandIcon
-        expandButtonIcon.bitmap = if (showItems) comboBoxShrinkIcon else comboBoxExpandIcon
+        //expandButtonIcon.bitmap = if (showItems) comboBoxShrinkIcon else comboBoxExpandIcon
         invisibleRect.size(width, height)
         selectedButton.size(width, height)
         selectedButton.text = selectedItem?.toString() ?: ""

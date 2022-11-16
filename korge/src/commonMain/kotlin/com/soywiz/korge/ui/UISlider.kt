@@ -42,7 +42,6 @@ class UISlider(
         }
     }
 
-    @ViewProperty
     val bg = solidRect(width, height, RGBA(32, 32, 32))
     val button = solidRect(height, height, Colors.DARKGREY)
     val text = text("", alignment = TextAlignment.TOP_LEFT, color = Colors.BLACK)

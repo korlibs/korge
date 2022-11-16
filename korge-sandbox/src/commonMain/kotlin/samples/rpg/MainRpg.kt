@@ -2,23 +2,17 @@ package samples.rpg
 
 import com.soywiz.klock.*
 import com.soywiz.korev.*
-import com.soywiz.korge.*
-import com.soywiz.korge.component.docking.*
 import com.soywiz.korge.scene.*
 import com.soywiz.korge.tiled.*
-import com.soywiz.korge.tween.*
 import com.soywiz.korge.view.*
 import com.soywiz.korge.view.animation.*
 import com.soywiz.korge.view.camera.*
 import com.soywiz.korge.view.filter.*
-import com.soywiz.korge.view.tween.*
 import com.soywiz.korim.atlas.*
-import com.soywiz.korim.color.*
 import com.soywiz.korim.format.*
 import com.soywiz.korim.tiles.tiled.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korma.geom.*
-import com.soywiz.korma.interpolation.*
 
 class MainRpgScene : ScaledScene(512, 512) {
     override suspend fun SContainer.sceneMain() {
@@ -77,7 +71,12 @@ class RpgIngameScene : Scene() {
 
                 println("charactersLayer=$charactersLayer")
 
-                charactersLayer.keepChildrenSortedByY()
+                // Keep zIndex in sync with y
+                charactersLayer.addUpdater {
+                    charactersLayer.forEachChild {
+                        it.zIndex = it.y
+                    }
+                }
 
                 for (obj in tiledMapView.tiledMap.data.getObjectByType("npc")) {
                     val npc = charactersLayer.imageDataView(

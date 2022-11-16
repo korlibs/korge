@@ -1,12 +1,10 @@
 package com.soywiz.korge.view
 
-import com.soywiz.korge.annotations.KorgeExperimental
-import com.soywiz.korge.render.RenderContext
-import com.soywiz.korim.bitmap.Bitmap32
-import com.soywiz.korma.geom.Point
-import com.soywiz.korma.geom.Rectangle
-import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.completeWith
+import com.soywiz.korge.annotations.*
+import com.soywiz.korge.render.*
+import com.soywiz.korim.bitmap.*
+import com.soywiz.korma.geom.*
+import kotlinx.coroutines.*
 
 /**
  * Asynchronously renders this [View] (with the provided [views]) to a [Bitmap32] and returns it.
@@ -32,7 +30,7 @@ suspend fun View.renderToBitmap(views: Views, region: Rectangle? = null, scale: 
 @KorgeExperimental
 fun View.unsafeRenderToBitmapSync(ctx: RenderContext, region: Rectangle? = null, scale: Double = 1.0, outPoint: Point = Point()): Bitmap32 {
     val view = this
-    val bounds = getLocalBoundsOptimizedAnchored()
+    val bounds = getLocalBoundsOptimizedAnchored(includeFilters = true)
 
     //println("bounds=$bounds")
 

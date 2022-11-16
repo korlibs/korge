@@ -328,13 +328,13 @@ open class Text(
 
                     //println("Text.BitmapFont: bounds=$bounds, firstBounds=$firstBounds, textWidth=$textWidth, textHeight=$textHeight, verticalAlign=$verticalAlign")
 
-                    val dx = (textBounds.width - textWidth) * horizontalAlign.ratio
+                    val dx = (_textBounds.width - textWidth) * horizontalAlign.ratio
                     //val dx = 0.0
                     val dy = when (verticalAlign) {
                         VerticalAlign.BASELINE -> 0.0
                         //VerticalAlign.MIDDLE -> +textHeight * 0.5 + font.getFontMetrics(textSize).ascent * 0.5
                         //VerticalAlign.MIDDLE -> 0.0
-                        else -> (textBounds.height - textHeight) * verticalAlign.ratioFake - firstBounds.y
+                        else -> (_textBounds.height - textHeight) * verticalAlign.ratioFake - firstBounds.y
                     }
 
                     if (newTvaRenderer) {
