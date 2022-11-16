@@ -11,6 +11,7 @@ import com.soywiz.korge.view.ViewLeaf
 import com.soywiz.korge.view.Views
 import com.soywiz.korge.view.addTo
 import com.soywiz.korge.view.ninePatch
+import com.soywiz.korge.view.property.*
 import com.soywiz.korge.view.size
 import com.soywiz.korge.view.solidRect
 import com.soywiz.korui.UiContainer
@@ -29,8 +30,9 @@ open class UIProgressBar(
 	current: Double = 0.0,
 	maximum: Double = 100.0,
 ) : UIView(width, height), ViewLeaf {
-
+    @ViewProperty(min = 0.0, max = 100.0)
 	var current by uiObservable(current) { updateState() }
+    @ViewProperty(min = 0.0, max = 100.0)
 	var maximum by uiObservable(maximum) { updateState() }
 
 	override var ratio: Double
@@ -47,13 +49,5 @@ open class UIProgressBar(
         progressView.ninePatch = buttonNormal
         background.color = buttonBackColor
         super.renderInternal(ctx)
-    }
-
-    override fun buildDebugComponent(views: Views, container: UiContainer) {
-        container.uiCollapsibleSection(this@UIProgressBar::class.simpleName!!) {
-            uiEditableValue(::current, min = 0.0, max = 100.0, clamp = false)
-            uiEditableValue(::maximum, min = 1.0, max = 100.0, clamp = false)
-        }
-        super.buildDebugComponent(views, container)
     }
 }

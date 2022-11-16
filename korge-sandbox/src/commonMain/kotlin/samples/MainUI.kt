@@ -7,6 +7,7 @@ import com.soywiz.korge.tween.get
 import com.soywiz.korge.tween.tween
 import com.soywiz.korge.ui.*
 import com.soywiz.korge.view.*
+import com.soywiz.korgw.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.font.readBitmapFont
 import com.soywiz.korio.file.std.resourcesVfs
@@ -35,8 +36,9 @@ class MainUI : Scene() {
             text = "Close Window"
             position(128, 128 + 32)
             onClick {
-                println("CLICKED!")
-                gameWindow.close()
+                if (gameWindow.confirm("Are you sure to close the window?")) {
+                    gameWindow.close()
+                }
             }
             enable()
         }

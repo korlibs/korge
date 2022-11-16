@@ -1,6 +1,7 @@
 package com.soywiz.korge.view
 
 import com.soywiz.korag.AG
+import com.soywiz.korge.view.property.*
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.color.RGBAf
 
@@ -35,6 +36,12 @@ data class BlendMode(
     fun apply(premultiplied: Boolean, src: RGBA, dst: RGBA): RGBA {
         val factors = factors(premultiplied)
         return factors.apply(src, dst)
+    }
+
+
+    @Suppress("unused")
+    object Provider {
+        val ITEMS get() = STANDARD_LIST
     }
 
     companion object {

@@ -15,6 +15,7 @@ import com.soywiz.korge.view.View
 import com.soywiz.korge.view.ViewDslMarker
 import com.soywiz.korge.view.Views
 import com.soywiz.korge.view.addTo
+import com.soywiz.korge.view.property.*
 import com.soywiz.korim.paint.Paint
 import com.soywiz.korim.vector.CompoundShape
 import com.soywiz.korim.vector.EmptyShape
@@ -132,6 +133,7 @@ open class GpuShapeView(
 
     var antialiasedMasks: Boolean = false
 
+    @ViewProperty
     var antialiased: Boolean = antialiased
         set(value) {
             field = value
@@ -474,6 +476,7 @@ open class GpuShapeView(
         return path.getPoints2List().mapNotNull { getPointsForPath(it, type) }
     }
 
+    @ViewProperty(min = 1.0, max = 1.0)
     var maxRenderCount: Int = 100_000
     //var maxRenderCount: Int = 1
     //var maxRenderCount: Int = 14
@@ -489,6 +492,7 @@ open class GpuShapeView(
     //    }
     //}
 
+    @ViewProperty
     var debugDrawOnlyAntialiasedBorder = false
         set(value) {
             field = value
@@ -705,9 +709,6 @@ open class GpuShapeView(
                     view.anchorY = 0.5
                 }
             }
-            uiEditableValue(view::antialiased)
-            uiEditableValue(view::debugDrawOnlyAntialiasedBorder)
-            uiEditableValue(view::maxRenderCount, min = 1, max = 10, clamp = false, name = "maxRenderCount")
         }
         super.buildDebugComponent(views, container)
     }

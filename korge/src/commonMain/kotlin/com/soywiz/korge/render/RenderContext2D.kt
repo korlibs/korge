@@ -347,7 +347,8 @@ class RenderContext2D(
 inline fun View.renderCtx2d(ctx: RenderContext, crossinline block: (RenderContext2D) -> Unit) {
     ctx.useCtx2d { context ->
         context.keep {
-            context.blendMode = blendMode
+            context.blendMode = renderBlendMode
+            context.multiplyColor = renderColorMul
             context.setMatrix(globalMatrix)
             block(context)
         }

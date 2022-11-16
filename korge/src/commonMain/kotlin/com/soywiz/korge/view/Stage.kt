@@ -11,13 +11,13 @@ import com.soywiz.korge.debug.uiEditableValue
 import com.soywiz.korge.input.Input
 import com.soywiz.korge.input.InputKeys
 import com.soywiz.korge.render.RenderContext
+import com.soywiz.korge.view.property.*
 import com.soywiz.korgw.GameWindow
 import com.soywiz.korinject.AsyncInjector
+import com.soywiz.korio.annotations.*
 import com.soywiz.korio.resources.ResourcesContainer
 import com.soywiz.korma.annotations.RootViewDslMarker
-import com.soywiz.korma.geom.Point
-import com.soywiz.korma.geom.Rectangle
-import com.soywiz.korma.geom.setTo
+import com.soywiz.korma.geom.*
 import com.soywiz.korui.UiContainer
 import kotlinx.coroutines.CoroutineScope
 
@@ -84,19 +84,17 @@ class Stage(override val views: Views) : FixedSizeContainer()
     //    }
     //}
 
-    override fun buildDebugComponent(views: Views, container: UiContainer) {
-        container.uiCollapsibleSection("Stage") {
-            uiEditableValue(Pair(views::virtualWidthDouble, views::virtualHeightDouble), name = "virtualSize", min = 0.0, max = 2000.0).findObservableProperties().fastForEach {
-                it.onChange {
-                    // @TODO: This shouldn't be necessary
-                    views.gameWindow.queue {
-                        views.resized()
-                    }
-                }
+    @Suppress("unused")
+    @ViewProperty(min = 0.0, max = 2000.0, groupName = "Stage")
+    private var virtualSize: IPoint
+        get() = Point(views.virtualWidthDouble, views.virtualHeightDouble)
+        set(value) {
+            views.virtualWidthDouble = value.x
+            views.virtualHeightDouble = value.y
+            views.gameWindow.queue {
+                views.resized()
             }
         }
-        super.buildDebugComponent(views, container)
-    }
 
     override fun invalidatedView(view: BaseView?) {
         views.invalidatedView(view)

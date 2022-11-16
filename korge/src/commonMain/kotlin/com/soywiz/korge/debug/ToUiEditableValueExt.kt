@@ -4,9 +4,7 @@ import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.color.RGBAf
 import com.soywiz.korio.lang.EnumLike
-import com.soywiz.korma.geom.Angle
-import com.soywiz.korma.geom.Point
-import com.soywiz.korma.geom.degrees
+import com.soywiz.korma.geom.*
 import com.soywiz.korui.UiContainer
 import kotlin.jvm.JvmName
 import kotlin.reflect.KMutableProperty0
@@ -167,6 +165,29 @@ fun UiContainer.uiEditableValue(
             UiNumberEditableValue(app, obs2, min, max, clampMin, clampMax, decimalPlaces),
         )).also { addChild(it) }
 }
+
+/*
+@JvmName("uiEditableValuePoint")
+fun UiContainer.uiEditableValue(
+    props: KMutableProperty0<IPoint>,
+    min: Double = -1.0,
+    max: Double = +1.0,
+    clamp: Boolean = false,
+    clampMin: Boolean = clamp,
+    clampMax: Boolean = clamp,
+    decimalPlaces: Int = 2,
+    name: String = "pair",
+): UiRowEditableValue {
+    val obs1 = ObservableProperty(props.first.name, internalSet = { props.first.set(it) }, internalGet = { props.first.get() })
+    val obs2 = ObservableProperty(props.second.name, internalSet = { props.second.set(it) }, internalGet = { props.second.get() })
+    return UiRowEditableValue(
+        app, name,
+        UiTwoItemEditableValue(app,
+            UiNumberEditableValue(app, obs1, min, max, clampMin, clampMax, decimalPlaces),
+            UiNumberEditableValue(app, obs2, min, max, clampMin, clampMax, decimalPlaces),
+        )).also { addChild(it) }
+}
+*/
 
 @JvmName("uiEditableValueTuple")
 fun UiContainer.uiEditableValue(

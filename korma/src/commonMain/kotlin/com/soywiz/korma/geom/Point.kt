@@ -92,7 +92,7 @@ val IPoint.normalized: IPoint
     }
 val IPoint.mutable: Point get() = Point(x, y)
 val IPoint.immutable: IPoint get() = IPoint(x, y)
-fun IPoint.copy() = IPoint(x, y)
+fun IPoint.copy(x: Double = this.x, y: Double = this.y): IPoint = IPoint(x, y)
 fun IPoint.isAlmostEquals(other: IPoint, epsilon: Double = 0.000001): Boolean =
     this.x.isAlmostEquals(other.x, epsilon) && this.y.isAlmostEquals(other.y, epsilon)
 

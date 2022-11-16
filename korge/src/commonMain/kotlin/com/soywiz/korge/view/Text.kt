@@ -10,6 +10,7 @@ import com.soywiz.korge.render.TexturedVertexArray
 import com.soywiz.korge.text.*
 import com.soywiz.korge.view.filter.backdropFilter
 import com.soywiz.korge.view.filter.filter
+import com.soywiz.korge.view.property.*
 import com.soywiz.korim.bitmap.Bitmaps
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
@@ -82,6 +83,7 @@ open class Text(
 
     var lineCount: Int = 0; private set
 
+    @ViewProperty
     override var text: String = text; set(value) { if (field != value) {
         field = value;
         updateLineCount()
@@ -109,6 +111,8 @@ open class Text(
         }
         //printStackTrace("setfont=$field")
     }
+
+    @ViewProperty(min = 1.0, max = 300.0)
     var textSize: Double = textSize; set(value) {
         if (field != value) {
             field = value
@@ -146,9 +150,14 @@ open class Text(
             version++
             invalidate()
         }
+    @ViewProperty
+    @ViewPropertyProvider(provider = HorizontalAlign.Provider::class)
     var horizontalAlign: HorizontalAlign
         get() = alignment.horizontal
         set(value) { alignment = alignment.withHorizontal(value) }
+
+    @ViewProperty
+    @ViewPropertyProvider(provider = VerticalAlign.Provider::class)
     var verticalAlign: VerticalAlign
         get() = alignment.vertical
         set(value) { alignment = alignment.withVertical(value) }
@@ -464,10 +473,6 @@ open class Text(
 
     override fun buildDebugComponent(views: Views, container: UiContainer) {
         container.uiCollapsibleSection("Text") {
-            uiEditableValue(::text)
-            uiEditableValue(::textSize, min= 1.0, max = 300.0)
-            uiEditableValue(::verticalAlign, VerticalAlign.ALL)
-            uiEditableValue(::horizontalAlign, HorizontalAlign.ALL)
             uiEditableValue(::fontSource, UiTextEditableValue.Kind.FILE(views.currentVfs) {
                 it.extensionLC == "ttf" || it.extensionLC == "fnt"
             })

@@ -82,11 +82,8 @@ class TextBlock(
 
     override fun renderInternal(ctx: RenderContext) {
         if (allBitmap) {
-            ctx.useCtx2d {
-                it.keep {
-                    it.setMatrix(globalMatrix)
-                    it.drawText(text, padding.left, padding.top, width - padding.right, height - padding.bottom, wordWrap, includePartialLines, ellipsis, fill, stroke, align)
-                }
+            renderCtx2d(ctx) {
+                it.drawText(text, padding.left, padding.top, width - padding.right, height - padding.bottom, wordWrap, includePartialLines, ellipsis, fill, stroke, align)
             }
         } else {
             ensureTexture()
