@@ -1,7 +1,6 @@
 package com.soywiz.korge.render
 
 import com.soywiz.kds.iterators.*
-import com.soywiz.korag.*
 import com.soywiz.korag.shader.*
 import com.soywiz.korge.annotations.*
 import com.soywiz.korge.view.*
@@ -63,7 +62,7 @@ object MaterialRender {
 
         // Apply a drop shadow effect.
         //IF((roundedDist ge -.1f) and (u_ShadowRadius gt 0f)) {
-        IF((out.a lt 1f) and (u_ShadowRadius ge 0f)) {
+        IF((out.a lt 1f) and (u_ShadowRadius gt 0f)) {
         //IF((smoothedAlpha lt .1f.lit) and (u_ShadowRadius gt 0f.lit)) {
             val shadowSoftness = u_ShadowRadius
             val shadowOffset = u_ShadowOffset
@@ -88,7 +87,7 @@ fun RenderContext2D.materialRoundRect(
     radius: RectCorners = RectCorners.EMPTY,
     shadowOffset: IPoint = IPoint.ZERO,
     shadowColor: RGBA = Colors.BLACK,
-    shadowRadius: Double = -1.0,
+    shadowRadius: Double = 0.0,
     highlightPos: IPoint = IPoint.ZERO,
     highlightRadius: Double = 0.0,
     highlightColor: RGBA = Colors.WHITE,
