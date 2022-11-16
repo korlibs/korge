@@ -94,7 +94,6 @@ suspend fun main() = Korge(
             Demo(::MainEditor),
             Demo(::MainAnimations),
             Demo(::MainBunnymark),
-            Demo(::MainKorviSample),
             Demo(::MainFiltersSample),
             Demo(::MainTextMetrics),
             Demo(::MainRenderText),

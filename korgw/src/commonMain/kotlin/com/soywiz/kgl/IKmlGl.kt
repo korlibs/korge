@@ -1,8 +1,8 @@
 package com.soywiz.kgl
 
-import com.soywiz.kmem.FBuffer
-import com.soywiz.korim.bitmap.NativeImage
-import com.soywiz.korio.lang.unsupported
+import com.soywiz.kmem.*
+import com.soywiz.korim.bitmap.*
+import com.soywiz.korio.lang.*
 
 interface IKmlGl {
 	fun startFrame() = Unit
@@ -165,14 +165,25 @@ interface IKmlGl {
 
     fun shaderSourceWithExt(shader: Int, string: String) {
         val stringLines = string.lines()
+        val versionLines = arrayListOf<String>()
+        val extensionLines = arrayListOf<String>()
+        val normalLines = arrayListOf<String>()
+        for (line in stringLines) {
+            when {
+                line.startsWith("#version") -> versionLines += line
+                line.startsWith("#extension") -> extensionLines += line
+                else -> normalLines += line
+            }
+        }
         shaderSource(shader, listOf(
             // @TODO: This shouldn't be necessary. Just do not include it in the shader source code, and include it here
-            *stringLines.filter { it.startsWith("#version") }.toTypedArray(),
+            *versionLines.toTypedArray(),
+            *extensionLines.toTypedArray(),
             "#extension GL_OES_standard_derivatives : enable",
             "#ifdef GL_ES",
             "precision mediump float;",
             "#endif",
-            *stringLines.filter { !it.startsWith("#version") }.toTypedArray(),
+            *normalLines.toTypedArray(),
         ).joinToString("\n"))
     }
 }
