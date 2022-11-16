@@ -82,7 +82,7 @@ internal class UiEditProperties(app: UiApplication, view: View?, val views: View
                 if (actionWithProperties != null) {
                     for ((groupName, eactions) in actionWithProperties.groupBy { it.viewProp.groupName }) {
                         for (eaction in eactions.multisorted(ActionWithProperty::order, ActionWithProperty::name)) {
-                            outputContainer.addChild(UiButton(app).also {
+                            addChild(UiButton(app).also {
                                 it.text = eaction.name
                                 it.onClick {
                                     (eaction.func as (Any.() -> Unit)).invoke(instance)
