@@ -1,22 +1,12 @@
 package com.soywiz.korge.ui
 
-import com.soywiz.kmem.clamp
-import com.soywiz.kmem.convertRange
-import com.soywiz.korge.render.RenderContext
-import com.soywiz.korge.render.TexturedVertexArray
-import com.soywiz.korge.view.Container
-import com.soywiz.korge.view.ViewDslMarker
-import com.soywiz.korge.view.addTo
-import com.soywiz.korim.bitmap.Bitmaps
-import com.soywiz.korim.bitmap.BmpSlice
-import com.soywiz.korim.color.Colors
-import com.soywiz.korim.color.RGBA
-import com.soywiz.korma.geom.Anchor
-import com.soywiz.korma.geom.Matrix
-import com.soywiz.korma.geom.Rectangle
-import com.soywiz.korma.geom.ScaleMode
-import com.soywiz.korma.geom.applyScaleMode
-import com.soywiz.korma.geom.size
+import com.soywiz.kmem.*
+import com.soywiz.korge.render.*
+import com.soywiz.korge.view.*
+import com.soywiz.korge.view.property.*
+import com.soywiz.korim.bitmap.*
+import com.soywiz.korim.color.*
+import com.soywiz.korma.geom.*
 
 inline fun Container.uiImage(
     width: Number = UI_DEFAULT_WIDTH,
@@ -36,10 +26,16 @@ class UIImage(
     private val cachedGlobalMatrix = Matrix()
     private var validCoords: Boolean = false
 
+    @ViewProperty
     var bgcolor: RGBA = Colors.TRANSPARENT_BLACK
+    @ViewProperty
     var smoothing: Boolean = true
+    @ViewProperty
     var bitmap: BmpSlice = bitmap ; set(value) { if (field !== value) { field = value; validCoords = false } }
+    @ViewProperty
+    @ViewPropertyProvider(ScaleMode.Provider::class)
     var scaleMode: ScaleMode = scaleMode ; set(value) { if (field !== value) { field = value; validCoords = false } }
+    @ViewProperty
     var contentAnchor: Anchor = contentAnchor ; set(value) { if (field !== value) { field = value; validCoords = false } }
     override fun onSizeChanged() {
         validCoords = false

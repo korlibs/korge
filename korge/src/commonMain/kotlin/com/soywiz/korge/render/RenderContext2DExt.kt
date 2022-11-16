@@ -53,7 +53,8 @@ object MaterialRender {
 
         // Render border
         IF(u_BorderSizeHalf gt 0f) {
-            SET(borderDist, SDFShaders.opBorder(roundedDist, u_BorderSizeHalf))
+            SET(borderDist, SDFShaders.opBorderInner(roundedDist, u_BorderSizeHalf * 2f))
+            //SET(borderDist, SDFShaders.opBorder(roundedDist, u_BorderSizeHalf))
             SET(borderAlpha, SDFShaders.opAA(borderDist))
             IF(borderAlpha gt 0f) {
                 SET(out, SDFShaders.opCombinePremultipliedColors(out, u_BorderColor * borderAlpha))

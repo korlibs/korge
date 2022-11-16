@@ -27,6 +27,14 @@ object SDFShaders : Program.Builder() {
     val opBorder by FUNC(Float1, Float1, returns = Float1) { d, r ->
         RETURN(abs(d) - r)
     }
+    val opBorderInner by FUNC(Float1, Float1, returns = Float1) { d, r ->
+        IF(d gt 0f) {
+            RETURN(d)
+        } ELSE {
+            RETURN(abs(d) - r)
+        }
+    }
+
     /**
      * From an SDF function, this creates a smooth antialiased version working with pixel distances.
      */

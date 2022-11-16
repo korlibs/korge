@@ -2,9 +2,7 @@
 import com.soywiz.korge.*
 import com.soywiz.korge.scene.*
 import com.soywiz.korge.ui.*
-import com.soywiz.korge.view.Stage
-import com.soywiz.korge.view.alignLeftToRightOf
-import com.soywiz.korge.view.xy
+import com.soywiz.korge.view.*
 import com.soywiz.korim.color.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.lang.*
@@ -42,8 +40,8 @@ suspend fun main() = Korge(
         //Demo(::MainAnimations),
         //Demo(::MainCache),
         //Demo(::MainEditor),
-        //Demo(::MainUI),
-        Demo(::MainBunnymark),
+        Demo(::MainUI),
+        //Demo(::MainBunnymark),
         //Demo(::MainBlur),
         //Demo(::MainSDF),
         //Demo(::MainMSDF),
@@ -162,7 +160,7 @@ class Demo(val sceneBuilder: () -> Scene, val name: String = sceneBuilder()::cla
 }
 
 suspend fun Stage.demoSelector(default: Demo, all: List<Demo>) {
-    val container = sceneContainer(width = width, height = height - 32.0) { }.xy(0, 32)
+    val container = sceneContainer(width = width, height = height - 48.0) { }.xy(0, 48)
 
     suspend fun setDemo(demo: Demo?) {
         //container.removeChildren()
@@ -174,16 +172,17 @@ suspend fun Stage.demoSelector(default: Demo, all: List<Demo>) {
         }
     }
 
-    val comboBox = uiComboBox(width = 300.0, items = (listOf(default) + all).distinctBy { it.name }.sortedBy { it.name }) {
+    val comboBox = uiComboBox(width = 200.0, items = (listOf(default) + all).distinctBy { it.name }.sortedBy { it.name }) {
         this.viewportHeight = 600
         this.onSelectionUpdate.add {
             println(it)
             launchImmediately { setDemo(it.selectedItem!!) }
         }
-    }
+    }.alignLeftToLeftOf(stage, padding = 8.0).alignTopToTopOf(stage, padding = 8.0)
     uiCheckBox(width = 300.0, text = "forceRenderEveryFrame", checked = views.forceRenderEveryFrame) {
         //x = 300.0
         alignLeftToRightOf(comboBox, padding = 16.0)
+        alignTopToTopOf(comboBox, padding = 0.0)
         //alignRightToLeftOf(comboBox)
         onChange {
             views.forceRenderEveryFrame = it.checked

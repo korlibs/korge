@@ -90,18 +90,22 @@ open class UIButton(
     }
 
     //val radiusRatioHalf get() = radiusRatio * 0.5
-    var bgColorOut = Colors["#1976d2"]
+    @ViewProperty
+    var bgColorOut = MaterialColors.BLUE_700
         set(value) {
             field = value
             background.bgColor = value
         }
-    var bgColorOver = Colors["#1B5AB3"]
+    @ViewProperty
+    var bgColorOver = MaterialColors.BLUE_800
+    @ViewProperty
+    var bgColorDisabled = Colors["#777777ff"]
+    @ViewProperty
     var elevation = true
         set(value) {
             field = value
             setInitialState()
         }
-    var bgColorDisabled = Colors["#777777ff"]
 
     //protected val rect: NinePatchEx = ninePatch(null, width, height)
     //protected val background = roundRect(
@@ -127,7 +131,15 @@ open class UIButton(
             updateRichText()
         }
 
-    protected val textView = textBlock(RichTextData(text, textSize = textSize, font = DefaultTtfFontAsBitmap))
+    @ViewProperty
+    var textAlignment: TextAlignment = TextAlignment.MIDDLE_CENTER
+        set(value) {
+            field = value
+            updateRichText()
+        }
+
+    val textView = textBlock(RichTextData(text, textSize = textSize, font = DefaultTtfFontAsBitmap))
+
     protected val iconView = image(Bitmaps.transparent)
 	protected var bover = false
 	protected var bpressing = false
@@ -155,12 +167,12 @@ open class UIButton(
         val height = height
         background.setSize(width, height)
         //background.setSize(width, height)
-        //background.radius = RectCorners(radiusWidth(width))
+        background.radius = RectCorners(this.radiusPoints())
         background.shadowRadius = if (elevation) 10.0 else 0.0
         //textView.setSize(width, height)
 
         textView.setSize(width, height)
-        textView.align = TextAlignment.MIDDLE_CENTER
+        textView.align = textAlignment
         updateRichText()
 
         fitIconInRect(iconView, icon ?: Bitmaps.transparent, width, height, Anchor.MIDDLE_CENTER)

@@ -30,10 +30,8 @@ class ViewNode(val view: View?) : TreeNode {
     val container = view as? Container?
     override fun toString(): String {
         if (view == null) return "null"
-        return StringBuilder().apply {
-            val nodeName = if (view.name != null) view.name else "#${view.index}"
-            append("$nodeName (${view::class.simpleName})")
-        }.toString()
+        val nodeName = if (view.name != null) view.name else "#${view.index}"
+        return "$nodeName (${view::class.simpleName})"
     }
 
     override fun isLeaf(): Boolean = (container == null) || (view is ViewLeaf)
@@ -127,18 +125,22 @@ internal class ViewsDebuggerComponent constructor(
 
     init {
         views.debugHighlighters.add { view ->
-            EventQueue.invokeLater {
+            SwingUtilities.invokeLater {
+            //EventQueue.invokeLater {
                 //println("HIGHLIGHTING: $view")
                 println("ViewsDebuggerActions.highlight: $views")
                 update()
                 val treeNode = view?.treeNode
                 if (treeNode != null) {
                     val path = TreePath((tree.model as DefaultTreeModel).getPathToRoot(treeNode))
-                    println("   - $path")
-                    tree.expandPath(path)
+                    val rpath = path.withTree(tree)
+                        //tree.selectionPath?.withTree(tree)
+                    println("   - $path : ${rpath.expanded}")
+                    rpath.selectAndScroll()
+                    //tree.expandPath(path)
                     //tree.clearSelection()
-                    tree.selectionPath = path
-                    tree.scrollPathToVisible(path)
+                    //tree.selectionPath = path
+                    //tree.scrollPathToVisible(path)
                     //tree.repaint()
                 } else {
                     tree.clearSelection()
@@ -155,10 +157,10 @@ internal class ViewsDebuggerComponent constructor(
         uiProperties.relayout()
     }
 
-    val tree: JTree = JTree(ViewNode(rootView)).apply {
+    val tree: JTree = JTree(rootView!!.treeNode).apply {
         val tree = this
         addTreeSelectionListener {
-            //println("addTreeSelectionListener: ${it.paths.toList()}")
+            println("addTreeSelectionListener: ${it.paths.toList()}")
             if (it.paths.isNotEmpty()) {
                 selectView((it.path.lastPathComponent as ViewNode).view)
             } else {

@@ -1,37 +1,22 @@
 package com.soywiz.korge.input
 
-import com.soywiz.kds.Extra
-import com.soywiz.kds.extraProperty
-import com.soywiz.klock.DateTime
-import com.soywiz.klock.PerformanceCounter
-import com.soywiz.klock.TimeSpan
-import com.soywiz.klock.seconds
-import com.soywiz.korev.MouseButton
-import com.soywiz.korev.MouseEvent
-import com.soywiz.korev.preventDefault
-import com.soywiz.korge.bitmapfont.drawText
-import com.soywiz.korge.component.MouseComponent
-import com.soywiz.korge.component.UpdateComponentWithViews
-import com.soywiz.korge.component.attach
-import com.soywiz.korge.component.detach
-import com.soywiz.korge.internal.KorgeInternal
-import com.soywiz.korge.view.BlendMode
-import com.soywiz.korge.view.View
-import com.soywiz.korge.view.Views
-import com.soywiz.korge.view.ViewsContainer
-import com.soywiz.korge.view.hasAncestor
-import com.soywiz.korge.view.onNextFrame
-import com.soywiz.korgw.GameWindow
-import com.soywiz.korim.bitmap.Bitmaps
-import com.soywiz.korim.color.RGBA
-import com.soywiz.korio.async.Signal
-import com.soywiz.korio.async.launchImmediately
-import com.soywiz.korio.lang.Closeable
-import com.soywiz.korio.util.Once
-import com.soywiz.korma.geom.Point
-import kotlin.math.max
-import kotlin.native.concurrent.ThreadLocal
-import kotlin.reflect.KProperty1
+import com.soywiz.kds.*
+import com.soywiz.klock.*
+import com.soywiz.korev.*
+import com.soywiz.korge.bitmapfont.*
+import com.soywiz.korge.component.*
+import com.soywiz.korge.internal.*
+import com.soywiz.korge.view.*
+import com.soywiz.korgw.*
+import com.soywiz.korim.bitmap.*
+import com.soywiz.korim.color.*
+import com.soywiz.korio.async.*
+import com.soywiz.korio.lang.*
+import com.soywiz.korio.util.*
+import com.soywiz.korma.geom.*
+import kotlin.math.*
+import kotlin.native.concurrent.*
+import kotlin.reflect.*
 
 @OptIn(KorgeInternal::class)
 class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixin(), Closeable {
@@ -44,6 +29,7 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
         var Input.mouseHitResult by Extra.Property<View?> { null }
         var Input.mouseHitResultUsed by Extra.Property<View?> { null }
         var Views.mouseDebugHandlerOnce by Extra.Property { Once() }
+        var Views.mouseDebugLastFrameClicked by Extra.Property { false }
 
         private fun mouseHitTest(views: Views): View? {
             if (!views.input.mouseHitSearch) {
@@ -88,6 +74,9 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
                     val mouseHit = mouseHitTest(views)
                     if (mouseHit != null) {
                         val bounds = mouseHit.getLocalBoundsOptimizedAnchored()
+                        if (mouseDebugLastFrameClicked) {
+                            views.debugHightlightView(mouseHit)
+                        }
                         renderContext.useBatcher { batch ->
                             batch.drawQuad(
                                 ctx.getTex(Bitmaps.white),
@@ -95,7 +84,7 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
                                 y = bounds.y.toFloat(),
                                 width = bounds.width.toFloat(),
                                 height = bounds.height.toFloat(),
-                                colorMul = RGBA(0xFF, 0, 0, 0x3F),
+                                colorMul = Colors.RED.withAd(0.3),
                                 m = mouseHit.globalMatrix,
                                 premultiplied = Bitmaps.white.premultiplied,
                                 wrap = false,
@@ -149,6 +138,8 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
                             }
                         }
                     }
+
+                    mouseDebugLastFrameClicked = false
                 }
             }
         }
@@ -430,6 +421,8 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
                 }
             }
             MouseEvent.Type.DOWN -> {
+                views.mouseDebugLastFrameClicked = true
+
                 //this.lastEventDown = event
                 downPosTime = PerformanceCounter.reference
                 downPosGlobal.copyFrom(views.input.mouse)

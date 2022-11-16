@@ -1,21 +1,13 @@
 package com.soywiz.korge.ui
 
-import com.soywiz.kmem.clamp
-import com.soywiz.kmem.convertRange
-import com.soywiz.kmem.nearestAlignedTo
-import com.soywiz.korge.input.onMouseDrag
-import com.soywiz.korge.view.Container
-import com.soywiz.korge.view.ViewDslMarker
-import com.soywiz.korge.view.addTo
-import com.soywiz.korge.view.size
-import com.soywiz.korge.view.solidRect
-import com.soywiz.korge.view.text
-import com.soywiz.korge.view.xy
-import com.soywiz.korim.color.Colors
-import com.soywiz.korim.color.RGBA
-import com.soywiz.korim.text.TextAlignment
-import com.soywiz.korio.async.Signal
-import com.soywiz.korio.util.toStringDecimal
+import com.soywiz.kmem.*
+import com.soywiz.korge.input.*
+import com.soywiz.korge.view.*
+import com.soywiz.korge.view.property.*
+import com.soywiz.korim.color.*
+import com.soywiz.korim.text.*
+import com.soywiz.korio.async.*
+import com.soywiz.korio.util.*
 
 inline fun Container.uiSlider(
     value: Number = UISlider.DEFAULT_VALUE,
@@ -50,12 +42,14 @@ class UISlider(
         }
     }
 
+    @ViewProperty
     val bg = solidRect(width, height, RGBA(32, 32, 32))
     val button = solidRect(height, height, Colors.DARKGREY)
     val text = text("", alignment = TextAlignment.TOP_LEFT, color = Colors.BLACK)
 
     val onChange: Signal<Double> = Signal()
 
+    @ViewProperty
     var min: Double = min.toDouble()
         set(value) {
             if (field != value) {
@@ -64,6 +58,7 @@ class UISlider(
             }
         }
 
+    @ViewProperty
     var max: Double = max.toDouble()
         set(value) {
             if (field != value) {
@@ -72,6 +67,7 @@ class UISlider(
             }
         }
 
+    @ViewProperty
     var step: Double = step.toDouble()
         set(value) {
             if (field != value) {
@@ -80,6 +76,7 @@ class UISlider(
             }
         }
 
+    @ViewProperty
     var value: Double = value.toDouble()
         set(value) {
             val rvalue = value.clamp(min, max).nearestAlignedTo(step)
@@ -91,6 +88,7 @@ class UISlider(
             }
         }
 
+    @ViewProperty
     var decimalPlaces: Int = decimalPlaces
         set(value) {
             field = value
