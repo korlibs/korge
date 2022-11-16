@@ -9,10 +9,10 @@ import com.soywiz.kmem.*
 import com.soywiz.korev.*
 import com.soywiz.korge.baseview.*
 import com.soywiz.korge.component.*
-import com.soywiz.korge.debug.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.filter.*
+import com.soywiz.korge.view.property.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.vector.*
 import com.soywiz.korio.lang.*
@@ -22,7 +22,6 @@ import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.shape.*
 import com.soywiz.korma.geom.vector.*
 import com.soywiz.korma.interpolation.*
-import com.soywiz.korui.*
 import com.soywiz.krypto.encoding.*
 import kotlin.math.*
 
@@ -58,7 +57,6 @@ abstract class View internal constructor(
     val isContainer: Boolean
 ) : BaseView(), Renderable
     , Extra
-    , KorgeDebugNode
     , BView
     , XY
     , HitTestable
@@ -196,6 +194,7 @@ abstract class View internal constructor(
     }
 
     /** Property used for interpolable views like morph shapes, progress bars etc. */
+    @ViewProperty(min = 0.0, max = 1.0, clampMin = false, clampMax = false)
     open var ratio: Double = 0.0
 
     @PublishedApi internal var _index: Int = 0
@@ -207,6 +206,7 @@ abstract class View internal constructor(
         internal set(value) { _index = value }
 
     /** Ratio speed of this node, affecting all the [UpdateComponent] */
+    @ViewProperty(min = -1.0, max = 1.0, clampMin = false, clampMax = false)
     var speed: Double = 1.0
 
     internal var _stage: Stage? = null
@@ -241,9 +241,12 @@ abstract class View internal constructor(
     override val baseParent: Container? get() = parent
 
     /** Optional name of this view */
+    @ViewProperty()
     var name: String? = null
 
     /** The [BlendMode] used for this view [BlendMode.INHERIT] will use the ancestors [blendMode]s */
+    @ViewProperty
+    @ViewPropertyProvider(provider = BlendMode.Provider::class)
     var blendMode: BlendMode = BlendMode.INHERIT
         set(value) {
             if (field != value) {
@@ -280,6 +283,8 @@ abstract class View internal constructor(
     }
 
     /** Position of the view. **@NOTE**: If [pos] coordinates are manually changed, you should call [View.invalidateMatrix] later to keep the matrix in sync */
+    //uiEditableValue(Pair(view::x, view::y), min = -1000.0, max = +1000.0, clamp = false, name = "position")
+    @ViewProperty(min = -1000.0, max = +1000.0, name = "position")
     var pos: IPoint
         get() = Point(x, y)
         set(value) = setXY(value.x, value.y)
@@ -314,6 +319,7 @@ abstract class View internal constructor(
     // @TODO: Instead of resort everytime that something changes, let's keep an index in the zIndex collection
     //@PublishedApi internal var _zIndexIndex: Int = 0
 
+    @ViewProperty()
     var zIndex: Double
         get() = _zIndex
         set(v) {
@@ -347,7 +353,20 @@ abstract class View internal constructor(
         get() { ensureTransform(); return _scaleY }
         set(v) { ensureTransform(); if (_scaleY != v) { _scaleY = v; invalidateMatrix() } }
 
+    @ViewProperty(name = "type", order = -1000, editable = false)
+    private val __type: String
+        get() = this::class.simpleName ?: "Unknown"
+
+    @ViewProperty(min = 0.0, max = 1.0)
+    private var scaleXY: Pair<Double, Double>
+        get() = scaleX to scaleY
+        set(value) {
+            scaleX = value.first
+            scaleY = value.second
+        }
+
     /** Allows to change [scaleX] and [scaleY] at once. Returns the mean value of x and y scales. */
+    @ViewProperty(min = 0.0, max = 1.0)
     var scale: Double
         get() = (scaleX + scaleY) / 2f
         set(v) { scaleX = v; scaleY = v }
@@ -363,9 +382,18 @@ abstract class View internal constructor(
         set(v) { ensureTransform(); if (_skewY != v) { _skewY = v; invalidateMatrix() } }
 
     /** Local rotation of this view */
+    @ViewProperty()
     var rotation: Angle
         get() { ensureTransform(); return _rotation }
         set(v) { ensureTransform(); if (_rotation != v) { _rotation = v; invalidateMatrix() } }
+
+    @ViewProperty(name = "skew")
+    private var skewXY: Pair<Angle, Angle>
+        get() = skewX to skewY
+        set(v) {
+            skewX = v.first
+            skewY = v.second
+        }
 
     /** The global x position of this view */
     var globalX: Double
@@ -451,6 +479,14 @@ abstract class View internal constructor(
             height = if (scaleY == 0.0) value else value / scaleY
         }
 
+    @ViewProperty(min = -1000.0, max = +1000.0, name = "size")
+    private var scaledWH: Pair<Double, Double>
+        get() = scaledWidth to scaledHeight
+        set(value) {
+            scaledWidth = value.first
+            scaledHeight = value.second
+        }
+
     /**
      * The multiplicative [RGBA] color.
      *
@@ -460,6 +496,7 @@ abstract class View internal constructor(
      * * [Colors.TRANSPARENT_BLACK] would be equivalent to setting [alpha]=0
      * * [Colors.RED] would only show the red component of the view
      */
+    @ViewProperty
     var colorMul: RGBA
         get() = _colorTransform.colorMul
         set(v) {
@@ -494,6 +531,7 @@ abstract class View internal constructor(
      * Shortcut for adjusting the multiplicative alpha value manually.
      * Equivalent to [ColorTransform.mA] + [View.invalidate]
      */
+    @ViewProperty(min = 0.0, max = 1.0, clampMin = true, clampMax = true)
     var alpha: Double
         get() = _colorTransform.mA;
         set(v) {
@@ -539,6 +577,7 @@ abstract class View internal constructor(
     open var mouseChildren: Boolean = true
 
     /** Determines if the view will be displayed or not. It is different to alpha=0, since the render method won't be executed. Usually giving better performance. But also not receiving events. */
+    @ViewProperty()
     open var visible: Boolean = true
         set(value) {
             if (field != value) {
@@ -1530,36 +1569,6 @@ abstract class View internal constructor(
         val x = ratioX.interpolate(bounds.left, bounds.right)
         val y = ratioY.interpolate(bounds.top, bounds.bottom)
         return out.setTo(localToGlobalX(x, y), localToGlobalY(x, y))
-    }
-
-    var extraBuildDebugComponent: ((views: Views, view: View, container: UiContainer) -> Unit)? = null
-
-    override fun buildDebugComponent(views: Views, container: UiContainer) {
-        val view = this
-
-        extraBuildDebugComponent?.invoke(views, view, container)
-
-        container.uiCollapsibleSection("View") {
-            addChild(UiRowEditableValue(app, "type", UiLabel(app).also { it.text = view::class.simpleName ?: "Unknown" }))
-            uiEditableValue(view::name)
-            uiEditableValue(view::colorMul)
-            uiEditableValue(view::blendMode, values = { BlendMode.STANDARD_LIST })
-            uiEditableValue(view::alpha, min = 0.0, max = 1.0, clamp = true)
-            uiEditableValue(view::speed, min = -1.0, max = 1.0, clamp = false)
-            uiEditableValue(view::ratio, min = 0.0, max = 1.0, clamp = false)
-            uiEditableValue(Pair(view::x, view::y), min = -1000.0, max = +1000.0, clamp = false, name = "position")
-            uiEditableValue(Pair(view::scaledWidth, view::scaledHeight), min = -1000.0, max = 1000.0, clamp = false, name = "size")
-            uiEditableValue(view::scale, min = 0.0, max = 1.0, clamp = false)
-            uiEditableValue(Pair(view::scaleX, view::scaleY), min = 0.0, max = 1.0, clamp = false, name = "scaleXY")
-            uiEditableValue(view::rotation, name = "rotation")
-            uiEditableValue(Pair(view::skewX, view::skewY), name = "skew")
-            uiEditableValue(view::visible)
-            uiEditableValue(view::zIndex)
-        }
-
-        views.viewExtraBuildDebugComponent.fastForEach {
-            it(views, view, container)
-        }
     }
 
     fun getGlobalMatrixWithAnchor(out: Matrix = Matrix()): Matrix {

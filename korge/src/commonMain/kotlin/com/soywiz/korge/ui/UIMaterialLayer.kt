@@ -7,6 +7,7 @@ import com.soywiz.korge.animate.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.tween.*
 import com.soywiz.korge.view.*
+import com.soywiz.korge.view.property.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.vector.*
 import com.soywiz.korma.geom.*
@@ -21,19 +22,26 @@ inline fun Container.uiMaterialLayer(
 class UIMaterialLayer(
     width: Double = 100.0,
     height: Double = 100.0
-) : UIView(width, height) {
+) : UIView(width, height), ViewLeaf {
+    @ViewProperty
     var bgColor: RGBA = Colors.WHITE; set(value) { field = value; invalidateRender() }
+    @ViewProperty
     var radius: RectCorners = RectCorners.EMPTY; set(value) { field = value; invalidateRender() }
 
+    @ViewProperty
     var borderColor: RGBA = Colors.BLACK; set(value) { field = value; invalidateRender() }
+    @ViewProperty
     var borderSize: Double = 0.0; set(value) { field = value; invalidateRender() }
 
     //var highlightPos = Point(0.5, 0.5); set(value) { field = value; invalidateRender() }
     //var highlightRadius = 0.0; set(value) { field = value; invalidateRender() }
     //var highlightColor = Colors.WHITE; set(value) { field = value; invalidateRender() }
 
+    @ViewProperty
     var shadowColor: RGBA = Colors.BLACK.withAd(0.3); set(value) { field = value; invalidateRender() }
+    @ViewProperty
     var shadowRadius: Double = 10.0; set(value) { field = value; invalidateRender() }
+    @ViewProperty
     var shadowOffset: IPoint = IPoint.ZERO; set(value) { field = value; invalidateRender() }
 
     class Highlight(var pos: IPoint, var radiusRatio: Double, var alpha: Double)
@@ -45,6 +53,7 @@ class UIMaterialLayer(
         if (!visible) return
 
         renderCtx2d(ctx) { ctx2d ->
+            //println("context.multiplyColor=${ctx2d.multiplyColor}")
             ctx2d.materialRoundRect(
                 x = 0.0,
                 y = 0.0,
@@ -59,7 +68,8 @@ class UIMaterialLayer(
                 //highlightRadius = highlightRadius,
                 //highlightColor = highlightColor,
                 borderSize = borderSize,
-                borderColor = borderColor
+                borderColor = borderColor,
+                //colorMul = renderColorMul,
             )
             highlights.fastForEach {
                 ctx2d.materialRoundRect(
@@ -72,6 +82,7 @@ class UIMaterialLayer(
                     highlightPos = it.pos,
                     highlightRadius = it.radiusRatio,
                     highlightColor = Colors.WHITE.withAd(it.alpha * 0.4),
+                    //colorMul = renderColorMul,
                 )
             }
         }
@@ -85,6 +96,12 @@ class UIMaterialLayer(
         simpleAnimator.tween(highlight::radiusRatio[1.0], V2Callback { invalidateRender() }, time = 0.5.seconds, easing = Easing.EASE_IN)
     }
 
+    @ViewProperty
+    private fun addHighlightAction() {
+        addHighlight(Point(0.5, 0.5))
+    }
+
+    @ViewProperty
     fun removeHighlights() {
         highlightsActive.fastForEach {
             simpleAnimator.sequence {

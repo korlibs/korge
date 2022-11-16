@@ -1,6 +1,7 @@
 package com.soywiz.kds
 
 import com.soywiz.kds.iterators.*
+import kotlin.reflect.*
 
 inline fun IntRange.toIntList(): IntArrayList = IntArrayList((this.endInclusive - this.start).coerceAtLeast(0)).also { for (v in this.start .. this.endInclusive) it.add(v) }
 
@@ -130,4 +131,16 @@ fun FloatArrayList.rotated(offset: Int): FloatArrayList = FloatArrayList(this.si
 
 fun DoubleArrayList.rotated(offset: Int): DoubleArrayList = DoubleArrayList(this.size).also {
     for (n in 0 until this.size) it.add(this.getCyclic(n - offset))
+}
+
+fun <T> Iterable<T>.multisorted(vararg props: KProperty1<T, Comparable<*>>): List<T> {
+    @Suppress("UNCHECKED_CAST")
+    val props2 = props as Array<KProperty1<T, Comparable<Any>>>
+    return sortedWith { a, b ->
+        props2.fastForEach {
+            val result = it.get(a).compareTo(it.get(b))
+            if (result != 0) return@sortedWith result
+        }
+        return@sortedWith 0
+    }
 }

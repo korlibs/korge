@@ -2,32 +2,21 @@ package com.soywiz.korge.particle
 
 import com.soywiz.klock.TimeSpan
 import com.soywiz.klock.milliseconds
-import com.soywiz.korag.AG
-import com.soywiz.korge.debug.UiTextEditableValue
-import com.soywiz.korge.debug.uiCollapsibleSection
-import com.soywiz.korge.debug.uiEditableValue
-import com.soywiz.korge.render.RenderContext
-import com.soywiz.korge.time.delayFrame
-import com.soywiz.korge.view.BlendMode
-import com.soywiz.korge.view.Container
-import com.soywiz.korge.view.View
-import com.soywiz.korge.view.ViewFileRef
-import com.soywiz.korge.view.Views
-import com.soywiz.korge.view.addTo
-import com.soywiz.korge.view.addUpdater
-import com.soywiz.korge.view.fast.FSpriteFromIndex
-import com.soywiz.korge.view.fast.FSprites
-import com.soywiz.korim.bitmap.Bitmaps
-import com.soywiz.korim.format.readBitmapSlice
-import com.soywiz.korio.async.launchImmediately
-import com.soywiz.korio.file.VfsFile
-import com.soywiz.korio.file.extensionLC
+import com.soywiz.korag.*
+import com.soywiz.korge.render.*
+import com.soywiz.korge.time.*
+import com.soywiz.korge.view.*
+import com.soywiz.korge.view.fast.*
+import com.soywiz.korge.view.property.*
+import com.soywiz.korim.bitmap.*
+import com.soywiz.korim.format.*
+import com.soywiz.korio.async.*
+import com.soywiz.korio.file.*
 import com.soywiz.korma.geom.IPoint
 import com.soywiz.korma.geom.Point
 import com.soywiz.korma.geom.Rectangle
-import com.soywiz.korui.UiContainer
-import kotlinx.coroutines.CancellationException
-import kotlin.random.Random
+import kotlinx.coroutines.*
+import kotlin.random.*
 
 inline fun Container.particleEmitter(
     emitter: ParticleEmitter,
@@ -54,18 +43,24 @@ suspend fun Container.attachParticleAndWait(
 }
 
 class ParticleEmitterView(
-    emitter: ParticleEmitter,
+    @ViewProperty
+    @ViewPropertySubTree
+    private var emitter: ParticleEmitter,
     emitterPos: IPoint = IPoint(),
     localCoords: Boolean = false,
     random: Random = Random,
 ) : View(), ViewFileRef by ViewFileRef.Mixin() {
-    private var emitter = emitter
     var simulator = ParticleEmitterSimulator(emitter, Point(emitterPos), random)
 
     var timeUntilStop by simulator::timeUntilStop
     var emitting by simulator::emitting
     val aliveCount by simulator::aliveCount
     val anyAlive by simulator::anyAlive
+
+    @ViewProperty(
+        min = -1000.0,
+        max = +1000.0,
+    )
     var emitterPos: Point
         get() = simulator.emitterPos
         set(value) {
@@ -87,6 +82,7 @@ class ParticleEmitterView(
             emitterPos.y = value
         }
 
+    @ViewProperty
     var localCoords: Boolean = localCoords
 
     private val lastPosition = Point(globalX, globalY)
@@ -198,6 +194,8 @@ class ParticleEmitterView(
     }
 
     private var textureLoaded: Boolean = false
+    @ViewProperty
+    @ViewPropertyFileRef(["png", "jpg"])
     var texture: String?
         get() = emitter.textureName
         set(value) {
@@ -225,70 +223,8 @@ class ParticleEmitterView(
         scale = 1.0
     }
 
-    override fun buildDebugComponent(views: Views, container: UiContainer) {
-        if (views.name == "ktree") {
-            container.uiCollapsibleSection("Particle Emitter Reference") {
-                uiEditableValue(::sourceFile, UiTextEditableValue.Kind.FILE(views.currentVfs) {
-                    it.extensionLC == "pex"
-                })
-            }
-            return
-        }
-        val particle = this@ParticleEmitterView.emitter
-        container.uiCollapsibleSection("Particle Emitter") {
-            uiEditableValue(::texture, UiTextEditableValue.Kind.FILE(views.currentVfs) {
-                it.extensionLC == "png" || it.extensionLC == "jpg"
-            })
-            uiEditableValue(this@ParticleEmitterView::localCoords)
-            uiEditableValue(
-                Pair(this@ParticleEmitterView::emitterX, this@ParticleEmitterView::emitterY),
-                min = -1000.0,
-                max = +1000.0,
-                clamp = false,
-                name = "emitterPos"
-            )
-            uiEditableValue(particle::emitterType)
-            uiEditableValue(particle::blendFuncSource)
-            uiEditableValue(particle::blendFuncDestination)
-            uiCollapsibleSection("Angle") {
-                uiEditableValue(listOf(particle::angle, particle::angleVariance))
-            }
-            uiCollapsibleSection("Speed") {
-                uiEditableValue(listOf(particle::speed, particle::speedVariance), 0.0, 1000.0)
-            }
-            uiCollapsibleSection("Lifespan") {
-                uiEditableValue(listOf(particle::lifeSpan, particle::lifespanVariance), -10.0, 10.0)
-                uiEditableValue(particle::duration, -10.0, 10.0)
-            }
-            uiEditableValue("Gravity", particle.gravity)
-            uiEditableValue("Source Position", particle.sourcePosition)
-            uiEditableValue("Source Position Variance", particle.sourcePositionVariance)
-            uiCollapsibleSection("Acceleration") {
-                uiEditableValue(listOf(particle::radialAcceleration, particle::radialAccelVariance), -1000.0, +1000.0)
-                uiEditableValue(
-                    listOf(particle::tangentialAcceleration, particle::tangentialAccelVariance),
-                    -1000.0,
-                    +1000.0
-                )
-            }
-            uiEditableValue("Start Color", particle.startColor)
-            uiEditableValue("Start Color Variance", particle.startColorVariance)
-            uiEditableValue("End Color", particle.endColor)
-            uiEditableValue("End Color Variance", particle.endColor)
-            uiEditableValue(particle::maxParticles)
-            uiEditableValue(listOf(particle::startSize, particle::startSizeVariance), -1000.0, +1000.0)
-            uiEditableValue(listOf(particle::endSize, particle::endSizeVariance), -1000.0, 1000.0)
-
-            uiCollapsibleSection("Radius") {
-                uiEditableValue(listOf(particle::minRadius, particle::minRadiusVariance), min = -1000.0, max = 1000.0)
-                uiEditableValue(listOf(particle::maxRadius, particle::maxRadiusVariance), min = -1000.0, max = 1000.0)
-            }
-            uiCollapsibleSection("Rotate") {
-                uiEditableValue(listOf(particle::rotatePerSecond, particle::rotatePerSecondVariance))
-                uiEditableValue(listOf(particle::rotationStart, particle::rotationStartVariance))
-                uiEditableValue(listOf(particle::rotationEnd, particle::rotationEndVariance))
-            }
-        }
-        super.buildDebugComponent(views, container)
-    }
+    @Suppress("unused")
+    @ViewProperty
+    @ViewPropertyFileRef(["pex"])
+    private var pexSourceFile: String? by this::sourceFile
 }

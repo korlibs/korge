@@ -1,20 +1,14 @@
 package samples
 
-import com.soywiz.korev.*
 import com.soywiz.korge.scene.*
-import com.soywiz.korge.ui.korui.*
 import com.soywiz.korge.view.*
-import com.soywiz.korgw.*
 import com.soywiz.korim.bitmap.effect.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.font.*
 import com.soywiz.korim.text.*
-import com.soywiz.korio.async.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
-import com.soywiz.korui.*
-import com.soywiz.korui.layout.*
 import kotlin.reflect.*
 
 class MainTextMetrics : Scene() {
@@ -103,6 +97,7 @@ class MainTextMetrics : Scene() {
             val convert: (T) -> String = { it.toString().toLowerCase().capitalize() }
         )
 
+        /*
         korui(width, 200) {
             for (info in listOf(
                 SecInfo("Vertical", text1::verticalAlign, verticalAlignments),
@@ -193,5 +188,6 @@ class MainTextMetrics : Scene() {
                 }
             }
         }
+        */
     }
 }

@@ -3,7 +3,6 @@ package com.soywiz.korge.scene
 import com.soywiz.kds.Extra
 import com.soywiz.klock.TimeSpan
 import com.soywiz.korag.AG
-import com.soywiz.korge.debug.KorgeDebugNode
 import com.soywiz.korge.input.Input
 import com.soywiz.korge.input.InputKeys
 import com.soywiz.korge.resources.ResourcesRoot
@@ -34,7 +33,6 @@ import com.soywiz.korma.geom.ISize
 import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.geom.ScaleMode
 import com.soywiz.korma.geom.Size
-import com.soywiz.korui.UiContainer
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -57,7 +55,7 @@ import kotlin.coroutines.coroutineContext
  * - NEW: [sceneAfterInit] - DO NOT BLOCK - Similar to [sceneMain] but after the transition.
  * - ## New scene is returned
  */
-abstract class Scene : InjectorAsyncDependency, ViewsContainer, CoroutineScope, KorgeDebugNode, ResourcesContainer, Extra by Extra.Mixin() {
+abstract class Scene : InjectorAsyncDependency, ViewsContainer, CoroutineScope, ResourcesContainer, Extra by Extra.Mixin() {
     /** A child [AsyncInjector] for this instance. Set by the [init] method. */
 	lateinit var injector: AsyncInjector
     /** The [Views] singleton of the application. Set by the [init] method. */
@@ -168,9 +166,6 @@ abstract class Scene : InjectorAsyncDependency, ViewsContainer, CoroutineScope, 
             if (e is CancellationException) throw e
             e.printStackTrace()
         }
-    }
-
-    override fun buildDebugComponent(views: Views, container: UiContainer) {
     }
 
     open fun onSizeChanged(width: Double, height: Double) {

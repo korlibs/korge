@@ -3,6 +3,7 @@ package com.soywiz.korge.view
 import com.soywiz.kmem.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.ui.*
+import com.soywiz.korge.view.property.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.font.*
 import com.soywiz.korim.paint.*
@@ -23,23 +24,39 @@ class TextBlock(
     align: TextAlignment = TextAlignment.TOP_LEFT,
     width: Double = 100.0,
     height: Double = 100.0,
-) : UIView(width, height) {
+) : UIView(width, height), ViewLeaf {
     private var dirty = true
+
+    @ViewProperty
     var text: RichTextData = text; set(value) { field = value; invalidateText() }
+
+    @ViewProperty
+    @ViewPropertyProvider(TextAlignment.Provider::class)
     var align: TextAlignment = align; set(value) { field = value; invalidProps() }
+
+    @ViewProperty
     var includePartialLines: Boolean = false; set(value) { field = value; invalidProps() }
+    @ViewProperty
+    var includeFirstLineAlways: Boolean = true; set(value) { field = value; invalidProps() }
+    @ViewProperty
     var fill: Paint? = colorMul; set(value) { field = value; invalidProps() }
+    @ViewProperty
     var stroke: Stroke? = null; set(value) { field = value; invalidProps() }
+    @ViewProperty
     var wordWrap: Boolean = true; set(value) { field = value; invalidProps() }
+    @ViewProperty
     var ellipsis: String? = "..."; set(value) { field = value; invalidProps() }
+    @ViewProperty
     var padding: Margin = Margin.EMPTY; set(value) { field = value; invalidProps() }
+    @ViewProperty
     var autoSize: Boolean = false; set(value) { field = value; invalidateText() }
+    @ViewProperty
     var plainText: String
         get() = text.text
         set(value) {
             text = RichTextData(value, style = text.defaultStyle)
         }
-    private var image = image(Bitmaps.transparent)
+    private var image: Image? = null
     private var allBitmap: Boolean = true
 
     private fun invalidateText() {
@@ -68,25 +85,27 @@ class TextBlock(
         dirty = false
         val bmp = NativeImage(width.toIntCeil(), height.toIntCeil())
         //println("ensureTexture: bmp=$bmp")
-        image.bitmap = bmp.slice()
-        image.program = (text.defaultStyle.font as? BitmapFont?)?.agProgram
+        if (image == null) {
+            image = image(Bitmaps.transparent)
+        }
+        image?.bitmap = bmp.slice()
+        image?.program = (text.defaultStyle.font as? BitmapFont?)?.agProgram
         bmp.context2d {
             drawRichText(
                 text,
                 bounds = Rectangle.fromBounds(padding.left, padding.top, width - padding.right, height - padding.bottom),
                 includePartialLines = includePartialLines, wordWrap = wordWrap, ellipsis = ellipsis, align = align,
-                fill = fill, stroke = stroke,
+                fill = fill, stroke = stroke, includeFirstLineAlways = true
             )
         }
     }
 
     override fun renderInternal(ctx: RenderContext) {
         if (allBitmap) {
-            ctx.useCtx2d {
-                it.keep {
-                    it.setMatrix(globalMatrix)
-                    it.drawText(text, padding.left, padding.top, width - padding.right, height - padding.bottom, wordWrap, includePartialLines, ellipsis, fill, stroke, align)
-                }
+            image?.removeFromParent()
+            image = null
+            renderCtx2d(ctx) {
+                it.drawText(text, padding.left, padding.top, width - padding.right, height - padding.bottom, wordWrap, includePartialLines, ellipsis, fill, stroke, align)
             }
         } else {
             ensureTexture()

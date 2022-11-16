@@ -1,17 +1,15 @@
 package com.soywiz.korge.ui
 
-import com.soywiz.kds.fastCastTo
-import com.soywiz.korge.debug.uiCollapsibleSection
-import com.soywiz.korge.debug.uiEditableValue
-import com.soywiz.korge.input.mouse
+import com.soywiz.kds.*
+import com.soywiz.korge.input.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
-import com.soywiz.korim.bitmap.NinePatchBmpSlice
-import com.soywiz.korim.color.Colors
+import com.soywiz.korge.view.property.*
+import com.soywiz.korim.bitmap.*
+import com.soywiz.korim.color.*
 import com.soywiz.korim.text.*
-import com.soywiz.korio.async.Signal
+import com.soywiz.korio.async.*
 import com.soywiz.korma.geom.*
-import com.soywiz.korui.UiContainer
 
 inline fun Container.uiCheckBox(
     width: Double = UI_DEFAULT_WIDTH,
@@ -34,11 +32,13 @@ open class UIBaseCheckBox<T : UIBaseCheckBox<T>>(
     width: Double = UI_DEFAULT_WIDTH,
     height: Double = UI_DEFAULT_HEIGHT,
     checked: Boolean = false,
+    @ViewProperty
     var text: String = "CheckBox",
 ) : UIView(width, height), ViewLeaf {
     val thisAsT get() = this.fastCastTo<T>()
     val onChange = Signal<T>()
 
+    @ViewProperty
     open var checked: Boolean = checked
         get() = field
         set(value) {
@@ -113,13 +113,5 @@ open class UIBaseCheckBox<T : UIBaseCheckBox<T>>(
 
     protected open fun onComponentClick() {
         this@UIBaseCheckBox.checked = !this@UIBaseCheckBox.checked
-    }
-
-    override fun buildDebugComponent(views: Views, container: UiContainer) {
-        container.uiCollapsibleSection(this::class.simpleName!!) {
-            uiEditableValue(::text)
-            uiEditableValue(::checked)
-        }
-        super.buildDebugComponent(views, container)
     }
 }

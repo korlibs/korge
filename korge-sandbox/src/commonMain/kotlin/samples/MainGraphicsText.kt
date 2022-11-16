@@ -1,39 +1,30 @@
 package samples
 
-import com.soywiz.korge.KeepOnReload
-import com.soywiz.korge.debug.uiEditableValue
-import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.view.SContainer
-import com.soywiz.korge.view.addDebugExtraComponent
-import com.soywiz.korge.view.filter.DropshadowFilter
-import com.soywiz.korge.view.filter.filters
-import com.soywiz.korge.view.graphics
-import com.soywiz.korge.view.xy
-import com.soywiz.korim.color.Colors
-import com.soywiz.korim.font.DefaultTtfFont
-import com.soywiz.korim.font.TtfFont
-import com.soywiz.korim.font.readTtfFont
-import com.soywiz.korim.paint.Stroke
-import com.soywiz.korim.text.TextAlignment
-import com.soywiz.korim.text.text
-import com.soywiz.korio.async.launchImmediately
-import com.soywiz.korio.file.std.resourcesVfs
-import com.soywiz.korma.geom.vector.circle
-import kotlin.properties.Delegates
+import com.soywiz.korge.*
+import com.soywiz.korge.scene.*
+import com.soywiz.korge.view.*
+import com.soywiz.korge.view.filter.*
+import com.soywiz.korge.view.property.*
+import com.soywiz.korim.color.*
+import com.soywiz.korim.font.*
+import com.soywiz.korim.paint.*
+import com.soywiz.korim.text.*
+import com.soywiz.korio.async.*
+import com.soywiz.korio.file.std.*
+import com.soywiz.korma.geom.vector.*
+import kotlin.properties.*
 
 class MainGraphicsText : Scene() {
     /** Property delegate to trigger a refresh on change */
     protected fun <T> refreshable(initial: T, refresh: () -> Unit = { sceneContainer.changeToAsync(this::class) }) = Delegates.observable(initial) { prop, old, new -> refresh() }
 
+    @ViewProperty
     @KeepOnReload var vfont: TtfFont by refreshable(DefaultTtfFont) { launchImmediately { this@MainGraphicsText.sceneView.sceneMainSync() } }
+    @ViewProperty
     @KeepOnReload var align by refreshable(TextAlignment.MIDDLE_CENTER) { launchImmediately { this@MainGraphicsText.sceneView.sceneMainSync() } }
 
     override suspend fun SContainer.sceneMain() {
         val helvetica = resourcesVfs["helvetica.otf"].readTtfFont()
-        addDebugExtraComponent("Debug") {
-            uiEditableValue(::align, values = TextAlignment.ALL)
-            uiEditableValue(::vfont, values = listOf(helvetica, DefaultTtfFont))
-        }
         views.debugHightlightView(this)
         vfont = helvetica
         sceneMainSync()

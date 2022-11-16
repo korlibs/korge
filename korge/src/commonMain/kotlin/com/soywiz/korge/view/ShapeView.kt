@@ -1,11 +1,10 @@
 package com.soywiz.korge.view
 
-import com.soywiz.korge.debug.*
 import com.soywiz.korge.internal.*
+import com.soywiz.korge.view.property.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.paint.*
 import com.soywiz.korma.geom.vector.*
-import com.soywiz.korui.*
 
 inline fun Container.shapeView(
     shape: VectorPath? = null,
@@ -35,14 +34,21 @@ open class ShapeView(
     @KorgeInternal override val anchorDispX: Double get() = shapeView.anchorDispX
     @KorgeInternal override val anchorDispY: Double get() = shapeView.anchorDispY
 
+    @ViewProperty
+    var antialiased: Boolean by shapeView::antialiased
+    @ViewProperty
     var autoScaling: Boolean by shapeView::autoScaling
+    @ViewProperty
     var renderer: GraphicsRenderer by shapeView::renderer
+    @ViewProperty
     var smoothing: Boolean by shapeView::smoothing
+    @ViewProperty
     var boundsIncludeStrokes: Boolean by shapeView::boundsIncludeStrokes
 
     @PublishedApi
     internal var _path: VectorPath? = shape
 
+    @ViewProperty
     var path: VectorPath?
         get() = _path
         set(value) {
@@ -50,18 +56,21 @@ open class ShapeView(
             _path = value
             _updateShapeGraphics()
         }
+    @ViewProperty
     var fill: Paint = fill
         set(value) {
             if (field == value) return
             field = value
             _updateShapeGraphics()
         }
+    @ViewProperty
     var stroke: Paint = stroke
         set(value) {
             if (field == value) return
             field = value
             _updateShapeGraphics()
         }
+    @ViewProperty
     var strokeThickness: Double = strokeThickness
         set(value) {
             if (field == value) return
@@ -101,13 +110,5 @@ open class ShapeView(
                 }
             }
         }
-    }
-
-    override fun buildDebugComponent(views: Views, container: UiContainer) {
-        val view = this
-        container.uiCollapsibleSection("ShapeView") {
-            buildAnchorableComponents(views, view)
-        }
-        super.buildDebugComponent(views, container)
     }
 }

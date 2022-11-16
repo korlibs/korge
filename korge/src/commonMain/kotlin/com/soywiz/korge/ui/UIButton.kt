@@ -3,25 +3,22 @@ package com.soywiz.korge.ui
 import com.soywiz.kds.iterators.*
 import com.soywiz.klock.*
 import com.soywiz.korge.animate.*
-import com.soywiz.korge.debug.uiCollapsibleSection
-import com.soywiz.korge.debug.uiEditableValue
 import com.soywiz.korge.input.*
 import com.soywiz.korge.tween.*
 import com.soywiz.korge.view.*
 import com.soywiz.korge.view.filter.*
+import com.soywiz.korge.view.property.*
 import com.soywiz.korgw.*
-import com.soywiz.korim.bitmap.Bitmaps
-import com.soywiz.korim.bitmap.BmpSlice
+import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.font.*
 import com.soywiz.korim.paint.*
 import com.soywiz.korim.text.*
-import com.soywiz.korio.async.Signal
+import com.soywiz.korio.async.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.interpolation.*
-import com.soywiz.korui.UiContainer
-import com.soywiz.korui.layout.*
-import com.soywiz.korui.layout.HorizontalUiLayout.pt
+import com.soywiz.korma.length.*
+import com.soywiz.korma.length.LengthExtensions.Companion.pt
 import kotlin.math.*
 import kotlin.reflect.*
 
@@ -123,6 +120,7 @@ open class UIButton(
     //    .also { it.mouseEnabled = false }
 
     //protected val textShadowView = text("", 16.0)
+    @ViewProperty(min = 1.0, max = 300.0)
     var textSize = 16.0
         set(value) {
             field = value
@@ -141,6 +139,7 @@ open class UIButton(
             field = value
             updateRichText()
         }
+    @ViewProperty()
     var text: String = text
         set(value) {
             field = value
@@ -248,15 +247,6 @@ open class UIButton(
 		}
         this.cursor = GameWindow.Cursor.HAND
         setInitialState()
-    }
-
-
-    override fun buildDebugComponent(views: Views, container: UiContainer) {
-        container.uiCollapsibleSection(UIButton::class.simpleName!!) {
-            uiEditableValue(::text)
-            uiEditableValue(::textSize, min = 1.0, max = 300.0)
-        }
-        super.buildDebugComponent(views, container)
     }
 
     open fun updatedUIButton(down: Boolean? = null, over: Boolean? = null, px: Double = 0.0, py: Double = 0.0, immediate: Boolean = false) {

@@ -28,6 +28,7 @@ fun RichTextData.place(
     fill: Paint? = null,
     stroke: Stroke? = null,
     align: TextAlignment = TextAlignment.TOP_LEFT,
+    includeFirstLineAlways: Boolean = true,
     out : RichTextDataPlacements = RichTextDataPlacements(),
 ): RichTextDataPlacements {
     val text = this
@@ -39,10 +40,11 @@ fun RichTextData.place(
         includePartialLines = includePartialLines,
         maxHeight = bounds.height,
         ellipsis = ellipsis,
-        trimSpaces = true
+        trimSpaces = true,
+        includeFirstLineAlways = includeFirstLineAlways
     )
     //var y = bounds.y + rtext.lines.first().maxHeight
-    val totalHeight = rtext.lines.dropLast(1).sumOf { it.maxLineHeight } + rtext.lines.last().maxHeight
+    val totalHeight = if (rtext.lines.isNotEmpty()) rtext.lines.dropLast(1).sumOf { it.maxLineHeight } + rtext.lines.last().maxHeight else 0.0
 
     var y = bounds.y + ((bounds.height - totalHeight) * align.vertical.ratioFake0)
 
@@ -87,8 +89,9 @@ fun Context2d.drawRichText(
     fill: Paint? = null,
     stroke: Stroke? = null,
     align: TextAlignment = TextAlignment.TOP_LEFT,
+    includeFirstLineAlways: Boolean = true,
 ) {
-    val result = text.place(bounds, wordWrap, includePartialLines, ellipsis, fill, stroke, align)
+    val result = text.place(bounds, wordWrap, includePartialLines, ellipsis, fill, stroke, align, includeFirstLineAlways = includeFirstLineAlways)
     for (place in result.placements) {
         drawText(
             place.text,

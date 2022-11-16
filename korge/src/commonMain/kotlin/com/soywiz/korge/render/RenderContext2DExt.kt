@@ -1,6 +1,7 @@
 package com.soywiz.korge.render
 
 import com.soywiz.kds.iterators.*
+import com.soywiz.korag.*
 import com.soywiz.korag.shader.*
 import com.soywiz.korge.annotations.*
 import com.soywiz.korge.view.*
@@ -27,6 +28,7 @@ object MaterialRender {
 
     val u_BorderSizeHalf by Uniform(VarType.Float1)
     val u_BorderColor by Uniform(VarType.Float4)
+    val u_BackgroundColor by Uniform(VarType.Float4)
 
     val PROGRAM = ShadedView.buildShader {
         val roundedDist = TEMP(Float1)
@@ -39,7 +41,7 @@ object MaterialRender {
         val size = u_Size
 
         SET(roundedDist, SDFShaders.roundedBox(v_Tex - (size / 2f), size / 2f, u_Radius))
-        SET(out, v_Col * SDFShaders.opAA(roundedDist))
+        SET(out, u_BackgroundColor * SDFShaders.opAA(roundedDist))
 
         // Render circle highlight
         IF(u_HighlightRadius gt 0f) {
@@ -61,7 +63,7 @@ object MaterialRender {
 
         // Apply a drop shadow effect.
         //IF((roundedDist ge -.1f) and (u_ShadowRadius gt 0f)) {
-        IF((u_ShadowRadius gt 0f)) {
+        IF((out.a lt 1f) and (u_ShadowRadius ge 0f)) {
         //IF((smoothedAlpha lt .1f.lit) and (u_ShadowRadius gt 0f.lit)) {
             val shadowSoftness = u_ShadowRadius
             val shadowOffset = u_ShadowOffset
@@ -71,6 +73,8 @@ object MaterialRender {
             SET(out, SDFShaders.opCombinePremultipliedColors(u_ShadowColor * shadowAlpha, out))
             //SET(out, mix(out, shadowColor, (shadowAlpha + smoothedAlpha)))
         }
+
+        SET(out, out * v_Col)
     }
 }
 
@@ -80,40 +84,39 @@ fun RenderContext2D.materialRoundRect(
     y: Double,
     width: Double,
     height: Double,
-    color: RGBA = this.multiplyColor,
-    //color: RGBA = Colors.RED,
+    color: RGBA = Colors.RED,
     radius: RectCorners = RectCorners.EMPTY,
     shadowOffset: IPoint = IPoint.ZERO,
     shadowColor: RGBA = Colors.BLACK,
-    shadowRadius: Double = 0.0,
+    shadowRadius: Double = -1.0,
     highlightPos: IPoint = IPoint.ZERO,
     highlightRadius: Double = 0.0,
     highlightColor: RGBA = Colors.WHITE,
     borderSize: Double = 0.0,
     borderColor: RGBA = Colors.WHITE,
+    //colorMul: RGBA = Colors.WHITE,
 ) {
-    keepColor {
-        this.multiplyColor = color
-        _tempProgramUniforms.clear()
-        _tempProgramUniforms[MaterialRender.u_Radius] = floatArrayOf(
-            radius.bottomRight.toFloat(), radius.topRight.toFloat(),
-            radius.bottomLeft.toFloat(), radius.topLeft.toFloat(),
-        )
-        _tempProgramUniforms[MaterialRender.u_Size] = Point(width, height)
+    _tempProgramUniforms.clear()
+    _tempProgramUniforms[MaterialRender.u_Radius] = floatArrayOf(
+        radius.bottomRight.toFloat(), radius.topRight.toFloat(),
+        radius.bottomLeft.toFloat(), radius.topLeft.toFloat(),
+    )
+    _tempProgramUniforms[MaterialRender.u_Size] = Point(width, height)
 
-        _tempProgramUniforms[MaterialRender.u_HighlightPos] = Point(highlightPos.x * width, highlightPos.y * height)
-        _tempProgramUniforms[MaterialRender.u_HighlightRadius] = highlightRadius * kotlin.math.max(width, height) * 1.25
-        _tempProgramUniforms[MaterialRender.u_HighlightColor] = highlightColor.premultipliedFast
+    _tempProgramUniforms[MaterialRender.u_BackgroundColor] = color.premultipliedFast
 
-        _tempProgramUniforms[MaterialRender.u_BorderSizeHalf] = borderSize * 0.5
-        _tempProgramUniforms[MaterialRender.u_BorderColor] = borderColor.premultipliedFast
+    _tempProgramUniforms[MaterialRender.u_HighlightPos] = Point(highlightPos.x * width, highlightPos.y * height)
+    _tempProgramUniforms[MaterialRender.u_HighlightRadius] = highlightRadius * kotlin.math.max(width, height) * 1.25
+    _tempProgramUniforms[MaterialRender.u_HighlightColor] = highlightColor.premultipliedFast
 
-        _tempProgramUniforms[MaterialRender.u_ShadowColor] = shadowColor.premultipliedFast
-        _tempProgramUniforms[MaterialRender.u_ShadowOffset] = Point(shadowOffset.x, shadowOffset.y)
-        _tempProgramUniforms[MaterialRender.u_ShadowRadius] = shadowRadius
+    _tempProgramUniforms[MaterialRender.u_BorderSizeHalf] = borderSize * 0.5
+    _tempProgramUniforms[MaterialRender.u_BorderColor] = borderColor.premultipliedFast
 
-        quadPaddedCustomProgram(x, y, width, height, MaterialRender.PROGRAM, _tempProgramUniforms, Margin(shadowRadius + shadowOffset.length))
-    }
+    _tempProgramUniforms[MaterialRender.u_ShadowColor] = shadowColor.premultipliedFast
+    _tempProgramUniforms[MaterialRender.u_ShadowOffset] = Point(shadowOffset.x, shadowOffset.y)
+    _tempProgramUniforms[MaterialRender.u_ShadowRadius] = shadowRadius
+
+    quadPaddedCustomProgram(x, y, width, height, MaterialRender.PROGRAM, _tempProgramUniforms, Margin(shadowRadius + shadowOffset.length))
 }
 
 @KorgeExperimental
@@ -129,8 +132,9 @@ fun RenderContext2D.drawText(
     fill: Paint? = null,
     stroke: Stroke? = null,
     align: TextAlignment = TextAlignment.TOP_LEFT,
+    includeFirstLineAlways: Boolean = true
 ) {
-    val placements = text.place(Rectangle(x, y, width, height), wordWrap, includePartialLines, ellipsis, fill, stroke, align)
+    val placements = text.place(Rectangle(x, y, width, height), wordWrap, includePartialLines, ellipsis, fill, stroke, align, includeFirstLineAlways = includeFirstLineAlways)
     placements.fastForEach { it ->
         val bmpFont = it.font as? BitmapFont?
         if (bmpFont != null) {
@@ -153,6 +157,7 @@ fun RenderContext2D.drawText(
     val scale = font.getTextScale(textSize)
     var sx = x
     val sy = y + if (baseline) -font.base * scale else 0.0
+    //println("multiplyColor=$multiplyColor")
     for (char in text) {
         val glyph = font.getGlyph(char)
         rect(
@@ -160,7 +165,9 @@ fun RenderContext2D.drawText(
             sy + glyph.yoffset * scale,
             glyph.texWidth.toDouble() * scale,
             glyph.texHeight.toDouble() * scale,
-            color, true, glyph.texture, font.agProgram,
+            (color * multiplyColor),
+            //multiplyColor,
+            true, glyph.texture, font.agProgram,
         )
         sx += glyph.xadvance * scale
     }

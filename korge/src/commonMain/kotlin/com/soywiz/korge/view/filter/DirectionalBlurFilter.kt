@@ -1,27 +1,22 @@
 package com.soywiz.korge.view.filter
 
-import com.soywiz.kmem.toIntCeil
-import com.soywiz.korag.FragmentShaderDefault
-import com.soywiz.korag.shader.Uniform
-import com.soywiz.korag.shader.VarType
-import com.soywiz.korge.debug.uiEditableValue
-import com.soywiz.korge.render.RenderContext
-import com.soywiz.korge.view.Views
-import com.soywiz.korma.geom.Angle
-import com.soywiz.korma.geom.MutableMarginInt
-import com.soywiz.korma.geom.Vector3D
-import com.soywiz.korma.geom.cosine
-import com.soywiz.korma.geom.degrees
-import com.soywiz.korma.geom.sine
-import com.soywiz.korui.UiContainer
-import kotlin.math.PI
-import kotlin.math.absoluteValue
-import kotlin.math.exp
-import kotlin.math.ln
-import kotlin.math.sqrt
+import com.soywiz.kmem.*
+import com.soywiz.korag.*
+import com.soywiz.korag.shader.*
+import com.soywiz.korge.render.*
+import com.soywiz.korge.view.property.*
+import com.soywiz.korma.geom.*
+import kotlin.math.*
 
 // https://en.wikipedia.org/wiki/Gaussian_blur
-class DirectionalBlurFilter(var angle: Angle = 0.degrees, var radius: Double = 4.0, var expandBorder: Boolean = true) : ShaderFilter() {
+class DirectionalBlurFilter(
+    @ViewProperty
+    var angle: Angle = 0.degrees,
+    @ViewProperty
+    var radius: Double = 4.0,
+    @ViewProperty
+    var expandBorder: Boolean = true
+) : ShaderFilter() {
     companion object : BaseProgramProvider() {
         private val u_radius = Uniform("u_radius", VarType.Float1)
         private val u_constant1 = Uniform("u_constant1", VarType.Float1)
@@ -107,9 +102,4 @@ class DirectionalBlurFilter(var angle: Angle = 0.degrees, var radius: Double = 4
     override val programProvider: ProgramProvider get() = DirectionalBlurFilter
 
     override val isIdentity: Boolean get() = radius == 0.0
-
-    override fun buildDebugComponent(views: Views, container: UiContainer) {
-        container.uiEditableValue(::angle)
-        container.uiEditableValue(::radius)
-    }
 }

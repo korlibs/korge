@@ -11,7 +11,7 @@ import com.soywiz.korge.view.*
 import com.soywiz.korim.color.Colors
 import com.soywiz.korio.async.Signal
 import com.soywiz.korma.geom.*
-import com.soywiz.korui.layout.HorizontalUiLayout.pt
+import com.soywiz.korma.length.LengthExtensions.Companion.pt
 import kotlin.native.concurrent.ThreadLocal
 
 inline fun <T> Container.uiComboBox(

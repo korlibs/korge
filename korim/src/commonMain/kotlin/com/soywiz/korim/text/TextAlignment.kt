@@ -16,6 +16,10 @@ data class TextAlignment(
     fun withHorizontal(horizontal: HorizontalAlign) = fromAlign(horizontal, vertical)
     fun withVertical(vertical: VerticalAlign) = fromAlign(horizontal, vertical)
 
+    object Provider {
+        val ITEMS get() = ALL
+    }
+
     companion object {
         private val horizontals = listOf(HorizontalAlign.LEFT, HorizontalAlign.CENTER, HorizontalAlign.RIGHT, HorizontalAlign.JUSTIFY)
 
@@ -78,6 +82,10 @@ inline class VerticalAlign(val ratio: Double) : EnumLike<VerticalAlign> {
     val ratioFake get() = if (this == BASELINE) 1.0 else ratio
     val ratioFake0 get() = if (this == BASELINE) 0.0 else ratio
 
+    object Provider {
+        val ITEMS: List<VerticalAlign> get() = ALL
+    }
+
     companion object {
         val TOP = VerticalAlign(0.0)
         val MIDDLE = VerticalAlign(0.5)
@@ -127,6 +135,10 @@ inline class VerticalAlign(val ratio: Double) : EnumLike<VerticalAlign> {
 
 inline class HorizontalAlign(val ratio: Double) : EnumLike<HorizontalAlign> {
     val ratioFake get() = if (this == JUSTIFY) 0.0 else ratio
+
+    object Provider {
+        val ITEMS: List<HorizontalAlign> get() = HorizontalAlign.ALL
+    }
 
     companion object {
         val JUSTIFY = HorizontalAlign(-0.00001)

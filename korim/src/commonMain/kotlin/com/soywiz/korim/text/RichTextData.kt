@@ -127,6 +127,7 @@ data class RichTextData(
         includePartialLines: Boolean = true,
         ellipsis: String? = null,
         trimSpaces: Boolean = false,
+        includeFirstLineAlways: Boolean = true,
     ): RichTextData {
         var out = this
         var removedWords = false
@@ -134,7 +135,7 @@ data class RichTextData(
             out = out.wordWrap(maxLineWidth)
         }
         if (maxHeight != Double.POSITIVE_INFINITY) {
-            out = out.limitHeight(maxHeight, includePartialLines = includePartialLines).also {
+            out = out.limitHeight(maxHeight, includePartialLines = includePartialLines, includeFirstLineAlways = includeFirstLineAlways).also {
                 if (it != out) removedWords = true
             }
         }
@@ -149,13 +150,13 @@ data class RichTextData(
         return out
     }
 
-    fun limitHeight(maxHeight: Double, includePartialLines: Boolean = true): RichTextData {
+    fun limitHeight(maxHeight: Double, includePartialLines: Boolean = true, includeFirstLineAlways: Boolean = true): RichTextData {
         var currentHeight: Double = 0.0
         val outLines = arrayListOf<Line>()
         for (line in lines) {
             currentHeight += line.maxLineHeight
             if (currentHeight >= maxHeight) {
-                if (includePartialLines) {
+                if (includePartialLines || (includeFirstLineAlways && outLines.isEmpty())) {
                     outLines += line
                 }
                 break

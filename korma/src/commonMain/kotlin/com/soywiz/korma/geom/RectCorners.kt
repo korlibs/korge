@@ -6,6 +6,13 @@ interface RectCorners {
     val bottomRight: Double
     val bottomLeft: Double
 
+    fun duplicate(
+        topLeft: Double = this.topLeft,
+        topRight: Double = this.topRight,
+        bottomRight: Double = this.bottomRight,
+        bottomLeft: Double = this.bottomLeft,
+    ): RectCorners = MutableRectCorners(topLeft, topRight, bottomRight, bottomLeft)
+
     companion object {
         val EMPTY: RectCorners = MutableRectCorners(0.0, 0.0, 0.0, 0.0)
 
