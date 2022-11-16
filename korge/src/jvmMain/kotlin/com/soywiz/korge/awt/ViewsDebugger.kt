@@ -15,7 +15,6 @@ import com.soywiz.korim.color.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.*
 import com.soywiz.korma.geom.*
-import com.soywiz.korui.*
 import kotlinx.coroutines.*
 import java.awt.*
 import java.awt.event.*

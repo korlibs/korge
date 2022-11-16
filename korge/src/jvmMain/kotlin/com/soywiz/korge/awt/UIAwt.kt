@@ -11,7 +11,6 @@ import com.soywiz.korio.file.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korma.geom.*
-import com.soywiz.korui.*
 import java.awt.*
 import java.awt.Point
 import java.awt.Rectangle
