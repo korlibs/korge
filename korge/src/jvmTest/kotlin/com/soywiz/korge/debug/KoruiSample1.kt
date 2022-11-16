@@ -1,13 +1,7 @@
 package com.soywiz.korge.debug
 
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.*
 import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.vector.*
 import com.soywiz.korui.*
-import com.soywiz.korui.layout.*
-import com.soywiz.korui.layout.Size
-import com.soywiz.korui.native.*
 
 object KoruiSample2 {
     @JvmStatic

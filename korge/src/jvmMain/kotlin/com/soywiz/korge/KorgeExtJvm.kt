@@ -6,7 +6,6 @@ import com.soywiz.korge.debug.*
 import com.soywiz.korge.time.*
 import com.soywiz.korge.view.*
 import com.soywiz.korui.*
-import com.soywiz.korui.native.*
 import kotlinx.coroutines.*
 import java.awt.Container
 

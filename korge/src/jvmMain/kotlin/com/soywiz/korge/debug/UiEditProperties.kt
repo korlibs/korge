@@ -2,18 +2,27 @@ package com.soywiz.korge.debug
 
 import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
+import com.soywiz.kmem.*
+import com.soywiz.korev.*
 import com.soywiz.korge.view.*
 import com.soywiz.korge.view.property.*
+import com.soywiz.korge.view.property.ObservableProperty
+import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.text.*
+import com.soywiz.korio.async.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
+import com.soywiz.korte.*
 import com.soywiz.korui.*
 import com.soywiz.korui.layout.*
+import kotlin.math.*
 import kotlin.reflect.*
 import kotlin.reflect.full.*
 import kotlin.reflect.jvm.*
+
+internal var UiApplication.views by Extra.PropertyThis<UiApplication, Views?> { null }
 
 internal class UiEditProperties(app: UiApplication, view: View?, val views: Views) : UiContainer(app) {
     val propsContainer = scrollPanel(xbar = false)
@@ -311,4 +320,488 @@ internal fun UiComponent.findObservableProperties(out: ArrayList<ObservablePrope
         }
     }
     return out
+}
+
+internal class UiBooleanEditableValue(
+    app: UiApplication,
+    prop: ObservableProperty<Boolean>,
+) : UiEditableValue<Boolean>(app, prop), ObservablePropertyHolder<Boolean> {
+    val initial = prop.value
+
+    init {
+        prop.onChange {
+            //println("prop.onChange: $it")
+            setValue(it, setProperty = false)
+        }
+    }
+
+    val contentCheckBox = UiCheckBox(app).also { it.text = "" }.also { it.checked = prop.value }
+
+    override fun hideEditor() {
+    }
+
+    override fun showEditor() {
+    }
+
+    fun setValue(value: Boolean, setProperty: Boolean = true) {
+        if (contentCheckBox.checked != value) {
+            contentCheckBox.checked = value
+        }
+        if (setProperty) prop.value = value
+    }
+
+    init {
+        layout = HorizontalUiLayout
+        addChild(contentCheckBox)
+        visible = true
+        contentCheckBox.onChange {
+            setValue(contentCheckBox.checked)
+        }
+    }
+}
+
+internal fun UiContainer.uiCollapsibleSection(name: String?, block: UiContainer.() -> Unit): UiCollapsibleSection {
+    return UiCollapsibleSection(app, name, block).also { addChild(it) }
+}
+
+@Deprecated(
+    message = "An older name of `uiCollapsibleSection`",
+    replaceWith = ReplaceWith("uiCollapsibleSection(name, block)"),
+    level = DeprecationLevel.WARNING
+)
+internal fun UiContainer.uiCollapsableSection(name: String?, block: UiContainer.() -> Unit): UiCollapsibleSection {
+    return UiCollapsibleSection(app, name, block).also { addChild(it) }
+}
+
+internal class UiCollapsibleSection(app: UiApplication, val name: String?, val componentChildren: List<UiComponent>) : UiContainer(app) {
+    companion object {
+        operator fun invoke(app: UiApplication, name: String?, block: UiContainer.() -> Unit): UiCollapsibleSection =
+            UiCollapsibleSection(app, name, listOf()).also { block(it.mycontainer) }
+
+        private fun createIcon(angle: Angle): NativeImage {
+            return NativeImage(ICON_SIZE, ICON_SIZE).context2d {
+                val s = ICON_SIZE.toDouble()
+                fill(Colors.DIMGREY) {
+                    if (angle == 0.degrees) {
+                        translate(s * 0.5, s * 0.25)
+                    } else {
+                        translate(s * 0.25, s * 0.5)
+                    }
+                    scale(ICON_SIZE.toDouble())
+                    rotate(angle)
+                    moveTo(-0.5, 0.0)
+                    lineTo(+0.5, 0.0)
+                    lineTo(0.0, 0.5)
+                    close()
+                }
+            }
+        }
+
+        val ICON_SIZE = 16
+        val ICON_OPEN = createIcon(0.degrees)
+        val ICON_CLOSE = createIcon((-90).degrees)
+    }
+
+    private lateinit var mycontainer: UiContainer
+
+    init {
+        button(name ?: "Unknown") {
+            this.icon = ICON_OPEN
+            onClick {
+                mycontainer.visible = !mycontainer.visible
+                mycontainer.root?.relayout()
+                this.icon = if (mycontainer.visible) ICON_OPEN else ICON_CLOSE
+            }
+        }
+        mycontainer = container {
+            for (child in componentChildren) {
+                addChild(child)
+            }
+        }
+    }
+}
+
+internal fun <T> Views.completedEditing(prop: ObservableProperty<T>) {
+    debugSaveView("Adjusted ${prop.name}", null)
+    completedEditing(Unit)
+}
+
+
+internal open class UiEditableValue<T>(app: UiApplication, override val prop: ObservableProperty<T>) : UiContainer(app), ObservablePropertyHolder<T> {
+    fun completedEditing() {
+        app.views?.completedEditing(prop)
+    }
+
+    open fun hideEditor() {
+        completedEditing()
+    }
+
+    open fun showEditor() {
+    }
+}
+
+internal class UiListEditableValue<T>(
+    app: UiApplication,
+    val itemsFactory: () -> List<T>,
+    prop: ObservableProperty<T>
+) : UiEditableValue<T>(app, prop) {
+    init {
+        layout = UiFillLayout
+        visible = true
+    }
+
+    var items = itemsFactory()
+    val contentText = UiLabel(app)
+        .also { it.text = "" }
+        .also { it.visible = true }
+    val contentComboBox = UiComboBox<T>(app)
+        .also { it.items = items }
+        .also { it.visible = false }
+
+    fun setValue(value: T, setProperty: Boolean = true) {
+        contentText.text = value.toString()
+        if (!contentComboBox.visible) {
+            contentComboBox.selectedItem = value
+        }
+        if (setProperty) prop.value = value
+    }
+
+    override fun hideEditor() {
+        if (!contentText.visible) {
+            val selectedItem = contentComboBox.selectedItem
+            //println("UiListEditableValue.hideEditor.selectedItem: $selectedItem")
+            contentText.visible = true
+            contentComboBox.visible = false
+            if (selectedItem != null) {
+                setValue(selectedItem)
+            }
+            super.hideEditor()
+        }
+    }
+
+    override fun showEditor() {
+        contentText.visible = false
+        contentComboBox.visible = true
+        contentComboBox.focus()
+    }
+
+    init {
+        setValue(prop.value)
+
+        prop.onChange {
+            items = itemsFactory()
+            setValue(it, false)
+        }
+
+        contentText.onClick {
+            showEditor()
+        }
+
+        contentComboBox.onChange {
+            hideEditor()
+        }
+        contentComboBox.onFocus { e ->
+            if (e.typeBlur) {
+                hideEditor()
+            } else {
+                contentComboBox.open()
+            }
+            //println(e)
+        }
+        addChild(contentText)
+        addChild(contentComboBox)
+    }
+}
+
+internal class UiMultipleItemEditableValue<T>(app: UiApplication, items: List<UiEditableValue<T>>) : UiEditableValue<T>(app, items.first().prop) {
+    init {
+        layout = HorizontalUiLayout
+        this.preferredWidth = 100.percent
+        for (item in items) {
+            item.preferredWidth = (100 / items.size).percent
+            addChild(item)
+        }
+    }
+}
+
+internal class UiNumberEditableValue(
+    app: UiApplication,
+    prop: ObservableProperty<Double>,
+    var min: Double = -1.0,
+    var max: Double = +1.0,
+    var clampMin: Boolean = false,
+    var clampMax: Boolean = false,
+    var decimalPlaces: Int = 2
+) : UiEditableValue<Double>(app, prop), ObservablePropertyHolder<Double> {
+    var evalContext: () -> Any? = { null }
+    val initial = prop.value
+    companion object {
+        //val MAX_WIDTH = 300
+        val MAX_WIDTH = 1000
+    }
+
+    init {
+        prop.onChange {
+            //println("prop.onChange: $it")
+            if (current != it) {
+                setValue(it, setProperty = false)
+            }
+        }
+    }
+
+    val contentText = UiLabel(app).also { it.text = "" }.also { it.visible = true }
+    val contentTextField = UiTextField(app).also { it.text = contentText.text }.also { it.visible = false }
+    var current: Double = Double.NaN
+
+    val isEditorVisible get() = !contentText.visible
+
+    override fun hideEditor() {
+        if (!isEditorVisible) return
+        contentText.visible = true
+        contentTextField.visible = false
+        if (contentTextField.text.isNotEmpty()) {
+            val templateResult = runBlockingNoSuspensions { Template("{{ ${contentTextField.text} }}").invoke(evalContext()) }
+            setValue(templateResult.toDoubleOrNull() ?: 0.0)
+        }
+        super.hideEditor()
+    }
+
+    override fun showEditor() {
+        if (isEditorVisible) return
+        contentTextField.text = contentText.text
+        contentText.visible = false
+        contentTextField.visible = true
+        contentTextField.select()
+        contentTextField.focus()
+    }
+
+    fun setValue(value: Double, setProperty: Boolean = true) {
+        //println("setValue")
+        var rvalue = value
+        if (clampMin) rvalue = rvalue.coerceAtLeast(min)
+        if (clampMax) rvalue = rvalue.coerceAtMost(max)
+        val valueStr = rvalue.toStringDecimal(decimalPlaces)
+        if (current != rvalue) {
+            current = rvalue
+            if (setProperty) {
+                prop.value = rvalue
+            }
+            contentText.text = valueStr
+            if (!isEditorVisible) {
+                contentTextField.text = valueStr
+            }
+        }
+    }
+
+    init {
+        layout = UiFillLayout
+        //layout = HorizontalUiLayout
+        visible = true
+        contentText.onClick {
+            showEditor()
+        }
+        contentTextField.onKeyEvent { e ->
+            if (e.typeDown && e.key == Key.RETURN) {
+                hideEditor()
+            }
+            //println(e)
+        }
+        contentTextField.onFocus { e ->
+            if (e.typeBlur) {
+                hideEditor()
+            }
+            //println(e)
+        }
+        var startX = 0
+        var startY = 0
+        var startValue = current
+        contentText.onMouseEvent { e ->
+            if (e.typeDown) {
+                startX = e.x
+                startY = e.y
+                startValue = current
+                e.requestLock()
+            }
+            if (e.typeUp) {
+                app.views?.completedEditing(prop)
+            }
+            if (e.typeDrag) {
+                val dx = (e.x - startX).toDouble()
+                val dy = (e.y - startY).toDouble()
+                //println("typeDrag: dx=$dx")
+                val lenAbs = dx.absoluteValue.convertRange(0.0, MAX_WIDTH.toDouble(), 0.0, max - min)
+                val len = lenAbs.withSign(dx)
+                setValue(startValue + len)
+                //println("//")
+            }
+        }
+        setValue(initial)
+        contentText.cursor = UiStandardCursor.RESIZE_EAST
+        addChild(contentText)
+        addChild(contentTextField)
+    }
+}
+
+internal class UiRowEditableValue(app: UiApplication, val labelText: String, val editor: UiComponent) : UiContainer(app) {
+    val leftPadding = UiLabel(app)
+    val label = UiLabel(app).apply {
+        text = labelText
+        preferredWidth = 50.percent
+    }
+    init {
+        layout = HorizontalUiLayout
+        leftPadding.preferredSize(16.pt, 32.pt)
+        label.preferredSize(50.percent - 16.pt, 32.pt)
+        editor.preferredSize(50.percent, 32.pt)
+        //backgroundColor = Colors.RED
+        addChild(leftPadding)
+        addChild(label)
+        addChild(editor)
+        label.onClick {
+            if (editor is UiEditableValue<*>) {
+                editor.hideEditor()
+            }
+        }
+        //addChild(UiLabel(app).also { it.text = "text" }.also { it.bounds = RectangleInt(120, 0, 120, 32) })
+    }
+}
+
+internal class UiTextEditableValue(
+    app: UiApplication,
+    prop: ObservableProperty<String>,
+    val kind: Kind
+) : UiEditableValue<String>(app, prop), ObservablePropertyHolder<String> {
+    open class Kind {
+        object STRING : Kind()
+        object COLOR : Kind()
+        class FILE(val currentVfs: VfsFile, val filter: (VfsFile) -> Boolean) : Kind()
+    }
+
+    var evalContext: () -> Any? = { null }
+    val initial = prop.value
+    companion object {
+        //val MAX_WIDTH = 300
+        val MAX_WIDTH = 1000
+    }
+
+    init {
+        prop.onChange {
+            //println("prop.onChange: $it")
+            if (current != it) {
+                setValue(it, setProperty = false)
+            }
+        }
+    }
+
+    val contentText = UiLabel(app).also { it.text = "" }.also { it.visible = true }
+    val contentTextField = UiTextField(app).also { it.text = contentText.text }.also { it.visible = false }
+    var current: String = ""
+
+    override fun hideEditor() {
+        if (!contentText.visible) {
+            contentText.visible = true
+            contentTextField.visible = false
+            setValue(untransformed(contentTextField.text))
+            super.hideEditor()
+        }
+    }
+
+    override fun showEditor() {
+        contentTextField.text = contentText.text
+        contentText.visible = false
+        contentTextField.visible = true
+        contentTextField.select()
+        contentTextField.focus()
+    }
+
+    fun transformed(text: String): String = text.uescape()
+    fun untransformed(text: String): String = text.unescape()
+
+    fun setValue(value: String, setProperty: Boolean = true) {
+        if (current != value) {
+            current = value
+            if (setProperty) prop.value = value
+            val transformed = transformed(value)
+            contentText.text = transformed
+            contentTextField.text = transformed
+        }
+    }
+
+    init {
+        visible = true
+        layout = HorizontalUiLayout
+        contentText.onClick { showEditor() }
+        contentTextField.onKeyEvent { e -> if (e.typeDown && e.key == Key.RETURN) hideEditor() }
+        contentTextField.onFocus { e -> if (e.typeBlur) hideEditor() }
+        var childCount = 1
+        when (kind) {
+            is Kind.FILE -> {
+                button("...") {
+                    preferredWidth = 50.percent
+                    childCount++
+                    onClick {
+                        val file = openFileDialog(null, kind.filter)
+                        if (file != null) {
+                            val filePathInfo = file.absolutePathInfo
+                            val currentVfsPathInfo = kind.currentVfs.absolutePathInfo
+                            val relativePath = filePathInfo.relativePathTo(currentVfsPathInfo)
+                            println("filePathInfo: $filePathInfo")
+                            println("currentVfsPathInfo: $currentVfsPathInfo")
+                            println("relativePath: $relativePath")
+
+                            //PathInfo("test").rela
+                            if (relativePath != null) {
+                                setValue(relativePath)
+                                completedEditing()
+                            }
+                        }
+                    }
+                }
+            }
+            is Kind.COLOR -> {
+                button("...") {
+                    preferredWidth = 50.percent
+                    childCount++
+                    onClick {
+                        val color = Colors[prop.value]
+                        prop.value = (openColorPickerDialog(color) { prop.value = it.hexString } ?: color).hexString
+                        completedEditing()
+                    }
+                }
+            }
+        }
+        container {
+            layout = UiFillLayout
+            preferredWidth = if (childCount == 2) 50.percent else 100.percent
+            setValue(initial)
+            addChild(contentText)
+            addChild(contentTextField)
+        }
+    }
+}
+
+internal class UiTwoItemEditableValue<T>(app: UiApplication, left: UiEditableValue<T>, right: UiEditableValue<T>) : UiEditableValue<T>(app, left.prop) {
+    init {
+        layout = HorizontalUiLayout
+        this.preferredWidth = 100.percent
+        left.preferredWidth = 50.percent
+        right.preferredWidth = 50.percent
+        addChild(left)
+        addChild(right)
+    }
+}
+
+internal class UiFourItemEditableValue<T>(app: UiApplication, a: UiEditableValue<T>, b: UiEditableValue<T>, c: UiEditableValue<T>, d: UiEditableValue<T>) : UiEditableValue<T>(app, a.prop) {
+    init {
+        layout = HorizontalUiLayout
+        this.preferredWidth = 100.percent
+        a.preferredWidth = 25.percent
+        b.preferredWidth = 25.percent
+        c.preferredWidth = 25.percent
+        d.preferredWidth = 25.percent
+        addChild(a)
+        addChild(b)
+        addChild(c)
+        addChild(d)
+    }
 }
