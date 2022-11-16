@@ -1,14 +1,12 @@
 package com.soywiz.korui
 
-import com.soywiz.korim.color.RGBA
-import com.soywiz.korio.lang.invalidOp
-import com.soywiz.korma.geom.RectangleInt
-import com.soywiz.korma.geom.SizeInt
-import com.soywiz.korui.layout.UiLayout
-import com.soywiz.korui.layout.VerticalUiLayout
-import com.soywiz.korui.native.NativeUiFactory
+import com.soywiz.korim.color.*
+import com.soywiz.korio.lang.*
+import com.soywiz.korma.geom.*
+import com.soywiz.korui.layout.*
+import com.soywiz.korui.native.*
 
-open class UiContainer(app: UiApplication, val container: NativeUiFactory.NativeContainer = app.factory.createContainer()) : UiComponent(app, container) {
+internal open class UiContainer(app: UiApplication, val container: NativeUiFactory.NativeContainer = app.factory.createContainer()) : UiComponent(app, container) {
     private val _children = arrayListOf<UiComponent>()
     val numChildren: Int get() = _children.size
     val size: Int get() = numChildren
@@ -79,13 +77,13 @@ open class UiContainer(app: UiApplication, val container: NativeUiFactory.Native
     val lastChild get() = _children.last()
 }
 
-inline fun UiContainer.container(block: UiContainer.() -> Unit): UiContainer {
+internal inline fun UiContainer.container(block: UiContainer.() -> Unit): UiContainer {
     return UiContainer(app)
         .also { it.parent = this }
         .also { it.bounds = this.bounds }
         .also(block)
 }
 
-inline fun UiContainer.addBlock(block: UiContainer.() -> Unit) {
+internal inline fun UiContainer.addBlock(block: UiContainer.() -> Unit) {
     block(this)
 }

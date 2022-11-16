@@ -1,11 +1,9 @@
 package com.soywiz.korui.native
 
-import com.soywiz.korim.color.RGBA
-import com.soywiz.korim.color.toAwt
-import com.soywiz.korim.color.toRgba
-import java.awt.Container
+import com.soywiz.korim.color.*
+import java.awt.*
 
-open class AwtContainer(
+internal open class AwtContainer(
     factory: BaseAwtUiFactory,
     val container: Container = factory.createJPanel(),
     val childContainer: Container = container

@@ -1,8 +1,8 @@
 package com.soywiz.korui
 
-import com.soywiz.korui.native.NativeUiFactory
+import com.soywiz.korui.native.*
 
-open class UiLabel(app: UiApplication, val label: NativeUiFactory.NativeLabel = app.factory.createLabel()) : UiComponent(app, label) {
+internal open class UiLabel(app: UiApplication, val label: NativeUiFactory.NativeLabel = app.factory.createLabel()) : UiComponent(app, label) {
     var text by label::text
     var icon by label::icon
 
@@ -13,6 +13,6 @@ open class UiLabel(app: UiApplication, val label: NativeUiFactory.NativeLabel = 
     }
 }
 
-inline fun UiContainer.label(text: String = "Button", block: UiLabel.() -> Unit = {}): UiLabel {
+internal inline fun UiContainer.label(text: String = "Button", block: UiLabel.() -> Unit = {}): UiLabel {
     return UiLabel(app).also { it.text = text }.also { it.parent = this }.also(block)
 }

@@ -6,9 +6,9 @@ import java.util.*
 import javax.swing.*
 import javax.swing.tree.*
 
-val UiTreeNode.awt by Extra.PropertyThis<UiTreeNode, AwtTreeNode>() { AwtTreeNode(this) }
+internal val UiTreeNode.awt by Extra.PropertyThis<UiTreeNode, AwtTreeNode>() { AwtTreeNode(this) }
 
-data class AwtTreeNode(val node: UiTreeNode) : TreeNode {
+internal data class AwtTreeNode(val node: UiTreeNode) : TreeNode {
     override fun getChildAt(childIndex: Int): TreeNode? = node.children?.get(childIndex)?.awt
     override fun getChildCount(): Int = node.children?.size ?: 0
     override fun getParent(): TreeNode? = node.parent?.let { it.awt }
@@ -19,7 +19,7 @@ data class AwtTreeNode(val node: UiTreeNode) : TreeNode {
     override fun toString(): String = node.toString()
 }
 
-open class AwtTree(factory: BaseAwtUiFactory, val tree: JTree = JTree()) : AwtComponent(factory, tree), NativeUiFactory.NativeTree {
+internal open class AwtTree(factory: BaseAwtUiFactory, val tree: JTree = JTree()) : AwtComponent(factory, tree), NativeUiFactory.NativeTree {
     val model get() = tree.model as DefaultTreeModel
     override var root: UiTreeNode?
         get() = (model.root as? AwtTreeNode?)?.node

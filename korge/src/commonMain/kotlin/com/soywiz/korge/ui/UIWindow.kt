@@ -1,23 +1,18 @@
 package com.soywiz.korge.ui
 
-import com.soywiz.kds.iterators.fastForEach
-import com.soywiz.klock.milliseconds
-import com.soywiz.kmem.clamp
-import com.soywiz.korge.annotations.KorgeExperimental
-import com.soywiz.korge.input.DraggableInfo
-import com.soywiz.korge.input.cursor
-import com.soywiz.korge.input.draggable
-import com.soywiz.korge.input.mouse
-import com.soywiz.korge.input.onClick
-import com.soywiz.korge.render.RenderContext
-import com.soywiz.korge.tween.get
-import com.soywiz.korge.tween.tween
+import com.soywiz.kds.iterators.*
+import com.soywiz.klock.*
+import com.soywiz.kmem.*
+import com.soywiz.korge.annotations.*
+import com.soywiz.korge.input.*
+import com.soywiz.korge.render.*
+import com.soywiz.korge.tween.*
 import com.soywiz.korge.view.*
-import com.soywiz.korgw.GameWindow
-import com.soywiz.korim.color.Colors
+import com.soywiz.korgw.*
+import com.soywiz.korim.color.*
 import com.soywiz.korim.text.*
 import com.soywiz.korma.geom.*
-import com.soywiz.korui.layout.HorizontalUiLayout.percent
+import com.soywiz.korma.length.LengthExtensions.Companion.percent
 
 @KorgeExperimental
 inline fun Container.uiWindow(

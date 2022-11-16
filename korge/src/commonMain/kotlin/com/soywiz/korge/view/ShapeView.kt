@@ -1,12 +1,10 @@
 package com.soywiz.korge.view
 
-import com.soywiz.korge.debug.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.view.property.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.paint.*
 import com.soywiz.korma.geom.vector.*
-import com.soywiz.korui.*
 
 inline fun Container.shapeView(
     shape: VectorPath? = null,

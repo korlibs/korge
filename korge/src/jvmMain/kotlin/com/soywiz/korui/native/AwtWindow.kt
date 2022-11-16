@@ -1,15 +1,12 @@
 package com.soywiz.korui.native
 
-import com.soywiz.korev.*
-import com.soywiz.korio.lang.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korui.*
 import com.soywiz.korui.native.util.*
 import java.awt.Rectangle
-import java.awt.event.*
 import javax.swing.*
 
-open class AwtWindow(factory: BaseAwtUiFactory, val frame: JFrame = JFrame()) : AwtContainer(factory, frame, frame.contentPane), NativeUiFactory.NativeWindow {
+internal open class AwtWindow(factory: BaseAwtUiFactory, val frame: JFrame = JFrame()) : AwtContainer(factory, frame, frame.contentPane), NativeUiFactory.NativeWindow {
     init {
         frame.contentPane.layout = null
         frame.defaultCloseOperation = WindowConstants.EXIT_ON_CLOSE

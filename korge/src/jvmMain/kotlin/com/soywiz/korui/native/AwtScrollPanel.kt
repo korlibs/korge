@@ -4,7 +4,7 @@ import com.soywiz.korma.geom.*
 import java.awt.*
 import javax.swing.*
 
-open class AwtScrollPanel(
+internal open class AwtScrollPanel(
     factory: BaseAwtUiFactory,
     val view: JFixedSizeContainer = AwtContainer(factory, JFixedSizeContainer()).container as JFixedSizeContainer,
     val scrollPanel: JScrollPane = factory.createJScrollPane()

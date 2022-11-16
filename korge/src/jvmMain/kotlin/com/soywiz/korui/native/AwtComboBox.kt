@@ -1,10 +1,10 @@
 package com.soywiz.korui.native
 
 import com.soywiz.korio.lang.*
-import java.awt.event.ActionListener
+import java.awt.event.*
 import javax.swing.*
 
-open class AwtComboBox<T>(factory: BaseAwtUiFactory, val comboBox: JComboBox<T> = JComboBox<T>()) : AwtComponent(factory, comboBox), NativeUiFactory.NativeComboBox<T> {
+internal open class AwtComboBox<T>(factory: BaseAwtUiFactory, val comboBox: JComboBox<T> = JComboBox<T>()) : AwtComponent(factory, comboBox), NativeUiFactory.NativeComboBox<T> {
     override var items: List<T>
         get() {
             val model = comboBox.model

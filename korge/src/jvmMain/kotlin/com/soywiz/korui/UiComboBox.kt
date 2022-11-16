@@ -1,8 +1,8 @@
 package com.soywiz.korui
 
-import com.soywiz.korui.native.NativeUiFactory
+import com.soywiz.korui.native.*
 
-open class UiComboBox<T>(app: UiApplication, val comboBox: NativeUiFactory.NativeComboBox<T> = app.factory.createComboBox()) : UiComponent(app, comboBox) {
+internal open class UiComboBox<T>(app: UiApplication, val comboBox: NativeUiFactory.NativeComboBox<T> = app.factory.createComboBox()) : UiComponent(app, comboBox) {
     var items by comboBox::items
     var selectedItem by comboBox::selectedItem
     fun open() = comboBox.open()
@@ -10,7 +10,7 @@ open class UiComboBox<T>(app: UiApplication, val comboBox: NativeUiFactory.Nativ
     fun onChange(block: () -> Unit) = comboBox.onChange(block)
 }
 
-inline fun <T> UiContainer.comboBox(selectedItem: T, items: List<T>, block: UiComboBox<T>.() -> Unit = {}): UiComboBox<T> =
+internal inline fun <T> UiContainer.comboBox(selectedItem: T, items: List<T>, block: UiComboBox<T>.() -> Unit = {}): UiComboBox<T> =
     UiComboBox<T>(app)
         .also { it.parent = this }
         .also { it.items = items }

@@ -33,7 +33,6 @@ import com.soywiz.korma.geom.ISize
 import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.geom.ScaleMode
 import com.soywiz.korma.geom.Size
-import com.soywiz.korui.UiContainer
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job

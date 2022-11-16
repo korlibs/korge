@@ -4,7 +4,7 @@ import com.soywiz.korge.view.property.*
 import com.soywiz.korui.*
 import com.soywiz.korui.layout.*
 
-class UiListEditableValue<T>(
+internal class UiListEditableValue<T>(
     app: UiApplication,
     val itemsFactory: () -> List<T>,
     prop: ObservableProperty<T>

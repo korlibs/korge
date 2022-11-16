@@ -8,7 +8,7 @@ import com.soywiz.korio.util.*
 import com.soywiz.korui.*
 import com.soywiz.korui.layout.*
 
-class UiTextEditableValue(
+internal class UiTextEditableValue(
     app: UiApplication,
     prop: ObservableProperty<String>,
     val kind: Kind

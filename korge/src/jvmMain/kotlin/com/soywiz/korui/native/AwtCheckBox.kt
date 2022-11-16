@@ -4,7 +4,7 @@ import com.soywiz.korio.lang.*
 import javax.swing.*
 import javax.swing.event.*
 
-open class AwtCheckBox(factory: BaseAwtUiFactory, val checkBox: JCheckBox = JCheckBox()) : AwtComponent(factory, checkBox), NativeUiFactory.NativeCheckBox {
+internal open class AwtCheckBox(factory: BaseAwtUiFactory, val checkBox: JCheckBox = JCheckBox()) : AwtComponent(factory, checkBox), NativeUiFactory.NativeCheckBox {
     override var text: String
         get() = checkBox.text
         set(value) { checkBox.text = value }

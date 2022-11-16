@@ -15,7 +15,7 @@ import kotlin.reflect.*
 import kotlin.reflect.full.*
 import kotlin.reflect.jvm.*
 
-class UiEditProperties(app: UiApplication, view: View?, val views: Views) : UiContainer(app) {
+internal class UiEditProperties(app: UiApplication, view: View?, val views: Views) : UiContainer(app) {
     val propsContainer = scrollPanel(xbar = false)
     var currentView: View? = null
 
@@ -301,7 +301,7 @@ class UiEditProperties(app: UiApplication, view: View?, val views: Views) : UiCo
     }
 }
 
-fun UiComponent.findObservableProperties(out: ArrayList<ObservableProperty<*>> = arrayListOf()): List<ObservableProperty<*>> {
+internal fun UiComponent.findObservableProperties(out: ArrayList<ObservableProperty<*>> = arrayListOf()): List<ObservableProperty<*>> {
     if (this is ObservablePropertyHolder<*>) {
         out.add(prop)
     }

@@ -8,7 +8,7 @@ import com.soywiz.korui.*
 import kotlin.reflect.*
 
 @JvmName("uiEditableValueGeneric")
-fun <T> UiContainer.uiEditableValue(
+internal fun <T> UiContainer.uiEditableValue(
     prop: KMutableProperty0<T>,
     values: () -> List<T>,
     name: String = prop.name,
@@ -18,7 +18,7 @@ fun <T> UiContainer.uiEditableValue(
 }
 
 @JvmName("uiEditableValueEnum")
-inline fun <reified T : Enum<T>> UiContainer.uiEditableValue(
+internal inline fun <reified T : Enum<T>> UiContainer.uiEditableValue(
     prop: KMutableProperty0<T>,
     name: String = prop.name,
 ): UiRowEditableValue {
@@ -26,7 +26,7 @@ inline fun <reified T : Enum<T>> UiContainer.uiEditableValue(
 }
 
 @JvmName("uiEditableValueEnumLike")
-inline fun <reified T : EnumLike<T>> UiContainer.uiEditableValue(
+internal inline fun <reified T : EnumLike<T>> UiContainer.uiEditableValue(
     prop: KMutableProperty0<T>,
     name: String = prop.name,
 ): UiRowEditableValue {
@@ -34,14 +34,14 @@ inline fun <reified T : EnumLike<T>> UiContainer.uiEditableValue(
 }
 
 @JvmName("uiEditableValueGeneric")
-fun <T> UiContainer.uiEditableValue(
+internal fun <T> UiContainer.uiEditableValue(
     prop: KMutableProperty0<T>,
     values: List<T>,
     name: String = prop.name,
 ): UiRowEditableValue = uiEditableValue(prop, { values }, name)
 
 @JvmName("uiEditableValueRGBA")
-fun UiContainer.uiEditableValue(
+internal fun UiContainer.uiEditableValue(
     prop: KMutableProperty0<RGBA>,
     name: String = prop.name
 ): UiRowEditableValue {
@@ -50,7 +50,7 @@ fun UiContainer.uiEditableValue(
 }
 
 @JvmName("uiEditableValueRGBAf")
-fun UiContainer.uiEditableValue(
+internal fun UiContainer.uiEditableValue(
     name: String,
     prop: RGBAf
 ) {
@@ -58,7 +58,7 @@ fun UiContainer.uiEditableValue(
 }
 
 @JvmName("uiEditableValuePoint")
-fun UiContainer.uiEditableValue(
+internal fun UiContainer.uiEditableValue(
     name: String,
     prop: Point
 ) {
@@ -66,7 +66,7 @@ fun UiContainer.uiEditableValue(
 }
 
 @JvmName("uiEditableValueDouble")
-fun UiContainer.uiEditableValue(
+internal fun UiContainer.uiEditableValue(
     prop: KMutableProperty0<Double>,
     min: Double = -1.0,
     max: Double = +1.0,
@@ -81,7 +81,7 @@ fun UiContainer.uiEditableValue(
 }
 
 @JvmName("uiEditableValueAngle")
-fun UiContainer.uiEditableValue(
+internal fun UiContainer.uiEditableValue(
     prop: KMutableProperty0<Angle>,
     name: String = prop.name,
 ): UiRowEditableValue {
@@ -90,7 +90,7 @@ fun UiContainer.uiEditableValue(
 }
 
 @JvmName("uiEditableValueAnglePair")
-fun UiContainer.uiEditableValue(
+internal fun UiContainer.uiEditableValue(
     props: Pair<KMutableProperty0<Angle>, KMutableProperty0<Angle>>,
     name: String = props.first.name,
 ): UiRowEditableValue {
@@ -105,7 +105,7 @@ fun UiContainer.uiEditableValue(
 }
 
 @JvmName("uiEditableValueFloat")
-fun UiContainer.uiEditableValue(
+internal fun UiContainer.uiEditableValue(
     prop: KMutableProperty0<Float>,
     min: Float = -1f,
     max: Float = +1f,
@@ -120,7 +120,7 @@ fun UiContainer.uiEditableValue(
 }
 
 @JvmName("uiEditableValueAngle")
-fun UiContainer.uiEditableValue(
+internal fun UiContainer.uiEditableValue(
     prop: KMutableProperty0<Angle>,
     name: String = prop.name,
     clamp: Boolean = true
@@ -130,7 +130,7 @@ fun UiContainer.uiEditableValue(
 }
 
 @JvmName("uiEditableValueInt")
-fun UiContainer.uiEditableValue(
+internal fun UiContainer.uiEditableValue(
     prop: KMutableProperty0<Int>,
     name: String = prop.name,
     min: Int = -1000,
@@ -144,7 +144,7 @@ fun UiContainer.uiEditableValue(
 }
 
 @JvmName("uiEditableValuePair")
-fun UiContainer.uiEditableValue(
+internal fun UiContainer.uiEditableValue(
     props: Pair<KMutableProperty0<Double>, KMutableProperty0<Double>>,
     min: Double = -1.0,
     max: Double = +1.0,
@@ -188,7 +188,7 @@ fun UiContainer.uiEditableValue(
 */
 
 @JvmName("uiEditableValueTuple")
-fun UiContainer.uiEditableValue(
+internal fun UiContainer.uiEditableValue(
     props: List<KMutableProperty0<Double>>,
     min: Double = -1.0,
     max: Double = +1.0,
@@ -206,7 +206,7 @@ fun UiContainer.uiEditableValue(
 }
 
 @JvmName("uiEditableValueTupleFloat")
-fun UiContainer.uiEditableValue(
+internal fun UiContainer.uiEditableValue(
     props: List<KMutableProperty0<Float>>,
     min: Float = -1f,
     max: Float = +1f,
@@ -224,7 +224,7 @@ fun UiContainer.uiEditableValue(
 }
 
 @JvmName("uiEditableValueTupleInt")
-fun UiContainer.uiEditableValue(
+internal fun UiContainer.uiEditableValue(
     props: List<KMutableProperty0<Int>>,
     min: Int = -100,
     max: Int = +100,
@@ -242,7 +242,7 @@ fun UiContainer.uiEditableValue(
 
 
 @JvmName("uiEditableValueTupleAngle")
-fun UiContainer.uiEditableValue(
+internal fun UiContainer.uiEditableValue(
     props: List<KMutableProperty0<Angle>>,
     name: String = props.first().name,
 ): UiRowEditableValue {
@@ -254,7 +254,7 @@ fun UiContainer.uiEditableValue(
 }
 
 @JvmName("uiEditableValueStringOrNull")
-fun UiContainer.uiEditableValue(
+internal fun UiContainer.uiEditableValue(
     prop: KMutableProperty0<String?>,
     kind: UiTextEditableValue.Kind = UiTextEditableValue.Kind.STRING,
     name: String = prop.name,
@@ -268,7 +268,7 @@ fun UiContainer.uiEditableValue(
 }
 
 @JvmName("uiEditableValueStringNullable")
-fun UiContainer.uiEditableValue(
+internal fun UiContainer.uiEditableValue(
     prop: KMutableProperty0<String>,
     kind: UiTextEditableValue.Kind = UiTextEditableValue.Kind.STRING,
     name: String = prop.name,
@@ -282,7 +282,7 @@ fun UiContainer.uiEditableValue(
 }
 
 @JvmName("uiEditableValueBoolean")
-fun UiContainer.uiEditableValue(
+internal fun UiContainer.uiEditableValue(
     prop: KMutableProperty0<Boolean>,
     name: String = prop.name,
 ): UiRowEditableValue {

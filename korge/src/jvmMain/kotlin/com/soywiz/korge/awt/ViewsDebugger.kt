@@ -108,7 +108,7 @@ class TreePathWithTree(val path: TreePath, val tree: JTree) : AbstractList<TreeP
     }
 }
 
-class ViewsDebuggerComponent constructor(
+internal class ViewsDebuggerComponent constructor(
     val views: Views,
     val app: UiApplication,
     rootView: View? = views.stage,

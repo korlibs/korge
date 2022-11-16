@@ -5,7 +5,7 @@ import com.soywiz.korim.color.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korui.*
 
-fun UiContainer.uiCollapsibleSection(name: String?, block: UiContainer.() -> Unit): UiCollapsibleSection {
+internal fun UiContainer.uiCollapsibleSection(name: String?, block: UiContainer.() -> Unit): UiCollapsibleSection {
     return UiCollapsibleSection(app, name, block).also { addChild(it) }
 }
 
@@ -14,11 +14,11 @@ fun UiContainer.uiCollapsibleSection(name: String?, block: UiContainer.() -> Uni
     replaceWith = ReplaceWith("uiCollapsibleSection(name, block)"),
     level = DeprecationLevel.WARNING
 )
-fun UiContainer.uiCollapsableSection(name: String?, block: UiContainer.() -> Unit): UiCollapsibleSection {
+internal fun UiContainer.uiCollapsableSection(name: String?, block: UiContainer.() -> Unit): UiCollapsibleSection {
     return UiCollapsibleSection(app, name, block).also { addChild(it) }
 }
 
-class UiCollapsibleSection(app: UiApplication, val name: String?, val componentChildren: List<UiComponent>) : UiContainer(app) {
+internal class UiCollapsibleSection(app: UiApplication, val name: String?, val componentChildren: List<UiComponent>) : UiContainer(app) {
     companion object {
         operator fun invoke(app: UiApplication, name: String?, block: UiContainer.() -> Unit): UiCollapsibleSection =
             UiCollapsibleSection(app, name, listOf()).also { block(it.mycontainer) }

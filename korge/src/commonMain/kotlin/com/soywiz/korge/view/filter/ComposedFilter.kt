@@ -1,16 +1,11 @@
 package com.soywiz.korge.view.filter
 
-import com.soywiz.kds.FastArrayList
-import com.soywiz.korge.render.RenderContext
-import com.soywiz.korge.render.Texture
-import com.soywiz.korge.view.BlendMode
-import com.soywiz.korge.view.Views
+import com.soywiz.kds.*
+import com.soywiz.korge.render.*
+import com.soywiz.korge.view.*
 import com.soywiz.korge.view.property.*
-import com.soywiz.korim.color.ColorAdd
-import com.soywiz.korim.color.RGBA
-import com.soywiz.korma.geom.Matrix
-import com.soywiz.korma.geom.MutableMarginInt
-import com.soywiz.korui.UiContainer
+import com.soywiz.korim.color.*
+import com.soywiz.korma.geom.*
 
 /**
  * Allows to create a single [Filter] that will render several [filters] in order.

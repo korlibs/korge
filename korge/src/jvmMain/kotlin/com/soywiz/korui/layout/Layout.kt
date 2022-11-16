@@ -3,16 +3,17 @@ package com.soywiz.korui.layout
 import com.soywiz.kds.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korui.*
+import com.soywiz.korui.layout.HorizontalUiLayout.pt
 import kotlin.math.*
 
-interface UiLayout {
+internal interface UiLayout {
     fun computePreferredSize(container: UiContainer, available: SizeInt): SizeInt
     fun relayout(container: UiContainer)
 }
 
-var UiContainer.layoutChildrenPadding by Extra.Property { 0 }
+internal var UiContainer.layoutChildrenPadding by Extra.Property { 0 }
 
-object UiFillLayout : UiLayout {
+internal object UiFillLayout : UiLayout {
     override fun computePreferredSize(container: UiContainer, available: SizeInt): SizeInt {
         /*
         var maxWidth = 0
@@ -39,10 +40,10 @@ object UiFillLayout : UiLayout {
     }
 }
 
-object VerticalUiLayout : LineUiLayout(LayoutDirection.VERTICAL)
-object HorizontalUiLayout : LineUiLayout(LayoutDirection.HORIZONTAL)
+internal object VerticalUiLayout : LineUiLayout(LayoutDirection.VERTICAL)
+internal object HorizontalUiLayout : LineUiLayout(LayoutDirection.HORIZONTAL)
 
-fun Length.Context.computeChildSize(child: UiComponent, direction: LayoutDirection): Int {
+internal fun LengthContext.computeChildSize(child: UiComponent, direction: LayoutDirection): Int {
     val ctx = this
     val preferredSize = child.preferredSize
     return when {
@@ -55,9 +56,9 @@ fun Length.Context.computeChildSize(child: UiComponent, direction: LayoutDirecti
     }
 }
 
-class LayoutContext(val available: SizeInt) {
-    val widthContext = Length.Context().also { it.size = available.width }
-    val heightContext = Length.Context().also { it.size = available.height }
+internal class LayoutContext(val available: SizeInt) {
+    val widthContext = LengthContext().also { it.size = available.width }
+    val heightContext = LengthContext().also { it.size = available.height }
 
     fun computeChildSize(child: UiComponent): SizeInt {
         return SizeInt(
@@ -67,7 +68,7 @@ class LayoutContext(val available: SizeInt) {
     }
 }
 
-open class LineUiLayout(
+internal open class LineUiLayout(
     open var direction: LayoutDirection = LayoutDirection.VERTICAL
 ) : UiLayout, LengthExtensions {
     val revDirection = direction.reversed
@@ -133,33 +134,33 @@ enum class LayoutDirection {
     val horizontal get() = this == HORIZONTAL
 }
 
-private val DEFAULT_WIDTH = Length.PT(128.0)
-private val DEFAULT_HEIGHT = Length.PT(32.0)
+private val DEFAULT_WIDTH = 128.0.pt
+private val DEFAULT_HEIGHT = 32.0.pt
 
 //var UiComponent.preferredSize by Extra.PropertyThis<UiComponent, Size> { Size(DEFAULT_WIDTH, DEFAULT_HEIGHT) }
-var UiComponent.preferredSize by Extra.PropertyThis<UiComponent, Size?> { null }
-var UiComponent.minimumSize by Extra.PropertyThis<UiComponent, Size> { Size(null, null) }
-var UiComponent.maximumSize by Extra.PropertyThis<UiComponent, Size> { Size(null, null) }
+internal var UiComponent.preferredSize by Extra.PropertyThis<UiComponent, Size?> { null }
+internal var UiComponent.minimumSize by Extra.PropertyThis<UiComponent, Size> { Size(null, null) }
+internal var UiComponent.maximumSize by Extra.PropertyThis<UiComponent, Size> { Size(null, null) }
 
-fun UiComponent.preferredSize(width: Length?, height: Length?) {
+internal fun UiComponent.preferredSize(width: Length?, height: Length?) {
     preferredSize = Size(width, height)
 }
 
-var UiComponent.preferredWidth: Length?
+internal var UiComponent.preferredWidth: Length?
     get() = preferredSize?.width
     set(value) {
         preferredSize = Size(value, preferredSize?.height)
     }
-var UiComponent.preferredHeight: Length?
+internal var UiComponent.preferredHeight: Length?
     get() = preferredSize?.height
     set(value) {
         preferredSize = Size(preferredSize?.width, value)
     }
 
-fun UiContainer.vertical(block: UiContainer.() -> Unit): UiContainer {
+internal fun UiContainer.vertical(block: UiContainer.() -> Unit): UiContainer {
     return UiContainer(app).also { it.layout = LineUiLayout(LayoutDirection.VERTICAL) }.also { it.parent = this }.also(block)
 }
 
-fun UiContainer.horizontal(block: UiContainer.() -> Unit): UiContainer {
+internal fun UiContainer.horizontal(block: UiContainer.() -> Unit): UiContainer {
     return UiContainer(app).also { it.layout = LineUiLayout(LayoutDirection.HORIZONTAL) }.also { it.parent = this }.also(block)
 }

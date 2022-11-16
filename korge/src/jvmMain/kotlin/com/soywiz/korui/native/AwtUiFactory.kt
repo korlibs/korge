@@ -8,17 +8,17 @@ import java.awt.*
 import java.awt.event.*
 import javax.swing.*
 
-actual val DEFAULT_UI_FACTORY: NativeUiFactory get() = DEFAULT_AWT_UI_FACTORY
+internal val DEFAULT_UI_FACTORY: NativeUiFactory get() = DEFAULT_AWT_UI_FACTORY
 
-var DEFAULT_AWT_UI_FACTORY: NativeUiFactory = AwtUiFactory()
+internal var DEFAULT_AWT_UI_FACTORY: NativeUiFactory = AwtUiFactory()
 
-class AwtUiFactory : BaseAwtUiFactory() {
+internal class AwtUiFactory : BaseAwtUiFactory() {
     init {
         //UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName())
     }
 }
 
-open class BaseAwtUiFactory : NativeUiFactory {
+internal open class BaseAwtUiFactory : NativeUiFactory {
     override fun wrapNative(native: Any?) = AwtComponent(this, native as Component)
     override fun wrapNativeContainer(native: Any?): NativeUiFactory.NativeContainer {
         val container = native as Container

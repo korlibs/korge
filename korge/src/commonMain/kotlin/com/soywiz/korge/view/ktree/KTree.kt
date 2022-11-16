@@ -31,7 +31,6 @@ import com.soywiz.korio.serialization.xml.readXml
 import com.soywiz.korma.geom.Angle
 import com.soywiz.korma.geom.degrees
 import com.soywiz.korma.geom.radians
-import com.soywiz.korui.UiContainer
 import kotlinx.coroutines.CancellationException
 import kotlin.collections.LinkedHashMap
 import kotlin.collections.Map

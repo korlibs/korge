@@ -4,4 +4,4 @@ import com.soywiz.kds.*
 import com.soywiz.korge.view.*
 import com.soywiz.korui.*
 
-var UiApplication.views by Extra.PropertyThis<UiApplication, Views?> { null }
+internal var UiApplication.views by Extra.PropertyThis<UiApplication, Views?> { null }

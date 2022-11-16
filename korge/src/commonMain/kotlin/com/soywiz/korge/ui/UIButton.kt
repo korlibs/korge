@@ -17,8 +17,8 @@ import com.soywiz.korim.text.*
 import com.soywiz.korio.async.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.interpolation.*
-import com.soywiz.korui.layout.*
-import com.soywiz.korui.layout.HorizontalUiLayout.pt
+import com.soywiz.korma.length.*
+import com.soywiz.korma.length.LengthExtensions.Companion.pt
 import kotlin.math.*
 import kotlin.reflect.*
 

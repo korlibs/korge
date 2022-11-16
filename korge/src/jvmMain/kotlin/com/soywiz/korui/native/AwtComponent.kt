@@ -18,9 +18,9 @@ import java.awt.image.*
 
 internal val awtToWrappersMap = WeakMap<Component, AwtComponent>()
 
-fun Component.toAwt(): AwtComponent? = awtToWrappersMap[this]
+internal fun Component.toAwt(): AwtComponent? = awtToWrappersMap[this]
 
-open class AwtComponent(override val factory: BaseAwtUiFactory, val component: Component) : NativeUiFactory.NativeComponent, Extra by Extra.Mixin() {
+internal open class AwtComponent(override val factory: BaseAwtUiFactory, val component: Component) : NativeUiFactory.NativeComponent, Extra by Extra.Mixin() {
     init {
         awtToWrappersMap[component] = this
     }

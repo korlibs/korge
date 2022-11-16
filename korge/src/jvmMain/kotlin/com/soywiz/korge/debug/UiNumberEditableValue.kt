@@ -11,7 +11,7 @@ import com.soywiz.korui.*
 import com.soywiz.korui.layout.*
 import kotlin.math.*
 
-class UiNumberEditableValue(
+internal class UiNumberEditableValue(
     app: UiApplication,
     prop: ObservableProperty<Double>,
     var min: Double = -1.0,

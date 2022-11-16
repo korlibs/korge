@@ -1,23 +1,15 @@
 package com.soywiz.korui.native
 
-import com.soywiz.kds.Extra
-import com.soywiz.korev.FocusEvent
-import com.soywiz.korev.KeyEvent
-import com.soywiz.korev.MouseEvent
-import com.soywiz.korev.ReshapeEvent
-import com.soywiz.korim.bitmap.Bitmap
-import com.soywiz.korim.color.RGBA
-import com.soywiz.korio.file.VfsFile
-import com.soywiz.korio.lang.Disposable
-import com.soywiz.korma.geom.RectangleInt
-import com.soywiz.korui.UiCursor
-import com.soywiz.korui.UiMenu
-import com.soywiz.korui.UiMenuItem
-import com.soywiz.korui.UiTreeNode
+import com.soywiz.kds.*
+import com.soywiz.korev.*
+import com.soywiz.korim.bitmap.*
+import com.soywiz.korim.color.*
+import com.soywiz.korio.file.*
+import com.soywiz.korio.lang.*
+import com.soywiz.korma.geom.*
+import com.soywiz.korui.*
 
-expect val DEFAULT_UI_FACTORY: NativeUiFactory
-
-object DummyUiFactory : NativeUiFactory {
+internal object DummyUiFactory : NativeUiFactory {
     open class DummyComponent(val native: Any?) : NativeUiFactory.NativeComponent, Extra by Extra.Mixin() {
         override val factory: NativeUiFactory get() = DummyUiFactory
         override var bounds: RectangleInt = RectangleInt(0, 0, 0, 0)
@@ -48,7 +40,7 @@ object DummyUiFactory : NativeUiFactory {
     override fun createToggleButton() = DummyToggleButton(null)
 }
 
-interface NativeUiFactory {
+internal interface NativeUiFactory {
     fun wrapNative(native: Any?): NativeComponent = TODO()
     fun wrapNativeContainer(native: Any?): NativeContainer = TODO()
     fun createWindow(): NativeWindow = TODO()

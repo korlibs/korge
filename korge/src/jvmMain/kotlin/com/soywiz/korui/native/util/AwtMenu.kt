@@ -4,7 +4,7 @@ import com.soywiz.korui.*
 import com.soywiz.korui.native.*
 import javax.swing.*
 
-fun UiMenuItem.toMenuItem(factory: BaseAwtUiFactory): JMenuItem {
+internal fun UiMenuItem.toMenuItem(factory: BaseAwtUiFactory): JMenuItem {
     val item = factory.createJMenuItem()
     item.text = this.text
     item.icon = this.icon?.toAwtIcon()
@@ -17,7 +17,7 @@ fun UiMenuItem.toMenuItem(factory: BaseAwtUiFactory): JMenuItem {
     return item
 }
 
-fun UiMenuItem.toMenu(factory: BaseAwtUiFactory): JMenu {
+internal fun UiMenuItem.toMenu(factory: BaseAwtUiFactory): JMenu {
     val item = factory.createJMenu()
     item.text = this.text
     item.addActionListener { this.action() }
@@ -29,7 +29,7 @@ fun UiMenuItem.toMenu(factory: BaseAwtUiFactory): JMenu {
     return item
 }
 
-fun UiMenu.toJMenuBar(factory: BaseAwtUiFactory): JMenuBar {
+internal fun UiMenu.toJMenuBar(factory: BaseAwtUiFactory): JMenuBar {
     val bar = factory.createJMenuBar()
     for (child in children) {
         bar.add(child.toMenu(factory))

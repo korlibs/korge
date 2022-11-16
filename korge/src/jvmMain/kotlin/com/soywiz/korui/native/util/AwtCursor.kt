@@ -3,7 +3,6 @@ package com.soywiz.korui.native.util
 import com.soywiz.kds.*
 import com.soywiz.korui.*
 import java.awt.*
-import javax.swing.*
 
 private val standardCursorToAwt = mapOf(
     UiStandardCursor.DEFAULT to Cursor.DEFAULT_CURSOR,
@@ -23,7 +22,7 @@ private val standardCursorToAwt = mapOf(
 )
 private val standardCursorToAwtRev = standardCursorToAwt.flip()
 
-fun UiCursor?.toAwt(): Cursor {
+internal fun UiCursor?.toAwt(): Cursor {
     return when (this) {
         null -> Cursor(Cursor.DEFAULT_CURSOR)
         is UiStandardCursor -> Cursor(standardCursorToAwt[this] ?: Cursor.DEFAULT_CURSOR)

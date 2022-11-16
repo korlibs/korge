@@ -3,7 +3,7 @@ package com.soywiz.korge.debug
 import com.soywiz.korui.*
 import com.soywiz.korui.layout.*
 
-class UiTwoItemEditableValue<T>(app: UiApplication, left: UiEditableValue<T>, right: UiEditableValue<T>) : UiEditableValue<T>(app, left.prop) {
+internal class UiTwoItemEditableValue<T>(app: UiApplication, left: UiEditableValue<T>, right: UiEditableValue<T>) : UiEditableValue<T>(app, left.prop) {
     init {
         layout = HorizontalUiLayout
         this.preferredWidth = 100.percent
@@ -14,7 +14,7 @@ class UiTwoItemEditableValue<T>(app: UiApplication, left: UiEditableValue<T>, ri
     }
 }
 
-class UiFourItemEditableValue<T>(app: UiApplication, a: UiEditableValue<T>, b: UiEditableValue<T>, c: UiEditableValue<T>, d: UiEditableValue<T>) : UiEditableValue<T>(app, a.prop) {
+internal class UiFourItemEditableValue<T>(app: UiApplication, a: UiEditableValue<T>, b: UiEditableValue<T>, c: UiEditableValue<T>, d: UiEditableValue<T>) : UiEditableValue<T>(app, a.prop) {
     init {
         layout = HorizontalUiLayout
         this.preferredWidth = 100.percent

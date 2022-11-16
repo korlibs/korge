@@ -4,7 +4,7 @@ import com.soywiz.korge.view.property.*
 import com.soywiz.korui.*
 import com.soywiz.korui.layout.*
 
-class UiBooleanEditableValue(
+internal class UiBooleanEditableValue(
     app: UiApplication,
     prop: ObservableProperty<Boolean>,
 ) : UiEditableValue<Boolean>(app, prop), ObservablePropertyHolder<Boolean> {

@@ -1,11 +1,10 @@
 package com.soywiz.korui
 
-import com.soywiz.korim.bitmap.Bitmap
-import com.soywiz.korui.layout.preferredHeight
-import com.soywiz.korui.layout.preferredWidth
-import com.soywiz.korui.native.NativeUiFactory
+import com.soywiz.korim.bitmap.*
+import com.soywiz.korui.layout.*
+import com.soywiz.korui.native.*
 
-open class UiCanvas(app: UiApplication, val canvas: NativeUiFactory.NativeCanvas = app.factory.createCanvas()) : UiComponent(app, canvas) {
+internal open class UiCanvas(app: UiApplication, val canvas: NativeUiFactory.NativeCanvas = app.factory.createCanvas()) : UiComponent(app, canvas) {
     var image: Bitmap?
         get() = canvas.image
         set(value) {
@@ -21,6 +20,6 @@ open class UiCanvas(app: UiApplication, val canvas: NativeUiFactory.NativeCanvas
     }
 }
 
-inline fun UiContainer.canvas(image: Bitmap? = null, block: UiCanvas.() -> Unit): UiCanvas {
+internal inline fun UiContainer.canvas(image: Bitmap? = null, block: UiCanvas.() -> Unit): UiCanvas {
     return UiCanvas(app).also { it.image = image }.also { it.parent = this }.also(block)
 }

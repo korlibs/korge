@@ -1,5 +1,6 @@
 package com.soywiz.korge3d
 
+/*
 import com.soywiz.korge.resources.*
 import com.soywiz.korge3d.format.*
 import com.soywiz.korio.file.*
@@ -16,3 +17,4 @@ open class ColladaResourceProcessor : ResourceProcessor("dae") {
 		outputFile.writeKs3d(library)
 	}
 }
+*/

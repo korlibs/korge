@@ -9,7 +9,6 @@ import com.soywiz.kmem.*
 import com.soywiz.korev.*
 import com.soywiz.korge.baseview.*
 import com.soywiz.korge.component.*
-import com.soywiz.korge.debug.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.filter.*
@@ -23,7 +22,6 @@ import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.shape.*
 import com.soywiz.korma.geom.vector.*
 import com.soywiz.korma.interpolation.*
-import com.soywiz.korui.*
 import com.soywiz.krypto.encoding.*
 import kotlin.math.*
 
