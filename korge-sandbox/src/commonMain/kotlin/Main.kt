@@ -1,21 +1,19 @@
-import com.soywiz.korge.Korge
-import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.scene.sceneContainer
-import com.soywiz.korge.ui.uiCheckBox
-import com.soywiz.korge.ui.uiComboBox
+
+import com.soywiz.korge.*
+import com.soywiz.korge.scene.*
+import com.soywiz.korge.ui.*
 import com.soywiz.korge.view.Stage
 import com.soywiz.korge.view.alignLeftToRightOf
 import com.soywiz.korge.view.xy
-import com.soywiz.korim.color.Colors
-import com.soywiz.korim.color.mix
-import com.soywiz.korio.async.launchImmediately
-import com.soywiz.korio.lang.portableSimpleName
+import com.soywiz.korim.color.*
+import com.soywiz.korio.async.*
+import com.soywiz.korio.lang.*
 import samples.*
-import samples.asteroids.MainAsteroids
-import samples.connect4.MainConnect4
-import samples.minesweeper.MainMineSweeper
-import samples.pong.MainPong
-import samples.rpg.MainRpgScene
+import samples.asteroids.*
+import samples.connect4.*
+import samples.minesweeper.*
+import samples.pong.*
+import samples.rpg.*
 
 val DEFAULT_KORGE_BG_COLOR = Colors.DARKCYAN.mix(Colors.BLACK, 0.8)
 
@@ -44,7 +42,8 @@ suspend fun main() = Korge(
         //Demo(::MainAnimations),
         //Demo(::MainCache),
         //Demo(::MainEditor),
-        Demo(::MainUI),
+        //Demo(::MainUI),
+        Demo(::MainBunnymark),
         //Demo(::MainBlur),
         //Demo(::MainSDF),
         //Demo(::MainMSDF),

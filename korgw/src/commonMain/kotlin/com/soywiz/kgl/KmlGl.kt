@@ -4,9 +4,9 @@
 
 package com.soywiz.kgl
 
-import com.soywiz.kds.Extra
-import com.soywiz.korag.AGFeatures
-import com.soywiz.korio.util.OS
+import com.soywiz.kds.*
+import com.soywiz.korag.*
+import com.soywiz.korio.util.*
 
 abstract class KmlGl : Extra by Extra.Mixin(), IKmlGl, AGFeatures {
     open val gles: Boolean get() = false

@@ -97,6 +97,7 @@ class AGQueueProcessorOpenGL(
     override fun contextLost() {
         globalState.contextVersion++
         gl.handleContextLost()
+        gl.graphicExtensions // Ensure extensions are available outside the GL thread
     }
 
     //var doPrintTimer = Stopwatch().also { it.start() }

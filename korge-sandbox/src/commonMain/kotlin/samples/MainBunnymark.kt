@@ -4,10 +4,10 @@ import com.soywiz.klock.*
 import com.soywiz.kmem.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.resources.*
+import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.view.*
 import com.soywiz.korge.view.fast.*
 import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.bitmap.effect.*
 import com.soywiz.korim.font.*
 import com.soywiz.korim.format.*
 import com.soywiz.korim.text.*
@@ -15,11 +15,10 @@ import com.soywiz.korio.async.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.resources.*
-import kotlin.random.*
 import com.soywiz.korma.geom.*
-import com.soywiz.korge.scene.Scene
 import com.soywiz.korma.random.*
 import kotlin.collections.random
+import kotlin.random.*
 
 class MainBunnymark : Scene() {
     // @TODO: We could autogenerate this via gradle
@@ -73,11 +72,11 @@ class Bunny(tex: BmpSlice) : FastSprite(tex) {
         var currentTexture = bunny1
 
         val bunnys = BunnyContainer(800_000)
-        addChild(bunnys.createView(wabbitTexture0, wabbitTexture1))
+        addChild(bunnys.createView(wabbitTexture0, wabbitTexture1).also {
+            it.blendMode = BlendMode.NONE
+        })
 
-        val font = DefaultTtfFont.toBitmapFont(fontSize = 16.0, effect = BitmapEffect(dropShadowX = 1, dropShadowY = 1, dropShadowRadius = 1))
-        val bunnyCountText = text("", font = font, textSize = 16.0, alignment = TextAlignment.TOP_LEFT).position(16.0, 16.0)
-
+        val bunnyCountText = text("", font = DefaultTtfFontAsBitmap, textSize = 16.0, alignment = TextAlignment.TOP_LEFT).position(16.0, 16.0)
 
         val random = Random(0)
 
@@ -124,6 +123,9 @@ class Bunny(tex: BmpSlice) : FastSprite(tex) {
                     addBunny(4_000)
                 }
             }
+            var nRandom = 0
+            val randoms = Array(32) { random.nextFloat() }
+
             bunnys.fastForEach { bunny ->
                 bunny.x += bunny.speedXf
                 bunny.y += bunny.speedYf
@@ -140,9 +142,9 @@ class Bunny(tex: BmpSlice) : FastSprite(tex) {
                 if (bunny.y > maxY) {
                     bunny.speedYf *= -0.85f
                     bunny.y = maxY
-                    bunny.radiansf = (random.nextFloat() - 0.5f) * 0.2f
-                    if (random.nextFloat() > 0.5) {
-                        bunny.speedYf -= random.nextFloat() * 6
+                    bunny.radiansf = (randoms[nRandom++ % 32] - 0.5f) * 0.2f
+                    if (randoms[nRandom++ % 32] > 0.5) {
+                        bunny.speedYf -= randoms[nRandom++ % 32] * 6
                     }
                 } else if (bunny.y < minY) {
                     bunny.speedYf = 0f
