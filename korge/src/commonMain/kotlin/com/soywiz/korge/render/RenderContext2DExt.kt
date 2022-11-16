@@ -134,7 +134,13 @@ fun RenderContext2D.drawText(
     align: TextAlignment = TextAlignment.TOP_LEFT,
     includeFirstLineAlways: Boolean = true
 ) {
-    val placements = text.place(Rectangle(x, y, width, height), wordWrap, includePartialLines, ellipsis, fill, stroke, align, includeFirstLineAlways = includeFirstLineAlways)
+    drawText(text.place(Rectangle(x, y, width, height), wordWrap, includePartialLines, ellipsis, fill, stroke, align, includeFirstLineAlways = includeFirstLineAlways))
+}
+
+@KorgeExperimental
+fun RenderContext2D.drawText(
+    placements: RichTextDataPlacements
+) {
     placements.fastForEach { it ->
         val bmpFont = it.font as? BitmapFont?
         if (bmpFont != null) {

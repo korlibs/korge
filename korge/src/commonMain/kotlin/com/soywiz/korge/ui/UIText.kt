@@ -1,17 +1,13 @@
 package com.soywiz.korge.ui
 
-import com.soywiz.korge.input.mouse
-import com.soywiz.korge.render.RenderContext
-import com.soywiz.korge.view.Container
-import com.soywiz.korge.view.ViewDslMarker
-import com.soywiz.korge.view.addTo
-import com.soywiz.korge.view.solidRect
-import com.soywiz.korge.view.text
-import com.soywiz.korim.color.Colors
-import com.soywiz.korim.color.RGBA
+import com.soywiz.korge.input.*
+import com.soywiz.korge.render.*
+import com.soywiz.korge.view.*
+import com.soywiz.korim.color.*
 import com.soywiz.korim.font.*
-import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.*
 
+// @TODO: Replace with TextBlock
 inline fun Container.uiText(
     text: String,
     width: Double = 128.0,
@@ -20,7 +16,7 @@ inline fun Container.uiText(
 ): UIText = UIText(text, width, height).addTo(this).apply(block)
 
 class UIText(
-    var text: String,
+    text: String,
     width: Double = 128.0,
     height: Double = 64.0,
 ) : UIView(width, height) {
@@ -30,6 +26,8 @@ class UIText(
     private val background = solidRect(width, height, Colors.TRANSPARENT_BLACK)
     private val textView = text(text, font = DefaultTtfFont)
     var bgcolor: RGBA = Colors.TRANSPARENT_BLACK
+
+    var text: String by textView::text
 
     init {
         mouse {

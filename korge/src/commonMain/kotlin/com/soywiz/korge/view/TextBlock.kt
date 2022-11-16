@@ -100,12 +100,18 @@ class TextBlock(
         }
     }
 
+    private var placements: RichTextDataPlacements? = null
+
     override fun renderInternal(ctx: RenderContext) {
         if (allBitmap) {
+            if (dirty || placements == null) {
+                dirty = false
+                placements = text.place(Rectangle(padding.left, padding.top, width - padding.right, height - padding.bottom), wordWrap, includePartialLines, ellipsis, fill, stroke, align, includeFirstLineAlways = includeFirstLineAlways)
+            }
             image?.removeFromParent()
             image = null
             renderCtx2d(ctx) {
-                it.drawText(text, padding.left, padding.top, width - padding.right, height - padding.bottom, wordWrap, includePartialLines, ellipsis, fill, stroke, align)
+                it.drawText(placements!!)
             }
         } else {
             ensureTexture()
