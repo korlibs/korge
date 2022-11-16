@@ -28,40 +28,23 @@ internal val DEFAULT_UI_FACTORY: NativeUiFactory get() = DEFAULT_AWT_UI_FACTORY
 internal var DEFAULT_AWT_UI_FACTORY: NativeUiFactory = NativeUiFactory()
 
 internal open class NativeUiFactory {
-    fun wrapNative(native: Any?) = AwtComponent(this, native as Component)
     fun wrapNativeContainer(native: Any?): NativeContainer {
         val container = native as Container
         return AwtContainer(this, container)
     }
 
-    fun createWindow() = AwtWindow(this)
     fun createContainer() = AwtContainer(this)
-    fun createToolbar() = AwtToolbar(this)
     fun createScrollPanel() = AwtScrollPanel(this)
     fun createButton() = AwtButton(this)
-    fun createToggleButton() = AwtToggleButton(this)
     fun createLabel() = AwtLabel(this)
     fun createCanvas() = AwtCanvas(this)
     fun createCheckBox() = AwtCheckBox(this)
     fun createTextField() = AwtTextField(this)
     fun <T> createComboBox() = AwtComboBox<T>(this)
-    fun createTree() = AwtTree(this)
 
-    interface NativeToolbar : NativeContainer {
-    }
-
-    interface NativeAbstractButton : NativeComponent, NativeWithText {
+    interface NativeButton : NativeComponent, NativeWithText {
         var icon: Bitmap?
             get() = null
-            set(value) = Unit
-    }
-
-    interface NativeButton : NativeAbstractButton {
-    }
-
-    interface NativeToggleButton : NativeAbstractButton {
-        var pressed: Boolean
-            get() = false
             set(value) = Unit
     }
 
@@ -91,9 +74,6 @@ internal open class NativeUiFactory {
         var bounds: RectangleInt
             get() = RectangleInt(0, 0, 0, 0)
             set(value) = Unit
-        var cursor: UiCursor?
-            get() = null
-            set(value) = Unit
         //fun setBounds(x: Int, y: Int, width: Int, height: Int) = Unit
         var parent: NativeContainer?
             get() = null
@@ -122,7 +102,6 @@ internal open class NativeUiFactory {
         fun focus(focus: Boolean) = Unit
         fun updateUI() = Unit
 
-        fun showPopupMenu(menu: List<UiMenuItem>, x: Int = Int.MIN_VALUE, y: Int = Int.MIN_VALUE) = Unit
         fun openFileDialog(file: VfsFile?, filter: (VfsFile) -> Boolean): VfsFile? {
             TODO()
             return null
@@ -194,25 +173,6 @@ internal open class NativeUiFactory {
         fun onKeyEvent(block: (KeyEvent) -> Unit): Disposable = Disposable { }
     }
 
-    interface NativeTree : NativeComponent {
-        var root: UiTreeNode?
-            get() = null
-            set(value) = Unit
-        fun select(node: UiTreeNode?) = Unit
-
-        fun onSelect(block: (nodes: List<UiTreeNode>) -> Unit) = Unit
-    }
-
-    interface NativeWindow : NativeContainer {
-        var title: String
-            get() = ""
-            set(value) = Unit
-        var menu: UiMenu?
-            get() = null
-            set(value) = Unit
-        val pixelFactor: Double get() = 1.0
-    }
-
     interface NativeWithText : NativeComponent {
         var text: String
             get() = ""
@@ -223,20 +183,16 @@ internal open class NativeUiFactory {
         it.horizontalScrollBar.unitIncrement = 16
     }
 
-    open fun createJToolBar() = JToolBar().also {
-        it.isOpaque = true
-        it.background = JPanel().background
-    }
-
-    open fun createJPopupMenu() = JPopupMenu()
-    open fun createJMenuItem() = JMenuItem()
-    open fun createJMenu() = JMenu()
-    open fun createJMenuBar(): JMenuBar = JMenuBar()
     open fun awtOpenFileDialog(component: Component, file: VfsFile?, filter: (VfsFile) -> Boolean): VfsFile? {
-        val fileChooser = JFileChooser()
-        fileChooser.selectedFile = file?.absolutePath?.let { java.io.File(it) }
-        val selection = fileChooser.showOpenDialog(component)
-        return fileChooser.selectedFile?.let { localVfs(it) }
+        val fileDialog = FileDialog(null as Frame?)
+        fileDialog.file = file?.absolutePath?.let { java.io.File(it) }?.absolutePath
+        fileDialog.isVisible = true
+        return localVfs(fileDialog.file)
+
+        //val fileChooser = JFileChooser()
+        //fileChooser.selectedFile = file?.absolutePath?.let { java.io.File(it) }
+        //val selection = fileChooser.showOpenDialog(component)
+        //return fileChooser.selectedFile?.let { localVfs(it) }
     }
 
     open fun awtOpenColorPickerDialog(component: Component, color: RGBA, listener: ((RGBA) -> Unit)?): RGBA? {
@@ -285,7 +241,6 @@ internal open class NativeUiFactory {
 }
 
 internal val awtToWrappersMap = WeakMap<Component, AwtComponent>()
-
 internal fun Component.toAwt(): AwtComponent? = awtToWrappersMap[this]
 
 internal open class AwtComponent(override val factory: NativeUiFactory, val component: Component) : NativeUiFactory.NativeComponent, Extra by Extra.Mixin() {
@@ -300,12 +255,6 @@ internal open class AwtComponent(override val factory: NativeUiFactory, val comp
         }
         set(value) {
             component.bounds = Rectangle(value.x, value.y, value.width, value.height)
-        }
-
-    override var cursor: UiCursor? = null
-        set(value) {
-            field = value
-            component.cursor = value.toAwt()
         }
 
     //override fun setBounds(x: Int, y: Int, width: Int, height: Int) { component.setBounds(x, y, width, height) }
@@ -442,22 +391,6 @@ internal open class AwtComponent(override val factory: NativeUiFactory, val comp
         component.addComponentListener(listener)
         return Disposable {
             component.removeComponentListener(listener)
-        }
-    }
-
-    override fun showPopupMenu(menu: List<UiMenuItem>, x: Int, y: Int) {
-        val jmenu = factory.createJPopupMenu()
-        //jmenu.border = DropShadowBorder()
-        for (it in menu) jmenu.add(it.toMenuItem(factory))
-        //var x = if (x >= 0) x
-        try {
-            jmenu.show(
-                component,
-                if (x == Int.MIN_VALUE) component.mousePosition?.x ?: 0 else x,
-                if (y == Int.MIN_VALUE) component.mousePosition?.y ?: 0 else y
-            )
-        } catch (e: Throwable) {
-            e.printStackTrace()
         }
     }
 
@@ -652,72 +585,6 @@ internal open class AwtTextField(factory: NativeUiFactory, val textField: JTextF
     }
 }
 
-internal open class AwtToggleButton(factory: NativeUiFactory, val button: JToggleButton = JToggleButton()) : AwtComponent(factory, button),
-    NativeUiFactory.NativeToggleButton {
-    override var text: String
-        get() = button.text
-        set(value) { button.text = value }
-
-    override var icon: Bitmap? = null
-        set(value) {
-            field = value
-            button.icon = value?.toAwtIcon()
-        }
-
-    override var pressed: Boolean
-        get() = button.isSelected
-        set(value) { button.isSelected = value }
-}
-
-internal open class AwtToolbar(factory: NativeUiFactory, val toolbar: JToolBar = factory.createJToolBar()) : AwtContainer(factory, toolbar),
-    NativeUiFactory.NativeToolbar {
-}
-
-internal open class AwtWindow(factory: NativeUiFactory, val frame: JFrame = JFrame()) : AwtContainer(factory, frame, frame.contentPane),
-    NativeUiFactory.NativeWindow {
-    init {
-        frame.contentPane.layout = null
-        frame.defaultCloseOperation = WindowConstants.EXIT_ON_CLOSE
-        frame.setLocationRelativeTo(null)
-    }
-
-    override val componentPane get() = frame.contentPane
-
-    override var bounds: RectangleInt
-        get() {
-            val b = frame.contentPane.bounds
-            return RectangleInt(b.x, b.y, b.width, b.height)
-        }
-        set(value) {
-            frame.contentPane.bounds = Rectangle(value.x, value.y, value.width, value.height)
-            frame.bounds = Rectangle(value.x, value.y, value.width, value.height)
-        }
-
-    override var visible: Boolean
-        get() = super<AwtContainer>.visible
-        set(value) {
-            super<AwtContainer>.visible = value
-            frame.setLocationRelativeTo(null)
-        }
-    override var title: String
-        get() = frame.title
-        set(value) {
-            frame.title = value
-        }
-
-    override var menu: UiMenu? = null
-        set(value) {
-            field = value
-            frame.jMenuBar = value?.toJMenuBar(factory)
-        }
-
-    override var focusable: Boolean
-        get() = frame.contentPane.isFocusable
-        set(value) {
-            frame.contentPane.isFocusable = value
-        }
-}
-
 internal open class AwtScrollPanel(
     factory: NativeUiFactory,
     val view: JFixedSizeContainer = AwtContainer(factory, JFixedSizeContainer()).container as JFixedSizeContainer,
@@ -793,101 +660,4 @@ open class JFixedSizeContainer : JPanel() {
     }
 }
 
-internal val UiTreeNode.awt by Extra.PropertyThis<UiTreeNode, AwtTreeNode>() { AwtTreeNode(this) }
-
-internal data class AwtTreeNode(val node: UiTreeNode) : TreeNode {
-    override fun getChildAt(childIndex: Int): TreeNode? = node.children?.get(childIndex)?.awt
-    override fun getChildCount(): Int = node.children?.size ?: 0
-    override fun getParent(): TreeNode? = node.parent?.let { it.awt }
-    override fun getIndex(node: TreeNode?): Int = this.node.children?.indexOf(node as UiTreeNode?) ?: -1
-    override fun getAllowsChildren(): Boolean = node.children != null
-    override fun isLeaf(): Boolean = node.children == null
-    override fun children(): Enumeration<out TreeNode> = Vector(node.children ?: listOf()).elements() as Enumeration<out TreeNode>
-    override fun toString(): String = node.toString()
-}
-
-internal open class AwtTree(factory: NativeUiFactory, val tree: JTree = JTree()) : AwtComponent(factory, tree), NativeUiFactory.NativeTree {
-    val model get() = tree.model as DefaultTreeModel
-    override var root: UiTreeNode?
-        get() = (model.root as? AwtTreeNode?)?.node
-        set(value) {
-            tree.model = DefaultTreeModel(value?.awt)
-        }
-
-    override fun select(node: UiTreeNode?) {
-        val path = TreePath(model.getPathToRoot(node?.awt))
-        tree.clearSelection()
-        tree.selectionPath = path
-        tree.expandPath(path)
-    }
-
-    override fun onSelect(block: (nodes: List<UiTreeNode>) -> Unit) {
-        tree.addTreeSelectionListener {
-            block(tree.selectionPaths.map { (it.lastPathComponent as AwtTreeNode).node })
-        }
-    }
-}
-
-internal fun UiMenuItem.toMenuItem(factory: NativeUiFactory): JMenuItem {
-    val item = factory.createJMenuItem()
-    item.text = this.text
-    item.icon = this.icon?.toAwtIcon()
-    item.addActionListener { this.action() }
-    if (this.children != null) {
-        for (child in this.children!!) {
-            item.add(child.toMenuItem(factory))
-        }
-    }
-    return item
-}
-
-internal fun UiMenuItem.toMenu(factory: NativeUiFactory): JMenu {
-    val item = factory.createJMenu()
-    item.text = this.text
-    item.addActionListener { this.action() }
-    if (this.children != null) {
-        for (child in this.children!!) {
-            item.add(child.toMenuItem(factory))
-        }
-    }
-    return item
-}
-
-internal fun UiMenu.toJMenuBar(factory: NativeUiFactory): JMenuBar {
-    val bar = factory.createJMenuBar()
-    for (child in children) {
-        bar.add(child.toMenu(factory))
-    }
-    return bar
-}
-
-internal fun Bitmap.toAwtIcon() = javax.swing.ImageIcon(this.toAwt())
-
-private val standardCursorToAwt = mapOf(
-    UiStandardCursor.DEFAULT to Cursor.DEFAULT_CURSOR,
-    UiStandardCursor.CROSSHAIR to Cursor.CROSSHAIR_CURSOR,
-    UiStandardCursor.TEXT to Cursor.TEXT_CURSOR,
-    UiStandardCursor.HAND to Cursor.HAND_CURSOR,
-    UiStandardCursor.MOVE to Cursor.MOVE_CURSOR,
-    UiStandardCursor.WAIT to Cursor.WAIT_CURSOR,
-    UiStandardCursor.RESIZE_EAST to Cursor.E_RESIZE_CURSOR,
-    UiStandardCursor.RESIZE_WEST to Cursor.W_RESIZE_CURSOR,
-    UiStandardCursor.RESIZE_SOUTH to Cursor.S_RESIZE_CURSOR,
-    UiStandardCursor.RESIZE_NORTH to Cursor.N_RESIZE_CURSOR,
-    UiStandardCursor.RESIZE_NORTH_EAST to Cursor.NE_RESIZE_CURSOR,
-    UiStandardCursor.RESIZE_NORTH_WEST to Cursor.NW_RESIZE_CURSOR,
-    UiStandardCursor.RESIZE_SOUTH_EAST to Cursor.SE_RESIZE_CURSOR,
-    UiStandardCursor.RESIZE_SOUTH_WEST to Cursor.SW_RESIZE_CURSOR
-)
-private val standardCursorToAwtRev = standardCursorToAwt.flip()
-
-internal fun UiCursor?.toAwt(): Cursor {
-    return when (this) {
-        null -> Cursor(Cursor.DEFAULT_CURSOR)
-        is UiStandardCursor -> Cursor(standardCursorToAwt[this] ?: Cursor.DEFAULT_CURSOR)
-        else -> {
-            TODO()
-        }
-    }
-}
-
+internal fun Bitmap.toAwtIcon() = ImageIcon(this.toAwt())

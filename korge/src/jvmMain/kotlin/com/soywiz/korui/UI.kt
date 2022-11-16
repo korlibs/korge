@@ -2,44 +2,21 @@ package com.soywiz.korui
 
 import com.soywiz.kds.*
 import com.soywiz.korev.*
-import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.length.*
-import com.soywiz.korma.length.LengthExtensions.Companion.pt
 
 //fun NativeUiFactory.createApp() = UiApplication(this)
 
 internal open class UiApplication constructor(val factory: NativeUiFactory) : Extra by Extra.Mixin() {
-    fun window(width: Int = 300, height: Int = 300, block: UiWindow.() -> Unit): UiWindow = UiWindow(this)
-        .also { it.bounds = RectangleInt(0, 0, width, height) }
-        .also { it.layout = VerticalUiLayout }
-        .also(block)
-        .also { it.visible = true }
-        .also { window -> window.onResize { window.layout?.relayout(window) } }
-        .also { it.relayout() }
-
     fun wrapContainer(native: Any?): UiContainer = UiContainer(this, factory.wrapNativeContainer(native)).also { container ->
         container.onResize {
             //println("wrapContainer.container.onResize: ${container.bounds}")
             container.relayout()
         }
     }
-
-    open fun evaluateExpression(expr: String): Any? {
-        return expr.toDoubleOrNull() ?: 0.0
-    }
-}
-
-internal interface UiCursor {
-}
-
-internal enum class UiStandardCursor : UiCursor {
-    DEFAULT, CROSSHAIR, TEXT, HAND, MOVE, WAIT,
-    RESIZE_EAST, RESIZE_WEST, RESIZE_SOUTH, RESIZE_NORTH,
-    RESIZE_NORTH_EAST, RESIZE_NORTH_WEST, RESIZE_SOUTH_EAST, RESIZE_SOUTH_WEST;
 }
 
 internal var NativeUiFactory.NativeComponent.uiComponent by Extra.PropertyThis<NativeUiFactory.NativeComponent, UiComponent?> { null }
@@ -75,20 +52,17 @@ internal open class UiComponent(val app: UiApplication, val component: NativeUiF
         set(value) {
             component.bounds = value
         }
-    var cursor by component::cursor
     var focusable by component::focusable
 
     open fun copyFrom(that: UiComponent) {
         this.visible = that.visible
         this.enabled = that.enabled
         this.bounds = that.bounds
-        this.cursor = that.cursor
         this.focusable = that.focusable
     }
 
     fun onMouseEvent(block: (MouseEvent) -> Unit) = component.onMouseEvent(block)
     fun onFocus(block: (FocusEvent) -> Unit) = component.onFocus(block)
-    fun showPopupMenu(menu: List<UiMenuItem>, x: Int = Int.MIN_VALUE, y: Int = Int.MIN_VALUE) = component.showPopupMenu(menu, x, y)
     fun openFileDialog(file: VfsFile?, filter: (VfsFile) -> Boolean) = component.openFileDialog(file, filter)
     fun openColorPickerDialog(color: RGBA, listener: ((RGBA) -> Unit)?): RGBA? = component.openColorPickerDialog(color, listener)
     fun focus(focus: Boolean = true) = component.focus(focus)
@@ -179,10 +153,6 @@ internal inline fun UiContainer.container(block: UiContainer.() -> Unit): UiCont
         .also(block)
 }
 
-internal inline fun UiContainer.addBlock(block: UiContainer.() -> Unit) {
-    block(this)
-}
-
 internal open class UiButton(app: UiApplication, val button: NativeUiFactory.NativeButton = app.factory.createButton()) : UiComponent(app, button) {
     var icon by button::icon
     var text by button::text
@@ -195,37 +165,10 @@ internal inline fun UiContainer.button(text: String = "Button", noinline onClick
         .also { button -> if (onClick != null) button.onClick { onClick(button, it) }  }
         .also(block)
 
-internal open class UiCanvas(app: UiApplication, val canvas: NativeUiFactory.NativeCanvas = app.factory.createCanvas()) : UiComponent(app, canvas) {
-    var image: Bitmap?
-        get() = canvas.image
-        set(value) {
-            canvas.image = value
-            this.preferredWidth = value?.width?.pt
-            this.preferredHeight = value?.height?.pt
-        }
-
-    override fun copyFrom(that: UiComponent) {
-        super.copyFrom(that)
-        that as UiCanvas
-        this.image = that.image
-    }
-}
-
-internal inline fun UiContainer.canvas(image: Bitmap? = null, block: UiCanvas.() -> Unit): UiCanvas {
-    return UiCanvas(app).also { it.image = image }.also { it.parent = this }.also(block)
-}
-
 internal open class UiCheckBox(app: UiApplication, val checkBox: NativeUiFactory.NativeCheckBox = app.factory.createCheckBox()) : UiComponent(app, checkBox) {
     var text by checkBox::text
     var checked by checkBox::checked
     fun onChange(block: UiCheckBox.(Boolean) -> Unit) = checkBox.onChange { block(this, checked) }
-}
-
-internal inline fun UiContainer.checkBox(text: String = "CheckBox", checked: Boolean = false, block: UiCheckBox.() -> Unit = {}): UiCheckBox {
-    return UiCheckBox(app)
-        .also { it.text = text }
-        .also { it.checked = checked }
-        .also { it.parent = this }.also(block)
 }
 
 internal open class UiComboBox<T>(app: UiApplication, val comboBox: NativeUiFactory.NativeComboBox<T> = app.factory.createComboBox()) : UiComponent(app, comboBox) {
@@ -236,13 +179,6 @@ internal open class UiComboBox<T>(app: UiApplication, val comboBox: NativeUiFact
     fun onChange(block: () -> Unit) = comboBox.onChange(block)
 }
 
-internal inline fun <T> UiContainer.comboBox(selectedItem: T, items: List<T>, block: UiComboBox<T>.() -> Unit = {}): UiComboBox<T> =
-    UiComboBox<T>(app)
-        .also { it.parent = this }
-        .also { it.items = items }
-        .also { it.selectedItem = selectedItem }
-        .also(block)
-
 internal open class UiLabel(app: UiApplication, val label: NativeUiFactory.NativeLabel = app.factory.createLabel()) : UiComponent(app, label) {
     var text by label::text
     var icon by label::icon
@@ -252,16 +188,6 @@ internal open class UiLabel(app: UiApplication, val label: NativeUiFactory.Nativ
         that as UiLabel
         this.text = that.text
     }
-}
-
-internal inline fun UiContainer.label(text: String = "Button", block: UiLabel.() -> Unit = {}): UiLabel {
-    return UiLabel(app).also { it.text = text }.also { it.parent = this }.also(block)
-}
-
-internal data class UiMenu(val children: List<UiMenuItem>) {
-    constructor(vararg children: UiMenuItem) : this(children.toList())
-}
-internal data class UiMenuItem(val text: String, val children: List<UiMenuItem>? = null, val icon: Bitmap? = null, val action: () -> Unit = {}) {
 }
 
 internal open class UiScrollPanel(app: UiApplication, val panel: NativeUiFactory.NativeScrollPanel = app.factory.createScrollPanel()) : UiContainer(app, panel) {
@@ -284,69 +210,6 @@ internal open class UiTextField(app: UiApplication, val textField: NativeUiFacto
     fun onKeyEvent(block: (KeyEvent) -> Unit): Disposable = textField.onKeyEvent(block)
 }
 
-internal inline fun UiContainer.textField(text: String = "Button", block: UiTextField.() -> Unit): UiTextField {
-    return UiTextField(app).also { it.text = text }.also { it.parent = this }.also(block)
-}
-
-internal open class UiToggleButton(app: UiApplication, val button: NativeUiFactory.NativeToggleButton = app.factory.createToggleButton()) : UiComponent(app, button) {
-    var icon by button::icon
-    var text by button::text
-    var pressed by button::pressed
-}
-
-internal inline fun UiContainer.toggleButton(text: String = "Button", pressed: Boolean = false, noinline onClick: (UiToggleButton.(MouseEvent) -> Unit)? = null, block: UiToggleButton.() -> Unit = {}): UiToggleButton =
-    UiToggleButton(app)
-        .also { it.text = text }
-        .also { it.parent = this }
-        .also { it.pressed = pressed }
-        .also { button -> if (onClick != null) button.onClick { button.onClick(it) }  }
-        .also(block)
-
-internal open class UiToolBar(app: UiApplication, val canvas: NativeUiFactory.NativeToolbar = app.factory.createToolbar()) : UiComponent(app, canvas) {
-}
-
-internal inline fun UiContainer.toolbar(block: UiToolBar.() -> Unit): UiToolBar {
-    return UiToolBar(app).also { it.parent = this }.also(block)
-}
-
-internal open class UiTree(app: UiApplication, val tree: NativeUiFactory.NativeTree = app.factory.createTree()) : UiComponent(app, tree) {
-    var nodeRoot by tree::root
-}
-
-internal interface UiTreeNode : Extra {
-    val parent: UiTreeNode? get() = null
-    val children: List<UiTreeNode>? get() = null
-}
-
-internal class SimpleUiTreeNode(val text: String, override val children: List<SimpleUiTreeNode>? = null) : UiTreeNode, Extra by Extra.Mixin() {
-    override var parent: UiTreeNode? = null
-
-    init {
-        if (children != null) {
-            for (child in children) {
-                child.parent = this
-            }
-        }
-    }
-
-    override fun toString(): String = text
-}
-
-internal inline fun UiContainer.tree(block: UiTree.() -> Unit): UiTree {
-    return UiTree(app).also { it.parent = this }.also(block)
-}
-
-internal open class UiWindow(app: UiApplication, val window: NativeUiFactory.NativeWindow = app.factory.createWindow()) : UiContainer(app, window) {
-    var title by window::title
-    var menu by window::menu
-    val pixelFactory by window::pixelFactor
-}
-
-object MathEx {
-    fun <T : Comparable<T>> min(a: T, b: T): T = if (a.compareTo(b) < 0) a else b
-    fun <T : Comparable<T>> max(a: T, b: T): T = if (a.compareTo(b) > 0) a else b
-}
-
 internal interface UiLayout {
     fun computePreferredSize(container: UiContainer, available: SizeInt): SizeInt
     fun relayout(container: UiContainer)
@@ -355,21 +218,7 @@ internal interface UiLayout {
 internal var UiContainer.layoutChildrenPadding by Extra.Property { 0 }
 
 internal object UiFillLayout : UiLayout {
-    override fun computePreferredSize(container: UiContainer, available: SizeInt): SizeInt {
-        /*
-        var maxWidth = 0
-        var maxHeight = 0
-        val ctx = LayoutContext(available)
-
-        container.forEachVisibleChild { child ->
-            val size = ctx.computeChildSize(child)
-            maxWidth = max(size.width, maxWidth)
-            maxHeight = max(size.height, maxHeight)
-        }
-        return SizeInt(maxWidth, maxHeight)
-        */
-        return available.clone()
-    }
+    override fun computePreferredSize(container: UiContainer, available: SizeInt): SizeInt = available.clone()
 
     override fun relayout(container: UiContainer) {
         val bounds = container.bounds
@@ -463,7 +312,6 @@ internal open class LineUiLayout(
     }
 }
 
-fun RectangleInt.getSizeDirection(direction: LayoutDirection) = if (direction == LayoutDirection.VERTICAL) height else width
 fun SizeLength.getDirection(direction: LayoutDirection) = if (direction == LayoutDirection.VERTICAL) height else width
 fun SizeInt.getDirection(direction: LayoutDirection) = if (direction == LayoutDirection.VERTICAL) height else width
 enum class LayoutDirection {
@@ -475,10 +323,6 @@ enum class LayoutDirection {
     val horizontal get() = this == HORIZONTAL
 }
 
-private val DEFAULT_WIDTH = 128.0.pt
-private val DEFAULT_HEIGHT = 32.0.pt
-
-//var UiComponent.preferredSize by Extra.PropertyThis<UiComponent, Size> { Size(DEFAULT_WIDTH, DEFAULT_HEIGHT) }
 internal var UiComponent.preferredSize by Extra.PropertyThis<UiComponent, SizeLength?> { null }
 internal var UiComponent.minimumSize by Extra.PropertyThis<UiComponent, SizeLength> { SizeLength(null, null) }
 internal var UiComponent.maximumSize by Extra.PropertyThis<UiComponent, SizeLength> { SizeLength(null, null) }
@@ -497,11 +341,3 @@ internal var UiComponent.preferredHeight: Length?
     set(value) {
         preferredSize = SizeLength(preferredSize?.width, value)
     }
-
-internal fun UiContainer.vertical(block: UiContainer.() -> Unit): UiContainer {
-    return UiContainer(app).also { it.layout = LineUiLayout(LayoutDirection.VERTICAL) }.also { it.parent = this }.also(block)
-}
-
-internal fun UiContainer.horizontal(block: UiContainer.() -> Unit): UiContainer {
-    return UiContainer(app).also { it.layout = LineUiLayout(LayoutDirection.HORIZONTAL) }.also { it.parent = this }.also(block)
-}

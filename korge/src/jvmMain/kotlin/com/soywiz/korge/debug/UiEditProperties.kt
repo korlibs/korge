@@ -16,7 +16,6 @@ import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korte.*
 import com.soywiz.korui.*
-import com.soywiz.korui.layout.*
 import kotlin.math.*
 import kotlin.reflect.*
 import kotlin.reflect.full.*
@@ -139,7 +138,7 @@ internal class UiEditProperties(app: UiApplication, view: View?, val views: View
         val obs = obs ?: ObservableProperty<Any?>(
             name,
             internalSet = { (prop as KMutableProperty1<Any, Any?>).set(instance, it) },
-            internalGet = { (prop as KMutableProperty1<Any, Any?>).get(instance) }
+            internalGet = { (prop as KProperty1<Any, Any?>).get(instance) }
         )
         return when {
             type.isSubtypeOf(Pair::class.starProjectedType) -> {
@@ -513,17 +512,6 @@ internal class UiListEditableValue<T>(
     }
 }
 
-internal class UiMultipleItemEditableValue<T>(app: UiApplication, items: List<UiEditableValue<T>>) : UiEditableValue<T>(app, items.first().prop) {
-    init {
-        layout = HorizontalUiLayout
-        this.preferredWidth = 100.percent
-        for (item in items) {
-            item.preferredWidth = (100 / items.size).percent
-            addChild(item)
-        }
-    }
-}
-
 internal class UiNumberEditableValue(
     app: UiApplication,
     prop: ObservableProperty<Double>,
@@ -636,7 +624,6 @@ internal class UiNumberEditableValue(
             }
         }
         setValue(initial)
-        contentText.cursor = UiStandardCursor.RESIZE_EAST
         addChild(contentText)
         addChild(contentTextField)
     }

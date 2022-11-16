@@ -4,9 +4,17 @@ import com.soywiz.kds.*
 import com.soywiz.korev.Event
 import com.soywiz.korge.debug.*
 import com.soywiz.korge.internal.*
+import com.soywiz.korge.particle.*
+import com.soywiz.korge.scene.*
+import com.soywiz.korge.tiled.*
 import com.soywiz.korge.view.*
 import com.soywiz.korge.view.Container
+import com.soywiz.korge.view.Image
+import com.soywiz.korge.view.ktree.*
+import com.soywiz.korim.bitmap.*
+import com.soywiz.korim.color.*
 import com.soywiz.korio.async.*
+import com.soywiz.korio.file.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korui.*
 import kotlinx.coroutines.*
@@ -117,7 +125,7 @@ internal class ViewsDebuggerComponent constructor(
             //it.add(JButton())
             panel.relayout()
         }
-    val uiPropertiesPanelScroll = myComponentFactory.scrollPane(uiPropertiesPanel).also { add(it) }
+    val uiPropertiesPanelScroll = scrollPane(uiPropertiesPanel).also { add(it) }
 
     init {
         views.debugHighlighters.add { view ->
@@ -181,12 +189,12 @@ internal class ViewsDebuggerComponent constructor(
                     val isContainer = view is Container
 
                     if (view != null) {
-                        val popupMenu = myComponentFactory.createPopupMenu()
+                        val popupMenu = createPopupMenu()
 
                         val subMenuAdd = JMenu("Add")
 
-                        for (factory in myComponentFactory.getViewFactories(views)) {
-                            subMenuAdd.add(myComponentFactory.createMenuItem(factory.name).also {
+                        for (factory in getViewFactories(views)) {
+                            subMenuAdd.add(createMenuItem(factory.name).also {
                                 it.isEnabled = isContainer
                                 it.addActionListener {
                                     actions.attachNewView(factory.build().also {
@@ -198,43 +206,43 @@ internal class ViewsDebuggerComponent constructor(
                         }
                         popupMenu.add(subMenuAdd)
 
-                        popupMenu.add(myComponentFactory.createSeparator())
-                        popupMenu.add(myComponentFactory.createMenuItem("Cut").also {
+                        popupMenu.add(createSeparator())
+                        popupMenu.add(createMenuItem("Cut").also {
                             it.addActionListener {
                                 actions.requestCut()
                             }
                         })
-                        popupMenu.add(myComponentFactory.createMenuItem("Copy").also {
+                        popupMenu.add(createMenuItem("Copy").also {
                             it.addActionListener {
                                 actions.requestCopy()
                             }
                         })
-                        popupMenu.add(myComponentFactory.createMenuItem("Paste").also {
+                        popupMenu.add(createMenuItem("Paste").also {
                             it.addActionListener {
                                 actions.requestPaste()
                             }
                         })
-                        popupMenu.add(myComponentFactory.createSeparator())
-                        popupMenu.add(myComponentFactory.createMenuItem("Duplicate", KeyEvent.CTRL_DOWN_MASK or KeyEvent.VK_D).also {
+                        popupMenu.add(createSeparator())
+                        popupMenu.add(createMenuItem("Duplicate", KeyEvent.CTRL_DOWN_MASK or KeyEvent.VK_D).also {
                             it.addActionListener {
                                 launchImmediately(coroutineContext) {
                                     actions.duplicate()
                                 }
                             }
                         })
-                        popupMenu.add(myComponentFactory.createSeparator())
-                        popupMenu.add(myComponentFactory.createMenuItem("Remove view", KeyEvent.VK_DELETE).also {
+                        popupMenu.add(createSeparator())
+                        popupMenu.add(createMenuItem("Remove view", KeyEvent.VK_DELETE).also {
                             it.addActionListener {
                                 actions.removeCurrentNode()
                             }
                         })
-                        popupMenu.add(myComponentFactory.createSeparator())
-                        popupMenu.add(myComponentFactory.createMenuItem("Send to back").also {
+                        popupMenu.add(createSeparator())
+                        popupMenu.add(createMenuItem("Send to back").also {
                             it.addActionListener {
                                 actions.sendToBack()
                             }
                         })
-                        popupMenu.add(myComponentFactory.createMenuItem("Bring to front").also {
+                        popupMenu.add(createMenuItem("Bring to front").also {
                             it.addActionListener {
                                 actions.sendToFront()
                             }
@@ -246,7 +254,7 @@ internal class ViewsDebuggerComponent constructor(
         })
     }
     val selectedView: View? get() = actions.selectedView
-    val treeScroll = myComponentFactory.scrollPane(tree).also {
+    val treeScroll = JScrollPane(tree).also {
         if (displayTree) {
             add(it)
         }
@@ -276,5 +284,35 @@ internal class ViewsDebuggerComponent constructor(
         //tree.treeDidChange()
         tree.updateUI()
         uiProperties.update()
+    }
+
+
+
+    private fun scrollPane(view: Component): JScrollPane =
+        JScrollPane(view, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED)
+
+    data class ViewFactory(val name: String, val build: () -> View)
+
+    private fun getViewFactories(views: Views): List<ViewFactory> = ArrayList<ViewFactory>().also { list ->
+        list.add(ViewFactory("Image") { Image(Bitmaps.white).apply { setSize(100.0, 100.0) } })
+        list.add(ViewFactory("VectorImage") { VectorImage.createDefault().apply { setSize(100.0, 100.0) } })
+        list.add(ViewFactory("SolidRect") { SolidRect(100, 100, Colors.WHITE) })
+        list.add(ViewFactory("Ellipse") { Ellipse(50.0, 50.0, Colors.WHITE).center() })
+        list.add(ViewFactory("Container") { Container() })
+        list.add(ViewFactory("TreeViewRef") { TreeViewRef() })
+        list.add(ViewFactory("ParticleEmitter") { ParticleEmitterView(ParticleEmitter()) })
+        list.add(ViewFactory("TiledMapViewRef") { TiledMapViewRef() })
+        list.add(ViewFactory("9-Patch") { NinePatchEx(NinePatchBmpSlice(Bitmap32(62, 62))) })
+        for (registration in views.ktreeSerializer.registrationsExt) {
+            list.add(ViewFactory(registration.name) { registration.factory() })
+        }
+    }
+
+    private fun createPopupMenu(): JPopupMenu = JPopupMenu()
+    private fun createSeparator(): JSeparator = JSeparator()
+    private fun createMenuItem(text: String, mnemonic: Int? = null, icon: Icon? = null): JMenuItem = when {
+        mnemonic != null -> JMenuItem(text, mnemonic)
+        icon != null -> JMenuItem(text, icon)
+        else -> JMenuItem(text)
     }
 }

@@ -11,6 +11,8 @@ import java.awt.Container
 
 internal actual fun completeViews(views: Views) {
     views.injector.mapSingleton<ViewsDebuggerComponent> {
+        //UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName())
+
         val app by lazy { UiApplication(DEFAULT_UI_FACTORY) }
         val debugger = ViewsDebuggerComponent(views, app)
         val frame = (views.gameWindow.debugComponent as? Container?) ?: return@mapSingleton debugger

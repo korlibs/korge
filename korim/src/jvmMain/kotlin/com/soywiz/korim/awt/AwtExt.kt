@@ -3,24 +3,19 @@ package com.soywiz.korim.awt
 import com.soywiz.kmem.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
-import com.soywiz.korim.format.ImageDecoderNotFoundException
-import com.soywiz.korim.format.ImageDecodingProps
+import com.soywiz.korim.format.*
 import com.soywiz.korio.async.*
-import com.soywiz.korma.geom.Anchor
-import com.soywiz.korma.geom.IPoint
-import com.soywiz.korma.geom.ISize
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.Rectangle
-import com.soywiz.korma.geom.ScaleMode
-import com.soywiz.korma.geom.Size
 import kotlinx.coroutines.*
 import java.awt.*
+import java.awt.Point
 import java.awt.event.*
 import java.awt.image.*
 import java.io.*
 import javax.imageio.*
 import javax.swing.*
 import kotlin.coroutines.*
-
 
 fun Bitmap32.toAwt(
 	out: BufferedImage = BufferedImage(
@@ -33,7 +28,8 @@ fun Bitmap32.toAwt(
 	return out
 }
 
-fun IPoint.toAwt(): java.awt.Point = Point(x.toIntRound(), y.toIntRound())
+@Suppress("unused")
+fun IPoint.toAwt(): Point = Point(x.toIntRound(), y.toIntRound())
 
 fun Bitmap.toAwt(
 	out: BufferedImage = BufferedImage(
