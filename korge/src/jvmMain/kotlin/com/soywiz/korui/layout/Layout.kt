@@ -1,20 +1,15 @@
 package com.soywiz.korui.layout
 
-import com.soywiz.kds.Extra
-import com.soywiz.korma.geom.RectangleInt
-import com.soywiz.korma.geom.SizeInt
-import com.soywiz.korma.geom.size
-import com.soywiz.korui.UiComponent
-import com.soywiz.korui.UiContainer
-import kotlin.math.max
-import kotlin.native.concurrent.ThreadLocal
+import com.soywiz.kds.*
+import com.soywiz.korma.geom.*
+import com.soywiz.korui.*
+import kotlin.math.*
 
 interface UiLayout {
     fun computePreferredSize(container: UiContainer, available: SizeInt): SizeInt
     fun relayout(container: UiContainer)
 }
 
-@ThreadLocal
 var UiContainer.layoutChildrenPadding by Extra.Property { 0 }
 
 object UiFillLayout : UiLayout {
@@ -142,11 +137,8 @@ private val DEFAULT_WIDTH = Length.PT(128.0)
 private val DEFAULT_HEIGHT = Length.PT(32.0)
 
 //var UiComponent.preferredSize by Extra.PropertyThis<UiComponent, Size> { Size(DEFAULT_WIDTH, DEFAULT_HEIGHT) }
-@ThreadLocal
 var UiComponent.preferredSize by Extra.PropertyThis<UiComponent, Size?> { null }
-@ThreadLocal
 var UiComponent.minimumSize by Extra.PropertyThis<UiComponent, Size> { Size(null, null) }
-@ThreadLocal
 var UiComponent.maximumSize by Extra.PropertyThis<UiComponent, Size> { Size(null, null) }
 
 fun UiComponent.preferredSize(width: Length?, height: Length?) {

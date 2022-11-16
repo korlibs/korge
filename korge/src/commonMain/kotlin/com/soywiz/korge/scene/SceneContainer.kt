@@ -14,6 +14,7 @@ import com.soywiz.korge.view.Views
 import com.soywiz.korge.view.addTo
 import com.soywiz.korge.view.descendantsWith
 import com.soywiz.korge.view.findFirstAscendant
+import com.soywiz.korge.view.property.*
 import com.soywiz.korge.view.views
 import com.soywiz.korinject.AsyncInjector
 import com.soywiz.korio.async.async
@@ -75,6 +76,8 @@ class SceneContainer(
 	val transitionView = TransitionView().also { this += it }
 
     /** The [Scene] that is currently set or null */
+    @ViewProperty
+    @ViewPropertySubTree
 	var currentScene: Scene? = null
     override fun onSizeChanged() {
         currentScene?.onSizeChanged(width, height)
@@ -335,10 +338,5 @@ class SceneContainer(
     private fun setCurrent(entry: VisitEntry) {
         while (visitStack.size <= visitPos) visitStack.add(EMPTY_VISIT_ENTRY)
         visitStack[visitPos] = entry
-    }
-
-    override fun buildDebugComponent(views: Views, container: UiContainer) {
-        currentScene?.buildDebugComponent(views, container)
-        super.buildDebugComponent(views, container)
     }
 }

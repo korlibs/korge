@@ -22,11 +22,12 @@ open class ViewsDebuggerActions(val views: Views) {
     var gridShowing = true
     var gridSnapping = true
 
-    val camera = stage.cameraContainer(1280.toDouble(), 720.toDouble(), clip = false, contentBuilder = {
-        KTreeRoot(it.width, it.height)
-    })
-    val root: KTreeRoot = camera.content as KTreeRoot
-    val grid get() = root.grid
+    val root get() = stage
+    //val camera = stage.cameraContainer(1280.toDouble(), 720.toDouble(), clip = false, contentBuilder = {
+    //    KTreeRoot(it.width, it.height)
+    //})
+    //val root: KTreeRoot = camera.content as KTreeRoot
+    //val grid get() = root.grid
 
     fun toggleGrid() {
         gridShowing = !gridShowing

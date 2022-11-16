@@ -1,15 +1,10 @@
 package com.soywiz.korge.view
 
-import com.soywiz.korge.debug.uiCollapsibleSection
-import com.soywiz.korge.debug.uiEditableValue
-import com.soywiz.korge.ui.uiObservable
+import com.soywiz.korge.ui.*
 import com.soywiz.korge.view.property.*
-import com.soywiz.korim.color.Colors
-import com.soywiz.korim.color.RGBA
-import com.soywiz.korim.paint.Paint
-import com.soywiz.korma.geom.vector.VectorPath
-import com.soywiz.korma.geom.vector.ellipse
-import com.soywiz.korui.UiContainer
+import com.soywiz.korim.color.*
+import com.soywiz.korim.paint.*
+import com.soywiz.korma.geom.vector.*
 
 /**
  * Creates a [Ellipse] of [radiusX], [radiusY] and [fill].

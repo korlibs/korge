@@ -1,5 +1,6 @@
 package com.soywiz.korge.view.property
 
+import com.soywiz.korio.async.*
 import kotlin.reflect.*
 
 /**
@@ -19,3 +20,5 @@ annotation class ViewProperty(
 )
 
 annotation class ViewPropertyProvider(val provider: KClass<out Any>)
+annotation class ViewPropertyFileRef(val extensions: Array<String>)
+annotation class ViewPropertySubTree()

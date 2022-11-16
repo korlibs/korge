@@ -1,15 +1,9 @@
 package com.soywiz.korge.debug
 
-import com.soywiz.korim.bitmap.NativeImage
-import com.soywiz.korim.bitmap.context2d
-import com.soywiz.korim.color.Colors
-import com.soywiz.korma.geom.Angle
-import com.soywiz.korma.geom.degrees
-import com.soywiz.korui.UiApplication
-import com.soywiz.korui.UiComponent
-import com.soywiz.korui.UiContainer
-import com.soywiz.korui.button
-import com.soywiz.korui.container
+import com.soywiz.korim.bitmap.*
+import com.soywiz.korim.color.*
+import com.soywiz.korma.geom.*
+import com.soywiz.korui.*
 
 fun UiContainer.uiCollapsibleSection(name: String?, block: UiContainer.() -> Unit): UiCollapsibleSection {
     return UiCollapsibleSection(app, name, block).also { addChild(it) }
@@ -72,8 +66,3 @@ class UiCollapsibleSection(app: UiApplication, val name: String?, val componentC
     }
 }
 
-@Deprecated(
-    message = "An older spelling of UiCollapsableSection",
-    replaceWith = ReplaceWith("UiCollapsibleSection")
-)
-typealias UiCollapsableSection = UiCollapsibleSection

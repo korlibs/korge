@@ -1,6 +1,7 @@
 package com.soywiz.korge.view
 
 import com.soywiz.korge.debug.*
+import com.soywiz.korge.view.property.*
 import com.soywiz.korma.geom.Anchor
 import com.soywiz.korui.*
 import com.soywiz.korui.layout.*
@@ -10,6 +11,28 @@ interface Anchorable {
     var anchorX: Double
     /** Normally in the range [0.0, 1.0] */
     var anchorY: Double
+
+    @ViewProperty(name = "anchor")
+    var anchorXY: Pair<Double, Double>
+        get() = anchorX to anchorY
+        set(value) {
+            anchorX = value.first
+            anchorY = value.second
+        }
+
+    @ViewProperty
+    val anchorActions: ViewActionList get() = ViewActionList(
+        ViewAction("TL") { view ->
+            views.undoable("Change anchor", view as View) {
+                (view as Anchorable).anchor(Anchor.TOP_LEFT)
+            }
+        },
+        ViewAction("Center") { view ->
+            views.undoable("Change anchor", view as View) {
+                (view as Anchorable).anchor(Anchor.CENTER)
+            }
+        },
+    )
 }
 
 fun <T : Anchorable> T.anchor(ax: Double, ay: Double): T {
@@ -25,19 +48,3 @@ fun <T : Anchorable> T.anchor(anchor: Anchor): T = anchor(anchor.sx, anchor.sy)
 
 fun <T : Anchorable> T.center(): T = anchor(0.5, 0.5)
 val <T : Anchorable> T.centered: T get() = anchor(0.5, 0.5)
-
-fun UiContainer.buildAnchorableComponents(views: Views, view: Anchorable) {
-    uiEditableValue(Pair(view::anchorX, view::anchorY), min = 0.0, max = 1.0, clamp = false, name = "anchor")
-    horizontal {
-        button("TL").onClick {
-            views.undoable("Change anchor", view as View) {
-                view.anchor(Anchor.TOP_LEFT)
-            }
-        }
-        button("Center").onClick {
-            views.undoable("Change anchor", view as View) {
-                view.anchor(Anchor.CENTER)
-            }
-        }
-    }
-}

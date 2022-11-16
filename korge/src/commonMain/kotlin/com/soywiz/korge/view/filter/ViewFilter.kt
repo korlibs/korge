@@ -1,35 +1,10 @@
 package com.soywiz.korge.view.filter
 
-import com.soywiz.kds.Extra
-import com.soywiz.kds.extraPropertyThis
-import com.soywiz.kmem.clamp
-import com.soywiz.kmem.toIntCeil
-import com.soywiz.korge.debug.uiCollapsibleSection
-import com.soywiz.korge.debug.uiEditableValue
-import com.soywiz.korge.render.RenderContext
+import com.soywiz.kds.*
+import com.soywiz.kmem.*
+import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
-import com.soywiz.korio.lang.portableSimpleName
-import kotlin.native.concurrent.ThreadLocal
-
-private class FilterDebugExtra(val view: View) {
-    var enable = true
-    init {
-        view.addDebugExtraComponent("") { views ->
-            if (enable) {
-                for (filter in view.filter?.allFilters ?: emptyList()) {
-                    uiCollapsibleSection(filter::class.portableSimpleName) {
-                        uiEditableValue(view::filterScale, min = 0.0, max = 1.0, clamp = true)
-                        filter.buildDebugComponent(views, this)
-                    }
-                }
-            }
-            // @TODO: Add filter button?
-        }
-    }
-}
-
-@ThreadLocal
-private var View.filterDebugExtra by Extra.PropertyThis { FilterDebugExtra(this) }
+import kotlin.native.concurrent.*
 
 /**
  * An optional [Filter] attached to this view.
@@ -40,7 +15,7 @@ var View.filter: Filter?
     get() = getRenderPhaseOfTypeOrNull<ViewRenderPhaseFilter>()?.filter
     set(value) {
         val enabled = value != null
-        filterDebugExtra.enable = enabled
+        //filterDebugExtra.enable = enabled
         if (enabled) {
             getOrCreateAndAddRenderPhase { ViewRenderPhaseFilter(value) }.filter = value
         } else {

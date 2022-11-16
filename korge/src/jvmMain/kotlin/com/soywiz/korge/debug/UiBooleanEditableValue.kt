@@ -1,8 +1,8 @@
 package com.soywiz.korge.debug
 
-import com.soywiz.korui.UiApplication
-import com.soywiz.korui.UiCheckBox
-import com.soywiz.korui.layout.HorizontalUiLayout
+import com.soywiz.korge.view.property.*
+import com.soywiz.korui.*
+import com.soywiz.korui.layout.*
 
 class UiBooleanEditableValue(
     app: UiApplication,

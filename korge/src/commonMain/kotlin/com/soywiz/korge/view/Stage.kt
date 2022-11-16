@@ -1,25 +1,18 @@
 package com.soywiz.korge.view
 
-import com.soywiz.kds.iterators.fastForEach
-import com.soywiz.korag.AG
-import com.soywiz.korag.annotation.KoragExperimental
-import com.soywiz.korev.EventDispatcher
+import com.soywiz.korag.*
+import com.soywiz.korag.annotation.*
+import com.soywiz.korev.*
 import com.soywiz.korge.baseview.*
-import com.soywiz.korge.debug.findObservableProperties
-import com.soywiz.korge.debug.uiCollapsibleSection
-import com.soywiz.korge.debug.uiEditableValue
-import com.soywiz.korge.input.Input
-import com.soywiz.korge.input.InputKeys
-import com.soywiz.korge.render.RenderContext
+import com.soywiz.korge.input.*
 import com.soywiz.korge.view.property.*
-import com.soywiz.korgw.GameWindow
-import com.soywiz.korinject.AsyncInjector
+import com.soywiz.korgw.*
+import com.soywiz.korinject.*
 import com.soywiz.korio.annotations.*
-import com.soywiz.korio.resources.ResourcesContainer
-import com.soywiz.korma.annotations.RootViewDslMarker
+import com.soywiz.korio.resources.*
+import com.soywiz.korma.annotations.*
 import com.soywiz.korma.geom.*
-import com.soywiz.korui.UiContainer
-import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.*
 
 /**
  * Singleton root [View] and [Container] that contains a reference to the [Views] singleton and doesn't have any parent.

@@ -1,13 +1,11 @@
 package com.soywiz.korge.debug
 
-import com.soywiz.korim.color.Colors
-import com.soywiz.korim.color.RGBA
-import com.soywiz.korim.color.RGBAf
-import com.soywiz.korio.lang.EnumLike
+import com.soywiz.korge.view.property.*
+import com.soywiz.korim.color.*
+import com.soywiz.korio.lang.*
 import com.soywiz.korma.geom.*
-import com.soywiz.korui.UiContainer
-import kotlin.jvm.JvmName
-import kotlin.reflect.KMutableProperty0
+import com.soywiz.korui.*
+import kotlin.reflect.*
 
 @JvmName("uiEditableValueGeneric")
 fun <T> UiContainer.uiEditableValue(

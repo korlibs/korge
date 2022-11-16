@@ -63,7 +63,7 @@ object MaterialRender {
 
         // Apply a drop shadow effect.
         //IF((roundedDist ge -.1f) and (u_ShadowRadius gt 0f)) {
-        IF((u_ShadowRadius gt 0f)) {
+        IF((out.a lt 1f) and (u_ShadowRadius ge 0f)) {
         //IF((smoothedAlpha lt .1f.lit) and (u_ShadowRadius gt 0f.lit)) {
             val shadowSoftness = u_ShadowRadius
             val shadowOffset = u_ShadowOffset
@@ -88,7 +88,7 @@ fun RenderContext2D.materialRoundRect(
     radius: RectCorners = RectCorners.EMPTY,
     shadowOffset: IPoint = IPoint.ZERO,
     shadowColor: RGBA = Colors.BLACK,
-    shadowRadius: Double = 0.0,
+    shadowRadius: Double = -1.0,
     highlightPos: IPoint = IPoint.ZERO,
     highlightRadius: Double = 0.0,
     highlightColor: RGBA = Colors.WHITE,
@@ -132,8 +132,9 @@ fun RenderContext2D.drawText(
     fill: Paint? = null,
     stroke: Stroke? = null,
     align: TextAlignment = TextAlignment.TOP_LEFT,
+    includeFirstLineAlways: Boolean = true
 ) {
-    val placements = text.place(Rectangle(x, y, width, height), wordWrap, includePartialLines, ellipsis, fill, stroke, align)
+    val placements = text.place(Rectangle(x, y, width, height), wordWrap, includePartialLines, ellipsis, fill, stroke, align, includeFirstLineAlways = includeFirstLineAlways)
     placements.fastForEach { it ->
         val bmpFont = it.font as? BitmapFont?
         if (bmpFont != null) {

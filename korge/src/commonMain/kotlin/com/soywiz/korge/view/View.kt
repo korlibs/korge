@@ -59,7 +59,6 @@ abstract class View internal constructor(
     val isContainer: Boolean
 ) : BaseView(), Renderable
     , Extra
-    , KorgeDebugNode
     , BView
     , XY
     , HitTestable
@@ -1572,18 +1571,6 @@ abstract class View internal constructor(
         val x = ratioX.interpolate(bounds.left, bounds.right)
         val y = ratioY.interpolate(bounds.top, bounds.bottom)
         return out.setTo(localToGlobalX(x, y), localToGlobalY(x, y))
-    }
-
-    var extraBuildDebugComponent: ((views: Views, view: View, container: UiContainer) -> Unit)? = null
-
-    override fun buildDebugComponent(views: Views, container: UiContainer) {
-        val view = this
-
-        extraBuildDebugComponent?.invoke(views, view, container)
-
-        views.viewExtraBuildDebugComponent.fastForEach {
-            it(views, view, container)
-        }
     }
 
     fun getGlobalMatrixWithAnchor(out: Matrix = Matrix()): Matrix {

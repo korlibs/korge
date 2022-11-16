@@ -1,16 +1,9 @@
 package com.soywiz.korge.view.filter
 
-import com.soywiz.korag.FragmentShaderDefault
-import com.soywiz.korag.shader.Uniform
-import com.soywiz.korag.shader.VarType
-import com.soywiz.korag.shader.storageFor
-import com.soywiz.korge.debug.uiEditableValue
-import com.soywiz.korge.render.BatchBuilder2D
-import com.soywiz.korge.view.Views
-import com.soywiz.korim.color.ColorAdd
-import com.soywiz.korim.color.ColorTransform
-import com.soywiz.korim.color.RGBA
-import com.soywiz.korui.UiContainer
+import com.soywiz.korag.*
+import com.soywiz.korag.shader.*
+import com.soywiz.korge.view.property.*
+import com.soywiz.korim.color.*
 
 /**
  * A [Filter] applying a multiplicative and additive color transformation to the view.
@@ -32,10 +25,12 @@ class ColorTransformFilter(colorTransform: ColorTransform) : ShaderFilter() {
 	private val colorMulStorage = uniforms.storageFor(u_ColorMul)
     private val colorAddStorage = uniforms.storageFor(u_ColorAdd)
 
+    @ViewProperty
     var colorMul: RGBA
         get() = RGBA.float(colorMulStorage.array)
         set(value) { value.readFloat(colorMulStorage.array) }
 
+    @ViewProperty
     var colorAdd: ColorAdd
         get() = ColorAdd.fromFloat(colorAddStorage.array)
         set(value) { value.readFloat(colorAddStorage.array) }
@@ -53,9 +48,4 @@ class ColorTransformFilter(colorTransform: ColorTransform) : ShaderFilter() {
     }
 
     override val programProvider: ProgramProvider get() = ColorTransformFilter
-
-    override fun buildDebugComponent(views: Views, container: UiContainer) {
-        container.uiEditableValue(listOf(colorMulStorage::x, colorMulStorage::y, colorMulStorage::z, colorMulStorage::w), name = "mul")
-        container.uiEditableValue(listOf(colorAddStorage::x, colorAddStorage::y, colorAddStorage::z, colorAddStorage::w), name = "add")
-    }
 }

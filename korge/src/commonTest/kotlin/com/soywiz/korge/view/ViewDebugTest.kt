@@ -1,7 +1,6 @@
 package com.soywiz.korge.view
 
-import com.soywiz.korge.debug.uiEditableValue
-import kotlin.test.Test
+import kotlin.test.*
 
 class ViewDebugTest {
     var myprop = 10.0
@@ -9,8 +8,5 @@ class ViewDebugTest {
     @Test
     fun test() {
         val view = DummyView()
-        view.addDebugExtraComponent("Debug") {
-            uiEditableValue(::myprop)
-        }
     }
 }

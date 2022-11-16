@@ -39,7 +39,6 @@ import com.soywiz.korge.component.ResizeComponent
 import com.soywiz.korge.component.TouchComponent
 import com.soywiz.korge.component.UpdateComponent
 import com.soywiz.korge.component.UpdateComponentWithViews
-import com.soywiz.korge.debug.ObservableProperty
 import com.soywiz.korge.input.Input
 import com.soywiz.korge.internal.DefaultViewport
 import com.soywiz.korge.internal.KorgeDeprecated
@@ -50,6 +49,7 @@ import com.soywiz.korge.render.Texture
 import com.soywiz.korge.render.TextureBase
 import com.soywiz.korge.scene.debugBmpFont
 import com.soywiz.korge.stat.Stats
+import com.soywiz.korge.view.property.*
 import com.soywiz.korgw.DialogInterfaceProvider
 import com.soywiz.korgw.GameWindow
 import com.soywiz.korim.bitmap.Bitmap
@@ -85,8 +85,6 @@ import com.soywiz.korma.geom.ScaleMode
 import com.soywiz.korma.geom.SizeInt
 import com.soywiz.korma.geom.applyTransform
 import com.soywiz.korma.geom.setTo
-import com.soywiz.korui.UiApplication
-import com.soywiz.korui.UiContainer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.cancel
 import kotlin.collections.set
@@ -543,11 +541,6 @@ class Views constructor(
         debugSaveView(action, view)
     }
 
-    fun <T> completedEditing(prop: ObservableProperty<T>) {
-        debugSaveView("Adjusted ${prop.name}", null)
-        completedEditing(Unit)
-    }
-
     var updatedSinceFrame: Int by gameWindow::updatedSinceFrame
 
     fun startFrame() {
@@ -559,7 +552,7 @@ class Views constructor(
         gameWindow.invalidatedView()
     }
 
-    var viewExtraBuildDebugComponent = arrayListOf<(views: Views, view: View, container: UiContainer) -> Unit>()
+    //var viewExtraBuildDebugComponent = arrayListOf<(views: Views, view: View, container: UiContainer) -> Unit>()
 }
 
 fun Views.getDefaultProgram(): Program =
@@ -775,8 +768,5 @@ fun BoundsProvider.setBoundsInfo(
     val br = windowToGlobalCoords(actualSize.width.toDouble(), actualSize.height.toDouble())
     actualVirtualBounds.setToBounds(tl.x, tl.y, br.x, br.y)
 }
-
-@ThreadLocal
-var UiApplication.views by Extra.PropertyThis<UiApplication, Views?> { null }
 
 suspend fun views(): Views = injector().get()

@@ -6,9 +6,6 @@ import com.soywiz.kds.Extra
 import com.soywiz.kds.extraCache
 import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.korge.annotations.KorgeExperimental
-import com.soywiz.korge.debug.UiTextEditableValue
-import com.soywiz.korge.debug.uiCollapsibleSection
-import com.soywiz.korge.debug.uiEditableValue
 import com.soywiz.korge.particle.ParticleEmitter
 import com.soywiz.korge.particle.ParticleEmitterView
 import com.soywiz.korge.render.RenderContext
@@ -21,6 +18,7 @@ import com.soywiz.korge.ui.UITextButton
 import com.soywiz.korge.ui.textSize
 import com.soywiz.korge.view.*
 import com.soywiz.korge.view.grid.OrthographicGrid
+import com.soywiz.korge.view.property.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
@@ -555,12 +553,8 @@ class TreeViewRef() : Container(), ViewLeaf, ViewFileRef by ViewFileRef.Mixin() 
         super.renderInternal(ctx)
     }
 
-    override fun buildDebugComponent(views: Views, container: UiContainer) {
-        container.uiCollapsibleSection("Tree") {
-            uiEditableValue(::sourceFile, kind = UiTextEditableValue.Kind.FILE(views.currentVfs) {
-                it.extensionLC == "ktree"
-            })
-        }
-        super.buildDebugComponent(views, container)
-    }
+    @Suppress("unused")
+    @ViewProperty
+    @ViewPropertyFileRef(["ktree"])
+    private var ktreeSourceFile: String? by this::sourceFile
 }

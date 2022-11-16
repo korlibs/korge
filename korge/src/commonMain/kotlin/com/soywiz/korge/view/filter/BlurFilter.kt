@@ -1,11 +1,8 @@
 package com.soywiz.korge.view.filter
 
-import com.soywiz.korge.debug.uiEditableValue
-import com.soywiz.korge.view.Views
 import com.soywiz.korge.view.property.*
-import com.soywiz.korma.geom.degrees
-import com.soywiz.korui.UiContainer
-import kotlin.math.log2
+import com.soywiz.korma.geom.*
+import kotlin.math.*
 
 class BlurFilter(
     radius: Double = 4.0,

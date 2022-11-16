@@ -1,21 +1,12 @@
 package com.soywiz.korge.view.filter
 
-import com.soywiz.klock.TimeSpan
-import com.soywiz.klock.seconds
-import com.soywiz.kmem.toIntCeil
-import com.soywiz.korag.FragmentShaderDefault
-import com.soywiz.korag.shader.FragmentShader
-import com.soywiz.korag.shader.Uniform
-import com.soywiz.korag.shader.VarType
-import com.soywiz.korag.shader.storageFor
-import com.soywiz.korge.debug.uiEditableValue
-import com.soywiz.korge.render.BatchBuilder2D
-import com.soywiz.korge.view.Views
-import com.soywiz.korma.geom.MutableMarginInt
-import com.soywiz.korui.UiContainer
-import kotlin.math.PI
-import kotlin.math.absoluteValue
-
+import com.soywiz.klock.*
+import com.soywiz.kmem.*
+import com.soywiz.korag.*
+import com.soywiz.korag.shader.*
+import com.soywiz.korge.view.property.*
+import com.soywiz.korma.geom.*
+import kotlin.math.*
 
 /**
  * A Flag [Filter] that distorts the texture using increasing waves to the right, keeping the left-most vertical static,
@@ -49,18 +40,22 @@ class FlagFilter(
     }
 
     /** Maximum amplitude of the wave on the Y axis */
-    var amplitude by scaledUniforms.storageFor(u_amplitude).doubleDelegateX(amplitude)
+    @ViewProperty
+    var amplitude: Double by scaledUniforms.storageFor(u_amplitude).doubleDelegateX(amplitude)
 
     /** Number of wave crests in the X axis */
-    var crestCount by uniforms.storageFor(u_crestCount).doubleDelegateX(crestCount)
+    @ViewProperty
+    var crestCount: Double by uniforms.storageFor(u_crestCount).doubleDelegateX(crestCount)
 
     /** Number of repetitions of the animation per second */
-    var cyclesPerSecond by uniforms.storageFor(u_cyclesPerSecond).doubleDelegateX(cyclesPerSecond)
+    @ViewProperty
+    var cyclesPerSecond: Double by uniforms.storageFor(u_cyclesPerSecond).doubleDelegateX(cyclesPerSecond)
 
     /** The elapsed time for the animation in seconds */
-    var timeSeconds by uniforms.storageFor(u_Time).doubleDelegateX(default = time.seconds)
+    var timeSeconds: Double by uniforms.storageFor(u_Time).doubleDelegateX(default = time.seconds)
 
     /** The elapsed time for the animation */
+    @ViewProperty
     var time: TimeSpan
         get() = timeSeconds.seconds
         set(value) {
@@ -71,12 +66,5 @@ class FlagFilter(
 
     override fun computeBorder(out: MutableMarginInt, texWidth: Int, texHeight: Int) {
         out.setTo(amplitude.absoluteValue.toIntCeil())
-    }
-
-    override fun buildDebugComponent(views: Views, container: UiContainer) {
-        container.uiEditableValue(::amplitude)
-        container.uiEditableValue(::crestCount)
-        container.uiEditableValue(::cyclesPerSecond)
-        container.uiEditableValue(::timeSeconds)
     }
 }

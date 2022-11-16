@@ -1,18 +1,11 @@
 package com.soywiz.korge.view.filter
 
-import com.soywiz.klock.TimeSpan
-import com.soywiz.klock.seconds
-import com.soywiz.korag.FragmentShaderDefault
-import com.soywiz.korag.shader.Uniform
-import com.soywiz.korag.shader.VarType
-import com.soywiz.korag.shader.storageFor
-import com.soywiz.korge.debug.uiEditableValue
-import com.soywiz.korge.render.BatchBuilder2D
-import com.soywiz.korge.view.Views
-import com.soywiz.korma.geom.MutableMarginInt
-import com.soywiz.korui.UiContainer
-import kotlin.math.PI
-import kotlin.math.absoluteValue
+import com.soywiz.klock.*
+import com.soywiz.korag.*
+import com.soywiz.korag.shader.*
+import com.soywiz.korge.view.property.*
+import com.soywiz.korma.geom.*
+import kotlin.math.*
 
 /**
  * A Wave [Filter] that distorts the texture using waves.
@@ -54,24 +47,31 @@ class WaveFilter(
 	private val cyclesPerSecond = uniforms.storageFor(u_cyclesPerSecond)
 
     /** Maximum amplitude of the wave on the X axis */
-	var amplitudeX by amplitude.intDelegateX(default = amplitudeX)
+    @ViewProperty
+	var amplitudeX: Int by amplitude.intDelegateX(default = amplitudeX)
     /** Maximum amplitude of the wave on the Y axis */
-	var amplitudeY by amplitude.intDelegateY(default = amplitudeY)
+    @ViewProperty
+	var amplitudeY: Int by amplitude.intDelegateY(default = amplitudeY)
 
     /** Number of wave crests in the X axis */
-	var crestCountX by crestCount.doubleDelegateX(default = crestCountX)
+    @ViewProperty
+	var crestCountX: Double by crestCount.doubleDelegateX(default = crestCountX)
     /** Number of wave crests in the Y axis */
-	var crestCountY by crestCount.doubleDelegateY(default = crestCountY)
+    @ViewProperty
+    var crestCountY: Double by crestCount.doubleDelegateY(default = crestCountY)
 
     /** Number of repetitions of the animation on the X axis per second */
-	var cyclesPerSecondX by cyclesPerSecond.doubleDelegateX(default = cyclesPerSecondX)
+    @ViewProperty
+	var cyclesPerSecondX: Double by cyclesPerSecond.doubleDelegateX(default = cyclesPerSecondX)
     /** Number of repetitions of the animation on the Y axis per second */
-	var cyclesPerSecondY by cyclesPerSecond.doubleDelegateY(default = cyclesPerSecondY)
+    @ViewProperty
+	var cyclesPerSecondY: Double by cyclesPerSecond.doubleDelegateY(default = cyclesPerSecondY)
 
     /** The elapsed time for the animation in seconds */
 	var timeSeconds by uniforms.storageFor(u_Time).doubleDelegateX(default = time.seconds)
 
     /** The elapsed time for the animation */
+    @ViewProperty
     var time: TimeSpan
         get() = timeSeconds.seconds
         set(value) { timeSeconds = value.seconds }
@@ -80,15 +80,5 @@ class WaveFilter(
 
     override fun computeBorder(out: MutableMarginInt, texWidth: Int, texHeight: Int) {
         out.setTo(amplitudeY.absoluteValue, amplitudeX.absoluteValue)
-    }
-
-    override fun buildDebugComponent(views: Views, container: UiContainer) {
-        container.uiEditableValue(::amplitudeX)
-        container.uiEditableValue(::amplitudeY)
-        container.uiEditableValue(::crestCountX)
-        container.uiEditableValue(::crestCountY)
-        container.uiEditableValue(::cyclesPerSecondX)
-        container.uiEditableValue(::cyclesPerSecondY)
-        container.uiEditableValue(::timeSeconds)
     }
 }

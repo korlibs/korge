@@ -1,31 +1,15 @@
 package com.soywiz.korge.view.vector
 
-import com.soywiz.kds.iterators.fastForEach
+import com.soywiz.kds.iterators.*
 import com.soywiz.klock.measureTime
-import com.soywiz.klogger.Console
-import com.soywiz.korag.AG
-import com.soywiz.korge.debug.uiCollapsibleSection
-import com.soywiz.korge.debug.uiEditableValue
-import com.soywiz.korge.internal.KorgeInternal
-import com.soywiz.korge.render.RenderContext
-import com.soywiz.korge.view.Anchorable
+import com.soywiz.korag.*
+import com.soywiz.korge.internal.*
+import com.soywiz.korge.render.*
+import com.soywiz.korge.view.*
 import com.soywiz.korge.view.BlendMode
-import com.soywiz.korge.view.Container
-import com.soywiz.korge.view.View
-import com.soywiz.korge.view.ViewDslMarker
-import com.soywiz.korge.view.Views
-import com.soywiz.korge.view.addTo
 import com.soywiz.korge.view.property.*
-import com.soywiz.korim.paint.Paint
-import com.soywiz.korim.vector.CompoundShape
-import com.soywiz.korim.vector.EmptyShape
-import com.soywiz.korim.vector.FillShape
-import com.soywiz.korim.vector.PolylineShape
-import com.soywiz.korim.vector.Shape
-import com.soywiz.korim.vector.ShapeBuilder
-import com.soywiz.korim.vector.TextShape
-import com.soywiz.korim.vector.buildShape
-import com.soywiz.korim.vector.getBounds
+import com.soywiz.korim.paint.*
+import com.soywiz.korim.vector.*
 import com.soywiz.korma.geom.Angle
 import com.soywiz.korma.geom.BoundsBuilder
 import com.soywiz.korma.geom.IPoint
@@ -35,25 +19,14 @@ import com.soywiz.korma.geom.Point
 import com.soywiz.korma.geom.PointArrayList
 import com.soywiz.korma.geom.PointPool
 import com.soywiz.korma.geom.Rectangle
-import com.soywiz.korma.geom.bezier.Bezier
-import com.soywiz.korma.geom.bezier.StrokePointsMode
-import com.soywiz.korma.geom.bezier.toStrokePointsList
+import com.soywiz.korma.geom.bezier.*
 import com.soywiz.korma.geom.degrees
 import com.soywiz.korma.geom.expand
 import com.soywiz.korma.geom.fastForEachGeneric
 import com.soywiz.korma.geom.minus
 import com.soywiz.korma.geom.plus
-import com.soywiz.korma.geom.shape.getPoints2
-import com.soywiz.korma.geom.shape.getPoints2List
-import com.soywiz.korma.geom.vector.LineCap
-import com.soywiz.korma.geom.vector.LineJoin
-import com.soywiz.korma.geom.vector.LineScaleMode
-import com.soywiz.korma.geom.vector.StrokeInfo
-import com.soywiz.korma.geom.vector.VectorPath
-import com.soywiz.korma.geom.vector.Winding
-import com.soywiz.korma.geom.vector.toCurvesList
-import com.soywiz.korui.UiContainer
-import com.soywiz.korui.button
+import com.soywiz.korma.geom.shape.*
+import com.soywiz.korma.geom.vector.*
 import kotlin.math.absoluteValue
 
 //@KorgeExperimental
@@ -430,7 +403,10 @@ open class GpuShapeView(
             )
 
             //gpuShapeViewCommands.setScissor(null)
-            gpuShapeViewCommands.draw(AG.DrawType.TRIANGLE_STRIP, info, stencil = stencil, startIndex = startIndex, endIndex = endIndex, blendMode = BlendMode.NORMAL)
+            gpuShapeViewCommands.draw(
+                AG.DrawType.TRIANGLE_STRIP, info, stencil = stencil, startIndex = startIndex, endIndex = endIndex,
+                blendMode = BlendMode.NORMAL
+            )
         }
     }
 
@@ -698,20 +674,5 @@ open class GpuShapeView(
     init {
         invalidateShape()
     }
-
-    override fun buildDebugComponent(views: Views, container: UiContainer) {
-        val view = this
-        container.uiCollapsibleSection("GpuShapeView") {
-            uiEditableValue(Pair(view::anchorX, view::anchorY), min = 0.0, max = 1.0, clamp = false, name = "anchor")
-            button("Center").onClick {
-                views.undoable("Change anchor", view) {
-                    view.anchorX = 0.5
-                    view.anchorY = 0.5
-                }
-            }
-        }
-        super.buildDebugComponent(views, container)
-    }
-
 }
 

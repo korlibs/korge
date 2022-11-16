@@ -7,14 +7,29 @@ import com.soywiz.korge.tween.get
 import com.soywiz.korge.tween.tween
 import com.soywiz.korge.ui.*
 import com.soywiz.korge.view.*
+import com.soywiz.korge.view.property.*
 import com.soywiz.korgw.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.font.readBitmapFont
+import com.soywiz.korim.format.*
+import com.soywiz.korio.async.*
 import com.soywiz.korio.file.std.resourcesVfs
 import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.shape.*
+import com.soywiz.korma.geom.vector.*
 import com.soywiz.korma.interpolation.Easing
 
 class MainUI : Scene() {
+    @ViewProperty
+    var yayProperty: Double = 0.0
+
+    @ViewProperty
+    fun yayAction() {
+        launchImmediately {
+            gameWindow.alert("yay!")
+        }
+    }
+
     override suspend fun SContainer.sceneMain() {
 
         uiSkin = UISkin {
@@ -50,6 +65,9 @@ class MainUI : Scene() {
         uiComboBox(items = listOf("ComboBox", "World", "this", "is", "a", "list", "of", "elements")) {
             position(128, 128 + 64 + 32)
         }
+
+        shapeView(buildVectorPath { this.circle(0, 0, 100) })
+        image(resourcesVfs["korge.png"].readBitmap()).scale(0.25)
 
         //uiMaterialLayer(50.0, 50.0) {
         //    xy(128, 260)

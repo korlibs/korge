@@ -1,8 +1,6 @@
-package com.soywiz.korge.debug
+package com.soywiz.korge.view.property
 
-import com.soywiz.korio.async.Signal
-import com.soywiz.korui.UiComponent
-import com.soywiz.korui.UiContainer
+import com.soywiz.korio.async.*
 
 class ObservableProperty<T>(
     val name: String,
@@ -35,16 +33,4 @@ class ObservableProperty<T>(
 
 interface ObservablePropertyHolder<T> {
     val prop: ObservableProperty<T>
-}
-
-fun UiComponent.findObservableProperties(out: ArrayList<ObservableProperty<*>> = arrayListOf()): List<ObservableProperty<*>> {
-    if (this is ObservablePropertyHolder<*>) {
-        out.add(prop)
-    }
-    if (this is UiContainer) {
-        forEachChild {
-            it.findObservableProperties(out)
-        }
-    }
-    return out
 }

@@ -1,15 +1,9 @@
 package com.soywiz.korge.view
 
-import com.soywiz.korge.debug.uiCollapsibleSection
-import com.soywiz.korge.debug.uiEditableValue
 import com.soywiz.korge.internal.*
-import com.soywiz.korge.view.vector.GpuShapeView
-import com.soywiz.korge.view.vector.gpuGraphics
-import com.soywiz.korim.vector.EmptyShape
-import com.soywiz.korim.vector.Shape
-import com.soywiz.korim.vector.ShapeBuilder
-import com.soywiz.korim.vector.buildShape
-import com.soywiz.korui.UiContainer
+import com.soywiz.korge.view.property.*
+import com.soywiz.korge.view.vector.*
+import com.soywiz.korim.vector.*
 
 inline fun Container.graphics(
     renderer: GraphicsRenderer = GraphicsRenderer.SYSTEM,
@@ -50,6 +44,7 @@ class Graphics(
     private val anchorable: Anchorable get() = (softGraphics ?: gpuGraphics)!!
     val rendererView: View get() = (softGraphics ?: gpuGraphics)!!
 
+    @ViewProperty
     var boundsIncludeStrokes: Boolean
         get() = softGraphics?.boundsIncludeStrokes ?: gpuGraphics?.boundsIncludeStrokes ?: false
         set(value) {
@@ -73,6 +68,7 @@ class Graphics(
     @KorgeInternal override val anchorDispX: Double get() = rendererView.anchorDispX
     @KorgeInternal override val anchorDispY: Double get() = rendererView.anchorDispY
 
+    @ViewProperty
     var antialiased: Boolean = true
         set(value) {
             if (field == value) return
@@ -81,6 +77,7 @@ class Graphics(
             gpuGraphics?.antialiased = true
             invalidateRender()
         }
+    @ViewProperty
     var smoothing: Boolean = true
         set(value) {
             if (field == value) return
@@ -89,6 +86,7 @@ class Graphics(
             gpuGraphics?.smoothing = true
             invalidateRender()
         }
+    @ViewProperty
     var autoScaling: Boolean = true
         set(value) {
             if (field == value) return
@@ -107,6 +105,8 @@ class Graphics(
             gpuGraphics?.shape = value
             invalidateRender()
         }
+
+    @ViewProperty
     var renderer: GraphicsRenderer = renderer
         set(value) {
             if (field === value) return
@@ -160,18 +160,5 @@ class Graphics(
 
     init {
         this.shape = shape
-    }
-
-    override fun buildDebugComponent(views: Views, container: UiContainer) {
-        val view = this
-        container.uiCollapsibleSection("Graphics") {
-            uiEditableValue(Pair(view::anchorX, view::anchorY), min = 0.0, max = 1.0, clamp = false, name = "anchor")
-            uiEditableValue(view::renderer)
-            uiEditableValue(view::boundsIncludeStrokes)
-            uiEditableValue(view::antialiased)
-            uiEditableValue(view::smoothing)
-            uiEditableValue(view::autoScaling)
-        }
-        super.buildDebugComponent(views, container)
     }
 }

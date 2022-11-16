@@ -1,39 +1,21 @@
 package com.soywiz.korge.view
 
 import com.soywiz.korag.shader.*
-import com.soywiz.korge.debug.UiTextEditableValue
-import com.soywiz.korge.debug.uiCollapsibleSection
-import com.soywiz.korge.debug.uiEditableValue
-import com.soywiz.korge.html.Html
-import com.soywiz.korge.render.RenderContext
-import com.soywiz.korge.render.TexturedVertexArray
+import com.soywiz.korge.html.*
+import com.soywiz.korge.render.*
 import com.soywiz.korge.text.*
-import com.soywiz.korge.view.filter.backdropFilter
-import com.soywiz.korge.view.filter.filter
+import com.soywiz.korge.view.filter.*
 import com.soywiz.korge.view.property.*
-import com.soywiz.korim.bitmap.Bitmaps
-import com.soywiz.korim.color.Colors
-import com.soywiz.korim.color.RGBA
+import com.soywiz.korim.bitmap.*
+import com.soywiz.korim.color.*
 import com.soywiz.korim.font.*
-import com.soywiz.korim.paint.Paint
-import com.soywiz.korim.paint.Stroke
-import com.soywiz.korim.text.CurveTextRenderer
-import com.soywiz.korim.text.DefaultStringTextRenderer
-import com.soywiz.korim.text.HorizontalAlign
-import com.soywiz.korim.text.Text2TextRendererActions
-import com.soywiz.korim.text.TextAlignment
-import com.soywiz.korim.text.TextRenderer
-import com.soywiz.korim.text.VerticalAlign
-import com.soywiz.korim.text.aroundPath
-import com.soywiz.korim.text.invoke
-import com.soywiz.korim.text.withSpacing
-import com.soywiz.korio.async.launchImmediately
-import com.soywiz.korio.file.VfsFile
-import com.soywiz.korio.file.extensionLC
-import com.soywiz.korio.resources.Resourceable
+import com.soywiz.korim.paint.*
+import com.soywiz.korim.text.*
+import com.soywiz.korio.async.*
+import com.soywiz.korio.file.*
+import com.soywiz.korio.resources.*
 import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.vector.VectorPath
-import com.soywiz.korui.UiContainer
+import com.soywiz.korma.geom.vector.*
 
 /*
 // Example:
@@ -471,14 +453,10 @@ open class Text(
 
     internal var _staticGraphics: Graphics? = null
 
-    override fun buildDebugComponent(views: Views, container: UiContainer) {
-        container.uiCollapsibleSection("Text") {
-            uiEditableValue(::fontSource, UiTextEditableValue.Kind.FILE(views.currentVfs) {
-                it.extensionLC == "ttf" || it.extensionLC == "fnt"
-            })
-        }
-        super.buildDebugComponent(views, container)
-    }
+    @Suppress("unused")
+    @ViewProperty
+    @ViewPropertyFileRef(["ttf", "fnt", "otf"])
+    private var fontSourceFile: String? by this::fontSource
 }
 
 fun <T : Text> T.autoSize(value: Boolean): T {

@@ -5,6 +5,7 @@ import com.soywiz.korge.render.RenderContext
 import com.soywiz.korge.render.Texture
 import com.soywiz.korge.view.BlendMode
 import com.soywiz.korge.view.Views
+import com.soywiz.korge.view.property.*
 import com.soywiz.korim.color.ColorAdd
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korma.geom.Matrix
@@ -14,7 +15,12 @@ import com.soywiz.korui.UiContainer
 /**
  * Allows to create a single [Filter] that will render several [filters] in order.
  */
-open class ComposedFilter private constructor(val filters: FastArrayList<Filter>, unit: Unit = Unit) : Filter {
+open class ComposedFilter private constructor(
+    @ViewProperty
+    @ViewPropertySubTree
+    val filters: FastArrayList<Filter>,
+    unit: Unit = Unit
+) : Filter {
     companion object {
         fun combine(left: Filter?, right: Filter?): Filter? = when {
             left == null && right == null -> null
@@ -148,11 +154,5 @@ open class ComposedFilter private constructor(val filters: FastArrayList<Filter>
     */
 
     protected open fun stepBefore() {
-    }
-
-    override fun buildDebugComponent(views: Views, container: UiContainer) {
-        for (filter in filters) {
-            filter.buildDebugComponent(views, container)
-        }
     }
 }

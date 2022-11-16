@@ -1,20 +1,9 @@
 package com.soywiz.korge.ui
 
-import com.soywiz.kmem.clamp01
-import com.soywiz.korge.debug.uiCollapsibleSection
-import com.soywiz.korge.debug.uiEditableValue
-import com.soywiz.korge.render.RenderContext
-import com.soywiz.korge.view.Container
-import com.soywiz.korge.view.NinePatchEx
-import com.soywiz.korge.view.ViewDslMarker
-import com.soywiz.korge.view.ViewLeaf
-import com.soywiz.korge.view.Views
-import com.soywiz.korge.view.addTo
-import com.soywiz.korge.view.ninePatch
+import com.soywiz.kmem.*
+import com.soywiz.korge.render.*
+import com.soywiz.korge.view.*
 import com.soywiz.korge.view.property.*
-import com.soywiz.korge.view.size
-import com.soywiz.korge.view.solidRect
-import com.soywiz.korui.UiContainer
 
 inline fun Container.uiProgressBar(
     width: Double = 256.0,

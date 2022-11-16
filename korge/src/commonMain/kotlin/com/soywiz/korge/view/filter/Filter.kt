@@ -1,36 +1,17 @@
 package com.soywiz.korge.view.filter
 
-import com.soywiz.kds.Extra
-import com.soywiz.kds.Pool
-import com.soywiz.kmem.toIntCeil
-import com.soywiz.korag.AG
-import com.soywiz.korag.DefaultShaders
-import com.soywiz.korag.annotation.KoragExperimental
-import com.soywiz.korag.shader.Operand
-import com.soywiz.korag.shader.Program
-import com.soywiz.korag.shader.Uniform
-import com.soywiz.korag.shader.VarType
-import com.soywiz.korge.debug.KorgeDebugNode
-import com.soywiz.korge.render.BatchBuilder2D
-import com.soywiz.korge.render.RenderContext
-import com.soywiz.korge.render.Texture
-import com.soywiz.korge.view.BlendMode
-import com.soywiz.korge.view.View
-import com.soywiz.korge.view.Views
-import com.soywiz.korim.color.ColorAdd
-import com.soywiz.korim.color.Colors
-import com.soywiz.korim.color.RGBA
-import com.soywiz.korio.lang.Disposable
-import com.soywiz.korma.geom.MarginInt
-import com.soywiz.korma.geom.Matrix
-import com.soywiz.korma.geom.MutableMarginInt
-import com.soywiz.korma.geom.Rectangle
-import com.soywiz.korma.geom.expand
-import com.soywiz.korma.geom.leftPlusRight
-import com.soywiz.korma.geom.topPlusBottom
-import com.soywiz.korui.UiContainer
-import kotlin.math.absoluteValue
-import kotlin.native.concurrent.ThreadLocal
+import com.soywiz.kds.*
+import com.soywiz.kmem.*
+import com.soywiz.korag.*
+import com.soywiz.korag.annotation.*
+import com.soywiz.korag.shader.*
+import com.soywiz.korge.render.*
+import com.soywiz.korge.view.*
+import com.soywiz.korim.color.*
+import com.soywiz.korio.lang.*
+import com.soywiz.korma.geom.*
+import kotlin.math.*
+import kotlin.native.concurrent.*
 
 /**
  * Interface for [View] filters.
@@ -44,7 +25,7 @@ import kotlin.native.concurrent.ThreadLocal
  *
  * Filters are usually [ComposedFilter] or [ShaderFilter]
  */
-interface Filter : KorgeDebugNode {
+interface Filter {
     companion object {
         //val u_Time = Uniform("time", VarType.Float1)
         val u_TextureSize = Uniform("effectTextureSize", VarType.Float2)
@@ -93,9 +74,6 @@ interface Filter : KorgeDebugNode {
         blendMode: BlendMode,
         filterScale: Double,
     )
-
-    override fun buildDebugComponent(views: Views, container: UiContainer) {
-    }
 }
 
 fun Filter.getBorder(texWidth: Int, texHeight: Int, out: MutableMarginInt = MutableMarginInt()): MarginInt {

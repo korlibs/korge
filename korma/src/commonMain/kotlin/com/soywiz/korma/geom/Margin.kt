@@ -8,6 +8,13 @@ interface Margin {
     val bottom: Double
     val left: Double
 
+    fun duplicate(
+        top: Double = this.top,
+        right: Double = this.right,
+        bottom: Double = this.bottom,
+        left: Double = this.left,
+    ): Margin = MutableMargin(top, right, bottom, left)
+
     companion object {
         val EMPTY: Margin = MutableMargin()
 

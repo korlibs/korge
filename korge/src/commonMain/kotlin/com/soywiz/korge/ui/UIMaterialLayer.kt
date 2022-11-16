@@ -96,12 +96,12 @@ class UIMaterialLayer(
         simpleAnimator.tween(highlight::radiusRatio[1.0], V2Callback { invalidateRender() }, time = 0.5.seconds, easing = Easing.EASE_IN)
     }
 
-    @ViewAction
+    @ViewProperty
     private fun addHighlightAction() {
         addHighlight(Point(0.5, 0.5))
     }
 
-    @ViewAction
+    @ViewProperty
     fun removeHighlights() {
         highlightsActive.fastForEach {
             simpleAnimator.sequence {
