@@ -50,21 +50,30 @@ class TextBlock(
     var padding: Margin = Margin.EMPTY; set(value) { field = value; invalidProps() }
     @ViewProperty
     var autoSize: Boolean = false; set(value) { field = value; invalidateText() }
-    @ViewProperty
+    //@ViewProperty(min = 0.0, max = 10.0, clampMin = true)
+    //var textRange: IntRange = ALL_TEXT_RANGE; set(value) { field = value; invalidateText() }
+    @ViewProperty(min = 0.0, max = 10.0, clampMin = true)
+    var textRangeStart: Int = 0; set(value) { field = value; invalidateText() }
+    @ViewProperty(min = 0.0, max = 10.0, clampMin = true)
+    var textRangeEnd: Int = Int.MAX_VALUE; set(value) { field = value; invalidateText() }
     var plainText: String
         get() = text.text
         set(value) {
             text = RichTextData(value, style = text.defaultStyle)
         }
     private var image: Image? = null
-    private var allBitmap: Boolean = true
+    private var allBitmap: Boolean? = null
+        get() {
+            if (field == null) field = text.allFonts.all { it is BitmapFont }
+            return field!!
+        }
 
     private fun invalidateText() {
         invalidProps()
         if (autoSize) {
             setSize(text.width, text.height)
         }
-        allBitmap = text.allFonts.all { it is BitmapFont }
+        allBitmap = null
     }
     
     private fun invalidProps() {
@@ -95,7 +104,8 @@ class TextBlock(
                 text,
                 bounds = Rectangle.fromBounds(padding.left, padding.top, width - padding.right, height - padding.bottom),
                 includePartialLines = includePartialLines, wordWrap = wordWrap, ellipsis = ellipsis, align = align,
-                fill = fill, stroke = stroke, includeFirstLineAlways = true
+                fill = fill, stroke = stroke, includeFirstLineAlways = true,
+                textRangeStart = textRangeStart, textRangeEnd = textRangeEnd
             )
         }
     }
@@ -103,19 +113,24 @@ class TextBlock(
     private var placements: RichTextDataPlacements? = null
 
     override fun renderInternal(ctx: RenderContext) {
-        if (allBitmap) {
+        if (allBitmap == true) {
             if (dirty || placements == null) {
                 dirty = false
                 placements = text.place(Rectangle(padding.left, padding.top, width - padding.right, height - padding.bottom), wordWrap, includePartialLines, ellipsis, fill, stroke, align, includeFirstLineAlways = includeFirstLineAlways)
             }
             image?.removeFromParent()
             image = null
+            //if (textRange != ALL_TEXT_RANGE) println("textRange=$textRange")
             renderCtx2d(ctx) {
-                it.drawText(placements!!)
+                it.drawText(placements!!, textRangeStart = textRangeStart, textRangeEnd = textRangeEnd)
             }
         } else {
             ensureTexture()
         }
         super.renderInternal(ctx)
+    }
+
+    companion object {
+        val ALL_TEXT_RANGE = 0 until Int.MAX_VALUE
     }
 }

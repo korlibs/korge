@@ -1,23 +1,21 @@
 package samples
 
-import com.soywiz.klock.seconds
-import com.soywiz.korge.input.onClick
-import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.tween.get
-import com.soywiz.korge.tween.tween
+import com.soywiz.klock.*
+import com.soywiz.korge.input.*
+import com.soywiz.korge.scene.*
+import com.soywiz.korge.tween.*
 import com.soywiz.korge.ui.*
 import com.soywiz.korge.view.*
 import com.soywiz.korge.view.property.*
 import com.soywiz.korgw.*
 import com.soywiz.korim.color.*
-import com.soywiz.korim.font.readBitmapFont
+import com.soywiz.korim.font.*
 import com.soywiz.korim.format.*
 import com.soywiz.korio.async.*
-import com.soywiz.korio.file.std.resourcesVfs
-import com.soywiz.korma.geom.*
+import com.soywiz.korio.file.std.*
 import com.soywiz.korma.geom.shape.*
 import com.soywiz.korma.geom.vector.*
-import com.soywiz.korma.interpolation.Easing
+import com.soywiz.korma.interpolation.*
 
 class MainUI : Scene() {
     @ViewProperty
@@ -80,7 +78,7 @@ class MainUI : Scene() {
 
         uiScrollable {
             it.position(480, 128)
-            for (n in 0 until 16) {
+            for (n in 0 until 20) {
                 uiButton(text = "HELLO $n").position(n * 16, n * 32)
             }
         }
