@@ -160,6 +160,16 @@ internal class UiEditProperties(app: UiApplication, view: View?, val views: View
 
                 UiTwoItemEditableValue(app, vv[0], vv[1])
             }
+            type.isSubtypeOf(IntRange::class.starProjectedType) -> {
+                @Suppress("UNCHECKED_CAST")
+                prop as KMutableProperty1<Any, IntRange>
+                val vv = listOf(
+                    ObservableProperty("x", { prop.set(instance, it.toInt()..prop.get(instance).last) }, { prop.get(instance).first.toDouble() }),
+                    ObservableProperty("y", { prop.set(instance, prop.get(instance).first..it.toInt()) }, { prop.get(instance).last.toDouble() }),
+                ).map { UiNumberEditableValue(app, it, viewProp.min, viewProp.max, viewProp.clampMin, viewProp.clampMax, 0) }
+
+                UiTwoItemEditableValue(app, vv[0], vv[1])
+            }
             type.isSubtypeOf(RectCorners::class.starProjectedType) -> {
                 @Suppress("UNCHECKED_CAST")
                 prop as KMutableProperty1<Any, RectCorners>
@@ -186,6 +196,11 @@ internal class UiEditProperties(app: UiApplication, view: View?, val views: View
             }
             type.isSubtypeOf(Double::class.starProjectedType) -> {
                 UiNumberEditableValue(app, obs as ObservableProperty<Double>, viewProp.min, viewProp.max, viewProp.clampMin, viewProp.clampMax, viewProp.decimalPlaces)
+            }
+            type.isSubtypeOf(Int::class.starProjectedType) -> {
+                val pobs = (obs as ObservableProperty<Int>)
+                val robs = ObservableProperty(obs.name, { pobs.value = it.toInt() }, { pobs.value.toDouble() })
+                UiNumberEditableValue(app, robs, viewProp.min, viewProp.max, viewProp.clampMin, viewProp.clampMax, 0)
             }
             type.isSubtypeOf(Boolean::class.starProjectedType) -> {
                 UiBooleanEditableValue(app, obs as ObservableProperty<Boolean>)

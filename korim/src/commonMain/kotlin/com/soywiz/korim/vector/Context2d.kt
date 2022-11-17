@@ -1,48 +1,17 @@
 package com.soywiz.korim.vector
 
-import com.soywiz.kds.IDoubleArrayList
-import com.soywiz.kds.Stack
-import com.soywiz.kds.mapFloat
-import com.soywiz.korim.bitmap.Bitmap
-import com.soywiz.korim.bitmap.Bitmap32
-import com.soywiz.korim.bitmap.NativeImage
-import com.soywiz.korim.bitmap.NativeImageOrBitmap32
-import com.soywiz.korim.bitmap.context2d
-import com.soywiz.korim.bitmap.mipmap
-import com.soywiz.korim.color.RGBA
-import com.soywiz.korim.font.Font
-import com.soywiz.korim.font.FontRegistry
-import com.soywiz.korim.font.TextMetrics
-import com.soywiz.korim.font.TextMetricsResult
-import com.soywiz.korim.font.drawText
-import com.soywiz.korim.font.getTextBounds
+import com.soywiz.kds.*
+import com.soywiz.korim.bitmap.*
+import com.soywiz.korim.color.*
+import com.soywiz.korim.font.*
 import com.soywiz.korim.paint.*
-import com.soywiz.korim.text.DefaultStringTextRenderer
-import com.soywiz.korim.text.HorizontalAlign
-import com.soywiz.korim.text.TextAlignment
-import com.soywiz.korim.text.TextRenderer
-import com.soywiz.korim.text.VerticalAlign
-import com.soywiz.korim.vector.renderer.Renderer
-import com.soywiz.korio.lang.Disposable
-import com.soywiz.korma.geom.Angle
-import com.soywiz.korma.geom.Matrix
-import com.soywiz.korma.geom.Rectangle
-import com.soywiz.korma.geom.degrees
-import com.soywiz.korma.geom.radians
+import com.soywiz.korim.text.*
+import com.soywiz.korim.vector.renderer.*
+import com.soywiz.korio.lang.*
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.shape.*
-import com.soywiz.korma.geom.vector.LineCap
-import com.soywiz.korma.geom.vector.LineJoin
-import com.soywiz.korma.geom.vector.VectorBuilder
-import com.soywiz.korma.geom.vector.VectorPath
-import com.soywiz.korma.geom.vector.Winding
-import com.soywiz.korma.geom.vector.rect
-import com.soywiz.korma.geom.vector.roundRect
-import com.soywiz.korma.geom.vector.LineScaleMode
-import com.soywiz.korma.geom.vector.StrokeInfo
-import com.soywiz.korma.geom.vector.isEmpty
-import kotlin.math.abs
-import kotlin.math.absoluteValue
-import kotlin.math.ceil
+import com.soywiz.korma.geom.vector.*
+import kotlin.math.*
 
 open class Context2d constructor(
     val renderer: Renderer,
@@ -626,9 +595,18 @@ open class Context2d constructor(
 
         fillStyle: Paint? = null,
         stroke: Stroke? = null,
+
+        textRangeStart: Int = 0,
+        textRangeEnd: Int = Int.MAX_VALUE,
     ): TextMetricsResult? {
         val paint = paint ?: (if (fill) this.fillStyle else this.strokeStyle)
-        return font?.drawText(this, size, text, paint, x, y, fill, renderer = renderer, align = align, outMetrics = outMetrics, fillStyle = fillStyle, stroke = stroke)
+        return font?.drawText(
+            this, size, text, paint, x, y, fill,
+            renderer = renderer, align = align, outMetrics = outMetrics,
+            fillStyle = fillStyle, stroke = stroke,
+            textRangeStart = textRangeStart,
+            textRangeEnd = textRangeEnd,
+        )
     }
 
     // @TODO: Fix this!

@@ -139,12 +139,20 @@ fun RenderContext2D.drawText(
 
 @KorgeExperimental
 fun RenderContext2D.drawText(
-    placements: RichTextDataPlacements
+    placements: RichTextDataPlacements,
+    textRangeStart: Int = 0,
+    textRangeEnd: Int = Int.MAX_VALUE,
 ) {
+    var n = 0
     placements.fastForEach { it ->
         val bmpFont = it.font as? BitmapFont?
         if (bmpFont != null) {
-            drawText(it.text, bmpFont, it.size, it.x, it.y, (it.fillStyle as? RGBA?) ?: Colors.WHITE, baseline = true)
+            drawText(
+                it.text, bmpFont, it.size, it.x, it.y, (it.fillStyle as? RGBA?) ?: Colors.WHITE, baseline = true,
+                textRangeStart = textRangeStart - n,
+                textRangeEnd = textRangeEnd - n
+            )
+            n += it.text.length
         }
     }
 }
@@ -157,24 +165,30 @@ fun RenderContext2D.drawText(
     x: Double = 0.0,
     y: Double = 0.0,
     color: RGBA = Colors.WHITE,
-    baseline: Boolean = false
+    baseline: Boolean = false,
+    textRangeStart: Int = 0,
+    textRangeEnd: Int = Int.MAX_VALUE,
     //stroke: Stroke?,
 ) {
     val scale = font.getTextScale(textSize)
     var sx = x
     val sy = y + if (baseline) -font.base * scale else 0.0
     //println("multiplyColor=$multiplyColor")
+    var n = 0
     for (char in text) {
         val glyph = font.getGlyph(char)
-        rect(
-            sx + glyph.xoffset * scale,
-            sy + glyph.yoffset * scale,
-            glyph.texWidth.toDouble() * scale,
-            glyph.texHeight.toDouble() * scale,
-            (color * multiplyColor),
-            //multiplyColor,
-            true, glyph.texture, font.agProgram,
-        )
+        if (n in textRangeStart until textRangeEnd) {
+            rect(
+                sx + glyph.xoffset * scale,
+                sy + glyph.yoffset * scale,
+                glyph.texWidth.toDouble() * scale,
+                glyph.texHeight.toDouble() * scale,
+                (color * multiplyColor),
+                //multiplyColor,
+                true, glyph.texture, font.agProgram,
+            )
+        }
         sx += glyph.xadvance * scale
+        n++
     }
 }

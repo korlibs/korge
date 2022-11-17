@@ -1,42 +1,18 @@
 package com.soywiz.korim.font
 
 import com.soywiz.kds.*
-import com.soywiz.kmem.toIntCeil
-import com.soywiz.korim.bitmap.Bitmap
-import com.soywiz.korim.bitmap.Bitmap32
-import com.soywiz.korim.bitmap.NativeImage
-import com.soywiz.korim.bitmap.context2d
-import com.soywiz.korim.bitmap.effect.BitmapEffect
-import com.soywiz.korim.bitmap.effect.applyEffect
-import com.soywiz.korim.paint.DefaultPaint
-import com.soywiz.korim.paint.NonePaint
-import com.soywiz.korim.paint.Paint
-import com.soywiz.korim.paint.Stroke
-import com.soywiz.korim.text.BoundBuilderTextRendererActions
-import com.soywiz.korim.text.DefaultStringTextRenderer
-import com.soywiz.korim.text.TextAlignment
-import com.soywiz.korim.text.TextRenderer
-import com.soywiz.korim.text.TextRendererActions
-import com.soywiz.korim.text.invoke
-import com.soywiz.korim.text.measure
+import com.soywiz.kmem.*
+import com.soywiz.korim.bitmap.*
+import com.soywiz.korim.bitmap.effect.*
+import com.soywiz.korim.paint.*
+import com.soywiz.korim.text.*
 import com.soywiz.korim.vector.*
-import com.soywiz.korio.lang.WStringReader
-import com.soywiz.korio.resources.Resourceable
-import com.soywiz.korma.geom.BoundsBuilder
-import com.soywiz.korma.geom.IPoint
-import com.soywiz.korma.geom.Matrix
-import com.soywiz.korma.geom.Point
-import com.soywiz.korma.geom.Rectangle
-import com.soywiz.korma.geom.bezier.Bezier
-import com.soywiz.korma.geom.bezier.Curves
-import com.soywiz.korma.geom.bezier.toBezier
-import com.soywiz.korma.geom.bounds
-import com.soywiz.korma.geom.shape.buildVectorPath
-import com.soywiz.korma.geom.vector.VectorPath
-import com.soywiz.korma.geom.vector.add
-import com.soywiz.korma.geom.vector.applyTransform
-import com.soywiz.korma.geom.vector.getCurves
-import com.soywiz.korma.geom.vector.rect
+import com.soywiz.korio.lang.*
+import com.soywiz.korio.resources.*
+import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.bezier.*
+import com.soywiz.korma.geom.shape.*
+import com.soywiz.korma.geom.vector.*
 
 interface Font : Resourceable<Font>, Extra {
     override fun getOrNull() = this
@@ -246,6 +222,9 @@ fun <T> Font.drawText(
     fillStyle: Paint? = null,
     stroke: Stroke? = null,
 
+    textRangeStart: Int = 0,
+    textRangeEnd: Int = Int.MAX_VALUE,
+
     placed: (TextRendererActions.(codePoint: Int, x: Double, y: Double, size: Double, metrics: GlyphMetrics, fmetrics: FontMetrics, transform: Matrix) -> Unit)? = null
 ): TextMetricsResult? {
     //println("drawText!!: text=$text, align=$align")
@@ -263,6 +242,7 @@ fun <T> Font.drawText(
     }
     val actions = object : TextRendererActions() {
         val metrics = renderer.measure(text, size, fnt)
+        var n = 0
         override fun put(reader: WStringReader, codePoint: Int): GlyphMetrics {
             val nline = currentLineNum
             val dx = metrics.getAlignX(align.horizontal, nline)
@@ -280,7 +260,11 @@ fun <T> Font.drawText(
                 ctx.transform(this.transform)
                 //ctx.translate(+m.width * transformAnchor.sx, -m.height * transformAnchor.sy)
                 ctx.fillStyle = this.paint ?: paint ?: NonePaint
-                this.font.renderGlyph(ctx, size, codePoint, 0.0, 0.0, null, glyphMetrics, reader, beforeDraw = doRender)
+                //println("n=$n, textRangeStart=$textRangeStart, textRangeEnd=$textRangeEnd, doDraw=$doDraw")
+                if (n in textRangeStart until textRangeEnd) {
+                    this.font.renderGlyph(ctx, size, codePoint, 0.0, 0.0, null, glyphMetrics, reader, beforeDraw = doRender)
+                }
+                n++
             }
             if (glyphs != null) {
                 val glyph = PlacedGlyphMetrics(

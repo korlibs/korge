@@ -90,8 +90,12 @@ fun Context2d.drawRichText(
     stroke: Stroke? = null,
     align: TextAlignment = TextAlignment.TOP_LEFT,
     includeFirstLineAlways: Boolean = true,
-) {
+    textRangeStart: Int = 0,
+    textRangeEnd: Int = Int.MAX_VALUE,
+): Int {
     val result = text.place(bounds, wordWrap, includePartialLines, ellipsis, fill, stroke, align, includeFirstLineAlways = includeFirstLineAlways)
+    var n = 0
+    val metrics = TextMetricsResult()
     for (place in result.placements) {
         drawText(
             place.text,
@@ -101,6 +105,13 @@ fun Context2d.drawRichText(
             fillStyle = place.fillStyle,
             stroke = place.stroke,
             align = TextAlignment.BASELINE_LEFT,
+            textRangeStart = textRangeStart - n,
+            textRangeEnd = textRangeEnd - n,
+            outMetrics = metrics,
+            renderer = DefaultStringTextRenderer
         )
+        //n += place.text.length
+        n += metrics.glyphs.size
     }
+    return n
 }
