@@ -2,29 +2,24 @@
 
 package com.soywiz.korge.ui
 
-import com.soywiz.kds.extraProperty
-import com.soywiz.kds.getCyclicOrNull
-import com.soywiz.kds.getExtra
-import com.soywiz.kds.hasExtra
-import com.soywiz.korev.Key
-import com.soywiz.korev.KeyEvent
-import com.soywiz.korev.SoftKeyboardConfig
-import com.soywiz.korev.ISoftKeyboardConfig
-import com.soywiz.korge.annotations.KorgeExperimental
-import com.soywiz.korge.component.KeyComponent
-import com.soywiz.korge.view.Stage
-import com.soywiz.korge.view.View
-import com.soywiz.korge.view.Views
-import com.soywiz.korge.view.descendantsOfType
-import com.soywiz.korge.view.descendantsWith
-import kotlin.native.concurrent.ThreadLocal
+import com.soywiz.kds.*
+import com.soywiz.korev.*
+import com.soywiz.korge.annotations.*
+import com.soywiz.korge.component.*
+import com.soywiz.korge.view.*
+import kotlin.native.concurrent.*
 
 @KorgeExperimental
 interface UIFocusable {
-    val UIFocusManager.focusView: View
+    val UIFocusManager.Scope.focusView: View
     var tabIndex: Int
-    var focused: Boolean
+    fun focusChanged(value: Boolean)
 }
+var UIFocusable.focused: Boolean
+    get() = UIFocusManager.Scope.focusView.stage?.uiFocusedView == UIFocusManager.Scope.focusView
+    set(value) {
+        if (value) UIFocusManager.Scope.focusView.stage?.uiFocusManager?.uiFocusedView = this
+    }
 
 @ThreadLocal
 private var View._focusable: UIFocusable? by extraProperty { null }
@@ -42,9 +37,17 @@ fun UIFocusable.blur() { focused = false }
 
 @KorgeExperimental
 class UIFocusManager(override val view: Stage) : KeyComponent {
+    object Scope
+
     val stage = view
     val gameWindow get() = view.gameWindow
     var uiFocusedView: UIFocusable? = null
+        set(value) {
+            if (field == value) return
+            field?.focusChanged(false)
+            field = value
+            field?.focusChanged(true)
+        }
 
     //private var toggleKeyboardTimeout: Closeable? = null
 
@@ -54,7 +57,7 @@ class UIFocusManager(override val view: Stage) : KeyComponent {
             if (show) {
                 if (view != null) {
                     view.apply {
-                        gameWindow.setInputRectangle(this@UIFocusManager.focusView.getWindowBounds(stage))
+                        gameWindow.setInputRectangle(Scope.focusView.getWindowBounds(stage))
                     }
                 }
                 gameWindow.showSoftKeyboard(config = view as? ISoftKeyboardConfig?)
@@ -74,6 +77,7 @@ class UIFocusManager(override val view: Stage) : KeyComponent {
                 .mapNotNull { it.focusable }
             val sortedFocusables = focusables.sortedBy { it.tabIndex }
             val index = sortedFocusables.indexOf(uiFocusedView).takeIf { it >= 0 }
+            //println("sortedFocusables=$sortedFocusables, index=$index, dir=$dir")
             sortedFocusables
                 .getCyclicOrNull(
                     when {

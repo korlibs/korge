@@ -34,7 +34,7 @@ open class UIBaseCheckBoxSkinMaterial(
             val extraPad2 = extraPad * 2
             ctx2d.materialRoundRect(
                 0.0 + extraPad, 0.0 + extraPad, height - extraPad2, height - extraPad2, radius = RectCorners((height - extraPad2) * 0.5),
-                color = item.overRatio.interpolate(Colors.TRANSPARENT, if (item.checkedRatio > 0.5) selectedColor.withAd(0.3) else unselectedColor.withAd(0.3))
+                color = (kotlin.math.max(item.overRatio, item.focusRatio)).interpolate(Colors.TRANSPARENT, if (item.checkedRatio > 0.5) selectedColor.withAd(0.3) else unselectedColor.withAd(0.3))
             )
             item.highlights.fastForEach {
                 ctx2d.materialRoundRect(

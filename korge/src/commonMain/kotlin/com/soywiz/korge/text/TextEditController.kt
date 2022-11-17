@@ -1,56 +1,27 @@
 package com.soywiz.korge.text
 
-import com.soywiz.kds.HistoryStack
-import com.soywiz.klock.seconds
-import com.soywiz.kmem.Platform
-import com.soywiz.kmem.clamp
-import com.soywiz.korev.ISoftKeyboardConfig
-import com.soywiz.korev.Key
-import com.soywiz.korev.KeyEvent
-import com.soywiz.korev.SoftKeyboardConfig
-import com.soywiz.korge.annotations.KorgeExperimental
-import com.soywiz.korge.component.onNewAttachDetach
-import com.soywiz.korge.input.cursor
-import com.soywiz.korge.input.doubleClick
-import com.soywiz.korge.input.newKeys
-import com.soywiz.korge.input.newMouse
-import com.soywiz.korge.time.timers
-import com.soywiz.korge.ui.UIFocusManager
-import com.soywiz.korge.ui.UIFocusable
-import com.soywiz.korge.ui.blur
-import com.soywiz.korge.ui.focusable
-import com.soywiz.korge.ui.uiFocusManager
-import com.soywiz.korge.ui.uiFocusedView
-import com.soywiz.korge.util.CancellableGroup
-import com.soywiz.korge.view.BlendMode
-import com.soywiz.korge.view.Container
-import com.soywiz.korge.view.RenderableView
-import com.soywiz.korge.view.Stage
-import com.soywiz.korge.view.Text
-import com.soywiz.korge.view.View
-import com.soywiz.korge.view.debug.debugVertexView
-import com.soywiz.korgw.GameWindow
-import com.soywiz.korgw.TextClipboardData
-import com.soywiz.korim.color.Colors
-import com.soywiz.korim.color.RGBA
-import com.soywiz.korim.font.Font
-import com.soywiz.korio.async.Signal
-import com.soywiz.korio.lang.Closeable
-import com.soywiz.korio.lang.cancel
-import com.soywiz.korio.lang.withInsertion
-import com.soywiz.korio.lang.withoutIndex
-import com.soywiz.korio.lang.withoutRange
+import com.soywiz.kds.*
+import com.soywiz.klock.*
+import com.soywiz.kmem.*
+import com.soywiz.korev.*
+import com.soywiz.korge.annotations.*
+import com.soywiz.korge.component.*
+import com.soywiz.korge.input.*
+import com.soywiz.korge.time.*
+import com.soywiz.korge.ui.*
+import com.soywiz.korge.util.*
+import com.soywiz.korge.view.*
+import com.soywiz.korge.view.debug.*
+import com.soywiz.korgw.*
+import com.soywiz.korim.color.*
+import com.soywiz.korim.font.*
+import com.soywiz.korio.async.*
+import com.soywiz.korio.lang.*
 import com.soywiz.korio.util.length
-import com.soywiz.korma.geom.Margin
-import com.soywiz.korma.geom.Point
-import com.soywiz.korma.geom.PointArrayList
-import com.soywiz.korma.geom.bezier.Bezier
-import com.soywiz.korma.geom.firstPoint
-import com.soywiz.korma.geom.lastPoint
-import kotlin.math.absoluteValue
-import kotlin.math.max
-import kotlin.math.min
-import kotlin.math.sign
+import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.bezier.*
+import kotlin.math.*
+import kotlin.text.isLetterOrDigit
 
 @KorgeExperimental
 class TextEditController(
@@ -66,7 +37,7 @@ class TextEditController(
     val stage: Stage? get() = textView.stage
     var initialText: String = textView.text
     private val closeables = CancellableGroup()
-    override val UIFocusManager.focusView: View get() = this@TextEditController.textView
+    override val UIFocusManager.Scope.focusView: View get() = this@TextEditController.textView
     val onEscPressed = Signal<TextEditController>()
     val onReturnPressed = Signal<TextEditController>()
     val onTextUpdated = Signal<TextEditController>()
@@ -344,37 +315,34 @@ class TextEditController(
 
     var acceptTextChange: (old: String, new: String) -> Boolean = { old, new -> true }
 
-    override var focused: Boolean
-        set(value) {
-            if (value == focused) return
-
-            bg?.isFocused = value
-
-            if (value) {
-                if (stage?.uiFocusedView != this) {
-                    stage?.uiFocusedView?.blur()
-                    stage?.uiFocusedView = this
-                }
-                caret.visible = true
-                //println("stage?.gameWindow?.showSoftKeyboard(): ${stage?.gameWindow}")
-                stage?.uiFocusManager?.requestToggleSoftKeyboard(true, this)
-            } else {
-                if (stage?.uiFocusedView == this) {
-                    stage?.uiFocusedView = null
-                    caret.visible = false
-                    if (stage?.uiFocusedView !is ISoftKeyboardConfig) {
-                        stage?.uiFocusManager?.requestToggleSoftKeyboard(false, null)
-                    }
-                }
-            }
-
-            if (value) {
-                onFocused(this)
-            } else {
-                onFocusLost(this)
+    override fun focusChanged(value: Boolean) {
+        if (value) {
+            caret.visible = true
+            //println("stage?.gameWindow?.showSoftKeyboard(): ${stage?.gameWindow}")
+            stage?.uiFocusManager?.requestToggleSoftKeyboard(true, this)
+        } else {
+            caret.visible = false
+            if (stage?.uiFocusedView !is ISoftKeyboardConfig) {
+                stage?.uiFocusManager?.requestToggleSoftKeyboard(false, null)
             }
         }
-        get() = stage?.uiFocusedView == this
+
+        if (value) {
+            onFocused(this)
+        } else {
+            onFocusLost(this)
+        }
+    }
+
+    //override var focused: Boolean
+    //    set(value) {
+    //        if (value == focused) return
+//
+    //        bg?.isFocused = value
+//
+    //
+    //    }
+    //    get() = stage?.uiFocusedView == this
 
     init {
         //println(metrics)
