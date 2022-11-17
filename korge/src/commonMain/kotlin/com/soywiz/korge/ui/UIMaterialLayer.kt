@@ -1,7 +1,6 @@
 package com.soywiz.korge.ui
 
 import com.soywiz.kds.*
-import com.soywiz.kds.iterators.*
 import com.soywiz.klock.*
 import com.soywiz.korge.animate.*
 import com.soywiz.korge.render.*
@@ -9,7 +8,6 @@ import com.soywiz.korge.tween.*
 import com.soywiz.korge.view.*
 import com.soywiz.korge.view.property.*
 import com.soywiz.korim.color.*
-import com.soywiz.korim.vector.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.interpolation.*
 
@@ -18,6 +16,38 @@ inline fun Container.uiMaterialLayer(
     height: Double = UI_DEFAULT_HEIGHT,
     block: @ViewDslMarker UIMaterialLayer.() -> Unit = {}
 ): UIMaterialLayer = UIMaterialLayer(width, height).addTo(this).apply(block)
+
+class MaterialLayerHighlights(val view: View) {
+    class Highlight(var pos: IPoint, var radiusRatio: Double, var alpha: Double)
+
+    @PublishedApi internal val highlights = fastArrayListOf<Highlight>()
+    private val highlightsActive = fastArrayListOf<Highlight>()
+
+    val size: Int get() = highlights.size
+
+    inline fun fastForEach(block: (Highlight) -> Unit) {
+        highlights.fastForEach(block)
+    }
+
+    fun addHighlight(pos: IPoint) {
+        removeHighlights()
+        val highlight = Highlight(pos, 0.0, 1.0)
+        highlights += highlight
+        highlightsActive += highlight
+        view.simpleAnimator.tween(highlight::radiusRatio[1.0], V2Callback { view.invalidateRender() }, time = 0.5.seconds, easing = Easing.EASE_IN)
+    }
+
+    @ViewProperty
+    fun removeHighlights() {
+        highlightsActive.fastForEach {
+            view.simpleAnimator.sequence {
+                tween(it::alpha[0.0], V2Callback { view.invalidateRender() }, time = 0.2.seconds, easing = Easing.EASE_IN)
+                block { highlights.remove(it) }
+            }
+        }
+        highlightsActive.clear()
+    }
+}
 
 class UIMaterialLayer(
     width: Double = 100.0,
@@ -44,10 +74,7 @@ class UIMaterialLayer(
     @ViewProperty
     var shadowOffset: IPoint = IPoint.ZERO; set(value) { field = value; invalidateRender() }
 
-    class Highlight(var pos: IPoint, var radiusRatio: Double, var alpha: Double)
-
-    private val highlights = fastArrayListOf<Highlight>()
-    private val highlightsActive = fastArrayListOf<Highlight>()
+    private val highlights = MaterialLayerHighlights(this)
 
     override fun renderInternal(ctx: RenderContext) {
         if (!visible) return
@@ -88,27 +115,17 @@ class UIMaterialLayer(
         }
     }
 
-    fun addHighlight(pos: IPoint) {
-        removeHighlights()
-        val highlight = Highlight(pos, 0.0, 1.0)
-        highlights += highlight
-        highlightsActive += highlight
-        simpleAnimator.tween(highlight::radiusRatio[1.0], V2Callback { invalidateRender() }, time = 0.5.seconds, easing = Easing.EASE_IN)
-    }
-
     @ViewProperty
     private fun addHighlightAction() {
         addHighlight(Point(0.5, 0.5))
     }
 
+    fun addHighlight(pos: IPoint) {
+        highlights.addHighlight(pos)
+    }
+
     @ViewProperty
     fun removeHighlights() {
-        highlightsActive.fastForEach {
-            simpleAnimator.sequence {
-                tween(it::alpha[0.0], V2Callback { invalidateRender() }, time = 0.2.seconds, easing = Easing.EASE_IN)
-                block { highlights.remove(it) }
-            }
-        }
-        highlightsActive.clear()
+        highlights.removeHighlights()
     }
 }

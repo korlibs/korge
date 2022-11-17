@@ -10,11 +10,8 @@ import com.soywiz.korge.view.property.*
 import com.soywiz.korgw.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.font.*
-import com.soywiz.korim.format.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.std.*
-import com.soywiz.korma.geom.shape.*
-import com.soywiz.korma.geom.vector.*
 import com.soywiz.korma.interpolation.*
 
 class MainUI : Scene() {
@@ -29,6 +26,7 @@ class MainUI : Scene() {
     }
 
     override suspend fun SContainer.sceneMain() {
+        println("[1]")
 
         uiSkin = UISkin {
             val colorTransform = ColorTransform(0.7, 0.9, 1.0)
@@ -56,16 +54,22 @@ class MainUI : Scene() {
             enable()
         }
 
-        uiCheckBox(text = "HELLO WORLD!") {
-            position(128, 128 + 64)
+        uiVerticalStack(padding = 8.0, adjustSize = false) {
+            position(128, 128 + 64 + 16)
+            uiCheckBox(text = "CheckBox1")
+            uiCheckBox(text = "CheckBox2")
+            uiComboBox(items = listOf("ComboBox", "World", "this", "is", "a", "list", "of", "elements"))
+            val group = UIRadioButtonGroup()
+            uiRadioButton(text = "Radio 1", group = group)
+            uiRadioButton(text = "Radio 2", group = group)
+            //uiSwitch(text = "Switch1")
+            //uiSwitch(text = "Switch2")
+            uiSlider(value = 0, min = -32, max = +32).changed {}
+            uiTextInput("TextInput")
         }
 
-        uiComboBox(items = listOf("ComboBox", "World", "this", "is", "a", "list", "of", "elements")) {
-            position(128, 128 + 64 + 32)
-        }
-
-        shapeView(buildVectorPath { this.circle(0, 0, 100) })
-        image(resourcesVfs["korge.png"].readBitmap()).scale(0.25)
+        //shapeView(buildVectorPath { this.circle(0, 0, 100) })
+        //image(resourcesVfs["korge.png"].readBitmap()).scale(0.25)
 
         //uiMaterialLayer(50.0, 50.0) {
         //    xy(128, 260)

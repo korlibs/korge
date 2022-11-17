@@ -1,8 +1,11 @@
 package com.soywiz.korge.ui
 
 import com.soywiz.kds.*
+import com.soywiz.klock.*
+import com.soywiz.korge.animate.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.render.*
+import com.soywiz.korge.tween.*
 import com.soywiz.korge.view.*
 import com.soywiz.korge.view.property.*
 import com.soywiz.korim.bitmap.*
@@ -24,8 +27,7 @@ open class UICheckBox(
     height: Double = UI_DEFAULT_HEIGHT,
     checked: Boolean = false,
     text: String = "CheckBox",
-) : UIBaseCheckBox<UICheckBox>(width, height, checked, text) {
-
+) : UIBaseCheckBox<UICheckBox>(width, height, checked, text, UIBaseCheckBoxSkin.Kind.CHECKBOX) {
 }
 
 open class UIBaseCheckBox<T : UIBaseCheckBox<T>>(
@@ -34,6 +36,7 @@ open class UIBaseCheckBox<T : UIBaseCheckBox<T>>(
     checked: Boolean = false,
     @ViewProperty
     var text: String = "CheckBox",
+    var skinKind: UIBaseCheckBoxSkin.Kind,
 ) : UIView(width, height), ViewLeaf {
     val thisAsT get() = this.fastCastTo<T>()
     val onChange = Signal<T>()
@@ -45,19 +48,22 @@ open class UIBaseCheckBox<T : UIBaseCheckBox<T>>(
             field = value
             onChange(thisAsT)
             invalidate()
+            simpleAnimator.tween(this::checkedRatio[if (value) 1.0 else 0.0], time = 0.1.seconds)
         }
 
+    var skin: UIBaseCheckBoxSkin = UIBaseCheckBoxSkinMaterial
     private val background = solidRect(width, height, Colors.TRANSPARENT_BLACK)
     val canvas = renderableView {
-        ctx2d.materialRoundRect(
-            0.0, 0.0, height, height, radius = RectCorners(height * 0.5),
-        )
+        skin.render(ctx2d, width, height, this@UIBaseCheckBox, skinKind)
     }
-    private val box = ninePatch(buttonNormal, height, height)
-    private val icon = image(checkBoxIcon)
     private val textView = textBlock(RichTextData(text))
+    var checkedRatio: Double = 0.0; private set
+    var overRatio: Double = 0.0; private set
 
-    private var over by uiObservable(false) { updateState() }
+    private var over by uiObservable(false) {
+        updateState()
+        simpleAnimator.tween(this::overRatio[if (it) 1.0 else 0.0], time = 0.1.seconds)
+    }
     private var pressing by uiObservable(false) { updateState() }
 
     private val textBounds = Rectangle()
@@ -87,11 +93,6 @@ open class UIBaseCheckBox<T : UIBaseCheckBox<T>>(
         textView.setSize(width - height - 8.0, height)
 
         background.size(width, height)
-        box.ninePatch = getNinePatch(this@UIBaseCheckBox.over)
-        box.size(height, height)
-
-        fitIconInRect(icon, checkBoxIcon, box.width, box.height, Anchor.MIDDLE_CENTER)
-        icon.visible = checked
     }
 
     open fun getNinePatch(over: Boolean): NinePatchBmpSlice {
@@ -101,13 +102,23 @@ open class UIBaseCheckBox<T : UIBaseCheckBox<T>>(
         }
     }
 
+    val highlights = MaterialLayerHighlights(this)
+
     init {
         mouse {
             onOver { this@UIBaseCheckBox.over = true }
             onOut { this@UIBaseCheckBox.over = false }
-            onDown { this@UIBaseCheckBox.pressing = true }
-            onUpAnywhere { this@UIBaseCheckBox.pressing = false }
-            onClick { if (!it.views.editingMode) this@UIBaseCheckBox.onComponentClick() }
+            onDown {
+                this@UIBaseCheckBox.pressing = true
+                highlights.addHighlight(Point(0.5, 0.5))
+            }
+            onUpAnywhere {
+                this@UIBaseCheckBox.pressing = false
+                highlights.removeHighlights()
+            }
+            onClick {
+                if (!it.views.editingMode) this@UIBaseCheckBox.onComponentClick()
+            }
         }
     }
 

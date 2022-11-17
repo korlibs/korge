@@ -39,8 +39,8 @@ suspend fun main() = Korge(
         //Demo(::MainInput),
         //Demo(::MainAnimations),
         //Demo(::MainCache),
-        Demo(::MainEditor),
-        //Demo(::MainUI),
+        //Demo(::MainEditor),
+        Demo(::MainUI),
         //Demo(::MainBunnymark),
         //Demo(::MainBlur),
         //Demo(::MainSDF),
@@ -190,5 +190,6 @@ suspend fun Stage.demoSelector(default: Demo, all: List<Demo>) {
             views.forceRenderEveryFrame = it.checked
         }
     }
-    setDemo(default)
+    comboBox.selectedItem = default
+    //setDemo(default)
 }

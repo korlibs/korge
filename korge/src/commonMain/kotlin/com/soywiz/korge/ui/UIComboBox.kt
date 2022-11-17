@@ -17,6 +17,8 @@ import com.soywiz.korma.interpolation.*
 import com.soywiz.korma.length.LengthExtensions.Companion.pt
 import kotlin.native.concurrent.*
 
+typealias UIDropDown<T> = UIComboBox<T>
+
 inline fun <T> Container.uiComboBox(
     width: Double = UI_DEFAULT_WIDTH,
     height: Double = UI_DEFAULT_HEIGHT,
@@ -113,10 +115,14 @@ open class UIComboBox<T>(
         invisibleRect.onOver {
             selectedButton.simulateOver()
             //expandButton.simulateOver()
+            //selectedButton.background.borderColor = MaterialColors.BLUE_300
+            //selectedButton.background.borderSize = 2.0
         }
         invisibleRect.onOut {
             selectedButton.simulateOut()
             //expandButton.simulateOut()
+            //selectedButton.background.borderColor = MaterialColors.GRAY_400
+            //selectedButton.background.borderSize = 1.0
         }
         invisibleRect.onDown {
             selectedButton.simulateDown()
@@ -143,6 +149,9 @@ open class UIComboBox<T>(
         }
 
         if (!itemsView.visible) {
+            //itemsView.removeFromParent()
+            this?.parent?.addChild(itemsView)
+            itemsView.zIndex = +100000.0
             itemsView.visible = true
             if (immediate) {
                 itemsView.alpha = 1.0
