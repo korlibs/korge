@@ -22,13 +22,17 @@ inline fun Container.uiScrollable(
     width: Double = 256.0,
     height: Double = 256.0,
     config: UIScrollable.() -> Unit = {},
-    block: @ViewDslMarker Container.(UIScrollable) -> Unit = {}
-): UIScrollable = UIScrollable(width, height)
+    cache: Boolean = true,
+    block: @ViewDslMarker Container.(UIScrollable) -> Unit = {},
+): UIScrollable = UIScrollable(width, height, cache)
     .addTo(this).apply(config).also { block(it.container, it) }
 
 // @TODO: Horizontal. And to be able to toggle vertical/horizontal
 @KorgeExperimental
-open class UIScrollable(width: Double, height: Double) : UIView(width, height) {
+open class UIScrollable(width: Double, height: Double, cache: Boolean = true) : UIView(
+    width, height,
+    cache = cache
+) {
     @PublishedApi
     internal var overflowEnabled: Boolean = true
 
@@ -171,6 +175,15 @@ open class UIScrollable(width: Double, height: Double) : UIView(width, height) {
     fun ensurePointIsVisible(x: Double, y: Double, anchor: Anchor = Anchor.CENTER) {
         horizontal.ensurePositionIsVisible(x, anchor.sx)
         vertical.ensurePositionIsVisible(y, anchor.sy)
+    }
+
+    fun ensureRectIsVisible(rect: IRectangle, anchor: Anchor = Anchor.CENTER) {
+        ensurePointIsVisible(rect.centerX, rect.centerY, anchor)
+    }
+
+    fun ensureViewIsVisible(view: View, anchor: Anchor = Anchor.CENTER) {
+        ensureRectIsVisible(view.getBounds(this), anchor)
+        scrollParentsToMakeVisible()
     }
 
     init {

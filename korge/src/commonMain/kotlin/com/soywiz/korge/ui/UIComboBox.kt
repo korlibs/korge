@@ -74,11 +74,11 @@ open class UIComboBox<T>(
     //private val expandButton = uiButton(height, height, icon = comboBoxExpandIcon).position(width - height, 0.0)
     private val invisibleRect = solidRect(width, height, Colors.TRANSPARENT_BLACK)
 
-    private val itemsView = uiScrollable(width, height = 128.0)
-    private val itemsViewBackground = itemsView.uiMaterialLayer(width, height = 128.0) {
+    private val itemsViewBackground = uiMaterialLayer(width, height = 128.0) {
         radius = RectCorners(0.0, 0.0, 12.0, 12.0)
         zIndex = -1000.0
     }
+    private val itemsView = uiScrollable(width, height = 128.0)
     private val verticalList = itemsView.container.uiVerticalList(object : UIVerticalList.Provider {
         override val numItems: Int = items.size
         override val fixedHeight: Double = itemHeight
@@ -150,22 +150,31 @@ open class UIComboBox<T>(
 
         if (!itemsView.visible) {
             //itemsView.removeFromParent()
+            this?.parent?.addChild(itemsViewBackground)
             this?.parent?.addChild(itemsView)
-            itemsView.zIndex = +100000.0
+            itemsView.zIndex = +100001.0
             itemsView.visible = true
+            itemsViewBackground.zIndex = +100000.0
+            itemsViewBackground.visible = true
             if (immediate) {
                 itemsView.alpha = 1.0
                 itemsView.scaleY = 1.0
+                itemsViewBackground.alpha = 1.0
+                itemsViewBackground.scaleY = 1.0
                 expandButtonIcon.scaleY = -1.0
                 selectedButton.background.borderColor = MaterialColors.BLUE_300
                 selectedButton.background.borderSize = 2.0
             } else {
                 itemsView.alpha = 0.0
                 itemsView.scaleY = 0.0
+                itemsViewBackground.alpha = 0.0
+                itemsViewBackground.scaleY = 0.0
                 simpleAnimator.cancel().sequence {
                     tween(
                         itemsView::alpha[0.0, 1.0],
                         itemsView::scaleY[0.0, 1.0],
+                        itemsViewBackground::alpha[0.0, 1.0],
+                        itemsViewBackground::scaleY[0.0, 1.0],
                         expandButtonIcon::scaleY[-1.0],
                         selectedButton.background::borderColor[MaterialColors.BLUE_300],
                         selectedButton.background::borderSize[2.0],
@@ -182,8 +191,8 @@ open class UIComboBox<T>(
             .size(width, viewportHeight.toDouble())
             .setGlobalXY(localToGlobal(Point(0.0, height + 8.0)))
         itemsViewBackground
-            .xy(0, -8)
             .size(width, itemsView.height + 16)
+            .setGlobalXY(localToGlobal(Point(0.0, height)))
         verticalList
             .size(width, verticalList.height)
 
@@ -206,6 +215,8 @@ open class UIComboBox<T>(
             if (immediate) {
                 itemsView.alpha = 0.0
                 itemsView.scaleY = 0.0
+                itemsViewBackground.alpha = 0.0
+                itemsViewBackground.scaleY = 0.0
                 expandButtonIcon.scaleY = +1.0
                 selectedButton.background.borderColor = MaterialColors.GRAY_400
                 selectedButton.background.borderSize = 1.0
@@ -215,6 +226,8 @@ open class UIComboBox<T>(
                     tween(
                         itemsView::alpha[0.0],
                         itemsView::scaleY[0.0],
+                        itemsViewBackground::alpha[0.0],
+                        itemsViewBackground::scaleY[0.0],
                         expandButtonIcon::scaleY[+1.0],
                         selectedButton.background::borderColor[MaterialColors.GRAY_400],
                         selectedButton.background::borderSize[1.0],
@@ -281,6 +294,7 @@ open class UIComboBox<T>(
         invisibleRect.size(width, height)
         selectedButton.size(width, height)
         selectedButton.text = selectedItem?.toString() ?: ""
+        expandButtonIcon.position(width - 16.0, height * 0.5)
         //expandButton.position(width - height, 0.0).size(height, height)
     }
 }

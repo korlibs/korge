@@ -1,14 +1,11 @@
 package com.soywiz.korge.view
 
-import com.soywiz.korge.internal.KorgeInternal
-import com.soywiz.korge.render.RenderContext
+import com.soywiz.korge.internal.*
+import com.soywiz.korge.render.*
 import com.soywiz.korge.view.filter.*
-import com.soywiz.korio.util.niceStr
-import com.soywiz.korma.geom.Rectangle
-import com.soywiz.korma.geom.applyTransform
-import com.soywiz.korma.geom.setTo
-import com.soywiz.korma.math.max
-import com.soywiz.korma.math.min
+import com.soywiz.korio.util.*
+import com.soywiz.korma.geom.*
+import com.soywiz.korma.math.*
 
 inline fun Container.fixedSizeContainer(
     width: Double,
@@ -38,7 +35,7 @@ open class FixedSizeContainer(
 ) : Container(), View.Reference {
 
     override fun getLocalBoundsInternal(out: Rectangle) {
-        out.setTo(0, 0, width, height)
+        out.setTo(0.0, 0.0, width, height)
     }
 
     override fun toString(): String {

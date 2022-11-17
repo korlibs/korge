@@ -13,6 +13,7 @@ import kotlin.native.concurrent.*
 interface UIFocusable {
     val UIFocusManager.Scope.focusView: View
     var tabIndex: Int
+    val isFocusable: Boolean
     fun focusChanged(value: Boolean)
 }
 var UIFocusable.focused: Boolean
@@ -39,7 +40,10 @@ fun UIFocusable.blur() { focused = false }
 class UIFocusManager(override val view: Stage) : KeyComponent {
     object Scope
 
+    private val UIFocusable.rfocusView get() = this.run { Scope.focusView }
+
     val stage = view
+    val views get() = stage.views
     val gameWindow get() = view.gameWindow
     var uiFocusedView: UIFocusable? = null
         set(value) {
@@ -47,6 +51,7 @@ class UIFocusManager(override val view: Stage) : KeyComponent {
             field?.focusChanged(false)
             field = value
             field?.focusChanged(true)
+            if (value != null) views.debugHightlightView(value.rfocusView)
         }
 
     //private var toggleKeyboardTimeout: Closeable? = null
@@ -75,7 +80,7 @@ class UIFocusManager(override val view: Stage) : KeyComponent {
             val focusables = stage
                 .descendantsWith { it.focusable != null }
                 .mapNotNull { it.focusable }
-            val sortedFocusables = focusables.sortedBy { it.tabIndex }
+            val sortedFocusables = focusables.sortedBy { it.tabIndex }.filter { it.isFocusable }
             val index = sortedFocusables.indexOf(uiFocusedView).takeIf { it >= 0 }
             //println("sortedFocusables=$sortedFocusables, index=$index, dir=$dir")
             sortedFocusables
@@ -86,7 +91,10 @@ class UIFocusManager(override val view: Stage) : KeyComponent {
                         else -> 0
                     }
                 )
-                ?.focus()
+                ?.also {
+                    it.focus()
+                    it.rfocusView.scrollParentsToMakeVisible()
+                }
 
             //println("FOCUS MANAGER TAB shift=$shift")
             //for (view in listOf(uiFocusedView, if (shift) stage.lastTreeView else stage)) {

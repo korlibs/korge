@@ -312,7 +312,7 @@ class TextEditController(
     fun rightIndex(index: Int, word: Boolean): Int = nextIndex(index, +1, word)
 
     override var tabIndex: Int = 0
-
+    override val isFocusable: Boolean get() = true
     var acceptTextChange: (old: String, new: String) -> Boolean = { old, new -> true }
 
     override fun focusChanged(value: Boolean) {

@@ -2,6 +2,8 @@ package com.soywiz.korge.ui
 
 import com.soywiz.kds.iterators.*
 import com.soywiz.klock.*
+import com.soywiz.kmem.*
+import com.soywiz.korev.*
 import com.soywiz.korge.animate.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.tween.*
@@ -68,7 +70,7 @@ open class UIButton(
 	height: Double = 32.0,
     text: String = "",
     icon: BmpSlice? = null,
-) : UIView(width, height) {
+) : UIView(width, height), UIFocusable {
     companion object {
         const val DEFAULT_WIDTH = UI_DEFAULT_WIDTH
         const val DEFAULT_HEIGHT = UI_DEFAULT_HEIGHT
@@ -217,7 +219,7 @@ open class UIButton(
 	fun simulateOut() {
         if (!bover) return
 		bover = false
-        updatedUIButton( over = false)
+        updatedUIButton(over = false)
 	}
 
 	fun simulatePressing(value: Boolean) {
@@ -245,6 +247,7 @@ open class UIButton(
                 //println("singleTouch.start")
 
                 simulateDown(it.localX / scaledWidth, it.localY / scaledHeight)
+                focused = true
             }
             endAnywhere {
                 //println("singleTouch.endAnywhere")
@@ -273,6 +276,10 @@ open class UIButton(
 		}
         this.cursor = GameWindow.Cursor.HAND
         setInitialState()
+    }
+
+    fun simulateClick(views: Views) {
+        touch.simulateTapAt(views, localToGlobal(Point(width * 0.5, height * 0.5)))
     }
 
     open fun updatedUIButton(down: Boolean? = null, over: Boolean? = null, px: Double = 0.0, py: Double = 0.0, immediate: Boolean = false) {
@@ -345,6 +352,27 @@ open class UIButton(
 
     init {
         updatedUIButton(down = false, over = false, immediate = true)
+    }
+
+    var focusRatio: Double = 0.0; private set(value) { field = value; invalidateRender() }
+    override val UIFocusManager.Scope.focusView: View get() = this@UIButton
+    override var tabIndex: Int = 0
+    override val isFocusable: Boolean get() = enabled
+    override fun focusChanged(value: Boolean) {
+        //simpleAnimator.tween(this::focusRatio[value.toInt().toDouble()], time = 0.2.seconds)
+        updatedUIButton(over = value)
+    }
+
+    init {
+        keys {
+            down(Key.SPACE, Key.RETURN) { if (this@UIButton.focused) simulateDown(0.5, 0.5) }
+            up(Key.SPACE, Key.RETURN) {
+                if (bpressing) {
+                    simulateUp()
+                    simulateClick(views)
+                }
+            }
+        }
     }
 }
 

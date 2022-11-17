@@ -21,7 +21,7 @@ import kotlin.reflect.*
 annotation class AnimatorDslMarker
 
 val View.simpleAnimator: Animator by Extra.PropertyThis {
-    animator(parallel = true)
+    animator(parallel = true).also { it.autoInvalidateView = true }
 }
 
 fun View.animator(

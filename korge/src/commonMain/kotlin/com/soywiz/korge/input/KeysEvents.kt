@@ -1,24 +1,15 @@
 package com.soywiz.korge.input
 
-import com.soywiz.kds.Extra
-import com.soywiz.klock.TimeSpan
-import com.soywiz.klock.milliseconds
-import com.soywiz.kmem.clamp01
-import com.soywiz.korev.Key
-import com.soywiz.korev.KeyEvent
-import com.soywiz.korge.component.KeyComponent
-import com.soywiz.korge.component.detach
-import com.soywiz.korge.time.interpolate
-import com.soywiz.korge.view.View
-import com.soywiz.korge.view.Views
-import com.soywiz.korge.view.addOptFixedUpdater
-import com.soywiz.korge.view.addUpdaterWithViews
-import com.soywiz.korio.async.AsyncSignal
-import com.soywiz.korio.async.launchImmediately
-import com.soywiz.korio.async.waitSubscriberCloseable
-import com.soywiz.korio.lang.Cancellable
-import com.soywiz.korio.lang.Closeable
-import kotlin.native.concurrent.ThreadLocal
+import com.soywiz.kds.*
+import com.soywiz.klock.*
+import com.soywiz.kmem.*
+import com.soywiz.korev.*
+import com.soywiz.korge.component.*
+import com.soywiz.korge.time.*
+import com.soywiz.korge.view.*
+import com.soywiz.korio.async.*
+import com.soywiz.korio.lang.*
+import kotlin.native.concurrent.*
 
 class KeysEvents(override val view: View) : KeyComponent, Closeable {
     @PublishedApi
@@ -92,6 +83,10 @@ class KeysEvents(override val view: View) : KeyComponent, Closeable {
 
     fun down(callback: suspend (key: KeyEvent) -> Unit): Closeable = onKeyDown { e -> callback(e) }
     fun down(key: Key, callback: suspend (key: KeyEvent) -> Unit): Closeable = onKeyDown { e -> if (e.key == key) callback(e) }
+    fun down(vararg keys: Key, callback: suspend (key: KeyEvent) -> Unit): Closeable {
+        val keys = keys.toSet()
+        return onKeyDown { e -> if (e.key in keys) callback(e) }
+    }
 
     fun downWithModifiers(key: Key, ctrl: Boolean? = null, shift: Boolean? = null, alt: Boolean? = null, meta: Boolean? = null, callback: suspend (key: KeyEvent) -> Unit): Closeable = onKeyDown { e ->
         if (e.key == key && match(ctrl, e.ctrl) && match(shift, e.shift) && match(alt, e.alt) && match(meta, e.meta)) callback(e)
@@ -101,6 +96,10 @@ class KeysEvents(override val view: View) : KeyComponent, Closeable {
 
     fun up(callback: suspend (key: KeyEvent) -> Unit): Closeable = onKeyUp { e -> callback(e) }
     fun up(key: Key, callback: suspend (key: KeyEvent) -> Unit): Closeable = onKeyUp { e -> if (e.key == key) callback(e) }
+    fun up(vararg keys: Key, callback: suspend (key: KeyEvent) -> Unit): Closeable {
+        val keys = keys.toSet()
+        return onKeyUp { e -> if (e.key in keys) callback(e) }
+    }
 
     fun typed(callback: suspend (key: KeyEvent) -> Unit): Closeable = onKeyTyped { e -> callback(e) }
     fun typed(key: Key, callback: suspend (key: KeyEvent) -> Unit): Closeable = onKeyTyped { e -> if (e.key == key) callback(e) }
@@ -127,7 +126,9 @@ inline fun View.newKeys(callback: KeysEvents.() -> Unit): KeysEvents = KeysEvent
     callback(it)
 }
 
-inline fun <T> View.keys(callback: KeysEvents.() -> T): T = keys.run(callback)
+inline fun <T> View.keys(callback: KeysEvents.() -> T): T {
+    return keys.run(callback)
+}
 
 suspend fun KeysEvents.waitUp(key: Key): KeyEvent = waitUp { it.key == key }
 suspend fun KeysEvents.waitUp(filter: (key: KeyEvent) -> Boolean = { true }): KeyEvent =

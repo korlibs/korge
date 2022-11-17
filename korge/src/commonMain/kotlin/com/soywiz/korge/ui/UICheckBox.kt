@@ -3,6 +3,7 @@ package com.soywiz.korge.ui
 import com.soywiz.kds.*
 import com.soywiz.klock.*
 import com.soywiz.kmem.*
+import com.soywiz.korev.*
 import com.soywiz.korge.animate.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.render.*
@@ -60,7 +61,6 @@ open class UIBaseCheckBox<T : UIBaseCheckBox<T>>(
     private val textView = textBlock(RichTextData(text))
     var checkedRatio: Double = 0.0; private set
     var overRatio: Double = 0.0; private set
-    var focusRatio: Double = 0.0; private set
 
     private var over by uiObservable(false) {
         updateState()
@@ -126,12 +126,21 @@ open class UIBaseCheckBox<T : UIBaseCheckBox<T>>(
 
     protected open fun onComponentClick() {
         this@UIBaseCheckBox.checked = !this@UIBaseCheckBox.checked
+        focused = true
     }
 
+    var focusRatio: Double = 0.0; private set
     override val UIFocusManager.Scope.focusView: View get() = this@UIBaseCheckBox
     override var tabIndex: Int = 0
+    override val isFocusable: Boolean get() = enabled
     override fun focusChanged(value: Boolean) {
         //println("focusChanged=$value")
         simpleAnimator.tween(this::focusRatio[value.toInt().toDouble()], time = 0.2.seconds)
+    }
+
+    init {
+        keys {
+            down(Key.SPACE, Key.RETURN) { if (this@UIBaseCheckBox.focused) onComponentClick() }
+        }
     }
 }

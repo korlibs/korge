@@ -1,16 +1,13 @@
 package com.soywiz.korge.input
 
 import com.soywiz.kds.*
-import com.soywiz.kds.iterators.fastForEach
-import com.soywiz.klock.DateTime
-import com.soywiz.korev.Touch
-import com.soywiz.korev.TouchEvent
-import com.soywiz.korge.component.TouchComponent
-import com.soywiz.korge.view.View
-import com.soywiz.korge.view.Views
-import com.soywiz.korge.view.hitTest
-import com.soywiz.korio.async.Signal
-import com.soywiz.korma.geom.Point
+import com.soywiz.kds.iterators.*
+import com.soywiz.klock.*
+import com.soywiz.korev.*
+import com.soywiz.korge.component.*
+import com.soywiz.korge.view.*
+import com.soywiz.korio.async.*
+import com.soywiz.korma.geom.*
 
 class TouchEvents(override val view: View) : TouchComponent {
     data class Info(
@@ -62,6 +59,21 @@ class TouchEvents(override val view: View) : TouchComponent {
     private val infoPool = Pool { Info(it) }
     private val infoById = FastIntMap<Info>()
     val infos = FastArrayList<Info>()
+
+    fun simulateTapAt(views: Views, globalXY: IPoint) {
+        val ev = TouchEvent(TouchEvent.Type.START)
+        ev.startFrame(TouchEvent.Type.START)
+        ev.touch(0, globalXY.x, globalXY.y, Touch.Status.ADD)
+        ev.endFrame()
+        onTouchEvent(views, ev)
+        ev.startFrame(TouchEvent.Type.END)
+        ev.touch(0, globalXY.x, globalXY.y, Touch.Status.REMOVE)
+        ev.endFrame()
+        onTouchEvent(views, ev)
+
+        view.mouse.click(view.mouse)
+
+    }
 
     override fun onTouchEvent(views: Views, e: TouchEvent) {
         infos.clear()
@@ -119,16 +131,15 @@ class TouchEvents(override val view: View) : TouchComponent {
     }
 }
 
-fun View.touch(block: TouchEvents.() -> Unit) {
-    block(getOrCreateComponentTouch { TouchEvents(this) })
-}
+val View.touch: TouchEvents get() = getOrCreateComponentTouch { TouchEvents(this) }
+fun View.touch(block: TouchEvents.() -> Unit) = block(touch)
 
 // @TODO: Handle several views covering other views (like MouseEvents)
 /**
  * @param block This block is executed once for every different touch
  */
 fun View.singleTouch(removeTouch: Boolean = false, supportStartAnywhere: Boolean = false, block: SingleTouchHandler.(id: Int) -> Unit) {
-    class SingleTouchInfo(val handler: SingleTouchHandler = SingleTouchHandler(), var startedInside: Boolean = false)
+    data class SingleTouchInfo(val handler: SingleTouchHandler = SingleTouchHandler(), var startedInside: Boolean = false)
 
     val ids = FastIntMap<SingleTouchInfo>()
     fun getById(id: Int): SingleTouchInfo = ids.getOrPut(id) { SingleTouchInfo().also { it.handler.block(id) } }
@@ -136,6 +147,7 @@ fun View.singleTouch(removeTouch: Boolean = false, supportStartAnywhere: Boolean
     touch {
         start {
             val info = getById(it.id)
+            //println("TOUCH START: info=$info")
             val handler = info.handler
             info.startedInside = this@singleTouch.hitTest(it.global) != null
             if (handler.start.hasListeners && info.startedInside) {
@@ -147,6 +159,7 @@ fun View.singleTouch(removeTouch: Boolean = false, supportStartAnywhere: Boolean
         }
         move {
             val info = getById(it.id)
+            //println("TOUCH MOVE: info=$info")
             if (!supportStartAnywhere && !info.startedInside) return@move
 
             val handler = info.handler
@@ -162,6 +175,7 @@ fun View.singleTouch(removeTouch: Boolean = false, supportStartAnywhere: Boolean
             val handler = info.handler
 
             val hitTest = if (handler.end.hasListeners || handler.tap.hasListeners) this@singleTouch.hitTest(it.global) != null else false
+            //println("TOUCH END: info=$info, hitTest=$hitTest")
 
             if (hitTest) {
                 handler.end(it)
@@ -169,6 +183,7 @@ fun View.singleTouch(removeTouch: Boolean = false, supportStartAnywhere: Boolean
             handler.endAnywhere(it)
             if ((Point.distance(it.startGlobal, it.global) <= it.views.input.clickDistance) && (it.elapsedTime <= it.views.input.clickTime)) {
                 if (info.startedInside && hitTest) {
+                    //println("TOUCH END: TAP!")
                     handler.tap(it)
                 }
                 handler.tapAnywhere(it)

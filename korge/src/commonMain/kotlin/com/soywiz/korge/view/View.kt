@@ -11,6 +11,7 @@ import com.soywiz.korge.baseview.*
 import com.soywiz.korge.component.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.render.*
+import com.soywiz.korge.ui.*
 import com.soywiz.korge.view.filter.*
 import com.soywiz.korge.view.property.*
 import com.soywiz.korim.color.*
@@ -1819,6 +1820,21 @@ fun View?.ancestorsUpTo(target: View?): List<View> {
     }
     return out
 }
+
+fun View?.firstAncestor(includeThis: Boolean = true, condition: (View) -> Boolean): View? {
+    if (this == null) return null
+    if (includeThis && condition(this)) return this
+    return parent?.firstAncestor(true, condition)
+}
+
+/**
+ * Scroll ancestors to make this view is visible
+ */
+fun View.scrollParentsToMakeVisible() {
+    firstAncestorOfType<UIScrollable>(includeThis = false)?.ensureViewIsVisible(this)
+}
+
+inline fun <reified T : View> View?.firstAncestorOfType(includeThis: Boolean = true): T? = firstAncestor(includeThis) { it is T } as T?
 
 /**
  * Returns a list of all the ancestors (including this) to reach the root node (usually the stage).

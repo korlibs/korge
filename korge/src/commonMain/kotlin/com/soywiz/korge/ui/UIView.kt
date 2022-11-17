@@ -1,22 +1,15 @@
 package com.soywiz.korge.ui
 
 import com.soywiz.kds.*
-import com.soywiz.klock.TimeSpan
-import com.soywiz.korge.baseview.BaseView
-import com.soywiz.korge.component.UpdateComponentWithViews
-import com.soywiz.korge.input.keys
-import com.soywiz.korge.render.RenderContext
-import com.soywiz.korge.view.FixedSizeContainer
-import com.soywiz.korge.view.Image
-import com.soywiz.korge.view.View
-import com.soywiz.korge.view.Views
-import com.soywiz.korge.view.anchor
-import com.soywiz.korge.view.position
-import com.soywiz.korge.view.scale
-import com.soywiz.korim.bitmap.BmpSlice
-import com.soywiz.korma.geom.Anchor
-import com.soywiz.korma.geom.Rectangle
-import kotlin.math.min
+import com.soywiz.klock.*
+import com.soywiz.korge.baseview.*
+import com.soywiz.korge.component.*
+import com.soywiz.korge.input.*
+import com.soywiz.korge.render.*
+import com.soywiz.korge.view.*
+import com.soywiz.korim.bitmap.*
+import com.soywiz.korma.geom.*
+import kotlin.math.*
 
 private val View._defaultUiSkin: UISkin get() = extraCache("_defaultUiSkin") { UISkin("defaultUiSkin") {  } }
 
@@ -38,8 +31,9 @@ val View.realUiSkin: UISkin get() = uiSkin ?: parent?.realUiSkin ?: root._defaul
 
 open class UIView(
 	width: Double = 90.0,
-	height: Double = 32.0
-) : FixedSizeContainer(width, height), UISkinable {
+	height: Double = 32.0,
+    cache: Boolean = false
+) : FixedSizeCachedContainer(width, height, cache = cache), UISkinable {
     @Deprecated("Do not use the old skinning")
     override fun <T> setSkinProperty(property: String, value: T) {
         uiSkinSure.setSkinProperty(property, value)

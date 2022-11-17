@@ -71,6 +71,7 @@ open class UIRadioButton(
 
     override fun onComponentClick() {
         checked = true
+        focused = true
     }
 
     override fun getNinePatch(over: Boolean): NinePatchBmpSlice {
