@@ -357,7 +357,7 @@ open class UIButton(
     var focusRatio: Double = 0.0; private set(value) { field = value; invalidateRender() }
     override val UIFocusManager.Scope.focusView: View get() = this@UIButton
     override var tabIndex: Int = 0
-    override val isFocusable: Boolean get() = enabled
+    override var isFocusable: Boolean = true
     override fun focusChanged(value: Boolean) {
         //simpleAnimator.tween(this::focusRatio[value.toInt().toDouble()], time = 0.2.seconds)
         updatedUIButton(over = value)

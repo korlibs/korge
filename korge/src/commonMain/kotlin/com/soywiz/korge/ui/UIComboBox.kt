@@ -2,6 +2,8 @@ package com.soywiz.korge.ui
 
 import com.soywiz.kds.*
 import com.soywiz.klock.*
+import com.soywiz.kmem.*
+import com.soywiz.korev.*
 import com.soywiz.korge.animate.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.render.*
@@ -35,13 +37,16 @@ open class UIComboBox<T>(
     height: Double = UI_DEFAULT_HEIGHT,
     selectedIndex: Int = 0,
     items: List<T> = listOf(),
-) : UIView(width, height) {
+) : UIView(width, height), UIFocusable {
     val onSelectionUpdate = Signal<UIComboBox<T>>()
 
     var selectedIndex by uiObservable(selectedIndex) {
-        updateState()
-        ensureSelectedIsInVisibleArea()
+        focusedIndex = it
         onSelectionUpdate(this)
+    }
+    var focusedIndex by uiObservable(-1) {
+        updateState()
+        ensureSelectedIsInVisibleArea(it)
     }
     var selectedItem: T?
         get() = items.getOrNull(selectedIndex)
@@ -63,7 +68,7 @@ open class UIComboBox<T>(
         it.textColor = MaterialColors.GRAY_800
         it.background.borderColor = MaterialColors.GRAY_400
         it.background.borderSize = 1.0
-
+        it.isFocusable = false
     }
     private val expandButtonIcon = shapeView(buildVectorPath {
         moveTo(0, 0)
@@ -93,8 +98,9 @@ open class UIComboBox<T>(
                 this.bgColorOver = MaterialColors.GRAY_400
                 this.bgColorSelected = MaterialColors.LIGHT_BLUE_A100
                 //println("selectedIndex == index : ${this@UIComboBox.selectedIndex} == $index : '${this.text}'")
-                this.selected = this@UIComboBox.selectedIndex == index
+                this.selected = this@UIComboBox.focusedIndex == index
                 this.elevation = false
+                this.isFocusable = false
             }
             it.onClick {
                 this@UIComboBox.selectedIndex = index
@@ -105,9 +111,9 @@ open class UIComboBox<T>(
     }, width = width)
     private var showItems = false
 
-    private fun ensureSelectedIsInVisibleArea() {
+    private fun ensureSelectedIsInVisibleArea(index: Int) {
         verticalList.updateList()
-        itemsView.ensurePointIsVisible(0.0, verticalList.provider.getItemY(selectedIndex))
+        itemsView.ensurePointIsVisible(0.0, verticalList.provider.getItemY(index))
     }
 
     init {
@@ -140,6 +146,8 @@ open class UIComboBox<T>(
     }
 
     fun open(immediate: Boolean = false) {
+        focused = true
+
         val views = stage?.views
         if (views != null) {
             if (views.openedComboBox != this) {
@@ -296,5 +304,27 @@ open class UIComboBox<T>(
         selectedButton.text = selectedItem?.toString() ?: ""
         expandButtonIcon.position(width - 16.0, height * 0.5)
         //expandButton.position(width - height, 0.0).size(height, height)
+    }
+
+    override val UIFocusManager.Scope.focusView: View get() = this@UIComboBox
+    override var tabIndex: Int = 0
+    override val isFocusable: Boolean = true
+    override fun focusChanged(value: Boolean) {
+        if (value) {
+            open()
+        } else {
+            close()
+        }
+    }
+
+    init {
+        val comboBox = this
+        keys {
+            down(Key.UP, Key.DOWN) {
+                if (focused) {
+                    comboBox.focusedIndex = (comboBox.focusedIndex + if (it.key == Key.UP) -1 else +1) umod comboBox.items.size
+                }
+            }
+        }
     }
 }
