@@ -89,7 +89,7 @@ open class UIBaseCheckBox<T : UIBaseCheckBox<T>>(
             color = textColor,
         ))
         textView.align = TextAlignment.MIDDLE_LEFT
-        textView.position(height + 8.0, 0.0)
+        textView.position(height + 4.0, 0.0)
         textView.setSize(width - height - 8.0, height)
 
         background.size(width, height)

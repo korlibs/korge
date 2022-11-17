@@ -16,7 +16,10 @@ interface UIBaseCheckBoxSkin {
     )
 }
 
-open class UIBaseCheckBoxSkinMaterial : UIBaseCheckBoxSkin {
+open class UIBaseCheckBoxSkinMaterial(
+    val selectedColor: RGBA = MaterialColors.BLUE_600,
+    val unselectedColor: RGBA = MaterialColors.GRAY_700,
+) : UIBaseCheckBoxSkin {
     companion object : UIBaseCheckBoxSkinMaterial()
 
     override fun render(
@@ -31,15 +34,15 @@ open class UIBaseCheckBoxSkinMaterial : UIBaseCheckBoxSkin {
             val extraPad2 = extraPad * 2
             ctx2d.materialRoundRect(
                 0.0 + extraPad, 0.0 + extraPad, height - extraPad2, height - extraPad2, radius = RectCorners((height - extraPad2) * 0.5),
-                color = item.overRatio.interpolate(Colors.TRANSPARENT_BLACK, if (item.checked) MaterialColors.BLUE_100.withAd(0.3) else MaterialColors.GRAY_700.withAd(0.3))
+                color = item.overRatio.interpolate(Colors.TRANSPARENT, if (item.checkedRatio > 0.5) selectedColor.withAd(0.3) else unselectedColor.withAd(0.3))
             )
             item.highlights.fastForEach {
                 ctx2d.materialRoundRect(
                     0.0 + extraPad, 0.0 + extraPad, height - extraPad2, height - extraPad2, radius = RectCorners(height * 0.5),
-                    color = Colors.TRANSPARENT_BLACK,
+                    color = Colors.TRANSPARENT,
                     highlightPos = it.pos,
                     highlightRadius = it.radiusRatio,
-                    highlightColor = MaterialColors.BLUE_700.withAd(it.alpha * 0.7),
+                    highlightColor = selectedColor.withAd(it.alpha * 0.7),
                     //colorMul = renderColorMul,
                 )
             }
@@ -52,8 +55,8 @@ open class UIBaseCheckBoxSkinMaterial : UIBaseCheckBoxSkin {
                 ctx2d.materialRoundRect(
                     0.0 + padding, 0.0 + padding, height - padding2, height - padding2, radius = RectCorners(4.0),
                     //color = if (this@UIBaseCheckBox.checked) MaterialColors.BLUE_600 else Colors.TRANSPARENT_BLACK,
-                    color = Colors.TRANSPARENT_BLACK,
-                    borderColor = item.checkedRatio.interpolate(MaterialColors.GRAY_700, MaterialColors.BLUE_600),
+                    color = Colors.TRANSPARENT,
+                    borderColor = item.checkedRatio.interpolate(unselectedColor, selectedColor),
                     borderSize = 2.0,
                 )
                 run {
@@ -61,7 +64,7 @@ open class UIBaseCheckBoxSkinMaterial : UIBaseCheckBoxSkin {
                     val padding2 = padding * 2
                     ctx2d.materialRoundRect(
                         0.0 + padding, 0.0 + padding, height - padding2, height - padding2, radius = RectCorners(1.0),
-                        color = item.checkedRatio.interpolate(Colors.TRANSPARENT_BLACK, MaterialColors.BLUE_600),
+                        color = item.checkedRatio.interpolate(Colors.TRANSPARENT, selectedColor),
                     )
                 }
             }
@@ -71,11 +74,11 @@ open class UIBaseCheckBoxSkinMaterial : UIBaseCheckBoxSkin {
                 ctx2d.materialRoundRect(
                     0.0 + padding, 0.0 + padding, height - padding2, height - padding2, radius = RectCorners((height - padding2) * 0.5),
                     borderSize = 2.0,
-                    borderColor = item.checkedRatio.interpolate(MaterialColors.GRAY_700, MaterialColors.BLUE_600),
-                    color = Colors.TRANSPARENT_BLACK,
+                    borderColor = item.checkedRatio.interpolate(unselectedColor, selectedColor),
+                    color = Colors.TRANSPARENT,
                     highlightRadius = item.checkedRatio.interpolate(0.0, 0.2),
                     highlightPos = Point(0.5, 0.5),
-                    highlightColor = MaterialColors.BLUE_600,
+                    highlightColor = selectedColor,
                 )
             }
         }

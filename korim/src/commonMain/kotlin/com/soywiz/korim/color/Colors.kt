@@ -1,7 +1,7 @@
 package com.soywiz.korim.color
 
-import com.soywiz.kds.toIntMap
-import com.soywiz.korio.lang.substr
+import com.soywiz.kds.*
+import com.soywiz.korio.lang.*
 
 @Suppress("MemberVisibilityCanBePrivate")
 object Colors {
@@ -11,7 +11,9 @@ object Colors {
 	val GREEN = RGBA(0x00, 0xFF, 0x00, 0xFF)
 	val BLUE = RGBA(0x00, 0x00, 0xFF, 0xFF)
 
-	val TRANSPARENT_BLACK = RGBA(0x00, 0x00, 0x00, 0x00)
+    val TRANSPARENT = RGBA(0x00, 0x00, 0x00, 0x00)
+    @Deprecated("Use TRANSPARENT", ReplaceWith("Colors.TRANSPARENT"))
+    val TRANSPARENT_BLACK get() = TRANSPARENT
 	val TRANSPARENT_WHITE = RGBA(0xFF, 0xFF, 0xFF, 0x00)
 
 	val ALICEBLUE = RGBA(240, 248, 255)

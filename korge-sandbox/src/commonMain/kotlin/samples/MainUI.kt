@@ -57,11 +57,11 @@ class MainUI : Scene() {
         uiVerticalStack(padding = 8.0, adjustSize = false) {
             position(128, 128 + 64 + 16)
             uiCheckBox(text = "CheckBox1")
-            uiCheckBox(text = "CheckBox2")
+            uiCheckBox(text = "CheckBox2") { skin = UIBaseCheckBoxSkinMaterial(MaterialColors.TEAL_700) }
             uiComboBox(items = listOf("ComboBox", "World", "this", "is", "a", "list", "of", "elements"))
             val group = UIRadioButtonGroup()
             uiRadioButton(text = "Radio 1", group = group)
-            uiRadioButton(text = "Radio 2", group = group)
+            uiRadioButton(text = "Radio 2", group = group) { skin = UIBaseCheckBoxSkinMaterial(MaterialColors.TEAL_700, MaterialColors.CYAN_800) }
             //uiSwitch(text = "Switch1")
             //uiSwitch(text = "Switch2")
             uiSlider(value = 0, min = -32, max = +32).changed {}
