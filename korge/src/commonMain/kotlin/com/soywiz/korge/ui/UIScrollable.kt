@@ -3,7 +3,6 @@ package com.soywiz.korge.ui
 import com.soywiz.kds.iterators.*
 import com.soywiz.klock.*
 import com.soywiz.kmem.*
-import com.soywiz.korge.annotations.*
 import com.soywiz.korge.component.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.internal.*
@@ -17,7 +16,6 @@ import com.soywiz.korma.geom.*
 import com.soywiz.korma.interpolation.*
 import kotlin.math.*
 
-@KorgeExperimental
 inline fun Container.uiScrollable(
     width: Double = 256.0,
     height: Double = 256.0,
@@ -27,8 +25,6 @@ inline fun Container.uiScrollable(
 ): UIScrollable = UIScrollable(width, height, cache)
     .addTo(this).apply(config).also { block(it.container, it) }
 
-// @TODO: Horizontal. And to be able to toggle vertical/horizontal
-@KorgeExperimental
 open class UIScrollable(width: Double, height: Double, cache: Boolean = true) : UIView(
     width, height,
     cache = cache
@@ -92,8 +88,11 @@ open class UIScrollable(width: Double, height: Double, cache: Boolean = true) : 
         }
 
         fun ensurePositionIsVisible(position: Double, anchor: Double = 0.5) {
-            if (position !in this.position..this.positionEnd) {
-                this.position = position - size * anchor
+            ensureRangeIsVisible(position, position, anchor)
+        }
+        fun ensureRangeIsVisible(start: Double, end: Double, anchor: Double = 0.5) {
+            if (start !in this.position..this.positionEnd || end !in this.position..this.positionEnd) {
+                this.position = (start - size * anchor).clamp(0.0, scrollArea)
             }
         }
 
@@ -110,7 +109,7 @@ open class UIScrollable(width: Double, height: Double, cache: Boolean = true) : 
 
     //private val background = solidRect(width, height, Colors["#161a1d"])
     private val contentContainer = fixedSizeContainer(width, height, clip = true)
-    val container = contentContainer.container()
+    val container = contentContainer.container(cull = true)
     //private val verticalScrollBar = solidRect(10.0, height / 2, Colors["#57577a"])
     //private val horizontalScrollBar = solidRect(width / 2, 10.0, Colors["#57577a"])
 
@@ -178,7 +177,8 @@ open class UIScrollable(width: Double, height: Double, cache: Boolean = true) : 
     }
 
     fun ensureRectIsVisible(rect: IRectangle, anchor: Anchor = Anchor.CENTER) {
-        ensurePointIsVisible(rect.centerX, rect.centerY, anchor)
+        horizontal.ensureRangeIsVisible(rect.left, rect.right, anchor.sx)
+        vertical.ensureRangeIsVisible(rect.top, rect.bottom, anchor.sy)
     }
 
     fun ensureViewIsVisible(view: View, anchor: Anchor = Anchor.CENTER) {
@@ -218,6 +218,7 @@ open class UIScrollable(width: Double, height: Double, cache: Boolean = true) : 
                     //if (it.scrollDeltaX != 0.0) infoAlt.pixelSpeed = 0.0
                 }
                 it.stopPropagation()
+                invalidateRender()
             }
         }
 
@@ -321,11 +322,12 @@ open class UIScrollable(width: Double, height: Double, cache: Boolean = true) : 
     }
 
     override fun onSizeChanged() {
+        super.onSizeChanged()
         contentContainer.size(this.width, this.height)
         vertical.view.position(width - 10.0, 0.0)
         horizontal.view.position(0.0, height - 10.0)
         //println(vertical.overflowPixelsEnd)
         //background.size(width, height)
-        super.onSizeChanged()
+        invalidateRender()
     }
 }

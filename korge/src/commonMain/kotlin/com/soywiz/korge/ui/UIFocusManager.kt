@@ -51,7 +51,7 @@ class UIFocusManager(override val view: Stage) : KeyComponent {
             field?.focusChanged(false)
             field = value
             field?.focusChanged(true)
-            if (value != null) views.debugHightlightView(value.rfocusView)
+            if (value != null) views.debugHightlightView(value.rfocusView, onlyIfDebuggerOpened = true)
         }
 
     //private var toggleKeyboardTimeout: Closeable? = null
@@ -72,49 +72,51 @@ class UIFocusManager(override val view: Stage) : KeyComponent {
         //}
     }
 
+    fun changeFocusIndex(dir: Int) {
+        //val focusables = stage.descendantsOfType<UIFocusable>()
+        val focusables = stage
+            .descendantsWith { it.focusable != null }
+            .mapNotNull { it.focusable }
+        val sortedFocusables = focusables.sortedBy { it.tabIndex }.filter { it.isFocusable }
+        val index = sortedFocusables.indexOf(uiFocusedView).takeIf { it >= 0 }
+        //println("sortedFocusables=$sortedFocusables, index=$index, dir=$dir")
+        sortedFocusables
+            .getCyclicOrNull(
+                when {
+                    index != null -> index + dir
+                    dir < 0 -> -1
+                    else -> 0
+                }
+            )
+            ?.also {
+                it.focus()
+                it.rfocusView.scrollParentsToMakeVisible()
+            }
+
+        //println("FOCUS MANAGER TAB shift=$shift")
+        //for (view in listOf(uiFocusedView, if (shift) stage.lastTreeView else stage)) {
+        //    //println("  view=$view")
+        //    val nview = when {
+        //        view != uiFocusedView && shift && view is UiFocusable -> view
+        //        shift -> view?.prevViewOfType<UiFocusable>()
+        //        else -> view?.nextViewOfType<UiFocusable>()
+        //    }
+        //    if (nview != null) {
+        //        nview.focus()
+        //        break
+        //    }
+        //}
+    }
+
     override fun Views.onKeyEvent(event: KeyEvent) {
         if (event.type == KeyEvent.Type.DOWN && event.key == Key.TAB) {
-            val shift = event.shift
-            val dir = if (shift) -1 else +1
-            //val focusables = stage.descendantsOfType<UIFocusable>()
-            val focusables = stage
-                .descendantsWith { it.focusable != null }
-                .mapNotNull { it.focusable }
-            val sortedFocusables = focusables.sortedBy { it.tabIndex }.filter { it.isFocusable }
-            val index = sortedFocusables.indexOf(uiFocusedView).takeIf { it >= 0 }
-            //println("sortedFocusables=$sortedFocusables, index=$index, dir=$dir")
-            sortedFocusables
-                .getCyclicOrNull(
-                    when {
-                        index != null -> index + dir
-                        shift -> -1
-                        else -> 0
-                    }
-                )
-                ?.also {
-                    it.focus()
-                    it.rfocusView.scrollParentsToMakeVisible()
-                }
-
-            //println("FOCUS MANAGER TAB shift=$shift")
-            //for (view in listOf(uiFocusedView, if (shift) stage.lastTreeView else stage)) {
-            //    //println("  view=$view")
-            //    val nview = when {
-            //        view != uiFocusedView && shift && view is UiFocusable -> view
-            //        shift -> view?.prevViewOfType<UiFocusable>()
-            //        else -> view?.nextViewOfType<UiFocusable>()
-            //    }
-            //    if (nview != null) {
-            //        nview.focus()
-            //        break
-            //    }
-            //}
+            changeFocusIndex(if (event.shift) -1 else +1)
         }
     }
 }
 
 @KorgeExperimental
-val Stage.uiFocusManager get() = this.getOrCreateComponentKey { UIFocusManager(this) }
+val Stage.uiFocusManager: UIFocusManager get() = this.getOrCreateComponentKey { UIFocusManager(this) }
 @KorgeExperimental
 var Stage.uiFocusedView: UIFocusable?
     get() = uiFocusManager.uiFocusedView

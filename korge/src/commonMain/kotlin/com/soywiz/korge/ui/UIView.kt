@@ -2,6 +2,7 @@ package com.soywiz.korge.ui
 
 import com.soywiz.kds.*
 import com.soywiz.klock.*
+import com.soywiz.korev.*
 import com.soywiz.korge.baseview.*
 import com.soywiz.korge.component.*
 import com.soywiz.korge.input.*
@@ -28,6 +29,26 @@ var View.uiSkinSure: UISkin
     set(value) { uiSkin = value }
 
 val View.realUiSkin: UISkin get() = uiSkin ?: parent?.realUiSkin ?: root._defaultUiSkin
+
+open class UIFocusableView(
+    width: Double = 90.0,
+    height: Double = 32.0,
+    cache: Boolean = false
+) : UIView(width, height, cache), UIFocusable {
+    override val UIFocusManager.Scope.focusView: View get() = this@UIFocusableView
+    override var tabIndex: Int = 0
+    override var isFocusable: Boolean = true
+    override fun focusChanged(value: Boolean) {
+    }
+
+    //init {
+    //    keys {
+    //        down(Key.UP, Key.DOWN) {
+    //            if (focused) views.stage.uiFocusManager.changeFocusIndex(if (it.key == Key.UP) -1 else +1)
+    //        }
+    //    }
+    //}
+}
 
 open class UIView(
 	width: Double = 90.0,

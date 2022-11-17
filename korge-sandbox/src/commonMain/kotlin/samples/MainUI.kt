@@ -80,8 +80,11 @@ class MainUI : Scene() {
 
         uiScrollable {
             it.position(480, 128)
-            for (n in 0 until 20) {
-                uiButton(text = "HELLO $n").position(n * 16, n * 40)
+            //for (n in 0 until 20) {
+            for (y in 0 until 30) {
+                for (x in 0 until 15) {
+                    uiButton(text = "HELLO $x,$y").position(x * 108, y * 40)
+                }
             }
         }
 

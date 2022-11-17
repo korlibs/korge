@@ -1,21 +1,18 @@
 package com.soywiz.korge.view
 
-import com.soywiz.kds.FastArrayList
-import com.soywiz.kds.iterators.fastForEach
-import com.soywiz.kmem.clamp
-import com.soywiz.korev.EventResult
-import com.soywiz.korge.component.Component
-import com.soywiz.korge.component.ComponentType
-import com.soywiz.korge.internal.KorgeInternal
-import com.soywiz.korge.internal.KorgeUntested
-import com.soywiz.korge.render.RenderContext
-import com.soywiz.korma.geom.BoundsBuilder
-import com.soywiz.korma.geom.Matrix
-import com.soywiz.korma.geom.Rectangle
+import com.soywiz.kds.*
+import com.soywiz.kds.iterators.*
+import com.soywiz.kmem.*
+import com.soywiz.korev.*
+import com.soywiz.korge.component.*
+import com.soywiz.korge.internal.*
+import com.soywiz.korge.render.*
+import com.soywiz.korge.view.property.*
+import com.soywiz.korma.geom.*
 
 /** Creates a new [Container], allowing to configure with [callback], and attaches the newly created container to the receiver this [Container] */
-inline fun Container.container(callback: @ViewDslMarker Container.() -> Unit = {}) =
-    Container().addTo(this, callback)
+inline fun Container.container(cull: Boolean = false, callback: @ViewDslMarker Container.() -> Unit = {}) =
+    Container(cull, ).addTo(this, callback)
 
 // For Flash compatibility
 //open class Sprite : Container()
@@ -32,7 +29,10 @@ inline fun Container.container(callback: @ViewDslMarker Container.() -> Unit = {
  * You can add new children to this container by calling [addChild] or [addChildAt].
  */
 @OptIn(KorgeInternal::class)
-open class Container : View(true) {
+open class Container(
+    @property:ViewProperty
+    var cull: Boolean = false
+) : View(true) {
     private val __children: FastArrayList<View> = FastArrayList()
 
     /**
@@ -270,8 +270,32 @@ open class Container : View(true) {
     }
 
     open fun renderChildrenInternal(ctx: RenderContext) {
-        fastForEachChildRender { child: View ->
-            child.render(ctx)
+        //fastForEachChildRender { child: View ->
+        //    child.render(ctx)
+        //}
+        if (!cull) {
+            fastForEachChildRender { child: View ->
+                child.render(ctx)
+            }
+            return
+        }
+        //currentVirtualRect.setBounds(ctx.virtualLeft, ctx.virtualTop, ctx.virtualRight, ctx.virtualBottom)
+        val clippingContainer = findFirstAscendant { (it is FixedSizeContainer) && it.clip } as? FixedSizeContainer?
+
+        //val bounds = this.getLocalBounds(Rectangle())
+        var renderedCount = 0
+        var culledCount = 0
+        Rectangle.POOL.alloc2 { tempRect2, tempRect ->
+            val bounds = clippingContainer?.getGlobalBounds(tempRect2)
+            fastForEachChildRender { child: View ->
+                //if (bounds.intersects(child.getLocalBoundsOptimized(includeFilters = true))) {
+                if (bounds == null || bounds.intersects(child.getGlobalBounds(tempRect, includeFilters = true))) {
+                    child.render(ctx)
+                    renderedCount++
+                } else {
+                    culledCount++
+                }
+            }
         }
     }
 

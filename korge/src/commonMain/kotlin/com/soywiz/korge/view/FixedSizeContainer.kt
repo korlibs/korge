@@ -3,6 +3,7 @@ package com.soywiz.korge.view
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.filter.*
+import com.soywiz.korge.view.property.*
 import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.math.*
@@ -25,13 +26,14 @@ inline fun Container.fixedSizeContainer(
 open class SContainer(
     width: Double = 100.0,
     height: Double = 100.0,
-    clip: Boolean = false
+    clip: Boolean = false,
 ) : FixedSizeContainer(width, height, clip)
 
 open class FixedSizeContainer(
     override var width: Double = 100.0,
     override var height: Double = 100.0,
-    open var clip: Boolean = false
+    @property:ViewProperty
+    open var clip: Boolean = false,
 ) : Container(), View.Reference {
 
     override fun getLocalBoundsInternal(out: Rectangle) {

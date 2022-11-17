@@ -37,7 +37,7 @@ open class UIComboBox<T>(
     height: Double = UI_DEFAULT_HEIGHT,
     selectedIndex: Int = 0,
     items: List<T> = listOf(),
-) : UIView(width, height), UIFocusable {
+) : UIFocusableView(width, height) {
     val onSelectionUpdate = Signal<UIComboBox<T>>()
 
     var selectedIndex by uiObservable(selectedIndex) {
@@ -103,6 +103,7 @@ open class UIComboBox<T>(
                 this.isFocusable = false
             }
             it.onClick {
+                println("CLICKED ON index=$index")
                 this@UIComboBox.selectedIndex = index
                 this@UIComboBox.close()
             }
@@ -113,7 +114,13 @@ open class UIComboBox<T>(
 
     private fun ensureSelectedIsInVisibleArea(index: Int) {
         verticalList.updateList()
-        itemsView.ensurePointIsVisible(0.0, verticalList.provider.getItemY(index))
+        itemsView.ensureRectIsVisible(
+            Rectangle(
+                0.0, verticalList.provider.getItemY(index),
+                width,
+                verticalList.provider.getItemHeight(index)
+            )
+        )
     }
 
     init {
@@ -306,9 +313,6 @@ open class UIComboBox<T>(
         //expandButton.position(width - height, 0.0).size(height, height)
     }
 
-    override val UIFocusManager.Scope.focusView: View get() = this@UIComboBox
-    override var tabIndex: Int = 0
-    override val isFocusable: Boolean = true
     override fun focusChanged(value: Boolean) {
         if (value) {
             open()

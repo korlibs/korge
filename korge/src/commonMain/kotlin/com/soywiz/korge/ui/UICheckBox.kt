@@ -39,7 +39,7 @@ open class UIBaseCheckBox<T : UIBaseCheckBox<T>>(
     @ViewProperty
     var text: String = "CheckBox",
     var skinKind: UIBaseCheckBoxSkin.Kind,
-) : UIView(width, height), ViewLeaf, UIFocusable {
+) : UIFocusableView(width, height), ViewLeaf {
     val thisAsT get() = this.fastCastTo<T>()
     val onChange = Signal<T>()
 
@@ -130,9 +130,6 @@ open class UIBaseCheckBox<T : UIBaseCheckBox<T>>(
     }
 
     var focusRatio: Double = 0.0; private set
-    override val UIFocusManager.Scope.focusView: View get() = this@UIBaseCheckBox
-    override var tabIndex: Int = 0
-    override val isFocusable: Boolean get() = enabled
     override fun focusChanged(value: Boolean) {
         //println("focusChanged=$value")
         simpleAnimator.tween(this::focusRatio[value.toInt().toDouble()], time = 0.2.seconds)

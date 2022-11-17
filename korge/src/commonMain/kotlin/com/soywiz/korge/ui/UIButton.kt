@@ -70,7 +70,7 @@ open class UIButton(
 	height: Double = 32.0,
     text: String = "",
     icon: BmpSlice? = null,
-) : UIView(width, height), UIFocusable {
+) : UIFocusableView(width, height) {
     companion object {
         const val DEFAULT_WIDTH = UI_DEFAULT_WIDTH
         const val DEFAULT_HEIGHT = UI_DEFAULT_HEIGHT
@@ -355,9 +355,6 @@ open class UIButton(
     }
 
     var focusRatio: Double = 0.0; private set(value) { field = value; invalidateRender() }
-    override val UIFocusManager.Scope.focusView: View get() = this@UIButton
-    override var tabIndex: Int = 0
-    override var isFocusable: Boolean = true
     override fun focusChanged(value: Boolean) {
         //simpleAnimator.tween(this::focusRatio[value.toInt().toDouble()], time = 0.2.seconds)
         updatedUIButton(over = value)

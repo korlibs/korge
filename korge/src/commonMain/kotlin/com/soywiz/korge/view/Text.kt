@@ -71,6 +71,7 @@ open class Text(
         updateLineCount()
         version++
         invalidate()
+        invalidateRender()
     } }
     private fun updateLineCount() {
         lineCount = text.count { it == '\n' } + 1
