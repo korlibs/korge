@@ -17,7 +17,7 @@ interface UIFocusable {
     fun focusChanged(value: Boolean)
 }
 var UIFocusable.focused: Boolean
-    get() = UIFocusManager.Scope.focusView.stage?.uiFocusedView == UIFocusManager.Scope.focusView
+    get() = UIFocusManager.Scope.focusView.stage?.uiFocusedView == this
     set(value) {
         if (value) UIFocusManager.Scope.focusView.stage?.uiFocusManager?.uiFocusedView = this
     }
@@ -31,9 +31,7 @@ var View.focusable: UIFocusable?
         _focusable = value
     }
 
-@KorgeExperimental
 fun UIFocusable.focus() { focused = true }
-@KorgeExperimental
 fun UIFocusable.blur() { focused = false }
 
 @KorgeExperimental

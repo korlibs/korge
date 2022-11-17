@@ -316,6 +316,8 @@ class TextEditController(
     var acceptTextChange: (old: String, new: String) -> Boolean = { old, new -> true }
 
     override fun focusChanged(value: Boolean) {
+        bg?.isFocused = value
+
         if (value) {
             caret.visible = true
             //println("stage?.gameWindow?.showSoftKeyboard(): ${stage?.gameWindow}")
@@ -363,6 +365,7 @@ class TextEditController(
 
         closeables += this.eventHandler.newKeys {
             typed {
+                //println("focused=$focused, focus=${textView.stage?.uiFocusManager?.uiFocusedView}")
                 if (!focused) return@typed
                 if (it.meta) return@typed
                 val code = it.character.code

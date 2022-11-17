@@ -584,7 +584,6 @@ abstract class View internal constructor(
             if (field != value) {
                 field = value
                 invalidate()
-                invalidateRender()
             }
         }
 
