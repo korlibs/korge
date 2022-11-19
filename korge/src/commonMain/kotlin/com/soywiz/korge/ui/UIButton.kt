@@ -247,7 +247,7 @@ open class UIButton(
                 //println("singleTouch.start")
 
                 simulateDown(it.localX / scaledWidth, it.localY / scaledHeight)
-                focused = true
+                if (isFocusable) focused = true
             }
             endAnywhere {
                 //println("singleTouch.endAnywhere")

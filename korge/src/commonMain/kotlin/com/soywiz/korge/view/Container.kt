@@ -12,7 +12,7 @@ import com.soywiz.korma.geom.*
 
 /** Creates a new [Container], allowing to configure with [callback], and attaches the newly created container to the receiver this [Container] */
 inline fun Container.container(cull: Boolean = false, callback: @ViewDslMarker Container.() -> Unit = {}) =
-    Container(cull, ).addTo(this, callback)
+    Container(cull).addTo(this, callback)
 
 // For Flash compatibility
 //open class Sprite : Container()

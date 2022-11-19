@@ -421,7 +421,9 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
                 }
             }
             MouseEvent.Type.DOWN -> {
-                views.mouseDebugLastFrameClicked = true
+                if (!event.isAltDown) {
+                    views.mouseDebugLastFrameClicked = true
+                }
 
                 //this.lastEventDown = event
                 downPosTime = PerformanceCounter.reference

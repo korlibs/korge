@@ -24,7 +24,7 @@ class UIText(
     protected var bpressing by uiObservable(false) { updateState() }
 
     private val background = solidRect(width, height, Colors.TRANSPARENT_BLACK)
-    private val textView = text(text, font = DefaultTtfFont)
+    private val textView = text(text, font = DefaultTtfFontAsBitmap)
     var bgcolor: RGBA = Colors.TRANSPARENT_BLACK
 
     var text: String by textView::text

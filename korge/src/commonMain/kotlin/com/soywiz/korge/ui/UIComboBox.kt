@@ -45,8 +45,8 @@ open class UIComboBox<T>(
         onSelectionUpdate(this)
     }
     var focusedIndex by uiObservable(-1) {
-        updateState()
         ensureSelectedIsInVisibleArea(it)
+        updateState()
     }
     var selectedItem: T?
         get() = items.getOrNull(selectedIndex)
@@ -152,6 +152,13 @@ open class UIComboBox<T>(
         onSizeChanged()
     }
 
+    fun selectAndClose(index: Int) {
+        this@UIComboBox.selectedIndex = index
+        close()
+    }
+
+    val isOpened: Boolean get() = itemsView.visible
+
     fun open(immediate: Boolean = false) {
         focused = true
 
@@ -163,7 +170,7 @@ open class UIComboBox<T>(
             views?.openedComboBox = this
         }
 
-        if (!itemsView.visible) {
+        if (!isOpened) {
             //itemsView.removeFromParent()
             this?.parent?.addChild(itemsViewBackground)
             this?.parent?.addChild(itemsView)
@@ -218,6 +225,9 @@ open class UIComboBox<T>(
     }
 
     fun close(immediate: Boolean = false) {
+        //println("CLOSE!")
+        //printStackTrace()
+
         val views = stage?.views
         if (views != null) {
             if (views.openedComboBox == this) {
@@ -226,7 +236,7 @@ open class UIComboBox<T>(
         }
 
         //itemsView.removeFromParent()
-        if (itemsView.visible) {
+        if (isOpened) {
             if (immediate) {
                 itemsView.alpha = 0.0
                 itemsView.scaleY = 0.0
@@ -325,8 +335,15 @@ open class UIComboBox<T>(
         val comboBox = this
         keys {
             down(Key.UP, Key.DOWN) {
-                if (focused) {
-                    comboBox.focusedIndex = (comboBox.focusedIndex + if (it.key == Key.UP) -1 else +1) umod comboBox.items.size
+                if (!focused) return@down
+                if (!isOpened) open()
+                comboBox.focusedIndex = (comboBox.focusedIndex + if (it.key == Key.UP) -1 else +1) umod comboBox.items.size
+            }
+            down(Key.RETURN) {
+                if (!focused) return@down
+                when {
+                    !isOpened -> open()
+                    else -> selectAndClose(focusedIndex)
                 }
             }
         }
