@@ -44,7 +44,7 @@ open class UIComboBox<T>(
         focusedIndex = it
         onSelectionUpdate(this)
     }
-    var focusedIndex by uiObservable(-1) {
+    var focusedIndex by uiObservable(selectedIndex) {
         ensureSelectedIsInVisibleArea(it)
         updateState()
     }
@@ -80,7 +80,7 @@ open class UIComboBox<T>(
     private val invisibleRect = solidRect(width, height, Colors.TRANSPARENT_BLACK)
 
     private val itemsViewBackground = uiMaterialLayer(width, height = 128.0) {
-        radius = RectCorners(0.0, 0.0, 12.0, 12.0)
+        radius = RectCorners(0.0, 0.0, 9.0, 9.0)
         zIndex = -1000.0
     }
     private val itemsView = uiScrollable(width, height = 128.0)
@@ -103,7 +103,7 @@ open class UIComboBox<T>(
                 this.isFocusable = false
             }
             it.onClick {
-                println("CLICKED ON index=$index")
+                //println("CLICKED ON index=$index")
                 this@UIComboBox.selectedIndex = index
                 this@UIComboBox.close()
             }
@@ -339,7 +339,7 @@ open class UIComboBox<T>(
                 if (!isOpened) open()
                 comboBox.focusedIndex = (comboBox.focusedIndex + if (it.key == Key.UP) -1 else +1) umod comboBox.items.size
             }
-            down(Key.RETURN) {
+            down(Key.RETURN, Key.SPACE) {
                 if (!focused) return@down
                 when {
                     !isOpened -> open()
