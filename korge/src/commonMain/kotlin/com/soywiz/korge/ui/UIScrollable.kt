@@ -165,8 +165,10 @@ open class UIScrollable(width: Double, height: Double, cache: Boolean = true) : 
     }
 
     override fun renderInternal(ctx: RenderContext) {
-        ctx.useBatcher { batch ->
-            batch.drawQuad(ctx.getTex(Bitmaps.white), 0f, 0f, width.toFloat(), height.toFloat(), globalMatrix, colorMul = backgroundColor * renderColorMul)
+        if (backgroundColor == Colors.TRANSPARENT) {
+            ctx.useBatcher { batch ->
+                batch.drawQuad(ctx.getTex(Bitmaps.white), 0f, 0f, width.toFloat(), height.toFloat(), globalMatrix, colorMul = backgroundColor * renderColorMul)
+            }
         }
         super.renderInternal(ctx)
     }

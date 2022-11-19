@@ -168,13 +168,20 @@ open class UIButton(
             updateRichText()
         }
     @ViewProperty()
-    var text: String = text
+    var text: String
+        get() = textView.text.text
         set(value) {
-            field = value
-            updateRichText()
+            updateRichText(value)
         }
 
-    private fun updateRichText() {
+    @ViewProperty()
+    var richText: RichTextData by textView::text
+
+    private fun updateRichText(
+        text: String = this.textView.text.text,
+        textSize: Double = this.textSize,
+        textColor: RGBA = this.textColor
+    ) {
         textView.text = RichTextData(text, textSize = textSize, font = DefaultTtfFontAsBitmap, color = textColor)
     }
 

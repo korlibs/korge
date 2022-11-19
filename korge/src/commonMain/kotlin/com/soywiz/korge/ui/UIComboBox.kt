@@ -83,7 +83,9 @@ open class UIComboBox<T>(
         radius = RectCorners(0.0, 0.0, 9.0, 9.0)
         zIndex = -1000.0
     }
-    private val itemsView = uiScrollable(width, height = 128.0)
+    private val itemsView = uiScrollable(width, height = 128.0).also {
+        it.backgroundColor = Colors.TRANSPARENT
+    }
     private val verticalList = itemsView.container.uiVerticalList(object : UIVerticalList.Provider {
         override val numItems: Int = items.size
         override val fixedHeight: Double = itemHeight
