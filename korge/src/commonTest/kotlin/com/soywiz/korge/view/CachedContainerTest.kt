@@ -1,6 +1,7 @@
 package com.soywiz.korge.view
 
 import com.soywiz.korge.render.*
+import com.soywiz.korma.geom.*
 import kotlin.coroutines.*
 import kotlin.test.*
 
@@ -32,5 +33,25 @@ class CachedContainerTest {
         assertEquals("aaa", rlog, "After disabling the cache, re-rendering should happen always")
         root.render(log.views.renderContext)
         assertEquals("aaaa", rlog, "Always")
+    }
+
+    @Test
+    fun testMatrixOrder() {
+        val globalMatrix = Matrix().scale(2, 2).translate(50, 50)
+        val globalMatrixInv = globalMatrix.inverted()
+        val renderScale = 2.0
+        val lbounds = Point(10, 20)
+
+        val mat1 = Matrix().also {
+            it.copyFrom(globalMatrixInv)
+            it.translate(-lbounds.x, -lbounds.y)
+            it.scale(renderScale)
+        }
+        val mat2 = Matrix().also {
+            it.copyFrom(globalMatrix)
+            it.pretranslate(lbounds.x, lbounds.y)
+            it.prescale(1.0 / renderScale)
+        }
+        assertEquals(mat1, mat2.copy().inverted())
     }
 }

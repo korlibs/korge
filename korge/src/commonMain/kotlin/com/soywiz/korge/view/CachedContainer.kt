@@ -3,6 +3,7 @@ package com.soywiz.korge.view
 import com.soywiz.korge.baseview.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.property.*
+import com.soywiz.korgw.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korma.geom.*
 
@@ -46,6 +47,7 @@ open class CachedContainer(
     private var _cacheTex: CacheTexture? = null
     private val tempMat2d = Matrix()
     private var dirty = true
+    private var scaledCache = -1.0
     private var lbounds = Rectangle()
 
     override fun invalidateRender() {
@@ -66,17 +68,25 @@ open class CachedContainer(
         val cache = _cacheTex!!
         ctx.refGcCloseable(cache)
 
-        if (dirty) {
+        val renderScale = when (ctx.views?.gameWindow?.quality) {
+            GameWindow.Quality.PERFORMANCE -> 1.0
+            else -> ctx.ag.devicePixelRatio
+        }
+        //val renderScale = 1.0
+
+        if (dirty || scaledCache != renderScale) {
+            scaledCache = renderScale
             lbounds.copyFrom(getLocalBoundsOptimizedAnchored(includeFilters = false))
             dirty = false
-            val texWidth = (lbounds.width).toInt().coerceAtLeast(1)
-            val texHeight = (lbounds.height).toInt().coerceAtLeast(1)
+            val texWidth = (lbounds.width * renderScale).toInt().coerceAtLeast(1)
+            val texHeight = (lbounds.height * renderScale).toInt().coerceAtLeast(1)
             cache.resize(texWidth, texHeight)
             ctx.renderToFrameBuffer(cache.rb) {
                 //ctx.ag.clear(Colors.TRANSPARENT, clearColor = true)
                 ctx.setViewMatrixTemp(tempMat2d.also {
                     it.copyFrom(globalMatrixInv)
                     it.translate(-lbounds.x, -lbounds.y)
+                    it.scale(renderScale)
                 }) {
                     super.renderInternal(ctx)
                 }
@@ -89,6 +99,7 @@ open class CachedContainer(
                 m = tempMat2d.also {
                     it.copyFrom(globalMatrix)
                     it.pretranslate(lbounds.x, lbounds.y)
+                    it.prescale(1.0 / renderScale)
                 },
                 colorAdd = renderColorAdd,
                 colorMul = renderColorMul,
