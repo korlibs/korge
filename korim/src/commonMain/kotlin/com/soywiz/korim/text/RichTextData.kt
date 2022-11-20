@@ -3,18 +3,17 @@ package com.soywiz.korim.text
 import com.soywiz.kds.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.font.*
-import com.soywiz.korim.paint.*
 import com.soywiz.korio.lang.*
 
 data class RichTextData(
-    val lines: List<Line>
+    val lines: List<Line>,
+    val defaultStyle: Style = lines.firstOrNull()?.defaultStyle ?: Style.DEFAULT
 ) : List<RichTextData.Line> by lines, Extra by Extra.Mixin() {
     constructor(vararg lines: Line) : this(lines.toList())
 
     val text: String by lazy { lines.joinToString("\n") { it.text } }
     val width: Double by lazy { lines.maxOf { it.width } }
     val height: Double by lazy { lines.sumOf { it.maxLineHeight } }
-    val defaultStyle: Style get() = lines.firstOrNull()?.defaultStyle ?: Style.DEFAULT
 
     val allFonts: Set<Font> by lazy {
         mutableSetOf<Font>().also {
@@ -82,9 +81,17 @@ data class RichTextData(
             }
             return Line(out.toList())
         }
+
+        fun withStyle(style: Style): Line {
+            return Line(nodes.map { it.withStyle(style) }, style)
+        }
     }
 
     interface Node {
+        fun withStyle(style: Style): Node {
+            return this
+        }
+
         val text: String?
         val width: Double
         val height: Double
@@ -112,6 +119,8 @@ data class RichTextData(
         init {
             require(!text.contains('\n')) { "Single RichTextData nodes cannot have line breaks" }
         }
+
+        override fun withStyle(style: Style): TextNode = TextNode(text, style)
 
         val bounds: TextMetrics by lazy { style.font.getTextBounds(style.textSize, text) }
         override val width: Double get() = bounds.width
@@ -236,6 +245,9 @@ data class RichTextData(
         }
         return RichTextData(outLines)
     }
+
+    fun withStyle(style: Style): RichTextData = RichTextData(lines.map { it.withStyle(style) })
+    fun withText(text: String): RichTextData = RichTextData(text, defaultStyle)
 
     companion object {
         internal fun Node.nonBreakable(): Node = if (this is TextNode) this.copy(style = style.copy(canBreak = false)) else this

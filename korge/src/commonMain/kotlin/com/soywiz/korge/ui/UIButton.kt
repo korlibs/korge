@@ -70,6 +70,7 @@ open class UIButton(
 	height: Double = 32.0,
     text: String = "",
     icon: BmpSlice? = null,
+    richText: RichTextData? = null,
 ) : UIFocusableView(width, height) {
     companion object {
         const val DEFAULT_WIDTH = UI_DEFAULT_WIDTH
@@ -141,20 +142,16 @@ open class UIButton(
 
     //protected val textShadowView = text("", 16.0)
     @ViewProperty(min = 1.0, max = 300.0)
-    var textSize = 16.0
+    var textSize: Double
+        get() = richText.defaultStyle.textSize
         set(value) {
-            field = value
-            updateRichText()
+            richText = richText.withStyle(richText.defaultStyle.copy(textSize = value))
         }
+
+    val textView = textBlock(richText ?: RichTextData(text), align = TextAlignment.MIDDLE_CENTER)
 
     @ViewProperty
-    var textAlignment: TextAlignment = TextAlignment.MIDDLE_CENTER
-        set(value) {
-            field = value
-            updateRichText()
-        }
-
-    val textView = textBlock(RichTextData(text, textSize = textSize, font = DefaultTtfFontAsBitmap))
+    var textAlignment: TextAlignment by textView::align
 
     protected val iconView = image(Bitmaps.transparent)
 	protected var bover = false
@@ -162,28 +159,21 @@ open class UIButton(
     val animator = animator(parallel = true, defaultEasing = Easing.LINEAR)
     val animatorEffects = animator(parallel = true, defaultEasing = Easing.LINEAR)
 
-    var textColor: RGBA = Colors.WHITE
-        set(value) {
-            field = value
-            updateRichText()
-        }
+    @ViewProperty()
+    var richText: RichTextData by textView::text
+
     @ViewProperty()
     var text: String
         get() = textView.text.text
         set(value) {
-            updateRichText(value)
+            richText = richText.withText(value)
         }
 
-    @ViewProperty()
-    var richText: RichTextData by textView::text
-
-    private fun updateRichText(
-        text: String = this.textView.text.text,
-        textSize: Double = this.textSize,
-        textColor: RGBA = this.textColor
-    ) {
-        textView.text = RichTextData(text, textSize = textSize, font = DefaultTtfFontAsBitmap, color = textColor)
-    }
+    var textColor: RGBA
+        get() = richText.defaultStyle.color ?: Colors.WHITE
+        set(value) {
+            richText = richText.withStyle(style = richText.defaultStyle.copy(color = value))
+        }
 
     private fun setInitialState() {
         val width = width
@@ -195,8 +185,6 @@ open class UIButton(
         //textView.setSize(width, height)
 
         textView.setSize(width, height)
-        textView.align = textAlignment
-        updateRichText()
 
         fitIconInRect(iconView, icon ?: Bitmaps.transparent, width, height, Anchor.MIDDLE_CENTER)
         iconView.alpha = when {

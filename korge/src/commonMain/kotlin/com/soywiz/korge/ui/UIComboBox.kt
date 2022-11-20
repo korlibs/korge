@@ -10,8 +10,10 @@ import com.soywiz.korge.render.*
 import com.soywiz.korge.tween.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.color.*
+import com.soywiz.korim.font.*
 import com.soywiz.korim.text.*
 import com.soywiz.korio.async.*
+import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.shape.*
 import com.soywiz.korma.geom.vector.*
@@ -48,6 +50,17 @@ open class UIComboBox<T>(
         ensureSelectedIsInVisibleArea(it)
         updateState()
     }
+    fun updateFocusIndex(sdir: Int) {
+        val dir = if (sdir == 0) +1 else sdir
+        //println("updateFocusIndex: sdir=$sdir, filter='$filter'")
+        for (n in (if (sdir == 0) 0 else +1) until items.size) {
+            val proposedIndex = (focusedIndex + dir * n) umod items.size
+            if (matchesFilter(proposedIndex)) {
+                focusedIndex = proposedIndex
+                break
+            }
+        }
+    }
     var selectedItem: T?
         get() = items.getOrNull(selectedIndex)
         set(value) {
@@ -57,6 +70,12 @@ open class UIComboBox<T>(
     //var itemHeight by uiObservable(height) { updateItemsSize() }
     val itemHeight get() = height
     var viewportHeight by uiObservable(196) { onSizeChanged() }
+    var filter: String = ""
+        set(value) {
+            //if (field == value) return
+            field = value
+            verticalList.invalidateList()
+        }
 
     private val selectedButton = uiButton(width, height, "").also {
         it.textAlignment = TextAlignment.MIDDLE_LEFT
@@ -91,11 +110,26 @@ open class UIComboBox<T>(
         override val fixedHeight: Double = itemHeight
         override fun getItemHeight(index: Int): Double = fixedHeight
         override fun getItemView(index: Int, vlist: UIVerticalList): View {
-            val it = UIButton(text = items[index].toString(), width = width, height = itemHeight).apply {
+            val itemText = items[index].toString()
+            val richText = when {
+                filter.isEmpty() -> {
+                    RichTextData(itemText, color = Colors.BLACK, font = DefaultTtfFontAsBitmap)
+                }
+                matchesFilter(index) -> {
+                    val highlightColor = MaterialColors.BLUE_800
+                    RichTextData.fromHTML(itemText.htmlspecialchars().replace(Regex(Regex.escapeReplacement(filter), RegexOption.IGNORE_CASE)) {
+                        "<b><span color='${highlightColor.hexString}'>${it.value}</span></b>"
+                    }, RichTextData.Style(color = Colors.BLACK, font = DefaultTtfFontAsBitmap))
+                }
+                else -> {
+                    RichTextData(itemText, color = Colors.DARKGREY, font = DefaultTtfFontAsBitmap)
+                }
+            }
+            //val filter = "twe"
+            val it = UIButton(richText = richText, width = width, height = itemHeight).apply {
                 this.textAlignment = TextAlignment.MIDDLE_LEFT
                 this.textView.padding = Margin(0.0, 8.0)
                 this.radius = 0.pt
-                this.textColor = Colors.BLACK
                 this.bgColorOut = MaterialColors.GRAY_50
                 this.bgColorOver = MaterialColors.GRAY_400
                 this.bgColorSelected = MaterialColors.LIGHT_BLUE_A100
@@ -103,15 +137,18 @@ open class UIComboBox<T>(
                 this.selected = this@UIComboBox.focusedIndex == index
                 this.elevation = false
                 this.isFocusable = false
+                //println("itemText=$itemText, filter=$filter")
             }
             it.onClick {
                 //println("CLICKED ON index=$index")
-                this@UIComboBox.selectedIndex = index
-                this@UIComboBox.close()
+                selectAndClose(index)
             }
             return it
         }
     }, width = width)
+    fun matchesFilter(index: Int): Boolean {
+        return items[index].toString().contains(filter, ignoreCase = true)
+    }
     private var showItems = false
 
     private fun ensureSelectedIsInVisibleArea(index: Int) {
@@ -156,12 +193,14 @@ open class UIComboBox<T>(
 
     fun selectAndClose(index: Int) {
         this@UIComboBox.selectedIndex = index
+        filter = ""
         close()
     }
 
     val isOpened: Boolean get() = itemsView.visible
 
     fun open(immediate: Boolean = false) {
+        verticalList.invalidateList()
         focused = true
 
         val views = stage?.views
@@ -224,6 +263,11 @@ open class UIComboBox<T>(
 
         showItems = true
         updateProps()
+    }
+
+    fun focusNoOpen() {
+        focus()
+        close()
     }
 
     fun close(immediate: Boolean = false) {
@@ -336,16 +380,42 @@ open class UIComboBox<T>(
     init {
         val comboBox = this
         keys {
+            typed {
+                if (!focused) return@typed
+                if (it.key == Key.BACKSPACE) return@typed
+                if (it.characters().firstOrNull()?.code ?: 0 < 32) return@typed
+                if (!isOpened) {
+                    open()
+                } else {
+                    //println(it.characters().map { it.code })
+                    filter += it.characters()
+                    updateFocusIndex(0)
+                }
+            }
+            down(Key.BACKSPACE) {
+                if (!focused) return@down
+                filter = filter.dropLast(1)
+                updateFocusIndex(0)
+            }
             down(Key.UP, Key.DOWN) {
                 if (!focused) return@down
                 if (!isOpened) open()
-                comboBox.focusedIndex = (comboBox.focusedIndex + if (it.key == Key.UP) -1 else +1) umod comboBox.items.size
+                updateFocusIndex(if (it.key == Key.UP) -1 else +1)
             }
             down(Key.RETURN, Key.SPACE) {
                 if (!focused) return@down
                 when {
                     !isOpened -> open()
                     else -> selectAndClose(focusedIndex)
+                }
+            }
+            down(Key.ESCAPE) {
+                if (focused) {
+                    if (isOpened) {
+                        close()
+                    } else {
+                        stage?.uiFocusedView = null
+                    }
                 }
             }
         }

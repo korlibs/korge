@@ -56,7 +56,12 @@ class MainUI : Scene() {
 
             uiCheckBox(text = "CheckBox1")
             uiCheckBox(text = "CheckBox2") { skin = UIBaseCheckBoxSkinMaterial(MaterialColors.TEAL_700) }
-            uiComboBox(items = listOf("ComboBox", "World", "this", "is", "a", "list", "of", "elements"))
+            val selectedItemLabel = uiText("-")
+            uiComboBox(items = listOf("ComboBox", "World", "this", "is", "a", "list", "of", "elements")) {
+                onSelectionUpdate {
+                    selectedItemLabel.text = "${it.selectedIndex}: ${it.selectedItem}"
+                }
+            }
             val group = UIRadioButtonGroup()
             uiRadioButton(text = "Radio 1", group = group)
             uiRadioButton(text = "Radio 2", group = group) { skin = UIBaseCheckBoxSkinMaterial(MaterialColors.TEAL_700, MaterialColors.CYAN_800) }

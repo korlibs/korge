@@ -34,13 +34,13 @@ suspend fun main() = Korge(
         //Demo(::MainJSMpeg),
         //Demo(::MainGraphicsText),
         //Demo(::MainTextBounds),
-        //Demo(::MainEditor),
+        Demo(::MainEditor),
         //Demo(::MainStage3d),
         //Demo(::MainInput),
         //Demo(::MainAnimations),
         //Demo(::MainCache),
         //Demo(::MainEditor),
-        Demo(::MainUI),
+        //Demo(::MainUI),
         //Demo(::MainBunnymark),
         //Demo(::MainBlur),
         //Demo(::MainSDF),
@@ -191,5 +191,6 @@ suspend fun Stage.demoSelector(default: Demo, all: List<Demo>) {
         }
     }
     comboBox.selectedItem = default
+    comboBox.focusNoOpen()
     //setDemo(default)
 }
