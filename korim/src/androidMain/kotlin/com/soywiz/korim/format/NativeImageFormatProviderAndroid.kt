@@ -15,10 +15,11 @@ import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.color.*
 import com.soywiz.korim.paint.*
 import com.soywiz.korim.vector.*
-import com.soywiz.korio.android.androidContext
+import com.soywiz.korio.android.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
 import kotlinx.coroutines.*
+import java.io.ByteArrayOutputStream
 
 actual val nativeImageFormatProvider: NativeImageFormatProvider by lazy {
     try {
@@ -31,6 +32,23 @@ actual val nativeImageFormatProvider: NativeImageFormatProvider by lazy {
 }
 
 object AndroidNativeImageFormatProvider : NativeImageFormatProvider() {
+    override suspend fun encodeSuspend(image: ImageDataContainer, props: ImageEncodingProps): ByteArray {
+        val compressFormat = when (props.mimeType) {
+            "image/png" -> android.graphics.Bitmap.CompressFormat.PNG
+            "image/jpeg", "image/jpg" -> android.graphics.Bitmap.CompressFormat.JPEG
+            "image/webp" -> if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                android.graphics.Bitmap.CompressFormat.WEBP_LOSSY
+            } else {
+                android.graphics.Bitmap.CompressFormat.PNG
+            }
+            else -> android.graphics.Bitmap.CompressFormat.PNG
+        }
+        return ByteArrayOutputStream().use { bao ->
+            image.mainBitmap.toAndroidBitmap().compress(compressFormat, (props.quality * 100).toInt(), bao)
+            bao.toByteArray()
+        }
+    }
+
     override suspend fun display(bitmap: Bitmap, kind: Int) {
         val ctx = androidContext()
         val androidBitmap = bitmap.toAndroidBitmap()

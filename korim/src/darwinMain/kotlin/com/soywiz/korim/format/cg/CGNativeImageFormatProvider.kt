@@ -1,13 +1,18 @@
 package com.soywiz.korim.format.cg
 
+import cnames.structs.CGImage
 import com.soywiz.kmem.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.format.*
 import kotlinx.cinterop.*
 import platform.CoreFoundation.*
 import platform.CoreGraphics.*
+import platform.CoreServices.*
 import platform.ImageIO.*
-import platform.posix.memcpy
+import platform.posix.*
+import kotlin.Boolean
+import kotlin.ByteArray
+import kotlin.Int
 import kotlin.native.concurrent.*
 
 open class CGBaseNativeImageFormatProvider : StbImageNativeImageFormatProvider() {
@@ -155,4 +160,47 @@ open class CGNativeImageFormatProvider : CGBaseNativeImageFormatProvider() {
             vvar.value
         }
     }
+
+    override suspend fun encodeSuspend(image: ImageDataContainer, props: ImageEncodingProps): ByteArray = memScoped {
+        val data = CFDataCreateMutable(null, 0)
+        val destination = CGImageDestinationCreateWithData(data, when (props.mimeType) {
+            "image/jpeg", "image/jpg" -> kUTTypeJPEG
+            //"image/heif", "image/heic" -> UTTypeHEIF
+            else -> kUTTypePNG
+        }, 1, null)
+            ?: error("Failed to create CGImageDestination")
+
+        val imageProperties = CFDictionaryCreateMutable(null, 0, null, null)
+
+        try {
+            val ref = alloc<DoubleVar>()
+            ref.value = props.quality
+            val num = CFNumberCreate(null, kCFNumberDoubleType, ref.ptr)
+            CFDictionaryAddValue(imageProperties, kCGImageDestinationLossyCompressionQuality, num)
+            CFRelease(num)
+            //println("CGNativeImageFormatProvider.encodeSuspend")
+            CGImageDestinationAddImage(destination, image.mainBitmap.toBMP32().toCGImage(), imageProperties)
+            if (!CGImageDestinationFinalize(destination)) error("Can't write image")
+        } finally {
+            CFRelease(imageProperties)
+            CFRelease(destination)
+        }
+        val length: Int = CFDataGetLength(data).convert()
+        val bytes = CFDataGetMutableBytePtr(data)?.readBytes(length.convert())
+        CFRelease(data)
+        return bytes ?: error("Can't write image")
+    }
 }
+
+/*
+fun Map<*, *>.toCFDictionary(): CFDictionaryRef = memScoped {
+    val dict = CFDictionaryCreateMutable(null, 0, null, null)
+    for ((key, value) in this) {
+        val ref = alloc<DoubleVar>()
+        ref.value = value.todo
+        CFNumberCreate(null, kCFNumberDoubleType, null, ref.ptr)
+        CFDictionaryAddValue()
+    }
+    return dict
+}
+*/

@@ -1,20 +1,10 @@
 package com.soywiz.korim.format
 
-import com.soywiz.korim.bitmap.Bitmap32
-import com.soywiz.korio.lang.IOException
-import kotlinx.cinterop.IntVar
-import kotlinx.cinterop.addressOf
-import kotlinx.cinterop.alloc
-import kotlinx.cinterop.convert
-import kotlinx.cinterop.memScoped
-import kotlinx.cinterop.ptr
-import kotlinx.cinterop.reinterpret
-import kotlinx.cinterop.usePinned
-import kotlinx.cinterop.value
-import platform.posix.memcpy
-import kotlin.native.concurrent.TransferMode
-import kotlin.native.concurrent.freeze
-import kotlin.native.concurrent.isFrozen
+import com.soywiz.korim.bitmap.*
+import com.soywiz.korio.lang.*
+import kotlinx.cinterop.*
+import platform.posix.*
+import kotlin.native.concurrent.*
 
 open class StbImageNativeImageFormatProvider : BaseNativeImageFormatProvider() {
     companion object : StbImageNativeImageFormatProvider()
@@ -55,5 +45,8 @@ open class StbImageNativeImageFormatProvider : BaseNativeImageFormatProvider() {
             )
         }.wrapNativeExt(props)
     }
+
+    override suspend fun encodeSuspend(image: ImageDataContainer, props: ImageEncodingProps): ByteArray =
+        PNG.encodeSuspend(image, props)
 }
 

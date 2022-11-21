@@ -1,23 +1,13 @@
 package com.soywiz.korim.format
 
-import com.soywiz.korim.bitmap.Bitmap
-import com.soywiz.korim.bitmap.Bitmap32
-import com.soywiz.korim.bitmap.BmpSlice
-import com.soywiz.korim.bitmap.NativeImage
-import com.soywiz.korim.bitmap.asumePremultiplied
-import com.soywiz.korim.bitmap.context2d
-import com.soywiz.korim.bitmap.ensureNative
-import com.soywiz.korim.bitmap.extract
-import com.soywiz.korim.color.RGBA
-import com.soywiz.korim.vector.Context2d
-import com.soywiz.korim.vector.SizedDrawable
-import com.soywiz.korim.vector.render
-import com.soywiz.korio.file.FinalVfsFile
-import com.soywiz.korio.file.Vfs
-import com.soywiz.korio.file.VfsFile
-import kotlinx.coroutines.CancellationException
-import kotlin.math.ceil
-import kotlin.native.concurrent.ThreadLocal
+import com.soywiz.korim.bitmap.*
+import com.soywiz.korim.color.*
+import com.soywiz.korim.vector.*
+import com.soywiz.korio.file.*
+import com.soywiz.korio.stream.*
+import kotlinx.coroutines.*
+import kotlin.math.*
+import kotlin.native.concurrent.*
 
 @ThreadLocal
 expect val nativeImageFormatProvider: NativeImageFormatProvider
@@ -28,7 +18,7 @@ data class NativeImageResult(
     val originalHeight: Int = image.height,
 )
 
-abstract class NativeImageFormatProvider : ImageFormatDecoder {
+abstract class NativeImageFormatProvider : ImageFormatEncoderDecoder {
     protected open suspend fun decodeHeaderInternal(data: ByteArray): ImageInfo {
         val result = decodeInternal(data, ImageDecodingProps.DEFAULT)
         return ImageInfo().also {
@@ -36,6 +26,8 @@ abstract class NativeImageFormatProvider : ImageFormatDecoder {
             it.height = result.originalHeight
         }
     }
+
+    override suspend fun encodeSuspend(image: ImageDataContainer, props: ImageEncodingProps): ByteArray = throw UnsupportedOperationException()
 
     protected abstract suspend fun decodeInternal(data: ByteArray, props: ImageDecodingProps): NativeImageResult
     protected open suspend fun decodeInternal(vfs: Vfs, path: String, props: ImageDecodingProps): NativeImageResult = decodeInternal(vfs.file(path).readBytes(), props)
@@ -59,6 +51,7 @@ abstract class NativeImageFormatProvider : ImageFormatDecoder {
     suspend fun decode(data: ByteArray, props: ImageDecodingProps = ImageDecodingProps.DEFAULT): NativeImage = decodeInternal(data, props).image
     override suspend fun decodeSuspend(data: ByteArray, props: ImageDecodingProps): NativeImage = decodeInternal(data, props).image
     suspend fun decode(file: FinalVfsFile, props: ImageDecodingProps): Bitmap = decodeInternal(file.vfs, file.path, props).image
+
     override suspend fun decode(file: VfsFile, props: ImageDecodingProps): Bitmap = decode(file.getUnderlyingUnscapedFile(), props)
 
     suspend fun decode(vfs: Vfs, path: String, premultiplied: Boolean = true): NativeImage = decode(vfs, path, ImageDecodingProps.DEFAULT(premultiplied))
