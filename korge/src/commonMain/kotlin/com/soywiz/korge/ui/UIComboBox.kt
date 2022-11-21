@@ -399,36 +399,36 @@ open class UIComboBox<T>(
                 if (it.key == Key.BACKSPACE) return@typed
                 if (it.characters().firstOrNull()?.code ?: 0 < 32) return@typed
                 if (!isOpened) {
-                    open()
+                    this@UIComboBox.open()
                 } else {
                     //println(it.characters().map { it.code })
                     filter += it.characters()
-                    updateFocusIndex(0)
+                    this@UIComboBox.updateFocusIndex(0)
                 }
             }
             down(Key.BACKSPACE) {
                 if (!focused) return@down
                 filter = filter.dropLast(1)
-                updateFocusIndex(0)
+                this@UIComboBox.updateFocusIndex(0)
             }
             down(Key.UP, Key.DOWN) {
                 if (!focused) return@down
-                if (!isOpened) open()
-                updateFocusIndex(if (it.key == Key.UP) -1 else +1)
+                if (!isOpened) this@UIComboBox.open()
+                this@UIComboBox.updateFocusIndex(if (it.key == Key.UP) -1 else +1)
             }
             down(Key.RETURN, Key.SPACE) {
                 if (!focused) return@down
                 when {
-                    !isOpened -> open()
-                    else -> selectAndClose(focusedIndex)
+                    !isOpened -> this@UIComboBox.open()
+                    else -> this@UIComboBox.selectAndClose(focusedIndex)
                 }
             }
             down(Key.ESCAPE) {
                 if (focused) {
                     if (isOpened) {
-                        close()
+                        this@UIComboBox.close()
                     } else {
-                        stage?.uiFocusedView = null
+                        this@UIComboBox.blur()
                     }
                 }
             }

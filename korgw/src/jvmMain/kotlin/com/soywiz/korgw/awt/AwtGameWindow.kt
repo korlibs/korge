@@ -162,7 +162,11 @@ class AwtGameWindow(checkGl: Boolean, logGl: Boolean, config: GameWindowCreation
         // https://docs.oracle.com/javase/tutorial/extra/fullscreen/rendering.html
         // https://docs.oracle.com/javase/tutorial/extra/fullscreen/doublebuf.html
         override fun paint(g: Graphics) {
-            framePaint(g)
+            try {
+                framePaint(g)
+            } catch (e: Throwable) {
+                e.printStackTrace()
+            }
         }
     }
 

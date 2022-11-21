@@ -8,7 +8,6 @@ import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.vector.*
 import com.soywiz.korma.geom.*
-import kotlin.math.*
 
 class LazyBitmapFont(
     val font: VectorFont,
@@ -129,3 +128,24 @@ class LazyBitmapFont(
 
 fun VectorFont.toLazyBitmapFont(fontSize: Double, distanceField: String? = null): LazyBitmapFont =
     LazyBitmapFont(this, fontSize, distanceField)
+
+/**
+ * Returns, creates and caches a [LazyBitmapFont] instance from the [VectorFont] that will
+ * generate and cache glyphs as required.
+ */
+val VectorFont.lazyBitmap: LazyBitmapFont by Extra.PropertyThis {
+    this.toLazyBitmapFont(32.0, distanceField = null)
+}
+
+/**
+ * Gets a [BitmapFont] from the font, that is going to be computed lazily as glyphs are required.
+ *
+ * If the font is already a BitmapFont the instance is returned, if a [VectorFont] is used,
+ * it returns a [LazyBitmapFont] that will compute glyphs as required.
+ */
+val Font.lazyBitmap: BitmapFont get() = when (this) {
+    is VectorFont -> this.lazyBitmap
+    is BitmapFont -> this
+    else -> TODO()
+}
+

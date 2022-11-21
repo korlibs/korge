@@ -1,30 +1,17 @@
 package com.soywiz.korim.text
 
-import com.soywiz.kds.doubleArrayListOf
-import com.soywiz.korim.bitmap.Bitmaps
-import com.soywiz.korim.bitmap.BmpSlice
-import com.soywiz.korim.color.Colors
-import com.soywiz.korim.color.RGBA
-import com.soywiz.korim.font.BitmapFont
-import com.soywiz.korim.font.Font
-import com.soywiz.korim.font.FontMetrics
-import com.soywiz.korim.font.GlyphMetrics
-import com.soywiz.korim.font.GlyphPath
-import com.soywiz.korim.font.VectorFont
-import com.soywiz.korim.paint.Paint
-import com.soywiz.korio.lang.WString
-import com.soywiz.korio.lang.WStringReader
-import com.soywiz.korio.lang.keep
-import com.soywiz.korio.util.niceStr
+import com.soywiz.kds.*
+import com.soywiz.korim.bitmap.*
+import com.soywiz.korim.color.*
+import com.soywiz.korim.font.*
+import com.soywiz.korim.paint.*
+import com.soywiz.korio.lang.*
+import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.bezier.Curve
-import com.soywiz.korma.geom.bezier.toVectorPath
-import com.soywiz.korma.geom.vector.VectorBuilder
-import com.soywiz.korma.geom.vector.VectorPath
-import com.soywiz.korma.geom.vector.getCurves
-import com.soywiz.korma.geom.vector.path
-import kotlin.math.max
-import kotlin.native.concurrent.SharedImmutable
+import com.soywiz.korma.geom.bezier.*
+import com.soywiz.korma.geom.vector.*
+import kotlin.math.*
+import kotlin.native.concurrent.*
 
 interface ITextRendererActions {
     var x: Double
@@ -201,8 +188,27 @@ class Text2TextRendererActions : TextRendererActions() {
     private val arraySX = doubleArrayListOf()
     private val arraySY = doubleArrayListOf()
     private val arrayRot = doubleArrayListOf()
+    val arrayMetrics = VectorArrayList(dimensions = 4)
     private val tr = Matrix.Transform()
     val size get() = arrayX.size
+
+    data class LineInfo(var maxTop: Double = 0.0, var minBottom: Double = 0.0, var maxLineHeight: Double = 0.0)
+
+    fun getLineInfos(): List<LineInfo> {
+        val out = arrayListOf<LineInfo>(LineInfo())
+        arrayMetrics.fastForEachGeneric {
+            val line = this[it, 0].toInt()
+            while (out.size <= line) out.add(LineInfo())
+            val lineInfo = out[line]
+            val top = this[it, 1]
+            val bottom = this[it, 2]
+            val lineHeight = this[it, 3]
+            lineInfo.maxTop = max(lineInfo.maxTop, top)
+            lineInfo.minBottom = min(lineInfo.minBottom, bottom)
+            lineInfo.maxLineHeight = max(lineInfo.maxLineHeight, lineHeight)
+        }
+        return out
+    }
 
     fun getGlyphBounds(n: Int, out: Rectangle = Rectangle()): IRectangle {
         if (n >= size) {
@@ -277,6 +283,8 @@ class Text2TextRendererActions : TextRendererActions() {
         arraySX.clear()
         arraySY.clear()
         arrayRot.clear()
+        arrayMetrics.clear()
+        currentLineNum = 0
     }
 
     override fun put(reader: WStringReader, codePoint: Int): GlyphMetrics {
@@ -299,6 +307,12 @@ class Text2TextRendererActions : TextRendererActions() {
         arraySX.add(tr.scaleX * fontScale)
         arraySY.add(tr.scaleY * fontScale)
         arrayRot.add(tr.rotation.radians)
+        arrayMetrics.add(
+            currentLineNum.toDouble(),
+            fontMetrics.top,
+            fontMetrics.bottom,
+            fontMetrics.lineHeight,
+        )
         return m
     }
 }

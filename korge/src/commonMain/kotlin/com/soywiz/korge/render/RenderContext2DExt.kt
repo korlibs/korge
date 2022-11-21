@@ -144,16 +144,13 @@ fun RenderContext2D.drawText(
     textRangeEnd: Int = Int.MAX_VALUE,
 ) {
     var n = 0
-    placements.fastForEach { it ->
-        val bmpFont = it.font as? BitmapFont?
-        if (bmpFont != null) {
-            drawText(
-                it.text, bmpFont, it.size, it.x, it.y, (it.fillStyle as? RGBA?) ?: Colors.WHITE, baseline = true,
-                textRangeStart = textRangeStart - n,
-                textRangeEnd = textRangeEnd - n
-            )
-            n += it.text.length
-        }
+    placements.fastForEach {
+        drawText(
+            it.text, it.font.lazyBitmap, it.size, it.x, it.y, (it.fillStyle as? RGBA?) ?: Colors.WHITE, baseline = true,
+            textRangeStart = textRangeStart - n,
+            textRangeEnd = textRangeEnd - n
+        )
+        n += it.text.length
     }
 }
 

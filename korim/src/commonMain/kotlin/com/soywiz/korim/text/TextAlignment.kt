@@ -1,10 +1,9 @@
 package com.soywiz.korim.text
 
-import com.soywiz.korim.font.FontMetrics
-import com.soywiz.korim.font.GlyphMetrics
-import com.soywiz.korio.lang.EnumLike
-import com.soywiz.korma.geom.Anchor
-import com.soywiz.korma.interpolation.interpolate
+import com.soywiz.korim.font.*
+import com.soywiz.korio.lang.*
+import com.soywiz.korma.geom.*
+import com.soywiz.korma.interpolation.*
 
 data class TextAlignment(
     val horizontal: HorizontalAlign,
@@ -91,7 +90,7 @@ inline class VerticalAlign(val ratio: Double) : EnumLike<VerticalAlign> {
         val MIDDLE = VerticalAlign(0.5)
         val BOTTOM = VerticalAlign(1.0)
         val BASELINE = VerticalAlign(Double.POSITIVE_INFINITY) // Special
-        private val values = arrayOf(TOP, BASELINE, MIDDLE, BOTTOM)
+        private val values = arrayOf(TOP, MIDDLE, BASELINE, BOTTOM)
 
         val CENTER get() = MIDDLE
         val ALL = values.toList()

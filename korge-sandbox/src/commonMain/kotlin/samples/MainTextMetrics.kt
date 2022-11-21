@@ -44,6 +44,7 @@ class MainTextMetrics : Scene() {
             "lower" to "abcdefghijklmnopqrstuvwxyz",
             "number" to "0123456789",
             "fox" to "The quick brown fox jumps over the lazy dog. 1234567890",
+            "multiline" to "This is a\nmultiline\n-text.",
         )
         val fontSizes = listOf(8, 16, 32, 64, 128, 175)
         val verticalAlignments = VerticalAlign.values().toList()
@@ -60,7 +61,7 @@ class MainTextMetrics : Scene() {
         )
 
         container {
-            xy(0, 500)
+            xy(300, 500)
             val leftPadding = 50
             text1 = text(textStrs["simple"]!!, 175.0, Colors.WHITE, font2, alignment = TextAlignment.BASELINE_LEFT, autoScaling = true).xy(leftPadding, 0)
             val gbounds = cpuGraphics {}.xy(leftPadding, 0)
@@ -78,7 +79,7 @@ class MainTextMetrics : Scene() {
                         stroke(Colors.RED, StrokeInfo(2.0)) {
                             rect(text1.getLocalBounds())
                         }
-                        stroke(Colors.BLUE, StrokeInfo(2.0)) {
+                        stroke(Colors.YELLOWGREEN, StrokeInfo(2.0)) {
                             line(-5, 0, +5, 0)
                             line(0, -5, 0, +5)
                         }

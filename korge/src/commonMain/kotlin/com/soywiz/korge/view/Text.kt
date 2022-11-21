@@ -224,9 +224,6 @@ open class Text(
 
     private val tempMatrix = Matrix()
 
-    //var newTvaRenderer = true
-    var newTvaRenderer = false
-
     override fun renderInternal(ctx: RenderContext) {
         _renderInternal(ctx)
         //val tva: TexturedVertexArray? = null
@@ -290,10 +287,13 @@ open class Text(
         if (autoSize && font is Font && boundsVersion != version) {
             boundsVersion = version
             val metrics = font.getTextBounds(textSize, text, out = textMetrics, renderer = renderer, align = alignment)
-            _textBounds.copyFrom(metrics.bounds)
-            _textBounds.height = font.getFontMetrics(textSize, metrics = fontMetrics).lineHeight * lineCount
-            _textBounds.x = -alignment.horizontal.getOffsetX(_textBounds.width) + metrics.left
-            _textBounds.y = alignment.vertical.getOffsetY(_textBounds.height, -metrics.ascent)
+            _textBounds.setTo(
+                metrics.left,
+                alignment.vertical.getOffsetY(metrics.height, -metrics.ascent),
+                metrics.width,
+                font.getFontMetrics(textSize, metrics = fontMetrics).lineHeight * lineCount
+            )
+            //println("autoSize: _textBounds=$_textBounds, ${alignment.horizontal}, ${alignment.horizontal.getOffsetX(metrics.width)} + ${metrics.left}")
         }
 
         when (font) {
@@ -324,43 +324,38 @@ open class Text(
 
                     val bounds = bitmapFontActions.getBounds()
                     val firstBounds = bitmapFontActions.getGlyphBounds(0)
+                    val lineInfos = bitmapFontActions.getLineInfos()
+                    val firstLineInfos = lineInfos.firstOrNull() ?: Text2TextRendererActions.LineInfo()
+                    val totalHeight = lineInfos.sumOf { it.maxLineHeight }
                     val textWidth = bounds.width
                     val textHeight = bounds.height
 
+                    //println("lineInfos=$lineInfos")
                     //println("Text.BitmapFont: bounds=$bounds, firstBounds=$firstBounds, textWidth=$textWidth, textHeight=$textHeight, verticalAlign=$verticalAlign")
 
-                    val dx = (_textBounds.width - textWidth) * horizontalAlign.ratio
-                    //val dx = 0.0
+                    //val dx = (-_textBounds.width - textWidth) * horizontalAlign.ratio
+                    val dx = _textBounds.x
                     val dy = when (verticalAlign) {
                         VerticalAlign.BASELINE -> 0.0
-                        //VerticalAlign.MIDDLE -> +textHeight * 0.5 + font.getFontMetrics(textSize).ascent * 0.5
-                        //VerticalAlign.MIDDLE -> 0.0
-                        else -> (_textBounds.height - textHeight) * verticalAlign.ratioFake - firstBounds.y
-                    }
-
-                    if (newTvaRenderer) {
-                        this.tva = TexturedVertexArray.forQuads(bitmapFontActions.size)
+                        VerticalAlign.TOP -> firstLineInfos.maxTop
+                        else -> firstLineInfos.maxTop - (totalHeight) * verticalAlign.ratioFake
                     }
 
                     val program = font.agProgram
                     //val program = null
                     for (n in 0 until bitmapFontActions.size) {
                         val entry = bitmapFontActions.read(n, tempBmpEntry)
-                        if (newTvaRenderer) {
-                            tva?.quad(n * 4, entry.x + dx, entry.y + dy, entry.tex.width * entry.sx, entry.tex.height * entry.sy, identityMat, entry.tex, renderColorMul, renderColorAdd)
-                        } else {
-                            val it = (container[n] as Image)
-                            it.program = program
-                            it.colorMul = color // @TODO: When doing black, all colors are lost even if the glyph is a colorized image
-                            it.anchor(0, 0)
-                            it.smoothing = smoothing
-                            it.bitmap = entry.tex
-                            it.x = entry.x + dx
-                            it.y = entry.y + dy
-                            it.scaleX = entry.sx
-                            it.scaleY = entry.sy
-                            it.rotation = entry.rot
-                        }
+                        val it = (container[n] as Image)
+                        it.program = program
+                        it.colorMul = color // @TODO: When doing black, all colors are lost even if the glyph is a colorized image
+                        it.anchor(0, 0)
+                        it.smoothing = smoothing
+                        it.bitmap = entry.tex
+                        it.x = entry.x + dx
+                        it.y = entry.y + dy
+                        it.scaleX = entry.sx
+                        it.scaleY = entry.sy
+                        it.rotation = entry.rot
                     }
 
                     //setContainerPosition(0.0, 0.0, font.base)
