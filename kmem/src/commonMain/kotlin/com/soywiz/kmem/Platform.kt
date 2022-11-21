@@ -1,10 +1,6 @@
 package com.soywiz.kmem
 
-import com.soywiz.kmem.internal.currentIsDebug
-import com.soywiz.kmem.internal.currentIsLittleEndian
-import com.soywiz.kmem.internal.currentRawOsName
-import com.soywiz.kmem.internal.currentRawPlatformName
-import com.soywiz.kmem.internal.multithreadedSharedHeap
+import com.soywiz.kmem.internal.*
 
 interface Platform {
     // Endianness
@@ -74,6 +70,8 @@ val Platform.isUnix: Boolean get() = os.isPosix
 val Platform.isPosix: Boolean get() = os.isPosix
 val Platform.isLinux: Boolean get() = os.isLinux
 val Platform.isMac: Boolean get() = os.isMac
+val Platform.isApple: Boolean get() = os.isApple
+val Platform.isAppleMobile: Boolean get() = os.isAppleMobile
 
 val Platform.isIos: Boolean get() = os.isIos
 val Platform.isAndroid: Boolean get() = os.isAndroid
