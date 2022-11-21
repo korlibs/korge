@@ -230,7 +230,7 @@ class TextEditController(
                     minDist = dist
                     //println("[$n] dist=$dist")
                     index = when {
-                        n >= glyphPositions.size - 1 && dist != 0.0 && glyph.distToPath(pos, startEnd = false) < glyph.distToPath(pos, startEnd = true)  -> n + 1
+                        n >= glyphPositions.size - 1 && dist != 0.0 && glyph.distToPath(pos, startEnd = false) < glyph.distToPath(pos, startEnd = true) -> n + 1
                         else -> n
                     }
                 }
@@ -245,12 +245,12 @@ class TextEditController(
         //val startX = getCaretAtIndex(range.start)
         //val endX = getCaretAtIndex(range.endExclusive)
 
-        val array = PointArrayList(2)
+        val array = PointArrayList(if (range.isEmpty()) 2 else (range.length + 1) * 2)
         if (range.isEmpty()) {
             val last = (range.first >= this.text.length)
             val caret = getCaretAtIndex(range.first)
             val sign = if (last) -1.0 else +1.0
-            val normal = caret.normal(0.0) * (4.0 * sign)
+            val normal = caret.normal(0.0) * (2.0 * sign)
             val p0 = caret.points.firstPoint()
             val p1 = caret.points.lastPoint()
             array.add(p0)
@@ -258,7 +258,7 @@ class TextEditController(
             array.add(p0 + normal)
             array.add(p1 + normal)
         } else {
-            for (n in range.first..range.last +1) {
+            for (n in range.first..range.last + 1) {
                 val caret = getCaretAtIndex(n)
                 val p0 = caret.points.firstPoint()
                 val p1 = caret.points.lastPoint()
@@ -288,18 +288,15 @@ class TextEditController(
             var idx = sidx
             while (true) {
                 if (idx !in text.indices) {
-                    if (dir < 0) {
-                        return idx - dir
-                    } else {
-                        return idx
+                    return when {
+                        dir < 0 -> idx - dir
+                        else -> idx
                     }
                 }
                 if (!text[idx].isLetterOrDigit()) {
-                    if (dir < 0) {
-                        if (idx == sidx) return idx
-                        return idx - dir
-                    } else {
-                        return idx
+                    return when {
+                        dir < 0 -> if (idx == sidx) idx else idx - dir
+                        else -> idx
                     }
                 }
                 idx += dir
@@ -417,8 +414,9 @@ class TextEditController(
                         } else {
                             if (it.key == Key.BACKSPACE) {
                                 if (cursorIndex > 0) {
+                                    val oldCursorIndex = cursorIndex
                                     text = text.withoutIndex(cursorIndex - 1)
-                                    if (text.length > cursorIndex) cursorIndex--
+                                    cursorIndex = oldCursorIndex - 1 // This [oldCursorIndex] is required since changing text might change the cursorIndex already in some circumstances
                                 }
                             } else {
                                 if (cursorIndex < text.length) {
@@ -505,7 +503,7 @@ class TextEditController(
 
     fun KeyEvent.isWordSkip(): Boolean = if (Platform.os.isApple) this.alt else this.ctrl
     fun KeyEvent.isStartFinalSkip(): Boolean = this.meta && Platform.os.isApple
-    fun KeyEvent.isNativeCtrl(): Boolean = if (Platform.os.isApple) this.meta else this.ctrl
+    fun KeyEvent.isNativeCtrl(): Boolean = this.metaOrCtrl
 
     override fun close() {
         this.textView.cursor = null
