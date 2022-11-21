@@ -108,13 +108,7 @@ open class CachedContainer(
         }
     }
 
-    override fun setInvalidateNotifier() {
-        _invalidateNotifier = this
-    }
-
-    init {
-        _invalidateNotifier = this
-    }
+    override val _invalidateNotifierForChildren: InvalidateNotifier get() = this
 
     override fun invalidatedView(view: BaseView?) {
         dirty = true

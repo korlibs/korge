@@ -38,6 +38,7 @@ class Stage(override val views: Views) : FixedSizeContainer()
     val gameWindow: GameWindow get() = views.gameWindow
     override val resources get() = views.resources
     override val stage: Stage get() = this
+    override val _invalidateNotifierForChildren: InvalidateNotifier get() = this
 
     init {
         this._stage = this

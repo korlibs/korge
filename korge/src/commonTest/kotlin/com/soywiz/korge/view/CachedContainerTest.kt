@@ -54,4 +54,23 @@ class CachedContainerTest {
         }
         assertEquals(mat1, mat2.copy().inverted())
     }
+
+    @Test
+    fun testChangingParentsKeepsChildrenRight() {
+        lateinit var solidRect: SolidRect
+        val cached = CachedContainer().apply {
+            name = "cached"
+            solidRect = solidRect(10, 10)
+        }
+        assertEquals(null, cached._invalidateNotifier)
+        assertEquals(cached, solidRect._invalidateNotifier)
+
+        val cached2 = CachedContainer().apply {
+            name = "cached2"
+            addChild(cached)
+        }
+
+        assertEquals(cached2, cached._invalidateNotifier)
+        assertEquals(cached, solidRect._invalidateNotifier)
+    }
 }

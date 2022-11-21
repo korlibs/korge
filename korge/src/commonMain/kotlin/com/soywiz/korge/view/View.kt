@@ -217,15 +217,18 @@ abstract class View internal constructor(
             forEachChild { it._stage = value }
         }
 
-    internal var _invalidateNotifier: InvalidateNotifier? = null
-        set(value) {
+    var _invalidateNotifier: InvalidateNotifier? = null
+        internal set(value) {
             if (field === value) return
             field = value
-            forEachChild { it._invalidateNotifier = value }
+            val parent = _invalidateNotifierForChildren
+            forEachChild { it._invalidateNotifier = parent }
         }
 
+    open val _invalidateNotifierForChildren: InvalidateNotifier? get() = _invalidateNotifier
+
     protected open fun setInvalidateNotifier() {
-        _invalidateNotifier = _parent?._invalidateNotifier
+        _invalidateNotifier = _parent?._invalidateNotifierForChildren
     }
 
     /** Parent [Container] of [this] View if any, or null */
