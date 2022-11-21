@@ -91,7 +91,7 @@ open class UIButton(
     var skin: UISkin? get() = uiSkin ; set(value) { uiSkin = value }
 
 	var forcePressed = false
-    var radius = 6.pt
+    var radius: Length = 6.pt
         set(value) {
             field = value
             setInitialState()
@@ -161,6 +161,7 @@ open class UIButton(
     val textView = textBlock(richText ?: RichTextData(text, font = DefaultTtfFontAsBitmap), align = TextAlignment.MIDDLE_CENTER)
 
     @ViewProperty
+    @ViewPropertyProvider(TextAlignment.Provider::class)
     var textAlignment: TextAlignment by textView::align
 
     protected val iconView = image(Bitmaps.transparent)

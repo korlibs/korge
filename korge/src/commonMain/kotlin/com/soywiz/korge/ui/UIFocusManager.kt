@@ -19,11 +19,7 @@ interface UIFocusable {
 var UIFocusable.focused: Boolean
     get() = UIFocusManager.Scope.focusView.stage?.uiFocusedView == this
     set(value) {
-        if (value) {
-            UIFocusManager.Scope.focusView.stage?.uiFocusManager?.uiFocusedView = this
-        } else {
-            UIFocusManager.Scope.focusView.stage?.uiFocusManager?.uiFocusedView = null
-        }
+        UIFocusManager.Scope.focusView.stage?.uiFocusManager?.uiFocusedView = if (value) this else null
     }
 
 @ThreadLocal

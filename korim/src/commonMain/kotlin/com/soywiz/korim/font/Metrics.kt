@@ -1,12 +1,8 @@
 package com.soywiz.korim.font
 
-import com.soywiz.kmem.toIntRound
-import com.soywiz.korio.util.niceStr
-import com.soywiz.korma.geom.Rectangle
-import com.soywiz.korma.math.*
-import kotlin.math.max
-import kotlin.math.min
-import kotlin.math.roundToInt
+import com.soywiz.korio.util.*
+import com.soywiz.korma.geom.*
+import kotlin.math.*
 
 /**
  *                              ... [top] (Positive)
@@ -50,8 +46,10 @@ data class FontMetrics(
     /** Bottom-most part of the glyphs (without the [lineGap] between lines) */
     val rbottom: Double get() = min(descent, bottom)
 
+    val lineHeightWithoutGap: Double get() = rtop - rbottom
+
     /** Total size of a line including from [top] to [bottom] + [lineGap] */
-    val lineHeight: Double get() = rtop - rbottom + lineGap // Including gap!
+    val lineHeight: Double get() = lineHeightWithoutGap + lineGap // Including gap!
 
     fun copyFrom(other: FontMetrics): FontMetrics = this.copyFromScaled(other, 1.0)
     fun copyFromNewSize(other: FontMetrics, size: Double): FontMetrics = this.copyFromScaled(other, size / other.size)

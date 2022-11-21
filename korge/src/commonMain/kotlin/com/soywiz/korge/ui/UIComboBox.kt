@@ -118,7 +118,7 @@ open class UIComboBox<T>(
                 matchesFilter(index) -> {
                     val highlightColor = MaterialColors.BLUE_800
                     RichTextData.fromHTML(itemText.htmlspecialchars().replace(Regex(Regex.escapeReplacement(filter), RegexOption.IGNORE_CASE)) {
-                        "<b><span color='${highlightColor.hexString}'>${it.value}</span></b>"
+                        "<span color='${highlightColor.hexString}'>${it.value}</span>"
                     }, RichTextData.Style(color = Colors.BLACK, font = DefaultTtfFontAsBitmap))
                 }
                 else -> {

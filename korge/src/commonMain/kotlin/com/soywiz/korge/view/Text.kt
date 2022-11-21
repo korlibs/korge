@@ -249,7 +249,7 @@ open class Text(
         _renderInternal(null)
         if (cachedVersionGlyphMetrics != version) {
             cachedVersionGlyphMetrics = version
-            _textMetricsResult = font.getOrNull()?.getTextBoundsWithGlyphs(fontSize, text, renderer)
+            _textMetricsResult = font.getOrNull()?.getTextBoundsWithGlyphs(fontSize, text, renderer, alignment)
         }
         return _textMetricsResult ?: error("Must ensure font is resolved before calling getGlyphMetrics")
     }

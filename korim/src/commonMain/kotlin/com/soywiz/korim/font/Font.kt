@@ -83,17 +83,12 @@ data class PlacedGlyphMetrics constructor(
     val boundsPath: VectorPath by lazy {
         buildVectorPath {
             this.optimize = false
-            val rect = Rectangle().copyFrom(metrics.bounds)
-            rect.y = -fontMetrics.ascent
-            rect.height = fontMetrics.ascent - fontMetrics.descent
-
-            //println("rect=$rect, ascent=${fontMetrics.ascent}, descent=${fontMetrics.descent}")
-
-            //rect.y = -rect.y
-            //rect.height = -rect.height
-            //rect.y = -rect.y
-            //rect.height = -rect.height
-            rect(rect)
+            rect(
+                metrics.left,
+                -fontMetrics.ascent,
+                metrics.xadvance,
+                fontMetrics.lineHeight
+            )
         }.applyTransform(Matrix().translate(x, y).premultiply(transform))
     }
     val boundsPathCurves: Curves by lazy {
