@@ -65,6 +65,16 @@ inline fun Container.uiTextButton(
 typealias UITextButton = UIButton
 typealias IconButton = UIButton
 
+open class UIToggleableButton(
+    width: Double = 128.0,
+    height: Double = 32.0,
+    text: String = "",
+    icon: BmpSlice? = null,
+    richText: RichTextData? = null,
+) : UIButton(width, height, text, icon, richText) {
+    var pressed: Boolean = false
+}
+
 open class UIButton(
 	width: Double = 128.0,
 	height: Double = 32.0,
@@ -148,7 +158,7 @@ open class UIButton(
             richText = richText.withStyle(richText.defaultStyle.copy(textSize = value))
         }
 
-    val textView = textBlock(richText ?: RichTextData(text), align = TextAlignment.MIDDLE_CENTER)
+    val textView = textBlock(richText ?: RichTextData(text, font = DefaultTtfFontAsBitmap), align = TextAlignment.MIDDLE_CENTER)
 
     @ViewProperty
     var textAlignment: TextAlignment by textView::align

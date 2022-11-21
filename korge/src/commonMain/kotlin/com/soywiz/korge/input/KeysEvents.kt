@@ -19,7 +19,7 @@ class KeysEvents(override val view: View) : KeyComponent, Closeable {
 
     private val onKeyDown = AsyncSignal<KeyEvent>()
     private val onKeyUp = AsyncSignal<KeyEvent>()
-	private val onKeyTyped = AsyncSignal<KeyEvent>()
+    private val onKeyTyped = AsyncSignal<KeyEvent>()
 
     fun KeyEvent.setFromKeys(key: Key, keys: InputKeys, dt: TimeSpan, type: KeyEvent.Type = KeyEvent.Type.DOWN): KeyEvent {
         this.type = type
@@ -119,7 +119,7 @@ class KeysEvents(override val view: View) : KeyComponent, Closeable {
 }
 
 @ThreadLocal
-val View.keys by Extra.PropertyThis<View, KeysEvents> { this.getOrCreateComponentKey<KeysEvents> { KeysEvents(this) } }
+val View.keys: KeysEvents by Extra.PropertyThis<View, KeysEvents> { this.getOrCreateComponentKey<KeysEvents> { KeysEvents(this) } }
 
 inline fun View.newKeys(callback: KeysEvents.() -> Unit): KeysEvents = KeysEvents(this).also {
     addComponent(it)

@@ -1,15 +1,11 @@
 package samples
 
 import com.soywiz.klock.*
-import com.soywiz.korge.animate.*
 import com.soywiz.korge.scene.*
 import com.soywiz.korge.time.*
-import com.soywiz.korge.tween.*
 import com.soywiz.korge.ui.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.color.*
-import com.soywiz.korim.paint.*
-import com.soywiz.korma.interpolation.*
 import com.soywiz.korma.random.*
 import kotlin.random.*
 
@@ -35,7 +31,10 @@ class MainCache : Scene() {
             for (n in 0 until 2000) {
                 cached.getChildAt(50_000 + n).colorMul = random[Colors.RED, Colors.BLUE].mix(Colors.WHITE, 0.3)
             }
+            println(cached.getChildAt(50000)._invalidateNotifier)
         }
+
+
         //timeout(1.seconds) {
         //    rect.color = Colors.BLUE
         //}

@@ -149,12 +149,12 @@ open class Text(
     private val container = container()
     private val bitmapFontActions = Text2TextRendererActions()
     private var fontLoaded: Boolean = false
-    var autoScaling = autoScaling
+    var autoScaling: Boolean = autoScaling
         set(value) {
             field = value
             invalidate()
         }
-    var preciseAutoscaling = false
+    var preciseAutoscaling: Boolean = false
         set(value) {
             field = value
             if (value) autoScaling = true

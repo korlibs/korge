@@ -1,55 +1,27 @@
 package com.soywiz.korge.tests
 
 import com.soywiz.kds.TGenPriorityQueue
-import com.soywiz.klock.DateTime
-import com.soywiz.klock.PerformanceCounter
-import com.soywiz.klock.TimeProvider
-import com.soywiz.klock.TimeSpan
-import com.soywiz.klock.milliseconds
-import com.soywiz.klock.seconds
-import com.soywiz.korag.AG
-import com.soywiz.korag.log.DummyAG
-import com.soywiz.korag.log.LogAG
-import com.soywiz.korag.log.LogBaseAG
-import com.soywiz.korev.Key
-import com.soywiz.korev.KeyEvent
-import com.soywiz.korev.MouseButton
-import com.soywiz.korev.MouseEvent
-import com.soywiz.korev.dispatch
-import com.soywiz.korge.Korge
+import com.soywiz.klock.*
+import com.soywiz.kmem.*
+import com.soywiz.korag.*
+import com.soywiz.korag.log.*
+import com.soywiz.korev.*
+import com.soywiz.korge.*
+import com.soywiz.korge.input.*
 import com.soywiz.korge.input.MouseEvents
-import com.soywiz.korge.input.mouse
-import com.soywiz.korge.internal.DefaultViewport
-import com.soywiz.korge.render.RenderContext
-import com.soywiz.korge.scene.Module
-import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.scene.sceneContainer
-import com.soywiz.korge.view.GameWindowLog
-import com.soywiz.korge.view.Stage
-import com.soywiz.korge.view.View
-import com.soywiz.korge.view.ViewsLog
-import com.soywiz.korgw.GameWindowCoroutineDispatcher
-import com.soywiz.korinject.AsyncInjector
-import com.soywiz.korio.async.DEFAULT_SUSPEND_TEST_TIMEOUT
-import com.soywiz.korio.async.launchImmediately
-import com.soywiz.korio.async.suspendTest
-import com.soywiz.korio.async.withTimeout
-import com.soywiz.korio.lang.WChar
-import com.soywiz.korio.lang.WString
-import com.soywiz.korio.lang.forEachCodePoint
-import com.soywiz.korio.util.OS
-import com.soywiz.korma.geom.Anchor
-import com.soywiz.korma.geom.IPoint
-import com.soywiz.korma.geom.Rectangle
-import com.soywiz.korma.geom.ScaleMode
-import com.soywiz.korma.geom.SizeInt
-import kotlinx.coroutines.CancellableContinuation
-import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.DisposableHandle
-import kotlinx.coroutines.Runnable
-import kotlinx.coroutines.delay
-import kotlin.coroutines.CoroutineContext
-import kotlin.jvm.JvmName
+import com.soywiz.korge.internal.*
+import com.soywiz.korge.render.*
+import com.soywiz.korge.scene.*
+import com.soywiz.korge.view.*
+import com.soywiz.korgw.*
+import com.soywiz.korinject.*
+import com.soywiz.korio.async.*
+import com.soywiz.korio.lang.*
+import com.soywiz.korio.util.*
+import com.soywiz.korma.geom.*
+import kotlinx.coroutines.*
+import kotlin.coroutines.*
+import kotlin.jvm.*
 
 open class ViewsForTesting(
     val frameTime: TimeSpan = 10.milliseconds,
@@ -184,52 +156,91 @@ open class ViewsForTesting(
         )
     }
 
-    suspend fun keyType(chars: WString, shift: Boolean = false, ctrl: Boolean = false) {
-        chars.forEachCodePoint { _, codePoint, _ -> keyType(WChar(codePoint), shift, ctrl) }
+    suspend fun keyType(chars: WString, shift: Boolean = simulatedShift, ctrl: Boolean = simulatedCtrl, alt: Boolean = simulatedAlt, meta: Boolean = simulatedMeta) {
+        chars.forEachCodePoint { _, codePoint, _ -> keyType(WChar(codePoint), shift, ctrl, alt, meta) }
     }
-    suspend fun keyType(chars: String, shift: Boolean = false, ctrl: Boolean = false) {
-        chars.forEachCodePoint { _, codePoint, _ -> keyType(WChar(codePoint), shift, ctrl) }
+    suspend fun keyType(chars: String, shift: Boolean = simulatedShift, ctrl: Boolean = simulatedCtrl, alt: Boolean = simulatedAlt, meta: Boolean = simulatedMeta) {
+        chars.forEachCodePoint { _, codePoint, _ -> keyType(WChar(codePoint), shift, ctrl, alt, meta) }
     }
 
-    suspend fun keyType(char: Char, shift: Boolean = false, ctrl: Boolean = false) = keyType(WChar(char.code), shift, ctrl)
+    suspend fun keyType(char: Char, shift: Boolean = simulatedShift, ctrl: Boolean = simulatedCtrl, alt: Boolean = simulatedAlt, meta: Boolean = simulatedMeta) = keyType(WChar(char.code), shift, ctrl, alt, meta)
 
-    suspend fun keyType(char: WChar, shift: Boolean = false, ctrl: Boolean = false) {
+    suspend fun keyType(char: WChar, shift: Boolean = simulatedShift, ctrl: Boolean = simulatedCtrl, alt: Boolean = simulatedAlt, meta: Boolean = simulatedMeta) {
         gameWindow.dispatch(
             KeyEvent(
                 type = KeyEvent.Type.TYPE,
                 id = 0, key = Key.NONE, keyCode = char.toInt(), character = char.toInt().toChar(),
-                shift = shift, ctrl = ctrl, alt = false, meta = false
+                shift = shift, ctrl = ctrl, alt = alt, meta = meta
             )
         )
         simulateFrame(count = 2)
     }
 
-    suspend fun keyDownThenUp(key: Key) {
-        keyDown(key)
-        keyUp(key)
+    var simulatedShift: Boolean = false
+    var simulatedCtrl: Boolean = false
+    var simulatedAlt: Boolean = false
+    var simulatedMeta: Boolean = false
+
+    var simulatedCtrlOrMeta: Boolean
+        get() = if (Platform.isApple) simulatedMeta else simulatedCtrl
+        set(value) {
+            if (Platform.isApple) simulatedMeta = value else simulatedCtrl = value
+        }
+
+    inline fun <T> cmdOrMeta(cmdOrMeta: Boolean = simulatedCtrlOrMeta, block: () -> T): T {
+        return controlKeys(
+            ctrl = if (Platform.isApple) simulatedCtrl else cmdOrMeta,
+            meta = if (Platform.isApple) cmdOrMeta else simulatedMeta,
+        ) {
+            block()
+        }
     }
 
-    suspend fun keyDown(key: Key) {
-        keyEvent(KeyEvent.Type.DOWN, key)
+    inline fun <T> controlKeys(shift: Boolean = simulatedShift, ctrl: Boolean = simulatedCtrl, alt: Boolean = simulatedAlt, meta: Boolean = simulatedMeta, block: () -> T): T {
+        val oldShift = this.simulatedShift
+        val oldCtrl = this.simulatedCtrl
+        val oldAlt = this.simulatedAlt
+        val oldMeta = this.simulatedMeta
+        try {
+            this.simulatedShift = shift
+            this.simulatedCtrl = ctrl
+            this.simulatedAlt = alt
+            this.simulatedMeta = meta
+            return block()
+        } finally {
+            this.simulatedShift = oldShift
+            this.simulatedCtrl = oldCtrl
+            this.simulatedAlt = oldAlt
+            this.simulatedMeta = oldMeta
+        }
+    }
+
+    suspend fun keyDownThenUp(key: Key, shift: Boolean = simulatedShift, ctrl: Boolean = simulatedCtrl, alt: Boolean = simulatedAlt, meta: Boolean = simulatedMeta) {
+        keyDown(key, shift = shift, ctrl = ctrl, alt = alt, meta = meta)
+        keyUp(key, shift = shift, ctrl = ctrl, alt = alt, meta = meta)
+    }
+
+    suspend fun keyDown(key: Key, shift: Boolean = simulatedShift, ctrl: Boolean = simulatedCtrl, alt: Boolean = simulatedAlt, meta: Boolean = simulatedMeta) {
+        keyEvent(KeyEvent.Type.DOWN, key, shift = shift, ctrl = ctrl, alt = alt, meta = meta)
         simulateFrame(count = 2)
     }
 
-    suspend fun keyUp(key: Key) {
-        keyEvent(KeyEvent.Type.UP, key)
+    suspend fun keyUp(key: Key, shift: Boolean = simulatedShift, ctrl: Boolean = simulatedCtrl, alt: Boolean = simulatedAlt, meta: Boolean = simulatedMeta) {
+        keyEvent(KeyEvent.Type.UP, key, shift = shift, ctrl = ctrl, alt = alt, meta = meta)
         simulateFrame(count = 2)
     }
 
-    private fun keyEvent(type: KeyEvent.Type, key: Key, keyCode: Int = 0) {
+    private fun keyEvent(type: KeyEvent.Type, key: Key, keyCode: Int = 0, shift: Boolean = simulatedShift, ctrl: Boolean = simulatedCtrl, alt: Boolean = simulatedAlt, meta: Boolean = simulatedMeta) {
         gameWindow.dispatch(
             KeyEvent(
                 type = type,
                 id = 0,
                 key = key,
                 keyCode = keyCode,
-                shift = false,
-                ctrl = false,
-                alt = false,
-                meta = false
+                shift = shift,
+                ctrl = ctrl,
+                alt = alt,
+                meta = meta
             )
         )
     }

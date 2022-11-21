@@ -80,6 +80,7 @@ open class UIView(
     //var maxHeight: Double = 100.0
 
     override fun setSize(width: Double, height: Double) {
+        if (width == this._width && height == this._height) return
         _width = width
         _height = height
         onSizeChanged()
@@ -105,6 +106,7 @@ open class UIView(
 	}
 
 	protected open fun onSizeChanged() {
+        parent?.onChildChangedSize(this)
 	}
 
     override fun onParentChanged() {

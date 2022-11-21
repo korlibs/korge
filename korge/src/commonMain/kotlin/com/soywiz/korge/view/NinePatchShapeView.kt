@@ -1,8 +1,8 @@
 package com.soywiz.korge.view
 
-import com.soywiz.korge.ui.UIView
-import com.soywiz.korim.vector.NinePatchShape
-import com.soywiz.korma.geom.Size
+import com.soywiz.korge.ui.*
+import com.soywiz.korim.vector.*
+import com.soywiz.korma.geom.*
 
 inline fun Container.ninePatchShapeView(
     shape: NinePatchShape,
@@ -31,6 +31,7 @@ class NinePatchShapeView(
         }
 
     override fun onSizeChanged() {
+        super.onSizeChanged()
         graphics.shape = shape.transform(Size(width, height))
     }
 }

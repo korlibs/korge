@@ -150,6 +150,9 @@ open class Container(
     protected open fun onChildAdded(view: View) {
     }
 
+    open fun onChildChangedSize(view: View) {
+    }
+
     /**
      * Retrieves the index of a given child [View].
      */

@@ -1,12 +1,15 @@
 package com.soywiz.korge.view.property
 
 import com.soywiz.korio.async.*
+import com.soywiz.korio.experimental.*
 import kotlin.reflect.*
 
 /**
  * Used by the debugger to make a property to appear in the debug panel.
  */
 @Suppress("unused")
+@SuppressIfAnnotated
+@KorioExperimentalApi
 annotation class ViewProperty(
     val min: Double = 0.0,
     val max: Double = 2000.0,

@@ -77,7 +77,7 @@ open class UIComboBox<T>(
             verticalList.invalidateList()
         }
 
-    private val selectedButton = uiButton(width, height, "").also {
+    private val selectedButton = uiButton("", width = width, height = height).also {
         it.textAlignment = TextAlignment.MIDDLE_LEFT
         it.textView.padding = Margin(0.0, 8.0)
         it.bgColorOut = Colors.WHITE
@@ -199,6 +199,19 @@ open class UIComboBox<T>(
 
     val isOpened: Boolean get() = itemsView.visible
 
+    fun changeParent(set: Boolean) {
+        val parent = if (set) stage else null
+        if (parent != null) {
+            parent.addChild(itemsViewBackground)
+            parent.addChild(itemsView)
+        } else {
+            itemsViewBackground.removeFromParent()
+            itemsView.removeFromParent()
+        }
+        itemsView.zIndex = +100001.0
+        itemsViewBackground.zIndex = +100000.0
+    }
+
     fun open(immediate: Boolean = false) {
         verticalList.invalidateList()
         focused = true
@@ -212,12 +225,9 @@ open class UIComboBox<T>(
         }
 
         if (!isOpened) {
+            changeParent(set = true)
             //itemsView.removeFromParent()
-            this?.parent?.addChild(itemsViewBackground)
-            this?.parent?.addChild(itemsView)
-            itemsView.zIndex = +100001.0
             itemsView.visible = true
-            itemsViewBackground.zIndex = +100000.0
             itemsViewBackground.visible = true
             if (immediate) {
                 itemsView.alpha = 1.0
@@ -292,6 +302,7 @@ open class UIComboBox<T>(
                 selectedButton.background.borderColor = MaterialColors.GRAY_400
                 selectedButton.background.borderSize = 1.0
                 itemsView.visible = false
+                changeParent(set = false)
             } else {
                 simpleAnimator.cancel().sequence {
                     tween(
@@ -305,7 +316,10 @@ open class UIComboBox<T>(
                         time = 0.25.seconds,
                         easing = Easing.EASE
                     )
-                    block { itemsView.visible = false }
+                    block {
+                        itemsView.visible = false
+                        changeParent(set = false)
+                    }
                 }
             }
         }

@@ -40,8 +40,8 @@ open class UIBaseCheckBox<T : UIBaseCheckBox<T>>(
     var text: String = "CheckBox",
     var skinKind: UIBaseCheckBoxSkin.Kind,
 ) : UIFocusableView(width, height), ViewLeaf {
-    val thisAsT get() = this.fastCastTo<T>()
-    val onChange = Signal<T>()
+    val thisAsT: T get() = this.fastCastTo<T>()
+    val onChange: Signal<T> = Signal<T>()
 
     @ViewProperty
     open var checked: Boolean = checked
@@ -56,7 +56,7 @@ open class UIBaseCheckBox<T : UIBaseCheckBox<T>>(
     var skin: UIBaseCheckBoxSkin = UIBaseCheckBoxSkinMaterial
     private val background = solidRect(width, height, Colors.TRANSPARENT_BLACK)
     val canvas = renderableView {
-        skin.render(ctx2d, width, height, this@UIBaseCheckBox, skinKind)
+        skin.render(ctx2d, this@UIBaseCheckBox.width, this@UIBaseCheckBox.height, this@UIBaseCheckBox, skinKind)
     }
     private val textView = textBlock(RichTextData(text))
     var checkedRatio: Double = 0.0; private set

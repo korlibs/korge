@@ -63,8 +63,9 @@ class MainUI : Scene() {
                 }
             }
             val group = UIRadioButtonGroup()
-            uiRadioButton(text = "Radio 1", group = group)
+            val rb = uiRadioButton(text = "Radio 1", group = group)
             uiRadioButton(text = "Radio 2", group = group) { skin = UIBaseCheckBoxSkinMaterial(MaterialColors.TEAL_700, MaterialColors.CYAN_800) }
+            //rb.simpleAnimator.tween(rb::height[120.0], time = 4.seconds)
             //uiSwitch(text = "Switch1")
             //uiSwitch(text = "Switch2")
             uiSlider(value = 0, min = -32, max = +32).changed {}

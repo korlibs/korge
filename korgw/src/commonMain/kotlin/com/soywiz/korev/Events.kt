@@ -1,15 +1,13 @@
 package com.soywiz.korev
 
 import com.soywiz.kds.*
-import com.soywiz.kds.iterators.fastForEach
-import com.soywiz.kds.iterators.fastIterateRemove
-import com.soywiz.klock.DateTime
-import com.soywiz.klock.TimeSpan
-import com.soywiz.korio.file.VfsFile
-import com.soywiz.korio.lang.Closeable
-import com.soywiz.korio.util.OS
-import com.soywiz.korio.util.niceStr
-import kotlin.jvm.JvmOverloads
+import com.soywiz.kds.iterators.*
+import com.soywiz.klock.*
+import com.soywiz.kmem.*
+import com.soywiz.korio.file.*
+import com.soywiz.korio.lang.*
+import com.soywiz.korio.util.*
+import kotlin.jvm.*
 
 interface TEvent<T : TEvent<T>> {
     val type: EventType<T>
@@ -393,6 +391,9 @@ data class KeyEvent constructor(
         this.deltaTime = other.deltaTime
         this.str = other.str
     }
+
+    /** On MacOS CMD, on Linux and Windows CTRL */
+    val metaOrCtrl: Boolean get() = if (Platform.os.isApple) this.meta else this.ctrl
 }
 
 data class GamePadConnectionEvent(

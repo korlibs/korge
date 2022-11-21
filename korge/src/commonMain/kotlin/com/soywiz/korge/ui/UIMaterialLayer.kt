@@ -41,7 +41,7 @@ class MaterialLayerHighlights(val view: View) {
     fun removeHighlights() {
         highlightsActive.fastForEach {
             view.simpleAnimator.sequence {
-                tween(it::alpha[0.0], V2Callback { view.invalidateRender() }, time = 0.2.seconds, easing = Easing.EASE_IN)
+                tween(it::alpha[0.0].delay(0.1.seconds), V2Callback { view.invalidateRender() }, time = 0.3.seconds, easing = Easing.EASE_IN)
                 block { highlights.remove(it) }
             }
         }
