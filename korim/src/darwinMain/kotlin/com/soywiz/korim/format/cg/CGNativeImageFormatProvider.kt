@@ -171,18 +171,21 @@ open class CGNativeImageFormatProvider : CGBaseNativeImageFormatProvider() {
             ?: error("Failed to create CGImageDestination")
 
         val imageProperties = CFDictionaryCreateMutable(null, 0, null, null)
+        val ref = alloc<DoubleVar>()
+        ref.value = props.quality
+        val num = CFNumberCreate(null, kCFNumberDoubleType, ref.ptr)
+        CFDictionaryAddValue(imageProperties, kCGImageDestinationLossyCompressionQuality, num)
+
+        //println("CGNativeImageFormatProvider.encodeSuspend")
+        val cgImage = image.mainBitmap.toBMP32().toCGImage()
 
         try {
-            val ref = alloc<DoubleVar>()
-            ref.value = props.quality
-            val num = CFNumberCreate(null, kCFNumberDoubleType, ref.ptr)
-            CFDictionaryAddValue(imageProperties, kCGImageDestinationLossyCompressionQuality, num)
-            CFRelease(num)
-            //println("CGNativeImageFormatProvider.encodeSuspend")
-            CGImageDestinationAddImage(destination, image.mainBitmap.toBMP32().toCGImage(), imageProperties)
+            CGImageDestinationAddImage(destination, cgImage, imageProperties)
             if (!CGImageDestinationFinalize(destination)) error("Can't write image")
         } finally {
+            CGImageRelease(cgImage)
             CFRelease(imageProperties)
+            CFRelease(num)
             CFRelease(destination)
         }
         val length: Int = CFDataGetLength(data).convert()
