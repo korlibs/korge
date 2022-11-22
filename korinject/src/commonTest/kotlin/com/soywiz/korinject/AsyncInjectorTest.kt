@@ -1,6 +1,7 @@
 package com.soywiz.korinject
 
 import com.soywiz.korinject.util.*
+import kotlinx.coroutines.delay
 import kotlin.test.*
 
 class AsyncInjectorTest {
@@ -262,6 +263,41 @@ class AsyncInjectorTest {
 			.mapInstance(Mapped::class, Mapped("hello"))
 			.get(MySingleton::class)
 	}
+
+    @Test
+    fun testGetSync() {
+        var n = 0
+        val injector = AsyncInjector()
+        injector.mapPrototype { n++ }
+        assertEquals(0, injector.getSync<Int>())
+        assertEquals(1, injector.getSync<Int>())
+    }
+
+    @Test
+    fun testGetSyncSuspending() {
+        val injector = AsyncInjector()
+        injector.mapPrototype { delay(5000L); 0 }
+        val error = assertFailsWith<RuntimeException> { injector.getSync<Int>() }
+        assertTrue { error.message!!.contains("synchronously") }
+    }
+
+    @Test
+    fun testHas() = suspendTest {
+        var n = 0
+        val injector = AsyncInjector()
+        injector.mapPrototype { n++ }
+        assertEquals(true, injector.has(Int::class))
+        assertEquals(false, injector.has(String::class))
+        assertEquals(0, n)
+    }
+
+    @Test
+    fun testToString() = suspendTest {
+        val injector = AsyncInjector()
+        assertEquals("AsyncInjector(level=0)", injector.toString())
+        assertEquals("AsyncInjector(level=1)", injector.child().toString())
+
+    }
 }
 
 private suspend inline fun <reified T : Any> AsyncInjector.getPath(path: String) =

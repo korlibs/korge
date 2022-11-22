@@ -24,7 +24,7 @@ class JsPlatformAudioOutput(coroutineContext: CoroutineContext, val freq: Int) :
 	val id = lastId++
 
 	init {
-		nativeSoundProvider.initOnce()
+		nativeSoundProvider // Ensure it is created
 	}
 
 	companion object {

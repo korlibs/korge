@@ -1,13 +1,12 @@
 package com.soywiz.korim.tiles.tiled
 
-import com.soywiz.kds.FastArrayList
-import com.soywiz.kds.IntMap
-import com.soywiz.kds.associateByInt
+import com.soywiz.kds.*
 import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.klogger.Logger
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
+import com.soywiz.korim.text.TextAlignment
 import com.soywiz.korim.tiles.TileMapObjectAlignment
 import com.soywiz.korim.tiles.TileMapOrientation
 import com.soywiz.korim.tiles.TileMapRenderOrder
@@ -18,7 +17,9 @@ import com.soywiz.korim.tiles.TileSetTileInfo
 import com.soywiz.korim.tiles.TileShapeInfo
 import com.soywiz.korio.lang.invalidArgument
 import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.shape.*
+import com.soywiz.korma.geom.shape.Shape2d
+import com.soywiz.korma.geom.shape.buildVectorPath
+import com.soywiz.korma.geom.shape.toShape2dNew
 import com.soywiz.korma.geom.vector.VectorPath
 import com.soywiz.korma.geom.vector.applyTransform
 import com.soywiz.korma.geom.vector.ellipse
@@ -297,21 +298,14 @@ class TiledMap constructor(
                 val underline: Boolean,
                 val strikeout: Boolean,
                 val kerning: Boolean,
-                val hAlign: TextHAlignment,
-                val vAlign: TextVAlignment
+                val align: TextAlignment,
             ) : Shape() {
+                val hAlign get() = align.horizontal
+                val vAlign get() = align.vertical
                 override fun toVectorPath(): VectorPath = buildVectorPath(VectorPath(), fun VectorPath.() {
                 })
             }
         }
-    }
-
-    enum class TextHAlignment(val value: String) {
-        LEFT("left"), CENTER("center"), RIGHT("right"), JUSTIFY("justify")
-    }
-
-    enum class TextVAlignment(val value: String) {
-        TOP("top"), CENTER("center"), BOTTOM("bottom")
     }
 
     sealed class Image(val width: Int, val height: Int, val transparent: RGBA? = null) {
@@ -421,15 +415,15 @@ class TiledMap constructor(
         abstract fun clone(): Layer
 
         class Tiles(
-            var map: Bitmap32 = Bitmap32(0, 0, premultiplied = true),
+            var map: IStackedIntArray2 = StackedIntArray2(0, 0),
             var encoding: Encoding = Encoding.XML,
             var compression: Compression = Compression.NO
         ) : Layer() {
             val width: Int get() = map.width
             val height: Int get() = map.height
             val area: Int get() = width * height
-            operator fun set(x: Int, y: Int, value: Int) { map.setInt(x, y, value) }
-            operator fun get(x: Int, y: Int): Int = map.getInt(x, y)
+            operator fun set(x: Int, y: Int, value: Int) { map.setFirst(x, y, value) }
+            operator fun get(x: Int, y: Int): Int = map.getFirst(x, y)
             override fun clone(): Tiles = Tiles(map.clone(), encoding, compression).also { it.copyFrom(this) }
         }
 

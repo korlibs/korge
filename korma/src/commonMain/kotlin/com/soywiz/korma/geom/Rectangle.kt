@@ -1,5 +1,6 @@
 package com.soywiz.korma.geom
 
+import com.soywiz.kds.*
 import com.soywiz.korma.internal.niceStr
 import com.soywiz.korma.interpolation.Interpolable
 import com.soywiz.korma.interpolation.MutableInterpolable
@@ -15,6 +16,8 @@ data class Rectangle(
 ) : MutableInterpolable<Rectangle>, Interpolable<Rectangle>, IRectangle, Sizeable {
 
     companion object {
+        val POOL: ConcurrentPool<Rectangle> = ConcurrentPool<Rectangle>({ it.clear() }) { Rectangle() }
+
         operator fun invoke(): Rectangle = Rectangle(0.0, 0.0, 0.0, 0.0)
         operator fun invoke(x: Int, y: Int, width: Int, height: Int): Rectangle =
             Rectangle(x.toDouble(), y.toDouble(), width.toDouble(), height.toDouble())
@@ -49,16 +52,32 @@ data class Rectangle(
     val isEmpty: Boolean get() = area == 0.0
     val isNotEmpty: Boolean get() = area != 0.0
     val area: Double get() = width * height
+    @Deprecated("Use x or leftKeepingRight")
     var left: Double
         get() = x
         set(value) {
             x = value
         }
+    @Deprecated("Use y or topKeepingBottom")
     var top: Double
         get() = y
         set(value) {
             y = value
         }
+
+    var leftKeepingRight: Double
+        get() = x
+        set(value) {
+            width += (x - value)
+            x = value
+        }
+    var topKeepingBottom: Double
+        get() = y
+        set(value) {
+            height += (y - value)
+            y = value
+        }
+
     var right: Double
         get() = x + width
         set(value) {

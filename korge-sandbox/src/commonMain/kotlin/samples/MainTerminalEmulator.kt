@@ -41,6 +41,8 @@ class MainTerminalEmulator : Scene() {
                 terminalEmulatorView.setString(0, 1, "Hello WORLD", Colors.WHITE, Colors.GREEN, false, true)
                 terminalEmulatorView.setString(0, 2, "Hello WORLD", Colors.WHITE, Colors.BLUE, true, false)
                 terminalEmulatorView.setString(0, 3, "Hello WORLD", Colors.WHITE, Colors.PURPLE, false, false)
+
+                invalidate()
             }
         }
     }

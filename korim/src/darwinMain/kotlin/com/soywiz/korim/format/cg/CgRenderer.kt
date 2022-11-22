@@ -2,6 +2,7 @@
 
 package com.soywiz.korim.format.cg
 
+import com.soywiz.kmem.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.font.*
@@ -17,6 +18,46 @@ import platform.CoreGraphics.*
 import platform.posix.*
 import kotlin.math.*
 
+//fun transferBitmap32CGImageRef(bmp: Bitmap32, image: CGImageRef?, toBitmap: Boolean) {
+//    val width = CGImageGetWidth(image).toInt()
+//    val height = CGImageGetHeight(image).toInt()
+//    val colorSpace = CGColorSpaceCreateDeviceRGB()
+//    val out = bmp.ints
+//    out.usePinned { outPin ->
+//        val bytesPerPixel = 4
+//        val bytesPerRow = bytesPerPixel * width
+//        val bitsPerComponent = 8
+//        val context = CGBitmapContextCreate(
+//            outPin.startAddressOf, width.convert(), height.convert(), bitsPerComponent.convert(), bytesPerRow.convert(), colorSpace,
+//            CGImageAlphaInfo.kCGImageAlphaPremultipliedLast.value or kCGBitmapByteOrder32Big
+//        )
+//        try {
+//            CGColorSpaceRelease(colorSpace)
+//
+//            CGContextDrawImage(context, CGRectMake(0.cg, 0.cg, width.cg, height.cg), image)
+//        } finally {
+//            CGContextRelease(context)
+//        }
+//    }
+//}
+
+private fun swapRB(value: Int): Int = (value and 0xFF00FF00.toInt()) or ((value and 0xFF) shl 16) or ((value ushr 16) and 0xFF)
+
+fun swapRB(ptr: CPointer<IntVar>?, count: Int) {
+    if (ptr == null) return
+    for (n in 0 until count) ptr[n] = swapRB(ptr[n])
+}
+
+//fun swapRB(ptr: CPointer<ByteVar>?, count: Int) {
+//    if (ptr == null) return
+//    for (n in 0 until count) {
+//        val r = ptr[n * 4 + 0]
+//        val g = ptr[n * 4 + 2]
+//        ptr[n * 4 + 2] = r
+//        ptr[n * 4 + 0] = g
+//    }
+//}
+
 fun transferBitmap32CGContext(bmp: Bitmap32, ctx: CGContextRef?, toBitmap: Boolean) {
     val ctxBytesPerRow = CGBitmapContextGetBytesPerRow(ctx).toInt()
     val ctxWidth = CGBitmapContextGetWidth(ctx).toInt()
@@ -26,16 +67,44 @@ fun transferBitmap32CGContext(bmp: Bitmap32, ctx: CGContextRef?, toBitmap: Boole
     val minHeight = min(ctxHeight, bmp.height)
     val out = bmp.ints
     out.usePinned { outPin ->
-        val outStart = outPin.addressOf(0)
+        val outStart: CPointer<IntVarOf<Int>> = outPin.startAddressOf
         val widthInBytes: size_t = (minWidth * 4).convert()
         for (n in 0 until minHeight) {
             val bmpPtr = outStart + ctxWidth * n
             val ctxPtr = pixels.reinterpret<ByteVar>() + ctxBytesPerRow * n
             when {
-                toBitmap -> memcpy(bmpPtr, ctxPtr, widthInBytes)
-                else -> memcpy(ctxPtr, bmpPtr, widthInBytes)
+                toBitmap -> {
+                    memcpy(bmpPtr, ctxPtr, widthInBytes)
+                    swapRB(bmpPtr?.reinterpret(), minWidth)
+                }
+                else -> {
+                    //swapRB(bmpPtr?.reinterpret(), minWidth)
+                    memcpy(ctxPtr, bmpPtr, widthInBytes)
+                    //swapRB(bmpPtr?.reinterpret(), minWidth) // Reverse since we cannot write directly without memcopy to ctxPtr
+                    //swapRB(ctxPtr?.reinterpret(), minWidth)
+                }
             }
         }
+    }
+}
+
+/**
+ * Returned image must be deallocated with [CGImageRelease]
+ */
+fun transferBitmap32ToCGImage(bmp: Bitmap32, colorSpace: CPointer<CGColorSpace>? = null): CGImageRef? {
+    val allocColorSpace = if (colorSpace == null) CGColorSpaceCreateDeviceRGB() else null
+
+    val imageCtx: CPointer<CGContext>? = CGBitmapContextCreate(
+        null, bmp.width.convert(), bmp.height.convert(),
+        8.convert(), 0.convert(), colorSpace ?: allocColorSpace,
+        CGImageAlphaInfo.kCGImageAlphaPremultipliedLast.value
+    )
+    try {
+        transferBitmap32CGContext(bmp, imageCtx, toBitmap = false)
+        return CGBitmapContextCreateImage(imageCtx)
+    } finally {
+        CGContextRelease(imageCtx)
+        if (allocColorSpace != null) CGColorSpaceRelease(allocColorSpace)
     }
 }
 
@@ -62,29 +131,18 @@ class CoreGraphicsRenderer(val bmp: Bitmap32, val antialiasing: Boolean) : com.s
     fun Matrix.toCGAffineTransform() = CGAffineTransformMake(a.cg, b.cg, c.cg, d.cg, tx.cg, ty.cg)
 
     private fun cgDrawBitmap(bmp: Bitmap32, ctx: CGContextRef?, colorSpace: CPointer<CGColorSpace>?, tiled: Boolean = false) {
-        val imageCtx = CGBitmapContextCreate(
-            null, bmp.width.convert(), bmp.height.convert(),
-            8.convert(), 0.convert(), colorSpace,
-            CGImageAlphaInfo.kCGImageAlphaPremultipliedLast.value
-        )
+        val image = transferBitmap32ToCGImage(bmp, colorSpace)
         try {
-            transferBitmap32CGContext(bmp, imageCtx, toBitmap = false)
-            val image = CGBitmapContextCreateImage(imageCtx)
-            try {
-                val rect = CGRectMake(0.cg, 0.cg, bmp.width.cg, bmp.height.cg)
+            val rect = CGRectMake(0.cg, 0.cg, bmp.width.cg, bmp.height.cg)
 
-                if (tiled) {
-                    CGContextDrawTiledImage(ctx, rect, image)
-                } else {
-                    //println("CGContextDrawImage: $ctx, ${bmp.size}")
-                    CGContextDrawImage(ctx, rect, image)
-                }
-                //println("MACOS: imageCtx=$imageCtx, image=$image")
-            } finally {
-                CGImageRelease(image)
+            if (tiled) {
+                CGContextDrawTiledImage(ctx, rect, image)
+            } else {
+                //println("CGContextDrawImage: $ctx, ${bmp.size}")
+                CGContextDrawImage(ctx, rect, image)
             }
         } finally {
-            CGContextRelease(imageCtx)
+            CGImageRelease(image)
         }
     }
 
@@ -195,6 +253,7 @@ class CoreGraphicsRenderer(val bmp: Bitmap32, val antialiasing: Boolean) : com.s
                                                     Winding.NON_ZERO -> CGContextFillPath(ctx)
                                                 }
                                             }
+
                                             is GradientPaint -> {
                                                 val nelements = style.colors.size
                                                 val colors = CFArrayCreateMutable(null, nelements.convert(), null)
@@ -219,14 +278,17 @@ class CoreGraphicsRenderer(val bmp: Bitmap32, val antialiasing: Boolean) : com.s
                                                         GradientKind.LINEAR -> {
                                                             CGContextDrawLinearGradient(ctx, gradient, start, end, options)
                                                         }
+
                                                         GradientKind.RADIAL -> {
                                                             CGContextDrawRadialGradient(ctx, gradient, start, style.r0.cg, end, style.r1.cg, options)
                                                         }
+
                                                         else -> Unit
                                                     }
                                                 }
                                                 CGGradientRelease(gradient)
                                             }
+
                                             is BitmapPaint -> {
                                                 CGContextClip(ctx)
                                                 cgKeepState(ctx) {
@@ -239,6 +301,7 @@ class CoreGraphicsRenderer(val bmp: Bitmap32, val antialiasing: Boolean) : com.s
                                                 }
                                                 //println("Not implemented style $style fill=$fill")
                                             }
+
                                             else -> {
                                                 println("Not implemented style $style fill=$fill")
                                             }
@@ -246,7 +309,6 @@ class CoreGraphicsRenderer(val bmp: Bitmap32, val antialiasing: Boolean) : com.s
                                     }
                                 }
                             }
-
                         } finally {
                             //transferBitmap32CGContext(bmp, ctx, toBitmap = true)
                             CGContextRelease(ctx)

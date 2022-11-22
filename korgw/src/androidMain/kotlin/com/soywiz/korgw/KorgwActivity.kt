@@ -20,11 +20,7 @@ abstract class KorgwActivity(
 ) : Activity(), ActivityWithResult by activityWithResult
 //, DialogInterface.OnKeyListener
 {
-    init {
-        activityWithResult.activity = this
-    }
-
-    var gameWindow: AndroidGameWindow = AndroidGameWindow(this)
+    var gameWindow: AndroidGameWindow = AndroidGameWindow(this, config)
     var mGLView: KorgwSurfaceView? = null
     lateinit var ag: AGOpengl
     open val agCheck: Boolean get() = false
@@ -41,16 +37,23 @@ abstract class KorgwActivity(
 
     private var defaultUiVisibility = -1
 
+    init {
+        activityWithResult.activity = this
+        gameWindow.onContinuousRenderModeUpdated = {
+            mGLView?.continuousRenderMode = it
+        }
+    }
+
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        println("---------------- KorgwActivity.onCreate(savedInstanceState=$savedInstanceState) --------------")
+        println("---------------- KorgwActivity.onCreate(savedInstanceState=$savedInstanceState) -------------- : ${this.config}")
         Log.e("KorgwActivity", "onCreate")
         //println("KorgwActivity.onCreate")
 
         //ag = AGOpenglFactory.create(this).create(this, AGConfig())
 
-        mGLView = KorgwSurfaceView(this, this, gameWindow)
+        mGLView = KorgwSurfaceView(this, this, gameWindow, config)
         ag = AndroidAGOpengl(this, agCheck) { mGLView }
 
         gameWindow.initializeAndroid()

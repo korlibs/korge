@@ -1,11 +1,8 @@
 package com.soywiz.korge.view.filter
 
-import com.soywiz.kds.CopyOnWriteFrozenMap
-import com.soywiz.korag.shader.appending
-import com.soywiz.korge.debug.uiEditableValue
-import com.soywiz.korge.render.BatchBuilder2D
-import com.soywiz.korge.view.Views
-import com.soywiz.korui.UiContainer
+import com.soywiz.kds.*
+import com.soywiz.korag.shader.*
+import com.soywiz.korge.view.property.*
 
 /**
  * Allows to swizzle (interchange) color components via the [swizzle] property.
@@ -35,6 +32,7 @@ class SwizzleColorsFilter(initialSwizzle: String = "rgba") : ShaderFilter() {
      * - swizzle="bgra" would interchange red and blue channels
      * - swizzle="rrra" would show as greyscale the red component
      * */
+    @ViewProperty
     var swizzle: String = initialSwizzle
         set(value) {
             field = value
@@ -46,9 +44,5 @@ class SwizzleColorsFilter(initialSwizzle: String = "rgba") : ShaderFilter() {
             _programProvider = CACHE.getOrPut(swizzle) { SwizzleProgram(swizzle) }
         }
         return _programProvider!!
-    }
-
-    override fun buildDebugComponent(views: Views, container: UiContainer) {
-        container.uiEditableValue(::swizzle)
     }
 }

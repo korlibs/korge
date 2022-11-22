@@ -1,11 +1,8 @@
 package com.soywiz.korgw
 
-import android.content.Context
-import com.soywiz.kgl.KmlGl
-import com.soywiz.kgl.KmlGlAndroid
-import com.soywiz.kgl.checkedIf
-import com.soywiz.kgl.logIf
-import com.soywiz.korag.gl.AGOpengl
+import android.content.*
+import com.soywiz.kgl.*
+import com.soywiz.korag.gl.*
 
 class AndroidAGOpengl(
     val androidContext: Context,

@@ -1,7 +1,7 @@
 package samples
 
 import com.soywiz.klock.seconds
-import com.soywiz.korge.animate.animate
+import com.soywiz.korge.animate.*
 import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.tween.get
 import com.soywiz.korge.view.SContainer

@@ -134,9 +134,9 @@ def createAndroidManifest =tasks.create("createAndroidManifest") {
         new File(mainDir, "androidsrc/MainActivity.kt").text = """
             package ${androidApplicationId}
             import com.soywiz.korio.android.withAndroidContext
-            import com.soywiz.korgw.KorgwActivity
+            import com.soywiz.korgw.*
             import main
-            class MainActivity : KorgwActivity() {
+            class MainActivity : KorgwActivity(config = GameWindowCreationConfig(msaa = 4)) {
             \toverride suspend fun activityMain() {
             \t\tmain()
             \t}

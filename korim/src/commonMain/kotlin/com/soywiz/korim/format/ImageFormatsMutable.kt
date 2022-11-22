@@ -1,10 +1,10 @@
 package com.soywiz.korim.format
 
 import com.soywiz.kds.atomic.kdsFreeze
-import com.soywiz.kds.lock.Lock
+import com.soywiz.kds.lock.NonRecursiveLock
 
 class ImageFormatsMutable : ImageFormats() {
-    val lock = Lock()
+    val lock = NonRecursiveLock()
 
     fun register(vararg formats: ImageFormat) {
         lock { this._formats = kdsFreeze(this._formats + formats) }

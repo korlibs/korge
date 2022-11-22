@@ -19,8 +19,6 @@ open class AtlasResourceProcessor : ResourceProcessor("atlas") {
 	override val outputExtension: String = "atlas.json"
 
 	override suspend fun processInternal(inputFile: VfsFile, outputFile: VfsFile) {
-        val mapper = ObjectMapper().jvmFallback()
-
 		// @TODO: Ignored file content. Use atlas to store information like max width/height, scale, etc.
 		//val atlasPath0 = inputFile.readString().trim()
 		//val atlasPath0 = ""
@@ -51,7 +49,9 @@ open class AtlasResourceProcessor : ResourceProcessor("atlas") {
             //println(Json.stringify(atlasInfo, pretty = true))
 
             outputFile.withCompoundExtension("atlas.json")
-                .writeString(Json.stringifyTyped(atlas.atlasInfo, pretty = true, mapper = mapper))
+                .writeString(
+                    atlas.atlasInfo.toJsonString()
+                )
 
             //Atlas.Factory()
             //println(files)

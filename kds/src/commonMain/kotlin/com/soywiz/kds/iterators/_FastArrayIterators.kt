@@ -1,8 +1,19 @@
 package com.soywiz.kds.iterators
 
 import com.soywiz.kds.DoubleArrayList
+import com.soywiz.kds.FastArrayList
 import com.soywiz.kds.FloatArrayList
 import com.soywiz.kds.IntArrayList
+import com.soywiz.kds.toFastList
+
+inline fun <T> List<T>.fastForEachWithTemp(temp: FastArrayList<T>, callback: (T) -> Unit) {
+    this.toFastList(temp)
+    try {
+        temp.fastForEach(callback)
+    } finally {
+        temp.clear()
+    }
+}
 
 inline fun <T> List<T>.fastForEach(callback: (T) -> Unit) {
 	var n = 0

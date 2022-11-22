@@ -1,8 +1,9 @@
 package samples
 
 import com.soywiz.korev.*
+import com.soywiz.korge.input.*
 import com.soywiz.korge.scene.*
-import com.soywiz.korge.ui.korui.*
+import com.soywiz.korge.ui.*
 import com.soywiz.korge.view.*
 import com.soywiz.korgw.*
 import com.soywiz.korim.bitmap.effect.*
@@ -13,8 +14,6 @@ import com.soywiz.korio.async.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
-import com.soywiz.korui.*
-import com.soywiz.korui.layout.*
 import kotlin.reflect.*
 
 class MainTextMetrics : Scene() {
@@ -24,6 +23,7 @@ class MainTextMetrics : Scene() {
         val font0 = resourcesVfs["clear_sans.fnt"].readFont()
         val font1 = debugBmpFont()
         val font2 = DefaultTtfFont
+        val font2b = DefaultTtfFontAsBitmap
         val font3 = BitmapFont(DefaultTtfFont, 64.0)
         val font4 = BitmapFont(DefaultTtfFont, 64.0, paint = Colors.BLUEVIOLET, effect = BitmapEffect(
             blurRadius = 0,
@@ -44,6 +44,7 @@ class MainTextMetrics : Scene() {
             "lower" to "abcdefghijklmnopqrstuvwxyz",
             "number" to "0123456789",
             "fox" to "The quick brown fox jumps over the lazy dog. 1234567890",
+            "multiline" to "This is a\nmultiline\n-text.",
         )
         val fontSizes = listOf(8, 16, 32, 64, 128, 175)
         val verticalAlignments = VerticalAlign.values().toList()
@@ -54,12 +55,13 @@ class MainTextMetrics : Scene() {
             "BMPFile" to font0,
             "ExternalTTF" to font5,
             "DefaultTTF" to font2,
+            "DefaultTTFAsBitmap" to font2b,
             "TTFtoBMP" to font3,
             "TTFtoBMPEffect" to font4,
         )
 
         container {
-            xy(0, 500)
+            xy(300, 500)
             val leftPadding = 50
             text1 = text(textStrs["simple"]!!, 175.0, Colors.WHITE, font2, alignment = TextAlignment.BASELINE_LEFT, autoScaling = true).xy(leftPadding, 0)
             val gbounds = cpuGraphics {}.xy(leftPadding, 0)
@@ -77,7 +79,7 @@ class MainTextMetrics : Scene() {
                         stroke(Colors.RED, StrokeInfo(2.0)) {
                             rect(text1.getLocalBounds())
                         }
-                        stroke(Colors.BLUE, StrokeInfo(2.0)) {
+                        stroke(Colors.YELLOWGREEN, StrokeInfo(2.0)) {
                             line(-5, 0, +5, 0)
                             line(0, -5, 0, +5)
                         }
@@ -103,7 +105,9 @@ class MainTextMetrics : Scene() {
             val convert: (T) -> String = { it.toString().toLowerCase().capitalize() }
         )
 
-        korui(width, 200) {
+
+        uiContainer(width, 200.0) { uiVerticalStack {
+        //korui(width, 200) {
             for (info in listOf(
                 SecInfo("Vertical", text1::verticalAlign, verticalAlignments),
                 SecInfo("Horizontal", text1::horizontalAlign, horizontalAlignments),
@@ -127,7 +131,7 @@ class MainTextMetrics : Scene() {
             val fontProp = com.soywiz.korio.async.ObservableProperty(text1.font.getOrNull()!!).observeStart { text1.font = it }
             horizontal {
                 label("Font:")
-                gameWindow.onDragAndDropFileEvent {
+                onDragAndDropFileEvent {
                     when (it.type) {
                         DropFileEvent.Type.START -> {
                             views.clearColor = DEFAULT_BG.interpolateWith(0.2, Colors.RED)
@@ -169,15 +173,15 @@ class MainTextMetrics : Scene() {
             horizontal {
                 checkBox("Autoscale") {
                     checked = text1.autoScaling
-                    onChange { text1.autoScaling = it }
+                    onChange { text1.autoScaling = it.checked }
                 }
                 checkBox("Smooth") {
                     checked = text1.smoothing
-                    onChange { text1.smoothing = it }
+                    onChange { text1.smoothing = it.checked }
                 }
                 checkBox("Native Render") {
                     checked = text1.useNativeRendering
-                    onChange { text1.useNativeRendering = it }
+                    onChange { text1.useNativeRendering = it.checked }
                 }
             }
             horizontal {
@@ -192,6 +196,31 @@ class MainTextMetrics : Scene() {
                     }
                 }
             }
+        } }
+    }
+    fun Container.checkBox(text: String, block: UICheckBox.() -> Unit = {}) {
+        uiCheckBox(text = text).block()
+    }
+    fun Container.button(text: String, block: UIButton.() -> Unit = {}) {
+        uiButton(label = text).block()
+    }
+    fun Container.toggleButton(text: String, block: UIToggleableButton.() -> Unit = {}) {
+        UIToggleableButton(text = text).addTo(this).block()
+    }
+    fun Container.label(text: String) {
+        uiText(text)
+    }
+    inline fun Container.horizontal(block: Container.() -> Unit) {
+        uiHorizontalStack {
+            block()
         }
     }
+    fun Container.onDragAndDropFileEvent(block: suspend (DropFileEvent) -> Unit) {
+        addOnEvent<DropFileEvent> {
+            launchImmediately {
+                block(it)
+            }
+        }
+    }
+
 }

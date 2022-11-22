@@ -21,7 +21,7 @@ object AtlasPacker {
         fun tryGetEntryByKey(key: T) = packedItemsByItem[key]
         override fun tryGetEntryByName(name: String): Atlas.Entry? = atlas.tryGetEntryByName(name)
 
-        val atlasInfo get() = atlas.info
+        val atlasInfo: AtlasInfo get() = atlas.info
     }
 
     data class Result<T>(val atlases: List<AtlasResult<T>>) : AtlasLookup {

@@ -21,13 +21,28 @@ class SolidRect(width: Double, height: Double, color: RGBA = Colors.WHITE) : Rec
         operator fun invoke(width: Float, height: Float, color: RGBA = Colors.WHITE) = SolidRect(width.toDouble(), height.toDouble(), color)
 	}
 
-	override var width: Double = width; set(v) { field = v; dirtyVertices = true }
-	override var height: Double = height; set(v) { field = v; dirtyVertices = true }
+	override var width: Double = width; set(v) {
+        if (field != v) {
+            field = v
+            dirtyVertices = true
+            invalidateRender()
+        }
+    }
+	override var height: Double = height; set(v) {
+       if (field != v) {
+           field = v
+           dirtyVertices = true
+           invalidateRender()
+       }
+    }
 
     override val bwidth: Double get() = width
     override val bheight: Double get() = height
 
-    // Allows to store a white bitmap in an atlas along for example a bitmap font to render in a single batch
+    /**
+     * Allows to store a white bitmap in an atlas along for example a bitmap font to render this rect
+     * in a single batch reusing the texture.
+     */
     var whiteBitmap: BitmapCoords get() = baseBitmap; set(v) { baseBitmap = v }
 
     /** The [color] of this [SolidRect]. Alias of [colorMul]. */

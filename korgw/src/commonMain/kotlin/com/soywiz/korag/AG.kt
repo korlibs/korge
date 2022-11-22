@@ -1331,11 +1331,11 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
     }
 
     @KoragExperimental
-    fun unsafeAllocateFrameRenderBuffer(width: Int, height: Int, hasDepth: Boolean = false, hasStencil: Boolean = true, msamples: Int = 1): RenderBuffer {
+    fun unsafeAllocateFrameRenderBuffer(width: Int, height: Int, hasDepth: Boolean = false, hasStencil: Boolean = true, msamples: Int = 1, onlyThisFrame: Boolean = true): RenderBuffer {
         val realWidth = fixWidthForRenderToTexture(kotlin.math.max(width, 64))
         val realHeight = fixHeightForRenderToTexture(kotlin.math.max(height, 64))
         val rb = renderBuffers.alloc()
-        frameRenderBuffers += rb
+        if (onlyThisFrame) frameRenderBuffers += rb
         rb.setSize(0, 0, realWidth, realHeight, realWidth, realHeight)
         rb.setExtra(hasDepth = hasDepth, hasStencil = hasStencil)
         rb.setSamples(msamples)
@@ -1345,7 +1345,8 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
 
     @KoragExperimental
     fun unsafeFreeFrameRenderBuffer(rb: RenderBuffer) {
-        frameRenderBuffers -= rb
+        if (frameRenderBuffers.remove(rb)) {
+        }
         renderBuffers.free(rb)
     }
 

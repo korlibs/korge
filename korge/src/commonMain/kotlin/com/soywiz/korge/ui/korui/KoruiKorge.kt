@@ -1,5 +1,6 @@
 package com.soywiz.korge.ui.korui
 
+/*
 import com.soywiz.kds.Extra
 import com.soywiz.korev.MouseEvent
 import com.soywiz.korge.component.removeFromView
@@ -229,3 +230,4 @@ fun Container.korui(
         .also { addChild(it.view) }
         .view
 }
+*/

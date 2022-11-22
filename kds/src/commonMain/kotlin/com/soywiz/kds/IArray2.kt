@@ -5,6 +5,11 @@ package com.soywiz.kds
 //
 // https://discuss.kotlinlang.org/t/performance-question-related-to-boxing-and-interface-implementation/17387
 interface IArray2<E> : Iterable<E> {
+    companion object {
+        fun checkArraySize(width: Int, height: Int, arraySize: Int) {
+            check(arraySize >= width * height) { "backing array of size=$arraySize, has less elements than $width * $height" }
+        }
+    }
     val width: Int
     val height: Int
 

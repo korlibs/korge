@@ -1,12 +1,6 @@
 package com.soywiz.korma.math
 
-import kotlin.math.abs
-import kotlin.math.absoluteValue
-import kotlin.math.ln
-import kotlin.math.log
-import kotlin.math.max
-import kotlin.math.min
-import kotlin.math.pow
+import kotlin.math.*
 
 fun Double.betweenInclusive(min: Double, max: Double): Boolean = (this >= min) && (this <= max)
 
@@ -15,6 +9,12 @@ fun almostZero(a: Float) = abs(a) <= 0.0000001
 
 fun almostEquals(a: Double, b: Double) = almostZero(a - b)
 fun almostZero(a: Double) = abs(a) <= 0.0000001
+
+fun Float.roundDecimalPlaces(places: Int): Float {
+    if (places < 0) return this
+    val placesFactor: Float = 10f.pow(places.toFloat())
+    return round(this * placesFactor) / placesFactor
+}
 
 fun Double.roundDecimalPlaces(places: Int): Double {
     if (places < 0) return this
@@ -88,6 +88,10 @@ fun min(a: Int, b: Int, c: Int, d: Int) = min(min(min(a, b), c), d)
 fun min(a: Float, b: Float, c: Float, d: Float) = min(min(min(a, b), c), d)
 fun min(a: Double, b: Double, c: Double, d: Double) = min(min(min(a, b), c), d)
 
+fun min(a: Int, b: Int, c: Int, d: Int, e: Int) = min(min(min(min(a, b), c), d), e)
+fun min(a: Float, b: Float, c: Float, d: Float, e: Float) = min(min(min(min(a, b), c), d), e)
+fun min(a: Double, b: Double, c: Double, d: Double, e: Double) = min(min(min(min(a, b), c), d), e)
+
 fun max(a: Int, b: Int, c: Int) = max(max(a, b), c)
 fun max(a: Float, b: Float, c: Float) = max(max(a, b), c)
 fun max(a: Double, b: Double, c: Double) = max(max(a, b), c)
@@ -95,3 +99,7 @@ fun max(a: Double, b: Double, c: Double) = max(max(a, b), c)
 fun max(a: Int, b: Int, c: Int, d: Int) = max(max(max(a, b), c), d)
 fun max(a: Float, b: Float, c: Float, d: Float) = max(max(max(a, b), c), d)
 fun max(a: Double, b: Double, c: Double, d: Double) = max(max(max(a, b), c), d)
+
+fun max(a: Int, b: Int, c: Int, d: Int, e: Int) = max(max(max(max(a, b), c), d), e)
+fun max(a: Float, b: Float, c: Float, d: Float, e: Float) = max(max(max(max(a, b), c), d), e)
+fun max(a: Double, b: Double, c: Double, d: Double, e: Double) = max(max(max(max(a, b), c), d), e)

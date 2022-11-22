@@ -1,5 +1,6 @@
 package com.soywiz.korge.editor
 
+/*
 import com.soywiz.kds.*
 import com.soywiz.klock.*
 import com.soywiz.kmem.*
@@ -700,3 +701,4 @@ suspend fun ktreeEditor(fileToEdit: BaseKorgeFileToEdit): Module {
         ktreeEditorKorge(stage, actions, views, fileToEdit) { viewsDebuggerComponent.setRootView(it) }
     }
 }
+*/

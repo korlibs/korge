@@ -73,6 +73,7 @@ abstract class AGOpengl(checked: Boolean = false) : AG(checked) {
     }
 
     override fun executeList(list: AGList) {
+        list.listFlush()
         glProcessor?.processBlockingAll(list)
     }
 

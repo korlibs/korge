@@ -17,8 +17,7 @@ import com.soywiz.korim.bitmap.sliceWithSize
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.color.mix
-import com.soywiz.korim.font.DefaultTtfFont
-import com.soywiz.korim.font.Font
+import com.soywiz.korim.font.*
 import com.soywiz.korim.paint.*
 import com.soywiz.korim.text.TextAlignment
 import com.soywiz.korma.geom.IPoint
@@ -33,6 +32,7 @@ import com.soywiz.korma.geom.vector.roundRect
 import kotlin.native.concurrent.ThreadLocal
 import kotlin.reflect.KProperty
 
+@Deprecated("Do not use the old skinning")
 class BoxUISkin(
     var bgColor: RGBA = Colors["#c3c3c3"],
     var borderColor: RGBA = Colors["#1f1f1f"],
@@ -60,6 +60,7 @@ class BoxUISkin(
     }
 }
 
+@Deprecated("Do not use the old skinning")
 interface UISkinable {
     fun <T> setSkinProperty(property: String, value: T)
     fun <T> getSkinPropertyOrNull(property: String): T?
@@ -173,7 +174,7 @@ fun UISkin(
 
 val DefaultUIFont get() = DefaultUIVectorFont
 val DefaultUIBitmapFont get() = debugBmpFontSync
-val DefaultUIVectorFont get() = DefaultTtfFont
+val DefaultUIVectorFont get() = DefaultTtfFontAsBitmap
 
 @ThreadLocal
 private var DEFAULT_UI_SKIN_IMG_OR_NULL: Bitmap32? = null

@@ -1,6 +1,5 @@
 package com.soywiz.korim.font
 
-import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.vector.Context2d
 import com.soywiz.korim.vector.Drawable
@@ -19,9 +18,11 @@ data class GlyphPath(
     val transform: Matrix = Matrix(),
     var scale: Double = 1.0
 ) : Drawable {
+    val isOnlyPath get() = bitmap == null && colorShape == null
+
     override fun draw(c: Context2d) {
         c.keepTransform {
-            c.beginPath()
+            //c.beginPath()
             c.transform(this.transform)
             when {
                 bitmap != null -> {
@@ -30,7 +31,7 @@ data class GlyphPath(
                 }
                 colorShape != null -> {
                     c.draw(colorShape!!)
-                    c.beginPath() // to avoid filling/strokking later
+                    c.beginPath() // to avoid filling/stroking later
                 }
                 else -> {
                     //println("this.transform=${this.transform}, path=$path")

@@ -1,23 +1,13 @@
 package com.soywiz.korge.ui
 
-import com.soywiz.korev.ISoftKeyboardConfig
-import com.soywiz.korev.SoftKeyboardConfig
-import com.soywiz.korge.annotations.KorgeExperimental
-import com.soywiz.korge.text.TextEditController
-import com.soywiz.korge.view.Container
-import com.soywiz.korge.view.ViewDslMarker
-import com.soywiz.korge.view.ViewRenderer
-import com.soywiz.korge.view.addTo
-import com.soywiz.korge.view.bounds
-import com.soywiz.korge.view.clipContainer
-import com.soywiz.korge.view.renderableView
-import com.soywiz.korge.view.text
-import com.soywiz.korim.color.Colors
-import com.soywiz.korim.font.Font
-import com.soywiz.korio.async.Signal
-import com.soywiz.korma.geom.Margin
-import com.soywiz.korma.geom.Rectangle
-import com.soywiz.korma.geom.without
+import com.soywiz.korev.*
+import com.soywiz.korge.annotations.*
+import com.soywiz.korge.text.*
+import com.soywiz.korge.view.*
+import com.soywiz.korim.color.*
+import com.soywiz.korim.font.*
+import com.soywiz.korio.async.*
+import com.soywiz.korma.geom.*
 
 @KorgeExperimental
 inline fun Container.uiTextInput(
@@ -43,7 +33,8 @@ class UITextInput(initialText: String = "", width: Double = 128.0, height: Doubl
     var skin by bg::viewRenderer
     private val container = clipContainer(0.0, 0.0)
     //private val container = fixedSizeContainer(width - 4.0, height - 4.0).position(2.0, 3.0)
-    private val textView = container.text(initialText, 16.0, color = Colors.BLACK)
+    private val textView = container.text(initialText, 16.0, color = Colors.BLACK, font = DefaultTtfFontAsBitmap)
+    //private val textView = container.text(initialText, 16.0, color = Colors.BLACK, font = DefaultTtfFont)
     val controller = TextEditController(textView, textView, this, bg)
 
     //init { uiScrollable {  } }

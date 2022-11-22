@@ -46,6 +46,8 @@ value class TimezoneOffset(
     override fun toString(): String = timeZone
 
     companion object {
+        val UTC = TimezoneOffset(0.0)
+
         @Suppress("MayBeConstant", "unused")
         private const val serialVersionUID = 1L
 

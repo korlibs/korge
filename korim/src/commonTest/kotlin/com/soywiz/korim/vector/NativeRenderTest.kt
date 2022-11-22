@@ -1,9 +1,6 @@
 package com.soywiz.korim.vector
 
-import com.soywiz.korim.bitmap.Bitmap
-import com.soywiz.korim.bitmap.Bitmap32
-import com.soywiz.korim.bitmap.NativeImage
-import com.soywiz.korim.bitmap.context2d
+import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.format.PNG
 import com.soywiz.korim.format.writeTo
@@ -27,7 +24,7 @@ class NativeRenderTest {
     }
 
     fun createBitmap(native: Boolean, drawBitmap: Boolean): Bitmap32 {
-        val bmp: Bitmap = if (native) NativeImage(100, 100) else Bitmap32(100, 100)
+        val bmp: Bitmap = NativeImageOrBitmap32(100, 100, native = native)
         return bmp.context2d {
             rotate(30.degrees)
             translate(20, 20)

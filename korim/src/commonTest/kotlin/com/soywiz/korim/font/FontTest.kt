@@ -6,12 +6,14 @@ import com.soywiz.korim.bitmap.context2d
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.paint.LinearGradientPaint
 import com.soywiz.korim.text.CreateStringTextRenderer
+import com.soywiz.korim.text.TextAlignment
 import com.soywiz.korim.vector.buildSvgXml
 import com.soywiz.korio.async.suspendTest
 import com.soywiz.korio.async.suspendTestNoBrowser
 import com.soywiz.korio.file.std.resourcesVfs
 import com.soywiz.korio.util.OS
 import com.soywiz.korma.geom.degrees
+import com.soywiz.korma.geom.int
 import com.soywiz.korma.geom.vector.circle
 import com.soywiz.korma.geom.vector.lineTo
 import com.soywiz.korma.geom.vector.moveTo
@@ -135,9 +137,14 @@ class FontTest {
     fun testDefaultFont() {
         val font = DefaultTtfFont
         val fmetrics = font.getFontMetrics(16.0)
-        assertEquals("FontMetrics(size=16, top=15, ascent=15, baseline=0, descent=-3, bottom=-3, leading=0, emHeight=18, lineHeight=18)", fmetrics.toString())
-        val gmetrics = font.getGlyphMetrics(16.0, 'k'.toInt())
-        assertEquals("GlyphMetrics(codePoint=107 ('k'), existing=true, xadvance=7, bounds=Rectangle(x=0, y=0, width=6, height=10))", gmetrics.toString())
+        val gmetrics = font.getGlyphMetrics(16.0, 'k'.code)
+        assertEquals(
+            """
+                FontMetrics(size=16, top=14.8, ascent=14.8, baseline=0, descent=-3.1, bottom=-3.1, lineGap=0.4, unitsPerEm=16, maxWidth=21.5, lineHeight=18.4)
+                GlyphMetrics(codePoint=107 ('k'), existing=true, xadvance=7, bounds=Rectangle(x=0, y=0, width=6, height=10))
+            """.trimIndent(),
+            "$fmetrics\n$gmetrics"
+        )
     }
 
     @Test
@@ -151,15 +158,50 @@ class FontTest {
     }
 
     @Test
+    fun testReadOpenTypeFont() = suspendTestNoBrowser {
+        //assertFailsWith<UnsupportedOperationException> {
+            val font1 = resourcesVfs["helvetica.otf"].readTtfFont(preload = true)
+            println("font1=$font1")
+        //}
+    }
+
+    @Test
     fun testTextBounds() {
+        val text0 = ""
+        val text1 = "Hello : jworld"
+        val text2 = "Hello : jworld\ntest"
+        fun metrics(text: String, align: TextAlignment): TextMetrics =
+            DefaultTtfFont.getTextBounds(16.0, text, align = align).round()
         assertEquals(
             """
-                TextMetrics[1, -3, 78, 14][-1, 11]            
-                TextMetrics[0, -3, 78, 30][0, 11]
+                [0]left:     TextMetrics[0, 0, 0, 18][0, 18]
+                [0]middle:   TextMetrics[0, -9, 0, 18][0, 9]
+                [0]baseline: TextMetrics[0, -15, 0, 18][0, 3]
+                [0]bottom:   TextMetrics[0, -18, 0, 18][0, 0]
+                [1]left:     TextMetrics[-1, 0, 79, 18][1, 18]
+                [1]middle:   TextMetrics[-1, -9, 79, 18][1, 9]
+                [1]baseline: TextMetrics[-1, -15, 79, 18][1, 3]
+                [1]bottom:   TextMetrics[-1, -18, 79, 18][1, 0]
+                [2]left:     TextMetrics[-1, 0, 79, 37][1, 18]
+                [2]middle:   TextMetrics[-1, -18, 79, 37][1, 0]
+                [2]baseline: TextMetrics[-1, -15, 79, 37][1, 3]
+                [2]bottom:   TextMetrics[-1, -37, 79, 37][1, -19]
+                Rectangle(x=3, y=0, width=342, height=73)
             """.trimIndent(),
             """
-                ${DefaultTtfFont.getTextBounds(16.0, "Hello : jworld").round()}            
-                ${DefaultTtfFont.getTextBounds(16.0, "Hello : jworld\ntest").round()}
+                [0]left:     ${metrics(text0, TextAlignment.TOP_LEFT)}
+                [0]middle:   ${metrics(text0, TextAlignment.MIDDLE_LEFT)}
+                [0]baseline: ${metrics(text0, TextAlignment.BASELINE_LEFT)}
+                [0]bottom:   ${metrics(text0, TextAlignment.BOTTOM_LEFT)}
+                [1]left:     ${metrics(text1, TextAlignment.TOP_LEFT)}
+                [1]middle:   ${metrics(text1, TextAlignment.MIDDLE_LEFT)}
+                [1]baseline: ${metrics(text1, TextAlignment.BASELINE_LEFT)}
+                [1]bottom:   ${metrics(text1, TextAlignment.BOTTOM_LEFT)}
+                [2]left:     ${metrics(text2, TextAlignment.TOP_LEFT)}
+                [2]middle:   ${metrics(text2, TextAlignment.MIDDLE_LEFT)}
+                [2]baseline: ${metrics(text2, TextAlignment.BASELINE_LEFT)}
+                [2]bottom:   ${metrics(text2, TextAlignment.BOTTOM_LEFT)}
+                ${DefaultTtfFont.getTextBounds(64.0, "jHello : Worljg").bounds.int.toString()}
             """.trimIndent()
         )
     }

@@ -1,5 +1,6 @@
 package com.soywiz.korgw.osx
 import com.sun.jna.*
+import java.util.concurrent.*
 
 //inline class ID(val id: Long)
 typealias ID = Long
@@ -50,6 +51,8 @@ interface ObjectiveC : Library {
     fun objc_msgSendInt(vararg args: Any?): Int
     @NativeName("objc_msgSend")
     fun objc_msgSendCGFloat(vararg args: Any?): CGFloat
+    @NativeName("objc_msgSend")
+    fun objc_msgSendFloat(vararg args: Any?): Float
     @NativeName("objc_msgSend")
     fun objc_msgSendNSPoint(vararg args: Any?): NSPointRes
     @NativeName("objc_msgSend")
@@ -153,13 +156,31 @@ typealias NSRectRes = MyNativeNSRect.ByValue
 private val isArm64 = System.getProperty("os.arch") == "aarch64"
 
 // @TODO: Move Long to ObjcRef to not pollute Long scope
-inline class ObjcRef(val id: Long) {
+open class ObjcRef(val id: Long) {
 }
 
-fun sel(name: String) = ObjectiveC.sel_registerName(name)
+inline class ObjcSel(val id: Long) {
+    companion object {
+        private val selectors = ConcurrentHashMap<String, ObjcSel>()
+
+        operator fun invoke(name: String): ObjcSel =
+            selectors.getOrPut(name) { ObjcSel(ObjectiveC.sel_registerName(name)) }
+    }
+}
+
+fun sel(name: String): Long = ObjectiveC.sel_registerName(name)
+fun sel(name: ObjcSel): Long = name.id
+fun Long.msgSend(sel: ObjcSel, vararg args: Any?): Long = ObjectiveC.objc_msgSend(this, sel(sel), *args)
 fun Long.msgSend(sel: String, vararg args: Any?): Long = ObjectiveC.objc_msgSend(this, sel(sel), *args)
+fun Long.msgSendInt(sel: ObjcSel, vararg args: Any?): Int = ObjectiveC.objc_msgSendInt(this, sel(sel), *args)
 fun Long.msgSendInt(sel: String, vararg args: Any?): Int = ObjectiveC.objc_msgSendInt(this, sel(sel), *args)
+
+fun Long.msgSendFloat(sel: ObjcSel, vararg args: Any?): Float = ObjectiveC.objc_msgSendFloat(this, sel(sel), *args)
+fun Long.msgSendFloat(sel: String, vararg args: Any?): Float = ObjectiveC.objc_msgSendFloat(this, sel(sel), *args)
+
+fun Long.msgSendCGFloat(sel: ObjcSel, vararg args: Any?): CGFloat = ObjectiveC.objc_msgSendCGFloat(this, sel(sel), *args)
 fun Long.msgSendCGFloat(sel: String, vararg args: Any?): CGFloat = ObjectiveC.objc_msgSendCGFloat(this, sel(sel), *args)
+
 fun Long.msgSendNSPoint(sel: String, vararg args: Any?): NSPointRes = ObjectiveC.objc_msgSendNSPoint(this, sel(sel), *args)
 fun Long.msgSendNSRect(sel: String, vararg args: Any?): NSRectRes {
     if (isArm64) {

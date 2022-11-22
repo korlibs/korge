@@ -47,6 +47,7 @@ abstract class Bitmap(
     var contentVersion: Int = 0
 
     /** Associated texture object to this Bitmap that could be used by other engines */
+    @Deprecated("Do not use")
 	var texture: Any? = null
 
     var dirtyRegion: Rectangle? = null

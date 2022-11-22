@@ -2,6 +2,7 @@ package com.soywiz.korim.format
 
 import com.soywiz.kds.Extra
 import com.soywiz.kds.ExtraType
+import com.soywiz.kmem.UByteArrayInt
 import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korio.async.runBlockingNoSuspensionsNullable
 import com.soywiz.korio.file.VfsFile
@@ -63,7 +64,7 @@ abstract class ImageFormat(vararg exts: String) : ImageFormatDecoder {
 
 	suspend fun read(file: VfsFile) = this.read(file.readAsSyncStream(), file.baseName)
 	//fun read(file: File) = this.read(file.openSync(), file.name)
-	fun read(s: ByteArray, filename: String = "unknown"): Bitmap = read(s.openSync(), filename)
+	fun read(s: ByteArray, filename: String): Bitmap = read(s.openSync(), filename)
 
 	fun read(s: SyncStream, props: ImageDecodingProps = ImageDecodingProps.DEFAULT): Bitmap = readImage(s, props).mainBitmap
 	//fun read(file: File, props: ImageDecodingProps = ImageDecodingProps()) = this.read(file.openSync(), props.copy(filename = file.name))
@@ -74,6 +75,8 @@ abstract class ImageFormat(vararg exts: String) : ImageFormatDecoder {
 
 	fun decode(s: SyncStream, props: ImageDecodingProps = ImageDecodingProps.DEFAULT): Bitmap = this.read(s, props)
 	//fun decode(file: File, props: ImageDecodingProps = ImageDecodingProps()) = this.read(file.openSync("r"), props.copy(filename = file.name))
+
+    /** Decodes a given [data] byte array to a bitmap based on the image format with optional extra [prop] properties. */
     fun decode(data: ByteArray, props: ImageDecodingProps = ImageDecodingProps.DEFAULT): Bitmap = read(data.openSync(), props)
 
 	override suspend fun decodeSuspend(data: ByteArray, props: ImageDecodingProps): Bitmap = decode(data, props)
@@ -120,6 +123,13 @@ data class ImageDecodingProps constructor(
     val preferKotlinDecoder: Boolean = false,
     val tryNativeDecode: Boolean = true,
     val format: ImageFormat? = RegisteredImageFormats,
+    /**
+     * Provides an `out` parameter to reuse an existing Bitmap to reduce allocations.
+     *
+     * Note though that not all formats may use the bitmap provided by the `out` param.
+     * In those cases, they will return a newly allocated Bitmap instead.
+     */
+    val out: Bitmap? = null,
     override var extra: ExtraType = null
 ) : Extra {
 
@@ -156,6 +166,11 @@ fun ImageFormat.toProps(props: ImageDecodingProps = ImageDecodingProps.DEFAULT):
 data class ImageEncodingProps(
     val filename: String = "",
     val quality: Double = 0.81,
-    override var extra: ExtraType = null
-) : Extra
+    override var extra: ExtraType = null,
+    val init: (ImageEncodingProps.() -> Unit)? = null
+) : Extra {
+    init {
+        init?.invoke(this)
+    }
+}
 

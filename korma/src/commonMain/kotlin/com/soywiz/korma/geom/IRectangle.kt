@@ -73,9 +73,18 @@ val IRectangle.topRight get() = Point(right, top)
 val IRectangle.bottomLeft get() = Point(left, bottom)
 val IRectangle.bottomRight get() = Point(right, bottom)
 
-val IRectangle.centerX get() = (right + left) * 0.5
-val IRectangle.centerY get() = (bottom + top) * 0.5
-val IRectangle.center get() = Point(centerX, centerY)
+val IRectangle.centerX: Double get() = (right + left) * 0.5
+val IRectangle.centerY: Double get() = (bottom + top) * 0.5
+val IRectangle.center: Point get() = Point(centerX, centerY)
+
+/**
+ * Circle that touches or contains all the corners ([topLeft], [topRight], [bottomLeft], [bottomRight]) of the rectangle.
+ */
+fun IRectangle.outerCircle(): Circle {
+    val centerX = centerX
+    val centerY = centerY
+    return Circle(center, Point.distance(centerX, centerY, right, top))
+}
 
 operator fun IRectangle.contains(that: IPoint) = contains(that.x, that.y)
 operator fun IRectangle.contains(that: IPointInt) = contains(that.x, that.y)

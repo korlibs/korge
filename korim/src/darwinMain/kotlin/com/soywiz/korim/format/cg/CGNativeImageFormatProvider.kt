@@ -131,7 +131,10 @@ open class CGNativeImageFormatProvider : CGBaseNativeImageFormatProvider() {
                                                 CGContextDrawImage(context, rect, cgImage)
                                                 CGContextFlush(context)
                                             } finally {
+                                                CGImageRelease(cgImage)
                                                 CGContextRelease(context)
+                                                CFRelease(imgSource)
+                                                CFRelease(cfdata)
                                             }
                                         }
                                     }

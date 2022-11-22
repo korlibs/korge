@@ -1,48 +1,17 @@
 package com.soywiz.korim.vector
 
-import com.soywiz.kds.IDoubleArrayList
-import com.soywiz.kds.Stack
-import com.soywiz.kds.mapFloat
-import com.soywiz.korim.bitmap.Bitmap
-import com.soywiz.korim.bitmap.Bitmap32
-import com.soywiz.korim.bitmap.NativeImage
-import com.soywiz.korim.bitmap.NativeImageOrBitmap32
-import com.soywiz.korim.bitmap.context2d
-import com.soywiz.korim.bitmap.mipmap
-import com.soywiz.korim.color.RGBA
-import com.soywiz.korim.font.Font
-import com.soywiz.korim.font.FontRegistry
-import com.soywiz.korim.font.TextMetrics
-import com.soywiz.korim.font.TextMetricsResult
-import com.soywiz.korim.font.drawText
-import com.soywiz.korim.font.getTextBounds
+import com.soywiz.kds.*
+import com.soywiz.korim.bitmap.*
+import com.soywiz.korim.color.*
+import com.soywiz.korim.font.*
 import com.soywiz.korim.paint.*
-import com.soywiz.korim.text.DefaultStringTextRenderer
-import com.soywiz.korim.text.HorizontalAlign
-import com.soywiz.korim.text.TextAlignment
-import com.soywiz.korim.text.TextRenderer
-import com.soywiz.korim.text.VerticalAlign
-import com.soywiz.korim.vector.renderer.Renderer
-import com.soywiz.korio.lang.Disposable
-import com.soywiz.korma.geom.Angle
-import com.soywiz.korma.geom.Matrix
-import com.soywiz.korma.geom.Rectangle
-import com.soywiz.korma.geom.degrees
-import com.soywiz.korma.geom.radians
+import com.soywiz.korim.text.*
+import com.soywiz.korim.vector.renderer.*
+import com.soywiz.korio.lang.*
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.shape.*
-import com.soywiz.korma.geom.vector.LineCap
-import com.soywiz.korma.geom.vector.LineJoin
-import com.soywiz.korma.geom.vector.VectorBuilder
-import com.soywiz.korma.geom.vector.VectorPath
-import com.soywiz.korma.geom.vector.Winding
-import com.soywiz.korma.geom.vector.rect
-import com.soywiz.korma.geom.vector.roundRect
-import com.soywiz.korma.geom.vector.LineScaleMode
-import com.soywiz.korma.geom.vector.StrokeInfo
-import com.soywiz.korma.geom.vector.isEmpty
-import kotlin.math.abs
-import kotlin.math.absoluteValue
-import kotlin.math.ceil
+import com.soywiz.korma.geom.vector.*
+import kotlin.math.*
 
 open class Context2d constructor(
     val renderer: Renderer,
@@ -290,10 +259,12 @@ open class Context2d constructor(
     inline fun rotate(angle: Int) = rotate(angle.toDouble())
     inline fun rotateDeg(degs: Int) = rotateDeg(degs.toDouble())
 
+    inline fun skew(skewX: Angle = Angle.ZERO, skewY: Angle = Angle.ZERO, block: () -> Unit) = keep { skew(skewX, skewY).also { block() } }
     inline fun scale(sx: Double, sy: Double = sx, block: () -> Unit) = keep { scale(sx, sy).also { block() } }
     inline fun rotate(angle: Angle, block: () -> Unit) = keep { rotate(angle).also { block() } }
     inline fun translate(tx: Double, ty: Double, block: () -> Unit) = keep { translate(tx, ty).also { block() } }
 
+    fun skew(skewX: Angle = 0.degrees, skewY: Angle = 0.degrees) { state.transform.preskew(skewX, skewY) }
 	fun scale(sx: Double, sy: Double = sx) { state.transform.prescale(sx, sy) }
     fun rotate(angle: Angle) { state.transform.prerotate(angle) }
 	fun rotate(angle: Double) { state.transform.prerotate(angle.radians) }
@@ -388,7 +359,8 @@ open class Context2d constructor(
 	fun stroke() { if (state.strokeStyle != NonePaint) rendererRender(state, fill = false) }
     fun fill(winding: Winding? = null) { if (state.fillStyle != NonePaint) rendererRender(state, fill = true, winding = winding) }
 
-    fun fill(paint: Paint, winding: Winding? = null) {
+    fun fill(paint: Paint?, winding: Winding? = null) {
+        if (paint == null) return
 		this.fillStyle(paint) {
 			this.fill(winding)
 		}
@@ -434,14 +406,28 @@ open class Context2d constructor(
         }
 	}
 
-    inline fun stroke(paint: Paint, info: StrokeInfo, begin: Boolean = true, callback: () -> Unit = {}) {
+    inline fun stroke(paint: Paint?, info: StrokeInfo?, begin: Boolean = true, callback: () -> Unit = {}) {
+        if (paint == null || info == null) return
         stroke(paint, info.thickness, info.startCap, info.join, info.miterLimit, info.dash, info.dashOffset, begin, callback)
     }
 
-    inline fun fillStroke(fill: Paint, stroke: Paint, strokeInfo: StrokeInfo? = null, callback: () -> Unit = {}) {
+    inline fun stroke(stroke: Stroke?, begin: Boolean = true, callback: () -> Unit = {}) {
+        stroke(stroke?.paint, stroke?.info, begin, callback)
+    }
+
+    inline fun fillStroke(fill: Paint?, stroke: Paint?, strokeInfo: StrokeInfo? = null, callback: () -> Unit = {}) {
         callback()
-        fill(fill)
-        if (strokeInfo != null) stroke(stroke, strokeInfo, begin = false) else stroke(stroke, begin = false)
+        if (fill != null) fill(fill)
+        if (stroke != null) {
+            when {
+                strokeInfo != null -> stroke(stroke, strokeInfo, begin = false)
+                else -> stroke(stroke, begin = false)
+            }
+        }
+    }
+
+    inline fun fillStroke(fill: Paint?, stroke: Stroke?, callback: () -> Unit = {}) {
+        fillStroke(fill, stroke?.paint, stroke?.info, callback)
     }
 
     fun fillStroke() { fill(); stroke() }
@@ -549,10 +535,16 @@ open class Context2d constructor(
         transform: Matrix = Matrix()
     ) = BitmapPaint(bitmap, transform, cycleX, cycleY, smooth)
 
-    fun getTextBounds(text: String, out: TextMetrics = TextMetrics()): TextMetrics {
+    fun getTextBounds(
+        text: String,
+        out: TextMetrics = TextMetrics(),
+        fontSize: Double = this.fontSize,
+        renderer: TextRenderer<String> = DefaultStringTextRenderer,
+        align: TextAlignment = this.alignment
+    ): TextMetrics {
         val font = font
         if (font != null) {
-            font.getTextBounds(fontSize, text, out = out)
+            font.getTextBounds(fontSize, text, out = out, renderer = renderer, align = align)
         } else {
             out.clear()
         }
@@ -582,25 +574,39 @@ open class Context2d constructor(
     ) {
         font(font, halign, valign, textSize) {
             fillStyle(color ?: fillStyle) {
-                drawText(text, x.toDouble(), y.toDouble(), fill = true)
+                drawText(text, x.toDouble(), y.toDouble(), fill = true, fillStyle = color ?: fillStyle)
             }
         }
     }
 
     fun <T> drawText(
-        text: T, x:
-        Double = 0.0,
+        text: T,
+        x: Double = 0.0,
         y: Double = 0.0,
-        fill: Boolean = true,
-        paint: Paint? = null,
+
+        fill: Boolean = true, // Deprecated parameter
+        paint: Paint? = null, // Deprecated parameter
+
         font: Font? = this.font,
         size: Double = this.fontSize,
         renderer: TextRenderer<T> = DefaultStringTextRenderer as TextRenderer<T>,
-        valign: VerticalAlign = VerticalAlign.BASELINE,
+        align: TextAlignment = TextAlignment.BASELINE_LEFT,
         outMetrics: TextMetricsResult? = null,
+
+        fillStyle: Paint? = null,
+        stroke: Stroke? = null,
+
+        textRangeStart: Int = 0,
+        textRangeEnd: Int = Int.MAX_VALUE,
     ): TextMetricsResult? {
         val paint = paint ?: (if (fill) this.fillStyle else this.strokeStyle)
-        return font?.drawText(this, size, text, paint, x, y, fill, renderer = renderer, valign = valign, outMetrics = outMetrics)
+        return font?.drawText(
+            this, size, text, paint, x, y, fill,
+            renderer = renderer, align = align, outMetrics = outMetrics,
+            fillStyle = fillStyle, stroke = stroke,
+            textRangeStart = textRangeStart,
+            textRangeEnd = textRangeEnd,
+        )
     }
 
     // @TODO: Fix this!

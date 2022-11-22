@@ -442,6 +442,7 @@ open class LogBaseAG(
     }
 
     override fun executeList(list: AGList) {
+        list.listFlush()
         agProcessor.processBlockingAll(list)
     }
 

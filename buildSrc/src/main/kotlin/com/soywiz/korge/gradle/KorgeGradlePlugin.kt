@@ -101,7 +101,7 @@ class KorgeGradleApply(val project: Project) {
                 module.excludeDirs = module.excludeDirs.also {
                     it.addAll(listOf(
                         ".gradle", ".idea", "gradle", "node_modules", "classes", "docs", "dependency-cache",
-                        "libs", "reports", "resources", "test-results", "tmp", "bundles",
+                        "libs", "reports", "resources", "test-results", "tmp", "bundles", "modules",
                     ).map { file(it) })
                 }
 			}

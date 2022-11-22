@@ -1,9 +1,9 @@
 package com.soywiz.korev
 
-import com.soywiz.kmem.arraycopy
-import com.soywiz.kmem.extract
-import com.soywiz.korma.geom.Point
-import kotlin.math.min
+import com.soywiz.kmem.*
+import com.soywiz.korio.util.*
+import com.soywiz.korma.geom.*
+import kotlin.math.*
 
 enum class MouseButton(val id: Int, val bits: Int = 1 shl id) {
 	LEFT(0), MIDDLE(1), RIGHT(2), BUTTON3(3),
@@ -181,7 +181,9 @@ enum class GameButton {
 	L3, R3,
 	LX, LY,
 	RX, RY,
-	BUTTON4, BUTTON5, BUTTON6, BUTTON7, BUTTON8, RECORD;
+	BUTTON4, BUTTON5, BUTTON6, BUTTON7, BUTTON8, RECORD,
+    DPADX, DPADY
+    ;
 
     val index: Int get() = ordinal
     val bitMask: Int get() = 1 shl ordinal
@@ -189,6 +191,9 @@ enum class GameButton {
 	companion object {
 		val BUTTONS = values()
 		val MAX = 32
+
+        val LEFT_SHOULDER get() = L1
+        val RIGHT_SHOULDER get() = R1
 
         val LEFT_TRIGGER get() = L2
         val RIGHT_TRIGGER get() = R2
@@ -215,7 +220,7 @@ enum class GameButton {
 	}
 }
 
-class GamepadInfo(
+class GamepadInfo constructor(
     var index: Int = 0,
     var connected: Boolean = false,
     var name: String = "unknown",
@@ -226,18 +231,31 @@ class GamepadInfo(
     var axesLength: Int = 0,
     var buttonsLength: Int = 0,
     var batteryLevel: Double = 1.0,
+    var name2: String = DEFAULT_NAME2,
+    var playerIndex: Int = index,
+    var batteryStatus: BatteryStatus = BatteryStatus.UNKNOWN,
 ) {
+    enum class BatteryStatus { CHARGING, DISCHARGING, FULL, UNKNOWN }
+
+    companion object {
+        val DEFAULT_NAME2 = "Wireless Controller"
+    }
     private val axesData: Array<Point> = Array(2) { Point() }
+
+    val fullName: String get() = "$name - $name2"
 
 	fun copyFrom(that: GamepadInfo) {
 		this.index = that.index
 		this.name = that.name
+        this.name2 = that.name2
 		this.mapping = that.mapping
         this.rawButtonsPressed = that.rawButtonsPressed
 		this.connected = that.connected
         this.axesLength = that.axesLength
         this.buttonsLength = that.buttonsLength
         this.batteryLevel = that.batteryLevel
+        this.playerIndex = that.playerIndex
+        this.batteryStatus = that.batteryStatus
         arraycopy(that.axesData, 0, this.axesData, 0, min(this.axesData.size, that.axesData.size))
         arraycopy(that.rawButtonsPressure, 0, this.rawButtonsPressure, 0, min(this.rawButtonsPressure.size, that.rawButtonsPressure.size))
 		arraycopy(that.rawAxes, 0, this.rawAxes, 0, min(this.rawAxes.size, that.rawAxes.size))
@@ -268,7 +286,7 @@ class GamepadInfo(
         GameStick.LEFT -> get(GameButton.LY)
         GameStick.RIGHT -> get(GameButton.RY)
     }
-	override fun toString(): String = "Gamepad[$index][$name]" + mapping.toString(this)
+	override fun toString(): String = "Gamepad[$index][$fullName]" + mapping.toString(this)
 }
 
 abstract class GamepadMapping {
@@ -283,6 +301,10 @@ abstract class GamepadMapping {
         GameButton.LY -> 1
         GameButton.RX -> 2
         GameButton.RY -> 3
+        GameButton.LEFT_TRIGGER, GameButton.L2 -> 4
+        GameButton.RIGHT_TRIGGER, GameButton.R2 -> 5
+        GameButton.DPADX -> 5
+        GameButton.DPADY -> 6
         else -> 0
     }
     open fun get(button: GameButton, info: GamepadInfo): Double = when (button) {
@@ -291,7 +313,7 @@ abstract class GamepadMapping {
     }
 
 	fun toString(info: GamepadInfo) = "$id(" + GameButton.values().joinToString(", ") {
-		"${it.name}=${get(it, info)}"
+		"${it.name}=${get(it, info).niceStr(2)}"
 	} + ")"
 }
 

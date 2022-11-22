@@ -2,6 +2,7 @@
 
 package com.soywiz.korma.geom
 
+import com.soywiz.kds.*
 import com.soywiz.korma.internal.niceStr
 import com.soywiz.korma.interpolation.Interpolable
 import com.soywiz.korma.interpolation.MutableInterpolable
@@ -22,6 +23,8 @@ interface IPoint {
     val y: Double
 
     companion object {
+        val ZERO: IPoint = Point(0, 0)
+
         operator fun invoke(): IPoint = Point(0.0, 0.0)
         operator fun invoke(v: IPoint): IPoint = Point(v.x, v.y)
         operator fun invoke(x: Double, y: Double): IPoint = Point(x, y)
@@ -29,6 +32,9 @@ interface IPoint {
         operator fun invoke(x: Int, y: Int): IPoint = Point(x, y)
     }
 }
+
+val IPoint.niceStr: String get() = "(${x.niceStr}, ${y.niceStr})"
+fun IPoint.niceStr(decimalPlaces: Int): String = "(${x.niceStr(decimalPlaces)}, ${y.niceStr(decimalPlaces)})"
 
 interface XY : IPoint {
     override var x: Double
@@ -86,7 +92,7 @@ val IPoint.normalized: IPoint
     }
 val IPoint.mutable: Point get() = Point(x, y)
 val IPoint.immutable: IPoint get() = IPoint(x, y)
-fun IPoint.copy() = IPoint(x, y)
+fun IPoint.copy(x: Double = this.x, y: Double = this.y): IPoint = IPoint(x, y)
 fun IPoint.isAlmostEquals(other: IPoint, epsilon: Double = 0.000001): Boolean =
     this.x.isAlmostEquals(other.x, epsilon) && this.y.isAlmostEquals(other.y, epsilon)
 
@@ -130,6 +136,8 @@ data class Point(
     fun setToRight() = setTo(+1.0, 0.0)
 
     companion object {
+        val POOL: ConcurrentPool<Point> = ConcurrentPool<Point>({ it.setTo(0.0, 0.0) }) { Point() }
+
         val Zero: IPoint = IPoint(0.0, 0.0)
         val One: IPoint = IPoint(1.0, 1.0)
         val Up: IPoint = IPoint(0.0, -1.0)
@@ -186,7 +194,7 @@ data class Point(
         fun distance(a: IPoint, b: IPoint): Double = distance(a.x, a.y, b.x, b.y)
         fun distance(a: IPointInt, b: IPointInt): Double = distance(a.x, a.y, b.x, b.y)
 
-        fun distanceSquared(a: Point, b: Point): Double = distanceSquared(a.x, a.y, b.x, b.y)
+        fun distanceSquared(a: IPoint, b: IPoint): Double = distanceSquared(a.x, a.y, b.x, b.y)
         fun distanceSquared(a: IPointInt, b: IPointInt): Int = distanceSquared(a.x, a.y, b.x, b.y)
 
         fun dot(aX: Double, aY: Double, bX: Double, bY: Double): Double = (aX * bX) + (aY * bY)

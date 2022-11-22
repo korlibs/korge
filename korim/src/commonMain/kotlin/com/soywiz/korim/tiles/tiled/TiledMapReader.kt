@@ -10,6 +10,9 @@ import com.soywiz.korim.atlas.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.format.*
+import com.soywiz.korim.text.HorizontalAlign
+import com.soywiz.korim.text.TextAlignment
+import com.soywiz.korim.text.VerticalAlign
 import com.soywiz.korim.tiles.TileMapObjectAlignment
 import com.soywiz.korim.tiles.TileMapOrientation
 import com.soywiz.korim.tiles.TileMapRenderOrder
@@ -452,12 +455,12 @@ private fun Xml.parseTileLayer(infinite: Boolean): Layer.Tiles {
 	val height = element.int("height")
 	val data = element.child("data")
 
-	val map: Bitmap32
+	val map: IStackedIntArray2
 	val encoding: Encoding
 	val compression: Compression
 
 	if (data == null) {
-		map = Bitmap32(width, height, premultiplied = true)
+		map = StackedIntArray2(width, height)
 		encoding = Encoding.CSV
 		compression = Compression.NO
 	} else {
@@ -493,24 +496,25 @@ private fun Xml.parseTileLayer(infinite: Boolean): Layer.Tiles {
 			}
 		}
 
-		val tiles: IntArray
 		if (infinite) {
-			tiles = IntArray(count)
+            val sparse = SparseChunkedStackedIntArray2()
+            map = sparse
 			data.children("chunk").forEach { chunk ->
 				val offsetX = chunk.int("x")
 				val offsetY = chunk.int("y")
 				val cwidth = chunk.int("width")
 				val cheight = chunk.int("height")
-				chunk.encodeGids().forEachIndexed { i, gid ->
-					val x = offsetX + i % cwidth
-					val y = offsetY + i / cwidth
-					tiles[x + y * (offsetX + cwidth)] = gid
-				}
+                sparse.putChunk(
+                    StackedIntArray2(
+                        IntArray2(cwidth, cheight, chunk.encodeGids()),
+                        startX = offsetX,
+                        startY = offsetY
+                    )
+                )
 			}
 		} else {
-			tiles = data.encodeGids()
+            map = StackedIntArray2(IntArray2(width, height, data.encodeGids()))
 		}
-		map = Bitmap32(width, height, RgbaArray(tiles))
 	}
 
 	layer.map = map
@@ -570,12 +574,10 @@ private fun Xml.parseObjectLayer(): Layer.Objects {
 				underline = text.int("underline") == 1,
 				strikeout = text.int("strikeout") == 1,
 				kerning = text.int("kerning", 1) == 1,
-				hAlign = text.str("halign", "left").let { align ->
-					TextHAlignment.values().find { it.value == align } ?: TextHAlignment.LEFT
-				},
-				vAlign = text.str("valign", "top").let { align ->
-					TextVAlignment.values().find { it.value == align } ?: TextVAlignment.TOP
-				}
+				align = TextAlignment(
+                    HorizontalAlign(text.str("halign", "left")),
+                    VerticalAlign(text.str("valign", "top")),
+                ),
 			)
 			else -> Object.Shape.Rectangle(objInstance.bounds.width, objInstance.bounds.height)
 		}

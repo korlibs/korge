@@ -1,23 +1,15 @@
 package com.soywiz.korge.ui
 
-import com.soywiz.klock.TimeSpan
-import com.soywiz.klock.seconds
-import com.soywiz.korge.annotations.KorgeExperimental
-import com.soywiz.korge.component.detach
-import com.soywiz.korge.input.onOutOnOver
-import com.soywiz.korge.time.timers
-import com.soywiz.korge.tween.TweenComponent
-import com.soywiz.korge.tween.get
-import com.soywiz.korge.tween.tweenNoWait
-import com.soywiz.korge.view.Container
-import com.soywiz.korge.view.View
-import com.soywiz.korge.view.ViewDslMarker
-import com.soywiz.korge.view.addTo
-import com.soywiz.korge.view.container
-import com.soywiz.korim.color.Colors
-import com.soywiz.korim.color.RGBA
-import com.soywiz.korim.font.Font
-import com.soywiz.korio.lang.Closeable
+import com.soywiz.klock.*
+import com.soywiz.korge.animate.*
+import com.soywiz.korge.annotations.*
+import com.soywiz.korge.input.*
+import com.soywiz.korge.time.*
+import com.soywiz.korge.tween.*
+import com.soywiz.korge.view.*
+import com.soywiz.korim.color.*
+import com.soywiz.korim.font.*
+import com.soywiz.korio.lang.*
 
 @KorgeExperimental
 inline fun Container.uiTooltipContainer(
@@ -44,14 +36,11 @@ class UITooltipContainer(font: Font = DefaultUIFont) : Container() {
     var tooltipOffsetY: Double = 4.0
 
     private var visibleTimer: Closeable? = null
-    private var visibleAppearTween: TweenComponent? = null
 
     fun disappear() {
         tooltip.visible = false
         visibleTimer?.close()
         visibleTimer = null
-        visibleAppearTween?.detach()
-        visibleAppearTween = null
     }
 
     fun appear() {
@@ -60,7 +49,7 @@ class UITooltipContainer(font: Font = DefaultUIFont) : Container() {
             tooltip.alpha = 0.0
             tooltip.visible = true
             visibleTimer = null
-            visibleAppearTween = tooltip.tweenNoWait(tooltip::alpha[0.0, 1.0], time = appearAnimationTime)
+            tooltip.simpleAnimator.tween(tooltip::alpha[0.0, 1.0], time = appearAnimationTime)
         }
     }
 

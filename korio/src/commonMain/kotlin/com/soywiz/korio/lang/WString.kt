@@ -123,6 +123,7 @@ inline class WChar(val codePoint: Int) {
 }
 
 class WStringReader(val str: WString, var position: Int = 0) {
+    constructor(str: String, position: Int = 0) : this(str.toWString(), position)
     val length: Int get() = str.length
     val available: Int get() = str.length - position
     val eof: Boolean get() = position >= str.length
@@ -131,4 +132,14 @@ class WStringReader(val str: WString, var position: Int = 0) {
     fun peek(offset: Int = 0): WChar = str.getOrElse(this.position + offset) { WChar(0) }
     fun skip(count: Int) { position += count }
     fun substr(offset: Int, len: Int = str.length): WString = str.substr(this.position + offset, len)
+}
+
+inline fun <T> WStringReader?.keep(block: () -> T): T {
+    //return ::position.keep { block() } // @TODO: Is this optimized in Kotlin?
+    val old = this?.position ?: 0
+    try {
+        return block()
+    } finally {
+        this?.position = old
+    }
 }

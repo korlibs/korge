@@ -96,6 +96,8 @@ inline class Dyn(val value: Any?) : Comparable<Dyn> {
     infix fun gt(r: Dyn): Boolean = compare(this, r) > 0
     /** Greater or Equal */
     infix fun ge(r: Dyn): Boolean = compare(this, r) >= 0
+    operator fun contains(r: String): Boolean = contains(r.dyn)
+    operator fun contains(r: Number): Boolean = contains(r.dyn)
     operator fun contains(r: Dyn): Boolean {
         val collection = this
         val element = r
@@ -103,6 +105,7 @@ inline class Dyn(val value: Any?) : Comparable<Dyn> {
         return when (collection.value) {
             is String -> collection.value.contains(element.value.toString())
             is Set<*> -> element.value in collection.value
+            is Map<*, *> -> element.value in collection.value
             else -> element.value in collection.toListAny()
         }
     }
@@ -230,6 +233,8 @@ inline class Dyn(val value: Any?) : Comparable<Dyn> {
 
     operator fun get(key: Dyn): Dyn = get(key.value)
     operator fun get(key: Any?): Dyn = _getOrThrow(key, doThrow = false)
+
+    fun getOrNull(key: Any?): Dyn? = _getOrThrow(key, doThrow = false).orNull
     fun getOrThrow(key: Any?): Dyn = _getOrThrow(key, doThrow = true)
 
     private fun _getOrThrow(key: Any?, doThrow: Boolean): Dyn = when (value) {
@@ -257,6 +262,7 @@ inline class Dyn(val value: Any?) : Comparable<Dyn> {
         else -> dynApi.suspendGet(value, key.toString()).dyn
     }
 
+    val orNull: Dyn? get() = value?.dyn
     val mapAny: Map<Any?, Any?> get() = if (value is Map<*, *>) value as Map<Any?, Any?> else LinkedHashMap()
     val listAny: List<Any?> get() = if (value == null) listOf() else if (value is List<*>) value else if (value is Iterable<*>) value.toList() else listOf(value)
     val keysAny: List<Any?> get() = if (value is Map<*, *>) keys.toList() else listOf()

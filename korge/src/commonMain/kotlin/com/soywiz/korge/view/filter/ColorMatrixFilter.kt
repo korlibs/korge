@@ -1,17 +1,9 @@
 package com.soywiz.korge.view.filter
 
-import com.soywiz.korag.FragmentShaderDefault
-import com.soywiz.korag.shader.FragmentShader
-import com.soywiz.korag.shader.Uniform
-import com.soywiz.korag.shader.VarType
-import com.soywiz.korag.shader.storageFor
-import com.soywiz.korag.shader.storageForMatrix3D
-import com.soywiz.korge.debug.uiEditableValue
-import com.soywiz.korge.render.BatchBuilder2D
-import com.soywiz.korge.view.Views
-import com.soywiz.korma.geom.Matrix3D
-import com.soywiz.korma.geom.fromColumns
-import com.soywiz.korui.UiContainer
+import com.soywiz.korag.*
+import com.soywiz.korag.shader.*
+import com.soywiz.korge.view.property.*
+import com.soywiz.korma.geom.*
 
 /**
  * A [Filter] applying a complex color transformation to the view.
@@ -64,7 +56,8 @@ class ColorMatrixFilter(colorMatrix: Matrix3D, blendRatio: Double = 1.0) : Shade
     }
 
     /** The 4x4 [Matrix3D] that will be used for transforming each pixel components [r, g, b, a] */
-	var colorMatrix by uniforms.storageForMatrix3D(u_ColorMatrix, colorMatrix)
+    @ViewProperty
+	var colorMatrix: Matrix3D by uniforms.storageForMatrix3D(u_ColorMatrix, colorMatrix)
 
     /**
      * Ratio for blending the original color with the transformed color.
@@ -72,20 +65,13 @@ class ColorMatrixFilter(colorMatrix: Matrix3D, blendRatio: Double = 1.0) : Shade
      * - 1 will return the transformed color
      * - Values between [0 and 1] would be an interpolation between those colors.
      * */
-	var blendRatio by uniforms.storageFor(u_BlendRatio).doubleDelegateX(blendRatio)
+    @ViewProperty
+	var blendRatio: Double by uniforms.storageFor(u_BlendRatio).doubleDelegateX(blendRatio)
 
     override val programProvider: ProgramProvider get() = ColorMatrixFilter
 
+    @ViewProperty
     var namedColorMatrix: String
         get() = NAMED_MATRICES.entries.firstOrNull { it.value == colorMatrix }?.key ?: NAMED_MATRICES.keys.first()
         set(value) { colorMatrix = (NAMED_MATRICES[value] ?: IDENTITY_MATRIX) }
-
-    override fun buildDebugComponent(views: Views, container: UiContainer) {
-        container.uiEditableValue(listOf(colorMatrix::v00, colorMatrix::v01, colorMatrix::v02, colorMatrix::v03), name = "row0")
-        container.uiEditableValue(listOf(colorMatrix::v10, colorMatrix::v11, colorMatrix::v12, colorMatrix::v13), name = "row1")
-        container.uiEditableValue(listOf(colorMatrix::v20, colorMatrix::v21, colorMatrix::v22, colorMatrix::v23), name = "row2")
-        container.uiEditableValue(listOf(colorMatrix::v30, colorMatrix::v31, colorMatrix::v32, colorMatrix::v33), name = "row3")
-        container.uiEditableValue(::namedColorMatrix, values = { NAMED_MATRICES.keys.toList() })
-        container.uiEditableValue(::blendRatio)
-    }
 }

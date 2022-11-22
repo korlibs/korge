@@ -41,7 +41,7 @@ class TiledMapView(val tiledMap: TiledMap, showShapes: Boolean = true, smoothing
     }
 
     override val customHitShape get() = true
-    override protected fun hitTestShapeInternal(shape: Shape2d, matrix: Matrix, direction: HitTestDirection): View? {
+    protected override fun hitTestShapeInternal(shape: Shape2d, matrix: Matrix, direction: HitTestDirection): View? {
         // @TODO: Use shape
         val p = matrix.transform(shape.getCenter())
         return globalPixelHitTest(p.x, p.y, direction)

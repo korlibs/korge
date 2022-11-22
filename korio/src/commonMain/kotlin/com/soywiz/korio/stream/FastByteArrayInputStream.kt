@@ -84,7 +84,7 @@ class FastByteArrayInputStream(val ba: ByteArray, offset: Int = 0, val start: In
 
 	// Skipping
 	fun skip(count: Int) { offset = (offset + count).coerceIn(start, end) }
-    fun unread(count: Int) = skip(-count)
+    fun unread(count: Int): Unit = skip(-count)
 
 	fun skipToAlign(count: Int) {
 		val nextPosition = offset.nextAlignedTo(count)

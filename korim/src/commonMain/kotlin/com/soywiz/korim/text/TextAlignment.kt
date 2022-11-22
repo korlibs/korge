@@ -1,18 +1,23 @@
 package com.soywiz.korim.text
 
-import com.soywiz.korim.font.FontMetrics
-import com.soywiz.korim.font.GlyphMetrics
-import com.soywiz.korma.geom.Anchor
+import com.soywiz.korim.font.*
+import com.soywiz.korio.lang.*
+import com.soywiz.korma.geom.*
+import com.soywiz.korma.interpolation.*
 
 data class TextAlignment(
     val horizontal: HorizontalAlign,
     val vertical: VerticalAlign,
-) {
+) : EnumLike<TextAlignment> {
     val justified get() = horizontal == HorizontalAlign.JUSTIFY
     val anchor: Anchor = Anchor(horizontal.ratioFake, vertical.ratioFake)
 
     fun withHorizontal(horizontal: HorizontalAlign) = fromAlign(horizontal, vertical)
     fun withVertical(vertical: VerticalAlign) = fromAlign(horizontal, vertical)
+
+    object Provider {
+        val ITEMS get() = ALL
+    }
 
     companion object {
         private val horizontals = listOf(HorizontalAlign.LEFT, HorizontalAlign.CENTER, HorizontalAlign.RIGHT, HorizontalAlign.JUSTIFY)
@@ -21,6 +26,8 @@ data class TextAlignment(
         private val BASELINE = horizontals.map { TextAlignment(it, VerticalAlign.BASELINE) }
         private val MIDDLE = horizontals.map { TextAlignment(it, VerticalAlign.MIDDLE) }
         private val BOTTOM = horizontals.map { TextAlignment(it, VerticalAlign.BOTTOM) }
+
+        val ALL = TOP + BASELINE + MIDDLE + BOTTOM
 
         val TOP_LEFT = TOP[0]
         val TOP_CENTER = TOP[1]
@@ -64,10 +71,19 @@ data class TextAlignment(
             }
         }
     }
+
+    override fun EnumLike.Scope.getValues(): List<TextAlignment> = ALL
+
+    override fun toString(): String = "${vertical}_$horizontal"
 }
 
-inline class VerticalAlign(val ratio: Double) {
+inline class VerticalAlign(val ratio: Double) : EnumLike<VerticalAlign> {
     val ratioFake get() = if (this == BASELINE) 1.0 else ratio
+    val ratioFake0 get() = if (this == BASELINE) 0.0 else ratio
+
+    object Provider {
+        val ITEMS: List<VerticalAlign> get() = ALL
+    }
 
     companion object {
         val TOP = VerticalAlign(0.0)
@@ -76,11 +92,14 @@ inline class VerticalAlign(val ratio: Double) {
         val BASELINE = VerticalAlign(Double.POSITIVE_INFINITY) // Special
         private val values = arrayOf(TOP, MIDDLE, BASELINE, BOTTOM)
 
+        val CENTER get() = MIDDLE
+        val ALL = values.toList()
+
         fun values() = values
 
-        operator fun invoke(str: String): VerticalAlign = when (str) {
+        operator fun invoke(str: String): VerticalAlign = when (str.uppercase()) {
             "TOP" -> TOP
-            "MIDDLE" -> MIDDLE
+            "CENTER", "MIDDLE" -> MIDDLE
             "BOTTOM" -> BOTTOM
             "BASELINE" -> BASELINE
             else -> VerticalAlign(str.substringAfter('(').substringBefore(')').toDoubleOrNull() ?: 0.0)
@@ -93,11 +112,16 @@ inline class VerticalAlign(val ratio: Double) {
     }
 
     fun getOffsetYRespectBaseline(glyph: GlyphMetrics, font: FontMetrics): Double = when (this) {
-        TOP -> font.top
-        BOTTOM -> font.bottom
         BASELINE -> 0.0
-        else -> (font.top * ratio + font.bottom * (1.0 - ratio))
+        else -> ratio.interpolate(font.top, font.bottom)
     }
+
+    fun getOffsetYRespectBaseline(font: FontMetrics, totalHeight: Double): Double = when (this) {
+        BASELINE -> 0.0
+        else -> ratio.interpolate(font.top, font.top - totalHeight)
+    }
+
+    override fun EnumLike.Scope.getValues(): List<VerticalAlign> = ALL
 
     override fun toString(): String = when (this) {
         TOP -> "TOP"
@@ -108,8 +132,12 @@ inline class VerticalAlign(val ratio: Double) {
     }
 }
 
-inline class HorizontalAlign(val ratio: Double) {
+inline class HorizontalAlign(val ratio: Double) : EnumLike<HorizontalAlign> {
     val ratioFake get() = if (this == JUSTIFY) 0.0 else ratio
+
+    object Provider {
+        val ITEMS: List<HorizontalAlign> get() = HorizontalAlign.ALL
+    }
 
     companion object {
         val JUSTIFY = HorizontalAlign(-0.00001)
@@ -118,10 +146,10 @@ inline class HorizontalAlign(val ratio: Double) {
         val RIGHT = HorizontalAlign(1.0)
 
         private val values = arrayOf(LEFT, CENTER, RIGHT, JUSTIFY)
-
+        val ALL = values.toList()
         fun values() = values
 
-        operator fun invoke(str: String): HorizontalAlign = when (str) {
+        operator fun invoke(str: String): HorizontalAlign = when (str.uppercase()) {
             "LEFT" -> LEFT
             "CENTER" -> CENTER
             "RIGHT" -> RIGHT
@@ -130,10 +158,14 @@ inline class HorizontalAlign(val ratio: Double) {
         }
     }
 
+    fun getOffsetX(min: Double, max: Double): Double = getOffsetX(max - min) + min
+
     fun getOffsetX(width: Double): Double = when (this) {
         JUSTIFY -> 0.0
         else -> width * ratio
     }
+
+    override fun EnumLike.Scope.getValues(): List<HorizontalAlign> = ALL
 
     override fun toString(): String = when (this) {
         LEFT -> "LEFT"

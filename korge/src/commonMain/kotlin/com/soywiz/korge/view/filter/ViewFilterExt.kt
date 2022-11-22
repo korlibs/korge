@@ -1,19 +1,15 @@
 package com.soywiz.korge.view.filter
 
-import com.soywiz.kds.Extra
-import com.soywiz.korge.debug.uiCollapsibleSection
-import com.soywiz.korge.view.Views
-import com.soywiz.korge.view.ViewsContainer
-import com.soywiz.korui.UiMenuItem
-import com.soywiz.korui.button
-import com.soywiz.korui.container
-import kotlin.native.concurrent.ThreadLocal
+import com.soywiz.kds.*
+import com.soywiz.korge.view.*
+import kotlin.native.concurrent.*
 
 @ThreadLocal
 var Views.registerFilterSerialization: Boolean by Extra.Property { false }
 fun ViewsContainer.registerFilterSerialization() {
     if (views.registerFilterSerialization) return
     views.registerFilterSerialization = true
+    /*
     views.viewExtraBuildDebugComponent.add { views, view, container ->
         val contentContainer = container.container {  }
         fun updateContentContainer() {
@@ -54,6 +50,7 @@ fun ViewsContainer.registerFilterSerialization() {
         }
         updateContentContainer()
     }
+    */
 }
 
 private inline fun <reified T : Filter> filterFactory(noinline block: () -> T): Pair<String, () -> T> {

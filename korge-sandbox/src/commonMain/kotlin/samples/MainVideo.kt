@@ -1,34 +1,19 @@
 package samples
 
-import com.soywiz.klock.TimeSpan
-import com.soywiz.klock.hr.HRTimeSpan
-import com.soywiz.korge.input.mouse
-import com.soywiz.korge.render.RenderContext
-import com.soywiz.korge.scene.ScaledScene
-import com.soywiz.korge.view.BaseImage
-import com.soywiz.korge.view.Container
-import com.soywiz.korge.view.SContainer
-import com.soywiz.korge.view.View
-import com.soywiz.korge.view.Views
-import com.soywiz.korge.view.addUpdater
-import com.soywiz.korge.view.textOld
-import com.soywiz.korim.bitmap.Bitmap32
-import com.soywiz.korim.bitmap.Bitmaps
-import com.soywiz.korim.bitmap.slice
-import com.soywiz.korim.color.arraycopy
-import com.soywiz.korio.async.AsyncCloseable
-import com.soywiz.korio.async.Signal
-import com.soywiz.korio.async.invoke
-import com.soywiz.korio.async.launchImmediately
-import com.soywiz.korio.async.waitOne
-import com.soywiz.korio.file.VfsFile
-import com.soywiz.korio.file.std.resourcesVfs
-import com.soywiz.korio.lang.Cancellable
-import com.soywiz.korio.lang.cancel
-import com.soywiz.korio.util.OS
-import com.soywiz.korvi.BaseKorviSeekable
-import com.soywiz.korvi.KorviVideo
-import kotlinx.coroutines.CoroutineScope
+import com.soywiz.klock.*
+import com.soywiz.klock.hr.*
+import com.soywiz.korge.input.*
+import com.soywiz.korge.render.*
+import com.soywiz.korge.scene.*
+import com.soywiz.korge.view.*
+import com.soywiz.korim.bitmap.*
+import com.soywiz.korio.async.*
+import com.soywiz.korio.file.*
+import com.soywiz.korio.file.std.*
+import com.soywiz.korio.lang.*
+import com.soywiz.korio.util.*
+import com.soywiz.korvi.*
+import kotlinx.coroutines.*
 
 class MainVideo : ScaledScene(1280, 720) {
     override suspend fun SContainer.sceneMain() {
@@ -98,13 +83,27 @@ class MainVideo : ScaledScene(1280, 720) {
             if (video.running) return
             coroutineScope.launchImmediately {
                 ensurePrepared()
-                video.play()
+                //try {
+                    video.play()
+                //} finally {
+                //    video.stop()
+                //}
             }
         }
 
         private var bmp = Bitmap32(1, 1)
 
         init {
+            coroutineScope.launchImmediately {
+                try {
+                    while (true) delay(100.seconds)
+                } catch (e: kotlinx.coroutines.CancellationException) {
+                    video.stop()
+                }
+            }
+            addUpdater {
+                if (video.running) invalidateRender()
+            }
             video.onVideoFrame {
                 //println("VIDEO FRAME! : ${it.position.timeSpan},  ${it.duration.timeSpan}")
                 if (OS.isJs || OS.isAndroid) {

@@ -104,4 +104,10 @@ class IntMapTest {
         assertEquals(null, map[3])
     }
 
+    @Test
+    fun testIntMapGetOrPut() {
+        val map = intMapOf<String>()
+        for (n in 0 until 3) map.getOrPut(n) { "${-it}" }
+        assertEquals("0=0, 1=-1, 2=-2", map.toMap().entries.sortedBy { it.key }.joinToString(", "))
+    }
 }

@@ -3,6 +3,7 @@ package samples
 import com.soywiz.klock.timesPerSecond
 import com.soywiz.korge.scene.ScaledScene
 import com.soywiz.korge.view.SContainer
+import com.soywiz.korge.view.Text
 import com.soywiz.korge.view.addFixedUpdater
 import com.soywiz.korge.view.position
 import com.soywiz.korge.view.text
@@ -34,9 +35,9 @@ class MainText : ScaledScene(512, 160) {
         )
 
         var offset = 0.degrees
-        addFixedUpdater(60.timesPerSecond) { offset += 10.degrees }
         var version = 0
-        text("Hello World!", font = font, textSize = 64.0, alignment = TextAlignment.BASELINE_LEFT, renderer = CreateStringTextRenderer({ version++ }) { reader: WStringReader, c: Int, g: GlyphMetrics, advance: Double ->
+        //text("Hello World!", font = font, textSize = 64.0, alignment = TextAlignment.BASELINE_LEFT, renderer = CreateStringTextRenderer({ version++ }) { reader: WStringReader, c: Int, g: GlyphMetrics, advance: Double ->
+        val text = text("Hello World!", font = font, textSize = 64.0, alignment = TextAlignment.BASELINE_LEFT, renderer = CreateStringTextRenderer({ version++ }) { reader: WStringReader, c: Int, g: GlyphMetrics, advance: Double ->
             transform.identity()
 
             val sin = sin(offset + (reader.position * 360 / reader.length).degrees)
@@ -46,5 +47,9 @@ class MainText : ScaledScene(512, 160) {
             put(reader, c)
             advance(advance)
         }).position(100, 100)
+        addFixedUpdater(60.timesPerSecond) {
+            offset += 10.degrees
+            text.invalidate()
+        }
     }
 }

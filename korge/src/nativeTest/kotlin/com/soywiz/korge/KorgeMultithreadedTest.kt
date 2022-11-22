@@ -13,6 +13,7 @@ import com.soywiz.korge.view.mask.mask
 import com.soywiz.korge.view.vector.gpuShapeView
 import com.soywiz.korim.format.*
 import com.soywiz.korio.file.std.*
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.bezier.isConvex
 import com.soywiz.korma.geom.shape.buildVectorPath
 import com.soywiz.korma.geom.vector.circle
@@ -81,7 +82,7 @@ class KorgeMultithreadedTest {
                 path.getCurvesList()
                 val curves = path.getCurves()
 
-                assertEquals(Unit, Mesh().getLocalBoundsInternal(), "Doesn't throw with mutability exception")
+                assertEquals(Unit, Mesh().getLocalBoundsInternal(Rectangle()), "Doesn't throw with mutability exception")
 
                 log += "rect.filterScale=${rect.filterScale}"
                 log += "rect.mask=${rect.mask != null}"

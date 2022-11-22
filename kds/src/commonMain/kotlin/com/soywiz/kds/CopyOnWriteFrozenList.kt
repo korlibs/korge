@@ -4,7 +4,7 @@ import com.soywiz.kds.atomic.KdsAtomicRef
 import com.soywiz.kds.fakemutable.asFakeMutable
 import com.soywiz.kds.sub.SubMutableList
 
-class CopyOnWriteFrozenList<T> : MutableList<T> {
+class CopyOnWriteFrozenList<T> : BaseMutableList<T> {
     private val list = KdsAtomicRef(emptyList<T>())
     override val size: Int get() = list.value.size
 
@@ -12,22 +12,26 @@ class CopyOnWriteFrozenList<T> : MutableList<T> {
     override fun containsAll(elements: Collection<T>): Boolean = list.value.containsAll(elements)
     override fun get(index: Int): T = list.value[index]
     override fun indexOf(element: T): Int = list.value.indexOf(element)
-    override fun isEmpty(): Boolean = list.value.isEmpty()
     override fun iterator(): MutableIterator<T> = list.value.iterator().asFakeMutable()
     override fun lastIndexOf(element: T): Int = list.value.lastIndexOf(element)
-    override fun add(element: T): Boolean = true.also { list.value = list.value + element }
     override fun add(index: Int, element: T) {
-        val oldList = list.value
-        list.value = (oldList.slice(0 until index) + element) + oldList.slice(index until oldList.size)
+        if (index == size) {
+            list.value = list.value + element
+        } else {
+            val oldList = list.value
+            list.value = (oldList.slice(0 until index) + element) + oldList.slice(index until oldList.size)
+        }
     }
 
     override fun addAll(index: Int, elements: Collection<T>): Boolean {
-        val oldList = list.value
-        list.value = (oldList.slice(0 until index) + elements) + oldList.slice(index until oldList.size)
+        if (index == size) {
+            list.value = list.value + elements
+        } else {
+            val oldList = list.value
+            list.value = (oldList.slice(0 until index) + elements) + oldList.slice(index until oldList.size)
+        }
         return true
     }
-
-    override fun addAll(elements: Collection<T>): Boolean = true.also { list.value = list.value + elements }
 
     override fun clear() { list.value = emptyList() }
     override fun listIterator(): MutableListIterator<T> = list.value.listIterator().asFakeMutable()
@@ -58,6 +62,5 @@ class CopyOnWriteFrozenList<T> : MutableList<T> {
         return oldList[index].also { list.value = (oldList.slice(0 until index) + element) + oldList.slice(index until oldList.size) }
     }
 
-    override fun subList(fromIndex: Int, toIndex: Int): MutableList<T> = SubMutableList(this, fromIndex, toIndex)
-
+    override fun subList(fromIndex: Int, toIndex: Int): MutableList<T> = BaseSubMutableList(this, fromIndex, toIndex)
 }

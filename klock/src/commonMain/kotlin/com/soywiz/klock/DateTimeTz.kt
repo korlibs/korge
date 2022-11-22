@@ -38,7 +38,7 @@ class DateTimeTz private constructor(
     /** Returns a new UTC date that will match these components without being the same time */
     val local: DateTime get() = adjusted
 
-    /** Returns a new UTC date that might not match these components but it is the same time as UTC */
+    /** Returns a new UTC date that might not match these components, but it is the same time as UTC */
     val utc: DateTime get() = (adjusted - offset.time)
 
     /** The [Year] part */

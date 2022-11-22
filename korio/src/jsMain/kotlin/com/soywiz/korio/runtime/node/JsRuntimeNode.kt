@@ -1,5 +1,6 @@
 package com.soywiz.korio.runtime.node
 
+import com.soywiz.klock.*
 import com.soywiz.korio.*
 import com.soywiz.korio.async.AsyncByteArrayDeque
 import com.soywiz.korio.async.AsyncQueue
@@ -18,9 +19,8 @@ import com.soywiz.korio.net.http.HttpClient
 import com.soywiz.korio.net.http.HttpServer
 import com.soywiz.korio.runtime.JsRuntime
 import com.soywiz.korio.stream.*
-import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.Channel
 import org.khronos.webgl.ArrayBuffer
 import org.khronos.webgl.Int8Array
 import org.khronos.webgl.Uint8Array
@@ -53,7 +53,7 @@ fun ByteArray.toNodeJsBuffer(offset: Int, size: Int): NodeJsBuffer =
 // DIRTY HACK to prevent webpack to mess with our code
 val REQ get() = "req"
 private external val eval: dynamic
-private fun require_node(name: String): dynamic = eval("(${REQ}uire('$name'))")
+internal fun require_node(name: String): dynamic = eval("(${REQ}uire('$name'))")
 
 private external val process: dynamic // node.js
 
@@ -103,16 +103,24 @@ private class NodeJsAsyncClient(val coroutineContext: CoroutineContext) : AsyncC
     override var connected: Boolean = false; private set
     private val task = AsyncQueue().withContext(coroutineContext)
 
+    fun setConnection(connection: dynamic) {
+        this.connection = connection
+        connected = true
+        connection?.pause()
+        connection?.on("data") { it ->
+            val bytes = it.unsafeCast<ByteArray>().copyOf()
+            task {
+                input.write(bytes)
+            }
+        }
+        connection?.on("error") { it ->
+            console.error(it)
+        }
+    }
+
     override suspend fun connect(host: String, port: Int): Unit = suspendCancellableCoroutine { c ->
         connection = net.createConnection(port, host) {
-            connected = true
-            connection?.pause()
-            connection?.on("data") { it ->
-                val bytes = it.unsafeCast<ByteArray>().copyOf()
-                task {
-                    input.write(bytes)
-                }
-            }
+            setConnection(connection)
             c.resume(Unit)
         }
         c.invokeOnCancellation {
@@ -142,28 +150,59 @@ private class NodeJsAsyncClient(val coroutineContext: CoroutineContext) : AsyncC
     }
 
     override suspend fun close() {
-        connection?.close()
+        if (connection != null) {
+            val deferred = CompletableDeferred<Unit>()
+            connection.end { deferred.complete(Unit) }
+            deferred.await()
+            connection.destroy()
+        }
+        connection = null
     }
 }
 
 private class NodeJsAsyncServer : AsyncServer {
-    override val requestPort: Int
-        get() = TODO("not implemented")
-    override val host: String
-        get() = TODO("not implemented")
-    override val backlog: Int
-        get() = TODO("not implemented")
-    override val port: Int
-        get() = TODO("not implemented")
+    private val net = require_node("net")
+    private var server: dynamic = null
+    override var requestPort: Int = -1; private set
+    override var host: String = ""; private set
+    override var backlog: Int = -1; private set
+    override var port: Int = -1; private set
+
+    private val clientFlow: Channel<dynamic> = Channel(Channel.UNLIMITED)
 
     override suspend fun accept(): AsyncClient {
-        TODO("not implemented")
+        val connection = clientFlow.receive()
+        return NodeJsAsyncClient(coroutineContext).also {
+            it.setConnection(connection)
+        }
     }
 
-    suspend fun init(port: Int, host: String, backlog: Int): AsyncServer = this.apply {
+    suspend fun init(port: Int, host: String, backlog: Int): AsyncServer {
+        server = net.createServer(jsObject(
+        )) { connection ->
+            clientFlow.trySend(connection)
+        }
+        clientFlow.invokeOnClose {
+            server.close()
+        }
+        val deferred = CompletableDeferred<Unit>()
+        server.on("error") { err ->
+            console.error(err)
+        }
+        server.listen(port, host, backlog) {
+            deferred.complete(Unit)
+        }
+        deferred.await()
+        this.backlog = backlog
+        this.requestPort = port
+        this.host = host
+        this.port = server.address().port
+        return this
     }
 
-    override suspend fun close() = Unit
+    override suspend fun close() {
+        clientFlow.cancel()
+    }
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -171,7 +210,23 @@ private class NodeJsAsyncServer : AsyncServer {
 private external interface NodeFD
 
 private external interface NodeFileStat {
+    val dev: Double
+    val ino: Double
+    val mode: Double
+    val nlinks: Double
+    val uid: Double
+    val gid: Double
+    val rdev: Double
     val size: Double
+    val blkSize: Int
+    val blocks: Double
+    val atimeMs: Double
+    val mtimeMs: Double
+    val ctimeMs: Double
+    fun isDirectory(): Boolean
+    fun isFile(): Boolean
+    fun isSocket(): Boolean
+    fun isSymbolicLink(): Boolean
 }
 
 private external interface NodeFS {
@@ -179,7 +234,8 @@ private external interface NodeFS {
     fun rename(src: String, dst: String, callback: (Error?) -> Unit)
     fun unlink(path: String, callback: (Error?) -> Unit)
     fun rmdir(path: String, callback: (Error?) -> Unit)
-
+    fun stat(path: String, callback: (Error?, NodeFileStat) -> Unit)
+    fun chmod(path: String, value: Int, callback: (Error?) -> Unit)
     fun open(path: String, cmode: String, callback: (Error?, NodeFD?) -> Unit)
     fun read(fd: NodeFD?, buffer: NodeJsBuffer, offset: Int, len: Int, position: Double, callback: (Error?, Int, NodeJsBuffer) -> Unit)
     fun write(fd: NodeFD?, buffer: NodeJsBuffer, offset: Int, len: Int, position: Double, callback: (Error?, Int, NodeJsBuffer) -> Unit)
@@ -195,7 +251,45 @@ private class NodeJsLocalVfs : LocalVfs() {
         return path.pathInfo.normalize()
     }
 
+    fun NodeFileStat?.toVfsStat(path: String): VfsStat {
+        val stats = this ?: return createNonExistsStat(path)
+        return createExistsStat(
+            path, stats.isDirectory(), stats.size.toLong(),
+            stats.dev.toLong(), stats.ino.toLong(),
+            mode = stats.mode.toInt(),
+            createTime = DateTime.Companion.fromUnixMillis(stats.ctimeMs),
+            modifiedTime = DateTime.Companion.fromUnixMillis(stats.mtimeMs),
+            lastAccessTime = DateTime.Companion.fromUnixMillis(stats.atimeMs),
+        )
+    }
+
+    override suspend fun setAttributes(path: String, attributes: List<Attribute>) {
+        attributes.getOrNull<UnixPermissions>()?.let {
+            chmod(path, it)
+        }
+    }
+
+    override suspend fun chmod(path: String, mode: UnixPermissions) {
+        val deferred = CompletableDeferred<Unit>()
+        nodeFS.chmod(path, mode.rbits) { err ->
+            if (err != null) deferred.completeExceptionally(err) else deferred.complete(Unit)
+        }
+        return deferred.await()
+    }
+
+    override suspend fun stat(path: String): VfsStat {
+        val deferred = CompletableDeferred<VfsStat>()
+        nodeFS.stat(path) { err, stats ->
+            //println("err=$err")
+            //println("stats=$stats")
+            deferred.completeWith(kotlin.runCatching { stats.toVfsStat(path) })
+        }
+        return deferred.await()
+    }
+
     override suspend fun exec(path: String, cmdAndArgs: List<String>, env: Map<String, String>, handler: VfsProcessHandler): Int {
+        checkExecFolder(path, cmdAndArgs)
+
         // @TODO: This fails on windows with characters like '&'
         val realCmdAndArgs = ShellArgs.buildShellExecCommandLineArrayForNodeSpawn(cmdAndArgs)
 

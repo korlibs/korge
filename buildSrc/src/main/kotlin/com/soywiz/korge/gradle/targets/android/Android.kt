@@ -425,11 +425,11 @@ fun writeAndroidManifest(outputFolder: File, korge: KorgeExtension, info: Androi
 			line("package $androidPackageName")
 
 			line("import com.soywiz.korio.android.withAndroidContext")
-			line("import com.soywiz.korgw.KorgwActivity")
+			line("import com.soywiz.korgw.*")
 			line("import ${korge.realEntryPoint}")
 
 			line("class MainActivity : KorgwActivity()") {
-				line("override suspend fun activityMain()") {
+				line("override suspend fun activityMain(config = GameWindowCreationConfig(msaa = ${korge.androidMsaa}))") {
 					//line("withAndroidContext(this)") { // @TODO: Probably we should move this to KorgwActivity itself
 						for (text in korge.plugins.pluginExts.getAndroidInit() + info.androidInit) {
 							line(text)

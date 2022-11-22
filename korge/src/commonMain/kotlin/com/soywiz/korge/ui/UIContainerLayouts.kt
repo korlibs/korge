@@ -1,11 +1,98 @@
 package com.soywiz.korge.ui
 
-import com.soywiz.korge.view.Container
-import com.soywiz.korge.view.View
-import com.soywiz.korge.view.ViewDslMarker
-import com.soywiz.korge.view.addTo
-import com.soywiz.korge.view.size
-import com.soywiz.korge.view.xy
+import com.soywiz.korge.view.*
+
+/**
+ * Equivalent to CSS flexbox `justify-content` values.
+ *
+ * See: <https://css-tricks.com/wp-content/uploads/2022/02/css-flexbox-poster.png>
+ */
+enum class JustifyContent {
+    /**
+     * `ABC------------`
+     *
+     * All elements are grouped together in the start without spacing between them.
+     */
+    START,
+    /**
+     * `------------ABC`
+     *
+     * All elements are grouped together in the end without spacing between them.
+     */
+    END,
+    /**
+     * `------ABC------`
+     *
+     * All elements are centered together without spacing between them.
+     */
+    CENTER,
+    /**
+     * `A------B------C`
+     *
+     * Space between elements are the same, and no space on tips.
+     */
+    SPACE_BETWEEN,
+    /**
+     * `--A----B----C--`
+     *
+     * Space between elements are the same, and tips, half the space.
+     */
+    SPACE_AROUND,
+    /**
+     * `---A---B---C---`
+     *
+     * Space between elements, and tips are the same.
+     */
+    SPACE_EVENLY,
+}
+
+/**
+ * Equivalent to CSS `align-items` and `align-self` properties:
+ *
+ * See: <https://css-tricks.com/wp-content/uploads/2022/02/css-flexbox-poster.png>
+ */
+enum class AlignItems {
+    /**
+     * ```
+     * . A  B  C  D
+     * .    B
+     * .    B
+     * ```
+     */
+    START,
+    /**
+     * ```
+     * .    B
+     * .    B
+     * . A  B  C  D
+     * ```
+     */
+    END,
+    /**
+     * ```
+     * .    B
+     * . A  B  C  D
+     * .    B
+     * ```
+     */
+    CENTER,
+    /**
+     * ```
+     * . A  B  C  D
+     * . A  B  C  D
+     * . A  B  C  D
+     * ```
+     */
+    STRETCH,
+    /**
+     * ```
+     * .
+     * . A  B  C  D   __ Text is here
+     * .    B
+     * ```
+     */
+    BASELINE,
+}
 
 inline fun Container.uiContainer(
     width: Double = 128.0,
@@ -19,6 +106,11 @@ open class UIContainer(width: Double, height: Double) : UIBaseContainer(width, h
 
 abstract class UIBaseContainer(width: Double, height: Double) : UIView(width, height) {
     override fun onChildAdded(view: View) {
+        relayout()
+    }
+
+    override fun onChildChangedSize(view: View) {
+        super.onChildChangedSize(view)
         relayout()
     }
 

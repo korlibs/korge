@@ -78,7 +78,10 @@ object Arc {
         if (remainingAngle.absoluteValue < Angle.EPSILON && start != end) remainingAngle = Angle.FULL
         val sgn1 = if (startAngle < endAngle) +1 else -1
         val sgn = if (counterclockwise) -sgn1 else sgn1
-        if (counterclockwise) remainingAngle = Angle.FULL - remainingAngle
+        if (counterclockwise) {
+            remainingAngle = Angle.FULL - remainingAngle
+            if (remainingAngle.absoluteValue < Angle.EPSILON && start != end) remainingAngle = Angle.FULL
+        }
         var a1 = startAngle
         var index = 0
 

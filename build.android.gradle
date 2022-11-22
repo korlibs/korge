@@ -25,8 +25,19 @@ dependencies {
 android {
     sourceSets {
         main {
+            if (System.getenv("ANDROID_TESTS") == "true") {
+                assets.srcDirs = [
+                    'src/commonMain/resources',
+                    'src/commonTest/resources',
+                ]
+            } else {
+                assets.srcDirs = [
+                    'src/commonMain/resources',
+                ]
+            }
+        }
+        test {
             assets.srcDirs = [
-                'src/commonMain/resources',
                 'src/commonTest/resources',
             ]
         }

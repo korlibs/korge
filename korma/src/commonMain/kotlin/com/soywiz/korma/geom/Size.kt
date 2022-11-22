@@ -23,6 +23,9 @@ interface ISize {
     }
 }
 
+fun Point.asSize(): Size = Size(this)
+fun IPoint.asSize(): ISize = Size(Point(this))
+
 inline class Size(val p: Point) : MutableInterpolable<Size>, Interpolable<Size>, ISize, Sizeable {
     companion object {
         operator fun invoke(): Size = Size(Point(0, 0))

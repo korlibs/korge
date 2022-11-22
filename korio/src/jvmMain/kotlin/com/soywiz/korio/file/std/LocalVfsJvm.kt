@@ -38,10 +38,10 @@ fun UrlVfs(url: URL): VfsFile = UrlVfs(url.toString())
 operator fun File.get(path: String) = File(this, path)
 
 fun ClassLoader.tryGetURLs(): List<URL> = try {
-	when {
-		this is URLClassLoader -> this.urLs.toList()
-		else -> KDynamic { this@tryGetURLs["ucp"]["path"] } as List<URL>
-	}
+    when (this) {
+        is URLClassLoader -> this.urLs.toList()
+        else -> this.dyn["ucp"]["path"] as List<URL>
+    }
 } catch (e: Throwable) {
 	//System.err.println("Error trying to get URLs from classloader $this")
 	//e.printStackTrace()

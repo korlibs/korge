@@ -11,7 +11,12 @@ import kotlin.reflect.KClass
 
 class ReloadClassContext(val injector: AsyncInjector, val refreshedClasses: Set<String>)
 
-internal expect fun <T : Any> KorgeReload_getReloadedClass(clazz: KClass<T>, context: ReloadClassContext): KClass<T>
+internal open class KorgeReloadInternalImpl {
+    open fun <T : Any> getReloadedClass(clazz: KClass<T>, context: ReloadClassContext): KClass<T> = clazz
+    open fun transferKeepProperties(old: Any, new: Any) = Unit
+}
+
+internal expect val KorgeReloadInternal: KorgeReloadInternalImpl
 
 object KorgeReload {
     @Suppress("VARIABLE_IN_SINGLETON_WITHOUT_THREAD_LOCAL")
@@ -44,5 +49,13 @@ data class ReloadEvent(
     val reloadSuccess: Boolean
 ) : Event() {
     val doFullReload: Boolean get() = !reloadSuccess
-    fun <T : Any> getReloadedClass(clazz: KClass<T>, injector: AsyncInjector): KClass<T> = KorgeReload_getReloadedClass(clazz, ReloadClassContext(injector, refreshedClasses))
+    fun <T : Any> getReloadedClass(clazz: KClass<T>, injector: AsyncInjector): KClass<T> = KorgeReloadInternal.getReloadedClass(clazz, ReloadClassContext(injector, refreshedClasses))
+    fun transferKeepProperties(old: Any, new: Any) = KorgeReloadInternal.transferKeepProperties(old, new)
 }
+
+/**
+ * Annotate properties in your Scene class that will be persisted upon reload
+ */
+@Target(AnnotationTarget.PROPERTY)
+@Retention(AnnotationRetention.RUNTIME)
+annotation class KeepOnReload

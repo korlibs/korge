@@ -1,16 +1,10 @@
 package samples
 
-import com.soywiz.klock.DateFormat
-import com.soywiz.klock.DateTime
-import com.soywiz.korge.component.onStageResized
-import com.soywiz.korge.input.gamepad
-import com.soywiz.korge.input.keys
-import com.soywiz.korge.input.mouse
-import com.soywiz.korge.scene.ScaledScene
-import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.view.SContainer
-import com.soywiz.korge.view.position
-import com.soywiz.korge.view.textOld
+import com.soywiz.klock.*
+import com.soywiz.korge.component.*
+import com.soywiz.korge.input.*
+import com.soywiz.korge.scene.*
+import com.soywiz.korge.view.*
 
 class MainInput : ScaledScene(1920, 1080) {
     override suspend fun SContainer.sceneMain() {
@@ -30,6 +24,7 @@ class MainInput : ScaledScene(1920, 1080) {
         val mouseScrollText = textLine("MouseScroll")
         val resizeText = textLine("Resize")
         val gamepadConnectedText = textLine("GamepadConnectedEv")
+        val gamepadText = textLine("GamepadTextEv")
         val gamepadButtonText = textLine("GamepadButtonEv")
         val gamepadStickText = textLine("GamepadStickEv")
         val gamepadUpdateText = textLine("GamepadUpdateEv")
@@ -37,6 +32,10 @@ class MainInput : ScaledScene(1920, 1080) {
 
         onStageResized { width, height ->
             resizeText.text = "Resize ${nowTime()} $width,$height"
+        }
+
+        gamepad {
+            updatedGamepad.invoke { gamepadText.text = "$it" }
         }
 
         gamepad {

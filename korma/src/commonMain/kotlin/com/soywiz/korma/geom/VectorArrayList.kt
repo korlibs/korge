@@ -1,18 +1,16 @@
 package com.soywiz.korma.geom
 
-import com.soywiz.kds.DoubleArrayList
-import com.soywiz.kds.Extra
-import com.soywiz.kds.iterators.fastForEach
-import com.soywiz.kds.mapDouble
-import com.soywiz.korma.internal.appendNice
-import com.soywiz.korma.math.roundDecimalPlaces
-import kotlin.math.sqrt
+import com.soywiz.kds.*
+import com.soywiz.kds.iterators.*
+import com.soywiz.korma.internal.*
+import com.soywiz.korma.math.*
+import kotlin.math.*
 
 interface IVectorArrayList : Extra {
     val closed: Boolean
     val size: Int
     val dimensions: Int
-    fun get(index: Int, dim: Int): Double
+    operator fun get(index: Int, dim: Int): Double
     fun getGeneric(index: Int): GenericVector = GenericVector(dimensions, DoubleArray(dimensions) { get(index, it) })
 }
 
@@ -126,6 +124,16 @@ class VectorArrayList(
         for (n in 0 until data.size) data[n] = data[n].roundDecimalPlaces(places)
         return this
     }
+
+    fun clear() {
+        data.clear()
+    }
+}
+
+fun <T> IVectorArrayList.mapVector(block: (list: IVectorArrayList, index: Int) -> T): List<T> {
+    val out = fastArrayListOf<T>()
+    for (n in 0 until size) out.add(block(this, n))
+    return out
 }
 
 fun vectorArrayListOf(vararg vectors: IGenericVector, dimensions: Int = vectors.first().dimensions): VectorArrayList =

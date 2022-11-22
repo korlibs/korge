@@ -93,6 +93,13 @@ tasks {
         dependsOn("runJvm")
     }
 
+    val updateReferencesJvm by creating(Task::class) {
+        doLast {
+            CheckReferences.main(project.projectDir, update = true)
+        }
+        dependsOn("runJvm")
+    }
+
     afterEvaluate {
         val isArm = com.soywiz.kmem.Platform.arch == com.soywiz.kmem.Arch.ARM64
         for (target in listOf("mingwX64", "linuxX64", if (isArm) "macosArm64" else "macosX64")) {

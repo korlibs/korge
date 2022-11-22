@@ -1,20 +1,12 @@
 package com.soywiz.korge.input
 
-import com.soywiz.kds.Extra
-import com.soywiz.kds.iterators.fastForEach
-import com.soywiz.korev.GameButton
-import com.soywiz.korev.GamePadButtonEvent
-import com.soywiz.korev.GamePadConnectionEvent
-import com.soywiz.korev.GamePadStickEvent
-import com.soywiz.korev.GamePadUpdateEvent
-import com.soywiz.korev.GameStick
-import com.soywiz.korev.GamepadInfo
-import com.soywiz.korge.component.GamepadComponent
-import com.soywiz.korge.view.View
-import com.soywiz.korge.view.Views
-import com.soywiz.korio.async.Signal
-import com.soywiz.korio.async.launchImmediately
-import kotlin.native.concurrent.ThreadLocal
+import com.soywiz.kds.*
+import com.soywiz.kds.iterators.*
+import com.soywiz.korev.*
+import com.soywiz.korge.component.*
+import com.soywiz.korge.view.*
+import com.soywiz.korio.async.*
+import kotlin.native.concurrent.*
 
 class GamePadEvents(override val view: View) : GamepadComponent {
     @PublishedApi
@@ -88,12 +80,15 @@ class GamePadEvents(override val view: View) : GamepadComponent {
 	override fun onGamepadEvent(views: Views, event: GamePadUpdateEvent) {
         this.views = views
 		gamepads.copyFrom(event)
+        var gamepadsUpdated = false
 		// Compute diff
 		for (gamepadIndex in 0 until event.gamepadsLength) {
 			val gamepad = event.gamepads[gamepadIndex]
 			val oldGamepad = this.oldGamepads.gamepads[gamepadIndex]
+            var updateCount = 0
 			GameButton.BUTTONS.fastForEach { button ->
 				if (gamepad[button] != oldGamepad[button]) {
+                    updateCount++
 					button(buttonEvent.apply {
 						this.gamepad = gamepad.index
 						this.type = if (gamepad[button] != 0.0) GamePadButtonEvent.Type.DOWN else GamePadButtonEvent.Type.UP
@@ -105,6 +100,7 @@ class GamePadEvents(override val view: View) : GamepadComponent {
 			GameStick.STICKS.fastForEach { stick ->
 				val vector = gamepad[stick]
 				if (vector != oldGamepad[stick]) {
+                    updateCount++
 					stick(stickEvent.apply {
 						this.gamepad = gamepad.index
 						this.stick = stick
@@ -113,10 +109,13 @@ class GamePadEvents(override val view: View) : GamepadComponent {
 					})
 				}
 			}
-            updatedGamepad(gamepad)
+            if (updateCount > 0) {
+                updatedGamepad(gamepad)
+                gamepadsUpdated = true
+            }
 		}
 		oldGamepads.copyFrom(event)
-		updated(event)
+		if (gamepadsUpdated) updated(event)
 	}
 
 	override fun onGamepadEvent(views: Views, event: GamePadConnectionEvent) {

@@ -1,5 +1,7 @@
 package com.soywiz.korge.gradle.util
 
+import java.util.Locale
+
 fun String.escape(): String {
     val out = StringBuilder()
     for (n in 0 until this.length) {

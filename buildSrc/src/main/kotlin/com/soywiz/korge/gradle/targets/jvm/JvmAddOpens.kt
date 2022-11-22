@@ -17,6 +17,7 @@ object JvmAddOpens {
         if (isMacos) {
             add("--add-opens=java.desktop/sun.lwawt=ALL-UNNAMED")
             add("--add-opens=java.desktop/sun.lwawt.macosx=ALL-UNNAMED")
+            add("--add-opens=java.desktop/com.apple.eawt.event=ALL-UNNAMED")
         }
         if (isLinux) add("--add-opens=java.desktop/sun.awt.X11=ALL-UNNAMED")
     }

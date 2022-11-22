@@ -18,7 +18,7 @@ class FloatMap<T> private constructor(private var nbits: Int, private val loadFa
     fun clear() = map.clear()
     operator fun get(key: Float): T? = map[key.adapt()]
     operator fun set(key: Float, value: T?): T? = map.set(key.adapt(), value)
-    inline fun getOrPut(key: Float, callback: () -> T): T = map.getOrPut(key.adapt(), callback)
+    inline fun getOrPut(key: Float, callback: (Int) -> T): T = map.getOrPut(key.adapt(), callback)
 
     data class Entry<T>(var key: Float, var value: T?)
 

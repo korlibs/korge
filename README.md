@@ -29,7 +29,7 @@ KorGE and all the other korlibs in a single monorepo.
 
 To use this version in other projects,
 you have to publish it locally to mavenLocal,
-and then use `2.0.0.999` as version: 
+and then use `999.0.0.999` as version: 
 
 ```shell script
 ./gradlew publishToMavenLocal
@@ -48,3 +48,38 @@ you can make experiments there:
 ./gradlew :korge-sandbox:runAndroidRelease
 ./gradlew :korge-sandbox:runIosDeviceRelease
 ```
+
+## KorGE Samples
+
+* <https://github.com/korlibs/korge-samples>
+* <https://github.com/korlibs/korge-samples-ext>
+
+## KorGE Modules
+
+Traditionally all the KorGE modules were published to central and their source code was available here,
+now they are available via kproject in these repositories:
+
+### UI
+
+* <https://github.com/korlibs/korge-compose>
+
+### Physics
+
+* <https://github.com/korlibs/korge-box2d>
+
+### ECS
+
+* <https://github.com/korlibs/korge-fleks>
+
+### Animations
+
+* <https://github.com/korlibs/korge-swf>
+
+### Skeletal Libraries
+
+* <https://github.com/korlibs/korge-dragonbones>
+* <https://github.com/korlibs/korge-spine>
+
+### Level Loading
+
+* <https://github.com/korlibs/korge-ldtk>

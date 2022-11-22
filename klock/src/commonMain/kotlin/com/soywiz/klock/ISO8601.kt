@@ -22,13 +22,24 @@ object ISO8601 {
 
     data class BaseIsoDateTimeFormat(val format: String, val twoDigitBaseYear: Int = 1900) : DateFormat {
         override fun format(dd: DateTimeTz): String = buildString {
-            val isUtc = format.endsWith('Z')
-            val d = if (isUtc) dd.utc else dd.local
+            val d = dd.local
             val s = d.copyDayOfMonth(hours = 0, minutes = 0, seconds = 0, milliseconds = 0)
             val time = d - s
             val fmtReader = MicroStrReader(format)
             while (fmtReader.hasMore) {
                 when {
+                    fmtReader.tryRead("Z") -> {
+                        //if (dd.offset != TimezoneOffset.UTC) {
+                        if (dd.offset != TimezoneOffset.UTC) {
+                            dd.offset.deltaHoursAbs
+                            append(if (dd.offset.positive) "+" else "-")
+                            append(dd.offset.deltaHoursAbs.padded(2))
+                            append(":")
+                            append(dd.offset.deltaMinutesAbs.padded(2))
+                        } else {
+                            append("Z")
+                        }
+                    }
                     fmtReader.tryRead("YYYYYY") -> append(d.yearInt.absoluteValue.padded(6))
                     fmtReader.tryRead("YYYY") -> append(d.yearInt.absoluteValue.padded(4))
                     fmtReader.tryRead("YY") -> append((d.yearInt.absoluteValue % 100).padded(2))
@@ -174,7 +185,7 @@ object ISO8601 {
             }
 
             val baseDateTime = dateTime + hours.hours + minutes.minutes + seconds.seconds
-            return if (tzOffset != null) DateTimeTz.utc(baseDateTime, TimezoneOffset(tzOffset)) else baseDateTime.local
+            return if (tzOffset != null) DateTimeTz.local(baseDateTime, TimezoneOffset(tzOffset)) else baseDateTime.local
         }
 
         fun withTwoDigitBaseYear(twoDigitBaseYear: Int = 1900) = BaseIsoDateTimeFormat(format, twoDigitBaseYear)

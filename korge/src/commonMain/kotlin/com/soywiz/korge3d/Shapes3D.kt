@@ -56,6 +56,7 @@ abstract class BaseViewWithMesh3D(mesh: Mesh3D) : ViewWithMesh3D(mesh.copy()) {
         get() = mesh.material
         set(value) {
             mesh.material = value
+            invalidateRender()
         }
 }
 

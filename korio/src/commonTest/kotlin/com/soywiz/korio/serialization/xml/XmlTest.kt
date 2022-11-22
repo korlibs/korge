@@ -98,8 +98,14 @@ class XmlTest {
     }
 
     @Test
-    fun testNAmedDescendant() {
+    fun testNamedDescendant() {
         val xml = Xml("<xml><a><b/><b/></a><c><b/><b/></c></xml>")
         assertEquals(4, xml.descendants("b").count())
+    }
+
+    @Test
+    fun testAttrWithoutQuotes() {
+        assertEquals("world", Xml("<xml hello=world />").strNull("hello"))
+        assertEquals(20, Xml("<xml size=20 />").intNull("size"))
     }
 }

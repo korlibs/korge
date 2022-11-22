@@ -14,7 +14,7 @@ actual val nativeImageFormatProvider: NativeImageFormatProvider get() = Win32Bas
 
 open class Win32BaseNativeImageFormatProvider : StbImageNativeImageFormatProvider() {
     companion object : Win32BaseNativeImageFormatProvider()
-    override fun createBitmapNativeImage(bmp: Bitmap) = GdiNativeImage(bmp.toBMP32())
+    override fun createBitmapNativeImage(bmp: Bitmap): GdiNativeImage = GdiNativeImage(bmp.toBMP32())
 }
 
 open class Win32NativeImageFormatProvider : BaseNativeImageFormatProvider() {

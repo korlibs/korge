@@ -14,7 +14,7 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
 
 class HtmlNativeSoundProvider : NativeSoundProvider() {
-    override fun init() {
+    init {
         HtmlSimpleSound.ensureUnlockStart()
     }
 

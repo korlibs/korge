@@ -1,20 +1,24 @@
 package com.soywiz.korgw.awt
 
+import com.soywiz.kds.*
 import com.soywiz.kgl.*
 import com.soywiz.klock.*
 import com.soywiz.kmem.*
 import com.soywiz.korev.*
 import com.soywiz.korgw.*
+import com.soywiz.korgw.internal.MicroDynamic
 import com.soywiz.korgw.osx.*
 import com.soywiz.korgw.platform.*
 import com.soywiz.korgw.win32.*
 import com.soywiz.korgw.x11.*
+import com.soywiz.korim.awt.*
 import com.soywiz.korim.color.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korio.net.URL
 import com.soywiz.korio.util.*
+import com.soywiz.korma.geom.*
 import com.sun.jna.*
 import kotlinx.coroutines.*
 import java.awt.*
@@ -52,28 +56,45 @@ abstract class BaseAwtGameWindow(val config: GameWindowCreationConfig) : GameWin
     }
     val windowOrComponent get() = window ?: component
 
+    val Cursor.jvmCursor: java.awt.Cursor get() = java.awt.Cursor(when (this) {
+        Cursor.DEFAULT -> java.awt.Cursor.DEFAULT_CURSOR
+        Cursor.CROSSHAIR -> java.awt.Cursor.CROSSHAIR_CURSOR
+        Cursor.TEXT -> java.awt.Cursor.TEXT_CURSOR
+        Cursor.HAND -> java.awt.Cursor.HAND_CURSOR
+        Cursor.MOVE -> java.awt.Cursor.MOVE_CURSOR
+        Cursor.WAIT -> java.awt.Cursor.WAIT_CURSOR
+        Cursor.RESIZE_EAST -> java.awt.Cursor.E_RESIZE_CURSOR
+        Cursor.RESIZE_SOUTH -> java.awt.Cursor.S_RESIZE_CURSOR
+        Cursor.RESIZE_WEST -> java.awt.Cursor.W_RESIZE_CURSOR
+        Cursor.RESIZE_NORTH -> java.awt.Cursor.N_RESIZE_CURSOR
+        Cursor.RESIZE_NORTH_EAST -> java.awt.Cursor.NE_RESIZE_CURSOR
+        Cursor.RESIZE_NORTH_WEST -> java.awt.Cursor.NW_RESIZE_CURSOR
+        Cursor.RESIZE_SOUTH_EAST -> java.awt.Cursor.SE_RESIZE_CURSOR
+        Cursor.RESIZE_SOUTH_WEST -> java.awt.Cursor.SW_RESIZE_CURSOR
+        else -> java.awt.Cursor.DEFAULT_CURSOR
+    })
+
+    val CustomCursor.jvmCursor: java.awt.Cursor by extraPropertyThis {
+        val toolkit = Toolkit.getDefaultToolkit()
+        val size = toolkit.getBestCursorSize(bounds.width.toIntCeil(), bounds.height.toIntCeil())
+        val result = this.createBitmap(Size(size.width, size.height))
+        //println("BITMAP SIZE=${result.bitmap.size}, hotspot=${result.hotspot}")
+        val hotspotX = result.hotspot.x.toInt().coerceIn(0, result.bitmap.width - 1)
+        val hotspotY = result.hotspot.y.toInt().coerceIn(0, result.bitmap.height - 1)
+        toolkit.createCustomCursor(result.bitmap.toAwt(), java.awt.Point(hotspotX, hotspotY), name).also {
+            //println("CUSTOM CURSOR: $it")
+        }
+    }
+
     override var cursor: ICursor = Cursor.DEFAULT
         set(value) {
             if (field == value) return
             field = value
-            val awtCursor = when (value) {
-                Cursor.DEFAULT -> java.awt.Cursor.DEFAULT_CURSOR
-                Cursor.CROSSHAIR -> java.awt.Cursor.CROSSHAIR_CURSOR
-                Cursor.TEXT -> java.awt.Cursor.TEXT_CURSOR
-                Cursor.HAND -> java.awt.Cursor.HAND_CURSOR
-                Cursor.MOVE -> java.awt.Cursor.MOVE_CURSOR
-                Cursor.WAIT -> java.awt.Cursor.WAIT_CURSOR
-                Cursor.RESIZE_EAST -> java.awt.Cursor.E_RESIZE_CURSOR
-                Cursor.RESIZE_SOUTH -> java.awt.Cursor.S_RESIZE_CURSOR
-                Cursor.RESIZE_WEST -> java.awt.Cursor.W_RESIZE_CURSOR
-                Cursor.RESIZE_NORTH -> java.awt.Cursor.N_RESIZE_CURSOR
-                Cursor.RESIZE_NORTH_EAST -> java.awt.Cursor.NE_RESIZE_CURSOR
-                Cursor.RESIZE_NORTH_WEST -> java.awt.Cursor.NW_RESIZE_CURSOR
-                Cursor.RESIZE_SOUTH_EAST -> java.awt.Cursor.SE_RESIZE_CURSOR
-                Cursor.RESIZE_SOUTH_WEST -> java.awt.Cursor.SW_RESIZE_CURSOR
-                else -> java.awt.Cursor.DEFAULT_CURSOR
+            component.cursor = when (value) {
+                is Cursor -> value.jvmCursor
+                is CustomCursor -> value.jvmCursor
+                else -> java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR)
             }
-            component.cursor = java.awt.Cursor(awtCursor)
         }
 
     fun MenuItem?.toJMenuItem(): JComponent {
@@ -461,6 +482,7 @@ abstract class BaseAwtGameWindow(val config: GameWindowCreationConfig) : GameWin
                 }
                 val scrollDelta = e.preciseWheelRotation * osfactor
 
+                val isShiftDown = modifiers hasFlags MouseEvent.SHIFT_DOWN_MASK
                 dispatchMouseEvent(
                     type = ev,
                     id = 0,
@@ -468,11 +490,11 @@ abstract class BaseAwtGameWindow(val config: GameWindowCreationConfig) : GameWin
                     y = sy.toInt(),
                     button = button,
                     buttons = 0,
-                    scrollDeltaX = 0.0,
-                    scrollDeltaY = scrollDelta,
+                    scrollDeltaX = if (isShiftDown) scrollDelta else 0.0,
+                    scrollDeltaY = if (isShiftDown) 0.0 else scrollDelta,
                     scrollDeltaZ = 0.0,
                     scrollDeltaMode = com.soywiz.korev.MouseEvent.ScrollDeltaMode.PIXEL,
-                    isShiftDown = modifiers hasFlags MouseEvent.SHIFT_DOWN_MASK,
+                    isShiftDown = isShiftDown,
                     isCtrlDown = modifiers hasFlags MouseEvent.CTRL_DOWN_MASK,
                     isAltDown = modifiers hasFlags MouseEvent.ALT_DOWN_MASK,
                     isMetaDown = modifiers hasFlags MouseEvent.META_DOWN_MASK,
@@ -608,7 +630,15 @@ abstract class BaseAwtGameWindow(val config: GameWindowCreationConfig) : GameWin
             println("NOT Using DisplayLink")
         }
 
-        println("running: ${Thread.currentThread()}")
+        println("running: ${Thread.currentThread()}, fvsync=$fvsync")
+
+        if (OS.isMac) {
+            try {
+                registerGestureListener()
+            } catch (e: Throwable) {
+                e.printStackTrace()
+            }
+        }
 
         while (running) {
             if (fvsync) {
@@ -662,6 +692,82 @@ abstract class BaseAwtGameWindow(val config: GameWindowCreationConfig) : GameWin
         if (exitProcessOnExit) { // Don't do this since we might continue in the e2e test
             exitProcess(this.exitCode)
         }
+    }
+
+    private fun registerGestureListener() {
+        println("MacOS registering gesture listener...")
+
+        val gestureListener = java.lang.reflect.Proxy.newProxyInstance(
+            ClassLoader.getSystemClassLoader(),
+            arrayOf(
+                Class.forName("com.apple.eawt.event.GestureListener"),
+                Class.forName("com.apple.eawt.event.MagnificationListener"),
+                Class.forName("com.apple.eawt.event.RotationListener"),
+                Class.forName("com.apple.eawt.event.SwipeListener"),
+            )
+        ) { proxy, method, args ->
+            try {
+                when (method.name) {
+                    "magnify" -> {
+                        val magnification = MicroDynamic { args[0].invoke("getMagnification") } as Double
+                        //println("magnify: $magnification")
+                        queue {
+                            dispatch(gestureEvent.also {
+                                it.type = GestureEvent.Type.MAGNIFY
+                                it.id = 0
+                                it.amount = magnification
+                            })
+                        }
+                    }
+
+                    "rotate" -> {
+                        val rotation = MicroDynamic { args[0].invoke("getRotation") } as Double
+                        //println("rotate: $rotation")
+                        queue {
+                            dispatch(gestureEvent.also {
+                                it.type = GestureEvent.Type.ROTATE
+                                it.id = 0
+                                it.amount = rotation
+                            })
+                        }
+                    }
+
+                    "swipedUp", "swipedDown", "swipedLeft", "swipedRight" -> {
+                        queue {
+                            dispatch(gestureEvent.also {
+                                it.type = GestureEvent.Type.SWIPE
+                                it.id = 0
+                                it.amountX = 0.0
+                                it.amountY = 0.0
+                                when (method.name) {
+                                    "swipedUp" -> it.amountY = -1.0
+                                    "swipedDown" -> it.amountY = +1.0
+                                    "swipedLeft" -> it.amountX = -1.0
+                                    "swipedRight" -> it.amountX = +1.0
+                                }
+                            })
+                        }
+                    }
+
+                    else -> {
+                        //println("gestureListener: $method, ${args.toList()}")
+                    }
+                }
+            } catch (e: Throwable) {
+                e.printStackTrace()
+            }
+            MicroDynamic.invokeCatching { args[0].invoke("consume") }
+        }
+
+        MicroDynamic.invokeCatching {
+            val clazz = getClass("com.apple.eawt.event.GestureUtilities")
+            println(" -- GestureUtilities=$clazz")
+            clazz.invoke("addGestureListenerTo", contentComponent, gestureListener)
+        }
+
+        //val value = (contentComponent as JComponent).getClientProperty("com.apple.eawt.event.internalGestureHandler");
+        //println("value $value");
+        //GestureUtilities.addGestureListenerTo(p, ga);
     }
 
     override fun computeDisplayRefreshRate(): Int {

@@ -1,7 +1,6 @@
 package com.soywiz.korge.view
 
-import com.soywiz.korge.render.RenderContext
-import com.soywiz.korge.render.RenderContext2D
+import com.soywiz.korge.render.*
 
 abstract class CustomContextRenderizableView(width: Double, height: Double) : RectBase() {
     override var width: Double = width; set(v) { field = v; dirtyVertices = true }
@@ -12,14 +11,10 @@ abstract class CustomContextRenderizableView(width: Double, height: Double) : Re
 
     final override fun renderInternal(ctx: RenderContext) {
         if (!visible) return
-        ctx.useCtx2d { context ->
-            this.ctx = ctx
-            ctx2d = context
-            context.keep {
-                context.blendMode = blendMode
-                context.setMatrix(globalMatrix)
-                renderer(context, width, height)
-            }
+        this.ctx = ctx
+        renderCtx2d(ctx) { ctx2d ->
+            this.ctx2d = ctx2d
+            renderer(ctx2d, width, height)
         }
     }
 

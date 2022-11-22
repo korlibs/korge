@@ -22,6 +22,13 @@ fun <T> runBlockingNoSuspensionsNullable(callback: suspend () -> T): T {
 /**
  * Allows to execute a suspendable block as long as you can ensure no suspending will happen at all..
  */
+fun <T: Any, R : Any> T.noSuspend(callback: suspend T.() -> R): R {
+    return runBlockingNoSuspensions { callback(this@noSuspend) }
+}
+
+/**
+ * Allows to execute a suspendable block as long as you can ensure no suspending will happen at all..
+ */
 @OptIn(InternalCoroutinesApi::class)
 fun <T : Any> runBlockingNoSuspensions(callback: suspend () -> T): T {
 	//TODO("runBlockingNoSuspensions not supported yet!")

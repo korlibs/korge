@@ -35,8 +35,8 @@ fun DateFormat.parseDate(str: String): Date = parse(str).local.date
 
 fun DateFormat.parseUtc(str: String): DateTime = parse(str).utc
 
-fun DateFormat.format(date: Double): String = format(DateTime.fromUnix(date))
-fun DateFormat.format(date: Long): String = format(DateTime.fromUnix(date))
+fun DateFormat.format(date: Double): String = format(DateTime.fromUnixMillis(date))
+fun DateFormat.format(date: Long): String = format(DateTime.fromUnixMillis(date))
 
 fun DateFormat.format(dd: DateTime): String = format(dd.toOffsetUnadjusted(0.minutes))
 fun DateFormat.format(dd: Date): String = format(dd.dateTimeDayStart)

@@ -1,5 +1,6 @@
 package com.soywiz.korio.compression
 
+import com.soywiz.kmem.Platform
 import com.soywiz.korio.async.suspendTest
 import com.soywiz.korio.compression.deflate.Deflate
 import com.soywiz.korio.compression.deflate.DeflatePortable
@@ -50,6 +51,11 @@ class MyInflaterTest {
 
 	@Test
 	fun test3b() {
+        // On Windows new memory manager, there is a crash here in tests in CI. Happens frequently but it is not consistently.
+        // - https://youtrack.jetbrains.com/issue/KT-52651/Native-korio-tests-crash-on-Windows-with-new-memory-manager-enabled
+        // - https://discord.com/channels/728582275884908604/728616376910217258/1011220692202700841
+        if (Platform.os.isWindows && Platform.runtime.isNative && Platform.hasMultithreadedSharedHeap) return
+
 		val compressed = "ED C2 31 0D 00 00 00 02 A0 4A 06 B2 7F 0E 53 F8 31 68 0A 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 9C 0D".unhexIgnoreSpaces
 		val result = compressed.uncompress(Deflate)
 		for (n in 0 until 1000) {

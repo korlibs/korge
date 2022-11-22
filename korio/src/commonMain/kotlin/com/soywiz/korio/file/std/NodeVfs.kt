@@ -2,26 +2,12 @@
 
 package com.soywiz.korio.file.std
 
-import com.soywiz.kds.iterators.fastForEach
-import com.soywiz.korio.async.Signal
-import com.soywiz.korio.file.PathInfo
-import com.soywiz.korio.file.Vfs
-import com.soywiz.korio.file.VfsFile
-import com.soywiz.korio.file.VfsOpenMode
-import com.soywiz.korio.file.VfsStat
-import com.soywiz.korio.file.baseName
-import com.soywiz.korio.file.folder
-import com.soywiz.korio.file.parts
-import com.soywiz.korio.file.pathInfo
-import com.soywiz.korio.lang.Closeable
-import com.soywiz.korio.lang.FileNotFoundException
-import com.soywiz.korio.stream.AsyncStream
-import com.soywiz.korio.stream.AsyncStreamBase
-import com.soywiz.korio.stream.MemorySyncStream
-import com.soywiz.korio.stream.SyncStreamBase
-import com.soywiz.korio.stream.toAsyncStream
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
+import com.soywiz.kds.iterators.*
+import com.soywiz.korio.async.*
+import com.soywiz.korio.file.*
+import com.soywiz.korio.lang.*
+import com.soywiz.korio.stream.*
+import kotlinx.coroutines.flow.*
 
 open class NodeVfs(val caseSensitive: Boolean = true) : Vfs() {
 	val events = Signal<FileEvent>()
@@ -75,6 +61,7 @@ open class NodeVfs(val caseSensitive: Boolean = true) : Vfs() {
 			null
 		}
 
+        fun accessOrNull(path: String): Node? = getOrNull(path)
 		fun access(path: String, createFolders: Boolean = false): Node {
 			var node = if (path.startsWith('/')) root else this
 			path.pathInfo.parts().fastForEach { part ->
@@ -164,7 +151,8 @@ open class NodeVfs(val caseSensitive: Boolean = true) : Vfs() {
 
 	override suspend fun mkdir(path: String, attributes: List<Attribute>): Boolean {
 		val pathInfo = PathInfo(path)
-		val out = rootNode.access(pathInfo.folder).mkdir(pathInfo.baseName)
+        val parentFolder = rootNode.accessOrNull(pathInfo.folder) ?: return false
+		val out = parentFolder.mkdir(pathInfo.baseName)
 		events(FileEvent(FileEvent.Kind.CREATED, this[path]))
 		return out
 	}

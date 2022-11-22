@@ -89,7 +89,13 @@ open class NativeSystemFontProvider {
         metrics.maxWidth = size
     }
 
-    open fun getSystemFontGlyphMetrics(systemFont: SystemFont, size: Double, codePoint: Int, metrics: GlyphMetrics) {
+    open fun getSystemFontGlyphMetrics(
+        systemFont: SystemFont,
+        size: Double,
+        codePoint: Int,
+        metrics: GlyphMetrics,
+        reader: WStringReader? = null
+    ) {
         metrics.existing = false
         metrics.bounds.setTo(0.0, 0.0, size, size)
         metrics.xadvance = size
@@ -229,9 +235,10 @@ abstract class TtfNativeSystemFontProvider() : NativeSystemFontProvider() {
         systemFont: SystemFont,
         size: Double,
         codePoint: Int,
-        metrics: GlyphMetrics
+        metrics: GlyphMetrics,
+        reader: WStringReader?,
     ) {
-        ttf(systemFont).getGlyphMetrics(size, codePoint, metrics)
+        ttf(systemFont).getGlyphMetrics(size, codePoint, metrics, reader)
     }
 
     override fun getSystemFontKerning(

@@ -1,6 +1,6 @@
 package com.soywiz.korio.async
 
-import com.soywiz.korio.concurrent.lock.Lock
+import com.soywiz.kds.lock.NonRecursiveLock
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
@@ -103,7 +103,7 @@ class AsyncThread() : AsyncInvokable {
  * This class is thread-safe.
  */
 class AsyncThread2 : AsyncInvokable {
-	private val lock = Lock()
+	private val lock = NonRecursiveLock()
 	private var lastPromise: Deferred<*> = CompletableDeferred(Unit)
 
 	suspend fun await() {
@@ -141,7 +141,7 @@ class NamedAsyncThreads(val threadFactory: () -> AsyncInvokable = { AsyncThread2
 	class AsyncJob(val thread: AsyncInvokable) {
 		var count = 0
 	}
-	private val lock = Lock()
+	private val lock = NonRecursiveLock()
 	private val jobs = LinkedHashMap<String, AsyncJob>()
 
 	internal fun threadsCount() = jobs.size

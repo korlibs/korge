@@ -39,7 +39,11 @@ value class DateTime(
             second: Int = 0,
             milliseconds: Int = 0
         ): DateTime = DateTime(
-            DateTime.dateToMillis(year.year, month.index1, day) + DateTime.timeToMillis(hour, minute, second) + milliseconds
+            DateTime.dateToMillis(year.year, month.index1, day) + DateTime.timeToMillis(
+                hour,
+                minute,
+                second
+            ) + milliseconds
         )
 
         /**
@@ -47,15 +51,15 @@ value class DateTime(
          *
          * This might throw a [DateException] on invalid dates.
          */
-		operator fun invoke(
-			date: Date,
-			time: Time = Time(0.milliseconds)
-		): DateTime = DateTime(
-			date.year, date.month1, date.day,
-			time.hour, time.minute, time.second, time.millisecond
-		)
+        operator fun invoke(
+            date: Date,
+            time: Time = Time(0.milliseconds)
+        ): DateTime = DateTime(
+            date.year, date.month1, date.day,
+            time.hour, time.minute, time.second, time.millisecond
+        )
 
-		/**
+        /**
          * Constructs a new [DateTime] from date and time information.
          *
          * This might throw a [DateException] on invalid dates.
@@ -69,7 +73,11 @@ value class DateTime(
             second: Int = 0,
             milliseconds: Int = 0
         ): DateTime = DateTime(
-            DateTime.dateToMillis(year, month.index1, day) + DateTime.timeToMillis(hour, minute, second) + milliseconds
+            DateTime.dateToMillis(year, month.index1, day) + DateTime.timeToMillis(
+                hour,
+                minute,
+                second
+            ) + milliseconds
         )
 
         /**
@@ -86,7 +94,11 @@ value class DateTime(
             second: Int = 0,
             milliseconds: Int = 0
         ): DateTime = DateTime(
-            DateTime.dateToMillis(year, month, day) + DateTime.timeToMillis(hour, minute, second) + milliseconds
+            DateTime.dateToMillis(year, month, day) + DateTime.timeToMillis(
+                hour,
+                minute,
+                second
+            ) + milliseconds
         )
 
         /**
@@ -170,19 +182,36 @@ value class DateTime(
             milliseconds: Int = 0
         ): DateTime {
             return DateTime(
-                DateTime.dateToMillisUnchecked(year, month, day) + DateTime.timeToMillisUnchecked(hour, minute, second) + milliseconds
+                DateTime.dateToMillisUnchecked(year, month, day) + DateTime.timeToMillisUnchecked(
+                    hour,
+                    minute,
+                    second
+                ) + milliseconds
             )
         }
 
         /** Constructs a new [DateTime] from a [unix] timestamp in milliseconds. */
-        operator fun invoke(unix: Long) = fromUnix(unix)
+        operator fun invoke(unix: Long) = fromUnixMillis(unix)
         /** Constructs a new [DateTime] from a [unix] timestamp in milliseconds. */
-        operator fun invoke(unix: Double) = fromUnix(unix)
+        operator fun invoke(unix: Double) = fromUnixMillis(unix)
 
         /** Constructs a new [DateTime] from a [unix] timestamp in milliseconds. */
-        fun fromUnix(unix: Double): DateTime = DateTime(unix)
+        @Deprecated(
+            "Please use fromUnixMillis instead. To be deleted in 3.1.",
+            ReplaceWith("DateTime.fromUnixMillis(unix)")
+        )
+        fun fromUnix(unix: Double): DateTime = fromUnixMillis(unix)
         /** Constructs a new [DateTime] from a [unix] timestamp in milliseconds. */
-        fun fromUnix(unix: Long): DateTime = fromUnix(unix.toDouble())
+        @Deprecated(
+            "Please use fromUnixMillis instead. To be deleted in 3.1.",
+            ReplaceWith("DateTime.fromUnixMillis(unix)")
+        )
+        fun fromUnix(unix: Long): DateTime = fromUnixMillis(unix)
+
+        /** Constructs a new [DateTime] from a [unix] timestamp in milliseconds. */
+        fun fromUnixMillis(unix: Double): DateTime = DateTime(unix)
+        /** Constructs a new [DateTime] from a [unix] timestamp in milliseconds. */
+        fun fromUnixMillis(unix: Long): DateTime = fromUnixMillis(unix.toDouble())
 
         /** Constructs a new [DateTime] by parsing the [str] using standard date formats. */
         fun fromString(str: String) = DateFormat.parse(str)
@@ -195,11 +224,25 @@ value class DateTime(
         fun nowLocal(): DateTimeTz = DateTimeTz.nowLocal()
 
         /** Returns the total milliseconds since unix epoch. The same as [nowUnixLong] but as double. To prevent allocation on targets without Long support. */
-        fun nowUnix(): Double = KlockInternal.currentTime
+        @Deprecated(
+            "Please use nowUnixMillis instead. To be deleted in 3.1.",
+            ReplaceWith("DateTime.nowUnixMillis()")
+        )
+        fun nowUnix(): Double = nowUnixMillis()
         /** Returns the total milliseconds since unix epoch. */
-        fun nowUnixLong(): Long = KlockInternal.currentTime.toLong()
+        @Deprecated(
+            "Please use nowUnixMillisLong instead. To be deleted in 3.1.",
+            ReplaceWith("DateTime.nowUnixMillisLong()")
+        )
+        fun nowUnixLong(): Long = nowUnixMillisLong()
 
-        internal const val EPOCH_INTERNAL_MILLIS = 62135596800000.0 // Millis since 00-00-0000 00:00 UTC to UNIX EPOCH
+        /** Returns the total milliseconds since unix epoch. The same as [nowUnixMillisLong] but as double. To prevent allocation on targets without Long support. */
+        fun nowUnixMillis(): Double = KlockInternal.currentTime
+        /** Returns the total milliseconds since unix epoch. */
+        fun nowUnixMillisLong(): Long = KlockInternal.currentTime.toLong()
+
+        internal const val EPOCH_INTERNAL_MILLIS =
+            62135596800000.0 // Millis since 00-00-0000 00:00 UTC to UNIX EPOCH
 
         internal enum class DatePart { Year, DayOfYear, Month, Day }
 
@@ -238,7 +281,8 @@ value class DateTime(
             if (part == DatePart.DayOfYear) return dayOfYear
 
             // Month
-            val month = Month.fromDayOfYear(dayOfYear, isLeap) ?: error("Invalid dayOfYear=$dayOfYear, isLeap=$isLeap")
+            val month = Month.fromDayOfYear(dayOfYear, isLeap)
+                ?: error("Invalid dayOfYear=$dayOfYear, isLeap=$isLeap")
             if (part == DatePart.Month) return month.index1
 
             // Day
@@ -427,8 +471,10 @@ value class DateTime(
     override fun toString(): String = "DateTime($unixMillisLong)"
 }
 
-fun max(a: DateTime, b: DateTime): DateTime = DateTime.fromUnix(max(a.unixMillis, b.unixMillis))
-fun min(a: DateTime, b: DateTime): DateTime = DateTime.fromUnix(min(a.unixMillis, b.unixMillis))
+fun max(a: DateTime, b: DateTime): DateTime =
+    DateTime.fromUnixMillis(max(a.unixMillis, b.unixMillis))
+fun min(a: DateTime, b: DateTime): DateTime =
+    DateTime.fromUnixMillis(min(a.unixMillis, b.unixMillis))
 fun DateTime.clamp(min: DateTime, max: DateTime): DateTime = when {
     this < min -> min
     this > max -> max

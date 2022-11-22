@@ -1,7 +1,11 @@
 createProgram() = 1001
 getString(35724) = 
 createShader(35632) = 2001
-shaderSource(2001, """uniform float u_ProgramType;
+shaderSource(2001, """#extension GL_OES_standard_derivatives : enable
+#ifdef GL_ES
+precision mediump float;
+#endif
+uniform float u_ProgramType;
 uniform vec4 u_Color;
 uniform sampler2D u_Tex;
 uniform mat4 u_Transform;
@@ -72,7 +76,11 @@ compileShader(2001)
 getShaderiv(2001, 35713, [1])
 getError() = 0
 createShader(35633) = 2002
-shaderSource(2002, """attribute vec2 a_Pos;
+shaderSource(2002, """#extension GL_OES_standard_derivatives : enable
+#ifdef GL_ES
+precision mediump float;
+#endif
+attribute vec2 a_Pos;
 attribute float a_Dist;
 attribute float a_MaxDist;
 uniform mat4 u_ProjMat;

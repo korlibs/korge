@@ -1,7 +1,7 @@
 package com.soywiz.korgw.awt
 
 import com.soywiz.korev.*
-import com.soywiz.korgw.GameWindowCreationConfig
+import com.soywiz.korgw.*
 import com.soywiz.korgw.internal.*
 import com.soywiz.korgw.internal.MicroDynamic.invoke
 import com.soywiz.korgw.platform.*
@@ -162,7 +162,11 @@ class AwtGameWindow(checkGl: Boolean, logGl: Boolean, config: GameWindowCreation
         // https://docs.oracle.com/javase/tutorial/extra/fullscreen/rendering.html
         // https://docs.oracle.com/javase/tutorial/extra/fullscreen/doublebuf.html
         override fun paint(g: Graphics) {
-            framePaint(g)
+            try {
+                framePaint(g)
+            } catch (e: Throwable) {
+                e.printStackTrace()
+            }
         }
     }
 
@@ -184,17 +188,24 @@ class AwtGameWindow(checkGl: Boolean, logGl: Boolean, config: GameWindowCreation
         }
 
     val debugFrame = JFrame("Debug").apply {
-        this.defaultCloseOperation = WindowConstants.DISPOSE_ON_CLOSE
-        this.setSize(256, 256)
-        this.type = Window.Type.UTILITY
-        //focusableWindowState = false
+        try {
+            this.defaultCloseOperation = WindowConstants.DISPOSE_ON_CLOSE
+            this.setSize(400, 256)
+            this.type = Window.Type.UTILITY
+            this.isAlwaysOnTop = true
+            //this.isUndecorated = true
+            //this.opacity = 0.5f
+            //focusableWindowState = false
+        } catch (e: Throwable) {
+            e.printStackTrace()
+        }
     }
 
     override val debugComponent: Any? = debugFrame
 
     private fun synchronizeDebugFrameCoordinates() {
         val frameBounds = RectangleInt(frame.location.x, frame.location.y, frame.size.width, frame.size.height)
-        debugFrame.setLocation(frameBounds.right, frameBounds.top)
+        debugFrame.setLocation(frameBounds.right - debugFrame.width, frameBounds.top)
         debugFrame.setSize(debugFrame.width.coerceAtLeast(64), frameBounds.height)
     }
 

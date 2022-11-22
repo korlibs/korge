@@ -17,8 +17,7 @@ interface DynApi {
     suspend fun suspendInvoke(instance: Any?, key: String, args: Array<out Any?>): Any? = invoke(instance, key, args)
 }
 
-@ThreadLocal
-var defaultDynApi: DynApi = DynamicInternal
+val defaultDynApi: DynApi get() = DynamicInternal
 
 // @TODO: We should be able to plug-in a kotlinx-serialization version for this
 @ThreadLocal

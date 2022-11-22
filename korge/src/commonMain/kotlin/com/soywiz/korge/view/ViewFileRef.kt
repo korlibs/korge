@@ -1,8 +1,8 @@
 package com.soywiz.korge.view
 
-import com.soywiz.korge.render.RenderContext
-import com.soywiz.korio.async.launchImmediately
-import com.soywiz.korio.file.VfsFile
+import com.soywiz.korge.render.*
+import com.soywiz.korio.async.*
+import com.soywiz.korio.file.*
 
 interface ViewFileRef {
     var sourceTreeLoaded: Boolean

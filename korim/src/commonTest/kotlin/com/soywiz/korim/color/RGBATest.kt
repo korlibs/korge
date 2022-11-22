@@ -83,4 +83,9 @@ class RGBATest {
         bmp.updateColors { if (it == Colors.BLACK) Colors.TRANSPARENT_BLACK else it }
         //println(bmp)
     }
+
+    @Test
+    fun testRgbaArray() {
+        assertEquals(listOf(Colors.RED, Colors.GREEN), RgbaArray(Colors.RED, Colors.GREEN).toList())
+    }
 }

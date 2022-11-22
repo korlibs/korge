@@ -1,6 +1,7 @@
 package com.soywiz.korma.geom.ds
 
 import com.soywiz.kds.FastArrayList
+import com.soywiz.kds.ds.*
 import com.soywiz.kds.fastArrayListOf
 import com.soywiz.korma.geom.IRectangle
 import com.soywiz.korma.geom.Ray

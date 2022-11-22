@@ -1,18 +1,15 @@
 package samples
 
-import com.soywiz.klock.milliseconds
-import com.soywiz.kmem.clamp
-import com.soywiz.korev.Key
-import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.tiled.tiledMapView
-import com.soywiz.korge.view.SContainer
-import com.soywiz.korge.view.addUpdater
-import com.soywiz.korge.view.camera
-import com.soywiz.korge.view.fixedSizeContainer
-import com.soywiz.korge.view.position
-import com.soywiz.korim.tiles.tiled.readTiledMap
-import com.soywiz.korio.file.std.resourcesVfs
-import kotlin.math.pow
+import com.soywiz.klock.*
+import com.soywiz.kmem.*
+import com.soywiz.korev.*
+import com.soywiz.korge.input.*
+import com.soywiz.korge.scene.*
+import com.soywiz.korge.tiled.*
+import com.soywiz.korge.view.*
+import com.soywiz.korim.tiles.tiled.*
+import com.soywiz.korio.file.std.*
+import kotlin.math.*
 
 class MainTilemapWithScroll : Scene() {
     override suspend fun SContainer.sceneMain() {
@@ -35,6 +32,14 @@ class MainTilemapWithScroll : Scene() {
             //		}
             //	}
             //}
+
+            onMouseDrag {
+                if (!it.start && !it.end) {
+                    dx += it.deltaDx
+                    dy += it.deltaDy
+                }
+            }
+
             addUpdater {
                 //val scale = 1.0 / (it / 16.666666.hrMilliseconds)
                 val scale = if (it == 0.0.milliseconds) 0.0 else (it / 16.666666.milliseconds)

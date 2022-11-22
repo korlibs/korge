@@ -1,6 +1,6 @@
 package com.soywiz.korim.bitmap
 
-import com.soywiz.kmem.divCeil
+import com.soywiz.kmem.*
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.color.RgbaArray
@@ -11,6 +11,20 @@ class Bitmap1(
 	data: ByteArray = ByteArray((width * height) divCeil 8),
 	palette: RgbaArray = RgbaArray(intArrayOf(Colors.TRANSPARENT_BLACK.value, Colors.WHITE.value))
 ) : BitmapIndexed(1, width, height, data, palette) {
+    companion object {
+        fun fromString(str: String, transform: (Char) -> Boolean = { it != '.' && it != ' ' }): Bitmap1 {
+            val lines = str.split('\n')
+            val height = lines.size
+            val width = lines.maxOf { it.length }
+            val bitmap = Bitmap1(width, height)
+            for (y in 0 until height) {
+                for (x in 0 until width) {
+                    bitmap[x, y] = transform(lines[y].getOrElse(x) { '.' }).toInt()
+                }
+            }
+            return bitmap
+        }
+    }
 	override fun createWithThisFormat(width: Int, height: Int): Bitmap = Bitmap1(width, height, palette = palette)
 }
 

@@ -1,20 +1,12 @@
 package com.soywiz.korge.view
 
-import com.soywiz.korge.debug.UiTextEditableValue
-import com.soywiz.korge.debug.uiCollapsibleSection
-import com.soywiz.korge.debug.uiEditableValue
-import com.soywiz.korge.render.RenderContext
-import com.soywiz.korge.render.TexturedVertexArray
+import com.soywiz.korge.render.*
+import com.soywiz.korge.view.property.*
 import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.Colors
-import com.soywiz.korio.file.VfsFile
-import com.soywiz.korio.file.baseName
-import com.soywiz.korma.geom.Matrix
-import com.soywiz.korma.geom.Rectangle
-import com.soywiz.korma.geom.RectangleInt
-import com.soywiz.korma.geom.setTo
-import com.soywiz.korui.UiContainer
-import kotlinx.coroutines.CancellationException
+import com.soywiz.korim.color.*
+import com.soywiz.korio.file.*
+import com.soywiz.korma.geom.*
+import kotlinx.coroutines.*
 
 inline fun Container.ninePatch(
 	ninePatch: NinePatchBmpSlice?, width: Double = ninePatch?.dwidth ?: 16.0, height: Double = ninePatch?.dheight ?: 16.0,
@@ -23,10 +15,29 @@ inline fun Container.ninePatch(
 
 class NinePatchEx(
 	ninePatch: NinePatchBmpSlice?,
-	override var width: Double = ninePatch?.width?.toDouble() ?: 16.0,
-	override var height: Double = ninePatch?.height?.toDouble() ?: 16.0
+	width: Double = ninePatch?.width?.toDouble() ?: 16.0,
+	height: Double = ninePatch?.height?.toDouble() ?: 16.0
 ) : View(), ViewFileRef by ViewFileRef.Mixin() {
+
+    override var width: Double = width
+        set(value) {
+            if (field == value) return
+            field = value
+            invalidateRender()
+        }
+    override var height: Double = height
+        set(value) {
+            if (field == value) return
+            field = value
+            invalidateRender()
+        }
+
     var ninePatch: NinePatchBmpSlice? = ninePatch
+        set(value) {
+            if (field === value) return
+            field = value
+            invalidateRender()
+        }
 	var smoothing = true
 
 	private val bounds = RectangleInt()
@@ -117,12 +128,8 @@ class NinePatchEx(
         }
     }
 
-    override fun buildDebugComponent(views: Views, container: UiContainer) {
-        container.uiCollapsibleSection("9-PatchImage") {
-            uiEditableValue(::sourceFile, kind = UiTextEditableValue.Kind.FILE(views.currentVfs) {
-                it.baseName.endsWith(".9.png")
-            })
-        }
-        super.buildDebugComponent(views, container)
-    }
+    @Suppress("unused")
+    @ViewProperty
+    @ViewPropertyFileRef(["9.png"])
+    private var imageSourceFile: String? by this::sourceFile
 }

@@ -1,18 +1,18 @@
 package com.soywiz.korge.view
 
-import com.soywiz.kds.FastArrayList
-import com.soywiz.kds.iterators.fastForEach
-import com.soywiz.kmem.clamp
-import com.soywiz.korge.internal.KorgeInternal
-import com.soywiz.korge.internal.KorgeUntested
-import com.soywiz.korge.render.RenderContext
-import com.soywiz.korma.geom.BoundsBuilder
-import com.soywiz.korma.geom.Matrix
-import com.soywiz.korma.geom.Rectangle
+import com.soywiz.kds.*
+import com.soywiz.kds.iterators.*
+import com.soywiz.kmem.*
+import com.soywiz.korev.*
+import com.soywiz.korge.component.*
+import com.soywiz.korge.internal.*
+import com.soywiz.korge.render.*
+import com.soywiz.korge.view.property.*
+import com.soywiz.korma.geom.*
 
 /** Creates a new [Container], allowing to configure with [callback], and attaches the newly created container to the receiver this [Container] */
-inline fun Container.container(callback: @ViewDslMarker Container.() -> Unit = {}) =
-    Container().addTo(this, callback)
+inline fun Container.container(cull: Boolean = false, callback: @ViewDslMarker Container.() -> Unit = {}) =
+    Container(cull).addTo(this, callback)
 
 // For Flash compatibility
 //open class Sprite : Container()
@@ -29,7 +29,10 @@ inline fun Container.container(callback: @ViewDslMarker Container.() -> Unit = {
  * You can add new children to this container by calling [addChild] or [addChildAt].
  */
 @OptIn(KorgeInternal::class)
-open class Container : View(true) {
+open class Container(
+    @property:ViewProperty
+    var cull: Boolean = false
+) : View(true) {
     private val __children: FastArrayList<View> = FastArrayList()
 
     /**
@@ -144,26 +147,10 @@ open class Container : View(true) {
         }
     }
 
-    /**
-     * Adds the [view] [View] as a child at a specific [index].
-     *
-     * Remarks: if [index] is outside bounds 0..[numChildren], it will be clamped to the nearest valid value.
-     */
-    fun addChildAt(view: View, index: Int) {
-        view.parent?.invalidateZIndexChildren()
-        view.removeFromParent()
-        val aindex = index.clamp(0, this.numChildren)
-        view.index = aindex
-        val children = __children
-        children.add(aindex, view)
-        for (n in aindex + 1 until children.size) children[n].index = n // Update other indices
-        view.parent = this
-        view.invalidate()
-        onChildAdded(view)
-        invalidateZIndexChildren()
+    protected open fun onChildAdded(view: View) {
     }
 
-    protected open fun onChildAdded(view: View) {
+    open fun onChildChangedSize(view: View) {
     }
 
     /**
@@ -189,25 +176,6 @@ open class Container : View(true) {
     @KorgeUntested
     fun getChildByName(name: String): View? = __children.firstOrNull { it.name == name }
 
-    /**
-     * Removes the specified [view] from this container.
-     *
-     * Returns true if the child was removed from this container.
-     * Returns false, if nothing happened.
-     *
-     * Remarks: If the parent of [view] is not this container, this function doesn't do anything.
-     */
-    fun removeChild(view: View?): Boolean {
-        //if (view == null) return false
-        if (view?.parent !== this) return false
-        for (i in view.index + 1 until numChildren) __children[i].index--
-        __children.removeAt(view.index)
-        view.parent = null
-        view.index = -1
-        invalidateZIndexChildren()
-        return true
-    }
-
     fun removeChildAt(index: Int): Boolean =
         removeChild(getChildAtOrNull(index))
 
@@ -215,20 +183,6 @@ open class Container : View(true) {
     fun removeChildAt(index: Int, count: Int) {
         repeat(count) { removeChildAt(index) }
         invalidateZIndexChildren()
-    }
-
-    fun replaceChild(old: View, new: View): Boolean {
-        if (old === new) return false
-        if (old.parent != this) return false
-        invalidateZIndexChildren()
-        new.parent?.__children?.remove(new)
-        old.parent!!.__children[old.index] = new
-        new.index = old.index
-        new.parent = old.parent
-        old.parent = null
-        new.invalidate()
-        old.index = -1
-        return true
     }
 
     // @TODO: Optimize
@@ -319,8 +273,32 @@ open class Container : View(true) {
     }
 
     open fun renderChildrenInternal(ctx: RenderContext) {
-        fastForEachChildRender { child: View ->
-            child.render(ctx)
+        //fastForEachChildRender { child: View ->
+        //    child.render(ctx)
+        //}
+        if (!cull) {
+            fastForEachChildRender { child: View ->
+                child.render(ctx)
+            }
+            return
+        }
+        //currentVirtualRect.setBounds(ctx.virtualLeft, ctx.virtualTop, ctx.virtualRight, ctx.virtualBottom)
+        val clippingContainer = findFirstAscendant { (it is FixedSizeContainer) && it.clip } as? FixedSizeContainer?
+
+        //val bounds = this.getLocalBounds(Rectangle())
+        var renderedCount = 0
+        var culledCount = 0
+        Rectangle.POOL.alloc2 { tempRect2, tempRect ->
+            val bounds = clippingContainer?.getGlobalBounds(tempRect2)
+            fastForEachChildRender { child: View ->
+                //if (bounds.intersects(child.getLocalBoundsOptimized(includeFilters = true))) {
+                if (bounds == null || bounds.intersects(child.getGlobalBounds(tempRect, includeFilters = true))) {
+                    child.render(ctx)
+                    renderedCount++
+                } else {
+                    culledCount++
+                }
+            }
         }
     }
 
@@ -406,12 +384,109 @@ open class Container : View(true) {
     // @TODO: Instead of resort everytime that something changes, let's keep an index in the zIndex collection
     @PublishedApi internal fun invalidateZIndexChildren() {
         this.__childrenZIndexValid = false
+        invalidateContainer()
     }
 
     // @TODO: Instead of resort everytime that something changes, let's keep an index in the zIndex collection
     @PublishedApi internal fun updatedChildZIndex(child: View, oldZIndex: Double, newZIndex: Double) {
         if (child.parent != this) return
         __childrenZIndexValidOrder = false
+        invalidateContainer()
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Base methods that update the collection
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    protected fun invalidateContainer() {
+        stage?.views?.invalidatedView(this)
+    }
+
+    /**
+     * Adds the [view] [View] as a child at a specific [index].
+     *
+     * Remarks: if [index] is outside bounds 0..[numChildren], it will be clamped to the nearest valid value.
+     */
+    fun addChildAt(view: View, index: Int) {
+        view.parent?.invalidateZIndexChildren()
+        view.removeFromParent()
+        val aindex = index.clamp(0, this.numChildren)
+        view.index = aindex
+        val children = __children
+        children.add(aindex, view)
+        for (n in aindex + 1 until children.size) children[n].index = n // Update other indices
+        view.parent = this
+        view.invalidate()
+        onChildAdded(view)
+        invalidateZIndexChildren()
+        invalidateContainer()
+        __updateChildListenerCount(view, add = true)
+    }
+
+    /**
+     * Removes the specified [view] from this container.
+     *
+     * Returns true if the child was removed from this container.
+     * Returns false, if nothing happened.
+     *
+     * Remarks: If the parent of [view] is not this container, this function doesn't do anything.
+     */
+    fun removeChild(view: View?): Boolean {
+        //if (view == null) return false
+        if (view?.parent !== this) return false
+        for (i in view.index + 1 until numChildren) __children[i].index--
+        __children.removeAt(view.index)
+        view.parent = null
+        view.index = -1
+        invalidateZIndexChildren()
+        __updateChildListenerCount(view, add = false)
+        invalidateContainer()
+        return true
+    }
+
+    /**
+     * Replaces this child [old] with a [new] view.
+     *
+     * [old] must be part of this Container
+     */
+    fun replaceChild(old: View, new: View): Boolean {
+        if (old === new) return false
+        if (old.parent != this) return false
+
+        __updateChildListenerCount(old, add = false)
+        if (new.parent !== this) __updateChildListenerCount(new, add = true)
+
+        invalidateContainer()
+        invalidateZIndexChildren()
+        new.parent?.__children?.remove(new)
+        old.parent!!.__children[old.index] = new
+        new.index = old.index
+        new.parent = old.parent
+        old.parent = null
+        new.invalidate()
+        old.index = -1
+        return true
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Event Listeners
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //override fun <T : TEvent<T>> dispatchChildren(type: EventType<T>, event: T, result: EventResult?) {
+    //    // @TODO: What if we mutate the list now
+    //    fastForEachChild {
+    //        val childEventListenerCount = it.onEventCount(type)
+    //        if (childEventListenerCount > 0) {
+    //            it.dispatch(type, event, result)
+    //        }
+    //    }
+    //}
+
+    override fun <T : Component> getComponentOfTypeRecursiveChildren(type: ComponentType<T>, out: FastArrayList<T>, results: EventResult?) {
+        fastForEachChild {
+            val childEventListenerCount = it.getComponentCountInDescendants(type)
+            if (childEventListenerCount > 0) {
+                it.getComponentOfTypeRecursive(type, out, results)
+            }
+        }
     }
 }
 

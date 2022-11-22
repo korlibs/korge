@@ -1,7 +1,7 @@
 package samples.connect4
 
 import com.soywiz.kds.Array2
-import com.soywiz.korge.animate.animate
+import com.soywiz.korge.animate.*
 import com.soywiz.korge.input.mouse
 import com.soywiz.korge.scene.ScaledScene
 import com.soywiz.korge.tween.get
@@ -14,6 +14,7 @@ import com.soywiz.korge.view.container
 import com.soywiz.korge.view.image
 import com.soywiz.korge.view.position
 import com.soywiz.korge.view.solidRect
+import com.soywiz.korge.view.tween.*
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.bitmap.context2d
 import com.soywiz.korim.color.ColorAdd
@@ -78,7 +79,7 @@ class MainConnect4 : ScaledScene(448, 384) {
         var gameFinished = false
 
         suspend fun drop(chip: Chip, column: Int) {
-            animate(speed = 128.0) {
+            animate(defaultSpeed = 128.0) {
                 val result = board.apply(Operation.Place(chip, column))
                 if (result != null) {
                     if (result.board.winner() != null) {
@@ -95,13 +96,13 @@ class MainConnect4 : ScaledScene(448, 384) {
                                             val r = action.row
                                             val pos = getPosition(c, r)
                                             val chipView = createChip(column, -1, action.chip)
-                                            chipView.moveTo(pos.x, pos.y)
+                                            moveTo(chipView, pos.x, pos.y)
                                             views[c, r] = chipView
                                         }
                                         is Action.Finish -> {
                                             for (pos in action.win.positions) {
                                                 val view = views[pos.column, pos.row]
-                                                tween({ view::colorAdd[ColorAdd(255, 255, 255, 0)] }, time = this.time)
+                                                tweenLazy({ view::colorAdd[ColorAdd(255, 255, 255, 0)] })
                                             }
                                         }
                                     }

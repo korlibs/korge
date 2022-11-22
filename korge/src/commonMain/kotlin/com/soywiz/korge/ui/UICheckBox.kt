@@ -1,28 +1,20 @@
 package com.soywiz.korge.ui
 
-import com.soywiz.kds.fastCastTo
-import com.soywiz.korge.debug.uiCollapsibleSection
-import com.soywiz.korge.debug.uiEditableValue
-import com.soywiz.korge.input.mouse
-import com.soywiz.korge.render.RenderContext
-import com.soywiz.korge.view.Container
-import com.soywiz.korge.view.ViewDslMarker
-import com.soywiz.korge.view.ViewLeaf
-import com.soywiz.korge.view.Views
-import com.soywiz.korge.view.addTo
-import com.soywiz.korge.view.image
-import com.soywiz.korge.view.ninePatch
-import com.soywiz.korge.view.position
-import com.soywiz.korge.view.size
-import com.soywiz.korge.view.solidRect
-import com.soywiz.korge.view.text
-import com.soywiz.korim.bitmap.NinePatchBmpSlice
-import com.soywiz.korim.color.Colors
-import com.soywiz.korim.text.TextAlignment
-import com.soywiz.korio.async.Signal
-import com.soywiz.korma.geom.Anchor
-import com.soywiz.korma.geom.Rectangle
-import com.soywiz.korui.UiContainer
+import com.soywiz.kds.*
+import com.soywiz.klock.*
+import com.soywiz.kmem.*
+import com.soywiz.korev.*
+import com.soywiz.korge.animate.*
+import com.soywiz.korge.input.*
+import com.soywiz.korge.render.*
+import com.soywiz.korge.tween.*
+import com.soywiz.korge.view.*
+import com.soywiz.korge.view.property.*
+import com.soywiz.korim.bitmap.*
+import com.soywiz.korim.color.*
+import com.soywiz.korim.text.*
+import com.soywiz.korio.async.*
+import com.soywiz.korma.geom.*
 
 inline fun Container.uiCheckBox(
     width: Double = UI_DEFAULT_WIDTH,
@@ -37,55 +29,72 @@ open class UICheckBox(
     height: Double = UI_DEFAULT_HEIGHT,
     checked: Boolean = false,
     text: String = "CheckBox",
-) : UIBaseCheckBox<UICheckBox>(width, height, checked, text) {
-
+) : UIBaseCheckBox<UICheckBox>(width, height, checked, text, UIBaseCheckBoxSkin.Kind.CHECKBOX) {
 }
 
-open class UIBaseCheckBox<T>(
+open class UIBaseCheckBox<T : UIBaseCheckBox<T>>(
     width: Double = UI_DEFAULT_WIDTH,
     height: Double = UI_DEFAULT_HEIGHT,
     checked: Boolean = false,
+    @ViewProperty
     var text: String = "CheckBox",
-) : UIView(width, height), ViewLeaf {
-    val thisAsT get() = this.fastCastTo<T>()
-    val onChange = Signal<T>()
+    var skinKind: UIBaseCheckBoxSkin.Kind,
+) : UIFocusableView(width, height), ViewLeaf {
+    val thisAsT: T get() = this.fastCastTo<T>()
+    val onChange: Signal<T> = Signal<T>()
 
+    @ViewProperty
     open var checked: Boolean = checked
         get() = field
         set(value) {
             field = value
             onChange(thisAsT)
+            invalidate()
+            simpleAnimator.tween(this::checkedRatio[if (value) 1.0 else 0.0], time = 0.1.seconds)
         }
 
+    var skin: UIBaseCheckBoxSkin = UIBaseCheckBoxSkinMaterial
     private val background = solidRect(width, height, Colors.TRANSPARENT_BLACK)
-    private val box = ninePatch(buttonNormal, height, height)
-    private val icon = image(checkBoxIcon)
-    private val textView = text(text)
+    val canvas = renderableView {
+        skin.render(ctx2d, this@UIBaseCheckBox.width, this@UIBaseCheckBox.height, this@UIBaseCheckBox, skinKind)
+    }
+    private val textView = textBlock(RichTextData(text))
+    var checkedRatio: Double = 0.0; private set
+    var overRatio: Double = 0.0; private set
 
-    private var over by uiObservable(false) { updateState() }
+    private var over by uiObservable(false) {
+        updateState()
+        simpleAnimator.tween(this::overRatio[if (it) 1.0 else 0.0], time = 0.1.seconds)
+    }
     private var pressing by uiObservable(false) { updateState() }
 
     private val textBounds = Rectangle()
 
     override fun renderInternal(ctx: RenderContext) {
-        textView.setFormat(
-            face = textFont,
-            size = textSize.toInt(),
+        updateState()
+        super.renderInternal(ctx)
+    }
+
+    override fun onSizeChanged() {
+        super.onSizeChanged()
+        updateState()
+    }
+
+    override fun updateState() {
+        super.updateState()
+        val width = this.width
+        val height = this.height
+
+        textView.text = RichTextData(textView.text.text, RichTextData.Style(
+            font = textFont,
+            textSize = textSize,
             color = textColor,
-            align = TextAlignment.MIDDLE_LEFT
-        )
-        textView.text = text
-        textView.position(height + 8.0, 0.0)
-        textView.setTextBounds(textBounds)
+        ))
+        textView.align = TextAlignment.MIDDLE_LEFT
+        textView.position(height + 4.0, 0.0)
+        textView.setSize(width - height - 8.0, height)
 
         background.size(width, height)
-        box.ninePatch = getNinePatch(this@UIBaseCheckBox.over)
-        box.size(height, height)
-        textBounds.setTo(0.0, 0.0, width - height - 8.0, height)
-
-        fitIconInRect(icon, checkBoxIcon, box.width, box.height, Anchor.MIDDLE_CENTER)
-        icon.visible = checked
-        super.renderInternal(ctx)
     }
 
     open fun getNinePatch(over: Boolean): NinePatchBmpSlice {
@@ -95,25 +104,40 @@ open class UIBaseCheckBox<T>(
         }
     }
 
+    val highlights = MaterialLayerHighlights(this)
+
     init {
         mouse {
             onOver { this@UIBaseCheckBox.over = true }
             onOut { this@UIBaseCheckBox.over = false }
-            onDown { this@UIBaseCheckBox.pressing = true }
-            onUpAnywhere { this@UIBaseCheckBox.pressing = false }
-            onClick { if (!it.views.editingMode) this@UIBaseCheckBox.onComponentClick() }
+            onDown {
+                this@UIBaseCheckBox.pressing = true
+                highlights.addHighlight(Point(0.5, 0.5))
+            }
+            onUpAnywhere {
+                this@UIBaseCheckBox.pressing = false
+                highlights.removeHighlights()
+            }
+            onClick {
+                if (!it.views.editingMode) this@UIBaseCheckBox.onComponentClick()
+            }
         }
     }
 
     protected open fun onComponentClick() {
         this@UIBaseCheckBox.checked = !this@UIBaseCheckBox.checked
+        focused = true
     }
 
-    override fun buildDebugComponent(views: Views, container: UiContainer) {
-        container.uiCollapsibleSection(this::class.simpleName!!) {
-            uiEditableValue(::text)
-            uiEditableValue(::checked)
+    var focusRatio: Double = 0.0; private set
+    override fun focusChanged(value: Boolean) {
+        //println("focusChanged=$value")
+        simpleAnimator.tween(this::focusRatio[value.toInt().toDouble()], time = 0.2.seconds)
+    }
+
+    init {
+        keys {
+            down(Key.SPACE, Key.RETURN) { if (this@UIBaseCheckBox.focused) onComponentClick() }
         }
-        super.buildDebugComponent(views, container)
     }
 }

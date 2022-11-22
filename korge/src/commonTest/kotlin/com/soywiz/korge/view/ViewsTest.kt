@@ -439,8 +439,8 @@ class ViewsTest : ViewsForTesting() {
         assertEquals(
             """
                 SolidRect1:MyEvent
-                SolidRect1:MyOtherEvent
                 SolidRect2:MyOtherEvent
+                SolidRect1:MyOtherEvent
                 Container:MyOtherEvent
                 Container:MyEvent
             """.trimIndent(),

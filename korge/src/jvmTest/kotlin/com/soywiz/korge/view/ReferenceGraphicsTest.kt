@@ -227,8 +227,8 @@ class ReferenceGraphicsTest : ViewsForTesting(
             "korge/render/BlurFilterEmptyContainer.log",
             listOf(
                 logAg.getLogAsString(),
-                view.getGlobalBounds().toString(),
-                view.getLocalBoundsOptimized().toString()
+                view.getGlobalBounds(includeFilters = true).toString(),
+                view.getLocalBoundsOptimized(includeFilters = true).toString()
             ).joinToString("\n")
         )
     }

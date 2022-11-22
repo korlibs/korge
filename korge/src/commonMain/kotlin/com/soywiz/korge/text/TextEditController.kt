@@ -1,56 +1,27 @@
 package com.soywiz.korge.text
 
-import com.soywiz.kds.HistoryStack
-import com.soywiz.klock.seconds
-import com.soywiz.kmem.Platform
-import com.soywiz.kmem.clamp
-import com.soywiz.korev.ISoftKeyboardConfig
-import com.soywiz.korev.Key
-import com.soywiz.korev.KeyEvent
-import com.soywiz.korev.SoftKeyboardConfig
-import com.soywiz.korge.annotations.KorgeExperimental
-import com.soywiz.korge.component.onNewAttachDetach
-import com.soywiz.korge.input.cursor
-import com.soywiz.korge.input.doubleClick
-import com.soywiz.korge.input.newKeys
-import com.soywiz.korge.input.newMouse
-import com.soywiz.korge.time.timers
-import com.soywiz.korge.ui.UIFocusManager
-import com.soywiz.korge.ui.UIFocusable
-import com.soywiz.korge.ui.blur
-import com.soywiz.korge.ui.focusable
-import com.soywiz.korge.ui.uiFocusManager
-import com.soywiz.korge.ui.uiFocusedView
-import com.soywiz.korge.util.CancellableGroup
-import com.soywiz.korge.view.BlendMode
-import com.soywiz.korge.view.Container
-import com.soywiz.korge.view.RenderableView
-import com.soywiz.korge.view.Stage
-import com.soywiz.korge.view.Text
-import com.soywiz.korge.view.View
-import com.soywiz.korge.view.debug.debugVertexView
-import com.soywiz.korgw.GameWindow
-import com.soywiz.korgw.TextClipboardData
-import com.soywiz.korim.color.Colors
-import com.soywiz.korim.color.RGBA
-import com.soywiz.korim.font.Font
-import com.soywiz.korio.async.Signal
-import com.soywiz.korio.lang.Closeable
-import com.soywiz.korio.lang.cancel
-import com.soywiz.korio.lang.withInsertion
-import com.soywiz.korio.lang.withoutIndex
-import com.soywiz.korio.lang.withoutRange
+import com.soywiz.kds.*
+import com.soywiz.klock.*
+import com.soywiz.kmem.*
+import com.soywiz.korev.*
+import com.soywiz.korge.annotations.*
+import com.soywiz.korge.component.*
+import com.soywiz.korge.input.*
+import com.soywiz.korge.time.*
+import com.soywiz.korge.ui.*
+import com.soywiz.korge.util.*
+import com.soywiz.korge.view.*
+import com.soywiz.korge.view.debug.*
+import com.soywiz.korgw.*
+import com.soywiz.korim.color.*
+import com.soywiz.korim.font.*
+import com.soywiz.korio.async.*
+import com.soywiz.korio.lang.*
 import com.soywiz.korio.util.length
-import com.soywiz.korma.geom.Margin
-import com.soywiz.korma.geom.Point
-import com.soywiz.korma.geom.PointArrayList
-import com.soywiz.korma.geom.bezier.Bezier
-import com.soywiz.korma.geom.firstPoint
-import com.soywiz.korma.geom.lastPoint
-import kotlin.math.absoluteValue
-import kotlin.math.max
-import kotlin.math.min
-import kotlin.math.sign
+import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.bezier.*
+import kotlin.math.*
+import kotlin.text.isLetterOrDigit
 
 @KorgeExperimental
 class TextEditController(
@@ -66,7 +37,7 @@ class TextEditController(
     val stage: Stage? get() = textView.stage
     var initialText: String = textView.text
     private val closeables = CancellableGroup()
-    override val UIFocusManager.focusView: View get() = this@TextEditController.textView
+    override val UIFocusManager.Scope.focusView: View get() = this@TextEditController.textView
     val onEscPressed = Signal<TextEditController>()
     val onReturnPressed = Signal<TextEditController>()
     val onTextUpdated = Signal<TextEditController>()
@@ -259,7 +230,7 @@ class TextEditController(
                     minDist = dist
                     //println("[$n] dist=$dist")
                     index = when {
-                        n >= glyphPositions.size - 1 && dist != 0.0 && glyph.distToPath(pos, startEnd = false) < glyph.distToPath(pos, startEnd = true)  -> n + 1
+                        n >= glyphPositions.size - 1 && dist != 0.0 && glyph.distToPath(pos, startEnd = false) < glyph.distToPath(pos, startEnd = true) -> n + 1
                         else -> n
                     }
                 }
@@ -274,12 +245,12 @@ class TextEditController(
         //val startX = getCaretAtIndex(range.start)
         //val endX = getCaretAtIndex(range.endExclusive)
 
-        val array = PointArrayList(2)
+        val array = PointArrayList(if (range.isEmpty()) 2 else (range.length + 1) * 2)
         if (range.isEmpty()) {
             val last = (range.first >= this.text.length)
             val caret = getCaretAtIndex(range.first)
             val sign = if (last) -1.0 else +1.0
-            val normal = caret.normal(0.0) * (4.0 * sign)
+            val normal = caret.normal(0.0) * (2.0 * sign)
             val p0 = caret.points.firstPoint()
             val p1 = caret.points.lastPoint()
             array.add(p0)
@@ -287,7 +258,7 @@ class TextEditController(
             array.add(p0 + normal)
             array.add(p1 + normal)
         } else {
-            for (n in range.first..range.last +1) {
+            for (n in range.first..range.last + 1) {
                 val caret = getCaretAtIndex(n)
                 val p0 = caret.points.firstPoint()
                 val p1 = caret.points.lastPoint()
@@ -303,6 +274,7 @@ class TextEditController(
         caret.scaledWidth = endX - startX + (if (range.isEmpty()) 2.0 else 0.0)
         */
         caret.visible = focused
+        textView.invalidateRender()
     }
 
     fun moveToIndex(selection: Boolean, index: Int) {
@@ -316,18 +288,15 @@ class TextEditController(
             var idx = sidx
             while (true) {
                 if (idx !in text.indices) {
-                    if (dir < 0) {
-                        return idx - dir
-                    } else {
-                        return idx
+                    return when {
+                        dir < 0 -> idx - dir
+                        else -> idx
                     }
                 }
                 if (!text[idx].isLetterOrDigit()) {
-                    if (dir < 0) {
-                        if (idx == sidx) return idx
-                        return idx - dir
-                    } else {
-                        return idx
+                    return when {
+                        dir < 0 -> if (idx == sidx) idx else idx - dir
+                        else -> idx
                     }
                 }
                 idx += dir
@@ -340,40 +309,39 @@ class TextEditController(
     fun rightIndex(index: Int, word: Boolean): Int = nextIndex(index, +1, word)
 
     override var tabIndex: Int = 0
-
+    override val isFocusable: Boolean get() = true
     var acceptTextChange: (old: String, new: String) -> Boolean = { old, new -> true }
 
-    override var focused: Boolean
-        set(value) {
-            if (value == focused) return
+    override fun focusChanged(value: Boolean) {
+        bg?.isFocused = value
 
-            bg?.isFocused = value
-
-            if (value) {
-                if (stage?.uiFocusedView != this) {
-                    stage?.uiFocusedView?.blur()
-                    stage?.uiFocusedView = this
-                }
-                caret.visible = true
-                //println("stage?.gameWindow?.showSoftKeyboard(): ${stage?.gameWindow}")
-                stage?.uiFocusManager?.requestToggleSoftKeyboard(true, this)
-            } else {
-                if (stage?.uiFocusedView == this) {
-                    stage?.uiFocusedView = null
-                    caret.visible = false
-                    if (stage?.uiFocusedView !is ISoftKeyboardConfig) {
-                        stage?.uiFocusManager?.requestToggleSoftKeyboard(false, null)
-                    }
-                }
-            }
-
-            if (value) {
-                onFocused(this)
-            } else {
-                onFocusLost(this)
+        if (value) {
+            caret.visible = true
+            //println("stage?.gameWindow?.showSoftKeyboard(): ${stage?.gameWindow}")
+            stage?.uiFocusManager?.requestToggleSoftKeyboard(true, this)
+        } else {
+            caret.visible = false
+            if (stage?.uiFocusedView !is ISoftKeyboardConfig) {
+                stage?.uiFocusManager?.requestToggleSoftKeyboard(false, null)
             }
         }
-        get() = stage?.uiFocusedView == this
+
+        if (value) {
+            onFocused(this)
+        } else {
+            onFocusLost(this)
+        }
+    }
+
+    //override var focused: Boolean
+    //    set(value) {
+    //        if (value == focused) return
+//
+    //        bg?.isFocused = value
+//
+    //
+    //    }
+    //    get() = stage?.uiFocusedView == this
 
     init {
         //println(metrics)
@@ -394,6 +362,7 @@ class TextEditController(
 
         closeables += this.eventHandler.newKeys {
             typed {
+                //println("focused=$focused, focus=${textView.stage?.uiFocusManager?.uiFocusedView}")
                 if (!focused) return@typed
                 if (it.meta) return@typed
                 val code = it.character.code
@@ -445,8 +414,9 @@ class TextEditController(
                         } else {
                             if (it.key == Key.BACKSPACE) {
                                 if (cursorIndex > 0) {
+                                    val oldCursorIndex = cursorIndex
                                     text = text.withoutIndex(cursorIndex - 1)
-                                    if (text.length > cursorIndex) cursorIndex--
+                                    cursorIndex = oldCursorIndex - 1 // This [oldCursorIndex] is required since changing text might change the cursorIndex already in some circumstances
                                 }
                             } else {
                                 if (cursorIndex < text.length) {
@@ -533,7 +503,7 @@ class TextEditController(
 
     fun KeyEvent.isWordSkip(): Boolean = if (Platform.os.isApple) this.alt else this.ctrl
     fun KeyEvent.isStartFinalSkip(): Boolean = this.meta && Platform.os.isApple
-    fun KeyEvent.isNativeCtrl(): Boolean = if (Platform.os.isApple) this.meta else this.ctrl
+    fun KeyEvent.isNativeCtrl(): Boolean = this.metaOrCtrl
 
     override fun close() {
         this.textView.cursor = null

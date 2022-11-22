@@ -1,8 +1,9 @@
 package com.soywiz.korim.atlas
 
 import com.soywiz.kds.ListReader
+import com.soywiz.korim.atlas.AtlasInfo.Companion.toRect
 import com.soywiz.korim.format.ImageOrientation
-import com.soywiz.korio.dynamic.KDynamic
+import com.soywiz.korio.dynamic.*
 import com.soywiz.korio.serialization.json.Json
 import com.soywiz.korio.serialization.xml.Xml
 import com.soywiz.korma.geom.*
@@ -13,8 +14,8 @@ data class AtlasInfo(
     val meta: Meta = Meta(),
     val pages: List<Page> = listOf()
 ) {
-    val frames = pages.flatMap { it.regions }
-    val framesMap = frames.associateBy { it.name }
+    val frames: List<Region> = pages.flatMap { it.regions }
+    val framesMap: Map<String, Region> = frames.associateBy { it.name }
 
     constructor(
         frames: List<Region>,
@@ -35,10 +36,13 @@ data class AtlasInfo(
         val rect get() = Rectangle(x, y, w, h)
 
         fun toRectangleInt() : RectangleInt = RectangleInt(x, y, w, h)
+        fun toMap() = mapOf("x" to x, "y" to y, "w" to w, "h" to h)
     }
 
     data class Size(val width: Int, val height: Int) {
         val size get() = com.soywiz.korma.geom.Size(width, height)
+
+        fun toMap() = mapOf("w" to width, "h" to height)
     }
 
     data class Meta(
@@ -98,10 +102,8 @@ data class AtlasInfo(
         val virtFrame: Rect? = null,
         val imageOrientation: ImageOrientation = ImageOrientation.ORIGINAL,
     ) {
-
-        val srcWidth = if (imageOrientation.isRotatedDeg90CwOrCcw) frame.h else frame.w
-
-        val srcHeight = if (imageOrientation.isRotatedDeg90CwOrCcw) frame.w else frame.h
+        val srcWidth get() = if (imageOrientation.isRotatedDeg90CwOrCcw) frame.h else frame.w
+        val srcHeight get() = if (imageOrientation.isRotatedDeg90CwOrCcw) frame.w else frame.h
 
         @Deprecated("Use primary constructor")
         constructor(
@@ -124,47 +126,29 @@ data class AtlasInfo(
                 else -> null
             },
             imageOrientation = if (rotated) ImageOrientation.ROTATE_90 else ImageOrientation.ORIGINAL
-        ) {
-            @Suppress("DEPRECATION")
-            this.rotated = rotated
-            @Suppress("DEPRECATION")
-            this.sourceSize = sourceSize
-            @Suppress("DEPRECATION")
-            this.spriteSourceSize = spriteSourceSize
-            @Suppress("DEPRECATION")
-            this.trimmed = trimmed
-            @Suppress("DEPRECATION")
-            this.orig = orig
-            @Suppress("DEPRECATION")
-            this.offset = offset
-        }
+        )
 
         @Deprecated("Use imageOrientation", ReplaceWith("imageOrientation == ImageOrientation.ROTATE_90", imports = ["com.soywiz.korim.format.ImageOrientation"]))
-        var rotated: Boolean = imageOrientation.isRotatedDeg90CwOrCcw
-            private set
+        val rotated: Boolean get() = imageOrientation.isRotatedDeg90CwOrCcw
 
         @Deprecated("Use virtFrame", ReplaceWith("Size(virtFrame?.w ?: frame.w, virtFrame?.h ?: frame.h)"))
-        var sourceSize: Size = Size(virtFrame?.w ?: frame.w, virtFrame?.h ?: frame.h)
-            private set
+        val sourceSize: Size get() = Size(virtFrame?.w ?: frame.w, virtFrame?.h ?: frame.h)
 
         @Deprecated("Use virtFrame", ReplaceWith("if (virtFrame == null) frame else Rect(virtFrame.x, virtFrame.y, frame.w, frame.h)"))
-        var spriteSourceSize: Rect = if (virtFrame == null) frame else Rect(virtFrame.x, virtFrame.y, frame.w, frame.h)
-            private set
+        val spriteSourceSize: Rect get() = if (virtFrame == null) frame else Rect(virtFrame.x, virtFrame.y, frame.w, frame.h)
 
         @Deprecated("Use virtFrame", ReplaceWith("virtFrame != null"))
-        var trimmed: Boolean = virtFrame != null
-            private set
+        val trimmed: Boolean get() = virtFrame != null
 
         @Deprecated("Use virtFrame", ReplaceWith("Size(virtFrame?.w ?: frame.w, virtFrame?.h ?: frame.h)"))
         @Suppress("DEPRECATION")
-        var orig: Size = sourceSize
-            private set
+        val orig: Size get() = sourceSize
 
         @Deprecated("Use virtFrame", ReplaceWith("Point(virtFrame?.x ?: 0, virtFrame?.y ?: 0)"))
-        var offset: Point = Point(virtFrame?.x ?: 0, virtFrame?.y ?: 0)
-            private set
+        val offset: Point get() = Point(virtFrame?.x ?: 0, virtFrame?.y ?: 0)
 
         // @TODO: Rename to path or name
+        //@IgnoreSerialization
         val filename get() = name
 
         fun applyRotation() = if (imageOrientation == ImageOrientation.ROTATE_90) {
@@ -189,10 +173,32 @@ data class AtlasInfo(
     val size: Size get() = meta.size
     val version: String get() = meta.version
 
+    fun toJsonString(): String = Json.stringify(toMap(), pretty = true)
+
+    fun toMap(): Map<String, Any?> = mapOf(
+        "meta" to mapOf(
+            "app" to app,
+            "version" to version,
+            "image" to image,
+            "format" to format,
+            "size" to size.toMap(),
+            "scale" to scale.toString(),
+        ),
+        "frames" to framesMap.entries.associate { (key, value) ->
+            key to mapOf(
+                "frame" to value.frame.toMap(),
+                "rotated" to value.rotated,
+                "trimmed" to value.trimmed,
+                "spriteSourceSize" to value.spriteSourceSize.toMap(),
+                "sourceSize" to value.sourceSize.toMap(),
+            )
+        }
+    )
+
     companion object {
-        private fun Any?.toRect() = KDynamic(this) { Rect(it["x"].int, it["y"].int, it["w"].int, it["h"].int) }
-        private fun Any?.toSize() = KDynamic(this) { Size(it["w"].int, it["h"].int) }
-        private fun KDynamic.createEntry(name: String, it: Any?): Region {
+        private fun Dyn.toRect(): Rect = Rect(this["x"].int, this["y"].int, this["w"].int, this["h"].int)
+        private fun Dyn.toSize(): Size = Size(this["w"].int, this["h"].int)
+        private fun createEntry(name: String, it: Dyn): Region {
             val rotated = it["rotated"].bool
             val sourceSize = it["sourceSize"].toSize()
             val spriteSourceSize = it["spriteSourceSize"].toRect()
@@ -204,16 +210,18 @@ data class AtlasInfo(
 
         // @TODO: kotlinx-serialization?
         fun loadJsonSpriter(json: String): AtlasInfo {
-            val info = KDynamic(Json.parse(json)) {
+            val it = Json.parse(json).dyn
+            val info =
                 AtlasInfo(
-                    frames = it["frames"].let { frames ->
+                    frames = it["frames"].let { framesDyn ->
+                        val frames = framesDyn.value
                         when (frames) {
                             // Hash-based
-                            is Map<*, *> -> frames.keys.map { createEntry(it.str, frames[it.str]) }
+                            is Map<*, *> -> frames.keys.map { createEntry(it.dyn.str, framesDyn[it.dyn.str]) }
                             // Array-based
-                            else -> frames.list.map {
+                            else -> framesDyn.list.map {
                                 createEntry(
-                                    it["name"]?.str ?: it["filename"]?.str ?: "unknown",
+                                    it["name"].orNull?.str ?: it["filename"].orNull?.str ?: "unknown",
                                     it
                                 )
                             }
@@ -227,8 +235,9 @@ data class AtlasInfo(
                             scale = it["scale"].double,
                             size = it["size"].toSize(),
                             version = it["version"].str,
-                            frameTags = it["frameTags"].let { frameTags ->
-                                if (frameTags is List<*>) frameTags.list.map {
+                            frameTags = it["frameTags"].let { frameTagsDyn ->
+                                val frameTags = frameTagsDyn.value
+                                if (frameTags is List<*>) frameTagsDyn.list.map {
                                     FrameTag(
                                         name = it["name"].str,
                                         from = it["from"].int,
@@ -238,8 +247,9 @@ data class AtlasInfo(
                                 }
                                 else listOf()
                             },
-                            layers = it["layers"].let { layers ->
-                                if (layers is List<*>) layers.list.map {
+                            layers = it["layers"].let { layersDyn ->
+                                val layers = layersDyn.value
+                                if (layers is List<*>) layersDyn.list.map {
                                     Layer(
                                         name = it["name"].str,
                                         opacity = it["opacity"].int,
@@ -248,13 +258,15 @@ data class AtlasInfo(
                                 }
                                 else listOf()
                             },
-                            slices = it["slices"].let { slices ->
-                                if (slices is List<*>) slices.list.map {
+                            slices = it["slices"].let { slicesDyn ->
+                                val slices = slicesDyn.value
+                                if (slices is List<*>) slicesDyn.list.map {
                                     Slice(
                                         name = it["name"].str,
                                         color = it["color"].str,
-                                        keys = it["keys"].let { keys ->
-                                            if (keys is List<*>) keys.list.map {
+                                        keys = it["keys"].let { keysDyn ->
+                                            val keys = keysDyn.value
+                                            if (keys is List<*>) keysDyn.list.map {
                                                 Key(
                                                     frame = it["frame"].int,
                                                     bounds = it["bounds"].toRect()
@@ -269,7 +281,7 @@ data class AtlasInfo(
                         )
                     }
                 )
-            }
+
             return info.copy(pages = info.pages.map { it.copy(regions = it.regions.map { it.apply { } }) })
         }
 

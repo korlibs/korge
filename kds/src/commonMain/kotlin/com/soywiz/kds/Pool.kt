@@ -1,11 +1,11 @@
 package com.soywiz.kds
 
 import com.soywiz.kds.iterators.fastForEach
-import com.soywiz.kds.lock.Lock
+import com.soywiz.kds.lock.NonRecursiveLock
 
 open class ConcurrentPool<T : Any>(private val reset: (T) -> Unit = {}, preallocate: Int = 0, private val gen: (Int) -> T)
     : Pool<T>(reset, preallocate, gen) {
-    private val lock = Lock()
+    private val lock = NonRecursiveLock()
 
     override fun alloc(): T {
         return lock { super.alloc() }
@@ -80,6 +80,30 @@ open class Pool<T : Any>(private val reset: (T) -> Unit = {}, preallocate: Int =
             return callback(temp)
         } finally {
             free(temp)
+        }
+    }
+
+    inline fun <R> alloc2(callback: (T, T) -> R): R {
+        val temp1 = alloc()
+        val temp2 = alloc()
+        try {
+            return callback(temp1, temp2)
+        } finally {
+            free(temp2)
+            free(temp1)
+        }
+    }
+
+    inline fun <R> alloc3(callback: (T, T, T) -> R): R {
+        val temp1 = alloc()
+        val temp2 = alloc()
+        val temp3 = alloc()
+        try {
+            return callback(temp1, temp2, temp3)
+        } finally {
+            free(temp3)
+            free(temp2)
+            free(temp1)
         }
     }
 

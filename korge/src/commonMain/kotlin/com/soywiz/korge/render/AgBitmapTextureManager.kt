@@ -1,11 +1,6 @@
 package com.soywiz.korge.render
 
-import com.soywiz.kds.FastArrayList
-import com.soywiz.kds.FastIdentityMap
-import com.soywiz.kds.Pool
-import com.soywiz.kds.clear
-import com.soywiz.kds.getAndRemove
-import com.soywiz.kds.getOrPut
+import com.soywiz.kds.*
 import com.soywiz.korag.AG
 import com.soywiz.korge.annotations.KorgeExperimental
 import com.soywiz.korge.internal.KorgeInternal
@@ -14,30 +9,43 @@ import com.soywiz.korim.bitmap.BitmapCoords
 import com.soywiz.korim.bitmap.BmpCoordsWithInstance
 import com.soywiz.korim.bitmap.BmpSlice
 import com.soywiz.korim.bitmap.MultiBitmap
-import com.soywiz.korio.lang.currentThreadId
+import com.soywiz.korio.lang.*
 import com.soywiz.korma.geom.Rectangle
 
 /**
  * Class in charge of automatically handling [AG.Texture] <-> [Bitmap] conversion.
  *
  * To simplify texture storage (which usually require uploading to the GPU, and releasing it once not used),
- * the [AgBitmapTextureManager] allows to get temporal textures that are available while referenced in the coming 60 frames.
- * If it has been 60 frames without being referenced, the textures are collected.
+ * the [AgBitmapTextureManager] allows to get temporal textures that are available
+ * while referenced in the previous [framesBetweenGC] frames, typically 60.
+ *
+ * If it has been [framesBetweenGC] frames without being referenced, the textures are collected.
  * This greatly simplifies texture management, but might have an impact in performance.
  * If you want to keep a Bitmap or an atlas in the GPU so there is no impact on uploading when required,
  * you can just call any of the getTexture* methods here each frame, even if not using it in the current frame.
- * You can also manage [Texture] manually, but you should release the textures manually by calling [Texture.close] so the resources are freed.
+ *
+ * You can also manage [Texture] manually, but you should release the textures manually
+ * by calling [Texture.close] so the resources are freed.
+ *
+ * If [maxCachedMemory] is not 0L, that value will be used to keep some textures in the cache
+ * even if they were not referenced in the past frames since GC.
  */
 // @TODO: Use [com.soywiz.kds.FastIdentityCacheMap]
 @OptIn(KorgeInternal::class, KorgeExperimental::class)
 class AgBitmapTextureManager(
     val ag: AG
-) {
+) : Closeable {
+    var maxCachedMemory = 0L
+
+    /** Bitmaps to keep for some time even if not referenced in [framesBetweenGC] as long as the [maxCachedMemory] allows it */
+    private val cachedBitmaps = AgFastSet<Bitmap>()
 	private val referencedBitmapsSinceGC = AgFastSet<Bitmap>()
 	private var referencedBitmaps = FastArrayList<Bitmap>()
 
     /** Number of frames between each Texture Garbage Collection step */
-    var framesBetweenGC = 60
+    var framesBetweenGC: Int = 60
+    var managedTextureMemory: Long = 0L
+        private set
     //var framesBetweenGC = 30 * 60 // 30 seconds
     //var framesBetweenGC = 360
 
@@ -46,7 +54,8 @@ class AgBitmapTextureManager(
 	//var BmpCoordsWithBitmap._texture: Texture? by Extra.Property { null }
 
     /** Wrapper of [TextureBase] that contains all the [TextureCoords] slices referenced as [BitmapCoords] in our current cache */
-	private class BitmapTextureInfo {
+	internal class BitmapTextureInfo {
+        var usedMemory: Int = 0
         var textureBase: TextureBase = TextureBase(null, 0, 0)
 		val slices = FastIdentityMap<BitmapCoords, TextureCoords>()
         fun reset() {
@@ -60,6 +69,8 @@ class AgBitmapTextureManager(
 
     private val textureInfoPool = Pool(reset = { it.reset() }) { BitmapTextureInfo() }
 	private val bitmapsToTextureBase = FastIdentityMap<Bitmap, BitmapTextureInfo>()
+
+    internal fun getBitmapsWithTextureInfoCopy(): Map<Bitmap, BitmapTextureInfo> = bitmapsToTextureBase.toMap()
 
 	private var cachedBitmap: Bitmap? = null
 	private var cachedBitmapTextureInfo: BitmapTextureInfo? = null
@@ -108,12 +119,20 @@ class AgBitmapTextureManager(
         if (bitmap.contentVersion != base.version) {
             base.version = bitmap.contentVersion
             // @TODO: Use dirtyRegion to upload only a fragment of the image
-            base.update(bitmap, bitmap.mipmaps)
+            managedTextureMemory -= textureInfo.usedMemory
+            try {
+                base.update(bitmap, bitmap.mipmaps)
+            } finally {
+                textureInfo.usedMemory = bitmap.estimateSizeInBytes
+                managedTextureMemory += textureInfo.usedMemory
+            }
             bitmap.clearDirtyRegion()
         }
 
 		return textureInfo
 	}
+
+    private val Bitmap.estimateSizeInBytes: Int get() = height * (width * bpp / 8)
 
     /** Obtains a temporal [TextureBase] from [bitmap] [Bitmap]. The texture shouldn't be stored, but used for drawing since it will be destroyed once not used anymore. */
 	fun getTextureBase(bitmap: Bitmap): TextureBase = getTextureInfo(bitmap).textureBase!!
@@ -152,7 +171,7 @@ class AgBitmapTextureManager(
      */
     internal fun afterRender() {
         // Prevent leaks when not referenced anymore
-        removeCache()
+        clearFastCacheAccess()
 
 		fcount++
 		if (fcount >= framesBetweenGC) {
@@ -161,16 +180,22 @@ class AgBitmapTextureManager(
 		}
 	}
 
-    /** Performs a kind of Garbage Collection of textures references since the last GC. This method is automatically executed every [framesBetweenGC] frames. */
+    /**
+     * Performs a kind of Garbage Collection of textures references since the last GC.
+     * This method is automatically executed every [framesBetweenGC] frames.
+     **/
 	internal fun gc() {
         //println("AgBitmapTextureManager.gc[${referencedBitmaps.size}] - [${referencedBitmapsSinceGC.size}]")
         referencedBitmaps.fastForEach { bmp ->
-            if (bmp !in referencedBitmapsSinceGC) {
-                removeBitmap(bmp, "GC")
+            when {
+                bmp in referencedBitmapsSinceGC -> Unit // Keep normally
+                maxCachedMemory < this.managedTextureMemory -> removeBitmap(bmp, "GC")
+                else -> cachedBitmaps.add(bmp)
             }
         }
         referencedBitmaps.clear()
         referencedBitmaps.addAll(referencedBitmapsSinceGC.items)
+        referencedBitmaps.addAll(cachedBitmaps.items)
         referencedBitmapsSinceGC.clear()
 	}
 
@@ -178,13 +203,15 @@ class AgBitmapTextureManager(
     fun removeBitmap(bmp: Bitmap, reason: String) {
         val info = bitmapsToTextureBase.getAndRemove(bmp) ?: return
         referencedBitmapsSinceGC.remove(bmp)
-        if (cachedBitmapTextureInfo === info || cachedBitmapTextureInfo2 === info) removeCache()
+        if (cachedBitmapTextureInfo === info || cachedBitmapTextureInfo2 === info) clearFastCacheAccess()
         info.textureBase.close()
         textureInfoPool.free(info)
+        managedTextureMemory -= info.usedMemory
+        cachedBitmaps.remove(bmp)
         //println("AgBitmapTextureManager.removeBitmap[$currentThreadId]:${bmp.size}, reason=$reason, textureInfoPool=${textureInfoPool.itemsInPool},${textureInfoPool.totalAllocatedItems}")
     }
 
-    private fun removeCache() {
+    private fun clearFastCacheAccess() {
         cachedBitmap = null
         cachedBitmapTextureInfo = null
         cachedBitmap2 = null
@@ -194,6 +221,16 @@ class AgBitmapTextureManager(
         cachedBmpSliceTexture = null
         cachedBmpSlice2 = null
         cachedBmpSliceTexture2 = null
+    }
+    
+    override fun close() {
+        clearFastCacheAccess()
+        for (bmp in bitmapsToTextureBase.keys.toList()) removeBitmap(bmp, "close")
+        bitmapsToTextureBase.clear()
+        referencedBitmaps.clear()
+        referencedBitmapsSinceGC.clear()
+        cachedBitmaps.clear()
+        textureInfoPool.clear()
     }
 }
 

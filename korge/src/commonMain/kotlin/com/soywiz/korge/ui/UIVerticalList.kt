@@ -1,21 +1,10 @@
 package com.soywiz.korge.ui
 
-import com.soywiz.kmem.clamp
-import com.soywiz.korge.annotations.KorgeExperimental
-import com.soywiz.korge.render.RenderContext
-import com.soywiz.korge.view.Container
-import com.soywiz.korge.view.DummyView
-import com.soywiz.korge.view.View
-import com.soywiz.korge.view.ViewDslMarker
-import com.soywiz.korge.view.addTo
-import com.soywiz.korge.view.addUpdater
-import com.soywiz.korge.view.getVisibleGlobalArea
-import com.soywiz.korge.view.getVisibleWindowArea
-import com.soywiz.korge.view.position
-import com.soywiz.korge.view.size
-import com.soywiz.korma.geom.Matrix
-import com.soywiz.korma.geom.Point
-import com.soywiz.korma.geom.Rectangle
+import com.soywiz.kmem.*
+import com.soywiz.korge.annotations.*
+import com.soywiz.korge.render.*
+import com.soywiz.korge.view.*
+import com.soywiz.korma.geom.*
 
 @KorgeExperimental
 inline fun Container.uiVerticalList(
@@ -72,6 +61,9 @@ open class UIVerticalList(provider: Provider, width: Double = 200.0) : UIView(wi
         return index.toInt()
     }
 
+    /**
+     * Invalidates the list, regenerating all the children views.
+     */
     fun invalidateList() {
         dirty = true
         removeChildren()
@@ -81,6 +73,9 @@ open class UIVerticalList(provider: Provider, width: Double = 200.0) : UIView(wi
 
     private val tempTransform = Matrix.Transform()
 
+    /**
+     * Updates the list after size changes, but keeps its contents.
+     */
     fun updateList() {
         if (parent == null) return
         //if (stage == null) return
@@ -117,6 +112,7 @@ open class UIVerticalList(provider: Provider, width: Double = 200.0) : UIView(wi
                         .position(0.0, provider.getItemY(index))
                         .size(width, itemHeight.toDouble())
                 }
+                view.zIndex = index.toDouble()
                 toIndex = index
 
                 //val localViewY = view.localToGlobalY(0.0, view.height)

@@ -2,10 +2,7 @@ package samples
 
 import com.soywiz.klock.seconds
 import com.soywiz.klock.timesPerSecond
-import com.soywiz.korge.input.mouse
-import com.soywiz.korge.input.rotationRecognizer
-import com.soywiz.korge.input.scaleRecognizer
-import com.soywiz.korge.input.touch
+import com.soywiz.korge.input.*
 import com.soywiz.korge.scene.ScaledScene
 import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.tween.get
@@ -22,8 +19,7 @@ import com.soywiz.korge.view.scale
 import com.soywiz.korge.view.text
 import com.soywiz.korim.format.readBitmap
 import com.soywiz.korio.file.std.resourcesVfs
-import com.soywiz.korma.geom.degrees
-import com.soywiz.korma.geom.plus
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.interpolation.Easing
 
 class MainGestures : ScaledScene(512, 512) {
@@ -43,6 +39,15 @@ class MainGestures : ScaledScene(512, 512) {
         }
 
         text("Zoom and rotate with two fingers")
+
+        gestures {
+            onMagnify {
+                image.scale += it.amount * image.scale
+            }
+            onRotate {
+                image.rotation += 5.degrees * it.amount
+            }
+        }
 
         touch {
             var startImageRatio = 1.0

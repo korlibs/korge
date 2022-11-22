@@ -1,6 +1,10 @@
 package samples
 
+import com.soywiz.klock.*
+import com.soywiz.korge.animate.*
+import com.soywiz.korge.render.*
 import com.soywiz.korge.scene.Scene
+import com.soywiz.korge.tween.*
 import com.soywiz.korge.ui.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.color.*
@@ -10,11 +14,8 @@ import com.soywiz.korma.geom.*
 
 class MainEditor : Scene() {
     override suspend fun SContainer.sceneMain() {
-
-        val font2 = DefaultTtfFont.toBitmapFont(16.0, CharacterSet.LATIN_ALL + CharacterSet.CYRILLIC)
-
         for (n in 0 until 10) {
-            text("HELLO АБВГДЕЖ HELLO АБВГДЕЖ HELLO АБВГДЕЖ HELLO АБВГДЕЖ", font = font2, renderer = DefaultStringTextRenderer).xy(100, 100 + n * 2)
+            text("HELLO АБВГДЕЖ HELLO АБВГДЕЖ HELLO АБВГДЕЖ HELLO АБВГДЕЖ", font = DefaultTtfFontAsBitmap, renderer = DefaultStringTextRenderer).xy(100, 100 + n * 2)
         }
 
         //return@Korge
@@ -26,9 +27,9 @@ class MainEditor : Scene() {
         //image(resourcesVfs["korio-128.png"].readBitmap()).xy(128, 128)
         //return@Korge
 
-        val font = DefaultTtfFont.toBitmapFont(16.0)
+        //val font = DefaultTtfFont
         uiSkin = UISkin {
-            this.textFont = font
+            this.textFont = DefaultTtfFontAsBitmap
         }
         //solidRect(100, 100, Colors.RED).xy(0, 0)
         ////solidRect(100, 100, Colors.BLUE).xy(50, 50)
@@ -58,6 +59,15 @@ class MainEditor : Scene() {
         //deferred(deferred = true) {
         //container {
         uiVerticalStack {
+            xy(600, 200)
+            val group = UIRadioButtonGroup()
+            uiRadioButton(group = group)
+            uiRadioButton(group = group)
+            uiSpacing()
+            uiCheckBox(checked = false)
+            uiCheckBox(checked = true)
+        }
+        uiVerticalStack {
             xy(400, 200)
             val group = UIRadioButtonGroup()
             uiRadioButton(group = group)
@@ -66,6 +76,13 @@ class MainEditor : Scene() {
             uiSpacing()
             uiRadioButton(group = group)
         }
+        uiVerticalStack(padding = 4.0) {
+            xy(800, 100)
+            uiButton("BUTTON")
+            uiButton("NAME")
+            uiButton("TEST").disable()
+        }
+
         /*
         uiContainer {
             //append(UIContainer(200.0, 200.0)) {
@@ -84,7 +101,7 @@ class MainEditor : Scene() {
             //it.isCloseable = false
             it.container.mobileBehaviour = false
             it.container.overflowRate = 0.0
-            uiVerticalStack(300.0) {
+            uiVerticalStack(300.0, padding = 4.0) {
                 uiText("Properties") { textColor = Colors.RED }
                 uiPropertyNumberRow("Alpha", *UIEditableNumberPropsList(solidRect::alpha))
                 uiPropertyNumberRow("Position", *UIEditableNumberPropsList(solidRect::x, solidRect::y, min = -1024.0, max = +1024.0, clamped = false))
@@ -103,7 +120,7 @@ class MainEditor : Scene() {
                 println(skewProp.getVisibleGlobalArea())
 
             }
-        }
+        }.xy(100, 150)
 
         //text("HELLO", font = font)
         uiContainer {
@@ -114,6 +131,25 @@ class MainEditor : Scene() {
             uiTextInput("LOL").position(0.0, 128.0)
         }
 
+        renderableView(width, height) {
+            ctx2d.materialRoundRect(0.0, 0.0, 64.0, 64.0, radius = RectCorners(32.0, 16.0, 8.0, 0.0))
+        }.xy(500, 500)
+
+        val richTextData = RichTextData.fromHTML("hello world,<br /><br />this is a long test to see how <font size=24 color='red'><b><i>rich text</i></b></font> <b color=yellow>works</b>! And <i>see</i> if this is going to show ellipsis if the text is too long")
+        //println("richTextData=${richTextData.toHTML()}")
+        val textBlock = textBlock(
+            richTextData
+        ) {
+            align = TextAlignment.MIDDLE_JUSTIFIED
+            //align = TextAlignment.TOP_LEFT
+            //autoSize = true
+            xy(600, 500)
+        }
+
+        textBlock.simpleAnimator.sequence(looped = true) {
+            tween(textBlock::width[300.0], time = 5.seconds)
+            tween(textBlock::width[1.0], time = 5.seconds)
+        }
 
         /*
         uiScrollable {

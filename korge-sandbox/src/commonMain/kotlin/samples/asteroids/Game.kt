@@ -1,39 +1,15 @@
 package samples.asteroids
 
-import com.soywiz.klock.milliseconds
-import com.soywiz.korev.Key
-import com.soywiz.korev.dispatch
-import com.soywiz.korge.tween.get
-import com.soywiz.korge.tween.tween
-import com.soywiz.korge.view.Image
-import com.soywiz.korge.view.SContainer
-import com.soywiz.korge.view.View
-import com.soywiz.korge.view.addTo
-import com.soywiz.korge.view.addUpdater
-import com.soywiz.korge.view.alignTopToBottomOf
-import com.soywiz.korge.view.center
-import com.soywiz.korge.view.centerOnStage
-import com.soywiz.korge.view.centerXOnStage
-import com.soywiz.korge.view.collidesWith
-import com.soywiz.korge.view.image
-import com.soywiz.korge.view.onCollision
-import com.soywiz.korge.view.position
-import com.soywiz.korge.view.rotation
-import com.soywiz.korge.view.solidRect
-import com.soywiz.korge.view.text
-import com.soywiz.korge.view.xy
-import com.soywiz.korim.color.Colors
-import com.soywiz.korio.async.launch
-import com.soywiz.korma.geom.Angle
-import com.soywiz.korma.geom.Point
-import com.soywiz.korma.geom.cosine
-import com.soywiz.korma.geom.degrees
-import com.soywiz.korma.geom.minus
-import com.soywiz.korma.geom.plus
-import com.soywiz.korma.geom.sine
-import com.soywiz.korma.geom.times
-import com.soywiz.korma.random.get
-import kotlin.random.Random
+import com.soywiz.klock.*
+import com.soywiz.korev.*
+import com.soywiz.korge.tween.*
+import com.soywiz.korge.view.*
+import com.soywiz.korim.color.*
+import com.soywiz.korim.font.*
+import com.soywiz.korio.async.*
+import com.soywiz.korma.geom.*
+import com.soywiz.korma.random.*
+import kotlin.random.*
 
 const val NUMBER_OF_ASTEROIDS = 15
 const val BULLET_SIZE = 14
@@ -138,7 +114,7 @@ class Game(val scene: MainAsteroids) {
                 overlay.tween(overlay::color[Colors.RED.withA(64)], time = 300.milliseconds)
             }
 
-            val gameOverText = text("GAME OVER", 64.0)
+            val gameOverText = text("GAME OVER", 64.0, font = DefaultTtfFont)
                 .centerOnStage()
 
             text("Press R to restart")

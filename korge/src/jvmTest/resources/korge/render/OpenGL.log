@@ -2,7 +2,11 @@ genTextures(1, [6001])
 createProgram() = 1001
 getString(35724) = 
 createShader(35632) = 2001
-shaderSource(2001, """uniform sampler2D u_Tex0;
+shaderSource(2001, """#extension GL_OES_standard_derivatives : enable
+#ifdef GL_ES
+precision mediump float;
+#endif
+uniform sampler2D u_Tex0;
 uniform sampler2D u_Tex1;
 uniform sampler2D u_Tex2;
 uniform sampler2D u_Tex3;
@@ -48,7 +52,11 @@ compileShader(2001)
 getShaderiv(2001, 35713, [1])
 getError() = 0
 createShader(35633) = 2002
-shaderSource(2002, """attribute vec2 a_Tex;
+shaderSource(2002, """#extension GL_OES_standard_derivatives : enable
+#ifdef GL_ES
+precision mediump float;
+#endif
+attribute vec2 a_Tex;
 attribute float a_TexIndex;
 attribute float a_Wrap;
 attribute vec4 a_Col;

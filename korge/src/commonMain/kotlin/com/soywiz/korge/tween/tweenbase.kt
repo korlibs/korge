@@ -9,22 +9,9 @@ import com.soywiz.kmem.fract
 import com.soywiz.kmem.toIntFloor
 import com.soywiz.korim.color.ColorAdd
 import com.soywiz.korim.color.RGBA
-import com.soywiz.korma.geom.Angle
-import com.soywiz.korma.geom.IPoint
-import com.soywiz.korma.geom.IPointArrayList
-import com.soywiz.korma.geom.Point
-import com.soywiz.korma.geom.PointArrayList
-import com.soywiz.korma.geom.absoluteValue
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.bezier.getEquidistantPoints
 import com.soywiz.korma.geom.bezier.getPoints
-import com.soywiz.korma.geom.degrees
-import com.soywiz.korma.geom.firstX
-import com.soywiz.korma.geom.firstY
-import com.soywiz.korma.geom.lastX
-import com.soywiz.korma.geom.lastY
-import com.soywiz.korma.geom.minus
-import com.soywiz.korma.geom.normalized
-import com.soywiz.korma.geom.plus
 import com.soywiz.korma.geom.vector.VectorPath
 import com.soywiz.korma.geom.vector.getCurves
 import com.soywiz.korma.interpolation.Easing
@@ -32,6 +19,7 @@ import com.soywiz.korma.interpolation.Interpolable
 import com.soywiz.korma.interpolation.interpolate
 import com.soywiz.korma.math.isAlmostEquals
 import kotlin.jvm.JvmName
+import kotlin.native.concurrent.*
 import kotlin.reflect.KMutableProperty0
 
 @Suppress("UNCHECKED_CAST")
@@ -42,20 +30,82 @@ data class V2<V>(
     val interpolator: (Double, V, V) -> V,
     val includeStart: Boolean,
     val startTime: TimeSpan = 0.nanoseconds,
-    val duration: TimeSpan = TimeSpan.NIL
+    val duration: TimeSpan = TimeSpan.NIL,
+    private val initialization: (() -> Unit)? = null,
 ) {
     val endTime = startTime + duration.coalesce { 0.nanoseconds }
 
-    fun init() {
+    fun duration(default: TimeSpan): TimeSpan = if (duration.isNil) default else duration
+    fun endTime(default: TimeSpan): TimeSpan = if (duration.isNil) default else endTime
+
+    fun init(): Unit {
         if (!includeStart) {
             initial = key.get()
+            //includeStart = true
         }
+        initialization?.invoke()
     }
-    fun set(ratio: Double) = key.set(interpolator(ratio, initial, end))
+
+    //private fun ensureInit() {
+    //    if (!includeStart) {
+    //        initial = key.get()
+    //        includeStart = true
+    //    }
+    //}
+    fun set(ratio: Double): Unit {
+        //ensureInit()
+        key.set(interpolator(ratio, initial, end))
+    }
+
+    fun get(): V {
+        return key.get()
+    }
 
     override fun toString(): String =
         "V2(key=${key.name}, range=[$initial-$end], startTime=$startTime, duration=$duration)"
 }
+
+@ThreadLocal
+private object V2CallbackSupport {
+    var dummy: Unit = Unit
+}
+
+private class V2CallbackTSupport<T>(var dummy: T)
+
+fun V2Callback(init: () -> Unit = {}, callback: (Double) -> Unit): V2<Unit> = V2(V2CallbackSupport::dummy, Unit, Unit, { ratio, _, _ -> callback(ratio) }, true, initialization = init)
+fun <T> V2CallbackT(initial: T, init: () -> Unit = {}, callback: (Double) -> T): V2<T> {
+    return V2(V2CallbackTSupport<T>(initial)::dummy, initial, initial, { ratio, _, _ -> callback(ratio) }, true, initialization = init)
+}
+
+fun V2Lazy(callback: () -> V2<*>): V2<Unit> {
+    var value: V2<*>? = null
+    return V2CallbackT(Unit) {
+        if (value == null) value = callback()
+        value!!.set(it)
+    }
+}
+
+fun KMutableProperty0<IPoint>.incr(dx: Double, dy: Double): V2<IPoint> {
+    val start: Point = Point(0, 0)
+    val value: Point = Point(0, 0)
+    return V2(this, start, value, { it, _, _ ->
+        value.setTo(start.x + dx, start.y + dy)
+        value
+    }, includeStart = false, initialization = {
+        start.copyFrom(this.get())
+    })
+}
+fun KMutableProperty0<IPoint>.incr(dx: Number, dy: Number): V2<IPoint> = incr(dx.toDouble(), dy.toDouble())
+fun KMutableProperty0<IPoint>.incr(incr: IPoint): V2<IPoint> = incr(incr.x, incr.y)
+
+inline fun KMutableProperty0<Double>.incr(incr: Number): V2<Double> = incr(incr.toDouble())
+fun KMutableProperty0<Double>.incr(incr: Double): V2<Double> = V2(this, 0.0, 0.0, interpolator = { it, start, _ ->
+    //println("INTERPOLATE: it=$it, start=$start, incr=$incr")
+    it.interpolate(start, start + incr)
+}, includeStart = false)
+fun KMutableProperty0<Angle>.incr(incr: Angle): V2<Angle> = V2(this, Angle.ZERO, Angle.ZERO, interpolator = { it, start, _ ->
+    it.interpolateAngleDenormalized(start, start + incr)
+}, includeStart = false)
 
 @JvmName("getInt")
 operator fun KMutableProperty0<Int>.get(end: Int) = V2(this, this.get(), end, ::_interpolateInt, includeStart = false)
@@ -91,21 +141,10 @@ internal fun _interpolateColorAdd(ratio: Double, l: ColorAdd, r: ColorAdd): Colo
 )
 
 @PublishedApi
-internal fun _interpolateAngle(ratio: Double, l: Angle, r: Angle): Angle = _interpolateAngleAny(ratio, l, r, minimizeAngle = true)
+internal fun _interpolateAngle(ratio: Double, l: Angle, r: Angle): Angle = ratio.interpolateAngleNormalized(l, r)
 
 @PublishedApi
-internal fun _interpolateAngleDenormalized(ratio: Double, l: Angle, r: Angle): Angle = _interpolateAngleAny(ratio, l, r, minimizeAngle = false)
-
-internal fun _interpolateAngleAny(ratio: Double, l: Angle, r: Angle, minimizeAngle: Boolean = true): Angle {
-    if (!minimizeAngle) return Angle.fromRatio(_interpolate(ratio, l.ratio, r.ratio))
-    val ln = l.normalized
-    val rn = r.normalized
-    return when {
-        (rn - ln).absoluteValue <= 180.degrees -> Angle.fromRadians(_interpolate(ratio, ln.radians, rn.radians))
-        ln < rn -> Angle.fromRadians(_interpolate(ratio, (ln + 360.degrees).radians, rn.radians)).normalized
-        else -> Angle.fromRadians(_interpolate(ratio, ln.radians, (rn + 360.degrees).radians)).normalized
-    }
-}
+internal fun _interpolateAngleDenormalized(ratio: Double, l: Angle, r: Angle): Angle = ratio.interpolateAngleDenormalized(l, r)
 
 @PublishedApi
 internal fun _interpolateTimeSpan(ratio: Double, l: TimeSpan, r: TimeSpan): TimeSpan = _interpolate(ratio, l.milliseconds, r.milliseconds).milliseconds

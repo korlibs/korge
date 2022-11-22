@@ -13,10 +13,26 @@ import kotlin.test.assertEquals
 class ImageAnimationViewTest {
     private val animImages4Layers1 = ImageAnimation(
         frames = listOf(
-            ImageFrame(0, 60.milliseconds, listOf(ImageFrameLayer(ImageLayer(0, "layer0"), Bitmaps.transparent, 1))),
-            ImageFrame(1, 60.milliseconds, listOf(ImageFrameLayer(ImageLayer(0, "layer0"), Bitmaps.transparent, 2))),
-            ImageFrame(2, 60.milliseconds, listOf(ImageFrameLayer(ImageLayer(0, "layer0"), Bitmaps.transparent, 3))),
-            ImageFrame(3, 60.milliseconds, listOf(ImageFrameLayer(ImageLayer(0, "layer0"), Bitmaps.transparent, 4)))
+            ImageFrame(0, 60.milliseconds, listOf(ImageFrameLayer(
+                ImageLayer(0, "layer0"),
+                Bitmaps.transparent,
+                1
+            ))),
+            ImageFrame(1, 60.milliseconds, listOf(ImageFrameLayer(
+                ImageLayer(0, "layer0"),
+                Bitmaps.transparent,
+                2
+            ))),
+            ImageFrame(2, 60.milliseconds, listOf(ImageFrameLayer(
+                ImageLayer(0, "layer0"),
+                Bitmaps.transparent,
+                3
+            ))),
+            ImageFrame(3, 60.milliseconds, listOf(ImageFrameLayer(
+                ImageLayer(0, "layer0"),
+                Bitmaps.transparent,
+                4
+            )))
         ),
         direction = ImageAnimation.Direction.FORWARD,
         name = "anim1",
@@ -24,12 +40,36 @@ class ImageAnimationViewTest {
     )
     private val animImages6Layers2 = ImageAnimation(
         frames = listOf(
-            ImageFrame(10, 60.milliseconds, listOf(ImageFrameLayer(ImageLayer(0, "layer0"), Bitmaps.transparent, 1), ImageFrameLayer(ImageLayer(1, "layer1"), Bitmaps.transparent, 10))),
-            ImageFrame(12, 60.milliseconds, listOf(ImageFrameLayer(ImageLayer(0, "layer0"), Bitmaps.transparent, 2), ImageFrameLayer(ImageLayer(1, "layer1"), Bitmaps.transparent, 20))),
-            ImageFrame(11, 60.milliseconds, listOf(ImageFrameLayer(ImageLayer(0, "layer0"), Bitmaps.transparent, 3), ImageFrameLayer(ImageLayer(1, "layer1"), Bitmaps.transparent, 30))),
-            ImageFrame(13, 60.milliseconds, listOf(ImageFrameLayer(ImageLayer(0, "layer0"), Bitmaps.transparent, 4), ImageFrameLayer(ImageLayer(1, "layer1"), Bitmaps.transparent, 40))),
-            ImageFrame(14, 60.milliseconds, listOf(ImageFrameLayer(ImageLayer(0, "layer0"), Bitmaps.transparent, 5), ImageFrameLayer(ImageLayer(1, "layer1"), Bitmaps.transparent, 50))),
-            ImageFrame(15, 60.milliseconds, listOf(ImageFrameLayer(ImageLayer(0, "layer0"), Bitmaps.transparent, 6), ImageFrameLayer(ImageLayer(1, "layer1"), Bitmaps.transparent, 60)))
+            ImageFrame(10, 60.milliseconds, listOf(ImageFrameLayer(
+                ImageLayer(0, "layer0"),
+                Bitmaps.transparent,
+                1
+            ), ImageFrameLayer(ImageLayer(1, "layer1"), Bitmaps.transparent, 10))),
+            ImageFrame(12, 60.milliseconds, listOf(ImageFrameLayer(
+                ImageLayer(0, "layer0"),
+                Bitmaps.transparent,
+                2
+            ), ImageFrameLayer(ImageLayer(1, "layer1"), Bitmaps.transparent, 20))),
+            ImageFrame(11, 60.milliseconds, listOf(ImageFrameLayer(
+                ImageLayer(0, "layer0"),
+                Bitmaps.transparent,
+                3
+            ), ImageFrameLayer(ImageLayer(1, "layer1"), Bitmaps.transparent, 30))),
+            ImageFrame(13, 60.milliseconds, listOf(ImageFrameLayer(
+                ImageLayer(0, "layer0"),
+                Bitmaps.transparent,
+                4
+            ), ImageFrameLayer(ImageLayer(1, "layer1"), Bitmaps.transparent, 40))),
+            ImageFrame(14, 60.milliseconds, listOf(ImageFrameLayer(
+                ImageLayer(0, "layer0"),
+                Bitmaps.transparent,
+                5
+            ), ImageFrameLayer(ImageLayer(1, "layer1"), Bitmaps.transparent, 50))),
+            ImageFrame(15, 60.milliseconds, listOf(ImageFrameLayer(
+                ImageLayer(0, "layer0"),
+                Bitmaps.transparent,
+                6
+            ), ImageFrameLayer(ImageLayer(1, "layer1"), Bitmaps.transparent, 60)))
         ),
         direction = ImageAnimation.Direction.REVERSE,
         name = "anim2",

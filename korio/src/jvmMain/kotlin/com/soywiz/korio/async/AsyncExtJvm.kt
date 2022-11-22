@@ -12,6 +12,7 @@ operator fun ExecutorService.invoke(callback: () -> Unit) {
 
 private val mainDispatcher by lazy { newSingleThreadContext("mainDispatcher") }
 internal val workerContext by lazy { newFixedThreadPoolContext(4, "worker") }
+//internal val workerContext by lazy { newSingleThreadContext("worker") }
 
 actual fun asyncEntryPoint(callback: suspend () -> Unit) =
     //runBlocking { callback() }

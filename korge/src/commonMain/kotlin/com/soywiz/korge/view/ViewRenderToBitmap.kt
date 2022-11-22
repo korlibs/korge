@@ -1,22 +1,23 @@
 package com.soywiz.korge.view
 
-import com.soywiz.korge.annotations.KorgeExperimental
-import com.soywiz.korge.render.RenderContext
-import com.soywiz.korim.bitmap.Bitmap32
-import com.soywiz.korma.geom.Point
-import com.soywiz.korma.geom.Rectangle
-import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.completeWith
+import com.soywiz.korge.annotations.*
+import com.soywiz.korge.render.*
+import com.soywiz.korim.bitmap.*
+import com.soywiz.korma.geom.*
+import kotlinx.coroutines.*
 
 /**
  * Asynchronously renders this [View] (with the provided [views]) to a [Bitmap32] and returns it.
  * The rendering will happen before the next frame.
  */
-suspend fun View.renderToBitmap(views: Views, region: Rectangle? = null, scale: Double = 1.0, outPoint: Point = Point()): Bitmap32 {
+suspend fun View.renderToBitmap(views: Views, region: Rectangle? = null, scale: Double = 1.0, outPoint: Point = Point(), includeBackground: Boolean = false): Bitmap32 {
 	val done = CompletableDeferred<Bitmap32>()
 
+    // This will help to trigger a re-rendering in the case nothing else changed
+    views.stage.invalidateRender()
     views.onBeforeRender.once { ctx ->
         done.completeWith(kotlin.runCatching {
+            if (includeBackground) ctx.ag.clear(views.clearColor)
             unsafeRenderToBitmapSync(ctx, region, scale, outPoint).also {
                 //println("/renderToBitmap")
             }
@@ -29,7 +30,7 @@ suspend fun View.renderToBitmap(views: Views, region: Rectangle? = null, scale: 
 @KorgeExperimental
 fun View.unsafeRenderToBitmapSync(ctx: RenderContext, region: Rectangle? = null, scale: Double = 1.0, outPoint: Point = Point()): Bitmap32 {
     val view = this
-    val bounds = getLocalBoundsOptimizedAnchored()
+    val bounds = getLocalBoundsOptimizedAnchored(includeFilters = true)
 
     //println("bounds=$bounds")
 

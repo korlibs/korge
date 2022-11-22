@@ -9,10 +9,11 @@ import com.soywiz.kmem.*
 import com.soywiz.korev.*
 import com.soywiz.korge.baseview.*
 import com.soywiz.korge.component.*
-import com.soywiz.korge.debug.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.render.*
+import com.soywiz.korge.ui.*
 import com.soywiz.korge.view.filter.*
+import com.soywiz.korge.view.property.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.vector.*
 import com.soywiz.korio.lang.*
@@ -22,7 +23,6 @@ import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.shape.*
 import com.soywiz.korma.geom.vector.*
 import com.soywiz.korma.interpolation.*
-import com.soywiz.korui.*
 import com.soywiz.krypto.encoding.*
 import kotlin.math.*
 
@@ -58,7 +58,6 @@ abstract class View internal constructor(
     val isContainer: Boolean
 ) : BaseView(), Renderable
     , Extra
-    , KorgeDebugNode
     , BView
     , XY
     , HitTestable
@@ -196,6 +195,7 @@ abstract class View internal constructor(
     }
 
     /** Property used for interpolable views like morph shapes, progress bars etc. */
+    @ViewProperty(min = 0.0, max = 1.0, clampMin = false, clampMax = false)
     open var ratio: Double = 0.0
 
     @PublishedApi internal var _index: Int = 0
@@ -207,17 +207,50 @@ abstract class View internal constructor(
         internal set(value) { _index = value }
 
     /** Ratio speed of this node, affecting all the [UpdateComponent] */
+    @ViewProperty(min = -1.0, max = 1.0, clampMin = false, clampMax = false)
     var speed: Double = 1.0
+
+    internal var _stage: Stage? = null
+        set(value) {
+            if (field === value) return
+            field = value
+            forEachChild { it._stage = value }
+        }
+
+    var _invalidateNotifier: InvalidateNotifier? = null
+        internal set(value) {
+            if (field === value) return
+            field = value
+            val parent = _invalidateNotifierForChildren
+            forEachChild { it._invalidateNotifier = parent }
+        }
+
+    open val _invalidateNotifierForChildren: InvalidateNotifier? get() = _invalidateNotifier
+
+    protected open fun setInvalidateNotifier() {
+        _invalidateNotifier = _parent?._invalidateNotifierForChildren
+    }
 
     /** Parent [Container] of [this] View if any, or null */
     var parent: Container?
         get() = _parent
-        internal set(value) { _parent = value }
+        internal set(value) {
+            if (_parent === value) return
+            _parent = value
+            _stage = _parent?._stage
+            setInvalidateNotifier()
+            onParentChanged()
+        }
+
+    override val baseParent: Container? get() = parent
 
     /** Optional name of this view */
+    @ViewProperty()
     var name: String? = null
 
     /** The [BlendMode] used for this view [BlendMode.INHERIT] will use the ancestors [blendMode]s */
+    @ViewProperty
+    @ViewPropertyProvider(provider = BlendMode.Provider::class)
     var blendMode: BlendMode = BlendMode.INHERIT
         set(value) {
             if (field != value) {
@@ -233,9 +266,9 @@ abstract class View internal constructor(
     protected var _y: Double = 0.0
     private var _scaleX: Double = 1.0
     private var _scaleY: Double = 1.0
-    private var _skewX: Angle = 0.0.radians
-    private var _skewY: Angle = 0.0.radians
-    private var _rotation: Angle = 0.0.radians
+    private var _skewX: Angle = Angle.ZERO
+    private var _skewY: Angle = Angle.ZERO
+    private var _rotation: Angle = Angle.ZERO
 
     private val _pos = Point()
 
@@ -254,6 +287,8 @@ abstract class View internal constructor(
     }
 
     /** Position of the view. **@NOTE**: If [pos] coordinates are manually changed, you should call [View.invalidateMatrix] later to keep the matrix in sync */
+    //uiEditableValue(Pair(view::x, view::y), min = -1000.0, max = +1000.0, clamp = false, name = "position")
+    @ViewProperty(min = -1000.0, max = +1000.0, name = "position")
     var pos: IPoint
         get() = Point(x, y)
         set(value) = setXY(value.x, value.y)
@@ -288,6 +323,7 @@ abstract class View internal constructor(
     // @TODO: Instead of resort everytime that something changes, let's keep an index in the zIndex collection
     //@PublishedApi internal var _zIndexIndex: Int = 0
 
+    @ViewProperty()
     var zIndex: Double
         get() = _zIndex
         set(v) {
@@ -321,7 +357,20 @@ abstract class View internal constructor(
         get() { ensureTransform(); return _scaleY }
         set(v) { ensureTransform(); if (_scaleY != v) { _scaleY = v; invalidateMatrix() } }
 
+    @ViewProperty(name = "type", order = -1000, editable = false)
+    private val __type: String
+        get() = this::class.simpleName ?: "Unknown"
+
+    @ViewProperty(min = 0.0, max = 1.0)
+    private var scaleXY: Pair<Double, Double>
+        get() = scaleX to scaleY
+        set(value) {
+            scaleX = value.first
+            scaleY = value.second
+        }
+
     /** Allows to change [scaleX] and [scaleY] at once. Returns the mean value of x and y scales. */
+    @ViewProperty(min = 0.0, max = 1.0)
     var scale: Double
         get() = (scaleX + scaleY) / 2f
         set(v) { scaleX = v; scaleY = v }
@@ -337,9 +386,18 @@ abstract class View internal constructor(
         set(v) { ensureTransform(); if (_skewY != v) { _skewY = v; invalidateMatrix() } }
 
     /** Local rotation of this view */
+    @ViewProperty()
     var rotation: Angle
         get() { ensureTransform(); return _rotation }
         set(v) { ensureTransform(); if (_rotation != v) { _rotation = v; invalidateMatrix() } }
+
+    @ViewProperty(name = "skew")
+    private var skewXY: Pair<Angle, Angle>
+        get() = skewX to skewY
+        set(v) {
+            skewX = v.first
+            skewY = v.second
+        }
 
     /** The global x position of this view */
     var globalX: Double
@@ -374,8 +432,10 @@ abstract class View internal constructor(
     }
 
     open fun setSizeScaled(width: Double, height: Double) {
-        this.scaledWidth = width
-        this.scaledHeight = height
+        this.setSize(
+            if (scaleX == 0.0) width else width / scaleX,
+            if (scaleY == 0.0) height else height / scaleY,
+        )
     }
 
     /**
@@ -423,6 +483,14 @@ abstract class View internal constructor(
             height = if (scaleY == 0.0) value else value / scaleY
         }
 
+    @ViewProperty(min = -1000.0, max = +1000.0, name = "size")
+    private var scaledWH: Pair<Double, Double>
+        get() = scaledWidth to scaledHeight
+        set(value) {
+            scaledWidth = value.first
+            scaledHeight = value.second
+        }
+
     /**
      * The multiplicative [RGBA] color.
      *
@@ -432,6 +500,7 @@ abstract class View internal constructor(
      * * [Colors.TRANSPARENT_BLACK] would be equivalent to setting [alpha]=0
      * * [Colors.RED] would only show the red component of the view
      */
+    @ViewProperty
     var colorMul: RGBA
         get() = _colorTransform.colorMul
         set(v) {
@@ -466,6 +535,7 @@ abstract class View internal constructor(
      * Shortcut for adjusting the multiplicative alpha value manually.
      * Equivalent to [ColorTransform.mA] + [View.invalidate]
      */
+    @ViewProperty(min = 0.0, max = 1.0, clampMin = true, clampMax = true)
     var alpha: Double
         get() = _colorTransform.mA;
         set(v) {
@@ -503,7 +573,7 @@ abstract class View internal constructor(
     val root: View get() = parent?.root ?: this
 
     /** When included in the tree, this returns the stage. When not attached yet, this will return null. */
-    open val stage: Stage? get() = root as? Stage?
+    open val stage: Stage? get() = _stage
 
     /** Determines if mouse events will be handled for this view and its children */
     //open var mouseEnabled: Boolean = true
@@ -511,7 +581,14 @@ abstract class View internal constructor(
     open var mouseChildren: Boolean = true
 
     /** Determines if the view will be displayed or not. It is different to alpha=0, since the render method won't be executed. Usually giving better performance. But also not receiving events. */
+    @ViewProperty()
     open var visible: Boolean = true
+        set(value) {
+            if (field != value) {
+                field = value
+                invalidate()
+            }
+        }
 
     /** Sets the local transform matrix that includes [x], [y], [scaleX], [scaleY], [rotation], [skewX] and [skewY] encoded into a [Matrix] */
     fun setMatrix(matrix: Matrix) {
@@ -652,7 +729,7 @@ abstract class View internal constructor(
             }
         }
 
-    private val _renderColorTransform = ColorTransform(1.0, 1.0, 1.0, 1.0, 0, 0, 0, 0)
+    private val _renderColorTransform: ColorTransform = ColorTransform(1.0, 1.0, 1.0, 1.0, 0, 0, 0, 0)
     private var _renderColorTransformVersion = -1
 
     private fun updateRenderColorTransform() {
@@ -758,12 +835,22 @@ abstract class View internal constructor(
         this._version++
         _requireInvalidate = false
         dirtyVertices = true
+        invalidateRender()
+    }
+
+    open fun onParentChanged() {
+    }
+
+    override fun invalidateRender() {
+        _invalidateNotifier?.invalidatedView(this)
+        //stage?.views?.invalidatedView(this)
     }
 
     open fun invalidateColorTransform() {
         this._versionColor++
         _requireInvalidateColor = false
         dirtyVertices = true
+        invalidateRender()
     }
 
     var debugAnnotate: Boolean = false
@@ -981,10 +1068,10 @@ abstract class View internal constructor(
     }
 
     /** Converts the local point [x], [y] into a X coordinate in window coordinates. */
-    fun localToWindowX(views: Views, x: Double, y: Double): Double = localToWindowXY(views, x, y, tempPoint).x
+    fun localToWindowX(views: Views, x: Double, y: Double): Double = Point.POOL { localToWindowXY(views, x, y, it).x }
 
     /** Converts the local point [x], [y] into a Y coordinate in window coordinates. */
-    fun localToWindowY(views: Views, x: Double, y: Double): Double = localToWindowXY(views, x, y, tempPoint).y
+    fun localToWindowY(views: Views, x: Double, y: Double): Double = Point.POOL { localToWindowXY(views, x, y, it).y }
 
     var hitTestEnabled = true
 
@@ -1028,14 +1115,16 @@ abstract class View internal constructor(
         if (!visible) return null
         if (_hitShape2d == null) {
             _children?.fastForEachReverse { child ->
-                if (child != view) {
+                if (child !== view) {
                     child.hitTestView(view, direction)?.let {
                         return it
                     }
                 }
             }
         }
-        val res = hitTestShapeInternal(view.hitShape2d, view.getGlobalMatrixWithAnchor(tempMatrix1), direction)
+        val res = Matrix.POOL.alloc { tempMatrix1 ->
+            hitTestShapeInternal(view.hitShape2d, view.getGlobalMatrixWithAnchor(tempMatrix1), direction)
+        }
         if (res != null) return res
         return if (this is Stage) this else null
     }
@@ -1055,15 +1144,10 @@ abstract class View internal constructor(
         return if (this is Stage) this else null
     }
 
-    private val tempMatrix1 = Matrix()
-    private val tempMatrix2 = Matrix()
-    private val tempMatrix = Matrix()
-    private val tempPoint = Point()
-
     open val customHitShape get() = false
-    open protected fun hitTestShapeInternal(shape: Shape2d, matrix: Matrix, direction: HitTestDirection): View? {
+    protected open fun hitTestShapeInternal(shape: Shape2d, matrix: Matrix, direction: HitTestDirection): View? {
         //println("View.hitTestShapeInternal: $this, $shape")
-        if (Shape2d.intersects(this.hitShape2d, getGlobalMatrixWithAnchor(tempMatrix2), shape, matrix, tempMatrix)) {
+        if (Matrix.POOL.alloc2 { tempMatrix2, tempMatrix -> Shape2d.intersects(this.hitShape2d, getGlobalMatrixWithAnchor(tempMatrix2), shape, matrix, tempMatrix) }) {
             //println(" -> true")
             return this
         }
@@ -1083,35 +1167,37 @@ abstract class View internal constructor(
             }
         }
         if (!mouseEnabled) return null
-        hitTestInternal(x, y)?.let {
+        hitTestInternal(x, y)?.let { view ->
 
             // @TODO: This should not be required if we compute bounds
-            val area = getClippingAreaInternal()
-            if (area != null && !area.contains(x, y)) return null
-
-            return it
+            Rectangle.POOL { tempRect ->
+                val area = getClippingAreaInternal(tempRect)
+                if (area != null && !area.contains(x, y)) return null
+                return view
+            }
         }
         return if (this is Stage) this else null
     }
 
-    private val _localBounds2: Rectangle = Rectangle()
-
     @KorgeInternal
-    fun getClippingAreaInternal(): Rectangle? {
-        this._localBounds2.setTo(Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY)
+    fun getClippingAreaInternal(out: Rectangle): Rectangle? {
+        out.setTo(Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY)
         var count = 0
-        forEachAscendant(true) {
-            if (it !is Stage && it is FixedSizeContainer && it.clip) {
-                it.getGlobalBounds(this._localBounds)
-                if (count == 0) {
-                    this._localBounds2.copyFrom(this._localBounds)
-                } else {
-                    this._localBounds2.setToIntersection(this._localBounds2, this._localBounds)
+        Rectangle.POOL { _localBounds ->
+            forEachAscendant(true) {
+                if (it !is Stage && it is FixedSizeContainer && it.clip) {
+                    it.getGlobalBounds(_localBounds)
+                    if (count == 0) {
+                        out.copyFrom(_localBounds)
+                    } else {
+                        out.setToIntersection(out, _localBounds)
+                    }
+                    count++
                 }
-                count++
             }
         }
-        return if (count == 0) null else this._localBounds2
+
+        return if (count == 0) null else out
     }
 
     fun mouseHitTest(x: Float, y: Float): View? = hitTest(x.toDouble(), y.toDouble())
@@ -1353,20 +1439,28 @@ abstract class View internal constructor(
 
     /** Returns the global bounds of this object. Allows to specify an [out] [Rectangle] to prevent allocations. */
     //fun getGlobalBounds(out: Rectangle = Rectangle()): Rectangle = getBounds(root, out, inclusive = false)
-    fun getGlobalBounds(out: Rectangle = Rectangle()): Rectangle = getBounds(root, out, inclusive = true)
+    fun getGlobalBounds(out: Rectangle = Rectangle(), includeFilters: Boolean = false): Rectangle = getBounds(root, out, inclusive = true, includeFilters = includeFilters)
+
+    /** Tries to set the global bounds of the object. If there are rotations in the ancestors, this might not work as expected. */
+    @KorgeUntested
+    fun setGlobalBounds(bounds: IRectangle) {
+        val transform = parent!!.globalMatrix.toTransform()
+        setGlobalXY(bounds.left, bounds.top)
+        setSizeScaled(
+            bounds.width * transform.scaleX,
+            bounds.height * transform.scaleY,
+        )
+    }
 
     // @TODO: Would not include strokes
     //fun getRect(target: View? = this, out: Rectangle = Rectangle()): Rectangle = TODO()
 
     /** Get the bounds of this view, using the [target] view as coordinate system. Not providing a [target] will return the local bounds. Allows to specify [out] [Rectangle] to prevent allocations. */
-    private val boundsTemp = Matrix()
-    private val bb = BoundsBuilder()
-
-    fun getBoundsNoAnchoring(target: View? = this, out: Rectangle = Rectangle(), inclusive: Boolean = false, includeFilters: Boolean = true): Rectangle {
+    fun getBoundsNoAnchoring(target: View? = this, out: Rectangle = Rectangle(), inclusive: Boolean = false, includeFilters: Boolean = false): Rectangle {
         return getBounds(target, out, false, inclusive, includeFilters)
     }
 
-    protected fun _getBounds(concat: Matrix?, out: Rectangle = Rectangle(), doAnchoring: Boolean = true, includeFilters: Boolean = true): Rectangle {
+    protected fun _getBounds(concat: Matrix?, out: Rectangle = Rectangle(), doAnchoring: Boolean = true, includeFilters: Boolean = false): Rectangle {
         getLocalBounds(out, doAnchoring, includeFilters)
 
         if (concat != null && !concat.isIdentity()) {
@@ -1382,37 +1476,43 @@ abstract class View internal constructor(
             val p4x = out.left
             val p4y = out.bottom
 
-            bb.reset()
-            bb.add(concat.transformX(p1x, p1y), concat.transformY(p1x, p1y))
-            bb.add(concat.transformX(p2x, p2y), concat.transformY(p2x, p2y))
-            bb.add(concat.transformX(p3x, p3y), concat.transformY(p3x, p3y))
-            bb.add(concat.transformX(p4x, p4y), concat.transformY(p4x, p4y))
-
-            bb.getBounds(out)
+            BoundsBuilder.POOL { bb ->
+                bb.add(concat.transformX(p1x, p1y), concat.transformY(p1x, p1y))
+                bb.add(concat.transformX(p2x, p2y), concat.transformY(p2x, p2y))
+                bb.add(concat.transformX(p3x, p3y), concat.transformY(p3x, p3y))
+                bb.add(concat.transformX(p4x, p4y), concat.transformY(p4x, p4y))
+                bb.getBounds(out)
+            }
         }
         return out
     }
 
-    fun getBounds(target: View? = this, out: Rectangle = Rectangle(), doAnchoring: Boolean = true, inclusive: Boolean = false, includeFilters: Boolean = true): Rectangle {
-        return _getBounds(this.getConcatMatrix(target ?: this, boundsTemp, inclusive), out, doAnchoring, includeFilters)
+    fun getBounds(target: View? = this, out: Rectangle = Rectangle(), doAnchoring: Boolean = true, inclusive: Boolean = false, includeFilters: Boolean = false): Rectangle {
+        return Matrix.POOL { boundsTemp -> _getBounds(this.getConcatMatrix(target ?: this, boundsTemp, inclusive), out, doAnchoring, includeFilters) }
     }
+
+    ///** Kind of bounds we are checking */
+    //enum class BoundsKind {
+    //    /** The bounds including pixels, so all the non-transparent pixels will be instead. For filters, etc. */
+    //    PIXELS,
+    //    /** For hit boxes and physics */
+    //    SHAPE
+    //}
 
     /**
      * **NOTE:** that if [out] is not provided, the [Rectangle] returned shouldn't stored and modified since it is owned by this class.
      */
-    fun getLocalBoundsOptimized(includeFilters: Boolean = true): Rectangle = getLocalBounds(_localBounds, includeFilters = includeFilters)
+    fun getLocalBoundsOptimized(includeFilters: Boolean = false): Rectangle = getLocalBounds(_localBounds, includeFilters = includeFilters)
 
-    fun getLocalBoundsOptimizedAnchored(includeFilters: Boolean = true): Rectangle = getLocalBounds(_localBounds, doAnchoring = true, includeFilters = includeFilters)
+    fun getLocalBoundsOptimizedAnchored(includeFilters: Boolean = false): Rectangle = getLocalBounds(_localBounds, doAnchoring = true, includeFilters = includeFilters)
 
     @Deprecated("Allocates")
-    fun getLocalBounds(doAnchoring: Boolean = true, includeFilters: Boolean = true): Rectangle = getLocalBounds(Rectangle(), doAnchoring, includeFilters)
-
-    private val tempMutableMargin: MutableMarginInt = MutableMarginInt()
+    fun getLocalBounds(doAnchoring: Boolean = true, includeFilters: Boolean = false): Rectangle = getLocalBounds(Rectangle(), doAnchoring, includeFilters)
 
     /**
      * Get local bounds of the view. Allows to specify [out] [Rectangle] if you want to reuse an object.
      */
-    fun getLocalBounds(out: Rectangle, doAnchoring: Boolean = true, includeFilters: Boolean = true): Rectangle {
+    fun getLocalBounds(out: Rectangle, doAnchoring: Boolean = true, includeFilters: Boolean = false): Rectangle {
         getLocalBoundsInternal(out)
         val it = out
         if (!doAnchoring) {
@@ -1420,13 +1520,13 @@ abstract class View internal constructor(
             it.y += anchorDispY
         }
         if (includeFilters) {
-            filter?.expandBorderRectangle(out, tempMutableMargin)
+            filter?.expandBorderRectangle(out)
         }
         return it
     }
 
     private val _localBounds: Rectangle = Rectangle()
-    open fun getLocalBoundsInternal(out: Rectangle = _localBounds) {
+    open fun getLocalBoundsInternal(out: Rectangle) {
         out.clear()
     }
 
@@ -1473,42 +1573,6 @@ abstract class View internal constructor(
         val x = ratioX.interpolate(bounds.left, bounds.right)
         val y = ratioY.interpolate(bounds.top, bounds.bottom)
         return out.setTo(localToGlobalX(x, y), localToGlobalY(x, y))
-    }
-
-    var extraBuildDebugComponent: ((views: Views, view: View, container: UiContainer) -> Unit)? = null
-
-    override fun buildDebugComponent(views: Views, container: UiContainer) {
-        val view = this
-
-        extraBuildDebugComponent?.invoke(views, view, container)
-
-        if (filter != null) {
-            container.uiCollapsibleSection("Filter") {
-                uiEditableValue(view::filterScale, min = 0.0, max = 1.0, clamp = true)
-                filter!!.buildDebugComponent(views, this)
-            }
-        }
-
-        container.uiCollapsibleSection("View") {
-            addChild(UiRowEditableValue(app, "type", UiLabel(app).also { it.text = view::class.simpleName ?: "Unknown" }))
-            uiEditableValue(view::name)
-            uiEditableValue(view::colorMul)
-            uiEditableValue(view::blendMode, values = { BlendMode.STANDARD_LIST })
-            uiEditableValue(view::alpha, min = 0.0, max = 1.0, clamp = true)
-            uiEditableValue(view::speed, min = -1.0, max = 1.0, clamp = false)
-            uiEditableValue(view::ratio, min = 0.0, max = 1.0, clamp = false)
-            uiEditableValue(Pair(view::x, view::y), min = -1000.0, max = +1000.0, clamp = false, name = "position")
-            uiEditableValue(Pair(view::scaledWidth, view::scaledHeight), min = -1000.0, max = 1000.0, clamp = false, name = "size")
-            uiEditableValue(view::scale, min = 0.0, max = 1.0, clamp = false)
-            uiEditableValue(Pair(view::scaleX, view::scaleY), min = 0.0, max = 1.0, clamp = false, name = "scaleXY")
-            uiEditableValue(view::rotation, name = "rotation")
-            uiEditableValue(Pair(view::skewX, view::skewY), name = "skew")
-            uiEditableValue(view::visible)
-        }
-
-        views.viewExtraBuildDebugComponent.fastForEach {
-            it(views, view, container)
-        }
     }
 
     fun getGlobalMatrixWithAnchor(out: Matrix = Matrix()): Matrix {
@@ -1601,6 +1665,11 @@ class ViewTransform(var view: View) {
 }
 */
 
+inline fun <T2 : View, T> extraViewProp(
+    name: String? = null,
+    noinline default: T2.() -> T
+): Extra.PropertyThis<T2, T> = extraPropertyThis(name, transform = { invalidateRender(); it}, default)
+
 interface ViewRenderPhase {
     val priority: Int get() = 0
     fun render(view: View, ctx: RenderContext) = view.renderNextPhase(ctx)
@@ -1641,26 +1710,22 @@ fun View?.commonAncestor(ancestor: View?): View? {
 fun View.replaceWith(view: View): Boolean = this.parent?.replaceChild(this, view) ?: false
 
 /** Adds a block that will be executed per frame to this view. As parameter the block will receive a [TimeSpan] with the time elapsed since the previous frame. */
-fun <T : View> T.addUpdater(updatable: T.(dt: TimeSpan) -> Unit): Cancellable {
-    val component = object : UpdateComponent {
-        override val view: View get() = this@addUpdater
-        override fun update(dt: TimeSpan) {
-            updatable(this@addUpdater, dt)
-        }
-    }.attach()
-    component.update(TimeSpan.ZERO)
-    return Cancellable { component.detach() }
+fun <T : View> T.addUpdater(first: Boolean = true, updatable: T.(dt: TimeSpan) -> Unit): Cancellable = object : UpdateComponent {
+    override val view: View get() = this@addUpdater
+    override fun update(dt: TimeSpan) {
+        updatable(this@addUpdater, dt)
+    }
+}.attach().also {
+    if (first) it.update(TimeSpan.ZERO)
 }
+fun <T : View> T.addUpdater(updatable: T.(dt: TimeSpan) -> Unit): Cancellable = addUpdater(true, updatable)
 
-fun <T : View> T.addUpdaterWithViews(updatable: T.(views: Views, dt: TimeSpan) -> Unit): Cancellable {
-    val component = object : UpdateComponentWithViews {
-        override val view: View get() = this@addUpdaterWithViews
-        override fun update(views: Views, dt: TimeSpan) {
-            updatable(this@addUpdaterWithViews, views, dt)
-        }
-    }.attach()
-    return Cancellable { component.detach() }
-}
+fun <T : View> T.addUpdaterWithViews(updatable: T.(views: Views, dt: TimeSpan) -> Unit): Cancellable = object : UpdateComponentWithViews {
+    override val view: View get() = this@addUpdaterWithViews
+    override fun update(views: Views, dt: TimeSpan) {
+        updatable(this@addUpdaterWithViews, views, dt)
+    }
+}.attach()
 
 fun <T : View> T.addOptFixedUpdater(time: TimeSpan = TimeSpan.NIL, updatable: T.(dt: TimeSpan) -> Unit): Cancellable = when (time) {
     TimeSpan.NIL -> addUpdater(updatable)
@@ -1684,50 +1749,46 @@ fun <T : View> T.addFixedUpdater(
     initial: Boolean = true,
     limitCallsPerFrame: Int = 16,
     updatable: T.() -> Unit
-): Cancellable {
+): Cancellable = object : UpdateComponent {
     var accum = 0.0.milliseconds
-    val component = object : UpdateComponent {
-        override val view: View get() = this@addFixedUpdater
-        override fun update(dt: TimeSpan) {
-            accum += dt
-            //println("UPDATE: accum=$accum, tickTime=$tickTime")
-            var calls = 0
-            while (accum >= time * 0.75) {
-                accum -= time
-                updatable(this@addFixedUpdater)
-                calls++
-                if (calls >= limitCallsPerFrame) {
-                    // We do not accumulate for the next frame in this case
-                    accum = 0.0.milliseconds
-                    break
-                }
-            }
-            if (calls > 0) {
-                // Do not accumulate for small fractions since this would cause hiccups!
-                if (accum < time * 0.25) {
-                    accum = 0.0.milliseconds
-                }
+    override val view: View get() = this@addFixedUpdater
+    override fun update(dt: TimeSpan) {
+        accum += dt
+        //println("UPDATE: accum=$accum, tickTime=$tickTime")
+        var calls = 0
+        while (accum >= time * 0.75) {
+            accum -= time
+            updatable(this@addFixedUpdater)
+            calls++
+            if (calls >= limitCallsPerFrame) {
+                // We do not accumulate for the next frame in this case
+                accum = 0.0.milliseconds
+                break
             }
         }
-    }.attach()
+        if (calls > 0) {
+            // Do not accumulate for small fractions since this would cause hiccups!
+            if (accum < time * 0.25) {
+                accum = 0.0.milliseconds
+            }
+        }
+    }
+}.attach().also {
     if (initial) {
         updatable(this@addFixedUpdater)
     }
-    return Cancellable { component.detach() }
 }
 
 @Deprecated("Use addUpdater instead", ReplaceWith("addUpdater(updatable)"))
 inline fun <T : View> T.onFrame(noinline updatable: T.(dt: TimeSpan) -> Unit): Cancellable = addUpdater(updatable)
 
-fun <T : View> T.onNextFrame(updatable: T.(views: Views) -> Unit): UpdateComponentWithViews {
-    return object : UpdateComponentWithViews {
-        override val view: View get() = this@onNextFrame
-        override fun update(views: Views, dt: TimeSpan) {
-            removeFromView()
-            updatable(this@onNextFrame, views)
-        }
-    }.attach()
-}
+fun <T : View> T.onNextFrame(updatable: T.(views: Views) -> Unit): UpdateComponentWithViews = object : UpdateComponentWithViews {
+    override val view: View get() = this@onNextFrame
+    override fun update(views: Views, dt: TimeSpan) {
+        removeFromView()
+        updatable(this@onNextFrame, views)
+    }
+}.attach()
 
 
 /**
@@ -1762,6 +1823,21 @@ fun View?.ancestorsUpTo(target: View?): List<View> {
     }
     return out
 }
+
+fun View?.firstAncestor(includeThis: Boolean = true, condition: (View) -> Boolean): View? {
+    if (this == null) return null
+    if (includeThis && condition(this)) return this
+    return parent?.firstAncestor(true, condition)
+}
+
+/**
+ * Scroll ancestors to make this view is visible
+ */
+fun View.scrollParentsToMakeVisible() {
+    firstAncestorOfType<UIScrollable>(includeThis = false)?.ensureViewIsVisible(this)
+}
+
+inline fun <reified T : View> View?.firstAncestorOfType(includeThis: Boolean = true): T? = firstAncestor(includeThis) { it is T } as T?
 
 /**
  * Returns a list of all the ancestors (including this) to reach the root node (usually the stage).
@@ -2126,6 +2202,13 @@ fun <T : View> T.alpha(alpha: Double): T {
 fun <T : View> T.alpha(alpha: Float): T = alpha(alpha.toDouble())
 fun <T : View> T.alpha(alpha: Int): T = alpha(alpha.toDouble())
 
+fun <T : View> T.zIndex(index: Float): T = zIndex(index.toDouble())
+fun <T : View> T.zIndex(index: Int): T = zIndex(index.toDouble())
+fun <T : View> T.zIndex(index: Double): T {
+    this.zIndex = index
+    return this
+}
+
 typealias ViewDslMarker = com.soywiz.korma.annotations.ViewDslMarker
 // @TODO: This causes issues having to put some explicit this@ when it shouldn't be required
 //typealias ViewDslMarker = KorDslMarker
@@ -2168,7 +2251,7 @@ val Stage.lastTreeView: View
                 return view
             }
         }
-        return view ?: stage
+        return view ?: stage!!
     }
 
 fun View.nextView(): View? {

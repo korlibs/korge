@@ -1,10 +1,17 @@
 package com.soywiz.kds
 
+/**
+ * This acts as a [lazy] delegate but for functions.
+ */
 fun <T : Any> (() -> T).memoize(): (() -> T) {
     val func = this
-    var cached: T? = null
+    var set = false
+    lateinit var cached: T
     return {
-        if (cached == null) cached = func()
-        cached!!
+        if (!set) {
+            cached = func()
+            set = true
+        }
+        cached
     }
 }

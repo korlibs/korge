@@ -3,22 +3,19 @@ package com.soywiz.korim.awt
 import com.soywiz.kmem.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
-import com.soywiz.korim.format.ImageDecoderNotFoundException
-import com.soywiz.korim.format.ImageDecodingProps
+import com.soywiz.korim.format.*
 import com.soywiz.korio.async.*
-import com.soywiz.korma.geom.Anchor
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.Rectangle
-import com.soywiz.korma.geom.ScaleMode
-import com.soywiz.korma.geom.Size
 import kotlinx.coroutines.*
 import java.awt.*
+import java.awt.Point
 import java.awt.event.*
 import java.awt.image.*
 import java.io.*
 import javax.imageio.*
 import javax.swing.*
 import kotlin.coroutines.*
-
 
 fun Bitmap32.toAwt(
 	out: BufferedImage = BufferedImage(
@@ -30,6 +27,9 @@ fun Bitmap32.toAwt(
 	transferTo(out)
 	return out
 }
+
+@Suppress("unused")
+fun IPoint.toAwt(): Point = Point(x.toIntRound(), y.toIntRound())
 
 fun Bitmap.toAwt(
 	out: BufferedImage = BufferedImage(
@@ -51,6 +51,9 @@ suspend fun awtShowImageAndWait(image: BufferedImage): Unit = suspendCancellable
 
 fun awtShowImage(image: BufferedImage): JFrame {
 	//println("Showing: $image")
+    if (GraphicsEnvironment.isHeadless()) {
+        throw HeadlessException("If on tests, try NON_HEADLESS_TESTS=true")
+    }
 	val frame = object : JFrame("Image (${image.width}x${image.height})") {
         override fun paint(g: Graphics) {
             //super.paint(g)

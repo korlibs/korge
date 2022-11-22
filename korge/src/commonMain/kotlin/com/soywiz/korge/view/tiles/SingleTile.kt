@@ -1,6 +1,7 @@
 package com.soywiz.korge.view.tiles
 
 import com.soywiz.kds.IntArray2
+import com.soywiz.kds.toStacked
 import com.soywiz.korge.view.Container
 import com.soywiz.korge.view.SmoothedBmpSlice
 import com.soywiz.korge.view.ViewDslMarker
@@ -14,13 +15,13 @@ inline fun Container.repeatedImageView(
     repeatY: Boolean = false,
     smoothing: Boolean = true,
     block: @ViewDslMarker SingleTile.() -> Unit = {}
-) = SingleTile(bitmap, smoothing).repeat(if (repeatX) BaseTileMap.Repeat.REPEAT else BaseTileMap.Repeat.NONE,
-        if (repeatY) BaseTileMap.Repeat.REPEAT else BaseTileMap.Repeat.NONE).addTo(this, block)
+) = SingleTile(bitmap, smoothing).repeat(if (repeatX) TileMapRepeat.REPEAT else TileMapRepeat.NONE,
+        if (repeatY) TileMapRepeat.REPEAT else TileMapRepeat.NONE).addTo(this, block)
 
 open class SingleTile(
     bitmap: BmpSlice,
     smoothing: Boolean = true
-) : BaseTileMap(IntArray2(1, 1, 0), smoothing), SmoothedBmpSlice {
+) : BaseTileMap(IntArray2(1, 1, 0).toStacked(), smoothing), SmoothedBmpSlice {
     override val tilesetTextures = Array<BitmapCoords?>(1) { bitmap }
 
     override var width = 0.0

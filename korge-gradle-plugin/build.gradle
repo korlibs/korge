@@ -100,6 +100,7 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
 //def publishAllPublications = false
 
 def publishJvmPublicationToMavenLocal = tasks.register("publishJvmPublicationToMavenLocal", Task) {
+    group = "publishing"
     //dependsOn(publishAllPublications ? "publishToMavenLocal" : "publishPluginMavenPublicationToMavenLocal")
     dependsOn("publishPluginMavenPublicationToMavenLocal")
     dependsOn("publishKorgePluginMarkerMavenPublicationToMavenLocal")
@@ -112,6 +113,7 @@ afterEvaluate {
 
     if (tasks.findByName("publishKorgePluginMarkerMavenPublicationToMavenRepository") != null) {
         def publishJvmPublicationToMavenRepository = tasks.register("publishJvmPublicationToMavenRepository", Task) {
+            group = "publishing"
             dependsOn("publishPluginMavenPublicationToMavenRepository")
             dependsOn("publishKorgePluginMarkerMavenPublicationToMavenRepository")
         }

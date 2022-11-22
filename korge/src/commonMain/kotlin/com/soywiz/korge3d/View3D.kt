@@ -8,7 +8,6 @@ import com.soywiz.korma.geom.degrees
 
 @Korge3DExperimental
 abstract class View3D : BaseView() {
-
     //TODO: I don't think that a Camera, Container, Light, ViewWithMesh, Text3D should all have this as supertype
     // they are not all 'types' of View ?
 
@@ -19,80 +18,96 @@ abstract class View3D : BaseView() {
 
 	///////
 
-	var x: Double
-		set(localX) { transform.setTranslation(localX, y, z, localW) }
+    override fun invalidateRender() {
+        val stage3D = root as? Stage3D?
+        //println("View3D.invalidateRender: stage3D=$stage3D")
+        stage3D?.views?.views?.invalidatedView(this)
+    }
+
+    var x: Double
+		set(localX) {
+            transform.setTranslation(localX, y, z, localW)
+            invalidateRender()
+        }
 		get() = transform.translation.x.toDouble()
 
 	var y: Double
-		set(localY) { transform.setTranslation(x, localY, z, localW) }
+		set(localY) {
+            transform.setTranslation(x, localY, z, localW)
+            invalidateRender()
+        }
 		get() = transform.translation.y.toDouble()
 
 	var z: Double
-		set(localZ) { transform.setTranslation(x, y, localZ, localW) }
+		set(localZ) { transform.setTranslation(x, y, localZ, localW); invalidateRender() }
 		get() = transform.translation.z.toDouble()
 
 	var localW: Double
-		set(localW) { transform.setTranslation(x, y, z, localW) }
+		set(localW) { transform.setTranslation(x, y, z, localW); invalidateRender() }
 		get() = transform.translation.w.toDouble()
 
 	///////
 
 	var scaleX: Double
-		set(scaleX) { transform.setScale(scaleX, scaleY, scaleZ, localScaleW) }
+		set(scaleX) { transform.setScale(scaleX, scaleY, scaleZ, localScaleW); invalidateRender() }
 		get() = transform.scale.x.toDouble()
 
 	var scaleY: Double
-		set(scaleY) { transform.setScale(scaleX, scaleY, scaleZ, localScaleW) }
+		set(scaleY) { transform.setScale(scaleX, scaleY, scaleZ, localScaleW); invalidateRender() }
 		get() = transform.scale.y.toDouble()
 
 	var scaleZ: Double
-		set(scaleZ) { transform.setScale(scaleX, scaleY, scaleZ, localScaleW) }
+		set(scaleZ) { transform.setScale(scaleX, scaleY, scaleZ, localScaleW); invalidateRender() }
 		get() = transform.scale.z.toDouble()
 
 	var localScaleW: Double
-		set(scaleW) { transform.setScale(scaleX, scaleY, scaleZ, scaleW) }
+		set(scaleW) { transform.setScale(scaleX, scaleY, scaleZ, scaleW); invalidateRender() }
 		get() = transform.scale.w.toDouble()
 
 	///////
 
 	var rotationX: Angle
-		set(rotationX) { transform.setRotation(rotationX, rotationY, rotationZ) }
+		set(rotationX) { transform.setRotation(rotationX, rotationY, rotationZ); invalidateRender() }
 		get() = transform.rotationEuler.x
 
 	var rotationY: Angle
-		set(rotationY) { transform.setRotation(rotationX, rotationY, rotationZ) }
+		set(rotationY) { transform.setRotation(rotationX, rotationY, rotationZ); invalidateRender() }
 		get() = transform.rotationEuler.y
 
 	var rotationZ: Angle
-		set(rotationZ) { transform.setRotation(rotationX, rotationY, rotationZ) }
+		set(rotationZ) { transform.setRotation(rotationX, rotationY, rotationZ); invalidateRender() }
 		get() = transform.rotationEuler.z
 
 	///////
 
 	var rotationQuatX: Double
-		set(rotationQuatX) { transform.setRotation(rotationQuatX, rotationQuatY, rotationQuatZ, rotationQuatW) }
+		set(rotationQuatX) { transform.setRotation(rotationQuatX, rotationQuatY, rotationQuatZ, rotationQuatW); invalidateRender() }
 		get() = transform.rotation.x
 
 	var rotationQuatY: Double
-		set(rotationQuatY) { transform.setRotation(rotationQuatX, rotationQuatY, rotationQuatZ, rotationQuatW) }
+		set(rotationQuatY) { transform.setRotation(rotationQuatX, rotationQuatY, rotationQuatZ, rotationQuatW); invalidateRender() }
 		get() = transform.rotation.y
 
 	var rotationQuatZ: Double
-		set(rotationQuatZ) { transform.setRotation(rotationQuatX, rotationQuatY, rotationQuatZ, rotationQuatW) }
+		set(rotationQuatZ) { transform.setRotation(rotationQuatX, rotationQuatY, rotationQuatZ, rotationQuatW); invalidateRender() }
 		get() = transform.rotation.z
 
 	var rotationQuatW: Double
-		set(rotationQuatW) { transform.setRotation(rotationQuatX, rotationQuatY, rotationQuatZ, rotationQuatW) }
+		set(rotationQuatW) { transform.setRotation(rotationQuatX, rotationQuatY, rotationQuatZ, rotationQuatW); invalidateRender() }
 		get() = transform.rotation.w
 
 	///////
 
 	internal var _parent: Container3D? = null
+    override val baseParent: Container3D? get() = parent
 
-	var parent: Container3D?
+    open val root: View3D get() = parent?.root ?: this
+
+    var parent: Container3D?
 		set(value) {
 			_parent = value
 			_parent?.addChild(this)
+            invalidateRender()
 		}
 		get() = _parent
 
@@ -168,6 +183,7 @@ fun <T : View3D> T.name(name: String): T {
 @Korge3DExperimental
 fun <T : View3D> T.position(x: Float, y: Float, z: Float, w: Float = 1f): T {
     transform.setTranslation(x, y, z, w)
+    invalidateRender()
     return this
 }
 @Korge3DExperimental
@@ -178,6 +194,7 @@ fun <T : View3D> T.position(x: Int, y: Int, z: Int, w: Int = 1): T = position(x.
 @Korge3DExperimental
 fun <T : View3D> T.rotation(x: Angle = 0.degrees, y: Angle = 0.degrees, z: Angle = 0.degrees): T {
 	transform.setRotation(x, y, z)
+    invalidateRender()
     return this
 }
 
@@ -207,6 +224,7 @@ inline fun <T : View3D> T.lookAt(x: Int, y: Int, z: Int): T = lookAt(x.toFloat()
 @Korge3DExperimental
 fun <T : View3D> T.positionLookingAt(px: Float, py: Float, pz: Float, tx: Float, ty: Float, tz: Float): T {
     transform.setTranslationAndLookAt(px, py, pz, tx, ty, tz)
+    invalidateRender()
     return this
 }
 @Korge3DExperimental

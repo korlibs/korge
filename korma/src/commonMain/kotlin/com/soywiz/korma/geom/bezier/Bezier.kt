@@ -4,37 +4,7 @@ import com.soywiz.kds.DoubleArrayList
 import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.kds.mapDouble
 import com.soywiz.kds.sort
-import com.soywiz.korma.geom.Angle
-import com.soywiz.korma.geom.IPoint
-import com.soywiz.korma.geom.IPointArrayList
-import com.soywiz.korma.geom.IRectangle
-import com.soywiz.korma.geom.Line
-import com.soywiz.korma.geom.Matrix
-import com.soywiz.korma.geom.Point
-import com.soywiz.korma.geom.PointArrayList
-import com.soywiz.korma.geom.Rectangle
-import com.soywiz.korma.geom.bottom
-import com.soywiz.korma.geom.clone
-import com.soywiz.korma.geom.fastForEach
-import com.soywiz.korma.geom.firstX
-import com.soywiz.korma.geom.firstY
-import com.soywiz.korma.geom.get
-import com.soywiz.korma.geom.getComponentList
-import com.soywiz.korma.geom.getPoint
-import com.soywiz.korma.geom.lastX
-import com.soywiz.korma.geom.lastY
-import com.soywiz.korma.geom.left
-import com.soywiz.korma.geom.mapPoints
-import com.soywiz.korma.geom.mutable
-import com.soywiz.korma.geom.pointArrayListOf
-import com.soywiz.korma.geom.radians
-import com.soywiz.korma.geom.right
-import com.soywiz.korma.geom.roundDecimalPlaces
-import com.soywiz.korma.geom.setToRoundDecimalPlaces
-import com.soywiz.korma.geom.top
-import com.soywiz.korma.geom.transformX
-import com.soywiz.korma.geom.transformY
-import com.soywiz.korma.geom.transformed
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.interpolation.interpolate
 import com.soywiz.korma.math.convertRange
 import com.soywiz.korma.math.isAlmostEquals
@@ -44,12 +14,7 @@ import com.soywiz.korma.math.roundDecimalPlaces
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
-import kotlin.math.abs
-import kotlin.math.absoluteValue
-import kotlin.math.atan2
-import kotlin.math.cos
-import kotlin.math.pow
-import kotlin.math.sin
+import kotlin.math.*
 
 interface IBezier : Curve {
     val points: IPointArrayList
@@ -188,6 +153,7 @@ class Bezier(
         alignedValid = false
         dpointsValid = false
         extremaValid = false
+        _outerCircle = null
     }
 
     fun setToRoundDecimalPlaces(places: Int) {
@@ -253,6 +219,14 @@ class Bezier(
         }
         _extrema = Extrema(out[0], out[1])
         return _extrema
+    }
+
+    private var _outerCircle: Circle? = null
+    val outerCircle: ICircle get() {
+        if (_outerCircle == null) {
+            _outerCircle = boundingBox.outerCircle()
+        }
+        return _outerCircle!!
     }
 
     private val _boundingBox: Rectangle = Rectangle()
@@ -382,7 +356,29 @@ class Bezier(
         return out
     }
 
+    private fun findNearestLine(pX: Double, pY: Double, aX: Double, aY: Double, bX: Double, bY: Double, out: ProjectedPoint = ProjectedPoint()): ProjectedPoint {
+        val atobX = bX - aX
+        val atobY = bY - aY
+
+        val atopX = pX - aX
+        val atopY = pY - aY
+
+        val len = atobX * atobX + atobY * atobY
+        val dot = atopX * atobX + atopY * atobY
+
+        val t = kotlin.math.min( 1.0, kotlin.math.max( 0.0, dot / len ) );
+        //dot = ( bX - aX ) * ( pY - aY ) - ( bY - aY ) * ( pX - aX );
+        out.p.setTo(aX + atobX * t, aY + atobY * t)
+        out.t = t
+        out.dSq = Point.distanceSquared(out.p.x, out.p.y, pX, pY)
+        return out
+    }
+
     override fun project(point: IPoint, out: ProjectedPoint): ProjectedPoint {
+        if (points.size == 2) {
+            return findNearestLine(point.x, point.y, points.getX(0), points.getY(0), points.getX(1), points.getY(1), out)
+        }
+
         val LUT = this.lut
         val l = LUT.steps.toDouble()
         val closest = LUT.closest(point)
@@ -392,34 +388,37 @@ class Bezier(
         val step: Double = 0.1 / l
 
         // step 2: fine check
-        var mdist = closest.mdist
+        var mdistSq = closest.mdistSq
         var t = t1
         var ft = t
-        mdist += 1
+        mdistSq += 1
         while (t < t2 + step) {
-            val p: IPoint = this.compute(t)
-            val d = Point.distance(point, p)
-            if (d < mdist) {
-                mdist = d
+            val p: IPoint = this.compute(t, out.tempP)
+            val d = Point.distanceSquared(point, p)
+            if (d < mdistSq) {
+                mdistSq = d
                 ft = t
+                out.p.copyFrom(p)
             }
             t += step
         }
-        out.p = this.compute(ft)
+        this.compute(ft, out.p)
         out.t = when {
             ft < 0 -> 0.0
             ft > 1 -> 1.0
             else -> ft
         }
-        out.d = mdist
+        out.dSq = mdistSq
         return out
     }
 
-    data class ProjectedPoint(var p: IPoint = IPoint(), var t: Double = 0.0, var d: Double = 0.0) {
+    data class ProjectedPoint(val p: Point = Point(), var t: Double = 0.0, var dSq: Double = 0.0) {
+        val d: Double get() = sqrt(dSq)
+        internal val tempP: Point = Point()
         fun roundDecimalPlaces(places: Int): ProjectedPoint = ProjectedPoint(
             p.mutable.setToRoundDecimalPlaces(places),
             t.roundDecimalPlaces(places),
-            d.roundDecimalPlaces(places)
+            dSq.roundDecimalPlaces(places)
         )
     }
 

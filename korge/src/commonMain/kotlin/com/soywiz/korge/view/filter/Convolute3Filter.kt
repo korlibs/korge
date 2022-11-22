@@ -1,19 +1,10 @@
 package com.soywiz.korge.view.filter
 
-import com.soywiz.kmem.toIntCeil
-import com.soywiz.korag.FragmentShaderDefault
-import com.soywiz.korag.shader.Uniform
-import com.soywiz.korag.shader.VarType
-import com.soywiz.korag.shader.storageFor
-import com.soywiz.korag.shader.storageForMatrix3D
-import com.soywiz.korge.debug.uiEditableValue
-import com.soywiz.korge.render.BatchBuilder2D
-import com.soywiz.korge.view.Views
-import com.soywiz.korma.geom.Matrix3D
-import com.soywiz.korma.geom.MutableMarginInt
-import com.soywiz.korma.geom.fromRows3x3
-import com.soywiz.korma.geom.times
-import com.soywiz.korui.UiContainer
+import com.soywiz.kmem.*
+import com.soywiz.korag.*
+import com.soywiz.korag.shader.*
+import com.soywiz.korge.view.property.*
+import com.soywiz.korma.geom.*
 
 /**
  * A [Filter] that will convolute near pixels (3x3) with a [kernel].
@@ -95,12 +86,19 @@ class Convolute3Filter(
         }
     }
 
+    object KernelNameProvider {
+        val LIST = NAMED_KERNELS
+    }
+
     /** 3x3 matrix representing a convolution kernel */
-    var weights by uniforms.storageForMatrix3D(u_Weights, kernel)
+    @ViewProperty
+    var weights: Matrix3D by uniforms.storageForMatrix3D(u_Weights, kernel)
     /** Distance between the origin pixel for sampling for edges */
-    var dist by uniforms.storageFor(u_Dist).doubleDelegateX(dist)
+    @ViewProperty
+    var dist: Double by uniforms.storageFor(u_Dist).doubleDelegateX(dist)
     /** Whether or not kernel must be applied to the alpha component */
-    var applyAlpha by uniforms.storageFor(u_ApplyAlpha).boolDelegateX(applyAlpha)
+    @ViewProperty
+    var applyAlpha: Boolean by uniforms.storageFor(u_ApplyAlpha).boolDelegateX(applyAlpha)
 
     override val programProvider: ProgramProvider get() = Convolute3Filter
 
@@ -108,16 +106,9 @@ class Convolute3Filter(
         out.setTo(dist.toIntCeil())
     }
 
+    @ViewProperty
+    @ViewPropertyProvider(KernelNameProvider::class)
     var namedKernel: String
         get() = NAMED_KERNELS.entries.firstOrNull { it.value == weights }?.key ?: NAMED_KERNELS.keys.first()
         set(value) { weights = (NAMED_KERNELS[value] ?: KERNEL_IDENTITY) }
-
-    override fun buildDebugComponent(views: Views, container: UiContainer) {
-        container.uiEditableValue(listOf(weights::v00, weights::v01, weights::v02), name = "row0")
-        container.uiEditableValue(listOf(weights::v10, weights::v11, weights::v12), name = "row1")
-        container.uiEditableValue(listOf(weights::v20, weights::v21, weights::v22), name = "row2")
-        container.uiEditableValue(::dist)
-        container.uiEditableValue(::applyAlpha)
-        container.uiEditableValue(::namedKernel, values = { NAMED_KERNELS.keys.toList() })
-    }
 }

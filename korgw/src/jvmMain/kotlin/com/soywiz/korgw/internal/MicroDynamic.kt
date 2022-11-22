@@ -4,6 +4,13 @@ import java.lang.reflect.Modifier
 
 // @TODO: Use DynamicJvm from KorIO once updated to >= 1.9.4
 internal object MicroDynamic {
+    inline fun invokeCatching(block: MicroDynamic.() -> Unit): Unit {
+        try {
+            block()
+        } catch (e: Throwable) {
+            e.printStackTrace()
+        }
+    }
     inline operator fun <T> invoke(block: MicroDynamic.() -> T): T = block(this)
     fun getClass(fqname: String) = try { Class.forName(fqname) } catch (e: Throwable) { null }
 

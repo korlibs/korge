@@ -224,10 +224,10 @@ private class StorageFiles(val storage: SimpleStorage, val timeProvider: () -> T
 		return EntryInfo(
             fullPath = fileName,
             isFile = di[EntryInfo::isFile.name]!! as Boolean,
-			size = (di[EntryInfo::size.name]!! as Number).toLong(),
-			children = (di[EntryInfo::children.name] as Iterable<String>).toList(),
-			createdTime = (DateTime.fromUnix((di[EntryInfo::createdTime.name] as Number).toDouble())),
-			modifiedTime = (DateTime.fromUnix((di[EntryInfo::modifiedTime.name] as Number).toDouble())),
+            size = (di[EntryInfo::size.name]!! as Number).toLong(),
+            children = (di[EntryInfo::children.name] as Iterable<String>).toList(),
+            createdTime = (DateTime.fromUnixMillis((di[EntryInfo::createdTime.name] as Number).toDouble())),
+            modifiedTime = (DateTime.fromUnixMillis((di[EntryInfo::modifiedTime.name] as Number).toDouble())),
         )
 	}
 

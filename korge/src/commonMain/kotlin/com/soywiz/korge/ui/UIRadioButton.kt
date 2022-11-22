@@ -1,9 +1,7 @@
 package com.soywiz.korge.ui
 
-import com.soywiz.korge.view.Container
-import com.soywiz.korge.view.ViewDslMarker
-import com.soywiz.korge.view.addTo
-import com.soywiz.korim.bitmap.NinePatchBmpSlice
+import com.soywiz.korge.view.*
+import com.soywiz.korim.bitmap.*
 
 class UIRadioButtonGroup {
     private var mutableButtons = hashSetOf<UIRadioButton>()
@@ -43,13 +41,14 @@ open class UIRadioButton(
     checked: Boolean = false,
     group: UIRadioButtonGroup = UIRadioButtonGroup(),
     text: String = "Radio Button",
-) : UIBaseCheckBox<UIRadioButton>(width, height, checked, text) {
+) : UIBaseCheckBox<UIRadioButton>(width, height, checked, text, UIBaseCheckBoxSkin.Kind.RADIO) {
     var group: UIRadioButtonGroup = group
         set(value) {
             if (field !== value) {
                 field.removeRadio(this)
                 field = value
                 value.addRadio(this)
+                invalidate()
             }
         }
 
@@ -59,6 +58,7 @@ open class UIRadioButton(
             if (super.checked != value) {
                 super.checked = value
                 if (value) group.selectedButton = this
+                invalidate()
             }
         }
 
@@ -71,6 +71,7 @@ open class UIRadioButton(
 
     override fun onComponentClick() {
         checked = true
+        focused = true
     }
 
     override fun getNinePatch(over: Boolean): NinePatchBmpSlice {

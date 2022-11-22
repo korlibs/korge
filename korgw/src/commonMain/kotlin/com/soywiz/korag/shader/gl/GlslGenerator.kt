@@ -49,7 +49,7 @@ class GlobalsProgramVisitor : Program.Visitor<Unit>(Unit) {
     val attributes = LinkedHashSet<Attribute>()
     val varyings = LinkedHashSet<Varying>()
     val uniforms = LinkedHashSet<Uniform>()
-    val funcRefs = LinkedHashSet<Program.FuncRef>()
+    val funcRefs = LinkedHashSet<String>()
 
     override fun visit(attribute: Attribute) {
         attributes += attribute
@@ -65,7 +65,7 @@ class GlobalsProgramVisitor : Program.Visitor<Unit>(Unit) {
 
     override fun visit(func: Program.CustomFunc) {
         //println("VISITED: $func")
-        funcRefs += func.ref
+        funcRefs += func.ref.name
     }
 }
 
@@ -114,7 +114,7 @@ class GlslGenerator constructor(
         types.visit(mainFunc)
 
         //println("types.funcRefs=${types.funcRefs}")
-        val customFuncs = funcs.filter { it.ref in types.funcRefs }.reversed().distinctBy { it.ref.name }
+        val customFuncs = funcs.filter { it.ref.name in types.funcRefs }.reversed().distinctBy { it.ref.name }
         for (func in funcs) types.visit(mainFunc)
 
         val allFuncs = customFuncs + listOf(mainFunc)

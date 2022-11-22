@@ -4,6 +4,7 @@ import com.soywiz.kds.FastArrayList
 import com.soywiz.korio.lang.Closeable
 import kotlin.reflect.KClass
 
+@Deprecated("Use EventListener instead")
 interface EventDispatcher {
 	fun <T : Event> addEventListener(clazz: KClass<T>, handler: (T) -> Unit): Closeable
 	fun <T : Event> dispatch(clazz: KClass<T>, event: T)
@@ -74,6 +75,8 @@ inline fun <reified T : Event> EventDispatcher.addEventListener(noinline handler
 inline fun <reified T : Event> EventDispatcher.dispatch(event: T) = dispatch(T::class, event)
 
 inline operator fun <T : Event> T.invoke(callback: T.() -> Unit): T = this.apply(callback)
+
+open class TypedEvent<T : TEvent<T>>(open override var type: EventType<T>) : Event(), TEvent<T>
 
 open class Event {
 	var target: Any? = null

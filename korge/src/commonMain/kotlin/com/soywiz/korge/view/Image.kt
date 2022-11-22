@@ -1,20 +1,13 @@
 package com.soywiz.korge.view
 
-import com.soywiz.korge.debug.UiTextEditableValue
-import com.soywiz.korge.debug.uiCollapsibleSection
-import com.soywiz.korge.debug.uiEditableValue
-import com.soywiz.korge.render.RenderContext
-import com.soywiz.korim.bitmap.BaseBmpSlice
-import com.soywiz.korim.bitmap.Bitmap
-import com.soywiz.korim.bitmap.Bitmaps
-import com.soywiz.korim.bitmap.slice
-import com.soywiz.korim.format.readBitmapSlice
-import com.soywiz.korio.file.VfsFile
-import com.soywiz.korio.file.extensionLC
-import com.soywiz.korio.resources.Resourceable
-import com.soywiz.korma.geom.Rectangle
-import com.soywiz.korma.geom.vector.VectorPath
-import com.soywiz.korui.UiContainer
+import com.soywiz.korge.render.*
+import com.soywiz.korge.view.property.*
+import com.soywiz.korim.bitmap.*
+import com.soywiz.korim.format.*
+import com.soywiz.korio.file.*
+import com.soywiz.korio.resources.*
+import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.vector.*
 
 inline fun Container.image(
 	texture: Resourceable<out BaseBmpSlice>, anchorX: Double = 0.0, anchorY: Double = 0.0, callback: @ViewDslMarker Image.() -> Unit = {}
@@ -46,15 +39,20 @@ open class BaseImage(
     var bitmap: BaseBmpSlice
         get() = baseBitmap
         set(value) {
+            if (baseBitmap == value) return
             setBitmapSource = true
             baseBitmap = value
+            //invalidate() // Already done in baseBitmap
         }
 
+    // @TODO: We might want to repaint when the source has been loaded
     var bitmapSrc: Resourceable<out BaseBmpSlice> = bitmap
         set(value) {
+            if (field == value) return
             setBitmapSource = false
             field = value
             trySetSource()
+            invalidate()
         }
 
     fun trySetSource() {
@@ -123,7 +121,12 @@ class Image(
 	hitShape: VectorPath? = null,
 	smoothing: Boolean = true
 ) : BaseImage(bitmap, anchorX, anchorY, hitShape, smoothing), ViewFileRef by ViewFileRef.Mixin(), SmoothedBmpSlice {
-	constructor(
+    @Suppress("unused")
+    @ViewProperty
+    @ViewPropertyFileRef(["png", "jpg"])
+    private var imageSourceFile: String? by this::sourceFile
+
+    constructor(
 		bitmap: Bitmap,
 		anchorX: Double = 0.0,
 		anchorY: Double = anchorX,
@@ -148,14 +151,5 @@ class Image(
             bitmap = Bitmaps.white
             scale = 100.0
         }
-    }
-
-    override fun buildDebugComponent(views: Views, container: UiContainer) {
-        container.uiCollapsibleSection("Image") {
-            uiEditableValue(this@Image::sourceFile, kind = UiTextEditableValue.Kind.FILE(views.currentVfs) {
-                it.extensionLC == "png" || it.extensionLC == "jpg"
-            })
-        }
-        super.buildDebugComponent(views, container)
     }
 }

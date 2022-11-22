@@ -4,26 +4,20 @@ import com.soywiz.kgl.KmlGl
 import com.soywiz.kgl.KmlGlProxyLogToString
 import com.soywiz.korag.AG
 import com.soywiz.korag.DefaultShaders
-import com.soywiz.korag.gl.AGOpengl
 import com.soywiz.korag.gl.SimpleAGOpengl
-import com.soywiz.korag.gl.fromGl
 import com.soywiz.korag.log.LogAG
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.bitmap.ForcedTexNativeImage
-import com.soywiz.korim.bitmap.NativeImage
-import com.soywiz.korim.bitmap.slice
 import com.soywiz.korim.bitmap.sliceWithSize
 import com.soywiz.korim.color.Colors
-import com.soywiz.korim.color.RgbaArray
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertSame
+import kotlin.test.*
 
 class AgBitmapTextureManagerTest {
+    val ag = LogAG()
+    val tm = AgBitmapTextureManager(ag)
+
 	@Test
 	fun test() {
-		val ag = LogAG()
-		val tm = AgBitmapTextureManager(ag)
 		val bmp1 = Bitmap32(32, 32)
 		val slice1 = bmp1.sliceWithSize(0, 0, 16, 16)
 		val slice2 = bmp1.sliceWithSize(16, 0, 16, 16)
@@ -32,13 +26,51 @@ class AgBitmapTextureManagerTest {
 		val tex2a = tm.getTexture(slice2)
 		val tex1c = tm.getTexture(slice1)
 		val tex2b = tm.getTexture(slice2)
+        assertEquals(1, tm.getBitmapsWithTextureInfoCopy().size)
+
 		assertSame(tex1a, tex1b)
 		assertSame(tex1a, tex1c)
 		assertSame(tex2a, tex2b)
+        assertEquals(4096L, tm.managedTextureMemory)
 		tm.gc()
-		val tex1AfterGc = tm.getTexture(slice1)
-		//assertNotSame(tex1a, tex1AfterGc) // @TODO: Check this!
-	}
+        assertEquals(1, tm.getBitmapsWithTextureInfoCopy().size)
+        tm.gc()
+        assertEquals(0, tm.getBitmapsWithTextureInfoCopy().size)
+
+        assertEquals(0L, tm.managedTextureMemory)
+
+        val tex1AfterGc = tm.getTexture(slice1)
+		assertNotSame(tex1a, tex1AfterGc)
+    }
+
+    @Test
+    fun testMaxMemoryKeepsTextureForLater() {
+        tm.maxCachedMemory = 4096L
+        val bmp1 = Bitmap32(32, 32)
+        val slice1a = bmp1.sliceWithSize(0, 0, 16, 16)
+        val slice1b = bmp1.sliceWithSize(16, 0, 16, 16)
+        val tex1a = tm.getTexture(slice1a)
+        val tex1b = tm.getTexture(slice1a)
+        val tex2a = tm.getTexture(slice1b)
+        val tex1c = tm.getTexture(slice1a)
+        val tex2b = tm.getTexture(slice1b)
+        assertEquals(1, tm.getBitmapsWithTextureInfoCopy().size)
+        assertEquals(4096L, tm.managedTextureMemory)
+        tm.gc()
+        tm.gc()
+        assertEquals(1, tm.getBitmapsWithTextureInfoCopy().size)
+        val bmp2 = Bitmap32(32, 32)
+        val slice2a = bmp2.sliceWithSize(0, 0, 16, 16)
+        val tex22a = tm.getTexture(slice2a)
+        assertEquals(8192L, tm.managedTextureMemory)
+        assertEquals(2, tm.getBitmapsWithTextureInfoCopy().size)
+        tm.gc()
+        tm.gc()
+        assertEquals(4096L, tm.managedTextureMemory)
+        assertEquals(1, tm.getBitmapsWithTextureInfoCopy().size)
+        tm.close()
+        assertEquals(0, tm.getBitmapsWithTextureInfoCopy().size)
+    }
 
     @Test
     fun testNativeImage() {

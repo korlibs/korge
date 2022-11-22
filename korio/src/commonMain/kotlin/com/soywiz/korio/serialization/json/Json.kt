@@ -3,6 +3,7 @@ package com.soywiz.korio.serialization.json
 import com.soywiz.kds.DoubleArrayList
 import com.soywiz.kds.FastArrayList
 import com.soywiz.kds.iterators.fastForEach
+import com.soywiz.korio.dynamic.*
 import com.soywiz.korio.lang.IOException
 import com.soywiz.korio.lang.invalidOp
 import com.soywiz.korio.util.Indenter
@@ -13,7 +14,12 @@ import kotlin.collections.set
 object Json {
 	fun parse(s: String, context: Context = Context.DEFAULT): Any? = parse(StrReader(s), context)
     fun parseFast(s: String): Any? = parse(StrReader(s), Context.FAST)
-	fun stringify(obj: Any?, pretty: Boolean = false) = when {
+
+    fun parseDyn(s: String, context: Context = Context.DEFAULT): Dyn = parse(s, context).dyn
+    fun parseFastDyn(s: String): Dyn = parseFast(s).dyn
+
+    fun stringify(obj: Dyn, pretty: Boolean = false): String = stringify(obj.value, pretty)
+    fun stringify(obj: Any?, pretty: Boolean = false): String = when {
 		pretty -> Indenter().apply { stringifyPretty(obj, this) }.toString(doIndent = true, indentChunk = "\t")
 		else -> StringBuilder().apply { stringify(obj, this) }.toString()
 	}

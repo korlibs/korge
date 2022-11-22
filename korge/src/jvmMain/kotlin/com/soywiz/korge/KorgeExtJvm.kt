@@ -1,16 +1,16 @@
 package com.soywiz.korge
 
-import com.soywiz.klock.milliseconds
+import com.soywiz.klock.*
 import com.soywiz.korge.awt.*
 import com.soywiz.korge.time.*
 import com.soywiz.korge.view.*
-import com.soywiz.korui.*
-import com.soywiz.korui.native.*
 import kotlinx.coroutines.*
 import java.awt.Container
 
 internal actual fun completeViews(views: Views) {
     views.injector.mapSingleton<ViewsDebuggerComponent> {
+        //UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName())
+
         val app by lazy { UiApplication(DEFAULT_UI_FACTORY) }
         val debugger = ViewsDebuggerComponent(views, app)
         val frame = (views.gameWindow.debugComponent as? Container?) ?: return@mapSingleton debugger
@@ -21,7 +21,7 @@ internal actual fun completeViews(views: Views) {
         frame.add(debugger)
         views.stage.timers.interval(500.milliseconds) {
             if (views.gameWindow.debug) {
-                debugger.update()
+                debugger.updateTimer()
             }
         }
         debugger

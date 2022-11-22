@@ -1,12 +1,23 @@
 package com.soywiz.korma.geom
 
+import com.soywiz.kds.*
+
 interface Margin {
     val top: Double
     val right: Double
     val bottom: Double
     val left: Double
 
+    fun duplicate(
+        top: Double = this.top,
+        right: Double = this.right,
+        bottom: Double = this.bottom,
+        left: Double = this.left,
+    ): Margin = MutableMargin(top, right, bottom, left)
+
     companion object {
+        val EMPTY: Margin = MutableMargin()
+
         operator fun invoke(top: Double, right: Double, bottom: Double, left: Double): Margin = MutableMargin(top, right, bottom, left)
         operator fun invoke(vertical: Double, horizontal: Double): Margin = MutableMargin(vertical, horizontal)
         operator fun invoke(margin: Double): Margin = MutableMargin(margin)
@@ -66,6 +77,10 @@ data class MutableMarginInt(
     override var bottom: Int = 0,
     override var left: Int = 0
 ) : MarginInt {
+    companion object {
+        val POOL: ConcurrentPool<MutableMarginInt> = ConcurrentPool<MutableMarginInt>({ it.setTo(0) }) { MutableMarginInt() }
+    }
+
     constructor(vertical: Int, horizontal: Int) : this(vertical, horizontal, vertical, horizontal)
     constructor(margin: Int) : this(margin, margin, margin, margin)
 

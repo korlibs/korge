@@ -1,5 +1,15 @@
 package com.soywiz.korma.geom.range
 
+import com.soywiz.korma.internal.niceStr
+
+data class DoubleRangeExclusive(val start: Double, val endExclusive: Double) {
+    val length: Double get() = endExclusive - start
+    operator fun contains(value: Double): Boolean = value >= start && value < endExclusive
+    override fun toString(): String = "${start.niceStr} until ${endExclusive.niceStr}"
+}
+
+inline infix fun Double.until(endExclusive: Double): DoubleRangeExclusive = DoubleRangeExclusive(this, endExclusive)
+
 class OpenRange<T : Comparable<T>>(val start: T, val endExclusive: T)
 
 // @TODO: Would cause conflicts with Int until Int for example

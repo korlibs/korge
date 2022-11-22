@@ -26,7 +26,7 @@ val tmpdir: String by lazy { Environment["TMPDIR"] ?: Environment["TEMP"] ?: Env
 @ThreadLocal
 var customCwd: String? = null
 @ThreadLocal
-val nativeCwd by lazy { com.soywiz.korio.nativeCwd() }
+val nativeCwd by lazy { StandardPaths.cwd }
 val cwd: String get() = customCwd ?: nativeCwd
 
 //@ThreadLocal
@@ -35,8 +35,8 @@ val cwdVfs: VfsFile get() = rootLocalVfsNative[cwd]
 
 @ThreadLocal
 actual val standardVfs: StandardVfs = object : StandardVfs() {
-    override val resourcesVfs: VfsFile by lazy { cwdVfs.jail() }
-    override val rootLocalVfs: VfsFile get() = cwdVfs
+    override val resourcesVfs: VfsFile by lazy { applicationDataVfs.jail() }
+    override val rootLocalVfs: VfsFile get() = applicationDataVfs
 }
 
 @ThreadLocal
@@ -44,10 +44,10 @@ actual val cacheVfs: VfsFile by lazy { MemoryVfs() }
 @ThreadLocal
 actual val tempVfs: VfsFile by lazy { jailedLocalVfs(tmpdir) }
 
-actual val applicationVfs: VfsFile get() = cwdVfs
-actual val applicationDataVfs: VfsFile get() = cwdVfs
-actual val externalStorageVfs: VfsFile get() = cwdVfs
-actual val userHomeVfs: VfsFile get() = jailedLocalVfs(Environment.expand("~"))
+actual val applicationVfs: VfsFile get() = rootLocalVfsNative[customCwd ?: StandardPaths.resourcesFolder]
+actual val applicationDataVfs: VfsFile get() = applicationVfs
+actual val externalStorageVfs: VfsFile get() = applicationVfs
+actual val userHomeVfs: VfsFile get() = jailedLocalVfs(StandardPaths.userHome)
 
 @ThreadLocal
 val rootLocalVfsNative by lazy { LocalVfsNative(async = true) }
@@ -72,9 +72,20 @@ open class LocalVfsNativeBase(val async: Boolean = true) : LocalVfs() {
 
     override suspend fun exec(
 		path: String, cmdAndArgs: List<String>, env: Map<String, String>, handler: VfsProcessHandler
-	): Int = posixExec(path, cmdAndArgs, env, handler)
+	): Int {
+        checkExecFolder(path, cmdAndArgs)
+        return posixExec(path, cmdAndArgs, env, handler)
+    }
 
-	override suspend fun readRange(path: String, range: LongRange): ByteArray {
+    override suspend fun getAttributes(path: String): List<Attribute> {
+        return listOf(UnixPermissions(posixStat(path)!!.mode))
+    }
+
+    override suspend fun chmod(path: String, mode: UnixPermissions) {
+        posixChmod(path, mode.rbits)
+    }
+
+    override suspend fun readRange(path: String, range: LongRange): ByteArray {
         val rpath = resolve(path)
 		data class Info(val path: String, val range: LongRange)
 
@@ -216,7 +227,7 @@ open class LocalVfsNativeBase(val async: Boolean = true) : LocalVfs() {
 		val rpath = resolve(path)
         val statInfo = posixStat(rpath)
         return when {
-            statInfo != null -> createExistsStat(rpath, statInfo.isDirectory, statInfo.size)
+            statInfo != null -> createExistsStat(rpath, statInfo.isDirectory, statInfo.size, mode = statInfo.mode)
             else -> createNonExistsStat(rpath)
         }
 	}
