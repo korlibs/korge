@@ -41,7 +41,10 @@ class JsBigInt internal constructor(private val value: NativeJsBig) : BigInt, Bi
     override fun unaryMinus(): BigInt = JsBigInt(-js)
 
     override fun inv(): BigInt = JsBigInt(NativeJsInv(js))
-    //override fun pow(exponent: BigInt): BigInt = JsBigInt(NativeJsPow(js, exponent.js))
+    override fun pow(exponent: BigInt): BigInt {
+        if (exponent.isNegative) throw BigIntNegativeExponentException()
+        return JsBigInt(NativeJsPow(js, exponent.js))
+    }
     override fun pow(exponent: Int): BigInt {
         if (exponent < 0) throw BigIntNegativeExponentException()
         return pow(JsBigInt(NativeJsBigInt(exponent)))

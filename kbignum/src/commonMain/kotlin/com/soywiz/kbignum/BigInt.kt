@@ -28,7 +28,7 @@ interface BigInt : Comparable<BigInt>, BigIntConstructor {
     fun inv(): BigInt
 
     // Binary
-    infix fun pow(exponent: BigInt): BigInt = pow(exponent.toInt())
+    infix fun pow(exponent: BigInt): BigInt
     infix fun pow(exponent: Int): BigInt
 
     infix fun and(other: BigInt): BigInt

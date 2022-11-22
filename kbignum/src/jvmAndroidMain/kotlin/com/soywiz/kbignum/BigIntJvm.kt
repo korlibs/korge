@@ -32,7 +32,9 @@ class JvmBigInt(val value: BigInteger) : BigInt, BigIntConstructor by JvmBigInt 
 
     override fun abs(): BigInt = value.abs().bi
     override fun square(): BigInt = (value * value).bi
-    override fun pow(exponent: BigInt): BigInt = pow(exponent.toInt())
+    override fun pow(exponent: BigInt): BigInt {
+        return pow(exponent.toInt())
+    }
     override fun pow(exponent: Int): BigInt {
         if (exponent < 0) throw BigIntNegativeExponentException()
         return (value.pow(exponent)).bi
