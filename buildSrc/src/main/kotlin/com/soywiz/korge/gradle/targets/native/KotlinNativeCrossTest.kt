@@ -10,7 +10,7 @@ fun Exec.commandLineCross(vararg args: String, type: CrossExecType) {
     commandLine(*type.commands(*args))
 }
 
-open class KotlinNativeCrossTest : org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeTest() {
+abstract class KotlinNativeCrossTest : org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeTest() {
     @Input
     @Option(option = "type", description = "Sets the executable cross type")
     lateinit var type: CrossExecType
