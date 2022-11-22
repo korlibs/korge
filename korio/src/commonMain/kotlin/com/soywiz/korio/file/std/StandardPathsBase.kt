@@ -2,8 +2,7 @@ package com.soywiz.korio.file.std
 
 import com.soywiz.korio.file.PathInfo
 import com.soywiz.korio.file.parent
-import com.soywiz.korio.lang.Environment
-import com.soywiz.korio.lang.tempPath
+import com.soywiz.korio.lang.*
 
 /**
  * Contain standard paths to different parts of the operating system.
@@ -42,7 +41,7 @@ interface StandardPathsBase {
      * - windows: /Users/user
      * - macos: /Users/user
      */
-    val userHome: String get() = Environment["~"] ?: "/tmp"
+    val userHome: String get() = Environment.expand("~")
 
     /**
      * Temp folder where to store temporal files that might be discarded anytime.
