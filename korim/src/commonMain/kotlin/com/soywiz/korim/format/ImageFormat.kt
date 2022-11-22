@@ -1,22 +1,12 @@
 package com.soywiz.korim.format
 
-import com.soywiz.kds.Extra
-import com.soywiz.kds.ExtraType
-import com.soywiz.kmem.UByteArrayInt
-import com.soywiz.korim.bitmap.Bitmap
-import com.soywiz.korio.async.runBlockingNoSuspensionsNullable
-import com.soywiz.korio.file.VfsFile
-import com.soywiz.korio.file.baseName
-import com.soywiz.korio.lang.runIgnoringExceptions
-import com.soywiz.korio.stream.AsyncStream
-import com.soywiz.korio.stream.MemorySyncStreamToByteArray
-import com.soywiz.korio.stream.SyncStream
-import com.soywiz.korio.stream.openSync
-import com.soywiz.korio.stream.readAll
-import com.soywiz.korio.stream.sliceHere
-import com.soywiz.korio.stream.toAsync
-import com.soywiz.korio.stream.toSyncOrNull
-import kotlin.math.max
+import com.soywiz.kds.*
+import com.soywiz.korim.bitmap.*
+import com.soywiz.korio.async.*
+import com.soywiz.korio.file.*
+import com.soywiz.korio.lang.*
+import com.soywiz.korio.stream.*
+import kotlin.math.*
 
 abstract class ImageFormatWithContainer(vararg exts: String) : ImageFormat(*exts) {
     override fun readImageContainer(s: SyncStream, props: ImageDecodingProps): ImageDataContainer = TODO()
@@ -35,15 +25,32 @@ interface ImageFormatDecoder {
     suspend fun decodeSuspend(data: ByteArray, props: ImageDecodingProps = ImageDecodingProps.DEFAULT): Bitmap
 }
 
-abstract class ImageFormat(vararg exts: String) : ImageFormatDecoder {
+interface ImageFormatEncoder {
+    suspend fun encodeSuspend(
+        image: ImageDataContainer,
+        props: ImageEncodingProps = ImageEncodingProps("unknown"),
+    ): ByteArray = throw UnsupportedOperationException()
+}
+
+suspend fun ImageFormatEncoder.encodeSuspend(
+    bitmap: Bitmap,
+    props: ImageEncodingProps = ImageEncodingProps("unknown"),
+): ByteArray = encodeSuspend(ImageDataContainer(bitmap), props)
+
+
+interface ImageFormatEncoderDecoder : ImageFormatEncoder, ImageFormatDecoder
+
+abstract class ImageFormat(vararg exts: String) : ImageFormatEncoderDecoder {
 	val extensions = exts.map { it.toLowerCase().trim() }.toSet()
     open fun readImageContainer(s: SyncStream, props: ImageDecodingProps = ImageDecodingProps.DEFAULT): ImageDataContainer = ImageDataContainer(listOf(readImage(s, props)))
 	open fun readImage(s: SyncStream, props: ImageDecodingProps = ImageDecodingProps.DEFAULT): ImageData = TODO()
-	open fun writeImage(
-		image: ImageData,
-		s: SyncStream,
-		props: ImageEncodingProps = ImageEncodingProps("unknown")
-	): Unit = throw UnsupportedOperationException()
+	open fun writeImage(image: ImageData, s: SyncStream, props: ImageEncodingProps): Unit = throw UnsupportedOperationException()
+
+    override suspend fun encodeSuspend(image: ImageDataContainer, props: ImageEncodingProps): ByteArray {
+        val out = MemorySyncStream()
+        writeImage(image.default, out, props)
+        return out.toByteArray()
+    }
 
     open suspend fun decodeHeaderSuspend(s: AsyncStream, props: ImageDecodingProps = ImageDecodingProps.DEFAULT): ImageInfo? {
         return decodeHeader(s.toSyncOrNull() ?: s.readAll().openSync())
@@ -169,6 +176,17 @@ data class ImageEncodingProps(
     override var extra: ExtraType = null,
     val init: (ImageEncodingProps.() -> Unit)? = null
 ) : Extra {
+    val extension: String get() = PathInfo(filename).extensionLC
+    val mimeType: String get() = when (extension) {
+        "jpg", "jpeg" -> "image/jpeg"
+        "png" -> "image/png"
+        "gif" -> "image/gif"
+        "webp" -> "image/webp"
+        "avif" -> "image/avif"
+        "heic" -> "image/heic"
+        else -> "image/png"
+    }
+
     init {
         init?.invoke(this)
     }

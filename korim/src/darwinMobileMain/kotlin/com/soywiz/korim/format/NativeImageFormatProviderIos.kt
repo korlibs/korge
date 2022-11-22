@@ -1,10 +1,25 @@
 package com.soywiz.korim.format
 
-import com.soywiz.korim.format.cg.CGNativeImageFormatProvider
+import com.soywiz.korim.format.cg.*
+import com.soywiz.korim.format.ui.*
+import kotlinx.cinterop.*
+import platform.UIKit.*
 
 //actual val nativeImageFormatProvider: NativeImageFormatProvider = UIImageNativeImageFormatProvider
-actual val nativeImageFormatProvider: NativeImageFormatProvider get() = CGNativeImageFormatProvider
+actual val nativeImageFormatProvider: NativeImageFormatProvider get() = UINativeImageFormatProvider
 //actual val nativeImageFormatProvider: NativeImageFormatProvider get() = CGBaseNativeImageFormatProvider
+
+object UINativeImageFormatProvider : CGNativeImageFormatProvider() {
+    @OptIn(UnsafeNumber::class)
+    override suspend fun encodeSuspend(image: ImageDataContainer, props: ImageEncodingProps): ByteArray {
+        val uiImage: UIImage = image.mainBitmap.toBMP32().toUIImage()
+        //println("Using UINativeImageFormatProvider.encodeSuspend")
+        return when (props.mimeType) {
+            "image/jpeg", "image/jpg" -> UIImageJPEGRepresentation(uiImage, compressionQuality = props.quality.cg)?.toByteArray()
+            else -> UIImagePNGRepresentation(uiImage)?.toByteArray()
+        } ?: error("Can't encode using UIImageRepresentation")
+    }
+}
 
 
 /*

@@ -2,20 +2,11 @@ package com.soywiz.korim.format
 
 import com.soywiz.korim.awt.*
 import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.font.Font
-import com.soywiz.korim.font.FontMetrics
-import com.soywiz.korim.font.GlyphMetrics
-import com.soywiz.korim.font.SystemFont
-import com.soywiz.korim.internal.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.file.std.*
-import com.soywiz.korio.file.std.*
-import java.awt.*
-import java.awt.font.FontRenderContext
-import java.awt.geom.AffineTransform
-import java.awt.geom.PathIterator
 import java.awt.image.*
 import java.io.*
+import javax.imageio.ImageIO.*
 import kotlin.math.*
 
 actual val nativeImageFormatProvider: NativeImageFormatProvider = AwtNativeImageFormatProvider
@@ -36,6 +27,17 @@ object AwtNativeImageFormatProvider : NativeImageFormatProvider() {
         is LocalVfs -> AwtNativeImage(awtReadImageInWorker(File(path), props))
         else -> AwtNativeImage(awtReadImageInWorker(vfs[path].readAll(), props))
     }.result(props)
+
+    override suspend fun encodeSuspend(image: ImageDataContainer, props: ImageEncodingProps): ByteArray {
+        val imageWriter = getImageWritersByMIMEType(props.mimeType).next()
+        return ByteArrayOutputStream().use { bao ->
+            createImageOutputStream(bao).use { ios ->
+                imageWriter.output = ios
+                imageWriter.write(image.default.mainBitmap.toAwt())
+            }
+            bao.toByteArray()
+        }
+    }
 
 	override fun create(width: Int, height: Int, premultiplied: Boolean?): NativeImage =
 		AwtNativeImage(BufferedImage(max(width, 1), max(height, 1), if (premultiplied == false) BufferedImage.TYPE_INT_ARGB else BufferedImage.TYPE_INT_ARGB_PRE))

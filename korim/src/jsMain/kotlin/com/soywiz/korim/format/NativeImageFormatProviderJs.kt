@@ -4,23 +4,23 @@ import com.soywiz.klock.*
 import com.soywiz.kmem.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
-import com.soywiz.korim.font.Font
+import com.soywiz.korim.font.*
 import com.soywiz.korim.paint.*
 import com.soywiz.korim.vector.*
-import com.soywiz.korim.vector.renderer.Renderer
+import com.soywiz.korim.vector.renderer.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
 import com.soywiz.krypto.encoding.*
+import kotlinx.browser.*
 import kotlinx.coroutines.*
 import org.khronos.webgl.*
 import org.khronos.webgl.set
 import org.w3c.dom.*
 import org.w3c.dom.url.*
 import org.w3c.files.*
-import kotlinx.browser.*
 import kotlin.coroutines.*
 import kotlin.js.*
 import kotlin.math.*
@@ -32,6 +32,10 @@ actual val nativeImageFormatProvider: NativeImageFormatProvider = when {
 
 object NodeJsNativeImageFormatProvider : BaseNativeImageFormatProvider() {
     override val formats: ImageFormat get() = RegisteredImageFormats
+    override suspend fun encodeSuspend(image: ImageDataContainer, props: ImageEncodingProps): ByteArray {
+        return RegisteredImageFormats.formats.first().encode(image.default)
+        //return PNG.encode(image.default.mainBitmap)
+    }
 }
 
 private val tempB = ArrayBuffer(4)
@@ -111,7 +115,7 @@ open class HtmlNativeImage(val texSourceBase: TexImageSource, width: Int, height
     }
 
     override fun getContext2d(antialiasing: Boolean): Context2d = Context2d(CanvasContext2dRenderer(lazyCanvasElement))
-    fun toDataURL(type: String = "image/png"): String = lazyCanvasElement.toDataURL(type)
+    fun toDataURL(type: String = "image/png", quality: Double? = null): String = lazyCanvasElement.toDataURL(type, quality)
 }
 
 object HtmlNativeImageFormatProvider : NativeImageFormatProvider() {
@@ -137,7 +141,11 @@ object HtmlNativeImageFormatProvider : NativeImageFormatProvider() {
         })
     }
 
-	override fun create(width: Int, height: Int, premultiplied: Boolean?): NativeImage {
+    override suspend fun encodeSuspend(image: ImageDataContainer, props: ImageEncodingProps): ByteArray {
+        return image.default.mainBitmap.toHtmlNative().toDataURL(props.mimeType, props.quality).split("base64,").last().fromBase64()
+    }
+
+    override fun create(width: Int, height: Int, premultiplied: Boolean?): NativeImage {
 		return HtmlNativeImage(HtmlCanvas.createCanvas(width, height))
 	}
 
