@@ -112,8 +112,8 @@ open class CGNativeImageFormatProvider : CGBaseNativeImageFormatProvider() {
                             } else {
 
                                 //val colorSpace = CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB)
-                                val colorSpace = CGColorSpaceCreateWithName(kCGColorSpaceSRGB)
-                                //val colorSpace = CGColorSpaceCreateDeviceRGB()
+                                //val colorSpace = CGColorSpaceCreateWithName(kCGColorSpaceSRGB)
+                                val colorSpace = CGColorSpaceCreateDeviceRGB()
                                 try {
                                     val realPremultiplied = true
                                     //val realPremultiplied = premultiplied
