@@ -12,8 +12,11 @@ gson = "2.8.6"
 #gradle-publish-plugin = "1.0.0"
 gradle-publish-plugin = "0.14.0"
 closure-compiler = "v20210808"
+# https://repo.maven.apache.org/maven2/org/jetbrains/intellij/deps/intellij-coverage-agent/
+kover-agent = "1.0.688"
 
 [libraries]
+kover-intellij-agent = { module = "org.jetbrains.intellij.deps:intellij-coverage-agent", version.ref = "kover-agent" }
 jna-core = { module = "net.java.dev.jna:jna", version.ref = "jna" }
 jna-platform = { module = "net.java.dev.jna:jna-platform", version.ref = "jna" }
 jcodec-core = { module = "org.jcodec:jcodec", version.ref = "jcodec" }

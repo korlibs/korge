@@ -138,11 +138,6 @@ subprojects {
         // AppData\Local\Android\Sdk\tools\bin>sdkmanager --licenses
         apply(plugin = "kotlin-multiplatform")
 
-        //extensions.getByType(kotlinx.kover.api.KoverProjectConfig::class.java).apply {
-        //    engine.set(IntellijEngine("1.0.683"))
-        //}
-        //kover { engine.set(IntellijEngine("1.0.683")) }
-
         if (hasAndroid) {
             if (isSample) {
                 apply(plugin = "com.android.application")
@@ -488,8 +483,19 @@ subprojects {
     }
 }
 
+// https://repo.maven.apache.org/maven2/org/jetbrains/intellij/deps/intellij-coverage-agent/1.0.688/
+//val koverVersion = "1.0.688"
+val koverVersion = libs.versions.kover.agent
+
 subprojects {
     apply(plugin = "kover")
+}
+
+allprojects {
+    extensions.getByType(kotlinx.kover.api.KoverProjectConfig::class.java).apply {
+        engine.set(kotlinx.kover.api.IntellijEngine(koverVersion.get()))
+    }
+    kover { engine.set(kotlinx.kover.api.IntellijEngine(koverVersion.get())) }
 }
 
 fun Project.samples(block: Project.() -> Unit) {
