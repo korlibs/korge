@@ -1,5 +1,6 @@
 package com.soywiz.korim.format.ui
 
+import cnames.structs.CGContext
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.format.cg.*
 import kotlinx.cinterop.*
