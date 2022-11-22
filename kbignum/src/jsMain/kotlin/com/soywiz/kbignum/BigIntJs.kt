@@ -24,6 +24,9 @@ class JsBigInt internal constructor(private val value: NativeJsBig) : BigInt, Bi
             }
             return super.create(value, radix)
         }
+        private fun validateRadix(value: String, radix: Int) {
+            for (c in value) digit(c, radix)
+        }
     }
 
     val BigInt.js: dynamic get() = (this as JsBigInt).value.asDynamic()
@@ -38,8 +41,14 @@ class JsBigInt internal constructor(private val value: NativeJsBig) : BigInt, Bi
     override fun unaryMinus(): BigInt = JsBigInt(-js)
 
     override fun inv(): BigInt = JsBigInt(NativeJsInv(js))
-    override fun pow(exponent: BigInt): BigInt = JsBigInt(NativeJsPow(js, exponent.js))
-    override fun pow(exponent: Int): BigInt = pow(JsBigInt(NativeJsBigInt(exponent)))
+    override fun pow(exponent: BigInt): BigInt {
+        if (exponent.isNegative) throw BigIntNegativeExponentException()
+        return JsBigInt(NativeJsPow(js, exponent.js))
+    }
+    override fun pow(exponent: Int): BigInt {
+        if (exponent < 0) throw BigIntNegativeExponentException()
+        return pow(JsBigInt(NativeJsBigInt(exponent)))
+    }
 
     override fun and(other: BigInt): BigInt = JsBigInt(NativeJsAnd(js, other.js))
     override fun or(other: BigInt): BigInt = JsBigInt(NativeJsOr(js, other.js))
@@ -51,7 +60,10 @@ class JsBigInt internal constructor(private val value: NativeJsBig) : BigInt, Bi
     override fun plus(other: BigInt): BigInt = JsBigInt(this.js + other.js)
     override fun minus(other: BigInt): BigInt = JsBigInt(this.js - other.js)
     override fun times(other: BigInt): BigInt = JsBigInt(this.js * other.js)
-    override fun div(other: BigInt): BigInt = JsBigInt(this.js / other.js)
+    override fun div(other: BigInt): BigInt {
+        if (other.isZero) throw BigIntDivisionByZeroException()
+        return JsBigInt(this.js / other.js)
+    }
     override fun rem(other: BigInt): BigInt = JsBigInt(this.js % other.js)
 
     private val cachedToString by lazy { value.toString() }

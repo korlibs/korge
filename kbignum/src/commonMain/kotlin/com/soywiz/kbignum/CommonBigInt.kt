@@ -122,7 +122,7 @@ class CommonBigInt private constructor(val data: UInt16ArrayZeroPad, override va
 	@OptIn(ExperimentalTime::class)
     override infix fun pow(exponent: BigInt): CommonBigInt {
         exponent as CommonBigInt
-		if (exponent.isNegative) throw BigIntOverflowException("Negative exponent")
+		if (exponent.isNegative) throw BigIntNegativeExponentException()
         if (exponent.isZero) return ONE
         if (exponent == ONE) return this
         var base = this
@@ -147,7 +147,7 @@ class CommonBigInt private constructor(val data: UInt16ArrayZeroPad, override va
 
 	fun powWithStats(exponent: Int, stats: OpStats?): CommonBigInt {
         //return this pow exponent.bi
-        if (exponent < 0) throw BigIntOverflowException("Negative exponent")
+        if (exponent < 0) throw BigIntNegativeExponentException()
         if (exponent == 0) return ONE
         if (exponent == 1) return this
         var result = ONE
@@ -220,7 +220,7 @@ class CommonBigInt private constructor(val data: UInt16ArrayZeroPad, override va
 				ZERO,
 				ZERO
 			)
-			other.isZero -> throw BigIntDivisionByZeroException("Division by zero")
+			other.isZero -> throw BigIntDivisionByZeroException()
 			this.isNegative && other.isNegative -> this.absoluteValue.divRem(other.absoluteValue).let {
 				DivRem(it.div, -it.rem)
 			}
@@ -249,8 +249,8 @@ class CommonBigInt private constructor(val data: UInt16ArrayZeroPad, override va
 	// Simple euclidean division
 	private fun divRemBig(other: CommonBigInt): DivRem {
 		if (this.isZero) return DivRem(ZERO, ZERO)
-		if (other.isZero) throw BigIntDivisionByZeroException("division by zero")
-		if (this.isNegative || other.isNegative) throw BigIntInvalidOperationException("Non positive numbers")
+		if (other.isZero) throw BigIntDivisionByZeroException()
+		if (this.isNegative || other.isNegative) throw BigIntException("Non positive numbers")
 		val lbits = this.significantBits
 		val rbits = other.significantBits
 		var rem = this
@@ -262,7 +262,7 @@ class CommonBigInt private constructor(val data: UInt16ArrayZeroPad, override va
 		divisor = divisor shl initialShiftBits
 
 		while (divisorShift >= 0) {
-			if (divisor.isZero) throw BigIntDivisionByZeroException("divisor is zero!")
+			if (divisor.isZero) throw BigIntDivisionByZeroException()
 
 			if (divisor <= rem) {
                 res = res.withBit(divisorShift)
