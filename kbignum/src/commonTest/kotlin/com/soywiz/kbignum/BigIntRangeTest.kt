@@ -1,5 +1,6 @@
 package com.soywiz.kbignum
 
+import com.soywiz.kbignum.ranges.*
 import kotlin.test.*
 
 class BigIntRangeTest {
@@ -15,5 +16,20 @@ class BigIntRangeTest {
         assertTrue { 10.bi in (0.bi .. 10.bi) }
         assertFalse { (-1).bi in (0.bi .. 10.bi) }
         assertFalse { 11.bi in (0.bi .. 10.bi) }
+    }
+
+    @Test
+    fun testIsEmpty() {
+        assertTrue { (1.bi .. 0.bi).isEmpty() }
+        assertTrue { BigIntRange.EMPTY.isEmpty() }
+    }
+
+    @Test
+    fun testHashCodeEquals() {
+        assertEquals(BigIntRange(1.bi, 0.bi).hashCode(), BigIntRange(1.bi, 0.bi).hashCode())
+        assertEquals(BigIntRange(1.bi, 0.bi), BigIntRange(1.bi, 0.bi))
+        assertNotEquals(BigIntRange(1.bi, 0.bi), BigIntRange(0.bi, 0.bi))
+        assertNotEquals(BigIntRange(1.bi, 0.bi), BigIntRange(1.bi, 1.bi))
+        assertNotEquals<Any>(BigIntRange(1.bi, 0.bi), 1)
     }
 }

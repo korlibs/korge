@@ -15,4 +15,18 @@ class BigIntProgressionTest {
         assertNotEquals<Any>(p1, Unit)
         assertEquals("0..10 step 1", p1.toString())
     }
+
+    @Test
+    fun testNext() {
+        run {
+            val iterator = BigIntProgressionIterator(0.bi, 0.bi, step = 1.bi)
+            iterator.next()
+            assertFailsWith<NoSuchElementException> { iterator.next() }
+        }
+        run {
+            val iterator = BigIntProgressionIterator(0.bi, 0.bi, step = (-1).bi)
+            iterator.next()
+            assertFailsWith<NoSuchElementException> { iterator.next() }
+        }
+    }
 }

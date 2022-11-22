@@ -1,11 +1,31 @@
 package com.soywiz.kbignum
 
-import com.soywiz.kbignum.internal.leadingZeros
-import com.soywiz.kbignum.internal.trailingZeros
+import com.soywiz.kbignum.internal.*
 import kotlin.test.*
 
 abstract class AbstractBigIntTest {
-	@Test
+    @Test
+    fun testInvalidRadix() {
+        "1f".bi(16)
+        assertFailsWith<BigIntInvalidFormatException> { "1f".bi(10) }
+    }
+
+    @Test
+    fun testLong() {
+        assertEquals(1L.bi, 1L.bi)
+    }
+
+    @Test
+    fun testDivisionByZero() {
+        assertFailsWith<BigIntDivisionByZeroException> { 1.bi / 0.bi }
+    }
+
+    @Test
+    fun testNegativeExponent() {
+        assertFailsWith<BigIntNegativeExponentException> { 1.bi.pow(-1) }
+    }
+
+    @Test
 	fun testMultiplyPowerOfTwo() {
 		assertEquals("1", (1.bi * 1.bi).toString(2))
 		assertEquals("10", (1.bi * 2.bi).toString(2))
@@ -302,6 +322,25 @@ class BigIntTestCommon : AbstractBigIntTest() {
     override val Int.bi: BigInt get() = CommonBigInt(this)
     override val String.bi: BigInt get() = CommonBigInt(this)
     override fun String.bi(radix: Int): BigInt = CommonBigInt(this, radix)
+
+    @Test
+    fun testEmpty() {}
+
+    @Test
+    fun testBigIntCompanion() {
+        assertEquals(1.bi, CommonBigInt.invoke(1))
+        assertEquals(1.bi, CommonBigInt.invoke(1L))
+        assertEquals(1.bi, CommonBigInt.invoke("1"))
+        assertEquals(1.bi, CommonBigInt.invoke("1", 16))
+    }
+
+    @Test
+    fun testBigIntSmall() {
+        assertTrue { CommonBigInt(10).isSmall }
+        assertTrue { CommonBigInt.TEN.isSmall }
+        assertTrue { CommonBigInt.SMALL.isSmall }
+        assertFalse { CommonBigInt(100000).isSmall }
+    }
 }
 
 class BigIntTestPlatform : AbstractBigIntTest() {
@@ -315,4 +354,7 @@ class BigIntTestPlatform : AbstractBigIntTest() {
     override fun testInv() {
         super.testInv()
     }
+
+    @Test
+    fun testEmpty() {}
 }

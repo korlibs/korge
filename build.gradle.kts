@@ -483,21 +483,6 @@ subprojects {
     }
 }
 
-// https://repo.maven.apache.org/maven2/org/jetbrains/intellij/deps/intellij-coverage-agent/1.0.688/
-//val koverVersion = "1.0.688"
-val koverVersion = libs.versions.kover.agent
-
-subprojects {
-    apply(plugin = "kover")
-}
-
-allprojects {
-    extensions.getByType(kotlinx.kover.api.KoverProjectConfig::class.java).apply {
-        engine.set(kotlinx.kover.api.IntellijEngine(koverVersion.get()))
-    }
-    kover { engine.set(kotlinx.kover.api.IntellijEngine(koverVersion.get())) }
-}
-
 fun Project.samples(block: Project.() -> Unit) {
     subprojects {
         if (project.isSample && project.hasBuildGradle()) {
@@ -1341,6 +1326,31 @@ afterEvaluate {
         if (mingwX64Test != null && isWindows && inCI) {
             mingwX64Test.doFirst { exec { commandLine("systeminfo") } }
             mingwX64Test.doLast { exec { commandLine("systeminfo") } }
+        }
+    }
+}
+
+// https://repo.maven.apache.org/maven2/org/jetbrains/intellij/deps/intellij-coverage-agent/1.0.688/
+//val koverVersion = "1.0.688"
+val koverVersion = libs.versions.kover.agent
+
+subprojects {
+    apply(plugin = "kover")
+}
+
+allprojects {
+    kover {
+        engine.set(kotlinx.kover.api.IntellijEngine(koverVersion.get()))
+    }
+    extensions.getByType(kotlinx.kover.api.KoverProjectConfig::class.java).apply {
+        engine.set(kotlinx.kover.api.IntellijEngine(koverVersion.get()))
+    }
+    tasks.withType<Test> {
+        extensions.configure(kotlinx.kover.api.KoverTaskExtension::class) {
+            //generateXml = false
+            //generateHtml = true
+            //coverageEngine = kotlinx.kover.api.CoverageEngine.INTELLIJ
+            excludes.add(".*BuildConfig")
         }
     }
 }

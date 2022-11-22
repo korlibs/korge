@@ -33,7 +33,10 @@ class JvmBigInt(val value: BigInteger) : BigInt, BigIntConstructor by JvmBigInt 
     override fun abs(): BigInt = value.abs().bi
     override fun square(): BigInt = (value * value).bi
     override fun pow(exponent: BigInt): BigInt = pow(exponent.toInt())
-    override fun pow(exponent: Int): BigInt = (value.pow(exponent)).bi
+    override fun pow(exponent: Int): BigInt {
+        if (exponent < 0) throw BigIntNegativeExponentException()
+        return (value.pow(exponent)).bi
+    }
 
     override fun and(other: BigInt): BigInt = value.and(other.jvm).bi
     override fun or(other: BigInt): BigInt = value.or(other.jvm).bi
@@ -44,7 +47,10 @@ class JvmBigInt(val value: BigInteger) : BigInt, BigIntConstructor by JvmBigInt 
     override fun plus(other: BigInt): BigInt = (value + other.jvm).bi
     override fun minus(other: BigInt): BigInt = (value - other.jvm).bi
     override fun times(other: BigInt): BigInt = (value * other.jvm).bi
-    override fun div(other: BigInt): BigInt = (value / other.jvm).bi
+    override fun div(other: BigInt): BigInt {
+        if (other.isZero) throw BigIntDivisionByZeroException()
+        return (value / other.jvm).bi
+    }
     override fun rem(other: BigInt): BigInt = (value % other.jvm).bi
 
     override fun toInt(): Int = value.toInt()

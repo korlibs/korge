@@ -28,7 +28,7 @@ interface BigInt : Comparable<BigInt>, BigIntConstructor {
     fun inv(): BigInt
 
     // Binary
-    infix fun pow(exponent: BigInt): BigInt
+    infix fun pow(exponent: BigInt): BigInt = pow(exponent.toInt())
     infix fun pow(exponent: Int): BigInt
 
     infix fun and(other: BigInt): BigInt
@@ -117,10 +117,6 @@ interface BigIntConstructor {
         if (value.startsWith("-")) return -create(value.substring(1))
         return parseWithNumberPrefix(value) { sub, radix -> create(sub, radix) }
     }
-}
-
-internal fun validateRadix(value: String, radix: Int) {
-    for (c in value) digit(c, radix)
 }
 
 expect val BigIntNativeFactory: BigIntConstructor
