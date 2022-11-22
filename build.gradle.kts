@@ -882,7 +882,7 @@ samples {
     kotlin {
         jvm {
         }
-        js {
+        js(org.jetbrains.kotlin.gradle.plugin.KotlinJsCompilerType.IR) {
             browser {
                 binaries.executable()
             }
@@ -892,7 +892,7 @@ samples {
             //println(this.outputs.files.toList())
             doLast {
                 val targetDir = this.outputs.files.first()
-                val jsMainCompilation = kotlin.js().compilations["main"]!!
+                val jsMainCompilation = kotlin.js(org.jetbrains.kotlin.gradle.plugin.KotlinJsCompilerType.IR).compilations["main"]!!
 
                 // @TODO: How to get the actual .js file generated/served?
                 val jsFile = File("${project.name}.js").name

@@ -21,12 +21,8 @@
  */
 package org.luaj.vm2.lib
 
-import org.luaj.vm2.internal.LuaDate
-import org.luaj.vm2.Buffer
-import org.luaj.vm2.Globals
-import org.luaj.vm2.LuaTable
+import org.luaj.vm2.*
 import org.luaj.vm2.LuaValue
-import org.luaj.vm2.Varargs
 import org.luaj.vm2.internal.*
 import kotlin.jvm.*
 import kotlin.time.*
@@ -173,6 +169,9 @@ open class OsLib : TwoArgFunction() {
         }
     }
 
+    @OptIn(ExperimentalTime::class)
+    private val clockMark: TimeSource.Monotonic.ValueTimeMark = TimeSource.Monotonic.markNow()
+
     /**
      * @return an approximation of the amount in seconds of CPU time used by
      * the program.  For luaj this simple returns the elapsed time since the
@@ -180,7 +179,7 @@ open class OsLib : TwoArgFunction() {
      */
     @OptIn(ExperimentalTime::class)
     protected fun clock(): Double {
-        return TimeSource.Monotonic.markNow().elapsedNow().inSeconds
+        return clockMark.elapsedNow().inWholeMicroseconds.toDouble() / 1_000_000.0
         //return (JSystem.currentTimeMillis() - t0) / 1000.0
     }
 
