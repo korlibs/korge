@@ -18,6 +18,8 @@ boolean isPropertyTrue(String name) {
 boolean inCI = isPropertyTrue("CI")
 boolean disabledExtraKorgeLibs = isPropertyTrue("DISABLED_EXTRA_KORGE_LIBS")
 
+include(":backend:foundation")
+include(":backend:metal")
 include(":kbignum")
 include(":luak")
 include(":klock")
