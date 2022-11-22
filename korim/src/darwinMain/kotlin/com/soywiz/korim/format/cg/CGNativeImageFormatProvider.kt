@@ -1,5 +1,6 @@
 package com.soywiz.korim.format.cg
 
+import cnames.structs.CGImage
 import com.soywiz.kmem.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.format.*
@@ -7,7 +8,10 @@ import kotlinx.cinterop.*
 import platform.CoreFoundation.*
 import platform.CoreGraphics.*
 import platform.ImageIO.*
-import platform.posix.memcpy
+import platform.posix.*
+import kotlin.Boolean
+import kotlin.ByteArray
+import kotlin.Int
 import kotlin.native.concurrent.*
 
 open class CGBaseNativeImageFormatProvider : StbImageNativeImageFormatProvider() {
@@ -107,8 +111,8 @@ open class CGNativeImageFormatProvider : CGBaseNativeImageFormatProvider() {
                             } else {
 
                                 //val colorSpace = CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB)
-                                val colorSpace = CGColorSpaceCreateWithName(kCGColorSpaceSRGB)
-                                //val colorSpace = CGColorSpaceCreateDeviceRGB()
+                                //val colorSpace = CGColorSpaceCreateWithName(kCGColorSpaceSRGB)
+                                val colorSpace = CGColorSpaceCreateDeviceRGB()
                                 try {
                                     val realPremultiplied = true
                                     //val realPremultiplied = premultiplied
