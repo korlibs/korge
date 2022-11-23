@@ -1,13 +1,13 @@
 package com.soywiz.korge.gradle
 
 object BuildVersions {
-    const val GIT = "v3.0.0-Beta-41-gf074a57f"
-    const val KOTLIN = "1.6.21"
+    const val GIT = "v4.0.0-alpha-1-6-g42151d8e-dirty"
+    const val KOTLIN = "1.8.0-Beta"
     const val NODE_JS = "16.9.1"
-    const val JNA = "5.11.0"
-    const val COROUTINES = "1.6.1"
-    const val ANDROID_BUILD = "7.0.3"
-    const val KOTLIN_SERIALIZATION = "1.3.2"
+    const val JNA = "5.12.1"
+    const val COROUTINES = "1.6.4"
+    const val ANDROID_BUILD = "7.0.4"
+    const val KOTLIN_SERIALIZATION = "1.4.0"
     const val KRYPTO = "999.0.0.999"
     const val KLOCK = "999.0.0.999"
     const val KDS = "999.0.0.999"

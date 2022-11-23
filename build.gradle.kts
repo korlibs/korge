@@ -1092,7 +1092,7 @@ symlinktree(
     intoFolder = File(rootProject.projectDir, "korge-gradle-plugin/build/srcgen2res")
 )
 
-val buildVersionsFile = file("korge-gradle-plugin/build/srcgen/com/soywiz/korge/gradle/BuildVersions.kt")
+val buildVersionsFile = file("buildSrc/src/main/kotlinGen/com/soywiz/korge/gradle/BuildVersions.kt")
 val oldBuildVersionsText = buildVersionsFile.takeIf { it.exists() }?.readText()
 val projectVersion = project.version
 val newBuildVersionsText = """
@@ -1354,6 +1354,8 @@ allprojects {
         }
     }
 }
+
+com.soywiz.korge.gradle.KorgeVersionsTask.registerShowKorgeVersions(project)
 
 //try {
 //    println(URL("http://127.0.0.1:$httpPort/?startTime=0&endTime=1").readText())
