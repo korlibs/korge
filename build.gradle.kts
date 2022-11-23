@@ -1092,39 +1092,38 @@ symlinktree(
     intoFolder = File(rootProject.projectDir, "korge-gradle-plugin/build/srcgen2res")
 )
 
-val buildVersionsFile = file("buildSrc/src/main/kotlinGen/com/soywiz/korge/gradle/BuildVersions.kt")
-val oldBuildVersionsText = buildVersionsFile.takeIf { it.exists() }?.readText()
 val projectVersion = project.version
-val newBuildVersionsText = """
-package com.soywiz.korge.gradle
-
-object BuildVersions {
-    const val GIT = "$gitVersion"
-    const val KOTLIN = "$realKotlinVersion"
-    const val NODE_JS = "$nodeVersion"
-    const val JNA = "${libs.versions.jna.get()}"
-    const val COROUTINES = "${libs.versions.kotlinx.coroutines.get()}"
-    const val ANDROID_BUILD = "$androidBuildGradleVersion"
-    const val KOTLIN_SERIALIZATION = "${libs.versions.kotlinx.serialization.get()}"
-    const val KRYPTO = "$projectVersion"
-    const val KLOCK = "$projectVersion"
-    const val KDS = "$projectVersion"
-    const val KMEM = "$projectVersion"
-    const val KORMA = "$projectVersion"
-    const val KORIO = "$projectVersion"
-    const val KORIM = "$projectVersion"
-    const val KORAU = "$projectVersion"
-    const val KORGW = "$projectVersion"
-    const val KORGE = "$projectVersion"
-
-    val ALL_PROPERTIES by lazy { listOf(::GIT, ::KRYPTO, ::KLOCK, ::KDS, ::KMEM, ::KORMA, ::KORIO, ::KORIM, ::KORAU, ::KORGW, ::KORGE, ::KOTLIN, ::JNA, ::COROUTINES, ::ANDROID_BUILD, ::KOTLIN_SERIALIZATION) }
-    val ALL by lazy { ALL_PROPERTIES.associate { it.name to it.get() } }
+fun createBuildVersions(git: Boolean): String {
+    return """
+        package com.soywiz.korge.gradle
+        
+        object BuildVersions {
+            const val GIT = "${if (git) gitVersion else "main"}"
+            const val KOTLIN = "$realKotlinVersion"
+            const val NODE_JS = "$nodeVersion"
+            const val JNA = "${libs.versions.jna.get()}"
+            const val COROUTINES = "${libs.versions.kotlinx.coroutines.get()}"
+            const val ANDROID_BUILD = "$androidBuildGradleVersion"
+            const val KOTLIN_SERIALIZATION = "${libs.versions.kotlinx.serialization.get()}"
+            const val KRYPTO = "$projectVersion"
+            const val KLOCK = "$projectVersion"
+            const val KDS = "$projectVersion"
+            const val KMEM = "$projectVersion"
+            const val KORMA = "$projectVersion"
+            const val KORIO = "$projectVersion"
+            const val KORIM = "$projectVersion"
+            const val KORAU = "$projectVersion"
+            const val KORGW = "$projectVersion"
+            const val KORGE = "$projectVersion"
+        
+            val ALL_PROPERTIES by lazy { listOf(::GIT, ::KRYPTO, ::KLOCK, ::KDS, ::KMEM, ::KORMA, ::KORIO, ::KORIM, ::KORAU, ::KORGW, ::KORGE, ::KOTLIN, ::JNA, ::COROUTINES, ::ANDROID_BUILD, ::KOTLIN_SERIALIZATION) }
+            val ALL by lazy { ALL_PROPERTIES.associate { it.name to it.get() } }
+        }
+    """.trimIndent()
 }
-""".trimIndent()
 
-if (oldBuildVersionsText != newBuildVersionsText) {
-    buildVersionsFile.also { it.parentFile.mkdirs() }.writeText(newBuildVersionsText)
-}
+file("buildSrc/src/main/kotlinGen/com/soywiz/korge/gradle/BuildVersions.kt").writeTextIfChanged(createBuildVersions(git = false))
+file("korge-gradle-plugin/build/srcgen/com/soywiz/korge/gradle/BuildVersions.kt").writeTextIfChanged(createBuildVersions(git = true))
 
 if (
     org.apache.tools.ant.taskdefs.condition.Os.isFamily(org.apache.tools.ant.taskdefs.condition.Os.FAMILY_UNIX) &&
