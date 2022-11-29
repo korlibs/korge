@@ -434,6 +434,34 @@ open class NBufferTestBase {
         assertEquals("0000000000030405060708090000", buffer2.hex())
     }
 
+    @Test
+    fun testCopy2() {
+        for (direct1 in listOf(false, true)) {
+            for (direct2 in listOf(false, true)) {
+                val bufferBase = NBuffer(16, direct1)
+                for (n in 0 until 16) bufferBase.setUnalignedUInt8(n, n)
+                val buffer = bufferBase.slice(1)
+                val buffer2 = NBuffer(14, direct2)
+                NBuffer.copy(buffer, 2, buffer2, 5, 7)
+                assertEquals("0000000000030405060708090000", buffer2.hex())
+            }
+        }
+    }
+
+    @Test
+    fun testCopy3() {
+        for (direct1 in listOf(false, true)) {
+            for (direct2 in listOf(false, true)) {
+                val bufferBase = NBuffer(16, direct1)
+                for (n in 0 until 16) bufferBase.setUnalignedUInt8(n, n)
+                val buffer = bufferBase.slice(1)
+                val buffer2 = buffer.slice(2)
+                NBuffer.copy(buffer.slice(1), 2, buffer2, 5, 7)
+                assertEquals("03040506070405060708090a0f", buffer2.hex())
+            }
+        }
+    }
+
     fun Byte.asLittle(): Byte = this
     fun Short.asLittle(): Short = if (currentIsLittleEndian) this else this.reverseBytes()
     fun Int.asLittle(): Int = if (currentIsLittleEndian) this else this.reverseBytes()

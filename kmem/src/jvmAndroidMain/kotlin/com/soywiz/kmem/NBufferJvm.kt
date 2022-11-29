@@ -52,9 +52,10 @@ actual fun NBuffer.Companion.copy(src: NBuffer, srcPosBytes: Int, dst: NBuffer, 
     }
 
     if (srcBuf === dstBuf) {
-        arraycopy(size, srcBuf, srcPos, dstBuf, dstPos, { it, value -> dst.setUnalignedUInt8(it, value) }, { src.getUnalignedUInt8(it) })
+        arraycopy(size, srcBuf, srcPosBytes, dstBuf, dstPosBytes, { it, value -> dst.setUnalignedUInt8(it, value) }, { src.getUnalignedUInt8(it) })
         return
     }
+
     dst.slicedBuffer(dstPosBytes, sizeInBytes).put(src.slicedBuffer(srcPosBytes, sizeInBytes))
 }
 
