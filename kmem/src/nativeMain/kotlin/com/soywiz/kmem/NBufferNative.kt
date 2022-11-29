@@ -3,8 +3,14 @@ package com.soywiz.kmem
 actual class NBuffer(val data: ByteArray, val offset: Int, val size: Int, dummy: Unit) {
     val end: Int = offset + size
 }
-actual fun NBuffer(size: Int, direct: Boolean): NBuffer = NBuffer(ByteArray(size), 0, size, Unit)
-actual fun NBuffer(array: ByteArray, offset: Int, size: Int): NBuffer = NBuffer(array, offset, size, Unit)
+actual fun NBuffer(size: Int, direct: Boolean): NBuffer {
+    checkNBufferSize(size)
+    return NBuffer(ByteArray(size), 0, size, Unit)
+}
+actual fun NBuffer(array: ByteArray, offset: Int, size: Int): NBuffer {
+    checkNBufferWrap(array, offset, size)
+    return NBuffer(array, offset, size, Unit)
+}
 actual val NBuffer.byteOffset: Int get() = offset
 actual val NBuffer.sizeInBytes: Int get() = size
 internal actual fun NBuffer.sliceInternal(start: Int, end: Int): NBuffer = NBuffer(data, offset + start, end - start)

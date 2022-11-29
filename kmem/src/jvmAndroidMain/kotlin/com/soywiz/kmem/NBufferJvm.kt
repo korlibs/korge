@@ -3,14 +3,18 @@ package com.soywiz.kmem
 import java.nio.*
 
 actual class NBuffer(val buffer: ByteBuffer, val offset: Int, val size: Int) {
-    val end: Int get() = offset + size
 }
-actual fun NBuffer(size: Int, direct: Boolean): NBuffer = NBuffer(
-    if (direct) ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder()) else ByteBuffer.allocate(size).order(ByteOrder.nativeOrder()),
-    0, size
-)
-actual fun NBuffer(array: ByteArray, offset: Int, size: Int): NBuffer =
-    NBuffer(ByteBuffer.wrap(array, offset, size).order(ByteOrder.nativeOrder()), offset, size)
+actual fun NBuffer(size: Int, direct: Boolean): NBuffer {
+    checkNBufferSize(size)
+    return NBuffer(
+        if (direct) ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder()) else ByteBuffer.allocate(size).order(ByteOrder.nativeOrder()),
+        0, size
+    )
+}
+actual fun NBuffer(array: ByteArray, offset: Int, size: Int): NBuffer {
+    checkNBufferWrap(array, offset, size)
+    return NBuffer(ByteBuffer.wrap(array, offset, size).order(ByteOrder.nativeOrder()), offset, size)
+}
 actual val NBuffer.byteOffset: Int get() = offset
 actual val NBuffer.sizeInBytes: Int get() = size
 actual fun NBuffer.sliceInternal(start: Int, end: Int): NBuffer = NBuffer(buffer, offset + start, end - start)
