@@ -69,10 +69,8 @@ actual fun NBuffer.Companion.copy(src: NBuffer, srcPosBytes: Int, dst: NBuffer, 
 //        this.positionSafe(oldPos)
 //    }
 //}
-internal fun java.nio.ByteBuffer.positionSafe(newPosition: Int): ByteBuffer { position(newPosition); return this }
-internal fun java.nio.ByteBuffer.limitSafe(newLimit: Int): ByteBuffer { limit(newLimit); return this }
-internal fun java.nio.ByteBuffer.clearSafe(): ByteBuffer { clear(); return this }
-internal fun java.nio.ByteBuffer.flipSafe(): ByteBuffer { flip(); return this }
+internal fun ByteBuffer.positionSafe(newPosition: Int): ByteBuffer { position(newPosition); return this }
+internal fun ByteBuffer.limitSafe(newLimit: Int): ByteBuffer { limit(newLimit); return this }
 
 // Unaligned versions
 
