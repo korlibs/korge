@@ -5,6 +5,10 @@ import org.khronos.webgl.*
 
 actual class NBuffer(val dataView: DataView) {
     val buffer: ArrayBuffer get() = dataView.buffer
+    actual companion object
+
+    fun sliceUint8Array(offset: Int = 0, size: Int = dataView.byteLength - offset): Uint8Array =
+        Uint8Array(buffer, dataView.byteOffset + offset, size)
 }
 actual fun NBuffer(size: Int, direct: Boolean): NBuffer {
     checkNBufferSize(size)
@@ -17,6 +21,10 @@ actual fun NBuffer(array: ByteArray, offset: Int, size: Int): NBuffer {
 actual val NBuffer.byteOffset: Int get() = this.dataView.byteOffset
 actual val NBuffer.sizeInBytes: Int get() = this.dataView.byteLength
 actual fun NBuffer.sliceInternal(start: Int, end: Int): NBuffer = NBuffer(DataView(this.buffer, this.byteOffset + start, end - start))
+
+actual fun NBuffer.Companion.copy(src: NBuffer, srcPosBytes: Int, dst: NBuffer, dstPosBytes: Int, sizeInBytes: Int) {
+    dst.sliceUint8Array(dstPosBytes, sizeInBytes).set(src.sliceUint8Array(srcPosBytes, sizeInBytes), 0)
+}
 
 // Unaligned versions
 

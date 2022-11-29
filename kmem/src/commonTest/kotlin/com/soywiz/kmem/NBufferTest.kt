@@ -425,6 +425,15 @@ open class NBufferTestBase {
         assertFailsWith<IllegalArgumentException> { buffer.sliceWithSize(1, 8) }
     }
 
+    @Test
+    fun testCopy() {
+        val bufferBase = NBuffer(ByteArray(16) { it.toByte() })
+        val buffer = bufferBase.slice(1)
+        val buffer2 = NBuffer(14, direct)
+        NBuffer.copy(buffer, 2, buffer2, 5, 7)
+        assertEquals("0000000000030405060708090000", buffer2.hex())
+    }
+
     fun Byte.asLittle(): Byte = this
     fun Short.asLittle(): Short = if (currentIsLittleEndian) this else this.reverseBytes()
     fun Int.asLittle(): Int = if (currentIsLittleEndian) this else this.reverseBytes()

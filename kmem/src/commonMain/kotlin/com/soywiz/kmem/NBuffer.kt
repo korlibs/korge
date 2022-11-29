@@ -10,7 +10,9 @@ internal fun checkNBufferWrap(array: ByteArray, offset: Int, size: Int) {
     }
 }
 
-expect class NBuffer
+expect class NBuffer {
+    companion object
+}
 expect fun NBuffer(size: Int, direct: Boolean = false): NBuffer
 expect fun NBuffer(array: ByteArray, offset: Int = 0, size: Int = array.size - offset): NBuffer
 expect val NBuffer.byteOffset: Int
@@ -29,12 +31,15 @@ fun NBuffer.hex(): String = buildString(sizeInBytes * 2) {
 }
 internal expect fun NBuffer.sliceInternal(start: Int, end: Int): NBuffer
 fun NBuffer.sliceWithSize(start: Int, size: Int): NBuffer = slice(start, start + size)
-fun NBuffer.slice(start: Int, end: Int): NBuffer {
+fun NBuffer.slice(start: Int = 0, end: Int = sizeInBytes): NBuffer {
     if (start > end || start !in 0 .. sizeInBytes || end !in 0 .. sizeInBytes) {
         throw IllegalArgumentException("invalid slice start:$start, end:$end not in 0..$sizeInBytes")
     }
     return sliceInternal(start, end)
 }
+
+// Copy
+expect fun NBuffer.Companion.copy(src: NBuffer, srcPosBytes: Int, dst: NBuffer, dstPosBytes: Int, sizeInBytes: Int)
 
 // Unaligned versions
 

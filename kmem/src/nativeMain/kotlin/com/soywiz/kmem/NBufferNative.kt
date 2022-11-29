@@ -2,6 +2,7 @@ package com.soywiz.kmem
 
 actual class NBuffer(val data: ByteArray, val offset: Int, val size: Int, dummy: Unit) {
     val end: Int = offset + size
+    actual companion object
 }
 actual fun NBuffer(size: Int, direct: Boolean): NBuffer {
     checkNBufferSize(size)
@@ -14,6 +15,14 @@ actual fun NBuffer(array: ByteArray, offset: Int, size: Int): NBuffer {
 actual val NBuffer.byteOffset: Int get() = offset
 actual val NBuffer.sizeInBytes: Int get() = size
 internal actual fun NBuffer.sliceInternal(start: Int, end: Int): NBuffer = NBuffer(data, offset + start, end - start)
+
+actual fun NBuffer.Companion.copy(src: NBuffer, srcPosBytes: Int, dst: NBuffer, dstPosBytes: Int, sizeInBytes: Int) {
+    arraycopy(
+        src.data, src.offset + srcPosBytes,
+        dst.data, dst.offset + dstPosBytes,
+        sizeInBytes
+    )
+}
 
 // Unaligned versions
 
