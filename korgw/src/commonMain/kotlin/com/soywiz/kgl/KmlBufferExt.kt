@@ -22,7 +22,7 @@ fun Buffer.putAsciiString(str: String): Buffer {
 }
 
 fun <T> IntArray.toTempBuffer(callback: (Buffer) -> T): T {
-	return NBufferTemp(this.size) { buffer: Buffer ->
+	return BufferTemp(this.size) { buffer: Buffer ->
 		val ints = buffer.i32
 		for (n in this.indices) ints[n] = this[n]
 		callback(buffer)

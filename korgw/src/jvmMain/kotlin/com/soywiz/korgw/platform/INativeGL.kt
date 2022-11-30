@@ -313,7 +313,7 @@ interface INativeGL {
     fun glGetUniformiv(program: GLuint, location: GLint, params: IntPtr)
     fun glGetVertexAttribfv(index: GLuint, pname: GLenum, params: FloatPtr)
     fun glGetVertexAttribiv(index: GLuint, pname: GLenum, params: IntPtr)
-    //fun glGetVertexAttribPointerv(index: GLuint, pname: GLenum, pointer: NBuffer)
+    //fun glGetVertexAttribPointerv(index: GLuint, pname: GLenum, pointer: Buffer)
     fun glHint(target: GLenum, mode: GLenum)
     fun glIsBuffer(buffer: GLuint): GLboolean
     fun glIsEnabled(cap: GLenum): GLboolean

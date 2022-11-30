@@ -609,7 +609,7 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
                 mem = Buffer(size.nextPowerOfTwo)
             }
             return mem!!
-            //return NBuffer(size)
+            //return Buffer(size)
         }
 
         fun upload(data: ByteArray, offset: Int = 0, length: Int = data.size): AGBuffer =
@@ -1005,7 +1005,7 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
                 list.uniformsSet(uniforms) {
                     list.setState(blending, stencil, colorMask, renderState)
 
-                    //val viewport = NBuffer(4 * 4)
+                    //val viewport = Buffer(4 * 4)
                     //gl.getIntegerv(KmlGl.VIEWPORT, viewport)
                     //println("viewport=${viewport.getAlignedInt32(0)},${viewport.getAlignedInt32(1)},${viewport.getAlignedInt32(2)},${viewport.getAlignedInt32(3)}")
 

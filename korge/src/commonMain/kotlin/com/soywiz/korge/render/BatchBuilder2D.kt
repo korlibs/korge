@@ -95,8 +95,8 @@ class BatchBuilder2D constructor(
     @PublishedApi internal val verticesWrap = ByteArray(maxVertices)
     @PublishedApi internal val indices = Buffer(2 * maxIndices)
     //@PublishedApi internal val indices = ShortArray(maxIndices)
-    //internal val vertices = NBuffer.allocNoDirect(6 * 4 * maxVertices)
-    //internal val indices = NBuffer.allocNoDirect(2 * maxIndices)
+    //internal val vertices = Buffer.allocNoDirect(6 * 4 * maxVertices)
+    //internal val indices = Buffer.allocNoDirect(2 * maxIndices)
     val indicesI16 = indices.u16
     //val indicesI16 = indices
 

@@ -63,8 +63,8 @@ private inline fun KmlGl.getInfoLog(
 	getInfoLog: (Int, Int, Buffer, Buffer) -> Unit
 ): String {
 	val size = getiv(obj, INFO_LOG_LENGTH)
-	return NBufferTemp(4 * 1) { sizev ->
-		NBufferTemp(size) { mbuffer ->
+	return BufferTemp(4 * 1) { sizev ->
+		BufferTemp(size) { mbuffer ->
 			getInfoLog(obj, size, sizev, mbuffer)
 			mbuffer.toAsciiString()
 		}

@@ -96,7 +96,7 @@ public inline fun <T> arraycopy(size: Int, src: Any?, srcPos: Int, dst: Any?, ds
     }
 }
 
-// NBuffer variants
+// Buffer variants
 fun arraycopy(src: Buffer, srcPos: Int, dst: Buffer, dstPos: Int, size: Int) {
     Buffer.copy(src, srcPos, dst, dstPos, size)
 }
