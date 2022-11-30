@@ -51,7 +51,7 @@ class Screamtracker : BaseModuleTracker() {
     var signature: String = ""
     var songlen: Int = 1
     var repeatpos: Int = 0
-    var patterntable: NBufferUInt8 = NBufferUInt8(0)
+    var patterntable: Uint8Buffer = Uint8Buffer(0)
     var channels: Int = 0
     var ordNum: Int = 0
     var insNum: Int = 0
@@ -174,7 +174,7 @@ class Screamtracker : BaseModuleTracker() {
 
         songlen = 1
         repeatpos = 0
-        patterntable = NBufferUInt8(256)
+        patterntable = Uint8Buffer(256)
 
         channels = 0
         ordNum = 0
@@ -358,7 +358,7 @@ class Screamtracker : BaseModuleTracker() {
 
         // load and unpack patterns
         var max_ch = 0
-        pattern = Array(patNum) { NBufferUInt8(channels * 64 * 5) }
+        pattern = Array(patNum) { Uint8Buffer(channels * 64 * 5) }
         for (i in 0 until patNum) {
             val boffset = 0x0060 + ordNum + insNum * 2 + i * 2
             var offset = (buffer[boffset] or (buffer[boffset + 1] shl 8)) * 16
@@ -421,9 +421,9 @@ class Screamtracker : BaseModuleTracker() {
         val oldch = channels
         channels = max_ch + 1
         for (i in 0 until patNum) {
-            val oldpat = NBufferUInt8(pattern[i].size)
+            val oldpat = Uint8Buffer(pattern[i].size)
             arraycopy(pattern[i], 0, oldpat, 0, pattern[i].size)
-            pattern[i] = NBufferUInt8(channels * 64 * 5)
+            pattern[i] = Uint8Buffer(channels * 64 * 5)
             val pattern = pattern[i]
             for (j in 0 until 64) {
                 for (c in 0 until channels) {

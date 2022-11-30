@@ -7,7 +7,7 @@ import com.soywiz.korag.shader.Program
 import com.soywiz.korag.shader.VertexLayout
 
 data class BufferWithVertexLayout(
-    val buffer: NBuffer,
+    val buffer: Buffer,
     val layout: VertexLayout
 ) {
     val vertexSizeInBytes = layout.totalSize
@@ -17,7 +17,7 @@ data class BufferWithVertexLayout(
 @Korge3DExperimental
 data class Mesh3D constructor(
     val vertexBuffers: FastArrayList<BufferWithVertexLayout>,
-    val indexBuffer: NBuffer,
+    val indexBuffer: Buffer,
     val indexType: AG.IndexType,
     val vertexCount:Int,
     val program: Program?,

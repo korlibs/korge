@@ -582,15 +582,15 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
         }
     }
 
-    private val buffers = LinkedHashSet<Buffer>()
+    private val buffers = LinkedHashSet<AGBuffer>()
     private val buffersCount: Int get() = buffers.size
     private val buffersMemory: ByteUnits get() = ByteUnits.fromBytes(buffers.sumOf { it.estimatedMemoryUsage.bytesLong })
 
     enum class BufferKind { INDEX, VERTEX }
 
-    open inner class Buffer constructor(val list: AGList) {
+    open inner class AGBuffer constructor(val list: AGList) {
         var dirty = false
-        internal var mem: NBuffer? = null
+        internal var mem: com.soywiz.kmem.Buffer? = null
         internal var memOffset: Int = 0
         internal var memLength: Int = 0
 
@@ -604,47 +604,47 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
             estimatedMemoryUsage = ByteUnits.fromBytes(memLength)
         }
 
-        private fun allocateMem(size: Int): NBuffer {
+        private fun allocateMem(size: Int): com.soywiz.kmem.Buffer {
             if (mem == null || mem!!.sizeInBytes < size) {
-                mem = NBuffer(size.nextPowerOfTwo)
+                mem = Buffer(size.nextPowerOfTwo)
             }
             return mem!!
             //return NBuffer(size)
         }
 
-        fun upload(data: ByteArray, offset: Int = 0, length: Int = data.size): Buffer =
+        fun upload(data: ByteArray, offset: Int = 0, length: Int = data.size): AGBuffer =
             _upload(allocateMem(length).also { it.setArrayInt8(0, data, offset, length) }, 0, length)
 
-        fun upload(data: FloatArray, offset: Int = 0, length: Int = data.size): Buffer =
+        fun upload(data: FloatArray, offset: Int = 0, length: Int = data.size): AGBuffer =
             _upload(allocateMem(length * 4).also { it.setArrayFloat32(0, data, offset, length) }, 0, length * 4)
 
-        fun upload(data: IntArray, offset: Int = 0, length: Int = data.size): Buffer =
+        fun upload(data: IntArray, offset: Int = 0, length: Int = data.size): AGBuffer =
             _upload(allocateMem(length * 4).also { it.setArrayInt32(0, data, offset, length) }, 0, length * 4)
 
-        fun upload(data: ShortArray, offset: Int = 0, length: Int = data.size): Buffer =
+        fun upload(data: ShortArray, offset: Int = 0, length: Int = data.size): AGBuffer =
             _upload(allocateMem(length * 2).also { it.setArrayInt16(0, data, offset, length) }, 0, length * 2)
 
-        fun upload(data: NBuffer, offset: Int = 0, length: Int = data.size): Buffer =
+        fun upload(data: com.soywiz.kmem.Buffer, offset: Int = 0, length: Int = data.size): AGBuffer =
             _upload(data, offset, length)
 
         private fun getLen(len: Int, dataSize: Int): Int {
             return if (len >= 0) len else dataSize
         }
 
-        fun upload(data: Any, offset: Int = 0, length: Int = -1): Buffer {
+        fun upload(data: Any, offset: Int = 0, length: Int = -1): AGBuffer {
             return when (data) {
                 is ByteArray -> upload(data, offset, getLen(length, data.size))
                 is ShortArray -> upload(data, offset, getLen(length, data.size))
                 is IntArray -> upload(data, offset, getLen(length, data.size))
                 is FloatArray -> upload(data, offset, getLen(length, data.size))
-                is NBuffer -> upload(data, offset, getLen(length, data.size))
+                is com.soywiz.kmem.Buffer -> upload(data, offset, getLen(length, data.size))
                 is IntArrayList -> upload(data.data, offset, getLen(length, data.size))
                 is FloatArrayList -> upload(data.data, offset, getLen(length, data.size))
                 else -> TODO()
             }
         }
 
-        private fun _upload(data: NBuffer, offset: Int = 0, length: Int = data.size): Buffer {
+        private fun _upload(data: com.soywiz.kmem.Buffer, offset: Int = 0, length: Int = data.size): AGBuffer {
             mem = data
             memOffset = offset
             memLength = length
@@ -710,7 +710,7 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
     open fun createTexture(premultiplied: Boolean, targetKind: TextureTargetKind = TextureTargetKind.TEXTURE_2D): Texture =
         Texture(premultiplied, targetKind)
 
-    open fun createBuffer(): Buffer = commandsNoWaitNoExecute { Buffer(it) }
+    open fun createBuffer(): AGBuffer = commandsNoWaitNoExecute { AGBuffer(it) }
     @Deprecated("")
     fun createIndexBuffer() = createBuffer()
     @Deprecated("")
@@ -723,7 +723,7 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
             upload(data, offset, length)
         }
 
-    fun createIndexBuffer(data: NBuffer, offset: Int = 0, length: Int = data.size - offset) =
+    fun createIndexBuffer(data: com.soywiz.kmem.Buffer, offset: Int = 0, length: Int = data.size - offset) =
         createIndexBuffer().apply {
             upload(data, offset, length)
         }
@@ -733,7 +733,7 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
             upload(data, offset, length)
         }
 
-    fun createVertexBuffer(data: NBuffer, offset: Int = 0, length: Int = data.size - offset) =
+    fun createVertexBuffer(data: com.soywiz.kmem.Buffer, offset: Int = 0, length: Int = data.size - offset) =
         createVertexBuffer().apply {
             upload(data, offset, length)
         }
@@ -855,12 +855,12 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
 
     @Deprecated("Use draw(Batch) or drawV2() instead")
     fun draw(
-        vertices: Buffer,
+        vertices: AGBuffer,
         program: Program,
         type: DrawType,
         vertexLayout: VertexLayout,
         vertexCount: Int,
-        indices: Buffer? = null,
+        indices: AGBuffer? = null,
         indexType: IndexType = IndexType.USHORT,
         offset: Int = 0,
         blending: Blending = Blending.NORMAL,
@@ -893,7 +893,7 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
         program: Program,
         type: DrawType,
         vertexCount: Int,
-        indices: Buffer? = null,
+        indices: AGBuffer? = null,
         indexType: IndexType = IndexType.USHORT,
         offset: Int = 0,
         blending: Blending = Blending.NORMAL,
@@ -927,10 +927,10 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
     )
 
     data class VertexData constructor(
-        var _buffer: Buffer?,
+        var _buffer: AGBuffer?,
         var layout: VertexLayout = VertexLayout()
     ) {
-        val buffer: Buffer get() = _buffer!!
+        val buffer: AGBuffer get() = _buffer!!
     }
 
     data class Batch constructor(
@@ -938,7 +938,7 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
         var program: Program = DefaultShaders.PROGRAM_DEBUG,
         var type: DrawType = DrawType.TRIANGLES,
         var vertexCount: Int = 0,
-        var indices: Buffer? = null,
+        var indices: AGBuffer? = null,
         var indexType: IndexType = IndexType.USHORT,
         var offset: Int = 0,
         var blending: Blending = Blending.NORMAL,
@@ -957,7 +957,7 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
         }
 
         @Deprecated("Use vertexData instead")
-        var vertices: Buffer
+        var vertices: AGBuffer
             get() = (singleVertexData.firstOrNull() ?: vertexData.first()).buffer
             set(value) {
                 ensureSingleVertexData()
@@ -1426,7 +1426,7 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
         val VERTEX_COUNT = 4
         val vertices = createBuffer()
         val vertexLayout = VertexLayout(DefaultShaders.a_Pos, DefaultShaders.a_Tex)
-        val verticesData = NBuffer(VERTEX_COUNT * vertexLayout.totalSize)
+        val verticesData = Buffer(VERTEX_COUNT * vertexLayout.totalSize)
         val program = Program(VertexShader {
             DefaultShaders {
                 SET(v_Tex, a_Tex)

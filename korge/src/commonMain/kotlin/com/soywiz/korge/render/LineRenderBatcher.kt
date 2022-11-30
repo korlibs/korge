@@ -80,7 +80,7 @@ class LineRenderBatcher(
     private val vertexBuffer = ag.createVertexBuffer()
     private val program = Program(VERTEX, FRAGMENT)
     private val maxVertexCount = 1024
-    private val vertices = NBuffer.allocDirect(6 * 4 * maxVertexCount)
+    private val vertices = Buffer.allocDirect(6 * 4 * maxVertexCount)
     private val tempRect = Rectangle()
     @PublishedApi
     internal val viewMat = Matrix3D()

@@ -214,8 +214,8 @@ open class LogBaseAG(
 		override fun toString(): String = "Texture[$id]"
 	}
 
-	inner class LogBuffer(val id: Int, list: AGList) : Buffer(list) {
-		val logmem: NBuffer? get() = mem
+	inner class LogBuffer(val id: Int, list: AGList) : AGBuffer(list) {
+		val logmem: com.soywiz.kmem.Buffer? get() = mem
 		val logmemOffset get() = memOffset
 		val logmemLength get() = memLength
 		override fun afterSetMem() {
@@ -248,7 +248,7 @@ open class LogBaseAG(
 	override fun createTexture(premultiplied: Boolean, targetKind: TextureTargetKind): Texture =
 		LogTexture(textureId++, premultiplied).apply { log("createTexture():$id", Kind.TEXTURE) }
 
-	override fun createBuffer(): Buffer =
+	override fun createBuffer(): AGBuffer =
         commandsNoWait { LogBuffer(bufferId++, _list).apply { log("createBuffer():$id", Kind.BUFFER) } }
 
     data class VertexAttributeEx(val index: Int, val attribute: Attribute, val pos: Int, val data: VertexData) {
@@ -295,7 +295,7 @@ open class LogBaseAG(
             offset: Int,
             instances: Int,
             indexType: AGIndexType?,
-            indices: Buffer?
+            indices: AGBuffer?
         ) {
             val _indices: IntArrayList? = when {
                 indices != null -> {
@@ -358,7 +358,7 @@ open class LogBaseAG(
 
         override fun bufferCreate(id: Int) = log("bufferCreate: $id", Kind.BUFFER)
         override fun bufferDelete(id: Int) = log("bufferDelete: $id", Kind.BUFFER)
-        override fun uniformsSet(layout: UniformLayout, data: NBuffer) = log("uniformsSet: $layout", Kind.UNIFORM)
+        override fun uniformsSet(layout: UniformLayout, data: com.soywiz.kmem.Buffer) = log("uniformsSet: $layout", Kind.UNIFORM)
         override fun uboCreate(id: Int) = log("uboCreate: $id", Kind.UNIFORM)
         override fun uboDelete(id: Int) = log("uboDelete: $id", Kind.UNIFORM)
         override fun uboSet(id: Int, ubo: UniformValues) {

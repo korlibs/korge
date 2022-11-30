@@ -6,17 +6,17 @@ import com.soywiz.korvi.mpeg.byteLength
 import com.soywiz.korvi.mpeg.length
 import com.soywiz.korvi.mpeg.set
 
-class BitBuffer(var bytes: NBufferUInt8, val mode: MODE = MODE.EXPAND) {
+class BitBuffer(var bytes: Uint8Buffer, val mode: MODE = MODE.EXPAND) {
     var byteLength: Int = bytes.size
     var index: Int = 0
-    var buffer: NBufferUInt8? = null
+    var buffer: Uint8Buffer? = null
 
-    constructor(size: Int, mode: MODE = MODE.EXPAND) : this(NBufferUInt8(size), mode) {
+    constructor(size: Int, mode: MODE = MODE.EXPAND) : this(Uint8Buffer(size), mode) {
         byteLength = 0
     }
 
     fun resize(size: Int) {
-        val newBytes = NBufferUInt8(size)
+        val newBytes = Uint8Buffer(size)
         if (this.byteLength != 0) {
             this.byteLength = kotlin.math.min(this.byteLength, size)
             arraycopy(this.bytes.buffer, 0, newBytes.buffer, 0, this.byteLength)

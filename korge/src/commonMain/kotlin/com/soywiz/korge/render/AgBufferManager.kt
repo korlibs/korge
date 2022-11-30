@@ -15,14 +15,14 @@ import com.soywiz.korag.AGList
 class AgBufferManager(
     val ag: AG
 ) {
-    private val buffers = FastIdentityMap<AgCachedBuffer, AG.Buffer>()
+    private val buffers = FastIdentityMap<AgCachedBuffer, AG.AGBuffer>()
     private val referencedBuffersSinceGC = AgFastSet<AgCachedBuffer>()
     private val bufferPool = Pool {
         //println("CREATE BUFFER")
         ag.createBuffer()
     }
 
-    fun getBuffer(cached: AgCachedBuffer): AG.Buffer {
+    fun getBuffer(cached: AgCachedBuffer): AG.AGBuffer {
         referencedBuffersSinceGC.add(cached)
         return buffers.getOrPut(cached) {
             bufferPool.alloc().also {
@@ -62,7 +62,7 @@ class AgBufferManager(
         ag.commandsNoWait { delete(buffer, it) }
     }
 
-    val empty = NBuffer(0)
+    val empty = Buffer(0)
 
     fun delete(buffer: AgCachedBuffer, list: AGList) {
         val buf = buffers.getAndRemove(buffer)

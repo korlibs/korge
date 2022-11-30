@@ -43,8 +43,8 @@ class TexturedVertexArray(vcount: Int, val indices: ShortArray, icount: Int = in
         }
     //internal val data = IntArray(TEXTURED_ARRAY_COMPONENTS_PER_VERTEX * vcount)
     //internal val _data = NBuffer(TEXTURED_ARRAY_COMPONENTS_PER_VERTEX * initialVcount * 4, direct = false)
-    @PublishedApi internal val _data: NBuffer = NBuffer.allocNoDirect(TEXTURED_ARRAY_COMPONENTS_PER_VERTEX * initialVcount * 4)
-    @PublishedApi internal val fast = _data.fast32
+    @PublishedApi internal val _data: Buffer = Buffer.allocNoDirect(TEXTURED_ARRAY_COMPONENTS_PER_VERTEX * initialVcount * 4)
+    @PublishedApi internal val fast = _data
     //private val f32 = _data.f32
     //private val i32 = _data.i32
     //val points = (0 until vcount).map { Item(data, it) }
@@ -123,32 +123,32 @@ class TexturedVertexArray(vcount: Int, val indices: ShortArray, icount: Int = in
     }
     /** Sets the [x] of the vertex previously selected calling [select] */
     inline fun setX(v: Float): TexturedVertexArray {
-        fast.setF(offset + 0, v)
+        fast.setFloat32(offset + 0, v)
         return this
     }
     /** Sets the [y] of the vertex previously selected calling [select] */
     inline fun setY(v: Float): TexturedVertexArray {
-        fast.setF(offset + 1, v)
+        fast.setFloat32(offset + 1, v)
         return this
     }
     /** Sets the [u] (x in texture) of the vertex previously selected calling [select] */
     inline fun setU(v: Float): TexturedVertexArray {
-        fast.setF(offset + 2, v)
+        fast.setFloat32(offset + 2, v)
         return this
     }
     /** Sets the [v] (y in texture) of the vertex previously selected calling [select] */
     inline fun setV(v: Float): TexturedVertexArray {
-        fast.setF(offset + 3, v)
+        fast.setFloat32(offset + 3, v)
         return this
     }
     /** Sets the [cMul] (multiplicative color) of the vertex previously selected calling [select] */
     inline fun setCMul(v: RGBA): TexturedVertexArray {
-        fast.setI(offset + 4, v.value)
+        fast.setInt32(offset + 4, v.value)
         return this
     }
     /** Sets the [cAdd] (additive color) of the vertex previously selected calling [select] */
     inline fun setCAdd(v: ColorAdd): TexturedVertexArray {
-        fast.setI(offset + 5, v.value)
+        fast.setInt32(offset + 5, v.value)
         return this
     }
     /** Sets the [x] and [y] with the [matrix] transform applied of the vertex previously selected calling [select] */
@@ -164,13 +164,13 @@ class TexturedVertexArray(vcount: Int, val indices: ShortArray, icount: Int = in
         quadV(fast, index * TEXTURED_ARRAY_COMPONENTS_PER_VERTEX, x, y, u, v, colMul.value, colAdd.value)
     }
 
-    fun quadV(fast: Fast32Buffer, pos: Int, x: Float, y: Float, u: Float, v: Float, colMul: Int, colAdd: Int): Int {
-        fast.setF(pos + 0, x)
-        fast.setF(pos + 1, y)
-        fast.setF(pos + 2, u)
-        fast.setF(pos + 3, v)
-        fast.setI(pos + 4, colMul)
-        fast.setI(pos + 5, colAdd)
+    fun quadV(fast: Buffer, pos: Int, x: Float, y: Float, u: Float, v: Float, colMul: Int, colAdd: Int): Int {
+        fast.setFloat32(pos + 0, x)
+        fast.setFloat32(pos + 1, y)
+        fast.setFloat32(pos + 2, u)
+        fast.setFloat32(pos + 3, v)
+        fast.setInt32(pos + 4, colMul)
+        fast.setInt32(pos + 5, colAdd)
         return TEXTURED_ARRAY_COMPONENTS_PER_VERTEX
     }
 
@@ -257,17 +257,17 @@ class TexturedVertexArray(vcount: Int, val indices: ShortArray, icount: Int = in
     }
 
     /** [x] at the previously vertex selected by calling [select] */
-    val x: Float get() = fast.getF(offset + 0)
+    val x: Float get() = fast.getFloat32(offset + 0)
     /** [y] at the previously vertex selected by calling [select] */
-    val y: Float get() = fast.getF(offset + 1)
+    val y: Float get() = fast.getFloat32(offset + 1)
     /** [u] (x in texture) at the previously vertex selected by calling [select] */
-    val u: Float get() = fast.getF(offset + 2)
+    val u: Float get() = fast.getFloat32(offset + 2)
     /** [v] (y in texture) at the previously vertex selected by calling [select] */
-    val v: Float get() = fast.getF(offset + 3)
+    val v: Float get() = fast.getFloat32(offset + 3)
     /** [cMul] (multiplicative color) at the previously vertex selected by calling [select] */
-    val cMul: Int get() = fast.getI(offset + 4)
+    val cMul: Int get() = fast.getInt32(offset + 4)
     /** [cAdd] (additive color) at the previously vertex selected by calling [select] */
-    val cAdd: Int get() = fast.getI(offset + 5)
+    val cAdd: Int get() = fast.getInt32(offset + 5)
 
     /** Describes the vertice previously selected by calling [select] */
     val vertexString: String get() = "V(xy=($x, $y),uv=$u, $v,cMul=$cMul,cAdd=$cAdd)"

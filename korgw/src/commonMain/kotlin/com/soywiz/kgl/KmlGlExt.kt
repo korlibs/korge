@@ -9,23 +9,23 @@ import kotlin.native.concurrent.ThreadLocal
 class KmlGlException(message: String) : RuntimeException(message)
 
 @ThreadLocal
-private val tempNBufferByte = NBuffer(1, direct = true)
+private val tempNBufferByte = Buffer(1, direct = true)
 @ThreadLocal
-private val tempNBuffer1 = NBuffer(4, direct = true)
+private val tempNBuffer1 = Buffer(4, direct = true)
 @ThreadLocal
-private val tempNBuffer4 = NBuffer(4 * 4, direct = true)
+private val tempNBuffer4 = Buffer(4 * 4, direct = true)
 
-private inline fun tempByte1Buffer(value: Int = 0, block: (NBuffer) -> Unit): Int = tempNBufferByte.let {
+private inline fun tempByte1Buffer(value: Int = 0, block: (Buffer) -> Unit): Int = tempNBufferByte.let {
     it.setInt8(0, value.toByte())
     block(it)
     it.getUInt8(0)
 }
-private inline fun tempInt1Buffer(value: Int = 0, block: (NBuffer) -> Unit): Int = tempNBuffer1.let {
+private inline fun tempInt1Buffer(value: Int = 0, block: (Buffer) -> Unit): Int = tempNBuffer1.let {
     it.setInt32(0, value)
     block(it)
     it.getInt32(0)
 }
-private inline fun tempFloat1Buffer(value: Float = 0f, block: (NBuffer) -> Unit): Float = tempNBuffer1.let {
+private inline fun tempFloat1Buffer(value: Float = 0f, block: (Buffer) -> Unit): Float = tempNBuffer1.let {
     it.setFloat32(0, value)
     block(it)
     it.getFloat32(0)
@@ -60,7 +60,7 @@ fun KmlGl.deleteFramebuffer(id: Int) { tempInt1Buffer(id) { deleteFramebuffers(1
 private inline fun KmlGl.getInfoLog(
 	obj: Int,
 	getiv: (Int, Int) -> Int,
-	getInfoLog: (Int, Int, NBuffer, NBuffer) -> Unit
+	getInfoLog: (Int, Int, Buffer, Buffer) -> Unit
 ): String {
 	val size = getiv(obj, INFO_LOG_LENGTH)
 	return NBufferTemp(4 * 1) { sizev ->

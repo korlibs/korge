@@ -195,7 +195,7 @@ class AGQueueProcessorOpenGL(
         buffers.tryGetAndDelete(id)?.let { gl.deleteBuffer(it.glId); it.glId = 0 }
     }
 
-    private fun bindBuffer(buffer: AG.Buffer, target: AGBufferKind) {
+    private fun bindBuffer(buffer: AG.AGBuffer, target: AGBufferKind) {
         val bufferInfo = buffers[buffer.agId] ?: return
         if (bufferInfo.cachedVersion != globalState.contextVersion) {
             bufferInfo.cachedVersion = globalState.contextVersion
@@ -225,7 +225,7 @@ class AGQueueProcessorOpenGL(
         offset: Int,
         instances: Int,
         indexType: AGIndexType?,
-        indices: AG.Buffer?
+        indices: AG.AGBuffer?
     ) {
         indices?.let { bindBuffer(it, AGBufferKind.INDEX) }
 
@@ -247,7 +247,7 @@ class AGQueueProcessorOpenGL(
     ///////////////////////////////////////
     // UNIFORMS
     ///////////////////////////////////////
-    override fun uniformsSet(layout: UniformLayout, data: NBuffer) {
+    override fun uniformsSet(layout: UniformLayout, data: Buffer) {
         layout.attributes.fastForEach {
             //currentProgram
         }
@@ -415,10 +415,10 @@ class AGQueueProcessorOpenGL(
     }
 
     private val TEMP_MAX_MATRICES = 1024
-    val tempBuffer = NBuffer.allocDirect(4 * 16 * TEMP_MAX_MATRICES)
-    val tempBufferM2 = NBuffer.allocDirect(4 * 2 * 2)
-    val tempBufferM3 = NBuffer.allocDirect(4 * 3 * 3)
-    val tempBufferM4 = NBuffer.allocDirect(4 * 4 * 4)
+    val tempBuffer = Buffer.allocDirect(4 * 16 * TEMP_MAX_MATRICES)
+    val tempBufferM2 = Buffer.allocDirect(4 * 2 * 2)
+    val tempBufferM3 = Buffer.allocDirect(4 * 3 * 3)
+    val tempBufferM4 = Buffer.allocDirect(4 * 4 * 4)
     val tempF32 = tempBuffer.f32
     private val tempFloats = FloatArray(16 * TEMP_MAX_MATRICES)
     private val mat3dArray = arrayOf(Matrix3D())
@@ -848,12 +848,12 @@ class AGQueueProcessorOpenGL(
         }
     }
 
-    private fun createBufferForBitmap(bmp: Bitmap?, premultiplied: Boolean): NBuffer? = when (bmp) {
+    private fun createBufferForBitmap(bmp: Bitmap?, premultiplied: Boolean): Buffer? = when (bmp) {
         null -> null
         is NativeImage -> unsupported("Should not call createBufferForBitmap with a NativeImage")
-        is Bitmap8 -> NBuffer(bmp.area).also { mem -> arraycopy(bmp.data, 0, mem.i8, 0, bmp.area) }
-        is FloatBitmap32 -> NBuffer(bmp.area * 4 * 4).also { mem -> arraycopy(bmp.data, 0, mem.f32, 0, bmp.area * 4) }
-        else -> NBuffer(bmp.area * 4).also { mem ->
+        is Bitmap8 -> Buffer(bmp.area).also { mem -> arraycopy(bmp.data, 0, mem.i8, 0, bmp.area) }
+        is FloatBitmap32 -> Buffer(bmp.area * 4 * 4).also { mem -> arraycopy(bmp.data, 0, mem.f32, 0, bmp.area * 4) }
+        else -> Buffer(bmp.area * 4).also { mem ->
             val abmp: Bitmap32 = if (premultiplied) bmp.toBMP32IfRequired().premultipliedIfRequired() else bmp.toBMP32IfRequired().depremultipliedIfRequired()
             arraycopy(abmp.ints, 0, mem.i32, 0, abmp.area)
         }

@@ -18,7 +18,7 @@ data class VertexInfo(
     var texHeight: Int = -1
     val xy get() = Point(x, y)
     val uv get() = Point(u, v)
-    fun read(buffer: NBuffer, n: Int) {
+    fun read(buffer: Buffer, n: Int) {
         val index = n * 6
         this.x = buffer.getFloat32(index + 0)
         this.y = buffer.getFloat32(index + 1)

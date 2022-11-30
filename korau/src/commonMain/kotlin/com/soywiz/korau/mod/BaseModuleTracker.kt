@@ -50,10 +50,10 @@ abstract class BaseModuleTracker {
     var endofsong = false
 
     abstract fun initialize()
-    abstract fun parse(buffer: NBufferUInt8): Boolean
+    abstract fun parse(buffer: Uint8Buffer): Boolean
     abstract fun mix(bufs: Array<FloatArray>, buflen: Int = bufs[0].size)
 
-    fun parseAndInit(buffer: NBufferUInt8) {
+    fun parseAndInit(buffer: Uint8Buffer) {
         parse(buffer)
         initialize()
         playing = true

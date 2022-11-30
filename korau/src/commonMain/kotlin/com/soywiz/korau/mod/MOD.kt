@@ -3,24 +3,15 @@
 package com.soywiz.korau.mod
 
 import com.soywiz.kds.IntDeque
-import com.soywiz.klock.TimeSpan
 import com.soywiz.klock.measureTime
-import com.soywiz.klock.seconds
 import com.soywiz.kmem.*
-import com.soywiz.korau.format.AudioDecodingProps
-import com.soywiz.korau.format.AudioFormat
-import com.soywiz.korau.sound.AudioSamples
-import com.soywiz.korau.sound.AudioStream
 import com.soywiz.korau.sound.NativeSoundProvider
 import com.soywiz.korau.sound.Sound
 import com.soywiz.korau.sound.nativeSoundProvider
 import com.soywiz.korio.file.VfsFile
 import com.soywiz.korio.stream.AsyncStream
-import com.soywiz.korio.stream.readAll
 import com.soywiz.korio.stream.readBytesExact
-import com.soywiz.korio.stream.slice
 import com.soywiz.korio.stream.sliceStart
-import kotlin.math.min
 import kotlin.math.pow
 
 /*
@@ -139,13 +130,13 @@ class Protracker : BaseModuleTracker() {
     var signature: String = ""
     var songlen = 1
     var repeatpos = 0
-    var patterntable: NBufferUInt8 = NBufferUInt8(0)
+    var patterntable: Uint8Buffer = Uint8Buffer(0)
     var channels: Int = 4
     var sample = emptyArray<Sample>()
     var samples: Int = 31
-    var pattern = emptyArray<NBufferUInt8>()
-    var note = emptyArray<NBufferUInt8>()
-    var pattern_unpack = emptyArray<NBufferUInt8>()
+    var pattern = emptyArray<Uint8Buffer>()
+    var note = emptyArray<Uint8Buffer>()
+    var pattern_unpack = emptyArray<Uint8Buffer>()
     var patterns: Int = 0
     var chvu: FloatArray = FloatArray(0)
     var looprow: Int = 0
@@ -161,7 +152,7 @@ class Protracker : BaseModuleTracker() {
 
         songlen = 1
         repeatpos = 0
-        patterntable = NBufferUInt8(128)
+        patterntable = Uint8Buffer(128)
 
         channels = 4
 
@@ -219,7 +210,7 @@ class Protracker : BaseModuleTracker() {
     }
 
     // parse the module from local buffer
-    override fun parse(buffer: NBufferUInt8): Boolean {
+    override fun parse(buffer: Uint8Buffer): Boolean {
         signature = CharArray(4) { buffer[1080 + it].toChar() }.concatToString()
         when (signature) {
             "M.K.", "M!K!", "4CHN", "FLT4" -> Unit
@@ -265,9 +256,9 @@ class Protracker : BaseModuleTracker() {
         patterns += 1
         val patlen = 4 * 64 * channels
 
-        pattern = Array(patterns) { NBufferUInt8(patlen) }
-        note = Array(patterns) { NBufferUInt8(channels * 64) }
-        pattern_unpack = Array(patterns) { NBufferUInt8(channels * 64 * 5) }
+        pattern = Array(patterns) { Uint8Buffer(patlen) }
+        note = Array(patterns) { Uint8Buffer(channels * 64) }
+        pattern_unpack = Array(patterns) { Uint8Buffer(channels * 64 * 5) }
         for (i in 0 until patterns) {
             for (j in 0 until patlen) pattern[i][j] = buffer[1084 + i * patlen + j]
             for (j in 0 until 64) {

@@ -74,7 +74,7 @@ object JSMpeg {
         //}
     }
 
-    fun Base64ToArrayBuffer(base64: String): NBufferUInt8 = base64.fromBase64().toNBufferUInt8()
+    fun Base64ToArrayBuffer(base64: String): Uint8Buffer = base64.fromBase64().toNBufferUInt8()
 }
 
 @Deprecated("", ReplaceWith("size")) internal val <T> List<T>.length: Int get() = size

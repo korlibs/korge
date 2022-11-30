@@ -71,11 +71,11 @@ open class AGSoftware(val bitmap: Bitmap32) : AG() {
         }
     }
 
-    inner class SoftwareBuffer(list: AGList) : Buffer( list) {
-        val memory: NBuffer? get() = mem
+    inner class SoftwareBuffer(list: AGList) : AGBuffer( list) {
+        val memory: com.soywiz.kmem.Buffer? get() = mem
     }
 
-    override fun createBuffer(): Buffer = commandsNoWait { SoftwareBuffer(it) }
+    override fun createBuffer(): AGBuffer = commandsNoWait { SoftwareBuffer(it) }
     override fun createMainRenderBuffer(): BaseRenderBuffer = SoftwareRenderBuffer()
     override fun createRenderBuffer(): RenderBuffer = SoftwareRenderBuffer()
 

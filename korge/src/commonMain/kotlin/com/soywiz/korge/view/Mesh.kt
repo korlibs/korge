@@ -10,9 +10,9 @@ import com.soywiz.korma.geom.Rectangle
 
 open class Mesh(
 	var texture: BmpSlice? = null,
-	var vertices: NBufferFloat32 = NBufferFloat32(0),
-	var uvs: NBufferFloat32 = NBufferFloat32(0),
-	var indices: NBufferUInt16 = NBufferUInt16(0),
+	var vertices: Float32Buffer = Float32Buffer(0),
+	var uvs: Float32Buffer = Float32Buffer(0),
+	var indices: Uint16Buffer = Uint16Buffer(0),
 	var drawMode: DrawModes = DrawModes.Triangles
 ) : View() {
 	enum class DrawModes { Triangles, TriangleStrip }

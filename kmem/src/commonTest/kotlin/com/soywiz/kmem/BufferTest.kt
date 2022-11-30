@@ -18,7 +18,7 @@ class BufferTest {
 
     @Test
     fun testSlice() {
-        val data = NBuffer(16 * 4)
+        val data = Buffer(16 * 4)
         val sliceAll = data.f32.sliceWithSize(0, 16)
         val slice1 = data.f32.sliceWithSize(0, 8)
         val slice2 = data.f32.sliceWithSize(8, 8)

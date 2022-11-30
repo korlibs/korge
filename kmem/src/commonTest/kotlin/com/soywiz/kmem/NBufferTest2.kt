@@ -6,7 +6,7 @@ import kotlin.test.assertEquals
 class NBufferTest2 {
 	@Test
 	fun testBasicUsage() {
-		val data = NBuffer(16)
+		val data = Buffer(16)
 
 		val i8 = data.i8
 		i8[0] = 0
@@ -32,7 +32,7 @@ class NBufferTest2 {
 
 	@Test
 	fun testArrayCopyOverlapping() {
-		val i32 = NBufferInt32(10)
+		val i32 = Int32Buffer(10)
 		i32[0] = 0x01020304
 		i32[1] = 0x05060708
 		arraycopy(i32, 0, i32, 1, 4)
@@ -64,7 +64,7 @@ class NBufferTest2 {
 
 	@Test
 	fun testNBuffer() {
-		val mem = NBuffer.allocDirect(10)
+		val mem = Buffer.allocDirect(10)
 		for (n in 0 until 8) mem[n] = n
 		assertEquals(0x03020100, mem.getInt32(0))
 		assertEquals(0x07060504, mem.getInt32(1))

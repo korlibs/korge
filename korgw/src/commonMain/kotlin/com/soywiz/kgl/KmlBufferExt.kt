@@ -2,7 +2,7 @@ package com.soywiz.kgl
 
 import com.soywiz.kmem.*
 
-fun NBuffer.toAsciiString(): String {
+fun Buffer.toAsciiString(): String {
 	var out = ""
 	for (n in 0 until size) {
 		val b = getInt8(n)
@@ -12,7 +12,7 @@ fun NBuffer.toAsciiString(): String {
 	return out
 }
 
-fun NBuffer.putAsciiString(str: String): NBuffer {
+fun Buffer.putAsciiString(str: String): Buffer {
 	var n = 0
 	for (c in str) {
 		if (size >= n) setInt8(n++, c.code)
@@ -21,8 +21,8 @@ fun NBuffer.putAsciiString(str: String): NBuffer {
 	return this
 }
 
-fun <T> IntArray.toTempBuffer(callback: (NBuffer) -> T): T {
-	return NBufferTemp(this.size) { buffer: NBuffer ->
+fun <T> IntArray.toTempBuffer(callback: (Buffer) -> T): T {
+	return NBufferTemp(this.size) { buffer: Buffer ->
 		val ints = buffer.i32
 		for (n in this.indices) ints[n] = this[n]
 		callback(buffer)

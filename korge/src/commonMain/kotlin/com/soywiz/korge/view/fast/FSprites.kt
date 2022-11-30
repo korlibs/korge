@@ -33,8 +33,8 @@ internal const val FSPRITES_STRIDE = 8
 open class FSprites(val maxSize: Int) {
     var size = 0
     val available: Int get() = maxSize - size
-    val data = NBuffer.allocDirect(maxSize * FSPRITES_STRIDE * 4)
-    val dataColorMul = NBuffer.allocDirect(maxSize * 4)
+    val data = Buffer.allocDirect(maxSize * FSPRITES_STRIDE * 4)
+    val dataColorMul = Buffer.allocDirect(maxSize * 4)
     private val freeItems = IntArrayList()
     private val i32 = data.i32
     private val f32 = data.f32
