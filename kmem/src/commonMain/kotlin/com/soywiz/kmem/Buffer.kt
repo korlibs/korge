@@ -124,22 +124,39 @@ fun Buffer.setArrayInt64(index: Int, inp: LongArray, offset: Int = 0, size: Int 
 fun Buffer.setArrayFloat32(index: Int, inp: FloatArray, offset: Int = 0, size: Int = inp.size - offset): Unit = setUnalignedArrayFloat32(index * 4, inp, offset, size)
 fun Buffer.setArrayFloat64(index: Int, inp: DoubleArray, offset: Int = 0, size: Int = inp.size - offset): Unit = setUnalignedArrayFloat64(index * 8, inp, offset, size)
 
-interface TypedBuffer {
-    val buffer: Buffer
+interface BaseBuffer {
     val size: Int
 }
 
-interface BaseIntBuffer {
-    val size: Int
+interface TypedBuffer : BaseBuffer {
+    val buffer: Buffer
+}
+
+interface BaseIntBuffer : BaseBuffer {
     operator fun get(index: Int): Int
     operator fun set(index: Int, value: Int)
 }
+
+interface BaseFloatBuffer : BaseBuffer {
+    operator fun get(index: Int): Float
+    operator fun set(index: Int, value: Float)
+}
+
+fun BaseIntBuffer.toIntArray(): IntArray = IntArray(size) { this[it] }
+fun BaseFloatBuffer.toFloatArray(): FloatArray = FloatArray(size) { this[it] }
 
 @JvmInline
 value class IntArrayBuffer(val array: IntArray) : BaseIntBuffer {
     override val size: Int get() = array.size
     override operator fun get(index: Int): Int = array[index]
     override operator fun set(index: Int, value: Int) { array[index] = value }
+}
+
+@JvmInline
+value class FloatArrayBuffer(val array: FloatArray) : BaseFloatBuffer {
+    override val size: Int get() = array.size
+    override operator fun get(index: Int): Float = array[index]
+    override operator fun set(index: Int, value: Float) { array[index] = value }
 }
 
 inline class Int8Buffer(override val buffer: Buffer) : TypedBuffer {
@@ -225,13 +242,13 @@ inline class Uint16Buffer(override val buffer: Buffer) : TypedBuffer, BaseIntBuf
     fun sliceWithSize(start: Int = 0, size: Int = this.size - start): Uint16Buffer = Uint16Buffer(buffer.sliceWithSize(start * 2, size * 2))
 }
 
-inline class Int32Buffer(override val buffer: Buffer) : TypedBuffer {
+inline class Int32Buffer(override val buffer: Buffer) : TypedBuffer, BaseIntBuffer {
     constructor(size: Int, direct: Boolean = false) : this(Buffer(size * 4, direct))
     constructor(data: IntArray) : this(Buffer(data.size * 4).also { it.setArrayInt32(0, data) })
 
     override val size: Int get() = buffer.sizeInBytes / 4
-    operator fun get(index: Int): Int = buffer.getInt32(index)
-    operator fun set(index: Int, value: Int) = buffer.setInt32(index, value)
+    override operator fun get(index: Int): Int = buffer.getInt32(index)
+    override operator fun set(index: Int, value: Int) = buffer.setInt32(index, value)
     fun getArray(index: Int, out: IntArray, offset: Int = 0, size: Int = out.size - offset): IntArray = buffer.getArrayInt32(index, out, offset, size)
     fun getArray(index: Int = 0, size: Int = this.size - index): IntArray = getArray(index, IntArray(size))
     fun setArray(index: Int, inp: IntArray, offset: Int = 0, size: Int = inp.size - offset): Unit = buffer.setArrayInt32(index, inp, offset, size)
@@ -273,13 +290,13 @@ inline class Int64Buffer(override val buffer: Buffer) : TypedBuffer {
     fun sliceWithSize(start: Int = 0, size: Int = this.size - start): Int64Buffer = Int64Buffer(buffer.sliceWithSize(start * 8, size * 8))
 }
 
-inline class Float32Buffer(override val buffer: Buffer) : TypedBuffer {
+inline class Float32Buffer(override val buffer: Buffer) : TypedBuffer, BaseFloatBuffer {
     constructor(size: Int, direct: Boolean = false) : this(Buffer(size * 4, direct))
     constructor(data: FloatArray) : this(Buffer(data.size * 4).also { it.setArrayFloat32(0, data) })
 
     override val size: Int get() = buffer.sizeInBytes / 4
-    operator fun get(index: Int): Float = buffer.getFloat32(index)
-    operator fun set(index: Int, value: Float) = buffer.setFloat32(index, value)
+    override operator fun get(index: Int): Float = buffer.getFloat32(index)
+    override operator fun set(index: Int, value: Float) = buffer.setFloat32(index, value)
     fun getArray(index: Int, out: FloatArray, offset: Int = 0, size: Int = out.size - offset): FloatArray = buffer.getArrayFloat32(index, out, offset, size)
     fun getArray(index: Int = 0, size: Int = this.size - index): FloatArray = getArray(index, FloatArray(size))
     fun setArray(index: Int, inp: FloatArray, offset: Int = 0, size: Int = inp.size - offset): Unit = buffer.setArrayFloat32(index, inp, offset, size)
