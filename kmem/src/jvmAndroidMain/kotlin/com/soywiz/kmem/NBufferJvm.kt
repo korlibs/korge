@@ -118,20 +118,20 @@ internal fun java.nio.Buffer.checkSliceBounds(offset: Int, size: Int) {
     //if (end !in 0 until this.capacity()) error("offset=$offset, size=$size not inside ${this.capacity()}")
 }
 
-fun Buffer.positionSafe(newPosition: Int): Buffer {
-    position(newPosition); return this
+fun Buffer.positionSafe(newPosition: Int) {
+    position(newPosition)
 }
 
-fun Buffer.limitSafe(newLimit: Int): Buffer {
-    limit(newLimit); return this
+fun Buffer.limitSafe(newLimit: Int) {
+    limit(newLimit)
 }
 
-fun Buffer.flipSafe(): Buffer {
-    flip(); return this
+fun Buffer.flipSafe() {
+    flip()
 }
 
-fun Buffer.clearSafe(): Buffer {
-    clear(); return this
+fun Buffer.clearSafe() {
+    clear()
 }
 
 inline fun <T : Buffer> T._slice(offset: Int, size: Int, dup: (T) -> T): T {
