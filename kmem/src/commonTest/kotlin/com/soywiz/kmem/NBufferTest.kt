@@ -18,16 +18,16 @@ class NBufferDirectTest : NBufferTestBase() {
 open class NBufferTestBase {
     open val direct: Boolean = true
 
-    fun NBufferInt8.str(): String = "[$size,${buffer.byteOffset},${buffer.sizeInBytes}]: " + (0 until size).map { this[it] }.joinToString(",")
-    fun NBufferInt16.str(): String = "[$size,${buffer.byteOffset},${buffer.sizeInBytes}]: " + (0 until size).map { this[it] }.joinToString(",")
-    fun NBufferInt32.str(): String = "[$size,${buffer.byteOffset},${buffer.sizeInBytes}]: " + (0 until size).map { this[it] }.joinToString(",")
-    fun NBufferInt64.str(): String = "[$size,${buffer.byteOffset},${buffer.sizeInBytes}]: " + (0 until size).map { this[it] }.joinToString(",")
-    fun NBufferFloat32.str(): String = "[$size,${buffer.byteOffset},${buffer.sizeInBytes}]: " + (0 until size).map { this[it].toInt().toString() }.joinToString(",")
-    fun NBufferFloat64.str(): String = "[$size,${buffer.byteOffset},${buffer.sizeInBytes}]: " + (0 until size).map { this[it].toInt().toString() }.joinToString(",")
+    fun Int8Buffer.str(): String = "[$size,${buffer.byteOffset},${buffer.sizeInBytes}]: " + (0 until size).map { this[it] }.joinToString(",")
+    fun Int16Buffer.str(): String = "[$size,${buffer.byteOffset},${buffer.sizeInBytes}]: " + (0 until size).map { this[it] }.joinToString(",")
+    fun Int32Buffer.str(): String = "[$size,${buffer.byteOffset},${buffer.sizeInBytes}]: " + (0 until size).map { this[it] }.joinToString(",")
+    fun Int64Buffer.str(): String = "[$size,${buffer.byteOffset},${buffer.sizeInBytes}]: " + (0 until size).map { this[it] }.joinToString(",")
+    fun Float32Buffer.str(): String = "[$size,${buffer.byteOffset},${buffer.sizeInBytes}]: " + (0 until size).map { this[it].toInt().toString() }.joinToString(",")
+    fun Float64Buffer.str(): String = "[$size,${buffer.byteOffset},${buffer.sizeInBytes}]: " + (0 until size).map { this[it].toInt().toString() }.joinToString(",")
 
     @Test
     fun testInt8() {
-        val data = NBufferInt8(8, direct)
+        val data = Int8Buffer(8, direct)
         val data2 = data.slice(1, 3)
         val data3 = data.sliceWithSize(1, 7).sliceWithSize(1, 6).sliceWithSize(1, 5).sliceWithSize(1, 4).sliceWithSize(1, 3)
 
@@ -53,7 +53,7 @@ open class NBufferTestBase {
 
     @Test
     fun testInt16() {
-        val data = NBufferInt16(8, direct)
+        val data = Int16Buffer(8, direct)
         val data2 = data.slice(1, 3)
         val data3 = data.sliceWithSize(1, 7).sliceWithSize(1, 6).sliceWithSize(1, 5).sliceWithSize(1, 4).sliceWithSize(1, 3)
 
@@ -79,7 +79,7 @@ open class NBufferTestBase {
 
     @Test
     fun testInt32() {
-        val data = NBufferInt32(8, direct)
+        val data = Int32Buffer(8, direct)
         val data2 = data.slice(1, 3)
         val data3 = data.sliceWithSize(1, 7).sliceWithSize(1, 6).sliceWithSize(1, 5).sliceWithSize(1, 4).sliceWithSize(1, 3)
 
@@ -105,7 +105,7 @@ open class NBufferTestBase {
 
     @Test
     fun testInt64() {
-        val data = NBufferInt64(8, direct)
+        val data = Int64Buffer(8, direct)
         val data2 = data.slice(1, 3)
         val data3 = data.sliceWithSize(1, 7).sliceWithSize(1, 6).sliceWithSize(1, 5).sliceWithSize(1, 4).sliceWithSize(1, 3)
 
@@ -131,7 +131,7 @@ open class NBufferTestBase {
 
     @Test
     fun testFloat32() {
-        val data = NBufferFloat32(8, direct)
+        val data = Float32Buffer(8, direct)
         val data2 = data.slice(1, 3)
         val data3 = data.sliceWithSize(1, 7).sliceWithSize(1, 6).sliceWithSize(1, 5).sliceWithSize(1, 4).sliceWithSize(1, 3)
 
@@ -157,7 +157,7 @@ open class NBufferTestBase {
 
     @Test
     fun testFloat64() {
-        val data = NBufferFloat64(8, direct)
+        val data = Float64Buffer(8, direct)
         val data2 = data.slice(1, 3)
         val data3 = data.sliceWithSize(1, 7).sliceWithSize(1, 6).sliceWithSize(1, 5).sliceWithSize(1, 4).sliceWithSize(1, 3)
 
@@ -183,7 +183,7 @@ open class NBufferTestBase {
 
     @Test
     fun testEndianness() {
-        val data64 = NBufferInt64(1, direct)
+        val data64 = Int64Buffer(1, direct)
         val data32 = data64.asInt32()
         val data16 = data64.asInt16()
         val data8 = data64.asInt8()
@@ -196,22 +196,22 @@ open class NBufferTestBase {
 
     @Test
     fun testWrap() {
-        val data = NBuffer(byteArrayOf(0, 1, 2, 3, 4, 5, 6, 7), 2, 6).asInt16()
-        val farray = data.getArray(1, 2).map { it.asLittle() }.toShortArray()
+        val data = Buffer(byteArrayOf(0, 1, 2, 3, 4, 5, 6, 7), 2, 6).i16
+        val farray = data.getArray(1, size = 2).map { it.asLittle() }.toShortArray()
         assertEquals("1284,1798", farray.joinToString(","))
-        assertEquals("3,4", data.asInt8().getArray(1, 2).map { it.asLittle() }.toByteArray().joinToString(","))
+        assertEquals("3,4", data.asInt8().getArray(1, size = 2).map { it.asLittle() }.toByteArray().joinToString(","))
     }
 
     @Test
     fun testWrapUnsigned() {
-        val data = NBuffer(byteArrayOf(0, 1, 2, 3, 4, 5, 6, 7), 2, 6).asUInt16()
-        assertEquals("1284,1798", data.getArray(1, 2).data.map { it.asLittle() }.toShortArray().joinToString(","))
-        assertEquals("3,4", data.asUInt8().getArray(1, 2).data.map { it.asLittle() }.toByteArray().joinToString(","))
+        val data = Buffer(byteArrayOf(0, 1, 2, 3, 4, 5, 6, 7), 2, 6).u16
+        assertEquals("1284,1798", data.getArray(1, size = 2).data.map { it.asLittle() }.toShortArray().joinToString(","))
+        assertEquals("3,4", data.asUInt8().getArray(1, size = 2).data.map { it.asLittle() }.toByteArray().joinToString(","))
     }
 
     @Test
     fun testArrayTransfer() {
-        val i64 = NBufferInt64(2, direct)
+        val i64 = Int64Buffer(2, direct)
         val buffer = i64.buffer
         val data = i64.asUInt8()
         val i32 = i64.asInt32().sliceWithSize(1, 1)
@@ -237,114 +237,114 @@ open class NBufferTestBase {
             2,3,4
         """.trimIndent()
 
-        NBufferUInt8(14).also { array ->
+        Uint8Buffer(14).also { array ->
             array.setArray(1, ubyteArrayIntOf(1, 2, 3, 4))
             array.setArray(7, ubyteArrayIntOf(-1, -2, -3, -4, -5, -6, -7), 2, 3)
             assertEquals(
                 expectedStr,
                 """
                 ${array.getArray().data.joinToString(",")}
-                ${array.getArray(0, array.size).data.joinToString(",")}
+                ${array.getArray(0, size = array.size).data.joinToString(",")}
                 ${array.getArray(1).data.joinToString(",")}
-                ${array.getArray(2, 3).data.joinToString(",")}
+                ${array.getArray(2, size = 3).data.joinToString(",")}
             """.trimIndent()
             )
         }
 
-        NBufferUInt16(14).also { array ->
+        Uint16Buffer(14).also { array ->
             array.setArray(1, ushortArrayIntOf(1, 2, 3, 4))
             array.setArray(7, ushortArrayIntOf(-1, -2, -3, -4, -5, -6, -7), 2, 3)
             assertEquals(
                 expectedStr,
                 """
                 ${array.getArray().data.joinToString(",")}
-                ${array.getArray(0, array.size).data.joinToString(",")}
+                ${array.getArray(0, size = array.size).data.joinToString(",")}
                 ${array.getArray(1).data.joinToString(",")}
-                ${array.getArray(2, 3).data.joinToString(",")}
+                ${array.getArray(2, size = 3).data.joinToString(",")}
             """.trimIndent()
             )
         }
 
-        NBufferInt8(14).also { array ->
+        Int8Buffer(14).also { array ->
             array.setArray(1, byteArrayOf(1, 2, 3, 4))
             array.setArray(7, byteArrayOf(-1, -2, -3, -4, -5, -6, -7), 2, 3)
             assertEquals(
                 expectedStr,
                 """
                 ${array.getArray().joinToString(",")}
-                ${array.getArray(0, array.size).joinToString(",")}
+                ${array.getArray(0, size = array.size).joinToString(",")}
                 ${array.getArray(1).joinToString(",")}
-                ${array.getArray(2, 3).joinToString(",")}
+                ${array.getArray(2, size = 3).joinToString(",")}
             """.trimIndent()
             )
         }
 
-        NBufferInt16(14).also { array ->
+        Int16Buffer(14).also { array ->
             array.setArray(1, shortArrayOf(1, 2, 3, 4))
             array.setArray(7, shortArrayOf(-1, -2, -3, -4, -5, -6, -7), 2, 3)
             assertEquals(
                 expectedStr,
                 """
                 ${array.getArray().joinToString(",")}
-                ${array.getArray(0, array.size).joinToString(",")}
+                ${array.getArray(0, size = array.size).joinToString(",")}
                 ${array.getArray(1).joinToString(",")}
-                ${array.getArray(2, 3).joinToString(",")}
+                ${array.getArray(2, size = 3).joinToString(",")}
             """.trimIndent()
             )
         }
 
-        NBufferInt32(14).also { array ->
+        Int32Buffer(14).also { array ->
             array.setArray(1, intArrayOf(1, 2, 3, 4))
             array.setArray(7, intArrayOf(-1, -2, -3, -4, -5, -6, -7), 2, 3)
             assertEquals(
                 expectedStr,
                 """
                 ${array.getArray().joinToString(",")}
-                ${array.getArray(0, array.size).joinToString(",")}
+                ${array.getArray(0, size = array.size).joinToString(",")}
                 ${array.getArray(1).joinToString(",")}
-                ${array.getArray(2, 3).joinToString(",")}
+                ${array.getArray(2, size = 3).joinToString(",")}
             """.trimIndent()
             )
         }
 
-        NBufferInt64(14).also { array ->
+        Int64Buffer(14).also { array ->
             array.setArray(1, longArrayOf(1, 2, 3, 4))
             array.setArray(7, longArrayOf(-1, -2, -3, -4, -5, -6, -7), 2, 3)
             assertEquals(
                 expectedStr,
                 """
                 ${array.getArray().joinToString(",")}
-                ${array.getArray(0, array.size).joinToString(",")}
+                ${array.getArray(0, size = array.size).joinToString(",")}
                 ${array.getArray(1).joinToString(",")}
-                ${array.getArray(2, 3).joinToString(",")}
+                ${array.getArray(2, size = 3).joinToString(",")}
             """.trimIndent()
             )
         }
 
-        NBufferFloat32(14).also { array ->
+        Float32Buffer(14).also { array ->
             array.setArray(1, floatArrayOf(1f, 2f, 3f, 4f))
             array.setArray(7, floatArrayOf(-1f, -2f, -3f, -4f, -5f, -6f, -7f), 2, 3)
             assertEquals(
                 expectedStr,
                 """
                 ${array.getArray().map { it.toInt() }.joinToString(",")}
-                ${array.getArray(0, array.size).map { it.toInt() }.joinToString(",")}
+                ${array.getArray(0, size = array.size).map { it.toInt() }.joinToString(",")}
                 ${array.getArray(1).map { it.toInt() }.joinToString(",")}
-                ${array.getArray(2, 3).map { it.toInt() }.joinToString(",")}
+                ${array.getArray(2, size = 3).map { it.toInt() }.joinToString(",")}
             """.trimIndent()
             )
         }
 
-        NBufferFloat64(14).also { array ->
+        Float64Buffer(14).also { array ->
             array.setArray(1, doubleArrayOf(1.0, 2.0, 3.0, 4.0))
             array.setArray(7, doubleArrayOf(-1.0, -2.0, -3.0, -4.0, -5.0, -6.0, -7.0), 2, 3)
             assertEquals(
                 expectedStr,
                 """
                 ${array.getArray().map { it.toInt() }.joinToString(",")}
-                ${array.getArray(0, array.size).map { it.toInt() }.joinToString(",")}
+                ${array.getArray(0, size = array.size).map { it.toInt() }.joinToString(",")}
                 ${array.getArray(1).map { it.toInt() }.joinToString(",")}
-                ${array.getArray(2, 3).map { it.toInt() }.joinToString(",")}
+                ${array.getArray(2, size = 3).map { it.toInt() }.joinToString(",")}
             """.trimIndent()
             )
         }
@@ -352,9 +352,9 @@ open class NBufferTestBase {
 
     @Test
     fun testUnalignedVariants() {
-        val i = NBuffer(4, direct)
-        val u8 = i.asUInt8()
-        val u16 = i.asUInt16()
+        val i = Buffer(4, direct)
+        val u8 = i.u8
+        val u16 = i.u16
         assertEquals(4, u8.size)
         assertEquals(2, u16.size)
         for (n in 0 until 4) u8[n] = n * 16 + n
@@ -369,20 +369,20 @@ open class NBufferTestBase {
 
     @Test
     fun testAsTyped() {
-        val i = NBuffer(8, direct)
-        assertEquals(i, i.asUInt8().buffer)
-        assertEquals(i, i.asUInt16().buffer)
-        assertEquals(i, i.asInt8().buffer)
-        assertEquals(i, i.asInt16().buffer)
-        assertEquals(i, i.asInt32().buffer)
-        assertEquals(i, i.asInt64().buffer)
-        assertEquals(i, i.asFloat32().buffer)
-        assertEquals(i, i.asFloat64().buffer)
+        val i = Buffer(8, direct)
+        assertEquals(i, i.u8.buffer)
+        assertEquals(i, i.u16.buffer)
+        assertEquals(i, i.i8.buffer)
+        assertEquals(i, i.i16.buffer)
+        assertEquals(i, i.i32.buffer)
+        assertEquals(i, i.i64.buffer)
+        assertEquals(i, i.f32.buffer)
+        assertEquals(i, i.f64.buffer)
     }
 
     @Test
     fun testTypedAsTyped() {
-        val i = NBuffer(8, direct).asUInt8()
+        val i = Buffer(8, direct).u8
         assertEquals(i.buffer, i.asUInt8().buffer)
         assertEquals(i.buffer, i.asUInt16().buffer)
         assertEquals(i.buffer, i.asInt8().buffer)
@@ -397,24 +397,24 @@ open class NBufferTestBase {
     fun testHex() {
         assertEquals(
             "0123456789abcdef",
-            NBuffer(ubyteArrayIntOf(0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef).asByteArray()).hex()
+            Buffer(ubyteArrayIntOf(0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef).asByteArray()).hex()
         )
     }
 
     @Test
     fun testInvalidConstructionArguments() {
-        NBuffer(0)
-        assertFailsWith<IllegalArgumentException> { NBuffer(-1) }
-        assertFailsWith<IllegalArgumentException> { NBuffer(byteArrayOf(1), 0, -1) }
-        assertFailsWith<IllegalArgumentException> { NBuffer(byteArrayOf(1), 0, 2) }
-        assertFailsWith<IllegalArgumentException> { NBuffer(byteArrayOf(1), 1, 1) }
-        assertFailsWith<IllegalArgumentException> { NBuffer(byteArrayOf(1), 2, 0) }
-        assertFailsWith<IllegalArgumentException> { NBuffer(byteArrayOf(1), -1, 0) }
+        Buffer(0)
+        assertFailsWith<IllegalArgumentException> { Buffer(-1) }
+        assertFailsWith<IllegalArgumentException> { Buffer(byteArrayOf(1), 0, -1) }
+        assertFailsWith<IllegalArgumentException> { Buffer(byteArrayOf(1), 0, 2) }
+        assertFailsWith<IllegalArgumentException> { Buffer(byteArrayOf(1), 1, 1) }
+        assertFailsWith<IllegalArgumentException> { Buffer(byteArrayOf(1), 2, 0) }
+        assertFailsWith<IllegalArgumentException> { Buffer(byteArrayOf(1), -1, 0) }
     }
 
     @Test
     fun testInvalidSlice() {
-        val buffer = NBuffer(8)
+        val buffer = Buffer(8)
         buffer.sliceWithSize(0, 0)
         buffer.sliceWithSize(8, 0)
         buffer.sliceWithSize(0, 8)
@@ -427,10 +427,10 @@ open class NBufferTestBase {
 
     @Test
     fun testCopy() {
-        val bufferBase = NBuffer(ByteArray(16) { it.toByte() })
+        val bufferBase = Buffer(ByteArray(16) { it.toByte() })
         val buffer = bufferBase.slice(1)
-        val buffer2 = NBuffer(14, direct)
-        NBuffer.copy(buffer, 2, buffer2, 5, 7)
+        val buffer2 = Buffer(14, direct)
+        Buffer.copy(buffer, 2, buffer2, 5, 7)
         assertEquals("0000000000030405060708090000", buffer2.hex())
     }
 
@@ -438,11 +438,11 @@ open class NBufferTestBase {
     fun testCopy2() {
         for (direct1 in listOf(false, true)) {
             for (direct2 in listOf(false, true)) {
-                val bufferBase = NBuffer(16, direct1)
+                val bufferBase = Buffer(16, direct1)
                 for (n in 0 until 16) bufferBase.setUnalignedUInt8(n, n)
                 val buffer = bufferBase.slice(1)
-                val buffer2 = NBuffer(14, direct2)
-                NBuffer.copy(buffer, 2, buffer2, 5, 7)
+                val buffer2 = Buffer(14, direct2)
+                Buffer.copy(buffer, 2, buffer2, 5, 7)
                 assertEquals("0000000000030405060708090000", buffer2.hex())
             }
         }
@@ -452,11 +452,11 @@ open class NBufferTestBase {
     fun testCopy3() {
         for (direct1 in listOf(false, true)) {
             for (direct2 in listOf(false, true)) {
-                val bufferBase = NBuffer(16, direct1)
+                val bufferBase = Buffer(16, direct1)
                 for (n in 0 until 16) bufferBase.setUnalignedUInt8(n, n)
                 val buffer = bufferBase.slice(1)
                 val buffer2 = buffer.slice(2)
-                NBuffer.copy(buffer.slice(1), 2, buffer2, 5, 7)
+                Buffer.copy(buffer.slice(1), 2, buffer2, 5, 7)
                 assertEquals("03040506070405060708090a0f", buffer2.hex())
             }
         }

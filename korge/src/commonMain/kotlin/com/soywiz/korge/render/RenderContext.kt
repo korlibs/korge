@@ -322,7 +322,7 @@ class RenderContext constructor(
      */
     fun getTex(bmp: BmpSlice): Texture = agBitmapTextureManager.getTexture(bmp)
 	fun getTex(bmp: BitmapCoords): TextureCoords = agBitmapTextureManager.getTexture(bmp)
-    fun getBuffer(buffer: AgCachedBuffer): AG.Buffer = agBufferManager.getBuffer(buffer)
+    fun getBuffer(buffer: AgCachedBuffer): AG.AGBuffer = agBufferManager.getBuffer(buffer)
 
     /**
      * Allocates a [Texture.Base] from a [Bitmap]. A Texture.Base doesn't have region information.

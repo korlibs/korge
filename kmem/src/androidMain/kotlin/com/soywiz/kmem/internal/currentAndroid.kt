@@ -2,7 +2,6 @@ package com.soywiz.kmem.internal
 
 import android.os.Build
 import com.soywiz.kmem.Arch
-import com.soywiz.kmem.BuildConfig
 import com.soywiz.kmem.Os
 import com.soywiz.kmem.Runtime
 import java.nio.ByteOrder
@@ -32,7 +31,7 @@ internal actual val currentArch: Arch by lazy {
     return@lazy Arch.UNKNOWN
 }
 
-internal actual val currentIsDebug: Boolean get() = BuildConfig.DEBUG
+internal actual val currentIsDebug: Boolean get() = com.soywiz.kmem.BuildConfig.DEBUG
 internal actual val currentIsLittleEndian: Boolean get() = ByteOrder.nativeOrder() == ByteOrder.LITTLE_ENDIAN
 
 internal actual val currentRawPlatformName: String = "android-$currentOs-$currentArch-$currentBuildVariant"

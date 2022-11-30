@@ -1,6 +1,6 @@
 package com.soywiz.korag
 
-import com.soywiz.kmem.FBuffer
+import com.soywiz.kmem.*
 import com.soywiz.korag.shader.Program
 import com.soywiz.korag.shader.ProgramConfig
 import com.soywiz.korag.shader.UniformLayout
@@ -21,12 +21,12 @@ interface AGQueueProcessor {
     fun readPixels(x: Int, y: Int, width: Int, height: Int, data: Any, kind: AG.ReadKind)
     fun readPixelsToTexture(textureId: Int, x: Int, y: Int, width: Int, height: Int, kind: AG.ReadKind)
     // DRAW
-    fun draw(type: AGDrawType, vertexCount: Int, offset: Int = 0, instances: Int = 1, indexType: AGIndexType? = null, indices: AG.Buffer? = null)
+    fun draw(type: AGDrawType, vertexCount: Int, offset: Int = 0, instances: Int = 1, indexType: AGIndexType? = null, indices: AG.AGBuffer? = null)
     // Buffers
     fun bufferCreate(id: Int)
     fun bufferDelete(id: Int)
     // Uniforms + UBO
-    fun uniformsSet(layout: UniformLayout, data: FBuffer)
+    fun uniformsSet(layout: UniformLayout, data: Buffer)
     fun uboCreate(id: Int)
     fun uboDelete(id: Int)
     fun uboSet(id: Int, ubo: AG.UniformValues)

@@ -1,16 +1,7 @@
 package com.soywiz.korvi.mpeg
 
 import com.soywiz.klock.PerformanceCounter
-import com.soywiz.kmem.BaseIntBuffer
-import com.soywiz.kmem.Int32Buffer
-import com.soywiz.kmem.Int8Buffer
-import com.soywiz.kmem.MemBufferWrap
-import com.soywiz.kmem.NewInt8Buffer
-import com.soywiz.kmem.Uint32Buffer
-import com.soywiz.kmem.Uint8Buffer
-import com.soywiz.kmem.arraycopy
-import com.soywiz.kmem.get
-import com.soywiz.kmem.size
+import com.soywiz.kmem.*
 import com.soywiz.krypto.encoding.fromBase64
 
 // This sets up the JSMpeg "Namespace". The object is empty apart from the Now()
@@ -83,7 +74,7 @@ object JSMpeg {
         //}
     }
 
-    fun Base64ToArrayBuffer(base64: String): Uint8Buffer = Uint8Buffer(com.soywiz.kmem.buffer.Int8Buffer(MemBufferWrap(base64.fromBase64())))
+    fun Base64ToArrayBuffer(base64: String): Uint8Buffer = base64.fromBase64().toNBufferUInt8()
 }
 
 @Deprecated("", ReplaceWith("size")) internal val <T> List<T>.length: Int get() = size
@@ -91,10 +82,10 @@ object JSMpeg {
 @Deprecated("", ReplaceWith("size")) internal val FloatArray.length: Int get() = size
 @Deprecated("", ReplaceWith("size")) internal val IntArray.length: Int get() = size
 
-internal val Uint8Buffer.byteLength: Int get() = size
-internal fun Uint8Buffer.set(other: Uint8Buffer, targetOffset: Int = 0) {
+@Deprecated("") internal val Uint8Buffer.byteLength: Int get() = size
+@Deprecated("") internal fun Uint8Buffer.set(other: Uint8Buffer, targetOffset: Int = 0) {
     //for (n in 0 until other.size) this[targetOffset + n] = other[n]
-    arraycopy(other.b, 0, this.b, targetOffset, other.size)
+    arraycopy(other, 0, this, targetOffset, other.size)
 }
 
 internal fun hashArray(array: IntArray): Int {

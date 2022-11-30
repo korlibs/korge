@@ -1,13 +1,13 @@
 package com.soywiz.korge3d
 
 import com.soywiz.kds.FastArrayList
-import com.soywiz.kmem.FBuffer
+import com.soywiz.kmem.*
 import com.soywiz.korag.AG
 import com.soywiz.korag.shader.Program
 import com.soywiz.korag.shader.VertexLayout
 
 data class BufferWithVertexLayout(
-    val buffer: FBuffer,
+    val buffer: Buffer,
     val layout: VertexLayout
 ) {
     val vertexSizeInBytes = layout.totalSize
@@ -17,7 +17,7 @@ data class BufferWithVertexLayout(
 @Korge3DExperimental
 data class Mesh3D constructor(
     val vertexBuffers: FastArrayList<BufferWithVertexLayout>,
-    val indexBuffer: FBuffer,
+    val indexBuffer: Buffer,
     val indexType: AG.IndexType,
     val vertexCount:Int,
     val program: Program?,
@@ -32,11 +32,11 @@ data class Mesh3D constructor(
 
     /*
 
-    val fbuffer by lazy {
-        FBuffer.alloc(data.size * 4).apply {
+    val buffer by lazy {
+        Buffer.alloc(data.size * 4).apply {
             setAlignedArrayFloat32(0, this@Mesh3D.data, 0, this@Mesh3D.data.size)
         }
-        //FBuffer.wrap(MemBufferAlloc(data.size * 4)).apply {
+        //Buffer.wrap(MemBufferAlloc(data.size * 4)).apply {
         //	arraycopy(this@Mesh3D.data, 0, this@apply.mem, 0, this@Mesh3D.data.size) // Bug in kmem-js?
         //}
     }

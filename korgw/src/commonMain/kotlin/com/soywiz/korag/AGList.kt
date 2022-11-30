@@ -14,18 +14,7 @@ import com.soywiz.kds.IntSet
 import com.soywiz.kds.Pool
 import com.soywiz.kds.fastCastTo
 import com.soywiz.kds.lock.NonRecursiveLock
-import com.soywiz.kmem.FBuffer
-import com.soywiz.kmem.extract
-import com.soywiz.kmem.extract16
-import com.soywiz.kmem.extract24
-import com.soywiz.kmem.extract4
-import com.soywiz.kmem.extract8
-import com.soywiz.kmem.extractBool
-import com.soywiz.kmem.finsert
-import com.soywiz.kmem.finsert16
-import com.soywiz.kmem.finsert24
-import com.soywiz.kmem.finsert4
-import com.soywiz.kmem.finsert8
+import com.soywiz.kmem.*
 import com.soywiz.korag.annotation.KoragExperimental
 import com.soywiz.korag.shader.Program
 import com.soywiz.korag.shader.ProgramConfig
@@ -564,7 +553,7 @@ class AGList(val globalState: AGGlobalState) {
     // UNIFORMS
     ////////////////////////////////////////
 
-    fun uniformsSet(layout: UniformLayout, data: FBuffer) {
+    fun uniformsSet(layout: UniformLayout, data: Buffer) {
         currentWrite.addExtra(layout, data)
         currentWrite.add(CMD(CMD_UNIFORMS_SET))
     }
@@ -579,7 +568,7 @@ class AGList(val globalState: AGGlobalState) {
         offset: Int = 0,
         instances: Int = 1,
         indexType: AGIndexType? = null,
-        indices: AG.Buffer? = null
+        indices: AG.AGBuffer? = null
     ) {
         currentWrite.addInt(vertexCount, offset, instances)
         currentWrite.addExtra(indices)
@@ -652,7 +641,7 @@ class AGList(val globalState: AGGlobalState) {
     // @TODO: If we have a layout we can have the objects already arranged.
     // @TODO: We have to put only integers and floats here, so textures should use the textureId for example
     @KorIncomplete
-    fun uboSet(id: Int, data: FBuffer, layout: UniformLayout) {
+    fun uboSet(id: Int, data: Buffer, layout: UniformLayout) {
         TODO()
     }
 

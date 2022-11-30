@@ -11,11 +11,8 @@ import com.soywiz.kgl.genBuffer
 import com.soywiz.kgl.genFramebuffer
 import com.soywiz.kgl.genRenderbuffer
 import com.soywiz.kgl.genTexture
-import com.soywiz.kmem.FBuffer
+import com.soywiz.kmem.*
 import com.soywiz.kmem.arraycopy
-import com.soywiz.kmem.fbuffer
-import com.soywiz.kmem.get
-import com.soywiz.kmem.toInt
 import com.soywiz.korag.AG
 import com.soywiz.korag.AGBlendEquation
 import com.soywiz.korag.AGBlendFactor
@@ -28,7 +25,6 @@ import com.soywiz.korag.AGFrontFace
 import com.soywiz.korag.AGGlobalState
 import com.soywiz.korag.AGIndexType
 import com.soywiz.korag.AGQueueProcessor
-import com.soywiz.korag.internal.setFloats
 import com.soywiz.korag.shader.Program
 import com.soywiz.korag.shader.ProgramConfig
 import com.soywiz.korag.shader.UniformLayout
@@ -38,10 +34,8 @@ import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.bitmap.Bitmap8
 import com.soywiz.korim.bitmap.FloatBitmap32
-import com.soywiz.korim.bitmap.ForcedTexId
 import com.soywiz.korim.bitmap.NativeImage
 import com.soywiz.korim.color.*
-import com.soywiz.korim.vector.BitmapVector
 import com.soywiz.korio.annotations.KorIncomplete
 import com.soywiz.korio.annotations.KorInternal
 import com.soywiz.korio.async.launchImmediately
@@ -201,7 +195,7 @@ class AGQueueProcessorOpenGL(
         buffers.tryGetAndDelete(id)?.let { gl.deleteBuffer(it.glId); it.glId = 0 }
     }
 
-    private fun bindBuffer(buffer: AG.Buffer, target: AGBufferKind) {
+    private fun bindBuffer(buffer: AG.AGBuffer, target: AGBufferKind) {
         val bufferInfo = buffers[buffer.agId] ?: return
         if (bufferInfo.cachedVersion != globalState.contextVersion) {
             bufferInfo.cachedVersion = globalState.contextVersion
@@ -231,7 +225,7 @@ class AGQueueProcessorOpenGL(
         offset: Int,
         instances: Int,
         indexType: AGIndexType?,
-        indices: AG.Buffer?
+        indices: AG.AGBuffer?
     ) {
         indices?.let { bindBuffer(it, AGBufferKind.INDEX) }
 
@@ -253,7 +247,7 @@ class AGQueueProcessorOpenGL(
     ///////////////////////////////////////
     // UNIFORMS
     ///////////////////////////////////////
-    override fun uniformsSet(layout: UniformLayout, data: FBuffer) {
+    override fun uniformsSet(layout: UniformLayout, data: Buffer) {
         layout.attributes.fastForEach {
             //currentProgram
         }
@@ -421,10 +415,10 @@ class AGQueueProcessorOpenGL(
     }
 
     private val TEMP_MAX_MATRICES = 1024
-    val tempBuffer = FBuffer(4 * 16 * TEMP_MAX_MATRICES)
-    val tempBufferM2 = FBuffer(4 * 2 * 2)
-    val tempBufferM3 = FBuffer(4 * 3 * 3)
-    val tempBufferM4 = FBuffer(4 * 4 * 4)
+    val tempBuffer = Buffer.allocDirect(4 * 16 * TEMP_MAX_MATRICES)
+    val tempBufferM2 = Buffer.allocDirect(4 * 2 * 2)
+    val tempBufferM3 = Buffer.allocDirect(4 * 3 * 3)
+    val tempBufferM4 = Buffer.allocDirect(4 * 4 * 4)
     val tempF32 = tempBuffer.f32
     private val tempFloats = FloatArray(16 * TEMP_MAX_MATRICES)
     private val mat3dArray = arrayOf(Matrix3D())
@@ -489,7 +483,7 @@ class AGQueueProcessorOpenGL(
                     for (n in 0 until arrayCount) {
                         matArray[n].copyToFloatWxH(tempFloats, matSize, matSize, MajorOrder.COLUMN, n * stride)
                     }
-                    tempBuffer.setFloats(0, tempFloats, 0, stride * arrayCount)
+                    tempBuffer.setArrayFloat32(0, tempFloats, 0, stride * arrayCount)
 
                     if (gl.webgl) {
                         //if (true) {
@@ -542,47 +536,47 @@ class AGQueueProcessorOpenGL(
                 VarType.Float1, VarType.Float2, VarType.Float3, VarType.Float4 -> {
                     var arrayCount = declArrayCount
                     when (value) {
-                        is Boolean -> tempBuffer.setFloat(0, value.toInt().toFloat())
-                        is Number -> tempBuffer.setAlignedFloat32(0, value.toFloat())
-                        is Vector3D -> tempBuffer.setFloats(0, value.data, 0, stride)
+                        is Boolean -> tempBuffer.setFloat32(0, value.toInt().toFloat())
+                        is Number -> tempBuffer.setFloat32(0, value.toFloat())
+                        is Vector3D -> tempBuffer.setArrayFloat32(0, value.data, 0, stride)
                         is FloatArray -> {
                             arrayCount = min(declArrayCount, value.size / stride)
-                            tempBuffer.setFloats(0, value, 0, stride * arrayCount)
+                            tempBuffer.setArrayFloat32(0, value, 0, stride * arrayCount)
                         }
                         is Point -> {
-                            tempBuffer.setFloat(0, value.xf)
-                            tempBuffer.setFloat(1, value.yf)
+                            tempBuffer.setFloat32(0, value.xf)
+                            tempBuffer.setFloat32(1, value.yf)
                         }
-                        is RGBAf -> tempBuffer.setFloats(0, value.data, 0, stride)
+                        is RGBAf -> tempBuffer.setArrayFloat32(0, value.data, 0, stride)
                         is Margin -> {
-                            if (stride >= 1) tempBuffer.setFloat(0, value.top.toFloat())
-                            if (stride >= 2) tempBuffer.setFloat(1, value.right.toFloat())
-                            if (stride >= 3) tempBuffer.setFloat(2, value.bottom.toFloat())
-                            if (stride >= 4) tempBuffer.setFloat(3, value.left.toFloat())
+                            if (stride >= 1) tempBuffer.setFloat32(0, value.top.toFloat())
+                            if (stride >= 2) tempBuffer.setFloat32(1, value.right.toFloat())
+                            if (stride >= 3) tempBuffer.setFloat32(2, value.bottom.toFloat())
+                            if (stride >= 4) tempBuffer.setFloat32(3, value.left.toFloat())
                         }
                         is RectCorners -> {
-                            if (stride >= 1) tempBuffer.setFloat(0, value.topLeft.toFloat())
-                            if (stride >= 2) tempBuffer.setFloat(1, value.topRight.toFloat())
-                            if (stride >= 3) tempBuffer.setFloat(2, value.bottomRight.toFloat())
-                            if (stride >= 4) tempBuffer.setFloat(3, value.bottomLeft.toFloat())
+                            if (stride >= 1) tempBuffer.setFloat32(0, value.topLeft.toFloat())
+                            if (stride >= 2) tempBuffer.setFloat32(1, value.topRight.toFloat())
+                            if (stride >= 3) tempBuffer.setFloat32(2, value.bottomRight.toFloat())
+                            if (stride >= 4) tempBuffer.setFloat32(3, value.bottomLeft.toFloat())
                         }
                         is RGBA -> {
-                            if (stride >= 1) tempBuffer.setFloat(0, value.rf)
-                            if (stride >= 2) tempBuffer.setFloat(1, value.gf)
-                            if (stride >= 3) tempBuffer.setFloat(2, value.bf)
-                            if (stride >= 4) tempBuffer.setFloat(3, value.af)
+                            if (stride >= 1) tempBuffer.setFloat32(0, value.rf)
+                            if (stride >= 2) tempBuffer.setFloat32(1, value.gf)
+                            if (stride >= 3) tempBuffer.setFloat32(2, value.bf)
+                            if (stride >= 4) tempBuffer.setFloat32(3, value.af)
                         }
                         is RGBAPremultiplied -> {
-                            if (stride >= 1) tempBuffer.setFloat(0, value.rf)
-                            if (stride >= 2) tempBuffer.setFloat(1, value.gf)
-                            if (stride >= 3) tempBuffer.setFloat(2, value.bf)
-                            if (stride >= 4) tempBuffer.setFloat(3, value.af)
+                            if (stride >= 1) tempBuffer.setFloat32(0, value.rf)
+                            if (stride >= 2) tempBuffer.setFloat32(1, value.gf)
+                            if (stride >= 3) tempBuffer.setFloat32(2, value.bf)
+                            if (stride >= 4) tempBuffer.setFloat32(3, value.af)
                         }
                         is Array<*> -> {
                             arrayCount = min(declArrayCount, value.size)
                             for (n in 0 until value.size) {
                                 val vector = value[n] as Vector3D
-                                tempBuffer.setFloats(n * stride, vector.data, 0, stride)
+                                tempBuffer.setArrayFloat32(n * stride, vector.data, 0, stride)
                             }
                         }
                         else -> error("Unknown type '$value'")
@@ -670,16 +664,16 @@ class AGQueueProcessorOpenGL(
             else -> TODO()
         }
         val area = width * height
-        fbuffer(area * bytesPerPixel) { buffer ->
+        BufferTemp(area * bytesPerPixel) { buffer ->
             when (kind) {
                 AG.ReadKind.COLOR -> gl.readPixels(x, y, width, height, KmlGl.RGBA, KmlGl.UNSIGNED_BYTE, buffer)
                 AG.ReadKind.DEPTH -> gl.readPixels(x, y, width, height, KmlGl.DEPTH_COMPONENT, KmlGl.FLOAT, buffer)
                 AG.ReadKind.STENCIL -> gl.readPixels(x, y, width, height, KmlGl.STENCIL_INDEX, KmlGl.UNSIGNED_BYTE, buffer)
             }
             when (data) {
-                is IntArray -> buffer.getAlignedArrayInt32(0, data, 0, area)
-                is FloatArray -> buffer.getAlignedArrayFloat32(0, data, 0, area)
-                is ByteArray -> buffer.getArrayInt8(0, data, 0, area)
+                is IntArray -> buffer.getArrayInt32(0, data, size = area)
+                is FloatArray -> buffer.getArrayFloat32(0, data, size = area)
+                is ByteArray -> buffer.getArrayInt8(0, data, size = area)
                 else -> TODO()
             }
             //println("readColor.HASH:" + bitmap.computeHash())
@@ -693,7 +687,7 @@ class AGQueueProcessorOpenGL(
         //println("BIND:" + gl.getError())
         gl.copyTexImage2D(KmlGl.TEXTURE_2D, 0, KmlGl.RGBA, x, y, width, height, 0)
 
-        //val data = FBuffer.alloc(800 * 800 * 4)
+        //val data = Buffer.alloc(800 * 800 * 4)
         //for (n in 0 until 800 * 800) data.setInt(n, Colors.RED.value)
         //gl.texImage2D(KmlGl.TEXTURE_2D, 0, KmlGl.RGBA, 800, 800, 0, KmlGl.RGBA, KmlGl.UNSIGNED_BYTE, data)
         //println("COPY_TEX:" + gl.getError())
@@ -854,14 +848,14 @@ class AGQueueProcessorOpenGL(
         }
     }
 
-    private fun createBufferForBitmap(bmp: Bitmap?, premultiplied: Boolean): FBuffer? = when (bmp) {
+    private fun createBufferForBitmap(bmp: Bitmap?, premultiplied: Boolean): Buffer? = when (bmp) {
         null -> null
         is NativeImage -> unsupported("Should not call createBufferForBitmap with a NativeImage")
-        is Bitmap8 -> FBuffer(bmp.area).also { mem -> arraycopy(bmp.data, 0, mem.arrayByte, 0, bmp.area) }
-        is FloatBitmap32 -> FBuffer(bmp.area * 4 * 4).also { mem -> arraycopy(bmp.data, 0, mem.arrayFloat, 0, bmp.area * 4) }
-        else -> FBuffer(bmp.area * 4).also { mem ->
+        is Bitmap8 -> Buffer(bmp.area).also { mem -> arraycopy(bmp.data, 0, mem.i8, 0, bmp.area) }
+        is FloatBitmap32 -> Buffer(bmp.area * 4 * 4).also { mem -> arraycopy(bmp.data, 0, mem.f32, 0, bmp.area * 4) }
+        else -> Buffer(bmp.area * 4).also { mem ->
             val abmp: Bitmap32 = if (premultiplied) bmp.toBMP32IfRequired().premultipliedIfRequired() else bmp.toBMP32IfRequired().depremultipliedIfRequired()
-            arraycopy(abmp.ints, 0, mem.arrayInt, 0, abmp.area)
+            arraycopy(abmp.ints, 0, mem.i32, 0, abmp.area)
         }
     }
 

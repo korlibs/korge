@@ -5,7 +5,7 @@ import com.soywiz.kds.fastArrayListOf
 import com.soywiz.kds.floatArrayListOf
 import com.soywiz.korag.AG
 import com.soywiz.korag.shader.VertexLayout
-import com.soywiz.korge3d.internal.toFBuffer
+import com.soywiz.korge3d.internal.toNBuffer
 import com.soywiz.korge3d.internal.vector3DTemps
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
@@ -237,10 +237,10 @@ class MeshBuilder3D(
 
     fun build(): Mesh3D = Mesh3D(
         fastArrayListOf(BufferWithVertexLayout(
-            buffer = vertexData.toFBuffer(),
+            buffer = vertexData.toNBuffer(),
             layout = layout
         )),
-        indexData.toFBuffer(),
+        indexData.toNBuffer(),
         AG.IndexType.USHORT,
         indexData.size,
         null,

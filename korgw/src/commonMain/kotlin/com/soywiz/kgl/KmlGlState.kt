@@ -1,7 +1,6 @@
 package com.soywiz.kgl
 
-import com.soywiz.kmem.FBuffer
-import com.soywiz.kmem.get
+import com.soywiz.kmem.*
 
 class KmlGlState(val gl: KmlGl) {
     val enabledList = listOf(
@@ -10,28 +9,28 @@ class KmlGlState(val gl: KmlGl) {
         gl.SCISSOR_TEST, gl.STENCIL_TEST,
     )
     val enabledArray = BooleanArray(enabledList.size)
-    val scissor = FBuffer(4 * 4)
-    val viewport = FBuffer(4 * 4)
-    val clearColor = FBuffer(4 * 4)
-    val clearDepth = FBuffer(4)
-    val clearStencil = FBuffer(4)
-    val stencilFrontWriteMask = FBuffer(4)
-    val stencilBackWriteMask = FBuffer(4)
-    val activeTexture = FBuffer(4)
-    val currentProgram = FBuffer(4)
+    val scissor = Buffer.allocDirect(4 * 4)
+    val viewport = Buffer.allocDirect(4 * 4)
+    val clearColor = Buffer.allocDirect(4 * 4)
+    val clearDepth = Buffer.allocDirect(4)
+    val clearStencil = Buffer.allocDirect(4)
+    val stencilFrontWriteMask = Buffer.allocDirect(4)
+    val stencilBackWriteMask = Buffer.allocDirect(4)
+    val activeTexture = Buffer.allocDirect(4)
+    val currentProgram = Buffer.allocDirect(4)
 
     val MAX_ATTRIB by lazy { gl.getIntegerv(gl.MAX_VERTEX_ATTRIBS) }
     val vertexAttribEnabled by lazy { BooleanArray(MAX_ATTRIB) }
-    val vertexAttribSize by lazy { Array(MAX_ATTRIB) { FBuffer(8) } }
-    val vertexAttribType by lazy { Array(MAX_ATTRIB) { FBuffer(8) } }
-    val vertexAttribNormal by lazy { Array(MAX_ATTRIB) { FBuffer(8) } }
-    val vertexAttribStride by lazy { Array(MAX_ATTRIB) { FBuffer(8) } }
-    val vertexAttribPointer by lazy { Array(MAX_ATTRIB) { FBuffer(8) } }
+    val vertexAttribSize by lazy { Array(MAX_ATTRIB) { Buffer.allocDirect(8) } }
+    val vertexAttribType by lazy { Array(MAX_ATTRIB) { Buffer.allocDirect(8) } }
+    val vertexAttribNormal by lazy { Array(MAX_ATTRIB) { Buffer.allocDirect(8) } }
+    val vertexAttribStride by lazy { Array(MAX_ATTRIB) { Buffer.allocDirect(8) } }
+    val vertexAttribPointer by lazy { Array(MAX_ATTRIB) { Buffer.allocDirect(8) } }
 
     val MAX_TEX_UNITS by lazy { gl.getIntegerv(gl.MAX_TEXTURE_IMAGE_UNITS) }
-    val textureBinding2DList by lazy { Array(MAX_TEX_UNITS) { FBuffer(8) } }
+    val textureBinding2DList by lazy { Array(MAX_TEX_UNITS) { Buffer.allocDirect(8) } }
 
-    private val temp = FBuffer(64)
+    private val temp = Buffer.allocDirect(64)
     private var arrayBufferBinding: Int = 0
     private var elementArrayBufferBinding: Int = 0
 
@@ -105,7 +104,7 @@ class KmlGlState(val gl: KmlGl) {
             for (n in 0 until MAX_ATTRIB) {
                 gl.enableDisableVertexAttribArray(n, vertexAttribEnabled[n])
                 if (vertexAttribEnabled[n]) {
-                    val ptr = vertexAttribPointer[n].getAlignedInt64(0)
+                    val ptr = vertexAttribPointer[n].getInt64(0)
                     gl.vertexAttribPointer(
                         n,
                         vertexAttribSize[n].i32[0],

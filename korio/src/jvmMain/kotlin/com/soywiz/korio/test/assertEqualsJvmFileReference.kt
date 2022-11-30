@@ -29,7 +29,7 @@ import java.io.*
  * }
  * ```
  */
-fun assertEqualsJvmFileReference(path: String, content: String) {
+fun assertEqualsJvmFileReference(path: String, content: String, trim: Boolean = true) {
     val file = File("src/jvmTest/resources/$path").absoluteFile
     if (System.getenv("UPDATE_TEST_REF") == "true") {
         file.parentFile.mkdirs()
@@ -37,8 +37,8 @@ fun assertEqualsJvmFileReference(path: String, content: String) {
     }
 
     val message: String? = null
-    val expected: String = file.takeIf { it.exists() }?.readText() ?: ""
-    val actual: String = content
+    val expected: String = (file.takeIf { it.exists() }?.readText() ?: "").let { if (trim) it.trimEnd() else it }
+    val actual: String = content.let { if (trim) it.trimEnd() else it }
 
     val expectedLines = expected.lines()
     val actualLines = actual.lines()

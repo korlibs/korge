@@ -69,7 +69,7 @@ class SkyBox(
             val VERTEX_COUNT = 4
             val vertices = createBuffer(AG.BufferKind.VERTEX)
             val vertexLayout = VertexLayout(DefaultShaders.a_Pos, DefaultShaders.a_Tex)
-            val verticesData = FBuffer(VERTEX_COUNT * vertexLayout.totalSize)
+            val verticesData = Buffer(VERTEX_COUNT * vertexLayout.totalSize)
             val program = Program(VertexShader {
                 DefaultShaders.apply {
                     v_Tex setTo a_Tex

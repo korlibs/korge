@@ -4,11 +4,7 @@ package com.soywiz.korau.mod
 
 import com.soywiz.kds.IntDeque
 import com.soywiz.klock.measureTime
-import com.soywiz.kmem.Uint8Buffer
-import com.soywiz.kmem.Uint8BufferAlloc
-import com.soywiz.kmem.arraycopy
-import com.soywiz.kmem.clamp
-import com.soywiz.kmem.mem
+import com.soywiz.kmem.*
 import com.soywiz.korau.sound.NativeSoundProvider
 import com.soywiz.korau.sound.Sound
 import com.soywiz.korau.sound.nativeSoundProvider
@@ -55,7 +51,7 @@ class Screamtracker : BaseModuleTracker() {
     var signature: String = ""
     var songlen: Int = 1
     var repeatpos: Int = 0
-    var patterntable: Uint8Buffer = Uint8BufferAlloc(0)
+    var patterntable: Uint8Buffer = Uint8Buffer(0)
     var channels: Int = 0
     var ordNum: Int = 0
     var insNum: Int = 0
@@ -178,7 +174,7 @@ class Screamtracker : BaseModuleTracker() {
 
         songlen = 1
         repeatpos = 0
-        patterntable = Uint8BufferAlloc(256)
+        patterntable = Uint8Buffer(256)
 
         channels = 0
         ordNum = 0
@@ -362,7 +358,7 @@ class Screamtracker : BaseModuleTracker() {
 
         // load and unpack patterns
         var max_ch = 0
-        pattern = Array(patNum) { Uint8BufferAlloc(channels * 64 * 5) }
+        pattern = Array(patNum) { Uint8Buffer(channels * 64 * 5) }
         for (i in 0 until patNum) {
             val boffset = 0x0060 + ordNum + insNum * 2 + i * 2
             var offset = (buffer[boffset] or (buffer[boffset + 1] shl 8)) * 16
@@ -425,9 +421,9 @@ class Screamtracker : BaseModuleTracker() {
         val oldch = channels
         channels = max_ch + 1
         for (i in 0 until patNum) {
-            val oldpat = Uint8BufferAlloc(pattern[i].size)
-            arraycopy(pattern[i].b.mem, 0, oldpat.b.mem, 0, pattern[i].size)
-            pattern[i] = Uint8BufferAlloc(channels * 64 * 5)
+            val oldpat = Uint8Buffer(pattern[i].size)
+            arraycopy(pattern[i], 0, oldpat, 0, pattern[i].size)
+            pattern[i] = Uint8Buffer(channels * 64 * 5)
             val pattern = pattern[i]
             for (j in 0 until 64) {
                 for (c in 0 until channels) {

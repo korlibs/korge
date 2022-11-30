@@ -1,9 +1,7 @@
 package com.soywiz.korvi.mpeg
 
 import com.soywiz.klock.milliseconds
-import com.soywiz.kmem.Uint8Buffer
-import com.soywiz.kmem.Uint8ClampedBuffer
-import com.soywiz.kmem.toUint8Buffer
+import com.soywiz.kmem.*
 import com.soywiz.korau.sound.AudioSamples
 import com.soywiz.korau.sound.AudioSamplesDeque
 import com.soywiz.korau.sound.nativeSoundProvider
@@ -181,7 +179,7 @@ class JSMpegPlayer(val coroutineContext: CoroutineContext) {
                 //val chunk = data.readBytesUpTo(128 * 1024)
                 val chunk = data.readBytesUpTo(2 * 1024 * 1024)
                 //val chunk = data.readBytesUpTo(100 * 1024 * 1024)
-                write(chunk.toUint8Buffer())
+                write(chunk.toNBufferUInt8())
                 continue
             }
 

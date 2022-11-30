@@ -1,7 +1,6 @@
 package com.soywiz.korim.awt
 
 import com.soywiz.kds.mapFloat
-import com.soywiz.kmem.MemBufferAlloc
 import com.soywiz.kmem.clearSafe
 import com.soywiz.kmem.flipSafe
 import com.soywiz.kmem.positionSafe

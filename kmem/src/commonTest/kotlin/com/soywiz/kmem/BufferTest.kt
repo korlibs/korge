@@ -18,10 +18,10 @@ class BufferTest {
 
     @Test
     fun testSlice() {
-        val data = MemBufferAlloc(16 * 4)
-        val sliceAll = data.sliceFloat32Buffer(0, 16)
-        val slice1 = data.sliceFloat32Buffer(0, 8)
-        val slice2 = data.sliceFloat32Buffer(8, 8)
+        val data = Buffer(16 * 4)
+        val sliceAll = data.f32.sliceWithSize(0, 16)
+        val slice1 = data.f32.sliceWithSize(0, 8)
+        val slice2 = data.f32.sliceWithSize(8, 8)
         for (n in 0 until 16) sliceAll[n] = n.toFloat()
         assertEquals(FloatArray(16) { it.toFloat() }.toList(), (0 until sliceAll.size).map { sliceAll[it] })
         assertEquals(FloatArray(8) { it.toFloat() }.toList(), (0 until slice1.size).map { slice1[it] })
@@ -32,7 +32,7 @@ class BufferTest {
     fun testCopySmall() {
         val buffer1 = Uint8Buffer(byteArrayOf(1, 2, 3, 4, 5, 6))
         val buffer2 = Uint8Buffer(byteArrayOf(-1, -2, -3, -4, -5, -6))
-        arraycopy(buffer1.subarray(3, 6).b, 1, buffer2.subarray(1).b, 2, 2)
+        arraycopy(buffer1.slice(3, 6), 1, buffer2.slice(1), 2, 2)
         assertEquals(listOf(255, 254, 253, 5, 6, 250), IntArray(buffer2.size) { buffer2[it] }.toList())
     }
 
@@ -40,7 +40,7 @@ class BufferTest {
     fun testCopyBigUnsigned8() {
         val buffer1 = Uint8Buffer(byteArrayOf(1, 2, 3, 4, 5, 6) + ByteArray(4096))
         val buffer2 = Uint8Buffer(byteArrayOf(-1, -2, -3, -4, -5, -6) + ByteArray(4096))
-        arraycopy(buffer1.subarray(3, 4000).b, 1, buffer2.subarray(1).b, 2, 3000)
+        arraycopy(buffer1.slice(3, 4000), 1, buffer2.slice(1), 2, 3000)
         assertEquals(listOf(255, 254, 253, 5, 6, 0, 0, 0, 0, 0), IntArray(10) { buffer2[it] }.toList())
     }
     
@@ -49,19 +49,19 @@ class BufferTest {
         run {
             val buffer1 = Int8Buffer(byteArrayOf(1, 2, 3, 4, 5, 6) + ByteArray(4096))
             val buffer2 = Int8Buffer(byteArrayOf(-1, -2, -3, -4, -5, -6) + ByteArray(4096))
-            arraycopy(buffer1.subarray(3, 4000), 1, buffer2.subarray(1), 2, 3000)
+            arraycopy(buffer1.slice(3, 4000), 1, buffer2.slice(1), 2, 3000)
             assertEquals(listOf(-1, -2, -3, 5, 6, 0, 0, 0, 0, 0), IntArray(10) { buffer2[it].toInt() }.toList())
         }
         run {
             val buffer1 = byteArrayOf(1, 2, 3, 4, 5, 6) + ByteArray(4096)
             val buffer2 = Int8Buffer(byteArrayOf(-1, -2, -3, -4, -5, -6) + ByteArray(4096))
-            arraycopy(buffer1.sliceArray(3 until 3 + 4000), 1, buffer2.subarray(1), 2, 3000)
+            arraycopy(buffer1.sliceArray(3 until 3 + 4000), 1, buffer2.slice(1), 2, 3000)
             assertEquals(listOf(-1, -2, -3, 5, 6, 0, 0, 0, 0, 0), IntArray(10) { buffer2[it].toInt() }.toList())
         }
         run {
             val buffer1 = Int8Buffer(byteArrayOf(1, 2, 3, 4, 5, 6) + ByteArray(4096))
             val buffer2 = byteArrayOf(-1, -2, -3, -4, -5, -6) + ByteArray(4096)
-            arraycopy(buffer1.subarray(3, 4000), 1, buffer2, 3, 3000)
+            arraycopy(buffer1.slice(3, 4000), 1, buffer2, 3, 3000)
             assertEquals(listOf(-1, -2, -3, 5, 6, 0, 0, 0, 0, 0), IntArray(10) { buffer2[it].toInt() }.toList())
         }
     }
@@ -71,19 +71,19 @@ class BufferTest {
         run {
             val buffer1 = Int16Buffer(shortArrayOf(1, 2, 3, 4, 5, 6) + ShortArray(4096))
             val buffer2 = Int16Buffer(shortArrayOf(-1, -2, -3, -4, -5, -6) + ShortArray(4096))
-            arraycopy(buffer1.subarray(3, 4000), 1, buffer2.subarray(1), 2, 3000)
+            arraycopy(buffer1.slice(3, 4000), 1, buffer2.slice(1), 2, 3000)
             assertEquals(listOf(-1, -2, -3, 5, 6, 0, 0, 0, 0, 0), IntArray(10) { buffer2[it].toInt() }.toList())
         }
         run {
             val buffer1 = shortArrayOf(1, 2, 3, 4, 5, 6) + ShortArray(4096)
             val buffer2 = Int16Buffer(shortArrayOf(-1, -2, -3, -4, -5, -6) + ShortArray(4096))
-            arraycopy(buffer1.sliceArray(3 until 3 + 4000), 1, buffer2.subarray(1), 2, 3000)
+            arraycopy(buffer1.sliceArray(3 until 3 + 4000), 1, buffer2.slice(1), 2, 3000)
             assertEquals(listOf(-1, -2, -3, 5, 6, 0, 0, 0, 0, 0), IntArray(10) { buffer2[it].toInt() }.toList())
         }
         run {
             val buffer1 = Int16Buffer(shortArrayOf(1, 2, 3, 4, 5, 6) + ShortArray(4096))
             val buffer2 = shortArrayOf(-1, -2, -3, -4, -5, -6) + ShortArray(4096)
-            arraycopy(buffer1.subarray(3, 4000), 1, buffer2, 3, 3000)
+            arraycopy(buffer1.slice(3, 4000), 1, buffer2, 3, 3000)
             assertEquals(listOf(-1, -2, -3, 5, 6, 0, 0, 0, 0, 0), IntArray(10) { buffer2[it].toInt() }.toList())
         }
     }
@@ -93,19 +93,19 @@ class BufferTest {
         run {
             val buffer1 = Int32Buffer(intArrayOf(1, 2, 3, 4, 5, 6) + IntArray(4096))
             val buffer2 = Int32Buffer(intArrayOf(-1, -2, -3, -4, -5, -6) + IntArray(4096))
-            arraycopy(buffer1.subarray(3, 4000), 1, buffer2.subarray(1), 2, 3000)
+            arraycopy(buffer1.slice(3, 4000), 1, buffer2.slice(1), 2, 3000)
             assertEquals(listOf(-1, -2, -3, 5, 6, 0, 0, 0, 0, 0), IntArray(10) { buffer2[it].toInt() }.toList())
         }
         run {
             val buffer1 = intArrayOf(1, 2, 3, 4, 5, 6) + IntArray(4096)
             val buffer2 = Int32Buffer(intArrayOf(-1, -2, -3, -4, -5, -6) + IntArray(4096))
-            arraycopy(buffer1.sliceArray(3 until 3 + 4000), 1, buffer2.subarray(1), 2, 3000)
+            arraycopy(buffer1.sliceArray(3 until 3 + 4000), 1, buffer2.slice(1), 2, 3000)
             assertEquals(listOf(-1, -2, -3, 5, 6, 0, 0, 0, 0, 0), IntArray(10) { buffer2[it].toInt() }.toList())
         }
         run {
             val buffer1 = Int32Buffer(intArrayOf(1, 2, 3, 4, 5, 6) + IntArray(4096))
             val buffer2 = intArrayOf(-1, -2, -3, -4, -5, -6) + IntArray(4096)
-            arraycopy(buffer1.subarray(3, 4000), 1, buffer2, 3, 3000)
+            arraycopy(buffer1.slice(3, 4000), 1, buffer2, 3, 3000)
             assertEquals(listOf(-1, -2, -3, 5, 6, 0, 0, 0, 0, 0), IntArray(10) { buffer2[it].toInt() }.toList())
         }
     }
@@ -118,19 +118,19 @@ class BufferTest {
         run {
             val buffer1 = Float32Buffer(floatArrayOf(1, 2, 3, 4, 5, 6) + FloatArray(4096))
             val buffer2 = Float32Buffer(floatArrayOf(-1, -2, -3, -4, -5, -6) + FloatArray(4096))
-            arraycopy(buffer1.subarray(3, 4000), 1, buffer2.subarray(1), 2, 3000)
+            arraycopy(buffer1.slice(3, 4000), 1, buffer2.slice(1), 2, 3000)
             assertEquals(listOf(-1, -2, -3, 5, 6, 0, 0, 0, 0, 0), IntArray(10) { buffer2[it].toInt() }.toList())
         }
         run {
             val buffer1 = floatArrayOf(1, 2, 3, 4, 5, 6) + FloatArray(4096)
             val buffer2 = Float32Buffer(floatArrayOf(-1, -2, -3, -4, -5, -6) + FloatArray(4096))
-            arraycopy(buffer1.sliceArray(3 until 3 + 4000), 1, buffer2.subarray(1), 2, 3000)
+            arraycopy(buffer1.sliceArray(3 until 3 + 4000), 1, buffer2.slice(1), 2, 3000)
             assertEquals(listOf(-1, -2, -3, 5, 6, 0, 0, 0, 0, 0), IntArray(10) { buffer2[it].toInt() }.toList())
         }
         run {
             val buffer1 = Float32Buffer(floatArrayOf(1, 2, 3, 4, 5, 6) + FloatArray(4096))
             val buffer2 = floatArrayOf(-1, -2, -3, -4, -5, -6) + FloatArray(4096)
-            arraycopy(buffer1.subarray(3, 4000), 1, buffer2, 3, 3000)
+            arraycopy(buffer1.slice(3, 4000), 1, buffer2, 3, 3000)
             assertEquals(listOf(-1, -2, -3, 5, 6, 0, 0, 0, 0, 0), IntArray(10) { buffer2[it].toInt() }.toList())
         }
     }
@@ -140,19 +140,19 @@ class BufferTest {
         run {
             val buffer1 = Float64Buffer(doubleArrayOf(1, 2, 3, 4, 5, 6) + DoubleArray(4096))
             val buffer2 = Float64Buffer(doubleArrayOf(-1, -2, -3, -4, -5, -6) + DoubleArray(4096))
-            arraycopy(buffer1.subarray(3, 4000), 1, buffer2.subarray(1), 2, 3000)
+            arraycopy(buffer1.slice(3, 4000), 1, buffer2.slice(1), 2, 3000)
             assertEquals(listOf(-1, -2, -3, 5, 6, 0, 0, 0, 0, 0), IntArray(10) { buffer2[it].toInt() }.toList())
         }
         run {
             val buffer1 = doubleArrayOf(1, 2, 3, 4, 5, 6) + DoubleArray(4096)
             val buffer2 = Float64Buffer(doubleArrayOf(-1, -2, -3, -4, -5, -6) + DoubleArray(4096))
-            arraycopy(buffer1.sliceArray(3 until 3 + 4000), 1, buffer2.subarray(1), 2, 3000)
+            arraycopy(buffer1.sliceArray(3 until 3 + 4000), 1, buffer2.slice(1), 2, 3000)
             assertEquals(listOf(-1, -2, -3, 5, 6, 0, 0, 0, 0, 0), IntArray(10) { buffer2[it].toInt() }.toList())
         }
         run {
             val buffer1 = Float64Buffer(doubleArrayOf(1, 2, 3, 4, 5, 6) + DoubleArray(4096))
             val buffer2 = doubleArrayOf(-1, -2, -3, -4, -5, -6) + DoubleArray(4096)
-            arraycopy(buffer1.subarray(3, 4000), 1, buffer2, 3, 3000)
+            arraycopy(buffer1.slice(3, 4000), 1, buffer2, 3, 3000)
             assertEquals(listOf(-1, -2, -3, 5, 6, 0, 0, 0, 0, 0), IntArray(10) { buffer2[it].toInt() }.toList())
         }
     }

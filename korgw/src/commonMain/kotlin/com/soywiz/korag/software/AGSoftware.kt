@@ -1,8 +1,7 @@
 package com.soywiz.korag.software
 
 import com.soywiz.klock.measureTime
-import com.soywiz.kmem.FBuffer
-import com.soywiz.kmem.clamp
+import com.soywiz.kmem.*
 import com.soywiz.korag.AG
 import com.soywiz.korag.AGConfig
 import com.soywiz.korag.AGFactory
@@ -72,11 +71,11 @@ open class AGSoftware(val bitmap: Bitmap32) : AG() {
         }
     }
 
-    inner class SoftwareBuffer(list: AGList) : Buffer( list) {
-        val memory: FBuffer? get() = mem
+    inner class SoftwareBuffer(list: AGList) : AGBuffer( list) {
+        val memory: com.soywiz.kmem.Buffer? get() = mem
     }
 
-    override fun createBuffer(): Buffer = commandsNoWait { SoftwareBuffer(it) }
+    override fun createBuffer(): AGBuffer = commandsNoWait { SoftwareBuffer(it) }
     override fun createMainRenderBuffer(): BaseRenderBuffer = SoftwareRenderBuffer()
     override fun createRenderBuffer(): RenderBuffer = SoftwareRenderBuffer()
 
@@ -86,7 +85,7 @@ open class AGSoftware(val bitmap: Bitmap32) : AG() {
         val indices = batch.indices as? SoftwareBuffer ?: return IntArray(batch.vertexCount) { it }
         val memory = indices.memory ?: TODO()
         return when (batch.indexType) {
-            IndexType.USHORT -> IntArray(batch.vertexCount) { memory.getAlignedUInt16(it) }
+            IndexType.USHORT -> IntArray(batch.vertexCount) { memory.getUInt16(it) }
             else -> TODO("${batch.indexType}")
         }
     }

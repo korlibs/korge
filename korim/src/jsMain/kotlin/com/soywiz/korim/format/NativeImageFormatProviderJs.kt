@@ -93,7 +93,7 @@ open class HtmlNativeImage(val texSourceBase: TexImageSource, width: Int, height
             }
         }
         val idata = ctx.getImageData(x.toDouble(), y.toDouble(), width.toDouble(), height.toDouble())
-        val data = idata.data.buffer.asInt32Buffer().unsafeCast<IntArray>()
+        val data = idata.data.buffer.asInt32Array().unsafeCast<IntArray>()
         arraycopy(data, 0, out, offset, size)
         if (isBigEndian) bswap32(out, offset, size)
         if (!asumePremultiplied) {
@@ -105,7 +105,7 @@ open class HtmlNativeImage(val texSourceBase: TexImageSource, width: Int, height
         if (width <= 0 || height <= 0) return
         val size = width * height
         val idata = ctx.createImageData(width.toDouble(), height.toDouble())
-        val data = idata.data.buffer.asInt32Buffer().unsafeCast<IntArray>()
+        val data = idata.data.buffer.asInt32Array().unsafeCast<IntArray>()
         arraycopy(out, offset, data, 0, size)
         if (!asumePremultiplied) {
             depremultiply(RgbaPremultipliedArray(data), 0, RgbaArray(data), 0, width * height)

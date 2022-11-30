@@ -7,17 +7,13 @@ package com.soywiz.korau.mod
 
 import com.soywiz.kds.IntDeque
 import com.soywiz.klock.measureTime
-import com.soywiz.kmem.Uint8Buffer
-import com.soywiz.kmem.Uint8BufferAlloc
-import com.soywiz.kmem.toInt
-import com.soywiz.kmem.toUint8Buffer
+import com.soywiz.kmem.*
 import com.soywiz.korau.sound.NativeSoundProvider
 import com.soywiz.korau.sound.Sound
 import com.soywiz.korau.sound.nativeSoundProvider
 import com.soywiz.korio.file.VfsFile
 import com.soywiz.korio.stream.AsyncStream
 import com.soywiz.korio.stream.readBytesExact
-import com.soywiz.korio.stream.sliceStart
 import kotlin.math.pow
 import kotlin.random.Random
 
@@ -43,7 +39,7 @@ import kotlin.random.Random
 object XM : BaseModuleTracker.Format("xm") {
     override fun createTracker(): BaseModuleTracker = Fasttracker()
     override suspend fun fastValidate(data: AsyncStream): Boolean {
-        val buffer = data.readBytesExact(60).toUint8Buffer()
+        val buffer = data.readBytesExact(60).toNBufferUInt8()
         val signature = CharArray(17) { buffer[it].toChar() }.concatToString()
         if (signature != "Extended Module: ") return false
         if (buffer[37] != 0x1a) return false
@@ -179,7 +175,7 @@ class Fasttracker : BaseModuleTracker() {
         var volenvlen: Int = 0,
         var volfadeout: Int = 0,
         var pantype: Int = 0,
-        var samplemap: Uint8Buffer = Uint8BufferAlloc(0),
+        var samplemap: Uint8Buffer = Uint8Buffer(0),
         var vibratotype: Int = 0,
         var vibratosweep: Int = 0,
         var vibratodepth: Int = 0,
@@ -247,7 +243,7 @@ class Fasttracker : BaseModuleTracker() {
     var amigaperiods: Int = 0
     var initSpeed: Int = 6
     var initBPM: Int = 125
-    var patterntable: Uint8Buffer = Uint8BufferAlloc(256)
+    var patterntable: Uint8Buffer = Uint8Buffer(256)
     var pattern = emptyArray<Uint8Buffer>()
     var instrument = emptyArray<Instrument>()
     var chvu = FloatArray(2)
@@ -270,7 +266,7 @@ class Fasttracker : BaseModuleTracker() {
         initSpeed = 6
         initBPM = 125
 
-        patterntable = Uint8BufferAlloc(256)
+        patterntable = Uint8Buffer(256)
 
         pattern = emptyArray()
         instrument = Array(instruments) { Instrument() }
@@ -365,13 +361,13 @@ class Fasttracker : BaseModuleTracker() {
         maxpatt++
 
         // allocate arrays for pattern data
-        pattern = Array(maxpatt) { Uint8BufferAlloc(0) }
+        pattern = Array(maxpatt) { Uint8Buffer(0) }
         patternlen = IntArray(maxpatt)
 
         for (i in 0 until maxpatt) {
             // initialize the pattern to defaults prior to unpacking
             patternlen[i] = 64
-            pattern[i] = Uint8BufferAlloc(channels * patternlen[i] * 5)
+            pattern[i] = Uint8Buffer(channels * patternlen[i] * 5)
             for (row in 0 until patternlen[i]) {
                 for (ch in 0 until channels) {
                     val pattern = pattern[i]
@@ -390,7 +386,7 @@ class Fasttracker : BaseModuleTracker() {
         var i = 0
         while (i < patterns) {
             patternlen[i] = le_word(buffer, offset + 5)
-            pattern[i] = Uint8BufferAlloc(channels * patternlen[i] * 5)
+            pattern[i] = Uint8Buffer(channels * patternlen[i] * 5)
 
             // initialize pattern to defaults prior to unpacking
             val pattern = pattern[i]
@@ -461,7 +457,7 @@ class Fasttracker : BaseModuleTracker() {
             instrument.samples = le_word(buffer, offset + 27)
 
             // initialize to defaults
-            instrument.samplemap = Uint8BufferAlloc(96)
+            instrument.samplemap = Uint8Buffer(96)
             for (j in 0 until 96) instrument.samplemap[j] = 0
             instrument.volenv = FloatArray (325)
             instrument.panenv = FloatArray (325)

@@ -6,7 +6,6 @@ import com.soywiz.kds.FastArrayList
 import com.soywiz.kds.fastArrayListOf
 import com.soywiz.klogger.Console
 import com.soywiz.kmem.Uint8Buffer
-import com.soywiz.kmem.subarray
 import com.soywiz.korvi.mpeg.util.BitBuffer
 import com.soywiz.korvi.mpeg.stream.DecoderBase
 
@@ -52,7 +51,7 @@ class TS : Demuxer {
         while (this.bits.has(188 shl 3) && this.parsePacket()) Unit
 
         val leftoverCount = this.bits.byteLength - (this.bits.index shr 3)
-        this.leftoverBytes = if (leftoverCount > 0) this.bits.bytes.subarray(this.bits.index shr 3) else null
+        this.leftoverBytes = if (leftoverCount > 0) this.bits.bytes.slice(this.bits.index shr 3) else null
     }
 
     var parsePacketCount = 0
@@ -211,7 +210,7 @@ class TS : Demuxer {
     }
 
     fun packetAddData(pi: PesPacketInfo, start: Int, end: Int): Boolean {
-        pi.buffers.add(this.bits.bytes.subarray(start, end))
+        pi.buffers.add(this.bits.bytes.slice(start, end))
         pi.currentLength += end - start
 
         return (pi.totalLength != 0 && pi.currentLength >= pi.totalLength) // complete
