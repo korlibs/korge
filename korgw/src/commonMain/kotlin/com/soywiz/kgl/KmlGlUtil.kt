@@ -165,7 +165,7 @@ class KmlGlBuffer(val gl: KmlGl, val type: Int, val buf: Int) {
 fun KmlGl.createBuffer(type: Int): KmlGlBuffer {
 	val id = fbuffer(4) {
 		genBuffers(1, it)
-		it.getInt(0)
+		it.getInt32(0)
 	}
 	return KmlGlBuffer(this, type, id)
 }
@@ -251,7 +251,7 @@ class KmlGlTex(val gl: KmlGl, val tex: Int) {
 
 	fun dispose() {
 		fbuffer(1) {
-			it.setInt(0, tex)
+			it.setInt32(0, tex)
 			gl.deleteTextures(1, it)
 		}
 	}
@@ -260,9 +260,9 @@ class KmlGlTex(val gl: KmlGl, val tex: Int) {
 fun KmlGl.createKmlTexture(): KmlGlTex {
 	val buf = fbuffer(4) {
 		genTextures(1, it)
-		it.getInt(0)
+		it.getInt32(0)
 	}
-	return KmlGlTex(this, buf).upload(1, 1, FBuffer(4))
+	return KmlGlTex(this, buf).upload(1, 1, NBuffer(4))
 }
 
 fun KmlGl.uniformTex(location: Int, tex: KmlGlTex, unit: Int) {
@@ -276,16 +276,16 @@ object KmlGlUtil {
 		height: Int,
 		near: Float = 0f,
 		far: Float = 1f,
-		out: Float32Buffer = Float32BufferAlloc(4 * 16)
-	): MemBuffer {
+		out: NBufferFloat32 = NBufferFloat32(4 * 16)
+	): NBufferFloat32 {
 		return ortho(height.toFloat(), 0f, 0f, width.toFloat(), near, far, out)
 	}
 
 	fun ortho(
 		bottom: Float, top: Float, left: Float, right: Float,
 		near: Float, far: Float,
-		M: Float32Buffer = Float32BufferAlloc(16)
-	): MemBuffer {
+		M: NBufferFloat32 = NBufferFloat32(16)
+	): NBufferFloat32 {
 		// set OpenGL perspective projection matrix
 		M[0] = 2 / (right - left)
 		M[1] = 0f
@@ -306,7 +306,7 @@ object KmlGlUtil {
 		M[13] = -(top + bottom) / (top - bottom)
 		M[14] = -(far + near) / (far - near)
 		M[15] = 1f
-		return M.mem
+		return M
 	}
 }
 

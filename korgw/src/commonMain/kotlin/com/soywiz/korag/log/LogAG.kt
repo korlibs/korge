@@ -6,8 +6,7 @@ import com.soywiz.kds.fastArrayListOf
 import com.soywiz.kds.linkedHashMapOf
 import com.soywiz.kds.mapInt
 import com.soywiz.kds.toIntArrayList
-import com.soywiz.kmem.FBuffer
-import com.soywiz.kmem.clamp01
+import com.soywiz.kmem.*
 import com.soywiz.korag.AG
 import com.soywiz.korag.AGBlendEquation
 import com.soywiz.korag.AGBlendFactor
@@ -216,7 +215,7 @@ open class LogBaseAG(
 	}
 
 	inner class LogBuffer(val id: Int, list: AGList) : Buffer(list) {
-		val logmem: FBuffer? get() = mem
+		val logmem: NBuffer? get() = mem
 		val logmemOffset get() = memOffset
 		val logmemLength get() = memLength
 		override fun afterSetMem() {

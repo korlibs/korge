@@ -1,8 +1,7 @@
 package com.soywiz.kgl
 
 import com.soywiz.klogger.Console
-import com.soywiz.kmem.FBuffer
-import com.soywiz.kmem.fbuffer
+import com.soywiz.kmem.*
 import com.soywiz.korma.geom.Rectangle
 import com.soywiz.krypto.encoding.hex
 import kotlin.native.concurrent.ThreadLocal

@@ -197,16 +197,16 @@ open class NBufferTestBase {
     @Test
     fun testWrap() {
         val data = NBuffer(byteArrayOf(0, 1, 2, 3, 4, 5, 6, 7), 2, 6).asInt16()
-        val farray = data.getArray(1, 2).map { it.asLittle() }.toShortArray()
+        val farray = data.getArray(1, size = 2).map { it.asLittle() }.toShortArray()
         assertEquals("1284,1798", farray.joinToString(","))
-        assertEquals("3,4", data.asInt8().getArray(1, 2).map { it.asLittle() }.toByteArray().joinToString(","))
+        assertEquals("3,4", data.asInt8().getArray(1, size = 2).map { it.asLittle() }.toByteArray().joinToString(","))
     }
 
     @Test
     fun testWrapUnsigned() {
         val data = NBuffer(byteArrayOf(0, 1, 2, 3, 4, 5, 6, 7), 2, 6).asUInt16()
-        assertEquals("1284,1798", data.getArray(1, 2).data.map { it.asLittle() }.toShortArray().joinToString(","))
-        assertEquals("3,4", data.asUInt8().getArray(1, 2).data.map { it.asLittle() }.toByteArray().joinToString(","))
+        assertEquals("1284,1798", data.getArray(1, size = 2).data.map { it.asLittle() }.toShortArray().joinToString(","))
+        assertEquals("3,4", data.asUInt8().getArray(1, size = 2).data.map { it.asLittle() }.toByteArray().joinToString(","))
     }
 
     @Test
@@ -244,9 +244,9 @@ open class NBufferTestBase {
                 expectedStr,
                 """
                 ${array.getArray().data.joinToString(",")}
-                ${array.getArray(0, array.size).data.joinToString(",")}
+                ${array.getArray(0, size = array.size).data.joinToString(",")}
                 ${array.getArray(1).data.joinToString(",")}
-                ${array.getArray(2, 3).data.joinToString(",")}
+                ${array.getArray(2, size = 3).data.joinToString(",")}
             """.trimIndent()
             )
         }
@@ -258,9 +258,9 @@ open class NBufferTestBase {
                 expectedStr,
                 """
                 ${array.getArray().data.joinToString(",")}
-                ${array.getArray(0, array.size).data.joinToString(",")}
+                ${array.getArray(0, size = array.size).data.joinToString(",")}
                 ${array.getArray(1).data.joinToString(",")}
-                ${array.getArray(2, 3).data.joinToString(",")}
+                ${array.getArray(2, size = 3).data.joinToString(",")}
             """.trimIndent()
             )
         }
@@ -272,9 +272,9 @@ open class NBufferTestBase {
                 expectedStr,
                 """
                 ${array.getArray().joinToString(",")}
-                ${array.getArray(0, array.size).joinToString(",")}
+                ${array.getArray(0, size = array.size).joinToString(",")}
                 ${array.getArray(1).joinToString(",")}
-                ${array.getArray(2, 3).joinToString(",")}
+                ${array.getArray(2, size = 3).joinToString(",")}
             """.trimIndent()
             )
         }
@@ -286,9 +286,9 @@ open class NBufferTestBase {
                 expectedStr,
                 """
                 ${array.getArray().joinToString(",")}
-                ${array.getArray(0, array.size).joinToString(",")}
+                ${array.getArray(0, size = array.size).joinToString(",")}
                 ${array.getArray(1).joinToString(",")}
-                ${array.getArray(2, 3).joinToString(",")}
+                ${array.getArray(2, size = 3).joinToString(",")}
             """.trimIndent()
             )
         }
@@ -300,9 +300,9 @@ open class NBufferTestBase {
                 expectedStr,
                 """
                 ${array.getArray().joinToString(",")}
-                ${array.getArray(0, array.size).joinToString(",")}
+                ${array.getArray(0, size = array.size).joinToString(",")}
                 ${array.getArray(1).joinToString(",")}
-                ${array.getArray(2, 3).joinToString(",")}
+                ${array.getArray(2, size = 3).joinToString(",")}
             """.trimIndent()
             )
         }
@@ -314,9 +314,9 @@ open class NBufferTestBase {
                 expectedStr,
                 """
                 ${array.getArray().joinToString(",")}
-                ${array.getArray(0, array.size).joinToString(",")}
+                ${array.getArray(0, size = array.size).joinToString(",")}
                 ${array.getArray(1).joinToString(",")}
-                ${array.getArray(2, 3).joinToString(",")}
+                ${array.getArray(2, size = 3).joinToString(",")}
             """.trimIndent()
             )
         }
@@ -328,9 +328,9 @@ open class NBufferTestBase {
                 expectedStr,
                 """
                 ${array.getArray().map { it.toInt() }.joinToString(",")}
-                ${array.getArray(0, array.size).map { it.toInt() }.joinToString(",")}
+                ${array.getArray(0, size = array.size).map { it.toInt() }.joinToString(",")}
                 ${array.getArray(1).map { it.toInt() }.joinToString(",")}
-                ${array.getArray(2, 3).map { it.toInt() }.joinToString(",")}
+                ${array.getArray(2, size = 3).map { it.toInt() }.joinToString(",")}
             """.trimIndent()
             )
         }
@@ -342,9 +342,9 @@ open class NBufferTestBase {
                 expectedStr,
                 """
                 ${array.getArray().map { it.toInt() }.joinToString(",")}
-                ${array.getArray(0, array.size).map { it.toInt() }.joinToString(",")}
+                ${array.getArray(0, size = array.size).map { it.toInt() }.joinToString(",")}
                 ${array.getArray(1).map { it.toInt() }.joinToString(",")}
-                ${array.getArray(2, 3).map { it.toInt() }.joinToString(",")}
+                ${array.getArray(2, size = 3).map { it.toInt() }.joinToString(",")}
             """.trimIndent()
             )
         }

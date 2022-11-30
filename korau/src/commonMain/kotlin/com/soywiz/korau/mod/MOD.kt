@@ -6,11 +6,7 @@ import com.soywiz.kds.IntDeque
 import com.soywiz.klock.TimeSpan
 import com.soywiz.klock.measureTime
 import com.soywiz.klock.seconds
-import com.soywiz.kmem.MemBufferWrap
-import com.soywiz.kmem.NewInt8Buffer
-import com.soywiz.kmem.Uint8Buffer
-import com.soywiz.kmem.Uint8BufferAlloc
-import com.soywiz.kmem.toUint8Buffer
+import com.soywiz.kmem.*
 import com.soywiz.korau.format.AudioDecodingProps
 import com.soywiz.korau.format.AudioFormat
 import com.soywiz.korau.sound.AudioSamples
@@ -143,13 +139,13 @@ class Protracker : BaseModuleTracker() {
     var signature: String = ""
     var songlen = 1
     var repeatpos = 0
-    var patterntable: Uint8Buffer = Uint8BufferAlloc(0)
+    var patterntable: NBufferUInt8 = NBufferUInt8(0)
     var channels: Int = 4
     var sample = emptyArray<Sample>()
     var samples: Int = 31
-    var pattern = emptyArray<Uint8Buffer>()
-    var note = emptyArray<Uint8Buffer>()
-    var pattern_unpack = emptyArray<Uint8Buffer>()
+    var pattern = emptyArray<NBufferUInt8>()
+    var note = emptyArray<NBufferUInt8>()
+    var pattern_unpack = emptyArray<NBufferUInt8>()
     var patterns: Int = 0
     var chvu: FloatArray = FloatArray(0)
     var looprow: Int = 0
@@ -165,7 +161,7 @@ class Protracker : BaseModuleTracker() {
 
         songlen = 1
         repeatpos = 0
-        patterntable = Uint8BufferAlloc(128)
+        patterntable = NBufferUInt8(128)
 
         channels = 4
 
@@ -223,7 +219,7 @@ class Protracker : BaseModuleTracker() {
     }
 
     // parse the module from local buffer
-    override fun parse(buffer: Uint8Buffer): Boolean {
+    override fun parse(buffer: NBufferUInt8): Boolean {
         signature = CharArray(4) { buffer[1080 + it].toChar() }.concatToString()
         when (signature) {
             "M.K.", "M!K!", "4CHN", "FLT4" -> Unit
@@ -269,9 +265,9 @@ class Protracker : BaseModuleTracker() {
         patterns += 1
         val patlen = 4 * 64 * channels
 
-        pattern = Array(patterns) { Uint8BufferAlloc(patlen) }
-        note = Array(patterns) { Uint8BufferAlloc(channels * 64) }
-        pattern_unpack = Array(patterns) { Uint8BufferAlloc(channels * 64 * 5) }
+        pattern = Array(patterns) { NBufferUInt8(patlen) }
+        note = Array(patterns) { NBufferUInt8(channels * 64) }
+        pattern_unpack = Array(patterns) { NBufferUInt8(channels * 64 * 5) }
         for (i in 0 until patterns) {
             for (j in 0 until patlen) pattern[i][j] = buffer[1084 + i * patlen + j]
             for (j in 0 until 64) {

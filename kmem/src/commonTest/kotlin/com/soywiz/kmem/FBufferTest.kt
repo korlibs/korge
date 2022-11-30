@@ -59,7 +59,7 @@ class FBufferTest {
 		assertEquals(listOf(4, 3, 2, 1, 4, 3, 2, 1, 8, 7, 6, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0), (0 until (10 * 4)).map { fast.i8[it].toInt() }.toList())
 
 		val out = ByteArray(10)
-		fast.getArrayInt8(1, out, 1, 5)
+		fast.getAlignedArrayInt8(1, out, 1, 5)
 
 		assertEquals(listOf(0, 3, 2, 1, 4, 3, 0, 0, 0, 0), out.toList().map { it.toInt() })
 

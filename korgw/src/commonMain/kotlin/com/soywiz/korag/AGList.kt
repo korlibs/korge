@@ -14,7 +14,7 @@ import com.soywiz.kds.IntSet
 import com.soywiz.kds.Pool
 import com.soywiz.kds.fastCastTo
 import com.soywiz.kds.lock.NonRecursiveLock
-import com.soywiz.kmem.FBuffer
+import com.soywiz.kmem.NBuffer
 import com.soywiz.kmem.extract
 import com.soywiz.kmem.extract16
 import com.soywiz.kmem.extract24
@@ -564,7 +564,7 @@ class AGList(val globalState: AGGlobalState) {
     // UNIFORMS
     ////////////////////////////////////////
 
-    fun uniformsSet(layout: UniformLayout, data: FBuffer) {
+    fun uniformsSet(layout: UniformLayout, data: NBuffer) {
         currentWrite.addExtra(layout, data)
         currentWrite.add(CMD(CMD_UNIFORMS_SET))
     }
@@ -652,7 +652,7 @@ class AGList(val globalState: AGGlobalState) {
     // @TODO: If we have a layout we can have the objects already arranged.
     // @TODO: We have to put only integers and floats here, so textures should use the textureId for example
     @KorIncomplete
-    fun uboSet(id: Int, data: FBuffer, layout: UniformLayout) {
+    fun uboSet(id: Int, data: NBuffer, layout: UniformLayout) {
         TODO()
     }
 

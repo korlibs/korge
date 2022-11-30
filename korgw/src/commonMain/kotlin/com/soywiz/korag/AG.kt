@@ -12,9 +12,7 @@ import com.soywiz.kds.hashCode
 import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.klock.measureTime
 import com.soywiz.klogger.Console
-import com.soywiz.kmem.FBuffer
-import com.soywiz.kmem.isPowerOfTwo
-import com.soywiz.kmem.nextPowerOfTwo
+import com.soywiz.kmem.*
 import com.soywiz.kmem.unit.ByteUnits
 import com.soywiz.korag.annotation.KoragExperimental
 import com.soywiz.korag.gl.fromGl
@@ -592,7 +590,7 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
 
     open inner class Buffer constructor(val list: AGList) {
         var dirty = false
-        internal var mem: FBuffer? = null
+        internal var mem: NBuffer? = null
         internal var memOffset: Int = 0
         internal var memLength: Int = 0
 
@@ -606,27 +604,27 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
             estimatedMemoryUsage = ByteUnits.fromBytes(memLength)
         }
 
-        private fun allocateMem(size: Int): FBuffer {
-            if (mem == null || mem!!.size < size) {
-                mem = FBuffer(size.nextPowerOfTwo)
+        private fun allocateMem(size: Int): NBuffer {
+            if (mem == null || mem!!.sizeInBytes < size) {
+                mem = NBuffer(size.nextPowerOfTwo)
             }
             return mem!!
             //return FBuffer(size)
         }
 
         fun upload(data: ByteArray, offset: Int = 0, length: Int = data.size): Buffer =
-            _upload(allocateMem(length).also { it.setAlignedArrayInt8(0, data, offset, length) }, 0, length)
+            _upload(allocateMem(length).also { it.setArrayInt8(0, data, offset, length) }, 0, length)
 
         fun upload(data: FloatArray, offset: Int = 0, length: Int = data.size): Buffer =
-            _upload(allocateMem(length * 4).also { it.setAlignedArrayFloat32(0, data, offset, length) }, 0, length * 4)
+            _upload(allocateMem(length * 4).also { it.setArrayFloat32(0, data, offset, length) }, 0, length * 4)
 
         fun upload(data: IntArray, offset: Int = 0, length: Int = data.size): Buffer =
-            _upload(allocateMem(length * 4).also { it.setAlignedArrayInt32(0, data, offset, length) }, 0, length * 4)
+            _upload(allocateMem(length * 4).also { it.setArrayInt32(0, data, offset, length) }, 0, length * 4)
 
         fun upload(data: ShortArray, offset: Int = 0, length: Int = data.size): Buffer =
-            _upload(allocateMem(length * 2).also { it.setAlignedArrayInt16(0, data, offset, length) }, 0, length * 2)
+            _upload(allocateMem(length * 2).also { it.setArrayInt16(0, data, offset, length) }, 0, length * 2)
 
-        fun upload(data: FBuffer, offset: Int = 0, length: Int = data.size): Buffer =
+        fun upload(data: NBuffer, offset: Int = 0, length: Int = data.size): Buffer =
             _upload(data, offset, length)
 
         private fun getLen(len: Int, dataSize: Int): Int {
@@ -646,7 +644,7 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
             }
         }
 
-        private fun _upload(data: FBuffer, offset: Int = 0, length: Int = data.size): Buffer {
+        private fun _upload(data: NBuffer, offset: Int = 0, length: Int = data.size): Buffer {
             mem = data
             memOffset = offset
             memLength = length

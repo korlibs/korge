@@ -4,12 +4,7 @@
 
 package com.soywiz.kgl
 
-import com.soywiz.kmem.FBuffer
-import com.soywiz.kmem.Float32Buffer
-import com.soywiz.kmem.get
-import com.soywiz.kmem.set
-import com.soywiz.kmem.size
-import com.soywiz.kmem.toInt
+import com.soywiz.kmem.*
 import com.soywiz.korim.bitmap.NativeImage
 import com.soywiz.korim.color.RgbaArray
 import com.soywiz.korim.format.HtmlNativeImage

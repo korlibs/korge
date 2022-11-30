@@ -40,7 +40,7 @@ public inline class UShortArrayInt(public val data: ShortArray) {
     fun fill(value: Int, fromIndex: Int = 0, toIndex: Int = size) = this.data.fill(value.toShort(), fromIndex, toIndex)
 }
 /** Creates a view of [this] reinterpreted as [Int] */
-public fun ShortArray.asUByteArrayInt(): UShortArrayInt = UShortArrayInt(this)
+public fun ShortArray.asUShortArrayInt(): UShortArrayInt = UShortArrayInt(this)
 /** Gets the underlying array of [this] */
 public fun UShortArrayInt.asShortArray(): ShortArray = this.data
 fun arraycopy(src: UShortArrayInt, srcPos: Int, dst: UShortArrayInt, dstPos: Int, size: Int) = arraycopy(src.data, srcPos, dst.data, dstPos, size)

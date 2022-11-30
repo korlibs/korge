@@ -9,6 +9,7 @@ actual class NBuffer(val dataView: DataView) {
 
     fun sliceUint8Array(offset: Int = 0, size: Int = dataView.byteLength - offset): Uint8Array =
         Uint8Array(buffer, dataView.byteOffset + offset, size)
+    override fun toString(): String = NBuffer_toString(this)
 }
 actual fun NBuffer(size: Int, direct: Boolean): NBuffer {
     checkNBufferSize(size)

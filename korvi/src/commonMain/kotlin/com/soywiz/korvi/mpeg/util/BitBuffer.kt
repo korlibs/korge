@@ -1,8 +1,7 @@
 package com.soywiz.korvi.mpeg.util
 
 import com.soywiz.kds.FastArrayList
-import com.soywiz.kmem.Uint8Buffer
-import com.soywiz.kmem.arraycopy
+import com.soywiz.kmem.*
 import com.soywiz.korvi.mpeg.byteLength
 import com.soywiz.korvi.mpeg.length
 import com.soywiz.korvi.mpeg.set
@@ -20,7 +19,7 @@ class BitBuffer(var bytes: Uint8Buffer, val mode: MODE = MODE.EXPAND) {
         val newBytes = Uint8Buffer(size)
         if (this.byteLength != 0) {
             this.byteLength = kotlin.math.min(this.byteLength, size)
-            arraycopy(this.bytes.b, 0, newBytes.b, 0, this.byteLength)
+            arraycopy(this.bytes.buffer, 0, newBytes.buffer, 0, this.byteLength)
         }
         this.bytes = newBytes
         this.index = kotlin.math.min(this.index, this.byteLength shl 3)

@@ -8,7 +8,7 @@ import kotlinx.cinterop.*
 import kotlin.reflect.*
 
 abstract class NativeBaseKmlGl : KmlGlWithExtensions() {
-    val tempBufferAddress = TempBufferAddress()
+    val tempBufferAddress = NBufferTempAddress()
 
     override fun activeTexture(texture: Int): Unit = tempBufferAddress { glActiveTextureExt(texture.convert()) }
     override fun attachShader(program: Int, shader: Int): Unit = tempBufferAddress { glAttachShaderExt(program.convert(), shader.convert()) }
@@ -425,37 +425,3 @@ fun CPointer<UByteVar>.toKString(): String = this.reinterpret<ByteVar>().toKStri
 
 fun Int.convertSize(): Long = this.toLong() // For 64-bit
 fun Float.convertFloat(): Double = this.toDouble() // For 64-bit
-
-class TempBufferAddress {
-	val pool = arrayListOf<Pinned<ByteArray>>()
-	companion object {
-		val ARRAY1 = ByteArray(1)
-	}
-	fun FBuffer.unsafeAddress(): CPointer<ByteVar> {
-		val byteArray = this.mem.data
-		val rbyteArray = if (byteArray.size > 0) byteArray else ARRAY1
-		val pin = rbyteArray.pin()
-		pool += pin
-		return pin.addressOf(0)
-	}
-
-	fun start() {
-		pool.clear()
-	}
-
-	fun dispose() {
-		// Kotlin-native: Try to avoid allocating an iterator (lists not optimized yet)
-		for (n in 0 until pool.size) pool[n].unpin()
-		//for (p in pool) p.unpin()
-		pool.clear()
-	}
-
-	inline operator fun <T> invoke(callback: TempBufferAddress.() -> T): T {
-		start()
-		try {
-			return callback()
-		} finally {
-			dispose()
-		}
-	}
-}

@@ -44,7 +44,7 @@ inline fun <T> DataBufferAlloc(size: Int, callback: (FBuffer) -> T): T {
 
 fun <T> IntArray.toTempBuffer(callback: (FBuffer) -> T): T {
 	return fbuffer(this.size) { buffer: FBuffer ->
-		val ints = buffer.arrayInt
+		val ints = buffer.i32
 		for (n in this.indices) ints[n] = this[n]
 		callback(buffer)
 	}

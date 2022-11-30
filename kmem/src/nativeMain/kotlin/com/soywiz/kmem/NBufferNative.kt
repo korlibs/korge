@@ -1,8 +1,11 @@
 package com.soywiz.kmem
 
+import kotlinx.cinterop.*
+
 actual class NBuffer(val data: ByteArray, val offset: Int, val size: Int, dummy: Unit) {
     val end: Int = offset + size
     actual companion object
+    override fun toString(): String = NBuffer_toString(this)
 }
 actual fun NBuffer(size: Int, direct: Boolean): NBuffer {
     checkNBufferSize(size)
@@ -39,3 +42,37 @@ actual fun NBuffer.setUnalignedInt32(byteOffset: Int, value: Int) { data.setIntA
 actual fun NBuffer.setUnalignedInt64(byteOffset: Int, value: Long) { data.setLongAt(offset + byteOffset, value) }
 actual fun NBuffer.setUnalignedFloat32(byteOffset: Int, value: Float) { data.setFloatAt(offset + byteOffset, value) }
 actual fun NBuffer.setUnalignedFloat64(byteOffset: Int, value: Double) { data.setDoubleAt(offset + byteOffset, value) }
+
+class NBufferTempAddress {
+    val pool = arrayListOf<Pinned<ByteArray>>()
+    companion object {
+        val ARRAY1 = ByteArray(1)
+    }
+    fun NBuffer.unsafeAddress(): CPointer<ByteVar> {
+        val byteArray = this.data
+        val rbyteArray = if (byteArray.size > 0) byteArray else ARRAY1
+        val pin = rbyteArray.pin()
+        pool += pin
+        return pin.addressOf(this.byteOffset)
+    }
+
+    fun start() {
+        pool.clear()
+    }
+
+    fun dispose() {
+        // Kotlin-native: Try to avoid allocating an iterator (lists not optimized yet)
+        for (n in 0 until pool.size) pool[n].unpin()
+        //for (p in pool) p.unpin()
+        pool.clear()
+    }
+
+    inline operator fun <T> invoke(callback: NBufferTempAddress.() -> T): T {
+        start()
+        try {
+            return callback()
+        } finally {
+            dispose()
+        }
+    }
+}

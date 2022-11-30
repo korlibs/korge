@@ -7,20 +7,29 @@ actual class NBuffer(val buffer: ByteBuffer, val offset: Int, val size: Int) {
 
     fun slicedBuffer(roffset: Int = 0, rsize: Int = this.size - roffset): ByteBuffer {
         val pos = this.offset + roffset
-        return buffer.duplicate().order(ByteOrder.nativeOrder()).positionSafe(pos).limitSafe(pos + rsize)
+        return buffer.duplicate().also {
+            it.order(ByteOrder.nativeOrder())
+            it.positionSafe(pos)
+            it.limitSafe(pos + rsize)
+        }
     }
+
+    override fun toString(): String = NBuffer_toString(this)
 }
+
 actual fun NBuffer(size: Int, direct: Boolean): NBuffer {
     checkNBufferSize(size)
     return NBuffer(
-        if (direct) ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder()) else ByteBuffer.allocate(size).order(ByteOrder.nativeOrder()),
+        if (direct) ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder()) else ByteBuffer.wrap(ByteArray(size)).order(ByteOrder.nativeOrder()),
         0, size
     )
 }
+
 actual fun NBuffer(array: ByteArray, offset: Int, size: Int): NBuffer {
     checkNBufferWrap(array, offset, size)
     return NBuffer(ByteBuffer.wrap(array, offset, size).order(ByteOrder.nativeOrder()), offset, size)
 }
+
 actual val NBuffer.byteOffset: Int get() = offset
 actual val NBuffer.sizeInBytes: Int get() = size
 actual fun NBuffer.sliceInternal(start: Int, end: Int): NBuffer = NBuffer(buffer, offset + start, end - start)
@@ -69,8 +78,6 @@ actual fun NBuffer.Companion.copy(src: NBuffer, srcPosBytes: Int, dst: NBuffer, 
 //        this.positionSafe(oldPos)
 //    }
 //}
-internal fun ByteBuffer.positionSafe(newPosition: Int): ByteBuffer { position(newPosition); return this }
-internal fun ByteBuffer.limitSafe(newLimit: Int): ByteBuffer { limit(newLimit); return this }
 
 // Unaligned versions
 
@@ -81,9 +88,69 @@ actual fun NBuffer.getUnalignedInt64(byteOffset: Int): Long = buffer.getLong(off
 actual fun NBuffer.getUnalignedFloat32(byteOffset: Int): Float = buffer.getFloat(offset + byteOffset)
 actual fun NBuffer.getUnalignedFloat64(byteOffset: Int): Double = buffer.getDouble(offset + byteOffset)
 
-actual fun NBuffer.setUnalignedInt8(byteOffset: Int, value: Byte) { buffer.put(offset + byteOffset, value) }
-actual fun NBuffer.setUnalignedInt16(byteOffset: Int, value: Short) { buffer.putShort(offset + byteOffset, value) }
-actual fun NBuffer.setUnalignedInt32(byteOffset: Int, value: Int) { buffer.putInt(offset + byteOffset, value) }
-actual fun NBuffer.setUnalignedInt64(byteOffset: Int, value: Long) { buffer.putLong(offset + byteOffset, value) }
-actual fun NBuffer.setUnalignedFloat32(byteOffset: Int, value: Float) { buffer.putFloat(offset + byteOffset, value) }
-actual fun NBuffer.setUnalignedFloat64(byteOffset: Int, value: Double) { buffer.putDouble(offset + byteOffset, value) }
+actual fun NBuffer.setUnalignedInt8(byteOffset: Int, value: Byte) {
+    buffer.put(offset + byteOffset, value)
+}
+
+actual fun NBuffer.setUnalignedInt16(byteOffset: Int, value: Short) {
+    buffer.putShort(offset + byteOffset, value)
+}
+
+actual fun NBuffer.setUnalignedInt32(byteOffset: Int, value: Int) {
+    buffer.putInt(offset + byteOffset, value)
+}
+
+actual fun NBuffer.setUnalignedInt64(byteOffset: Int, value: Long) {
+    buffer.putLong(offset + byteOffset, value)
+}
+
+actual fun NBuffer.setUnalignedFloat32(byteOffset: Int, value: Float) {
+    buffer.putFloat(offset + byteOffset, value)
+}
+
+actual fun NBuffer.setUnalignedFloat64(byteOffset: Int, value: Double) {
+    buffer.putDouble(offset + byteOffset, value)
+}
+
+@PublishedApi
+internal fun java.nio.Buffer.checkSliceBounds(offset: Int, size: Int) {
+    //val end = offset + size - 1
+    //if (offset !in 0 until this.capacity()) error("offset=$offset, size=$size not inside ${this.capacity()}")
+    //if (end !in 0 until this.capacity()) error("offset=$offset, size=$size not inside ${this.capacity()}")
+}
+
+fun Buffer.positionSafe(newPosition: Int): Buffer {
+    position(newPosition); return this
+}
+
+fun Buffer.limitSafe(newLimit: Int): Buffer {
+    limit(newLimit); return this
+}
+
+fun Buffer.flipSafe(): Buffer {
+    flip(); return this
+}
+
+fun Buffer.clearSafe(): Buffer {
+    clear(); return this
+}
+
+inline fun <T : Buffer> T._slice(offset: Int, size: Int, dup: (T) -> T): T {
+    checkSliceBounds(offset, size)
+    val out = dup(this)
+    val start = this.position() + offset
+    val end = start + size
+    out.positionSafe(start)
+    out.limitSafe(end)
+    return out
+}
+
+fun ByteBuffer.slice(offset: Int, size: Int): ByteBuffer = _slice(offset, size) { it.duplicate() }
+fun ShortBuffer.slice(offset: Int, size: Int): ShortBuffer = _slice(offset, size) { it.duplicate() }
+fun IntBuffer.slice(offset: Int, size: Int): IntBuffer = _slice(offset, size) { it.duplicate() }
+fun FloatBuffer.slice(offset: Int, size: Int): FloatBuffer = _slice(offset, size) { it.duplicate() }
+fun DoubleBuffer.slice(offset: Int, size: Int): DoubleBuffer = _slice(offset, size) { it.duplicate() }
+
+val FBuffer.nioBuffer: java.nio.ByteBuffer get() = this.slicedBuffer()
+val FBuffer.nioIntBuffer: java.nio.IntBuffer get() = this.slicedBuffer().asIntBuffer()
+val FBuffer.nioFloatBuffer: java.nio.FloatBuffer get() = this.slicedBuffer().asFloatBuffer()

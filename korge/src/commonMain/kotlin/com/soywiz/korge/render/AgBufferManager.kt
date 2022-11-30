@@ -5,7 +5,7 @@ import com.soywiz.kds.Pool
 import com.soywiz.kds.getAndRemove
 import com.soywiz.kds.getOrPut
 import com.soywiz.kds.iterators.fastForEach
-import com.soywiz.kmem.FBuffer
+import com.soywiz.kmem.*
 import com.soywiz.korag.AG
 import com.soywiz.korag.AGList
 
@@ -62,7 +62,7 @@ class AgBufferManager(
         ag.commandsNoWait { delete(buffer, it) }
     }
 
-    val empty = FBuffer(0)
+    val empty = NBuffer(0)
 
     fun delete(buffer: AgCachedBuffer, list: AGList) {
         val buf = buffers.getAndRemove(buffer)

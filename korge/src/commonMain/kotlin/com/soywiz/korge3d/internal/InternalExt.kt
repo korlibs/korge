@@ -1,7 +1,7 @@
 package com.soywiz.korge3d.internal
 
 import com.soywiz.kds.*
-import com.soywiz.kmem.FBuffer
+import com.soywiz.kmem.*
 import com.soywiz.korma.geom.Vector3D
 import kotlin.native.concurrent.ThreadLocal
 

@@ -2,8 +2,7 @@ package com.soywiz.korau.mod
 
 import com.soywiz.klock.TimeSpan
 import com.soywiz.klock.seconds
-import com.soywiz.kmem.Uint8Buffer
-import com.soywiz.kmem.toUint8Buffer
+import com.soywiz.kmem.*
 import com.soywiz.korau.format.AudioDecodingProps
 import com.soywiz.korau.format.AudioFormat
 import com.soywiz.korau.sound.AudioSamples
@@ -51,10 +50,10 @@ abstract class BaseModuleTracker {
     var endofsong = false
 
     abstract fun initialize()
-    abstract fun parse(buffer: Uint8Buffer): Boolean
+    abstract fun parse(buffer: NBufferUInt8): Boolean
     abstract fun mix(bufs: Array<FloatArray>, buflen: Int = bufs[0].size)
 
-    fun parseAndInit(buffer: Uint8Buffer) {
+    fun parseAndInit(buffer: NBufferUInt8) {
         parse(buffer)
         initialize()
         playing = true

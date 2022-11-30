@@ -1,8 +1,6 @@
 package com.soywiz.korge.render
 
-import com.soywiz.kmem.FBuffer
-import com.soywiz.kmem.get
-import com.soywiz.kmem.toIntRound
+import com.soywiz.kmem.*
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korio.util.niceStr
@@ -20,14 +18,14 @@ data class VertexInfo(
     var texHeight: Int = -1
     val xy get() = Point(x, y)
     val uv get() = Point(u, v)
-    fun read(buffer: FBuffer, n: Int) {
+    fun read(buffer: NBuffer, n: Int) {
         val index = n * 6
-        this.x = buffer.f32[index + 0]
-        this.y = buffer.f32[index + 1]
-        this.u = buffer.f32[index + 2]
-        this.v = buffer.f32[index + 3]
-        this.colorMul = RGBA(buffer.i32[index + 4])
-        this.colorAdd = buffer.i32[index + 5]
+        this.x = buffer.getFloat32(index + 0)
+        this.y = buffer.getFloat32(index + 1)
+        this.u = buffer.getFloat32(index + 2)
+        this.v = buffer.getFloat32(index + 3)
+        this.colorMul = RGBA(buffer.getInt32(index + 4))
+        this.colorAdd = buffer.getInt32(index + 5)
     }
 
     fun toStringXY() = "[${x.niceStr},${y.niceStr}]"

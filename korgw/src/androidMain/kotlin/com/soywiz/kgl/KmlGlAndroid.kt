@@ -4,12 +4,12 @@
 
 package com.soywiz.kgl
 
-import android.opengl.GLES20.*
 import android.opengl.GLES30.*
+import android.os.*
 import com.soywiz.kmem.*
 import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.format.AndroidNativeImage
-import java.nio.ByteBuffer
+import com.soywiz.korim.format.*
+import java.nio.*
 
 class KmlGlAndroid(val clientVersion: () -> Int) : KmlGlWithExtensions() {
     override val gles: Boolean = true
@@ -70,8 +70,8 @@ class KmlGlAndroid(val clientVersion: () -> Int) : KmlGlWithExtensions() {
     override fun genFramebuffers(n: Int, framebuffers: FBuffer): Unit = glGenFramebuffers(n, framebuffers.nioIntBuffer)
     override fun genRenderbuffers(n: Int, renderbuffers: FBuffer): Unit = glGenRenderbuffers(n, renderbuffers.nioIntBuffer)
     override fun genTextures(n: Int, textures: FBuffer): Unit = glGenTextures(n, textures.nioIntBuffer)
-    override fun getActiveAttrib(program: Int, index: Int, bufSize: Int, length: FBuffer, size: FBuffer, type: FBuffer, name: FBuffer) { val alen = IntArray(1) ; val asize = IntArray(1) ; val atype = IntArray(1) ; val aname = ByteArray(name.size); glGetActiveAttrib(program, index, bufSize, alen, 0, asize, 0, atype, 0, aname, 0); length.setInt(0, alen[0]); size.setInt(0, asize[0]); type.setInt(0, atype[0]); name.putAsciiString(aname.toString(Charsets.US_ASCII)) }
-    override fun getActiveUniform(program: Int, index: Int, bufSize: Int, length: FBuffer, size: FBuffer, type: FBuffer, name: FBuffer) { val alen = IntArray(1) ; val asize = IntArray(1) ; val atype = IntArray(1) ; val aname = ByteArray(name.size); glGetActiveUniform(program, index, bufSize, alen, 0, asize, 0, atype, 0, aname, 0); length.setInt(0, alen[0]); size.setInt(0, asize[0]); type.setInt(0, atype[0]); name.putAsciiString(aname.toString(Charsets.US_ASCII)) }
+    override fun getActiveAttrib(program: Int, index: Int, bufSize: Int, length: FBuffer, size: FBuffer, type: FBuffer, name: FBuffer) { val alen = IntArray(1) ; val asize = IntArray(1) ; val atype = IntArray(1) ; val aname = ByteArray(name.size); glGetActiveAttrib(program, index, bufSize, alen, 0, asize, 0, atype, 0, aname, 0); length.setInt32(0, alen[0]); size.setInt32(0, asize[0]); type.setInt32(0, atype[0]); name.putAsciiString(aname.toString(Charsets.US_ASCII)) }
+    override fun getActiveUniform(program: Int, index: Int, bufSize: Int, length: FBuffer, size: FBuffer, type: FBuffer, name: FBuffer) { val alen = IntArray(1) ; val asize = IntArray(1) ; val atype = IntArray(1) ; val aname = ByteArray(name.size); glGetActiveUniform(program, index, bufSize, alen, 0, asize, 0, atype, 0, aname, 0); length.setInt32(0, alen[0]); size.setInt32(0, asize[0]); type.setInt32(0, atype[0]); name.putAsciiString(aname.toString(Charsets.US_ASCII)) }
     override fun getAttachedShaders(program: Int, maxCount: Int, count: FBuffer, shaders: FBuffer): Unit = glGetAttachedShaders(program, maxCount, count.nioIntBuffer, shaders.nioIntBuffer)
     override fun getAttribLocation(program: Int, name: String): Int = glGetAttribLocation(program, name)
     override fun getUniformLocation(program: Int, name: String): Int = glGetUniformLocation(program, name)
@@ -174,7 +174,19 @@ class KmlGlAndroid(val clientVersion: () -> Int) : KmlGlWithExtensions() {
         cachedClientVersion >= 3
     }
 
-    override fun drawArraysInstanced(mode: Int, first: Int, count: Int, instancecount: Int) = glDrawArraysInstanced(mode, first, count, instancecount)
-    override fun drawElementsInstanced(mode: Int, count: Int, type: Int, indices: Int, instancecount: Int) = glDrawElementsInstanced(mode, count, type, indices, instancecount)
-    override fun vertexAttribDivisor(index: Int, divisor: Int) = glVertexAttribDivisor(index, divisor)
+    override fun drawArraysInstanced(mode: Int, first: Int, count: Int, instancecount: Int): Unit {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+            glDrawArraysInstanced(mode, first, count, instancecount)
+        }
+    }
+    override fun drawElementsInstanced(mode: Int, count: Int, type: Int, indices: Int, instancecount: Int) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+            glDrawElementsInstanced(mode, count, type, indices, instancecount)
+        }
+    }
+    override fun vertexAttribDivisor(index: Int, divisor: Int) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+            glVertexAttribDivisor(index, divisor)
+        }
+    }
 }

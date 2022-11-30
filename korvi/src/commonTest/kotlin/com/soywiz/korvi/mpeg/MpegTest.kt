@@ -1,9 +1,6 @@
 package com.soywiz.korvi.mpeg
 
-import com.soywiz.kmem.Int32Buffer
-import com.soywiz.kmem.arraycopy
-import com.soywiz.kmem.mem
-import com.soywiz.kmem.toUint8Buffer
+import com.soywiz.kmem.*
 import com.soywiz.korio.async.suspendTest
 import com.soywiz.korio.file.std.resourcesVfs
 import com.soywiz.krypto.MD5
@@ -20,7 +17,7 @@ class MpegTest {
         //player.write(data2.toUint8Buffer().subarray(0, 32 * 1024))
         for (n in 0 until 7) player.frameSimple()
         val bytes = ByteArray(player.bitmap.ints.size * 4)
-        arraycopy(Int32Buffer(player.bitmap.ints).mem, 0, bytes, 0, bytes.size)
+        arraycopy(Int32Buffer(player.bitmap.ints).mem.i8, 0, bytes, 0, bytes.size)
         assertEquals("1065ea34f461308d055b08c498f37953", MD5.digest(bytes).hex)
         //player.bitmap.showImageAndWait()
     }

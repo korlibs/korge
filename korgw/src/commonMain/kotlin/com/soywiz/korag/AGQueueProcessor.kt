@@ -1,6 +1,6 @@
 package com.soywiz.korag
 
-import com.soywiz.kmem.FBuffer
+import com.soywiz.kmem.NBuffer
 import com.soywiz.korag.shader.Program
 import com.soywiz.korag.shader.ProgramConfig
 import com.soywiz.korag.shader.UniformLayout
@@ -26,7 +26,7 @@ interface AGQueueProcessor {
     fun bufferCreate(id: Int)
     fun bufferDelete(id: Int)
     // Uniforms + UBO
-    fun uniformsSet(layout: UniformLayout, data: FBuffer)
+    fun uniformsSet(layout: UniformLayout, data: NBuffer)
     fun uboCreate(id: Int)
     fun uboDelete(id: Int)
     fun uboSet(id: Int, ubo: AG.UniformValues)

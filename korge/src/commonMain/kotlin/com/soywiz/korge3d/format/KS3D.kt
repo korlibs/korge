@@ -2,7 +2,7 @@ package com.soywiz.korge3d.format
 
 import com.soywiz.kds.IndexedTable
 import com.soywiz.kds.fastForEach
-import com.soywiz.kmem.toInt
+import com.soywiz.kmem.*
 import com.soywiz.korge3d.Korge3DExperimental
 import com.soywiz.korge3d.Library3D
 import com.soywiz.korio.file.VfsFile

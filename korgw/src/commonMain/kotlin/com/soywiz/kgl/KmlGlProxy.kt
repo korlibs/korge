@@ -5,10 +5,7 @@
 package com.soywiz.kgl
 
 import com.soywiz.klogger.Console
-import com.soywiz.kmem.FBuffer
-import com.soywiz.kmem.Int32Buffer
-import com.soywiz.kmem.get
-import com.soywiz.kmem.size
+import com.soywiz.kmem.*
 import com.soywiz.korim.bitmap.NativeImage
 import com.soywiz.korio.lang.printStackTrace
 import com.soywiz.korio.lang.quoted
@@ -27,7 +24,7 @@ open class KmlGlProxy(parent: KmlGl) : KmlGlFastProxy(parent) {
         val bufferIsInt = name.startsWith("gen") || name.startsWith("delete") || name == "getShaderiv" || name == "getProgramiv"
         return params.joinToString(", ") {
             when {
-                bufferIsInt && it is FBuffer -> it.arrayInt.toRealString(it.size / 4)
+                bufferIsInt && it is FBuffer -> it.i32.toRealString(it.size / 4)
                 it is String -> if (it.contains("\n")) "\"\"\"$it\"\"\"" else it.quoted
                 else -> "$it"
             }

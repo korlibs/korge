@@ -145,7 +145,7 @@ open class KmlGlDummyBase : KmlGl() {
     override fun getProgramiv(program: Int, pname: Int, params: FBuffer): Unit = Unit
     override fun getShaderiv(shader: Int, pname: Int, params: FBuffer) {
         when (pname) {
-            COMPILE_STATUS -> params.i32[0] = GTRUE
+            COMPILE_STATUS -> params.asInt32()[0] = GTRUE
         }
     }
     override fun getShaderInfoLog(shader: Int, bufSize: Int, length: FBuffer, infoLog: FBuffer): Unit = Unit

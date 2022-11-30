@@ -1,12 +1,6 @@
 package com.soywiz.korge.render
 
-import com.soywiz.kmem.FBuffer
-import com.soywiz.kmem.Fast32Buffer
-import com.soywiz.kmem.arraycopy
-import com.soywiz.kmem.getF
-import com.soywiz.kmem.getI
-import com.soywiz.kmem.setF
-import com.soywiz.kmem.setI
+import com.soywiz.kmem.*
 import com.soywiz.korge.internal.KorgeInternal
 import com.soywiz.korim.bitmap.BmpCoords
 import com.soywiz.korim.bitmap.BmpSlice
@@ -49,7 +43,7 @@ class TexturedVertexArray(vcount: Int, val indices: ShortArray, icount: Int = in
         }
     //internal val data = IntArray(TEXTURED_ARRAY_COMPONENTS_PER_VERTEX * vcount)
     //internal val _data = FBuffer(TEXTURED_ARRAY_COMPONENTS_PER_VERTEX * initialVcount * 4, direct = false)
-    @PublishedApi internal val _data = FBuffer.allocNoDirect(TEXTURED_ARRAY_COMPONENTS_PER_VERTEX * initialVcount * 4)
+    @PublishedApi internal val _data: NBuffer = FBuffer.allocNoDirect(TEXTURED_ARRAY_COMPONENTS_PER_VERTEX * initialVcount * 4)
     @PublishedApi internal val fast = _data.fast32
     //private val f32 = _data.f32
     //private val i32 = _data.i32
@@ -289,7 +283,7 @@ class TexturedVertexArray(vcount: Int, val indices: ShortArray, icount: Int = in
     }
 
     fun copyFrom(other: TexturedVertexArray) {
-        arraycopy(other._data.arrayInt, 0, this._data.arrayInt, 0, this._data.size / 4)
+        arraycopy(other._data.i32, 0, this._data.i32, 0, this._data.size / 4)
         arraycopy(other.indices, 0, this.indices, 0, this.indices.size)
     }
 

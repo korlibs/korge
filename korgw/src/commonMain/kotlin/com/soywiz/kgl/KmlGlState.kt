@@ -1,7 +1,6 @@
 package com.soywiz.kgl
 
-import com.soywiz.kmem.FBuffer
-import com.soywiz.kmem.get
+import com.soywiz.kmem.*
 
 class KmlGlState(val gl: KmlGl) {
     val enabledList = listOf(
@@ -10,28 +9,28 @@ class KmlGlState(val gl: KmlGl) {
         gl.SCISSOR_TEST, gl.STENCIL_TEST,
     )
     val enabledArray = BooleanArray(enabledList.size)
-    val scissor = FBuffer(4 * 4)
-    val viewport = FBuffer(4 * 4)
-    val clearColor = FBuffer(4 * 4)
-    val clearDepth = FBuffer(4)
-    val clearStencil = FBuffer(4)
-    val stencilFrontWriteMask = FBuffer(4)
-    val stencilBackWriteMask = FBuffer(4)
-    val activeTexture = FBuffer(4)
-    val currentProgram = FBuffer(4)
+    val scissor = FBuffer.alloc(4 * 4)
+    val viewport = FBuffer.alloc(4 * 4)
+    val clearColor = FBuffer.alloc(4 * 4)
+    val clearDepth = FBuffer.alloc(4)
+    val clearStencil = FBuffer.alloc(4)
+    val stencilFrontWriteMask = FBuffer.alloc(4)
+    val stencilBackWriteMask = FBuffer.alloc(4)
+    val activeTexture = FBuffer.alloc(4)
+    val currentProgram = FBuffer.alloc(4)
 
     val MAX_ATTRIB by lazy { gl.getIntegerv(gl.MAX_VERTEX_ATTRIBS) }
     val vertexAttribEnabled by lazy { BooleanArray(MAX_ATTRIB) }
-    val vertexAttribSize by lazy { Array(MAX_ATTRIB) { FBuffer(8) } }
-    val vertexAttribType by lazy { Array(MAX_ATTRIB) { FBuffer(8) } }
-    val vertexAttribNormal by lazy { Array(MAX_ATTRIB) { FBuffer(8) } }
-    val vertexAttribStride by lazy { Array(MAX_ATTRIB) { FBuffer(8) } }
-    val vertexAttribPointer by lazy { Array(MAX_ATTRIB) { FBuffer(8) } }
+    val vertexAttribSize by lazy { Array(MAX_ATTRIB) { FBuffer.alloc(8) } }
+    val vertexAttribType by lazy { Array(MAX_ATTRIB) { FBuffer.alloc(8) } }
+    val vertexAttribNormal by lazy { Array(MAX_ATTRIB) { FBuffer.alloc(8) } }
+    val vertexAttribStride by lazy { Array(MAX_ATTRIB) { FBuffer.alloc(8) } }
+    val vertexAttribPointer by lazy { Array(MAX_ATTRIB) { FBuffer.alloc(8) } }
 
     val MAX_TEX_UNITS by lazy { gl.getIntegerv(gl.MAX_TEXTURE_IMAGE_UNITS) }
-    val textureBinding2DList by lazy { Array(MAX_TEX_UNITS) { FBuffer(8) } }
+    val textureBinding2DList by lazy { Array(MAX_TEX_UNITS) { FBuffer.alloc(8) } }
 
-    private val temp = FBuffer(64)
+    private val temp = FBuffer.alloc(64)
     private var arrayBufferBinding: Int = 0
     private var elementArrayBufferBinding: Int = 0
 
