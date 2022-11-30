@@ -13,7 +13,7 @@ inline class Particle(val index: Int) {
 }
 
 open class ParticleContainer(val max: Int) {
-    val data = FBuffer.allocDirect(max * PARTICLE_STRIDE * Float.SIZE_BYTES)
+    val data = NBuffer.allocDirect(max * PARTICLE_STRIDE * Float.SIZE_BYTES)
     val f32 = data.f32
 
     var Particle.rotation: Angle get() = rotationRadians.radians; set(value) { rotationRadians = value.radians.toFloat() }

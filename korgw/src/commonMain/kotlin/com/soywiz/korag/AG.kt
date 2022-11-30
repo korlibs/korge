@@ -609,7 +609,7 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
                 mem = NBuffer(size.nextPowerOfTwo)
             }
             return mem!!
-            //return FBuffer(size)
+            //return NBuffer(size)
         }
 
         fun upload(data: ByteArray, offset: Int = 0, length: Int = data.size): Buffer =
@@ -637,7 +637,7 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
                 is ShortArray -> upload(data, offset, getLen(length, data.size))
                 is IntArray -> upload(data, offset, getLen(length, data.size))
                 is FloatArray -> upload(data, offset, getLen(length, data.size))
-                is FBuffer -> upload(data, offset, getLen(length, data.size))
+                is NBuffer -> upload(data, offset, getLen(length, data.size))
                 is IntArrayList -> upload(data.data, offset, getLen(length, data.size))
                 is FloatArrayList -> upload(data.data, offset, getLen(length, data.size))
                 else -> TODO()
@@ -723,7 +723,7 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
             upload(data, offset, length)
         }
 
-    fun createIndexBuffer(data: FBuffer, offset: Int = 0, length: Int = data.size - offset) =
+    fun createIndexBuffer(data: NBuffer, offset: Int = 0, length: Int = data.size - offset) =
         createIndexBuffer().apply {
             upload(data, offset, length)
         }
@@ -733,7 +733,7 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
             upload(data, offset, length)
         }
 
-    fun createVertexBuffer(data: FBuffer, offset: Int = 0, length: Int = data.size - offset) =
+    fun createVertexBuffer(data: NBuffer, offset: Int = 0, length: Int = data.size - offset) =
         createVertexBuffer().apply {
             upload(data, offset, length)
         }
@@ -1005,7 +1005,7 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
                 list.uniformsSet(uniforms) {
                     list.setState(blending, stencil, colorMask, renderState)
 
-                    //val viewport = FBuffer(4 * 4)
+                    //val viewport = NBuffer(4 * 4)
                     //gl.getIntegerv(KmlGl.VIEWPORT, viewport)
                     //println("viewport=${viewport.getAlignedInt32(0)},${viewport.getAlignedInt32(1)},${viewport.getAlignedInt32(2)},${viewport.getAlignedInt32(3)}")
 

@@ -9,28 +9,28 @@ class KmlGlState(val gl: KmlGl) {
         gl.SCISSOR_TEST, gl.STENCIL_TEST,
     )
     val enabledArray = BooleanArray(enabledList.size)
-    val scissor = FBuffer.allocDirect(4 * 4)
-    val viewport = FBuffer.allocDirect(4 * 4)
-    val clearColor = FBuffer.allocDirect(4 * 4)
-    val clearDepth = FBuffer.allocDirect(4)
-    val clearStencil = FBuffer.allocDirect(4)
-    val stencilFrontWriteMask = FBuffer.allocDirect(4)
-    val stencilBackWriteMask = FBuffer.allocDirect(4)
-    val activeTexture = FBuffer.allocDirect(4)
-    val currentProgram = FBuffer.allocDirect(4)
+    val scissor = NBuffer.allocDirect(4 * 4)
+    val viewport = NBuffer.allocDirect(4 * 4)
+    val clearColor = NBuffer.allocDirect(4 * 4)
+    val clearDepth = NBuffer.allocDirect(4)
+    val clearStencil = NBuffer.allocDirect(4)
+    val stencilFrontWriteMask = NBuffer.allocDirect(4)
+    val stencilBackWriteMask = NBuffer.allocDirect(4)
+    val activeTexture = NBuffer.allocDirect(4)
+    val currentProgram = NBuffer.allocDirect(4)
 
     val MAX_ATTRIB by lazy { gl.getIntegerv(gl.MAX_VERTEX_ATTRIBS) }
     val vertexAttribEnabled by lazy { BooleanArray(MAX_ATTRIB) }
-    val vertexAttribSize by lazy { Array(MAX_ATTRIB) { FBuffer.allocDirect(8) } }
-    val vertexAttribType by lazy { Array(MAX_ATTRIB) { FBuffer.allocDirect(8) } }
-    val vertexAttribNormal by lazy { Array(MAX_ATTRIB) { FBuffer.allocDirect(8) } }
-    val vertexAttribStride by lazy { Array(MAX_ATTRIB) { FBuffer.allocDirect(8) } }
-    val vertexAttribPointer by lazy { Array(MAX_ATTRIB) { FBuffer.allocDirect(8) } }
+    val vertexAttribSize by lazy { Array(MAX_ATTRIB) { NBuffer.allocDirect(8) } }
+    val vertexAttribType by lazy { Array(MAX_ATTRIB) { NBuffer.allocDirect(8) } }
+    val vertexAttribNormal by lazy { Array(MAX_ATTRIB) { NBuffer.allocDirect(8) } }
+    val vertexAttribStride by lazy { Array(MAX_ATTRIB) { NBuffer.allocDirect(8) } }
+    val vertexAttribPointer by lazy { Array(MAX_ATTRIB) { NBuffer.allocDirect(8) } }
 
     val MAX_TEX_UNITS by lazy { gl.getIntegerv(gl.MAX_TEXTURE_IMAGE_UNITS) }
-    val textureBinding2DList by lazy { Array(MAX_TEX_UNITS) { FBuffer.allocDirect(8) } }
+    val textureBinding2DList by lazy { Array(MAX_TEX_UNITS) { NBuffer.allocDirect(8) } }
 
-    private val temp = FBuffer.allocDirect(64)
+    private val temp = NBuffer.allocDirect(64)
     private var arrayBufferBinding: Int = 0
     private var elementArrayBufferBinding: Int = 0
 

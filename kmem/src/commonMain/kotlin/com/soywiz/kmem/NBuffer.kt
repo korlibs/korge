@@ -6,7 +6,7 @@ expect class NBuffer {
     companion object
 }
 val NBuffer.size: Int get() = sizeInBytes
-internal fun NBuffer_toString(buffer: NBuffer): String = "FBuffer(size=${buffer.size})"
+internal fun NBuffer_toString(buffer: NBuffer): String = "NBuffer(size=${buffer.size})"
 internal fun checkNBufferSize(size: Int) {
     if (size < 0) throw IllegalArgumentException("invalid size $size")
 }
@@ -328,8 +328,6 @@ fun NBufferTyped.asFloat32(): NBufferFloat32 = this.buffer.f32
 fun NBufferTyped.asFloat64(): NBufferFloat64 = this.buffer.f64
 fun NBufferTyped.asFast32(): NBufferFast32 = this.buffer.fast32
 
-// @TODO: Compatibility layer with FBuffer, MemBuffer & DataBuffer
-
 @Deprecated("", ReplaceWith("", "com.soywiz.kmem.NBufferUInt8")) typealias Uint8Buffer = NBufferUInt8
 @Deprecated("") typealias Int8Buffer = NBufferInt8
 @Deprecated("") typealias Int16Buffer = NBufferInt16
@@ -339,7 +337,6 @@ fun NBufferTyped.asFast32(): NBufferFast32 = this.buffer.fast32
 @Deprecated("") typealias Uint8ClampedBuffer = NBufferClampedUInt8
 @Deprecated("") typealias Uint32Buffer = NBufferUInt32
 
-@Deprecated("") typealias FBuffer = NBuffer
 fun NBuffer.Companion.allocDirect(size: Int): NBuffer = NBuffer(size, direct = true)
 fun NBuffer.Companion.allocNoDirect(size: Int): NBuffer = NBuffer(size, direct = false)
 
@@ -347,7 +344,7 @@ fun NBuffer.Companion.allocNoDirect(size: Int): NBuffer = NBuffer(size, direct =
 @Deprecated("") operator fun NBuffer.set(index: Int, value: Byte) = setInt8(index, value)
 @Deprecated("") operator fun NBuffer.set(index: Int, value: Int) = setUInt8(index, value)
 
-inline fun <T> NBufferTemp(size: Int, callback: (FBuffer) -> T): T = NBuffer(size).run(callback)
+inline fun <T> NBufferTemp(size: Int, callback: (NBuffer) -> T): T = NBuffer(size).run(callback)
 
 fun ByteArray.toNBufferUInt8(): NBufferUInt8 = NBuffer(this).u8
 

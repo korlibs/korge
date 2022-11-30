@@ -25,7 +25,7 @@ class MainBunnymark : Scene() {
     val ResourcesContainer.korge_png by resourceBitmap("korge.png")
 
     class BunnyContainer(maxSize: Int) : FSprites(maxSize) {
-        val speeds = FBuffer.allocDirect(maxSize * Float.SIZE_BYTES * 2).f32
+        val speeds = NBuffer.allocDirect(maxSize * Float.SIZE_BYTES * 2).f32
         var FSprite.speedXf: Float get() = speeds[index * 2 + 0] ; set(value) { speeds[index * 2 + 0] = value }
         var FSprite.speedYf: Float get() = speeds[index * 2 + 1] ; set(value) { speeds[index * 2 + 1] = value }
         //var FSprite.tex: BmpSlice

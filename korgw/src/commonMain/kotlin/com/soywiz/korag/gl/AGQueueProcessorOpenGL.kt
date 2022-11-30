@@ -687,7 +687,7 @@ class AGQueueProcessorOpenGL(
         //println("BIND:" + gl.getError())
         gl.copyTexImage2D(KmlGl.TEXTURE_2D, 0, KmlGl.RGBA, x, y, width, height, 0)
 
-        //val data = FBuffer.alloc(800 * 800 * 4)
+        //val data = NBuffer.alloc(800 * 800 * 4)
         //for (n in 0 until 800 * 800) data.setInt(n, Colors.RED.value)
         //gl.texImage2D(KmlGl.TEXTURE_2D, 0, KmlGl.RGBA, 800, 800, 0, KmlGl.RGBA, KmlGl.UNSIGNED_BYTE, data)
         //println("COPY_TEX:" + gl.getError())

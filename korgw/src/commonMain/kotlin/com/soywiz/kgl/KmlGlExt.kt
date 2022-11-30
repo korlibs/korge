@@ -9,23 +9,23 @@ import kotlin.native.concurrent.ThreadLocal
 class KmlGlException(message: String) : RuntimeException(message)
 
 @ThreadLocal
-private val tempFBufferByte = NBuffer(1, direct = true)
+private val tempNBufferByte = NBuffer(1, direct = true)
 @ThreadLocal
-private val tempFBuffer1 = NBuffer(4, direct = true)
+private val tempNBuffer1 = NBuffer(4, direct = true)
 @ThreadLocal
-private val tempFBuffer4 = NBuffer(4 * 4, direct = true)
+private val tempNBuffer4 = NBuffer(4 * 4, direct = true)
 
-private inline fun tempByte1Buffer(value: Int = 0, block: (FBuffer) -> Unit): Int = tempFBufferByte.let {
+private inline fun tempByte1Buffer(value: Int = 0, block: (NBuffer) -> Unit): Int = tempNBufferByte.let {
     it.setInt8(0, value.toByte())
     block(it)
     it.getUInt8(0)
 }
-private inline fun tempInt1Buffer(value: Int = 0, block: (FBuffer) -> Unit): Int = tempFBuffer1.let {
+private inline fun tempInt1Buffer(value: Int = 0, block: (NBuffer) -> Unit): Int = tempNBuffer1.let {
     it.setInt32(0, value)
     block(it)
     it.getInt32(0)
 }
-private inline fun tempFloat1Buffer(value: Float = 0f, block: (FBuffer) -> Unit): Float = tempFBuffer1.let {
+private inline fun tempFloat1Buffer(value: Float = 0f, block: (NBuffer) -> Unit): Float = tempNBuffer1.let {
     it.setFloat32(0, value)
     block(it)
     it.getFloat32(0)
@@ -38,7 +38,7 @@ fun KmlGl.getBooleanv(pname: Int): Boolean = tempByte1Buffer { getBooleanv(pname
 fun KmlGl.getFloatv(pname: Int): Float = tempFloat1Buffer { getFloatv(pname, it) }
 fun KmlGl.getIntegerv(pname: Int): Int = tempInt1Buffer { getIntegerv(pname, it) }
 fun KmlGl.getVertexAttribiv(index: Int, pname: Int): Int = tempInt1Buffer { getVertexAttribiv(index, pname, it) }
-fun KmlGl.getRectanglev(pname: Int, out: Rectangle = Rectangle()): Rectangle = tempFBuffer4.let {
+fun KmlGl.getRectanglev(pname: Int, out: Rectangle = Rectangle()): Rectangle = tempNBuffer4.let {
     it.setFloat32(0, 0f)
     it.setFloat32(1, 0f)
     it.setFloat32(2, 0f)
@@ -60,7 +60,7 @@ fun KmlGl.deleteFramebuffer(id: Int) { tempInt1Buffer(id) { deleteFramebuffers(1
 private inline fun KmlGl.getInfoLog(
 	obj: Int,
 	getiv: (Int, Int) -> Int,
-	getInfoLog: (Int, Int, FBuffer, FBuffer) -> Unit
+	getInfoLog: (Int, Int, NBuffer, NBuffer) -> Unit
 ): String {
 	val size = getiv(obj, INFO_LOG_LENGTH)
 	return NBufferTemp(4 * 1) { sizev ->

@@ -358,7 +358,7 @@ open class LogBaseAG(
 
         override fun bufferCreate(id: Int) = log("bufferCreate: $id", Kind.BUFFER)
         override fun bufferDelete(id: Int) = log("bufferDelete: $id", Kind.BUFFER)
-        override fun uniformsSet(layout: UniformLayout, data: FBuffer) = log("uniformsSet: $layout", Kind.UNIFORM)
+        override fun uniformsSet(layout: UniformLayout, data: NBuffer) = log("uniformsSet: $layout", Kind.UNIFORM)
         override fun uboCreate(id: Int) = log("uboCreate: $id", Kind.UNIFORM)
         override fun uboDelete(id: Int) = log("uboDelete: $id", Kind.UNIFORM)
         override fun uboSet(id: Int, ubo: UniformValues) {

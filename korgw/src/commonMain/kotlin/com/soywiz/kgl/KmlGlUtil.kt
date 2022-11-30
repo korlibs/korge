@@ -149,7 +149,7 @@ class KmlGlBuffer(val gl: KmlGl, val type: Int, val buf: Int) {
 		}
 	}
 
-	fun setData(data: FBuffer, size: Int = data.size): KmlGlBuffer {
+	fun setData(data: NBuffer, size: Int = data.size): KmlGlBuffer {
 		bind()
 		gl.bufferData(type, size, data, gl.STATIC_DRAW)
 		return this
@@ -226,7 +226,7 @@ class KmlGlTex(val gl: KmlGl, val tex: Int) {
 	fun upload(
 		width: Int,
 		height: Int,
-		data: FBuffer,
+		data: NBuffer,
 		format: Int = gl.RGBA,
 		type: Int = gl.UNSIGNED_BYTE
 	): KmlGlTex {

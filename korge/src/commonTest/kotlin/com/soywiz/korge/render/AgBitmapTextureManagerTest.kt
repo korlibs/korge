@@ -136,7 +136,7 @@ class AgBitmapTextureManagerTest {
                 texParameteri(36197, 10240, 9729)
                 activeTexture(33985)
                 bindTexture(3553, 6001)
-                texImage2D(3553, 0, 6408, 1, 1, 0, 6408, 5121, FBuffer(size=4))
+                texImage2D(3553, 0, 6408, 1, 1, 0, 6408, 5121, NBuffer(size=4))
                 texParameteri(3553, 10242, 33071)
                 texParameteri(3553, 10243, 33071)
                 texParameteri(3553, 10241, 9729)

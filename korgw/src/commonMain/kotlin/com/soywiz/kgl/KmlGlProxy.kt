@@ -24,7 +24,7 @@ open class KmlGlProxy(parent: KmlGl) : KmlGlFastProxy(parent) {
         val bufferIsInt = name.startsWith("gen") || name.startsWith("delete") || name == "getShaderiv" || name == "getProgramiv"
         return params.joinToString(", ") {
             when {
-                bufferIsInt && it is FBuffer -> it.i32.toRealString(it.size / 4)
+                bufferIsInt && it is NBuffer -> it.i32.toRealString(it.size / 4)
                 it is String -> if (it.contains("\n")) "\"\"\"$it\"\"\"" else it.quoted
                 else -> "$it"
             }
@@ -117,14 +117,14 @@ open class KmlGlProxy(parent: KmlGl) : KmlGlFastProxy(parent) {
 		after("blendFuncSeparate", sparams, res)
 		return res
 	}
-	override fun bufferData(target: Int, size: Int, data: FBuffer, usage: Int) {
+	override fun bufferData(target: Int, size: Int, data: NBuffer, usage: Int) {
 		val sparams = listOf<Any?>(target, size, data, usage)
 		before("bufferData", sparams)
 		val res = parent.bufferData(target, size, data, usage)
 		after("bufferData", sparams, res)
 		return res
 	}
-	override fun bufferSubData(target: Int, offset: Int, size: Int, data: FBuffer) {
+	override fun bufferSubData(target: Int, offset: Int, size: Int, data: NBuffer) {
 		val sparams = listOf<Any?>(target, offset, size, data)
 		before("bufferSubData", sparams)
 		val res = parent.bufferSubData(target, offset, size, data)
@@ -180,14 +180,14 @@ open class KmlGlProxy(parent: KmlGl) : KmlGlFastProxy(parent) {
 		after("compileShader", sparams, res)
 		return res
 	}
-	override fun compressedTexImage2D(target: Int, level: Int, internalformat: Int, width: Int, height: Int, border: Int, imageSize: Int, data: FBuffer) {
+	override fun compressedTexImage2D(target: Int, level: Int, internalformat: Int, width: Int, height: Int, border: Int, imageSize: Int, data: NBuffer) {
 		val sparams = listOf<Any?>(target, level, internalformat, width, height, border, imageSize, data)
 		before("compressedTexImage2D", sparams)
 		val res = parent.compressedTexImage2D(target, level, internalformat, width, height, border, imageSize, data)
 		after("compressedTexImage2D", sparams, res)
 		return res
 	}
-	override fun compressedTexSubImage2D(target: Int, level: Int, xoffset: Int, yoffset: Int, width: Int, height: Int, format: Int, imageSize: Int, data: FBuffer) {
+	override fun compressedTexSubImage2D(target: Int, level: Int, xoffset: Int, yoffset: Int, width: Int, height: Int, format: Int, imageSize: Int, data: NBuffer) {
 		val sparams = listOf<Any?>(target, level, xoffset, yoffset, width, height, format, imageSize, data)
 		before("compressedTexSubImage2D", sparams)
 		val res = parent.compressedTexSubImage2D(target, level, xoffset, yoffset, width, height, format, imageSize, data)
@@ -229,14 +229,14 @@ open class KmlGlProxy(parent: KmlGl) : KmlGlFastProxy(parent) {
 		after("cullFace", sparams, res)
 		return res
 	}
-	override fun deleteBuffers(n: Int, items: FBuffer) {
+	override fun deleteBuffers(n: Int, items: NBuffer) {
 		val sparams = listOf<Any?>(n, items)
 		before("deleteBuffers", sparams)
 		val res = parent.deleteBuffers(n, items)
 		after("deleteBuffers", sparams, res)
 		return res
 	}
-	override fun deleteFramebuffers(n: Int, items: FBuffer) {
+	override fun deleteFramebuffers(n: Int, items: NBuffer) {
 		val sparams = listOf<Any?>(n, items)
 		before("deleteFramebuffers", sparams)
 		val res = parent.deleteFramebuffers(n, items)
@@ -250,7 +250,7 @@ open class KmlGlProxy(parent: KmlGl) : KmlGlFastProxy(parent) {
 		after("deleteProgram", sparams, res)
 		return res
 	}
-	override fun deleteRenderbuffers(n: Int, items: FBuffer) {
+	override fun deleteRenderbuffers(n: Int, items: NBuffer) {
 		val sparams = listOf<Any?>(n, items)
 		before("deleteRenderbuffers", sparams)
 		val res = parent.deleteRenderbuffers(n, items)
@@ -264,7 +264,7 @@ open class KmlGlProxy(parent: KmlGl) : KmlGlFastProxy(parent) {
 		after("deleteShader", sparams, res)
 		return res
 	}
-	override fun deleteTextures(n: Int, items: FBuffer) {
+	override fun deleteTextures(n: Int, items: NBuffer) {
 		val sparams = listOf<Any?>(n, items)
 		before("deleteTextures", sparams)
 		val res = parent.deleteTextures(n, items)
@@ -376,7 +376,7 @@ open class KmlGlProxy(parent: KmlGl) : KmlGlFastProxy(parent) {
 		after("frontFace", sparams, res)
 		return res
 	}
-	override fun genBuffers(n: Int, buffers: FBuffer) {
+	override fun genBuffers(n: Int, buffers: NBuffer) {
 		val sparams = listOf<Any?>(n, buffers)
 		before("genBuffers", sparams)
 		val res = parent.genBuffers(n, buffers)
@@ -390,42 +390,42 @@ open class KmlGlProxy(parent: KmlGl) : KmlGlFastProxy(parent) {
 		after("generateMipmap", sparams, res)
 		return res
 	}
-	override fun genFramebuffers(n: Int, framebuffers: FBuffer) {
+	override fun genFramebuffers(n: Int, framebuffers: NBuffer) {
 		val sparams = listOf<Any?>(n, framebuffers)
 		before("genFramebuffers", sparams)
 		val res = parent.genFramebuffers(n, framebuffers)
 		after("genFramebuffers", sparams, res)
 		return res
 	}
-	override fun genRenderbuffers(n: Int, renderbuffers: FBuffer) {
+	override fun genRenderbuffers(n: Int, renderbuffers: NBuffer) {
 		val sparams = listOf<Any?>(n, renderbuffers)
 		before("genRenderbuffers", sparams)
 		val res = parent.genRenderbuffers(n, renderbuffers)
 		after("genRenderbuffers", sparams, res)
 		return res
 	}
-	override fun genTextures(n: Int, textures: FBuffer) {
+	override fun genTextures(n: Int, textures: NBuffer) {
 		val sparams = listOf<Any?>(n, textures)
 		before("genTextures", sparams)
 		val res = parent.genTextures(n, textures)
 		after("genTextures", sparams, res)
 		return res
 	}
-	override fun getActiveAttrib(program: Int, index: Int, bufSize: Int, length: FBuffer, size: FBuffer, type: FBuffer, name: FBuffer) {
+	override fun getActiveAttrib(program: Int, index: Int, bufSize: Int, length: NBuffer, size: NBuffer, type: NBuffer, name: NBuffer) {
 		val sparams = listOf<Any?>(program, index, bufSize, length, size, type, name)
 		before("getActiveAttrib", sparams)
 		val res = parent.getActiveAttrib(program, index, bufSize, length, size, type, name)
 		after("getActiveAttrib", sparams, res)
 		return res
 	}
-	override fun getActiveUniform(program: Int, index: Int, bufSize: Int, length: FBuffer, size: FBuffer, type: FBuffer, name: FBuffer) {
+	override fun getActiveUniform(program: Int, index: Int, bufSize: Int, length: NBuffer, size: NBuffer, type: NBuffer, name: NBuffer) {
 		val sparams = listOf<Any?>(program, index, bufSize, length, size, type, name)
 		before("getActiveUniform", sparams)
 		val res = parent.getActiveUniform(program, index, bufSize, length, size, type, name)
 		after("getActiveUniform", sparams, res)
 		return res
 	}
-	override fun getAttachedShaders(program: Int, maxCount: Int, count: FBuffer, shaders: FBuffer) {
+	override fun getAttachedShaders(program: Int, maxCount: Int, count: NBuffer, shaders: NBuffer) {
 		val sparams = listOf<Any?>(program, maxCount, count, shaders)
 		before("getAttachedShaders", sparams)
 		val res = parent.getAttachedShaders(program, maxCount, count, shaders)
@@ -446,14 +446,14 @@ open class KmlGlProxy(parent: KmlGl) : KmlGlFastProxy(parent) {
 		after("getUniformLocation", sparams, res)
 		return res
 	}
-	override fun getBooleanv(pname: Int, data: FBuffer) {
+	override fun getBooleanv(pname: Int, data: NBuffer) {
 		val sparams = listOf<Any?>(pname, data)
 		before("getBooleanv", sparams)
 		val res = parent.getBooleanv(pname, data)
 		after("getBooleanv", sparams, res)
 		return res
 	}
-	override fun getBufferParameteriv(target: Int, pname: Int, params: FBuffer) {
+	override fun getBufferParameteriv(target: Int, pname: Int, params: NBuffer) {
 		val sparams = listOf<Any?>(target, pname, params)
 		before("getBufferParameteriv", sparams)
 		val res = parent.getBufferParameteriv(target, pname, params)
@@ -467,70 +467,70 @@ open class KmlGlProxy(parent: KmlGl) : KmlGlFastProxy(parent) {
 		after("getError", sparams, res)
 		return res
 	}
-	override fun getFloatv(pname: Int, data: FBuffer) {
+	override fun getFloatv(pname: Int, data: NBuffer) {
 		val sparams = listOf<Any?>(pname, data)
 		before("getFloatv", sparams)
 		val res = parent.getFloatv(pname, data)
 		after("getFloatv", sparams, res)
 		return res
 	}
-	override fun getFramebufferAttachmentParameteriv(target: Int, attachment: Int, pname: Int, params: FBuffer) {
+	override fun getFramebufferAttachmentParameteriv(target: Int, attachment: Int, pname: Int, params: NBuffer) {
 		val sparams = listOf<Any?>(target, attachment, pname, params)
 		before("getFramebufferAttachmentParameteriv", sparams)
 		val res = parent.getFramebufferAttachmentParameteriv(target, attachment, pname, params)
 		after("getFramebufferAttachmentParameteriv", sparams, res)
 		return res
 	}
-	override fun getIntegerv(pname: Int, data: FBuffer) {
+	override fun getIntegerv(pname: Int, data: NBuffer) {
 		val sparams = listOf<Any?>(pname, data)
 		before("getIntegerv", sparams)
 		val res = parent.getIntegerv(pname, data)
 		after("getIntegerv", sparams, res)
 		return res
 	}
-	override fun getProgramInfoLog(program: Int, bufSize: Int, length: FBuffer, infoLog: FBuffer) {
+	override fun getProgramInfoLog(program: Int, bufSize: Int, length: NBuffer, infoLog: NBuffer) {
 		val sparams = listOf<Any?>(program, bufSize, length, infoLog)
 		before("getProgramInfoLog", sparams)
 		val res = parent.getProgramInfoLog(program, bufSize, length, infoLog)
 		after("getProgramInfoLog", sparams, res)
 		return res
 	}
-	override fun getRenderbufferParameteriv(target: Int, pname: Int, params: FBuffer) {
+	override fun getRenderbufferParameteriv(target: Int, pname: Int, params: NBuffer) {
 		val sparams = listOf<Any?>(target, pname, params)
 		before("getRenderbufferParameteriv", sparams)
 		val res = parent.getRenderbufferParameteriv(target, pname, params)
 		after("getRenderbufferParameteriv", sparams, res)
 		return res
 	}
-	override fun getProgramiv(program: Int, pname: Int, params: FBuffer) {
+	override fun getProgramiv(program: Int, pname: Int, params: NBuffer) {
 		val sparams = listOf<Any?>(program, pname, params)
 		before("getProgramiv", sparams)
 		val res = parent.getProgramiv(program, pname, params)
 		after("getProgramiv", sparams, res)
 		return res
 	}
-	override fun getShaderiv(shader: Int, pname: Int, params: FBuffer) {
+	override fun getShaderiv(shader: Int, pname: Int, params: NBuffer) {
 		val sparams = listOf<Any?>(shader, pname, params)
 		before("getShaderiv", sparams)
 		val res = parent.getShaderiv(shader, pname, params)
 		after("getShaderiv", sparams, res)
 		return res
 	}
-	override fun getShaderInfoLog(shader: Int, bufSize: Int, length: FBuffer, infoLog: FBuffer) {
+	override fun getShaderInfoLog(shader: Int, bufSize: Int, length: NBuffer, infoLog: NBuffer) {
 		val sparams = listOf<Any?>(shader, bufSize, length, infoLog)
 		before("getShaderInfoLog", sparams)
 		val res = parent.getShaderInfoLog(shader, bufSize, length, infoLog)
 		after("getShaderInfoLog", sparams, res)
 		return res
 	}
-	override fun getShaderPrecisionFormat(shadertype: Int, precisiontype: Int, range: FBuffer, precision: FBuffer) {
+	override fun getShaderPrecisionFormat(shadertype: Int, precisiontype: Int, range: NBuffer, precision: NBuffer) {
 		val sparams = listOf<Any?>(shadertype, precisiontype, range, precision)
 		before("getShaderPrecisionFormat", sparams)
 		val res = parent.getShaderPrecisionFormat(shadertype, precisiontype, range, precision)
 		after("getShaderPrecisionFormat", sparams, res)
 		return res
 	}
-	override fun getShaderSource(shader: Int, bufSize: Int, length: FBuffer, source: FBuffer) {
+	override fun getShaderSource(shader: Int, bufSize: Int, length: NBuffer, source: NBuffer) {
 		val sparams = listOf<Any?>(shader, bufSize, length, source)
 		before("getShaderSource", sparams)
 		val res = parent.getShaderSource(shader, bufSize, length, source)
@@ -544,49 +544,49 @@ open class KmlGlProxy(parent: KmlGl) : KmlGlFastProxy(parent) {
 		after("getString", sparams, res)
 		return res
 	}
-	override fun getTexParameterfv(target: Int, pname: Int, params: FBuffer) {
+	override fun getTexParameterfv(target: Int, pname: Int, params: NBuffer) {
 		val sparams = listOf<Any?>(target, pname, params)
 		before("getTexParameterfv", sparams)
 		val res = parent.getTexParameterfv(target, pname, params)
 		after("getTexParameterfv", sparams, res)
 		return res
 	}
-	override fun getTexParameteriv(target: Int, pname: Int, params: FBuffer) {
+	override fun getTexParameteriv(target: Int, pname: Int, params: NBuffer) {
 		val sparams = listOf<Any?>(target, pname, params)
 		before("getTexParameteriv", sparams)
 		val res = parent.getTexParameteriv(target, pname, params)
 		after("getTexParameteriv", sparams, res)
 		return res
 	}
-	override fun getUniformfv(program: Int, location: Int, params: FBuffer) {
+	override fun getUniformfv(program: Int, location: Int, params: NBuffer) {
 		val sparams = listOf<Any?>(program, location, params)
 		before("getUniformfv", sparams)
 		val res = parent.getUniformfv(program, location, params)
 		after("getUniformfv", sparams, res)
 		return res
 	}
-	override fun getUniformiv(program: Int, location: Int, params: FBuffer) {
+	override fun getUniformiv(program: Int, location: Int, params: NBuffer) {
 		val sparams = listOf<Any?>(program, location, params)
 		before("getUniformiv", sparams)
 		val res = parent.getUniformiv(program, location, params)
 		after("getUniformiv", sparams, res)
 		return res
 	}
-	override fun getVertexAttribfv(index: Int, pname: Int, params: FBuffer) {
+	override fun getVertexAttribfv(index: Int, pname: Int, params: NBuffer) {
 		val sparams = listOf<Any?>(index, pname, params)
 		before("getVertexAttribfv", sparams)
 		val res = parent.getVertexAttribfv(index, pname, params)
 		after("getVertexAttribfv", sparams, res)
 		return res
 	}
-	override fun getVertexAttribiv(index: Int, pname: Int, params: FBuffer) {
+	override fun getVertexAttribiv(index: Int, pname: Int, params: NBuffer) {
 		val sparams = listOf<Any?>(index, pname, params)
 		before("getVertexAttribiv", sparams)
 		val res = parent.getVertexAttribiv(index, pname, params)
 		after("getVertexAttribiv", sparams, res)
 		return res
 	}
-	override fun getVertexAttribPointerv(index: Int, pname: Int, pointer: FBuffer) {
+	override fun getVertexAttribPointerv(index: Int, pname: Int, pointer: NBuffer) {
 		val sparams = listOf<Any?>(index, pname, pointer)
 		before("getVertexAttribPointerv", sparams)
 		val res = parent.getVertexAttribPointerv(index, pname, pointer)
@@ -677,7 +677,7 @@ open class KmlGlProxy(parent: KmlGl) : KmlGlFastProxy(parent) {
 		after("polygonOffset", sparams, res)
 		return res
 	}
-	override fun readPixels(x: Int, y: Int, width: Int, height: Int, format: Int, type: Int, pixels: FBuffer) {
+	override fun readPixels(x: Int, y: Int, width: Int, height: Int, format: Int, type: Int, pixels: NBuffer) {
 		val sparams = listOf<Any?>(x, y, width, height, format, type, pixels)
 		before("readPixels", sparams)
 		val res = parent.readPixels(x, y, width, height, format, type, pixels)
@@ -712,7 +712,7 @@ open class KmlGlProxy(parent: KmlGl) : KmlGlFastProxy(parent) {
 		after("scissor", sparams, res)
 		return res
 	}
-	override fun shaderBinary(count: Int, shaders: FBuffer, binaryformat: Int, binary: FBuffer, length: Int) {
+	override fun shaderBinary(count: Int, shaders: NBuffer, binaryformat: Int, binary: NBuffer, length: Int) {
 		val sparams = listOf<Any?>(count, shaders, binaryformat, binary, length)
 		before("shaderBinary", sparams)
 		val res = parent.shaderBinary(count, shaders, binaryformat, binary, length)
@@ -768,7 +768,7 @@ open class KmlGlProxy(parent: KmlGl) : KmlGlFastProxy(parent) {
 		after("stencilOpSeparate", sparams, res)
 		return res
 	}
-	override fun texImage2D(target: Int, level: Int, internalformat: Int, width: Int, height: Int, border: Int, format: Int, type: Int, pixels: FBuffer?) {
+	override fun texImage2D(target: Int, level: Int, internalformat: Int, width: Int, height: Int, border: Int, format: Int, type: Int, pixels: NBuffer?) {
 		val sparams = listOf<Any?>(target, level, internalformat, width, height, border, format, type, pixels)
 		before("texImage2D", sparams)
 		val res = parent.texImage2D(target, level, internalformat, width, height, border, format, type, pixels)
@@ -789,7 +789,7 @@ open class KmlGlProxy(parent: KmlGl) : KmlGlFastProxy(parent) {
 		after("texParameterf", sparams, res)
 		return res
 	}
-	override fun texParameterfv(target: Int, pname: Int, params: FBuffer) {
+	override fun texParameterfv(target: Int, pname: Int, params: NBuffer) {
 		val sparams = listOf<Any?>(target, pname, params)
 		before("texParameterfv", sparams)
 		val res = parent.texParameterfv(target, pname, params)
@@ -803,14 +803,14 @@ open class KmlGlProxy(parent: KmlGl) : KmlGlFastProxy(parent) {
 		after("texParameteri", sparams, res)
 		return res
 	}
-	override fun texParameteriv(target: Int, pname: Int, params: FBuffer) {
+	override fun texParameteriv(target: Int, pname: Int, params: NBuffer) {
 		val sparams = listOf<Any?>(target, pname, params)
 		before("texParameteriv", sparams)
 		val res = parent.texParameteriv(target, pname, params)
 		after("texParameteriv", sparams, res)
 		return res
 	}
-	override fun texSubImage2D(target: Int, level: Int, xoffset: Int, yoffset: Int, width: Int, height: Int, format: Int, type: Int, pixels: FBuffer) {
+	override fun texSubImage2D(target: Int, level: Int, xoffset: Int, yoffset: Int, width: Int, height: Int, format: Int, type: Int, pixels: NBuffer) {
 		val sparams = listOf<Any?>(target, level, xoffset, yoffset, width, height, format, type, pixels)
 		before("texSubImage2D", sparams)
 		val res = parent.texSubImage2D(target, level, xoffset, yoffset, width, height, format, type, pixels)
@@ -824,7 +824,7 @@ open class KmlGlProxy(parent: KmlGl) : KmlGlFastProxy(parent) {
 		after("uniform1f", sparams, res)
 		return res
 	}
-	override fun uniform1fv(location: Int, count: Int, value: FBuffer) {
+	override fun uniform1fv(location: Int, count: Int, value: NBuffer) {
 		val sparams = listOf<Any?>(location, count, value)
 		before("uniform1fv", sparams)
 		val res = parent.uniform1fv(location, count, value)
@@ -838,7 +838,7 @@ open class KmlGlProxy(parent: KmlGl) : KmlGlFastProxy(parent) {
 		after("uniform1i", sparams, res)
 		return res
 	}
-	override fun uniform1iv(location: Int, count: Int, value: FBuffer) {
+	override fun uniform1iv(location: Int, count: Int, value: NBuffer) {
 		val sparams = listOf<Any?>(location, count, value)
 		before("uniform1iv", sparams)
 		val res = parent.uniform1iv(location, count, value)
@@ -852,7 +852,7 @@ open class KmlGlProxy(parent: KmlGl) : KmlGlFastProxy(parent) {
 		after("uniform2f", sparams, res)
 		return res
 	}
-	override fun uniform2fv(location: Int, count: Int, value: FBuffer) {
+	override fun uniform2fv(location: Int, count: Int, value: NBuffer) {
 		val sparams = listOf<Any?>(location, count, value)
 		before("uniform2fv", sparams)
 		val res = parent.uniform2fv(location, count, value)
@@ -866,7 +866,7 @@ open class KmlGlProxy(parent: KmlGl) : KmlGlFastProxy(parent) {
 		after("uniform2i", sparams, res)
 		return res
 	}
-	override fun uniform2iv(location: Int, count: Int, value: FBuffer) {
+	override fun uniform2iv(location: Int, count: Int, value: NBuffer) {
 		val sparams = listOf<Any?>(location, count, value)
 		before("uniform2iv", sparams)
 		val res = parent.uniform2iv(location, count, value)
@@ -880,7 +880,7 @@ open class KmlGlProxy(parent: KmlGl) : KmlGlFastProxy(parent) {
 		after("uniform3f", sparams, res)
 		return res
 	}
-	override fun uniform3fv(location: Int, count: Int, value: FBuffer) {
+	override fun uniform3fv(location: Int, count: Int, value: NBuffer) {
 		val sparams = listOf<Any?>(location, count, value)
 		before("uniform3fv", sparams)
 		val res = parent.uniform3fv(location, count, value)
@@ -894,7 +894,7 @@ open class KmlGlProxy(parent: KmlGl) : KmlGlFastProxy(parent) {
 		after("uniform3i", sparams, res)
 		return res
 	}
-	override fun uniform3iv(location: Int, count: Int, value: FBuffer) {
+	override fun uniform3iv(location: Int, count: Int, value: NBuffer) {
 		val sparams = listOf<Any?>(location, count, value)
 		before("uniform3iv", sparams)
 		val res = parent.uniform3iv(location, count, value)
@@ -908,7 +908,7 @@ open class KmlGlProxy(parent: KmlGl) : KmlGlFastProxy(parent) {
 		after("uniform4f", sparams, res)
 		return res
 	}
-	override fun uniform4fv(location: Int, count: Int, value: FBuffer) {
+	override fun uniform4fv(location: Int, count: Int, value: NBuffer) {
 		val sparams = listOf<Any?>(location, count, value)
 		before("uniform4fv", sparams)
 		val res = parent.uniform4fv(location, count, value)
@@ -922,28 +922,28 @@ open class KmlGlProxy(parent: KmlGl) : KmlGlFastProxy(parent) {
 		after("uniform4i", sparams, res)
 		return res
 	}
-	override fun uniform4iv(location: Int, count: Int, value: FBuffer) {
+	override fun uniform4iv(location: Int, count: Int, value: NBuffer) {
 		val sparams = listOf<Any?>(location, count, value)
 		before("uniform4iv", sparams)
 		val res = parent.uniform4iv(location, count, value)
 		after("uniform4iv", sparams, res)
 		return res
 	}
-	override fun uniformMatrix2fv(location: Int, count: Int, transpose: Boolean, value: FBuffer) {
+	override fun uniformMatrix2fv(location: Int, count: Int, transpose: Boolean, value: NBuffer) {
 		val sparams = listOf<Any?>(location, count, transpose, value)
 		before("uniformMatrix2fv", sparams)
 		val res = parent.uniformMatrix2fv(location, count, transpose, value)
 		after("uniformMatrix2fv", sparams, res)
 		return res
 	}
-	override fun uniformMatrix3fv(location: Int, count: Int, transpose: Boolean, value: FBuffer) {
+	override fun uniformMatrix3fv(location: Int, count: Int, transpose: Boolean, value: NBuffer) {
 		val sparams = listOf<Any?>(location, count, transpose, value)
 		before("uniformMatrix3fv", sparams)
 		val res = parent.uniformMatrix3fv(location, count, transpose, value)
 		after("uniformMatrix3fv", sparams, res)
 		return res
 	}
-	override fun uniformMatrix4fv(location: Int, count: Int, transpose: Boolean, value: FBuffer) {
+	override fun uniformMatrix4fv(location: Int, count: Int, transpose: Boolean, value: NBuffer) {
 		val sparams = listOf<Any?>(location, count, transpose, value)
 		before("uniformMatrix4fv", sparams)
 		val res = parent.uniformMatrix4fv(location, count, transpose, value)
@@ -971,7 +971,7 @@ open class KmlGlProxy(parent: KmlGl) : KmlGlFastProxy(parent) {
 		after("vertexAttrib1f", sparams, res)
 		return res
 	}
-	override fun vertexAttrib1fv(index: Int, v: FBuffer) {
+	override fun vertexAttrib1fv(index: Int, v: NBuffer) {
 		val sparams = listOf<Any?>(index, v)
 		before("vertexAttrib1fv", sparams)
 		val res = parent.vertexAttrib1fv(index, v)
@@ -985,7 +985,7 @@ open class KmlGlProxy(parent: KmlGl) : KmlGlFastProxy(parent) {
 		after("vertexAttrib2f", sparams, res)
 		return res
 	}
-	override fun vertexAttrib2fv(index: Int, v: FBuffer) {
+	override fun vertexAttrib2fv(index: Int, v: NBuffer) {
 		val sparams = listOf<Any?>(index, v)
 		before("vertexAttrib2fv", sparams)
 		val res = parent.vertexAttrib2fv(index, v)
@@ -999,7 +999,7 @@ open class KmlGlProxy(parent: KmlGl) : KmlGlFastProxy(parent) {
 		after("vertexAttrib3f", sparams, res)
 		return res
 	}
-	override fun vertexAttrib3fv(index: Int, v: FBuffer) {
+	override fun vertexAttrib3fv(index: Int, v: NBuffer) {
 		val sparams = listOf<Any?>(index, v)
 		before("vertexAttrib3fv", sparams)
 		val res = parent.vertexAttrib3fv(index, v)
@@ -1013,7 +1013,7 @@ open class KmlGlProxy(parent: KmlGl) : KmlGlFastProxy(parent) {
 		after("vertexAttrib4f", sparams, res)
 		return res
 	}
-	override fun vertexAttrib4fv(index: Int, v: FBuffer) {
+	override fun vertexAttrib4fv(index: Int, v: NBuffer) {
 		val sparams = listOf<Any?>(index, v)
 		before("vertexAttrib4fv", sparams)
 		val res = parent.vertexAttrib4fv(index, v)
@@ -1141,10 +1141,10 @@ open class KmlGlFastProxy(var parent: KmlGl) : KmlGl() {
 	override fun blendFuncSeparate(sfactorRGB: Int, dfactorRGB: Int, sfactorAlpha: Int, dfactorAlpha: Int) {
 		return parent.blendFuncSeparate(sfactorRGB, dfactorRGB, sfactorAlpha, dfactorAlpha)
 	}
-	override fun bufferData(target: Int, size: Int, data: FBuffer, usage: Int) {
+	override fun bufferData(target: Int, size: Int, data: NBuffer, usage: Int) {
 		return parent.bufferData(target, size, data, usage)
 	}
-	override fun bufferSubData(target: Int, offset: Int, size: Int, data: FBuffer) {
+	override fun bufferSubData(target: Int, offset: Int, size: Int, data: NBuffer) {
 		return parent.bufferSubData(target, offset, size, data)
 	}
 	override fun checkFramebufferStatus(target: Int): Int {
@@ -1168,10 +1168,10 @@ open class KmlGlFastProxy(var parent: KmlGl) : KmlGl() {
 	override fun compileShader(shader: Int) {
 		return parent.compileShader(shader)
 	}
-	override fun compressedTexImage2D(target: Int, level: Int, internalformat: Int, width: Int, height: Int, border: Int, imageSize: Int, data: FBuffer) {
+	override fun compressedTexImage2D(target: Int, level: Int, internalformat: Int, width: Int, height: Int, border: Int, imageSize: Int, data: NBuffer) {
 		return parent.compressedTexImage2D(target, level, internalformat, width, height, border, imageSize, data)
 	}
-	override fun compressedTexSubImage2D(target: Int, level: Int, xoffset: Int, yoffset: Int, width: Int, height: Int, format: Int, imageSize: Int, data: FBuffer) {
+	override fun compressedTexSubImage2D(target: Int, level: Int, xoffset: Int, yoffset: Int, width: Int, height: Int, format: Int, imageSize: Int, data: NBuffer) {
 		return parent.compressedTexSubImage2D(target, level, xoffset, yoffset, width, height, format, imageSize, data)
 	}
 	override fun copyTexImage2D(target: Int, level: Int, internalformat: Int, x: Int, y: Int, width: Int, height: Int, border: Int) {
@@ -1189,22 +1189,22 @@ open class KmlGlFastProxy(var parent: KmlGl) : KmlGl() {
 	override fun cullFace(mode: Int) {
 		return parent.cullFace(mode)
 	}
-	override fun deleteBuffers(n: Int, items: FBuffer) {
+	override fun deleteBuffers(n: Int, items: NBuffer) {
 		return parent.deleteBuffers(n, items)
 	}
-	override fun deleteFramebuffers(n: Int, items: FBuffer) {
+	override fun deleteFramebuffers(n: Int, items: NBuffer) {
 		return parent.deleteFramebuffers(n, items)
 	}
 	override fun deleteProgram(program: Int) {
 		return parent.deleteProgram(program)
 	}
-	override fun deleteRenderbuffers(n: Int, items: FBuffer) {
+	override fun deleteRenderbuffers(n: Int, items: NBuffer) {
 		return parent.deleteRenderbuffers(n, items)
 	}
 	override fun deleteShader(shader: Int) {
 		return parent.deleteShader(shader)
 	}
-	override fun deleteTextures(n: Int, items: FBuffer) {
+	override fun deleteTextures(n: Int, items: NBuffer) {
 		return parent.deleteTextures(n, items)
 	}
 	override fun depthFunc(func: Int) {
@@ -1252,28 +1252,28 @@ open class KmlGlFastProxy(var parent: KmlGl) : KmlGl() {
 	override fun frontFace(mode: Int) {
 		return parent.frontFace(mode)
 	}
-	override fun genBuffers(n: Int, buffers: FBuffer) {
+	override fun genBuffers(n: Int, buffers: NBuffer) {
 		return parent.genBuffers(n, buffers)
 	}
 	override fun generateMipmap(target: Int) {
 		return parent.generateMipmap(target)
 	}
-	override fun genFramebuffers(n: Int, framebuffers: FBuffer) {
+	override fun genFramebuffers(n: Int, framebuffers: NBuffer) {
 		return parent.genFramebuffers(n, framebuffers)
 	}
-	override fun genRenderbuffers(n: Int, renderbuffers: FBuffer) {
+	override fun genRenderbuffers(n: Int, renderbuffers: NBuffer) {
 		return parent.genRenderbuffers(n, renderbuffers)
 	}
-	override fun genTextures(n: Int, textures: FBuffer) {
+	override fun genTextures(n: Int, textures: NBuffer) {
 		return parent.genTextures(n, textures)
 	}
-	override fun getActiveAttrib(program: Int, index: Int, bufSize: Int, length: FBuffer, size: FBuffer, type: FBuffer, name: FBuffer) {
+	override fun getActiveAttrib(program: Int, index: Int, bufSize: Int, length: NBuffer, size: NBuffer, type: NBuffer, name: NBuffer) {
 		return parent.getActiveAttrib(program, index, bufSize, length, size, type, name)
 	}
-	override fun getActiveUniform(program: Int, index: Int, bufSize: Int, length: FBuffer, size: FBuffer, type: FBuffer, name: FBuffer) {
+	override fun getActiveUniform(program: Int, index: Int, bufSize: Int, length: NBuffer, size: NBuffer, type: NBuffer, name: NBuffer) {
 		return parent.getActiveUniform(program, index, bufSize, length, size, type, name)
 	}
-	override fun getAttachedShaders(program: Int, maxCount: Int, count: FBuffer, shaders: FBuffer) {
+	override fun getAttachedShaders(program: Int, maxCount: Int, count: NBuffer, shaders: NBuffer) {
 		return parent.getAttachedShaders(program, maxCount, count, shaders)
 	}
 	override fun getAttribLocation(program: Int, name: String): Int {
@@ -1282,67 +1282,67 @@ open class KmlGlFastProxy(var parent: KmlGl) : KmlGl() {
 	override fun getUniformLocation(program: Int, name: String): Int {
 		return parent.getUniformLocation(program, name)
 	}
-	override fun getBooleanv(pname: Int, data: FBuffer) {
+	override fun getBooleanv(pname: Int, data: NBuffer) {
 		return parent.getBooleanv(pname, data)
 	}
-	override fun getBufferParameteriv(target: Int, pname: Int, params: FBuffer) {
+	override fun getBufferParameteriv(target: Int, pname: Int, params: NBuffer) {
 		return parent.getBufferParameteriv(target, pname, params)
 	}
 	override fun getError(): Int {
 		return parent.getError()
 	}
-	override fun getFloatv(pname: Int, data: FBuffer) {
+	override fun getFloatv(pname: Int, data: NBuffer) {
 		return parent.getFloatv(pname, data)
 	}
-	override fun getFramebufferAttachmentParameteriv(target: Int, attachment: Int, pname: Int, params: FBuffer) {
+	override fun getFramebufferAttachmentParameteriv(target: Int, attachment: Int, pname: Int, params: NBuffer) {
 		return parent.getFramebufferAttachmentParameteriv(target, attachment, pname, params)
 	}
-	override fun getIntegerv(pname: Int, data: FBuffer) {
+	override fun getIntegerv(pname: Int, data: NBuffer) {
 		return parent.getIntegerv(pname, data)
 	}
-	override fun getProgramInfoLog(program: Int, bufSize: Int, length: FBuffer, infoLog: FBuffer) {
+	override fun getProgramInfoLog(program: Int, bufSize: Int, length: NBuffer, infoLog: NBuffer) {
 		return parent.getProgramInfoLog(program, bufSize, length, infoLog)
 	}
-	override fun getRenderbufferParameteriv(target: Int, pname: Int, params: FBuffer) {
+	override fun getRenderbufferParameteriv(target: Int, pname: Int, params: NBuffer) {
 		return parent.getRenderbufferParameteriv(target, pname, params)
 	}
-	override fun getProgramiv(program: Int, pname: Int, params: FBuffer) {
+	override fun getProgramiv(program: Int, pname: Int, params: NBuffer) {
 		return parent.getProgramiv(program, pname, params)
 	}
-	override fun getShaderiv(shader: Int, pname: Int, params: FBuffer) {
+	override fun getShaderiv(shader: Int, pname: Int, params: NBuffer) {
 		return parent.getShaderiv(shader, pname, params)
 	}
-	override fun getShaderInfoLog(shader: Int, bufSize: Int, length: FBuffer, infoLog: FBuffer) {
+	override fun getShaderInfoLog(shader: Int, bufSize: Int, length: NBuffer, infoLog: NBuffer) {
 		return parent.getShaderInfoLog(shader, bufSize, length, infoLog)
 	}
-	override fun getShaderPrecisionFormat(shadertype: Int, precisiontype: Int, range: FBuffer, precision: FBuffer) {
+	override fun getShaderPrecisionFormat(shadertype: Int, precisiontype: Int, range: NBuffer, precision: NBuffer) {
 		return parent.getShaderPrecisionFormat(shadertype, precisiontype, range, precision)
 	}
-	override fun getShaderSource(shader: Int, bufSize: Int, length: FBuffer, source: FBuffer) {
+	override fun getShaderSource(shader: Int, bufSize: Int, length: NBuffer, source: NBuffer) {
 		return parent.getShaderSource(shader, bufSize, length, source)
 	}
 	override fun getString(name: Int): String {
 		return parent.getString(name)
 	}
-	override fun getTexParameterfv(target: Int, pname: Int, params: FBuffer) {
+	override fun getTexParameterfv(target: Int, pname: Int, params: NBuffer) {
 		return parent.getTexParameterfv(target, pname, params)
 	}
-	override fun getTexParameteriv(target: Int, pname: Int, params: FBuffer) {
+	override fun getTexParameteriv(target: Int, pname: Int, params: NBuffer) {
 		return parent.getTexParameteriv(target, pname, params)
 	}
-	override fun getUniformfv(program: Int, location: Int, params: FBuffer) {
+	override fun getUniformfv(program: Int, location: Int, params: NBuffer) {
 		return parent.getUniformfv(program, location, params)
 	}
-	override fun getUniformiv(program: Int, location: Int, params: FBuffer) {
+	override fun getUniformiv(program: Int, location: Int, params: NBuffer) {
 		return parent.getUniformiv(program, location, params)
 	}
-	override fun getVertexAttribfv(index: Int, pname: Int, params: FBuffer) {
+	override fun getVertexAttribfv(index: Int, pname: Int, params: NBuffer) {
 		return parent.getVertexAttribfv(index, pname, params)
 	}
-	override fun getVertexAttribiv(index: Int, pname: Int, params: FBuffer) {
+	override fun getVertexAttribiv(index: Int, pname: Int, params: NBuffer) {
 		return parent.getVertexAttribiv(index, pname, params)
 	}
-	override fun getVertexAttribPointerv(index: Int, pname: Int, pointer: FBuffer) {
+	override fun getVertexAttribPointerv(index: Int, pname: Int, pointer: NBuffer) {
 		return parent.getVertexAttribPointerv(index, pname, pointer)
 	}
 	override fun hint(target: Int, mode: Int) {
@@ -1381,7 +1381,7 @@ open class KmlGlFastProxy(var parent: KmlGl) : KmlGl() {
 	override fun polygonOffset(factor: Float, units: Float) {
 		return parent.polygonOffset(factor, units)
 	}
-	override fun readPixels(x: Int, y: Int, width: Int, height: Int, format: Int, type: Int, pixels: FBuffer) {
+	override fun readPixels(x: Int, y: Int, width: Int, height: Int, format: Int, type: Int, pixels: NBuffer) {
 		return parent.readPixels(x, y, width, height, format, type, pixels)
 	}
 	override fun releaseShaderCompiler() {
@@ -1396,7 +1396,7 @@ open class KmlGlFastProxy(var parent: KmlGl) : KmlGl() {
 	override fun scissor(x: Int, y: Int, width: Int, height: Int) {
 		return parent.scissor(x, y, width, height)
 	}
-	override fun shaderBinary(count: Int, shaders: FBuffer, binaryformat: Int, binary: FBuffer, length: Int) {
+	override fun shaderBinary(count: Int, shaders: NBuffer, binaryformat: Int, binary: NBuffer, length: Int) {
 		return parent.shaderBinary(count, shaders, binaryformat, binary, length)
 	}
 	override fun shaderSource(shader: Int, string: String) {
@@ -1420,7 +1420,7 @@ open class KmlGlFastProxy(var parent: KmlGl) : KmlGl() {
 	override fun stencilOpSeparate(face: Int, sfail: Int, dpfail: Int, dppass: Int) {
 		return parent.stencilOpSeparate(face, sfail, dpfail, dppass)
 	}
-	override fun texImage2D(target: Int, level: Int, internalformat: Int, width: Int, height: Int, border: Int, format: Int, type: Int, pixels: FBuffer?) {
+	override fun texImage2D(target: Int, level: Int, internalformat: Int, width: Int, height: Int, border: Int, format: Int, type: Int, pixels: NBuffer?) {
 		return parent.texImage2D(target, level, internalformat, width, height, border, format, type, pixels)
 	}
 	override fun texImage2D(target: Int, level: Int, internalformat: Int, format: Int, type: Int, data: NativeImage) {
@@ -1429,73 +1429,73 @@ open class KmlGlFastProxy(var parent: KmlGl) : KmlGl() {
 	override fun texParameterf(target: Int, pname: Int, param: Float) {
 		return parent.texParameterf(target, pname, param)
 	}
-	override fun texParameterfv(target: Int, pname: Int, params: FBuffer) {
+	override fun texParameterfv(target: Int, pname: Int, params: NBuffer) {
 		return parent.texParameterfv(target, pname, params)
 	}
 	override fun texParameteri(target: Int, pname: Int, param: Int) {
 		return parent.texParameteri(target, pname, param)
 	}
-	override fun texParameteriv(target: Int, pname: Int, params: FBuffer) {
+	override fun texParameteriv(target: Int, pname: Int, params: NBuffer) {
 		return parent.texParameteriv(target, pname, params)
 	}
-	override fun texSubImage2D(target: Int, level: Int, xoffset: Int, yoffset: Int, width: Int, height: Int, format: Int, type: Int, pixels: FBuffer) {
+	override fun texSubImage2D(target: Int, level: Int, xoffset: Int, yoffset: Int, width: Int, height: Int, format: Int, type: Int, pixels: NBuffer) {
 		return parent.texSubImage2D(target, level, xoffset, yoffset, width, height, format, type, pixels)
 	}
 	override fun uniform1f(location: Int, v0: Float) {
 		return parent.uniform1f(location, v0)
 	}
-	override fun uniform1fv(location: Int, count: Int, value: FBuffer) {
+	override fun uniform1fv(location: Int, count: Int, value: NBuffer) {
 		return parent.uniform1fv(location, count, value)
 	}
 	override fun uniform1i(location: Int, v0: Int) {
 		return parent.uniform1i(location, v0)
 	}
-	override fun uniform1iv(location: Int, count: Int, value: FBuffer) {
+	override fun uniform1iv(location: Int, count: Int, value: NBuffer) {
 		return parent.uniform1iv(location, count, value)
 	}
 	override fun uniform2f(location: Int, v0: Float, v1: Float) {
 		return parent.uniform2f(location, v0, v1)
 	}
-	override fun uniform2fv(location: Int, count: Int, value: FBuffer) {
+	override fun uniform2fv(location: Int, count: Int, value: NBuffer) {
 		return parent.uniform2fv(location, count, value)
 	}
 	override fun uniform2i(location: Int, v0: Int, v1: Int) {
 		return parent.uniform2i(location, v0, v1)
 	}
-	override fun uniform2iv(location: Int, count: Int, value: FBuffer) {
+	override fun uniform2iv(location: Int, count: Int, value: NBuffer) {
 		return parent.uniform2iv(location, count, value)
 	}
 	override fun uniform3f(location: Int, v0: Float, v1: Float, v2: Float) {
 		return parent.uniform3f(location, v0, v1, v2)
 	}
-	override fun uniform3fv(location: Int, count: Int, value: FBuffer) {
+	override fun uniform3fv(location: Int, count: Int, value: NBuffer) {
 		return parent.uniform3fv(location, count, value)
 	}
 	override fun uniform3i(location: Int, v0: Int, v1: Int, v2: Int) {
 		return parent.uniform3i(location, v0, v1, v2)
 	}
-	override fun uniform3iv(location: Int, count: Int, value: FBuffer) {
+	override fun uniform3iv(location: Int, count: Int, value: NBuffer) {
 		return parent.uniform3iv(location, count, value)
 	}
 	override fun uniform4f(location: Int, v0: Float, v1: Float, v2: Float, v3: Float) {
 		return parent.uniform4f(location, v0, v1, v2, v3)
 	}
-	override fun uniform4fv(location: Int, count: Int, value: FBuffer) {
+	override fun uniform4fv(location: Int, count: Int, value: NBuffer) {
 		return parent.uniform4fv(location, count, value)
 	}
 	override fun uniform4i(location: Int, v0: Int, v1: Int, v2: Int, v3: Int) {
 		return parent.uniform4i(location, v0, v1, v2, v3)
 	}
-	override fun uniform4iv(location: Int, count: Int, value: FBuffer) {
+	override fun uniform4iv(location: Int, count: Int, value: NBuffer) {
 		return parent.uniform4iv(location, count, value)
 	}
-	override fun uniformMatrix2fv(location: Int, count: Int, transpose: Boolean, value: FBuffer) {
+	override fun uniformMatrix2fv(location: Int, count: Int, transpose: Boolean, value: NBuffer) {
 		return parent.uniformMatrix2fv(location, count, transpose, value)
 	}
-	override fun uniformMatrix3fv(location: Int, count: Int, transpose: Boolean, value: FBuffer) {
+	override fun uniformMatrix3fv(location: Int, count: Int, transpose: Boolean, value: NBuffer) {
 		return parent.uniformMatrix3fv(location, count, transpose, value)
 	}
-	override fun uniformMatrix4fv(location: Int, count: Int, transpose: Boolean, value: FBuffer) {
+	override fun uniformMatrix4fv(location: Int, count: Int, transpose: Boolean, value: NBuffer) {
 		return parent.uniformMatrix4fv(location, count, transpose, value)
 	}
 	override fun useProgram(program: Int) {
@@ -1507,25 +1507,25 @@ open class KmlGlFastProxy(var parent: KmlGl) : KmlGl() {
 	override fun vertexAttrib1f(index: Int, x: Float) {
 		return parent.vertexAttrib1f(index, x)
 	}
-	override fun vertexAttrib1fv(index: Int, v: FBuffer) {
+	override fun vertexAttrib1fv(index: Int, v: NBuffer) {
 		return parent.vertexAttrib1fv(index, v)
 	}
 	override fun vertexAttrib2f(index: Int, x: Float, y: Float) {
 		return parent.vertexAttrib2f(index, x, y)
 	}
-	override fun vertexAttrib2fv(index: Int, v: FBuffer) {
+	override fun vertexAttrib2fv(index: Int, v: NBuffer) {
 		return parent.vertexAttrib2fv(index, v)
 	}
 	override fun vertexAttrib3f(index: Int, x: Float, y: Float, z: Float) {
 		return parent.vertexAttrib3f(index, x, y, z)
 	}
-	override fun vertexAttrib3fv(index: Int, v: FBuffer) {
+	override fun vertexAttrib3fv(index: Int, v: NBuffer) {
 		return parent.vertexAttrib3fv(index, v)
 	}
 	override fun vertexAttrib4f(index: Int, x: Float, y: Float, z: Float, w: Float) {
 		return parent.vertexAttrib4f(index, x, y, z, w)
 	}
-	override fun vertexAttrib4fv(index: Int, v: FBuffer) {
+	override fun vertexAttrib4fv(index: Int, v: NBuffer) {
 		return parent.vertexAttrib4fv(index, v)
 	}
 	override fun vertexAttribPointer(index: Int, size: Int, type: Int, normalized: Boolean, stride: Int, pointer: Long) {

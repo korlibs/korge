@@ -32,11 +32,11 @@ data class Mesh3D constructor(
 
     /*
 
-    val fbuffer by lazy {
-        FBuffer.alloc(data.size * 4).apply {
+    val nbuffer by lazy {
+        NBuffer.alloc(data.size * 4).apply {
             setAlignedArrayFloat32(0, this@Mesh3D.data, 0, this@Mesh3D.data.size)
         }
-        //FBuffer.wrap(MemBufferAlloc(data.size * 4)).apply {
+        //NBuffer.wrap(MemBufferAlloc(data.size * 4)).apply {
         //	arraycopy(this@Mesh3D.data, 0, this@apply.mem, 0, this@Mesh3D.data.size) // Bug in kmem-js?
         //}
     }

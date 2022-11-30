@@ -105,7 +105,7 @@ getProgramiv(1001, 35714, [0])
 useProgram(1001)
 genBuffers(1, [3001])
 bindBuffer(34962, 3001)
-bufferData(34962, 160, FBuffer(size=256), 35044)
+bufferData(34962, 160, NBuffer(size=256), 35044)
 getAttribLocation(1001, "a_Pos") = 8001
 enableVertexAttribArray(8001)
 vertexAttribPointer(8001, 2, 5126, false, 16, 0)
@@ -116,9 +116,9 @@ getAttribLocation(1001, "a_MaxDist") = 8003
 enableVertexAttribArray(8003)
 vertexAttribPointer(8003, 1, 5126, false, 16, 12)
 getUniformLocation(1001, "u_ProjMat") = 7001
-uniformMatrix4fv(7001, 1, false, FBuffer(size=65536))
+uniformMatrix4fv(7001, 1, false, NBuffer(size=65536))
 getUniformLocation(1001, "u_ViewMat") = 7002
-uniformMatrix4fv(7002, 1, false, FBuffer(size=65536))
+uniformMatrix4fv(7002, 1, false, NBuffer(size=65536))
 getUniformLocation(1001, "u_Tex0") = 7003
 activeTexture(33984)
 bindTexture(3553, 0)

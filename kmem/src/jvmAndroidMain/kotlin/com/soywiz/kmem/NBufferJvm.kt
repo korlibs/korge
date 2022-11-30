@@ -150,6 +150,6 @@ fun IntBuffer.slice(offset: Int, size: Int): IntBuffer = _slice(offset, size) { 
 fun FloatBuffer.slice(offset: Int, size: Int): FloatBuffer = _slice(offset, size) { it.duplicate() }
 fun DoubleBuffer.slice(offset: Int, size: Int): DoubleBuffer = _slice(offset, size) { it.duplicate() }
 
-val FBuffer.nioBuffer: java.nio.ByteBuffer get() = this.slicedBuffer()
-val FBuffer.nioIntBuffer: java.nio.IntBuffer get() = this.slicedBuffer().asIntBuffer()
-val FBuffer.nioFloatBuffer: java.nio.FloatBuffer get() = this.slicedBuffer().asFloatBuffer()
+val NBuffer.nioBuffer: java.nio.ByteBuffer get() = this.slicedBuffer()
+val NBuffer.nioIntBuffer: java.nio.IntBuffer get() = this.slicedBuffer().asIntBuffer()
+val NBuffer.nioFloatBuffer: java.nio.FloatBuffer get() = this.slicedBuffer().asFloatBuffer()

@@ -2,9 +2,8 @@ package com.soywiz.kmem
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
 
-class FBufferTest {
+class NBufferTest2 {
 	@Test
 	fun testBasicUsage() {
 		val data = NBuffer(16)
@@ -64,8 +63,8 @@ class FBufferTest {
 	}
 
 	@Test
-	fun testFBuffer() {
-		val mem = FBuffer.allocDirect(10)
+	fun testNBuffer() {
+		val mem = NBuffer.allocDirect(10)
 		for (n in 0 until 8) mem[n] = n
 		assertEquals(0x03020100, mem.getInt32(0))
 		assertEquals(0x07060504, mem.getInt32(1))

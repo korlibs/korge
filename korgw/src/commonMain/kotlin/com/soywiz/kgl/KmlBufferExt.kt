@@ -12,7 +12,7 @@ fun NBuffer.toAsciiString(): String {
 	return out
 }
 
-fun NBuffer.putAsciiString(str: String): FBuffer {
+fun NBuffer.putAsciiString(str: String): NBuffer {
 	var n = 0
 	for (c in str) {
 		if (size >= n) setInt8(n++, c.code)
@@ -21,8 +21,8 @@ fun NBuffer.putAsciiString(str: String): FBuffer {
 	return this
 }
 
-fun <T> IntArray.toTempBuffer(callback: (FBuffer) -> T): T {
-	return NBufferTemp(this.size) { buffer: FBuffer ->
+fun <T> IntArray.toTempBuffer(callback: (NBuffer) -> T): T {
+	return NBufferTemp(this.size) { buffer: NBuffer ->
 		val ints = buffer.i32
 		for (n in this.indices) ints[n] = this[n]
 		callback(buffer)

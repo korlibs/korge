@@ -11,7 +11,7 @@ import com.soywiz.korge3d.Library3D
 import com.soywiz.korge3d.Mesh3D
 import com.soywiz.korge3d.Shaders3D
 import com.soywiz.korge3d.animation.Animation3D
-import com.soywiz.korge3d.internal.toFBuffer
+import com.soywiz.korge3d.internal.toNBuffer
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korio.file.VfsFile
 import com.soywiz.korio.serialization.xml.Xml
@@ -284,9 +284,9 @@ class ColladaParser {
 
             geometryDefs[geom.id] = Library3D.GeometryDef(
                 Mesh3D(
-                    //combinedData.toFloatArray().toFBuffer(),
+                    //combinedData.toFloatArray().toNBuffer(),
                     fastArrayListOf(BufferWithVertexLayout(
-                        buffer = combinedVertexData.toFBuffer(),
+                        buffer = combinedVertexData.toNBuffer(),
                         layout = VertexLayout(buildList {
                             add(Shaders3D.a_pos)
                             if (hasNormals) add(Shaders3D.a_norm)
@@ -295,7 +295,7 @@ class ColladaParser {
                             for (n in 0 until 4) if (maxWeights > n * 4) add(Shaders3D.a_weight[n])
                         }),
                     )),
-                    combinedIndexData.toFBuffer(),
+                    combinedIndexData.toNBuffer(),
                     AG.IndexType.USHORT,
                     combinedIndexData.size,
                     null,
