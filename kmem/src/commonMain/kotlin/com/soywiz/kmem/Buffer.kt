@@ -329,6 +329,6 @@ fun TypedBuffer.asFloat64(): Float64Buffer = this.buffer.f64
 @Deprecated("") operator fun Buffer.set(index: Int, value: Byte) = setInt8(index, value)
 @Deprecated("") operator fun Buffer.set(index: Int, value: Int) = setUInt8(index, value)
 
-inline fun <T> NBufferTemp(size: Int, callback: (Buffer) -> T): T = Buffer(size).run(callback)
+inline fun <T> NBufferTemp(size: Int, callback: (Buffer) -> T): T = Buffer.allocDirect(size).run(callback)
 
 fun ByteArray.toNBufferUInt8(): Uint8Buffer = Buffer(this).u8
