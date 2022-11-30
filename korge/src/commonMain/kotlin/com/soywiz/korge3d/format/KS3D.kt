@@ -41,7 +41,7 @@ suspend fun VfsFile.writeKs3d(library: Library3D) {
             mesh.vertexBuffers.fastForEach {
                 writeU_VL(it.buffer.size)
                 val temp = ByteArray(it.buffer.size)
-                it.buffer.getAlignedArrayInt8(0, temp, 0, it.buffer.size)
+                it.buffer.getArrayInt8(0, temp, 0, it.buffer.size)
                 writeBytes(temp)
             }
         }

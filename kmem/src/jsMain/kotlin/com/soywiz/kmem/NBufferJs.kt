@@ -70,5 +70,5 @@ val NBuffer.arrayShort: Int16Array get() = Int16Array(buffer)
 val NBuffer.arrayInt: Int32Array get() = Int32Array(buffer)
 val NBuffer.arrayFloat: Float32Array get() = Float32Array(buffer)
 val NBuffer.arrayDouble: Float64Array get() = Float64Array(buffer)
-val NBuffer.arrayBuffer: ArrayBuffer get() = this.mem.buffer
-val NBuffer.arrayUByte: Uint8Array get() = Uint8Array(this.mem.buffer)
+val NBuffer.arrayBuffer: ArrayBuffer get() = this.buffer
+val NBuffer.arrayUByte: Uint8Array get() = Uint8Array(this.buffer)

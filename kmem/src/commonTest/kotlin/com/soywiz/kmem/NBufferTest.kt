@@ -196,7 +196,7 @@ open class NBufferTestBase {
 
     @Test
     fun testWrap() {
-        val data = NBuffer(byteArrayOf(0, 1, 2, 3, 4, 5, 6, 7), 2, 6).asInt16()
+        val data = NBuffer(byteArrayOf(0, 1, 2, 3, 4, 5, 6, 7), 2, 6).i16
         val farray = data.getArray(1, size = 2).map { it.asLittle() }.toShortArray()
         assertEquals("1284,1798", farray.joinToString(","))
         assertEquals("3,4", data.asInt8().getArray(1, size = 2).map { it.asLittle() }.toByteArray().joinToString(","))
@@ -204,7 +204,7 @@ open class NBufferTestBase {
 
     @Test
     fun testWrapUnsigned() {
-        val data = NBuffer(byteArrayOf(0, 1, 2, 3, 4, 5, 6, 7), 2, 6).asUInt16()
+        val data = NBuffer(byteArrayOf(0, 1, 2, 3, 4, 5, 6, 7), 2, 6).u16
         assertEquals("1284,1798", data.getArray(1, size = 2).data.map { it.asLittle() }.toShortArray().joinToString(","))
         assertEquals("3,4", data.asUInt8().getArray(1, size = 2).data.map { it.asLittle() }.toByteArray().joinToString(","))
     }
@@ -353,8 +353,8 @@ open class NBufferTestBase {
     @Test
     fun testUnalignedVariants() {
         val i = NBuffer(4, direct)
-        val u8 = i.asUInt8()
-        val u16 = i.asUInt16()
+        val u8 = i.u8
+        val u16 = i.u16
         assertEquals(4, u8.size)
         assertEquals(2, u16.size)
         for (n in 0 until 4) u8[n] = n * 16 + n
@@ -370,19 +370,19 @@ open class NBufferTestBase {
     @Test
     fun testAsTyped() {
         val i = NBuffer(8, direct)
-        assertEquals(i, i.asUInt8().buffer)
-        assertEquals(i, i.asUInt16().buffer)
-        assertEquals(i, i.asInt8().buffer)
-        assertEquals(i, i.asInt16().buffer)
-        assertEquals(i, i.asInt32().buffer)
-        assertEquals(i, i.asInt64().buffer)
-        assertEquals(i, i.asFloat32().buffer)
-        assertEquals(i, i.asFloat64().buffer)
+        assertEquals(i, i.u8.buffer)
+        assertEquals(i, i.u16.buffer)
+        assertEquals(i, i.i8.buffer)
+        assertEquals(i, i.i16.buffer)
+        assertEquals(i, i.i32.buffer)
+        assertEquals(i, i.i64.buffer)
+        assertEquals(i, i.f32.buffer)
+        assertEquals(i, i.f64.buffer)
     }
 
     @Test
     fun testTypedAsTyped() {
-        val i = NBuffer(8, direct).asUInt8()
+        val i = NBuffer(8, direct).u8
         assertEquals(i.buffer, i.asUInt8().buffer)
         assertEquals(i.buffer, i.asUInt16().buffer)
         assertEquals(i.buffer, i.asInt8().buffer)

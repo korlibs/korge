@@ -1426,7 +1426,7 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
         val VERTEX_COUNT = 4
         val vertices = createBuffer()
         val vertexLayout = VertexLayout(DefaultShaders.a_Pos, DefaultShaders.a_Tex)
-        val verticesData = FBuffer(VERTEX_COUNT * vertexLayout.totalSize)
+        val verticesData = NBuffer(VERTEX_COUNT * vertexLayout.totalSize)
         val program = Program(VertexShader {
             DefaultShaders {
                 SET(v_Tex, a_Tex)
@@ -1442,10 +1442,10 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
 
         fun setVertex(n: Int, px: Float, py: Float, tx: Float, ty: Float) {
             val offset = n * 4
-            verticesData.setAlignedFloat32(offset + 0, px)
-            verticesData.setAlignedFloat32(offset + 1, py)
-            verticesData.setAlignedFloat32(offset + 2, tx)
-            verticesData.setAlignedFloat32(offset + 3, ty)
+            verticesData.setFloat32(offset + 0, px)
+            verticesData.setFloat32(offset + 1, py)
+            verticesData.setFloat32(offset + 2, tx)
+            verticesData.setFloat32(offset + 3, ty)
         }
 
         fun draw(tex: Texture, left: Float, top: Float, right: Float, bottom: Float) {

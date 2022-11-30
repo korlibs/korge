@@ -6,17 +6,17 @@ import com.soywiz.korvi.mpeg.byteLength
 import com.soywiz.korvi.mpeg.length
 import com.soywiz.korvi.mpeg.set
 
-class BitBuffer(var bytes: Uint8Buffer, val mode: MODE = MODE.EXPAND) {
+class BitBuffer(var bytes: NBufferUInt8, val mode: MODE = MODE.EXPAND) {
     var byteLength: Int = bytes.size
     var index: Int = 0
-    var buffer: Uint8Buffer? = null
+    var buffer: NBufferUInt8? = null
 
-    constructor(size: Int, mode: MODE = MODE.EXPAND) : this(Uint8Buffer(size), mode) {
+    constructor(size: Int, mode: MODE = MODE.EXPAND) : this(NBufferUInt8(size), mode) {
         byteLength = 0
     }
 
     fun resize(size: Int) {
-        val newBytes = Uint8Buffer(size)
+        val newBytes = NBufferUInt8(size)
         if (this.byteLength != 0) {
             this.byteLength = kotlin.math.min(this.byteLength, size)
             arraycopy(this.bytes.buffer, 0, newBytes.buffer, 0, this.byteLength)
@@ -46,7 +46,7 @@ class BitBuffer(var bytes: Uint8Buffer, val mode: MODE = MODE.EXPAND) {
 
         // Some browsers don't support copyWithin() yet - we may have to do
         // it manually using set and a subarray
-        arraycopy(this.bytes.b, bytePos, this.bytes.b, 0, this.byteLength - bytePos)
+        arraycopy(this.bytes, bytePos, this.bytes, 0, this.byteLength - bytePos)
         //when {
         //    this.bytes.copyWithin -> this.bytes.copyWithin(0, bytePos, this.byteLength)
         //    else -> this.bytes.set(this.bytes.subarray(bytePos, this.byteLength))

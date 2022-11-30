@@ -1,11 +1,6 @@
 package com.soywiz.korge.view
 
-import com.soywiz.kmem.Float32Buffer
-import com.soywiz.kmem.Float32BufferAlloc
-import com.soywiz.kmem.Uint16Buffer
-import com.soywiz.kmem.Uint16BufferAlloc
-import com.soywiz.kmem.get
-import com.soywiz.kmem.size
+import com.soywiz.kmem.*
 import com.soywiz.korge.render.RenderContext
 import com.soywiz.korge.render.TexturedVertexArray
 import com.soywiz.korim.bitmap.Bitmaps
@@ -15,9 +10,9 @@ import com.soywiz.korma.geom.Rectangle
 
 open class Mesh(
 	var texture: BmpSlice? = null,
-	var vertices: Float32Buffer = Float32BufferAlloc(0),
-	var uvs: Float32Buffer = Float32BufferAlloc(0),
-	var indices: Uint16Buffer = Uint16BufferAlloc(0),
+	var vertices: NBufferFloat32 = NBufferFloat32(0),
+	var uvs: NBufferFloat32 = NBufferFloat32(0),
+	var indices: NBufferUInt16 = NBufferUInt16(0),
 	var drawMode: DrawModes = DrawModes.Triangles
 ) : View() {
 	enum class DrawModes { Triangles, TriangleStrip }

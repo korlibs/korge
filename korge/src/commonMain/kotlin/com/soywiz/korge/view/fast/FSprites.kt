@@ -5,18 +5,15 @@ import com.soywiz.kds.IntArrayList
 import com.soywiz.kds.fastArrayListOf
 import com.soywiz.kmem.*
 import com.soywiz.korag.AG
-import com.soywiz.korag.DefaultShaders
 import com.soywiz.korag.FragmentShaderDefault
 import com.soywiz.korag.VertexShaderDefault
 import com.soywiz.korag.shader.Attribute
-import com.soywiz.korag.shader.FragmentShader
 import com.soywiz.korag.shader.Operand
 import com.soywiz.korag.shader.Precision
 import com.soywiz.korag.shader.Program
 import com.soywiz.korag.shader.Uniform
 import com.soywiz.korag.shader.VarType
 import com.soywiz.korag.shader.Varying
-import com.soywiz.korag.shader.VertexShader
 import com.soywiz.korge.render.BatchBuilder2D
 import com.soywiz.korge.render.RenderContext
 import com.soywiz.korge.view.BlendMode
@@ -28,7 +25,6 @@ import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korma.geom.Angle
 import com.soywiz.korma.geom.Matrix
-import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.geom.radians
 
 @PublishedApi
@@ -36,9 +32,9 @@ internal const val FSPRITES_STRIDE = 8
 
 open class FSprites(val maxSize: Int) {
     var size = 0
-    val available get() = maxSize - size
-    val data = FBuffer(maxSize * FSPRITES_STRIDE * 4)
-    val dataColorMul = FBuffer(maxSize * 4)
+    val available: Int get() = maxSize - size
+    val data = NBuffer.allocDirect(maxSize * FSPRITES_STRIDE * 4)
+    val dataColorMul = NBuffer.allocDirect(maxSize * 4)
     private val freeItems = IntArrayList()
     private val i32 = data.i32
     private val f32 = data.f32

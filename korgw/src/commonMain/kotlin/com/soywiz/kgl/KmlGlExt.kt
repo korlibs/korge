@@ -9,26 +9,26 @@ import kotlin.native.concurrent.ThreadLocal
 class KmlGlException(message: String) : RuntimeException(message)
 
 @ThreadLocal
-private val tempFBufferByte = FBuffer(1)
+private val tempFBufferByte = NBuffer(1, direct = true)
 @ThreadLocal
-private val tempFBuffer1 = FBuffer(4)
+private val tempFBuffer1 = NBuffer(4, direct = true)
 @ThreadLocal
-private val tempFBuffer4 = FBuffer(4 * 4)
+private val tempFBuffer4 = NBuffer(4 * 4, direct = true)
 
 private inline fun tempByte1Buffer(value: Int = 0, block: (FBuffer) -> Unit): Int = tempFBufferByte.let {
-    it.setByte(0, value.toByte())
+    it.setInt8(0, value.toByte())
     block(it)
-    it.getByte(0).toInt() and 0xFF
+    it.getUInt8(0)
 }
 private inline fun tempInt1Buffer(value: Int = 0, block: (FBuffer) -> Unit): Int = tempFBuffer1.let {
-    it.setInt(0, value)
+    it.setInt32(0, value)
     block(it)
-    it.getInt(0)
+    it.getInt32(0)
 }
 private inline fun tempFloat1Buffer(value: Float = 0f, block: (FBuffer) -> Unit): Float = tempFBuffer1.let {
-    it.setFloat(0, value)
+    it.setFloat32(0, value)
     block(it)
-    it.getFloat(0)
+    it.getFloat32(0)
 }
 
 fun KmlGl.getShaderiv(shader: Int, type: Int): Int = tempInt1Buffer { getShaderiv(shader, type, it) }
@@ -39,12 +39,12 @@ fun KmlGl.getFloatv(pname: Int): Float = tempFloat1Buffer { getFloatv(pname, it)
 fun KmlGl.getIntegerv(pname: Int): Int = tempInt1Buffer { getIntegerv(pname, it) }
 fun KmlGl.getVertexAttribiv(index: Int, pname: Int): Int = tempInt1Buffer { getVertexAttribiv(index, pname, it) }
 fun KmlGl.getRectanglev(pname: Int, out: Rectangle = Rectangle()): Rectangle = tempFBuffer4.let {
-    it.setFloat(0, 0f)
-    it.setFloat(1, 0f)
-    it.setFloat(2, 0f)
-    it.setFloat(3, 0f)
+    it.setFloat32(0, 0f)
+    it.setFloat32(1, 0f)
+    it.setFloat32(2, 0f)
+    it.setFloat32(3, 0f)
     getFloatv(pname, it)
-    out.setTo(it.getFloat(0), it.getFloat(1), it.getFloat(2), it.getFloat(3))
+    out.setTo(it.getFloat32(0), it.getFloat32(1), it.getFloat32(2), it.getFloat32(3))
 }
 
 fun KmlGl.genBuffer(): Int = tempInt1Buffer { genBuffers(1, it) }
@@ -63,8 +63,8 @@ private inline fun KmlGl.getInfoLog(
 	getInfoLog: (Int, Int, FBuffer, FBuffer) -> Unit
 ): String {
 	val size = getiv(obj, INFO_LOG_LENGTH)
-	return fbuffer(4 * 1) { sizev ->
-		fbuffer(size) { mbuffer ->
+	return NBufferTemp(4 * 1) { sizev ->
+		NBufferTemp(size) { mbuffer ->
 			getInfoLog(obj, size, sizev, mbuffer)
 			mbuffer.toAsciiString()
 		}

@@ -1,7 +1,6 @@
 package samples
 
 import com.soywiz.klock.milliseconds
-import com.soywiz.kmem.toUint8Buffer
 import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.scene.delay
 import com.soywiz.korge.view.SContainer

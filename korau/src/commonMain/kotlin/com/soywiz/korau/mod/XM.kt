@@ -40,7 +40,7 @@ import kotlin.random.Random
 object XM : BaseModuleTracker.Format("xm") {
     override fun createTracker(): BaseModuleTracker = Fasttracker()
     override suspend fun fastValidate(data: AsyncStream): Boolean {
-        val buffer = data.readBytesExact(60).toUint8Buffer()
+        val buffer = data.readBytesExact(60).toNBufferUInt8()
         val signature = CharArray(17) { buffer[it].toChar() }.concatToString()
         if (signature != "Extended Module: ") return false
         if (buffer[37] != 0x1a) return false

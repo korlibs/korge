@@ -97,7 +97,7 @@ class BatchBuilder2D constructor(
     //@PublishedApi internal val indices = ShortArray(maxIndices)
     //internal val vertices = FBuffer.allocNoDirect(6 * 4 * maxVertices)
     //internal val indices = FBuffer.allocNoDirect(2 * maxIndices)
-    val indicesI16 = indices.asUInt16()
+    val indicesI16 = indices.u16
     //val indicesI16 = indices
     internal val verticesFast32 = NBufferFast32(vertices)
 

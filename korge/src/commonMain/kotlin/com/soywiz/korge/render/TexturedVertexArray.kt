@@ -43,7 +43,7 @@ class TexturedVertexArray(vcount: Int, val indices: ShortArray, icount: Int = in
         }
     //internal val data = IntArray(TEXTURED_ARRAY_COMPONENTS_PER_VERTEX * vcount)
     //internal val _data = FBuffer(TEXTURED_ARRAY_COMPONENTS_PER_VERTEX * initialVcount * 4, direct = false)
-    @PublishedApi internal val _data: NBuffer = FBuffer.allocNoDirect(TEXTURED_ARRAY_COMPONENTS_PER_VERTEX * initialVcount * 4)
+    @PublishedApi internal val _data: NBuffer = NBuffer.allocNoDirect(TEXTURED_ARRAY_COMPONENTS_PER_VERTEX * initialVcount * 4)
     @PublishedApi internal val fast = _data.fast32
     //private val f32 = _data.f32
     //private val i32 = _data.i32

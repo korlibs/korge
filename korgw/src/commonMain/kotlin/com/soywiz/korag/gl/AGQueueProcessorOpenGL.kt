@@ -415,10 +415,10 @@ class AGQueueProcessorOpenGL(
     }
 
     private val TEMP_MAX_MATRICES = 1024
-    val tempBuffer = NBuffer.alloc(4 * 16 * TEMP_MAX_MATRICES)
-    val tempBufferM2 = NBuffer.alloc(4 * 2 * 2)
-    val tempBufferM3 = NBuffer.alloc(4 * 3 * 3)
-    val tempBufferM4 = NBuffer.alloc(4 * 4 * 4)
+    val tempBuffer = NBuffer.allocDirect(4 * 16 * TEMP_MAX_MATRICES)
+    val tempBufferM2 = NBuffer.allocDirect(4 * 2 * 2)
+    val tempBufferM3 = NBuffer.allocDirect(4 * 3 * 3)
+    val tempBufferM4 = NBuffer.allocDirect(4 * 4 * 4)
     val tempF32 = tempBuffer.f32
     private val tempFloats = FloatArray(16 * TEMP_MAX_MATRICES)
     private val mat3dArray = arrayOf(Matrix3D())
@@ -536,16 +536,16 @@ class AGQueueProcessorOpenGL(
                 VarType.Float1, VarType.Float2, VarType.Float3, VarType.Float4 -> {
                     var arrayCount = declArrayCount
                     when (value) {
-                        is Boolean -> tempBuffer.setFloat(0, value.toInt().toFloat())
-                        is Number -> tempBuffer.setAlignedFloat32(0, value.toFloat())
+                        is Boolean -> tempBuffer.setFloat32(0, value.toInt().toFloat())
+                        is Number -> tempBuffer.setFloat32(0, value.toFloat())
                         is Vector3D -> tempBuffer.setArrayFloat32(0, value.data, 0, stride)
                         is FloatArray -> {
                             arrayCount = min(declArrayCount, value.size / stride)
                             tempBuffer.setArrayFloat32(0, value, 0, stride * arrayCount)
                         }
                         is Point -> {
-                            tempBuffer.setFloat(0, value.xf)
-                            tempBuffer.setFloat(1, value.yf)
+                            tempBuffer.setFloat32(0, value.xf)
+                            tempBuffer.setFloat32(1, value.yf)
                         }
                         is RGBAf -> tempBuffer.setArrayFloat32(0, value.data, 0, stride)
                         is Margin -> {
@@ -664,7 +664,7 @@ class AGQueueProcessorOpenGL(
             else -> TODO()
         }
         val area = width * height
-        fbuffer(area * bytesPerPixel) { buffer ->
+        NBufferTemp(area * bytesPerPixel) { buffer ->
             when (kind) {
                 AG.ReadKind.COLOR -> gl.readPixels(x, y, width, height, KmlGl.RGBA, KmlGl.UNSIGNED_BYTE, buffer)
                 AG.ReadKind.DEPTH -> gl.readPixels(x, y, width, height, KmlGl.DEPTH_COMPONENT, KmlGl.FLOAT, buffer)

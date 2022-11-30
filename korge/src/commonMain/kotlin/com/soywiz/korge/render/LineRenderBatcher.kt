@@ -80,7 +80,7 @@ class LineRenderBatcher(
     private val vertexBuffer = ag.createVertexBuffer()
     private val program = Program(VERTEX, FRAGMENT)
     private val maxVertexCount = 1024
-    private val vertices = FBuffer.alloc(6 * 4 * maxVertexCount)
+    private val vertices = FBuffer.allocDirect(6 * 4 * maxVertexCount)
     private val tempRect = Rectangle()
     @PublishedApi
     internal val viewMat = Matrix3D()
@@ -191,9 +191,9 @@ class LineRenderBatcher(
     }
 
     private fun addVertex(x: Float, y: Float, color: RGBA = this.color, m: Matrix = currentMatrix) {
-        vertices.setAlignedFloat32(vertexPos + 0, m.transformXf(x, y))
-        vertices.setAlignedFloat32(vertexPos + 1, m.transformYf(x, y))
-        vertices.setAlignedInt32(vertexPos + 2, color.value)
+        vertices.setFloat32(vertexPos + 0, m.transformXf(x, y))
+        vertices.setFloat32(vertexPos + 1, m.transformYf(x, y))
+        vertices.setInt32(vertexPos + 2, color.value)
         vertexPos += LAYOUT.totalSize / Int.SIZE_BYTES
         vertexCount++
     }

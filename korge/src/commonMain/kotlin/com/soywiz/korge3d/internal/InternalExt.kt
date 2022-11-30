@@ -68,12 +68,12 @@ internal class Vector3DTemps {
 internal fun FloatArrayList.toFBuffer(): FBuffer = toFloatArray().toFBuffer()
 
 internal fun FloatArray.toFBuffer(): FBuffer =
-	FBuffer.alloc(this.size * 4).also { it.setAlignedArrayFloat32(0, this, 0, this.size) }
+	FBuffer.allocDirect(this.size * 4).also { it.setArrayFloat32(0, this, 0, this.size) }
 
 internal fun IntArrayList.toFBuffer(): FBuffer = toIntArray().toFBuffer()
 internal fun IntArray.toFBuffer():FBuffer =
-    FBuffer.alloc(this.size * 4).also { it.setAlignedArrayInt32(0, this, 0, this.size) }
+    FBuffer.allocDirect(this.size * 4).also { it.setArrayInt32(0, this, 0, this.size) }
 
 internal fun ShortArrayList.toFBuffer(): FBuffer = toShortArray().toFBuffer()
 internal fun ShortArray.toFBuffer():FBuffer =
-    FBuffer.alloc(this.size * 2).also { it.setAlignedArrayInt16(0, this, 0, this.size) }
+    FBuffer.allocDirect(this.size * 2).also { it.setArrayInt16(0, this, 0, this.size) }

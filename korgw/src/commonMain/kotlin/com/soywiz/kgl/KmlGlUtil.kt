@@ -156,14 +156,14 @@ class KmlGlBuffer(val gl: KmlGl, val type: Int, val buf: Int) {
 	}
 
 	fun dispose() {
-		fbuffer(4) {
+		NBufferTemp(4) {
 			gl.deleteBuffers(1, it)
 		}
 	}
 }
 
 fun KmlGl.createBuffer(type: Int): KmlGlBuffer {
-	val id = fbuffer(4) {
+	val id = NBufferTemp(4) {
 		genBuffers(1, it)
 		it.getInt32(0)
 	}
@@ -250,7 +250,7 @@ class KmlGlTex(val gl: KmlGl, val tex: Int) {
 	}
 
 	fun dispose() {
-		fbuffer(1) {
+		NBufferTemp(1) {
 			it.setInt32(0, tex)
 			gl.deleteTextures(1, it)
 		}
@@ -258,7 +258,7 @@ class KmlGlTex(val gl: KmlGl, val tex: Int) {
 }
 
 fun KmlGl.createKmlTexture(): KmlGlTex {
-	val buf = fbuffer(4) {
+	val buf = NBufferTemp(4) {
 		genTextures(1, it)
 		it.getInt32(0)
 	}
