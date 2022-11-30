@@ -129,7 +129,7 @@ fun java.nio.Buffer.limitSafe(newLimit: Int): Unit { limit(newLimit) }
 fun java.nio.Buffer.clearSafe(): Unit { clear() }
 fun java.nio.Buffer.flipSafe(): Unit { flip() }
 
-private inline fun <T> arraycopy(size: Int, src: Any?, srcPos: Int, dst: Any?, dstPos: Int, setDst: (Int, T) -> Unit, getSrc: (Int) -> T) {
+internal inline fun <T> arraycopy(size: Int, src: Any?, srcPos: Int, dst: Any?, dstPos: Int, setDst: (Int, T) -> Unit, getSrc: (Int) -> T) {
     val overlapping = src === dst && dstPos > srcPos
     if (overlapping) {
         var n = size
