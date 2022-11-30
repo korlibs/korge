@@ -22,6 +22,7 @@ internal open class UiApplication constructor(val factory: NativeUiFactory) : Ex
 internal var NativeUiFactory.NativeComponent.uiComponent by Extra.PropertyThis<NativeUiFactory.NativeComponent, UiComponent?> { null }
 
 internal open class UiComponent(val app: UiApplication, val component: NativeUiFactory.NativeComponent) : Extra by Extra.Mixin(), LengthExtensions {
+    val nativeComponent get() = component.component
     init {
         component.uiComponent = this
     }

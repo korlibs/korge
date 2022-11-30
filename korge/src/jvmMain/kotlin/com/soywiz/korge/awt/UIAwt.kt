@@ -69,6 +69,7 @@ internal open class NativeUiFactory {
     }
 
     interface NativeComponent : Extra {
+        val component: Component
         val factory: NativeUiFactory
         var bounds: RectangleInt
             get() = RectangleInt(0, 0, 0, 0)
@@ -242,7 +243,7 @@ internal open class NativeUiFactory {
 internal val awtToWrappersMap = WeakMap<Component, AwtComponent>()
 internal fun Component.toAwt(): AwtComponent? = awtToWrappersMap[this]
 
-internal open class AwtComponent(override val factory: NativeUiFactory, val component: Component) : NativeUiFactory.NativeComponent, Extra by Extra.Mixin() {
+internal open class AwtComponent(override val factory: NativeUiFactory, override val component: Component) : NativeUiFactory.NativeComponent, Extra by Extra.Mixin() {
     init {
         awtToWrappersMap[component] = this
     }
