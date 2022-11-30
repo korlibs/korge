@@ -3,8 +3,6 @@ package com.soywiz.kmem
 import java.nio.*
 
 actual class NBuffer(val buffer: ByteBuffer, val offset: Int, val size: Int) {
-    actual companion object
-
     fun slicedBuffer(roffset: Int = 0, rsize: Int = this.size - roffset): ByteBuffer {
         val pos = this.offset + roffset
         return buffer.duplicate().also {
@@ -15,6 +13,7 @@ actual class NBuffer(val buffer: ByteBuffer, val offset: Int, val size: Int) {
     }
 
     override fun toString(): String = NBuffer_toString(this)
+    actual companion object { }
 }
 
 actual fun NBuffer(size: Int, direct: Boolean): NBuffer {

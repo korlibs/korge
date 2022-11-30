@@ -5,11 +5,11 @@ import org.khronos.webgl.*
 
 actual class NBuffer(val dataView: DataView) {
     val buffer: ArrayBuffer get() = dataView.buffer
-    actual companion object
 
     fun sliceUint8Array(offset: Int = 0, size: Int = dataView.byteLength - offset): Uint8Array =
         Uint8Array(buffer, dataView.byteOffset + offset, size)
     override fun toString(): String = NBuffer_toString(this)
+    actual companion object {}
 }
 actual fun NBuffer(size: Int, direct: Boolean): NBuffer {
     checkNBufferSize(size)
@@ -49,3 +49,26 @@ actual fun NBuffer.setUnalignedInt64(byteOffset: Int, value: Long) {
 }
 actual fun NBuffer.setUnalignedFloat32(byteOffset: Int, value: Float) = dataView.setFloat32(byteOffset, value, currentIsLittleEndian)
 actual fun NBuffer.setUnalignedFloat64(byteOffset: Int, value: Double) = dataView.setFloat64(byteOffset, value, currentIsLittleEndian)
+
+fun ArrayBuffer.asUint8ClampedArray(): Uint8ClampedArray = Uint8ClampedArray(this)
+fun ArrayBuffer.asUint8Array(): Uint8Array = Uint8Array(this)
+fun ArrayBuffer.asInt8Array(): Int8Array = Int8Array(this)
+fun ArrayBuffer.asInt16Array(): Int16Array = Int16Array(this)
+fun ArrayBuffer.asInt32Array(): Int32Array = Int32Array(this)
+fun ArrayBuffer.asFloat32Array(): Float32Array = Float32Array(this)
+fun ArrayBuffer.asFloat64Array(): Float64Array = Float64Array(this)
+
+fun ArrayBuffer.asUByteArray(): UByteArray = asUint8Array().unsafeCast<ByteArray>().asUByteArray()
+fun ArrayBuffer.asByteArray(): ByteArray = asInt8Array().unsafeCast<ByteArray>()
+fun ArrayBuffer.asShortArray(): ShortArray = asInt16Array().unsafeCast<ShortArray>()
+fun ArrayBuffer.asIntArray(): IntArray = asInt32Array().unsafeCast<IntArray>()
+fun ArrayBuffer.asFloatArray(): FloatArray = asFloat32Array().unsafeCast<FloatArray>()
+fun ArrayBuffer.asDoubleArray(): DoubleArray = asFloat64Array().unsafeCast<DoubleArray>()
+
+val NBuffer.arrayByte: Int8Array get() = Int8Array(buffer)
+val NBuffer.arrayShort: Int16Array get() = Int16Array(buffer)
+val NBuffer.arrayInt: Int32Array get() = Int32Array(buffer)
+val NBuffer.arrayFloat: Float32Array get() = Float32Array(buffer)
+val NBuffer.arrayDouble: Float64Array get() = Float64Array(buffer)
+val NBuffer.arrayBuffer: ArrayBuffer get() = this.mem.buffer
+val NBuffer.arrayUByte: Uint8Array get() = Uint8Array(this.mem.buffer)

@@ -9,11 +9,7 @@ import com.soywiz.korim.bitmap.NativeImage
 import com.soywiz.korim.color.RgbaArray
 import com.soywiz.korim.format.HtmlNativeImage
 import kotlinx.browser.document
-import org.khronos.webgl.Float32Array
-import org.khronos.webgl.Int32Array
-import org.khronos.webgl.Uint8Array
-import org.khronos.webgl.WebGLProgram
-import org.khronos.webgl.WebGLRenderingContext
+import org.khronos.webgl.*
 import org.w3c.dom.HTMLCanvasElement
 import org.w3c.dom.HTMLElement
 import kotlin.math.min
@@ -189,8 +185,8 @@ class KmlGlJsCanvas(val canvas: HTMLCanvasElement, val glOpts: dynamic) : KmlGlW
     override fun stencilOp(fail: Int, zfail: Int, zpass: Int): Unit = gl.stencilOp(fail, zfail, zpass)
     override fun stencilOpSeparate(face: Int, sfail: Int, dpfail: Int, dppass: Int): Unit = gl.stencilOpSeparate(face, sfail, dpfail, dppass)
     override fun texImage2D(target: Int, level: Int, internalformat: Int, width: Int, height: Int, border: Int, format: Int, type: Int, pixels: FBuffer?) {
-        val vpixels = when (type) {
-            FLOAT -> pixels?.f32
+        val vpixels: ArrayBufferView? = when (type) {
+            FLOAT -> pixels?.arrayFloat
             else -> pixels?.arrayUByte
         }
         gl.texImage2D(target, level, internalformat, width, height, border, format, type, vpixels)
@@ -237,7 +233,7 @@ class KmlGlJsCanvas(val canvas: HTMLCanvasElement, val glOpts: dynamic) : KmlGlW
     override fun vertexAttribPointer(index: Int, size: Int, type: Int, normalized: Boolean, stride: Int, pointer: Long): Unit = gl.vertexAttribPointer(index, size, type, normalized, stride, pointer.toInt())
     override fun viewport(x: Int, y: Int, width: Int, height: Int): Unit = gl.viewport(x, y, width, height)
 
-    private fun Float32Buffer.sliceIfRequired(count: Int): Float32Buffer = if (size == count) this else Float32Array(this.buffer, 0, count)
+    private fun Float32Array.sliceIfRequired(count: Int): Float32Array = if (this.length == count) this else Float32Array(this.buffer, 0, count)
 
     override val extensions by lazy { (gl.getSupportedExtensions() ?: arrayOf()).toSet() }
 

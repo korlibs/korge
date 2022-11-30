@@ -320,12 +320,6 @@ val NBuffer.f32: NBufferFloat32 get() = NBufferFloat32(this)
 val NBuffer.f64: NBufferFloat64 get() = NBufferFloat64(this)
 val NBuffer.fast32: NBufferFast32 get() = NBufferFast32(this)
 
-@Deprecated("") val NBuffer.arrayByte: NBufferInt8 get() = i8
-@Deprecated("") val NBuffer.arrayShort: NBufferInt16 get() = i16
-@Deprecated("") val NBuffer.arrayInt: NBufferInt32 get() = i32
-@Deprecated("") val NBuffer.arrayFloat: NBufferFloat32 get() = f32
-@Deprecated("") val NBuffer.arrayDouble: NBufferFloat64 get() = f64
-
 fun NBuffer.asInt8(): NBufferInt8 = NBufferInt8(this)
 fun NBuffer.asInt16(): NBufferInt16 = NBufferInt16(this)
 fun NBuffer.asInt32(): NBufferInt32 = NBufferInt32(this)

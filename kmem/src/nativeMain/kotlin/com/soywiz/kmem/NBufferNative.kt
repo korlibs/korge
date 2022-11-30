@@ -4,8 +4,8 @@ import kotlinx.cinterop.*
 
 actual class NBuffer(val data: ByteArray, val offset: Int, val size: Int, dummy: Unit) {
     val end: Int = offset + size
-    actual companion object
     override fun toString(): String = NBuffer_toString(this)
+    actual companion object { }
 }
 actual fun NBuffer(size: Int, direct: Boolean): NBuffer {
     checkNBufferSize(size)

@@ -298,7 +298,7 @@ class TexturedVertexArray(vcount: Int, val indices: ShortArray, icount: Int = in
 
     fun copy(): TexturedVertexArray {
         val out = TexturedVertexArray(vcount, indices, icount)
-        arraycopy(this._data.arrayByte, 0, out._data.arrayByte, 0, _data.size)
+        arraycopy(this._data, 0, out._data, 0, _data.size)
         return out
     }
 
