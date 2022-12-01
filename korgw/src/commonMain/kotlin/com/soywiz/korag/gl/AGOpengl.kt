@@ -4,11 +4,7 @@ import com.soywiz.kds.Extra
 import com.soywiz.kgl.KmlGl
 import com.soywiz.kgl.KmlGlState
 import com.soywiz.kgl.getIntegerv
-import com.soywiz.klogger.Console
-import com.soywiz.korag.AG
-import com.soywiz.korag.AGFeatures
-import com.soywiz.korag.AGList
-import com.soywiz.korag.processBlockingAll
+import com.soywiz.korag.*
 import com.soywiz.korio.annotations.KorIncomplete
 import com.soywiz.korio.annotations.KorInternal
 import com.soywiz.krypto.encoding.hex
@@ -34,12 +30,12 @@ abstract class AGOpengl(checked: Boolean = false) : AG(checked) {
         //gl.swapInterval = 0
     }
 
-    override fun createMainRenderBuffer(): BaseRenderBufferImpl {
+    override fun createMainRenderBuffer(): AGBaseRenderBufferImpl {
         var backBufferTextureBinding2d: Int = 0
         var backBufferRenderBufferBinding: Int = 0
         var backBufferFrameBufferBinding: Int = 0
 
-        return object : BaseRenderBufferImpl() {
+        return object : AGBaseRenderBufferImpl(this) {
             override fun init() {
                 commandsSync {  }
                 backBufferTextureBinding2d = gl.getIntegerv(KmlGl.TEXTURE_BINDING_2D)
@@ -77,7 +73,7 @@ abstract class AGOpengl(checked: Boolean = false) : AG(checked) {
         glProcessor?.processBlockingAll(list)
     }
 
-    override fun readColorTexture(texture: Texture, x: Int, y: Int, width: Int, height: Int) {
+    override fun readColorTexture(texture: AGTexture, x: Int, y: Int, width: Int, height: Int) {
         //gl.flush()
         //gl.finish()
         texture.bind()

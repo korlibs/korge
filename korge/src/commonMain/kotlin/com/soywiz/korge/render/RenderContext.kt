@@ -235,9 +235,9 @@ class RenderContext constructor(
 	}
 
     inline fun renderToFrameBuffer(
-        frameBuffer: AG.RenderBuffer,
+        frameBuffer: AGRenderBuffer,
         clear: Boolean = true,
-        render: (AG.RenderBuffer) -> Unit,
+        render: (AGRenderBuffer) -> Unit,
     ) {
         flush()
         ag.setRenderBufferTemporally(frameBuffer) {
@@ -264,7 +264,7 @@ class RenderContext constructor(
      */
     inline fun renderToTexture(
         width: Int, height: Int,
-        render: (AG.RenderBuffer) -> Unit = {},
+        render: (AGRenderBuffer) -> Unit = {},
         hasDepth: Boolean = false, hasStencil: Boolean = true, msamples: Int = 1,
         use: (texture: Texture) -> Unit
     ) {
@@ -317,7 +317,7 @@ class RenderContext constructor(
      */
     fun getTex(bmp: BmpSlice): Texture = agBitmapTextureManager.getTexture(bmp)
 	fun getTex(bmp: BitmapCoords): TextureCoords = agBitmapTextureManager.getTexture(bmp)
-    fun getBuffer(buffer: AgCachedBuffer): AG.AGBuffer = agBufferManager.getBuffer(buffer)
+    fun getBuffer(buffer: AgCachedBuffer): AGBuffer = agBufferManager.getBuffer(buffer)
 
     /**
      * Allocates a [Texture.Base] from a [Bitmap]. A Texture.Base doesn't have region information.

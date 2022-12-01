@@ -6,7 +6,6 @@ import com.soywiz.korag.*
 import com.soywiz.korag.shader.FragmentShader
 import com.soywiz.korag.shader.Uniform
 import com.soywiz.korag.shader.VarType
-import com.soywiz.korag.shader.VertexShader
 import com.soywiz.korge.render.RenderContext
 import com.soywiz.korge.view.Container
 import com.soywiz.korge.view.View
@@ -115,7 +114,7 @@ class DebugVertexView(pointsList: List<IVectorArrayList>, color: RGBA = Colors.W
         ctx.dynamicVertexBufferPool.alloc { vb ->
             vb.upload(this@DebugVertexView.buffer)
             val vData = fastArrayListOf(
-                AG.VertexData(vb, DefaultShaders.LAYOUT_DEBUG)
+                AGVertexData(vb, DefaultShaders.LAYOUT_DEBUG)
             )
             batches.fastForEach { batch ->
                 ctx.ag.drawV2(

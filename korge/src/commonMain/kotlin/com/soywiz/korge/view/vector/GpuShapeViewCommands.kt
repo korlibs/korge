@@ -100,7 +100,7 @@ class GpuShapeViewCommands {
 
     private val decomposed = Matrix.Transform()
     private val tempColorMul = FloatArray(4)
-    private val texturesToDelete = FastArrayList<AG.Texture>()
+    private val texturesToDelete = FastArrayList<AGTexture>()
     private val tempUniforms = AGUniformValues()
     private val tempMat = Matrix()
     fun render(ctx: RenderContext, globalMatrix: Matrix, localMatrix: Matrix, applyScissor: Boolean, colorMul: RGBA, doRequireTexture: Boolean) {
@@ -138,9 +138,9 @@ class GpuShapeViewCommands {
                         list.useProgram(ag, GpuShapeViewPrograms.PROGRAM_COMBINED)
                         //list.vertexArrayObjectSet(ag, GpuShapeViewPrograms.LAYOUT_POS_TEX_FILL_DIST, bufferVertexData) {
                         list.vertexArrayObjectSet(
-                            AG.VertexArrayObject(
+                            AGVertexArrayObject(
                                 fastArrayListOf(
-                                    AG.VertexData(
+                                    AGVertexData(
                                         ctx.getBuffer(
                                             vertices
                                         ), GpuShapeViewPrograms.LAYOUT_POS_TEX_FILL_DIST
@@ -184,7 +184,7 @@ class GpuShapeViewCommands {
                                                 //val pixelScale = 1f
                                                 tempUniforms.put(GpuShapeViewPrograms.u_GlobalPixelScale, pixelScale)
 
-                                                val texUnit = tempUniforms[DefaultShaders.u_Tex] as? AG.TextureUnit?
+                                                val texUnit = tempUniforms[DefaultShaders.u_Tex] as? AGTextureUnit?
                                                 val premultiplied = texUnit?.texture?.premultiplied ?: false
                                                 //val premultiplied = false
                                                 val outPremultiplied = ag.isRenderingToTexture
@@ -235,7 +235,7 @@ class GpuShapeViewCommands {
             if (value is Bitmap) {
                 val tex = ctx.ag.tempTexturePool.alloc()
                 tex.upload(value)
-                uniforms[uniform] = AG.TextureUnit(tex)
+                uniforms[uniform] = AGTextureUnit(tex)
                 texturesToDelete.add(tex)
             }
         }

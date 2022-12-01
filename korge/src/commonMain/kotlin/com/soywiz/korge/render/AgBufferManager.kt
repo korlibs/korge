@@ -6,8 +6,7 @@ import com.soywiz.kds.getAndRemove
 import com.soywiz.kds.getOrPut
 import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.kmem.*
-import com.soywiz.korag.AG
-import com.soywiz.korag.AGList
+import com.soywiz.korag.*
 
 /**
  * Class to handle cached buffers, that are freed after a few frames of not being used
@@ -15,14 +14,14 @@ import com.soywiz.korag.AGList
 class AgBufferManager(
     val ag: AG
 ) {
-    private val buffers = FastIdentityMap<AgCachedBuffer, AG.AGBuffer>()
+    private val buffers = FastIdentityMap<AgCachedBuffer, AGBuffer>()
     private val referencedBuffersSinceGC = AgFastSet<AgCachedBuffer>()
     private val bufferPool = Pool {
         //println("CREATE BUFFER")
         ag.createBuffer()
     }
 
-    fun getBuffer(cached: AgCachedBuffer): AG.AGBuffer {
+    fun getBuffer(cached: AgCachedBuffer): AGBuffer {
         referencedBuffersSinceGC.add(cached)
         return buffers.getOrPut(cached) {
             bufferPool.alloc().also {

@@ -5,7 +5,7 @@ package com.soywiz.korag.software
 import com.soywiz.kds.IntArrayList
 import com.soywiz.kmem.extract
 import com.soywiz.kmem.insert
-import com.soywiz.korag.AG
+import com.soywiz.korag.*
 import com.soywiz.korag.shader.Uniform
 import com.soywiz.korag.shader.VarKind
 import com.soywiz.korag.shader.Variable
@@ -93,7 +93,7 @@ class SGVM(
             when (type.kind) {
                 VarKind.TINT -> {
                     if (type.elementCount != 1) TODO("${type.elementCount}")
-                    if (value is AG.TextureUnit) {
+                    if (value is AGTextureUnit) {
                         val softwareTexture = value.texture as? AGSoftware.SoftwareTexture?
                         softwareTexture?.bindEnsuring()
                         textures[pos] = softwareTexture

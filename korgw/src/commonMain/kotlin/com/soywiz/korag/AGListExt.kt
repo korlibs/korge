@@ -60,7 +60,7 @@ fun AGList.setStencilState(stencilOpFunc: AGStencilOpFuncState?, stencilRef: AGS
 fun AGList.setScissorState(ag: AG, scissor: AGScissor = AGScissor.NIL) =
     setScissorState(ag.currentRenderBuffer, ag.mainRenderBuffer, scissor)
 
-fun AGList.setScissorState(currentRenderBuffer: AG.BaseRenderBuffer?, mainRenderBuffer: AG.BaseRenderBuffer, scissor: AGScissor = AGScissor.NIL) {
+fun AGList.setScissorState(currentRenderBuffer: AGBaseRenderBuffer?, mainRenderBuffer: AGBaseRenderBuffer, scissor: AGScissor = AGScissor.NIL) {
     if (currentRenderBuffer == null) return
 
     //println("applyScissorState")
@@ -142,7 +142,7 @@ inline fun AGList.uniformsSet(uniforms: AGUniformValues?, block: () -> Unit) {
     //}
 }
 
-inline fun AGList.vertexArrayObjectSet(vao: AG.VertexArrayObject, block: () -> Unit) {
+inline fun AGList.vertexArrayObjectSet(vao: AGVertexArrayObject, block: () -> Unit) {
     val vaoId = vaoCreate()
     try {
         vaoSet(vaoId, vao)
@@ -157,7 +157,7 @@ inline fun AGList.vertexArrayObjectSet(vao: AG.VertexArrayObject, block: () -> U
 inline fun AGList.vertexArrayObjectSet(ag: AG, layout: VertexLayout, data: Any, offset: Int = 0, length: Int = -1, block: () -> Unit) {
     ag.tempVertexBufferPool.alloc { buffer ->
         buffer.upload(data, offset, length)
-        vertexArrayObjectSet(AG.VertexArrayObject(fastArrayListOf(AG.VertexData(buffer, layout)))) {
+        vertexArrayObjectSet(AGVertexArrayObject(fastArrayListOf(AGVertexData(buffer, layout)))) {
             block()
         }
     }

@@ -155,6 +155,6 @@ fun AGUniformValues.storageForMatrix3D(uniform: Uniform, matrix: Matrix3D = Matr
     }
 }
 
-fun AGUniformValues.storageForTextureUnit(uniform: Uniform, textureUnit: AG.TextureUnit): UniformValueStorage<AG.TextureUnit> {
+fun AGUniformValues.storageForTextureUnit(uniform: Uniform, textureUnit: AGTextureUnit): UniformValueStorage<AGTextureUnit> {
     return UniformValueStorage(this, uniform, textureUnit)
 }

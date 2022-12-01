@@ -110,7 +110,7 @@ class BatchBuilder2D constructor(
     @PublishedApi internal var indexPos = 0
     @PublishedApi internal var currentTexIndex = 0
 
-    @PublishedApi internal var currentTexN: Array<AG.Texture?> = Array(maxTextures) { null }
+    @PublishedApi internal var currentTexN: Array<AGTexture?> = Array(maxTextures) { null }
 
 	//@PublishedApi internal var currentTex0: AG.Texture? = null
     //@PublishedApi internal var currentTex1: AG.Texture? = null
@@ -164,7 +164,7 @@ class BatchBuilder2D constructor(
 
 	init { logger.trace { "BatchBuilder2D[9]" } }
 
-    val textureUnitN = Array(maxTextures) { AG.TextureUnit(null, linear = false) }
+    val textureUnitN = Array(maxTextures) { AGTextureUnit(null, linear = false) }
 
     //@KorgeInternal val textureUnit0 = AG.TextureUnit(null, linear = false)
     //@KorgeInternal val textureUnit1 = AG.TextureUnit(null, linear = false)
@@ -471,7 +471,7 @@ class BatchBuilder2D constructor(
      * Sets the current texture [tex], [smoothing], [blendMode] and [program] that will be used by the following drawing calls not specifying these attributes.
      */
     inline fun setStateFast(
-        tex: AG.Texture?, smoothing: Boolean, blendMode: BlendMode, program: Program?, icount: Int, vcount: Int,
+        tex: AGTexture?, smoothing: Boolean, blendMode: BlendMode, program: Program?, icount: Int, vcount: Int,
     ) {
         ensure(icount, vcount)
 
@@ -486,7 +486,7 @@ class BatchBuilder2D constructor(
         currentProgram = program
     }
 
-    fun hasTex(tex: AG.Texture?): Boolean {
+    fun hasTex(tex: AGTexture?): Boolean {
         currentTexN.fastForEach { if (it === tex) return true }
         return false
     }
@@ -502,7 +502,7 @@ class BatchBuilder2D constructor(
     //}
 
     @PublishedApi internal fun isCurrentStateFast(
-        tex: AG.Texture?, smoothing: Boolean, blendMode: BlendMode, program: Program?,
+        tex: AGTexture?, smoothing: Boolean, blendMode: BlendMode, program: Program?,
     ): Boolean {
         var hasTex = hasTex(tex)
         if (currentTexN[0] !== null && !hasTex) {
@@ -870,9 +870,9 @@ class BatchBuilder2D constructor(
     }
 
     private val vertexData = fastArrayListOf(
-        AG.VertexData(vertexBuffer, LAYOUT),
-        AG.VertexData(texIndexVertexBuffer, LAYOUT_TEX_INDEX),
-        AG.VertexData(texWrapVertexBuffer, LAYOUT_WRAP),
+        AGVertexData(vertexBuffer, LAYOUT),
+        AGVertexData(texIndexVertexBuffer, LAYOUT_TEX_INDEX),
+        AGVertexData(texWrapVertexBuffer, LAYOUT_WRAP),
     )
 
     fun updateStandardUniforms() {
@@ -892,7 +892,7 @@ class BatchBuilder2D constructor(
         uniforms[u_OutputPre] = ag.isRenderingToTexture
     }
 
-    fun getIsPremultiplied(texture: AG.Texture?): Boolean = texture?.premultiplied == true
+    fun getIsPremultiplied(texture: AGTexture?): Boolean = texture?.premultiplied == true
     fun getDefaultProgram(): Program = PROGRAM
     fun getDefaultProgramForTexture(): Program = getDefaultProgram()
 

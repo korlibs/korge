@@ -2,7 +2,7 @@ package com.soywiz.korge3d
 
 import com.soywiz.kds.FastArrayList
 import com.soywiz.kds.Pool
-import com.soywiz.korag.AG
+import com.soywiz.korag.*
 import com.soywiz.korge.render.AgBitmapTextureManager
 import com.soywiz.korge.render.AgBufferManager
 import com.soywiz.korge.render.RenderContext
@@ -14,7 +14,7 @@ class RenderContext3D() {
     lateinit var ag: AG
     lateinit var rctx: RenderContext
     val shaders = Shaders3D()
-    val textureUnit = AG.TextureUnit()
+    val textureUnit = AGTextureUnit()
     val bindMat4 = Matrix3D()
     val bones = Array(128) { Matrix3D() }
     val tempMat = Matrix3D()
@@ -30,9 +30,9 @@ class RenderContext3D() {
     val textureManager by lazy { AgBitmapTextureManager(ag) }
     val bufferManager by lazy { AgBufferManager(ag) }
 
-    val tempAgVertexData = FastArrayList<AG.VertexData>()
+    val tempAgVertexData = FastArrayList<AGVertexData>()
 
-    inline fun useDynamicVertexData(vertexBuffers: FastArrayList<BufferWithVertexLayout>, block: (FastArrayList<AG.VertexData>) -> Unit) {
+    inline fun useDynamicVertexData(vertexBuffers: FastArrayList<BufferWithVertexLayout>, block: (FastArrayList<AGVertexData>) -> Unit) {
         dynamicVertexDataPool.allocMultiple(vertexBuffers.size, tempAgVertexData) { vertexData ->
             for (n in 0 until vertexBuffers.size) {
                 val bufferWithVertexLayout = vertexBuffers[n]

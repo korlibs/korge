@@ -208,19 +208,19 @@ open class FSprites(val maxSize: Int) {
         val a_texId = Attribute("a_texId", VarType.UByte1, normalized = false, precision = Precision.LOW).withDivisor(1)
         val v_TexId = Varying("v_TexId", VarType.Float1, precision = Precision.LOW)
 
-        val RenderContext.xyBuffer by Extra.PropertyThis<RenderContext, AG.VertexData> {
+        val RenderContext.xyBuffer by Extra.PropertyThis<RenderContext, AGVertexData> {
             ag.createVertexData(a_xy)
         }
-        val RenderContext.fastSpriteBuffer by Extra.PropertyThis<RenderContext, AG.VertexData> {
+        val RenderContext.fastSpriteBuffer by Extra.PropertyThis<RenderContext, AGVertexData> {
             ag.createVertexData(a_pos, a_scale, a_angle, a_anchor, a_uv0, a_uv1)
         }
-        val RenderContext.fastSpriteBufferMul by Extra.PropertyThis<RenderContext, AG.VertexData> {
+        val RenderContext.fastSpriteBufferMul by Extra.PropertyThis<RenderContext, AGVertexData> {
             ag.createVertexData(a_colMul)
         }
-        val RenderContext.fastSpriteBufferTexId by Extra.PropertyThis<RenderContext, AG.VertexData> {
+        val RenderContext.fastSpriteBufferTexId by Extra.PropertyThis<RenderContext, AGVertexData> {
             ag.createVertexData(a_texId)
         }
-        val RenderContext.buffers by Extra.PropertyThis<RenderContext, FastArrayList<AG.VertexData>> {
+        val RenderContext.buffers by Extra.PropertyThis<RenderContext, FastArrayList<AGVertexData>> {
             fastArrayListOf(xyBuffer, fastSpriteBuffer, fastSpriteBufferMul, fastSpriteBufferTexId)
         }
 

@@ -30,7 +30,7 @@ interface IDefaultShaders {
     val t_Temp0: Temp get() = DefaultShaders.t_Temp0
     val t_Temp1: Temp get() = DefaultShaders.t_Temp1
     val t_TempMat2: Temp get() = DefaultShaders.t_TempMat2
-    val textureUnit: AG.TextureUnit get() = DefaultShaders.textureUnit
+    val textureUnit: AGTextureUnit get() = DefaultShaders.textureUnit
 }
 
 object DefaultShaders {
@@ -50,7 +50,7 @@ object DefaultShaders {
 	val t_Temp1: Temp = Temp(1, VarType.Float4)
     val t_TempMat2: Temp = Temp(2, VarType.Mat2)
 
-	val textureUnit: AG.TextureUnit = AG.TextureUnit()
+	val textureUnit: AGTextureUnit = AGTextureUnit()
 
 	val LAYOUT_DEFAULT: VertexLayout = VertexLayout(a_Pos, a_Tex, a_Col)
 

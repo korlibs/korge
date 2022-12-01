@@ -184,7 +184,7 @@ class AGQueueProcessorOpenGL(
         buffers.tryGetAndDelete(id)?.let { gl.deleteBuffer(it.glId); it.glId = 0 }
     }
 
-    private fun bindBuffer(buffer: AG.AGBuffer, target: AGBufferKind) {
+    private fun bindBuffer(buffer: AGBuffer, target: AGBufferKind) {
         val bufferInfo = buffers[buffer.agId] ?: return
         if (bufferInfo.cachedVersion != globalState.contextVersion) {
             bufferInfo.cachedVersion = globalState.contextVersion
@@ -214,7 +214,7 @@ class AGQueueProcessorOpenGL(
         offset: Int,
         instances: Int,
         indexType: AGIndexType,
-        indices: AG.AGBuffer?
+        indices: AGBuffer?
     ) {
         indices?.let { bindBuffer(it, AGBufferKind.INDEX) }
 
@@ -299,10 +299,10 @@ class AGQueueProcessorOpenGL(
         gl.clearStencil(stencil)
     }
 
-    val vaos = arrayListOf<AG.VertexArrayObject?>()
+    val vaos = arrayListOf<AGVertexArrayObject?>()
 
     //val vaos = IntMap<AG.VertexArrayObject?>()
-    var lastUsedVao: AG.VertexArrayObject? = null
+    var lastUsedVao: AGVertexArrayObject? = null
 
     private fun ensureVaoIndex(index: Int): Int {
         while (vaos.size <= index) vaos.add(null)
@@ -316,7 +316,7 @@ class AGQueueProcessorOpenGL(
         if (id < vaos.size) vaos[id] = null
     }
 
-    override fun vaoSet(id: Int, vao: AG.VertexArrayObject) {
+    override fun vaoSet(id: Int, vao: AGVertexArrayObject) {
         vaos[ensureVaoIndex(id)] = vao
     }
 
@@ -434,7 +434,7 @@ class AGQueueProcessorOpenGL(
 
             when (uniformType) {
                 VarType.Sampler2D, VarType.SamplerCube -> {
-                    val unit = value.fastCastTo<AG.TextureUnit>()
+                    val unit = value.fastCastTo<AGTextureUnit>()
                     gl.activeTexture(KmlGl.TEXTURE0 + textureUnit)
 
                     val tex = unit.texture
@@ -618,7 +618,7 @@ class AGQueueProcessorOpenGL(
     }
 
 
-    fun textureSetFilter(tex: AG.Texture, linear: Boolean, trilinear: Boolean = linear) {
+    fun textureSetFilter(tex: AGTexture, linear: Boolean, trilinear: Boolean = linear) {
         val minFilter = if (tex.mipmaps) {
             when {
                 linear -> when {
@@ -639,7 +639,7 @@ class AGQueueProcessorOpenGL(
         gl.texParameteri(tex.implForcedTexTarget.toGl(), KmlGl.TEXTURE_MAG_FILTER, magFilter)
     }
 
-    fun textureSetWrap(tex: AG.Texture) {
+    fun textureSetWrap(tex: AGTexture) {
         gl.texParameteri(tex.implForcedTexTarget.toGl(), KmlGl.TEXTURE_WRAP_S, KmlGl.CLAMP_TO_EDGE)
         gl.texParameteri(tex.implForcedTexTarget.toGl(), KmlGl.TEXTURE_WRAP_T, KmlGl.CLAMP_TO_EDGE)
         if (tex.implForcedTexTarget.dims >= 3) gl.texParameteri(tex.implForcedTexTarget.toGl(), KmlGl.TEXTURE_WRAP_R, KmlGl.CLAMP_TO_EDGE)
@@ -710,7 +710,7 @@ class AGQueueProcessorOpenGL(
         gl.bindTexture(target.toGl(), glId)
     }
 
-    override fun textureBindEnsuring(tex: AG.Texture?) {
+    override fun textureBindEnsuring(tex: AGTexture?) {
         if (tex == null) return gl.bindTexture(KmlGl.TEXTURE_2D, 0)
 
         // Context lost
@@ -731,15 +731,15 @@ class AGQueueProcessorOpenGL(
         if (!tex.generating) {
             tex.generating = true
             when (source) {
-                is AG.SyncBitmapSourceList -> {
+                is AGSyncBitmapSourceList -> {
                     tex.tempBitmaps = source.gen()
                     tex.generated = true
                 }
-                is AG.SyncBitmapSource -> {
+                is AGSyncBitmapSource -> {
                     tex.tempBitmaps = listOf(source.gen())
                     tex.generated = true
                 }
-                is AG.AsyncBitmapSource -> {
+                is AGAsyncBitmapSource -> {
                     launchImmediately(source.coroutineContext) {
                         tex.tempBitmaps = listOf(source.gen())
                         tex.generated = true
@@ -778,12 +778,12 @@ class AGQueueProcessorOpenGL(
         gl.bindTexture(gl.TEXTURE_2D, 0)
     }
 
-    override fun textureUpdate(textureId: Int, target: AGTextureTargetKind, index: Int, bmp: Bitmap?, source: AG.BitmapSourceBase, doMipmaps: Boolean, premultiplied: Boolean) {
+    override fun textureUpdate(textureId: Int, target: AGTextureTargetKind, index: Int, bmp: Bitmap?, source: AGBitmapSourceBase, doMipmaps: Boolean, premultiplied: Boolean) {
         //textureBind(textureId, target, -1)
         _textureUpdate(textureId, target, index, bmp, source, doMipmaps, premultiplied)
     }
 
-    fun _textureUpdate(textureId: Int, target: AGTextureTargetKind, index: Int, bmp: Bitmap?, source: AG.BitmapSourceBase, doMipmaps: Boolean, premultiplied: Boolean) {
+    fun _textureUpdate(textureId: Int, target: AGTextureTargetKind, index: Int, bmp: Bitmap?, source: AGBitmapSourceBase, doMipmaps: Boolean, premultiplied: Boolean) {
         val bytesPerPixel = if (source.rgba) 4 else 1
 
         val isFloat = bmp is FloatBitmap32

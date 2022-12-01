@@ -101,8 +101,8 @@ class AgBitmapTextureManagerTest {
                 val program = list.createProgram(DefaultShaders.PROGRAM_DEFAULT)
                 list.useProgram(program)
                 list.uboSet(it, AGUniformValues(
-                    DefaultShaders.u_Tex to AG.TextureUnit(tex1.base),
-                    DefaultShaders.u_Tex2 to AG.TextureUnit(tex0.base),
+                    DefaultShaders.u_Tex to AGTextureUnit(tex1.base),
+                    DefaultShaders.u_Tex2 to AGTextureUnit(tex0.base),
                 )
                 )
                 list.uboUse(it)

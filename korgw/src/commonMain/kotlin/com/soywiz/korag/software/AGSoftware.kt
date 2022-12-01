@@ -33,7 +33,7 @@ open class AGSoftware(val bitmap: Bitmap32) : AG() {
     var renderBuffer: SoftwareRenderBuffer? = null
     var currentTexture: SoftwareTexture? = null
 
-    inner class SoftwareTexture(premultiplied: Boolean) : AG.Texture(premultiplied) {
+    inner class SoftwareTexture(premultiplied: Boolean) : AGTexture(this, premultiplied) {
         var bitmap: Bitmap = Bitmaps.transparent.bmp
 
         override fun uploadedSource() {
@@ -47,7 +47,7 @@ open class AGSoftware(val bitmap: Bitmap32) : AG() {
             currentTexture = null
         }
 
-        override fun actualSyncUpload(source: BitmapSourceBase, bmps: List<Bitmap?>?, requestMipmaps: Boolean) {
+        override fun actualSyncUpload(source: AGBitmapSourceBase, bmps: List<Bitmap?>?, requestMipmaps: Boolean) {
             bitmap = bmps?.firstOrNull() ?: bitmap
         }
 
@@ -55,7 +55,7 @@ open class AGSoftware(val bitmap: Bitmap32) : AG() {
         }
     }
 
-    inner class SoftwareRenderBuffer : RenderBuffer() {
+    inner class SoftwareRenderBuffer : AGRenderBuffer(this) {
         var bitmap = Bitmap32(1, 1)
 
         override fun setSize(x: Int, y: Int, width: Int, height: Int, fullWidth: Int, fullHeight: Int) {
@@ -67,17 +67,17 @@ open class AGSoftware(val bitmap: Bitmap32) : AG() {
         }
     }
 
-    inner class SoftwareBuffer(list: AGList) : AGBuffer( list) {
+    inner class SoftwareBuffer(list: AGList) : AGBuffer(this, list) {
         val memory: com.soywiz.kmem.Buffer? get() = mem
     }
 
     override fun createBuffer(): AGBuffer = commandsNoWait { SoftwareBuffer(it) }
-    override fun createMainRenderBuffer(): BaseRenderBuffer = SoftwareRenderBuffer()
-    override fun createRenderBuffer(): RenderBuffer = SoftwareRenderBuffer()
+    override fun createMainRenderBuffer(): AGBaseRenderBuffer = SoftwareRenderBuffer()
+    override fun createRenderBuffer(): AGRenderBuffer = SoftwareRenderBuffer()
 
-    override fun createTexture(premultiplied: Boolean, targetKind: AGTextureTargetKind): Texture = SoftwareTexture(premultiplied)
+    override fun createTexture(premultiplied: Boolean, targetKind: AGTextureTargetKind): AGTexture = SoftwareTexture(premultiplied)
 
-    fun readIndices(batch: Batch): IntArray {
+    fun readIndices(batch: AGBatch): IntArray {
         val indices = batch.indices as? SoftwareBuffer ?: return IntArray(batch.vertexCount) { it }
         val memory = indices.memory ?: TODO()
         return when (batch.indexType) {
@@ -86,7 +86,7 @@ open class AGSoftware(val bitmap: Bitmap32) : AG() {
         }
     }
 
-    override fun draw(batch: Batch) {
+    override fun draw(batch: AGBatch) {
         val time = measureTime {
             drawInternal(batch)
         }
@@ -103,7 +103,7 @@ open class AGSoftware(val bitmap: Bitmap32) : AG() {
 
     private val compiledPrograms = LinkedHashMap<Program, CompiledProgram>()
 
-    fun drawInternal(batch: Batch) {
+    fun drawInternal(batch: AGBatch) {
         // Read indices
         val indices = readIndices(batch)
 
@@ -144,7 +144,7 @@ open class AGSoftware(val bitmap: Bitmap32) : AG() {
                 else -> 1f
             }
         }
-        data class CachedVertexData(val data: VertexData, val program: SGVM) {
+        data class CachedVertexData(val data: AGVertexData, val program: SGVM) {
             val buffer = data.buffer as SoftwareBuffer
             val memory = buffer.memory!!
             val layout = data.layout
@@ -367,7 +367,7 @@ open class AGSoftware(val bitmap: Bitmap32) : AG() {
     override fun readDepth(width: Int, height: Int, out: FloatArray) {
         println("WARNNING. AGSoftware.readDepth not implemented")
     }
-    override fun readColorTexture(texture: Texture, x: Int, y: Int, width: Int, height: Int) {
+    override fun readColorTexture(texture: AGTexture, x: Int, y: Int, width: Int, height: Int) {
         TODO("readColorTexture")
     }
 

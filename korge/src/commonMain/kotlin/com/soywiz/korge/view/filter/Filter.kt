@@ -128,7 +128,7 @@ class RenderToTextureResult() : Disposable {
     var filterScale: Double = 1.0
     val matrix = Matrix()
     var texture: Texture? = null
-    var fb: AG.RenderBuffer? = null
+    var fb: AGRenderBuffer? = null
     var newtex: Texture? = null
     var ctx: RenderContext? = null
     private val tempMat = Matrix()
@@ -180,7 +180,7 @@ fun Filter.renderToTextureWithBorderUnsafe(
     //println("texWidth=$newTexWidth,$newTexHeight")
 
     ctx.flush()
-    val fb: AG.RenderBuffer = ctx.ag.unsafeAllocateFrameRenderBuffer(newTexWidth, newTexHeight)
+    val fb: AGRenderBuffer = ctx.ag.unsafeAllocateFrameRenderBuffer(newTexWidth, newTexHeight)
     result.borderLeft = borderLeft
     result.borderTop = borderTop
     result.newTexWidth = newTexWidth

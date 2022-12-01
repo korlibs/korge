@@ -27,7 +27,7 @@ Buffer[3].afterSetMem(mem[49152])
 enable: SCISSOR
 scissor: 0, 0, 1280, 720
 vaoCreate: 1
-vaoSet: 1, VertexArrayObject(list=[VertexData(_buffer=Buffer[0], layout=VertexLayout[a_Pos, a_Tex, a_Col, a_Col2]), VertexData(_buffer=Buffer[1], layout=VertexLayout[a_TexIndex]), VertexData(_buffer=Buffer[2], layout=VertexLayout[a_Wrap])])
+vaoSet: 1, AGVertexArrayObject(list=[AGVertexData(_buffer=Buffer[0], layout=VertexLayout[a_Pos, a_Tex, a_Col, a_Col2]), AGVertexData(_buffer=Buffer[1], layout=VertexLayout[a_TexIndex]), AGVertexData(_buffer=Buffer[2], layout=VertexLayout[a_Wrap])])
 vaoUse: 1
 uboCreate: 1
 uboSet: 1
@@ -43,10 +43,10 @@ uboSet.uniform: Uniform(u_ViewMat) = Matrix3D(
   [ 0, 0, 1, 0 ],
   [ 0, 0, 0, 1 ],
 )
-uboSet.uniform: Uniform(u_Tex0) = TextureUnit(texture=Texture[0], linear=true, trilinear=null)
-uboSet.uniform: Uniform(u_Tex1) = TextureUnit(texture=null, linear=true, trilinear=null)
-uboSet.uniform: Uniform(u_Tex2) = TextureUnit(texture=null, linear=true, trilinear=null)
-uboSet.uniform: Uniform(u_Tex3) = TextureUnit(texture=null, linear=true, trilinear=null)
+uboSet.uniform: Uniform(u_Tex0) = AGTextureUnit(texture=Texture[0], linear=true, trilinear=null)
+uboSet.uniform: Uniform(u_Tex1) = AGTextureUnit(texture=null, linear=true, trilinear=null)
+uboSet.uniform: Uniform(u_Tex2) = AGTextureUnit(texture=null, linear=true, trilinear=null)
+uboSet.uniform: Uniform(u_Tex3) = AGTextureUnit(texture=null, linear=true, trilinear=null)
 uboSet.uniform: Uniform(u_OutputPre) = false
 uboUse: 1
 enable: BLEND

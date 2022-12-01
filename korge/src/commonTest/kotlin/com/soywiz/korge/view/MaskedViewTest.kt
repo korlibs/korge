@@ -19,7 +19,7 @@ class MaskedViewTest : ViewsForTesting() {
         masked.solidRect(64, 64)
 
         testRenderContext(object : LogBaseAG() {
-            override fun draw(batch: Batch) {
+            override fun draw(batch: AGBatch) {
                 stencils += batch.stencilFull
             }
         }) { ctx ->

@@ -21,7 +21,7 @@ interface AGQueueProcessor {
     fun readPixels(x: Int, y: Int, width: Int, height: Int, data: Any, kind: AGReadKind)
     fun readPixelsToTexture(textureId: Int, x: Int, y: Int, width: Int, height: Int, kind: AGReadKind)
     // DRAW
-    fun draw(type: AGDrawType, vertexCount: Int, offset: Int = 0, instances: Int = 1, indexType: AGIndexType = AGIndexType.NONE, indices: AG.AGBuffer? = null)
+    fun draw(type: AGDrawType, vertexCount: Int, offset: Int = 0, instances: Int = 1, indexType: AGIndexType = AGIndexType.NONE, indices: AGBuffer? = null)
     // Buffers
     fun bufferCreate(id: Int)
     fun bufferDelete(id: Int)
@@ -62,7 +62,7 @@ interface AGQueueProcessor {
     // VAO
     fun vaoCreate(id: Int)
     fun vaoDelete(id: Int)
-    fun vaoSet(id: Int, vao: AG.VertexArrayObject)
+    fun vaoSet(id: Int, vao: AGVertexArrayObject)
     fun vaoUse(id: Int)
     // TEXTURES
     fun textureCreate(textureId: Int)
@@ -72,12 +72,12 @@ interface AGQueueProcessor {
         target: AGTextureTargetKind,
         index: Int,
         bmp: Bitmap?,
-        source: AG.BitmapSourceBase,
+        source: AGBitmapSourceBase,
         doMipmaps: Boolean,
         premultiplied: Boolean
     )
     fun textureBind(textureId: Int, target: AGTextureTargetKind, implForcedTexId: Int)
-    fun textureBindEnsuring(tex: AG.Texture?)
+    fun textureBindEnsuring(tex: AGTexture?)
     fun textureSetFromFrameBuffer(textureId: Int, x: Int, y: Int, width: Int, height: Int)
     // FRAME BUFFER
     fun frameBufferCreate(id: Int)

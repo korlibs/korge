@@ -307,7 +307,7 @@ class AGList(val globalState: AGGlobalState) {
                     globalState.vaoIndices.free(id)
                 }
 
-                CMD_VAO_SET -> processor.vaoSet(data.extract16(0), AG.VertexArrayObject(readExtra()))
+                CMD_VAO_SET -> processor.vaoSet(data.extract16(0), AGVertexArrayObject(readExtra()))
                 CMD_VAO_USE -> processor.vaoUse(data.extract16(0))
                 // UBO
                 CMD_UBO_CREATE -> processor.uboCreate(data.extract16(0))
@@ -503,7 +503,7 @@ class AGList(val globalState: AGGlobalState) {
         currentWrite.add(CMD(CMD_PROGRAM_USE).finsert16(programId, 0))
     }
 
-    fun useProgram(program: AG.AgProgram) {
+    fun useProgram(program: AGProgram) {
         program.ensure(this)
         useProgram(program.programId)
     }
@@ -527,7 +527,7 @@ class AGList(val globalState: AGGlobalState) {
         target: AGTextureTargetKind,
         index: Int,
         data: Any?,
-        source: AG.BitmapSourceBase,
+        source: AGBitmapSourceBase,
         doMipmaps: Boolean,
         premultiplied: Boolean
     ) {
@@ -544,7 +544,7 @@ class AGList(val globalState: AGGlobalState) {
         currentWrite.add(CMD(CMD_TEXTURE_BIND).finsert16(textureId, 0).finsert4(target.ordinal, 16))
     }
 
-    fun bindTextureEnsuring(texture: AG.Texture?) {
+    fun bindTextureEnsuring(texture: AGTexture?) {
         currentWrite.addExtra(texture)
         currentWrite.add(CMD(CMD_TEXTURE_BIND_ENSURING))
     }
@@ -568,7 +568,7 @@ class AGList(val globalState: AGGlobalState) {
         offset: Int = 0,
         instances: Int = 1,
         indexType: AGIndexType = AGIndexType.NONE,
-        indices: AG.AGBuffer? = null
+        indices: AGBuffer? = null
     ) {
         currentWrite.addInt(vertexCount, offset, instances)
         currentWrite.addExtra(indices)
@@ -609,7 +609,7 @@ class AGList(val globalState: AGGlobalState) {
         currentWrite.add(CMD(CMD_VAO_DELETE).finsert16(id, 0))
     }
 
-    fun vaoSet(id: Int, vao: AG.VertexArrayObject) {
+    fun vaoSet(id: Int, vao: AGVertexArrayObject) {
         currentWrite.addExtra(vao.list)
         currentWrite.add(CMD(CMD_VAO_SET).finsert16(id, 0))
     }

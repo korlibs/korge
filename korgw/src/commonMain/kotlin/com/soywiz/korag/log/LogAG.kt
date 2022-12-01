@@ -191,7 +191,7 @@ open class LogBaseAG(
 
 	override fun dispose() = log("dispose()", Kind.DISPOSE)
 
-	inner class LogTexture(val id: Int, premultiplied: Boolean) : Texture(premultiplied) {
+	inner class LogTexture(val id: Int, premultiplied: Boolean) : AGTexture(this, premultiplied) {
 		override fun uploadedSource() {
 			log("$this.uploadedBitmap($source, ${source.width}, ${source.height})", Kind.TEXTURE_UPLOAD)
 		}
@@ -203,7 +203,7 @@ open class LogBaseAG(
 		override fun toString(): String = "Texture[$id]"
 	}
 
-	inner class LogBuffer(val id: Int, list: AGList) : AGBuffer(list) {
+	inner class LogBuffer(val id: Int, list: AGList) : AGBuffer(this, list) {
 		val logmem: com.soywiz.kmem.Buffer? get() = mem
 		val logmemOffset get() = memOffset
 		val logmemLength get() = memLength
@@ -215,7 +215,7 @@ open class LogBaseAG(
 		override fun toString(): String = "Buffer[$id]"
 	}
 
-	inner class LogRenderBuffer(override val id: Int, val isMain: Boolean) : RenderBuffer() {
+	inner class LogRenderBuffer(override val id: Int, val isMain: Boolean) : AGRenderBuffer(this) {
         override fun setSize(x: Int, y: Int, width: Int, height: Int, fullWidth: Int, fullHeight: Int) {
             super.setSize(x, y, width, height, fullWidth, fullHeight)
             log("$this.setSize($width, $height)", Kind.FRAME_BUFFER)
@@ -234,13 +234,13 @@ open class LogBaseAG(
 	private var bufferId = 0
 	private var renderBufferId = 0
 
-	override fun createTexture(premultiplied: Boolean, targetKind: AGTextureTargetKind): Texture =
+	override fun createTexture(premultiplied: Boolean, targetKind: AGTextureTargetKind): AGTexture =
 		LogTexture(textureId++, premultiplied).apply { log("createTexture():$id", Kind.TEXTURE) }
 
 	override fun createBuffer(): AGBuffer =
         commandsNoWait { LogBuffer(bufferId++, _list).apply { log("createBuffer():$id", Kind.BUFFER) } }
 
-    data class VertexAttributeEx(val index: Int, val attribute: Attribute, val pos: Int, val data: VertexData) {
+    data class VertexAttributeEx(val index: Int, val attribute: Attribute, val pos: Int, val data: AGVertexData) {
         val layout = data.layout
         val buffer = data.buffer as LogBuffer
     }
@@ -391,8 +391,8 @@ open class LogBaseAG(
         override fun programUse(programId: Int) = log("programUse: $programId", Kind.SHADER)
         override fun vaoCreate(id: Int) = log("vaoCreate: $id", Kind.VERTEX)
         override fun vaoDelete(id: Int) = log("vaoDelete: $id", Kind.VERTEX)
-        private var vertexData: FastArrayList<VertexData> = fastArrayListOf()
-        override fun vaoSet(id: Int, vao: VertexArrayObject) {
+        private var vertexData: FastArrayList<AGVertexData> = fastArrayListOf()
+        override fun vaoSet(id: Int, vao: AGVertexArrayObject) {
             log("vaoSet: $id, $vao", Kind.VERTEX)
             vertexData = vao.list
         }
@@ -404,7 +404,7 @@ open class LogBaseAG(
             target: AGTextureTargetKind,
             index: Int,
             bmp: Bitmap?,
-            source: BitmapSourceBase,
+            source: AGBitmapSourceBase,
             doMipmaps: Boolean,
             premultiplied: Boolean
         ) {
@@ -412,7 +412,7 @@ open class LogBaseAG(
         }
 
         override fun textureBind(textureId: Int, target: AGTextureTargetKind, implForcedTexId: Int) = log("textureBind: $textureId", Kind.TEXTURE)
-        override fun textureBindEnsuring(tex: Texture?) = log("textureBindEnsuring: $tex", Kind.TEXTURE)
+        override fun textureBindEnsuring(tex: AGTexture?) = log("textureBindEnsuring: $tex", Kind.TEXTURE)
         override fun textureSetFromFrameBuffer(textureId: Int, x: Int, y: Int, width: Int, height: Int) = log("textureSetFromFrameBuffer: $textureId, $x, $y, $width, $height", Kind.TEXTURE)
         override fun frameBufferCreate(id: Int) = log("frameBufferCreate: $id", Kind.FRAME_BUFFER)
         override fun frameBufferDelete(id: Int) = log("frameBufferDelete: $id", Kind.FRAME_BUFFER)
@@ -441,10 +441,10 @@ open class LogBaseAG(
     }
 
     override fun disposeTemporalPerFrameStuff() = log("disposeTemporalPerFrameStuff()", Kind.DISPOSE)
-	override fun createRenderBuffer(): RenderBuffer =
+	override fun createRenderBuffer(): AGRenderBuffer =
 		LogRenderBuffer(renderBufferId++, isMain = false).apply { log("createRenderBuffer():$id", Kind.FRAME_BUFFER) }
 
-    override fun createMainRenderBuffer(): RenderBuffer =
+    override fun createMainRenderBuffer(): AGRenderBuffer =
         LogRenderBuffer(renderBufferId++, isMain = true).apply { log("createMainRenderBuffer():$id", Kind.FRAME_BUFFER) }
 
     override fun flipInternal() = log("flipInternal()", Kind.FLIP)

@@ -89,7 +89,7 @@ void main() {
 
 programUse: 1
 vaoCreate: 1
-vaoSet: 1, VertexArrayObject(list=[VertexData(_buffer=Buffer[8], layout=VertexLayout[a_xy]), VertexData(_buffer=Buffer[5], layout=VertexLayout[a_rxy, a_scale, a_rangle, a_axy, a_uv0, a_uv1]), VertexData(_buffer=Buffer[6], layout=VertexLayout[a_colMul]), VertexData(_buffer=Buffer[7], layout=VertexLayout[a_texId])])
+vaoSet: 1, AGVertexArrayObject(list=[AGVertexData(_buffer=Buffer[8], layout=VertexLayout[a_xy]), AGVertexData(_buffer=Buffer[5], layout=VertexLayout[a_rxy, a_scale, a_rangle, a_axy, a_uv0, a_uv1]), AGVertexData(_buffer=Buffer[6], layout=VertexLayout[a_colMul]), AGVertexData(_buffer=Buffer[7], layout=VertexLayout[a_texId])])
 vaoUse: 1
 uboCreate: 1
 uboSet: 1
@@ -105,10 +105,10 @@ uboSet.uniform: Uniform(u_ViewMat) = Matrix3D(
   [ 0, 0, 1, 0 ],
   [ 0, 0, 0, 1 ],
 )
-uboSet.uniform: Uniform(u_Tex0) = TextureUnit(texture=Texture[0], linear=true, trilinear=null)
-uboSet.uniform: Uniform(u_Tex1) = TextureUnit(texture=null, linear=false, trilinear=null)
-uboSet.uniform: Uniform(u_Tex2) = TextureUnit(texture=null, linear=false, trilinear=null)
-uboSet.uniform: Uniform(u_Tex3) = TextureUnit(texture=null, linear=false, trilinear=null)
+uboSet.uniform: Uniform(u_Tex0) = AGTextureUnit(texture=Texture[0], linear=true, trilinear=null)
+uboSet.uniform: Uniform(u_Tex1) = AGTextureUnit(texture=null, linear=false, trilinear=null)
+uboSet.uniform: Uniform(u_Tex2) = AGTextureUnit(texture=null, linear=false, trilinear=null)
+uboSet.uniform: Uniform(u_Tex3) = AGTextureUnit(texture=null, linear=false, trilinear=null)
 uboSet.uniform: Uniform(u_OutputPre) = false
 uboSet.uniform: Uniform(u_texSize0) = [0.03125, 0.03125]
 uboUse: 1

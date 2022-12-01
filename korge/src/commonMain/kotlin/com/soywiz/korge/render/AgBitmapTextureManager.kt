@@ -13,7 +13,7 @@ import com.soywiz.korio.lang.*
 import com.soywiz.korma.geom.Rectangle
 
 /**
- * Class in charge of automatically handling [AG.Texture] <-> [Bitmap] conversion.
+ * Class in charge of automatically handling [AGTexture] <-> [Bitmap] conversion.
  *
  * To simplify texture storage (which usually require uploading to the GPU, and releasing it once not used),
  * the [AgBitmapTextureManager] allows to get temporal textures that are available
