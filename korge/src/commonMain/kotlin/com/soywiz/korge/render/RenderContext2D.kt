@@ -3,7 +3,7 @@ package com.soywiz.korge.render
 import com.soywiz.kds.Extra
 import com.soywiz.kds.Pool
 import com.soywiz.klogger.Logger
-import com.soywiz.korag.AG
+import com.soywiz.korag.*
 import com.soywiz.korag.shader.*
 import com.soywiz.korge.internal.KorgeInternal
 import com.soywiz.korge.view.*
@@ -53,7 +53,7 @@ class RenderContext2D(
     @KorgeInternal
 	val mpool = Pool<Matrix> { Matrix() }
 
-    val _tempProgramUniforms = AG.UniformValues()
+    val _tempProgramUniforms = AGUniformValues()
 
 	init { logger.trace { "RenderContext2D[1]" } }
 
@@ -219,7 +219,7 @@ class RenderContext2D(
         width: Double,
         height: Double,
         program: Program,
-        uniforms: AG.UniformValues,
+        uniforms: AGUniformValues,
         padding: Margin = Margin.EMPTY,
     ) {
         val ctx = batch.ctx
@@ -282,7 +282,7 @@ class RenderContext2D(
 	}
 
     /** Temporarily sets the [scissor] (visible rendering area) to [x], [y], [width] and [height] while [block] is executed. */
-    inline fun scissor(x: Int, y: Int, width: Int, height: Int, block: () -> Unit) = scissor(AG.Scissor(x, y, width, height), block)
+    inline fun scissor(x: Int, y: Int, width: Int, height: Int, block: () -> Unit) = scissor(AGScissor(x, y, width, height), block)
 
     /** Temporarily sets the [scissor] (visible rendering area) to [x], [y], [width] and [height] while [block] is executed. */
     inline fun scissor(x: Double, y: Double, width: Double, height: Double, block: () -> Unit) = scissor(x.toInt(), y.toInt(), width.toInt(), height.toInt(), block)
@@ -292,10 +292,10 @@ class RenderContext2D(
 
     /** Temporarily sets the [scissor] (visible rendering area) to [rect] is executed. */
     inline fun scissor(rect: Rectangle?, block: () -> Unit) =
-        scissor(AG.Scissor(rect), block)
+        scissor(AGScissor(rect), block)
 
     /** Temporarily sets the [scissor] (visible rendering area) to [scissor] is executed. */
-    inline fun scissor(scissor: AG.Scissor, block: () -> Unit) {
+    inline fun scissor(scissor: AGScissor, block: () -> Unit) {
         val oldScissor = batch.scissor
         scissorStart(scissor)
         try {
@@ -306,23 +306,23 @@ class RenderContext2D(
     }
 
     @PublishedApi
-    internal fun scissorStart(scissor: AG.Scissor) {
+    internal fun scissorStart(scissor: AGScissor) {
         batch.flush()
-        if (scissor != AG.Scissor.NIL) {
+        if (scissor != AGScissor.NIL) {
             val left = m.transformX(scissor.left, scissor.top)
             val top = m.transformY(scissor.left, scissor.top)
             val right = m.transformX(scissor.right, scissor.bottom)
             val bottom = m.transformY(scissor.right, scissor.bottom)
 
-            batch.scissor = AG.Scissor.fromBounds(left, top, right, bottom)
+            batch.scissor = AGScissor.fromBounds(left, top, right, bottom)
             //println("batch.scissor: ${batch.scissor}")
         } else {
-            batch.scissor = AG.Scissor.NIL
+            batch.scissor = AGScissor.NIL
         }
     }
 
     @PublishedApi
-    internal fun scissorEnd(oldScissor: AG.Scissor) {
+    internal fun scissorEnd(oldScissor: AGScissor) {
         batch.flush()
         batch.scissor = oldScissor
     }

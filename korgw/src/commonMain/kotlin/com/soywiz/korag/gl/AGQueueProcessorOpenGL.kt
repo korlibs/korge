@@ -13,18 +13,7 @@ import com.soywiz.kgl.genRenderbuffer
 import com.soywiz.kgl.genTexture
 import com.soywiz.kmem.*
 import com.soywiz.kmem.arraycopy
-import com.soywiz.korag.AG
-import com.soywiz.korag.AGBlendEquation
-import com.soywiz.korag.AGBlendFactor
-import com.soywiz.korag.AGBufferKind
-import com.soywiz.korag.AGCompareMode
-import com.soywiz.korag.AGCullFace
-import com.soywiz.korag.AGDrawType
-import com.soywiz.korag.AGEnable
-import com.soywiz.korag.AGFrontFace
-import com.soywiz.korag.AGGlobalState
-import com.soywiz.korag.AGIndexType
-import com.soywiz.korag.AGQueueProcessor
+import com.soywiz.korag.*
 import com.soywiz.korag.shader.Program
 import com.soywiz.korag.shader.ProgramConfig
 import com.soywiz.korag.shader.UniformLayout
@@ -224,12 +213,12 @@ class AGQueueProcessorOpenGL(
         vertexCount: Int,
         offset: Int,
         instances: Int,
-        indexType: AGIndexType?,
+        indexType: AGIndexType,
         indices: AG.AGBuffer?
     ) {
         indices?.let { bindBuffer(it, AGBufferKind.INDEX) }
 
-        if (indexType != null) {
+        if (indexType != AGIndexType.NONE) {
             if (instances != 1) {
                 gl.drawElementsInstanced(type.toGl(), vertexCount, indexType.toGl(), offset, instances)
             } else {
@@ -262,15 +251,15 @@ class AGQueueProcessorOpenGL(
         gl.depthRangef(near, far)
     }
 
-    override fun stencilFunction(compareMode: AG.CompareMode, referenceValue: Int, readMask: Int) {
+    override fun stencilFunction(compareMode: AGCompareMode, referenceValue: Int, readMask: Int) {
         gl.stencilFunc(compareMode.toGl(), referenceValue, readMask)
     }
 
     // @TODO: Separate
     override fun stencilOperation(
-        actionOnDepthFail: AG.StencilOp,
-        actionOnDepthPassStencilFail: AG.StencilOp,
-        actionOnBothPass: AG.StencilOp
+        actionOnDepthFail: AGStencilOp,
+        actionOnDepthPassStencilFail: AGStencilOp,
+        actionOnBothPass: AGStencilOp
     ) {
         gl.stencilOp(actionOnDepthFail.toGl(), actionOnDepthPassStencilFail.toGl(), actionOnBothPass.toGl())
     }
@@ -393,7 +382,7 @@ class AGQueueProcessorOpenGL(
 
     // UBO
 
-    val ubos = arrayListOf<AG.UniformValues?>()
+    val ubos = arrayListOf<AGUniformValues?>()
 
     private fun ensureUboIndex(index: Int): Int {
         while (ubos.size <= index) ubos.add(null)
@@ -410,7 +399,7 @@ class AGQueueProcessorOpenGL(
         if (id < ubos.size) ubos[id] = null
     }
 
-    override fun uboSet(id: Int, ubo: AG.UniformValues) {
+    override fun uboSet(id: Int, ubo: AGUniformValues) {
         ubos[ensureUboIndex(id)] = ubo
     }
 
@@ -656,7 +645,7 @@ class AGQueueProcessorOpenGL(
         if (tex.implForcedTexTarget.dims >= 3) gl.texParameteri(tex.implForcedTexTarget.toGl(), KmlGl.TEXTURE_WRAP_R, KmlGl.CLAMP_TO_EDGE)
     }
 
-    override fun readPixels(x: Int, y: Int, width: Int, height: Int, data: Any, kind: AG.ReadKind) {
+    override fun readPixels(x: Int, y: Int, width: Int, height: Int, data: Any, kind: AGReadKind) {
         val bytesPerPixel = when (data) {
             is IntArray -> 4
             is FloatArray -> 4
@@ -666,9 +655,9 @@ class AGQueueProcessorOpenGL(
         val area = width * height
         BufferTemp(area * bytesPerPixel) { buffer ->
             when (kind) {
-                AG.ReadKind.COLOR -> gl.readPixels(x, y, width, height, KmlGl.RGBA, KmlGl.UNSIGNED_BYTE, buffer)
-                AG.ReadKind.DEPTH -> gl.readPixels(x, y, width, height, KmlGl.DEPTH_COMPONENT, KmlGl.FLOAT, buffer)
-                AG.ReadKind.STENCIL -> gl.readPixels(x, y, width, height, KmlGl.STENCIL_INDEX, KmlGl.UNSIGNED_BYTE, buffer)
+                AGReadKind.COLOR -> gl.readPixels(x, y, width, height, KmlGl.RGBA, KmlGl.UNSIGNED_BYTE, buffer)
+                AGReadKind.DEPTH -> gl.readPixels(x, y, width, height, KmlGl.DEPTH_COMPONENT, KmlGl.FLOAT, buffer)
+                AGReadKind.STENCIL -> gl.readPixels(x, y, width, height, KmlGl.STENCIL_INDEX, KmlGl.UNSIGNED_BYTE, buffer)
             }
             when (data) {
                 is IntArray -> buffer.getArrayInt32(0, data, size = area)
@@ -680,10 +669,10 @@ class AGQueueProcessorOpenGL(
         }
     }
 
-    override fun readPixelsToTexture(textureId: Int, x: Int, y: Int, width: Int, height: Int, kind: AG.ReadKind) {
+    override fun readPixelsToTexture(textureId: Int, x: Int, y: Int, width: Int, height: Int, kind: AGReadKind) {
         //println("BEFORE:" + gl.getError())
         //textureBindEnsuring(tex)
-        textureBind(textureId, AG.TextureTargetKind.TEXTURE_2D, -1)
+        textureBind(textureId, AGTextureTargetKind.TEXTURE_2D, -1)
         //println("BIND:" + gl.getError())
         gl.copyTexImage2D(KmlGl.TEXTURE_2D, 0, KmlGl.RGBA, x, y, width, height, 0)
 
@@ -714,7 +703,7 @@ class AGQueueProcessorOpenGL(
         tex.glId = 0
     }
 
-    override fun textureBind(textureId: Int, target: AG.TextureTargetKind, implForcedTexId: Int) {
+    override fun textureBind(textureId: Int, target: AGTextureTargetKind, implForcedTexId: Int) {
         val glId = implForcedTexId.takeIf { it >= 0 } ?: textures[textureId]?.glId ?: 0
         //if (glId == -1) println("glId=$glId")
         //println("textureBind: $glId, textureId=$textureId, target=$target, implForcedTexId=$implForcedTexId")
@@ -789,12 +778,12 @@ class AGQueueProcessorOpenGL(
         gl.bindTexture(gl.TEXTURE_2D, 0)
     }
 
-    override fun textureUpdate(textureId: Int, target: AG.TextureTargetKind, index: Int, bmp: Bitmap?, source: AG.BitmapSourceBase, doMipmaps: Boolean, premultiplied: Boolean) {
+    override fun textureUpdate(textureId: Int, target: AGTextureTargetKind, index: Int, bmp: Bitmap?, source: AG.BitmapSourceBase, doMipmaps: Boolean, premultiplied: Boolean) {
         //textureBind(textureId, target, -1)
         _textureUpdate(textureId, target, index, bmp, source, doMipmaps, premultiplied)
     }
 
-    fun _textureUpdate(textureId: Int, target: AG.TextureTargetKind, index: Int, bmp: Bitmap?, source: AG.BitmapSourceBase, doMipmaps: Boolean, premultiplied: Boolean) {
+    fun _textureUpdate(textureId: Int, target: AGTextureTargetKind, index: Int, bmp: Bitmap?, source: AG.BitmapSourceBase, doMipmaps: Boolean, premultiplied: Boolean) {
         val bytesPerPixel = if (source.rgba) 4 else 1
 
         val isFloat = bmp is FloatBitmap32
@@ -805,7 +794,7 @@ class AGQueueProcessorOpenGL(
         }
 
         val texTarget = when (target) {
-            AG.TextureTargetKind.TEXTURE_CUBE_MAP -> KmlGl.TEXTURE_CUBE_MAP_POSITIVE_X + index
+            AGTextureTargetKind.TEXTURE_CUBE_MAP -> KmlGl.TEXTURE_CUBE_MAP_POSITIVE_X + index
             else -> target.toGl()
         }
 

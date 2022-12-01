@@ -16,32 +16,32 @@ fun AGList.disableDepth(): Unit = disable(AGEnable.DEPTH)
 fun AGList.disableScissor(): Unit = disable(AGEnable.SCISSOR)
 fun AGList.disableStencil(): Unit = disable(AGEnable.STENCIL)
 
-fun AGList.setBlendingState(blending: AG.Blending? = null) {
-    val blending = blending ?: AG.Blending.NORMAL
+fun AGList.setBlendingState(blending: AGBlending? = null) {
+    val blending = blending ?: AGBlending.NORMAL
     enableDisable(AGEnable.BLEND, blending.enabled) {
         blendEquation(blending.eqRGB, blending.eqA)
         blendFunction(blending.srcRGB, blending.dstRGB, blending.srcA, blending.dstA)
     }
 }
 
-fun AGList.setRenderState(renderState: AG.RenderState) {
-    enableDisable(AGEnable.CULL_FACE, renderState.frontFace != AG.FrontFace.BOTH) {
+fun AGList.setRenderState(renderState: AGRenderState) {
+    enableDisable(AGEnable.CULL_FACE, renderState.frontFace != AGFrontFace.BOTH) {
         frontFace(renderState.frontFace)
     }
 
     depthMask(renderState.depthMask)
     depthRange(renderState.depthNear, renderState.depthFar)
 
-    enableDisable(AGEnable.DEPTH, renderState.depthFunc != AG.CompareMode.ALWAYS) {
+    enableDisable(AGEnable.DEPTH, renderState.depthFunc != AGCompareMode.ALWAYS) {
         depthFunction(renderState.depthFunc)
     }
 }
 
-fun AGList.setColorMaskState(colorMask: AG.ColorMaskState?) {
+fun AGList.setColorMaskState(colorMask: AGColorMaskState?) {
     colorMask(colorMask?.red ?: true, colorMask?.green ?: true, colorMask?.blue ?: true, colorMask?.alpha ?: true)
 }
 
-fun AGList.setStencilState(stencilOpFunc: AG.StencilOpFuncState?, stencilRef: AG.StencilReferenceState) {
+fun AGList.setStencilState(stencilOpFunc: AGStencilOpFuncState?, stencilRef: AGStencilReferenceState) {
     if (stencilOpFunc != null && stencilOpFunc.enabled) {
         enable(AGEnable.STENCIL)
         stencilFunction(stencilOpFunc.compareMode, stencilRef.referenceValue, stencilRef.readMask)
@@ -57,10 +57,10 @@ fun AGList.setStencilState(stencilOpFunc: AG.StencilOpFuncState?, stencilRef: AG
     }
 }
 
-fun AGList.setScissorState(ag: AG, scissor: AG.Scissor = AG.Scissor.NIL) =
+fun AGList.setScissorState(ag: AG, scissor: AGScissor = AGScissor.NIL) =
     setScissorState(ag.currentRenderBuffer, ag.mainRenderBuffer, scissor)
 
-fun AGList.setScissorState(currentRenderBuffer: AG.BaseRenderBuffer?, mainRenderBuffer: AG.BaseRenderBuffer, scissor: AG.Scissor = AG.Scissor.NIL) {
+fun AGList.setScissorState(currentRenderBuffer: AG.BaseRenderBuffer?, mainRenderBuffer: AG.BaseRenderBuffer, scissor: AGScissor = AGScissor.NIL) {
     if (currentRenderBuffer == null) return
 
     //println("applyScissorState")
@@ -72,7 +72,7 @@ fun AGList.setScissorState(currentRenderBuffer: AG.BaseRenderBuffer?, mainRender
     if (currentRenderBuffer === mainRenderBuffer) {
         var realScissors: Rectangle? = finalScissorBL
         realScissors?.setTo(0.0, 0.0, realBackWidth.toDouble(), realBackHeight.toDouble())
-        if (scissor != AG.Scissor.NIL) {
+        if (scissor != AGScissor.NIL) {
             tempRect.setTo(
                 currentRenderBuffer.x + scissor.x,
                 ((currentRenderBuffer.y + currentRenderBuffer.height) - (scissor.y + scissor.height)),
@@ -100,18 +100,18 @@ fun AGList.setScissorState(currentRenderBuffer: AG.BaseRenderBuffer?, mainRender
     } else {
         //println("[RENDER_TARGET] scissor: $scissor")
 
-        enableDisable(AGEnable.SCISSOR, scissor != AG.Scissor.NIL) {
+        enableDisable(AGEnable.SCISSOR, scissor != AGScissor.NIL) {
             scissor(scissor.x, scissor.y, scissor.width, scissor.height)
         }
     }
 }
 
 fun AGList.setState(
-    blending: AG.Blending = AG.Blending.NORMAL,
-    stencilOpFunc: AG.StencilOpFuncState = AG.StencilOpFuncState.DEFAULT,
-    stencilRef: AG.StencilReferenceState = AG.StencilReferenceState.DEFAULT,
-    colorMask: AG.ColorMaskState = AG.ColorMaskState.ALL_ENABLED,
-    renderState: AG.RenderState = AG.RenderState.DEFAULT,
+    blending: AGBlending = AGBlending.NORMAL,
+    stencilOpFunc: AGStencilOpFuncState = AGStencilOpFuncState.DEFAULT,
+    stencilRef: AGStencilReferenceState = AGStencilReferenceState.DEFAULT,
+    colorMask: AGColorMaskState = AGColorMaskState.ALL_ENABLED,
+    renderState: AGRenderState = AGRenderState.DEFAULT,
 ) {
     setBlendingState(blending)
     setRenderState(renderState)
@@ -123,17 +123,17 @@ inline fun AGList.useProgram(ag: AG, program: Program) {
     useProgram(ag.getProgram(program))
 }
 
-inline fun AGList.uniformsSet(uniforms: AG.UniformValues?, block: () -> Unit) {
+inline fun AGList.uniformsSet(uniforms: AGUniformValues?, block: () -> Unit) {
     //if (true) {
         tempUBOs.alloc { ubo ->
-            uboSet(ubo, uniforms ?: AG.UniformValues())
+            uboSet(ubo, uniforms ?: AGUniformValues())
             uboUse(ubo)
             block()
         }
     //} else {
     //    val ubo = uboCreate()
     //    try {
-    //        uboSet(ubo, uniforms ?: AG.UniformValues())
+    //        uboSet(ubo, uniforms ?: AGUniformValues())
     //        uboUse(ubo)
     //        block()
     //    } finally {

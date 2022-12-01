@@ -171,7 +171,7 @@ class LineRenderBatcher(
             ag.draw(
                 vertices = vertexBuffer,
                 program = program,
-                type = AG.DrawType.LINES,
+                type = AGDrawType.LINES,
                 vertexLayout = LAYOUT,
                 vertexCount = vertexCount,
                 uniforms = uniforms,

@@ -2,11 +2,7 @@ package com.soywiz.korag.software
 
 import com.soywiz.klock.measureTime
 import com.soywiz.kmem.*
-import com.soywiz.korag.AG
-import com.soywiz.korag.AGConfig
-import com.soywiz.korag.AGFactory
-import com.soywiz.korag.AGList
-import com.soywiz.korag.AGWindow
+import com.soywiz.korag.*
 import com.soywiz.korag.shader.Attribute
 import com.soywiz.korag.shader.Program
 import com.soywiz.korag.shader.VarKind
@@ -79,13 +75,13 @@ open class AGSoftware(val bitmap: Bitmap32) : AG() {
     override fun createMainRenderBuffer(): BaseRenderBuffer = SoftwareRenderBuffer()
     override fun createRenderBuffer(): RenderBuffer = SoftwareRenderBuffer()
 
-    override fun createTexture(premultiplied: Boolean, targetKind: TextureTargetKind): Texture = SoftwareTexture(premultiplied)
+    override fun createTexture(premultiplied: Boolean, targetKind: AGTextureTargetKind): Texture = SoftwareTexture(premultiplied)
 
     fun readIndices(batch: Batch): IntArray {
         val indices = batch.indices as? SoftwareBuffer ?: return IntArray(batch.vertexCount) { it }
         val memory = indices.memory ?: TODO()
         return when (batch.indexType) {
-            IndexType.USHORT -> IntArray(batch.vertexCount) { memory.getUInt16(it) }
+            AGIndexType.USHORT -> IntArray(batch.vertexCount) { memory.getUInt16(it) }
             else -> TODO("${batch.indexType}")
         }
     }
@@ -179,7 +175,7 @@ open class AGSoftware(val bitmap: Bitmap32) : AG() {
         //println("varyings=${programAllocator.varyings}")
         //println("output=${vertexShader.allocator.output}")
 
-        if (batch.type != AG.DrawType.TRIANGLES) TODO("Unsupported ${batch.type}")
+        if (batch.type != AGDrawType.TRIANGLES) TODO("Unsupported ${batch.type}")
 
         var n = 0
         var triangleCount = 0

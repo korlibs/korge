@@ -1,8 +1,7 @@
 package com.soywiz.korge.view.filter
 
 import com.soywiz.kmem.toIntCeil
-import com.soywiz.korag.AG
-import com.soywiz.korag.DefaultShaders
+import com.soywiz.korag.*
 import com.soywiz.korag.shader.FragmentShader
 import com.soywiz.korag.shader.Operand
 import com.soywiz.korag.shader.Program
@@ -100,9 +99,9 @@ abstract class ShaderFilter : Filter {
     private val textureMaxTexCoords = FloatArray(2)
     private val textureStdTexDerivates = FloatArray(2)
 
-    val scaledUniforms = AG.UniformValues()
+    val scaledUniforms = AGUniformValues()
 
-    val uniforms = AG.UniformValues(
+    val uniforms = AGUniformValues(
         //Filter.u_Time to timeHolder,
         u_TextureSize to textureSizeHolder,
         u_MaxTexCoords to textureMaxTexCoords,

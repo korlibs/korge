@@ -1,7 +1,6 @@
 package com.soywiz.kmem
 
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import kotlin.test.*
 
 class BufferTest {
     @Test
@@ -163,6 +162,12 @@ class BufferTest {
         val buf2 = Int32Buffer(intArrayOf(-1, -2, -3, -4, -5, -6, -7, -8, -9, -10))
         arraycopy(buf1, 6, buf2, 7, 3)
         assertEquals(listOf(-1, -2, -3, -4, -5, -6, -7, 7, 8, 9), IntArray(buf2.size) { buf2[it] }.toList())
+    }
 
+    @Test
+    fun testEquality() {
+        assertEquals(Int32Buffer(intArrayOf(1, 2, 3)), Int32Buffer(intArrayOf(1, 2, 3)))
+        assertNotEquals(Int32Buffer(intArrayOf(1, 2, 3)), Int32Buffer(intArrayOf(1, 2, 4)))
+        assertEquals(Int32Buffer(intArrayOf(1, 2, 3)).slice(1), Int32Buffer(intArrayOf(2, 3)))
     }
 }

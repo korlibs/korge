@@ -540,7 +540,7 @@ fun List<Curves>.toStrokePointsList(
                 )
 
                 gpuShapeViewCommands.setScissor(null)
-                gpuShapeViewCommands.draw(AG.DrawType.TRIANGLE_STRIP, info, stencil = stencil)
+                gpuShapeViewCommands.draw(AGDrawType.TRIANGLE_STRIP, info, stencil = stencil)
             }
         }
 

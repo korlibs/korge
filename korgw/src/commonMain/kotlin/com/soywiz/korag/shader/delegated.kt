@@ -1,7 +1,7 @@
 package com.soywiz.korag.shader
 
 import com.soywiz.kmem.toInt
-import com.soywiz.korag.AG
+import com.soywiz.korag.*
 import com.soywiz.korma.geom.Matrix3D
 import com.soywiz.korma.geom.Vector3D
 import kotlin.reflect.KProperty
@@ -72,7 +72,7 @@ class BoolDelegatedUniform(val uniform: Uniform, val values: FloatArray, val ind
 	}
 }
 
-class UniformFloatStorage(val uniforms: AG.UniformValues, val uniform: Uniform, val array: FloatArray) {
+class UniformFloatStorage(val uniforms: AGUniformValues, val uniform: Uniform, val array: FloatArray) {
 	init {
 		uniforms[uniform] = array
 	}
@@ -115,7 +115,7 @@ class UniformFloatStorage(val uniforms: AG.UniformValues, val uniform: Uniform, 
 
 }
 
-class UniformValueStorage<T : Any>(val uniforms: AG.UniformValues, val uniform: Uniform, val value: T) {
+class UniformValueStorage<T : Any>(val uniforms: AGUniformValues, val uniform: Uniform, val value: T) {
 	init {
 		uniforms[uniform] = value
 	}
@@ -128,7 +128,7 @@ class UniformValueStorage<T : Any>(val uniforms: AG.UniformValues, val uniform: 
 	}
 }
 
-class UniformValueStorageMatrix3D(val uniforms: AG.UniformValues, val uniform: Uniform, val value: Matrix3D) {
+class UniformValueStorageMatrix3D(val uniforms: AGUniformValues, val uniform: Uniform, val value: Matrix3D) {
     init {
         uniforms[uniform] = value
     }
@@ -144,17 +144,17 @@ class UniformValueStorageMatrix3D(val uniforms: AG.UniformValues, val uniform: U
     operator fun setValue(obj: Any, prop: KProperty<*>, value: Matrix3D) = setMatrix(value)
 }
 
-fun AG.UniformValues.storageFor(uniform: Uniform, array: FloatArray = FloatArray(4)) =
+fun AGUniformValues.storageFor(uniform: Uniform, array: FloatArray = FloatArray(4)) =
     UniformFloatStorage(this, uniform, array)
-//fun AG.UniformValues.storageForMatrix2(uniform: Uniform, matrix: Matrix3D = Matrix3D()) = UniformValueStorage(this, uniform, matrix)
-//fun AG.UniformValues.storageForMatrix3(uniform: Uniform, matrix: Matrix3D = Matrix3D()) = UniformValueStorage(this, uniform, matrix)
-//fun AG.UniformValues.storageForMatrix4(uniform: Uniform, matrix: Matrix3D = Matrix3D()) = UniformValueStorage(this, uniform, matrix)
-fun AG.UniformValues.storageForMatrix3D(uniform: Uniform, matrix: Matrix3D = Matrix3D()): UniformValueStorageMatrix3D {
+//fun AGUniformValues.storageForMatrix2(uniform: Uniform, matrix: Matrix3D = Matrix3D()) = UniformValueStorage(this, uniform, matrix)
+//fun AGUniformValues.storageForMatrix3(uniform: Uniform, matrix: Matrix3D = Matrix3D()) = UniformValueStorage(this, uniform, matrix)
+//fun AGUniformValues.storageForMatrix4(uniform: Uniform, matrix: Matrix3D = Matrix3D()) = UniformValueStorage(this, uniform, matrix)
+fun AGUniformValues.storageForMatrix3D(uniform: Uniform, matrix: Matrix3D = Matrix3D()): UniformValueStorageMatrix3D {
     return UniformValueStorageMatrix3D(this, uniform, Matrix3D()).also {
         it.setMatrix(matrix)
     }
 }
 
-fun AG.UniformValues.storageForTextureUnit(uniform: Uniform, textureUnit: AG.TextureUnit): UniformValueStorage<AG.TextureUnit> {
+fun AGUniformValues.storageForTextureUnit(uniform: Uniform, textureUnit: AG.TextureUnit): UniformValueStorage<AG.TextureUnit> {
     return UniformValueStorage(this, uniform, textureUnit)
 }

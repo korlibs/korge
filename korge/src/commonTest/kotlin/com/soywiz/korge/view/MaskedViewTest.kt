@@ -1,6 +1,6 @@
 package com.soywiz.korge.view
 
-import com.soywiz.korag.AG
+import com.soywiz.korag.*
 import com.soywiz.korag.log.LogBaseAG
 import com.soywiz.korge.render.MaskStates
 import com.soywiz.korge.render.VertexInfo
@@ -12,7 +12,7 @@ class MaskedViewTest : ViewsForTesting() {
     @Test
     fun testMaskBatches() {
         val vertices = arrayListOf<List<VertexInfo>>()
-        val stencils = arrayListOf<AG.StencilFullState>()
+        val stencils = arrayListOf<AGStencilFullState>()
 
         val masked = MaskedView()
         masked.mask = SolidRect(32.0, 32.0)

@@ -1,10 +1,10 @@
 package com.soywiz.korge.render
 
-import com.soywiz.korag.AG
+import com.soywiz.korag.*
 
 object MaskStates {
-    class RenderState(val stencilOpFunc: AG.StencilOpFuncState, val stencilRef: AG.StencilReferenceState, val colorMask: AG.ColorMaskState) {
-        val stencilFull get() = AG.StencilFullState(stencilOpFunc, stencilRef)
+    class RenderState(val stencilOpFunc: AGStencilOpFuncState, val stencilRef: AGStencilReferenceState, val colorMask: AGColorMaskState) {
+        val stencilFull get() = AGStencilFullState(stencilOpFunc, stencilRef)
 
         @Suppress("DEPRECATION")
         fun set(ctx: RenderContext, referenceValue: Int) {
@@ -22,18 +22,18 @@ object MaskStates {
     }
 
     val STATE_NONE = RenderState(
-        AG.StencilOpFuncState.DEFAULT,
-        AG.StencilReferenceState.DEFAULT,
-        AG.ColorMaskState.ALL_ENABLED,
+        AGStencilOpFuncState.DEFAULT,
+        AGStencilReferenceState.DEFAULT,
+        AGColorMaskState.ALL_ENABLED,
     )
     val STATE_SHAPE = RenderState(
-        AG.StencilOpFuncState.DEFAULT.withEnabled(true).withCompareMode(AG.CompareMode.ALWAYS).withAction(AG.StencilOp.SET),
-        AG.StencilReferenceState.DEFAULT.withReferenceValue(0).withReadMask(0x00).withWriteMask(0xFF),
-        AG.ColorMaskState.ALL_DISABLED
+        AGStencilOpFuncState.DEFAULT.withEnabled(true).withCompareMode(AGCompareMode.ALWAYS).withAction(AGStencilOp.SET),
+        AGStencilReferenceState.DEFAULT.withReferenceValue(0).withReadMask(0x00).withWriteMask(0xFF),
+        AGColorMaskState.ALL_DISABLED
     )
     val STATE_CONTENT = RenderState(
-        AG.StencilOpFuncState.DEFAULT.withEnabled(true).withCompareMode(AG.CompareMode.EQUAL).withAction(AG.StencilOp.KEEP),
-        AG.StencilReferenceState.DEFAULT.withReferenceValue(0).withReadMask(0xFF).withWriteMask(0x00),
-        AG.ColorMaskState.ALL_ENABLED
+        AGStencilOpFuncState.DEFAULT.withEnabled(true).withCompareMode(AGCompareMode.EQUAL).withAction(AGStencilOp.KEEP),
+        AGStencilReferenceState.DEFAULT.withReferenceValue(0).withReadMask(0xFF).withWriteMask(0x00),
+        AGColorMaskState.ALL_ENABLED
     )
 }

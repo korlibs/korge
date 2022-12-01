@@ -2,9 +2,7 @@ package com.soywiz.korge.view.debug
 
 import com.soywiz.kds.fastArrayListOf
 import com.soywiz.kds.iterators.fastForEach
-import com.soywiz.korag.AG
-import com.soywiz.korag.DefaultShaders
-import com.soywiz.korag.VertexShaderDefault
+import com.soywiz.korag.*
 import com.soywiz.korag.shader.FragmentShader
 import com.soywiz.korag.shader.Uniform
 import com.soywiz.korag.shader.VarType
@@ -26,11 +24,11 @@ import com.soywiz.korma.geom.toMatrix3D
 inline fun Container.debugVertexView(
     pointsList: List<IVectorArrayList> = listOf(),
     color: RGBA = Colors.WHITE,
-    type: AG.DrawType = AG.DrawType.TRIANGLE_STRIP,
+    type: AGDrawType = AGDrawType.TRIANGLE_STRIP,
     callback: @ViewDslMarker DebugVertexView.() -> Unit = {}
 ): DebugVertexView = DebugVertexView(pointsList, color, type).addTo(this, callback)
 
-class DebugVertexView(pointsList: List<IVectorArrayList>, color: RGBA = Colors.WHITE, type: AG.DrawType = AG.DrawType.TRIANGLE_STRIP) : View() {
+class DebugVertexView(pointsList: List<IVectorArrayList>, color: RGBA = Colors.WHITE, type: AGDrawType = AGDrawType.TRIANGLE_STRIP) : View() {
     init {
         colorMul = color
     }
@@ -61,7 +59,7 @@ class DebugVertexView(pointsList: List<IVectorArrayList>, color: RGBA = Colors.W
         get() = pointsList.firstOrNull() ?: VectorArrayList(5)
         set(value) { pointsList = listOf(value) }
 
-    var type: AG.DrawType = type
+    var type: AGDrawType = type
     class Batch(val offset: Int, val count: Int)
     var buffer: FloatArray = floatArrayOf(0f, 0f, 100f, 0f, 0f, 100f, 100f, 100f)
     val batches = arrayListOf<Batch>()
@@ -100,7 +98,7 @@ class DebugVertexView(pointsList: List<IVectorArrayList>, color: RGBA = Colors.W
         }
     }
 
-    private val uniforms: AG.UniformValues = AG.UniformValues()
+    private val uniforms: AGUniformValues = AGUniformValues()
 
     override fun getLocalBoundsInternal(out: Rectangle) {
         bb.getBounds(out)

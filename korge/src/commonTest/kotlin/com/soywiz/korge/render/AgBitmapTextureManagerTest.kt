@@ -2,8 +2,7 @@ package com.soywiz.korge.render
 
 import com.soywiz.kgl.KmlGl
 import com.soywiz.kgl.KmlGlProxyLogToString
-import com.soywiz.korag.AG
-import com.soywiz.korag.DefaultShaders
+import com.soywiz.korag.*
 import com.soywiz.korag.gl.SimpleAGOpengl
 import com.soywiz.korag.log.LogAG
 import com.soywiz.korim.bitmap.Bitmap32
@@ -101,10 +100,11 @@ class AgBitmapTextureManagerTest {
             list.tempUBOs {
                 val program = list.createProgram(DefaultShaders.PROGRAM_DEFAULT)
                 list.useProgram(program)
-                list.uboSet(it, AG.UniformValues(
+                list.uboSet(it, AGUniformValues(
                     DefaultShaders.u_Tex to AG.TextureUnit(tex1.base),
                     DefaultShaders.u_Tex2 to AG.TextureUnit(tex0.base),
-                ))
+                )
+                )
                 list.uboUse(it)
             }
         }

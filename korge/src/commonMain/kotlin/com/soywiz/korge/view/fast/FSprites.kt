@@ -4,9 +4,7 @@ import com.soywiz.kds.FastArrayList
 import com.soywiz.kds.IntArrayList
 import com.soywiz.kds.fastArrayListOf
 import com.soywiz.kmem.*
-import com.soywiz.korag.AG
-import com.soywiz.korag.FragmentShaderDefault
-import com.soywiz.korag.VertexShaderDefault
+import com.soywiz.korag.*
 import com.soywiz.korag.shader.Attribute
 import com.soywiz.korag.shader.Operand
 import com.soywiz.korag.shader.Precision
@@ -177,11 +175,11 @@ open class FSprites(val maxSize: Int) {
                             ctx.ag.drawV2(
                                 vertexData = ctx.buffers,
                                 program = program,
-                                type = AG.DrawType.TRIANGLE_FAN,
+                                type = AGDrawType.TRIANGLE_FAN,
                                 vertexCount = 4,
                                 instances = sprites.size,
                                 uniforms = uniforms,
-                                //renderState = AG.RenderState(depthFunc = AG.CompareMode.LESS),
+                                //renderState = AGRenderState(depthFunc = AGCompareMode.LESS),
                                 blending = blending.factors(ctx.ag.isRenderingToTexture)
                             )
                             sprites.unloadVertices(ctx)

@@ -1,6 +1,6 @@
 package samples
 
-import com.soywiz.korag.AG
+import com.soywiz.korag.*
 import com.soywiz.korev.Key
 import com.soywiz.korge.input.keys
 import com.soywiz.korge.scene.Scene
@@ -49,16 +49,16 @@ class MainGpuVectorRendering3 : Scene() {
                 }
             }.xy(pos)
 
-            //debugVertexView(pointsList.map { it.vector }, type = AG.DrawType.POINTS)
+            //debugVertexView(pointsList.map { it.vector }, type = AGDrawType.POINTS)
             text(desc, alignment = TextAlignment.BASELINE_LEFT).xy(pos - Point(0, 8))
 
-            debugVertexView(path.getPoints2List(), color = Colors.YELLOWGREEN, type = AG.DrawType.LINE_STRIP).xy(pos).apply {
+            debugVertexView(path.getPoints2List(), color = Colors.YELLOWGREEN, type = AGDrawType.LINE_STRIP).xy(pos).apply {
                 keys {
                     down(Key.N8) { visible = !visible }
                 }
             }
 
-            debugVertexView(pointsList.map { it.vector }, type = AG.DrawType.LINE_STRIP).xy(pos).apply {
+            debugVertexView(pointsList.map { it.vector }, type = AGDrawType.LINE_STRIP).xy(pos).apply {
                 keys {
                     down(Key.N9) { visible = !visible }
                 }
