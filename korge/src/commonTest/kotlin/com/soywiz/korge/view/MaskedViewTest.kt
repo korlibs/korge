@@ -12,7 +12,7 @@ class MaskedViewTest : ViewsForTesting() {
     @Test
     fun testMaskBatches() {
         val vertices = arrayListOf<List<VertexInfo>>()
-        val stencils = arrayListOf<AG.StencilState>()
+        val stencils = arrayListOf<AG.StencilFullState>()
 
         val masked = MaskedView()
         masked.mask = SolidRect(32.0, 32.0)
@@ -20,7 +20,7 @@ class MaskedViewTest : ViewsForTesting() {
 
         testRenderContext(object : LogBaseAG() {
             override fun draw(batch: Batch) {
-                stencils += batch.stencil.copy()
+                stencils += batch.stencilFull
             }
         }) { ctx ->
             @Suppress("EXPERIMENTAL_API_USAGE")
@@ -30,8 +30,8 @@ class MaskedViewTest : ViewsForTesting() {
 
         assertEquals(2, vertices.size)
         assertEquals(listOf(
-            MaskStates.STATE_SHAPE.stencil.copy(referenceValue = 1),
-            MaskStates.STATE_CONTENT.stencil.copy(referenceValue = 1)
+            MaskStates.STATE_SHAPE.stencilFull.withReferenceValue(referenceValue = 1),
+            MaskStates.STATE_CONTENT.stencilFull.withReferenceValue(referenceValue = 1)
         ), stencils)
     }
 }

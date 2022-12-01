@@ -1,7 +1,6 @@
 package com.soywiz.korag
 
 import com.soywiz.kds.fastArrayListOf
-import com.soywiz.kmem.toIntRound
 import com.soywiz.korag.shader.Program
 import com.soywiz.korag.shader.VertexLayout
 import com.soywiz.korma.geom.Rectangle
@@ -42,26 +41,26 @@ fun AGList.setColorMaskState(colorMask: AG.ColorMaskState?) {
     colorMask(colorMask?.red ?: true, colorMask?.green ?: true, colorMask?.blue ?: true, colorMask?.alpha ?: true)
 }
 
-fun AGList.setStencilState(stencil: AG.StencilState?) {
-    if (stencil != null && stencil.enabled) {
+fun AGList.setStencilState(stencilOpFunc: AG.StencilOpFuncState?, stencilRef: AG.StencilReferenceState) {
+    if (stencilOpFunc != null && stencilOpFunc.enabled) {
         enable(AGEnable.STENCIL)
-        stencilFunction(stencil.compareMode, stencil.referenceValue, stencil.readMask)
+        stencilFunction(stencilOpFunc.compareMode, stencilRef.referenceValue, stencilRef.readMask)
         stencilOperation(
-            stencil.actionOnDepthFail,
-            stencil.actionOnDepthPassStencilFail,
-            stencil.actionOnBothPass
+            stencilOpFunc.actionOnDepthFail,
+            stencilOpFunc.actionOnDepthPassStencilFail,
+            stencilOpFunc.actionOnBothPass
         )
-        stencilMask(stencil.writeMask)
+        stencilMask(stencilRef.writeMask)
     } else {
         disable(AGEnable.STENCIL)
         stencilMask(0)
     }
 }
 
-fun AGList.setScissorState(ag: AG, scissor: AG.Scissor? = null) =
+fun AGList.setScissorState(ag: AG, scissor: AG.Scissor = AG.Scissor.NIL) =
     setScissorState(ag.currentRenderBuffer, ag.mainRenderBuffer, scissor)
 
-fun AGList.setScissorState(currentRenderBuffer: AG.BaseRenderBuffer?, mainRenderBuffer: AG.BaseRenderBuffer, scissor: AG.Scissor? = null) {
+fun AGList.setScissorState(currentRenderBuffer: AG.BaseRenderBuffer?, mainRenderBuffer: AG.BaseRenderBuffer, scissor: AG.Scissor = AG.Scissor.NIL) {
     if (currentRenderBuffer == null) return
 
     //println("applyScissorState")
@@ -73,7 +72,7 @@ fun AGList.setScissorState(currentRenderBuffer: AG.BaseRenderBuffer?, mainRender
     if (currentRenderBuffer === mainRenderBuffer) {
         var realScissors: Rectangle? = finalScissorBL
         realScissors?.setTo(0.0, 0.0, realBackWidth.toDouble(), realBackHeight.toDouble())
-        if (scissor != null) {
+        if (scissor != AG.Scissor.NIL) {
             tempRect.setTo(
                 currentRenderBuffer.x + scissor.x,
                 ((currentRenderBuffer.y + currentRenderBuffer.height) - (scissor.y + scissor.height)),
@@ -101,22 +100,23 @@ fun AGList.setScissorState(currentRenderBuffer: AG.BaseRenderBuffer?, mainRender
     } else {
         //println("[RENDER_TARGET] scissor: $scissor")
 
-        enableDisable(AGEnable.SCISSOR, scissor != null) {
-            scissor(scissor!!.x.toIntRound(), scissor.y.toIntRound(), scissor.width.toIntRound(), scissor.height.toIntRound())
+        enableDisable(AGEnable.SCISSOR, scissor != AG.Scissor.NIL) {
+            scissor(scissor.x, scissor.y, scissor.width, scissor.height)
         }
     }
 }
 
 fun AGList.setState(
     blending: AG.Blending = AG.Blending.NORMAL,
-    stencil: AG.StencilState = AG.StencilState.DUMMY,
-    colorMask: AG.ColorMaskState = AG.ColorMaskState.DUMMY,
-    renderState: AG.RenderState = AG.RenderState.DUMMY,
+    stencilOpFunc: AG.StencilOpFuncState = AG.StencilOpFuncState.DEFAULT,
+    stencilRef: AG.StencilReferenceState = AG.StencilReferenceState.DEFAULT,
+    colorMask: AG.ColorMaskState = AG.ColorMaskState.ALL_ENABLED,
+    renderState: AG.RenderState = AG.RenderState.DEFAULT,
 ) {
     setBlendingState(blending)
     setRenderState(renderState)
     setColorMaskState(colorMask)
-    setStencilState(stencil)
+    setStencilState(stencilOpFunc, stencilRef)
 }
 
 inline fun AGList.useProgram(ag: AG, program: Program) {

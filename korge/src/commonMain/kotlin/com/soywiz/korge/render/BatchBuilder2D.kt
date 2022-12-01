@@ -133,7 +133,8 @@ class BatchBuilder2D constructor(
 	init { logger.trace { "BatchBuilder2D[4]" } }
 
     /** The current stencil state. If you change it, you must call the [flush] method to ensure everything has been drawn. */
-	var stencil = AG.StencilState()
+	var stencilRef = AG.StencilReferenceState.DEFAULT
+    var stencilOpFunc = AG.StencilOpFuncState.DEFAULT
 
 	init { logger.trace { "BatchBuilder2D[5]" } }
 
@@ -143,7 +144,7 @@ class BatchBuilder2D constructor(
 	init { logger.trace { "BatchBuilder2D[6]" } }
 
     /** The current scissor state. If you change it, you must call the [flush] method to ensure everything has been drawn. */
-	var scissor: AG.Scissor? = null
+	var scissor: AG.Scissor = AG.Scissor.NIL
 
 	private val identity = Matrix()
 
@@ -924,12 +925,14 @@ class BatchBuilder2D constructor(
                 program = program,
                 //program = PROGRAM_PRE,
                 type = AG.DrawType.TRIANGLES,
-                vertexCount = indexPos,
                 blending = factors.factors(ag.isRenderingToTexture),
                 uniforms = uniforms,
-                stencil = stencil,
+                stencilOpFunc = stencilOpFunc,
+                stencilRef = stencilRef,
                 colorMask = colorMask,
-                scissor = scissor
+                scissor = scissor,
+                offset = 0,
+                vertexCount = indexPos,
             )
             beforeFlush(this)
 		}

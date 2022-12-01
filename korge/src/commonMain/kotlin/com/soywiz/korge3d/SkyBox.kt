@@ -154,7 +154,7 @@ class SkyBox(
     }
 
     private val uniformValues = AG.UniformValues()
-    private val rs = AG.RenderState(depthMask = false, depthFunc = AG.CompareMode.LESS_EQUAL)
+    private val rs = AG.RenderState.DEFAULT.withDepthMask(depthMask = false).withDepthFunc(depthFunc = AG.CompareMode.LESS_EQUAL)
 
     private val cubeMapTexUnit = AG.TextureUnit()
     private val viewNoTrans = Matrix3D()

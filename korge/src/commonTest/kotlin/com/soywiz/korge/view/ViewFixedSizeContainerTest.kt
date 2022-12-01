@@ -22,7 +22,7 @@ class ViewFixedSizeContainerTest : ViewsForTesting(
         val log = arrayListOf<Any?>()
         testRenderContext(object : LogBaseAG() {
             override fun draw(batch: Batch) {
-                log += batch.scissor?.rect
+                log += batch.scissor.toRectOrNull()
             }
         }) {
             stage.render(it)

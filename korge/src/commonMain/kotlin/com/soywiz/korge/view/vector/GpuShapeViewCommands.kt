@@ -76,7 +76,8 @@ class GpuShapeViewCommands {
         drawType: AG.DrawType,
         paintShader: GpuShapeViewPrograms.PaintShader?,
         colorMask: AG.ColorMaskState? = null,
-        stencil: AG.StencilState? = null,
+        stencilOpFunc: AG.StencilOpFuncState? = null,
+        stencilRef: AG.StencilReferenceState = AG.StencilReferenceState.DEFAULT,
         blendMode: BlendMode? = null,
         cullFace: AG.CullFace? = null,
         startIndex: Int = this.verticesStartIndex,
@@ -88,7 +89,8 @@ class GpuShapeViewCommands {
             vertexEnd = endIndex,
             paintShader = paintShader,
             colorMask = colorMask,
-            stencil = stencil,
+            stencilOpFunc = stencilOpFunc,
+            stencilRef = stencilRef,
             blendMode = blendMode,
             cullFace = cullFace,
         )
@@ -171,9 +173,9 @@ class GpuShapeViewCommands {
                                                 }
                                                 if (rect != null) {
                                                     rect.applyTransform(globalMatrix)
-                                                    list.setScissorState(ag, AG.Scissor().setTo(rect))
+                                                    list.setScissorState(ag, AG.Scissor(rect))
                                                 } else {
-                                                    list.setScissorState(ag, null)
+                                                    list.setScissorState(ag, AG.Scissor.NIL)
                                                 }
                                             }
                                             is ClearCommand -> {
@@ -206,7 +208,7 @@ class GpuShapeViewCommands {
                                                 list.uboSet(ubo, tempUniforms)
                                                 list.uboUse(ubo)
 
-                                                list.setStencilState(cmd.stencil)
+                                                list.setStencilState(cmd.stencilOpFunc, cmd.stencilRef)
                                                 list.setColorMaskState(cmd.colorMask)
                                                 list.setBlendingState((cmd.blendMode ?: BlendMode.NORMAL)?.factors(outPremultiplied))
                                                 if (cmd.cullFace != null) {
@@ -265,7 +267,8 @@ class GpuShapeViewCommands {
         var paintShader: GpuShapeViewPrograms.PaintShader?,
         var program: Program? = null,
         var colorMask: AG.ColorMaskState? = null,
-        var stencil: AG.StencilState? = null,
+        var stencilOpFunc: AG.StencilOpFuncState? = null,
+        var stencilRef: AG.StencilReferenceState = AG.StencilReferenceState.DEFAULT,
         var blendMode: BlendMode? = null,
         var cullFace: AG.CullFace? = null
     ) : ICommand {

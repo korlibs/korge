@@ -27,7 +27,7 @@ class Text3D(
     }
 
     private val uniformValues = AG.UniformValues()
-    private val rs = AG.RenderState(depthFunc = AG.CompareMode.LESS_EQUAL)
+    private val rs = AG.RenderState.DEFAULT.withDepthFunc(depthFunc = AG.CompareMode.LESS_EQUAL)
     private val tempMat1 = Matrix3D()
     private val tempMat2 = Matrix3D()
     private val tempMat3 = Matrix3D()

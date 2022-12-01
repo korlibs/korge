@@ -136,7 +136,7 @@ public fun Int.extractShort(offset: Int): Short = (this ushr offset).toShort()
 /** Extracts [count] at [offset] from [this] [Int] and convert the possible values into the range 0x00..[scale] */
 public fun Int.extractScaled(offset: Int, count: Int, scale: Int): Int = (extract(offset, count) * scale) / count.mask()
 /** Extracts [count] at [offset] from [this] [Int] and convert the possible values into the range 0.0..1.0 */
-public fun Int.extractScaledf01(offset: Int, count: Int): Double = extract(offset, count).toDouble() / count.mask().toDouble()
+public fun Int.extractScaledf01(offset: Int, count: Int): Float = extract(offset, count).toFloat() / count.mask().toFloat()
 
 /** Extracts [count] at [offset] from [this] [Int] and convert the possible values into the range 0x00..0xFF */
 public fun Int.extractScaledFF(offset: Int, count: Int): Int = extractScaled(offset, count, 0xFF)
@@ -188,6 +188,8 @@ public fun Int.insert(value: Boolean, offset: Int): Int {
 
 public fun Int.insertScaled(value: Int, offset: Int, count: Int, scale: Int): Int = insert((value * count.mask()) / scale, offset, count)
 public fun Int.insertScaledFF(value: Int, offset: Int, count: Int): Int = if (count == 0) this else this.insertScaled(value, offset, count, 0xFF)
+/** Extracts [count] at [offset] from [this] [Int] and convert the possible values into the range 0.0..1.0 */
+public fun Int.insertScaledf01(value: Float, offset: Int, count: Int): Int = this.insert((value.clamp01() * offset.mask()).toInt(), offset, count)
 
 
 /** Check if [this] has all the bits set in [bits] set */
@@ -217,3 +219,10 @@ public fun Int.with(bits: Int): Int = this or bits
 
 public fun Long.without(bits: Long): Long = this and bits.inv()
 public fun Long.with(bits: Long): Long = this or bits
+
+/** Get high 32-bits of this Long */
+val Long.high: Int get() = (this ushr 32).toInt()
+/** Get low 32-bits of this Long */
+val Long.low: Int get() = this.toInt()
+
+fun Long.Companion.fromLowHigh(low: Int, high: Int): Long = (low.toLong() and 0xFFFFFFFFL) or (high.toLong() shl 32)

@@ -234,9 +234,6 @@ class RenderContext constructor(
         flushers(Unit)
 	}
 
-    @PublishedApi
-    internal val renderToTextureScissors = Pool { AG.Scissor() }
-
     inline fun renderToFrameBuffer(
         frameBuffer: AG.RenderBuffer,
         clear: Boolean = true,
@@ -246,16 +243,14 @@ class RenderContext constructor(
         ag.setRenderBufferTemporally(frameBuffer) {
             useBatcher { batch ->
                 val oldScissors = batch.scissor
-                renderToTextureScissors.alloc { scissor ->
-                    batch.scissor = scissor.setTo(0, 0, frameBuffer.width, frameBuffer.height)
-                    //batch.scissor = null
-                    try {
-                        if (clear) ag.clear(Colors.TRANSPARENT_BLACK)
-                        render(frameBuffer)
-                        flush()
-                    } finally {
-                        batch.scissor = oldScissors
-                    }
+                batch.scissor = AG.Scissor(0, 0, frameBuffer.width, frameBuffer.height)
+                //batch.scissor = null
+                try {
+                    if (clear) ag.clear(Colors.TRANSPARENT_BLACK)
+                    render(frameBuffer)
+                    flush()
+                } finally {
+                    batch.scissor = oldScissors
                 }
             }
         }
