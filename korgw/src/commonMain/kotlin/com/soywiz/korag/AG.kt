@@ -36,7 +36,7 @@ import com.soywiz.korim.color.RGBAPremultiplied
 import com.soywiz.korim.color.RGBAf
 import com.soywiz.korio.annotations.KorIncomplete
 import com.soywiz.korio.async.runBlockingNoJs
-import com.soywiz.korio.lang.Closeable
+import com.soywiz.korio.lang.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.math.nextMultipleOf
 import kotlin.contracts.ExperimentalContracts
@@ -48,16 +48,576 @@ import kotlin.jvm.JvmInline
 import kotlin.jvm.JvmOverloads
 import kotlin.math.*
 
-typealias AGBlendEquation = AG.BlendEquation
-typealias AGBlendFactor = AG.BlendFactor
-typealias AGStencilOp = AG.StencilOp
-typealias AGTriangleFace = AG.TriangleFace
-typealias AGCompareMode = AG.CompareMode
-typealias AGFrontFace = AG.FrontFace
-typealias AGCullFace = AG.CullFace
-typealias AGDrawType = AG.DrawType
-typealias AGIndexType = AG.IndexType
-typealias AGBufferKind = AG.BufferKind
+
+inline class AGReadKind(val ordinal: Int) {
+    companion object {
+        val COLOR = AGReadKind(0)
+        val DEPTH = AGReadKind(1)
+        val STENCIL = AGReadKind(2)
+    }
+    val size: Int get() = when (this) {
+        COLOR -> 4
+        DEPTH -> 4
+        STENCIL -> 1
+        else -> unreachable
+    }
+
+    override fun toString(): String = when (this) {
+        COLOR -> "COLOR"
+        DEPTH -> "DEPTH"
+        STENCIL -> "STENCIL"
+        else -> "-"
+    }
+}
+
+//TODO: there are other possible values
+enum class AGTextureTargetKind(val dims: Int) {
+    TEXTURE_2D(2), TEXTURE_3D(3), TEXTURE_CUBE_MAP(3), EXTERNAL_TEXTURE(2);
+    companion object {
+        val VALUES = values()
+    }
+}
+
+
+/** 2 bits required for encoding */
+inline class AGBlendEquation(val ordinal: Int) {
+    companion object {
+        val ADD = AGBlendEquation(0)
+        val SUBTRACT = AGBlendEquation(1)
+        val REVERSE_SUBTRACT = AGBlendEquation(2)
+    }
+
+    override fun toString(): String = when (this) {
+        ADD -> "ADD"
+        SUBTRACT -> "SUBTRACT"
+        REVERSE_SUBTRACT -> "REVERSE_SUBTRACT"
+        else -> "-"
+    }
+
+    val op: String get() = when (this) {
+        ADD -> "+"
+        SUBTRACT -> "-"
+        REVERSE_SUBTRACT -> "r-"
+        else -> unreachable
+    }
+
+    fun apply(l: Double, r: Double): Double = when (this) {
+        ADD -> l + r
+        SUBTRACT -> l - r
+        REVERSE_SUBTRACT -> r - l
+        else -> unreachable
+    }
+
+    fun apply(l: Float, r: Float): Float = when (this) {
+        ADD -> l + r
+        SUBTRACT -> l - r
+        REVERSE_SUBTRACT -> r - l
+        else -> unreachable
+    }
+
+    fun apply(l: Int, r: Int): Int = when (this) {
+        ADD -> l + r
+        SUBTRACT -> l - r
+        REVERSE_SUBTRACT -> r - l
+        else -> unreachable
+    }
+}
+
+/** 4 bits required for encoding */
+inline class AGBlendFactor(val ordinal: Int) {
+    companion object {
+        val DESTINATION_ALPHA = AGBlendFactor(0)
+        val DESTINATION_COLOR = AGBlendFactor(1)
+        val ONE = AGBlendFactor(2)
+        val ONE_MINUS_DESTINATION_ALPHA = AGBlendFactor(3)
+        val ONE_MINUS_DESTINATION_COLOR = AGBlendFactor(4)
+        val ONE_MINUS_SOURCE_ALPHA = AGBlendFactor(5)
+        val ONE_MINUS_SOURCE_COLOR = AGBlendFactor(6)
+        val SOURCE_ALPHA = AGBlendFactor(7)
+        val SOURCE_COLOR = AGBlendFactor(8)
+        val ZERO = AGBlendFactor(9)
+    }
+
+    override fun toString(): String = when (this) {
+        DESTINATION_ALPHA -> "DESTINATION_ALPHA"
+        DESTINATION_COLOR -> "DESTINATION_COLOR"
+        ONE -> "ONE"
+        ONE_MINUS_DESTINATION_ALPHA -> "ONE_MINUS_DESTINATION_ALPHA"
+        ONE_MINUS_DESTINATION_COLOR -> "ONE_MINUS_DESTINATION_COLOR"
+        ONE_MINUS_SOURCE_ALPHA -> "ONE_MINUS_SOURCE_ALPHA"
+        ONE_MINUS_SOURCE_COLOR -> "ONE_MINUS_SOURCE_COLOR"
+        SOURCE_ALPHA -> "SOURCE_ALPHA"
+        SOURCE_COLOR -> "SOURCE_COLOR"
+        ZERO -> "ZERO"
+        else -> "-"
+    }
+
+    val op: String get() = when (this) {
+        DESTINATION_ALPHA -> "dstA"
+        DESTINATION_COLOR -> "dstRGB"
+        ONE -> "1"
+        ONE_MINUS_DESTINATION_ALPHA -> "(1 - dstA)"
+        ONE_MINUS_DESTINATION_COLOR -> "(1 - dstRGB)"
+        ONE_MINUS_SOURCE_ALPHA -> "(1 - srcA)"
+        ONE_MINUS_SOURCE_COLOR -> "(1 - srcRGB)"
+        SOURCE_ALPHA -> "srcA"
+        SOURCE_COLOR -> "srcRGB"
+        ZERO -> "0"
+        else -> unreachable
+    }
+
+    fun get(srcC: Double, srcA: Double, dstC: Double, dstA: Double): Double = when (this) {
+        DESTINATION_ALPHA -> dstA
+        DESTINATION_COLOR -> dstC
+        ONE -> 1.0
+        ONE_MINUS_DESTINATION_ALPHA -> 1.0 - dstA
+        ONE_MINUS_DESTINATION_COLOR -> 1.0 - dstC
+        ONE_MINUS_SOURCE_ALPHA -> 1.0 - srcA
+        ONE_MINUS_SOURCE_COLOR -> 1.0 - srcC
+        SOURCE_ALPHA -> srcA
+        SOURCE_COLOR -> srcC
+        ZERO -> 0.0
+        else -> unreachable
+    }
+}
+
+inline class AGStencilOp(val ordinal: Int) {
+    companion object {
+        val DECREMENT_SATURATE = AGStencilOp(0)
+        val DECREMENT_WRAP = AGStencilOp(1)
+        val INCREMENT_SATURATE = AGStencilOp(2)
+        val INCREMENT_WRAP = AGStencilOp(3)
+        val INVERT = AGStencilOp(4)
+        val KEEP = AGStencilOp(5)
+        val SET = AGStencilOp(6)
+        val ZERO = AGStencilOp(7)
+    }
+
+    override fun toString(): String = when (this) {
+        DECREMENT_SATURATE -> "DECREMENT_SATURATE"
+        DECREMENT_WRAP -> "DECREMENT_WRAP"
+        INCREMENT_SATURATE -> "INCREMENT_SATURATE"
+        INCREMENT_WRAP -> "INCREMENT_WRAP"
+        INVERT -> "INVERT"
+        KEEP -> "KEEP"
+        SET -> "SET"
+        ZERO -> "ZERO"
+        else -> "-"
+    }
+}
+
+
+/** 2 bits required for encoding */
+inline class AGTriangleFace(val ordinal :Int) {
+    companion object {
+        val FRONT = AGTriangleFace(0)
+        val BACK = AGTriangleFace(1)
+        val FRONT_AND_BACK = AGTriangleFace(2)
+        val NONE = AGTriangleFace(3)
+    }
+
+    override fun toString(): String = when (this) {
+        FRONT -> "FRONT"
+        BACK -> "BACK"
+        FRONT_AND_BACK -> "FRONT_AND_BACK"
+        NONE -> "NONE"
+        else -> "-"
+    }
+}
+
+
+/** 3 bits required for encoding */
+inline class AGCompareMode(val ordinal: Int) {
+    companion object {
+        val ALWAYS = AGCompareMode(0)
+        val EQUAL = AGCompareMode(1)
+        val GREATER = AGCompareMode(2)
+        val GREATER_EQUAL = AGCompareMode(3)
+        val LESS = AGCompareMode(4)
+        val LESS_EQUAL = AGCompareMode(5)
+        val NEVER = AGCompareMode(6)
+        val NOT_EQUAL = AGCompareMode(7)
+    }
+
+    override fun toString(): String = when (this) {
+        ALWAYS -> "ALWAYS"
+        EQUAL -> "EQUAL"
+        GREATER -> "GREATER"
+        GREATER_EQUAL -> "GREATER_EQUAL"
+        LESS -> "LESS"
+        LESS_EQUAL -> "LESS_EQUAL"
+        NEVER -> "NEVER"
+        NOT_EQUAL -> "NOT_EQUAL"
+        else -> "-"
+    }
+
+    fun inverted(): AGCompareMode = when (this) {
+        ALWAYS -> NEVER
+        EQUAL -> NOT_EQUAL
+        GREATER -> LESS_EQUAL
+        GREATER_EQUAL -> LESS
+        LESS -> GREATER_EQUAL
+        LESS_EQUAL -> GREATER
+        NEVER -> ALWAYS
+        NOT_EQUAL -> EQUAL
+        else -> NEVER
+    }
+}
+
+// Default: CCW
+/** 2 Bits required for encoding */
+inline class AGFrontFace(val ordinal: Int) {
+    companion object {
+        val DEFAULT: AGFrontFace get() = CCW
+
+        // @TODO: This is incorrect
+        val BOTH = AGFrontFace(0)
+        val CCW = AGFrontFace(1)
+        val CW = AGFrontFace(2)
+    }
+
+    override fun toString(): String = when (this) {
+        BOTH -> "BOTH"
+        CCW -> "CCW"
+        CW -> "CW"
+        else -> "-"
+    }
+}
+
+
+/** 2 Bits required for encoding */
+inline class AGCullFace(val ordinal: Int) {
+    companion object {
+        val BOTH = AGCullFace(0)
+        val FRONT = AGCullFace(1)
+        val BACK = AGCullFace(2)
+    }
+
+    override fun toString(): String = when (this) {
+        BOTH -> "BOTH"
+        FRONT -> "FRONT"
+        BACK -> "BACK"
+        else -> "-"
+    }
+}
+
+
+/** Encoded in 3 bits */
+inline class AGDrawType(val ordinal: Int) {
+    companion object {
+        val POINTS = AGDrawType(0)
+        val LINE_STRIP = AGDrawType(1)
+        val LINE_LOOP = AGDrawType(2)
+        val LINES = AGDrawType(3)
+        val TRIANGLES = AGDrawType(4)
+        val TRIANGLE_STRIP = AGDrawType(5)
+        val TRIANGLE_FAN = AGDrawType(6)
+    }
+
+    override fun toString(): String = when (this) {
+        POINTS -> "POINTS"
+        LINE_STRIP -> "LINE_STRIP"
+        LINE_LOOP -> "LINE_LOOP"
+        LINES -> "LINES"
+        TRIANGLES -> "TRIANGLES"
+        TRIANGLE_STRIP -> "TRIANGLE_STRIP"
+        TRIANGLE_FAN -> "TRIANGLE_FAN"
+        else -> "-"
+    }
+}
+
+/** Encoded in 2 bits */
+inline class AGIndexType(val ordinal: Int) {
+    companion object {
+        val NONE = AGIndexType(0)
+        val UBYTE = AGIndexType(1)
+        val USHORT = AGIndexType(2)
+        // https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/drawElements
+        @Deprecated("UINT is not always supported on webgl")
+        val UINT = AGIndexType(3)
+    }
+
+    override fun toString(): String = when (this) {
+        NONE -> "null"
+        UBYTE -> "UBYTE"
+        USHORT -> "USHORT"
+        UINT -> "UINT"
+        else -> "-"
+    }
+}
+
+
+/**
+ * color(RGB) = (sourceColor * [srcRGB]) + (destinationColor * [dstRGB])
+ * color(A) = (sourceAlpha * [srcA]) + (destinationAlpha * [dstA])
+ *
+ * Instead of + [eqRGB] and [eqA] determines the operation to use (+, - or reversed -)
+ */
+inline class AGBlending(val data: Int) {
+    val srcRGB: AGBlendFactor get() = AGBlendFactor(data.extract4(0))
+    val srcA: AGBlendFactor get() = AGBlendFactor(data.extract4(4))
+    val dstRGB: AGBlendFactor get() = AGBlendFactor(data.extract4(8))
+    val dstA: AGBlendFactor get() = AGBlendFactor(data.extract4(12))
+    val eqRGB: AGBlendEquation get() = AGBlendEquation(data.extract2(16))
+    val eqA: AGBlendEquation get() = AGBlendEquation(data.extract2(18))
+
+    fun withSRC(rgb: AGBlendFactor, a: AGBlendFactor = rgb): AGBlending = AGBlending(data.insert4(rgb.ordinal, 0).insert4(a.ordinal, 4))
+    fun withDST(rgb: AGBlendFactor, a: AGBlendFactor = rgb): AGBlending = AGBlending(data.insert4(rgb.ordinal, 8).insert4(a.ordinal, 12))
+    fun withEQ(rgb: AGBlendEquation, a: AGBlendEquation = rgb): AGBlending = AGBlending(data.insert2(rgb.ordinal, 16).insert2(a.ordinal, 18))
+
+    private fun applyColorComponent(srcC: Double, dstC: Double, srcA: Double, dstA: Double): Double {
+        return this.eqRGB.apply(srcC * this.srcRGB.get(srcC, srcA, dstC, dstA), dstC * this.dstRGB.get(srcC, srcA, dstC, dstA))
+    }
+
+    private fun applyAlphaComponent(srcA: Double, dstA: Double): Double {
+        return eqRGB.apply(srcA * this.srcA.get(0.0, srcA, 0.0, dstA), dstA * this.dstA.get(0.0, srcA, 0.0, dstA))
+    }
+
+    fun apply(src: RGBAf, dst: RGBAf, out: RGBAf = RGBAf()): RGBAf {
+        out.rd = applyColorComponent(src.rd, dst.rd, src.ad, dst.ad)
+        out.gd = applyColorComponent(src.gd, dst.gd, src.ad, dst.ad)
+        out.bd = applyColorComponent(src.bd, dst.bd, src.ad, dst.ad)
+        out.ad = applyAlphaComponent(src.ad, dst.ad)
+        return out
+    }
+
+    fun apply(src: RGBA, dst: RGBA): RGBA {
+        val srcA = src.ad
+        val dstA = dst.ad
+        val r = applyColorComponent(src.rd, dst.rd, srcA, dstA)
+        val g = applyColorComponent(src.gd, dst.gd, srcA, dstA)
+        val b = applyColorComponent(src.bd, dst.bd, srcA, dstA)
+        val a = applyAlphaComponent(srcA, dstA)
+        return RGBA.float(r, g, b, a)
+    }
+
+    val disabled: Boolean get() = this == NONE
+    val enabled: Boolean get() = this != NONE
+
+    override fun toString(): String = "Blending(outRGB = (srcRGB * ${srcRGB.op}) ${eqRGB.op} (dstRGB * ${dstRGB.op}), outA = (srcA * ${srcA.op}) ${eqA.op} (dstA * ${dstA.op}))"
+
+    companion object {
+        operator fun invoke(
+            srcRGB: AGBlendFactor,
+            dstRGB: AGBlendFactor,
+            srcA: AGBlendFactor = srcRGB,
+            dstA: AGBlendFactor = dstRGB,
+            eqRGB: AGBlendEquation = AGBlendEquation.ADD,
+            eqA: AGBlendEquation = eqRGB
+        ): AGBlending = AGBlending(0).withSRC(srcRGB, srcA).withDST(dstRGB, dstA).withEQ(eqRGB, eqA)
+
+        operator fun invoke(
+            src: AGBlendFactor,
+            dst: AGBlendFactor,
+            eq: AGBlendEquation = AGBlendEquation.ADD,
+        ): AGBlending = AGBlending(0).withSRC(src).withDST(dst).withEQ(eq)
+
+        val NONE = AGBlending(AGBlendFactor.ONE, AGBlendFactor.ZERO, AGBlendFactor.ONE, AGBlendFactor.ZERO)
+        val NORMAL = AGBlending(
+            //GL_ONE, GL_ONE_MINUS_SRC_ALPHA <-- premultiplied
+            AGBlendFactor.SOURCE_ALPHA, AGBlendFactor.ONE_MINUS_SOURCE_ALPHA,
+            AGBlendFactor.ONE, AGBlendFactor.ONE_MINUS_SOURCE_ALPHA
+        )
+        val NORMAL_PRE = AGBlending(
+            AGBlendFactor.ONE, AGBlendFactor.ONE_MINUS_SOURCE_ALPHA,
+        )
+        val ADD = AGBlending(
+            AGBlendFactor.SOURCE_ALPHA, AGBlendFactor.DESTINATION_ALPHA,
+            AGBlendFactor.ONE, AGBlendFactor.ONE
+        )
+        val ADD_PRE = AGBlending(
+            AGBlendFactor.ONE, AGBlendFactor.ONE,
+            AGBlendFactor.ONE, AGBlendFactor.ONE
+        )
+    }
+}
+
+inline class AGColorMaskState(
+    val data: Int
+) {
+    val red: Boolean get() = data.extractBool(0)
+    val green: Boolean get() = data.extractBool(1)
+    val blue: Boolean get() = data.extractBool(2)
+    val alpha: Boolean get() = data.extractBool(3)
+
+    constructor(red: Boolean, green: Boolean, blue: Boolean, alpha: Boolean) : this(0.insert(red, 0).insert(green, 1).insert(blue, 2).insert(alpha, 3))
+    constructor(value: Boolean = true) : this(value, value, value, value)
+
+    fun copy(
+        red: Boolean = this.red,
+        green: Boolean = this.green,
+        blue: Boolean = this.blue,
+        alpha: Boolean = this.alpha
+    ): AGColorMaskState = AGColorMaskState(red, green, blue, alpha)
+
+    companion object {
+        internal val DUMMY = AGColorMaskState()
+        val ALL_ENABLED = AGColorMaskState(true)
+        val ALL_BUT_ALPHA_ENABLED = AGColorMaskState(true, true, true, false)
+        val ALL_DISABLED = AGColorMaskState(false)
+    }
+}
+
+inline class AGRenderState(val data: Int) {
+    companion object {
+        operator fun invoke(): AGRenderState = DEFAULT
+        val DEFAULT = AGRenderState(0).withDepth(0f, 1f).withDepthMask(true).withDepthFunc(AGCompareMode.ALWAYS).withFrontFace(AGFrontFace.BOTH)
+    }
+
+    val depthNear: Float get() = data.extractScaledf01(0, 12)
+    val depthFar: Float get() = data.extractScaledf01(12, 12)
+    val depthMask: Boolean get() = data.extractBool(24)
+    val depthFunc: AGCompareMode get() = AGCompareMode(data.extract3(26))
+    val frontFace: AGFrontFace get() = AGFrontFace(data.extract2(30))
+
+    fun withDepth(near: Float, far: Float): AGRenderState = AGRenderState(data.insertScaledf01(near, 0, 12).insertScaledf01(far, 12, 12))
+    fun withDepthMask(depthMask: Boolean): AGRenderState = AGRenderState(data.insert(depthMask, 24))
+    fun withDepthFunc(depthFunc: AGCompareMode): AGRenderState = AGRenderState(data.insert3(depthFunc.ordinal, 26))
+    fun withFrontFace(frontFace: AGFrontFace): AGRenderState = AGRenderState(data.insert2(frontFace.ordinal, 30))
+}
+
+inline class AGStencilFullState private constructor(private val data: Long) {
+    constructor(opFunc: AGStencilOpFuncState = AGStencilOpFuncState.DEFAULT, ref: AGStencilReferenceState = AGStencilReferenceState.DEFAULT) : this(Long.fromLowHigh(opFunc.data, ref.data))
+    val opFunc: AGStencilOpFuncState get() = AGStencilOpFuncState(data.low)
+    val ref: AGStencilReferenceState get() = AGStencilReferenceState(data.high)
+
+    fun withOpFunc(opFunc: AGStencilOpFuncState): AGStencilFullState = AGStencilFullState(opFunc, ref)
+    fun withRef(ref: AGStencilReferenceState): AGStencilFullState = AGStencilFullState(opFunc, ref)
+    fun withReferenceValue(referenceValue: Int): AGStencilFullState = withRef(ref.withReferenceValue(referenceValue))
+}
+
+inline class AGStencilReferenceState(val data: Int) {
+    companion object {
+        val DEFAULT = AGStencilReferenceState(0)
+            .withReferenceValue(0)
+            .withReadMask(0xFF)
+            .withWriteMask(0xFF)
+    }
+
+    val referenceValue: Int get() = data.extract8(0)
+    val readMask: Int get() = data.extract8(8)
+    val writeMask: Int get() = data.extract8(16)
+
+    fun withReferenceValue(referenceValue: Int): AGStencilReferenceState = AGStencilReferenceState(data.insert8(referenceValue, 0))
+    fun withReadMask(readMask: Int): AGStencilReferenceState = AGStencilReferenceState(data.insert8(readMask, 8))
+    fun withWriteMask(writeMask: Int): AGStencilReferenceState = AGStencilReferenceState(data.insert8(writeMask, 16))
+}
+
+inline class AGStencilOpFuncState(val data: Int) {
+    companion object {
+        val DEFAULT = AGStencilOpFuncState(0)
+            .withEnabled(false)
+            .withTriangleFace(AGTriangleFace.FRONT_AND_BACK)
+            .withCompareMode(AGCompareMode.ALWAYS)
+            .withAction(AGStencilOp.KEEP, AGStencilOp.KEEP, AGStencilOp.KEEP)
+    }
+
+    val enabled: Boolean get() = data.extractBool(0)
+    val triangleFace: AGTriangleFace get() = AGTriangleFace(data.extract2(4))
+    val compareMode: AGCompareMode get() = AGCompareMode(data.extract3(8))
+    val actionOnBothPass: AGStencilOp get() = AGStencilOp(data.extract3(12))
+    val actionOnDepthFail: AGStencilOp get() = AGStencilOp(data.extract3(16))
+    val actionOnDepthPassStencilFail: AGStencilOp get() = AGStencilOp(data.extract3(20))
+
+    fun withEnabled(enabled: Boolean): AGStencilOpFuncState = AGStencilOpFuncState(data.insert(enabled, 0))
+    fun withTriangleFace(triangleFace: AGTriangleFace): AGStencilOpFuncState = AGStencilOpFuncState(data.insert2(triangleFace.ordinal, 4))
+    fun withCompareMode(compareMode: AGCompareMode): AGStencilOpFuncState = AGStencilOpFuncState(data.insert3(compareMode.ordinal, 8))
+    fun withActionOnBothPass(actionOnBothPass: AGStencilOp): AGStencilOpFuncState = AGStencilOpFuncState(data.insert3(actionOnBothPass.ordinal, 12))
+    fun withActionOnDepthFail(actionOnDepthFail: AGStencilOp): AGStencilOpFuncState = AGStencilOpFuncState(data.insert3(actionOnDepthFail.ordinal, 16))
+    fun withActionOnDepthPassStencilFail(actionOnDepthPassStencilFail: AGStencilOp): AGStencilOpFuncState = AGStencilOpFuncState(data.insert3(actionOnDepthPassStencilFail.ordinal, 20))
+
+    // Shortcut
+    fun withAction(actionOnBothPass: AGStencilOp, actionOnDepthFail: AGStencilOp = actionOnBothPass, actionOnDepthPassStencilFail: AGStencilOp = actionOnDepthFail): AGStencilOpFuncState = withActionOnBothPass(actionOnBothPass).withActionOnDepthFail(actionOnDepthFail).withActionOnDepthPassStencilFail(actionOnDepthPassStencilFail)
+}
+
+//open val supportInstancedDrawing: Boolean get() = false
+
+inline class AGFullState(val data: Int32Buffer = Int32Buffer(6)) {
+    var blending: AGBlending
+        get() = AGBlending(data[0])
+        set(value) { data[0] = value.data }
+    var stencilOpFunc: AGStencilOpFuncState
+        get() = AGStencilOpFuncState(data[1])
+        set(value) { data[1] = value.data }
+    var stencilRef: AGStencilReferenceState
+        get() = AGStencilReferenceState(data[2])
+        set(value) { data[2] = value.data }
+    var colorMask: AGColorMaskState
+        get() = AGColorMaskState(data[3])
+        set(value) { data[3] = value.data }
+    var scissor: AGScissor
+        get() = AGScissor(data[4], data[5])
+        set(value) {
+            data[4] = value.xy
+            data[5] = value.wh
+        }
+}
+
+inline class AGScissor(val data: Long) {
+    constructor(xy: Int, wh: Int) : this(Long.fromLowHigh(xy, wh))
+    constructor(x: Int, y: Int, width: Int, height: Int) : this(0.insert16(x, 0).insert16(y, 16), 0.insert16(width, 0).insert16(height, 16))
+    constructor(x: Double, y: Double, width: Double, height: Double) : this(x.toIntRound(), y.toIntRound(), width.toIntRound(), height.toIntRound())
+    //constructor(x: Double, y: Double, width: Double, height: Double) : this(x.toInt(), y.toInt(), width.toInt(), height.toInt())
+
+    val xy: Int get() = data.low
+    val wh: Int get() = data.high
+
+    val x: Int get() = xy.extract16Signed(0)
+    val y: Int get() = xy.extract16Signed(16)
+    val width: Int get() = wh.extract16Signed(0)
+    val height: Int get() = wh.extract16Signed(16)
+
+    val top get() = y
+    val left get() = x
+    val right get() = x + width
+    val bottom get() = y + height
+
+    fun withXY(x: Int, y: Int): AGScissor = AGScissor(0.insert16(x, 0).insert16(y, 16), wh)
+    fun withWH(width: Int, height: Int): AGScissor = AGScissor(xy, 0.insert16(width, 0).insert16(height, 16))
+    fun copy(x: Int = this.x, y: Int = this.y, width: Int = this.width, height: Int = this.height): AGScissor = AGScissor(x, y, width, height)
+    override fun toString(): String {
+        if (this == NIL) return "null"
+        return "Scissor(x=${x}, y=${y}, width=${width}, height=${height})"
+    }
+
+    fun toRect(out: Rectangle = Rectangle()): Rectangle = out.setTo(x, y, width, height)
+    fun toRectOrNull(out: Rectangle = Rectangle()): Rectangle? {
+        if (this == NIL) return null
+        return out.setTo(x, y, width, height)
+    }
+
+    companion object {
+        val EMPTY = AGScissor(0, 0)
+        val FULL = AGScissor(0, 0x7FFF7FFF)
+        val NIL = AGScissor(-1, 0x7FFF7FFF)
+        fun fromBounds(left: Int, top: Int, right: Int, bottom: Int): AGScissor = AGScissor(left, top, right - left, bottom - top)
+        fun fromBounds(left: Double, top: Double, right: Double, bottom: Double): AGScissor = AGScissor(left, top, right - left, bottom - top)
+
+        operator fun invoke(rect: IRectangle?): AGScissor {
+            if (rect == null) return NIL
+            return AGScissor(rect.x, rect.y, rect.width, rect.height)
+        }
+
+        // null is equivalent to Scissor(-Inf, -Inf, +Inf, +Inf)
+        fun combine(prev: AGScissor, next: AGScissor): AGScissor {
+            if (prev == NIL) return next
+            if (next == NIL) return prev
+
+            val intersectsX = prev.left <= next.right && prev.right >= next.left
+            val intersectsY = prev.top <= next.bottom && prev.bottom >= next.top
+            if (!intersectsX || !intersectsY) return EMPTY
+
+            val left = max(prev.left, next.left)
+            val top = max(prev.top, next.top)
+            val right = min(prev.right, next.right)
+            val bottom = min(prev.bottom, next.bottom)
+
+            return fromBounds(left, top, right, bottom)
+        }
+    }
+}
+
+enum class AGBufferKind { INDEX, VERTEX }
 
 interface AGFactory {
     val supportsNativeFrame: Boolean
@@ -168,218 +728,6 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
 
     //protected fun setViewport(v: IntArray) = setViewport(v[0], v[1], v[2], v[3])
 
-    /** 2 bits required for encoding */
-    enum class BlendEquation(val op: String) {
-        ADD("+"),
-        SUBTRACT("-"),
-        REVERSE_SUBTRACT("r-"),
-        ;
-
-        fun apply(l: Double, r: Double): Double = when (this) {
-            ADD -> l + r
-            SUBTRACT -> l - r
-            REVERSE_SUBTRACT -> r - l
-        }
-
-        fun apply(l: Float, r: Float): Float = when (this) {
-            ADD -> l + r
-            SUBTRACT -> l - r
-            REVERSE_SUBTRACT -> r - l
-        }
-
-        fun apply(l: Int, r: Int): Int = when (this) {
-            ADD -> l + r
-            SUBTRACT -> l - r
-            REVERSE_SUBTRACT -> r - l
-        }
-
-        companion object {
-            val VALUES = values()
-        }
-    }
-
-    /** 4 bits required for encoding */
-    enum class BlendFactor(
-        val op: String,
-    ) {
-        DESTINATION_ALPHA("dstA"),
-        DESTINATION_COLOR("dstRGB"),
-        ONE("1"),
-        ONE_MINUS_DESTINATION_ALPHA("(1 - dstA)"),
-        ONE_MINUS_DESTINATION_COLOR("(1 - dstRGB)"),
-        ONE_MINUS_SOURCE_ALPHA("(1 - srcA)"),
-        ONE_MINUS_SOURCE_COLOR("(1 - srcRGB)"),
-        SOURCE_ALPHA("srcA"),
-        SOURCE_COLOR("srcRGB"),
-        ZERO("0"),
-        ;
-
-        fun get(srcC: Double, srcA: Double, dstC: Double, dstA: Double): Double = when (this) {
-            DESTINATION_ALPHA -> dstA
-            DESTINATION_COLOR -> dstC
-            ONE -> 1.0
-            ONE_MINUS_DESTINATION_ALPHA -> 1.0 - dstA
-            ONE_MINUS_DESTINATION_COLOR -> 1.0 - dstC
-            ONE_MINUS_SOURCE_ALPHA -> 1.0 - srcA
-            ONE_MINUS_SOURCE_COLOR -> 1.0 - srcC
-            SOURCE_ALPHA -> srcA
-            SOURCE_COLOR -> srcC
-            ZERO -> 0.0
-        }
-
-        companion object {
-            val VALUES = values()
-        }
-    }
-
-    inline class Scissor private constructor(val data: Long) {
-        private constructor(low: Int, high: Int) : this(Long.fromLowHigh(low, high))
-        constructor(x: Int, y: Int, width: Int, height: Int) : this(0.insert16(x, 0).insert16(y, 16), 0.insert16(width, 0).insert16(height, 16))
-        constructor(x: Double, y: Double, width: Double, height: Double) : this(x.toIntRound(), y.toIntRound(), width.toIntRound(), height.toIntRound())
-        //constructor(x: Double, y: Double, width: Double, height: Double) : this(x.toInt(), y.toInt(), width.toInt(), height.toInt())
-
-        private val high: Int get() = data.high
-        private val low: Int get() = data.low
-
-        val x: Int get() = low.extract16Signed(0)
-        val y: Int get() = low.extract16Signed(16)
-        val width: Int get() = high.extract16Signed(0)
-        val height: Int get() = high.extract16Signed(16)
-
-        val top get() = y
-        val left get() = x
-        val right get() = x + width
-        val bottom get() = y + height
-
-        fun withXY(x: Int, y: Int): Scissor = Scissor(0.insert16(x, 0).insert16(y, 16), high)
-        fun withWH(width: Int, height: Int): Scissor = Scissor(low, 0.insert16(width, 0).insert16(height, 16))
-        fun copy(x: Int = this.x, y: Int = this.y, width: Int = this.width, height: Int = this.height): Scissor = Scissor(x, y, width, height)
-        override fun toString(): String {
-            if (this == NIL) return "null"
-            return "Scissor(x=${x}, y=${y}, width=${width}, height=${height})"
-        }
-
-        fun toRect(out: Rectangle = Rectangle()): Rectangle = out.setTo(x, y, width, height)
-        fun toRectOrNull(out: Rectangle = Rectangle()): Rectangle? {
-            if (this == NIL) return null
-            return out.setTo(x, y, width, height)
-        }
-
-        companion object {
-            val EMPTY = Scissor(0, 0)
-            val FULL = Scissor(0, 0x7FFF7FFF)
-            val NIL = Scissor(-1, 0x7FFF7FFF)
-            fun fromBounds(left: Int, top: Int, right: Int, bottom: Int): Scissor = Scissor(left, top, right - left, bottom - top)
-            fun fromBounds(left: Double, top: Double, right: Double, bottom: Double): Scissor = Scissor(left, top, right - left, bottom - top)
-
-            operator fun invoke(rect: IRectangle?): Scissor {
-                if (rect == null) return NIL
-                return Scissor(rect.x, rect.y, rect.width, rect.height)
-            }
-
-            // null is equivalent to Scissor(-Inf, -Inf, +Inf, +Inf)
-            fun combine(prev: Scissor, next: Scissor): Scissor {
-                if (prev == NIL) return next
-                if (next == NIL) return prev
-
-                val intersectsX = prev.left <= next.right && prev.right >= next.left
-                val intersectsY = prev.top <= next.bottom && prev.bottom >= next.top
-                if (!intersectsX || !intersectsY) return EMPTY
-
-                val left = max(prev.left, next.left)
-                val top = max(prev.top, next.top)
-                val right = min(prev.right, next.right)
-                val bottom = min(prev.bottom, next.bottom)
-
-                return fromBounds(left, top, right, bottom)
-            }
-        }
-    }
-
-    /**
-     * color(RGB) = (sourceColor * [srcRGB]) + (destinationColor * [dstRGB])
-     * color(A) = (sourceAlpha * [srcA]) + (destinationAlpha * [dstA])
-     *
-     * Instead of + [eqRGB] and [eqA] determines the operation to use (+, - or reversed -)
-     */
-    inline class Blending(val data: Int) {
-        val srcRGB: BlendFactor get() = BlendFactor.VALUES[data.extract4(0)]
-        val srcA: BlendFactor get() = BlendFactor.VALUES[data.extract4(4)]
-        val dstRGB: BlendFactor get() = BlendFactor.VALUES[data.extract4(8)]
-        val dstA: BlendFactor get() = BlendFactor.VALUES[data.extract4(12)]
-        val eqRGB: BlendEquation get() = BlendEquation.VALUES[data.extract2(16)]
-        val eqA: BlendEquation get() = BlendEquation.VALUES[data.extract2(18)]
-
-        fun withSRC(rgb: BlendFactor, a: BlendFactor = rgb): Blending = Blending(data.insert4(rgb.ordinal, 0).insert4(a.ordinal, 4))
-        fun withDST(rgb: BlendFactor, a: BlendFactor = rgb): Blending = Blending(data.insert4(rgb.ordinal, 8).insert4(a.ordinal, 12))
-        fun withEQ(rgb: BlendEquation, a: BlendEquation = rgb): Blending = Blending(data.insert2(rgb.ordinal, 16).insert2(a.ordinal, 18))
-
-        private fun applyColorComponent(srcC: Double, dstC: Double, srcA: Double, dstA: Double): Double {
-            return this.eqRGB.apply(srcC * this.srcRGB.get(srcC, srcA, dstC, dstA), dstC * this.dstRGB.get(srcC, srcA, dstC, dstA))
-        }
-
-        private fun applyAlphaComponent(srcA: Double, dstA: Double): Double {
-            return eqRGB.apply(srcA * this.srcA.get(0.0, srcA, 0.0, dstA), dstA * this.dstA.get(0.0, srcA, 0.0, dstA))
-        }
-
-        fun apply(src: RGBAf, dst: RGBAf, out: RGBAf = RGBAf()): RGBAf {
-            out.rd = applyColorComponent(src.rd, dst.rd, src.ad, dst.ad)
-            out.gd = applyColorComponent(src.gd, dst.gd, src.ad, dst.ad)
-            out.bd = applyColorComponent(src.bd, dst.bd, src.ad, dst.ad)
-            out.ad = applyAlphaComponent(src.ad, dst.ad)
-            return out
-        }
-
-        fun apply(src: RGBA, dst: RGBA): RGBA {
-            val srcA = src.ad
-            val dstA = dst.ad
-            val r = applyColorComponent(src.rd, dst.rd, srcA, dstA)
-            val g = applyColorComponent(src.gd, dst.gd, srcA, dstA)
-            val b = applyColorComponent(src.bd, dst.bd, srcA, dstA)
-            val a = applyAlphaComponent(srcA, dstA)
-            return RGBA.float(r, g, b, a)
-        }
-
-        val disabled: Boolean get() = this == NONE
-        val enabled: Boolean get() = this != NONE
-
-        override fun toString(): String = "Blending(outRGB = (srcRGB * ${srcRGB.op}) ${eqRGB.op} (dstRGB * ${dstRGB.op}), outA = (srcA * ${srcA.op}) ${eqA.op} (dstA * ${dstA.op}))"
-
-        companion object {
-            operator fun invoke(
-                srcRGB: BlendFactor,
-                dstRGB: BlendFactor,
-                srcA: BlendFactor = srcRGB,
-                dstA: BlendFactor = dstRGB,
-                eqRGB: BlendEquation = BlendEquation.ADD,
-                eqA: BlendEquation = eqRGB
-            ): Blending = Blending(0).withSRC(srcRGB, srcA).withDST(dstRGB, dstA).withEQ(eqRGB, eqA)
-
-            operator fun invoke(
-                src: BlendFactor,
-                dst: BlendFactor,
-                eq: BlendEquation = BlendEquation.ADD,
-            ): Blending = Blending(0).withSRC(src).withDST(dst).withEQ(eq)
-
-            val NONE = Blending(BlendFactor.ONE, BlendFactor.ZERO, BlendFactor.ONE, BlendFactor.ZERO)
-            val NORMAL = Blending(
-                //GL_ONE, GL_ONE_MINUS_SRC_ALPHA <-- premultiplied
-                BlendFactor.SOURCE_ALPHA, BlendFactor.ONE_MINUS_SOURCE_ALPHA,
-                BlendFactor.ONE, BlendFactor.ONE_MINUS_SOURCE_ALPHA
-            )
-            val NORMAL_PRE = Blending(
-                BlendFactor.ONE, BlendFactor.ONE_MINUS_SOURCE_ALPHA,
-            )
-            val ADD = Blending(
-                BlendFactor.SOURCE_ALPHA, BlendFactor.DESTINATION_ALPHA,
-                BlendFactor.ONE, BlendFactor.ONE
-            )
-            val ADD_PRE = Blending(
-                BlendFactor.ONE, BlendFactor.ONE,
-                BlendFactor.ONE, BlendFactor.ONE
-            )
-        }
-    }
 
     interface BitmapSourceBase {
         val rgba: Boolean
@@ -434,20 +782,10 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
     private val texturesCount: Int get() = textures.size
     private val texturesMemory: ByteUnits get() = ByteUnits.fromBytes(textures.sumOf { it.estimatedMemoryUsage.bytesLong })
 
-    enum class TextureKind { RGBA, LUMINANCE }
-
-    //TODO: there are other possible values
-    enum class TextureTargetKind(val dims: Int) {
-        TEXTURE_2D(2), TEXTURE_3D(3), TEXTURE_CUBE_MAP(3), EXTERNAL_TEXTURE(2);
-        companion object {
-            val VALUES = values()
-        }
-    }
-
     // @TODO: Move most of this to AGQueueProcessorOpenGL, avoid cyclic dependency and simplify
     open inner class Texture constructor(
         open val premultiplied: Boolean,
-        val targetKind: TextureTargetKind = TextureTargetKind.TEXTURE_2D
+        val targetKind: AGTextureTargetKind = AGTextureTargetKind.TEXTURE_2D
     ) : Closeable {
         var isFbo: Boolean = false
         var requestMipmaps: Boolean = false
@@ -464,7 +802,7 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
 
         var forcedTexId: ForcedTexId? = null
         val implForcedTexId: Int get() = forcedTexId?.forcedTexId ?: -1
-        val implForcedTexTarget: AG.TextureTargetKind get() = forcedTexId?.forcedTexTarget?.let { TextureTargetKind.fromGl(it) } ?: targetKind
+        val implForcedTexTarget: AGTextureTargetKind get() = forcedTexId?.forcedTexTarget?.let { AGTextureTargetKind.fromGl(it) } ?: targetKind
 
         init {
             createdTextureCount++
@@ -603,8 +941,6 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
     private val buffersCount: Int get() = buffers.size
     private val buffersMemory: ByteUnits get() = ByteUnits.fromBytes(buffers.sumOf { it.estimatedMemoryUsage.bytesLong })
 
-    enum class BufferKind { INDEX, VERTEX }
-
     open inner class AGBuffer constructor(val list: AGList) {
         var dirty = false
         internal var mem: com.soywiz.kmem.Buffer? = null
@@ -684,36 +1020,6 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
         }
     }
 
-    enum class DrawType {
-        POINTS,
-        LINE_STRIP,
-        LINE_LOOP,
-        LINES,
-        TRIANGLES,
-        TRIANGLE_STRIP,
-        TRIANGLE_FAN;
-
-        companion object {
-            val VALUES = values()
-        }
-    }
-
-    enum class IndexType {
-        UBYTE, USHORT,
-        // https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/drawElements
-        @Deprecated("UINT is not always supported on webgl")
-        UINT;
-
-        companion object {
-            val VALUES = values()
-        }
-    }
-
-    enum class ReadKind(val size: Int) {
-        COLOR(4), DEPTH(4), STENCIL(1);
-        companion object { val VALUES = values() }
-    }
-
     val dummyTexture by lazy { createTexture() }
 
     fun createTexture(): Texture = createTexture(premultiplied = true)
@@ -724,7 +1030,7 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
     fun createTexture(bmp: Bitmap, mipmaps: Boolean = false, premultiplied: Boolean = true): Texture =
         createTexture(premultiplied).upload(bmp, mipmaps)
 
-    open fun createTexture(premultiplied: Boolean, targetKind: TextureTargetKind = TextureTargetKind.TEXTURE_2D): Texture =
+    open fun createTexture(premultiplied: Boolean, targetKind: AGTextureTargetKind = AGTextureTargetKind.TEXTURE_2D): Texture =
         Texture(premultiplied, targetKind)
 
     open fun createBuffer(): AGBuffer = commandsNoWaitNoExecute { AGBuffer(it) }
@@ -755,183 +1061,23 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
             upload(data, offset, length)
         }
 
-    enum class StencilOp {
-        DECREMENT_SATURATE,
-        DECREMENT_WRAP,
-        INCREMENT_SATURATE,
-        INCREMENT_WRAP,
-        INVERT,
-        KEEP,
-        SET,
-        ZERO;
-        companion object {
-            val VALUES = values()
-        }
-    }
-
-    /** 2 bits required for encoding */
-    enum class TriangleFace {
-        FRONT, BACK, FRONT_AND_BACK, NONE;
-        companion object {
-            val VALUES = values()
-        }
-    }
-
-    /** 3 bits required for encoding */
-    enum class CompareMode {
-        ALWAYS, EQUAL, GREATER, GREATER_EQUAL, LESS, LESS_EQUAL, NEVER, NOT_EQUAL;
-
-        fun inverted(): CompareMode = when (this) {
-            ALWAYS -> NEVER
-            EQUAL -> NOT_EQUAL
-            GREATER -> LESS_EQUAL
-            GREATER_EQUAL -> LESS
-            LESS -> GREATER_EQUAL
-            LESS_EQUAL -> GREATER
-            NEVER -> ALWAYS
-            NOT_EQUAL -> EQUAL
-        }
-
-        companion object {
-            val VALUES = values()
-        }
-    }
-
-    inline class ColorMaskState(
-        val data: Int
-    ) {
-        val red: Boolean get() = data.extractBool(0)
-        val green: Boolean get() = data.extractBool(1)
-        val blue: Boolean get() = data.extractBool(2)
-        val alpha: Boolean get() = data.extractBool(3)
-
-        constructor(red: Boolean, green: Boolean, blue: Boolean, alpha: Boolean) : this(0.insert(red, 0).insert(green, 1).insert(blue, 2).insert(alpha, 3))
-        constructor(value: Boolean = true) : this(value, value, value, value)
-
-        fun copy(
-            red: Boolean = this.red,
-            green: Boolean = this.green,
-            blue: Boolean = this.blue,
-            alpha: Boolean = this.alpha
-        ): ColorMaskState = ColorMaskState(red, green, blue, alpha)
-
-        companion object {
-            internal val DUMMY = ColorMaskState()
-            val ALL_ENABLED = ColorMaskState(true)
-            val ALL_BUT_ALPHA_ENABLED = ColorMaskState(true, true, true, false)
-            val ALL_DISABLED = ColorMaskState(false)
-        }
-    }
-
-    enum class CullFace {
-        BOTH, FRONT, BACK;
-        companion object {
-            val VALUES = values()
-        }
-    }
-
-    // Default: CCW
-    /** 2 Bits required for encoding */
-    enum class FrontFace {
-        BOTH, // @TODO: This is incorrect
-        CCW, CW;
-        companion object {
-            val DEFAULT: FrontFace get() = CCW
-            val VALUES = values()
-        }
-    }
-
-    inline class RenderState(val data: Int) {
-        companion object {
-            operator fun invoke(): RenderState = DEFAULT
-            val DEFAULT = RenderState(0).withDepth(0f, 1f).withDepthMask(true).withDepthFunc(CompareMode.ALWAYS).withFrontFace(FrontFace.BOTH)
-        }
-
-        val depthNear: Float get() = data.extractScaledf01(0, 12)
-        val depthFar: Float get() = data.extractScaledf01(12, 12)
-        val depthMask: Boolean get() = data.extractBool(24)
-        val depthFunc: CompareMode get() = CompareMode.VALUES[data.extract3(26)]
-        val frontFace: FrontFace get() = FrontFace.VALUES[data.extract2(30)]
-
-        fun withDepth(near: Float, far: Float): RenderState = RenderState(data.insertScaledf01(near, 0, 12).insertScaledf01(far, 12, 12))
-        fun withDepthMask(depthMask: Boolean): RenderState = RenderState(data.insert(depthMask, 24))
-        fun withDepthFunc(depthFunc: CompareMode): RenderState = RenderState(data.insert3(depthFunc.ordinal, 26))
-        fun withFrontFace(frontFace: FrontFace): RenderState = RenderState(data.insert2(frontFace.ordinal, 30))
-    }
-
-    inline class StencilFullState private constructor(private val data: Long) {
-        constructor(opFunc: StencilOpFuncState = StencilOpFuncState.DEFAULT, ref: StencilReferenceState = StencilReferenceState.DEFAULT) : this(Long.fromLowHigh(opFunc.data, ref.data))
-        val opFunc: StencilOpFuncState get() = StencilOpFuncState(data.low)
-        val ref: StencilReferenceState get() = StencilReferenceState(data.high)
-
-        fun withOpFunc(opFunc: StencilOpFuncState): StencilFullState = StencilFullState(opFunc, ref)
-        fun withRef(ref: StencilReferenceState): StencilFullState = StencilFullState(opFunc, ref)
-        fun withReferenceValue(referenceValue: Int): StencilFullState = withRef(ref.withReferenceValue(referenceValue))
-    }
-
-    inline class StencilReferenceState(val data: Int) {
-        companion object {
-            val DEFAULT = StencilReferenceState(0)
-                .withReferenceValue(0)
-                .withReadMask(0xFF)
-                .withWriteMask(0xFF)
-        }
-
-        val referenceValue: Int get() = data.extract8(0)
-        val readMask: Int get() = data.extract8(8)
-        val writeMask: Int get() = data.extract8(16)
-
-        fun withReferenceValue(referenceValue: Int): StencilReferenceState = StencilReferenceState(data.insert8(referenceValue, 0))
-        fun withReadMask(readMask: Int): StencilReferenceState = StencilReferenceState(data.insert8(readMask, 8))
-        fun withWriteMask(writeMask: Int): StencilReferenceState = StencilReferenceState(data.insert8(writeMask, 16))
-    }
-
-    inline class StencilOpFuncState(val data: Int) {
-        companion object {
-            val DEFAULT = StencilOpFuncState(0)
-                .withEnabled(false)
-                .withTriangleFace(TriangleFace.FRONT_AND_BACK)
-                .withCompareMode(CompareMode.ALWAYS)
-                .withAction(StencilOp.KEEP,StencilOp.KEEP, StencilOp.KEEP)
-        }
-
-        val enabled: Boolean get() = data.extractBool(0)
-        val triangleFace: TriangleFace get() = TriangleFace.VALUES[data.extract2(4)]
-        val compareMode: CompareMode get() = CompareMode.VALUES[data.extract3(8)]
-        val actionOnBothPass: StencilOp get() = StencilOp.VALUES[data.extract3(12)]
-        val actionOnDepthFail: StencilOp get() = StencilOp.VALUES[data.extract3(16)]
-        val actionOnDepthPassStencilFail: StencilOp get() = StencilOp.VALUES[data.extract3(20)]
-
-        fun withEnabled(enabled: Boolean): StencilOpFuncState = StencilOpFuncState(data.insert(enabled, 0))
-        fun withTriangleFace(triangleFace: TriangleFace): StencilOpFuncState = StencilOpFuncState(data.insert2(triangleFace.ordinal, 4))
-        fun withCompareMode(compareMode: CompareMode): StencilOpFuncState = StencilOpFuncState(data.insert3(compareMode.ordinal, 8))
-        fun withActionOnBothPass(actionOnBothPass: StencilOp): StencilOpFuncState = StencilOpFuncState(data.insert3(actionOnBothPass.ordinal, 12))
-        fun withActionOnDepthFail(actionOnDepthFail: StencilOp): StencilOpFuncState = StencilOpFuncState(data.insert3(actionOnDepthFail.ordinal, 16))
-        fun withActionOnDepthPassStencilFail(actionOnDepthPassStencilFail: StencilOp): StencilOpFuncState = StencilOpFuncState(data.insert3(actionOnDepthPassStencilFail.ordinal, 20))
-
-        // Shortcut
-        fun withAction(actionOnBothPass: StencilOp, actionOnDepthFail: StencilOp = actionOnBothPass, actionOnDepthPassStencilFail: StencilOp = actionOnDepthFail): StencilOpFuncState = withActionOnBothPass(actionOnBothPass).withActionOnDepthFail(actionOnDepthFail).withActionOnDepthPassStencilFail(actionOnDepthPassStencilFail)
-    }
-
-    //open val supportInstancedDrawing: Boolean get() = false
-
     @Deprecated("Use draw(Batch) or drawV2() instead")
     fun draw(
         vertices: AGBuffer,
         program: Program,
-        type: DrawType,
+        type: AGDrawType,
         vertexLayout: VertexLayout,
         vertexCount: Int,
         indices: AGBuffer? = null,
-        indexType: IndexType = IndexType.USHORT,
+        indexType: AGIndexType = AGIndexType.USHORT,
         offset: Int = 0,
-        blending: Blending = Blending.NORMAL,
-        uniforms: UniformValues = UniformValues.EMPTY,
-        stencilRef: StencilReferenceState = StencilReferenceState.DEFAULT,
-        stencilOpFunc: StencilOpFuncState = StencilOpFuncState.DEFAULT,
-        colorMask: ColorMaskState = ColorMaskState.ALL_ENABLED,
-        renderState: RenderState = RenderState.DEFAULT,
-        scissor: Scissor = AG.Scissor.NIL,
+        blending: AGBlending = AGBlending.NORMAL,
+        uniforms: AGUniformValues = AGUniformValues.EMPTY,
+        stencilRef: AGStencilReferenceState = AGStencilReferenceState.DEFAULT,
+        stencilOpFunc: AGStencilOpFuncState = AGStencilOpFuncState.DEFAULT,
+        colorMask: AGColorMaskState = AGColorMaskState.ALL_ENABLED,
+        renderState: AGRenderState = AGRenderState.DEFAULT,
+        scissor: AGScissor = AGScissor.NIL,
         instances: Int = 1
     ) = draw(batch.also { batch ->
         batch.vertices = vertices
@@ -955,18 +1101,18 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
     fun drawV2(
         vertexData: FastArrayList<VertexData>,
         program: Program,
-        type: DrawType,
+        type: AGDrawType,
         vertexCount: Int,
         indices: AGBuffer? = null,
-        indexType: IndexType = IndexType.USHORT,
+        indexType: AGIndexType = AGIndexType.USHORT,
         offset: Int = 0,
-        blending: Blending = Blending.NORMAL,
-        uniforms: UniformValues = UniformValues.EMPTY,
-        stencilRef: StencilReferenceState = StencilReferenceState.DEFAULT,
-        stencilOpFunc: StencilOpFuncState = StencilOpFuncState.DEFAULT,
-        colorMask: ColorMaskState = ColorMaskState.ALL_ENABLED,
-        renderState: RenderState = RenderState.DEFAULT,
-        scissor: Scissor = AG.Scissor.NIL,
+        blending: AGBlending = AGBlending.NORMAL,
+        uniforms: AGUniformValues = AGUniformValues.EMPTY,
+        stencilRef: AGStencilReferenceState = AGStencilReferenceState.DEFAULT,
+        stencilOpFunc: AGStencilOpFuncState = AGStencilOpFuncState.DEFAULT,
+        colorMask: AGColorMaskState = AGColorMaskState.ALL_ENABLED,
+        renderState: AGRenderState = AGRenderState.DEFAULT,
+        scissor: AGScissor = AGScissor.NIL,
         instances: Int = 1
     ) = draw(batch.also { batch ->
         batch.vertexData = vertexData
@@ -1002,23 +1148,23 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
     data class Batch constructor(
         var vertexData: FastArrayList<VertexData> = fastArrayListOf(VertexData(null)),
         var program: Program = DefaultShaders.PROGRAM_DEBUG,
-        var type: DrawType = DrawType.TRIANGLES,
+        var type: AGDrawType = AGDrawType.TRIANGLES,
         var vertexCount: Int = 0,
         var indices: AGBuffer? = null,
-        var indexType: IndexType = IndexType.USHORT,
+        var indexType: AGIndexType = AGIndexType.USHORT,
         var offset: Int = 0,
-        var blending: Blending = Blending.NORMAL,
-        var uniforms: UniformValues = UniformValues.EMPTY,
-        var stencilOpFunc: StencilOpFuncState = StencilOpFuncState.DEFAULT,
-        var stencilRef: StencilReferenceState = StencilReferenceState.DEFAULT,
-        var colorMask: ColorMaskState = ColorMaskState(),
-        var renderState: RenderState = RenderState(),
-        var scissor: Scissor = AG.Scissor.NIL,
+        var blending: AGBlending = AGBlending.NORMAL,
+        var uniforms: AGUniformValues = AGUniformValues.EMPTY,
+        var stencilOpFunc: AGStencilOpFuncState = AGStencilOpFuncState.DEFAULT,
+        var stencilRef: AGStencilReferenceState = AGStencilReferenceState.DEFAULT,
+        var colorMask: AGColorMaskState = AGColorMaskState(),
+        var renderState: AGRenderState = AGRenderState(),
+        var scissor: AGScissor = AGScissor.NIL,
         var instances: Int = 1
     ) {
 
-        var stencilFull: AG.StencilFullState
-            get() = AG.StencilFullState(stencilOpFunc, stencilRef)
+        var stencilFull: AGStencilFullState
+            get() = AGStencilFullState(stencilOpFunc, stencilRef)
             set(value) {
                 stencilOpFunc = value.opFunc
                 stencilRef = value.ref
@@ -1085,13 +1231,13 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
                     //gl.getIntegerv(KmlGl.VIEWPORT, viewport)
                     //println("viewport=${viewport.getAlignedInt32(0)},${viewport.getAlignedInt32(1)},${viewport.getAlignedInt32(2)},${viewport.getAlignedInt32(3)}")
 
-                    list.draw(type, vertexCount, offset, instances, if (indices != null) indexType else null, indices)
+                    list.draw(type, vertexCount, offset, instances, if (indices != null) indexType else AGIndexType.NONE, indices)
                 }
             }
         }
     }
 
-    fun UniformValues.useExternalSampler(): Boolean {
+    fun AGUniformValues.useExternalSampler(): Boolean {
         var useExternalSampler = false
         this.fastForEach { uniform, value ->
             val uniformType = uniform.type
@@ -1100,7 +1246,7 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
                     val unit = value.fastCastTo<TextureUnit>()
                     val tex = (unit.texture.fastCastTo<Texture?>())
                     if (tex != null) {
-                        if (tex.implForcedTexTarget == AG.TextureTargetKind.EXTERNAL_TEXTURE) {
+                        if (tex.implForcedTexTarget == AGTextureTargetKind.EXTERNAL_TEXTURE) {
                             useExternalSampler = true
                         }
                     }
@@ -1310,7 +1456,7 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
         clearColor: Boolean = true,
         clearDepth: Boolean = true,
         clearStencil: Boolean = true,
-        scissor: Scissor = AG.Scissor.NIL,
+        scissor: AGScissor = AGScissor.NIL,
     ) {
         commandsNoWait { list ->
             //println("CLEAR: $color, $depth")
@@ -1336,9 +1482,9 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
     private val finalScissorBL = Rectangle()
     private val tempRect = Rectangle()
 
-    fun clearStencil(stencil: Int = 0, scissor: Scissor = AG.Scissor.NIL) = clear(clearColor = false, clearDepth = false, clearStencil = true, stencil = stencil, scissor = scissor)
-    fun clearDepth(depth: Float = 1f, scissor: Scissor = AG.Scissor.NIL) = clear(clearColor = false, clearDepth = true, clearStencil = false, depth = depth, scissor = scissor)
-    fun clearColor(color: RGBA = Colors.TRANSPARENT_BLACK, scissor: Scissor = AG.Scissor.NIL) = clear(clearColor = true, clearDepth = false, clearStencil = false, color = color, scissor = scissor)
+    fun clearStencil(stencil: Int = 0, scissor: AGScissor = AGScissor.NIL) = clear(clearColor = false, clearDepth = false, clearStencil = true, stencil = stencil, scissor = scissor)
+    fun clearDepth(depth: Float = 1f, scissor: AGScissor = AGScissor.NIL) = clear(clearColor = false, clearDepth = true, clearStencil = false, depth = depth, scissor = scissor)
+    fun clearColor(color: RGBA = Colors.TRANSPARENT_BLACK, scissor: AGScissor = AGScissor.NIL) = clear(clearColor = true, clearDepth = false, clearStencil = false, color = color, scissor = scissor)
 
     val renderBufferStack = FastArrayList<BaseRenderBuffer?>()
 
@@ -1485,13 +1631,13 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
     }
 
     open fun readColor(bitmap: Bitmap32, x: Int = 0, y: Int = 0) {
-        commandsSync { it.readPixels(x, y, bitmap.width, bitmap.height, bitmap.ints, ReadKind.COLOR) }
+        commandsSync { it.readPixels(x, y, bitmap.width, bitmap.height, bitmap.ints, AGReadKind.COLOR) }
     }
     open fun readDepth(width: Int, height: Int, out: FloatArray) {
-        commandsSync { it.readPixels(0, 0, width, height, out, ReadKind.DEPTH) }
+        commandsSync { it.readPixels(0, 0, width, height, out, AGReadKind.DEPTH) }
     }
     open fun readStencil(bitmap: Bitmap8) {
-        commandsSync { it.readPixels(0, 0, bitmap.width, bitmap.height, bitmap.data, ReadKind.STENCIL) }
+        commandsSync { it.readPixels(0, 0, bitmap.width, bitmap.height, bitmap.data, AGReadKind.STENCIL) }
     }
     fun readDepth(out: FloatArray2): Unit = readDepth(out.width, out.height, out.data)
     open fun readColorTexture(texture: Texture, x: Int = 0, y: Int = 0, width: Int = backWidth, height: Int = backHeight): Unit = TODO()
@@ -1514,7 +1660,7 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
                 SET(out, texture2D(u_Tex, v_Tex["xy"]))
             }
         })
-        val uniforms = UniformValues()
+        val uniforms = AGUniformValues()
 
         fun setVertex(n: Int, px: Float, py: Float, tx: Float, ty: Float) {
             val offset = n * 4
@@ -1542,11 +1688,11 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
             draw(
                 vertices = vertices,
                 program = program,
-                type = AG.DrawType.TRIANGLE_STRIP,
+                type = AGDrawType.TRIANGLE_STRIP,
                 vertexLayout = vertexLayout,
                 vertexCount = 4,
                 uniforms = uniforms,
-                blending = AG.Blending.NONE
+                blending = AGBlending.NONE
             )
         }
     }
@@ -1690,112 +1836,6 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
         drawTempTexture.upload(Bitmaps.transparent)
     }
 
-    class UniformValues() : Iterable<Pair<Uniform, Any>> {
-        companion object {
-            internal val EMPTY = UniformValues()
-
-            fun valueToString(value: Any?): String {
-                if (value is FloatArray) return value.toList().toString()
-                return value.toString()
-            }
-        }
-
-        fun clone(): UniformValues = UniformValues().also { it.setTo(this) }
-
-        private val _uniforms = FastArrayList<Uniform>()
-        private val _values = FastArrayList<Any>()
-        val uniforms = _uniforms as List<Uniform>
-
-        val keys get() = uniforms
-        val values = _values as List<Any>
-
-        val size get() = _uniforms.size
-
-        fun isEmpty(): Boolean = size == 0
-        fun isNotEmpty(): Boolean = size != 0
-
-        constructor(vararg pairs: Pair<Uniform, Any>) : this() {
-            for (pair in pairs) put(pair.first, pair.second)
-        }
-
-        inline fun fastForEach(block: (uniform: Uniform, value: Any) -> Unit) {
-            for (n in 0 until size) {
-                block(uniforms[n], values[n])
-            }
-        }
-
-        operator fun plus(other: UniformValues): UniformValues {
-            return UniformValues().put(this).put(other)
-        }
-
-        fun clear() {
-            _uniforms.clear()
-            _values.clear()
-        }
-
-        operator fun contains(uniform: Uniform): Boolean = _uniforms.contains(uniform)
-
-        operator fun get(uniform: Uniform): Any? {
-            for (n in 0 until _uniforms.size) {
-                if (_uniforms[n].name == uniform.name) return _values[n]
-            }
-            return null
-        }
-
-        operator fun set(uniform: Uniform, value: Any) = put(uniform, value)
-
-        fun putOrRemove(uniform: Uniform, value: Any?) {
-            if (value == null) {
-                remove(uniform)
-            } else {
-                put(uniform, value)
-            }
-        }
-
-        fun put(uniform: Uniform, value: Any): UniformValues {
-            for (n in 0 until _uniforms.size) {
-                if (_uniforms[n].name == uniform.name) {
-                    _values[n] = value
-                    return this
-                }
-            }
-
-            _uniforms.add(uniform)
-            _values.add(value)
-            return this
-        }
-
-        fun remove(uniform: Uniform) {
-            for (n in 0 until _uniforms.size) {
-                if (_uniforms[n].name == uniform.name) {
-                    _uniforms.removeAt(n)
-                    _values.removeAt(n)
-                    return
-                }
-            }
-        }
-
-        fun put(uniforms: UniformValues?): UniformValues {
-            if (uniforms == null) return this
-            for (n in 0 until uniforms.size) {
-                this.put(uniforms._uniforms[n], uniforms._values[n])
-            }
-            return this
-        }
-
-        fun setTo(uniforms: UniformValues) {
-            clear()
-            put(uniforms)
-        }
-
-        override fun iterator(): Iterator<Pair<Uniform, Any>> = iterator {
-            fastForEach { uniform, value -> yield(uniform to value) }
-        }
-
-        override fun toString() = "{" + keys.zip(values)
-            .joinToString(", ") { "${it.first}=${valueToString(it.second)}" } + "}"
-    }
-
     private val stats = AGStats()
 
     fun getStats(out: AGStats = stats): AGStats {
@@ -1827,6 +1867,111 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
     }
 }
 
+class AGUniformValues() : Iterable<Pair<Uniform, Any>> {
+    companion object {
+        internal val EMPTY = AGUniformValues()
 
-fun AG.Blending.toRenderFboIntoBack() = this
-fun AG.Blending.toRenderImageIntoFbo() = this
+        fun valueToString(value: Any?): String {
+            if (value is FloatArray) return value.toList().toString()
+            return value.toString()
+        }
+    }
+
+    fun clone(): AGUniformValues = AGUniformValues().also { it.setTo(this) }
+
+    private val _uniforms = FastArrayList<Uniform>()
+    private val _values = FastArrayList<Any>()
+    val uniforms = _uniforms as List<Uniform>
+
+    val keys get() = uniforms
+    val values = _values as List<Any>
+
+    val size get() = _uniforms.size
+
+    fun isEmpty(): Boolean = size == 0
+    fun isNotEmpty(): Boolean = size != 0
+
+    constructor(vararg pairs: Pair<Uniform, Any>) : this() {
+        for (pair in pairs) put(pair.first, pair.second)
+    }
+
+    inline fun fastForEach(block: (uniform: Uniform, value: Any) -> Unit) {
+        for (n in 0 until size) {
+            block(uniforms[n], values[n])
+        }
+    }
+
+    operator fun plus(other: AGUniformValues): AGUniformValues {
+        return AGUniformValues().put(this).put(other)
+    }
+
+    fun clear() {
+        _uniforms.clear()
+        _values.clear()
+    }
+
+    operator fun contains(uniform: Uniform): Boolean = _uniforms.contains(uniform)
+
+    operator fun get(uniform: Uniform): Any? {
+        for (n in 0 until _uniforms.size) {
+            if (_uniforms[n].name == uniform.name) return _values[n]
+        }
+        return null
+    }
+
+    operator fun set(uniform: Uniform, value: Any) = put(uniform, value)
+
+    fun putOrRemove(uniform: Uniform, value: Any?) {
+        if (value == null) {
+            remove(uniform)
+        } else {
+            put(uniform, value)
+        }
+    }
+
+    fun put(uniform: Uniform, value: Any): AGUniformValues {
+        for (n in 0 until _uniforms.size) {
+            if (_uniforms[n].name == uniform.name) {
+                _values[n] = value
+                return this
+            }
+        }
+
+        _uniforms.add(uniform)
+        _values.add(value)
+        return this
+    }
+
+    fun remove(uniform: Uniform) {
+        for (n in 0 until _uniforms.size) {
+            if (_uniforms[n].name == uniform.name) {
+                _uniforms.removeAt(n)
+                _values.removeAt(n)
+                return
+            }
+        }
+    }
+
+    fun put(uniforms: AGUniformValues?): AGUniformValues {
+        if (uniforms == null) return this
+        for (n in 0 until uniforms.size) {
+            this.put(uniforms._uniforms[n], uniforms._values[n])
+        }
+        return this
+    }
+
+    fun setTo(uniforms: AGUniformValues) {
+        clear()
+        put(uniforms)
+    }
+
+    override fun iterator(): Iterator<Pair<Uniform, Any>> = iterator {
+        fastForEach { uniform, value -> yield(uniform to value) }
+    }
+
+    override fun toString() = "{" + keys.zip(values)
+        .joinToString(", ") { "${it.first}=${valueToString(it.second)}" } + "}"
+}
+
+fun AGBlending.toRenderFboIntoBack() = this
+fun AGBlending.toRenderImageIntoFbo() = this

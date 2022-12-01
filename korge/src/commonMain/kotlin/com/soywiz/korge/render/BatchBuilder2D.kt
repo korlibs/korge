@@ -6,10 +6,7 @@ import com.soywiz.kds.fastArrayListOf
 import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.klogger.Logger
 import com.soywiz.kmem.*
-import com.soywiz.korag.AG
-import com.soywiz.korag.DefaultShaders
-import com.soywiz.korag.FragmentShaderDefault
-import com.soywiz.korag.VertexShaderDefault
+import com.soywiz.korag.*
 import com.soywiz.korag.shader.Attribute
 import com.soywiz.korag.shader.FragmentShader
 import com.soywiz.korag.shader.Operand
@@ -64,7 +61,7 @@ class BatchBuilder2D constructor(
     @KorgeInternal
     val viewMat2D: Matrix get() = ctx.viewMat2D
     @KorgeInternal
-    val uniforms: AG.UniformValues get() = ctx.uniforms
+    val uniforms: AGUniformValues get() = ctx.uniforms
 
     inline fun use(block: (BatchBuilder2D) -> Unit) = ctx.useBatcher(this, block)
 
@@ -133,18 +130,18 @@ class BatchBuilder2D constructor(
 	init { logger.trace { "BatchBuilder2D[4]" } }
 
     /** The current stencil state. If you change it, you must call the [flush] method to ensure everything has been drawn. */
-	var stencilRef = AG.StencilReferenceState.DEFAULT
-    var stencilOpFunc = AG.StencilOpFuncState.DEFAULT
+	var stencilRef = AGStencilReferenceState.DEFAULT
+    var stencilOpFunc = AGStencilOpFuncState.DEFAULT
 
 	init { logger.trace { "BatchBuilder2D[5]" } }
 
     /** The current color mask state. If you change it, you must call the [flush] method to ensure everything has been drawn. */
-	var colorMask = AG.ColorMaskState()
+	var colorMask = AGColorMaskState()
 
 	init { logger.trace { "BatchBuilder2D[6]" } }
 
     /** The current scissor state. If you change it, you must call the [flush] method to ensure everything has been drawn. */
-	var scissor: AG.Scissor = AG.Scissor.NIL
+	var scissor: AGScissor = AGScissor.NIL
 
 	private val identity = Matrix()
 
@@ -181,7 +178,7 @@ class BatchBuilder2D constructor(
 	//)
 
     init {
-        ctx.uniforms.put(AG.UniformValues(
+        ctx.uniforms.put(AGUniformValues(
             *Array(maxTextures) { BatchBuilder2D.u_TexN[it] to textureUnitN[it] },
         ))
     }
@@ -924,7 +921,7 @@ class BatchBuilder2D constructor(
                 indices = indexBuffer,
                 program = program,
                 //program = PROGRAM_PRE,
-                type = AG.DrawType.TRIANGLES,
+                type = AGDrawType.TRIANGLES,
                 blending = factors.factors(ag.isRenderingToTexture),
                 uniforms = uniforms,
                 stencilOpFunc = stencilOpFunc,
@@ -963,15 +960,15 @@ class BatchBuilder2D constructor(
     /**
      * Executes [callback] while setting temporarily an [uniform] to a [value]
      */
-	inline fun setTemporalUniform(uniform: Uniform, value: Any?, flush: Boolean = true, callback: (AG.UniformValues) -> Unit) = ctx.setTemporalUniform(uniform, value, flush, callback)
+	inline fun setTemporalUniform(uniform: Uniform, value: Any?, flush: Boolean = true, callback: (AGUniformValues) -> Unit) = ctx.setTemporalUniform(uniform, value, flush, callback)
 
-    inline fun <reified T> setTemporalUniforms(uniforms: Array<Uniform>, values: Array<T>, count: Int = values.size, olds: Array<T?> = arrayOfNulls<T>(count), flush: Boolean = true, callback: (AG.UniformValues) -> Unit) =
+    inline fun <reified T> setTemporalUniforms(uniforms: Array<Uniform>, values: Array<T>, count: Int = values.size, olds: Array<T?> = arrayOfNulls<T>(count), flush: Boolean = true, callback: (AGUniformValues) -> Unit) =
         ctx.setTemporalUniforms(uniforms, values, count, olds, flush, callback)
 
     /**
      * Executes [callback] while setting temporarily a set of [uniforms]
      */
-	inline fun setTemporalUniforms(uniforms: AG.UniformValues?, callback: (AG.UniformValues) -> Unit) = ctx.setTemporalUniforms(uniforms, callback)
+	inline fun setTemporalUniforms(uniforms: AGUniformValues?, callback: (AGUniformValues) -> Unit) = ctx.setTemporalUniforms(uniforms, callback)
 }
 
 @ThreadLocal

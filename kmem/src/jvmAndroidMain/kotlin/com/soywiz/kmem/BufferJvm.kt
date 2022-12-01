@@ -1,6 +1,7 @@
 package com.soywiz.kmem
 
 import java.nio.*
+import java.util.*
 
 actual class Buffer(val buffer: ByteBuffer, val offset: Int, val size: Int) {
     fun slicedBuffer(roffset: Int = 0, rsize: Int = this.size - roffset): ByteBuffer {
@@ -13,6 +14,22 @@ actual class Buffer(val buffer: ByteBuffer, val offset: Int, val size: Int) {
     }
 
     override fun toString(): String = NBuffer_toString(this)
+
+    // @TODO: Optimize by using words instead o bytes
+    override fun hashCode(): Int {
+        var h = 1
+        for (n in 0 until size) h = 31 * h + buffer[offset + n]
+        return h
+    }
+
+    // @TODO: Optimize by using words instead o bytes
+    override fun equals(other: Any?): Boolean {
+        if (other !is Buffer || this.size != other.size) return false
+        val t = this.buffer
+        val o = other.buffer
+        for (n in 0 until size) if (t[this.offset + n] != o[other.offset + n]) return false
+        return true
+    }
 
     actual companion object {
         actual fun copy(src: Buffer, srcPosBytes: Int, dst: Buffer, dstPosBytes: Int, sizeInBytes: Int) {

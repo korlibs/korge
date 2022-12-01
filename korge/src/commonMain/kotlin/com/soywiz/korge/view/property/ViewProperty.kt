@@ -9,7 +9,6 @@ import kotlin.reflect.*
  */
 @Suppress("unused")
 @SuppressIfAnnotated
-@KorioExperimentalApi
 annotation class ViewProperty(
     val min: Double = 0.0,
     val max: Double = 2000.0,

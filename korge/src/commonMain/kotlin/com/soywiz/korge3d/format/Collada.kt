@@ -3,7 +3,7 @@ package com.soywiz.korge3d.format
 import com.soywiz.kds.*
 import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.kds.iterators.fastForEachWithIndex
-import com.soywiz.korag.AG
+import com.soywiz.korag.*
 import com.soywiz.korag.shader.VertexLayout
 import com.soywiz.korge3d.BufferWithVertexLayout
 import com.soywiz.korge3d.Korge3DExperimental
@@ -296,10 +296,10 @@ class ColladaParser {
                         }),
                     )),
                     combinedIndexData.toNBuffer(),
-                    AG.IndexType.USHORT,
+                    AGIndexType.USHORT,
                     combinedIndexData.size,
                     null,
-                    AG.DrawType.TRIANGLES,
+                    AGDrawType.TRIANGLES,
                     hasTexture = hasTexture,
                     maxWeights = maxWeights
                 ).apply {

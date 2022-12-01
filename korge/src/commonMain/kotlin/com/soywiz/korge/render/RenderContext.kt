@@ -50,8 +50,8 @@ class RenderContext constructor(
     val viewMat2D: Matrix = Matrix()
 
     @KorgeInternal
-    val uniforms: AG.UniformValues by lazy {
-        AG.UniformValues(
+    val uniforms: AGUniformValues by lazy {
+        AGUniformValues(
             DefaultShaders.u_ProjMat to projMat,
             DefaultShaders.u_ViewMat to viewMat,
         )
@@ -109,7 +109,7 @@ class RenderContext constructor(
     /**
      * Executes [callback] while setting temporarily an [uniform] to a [value]
      */
-    inline fun setTemporalUniform(uniform: Uniform, value: Any?, flush: Boolean = true, callback: (AG.UniformValues) -> Unit) {
+    inline fun setTemporalUniform(uniform: Uniform, value: Any?, flush: Boolean = true, callback: (AGUniformValues) -> Unit) {
         val old = this.uniforms[uniform]
         if (flush) flush()
         this.uniforms.putOrRemove(uniform, value)
@@ -121,7 +121,7 @@ class RenderContext constructor(
         }
     }
 
-    inline fun <reified T> setTemporalUniforms(uniforms: Array<Uniform>, values: Array<T>, count: Int = values.size, olds: Array<T?> = arrayOfNulls<T>(count), flush: Boolean = true, callback: (AG.UniformValues) -> Unit) {
+    inline fun <reified T> setTemporalUniforms(uniforms: Array<Uniform>, values: Array<T>, count: Int = values.size, olds: Array<T?> = arrayOfNulls<T>(count), flush: Boolean = true, callback: (AGUniformValues) -> Unit) {
         if (flush) flush()
         for (n in 0 until count) {
             olds[n] = this.uniforms[uniforms[n]] as T?
@@ -139,12 +139,12 @@ class RenderContext constructor(
     }
 
     @PublishedApi
-    internal val tempOldUniformsList: Pool<AG.UniformValues> = Pool { AG.UniformValues() }
+    internal val tempOldUniformsList: Pool<AGUniformValues> = Pool { AGUniformValues() }
 
     /**
      * Executes [callback] while setting temporarily a set of [uniforms]
      */
-    inline fun setTemporalUniforms(uniforms: AG.UniformValues?, callback: (AG.UniformValues) -> Unit) {
+    inline fun setTemporalUniforms(uniforms: AGUniformValues?, callback: (AGUniformValues) -> Unit) {
         tempOldUniformsList { tempOldUniforms ->
             if (uniforms != null && uniforms.isNotEmpty()) {
                 flush()
@@ -243,7 +243,7 @@ class RenderContext constructor(
         ag.setRenderBufferTemporally(frameBuffer) {
             useBatcher { batch ->
                 val oldScissors = batch.scissor
-                batch.scissor = AG.Scissor(0, 0, frameBuffer.width, frameBuffer.height)
+                batch.scissor = AGScissor(0, 0, frameBuffer.width, frameBuffer.height)
                 //batch.scissor = null
                 try {
                     if (clear) ag.clear(Colors.TRANSPARENT_BLACK)

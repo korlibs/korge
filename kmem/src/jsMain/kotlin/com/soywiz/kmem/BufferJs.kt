@@ -14,6 +14,23 @@ actual class Buffer(val dataView: DataView) {
             dst.sliceUint8Array(dstPosBytes, sizeInBytes).set(src.sliceUint8Array(srcPosBytes, sizeInBytes), 0)
         }
     }
+
+
+    // @TODO: Optimize by using words instead o bytes
+    override fun hashCode(): Int {
+        var h = 1
+        for (n in 0 until size) h = 31 * h + dataView.getInt8(n)
+        return h
+    }
+
+    // @TODO: Optimize by using words instead o bytes
+    override fun equals(other: Any?): Boolean {
+        if (other !is Buffer || this.size != other.size) return false
+        val t = this.dataView
+        val o = other.dataView
+        for (n in 0 until size) if (t.getInt8(n) != o.getInt8(n)) return false
+        return true
+    }
 }
 actual fun Buffer(size: Int, direct: Boolean): Buffer {
     checkNBufferSize(size)

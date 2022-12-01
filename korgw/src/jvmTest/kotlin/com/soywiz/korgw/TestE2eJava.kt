@@ -47,10 +47,10 @@ class TestE2eJava {
                         ag.draw(
                             vertices,
                             program = DefaultShaders.PROGRAM_DEBUG,
-                            type = AG.DrawType.TRIANGLES,
+                            type = AGDrawType.TRIANGLES,
                             vertexLayout = DefaultShaders.LAYOUT_DEBUG,
                             vertexCount = 3,
-                            uniforms = AG.UniformValues(
+                            uniforms = AGUniformValues(
                                 //DefaultShaders.u_ProjMat to Matrix3D().setToOrtho(0f, 0f, WIDTH.toFloat(), HEIGHT.toFloat(), -1f, +1f)
                             )
                         )

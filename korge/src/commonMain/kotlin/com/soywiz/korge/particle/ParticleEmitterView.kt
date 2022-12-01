@@ -147,7 +147,7 @@ class ParticleEmitterView(
         }
 
         if (cachedBlending.factors.srcRGB != emitter.blendFuncSource || cachedBlending.factors.dstRGB != emitter.blendFuncDestination) {
-            cachedBlending = BlendMode(AG.Blending(emitter.blendFuncSource, emitter.blendFuncDestination))
+            cachedBlending = BlendMode(AGBlending(emitter.blendFuncSource, emitter.blendFuncDestination))
         }
 
         if (fsprites == null || fsprites!!.maxSize < simulator.particles.max) {

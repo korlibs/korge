@@ -7,18 +7,7 @@ import com.soywiz.kds.linkedHashMapOf
 import com.soywiz.kds.mapInt
 import com.soywiz.kds.toIntArrayList
 import com.soywiz.kmem.*
-import com.soywiz.korag.AG
-import com.soywiz.korag.AGBlendEquation
-import com.soywiz.korag.AGBlendFactor
-import com.soywiz.korag.AGCompareMode
-import com.soywiz.korag.AGCullFace
-import com.soywiz.korag.AGDrawType
-import com.soywiz.korag.AGEnable
-import com.soywiz.korag.AGFrontFace
-import com.soywiz.korag.AGIndexType
-import com.soywiz.korag.AGList
-import com.soywiz.korag.AGQueueProcessor
-import com.soywiz.korag.processBlockingAll
+import com.soywiz.korag.*
 import com.soywiz.korag.shader.Attribute
 import com.soywiz.korag.shader.Program
 import com.soywiz.korag.shader.ProgramConfig
@@ -190,7 +179,7 @@ open class LogBaseAG(
 		clearColor: Boolean,
 		clearDepth: Boolean,
 		clearStencil: Boolean,
-        scissor: AG.Scissor,
+        scissor: AGScissor,
 	) {
         log("clear($color, $depth, $stencil, $clearColor, $clearDepth, $clearStencil)", Kind.CLEAR)
     }
@@ -245,7 +234,7 @@ open class LogBaseAG(
 	private var bufferId = 0
 	private var renderBufferId = 0
 
-	override fun createTexture(premultiplied: Boolean, targetKind: TextureTargetKind): Texture =
+	override fun createTexture(premultiplied: Boolean, targetKind: AGTextureTargetKind): Texture =
 		LogTexture(textureId++, premultiplied).apply { log("createTexture():$id", Kind.TEXTURE) }
 
 	override fun createBuffer(): AGBuffer =
@@ -282,11 +271,11 @@ open class LogBaseAG(
             log("${if (enable) "enable" else "disable"}: $kind", Kind.ENABLE_DISABLE)
         }
 
-        override fun readPixelsToTexture(textureId: Int, x: Int, y: Int, width: Int, height: Int, kind: ReadKind) {
+        override fun readPixelsToTexture(textureId: Int, x: Int, y: Int, width: Int, height: Int, kind: AGReadKind) {
             log("readPixelsToTexture($textureId, $x, $y, $width, $height, $kind)", Kind.READ)
         }
 
-        override fun readPixels(x: Int, y: Int, width: Int, height: Int, data: Any, kind: ReadKind) =
+        override fun readPixels(x: Int, y: Int, width: Int, height: Int, data: Any, kind: AGReadKind) =
             log("readPixels($x, $y, $width, $height, $kind)", Kind.READ)
 
         override fun draw(
@@ -294,7 +283,7 @@ open class LogBaseAG(
             vertexCount: Int,
             offset: Int,
             instances: Int,
-            indexType: AGIndexType?,
+            indexType: AGIndexType,
             indices: AGBuffer?
         ) {
             val _indices: IntArrayList? = when {
@@ -302,10 +291,10 @@ open class LogBaseAG(
                     val indexMem = (indices as LogBuffer).logmem!!
                     val range = offset until offset + vertexCount
                     when (indexType) {
-                        IndexType.UBYTE -> range.mapInt { indexMem.getUInt8(it) }
-                        IndexType.USHORT -> range.mapInt { indexMem.getUInt16(it) }
-                        IndexType.UINT -> range.mapInt { indexMem.getInt32(it) }
-                        null -> null
+                        AGIndexType.UBYTE -> range.mapInt { indexMem.getUInt8(it) }
+                        AGIndexType.USHORT -> range.mapInt { indexMem.getUInt16(it) }
+                        AGIndexType.UINT -> range.mapInt { indexMem.getInt32(it) }
+                        else -> null
                     }
                 }
                 else -> null
@@ -361,10 +350,10 @@ open class LogBaseAG(
         override fun uniformsSet(layout: UniformLayout, data: com.soywiz.kmem.Buffer) = log("uniformsSet: $layout", Kind.UNIFORM)
         override fun uboCreate(id: Int) = log("uboCreate: $id", Kind.UNIFORM)
         override fun uboDelete(id: Int) = log("uboDelete: $id", Kind.UNIFORM)
-        override fun uboSet(id: Int, ubo: UniformValues) {
+        override fun uboSet(id: Int, ubo: AGUniformValues) {
             log("uboSet: $id", Kind.UNIFORM)
             ubo.fastForEach { uniform, value ->
-                log("uboSet.uniform: $uniform = ${UniformValues.valueToString(value)}", Kind.UNIFORM_VALUES)
+                log("uboSet.uniform: $uniform = ${AGUniformValues.valueToString(value)}", Kind.UNIFORM_VALUES)
             }
         }
         override fun uboUse(id: Int) = log("uboUse: $id", Kind.UNIFORM)
@@ -376,12 +365,12 @@ open class LogBaseAG(
         override fun depthFunction(depthTest: AGCompareMode) = log("depthFunction: $depthTest", Kind.OTHER)
         override fun depthMask(depth: Boolean) = log("depthMask: $depth", Kind.OTHER)
         override fun depthRange(near: Float, far: Float) = log("depthRange: $near, $far", Kind.OTHER)
-        override fun stencilFunction(compareMode: CompareMode, referenceValue: Int, readMask: Int) = log("stencilFunction: $compareMode, $referenceValue, $readMask", Kind.OTHER)
+        override fun stencilFunction(compareMode: AGCompareMode, referenceValue: Int, readMask: Int) = log("stencilFunction: $compareMode, $referenceValue, $readMask", Kind.OTHER)
 
         override fun stencilOperation(
-            actionOnDepthFail: StencilOp,
-            actionOnDepthPassStencilFail: StencilOp,
-            actionOnBothPass: StencilOp
+            actionOnDepthFail: AGStencilOp,
+            actionOnDepthPassStencilFail: AGStencilOp,
+            actionOnBothPass: AGStencilOp
         ) = log("stencilOperation: $actionOnDepthFail, $actionOnDepthPassStencilFail, $actionOnBothPass", Kind.OTHER)
 
         override fun stencilMask(writeMask: Int) = log("stencilMask: $writeMask", Kind.OTHER)
@@ -412,7 +401,7 @@ open class LogBaseAG(
         override fun textureDelete(textureId: Int) = log("textureDelete: $textureId", Kind.TEXTURE)
         override fun textureUpdate(
             textureId: Int,
-            target: TextureTargetKind,
+            target: AGTextureTargetKind,
             index: Int,
             bmp: Bitmap?,
             source: BitmapSourceBase,
@@ -422,7 +411,7 @@ open class LogBaseAG(
             log("textureUpdate: $textureId, $target, $index, $bmp, $source, $doMipmaps, $premultiplied", Kind.TEXTURE_UPLOAD)
         }
 
-        override fun textureBind(textureId: Int, target: TextureTargetKind, implForcedTexId: Int) = log("textureBind: $textureId", Kind.TEXTURE)
+        override fun textureBind(textureId: Int, target: AGTextureTargetKind, implForcedTexId: Int) = log("textureBind: $textureId", Kind.TEXTURE)
         override fun textureBindEnsuring(tex: Texture?) = log("textureBindEnsuring: $tex", Kind.TEXTURE)
         override fun textureSetFromFrameBuffer(textureId: Int, x: Int, y: Int, width: Int, height: Int) = log("textureSetFromFrameBuffer: $textureId, $x, $y, $width, $height", Kind.TEXTURE)
         override fun frameBufferCreate(id: Int) = log("frameBufferCreate: $id", Kind.FRAME_BUFFER)

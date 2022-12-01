@@ -18,10 +18,10 @@ interface AGQueueProcessor {
     // ENABLE / DISABLE
     fun enableDisable(kind: AGEnable, enable: Boolean)
     // READ
-    fun readPixels(x: Int, y: Int, width: Int, height: Int, data: Any, kind: AG.ReadKind)
-    fun readPixelsToTexture(textureId: Int, x: Int, y: Int, width: Int, height: Int, kind: AG.ReadKind)
+    fun readPixels(x: Int, y: Int, width: Int, height: Int, data: Any, kind: AGReadKind)
+    fun readPixelsToTexture(textureId: Int, x: Int, y: Int, width: Int, height: Int, kind: AGReadKind)
     // DRAW
-    fun draw(type: AGDrawType, vertexCount: Int, offset: Int = 0, instances: Int = 1, indexType: AGIndexType? = null, indices: AG.AGBuffer? = null)
+    fun draw(type: AGDrawType, vertexCount: Int, offset: Int = 0, instances: Int = 1, indexType: AGIndexType = AGIndexType.NONE, indices: AG.AGBuffer? = null)
     // Buffers
     fun bufferCreate(id: Int)
     fun bufferDelete(id: Int)
@@ -29,7 +29,7 @@ interface AGQueueProcessor {
     fun uniformsSet(layout: UniformLayout, data: Buffer)
     fun uboCreate(id: Int)
     fun uboDelete(id: Int)
-    fun uboSet(id: Int, ubo: AG.UniformValues)
+    fun uboSet(id: Int, ubo: AGUniformValues)
     fun uboUse(id: Int)
     // Faces
     fun cullFace(face: AGCullFace)
@@ -44,8 +44,8 @@ interface AGQueueProcessor {
     fun depthMask(depth: Boolean)
     fun depthRange(near: Float, far: Float)
     // Stencil
-    fun stencilFunction(compareMode: AG.CompareMode, referenceValue: Int, readMask: Int)
-    fun stencilOperation(actionOnDepthFail: AG.StencilOp, actionOnDepthPassStencilFail: AG.StencilOp, actionOnBothPass: AG.StencilOp)
+    fun stencilFunction(compareMode: AGCompareMode, referenceValue: Int, readMask: Int)
+    fun stencilOperation(actionOnDepthFail: AGStencilOp, actionOnDepthPassStencilFail: AGStencilOp, actionOnBothPass: AGStencilOp)
     fun stencilMask(writeMask: Int)
     // Scissors & Viewport
     fun scissor(x: Int, y: Int, width: Int, height: Int)
@@ -69,14 +69,14 @@ interface AGQueueProcessor {
     fun textureDelete(textureId: Int)
     fun textureUpdate(
         textureId: Int,
-        target: AG.TextureTargetKind,
+        target: AGTextureTargetKind,
         index: Int,
         bmp: Bitmap?,
         source: AG.BitmapSourceBase,
         doMipmaps: Boolean,
         premultiplied: Boolean
     )
-    fun textureBind(textureId: Int, target: AG.TextureTargetKind, implForcedTexId: Int)
+    fun textureBind(textureId: Int, target: AGTextureTargetKind, implForcedTexId: Int)
     fun textureBindEnsuring(tex: AG.Texture?)
     fun textureSetFromFrameBuffer(textureId: Int, x: Int, y: Int, width: Int, height: Int)
     // FRAME BUFFER

@@ -86,7 +86,7 @@ open class ShadedView(
         )
     }
 
-    open protected fun updateUniforms(uniforms: AG.UniformValues, ctx: RenderContext) {
+    open protected fun updateUniforms(uniforms: AGUniformValues, ctx: RenderContext) {
     }
 
 

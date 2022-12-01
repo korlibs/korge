@@ -2,7 +2,7 @@ package com.soywiz.korge3d
 
 import com.soywiz.kds.FastArrayList
 import com.soywiz.kmem.*
-import com.soywiz.korag.AG
+import com.soywiz.korag.*
 import com.soywiz.korag.shader.Program
 import com.soywiz.korag.shader.VertexLayout
 
@@ -18,10 +18,10 @@ data class BufferWithVertexLayout(
 data class Mesh3D constructor(
     val vertexBuffers: FastArrayList<BufferWithVertexLayout>,
     val indexBuffer: Buffer,
-    val indexType: AG.IndexType,
+    val indexType: AGIndexType,
     val vertexCount:Int,
     val program: Program?,
-    val drawType: AG.DrawType,
+    val drawType: AGDrawType,
     val hasTexture: Boolean = false,
     val maxWeights: Int = 0,
     var skin: Skin3D? = null,

@@ -1,10 +1,7 @@
 package com.soywiz.korge.view.vector
 
 import com.soywiz.kmem.toInt
-import com.soywiz.korag.AG
-import com.soywiz.korag.DefaultShaders
-import com.soywiz.korag.FragmentShaderDefault
-import com.soywiz.korag.VertexShaderDefault
+import com.soywiz.korag.*
 import com.soywiz.korag.shader.Attribute
 import com.soywiz.korag.shader.Operand
 import com.soywiz.korag.shader.Precision
@@ -161,14 +158,14 @@ object GpuShapeViewPrograms {
 
     ///////////////
     data class PaintShader(
-        val uniforms: AG.UniformValues = AG.UniformValues(),
-        val texUniforms: AG.UniformValues = AG.UniformValues(),
+        val uniforms: AGUniformValues = AGUniformValues(),
+        val texUniforms: AGUniformValues = AGUniformValues(),
         val program: Program = PROGRAM_COMBINED
     )
 
     val stencilPaintShader = PaintShader(
-        AG.UniformValues(u_ProgramType to PROGRAM_TYPE_STENCIL.toFloat(),),
-        AG.UniformValues(),
+        AGUniformValues(u_ProgramType to PROGRAM_TYPE_STENCIL.toFloat(),),
+        AGUniformValues(),
     )
 
     fun paintToShaderInfo(
@@ -181,12 +178,12 @@ object GpuShapeViewPrograms {
             null
         }
         is ColorPaint -> {
-            PaintShader(AG.UniformValues(
+            PaintShader(AGUniformValues(
                 u_ProgramType to PROGRAM_TYPE_COLOR.toFloat(),
                 u_Color to paint.toVector3D(),
                 u_GlobalAlpha to globalAlpha.toFloat(),
                 //u_LineWidth to lineWidth.toFloat(),
-            ), AG.UniformValues())
+            ), AGUniformValues())
 
         }
         is BitmapPaint -> {
@@ -202,13 +199,14 @@ object GpuShapeViewPrograms {
             //val mat = (paint.transform * stateTransform)
             //mat.scale(1.0 / paint.bitmap.width, 1.0 / paint.bitmap.height)
             //println("mat=$mat")
-            PaintShader(AG.UniformValues(
+            PaintShader(
+                AGUniformValues(
                 u_ProgramType to PROGRAM_TYPE_BITMAP.toFloat(),
                 u_Transform to mat.toMatrix3D(), // @TODO: Why is this transposed???
                 u_GlobalAlpha to globalAlpha.toFloat(),
                 //u_LineWidth to lineWidth.toFloat(),
                 //}, GpuShapeView.PROGRAM_BITMAP)
-            ), AG.UniformValues(
+            ), AGUniformValues(
                 DefaultShaders.u_Tex to paint.bitmap
             ))
         }
@@ -230,7 +228,7 @@ object GpuShapeViewPrograms {
                 else -> npaint.transform.inverted()
             }
             PaintShader(
-                AG.UniformValues(
+                AGUniformValues(
                     u_ProgramType to when (paint.kind) {
                         GradientKind.RADIAL -> PROGRAM_TYPE_GRADIENT_RADIAL
                         GradientKind.SWEEP -> PROGRAM_TYPE_GRADIENT_SWEEP
@@ -241,7 +239,7 @@ object GpuShapeViewPrograms {
                     u_Gradientp1 to Vector3D(paint.x1.toFloat(), paint.y1.toFloat(), paint.r1.toFloat()),
                     u_GlobalAlpha to globalAlpha.toFloat(),
                     //u_LineWidth to lineWidth.toFloat(),
-                ), AG.UniformValues(
+                ), AGUniformValues(
                     DefaultShaders.u_Tex to gradientBitmap
                 )
                 //when (paint.kind) {

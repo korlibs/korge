@@ -30,7 +30,7 @@ ag.createVertexBuffer(floatArrayOf(
     ag.draw(
         vertices,
         program = DefaultShaders.PROGRAM_DEBUG_WITH_PROJ,
-        type = AG.DrawType.TRIANGLES,
+        type = AGDrawType.TRIANGLES,
         vertexLayout = DefaultShaders.LAYOUT_DEBUG,
         vertexCount = 3,
         uniforms = mapOf(

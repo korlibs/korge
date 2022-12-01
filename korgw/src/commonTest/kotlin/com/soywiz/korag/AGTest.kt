@@ -19,11 +19,11 @@ class AGTest {
 
     @Test
     fun testCombineScissor() {
-        assertEquals(AG.Scissor.NIL, AG.Scissor.combine(AG.Scissor.NIL, AG.Scissor.NIL))
-        assertEquals(AG.Scissor(0, 0, 100, 100), AG.Scissor.combine(AG.Scissor(0, 0, 100, 100), AG.Scissor.NIL))
-        assertEquals(AG.Scissor(50, 50, 50, 50), AG.Scissor.combine(AG.Scissor(0, 0, 100, 100), AG.Scissor(50, 50, 100, 100)))
-        assertEquals(AG.Scissor(50, 50, 100, 100), AG.Scissor.combine(AG.Scissor.NIL, AG.Scissor(50, 50, 100, 100)))
-        assertEquals(AG.Scissor(0, 0, 0, 0), AG.Scissor.combine(AG.Scissor(2000, 2000, 100, 100), AG.Scissor(50, 50, 100, 100)))
+        assertEquals(AGScissor.NIL, AGScissor.combine(AGScissor.NIL, AGScissor.NIL))
+        assertEquals(AGScissor(0, 0, 100, 100), AGScissor.combine(AGScissor(0, 0, 100, 100), AGScissor.NIL))
+        assertEquals(AGScissor(50, 50, 50, 50), AGScissor.combine(AGScissor(0, 0, 100, 100), AGScissor(50, 50, 100, 100)))
+        assertEquals(AGScissor(50, 50, 100, 100), AGScissor.combine(AGScissor.NIL, AGScissor(50, 50, 100, 100)))
+        assertEquals(AGScissor(0, 0, 0, 0), AGScissor.combine(AGScissor(2000, 2000, 100, 100), AGScissor(50, 50, 100, 100)))
     }
 
     val VERTEX = VertexShaderDefault {

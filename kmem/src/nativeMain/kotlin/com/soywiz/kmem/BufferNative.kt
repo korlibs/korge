@@ -14,6 +14,22 @@ actual class Buffer(val data: ByteArray, val offset: Int, val size: Int, dummy: 
             )
         }
     }
+
+    // @TODO: Optimize by using words instead o bytes
+    override fun hashCode(): Int {
+        var h = 1
+        for (n in 0 until size) h = 31 * h + data[offset + n]
+        return h
+    }
+
+    // @TODO: Optimize by using words instead o bytes
+    override fun equals(other: Any?): Boolean {
+        if (other !is Buffer || this.size != other.size) return false
+        val t = this.data
+        val o = other.data
+        for (n in 0 until size) if (t[this.offset + n] != o[other.offset + n]) return false
+        return true
+    }
 }
 actual fun Buffer(size: Int, direct: Boolean): Buffer {
     checkNBufferSize(size)
