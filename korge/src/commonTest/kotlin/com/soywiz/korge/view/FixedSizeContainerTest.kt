@@ -33,7 +33,7 @@ class FixedSizeContainerTest {
             }
             assertEquals(
                 """
-                    Scissor(x=137.5, y=112.5, width=37.5, height=37.5)
+                    Scissor(x=138, y=112, width=38, height=38)
                     Scissor(x=110, y=120, width=30, height=40)
                 """.trimIndent(),
                 log.joinToString("\n")

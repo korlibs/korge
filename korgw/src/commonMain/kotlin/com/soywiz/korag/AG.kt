@@ -236,6 +236,7 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
         private constructor(low: Int, high: Int) : this(Long.fromLowHigh(low, high))
         constructor(x: Int, y: Int, width: Int, height: Int) : this(0.insert16(x, 0).insert16(y, 16), 0.insert16(width, 0).insert16(height, 16))
         constructor(x: Double, y: Double, width: Double, height: Double) : this(x.toIntRound(), y.toIntRound(), width.toIntRound(), height.toIntRound())
+        //constructor(x: Double, y: Double, width: Double, height: Double) : this(x.toInt(), y.toInt(), width.toInt(), height.toInt())
 
         private val high: Int get() = data.high
         private val low: Int get() = data.low
@@ -852,7 +853,7 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
         val depthFunc: CompareMode get() = CompareMode.VALUES[data.extract3(26)]
         val frontFace: FrontFace get() = FrontFace.VALUES[data.extract2(30)]
 
-        fun withDepth(near: Float, far: Float): RenderState = RenderState(data.insertScaledf01(near, 0, 12).insertScaledf01(near, 12, 12))
+        fun withDepth(near: Float, far: Float): RenderState = RenderState(data.insertScaledf01(near, 0, 12).insertScaledf01(far, 12, 12))
         fun withDepthMask(depthMask: Boolean): RenderState = RenderState(data.insert(depthMask, 24))
         fun withDepthFunc(depthFunc: CompareMode): RenderState = RenderState(data.insert3(depthFunc.ordinal, 26))
         fun withFrontFace(frontFace: FrontFace): RenderState = RenderState(data.insert2(frontFace.ordinal, 30))
