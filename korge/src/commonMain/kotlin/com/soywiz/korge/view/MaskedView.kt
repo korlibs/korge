@@ -16,7 +16,6 @@ class MaskedView : Container() {
             }
         }
 
-    private val tempLocalRenderState = MaskStates.LocalRenderState()
     override fun renderInternal(ctx: RenderContext) {
         if (!visible) return
         val useMask = mask != null
@@ -51,6 +50,6 @@ class MaskedView : Container() {
     }
 
     private fun setMaskState(ctx: RenderContext, state: MaskStates.RenderState) {
-        state.set(ctx, ctx.stencilIndex, tempLocalRenderState)
+        state.set(ctx, ctx.stencilIndex)
     }
 }

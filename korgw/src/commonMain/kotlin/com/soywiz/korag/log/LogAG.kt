@@ -190,7 +190,7 @@ open class LogBaseAG(
 		clearColor: Boolean,
 		clearDepth: Boolean,
 		clearStencil: Boolean,
-        scissor: AG.Scissor?,
+        scissor: AG.Scissor,
 	) {
         log("clear($color, $depth, $stencil, $clearColor, $clearDepth, $clearStencil)", Kind.CLEAR)
     }
