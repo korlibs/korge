@@ -175,9 +175,9 @@ class BatchBuilder2D constructor(
 	//)
 
     init {
-        ctx.uniforms.put(AGUniformValues(
-            *Array(maxTextures) { BatchBuilder2D.u_TexN[it] to textureUnitN[it] },
-        ))
+        ctx.uniforms.put(AGUniformValues {
+            for (n in 0 until maxTextures) it[u_TexN[n]] = textureUnitN[n]
+        })
     }
 
 	init { logger.trace { "BatchBuilder2D[11]" } }
@@ -710,7 +710,8 @@ class BatchBuilder2D constructor(
 
     companion object {
         val MAX_BATCH_QUADS = 16383
-        val DEFAULT_BATCH_QUADS = 4096
+        //val DEFAULT_BATCH_QUADS = 4096
+        val DEFAULT_BATCH_QUADS = 8192
         //val DEFAULT_BATCH_QUADS = MAX_BATCH_QUADS
 
         init { logger.trace { "BatchBuilder2D.Companion[0]" } }
@@ -902,7 +903,7 @@ class BatchBuilder2D constructor(
         val scissor: AGScissor,
         val blending: AGBlending,
         val renderState: AGRenderState,
-        val indexOffset: Int,
+        val offset: Int,
         val vertexCount: Int,
         val instances: Int,
     ) {
@@ -913,10 +914,11 @@ class BatchBuilder2D constructor(
         fun render(list: AGList, ag: AG, drawType: AGDrawType, vertexData: FastArrayList<AGVertexData>, indices: AGBuffer, indexType: AGIndexType = AGIndexType.USHORT) {
             list.setScissorState(ag, scissor)
 
-            ag.getProgram(program, config = when {
+            val agProgram = ag.getProgram(program, config = when {
                 uniforms.useExternalSampler() -> ProgramConfig.EXTERNAL_TEXTURE_SAMPLER
                 else -> ProgramConfig.DEFAULT
-            }).use(list)
+            })
+            agProgram.use(list)
 
             // @TODO: Can we reuse VAO with different programs?
             list.vertexArrayObjectSet(AGVertexArrayObject(vertexData)) {
@@ -927,7 +929,7 @@ class BatchBuilder2D constructor(
                     //gl.getIntegerv(KmlGl.VIEWPORT, viewport)
                     //println("viewport=${viewport.getAlignedInt32(0)},${viewport.getAlignedInt32(1)},${viewport.getAlignedInt32(2)},${viewport.getAlignedInt32(3)}")
 
-                    list.draw(drawType, vertexCount, indexOffset, instances, indexType, indices)
+                    list.draw(drawType, vertexCount, offset, instances, indexType, indices)
                 }
             }
 
@@ -948,7 +950,7 @@ class BatchBuilder2D constructor(
             stencilRef = stencilRef,
             colorMask = colorMask,
             scissor = scissor,
-            indexOffset = lastIndexPos * 2,
+            offset = lastIndexPos * 2, // In bytes
             vertexCount = indexPos - lastIndexPos,
             instances = 1,
             renderState = AGRenderState.DEFAULT,
@@ -968,6 +970,12 @@ class BatchBuilder2D constructor(
             if (uploadIndices) uploadIndices()
 
             //println("batches=${batches.size}")
+
+            val programSet = AgFastSet<Program>()
+
+            batches.fastForEach { batch ->
+                programSet.add(batch.program)
+            }
 
             batches.fastForEach { batch ->
                 ag.commandsNoWait { list ->

@@ -104,12 +104,14 @@ class DebugVertexView(pointsList: List<IVectorArrayList>, color: RGBA = Colors.W
         //println("DebugVertexView.getLocalBoundsInternal:$out")
     }
 
+
+
     override fun renderInternal(ctx: RenderContext) {
         ctx.flush()
         ctx.updateStandardUniforms()
         this.uniforms.put(ctx.uniforms)
-        this.uniforms.put(u_Col, renderColorMul)
-        this.uniforms.put(u_Matrix, globalMatrix.toMatrix3D())
+        this.uniforms[u_Col] = renderColorMul
+        this.uniforms[u_Matrix] = globalMatrix.toMatrix3D()
 
         ctx.dynamicVertexBufferPool.alloc { vb ->
             vb.upload(this@DebugVertexView.buffer)

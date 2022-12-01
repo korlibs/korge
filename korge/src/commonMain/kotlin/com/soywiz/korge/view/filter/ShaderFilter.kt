@@ -101,12 +101,12 @@ abstract class ShaderFilter : Filter {
 
     val scaledUniforms = AGUniformValues()
 
-    val uniforms = AGUniformValues(
+    val uniforms = AGUniformValues {
         //Filter.u_Time to timeHolder,
-        u_TextureSize to textureSizeHolder,
-        u_MaxTexCoords to textureMaxTexCoords,
-        u_StdTexDerivates to textureStdTexDerivates,
-    )
+        it[u_TextureSize] = textureSizeHolder
+        it[u_MaxTexCoords] = textureMaxTexCoords
+        it[u_StdTexDerivates] = textureStdTexDerivates
+    }
 
     override fun computeBorder(out: MutableMarginInt, texWidth: Int, texHeight: Int) {
         out.setTo(0)

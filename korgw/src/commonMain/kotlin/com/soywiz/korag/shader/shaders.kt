@@ -264,20 +264,26 @@ open class Varying(name: String, type: VarType, arrayCount: Int, precision: Prec
 }
 fun Varying(type: VarType, arrayCount: Int = 1, precision: Precision = Precision.DEFAULT): Varying.Provider = Varying.Provider(type, arrayCount, precision)
 
-open class Uniform(name: String, type: VarType, arrayCount: Int, precision: Precision = Precision.DEFAULT, offset: Int? = null) : VariableWithOffset(
+class UniformBlock {
+    companion object {
+        val DEFAULT = UniformBlock()
+    }
+}
+
+open class Uniform(name: String, type: VarType, arrayCount: Int, precision: Precision = Precision.DEFAULT, offset: Int? = null, val block: UniformBlock = UniformBlock.DEFAULT) : VariableWithOffset(
     name, type, arrayCount, precision, offset
 ) {
-    constructor(name: String, type: VarType, precision: Precision = Precision.DEFAULT) : this(name, type, 1, precision)
+    constructor(name: String, type: VarType, precision: Precision = Precision.DEFAULT, block: UniformBlock = UniformBlock.DEFAULT) : this(name, type, 1, precision, null, block)
 	override fun toString(): String = "Uniform($name)"
     override fun equals(other: Any?): Boolean = mequals<Uniform>(other)
     override fun hashCode(): Int = mhashcode()
     operator fun getValue(thisRef: Any?, property: KProperty<*>): Uniform = this
 
-    class Provider(val type: VarType, val arrayCount: Int, val precision: Precision = Precision.DEFAULT) {
-        operator fun provideDelegate(thisRef: Any?, property: KProperty<*>): Uniform = Uniform(property.name, type, arrayCount, precision)
+    class Provider(val type: VarType, val arrayCount: Int, val precision: Precision = Precision.DEFAULT, val block: UniformBlock = UniformBlock.DEFAULT) {
+        operator fun provideDelegate(thisRef: Any?, property: KProperty<*>): Uniform = Uniform(property.name, type, arrayCount, precision, null, block)
     }
 }
-fun Uniform(type: VarType, arrayCount: Int = 1, precision: Precision = Precision.DEFAULT): Uniform.Provider = Uniform.Provider(type, arrayCount, precision)
+fun Uniform(type: VarType, arrayCount: Int = 1, precision: Precision = Precision.DEFAULT, block: UniformBlock = UniformBlock.DEFAULT): Uniform.Provider = Uniform.Provider(type, arrayCount, precision, block)
 
 open class Temp(id: Int, type: VarType, arrayCount: Int, precision: Precision = Precision.DEFAULT) : Variable("temp$id", type, arrayCount, precision) {
     constructor(id: Int, type: VarType, precision: Precision = Precision.DEFAULT) : this(id, type, 1, precision)
@@ -328,6 +334,7 @@ inline fun Program.appendingFragment(extraName: String, block: Program.Builder.(
 
 data class Program(val vertex: VertexShader, val fragment: FragmentShader, val name: String = "program-${vertex.name}-${fragment.name}") : Closeable {
 	val uniforms = vertex.uniforms + fragment.uniforms
+    val uniformsLayout = UniformLayout(uniforms.toList())
 	val attributes = vertex.attributes + fragment.attributes
     val cachedHashCode = (vertex.hashCode() * 11) + (fragment.hashCode() * 7) + name.hashCode()
     override fun hashCode(): Int = cachedHashCode
@@ -1035,9 +1042,15 @@ inline fun FragmentShader(callback: Program.Builder.() -> Unit): FragmentShader 
 typealias UniformLayout = ProgramLayout<Uniform>
 typealias VertexLayout = ProgramLayout<Attribute>
 
+val UniformLayout.uniforms get() = items
+val UniformLayout.uniformPositions get() = positions
+
+val VertexLayout.attributes get() = items
+val VertexLayout.attributePositions get() = positions
+
 open class ProgramLayout<TVariable : VariableWithOffset>(attr: List<TVariable>, private val layoutSize: Int?) {
 	private val myattr = attr
-	val attributes = attr
+	val items = attr
 	constructor(attributes: List<TVariable>) : this(attributes, null)
 	constructor(vararg attributes: TVariable) : this(attributes.toFastList(), null)
 	constructor(vararg attributes: TVariable, layoutSize: Int? = null) : this(attributes.toFastList(), layoutSize)
@@ -1049,7 +1062,7 @@ open class ProgramLayout<TVariable : VariableWithOffset>(attr: List<TVariable>, 
 		if (a <= 1) 1 else a
 	}
 
-	val attributePositions = myattr.mapInt {
+	val positions = myattr.mapInt {
 		if (it.offset != null) {
 			_lastPos = it.offset
 		} else {
@@ -1061,6 +1074,9 @@ open class ProgramLayout<TVariable : VariableWithOffset>(attr: List<TVariable>, 
 	}
 
 	val maxAlignment = alignments.maxOrNull() ?: 1
+
+    val numElements get() = items.size
+
     /** Size in bytes for each vertex */
 	val totalSize: Int = layoutSize ?: _lastPos.nextAlignedTo(maxAlignment)
 

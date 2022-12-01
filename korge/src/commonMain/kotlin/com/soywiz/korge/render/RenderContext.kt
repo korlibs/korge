@@ -51,10 +51,10 @@ class RenderContext constructor(
 
     @KorgeInternal
     val uniforms: AGUniformValues by lazy {
-        AGUniformValues(
-            DefaultShaders.u_ProjMat to projMat,
-            DefaultShaders.u_ViewMat to viewMat,
-        )
+        AGUniformValues {
+            it[DefaultShaders.u_ProjMat] = projMat
+            it[DefaultShaders.u_ViewMat] = viewMat
+        }
     }
 
     inline fun <T> setTemporalProjectionMatrixTransform(m: Matrix, block: () -> T): T =

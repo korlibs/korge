@@ -34,6 +34,7 @@ suspend fun main() = Korge(
         //val side = 20
         val side = 20
         uiVerticalStack {
+            scale = 0.5
             for (y in 0 until side) {
                 uiHorizontalStack {
                     for (x in 0 until side) {

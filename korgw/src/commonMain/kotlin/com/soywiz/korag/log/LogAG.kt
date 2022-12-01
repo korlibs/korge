@@ -8,13 +8,7 @@ import com.soywiz.kds.mapInt
 import com.soywiz.kds.toIntArrayList
 import com.soywiz.kmem.*
 import com.soywiz.korag.*
-import com.soywiz.korag.shader.Attribute
-import com.soywiz.korag.shader.Program
-import com.soywiz.korag.shader.ProgramConfig
-import com.soywiz.korag.shader.Shader
-import com.soywiz.korag.shader.ShaderType
-import com.soywiz.korag.shader.UniformLayout
-import com.soywiz.korag.shader.VarKind
+import com.soywiz.korag.shader.*
 import com.soywiz.korag.shader.gl.GlslGenerator
 import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.Bitmap32

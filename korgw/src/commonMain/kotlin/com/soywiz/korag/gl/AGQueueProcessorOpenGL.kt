@@ -14,10 +14,7 @@ import com.soywiz.kgl.genTexture
 import com.soywiz.kmem.*
 import com.soywiz.kmem.arraycopy
 import com.soywiz.korag.*
-import com.soywiz.korag.shader.Program
-import com.soywiz.korag.shader.ProgramConfig
-import com.soywiz.korag.shader.UniformLayout
-import com.soywiz.korag.shader.VarType
+import com.soywiz.korag.shader.*
 import com.soywiz.korag.shader.gl.GlslConfig
 import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.Bitmap32
@@ -90,8 +87,12 @@ class AGQueueProcessorOpenGL(
         gl.flush()
     }
 
+    var frameVersion = 0
+
     override fun finish() {
         gl.flush()
+        frameVersion++
+
         //gl.finish()
 
        //doPrint = if (doPrintTimer.elapsed >= 1.seconds) {
@@ -240,7 +241,7 @@ class AGQueueProcessorOpenGL(
     // UNIFORMS
     ///////////////////////////////////////
     override fun uniformsSet(layout: UniformLayout, data: Buffer) {
-        layout.attributes.fastForEach {
+        layout.uniforms.fastForEach {
             //currentProgram
         }
         TODO()
@@ -422,21 +423,32 @@ class AGQueueProcessorOpenGL(
 
         //if (doPrint) println("-----------")
 
-        var textureUnit = 0
         //for ((uniform, value) in uniforms) {
-        for (n in 0 until uniforms.uniforms.size) {
-            val uniform = uniforms.uniforms[n]
+
+        uniforms.forEachUniform { uniform, value, valueData, valueIndex ->
             val uniformName = uniform.name
             val uniformType = uniform.type
-            val value = uniforms.values[n]
             val location = glProgram.getUniformLocation(gl, uniformName)
             val declArrayCount = uniform.arrayCount
             val stride = uniform.type.elementCount
+
+            //if (glProgram.cachedFrameVersion != frameVersion) {
+            //    glProgram.cache.clear()
+            //    glProgram.cachedFrameVersion = frameVersion
+            //}
+            val oldValue = glProgram.cache[uniform]
+            if (value == oldValue && uniformType != VarType.Sampler2D && uniformType != VarType.Sampler1D && uniformType != VarType.Sampler3D && uniformType != VarType.SamplerCube) {
+            //if (value == oldValue) {
+                //println("value == oldValue ::: $value == $oldValue")
+                return@forEachUniform
+            }
+            glProgram.cache[uniform] = value
 
             //println("uniform: $uniform, arrayCount=$arrayCount, stride=$stride")
 
             when (uniformType) {
                 VarType.Sampler2D, VarType.SamplerCube -> {
+                    val textureUnit = glProgram.getTextureUnit(uniform)
                     val unit = value.fastCastTo<AGTextureUnit>()
                     gl.activeTexture(KmlGl.TEXTURE0 + textureUnit)
 
@@ -458,7 +470,6 @@ class AGQueueProcessorOpenGL(
                     gl.uniform1i(location, textureUnit)
                     //val texBinding = gl.getIntegerv(gl.TEXTURE_BINDING_2D)
                     //println("OpenglAG.draw: textureUnit=$textureUnit, textureBinding=$texBinding, instances=$instances, vertexCount=$vertexCount")
-                    textureUnit++
                 }
                 VarType.Mat2, VarType.Mat3, VarType.Mat4 -> {
                     val matArray = when (value) {

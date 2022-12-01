@@ -1163,9 +1163,24 @@ class AGStats(
     }
 }
 
+class AGProgramUniformData(val program: Program) {
+    val layout = program.uniformsLayout
+    val buffer = Buffer(layout.totalSize)
+
+    fun copyFrom(values: AGUniformValues) {
+        for (n in 0 until layout.numElements) {
+            val uniform = layout.uniforms[n]
+            val position = layout.uniformPositions[n]
+            val value = values[uniform]
+        }
+    }
+}
+
 class AGUniformValues() : Iterable<Pair<Uniform, Any>> {
     companion object {
         internal val EMPTY = AGUniformValues()
+
+        operator fun invoke(block: (AGUniformValues) -> Unit): AGUniformValues = AGUniformValues().also(block)
 
         fun valueToString(value: Any?): String {
             if (value is FloatArray) return value.toList().toString()
@@ -1175,21 +1190,31 @@ class AGUniformValues() : Iterable<Pair<Uniform, Any>> {
 
     fun clone(): AGUniformValues = AGUniformValues().also { it.setTo(this, clone = true) }
 
-    private val _uniforms = FastArrayList<Uniform>()
-    private val _values = FastArrayList<Any>()
-    val uniforms = _uniforms as List<Uniform>
+    private var allocationPos = 0
+    private val allocations = Array(17) { size -> Pool { allocationPos.also { allocationPos += size } } }
+    private fun allocate(size: Int): Int = allocations[size].alloc()
+    private fun free(size: Int, index: Int) { allocations[size].free(index) }
 
-    val keys get() = uniforms
-    val values = _values as List<Any>
+    val valueData = Buffer(1024)
+
+    private val _uniforms = FastArrayList<Uniform>()
+    @PublishedApi internal val _indices = intArrayListOf()
+    private val _values = FastArrayList<Any>()
+    @PublishedApi internal val uniforms = _uniforms as List<Uniform>
+
+    inline fun forEachUniform(block: (uniform: Uniform, value: Any, valueData: Buffer, valueIndex: Int) -> Unit) {
+        for (n in 0 until uniforms.size) {
+            block(uniforms[n], values[n], valueData, _indices[n])
+        }
+    }
+
+    @PublishedApi internal val keys get() = uniforms
+    @PublishedApi internal val values = _values as List<Any>
 
     val size get() = _uniforms.size
 
     fun isEmpty(): Boolean = size == 0
     fun isNotEmpty(): Boolean = size != 0
-
-    constructor(vararg pairs: Pair<Uniform, Any>) : this() {
-        for (pair in pairs) put(pair.first, pair.second)
-    }
 
     inline fun fastForEach(block: (uniform: Uniform, value: Any) -> Unit) {
         for (n in 0 until size) {
@@ -1204,6 +1229,7 @@ class AGUniformValues() : Iterable<Pair<Uniform, Any>> {
     fun clear() {
         _uniforms.clear()
         _values.clear()
+        _indices.clear()
     }
 
     operator fun contains(uniform: Uniform): Boolean = _uniforms.contains(uniform)
@@ -1215,7 +1241,32 @@ class AGUniformValues() : Iterable<Pair<Uniform, Any>> {
         return null
     }
 
+    private fun findUniformIndex(uniform: Uniform): Int {
+        for (n in 0 until _uniforms.size) {
+            if (_uniforms[n].name == uniform.name) {
+                return n
+            }
+        }
+
+        val n = _uniforms.size
+        val index = allocate(uniform.elementCount)
+        _uniforms.add(uniform)
+        _indices.add(index)
+        _values.add(Unit)
+        return n
+    }
+
+    private val mat3dArray = arrayOf(Matrix3D())
+
     operator fun set(uniform: Uniform, value: Any) = put(uniform, value)
+    operator fun set(uniform: Uniform, value: Boolean) = put(uniform, value)
+    operator fun set(uniform: Uniform, value: Matrix3D) {
+        //set(uniform, mat3dArray.also { it[0].copyFrom(value) })
+        put(uniform, value)
+    }
+    operator fun set(uniform: Uniform, mat3dArray: Array<Matrix3D>) {
+        put(uniform, mat3dArray)
+    }
 
     fun putOrRemove(uniform: Uniform, value: Any?) {
         if (value == null) {
@@ -1239,27 +1290,24 @@ class AGUniformValues() : Iterable<Pair<Uniform, Any>> {
                 is Number -> value
                 is RGBA -> value
                 is RGBAPremultiplied -> value
+                //is Array<*> -> value
                 else -> TODO("Unsupported cloning $value (${value::class})")
             }
             else -> value
         }
-        for (n in 0 until _uniforms.size) {
-            if (_uniforms[n].name == uniform.name) {
-                _values[n] = value
-                return this
-            }
-        }
-
-        _uniforms.add(uniform)
-        _values.add(value)
+        val n = findUniformIndex(uniform)
+        val index = _indices[n]
+        _values[n] = value
         return this
     }
 
     fun remove(uniform: Uniform) {
         for (n in 0 until _uniforms.size) {
             if (_uniforms[n].name == uniform.name) {
+                free(_uniforms[n].elementCount, _indices[n])
                 _uniforms.removeAt(n)
                 _values.removeAt(n)
+                _indices.removeAt(n)
                 return
             }
         }

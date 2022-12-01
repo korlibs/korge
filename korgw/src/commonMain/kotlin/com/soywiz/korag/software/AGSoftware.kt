@@ -3,9 +3,7 @@ package com.soywiz.korag.software
 import com.soywiz.klock.measureTime
 import com.soywiz.kmem.*
 import com.soywiz.korag.*
-import com.soywiz.korag.shader.Attribute
-import com.soywiz.korag.shader.Program
-import com.soywiz.korag.shader.VarKind
+import com.soywiz.korag.shader.*
 import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.bitmap.Bitmaps
