@@ -57,6 +57,7 @@ fun AGEnable.toGl(): Int = when (this) {
     AGEnable.DEPTH -> KmlGl.DEPTH_TEST
     AGEnable.SCISSOR -> KmlGl.SCISSOR_TEST
     AGEnable.STENCIL -> KmlGl.STENCIL_TEST
+    else -> unreachable
 }
 
 fun AGBlendEquation.toGl(): Int = when (this) {

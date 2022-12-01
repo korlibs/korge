@@ -224,10 +224,12 @@ open class Attribute(
         offset: Int? = this.offset,
         active: Boolean = this.active,
         precision: Precision = this.precision,
-        divisor: Int = this.divisor
-    ) = Attribute(name, type, normalized, offset, active, precision, divisor)
+        divisor: Int = this.divisor,
+        fixedLocation: Int? = null
+    ) = Attribute(name, type, normalized, offset, active, precision, divisor, fixedLocation)
     fun inactived() = copy(active = false)
     fun withDivisor(divisor: Int) = copy(divisor = divisor)
+    fun withFixedLocation(fixedLocation: Int) = copy(fixedLocation = fixedLocation)
 	override fun toString(): String = "Attribute($name)"
     fun toStringEx(): String = "Attribute($name, type=$type, normalized=$normalized, offset=$offset, active=$active, precision=$precision, divisor=$divisor)"
     override fun equals(other: Any?): Boolean = mequals<Attribute>(other) && this.normalized == (other as Attribute).normalized && this.offset == other.offset && this.active == other.active

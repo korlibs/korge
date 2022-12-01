@@ -719,7 +719,7 @@ class BatchBuilder2D constructor(
         @KorgeInternal
 		val a_ColMul: Attribute get() = DefaultShaders.a_Col
         @KorgeInternal
-		val a_ColAdd: Attribute = Attribute("a_Col2", VarType.Byte4, normalized = true)
+		val a_ColAdd: Attribute = Attribute("a_Col2", VarType.Byte4, normalized = true, fixedLocation = 3)
 
 		init { logger.trace { "BatchBuilder2D.Companion[1]" } }
 
@@ -911,26 +911,28 @@ class BatchBuilder2D constructor(
             //println("vertexOffset=$vertexOffset, vertexCount=$vertexCount")
         }
 
-        fun render(list: AGList, ag: AG, drawType: AGDrawType, vertexData: FastArrayList<AGVertexData>, indices: AGBuffer, indexType: AGIndexType = AGIndexType.USHORT) {
-            list.setScissorState(ag, scissor)
-
+        fun getProgramAndUse(list: AGList, ag: AG): AGProgram {
             val agProgram = ag.getProgram(program, config = when {
                 uniforms.useExternalSampler() -> ProgramConfig.EXTERNAL_TEXTURE_SAMPLER
                 else -> ProgramConfig.DEFAULT
             })
             agProgram.use(list)
+            return agProgram
+        }
+
+        fun render(list: AGList, ag: AG, drawType: AGDrawType, indices: AGBuffer, indexType: AGIndexType = AGIndexType.USHORT) {
+            val agProgram = getProgramAndUse(list, ag)
 
             // @TODO: Can we reuse VAO with different programs?
-            list.vertexArrayObjectSet(AGVertexArrayObject(vertexData)) {
-                list.uniformsSet(uniforms) {
-                    list.setState(blending, stencilOpFunc, stencilRef, colorMask, renderState)
+            list.uniformsSet(uniforms) {
+                list.setState(blending, stencilOpFunc, stencilRef, colorMask, renderState)
+                list.setScissorState(ag, scissor)
 
-                    //val viewport = Buffer(4 * 4)
-                    //gl.getIntegerv(KmlGl.VIEWPORT, viewport)
-                    //println("viewport=${viewport.getAlignedInt32(0)},${viewport.getAlignedInt32(1)},${viewport.getAlignedInt32(2)},${viewport.getAlignedInt32(3)}")
+                //val viewport = Buffer(4 * 4)
+                //gl.getIntegerv(KmlGl.VIEWPORT, viewport)
+                //println("viewport=${viewport.getAlignedInt32(0)},${viewport.getAlignedInt32(1)},${viewport.getAlignedInt32(2)},${viewport.getAlignedInt32(3)}")
 
-                    list.draw(drawType, vertexCount, offset, instances, indexType, indices)
-                }
+                list.draw(drawType, vertexCount, offset, instances, indexType, indices)
             }
 
         }
@@ -963,7 +965,7 @@ class BatchBuilder2D constructor(
         createBatchIfRequired()
 
         //println("vertexCount=${vertexCount}")
-		if (vertexCount > 0) {
+		if (indexPos > 0 && batches.isNotEmpty()) {
 			//println("ORTHO: ${ag.backHeight.toFloat()}, ${ag.backWidth.toFloat()}")
 
 			if (uploadVertices) uploadVertices()
@@ -971,15 +973,15 @@ class BatchBuilder2D constructor(
 
             //println("batches=${batches.size}")
 
-            val programSet = AgFastSet<Program>()
+            //val programSet = AgFastSet<Program>()
+            //batches.fastForEach { batch -> programSet.add(batch.program) }
 
-            batches.fastForEach { batch ->
-                programSet.add(batch.program)
-            }
-
-            batches.fastForEach { batch ->
-                ag.commandsNoWait { list ->
-                    batch.render(list, ag, AGDrawType.TRIANGLES, vertexData, indexBuffer)
+            ag.commandsNoWait { list ->
+                //batches.first().getProgramAndUse(list, ag)
+                list.vertexArrayObjectSet(AGVertexArrayObject(vertexData)) {
+                    batches.fastForEach { batch ->
+                        batch.render(list, ag, AGDrawType.TRIANGLES, indexBuffer)
+                    }
                 }
             }
             batches.clear()

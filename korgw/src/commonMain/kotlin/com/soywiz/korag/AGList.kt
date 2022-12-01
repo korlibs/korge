@@ -35,11 +35,13 @@ inline fun AGQueueProcessor.processBlocking(list: AGList, maxCount: Int = 1) {
 @KorInternal
 inline fun AGQueueProcessor.processBlockingAll(list: AGList): Unit = processBlocking(list, -1)
 
-enum class AGEnable {
-    BLEND, CULL_FACE, DEPTH, SCISSOR, STENCIL;
-
+inline class AGEnable(val ordinal: Int) {
     companion object {
-        val VALUES = values()
+        val BLEND = AGEnable(0)
+        val CULL_FACE = AGEnable(1)
+        val DEPTH = AGEnable(2)
+        val SCISSOR = AGEnable(3)
+        val STENCIL = AGEnable(4)
     }
 }
 
@@ -226,8 +228,8 @@ class AGList(val globalState: AGGlobalState) {
                 }
                 CMD_CONTEXT_LOST -> processor.contextLost()
                 CMD_DEPTH_FUNCTION -> processor.depthFunction(AGCompareMode(data.extract4(0)))
-                CMD_ENABLE -> processor.enableDisable(AGEnable.VALUES[data.extract4(0)], enable = true)
-                CMD_DISABLE -> processor.enableDisable(AGEnable.VALUES[data.extract4(0)], enable = false)
+                CMD_ENABLE -> processor.enableDisable(AGEnable(data.extract4(0)), enable = true)
+                CMD_DISABLE -> processor.enableDisable(AGEnable(data.extract4(0)), enable = false)
                 CMD_COLOR_MASK -> processor.colorMask(
                     data.extract(0),
                     data.extract(1),

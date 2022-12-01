@@ -89,9 +89,18 @@ class AGQueueProcessorOpenGL(
 
     var frameVersion = 0
 
+    private val enableCache = Array<Boolean?>(16) { null }
+    private var scissorCache: AGScissor = AGScissor.NIL
+    private var viewportCache: AGScissor = AGScissor.NIL
+    private var cacheTextureUnit = Array<AGTextureUnit?>(16) { null }
+
     override fun finish() {
         gl.flush()
         frameVersion++
+        enableCache.fill(null)
+        cacheTextureUnit.fill(null)
+        scissorCache = AGScissor.NIL
+        viewportCache = AGScissor.NIL
 
         //gl.finish()
 
@@ -106,6 +115,8 @@ class AGQueueProcessorOpenGL(
     }
 
     override fun enableDisable(kind: AGEnable, enable: Boolean) {
+        if (enableCache[kind.ordinal] == enable) return
+        enableCache[kind.ordinal] = enable
         gl.enableDisable(kind.toGl(), enable)
     }
 
@@ -274,12 +285,20 @@ class AGQueueProcessorOpenGL(
     }
 
     override fun scissor(x: Int, y: Int, width: Int, height: Int) {
-        gl.scissor(x, y, width, height)
+        val value = AGScissor(x, y, width, height)
+        if (scissorCache != value) {
+            scissorCache = value
+            gl.scissor(x, y, width, height)
+        }
         //println("SCISSOR: $x, $y, $width, $height")
     }
 
     override fun viewport(x: Int, y: Int, width: Int, height: Int) {
-        gl.viewport(x, y, width, height)
+        val value = AGScissor(x, y, width, height)
+        if (viewportCache != value) {
+            viewportCache = value
+            gl.viewport(x, y, width, height)
+        }
         //println("VIEWPORT: $x, $y, $width, $height")
     }
 
@@ -335,6 +354,9 @@ class AGQueueProcessorOpenGL(
                 val vattrs = entry.layout.attributes
                 vattrs.fastForEach { att ->
                     if (att.active) {
+                        if (att.fixedLocation == null) {
+                            //error("WOOPS!")
+                        }
                         val loc = att.fixedLocation ?: cprogram?.getAttribLocation(gl, att.name) ?: 0
                         if (loc >= 0) {
                             if (att.divisor != 0) {
@@ -362,6 +384,9 @@ class AGQueueProcessorOpenGL(
                     val att = vattrs[n]
                     if (!att.active) continue
                     val off = vattrspos[n]
+                    if (att.fixedLocation == null) {
+                        //error("WOOPS!")
+                    }
                     val loc = att.fixedLocation ?: cprogram?.getAttribLocation(gl, att.name) ?: 0
                     val glElementType = att.type.toGl()
                     val elementCount = att.type.elementCount
@@ -432,12 +457,41 @@ class AGQueueProcessorOpenGL(
             val declArrayCount = uniform.arrayCount
             val stride = uniform.type.elementCount
 
+            when (uniformType) {
+                VarType.Sampler2D, VarType.SamplerCube -> {
+                    val textureUnit = glProgram.getTextureUnit(uniform)
+
+                    val unit = value.fastCastTo<AGTextureUnit>()
+
+                    if (cacheTextureUnit[textureUnit] != unit) {
+                        cacheTextureUnit[textureUnit] = unit.clone()
+                        gl.activeTexture(KmlGl.TEXTURE0 + textureUnit)
+
+                        val tex = unit.texture
+                        if (tex != null) {
+                            // @TODO: This might be enqueuing commands, we shouldn't do that here.
+                            textureBindEnsuring(tex)
+                            textureSetWrap(tex)
+                            textureSetFilter(tex, unit.linear, unit.trilinear ?: unit.linear)
+                            //val texture = textures[tex.texId]
+                            //if (doPrint) println("BIND TEXTURE: $textureUnit, tex=${tex.texId}, glId=${texture?.glId}")
+                            //println("BIND TEXTURE: $textureUnit, tex=${tex.texId}, implForcedTexId=${tex.implForcedTexId}")
+                        } else {
+                            gl.bindTexture(KmlGl.TEXTURE_2D, 0)
+                            //println("NULL TEXTURE")
+                            //if (doPrint) println("NULL TEXTURE")
+                        }
+                    }
+                }
+                else -> Unit
+            }
+
             //if (glProgram.cachedFrameVersion != frameVersion) {
             //    glProgram.cache.clear()
             //    glProgram.cachedFrameVersion = frameVersion
             //}
             val oldValue = glProgram.cache[uniform]
-            if (value == oldValue && uniformType != VarType.Sampler2D && uniformType != VarType.Sampler1D && uniformType != VarType.Sampler3D && uniformType != VarType.SamplerCube) {
+            if (value == oldValue) {
             //if (value == oldValue) {
                 //println("value == oldValue ::: $value == $oldValue")
                 return@forEachUniform
@@ -449,24 +503,6 @@ class AGQueueProcessorOpenGL(
             when (uniformType) {
                 VarType.Sampler2D, VarType.SamplerCube -> {
                     val textureUnit = glProgram.getTextureUnit(uniform)
-                    val unit = value.fastCastTo<AGTextureUnit>()
-                    gl.activeTexture(KmlGl.TEXTURE0 + textureUnit)
-
-                    val tex = unit.texture
-                    if (tex != null) {
-                        // @TODO: This might be enqueuing commands, we shouldn't do that here.
-                        textureBindEnsuring(tex)
-                        textureSetWrap(tex)
-                        textureSetFilter(tex, unit.linear, unit.trilinear ?: unit.linear)
-                        //val texture = textures[tex.texId]
-                        //if (doPrint) println("BIND TEXTURE: $textureUnit, tex=${tex.texId}, glId=${texture?.glId}")
-                        //println("BIND TEXTURE: $textureUnit, tex=${tex.texId}, implForcedTexId=${tex.implForcedTexId}")
-                    } else {
-                        gl.bindTexture(KmlGl.TEXTURE_2D, 0)
-                        //println("NULL TEXTURE")
-                        //if (doPrint) println("NULL TEXTURE")
-                    }
-
                     gl.uniform1i(location, textureUnit)
                     //val texBinding = gl.getIntegerv(gl.TEXTURE_BINDING_2D)
                     //println("OpenglAG.draw: textureUnit=$textureUnit, textureBinding=$texBinding, instances=$instances, vertexCount=$vertexCount")
