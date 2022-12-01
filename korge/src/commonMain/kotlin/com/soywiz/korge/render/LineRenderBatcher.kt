@@ -60,19 +60,15 @@ class LineRenderBatcher(
     val LAYOUT = VertexLayout(DefaultShaders.a_Pos, DefaultShaders.a_Col)
 
     @KorgeInternal
-    val VERTEX = VertexShader {
-        DefaultShaders.apply {
-            SET(out, (u_ProjMat * u_ViewMat) * vec4(a_Pos, 0f.lit, 1f.lit))
-            SET(v_Col, a_Col)
-        }
+    val VERTEX = VertexShaderDefault {
+        SET(out, (u_ProjMat * u_ViewMat) * vec4(a_Pos, 0f.lit, 1f.lit))
+        SET(v_Col, a_Col)
     }
 
     @KorgeInternal
-    val FRAGMENT = FragmentShader {
-        DefaultShaders.apply {
-            //SET(out, vec4(1f.lit, 1f.lit, 0f.lit, 1f.lit))
-            SET(out, v_Col)
-        }
+    val FRAGMENT = FragmentShaderDefault {
+        //SET(out, vec4(1f.lit, 1f.lit, 0f.lit, 1f.lit))
+        SET(out, v_Col)
     }
 
     internal val uniforms get() = ctx.uniforms

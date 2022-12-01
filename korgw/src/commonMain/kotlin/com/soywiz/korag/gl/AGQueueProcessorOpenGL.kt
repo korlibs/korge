@@ -441,6 +441,23 @@ class AGQueueProcessorOpenGL(
     private val tempFloats = FloatArray(16 * TEMP_MAX_MATRICES)
     private val mat3dArray = arrayOf(Matrix3D())
 
+    fun Any.clone(): Any {
+        return when (this) {
+            is Matrix3D -> this.clone()
+            is IPoint -> this.copy()
+            is FloatArray -> this.copyOf()
+            is Number -> this
+            is Boolean -> this
+            is AGTextureUnit -> this.clone()
+            is Vector3D -> this.copy()
+            is Point -> this.copy()
+            is Margin -> this.copy()
+            is RectCorners -> this.duplicate()
+            is RGBA -> value
+            is RGBAPremultiplied -> value
+            else -> TODO("$this : ${this::class}")
+        }
+    }
 
     override fun uboUse(id: Int) {
         val uniforms = ubos[id] ?: return
@@ -494,9 +511,13 @@ class AGQueueProcessorOpenGL(
             if (value == oldValue) {
             //if (value == oldValue) {
                 //println("value == oldValue ::: $value == $oldValue")
+                //if (glProgram.programId > 4) {
+                //    println("glProgram.oid=${glProgram.programId} : $uniform :: value == oldValue ::: $value == $oldValue")
+                //}
+
                 return@forEachUniform
             }
-            glProgram.cache[uniform] = value
+            glProgram.cache[uniform] = value.clone()
 
             //println("uniform: $uniform, arrayCount=$arrayCount, stride=$stride")
 
