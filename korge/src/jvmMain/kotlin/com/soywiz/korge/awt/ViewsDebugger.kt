@@ -128,14 +128,14 @@ internal class ViewsDebuggerComponent constructor(
             SwingUtilities.invokeLater {
             //EventQueue.invokeLater {
                 //println("HIGHLIGHTING: $view")
-                println("ViewsDebuggerActions.highlight: $views")
+                //println("ViewsDebuggerActions.highlight: $views")
                 update()
                 val treeNode = view?.treeNode
                 if (treeNode != null) {
                     val path = TreePath((tree.model as DefaultTreeModel).getPathToRoot(treeNode))
                     val rpath = path.withTree(tree)
                         //tree.selectionPath?.withTree(tree)
-                    println("   - $path : ${rpath.expanded}")
+                    //println("   - $path : ${rpath.expanded}")
                     rpath.selectAndScroll()
                     //tree.expandPath(path)
                     //tree.clearSelection()

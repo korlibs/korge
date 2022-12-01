@@ -36,6 +36,8 @@ class Vector3D : MVector3 {
     override var z: Float get() = data[2]; set(value) { data[2] = value }
     var w: Float get() = data[3]; set(value) { data[3] = value }
 
+    fun copy(): Vector3D = Vector3D(x, y, z, w)
+
     val lengthSquared: Float get() = (x * x) + (y * y) + (z * z) + (w * w)
     val length: Float get() = sqrt(lengthSquared)
 

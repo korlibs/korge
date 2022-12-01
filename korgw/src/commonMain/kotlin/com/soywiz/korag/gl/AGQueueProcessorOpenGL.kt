@@ -39,7 +39,8 @@ import kotlin.math.min
 @OptIn(KorIncomplete::class, KorInternal::class)
 class AGQueueProcessorOpenGL(
     private val gl: KmlGl,
-    val globalState: AGGlobalState
+    val globalState: AGGlobalState,
+    val stats: AGStats,
 ) : AGQueueProcessor {
     class FastResources<T : Any>(val create: (id: Int) -> T) {
         private val resources = arrayListOf<T?>()
@@ -198,9 +199,11 @@ class AGQueueProcessorOpenGL(
         gl.bindBuffer(target.toGl(), bufferInfo.glId)
 
         if (buffer.dirty) {
+            buffer.dirty = false
             val mem = buffer.mem
             if (mem != null) {
                 gl.bufferData(target.toGl(), buffer.memLength, mem, KmlGl.STATIC_DRAW)
+                stats.updatedBufferCount++
             }
         }
     }

@@ -865,6 +865,7 @@ data class AGTextureUnit constructor(
         this.linear = linear
         this.trilinear = trilinear
     }
+    fun clone(): AGTextureUnit = AGTextureUnit(texture, linear, trilinear)
 }
 
 // @TODO: Move most of this to AGQueueProcessorOpenGL, avoid cyclic dependency and simplify
@@ -1152,9 +1153,14 @@ class AGStats(
     var texturesCreated: Int = 0,
     var texturesDeleted: Int = 0,
     var programCount: Int = 0,
+    var updatedBufferCount: Int = 0,
 ) {
     override fun toString(): String =
-        "AGStats(textures[$texturesCount] = $texturesMemory, buffers[$buffersCount] = $buffersMemory, renderBuffers[$renderBuffersCount] = $renderBuffersMemory, programs[$programCount])"
+        "AGStats(textures[$texturesCount] = $texturesMemory, buffers[$buffersCount] = $buffersMemory, renderBuffers[$renderBuffersCount] = $renderBuffersMemory, programs[$programCount], updatedBufferCount[$updatedBufferCount])"
+
+    fun startFrame() {
+        updatedBufferCount = 0
+    }
 }
 
 class AGUniformValues() : Iterable<Pair<Uniform, Any>> {
@@ -1167,7 +1173,7 @@ class AGUniformValues() : Iterable<Pair<Uniform, Any>> {
         }
     }
 
-    fun clone(): AGUniformValues = AGUniformValues().also { it.setTo(this) }
+    fun clone(): AGUniformValues = AGUniformValues().also { it.setTo(this, clone = true) }
 
     private val _uniforms = FastArrayList<Uniform>()
     private val _values = FastArrayList<Any>()
@@ -1219,7 +1225,24 @@ class AGUniformValues() : Iterable<Pair<Uniform, Any>> {
         }
     }
 
-    fun put(uniform: Uniform, value: Any): AGUniformValues {
+    fun put(uniform: Uniform, value: Any, clone: Boolean = false): AGUniformValues {
+        val value = when {
+            clone -> when (value) {
+                is AGTextureUnit -> value.clone()
+                is Matrix3D -> value.clone()
+                is Vector3D -> value.copy()
+                is Point -> value.copy()
+                is Margin -> value.copy()
+                is RectCorners -> value.duplicate()
+                is FloatArray -> value.copyOf()
+                is Boolean -> value
+                is Number -> value
+                is RGBA -> value
+                is RGBAPremultiplied -> value
+                else -> TODO("Unsupported cloning $value (${value::class})")
+            }
+            else -> value
+        }
         for (n in 0 until _uniforms.size) {
             if (_uniforms[n].name == uniform.name) {
                 _values[n] = value
@@ -1242,17 +1265,17 @@ class AGUniformValues() : Iterable<Pair<Uniform, Any>> {
         }
     }
 
-    fun put(uniforms: AGUniformValues?): AGUniformValues {
+    fun put(uniforms: AGUniformValues?, clone: Boolean = false): AGUniformValues {
         if (uniforms == null) return this
         for (n in 0 until uniforms.size) {
-            this.put(uniforms._uniforms[n], uniforms._values[n])
+            this.put(uniforms._uniforms[n], uniforms._values[n], clone)
         }
         return this
     }
 
-    fun setTo(uniforms: AGUniformValues) {
+    fun setTo(uniforms: AGUniformValues, clone: Boolean = false) {
         clear()
-        put(uniforms)
+        put(uniforms, clone)
     }
 
     override fun iterator(): Iterator<Pair<Uniform, Any>> = iterator {

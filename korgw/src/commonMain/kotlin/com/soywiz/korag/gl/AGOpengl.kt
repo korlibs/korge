@@ -64,7 +64,7 @@ abstract class AGOpengl(checked: Boolean = false) : AG(checked) {
 
     private var _glProcessor: AGQueueProcessorOpenGL? = null
     private val glProcessor: AGQueueProcessorOpenGL get() {
-        if (_glProcessor == null) _glProcessor = AGQueueProcessorOpenGL(gl, _globalState)
+        if (_glProcessor == null) _glProcessor = AGQueueProcessorOpenGL(gl, _globalState, stats)
         return _glProcessor!!
     }
 

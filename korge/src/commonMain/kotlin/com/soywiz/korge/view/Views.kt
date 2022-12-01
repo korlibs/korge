@@ -456,7 +456,7 @@ class Views constructor(
 
     fun debugHightlightView(viewToHightlight: View?, onlyIfDebuggerOpened: Boolean = false) {
         if (onlyIfDebuggerOpened && !gameWindow.debug) return
-        println("debugHightlightView: $viewToHightlight")
+        //println("debugHightlightView: $viewToHightlight")
         debugHighlighters(viewToHightlight)
     }
 

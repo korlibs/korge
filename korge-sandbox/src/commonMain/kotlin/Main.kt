@@ -27,6 +27,24 @@ suspend fun main() = Korge(
     //forceRenderEveryFrame = true
     //debugAg = true,
 ) {
+    if (true) {
+    //if (false) {
+        views.forceRenderEveryFrame = true
+        //val side = 10
+        //val side = 20
+        val side = 20
+        uiVerticalStack {
+            for (y in 0 until side) {
+                uiHorizontalStack {
+                    for (x in 0 until side) {
+                        uiButton("HELLO$x,$y")
+                    }
+                }
+            }
+        }
+        return@Korge
+    }
+
     //uiButton("HELLO WORLD!", width = 300.0).position(100, 100); return@Korge
     //solidRect(100, 100, Colors.RED).xy(300, 300).filters(BlurFilter()); return@Korge
 

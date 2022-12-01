@@ -213,6 +213,8 @@ class RenderContext2D(
         batch.drawVertices(texturedVertexArray, m, premultiplied = Bitmaps.white.premultiplied, wrap = false)
     }
 
+    private val vertices = TexturedVertexArray(6, TexturedVertexArray.QUAD_INDICES)
+
     fun quadPaddedCustomProgram(
         x: Double,
         y: Double,
@@ -243,7 +245,6 @@ class RenderContext2D(
                 var r = (width + padding.right).toFloat()
                 var b = (height + padding.bottom).toFloat()
 
-                val vertices = TexturedVertexArray(6, TexturedVertexArray.QUAD_INDICES)
                 vertices.quad(
                     0,
                     L, T, R, B,

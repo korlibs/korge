@@ -22,6 +22,7 @@ interface Margin {
         operator fun invoke(vertical: Double, horizontal: Double): Margin = MutableMargin(vertical, horizontal)
         operator fun invoke(margin: Double): Margin = MutableMargin(margin)
     }
+    fun copy(): Margin = Margin(top, right, bottom, left)
 }
 
 val Margin.leftPlusRight: Double get() = left + right

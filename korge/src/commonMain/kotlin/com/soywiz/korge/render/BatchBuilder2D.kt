@@ -2,20 +2,12 @@
 
 package com.soywiz.korge.render
 
-import com.soywiz.kds.fastArrayListOf
+import com.soywiz.kds.*
 import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.klogger.Logger
 import com.soywiz.kmem.*
 import com.soywiz.korag.*
-import com.soywiz.korag.shader.Attribute
-import com.soywiz.korag.shader.FragmentShader
-import com.soywiz.korag.shader.Operand
-import com.soywiz.korag.shader.Precision
-import com.soywiz.korag.shader.Program
-import com.soywiz.korag.shader.Uniform
-import com.soywiz.korag.shader.VarType
-import com.soywiz.korag.shader.Varying
-import com.soywiz.korag.shader.VertexLayout
+import com.soywiz.korag.shader.*
 import com.soywiz.korge.internal.KorgeInternal
 import com.soywiz.korge.view.BlendMode
 import com.soywiz.korim.bitmap.*
@@ -23,7 +15,6 @@ import com.soywiz.korim.color.ColorAdd
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korio.async.Signal
-import com.soywiz.korio.util.OS
 import com.soywiz.korma.geom.Matrix
 import com.soywiz.korma.geom.Matrix3D
 import com.soywiz.korma.geom.Point
@@ -72,7 +63,12 @@ class BatchBuilder2D constructor(
     val ag: AG = ctx.ag
 	init {
         logger.trace { "BatchBuilder2D[0]" }
-        ctx.flushers.add { flush() }
+        ctx.flushers.add {
+            when (it) {
+                RenderContext.FlushKind.STATE -> createBatchIfRequired()
+                RenderContext.FlushKind.FULL -> flush()
+            }
+        }
     }
 
 	var flipRenderTexture = true
@@ -107,6 +103,7 @@ class BatchBuilder2D constructor(
         internal set(value) { _vertexCount = value }
 
     @PublishedApi internal var vertexPos = 0
+    @PublishedApi internal var lastIndexPos = 0
     @PublishedApi internal var indexPos = 0
     @PublishedApi internal var currentTexIndex = 0
 
@@ -122,10 +119,10 @@ class BatchBuilder2D constructor(
 
 	init { logger.trace { "BatchBuilder2D[3]" } }
 
-	private val vertexBuffer = ag.createVertexBuffer()
-    private val texIndexVertexBuffer = ag.createVertexBuffer()
-    private val texWrapVertexBuffer = ag.createVertexBuffer()
-	private val indexBuffer = ag.createIndexBuffer()
+	private val vertexBuffer = ag.createBuffer()
+    private val texIndexVertexBuffer = ag.createBuffer()
+    private val texWrapVertexBuffer = ag.createBuffer()
+	private val indexBuffer = ag.createBuffer()
 
 	init { logger.trace { "BatchBuilder2D[4]" } }
 
@@ -447,7 +444,7 @@ class BatchBuilder2D constructor(
 	}
 
 	private fun checkAvailable(indices: Int, vertices: Int): Boolean {
-		return (this.indexPos + indices < maxIndices) || (this.vertexPos + vertices < maxVertices)
+		return (this.indexPos + indices < maxIndices) && (this.vertexPos + vertices < maxVertices)
 	}
 
 	fun ensure(indices: Int, vertices: Int): Boolean {
@@ -478,7 +475,7 @@ class BatchBuilder2D constructor(
         val isCurrentStateFast = isCurrentStateFast(tex, smoothing, blendMode, program)
         //println("isCurrentStateFast=$isCurrentStateFast, tex=$tex, currentTex=$currentTex, currentTex2=$currentTex2")
         if (isCurrentStateFast) return
-        flush()
+        createBatchIfRequired()
         currentTexIndex = 0
         currentTexN[0] = tex
         currentSmoothing = smoothing
@@ -896,46 +893,95 @@ class BatchBuilder2D constructor(
     fun getDefaultProgram(): Program = PROGRAM
     fun getDefaultProgramForTexture(): Program = getDefaultProgram()
 
+    class BatchBatch(
+        val program: Program,
+        val uniforms: AGUniformValues,
+        val stencilOpFunc: AGStencilOpFuncState,
+        val stencilRef: AGStencilReferenceState,
+        val colorMask: AGColorMaskState,
+        val scissor: AGScissor,
+        val blending: AGBlending,
+        val renderState: AGRenderState,
+        val indexOffset: Int,
+        val vertexCount: Int,
+        val instances: Int,
+    ) {
+        init {
+            //println("vertexOffset=$vertexOffset, vertexCount=$vertexCount")
+        }
+
+        fun render(list: AGList, ag: AG, drawType: AGDrawType, vertexData: FastArrayList<AGVertexData>, indices: AGBuffer, indexType: AGIndexType = AGIndexType.USHORT) {
+            list.setScissorState(ag, scissor)
+
+            ag.getProgram(program, config = when {
+                uniforms.useExternalSampler() -> ProgramConfig.EXTERNAL_TEXTURE_SAMPLER
+                else -> ProgramConfig.DEFAULT
+            }).use(list)
+
+            // @TODO: Can we reuse VAO with different programs?
+            list.vertexArrayObjectSet(AGVertexArrayObject(vertexData)) {
+                list.uniformsSet(uniforms) {
+                    list.setState(blending, stencilOpFunc, stencilRef, colorMask, renderState)
+
+                    //val viewport = Buffer(4 * 4)
+                    //gl.getIntegerv(KmlGl.VIEWPORT, viewport)
+                    //println("viewport=${viewport.getAlignedInt32(0)},${viewport.getAlignedInt32(1)},${viewport.getAlignedInt32(2)},${viewport.getAlignedInt32(3)}")
+
+                    list.draw(drawType, vertexCount, indexOffset, instances, indexType, indices)
+                }
+            }
+
+        }
+    }
+
+    private val batches = fastArrayListOf<BatchBatch>()
+
+    @PublishedApi
+    internal fun createBatchIfRequired() {
+        if (lastIndexPos == indexPos) return
+        updateStandardUniforms()
+        batches.add(BatchBatch(
+            program = currentProgram ?: PROGRAM,
+            blending = currentBlendMode.factors(ag.isRenderingToTexture),
+            uniforms = uniforms.clone(),
+            stencilOpFunc = stencilOpFunc,
+            stencilRef = stencilRef,
+            colorMask = colorMask,
+            scissor = scissor,
+            indexOffset = lastIndexPos * 2,
+            vertexCount = indexPos - lastIndexPos,
+            instances = 1,
+            renderState = AGRenderState.DEFAULT,
+        ))
+        lastIndexPos = indexPos
+    }
+
     /** When there are vertices pending, this performs a [AG.draw] call flushing all the buffered geometry pending to draw */
 	fun flush(uploadVertices: Boolean = true, uploadIndices: Boolean = true) {
+        createBatchIfRequired()
+
         //println("vertexCount=${vertexCount}")
 		if (vertexCount > 0) {
-            updateStandardUniforms()
-
 			//println("ORTHO: ${ag.backHeight.toFloat()}, ${ag.backWidth.toFloat()}")
-
-			val factors = currentBlendMode
 
 			if (uploadVertices) uploadVertices()
             if (uploadIndices) uploadIndices()
 
-			//println("MyUniforms: $uniforms")
+            //println("batches=${batches.size}")
 
-			//println("RENDER: $realFactors")
-            //println("DRAW: $uniforms")
+            batches.fastForEach { batch ->
+                ag.commandsNoWait { list ->
+                    batch.render(list, ag, AGDrawType.TRIANGLES, vertexData, indexBuffer)
+                }
+            }
+            batches.clear()
 
-            val program = currentProgram ?: PROGRAM
-            //println("program=$program, currentTexN[0]=${currentTexN[0]}")
-            ag.drawV2(
-                vertexData = vertexData,
-                indices = indexBuffer,
-                program = program,
-                //program = PROGRAM_PRE,
-                type = AGDrawType.TRIANGLES,
-                blending = factors.factors(ag.isRenderingToTexture),
-                uniforms = uniforms,
-                stencilOpFunc = stencilOpFunc,
-                stencilRef = stencilRef,
-                colorMask = colorMask,
-                scissor = scissor,
-                offset = 0,
-                vertexCount = indexPos,
-            )
             beforeFlush(this)
 		}
 
 		vertexCount = 0
 		vertexPos = 0
+        lastIndexPos = 0
 		indexPos = 0
         for (n in 0 until maxTextures) currentTexN[n] = null
         currentTexIndex = 0
@@ -974,8 +1020,7 @@ class BatchBuilder2D constructor(
 @ThreadLocal
 private val BATCH_BUILDER2D_PROGRAMS: Array<Program?> = arrayOfNulls(64)
 
-internal val BB_MAX_TEXTURES = when (OS.rawName) {
-    "linuxArm32Hfp",
-    "iosArm32" -> 1
+internal val BB_MAX_TEXTURES = when {
+    Platform.arch.isArm32 -> 1
     else -> 4
 }
