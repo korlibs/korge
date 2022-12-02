@@ -156,7 +156,7 @@ class SkyBox(
     private val uniformValues = AGUniformValues()
     private val rs = AGRenderState.DEFAULT.withDepthMask(depthMask = false).withDepthFunc(depthFunc = AGCompareMode.LESS_EQUAL)
 
-    private val cubeMapTexUnit = AGTextureUnit()
+    private val cubeMapTexUnit = AGTextureUnit(7)
     private val viewNoTrans = Matrix3D()
 
     override fun render(ctx: RenderContext3D) {

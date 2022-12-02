@@ -441,22 +441,21 @@ class AGQueueProcessorOpenGL(
     private val tempFloats = FloatArray(16 * TEMP_MAX_MATRICES)
     private val mat3dArray = arrayOf(Matrix3D())
 
-    fun Any.clone(): Any {
-        return when (this) {
-            is Matrix3D -> this.clone()
-            is IPoint -> this.copy()
-            is FloatArray -> this.copyOf()
-            is Number -> this
-            is Boolean -> this
-            is AGTextureUnit -> this.clone()
-            is Vector3D -> this.copy()
-            is Point -> this.copy()
-            is Margin -> this.copy()
-            is RectCorners -> this.duplicate()
-            is RGBA -> value
-            is RGBAPremultiplied -> value
-            else -> TODO("$this : ${this::class}")
-        }
+    // @TODO: Remove this
+    fun Any.clone(): Any = when (this) {
+        is Matrix3D -> this.clone()
+        is IPoint -> this.copy()
+        is FloatArray -> this.copyOf()
+        is Number -> this
+        is Boolean -> this
+        is AGTextureUnit -> this.clone()
+        is Vector3D -> this.copy()
+        is Point -> this.copy()
+        is Margin -> this.copy()
+        is RectCorners -> this.duplicate()
+        is RGBA -> value
+        is RGBAPremultiplied -> value
+        else -> TODO("$this : ${this::class}")
     }
 
     override fun uboUse(id: Int) {
@@ -473,12 +472,12 @@ class AGQueueProcessorOpenGL(
             val location = glProgram.getUniformLocation(gl, uniformName)
             val declArrayCount = uniform.arrayCount
             val stride = uniform.type.elementCount
+            var textureUnit: Int = -1
 
             when (uniformType) {
                 VarType.Sampler2D, VarType.SamplerCube -> {
-                    val textureUnit = glProgram.getTextureUnit(uniform)
-
                     val unit = value.fastCastTo<AGTextureUnit>()
+                    textureUnit = glProgram.getTextureUnit(uniform, unit)
 
                     if (cacheTextureUnit[textureUnit] != unit) {
                         cacheTextureUnit[textureUnit] = unit.clone()
@@ -523,13 +522,12 @@ class AGQueueProcessorOpenGL(
 
             when (uniformType) {
                 VarType.Sampler2D, VarType.SamplerCube -> {
-                    val textureUnit = glProgram.getTextureUnit(uniform)
                     gl.uniform1i(location, textureUnit)
                     //val texBinding = gl.getIntegerv(gl.TEXTURE_BINDING_2D)
                     //println("OpenglAG.draw: textureUnit=$textureUnit, textureBinding=$texBinding, instances=$instances, vertexCount=$vertexCount")
                 }
                 VarType.Mat2, VarType.Mat3, VarType.Mat4 -> {
-                    val matArray = when (value) {
+                    val matArray: Array<Matrix3D> = when (value) {
                         is Array<*> -> value
                         is Matrix3D -> mat3dArray.also { it[0].copyFrom(value) }
                         else -> error("Not an array or a matrix3d")

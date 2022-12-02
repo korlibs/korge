@@ -856,6 +856,7 @@ data class AGBatch constructor(
 }
 
 data class AGTextureUnit constructor(
+    val index: Int,
     var texture: AGTexture? = null,
     var linear: Boolean = true,
     var trilinear: Boolean? = null,
@@ -865,7 +866,7 @@ data class AGTextureUnit constructor(
         this.linear = linear
         this.trilinear = trilinear
     }
-    fun clone(): AGTextureUnit = AGTextureUnit(texture, linear, trilinear)
+    fun clone(): AGTextureUnit = AGTextureUnit(index, texture, linear, trilinear)
 }
 
 // @TODO: Move most of this to AGQueueProcessorOpenGL, avoid cyclic dependency and simplify
@@ -1038,7 +1039,7 @@ class AGTextureDrawer(val ag: AG) {
 
     fun draw(tex: AGTexture, left: Float, top: Float, right: Float, bottom: Float) {
         //tex.upload(Bitmap32(32, 32) { x, y -> Colors.RED })
-        uniforms[DefaultShaders.u_Tex] = AGTextureUnit(tex)
+        uniforms[DefaultShaders.u_Tex] = AGTextureUnit(0, tex)
 
         val texLeft = -1f
         val texRight = +1f

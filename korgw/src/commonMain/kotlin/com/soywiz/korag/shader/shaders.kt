@@ -175,7 +175,8 @@ enum class ShaderType {
 }
 
 open class Operand(open val type: VarType) {
-    val elementCount get() = type.elementCount
+    val elementCount: Int get() = type.elementCount
+    val bytesSize: Int get() = type.bytesSize
 }
 
 enum class Precision { DEFAULT, LOW, MEDIUM, HIGH }

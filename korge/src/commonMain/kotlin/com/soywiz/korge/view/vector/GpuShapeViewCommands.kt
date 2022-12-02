@@ -231,11 +231,12 @@ class GpuShapeViewCommands {
     }
 
     private fun resolve(ctx: RenderContext, uniforms: AGUniformValues, texUniforms: AGUniformValues) {
+        var uniformIndex = 5
         texUniforms.fastForEach { uniform, value ->
             if (value is Bitmap) {
                 val tex = ctx.ag.tempTexturePool.alloc()
                 tex.upload(value)
-                uniforms[uniform] = AGTextureUnit(tex)
+                uniforms[uniform] = AGTextureUnit(uniformIndex++, tex)
                 texturesToDelete.add(tex)
             }
         }

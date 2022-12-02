@@ -17,11 +17,12 @@ internal data class GLProgramInfo(var programId: Int, var vertexId: Int, var fra
     val cachedAttribLocations = FastStringMap<Int>()
     val cachedUniformLocations = FastStringMap<Int>()
 
-    private var lastTextureUnit: Int = 0
-    val cachedTextureUnit = HashMap<Uniform, Int>()
+    //private var lastTextureUnit: Int = 0
+    //val cachedTextureUnit = HashMap<Uniform, Int>()
 
-    fun getTextureUnit(uniform: Uniform): Int {
-        return cachedTextureUnit.getOrPut(uniform) { lastTextureUnit++ }
+    fun getTextureUnit(uniform: Uniform, unit: AGTextureUnit): Int {
+        return unit.index
+        //return cachedTextureUnit.getOrPut(uniform) { lastTextureUnit++ }
     }
 
     //var cachedFrameVersion = -1

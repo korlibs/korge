@@ -161,7 +161,7 @@ class BatchBuilder2D constructor(
 
 	init { logger.trace { "BatchBuilder2D[9]" } }
 
-    val textureUnitN = Array(maxTextures) { AGTextureUnit(null, linear = false) }
+    val textureUnitN = Array(maxTextures) { AGTextureUnit(it, null, linear = false) }
 
     //@KorgeInternal val textureUnit0 = AG.TextureUnit(null, linear = false)
     //@KorgeInternal val textureUnit1 = AG.TextureUnit(null, linear = false)
