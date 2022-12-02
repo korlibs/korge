@@ -181,7 +181,9 @@ class NAGOpengl(val gl: KmlGl) : NAG() {
         if (currentState.scissorXY != scissorXY || currentState.scissorWH != scissorWH) {
             currentState.scissorXY = scissorXY
             currentState.scissorWH = scissorWH
-            gl.scissor(scissorXY.x, scissorXY.y, scissorWH.width, scissorWH.height)
+            gl.enableDisable(KmlGl.SCISSOR_TEST, state.scissor != AGRect.NIL && state.scissor != AGRect.FULL) {
+                gl.scissor(scissorXY.x, scissorXY.y, scissorWH.width, scissorWH.height)
+            }
         }
 
         val viewportXY = state.viewportXY
@@ -197,16 +199,33 @@ class NAGOpengl(val gl: KmlGl) : NAG() {
         if (currentState.stencilOpFunc != stencilOpFunc || currentState.stencilRef != stencilRef) {
             currentState.stencilOpFunc = stencilOpFunc
             currentState.stencilRef = stencilRef
-            gl.stencilFunc(stencilOpFunc.compareMode.toGl(), stencilRef.referenceValue, stencilRef.readMask)
-            gl.stencilMask(stencilRef.writeMask)
-            gl.stencilOp(stencilOpFunc.actionOnDepthFail.toGl(), stencilOpFunc.actionOnDepthPassStencilFail.toGl(), stencilOpFunc.actionOnBothPass.toGl())
+            gl.enableDisable(KmlGl.STENCIL_TEST, state.stencilOpFunc != AGStencilOpFuncState.DISABLED) {
+                gl.stencilFunc(stencilOpFunc.compareMode.toGl(), stencilRef.referenceValue, stencilRef.readMask)
+                gl.stencilMask(stencilRef.writeMask)
+                gl.stencilOp(stencilOpFunc.actionOnDepthFail.toGl(), stencilOpFunc.actionOnDepthPassStencilFail.toGl(), stencilOpFunc.actionOnBothPass.toGl())
+            }
         }
 
         val blending = state.blending
         if (currentState.blending != blending) {
             currentState.blending = blending
-            gl.blendFuncSeparate(blending.srcRGB.toGl(), blending.dstRGB.toGl(), blending.srcA.toGl(), blending.dstA.toGl())
-            gl.blendEquationSeparate(blending.eqRGB.toGl(), blending.eqA.toGl())
+            gl.enableDisable(KmlGl.BLEND, blending.enabled) {
+                gl.blendFuncSeparate(blending.srcRGB.toGl(), blending.dstRGB.toGl(), blending.srcA.toGl(), blending.dstA.toGl())
+                gl.blendEquationSeparate(blending.eqRGB.toGl(), blending.eqA.toGl())
+            }
+        }
+
+        val render = state.render
+        if (currentState.render != render) {
+            currentState.render = render
+            gl.depthMask(render.depthMask)
+            gl.depthRangef(render.depthNear, render.depthFar)
+            gl.enableDisable(KmlGl.CULL_FACE, render.frontFace != AGFrontFace.BOTH) {
+                gl.frontFace(render.frontFace.toGl())
+            }
+            gl.enableDisable(KmlGl.DEPTH_TEST, render.depthFunc != AGCompareMode.ALWAYS) {
+                gl.depthFunc(render.depthFunc.toGl())
+            }
         }
     }
 

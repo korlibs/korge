@@ -501,20 +501,21 @@ inline class AGStencilOpFuncState(val data: Int) {
     companion object {
         val DEFAULT = AGStencilOpFuncState(0)
             .withEnabled(false)
-            .withTriangleFace(AGTriangleFace.FRONT_AND_BACK)
+            //.withTriangleFace(AGTriangleFace.FRONT_AND_BACK)
             .withCompareMode(AGCompareMode.ALWAYS)
             .withAction(AGStencilOp.KEEP, AGStencilOp.KEEP, AGStencilOp.KEEP)
+        val DISABLED = DEFAULT
     }
 
     val enabled: Boolean get() = data.extractBool(0)
-    val triangleFace: AGTriangleFace get() = AGTriangleFace(data.extract2(4))
+    //val triangleFace: AGTriangleFace get() = AGTriangleFace(data.extract2(4))
     val compareMode: AGCompareMode get() = AGCompareMode(data.extract3(8))
     val actionOnBothPass: AGStencilOp get() = AGStencilOp(data.extract3(12))
     val actionOnDepthFail: AGStencilOp get() = AGStencilOp(data.extract3(16))
     val actionOnDepthPassStencilFail: AGStencilOp get() = AGStencilOp(data.extract3(20))
 
     fun withEnabled(enabled: Boolean): AGStencilOpFuncState = AGStencilOpFuncState(data.insert(enabled, 0))
-    fun withTriangleFace(triangleFace: AGTriangleFace): AGStencilOpFuncState = AGStencilOpFuncState(data.insert2(triangleFace.ordinal, 4))
+    //fun withTriangleFace(triangleFace: AGTriangleFace): AGStencilOpFuncState = AGStencilOpFuncState(data.insert2(triangleFace.ordinal, 4))
     fun withCompareMode(compareMode: AGCompareMode): AGStencilOpFuncState = AGStencilOpFuncState(data.insert3(compareMode.ordinal, 8))
     fun withActionOnBothPass(actionOnBothPass: AGStencilOp): AGStencilOpFuncState = AGStencilOpFuncState(data.insert3(actionOnBothPass.ordinal, 12))
     fun withActionOnDepthFail(actionOnDepthFail: AGStencilOp): AGStencilOpFuncState = AGStencilOpFuncState(data.insert3(actionOnDepthFail.ordinal, 16))
@@ -526,7 +527,7 @@ inline class AGStencilOpFuncState(val data: Int) {
 
 //open val supportInstancedDrawing: Boolean get() = false
 
-inline class AGFullState(val data: IntArray = IntArray(8)) {
+inline class AGFullState(val data: IntArray = IntArray(9)) {
     var blending: AGBlending ; get() = AGBlending(data[0]) ; set(value) { data[0] = value.data }
     var stencilOpFunc: AGStencilOpFuncState ; get() = AGStencilOpFuncState(data[1]) ; set(value) { data[1] = value.data }
     var stencilRef: AGStencilReferenceState ; get() = AGStencilReferenceState(data[2]) ; set(value) { data[2] = value.data }
@@ -535,6 +536,7 @@ inline class AGFullState(val data: IntArray = IntArray(8)) {
     var scissorWH: AGRectWH ; get() = AGRectWH(data[5]) ; set(value) { data[5] = value.data }
     var viewportXY: AGRectXY ; get() = AGRectXY(data[6]) ; set(value) { data[6] = value.data }
     var viewportWH: AGRectWH ; get() = AGRectWH(data[7]) ; set(value) { data[7] = value.data }
+    var render: AGRenderState ; get() = AGRenderState(data[8]) ; set(value) { data[8] = value.data }
     var scissor: AGRect
         get() = AGRect(scissorXY.data, scissorWH.data)
         set(value) {

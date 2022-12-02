@@ -188,3 +188,7 @@ interface IKmlGl {
     }
 }
 
+inline fun IKmlGl.enableDisable(cap: Int, enable: Boolean, block: () -> Unit) {
+    enableDisable(cap, enable)
+    if (enable) block()
+}
