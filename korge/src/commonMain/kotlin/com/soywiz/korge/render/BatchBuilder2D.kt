@@ -947,7 +947,7 @@ class BatchBuilder2D constructor(
         batches.add(BatchBatch(
             program = currentProgram ?: PROGRAM,
             blending = currentBlendMode.factors(ag.isRenderingToTexture),
-            uniforms = uniforms.clone(),
+            uniforms = uniforms.cloneReadOnly(),
             stencilOpFunc = stencilOpFunc,
             stencilRef = stencilRef,
             colorMask = colorMask,

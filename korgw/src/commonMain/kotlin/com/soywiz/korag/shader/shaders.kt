@@ -186,6 +186,7 @@ enum class Precision { DEFAULT, LOW, MEDIUM, HIGH }
 
 sealed class Variable(val name: String, type: VarType, val arrayCount: Int, val precision: Precision = Precision.DEFAULT) : Operand(type) {
     constructor(name: String, type: VarType, precision: Precision = Precision.DEFAULT) : this(name, type, 1, precision)
+    val totalElementCount: Int = type.elementCount * arrayCount
     val indexNames = Array(arrayCount) { "$name[$it]" }
     var id: Int = 0
 	var data: Any? = null

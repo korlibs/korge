@@ -1,10 +1,6 @@
 package com.soywiz.korag
 
-import com.soywiz.kds.Extra
-import com.soywiz.kds.FastArrayList
-import com.soywiz.kds.FloatArray2
-import com.soywiz.kds.Pool
-import com.soywiz.kds.fastCastTo
+import com.soywiz.kds.*
 import com.soywiz.klogger.Console
 import com.soywiz.kmem.*
 import com.soywiz.kmem.unit.ByteUnits
@@ -641,6 +637,42 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
         out.programCount = this.programCount
         return out
     }
+}
+
+data class AGMacroBatch(
+    val vertexData: AGVertexArrayObject,
+    val indexData: AGBuffer,
+    val batches: FastArrayList<AGMiniBatch>
+)
+
+data class AGMiniBatch(
+    var program: Program,
+    val uniforms: AGUniformValues,
+    val state: AGFullState,
+    val commands: AGDrawCommandArray = AGDrawCommandArray.EMPTY,
+)
+
+inline class AGDrawCommandArray(val data: IntArray) {
+    companion object {
+        val EMPTY = AGDrawCommandArray(intArrayOf())
+    }
+    val size: Int get() = data.size / 3
+
+    private fun v0(n: Int) = data[n * 3 + 0]
+    private fun v1(n: Int) = data[n * 3 + 1]
+    private fun v2(n: Int) = data[n * 3 + 2]
+
+    inline fun fastForEach(block: (drawType: AGDrawType, indexType: AGIndexType, count: Int, offset: Int, instances: Int) -> Unit) {
+        for (n in 0 until size) {
+            block(getDrawType(n), getIndexType(n), getCount(n), getOffset(n), getInstances(n))
+        }
+    }
+
+    fun getDrawType(n: Int): AGDrawType = AGDrawType(v0(n).extract3(0))
+    fun getIndexType(n: Int): AGIndexType = AGIndexType(v0(n).extract2(3))
+    fun getCount(n: Int): Int = v0(n).extract24(8)
+    fun getInstances(n: Int): Int = v1(n)
+    fun getOffset(n: Int): Int = v2(n)
 }
 
 fun AGUniformValues.useExternalSampler(): Boolean {

@@ -9,30 +9,24 @@ import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 import kotlin.math.*
 
-class AGUniformValue(val uniform: Uniform) : AGValue(uniform) {
+class AGUniformValue constructor(val uniform: Uniform, data: Buffer, nativeValue: Any?) : AGValue(uniform, data, nativeValue) {
     override fun equals(other: Any?): Boolean = other is AGUniformValue && this.uniform == uniform && this.data == other.data && this.nativeValue == other.nativeValue
     override fun hashCode(): Int = uniform.hashCode() + super.hashCode()
-
-    override fun clone(): AGUniformValue = AGUniformValue(uniform).also {
-        arraycopy(this.data, 0, it.data, 0, this.data.size)
-        it.nativeValue = this.nativeValue
-    }
 }
 
+class AGUniformValues(val capacity: Int = 4 * 1024) {
+    private val data = Buffer.allocDirect(capacity)
+    private var allocOffset = 0
 
-class AGUniformValues {
     @PublishedApi internal val values = FastArrayList<AGUniformValue>()
 
     inline fun fastForEach(block: (AGUniformValue) -> Unit) {
         values.fastForEach(block)
     }
 
-    fun remove(uniform: Uniform) {
-        values.removeAll { it.uniform == uniform }
-    }
-
     fun clear() {
         values.clear()
+        allocOffset = 0
     }
 
     fun put(other: AGUniformValues?) {
@@ -50,14 +44,27 @@ class AGUniformValues {
         copyFrom(other)
     }
 
-    fun clone(): AGUniformValues = AGUniformValues().also { it.copyFrom(this) }
+    fun cloneReadOnly(): AGUniformValues {
+        //return AGUniformValues().copyFrom(this)
+        val out = AGUniformValues(allocOffset)
+        arraycopy(this.data, 0, out.data, 0, allocOffset)
+        values.fastForEach { value ->
+            out.values.add(AGUniformValue(value.uniform, out.data.sliceWithSize(value.data.byteOffset, value.data.sizeInBytes), value.nativeValue))
+        }
+        return out
+    }
 
     operator fun get(uniform: Uniform): AGUniformValue {
         for (n in 0 until values.size) {
             val value = values[n]
             if (value.uniform == uniform) return value
         }
-        return AGUniformValue(uniform).also { values.add(it) }
+        val dataSize = uniform.totalElementCount * 4
+        if (allocOffset + dataSize >= this.data.size) error("this=$this : uniform=$uniform, allocOffset=$allocOffset, dataSize=$dataSize")
+        val out = AGUniformValue(uniform, data.sliceWithSize(allocOffset, dataSize), null)
+        values.add(out)
+        allocOffset += dataSize
+        return out
     }
 
     operator fun set(uniform: Uniform, value: Unit) { this[uniform].set(value) }
@@ -88,16 +95,13 @@ class AGUniformValues {
     }
 }
 
-open class AGValue(val type: VarType, val arrayCount: Int, val data: Buffer = Buffer(type.elementCount * arrayCount * 4)) {
-    constructor(variable: Variable) : this(variable.type, variable.arrayCount)
+open class AGValue(val type: VarType, val arrayCount: Int, val data: Buffer, var nativeValue: Any?) {
+    constructor(variable: Variable, data: Buffer, nativeValue: Any?) : this(variable.type, variable.arrayCount, data, nativeValue)
 
-    var nativeValue: Any? = null
     val kind: VarKind = type.kind
     val stride: Int = type.elementCount
     val totalElements: Int = stride * arrayCount
     val totalBytes: Int = type.bytesSize * arrayCount
-
-    open fun clone(): AGValue = AGValue(type, arrayCount, data.clone())
 
     //val data: Buffer = Buffer(type.bytesSize * arrayCount * 4)
     val i32: Int32Buffer = data.i32

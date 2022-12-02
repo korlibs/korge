@@ -27,8 +27,8 @@ suspend fun main() = Korge(
     //forceRenderEveryFrame = true
     //debugAg = true,
 ) {
-    //if (true) {
-    if (false) {
+    if (true) {
+    //if (false) {
         views.forceRenderEveryFrame = true
         //val side = 10
         //val side = 20
