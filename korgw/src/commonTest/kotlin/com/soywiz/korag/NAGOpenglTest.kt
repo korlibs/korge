@@ -2,6 +2,8 @@ package com.soywiz.korag
 
 import com.soywiz.kgl.*
 import com.soywiz.korag.shader.*
+import com.soywiz.korgw.*
+import kotlin.jvm.*
 import kotlin.test.*
 
 class NAGOpenglTest {

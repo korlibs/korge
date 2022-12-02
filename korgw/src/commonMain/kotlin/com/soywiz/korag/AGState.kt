@@ -534,8 +534,8 @@ inline class AGFullState(val data: IntArray = IntArray(9)) {
     var colorMask: AGColorMaskState ; get() = AGColorMaskState(data[3]) ; set(value) { data[3] = value.data }
     var scissorXY: AGRectXY ; get() = AGRectXY(data[4]) ; set(value) { data[4] = value.data }
     var scissorWH: AGRectWH ; get() = AGRectWH(data[5]) ; set(value) { data[5] = value.data }
-    var viewportXY: AGRectXY ; get() = AGRectXY(data[6]) ; set(value) { data[6] = value.data }
-    var viewportWH: AGRectWH ; get() = AGRectWH(data[7]) ; set(value) { data[7] = value.data }
+    //var viewportXY: AGRectXY ; get() = AGRectXY(data[6]) ; set(value) { data[6] = value.data }
+    //var viewportWH: AGRectWH ; get() = AGRectWH(data[7]) ; set(value) { data[7] = value.data }
     var render: AGRenderState ; get() = AGRenderState(data[8]) ; set(value) { data[8] = value.data }
     var scissor: AGRect
         get() = AGRect(scissorXY.data, scissorWH.data)
@@ -543,12 +543,12 @@ inline class AGFullState(val data: IntArray = IntArray(9)) {
             scissorXY = AGRectXY(value.xy)
             scissorWH = AGRectWH(value.wh)
         }
-    var viewport: AGRect
-        get() = AGRect(viewportXY.data, viewportWH.data)
-        set(value) {
-            viewportXY = AGRectXY(value.xy)
-            viewportWH = AGRectWH(value.wh)
-        }
+    //var viewport: AGRect
+    //    get() = AGRect(viewportXY.data, viewportWH.data)
+    //    set(value) {
+    //        viewportXY = AGRectXY(value.xy)
+    //        viewportWH = AGRectWH(value.wh)
+    //    }
 }
 
 inline class AGRectXY(val data: Int) {
@@ -1062,6 +1062,7 @@ class AGTextureDrawer(val ag: AG) {
 }
 
 open class AGBuffer constructor(val ag: AG, val list: AGList) {
+    val nag = NAGBuffer()
     var dirty = false
     internal var mem: com.soywiz.kmem.Buffer? = null
     internal var memOffset: Int = 0
@@ -1118,6 +1119,7 @@ open class AGBuffer constructor(val ag: AG, val list: AGList) {
     }
 
     private fun _upload(data: com.soywiz.kmem.Buffer, offset: Int = 0, length: Int = data.size): AGBuffer {
+        nag.upload(data.slice(offset, length))
         mem = data
         memOffset = offset
         memLength = length

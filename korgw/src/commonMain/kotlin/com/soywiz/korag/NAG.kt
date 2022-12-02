@@ -12,9 +12,14 @@ import com.soywiz.korio.async.*
  */
 abstract class NAG {
     @PublishedApi internal var contextVersion: Int = 0
-    open val frameBufferWidth: Int = 0
-    open val frameBufferHeight: Int = 0
-    open val devicePixelRatio: Double = 1.0
+    var frameBufferWidth: Int = 0
+    var frameBufferHeight: Int = 0
+    var devicePixelRatio: Double = 1.0
+
+    fun resized(x: Int, y: Int, width: Int, height: Int, fullWidth: Int = width, fullHeight: Int = height) {
+        frameBufferWidth = width
+        frameBufferHeight = height
+    }
 
     open fun contextLost() {
         contextVersion++
@@ -22,7 +27,10 @@ abstract class NAG {
 
     abstract fun execute(command: NAGCommand)
 
-    fun clear(renderBuffer: NAGFrameBuffer, color: RGBA? = null, depth: Float? = null, stencil: Int? = null) {
+    fun startFrame() {
+    }
+
+    fun clear(renderBuffer: NAGFrameBuffer?, color: RGBA? = null, depth: Float? = null, stencil: Int? = null) {
         execute(NAGCommandFullBatch(NAGBatch(batches = listOf(NAGUniformBatch(
             renderBuffer = renderBuffer,
             clear = ClearState(color, depth, stencil)
@@ -182,10 +190,10 @@ data class ClearState(
 )
 
 sealed interface NAGCommandTransfer : NAGCommand {
-    val renderBuffer: NAGFrameBuffer
+    val frameBuffer: NAGFrameBuffer
     val completed: Signal<Unit>?
-    class CopyToTexture(override val renderBuffer: NAGFrameBuffer, val texture: NAGTexture, val x: Int, val y: Int, val width: Int, val height: Int, override val completed: Signal<Unit>? = null) : NAGCommandTransfer
-    class ReadBits(override val renderBuffer: NAGFrameBuffer, val readKind: AGReadKind, val x: Int, val y: Int, val width: Int, val height: Int, val target: Any?, override val completed: Signal<Unit>? = null) : NAGCommandTransfer
+    class CopyToTexture(override val frameBuffer: NAGFrameBuffer, val texture: NAGTexture, val x: Int, val y: Int, val width: Int, val height: Int, override val completed: Signal<Unit>? = null) : NAGCommandTransfer
+    class ReadBits(override val frameBuffer: NAGFrameBuffer, val readKind: AGReadKind, val x: Int, val y: Int, val width: Int, val height: Int, val target: Any?, override val completed: Signal<Unit>? = null) : NAGCommandTransfer
 }
 
 inline class NAGDrawCommandArrayWriter(private val data: IntArrayList = IntArrayList()) {

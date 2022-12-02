@@ -74,11 +74,11 @@ class Views constructor(
 
     private val INCH_TO_CM = 2.54
 
-    val devicePixelRatio: Double get() = ag.devicePixelRatio
+    val devicePixelRatio: Double get() = renderContext.devicePixelRatio
     /** Approximate on iOS */
-    val pixelsPerInch: Double get() = ag.pixelsPerInch
+    val pixelsPerInch: Double get() = renderContext.pixelsPerInch
     /** Approximate on iOS */
-    val pixelsPerCm: Double get() = ag.pixelsPerInch / INCH_TO_CM
+    val pixelsPerCm: Double get() = renderContext.pixelsPerInch / INCH_TO_CM
     val virtualPixelsPerInch: Double get() = pixelsPerInch / globalToWindowScaleAvg
     val virtualPixelsPerCm: Double get() = virtualPixelsPerInch / INCH_TO_CM
 
@@ -97,8 +97,7 @@ class Views constructor(
         }
     }
 
-    lateinit var debugBmpFont: BitmapFont
-        private set
+    lateinit var debugBmpFont: BitmapFont ; private set
 
     suspend fun init() {
         debugBmpFont = debugBmpFont()
@@ -108,6 +107,7 @@ class Views constructor(
     var currentVfs: VfsFile = resourcesVfs
     var imageFormats = RegisteredImageFormats
 	val renderContext = RenderContext(ag, nag, this, stats, coroutineContext, batchMaxQuads)
+    val useNag: Boolean get() = renderContext.useNag
 	@KorgeDeprecated val agBitmapTextureManager get() = renderContext.agBitmapTextureManager
     @KorgeDeprecated val agBufferManager get() = renderContext.agBufferManager
 	var clearEachFrame = true
@@ -122,11 +122,9 @@ class Views constructor(
     var editingMode: Boolean = false
 
     /** Native width in pixels (in retina displays this will be twice the window width). Use [virtualWidth] instead */
-    @KorgeInternal
-	val nativeWidth get() = ag.mainRenderBuffer.width
+    @KorgeInternal val nativeWidth get() = renderContext.nativeWidth
     /** Native height in pixels (in retina displays this will be twice the window height). Use [virtualHeight] instead */
-    @KorgeInternal
-	val nativeHeight get() = ag.mainRenderBuffer.height
+    @KorgeInternal val nativeHeight get() = renderContext.nativeHeight
 
     // Later updated
     /** The defined virtual width */
@@ -134,12 +132,8 @@ class Views constructor(
     /** The defined virtual height */
 	var virtualHeight: Int = DefaultViewport.HEIGHT; internal set
 
-    var virtualWidthDouble: Double
-        get() = virtualWidth.toDouble()
-        set(value) { virtualWidth = value.toInt() }
-    var virtualHeightDouble: Double
-        get() = virtualHeight.toDouble()
-        set(value) { virtualHeight = value.toInt() }
+    var virtualWidthDouble: Double ; get() = virtualWidth.toDouble() ; set(value) { virtualWidth = value.toInt() }
+    var virtualHeightDouble: Double ; get() = virtualHeight.toDouble() ; set(value) { virtualHeight = value.toInt() }
 
 	private val closeables = arrayListOf<AsyncCloseable>()
 
@@ -228,10 +222,8 @@ class Views constructor(
 	private val actualSize = SizeInt()
 	private val targetSize = SizeInt()
 
-    @KorgeInternal
-    val actualWidth get() = actualSize.width
-    @KorgeInternal
-    val actualHeight get() = actualSize.height
+    @KorgeInternal val actualWidth get() = actualSize.width
+    @KorgeInternal val actualHeight get() = actualSize.height
 
     val onBeforeRender = Signal<RenderContext>()
     val onAfterRender = Signal<RenderContext>()
@@ -314,8 +306,18 @@ class Views constructor(
 	}
 
 	fun render() {
-        ag.startFrame()
-		if (clearEachFrame) ag.clear(clearColor, stencil = 0, depth = 1f, clearColor = true, clearStencil = true, clearDepth = true)
+        if (useNag) {
+            nag.startFrame()
+        } else {
+            ag.startFrame()
+        }
+		if (clearEachFrame) {
+            if (useNag) {
+                nag.clear(null, color = clearColor, depth = 1f, stencil = 0)
+            } else {
+                ag.clear(clearColor, stencil = 0, depth = 1f, clearColor = true, clearStencil = true, clearDepth = true)
+            }
+        }
         onBeforeRender(renderContext)
         renderContext.flush()
 		stage.render(renderContext)
@@ -324,12 +326,10 @@ class Views constructor(
 
 		if (debugViews) {
             //renderContext.setTemporalProjectionMatrixTransform(Matrix()) {
-            run {
-                debugHandlers.fastForEach { debugHandler ->
-                    this.debugHandler(renderContext)
-                }
+            debugHandlers.fastForEach { debugHandler ->
+                this.debugHandler(renderContext)
             }
-		}
+        }
 
         onAfterRender(renderContext)
         renderContext.flush()

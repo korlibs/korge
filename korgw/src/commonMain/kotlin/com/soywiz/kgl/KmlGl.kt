@@ -6,6 +6,7 @@ package com.soywiz.kgl
 
 import com.soywiz.kds.*
 import com.soywiz.korag.*
+import com.soywiz.korio.lang.*
 import com.soywiz.korio.util.*
 
 abstract class KmlGl : Extra by Extra.Mixin(), IKmlGl, AGFeatures {

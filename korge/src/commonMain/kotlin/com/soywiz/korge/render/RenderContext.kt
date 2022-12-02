@@ -42,6 +42,9 @@ class RenderContext constructor(
 	val coroutineContext: CoroutineContext = EmptyCoroutineContext,
     val batchMaxQuads: Int = BatchBuilder2D.DEFAULT_BATCH_QUADS
 ) : Extra by Extra.Mixin(), BoundsProvider by bp, AGFeatures by ag, Closeable {
+    //val useNag = true
+    val useNag = false
+
     val projectionMatrixTransform = Matrix()
     val projectionMatrixTransformInv = Matrix()
     private val projMat: Matrix3D = Matrix3D()
@@ -61,13 +64,26 @@ class RenderContext constructor(
     private val tempRect = Rectangle()
     private val tempMat3d = Matrix3D()
 
+    var currentFrameBuffer: NAGFrameBuffer? = null
+    val isRenderingToTexture: Boolean get() = currentFrameBuffer != null
+    val currentWidth: Int get() = nag.frameBufferWidth
+    val currentHeight: Int get() = nag.frameBufferHeight
+    val devicePixelRatio: Double get() = ag.devicePixelRatio
+    val pixelsPerInch: Double get() = ag.pixelsPerInch
+    val computedPixelRatio: Double get() = ag.devicePixelRatio
+    val nativeWidth: Int get() = ag.mainRenderBuffer.width
+    val nativeHeight: Int get() = ag.mainRenderBuffer.height
+    var debugExtraFontScale : Double = 1.0
+    var debugExtraFontColor : RGBA = Colors.WHITE
+    val debugOverlayScale: Double get() = kotlin.math.round(computedPixelRatio * debugExtraFontScale).coerceAtLeast(1.0)
+
     @OptIn(KorgeInternal::class)
     fun updateStandardUniforms() {
         //println("updateStandardUniforms: ag.currentSize(${ag.currentWidth}, ${ag.currentHeight}) : ${ag.currentRenderBuffer}")
-        if (flipRenderTexture && ag.renderingToTexture) {
-            projMat.setToOrtho(tempRect.setBounds(0, ag.currentHeight, ag.currentWidth, 0), -1f, 1f)
+        if (flipRenderTexture && isRenderingToTexture) {
+            projMat.setToOrtho(tempRect.setBounds(0, currentHeight, currentWidth, 0), -1f, 1f)
         } else {
-            projMat.setToOrtho(tempRect.setBounds(0, 0, ag.currentWidth, ag.currentHeight), -1f, 1f)
+            projMat.setToOrtho(tempRect.setBounds(0, 0, currentWidth, currentHeight), -1f, 1f)
             projMat.multiply(projMat, projectionMatrixTransform.toMatrix3D(tempMat3d))
         }
         uniforms[DefaultShaders.u_ProjMat] = projMat
@@ -151,10 +167,6 @@ class RenderContext constructor(
             field = value
             views?.invalidatedView(field)
         }
-    var debugExtraFontScale : Double = 1.0
-    var debugExtraFontColor : RGBA = Colors.WHITE
-
-    val debugOverlayScale: Double get() = kotlin.math.round(ag.computedPixelRatio * debugExtraFontScale).coerceAtLeast(1.0)
 
     var stencilIndex: Int = 0
 

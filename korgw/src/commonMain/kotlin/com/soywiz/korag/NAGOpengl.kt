@@ -23,13 +23,14 @@ open class NAGOpengl(val gl: KmlGl) : NAG() {
 
     private fun execute(command: NAGCommandTransfer.CopyToTexture) {
         val target = AGTextureTargetKind.TEXTURE_2D
-        bindFrameBuffer(command.renderBuffer)
+        bindFrameBuffer(command.frameBuffer)
         bindTexture(command.texture, target)
         gl.copyTexImage2D(target.toGl(), 0, KmlGl.RGBA, command.x, command.y, command.width, command.height, 0)
     }
 
     private fun execute(command: NAGCommandTransfer.ReadBits) {
-        bindFrameBuffer(command.renderBuffer)
+        bindFrameBuffer(command.frameBuffer)
+
         val target = command.target
         val data = when (target) {
             is Bitmap32 -> target.ints
@@ -120,7 +121,6 @@ open class NAGOpengl(val gl: KmlGl) : NAG() {
         val glProgram = program.info
         val currentUniforms = program.uniforms
         uniforms.fastForEach { value ->
-            var textureUnit: Int = -1
             val uniform = value.uniform
             val uniformType = uniform.type
             val uniformName = uniform.name
@@ -186,13 +186,13 @@ open class NAGOpengl(val gl: KmlGl) : NAG() {
             }
         }
 
-        val viewportXY = state.viewportXY
-        val viewportWH = state.viewportWH
-        if (currentState.viewportXY != viewportXY || currentState.viewportWH != viewportWH) {
-            currentState.viewportXY = viewportXY
-            currentState.viewportWH = viewportWH
-            gl.viewport(viewportXY.x, viewportXY.y, viewportWH.width, viewportWH.height)
-        }
+        //val viewportXY = state.viewportXY
+        //val viewportWH = state.viewportWH
+        //if (currentState.viewportXY != viewportXY || currentState.viewportWH != viewportWH) {
+        //    currentState.viewportXY = viewportXY
+        //    currentState.viewportWH = viewportWH
+        //    gl.viewport(viewportXY.x, viewportXY.y, viewportWH.width, viewportWH.height)
+        //}
 
         val stencilOpFunc = state.stencilOpFunc
         val stencilRef = state.stencilRef
@@ -350,12 +350,14 @@ open class NAGOpengl(val gl: KmlGl) : NAG() {
     private fun bindFrameBuffer(fb: NAGFrameBuffer?) {
         if (fb == null) {
             gl.bindFramebuffer(KmlGl.FRAMEBUFFER, 0)
+            //gl.viewport(viewportXY.x, viewportXY.y, viewportWH.width, viewportWH.height)
             return
         }
 
         val nfb = fb.gl
         fb.updateObject { nfb.setSize(fb.width, fb.height) }
         nfb.bind()
+        //gl.viewport(viewportXY.x, viewportXY.y, viewportWH.width, viewportWH.height)
     }
 
     private abstract inner class GLObject : NAGNativeObject {
