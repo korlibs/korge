@@ -73,7 +73,7 @@ open class NAGOpengl(val gl: KmlGl) : NAG() {
     }
 
     private fun execute(batch: NAGBatch) {
-        bindVertexData(batch.vertexData, bind = true)
+        batch.vertexData?.let { bindVertexData(it, bind = true) }
         try {
             if (batch.indexData != null) {
                 bindBuffer(AGBufferKind.INDEX, batch.indexData)
@@ -82,7 +82,7 @@ open class NAGOpengl(val gl: KmlGl) : NAG() {
                 execute(it)
             }
         } finally {
-            bindVertexData(batch.vertexData, bind = false)
+            batch.vertexData?.let { bindVertexData(it, bind = false) }
         }
     }
 
@@ -97,9 +97,9 @@ open class NAGOpengl(val gl: KmlGl) : NAG() {
             it.stencil?.let { gl.clearStencil(it); value = value or KmlGl.STENCIL_BUFFER_BIT }
             gl.clear(value)
         }
-        useProgram(batch.program)
-        execute(batch.state)
-        execute(batch.uniforms)
+        batch.program?.let { useProgram(it) }
+        batch.state?.let { execute(it) }
+        batch.uniforms?.let { execute(it) }
         batch.drawCommands.fastForEach { drawType, indexType, offset, count, instances ->
             if (instances > 1) {
                 when (indexType) {

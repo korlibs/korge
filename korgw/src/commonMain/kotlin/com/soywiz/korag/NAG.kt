@@ -22,6 +22,13 @@ abstract class NAG {
 
     abstract fun execute(command: NAGCommand)
 
+    fun clear(renderBuffer: NAGFrameBuffer, color: RGBA? = null, depth: Float? = null, stencil: Int? = null) {
+        execute(NAGCommandFullBatch(NAGBatch(batches = listOf(NAGUniformBatch(
+            renderBuffer = renderBuffer,
+            clear = ClearState(color, depth, stencil)
+        )))))
+    }
+
     fun draw(batches: List<NAGBatch>) = execute(NAGCommandFullBatch(batches))
     fun draw(vararg batches: NAGBatch) = draw(batches.toList())
 
@@ -149,19 +156,21 @@ class NAGCommandFinish(
 
 data class NAGCommandFullBatch(
     val batches: List<NAGBatch>,
-) : NAGCommand
+) : NAGCommand {
+    constructor(vararg batches: NAGBatch) : this(batches.toList())
+}
 
 data class NAGBatch(
-    val vertexData: NAGVertices,
+    val vertexData: NAGVertices? = null,
     val indexData: NAGBuffer? = null,
     val batches: List<NAGUniformBatch> = emptyList(),
 )
 
 data class NAGUniformBatch(
     val renderBuffer: NAGFrameBuffer?,
-    val program: Program,
-    val uniforms: AGUniformValues,
-    val state: AGFullState,
+    val program: Program? = null,
+    val uniforms: AGUniformValues? = null,
+    val state: AGFullState? = null,
     val drawCommands: NAGDrawCommandArray = NAGDrawCommandArray.EMPTY,
     var clear: ClearState? = null,
 )
