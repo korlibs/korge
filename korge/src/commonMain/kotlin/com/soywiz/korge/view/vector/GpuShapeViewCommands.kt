@@ -6,7 +6,7 @@ import com.soywiz.kds.floatArrayListOf
 import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.kmem.toInt
 import com.soywiz.korag.*
-import com.soywiz.korag.shader.Program
+import com.soywiz.korag.shader.*
 import com.soywiz.korge.internal.KorgeInternal
 import com.soywiz.korge.render.AgCachedBuffer
 import com.soywiz.korge.render.BatchBuilder2D
@@ -230,15 +230,13 @@ class GpuShapeViewCommands {
         texturesToDelete.clear()
     }
 
-    private fun resolve(ctx: RenderContext, uniforms: AGUniformValues, texUniforms: AGUniformValues) {
+    private fun resolve(ctx: RenderContext, uniforms: AGUniformValues, texUniforms: Map<Uniform, Bitmap>) {
         var uniformIndex = 5
-        texUniforms.fastForEach { uniform, value ->
-            if (value is Bitmap) {
-                val tex = ctx.ag.tempTexturePool.alloc()
-                tex.upload(value)
-                uniforms[uniform] = AGTextureUnit(uniformIndex++, tex)
-                texturesToDelete.add(tex)
-            }
+        texUniforms.forEach { (uniform, value) ->
+            val tex = ctx.ag.tempTexturePool.alloc()
+            tex.upload(value)
+            uniforms[uniform] = AGTextureUnit(uniformIndex++, tex)
+            texturesToDelete.add(tex)
         }
     }
 

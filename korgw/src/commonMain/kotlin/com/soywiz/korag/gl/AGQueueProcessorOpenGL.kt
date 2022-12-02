@@ -466,7 +466,7 @@ class AGQueueProcessorOpenGL(
 
         //for ((uniform, value) in uniforms) {
 
-        uniforms.forEachUniform { uniform, value, valueData, valueIndex ->
+        uniforms.forEachUniform { uniform, value, agValue, valueData, valueIndex ->
             val uniformName = uniform.name
             val uniformType = uniform.type
             val location = glProgram.getUniformLocation(gl, uniformName)
@@ -519,30 +519,10 @@ class AGQueueProcessorOpenGL(
             glProgram.cache[uniform] = value.clone()
 
             //println("uniform: $uniform, arrayCount=$arrayCount, stride=$stride")
+            arraycopy(agValue.data, 0, tempBuffer, 0, agValue.data.size)
 
             when (uniformType) {
-                VarType.Sampler2D, VarType.SamplerCube -> {
-                    gl.uniform1i(location, textureUnit)
-                    //val texBinding = gl.getIntegerv(gl.TEXTURE_BINDING_2D)
-                    //println("OpenglAG.draw: textureUnit=$textureUnit, textureBinding=$texBinding, instances=$instances, vertexCount=$vertexCount")
-                }
                 VarType.Mat2, VarType.Mat3, VarType.Mat4 -> {
-                    val matArray: Array<Matrix3D> = when (value) {
-                        is Array<*> -> value
-                        is Matrix3D -> mat3dArray.also { it[0].copyFrom(value) }
-                        else -> error("Not an array or a matrix3d")
-                    }.fastCastTo<Array<Matrix3D>>()
-                    val arrayCount = min(declArrayCount, matArray.size)
-
-                    val matSize = when (uniformType) {
-                        VarType.Mat2 -> 2; VarType.Mat3 -> 3; VarType.Mat4 -> 4; else -> -1
-                    }
-
-                    for (n in 0 until arrayCount) {
-                        matArray[n].copyToFloatWxH(tempFloats, matSize, matSize, MajorOrder.COLUMN, n * stride)
-                    }
-                    tempBuffer.setArrayFloat32(0, tempFloats, 0, stride * arrayCount)
-
                     if (gl.webgl) {
                         //if (true) {
                         val tb = when (uniformType) {
@@ -552,8 +532,8 @@ class AGQueueProcessorOpenGL(
                             else -> tempBufferM4
                         }
 
-                        for (n in 0 until arrayCount) {
-                            val itLocation = when (arrayCount) {
+                        for (n in 0 until declArrayCount) {
+                            val itLocation = when (declArrayCount) {
                                 1 -> location
                                 else -> gl.getUniformLocation(glProgram.programId, uniform.indexNames[n])
                             }
@@ -569,114 +549,73 @@ class AGQueueProcessorOpenGL(
                     } else {
                         //println("[NO-WEBGL] uniformName[$uniformName]=$location ")
                         when (uniform.type) {
-                            VarType.Mat2 -> gl.uniformMatrix2fv(location, arrayCount, false, tempBuffer)
-                            VarType.Mat3 -> gl.uniformMatrix3fv(location, arrayCount, false, tempBuffer)
-                            VarType.Mat4 -> gl.uniformMatrix4fv(location, arrayCount, false, tempBuffer)
+                            VarType.Mat2 -> gl.uniformMatrix2fv(location, declArrayCount, false, tempBuffer)
+                            VarType.Mat3 -> gl.uniformMatrix3fv(location, declArrayCount, false, tempBuffer)
+                            VarType.Mat4 -> gl.uniformMatrix4fv(location, declArrayCount, false, tempBuffer)
                             else -> invalidOp("Don't know how to set uniform matrix ${uniform.type}")
                         }
                     }
                 }
-                VarType.Bool1, VarType.Bool2, VarType.Bool3, VarType.Bool4 -> {
-                    when (value) {
-                        is Boolean -> gl.uniform1i(location, value.toInt())
-                        is BooleanArray -> {
-                            when (uniformType.elementCount) {
-                                1 -> gl.uniform1i(location, value[0].toInt())
-                                2 -> gl.uniform2i(location, value[0].toInt(), value[1].toInt())
-                                3 -> gl.uniform3i(location, value[0].toInt(), value[1].toInt(), value[2].toInt())
-                                4 -> gl.uniform4i(location, value[0].toInt(), value[1].toInt(), value[2].toInt(), value[3].toInt())
+                VarType.Bool1, VarType.Bool2, VarType.Bool3, VarType.Bool4,
+                VarType.Int1, VarType.Int2, VarType.Int3, VarType.Int4,
+                VarType.UByte1, VarType.UByte2, VarType.UByte3, VarType.UByte4,
+                VarType.SByte1, VarType.SByte2, VarType.SByte3, VarType.SByte4,
+                VarType.Short1, VarType.Short2, VarType.Byte4, VarType.Byte4,
+                VarType.Sampler2D, VarType.SamplerCube,
+                -> {
+                    val i32 = agValue.i32
+                    when (uniformType.elementCount) {
+                        1 -> {
+                            when (uniform.arrayCount) {
+                                1 -> gl.uniform1i(location, i32[0])
+                                else -> gl.uniform1iv(location, uniform.arrayCount, agValue.data)
                             }
                         }
-                        else -> TODO()
+                        2 -> {
+                            when (uniform.arrayCount) {
+                                1 -> gl.uniform2i(location, i32[0], i32[1])
+                                else -> gl.uniform2iv(location, uniform.arrayCount, agValue.data)
+                            }
+                        }
+                        3 -> {
+                            when (uniform.arrayCount) {
+                                1 -> gl.uniform3i(location, i32[0], i32[1], i32[2])
+                                else -> gl.uniform3iv(location, uniform.arrayCount, agValue.data)
+                            }
+                        }
+                        4 -> {
+                            when (uniform.arrayCount) {
+                                1 -> gl.uniform4i(location, i32[0], i32[1], i32[2], i32[3])
+                                else -> gl.uniform4iv(location, uniform.arrayCount, agValue.data)
+                            }
+                        }
                     }
-
                 }
                 VarType.Float1, VarType.Float2, VarType.Float3, VarType.Float4 -> {
-                    var arrayCount = declArrayCount
-                    when (value) {
-                        is Boolean -> tempBuffer.setFloat32(0, value.toInt().toFloat())
-                        is Number -> tempBuffer.setFloat32(0, value.toFloat())
-                        is Vector3D -> tempBuffer.setArrayFloat32(0, value.data, 0, stride)
-                        is FloatArray -> {
-                            arrayCount = min(declArrayCount, value.size / stride)
-                            tempBuffer.setArrayFloat32(0, value, 0, stride * arrayCount)
-                        }
-                        is Point -> {
-                            tempBuffer.setFloat32(0, value.xf)
-                            tempBuffer.setFloat32(1, value.yf)
-                        }
-                        is RGBAf -> tempBuffer.setArrayFloat32(0, value.data, 0, stride)
-                        is Margin -> {
-                            if (stride >= 1) tempBuffer.setFloat32(0, value.top.toFloat())
-                            if (stride >= 2) tempBuffer.setFloat32(1, value.right.toFloat())
-                            if (stride >= 3) tempBuffer.setFloat32(2, value.bottom.toFloat())
-                            if (stride >= 4) tempBuffer.setFloat32(3, value.left.toFloat())
-                        }
-                        is RectCorners -> {
-                            if (stride >= 1) tempBuffer.setFloat32(0, value.topLeft.toFloat())
-                            if (stride >= 2) tempBuffer.setFloat32(1, value.topRight.toFloat())
-                            if (stride >= 3) tempBuffer.setFloat32(2, value.bottomRight.toFloat())
-                            if (stride >= 4) tempBuffer.setFloat32(3, value.bottomLeft.toFloat())
-                        }
-                        is RGBA -> {
-                            if (stride >= 1) tempBuffer.setFloat32(0, value.rf)
-                            if (stride >= 2) tempBuffer.setFloat32(1, value.gf)
-                            if (stride >= 3) tempBuffer.setFloat32(2, value.bf)
-                            if (stride >= 4) tempBuffer.setFloat32(3, value.af)
-                        }
-                        is RGBAPremultiplied -> {
-                            if (stride >= 1) tempBuffer.setFloat32(0, value.rf)
-                            if (stride >= 2) tempBuffer.setFloat32(1, value.gf)
-                            if (stride >= 3) tempBuffer.setFloat32(2, value.bf)
-                            if (stride >= 4) tempBuffer.setFloat32(3, value.af)
-                        }
-                        is Array<*> -> {
-                            arrayCount = min(declArrayCount, value.size)
-                            for (n in 0 until value.size) {
-                                val vector = value[n] as Vector3D
-                                tempBuffer.setArrayFloat32(n * stride, vector.data, 0, stride)
+                    val f32 = agValue.f32
+                    when (uniformType.elementCount) {
+                        1 -> {
+                            when (uniform.arrayCount) {
+                                1 -> gl.uniform1f(location, f32[0])
+                                else -> gl.uniform1fv(location, uniform.arrayCount, agValue.data)
                             }
                         }
-                        else -> error("Unknown type '$value'")
-                    }
-                    //if (true) {
-                    if (gl.webgl) {
-                        val tb = tempBufferM2
-                        for (n in 0 until arrayCount) {
-                            val itLocation = when (arrayCount) {
-                                1 -> location
-                                else -> gl.getUniformLocation(glProgram.programId, uniform.indexNames[n])
-                            }
-                            val f32 = tb.f32
-                            //println("uniformName[$uniformName] = $itLocation")
-                            arraycopy(tempBuffer.f32, 0, tb.f32, 0, stride)
-
-                            when (uniform.type) {
-                                VarType.Float1 -> gl.uniform1f(itLocation, f32[0])
-                                VarType.Float2 -> gl.uniform2f(itLocation, f32[0], f32[1])
-                                VarType.Float3 -> gl.uniform3f(itLocation, f32[0], f32[1], f32[2])
-                                VarType.Float4 -> gl.uniform4f(itLocation, f32[0], f32[1], f32[2], f32[3])
-                                else -> Unit
+                        2 -> {
+                            when (uniform.arrayCount) {
+                                1 -> gl.uniform2f(location, f32[0], f32[1])
+                                else -> gl.uniform2fv(location, uniform.arrayCount, agValue.data)
                             }
                         }
-                    } else {
-                        val tb = tempBuffer
-                        val f32 = tb.f32
-                        if (arrayCount == 1) {
-                            when (uniform.type) {
-                                VarType.Float1 -> gl.uniform1f(location, f32[0])
-                                VarType.Float2 -> gl.uniform2f(location, f32[0], f32[1])
-                                VarType.Float3 -> gl.uniform3f(location, f32[0], f32[1], f32[2])
-                                VarType.Float4 -> gl.uniform4f(location, f32[0], f32[1], f32[2], f32[3])
-                                else -> Unit
+                        3 -> {
+                            when (uniform.arrayCount) {
+                                1 -> gl.uniform3f(location, f32[0], f32[1], f32[2])
+                                else -> gl.uniform3fv(location, uniform.arrayCount, agValue.data)
                             }
-                        } else {
-                            when (uniform.type) {
-                                VarType.Float1 -> gl.uniform1fv(location, arrayCount, tempBuffer)
-                                VarType.Float2 -> gl.uniform2fv(location, arrayCount, tempBuffer)
-                                VarType.Float3 -> gl.uniform3fv(location, arrayCount, tempBuffer)
-                                VarType.Float4 -> gl.uniform4fv(location, arrayCount, tempBuffer)
-                                else -> Unit
+                        }
+                        4 -> {
+                            when (uniform.arrayCount) {
+                                1 -> gl.uniform4f(location, f32[0], f32[1], f32[2], f32[3])
+                                else -> gl.uniform4fv(location, uniform.arrayCount, agValue.data)
                             }
                         }
                     }

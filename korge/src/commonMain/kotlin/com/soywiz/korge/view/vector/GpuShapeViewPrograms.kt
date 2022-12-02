@@ -12,7 +12,7 @@ import com.soywiz.korag.shader.Varying
 import com.soywiz.korag.shader.VertexLayout
 import com.soywiz.korge.internal.KorgeInternal
 import com.soywiz.korge.render.BatchBuilder2D
-import com.soywiz.korim.bitmap.Bitmap32
+import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.RgbaPremultipliedArray
 import com.soywiz.korim.color.toVector3D
 import com.soywiz.korim.paint.BitmapPaint
@@ -159,7 +159,7 @@ object GpuShapeViewPrograms {
     ///////////////
     data class PaintShader(
         val uniforms: AGUniformValues = AGUniformValues(),
-        val texUniforms: AGUniformValues = AGUniformValues(),
+        val texUniforms: Map<Uniform, Bitmap> = emptyMap<Uniform, Bitmap>(),
         val program: Program = PROGRAM_COMBINED
     )
 
@@ -167,7 +167,7 @@ object GpuShapeViewPrograms {
         AGUniformValues {
             it[u_ProgramType] = PROGRAM_TYPE_STENCIL.toFloat()
         },
-        AGUniformValues(),
+        emptyMap(),
     )
 
     fun paintToShaderInfo(
@@ -185,7 +185,7 @@ object GpuShapeViewPrograms {
                 it[u_Color] = paint.toVector3D()
                 it[u_GlobalAlpha] = globalAlpha.toFloat()
                 //it[u_LineWidth] = lineWidth.toFloat()
-            }, AGUniformValues())
+            }, emptyMap())
 
         }
         is BitmapPaint -> {
@@ -209,9 +209,7 @@ object GpuShapeViewPrograms {
                     //it[u_LineWidth] = lineWidth.toFloat()
                     //}, GpuShapeView.PROGRAM_BITMAP)
                 },
-                AGUniformValues {
-                    it[DefaultShaders.u_Tex] = paint.bitmap
-                }
+                mapOf(DefaultShaders.u_Tex to paint.bitmap)
             )
         }
         is GradientPaint -> {
@@ -243,9 +241,8 @@ object GpuShapeViewPrograms {
                     it[u_Gradientp1] = Vector3D(paint.x1.toFloat(), paint.y1.toFloat(), paint.r1.toFloat())
                     it[u_GlobalAlpha] = globalAlpha.toFloat()
                     //u_LineWidth to lineWidth.toFloat(),
-                }, AGUniformValues {
-                    it[DefaultShaders.u_Tex] = gradientBitmap
-                }
+                },
+                mapOf(DefaultShaders.u_Tex to gradientBitmap)
                 //when (paint.kind) {
                 //    GradientKind.RADIAL -> GpuShapeView.PROGRAM_RADIAL_GRADIENT
                 //    GradientKind.SWEEP -> GpuShapeView.PROGRAM_SWEEP_GRADIENT

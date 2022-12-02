@@ -1201,11 +1201,12 @@ class AGUniformValues() : Iterable<Pair<Uniform, Any>> {
     private val _uniforms = FastArrayList<Uniform>()
     @PublishedApi internal val _indices = intArrayListOf()
     private val _values = FastArrayList<Any>()
+    @PublishedApi internal val _agValues = FastArrayList<AGValue>()
     @PublishedApi internal val uniforms = _uniforms as List<Uniform>
 
-    inline fun forEachUniform(block: (uniform: Uniform, value: Any, valueData: Buffer, valueIndex: Int) -> Unit) {
+    inline fun forEachUniform(block: (uniform: Uniform, value: Any, newValue: AGValue, valueData: Buffer, valueIndex: Int) -> Unit) {
         for (n in 0 until uniforms.size) {
-            block(uniforms[n], values[n], valueData, _indices[n])
+            block(uniforms[n], values[n], _agValues[n], valueData, _indices[n])
         }
     }
 
@@ -1230,6 +1231,7 @@ class AGUniformValues() : Iterable<Pair<Uniform, Any>> {
     fun clear() {
         _uniforms.clear()
         _values.clear()
+        _agValues.clear()
         _indices.clear()
     }
 
@@ -1254,6 +1256,7 @@ class AGUniformValues() : Iterable<Pair<Uniform, Any>> {
         _uniforms.add(uniform)
         _indices.add(index)
         _values.add(Unit)
+        _agValues.add(AGValue(uniform).also { it.set(Unit) })
         return n
     }
 
@@ -1299,6 +1302,7 @@ class AGUniformValues() : Iterable<Pair<Uniform, Any>> {
         val n = findUniformIndex(uniform)
         val index = _indices[n]
         _values[n] = value
+        _agValues[n].set(value)
         return this
     }
 
@@ -1308,6 +1312,7 @@ class AGUniformValues() : Iterable<Pair<Uniform, Any>> {
                 free(_uniforms[n].elementCount, _indices[n])
                 _uniforms.removeAt(n)
                 _values.removeAt(n)
+                _agValues.removeAt(n)
                 _indices.removeAt(n)
                 return
             }

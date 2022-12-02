@@ -84,6 +84,9 @@ enum class VarType(val kind: VarKind, val elementCount: Int, val isMatrix: Boole
     SamplerCube(VarKind.TINT, elementCount = 1),
 
 	Int1(VarKind.TINT, elementCount = 1),
+    Int2(VarKind.TINT, elementCount = 2),
+    Int3(VarKind.TINT, elementCount = 3),
+    Int4(VarKind.TINT, elementCount = 4),
 
     Float1(VarKind.TFLOAT, elementCount = 1),
 	Float2(VarKind.TFLOAT, elementCount = 2),
@@ -99,8 +102,6 @@ enum class VarType(val kind: VarKind, val elementCount: Int, val isMatrix: Boole
     Bool2(VarKind.TBOOL, elementCount = 2),
     Bool3(VarKind.TBOOL, elementCount = 3),
     Bool4(VarKind.TBOOL, elementCount = 4),
-
-    Byte4(VarKind.TUNSIGNED_BYTE, elementCount = 4), // OLD: Is this right?
 
 	SByte1(VarKind.TBYTE, elementCount = 1),
 	SByte2(VarKind.TBYTE, elementCount = 2),
@@ -143,6 +144,8 @@ enum class VarType(val kind: VarKind, val elementCount: Int, val isMatrix: Boole
     val bytesSize: Int = kind.bytesSize * elementCount
 
 	companion object {
+        val Byte4 get() = UByte4
+
         @Deprecated("", ReplaceWith("VarType.Sampler2D", "com.soywiz.korag.shader.VarType"))
         val TextureUnit get() = Sampler2D
 
