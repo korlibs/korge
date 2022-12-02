@@ -501,18 +501,12 @@ inline class AGStencilOpFuncState(val data: Int) {
 //open val supportInstancedDrawing: Boolean get() = false
 
 inline class AGFullState(val data: IntArray = IntArray(6)) {
-    var blending: AGBlending
-        get() = AGBlending(data[0])
-        set(value) { data[0] = value.data }
-    var stencilOpFunc: AGStencilOpFuncState
-        get() = AGStencilOpFuncState(data[1])
-        set(value) { data[1] = value.data }
-    var stencilRef: AGStencilReferenceState
-        get() = AGStencilReferenceState(data[2])
-        set(value) { data[2] = value.data }
-    var colorMask: AGColorMaskState
-        get() = AGColorMaskState(data[3])
-        set(value) { data[3] = value.data }
+    var blending: AGBlending ; get() = AGBlending(data[0]) ; set(value) { data[0] = value.data }
+    var stencilOpFunc: AGStencilOpFuncState ; get() = AGStencilOpFuncState(data[1]) ; set(value) { data[1] = value.data }
+    var stencilRef: AGStencilReferenceState ; get() = AGStencilReferenceState(data[2]) ; set(value) { data[2] = value.data }
+    var colorMask: AGColorMaskState ; get() = AGColorMaskState(data[3]) ; set(value) { data[3] = value.data }
+    var scissorXY: AGScissorXY ; get() = AGScissorXY(data[4]) ; set(value) { data[4] = value.data }
+    var scissorWH: AGScissorWH ; get() = AGScissorWH(data[5]) ; set(value) { data[5] = value.data }
     var scissor: AGScissor
         get() = AGScissor(data[4], data[5])
         set(value) {
@@ -521,8 +515,21 @@ inline class AGFullState(val data: IntArray = IntArray(6)) {
         }
 }
 
+inline class AGScissorXY(val data: Int) {
+    val x: Int get() = data.extract16Signed(0)
+    val y: Int get() = data.extract16Signed(16)
+    fun with(x: Int, y: Int): AGScissorXY = AGScissorXY(0.insert16(x, 0).insert16(y, 16))
+}
+
+inline class AGScissorWH(val data: Int) {
+    val width: Int get() = data.extract16Signed(0)
+    val height: Int get() = data.extract16Signed(16)
+    fun with(width: Int, height: Int): AGScissorXY = AGScissorXY(0.insert16(width, 0).insert16(height, 16))
+}
+
 inline class AGScissor(val data: Long) {
     constructor(xy: Int, wh: Int) : this(Long.fromLowHigh(xy, wh))
+    //constructor(xy: AGScissorXY, wh: AGScissorWH) : this(Long.fromLowHigh(xy.data, wh.data))
     constructor(x: Int, y: Int, width: Int, height: Int) : this(0.insert16(x, 0).insert16(y, 16), 0.insert16(width, 0).insert16(height, 16))
     constructor(x: Double, y: Double, width: Double, height: Double) : this(x.toIntRound(), y.toIntRound(), width.toIntRound(), height.toIntRound())
     //constructor(x: Double, y: Double, width: Double, height: Double) : this(x.toInt(), y.toInt(), width.toInt(), height.toInt())
@@ -807,53 +814,6 @@ data class AGVertexData constructor(
     val buffer: AGBuffer get() = _buffer!!
 }
 
-data class AGBatch constructor(
-    var vertexData: FastArrayList<AGVertexData> = fastArrayListOf(AGVertexData(null)),
-    var program: Program = DefaultShaders.PROGRAM_DEBUG,
-    var type: AGDrawType = AGDrawType.TRIANGLES,
-    var vertexCount: Int = 0,
-    var indices: AGBuffer? = null,
-    var indexType: AGIndexType = AGIndexType.USHORT,
-    var offset: Int = 0,
-    var blending: AGBlending = AGBlending.NORMAL,
-    var uniforms: AGUniformValues = AGUniformValues.EMPTY,
-    var stencilOpFunc: AGStencilOpFuncState = AGStencilOpFuncState.DEFAULT,
-    var stencilRef: AGStencilReferenceState = AGStencilReferenceState.DEFAULT,
-    var colorMask: AGColorMaskState = AGColorMaskState(),
-    var renderState: AGRenderState = AGRenderState(),
-    var scissor: AGScissor = AGScissor.NIL,
-    var instances: Int = 1
-) {
-
-    var stencilFull: AGStencilFullState
-        get() = AGStencilFullState(stencilOpFunc, stencilRef)
-        set(value) {
-            stencilOpFunc = value.opFunc
-            stencilRef = value.ref
-        }
-
-    private val singleVertexData = FastArrayList<AGVertexData>()
-
-    private fun ensureSingleVertexData() {
-        if (singleVertexData.isEmpty()) singleVertexData.add(AGVertexData(null))
-        vertexData = singleVertexData
-    }
-
-    @Deprecated("Use vertexData instead")
-    var vertices: AGBuffer
-        get() = (singleVertexData.firstOrNull() ?: vertexData.first()).buffer
-        set(value) {
-            ensureSingleVertexData()
-            singleVertexData[0]._buffer = value
-        }
-    @Deprecated("Use vertexData instead")
-    var vertexLayout: VertexLayout
-        get() = (singleVertexData.firstOrNull() ?: vertexData.first()).layout
-        set(value) {
-            ensureSingleVertexData()
-            singleVertexData[0].layout = value
-        }
-}
 
 data class AGTextureUnit constructor(
     val index: Int,

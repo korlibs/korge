@@ -639,59 +639,6 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
     }
 }
 
-data class AGFullBatch(
-    val macros: FastArrayList<AGMacroBatch>
-)
-
-data class AGMacroBatch(
-    val vertexData: AGVertexArrayObject,
-    val indexData: AGBuffer,
-    val batches: FastArrayList<AGMiniBatch>
-)
-
-data class AGMiniBatch(
-    val program: Program,
-    val uniforms: AGUniformValues,
-    val state: AGFullState,
-    val draws: AGDrawCommandArray = AGDrawCommandArray.EMPTY,
-)
-
-inline class AGDrawCommandArrayWriter(private val data: IntArrayList = IntArrayList()) {
-    fun toArray(): AGDrawCommandArray = AGDrawCommandArray(data.toIntArray())
-    fun clear() {
-        data.clear()
-    }
-    fun add(drawType: AGDrawType, indexType: AGIndexType, offset: Int, count: Int, instances: Int = 1) {
-        data.add(
-            0.insert3(drawType.ordinal, 0).insert2(indexType.ordinal, 3).insert24(count, 8),
-            offset, instances
-        )
-    }
-}
-
-inline class AGDrawCommandArray(val data: IntArray) {
-    companion object {
-        val EMPTY = AGDrawCommandArray(intArrayOf())
-    }
-    val size: Int get() = data.size / 3
-
-    private fun v0(n: Int) = data[n * 3 + 0]
-    private fun v1(n: Int) = data[n * 3 + 1]
-    private fun v2(n: Int) = data[n * 3 + 2]
-
-    inline fun fastForEach(block: (drawType: AGDrawType, indexType: AGIndexType, offset: Int, count: Int, instances: Int) -> Unit) {
-        for (n in 0 until size) {
-            block(getDrawType(n), getIndexType(n), getOffset(n), getCount(n), getInstances(n))
-        }
-    }
-
-    fun getDrawType(n: Int): AGDrawType = AGDrawType(v0(n).extract3(0))
-    fun getIndexType(n: Int): AGIndexType = AGIndexType(v0(n).extract2(3))
-    fun getCount(n: Int): Int = v0(n).extract24(8)
-    fun getOffset(n: Int): Int = v1(n)
-    fun getInstances(n: Int): Int = v2(n)
-}
-
 fun AGUniformValues.useExternalSampler(): Boolean {
     var useExternalSampler = false
     this.fastForEach { uniform ->
