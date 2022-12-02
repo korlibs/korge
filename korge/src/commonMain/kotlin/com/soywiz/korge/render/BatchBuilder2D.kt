@@ -138,7 +138,7 @@ class BatchBuilder2D constructor(
 	init { logger.trace { "BatchBuilder2D[6]" } }
 
     /** The current scissor state. If you change it, you must call the [flush] method to ensure everything has been drawn. */
-	var scissor: AGScissor = AGScissor.NIL
+	var scissor: AGRect = AGRect.NIL
 
 	private val identity = Matrix()
 
@@ -900,7 +900,7 @@ class BatchBuilder2D constructor(
         val stencilOpFunc: AGStencilOpFuncState,
         val stencilRef: AGStencilReferenceState,
         val colorMask: AGColorMaskState,
-        val scissor: AGScissor,
+        val scissor: AGRect,
         val blending: AGBlending,
         val renderState: AGRenderState,
         val offset: Int,

@@ -163,9 +163,9 @@ class GpuShapeViewCommands {
                                                 }
                                                 if (rect != null) {
                                                     rect.applyTransform(globalMatrix)
-                                                    list.setScissorState(ag, AGScissor(rect))
+                                                    list.setScissorState(ag, AGRect(rect))
                                                 } else {
-                                                    list.setScissorState(ag, AGScissor.NIL)
+                                                    list.setScissorState(ag, AGRect.NIL)
                                                 }
                                             }
                                             is ClearCommand -> {

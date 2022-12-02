@@ -83,8 +83,8 @@ class AGQueueProcessorOpenGL(
     var frameVersion = 0
 
     private val enableCache = Array<Boolean?>(16) { null }
-    private var scissorCache: AGScissor = AGScissor.NIL
-    private var viewportCache: AGScissor = AGScissor.NIL
+    private var scissorCache: AGRect = AGRect.NIL
+    private var viewportCache: AGRect = AGRect.NIL
     private var cacheTextureUnit = Array<AGTextureUnit?>(16) { null }
 
     override fun finish() {
@@ -92,8 +92,8 @@ class AGQueueProcessorOpenGL(
         frameVersion++
         enableCache.fill(null)
         cacheTextureUnit.fill(null)
-        scissorCache = AGScissor.NIL
-        viewportCache = AGScissor.NIL
+        scissorCache = AGRect.NIL
+        viewportCache = AGRect.NIL
 
         //gl.finish()
 
@@ -278,7 +278,7 @@ class AGQueueProcessorOpenGL(
     }
 
     override fun scissor(x: Int, y: Int, width: Int, height: Int) {
-        val value = AGScissor(x, y, width, height)
+        val value = AGRect(x, y, width, height)
         if (scissorCache != value) {
             scissorCache = value
             gl.scissor(x, y, width, height)
@@ -287,7 +287,7 @@ class AGQueueProcessorOpenGL(
     }
 
     override fun viewport(x: Int, y: Int, width: Int, height: Int) {
-        val value = AGScissor(x, y, width, height)
+        val value = AGRect(x, y, width, height)
         if (viewportCache != value) {
             viewportCache = value
             gl.viewport(x, y, width, height)

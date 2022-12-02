@@ -270,6 +270,32 @@ inline class AGCullFace(val ordinal: Int) {
 }
 
 
+inline class AGMINFilter(val ordinal: Int) {
+    companion object {
+        val LINEAR = AGMINFilter(0)
+        val NEAREST = AGMINFilter(1)
+        val NEAREST_MIPMAP_NEAREST = AGMINFilter(2)
+        val LINEAR_MIPMAP_NEAREST = AGMINFilter(3)
+        val NEAREST_MIPMAP_LINEAR = AGMINFilter(4)
+        val LINEAR_MIPMAP_LINEAR = AGMINFilter(5)
+    }
+}
+
+inline class AGMAGFilter(val ordinal: Int) {
+    companion object {
+        val LINEAR = AGMAGFilter(0)
+        val NEAREST = AGMAGFilter(1)
+    }
+}
+
+inline class AGTextureWrap(val ordinal: Int) {
+    companion object {
+        val REPEAT = AGTextureWrap(0)
+        val CLAMP_TO_EDGE = AGTextureWrap(1)
+        val MIRRORED_REPEAT = AGTextureWrap(2)
+    }
+}
+
 /** Encoded in 3 bits */
 inline class AGDrawType(val ordinal: Int) {
     companion object {
@@ -500,34 +526,42 @@ inline class AGStencilOpFuncState(val data: Int) {
 
 //open val supportInstancedDrawing: Boolean get() = false
 
-inline class AGFullState(val data: IntArray = IntArray(6)) {
+inline class AGFullState(val data: IntArray = IntArray(8)) {
     var blending: AGBlending ; get() = AGBlending(data[0]) ; set(value) { data[0] = value.data }
     var stencilOpFunc: AGStencilOpFuncState ; get() = AGStencilOpFuncState(data[1]) ; set(value) { data[1] = value.data }
     var stencilRef: AGStencilReferenceState ; get() = AGStencilReferenceState(data[2]) ; set(value) { data[2] = value.data }
     var colorMask: AGColorMaskState ; get() = AGColorMaskState(data[3]) ; set(value) { data[3] = value.data }
-    var scissorXY: AGScissorXY ; get() = AGScissorXY(data[4]) ; set(value) { data[4] = value.data }
-    var scissorWH: AGScissorWH ; get() = AGScissorWH(data[5]) ; set(value) { data[5] = value.data }
-    var scissor: AGScissor
-        get() = AGScissor(data[4], data[5])
+    var scissorXY: AGRectXY ; get() = AGRectXY(data[4]) ; set(value) { data[4] = value.data }
+    var scissorWH: AGRectWH ; get() = AGRectWH(data[5]) ; set(value) { data[5] = value.data }
+    var viewportXY: AGRectXY ; get() = AGRectXY(data[6]) ; set(value) { data[6] = value.data }
+    var viewportWH: AGRectWH ; get() = AGRectWH(data[7]) ; set(value) { data[7] = value.data }
+    var scissor: AGRect
+        get() = AGRect(scissorXY.data, scissorWH.data)
         set(value) {
-            data[4] = value.xy
-            data[5] = value.wh
+            scissorXY = AGRectXY(value.xy)
+            scissorWH = AGRectWH(value.wh)
+        }
+    var viewport: AGRect
+        get() = AGRect(viewportXY.data, viewportWH.data)
+        set(value) {
+            viewportXY = AGRectXY(value.xy)
+            viewportWH = AGRectWH(value.wh)
         }
 }
 
-inline class AGScissorXY(val data: Int) {
+inline class AGRectXY(val data: Int) {
     val x: Int get() = data.extract16Signed(0)
     val y: Int get() = data.extract16Signed(16)
-    fun with(x: Int, y: Int): AGScissorXY = AGScissorXY(0.insert16(x, 0).insert16(y, 16))
+    fun with(x: Int, y: Int): AGRectXY = AGRectXY(0.insert16(x, 0).insert16(y, 16))
 }
 
-inline class AGScissorWH(val data: Int) {
+inline class AGRectWH(val data: Int) {
     val width: Int get() = data.extract16Signed(0)
     val height: Int get() = data.extract16Signed(16)
-    fun with(width: Int, height: Int): AGScissorXY = AGScissorXY(0.insert16(width, 0).insert16(height, 16))
+    fun with(width: Int, height: Int): AGRectXY = AGRectXY(0.insert16(width, 0).insert16(height, 16))
 }
 
-inline class AGScissor(val data: Long) {
+inline class AGRect(val data: Long) {
     constructor(xy: Int, wh: Int) : this(Long.fromLowHigh(xy, wh))
     //constructor(xy: AGScissorXY, wh: AGScissorWH) : this(Long.fromLowHigh(xy.data, wh.data))
     constructor(x: Int, y: Int, width: Int, height: Int) : this(0.insert16(x, 0).insert16(y, 16), 0.insert16(width, 0).insert16(height, 16))
@@ -547,9 +581,9 @@ inline class AGScissor(val data: Long) {
     val right get() = x + width
     val bottom get() = y + height
 
-    fun withXY(x: Int, y: Int): AGScissor = AGScissor(0.insert16(x, 0).insert16(y, 16), wh)
-    fun withWH(width: Int, height: Int): AGScissor = AGScissor(xy, 0.insert16(width, 0).insert16(height, 16))
-    fun copy(x: Int = this.x, y: Int = this.y, width: Int = this.width, height: Int = this.height): AGScissor = AGScissor(x, y, width, height)
+    fun withXY(x: Int, y: Int): AGRect = AGRect(0.insert16(x, 0).insert16(y, 16), wh)
+    fun withWH(width: Int, height: Int): AGRect = AGRect(xy, 0.insert16(width, 0).insert16(height, 16))
+    fun copy(x: Int = this.x, y: Int = this.y, width: Int = this.width, height: Int = this.height): AGRect = AGRect(x, y, width, height)
     override fun toString(): String {
         if (this == NIL) return "null"
         return "Scissor(x=${x}, y=${y}, width=${width}, height=${height})"
@@ -562,19 +596,19 @@ inline class AGScissor(val data: Long) {
     }
 
     companion object {
-        val EMPTY = AGScissor(0, 0)
-        val FULL = AGScissor(0, 0x7FFF7FFF)
-        val NIL = AGScissor(-1, 0x7FFF7FFF)
-        fun fromBounds(left: Int, top: Int, right: Int, bottom: Int): AGScissor = AGScissor(left, top, right - left, bottom - top)
-        fun fromBounds(left: Double, top: Double, right: Double, bottom: Double): AGScissor = AGScissor(left, top, right - left, bottom - top)
+        val EMPTY = AGRect(0, 0)
+        val FULL = AGRect(0, 0x7FFF7FFF)
+        val NIL = AGRect(-1, 0x7FFF7FFF)
+        fun fromBounds(left: Int, top: Int, right: Int, bottom: Int): AGRect = AGRect(left, top, right - left, bottom - top)
+        fun fromBounds(left: Double, top: Double, right: Double, bottom: Double): AGRect = AGRect(left, top, right - left, bottom - top)
 
-        operator fun invoke(rect: IRectangle?): AGScissor {
+        operator fun invoke(rect: IRectangle?): AGRect {
             if (rect == null) return NIL
-            return AGScissor(rect.x, rect.y, rect.width, rect.height)
+            return AGRect(rect.x, rect.y, rect.width, rect.height)
         }
 
         // null is equivalent to Scissor(-Inf, -Inf, +Inf, +Inf)
-        fun combine(prev: AGScissor, next: AGScissor): AGScissor {
+        fun combine(prev: AGRect, next: AGRect): AGRect {
             if (prev == NIL) return next
             if (next == NIL) return prev
 

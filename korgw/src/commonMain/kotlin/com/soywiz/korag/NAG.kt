@@ -4,13 +4,17 @@ import com.soywiz.kds.*
 import com.soywiz.kmem.*
 import com.soywiz.korag.shader.*
 import com.soywiz.korim.bitmap.*
+import com.soywiz.korim.color.*
 import com.soywiz.korio.async.*
 
 /**
  * New Accelerated Graphics
  */
 abstract class NAG {
-    protected var contextVersion: Int = 0
+    @PublishedApi internal var contextVersion: Int = 0
+    open val frameBufferWidth: Int = 0
+    open val frameBufferHeight: Int = 0
+    open val devicePixelRatio: Double = 1.0
 
     open fun contextLost() {
         contextVersion++
@@ -18,16 +22,15 @@ abstract class NAG {
 
     abstract fun execute(command: NAGCommand)
 
-    fun draw(batches: List<NAGBatch>) {
-        execute(NAGCommandFullBatch(batches))
-    }
+    fun draw(batches: List<NAGBatch>) = execute(NAGCommandFullBatch(batches))
+    fun draw(vararg batches: NAGBatch) = draw(batches.toList())
 
-    fun readToTexture(renderBuffer: NAGRenderBuffer, texture: NAGTexture, x: Int, y: Int, width: Int, height: Int, completed: Signal<Unit>? = null) {
+    fun readToTexture(renderBuffer: NAGFrameBuffer, texture: NAGTexture, x: Int, y: Int, width: Int, height: Int, completed: Signal<Unit>? = null) {
         execute(NAGCommandTransfer.CopyToTexture(renderBuffer, texture, x, y, width, height, completed))
     }
 
-    fun readBits(renderBuffer: NAGRenderBuffer, kind: AGReadKind, x: Int, y: Int, width: Int, height: Int, completed: Signal<Unit>? = null, targetBitmap: Bitmap32? = null, targetFloats: FloatArray? = null) {
-        execute(NAGCommandTransfer.ReadBits(renderBuffer, kind, x, y, width, height, completed, targetBitmap, targetFloats))
+    fun readBits(renderBuffer: NAGFrameBuffer, kind: AGReadKind, x: Int, y: Int, width: Int, height: Int, completed: Signal<Unit>? = null, target: Any? = null) {
+        execute(NAGCommandTransfer.ReadBits(renderBuffer, kind, x, y, width, height, completed, target))
     }
 
     fun finish(completed: Signal<Unit>? = null) {
@@ -39,31 +42,31 @@ abstract class NAG {
     }
 }
 
-open class NAGMainRenderBuffer : NAGRenderBuffer() {
-}
+open class NAGTextureUnit : NAGObject() {
+    var texture: NAGTexture? = null
+    var wrap: AGTextureWrap = AGTextureWrap.REPEAT
+    var magFilter: AGMAGFilter = AGMAGFilter.LINEAR
+    var minFilter: AGMINFilter = AGMINFilter(magFilter.ordinal)
+    var unitId: Int = -1
 
-open class NAGRenderBuffer : NAGObject() {
-    var width: Int = 0
-    var height: Int = 0
-
-    fun setSize(width: Int, height: Int) {
-        if (this.width == width && this.height == height) return
-        this.width = width
-        this.height = height
+    fun set(
+        unitId: Int = -1,
+        texture: NAGTexture,
+        wrap: AGTextureWrap = AGTextureWrap.REPEAT,
+        magFilter: AGMAGFilter = AGMAGFilter.LINEAR,
+        minFilter: AGMINFilter = AGMINFilter(magFilter.ordinal),
+    ): NAGTextureUnit {
+        this.unitId = unitId
+        this.texture = texture
+        this.wrap = wrap
+        this.magFilter = magFilter
+        this.minFilter = minFilter
         this.invalidate()
+        return this
     }
 }
 
-class NAGProgram : NAGObject() {
-    var program: Program? = null
-
-    fun set(program: Program) {
-        this.program = program
-        this.invalidate()
-    }
-}
-
-class NAGTexture : NAGObject() {
+open class NAGTexture : NAGObject() {
     var content: Bitmap? = null
 
     fun upload(content: Bitmap? = null) {
@@ -72,59 +75,66 @@ class NAGTexture : NAGObject() {
     }
 }
 
+open class NAGFrameBuffer : NAGObject() {
+    val texture = NAGTexture()
+    var width: Int = 0
+    var height: Int = 0
+
+    var hasStencil: Boolean = true
+    var hasDepth: Boolean = true
+    val hasStencilAndDepth: Boolean get() = hasStencil && hasDepth
+
+    fun set(width: Int = this.width, height: Int = this.height, hasStencil: Boolean = this.hasStencil, hasDepth: Boolean = this.hasDepth): NAGFrameBuffer {
+        if (this.width == width && this.height == height && this.hasStencil == hasStencil && this.hasDepth == hasDepth) return this
+        this.width = width
+        this.height = height
+        this.hasStencil = hasStencil
+        this.hasDepth = hasDepth
+        this.invalidate()
+        return this
+    }
+}
+
+class NAGProgram(val program: Program) : NAGObject()
+
 class NAGBuffer : NAGObject() {
     var content: Buffer? = null
     var usage: Usage = Usage.DYNAMIC
 
     enum class Usage { DYNAMIC, STATIC, STREAM }
 
-    fun upload(content: Buffer? = null, usage: Usage = Usage.DYNAMIC) {
+    fun upload(content: Buffer? = null, usage: Usage = Usage.DYNAMIC): NAGBuffer {
         this.content = content
         this.usage = usage
         this.invalidate()
+        return this
     }
+}
+
+interface NAGNativeObject {
+    fun markDelete()
 }
 
 open class NAGObject {
-    var _nativeContextVersion: Int = -1
-    var _nativeObjectVersion: Int = -1
-    var _nativeInt: Int = -1
-    var _nativeInt1: Int = -1
-    var _nativeInt2: Int = -1
-    var _nativeDelete: ((NAGObject) -> Unit)? = null
-    var _nativeDeleteRegister: ((NAGObject) -> Unit)? = null
-    var _nativeLong: Long = 0L
-    var _nativeObject: Any? = null
-    var deleted = false
-    var version: Int = 0
-
-    inline fun _nativeCreateObject(contextVersion: Int, noinline _nativeDeleteRegister: (NAGObject) -> Unit, block: (NAGObject) -> Unit) {
-        if (this._nativeContextVersion != contextVersion) {
-            this._nativeContextVersion = contextVersion
-            this._nativeDeleteRegister = _nativeDeleteRegister
-            block(this)
-        }
-    }
-
-    inline fun _nativeUploadObject(block: (NAGObject) -> Unit) {
-        if (this._nativeObjectVersion != version) {
-            this._nativeObjectVersion = version
-            block(this)
-        }
-    }
+    @PublishedApi internal var _nativeContextVersion: Int = -1
+    @PublishedApi internal var _nativeObjectVersion: Int = -1
+    @PublishedApi internal var _native: NAGNativeObject? = null
+    @PublishedApi internal var _version: Int = 0
 
     fun invalidate() {
-        version++
+        _version++
     }
 
     fun delete() {
-        _nativeDeleteRegister?.invoke(this)
-        _nativeDeleteRegister = null
-        deleted = true
+        _native?.markDelete()
+        _native = null
     }
 }
 
-class NAGVertices(val data: List<Pair<VertexLayout, NAGBuffer>>)
+class NAGVerticesPart(val layout: VertexLayout, val buffer: NAGBuffer)
+class NAGVertices(val data: List<NAGVerticesPart>) {
+    constructor(vararg data: NAGVerticesPart) : this(data.toList())
+}
 
 sealed interface NAGCommand
 
@@ -138,23 +148,30 @@ data class NAGCommandFullBatch(
 
 data class NAGBatch(
     val vertexData: NAGVertices,
-    val indexData: NAGBuffer?,
-    val batches: List<NAGUniformBatch>,
+    val indexData: NAGBuffer? = null,
+    val batches: List<NAGUniformBatch> = emptyList(),
 )
 
 data class NAGUniformBatch(
-    val renderBuffer: NAGRenderBuffer,
+    val renderBuffer: NAGFrameBuffer?,
     val program: Program,
     val uniforms: AGUniformValues,
     val state: AGFullState,
     val drawCommands: NAGDrawCommandArray = NAGDrawCommandArray.EMPTY,
+    var clear: ClearState? = null,
+)
+
+data class ClearState(
+    val color: RGBA? = null,
+    val depth: Float? = null,
+    val stencil: Int? = null,
 )
 
 sealed interface NAGCommandTransfer : NAGCommand {
-    val renderBuffer: NAGRenderBuffer
+    val renderBuffer: NAGFrameBuffer
     val completed: Signal<Unit>?
-    class CopyToTexture(override val renderBuffer: NAGRenderBuffer, val texture: NAGTexture, val x: Int, val y: Int, val width: Int, val height: Int, override val completed: Signal<Unit>? = null) : NAGCommandTransfer
-    class ReadBits(override val renderBuffer: NAGRenderBuffer, val readKind: AGReadKind, val x: Int, val y: Int, val width: Int, val height: Int, override val completed: Signal<Unit>? = null, val targetBitmap: Bitmap32? = null, val targetFloats: FloatArray? = null) : NAGCommandTransfer
+    class CopyToTexture(override val renderBuffer: NAGFrameBuffer, val texture: NAGTexture, val x: Int, val y: Int, val width: Int, val height: Int, override val completed: Signal<Unit>? = null) : NAGCommandTransfer
+    class ReadBits(override val renderBuffer: NAGFrameBuffer, val readKind: AGReadKind, val x: Int, val y: Int, val width: Int, val height: Int, override val completed: Signal<Unit>? = null, val target: Any? = null) : NAGCommandTransfer
 }
 
 inline class NAGDrawCommandArrayWriter(private val data: IntArrayList = IntArrayList()) {
@@ -173,6 +190,9 @@ inline class NAGDrawCommandArrayWriter(private val data: IntArrayList = IntArray
 inline class NAGDrawCommandArray(val data: IntArray) {
     companion object {
         val EMPTY = NAGDrawCommandArray(intArrayOf())
+
+        operator fun invoke(build: (NAGDrawCommandArrayWriter) -> Unit): NAGDrawCommandArray =
+            NAGDrawCommandArrayWriter().also(build).toArray()
     }
     val size: Int get() = data.size / 3
 

@@ -33,7 +33,7 @@ interface VarTypeAccessor {
     val Mat2: VarType get() = VarType.Mat2
     val Mat3: VarType get() = VarType.Mat3
     val Mat4: VarType get() = VarType.Mat4
-    val Sampler1D: VarType get() = VarType.Sampler1D
+    //val Sampler1D: VarType get() = VarType.Sampler1D
     val Sampler2D: VarType get() = VarType.Sampler2D
     val Sampler3D: VarType get() = VarType.Sampler3D
     val SamplerCube: VarType get() = VarType.SamplerCube
@@ -78,7 +78,7 @@ enum class VarType(val kind: VarKind, val elementCount: Int, val isMatrix: Boole
 	Mat4(VarKind.TFLOAT, elementCount = 16, isMatrix = true),
 
     //TODO: need to have a way of indicating Float/Int/UInt variations + more types of sampler to add
-    Sampler1D(VarKind.TINT, elementCount = 1),
+    //Sampler1D(VarKind.TINT, elementCount = 1),
     Sampler2D(VarKind.TINT, elementCount = 1),
     Sampler3D(VarKind.TINT, elementCount = 1),
     SamplerCube(VarKind.TINT, elementCount = 1),
@@ -142,6 +142,8 @@ enum class VarType(val kind: VarKind, val elementCount: Int, val isMatrix: Boole
     }
 
     val bytesSize: Int = kind.bytesSize * elementCount
+
+    val isSampler: Boolean get() = this == Sampler2D || this == Sampler3D || this == SamplerCube
 
 	companion object {
         val Byte4 get() = UByte4

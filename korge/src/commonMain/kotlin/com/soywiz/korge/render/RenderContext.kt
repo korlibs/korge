@@ -216,7 +216,7 @@ class RenderContext constructor(
         ag.setRenderBufferTemporally(frameBuffer) {
             useBatcher { batch ->
                 val oldScissors = batch.scissor
-                batch.scissor = AGScissor(0, 0, frameBuffer.width, frameBuffer.height)
+                batch.scissor = AGRect(0, 0, frameBuffer.width, frameBuffer.height)
                 //batch.scissor = null
                 try {
                     if (clear) ag.clear(Colors.TRANSPARENT_BLACK)

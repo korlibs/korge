@@ -52,7 +52,7 @@ internal object GLShaderCompiler {
     private fun String.replaceVersion(version: Int) = this.replace("#version 100", "#version $version")
 
     // @TODO: Prevent leaks if we throw exceptions, we should free resources
-    fun programCreate(gl: KmlGl, config: GlslConfig, program: Program, glSlVersion: Int? = null, debugName: String?): GLProgramInfo {
+    fun programCreate(gl: KmlGl, config: GlslConfig, program: Program, glSlVersion: Int? = null, debugName: String? = program.name): GLProgramInfo {
         val id = gl.createProgram()
 
         //println("GL_SHADING_LANGUAGE_VERSION: $glslVersionInt : $glslVersionString")

@@ -174,7 +174,7 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
         stencilOpFunc: AGStencilOpFuncState = AGStencilOpFuncState.DEFAULT,
         colorMask: AGColorMaskState = AGColorMaskState.ALL_ENABLED,
         renderState: AGRenderState = AGRenderState.DEFAULT,
-        scissor: AGScissor = AGScissor.NIL,
+        scissor: AGRect = AGRect.NIL,
         instances: Int = 1
     ) = draw(batch.also { batch ->
         batch.vertices = vertices
@@ -209,7 +209,7 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
         stencilOpFunc: AGStencilOpFuncState = AGStencilOpFuncState.DEFAULT,
         colorMask: AGColorMaskState = AGColorMaskState.ALL_ENABLED,
         renderState: AGRenderState = AGRenderState.DEFAULT,
-        scissor: AGScissor = AGScissor.NIL,
+        scissor: AGRect = AGRect.NIL,
         instances: Int = 1
     ) = draw(batch.also { batch ->
         batch.vertexData = vertexData
@@ -332,7 +332,7 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
         clearColor: Boolean = true,
         clearDepth: Boolean = true,
         clearStencil: Boolean = true,
-        scissor: AGScissor = AGScissor.NIL,
+        scissor: AGRect = AGRect.NIL,
     ) {
         commandsNoWait { list ->
             //println("CLEAR: $color, $depth")
@@ -358,9 +358,9 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
     private val finalScissorBL = Rectangle()
     private val tempRect = Rectangle()
 
-    fun clearStencil(stencil: Int = 0, scissor: AGScissor = AGScissor.NIL) = clear(clearColor = false, clearDepth = false, clearStencil = true, stencil = stencil, scissor = scissor)
-    fun clearDepth(depth: Float = 1f, scissor: AGScissor = AGScissor.NIL) = clear(clearColor = false, clearDepth = true, clearStencil = false, depth = depth, scissor = scissor)
-    fun clearColor(color: RGBA = Colors.TRANSPARENT_BLACK, scissor: AGScissor = AGScissor.NIL) = clear(clearColor = true, clearDepth = false, clearStencil = false, color = color, scissor = scissor)
+    fun clearStencil(stencil: Int = 0, scissor: AGRect = AGRect.NIL) = clear(clearColor = false, clearDepth = false, clearStencil = true, stencil = stencil, scissor = scissor)
+    fun clearDepth(depth: Float = 1f, scissor: AGRect = AGRect.NIL) = clear(clearColor = false, clearDepth = true, clearStencil = false, depth = depth, scissor = scissor)
+    fun clearColor(color: RGBA = Colors.TRANSPARENT_BLACK, scissor: AGRect = AGRect.NIL) = clear(clearColor = true, clearDepth = false, clearStencil = false, color = color, scissor = scissor)
 
     val renderBufferStack = FastArrayList<AGBaseRenderBuffer?>()
 

@@ -136,3 +136,27 @@ fun AGBufferKind.toGl(): Int = when (this) {
     AGBufferKind.INDEX -> KmlGl.ELEMENT_ARRAY_BUFFER
     AGBufferKind.VERTEX -> KmlGl.ARRAY_BUFFER
 }
+
+
+fun AGMINFilter.toGl(): Int = when (this) {
+    AGMINFilter.LINEAR -> KmlGl.LINEAR
+    AGMINFilter.NEAREST -> KmlGl.NEAREST
+    AGMINFilter.NEAREST_MIPMAP_NEAREST -> KmlGl.NEAREST_MIPMAP_NEAREST
+    AGMINFilter.LINEAR_MIPMAP_NEAREST -> KmlGl.LINEAR_MIPMAP_NEAREST
+    AGMINFilter.NEAREST_MIPMAP_LINEAR -> KmlGl.NEAREST_MIPMAP_LINEAR
+    AGMINFilter.LINEAR_MIPMAP_LINEAR -> KmlGl.LINEAR_MIPMAP_LINEAR
+    else -> unreachable
+}
+
+fun AGMAGFilter.toGl(): Int = when (this) {
+    AGMAGFilter.LINEAR -> KmlGl.LINEAR
+    AGMAGFilter.NEAREST -> KmlGl.NEAREST
+    else -> unreachable
+}
+
+fun AGTextureWrap.toGl(): Int = when (this) {
+    AGTextureWrap.REPEAT -> KmlGl.REPEAT
+    AGTextureWrap.CLAMP_TO_EDGE -> KmlGl.CLAMP_TO_EDGE
+    AGTextureWrap.MIRRORED_REPEAT -> KmlGl.MIRRORED_REPEAT
+    else -> unreachable
+}

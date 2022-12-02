@@ -284,7 +284,7 @@ class RenderContext2D(
 	}
 
     /** Temporarily sets the [scissor] (visible rendering area) to [x], [y], [width] and [height] while [block] is executed. */
-    inline fun scissor(x: Int, y: Int, width: Int, height: Int, block: () -> Unit) = scissor(AGScissor(x, y, width, height), block)
+    inline fun scissor(x: Int, y: Int, width: Int, height: Int, block: () -> Unit) = scissor(AGRect(x, y, width, height), block)
 
     /** Temporarily sets the [scissor] (visible rendering area) to [x], [y], [width] and [height] while [block] is executed. */
     inline fun scissor(x: Double, y: Double, width: Double, height: Double, block: () -> Unit) = scissor(x.toInt(), y.toInt(), width.toInt(), height.toInt(), block)
@@ -294,10 +294,10 @@ class RenderContext2D(
 
     /** Temporarily sets the [scissor] (visible rendering area) to [rect] is executed. */
     inline fun scissor(rect: Rectangle?, block: () -> Unit) =
-        scissor(AGScissor(rect), block)
+        scissor(AGRect(rect), block)
 
     /** Temporarily sets the [scissor] (visible rendering area) to [scissor] is executed. */
-    inline fun scissor(scissor: AGScissor, block: () -> Unit) {
+    inline fun scissor(scissor: AGRect, block: () -> Unit) {
         val oldScissor = batch.scissor
         scissorStart(scissor)
         try {
@@ -308,23 +308,23 @@ class RenderContext2D(
     }
 
     @PublishedApi
-    internal fun scissorStart(scissor: AGScissor) {
+    internal fun scissorStart(scissor: AGRect) {
         batch.flush()
-        if (scissor != AGScissor.NIL) {
+        if (scissor != AGRect.NIL) {
             val left = m.transformX(scissor.left, scissor.top)
             val top = m.transformY(scissor.left, scissor.top)
             val right = m.transformX(scissor.right, scissor.bottom)
             val bottom = m.transformY(scissor.right, scissor.bottom)
 
-            batch.scissor = AGScissor.fromBounds(left, top, right, bottom)
+            batch.scissor = AGRect.fromBounds(left, top, right, bottom)
             //println("batch.scissor: ${batch.scissor}")
         } else {
-            batch.scissor = AGScissor.NIL
+            batch.scissor = AGRect.NIL
         }
     }
 
     @PublishedApi
-    internal fun scissorEnd(oldScissor: AGScissor) {
+    internal fun scissorEnd(oldScissor: AGRect) {
         batch.flush()
         batch.scissor = oldScissor
     }

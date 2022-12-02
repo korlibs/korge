@@ -57,10 +57,10 @@ fun AGList.setStencilState(stencilOpFunc: AGStencilOpFuncState?, stencilRef: AGS
     }
 }
 
-fun AGList.setScissorState(ag: AG, scissor: AGScissor = AGScissor.NIL) =
+fun AGList.setScissorState(ag: AG, scissor: AGRect = AGRect.NIL) =
     setScissorState(ag.currentRenderBuffer, ag.mainRenderBuffer, scissor)
 
-fun AGList.setScissorState(currentRenderBuffer: AGBaseRenderBuffer?, mainRenderBuffer: AGBaseRenderBuffer, scissor: AGScissor = AGScissor.NIL) {
+fun AGList.setScissorState(currentRenderBuffer: AGBaseRenderBuffer?, mainRenderBuffer: AGBaseRenderBuffer, scissor: AGRect = AGRect.NIL) {
     if (currentRenderBuffer == null) return
 
     //println("applyScissorState")
@@ -72,7 +72,7 @@ fun AGList.setScissorState(currentRenderBuffer: AGBaseRenderBuffer?, mainRenderB
     if (currentRenderBuffer === mainRenderBuffer) {
         var realScissors: Rectangle? = finalScissorBL
         realScissors?.setTo(0.0, 0.0, realBackWidth.toDouble(), realBackHeight.toDouble())
-        if (scissor != AGScissor.NIL) {
+        if (scissor != AGRect.NIL) {
             tempRect.setTo(
                 currentRenderBuffer.x + scissor.x,
                 ((currentRenderBuffer.y + currentRenderBuffer.height) - (scissor.y + scissor.height)),
@@ -100,7 +100,7 @@ fun AGList.setScissorState(currentRenderBuffer: AGBaseRenderBuffer?, mainRenderB
     } else {
         //println("[RENDER_TARGET] scissor: $scissor")
 
-        enableDisable(AGEnable.SCISSOR, scissor != AGScissor.NIL) {
+        enableDisable(AGEnable.SCISSOR, scissor != AGRect.NIL) {
             scissor(scissor.x, scissor.y, scissor.width, scissor.height)
         }
     }

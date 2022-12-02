@@ -7,25 +7,67 @@ import com.soywiz.kgl.*
 import com.soywiz.kmem.*
 import com.soywiz.korag.gl.*
 import com.soywiz.korag.shader.*
+import com.soywiz.korag.shader.gl.*
+import com.soywiz.korim.bitmap.*
+import com.soywiz.korio.lang.*
 
 class NAGOpengl(val gl: KmlGl) : NAG() {
     override fun execute(command: NAGCommand) {
-        deletesLock {
-            deletes.fastForEach {
-                it._nativeDelete?.invoke(it)
-                it._nativeDelete = null
-            }
-            deletes.clear()
-        }
         when (command) {
             is NAGCommandFinish -> execute(command)
             is NAGCommandFullBatch -> command.batches.fastForEach { execute(it) }
-            is NAGCommandTransfer.CopyToTexture -> TODO()
-            is NAGCommandTransfer.ReadBits -> TODO()
+            is NAGCommandTransfer.CopyToTexture -> execute(command)
+            is NAGCommandTransfer.ReadBits -> execute(command)
+        }
+    }
+
+    private fun execute(command: NAGCommandTransfer.CopyToTexture) {
+        val target = AGTextureTargetKind.TEXTURE_2D
+        bindFrameBuffer(command.renderBuffer)
+        bindTexture(command.texture, target)
+        gl.copyTexImage2D(target.toGl(), 0, KmlGl.RGBA, command.x, command.y, command.width, command.height, 0)
+    }
+
+    private fun execute(command: NAGCommandTransfer.ReadBits) {
+        bindFrameBuffer(command.renderBuffer)
+        val target = command.target
+        val data = when (target) {
+            is Bitmap32 -> target.ints
+            else -> target
+        }
+        val bytesPerPixel = when (data) {
+            is IntArray -> 4
+            is FloatArray -> 4
+            is ByteArray -> 1
+            else -> unsupported()
+        }
+        val x = command.x
+        val y = command.y
+        val width = command.width
+        val height = command.height
+        val area = width * height
+        BufferTemp(area * bytesPerPixel) { buffer ->
+            when (command.readKind) {
+                AGReadKind.COLOR -> gl.readPixels(x, y, width, height, KmlGl.RGBA, KmlGl.UNSIGNED_BYTE, buffer)
+                AGReadKind.DEPTH -> gl.readPixels(x, y, width, height, KmlGl.DEPTH_COMPONENT, KmlGl.FLOAT, buffer)
+                AGReadKind.STENCIL -> gl.readPixels(x, y, width, height, KmlGl.STENCIL_INDEX, KmlGl.UNSIGNED_BYTE, buffer)
+            }
+            when (data) {
+                is IntArray -> buffer.getArrayInt32(0, data, size = area)
+                is FloatArray -> buffer.getArrayFloat32(0, data, size = area)
+                is ByteArray -> buffer.getArrayInt8(0, data, size = area)
+                else -> unsupported()
+            }
+            //println("readColor.HASH:" + bitmap.computeHash())
         }
     }
 
     private fun execute(command: NAGCommandFinish) {
+        while (true) {
+            val deletesArray = deletesLock { (if (deletes.isNotEmpty()) deletes.toList() else null).also { deletes.clear() } } ?: break
+            deletesArray.fastForEach { it.delete() }
+        }
+
         gl.finish()
         command.completed?.invoke(Unit)
     }
@@ -36,6 +78,9 @@ class NAGOpengl(val gl: KmlGl) : NAG() {
             if (batch.indexData != null) {
                 bindBuffer(AGBufferKind.INDEX, batch.indexData)
             }
+            batch.batches.fastForEach {
+                execute(it)
+            }
         } finally {
             bindVertexData(batch.vertexData, bind = false)
         }
@@ -44,8 +89,15 @@ class NAGOpengl(val gl: KmlGl) : NAG() {
     private val currentState = AGFullState()
 
     private fun execute(batch: NAGUniformBatch) {
-        bindRenderBuffer(batch.renderBuffer)
-        bindProgram(batch.program)
+        bindFrameBuffer(batch.renderBuffer)
+        batch.clear?.let {
+            var value = 0
+            it.color?.let { gl.clearColor(it.rf, it.gf, it.bf, it.af); value = value or KmlGl.COLOR_BUFFER_BIT }
+            it.depth?.let { gl.clearDepthf(it); value = value or KmlGl.DEPTH_BUFFER_BIT }
+            it.stencil?.let { gl.clearStencil(it); value = value or KmlGl.STENCIL_BUFFER_BIT }
+            gl.clear(value)
+        }
+        useProgram(batch.program)
         execute(batch.state)
         execute(batch.uniforms)
         batch.drawCommands.fastForEach { drawType, indexType, offset, count, instances ->
@@ -64,7 +116,57 @@ class NAGOpengl(val gl: KmlGl) : NAG() {
     }
 
     private fun execute(uniforms: AGUniformValues) {
-        TODO()
+        val program = currentProgram ?: error("Program not used")
+        val glProgram = program.info
+        val currentUniforms = program.uniforms
+        uniforms.fastForEach { value ->
+            var textureUnit: Int = -1
+            val uniform = value.uniform
+            val uniformType = uniform.type
+            val uniformName = uniform.name
+            val location = glProgram.getUniformLocation(gl, uniformName)
+            val declArrayCount = uniform.arrayCount
+            val data = value.data
+
+            val old = currentUniforms[value.uniform]
+            if (old != value) {
+                old.set(value)
+                return@fastForEach
+            }
+
+            if (uniformType.isSampler) {
+                val unit = value.nativeValue as NAGTextureUnit
+
+                bindTextureUnit(unit.unitId, unit, when (uniformType) {
+                    VarType.Sampler2D -> AGTextureTargetKind.TEXTURE_2D
+                    VarType.Sampler3D -> AGTextureTargetKind.TEXTURE_3D
+                    VarType.SamplerCube -> AGTextureTargetKind.TEXTURE_CUBE_MAP
+                    else -> unreachable
+                })
+                value.set(unit.unitId)
+            }
+
+            // UPDATE UNIFORM
+            when (uniformType.kind) {
+                VarKind.TFLOAT -> when (uniform.type) {
+                    VarType.Mat2 -> gl.uniformMatrix2fv(location, declArrayCount, false, data)
+                    VarType.Mat3 -> gl.uniformMatrix3fv(location, declArrayCount, false, data)
+                    VarType.Mat4 -> gl.uniformMatrix4fv(location, declArrayCount, false, data)
+                    else -> when (uniformType.elementCount) {
+                        1 -> gl.uniform1fv(location, uniform.arrayCount, data)
+                        2 -> gl.uniform2fv(location, uniform.arrayCount, data)
+                        3 -> gl.uniform3fv(location, uniform.arrayCount, data)
+                        4 -> gl.uniform4fv(location, uniform.arrayCount, data)
+                    }
+                }
+                else -> when (uniformType.elementCount) {
+                    1 -> gl.uniform1iv(location, uniform.arrayCount, data)
+                    2 -> gl.uniform2iv(location, uniform.arrayCount, data)
+                    3 -> gl.uniform3iv(location, uniform.arrayCount, data)
+                    4 -> gl.uniform4iv(location, uniform.arrayCount, data)
+                }
+            }
+        }
     }
 
     private fun execute(state: AGFullState) {
@@ -80,6 +182,14 @@ class NAGOpengl(val gl: KmlGl) : NAG() {
             currentState.scissorXY = scissorXY
             currentState.scissorWH = scissorWH
             gl.scissor(scissorXY.x, scissorXY.y, scissorWH.width, scissorWH.height)
+        }
+
+        val viewportXY = state.viewportXY
+        val viewportWH = state.viewportWH
+        if (currentState.viewportXY != viewportXY || currentState.viewportWH != viewportWH) {
+            currentState.viewportXY = viewportXY
+            currentState.viewportWH = viewportWH
+            gl.viewport(viewportXY.x, viewportXY.y, viewportWH.width, viewportWH.height)
         }
 
         val stencilOpFunc = state.stencilOpFunc
@@ -101,7 +211,9 @@ class NAGOpengl(val gl: KmlGl) : NAG() {
     }
 
     private fun bindVertexData(vertices: NAGVertices, bind: Boolean) {
-        vertices.data.fastForEach { (vertexLayout, vertices) ->
+        vertices.data.fastForEach { info ->
+            val vertexLayout = info.layout
+            val vertices = info.buffer
             val vattrs = vertexLayout.attributes
             val vattrspos = vertexLayout.attributePositions
 
@@ -148,26 +260,19 @@ class NAGOpengl(val gl: KmlGl) : NAG() {
     private val emptyBuffer = Buffer(0)
 
     private val deletesLock = Lock()
-    private val deletes = fastArrayListOf<NAGObject>()
-
-    private val _nativeDeleteRegister = { obj: NAGObject ->
-        deletesLock { deletes += obj }
-    }
+    private val deletes = fastArrayListOf<GLObject>()
 
     private fun bindBuffer(kind: AGBufferKind, buffer: NAGBuffer?) {
-        val target = kind.toGl()
+        val glTarget = kind.toGl()
         if (buffer == null) {
-            gl.bindBuffer(target, 0)
+            gl.bindBuffer(glTarget, 0)
             return
         }
-        buffer._nativeCreateObject(contextVersion, _nativeDeleteRegister) {
-            buffer._nativeInt = gl.genBuffer()
-            buffer._nativeDelete = { gl.deleteBuffer(it._nativeInt) }
-        }
-        gl.bindBuffer(target, buffer._nativeInt)
-        buffer._nativeUploadObject {
+        val glBuffer = buffer.gl
+        glBuffer.bind(kind)
+        buffer.updateObject {
             gl.bufferData(
-                target,
+                glTarget,
                 buffer.content?.size ?: 0, buffer.content ?: emptyBuffer,
                 when (buffer.usage) {
                     NAGBuffer.Usage.DYNAMIC -> KmlGl.DYNAMIC_DRAW
@@ -180,22 +285,188 @@ class NAGOpengl(val gl: KmlGl) : NAG() {
 
     private val programs = LinkedHashMap<Program, NAGProgram>()
 
-    private fun bindProgram(program: Program) {
-        val nagProgram = programs.getOrPut(program) { NAGProgram().also { it.set(program) } }
-        nagProgram._nativeCreateObject(contextVersion, _nativeDeleteRegister) {
-            nagProgram._nativeInt = gl.createProgram()
-            nagProgram._nativeInt1 = gl.createShader(KmlGl.FRAGMENT_SHADER)
-            nagProgram._nativeInt2 = gl.createShader(KmlGl.VERTEX_SHADER)
-            nagProgram._nativeDelete = {
-                gl.deleteProgram(it._nativeInt)
-                gl.deleteShader(it._nativeInt1)
-                gl.deleteShader(it._nativeInt2)
-            }
-        }
-        TODO()
+    private var currentProgram: GLProgram? = null
+
+    private val NAGProgram.gl: GLProgram get() = createObjectIfRequired { GLProgram(this.program) }
+    private val Program.gl: GLProgram get() = nag.gl
+    private val Program.nag: NAGProgram get() = programs.getOrPut(this) { NAGProgram(this@nag) }
+
+    private fun useProgram(program: Program) {
+        currentProgram = program.gl.also { it.use() }
     }
 
-    private fun bindRenderBuffer(renderBuffer: NAGRenderBuffer) {
-        TODO()
+    private var currentRenderBuffer: NAGFrameBuffer? = null
+    private var currentTextureUnitId: Int = -1
+
+    private fun bindTextureUnit(textureUnitId: Int, textureUnit: NAGTextureUnit, target: AGTextureTargetKind) {
+        val glTarget = target.toGl()
+        currentTextureUnitId = textureUnitId
+        gl.activeTexture(textureUnitId)
+        bindTexture(textureUnit.texture, target)
+        gl.texParameteri(glTarget, KmlGl.TEXTURE_MIN_FILTER, textureUnit.minFilter.toGl())
+        gl.texParameteri(glTarget, KmlGl.TEXTURE_MAG_FILTER, textureUnit.magFilter.toGl())
+        gl.texParameteri(glTarget, KmlGl.TEXTURE_WRAP_S, textureUnit.wrap.toGl())
+        gl.texParameteri(glTarget, KmlGl.TEXTURE_WRAP_T, textureUnit.wrap.toGl())
+    }
+
+    private fun bindTexture(texture: NAGTexture?, target: AGTextureTargetKind) {
+        val tgl = texture?.gl
+        if (tgl != null) {
+            val content = texture.content
+            if (tgl.cachedContentVersion != content?.contentVersion) {
+                tgl.cachedContentVersion = content?.contentVersion ?: -1
+                texture._nativeObjectVersion++
+            }
+
+            texture.updateObject {
+                when (content) {
+                    is Bitmap32 -> tgl.upload(target, content.width, content.height, null, GLTexKind.RGBA, GLTexKindStorage.UNSIGNED_BYTE)
+                    null -> tgl.upload(target, 0, 0, null, GLTexKind.RGBA, GLTexKindStorage.UNSIGNED_BYTE)
+                }
+            }
+        }
+        gl.bindTexture(target.toGl(), tgl?.id ?: 0)
+    }
+
+    private fun bindFrameBuffer(fb: NAGFrameBuffer?) {
+        if (fb == null) {
+            gl.bindFramebuffer(KmlGl.FRAMEBUFFER, 0)
+            return
+        }
+
+        val nfb = fb.gl
+        fb.updateObject { nfb.setSize(fb.width, fb.height) }
+        nfb.bind()
+    }
+
+    private abstract inner class GLObject : NAGNativeObject {
+        abstract fun delete()
+        override fun markDelete() {
+            deletesLock { deletes += this }
+        }
+    }
+
+    private val NAGFrameBuffer.gl: GLFrameBuffer get() = createObjectIfRequired { GLFrameBuffer(this) }
+    private inner class GLFrameBuffer(val fb: NAGFrameBuffer) : GLObject() {
+        val texture = fb.texture
+        val frameBuffer = gl.genFramebuffer()
+        val renderBuffer = gl.genRenderbuffer()
+
+        override fun delete() {
+            texture.delete()
+            gl.deleteFramebuffer(frameBuffer)
+            gl.deleteRenderbuffer(renderBuffer)
+        }
+
+        val internalFormat: Int get() = when {
+            fb.hasStencilAndDepth -> KmlGl.DEPTH_STENCIL_ATTACHMENT
+            fb.hasStencil -> KmlGl.STENCIL_ATTACHMENT
+            fb.hasDepth -> KmlGl.DEPTH_ATTACHMENT
+            else -> 0
+        }
+
+        fun setSize(width: Int, height: Int) {
+            val texTarget = AGTextureTargetKind.TEXTURE_2D
+            val texTargetGl = texTarget.toGl()
+            texture.gl.bind(texTarget)
+            gl.texParameteri(texTargetGl, KmlGl.TEXTURE_MAG_FILTER, KmlGl.LINEAR)
+            gl.texParameteri(texTargetGl, KmlGl.TEXTURE_MIN_FILTER, KmlGl.LINEAR)
+            gl.texImage2D(texTargetGl, 0, KmlGl.RGBA, width, height, 0, KmlGl.RGBA, KmlGl.UNSIGNED_BYTE, null)
+            gl.bindTexture(texTargetGl, 0)
+
+            gl.bindRenderbuffer(KmlGl.RENDERBUFFER, renderBuffer)
+            if (internalFormat != 0) {
+                gl.renderbufferStorage(KmlGl.RENDERBUFFER, internalFormat, fb.width, fb.height)
+            }
+            gl.bindRenderbuffer(KmlGl.RENDERBUFFER, 0)
+
+            this.bind()
+            gl.framebufferTexture2D(KmlGl.FRAMEBUFFER, KmlGl.COLOR_ATTACHMENT0, KmlGl.TEXTURE_2D, texture.gl.id, 0)
+            if (internalFormat != 0) {
+                gl.framebufferRenderbuffer(KmlGl.FRAMEBUFFER, internalFormat, KmlGl.RENDERBUFFER, renderBuffer)
+            } else {
+                gl.framebufferRenderbuffer(KmlGl.FRAMEBUFFER, KmlGl.STENCIL_ATTACHMENT, KmlGl.RENDERBUFFER, 0)
+                gl.framebufferRenderbuffer(KmlGl.DEPTH_ATTACHMENT, KmlGl.STENCIL_ATTACHMENT, KmlGl.RENDERBUFFER, 0)
+            }
+
+        }
+
+        fun bind() {
+            gl.bindFramebuffer(KmlGl.FRAMEBUFFER, frameBuffer)
+        }
+    }
+
+    enum class GLTexKind {
+        RGBA, LUMINANCE
+    }
+
+    enum class GLTexKindStorage {
+        UNSIGNED_BYTE, UNSIGNED_SHORT_5_6_5
+    }
+
+    fun GLTexKind.toGl() = when (this) {
+        GLTexKind.RGBA -> KmlGl.RGBA
+        GLTexKind.LUMINANCE -> KmlGl.LUMINANCE
+    }
+    fun GLTexKindStorage.toGl() = when (this) {
+        GLTexKindStorage.UNSIGNED_BYTE -> KmlGl.UNSIGNED_BYTE
+        GLTexKindStorage.UNSIGNED_SHORT_5_6_5 -> KmlGl.UNSIGNED_SHORT_5_6_5
+    }
+
+    private val NAGTexture.gl: GLTexture get() = createObjectIfRequired { GLTexture() }
+    private inner class GLTexture() : GLObject() {
+        var cachedContentVersion: Int = -1
+        val id = gl.genTexture()
+        fun bind(target: AGTextureTargetKind) {
+            gl.bindTexture(target.toGl(), id)
+        }
+        fun upload(target: AGTextureTargetKind, width: Int, height: Int, buffer: Buffer?, type: GLTexKind, storage: GLTexKindStorage, level: Int = 0) {
+            val internalFormat = type.toGl()
+            gl.texImage2D(target.toGl(), level, internalFormat, width, height, 0, internalFormat, storage.toGl(), buffer)
+        }
+        override fun delete() {
+            gl.deleteTexture(id)
+        }
+    }
+
+    private val NAGBuffer.gl: GLBuffer get() = createObjectIfRequired { GLBuffer() }
+    private inner class GLBuffer : GLObject() {
+        var id: Int = gl.genBuffer()
+
+        override fun delete() {
+            gl.deleteBuffer(id)
+            id = -1
+        }
+
+        fun bind(kind: AGBufferKind) {
+            gl.bindBuffer(kind.toGl(), id)
+        }
+    }
+    private inner class GLProgram(val program: Program) : GLObject() {
+        val uniforms: AGUniformValues = AGUniformValues()
+        val info: GLProgramInfo = GLShaderCompiler.programCreate(gl, GlslConfig(), program)
+
+        fun use() {
+            info.use(gl)
+        }
+
+        override fun delete() {
+            info.delete(gl)
+        }
+    }
+
+    private inline fun <T : NAGNativeObject> NAGObject.createObjectIfRequired(block: (NAGObject) -> T): T {
+        if (this._nativeContextVersion != contextVersion) {
+            this._nativeContextVersion = contextVersion
+            this._native = block(this)
+        }
+        return this._native as T
+    }
+
+    private inline fun <T : NAGObject> T.updateObject(block: (T) -> Unit) {
+        if (this._nativeObjectVersion != _version) {
+            this._nativeObjectVersion = _version
+            block(this)
+        }
     }
 }

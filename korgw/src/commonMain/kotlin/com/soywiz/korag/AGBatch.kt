@@ -22,7 +22,7 @@ data class AGBatch constructor(
     var stencilRef: AGStencilReferenceState = AGStencilReferenceState.DEFAULT,
     var colorMask: AGColorMaskState = AGColorMaskState(),
     var renderState: AGRenderState = AGRenderState(),
-    var scissor: AGScissor = AGScissor.NIL,
+    var scissor: AGRect = AGRect.NIL,
     var instances: Int = 1
 ) {
 
