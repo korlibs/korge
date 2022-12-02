@@ -5,7 +5,7 @@ import kotlin.test.*
 class AGBatchTest {
     @Test
     fun test() {
-        val writer = AGDrawCommandArrayWriter()
+        val writer = NAGDrawCommandArrayWriter()
         writer.add(AGDrawType.TRIANGLES, AGIndexType.USHORT, 12345, 654321, 999999)
         writer.add(AGDrawType.LINES, AGIndexType.UBYTE, 1193046, 3430008, 305419896)
         val array = writer.toArray()
