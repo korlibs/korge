@@ -1,5 +1,26 @@
 description = "Memory utilities for Kotlin"
 
 dependencies {
-    add("jvmMainApi", libs.bundles.jna)
+    //add("jvmMainApi", libs.bundles.jna)
+
+    // Includes this change to support direct OpenGL Win32 mapping:
+    // https://github.com/korlibs/jna/commit/c5d87cc4b1034b402b5d114e0efd401533636832
+    add("jvmMainApi", files("lib/jna-patched.jar", "lib/jna-platform-5.12.1.jar"))
+}
+
+configurations {
+    // configuration that holds jars to copy into lib
+    extraLibs
+}
+dependencies {
+    extraLibs files("lib/jna-patched.jar", "lib/jna-platform-5.12.1.jar")
+}
+
+jvmJar {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    into('lib') {
+        from {
+            configurations.extraLibs.collect { it.isDirectory() ? it : zipTree(it) }
+        }
+    }
 }

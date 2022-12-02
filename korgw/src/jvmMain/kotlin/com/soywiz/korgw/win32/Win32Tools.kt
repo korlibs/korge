@@ -5,9 +5,7 @@ import com.soywiz.kgl.getIntegerv
 import com.soywiz.klogger.Console
 import com.soywiz.korgw.GameWindow
 import com.soywiz.korgw.GameWindowConfig
-import com.soywiz.korgw.platform.BaseOpenglContext
-import com.soywiz.korgw.platform.INativeGL
-import com.soywiz.korgw.platform.NativeKgl
+import com.soywiz.korgw.platform.*
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korio.lang.Environment
 import com.sun.jna.*
@@ -24,7 +22,8 @@ import java.lang.reflect.Method
 import java.lang.reflect.Proxy
 
 //open class Win32KmlGl : CheckErrorsKmlGlProxy(NativeKgl(Win32GL)) {
-open class Win32KmlGl : NativeKgl(Win32GL) {
+//open class Win32KmlGl : NativeKgl(Win32GL) {
+open class Win32KmlGl : NativeKgl(DirectGL) {
     companion object : Win32KmlGl()
 
     var vertexArrayCachedVersion = -1
@@ -35,11 +34,11 @@ open class Win32KmlGl : NativeKgl(Win32GL) {
             vertexArrayCachedVersion = contextVersion
             val out = intArrayOf(-1)
             //checkError("before glGenVertexArrays")
-            Win32GL.glGenVertexArrays(1, out)
+            DirectGL.glGenVertexArrays(1, out)
             checkError("glGenVertexArrays")
             vertexArray = out[0]
         }
-        Win32GL.glBindVertexArray(vertexArray)
+        DirectGL.glBindVertexArray(vertexArray)
         //checkError("glBindVertexArray")
     }
 }
@@ -53,9 +52,6 @@ interface Win32GL : INativeGL, Library {
     fun wglChoosePixelFormatARB(hDC: HDC, piAttribIList: IntArray?, pfAttribFList: FloatArray?, nMaxFormats: Int, piFormats: Pointer?, nNumFormats: Pointer?): Int
     //fun wglCreateContextAttribsARB(hDC: HDC, hshareContext: WinGDI.PIXELFORMATDESCRIPTOR.ByReference?, attribList: Pointer?): Int
     fun wglCreateContextAttribsARB(hDC: HDC, hshareContext: WinGDI.PIXELFORMATDESCRIPTOR.ByReference?, attribList: IntArray?): HGLRC?
-
-    fun glGenVertexArrays(n: Int, out: IntArray)
-    fun glBindVertexArray(varray: Int)
 
     companion object : Win32GLBase(Win32GLLoader())
 
