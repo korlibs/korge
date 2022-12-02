@@ -13,8 +13,7 @@ import com.soywiz.klock.roundMilliseconds
 import com.soywiz.klock.seconds
 import com.soywiz.klogger.Logger
 import com.soywiz.kmem.setBits
-import com.soywiz.korag.AG
-import com.soywiz.korag.AGWindow
+import com.soywiz.korag.*
 import com.soywiz.korag.annotation.KoragExperimental
 import com.soywiz.korag.log.DummyAG
 import com.soywiz.korev.DestroyEvent
@@ -387,6 +386,7 @@ open class GameWindow :
 
     //override val ag: AG = LogAG()
     override val ag: AG = DummyAG()
+    override val nag: NAG = NAGDummy()
 
     open val coroutineDispatcher: GameWindowCoroutineDispatcher = GameWindowCoroutineDispatcher()
 

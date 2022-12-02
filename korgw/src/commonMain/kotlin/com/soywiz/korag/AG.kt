@@ -30,8 +30,7 @@ import kotlin.jvm.JvmOverloads
 import kotlin.math.*
 
 
-interface AGWindow : AGContainer {
-}
+interface AGWindow : AGContainer
 
 interface AGFeatures {
     val parentFeatures: AGFeatures? get() = null
@@ -42,6 +41,7 @@ interface AGFeatures {
 }
 
 @OptIn(KorIncomplete::class)
+@Deprecated("Use NAG instead")
 abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mixin() {
     companion object {
         const val defaultPixelsPerInch : Double = 96.0

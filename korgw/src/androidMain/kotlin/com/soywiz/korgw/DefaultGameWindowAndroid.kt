@@ -96,6 +96,7 @@ class AndroidGameWindow(val activity: KorgwActivity, config: GameWindowCreationC
     val mainHandler by lazy { android.os.Handler(androidContext.mainLooper) }
 
     override val ag: AG get() = activity.ag
+    override val nag: NAG get() = activity.nag
 
     private var _setTitle: String? = null
     override var title: String; get() = _setTitle ?: activity.title.toString(); set(value) { _setTitle = value; mainHandler.post { activity.title = value } }
@@ -135,6 +136,7 @@ class AndroidGameWindowNoActivity(
     override val width: Int,
     override val height: Int,
     override val ag: AG,
+    override val nag: NAG,
     override val androidContext: Context,
     config: GameWindowCreationConfig = GameWindowCreationConfig(),
     val getView: () -> View

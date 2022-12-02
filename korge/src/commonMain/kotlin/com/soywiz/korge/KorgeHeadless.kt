@@ -1,7 +1,7 @@
 package com.soywiz.korge
 
 import com.soywiz.klock.TimeProvider
-import com.soywiz.korag.AG
+import com.soywiz.korag.*
 import com.soywiz.korag.log.DummyAG
 import com.soywiz.korag.software.AGSoftware
 import com.soywiz.korge.internal.DefaultViewport
@@ -20,6 +20,7 @@ import com.soywiz.korma.geom.ScaleMode
 object KorgeHeadless {
     class HeadlessGameWindow(override val width: Int = 640, override val height: Int = 480, val draw: Boolean = false) : GameWindow() {
         override val ag: AG = if (draw) AGSoftware(width, height) else DummyAG(width, height)
+        override val nag: NAG = NAGDummy()
         val agSoftware: AGSoftware get() = ag as AGSoftware
         val bitmap: Bitmap32 get() = agSoftware.bitmap
     }

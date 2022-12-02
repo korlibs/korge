@@ -11,7 +11,7 @@ import com.soywiz.korag.shader.gl.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korio.lang.*
 
-class NAGOpengl(val gl: KmlGl) : NAG() {
+open class NAGOpengl(val gl: KmlGl) : NAG() {
     override fun execute(command: NAGCommand) {
         when (command) {
             is NAGCommandFinish -> execute(command)
@@ -387,11 +387,9 @@ class NAGOpengl(val gl: KmlGl) : NAG() {
         fun setSize(width: Int, height: Int) {
             val texTarget = AGTextureTargetKind.TEXTURE_2D
             val texTargetGl = texTarget.toGl()
-            texture.gl.bind(texTarget)
-            gl.texParameteri(texTargetGl, KmlGl.TEXTURE_MAG_FILTER, KmlGl.LINEAR)
-            gl.texParameteri(texTargetGl, KmlGl.TEXTURE_MIN_FILTER, KmlGl.LINEAR)
+            bindTexture(texture, texTarget)
             gl.texImage2D(texTargetGl, 0, KmlGl.RGBA, width, height, 0, KmlGl.RGBA, KmlGl.UNSIGNED_BYTE, null)
-            gl.bindTexture(texTargetGl, 0)
+            bindTexture(null, texTarget)
 
             gl.bindRenderbuffer(KmlGl.RENDERBUFFER, renderBuffer)
             if (internalFormat != 0) {

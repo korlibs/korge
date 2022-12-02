@@ -25,6 +25,7 @@ import com.soywiz.kmem.dyn.func
 import com.soywiz.kmem.startAddressOf
 import com.soywiz.kmem.toInt
 import com.soywiz.kmem.write32LE
+import com.soywiz.korag.*
 import com.soywiz.korag.gl.AGOpengl
 import com.soywiz.korev.Key
 import com.soywiz.korev.MouseButton
@@ -154,6 +155,7 @@ class X11GameWindow : EventLoopGameWindow() {
 
     //init { println("X11GameWindow") }
     override val ag: X11AgOpengl by lazy { X11AgOpengl(this) }
+    override val nag: NAG by lazy { ag.gl }
     override var width: Int = 200; private set
     override var height: Int = 200; private set
     override var title: String = "Korgw"

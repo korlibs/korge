@@ -471,8 +471,8 @@ class MyDefaultGameWindow : GameWindow() {
         //println("doRender[4]")
     }
 
-    override val ag: AG = MacAGNative(window)
-
+    override val ag: MacAGNative = MacAGNative(window)
+    override val nag: NAG = NAGOpengl(ag.gl)
     //override val width: Int get() = window.frame.width.toInt()
     //override val height: Int get() = window.frame.height.toInt()
     override val width: Int get() = openglView.bounds.width.toInt()

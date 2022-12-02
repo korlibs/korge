@@ -6,6 +6,7 @@ import com.soywiz.klock.PerformanceCounter
 import com.soywiz.klock.TimeSpan
 import com.soywiz.kmem.toInt
 import com.soywiz.kmem.write32LE
+import com.soywiz.korag.*
 import com.soywiz.korag.gl.AGOpengl
 import com.soywiz.korev.Key
 import com.soywiz.korev.MouseButton
@@ -27,6 +28,7 @@ class X11GameWindow(val checkGl: Boolean) : EventLoopGameWindow() {
     override val dialogInterface: DialogInterface = ZenityDialogs()
 
     override val ag: X11Ag by lazy { X11Ag(this, checkGl) }
+    override val nag: NAG by lazy { NAGOpengl(ag.gl) }
     override var width: Int = 200; private set
     override var height: Int = 200; private set
     override var title: String = "Korgw"

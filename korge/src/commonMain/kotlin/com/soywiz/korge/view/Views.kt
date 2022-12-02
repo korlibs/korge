@@ -47,6 +47,7 @@ import kotlin.reflect.*
 class Views constructor(
     override val coroutineContext: CoroutineContext,
     val ag: AG,
+    val nag: NAG,
     val injector: AsyncInjector,
     val input: Input,
     val timeProvider: TimeProvider,
@@ -106,7 +107,7 @@ class Views constructor(
     var name: String? = null
     var currentVfs: VfsFile = resourcesVfs
     var imageFormats = RegisteredImageFormats
-	val renderContext = RenderContext(ag, this, stats, coroutineContext, batchMaxQuads)
+	val renderContext = RenderContext(ag, nag, this, stats, coroutineContext, batchMaxQuads)
 	@KorgeDeprecated val agBitmapTextureManager get() = renderContext.agBitmapTextureManager
     @KorgeDeprecated val agBufferManager get() = renderContext.agBufferManager
 	var clearEachFrame = true
@@ -520,12 +521,13 @@ class ViewsLog constructor(
 	override val coroutineContext: CoroutineContext,
 	val injector: AsyncInjector = AsyncInjector(),
 	val ag: AG = LogAG(),
+    val nag: NAG = NAGLog(),
 	val input: Input = Input(),
 	val timeProvider: TimeProvider = TimeProvider,
 	val stats: Stats = Stats(),
 	val gameWindow: GameWindow = GameWindowLog()
 ) : CoroutineScope {
-	val views = Views(coroutineContext + AsyncInjectorContext(injector), ag, injector, input, timeProvider, stats, gameWindow).also {
+	val views = Views(coroutineContext + AsyncInjectorContext(injector), ag, nag, injector, input, timeProvider, stats, gameWindow).also {
 	    it.rethrowRenderError = true
     }
     val stage: Stage get() = views.stage

@@ -35,6 +35,7 @@ import kotlin.coroutines.*
 class RenderContext constructor(
     /** The Accelerated Graphics object that allows direct rendering */
 	val ag: AG,
+    val nag: NAG,
 	val bp: BoundsProvider = BoundsProvider.Base(),
     /** Object storing all the rendering [Stats] like number of batches, number of vertices etc. */
 	val stats: Stats = Stats(),
@@ -329,11 +330,13 @@ class RenderContext constructor(
     }
 }
 
-inline fun <T : AG> testRenderContext(ag: T, bp: BoundsProvider = BoundsProvider.Base(), block: (RenderContext) -> Unit): T {
-    val ctx = RenderContext(ag, bp)
+inline fun <T : AG> testRenderContext(ag: T, nag: NAG, bp: BoundsProvider = BoundsProvider.Base(), block: (RenderContext) -> Unit): T {
+    val ctx = RenderContext(ag, nag, bp)
     block(ctx)
     ctx.flush()
     return ag
 }
 
-inline fun testRenderContext(bp: BoundsProvider = BoundsProvider.Base(), block: (RenderContext) -> Unit): LogAG = testRenderContext(LogAG(), bp, block)
+inline fun testRenderContext(bp: BoundsProvider = BoundsProvider.Base(), block: (RenderContext) -> Unit): LogAG {
+    return testRenderContext(LogAG(), NAGLog(), bp, block)
+}

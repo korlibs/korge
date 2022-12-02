@@ -2,6 +2,7 @@ package com.soywiz.korgw
 
 import com.soywiz.kgl.KmlGl
 import com.soywiz.kgl.KmlGlNative
+import com.soywiz.korag.*
 import com.soywiz.korag.gl.AGOpengl
 import com.soywiz.korev.Key
 import com.soywiz.korev.KeyEvent
@@ -17,6 +18,7 @@ class SDLAg(window: SdlGameWindowNative, override val gl: KmlGl = KmlGlNative())
 
 class SdlGameWindowNative : EventLoopGameWindow() {
     override val ag: SDLAg by lazy { SDLAg(this) }
+    override val nag: NAG by lazy { NAGOpengl(ag.gl) }
 
     var w: SDL.Window? = null
     var r: SDL.Renderer? = null

@@ -400,8 +400,8 @@ open class ViewsForTesting(
 		override fun toString(): String = "FastGameWindowCoroutineDispatcher"
 	}
 
-    inline fun <T : AG> testRenderContext(ag: T, block: (RenderContext) -> Unit): T {
-        val ctx = RenderContext(ag, views)
+    inline fun <T : AG> testRenderContext(ag: T, nag: NAG, block: (RenderContext) -> Unit): T {
+        val ctx = RenderContext(ag, nag, views)
         block(ctx)
         ctx.flush()
         return ag

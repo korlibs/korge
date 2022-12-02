@@ -411,8 +411,8 @@ open class IosGameWindow(
 ) : GameWindow() {
     override val dialogInterface = DialogInterfaceIos()
 
-    override val ag: AG = IosAGNative()
-
+    override val ag: IosAGNative = IosAGNative()
+    override val nag: NAG = NAGOpengl(ag.gl)
     //override var fps: Int get() = 60; set(value) = Unit
     //override var title: String get() = ""; set(value) = Unit
     //override val width: Int get() = 512

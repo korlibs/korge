@@ -1,12 +1,14 @@
 package com.soywiz.korge.render
 
+import com.soywiz.korag.*
 import com.soywiz.korag.log.*
 import com.soywiz.korge.test.*
 import kotlin.test.*
 
 class BatchBuilderTest {
 	val ag = LogAG(16, 16)
-	val bb = BatchBuilder2D(RenderContext(ag))
+    val nag = NAGLog()
+	val bb = BatchBuilder2D(RenderContext(ag, nag))
 
 	@Test
 	fun simpleBatch() {

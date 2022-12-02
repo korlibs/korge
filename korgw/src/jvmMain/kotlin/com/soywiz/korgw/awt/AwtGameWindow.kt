@@ -1,6 +1,7 @@
 package com.soywiz.korgw.awt
 
 import com.soywiz.kmem.*
+import com.soywiz.korag.*
 import com.soywiz.korev.*
 import com.soywiz.korgw.*
 import com.soywiz.korgw.internal.*
@@ -21,7 +22,7 @@ import javax.swing.*
 
 class AwtGameWindow(checkGl: Boolean, logGl: Boolean, config: GameWindowCreationConfig) : BaseAwtGameWindow(config) {
     override val ag: AwtAg = AwtAg(this, checkGl, logGl)
-
+    override val nag: NAG = NAGOpengl(ag.gl)
     /*
     fun JFrame.isFullScreen(): Boolean {
         try {

@@ -108,6 +108,7 @@ class Signal<T>(onRegister: () -> Unit = {}) : BaseSignal<T, (T) -> Unit>(onRegi
 
 suspend fun <T> AsyncSignal<T>.waitOne() = waitOneBase()
 suspend fun <T> Signal<T>.waitOne() = waitOneBase()
+suspend fun <T> Signal<T>.awaitOne() = waitOneBase()
 
 fun <TI, TO> AsyncSignal<TI>.mapSignal(transform: (TI) -> TO): AsyncSignal<TO> {
 	val out = AsyncSignal<TO>()

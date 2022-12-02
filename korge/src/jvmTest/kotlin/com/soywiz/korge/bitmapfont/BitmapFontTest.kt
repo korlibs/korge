@@ -1,5 +1,6 @@
 package com.soywiz.korge.bitmapfont
 
+import com.soywiz.korag.*
 import com.soywiz.korag.log.*
 import com.soywiz.korge.*
 import com.soywiz.korge.render.*
@@ -18,7 +19,9 @@ class BitmapFontTest {
             }
         }
     }
-	val ctx = RenderContext(ag, coroutineContext = EmptyCoroutineContext)
+    val nag = object : NAGLog() {
+    }
+	val ctx = RenderContext(ag, nag, coroutineContext = EmptyCoroutineContext)
 
 	@Test
 	fun simple() = suspendTest {

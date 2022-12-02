@@ -28,15 +28,19 @@ abstract class NAG {
     fun readToTexture(renderBuffer: NAGFrameBuffer, texture: NAGTexture, x: Int, y: Int, width: Int, height: Int, completed: Signal<Unit>? = null) {
         execute(NAGCommandTransfer.CopyToTexture(renderBuffer, texture, x, y, width, height, completed))
     }
-
-    fun readBits(renderBuffer: NAGFrameBuffer, kind: AGReadKind, x: Int, y: Int, width: Int, height: Int, completed: Signal<Unit>? = null, target: Any? = null) {
-        execute(NAGCommandTransfer.ReadBits(renderBuffer, kind, x, y, width, height, completed, target))
+    fun readBits(renderBuffer: NAGFrameBuffer, kind: AGReadKind, x: Int, y: Int, width: Int, height: Int, target: Any?, completed: Signal<Unit>? = null) {
+        execute(NAGCommandTransfer.ReadBits(renderBuffer, kind, x, y, width, height, target, completed))
     }
-
     fun finish(completed: Signal<Unit>? = null) {
         execute(NAGCommandFinish(completed))
     }
 
+    suspend fun readToTextureSuspend(renderBuffer: NAGFrameBuffer, texture: NAGTexture, x: Int, y: Int, width: Int, height: Int) {
+        Signal<Unit>().also { readToTexture(renderBuffer, texture, x, y, width, height, it) }.awaitOne()
+    }
+    suspend fun readBitsSuspend(renderBuffer: NAGFrameBuffer, kind: AGReadKind, x: Int, y: Int, width: Int, height: Int, target: Any? = null) {
+        Signal<Unit>().also { readBits(renderBuffer, kind, x, y, width, height, target, it) }.awaitOne()
+    }
     suspend fun finishSuspend() {
         Signal<Unit>().also { finish(it) }.waitOne()
     }
@@ -69,9 +73,10 @@ open class NAGTextureUnit : NAGObject() {
 open class NAGTexture : NAGObject() {
     var content: Bitmap? = null
 
-    fun upload(content: Bitmap? = null) {
+    fun upload(content: Bitmap? = null): NAGTexture {
         this.content = content
         this.invalidate()
+        return this
     }
 }
 
@@ -104,7 +109,7 @@ class NAGBuffer : NAGObject() {
     enum class Usage { DYNAMIC, STATIC, STREAM }
 
     fun upload(content: Buffer? = null, usage: Usage = Usage.DYNAMIC): NAGBuffer {
-        this.content = content
+        this.content = content?.clone(direct = true)
         this.usage = usage
         this.invalidate()
         return this
@@ -171,7 +176,7 @@ sealed interface NAGCommandTransfer : NAGCommand {
     val renderBuffer: NAGFrameBuffer
     val completed: Signal<Unit>?
     class CopyToTexture(override val renderBuffer: NAGFrameBuffer, val texture: NAGTexture, val x: Int, val y: Int, val width: Int, val height: Int, override val completed: Signal<Unit>? = null) : NAGCommandTransfer
-    class ReadBits(override val renderBuffer: NAGFrameBuffer, val readKind: AGReadKind, val x: Int, val y: Int, val width: Int, val height: Int, override val completed: Signal<Unit>? = null, val target: Any? = null) : NAGCommandTransfer
+    class ReadBits(override val renderBuffer: NAGFrameBuffer, val readKind: AGReadKind, val x: Int, val y: Int, val width: Int, val height: Int, val target: Any?, override val completed: Signal<Unit>? = null) : NAGCommandTransfer
 }
 
 inline class NAGDrawCommandArrayWriter(private val data: IntArrayList = IntArrayList()) {

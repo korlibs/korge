@@ -210,6 +210,7 @@ object Korge {
             val views: Views = Views(
                 coroutineContext = coroutineContext + gameWindow.coroutineDispatcher + AsyncInjectorContext(injector) + SupervisorJob(),
                 ag = if (debugAg) PrintAG() else ag,
+                nag = nag,
                 injector = injector,
                 input = input,
                 timeProvider = timeProvider,

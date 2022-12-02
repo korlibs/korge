@@ -1,5 +1,6 @@
 import com.soywiz.kgl.KmlGl
 import com.soywiz.kgl.checkedIf
+import com.soywiz.korag.*
 import com.soywiz.korag.gl.AGOpengl
 import com.soywiz.korev.Key
 import com.soywiz.korev.KeyEvent
@@ -49,7 +50,7 @@ val NULLPTR = Pointer(0)
 
 class SdlGameWindowJvm(checkGl: Boolean) : EventLoopGameWindow() {
     override val ag: AGOpengl by lazy { SDLAg(this, checkGl) }
-
+    override val nag: NAG = NAGOpengl(ag.gl)
     override var title: String = "Korgw"
         set(value) {
             field = value

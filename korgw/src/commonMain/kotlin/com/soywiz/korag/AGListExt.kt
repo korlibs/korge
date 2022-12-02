@@ -28,10 +28,8 @@ fun AGList.setRenderState(renderState: AGRenderState) {
     enableDisable(AGEnable.CULL_FACE, renderState.frontFace != AGFrontFace.BOTH) {
         frontFace(renderState.frontFace)
     }
-
     depthMask(renderState.depthMask)
     depthRange(renderState.depthNear, renderState.depthFar)
-
     enableDisable(AGEnable.DEPTH, renderState.depthFunc != AGCompareMode.ALWAYS) {
         depthFunction(renderState.depthFunc)
     }

@@ -820,6 +820,7 @@ data class AGConfig(val antialiasHint: Boolean = true)
 
 interface AGContainer {
     val ag: AG
+    val nag: NAG
     //data class Resized(var width: Int, var height: Int) {
     //	fun setSize(width: Int, height: Int): Resized = this.apply {
     //		this.width = width

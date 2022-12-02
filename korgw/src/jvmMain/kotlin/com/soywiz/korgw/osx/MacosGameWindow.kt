@@ -3,6 +3,7 @@ package com.soywiz.korgw.osx
 import com.soywiz.kgl.KmlGl
 import com.soywiz.kgl.checkedIf
 import com.soywiz.kgl.logIf
+import com.soywiz.korag.*
 import com.soywiz.korag.gl.AGOpengl
 import com.soywiz.korev.Key
 import com.soywiz.korev.KeyEvent
@@ -21,7 +22,7 @@ import java.nio.ByteBuffer
 import kotlin.coroutines.*
 import kotlin.system.*
 
-class MacAG(val window: Long, val checkGl: Boolean, val logGl:Boolean) : AGOpengl() {
+class MacAG(val window: Long, val checkGl: Boolean, val logGl: Boolean) : AGOpengl() {
     //override val glSlVersion = 140
     //override val glSlVersion = 100
     override val gl: KmlGl = MacKmlGL().checkedIf(checkGl).logIf(logGl)
@@ -274,6 +275,7 @@ class MacGameWindow(val checkGl: Boolean, val logGl: Boolean) : GameWindow() {
     override val key: CoroutineContext.Key<*>
         get() = super.key
     override val ag: MacAG = MacAG(window, checkGl, logGl)
+    override val nag: NAG = NAGOpengl(ag.gl)
     override val coroutineDispatcher: GameWindowCoroutineDispatcher
         get() = super.coroutineDispatcher
     override var title: String

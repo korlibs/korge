@@ -87,7 +87,8 @@ class WindowsGameWindow : EventLoopGameWindow() {
     val agNativeComponent = Any()
     var hwnd: HWND? = null
     var glRenderContext: HGLRC? = null
-    override val ag: AG = Win32AGOpengl({ hwnd })
+    override val ag: Win32AGOpengl = Win32AGOpengl({ hwnd })
+    override val nag: NAG = NAGOpengl(ag.gl)
 
     override var title: String
         get() = if (hwnd != null) processString(4096) { ptr, len -> GetWindowTextW(hwnd, ptr, len) } else lastTitle

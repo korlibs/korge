@@ -29,6 +29,7 @@ open class JsGameWindow : GameWindow() {
 
 open class BrowserCanvasJsGameWindow : JsGameWindow() {
     override val ag: AGWebgl = AGWebgl(AGConfig())
+    override val nag: NAG = NAGOpengl(ag.gl)
     val canvas get() = ag.canvas
     override val dialogInterface: DialogInterfaceJs = DialogInterfaceJs()
     private var isTouchDeviceCache: Boolean? = null

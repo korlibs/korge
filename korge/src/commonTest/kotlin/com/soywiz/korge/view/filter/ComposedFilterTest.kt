@@ -1,5 +1,6 @@
 package com.soywiz.korge.view.filter
 
+import com.soywiz.korag.*
 import com.soywiz.korag.log.LogAG
 import com.soywiz.korge.render.RenderContext
 import com.soywiz.korge.view.View
@@ -13,7 +14,7 @@ class ComposedFilterTest {
 
     @Test
     fun test() = suspendTest {
-        val ctx = RenderContext(LogAG())
+        val ctx = RenderContext(LogAG(), NAGLog())
         val rect = object : View() {
             override fun renderInternal(ctx: RenderContext) {
                 log += "image.renderBuffers=${ctx.ag.renderBuffers.totalItemsInUse}"

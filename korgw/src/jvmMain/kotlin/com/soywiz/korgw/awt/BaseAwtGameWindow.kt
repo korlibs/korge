@@ -4,6 +4,7 @@ import com.soywiz.kds.*
 import com.soywiz.kgl.*
 import com.soywiz.klock.*
 import com.soywiz.kmem.*
+import com.soywiz.korag.*
 import com.soywiz.korev.*
 import com.soywiz.korgw.*
 import com.soywiz.korgw.internal.MicroDynamic
@@ -36,6 +37,7 @@ import kotlin.system.*
 
 abstract class BaseAwtGameWindow(val config: GameWindowCreationConfig) : GameWindow(), ClipboardOwner {
     abstract override val ag: AwtAg
+    abstract override val nag: NAG
 
     //val fvsync get() = vsync
     val fvsync get() = false

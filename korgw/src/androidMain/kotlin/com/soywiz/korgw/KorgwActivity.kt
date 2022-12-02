@@ -10,6 +10,7 @@ import com.soywiz.kds.*
 import com.soywiz.kgl.*
 import com.soywiz.kmem.KmemGC
 import com.soywiz.kmem.hasBits
+import com.soywiz.korag.*
 import com.soywiz.korag.gl.*
 import com.soywiz.korev.*
 import kotlin.coroutines.*
@@ -23,6 +24,7 @@ abstract class KorgwActivity(
     var gameWindow: AndroidGameWindow = AndroidGameWindow(this, config)
     var mGLView: KorgwSurfaceView? = null
     lateinit var ag: AGOpengl
+    lateinit var nag: NAGOpengl
     open val agCheck: Boolean get() = false
     open val agTrace: Boolean get() = false
 
@@ -55,6 +57,7 @@ abstract class KorgwActivity(
 
         mGLView = KorgwSurfaceView(this, this, gameWindow, config)
         ag = AndroidAGOpengl(this, agCheck) { mGLView }
+        nag = NAGOpengl(ag.gl)
 
         gameWindow.initializeAndroid()
         setContentView(mGLView)
