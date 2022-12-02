@@ -1,6 +1,5 @@
 package com.soywiz.korge.view.vector
 
-import com.soywiz.kmem.toInt
 import com.soywiz.korag.*
 import com.soywiz.korag.shader.Attribute
 import com.soywiz.korag.shader.Operand

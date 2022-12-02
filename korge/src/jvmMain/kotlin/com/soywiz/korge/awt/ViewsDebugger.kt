@@ -160,7 +160,7 @@ internal class ViewsDebuggerComponent constructor(
     val tree: JTree = JTree(rootView!!.treeNode).apply {
         val tree = this
         addTreeSelectionListener {
-            println("addTreeSelectionListener: ${it.paths.toList()}")
+            //println("addTreeSelectionListener: ${it.paths.toList()}")
             if (it.paths.isNotEmpty()) {
                 selectView((it.path.lastPathComponent as ViewNode).view)
             } else {

@@ -113,7 +113,8 @@ class GpuShapeViewCommands {
         ctx.useBatcher { batcher ->
             batcher.updateStandardUniforms()
             colorMul.writeFloat(tempColorMul)
-            batcher.setTemporalUniform(GpuShapeViewPrograms.u_ColorMul, tempColorMul) {
+            batcher.keepUniform(GpuShapeViewPrograms.u_ColorMul) { uniforms ->
+                uniforms[GpuShapeViewPrograms.u_ColorMul] = tempColorMul
                 //tempMat.identity()
                 when {
                     doRequireTexture -> tempMat.identity()
@@ -182,7 +183,7 @@ class GpuShapeViewCommands {
                                                 tempUniforms.put(paintShader?.uniforms)
                                                 val pixelScale = decomposed.scaleAvg / ctx.bp.globalToWindowScaleAvg
                                                 //val pixelScale = 1f
-                                                tempUniforms.put(GpuShapeViewPrograms.u_GlobalPixelScale, pixelScale)
+                                                tempUniforms[GpuShapeViewPrograms.u_GlobalPixelScale] = pixelScale
 
                                                 val texUnit = tempUniforms[DefaultShaders.u_Tex] as? AGTextureUnit?
                                                 val premultiplied = texUnit?.texture?.premultiplied ?: false

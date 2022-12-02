@@ -1,137 +1,132 @@
 package com.soywiz.korag
 
+import com.soywiz.kds.*
 import com.soywiz.kds.lock.*
 import com.soywiz.kmem.*
 import com.soywiz.korag.shader.*
 import com.soywiz.korim.color.*
+import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 import kotlin.math.*
 
-class AGUniformValue(val uniform: Uniform) : AGValue(uniform)
+class AGUniformValue(val uniform: Uniform) : AGValue(uniform) {
+    override fun equals(other: Any?): Boolean = other is AGUniformValue && this.uniform == uniform && this.data == other.data && this.nativeValue == other.nativeValue
+    override fun hashCode(): Int = uniform.hashCode() + super.hashCode()
 
-open class AGValue(val type: VarType, val arrayCount: Int) {
+    override fun clone(): AGUniformValue = AGUniformValue(uniform).also {
+        arraycopy(this.data, 0, it.data, 0, this.data.size)
+        it.nativeValue = this.nativeValue
+    }
+}
+
+
+class AGUniformValues {
+    @PublishedApi internal val values = FastArrayList<AGUniformValue>()
+
+    inline fun fastForEach(block: (AGUniformValue) -> Unit) {
+        values.fastForEach(block)
+    }
+
+    fun remove(uniform: Uniform) {
+        values.removeAll { it.uniform == uniform }
+    }
+
+    fun clear() {
+        values.clear()
+    }
+
+    fun put(other: AGUniformValues?) {
+        copyFrom(other)
+    }
+
+    fun copyFrom(other: AGUniformValues?) {
+        other?.fastForEach {
+            this[it.uniform].set(it)
+        }
+    }
+
+    fun setTo(other: AGUniformValues) {
+        clear()
+        copyFrom(other)
+    }
+
+    fun clone(): AGUniformValues = AGUniformValues().also { it.copyFrom(this) }
+
+    operator fun get(uniform: Uniform): AGUniformValue {
+        for (n in 0 until values.size) {
+            val value = values[n]
+            if (value.uniform == uniform) return value
+        }
+        return AGUniformValue(uniform).also { values.add(it) }
+    }
+
+    operator fun set(uniform: Uniform, value: Unit) { this[uniform].set(value) }
+    operator fun set(uniform: Uniform, value: AGValue) { this[uniform].set(value) }
+    operator fun set(uniform: Uniform, value: AGTextureUnit) { this[uniform].set(value) }
+    operator fun set(uniform: Uniform, value: Boolean) { this[uniform].set(value) }
+    operator fun set(uniform: Uniform, value: BooleanArray) { this[uniform].set(value) }
+    operator fun set(uniform: Uniform, value: Int) { this[uniform].set(value) }
+    operator fun set(uniform: Uniform, value: IntArray) { this[uniform].set(value) }
+    operator fun set(uniform: Uniform, value: Float) { this[uniform].set(value) }
+    operator fun set(uniform: Uniform, value: FloatArray) { this[uniform].set(value) }
+    operator fun set(uniform: Uniform, value: Double) { this[uniform].set(value) }
+    operator fun set(uniform: Uniform, value: Matrix3D) { this[uniform].set(value) }
+    operator fun set(uniform: Uniform, value: IPoint) { this[uniform].set(value) }
+    operator fun set(uniform: Uniform, value: Vector3D) { this[uniform].set(value) }
+    operator fun set(uniform: Uniform, value: RGBAf) { this[uniform].set(value) }
+    operator fun set(uniform: Uniform, value: RGBA) { this[uniform].set(value) }
+    operator fun set(uniform: Uniform, value: RGBAPremultiplied) { this[uniform].set(value) }
+    operator fun set(uniform: Uniform, value: Array<Vector3D>) { this[uniform].set(value) }
+    operator fun set(uniform: Uniform, value: Array<Matrix3D>) { this[uniform].set(value) }
+    operator fun set(uniform: Uniform, value: Array<FloatArray>) { this[uniform].set(value) }
+
+    companion object {
+        @PublishedApi internal val EMPTY = AGUniformValues()
+
+        operator fun invoke(block: (AGUniformValues) -> Unit): AGUniformValues = AGUniformValues().also(block)
+        fun valueToString(value: AGValue): String = value.toString()
+    }
+}
+
+open class AGValue(val type: VarType, val arrayCount: Int, val data: Buffer = Buffer(type.elementCount * arrayCount * 4)) {
     constructor(variable: Variable) : this(variable.type, variable.arrayCount)
 
+    var nativeValue: Any? = null
     val kind: VarKind = type.kind
     val stride: Int = type.elementCount
     val totalElements: Int = stride * arrayCount
     val totalBytes: Int = type.bytesSize * arrayCount
 
+    open fun clone(): AGValue = AGValue(type, arrayCount, data.clone())
+
     //val data: Buffer = Buffer(type.bytesSize * arrayCount * 4)
-    val data: Buffer = Buffer(type.elementCount * arrayCount * 4)
     val i32: Int32Buffer = data.i32
     val f32: Float32Buffer = data.f32
 
-    //fun set(data: Buffer) {
-    //    arraycopy(data, 0, this.data, 0, min(totalBytes, data.size))
-    //}
+    fun set(value: Unit) = Unit
+    fun set(value: Boolean) = set(value.toInt())
 
-    @Deprecated("")
-    fun set(value: Any?) {
-        when (value) {
-            null -> set(Unit)
-            is AGTextureUnit -> set(value)
-            is Unit -> set(Unit)
-            is Boolean -> set(value)
-            is BooleanArray -> set(value)
-            is Int -> set(value)
-            is IntArray -> set(value)
-            is Float -> set(value)
-            is FloatArray -> set(value)
-            is Double -> set(value.toFloat())
-            is Matrix3D -> set(value)
-            is IPoint -> set(value)
-            is Vector3D -> set(value)
-            is RGBAf -> set(value)
-            is RGBA -> set(value)
-            is RGBAPremultiplied -> set(value)
-            is Array<*> -> {
-                if (value.size > 0) {
-                    val item = value[0]
-                    when (item) {
-                        is Vector3D -> set(value as Array<Vector3D>)
-                        is Matrix3D -> set(value as Array<Matrix3D>)
-                        is FloatArray -> set(value as Array<FloatArray>)
-                        else -> TODO()
-                    }
-                }
-            }
-            else -> TODO("$value : ${value::class}")
-        }
-    }
-    /*
-                arrayCount = min(declArrayCount, value.size)
-                for (n in 0 until value.size) {
-                    val vector = value[n] as Vector3D
-                    tempBuffer.setArrayFloat32(n * stride, vector.data, 0, stride)
-                }
-
-                set(value as Array<Matrix3D>)
-
-     */
-
-    fun set(value: Unit) {
-    }
-
-    fun set(value: Boolean) {
-        set(value.toInt())
+    fun set(value: AGValue) {
+        arraycopy(value.data, 0, this.data, 0, min(this.data.size, value.data.size))
+        this.nativeValue = value.nativeValue
     }
 
     fun set(value: AGTextureUnit) {
         set(value.index)
+        nativeValue = value
     }
 
-    fun set(value: Int) {
-        when (kind) {
-            //VarKind.TBOOL, VarKind.TBYTE, VarKind.TUNSIGNED_BYTE -> data.setUInt8(0, value)
-            //VarKind.TSHORT, VarKind.TUNSIGNED_SHORT -> data.setInt16(0, value.toShort())
-            //VarKind.TINT -> data.setInt32(0, value)
-            //VarKind.TFLOAT -> data.setFloat32(0, value.toFloat())
-            VarKind.TFLOAT -> f32[0] = value.toFloat()
-            else -> i32[0] = value
-        }
+    fun set(value: Int) = when (kind) {
+        VarKind.TFLOAT -> f32[0] = value.toFloat()
+        else -> i32[0] = value
     }
 
-    fun set(value: Float) {
-        when (kind) {
-            VarKind.TFLOAT -> data.setFloat32(0, value)
-            else -> set(value.toInt())
-        }
+    fun set(value: Float) = when (kind) {
+        VarKind.TFLOAT -> data.setFloat32(0, value)
+        else -> set(value.toInt())
     }
 
-    fun set(value: BooleanArray, offset: Int = 0, size: Int = value.size - offset) {
-        tempIntsLock {
-            for (n in 0 until size) tempInts[n] = value[offset + n].toInt()
-            set(tempInts, 0, size)
-        }
-    }
-
-    fun set(value: IntArray, offset: Int = 0, size: Int = value.size - offset) {
-        when (kind) {
-            //VarKind.TBOOL, VarKind.TBYTE, VarKind.TUNSIGNED_BYTE -> for (n in 0 until size) data.setUInt8(n, value[offset + n])
-            //VarKind.TSHORT, VarKind.TUNSIGNED_SHORT -> for (n in 0 until size) data.setUInt16(n, value[offset + n])
-            //VarKind.TINT -> for (n in 0 until size) data.setInt32(n, value[offset + n])
-            VarKind.TFLOAT -> for (n in 0 until size) data.setFloat32(n, value[offset + n].toFloat())
-            else -> data.setArrayInt32(0, value, offset, size)
-        }
-    }
-
-    fun set(value: FloatArray, offset: Int = 0, size: Int = value.size - offset) {
-        when (kind) {
-            //VarKind.TBOOL, VarKind.TBYTE, VarKind.TUNSIGNED_BYTE -> for (n in 0 until size) data.setUInt8(n, value[offset + n].toInt())
-            //VarKind.TSHORT, VarKind.TUNSIGNED_SHORT -> for (n in 0 until size) data.setUInt16(n, value[offset + n].toInt())
-            //VarKind.TINT -> for (n in 0 until size) data.setInt32(n, value[offset + n].toInt())
-            VarKind.TFLOAT -> data.setArrayFloat32(0, value, offset, size)
-            else -> for (n in 0 until size) i32[n] = value[offset + n].toInt()
-        }
-    }
-
-    fun set(value: Array<FloatArray>) {
-        for (n in 0 until min(value.size, arrayCount)) {
-            val data = value[n]
-            f32.setArray(n * stride, data, 0, min(stride, data.size))
-        }
-    }
+    fun set(value: Double) = set(value.toFloat())
 
     fun set(v0: Float, v1: Float) {
         tempFloatsLock {
@@ -160,38 +155,55 @@ open class AGValue(val type: VarType, val arrayCount: Int) {
         }
     }
 
-    fun set(value: Vector3D) {
-        set(value.data, 0, stride)
+    fun set(value: Vector3D) = set(value.data, 0, stride)
+    fun set(value: RGBAf) = set(value.data, 0, 4)
+    fun set(value: IPoint) = set(value.x.toFloat(), value.y.toFloat())
+    fun set(value: Margin) = set(value.top.toFloat(), value.right.toFloat(), value.bottom.toFloat(), value.left.toFloat())
+    fun set(value: RectCorners) = set(value.topLeft.toFloat(), value.topRight.toFloat(), value.bottomRight.toFloat(), value.bottomLeft.toFloat())
+    fun set(value: RGBA) = set(value.rf, value.gf, value.bf, value.af)
+    fun set(value: RGBAPremultiplied) = set(value.rf, value.gf, value.bf, value.af)
+    fun set(mat: Matrix3D) = tempMatrixLock { set(tempMatrix.also { it[0] = mat }) }
+
+
+    fun set(value: BooleanArray, offset: Int = 0, size: Int = value.size - offset) {
+        tempIntsLock {
+            for (n in 0 until size) tempInts[n] = value[offset + n].toInt()
+            set(tempInts, 0, size)
+        }
     }
 
-    fun set(value: RGBAf) {
-        set(value.data, 0, 4)
+    fun set(value: IntArray, offset: Int = 0, size: Int = value.size - offset) {
+        when (kind) {
+            VarKind.TFLOAT -> for (n in 0 until size) data.setFloat32(n, value[offset + n].toFloat())
+            else -> data.setArrayInt32(0, value, offset, size)
+        }
     }
 
-    fun set(value: IPoint) {
-        set(value.x.toFloat(), value.y.toFloat())
+    fun set(value: FloatArray, offset: Int = 0, size: Int = value.size - offset) {
+        when (kind) {
+            VarKind.TFLOAT -> data.setArrayFloat32(0, value, offset, size)
+            else -> for (n in 0 until size) i32[n] = value[offset + n].toInt()
+        }
     }
 
-    fun set(value: Margin) {
-        set(value.top.toFloat(), value.right.toFloat(), value.bottom.toFloat(), value.left.toFloat())
+    fun set(value: DoubleArray, offset: Int = 0, size: Int = value.size - offset) {
+        when (kind) {
+            VarKind.TFLOAT -> for (n in 0 until size) f32[n] = value[offset + n].toFloat()
+            else -> for (n in 0 until size) i32[n] = value[offset + n].toInt()
+        }
     }
 
-    fun set(value: RectCorners) {
-        set(value.topLeft.toFloat(), value.topRight.toFloat(), value.bottomRight.toFloat(), value.bottomLeft.toFloat())
+    fun set(value: Array<FloatArray>) {
+        for (n in 0 until min(value.size, arrayCount)) {
+            val data = value[n]
+            f32.setArray(n * stride, data, 0, min(stride, data.size))
+        }
     }
 
-    fun set(value: RGBA) {
-        set(value.rf, value.gf, value.bf, value.af)
-    }
-
-    fun set(value: RGBAPremultiplied) {
-        set(value.rf, value.gf, value.bf, value.af)
-    }
-
-    fun set(mat: Matrix3D) {
-        tempMatrixLock {
-            tempMatrix[0] = mat
-            set(tempMatrix)
+    fun set(vectors: Array<Vector3D>) {
+        for (n in 0 until min(vectors.size, arrayCount)) {
+            val data = vectors[n].data
+            f32.setArray(n * stride, data, 0, min(data.size, stride))
         }
     }
 
@@ -208,12 +220,8 @@ open class AGValue(val type: VarType, val arrayCount: Int) {
         }
     }
 
-    fun set(vectors: Array<Vector3D>) {
-        for (n in 0 until min(vectors.size, arrayCount)) {
-            val data = vectors[n].data
-            f32.setArray(n * stride, data, 0, min(data.size, stride))
-        }
-    }
+    override fun equals(other: Any?): Boolean = other is AGValue && this.data == other.data && this.nativeValue == other.nativeValue
+    override fun hashCode(): Int = data.hashCode()
 
     companion object {
         private val tempIntsLock = NonRecursiveLock()
@@ -222,5 +230,27 @@ open class AGValue(val type: VarType, val arrayCount: Int) {
         private val tempFloats = FloatArray(64 * (4 * 4))
         private val tempMatrixLock = NonRecursiveLock()
         private val tempMatrix = Array<Matrix3D>(1) { Matrix3D() }
+    }
+
+    override fun toString(): String {
+        return buildString {
+            append("AGValue[$kind](")
+            append('[')
+            for (i in 0 until arrayCount) {
+                if (i != 0) append(",")
+                append('[')
+                for (n in 0 until stride) {
+                    if (n != 0) append(", ")
+                    if (kind == VarKind.TFLOAT) {
+                        append(f32[i * stride + n].niceStr)
+                    } else {
+                        append(i32[i * stride + n])
+                    }
+                }
+                append(']')
+            }
+            append(']')
+            append(")")
+        }
     }
 }

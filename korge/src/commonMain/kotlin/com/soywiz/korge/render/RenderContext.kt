@@ -50,29 +50,17 @@ class RenderContext constructor(
     val viewMat2D: Matrix = Matrix()
 
     @KorgeInternal
-    val uniforms: AGUniformValues by lazy {
-        AGUniformValues {
-            it[DefaultShaders.u_ProjMat] = projMat
-            it[DefaultShaders.u_ViewMat] = viewMat
-        }
+    val uniforms: AGUniformValues = AGUniformValues().also {
+        it[DefaultShaders.u_ProjMat] = projMat
+        it[DefaultShaders.u_ViewMat] = viewMat
     }
-
-    inline fun <T> setTemporalProjectionMatrixTransform(m: Matrix, block: () -> T): T =
-        this.projectionMatrixTransform.keepMatrix {
-            flush()
-            this.projectionMatrixTransform.copyFrom(m)
-            try {
-                block()
-            } finally {
-                flush()
-            }
-        }
 
     var flipRenderTexture = true
     //var flipRenderTexture = false
     private val tempRect = Rectangle()
     private val tempMat3d = Matrix3D()
 
+    @OptIn(KorgeInternal::class)
     fun updateStandardUniforms() {
         //println("updateStandardUniforms: ag.currentSize(${ag.currentWidth}, ${ag.currentHeight}) : ${ag.currentRenderBuffer}")
         if (flipRenderTexture && ag.renderingToTexture) {
@@ -81,6 +69,9 @@ class RenderContext constructor(
             projMat.setToOrtho(tempRect.setBounds(0, 0, ag.currentWidth, ag.currentHeight), -1f, 1f)
             projMat.multiply(projMat, projectionMatrixTransform.toMatrix3D(tempMat3d))
         }
+        uniforms[DefaultShaders.u_ProjMat] = projMat
+        uniforms[DefaultShaders.u_ViewMat] = viewMat
+
     }
 
     /**
@@ -106,61 +97,41 @@ class RenderContext constructor(
         }
     }
 
+
+    @PublishedApi internal val tempUniforms = Pool(reset = { it.clear() }) { AGUniformValues() }
+
     /**
-     * Executes [callback] while setting temporarily an [uniform] to a [value]
+     * Support restoring uniforms later.
      */
-    inline fun setTemporalUniform(uniform: Uniform, value: Any?, flush: Boolean = true, callback: (AGUniformValues) -> Unit) {
-        val old = this.uniforms[uniform]
-        if (flush) flush()
-        this.uniforms.putOrRemove(uniform, value)
-        try {
-            callback(this.uniforms)
-        } finally {
-            if (flush) flush()
-            this.uniforms.putOrRemove(uniform, old)
+    inline fun keepUniforms(callback: (AGUniformValues) -> Unit) {
+        tempUniforms.alloc { temp ->
+            temp.setTo(this.uniforms)
+            try {
+                callback(this.uniforms)
+            } finally {
+                this.uniforms.setTo(temp)
+            }
         }
     }
 
-    inline fun <reified T> setTemporalUniforms(uniforms: Array<Uniform>, values: Array<T>, count: Int = values.size, olds: Array<T?> = arrayOfNulls<T>(count), flush: Boolean = true, callback: (AGUniformValues) -> Unit) {
-        if (flush) flush()
-        for (n in 0 until count) {
-            olds[n] = this.uniforms[uniforms[n]] as T?
-            this.uniforms.putOrRemove(uniforms[n], values[n])
-        }
-        try {
-            callback(this.uniforms)
-        } finally {
+    /**
+     * Executes [callback] while setting temporarily an [uniform] to a [value]
+     */
+    inline fun keepUniform(uniform: Uniform, flush: Boolean = true, callback: (AGUniformValues) -> Unit) {
+        tempUniforms.alloc { temp ->
             if (flush) flush()
-            for (n in 0 until count) {
-                val m = olds.size - 1 - n
-                this.uniforms.putOrRemove(uniforms[m], olds[m])
+            temp[uniform] = this.uniforms[uniform]
+            try {
+                callback(this.uniforms)
+            } finally {
+                if (flush) flush()
+                this.uniforms[uniform] = temp[uniform]
             }
         }
     }
 
     @PublishedApi
     internal val tempOldUniformsList: Pool<AGUniformValues> = Pool { AGUniformValues() }
-
-    /**
-     * Executes [callback] while setting temporarily a set of [uniforms]
-     */
-    inline fun setTemporalUniforms(uniforms: AGUniformValues?, callback: (AGUniformValues) -> Unit) {
-        tempOldUniformsList { tempOldUniforms ->
-            if (uniforms != null && uniforms.isNotEmpty()) {
-                flush(FlushKind.STATE)
-                tempOldUniforms.setTo(this.uniforms)
-                this.uniforms.put(uniforms)
-            }
-            try {
-                callback(this.uniforms)
-            } finally {
-                if (uniforms != null && uniforms.isNotEmpty()) {
-                    flush(FlushKind.STATE)
-                    this.uniforms.setTo(tempOldUniforms)
-                }
-            }
-        }
-    }
 
     val agAutoFreeManager = AgAutoFreeManager()
 	val agBitmapTextureManager = AgBitmapTextureManager(ag)

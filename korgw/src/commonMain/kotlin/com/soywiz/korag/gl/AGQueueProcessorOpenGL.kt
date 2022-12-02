@@ -21,17 +21,10 @@ import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.bitmap.Bitmap8
 import com.soywiz.korim.bitmap.FloatBitmap32
 import com.soywiz.korim.bitmap.NativeImage
-import com.soywiz.korim.color.*
 import com.soywiz.korio.annotations.KorIncomplete
 import com.soywiz.korio.annotations.KorInternal
 import com.soywiz.korio.async.launchImmediately
-import com.soywiz.korio.lang.currentThreadId
-import com.soywiz.korio.lang.currentThreadName
-import com.soywiz.korio.lang.invalidOp
-import com.soywiz.korio.lang.printStackTrace
-import com.soywiz.korio.lang.unsupported
-import com.soywiz.korma.geom.*
-import kotlin.math.min
+import com.soywiz.korio.lang.*
 
 @OptIn(KorIncomplete::class, KorInternal::class)
 class AGQueueProcessorOpenGL(
@@ -432,31 +425,7 @@ class AGQueueProcessorOpenGL(
         ubos[ensureUboIndex(id)] = ubo
     }
 
-    private val TEMP_MAX_MATRICES = 1024
-    val tempBuffer = Buffer.allocDirect(4 * 16 * TEMP_MAX_MATRICES)
-    val tempBufferM2 = Buffer.allocDirect(4 * 2 * 2)
-    val tempBufferM3 = Buffer.allocDirect(4 * 3 * 3)
-    val tempBufferM4 = Buffer.allocDirect(4 * 4 * 4)
-    val tempF32 = tempBuffer.f32
-    private val tempFloats = FloatArray(16 * TEMP_MAX_MATRICES)
-    private val mat3dArray = arrayOf(Matrix3D())
-
-    // @TODO: Remove this
-    fun Any.clone(): Any = when (this) {
-        is Matrix3D -> this.clone()
-        is IPoint -> this.copy()
-        is FloatArray -> this.copyOf()
-        is Number -> this
-        is Boolean -> this
-        is AGTextureUnit -> this.clone()
-        is Vector3D -> this.copy()
-        is Point -> this.copy()
-        is Margin -> this.copy()
-        is RectCorners -> this.duplicate()
-        is RGBA -> value
-        is RGBAPremultiplied -> value
-        else -> TODO("$this : ${this::class}")
-    }
+    //val tempData = Buffer.allocDirect(4 * 1024)
 
     override fun uboUse(id: Int) {
         val uniforms = ubos[id] ?: return
@@ -466,17 +435,18 @@ class AGQueueProcessorOpenGL(
 
         //for ((uniform, value) in uniforms) {
 
-        uniforms.forEachUniform { uniform, value, agValue, valueData, valueIndex ->
+        uniforms.fastForEach { value ->
+            val uniform = value.uniform
             val uniformName = uniform.name
             val uniformType = uniform.type
             val location = glProgram.getUniformLocation(gl, uniformName)
             val declArrayCount = uniform.arrayCount
-            val stride = uniform.type.elementCount
             var textureUnit: Int = -1
 
             when (uniformType) {
                 VarType.Sampler2D, VarType.SamplerCube -> {
-                    val unit = value.fastCastTo<AGTextureUnit>()
+                    val unit = value.nativeValue?.fastCastTo<AGTextureUnit>() ?: AGTextureUnit(0, null)
+                    //println("unit=${unit.texture}")
                     textureUnit = glProgram.getTextureUnit(uniform, unit)
 
                     if (cacheTextureUnit[textureUnit] != unit) {
@@ -489,157 +459,56 @@ class AGQueueProcessorOpenGL(
                             textureBindEnsuring(tex)
                             textureSetWrap(tex)
                             textureSetFilter(tex, unit.linear, unit.trilinear ?: unit.linear)
-                            //val texture = textures[tex.texId]
-                            //if (doPrint) println("BIND TEXTURE: $textureUnit, tex=${tex.texId}, glId=${texture?.glId}")
-                            //println("BIND TEXTURE: $textureUnit, tex=${tex.texId}, implForcedTexId=${tex.implForcedTexId}")
                         } else {
                             gl.bindTexture(KmlGl.TEXTURE_2D, 0)
-                            //println("NULL TEXTURE")
-                            //if (doPrint) println("NULL TEXTURE")
                         }
                     }
                 }
                 else -> Unit
             }
 
-            //if (glProgram.cachedFrameVersion != frameVersion) {
-            //    glProgram.cache.clear()
-            //    glProgram.cachedFrameVersion = frameVersion
-            //}
             val oldValue = glProgram.cache[uniform]
             if (value == oldValue) {
-            //if (value == oldValue) {
-                //println("value == oldValue ::: $value == $oldValue")
-                //if (glProgram.programId > 4) {
-                //    println("glProgram.oid=${glProgram.programId} : $uniform :: value == oldValue ::: $value == $oldValue")
-                //}
-
-                return@forEachUniform
+                return@fastForEach
             }
-            glProgram.cache[uniform] = value.clone()
+            glProgram.cache[uniform] = value
 
-            //println("uniform: $uniform, arrayCount=$arrayCount, stride=$stride")
-            arraycopy(agValue.data, 0, tempBuffer, 0, agValue.data.size)
+            //println("uniform: $uniform, arrayCount=${uniform.arrayCount}, stride=${uniform.elementCount}, value=$value old=$oldValue")
 
-            when (uniformType) {
-                VarType.Mat2, VarType.Mat3, VarType.Mat4 -> {
-                    if (gl.webgl) {
-                        //if (true) {
-                        val tb = when (uniformType) {
-                            VarType.Mat2 -> tempBufferM2
-                            VarType.Mat3 -> tempBufferM3
-                            VarType.Mat4 -> tempBufferM4
-                            else -> tempBufferM4
-                        }
+            // Store into a direct buffer
+            //arraycopy(value.data, 0, tempData, 0, value.data.size)
+            val data = value.data
 
-                        for (n in 0 until declArrayCount) {
-                            val itLocation = when (declArrayCount) {
-                                1 -> location
-                                else -> gl.getUniformLocation(glProgram.programId, uniform.indexNames[n])
-                            }
-                            arraycopy(tempBuffer.f32, n * stride, tb.f32, 0, stride)
-                            //println("[WEBGL] uniformName[$uniformName]=$itLocation, tb: ${tb.f32.size}")
-                            when (uniform.type) {
-                                VarType.Mat2 -> gl.uniformMatrix2fv(itLocation, 1, false, tb)
-                                VarType.Mat3 -> gl.uniformMatrix3fv(itLocation, 1, false, tb)
-                                VarType.Mat4 -> gl.uniformMatrix4fv(itLocation, 1, false, tb)
-                                else -> invalidOp("Don't know how to set uniform matrix ${uniform.type}")
-                            }
-                        }
-                    } else {
-                        //println("[NO-WEBGL] uniformName[$uniformName]=$location ")
-                        when (uniform.type) {
-                            VarType.Mat2 -> gl.uniformMatrix2fv(location, declArrayCount, false, tempBuffer)
-                            VarType.Mat3 -> gl.uniformMatrix3fv(location, declArrayCount, false, tempBuffer)
-                            VarType.Mat4 -> gl.uniformMatrix4fv(location, declArrayCount, false, tempBuffer)
-                            else -> invalidOp("Don't know how to set uniform matrix ${uniform.type}")
-                        }
+            when (uniformType.kind) {
+                VarKind.TFLOAT -> when (uniform.type) {
+                    VarType.Mat2 -> gl.uniformMatrix2fv(location, declArrayCount, false, data)
+                    VarType.Mat3 -> gl.uniformMatrix3fv(location, declArrayCount, false, data)
+                    VarType.Mat4 -> gl.uniformMatrix4fv(location, declArrayCount, false, data)
+                    else -> when (uniformType.elementCount) {
+                        1 -> gl.uniform1fv(location, uniform.arrayCount, data)
+                        2 -> gl.uniform2fv(location, uniform.arrayCount, data)
+                        3 -> gl.uniform3fv(location, uniform.arrayCount, data)
+                        4 -> gl.uniform4fv(location, uniform.arrayCount, data)
                     }
                 }
-                VarType.Bool1, VarType.Bool2, VarType.Bool3, VarType.Bool4,
-                VarType.Int1, VarType.Int2, VarType.Int3, VarType.Int4,
-                VarType.UByte1, VarType.UByte2, VarType.UByte3, VarType.UByte4,
-                VarType.SByte1, VarType.SByte2, VarType.SByte3, VarType.SByte4,
-                VarType.Short1, VarType.Short2, VarType.Byte4, VarType.Byte4,
-                VarType.Sampler2D, VarType.SamplerCube,
-                -> {
-                    val i32 = agValue.i32
-                    when (uniformType.elementCount) {
-                        1 -> {
-                            when (uniform.arrayCount) {
-                                1 -> gl.uniform1i(location, i32[0])
-                                else -> gl.uniform1iv(location, uniform.arrayCount, agValue.data)
-                            }
-                        }
-                        2 -> {
-                            when (uniform.arrayCount) {
-                                1 -> gl.uniform2i(location, i32[0], i32[1])
-                                else -> gl.uniform2iv(location, uniform.arrayCount, agValue.data)
-                            }
-                        }
-                        3 -> {
-                            when (uniform.arrayCount) {
-                                1 -> gl.uniform3i(location, i32[0], i32[1], i32[2])
-                                else -> gl.uniform3iv(location, uniform.arrayCount, agValue.data)
-                            }
-                        }
-                        4 -> {
-                            when (uniform.arrayCount) {
-                                1 -> gl.uniform4i(location, i32[0], i32[1], i32[2], i32[3])
-                                else -> gl.uniform4iv(location, uniform.arrayCount, agValue.data)
-                            }
-                        }
-                    }
+                else -> when (uniformType.elementCount) {
+                    1 -> gl.uniform1iv(location, uniform.arrayCount, data)
+                    2 -> gl.uniform2iv(location, uniform.arrayCount, data)
+                    3 -> gl.uniform3iv(location, uniform.arrayCount, data)
+                    4 -> gl.uniform4iv(location, uniform.arrayCount, data)
                 }
-                VarType.Float1, VarType.Float2, VarType.Float3, VarType.Float4 -> {
-                    val f32 = agValue.f32
-                    when (uniformType.elementCount) {
-                        1 -> {
-                            when (uniform.arrayCount) {
-                                1 -> gl.uniform1f(location, f32[0])
-                                else -> gl.uniform1fv(location, uniform.arrayCount, agValue.data)
-                            }
-                        }
-                        2 -> {
-                            when (uniform.arrayCount) {
-                                1 -> gl.uniform2f(location, f32[0], f32[1])
-                                else -> gl.uniform2fv(location, uniform.arrayCount, agValue.data)
-                            }
-                        }
-                        3 -> {
-                            when (uniform.arrayCount) {
-                                1 -> gl.uniform3f(location, f32[0], f32[1], f32[2])
-                                else -> gl.uniform3fv(location, uniform.arrayCount, agValue.data)
-                            }
-                        }
-                        4 -> {
-                            when (uniform.arrayCount) {
-                                1 -> gl.uniform4f(location, f32[0], f32[1], f32[2], f32[3])
-                                else -> gl.uniform4fv(location, uniform.arrayCount, agValue.data)
-                            }
-                        }
-                    }
-                }
-                else -> invalidOp("Don't know how to set uniform ${uniform.type}")
             }
         }
     }
 
 
     fun textureSetFilter(tex: AGTexture, linear: Boolean, trilinear: Boolean = linear) {
-        val minFilter = if (tex.mipmaps) {
-            when {
-                linear -> when {
-                    trilinear -> KmlGl.LINEAR_MIPMAP_LINEAR
-                    else -> KmlGl.LINEAR_MIPMAP_NEAREST
-                }
-                else -> when {
-                    trilinear -> KmlGl.NEAREST_MIPMAP_LINEAR
-                    else -> KmlGl.NEAREST_MIPMAP_NEAREST
-                }
+        val minFilter = when {
+            tex.mipmaps -> when {
+                linear -> if (trilinear) KmlGl.LINEAR_MIPMAP_LINEAR else KmlGl.LINEAR_MIPMAP_NEAREST
+                else -> if (trilinear) KmlGl.NEAREST_MIPMAP_LINEAR else KmlGl.NEAREST_MIPMAP_NEAREST
             }
-        } else {
-            if (linear) KmlGl.LINEAR else KmlGl.NEAREST
+            else -> if (linear) KmlGl.LINEAR else KmlGl.NEAREST
         }
         val magFilter = if (linear) KmlGl.LINEAR else KmlGl.NEAREST
 

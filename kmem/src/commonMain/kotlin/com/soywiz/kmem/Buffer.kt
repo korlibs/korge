@@ -23,6 +23,12 @@ expect fun Buffer(array: ByteArray, offset: Int = 0, size: Int = array.size - of
 fun Buffer.Companion.allocDirect(size: Int): Buffer = Buffer(size, direct = true)
 fun Buffer.Companion.allocNoDirect(size: Int): Buffer = Buffer(size, direct = false)
 
+fun Buffer.clone(direct: Boolean = false): Buffer {
+    val out = Buffer(this.size, direct)
+    arraycopy(this, 0, out, 0, size)
+    return out
+}
+
 expect val Buffer.byteOffset: Int
 expect val Buffer.sizeInBytes: Int
 private fun Int.hexChar(): Char = when (this) {

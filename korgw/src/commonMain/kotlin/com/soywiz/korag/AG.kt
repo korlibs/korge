@@ -645,12 +645,12 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
 
 fun AGUniformValues.useExternalSampler(): Boolean {
     var useExternalSampler = false
-    this.fastForEach { uniform, value ->
+    this.fastForEach { uniform ->
         val uniformType = uniform.type
         when (uniformType) {
             VarType.Sampler2D -> {
-                val unit = value.fastCastTo<AGTextureUnit>()
-                val tex = (unit.texture.fastCastTo<AGTexture?>())
+                val unit = uniform.nativeValue?.fastCastTo<AGTextureUnit>()
+                val tex = (unit?.texture?.fastCastTo<AGTexture?>())
                 if (tex != null) {
                     if (tex.implForcedTexTarget == AGTextureTargetKind.EXTERNAL_TEXTURE) {
                         useExternalSampler = true

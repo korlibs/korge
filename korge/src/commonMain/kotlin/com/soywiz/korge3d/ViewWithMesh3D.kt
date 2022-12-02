@@ -38,12 +38,12 @@ open class ViewWithMesh3D(
     ) {
         when (actual) {
             is Material3D.LightColor -> {
-                this[uniform.u_color] = actual.colorVec
+                this[uniform.u_color].set(actual.colorVec)
             }
             is Material3D.LightTexture -> {
                 actual.textureUnit.texture = actual.bitmap?.let { ctx.rctx.agBitmapTextureManager.getTextureBase(it).base }
                 actual.textureUnit.linear = true
-                this[uniform.u_texUnit] = actual.textureUnit
+                this[uniform.u_texUnit].set(actual.textureUnit)
             }
         }
     }
@@ -81,14 +81,14 @@ open class ViewWithMesh3D(
                         blending = AGBlending.NONE,
                         //vertexCount = 6 * 6,
                         uniforms = uniformValues.apply {
-                            this[u_ProjMat] = ctx.projCameraMat
-                            this[u_ViewMat] = transform.globalMatrix
-                            this[u_ModMat] = tempMat2.multiply(tempMat1.apply { prepareExtraModelMatrix(this) }, modelMat)
+                            this[u_ProjMat].set(ctx.projCameraMat)
+                            this[u_ViewMat].set(transform.globalMatrix)
+                            this[u_ModMat].set(tempMat2.multiply(tempMat1.apply { prepareExtraModelMatrix(this) }, modelMat))
                             //this[u_NormMat] = tempMat3.multiply(tempMat2, localTransform.matrix).invert().transpose()
-                            this[u_NormMat] = tempMat3.multiply(tempMat2, transform.globalMatrix)//.invert()
+                            this[u_NormMat].set(tempMat3.multiply(tempMat2, transform.globalMatrix))//.invert()
 
-                            this[u_Shininess] = meshMaterial?.shininess ?: 0.5f
-                            this[u_IndexOfRefraction] = meshMaterial?.indexOfRefraction ?: 1f
+                            this[u_Shininess].set(meshMaterial?.shininess ?: 0.5f)
+                            this[u_IndexOfRefraction].set(meshMaterial?.indexOfRefraction ?: 1f)
 
                             if (meshMaterial != null) {
                                 setMaterialLight(ctx, ambient, meshMaterial.ambient)
@@ -99,8 +99,8 @@ open class ViewWithMesh3D(
 
                             val skeleton = this@ViewWithMesh3D.skeleton
                             val skin = mesh.skin
-                            this[u_BindShapeMatrix] = identity
-                            this[u_BindShapeMatrixInv] = identity
+                            this[u_BindShapeMatrix].set(identity)
+                            this[u_BindShapeMatrixInv].set(identity)
                             //println("skeleton: $skeleton, skin: $skin")
                             if (skeleton != null && skin != null) {
                                 skin.bones.fastForEach { bone ->
@@ -116,19 +116,18 @@ open class ViewWithMesh3D(
                                     }
 
                                 }
-                                this[u_BindShapeMatrix] = skin.bindShapeMatrix
-                                this[u_BindShapeMatrixInv] = skin.bindShapeMatrixInv
+                                this[u_BindShapeMatrix].set(skin.bindShapeMatrix)
+                                this[u_BindShapeMatrixInv].set(skin.bindShapeMatrixInv)
 
-                                this[u_BoneMats] = skin.matrices
+                                this[u_BoneMats].set(skin.matrices)
                             }
 
-                            this[u_AmbientColor] = ctx.ambientColor
+                            this[u_AmbientColor].set(ctx.ambientColor)
 
                             ctx.lights.fastForEachWithIndex { index, light: Light3D ->
                                 val lightColor = light.color
                                 this[lights[index].u_sourcePos] = light.transform.translation
-                                this[lights[index].u_color] =
-                                    light.colorVec.setTo(lightColor.rf, lightColor.gf, lightColor.bf, 1f)
+                                this[lights[index].u_color] = light.colorVec.setTo(lightColor.rf, lightColor.gf, lightColor.bf, 1f)
                                 this[lights[index].u_attenuation] = light.attenuationVec.setTo(
                                     light.constantAttenuation,
                                     light.linearAttenuation,

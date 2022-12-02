@@ -77,7 +77,8 @@ open class RectBase(
     protected open fun drawVertices(ctx: RenderContext) {
         ctx.useBatcher { batch ->
             //batch.texture1212
-            batch.setTemporalUniforms(_programUniforms) {
+            batch.keepUniforms {
+                it.copyFrom(_programUniforms)
                 batch.drawVertices(
                     vertices, ctx.getTex(baseBitmap).base, smoothing, renderBlendMode,
                     program = program,

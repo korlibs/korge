@@ -126,7 +126,7 @@ inline fun AGList.useProgram(ag: AG, program: Program) {
 inline fun AGList.uniformsSet(uniforms: AGUniformValues?, block: () -> Unit) {
     //if (true) {
         tempUBOs.alloc { ubo ->
-            uboSet(ubo, uniforms ?: AGUniformValues())
+            uboSet(ubo, uniforms ?: AGUniformValues.EMPTY)
             uboUse(ubo)
             block()
         }

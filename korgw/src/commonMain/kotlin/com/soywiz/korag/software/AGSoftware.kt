@@ -158,7 +158,8 @@ open class AGSoftware(val bitmap: Bitmap32) : AG() {
 
         // Set uniforms
         run {
-            batch.uniforms.fastForEach { uniform, value ->
+            batch.uniforms.fastForEach { value ->
+                val uniform = value.uniform
                 val position = vertexShader.getAllocation(uniform)
                 if (position != null) {
                     fragmentShader.setUniform(position.index, uniform, value)

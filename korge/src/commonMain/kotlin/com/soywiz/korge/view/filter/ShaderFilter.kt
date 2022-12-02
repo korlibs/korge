@@ -2,13 +2,7 @@ package com.soywiz.korge.view.filter
 
 import com.soywiz.kmem.toIntCeil
 import com.soywiz.korag.*
-import com.soywiz.korag.shader.FragmentShader
-import com.soywiz.korag.shader.Operand
-import com.soywiz.korag.shader.Program
-import com.soywiz.korag.shader.Uniform
-import com.soywiz.korag.shader.VarType
-import com.soywiz.korag.shader.VertexShader
-import com.soywiz.korag.shader.appending
+import com.soywiz.korag.shader.*
 import com.soywiz.korge.render.BatchBuilder2D
 import com.soywiz.korge.render.RenderContext
 import com.soywiz.korge.render.Texture
@@ -99,9 +93,9 @@ abstract class ShaderFilter : Filter {
     private val textureMaxTexCoords = FloatArray(2)
     private val textureStdTexDerivates = FloatArray(2)
 
-    val scaledUniforms = AGUniformValues()
+    val scaledUniforms: AGUniformValues = AGUniformValues()
 
-    val uniforms = AGUniformValues {
+    val uniforms: AGUniformValues = AGUniformValues {
         //Filter.u_Time to timeHolder,
         it[u_TextureSize] = textureSizeHolder
         it[u_MaxTexCoords] = textureMaxTexCoords
@@ -127,14 +121,14 @@ abstract class ShaderFilter : Filter {
 
     private fun _updateUniforms(ctx: RenderContext, filterScale: Double) {
         uniforms[u_filterScale] = filterScale
-        scaledUniforms.fastForEach { uniform, value ->
-            when (value) {
-                is FloatArray -> {
-                    if (uniform !in uniforms) {
-                        uniforms[uniform] = value.copyOf()
-                    }
-                    val out = (uniforms[uniform] as FloatArray)
-                    for (n in out.indices) out[n] = (value[n] * filterScale).toFloat()
+        val sfilterScale = filterScale.toFloat()
+        scaledUniforms.fastForEach { value ->
+            when (value.kind) {
+                VarKind.TFLOAT -> {
+                    val data = uniforms[value.uniform]
+                    data.set(value)
+                    val f32 = data.f32
+                    for (n in 0 until f32.size) f32[n] *= sfilterScale
                 }
                 else -> TODO()
             }
@@ -186,7 +180,8 @@ abstract class ShaderFilter : Filter {
         _updateUniforms(ctx, filterScale)
 
         ctx.useBatcher { batch ->
-            batch.setTemporalUniforms(this.uniforms) {
+            batch.keepUniforms {
+                it.copyFrom(this.uniforms)
                 //println("renderColorMulInt=" + RGBA(renderColorMulInt))
                 //println("blendMode:$blendMode")
 

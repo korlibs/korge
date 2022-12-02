@@ -175,9 +175,9 @@ class BatchBuilder2D constructor(
 	//)
 
     init {
-        ctx.uniforms.put(AGUniformValues {
-            for (n in 0 until maxTextures) it[u_TexN[n]] = textureUnitN[n]
-        })
+        for (n in 0 until maxTextures) {
+            ctx.uniforms[u_TexN[n]].set(textureUnitN[n])
+        }
     }
 
 	init { logger.trace { "BatchBuilder2D[11]" } }
@@ -1014,17 +1014,14 @@ class BatchBuilder2D constructor(
 	inline fun setViewMatrixTemp(matrix: Matrix, crossinline callback: () -> Unit) = ctx.setViewMatrixTemp(matrix, callback)
 
     /**
-     * Executes [callback] while setting temporarily an [uniform] to a [value]
+     * Support restoring a specific uniform later.
      */
-	inline fun setTemporalUniform(uniform: Uniform, value: Any?, flush: Boolean = true, callback: (AGUniformValues) -> Unit) = ctx.setTemporalUniform(uniform, value, flush, callback)
-
-    inline fun <reified T> setTemporalUniforms(uniforms: Array<Uniform>, values: Array<T>, count: Int = values.size, olds: Array<T?> = arrayOfNulls<T>(count), flush: Boolean = true, callback: (AGUniformValues) -> Unit) =
-        ctx.setTemporalUniforms(uniforms, values, count, olds, flush, callback)
+    inline fun keepUniform(uniform: Uniform, flush: Boolean = true, callback: (AGUniformValues) -> Unit) = ctx.keepUniform(uniform, flush, callback)
 
     /**
-     * Executes [callback] while setting temporarily a set of [uniforms]
+     * Support restoring uniforms later.
      */
-	inline fun setTemporalUniforms(uniforms: AGUniformValues?, callback: (AGUniformValues) -> Unit) = ctx.setTemporalUniforms(uniforms, callback)
+    inline fun keepUniforms(callback: (AGUniformValues) -> Unit) = ctx.keepUniforms(callback)
 }
 
 @ThreadLocal

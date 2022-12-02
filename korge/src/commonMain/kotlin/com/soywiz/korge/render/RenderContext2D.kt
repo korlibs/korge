@@ -228,7 +228,8 @@ class RenderContext2D(
         //programUniforms
         ctx.useBatcher { batch ->
             //batch.texture1212
-            batch.setTemporalUniforms(uniforms) {
+            batch.keepUniforms {
+                it.copyFrom(uniforms)
                 //batch.drawQuad(
                 //    vertices, ctx.getTex(baseBitmap).base, smoothing, renderBlendMode,
                 //    program = FastMaterialBackground.PROGRAM,
