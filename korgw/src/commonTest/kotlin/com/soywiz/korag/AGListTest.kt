@@ -20,7 +20,7 @@ class AGListTest {
     @Test
     fun test() {
         val log = KmlGlProxyLogToString()
-        val processor = AGQueueProcessorOpenGL(log, global)
+        val processor = AGQueueProcessorOpenGL(log, global, stats = AGStats())
         processor.sync {
             val tex1 = createTexture()
             deleteTexture(tex1)

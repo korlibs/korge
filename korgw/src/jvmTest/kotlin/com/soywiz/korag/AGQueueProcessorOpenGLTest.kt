@@ -14,7 +14,7 @@ class AGQueueProcessorOpenGLTest {
     fun test() {
         val gl = KmlGlProxyLogToString()
         val global = AGGlobalState()
-        val processor = AGQueueProcessorOpenGL(gl, global)
+        val processor = AGQueueProcessorOpenGL(gl, global, AGStats())
         val list = global.createList()
         list.enable(AGEnable.BLEND)
         val program = list.createProgram(DefaultShaders.PROGRAM_DEBUG)

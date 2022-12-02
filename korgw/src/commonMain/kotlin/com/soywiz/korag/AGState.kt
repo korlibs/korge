@@ -500,7 +500,7 @@ inline class AGStencilOpFuncState(val data: Int) {
 
 //open val supportInstancedDrawing: Boolean get() = false
 
-inline class AGFullState(val data: Int32Buffer = Int32Buffer(6)) {
+inline class AGFullState(val data: IntArray = IntArray(6)) {
     var blending: AGBlending
         get() = AGBlending(data[0])
         set(value) { data[0] = value.data }
