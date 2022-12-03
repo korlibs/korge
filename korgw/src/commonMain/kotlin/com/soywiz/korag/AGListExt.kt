@@ -120,15 +120,3 @@ fun AGList.setState(
 inline fun AGList.useProgram(ag: AG, program: Program) {
     useProgram(ag.getProgram(program))
 }
-
-inline fun AGList.vertexArrayObjectSet(vao: AGVertexArrayObject, block: () -> Unit) {
-    val vaoId = vaoCreate()
-    try {
-        vaoSet(vaoId, vao)
-        vaoUse(vaoId)
-        block()
-    } finally {
-        vaoUse(0)
-        vaoDelete(vaoId)
-    }
-}

@@ -381,14 +381,9 @@ open class LogBaseAG(
         }
         override fun programDelete(programId: Int) = log("programDelete: $programId", Kind.SHADER)
         override fun programUse(programId: Int) = log("programUse: $programId", Kind.SHADER)
-        override fun vaoCreate(id: Int) = log("vaoCreate: $id", Kind.VERTEX)
-        override fun vaoDelete(id: Int) = log("vaoDelete: $id", Kind.VERTEX)
         private var vertexData: FastArrayList<AGVertexData> = fastArrayListOf()
-        override fun vaoSet(id: Int, vao: AGVertexArrayObject) {
-            log("vaoSet: $id, $vao", Kind.VERTEX)
-            vertexData = vao.list
-        }
-        override fun vaoUse(id: Int) = log("vaoUse: $id", Kind.VERTEX)
+        override fun vaoUse(vao: AGVertexArrayObject) = log("vaoUse: $vao", Kind.VERTEX)
+        override fun vaoUnuse(vao: AGVertexArrayObject) = log("vaoUse: $vao", Kind.VERTEX)
         override fun textureCreate(textureId: Int) = log("textureCreate: $textureId", Kind.TEXTURE)
         override fun textureDelete(textureId: Int) = log("textureDelete: $textureId", Kind.TEXTURE)
         override fun textureUpdate(

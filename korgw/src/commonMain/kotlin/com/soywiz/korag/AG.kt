@@ -225,7 +225,7 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
             val uniformType = uniform.type
             when (uniformType) {
                 VarType.Sampler2D -> {
-                    val unit = value?.nativeValue?.fastCastTo<AGTextureUnit>()
+                    val unit = value.nativeValue?.fastCastTo<AGTextureUnit>()
                     val tex = (unit?.texture?.fastCastTo<AGTexture?>())
                     if (tex != null) {
                         if (tex.implForcedTexTarget == AGTextureTargetKind.EXTERNAL_TEXTURE) {

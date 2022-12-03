@@ -103,9 +103,7 @@ void main() {
 }
 
 programUse: 1
-vaoCreate: 1
-vaoSet: 1, AGVertexArrayObject(list=[AGVertexData(_buffer=Buffer[0], layout=VertexLayout[a_Pos, a_Tex, a_Col, a_Col2]), AGVertexData(_buffer=Buffer[1], layout=VertexLayout[a_TexIndex]), AGVertexData(_buffer=Buffer[2], layout=VertexLayout[a_Wrap])])
-vaoUse: 1
+vaoUse: AGVertexArrayObject(list=[AGVertexData(_buffer=Buffer[0], layout=VertexLayout[a_Pos, a_Tex, a_Col, a_Col2]), AGVertexData(_buffer=Buffer[1], layout=VertexLayout[a_TexIndex]), AGVertexData(_buffer=Buffer[2], layout=VertexLayout[a_Wrap])])
 uboSet:
 uboSet.uniform: Uniform(u_ProjMat) = AGValue[TFLOAT]([[0.02, 0, 0, 0, 0, -0.02, 0, 0, 0, 0, -1, 0, -1, 1, 0, 1]])
 uboSet.uniform: Uniform(u_ViewMat) = AGValue[TFLOAT]([[1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]])
@@ -126,21 +124,20 @@ disable: STENCIL
 stencilMask: 0
 draw: TRIANGLES, offset=0, count=18, instances=1, indexType=USHORT
 ::draw.indices: [0, 1, 2, 3, 0, 2, 4, 5, 6, 7, 4, 6, 8, 9, 10, 11, 8, 10]
-::draw.attributes[3]: [Attribute(a_Pos), Attribute(a_Tex), Attribute(a_Col), Attribute(a_Col2), Attribute(a_TexIndex), Attribute(a_Wrap)]
-::draw.vertex[0]: a_Pos[-60,-60], a_Tex[0,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_Wrap[0]
-::draw.vertex[1]: a_Pos[11,-60], a_Tex[1,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_Wrap[0]
-::draw.vertex[2]: a_Pos[11,11], a_Tex[1,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_Wrap[0]
-::draw.vertex[3]: a_Pos[-60,11], a_Tex[0,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_Wrap[0]
-::draw.vertex[4]: a_Pos[14.678551,-81.82144], a_Tex[0,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[1], a_Wrap[0]
-::draw.vertex[5]: a_Pos[154.10864,-1.3214493], a_Tex[1,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[1], a_Wrap[0]
-::draw.vertex[6]: a_Pos[73.60864,138.10864], a_Tex[1,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[1], a_Wrap[0]
-::draw.vertex[7]: a_Pos[-65.82145,57.60864], a_Tex[0,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[1], a_Wrap[0]
-::draw.vertex[8]: a_Pos[236.55515,68.68465], a_Tex[0,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[2], a_Wrap[0]
-::draw.vertex[9]: a_Pos[291.98077,100.68465], a_Tex[1,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[2], a_Wrap[0]
-::draw.vertex[10]: a_Pos[259.98077,156.11028], a_Tex[1,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[2], a_Wrap[0]
-::draw.vertex[11]: a_Pos[204.55515,124.110275], a_Tex[0,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[2], a_Wrap[0]
-vaoUse: 0
-vaoDelete: 1
+::draw.attributes[0]: []
+::draw.vertex[0]: 
+::draw.vertex[1]: 
+::draw.vertex[2]: 
+::draw.vertex[3]: 
+::draw.vertex[4]: 
+::draw.vertex[5]: 
+::draw.vertex[6]: 
+::draw.vertex[7]: 
+::draw.vertex[8]: 
+::draw.vertex[9]: 
+::draw.vertex[10]: 
+::draw.vertex[11]: 
+vaoUse: AGVertexArrayObject(list=[AGVertexData(_buffer=Buffer[0], layout=VertexLayout[a_Pos, a_Tex, a_Col, a_Col2]), AGVertexData(_buffer=Buffer[1], layout=VertexLayout[a_TexIndex]), AGVertexData(_buffer=Buffer[2], layout=VertexLayout[a_Wrap])])
 disposeTemporalPerFrameStuff()
 flipInternal()
 finish

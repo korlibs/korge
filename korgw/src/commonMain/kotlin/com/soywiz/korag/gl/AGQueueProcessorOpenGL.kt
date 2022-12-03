@@ -322,81 +322,54 @@ class AGQueueProcessorOpenGL(
         gl.clearStencil(stencil)
     }
 
-    val vaos = arrayListOf<AGVertexArrayObject?>()
-
-    //val vaos = IntMap<AG.VertexArrayObject?>()
-    var lastUsedVao: AGVertexArrayObject? = null
-
-    private fun ensureVaoIndex(index: Int): Int {
-        while (vaos.size <= index) vaos.add(null)
-        return index
-    }
-
-    override fun vaoCreate(id: Int) {
-    }
-
-    override fun vaoDelete(id: Int) {
-        if (id < vaos.size) vaos[id] = null
-    }
-
-    override fun vaoSet(id: Int, vao: AGVertexArrayObject) {
-        vaos[ensureVaoIndex(id)] = vao
-    }
-
-    override fun vaoUse(id: Int) {
-        val prevVao = lastUsedVao
-        val vao = vaos.getOrNull(id)
-        val cprogram = currentProgram
-        lastUsedVao = vao
-        if (vao == null) {
-            val rvao = prevVao
-            rvao?.list?.fastForEach { entry ->
-                val vattrs = entry.layout.attributes
-                vattrs.fastForEach { att ->
-                    if (att.active) {
-                        val loc = att.fixedLocation
-                        if (loc >= 0) {
-                            if (att.divisor != 0) {
-                                gl.vertexAttribDivisor(loc, 0)
-                            }
-                            gl.disableVertexAttribArray(loc)
+    override fun vaoUnuse(vao: AGVertexArrayObject) {
+        vao.list.fastForEach { entry ->
+            val vattrs = entry.layout.attributes
+            vattrs.fastForEach { att ->
+                if (att.active) {
+                    val loc = att.fixedLocation
+                    if (loc >= 0) {
+                        if (att.divisor != 0) {
+                            gl.vertexAttribDivisor(loc, 0)
                         }
+                        gl.disableVertexAttribArray(loc)
                     }
                 }
             }
-        } else {
-            val rvao = vao
-            rvao.list.fastForEach { entry ->
-                val vertices = entry.buffer
-                val vertexLayout = entry.layout
+        }
+    }
 
-                val vattrs = vertexLayout.attributes
-                val vattrspos = vertexLayout.attributePositions
+    override fun vaoUse(vao: AGVertexArrayObject) {
+        vao.list.fastForEach { entry ->
+            val vertices = entry.buffer
+            val vertexLayout = entry.layout
 
-                //if (vertices.kind != AG.BufferKind.VERTEX) invalidOp("Not a VertexBuffer")
+            val vattrs = vertexLayout.attributes
+            val vattrspos = vertexLayout.attributePositions
 
-                bindBuffer(vertices, AGBufferKind.VERTEX)
-                val totalSize = vertexLayout.totalSize
-                for (n in 0 until vattrspos.size) {
-                    val att = vattrs[n]
-                    if (!att.active) continue
-                    val off = vattrspos[n]
-                    val loc = att.fixedLocation
-                    val glElementType = att.type.toGl()
-                    val elementCount = att.type.elementCount
-                    if (loc >= 0) {
-                        gl.enableVertexAttribArray(loc)
-                        gl.vertexAttribPointer(
-                            loc,
-                            elementCount,
-                            glElementType,
-                            att.normalized,
-                            totalSize,
-                            off.toLong()
-                        )
-                        if (att.divisor != 0) {
-                            gl.vertexAttribDivisor(loc, att.divisor)
-                        }
+            //if (vertices.kind != AG.BufferKind.VERTEX) invalidOp("Not a VertexBuffer")
+
+            bindBuffer(vertices, AGBufferKind.VERTEX)
+            val totalSize = vertexLayout.totalSize
+            for (n in 0 until vattrspos.size) {
+                val att = vattrs[n]
+                if (!att.active) continue
+                val off = vattrspos[n]
+                val loc = att.fixedLocation
+                val glElementType = att.type.toGl()
+                val elementCount = att.type.elementCount
+                if (loc >= 0) {
+                    gl.enableVertexAttribArray(loc)
+                    gl.vertexAttribPointer(
+                        loc,
+                        elementCount,
+                        glElementType,
+                        att.normalized,
+                        totalSize,
+                        off.toLong()
+                    )
+                    if (att.divisor != 0) {
+                        gl.vertexAttribDivisor(loc, att.divisor)
                     }
                 }
             }

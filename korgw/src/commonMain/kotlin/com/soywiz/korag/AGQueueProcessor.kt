@@ -53,10 +53,8 @@ interface AGQueueProcessor {
     fun programDelete(programId: Int)
     fun programUse(programId: Int)
     // VAO
-    fun vaoCreate(id: Int)
-    fun vaoDelete(id: Int)
-    fun vaoSet(id: Int, vao: AGVertexArrayObject)
-    fun vaoUse(id: Int)
+    fun vaoUnuse(vao: AGVertexArrayObject)
+    fun vaoUse(vao: AGVertexArrayObject)
     // TEXTURES
     fun textureCreate(textureId: Int)
     fun textureDelete(textureId: Int)

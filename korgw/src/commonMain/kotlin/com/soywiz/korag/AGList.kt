@@ -286,15 +286,8 @@ class AGList(val globalState: AGGlobalState) {
                 CMD_CLEAR_DEPTH -> processor.clearDepth(readFloat())
                 CMD_CLEAR_STENCIL -> processor.clearStencil(data.extract24(0))
                 // VAO
-                CMD_VAO_CREATE -> processor.vaoCreate(data.extract16(0))
-                CMD_VAO_DELETE -> {
-                    val id = data.extract16(0)
-                    processor.vaoDelete(id)
-                    globalState.vaoIndices.free(id)
-                }
-
-                CMD_VAO_SET -> processor.vaoSet(data.extract16(0), AGVertexArrayObject(readExtra<FastArrayList<AGVertexData>>()))
-                CMD_VAO_USE -> processor.vaoUse(data.extract16(0))
+                CMD_VAO_USE -> processor.vaoUse(AGVertexArrayObject(readExtra<FastArrayList<AGVertexData>>()))
+                CMD_VAO_UNUSE -> processor.vaoUse(AGVertexArrayObject(readExtra<FastArrayList<AGVertexData>>()))
                 // UBO
                 CMD_UNIFORMS_SET -> processor.uniformsSet(readExtra())
                 // TEXTURES
@@ -560,23 +553,23 @@ class AGList(val globalState: AGGlobalState) {
     ////////////////////////////////////////
     // VAO: Vertex Array Object
     ////////////////////////////////////////
-    fun vaoCreate(): Int {
-        val id = globalState.vaoIndices.alloc()
-        currentWrite.add(CMD(CMD_VAO_CREATE).finsert16(id, 0))
-        return id
-    }
-
-    fun vaoDelete(id: Int) {
-        currentWrite.add(CMD(CMD_VAO_DELETE).finsert16(id, 0))
-    }
-
-    fun vaoSet(id: Int, vao: AGVertexArrayObject) {
+    fun vaoUse(vao: AGVertexArrayObject) {
         currentWrite.addExtra(vao.list)
-        currentWrite.add(CMD(CMD_VAO_SET).finsert16(id, 0))
+        currentWrite.add(CMD(CMD_VAO_USE))
     }
 
-    fun vaoUse(id: Int) {
-        currentWrite.add(CMD(CMD_VAO_USE).finsert16(id, 0))
+    fun vaoUnuse(vao: AGVertexArrayObject) {
+        currentWrite.addExtra(vao.list)
+        currentWrite.add(CMD(CMD_VAO_UNUSE))
+    }
+
+    inline fun vertexArrayObjectSet(vao: AGVertexArrayObject, block: () -> Unit) {
+        vaoUse(vao)
+        try {
+            block()
+        } finally {
+            vaoUnuse(vao)
+        }
     }
 
     ////////////////////////////////////////
@@ -676,10 +669,8 @@ class AGList(val globalState: AGGlobalState) {
         private const val CMD_STENCIL_OP = 0x81
         private const val CMD_STENCIL_MASK = 0x82
         // VAO - Vertex Array Object
-        private const val CMD_VAO_CREATE = 0x90
-        private const val CMD_VAO_DELETE = 0x91
-        private const val CMD_VAO_SET = 0x92
-        private const val CMD_VAO_USE = 0x93
+        private const val CMD_VAO_USE = 0x90
+        private const val CMD_VAO_UNUSE = 0x91
         // UNIFORMS
         private const val CMD_UNIFORMS_SET = 0xA2
         // FRAME BUFFERS

@@ -19,9 +19,7 @@ Buffer[2].afterSetMem(mem[16384])
 Buffer[3].afterSetMem(mem[12])
 enable: SCISSOR
 scissor: 0, 0, 64, 64
-vaoCreate: 1
-vaoSet: 1, AGVertexArrayObject(list=[AGVertexData(_buffer=Buffer[0], layout=VertexLayout[a_Pos, a_Tex, a_Col, a_Col2]), AGVertexData(_buffer=Buffer[1], layout=VertexLayout[a_TexIndex]), AGVertexData(_buffer=Buffer[2], layout=VertexLayout[a_Wrap])])
-vaoUse: 1
+vaoUse: AGVertexArrayObject(list=[AGVertexData(_buffer=Buffer[0], layout=VertexLayout[a_Pos, a_Tex, a_Col, a_Col2]), AGVertexData(_buffer=Buffer[1], layout=VertexLayout[a_TexIndex]), AGVertexData(_buffer=Buffer[2], layout=VertexLayout[a_Wrap])])
 uboSet:
 uboSet.uniform: Uniform(u_ProjMat) = AGValue[TFLOAT]([[0.03125, 0, 0, 0, 0, 0.03125, 0, 0, 0, 0, -1, 0, -1, -1, 0, 1]])
 uboSet.uniform: Uniform(u_ViewMat) = AGValue[TFLOAT]([[1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]])
@@ -42,13 +40,12 @@ disable: STENCIL
 stencilMask: 0
 draw: TRIANGLES, offset=0, count=6, instances=1, indexType=USHORT
 ::draw.indices: [0, 1, 2, 3, 0, 2]
-::draw.attributes[3]: [Attribute(a_Pos), Attribute(a_Tex), Attribute(a_Col), Attribute(a_Col2), Attribute(a_TexIndex), Attribute(a_Wrap)]
-::draw.vertex[0]: a_Pos[0,0], a_Tex[0,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_Wrap[0]
-::draw.vertex[1]: a_Pos[10,0], a_Tex[1,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_Wrap[0]
-::draw.vertex[2]: a_Pos[10,10], a_Tex[1,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_Wrap[0]
-::draw.vertex[3]: a_Pos[0,10], a_Tex[0,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_Wrap[0]
-vaoUse: 0
-vaoDelete: 1
+::draw.attributes[0]: []
+::draw.vertex[0]: 
+::draw.vertex[1]: 
+::draw.vertex[2]: 
+::draw.vertex[3]: 
+vaoUse: AGVertexArrayObject(list=[AGVertexData(_buffer=Buffer[0], layout=VertexLayout[a_Pos, a_Tex, a_Col, a_Col2]), AGVertexData(_buffer=Buffer[1], layout=VertexLayout[a_TexIndex]), AGVertexData(_buffer=Buffer[2], layout=VertexLayout[a_Wrap])])
 textureCreate: 2
 createTexture():1
 createRenderBuffer():2
@@ -61,9 +58,7 @@ Buffer[2].afterSetMem(mem[16384])
 Buffer[3].afterSetMem(mem[12])
 enable: SCISSOR
 scissor: 0, 0, 64, 64
-vaoCreate: 1
-vaoSet: 1, AGVertexArrayObject(list=[AGVertexData(_buffer=Buffer[0], layout=VertexLayout[a_Pos, a_Tex, a_Col, a_Col2]), AGVertexData(_buffer=Buffer[1], layout=VertexLayout[a_TexIndex]), AGVertexData(_buffer=Buffer[2], layout=VertexLayout[a_Wrap])])
-vaoUse: 1
+vaoUse: AGVertexArrayObject(list=[AGVertexData(_buffer=Buffer[0], layout=VertexLayout[a_Pos, a_Tex, a_Col, a_Col2]), AGVertexData(_buffer=Buffer[1], layout=VertexLayout[a_TexIndex]), AGVertexData(_buffer=Buffer[2], layout=VertexLayout[a_Wrap])])
 uboSet:
 uboSet.uniform: Uniform(u_ProjMat) = AGValue[TFLOAT]([[0.03125, 0, 0, 0, 0, 0.03125, 0, 0, 0, 0, -1, 0, -1, -1, 0, 1]])
 uboSet.uniform: Uniform(u_ViewMat) = AGValue[TFLOAT]([[1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]])
@@ -90,13 +85,12 @@ disable: STENCIL
 stencilMask: 0
 draw: TRIANGLES, offset=0, count=6, instances=1, indexType=USHORT
 ::draw.indices: [0, 1, 2, 3, 0, 2]
-::draw.attributes[3]: [Attribute(a_Pos), Attribute(a_Tex), Attribute(a_Col), Attribute(a_Col2), Attribute(a_TexIndex), Attribute(a_Wrap)]
-::draw.vertex[0]: a_Pos[0,0], a_Tex[0,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_Wrap[0]
-::draw.vertex[1]: a_Pos[10,0], a_Tex[0.15625,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_Wrap[0]
-::draw.vertex[2]: a_Pos[10,10], a_Tex[0.15625,0.15625], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_Wrap[0]
-::draw.vertex[3]: a_Pos[0,10], a_Tex[0,0.15625], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_Wrap[0]
-vaoUse: 0
-vaoDelete: 1
+::draw.attributes[0]: []
+::draw.vertex[0]: 
+::draw.vertex[1]: 
+::draw.vertex[2]: 
+::draw.vertex[3]: 
+vaoUse: AGVertexArrayObject(list=[AGVertexData(_buffer=Buffer[0], layout=VertexLayout[a_Pos, a_Tex, a_Col, a_Col2]), AGVertexData(_buffer=Buffer[1], layout=VertexLayout[a_TexIndex]), AGVertexData(_buffer=Buffer[2], layout=VertexLayout[a_Wrap])])
 textureCreate: 3
 createTexture():2
 createRenderBuffer():3
@@ -109,9 +103,7 @@ Buffer[2].afterSetMem(mem[16384])
 Buffer[3].afterSetMem(mem[12])
 enable: SCISSOR
 scissor: 0, 0, 64, 64
-vaoCreate: 1
-vaoSet: 1, AGVertexArrayObject(list=[AGVertexData(_buffer=Buffer[0], layout=VertexLayout[a_Pos, a_Tex, a_Col, a_Col2]), AGVertexData(_buffer=Buffer[1], layout=VertexLayout[a_TexIndex]), AGVertexData(_buffer=Buffer[2], layout=VertexLayout[a_Wrap])])
-vaoUse: 1
+vaoUse: AGVertexArrayObject(list=[AGVertexData(_buffer=Buffer[0], layout=VertexLayout[a_Pos, a_Tex, a_Col, a_Col2]), AGVertexData(_buffer=Buffer[1], layout=VertexLayout[a_TexIndex]), AGVertexData(_buffer=Buffer[2], layout=VertexLayout[a_Wrap])])
 uboSet:
 uboSet.uniform: Uniform(u_ProjMat) = AGValue[TFLOAT]([[0.03125, 0, 0, 0, 0, 0.03125, 0, 0, 0, 0, -1, 0, -1, -1, 0, 1]])
 uboSet.uniform: Uniform(u_ViewMat) = AGValue[TFLOAT]([[1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]])
@@ -139,22 +131,19 @@ disable: STENCIL
 stencilMask: 0
 draw: TRIANGLES, offset=0, count=6, instances=1, indexType=USHORT
 ::draw.indices: [0, 1, 2, 3, 0, 2]
-::draw.attributes[3]: [Attribute(a_Pos), Attribute(a_Tex), Attribute(a_Col), Attribute(a_Col2), Attribute(a_TexIndex), Attribute(a_Wrap)]
-::draw.vertex[0]: a_Pos[0,0], a_Tex[-0.015625,-0.015625], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_Wrap[0]
-::draw.vertex[1]: a_Pos[12,0], a_Tex[0.171875,-0.015625], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_Wrap[0]
-::draw.vertex[2]: a_Pos[12,12], a_Tex[0.171875,0.171875], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_Wrap[0]
-::draw.vertex[3]: a_Pos[0,12], a_Tex[-0.015625,0.171875], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_Wrap[0]
-vaoUse: 0
-vaoDelete: 1
+::draw.attributes[0]: []
+::draw.vertex[0]: 
+::draw.vertex[1]: 
+::draw.vertex[2]: 
+::draw.vertex[3]: 
+vaoUse: AGVertexArrayObject(list=[AGVertexData(_buffer=Buffer[0], layout=VertexLayout[a_Pos, a_Tex, a_Col, a_Col2]), AGVertexData(_buffer=Buffer[1], layout=VertexLayout[a_TexIndex]), AGVertexData(_buffer=Buffer[2], layout=VertexLayout[a_Wrap])])
 textureCreate: 4
 createTexture():3
 Buffer[0].afterSetMem(mem[96])
 Buffer[1].afterSetMem(mem[16384])
 Buffer[2].afterSetMem(mem[16384])
 Buffer[3].afterSetMem(mem[12])
-vaoCreate: 1
-vaoSet: 1, AGVertexArrayObject(list=[AGVertexData(_buffer=Buffer[0], layout=VertexLayout[a_Pos, a_Tex, a_Col, a_Col2]), AGVertexData(_buffer=Buffer[1], layout=VertexLayout[a_TexIndex]), AGVertexData(_buffer=Buffer[2], layout=VertexLayout[a_Wrap])])
-vaoUse: 1
+vaoUse: AGVertexArrayObject(list=[AGVertexData(_buffer=Buffer[0], layout=VertexLayout[a_Pos, a_Tex, a_Col, a_Col2]), AGVertexData(_buffer=Buffer[1], layout=VertexLayout[a_TexIndex]), AGVertexData(_buffer=Buffer[2], layout=VertexLayout[a_Wrap])])
 uboSet:
 uboSet.uniform: Uniform(u_ProjMat) = AGValue[TFLOAT]([[0.0015625, 0, 0, 0, 0, -0.0027777778, 0, 0, 0, 0, -1, 0, -1, 1, 0, 1]])
 uboSet.uniform: Uniform(u_ViewMat) = AGValue[TFLOAT]([[1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]])
@@ -175,13 +164,12 @@ disable: STENCIL
 stencilMask: 0
 draw: TRIANGLES, offset=0, count=6, instances=1, indexType=USHORT
 ::draw.indices: [0, 1, 2, 3, 0, 2]
-::draw.attributes[3]: [Attribute(a_Pos), Attribute(a_Tex), Attribute(a_Col), Attribute(a_Col2), Attribute(a_TexIndex), Attribute(a_Wrap)]
-::draw.vertex[0]: a_Pos[-1,-1], a_Tex[0,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_Wrap[0]
-::draw.vertex[1]: a_Pos[11,-1], a_Tex[0.1875,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_Wrap[0]
-::draw.vertex[2]: a_Pos[11,11], a_Tex[0.1875,0.1875], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_Wrap[0]
-::draw.vertex[3]: a_Pos[-1,11], a_Tex[0,0.1875], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_Wrap[0]
-vaoUse: 0
-vaoDelete: 1
+::draw.attributes[0]: []
+::draw.vertex[0]: 
+::draw.vertex[1]: 
+::draw.vertex[2]: 
+::draw.vertex[3]: 
+vaoUse: AGVertexArrayObject(list=[AGVertexData(_buffer=Buffer[0], layout=VertexLayout[a_Pos, a_Tex, a_Col, a_Col2]), AGVertexData(_buffer=Buffer[1], layout=VertexLayout[a_TexIndex]), AGVertexData(_buffer=Buffer[2], layout=VertexLayout[a_Wrap])])
 disposeTemporalPerFrameStuff()
 flipInternal()
 finish

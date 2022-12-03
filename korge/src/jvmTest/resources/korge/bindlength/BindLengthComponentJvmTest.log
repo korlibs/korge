@@ -21,9 +21,7 @@ Buffer[2].afterSetMem(mem[16384])
 Buffer[3].afterSetMem(mem[12])
 enable: SCISSOR
 scissor: 0, 0, 1280, 720
-vaoCreate: 1
-vaoSet: 1, AGVertexArrayObject(list=[AGVertexData(_buffer=Buffer[0], layout=VertexLayout[a_Pos, a_Tex, a_Col, a_Col2]), AGVertexData(_buffer=Buffer[1], layout=VertexLayout[a_TexIndex]), AGVertexData(_buffer=Buffer[2], layout=VertexLayout[a_Wrap])])
-vaoUse: 1
+vaoUse: AGVertexArrayObject(list=[AGVertexData(_buffer=Buffer[0], layout=VertexLayout[a_Pos, a_Tex, a_Col, a_Col2]), AGVertexData(_buffer=Buffer[1], layout=VertexLayout[a_TexIndex]), AGVertexData(_buffer=Buffer[2], layout=VertexLayout[a_Wrap])])
 uboSet:
 uboSet.uniform: Uniform(u_ProjMat) = AGValue[TFLOAT]([[0.0015625, 0, 0, 0, 0, -0.0027777778, 0, 0, 0, 0, -1, 0, -1, 1, 0, 1]])
 uboSet.uniform: Uniform(u_ViewMat) = AGValue[TFLOAT]([[1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]])
@@ -44,13 +42,12 @@ disable: STENCIL
 stencilMask: 0
 draw: TRIANGLES, offset=0, count=6, instances=1, indexType=USHORT
 ::draw.indices: [0, 1, 2, 3, 0, 2]
-::draw.attributes[3]: [Attribute(a_Pos), Attribute(a_Tex), Attribute(a_Col), Attribute(a_Col2), Attribute(a_TexIndex), Attribute(a_Wrap)]
-::draw.vertex[0]: a_Pos[150,250], a_Tex[0,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_Wrap[0]
-::draw.vertex[1]: a_Pos[250,250], a_Tex[1,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_Wrap[0]
-::draw.vertex[2]: a_Pos[250,350], a_Tex[1,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_Wrap[0]
-::draw.vertex[3]: a_Pos[150,350], a_Tex[0,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_Wrap[0]
-vaoUse: 0
-vaoDelete: 1
+::draw.attributes[0]: []
+::draw.vertex[0]: 
+::draw.vertex[1]: 
+::draw.vertex[2]: 
+::draw.vertex[3]: 
+vaoUse: AGVertexArrayObject(list=[AGVertexData(_buffer=Buffer[0], layout=VertexLayout[a_Pos, a_Tex, a_Col, a_Col2]), AGVertexData(_buffer=Buffer[1], layout=VertexLayout[a_TexIndex]), AGVertexData(_buffer=Buffer[2], layout=VertexLayout[a_Wrap])])
 disposeTemporalPerFrameStuff()
 flipInternal()
 finish
