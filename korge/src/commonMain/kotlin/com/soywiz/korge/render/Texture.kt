@@ -127,7 +127,7 @@ class Texture(
         /**
          * Creates a [Texture] from a frame buffer [frameBuffer] with the right size of the frameBuffer.
          */
-        operator fun invoke(frameBuffer: AGRenderBuffer): Texture = invoke(frameBuffer.tex, frameBuffer.width, frameBuffer.height)
+        operator fun invoke(frameBuffer: AGFrameBuffer): Texture = invoke(frameBuffer.tex, frameBuffer.width, frameBuffer.height)
 	}
 
     /**

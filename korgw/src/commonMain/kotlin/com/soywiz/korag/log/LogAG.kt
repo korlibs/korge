@@ -213,7 +213,7 @@ open class LogBaseAG(
 		override fun toString(): String = "Buffer[$id]"
 	}
 
-	inner class LogRenderBuffer(override val id: Int, val isMain: Boolean) : AGRenderBuffer(this) {
+	inner class LogFrameBuffer(override val id: Int, val isMain: Boolean) : AGFrameBuffer(this) {
         override fun setSize(x: Int, y: Int, width: Int, height: Int, fullWidth: Int, fullHeight: Int) {
             super.setSize(x, y, width, height, fullWidth, fullHeight)
             log("$this.setSize($width, $height)", Kind.FRAME_BUFFER)
@@ -439,11 +439,11 @@ open class LogBaseAG(
     }
 
     override fun disposeTemporalPerFrameStuff() = log("disposeTemporalPerFrameStuff()", Kind.DISPOSE)
-	override fun createRenderBuffer(): AGRenderBuffer =
-		LogRenderBuffer(renderBufferId++, isMain = false).apply { log("createRenderBuffer():$id", Kind.FRAME_BUFFER) }
+	override fun createRenderBuffer(): AGFrameBuffer =
+		LogFrameBuffer(renderBufferId++, isMain = false).apply { log("createRenderBuffer():$id", Kind.FRAME_BUFFER) }
 
-    override fun createMainRenderBuffer(): AGRenderBuffer =
-        LogRenderBuffer(renderBufferId++, isMain = true).apply { log("createMainRenderBuffer():$id", Kind.FRAME_BUFFER) }
+    override fun createMainRenderBuffer(): AGFrameBuffer =
+        LogFrameBuffer(renderBufferId++, isMain = true).apply { log("createMainRenderBuffer():$id", Kind.FRAME_BUFFER) }
 
     override fun flipInternal() = log("flipInternal()", Kind.FLIP)
 	override fun readColor(bitmap: Bitmap32, x: Int, y: Int) = log("$this.readBitmap($bitmap, $x, $y)", Kind.READ)

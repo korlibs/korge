@@ -456,10 +456,7 @@ inline class AGStencilFullState private constructor(private val data: Long) {
 
 inline class AGStencilReferenceState(val data: Int) {
     companion object {
-        val DEFAULT = AGStencilReferenceState(0)
-            .withReferenceValue(0)
-            .withReadMask(0xFF)
-            .withWriteMask(0xFF)
+        val DEFAULT = AGStencilReferenceState(0).withReferenceValue(0).withReadMask(0xFF).withWriteMask(0xFF)
     }
 
     val referenceValue: Int get() = data.extract8(0)
@@ -501,24 +498,11 @@ inline class AGStencilOpFuncState(val data: Int) {
 //open val supportInstancedDrawing: Boolean get() = false
 
 inline class AGFullState(val data: Int32Buffer = Int32Buffer(6)) {
-    var blending: AGBlending
-        get() = AGBlending(data[0])
-        set(value) { data[0] = value.data }
-    var stencilOpFunc: AGStencilOpFuncState
-        get() = AGStencilOpFuncState(data[1])
-        set(value) { data[1] = value.data }
-    var stencilRef: AGStencilReferenceState
-        get() = AGStencilReferenceState(data[2])
-        set(value) { data[2] = value.data }
-    var colorMask: AGColorMaskState
-        get() = AGColorMaskState(data[3])
-        set(value) { data[3] = value.data }
-    var scissor: AGScissor
-        get() = AGScissor(data[4], data[5])
-        set(value) {
-            data[4] = value.xy
-            data[5] = value.wh
-        }
+    var blending: AGBlending ; get() = AGBlending(data[0]) ; set(value) { data[0] = value.data }
+    var stencilOpFunc: AGStencilOpFuncState ; get() = AGStencilOpFuncState(data[1]) ; set(value) { data[1] = value.data }
+    var stencilRef: AGStencilReferenceState ; get() = AGStencilReferenceState(data[2]) ; set(value) { data[2] = value.data }
+    var colorMask: AGColorMaskState ; get() = AGColorMaskState(data[3]) ; set(value) { data[3] = value.data }
+    var scissor: AGScissor ; get() = AGScissor(data[4], data[5]) ; set(value) { data[4] = value.xy; data[5] = value.wh }
 }
 
 inline class AGScissor(val data: Long) {
@@ -594,45 +578,7 @@ interface AGFactory {
     //fun createFastWindow(title: String, width: Int, height: Int, config: AGConfig): AGWindow
 }
 
-
-class AGProgram(val ag: AG, val program: Program, val programConfig: ProgramConfig) {
-    var cachedVersion = -1
-    var programId = 0
-
-    fun ensure(list: AGList) {
-        if (cachedVersion != ag.contextVersion) {
-            val time = measureTime {
-                ag.programCount++
-                programId = list.createProgram(program, programConfig)
-                cachedVersion = ag.contextVersion
-            }
-            if (GlslGenerator.DEBUG_GLSL) {
-                Console.info("AG: Created program ${program.name} with id ${programId} in time=$time")
-            }
-        }
-    }
-
-    fun use(list: AGList) {
-        ensure(list)
-        list.useProgram(programId)
-    }
-
-    fun unuse(list: AGList) {
-        ensure(list)
-        list.useProgram(0)
-    }
-
-    fun close(list: AGList) {
-        if (programId != 0) {
-            ag.programCount--
-            list.deleteProgram(programId)
-        }
-        programId = 0
-    }
-}
-
-
-interface AGBaseRenderBuffer : Closeable {
+interface AGBaseFrameBuffer : Closeable {
     val x: Int
     val y: Int
     val width: Int
@@ -648,7 +594,7 @@ interface AGBaseRenderBuffer : Closeable {
     fun scissor(scissor: RectangleInt?)
 }
 
-open class AGBaseRenderBufferImpl(val ag: AG) : AGBaseRenderBuffer {
+open class AGBaseFrameBufferImpl(val ag: AG) : AGBaseFrameBuffer {
     override var x = 0
     override var y = 0
     override var width = AG.RenderBufferConsts.DEFAULT_INITIAL_WIDTH
@@ -684,7 +630,7 @@ open class AGBaseRenderBufferImpl(val ag: AG) : AGBaseRenderBuffer {
     }
 }
 
-open class AGRenderBuffer(ag: AG) : AGBaseRenderBufferImpl(ag) {
+open class AGFrameBuffer(ag: AG) : AGBaseFrameBufferImpl(ag) {
     open val id: Int = -1
     private var cachedTexVersion = -1
     private var _tex: AGTexture? = null
@@ -740,7 +686,7 @@ open class AGRenderBuffer(ag: AG) : AGBaseRenderBufferImpl(ag) {
     }
 }
 
-class AGFinalRenderBuffer(ag: AG) : AGRenderBuffer(ag) {
+class AGFinalFrameBuffer(ag: AG) : AGFrameBuffer(ag) {
     override val id = ag.lastRenderContextId++
 
     var frameBufferId: Int = -1
@@ -832,312 +778,3 @@ data class AGBatch constructor(
             stencilRef = value.ref
         }
 }
-
-data class AGTextureUnit constructor(
-    val index: Int,
-    var texture: AGTexture? = null,
-    var linear: Boolean = true,
-    var trilinear: Boolean? = null,
-) {
-    fun set(texture: AGTexture?, linear: Boolean, trilinear: Boolean? = null) {
-        this.texture = texture
-        this.linear = linear
-        this.trilinear = trilinear
-    }
-}
-
-// @TODO: Move most of this to AGQueueProcessorOpenGL, avoid cyclic dependency and simplify
-open class AGTexture constructor(
-    val ag: AG,
-    open val premultiplied: Boolean,
-    val targetKind: AGTextureTargetKind = AGTextureTargetKind.TEXTURE_2D
-) : Closeable {
-    var isFbo: Boolean = false
-    var requestMipmaps: Boolean = false
-    var mipmaps: Boolean = false; internal set
-    var source: AGBitmapSourceBase = AGSyncBitmapSource.NIL
-    internal var uploaded: Boolean = false
-    internal var generating: Boolean = false
-    internal var generated: Boolean = false
-    internal var tempBitmaps: List<Bitmap?>? = null
-    var ready: Boolean = false; internal set
-
-    var cachedVersion = ag.contextVersion
-    var texId = ag.commandsNoWait { it.createTexture() }
-
-    var forcedTexId: ForcedTexId? = null
-    val implForcedTexId: Int get() = forcedTexId?.forcedTexId ?: -1
-    val implForcedTexTarget: AGTextureTargetKind get() = forcedTexId?.forcedTexTarget?.let { AGTextureTargetKind.fromGl(it) } ?: targetKind
-
-    init {
-        ag.createdTextureCount++
-        ag.textures += this
-    }
-
-    internal fun invalidate() {
-        uploaded = false
-        generating = false
-        generated = false
-    }
-
-    private fun checkBitmaps(bmp: Bitmap) {
-        if (!bmp.premultiplied) {
-            Console.error("Trying to upload a non-premultiplied bitmap: $bmp. This will cause rendering artifacts")
-        }
-    }
-
-    fun upload(list: List<Bitmap>, width: Int, height: Int): AGTexture {
-        list.fastForEach { checkBitmaps(it) }
-        return upload(AGSyncBitmapSourceList(rgba = true, width = width, height = height, depth = list.size) { list })
-    }
-
-    fun upload(bmp: Bitmap?, mipmaps: Boolean = false): AGTexture {
-        bmp?.let { checkBitmaps(it) }
-        this.forcedTexId = (bmp as? ForcedTexId?)
-        return upload(
-            if (bmp != null) AGSyncBitmapSource(
-                rgba = bmp.bpp > 8,
-                width = bmp.width,
-                height = bmp.height
-            ) { bmp } else AGSyncBitmapSource.NIL, mipmaps)
-    }
-
-    fun upload(bmp: BitmapSlice<Bitmap>?, mipmaps: Boolean = false): AGTexture {
-        // @TODO: Optimize to avoid copying?
-        return upload(bmp?.extract(), mipmaps)
-    }
-
-    var estimatedMemoryUsage: ByteUnits = ByteUnits.fromBytes(0L)
-
-    fun upload(source: AGBitmapSourceBase, mipmaps: Boolean = false): AGTexture {
-        this.source = source
-        estimatedMemoryUsage = ByteUnits.fromBytes(source.width * source.height * source.depth * 4)
-        uploadedSource()
-        invalidate()
-        this.requestMipmaps = mipmaps
-        return this
-    }
-
-    protected open fun uploadedSource() {
-    }
-
-    fun uploadAndBindEnsuring(bmp: Bitmap?, mipmaps: Boolean = false): AGTexture = upload(bmp, mipmaps).bindEnsuring()
-    fun uploadAndBindEnsuring(bmp: BitmapSlice<Bitmap>?, mipmaps: Boolean = false): AGTexture = upload(bmp, mipmaps).bindEnsuring()
-    fun uploadAndBindEnsuring(source: AGBitmapSourceBase, mipmaps: Boolean = false): AGTexture = upload(source, mipmaps).bindEnsuring()
-
-    fun doMipmaps(source: AGBitmapSourceBase, requestMipmaps: Boolean): Boolean {
-        return requestMipmaps && source.width.isPowerOfTwo && source.height.isPowerOfTwo
-    }
-
-    open fun bind(): Unit = ag.commandsNoWait { it.bindTexture(texId, implForcedTexTarget, implForcedTexId) }
-    open fun unbind(): Unit = ag.commandsNoWait { it.bindTexture(0, implForcedTexTarget) }
-
-    private var closed = false
-    override fun close() {
-        if (!alreadyClosed) {
-            alreadyClosed = true
-            source = AGSyncBitmapSource.NIL
-            tempBitmaps = null
-            ag.deletedTextureCount++
-            ag.textures -= this
-            //Console.log("CLOSED TEXTURE: $texId")
-            //printTexStats()
-        }
-
-        if (!closed) {
-            closed = true
-            if (cachedVersion == ag.contextVersion) {
-                if (texId != 0) {
-                    ag.commandsNoWait { it.deleteTexture(texId) }
-                    texId = 0
-                }
-            } else {
-                //println("YAY! NO DELETE texture because in new context and would remove the wrong texture: $texId")
-            }
-        } else {
-            //println("ALREADY CLOSED TEXTURE: $texId")
-        }
-    }
-
-    override fun toString(): String = "AGOpengl.GlTexture($texId, pre=$premultiplied)"
-    fun manualUpload(): AGTexture {
-        uploaded = true
-        return this
-    }
-
-    fun bindEnsuring(): AGTexture {
-        ag.commandsNoWait { it.bindTextureEnsuring(this) }
-        return this
-    }
-
-    open fun actualSyncUpload(source: AGBitmapSourceBase, bmps: List<Bitmap?>?, requestMipmaps: Boolean) {
-        //this.bind() // Already bound
-        this.mipmaps = doMipmaps(source, requestMipmaps)
-    }
-
-    init {
-        //Console.log("CREATED TEXTURE: $texId")
-        //printTexStats()
-    }
-
-    private var alreadyClosed = false
-
-    private fun printTexStats() {
-        //Console.log("create=$createdCount, delete=$deletedCount, alive=${createdCount - deletedCount}")
-    }
-}
-
-
-class AGTextureDrawer(val ag: AG) {
-    val VERTEX_COUNT = 4
-    val vertices = ag.createBuffer()
-    val vertexLayout = VertexLayout(DefaultShaders.a_Pos, DefaultShaders.a_Tex)
-    val vertexData = AGVertexArrayObject(AGVertexData(vertices, vertexLayout))
-    val verticesData = Buffer(VERTEX_COUNT * vertexLayout.totalSize)
-    val program = Program(VertexShader {
-        DefaultShaders {
-            SET(v_Tex, a_Tex)
-            SET(out, vec4(a_Pos, 0f.lit, 1f.lit))
-        }
-    }, FragmentShader {
-        DefaultShaders {
-            //out setTo vec4(1f, 1f, 0f, 1f)
-            SET(out, texture2D(u_Tex, v_Tex["xy"]))
-        }
-    })
-    val uniforms = AGUniformValues()
-
-    fun setVertex(n: Int, px: Float, py: Float, tx: Float, ty: Float) {
-        val offset = n * 4
-        verticesData.setFloat32(offset + 0, px)
-        verticesData.setFloat32(offset + 1, py)
-        verticesData.setFloat32(offset + 2, tx)
-        verticesData.setFloat32(offset + 3, ty)
-    }
-
-    fun draw(tex: AGTexture, left: Float, top: Float, right: Float, bottom: Float) {
-        //tex.upload(Bitmap32(32, 32) { x, y -> Colors.RED })
-        uniforms[DefaultShaders.u_Tex] = AGTextureUnit(0, tex)
-
-        val texLeft = -1f
-        val texRight = +1f
-        val texTop = -1f
-        val texBottom = +1f
-
-        setVertex(0, left, top, texLeft, texTop)
-        setVertex(1, right, top, texRight, texTop)
-        setVertex(2, left, bottom, texLeft, texBottom)
-        setVertex(3, right, bottom, texRight, texBottom)
-
-        vertices.upload(verticesData)
-        ag.drawV2(
-            vertexData = vertexData,
-            program = program,
-            type = AGDrawType.TRIANGLE_STRIP,
-            vertexCount = 4,
-            uniforms = uniforms,
-            blending = AGBlending.NONE
-        )
-    }
-}
-
-open class AGBuffer constructor(val ag: AG, val list: AGList) {
-    var estimatedMemoryUsage: ByteUnits = ByteUnits.fromBytes(0)
-    internal var mem: Buffer? = null
-    internal var agId: Int = list.bufferCreate()
-    var dirty = false
-
-    init {
-        ag.buffers += this
-    }
-
-    open fun afterSetMem() {
-        estimatedMemoryUsage = ByteUnits.fromBytes(mem?.sizeInBytes ?: 0)
-    }
-
-    fun upload(data: ByteArray, offset: Int = 0, length: Int = data.size - offset): AGBuffer = upload(Int8Buffer(data, offset, length).buffer)
-    fun upload(data: FloatArray, offset: Int = 0, length: Int = data.size - offset): AGBuffer = upload(Float32Buffer(data, offset, length).buffer)
-    fun upload(data: IntArray, offset: Int = 0, length: Int = data.size - offset): AGBuffer = upload(Int32Buffer(data, offset, length).buffer)
-    fun upload(data: ShortArray, offset: Int = 0, length: Int = data.size - offset): AGBuffer = upload(Int16Buffer(data, offset, length).buffer)
-    fun upload(data: Buffer, offset: Int, length: Int = data.size - offset): AGBuffer = upload(data.sliceWithSize(offset, length))
-    fun upload(data: Buffer): AGBuffer {
-        mem = data
-        dirty = true
-        afterSetMem()
-        return this
-    }
-
-    open fun close(list: AGList) {
-        mem = null
-        dirty = true
-
-        list.bufferDelete(this.agId)
-        ag.buffers -= this
-        agId = 0
-    }
-}
-
-
-class AGStats(
-    var texturesCount: Int = 0,
-    var texturesMemory: ByteUnits = ByteUnits.fromBytes(0),
-    var buffersCount: Int = 0,
-    var buffersMemory: ByteUnits = ByteUnits.fromBytes(0),
-    var renderBuffersCount: Int = 0,
-    var renderBuffersMemory: ByteUnits = ByteUnits.fromBytes(0),
-    var texturesCreated: Int = 0,
-    var texturesDeleted: Int = 0,
-    var programCount: Int = 0,
-) {
-    override fun toString(): String =
-        "AGStats(textures[$texturesCount] = $texturesMemory, buffers[$buffersCount] = $buffersMemory, renderBuffers[$renderBuffersCount] = $renderBuffersMemory, programs[$programCount])"
-}
-
-interface AGBitmapSourceBase {
-    val rgba: Boolean
-    val width: Int
-    val height: Int
-    val depth: Int get() = 1
-}
-
-class AGSyncBitmapSourceList(
-    override val rgba: Boolean,
-    override val width: Int,
-    override val height: Int,
-    override val depth: Int,
-    val gen: () -> List<Bitmap>?
-) : AGBitmapSourceBase {
-    companion object {
-        val NIL = AGSyncBitmapSourceList(true, 0, 0, 0) { null }
-    }
-
-    override fun toString(): String = "SyncBitmapSourceList(rgba=$rgba, width=$width, height=$height)"
-}
-
-class AGSyncBitmapSource(
-    override val rgba: Boolean,
-    override val width: Int,
-    override val height: Int,
-    val gen: () -> Bitmap?
-) : AGBitmapSourceBase {
-    companion object {
-        val NIL = AGSyncBitmapSource(true, 0, 0) { null }
-    }
-
-    override fun toString(): String = "SyncBitmapSource(rgba=$rgba, width=$width, height=$height)"
-}
-
-class AGAsyncBitmapSource(
-    val coroutineContext: CoroutineContext,
-    override val rgba: Boolean,
-    override val width: Int,
-    override val height: Int,
-    val gen: suspend () -> Bitmap?
-) : AGBitmapSourceBase {
-    companion object {
-        val NIL = AGAsyncBitmapSource(EmptyCoroutineContext, true, 0, 0) { null }
-    }
-}
-
-fun AGBlending.toRenderFboIntoBack() = this
-fun AGBlending.toRenderImageIntoFbo() = this

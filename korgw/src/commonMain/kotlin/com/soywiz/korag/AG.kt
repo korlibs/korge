@@ -243,15 +243,15 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
 
     open fun disposeTemporalPerFrameStuff() = Unit
 
-    val frameRenderBuffers = LinkedHashSet<AGRenderBuffer>()
-    val renderBuffers = Pool<AGRenderBuffer>() { createRenderBuffer() }
+    val frameRenderBuffers = LinkedHashSet<AGFrameBuffer>()
+    val renderBuffers = Pool<AGFrameBuffer>() { createRenderBuffer() }
 
     object RenderBufferConsts {
         const val DEFAULT_INITIAL_WIDTH = 128
         const val DEFAULT_INITIAL_HEIGHT = 128
     }
 
-    internal val allRenderBuffers = LinkedHashSet<AGBaseRenderBuffer>()
+    internal val allRenderBuffers = LinkedHashSet<AGBaseFrameBuffer>()
     private val renderBufferCount: Int get() = allRenderBuffers.size
     private val renderBuffersMemory: ByteUnits get() = ByteUnits.fromBytes(allRenderBuffers.sumOf { it.estimatedMemoryUsage.bytesLong })
 
@@ -259,23 +259,23 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
     @KoragExperimental
     var agTarget = AGTarget.DISPLAY
 
-    val mainRenderBuffer: AGBaseRenderBuffer by lazy {
+    val mainRenderBuffer: AGBaseFrameBuffer by lazy {
         when (agTarget) {
             AGTarget.DISPLAY -> createMainRenderBuffer()
             AGTarget.OFFSCREEN -> createRenderBuffer()
         }
     }
 
-    open fun createMainRenderBuffer(): AGBaseRenderBuffer = AGBaseRenderBufferImpl(this)
+    open fun createMainRenderBuffer(): AGBaseFrameBuffer = AGBaseFrameBufferImpl(this)
 
-    internal fun setViewport(buffer: AGBaseRenderBuffer) {
+    internal fun setViewport(buffer: AGBaseFrameBuffer) {
         commandsNoWait { it.viewport(buffer.x, buffer.y, buffer.width, buffer.height) }
         //println("setViewport: ${buffer.x}, ${buffer.y}, ${buffer.width}, ${buffer.height}")
     }
 
     var lastRenderContextId = 0
 
-    open fun createRenderBuffer(): AGRenderBuffer = AGFinalRenderBuffer(this)
+    open fun createRenderBuffer(): AGFrameBuffer = AGFinalFrameBuffer(this)
 
     //open fun createRenderBuffer() = RenderBuffer()
 
@@ -329,14 +329,14 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
     fun clearDepth(depth: Float = 1f, scissor: AGScissor = AGScissor.NIL) = clear(clearColor = false, clearDepth = true, clearStencil = false, depth = depth, scissor = scissor)
     fun clearColor(color: RGBA = Colors.TRANSPARENT_BLACK, scissor: AGScissor = AGScissor.NIL) = clear(clearColor = true, clearDepth = false, clearStencil = false, color = color, scissor = scissor)
 
-    val renderBufferStack = FastArrayList<AGBaseRenderBuffer?>()
+    val renderBufferStack = FastArrayList<AGBaseFrameBuffer?>()
 
     //@PublishedApi
     @KoragExperimental
-    var currentRenderBuffer: AGBaseRenderBuffer? = null
+    var currentRenderBuffer: AGBaseFrameBuffer? = null
         private set
 
-    val currentRenderBufferOrMain: AGBaseRenderBuffer get() = currentRenderBuffer ?: mainRenderBuffer
+    val currentRenderBufferOrMain: AGBaseFrameBuffer get() = currentRenderBuffer ?: mainRenderBuffer
 
     val isRenderingToWindow: Boolean get() = currentRenderBufferOrMain === mainRenderBuffer
     val isRenderingToTexture: Boolean get() = !isRenderingToWindow
@@ -352,7 +352,7 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
         }
     }
 
-    inline fun setRenderBufferTemporally(rb: AGBaseRenderBuffer, callback: (AGBaseRenderBuffer) -> Unit) {
+    inline fun setRenderBufferTemporally(rb: AGBaseFrameBuffer, callback: (AGBaseFrameBuffer) -> Unit) {
         pushRenderBuffer(rb)
         try {
             callback(rb)
@@ -373,7 +373,7 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
     //open fun fixWidthForRenderToTexture(width: Int): Int = width
     //open fun fixHeightForRenderToTexture(height: Int): Int = height
 
-    inline fun tempAllocateFrameBuffer(width: Int, height: Int, hasDepth: Boolean = false, hasStencil: Boolean = true, msamples: Int = 1, block: (rb: AGRenderBuffer) -> Unit) {
+    inline fun tempAllocateFrameBuffer(width: Int, height: Int, hasDepth: Boolean = false, hasStencil: Boolean = true, msamples: Int = 1, block: (rb: AGFrameBuffer) -> Unit) {
         val rb = unsafeAllocateFrameRenderBuffer(width, height, hasDepth = hasDepth, hasStencil = hasStencil, msamples = msamples)
         try {
             block(rb)
@@ -382,7 +382,7 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
         }
     }
 
-    inline fun tempAllocateFrameBuffers2(width: Int, height: Int, hasDepth: Boolean = false, hasStencil: Boolean = true, msamples: Int = 1, block: (rb0: AGRenderBuffer, rb1: AGRenderBuffer) -> Unit) {
+    inline fun tempAllocateFrameBuffers2(width: Int, height: Int, hasDepth: Boolean = false, hasStencil: Boolean = true, msamples: Int = 1, block: (rb0: AGFrameBuffer, rb1: AGFrameBuffer) -> Unit) {
         tempAllocateFrameBuffer(width, height, hasDepth, hasStencil, msamples) { rb0 ->
             tempAllocateFrameBuffer(width, height, hasDepth, hasStencil, msamples) { rb1 ->
                 block(rb0, rb1)
@@ -391,7 +391,7 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
     }
 
     @KoragExperimental
-    fun unsafeAllocateFrameRenderBuffer(width: Int, height: Int, hasDepth: Boolean = false, hasStencil: Boolean = true, msamples: Int = 1, onlyThisFrame: Boolean = true): AGRenderBuffer {
+    fun unsafeAllocateFrameRenderBuffer(width: Int, height: Int, hasDepth: Boolean = false, hasStencil: Boolean = true, msamples: Int = 1, onlyThisFrame: Boolean = true): AGFrameBuffer {
         val realWidth = fixWidthForRenderToTexture(kotlin.math.max(width, 64))
         val realHeight = fixHeightForRenderToTexture(kotlin.math.max(height, 64))
         val rb = renderBuffers.alloc()
@@ -404,7 +404,7 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
     }
 
     @KoragExperimental
-    fun unsafeFreeFrameRenderBuffer(rb: AGRenderBuffer) {
+    fun unsafeFreeFrameRenderBuffer(rb: AGFrameBuffer) {
         if (frameRenderBuffers.remove(rb)) {
         }
         renderBuffers.free(rb)
@@ -413,7 +413,7 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
     @OptIn(KoragExperimental::class)
     inline fun renderToTexture(
         width: Int, height: Int,
-        render: (rb: AGRenderBuffer) -> Unit,
+        render: (rb: AGFrameBuffer) -> Unit,
         hasDepth: Boolean = false, hasStencil: Boolean = false, msamples: Int = 1,
         use: (tex: AGTexture, texWidth: Int, texHeight: Int) -> Unit
     ) {
@@ -441,7 +441,7 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
         }, hasDepth = hasDepth, hasStencil = hasStencil, msamples = msamples, use = { _, _, _ -> })
     }
 
-    fun setRenderBuffer(renderBuffer: AGBaseRenderBuffer?): AGBaseRenderBuffer? {
+    fun setRenderBuffer(renderBuffer: AGBaseFrameBuffer?): AGBaseFrameBuffer? {
         val old = currentRenderBuffer
         currentRenderBuffer?.unset()
         currentRenderBuffer = renderBuffer
@@ -449,12 +449,12 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
         return old
     }
 
-    fun getRenderBufferAtStackPoint(offset: Int): AGBaseRenderBuffer {
+    fun getRenderBufferAtStackPoint(offset: Int): AGBaseFrameBuffer {
         if (offset == 0) return currentRenderBufferOrMain
         return renderBufferStack.getOrNull(renderBufferStack.size + offset) ?: mainRenderBuffer
     }
 
-    fun pushRenderBuffer(renderBuffer: AGBaseRenderBuffer) {
+    fun pushRenderBuffer(renderBuffer: AGBaseFrameBuffer) {
         renderBufferStack.add(currentRenderBuffer)
         setRenderBuffer(renderBuffer)
     }

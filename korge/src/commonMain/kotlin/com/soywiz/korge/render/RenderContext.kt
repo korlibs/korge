@@ -240,9 +240,9 @@ class RenderContext constructor(
 	}
 
     inline fun renderToFrameBuffer(
-        frameBuffer: AGRenderBuffer,
+        frameBuffer: AGFrameBuffer,
         clear: Boolean = true,
-        render: (AGRenderBuffer) -> Unit,
+        render: (AGFrameBuffer) -> Unit,
     ) {
         flush()
         ag.setRenderBufferTemporally(frameBuffer) {
@@ -269,7 +269,7 @@ class RenderContext constructor(
      */
     inline fun renderToTexture(
         width: Int, height: Int,
-        render: (AGRenderBuffer) -> Unit = {},
+        render: (AGFrameBuffer) -> Unit = {},
         hasDepth: Boolean = false, hasStencil: Boolean = true, msamples: Int = 1,
         use: (texture: Texture) -> Unit
     ) {

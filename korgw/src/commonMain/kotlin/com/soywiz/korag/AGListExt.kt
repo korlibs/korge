@@ -1,8 +1,6 @@
 package com.soywiz.korag
 
-import com.soywiz.kds.fastArrayListOf
 import com.soywiz.korag.shader.Program
-import com.soywiz.korag.shader.VertexLayout
 import com.soywiz.korma.geom.Rectangle
 
 fun AGList.enableBlend(): Unit = enable(AGEnable.BLEND)
@@ -60,7 +58,7 @@ fun AGList.setStencilState(stencilOpFunc: AGStencilOpFuncState?, stencilRef: AGS
 fun AGList.setScissorState(ag: AG, scissor: AGScissor = AGScissor.NIL) =
     setScissorState(ag.currentRenderBuffer, ag.mainRenderBuffer, scissor)
 
-fun AGList.setScissorState(currentRenderBuffer: AGBaseRenderBuffer?, mainRenderBuffer: AGBaseRenderBuffer, scissor: AGScissor = AGScissor.NIL) {
+fun AGList.setScissorState(currentRenderBuffer: AGBaseFrameBuffer?, mainRenderBuffer: AGBaseFrameBuffer, scissor: AGScissor = AGScissor.NIL) {
     if (currentRenderBuffer == null) return
 
     //println("applyScissorState")

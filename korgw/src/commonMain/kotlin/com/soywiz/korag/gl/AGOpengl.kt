@@ -30,12 +30,12 @@ abstract class AGOpengl(checked: Boolean = false) : AG(checked) {
         //gl.swapInterval = 0
     }
 
-    override fun createMainRenderBuffer(): AGBaseRenderBufferImpl {
+    override fun createMainRenderBuffer(): AGBaseFrameBufferImpl {
         var backBufferTextureBinding2d: Int = 0
         var backBufferRenderBufferBinding: Int = 0
         var backBufferFrameBufferBinding: Int = 0
 
-        return object : AGBaseRenderBufferImpl(this) {
+        return object : AGBaseFrameBufferImpl(this) {
             override fun init() {
                 commandsSync {  }
                 backBufferTextureBinding2d = gl.getIntegerv(KmlGl.TEXTURE_BINDING_2D)
