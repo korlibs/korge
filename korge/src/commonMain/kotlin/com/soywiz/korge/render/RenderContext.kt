@@ -42,8 +42,8 @@ class RenderContext constructor(
 	val coroutineContext: CoroutineContext = EmptyCoroutineContext,
     val batchMaxQuads: Int = BatchBuilder2D.DEFAULT_BATCH_QUADS
 ) : Extra by Extra.Mixin(), BoundsProvider by bp, AGFeatures by ag, Closeable {
-    //val useNag = true
-    val useNag = false
+    val useNag = true
+    //val useNag = false
 
     val projectionMatrixTransform = Matrix()
     val projectionMatrixTransformInv = Matrix()

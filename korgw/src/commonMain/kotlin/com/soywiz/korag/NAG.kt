@@ -28,11 +28,12 @@ abstract class NAG {
     abstract fun execute(command: NAGCommand)
 
     fun startFrame() {
+        execute(NAGCommandStart)
     }
 
     fun clear(renderBuffer: NAGFrameBuffer?, color: RGBA? = null, depth: Float? = null, stencil: Int? = null) {
         execute(NAGCommandFullBatch(NAGBatch(batches = listOf(NAGUniformBatch(
-            renderBuffer = renderBuffer,
+            frameBuffer = renderBuffer,
             clear = ClearState(color, depth, stencil)
         )))))
     }
@@ -70,7 +71,7 @@ open class NAGTextureUnit : NAGObject() {
 
     fun set(
         unitId: Int = -1,
-        texture: NAGTexture,
+        texture: NAGTexture?,
         wrap: AGTextureWrap = AGTextureWrap.REPEAT,
         magFilter: AGMAGFilter = AGMAGFilter.LINEAR,
         minFilter: AGMINFilter = AGMINFilter(magFilter.ordinal),
@@ -89,6 +90,7 @@ open class NAGTexture : NAGObject() {
     var content: Bitmap? = null
 
     fun upload(content: Bitmap? = null): NAGTexture {
+        if (content === this.content) return this
         this.content = content
         this.invalidate()
         return this
@@ -158,6 +160,8 @@ class NAGVertices(val data: List<NAGVerticesPart>) {
 
 sealed interface NAGCommand
 
+object NAGCommandStart : NAGCommand
+
 class NAGCommandFinish(
     val completed: Signal<Unit>? = null,
 ) : NAGCommand
@@ -175,7 +179,7 @@ data class NAGBatch(
 )
 
 data class NAGUniformBatch(
-    val renderBuffer: NAGFrameBuffer?,
+    val frameBuffer: NAGFrameBuffer?,
     val program: Program? = null,
     val uniforms: AGUniformValues? = null,
     val state: AGFullState? = null,

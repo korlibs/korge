@@ -80,13 +80,61 @@ class KglOffScreenTest {
             val fb = NAGFrameBuffer().set(10, 10)
             //val fb: NAGFrameBuffer? = null
             ag.clear(fb, Colors.RED, 1f, 0)
-            val buffer = Buffer.allocDirect(4 * 4 * 4)
+            val buffer = Buffer(4 * 4 * 4)
             ag.readBits(fb, AGReadKind.COLOR, 0, 0, 4, 4, buffer)
             assertEquals(
                 "ff0000ffff0000ffff0000ffff0000ffff0000ffff0000ffff0000ffff0000ffff0000ffff0000ffff0000ffff0000ffff0000ffff0000ffff0000ffff0000ff",
                 buffer.hex()
             )
         }
+    }
+
+    @Test
+    fun testNAG2() {
+        KmlGlContextDefaultTemp { gl ->
+            val rgl = KmlGlProxyLogToString(gl)
+            val ag = NAGOpengl(rgl)
+            val fb = NAGFrameBuffer().set(4, 4)
+            rgl.viewport(0, 0, 4, 4)
+            //val fb: NAGFrameBuffer? = null
+            val vertexData = NAGBuffer()
+            vertexData.upload(Float32Buffer(floatArrayOf(
+                -10f, -10f,
+                +10f, -10f,
+                -10f, +10f,
+            )).buffer)
+            //val fb: NAGFrameBuffer? = null
+            ag.startFrame()
+            ag.clear(fb, Colors["#1f1f1f"], 1f, 0)
+            ag.draw(
+                NAGBatch(
+                    vertexData = NAGVertices(NAGVerticesPart(DefaultShaders.LAYOUT_DEBUG, vertexData)),
+                    //indexData = NAGBuffer().upload(Int16Buffer(shortArrayOf(0, 1, 2, 1, 2, 0)).buffer),
+                    batches = listOf(
+                        NAGUniformBatch(
+                            frameBuffer = fb,
+                            program = DefaultShaders.PROGRAM_DEBUG,
+                            state = AGFullState(),
+                            drawCommands = NAGDrawCommandArray.invoke {
+                                it.add(AGDrawType.TRIANGLES, AGIndexType.NONE, 0, 3)
+                                //it.add(AGDrawType.TRIANGLES, AGIndexType.USHORT, 2, 3)
+                            }
+                        )
+                    )
+                )
+            )
+            val buffer = Buffer(4 * 4 * 4)
+            ag.readBits(fb, AGReadKind.COLOR, 0, 0, 4, 4, buffer)
+            println(rgl.log.joinToString("\n"))
+            println(buffer.hex())
+            /*
+            assertEquals(
+                "ff0000ffff0000ffff0000ffff0000ffff0000ffff0000ffff0000ffff0000ffff0000ffff0000ffff0000ffff0000ffff0000ffff0000ffff0000ffff0000ff",
+                buffer.hex()
+            )
+            */
+        }
+
     }
 }
 

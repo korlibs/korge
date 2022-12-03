@@ -11,14 +11,26 @@ import com.soywiz.korag.shader.gl.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korio.lang.*
 
-open class NAGOpengl(val gl: KmlGl) : NAG() {
+open class NAGOpengl(val baseGl: KmlGl) : NAG() {
+    val gl = baseGl
+    //val gl = baseGl.logIf(log = true)
+
     override fun execute(command: NAGCommand) {
         when (command) {
             is NAGCommandFinish -> execute(command)
             is NAGCommandFullBatch -> command.batches.fastForEach { execute(it) }
             is NAGCommandTransfer.CopyToTexture -> execute(command)
             is NAGCommandTransfer.ReadBits -> execute(command)
+            is NAGCommandStart -> execute(command)
         }
+    }
+
+    var defaultFrameBuffer = 0
+
+    private fun execute(command: NAGCommandStart) {
+        //println("----------------------")
+        defaultFrameBuffer = gl.getIntegerv(gl.FRAMEBUFFER_BINDING)
+        //println("defaultFrameBuffer=$defaultFrameBuffer")
     }
 
     private fun execute(command: NAGCommandTransfer.CopyToTexture) {
@@ -98,7 +110,7 @@ open class NAGOpengl(val gl: KmlGl) : NAG() {
     private val currentState = AGFullState()
 
     private fun execute(batch: NAGUniformBatch) {
-        bindFrameBuffer(batch.renderBuffer)
+        bindFrameBuffer(batch.frameBuffer)
         batch.clear?.let {
             var value = 0
             it.color?.let { gl.clearColor(it.rf, it.gf, it.bf, it.af); value = value or KmlGl.COLOR_BUFFER_BIT }
@@ -137,13 +149,24 @@ open class NAGOpengl(val gl: KmlGl) : NAG() {
             val data = value.data
 
             val old = currentUniforms[value.uniform]
-            if (old != value) {
-                old.set(value)
+            if (old == value) {
                 return@fastForEach
             }
+            old.set(value)
 
             if (uniformType.isSampler) {
-                val unit = value.nativeValue as NAGTextureUnit
+                val nativeValue =value.nativeValue
+                val unit = when (nativeValue) {
+                    is AGTextureUnit -> {
+                        val texture = nativeValue.texture
+                        val bitmap = (texture?.source as? AGSyncBitmapSource?)?.gen?.invoke()
+                        texture?.nag?.upload(bitmap)
+                        nativeValue.nag.set(nativeValue.index, texture?.nag)
+                        nativeValue.nag
+                    }
+                    is NAGTextureUnit -> nativeValue
+                    else -> error("Unknown value $nativeValue for sampler $uniformType")
+                }
 
                 bindTextureUnit(unit.unitId, unit, when (uniformType) {
                     VarType.Sampler2D -> AGTextureTargetKind.TEXTURE_2D
@@ -238,6 +261,24 @@ open class NAGOpengl(val gl: KmlGl) : NAG() {
     }
 
     private fun bindVertexData(vertices: NAGVertices, bind: Boolean) {
+        if (!bind) {
+            vertices.data.fastForEach { info ->
+                val vertexLayout = info.layout
+                val vertices = info.buffer
+                val vattrs = vertexLayout.attributes
+                val vattrspos = vertexLayout.attributePositions
+                for (n in 0 until vattrspos.size) {
+                    val att = vattrs[n]
+                    val loc = att.fixedLocation ?: error("fixedLocation not set")
+                    if (att.divisor != 0) {
+                        gl.vertexAttribDivisor(loc, 0)
+                    }
+                    gl.disableVertexAttribArray(loc)
+                }
+            }
+            return
+        }
+
         vertices.data.fastForEach { info ->
             val vertexLayout = info.layout
             val vertices = info.buffer
@@ -255,29 +296,22 @@ open class NAGOpengl(val gl: KmlGl) : NAG() {
                 if (att.fixedLocation == null) {
                     //error("WOOPS!")
                 }
-                val loc = att.fixedLocation ?: error("fixedLocation not set")
+                val loc = att.fixedLocation ?: error("fixedLocation not set in $att")
                 val glElementType = att.type.toGl()
                 val elementCount = att.type.elementCount
-                if (bind) {
-                    if (loc >= 0) {
-                        gl.enableVertexAttribArray(loc)
-                        gl.vertexAttribPointer(
-                            loc,
-                            elementCount,
-                            glElementType,
-                            att.normalized,
-                            totalSize,
-                            off.toLong()
-                        )
-                        if (att.divisor != 0) {
-                            gl.vertexAttribDivisor(loc, att.divisor)
-                        }
-                    }
-                } else {
+                if (loc >= 0) {
+                    gl.enableVertexAttribArray(loc)
+                    gl.vertexAttribPointer(
+                        loc,
+                        elementCount,
+                        glElementType,
+                        att.normalized,
+                        totalSize,
+                        off.toLong()
+                    )
                     if (att.divisor != 0) {
-                        gl.vertexAttribDivisor(loc, 0)
+                        gl.vertexAttribDivisor(loc, att.divisor)
                     }
-                    gl.disableVertexAttribArray(loc)
                 }
             }
         }
@@ -352,8 +386,9 @@ open class NAGOpengl(val gl: KmlGl) : NAG() {
 
             texture.updateObject {
                 when (content) {
-                    is Bitmap32 -> tgl.upload(target, content.width, content.height, null, GLTexKind.RGBA, GLTexKindStorage.UNSIGNED_BYTE)
+                    is Bitmap32 -> tgl.upload(target, content.width, content.height, Int32Buffer(content.ints).buffer, GLTexKind.RGBA, GLTexKindStorage.UNSIGNED_BYTE)
                     null -> tgl.upload(target, 0, 0, null, GLTexKind.RGBA, GLTexKindStorage.UNSIGNED_BYTE)
+                    else -> error("Don't know how to handle texture $content")
                 }
             }
         }
@@ -366,7 +401,7 @@ open class NAGOpengl(val gl: KmlGl) : NAG() {
         if (fb == null) {
             if (currentFb == fb) return
             currentFb = fb
-            gl.bindFramebuffer(KmlGl.FRAMEBUFFER, 0)
+            gl.bindFramebuffer(KmlGl.FRAMEBUFFER, defaultFrameBuffer)
             //gl.viewport(viewportXY.x, viewportXY.y, viewportWH.width, viewportWH.height)
             return
         }

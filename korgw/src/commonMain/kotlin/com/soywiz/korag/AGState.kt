@@ -858,6 +858,8 @@ data class AGTextureUnit constructor(
     var linear: Boolean = true,
     var trilinear: Boolean? = null,
 ) {
+    val nag = NAGTextureUnit()
+
     fun set(texture: AGTexture?, linear: Boolean, trilinear: Boolean? = null) {
         this.texture = texture
         this.linear = linear
@@ -872,6 +874,8 @@ open class AGTexture constructor(
     open val premultiplied: Boolean,
     val targetKind: AGTextureTargetKind = AGTextureTargetKind.TEXTURE_2D
 ) : Closeable {
+    val nag: NAGTexture = NAGTexture()
+
     var isFbo: Boolean = false
     var requestMipmaps: Boolean = false
     var mipmaps: Boolean = false; internal set
@@ -1184,7 +1188,7 @@ class AGSyncBitmapSourceList(
     override fun toString(): String = "SyncBitmapSourceList(rgba=$rgba, width=$width, height=$height)"
 }
 
-class AGSyncBitmapSource(
+class AGSyncBitmapSource constructor(
     override val rgba: Boolean,
     override val width: Int,
     override val height: Int,

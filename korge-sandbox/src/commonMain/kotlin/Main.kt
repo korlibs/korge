@@ -30,6 +30,7 @@ suspend fun main() = Korge(
     if (true) {
     //if (false) {
         views.forceRenderEveryFrame = true
+        //views.forceRenderEveryFrame = false
         //val side = 10
         //val side = 20
         val side = 20
