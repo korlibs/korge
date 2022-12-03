@@ -111,7 +111,6 @@ void main() {
 }
 
 programUse: 1
-bufferCreate: 6
 Buffer[5].afterSetMem(mem[21760])
 vaoCreate: 1
 vaoSet: 1, AGVertexArrayObject(list=[AGVertexData(_buffer=Buffer[5], layout=VertexLayout[a_Pos, a_Dist, a_MaxDist])])

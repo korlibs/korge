@@ -209,7 +209,6 @@ open class LogBaseAG(
             super.afterSetMem()
             log("$this.afterSetMem(mem[${mem!!.size}])", LogBaseAG.Kind.BUFFER)
         }
-		override fun close(list: AGList) = log("$this.close()", LogBaseAG.Kind.BUFFER)
 		override fun toString(): String = "Buffer[$id]"
 	}
 
@@ -343,8 +342,6 @@ open class LogBaseAG(
             }
         }
 
-        override fun bufferCreate(id: Int) = log("bufferCreate: $id", Kind.BUFFER)
-        override fun bufferDelete(id: Int) = log("bufferDelete: $id", Kind.BUFFER)
         override fun uniformsSet(layout: UniformLayout, data: com.soywiz.kmem.Buffer) = log("uniformsSet: $layout", Kind.UNIFORM)
         override fun uboCreate(id: Int) = log("uboCreate: $id", Kind.UNIFORM)
         override fun uboDelete(id: Int) = log("uboDelete: $id", Kind.UNIFORM)

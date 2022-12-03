@@ -19,6 +19,7 @@ internal interface AGNativeObject {
 open class AGObject : Closeable {
     internal var _native: AGNativeObject? = null
     internal var _cachedContextVersion: Int = -1
+    internal var _cachedVersion: Int = -2
     internal var _version: Int = -1
 
     protected fun markAsDirty() {
@@ -35,7 +36,6 @@ open class AGBuffer constructor(val ag: AG, val list: AGList) : AGObject() {
     var estimatedMemoryUsage: ByteUnits = ByteUnits.fromBytes(0)
     var dirty: Boolean = true
     internal var mem: Buffer? = null
-    internal var agId: Int = list.bufferCreate()
 
     init {
         ag.buffers += this
@@ -53,18 +53,8 @@ open class AGBuffer constructor(val ag: AG, val list: AGList) : AGObject() {
     fun upload(data: Buffer): AGBuffer {
         mem = data
         afterSetMem()
-        dirty = true
         markAsDirty()
         return this
-    }
-
-    open fun close(list: AGList) {
-        mem = null
-        list.bufferDelete(this.agId)
-        ag.buffers -= this
-        agId = 0
-        dirty = true
-        markAsDirty()
     }
 }
 

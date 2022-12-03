@@ -22,9 +22,6 @@ interface AGQueueProcessor {
     fun readPixelsToTexture(textureId: Int, x: Int, y: Int, width: Int, height: Int, kind: AGReadKind)
     // DRAW
     fun draw(type: AGDrawType, vertexCount: Int, offset: Int = 0, instances: Int = 1, indexType: AGIndexType = AGIndexType.NONE, indices: AGBuffer? = null)
-    // Buffers
-    fun bufferCreate(id: Int)
-    fun bufferDelete(id: Int)
     // Uniforms + UBO
     fun uniformsSet(layout: UniformLayout, data: Buffer)
     fun uboCreate(id: Int)

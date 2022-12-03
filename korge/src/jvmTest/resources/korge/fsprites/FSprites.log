@@ -1,13 +1,8 @@
 createBuffer():0
-bufferCreate: 1
 createBuffer():1
-bufferCreate: 2
 createBuffer():2
-bufferCreate: 3
 createBuffer():3
-bufferCreate: 4
 createBuffer():4
-bufferCreate: 5
 RenderBuffer[0].setSize(1280, 720)
 createMainRenderBuffer():0
 RenderBuffer[0].set()
@@ -21,16 +16,12 @@ textureCreate: 1
 createTexture():0
 Texture[0].uploadedBitmap(SyncBitmapSource(rgba=true, width=1, height=1), 1, 1)
 createBuffer():5
-bufferCreate: 6
 Buffer[5].afterSetMem(mem[320])
 createBuffer():6
-bufferCreate: 7
 Buffer[6].afterSetMem(mem[40])
 createBuffer():7
-bufferCreate: 8
 Buffer[7].afterSetMem(mem[64])
 createBuffer():8
-bufferCreate: 9
 Buffer[8].afterSetMem(mem[32])
 enable: SCISSOR
 scissor: 0, 0, 1280, 720

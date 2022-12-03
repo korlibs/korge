@@ -1,11 +1,7 @@
 createBuffer():0
-bufferCreate: 1
 createBuffer():1
-bufferCreate: 2
 createBuffer():2
-bufferCreate: 3
 createBuffer():3
-bufferCreate: 4
 textureCreate: 1
 createTexture():0
 Texture[0].uploadedBitmap(SyncBitmapSource(rgba=true, width=361, height=512), 361, 512)

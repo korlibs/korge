@@ -1,19 +1,11 @@
 createBuffer():0
-bufferCreate: 1
 createBuffer():1
-bufferCreate: 2
 createBuffer():2
-bufferCreate: 3
 createBuffer():3
-bufferCreate: 4
 createBuffer():4
-bufferCreate: 5
 createBuffer():5
-bufferCreate: 6
 createBuffer():6
-bufferCreate: 7
 createBuffer():7
-bufferCreate: 8
 textureCreate: 1
 createTexture():0
 RenderBuffer[0].setSize(16, 16)

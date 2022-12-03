@@ -1,13 +1,8 @@
 createBuffer():0
-bufferCreate: 1
 createBuffer():1
-bufferCreate: 2
 createBuffer():2
-bufferCreate: 3
 createBuffer():3
-bufferCreate: 4
 createBuffer():4
-bufferCreate: 5
 RenderBuffer[0].setSize(800, 600)
 createMainRenderBuffer():0
 RenderBuffer[0].set()

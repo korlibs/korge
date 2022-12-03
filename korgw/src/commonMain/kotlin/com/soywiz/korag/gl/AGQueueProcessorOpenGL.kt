@@ -1,7 +1,8 @@
 package com.soywiz.korag.gl
 
-import com.soywiz.kds.fastCastTo
+import com.soywiz.kds.*
 import com.soywiz.kds.iterators.fastForEach
+import com.soywiz.kds.lock.*
 import com.soywiz.kgl.KmlGl
 import com.soywiz.kgl.deleteBuffer
 import com.soywiz.kgl.deleteFramebuffer
@@ -90,6 +91,8 @@ class AGQueueProcessorOpenGL(
         gl.flush()
         //gl.finish()
 
+        deletePendingObjects()
+
        //doPrint = if (doPrintTimer.elapsed >= 1.seconds) {
        //    println("---------------------------------")
        //    doPrintTimer.restart()
@@ -171,34 +174,64 @@ class AGQueueProcessorOpenGL(
         var cachedVersion = -1
     }
 
-    private val buffers = FastResources { BufferInfo(it) }
+    private fun deletePendingObjects() {
+        while (true) {
+            objectsToDeleteLock {
+                if (objectsToDelete.isNotEmpty()) {
+                    objectsToDelete.toList().also {
+                        objectsToDelete.clear()
+                    }
+                } else {
+                    return
+                }
+            }.fastForEach {
+                it.delete()
+            }
+        }
 
-    override fun bufferCreate(id: Int) {
-        buffers.getOrCreate(id)
+    }
+    private val objectsToDeleteLock = Lock()
+    private val objectsToDelete = fastArrayListOf<GLBaseObject>()
+
+    private open inner class GLBaseObject : AGNativeObject {
+        open fun delete() {
+        }
+
+        final override fun markToDelete() {
+            objectsToDeleteLock { objectsToDelete += this }
+        }
     }
 
-    override fun bufferDelete(id: Int) {
-        buffers.tryGetAndDelete(id)?.let { gl.deleteBuffer(it.glId); it.glId = 0 }
+    private val AGBuffer.gl: GLBuffer get() = createOnce { GLBuffer() }
+    private inner class GLBuffer : GLBaseObject() {
+        var id = gl.genBuffer()
+        override fun delete() {
+            gl.deleteBuffer(id)
+            id = -1
+        }
+    }
+
+    fun <T : AGObject, R: AGNativeObject> T.createOnce(block: (T) -> R): R {
+        if (this._native == null || this._cachedContextVersion != globalState.contextVersion) {
+            this._cachedContextVersion = globalState.contextVersion
+            this._native = block(this)
+        }
+        return this._native as R
+    }
+
+    fun <T : AGObject> T.update(block: (T) -> Unit) {
+        if (this._cachedVersion != this._version) {
+            this._cachedVersion = this._version
+            block(this)
+        }
     }
 
     private fun bindBuffer(buffer: AGBuffer, target: AGBufferKind) {
-        val bufferInfo = buffers[buffer.agId] ?: return
-        if (bufferInfo.cachedVersion != globalState.contextVersion) {
-            bufferInfo.cachedVersion = globalState.contextVersion
-            buffer.dirty = true
-            bufferInfo.glId = 0
-        }
-        if (bufferInfo.glId <= 0) {
-            bufferInfo.glId = gl.genBuffer()
-        }
-
-        gl.bindBuffer(target.toGl(), bufferInfo.glId)
-
-        if (buffer.dirty) {
-            val mem = buffer.mem
-            if (mem != null) {
-                gl.bufferData(target.toGl(), mem.sizeInBytes, mem, KmlGl.STATIC_DRAW)
-            }
+        val bufferInfo = buffer.gl
+        gl.bindBuffer(target.toGl(), bufferInfo.id)
+        buffer.update {
+            val mem = buffer.mem ?: Buffer(0)
+            gl.bufferData(target.toGl(), mem.sizeInBytes, mem, KmlGl.STATIC_DRAW)
         }
     }
 

@@ -318,9 +318,6 @@ class AGList(val globalState: AGGlobalState) {
                 }
 
                 CMD_UBO_USE -> processor.uboUse(data.extract16(0))
-                // BUFFER
-                CMD_BUFFER_CREATE -> processor.bufferCreate(data.extract16(0))
-                CMD_BUFFER_DELETE -> processor.bufferDelete(data.extract16(0))
                 // TEXTURES
                 CMD_TEXTURE_CREATE -> processor.textureCreate(data.extract16(0))
                 CMD_TEXTURE_DELETE -> {
@@ -655,17 +652,6 @@ class AGList(val globalState: AGGlobalState) {
         currentWrite.add(CMD(CMD_READ_PIXELS_TO_TEXTURE).finsert4(kind.ordinal, 0))
     }
 
-    // BUFFERS
-    fun bufferCreate(): Int {
-        val id = globalState.bufferIndices.alloc()
-        currentWrite.add(CMD(CMD_BUFFER_CREATE).finsert16(id, 0))
-        return id
-    }
-
-    fun bufferDelete(id: Int) {
-        currentWrite.add(CMD(CMD_BUFFER_DELETE).finsert16(id, 0))
-    }
-
     ////////////////////////////////////////
     // Frame Buffers
     ////////////////////////////////////////
@@ -755,11 +741,6 @@ class AGList(val globalState: AGGlobalState) {
         private const val CMD_UBO_DELETE = 0xA1
         private const val CMD_UBO_SET = 0xA2
         private const val CMD_UBO_USE = 0xA3
-        // BUFFERS
-        private const val CMD_BUFFER_CREATE = 0xB0
-        private const val CMD_BUFFER_DELETE = 0xB1
-        private const val CMD_BUFFER_SET = 0xB2
-        private const val CMD_BUFFER_USE = 0xB3
         // FRAME BUFFERS
         private const val CMD_FRAMEBUFFER_CREATE = 0xC0
         private const val CMD_FRAMEBUFFER_DELETE = 0xC1
