@@ -191,17 +191,17 @@ open class FSprites(val maxSize: Int) {
         private val xyData = floatArrayOf(0f, 0f, /**/ 1f, 0f, /**/ 1f, 1f, /**/ 0f, 1f)
 
         val u_i_texSizeN = Array(MAX_SUPPORTED_TEXTURES + 1) { Uniform("u_texSize$it", VarType.Float2) }
-        val a_xy = Attribute("a_xy", VarType.Float2, false)
+        val a_xy = Attribute("a_xy", VarType.Float2, false, fixedLocation = 0)
 
-        val a_pos = Attribute("a_rxy", VarType.Float2, false).withDivisor(1)
-        val a_scale = Attribute("a_scale", VarType.Float2, true).withDivisor(1)
-        val a_angle = Attribute("a_rangle", VarType.Float1, false).withDivisor(1)
-        val a_anchor = Attribute("a_axy", VarType.UShort2, true).withDivisor(1)
-        val a_uv0 = Attribute("a_uv0", VarType.UShort2, false).withDivisor(1)
-        val a_uv1 = Attribute("a_uv1", VarType.UShort2, false).withDivisor(1)
-        val a_colMul = Attribute("a_colMul", VarType.Byte4, normalized = true, precision = Precision.LOW).withDivisor(1)
+        val a_pos = Attribute("a_rxy", VarType.Float2, false, fixedLocation = 1).withDivisor(1)
+        val a_scale = Attribute("a_scale", VarType.Float2, true, fixedLocation = 2).withDivisor(1)
+        val a_angle = Attribute("a_rangle", VarType.Float1, false, fixedLocation = 3).withDivisor(1)
+        val a_anchor = Attribute("a_axy", VarType.UShort2, true, fixedLocation = 4).withDivisor(1)
+        val a_uv0 = Attribute("a_uv0", VarType.UShort2, false, fixedLocation = 5).withDivisor(1)
+        val a_uv1 = Attribute("a_uv1", VarType.UShort2, false, fixedLocation = 6).withDivisor(1)
+        val a_colMul = Attribute("a_colMul", VarType.Byte4, normalized = true, precision = Precision.LOW, fixedLocation = 7).withDivisor(1)
 
-        val a_texId = Attribute("a_texId", VarType.UByte1, normalized = false, precision = Precision.LOW).withDivisor(1)
+        val a_texId = Attribute("a_texId", VarType.UByte1, normalized = false, precision = Precision.LOW, fixedLocation = 8).withDivisor(1)
         val v_TexId = Varying("v_TexId", VarType.Float1, precision = Precision.LOW)
 
         val RenderContext.xyBuffer by Extra.PropertyThis<RenderContext, NAGVerticesPart> {

@@ -157,7 +157,7 @@ class SGVMTest {
 
 object ShaderTest {
     val a_ColMul = DefaultShaders.a_Col
-    val a_ColAdd = Attribute("a_Col2", VarType.Byte4, normalized = true)
+    val a_ColAdd = Attribute("a_Col2", VarType.Byte4, normalized = true, fixedLocation = 4)
 
     val v_ColMul = DefaultShaders.v_Col
     val v_ColAdd = Varying("v_Col2", VarType.Byte4)

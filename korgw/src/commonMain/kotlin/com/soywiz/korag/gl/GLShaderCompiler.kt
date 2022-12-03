@@ -76,7 +76,7 @@ internal object GLShaderCompiler {
             program.vertex.toNewGlslString(config.copy(version = usedGlSlVersion, compatibility = compatibility))
         }
         for (attr in program.attributes) {
-            val location = attr.fixedLocation ?: continue
+            val location = attr.fixedLocation
             gl.bindAttribLocation(id, location, attr.name)
         }
         gl.attachShader(id, fragmentShaderId)
