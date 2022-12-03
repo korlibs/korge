@@ -46,7 +46,7 @@ class TestE2eJava {
                             +1f, +1f
                         ))
                         ag.drawV2(
-                            fastArrayListOf(AGVertexData(vertices, DefaultShaders.LAYOUT_DEBUG)),
+                            AGVertexArrayObject(AGVertexData(vertices, DefaultShaders.LAYOUT_DEBUG)),
                             program = DefaultShaders.PROGRAM_DEBUG,
                             type = AGDrawType.TRIANGLES,
                             vertexCount = 3,

@@ -220,8 +220,8 @@ open class FSprites(val maxSize: Int) {
         val RenderContext.fastSpriteBufferTexId by Extra.PropertyThis<RenderContext, AGVertexData> {
             ag.createVertexData(a_texId)
         }
-        val RenderContext.buffers by Extra.PropertyThis<RenderContext, FastArrayList<AGVertexData>> {
-            fastArrayListOf(xyBuffer, fastSpriteBuffer, fastSpriteBufferMul, fastSpriteBufferTexId)
+        val RenderContext.buffers by Extra.PropertyThis<RenderContext, AGVertexArrayObject> {
+            AGVertexArrayObject(xyBuffer, fastSpriteBuffer, fastSpriteBufferMul, fastSpriteBufferTexId)
         }
 
         fun createProgram(maxTexs: Int = 4): Program {

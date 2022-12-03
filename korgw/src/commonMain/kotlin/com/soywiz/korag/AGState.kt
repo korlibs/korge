@@ -798,6 +798,7 @@ enum class AGTarget {
 value class AGVertexArrayObject(
     val list: FastArrayList<AGVertexData>
 ) {
+    constructor(vararg datas: AGVertexData) : this(fastArrayListOf(*datas))
 }
 
 data class AGVertexData constructor(
@@ -808,7 +809,7 @@ data class AGVertexData constructor(
 }
 
 data class AGBatch constructor(
-    var vertexData: FastArrayList<AGVertexData> = fastArrayListOf(AGVertexData(null)),
+    var vertexData: AGVertexArrayObject = AGVertexArrayObject(AGVertexData(null)),
     var program: Program = DefaultShaders.PROGRAM_DEBUG,
     var type: AGDrawType = AGDrawType.TRIANGLES,
     var vertexCount: Int = 0,
@@ -824,34 +825,11 @@ data class AGBatch constructor(
     var scissor: AGScissor = AGScissor.NIL,
     var instances: Int = 1
 ) {
-
     var stencilFull: AGStencilFullState
         get() = AGStencilFullState(stencilOpFunc, stencilRef)
         set(value) {
             stencilOpFunc = value.opFunc
             stencilRef = value.ref
-        }
-
-    private val singleVertexData = FastArrayList<AGVertexData>()
-
-    private fun ensureSingleVertexData() {
-        if (singleVertexData.isEmpty()) singleVertexData.add(AGVertexData(null))
-        vertexData = singleVertexData
-    }
-
-    @Deprecated("Use vertexData instead")
-    var vertices: AGBuffer
-        get() = (singleVertexData.firstOrNull() ?: vertexData.first()).buffer
-        set(value) {
-            ensureSingleVertexData()
-            singleVertexData[0]._buffer = value
-        }
-    @Deprecated("Use vertexData instead")
-    var vertexLayout: VertexLayout
-        get() = (singleVertexData.firstOrNull() ?: vertexData.first()).layout
-        set(value) {
-            ensureSingleVertexData()
-            singleVertexData[0].layout = value
         }
 }
 
@@ -1013,7 +991,7 @@ class AGTextureDrawer(val ag: AG) {
     val VERTEX_COUNT = 4
     val vertices = ag.createBuffer()
     val vertexLayout = VertexLayout(DefaultShaders.a_Pos, DefaultShaders.a_Tex)
-    val vertexData = fastArrayListOf(AGVertexData(vertices, vertexLayout))
+    val vertexData = AGVertexArrayObject(AGVertexData(vertices, vertexLayout))
     val verticesData = Buffer(VERTEX_COUNT * vertexLayout.totalSize)
     val program = Program(VertexShader {
         DefaultShaders {

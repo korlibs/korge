@@ -32,14 +32,14 @@ class RenderContext3D() {
 
     val tempAgVertexData = FastArrayList<AGVertexData>()
 
-    inline fun useDynamicVertexData(vertexBuffers: FastArrayList<BufferWithVertexLayout>, block: (FastArrayList<AGVertexData>) -> Unit) {
+    inline fun useDynamicVertexData(vertexBuffers: FastArrayList<BufferWithVertexLayout>, block: (AGVertexArrayObject) -> Unit) {
         dynamicVertexDataPool.allocMultiple(vertexBuffers.size, tempAgVertexData) { vertexData ->
             for (n in 0 until vertexBuffers.size) {
                 val bufferWithVertexLayout = vertexBuffers[n]
                 vertexData[n].buffer.upload(bufferWithVertexLayout.buffer)
                 vertexData[n].layout = bufferWithVertexLayout.layout
             }
-            block(vertexData)
+            block(AGVertexArrayObject(vertexData))
         }
     }
 }

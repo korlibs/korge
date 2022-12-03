@@ -6,13 +6,7 @@
 
 package com.soywiz.korag
 
-import com.soywiz.kds.ConcurrentPool
-import com.soywiz.kds.Deque
-import com.soywiz.kds.FloatDeque
-import com.soywiz.kds.IntDeque
-import com.soywiz.kds.IntSet
-import com.soywiz.kds.Pool
-import com.soywiz.kds.fastCastTo
+import com.soywiz.kds.*
 import com.soywiz.kds.lock.NonRecursiveLock
 import com.soywiz.kmem.*
 import com.soywiz.korag.annotation.KoragExperimental
@@ -307,7 +301,7 @@ class AGList(val globalState: AGGlobalState) {
                     globalState.vaoIndices.free(id)
                 }
 
-                CMD_VAO_SET -> processor.vaoSet(data.extract16(0), AGVertexArrayObject(readExtra()))
+                CMD_VAO_SET -> processor.vaoSet(data.extract16(0), AGVertexArrayObject(readExtra<FastArrayList<AGVertexData>>()))
                 CMD_VAO_USE -> processor.vaoUse(data.extract16(0))
                 // UBO
                 CMD_UBO_CREATE -> processor.uboCreate(data.extract16(0))

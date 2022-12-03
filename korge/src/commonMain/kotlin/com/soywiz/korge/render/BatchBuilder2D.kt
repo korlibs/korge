@@ -869,7 +869,7 @@ class BatchBuilder2D constructor(
         indexBuffer.upload(indices, 0, indexPos * 2)
     }
 
-    private val vertexData = fastArrayListOf(
+    private val vertexData = AGVertexArrayObject(
         AGVertexData(vertexBuffer, LAYOUT),
         AGVertexData(texIndexVertexBuffer, LAYOUT_TEX_INDEX),
         AGVertexData(texWrapVertexBuffer, LAYOUT_WRAP),

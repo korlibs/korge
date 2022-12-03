@@ -113,7 +113,7 @@ class DebugVertexView(pointsList: List<IVectorArrayList>, color: RGBA = Colors.W
 
         ctx.dynamicVertexBufferPool.alloc { vb ->
             vb.upload(this@DebugVertexView.buffer)
-            val vData = fastArrayListOf(
+            val vData = AGVertexArrayObject(
                 AGVertexData(vb, DefaultShaders.LAYOUT_DEBUG)
             )
             batches.fastForEach { batch ->

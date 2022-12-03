@@ -78,7 +78,7 @@ class LineRenderBatcher(
     internal val uniforms get() = ctx.uniforms
 
     private val vertexBuffer = ag.createVertexBuffer()
-    private val vertexData = fastArrayListOf(AGVertexData(vertexBuffer, LAYOUT))
+    private val vertexData = AGVertexArrayObject(AGVertexData(vertexBuffer, LAYOUT))
     private val program = Program(VERTEX, FRAGMENT)
     private val maxVertexCount = 1024
     private val vertices = Buffer.allocDirect(6 * 4 * maxVertexCount)

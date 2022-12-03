@@ -178,7 +178,7 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
         }
 
     fun drawV2(
-        vertexData: FastArrayList<AGVertexData>,
+        vertexData: AGVertexArrayObject,
         program: Program,
         type: AGDrawType,
         vertexCount: Int,
@@ -241,7 +241,7 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
                 else -> ProgramConfig.DEFAULT
             }).use(list)
 
-            list.vertexArrayObjectSet(AGVertexArrayObject(batch.vertexData)) {
+            list.vertexArrayObjectSet(batch.vertexData) {
                 list.uniformsSet(uniforms) {
                     list.setState(blending, stencilOpFunc, stencilRef, colorMask, renderState)
 

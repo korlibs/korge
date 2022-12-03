@@ -152,7 +152,7 @@ open class AGSoftware(val bitmap: Bitmap32) : AG() {
             val attributes = layout.attributes.zip(layout.attributePositions).map { CachedAttribute(it.first, it.second, vertexShader) }
         }
 
-        val vertexData = batch.vertexData.map { CachedVertexData(it, vertexShader) }
+        val vertexData = batch.vertexData.list.map { CachedVertexData(it, vertexShader) }
 
         println("------------------------------------------------------------------------------------------------------------")
 
