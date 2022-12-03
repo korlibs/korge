@@ -36,31 +36,39 @@ open class NAGOpengl(val gl: KmlGl) : NAG() {
             is Bitmap32 -> target.ints
             else -> target
         }
-        val bytesPerPixel = when (data) {
-            is IntArray -> 4
-            is FloatArray -> 4
-            is ByteArray -> 1
-            else -> unsupported()
-        }
         val x = command.x
         val y = command.y
         val width = command.width
         val height = command.height
         val area = width * height
-        BufferTemp(area * bytesPerPixel) { buffer ->
-            when (command.readKind) {
-                AGReadKind.COLOR -> gl.readPixels(x, y, width, height, KmlGl.RGBA, KmlGl.UNSIGNED_BYTE, buffer)
-                AGReadKind.DEPTH -> gl.readPixels(x, y, width, height, KmlGl.DEPTH_COMPONENT, KmlGl.FLOAT, buffer)
-                AGReadKind.STENCIL -> gl.readPixels(x, y, width, height, KmlGl.STENCIL_INDEX, KmlGl.UNSIGNED_BYTE, buffer)
+        val buffer = when (data) {
+            is Buffer -> {
+                Buffer.allocDirect(data.size)
             }
-            when (data) {
-                is IntArray -> buffer.getArrayInt32(0, data, size = area)
-                is FloatArray -> buffer.getArrayFloat32(0, data, size = area)
-                is ByteArray -> buffer.getArrayInt8(0, data, size = area)
-                else -> unsupported()
+            else -> {
+                Buffer.allocDirect(area * when (data) {
+                    is IntArray -> 4
+                    is FloatArray -> 4
+                    is ByteArray -> 1
+                    else -> unsupported()
+                })
             }
-            //println("readColor.HASH:" + bitmap.computeHash())
         }
+
+        when (command.readKind) {
+            AGReadKind.COLOR -> gl.readPixels(x, y, width, height, KmlGl.RGBA, KmlGl.UNSIGNED_BYTE, buffer)
+            AGReadKind.DEPTH -> gl.readPixels(x, y, width, height, KmlGl.DEPTH_COMPONENT, KmlGl.FLOAT, buffer)
+            AGReadKind.STENCIL -> gl.readPixels(x, y, width, height, KmlGl.STENCIL_INDEX, KmlGl.UNSIGNED_BYTE, buffer)
+        }
+        when (data) {
+            is IntArray -> buffer.getArrayInt32(0, data, size = buffer.size / 4)
+            is FloatArray -> buffer.getArrayFloat32(0, data, size = buffer.size / 4)
+            is ByteArray -> buffer.getArrayInt8(0, data, size = buffer.size / 1)
+            is Buffer -> arraycopy(buffer, 0, data, 0, data.size)
+            else -> unsupported()
+        }
+        //println(buffer.hex())
+        //println("readColor.HASH:" + bitmap.computeHash())
     }
 
     private fun execute(command: NAGCommandFinish) {
@@ -329,6 +337,11 @@ open class NAGOpengl(val gl: KmlGl) : NAG() {
     }
 
     private fun bindTexture(texture: NAGTexture?, target: AGTextureTargetKind) {
+        if (texture == null) {
+            gl.bindTexture(target.toGl(), 0)
+            return
+        }
+
         val tgl = texture?.gl
         if (tgl != null) {
             val content = texture.content
@@ -347,8 +360,12 @@ open class NAGOpengl(val gl: KmlGl) : NAG() {
         gl.bindTexture(target.toGl(), tgl?.id ?: 0)
     }
 
+    private var currentFb: NAGFrameBuffer? = null
+
     private fun bindFrameBuffer(fb: NAGFrameBuffer?) {
         if (fb == null) {
+            if (currentFb == fb) return
+            currentFb = fb
             gl.bindFramebuffer(KmlGl.FRAMEBUFFER, 0)
             //gl.viewport(viewportXY.x, viewportXY.y, viewportWH.width, viewportWH.height)
             return
@@ -356,7 +373,11 @@ open class NAGOpengl(val gl: KmlGl) : NAG() {
 
         val nfb = fb.gl
         fb.updateObject { nfb.setSize(fb.width, fb.height) }
+        if (currentFb == fb) return
+        currentFb = fb
         nfb.bind()
+        //val status = gl.checkFramebufferStatus(gl.FRAMEBUFFER)
+        //println("status=$status")
         //gl.viewport(viewportXY.x, viewportXY.y, viewportWH.width, viewportWH.height)
     }
 
@@ -395,19 +416,19 @@ open class NAGOpengl(val gl: KmlGl) : NAG() {
 
             gl.bindRenderbuffer(KmlGl.RENDERBUFFER, renderBuffer)
             if (internalFormat != 0) {
-                gl.renderbufferStorage(KmlGl.RENDERBUFFER, internalFormat, fb.width, fb.height)
+                gl.renderbufferStorage(KmlGl.RENDERBUFFER, KmlGl.DEPTH_ATTACHMENT, fb.width, fb.height)
             }
             gl.bindRenderbuffer(KmlGl.RENDERBUFFER, 0)
 
             this.bind()
             gl.framebufferTexture2D(KmlGl.FRAMEBUFFER, KmlGl.COLOR_ATTACHMENT0, KmlGl.TEXTURE_2D, texture.gl.id, 0)
-            if (internalFormat != 0) {
-                gl.framebufferRenderbuffer(KmlGl.FRAMEBUFFER, internalFormat, KmlGl.RENDERBUFFER, renderBuffer)
-            } else {
-                gl.framebufferRenderbuffer(KmlGl.FRAMEBUFFER, KmlGl.STENCIL_ATTACHMENT, KmlGl.RENDERBUFFER, 0)
-                gl.framebufferRenderbuffer(KmlGl.DEPTH_ATTACHMENT, KmlGl.STENCIL_ATTACHMENT, KmlGl.RENDERBUFFER, 0)
-            }
-
+            //gl.framebufferRenderbuffer(KmlGl.FRAMEBUFFER, KmlGl.DEPTH_ATTACHMENT, KmlGl.RENDERBUFFER, renderBuffer)
+            //if (internalFormat != 0) {
+            //    gl.framebufferRenderbuffer(KmlGl.FRAMEBUFFER, internalFormat, KmlGl.RENDERBUFFER, renderBuffer)
+            //} else {
+            //    gl.framebufferRenderbuffer(KmlGl.FRAMEBUFFER, KmlGl.STENCIL_ATTACHMENT, KmlGl.RENDERBUFFER, 0)
+            //    gl.framebufferRenderbuffer(KmlGl.FRAMEBUFFER, KmlGl.DEPTH_ATTACHMENT, KmlGl.RENDERBUFFER, 0)
+            //}
         }
 
         fun bind() {

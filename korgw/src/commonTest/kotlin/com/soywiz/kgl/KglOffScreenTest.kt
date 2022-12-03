@@ -1,7 +1,8 @@
 package com.soywiz.kgl
 
 import com.soywiz.kmem.*
-import com.soywiz.korio.lang.*
+import com.soywiz.korag.*
+import com.soywiz.korim.color.*
 import kotlin.test.*
 
 class KglOffScreenTest {
@@ -23,15 +24,14 @@ class KglOffScreenTest {
 
             // Create and set texture
 
-            gl.activeTexture(gl.TEXTURE0).check("activeTexture")
+            //gl.activeTexture(gl.TEXTURE0).check("activeTexture")
+            //gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR).check("texParameteri:MIN")
+            //gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR).check("texParameteri:MAG")
+            //gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE).check("texParameteri:WRAP_S")
+            //gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE).check("texParameteri:WRAP_T")
 
             val fbTex = gl.genTexture().check("genTexture")
             gl.bindTexture(gl.TEXTURE_2D, fbTex).check("bindTexture")
-
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR).check("texParameteri:MIN")
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR).check("texParameteri:MAG")
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE).check("texParameteri:WRAP_S")
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE).check("texParameteri:WRAP_T")
 
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, fboWidth, fboHeight, 0, gl.RGBA, gl.UNSIGNED_BYTE, null).check("texImage2D")
             gl.bindTexture(gl.TEXTURE_2D, 0).check("bindTexture:null")
@@ -58,6 +58,33 @@ class KglOffScreenTest {
             assertEquals(
                 "ff0000ffff0000ffff0000ffff0000ffff0000ffff0000ffff0000ffff0000ffff0000ffff0000ffff0000ffff0000ffff0000ffff0000ffff0000ffff0000ff",
                 data.hex()
+            )
+        }
+    }
+
+    @Test
+    fun testNAG() {
+        run {
+            val log = KmlGlProxyLogToString()
+            val ag = NAGOpengl(log)
+            val fb = NAGFrameBuffer().set(10, 10)
+            ag.clear(fb, Colors.RED, 1f, 0)
+            val bytes = ByteArray(4 * 4 * 4)
+            val buffer = Buffer(bytes)
+            ag.readBits(fb, AGReadKind.COLOR, 0, 0, 4, 4, bytes)
+            println(log.log.joinToString("\n"))
+        }
+
+        KmlGlContextDefaultTemp { gl ->
+            val ag = NAGOpengl(gl)
+            val fb = NAGFrameBuffer().set(10, 10)
+            //val fb: NAGFrameBuffer? = null
+            ag.clear(fb, Colors.RED, 1f, 0)
+            val buffer = Buffer.allocDirect(4 * 4 * 4)
+            ag.readBits(fb, AGReadKind.COLOR, 0, 0, 4, 4, buffer)
+            assertEquals(
+                "ff0000ffff0000ffff0000ffff0000ffff0000ffff0000ffff0000ffff0000ffff0000ffff0000ffff0000ffff0000ffff0000ffff0000ffff0000ffff0000ff",
+                buffer.hex()
             )
         }
     }

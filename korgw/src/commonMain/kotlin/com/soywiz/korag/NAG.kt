@@ -40,10 +40,10 @@ abstract class NAG {
     fun draw(batches: List<NAGBatch>) = execute(NAGCommandFullBatch(batches))
     fun draw(vararg batches: NAGBatch) = draw(batches.toList())
 
-    fun readToTexture(renderBuffer: NAGFrameBuffer, texture: NAGTexture, x: Int, y: Int, width: Int, height: Int, completed: Signal<Unit>? = null) {
+    fun readToTexture(renderBuffer: NAGFrameBuffer?, texture: NAGTexture, x: Int, y: Int, width: Int, height: Int, completed: Signal<Unit>? = null) {
         execute(NAGCommandTransfer.CopyToTexture(renderBuffer, texture, x, y, width, height, completed))
     }
-    fun readBits(renderBuffer: NAGFrameBuffer, kind: AGReadKind, x: Int, y: Int, width: Int, height: Int, target: Any?, completed: Signal<Unit>? = null) {
+    fun readBits(renderBuffer: NAGFrameBuffer?, kind: AGReadKind, x: Int, y: Int, width: Int, height: Int, target: Any?, completed: Signal<Unit>? = null) {
         execute(NAGCommandTransfer.ReadBits(renderBuffer, kind, x, y, width, height, target, completed))
     }
     fun finish(completed: Signal<Unit>? = null) {
@@ -101,7 +101,7 @@ open class NAGFrameBuffer : NAGObject() {
     var height: Int = 0
 
     var hasStencil: Boolean = true
-    var hasDepth: Boolean = true
+    var hasDepth: Boolean = false
     val hasStencilAndDepth: Boolean get() = hasStencil && hasDepth
 
     fun set(width: Int = this.width, height: Int = this.height, hasStencil: Boolean = this.hasStencil, hasDepth: Boolean = this.hasDepth): NAGFrameBuffer {
@@ -190,10 +190,10 @@ data class ClearState(
 )
 
 sealed interface NAGCommandTransfer : NAGCommand {
-    val frameBuffer: NAGFrameBuffer
+    val frameBuffer: NAGFrameBuffer?
     val completed: Signal<Unit>?
-    class CopyToTexture(override val frameBuffer: NAGFrameBuffer, val texture: NAGTexture, val x: Int, val y: Int, val width: Int, val height: Int, override val completed: Signal<Unit>? = null) : NAGCommandTransfer
-    class ReadBits(override val frameBuffer: NAGFrameBuffer, val readKind: AGReadKind, val x: Int, val y: Int, val width: Int, val height: Int, val target: Any?, override val completed: Signal<Unit>? = null) : NAGCommandTransfer
+    class CopyToTexture(override val frameBuffer: NAGFrameBuffer?, val texture: NAGTexture, val x: Int, val y: Int, val width: Int, val height: Int, override val completed: Signal<Unit>? = null) : NAGCommandTransfer
+    class ReadBits(override val frameBuffer: NAGFrameBuffer?, val readKind: AGReadKind, val x: Int, val y: Int, val width: Int, val height: Int, val target: Any?, override val completed: Signal<Unit>? = null) : NAGCommandTransfer
 }
 
 inline class NAGDrawCommandArrayWriter(private val data: IntArrayList = IntArrayList()) {

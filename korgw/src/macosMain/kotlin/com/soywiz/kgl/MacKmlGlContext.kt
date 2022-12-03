@@ -12,6 +12,10 @@ open class MacKmlGlContext(window: Any? = null, parent: KmlGlContext? = null) : 
         uintArrayOf(
             kCGLPFAAccelerated,
             kCGLPFAOpenGLProfile, kCGLOGLPVersion_GL4_Core,
+            kCGLPFAColorSize, 24u,
+            kCGLPFADepthSize, 16u,
+            kCGLPFAStencilSize, 8u,
+            kCGLPFADoubleBuffer,
             0u
         ).usePinned { attributesPin ->
             // @TODO: Create context for window
@@ -19,9 +23,9 @@ open class MacKmlGlContext(window: Any? = null, parent: KmlGlContext? = null) : 
                 val ctx = alloc<CGLContextObjVar>()
                 val num = alloc<GLintVar>()
                 val pix = alloc<CGLPixelFormatObjVar>()
-                println("kCGLPFAAccelerated=$kCGLPFAAccelerated")
-                println("kCGLPFAOpenGLProfile=$kCGLPFAOpenGLProfile")
-                println("kCGLOGLPVersion_GL4_Core=$kCGLOGLPVersion_GL4_Core")
+                //println("kCGLPFAAccelerated=$kCGLPFAAccelerated")
+                //println("kCGLPFAOpenGLProfile=$kCGLPFAOpenGLProfile")
+                //println("kCGLOGLPVersion_GL4_Core=$kCGLOGLPVersion_GL4_Core")
                 //println(sizeOf<CGLContextObjVar>())
                 //println(sizeOf<GLintVar>())
                 //println(sizeOf<CGLPixelFormatObjVar>())

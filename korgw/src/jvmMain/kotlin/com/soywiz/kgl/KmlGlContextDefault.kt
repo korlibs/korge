@@ -315,11 +315,16 @@ open class MacKmlGlContext(window: Any? = null, parent: KmlGlContext? = null) : 
         MacGL.CGLEnable()
     }
     var ctx: com.sun.jna.Pointer? = run {
-        val attributes = Memory(16L)
-        attributes.setInt(0, kCGLPFAAccelerated)
-        attributes.setInt(4, kCGLPFAOpenGLProfile)
-        attributes.setInt(8, kCGLOGLPVersion_GL4_Core)
-        attributes.setInt(12, 0)
+        val attributes = Memory(intArrayOf(
+            kCGLPFAAccelerated,
+            kCGLPFAOpenGLProfile, kCGLOGLPVersion_GL4_Core,
+            kCGLPFAColorSize, 24,
+            kCGLPFADepthSize, 16,
+            kCGLPFAStencilSize, 8,
+            kCGLPFADoubleBuffer,
+            //kCGLPFASupersample,
+            0,
+        ))
         val num = Memory(4L)
         val ctx = Memory(8L) // void**
         val pix = Memory(8L) // void**
@@ -341,6 +346,10 @@ open class MacKmlGlContext(window: Any? = null, parent: KmlGlContext? = null) : 
         MacGL.CGLSetCurrentContext(null)
     }
 
+    override fun swap() {
+        //super.swap()
+    }
+
     override fun close() {
         if (ctx == null) return
         if (MacGL.CGLGetCurrentContext() == ctx) {
@@ -351,8 +360,17 @@ open class MacKmlGlContext(window: Any? = null, parent: KmlGlContext? = null) : 
     }
 
     companion object {
+        // https://github.com/apitrace/apitrace/blob/master/retrace/glretrace_cgl.cpp
         const val kCGLPFAAccelerated = 73
         const val kCGLPFAOpenGLProfile = 99
         const val kCGLOGLPVersion_GL4_Core = 16640
+
+        const val kCGLPFAColorSize              = 8
+        const val kCGLPFAAlphaSize              =11
+        const val kCGLPFADepthSize              =12
+        const val kCGLPFAStencilSize            =13
+        const val kCGLPFAAccumSize              =14
+        const val kCGLPFADoubleBuffer           =5
+
     }
 }
