@@ -20,6 +20,8 @@ abstract class KmlGlContext(val window: Any?, val gl: KmlGl, val parent: KmlGlCo
     }
     open fun unset() {
     }
+    open fun swap() {
+    }
     override fun close() {
     }
 }

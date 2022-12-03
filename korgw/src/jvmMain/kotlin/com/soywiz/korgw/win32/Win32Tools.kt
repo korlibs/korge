@@ -254,7 +254,7 @@ class Win32OpenglContext(val gwconfig: GameWindowConfig, val hWnd: WinDef.HWND, 
                 //WGL_DOUBLE_BUFFER_ARB, GL_FALSE,
                 WGL_PIXEL_TYPE_ARB, WGL_TYPE_RGBA_ARB,
                 WGL_COLOR_BITS_ARB, 32,
-                WGL_DEPTH_BITS_ARB, 24,
+                WGL_DEPTH_BITS_ARB, 16,
                 WGL_STENCIL_BITS_ARB, 8,
                 WGL_SAMPLE_BUFFERS_ARB, 1, // Number of buffers (must be 1 at time of writing)
                 WGL_SAMPLES_ARB, 4,        // Number of samples
