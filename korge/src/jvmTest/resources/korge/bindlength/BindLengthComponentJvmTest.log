@@ -3,6 +3,8 @@ createBuffer():1
 createBuffer():2
 createBuffer():3
 createBuffer():4
+createTexture():0
+Texture[0].uploadedBitmap(1280, 720)
 RenderBuffer[0].setSize(1280, 720)
 createMainRenderBuffer():0
 RenderBuffer[0].set()
@@ -12,9 +14,8 @@ flipInternal()
 finish
 RenderBuffer[0].set()
 clear(#00000000, 1.0, 0, true, true, true)
-textureCreate: 1
-createTexture():0
-Texture[0].uploadedBitmap(SyncBitmapSource(rgba=true, width=1, height=1), 1, 1)
+createTexture():1
+Texture[1].uploadedBitmap(1, 1)
 Buffer[0].afterSetMem(mem[96])
 Buffer[1].afterSetMem(mem[16384])
 Buffer[2].afterSetMem(mem[16384])

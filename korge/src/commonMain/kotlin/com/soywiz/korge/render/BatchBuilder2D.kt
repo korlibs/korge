@@ -189,7 +189,7 @@ class BatchBuilder2D constructor(
 
     fun readVertex(n: Int, out: VertexInfo = VertexInfo()): VertexInfo {
         out.read(this.vertices, n)
-        val source = textureUnitN[0].texture?.source
+        val source = textureUnitN[0].texture
         out.texWidth = source?.width ?: -1
         out.texHeight = source?.height ?: -1
         return out

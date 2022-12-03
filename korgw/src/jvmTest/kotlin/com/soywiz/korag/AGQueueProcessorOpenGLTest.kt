@@ -10,12 +10,15 @@ import kotlin.test.*
 
 @OptIn(KorIncomplete::class, KorInternal::class)
 class AGQueueProcessorOpenGLTest {
+    val gl = KmlGlProxyLogToString()
+    val ag = SimpleAGOpengl(gl)
+    val global = AGGlobalState()
+    val glGlobal = GLGlobalState(gl, global)
+    val processor = AGQueueProcessorOpenGL(gl, glGlobal)
+    val list = ag._list
+
     @Test
     fun test() {
-        val gl = KmlGlProxyLogToString()
-        val global = AGGlobalState()
-        val processor = AGQueueProcessorOpenGL(gl, global)
-        val list = global.createList()
         list.enable(AGEnable.BLEND)
         val program = list.createProgram(DefaultShaders.PROGRAM_DEBUG)
         list.useProgram(program)
@@ -28,13 +31,12 @@ class AGQueueProcessorOpenGLTest {
 
     @Test
     fun testContextLost() {
-        val gl = KmlGlProxyLogToString()
-        val ag = SimpleAGOpengl(gl)
-        val tex = ag.createTexture()
-        tex.upload(Bitmap32(1, 1, Colors.RED))
-        tex.bindEnsuring()
+        val tex = ag.createTexture().upload(Bitmap32(1, 1, Colors.RED))
+        list.bindTexture(tex, AGTextureTargetKind.TEXTURE_2D)
+        processor.processBlocking(list, -1)
         ag.contextLost()
-        tex.bindEnsuring()
+        list.bindTexture(tex, AGTextureTargetKind.TEXTURE_2D)
+        processor.processBlocking(list, -1)
         ag.commandsSync {  }
         assertEqualsJvmFileReference("com/soywiz/korag/AGQueueProcessorContextLost.ref", gl.getLogAsString())
     }

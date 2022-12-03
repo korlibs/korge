@@ -1,8 +1,10 @@
 package com.soywiz.korag
 
-import com.soywiz.kgl.KmlGlDummy
-import com.soywiz.kgl.KmlGlProxyLogToString
-import com.soywiz.korag.gl.AGQueueProcessorOpenGL
+import com.soywiz.kgl.*
+import com.soywiz.korag.gl.*
+import com.soywiz.korag.log.*
+import com.soywiz.korim.bitmap.*
+import com.soywiz.korim.color.*
 import com.soywiz.korio.annotations.KorIncomplete
 import com.soywiz.korio.annotations.KorInternal
 import kotlin.test.Test
@@ -11,6 +13,9 @@ import kotlin.test.assertEquals
 @OptIn(KorIncomplete::class, KorInternal::class)
 class AGListTest {
     val global = AGGlobalState()
+    val log = KmlGlProxyLogToString()
+    val glGlobal = GLGlobalState(log, global)
+    val ag = DummyAG()
     val _list = AGList(global)
     fun AGQueueProcessor.sync(list: AGList = _list, block: AGList.() -> Unit) {
         block(list)
@@ -19,29 +24,21 @@ class AGListTest {
     }
     @Test
     fun test() {
-        val log = KmlGlProxyLogToString()
-        val processor = AGQueueProcessorOpenGL(log, global)
+        val processor = AGQueueProcessorOpenGL(log, glGlobal)
+        val tex = ag.createTexture().upload(Bitmap32(1, 1, Colors.RED))
         processor.sync {
-            val tex1 = createTexture()
-            deleteTexture(tex1)
-            val tex2 = createTexture()
-            deleteTexture(tex2)
+            bindTexture(tex, AGTextureTargetKind.TEXTURE_2D)
         }
+        tex.close()
         processor.sync {
-            val tex1 = createTexture()
-            deleteTexture(tex1)
-            val tex2 = createTexture()
-            deleteTexture(tex2)
+            finish()
         }
         assertEquals(
             """
                 genTextures(1, [6001])
-                deleteTextures(1, [6001])
-                genTextures(1, [6001])
-                deleteTextures(1, [6001])
-                genTextures(1, [6001])
-                deleteTextures(1, [6001])
-                genTextures(1, [6001])
+                bindTexture(3553, 6001)
+                texImage2D(3553, 0, 6408, 1, 1, 0, 6408, 5121, Buffer(size=4))
+                flush()
                 deleteTextures(1, [6001])
             """.trimIndent(),
             log.log.joinToString("\n")

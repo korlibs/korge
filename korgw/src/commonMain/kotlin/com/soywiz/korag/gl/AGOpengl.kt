@@ -23,6 +23,7 @@ abstract class AGOpengl(checked: Boolean = false) : AG(checked) {
     abstract val gl: KmlGl
 
     override val parentFeatures: AGFeatures get() = gl
+    protected val glGlobalState by lazy { GLGlobalState(gl, _globalState) }
 
     //val queue = Deque<(gl: GL) -> Unit>()
 
@@ -64,7 +65,7 @@ abstract class AGOpengl(checked: Boolean = false) : AG(checked) {
 
     private var _glProcessor: AGQueueProcessorOpenGL? = null
     private val glProcessor: AGQueueProcessorOpenGL get() {
-        if (_glProcessor == null) _glProcessor = AGQueueProcessorOpenGL(gl, _globalState)
+        if (_glProcessor == null) _glProcessor = AGQueueProcessorOpenGL(gl, glGlobalState)
         return _glProcessor!!
     }
 
@@ -76,9 +77,9 @@ abstract class AGOpengl(checked: Boolean = false) : AG(checked) {
     override fun readColorTexture(texture: AGTexture, x: Int, y: Int, width: Int, height: Int) {
         //gl.flush()
         //gl.finish()
-        texture.bind()
+        commandsSync { it.bindTexture(texture, AGTextureTargetKind.TEXTURE_2D) }
         gl.copyTexImage2D(gl.TEXTURE_2D, 0, gl.RGBA, x, y, width, height, 0)
-        texture.unbind()
+        commandsSync { it.bindTexture(null, AGTextureTargetKind.TEXTURE_2D) }
     }
 }
 

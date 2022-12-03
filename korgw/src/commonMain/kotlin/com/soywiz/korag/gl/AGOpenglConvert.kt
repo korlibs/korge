@@ -105,6 +105,7 @@ fun AGTextureTargetKind.toGl(): Int = when (this) {
     AGTextureTargetKind.TEXTURE_3D -> KmlGl.TEXTURE_3D
     AGTextureTargetKind.TEXTURE_CUBE_MAP -> KmlGl.TEXTURE_CUBE_MAP
     AGTextureTargetKind.EXTERNAL_TEXTURE -> KmlGl.TEXTURE_EXTERNAL_OES
+    else -> this.ordinal
 }
 
 fun AGTextureTargetKind.Companion.fromGl(value: Int): AGTextureTargetKind = when (value) {

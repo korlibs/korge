@@ -2,9 +2,10 @@ createBuffer():0
 createBuffer():1
 createBuffer():2
 createBuffer():3
-textureCreate: 1
 createTexture():0
-Texture[0].uploadedBitmap(SyncBitmapSource(rgba=true, width=361, height=512), 361, 512)
+Texture[0].uploadedBitmap(361, 512)
+createTexture():1
+Texture[1].uploadedBitmap(640, 480)
 RenderBuffer[0].setSize(640, 480)
 createMainRenderBuffer():0
 Buffer[0].afterSetMem(mem[384])

@@ -9,6 +9,7 @@ import com.soywiz.klogger.Console
 import com.soywiz.kmem.*
 import com.soywiz.kmem.unit.ByteUnits
 import com.soywiz.korag.annotation.KoragExperimental
+import com.soywiz.korag.gl.*
 import com.soywiz.korag.shader.Attribute
 import com.soywiz.korag.shader.Program
 import com.soywiz.korag.shader.ProgramConfig
@@ -131,6 +132,7 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
 
     fun createTexture(): AGTexture = createTexture(premultiplied = true)
     fun createTexture(bmp: Bitmap, mipmaps: Boolean = false): AGTexture = createTexture(bmp.premultiplied).upload(bmp, mipmaps)
+    @Deprecated("This will copy the data")
     fun createTexture(bmp: BitmapSlice<Bitmap>, mipmaps: Boolean = false): AGTexture = createTexture(bmp.premultiplied).upload(bmp, mipmaps)
     fun createTexture(bmp: Bitmap, mipmaps: Boolean = false, premultiplied: Boolean = true): AGTexture = createTexture(premultiplied).upload(bmp, mipmaps)
     open fun createTexture(premultiplied: Boolean, targetKind: AGTextureTargetKind = AGTextureTargetKind.TEXTURE_2D): AGTexture = AGTexture(this, premultiplied, targetKind)
@@ -274,7 +276,7 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
 
     var lastRenderContextId = 0
 
-    open fun createRenderBuffer(): AGFrameBuffer = AGFinalFrameBuffer(this)
+    open fun createRenderBuffer(): AGFrameBuffer = AGFrameBuffer(this)
 
     //open fun createRenderBuffer() = RenderBuffer()
 
@@ -583,7 +585,7 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
     fun drawBitmap(bmp: Bitmap) {
         drawTempTexture.upload(bmp, mipmaps = false)
         drawTexture(drawTempTexture)
-        drawTempTexture.upload(Bitmaps.transparent)
+        drawTempTexture.upload(Bitmaps.transparent.bmp)
     }
 
     private val stats = AGStats()

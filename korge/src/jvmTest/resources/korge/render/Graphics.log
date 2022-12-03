@@ -1,14 +1,11 @@
 RenderBuffer[0].set()
 clear(#00000000, 1.0, 0, true, true, true)
-textureCreate: 1
-createTexture():0
-Texture[0].uploadedBitmap(SyncBitmapSource(rgba=true, width=71, height=71), 71, 71)
-textureCreate: 2
 createTexture():1
-Texture[1].uploadedBitmap(SyncBitmapSource(rgba=true, width=161, height=161), 161, 161)
-textureCreate: 3
+Texture[1].uploadedBitmap(71, 71)
 createTexture():2
-Texture[2].uploadedBitmap(SyncBitmapSource(rgba=true, width=64, height=64), 64, 64)
+Texture[2].uploadedBitmap(161, 161)
+createTexture():3
+Texture[3].uploadedBitmap(64, 64)
 Buffer[0].afterSetMem(mem[288])
 Buffer[1].afterSetMem(mem[16384])
 Buffer[2].afterSetMem(mem[16384])

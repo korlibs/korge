@@ -1,8 +1,9 @@
 package com.soywiz.korim.bitmap
 
-open class MultiBitmap(
+open class NullBitmap(
     width: Int,
     height: Int,
-    val bitmaps: List<Bitmap>,
     premultiplied: Boolean = true
 ) : Bitmap(width, height, 32, premultiplied, null)
+
+

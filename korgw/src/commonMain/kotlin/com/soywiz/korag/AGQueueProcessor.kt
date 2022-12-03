@@ -1,11 +1,7 @@
 package com.soywiz.korag
 
-import com.soywiz.kmem.*
-import com.soywiz.korag.shader.Program
-import com.soywiz.korag.shader.ProgramConfig
-import com.soywiz.korag.shader.UniformLayout
-import com.soywiz.korim.bitmap.Bitmap
-import com.soywiz.korio.annotations.KorInternal
+import com.soywiz.korag.shader.*
+import com.soywiz.korio.annotations.*
 
 @KorInternal
 interface AGQueueProcessor {
@@ -19,11 +15,11 @@ interface AGQueueProcessor {
     fun enableDisable(kind: AGEnable, enable: Boolean)
     // READ
     fun readPixels(x: Int, y: Int, width: Int, height: Int, data: Any, kind: AGReadKind)
-    fun readPixelsToTexture(textureId: Int, x: Int, y: Int, width: Int, height: Int, kind: AGReadKind)
+    fun readPixelsToTexture(tex: AGTexture, x: Int, y: Int, width: Int, height: Int, kind: AGReadKind)
     // DRAW
     fun draw(type: AGDrawType, vertexCount: Int, offset: Int = 0, instances: Int = 1, indexType: AGIndexType = AGIndexType.NONE, indices: AGBuffer? = null)
     // Uniforms
-    fun uniformsSet(ubo: AGUniformValues)
+    fun uniformsSet(uniforms: AGUniformValues)
     // Faces
     fun cullFace(face: AGCullFace)
     fun frontFace(face: AGFrontFace)
@@ -56,23 +52,8 @@ interface AGQueueProcessor {
     fun vaoUnuse(vao: AGVertexArrayObject)
     fun vaoUse(vao: AGVertexArrayObject)
     // TEXTURES
-    fun textureCreate(textureId: Int)
-    fun textureDelete(textureId: Int)
-    fun textureUpdate(
-        textureId: Int,
-        target: AGTextureTargetKind,
-        index: Int,
-        bmp: Bitmap?,
-        source: AGBitmapSourceBase,
-        doMipmaps: Boolean,
-        premultiplied: Boolean
-    )
-    fun textureBind(textureId: Int, target: AGTextureTargetKind, implForcedTexId: Int)
-    fun textureBindEnsuring(tex: AGTexture?)
-    fun textureSetFromFrameBuffer(textureId: Int, x: Int, y: Int, width: Int, height: Int)
+    fun textureBind(tex: AGTexture?, target: AGTextureTargetKind)
+    fun textureSetFromFrameBuffer(tex: AGTexture, x: Int, y: Int, width: Int, height: Int)
     // FRAME BUFFER
-    fun frameBufferCreate(id: Int)
-    fun frameBufferDelete(id: Int)
-    fun frameBufferSet(id: Int, textureId: Int, width: Int, height: Int, hasStencil: Boolean, hasDepth: Boolean)
-    fun frameBufferUse(id: Int)
+    fun frameBufferSet(frameBuffer: AGFrameBuffer)
 }
