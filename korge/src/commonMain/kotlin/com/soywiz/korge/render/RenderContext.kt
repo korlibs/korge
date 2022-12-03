@@ -1,6 +1,7 @@
 package com.soywiz.korge.render
 
 import com.soywiz.kds.*
+import com.soywiz.kds.iterators.*
 import com.soywiz.korag.*
 import com.soywiz.korag.log.*
 import com.soywiz.korag.shader.Uniform
@@ -51,10 +52,10 @@ class RenderContext constructor(
 
     @KorgeInternal
     val uniforms: AGUniformValues by lazy {
-        AGUniformValues(
-            DefaultShaders.u_ProjMat to projMat,
-            DefaultShaders.u_ViewMat to viewMat,
-        )
+        AGUniformValues {
+            it[DefaultShaders.u_ProjMat] = projMat
+            it[DefaultShaders.u_ViewMat] = viewMat
+        }
     }
 
     inline fun <T> setTemporalProjectionMatrixTransform(m: Matrix, block: () -> T): T =
@@ -75,12 +76,14 @@ class RenderContext constructor(
 
     fun updateStandardUniforms() {
         //println("updateStandardUniforms: ag.currentSize(${ag.currentWidth}, ${ag.currentHeight}) : ${ag.currentRenderBuffer}")
-        if (flipRenderTexture && ag.renderingToTexture) {
+        if (flipRenderTexture && ag.isRenderingToTexture) {
             projMat.setToOrtho(tempRect.setBounds(0, ag.currentHeight, ag.currentWidth, 0), -1f, 1f)
         } else {
             projMat.setToOrtho(tempRect.setBounds(0, 0, ag.currentWidth, ag.currentHeight), -1f, 1f)
             projMat.multiply(projMat, projectionMatrixTransform.toMatrix3D(tempMat3d))
         }
+        uniforms[DefaultShaders.u_ProjMat] = projMat
+        uniforms[DefaultShaders.u_ViewMat] = viewMat
     }
 
     /**
@@ -106,34 +109,36 @@ class RenderContext constructor(
         }
     }
 
+    @PublishedApi internal val uniformsPool = Pool { AGUniformValues() }
+
     /**
-     * Executes [callback] while setting temporarily an [uniform] to a [value]
+     * Executes [callback] while restoring [uniform] to its current value after [callback] is exexcuted.
      */
-    inline fun setTemporalUniform(uniform: Uniform, value: Any?, flush: Boolean = true, callback: (AGUniformValues) -> Unit) {
-        val old = this.uniforms[uniform]
-        if (flush) flush()
-        this.uniforms.putOrRemove(uniform, value)
-        try {
-            callback(this.uniforms)
-        } finally {
+    inline fun keepUniform(uniform: Uniform, flush: Boolean = true, callback: (AGUniformValues) -> Unit) {
+        uniformsPool.alloc { tempUniforms ->
+            tempUniforms[uniform].set(this.uniforms[uniform])
             if (flush) flush()
-            this.uniforms.putOrRemove(uniform, old)
+            try {
+                callback(this.uniforms)
+            } finally {
+                if (flush) flush()
+                this.uniforms[uniform].set(tempUniforms[uniform])
+            }
         }
     }
 
-    inline fun <reified T> setTemporalUniforms(uniforms: Array<Uniform>, values: Array<T>, count: Int = values.size, olds: Array<T?> = arrayOfNulls<T>(count), flush: Boolean = true, callback: (AGUniformValues) -> Unit) {
-        if (flush) flush()
-        for (n in 0 until count) {
-            olds[n] = this.uniforms[uniforms[n]] as T?
-            this.uniforms.putOrRemove(uniforms[n], values[n])
-        }
-        try {
-            callback(this.uniforms)
-        } finally {
+    /**
+     * Executes [callback] while restoring [uniforms] to its current value after [callback] is exexcuted.
+     */
+    inline fun keepUniforms(uniforms: Array<Uniform>, flush: Boolean = true, callback: (AGUniformValues) -> Unit) {
+        uniformsPool.alloc { tempUniforms ->
+            uniforms.fastForEach { tempUniforms[it].set(this.uniforms[it]) }
             if (flush) flush()
-            for (n in 0 until count) {
-                val m = olds.size - 1 - n
-                this.uniforms.putOrRemove(uniforms[m], olds[m])
+            try {
+                callback(this.uniforms)
+            } finally {
+                if (flush) flush()
+                uniforms.fastForEach { this.uniforms[it].set(tempUniforms[it]) }
             }
         }
     }

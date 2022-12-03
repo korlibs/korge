@@ -834,6 +834,7 @@ data class AGBatch constructor(
 }
 
 data class AGTextureUnit constructor(
+    val index: Int,
     var texture: AGTexture? = null,
     var linear: Boolean = true,
     var trilinear: Boolean? = null,
@@ -1016,7 +1017,7 @@ class AGTextureDrawer(val ag: AG) {
 
     fun draw(tex: AGTexture, left: Float, top: Float, right: Float, bottom: Float) {
         //tex.upload(Bitmap32(32, 32) { x, y -> Colors.RED })
-        uniforms[DefaultShaders.u_Tex] = AGTextureUnit(tex)
+        uniforms[DefaultShaders.u_Tex] = AGTextureUnit(0, tex)
 
         val texLeft = -1f
         val texRight = +1f
@@ -1133,112 +1134,6 @@ class AGStats(
 ) {
     override fun toString(): String =
         "AGStats(textures[$texturesCount] = $texturesMemory, buffers[$buffersCount] = $buffersMemory, renderBuffers[$renderBuffersCount] = $renderBuffersMemory, programs[$programCount])"
-}
-
-class AGUniformValues() : Iterable<Pair<Uniform, Any>> {
-    companion object {
-        internal val EMPTY = AGUniformValues()
-
-        fun valueToString(value: Any?): String {
-            if (value is FloatArray) return value.toList().toString()
-            return value.toString()
-        }
-    }
-
-    fun clone(): AGUniformValues = AGUniformValues().also { it.setTo(this) }
-
-    private val _uniforms = FastArrayList<Uniform>()
-    private val _values = FastArrayList<Any>()
-    val uniforms = _uniforms as List<Uniform>
-
-    val keys get() = uniforms
-    val values = _values as List<Any>
-
-    val size get() = _uniforms.size
-
-    fun isEmpty(): Boolean = size == 0
-    fun isNotEmpty(): Boolean = size != 0
-
-    constructor(vararg pairs: Pair<Uniform, Any>) : this() {
-        for (pair in pairs) put(pair.first, pair.second)
-    }
-
-    inline fun fastForEach(block: (uniform: Uniform, value: Any) -> Unit) {
-        for (n in 0 until size) {
-            block(uniforms[n], values[n])
-        }
-    }
-
-    operator fun plus(other: AGUniformValues): AGUniformValues {
-        return AGUniformValues().put(this).put(other)
-    }
-
-    fun clear() {
-        _uniforms.clear()
-        _values.clear()
-    }
-
-    operator fun contains(uniform: Uniform): Boolean = _uniforms.contains(uniform)
-
-    operator fun get(uniform: Uniform): Any? {
-        for (n in 0 until _uniforms.size) {
-            if (_uniforms[n].name == uniform.name) return _values[n]
-        }
-        return null
-    }
-
-    operator fun set(uniform: Uniform, value: Any) = put(uniform, value)
-
-    fun putOrRemove(uniform: Uniform, value: Any?) {
-        if (value == null) {
-            remove(uniform)
-        } else {
-            put(uniform, value)
-        }
-    }
-
-    fun put(uniform: Uniform, value: Any): AGUniformValues {
-        for (n in 0 until _uniforms.size) {
-            if (_uniforms[n].name == uniform.name) {
-                _values[n] = value
-                return this
-            }
-        }
-
-        _uniforms.add(uniform)
-        _values.add(value)
-        return this
-    }
-
-    fun remove(uniform: Uniform) {
-        for (n in 0 until _uniforms.size) {
-            if (_uniforms[n].name == uniform.name) {
-                _uniforms.removeAt(n)
-                _values.removeAt(n)
-                return
-            }
-        }
-    }
-
-    fun put(uniforms: AGUniformValues?): AGUniformValues {
-        if (uniforms == null) return this
-        for (n in 0 until uniforms.size) {
-            this.put(uniforms._uniforms[n], uniforms._values[n])
-        }
-        return this
-    }
-
-    fun setTo(uniforms: AGUniformValues) {
-        clear()
-        put(uniforms)
-    }
-
-    override fun iterator(): Iterator<Pair<Uniform, Any>> = iterator {
-        fastForEach { uniform, value -> yield(uniform to value) }
-    }
-
-    override fun toString() = "{" + keys.zip(values)
-        .joinToString(", ") { "${it.first}=${valueToString(it.second)}" } + "}"
 }
 
 interface AGBitmapSourceBase {

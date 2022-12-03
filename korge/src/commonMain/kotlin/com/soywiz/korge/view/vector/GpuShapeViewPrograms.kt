@@ -12,7 +12,7 @@ import com.soywiz.korag.shader.Varying
 import com.soywiz.korag.shader.VertexLayout
 import com.soywiz.korge.internal.KorgeInternal
 import com.soywiz.korge.render.BatchBuilder2D
-import com.soywiz.korim.bitmap.Bitmap32
+import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.RgbaPremultipliedArray
 import com.soywiz.korim.color.toVector3D
 import com.soywiz.korim.paint.BitmapPaint
@@ -159,13 +159,13 @@ object GpuShapeViewPrograms {
     ///////////////
     data class PaintShader(
         val uniforms: AGUniformValues = AGUniformValues(),
-        val texUniforms: AGUniformValues = AGUniformValues(),
+        val texUniforms: Map<Uniform, Bitmap> = emptyMap(),
         val program: Program = PROGRAM_COMBINED
     )
 
     val stencilPaintShader = PaintShader(
-        AGUniformValues(u_ProgramType to PROGRAM_TYPE_STENCIL.toFloat(),),
-        AGUniformValues(),
+        AGUniformValues { it[u_ProgramType] = PROGRAM_TYPE_STENCIL.toFloat() },
+        emptyMap(),
     )
 
     fun paintToShaderInfo(
@@ -178,12 +178,12 @@ object GpuShapeViewPrograms {
             null
         }
         is ColorPaint -> {
-            PaintShader(AGUniformValues(
-                u_ProgramType to PROGRAM_TYPE_COLOR.toFloat(),
-                u_Color to paint.toVector3D(),
-                u_GlobalAlpha to globalAlpha.toFloat(),
+            PaintShader(AGUniformValues {
+                it[u_ProgramType] = PROGRAM_TYPE_COLOR.toFloat()
+                it[u_Color] = paint.toVector3D()
+                it[u_GlobalAlpha] = globalAlpha.toFloat()
                 //u_LineWidth to lineWidth.toFloat(),
-            ), AGUniformValues())
+            }, emptyMap())
 
         }
         is BitmapPaint -> {
@@ -200,15 +200,15 @@ object GpuShapeViewPrograms {
             //mat.scale(1.0 / paint.bitmap.width, 1.0 / paint.bitmap.height)
             //println("mat=$mat")
             PaintShader(
-                AGUniformValues(
-                u_ProgramType to PROGRAM_TYPE_BITMAP.toFloat(),
-                u_Transform to mat.toMatrix3D(), // @TODO: Why is this transposed???
-                u_GlobalAlpha to globalAlpha.toFloat(),
-                //u_LineWidth to lineWidth.toFloat(),
-                //}, GpuShapeView.PROGRAM_BITMAP)
-            ), AGUniformValues(
-                DefaultShaders.u_Tex to paint.bitmap
-            ))
+                AGUniformValues {
+                    it[u_ProgramType] = PROGRAM_TYPE_BITMAP.toFloat()
+                    it[u_Transform] = mat.toMatrix3D() // @TODO: Why is this transposed???
+                    it[u_GlobalAlpha] = globalAlpha.toFloat()
+                    //u_LineWidth to lineWidth.toFloat(),
+                    //}, GpuShapeView.PROGRAM_BITMAP)
+                }, mapOf(
+                    DefaultShaders.u_Tex to paint.bitmap
+                ))
         }
         is GradientPaint -> {
             val gradientBitmap = Bitmap32(256, 1, premultiplied = true)
@@ -228,18 +228,18 @@ object GpuShapeViewPrograms {
                 else -> npaint.transform.inverted()
             }
             PaintShader(
-                AGUniformValues(
-                    u_ProgramType to when (paint.kind) {
+                AGUniformValues {
+                    it[u_ProgramType] = when (paint.kind) {
                         GradientKind.RADIAL -> PROGRAM_TYPE_GRADIENT_RADIAL
                         GradientKind.SWEEP -> PROGRAM_TYPE_GRADIENT_SWEEP
                         else -> PROGRAM_TYPE_GRADIENT_LINEAR
-                    },
-                    u_Transform to mat.toMatrix3D(),
-                    u_Gradientp0 to Vector3D(paint.x0.toFloat(), paint.y0.toFloat(), paint.r0.toFloat()),
-                    u_Gradientp1 to Vector3D(paint.x1.toFloat(), paint.y1.toFloat(), paint.r1.toFloat()),
-                    u_GlobalAlpha to globalAlpha.toFloat(),
-                    //u_LineWidth to lineWidth.toFloat(),
-                ), AGUniformValues(
+                    }
+                    it[u_Transform] = mat.toMatrix3D()
+                    it[u_Gradientp0] = Vector3D(paint.x0.toFloat(), paint.y0.toFloat(), paint.r0.toFloat())
+                    it[u_Gradientp1] = Vector3D(paint.x1.toFloat(), paint.y1.toFloat(), paint.r1.toFloat())
+                    it[u_GlobalAlpha] = globalAlpha.toFloat()
+                    //it[u_LineWidth] = lineWidth.toFloat()
+                }, mapOf(
                     DefaultShaders.u_Tex to gradientBitmap
                 )
                 //when (paint.kind) {

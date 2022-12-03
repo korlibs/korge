@@ -9,6 +9,7 @@ import com.soywiz.kmem.*
 import com.soywiz.korim.bitmap.NativeImage
 import com.soywiz.korio.lang.printStackTrace
 import com.soywiz.korio.lang.quoted
+import com.soywiz.korio.util.*
 
 open class KmlGlProxy(parent: KmlGl) : KmlGlFastProxy(parent) {
     fun Int32Buffer.toRealString(size: Int = this.size): String = buildString {
@@ -20,11 +21,22 @@ open class KmlGlProxy(parent: KmlGl) : KmlGlFastProxy(parent) {
         append("]")
     }
 
+    fun Float32Buffer.toRealString(size: Int = this.size): String = buildString {
+        append("[")
+        for (n in 0 until size) {
+            if (n != 0) append(", ")
+            append(this@toRealString[n].niceStr)
+        }
+        append("]")
+    }
+
     open fun serializeParams(name: String, params: List<Any?>): String {
-        val bufferIsInt = name.startsWith("gen") || name.startsWith("delete") || name == "getShaderiv" || name == "getProgramiv"
+        val bufferIsInt = name.startsWith("gen") || name.startsWith("delete") || name.endsWith("iv")
+        val bufferIsFloat = name.endsWith("fv")
         return params.joinToString(", ") {
             when {
                 bufferIsInt && it is Buffer -> it.i32.toRealString(it.size / 4)
+                bufferIsFloat && it is Buffer -> it.f32.toRealString(it.size / 4)
                 it is String -> if (it.contains("\n")) "\"\"\"$it\"\"\"" else it.quoted
                 else -> "$it"
             }

@@ -166,8 +166,10 @@ open class FSprites(val maxSize: Int) {
                     //println(ttex.base)
                 }
                 //batch.setTemporalUniform(u_i_texSizeN[0], u_i_texSizeDataN[0]) {
-                batch.setTemporalUniforms(u_i_texSizeN, u_i_texSizeDataN, texs.size, olds) { uniforms ->
-                    batch.setTemporalUniform(BatchBuilder2D.u_OutputPre, ctx.ag.isRenderingToTexture) {
+                batch.keepUniforms(u_i_texSizeN) { uniforms ->
+                    for (n in 0 until texs.size) uniforms[u_i_texSizeN[n]] = u_i_texSizeDataN[n]
+                    batch.keepUniform(BatchBuilder2D.u_OutputPre) {
+                        it[BatchBuilder2D.u_OutputPre] = ctx.ag.isRenderingToTexture
                         batch.setViewMatrixTemp(globalMatrix) {
                             //ctx.batch.setStateFast()
                             sprites.uploadVertices(ctx)

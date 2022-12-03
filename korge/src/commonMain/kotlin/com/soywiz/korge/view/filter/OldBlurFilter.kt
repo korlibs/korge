@@ -54,6 +54,7 @@ class OldBlurFilter(radius: Double = 4.0) : Filter {
             composedFilters.add(blur)
             val ratio = if (scale && isLast) 1.0 - (ceil(radius) - radius) else 1.0
             blur.weights.setToInterpolated(Convolute3Filter.KERNEL_IDENTITY, Convolute3Filter.KERNEL_GAUSSIAN_BLUR, ratio)
+            blur.weights = blur.weights
         }
         composed.render(ctx, matrix, texture, texWidth, texHeight, renderColorAdd, renderColorMul, blendMode, filterScale)
     }

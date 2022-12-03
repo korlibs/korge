@@ -2,13 +2,7 @@ package com.soywiz.korge.view.filter
 
 import com.soywiz.kmem.toIntCeil
 import com.soywiz.korag.*
-import com.soywiz.korag.shader.FragmentShader
-import com.soywiz.korag.shader.Operand
-import com.soywiz.korag.shader.Program
-import com.soywiz.korag.shader.Uniform
-import com.soywiz.korag.shader.VarType
-import com.soywiz.korag.shader.VertexShader
-import com.soywiz.korag.shader.appending
+import com.soywiz.korag.shader.*
 import com.soywiz.korge.render.BatchBuilder2D
 import com.soywiz.korge.render.RenderContext
 import com.soywiz.korge.render.Texture
@@ -101,12 +95,12 @@ abstract class ShaderFilter : Filter {
 
     val scaledUniforms = AGUniformValues()
 
-    val uniforms = AGUniformValues(
+    val uniforms = AGUniformValues {
         //Filter.u_Time to timeHolder,
-        u_TextureSize to textureSizeHolder,
-        u_MaxTexCoords to textureMaxTexCoords,
-        u_StdTexDerivates to textureStdTexDerivates,
-    )
+        it[u_TextureSize] = textureSizeHolder
+        it[u_MaxTexCoords] = textureMaxTexCoords
+        it[u_StdTexDerivates] = textureStdTexDerivates
+    }
 
     override fun computeBorder(out: MutableMarginInt, texWidth: Int, texHeight: Int) {
         out.setTo(0)
@@ -114,7 +108,7 @@ abstract class ShaderFilter : Filter {
 
     ///** The [VertexShader] used this this [Filter] */
     //open val vertex: VertexShader = BatchBuilder2D.VERTEX
-    ///** The [FragmentShader] used this this [Filter]. This is usually overriden. */
+    ///** The [FragmentShader] used this [Filter]. This is usually overriden. */
     //open val fragment: FragmentShader = Filter.DEFAULT_FRAGMENT
     //private val programPremult: Program by lazy { createProgram(vertex, fragment, true) }
     //private val programNormal: Program by lazy { createProgram(vertex, fragment, false) }
@@ -127,18 +121,18 @@ abstract class ShaderFilter : Filter {
 
     private fun _updateUniforms(ctx: RenderContext, filterScale: Double) {
         uniforms[u_filterScale] = filterScale
-        scaledUniforms.fastForEach { uniform, value ->
-            when (value) {
-                is FloatArray -> {
-                    if (uniform !in uniforms) {
-                        uniforms[uniform] = value.copyOf()
-                    }
-                    val out = (uniforms[uniform] as FloatArray)
-                    for (n in out.indices) out[n] = (value[n] * filterScale).toFloat()
+        uniforms[u_TextureSize] = textureSizeHolder
+        uniforms[u_MaxTexCoords] = textureMaxTexCoords
+        uniforms[u_StdTexDerivates] = textureStdTexDerivates
+
+        scaledUniforms.fastForEach { value ->
+            when (value.type.kind) {
+                VarKind.TFLOAT -> {
+                    val out = uniforms[value.uniform].f32
+                    for (n in 0 until out.size) out[n] = (value.f32[n] * filterScale).toFloat()
                 }
                 else -> TODO()
             }
-
         }
         updateUniforms(ctx, filterScale)
     }

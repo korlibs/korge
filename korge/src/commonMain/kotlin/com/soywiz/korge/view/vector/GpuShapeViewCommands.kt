@@ -6,7 +6,7 @@ import com.soywiz.kds.floatArrayListOf
 import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.kmem.toInt
 import com.soywiz.korag.*
-import com.soywiz.korag.shader.Program
+import com.soywiz.korag.shader.*
 import com.soywiz.korge.internal.KorgeInternal
 import com.soywiz.korge.render.AgCachedBuffer
 import com.soywiz.korge.render.BatchBuilder2D
@@ -113,7 +113,8 @@ class GpuShapeViewCommands {
         ctx.useBatcher { batcher ->
             batcher.updateStandardUniforms()
             colorMul.writeFloat(tempColorMul)
-            batcher.setTemporalUniform(GpuShapeViewPrograms.u_ColorMul, tempColorMul) {
+            batcher.keepUniform(GpuShapeViewPrograms.u_ColorMul) {
+                it[GpuShapeViewPrograms.u_ColorMul] = tempColorMul
                 //tempMat.identity()
                 when {
                     doRequireTexture -> tempMat.identity()
@@ -182,7 +183,7 @@ class GpuShapeViewCommands {
                                                 tempUniforms.put(paintShader?.uniforms)
                                                 val pixelScale = decomposed.scaleAvg / ctx.bp.globalToWindowScaleAvg
                                                 //val pixelScale = 1f
-                                                tempUniforms.put(GpuShapeViewPrograms.u_GlobalPixelScale, pixelScale)
+                                                tempUniforms[GpuShapeViewPrograms.u_GlobalPixelScale] = pixelScale
 
                                                 val texUnit = tempUniforms[DefaultShaders.u_Tex] as? AGTextureUnit?
                                                 val premultiplied = texUnit?.texture?.premultiplied ?: false
@@ -230,14 +231,13 @@ class GpuShapeViewCommands {
         texturesToDelete.clear()
     }
 
-    private fun resolve(ctx: RenderContext, uniforms: AGUniformValues, texUniforms: AGUniformValues) {
-        texUniforms.fastForEach { uniform, value ->
-            if (value is Bitmap) {
-                val tex = ctx.ag.tempTexturePool.alloc()
-                tex.upload(value)
-                uniforms[uniform] = AGTextureUnit(tex)
-                texturesToDelete.add(tex)
-            }
+    private fun resolve(ctx: RenderContext, uniforms: AGUniformValues, texUniforms: Map<Uniform, Bitmap>) {
+        var unitId = 0
+        for ((uniform, value) in texUniforms) {
+            val tex = ctx.ag.tempTexturePool.alloc()
+            tex.upload(value)
+            uniforms[uniform] = AGTextureUnit(unitId++, tex)
+            texturesToDelete.add(tex)
         }
     }
 

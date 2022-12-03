@@ -14,10 +14,7 @@ import com.soywiz.kgl.genTexture
 import com.soywiz.kmem.*
 import com.soywiz.kmem.arraycopy
 import com.soywiz.korag.*
-import com.soywiz.korag.shader.Program
-import com.soywiz.korag.shader.ProgramConfig
-import com.soywiz.korag.shader.UniformLayout
-import com.soywiz.korag.shader.VarType
+import com.soywiz.korag.shader.*
 import com.soywiz.korag.shader.gl.GlslConfig
 import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.Bitmap32
@@ -419,200 +416,73 @@ class AGQueueProcessorOpenGL(
 
         //if (doPrint) println("-----------")
 
-        var textureUnit = 0
+        var textureUnit = -1
         //for ((uniform, value) in uniforms) {
-        for (n in 0 until uniforms.uniforms.size) {
-            val uniform = uniforms.uniforms[n]
+        uniforms.fastForEach { value ->
+            val uniform = value.uniform
             val uniformName = uniform.name
             val uniformType = uniform.type
-            val value = uniforms.values[n]
             val location = glProgram.getUniformLocation(gl, uniformName)
             val declArrayCount = uniform.arrayCount
-            val stride = uniform.type.elementCount
-
-            //println("uniform: $uniform, arrayCount=$arrayCount, stride=$stride")
 
             when (uniformType) {
                 VarType.Sampler2D, VarType.SamplerCube -> {
-                    val unit = value.fastCastTo<AGTextureUnit>()
-                    gl.activeTexture(KmlGl.TEXTURE0 + textureUnit)
-
-                    val tex = unit.texture
-                    if (tex != null) {
-                        // @TODO: This might be enqueuing commands, we shouldn't do that here.
-                        textureBindEnsuring(tex)
-                        textureSetWrap(tex)
-                        textureSetFilter(tex, unit.linear, unit.trilinear ?: unit.linear)
-                        //val texture = textures[tex.texId]
-                        //if (doPrint) println("BIND TEXTURE: $textureUnit, tex=${tex.texId}, glId=${texture?.glId}")
-                        //println("BIND TEXTURE: $textureUnit, tex=${tex.texId}, implForcedTexId=${tex.implForcedTexId}")
-                    } else {
-                        gl.bindTexture(KmlGl.TEXTURE_2D, 0)
-                        //println("NULL TEXTURE")
-                        //if (doPrint) println("NULL TEXTURE")
-                    }
-
-                    gl.uniform1i(location, textureUnit)
-                    //val texBinding = gl.getIntegerv(gl.TEXTURE_BINDING_2D)
-                    //println("OpenglAG.draw: textureUnit=$textureUnit, textureBinding=$texBinding, instances=$instances, vertexCount=$vertexCount")
                     textureUnit++
-                }
-                VarType.Mat2, VarType.Mat3, VarType.Mat4 -> {
-                    val matArray = when (value) {
-                        is Array<*> -> value
-                        is Matrix3D -> mat3dArray.also { it[0].copyFrom(value) }
-                        else -> error("Not an array or a matrix3d")
-                    }.fastCastTo<Array<Matrix3D>>()
-                    val arrayCount = min(declArrayCount, matArray.size)
+                    val unit = value.nativeValue?.fastCastTo<AGTextureUnit>() ?: AGTextureUnit(textureUnit, null)
+                    //println("unit=${unit.texture}")
+                    //textureUnit = glProgram.getTextureUnit(uniform, unit)
 
-                    val matSize = when (uniformType) {
-                        VarType.Mat2 -> 2; VarType.Mat3 -> 3; VarType.Mat4 -> 4; else -> -1
-                    }
+                    //if (cacheTextureUnit[textureUnit] != unit) {
+                    //    cacheTextureUnit[textureUnit] = unit.clone()
+                        gl.activeTexture(KmlGl.TEXTURE0 + textureUnit)
+                        value.i32[0] = textureUnit
 
-                    for (n in 0 until arrayCount) {
-                        matArray[n].copyToFloatWxH(tempFloats, matSize, matSize, MajorOrder.COLUMN, n * stride)
-                    }
-                    tempBuffer.setArrayFloat32(0, tempFloats, 0, stride * arrayCount)
-
-                    if (gl.webgl) {
-                        //if (true) {
-                        val tb = when (uniformType) {
-                            VarType.Mat2 -> tempBufferM2
-                            VarType.Mat3 -> tempBufferM3
-                            VarType.Mat4 -> tempBufferM4
-                            else -> tempBufferM4
-                        }
-
-                        for (n in 0 until arrayCount) {
-                            val itLocation = when (arrayCount) {
-                                1 -> location
-                                else -> gl.getUniformLocation(glProgram.programId, uniform.indexNames[n])
-                            }
-                            arraycopy(tempBuffer.f32, n * stride, tb.f32, 0, stride)
-                            //println("[WEBGL] uniformName[$uniformName]=$itLocation, tb: ${tb.f32.size}")
-                            when (uniform.type) {
-                                VarType.Mat2 -> gl.uniformMatrix2fv(itLocation, 1, false, tb)
-                                VarType.Mat3 -> gl.uniformMatrix3fv(itLocation, 1, false, tb)
-                                VarType.Mat4 -> gl.uniformMatrix4fv(itLocation, 1, false, tb)
-                                else -> invalidOp("Don't know how to set uniform matrix ${uniform.type}")
-                            }
-                        }
-                    } else {
-                        //println("[NO-WEBGL] uniformName[$uniformName]=$location ")
-                        when (uniform.type) {
-                            VarType.Mat2 -> gl.uniformMatrix2fv(location, arrayCount, false, tempBuffer)
-                            VarType.Mat3 -> gl.uniformMatrix3fv(location, arrayCount, false, tempBuffer)
-                            VarType.Mat4 -> gl.uniformMatrix4fv(location, arrayCount, false, tempBuffer)
-                            else -> invalidOp("Don't know how to set uniform matrix ${uniform.type}")
-                        }
-                    }
-                }
-                VarType.Bool1, VarType.Bool2, VarType.Bool3, VarType.Bool4 -> {
-                    when (value) {
-                        is Boolean -> gl.uniform1i(location, value.toInt())
-                        is BooleanArray -> {
-                            when (uniformType.elementCount) {
-                                1 -> gl.uniform1i(location, value[0].toInt())
-                                2 -> gl.uniform2i(location, value[0].toInt(), value[1].toInt())
-                                3 -> gl.uniform3i(location, value[0].toInt(), value[1].toInt(), value[2].toInt())
-                                4 -> gl.uniform4i(location, value[0].toInt(), value[1].toInt(), value[2].toInt(), value[3].toInt())
-                            }
-                        }
-                        else -> TODO()
-                    }
-
-                }
-                VarType.Float1, VarType.Float2, VarType.Float3, VarType.Float4 -> {
-                    var arrayCount = declArrayCount
-                    when (value) {
-                        is Boolean -> tempBuffer.setFloat32(0, value.toInt().toFloat())
-                        is Number -> tempBuffer.setFloat32(0, value.toFloat())
-                        is Vector3D -> tempBuffer.setArrayFloat32(0, value.data, 0, stride)
-                        is FloatArray -> {
-                            arrayCount = min(declArrayCount, value.size / stride)
-                            tempBuffer.setArrayFloat32(0, value, 0, stride * arrayCount)
-                        }
-                        is Point -> {
-                            tempBuffer.setFloat32(0, value.xf)
-                            tempBuffer.setFloat32(1, value.yf)
-                        }
-                        is RGBAf -> tempBuffer.setArrayFloat32(0, value.data, 0, stride)
-                        is Margin -> {
-                            if (stride >= 1) tempBuffer.setFloat32(0, value.top.toFloat())
-                            if (stride >= 2) tempBuffer.setFloat32(1, value.right.toFloat())
-                            if (stride >= 3) tempBuffer.setFloat32(2, value.bottom.toFloat())
-                            if (stride >= 4) tempBuffer.setFloat32(3, value.left.toFloat())
-                        }
-                        is RectCorners -> {
-                            if (stride >= 1) tempBuffer.setFloat32(0, value.topLeft.toFloat())
-                            if (stride >= 2) tempBuffer.setFloat32(1, value.topRight.toFloat())
-                            if (stride >= 3) tempBuffer.setFloat32(2, value.bottomRight.toFloat())
-                            if (stride >= 4) tempBuffer.setFloat32(3, value.bottomLeft.toFloat())
-                        }
-                        is RGBA -> {
-                            if (stride >= 1) tempBuffer.setFloat32(0, value.rf)
-                            if (stride >= 2) tempBuffer.setFloat32(1, value.gf)
-                            if (stride >= 3) tempBuffer.setFloat32(2, value.bf)
-                            if (stride >= 4) tempBuffer.setFloat32(3, value.af)
-                        }
-                        is RGBAPremultiplied -> {
-                            if (stride >= 1) tempBuffer.setFloat32(0, value.rf)
-                            if (stride >= 2) tempBuffer.setFloat32(1, value.gf)
-                            if (stride >= 3) tempBuffer.setFloat32(2, value.bf)
-                            if (stride >= 4) tempBuffer.setFloat32(3, value.af)
-                        }
-                        is Array<*> -> {
-                            arrayCount = min(declArrayCount, value.size)
-                            for (n in 0 until value.size) {
-                                val vector = value[n] as Vector3D
-                                tempBuffer.setArrayFloat32(n * stride, vector.data, 0, stride)
-                            }
-                        }
-                        else -> error("Unknown type '$value'")
-                    }
-                    //if (true) {
-                    if (gl.webgl) {
-                        val tb = tempBufferM2
-                        for (n in 0 until arrayCount) {
-                            val itLocation = when (arrayCount) {
-                                1 -> location
-                                else -> gl.getUniformLocation(glProgram.programId, uniform.indexNames[n])
-                            }
-                            val f32 = tb.f32
-                            //println("uniformName[$uniformName] = $itLocation")
-                            arraycopy(tempBuffer.f32, 0, tb.f32, 0, stride)
-
-                            when (uniform.type) {
-                                VarType.Float1 -> gl.uniform1f(itLocation, f32[0])
-                                VarType.Float2 -> gl.uniform2f(itLocation, f32[0], f32[1])
-                                VarType.Float3 -> gl.uniform3f(itLocation, f32[0], f32[1], f32[2])
-                                VarType.Float4 -> gl.uniform4f(itLocation, f32[0], f32[1], f32[2], f32[3])
-                                else -> Unit
-                            }
-                        }
-                    } else {
-                        val tb = tempBuffer
-                        val f32 = tb.f32
-                        if (arrayCount == 1) {
-                            when (uniform.type) {
-                                VarType.Float1 -> gl.uniform1f(location, f32[0])
-                                VarType.Float2 -> gl.uniform2f(location, f32[0], f32[1])
-                                VarType.Float3 -> gl.uniform3f(location, f32[0], f32[1], f32[2])
-                                VarType.Float4 -> gl.uniform4f(location, f32[0], f32[1], f32[2], f32[3])
-                                else -> Unit
-                            }
+                        val tex = unit.texture
+                        if (tex != null) {
+                            // @TODO: This might be enqueuing commands, we shouldn't do that here.
+                            textureBindEnsuring(tex)
+                            textureSetWrap(tex)
+                            textureSetFilter(tex, unit.linear, unit.trilinear ?: unit.linear)
                         } else {
-                            when (uniform.type) {
-                                VarType.Float1 -> gl.uniform1fv(location, arrayCount, tempBuffer)
-                                VarType.Float2 -> gl.uniform2fv(location, arrayCount, tempBuffer)
-                                VarType.Float3 -> gl.uniform3fv(location, arrayCount, tempBuffer)
-                                VarType.Float4 -> gl.uniform4fv(location, arrayCount, tempBuffer)
-                                else -> Unit
-                            }
+                            gl.bindTexture(KmlGl.TEXTURE_2D, 0)
                         }
+                    //}
+                }
+                else -> Unit
+            }
+
+            //val oldValue = glProgram.cache[uniform]
+            //if (value == oldValue) {
+            //    return@fastForEach
+            //}
+            //glProgram.cache[uniform] = value
+
+            //println("uniform: $uniform, arrayCount=${uniform.arrayCount}, stride=${uniform.elementCount}, value=$value old=$oldValue")
+
+            // Store into a direct buffer
+            //arraycopy(value.data, 0, tempData, 0, value.data.size)
+            val data = value.data
+
+            //println("uniform=$uniform, data=${value.data}")
+
+            when (uniformType.kind) {
+                VarKind.TFLOAT -> when (uniform.type) {
+                    VarType.Mat2 -> gl.uniformMatrix2fv(location, declArrayCount, false, data)
+                    VarType.Mat3 -> gl.uniformMatrix3fv(location, declArrayCount, false, data)
+                    VarType.Mat4 -> gl.uniformMatrix4fv(location, declArrayCount, false, data)
+                    else -> when (uniformType.elementCount) {
+                        1 -> gl.uniform1fv(location, declArrayCount, data)
+                        2 -> gl.uniform2fv(location, declArrayCount, data)
+                        3 -> gl.uniform3fv(location, declArrayCount, data)
+                        4 -> gl.uniform4fv(location, declArrayCount, data)
                     }
                 }
-                else -> invalidOp("Don't know how to set uniform ${uniform.type}")
+                else -> when (uniformType.elementCount) {
+                    1 -> gl.uniform1iv(location, declArrayCount, data)
+                    2 -> gl.uniform2iv(location, declArrayCount, data)
+                    3 -> gl.uniform3iv(location, declArrayCount, data)
+                    4 -> gl.uniform4iv(location, declArrayCount, data)
+                }
             }
         }
     }
@@ -804,7 +674,6 @@ class AGQueueProcessorOpenGL(
         if (bmp == null) {
             gl.texImage2D(target.toGl(), 0, type, source.width, source.height, 0, type, KmlGl.UNSIGNED_BYTE, null)
         } else {
-
             if (bmp is NativeImage) {
                 if (bmp.area != 0) {
                     prepareTexImage2D()
