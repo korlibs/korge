@@ -1,5 +1,6 @@
 package com.soywiz.korge3d
 
+import com.soywiz.kds.*
 import com.soywiz.korag.*
 import com.soywiz.korag.shader.FragmentShader
 import com.soywiz.korag.shader.Precision
@@ -174,11 +175,10 @@ class SkyBox(
                     .setColumn(3, 0f, 0f, 0f, 0f)
                     .setRow(3, 0f, 0f, 0f, 0f)
                     .translate(center)
-                ctx.ag.draw(
-                    vertices = vertexBuffer,
+                ctx.ag.drawV2(
+                    vertexData = fastArrayListOf(AGVertexData(vertexBuffer, layout)),
                     type = AGDrawType.TRIANGLES,
                     program = skyBoxProgram,
-                    vertexLayout = layout,
                     vertexCount = 36,
                     indices = indexBuffer,
                     indexType = AGIndexType.USHORT,

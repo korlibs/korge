@@ -1013,6 +1013,7 @@ class AGTextureDrawer(val ag: AG) {
     val VERTEX_COUNT = 4
     val vertices = ag.createBuffer()
     val vertexLayout = VertexLayout(DefaultShaders.a_Pos, DefaultShaders.a_Tex)
+    val vertexData = fastArrayListOf(AGVertexData(vertices, vertexLayout))
     val verticesData = Buffer(VERTEX_COUNT * vertexLayout.totalSize)
     val program = Program(VertexShader {
         DefaultShaders {
@@ -1050,11 +1051,10 @@ class AGTextureDrawer(val ag: AG) {
         setVertex(3, right, bottom, texRight, texBottom)
 
         vertices.upload(verticesData)
-        ag.draw(
-            vertices = vertices,
+        ag.drawV2(
+            vertexData = vertexData,
             program = program,
             type = AGDrawType.TRIANGLE_STRIP,
-            vertexLayout = vertexLayout,
             vertexCount = 4,
             uniforms = uniforms,
             blending = AGBlending.NONE

@@ -177,43 +177,6 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
             upload(data, offset, length)
         }
 
-    @Deprecated("Use draw(Batch) or drawV2() instead")
-    fun draw(
-        vertices: AGBuffer,
-        program: Program,
-        type: AGDrawType,
-        vertexLayout: VertexLayout,
-        vertexCount: Int,
-        indices: AGBuffer? = null,
-        indexType: AGIndexType = AGIndexType.USHORT,
-        offset: Int = 0,
-        blending: AGBlending = AGBlending.NORMAL,
-        uniforms: AGUniformValues = AGUniformValues.EMPTY,
-        stencilRef: AGStencilReferenceState = AGStencilReferenceState.DEFAULT,
-        stencilOpFunc: AGStencilOpFuncState = AGStencilOpFuncState.DEFAULT,
-        colorMask: AGColorMaskState = AGColorMaskState.ALL_ENABLED,
-        renderState: AGRenderState = AGRenderState.DEFAULT,
-        scissor: AGScissor = AGScissor.NIL,
-        instances: Int = 1
-    ) = draw(batch.also { batch ->
-        batch.vertices = vertices
-        batch.program = program
-        batch.type = type
-        batch.vertexLayout = vertexLayout
-        batch.vertexCount = vertexCount
-        batch.indices = indices
-        batch.indexType = indexType
-        batch.offset = offset
-        batch.blending = blending
-        batch.uniforms = uniforms
-        batch.stencilRef = stencilRef
-        batch.stencilOpFunc = stencilOpFunc
-        batch.colorMask = colorMask
-        batch.renderState = renderState
-        batch.scissor = scissor
-        batch.instances = instances
-    })
-
     fun drawV2(
         vertexData: FastArrayList<AGVertexData>,
         program: Program,
