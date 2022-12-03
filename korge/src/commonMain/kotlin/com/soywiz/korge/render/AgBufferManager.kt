@@ -11,21 +11,19 @@ import com.soywiz.korag.*
 /**
  * Class to handle cached buffers, that are freed after a few frames of not being used
  */
-class AgBufferManager(
-    val ag: AG
-) {
-    private val buffers = FastIdentityMap<AgCachedBuffer, AGBuffer>()
-    private val referencedBuffersSinceGC = AgFastSet<AgCachedBuffer>()
+class AgBufferManager {
+    private val buffers = FastIdentityMap<Buffer, NAGBuffer>()
+    private val referencedBuffersSinceGC = AgFastSet<Buffer>()
     private val bufferPool = Pool {
         //println("CREATE BUFFER")
-        ag.createBuffer()
+        NAGBuffer()
     }
 
-    fun getBuffer(cached: AgCachedBuffer): AGBuffer {
+    fun getBuffer(cached: Buffer): NAGBuffer {
         referencedBuffersSinceGC.add(cached)
         return buffers.getOrPut(cached) {
             bufferPool.alloc().also {
-                it.upload(cached.data, cached.dataOffset, cached.dataLen)
+                it.upload(cached)
             }
         }
     }
@@ -52,18 +50,13 @@ class AgBufferManager(
     private fun removeCache() {
     }
 
-    fun delete(buffer: List<AgCachedBuffer>) {
-        ag.commandsNoWait { list ->
-            buffer.fastForEach { delete(it, list) }
-        }
-    }
-    fun delete(buffer: AgCachedBuffer) {
-        ag.commandsNoWait { delete(buffer, it) }
+    fun delete(buffer: List<Buffer>) {
+        buffer.fastForEach { delete(it) }
     }
 
     val empty = Buffer(0)
 
-    fun delete(buffer: AgCachedBuffer, list: AGList) {
+    fun delete(buffer: Buffer) {
         val buf = buffers.getAndRemove(buffer)
         buf?.let {
             it.upload(empty)
@@ -72,6 +65,3 @@ class AgBufferManager(
         //buf?.close(list)
     }
 }
-
-//class AgCachedBuffer(val kind: AG.BufferKind, val data: Any, val dataOffset: Int = 0, val dataLen: Int = -1)
-class AgCachedBuffer(val data: Any, val dataOffset: Int = 0, val dataLen: Int = -1)

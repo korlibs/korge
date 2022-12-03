@@ -17,7 +17,7 @@ suspend fun View.renderToBitmap(views: Views, region: Rectangle? = null, scale: 
     views.stage.invalidateRender()
     views.onBeforeRender.once { ctx ->
         done.completeWith(kotlin.runCatching {
-            if (includeBackground) ctx.ag.clear(views.clearColor)
+            if (includeBackground) ctx.clear(views.clearColor)
             unsafeRenderToBitmapSync(ctx, region, scale, outPoint).also {
                 //println("/renderToBitmap")
             }

@@ -4,11 +4,10 @@ import com.soywiz.kds.FastArrayList
 import com.soywiz.kds.fastArrayListOf
 import com.soywiz.kds.floatArrayListOf
 import com.soywiz.kds.iterators.fastForEach
-import com.soywiz.kmem.toInt
+import com.soywiz.kmem.*
 import com.soywiz.korag.*
 import com.soywiz.korag.shader.*
 import com.soywiz.korge.internal.KorgeInternal
-import com.soywiz.korge.render.AgCachedBuffer
 import com.soywiz.korge.render.BatchBuilder2D
 import com.soywiz.korge.render.RenderContext
 import com.soywiz.korge.view.BlendMode
@@ -24,8 +23,8 @@ class GpuShapeViewCommands {
     private var vertexIndex = 0
     private val bufferVertexData = floatArrayListOf()
     private val commands = arrayListOf<ICommand>()
-    private var vertices: AgCachedBuffer? = null
-    private val verticesToDelete = FastArrayList<AgCachedBuffer>()
+    private var vertices: Buffer? = null
+    private val verticesToDelete = FastArrayList<Buffer>()
 
     fun clear() {
         vertexIndex = 0
@@ -95,21 +94,24 @@ class GpuShapeViewCommands {
 
     fun finish() {
         vertices?.let { verticesToDelete += it }
-        vertices = AgCachedBuffer(bufferVertexData)
+        //vertices = bufferVertexData
+        TODO()
     }
 
     private val decomposed = Matrix.Transform()
     private val tempColorMul = FloatArray(4)
-    private val texturesToDelete = FastArrayList<AGTexture>()
+    private val texturesToDelete = FastArrayList<NAGTexture>()
     private val tempUniforms = AGUniformValues()
     private val tempMat = Matrix()
     fun render(ctx: RenderContext, globalMatrix: Matrix, localMatrix: Matrix, applyScissor: Boolean, colorMul: RGBA, doRequireTexture: Boolean) {
+        TODO()
+        /*
         val vertices = this.vertices ?: return
         ctx.agBufferManager.delete(verticesToDelete)
         verticesToDelete.clear()
 
         ctx.flush()
-        val ag = ctx.ag
+        val nag = ctx.nag
         ctx.useBatcher { batcher ->
             batcher.updateStandardUniforms()
             colorMul.writeFloat(tempColorMul)
@@ -226,17 +228,18 @@ class GpuShapeViewCommands {
             }
         }
         for (tex in texturesToDelete) {
-            ag.tempTexturePool.free(tex)
+            ctx.texturePool.free(tex)
         }
         texturesToDelete.clear()
+        */
     }
 
     private fun resolve(ctx: RenderContext, uniforms: AGUniformValues, texUniforms: Map<Uniform, Bitmap>) {
         var uniformIndex = 5
         texUniforms.forEach { (uniform, value) ->
-            val tex = ctx.ag.tempTexturePool.alloc()
-            tex.upload(value)
-            uniforms[uniform] = AGTextureUnit(uniformIndex++, tex)
+            val tex = ctx.texturePool.alloc()
+            tex.set(value)
+            uniforms[uniform] = NAGTextureUnit(uniformIndex++).set(tex)
             texturesToDelete.add(tex)
         }
     }

@@ -52,7 +52,8 @@ class LineRenderBatcher(
         ctx.flushers.add { flush() }
     }
 
-    private val ag: AG = ctx.ag
+    //private val ag: AG = ctx.ag
+    private val nag: NAG = ctx.nag
 
     var color: RGBA = Colors.YELLOW
 
@@ -73,7 +74,8 @@ class LineRenderBatcher(
 
     internal val uniforms get() = ctx.uniforms
 
-    private val vertexBuffer = ag.createVertexBuffer()
+    private val vertexBuffer = NAGBuffer()
+    private val nagVertices = NAGVertices(NAGVerticesPart(LAYOUT, vertexBuffer))
     private val program = Program(VERTEX, FRAGMENT)
     private val maxVertexCount = 1024
     private val vertices = Buffer.allocDirect(6 * 4 * maxVertexCount)
@@ -160,18 +162,27 @@ class LineRenderBatcher(
         //println("BLENDING=$blending")
         if (vertexCount > 0) {
             beforeFlush(this)
-            vertexBuffer.upload(vertices, 0, vertexPos * 4)
+            vertexBuffer.upload(vertices.slice(0, vertexPos * 4))
             ctx.updateStandardUniforms()
             //projMat.setToOrtho(tempRect.setBounds(0, 0, ag.backWidth, ag.backHeight), -1f, 1f)
 
-            ag.draw(
-                vertices = vertexBuffer,
-                program = program,
-                type = AGDrawType.LINES,
-                vertexLayout = LAYOUT,
-                vertexCount = vertexCount,
-                uniforms = uniforms,
-                blending = blendMode.factors
+            nag.draw(
+                NAGBatch(
+                    vertexData = nagVertices,
+                    batches = listOf(
+                        NAGUniformBatch(
+                            ctx.currentFrameBuffer,
+                            program = program,
+                            uniforms = uniforms,
+                            state = AGFullState().also {
+                                it.blending = blendMode.factors
+                            },
+                            drawCommands = NAGDrawCommandArray.invoke {
+                                it.add(AGDrawType.LINES, AGIndexType.NONE, 0, vertexCount)
+                            }
+                        )
+                    )
+                )
             )
         }
         vertexCount = 0

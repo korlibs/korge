@@ -1428,7 +1428,7 @@ abstract class View internal constructor(
 
     fun getRenderTargetBounds(ctx: RenderContext, out: Rectangle = Rectangle()): Rectangle {
         //println("ctx.ag.isRenderingToWindow=${ctx.ag.isRenderingToWindow}")
-        return if (ctx.ag.isRenderingToWindow) getWindowBounds(ctx, out) else getGlobalBounds(out)
+        return if (ctx.isRenderingToWindow) getWindowBounds(ctx, out) else getGlobalBounds(out)
     }
 
     fun getClippingBounds(ctx: RenderContext, out: Rectangle = Rectangle()): Rectangle =

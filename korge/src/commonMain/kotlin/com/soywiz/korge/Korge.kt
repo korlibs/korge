@@ -209,7 +209,7 @@ object Korge {
             //val views = Views(gameWindow.getCoroutineDispatcherWithCurrentContext() + SupervisorJob(), ag, injector, input, timeProvider, stats, gameWindow)
             val views: Views = Views(
                 coroutineContext = coroutineContext + gameWindow.coroutineDispatcher + AsyncInjectorContext(injector) + SupervisorJob(),
-                ag = if (debugAg) PrintAG() else ag,
+                //ag = if (debugAg) PrintAG() else ag,
                 nag = nag,
                 injector = injector,
                 input = input,
@@ -294,7 +294,7 @@ object Korge {
 
         val injector = views.injector
         injector.mapInstance(views)
-        injector.mapInstance(views.ag)
+        injector.mapInstance(views.nag)
         injector.mapInstance(Resources::class, views.globalResources)
         injector.mapSingleton(ResourcesRoot::class) { ResourcesRoot() }
         injector.mapInstance(views.input)
@@ -304,7 +304,7 @@ object Korge {
         injector.mapInstance(TimeProvider::class, views.timeProvider)
 
         val input = views.input
-        val ag = views.ag
+        val nag = views.nag
         val downPos = Point()
         val upPos = Point()
         var downTime = DateTime.EPOCH
@@ -320,8 +320,8 @@ object Korge {
             return views.windowToGlobalCoords(x, y, out)
         }
 
-        fun getRealX(x: Double, scaleCoords: Boolean): Double = if (scaleCoords) x * ag.devicePixelRatio else x
-        fun getRealY(y: Double, scaleCoords: Boolean): Double = if (scaleCoords) y * ag.devicePixelRatio else y
+        fun getRealX(x: Double, scaleCoords: Boolean): Double = if (scaleCoords) x * nag.devicePixelRatio else x
+        fun getRealY(y: Double, scaleCoords: Boolean): Double = if (scaleCoords) y * nag.devicePixelRatio else y
 
         /*
         fun updateTouch(id: Int, x: Double, y: Double, start: Boolean, end: Boolean) {
@@ -512,7 +512,7 @@ object Korge {
             //try { throw Exception() } catch (e: Throwable) { e.printStackTrace() }
             //println("eventDispatcher.addEventListener<ReshapeEvent>: ${ag.backWidth}x${ag.backHeight} : ${e.width}x${e.height}")
             //println("resized. ${ag.backWidth}, ${ag.backHeight}")
-            views.resized(ag.backWidth, ag.backHeight)
+            views.resized(nag.finalFrameBufferWidth, nag.finalFrameBufferHeight)
         }
 
         //println("eventDispatcher.dispatch(ReshapeEvent(0, 0, views.nativeWidth, views.nativeHeight)) : ${views.nativeWidth}x${views.nativeHeight}")
@@ -554,7 +554,7 @@ object Korge {
                 renderBlock(event)
 
             } else {
-                views.ag.doRender {
+                views.nag.doRender {
                     if (!renderShown) {
                         //println("!!!!!!!!!!!!! views.gameWindow.addEventListener<RenderEvent>")
                         renderShown = true

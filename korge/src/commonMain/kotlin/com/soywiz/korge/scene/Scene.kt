@@ -2,7 +2,7 @@ package com.soywiz.korge.scene
 
 import com.soywiz.kds.Extra
 import com.soywiz.klock.TimeSpan
-import com.soywiz.korag.AG
+import com.soywiz.korag.*
 import com.soywiz.korge.input.Input
 import com.soywiz.korge.input.InputKeys
 import com.soywiz.korge.resources.ResourcesRoot
@@ -66,7 +66,7 @@ abstract class Scene : InjectorAsyncDependency, ViewsContainer, CoroutineScope, 
 	lateinit var resourcesRoot: ResourcesRoot
 
     /** A reference to the [AG] from the [Views] */
-    val ag: AG get() = views.ag
+    val nag: NAG get() = views.nag
     val gameWindow: GameWindow get() = views.gameWindow
     val stage: Stage get() = views.stage
     val keys: InputKeys get() = views.input.keys

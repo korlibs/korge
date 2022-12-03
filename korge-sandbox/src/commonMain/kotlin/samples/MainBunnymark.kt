@@ -45,9 +45,9 @@ class Bunny(tex: BmpSlice) : FastSprite(tex) {
         println("currentThreadId=$currentThreadId")
         delay(1.milliseconds)
         println("currentThreadId=$currentThreadId")
-        println("ag.graphicExtensions=${ag.graphicExtensions}")
-        println("ag.isFloatTextureSupported=${ag.isFloatTextureSupported}")
-        println("ag.isInstancedSupported=${ag.isInstancedSupported}")
+        println("ag.graphicExtensions=${views.renderContext.graphicExtensions}")
+        println("ag.isFloatTextureSupported=${views.renderContext.isFloatTextureSupported}")
+        println("ag.isInstancedSupported=${views.renderContext.isInstancedSupported}")
 //suspend fun main() = Korge(width = 800, height = 600, bgcolor = Colors["#2b2b9b"]) {
         val wabbitTexture0 = resourcesVfs["bunnys.png"].readBitmap()
         val GRAYSCALE_MATRIX = Matrix3D.fromColumns(

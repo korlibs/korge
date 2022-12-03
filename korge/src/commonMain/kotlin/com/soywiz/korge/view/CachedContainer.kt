@@ -28,19 +28,19 @@ open class CachedContainer(
     //var cache: Boolean = cache
 
     inner class CacheTexture(val ctx: RenderContext) : Closeable {
-        val rb = ctx.ag.unsafeAllocateFrameRenderBuffer(16, 16, onlyThisFrame = false)
-        val texBase = TextureBase(rb.tex, 16, 16)
+        val rb = ctx.unsafeAllocateFrameRenderBuffer(16, 16, onlyThisFrame = false)
+        val texBase = TextureBase(rb, 16, 16)
         var tex = Texture(texBase)
 
         fun resize(width: Int, height: Int) {
-            rb.setSize(0, 0, width, height)
+            rb.set(width, height)
             texBase.width = width
             texBase.height = height
             tex = Texture(texBase)
         }
         override fun close() {
             _cacheTex = null
-            ctx.ag.unsafeFreeFrameRenderBuffer(rb)
+            ctx.unsafeFreeFrameRenderBuffer(rb)
         }
     }
 
@@ -70,7 +70,7 @@ open class CachedContainer(
 
         val renderScale = when (ctx.views?.gameWindow?.quality) {
             GameWindow.Quality.PERFORMANCE -> 1.0
-            else -> ctx.ag.devicePixelRatio
+            else -> ctx.devicePixelRatio
         }
         //val renderScale = 1.0
 

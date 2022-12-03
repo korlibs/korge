@@ -115,15 +115,15 @@ class UniformFloatStorage(val uniforms: AGUniformValues, val uniform: Uniform, v
 
 }
 
-class UniformValueStorageAGTextureUnit(val uniforms: AGUniformValues, val uniform: Uniform, val value: AGTextureUnit) {
+class UniformValueStorageAGTextureUnit(val uniforms: AGUniformValues, val uniform: Uniform, val value: NAGTextureUnit) {
 	init {
 		uniforms[uniform] = value
 	}
 
 	fun delegate() = this
 
-	operator fun getValue(obj: Any, prop: KProperty<*>): AGTextureUnit = value
-	operator fun setValue(obj: Any, prop: KProperty<*>, value: AGTextureUnit) {
+	operator fun getValue(obj: Any, prop: KProperty<*>): NAGTextureUnit = value
+	operator fun setValue(obj: Any, prop: KProperty<*>, value: NAGTextureUnit) {
 		uniforms[uniform] = value
 	}
 }
@@ -155,5 +155,5 @@ fun AGUniformValues.storageForMatrix3D(uniform: Uniform, matrix: Matrix3D = Matr
     }
 }
 
-fun AGUniformValues.storageForTextureUnit(uniform: Uniform, textureUnit: AGTextureUnit): UniformValueStorageAGTextureUnit =
+fun AGUniformValues.storageForTextureUnit(uniform: Uniform, textureUnit: NAGTextureUnit): UniformValueStorageAGTextureUnit =
     UniformValueStorageAGTextureUnit(this, uniform, textureUnit)

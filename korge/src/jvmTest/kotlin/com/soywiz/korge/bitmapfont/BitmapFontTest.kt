@@ -21,7 +21,7 @@ class BitmapFontTest {
     }
     val nag = object : NAGLog() {
     }
-	val ctx = RenderContext(ag, nag, coroutineContext = EmptyCoroutineContext)
+	val ctx = RenderContext(nag, coroutineContext = EmptyCoroutineContext)
 
 	@Test
 	fun simple() = suspendTest {

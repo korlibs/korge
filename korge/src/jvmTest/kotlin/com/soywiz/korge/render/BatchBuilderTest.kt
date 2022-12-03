@@ -8,11 +8,11 @@ import kotlin.test.*
 class BatchBuilderTest {
 	val ag = LogAG(16, 16)
     val nag = NAGLog()
-	val bb = BatchBuilder2D(RenderContext(ag, nag))
+	val bb = BatchBuilder2D(RenderContext(nag))
 
 	@Test
 	fun simpleBatch() {
-		val tex = Texture(ag.createTexture(), 100, 100)
+		val tex = Texture(NAGTexture(), 100, 100)
 		bb.drawQuad(tex, 0f, 0f, premultiplied = tex.premultiplied, wrap = false)
 		bb.flush()
 
@@ -21,7 +21,7 @@ class BatchBuilderTest {
 
 	@Test
 	fun batch2() {
-		val tex = Texture(ag.createTexture(), 100, 100)
+		val tex = Texture(NAGTexture(), 100, 100)
 		bb.drawQuad(tex, 0f, 0f, premultiplied = tex.premultiplied, wrap = false)
 		bb.drawQuad(tex, 100f, 0f, premultiplied = tex.premultiplied, wrap = false)
 		bb.flush()

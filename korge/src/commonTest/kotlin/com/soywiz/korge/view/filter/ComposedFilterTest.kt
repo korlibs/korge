@@ -14,10 +14,10 @@ class ComposedFilterTest {
 
     @Test
     fun test() = suspendTest {
-        val ctx = RenderContext(LogAG(), NAGLog())
+        val ctx = RenderContext(NAGLog())
         val rect = object : View() {
             override fun renderInternal(ctx: RenderContext) {
-                log += "image.renderBuffers=${ctx.ag.renderBuffers.totalItemsInUse}"
+                log += "image.renderBuffers=${ctx.nag.totalRenderBuffers}"
             }
 
             override fun getLocalBoundsInternal(out: Rectangle) {
@@ -27,11 +27,11 @@ class ComposedFilterTest {
         rect.addFilters(SwizzleColorsFilter("rrra"), ColorMatrixFilter(ColorMatrixFilter.SEPIA_MATRIX), BlurFilter(), WaveFilter())
         rect.filter = object : ComposedFilter(rect.filter?.allFilters ?: emptyList()) {
             override fun stepBefore() {
-                log += "filter.renderBuffers=${ctx.ag.renderBuffers.totalItemsInUse}"
+                log += "filter.renderBuffers=${ctx.nag.totalRenderBuffers}"
             }
         }
         rect.render(ctx)
-        log += "end.renderBuffers=${ctx.ag.renderBuffers.totalItemsInUse}"
+        log += "end.renderBuffers=${ctx.nag.totalRenderBuffers}"
         assertEquals(
             """
                 image.renderBuffers=1

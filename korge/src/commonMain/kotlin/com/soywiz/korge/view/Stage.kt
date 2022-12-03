@@ -34,7 +34,7 @@ class Stage(override val views: Views) : FixedSizeContainer()
     val keys: InputKeys get() = views.input.keys
     val input: Input get() = views.input
     val injector: AsyncInjector get() = views.injector
-    val ag: AG get() = views.ag
+    val nag: NAG get() = views.nag
     val gameWindow: GameWindow get() = views.gameWindow
     override val resources get() = views.resources
     override val stage: Stage get() = this

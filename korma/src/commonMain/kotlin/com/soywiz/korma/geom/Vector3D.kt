@@ -65,7 +65,7 @@ class Vector3D : MVector3 {
 
     fun copyFrom(other: Vector3D) = setTo(other.x, other.y, other.z, other.w)
 
-    fun setTo(x: Float, y: Float, z: Float, w: Float): Vector3D = this.apply { this.x = x; this.y = y; this.z = z; this.w = w }
+    fun setTo(x: Float, y: Float, z: Float, w: Float): Vector3D { this.x = x; this.y = y; this.z = z; this.w = w; return this }
     fun setTo(x: Double, y: Double, z: Double, w: Double): Vector3D = setTo(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat())
     fun setTo(x: Int, y: Int, z: Int, w: Int): Vector3D = setTo(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat())
 

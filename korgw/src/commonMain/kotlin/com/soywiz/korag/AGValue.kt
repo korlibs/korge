@@ -15,7 +15,7 @@ class AGUniformValue constructor(val uniform: Uniform, data: Buffer, nativeValue
 }
 
 class AGUniformValues(val capacity: Int = 4 * 1024) {
-    private val data = Buffer.allocDirect(capacity)
+    private val data = Buffer(capacity)
     private var allocOffset = 0
 
     @PublishedApi internal val values = FastArrayList<AGUniformValue>()
@@ -69,7 +69,9 @@ class AGUniformValues(val capacity: Int = 4 * 1024) {
 
     operator fun set(uniform: Uniform, value: Unit) { this[uniform].set(value) }
     operator fun set(uniform: Uniform, value: AGValue) { this[uniform].set(value) }
+    @Deprecated("Use NAGTextureUnit")
     operator fun set(uniform: Uniform, value: AGTextureUnit) { this[uniform].set(value) }
+    operator fun set(uniform: Uniform, value: NAGTextureUnit) { this[uniform].set(value) }
     operator fun set(uniform: Uniform, value: Boolean) { this[uniform].set(value) }
     operator fun set(uniform: Uniform, value: BooleanArray) { this[uniform].set(value) }
     operator fun set(uniform: Uniform, value: Int) { this[uniform].set(value) }
@@ -115,8 +117,14 @@ open class AGValue(val type: VarType, val arrayCount: Int, val data: Buffer, var
         this.nativeValue = value.nativeValue
     }
 
+    @Deprecated("Use NAGTextureUnit")
     fun set(value: AGTextureUnit) {
         set(value.index)
+        nativeValue = value
+    }
+
+    fun set(value: NAGTextureUnit) {
+        set(value.unitId)
         nativeValue = value
     }
 

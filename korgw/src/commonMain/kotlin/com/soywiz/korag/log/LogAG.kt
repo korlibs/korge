@@ -141,6 +141,7 @@ open class PrintAG(
     }
 }
 
+@Deprecated("Use NAGLog")
 open class LogAG(
     width: Int = 640,
     height: Int = 480,

@@ -148,7 +148,7 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
             upload(data, offset, length)
         }
 
-    fun createVertexBuffer(data: FloatArray, offset: Int = 0, length: Int = data.size - offset) =
+    fun createVertexBuffer(data: FloatArray, offset: Int = 0, length: Int = data.size - offset): AGBuffer =
         createVertexBuffer().apply {
             upload(data, offset, length)
         }

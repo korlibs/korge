@@ -72,7 +72,7 @@ class TransitionFilter(
     }
 
     override val programProvider: ProgramProvider get() = TransitionFilter
-    private val textureUnit = AGTextureUnit(7)
+    private val textureUnit = NAGTextureUnit(7)
     private val s_ratio = uniforms.storageFor(u_Ratio)
     private val s_tex = uniforms.storageForTextureUnit(u_Mask, textureUnit)
     @ViewProperty

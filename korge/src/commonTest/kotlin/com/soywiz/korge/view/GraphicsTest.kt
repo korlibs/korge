@@ -256,4 +256,4 @@ class GraphicsTest {
     }
 }
 
-fun TestRenderContext() = RenderContext(LogAG(), NAGLog())
+fun TestRenderContext() = RenderContext(NAGLog())

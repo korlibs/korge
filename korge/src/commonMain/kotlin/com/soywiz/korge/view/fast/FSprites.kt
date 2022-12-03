@@ -5,13 +5,7 @@ import com.soywiz.kds.IntArrayList
 import com.soywiz.kds.fastArrayListOf
 import com.soywiz.kmem.*
 import com.soywiz.korag.*
-import com.soywiz.korag.shader.Attribute
-import com.soywiz.korag.shader.Operand
-import com.soywiz.korag.shader.Precision
-import com.soywiz.korag.shader.Program
-import com.soywiz.korag.shader.Uniform
-import com.soywiz.korag.shader.VarType
-import com.soywiz.korag.shader.Varying
+import com.soywiz.korag.shader.*
 import com.soywiz.korge.render.BatchBuilder2D
 import com.soywiz.korge.render.RenderContext
 import com.soywiz.korge.view.BlendMode
@@ -31,7 +25,7 @@ internal const val FSPRITES_STRIDE = 8
 open class FSprites(val maxSize: Int) {
     var size = 0
     val available: Int get() = maxSize - size
-    val data = Buffer.allocDirect(maxSize * FSPRITES_STRIDE * 4)
+    val data = Buffer(maxSize * FSPRITES_STRIDE * 4)
     val dataColorMul = Buffer.allocDirect(maxSize * 4)
     private val freeItems = IntArrayList()
     private val i32 = data.i32
@@ -169,12 +163,13 @@ open class FSprites(val maxSize: Int) {
                 //batch.setTemporalUniforms(u_i_texSizeN, u_i_texSizeDataN, texs.size, olds) { uniforms ->
                 batch.keepUniforms { uniforms ->
                     for (n in 0 until texs.size) uniforms[u_i_texSizeN[n]] = u_i_texSizeDataN[n]
-                    uniforms[BatchBuilder2D.u_OutputPre] = ctx.ag.isRenderingToTexture
+                    uniforms[BatchBuilder2D.u_OutputPre] = ctx.isRenderingToTexture
                     batch.setViewMatrixTemp(globalMatrix) {
                         //ctx.batch.setStateFast()
                         sprites.uploadVertices(ctx)
                         ctx.xyBuffer.buffer.upload(xyData)
-                        ctx.ag.drawV2(
+                        ctx.nag.drawV2(
+                            ctx.currentFrameBuffer,
                             vertexData = ctx.buffers,
                             program = program,
                             type = AGDrawType.TRIANGLE_FAN,
@@ -182,7 +177,7 @@ open class FSprites(val maxSize: Int) {
                             instances = sprites.size,
                             uniforms = uniforms,
                             //renderState = AGRenderState(depthFunc = AGCompareMode.LESS),
-                            blending = blending.factors(ctx.ag.isRenderingToTexture)
+                            blending = blending.factors(ctx.isRenderingToTexture)
                         )
                         sprites.unloadVertices(ctx)
                     }
@@ -209,20 +204,20 @@ open class FSprites(val maxSize: Int) {
         val a_texId = Attribute("a_texId", VarType.UByte1, normalized = false, precision = Precision.LOW).withDivisor(1)
         val v_TexId = Varying("v_TexId", VarType.Float1, precision = Precision.LOW)
 
-        val RenderContext.xyBuffer by Extra.PropertyThis<RenderContext, AGVertexData> {
-            ag.createVertexData(a_xy)
+        val RenderContext.xyBuffer by Extra.PropertyThis<RenderContext, NAGVerticesPart> {
+            NAGVerticesPart(VertexLayout(a_xy))
         }
-        val RenderContext.fastSpriteBuffer by Extra.PropertyThis<RenderContext, AGVertexData> {
-            ag.createVertexData(a_pos, a_scale, a_angle, a_anchor, a_uv0, a_uv1)
+        val RenderContext.fastSpriteBuffer by Extra.PropertyThis<RenderContext, NAGVerticesPart> {
+            NAGVerticesPart(VertexLayout(a_pos, a_scale, a_angle, a_anchor, a_uv0, a_uv1))
         }
-        val RenderContext.fastSpriteBufferMul by Extra.PropertyThis<RenderContext, AGVertexData> {
-            ag.createVertexData(a_colMul)
+        val RenderContext.fastSpriteBufferMul by Extra.PropertyThis<RenderContext, NAGVerticesPart> {
+            NAGVerticesPart(VertexLayout(a_colMul))
         }
-        val RenderContext.fastSpriteBufferTexId by Extra.PropertyThis<RenderContext, AGVertexData> {
-            ag.createVertexData(a_texId)
+        val RenderContext.fastSpriteBufferTexId by Extra.PropertyThis<RenderContext, NAGVerticesPart> {
+            NAGVerticesPart(VertexLayout(a_texId))
         }
-        val RenderContext.buffers by Extra.PropertyThis<RenderContext, FastArrayList<AGVertexData>> {
-            fastArrayListOf(xyBuffer, fastSpriteBuffer, fastSpriteBufferMul, fastSpriteBufferTexId)
+        val RenderContext.buffers by Extra.PropertyThis<RenderContext, NAGVertices> {
+            NAGVertices(xyBuffer, fastSpriteBuffer, fastSpriteBufferMul, fastSpriteBufferTexId)
         }
 
         fun createProgram(maxTexs: Int = 4): Program {

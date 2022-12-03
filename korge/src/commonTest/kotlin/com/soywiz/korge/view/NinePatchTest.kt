@@ -114,7 +114,7 @@ class NinePatchTest : ViewsForTesting() {
 
     @Test
     fun testNinePatchColorInvalidation() {
-        val ctx = RenderContext(LogAG(), NAGLog())
+        val ctx = RenderContext(NAGLog())
         val container = Container()
         val ninePatch = container.ninePatch(NinePatchBmpSlice(Bitmap32(32, 32, premultiplied = true)), 16.0, 16.0)
         ninePatch.render(ctx)

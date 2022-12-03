@@ -53,7 +53,6 @@ class Text3D(
     }
 
     override fun render(ctx: RenderContext3D) {
-        val ag = ctx.ag
         val mesh = this.createMesh(ctx)
 
         ctx.useDynamicVertexData(mesh.vertexBuffers) { vertexData ->
@@ -64,7 +63,8 @@ class Text3D(
 
             Shaders3D.apply {
                 val meshMaterial = mesh.material
-                ag.drawV2(
+                ctx.nag.drawV2(
+                    ctx.rctx.currentFrameBuffer,
                     vertexData,
                     type = mesh.drawType,
                     program = mesh.program ?: ctx.shaders.getProgram3D(
@@ -101,8 +101,7 @@ class Text3D(
                         ctx.lights.fastForEachWithIndex { index, light: Light3D ->
                             val lightColor = light.color
                             this[lights[index].u_sourcePos] = light.transform.translation
-                            this[lights[index].u_color] =
-                                light.colorVec.setTo(lightColor.rf, lightColor.gf, lightColor.bf, 1f)
+                            this[lights[index].u_color] = light.colorVec.setTo(lightColor.rf, lightColor.gf, lightColor.bf, 1f)
                             this[lights[index].u_attenuation] = light.attenuationVec.setTo(
                                 light.constantAttenuation,
                                 light.linearAttenuation,

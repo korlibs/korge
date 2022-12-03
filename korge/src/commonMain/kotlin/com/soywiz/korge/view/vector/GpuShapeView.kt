@@ -214,11 +214,9 @@ open class GpuShapeView(
 
         val time = measureTime {
             if (doRequireTexture) {
-                //val currentRenderBuffer = ctx.ag.currentRenderBufferOrMain
-                val currentRenderBuffer = ctx.ag.mainRenderBuffer
                 //ctx.renderToTexture(currentRenderBuffer.width, currentRenderBuffer.height, {
-                bufferWidth = currentRenderBuffer.width
-                bufferHeight = currentRenderBuffer.height
+                bufferWidth = ctx.currentFrameBufferWidth
+                bufferHeight = ctx.currentFrameBufferHeight
                 //println("bufferWidth=$bufferWidth, bufferHeight=$bufferHeight")
                 ctx.renderToTexture(bufferWidth, bufferHeight, {
                     renderCommands(ctx, doRequireTexture)

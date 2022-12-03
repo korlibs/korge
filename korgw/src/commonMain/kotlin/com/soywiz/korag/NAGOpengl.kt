@@ -12,8 +12,8 @@ import com.soywiz.korim.bitmap.*
 import com.soywiz.korio.lang.*
 
 open class NAGOpengl(val baseGl: KmlGl) : NAG() {
-    val gl = baseGl
-    //val gl = baseGl.logIf(log = true)
+    //val gl = baseGl
+    val gl = baseGl.logIf(log = true)
 
     override fun execute(command: NAGCommand) {
         when (command) {
@@ -21,15 +21,18 @@ open class NAGOpengl(val baseGl: KmlGl) : NAG() {
             is NAGCommandFullBatch -> command.batches.fastForEach { execute(it) }
             is NAGCommandTransfer.CopyToTexture -> execute(command)
             is NAGCommandTransfer.ReadBits -> execute(command)
-            is NAGCommandStart -> execute(command)
+            is NAGCommandStart -> executeStart(command)
         }
     }
 
     var defaultFrameBuffer = 0
 
-    private fun execute(command: NAGCommandStart) {
+    private fun executeStart(command: NAGCommandStart) {
         //println("----------------------")
         defaultFrameBuffer = gl.getIntegerv(gl.FRAMEBUFFER_BINDING)
+        programs.values.forEach {
+            it.gl.uniforms.clear()
+        }
         //println("defaultFrameBuffer=$defaultFrameBuffer")
     }
 
@@ -148,6 +151,9 @@ open class NAGOpengl(val baseGl: KmlGl) : NAG() {
             val declArrayCount = uniform.arrayCount
             val data = value.data
 
+            // That uniform is not available in this program
+            if (location < 0) return@fastForEach
+
             val old = currentUniforms[value.uniform]
             if (old == value) {
                 return@fastForEach
@@ -155,15 +161,15 @@ open class NAGOpengl(val baseGl: KmlGl) : NAG() {
             old.set(value)
 
             if (uniformType.isSampler) {
-                val nativeValue =value.nativeValue
+                val nativeValue = value.nativeValue
                 val unit = when (nativeValue) {
-                    is AGTextureUnit -> {
-                        val texture = nativeValue.texture
-                        val bitmap = (texture?.source as? AGSyncBitmapSource?)?.gen?.invoke()
-                        texture?.nag?.upload(bitmap)
-                        nativeValue.nag.set(nativeValue.index, texture?.nag)
-                        nativeValue.nag
-                    }
+                    //is AGTextureUnit -> {
+                    //    val texture = nativeValue.texture
+                    //    val bitmap = (texture?.source as? AGSyncBitmapSource?)?.gen?.invoke()
+                    //    texture?.nag?.upload(bitmap)
+                    //    nativeValue.nag.set(nativeValue.index, texture?.nag)
+                    //    nativeValue.nag
+                    //}
                     is NAGTextureUnit -> nativeValue
                     else -> error("Unknown value $nativeValue for sampler $uniformType")
                 }
@@ -177,6 +183,10 @@ open class NAGOpengl(val baseGl: KmlGl) : NAG() {
                 value.set(unit.unitId)
             }
 
+            if (declArrayCount != 1) {
+                println("declArrayCount=$declArrayCount")
+            }
+
             // UPDATE UNIFORM
             when (uniformType.kind) {
                 VarKind.TFLOAT -> when (uniform.type) {
@@ -184,17 +194,17 @@ open class NAGOpengl(val baseGl: KmlGl) : NAG() {
                     VarType.Mat3 -> gl.uniformMatrix3fv(location, declArrayCount, false, data)
                     VarType.Mat4 -> gl.uniformMatrix4fv(location, declArrayCount, false, data)
                     else -> when (uniformType.elementCount) {
-                        1 -> gl.uniform1fv(location, uniform.arrayCount, data)
-                        2 -> gl.uniform2fv(location, uniform.arrayCount, data)
-                        3 -> gl.uniform3fv(location, uniform.arrayCount, data)
-                        4 -> gl.uniform4fv(location, uniform.arrayCount, data)
+                        1 -> gl.uniform1fv(location, declArrayCount, data)
+                        2 -> gl.uniform2fv(location, declArrayCount, data)
+                        3 -> gl.uniform3fv(location, declArrayCount, data)
+                        4 -> gl.uniform4fv(location, declArrayCount, data)
                     }
                 }
                 else -> when (uniformType.elementCount) {
-                    1 -> gl.uniform1iv(location, uniform.arrayCount, data)
-                    2 -> gl.uniform2iv(location, uniform.arrayCount, data)
-                    3 -> gl.uniform3iv(location, uniform.arrayCount, data)
-                    4 -> gl.uniform4iv(location, uniform.arrayCount, data)
+                    1 -> gl.uniform1iv(location, declArrayCount, data)
+                    2 -> gl.uniform2iv(location, declArrayCount, data)
+                    3 -> gl.uniform3iv(location, declArrayCount, data)
+                    4 -> gl.uniform4iv(location, declArrayCount, data)
                 }
             }
         }
@@ -362,7 +372,10 @@ open class NAGOpengl(val baseGl: KmlGl) : NAG() {
     private fun bindTextureUnit(textureUnitId: Int, textureUnit: NAGTextureUnit, target: AGTextureTargetKind) {
         val glTarget = target.toGl()
         currentTextureUnitId = textureUnitId
-        gl.activeTexture(textureUnitId)
+        if (textureUnitId < 0) {
+            println("bindTextureUnit: textureUnitId=$textureUnitId!!")
+        }
+        gl.activeTexture(gl.TEXTURE0 + textureUnitId)
         bindTexture(textureUnit.texture, target)
         gl.texParameteri(glTarget, KmlGl.TEXTURE_MIN_FILTER, textureUnit.minFilter.toGl())
         gl.texParameteri(glTarget, KmlGl.TEXTURE_MAG_FILTER, textureUnit.magFilter.toGl())
@@ -370,7 +383,11 @@ open class NAGOpengl(val baseGl: KmlGl) : NAG() {
         gl.texParameteri(glTarget, KmlGl.TEXTURE_WRAP_T, textureUnit.wrap.toGl())
     }
 
+    private var currentBoundTexture: NAGTexture? = null
+
     private fun bindTexture(texture: NAGTexture?, target: AGTextureTargetKind) {
+        currentBoundTexture = null
+
         if (texture == null) {
             gl.bindTexture(target.toGl(), 0)
             return
@@ -385,7 +402,9 @@ open class NAGOpengl(val baseGl: KmlGl) : NAG() {
             }
 
             texture.updateObject {
+                gl.bindTexture(target.toGl(), tgl.id)
                 when (content) {
+                    is NativeImage -> tgl.upload(target, GLTexKind.RGBA, GLTexKindStorage.UNSIGNED_BYTE, content)
                     is Bitmap32 -> tgl.upload(target, content.width, content.height, Int32Buffer(content.ints).buffer, GLTexKind.RGBA, GLTexKindStorage.UNSIGNED_BYTE)
                     null -> tgl.upload(target, 0, 0, null, GLTexKind.RGBA, GLTexKindStorage.UNSIGNED_BYTE)
                     else -> error("Don't know how to handle texture $content")
@@ -445,9 +464,10 @@ open class NAGOpengl(val baseGl: KmlGl) : NAG() {
         fun setSize(width: Int, height: Int) {
             val texTarget = AGTextureTargetKind.TEXTURE_2D
             val texTargetGl = texTarget.toGl()
+            val oldTex = currentBoundTexture
             bindTexture(texture, texTarget)
             gl.texImage2D(texTargetGl, 0, KmlGl.RGBA, width, height, 0, KmlGl.RGBA, KmlGl.UNSIGNED_BYTE, null)
-            bindTexture(null, texTarget)
+            bindTexture(oldTex, texTarget)
 
             gl.bindRenderbuffer(KmlGl.RENDERBUFFER, renderBuffer)
             if (internalFormat != 0) {
@@ -490,7 +510,7 @@ open class NAGOpengl(val baseGl: KmlGl) : NAG() {
 
     private val NAGTexture.gl: GLTexture get() = createObjectIfRequired { GLTexture() }
     private inner class GLTexture() : GLObject() {
-        var cachedContentVersion: Int = -1
+        var cachedContentVersion: Int = -2
         val id = gl.genTexture()
         fun bind(target: AGTextureTargetKind) {
             gl.bindTexture(target.toGl(), id)
@@ -498,6 +518,10 @@ open class NAGOpengl(val baseGl: KmlGl) : NAG() {
         fun upload(target: AGTextureTargetKind, width: Int, height: Int, buffer: Buffer?, type: GLTexKind, storage: GLTexKindStorage, level: Int = 0) {
             val internalFormat = type.toGl()
             gl.texImage2D(target.toGl(), level, internalFormat, width, height, 0, internalFormat, storage.toGl(), buffer)
+        }
+        fun upload(target: AGTextureTargetKind, type: GLTexKind, storage: GLTexKindStorage, image: NativeImage, level: Int = 0) {
+            val internalFormat = type.toGl()
+            gl.texImage2D(target.toGl(), level, internalFormat, internalFormat, storage.toGl(), image)
         }
         override fun delete() {
             gl.deleteTexture(id)

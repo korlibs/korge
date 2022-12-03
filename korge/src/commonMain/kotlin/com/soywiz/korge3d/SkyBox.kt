@@ -156,15 +156,15 @@ class SkyBox(
     private val uniformValues = AGUniformValues()
     private val rs = AGRenderState.DEFAULT.withDepthMask(depthMask = false).withDepthFunc(depthFunc = AGCompareMode.LESS_EQUAL)
 
-    private val cubeMapTexUnit = AGTextureUnit(7)
+    private val cubeMapTexUnit = NAGTextureUnit(7)
     private val viewNoTrans = Matrix3D()
 
     override fun render(ctx: RenderContext3D) {
         //println("----------- SkyBox render ---------------")
         cubeMapTexUnit.texture = ctx.textureManager.getTextureBase(cubemap).base
 
-        ctx.dynamicIndexBufferPool.alloc { indexBuffer ->
-            ctx.dynamicVertexBufferPool.alloc { vertexBuffer ->
+        ctx.dynamicBufferPool.alloc { indexBuffer ->
+            ctx.dynamicBufferPool.alloc { vertexBuffer ->
                 vertexBuffer.upload(skyboxVertices)
                 indexBuffer.upload(skyboxIndices)
                 val projection = ctx.projCameraMat
@@ -174,11 +174,11 @@ class SkyBox(
                     .setColumn(3, 0f, 0f, 0f, 0f)
                     .setRow(3, 0f, 0f, 0f, 0f)
                     .translate(center)
-                ctx.ag.draw(
-                    vertices = vertexBuffer,
+                ctx.nag.drawV2(
+                    ctx.rctx.currentFrameBuffer,
+                    vertexData = NAGVertices(NAGVerticesPart(layout, vertexBuffer)),
                     type = AGDrawType.TRIANGLES,
                     program = skyBoxProgram,
-                    vertexLayout = layout,
                     vertexCount = 36,
                     indices = indexBuffer,
                     indexType = AGIndexType.USHORT,

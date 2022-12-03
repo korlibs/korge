@@ -60,7 +60,6 @@ class BatchBuilder2D constructor(
 
     val texManager = ctx.agBitmapTextureManager
     //constructor(ag: AG, maxQuads: Int = DEFAULT_BATCH_QUADS) : this(RenderContext(ag), maxQuads)
-    val ag: AG = ctx.ag
 	init {
         logger.trace { "BatchBuilder2D[0]" }
         ctx.flushers.add {
@@ -107,7 +106,7 @@ class BatchBuilder2D constructor(
     @PublishedApi internal var indexPos = 0
     @PublishedApi internal var currentTexIndex = 0
 
-    @PublishedApi internal var currentTexN: Array<AGTexture?> = Array(maxTextures) { null }
+    @PublishedApi internal var currentTexN: Array<NAGTexture?> = Array(maxTextures) { null }
 
 	//@PublishedApi internal var currentTex0: AG.Texture? = null
     //@PublishedApi internal var currentTex1: AG.Texture? = null
@@ -123,11 +122,6 @@ class BatchBuilder2D constructor(
     private val nagTexIndexVertexBuffer = NAGBuffer()
     private val nagTexWrapVertexBuffer = NAGBuffer()
     private val nagIndexBuffer = NAGBuffer()
-
-	private val vertexBuffer = ag.createBuffer()
-    private val texIndexVertexBuffer = ag.createBuffer()
-    private val texWrapVertexBuffer = ag.createBuffer()
-	private val indexBuffer = ag.createBuffer()
 
 	init { logger.trace { "BatchBuilder2D[4]" } }
 
@@ -166,7 +160,7 @@ class BatchBuilder2D constructor(
 
 	init { logger.trace { "BatchBuilder2D[9]" } }
 
-    val textureUnitN = Array(maxTextures) { AGTextureUnit(it, null, linear = false) }
+    val textureUnitN = Array(maxTextures) { NAGTextureUnit(it).set(null, linear = false) }
 
     //@KorgeInternal val textureUnit0 = AG.TextureUnit(null, linear = false)
     //@KorgeInternal val textureUnit1 = AG.TextureUnit(null, linear = false)
@@ -191,9 +185,9 @@ class BatchBuilder2D constructor(
 
     fun readVertex(n: Int, out: VertexInfo = VertexInfo()): VertexInfo {
         out.read(this.vertices, n)
-        val source = textureUnitN[0].texture?.source
-        out.texWidth = source?.width ?: -1
-        out.texHeight = source?.height ?: -1
+        val tex = textureUnitN[0].texture
+        out.texWidth = tex?.width ?: -1
+        out.texHeight = tex?.height ?: -1
         return out
     }
 
@@ -473,7 +467,7 @@ class BatchBuilder2D constructor(
      * Sets the current texture [tex], [smoothing], [blendMode] and [program] that will be used by the following drawing calls not specifying these attributes.
      */
     inline fun setStateFast(
-        tex: AGTexture?, smoothing: Boolean, blendMode: BlendMode, program: Program?, icount: Int, vcount: Int,
+        tex: NAGTexture?, smoothing: Boolean, blendMode: BlendMode, program: Program?, icount: Int, vcount: Int,
     ) {
         ensure(icount, vcount)
 
@@ -488,7 +482,7 @@ class BatchBuilder2D constructor(
         currentProgram = program
     }
 
-    fun hasTex(tex: AGTexture?): Boolean {
+    fun hasTex(tex: NAGTexture?): Boolean {
         currentTexN.fastForEach { if (it === tex) return true }
         return false
     }
@@ -504,7 +498,7 @@ class BatchBuilder2D constructor(
     //}
 
     @PublishedApi internal fun isCurrentStateFast(
-        tex: AGTexture?, smoothing: Boolean, blendMode: BlendMode, program: Program?,
+        tex: NAGTexture?, smoothing: Boolean, blendMode: BlendMode, program: Program?,
     ): Boolean {
         var hasTex = hasTex(tex)
         if (currentTexN[0] !== null && !hasTex) {
@@ -863,32 +857,14 @@ class BatchBuilder2D constructor(
     val onInstanceCount = Signal<Int>()
 
     fun uploadVertices() {
-        if (ctx.useNag) {
-            nagVertexBuffer.upload(vertices.slice(0, vertexPos * 4))
-            nagTexIndexVertexBuffer.upload(Buffer(verticesTexIndex).slice(0, vertexPos / 6))
-            nagTexWrapVertexBuffer.upload(Buffer(verticesWrap).slice(0, vertexPos / 6))
-        } else {
-            // @TODO: Remove this and keep only NAG
-            vertexBuffer.upload(vertices, 0, vertexPos * 4)
-            texIndexVertexBuffer.upload(verticesTexIndex, 0, vertexPos / 6)
-            texWrapVertexBuffer.upload(verticesWrap, 0, vertexPos / 6)
-        }
+        nagVertexBuffer.upload(vertices.slice(0, vertexPos * 4))
+        nagTexIndexVertexBuffer.upload(Buffer(verticesTexIndex).slice(0, vertexPos / 6))
+        nagTexWrapVertexBuffer.upload(Buffer(verticesWrap).slice(0, vertexPos / 6))
     }
 
     fun uploadIndices() {
-        if (ctx.useNag) {
-            nagIndexBuffer.upload(indices.slice(0, indexPos * 2))
-        } else {
-            // @TODO: Remove this and keep only NAG
-            indexBuffer.upload(indices, 0, indexPos * 2)
-        }
+        nagIndexBuffer.upload(indices.slice(0, indexPos * 2))
     }
-
-    private val vertexData = fastArrayListOf(
-        AGVertexData(vertexBuffer, LAYOUT),
-        AGVertexData(texIndexVertexBuffer, LAYOUT_TEX_INDEX),
-        AGVertexData(texWrapVertexBuffer, LAYOUT_WRAP),
-    )
 
     private val nagVertexData = NAGVertices(
         NAGVerticesPart(LAYOUT, nagVertexBuffer),
@@ -910,98 +886,31 @@ class BatchBuilder2D constructor(
 
     fun updateStandardUniformsPre() {
         //uniforms[u_InputPre] = currentTexN[0]?.premultiplied == true
-        uniforms[u_OutputPre] = ag.isRenderingToTexture
+        uniforms[u_OutputPre] = ctx.isRenderingToTexture
     }
 
-    fun getIsPremultiplied(texture: AGTexture?): Boolean = texture?.premultiplied == true
-    fun getDefaultProgram(): Program = PROGRAM
-    fun getDefaultProgramForTexture(): Program = getDefaultProgram()
-
-    class BatchBatch(
-        val program: Program,
-        val uniforms: AGUniformValues,
-        val stencilOpFunc: AGStencilOpFuncState,
-        val stencilRef: AGStencilReferenceState,
-        val colorMask: AGColorMaskState,
-        val scissor: AGRect,
-        val blending: AGBlending,
-        val renderState: AGRenderState,
-        val offset: Int,
-        val vertexCount: Int,
-        val instances: Int,
-    ) {
-        init {
-            //println("vertexOffset=$vertexOffset, vertexCount=$vertexCount")
-        }
-
-        fun getProgramAndUse(list: AGList, ag: AG): AGProgram {
-            val agProgram = ag.getProgram(program, config = when {
-                uniforms.useExternalSampler() -> ProgramConfig.EXTERNAL_TEXTURE_SAMPLER
-                else -> ProgramConfig.DEFAULT
-            })
-            agProgram.use(list)
-            return agProgram
-        }
-
-        fun render(list: AGList, ag: AG, drawType: AGDrawType, indices: AGBuffer, indexType: AGIndexType = AGIndexType.USHORT) {
-            val agProgram = getProgramAndUse(list, ag)
-
-            // @TODO: Can we reuse VAO with different programs?
-            list.uniformsSet(uniforms) {
-                list.setState(blending, stencilOpFunc, stencilRef, colorMask, renderState)
-                list.setScissorState(ag, scissor)
-
-                //val viewport = Buffer(4 * 4)
-                //gl.getIntegerv(KmlGl.VIEWPORT, viewport)
-                //println("viewport=${viewport.getAlignedInt32(0)},${viewport.getAlignedInt32(1)},${viewport.getAlignedInt32(2)},${viewport.getAlignedInt32(3)}")
-
-                list.draw(drawType, vertexCount, offset, instances, indexType, indices)
-            }
-
-        }
-    }
-
-    private val batches = fastArrayListOf<BatchBatch>()
-    private val nagBatches = fastArrayListOf<NAGUniformBatch>()
+    private val batches = fastArrayListOf<NAGUniformBatch>()
 
     @PublishedApi
     internal fun createBatchIfRequired() {
         if (lastIndexPos == indexPos) return
         updateStandardUniforms()
 
-        if (ctx.useNag) {
-            nagBatches.add(NAGUniformBatch(
-                frameBuffer = ctx.currentFrameBuffer,
-                program = currentProgram ?: PROGRAM,
-                uniforms = uniforms.cloneReadOnly(),
-                state = AGFullState().also {
-                    it.blending = currentBlendMode.factors(ag.isRenderingToTexture)
-                    it.stencilOpFunc = stencilOpFunc
-                    it.stencilRef = stencilRef
-                    it.colorMask = colorMask
-                    it.scissor = scissor
-                },
-                drawCommands = NAGDrawCommandArray.invoke {
-                    it.add(AGDrawType.TRIANGLES, AGIndexType.USHORT, lastIndexPos * 2, indexPos - lastIndexPos)
-                }
-            ))
-        } else {
-            batches.add(
-                BatchBatch(
-                    program = currentProgram ?: PROGRAM,
-                    blending = currentBlendMode.factors(ag.isRenderingToTexture),
-                    uniforms = uniforms.cloneReadOnly(),
-                    stencilOpFunc = stencilOpFunc,
-                    stencilRef = stencilRef,
-                    colorMask = colorMask,
-                    scissor = scissor,
-                    offset = lastIndexPos * 2, // In bytes
-                    vertexCount = indexPos - lastIndexPos,
-                    instances = 1,
-                    renderState = AGRenderState.DEFAULT,
-                )
-            )
-        }
+        batches.add(NAGUniformBatch(
+            frameBuffer = ctx.currentFrameBuffer,
+            program = currentProgram ?: PROGRAM,
+            uniforms = uniforms.cloneReadOnly(),
+            state = AGFullState().also {
+                it.blending = currentBlendMode.factors(ctx.isRenderingToTexture)
+                it.stencilOpFunc = stencilOpFunc
+                it.stencilRef = stencilRef
+                it.colorMask = colorMask
+                it.scissor = scissor
+            },
+            drawCommands = NAGDrawCommandArray.invoke {
+                it.add(AGDrawType.TRIANGLES, AGIndexType.USHORT, lastIndexPos * 2, indexPos - lastIndexPos)
+            }
+        ))
         lastIndexPos = indexPos
     }
 
@@ -1021,26 +930,14 @@ class BatchBuilder2D constructor(
             //val programSet = AgFastSet<Program>()
             //batches.fastForEach { batch -> programSet.add(batch.program) }
 
-            if (ctx.useNag) {
-                ctx.nag.draw(
-                    NAGBatch(
-                        vertexData = nagVertexData,
-                        indexData = nagIndexBuffer,
-                        batches = nagBatches.toList()
-                    )
+            ctx.nag.draw(
+                NAGBatch(
+                    vertexData = nagVertexData,
+                    indexData = nagIndexBuffer,
+                    batches = batches.toList()
                 )
-                nagBatches.clear()
-            } else {
-                ag.commandsNoWait { list ->
-                    //batches.first().getProgramAndUse(list, ag)
-                    list.vertexArrayObjectSet(AGVertexArrayObject(vertexData)) {
-                        batches.fastForEach { batch ->
-                            batch.render(list, ag, AGDrawType.TRIANGLES, indexBuffer)
-                        }
-                    }
-                }
-                batches.clear()
-            }
+            )
+            batches.clear()
 
             beforeFlush(this)
 		}

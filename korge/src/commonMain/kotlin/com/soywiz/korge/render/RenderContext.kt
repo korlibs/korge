@@ -1,6 +1,7 @@
 package com.soywiz.korge.render
 
 import com.soywiz.kds.*
+import com.soywiz.kmem.*
 import com.soywiz.korag.*
 import com.soywiz.korag.log.*
 import com.soywiz.korag.shader.Uniform
@@ -17,13 +18,13 @@ import kotlin.coroutines.*
 /**
  * A context that allows to render objects.
  *
- * The [RenderContext] contains the [ag] [AG] (Accelerated Graphics),
+ * The [RenderContext] contains the [nag] [NAG] (Accelerated Graphics),
  * that allow to render triangles and other primitives to the current render buffer.
  *
  * When doing 2D, you should usually use the [batch] to buffer vertices,
  * so they can be rendered at once when flushing.
  *
- * If you plan to do a custom drawing using [ag] directly, you should call [flush],
+ * If you plan to do a custom drawing using [nag] directly, you should call [flush],
  * so all the pending vertices are rendered.
  *
  * If you want to perform drawing using a context allowing non-precomputed transformations
@@ -34,17 +35,13 @@ import kotlin.coroutines.*
  */
 class RenderContext constructor(
     /** The Accelerated Graphics object that allows direct rendering */
-	val ag: AG,
     val nag: NAG,
 	val bp: BoundsProvider = BoundsProvider.Base(),
     /** Object storing all the rendering [Stats] like number of batches, number of vertices etc. */
 	val stats: Stats = Stats(),
 	val coroutineContext: CoroutineContext = EmptyCoroutineContext,
     val batchMaxQuads: Int = BatchBuilder2D.DEFAULT_BATCH_QUADS
-) : Extra by Extra.Mixin(), BoundsProvider by bp, AGFeatures by ag, Closeable {
-    val useNag = true
-    //val useNag = false
-
+) : Extra by Extra.Mixin(), BoundsProvider by bp, Closeable {
     val projectionMatrixTransform = Matrix()
     val projectionMatrixTransformInv = Matrix()
     private val projMat: Matrix3D = Matrix3D()
@@ -59,20 +56,30 @@ class RenderContext constructor(
         it[DefaultShaders.u_ViewMat] = viewMat
     }
 
+    val texturePool = Pool { NAGTexture() }
+
     var flipRenderTexture = true
     //var flipRenderTexture = false
     private val tempRect = Rectangle()
     private val tempMat3d = Matrix3D()
 
     var currentFrameBuffer: NAGFrameBuffer? = null
+
+    val graphicExtensions: List<String> get() = nag.graphicExtensions
+    val isFloatTextureSupported: Boolean get() = nag.isFloatTextureSupported
+    val isInstancedSupported: Boolean get() = nag.isInstancedSupported
+    val currentFrameBufferWidth: Int get() = currentFrameBuffer?.width ?: nag.finalFrameBufferWidth
+    val currentFrameBufferHeight: Int get() = currentFrameBuffer?.height ?: nag.finalFrameBufferHeight
+
     val isRenderingToTexture: Boolean get() = currentFrameBuffer != null
-    val currentWidth: Int get() = nag.frameBufferWidth
-    val currentHeight: Int get() = nag.frameBufferHeight
-    val devicePixelRatio: Double get() = ag.devicePixelRatio
-    val pixelsPerInch: Double get() = ag.pixelsPerInch
-    val computedPixelRatio: Double get() = ag.devicePixelRatio
-    val nativeWidth: Int get() = ag.mainRenderBuffer.width
-    val nativeHeight: Int get() = ag.mainRenderBuffer.height
+    val isRenderingToWindow: Boolean get() = !isRenderingToTexture
+    val currentWidth: Int get() = nag.finalFrameBufferWidth
+    val currentHeight: Int get() = nag.finalFrameBufferHeight
+    val devicePixelRatio: Double get() = nag.devicePixelRatio
+    val pixelsPerInch: Double get() = nag.pixelsPerInch
+    val computedPixelRatio: Double get() = nag.devicePixelRatio
+    val nativeWidth: Int get() = nag.finalFrameBufferWidth
+    val nativeHeight: Int get() = nag.finalFrameBufferHeight
     var debugExtraFontScale : Double = 1.0
     var debugExtraFontColor : RGBA = Colors.WHITE
     val debugOverlayScale: Double get() = kotlin.math.round(computedPixelRatio * debugExtraFontScale).coerceAtLeast(1.0)
@@ -117,6 +124,22 @@ class RenderContext constructor(
 
     @PublishedApi internal val tempUniforms = Pool(reset = { it.clear() }) { AGUniformValues() }
 
+    open fun startFrame() {
+        nag.startFrame()
+    }
+
+    open fun clear(
+        color: RGBA = Colors.TRANSPARENT_BLACK,
+        depth: Float = 1f,
+        stencil: Int = 0,
+        clearColor: Boolean = true,
+        clearDepth: Boolean = true,
+        clearStencil: Boolean = true,
+        scissor: AGRect = AGRect.NIL,
+    ) {
+        nag.clear(currentFrameBuffer, if (clearColor) color else null, if (clearDepth) depth else null, if (clearStencil) stencil else null)
+    }
+
     /**
      * Support restoring uniforms later.
      */
@@ -151,8 +174,8 @@ class RenderContext constructor(
     internal val tempOldUniformsList: Pool<AGUniformValues> = Pool { AGUniformValues() }
 
     val agAutoFreeManager = AgAutoFreeManager()
-	val agBitmapTextureManager = AgBitmapTextureManager(ag)
-    val agBufferManager = AgBufferManager(ag)
+	val agBitmapTextureManager = AgBitmapTextureManager()
+    val agBufferManager = AgBufferManager()
 
     enum class FlushKind { STATE, FULL }
 
@@ -175,9 +198,7 @@ class RenderContext constructor(
     @KorgeInternal
     val batch = BatchBuilder2D(this, batchMaxQuads)
 
-    val dynamicVertexBufferPool = Pool { ag.createVertexBuffer() }
-    val dynamicVertexDataPool = Pool { ag.createVertexData() }
-    val dynamicIndexBufferPool = Pool { ag.createIndexBuffer() }
+    val dynamicVertexBufferPool = Pool { NAGBuffer() }
 
     @OptIn(KorgeInternal::class)
     inline fun useBatcher(block: (BatchBuilder2D) -> Unit) = batch.use(block)
@@ -220,24 +241,52 @@ class RenderContext constructor(
         flushers(kind)
 	}
 
+    fun unsafeAllocateFrameRenderBuffer(
+        width: Int, height: Int, hasDepth: Boolean = false, hasStencil: Boolean = true, msamples: Int = 1, onlyThisFrame: Boolean = true
+    ): NAGFrameBuffer = tempNagFrameBufferPool.alloc()
+
+    fun unsafeFreeFrameRenderBuffer(rb: NAGFrameBuffer) {
+        tempNagFrameBufferPool.free(rb)
+    }
+
     inline fun renderToFrameBuffer(
-        frameBuffer: AGRenderBuffer,
+        frameBuffer: NAGFrameBuffer,
         clear: Boolean = true,
-        render: (AGRenderBuffer) -> Unit,
+        render: (NAGFrameBuffer) -> Unit,
     ) {
         flush()
-        ag.setRenderBufferTemporally(frameBuffer) {
+        val oldFrameBuffer = currentFrameBuffer
+        try {
+            currentFrameBuffer = frameBuffer
             useBatcher { batch ->
                 val oldScissors = batch.scissor
                 batch.scissor = AGRect(0, 0, frameBuffer.width, frameBuffer.height)
                 //batch.scissor = null
                 try {
-                    if (clear) ag.clear(Colors.TRANSPARENT_BLACK)
+                    if (clear) clear(Colors.TRANSPARENT_BLACK)
                     render(frameBuffer)
                     flush()
                 } finally {
                     batch.scissor = oldScissors
                 }
+            }
+        } finally {
+            currentFrameBuffer = oldFrameBuffer
+        }
+    }
+
+    @PublishedApi internal val tempNagFrameBufferPool = Pool(reset = {}) { NAGFrameBuffer() }
+
+    inline fun tempAllocateFrameBuffer(width: Int, height: Int, hasDepth: Boolean = false, hasStencil: Boolean = true, msamples: Int = 1, block: (fb: NAGFrameBuffer) -> Unit) {
+        tempNagFrameBufferPool.alloc {
+            block(it.set(width, height, hasStencil, hasDepth))
+        }
+    }
+
+    inline fun tempAllocateFrameBuffers2(width: Int, height: Int, hasDepth: Boolean = false, hasStencil: Boolean = true, msamples: Int = 1, block: (fb1: NAGFrameBuffer, fb2: NAGFrameBuffer) -> Unit) {
+        tempAllocateFrameBuffer(width, height, hasDepth, hasStencil, msamples) { fb1 ->
+            tempAllocateFrameBuffer(width, height, hasDepth, hasStencil, msamples) { fb2 ->
+                block(fb1, fb2)
             }
         }
     }
@@ -250,12 +299,12 @@ class RenderContext constructor(
      */
     inline fun renderToTexture(
         width: Int, height: Int,
-        render: (AGRenderBuffer) -> Unit = {},
+        render: (NAGFrameBuffer) -> Unit = {},
         hasDepth: Boolean = false, hasStencil: Boolean = true, msamples: Int = 1,
         use: (texture: Texture) -> Unit
     ) {
 		flush()
-        ag.tempAllocateFrameBuffer(width, height, hasDepth = hasDepth, hasStencil = hasStencil, msamples = msamples) { fb ->
+        tempAllocateFrameBuffer(width, height, hasDepth = hasDepth, hasStencil = hasStencil, msamples = msamples) { fb ->
             renderToFrameBuffer(fb) { render(it) }
             use(Texture(fb).slice(0, 0, width, height))
             flush()
@@ -271,10 +320,11 @@ class RenderContext constructor(
         callback: () -> Unit
     ): Bitmap32 {
 		flush()
-		ag.renderToBitmap(bmp, hasDepth, hasStencil, msamples) {
-			callback()
-			flush()
-		}
+        TODO()
+		//ag.renderToBitmap(bmp, hasDepth, hasStencil, msamples) {
+		//	callback()
+		//	flush()
+		//}
 		return bmp
 	}
 
@@ -293,7 +343,7 @@ class RenderContext constructor(
      * Finishes the drawing and flips the screen. Called by the KorGe engine at the end of the frame.
      */
 	fun finish() {
-		ag.flip()
+		nag.finish()
 	}
 
     /**
@@ -303,7 +353,7 @@ class RenderContext constructor(
      */
     fun getTex(bmp: BmpSlice): Texture = agBitmapTextureManager.getTexture(bmp)
 	fun getTex(bmp: BitmapCoords): TextureCoords = agBitmapTextureManager.getTexture(bmp)
-    fun getBuffer(buffer: AgCachedBuffer): AGBuffer = agBufferManager.getBuffer(buffer)
+    fun getBuffer(buffer: Buffer): NAGBuffer = agBufferManager.getBuffer(buffer)
 
     /**
      * Allocates a [Texture.Base] from a [Bitmap]. A Texture.Base doesn't have region information.
@@ -342,13 +392,13 @@ class RenderContext constructor(
     }
 }
 
-inline fun <T : AG> testRenderContext(ag: T, nag: NAG, bp: BoundsProvider = BoundsProvider.Base(), block: (RenderContext) -> Unit): T {
-    val ctx = RenderContext(ag, nag, bp)
+inline fun <T: NAG> testRenderContext(nag: T, bp: BoundsProvider = BoundsProvider.Base(), block: (RenderContext) -> Unit): T {
+    val ctx = RenderContext(nag, bp)
     block(ctx)
     ctx.flush()
-    return ag
+    return nag
 }
 
-inline fun testRenderContext(bp: BoundsProvider = BoundsProvider.Base(), block: (RenderContext) -> Unit): LogAG {
-    return testRenderContext(LogAG(), NAGLog(), bp, block)
+inline fun testRenderContext(bp: BoundsProvider = BoundsProvider.Base(), block: (RenderContext) -> Unit): NAGLog {
+    return testRenderContext(NAGLog(), bp, block)
 }

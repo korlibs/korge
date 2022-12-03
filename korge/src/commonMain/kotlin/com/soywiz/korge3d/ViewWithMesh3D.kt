@@ -52,11 +52,9 @@ open class ViewWithMesh3D(
     private val identityInv = identity.clone().invert()
 
     override fun render(ctx: RenderContext3D) {
-        val ag = ctx.ag
-
         // @TODO: We should have a managed object for index and vertex buffers like Bitmap -> Texture
         // @TODO:   that handles this automatically. So they are released and allocated automatically on the GPU
-        ctx.dynamicIndexBufferPool.alloc { indexBuffer ->
+        ctx.dynamicBufferPool.alloc { indexBuffer ->
             ctx.useDynamicVertexData(mesh.vertexBuffers) { vertexData ->
                 indexBuffer.upload(mesh.indexBuffer)
                 //tempMat2.invert()
@@ -66,7 +64,8 @@ open class ViewWithMesh3D(
 
                 Shaders3D.apply {
                     val meshMaterial = mesh.material
-                    ag.drawV2(
+                    ctx.nag.drawV2(
+                        ctx.rctx.currentFrameBuffer,
                         vertexData = vertexData,
                         indices = indexBuffer,
                         indexType = mesh.indexType,

@@ -124,66 +124,67 @@ class Terrain3D(
                 this[uniform.u_color] = actual.colorVec
             }
             is Material3D.LightTexture -> {
-                actual.textureUnit.texture =
-                    actual.bitmap?.let { ctx.rctx.agBitmapTextureManager.getTextureBase(it).base }
+                actual.textureUnit.texture = actual.bitmap?.let { ctx.rctx.agBitmapTextureManager.getTextureBase(it).base }
                 actual.textureUnit.linear = true
                 this[uniform.u_texUnit] = actual.textureUnit
             }
         }
     }
 
+    val indexBuffer = NAGBuffer()
+
     override fun render(ctx: RenderContext3D) {
-        val ag = ctx.ag
-        val indexBuffer = ag.createIndexBuffer()
-        ctx.useDynamicVertexData(mesh.vertexBuffers) { vertexData ->
-            indexBuffer.upload(mesh.indexBuffer)
-            Shaders3D.apply {
-                val meshMaterial = mesh.material
-                ag.drawV2(
-                    vertexData = vertexData,
-                    indices = indexBuffer,
-                    indexType = mesh.indexType,
-                    type = mesh.drawType,
-                    program = mesh.program ?: ctx.shaders.getProgram3D(
-                        ctx.lights.size.clamp(0, 4),
-                        mesh.maxWeights,
-                        meshMaterial,
-                        mesh.hasTexture
-                    ),
-                    vertexCount = mesh.vertexCount,
-                    blending = AGBlending.NONE,
-                    //vertexCount = 6 * 6,
-                    uniforms = uniformValues.apply {
-                        this[u_ProjMat] = ctx.projCameraMat
-                        this[u_ViewMat] = transform.globalMatrix
-                        this[u_ModMat] = modelMat
-                        //this[u_NormMat] = tempMat3.multiply(tempMat2, localTransform.matrix).invert().transpose()
-                        this[u_NormMat] = tempMat3.multiply(tempMat2, transform.globalMatrix)//.invert()
+        ctx.dynamicBufferPool.alloc {
+            ctx.useDynamicVertexData(mesh.vertexBuffers) { vertexData ->
+                indexBuffer.upload(mesh.indexBuffer)
+                Shaders3D.apply {
+                    val meshMaterial = mesh.material
+                    ctx.nag.drawV2(
+                        ctx.rctx.currentFrameBuffer,
+                        vertexData = vertexData,
+                        indices = indexBuffer,
+                        indexType = mesh.indexType,
+                        type = mesh.drawType,
+                        program = mesh.program ?: ctx.shaders.getProgram3D(
+                            ctx.lights.size.clamp(0, 4),
+                            mesh.maxWeights,
+                            meshMaterial,
+                            mesh.hasTexture
+                        ),
+                        vertexCount = mesh.vertexCount,
+                        blending = AGBlending.NONE,
+                        //vertexCount = 6 * 6,
+                        uniforms = uniformValues.apply {
+                            this[u_ProjMat] = ctx.projCameraMat
+                            this[u_ViewMat] = transform.globalMatrix
+                            this[u_ModMat] = modelMat
+                            //this[u_NormMat] = tempMat3.multiply(tempMat2, localTransform.matrix).invert().transpose()
+                            this[u_NormMat] = tempMat3.multiply(tempMat2, transform.globalMatrix)//.invert()
 
-                        this[u_Shininess] = meshMaterial?.shininess ?: 0.5f
-                        this[u_IndexOfRefraction] = meshMaterial?.indexOfRefraction ?: 1f
+                            this[u_Shininess] = meshMaterial?.shininess ?: 0.5f
+                            this[u_IndexOfRefraction] = meshMaterial?.indexOfRefraction ?: 1f
 
-                        if (meshMaterial != null) {
-                            setMaterialLight(ctx, ambient, meshMaterial.ambient)
-                            setMaterialLight(ctx, diffuse, meshMaterial.diffuse)
-                            setMaterialLight(ctx, emission, meshMaterial.emission)
-                            setMaterialLight(ctx, specular, meshMaterial.specular)
-                        }
-                        this[u_AmbientColor] = ctx.ambientColor
-                        ctx.lights.fastForEachWithIndex { index, light: Light3D ->
-                            val lightColor = light.color
-                            this[lights[index].u_sourcePos] = light.transform.translation
-                            this[lights[index].u_color] =
-                                light.colorVec.setTo(lightColor.rf, lightColor.gf, lightColor.bf, 1f)
-                            this[lights[index].u_attenuation] = light.attenuationVec.setTo(
-                                light.constantAttenuation,
-                                light.linearAttenuation,
-                                light.quadraticAttenuation
-                            )
-                        }
-                    },
-                    renderState = rs
-                )
+                            if (meshMaterial != null) {
+                                setMaterialLight(ctx, ambient, meshMaterial.ambient)
+                                setMaterialLight(ctx, diffuse, meshMaterial.diffuse)
+                                setMaterialLight(ctx, emission, meshMaterial.emission)
+                                setMaterialLight(ctx, specular, meshMaterial.specular)
+                            }
+                            this[u_AmbientColor] = ctx.ambientColor
+                            ctx.lights.fastForEachWithIndex { index, light: Light3D ->
+                                val lightColor = light.color
+                                this[lights[index].u_sourcePos] = light.transform.translation
+                                this[lights[index].u_color] = light.colorVec.setTo(lightColor.rf, lightColor.gf, lightColor.bf, 1f)
+                                this[lights[index].u_attenuation] = light.attenuationVec.setTo(
+                                    light.constantAttenuation,
+                                    light.linearAttenuation,
+                                    light.quadraticAttenuation
+                                )
+                            }
+                        },
+                        renderState = rs
+                    )
+                }
             }
         }
     }

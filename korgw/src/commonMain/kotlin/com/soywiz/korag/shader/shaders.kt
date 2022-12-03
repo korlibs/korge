@@ -284,8 +284,8 @@ open class Uniform(name: String, type: VarType, arrayCount: Int, precision: Prec
 ) {
     constructor(name: String, type: VarType, precision: Precision = Precision.DEFAULT, block: UniformBlock = UniformBlock.DEFAULT) : this(name, type, 1, precision, null, block)
 	override fun toString(): String = "Uniform($name)"
-    override fun equals(other: Any?): Boolean = mequals<Uniform>(other)
-    override fun hashCode(): Int = mhashcode()
+    //override fun equals(other: Any?): Boolean = mequals<Uniform>(other)
+    //override fun hashCode(): Int = mhashcode()
     operator fun getValue(thisRef: Any?, property: KProperty<*>): Uniform = this
 
     class Provider(val type: VarType, val arrayCount: Int, val precision: Precision = Precision.DEFAULT, val block: UniformBlock = UniformBlock.DEFAULT) {

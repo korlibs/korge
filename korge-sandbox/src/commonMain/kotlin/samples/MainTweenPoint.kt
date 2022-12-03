@@ -49,7 +49,7 @@ class MainTweenPoint : Scene() {
         }
 
         addUpdater {
-            println("views.ag.getStats: ${views.ag.getStats()}")
+            //println("views.ag.getStats: ${views.ag.getStats()}")
         }
     }
 }

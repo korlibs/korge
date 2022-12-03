@@ -12,13 +12,30 @@ import com.soywiz.korio.async.*
  */
 abstract class NAG {
     @PublishedApi internal var contextVersion: Int = 0
-    var frameBufferWidth: Int = 0
-    var frameBufferHeight: Int = 0
-    var devicePixelRatio: Double = 1.0
+    open var finalFrameBufferWidth: Int = 0
+    open var finalFrameBufferHeight: Int = 0
+    open var devicePixelRatio: Double = 1.0
+    open val pixelsPerInch: Double get() = 96.0 * devicePixelRatio
+
+    open val graphicExtensions: List<String> = emptyList()
+    open val isFloatTextureSupported: Boolean get() = false
+    open val isInstancedSupported: Boolean get() = true
+
+    open val totalRenderBuffers: Int get() = 0
+
+    @Deprecated("")
+    inline fun doRender(block: () -> Unit) {
+        //beforeDoRender()
+        //mainRenderBuffer.init()
+        //setRenderBufferTemporally(mainRenderBuffer) {
+            block()
+        //}
+    }
+
 
     fun resized(x: Int, y: Int, width: Int, height: Int, fullWidth: Int = width, fullHeight: Int = height) {
-        frameBufferWidth = width
-        frameBufferHeight = height
+        finalFrameBufferWidth = width
+        finalFrameBufferHeight = height
     }
 
     open fun contextLost() {
@@ -41,10 +58,10 @@ abstract class NAG {
     fun draw(batches: List<NAGBatch>) = execute(NAGCommandFullBatch(batches))
     fun draw(vararg batches: NAGBatch) = draw(batches.toList())
 
-    fun readToTexture(renderBuffer: NAGFrameBuffer?, texture: NAGTexture, x: Int, y: Int, width: Int, height: Int, completed: Signal<Unit>? = null) {
+    fun readToTexture(renderBuffer: NAGFrameBuffer?, texture: NAGTexture, x: Int, y: Int, width: Int, height: Int, completed: Signal<Unit>? = null, sync: Boolean = true) {
         execute(NAGCommandTransfer.CopyToTexture(renderBuffer, texture, x, y, width, height, completed))
     }
-    fun readBits(renderBuffer: NAGFrameBuffer?, kind: AGReadKind, x: Int, y: Int, width: Int, height: Int, target: Any?, completed: Signal<Unit>? = null) {
+    fun readBits(renderBuffer: NAGFrameBuffer?, kind: AGReadKind, x: Int, y: Int, width: Int, height: Int, target: Any?, completed: Signal<Unit>? = null, sync: Boolean = true) {
         execute(NAGCommandTransfer.ReadBits(renderBuffer, kind, x, y, width, height, target, completed))
     }
     fun finish(completed: Signal<Unit>? = null) {
@@ -60,45 +77,107 @@ abstract class NAG {
     suspend fun finishSuspend() {
         Signal<Unit>().also { finish(it) }.waitOne()
     }
+
+    fun drawV2(
+        frameBuffer: NAGFrameBuffer?,
+        vertexData: NAGVertices,
+        indices: NAGBuffer? = null,
+        indexType: AGIndexType = AGIndexType.NONE,
+        type: AGDrawType,
+        program: Program,
+        vertexCount: Int,
+        blending: AGBlending = AGBlending.NORMAL,
+        uniforms: AGUniformValues,
+        renderState: AGRenderState = AGRenderState.DEFAULT,
+        offset: Int = 0,
+        instances: Int = 1,
+    ) {
+        draw(NAGBatch(
+            vertexData,
+            indices,
+            listOf(
+                NAGUniformBatch(
+                    frameBuffer,
+                    program,
+                    uniforms,
+                    AGFullState().also {
+                        it.blending = blending
+                        it.render = renderState
+                   },
+                    NAGDrawCommandArray.invoke {
+                        it.add(type, indexType, offset, vertexCount, instances)
+                    }
+                )
+            )
+        ))
+    }
 }
 
-open class NAGTextureUnit : NAGObject() {
+open class NAGTextureUnit(var unitId: Int) : NAGObject() {
     var texture: NAGTexture? = null
     var wrap: AGTextureWrap = AGTextureWrap.REPEAT
-    var magFilter: AGMAGFilter = AGMAGFilter.LINEAR
-    var minFilter: AGMINFilter = AGMINFilter(magFilter.ordinal)
-    var unitId: Int = -1
+    var linear: Boolean = true
+    var trilinear: Boolean = true
+    //var magFilter: AGMAGFilter = AGMAGFilter.LINEAR
+    //var minFilter: AGMINFilter = AGMINFilter(magFilter.ordinal)
+
+    val mipmaps: Boolean get() = texture?.mipmaps == true
+    val minFilter: AGMINFilter get() = when {
+        mipmaps -> when {
+            linear -> if (trilinear) AGMINFilter.LINEAR_MIPMAP_LINEAR else AGMINFilter.LINEAR_MIPMAP_NEAREST
+            else -> if (trilinear) AGMINFilter.NEAREST_MIPMAP_LINEAR else AGMINFilter.NEAREST_MIPMAP_NEAREST
+        }
+        else -> if (linear) AGMINFilter.LINEAR else AGMINFilter.NEAREST
+    }
+    val magFilter: AGMAGFilter get() = if (linear) AGMAGFilter.LINEAR else AGMAGFilter.NEAREST
 
     fun set(
-        unitId: Int = -1,
         texture: NAGTexture?,
-        wrap: AGTextureWrap = AGTextureWrap.REPEAT,
-        magFilter: AGMAGFilter = AGMAGFilter.LINEAR,
-        minFilter: AGMINFilter = AGMINFilter(magFilter.ordinal),
+        linear: Boolean = true,
+        trilinear: Boolean = linear,
+        //wrap: AGTextureWrap = AGTextureWrap.REPEAT,
+        wrap: AGTextureWrap = AGTextureWrap.CLAMP_TO_EDGE,
     ): NAGTextureUnit {
-        this.unitId = unitId
+        //this.unitId = unitId
         this.texture = texture
         this.wrap = wrap
-        this.magFilter = magFilter
-        this.minFilter = minFilter
+        this.linear = linear
+        this.trilinear = trilinear
         this.invalidate()
         return this
     }
 }
 
-open class NAGTexture : NAGObject() {
+open class NAGTexture(val targetKind: AGTextureTargetKind = AGTextureTargetKind.TEXTURE_2D) : NAGObject() {
     var content: Bitmap? = null
+    var width: Int = 0
+    var height: Int = 0
+    var mipmaps: Boolean = false
+    var premultiplied: Boolean = true
 
-    fun upload(content: Bitmap? = null): NAGTexture {
+    fun set(content: Bitmap? = null, mipmaps: Boolean = false): NAGTexture {
         if (content === this.content) return this
         this.content = content
+        this.width = content?.width ?: 0
+        this.height = content?.height ?: 0
+        this.mipmaps = mipmaps
+        this.premultiplied = content?.premultiplied ?: true
         this.invalidate()
         return this
+    }
+    fun set(content: BitmapSlice<Bitmap>?, mipmaps: Boolean = false): NAGTexture {
+        return set(content?.bmp, mipmaps)
+    }
+
+    fun set(list: List<Bitmap>, width: Int, height: Int): NAGTexture {
+        this.width = width
+        this.height = height
+        TODO()
     }
 }
 
 open class NAGFrameBuffer : NAGObject() {
-    val texture = NAGTexture()
+    val texture = NAGTexture(AGTextureTargetKind.TEXTURE_2D)
     var width: Int = 0
     var height: Int = 0
 
@@ -131,6 +210,12 @@ class NAGBuffer : NAGObject() {
         this.invalidate()
         return this
     }
+
+    fun upload(content: Buffer, offset: Int, size: Int, usage: Usage = Usage.DYNAMIC): NAGBuffer = upload(content.sliceWithSize(offset, size), usage)
+    fun upload(data: FloatArray, offset: Int = 0, size: Int = data.size - offset, usage: Usage = Usage.DYNAMIC): NAGBuffer = upload(Float32Buffer(data, offset, size).buffer, usage)
+    fun upload(data: IntArray, offset: Int = 0, size: Int = data.size - offset, usage: Usage = Usage.DYNAMIC): NAGBuffer = upload(Int32Buffer(data, offset, size).buffer, usage)
+    fun upload(data: ShortArray, offset: Int = 0, size: Int = data.size - offset, usage: Usage = Usage.DYNAMIC): NAGBuffer = upload(Int16Buffer(data, offset, size).buffer, usage)
+    fun upload(data: ByteArray, offset: Int = 0, size: Int = data.size - offset, usage: Usage = Usage.DYNAMIC): NAGBuffer = upload(Buffer(data, offset, size), usage)
 }
 
 interface NAGNativeObject {
@@ -153,7 +238,7 @@ open class NAGObject {
     }
 }
 
-class NAGVerticesPart(val layout: VertexLayout, val buffer: NAGBuffer)
+class NAGVerticesPart(val layout: VertexLayout, val buffer: NAGBuffer = NAGBuffer())
 class NAGVertices(val data: List<NAGVerticesPart>) {
     constructor(vararg data: NAGVerticesPart) : this(data.toList())
 }

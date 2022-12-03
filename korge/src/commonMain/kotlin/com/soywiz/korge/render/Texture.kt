@@ -13,22 +13,24 @@ import com.soywiz.korma.geom.*
 /**
  * Represents a full texture region wraping a [base] [AGTexture] and specifying its [width] and [height]
  */
-class TextureBase(
-    var base: AGTexture?,
+class TextureBase constructor(
+    var base: NAGTexture?,
     override var width: Int,
     override var height: Int
 ) : Closeable, ISizeInt {
+    constructor(base: NAGFrameBuffer, width: Int = base.width, height: Int = base.height) : this(base.texture, width, height)
+
     var version = -1
     val premultiplied get() = base?.premultiplied == true
     override fun close() {
-        base?.close()
+        base?.delete()
         base = null
     }
     fun update(bmp: Bitmap, mipmaps: Boolean = bmp.mipmaps) {
         if (bmp is MultiBitmap) {
-            base?.upload(bmp.bitmaps, bmp.width, bmp.height)
+            base?.set(bmp.bitmaps, bmp.width, bmp.height)
         } else {
-            base?.upload(bmp, mipmaps)
+            base?.set(bmp, mipmaps)
         }
     }
 
@@ -119,15 +121,15 @@ class Texture(
 
 	companion object {
         /**
-         * Creates a [Texture] from a texture [agBase] and its wanted size [width], [height].
+         * Creates a [Texture] from a texture [nagTexture] and its wanted size [width], [height].
          */
-		operator fun invoke(agBase: AGTexture, width: Int, height: Int): Texture =
-			Texture(TextureBase(agBase, width, height), 0, 0, width, height)
+        operator fun invoke(nagTexture: NAGTexture, width: Int, height: Int): Texture =
+            Texture(TextureBase(nagTexture, width, height), 0, 0, width, height)
 
         /**
          * Creates a [Texture] from a frame buffer [frameBuffer] with the right size of the frameBuffer.
          */
-        operator fun invoke(frameBuffer: AGRenderBuffer): Texture = invoke(frameBuffer.tex, frameBuffer.width, frameBuffer.height)
+        operator fun invoke(frameBuffer: NAGFrameBuffer): Texture = Texture(frameBuffer.texture, frameBuffer.width, frameBuffer.height)
 	}
 
     /**

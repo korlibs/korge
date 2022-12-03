@@ -115,11 +115,12 @@ class DebugVertexView(pointsList: List<IVectorArrayList>, color: RGBA = Colors.W
 
         ctx.dynamicVertexBufferPool.alloc { vb ->
             vb.upload(this@DebugVertexView.buffer)
-            val vData = fastArrayListOf(
-                AGVertexData(vb, DefaultShaders.LAYOUT_DEBUG)
+            val vData = NAGVertices(
+                NAGVerticesPart(DefaultShaders.LAYOUT_DEBUG, vb)
             )
             batches.fastForEach { batch ->
-                ctx.ag.drawV2(
+                ctx.nag.drawV2(
+                    ctx.currentFrameBuffer,
                     vData,
                     type = type,
                     program = PROGRAM,

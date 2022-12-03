@@ -844,6 +844,7 @@ value class AGVertexArrayObject(
 ) {
 }
 
+@Deprecated("Use NAGVertices & NAGVerticesPart")
 data class AGVertexData constructor(
     var _buffer: AGBuffer?,
     var layout: VertexLayout = VertexLayout()
@@ -851,24 +852,26 @@ data class AGVertexData constructor(
     val buffer: AGBuffer get() = _buffer!!
 }
 
-
+@Deprecated("Use NAGTextureUnit")
 data class AGTextureUnit constructor(
     val index: Int,
     var texture: AGTexture? = null,
     var linear: Boolean = true,
     var trilinear: Boolean? = null,
 ) {
-    val nag = NAGTextureUnit()
-
     fun set(texture: AGTexture?, linear: Boolean, trilinear: Boolean? = null) {
         this.texture = texture
         this.linear = linear
         this.trilinear = trilinear
     }
+    fun copyFrom(other: AGTextureUnit) {
+        set(other.texture, other.linear, other.trilinear)
+    }
     fun clone(): AGTextureUnit = AGTextureUnit(index, texture, linear, trilinear)
 }
 
 // @TODO: Move most of this to AGQueueProcessorOpenGL, avoid cyclic dependency and simplify
+@Deprecated("Use NAGTexture")
 open class AGTexture constructor(
     val ag: AG,
     open val premultiplied: Boolean,

@@ -3,8 +3,11 @@ import com.soywiz.korge.*
 import com.soywiz.korge.scene.*
 import com.soywiz.korge.ui.*
 import com.soywiz.korge.view.*
+import com.soywiz.korge.view.filter.*
 import com.soywiz.korim.color.*
+import com.soywiz.korim.format.*
 import com.soywiz.korio.async.*
+import com.soywiz.korio.file.std.*
 import com.soywiz.korio.lang.*
 import samples.*
 import samples.asteroids.*
@@ -28,6 +31,8 @@ suspend fun main() = Korge(
     //debugAg = true,
 ) {
     if (true) {
+        image(resourcesVfs["korge.png"].readBitmap()).filters(BlurFilter())
+        /*
     //if (false) {
         views.forceRenderEveryFrame = true
         //views.forceRenderEveryFrame = false
@@ -44,6 +49,7 @@ suspend fun main() = Korge(
                 }
             }
         }
+        */
         return@Korge
     }
 

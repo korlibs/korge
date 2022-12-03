@@ -34,15 +34,15 @@ class ViewRenderPhaseBackdropFilter(var filter: Filter) : ViewRenderPhase {
     var bgrtex: Texture? = null
 
     override fun beforeRender(view: View, ctx: RenderContext) {
-        val bgtex = ctx.ag.tempTexturePool.alloc()
-        val width = ctx.ag.currentRenderBufferOrMain.width
-        val height = ctx.ag.currentRenderBufferOrMain.height
-        ctx.ag.readColorTexture(bgtex, 0, 0, width, height)
+        val bgtex = ctx.texturePool.alloc()
+        val width = ctx.currentFrameBufferWidth
+        val height = ctx.currentFrameBufferHeight
+        ctx.nag.readToTexture(ctx.currentFrameBuffer, bgtex, 0, 0, width, height, sync = true)
         bgrtex = Texture(bgtex, width, height)
     }
 
     override fun afterRender(view: View, ctx: RenderContext) {
-        bgrtex?.let { ctx.ag.tempTexturePool.free(it.base.base!!) }
+        bgrtex?.let { ctx.texturePool.free(it.base.base!!) }
         bgrtex = null
     }
 
@@ -60,7 +60,7 @@ class ViewRenderPhaseBackdropFilter(var filter: Filter) : ViewRenderPhase {
                         DefaultShaders.u_Tex2,
                         flush = true
                     ) { uniforms ->
-                        uniforms[DefaultShaders.u_Tex2] = AGTextureUnit(1, mask.base.base)
+                        uniforms[DefaultShaders.u_Tex2] = NAGTextureUnit(1).set(mask.base.base)
                         //batcher.drawQuad(bgrtex, x = 0f, y = 0f, program = MERGE_ALPHA)
                         batcher.drawQuad(
                             bgrtex!!, x = 0f, y = 0f, m = view.parent!!.globalMatrix, program = MERGE_ALPHA,

@@ -54,7 +54,7 @@ class MainFilterSwitch : Scene() {
                         ColorMatrixFilter(ColorMatrixFilter.GRAYSCALE_MATRIX)
                     }
                 }
-                println(views.ag.getStats())
+                //println(views.ag.getStats())
             }
         }
     }

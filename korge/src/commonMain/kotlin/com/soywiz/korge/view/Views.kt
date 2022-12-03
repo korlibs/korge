@@ -46,7 +46,6 @@ import kotlin.reflect.*
  */
 class Views constructor(
     override val coroutineContext: CoroutineContext,
-    val ag: AG,
     val nag: NAG,
     val injector: AsyncInjector,
     val input: Input,
@@ -106,8 +105,7 @@ class Views constructor(
     var name: String? = null
     var currentVfs: VfsFile = resourcesVfs
     var imageFormats = RegisteredImageFormats
-	val renderContext = RenderContext(ag, nag, this, stats, coroutineContext, batchMaxQuads)
-    val useNag: Boolean get() = renderContext.useNag
+	val renderContext = RenderContext(nag, this, stats, coroutineContext, batchMaxQuads)
 	@KorgeDeprecated val agBitmapTextureManager get() = renderContext.agBitmapTextureManager
     @KorgeDeprecated val agBufferManager get() = renderContext.agBufferManager
 	var clearEachFrame = true
@@ -232,7 +230,7 @@ class Views constructor(
 
 	init {
 		injector.mapInstance(CoroutineContext::class, coroutineContext)
-		injector.mapInstance(AG::class, ag)
+		injector.mapInstance(NAG::class, nag)
 		injector.mapInstance(Views::class, this)
         onAfterRender {
             renderContext.afterRender()
@@ -306,17 +304,9 @@ class Views constructor(
 	}
 
 	fun render() {
-        if (useNag) {
-            nag.startFrame()
-        } else {
-            ag.startFrame()
-        }
+        renderContext.startFrame()
 		if (clearEachFrame) {
-            if (useNag) {
-                nag.clear(null, color = clearColor, depth = 1f, stencil = 0)
-            } else {
-                ag.clear(clearColor, stencil = 0, depth = 1f, clearColor = true, clearStencil = true, clearDepth = true)
-            }
+            renderContext.clear(color = clearColor, depth = 1f, stencil = 0)
         }
         onBeforeRender(renderContext)
         renderContext.flush()
@@ -502,8 +492,7 @@ class Views constructor(
     //var viewExtraBuildDebugComponent = arrayListOf<(views: Views, view: View, container: UiContainer) -> Unit>()
 }
 
-fun Views.getDefaultProgram(): Program =
-    renderContext.batch.getDefaultProgram()
+fun Views.getDefaultProgram(): Program = BatchBuilder2D.PROGRAM
 
 fun viewsLog(callback: suspend Stage.(log: ViewsLog) -> Unit) = Korio {
     viewsLogSuspend(callback)
@@ -520,14 +509,13 @@ open class GameWindowLog : GameWindow() {
 class ViewsLog constructor(
 	override val coroutineContext: CoroutineContext,
 	val injector: AsyncInjector = AsyncInjector(),
-	val ag: AG = LogAG(),
     val nag: NAG = NAGLog(),
 	val input: Input = Input(),
 	val timeProvider: TimeProvider = TimeProvider,
 	val stats: Stats = Stats(),
 	val gameWindow: GameWindow = GameWindowLog()
 ) : CoroutineScope {
-	val views = Views(coroutineContext + AsyncInjectorContext(injector), ag, nag, injector, input, timeProvider, stats, gameWindow).also {
+	val views = Views(coroutineContext + AsyncInjectorContext(injector), nag, injector, input, timeProvider, stats, gameWindow).also {
 	    it.rethrowRenderError = true
     }
     val stage: Stage get() = views.stage
@@ -541,17 +529,15 @@ class ViewsLog constructor(
     }
 }
 
-fun Views.texture(bmp: Bitmap, mipmaps: Boolean = false): Texture = Texture(TextureBase(ag.createTexture(bmp, mipmaps), bmp.width, bmp.height))
-fun Views.texture(bmp: BitmapSlice<Bitmap>, mipmaps: Boolean = false): Texture = Texture(TextureBase(ag.createTexture(bmp, mipmaps), bmp.width, bmp.height))
+fun Views.texture(bmp: Bitmap, mipmaps: Boolean = false): Texture = Texture(TextureBase(NAGTexture().set(bmp, mipmaps), bmp.width, bmp.height))
+fun Views.texture(bmp: BitmapSlice<Bitmap>, mipmaps: Boolean = false): Texture = Texture(TextureBase(NAGTexture().set(bmp, mipmaps), bmp.width, bmp.height))
 fun Bitmap.texture(views: Views, mipmaps: Boolean = false) = views.texture(this, mipmaps)
-fun Views.texture(width: Int, height: Int, mipmaps: Boolean = false) = texture(Bitmap32(width, height), mipmaps)
+fun Views.texture(width: Int, height: Int, mipmaps: Boolean = false) = texture(Bitmap32(width, height, premultiplied = true), mipmaps)
 suspend fun Views.texture(bmp: ByteArray, mipmaps: Boolean = false): Texture = texture(nativeImageFormatProvider.decode(bmp), mipmaps)
 
 interface ViewsContainer {
 	val views: Views
 }
-
-val ViewsContainer.ag: AG get() = views.ag
 
 data class KorgeFileLoaderTester<T>(
 	val name: String,

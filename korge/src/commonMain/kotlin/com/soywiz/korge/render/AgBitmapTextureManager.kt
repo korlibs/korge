@@ -32,9 +32,7 @@ import com.soywiz.korma.geom.Rectangle
  */
 // @TODO: Use [com.soywiz.kds.FastIdentityCacheMap]
 @OptIn(KorgeInternal::class, KorgeExperimental::class)
-class AgBitmapTextureManager(
-    val ag: AG
-) : Closeable {
+class AgBitmapTextureManager() : Closeable {
     var maxCachedMemory = 0L
 
     /** Bitmaps to keep for some time even if not referenced in [framesBetweenGC] as long as the [maxCachedMemory] allows it */
@@ -101,10 +99,10 @@ class AgBitmapTextureManager(
             textureInfoPool.alloc().also {
                 val base = it.textureBase
                 base.version = -1
-                base.base = ag.createTexture(bitmap.premultiplied, targetKind = when (bitmap) {
+                base.base = NAGTexture(when (bitmap) {
                     is MultiBitmap -> AGTextureTargetKind.TEXTURE_CUBE_MAP
                     else -> AGTextureTargetKind.TEXTURE_2D
-                })
+                }).set().also { it.premultiplied = bitmap.premultiplied }
                 base.width = bitmap.width
                 base.height = bitmap.height
             }
