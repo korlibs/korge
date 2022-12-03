@@ -5,13 +5,13 @@ createTexture():0
 Texture[0].uploadedBitmap(SyncBitmapSource(rgba=true, width=32, height=32), 32, 32)
 createBuffer():5
 bufferCreate: 6
-Buffer[5].afterSetMem(mem[512])
+Buffer[5].afterSetMem(mem[128])
 createBuffer():6
 bufferCreate: 7
-Buffer[6].afterSetMem(mem[64])
+Buffer[6].afterSetMem(mem[16])
 createBuffer():7
 bufferCreate: 8
-Buffer[7].afterSetMem(mem[4])
+Buffer[7].afterSetMem(mem[16])
 createBuffer():8
 bufferCreate: 9
 Buffer[8].afterSetMem(mem[32])
@@ -154,7 +154,7 @@ draw: TRIANGLE_FAN, offset=0, count=4, instances=4, indexType=null
 ::draw.instance[3]: a_rxy[400,100], a_scale[1,1], a_rangle[0], a_axy[0,1], a_uv0[0,0], a_uv1[32,32], a_colMul[1,1,1,0.49803922], a_texId[0]
 vaoUse: 0
 vaoDelete: 1
-Buffer[5].afterSetMem(mem[512])
+Buffer[5].afterSetMem(mem[0])
 disposeTemporalPerFrameStuff()
 flipInternal()
 finish

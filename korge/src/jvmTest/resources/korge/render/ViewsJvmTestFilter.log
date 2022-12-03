@@ -18,10 +18,10 @@ clear(#00000000, 1.0, 0, true, true, true)
 textureCreate: 1
 createTexture():0
 Texture[0].uploadedBitmap(SyncBitmapSource(rgba=true, width=10, height=10), 10, 10)
-Buffer[0].afterSetMem(mem[393216])
-Buffer[1].afterSetMem(mem[4])
-Buffer[2].afterSetMem(mem[4])
-Buffer[3].afterSetMem(mem[49152])
+Buffer[0].afterSetMem(mem[96])
+Buffer[1].afterSetMem(mem[16384])
+Buffer[2].afterSetMem(mem[16384])
+Buffer[3].afterSetMem(mem[12])
 enable: SCISSOR
 scissor: 0, 0, 64, 64
 vaoCreate: 1
@@ -62,10 +62,10 @@ createRenderBuffer():2
 RenderBuffer[2].setSize(64, 64)
 RenderBuffer[2].set()
 clear(#00000000, 1.0, 0, true, true, true)
-Buffer[0].afterSetMem(mem[393216])
-Buffer[1].afterSetMem(mem[4])
-Buffer[2].afterSetMem(mem[4])
-Buffer[3].afterSetMem(mem[49152])
+Buffer[0].afterSetMem(mem[96])
+Buffer[1].afterSetMem(mem[16384])
+Buffer[2].afterSetMem(mem[16384])
+Buffer[3].afterSetMem(mem[12])
 enable: SCISSOR
 scissor: 0, 0, 64, 64
 vaoCreate: 1
@@ -111,10 +111,10 @@ createRenderBuffer():3
 RenderBuffer[3].setSize(64, 64)
 RenderBuffer[3].set()
 clear(#00000000, 1.0, 0, true, true, true)
-Buffer[0].afterSetMem(mem[393216])
-Buffer[1].afterSetMem(mem[4])
-Buffer[2].afterSetMem(mem[4])
-Buffer[3].afterSetMem(mem[49152])
+Buffer[0].afterSetMem(mem[96])
+Buffer[1].afterSetMem(mem[16384])
+Buffer[2].afterSetMem(mem[16384])
+Buffer[3].afterSetMem(mem[12])
 enable: SCISSOR
 scissor: 0, 0, 64, 64
 vaoCreate: 1
@@ -157,10 +157,10 @@ vaoUse: 0
 vaoDelete: 1
 textureCreate: 4
 createTexture():3
-Buffer[0].afterSetMem(mem[393216])
-Buffer[1].afterSetMem(mem[4])
-Buffer[2].afterSetMem(mem[4])
-Buffer[3].afterSetMem(mem[49152])
+Buffer[0].afterSetMem(mem[96])
+Buffer[1].afterSetMem(mem[16384])
+Buffer[2].afterSetMem(mem[16384])
+Buffer[3].afterSetMem(mem[12])
 vaoCreate: 1
 vaoSet: 1, AGVertexArrayObject(list=[AGVertexData(_buffer=Buffer[0], layout=VertexLayout[a_Pos, a_Tex, a_Col, a_Col2]), AGVertexData(_buffer=Buffer[1], layout=VertexLayout[a_TexIndex]), AGVertexData(_buffer=Buffer[2], layout=VertexLayout[a_Wrap])])
 vaoUse: 1

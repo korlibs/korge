@@ -32,10 +32,10 @@ Texture[3].uploadedBitmap(SyncBitmapSource(rgba=true, width=16, height=16), 16, 
 textureCreate: 5
 createTexture():4
 Texture[4].uploadedBitmap(SyncBitmapSource(rgba=true, width=16, height=16), 16, 16)
-Buffer[0].afterSetMem(mem[393216])
-Buffer[1].afterSetMem(mem[32])
-Buffer[2].afterSetMem(mem[32])
-Buffer[3].afterSetMem(mem[49152])
+Buffer[0].afterSetMem(mem[768])
+Buffer[1].afterSetMem(mem[16384])
+Buffer[2].afterSetMem(mem[16384])
+Buffer[3].afterSetMem(mem[96])
 enable: SCISSOR
 scissor: 0, 0, 1280, 720
 vaoCreate: 1
@@ -98,10 +98,10 @@ draw: TRIANGLES, offset=0, count=48, instances=1, indexType=USHORT
 ::draw.vertex[31]: a_Pos[112,128], a_Tex[0,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[3], a_Wrap[0]
 vaoUse: 0
 vaoDelete: 1
-Buffer[0].afterSetMem(mem[393216])
-Buffer[1].afterSetMem(mem[32])
-Buffer[2].afterSetMem(mem[32])
-Buffer[3].afterSetMem(mem[49152])
+Buffer[0].afterSetMem(mem[192])
+Buffer[1].afterSetMem(mem[16384])
+Buffer[2].afterSetMem(mem[16384])
+Buffer[3].afterSetMem(mem[24])
 enable: SCISSOR
 scissor: 0, 0, 1280, 720
 vaoCreate: 1

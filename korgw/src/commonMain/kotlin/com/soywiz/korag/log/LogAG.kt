@@ -205,8 +205,6 @@ open class LogBaseAG(
 
 	inner class LogBuffer(val id: Int, list: AGList) : AGBuffer(this, list) {
 		val logmem: com.soywiz.kmem.Buffer? get() = mem
-		val logmemOffset get() = memOffset
-		val logmemLength get() = memLength
 		override fun afterSetMem() {
             super.afterSetMem()
             log("$this.afterSetMem(mem[${mem!!.size}])", LogBaseAG.Kind.BUFFER)
@@ -319,7 +317,7 @@ open class LogBaseAG(
                         val attribute = vlae.attribute
                         val vm = vlae.buffer.logmem!!
                         val attributeType = attribute.type
-                        val o = (index * vlae.layout.totalSize) + vlae.pos + vlae.buffer.logmemOffset
+                        val o = (index * vlae.layout.totalSize) + vlae.pos
                         val acount = attributeType.elementCount
 
                         val info: List<Number> = when (attributeType.kind) {

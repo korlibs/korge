@@ -137,7 +137,7 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
     open fun createBuffer(): AGBuffer = commandsNoWaitNoExecute { AGBuffer(this, it) }
 
     fun createVertexData(vararg attributes: Attribute, layoutSize: Int? = null) = AGVertexData(createBuffer(), VertexLayout(*attributes, layoutSize = layoutSize))
-    fun createBuffer(data: Buffer, offset: Int = 0, length: Int = data.size - offset) = createBuffer().apply { upload(data, offset, length) }
+    fun createBuffer(data: Buffer) = createBuffer().apply { upload(data) }
     fun createBuffer(data: ShortArray, offset: Int = 0, length: Int = data.size - offset) = createBuffer().apply { upload(data, offset, length) }
     fun createBuffer(data: FloatArray, offset: Int = 0, length: Int = data.size - offset) = createBuffer().apply { upload(data, offset, length) }
 

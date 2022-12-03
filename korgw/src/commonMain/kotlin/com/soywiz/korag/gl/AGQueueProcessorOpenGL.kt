@@ -197,7 +197,7 @@ class AGQueueProcessorOpenGL(
         if (buffer.dirty) {
             val mem = buffer.mem
             if (mem != null) {
-                gl.bufferData(target.toGl(), buffer.memLength, mem, KmlGl.STATIC_DRAW)
+                gl.bufferData(target.toGl(), mem.sizeInBytes, mem, KmlGl.STATIC_DRAW)
             }
         }
     }

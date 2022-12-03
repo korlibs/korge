@@ -153,12 +153,3 @@ inline fun AGList.vertexArrayObjectSet(vao: AGVertexArrayObject, block: () -> Un
         vaoDelete(vaoId)
     }
 }
-
-inline fun AGList.vertexArrayObjectSet(ag: AG, layout: VertexLayout, data: Any, offset: Int = 0, length: Int = -1, block: () -> Unit) {
-    ag.tempVertexBufferPool.alloc { buffer ->
-        buffer.upload(data, offset, length)
-        vertexArrayObjectSet(AGVertexArrayObject(fastArrayListOf(AGVertexData(buffer, layout)))) {
-            block()
-        }
-    }
-}

@@ -1042,76 +1042,33 @@ class AGTextureDrawer(val ag: AG) {
 }
 
 open class AGBuffer constructor(val ag: AG, val list: AGList) {
-    var dirty = false
-    internal var mem: com.soywiz.kmem.Buffer? = null
-    internal var memOffset: Int = 0
-    internal var memLength: Int = 0
-
     var estimatedMemoryUsage: ByteUnits = ByteUnits.fromBytes(0)
+    internal var mem: Buffer? = null
+    internal var agId: Int = list.bufferCreate()
+    var dirty = false
 
     init {
         ag.buffers += this
     }
 
     open fun afterSetMem() {
-        estimatedMemoryUsage = ByteUnits.fromBytes(memLength)
+        estimatedMemoryUsage = ByteUnits.fromBytes(mem?.sizeInBytes ?: 0)
     }
 
-    private fun allocateMem(size: Int): com.soywiz.kmem.Buffer {
-        if (mem == null || mem!!.sizeInBytes < size) {
-            mem = Buffer(size.nextPowerOfTwo)
-        }
-        return mem!!
-        //return Buffer(size)
-    }
-
-    fun upload(data: ByteArray, offset: Int = 0, length: Int = data.size): AGBuffer =
-        _upload(allocateMem(length).also { it.setArrayInt8(0, data, offset, length) }, 0, length)
-
-    fun upload(data: FloatArray, offset: Int = 0, length: Int = data.size): AGBuffer =
-        _upload(allocateMem(length * 4).also { it.setArrayFloat32(0, data, offset, length) }, 0, length * 4)
-
-    fun upload(data: IntArray, offset: Int = 0, length: Int = data.size): AGBuffer =
-        _upload(allocateMem(length * 4).also { it.setArrayInt32(0, data, offset, length) }, 0, length * 4)
-
-    fun upload(data: ShortArray, offset: Int = 0, length: Int = data.size): AGBuffer =
-        _upload(allocateMem(length * 2).also { it.setArrayInt16(0, data, offset, length) }, 0, length * 2)
-
-    fun upload(data: com.soywiz.kmem.Buffer, offset: Int = 0, length: Int = data.size): AGBuffer =
-        _upload(data, offset, length)
-
-    private fun getLen(len: Int, dataSize: Int): Int {
-        return if (len >= 0) len else dataSize
-    }
-
-    fun upload(data: Any, offset: Int = 0, length: Int = -1): AGBuffer {
-        return when (data) {
-            is ByteArray -> upload(data, offset, getLen(length, data.size))
-            is ShortArray -> upload(data, offset, getLen(length, data.size))
-            is IntArray -> upload(data, offset, getLen(length, data.size))
-            is FloatArray -> upload(data, offset, getLen(length, data.size))
-            is com.soywiz.kmem.Buffer -> upload(data, offset, getLen(length, data.size))
-            is IntArrayList -> upload(data.data, offset, getLen(length, data.size))
-            is FloatArrayList -> upload(data.data, offset, getLen(length, data.size))
-            else -> TODO()
-        }
-    }
-
-    private fun _upload(data: com.soywiz.kmem.Buffer, offset: Int = 0, length: Int = data.size): AGBuffer {
+    fun upload(data: ByteArray, offset: Int = 0, length: Int = data.size - offset): AGBuffer = upload(Int8Buffer(data, offset, length).buffer)
+    fun upload(data: FloatArray, offset: Int = 0, length: Int = data.size - offset): AGBuffer = upload(Float32Buffer(data, offset, length).buffer)
+    fun upload(data: IntArray, offset: Int = 0, length: Int = data.size - offset): AGBuffer = upload(Int32Buffer(data, offset, length).buffer)
+    fun upload(data: ShortArray, offset: Int = 0, length: Int = data.size - offset): AGBuffer = upload(Int16Buffer(data, offset, length).buffer)
+    fun upload(data: Buffer, offset: Int, length: Int = data.size - offset): AGBuffer = upload(data.sliceWithSize(offset, length))
+    fun upload(data: Buffer): AGBuffer {
         mem = data
-        memOffset = offset
-        memLength = length
         dirty = true
         afterSetMem()
         return this
     }
 
-    internal var agId: Int = list.bufferCreate()
-
     open fun close(list: AGList) {
         mem = null
-        memOffset = 0
-        memLength = 0
         dirty = true
 
         list.bufferDelete(this.agId)

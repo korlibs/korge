@@ -4,7 +4,7 @@ import com.soywiz.kds.FastArrayList
 import com.soywiz.kds.fastArrayListOf
 import com.soywiz.kds.floatArrayListOf
 import com.soywiz.kds.iterators.fastForEach
-import com.soywiz.kmem.toInt
+import com.soywiz.kmem.*
 import com.soywiz.korag.*
 import com.soywiz.korag.shader.*
 import com.soywiz.korge.internal.KorgeInternal
@@ -95,7 +95,7 @@ class GpuShapeViewCommands {
 
     fun finish() {
         vertices?.let { verticesToDelete += it }
-        vertices = AgCachedBuffer(bufferVertexData)
+        vertices = AgCachedBuffer(Float32Buffer(bufferVertexData.toFloatArray()).buffer)
     }
 
     private val decomposed = Matrix.Transform()

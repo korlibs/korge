@@ -24,10 +24,10 @@ clear(#00000000, 1.0, 0, true, true, true)
 textureCreate: 1
 createTexture():0
 Texture[0].uploadedBitmap(SyncBitmapSource(rgba=true, width=512, height=512), 512, 512)
-Buffer[0].afterSetMem(mem[393216])
-Buffer[1].afterSetMem(mem[4])
-Buffer[2].afterSetMem(mem[4])
-Buffer[3].afterSetMem(mem[49152])
+Buffer[0].afterSetMem(mem[96])
+Buffer[1].afterSetMem(mem[16384])
+Buffer[2].afterSetMem(mem[16384])
+Buffer[3].afterSetMem(mem[12])
 enable: SCISSOR
 scissor: 0, 0, 512, 512
 vaoCreate: 1
@@ -69,10 +69,10 @@ createRenderBuffer():2
 RenderBuffer[2].setSize(512, 512)
 RenderBuffer[2].set()
 clear(#00000000, 1.0, 0, true, true, true)
-Buffer[0].afterSetMem(mem[393216])
-Buffer[1].afterSetMem(mem[4])
-Buffer[2].afterSetMem(mem[4])
-Buffer[3].afterSetMem(mem[49152])
+Buffer[0].afterSetMem(mem[96])
+Buffer[1].afterSetMem(mem[16384])
+Buffer[2].afterSetMem(mem[16384])
+Buffer[3].afterSetMem(mem[12])
 enable: SCISSOR
 scissor: 0, 0, 512, 512
 vaoCreate: 1
@@ -117,10 +117,10 @@ createRenderBuffer():3
 RenderBuffer[3].setSize(512, 512)
 RenderBuffer[3].set()
 clear(#00000000, 1.0, 0, true, true, true)
-Buffer[0].afterSetMem(mem[393216])
-Buffer[1].afterSetMem(mem[4])
-Buffer[2].afterSetMem(mem[4])
-Buffer[3].afterSetMem(mem[49152])
+Buffer[0].afterSetMem(mem[96])
+Buffer[1].afterSetMem(mem[16384])
+Buffer[2].afterSetMem(mem[16384])
+Buffer[3].afterSetMem(mem[12])
 enable: SCISSOR
 scissor: 0, 0, 512, 512
 vaoCreate: 1
@@ -163,10 +163,10 @@ vaoDelete: 1
 RenderBuffer[0].set()
 textureCreate: 4
 createTexture():3
-Buffer[0].afterSetMem(mem[393216])
-Buffer[1].afterSetMem(mem[4])
-Buffer[2].afterSetMem(mem[4])
-Buffer[3].afterSetMem(mem[49152])
+Buffer[0].afterSetMem(mem[96])
+Buffer[1].afterSetMem(mem[16384])
+Buffer[2].afterSetMem(mem[16384])
+Buffer[3].afterSetMem(mem[12])
 enable: SCISSOR
 scissor: 0, -720, 2560, 1440
 vaoCreate: 1
@@ -212,10 +212,10 @@ clear(#00000000, 1.0, 0, true, true, true)
 RenderBuffer[3].setSize(512, 512)
 RenderBuffer[3].set()
 clear(#00000000, 1.0, 0, true, true, true)
-Buffer[0].afterSetMem(mem[393216])
-Buffer[1].afterSetMem(mem[4])
-Buffer[2].afterSetMem(mem[4])
-Buffer[3].afterSetMem(mem[49152])
+Buffer[0].afterSetMem(mem[96])
+Buffer[1].afterSetMem(mem[16384])
+Buffer[2].afterSetMem(mem[16384])
+Buffer[3].afterSetMem(mem[12])
 enable: SCISSOR
 scissor: 0, 0, 512, 512
 vaoCreate: 1
@@ -253,10 +253,10 @@ RenderBuffer[1].set()
 RenderBuffer[2].setSize(512, 512)
 RenderBuffer[2].set()
 clear(#00000000, 1.0, 0, true, true, true)
-Buffer[0].afterSetMem(mem[393216])
-Buffer[1].afterSetMem(mem[4])
-Buffer[2].afterSetMem(mem[4])
-Buffer[3].afterSetMem(mem[49152])
+Buffer[0].afterSetMem(mem[96])
+Buffer[1].afterSetMem(mem[16384])
+Buffer[2].afterSetMem(mem[16384])
+Buffer[3].afterSetMem(mem[12])
 enable: SCISSOR
 scissor: 0, 0, 512, 512
 vaoCreate: 1
@@ -299,10 +299,10 @@ createRenderBuffer():4
 RenderBuffer[4].setSize(512, 512)
 RenderBuffer[4].set()
 clear(#00000000, 1.0, 0, true, true, true)
-Buffer[0].afterSetMem(mem[393216])
-Buffer[1].afterSetMem(mem[4])
-Buffer[2].afterSetMem(mem[4])
-Buffer[3].afterSetMem(mem[49152])
+Buffer[0].afterSetMem(mem[96])
+Buffer[1].afterSetMem(mem[16384])
+Buffer[2].afterSetMem(mem[16384])
+Buffer[3].afterSetMem(mem[12])
 enable: SCISSOR
 scissor: 0, 0, 512, 512
 vaoCreate: 1
@@ -345,10 +345,10 @@ vaoDelete: 1
 RenderBuffer[1].set()
 textureCreate: 5
 createTexture():4
-Buffer[0].afterSetMem(mem[393216])
-Buffer[1].afterSetMem(mem[4])
-Buffer[2].afterSetMem(mem[4])
-Buffer[3].afterSetMem(mem[49152])
+Buffer[0].afterSetMem(mem[96])
+Buffer[1].afterSetMem(mem[16384])
+Buffer[2].afterSetMem(mem[16384])
+Buffer[3].afterSetMem(mem[12])
 disable: SCISSOR
 vaoCreate: 1
 vaoSet: 1, AGVertexArrayObject(list=[AGVertexData(_buffer=Buffer[0], layout=VertexLayout[a_Pos, a_Tex, a_Col, a_Col2]), AGVertexData(_buffer=Buffer[1], layout=VertexLayout[a_TexIndex]), AGVertexData(_buffer=Buffer[2], layout=VertexLayout[a_Wrap])])
@@ -386,10 +386,10 @@ RenderBuffer[0].set()
 RenderBuffer[1].setSize(512, 512)
 RenderBuffer[1].set()
 clear(#00000000, 1.0, 0, true, true, true)
-Buffer[0].afterSetMem(mem[393216])
-Buffer[1].afterSetMem(mem[4])
-Buffer[2].afterSetMem(mem[4])
-Buffer[3].afterSetMem(mem[49152])
+Buffer[0].afterSetMem(mem[96])
+Buffer[1].afterSetMem(mem[16384])
+Buffer[2].afterSetMem(mem[16384])
+Buffer[3].afterSetMem(mem[12])
 enable: SCISSOR
 scissor: 0, 0, 512, 512
 vaoCreate: 1
@@ -427,10 +427,10 @@ RenderBuffer[0].set()
 RenderBuffer[3].setSize(512, 512)
 RenderBuffer[3].set()
 clear(#00000000, 1.0, 0, true, true, true)
-Buffer[0].afterSetMem(mem[393216])
-Buffer[1].afterSetMem(mem[4])
-Buffer[2].afterSetMem(mem[4])
-Buffer[3].afterSetMem(mem[49152])
+Buffer[0].afterSetMem(mem[96])
+Buffer[1].afterSetMem(mem[16384])
+Buffer[2].afterSetMem(mem[16384])
+Buffer[3].afterSetMem(mem[12])
 enable: SCISSOR
 scissor: 0, 0, 512, 512
 vaoCreate: 1
@@ -472,10 +472,10 @@ RenderBuffer[0].set()
 RenderBuffer[4].setSize(512, 512)
 RenderBuffer[4].set()
 clear(#00000000, 1.0, 0, true, true, true)
-Buffer[0].afterSetMem(mem[393216])
-Buffer[1].afterSetMem(mem[4])
-Buffer[2].afterSetMem(mem[4])
-Buffer[3].afterSetMem(mem[49152])
+Buffer[0].afterSetMem(mem[96])
+Buffer[1].afterSetMem(mem[16384])
+Buffer[2].afterSetMem(mem[16384])
+Buffer[3].afterSetMem(mem[12])
 enable: SCISSOR
 scissor: 0, 0, 512, 512
 vaoCreate: 1
@@ -516,10 +516,10 @@ draw: TRIANGLES, offset=0, count=6, instances=1, indexType=USHORT
 vaoUse: 0
 vaoDelete: 1
 RenderBuffer[0].set()
-Buffer[0].afterSetMem(mem[393216])
-Buffer[1].afterSetMem(mem[4])
-Buffer[2].afterSetMem(mem[4])
-Buffer[3].afterSetMem(mem[49152])
+Buffer[0].afterSetMem(mem[96])
+Buffer[1].afterSetMem(mem[16384])
+Buffer[2].afterSetMem(mem[16384])
+Buffer[3].afterSetMem(mem[12])
 enable: SCISSOR
 scissor: 0, -720, 2560, 1440
 vaoCreate: 1
