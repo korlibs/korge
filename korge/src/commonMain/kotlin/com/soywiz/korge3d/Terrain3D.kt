@@ -134,7 +134,7 @@ class Terrain3D(
 
     override fun render(ctx: RenderContext3D) {
         val ag = ctx.ag
-        val indexBuffer = ag.createIndexBuffer()
+        val indexBuffer = ag.createBuffer()
         ctx.useDynamicVertexData(mesh.vertexBuffers) { vertexData ->
             indexBuffer.upload(mesh.indexBuffer)
             Shaders3D.apply {

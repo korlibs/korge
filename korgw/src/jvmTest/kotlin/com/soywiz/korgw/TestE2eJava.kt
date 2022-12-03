@@ -1,6 +1,5 @@
 package com.soywiz.korgw
 
-import com.soywiz.kds.*
 import com.soywiz.korag.*
 import com.soywiz.korev.*
 import com.soywiz.korim.bitmap.*
@@ -40,7 +39,7 @@ class TestE2eJava {
                 gameWindow.onRenderEvent {
                     try {
                         ag.clear(Colors.DARKGREY)
-                        val vertices = ag.createVertexBuffer(floatArrayOf(
+                        val vertices = ag.createBuffer(floatArrayOf(
                             -1f, -1f,
                             -1f, +1f,
                             +1f, +1f

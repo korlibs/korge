@@ -122,10 +122,10 @@ class BatchBuilder2D constructor(
 
 	init { logger.trace { "BatchBuilder2D[3]" } }
 
-	private val vertexBuffer = ag.createVertexBuffer()
-    private val texIndexVertexBuffer = ag.createVertexBuffer()
-    private val texWrapVertexBuffer = ag.createVertexBuffer()
-	private val indexBuffer = ag.createIndexBuffer()
+	private val vertexBuffer = ag.createBuffer()
+    private val texIndexVertexBuffer = ag.createBuffer()
+    private val texWrapVertexBuffer = ag.createBuffer()
+	private val indexBuffer = ag.createBuffer()
 
 	init { logger.trace { "BatchBuilder2D[4]" } }
 

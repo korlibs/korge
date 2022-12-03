@@ -23,9 +23,9 @@ class RenderContext3D() {
     val projCameraMat: Matrix3D = Matrix3D()
     val cameraMat: Matrix3D = Matrix3D()
     val cameraMatInv: Matrix3D = Matrix3D()
-    val dynamicVertexBufferPool = Pool { ag.createVertexBuffer() }
+    val dynamicVertexBufferPool = Pool { ag.createBuffer() }
     val dynamicVertexDataPool = Pool { ag.createVertexData() }
-    val dynamicIndexBufferPool = Pool { ag.createIndexBuffer() }
+    val dynamicIndexBufferPool = Pool { ag.createBuffer() }
     val ambientColor: Vector3D = Vector3D()
     val textureManager by lazy { AgBitmapTextureManager(ag) }
     val bufferManager by lazy { AgBufferManager(ag) }

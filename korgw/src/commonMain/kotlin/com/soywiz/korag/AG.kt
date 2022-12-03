@@ -3,37 +3,25 @@ package com.soywiz.korag
 import com.soywiz.kds.Extra
 import com.soywiz.kds.FastArrayList
 import com.soywiz.kds.FloatArray2
-import com.soywiz.kds.FloatArrayList
-import com.soywiz.kds.IntArrayList
 import com.soywiz.kds.Pool
-import com.soywiz.kds.fastArrayListOf
 import com.soywiz.kds.fastCastTo
-import com.soywiz.kds.iterators.fastForEach
-import com.soywiz.klock.measureTime
 import com.soywiz.klogger.Console
 import com.soywiz.kmem.*
 import com.soywiz.kmem.unit.ByteUnits
 import com.soywiz.korag.annotation.KoragExperimental
-import com.soywiz.korag.gl.fromGl
 import com.soywiz.korag.shader.Attribute
-import com.soywiz.korag.shader.FragmentShader
 import com.soywiz.korag.shader.Program
 import com.soywiz.korag.shader.ProgramConfig
-import com.soywiz.korag.shader.Uniform
 import com.soywiz.korag.shader.VarType
 import com.soywiz.korag.shader.VertexLayout
-import com.soywiz.korag.shader.VertexShader
-import com.soywiz.korag.shader.gl.GlslGenerator
 import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.bitmap.Bitmap8
 import com.soywiz.korim.bitmap.BitmapSlice
 import com.soywiz.korim.bitmap.Bitmaps
-import com.soywiz.korim.bitmap.ForcedTexId
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.color.RGBAPremultiplied
-import com.soywiz.korim.color.RGBAf
 import com.soywiz.korio.annotations.KorIncomplete
 import com.soywiz.korio.async.runBlockingNoJs
 import com.soywiz.korio.lang.*
@@ -42,9 +30,6 @@ import com.soywiz.korma.math.nextMultipleOf
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
-import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.EmptyCoroutineContext
-import kotlin.jvm.JvmInline
 import kotlin.jvm.JvmOverloads
 import kotlin.math.*
 
@@ -150,32 +135,11 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
     fun createTexture(bmp: Bitmap, mipmaps: Boolean = false, premultiplied: Boolean = true): AGTexture = createTexture(premultiplied).upload(bmp, mipmaps)
     open fun createTexture(premultiplied: Boolean, targetKind: AGTextureTargetKind = AGTextureTargetKind.TEXTURE_2D): AGTexture = AGTexture(this, premultiplied, targetKind)
     open fun createBuffer(): AGBuffer = commandsNoWaitNoExecute { AGBuffer(this, it) }
-    @Deprecated("")
-    fun createIndexBuffer() = createBuffer()
-    @Deprecated("")
-    fun createVertexBuffer() = createBuffer()
 
-    fun createVertexData(vararg attributes: Attribute, layoutSize: Int? = null) = AGVertexData(createVertexBuffer(), VertexLayout(*attributes, layoutSize = layoutSize))
-
-    fun createIndexBuffer(data: ShortArray, offset: Int = 0, length: Int = data.size - offset) =
-        createIndexBuffer().apply {
-            upload(data, offset, length)
-        }
-
-    fun createIndexBuffer(data: com.soywiz.kmem.Buffer, offset: Int = 0, length: Int = data.size - offset) =
-        createIndexBuffer().apply {
-            upload(data, offset, length)
-        }
-
-    fun createVertexBuffer(data: FloatArray, offset: Int = 0, length: Int = data.size - offset) =
-        createVertexBuffer().apply {
-            upload(data, offset, length)
-        }
-
-    fun createVertexBuffer(data: com.soywiz.kmem.Buffer, offset: Int = 0, length: Int = data.size - offset) =
-        createVertexBuffer().apply {
-            upload(data, offset, length)
-        }
+    fun createVertexData(vararg attributes: Attribute, layoutSize: Int? = null) = AGVertexData(createBuffer(), VertexLayout(*attributes, layoutSize = layoutSize))
+    fun createBuffer(data: Buffer, offset: Int = 0, length: Int = data.size - offset) = createBuffer().apply { upload(data, offset, length) }
+    fun createBuffer(data: ShortArray, offset: Int = 0, length: Int = data.size - offset) = createBuffer().apply { upload(data, offset, length) }
+    fun createBuffer(data: FloatArray, offset: Int = 0, length: Int = data.size - offset) = createBuffer().apply { upload(data, offset, length) }
 
     fun drawV2(
         vertexData: AGVertexArrayObject,
