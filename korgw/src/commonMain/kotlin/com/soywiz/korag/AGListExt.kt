@@ -121,25 +121,6 @@ inline fun AGList.useProgram(ag: AG, program: Program) {
     useProgram(ag.getProgram(program))
 }
 
-inline fun AGList.uniformsSet(uniforms: AGUniformValues?, block: () -> Unit) {
-    //if (true) {
-        tempUBOs.alloc { ubo ->
-            uboSet(ubo, uniforms ?: AGUniformValues())
-            uboUse(ubo)
-            block()
-        }
-    //} else {
-    //    val ubo = uboCreate()
-    //    try {
-    //        uboSet(ubo, uniforms ?: AGUniformValues())
-    //        uboUse(ubo)
-    //        block()
-    //    } finally {
-    //        uboDelete(ubo)
-    //    }
-    //}
-}
-
 inline fun AGList.vertexArrayObjectSet(vao: AGVertexArrayObject, block: () -> Unit) {
     val vaoId = vaoCreate()
     try {

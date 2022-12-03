@@ -206,15 +206,14 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
             }).use(list)
 
             list.vertexArrayObjectSet(batch.vertexData) {
-                list.uniformsSet(uniforms) {
-                    list.setState(blending, stencilOpFunc, stencilRef, colorMask, renderState)
+                list.uniformsSet(uniforms)
+                list.setState(blending, stencilOpFunc, stencilRef, colorMask, renderState)
 
-                    //val viewport = Buffer(4 * 4)
-                    //gl.getIntegerv(KmlGl.VIEWPORT, viewport)
-                    //println("viewport=${viewport.getAlignedInt32(0)},${viewport.getAlignedInt32(1)},${viewport.getAlignedInt32(2)},${viewport.getAlignedInt32(3)}")
+                //val viewport = Buffer(4 * 4)
+                //gl.getIntegerv(KmlGl.VIEWPORT, viewport)
+                //println("viewport=${viewport.getAlignedInt32(0)},${viewport.getAlignedInt32(1)},${viewport.getAlignedInt32(2)},${viewport.getAlignedInt32(3)}")
 
-                    list.draw(type, vertexCount, offset, instances, if (indices != null) indexType else AGIndexType.NONE, indices)
-                }
+                list.draw(type, vertexCount, offset, instances, if (indices != null) indexType else AGIndexType.NONE, indices)
             }
         }
     }

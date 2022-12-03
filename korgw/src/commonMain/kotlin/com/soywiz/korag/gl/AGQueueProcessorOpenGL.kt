@@ -266,13 +266,6 @@ class AGQueueProcessorOpenGL(
     ///////////////////////////////////////
     // UNIFORMS
     ///////////////////////////////////////
-    override fun uniformsSet(layout: UniformLayout, data: Buffer) {
-        layout.attributes.fastForEach {
-            //currentProgram
-        }
-        TODO()
-    }
-
     override fun depthMask(depth: Boolean) {
         gl.depthMask(depth)
     }
@@ -412,39 +405,7 @@ class AGQueueProcessorOpenGL(
 
     // UBO
 
-    val ubos = arrayListOf<AGUniformValues?>()
-
-    private fun ensureUboIndex(index: Int): Int {
-        while (ubos.size <= index) ubos.add(null)
-        return index
-    }
-
-
-    override fun uboCreate(id: Int) {
-        //println("uboCreate: id=$id")
-    }
-
-    override fun uboDelete(id: Int) {
-        //println("uboDelete: id=$id")
-        if (id < ubos.size) ubos[id] = null
-    }
-
-    override fun uboSet(id: Int, ubo: AGUniformValues) {
-        ubos[ensureUboIndex(id)] = ubo
-    }
-
-    private val TEMP_MAX_MATRICES = 1024
-    val tempBuffer = Buffer.allocDirect(4 * 16 * TEMP_MAX_MATRICES)
-    val tempBufferM2 = Buffer.allocDirect(4 * 2 * 2)
-    val tempBufferM3 = Buffer.allocDirect(4 * 3 * 3)
-    val tempBufferM4 = Buffer.allocDirect(4 * 4 * 4)
-    val tempF32 = tempBuffer.f32
-    private val tempFloats = FloatArray(16 * TEMP_MAX_MATRICES)
-    private val mat3dArray = arrayOf(Matrix3D())
-
-
-    override fun uboUse(id: Int) {
-        val uniforms = ubos[id] ?: return
+    override fun uniformsSet(uniforms: AGUniformValues) {
         val glProgram = currentProgram ?: return
 
         //if (doPrint) println("-----------")

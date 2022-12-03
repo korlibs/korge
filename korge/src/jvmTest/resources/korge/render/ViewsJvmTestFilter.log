@@ -22,8 +22,7 @@ scissor: 0, 0, 64, 64
 vaoCreate: 1
 vaoSet: 1, AGVertexArrayObject(list=[AGVertexData(_buffer=Buffer[0], layout=VertexLayout[a_Pos, a_Tex, a_Col, a_Col2]), AGVertexData(_buffer=Buffer[1], layout=VertexLayout[a_TexIndex]), AGVertexData(_buffer=Buffer[2], layout=VertexLayout[a_Wrap])])
 vaoUse: 1
-uboCreate: 1
-uboSet: 1
+uboSet:
 uboSet.uniform: Uniform(u_ProjMat) = AGValue[TFLOAT]([[0.03125, 0, 0, 0, 0, 0.03125, 0, 0, 0, 0, -1, 0, -1, -1, 0, 1]])
 uboSet.uniform: Uniform(u_ViewMat) = AGValue[TFLOAT]([[1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]])
 uboSet.uniform: Uniform(u_Tex0) = AGValue[TINT]([[0]])
@@ -31,7 +30,6 @@ uboSet.uniform: Uniform(u_Tex1) = AGValue[TINT]([[1]])
 uboSet.uniform: Uniform(u_Tex2) = AGValue[TINT]([[2]])
 uboSet.uniform: Uniform(u_Tex3) = AGValue[TINT]([[3]])
 uboSet.uniform: Uniform(u_OutputPre) = AGValue[TBOOL]([[1]])
-uboUse: 1
 enable: BLEND
 blendEquation: ADD, ADD
 blendFunction: ONE, ONE_MINUS_SOURCE_ALPHA, ONE, ONE_MINUS_SOURCE_ALPHA
@@ -66,7 +64,7 @@ scissor: 0, 0, 64, 64
 vaoCreate: 1
 vaoSet: 1, AGVertexArrayObject(list=[AGVertexData(_buffer=Buffer[0], layout=VertexLayout[a_Pos, a_Tex, a_Col, a_Col2]), AGVertexData(_buffer=Buffer[1], layout=VertexLayout[a_TexIndex]), AGVertexData(_buffer=Buffer[2], layout=VertexLayout[a_Wrap])])
 vaoUse: 1
-uboSet: 1
+uboSet:
 uboSet.uniform: Uniform(u_ProjMat) = AGValue[TFLOAT]([[0.03125, 0, 0, 0, 0, 0.03125, 0, 0, 0, 0, -1, 0, -1, -1, 0, 1]])
 uboSet.uniform: Uniform(u_ViewMat) = AGValue[TFLOAT]([[1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]])
 uboSet.uniform: Uniform(u_Tex0) = AGValue[TINT]([[0]])
@@ -80,7 +78,6 @@ uboSet.uniform: Uniform(u_StdTexDerivates) = AGValue[TFLOAT]([[0.015625, 0.01562
 uboSet.uniform: Uniform(colorMatrix) = AGValue[TFLOAT]([[0.33, 0.33, 0.33, 0, 0.59, 0.59, 0.59, 0, 0.11, 0.11, 0.11, 0, 0, 0, 0, 1]])
 uboSet.uniform: Uniform(blendRatio) = AGValue[TFLOAT]([[1]])
 uboSet.uniform: Uniform(u_filterScale) = AGValue[TFLOAT]([[1]])
-uboUse: 1
 enable: BLEND
 blendEquation: ADD, ADD
 blendFunction: ONE, ONE_MINUS_SOURCE_ALPHA, ONE, ONE_MINUS_SOURCE_ALPHA
@@ -115,7 +112,7 @@ scissor: 0, 0, 64, 64
 vaoCreate: 1
 vaoSet: 1, AGVertexArrayObject(list=[AGVertexData(_buffer=Buffer[0], layout=VertexLayout[a_Pos, a_Tex, a_Col, a_Col2]), AGVertexData(_buffer=Buffer[1], layout=VertexLayout[a_TexIndex]), AGVertexData(_buffer=Buffer[2], layout=VertexLayout[a_Wrap])])
 vaoUse: 1
-uboSet: 1
+uboSet:
 uboSet.uniform: Uniform(u_ProjMat) = AGValue[TFLOAT]([[0.03125, 0, 0, 0, 0, 0.03125, 0, 0, 0, 0, -1, 0, -1, -1, 0, 1]])
 uboSet.uniform: Uniform(u_ViewMat) = AGValue[TFLOAT]([[1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]])
 uboSet.uniform: Uniform(u_Tex0) = AGValue[TINT]([[0]])
@@ -130,7 +127,6 @@ uboSet.uniform: Uniform(weights) = AGValue[TFLOAT]([[-1, -1, -1, -1, 8, -1, -1, 
 uboSet.uniform: Uniform(dist) = AGValue[TFLOAT]([[1]])
 uboSet.uniform: Uniform(apply_alpha) = AGValue[TFLOAT]([[0]])
 uboSet.uniform: Uniform(u_filterScale) = AGValue[TFLOAT]([[1]])
-uboUse: 1
 enable: BLEND
 blendEquation: ADD, ADD
 blendFunction: ONE, ONE_MINUS_SOURCE_ALPHA, ONE, ONE_MINUS_SOURCE_ALPHA
@@ -159,7 +155,7 @@ Buffer[3].afterSetMem(mem[12])
 vaoCreate: 1
 vaoSet: 1, AGVertexArrayObject(list=[AGVertexData(_buffer=Buffer[0], layout=VertexLayout[a_Pos, a_Tex, a_Col, a_Col2]), AGVertexData(_buffer=Buffer[1], layout=VertexLayout[a_TexIndex]), AGVertexData(_buffer=Buffer[2], layout=VertexLayout[a_Wrap])])
 vaoUse: 1
-uboSet: 1
+uboSet:
 uboSet.uniform: Uniform(u_ProjMat) = AGValue[TFLOAT]([[0.0015625, 0, 0, 0, 0, -0.0027777778, 0, 0, 0, 0, -1, 0, -1, 1, 0, 1]])
 uboSet.uniform: Uniform(u_ViewMat) = AGValue[TFLOAT]([[1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]])
 uboSet.uniform: Uniform(u_Tex0) = AGValue[TINT]([[0]])
@@ -167,7 +163,6 @@ uboSet.uniform: Uniform(u_Tex1) = AGValue[TINT]([[1]])
 uboSet.uniform: Uniform(u_Tex2) = AGValue[TINT]([[2]])
 uboSet.uniform: Uniform(u_Tex3) = AGValue[TINT]([[3]])
 uboSet.uniform: Uniform(u_OutputPre) = AGValue[TBOOL]([[0]])
-uboUse: 1
 enable: BLEND
 blendEquation: ADD, ADD
 blendFunction: SOURCE_ALPHA, ONE_MINUS_SOURCE_ALPHA, ONE, ONE_MINUS_SOURCE_ALPHA

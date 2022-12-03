@@ -115,8 +115,7 @@ Buffer[5].afterSetMem(mem[21760])
 vaoCreate: 1
 vaoSet: 1, AGVertexArrayObject(list=[AGVertexData(_buffer=Buffer[5], layout=VertexLayout[a_Pos, a_Dist, a_MaxDist])])
 vaoUse: 1
-uboCreate: 1
-uboSet: 1
+uboSet:
 uboSet.uniform: Uniform(u_ProjMat) = AGValue[TFLOAT]([[0.01, 0, 0, 0, 0, 0.01, 0, 0, 0, 0, -1, 0, -1, -1, 0, 1]])
 uboSet.uniform: Uniform(u_ViewMat) = AGValue[TFLOAT]([[1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]])
 uboSet.uniform: Uniform(u_Tex0) = AGValue[TINT]([[0]])
@@ -125,21 +124,13 @@ uboSet.uniform: Uniform(u_Tex2) = AGValue[TINT]([[2]])
 uboSet.uniform: Uniform(u_Tex3) = AGValue[TINT]([[3]])
 uboSet.uniform: Uniform(u_OutputPre) = AGValue[TBOOL]([[1]])
 uboSet.uniform: Uniform(u_ColorMul) = AGValue[TFLOAT]([[1, 1, 1, 1]])
-uboUse: 1
-uboCreate: 2
 createStencil: 0
 stencilMask: 255
 clear: color=false, depth=false, stencil=true
 disable: SCISSOR
 enable: SCISSOR
 scissor: -788, -1188, 536, 536
-uboSet: 2
-uboSet.uniform: Uniform(u_ProgramType) = AGValue[TFLOAT]([[5]])
-uboSet.uniform: Uniform(u_GlobalPixelScale) = AGValue[TFLOAT]([[2]])
-uboSet.uniform: Uniform(u_Tex) = AGValue[TINT]([[0]])
-uboSet.uniform: Uniform(u_InputPre) = AGValue[TFLOAT]([[0]])
-uboSet.uniform: Uniform(u_OutputPre) = AGValue[TBOOL]([[1]])
-uboUse: 2
+uboSet:
 enable: STENCIL
 stencilFunction: ALWAYS, 0, 255
 stencilOperation: KEEP, KEEP, INCREMENT_WRAP
@@ -158,13 +149,7 @@ draw: TRIANGLE_FAN, offset=0, count=7, instances=1, indexType=null
 ::draw.vertex[4]: a_Pos[90,310], a_Dist[0], a_MaxDist[10000]
 ::draw.vertex[5]: a_Pos[90,190], a_Dist[0], a_MaxDist[10000]
 ::draw.vertex[6]: a_Pos[90,190], a_Dist[0], a_MaxDist[10000]
-uboSet: 2
-uboSet.uniform: Uniform(u_ProgramType) = AGValue[TFLOAT]([[5]])
-uboSet.uniform: Uniform(u_GlobalPixelScale) = AGValue[TFLOAT]([[2]])
-uboSet.uniform: Uniform(u_Tex) = AGValue[TINT]([[0]])
-uboSet.uniform: Uniform(u_InputPre) = AGValue[TFLOAT]([[0]])
-uboSet.uniform: Uniform(u_OutputPre) = AGValue[TBOOL]([[1]])
-uboUse: 2
+uboSet:
 enable: STENCIL
 stencilFunction: ALWAYS, 0, 255
 stencilOperation: KEEP, KEEP, DECREMENT_WRAP
@@ -183,13 +168,7 @@ draw: TRIANGLE_FAN, offset=0, count=7, instances=1, indexType=null
 ::draw.vertex[4]: a_Pos[90,310], a_Dist[0], a_MaxDist[10000]
 ::draw.vertex[5]: a_Pos[90,190], a_Dist[0], a_MaxDist[10000]
 ::draw.vertex[6]: a_Pos[90,190], a_Dist[0], a_MaxDist[10000]
-uboSet: 2
-uboSet.uniform: Uniform(u_ProgramType) = AGValue[TFLOAT]([[5]])
-uboSet.uniform: Uniform(u_GlobalPixelScale) = AGValue[TFLOAT]([[2]])
-uboSet.uniform: Uniform(u_Tex) = AGValue[TINT]([[0]])
-uboSet.uniform: Uniform(u_InputPre) = AGValue[TFLOAT]([[0]])
-uboSet.uniform: Uniform(u_OutputPre) = AGValue[TBOOL]([[1]])
-uboUse: 2
+uboSet:
 enable: STENCIL
 stencilFunction: ALWAYS, 0, 255
 stencilOperation: KEEP, KEEP, INCREMENT_WRAP
@@ -208,13 +187,7 @@ draw: TRIANGLE_FAN, offset=7, count=7, instances=1, indexType=null
 ::draw.vertex[11]: a_Pos[220,240], a_Dist[0], a_MaxDist[10000]
 ::draw.vertex[12]: a_Pos[140,240], a_Dist[0], a_MaxDist[10000]
 ::draw.vertex[13]: a_Pos[140,240], a_Dist[0], a_MaxDist[10000]
-uboSet: 2
-uboSet.uniform: Uniform(u_ProgramType) = AGValue[TFLOAT]([[5]])
-uboSet.uniform: Uniform(u_GlobalPixelScale) = AGValue[TFLOAT]([[2]])
-uboSet.uniform: Uniform(u_Tex) = AGValue[TINT]([[0]])
-uboSet.uniform: Uniform(u_InputPre) = AGValue[TFLOAT]([[0]])
-uboSet.uniform: Uniform(u_OutputPre) = AGValue[TBOOL]([[1]])
-uboUse: 2
+uboSet:
 enable: STENCIL
 stencilFunction: ALWAYS, 0, 255
 stencilOperation: KEEP, KEEP, DECREMENT_WRAP
@@ -234,15 +207,7 @@ draw: TRIANGLE_FAN, offset=7, count=7, instances=1, indexType=null
 ::draw.vertex[12]: a_Pos[140,240], a_Dist[0], a_MaxDist[10000]
 ::draw.vertex[13]: a_Pos[140,240], a_Dist[0], a_MaxDist[10000]
 disable: SCISSOR
-uboSet: 2
-uboSet.uniform: Uniform(u_ProgramType) = AGValue[TFLOAT]([[0]])
-uboSet.uniform: Uniform(u_Color) = AGValue[TFLOAT]([[0, 0, 1, 1]])
-uboSet.uniform: Uniform(u_GlobalAlpha) = AGValue[TFLOAT]([[1]])
-uboSet.uniform: Uniform(u_GlobalPixelScale) = AGValue[TFLOAT]([[2]])
-uboSet.uniform: Uniform(u_Tex) = AGValue[TINT]([[0]])
-uboSet.uniform: Uniform(u_InputPre) = AGValue[TFLOAT]([[0]])
-uboSet.uniform: Uniform(u_OutputPre) = AGValue[TBOOL]([[1]])
-uboUse: 2
+uboSet:
 enable: STENCIL
 stencilFunction: EQUAL, 0, 255
 stencilOperation: KEEP, KEEP, KEEP
@@ -265,15 +230,7 @@ draw: TRIANGLE_STRIP, offset=14, count=10, instances=1, indexType=null
 ::draw.vertex[21]: a_Pos[89.8,310.2], a_Dist[-0.28284273], a_MaxDist[0.28284273]
 ::draw.vertex[22]: a_Pos[90.2,190.2], a_Dist[0.28284273], a_MaxDist[0.28284273]
 ::draw.vertex[23]: a_Pos[89.8,189.8], a_Dist[-0.28284273], a_MaxDist[0.28284273]
-uboSet: 2
-uboSet.uniform: Uniform(u_ProgramType) = AGValue[TFLOAT]([[0]])
-uboSet.uniform: Uniform(u_Color) = AGValue[TFLOAT]([[0, 0, 1, 1]])
-uboSet.uniform: Uniform(u_GlobalAlpha) = AGValue[TFLOAT]([[1]])
-uboSet.uniform: Uniform(u_GlobalPixelScale) = AGValue[TFLOAT]([[2]])
-uboSet.uniform: Uniform(u_Tex) = AGValue[TINT]([[0]])
-uboSet.uniform: Uniform(u_InputPre) = AGValue[TFLOAT]([[0]])
-uboSet.uniform: Uniform(u_OutputPre) = AGValue[TBOOL]([[1]])
-uboUse: 2
+uboSet:
 enable: STENCIL
 stencilFunction: EQUAL, 0, 255
 stencilOperation: KEEP, KEEP, KEEP
@@ -296,15 +253,7 @@ draw: TRIANGLE_STRIP, offset=24, count=10, instances=1, indexType=null
 ::draw.vertex[31]: a_Pos[219.8,240.2], a_Dist[-0.28284273], a_MaxDist[0.28284273]
 ::draw.vertex[32]: a_Pos[139.8,239.8], a_Dist[0.28284273], a_MaxDist[0.28284273]
 ::draw.vertex[33]: a_Pos[140.2,240.2], a_Dist[-0.28284273], a_MaxDist[0.28284273]
-uboSet: 2
-uboSet.uniform: Uniform(u_ProgramType) = AGValue[TFLOAT]([[0]])
-uboSet.uniform: Uniform(u_Color) = AGValue[TFLOAT]([[0, 0, 1, 1]])
-uboSet.uniform: Uniform(u_GlobalAlpha) = AGValue[TFLOAT]([[1]])
-uboSet.uniform: Uniform(u_GlobalPixelScale) = AGValue[TFLOAT]([[2]])
-uboSet.uniform: Uniform(u_Tex) = AGValue[TINT]([[0]])
-uboSet.uniform: Uniform(u_InputPre) = AGValue[TFLOAT]([[0]])
-uboSet.uniform: Uniform(u_OutputPre) = AGValue[TBOOL]([[1]])
-uboUse: 2
+uboSet:
 enable: STENCIL
 stencilFunction: NOT_EQUAL, 0, 255
 stencilOperation: KEEP, KEEP, KEEP
@@ -325,15 +274,7 @@ createStencil: 0
 stencilMask: 255
 clear: color=false, depth=false, stencil=true
 disable: SCISSOR
-uboSet: 2
-uboSet.uniform: Uniform(u_ProgramType) = AGValue[TFLOAT]([[0]])
-uboSet.uniform: Uniform(u_Color) = AGValue[TFLOAT]([[1, 1, 0, 1]])
-uboSet.uniform: Uniform(u_GlobalAlpha) = AGValue[TFLOAT]([[1]])
-uboSet.uniform: Uniform(u_GlobalPixelScale) = AGValue[TFLOAT]([[2]])
-uboSet.uniform: Uniform(u_Tex) = AGValue[TINT]([[0]])
-uboSet.uniform: Uniform(u_InputPre) = AGValue[TFLOAT]([[0]])
-uboSet.uniform: Uniform(u_OutputPre) = AGValue[TBOOL]([[1]])
-uboUse: 2
+uboSet:
 disable: STENCIL
 stencilMask: 0
 colorMask: true, true, true, true
@@ -902,15 +843,7 @@ draw: TRIANGLE_STRIP, offset=38, count=558, instances=1, indexType=null
 ::draw.vertex[593]: a_Pos[240,300], a_Dist[40], a_MaxDist[40]
 ::draw.vertex[594]: a_Pos[200,300], a_Dist[0], a_MaxDist[40]
 ::draw.vertex[595]: a_Pos[240,300], a_Dist[40], a_MaxDist[40]
-uboSet: 2
-uboSet.uniform: Uniform(u_ProgramType) = AGValue[TFLOAT]([[0]])
-uboSet.uniform: Uniform(u_Color) = AGValue[TFLOAT]([[1, 0, 0, 1]])
-uboSet.uniform: Uniform(u_GlobalAlpha) = AGValue[TFLOAT]([[1]])
-uboSet.uniform: Uniform(u_GlobalPixelScale) = AGValue[TFLOAT]([[2]])
-uboSet.uniform: Uniform(u_Tex) = AGValue[TINT]([[0]])
-uboSet.uniform: Uniform(u_InputPre) = AGValue[TFLOAT]([[0]])
-uboSet.uniform: Uniform(u_OutputPre) = AGValue[TBOOL]([[1]])
-uboUse: 2
+uboSet:
 disable: STENCIL
 stencilMask: 0
 colorMask: true, true, true, true
@@ -940,15 +873,7 @@ draw: TRIANGLE_STRIP, offset=596, count=16, instances=1, indexType=null
 textureCreate: 1
 createTexture():0
 Texture[0].uploadedBitmap(SyncBitmapSource(rgba=true, width=512, height=512), 512, 512)
-uboSet: 2
-uboSet.uniform: Uniform(u_ProgramType) = AGValue[TFLOAT]([[1]])
-uboSet.uniform: Uniform(u_Transform) = AGValue[TFLOAT]([[0.0078125, 0, 0, 0, 0, 0.0078125, 0, 0, 0, 0, 1, 0, -0.87890625, -0.25390625, 0, 1]])
-uboSet.uniform: Uniform(u_GlobalAlpha) = AGValue[TFLOAT]([[0.75]])
-uboSet.uniform: Uniform(u_Tex) = AGValue[TINT]([[0]])
-uboSet.uniform: Uniform(u_GlobalPixelScale) = AGValue[TFLOAT]([[2]])
-uboSet.uniform: Uniform(u_InputPre) = AGValue[TFLOAT]([[0]])
-uboSet.uniform: Uniform(u_OutputPre) = AGValue[TBOOL]([[1]])
-uboUse: 2
+uboSet:
 disable: STENCIL
 stencilMask: 0
 colorMask: true, true, true, true
@@ -973,13 +898,7 @@ draw: TRIANGLE_STRIP, offset=612, count=12, instances=1, indexType=null
 ::draw.vertex[623]: a_Pos[100,20], a_Dist[141.42136], a_MaxDist[141.42136]
 enable: SCISSOR
 scissor: -1900, -780, 808, 800
-uboSet: 2
-uboSet.uniform: Uniform(u_ProgramType) = AGValue[TFLOAT]([[5]])
-uboSet.uniform: Uniform(u_GlobalPixelScale) = AGValue[TFLOAT]([[2]])
-uboSet.uniform: Uniform(u_Tex) = AGValue[TINT]([[-2147483648]])
-uboSet.uniform: Uniform(u_InputPre) = AGValue[TFLOAT]([[0]])
-uboSet.uniform: Uniform(u_OutputPre) = AGValue[TBOOL]([[1]])
-uboUse: 2
+uboSet:
 enable: STENCIL
 stencilFunction: ALWAYS, 0, 255
 stencilOperation: KEEP, KEEP, INCREMENT_WRAP
@@ -998,13 +917,7 @@ draw: TRIANGLE_FAN, offset=624, count=7, instances=1, indexType=null
 ::draw.vertex[628]: a_Pos[300,220], a_Dist[0], a_MaxDist[10000]
 ::draw.vertex[629]: a_Pos[300,20], a_Dist[0], a_MaxDist[10000]
 ::draw.vertex[630]: a_Pos[300,20], a_Dist[0], a_MaxDist[10000]
-uboSet: 2
-uboSet.uniform: Uniform(u_ProgramType) = AGValue[TFLOAT]([[5]])
-uboSet.uniform: Uniform(u_GlobalPixelScale) = AGValue[TFLOAT]([[2]])
-uboSet.uniform: Uniform(u_Tex) = AGValue[TINT]([[-2147483648]])
-uboSet.uniform: Uniform(u_InputPre) = AGValue[TFLOAT]([[0]])
-uboSet.uniform: Uniform(u_OutputPre) = AGValue[TBOOL]([[1]])
-uboUse: 2
+uboSet:
 enable: STENCIL
 stencilFunction: ALWAYS, 0, 255
 stencilOperation: KEEP, KEEP, DECREMENT_WRAP
@@ -1023,13 +936,7 @@ draw: TRIANGLE_FAN, offset=624, count=7, instances=1, indexType=null
 ::draw.vertex[628]: a_Pos[300,220], a_Dist[0], a_MaxDist[10000]
 ::draw.vertex[629]: a_Pos[300,20], a_Dist[0], a_MaxDist[10000]
 ::draw.vertex[630]: a_Pos[300,20], a_Dist[0], a_MaxDist[10000]
-uboSet: 2
-uboSet.uniform: Uniform(u_ProgramType) = AGValue[TFLOAT]([[5]])
-uboSet.uniform: Uniform(u_GlobalPixelScale) = AGValue[TFLOAT]([[2]])
-uboSet.uniform: Uniform(u_Tex) = AGValue[TINT]([[-2147483648]])
-uboSet.uniform: Uniform(u_InputPre) = AGValue[TFLOAT]([[0]])
-uboSet.uniform: Uniform(u_OutputPre) = AGValue[TBOOL]([[1]])
-uboUse: 2
+uboSet:
 enable: STENCIL
 stencilFunction: NOT_EQUAL, 0, 0
 stencilOperation: KEEP, KEEP, INVERT
@@ -1742,13 +1649,7 @@ draw: TRIANGLE_FAN, offset=631, count=701, instances=1, indexType=null
 ::draw.vertex[1329]: a_Pos[500,120], a_Dist[0], a_MaxDist[10000]
 ::draw.vertex[1330]: a_Pos[500,120], a_Dist[0], a_MaxDist[10000]
 ::draw.vertex[1331]: a_Pos[100,20], a_Dist[0], a_MaxDist[10000]
-uboSet: 2
-uboSet.uniform: Uniform(u_ProgramType) = AGValue[TFLOAT]([[5]])
-uboSet.uniform: Uniform(u_GlobalPixelScale) = AGValue[TFLOAT]([[2]])
-uboSet.uniform: Uniform(u_Tex) = AGValue[TINT]([[-2147483648]])
-uboSet.uniform: Uniform(u_InputPre) = AGValue[TFLOAT]([[0]])
-uboSet.uniform: Uniform(u_OutputPre) = AGValue[TBOOL]([[1]])
-uboUse: 2
+uboSet:
 enable: STENCIL
 stencilFunction: ALWAYS, 0, 255
 stencilOperation: KEEP, KEEP, INVERT
@@ -2464,17 +2365,7 @@ draw: TRIANGLE_FAN, offset=631, count=701, instances=1, indexType=null
 textureCreate: 2
 createTexture():1
 Texture[1].uploadedBitmap(SyncBitmapSource(rgba=true, width=256, height=1), 256, 1)
-uboSet: 2
-uboSet.uniform: Uniform(u_ProgramType) = AGValue[TFLOAT]([[2]])
-uboSet.uniform: Uniform(u_Transform) = AGValue[TFLOAT]([[0.005, -0.005, 0, 0, 0.005, 0.005, 0, 0, 0, 0, 1, 0, -2.1, 1.9, 0, 1]])
-uboSet.uniform: Uniform(u_Gradientp0) = AGValue[TFLOAT]([[0, 0, 0]])
-uboSet.uniform: Uniform(u_Gradientp1) = AGValue[TFLOAT]([[100, 100, 0]])
-uboSet.uniform: Uniform(u_GlobalAlpha) = AGValue[TFLOAT]([[0.9]])
-uboSet.uniform: Uniform(u_Tex) = AGValue[TINT]([[0]])
-uboSet.uniform: Uniform(u_GlobalPixelScale) = AGValue[TFLOAT]([[2]])
-uboSet.uniform: Uniform(u_InputPre) = AGValue[TFLOAT]([[0]])
-uboSet.uniform: Uniform(u_OutputPre) = AGValue[TBOOL]([[1]])
-uboUse: 2
+uboSet:
 enable: STENCIL
 stencilFunction: NOT_EQUAL, 3, 255
 stencilOperation: KEEP, KEEP, KEEP
@@ -2498,17 +2389,7 @@ disable: SCISSOR
 textureCreate: 3
 createTexture():2
 Texture[2].uploadedBitmap(SyncBitmapSource(rgba=true, width=256, height=1), 256, 1)
-uboSet: 2
-uboSet.uniform: Uniform(u_ProgramType) = AGValue[TFLOAT]([[3]])
-uboSet.uniform: Uniform(u_Transform) = AGValue[TFLOAT]([[0.5, 0, 0, 0, 0, 0.5, 0, 0, 0, 0, 1, 0, -50, -10, 0, 1]])
-uboSet.uniform: Uniform(u_Gradientp0) = AGValue[TFLOAT]([[150, 150, 30]])
-uboSet.uniform: Uniform(u_Gradientp1) = AGValue[TFLOAT]([[130, 180, 70]])
-uboSet.uniform: Uniform(u_GlobalAlpha) = AGValue[TFLOAT]([[0.9]])
-uboSet.uniform: Uniform(u_Tex) = AGValue[TINT]([[0]])
-uboSet.uniform: Uniform(u_GlobalPixelScale) = AGValue[TFLOAT]([[2]])
-uboSet.uniform: Uniform(u_InputPre) = AGValue[TFLOAT]([[0]])
-uboSet.uniform: Uniform(u_OutputPre) = AGValue[TBOOL]([[1]])
-uboUse: 2
+uboSet:
 disable: STENCIL
 stencilMask: 0
 colorMask: true, true, true, true
@@ -2534,7 +2415,7 @@ draw: TRIANGLE_STRIP, offset=1336, count=12, instances=1, indexType=null
 textureCreate: 4
 createTexture():3
 Texture[3].uploadedBitmap(SyncBitmapSource(rgba=true, width=256, height=1), 256, 1)
-uboSet: 2
+uboSet:
 uboSet.uniform: Uniform(u_ProgramType) = AGValue[TFLOAT]([[4]])
 uboSet.uniform: Uniform(u_Transform) = AGValue[TFLOAT]([[0.5, 0, 0, 0, 0, 0.5, 0, 0, 0, 0, 1, 0, -50, -10, 0, 1]])
 uboSet.uniform: Uniform(u_Gradientp0) = AGValue[TFLOAT]([[175, 100, 0]])
@@ -2544,7 +2425,6 @@ uboSet.uniform: Uniform(u_Tex) = AGValue[TINT]([[0]])
 uboSet.uniform: Uniform(u_GlobalPixelScale) = AGValue[TFLOAT]([[2]])
 uboSet.uniform: Uniform(u_InputPre) = AGValue[TFLOAT]([[0]])
 uboSet.uniform: Uniform(u_OutputPre) = AGValue[TBOOL]([[1]])
-uboUse: 2
 disable: STENCIL
 stencilMask: 0
 colorMask: true, true, true, true
@@ -2567,7 +2447,6 @@ draw: TRIANGLE_STRIP, offset=1348, count=12, instances=1, indexType=null
 ::draw.vertex[1357]: a_Pos[400,170], a_Dist[70.71068], a_MaxDist[70.71068]
 ::draw.vertex[1358]: a_Pos[450,220], a_Dist[0], a_MaxDist[70.71068]
 ::draw.vertex[1359]: a_Pos[400,170], a_Dist[70.71068], a_MaxDist[70.71068]
-uboDelete: 2
 vaoUse: 0
 vaoDelete: 1
 disable: CULL_FACE
@@ -2671,7 +2550,7 @@ programUse: 2
 vaoCreate: 1
 vaoSet: 1, AGVertexArrayObject(list=[AGVertexData(_buffer=Buffer[0], layout=VertexLayout[a_Pos, a_Tex, a_Col, a_Col2]), AGVertexData(_buffer=Buffer[1], layout=VertexLayout[a_TexIndex]), AGVertexData(_buffer=Buffer[2], layout=VertexLayout[a_Wrap])])
 vaoUse: 1
-uboSet: 1
+uboSet:
 uboSet.uniform: Uniform(u_ProjMat) = AGValue[TFLOAT]([[0.02, 0, 0, 0, 0, -0.02, 0, 0, 0, 0, -1, 0, -1, 1, 0, 1]])
 uboSet.uniform: Uniform(u_ViewMat) = AGValue[TFLOAT]([[1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]])
 uboSet.uniform: Uniform(u_Tex0) = AGValue[TINT]([[0]])
@@ -2680,7 +2559,6 @@ uboSet.uniform: Uniform(u_Tex2) = AGValue[TINT]([[2]])
 uboSet.uniform: Uniform(u_Tex3) = AGValue[TINT]([[3]])
 uboSet.uniform: Uniform(u_OutputPre) = AGValue[TBOOL]([[0]])
 uboSet.uniform: Uniform(u_ColorMul) = AGValue[TFLOAT]([[0, 0, 0, 0]])
-uboUse: 1
 enable: BLEND
 blendEquation: ADD, ADD
 blendFunction: SOURCE_ALPHA, ONE_MINUS_SOURCE_ALPHA, ONE, ONE_MINUS_SOURCE_ALPHA

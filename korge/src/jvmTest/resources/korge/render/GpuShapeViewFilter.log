@@ -1,5 +1,4 @@
-uboCreate: 1
-uboSet: 1
+uboSet:
 uboSet.uniform: Uniform(u_ProjMat) = AGValue[TFLOAT]([[0.01, 0, 0, 0, 0, 0.01, 0, 0, 0, 0, -1, 0, -1, -1, 0, 1]])
 uboSet.uniform: Uniform(u_ViewMat) = AGValue[TFLOAT]([[0.8333333, 0, 0, 0, 0, 0.8333333, 0, 0, 0, 0, 1, 0, -100, -100, 0, 1]])
 uboSet.uniform: Uniform(u_Tex0) = AGValue[TINT]([[0]])
@@ -7,8 +6,7 @@ uboSet.uniform: Uniform(u_Tex1) = AGValue[TINT]([[1]])
 uboSet.uniform: Uniform(u_Tex2) = AGValue[TINT]([[2]])
 uboSet.uniform: Uniform(u_Tex3) = AGValue[TINT]([[3]])
 uboSet.uniform: Uniform(u_OutputPre) = AGValue[TBOOL]([[1]])
-uboUse: 1
-uboSet: 1
+uboSet:
 uboSet.uniform: Uniform(u_ProjMat) = AGValue[TFLOAT]([[0.007751938, 0, 0, 0, 0, 0.00877193, 0, 0, 0, 0, -1, 0, -1, -1, 0, 1]])
 uboSet.uniform: Uniform(u_ViewMat) = AGValue[TFLOAT]([[1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]])
 uboSet.uniform: Uniform(u_Tex0) = AGValue[TINT]([[0]])
@@ -24,8 +22,7 @@ uboSet.uniform: Uniform(u_radius) = AGValue[TFLOAT]([[13.316172]])
 uboSet.uniform: Uniform(u_constant1) = AGValue[TFLOAT]([[0.09292257]])
 uboSet.uniform: Uniform(u_constant2) = AGValue[TFLOAT]([[0.027036782]])
 uboSet.uniform: Uniform(u_direction) = AGValue[TFLOAT]([[1, 0]])
-uboUse: 1
-uboSet: 1
+uboSet:
 uboSet.uniform: Uniform(u_ProjMat) = AGValue[TFLOAT]([[0.0076923077, 0, 0, 0, 0, 0.0078125, 0, 0, 0, 0, -1, 0, -1, -1, 0, 1]])
 uboSet.uniform: Uniform(u_ViewMat) = AGValue[TFLOAT]([[1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]])
 uboSet.uniform: Uniform(u_Tex0) = AGValue[TINT]([[0]])
@@ -41,8 +38,7 @@ uboSet.uniform: Uniform(u_radius) = AGValue[TFLOAT]([[13.316172]])
 uboSet.uniform: Uniform(u_constant1) = AGValue[TFLOAT]([[0.09292257]])
 uboSet.uniform: Uniform(u_constant2) = AGValue[TFLOAT]([[0.027036782]])
 uboSet.uniform: Uniform(u_direction) = AGValue[TFLOAT]([[0, 1]])
-uboUse: 1
-uboSet: 1
+uboSet:
 uboSet.uniform: Uniform(u_ProjMat) = AGValue[TFLOAT]([[0.008695652, 0, 0, 0, 0, 0.00877193, 0, 0, 0, 0, -1, 0, -1, -1, 0, 1]])
 uboSet.uniform: Uniform(u_ViewMat) = AGValue[TFLOAT]([[1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]])
 uboSet.uniform: Uniform(u_Tex0) = AGValue[TINT]([[0]])
@@ -50,8 +46,7 @@ uboSet.uniform: Uniform(u_Tex1) = AGValue[TINT]([[1]])
 uboSet.uniform: Uniform(u_Tex2) = AGValue[TINT]([[2]])
 uboSet.uniform: Uniform(u_Tex3) = AGValue[TINT]([[3]])
 uboSet.uniform: Uniform(u_OutputPre) = AGValue[TBOOL]([[1]])
-uboUse: 1
-uboSet: 1
+uboSet:
 uboSet.uniform: Uniform(u_ProjMat) = AGValue[TFLOAT]([[0.02, 0, 0, 0, 0, -0.02, 0, 0, 0, 0, -1, 0, -1, 1, 0, 1]])
 uboSet.uniform: Uniform(u_ViewMat) = AGValue[TFLOAT]([[1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]])
 uboSet.uniform: Uniform(u_Tex0) = AGValue[TINT]([[0]])
@@ -59,8 +54,7 @@ uboSet.uniform: Uniform(u_Tex1) = AGValue[TINT]([[1]])
 uboSet.uniform: Uniform(u_Tex2) = AGValue[TINT]([[2]])
 uboSet.uniform: Uniform(u_Tex3) = AGValue[TINT]([[3]])
 uboSet.uniform: Uniform(u_OutputPre) = AGValue[TBOOL]([[0]])
-uboUse: 1
-uboSet: 1
+uboSet:
 uboSet.uniform: Uniform(u_ProjMat) = AGValue[TFLOAT]([[0.02, 0, 0, 0, 0, -0.02, 0, 0, 0, 0, -1, 0, -1, 1, 0, 1]])
 uboSet.uniform: Uniform(u_ViewMat) = AGValue[TFLOAT]([[1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]])
 uboSet.uniform: Uniform(u_Tex0) = AGValue[TINT]([[0]])
@@ -68,4 +62,3 @@ uboSet.uniform: Uniform(u_Tex1) = AGValue[TINT]([[1]])
 uboSet.uniform: Uniform(u_Tex2) = AGValue[TINT]([[2]])
 uboSet.uniform: Uniform(u_Tex3) = AGValue[TINT]([[3]])
 uboSet.uniform: Uniform(u_OutputPre) = AGValue[TBOOL]([[0]])
-uboUse: 1

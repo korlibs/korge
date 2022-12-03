@@ -342,16 +342,13 @@ open class LogBaseAG(
             }
         }
 
-        override fun uniformsSet(layout: UniformLayout, data: com.soywiz.kmem.Buffer) = log("uniformsSet: $layout", Kind.UNIFORM)
-        override fun uboCreate(id: Int) = log("uboCreate: $id", Kind.UNIFORM)
-        override fun uboDelete(id: Int) = log("uboDelete: $id", Kind.UNIFORM)
-        override fun uboSet(id: Int, ubo: AGUniformValues) {
-            log("uboSet: $id", Kind.UNIFORM)
+        override fun uniformsSet(ubo: AGUniformValues) {
+            log("uboSet:", Kind.UNIFORM)
             ubo.fastForEach { uniformValue ->
                 log("uboSet.uniform: ${uniformValue.uniform} = ${AGUniformValues.valueToString(uniformValue)}", Kind.UNIFORM_VALUES)
             }
         }
-        override fun uboUse(id: Int) = log("uboUse: $id", Kind.UNIFORM)
+
         override fun cullFace(face: AGCullFace) = log("cullFace: $face", Kind.OTHER)
         override fun frontFace(face: AGFrontFace) = log("frontFace: $face", Kind.OTHER)
         override fun blendEquation(rgb: AGBlendEquation, a: AGBlendEquation) = log("blendEquation: $rgb, $a", Kind.OTHER)

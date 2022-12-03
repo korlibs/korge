@@ -106,8 +106,7 @@ programUse: 1
 vaoCreate: 1
 vaoSet: 1, AGVertexArrayObject(list=[AGVertexData(_buffer=Buffer[0], layout=VertexLayout[a_Pos, a_Tex, a_Col, a_Col2]), AGVertexData(_buffer=Buffer[1], layout=VertexLayout[a_TexIndex]), AGVertexData(_buffer=Buffer[2], layout=VertexLayout[a_Wrap])])
 vaoUse: 1
-uboCreate: 1
-uboSet: 1
+uboSet:
 uboSet.uniform: Uniform(u_ProjMat) = AGValue[TFLOAT]([[0.02, 0, 0, 0, 0, -0.02, 0, 0, 0, 0, -1, 0, -1, 1, 0, 1]])
 uboSet.uniform: Uniform(u_ViewMat) = AGValue[TFLOAT]([[1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]])
 uboSet.uniform: Uniform(u_Tex0) = AGValue[TINT]([[0]])
@@ -115,7 +114,6 @@ uboSet.uniform: Uniform(u_Tex1) = AGValue[TINT]([[1]])
 uboSet.uniform: Uniform(u_Tex2) = AGValue[TINT]([[2]])
 uboSet.uniform: Uniform(u_Tex3) = AGValue[TINT]([[3]])
 uboSet.uniform: Uniform(u_OutputPre) = AGValue[TBOOL]([[0]])
-uboUse: 1
 enable: BLEND
 blendEquation: ADD, ADD
 blendFunction: SOURCE_ALPHA, ONE_MINUS_SOURCE_ALPHA, ONE, ONE_MINUS_SOURCE_ALPHA

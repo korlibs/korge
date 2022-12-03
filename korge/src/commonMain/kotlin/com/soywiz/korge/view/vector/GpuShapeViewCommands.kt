@@ -149,74 +149,68 @@ class GpuShapeViewCommands {
                                 )
                             )
                         ) {
-                            list.uniformsSet(batcher.uniforms) {
-                                val ubo = list.uboCreate()
-                                try {
-                                    commands.fastForEach { cmd ->
-                                        when (cmd) {
-                                            //is FinishCommand -> list.flush()
-                                            is ScissorCommand -> {
-                                                val rect = cmd.scissor?.clone()
-                                                //rect.normalize()
-                                                // @TODO: Do scissor intersection
-                                                if (applyScissor) {
-                                                }
-                                                if (rect != null) {
-                                                    rect.applyTransform(globalMatrix)
-                                                    list.setScissorState(ag, AGScissor(rect))
-                                                } else {
-                                                    list.setScissorState(ag, AGScissor.NIL)
-                                                }
-                                            }
-                                            is ClearCommand -> {
-                                                list.clearStencil(cmd.i)
-                                                list.stencilMask(0xFF)
-                                                list.clear(false, false, true)
-                                            }
-                                            is ShapeCommand -> {
-                                                val paintShader = cmd.paintShader
-                                                //println("cmd.vertexCount=${cmd.vertexCount}, cmd.vertexIndex=${cmd.vertexIndex}, paintShader=$paintShader")
-                                                batcher.simulateBatchStats(cmd.vertexCount)
-                                                //println(paintShader.uniforms)
-                                                tempUniforms.clear()
-                                                paintShader?.uniforms?.let { resolve(ctx, it, paintShader.texUniforms) }
-                                                tempUniforms.put(paintShader?.uniforms)
-                                                val pixelScale = decomposed.scaleAvg / ctx.bp.globalToWindowScaleAvg
-                                                //val pixelScale = 1f
-                                                tempUniforms[GpuShapeViewPrograms.u_GlobalPixelScale] = pixelScale
-
-                                                val texUnit = tempUniforms[DefaultShaders.u_Tex] as? AGTextureUnit?
-                                                val premultiplied = texUnit?.texture?.premultiplied ?: false
-                                                //val premultiplied = false
-                                                val outPremultiplied = ag.isRenderingToTexture
-
-                                                //println("outPremultiplied=$outPremultiplied, blendMode=${cmd.blendMode?.name}")
-
-                                                tempUniforms[GpuShapeViewPrograms.u_InputPre] = premultiplied.toInt().toFloat()
-                                                tempUniforms[BatchBuilder2D.u_OutputPre] = outPremultiplied
-
-                                                list.uboSet(ubo, tempUniforms)
-                                                list.uboUse(ubo)
-
-                                                list.setStencilState(cmd.stencilOpFunc, cmd.stencilRef)
-                                                list.setColorMaskState(cmd.colorMask)
-                                                list.setBlendingState((cmd.blendMode ?: BlendMode.NORMAL)?.factors(outPremultiplied))
-                                                if (cmd.cullFace != null) {
-                                                    list.enableCullFace()
-                                                    list.cullFace(cmd.cullFace!!)
-                                                } else {
-                                                    list.disableCullFace()
-                                                }
-                                                //println(ctx.batch.viewMat2D)
-                                                list.draw(cmd.drawType, cmd.vertexCount, cmd.vertexIndex)
-                                            }
+                            list.uniformsSet(batcher.uniforms)
+                            commands.fastForEach { cmd ->
+                                when (cmd) {
+                                    //is FinishCommand -> list.flush()
+                                    is ScissorCommand -> {
+                                        val rect = cmd.scissor?.clone()
+                                        //rect.normalize()
+                                        // @TODO: Do scissor intersection
+                                        if (applyScissor) {
+                                        }
+                                        if (rect != null) {
+                                            rect.applyTransform(globalMatrix)
+                                            list.setScissorState(ag, AGScissor(rect))
+                                        } else {
+                                            list.setScissorState(ag, AGScissor.NIL)
                                         }
                                     }
-                                } finally {
-                                    list.uboDelete(ubo)
-                                }
 
+                                    is ClearCommand -> {
+                                        list.clearStencil(cmd.i)
+                                        list.stencilMask(0xFF)
+                                        list.clear(false, false, true)
+                                    }
+
+                                    is ShapeCommand -> {
+                                        val paintShader = cmd.paintShader
+                                        //println("cmd.vertexCount=${cmd.vertexCount}, cmd.vertexIndex=${cmd.vertexIndex}, paintShader=$paintShader")
+                                        batcher.simulateBatchStats(cmd.vertexCount)
+                                        //println(paintShader.uniforms)
+                                        tempUniforms.clear()
+                                        paintShader?.uniforms?.let { resolve(ctx, it, paintShader.texUniforms) }
+                                        tempUniforms.put(paintShader?.uniforms)
+                                        val pixelScale = decomposed.scaleAvg / ctx.bp.globalToWindowScaleAvg
+                                        //val pixelScale = 1f
+                                        tempUniforms[GpuShapeViewPrograms.u_GlobalPixelScale] = pixelScale
+
+                                        val texUnit = tempUniforms[DefaultShaders.u_Tex] as? AGTextureUnit?
+                                        val premultiplied = texUnit?.texture?.premultiplied ?: false
+                                        //val premultiplied = false
+                                        val outPremultiplied = ag.isRenderingToTexture
+
+                                        //println("outPremultiplied=$outPremultiplied, blendMode=${cmd.blendMode?.name}")
+
+                                        tempUniforms[GpuShapeViewPrograms.u_InputPre] = premultiplied.toInt().toFloat()
+                                        tempUniforms[BatchBuilder2D.u_OutputPre] = outPremultiplied
+
+                                        list.uniformsSet(tempUniforms)
+                                        list.setStencilState(cmd.stencilOpFunc, cmd.stencilRef)
+                                        list.setColorMaskState(cmd.colorMask)
+                                        list.setBlendingState((cmd.blendMode ?: BlendMode.NORMAL)?.factors(outPremultiplied))
+                                        if (cmd.cullFace != null) {
+                                            list.enableCullFace()
+                                            list.cullFace(cmd.cullFace!!)
+                                        } else {
+                                            list.disableCullFace()
+                                        }
+                                        //println(ctx.batch.viewMat2D)
+                                        list.draw(cmd.drawType, cmd.vertexCount, cmd.vertexIndex)
+                                    }
+                                }
                             }
+
                         }
                         //list.finish()
 

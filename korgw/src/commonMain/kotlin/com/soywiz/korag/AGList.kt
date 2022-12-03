@@ -12,8 +12,6 @@ import com.soywiz.kmem.*
 import com.soywiz.korag.annotation.KoragExperimental
 import com.soywiz.korag.shader.Program
 import com.soywiz.korag.shader.ProgramConfig
-import com.soywiz.korag.shader.UniformLayout
-import com.soywiz.korio.annotations.KorIncomplete
 import com.soywiz.korio.annotations.KorInternal
 import com.soywiz.korma.geom.Rectangle
 import com.soywiz.krypto.encoding.hex
@@ -62,8 +60,6 @@ class AGGlobalState(val checked: Boolean = false) {
     internal var renderThreadId: Long = -1L
     internal var renderThreadName: String? = null
     internal val vaoIndices = AGManagedObjectPool("vao", checked = checked)
-    internal val uboIndices = AGManagedObjectPool("ubo", checked = checked)
-    internal val bufferIndices = AGManagedObjectPool("buffer", checked = checked)
     internal val programIndices = AGManagedObjectPool("program", checked = checked)
     internal val textureIndices = AGManagedObjectPool("texture", checked = checked)
     internal val frameBufferIndices = AGManagedObjectPool("frame", checked = checked)
@@ -189,9 +185,6 @@ class AGList(val globalState: AGGlobalState) {
         }
     }
 
-    val tempUBOs = Pool { uboCreate() }
-    private val uniformValuesPool = Pool { AGUniformValues() }
-
     @KorInternal
     fun AGQueueProcessor.processBlocking(maxCount: Int = 1): Boolean {
         var pending = maxCount
@@ -270,7 +263,6 @@ class AGList(val globalState: AGGlobalState) {
                     AGReadKind(data.extract4(0))
                 )
                 // Uniforms
-                CMD_UNIFORMS_SET -> processor.uniformsSet(readExtra(), readExtra())
                 CMD_DEPTH_MASK -> processor.depthMask(data.extract(0))
                 CMD_DEPTH_RANGE -> processor.depthRange(readFloat(), readFloat())
                 CMD_SYNC -> readExtra<CompletableDeferred<Unit>>().complete(Unit)
@@ -304,20 +296,7 @@ class AGList(val globalState: AGGlobalState) {
                 CMD_VAO_SET -> processor.vaoSet(data.extract16(0), AGVertexArrayObject(readExtra<FastArrayList<AGVertexData>>()))
                 CMD_VAO_USE -> processor.vaoUse(data.extract16(0))
                 // UBO
-                CMD_UBO_CREATE -> processor.uboCreate(data.extract16(0))
-                CMD_UBO_DELETE -> {
-                    val id = data.extract16(0)
-                    processor.uboDelete(id)
-                    globalState.uboIndices.free(id)
-                }
-
-                CMD_UBO_SET -> {
-                    val ubo = readExtra<AGUniformValues>()
-                    processor.uboSet(data.extract16(0), ubo)
-                    uniformValuesPool.free(ubo)
-                }
-
-                CMD_UBO_USE -> processor.uboUse(data.extract16(0))
+                CMD_UNIFORMS_SET -> processor.uniformsSet(readExtra())
                 // TEXTURES
                 CMD_TEXTURE_CREATE -> processor.textureCreate(data.extract16(0))
                 CMD_TEXTURE_DELETE -> {
@@ -541,15 +520,6 @@ class AGList(val globalState: AGGlobalState) {
     }
 
     ////////////////////////////////////////
-    // UNIFORMS
-    ////////////////////////////////////////
-
-    fun uniformsSet(layout: UniformLayout, data: Buffer) {
-        currentWrite.addExtra(layout, data)
-        currentWrite.add(CMD(CMD_UNIFORMS_SET))
-    }
-
-    ////////////////////////////////////////
     // DRAW
     ////////////////////////////////////////
 
@@ -612,32 +582,9 @@ class AGList(val globalState: AGGlobalState) {
     ////////////////////////////////////////
     // UBO: Uniform Buffer Object
     ////////////////////////////////////////
-    fun uboCreate(): Int {
-        val id = globalState.uboIndices.alloc()
-        currentWrite.add(CMD(CMD_UBO_CREATE).finsert16(id, 0))
-        return id
-    }
-
-    fun uboDelete(id: Int) {
-        currentWrite.add(CMD(CMD_UBO_DELETE).finsert16(id, 0))
-    }
-
-    fun uboSet(id: Int, ubo: AGUniformValues) {
-        val uboCopy = uniformValuesPool.alloc()
-        uboCopy.setTo(ubo)
-        currentWrite.addExtra(uboCopy)
-        currentWrite.add(CMD(CMD_UBO_SET).finsert16(id, 0))
-    }
-
-    // @TODO: If we have a layout we can have the objects already arranged.
-    // @TODO: We have to put only integers and floats here, so textures should use the textureId for example
-    @KorIncomplete
-    fun uboSet(id: Int, data: Buffer, layout: UniformLayout) {
-        TODO()
-    }
-
-    fun uboUse(id: Int) {
-        currentWrite.add(CMD(CMD_UBO_USE).finsert16(id, 0))
+    fun uniformsSet(ubo: AGUniformValues) {
+        currentWrite.addExtra(ubo)
+        currentWrite.add(CMD(CMD_UNIFORMS_SET))
     }
 
     fun readPixels(x: Int, y: Int, width: Int, height: Int, data: Any, kind: AGReadKind) {
@@ -662,7 +609,6 @@ class AGList(val globalState: AGGlobalState) {
     }
 
     fun frameBufferDelete(id: Int) {
-        globalState.uboIndices.free(id)
         currentWrite.add(CMD(CMD_FRAMEBUFFER_DELETE).finsert16(id, 0))
     }
 
@@ -717,8 +663,6 @@ class AGList(val globalState: AGGlobalState) {
         private const val CMD_TEXTURE_UPDATE = 0x42
         private const val CMD_TEXTURE_BIND = 0x43
         private const val CMD_TEXTURE_BIND_ENSURING = 0x44
-        // Uniform
-        private const val CMD_UNIFORMS_SET = 0x50
         // Attributes
         private const val CMD_ATTRIBUTE_SET = 0x60
         // Render Buffer
@@ -736,11 +680,8 @@ class AGList(val globalState: AGGlobalState) {
         private const val CMD_VAO_DELETE = 0x91
         private const val CMD_VAO_SET = 0x92
         private const val CMD_VAO_USE = 0x93
-        // UBO - Uniform Buffer Object
-        private const val CMD_UBO_CREATE = 0xA0
-        private const val CMD_UBO_DELETE = 0xA1
-        private const val CMD_UBO_SET = 0xA2
-        private const val CMD_UBO_USE = 0xA3
+        // UNIFORMS
+        private const val CMD_UNIFORMS_SET = 0xA2
         // FRAME BUFFERS
         private const val CMD_FRAMEBUFFER_CREATE = 0xC0
         private const val CMD_FRAMEBUFFER_DELETE = 0xC1

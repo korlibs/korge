@@ -22,12 +22,8 @@ interface AGQueueProcessor {
     fun readPixelsToTexture(textureId: Int, x: Int, y: Int, width: Int, height: Int, kind: AGReadKind)
     // DRAW
     fun draw(type: AGDrawType, vertexCount: Int, offset: Int = 0, instances: Int = 1, indexType: AGIndexType = AGIndexType.NONE, indices: AGBuffer? = null)
-    // Uniforms + UBO
-    fun uniformsSet(layout: UniformLayout, data: Buffer)
-    fun uboCreate(id: Int)
-    fun uboDelete(id: Int)
-    fun uboSet(id: Int, ubo: AGUniformValues)
-    fun uboUse(id: Int)
+    // Uniforms
+    fun uniformsSet(ubo: AGUniformValues)
     // Faces
     fun cullFace(face: AGCullFace)
     fun frontFace(face: AGFrontFace)

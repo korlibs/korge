@@ -97,15 +97,12 @@ class AgBitmapTextureManagerTest {
         val tex1 = tm.getTextureBase(fixedNativeImage)
         tex1.base?.forcedTexId = fixedNativeImage
         ag.commandsSync { list ->
-            list.tempUBOs {
-                val program = list.createProgram(DefaultShaders.PROGRAM_DEFAULT)
-                list.useProgram(program)
-                list.uboSet(it, AGUniformValues {
-                    it[DefaultShaders.u_Tex] = AGTextureUnit(0, tex1.base)
-                    it[DefaultShaders.u_Tex2] = AGTextureUnit(1, tex0.base)
-                })
-                list.uboUse(it)
-            }
+            val program = list.createProgram(DefaultShaders.PROGRAM_DEFAULT)
+            list.useProgram(program)
+            list.uniformsSet(AGUniformValues {
+                it[DefaultShaders.u_Tex] = AGTextureUnit(0, tex1.base)
+                it[DefaultShaders.u_Tex2] = AGTextureUnit(1, tex0.base)
+            })
         }
         val tex2 = tm.getTextureBase(image1)
         val tex3 = tm.getTextureBase(fixedNativeImage2)
