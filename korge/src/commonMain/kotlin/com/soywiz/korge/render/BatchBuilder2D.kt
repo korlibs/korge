@@ -164,7 +164,7 @@ class BatchBuilder2D constructor(
 
 	init { logger.trace { "BatchBuilder2D[9]" } }
 
-    val textureUnitN = Array(maxTextures) { AGTextureUnit(null, linear = false) }
+    val textureUnitN = Array(maxTextures) { AGTextureUnit(it, null, linear = false) }
 
     //@KorgeInternal val textureUnit0 = AG.TextureUnit(null, linear = false)
     //@KorgeInternal val textureUnit1 = AG.TextureUnit(null, linear = false)
@@ -178,9 +178,9 @@ class BatchBuilder2D constructor(
 	//)
 
     init {
-        ctx.uniforms.put(AGUniformValues(
-            *Array(maxTextures) { BatchBuilder2D.u_TexN[it] to textureUnitN[it] },
-        ))
+        ctx.uniforms.put(AGUniformValues {
+            for (n in 0 until maxTextures) it[BatchBuilder2D.u_TexN[n]] = textureUnitN[n]
+        })
     }
 
 	init { logger.trace { "BatchBuilder2D[11]" } }
@@ -958,12 +958,18 @@ class BatchBuilder2D constructor(
 	inline fun setViewMatrixTemp(matrix: Matrix, crossinline callback: () -> Unit) = ctx.setViewMatrixTemp(matrix, callback)
 
     /**
-     * Executes [callback] while setting temporarily an [uniform] to a [value]
+     * Executes [callback] while restoring [uniform] to its current value after [callback] is exexcuted.
      */
-	inline fun setTemporalUniform(uniform: Uniform, value: Any?, flush: Boolean = true, callback: (AGUniformValues) -> Unit) = ctx.setTemporalUniform(uniform, value, flush, callback)
+    inline fun keepUniform(uniform: Uniform, flush: Boolean = true, callback: (AGUniformValues) -> Unit) {
+        ctx.keepUniform(uniform, flush, callback)
+    }
 
-    inline fun <reified T> setTemporalUniforms(uniforms: Array<Uniform>, values: Array<T>, count: Int = values.size, olds: Array<T?> = arrayOfNulls<T>(count), flush: Boolean = true, callback: (AGUniformValues) -> Unit) =
-        ctx.setTemporalUniforms(uniforms, values, count, olds, flush, callback)
+    /**
+     * Executes [callback] while restoring [uniforms] to its current value after [callback] is exexcuted.
+     */
+    inline fun keepUniforms(uniforms: Array<Uniform>, flush: Boolean = true, callback: (AGUniformValues) -> Unit) {
+        ctx.keepUniforms(uniforms, flush, callback)
+    }
 
     /**
      * Executes [callback] while setting temporarily a set of [uniforms]

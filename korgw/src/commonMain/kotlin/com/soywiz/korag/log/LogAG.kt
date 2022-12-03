@@ -352,8 +352,8 @@ open class LogBaseAG(
         override fun uboDelete(id: Int) = log("uboDelete: $id", Kind.UNIFORM)
         override fun uboSet(id: Int, ubo: AGUniformValues) {
             log("uboSet: $id", Kind.UNIFORM)
-            ubo.fastForEach { uniform, value ->
-                log("uboSet.uniform: $uniform = ${AGUniformValues.valueToString(value)}", Kind.UNIFORM_VALUES)
+            ubo.fastForEach { uniformValue ->
+                log("uboSet.uniform: ${uniformValue.uniform} = ${AGUniformValues.valueToString(uniformValue)}", Kind.UNIFORM_VALUES)
             }
         }
         override fun uboUse(id: Int) = log("uboUse: $id", Kind.UNIFORM)

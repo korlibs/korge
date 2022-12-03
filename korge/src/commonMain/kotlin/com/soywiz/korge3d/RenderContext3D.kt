@@ -14,7 +14,7 @@ class RenderContext3D() {
     lateinit var ag: AG
     lateinit var rctx: RenderContext
     val shaders = Shaders3D()
-    val textureUnit = AGTextureUnit()
+    val textureUnit = AGTextureUnit(0)
     val bindMat4 = Matrix3D()
     val bones = Array(128) { Matrix3D() }
     val tempMat = Matrix3D()

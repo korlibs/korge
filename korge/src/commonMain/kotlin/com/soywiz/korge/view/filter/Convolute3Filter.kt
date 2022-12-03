@@ -3,6 +3,7 @@ package com.soywiz.korge.view.filter
 import com.soywiz.kmem.*
 import com.soywiz.korag.*
 import com.soywiz.korag.shader.*
+import com.soywiz.korge.render.*
 import com.soywiz.korge.view.property.*
 import com.soywiz.korma.geom.*
 
@@ -104,6 +105,11 @@ class Convolute3Filter(
 
     override fun computeBorder(out: MutableMarginInt, texWidth: Int, texHeight: Int) {
         out.setTo(dist.toIntCeil())
+    }
+
+    override fun updateUniforms(ctx: RenderContext, filterScale: Double) {
+        super.updateUniforms(ctx, filterScale)
+        //println("weights=$weights, dist=$dist,${uniforms[u_Dist].f32.toFloatArray().toList()}, ${uniforms[u_Weights].f32.toFloatArray().toList()}")
     }
 
     @ViewProperty

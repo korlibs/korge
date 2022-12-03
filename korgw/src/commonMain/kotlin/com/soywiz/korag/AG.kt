@@ -257,12 +257,13 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
 
     fun AGUniformValues.useExternalSampler(): Boolean {
         var useExternalSampler = false
-        this.fastForEach { uniform, value ->
+        this.fastForEach { value ->
+            val uniform = value.uniform
             val uniformType = uniform.type
             when (uniformType) {
                 VarType.Sampler2D -> {
-                    val unit = value.fastCastTo<AGTextureUnit>()
-                    val tex = (unit.texture.fastCastTo<AGTexture?>())
+                    val unit = value?.nativeValue?.fastCastTo<AGTextureUnit>()
+                    val tex = (unit?.texture?.fastCastTo<AGTexture?>())
                     if (tex != null) {
                         if (tex.implForcedTexTarget == AGTextureTargetKind.EXTERNAL_TEXTURE) {
                             useExternalSampler = true
@@ -375,9 +376,6 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
 
     val isRenderingToWindow: Boolean get() = currentRenderBufferOrMain === mainRenderBuffer
     val isRenderingToTexture: Boolean get() = !isRenderingToWindow
-
-    @Deprecated("", ReplaceWith("isRenderingToTexture"))
-    val renderingToTexture: Boolean get() = isRenderingToTexture
 
     inline fun backupTexture(tex: AGTexture?, callback: () -> Unit) {
         if (tex != null) {

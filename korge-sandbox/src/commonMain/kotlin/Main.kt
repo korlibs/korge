@@ -41,6 +41,8 @@ suspend fun main() = Korge(
         //Demo(::MainCache),
         //Demo(::MainEditor),
         Demo(::MainUI),
+        //Demo(::MainFilters),
+        //Demo(::MainGpuVectorRendering),
         //Demo(::MainTextMetrics),
         //Demo(::MainBunnymark),
         //Demo(::MainBlur),

@@ -92,7 +92,7 @@ class MainFilters : ScaledScene(768, 512) {
             sequence(looped = true) {
                 block { conImg.filter = Convolute3Filter(Convolute3Filter.KERNEL_SHARPEN) }
                 wait(1.seconds)
-                block { conImg.filter = Convolute3Filter(Convolute3Filter.KERNEL_IDENTITY) }
+                block { conImg.filter = Convolute3Filter(Convolute3Filter.KERNEL_BOX_BLUR) }
                 wait(1.seconds)
             }
             sequence(looped = true) {

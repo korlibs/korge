@@ -271,6 +271,8 @@ fun Varying(type: VarType, arrayCount: Int = 1, precision: Precision = Precision
 open class Uniform(name: String, type: VarType, arrayCount: Int, precision: Precision = Precision.DEFAULT, offset: Int? = null) : VariableWithOffset(
     name, type, arrayCount, precision, offset
 ) {
+    val totalElementCount: Int get() = type.elementCount * arrayCount
+
     constructor(name: String, type: VarType, precision: Precision = Precision.DEFAULT) : this(name, type, 1, precision)
 	override fun toString(): String = "Uniform($name)"
     override fun equals(other: Any?): Boolean = mequals<Uniform>(other)

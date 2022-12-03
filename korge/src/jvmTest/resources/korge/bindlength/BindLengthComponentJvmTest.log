@@ -31,23 +31,13 @@ vaoSet: 1, AGVertexArrayObject(list=[AGVertexData(_buffer=Buffer[0], layout=Vert
 vaoUse: 1
 uboCreate: 1
 uboSet: 1
-uboSet.uniform: Uniform(u_ProjMat) = Matrix3D(
-  [ 0.0015625, 0, 0, -1 ],
-  [ 0, -0.0027777778, 0, 1 ],
-  [ 0, 0, -1, 0 ],
-  [ 0, 0, 0, 1 ],
-)
-uboSet.uniform: Uniform(u_ViewMat) = Matrix3D(
-  [ 1, 0, 0, 0 ],
-  [ 0, 1, 0, 0 ],
-  [ 0, 0, 1, 0 ],
-  [ 0, 0, 0, 1 ],
-)
-uboSet.uniform: Uniform(u_Tex0) = AGTextureUnit(texture=Texture[0], linear=true, trilinear=null)
-uboSet.uniform: Uniform(u_Tex1) = AGTextureUnit(texture=null, linear=true, trilinear=null)
-uboSet.uniform: Uniform(u_Tex2) = AGTextureUnit(texture=null, linear=true, trilinear=null)
-uboSet.uniform: Uniform(u_Tex3) = AGTextureUnit(texture=null, linear=true, trilinear=null)
-uboSet.uniform: Uniform(u_OutputPre) = false
+uboSet.uniform: Uniform(u_ProjMat) = AGValue[TFLOAT]([[0.0015625, 0, 0, 0, 0, -0.0027777778, 0, 0, 0, 0, -1, 0, -1, 1, 0, 1]])
+uboSet.uniform: Uniform(u_ViewMat) = AGValue[TFLOAT]([[1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]])
+uboSet.uniform: Uniform(u_Tex0) = AGValue[TINT]([[0]])
+uboSet.uniform: Uniform(u_Tex1) = AGValue[TINT]([[1]])
+uboSet.uniform: Uniform(u_Tex2) = AGValue[TINT]([[2]])
+uboSet.uniform: Uniform(u_Tex3) = AGValue[TINT]([[3]])
+uboSet.uniform: Uniform(u_OutputPre) = AGValue[TBOOL]([[0]])
 uboUse: 1
 enable: BLEND
 blendEquation: ADD, ADD
