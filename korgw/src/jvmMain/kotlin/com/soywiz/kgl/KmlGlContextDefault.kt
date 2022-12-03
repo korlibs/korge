@@ -267,7 +267,11 @@ open class EGLKmlGlContext(window: Any? = null, parent: KmlGlContext? = null) : 
     }
 
     override fun unset() {
-        EGL.eglMakeCurrent(display, null, null, null)
+        EGL.eglMakeCurrent(display, eglSurface, eglSurface, null)
+    }
+
+    override fun swap() {
+        EGL.eglSwapBuffers(display, eglSurface)
     }
 
     override fun close() {

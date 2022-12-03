@@ -596,6 +596,7 @@ object EGL {
     external fun eglMakeCurrent(display: Pointer?, draw: Pointer?, read: Pointer?, context: Pointer?): Boolean
     external fun eglDestroyContext(display: Pointer?, context: Pointer?): Boolean
     external fun eglDestroySurface(display: Pointer?, surface: Pointer?)
+    external fun eglSwapBuffers(display: Pointer?, eglSurface: Pointer?): Boolean
 
     init {
         Native.register("EGL")

@@ -29,6 +29,7 @@ val isCanvasCreatedAndHandled get() = korgwCanvasQuery == null
 
 open class AGWebgl(val config: AGConfig, val glDecorator: (KmlGl) -> KmlGl = { it }) : AGOpengl(), AGContainer {
 	override val ag: AG = this
+    override val nag: NAG by lazy { NAGOpengl(this.gl) }
 
     open fun getCanvas(): HTMLCanvasElement {
         return (korgwCanvasQuery?.let { document.querySelector(it) as HTMLCanvasElement })
