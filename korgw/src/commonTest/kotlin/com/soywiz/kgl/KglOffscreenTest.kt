@@ -10,6 +10,7 @@ class KglOffScreenTest {
         if (Platform.isIos) return
         if (Platform.isAndroid) return
         if (Platform.isNative) return
+        if (Platform.isLinux) return
 
         KmlGlContextDefaultTemp { gl ->
             fun <T> T.check(name: String): T {
