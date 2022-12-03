@@ -19,8 +19,9 @@ inline fun Container.circle(
     stroke: Paint = Colors.WHITE,
     strokeThickness: Double = 0.0,
     autoScaling: Boolean = true,
+    renderer: GraphicsRenderer = GraphicsRenderer.SYSTEM,
     callback: @ViewDslMarker Circle.() -> Unit = {}
-): Circle = Circle(radius, fill, stroke, strokeThickness, autoScaling).addTo(this, callback)
+): Circle = Circle(radius, fill, stroke, strokeThickness, autoScaling, renderer).addTo(this, callback)
 
 /**
  * A [CpuGraphics] class that automatically keeps a circle shape with [radius] and [color].
@@ -32,7 +33,8 @@ open class Circle(
     stroke: Paint = Colors.WHITE,
     strokeThickness: Double = 0.0,
     autoScaling: Boolean = true,
-) : ShapeView(shape = VectorPath(), fill = fill, stroke = stroke, strokeThickness = strokeThickness, autoScaling = autoScaling) {
+    renderer: GraphicsRenderer = GraphicsRenderer.SYSTEM,
+) : ShapeView(shape = VectorPath(), fill = fill, stroke = stroke, strokeThickness = strokeThickness, autoScaling = autoScaling, renderer = renderer) {
     /** Radius of the circle */
     var radius: Double by uiObservable(radius) { updateGraphics() }
     /** Color of the circle. Internally it uses the [colorMul] property */
