@@ -208,14 +208,15 @@ open class Attribute(
 	val active: Boolean = true,
     precision: Precision = Precision.DEFAULT,
     val divisor: Int = 0,
-    val fixedLocation: Int? = null
+    val fixedLocation: Int
 ) : VariableWithOffset(name, type, 1, precision, offset) {
 	constructor(
         name: String,
         type: VarType,
         normalized: Boolean,
-        precision: Precision = Precision.DEFAULT
-    ) : this(name, type, normalized, null, true, precision)
+        precision: Precision = Precision.DEFAULT,
+        fixedLocation: Int
+    ) : this(name, type, normalized, null, true, precision, fixedLocation = fixedLocation)
 
     fun copy(
         name: String = this.name,
@@ -224,12 +225,14 @@ open class Attribute(
         offset: Int? = this.offset,
         active: Boolean = this.active,
         precision: Precision = this.precision,
-        divisor: Int = this.divisor
-    ) = Attribute(name, type, normalized, offset, active, precision, divisor)
+        divisor: Int = this.divisor,
+        fixedLocation: Int = this.fixedLocation,
+    ) = Attribute(name, type, normalized, offset, active, precision, divisor, fixedLocation = fixedLocation)
     fun inactived() = copy(active = false)
     fun withDivisor(divisor: Int) = copy(divisor = divisor)
+    fun withFixedLocation(fixedLocation: Int) = copy(fixedLocation = fixedLocation)
 	override fun toString(): String = "Attribute($name)"
-    fun toStringEx(): String = "Attribute($name, type=$type, normalized=$normalized, offset=$offset, active=$active, precision=$precision, divisor=$divisor)"
+    fun toStringEx(): String = "Attribute($name, type=$type, normalized=$normalized, offset=$offset, active=$active, precision=$precision, divisor=$divisor, fixedLocation=$fixedLocation)"
     override fun equals(other: Any?): Boolean = mequals<Attribute>(other) && this.normalized == (other as Attribute).normalized && this.offset == other.offset && this.active == other.active
     override fun hashCode(): Int {
         var out = mhashcode()
@@ -241,15 +244,16 @@ open class Attribute(
 
     operator fun getValue(thisRef: Any?, property: KProperty<*>): Attribute = this
 
-    class Provider(val type: VarType, val normalized: Boolean, val precision: Precision = Precision.DEFAULT) {
-        operator fun provideDelegate(thisRef: Any?, property: KProperty<*>): Attribute = Attribute(property.name, type, normalized, precision)
+    class Provider(val type: VarType, val normalized: Boolean, val precision: Precision = Precision.DEFAULT, val fixedLocation: Int) {
+        operator fun provideDelegate(thisRef: Any?, property: KProperty<*>): Attribute = Attribute(property.name, type, normalized, precision, fixedLocation)
     }
 }
 fun Attribute(
     type: VarType,
     normalized: Boolean,
-    precision: Precision = Precision.DEFAULT
-): Attribute.Provider = Attribute.Provider(type, normalized, precision)
+    precision: Precision = Precision.DEFAULT,
+    fixedLocation: Int,
+): Attribute.Provider = Attribute.Provider(type, normalized, precision, fixedLocation)
 
 open class Varying(name: String, type: VarType, arrayCount: Int, precision: Precision = Precision.DEFAULT) : Variable(name, type, arrayCount, precision) {
     constructor(name: String, type: VarType, precision: Precision = Precision.DEFAULT) : this(name, type, 1, precision)

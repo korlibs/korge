@@ -331,7 +331,7 @@ class AGQueueProcessorOpenGL(
                 val vattrs = entry.layout.attributes
                 vattrs.fastForEach { att ->
                     if (att.active) {
-                        val loc = att.fixedLocation ?: cprogram?.getAttribLocation(gl, att.name) ?: 0
+                        val loc = att.fixedLocation
                         if (loc >= 0) {
                             if (att.divisor != 0) {
                                 gl.vertexAttribDivisor(loc, 0)
@@ -358,7 +358,7 @@ class AGQueueProcessorOpenGL(
                     val att = vattrs[n]
                     if (!att.active) continue
                     val off = vattrspos[n]
-                    val loc = att.fixedLocation ?: cprogram?.getAttribLocation(gl, att.name) ?: 0
+                    val loc = att.fixedLocation
                     val glElementType = att.type.toGl()
                     val elementCount = att.type.elementCount
                     if (loc >= 0) {

@@ -64,6 +64,10 @@ internal object GLShaderCompiler {
         val vertexShaderId = createShaderCompat(gl, gl.VERTEX_SHADER, debugName) { compatibility ->
             program.vertex.toNewGlslString(config.copy(version = usedGlSlVersion, compatibility = compatibility))
         }
+        for (attr in program.attributes) {
+            val location = attr.fixedLocation
+            gl.bindAttribLocation(id, location, attr.name)
+        }
         gl.attachShader(id, fragmentShaderId)
         gl.attachShader(id, vertexShaderId)
         gl.linkProgram(id)

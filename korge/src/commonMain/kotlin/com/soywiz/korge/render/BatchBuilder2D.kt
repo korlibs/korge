@@ -721,7 +721,7 @@ class BatchBuilder2D constructor(
         @KorgeInternal
 		val a_ColMul: Attribute get() = DefaultShaders.a_Col
         @KorgeInternal
-		val a_ColAdd: Attribute = Attribute("a_Col2", VarType.Byte4, normalized = true)
+		val a_ColAdd: Attribute = Attribute("a_Col2", VarType.Byte4, normalized = true, fixedLocation = 3)
 
 		init { logger.trace { "BatchBuilder2D.Companion[1]" } }
 
@@ -730,8 +730,8 @@ class BatchBuilder2D constructor(
         @KorgeInternal
 		val v_ColAdd: Varying = Varying("v_Col2", VarType.Float4)
 
-        val a_TexIndex: Attribute = Attribute("a_TexIndex", VarType.UByte1, normalized = false, precision = Precision.LOW)
-        val a_Wrap: Attribute = Attribute("a_Wrap", VarType.UByte1, normalized = false, precision = Precision.LOW)
+        val a_TexIndex: Attribute = Attribute("a_TexIndex", VarType.UByte1, normalized = false, precision = Precision.LOW, fixedLocation = 4)
+        val a_Wrap: Attribute = Attribute("a_Wrap", VarType.UByte1, normalized = false, precision = Precision.LOW, fixedLocation = 5)
 
         val v_TexIndex: Varying = Varying("v_TexIndex", VarType.Float1, precision = Precision.LOW)
         val v_Wrap: Varying = Varying("v_Wrap", VarType.Float1, precision = Precision.LOW)

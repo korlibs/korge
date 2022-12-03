@@ -26,6 +26,7 @@ void main() {
 compileShader(2002)
 getShaderiv(2002, 35713, [1])
 getError() = 0
+bindAttribLocation(1001, 0, "a_Pos")
 attachShader(1001, 2001)
 attachShader(1001, 2002)
 linkProgram(1001)
