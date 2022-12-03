@@ -1,5 +1,6 @@
 package com.soywiz.korgw
 
+import com.soywiz.kds.*
 import com.soywiz.korag.*
 import com.soywiz.korev.*
 import com.soywiz.korim.bitmap.*
@@ -44,11 +45,10 @@ class TestE2eJava {
                             -1f, +1f,
                             +1f, +1f
                         ))
-                        ag.draw(
-                            vertices,
+                        ag.drawV2(
+                            fastArrayListOf(AGVertexData(vertices, DefaultShaders.LAYOUT_DEBUG)),
                             program = DefaultShaders.PROGRAM_DEBUG,
                             type = AGDrawType.TRIANGLES,
-                            vertexLayout = DefaultShaders.LAYOUT_DEBUG,
                             vertexCount = 3,
                             uniforms = AGUniformValues(
                                 //DefaultShaders.u_ProjMat to Matrix3D().setToOrtho(0f, 0f, WIDTH.toFloat(), HEIGHT.toFloat(), -1f, +1f)

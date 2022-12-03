@@ -914,7 +914,7 @@ class BatchBuilder2D constructor(
         lastIndexPos = indexPos
     }
 
-    /** When there are vertices pending, this performs a [AG.draw] call flushing all the buffered geometry pending to draw */
+    /** When there are vertices pending, this performs a [AG.drawV2] call flushing all the buffered geometry pending to draw */
 	fun flush(uploadVertices: Boolean = true, uploadIndices: Boolean = true) {
         createBatchIfRequired()
 

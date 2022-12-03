@@ -1,5 +1,6 @@
 package com.soywiz.korge3d
 
+import com.soywiz.kds.*
 import com.soywiz.korag.*
 import com.soywiz.korag.shader.FragmentShader
 import com.soywiz.korag.shader.Precision

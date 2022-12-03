@@ -8,9 +8,9 @@ internal class AgFastSet<T> : AbstractMutableSet<T>() {
     override val size: Int get() = items.size
     override fun iterator(): MutableIterator<T> = items.iterator()
 
-    var fast0: T? = null
-    var fast1: T? = null
-    var fast2: T? = null
+    private var fast0: T? = null
+    private var fast1: T? = null
+    private var fast2: T? = null
 
     override fun add(element: T): Boolean {
         if (element in this) return false
