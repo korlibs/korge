@@ -2,7 +2,6 @@ package com.soywiz.kmem
 
 import kotlin.math.max
 
-
 /**
  * Analogous to [StringBuilder] but for [ByteArray]. Allows to [append] values to end calling [toByteArray].
  * Provides some methods like [s16LE] or [f32BE] to append specific bit representations easily.

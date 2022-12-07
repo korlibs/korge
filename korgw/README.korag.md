@@ -30,7 +30,7 @@ ag.createVertexBuffer(floatArrayOf(
     ag.draw(
         vertices,
         program = DefaultShaders.PROGRAM_DEBUG_WITH_PROJ,
-        type = AG.DrawType.TRIANGLES,
+        type = AGDrawType.TRIANGLES,
         vertexLayout = DefaultShaders.LAYOUT_DEBUG,
         vertexCount = 3,
         uniforms = mapOf(
@@ -86,7 +86,7 @@ class AG {
         fun upload(data: FloatArray, offset: Int = 0, length: Int = data.size): Buffer
         fun upload(data: IntArray, offset: Int = 0, length: Int = data.size): Buffer
         fun upload(data: ShortArray, offset: Int = 0, length: Int = data.size): Buffer
-        fun upload(data: FBuffer, offset: Int = 0, length: Int = data.length): Buffer
+        fun upload(data: Buffer, offset: Int = 0, length: Int = data.length): Buffer
         fun close()
     }
     class RenderBuffer : Closeable {

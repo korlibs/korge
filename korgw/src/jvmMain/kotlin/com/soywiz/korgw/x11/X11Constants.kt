@@ -585,6 +585,24 @@ internal class MyXMotionEvent(p: Pointer? = null) : KStructure(p) {
     var same_screen by int()
 }
 
+object EGL {
+    external fun eglGetDisplay(displayType: Long): Pointer?
+    external fun eglInitialize(display: Pointer?, major: Pointer?, minor: Pointer?): Boolean
+    external fun eglTerminate(display: Pointer?): Pointer
+    external fun eglChooseConfig(display: Pointer?, attribList: Pointer, configs: Pointer, configSize: Int, numConfig: Pointer): Boolean
+    external fun eglCreatePbufferSurface(display: Pointer?, config: Pointer?, attribList: Pointer?): Pointer?
+    external fun eglBindAPI(api: Int)
+    external fun eglCreateContext(display: Pointer?, config: Pointer?, shareContext: Pointer?, attribList: Pointer?): Pointer?
+    external fun eglMakeCurrent(display: Pointer?, draw: Pointer?, read: Pointer?, context: Pointer?): Boolean
+    external fun eglDestroyContext(display: Pointer?, context: Pointer?): Boolean
+    external fun eglDestroySurface(display: Pointer?, surface: Pointer?)
+    external fun eglSwapBuffers(display: Pointer?, eglSurface: Pointer?): Boolean
+
+    init {
+        Native.register("EGL")
+    }
+}
+
 object X :
     X11Impl by Native.load(System.getenv("X11LIB_PATH") ?: "libX11", X11Impl::class.java),
     GL by Native.load(System.getenv("GLLIB_PATH") ?: "libGL", GL::class.java)

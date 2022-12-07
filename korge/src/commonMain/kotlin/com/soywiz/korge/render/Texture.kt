@@ -11,10 +11,10 @@ import com.soywiz.korio.lang.*
 import com.soywiz.korma.geom.*
 
 /**
- * Represents a full texture region wraping a [base] [AG.Texture] and specifying its [width] and [height]
+ * Represents a full texture region wraping a [base] [AGTexture] and specifying its [width] and [height]
  */
 class TextureBase(
-    var base: AG.Texture?,
+    var base: AGTexture?,
     override var width: Int,
     override var height: Int
 ) : Closeable, ISizeInt {
@@ -43,7 +43,7 @@ typealias TextureCoords = BmpCoordsWithT<TextureBase>
 
 /**
  * A [Texture] is a region (delimited by [left], [top], [right] and [bottom]) of a [Texture.Base].
- * A [Texture.Base] wraps a [AG.Texture] but adds [width] and [height] information.
+ * A [Texture.Base] wraps a [AGTexture] but adds [width] and [height] information.
  */
 class Texture(
 	override val base: TextureBase,
@@ -121,13 +121,13 @@ class Texture(
         /**
          * Creates a [Texture] from a texture [agBase] and its wanted size [width], [height].
          */
-		operator fun invoke(agBase: AG.Texture, width: Int, height: Int): Texture =
+		operator fun invoke(agBase: AGTexture, width: Int, height: Int): Texture =
 			Texture(TextureBase(agBase, width, height), 0, 0, width, height)
 
         /**
          * Creates a [Texture] from a frame buffer [frameBuffer] with the right size of the frameBuffer.
          */
-        operator fun invoke(frameBuffer: AG.RenderBuffer): Texture = invoke(frameBuffer.tex, frameBuffer.width, frameBuffer.height)
+        operator fun invoke(frameBuffer: AGFrameBuffer): Texture = invoke(frameBuffer.tex, frameBuffer.width, frameBuffer.height)
 	}
 
     /**

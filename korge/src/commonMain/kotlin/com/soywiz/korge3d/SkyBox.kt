@@ -1,6 +1,7 @@
 package com.soywiz.korge3d
 
-import com.soywiz.korag.AG
+import com.soywiz.kds.*
+import com.soywiz.korag.*
 import com.soywiz.korag.shader.FragmentShader
 import com.soywiz.korag.shader.Precision
 import com.soywiz.korag.shader.Program
@@ -69,7 +70,7 @@ class SkyBox(
             val VERTEX_COUNT = 4
             val vertices = createBuffer(AG.BufferKind.VERTEX)
             val vertexLayout = VertexLayout(DefaultShaders.a_Pos, DefaultShaders.a_Tex)
-            val verticesData = FBuffer(VERTEX_COUNT * vertexLayout.totalSize)
+            val verticesData = Buffer(VERTEX_COUNT * vertexLayout.totalSize)
             val program = Program(VertexShader {
                 DefaultShaders.apply {
                     v_Tex setTo a_Tex
@@ -81,7 +82,7 @@ class SkyBox(
                     out setTo texture2D(u_Tex, v_Tex["xy"])
                 }
             })
-            val uniforms = AG.UniformValues()
+            val uniforms = AGUniformValues()
 
             fun setVertex(n: Int, px: Float, py: Float, tx: Float, ty: Float) {
                 val offset = n * 4
@@ -109,11 +110,11 @@ class SkyBox(
                 draw(
                     vertices = vertices,
                     program = program,
-                    type = AG.DrawType.TRIANGLE_STRIP,
+                    type = AGDrawType.TRIANGLE_STRIP,
                     vertexLayout = vertexLayout,
                     vertexCount = 4,
                     uniforms = uniforms,
-                    blending = AG.Blending.NONE
+                    blending = AGBlending.NONE
                 )
             }
         }
@@ -153,10 +154,10 @@ class SkyBox(
         })
     }
 
-    private val uniformValues = AG.UniformValues()
-    private val rs = AG.RenderState(depthMask = false, depthFunc = AG.CompareMode.LESS_EQUAL)
+    private val uniformValues = AGUniformValues()
+    private val rs = AGRenderState.DEFAULT.withDepthMask(depthMask = false).withDepthFunc(depthFunc = AGCompareMode.LESS_EQUAL)
 
-    private val cubeMapTexUnit = AG.TextureUnit()
+    private val cubeMapTexUnit = AGTextureUnit(0)
     private val viewNoTrans = Matrix3D()
 
     override fun render(ctx: RenderContext3D) {
@@ -174,15 +175,14 @@ class SkyBox(
                     .setColumn(3, 0f, 0f, 0f, 0f)
                     .setRow(3, 0f, 0f, 0f, 0f)
                     .translate(center)
-                ctx.ag.draw(
-                    vertices = vertexBuffer,
-                    type = AG.DrawType.TRIANGLES,
+                ctx.ag.drawV2(
+                    vertexData = AGVertexArrayObject(AGVertexData(vertexBuffer, layout)),
+                    type = AGDrawType.TRIANGLES,
                     program = skyBoxProgram,
-                    vertexLayout = layout,
                     vertexCount = 36,
                     indices = indexBuffer,
-                    indexType = AG.IndexType.USHORT,
-                    blending = AG.Blending.NONE,
+                    indexType = AGIndexType.USHORT,
+                    blending = AGBlending.NONE,
                     uniforms = uniformValues.apply {
                         this[u_ProjMat] = projection
                         this[u_ViewMat] = viewNoTrans

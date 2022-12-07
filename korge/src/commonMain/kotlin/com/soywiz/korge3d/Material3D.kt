@@ -1,6 +1,6 @@
 package com.soywiz.korge3d
 
-import com.soywiz.korag.AG
+import com.soywiz.korag.*
 import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
@@ -27,7 +27,7 @@ data class Material3D(
 
 	@Korge3DExperimental
 	data class LightTexture(val bitmap: Bitmap?) : Light("texture") {
-		val textureUnit = AG.TextureUnit()
+		val textureUnit = AGTextureUnit(0)
 	}
 
 	val kind: String = "${emission.kind}_${ambient.kind}_${diffuse.kind}_${specular.kind}"

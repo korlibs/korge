@@ -1,9 +1,7 @@
 package com.soywiz.korge.view.mask
 
 import com.soywiz.kds.extraProperty
-import com.soywiz.korag.AG
-import com.soywiz.korag.DefaultShaders
-import com.soywiz.korag.FragmentShaderDefault
+import com.soywiz.korag.*
 import com.soywiz.korag.annotation.KoragExperimental
 import com.soywiz.korag.shader.Program
 import com.soywiz.korge.render.RenderContext
@@ -71,7 +69,8 @@ class ViewRenderPhaseMask(var mask: View) : ViewRenderPhase {
                 }
                 //batcher.drawQuad(Texture(maskFB), 100f, 200f, m = view.parent!!.globalMatrix)
                 //batcher.drawQuad(Texture(viewFB), 300f, 200f, m = view.parent!!.globalMatrix)
-                batcher.setTemporalUniform(DefaultShaders.u_Tex2, AG.TextureUnit(maskFB.tex), flush = true) {
+                batcher.keepUniform(DefaultShaders.u_Tex2, flush = true) {
+                    it[DefaultShaders.u_Tex2] = AGTextureUnit(6, maskFB.tex)
                     batcher.drawQuad(
                         Texture(viewFB), m = mask.globalMatrix, program = MERGE_ALPHA_PROGRAM,
                     )

@@ -48,12 +48,12 @@ open class Shaders3D {
 		val MAX_BONE_MATS = 64
 		val u_BoneMats = Uniform("u_BoneMats", VarType.Mat4, arrayCount = MAX_BONE_MATS)
 		val u_TexUnit = Uniform("u_TexUnit", VarType.Sampler2D)
-		val a_pos = Attribute("a_Pos", VarType.Float3, normalized = false, precision = Precision.HIGH)
-		val a_norm = Attribute("a_Norm", VarType.Float3, normalized = false, precision = Precision.HIGH)
-		val a_tex = Attribute("a_TexCoords", VarType.Float2, normalized = false, precision = Precision.MEDIUM)
-		val a_boneIndex = Array(4) { Attribute("a_BoneIndex$it", VarType.Float4, normalized = false) }
-		val a_weight = Array(4) { Attribute("a_Weight$it", VarType.Float4, normalized = false) }
-		val a_col = Attribute("a_Col", VarType.Float3, normalized = true)
+		val a_pos = Attribute("a_Pos", VarType.Float3, normalized = false, precision = Precision.HIGH, fixedLocation = 0)
+		val a_norm = Attribute("a_Norm", VarType.Float3, normalized = false, precision = Precision.HIGH, fixedLocation = 1)
+		val a_tex = Attribute("a_TexCoords", VarType.Float2, normalized = false, precision = Precision.MEDIUM, fixedLocation = 2)
+        val a_col = Attribute("a_Col", VarType.Float3, normalized = true, fixedLocation = 3)
+		val a_boneIndex = Array(4) { Attribute("a_BoneIndex$it", VarType.Float4, normalized = false, fixedLocation = 4 + it) }
+		val a_weight = Array(4) { Attribute("a_Weight$it", VarType.Float4, normalized = false, fixedLocation = 8 + it) }
 		val v_col = Varying("v_Col", VarType.Float3)
 
 		val v_Pos = Varying("v_Pos", VarType.Float3, precision = Precision.HIGH)

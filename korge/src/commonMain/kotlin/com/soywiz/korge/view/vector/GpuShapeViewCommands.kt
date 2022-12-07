@@ -4,20 +4,9 @@ import com.soywiz.kds.FastArrayList
 import com.soywiz.kds.fastArrayListOf
 import com.soywiz.kds.floatArrayListOf
 import com.soywiz.kds.iterators.fastForEach
-import com.soywiz.kmem.toInt
-import com.soywiz.korag.AG
-import com.soywiz.korag.DefaultShaders
-import com.soywiz.korag.disableCullFace
-import com.soywiz.korag.disableScissor
-import com.soywiz.korag.enableCullFace
-import com.soywiz.korag.setBlendingState
-import com.soywiz.korag.setColorMaskState
-import com.soywiz.korag.setScissorState
-import com.soywiz.korag.setStencilState
-import com.soywiz.korag.shader.Program
-import com.soywiz.korag.uniformsSet
-import com.soywiz.korag.useProgram
-import com.soywiz.korag.vertexArrayObjectSet
+import com.soywiz.kmem.*
+import com.soywiz.korag.*
+import com.soywiz.korag.shader.*
 import com.soywiz.korge.internal.KorgeInternal
 import com.soywiz.korge.render.AgCachedBuffer
 import com.soywiz.korge.render.BatchBuilder2D
@@ -73,12 +62,13 @@ class GpuShapeViewCommands {
     }
 
     fun draw(
-        drawType: AG.DrawType,
+        drawType: AGDrawType,
         paintShader: GpuShapeViewPrograms.PaintShader?,
-        colorMask: AG.ColorMaskState? = null,
-        stencil: AG.StencilState? = null,
+        colorMask: AGColorMaskState? = null,
+        stencilOpFunc: AGStencilOpFuncState? = null,
+        stencilRef: AGStencilReferenceState = AGStencilReferenceState.DEFAULT,
         blendMode: BlendMode? = null,
-        cullFace: AG.CullFace? = null,
+        cullFace: AGCullFace? = null,
         startIndex: Int = this.verticesStartIndex,
         endIndex: Int = this.vertexIndex
     ) {
@@ -88,7 +78,8 @@ class GpuShapeViewCommands {
             vertexEnd = endIndex,
             paintShader = paintShader,
             colorMask = colorMask,
-            stencil = stencil,
+            stencilOpFunc = stencilOpFunc,
+            stencilRef = stencilRef,
             blendMode = blendMode,
             cullFace = cullFace,
         )
@@ -104,13 +95,13 @@ class GpuShapeViewCommands {
 
     fun finish() {
         vertices?.let { verticesToDelete += it }
-        vertices = AgCachedBuffer(bufferVertexData)
+        vertices = AgCachedBuffer(Float32Buffer(bufferVertexData.toFloatArray()).buffer)
     }
 
     private val decomposed = Matrix.Transform()
     private val tempColorMul = FloatArray(4)
-    private val texturesToDelete = FastArrayList<AG.Texture>()
-    private val tempUniforms = AG.UniformValues()
+    private val texturesToDelete = FastArrayList<AGTexture>()
+    private val tempUniforms = AGUniformValues()
     private val tempMat = Matrix()
     fun render(ctx: RenderContext, globalMatrix: Matrix, localMatrix: Matrix, applyScissor: Boolean, colorMul: RGBA, doRequireTexture: Boolean) {
         val vertices = this.vertices ?: return
@@ -122,7 +113,8 @@ class GpuShapeViewCommands {
         ctx.useBatcher { batcher ->
             batcher.updateStandardUniforms()
             colorMul.writeFloat(tempColorMul)
-            batcher.setTemporalUniform(GpuShapeViewPrograms.u_ColorMul, tempColorMul) {
+            batcher.keepUniform(GpuShapeViewPrograms.u_ColorMul) {
+                it[GpuShapeViewPrograms.u_ColorMul] = tempColorMul
                 //tempMat.identity()
                 when {
                     doRequireTexture -> tempMat.identity()
@@ -137,7 +129,7 @@ class GpuShapeViewCommands {
                             list.disableScissor()
                         }
 
-                        //list.setScissorState(ag, AG.Scissor().setTo(rect))
+                        //list.setScissorState(ag, AGScissor().setTo(rect))
                         //list.disableScissor()
 
                         //ag.commandsSync { list ->
@@ -147,9 +139,9 @@ class GpuShapeViewCommands {
                         list.useProgram(ag, GpuShapeViewPrograms.PROGRAM_COMBINED)
                         //list.vertexArrayObjectSet(ag, GpuShapeViewPrograms.LAYOUT_POS_TEX_FILL_DIST, bufferVertexData) {
                         list.vertexArrayObjectSet(
-                            AG.VertexArrayObject(
+                            AGVertexArrayObject(
                                 fastArrayListOf(
-                                    AG.VertexData(
+                                    AGVertexData(
                                         ctx.getBuffer(
                                             vertices
                                         ), GpuShapeViewPrograms.LAYOUT_POS_TEX_FILL_DIST
@@ -157,74 +149,68 @@ class GpuShapeViewCommands {
                                 )
                             )
                         ) {
-                            list.uniformsSet(batcher.uniforms) {
-                                val ubo = list.uboCreate()
-                                try {
-                                    commands.fastForEach { cmd ->
-                                        when (cmd) {
-                                            //is FinishCommand -> list.flush()
-                                            is ScissorCommand -> {
-                                                val rect = cmd.scissor?.clone()
-                                                //rect.normalize()
-                                                // @TODO: Do scissor intersection
-                                                if (applyScissor) {
-                                                }
-                                                if (rect != null) {
-                                                    rect.applyTransform(globalMatrix)
-                                                    list.setScissorState(ag, AG.Scissor().setTo(rect))
-                                                } else {
-                                                    list.setScissorState(ag, null)
-                                                }
-                                            }
-                                            is ClearCommand -> {
-                                                list.clearStencil(cmd.i)
-                                                list.stencilMask(0xFF)
-                                                list.clear(false, false, true)
-                                            }
-                                            is ShapeCommand -> {
-                                                val paintShader = cmd.paintShader
-                                                //println("cmd.vertexCount=${cmd.vertexCount}, cmd.vertexIndex=${cmd.vertexIndex}, paintShader=$paintShader")
-                                                batcher.simulateBatchStats(cmd.vertexCount)
-                                                //println(paintShader.uniforms)
-                                                tempUniforms.clear()
-                                                paintShader?.uniforms?.let { resolve(ctx, it, paintShader.texUniforms) }
-                                                tempUniforms.put(paintShader?.uniforms)
-                                                val pixelScale = decomposed.scaleAvg / ctx.bp.globalToWindowScaleAvg
-                                                //val pixelScale = 1f
-                                                tempUniforms.put(GpuShapeViewPrograms.u_GlobalPixelScale, pixelScale)
-
-                                                val texUnit = tempUniforms[DefaultShaders.u_Tex] as? AG.TextureUnit?
-                                                val premultiplied = texUnit?.texture?.premultiplied ?: false
-                                                //val premultiplied = false
-                                                val outPremultiplied = ag.isRenderingToTexture
-
-                                                //println("outPremultiplied=$outPremultiplied, blendMode=${cmd.blendMode?.name}")
-
-                                                tempUniforms[GpuShapeViewPrograms.u_InputPre] = premultiplied.toInt().toFloat()
-                                                tempUniforms[BatchBuilder2D.u_OutputPre] = outPremultiplied
-
-                                                list.uboSet(ubo, tempUniforms)
-                                                list.uboUse(ubo)
-
-                                                list.setStencilState(cmd.stencil)
-                                                list.setColorMaskState(cmd.colorMask)
-                                                list.setBlendingState((cmd.blendMode ?: BlendMode.NORMAL)?.factors(outPremultiplied))
-                                                if (cmd.cullFace != null) {
-                                                    list.enableCullFace()
-                                                    list.cullFace(cmd.cullFace!!)
-                                                } else {
-                                                    list.disableCullFace()
-                                                }
-                                                //println(ctx.batch.viewMat2D)
-                                                list.draw(cmd.drawType, cmd.vertexCount, cmd.vertexIndex)
-                                            }
+                            list.uniformsSet(batcher.uniforms)
+                            commands.fastForEach { cmd ->
+                                when (cmd) {
+                                    //is FinishCommand -> list.flush()
+                                    is ScissorCommand -> {
+                                        val rect = cmd.scissor?.clone()
+                                        //rect.normalize()
+                                        // @TODO: Do scissor intersection
+                                        if (applyScissor) {
+                                        }
+                                        if (rect != null) {
+                                            rect.applyTransform(globalMatrix)
+                                            list.setScissorState(ag, AGScissor(rect))
+                                        } else {
+                                            list.setScissorState(ag, AGScissor.NIL)
                                         }
                                     }
-                                } finally {
-                                    list.uboDelete(ubo)
-                                }
 
+                                    is ClearCommand -> {
+                                        list.clearStencil(cmd.i)
+                                        list.stencilMask(0xFF)
+                                        list.clear(false, false, true)
+                                    }
+
+                                    is ShapeCommand -> {
+                                        val paintShader = cmd.paintShader
+                                        //println("cmd.vertexCount=${cmd.vertexCount}, cmd.vertexIndex=${cmd.vertexIndex}, paintShader=$paintShader")
+                                        batcher.simulateBatchStats(cmd.vertexCount)
+                                        //println(paintShader.uniforms)
+                                        tempUniforms.clear()
+                                        paintShader?.uniforms?.let { resolve(ctx, it, paintShader.texUniforms) }
+                                        tempUniforms.put(paintShader?.uniforms)
+                                        val pixelScale = decomposed.scaleAvg / ctx.bp.globalToWindowScaleAvg
+                                        //val pixelScale = 1f
+                                        tempUniforms[GpuShapeViewPrograms.u_GlobalPixelScale] = pixelScale
+
+                                        val texUnit = tempUniforms[DefaultShaders.u_Tex] as? AGTextureUnit?
+                                        val premultiplied = texUnit?.texture?.premultiplied ?: false
+                                        //val premultiplied = false
+                                        val outPremultiplied = ag.isRenderingToTexture
+
+                                        //println("outPremultiplied=$outPremultiplied, blendMode=${cmd.blendMode?.name}")
+
+                                        tempUniforms[GpuShapeViewPrograms.u_InputPre] = premultiplied.toInt().toFloat()
+                                        tempUniforms[BatchBuilder2D.u_OutputPre] = outPremultiplied
+
+                                        list.uniformsSet(tempUniforms)
+                                        list.setStencilState(cmd.stencilOpFunc, cmd.stencilRef)
+                                        list.setColorMaskState(cmd.colorMask)
+                                        list.setBlendingState((cmd.blendMode ?: BlendMode.NORMAL)?.factors(outPremultiplied))
+                                        if (cmd.cullFace != null) {
+                                            list.enableCullFace()
+                                            list.cullFace(cmd.cullFace!!)
+                                        } else {
+                                            list.disableCullFace()
+                                        }
+                                        //println(ctx.batch.viewMat2D)
+                                        list.draw(cmd.drawType, cmd.vertexCount, cmd.vertexIndex)
+                                    }
+                                }
                             }
+
                         }
                         //list.finish()
 
@@ -239,14 +225,13 @@ class GpuShapeViewCommands {
         texturesToDelete.clear()
     }
 
-    private fun resolve(ctx: RenderContext, uniforms: AG.UniformValues, texUniforms: AG.UniformValues) {
-        texUniforms.fastForEach { uniform, value ->
-            if (value is Bitmap) {
-                val tex = ctx.ag.tempTexturePool.alloc()
-                tex.upload(value)
-                uniforms[uniform] = AG.TextureUnit(tex)
-                texturesToDelete.add(tex)
-            }
+    private fun resolve(ctx: RenderContext, uniforms: AGUniformValues, texUniforms: Map<Uniform, Bitmap>) {
+        var unitId = 0
+        for ((uniform, value) in texUniforms) {
+            val tex = ctx.ag.tempTexturePool.alloc()
+            tex.upload(value)
+            uniforms[uniform] = AGTextureUnit(unitId++, tex)
+            texturesToDelete.add(tex)
         }
     }
 
@@ -259,15 +244,16 @@ class GpuShapeViewCommands {
     //object FinishCommand : ICommand
 
     data class ShapeCommand(
-        var drawType: AG.DrawType = AG.DrawType.LINE_STRIP,
+        var drawType: AGDrawType = AGDrawType.LINE_STRIP,
         var vertexIndex: Int = 0,
         var vertexEnd: Int = 0,
         var paintShader: GpuShapeViewPrograms.PaintShader?,
         var program: Program? = null,
-        var colorMask: AG.ColorMaskState? = null,
-        var stencil: AG.StencilState? = null,
+        var colorMask: AGColorMaskState? = null,
+        var stencilOpFunc: AGStencilOpFuncState? = null,
+        var stencilRef: AGStencilReferenceState = AGStencilReferenceState.DEFAULT,
         var blendMode: BlendMode? = null,
-        var cullFace: AG.CullFace? = null
+        var cullFace: AGCullFace? = null
     ) : ICommand {
         val vertexCount: Int get() = vertexEnd - vertexIndex
     }

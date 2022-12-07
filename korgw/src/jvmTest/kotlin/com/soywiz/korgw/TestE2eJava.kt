@@ -39,18 +39,17 @@ class TestE2eJava {
                 gameWindow.onRenderEvent {
                     try {
                         ag.clear(Colors.DARKGREY)
-                        val vertices = ag.createVertexBuffer(floatArrayOf(
+                        val vertices = ag.createBuffer(floatArrayOf(
                             -1f, -1f,
                             -1f, +1f,
                             +1f, +1f
                         ))
-                        ag.draw(
-                            vertices,
+                        ag.drawV2(
+                            AGVertexArrayObject(AGVertexData(vertices, DefaultShaders.LAYOUT_DEBUG)),
                             program = DefaultShaders.PROGRAM_DEBUG,
-                            type = AG.DrawType.TRIANGLES,
-                            vertexLayout = DefaultShaders.LAYOUT_DEBUG,
+                            type = AGDrawType.TRIANGLES,
                             vertexCount = 3,
-                            uniforms = AG.UniformValues(
+                            uniforms = AGUniformValues(
                                 //DefaultShaders.u_ProjMat to Matrix3D().setToOrtho(0f, 0f, WIDTH.toFloat(), HEIGHT.toFloat(), -1f, +1f)
                             )
                         )

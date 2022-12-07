@@ -15,6 +15,9 @@ import com.soywiz.korio.file.*
 import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korte.*
+import java.awt.Color
+import java.awt.Font
+import javax.swing.JLabel
 import kotlin.math.*
 import kotlin.reflect.*
 import kotlin.reflect.full.*
@@ -647,13 +650,15 @@ internal class UiRowEditableValue(app: UiApplication, val labelText: String, val
     val leftPadding = UiLabel(app)
     val label = UiLabel(app).apply {
         text = labelText
-        preferredWidth = 50.percent
+        val component = (this@apply.nativeComponent as JLabel)
+        component.font = Font(component.font.name, Font.BOLD, component.font.size)
+        component.foreground = Color.DARK_GRAY
     }
     init {
         layout = HorizontalUiLayout
-        leftPadding.preferredSize(16.pt, 32.pt)
-        label.preferredSize(50.percent - 16.pt, 32.pt)
-        editor.preferredSize(50.percent, 32.pt)
+        leftPadding.preferredSize(8.pt, 24.pt)
+        label.preferredSize(100.pt, 24.pt)
+        editor.preferredSize(100.percent - 100.pt - (8.pt * 2) - 8.pt, 24.pt)
         //backgroundColor = Colors.RED
         addChild(leftPadding)
         addChild(label)

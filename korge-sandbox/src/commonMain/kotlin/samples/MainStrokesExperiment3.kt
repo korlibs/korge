@@ -5,7 +5,7 @@ import com.soywiz.kds.forEachRatio01
 import com.soywiz.kds.getCyclic
 import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.klock.seconds
-import com.soywiz.korag.AG
+import com.soywiz.korag.*
 import com.soywiz.korev.Key
 import com.soywiz.korge.input.keys
 import com.soywiz.korge.scene.Scene
@@ -103,10 +103,10 @@ class MainStrokesExperiment2 : Scene() {
         val path = buildVectorPath {}
         val curves = path.getCurves()
         val points = curves.toStrokePointsList(10.0, mode = StrokePointsMode.SCALABLE_POS_NORMAL_WIDTH)
-        //addChild(DebugVertexView(points.vector, type = AG.DrawType.LINE_STRIP).also { it.color = Colors.WHITE })
-        val dbv = debugVertexView(points.map { it.vector }, type = AG.DrawType.TRIANGLE_STRIP) { color = Colors.WHITE }
-        val dbv3 = debugVertexView(type = AG.DrawType.LINE_STRIP) { color = Colors.BLUE.withAd(0.1) }
-        val dbv2 = debugVertexView(type = AG.DrawType.POINTS) { color = Colors.RED }
+        //addChild(DebugVertexView(points.vector, type = AGDrawType.LINE_STRIP).also { it.color = Colors.WHITE })
+        val dbv = debugVertexView(points.map { it.vector }, type = AGDrawType.TRIANGLE_STRIP) { color = Colors.WHITE }
+        val dbv3 = debugVertexView(type = AGDrawType.LINE_STRIP) { color = Colors.BLUE.withAd(0.1) }
+        val dbv2 = debugVertexView(type = AGDrawType.POINTS) { color = Colors.RED }
         val dbv4 = gpuShapeView {  }
         //val dbv4 = graphics {  }
 
@@ -336,7 +336,7 @@ class StrokeView(val points: IVectorArrayList) : View() {
         }
         gpuShapeViewCommands.verticesEnd()
         gpuShapeViewCommands.draw(
-            AG.DrawType.TRIANGLE_STRIP,
+            AGDrawType.TRIANGLE_STRIP,
             GpuShapeViewPrograms.paintToShaderInfo(Matrix(), Colors.RED, 1.0, 6.0)
         )
         ctx.flush()

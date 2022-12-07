@@ -1,9 +1,6 @@
 package com.soywiz.korag
 
-import com.soywiz.kds.fastArrayListOf
-import com.soywiz.kmem.toIntRound
 import com.soywiz.korag.shader.Program
-import com.soywiz.korag.shader.VertexLayout
 import com.soywiz.korma.geom.Rectangle
 
 fun AGList.enableBlend(): Unit = enable(AGEnable.BLEND)
@@ -17,51 +14,51 @@ fun AGList.disableDepth(): Unit = disable(AGEnable.DEPTH)
 fun AGList.disableScissor(): Unit = disable(AGEnable.SCISSOR)
 fun AGList.disableStencil(): Unit = disable(AGEnable.STENCIL)
 
-fun AGList.setBlendingState(blending: AG.Blending? = null) {
-    val blending = blending ?: AG.Blending.NORMAL
+fun AGList.setBlendingState(blending: AGBlending? = null) {
+    val blending = blending ?: AGBlending.NORMAL
     enableDisable(AGEnable.BLEND, blending.enabled) {
         blendEquation(blending.eqRGB, blending.eqA)
         blendFunction(blending.srcRGB, blending.dstRGB, blending.srcA, blending.dstA)
     }
 }
 
-fun AGList.setRenderState(renderState: AG.RenderState) {
-    enableDisable(AGEnable.CULL_FACE, renderState.frontFace != AG.FrontFace.BOTH) {
+fun AGList.setRenderState(renderState: AGRenderState) {
+    enableDisable(AGEnable.CULL_FACE, renderState.frontFace != AGFrontFace.BOTH) {
         frontFace(renderState.frontFace)
     }
 
     depthMask(renderState.depthMask)
     depthRange(renderState.depthNear, renderState.depthFar)
 
-    enableDisable(AGEnable.DEPTH, renderState.depthFunc != AG.CompareMode.ALWAYS) {
+    enableDisable(AGEnable.DEPTH, renderState.depthFunc != AGCompareMode.ALWAYS) {
         depthFunction(renderState.depthFunc)
     }
 }
 
-fun AGList.setColorMaskState(colorMask: AG.ColorMaskState?) {
+fun AGList.setColorMaskState(colorMask: AGColorMaskState?) {
     colorMask(colorMask?.red ?: true, colorMask?.green ?: true, colorMask?.blue ?: true, colorMask?.alpha ?: true)
 }
 
-fun AGList.setStencilState(stencil: AG.StencilState?) {
-    if (stencil != null && stencil.enabled) {
+fun AGList.setStencilState(stencilOpFunc: AGStencilOpFuncState?, stencilRef: AGStencilReferenceState) {
+    if (stencilOpFunc != null && stencilOpFunc.enabled) {
         enable(AGEnable.STENCIL)
-        stencilFunction(stencil.compareMode, stencil.referenceValue, stencil.readMask)
+        stencilFunction(stencilOpFunc.compareMode, stencilRef.referenceValue, stencilRef.readMask)
         stencilOperation(
-            stencil.actionOnDepthFail,
-            stencil.actionOnDepthPassStencilFail,
-            stencil.actionOnBothPass
+            stencilOpFunc.actionOnDepthFail,
+            stencilOpFunc.actionOnDepthPassStencilFail,
+            stencilOpFunc.actionOnBothPass
         )
-        stencilMask(stencil.writeMask)
+        stencilMask(stencilRef.writeMask)
     } else {
         disable(AGEnable.STENCIL)
         stencilMask(0)
     }
 }
 
-fun AGList.setScissorState(ag: AG, scissor: AG.Scissor? = null) =
+fun AGList.setScissorState(ag: AG, scissor: AGScissor = AGScissor.NIL) =
     setScissorState(ag.currentRenderBuffer, ag.mainRenderBuffer, scissor)
 
-fun AGList.setScissorState(currentRenderBuffer: AG.BaseRenderBuffer?, mainRenderBuffer: AG.BaseRenderBuffer, scissor: AG.Scissor? = null) {
+fun AGList.setScissorState(currentRenderBuffer: AGBaseFrameBuffer?, mainRenderBuffer: AGBaseFrameBuffer, scissor: AGScissor = AGScissor.NIL) {
     if (currentRenderBuffer == null) return
 
     //println("applyScissorState")
@@ -73,7 +70,7 @@ fun AGList.setScissorState(currentRenderBuffer: AG.BaseRenderBuffer?, mainRender
     if (currentRenderBuffer === mainRenderBuffer) {
         var realScissors: Rectangle? = finalScissorBL
         realScissors?.setTo(0.0, 0.0, realBackWidth.toDouble(), realBackHeight.toDouble())
-        if (scissor != null) {
+        if (scissor != AGScissor.NIL) {
             tempRect.setTo(
                 currentRenderBuffer.x + scissor.x,
                 ((currentRenderBuffer.y + currentRenderBuffer.height) - (scissor.y + scissor.height)),
@@ -101,64 +98,25 @@ fun AGList.setScissorState(currentRenderBuffer: AG.BaseRenderBuffer?, mainRender
     } else {
         //println("[RENDER_TARGET] scissor: $scissor")
 
-        enableDisable(AGEnable.SCISSOR, scissor != null) {
-            scissor(scissor!!.x.toIntRound(), scissor.y.toIntRound(), scissor.width.toIntRound(), scissor.height.toIntRound())
+        enableDisable(AGEnable.SCISSOR, scissor != AGScissor.NIL) {
+            scissor(scissor.x, scissor.y, scissor.width, scissor.height)
         }
     }
 }
 
 fun AGList.setState(
-    blending: AG.Blending = AG.Blending.NORMAL,
-    stencil: AG.StencilState = AG.StencilState.DUMMY,
-    colorMask: AG.ColorMaskState = AG.ColorMaskState.DUMMY,
-    renderState: AG.RenderState = AG.RenderState.DUMMY,
+    blending: AGBlending = AGBlending.NORMAL,
+    stencilOpFunc: AGStencilOpFuncState = AGStencilOpFuncState.DEFAULT,
+    stencilRef: AGStencilReferenceState = AGStencilReferenceState.DEFAULT,
+    colorMask: AGColorMaskState = AGColorMaskState.ALL_ENABLED,
+    renderState: AGRenderState = AGRenderState.DEFAULT,
 ) {
     setBlendingState(blending)
     setRenderState(renderState)
     setColorMaskState(colorMask)
-    setStencilState(stencil)
+    setStencilState(stencilOpFunc, stencilRef)
 }
 
 inline fun AGList.useProgram(ag: AG, program: Program) {
     useProgram(ag.getProgram(program))
-}
-
-inline fun AGList.uniformsSet(uniforms: AG.UniformValues?, block: () -> Unit) {
-    //if (true) {
-        tempUBOs.alloc { ubo ->
-            uboSet(ubo, uniforms ?: AG.UniformValues())
-            uboUse(ubo)
-            block()
-        }
-    //} else {
-    //    val ubo = uboCreate()
-    //    try {
-    //        uboSet(ubo, uniforms ?: AG.UniformValues())
-    //        uboUse(ubo)
-    //        block()
-    //    } finally {
-    //        uboDelete(ubo)
-    //    }
-    //}
-}
-
-inline fun AGList.vertexArrayObjectSet(vao: AG.VertexArrayObject, block: () -> Unit) {
-    val vaoId = vaoCreate()
-    try {
-        vaoSet(vaoId, vao)
-        vaoUse(vaoId)
-        block()
-    } finally {
-        vaoUse(0)
-        vaoDelete(vaoId)
-    }
-}
-
-inline fun AGList.vertexArrayObjectSet(ag: AG, layout: VertexLayout, data: Any, offset: Int = 0, length: Int = -1, block: () -> Unit) {
-    ag.tempVertexBufferPool.alloc { buffer ->
-        buffer.upload(data, offset, length)
-        vertexArrayObjectSet(AG.VertexArrayObject(fastArrayListOf(AG.VertexData(buffer, layout)))) {
-            block()
-        }
-    }
 }

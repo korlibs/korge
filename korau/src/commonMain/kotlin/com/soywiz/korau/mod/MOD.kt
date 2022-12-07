@@ -3,28 +3,15 @@
 package com.soywiz.korau.mod
 
 import com.soywiz.kds.IntDeque
-import com.soywiz.klock.TimeSpan
 import com.soywiz.klock.measureTime
-import com.soywiz.klock.seconds
-import com.soywiz.kmem.MemBufferWrap
-import com.soywiz.kmem.NewInt8Buffer
-import com.soywiz.kmem.Uint8Buffer
-import com.soywiz.kmem.Uint8BufferAlloc
-import com.soywiz.kmem.toUint8Buffer
-import com.soywiz.korau.format.AudioDecodingProps
-import com.soywiz.korau.format.AudioFormat
-import com.soywiz.korau.sound.AudioSamples
-import com.soywiz.korau.sound.AudioStream
+import com.soywiz.kmem.*
 import com.soywiz.korau.sound.NativeSoundProvider
 import com.soywiz.korau.sound.Sound
 import com.soywiz.korau.sound.nativeSoundProvider
 import com.soywiz.korio.file.VfsFile
 import com.soywiz.korio.stream.AsyncStream
-import com.soywiz.korio.stream.readAll
 import com.soywiz.korio.stream.readBytesExact
-import com.soywiz.korio.stream.slice
 import com.soywiz.korio.stream.sliceStart
-import kotlin.math.min
 import kotlin.math.pow
 
 /*
@@ -143,7 +130,7 @@ class Protracker : BaseModuleTracker() {
     var signature: String = ""
     var songlen = 1
     var repeatpos = 0
-    var patterntable: Uint8Buffer = Uint8BufferAlloc(0)
+    var patterntable: Uint8Buffer = Uint8Buffer(0)
     var channels: Int = 4
     var sample = emptyArray<Sample>()
     var samples: Int = 31
@@ -165,7 +152,7 @@ class Protracker : BaseModuleTracker() {
 
         songlen = 1
         repeatpos = 0
-        patterntable = Uint8BufferAlloc(128)
+        patterntable = Uint8Buffer(128)
 
         channels = 4
 
@@ -269,9 +256,9 @@ class Protracker : BaseModuleTracker() {
         patterns += 1
         val patlen = 4 * 64 * channels
 
-        pattern = Array(patterns) { Uint8BufferAlloc(patlen) }
-        note = Array(patterns) { Uint8BufferAlloc(channels * 64) }
-        pattern_unpack = Array(patterns) { Uint8BufferAlloc(channels * 64 * 5) }
+        pattern = Array(patterns) { Uint8Buffer(patlen) }
+        note = Array(patterns) { Uint8Buffer(channels * 64) }
+        pattern_unpack = Array(patterns) { Uint8Buffer(channels * 64 * 5) }
         for (i in 0 until patterns) {
             for (j in 0 until patlen) pattern[i][j] = buffer[1084 + i * patlen + j]
             for (j in 0 until 64) {

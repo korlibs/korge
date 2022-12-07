@@ -1,7 +1,8 @@
 package com.soywiz.korag.gl
 
-import com.soywiz.kds.fastCastTo
+import com.soywiz.kds.*
 import com.soywiz.kds.iterators.fastForEach
+import com.soywiz.kds.lock.*
 import com.soywiz.kgl.KmlGl
 import com.soywiz.kgl.deleteBuffer
 import com.soywiz.kgl.deleteFramebuffer
@@ -11,37 +12,17 @@ import com.soywiz.kgl.genBuffer
 import com.soywiz.kgl.genFramebuffer
 import com.soywiz.kgl.genRenderbuffer
 import com.soywiz.kgl.genTexture
-import com.soywiz.kmem.FBuffer
+import com.soywiz.kmem.*
 import com.soywiz.kmem.arraycopy
-import com.soywiz.kmem.fbuffer
-import com.soywiz.kmem.get
-import com.soywiz.kmem.toInt
-import com.soywiz.korag.AG
-import com.soywiz.korag.AGBlendEquation
-import com.soywiz.korag.AGBlendFactor
-import com.soywiz.korag.AGBufferKind
-import com.soywiz.korag.AGCompareMode
-import com.soywiz.korag.AGCullFace
-import com.soywiz.korag.AGDrawType
-import com.soywiz.korag.AGEnable
-import com.soywiz.korag.AGFrontFace
-import com.soywiz.korag.AGGlobalState
-import com.soywiz.korag.AGIndexType
-import com.soywiz.korag.AGQueueProcessor
-import com.soywiz.korag.internal.setFloats
-import com.soywiz.korag.shader.Program
-import com.soywiz.korag.shader.ProgramConfig
-import com.soywiz.korag.shader.UniformLayout
-import com.soywiz.korag.shader.VarType
+import com.soywiz.korag.*
+import com.soywiz.korag.shader.*
 import com.soywiz.korag.shader.gl.GlslConfig
 import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.bitmap.Bitmap8
 import com.soywiz.korim.bitmap.FloatBitmap32
-import com.soywiz.korim.bitmap.ForcedTexId
 import com.soywiz.korim.bitmap.NativeImage
 import com.soywiz.korim.color.*
-import com.soywiz.korim.vector.BitmapVector
 import com.soywiz.korio.annotations.KorIncomplete
 import com.soywiz.korio.annotations.KorInternal
 import com.soywiz.korio.async.launchImmediately
@@ -109,6 +90,8 @@ class AGQueueProcessorOpenGL(
     override fun finish() {
         gl.flush()
         //gl.finish()
+
+        deletePendingObjects()
 
        //doPrint = if (doPrintTimer.elapsed >= 1.seconds) {
        //    println("---------------------------------")
@@ -191,34 +174,64 @@ class AGQueueProcessorOpenGL(
         var cachedVersion = -1
     }
 
-    private val buffers = FastResources { BufferInfo(it) }
-
-    override fun bufferCreate(id: Int) {
-        buffers.getOrCreate(id)
-    }
-
-    override fun bufferDelete(id: Int) {
-        buffers.tryGetAndDelete(id)?.let { gl.deleteBuffer(it.glId); it.glId = 0 }
-    }
-
-    private fun bindBuffer(buffer: AG.Buffer, target: AGBufferKind) {
-        val bufferInfo = buffers[buffer.agId] ?: return
-        if (bufferInfo.cachedVersion != globalState.contextVersion) {
-            bufferInfo.cachedVersion = globalState.contextVersion
-            buffer.dirty = true
-            bufferInfo.glId = 0
-        }
-        if (bufferInfo.glId <= 0) {
-            bufferInfo.glId = gl.genBuffer()
-        }
-
-        gl.bindBuffer(target.toGl(), bufferInfo.glId)
-
-        if (buffer.dirty) {
-            val mem = buffer.mem
-            if (mem != null) {
-                gl.bufferData(target.toGl(), buffer.memLength, mem, KmlGl.STATIC_DRAW)
+    private fun deletePendingObjects() {
+        while (true) {
+            objectsToDeleteLock {
+                if (objectsToDelete.isNotEmpty()) {
+                    objectsToDelete.toList().also {
+                        objectsToDelete.clear()
+                    }
+                } else {
+                    return
+                }
+            }.fastForEach {
+                it.delete()
             }
+        }
+
+    }
+    private val objectsToDeleteLock = Lock()
+    private val objectsToDelete = fastArrayListOf<GLBaseObject>()
+
+    private open inner class GLBaseObject : AGNativeObject {
+        open fun delete() {
+        }
+
+        final override fun markToDelete() {
+            objectsToDeleteLock { objectsToDelete += this }
+        }
+    }
+
+    private val AGBuffer.gl: GLBuffer get() = createOnce { GLBuffer() }
+    private inner class GLBuffer : GLBaseObject() {
+        var id = gl.genBuffer()
+        override fun delete() {
+            gl.deleteBuffer(id)
+            id = -1
+        }
+    }
+
+    fun <T : AGObject, R: AGNativeObject> T.createOnce(block: (T) -> R): R {
+        if (this._native == null || this._cachedContextVersion != globalState.contextVersion) {
+            this._cachedContextVersion = globalState.contextVersion
+            this._native = block(this)
+        }
+        return this._native as R
+    }
+
+    fun <T : AGObject> T.update(block: (T) -> Unit) {
+        if (this._cachedVersion != this._version) {
+            this._cachedVersion = this._version
+            block(this)
+        }
+    }
+
+    private fun bindBuffer(buffer: AGBuffer, target: AGBufferKind) {
+        val bufferInfo = buffer.gl
+        gl.bindBuffer(target.toGl(), bufferInfo.id)
+        buffer.update {
+            val mem = buffer.mem ?: Buffer(0)
+            gl.bufferData(target.toGl(), mem.sizeInBytes, mem, KmlGl.STATIC_DRAW)
         }
     }
 
@@ -230,12 +243,12 @@ class AGQueueProcessorOpenGL(
         vertexCount: Int,
         offset: Int,
         instances: Int,
-        indexType: AGIndexType?,
-        indices: AG.Buffer?
+        indexType: AGIndexType,
+        indices: AGBuffer?
     ) {
         indices?.let { bindBuffer(it, AGBufferKind.INDEX) }
 
-        if (indexType != null) {
+        if (indexType != AGIndexType.NONE) {
             if (instances != 1) {
                 gl.drawElementsInstanced(type.toGl(), vertexCount, indexType.toGl(), offset, instances)
             } else {
@@ -253,13 +266,6 @@ class AGQueueProcessorOpenGL(
     ///////////////////////////////////////
     // UNIFORMS
     ///////////////////////////////////////
-    override fun uniformsSet(layout: UniformLayout, data: FBuffer) {
-        layout.attributes.fastForEach {
-            //currentProgram
-        }
-        TODO()
-    }
-
     override fun depthMask(depth: Boolean) {
         gl.depthMask(depth)
     }
@@ -268,15 +274,15 @@ class AGQueueProcessorOpenGL(
         gl.depthRangef(near, far)
     }
 
-    override fun stencilFunction(compareMode: AG.CompareMode, referenceValue: Int, readMask: Int) {
+    override fun stencilFunction(compareMode: AGCompareMode, referenceValue: Int, readMask: Int) {
         gl.stencilFunc(compareMode.toGl(), referenceValue, readMask)
     }
 
     // @TODO: Separate
     override fun stencilOperation(
-        actionOnDepthFail: AG.StencilOp,
-        actionOnDepthPassStencilFail: AG.StencilOp,
-        actionOnBothPass: AG.StencilOp
+        actionOnDepthFail: AGStencilOp,
+        actionOnDepthPassStencilFail: AGStencilOp,
+        actionOnBothPass: AGStencilOp
     ) {
         gl.stencilOp(actionOnDepthFail.toGl(), actionOnDepthPassStencilFail.toGl(), actionOnBothPass.toGl())
     }
@@ -316,81 +322,54 @@ class AGQueueProcessorOpenGL(
         gl.clearStencil(stencil)
     }
 
-    val vaos = arrayListOf<AG.VertexArrayObject?>()
-
-    //val vaos = IntMap<AG.VertexArrayObject?>()
-    var lastUsedVao: AG.VertexArrayObject? = null
-
-    private fun ensureVaoIndex(index: Int): Int {
-        while (vaos.size <= index) vaos.add(null)
-        return index
-    }
-
-    override fun vaoCreate(id: Int) {
-    }
-
-    override fun vaoDelete(id: Int) {
-        if (id < vaos.size) vaos[id] = null
-    }
-
-    override fun vaoSet(id: Int, vao: AG.VertexArrayObject) {
-        vaos[ensureVaoIndex(id)] = vao
-    }
-
-    override fun vaoUse(id: Int) {
-        val prevVao = lastUsedVao
-        val vao = vaos.getOrNull(id)
-        val cprogram = currentProgram
-        lastUsedVao = vao
-        if (vao == null) {
-            val rvao = prevVao
-            rvao?.list?.fastForEach { entry ->
-                val vattrs = entry.layout.attributes
-                vattrs.fastForEach { att ->
-                    if (att.active) {
-                        val loc = att.fixedLocation ?: cprogram?.getAttribLocation(gl, att.name) ?: 0
-                        if (loc >= 0) {
-                            if (att.divisor != 0) {
-                                gl.vertexAttribDivisor(loc, 0)
-                            }
-                            gl.disableVertexAttribArray(loc)
+    override fun vaoUnuse(vao: AGVertexArrayObject) {
+        vao.list.fastForEach { entry ->
+            val vattrs = entry.layout.attributes
+            vattrs.fastForEach { att ->
+                if (att.active) {
+                    val loc = att.fixedLocation
+                    if (loc >= 0) {
+                        if (att.divisor != 0) {
+                            gl.vertexAttribDivisor(loc, 0)
                         }
+                        gl.disableVertexAttribArray(loc)
                     }
                 }
             }
-        } else {
-            val rvao = vao
-            rvao.list.fastForEach { entry ->
-                val vertices = entry.buffer
-                val vertexLayout = entry.layout
+        }
+    }
 
-                val vattrs = vertexLayout.attributes
-                val vattrspos = vertexLayout.attributePositions
+    override fun vaoUse(vao: AGVertexArrayObject) {
+        vao.list.fastForEach { entry ->
+            val vertices = entry.buffer
+            val vertexLayout = entry.layout
 
-                //if (vertices.kind != AG.BufferKind.VERTEX) invalidOp("Not a VertexBuffer")
+            val vattrs = vertexLayout.attributes
+            val vattrspos = vertexLayout.attributePositions
 
-                bindBuffer(vertices, AGBufferKind.VERTEX)
-                val totalSize = vertexLayout.totalSize
-                for (n in 0 until vattrspos.size) {
-                    val att = vattrs[n]
-                    if (!att.active) continue
-                    val off = vattrspos[n]
-                    val loc = att.fixedLocation ?: cprogram?.getAttribLocation(gl, att.name) ?: 0
-                    val glElementType = att.type.toGl()
-                    val elementCount = att.type.elementCount
-                    if (loc >= 0) {
-                        gl.enableVertexAttribArray(loc)
-                        gl.vertexAttribPointer(
-                            loc,
-                            elementCount,
-                            glElementType,
-                            att.normalized,
-                            totalSize,
-                            off.toLong()
-                        )
-                        if (att.divisor != 0) {
-                            gl.vertexAttribDivisor(loc, att.divisor)
-                        }
+            //if (vertices.kind != AG.BufferKind.VERTEX) invalidOp("Not a VertexBuffer")
+
+            bindBuffer(vertices, AGBufferKind.VERTEX)
+            val totalSize = vertexLayout.totalSize
+            for (n in 0 until vattrspos.size) {
+                val att = vattrs[n]
+                if (!att.active) continue
+                val off = vattrspos[n]
+                val loc = att.fixedLocation
+                val glElementType = att.type.toGl()
+                val elementCount = att.type.elementCount
+                if (loc >= 0) {
+                    gl.enableVertexAttribArray(loc)
+                    gl.vertexAttribPointer(
+                        loc,
+                        elementCount,
+                        glElementType,
+                        att.normalized,
+                        totalSize,
+                        off.toLong()
+                    )
+                    if (att.divisor != 0) {
+                        gl.vertexAttribDivisor(loc, att.divisor)
                     }
                 }
             }
@@ -399,243 +378,84 @@ class AGQueueProcessorOpenGL(
 
     // UBO
 
-    val ubos = arrayListOf<AG.UniformValues?>()
-
-    private fun ensureUboIndex(index: Int): Int {
-        while (ubos.size <= index) ubos.add(null)
-        return index
-    }
-
-
-    override fun uboCreate(id: Int) {
-        //println("uboCreate: id=$id")
-    }
-
-    override fun uboDelete(id: Int) {
-        //println("uboDelete: id=$id")
-        if (id < ubos.size) ubos[id] = null
-    }
-
-    override fun uboSet(id: Int, ubo: AG.UniformValues) {
-        ubos[ensureUboIndex(id)] = ubo
-    }
-
-    private val TEMP_MAX_MATRICES = 1024
-    val tempBuffer = FBuffer(4 * 16 * TEMP_MAX_MATRICES)
-    val tempBufferM2 = FBuffer(4 * 2 * 2)
-    val tempBufferM3 = FBuffer(4 * 3 * 3)
-    val tempBufferM4 = FBuffer(4 * 4 * 4)
-    val tempF32 = tempBuffer.f32
-    private val tempFloats = FloatArray(16 * TEMP_MAX_MATRICES)
-    private val mat3dArray = arrayOf(Matrix3D())
-
-
-    override fun uboUse(id: Int) {
-        val uniforms = ubos[id] ?: return
+    override fun uniformsSet(uniforms: AGUniformValues) {
         val glProgram = currentProgram ?: return
 
         //if (doPrint) println("-----------")
 
-        var textureUnit = 0
+        var textureUnit = -1
         //for ((uniform, value) in uniforms) {
-        for (n in 0 until uniforms.uniforms.size) {
-            val uniform = uniforms.uniforms[n]
+        uniforms.fastForEach { value ->
+            val uniform = value.uniform
             val uniformName = uniform.name
             val uniformType = uniform.type
-            val value = uniforms.values[n]
             val location = glProgram.getUniformLocation(gl, uniformName)
             val declArrayCount = uniform.arrayCount
-            val stride = uniform.type.elementCount
-
-            //println("uniform: $uniform, arrayCount=$arrayCount, stride=$stride")
 
             when (uniformType) {
                 VarType.Sampler2D, VarType.SamplerCube -> {
-                    val unit = value.fastCastTo<AG.TextureUnit>()
-                    gl.activeTexture(KmlGl.TEXTURE0 + textureUnit)
-
-                    val tex = unit.texture
-                    if (tex != null) {
-                        // @TODO: This might be enqueuing commands, we shouldn't do that here.
-                        textureBindEnsuring(tex)
-                        textureSetWrap(tex)
-                        textureSetFilter(tex, unit.linear, unit.trilinear ?: unit.linear)
-                        //val texture = textures[tex.texId]
-                        //if (doPrint) println("BIND TEXTURE: $textureUnit, tex=${tex.texId}, glId=${texture?.glId}")
-                        //println("BIND TEXTURE: $textureUnit, tex=${tex.texId}, implForcedTexId=${tex.implForcedTexId}")
-                    } else {
-                        gl.bindTexture(KmlGl.TEXTURE_2D, 0)
-                        //println("NULL TEXTURE")
-                        //if (doPrint) println("NULL TEXTURE")
-                    }
-
-                    gl.uniform1i(location, textureUnit)
-                    //val texBinding = gl.getIntegerv(gl.TEXTURE_BINDING_2D)
-                    //println("OpenglAG.draw: textureUnit=$textureUnit, textureBinding=$texBinding, instances=$instances, vertexCount=$vertexCount")
                     textureUnit++
-                }
-                VarType.Mat2, VarType.Mat3, VarType.Mat4 -> {
-                    val matArray = when (value) {
-                        is Array<*> -> value
-                        is Matrix3D -> mat3dArray.also { it[0].copyFrom(value) }
-                        else -> error("Not an array or a matrix3d")
-                    }.fastCastTo<Array<Matrix3D>>()
-                    val arrayCount = min(declArrayCount, matArray.size)
+                    val unit = value.nativeValue?.fastCastTo<AGTextureUnit>() ?: AGTextureUnit(textureUnit, null)
+                    //println("unit=${unit.texture}")
+                    //textureUnit = glProgram.getTextureUnit(uniform, unit)
 
-                    val matSize = when (uniformType) {
-                        VarType.Mat2 -> 2; VarType.Mat3 -> 3; VarType.Mat4 -> 4; else -> -1
-                    }
+                    //if (cacheTextureUnit[textureUnit] != unit) {
+                    //    cacheTextureUnit[textureUnit] = unit.clone()
+                        gl.activeTexture(KmlGl.TEXTURE0 + textureUnit)
+                        value.i32[0] = textureUnit
 
-                    for (n in 0 until arrayCount) {
-                        matArray[n].copyToFloatWxH(tempFloats, matSize, matSize, MajorOrder.COLUMN, n * stride)
-                    }
-                    tempBuffer.setFloats(0, tempFloats, 0, stride * arrayCount)
-
-                    if (gl.webgl) {
-                        //if (true) {
-                        val tb = when (uniformType) {
-                            VarType.Mat2 -> tempBufferM2
-                            VarType.Mat3 -> tempBufferM3
-                            VarType.Mat4 -> tempBufferM4
-                            else -> tempBufferM4
-                        }
-
-                        for (n in 0 until arrayCount) {
-                            val itLocation = when (arrayCount) {
-                                1 -> location
-                                else -> gl.getUniformLocation(glProgram.programId, uniform.indexNames[n])
-                            }
-                            arraycopy(tempBuffer.f32, n * stride, tb.f32, 0, stride)
-                            //println("[WEBGL] uniformName[$uniformName]=$itLocation, tb: ${tb.f32.size}")
-                            when (uniform.type) {
-                                VarType.Mat2 -> gl.uniformMatrix2fv(itLocation, 1, false, tb)
-                                VarType.Mat3 -> gl.uniformMatrix3fv(itLocation, 1, false, tb)
-                                VarType.Mat4 -> gl.uniformMatrix4fv(itLocation, 1, false, tb)
-                                else -> invalidOp("Don't know how to set uniform matrix ${uniform.type}")
-                            }
-                        }
-                    } else {
-                        //println("[NO-WEBGL] uniformName[$uniformName]=$location ")
-                        when (uniform.type) {
-                            VarType.Mat2 -> gl.uniformMatrix2fv(location, arrayCount, false, tempBuffer)
-                            VarType.Mat3 -> gl.uniformMatrix3fv(location, arrayCount, false, tempBuffer)
-                            VarType.Mat4 -> gl.uniformMatrix4fv(location, arrayCount, false, tempBuffer)
-                            else -> invalidOp("Don't know how to set uniform matrix ${uniform.type}")
-                        }
-                    }
-                }
-                VarType.Bool1, VarType.Bool2, VarType.Bool3, VarType.Bool4 -> {
-                    when (value) {
-                        is Boolean -> gl.uniform1i(location, value.toInt())
-                        is BooleanArray -> {
-                            when (uniformType.elementCount) {
-                                1 -> gl.uniform1i(location, value[0].toInt())
-                                2 -> gl.uniform2i(location, value[0].toInt(), value[1].toInt())
-                                3 -> gl.uniform3i(location, value[0].toInt(), value[1].toInt(), value[2].toInt())
-                                4 -> gl.uniform4i(location, value[0].toInt(), value[1].toInt(), value[2].toInt(), value[3].toInt())
-                            }
-                        }
-                        else -> TODO()
-                    }
-
-                }
-                VarType.Float1, VarType.Float2, VarType.Float3, VarType.Float4 -> {
-                    var arrayCount = declArrayCount
-                    when (value) {
-                        is Boolean -> tempBuffer.setFloat(0, value.toInt().toFloat())
-                        is Number -> tempBuffer.setAlignedFloat32(0, value.toFloat())
-                        is Vector3D -> tempBuffer.setFloats(0, value.data, 0, stride)
-                        is FloatArray -> {
-                            arrayCount = min(declArrayCount, value.size / stride)
-                            tempBuffer.setFloats(0, value, 0, stride * arrayCount)
-                        }
-                        is Point -> {
-                            tempBuffer.setFloat(0, value.xf)
-                            tempBuffer.setFloat(1, value.yf)
-                        }
-                        is RGBAf -> tempBuffer.setFloats(0, value.data, 0, stride)
-                        is Margin -> {
-                            if (stride >= 1) tempBuffer.setFloat(0, value.top.toFloat())
-                            if (stride >= 2) tempBuffer.setFloat(1, value.right.toFloat())
-                            if (stride >= 3) tempBuffer.setFloat(2, value.bottom.toFloat())
-                            if (stride >= 4) tempBuffer.setFloat(3, value.left.toFloat())
-                        }
-                        is RectCorners -> {
-                            if (stride >= 1) tempBuffer.setFloat(0, value.topLeft.toFloat())
-                            if (stride >= 2) tempBuffer.setFloat(1, value.topRight.toFloat())
-                            if (stride >= 3) tempBuffer.setFloat(2, value.bottomRight.toFloat())
-                            if (stride >= 4) tempBuffer.setFloat(3, value.bottomLeft.toFloat())
-                        }
-                        is RGBA -> {
-                            if (stride >= 1) tempBuffer.setFloat(0, value.rf)
-                            if (stride >= 2) tempBuffer.setFloat(1, value.gf)
-                            if (stride >= 3) tempBuffer.setFloat(2, value.bf)
-                            if (stride >= 4) tempBuffer.setFloat(3, value.af)
-                        }
-                        is RGBAPremultiplied -> {
-                            if (stride >= 1) tempBuffer.setFloat(0, value.rf)
-                            if (stride >= 2) tempBuffer.setFloat(1, value.gf)
-                            if (stride >= 3) tempBuffer.setFloat(2, value.bf)
-                            if (stride >= 4) tempBuffer.setFloat(3, value.af)
-                        }
-                        is Array<*> -> {
-                            arrayCount = min(declArrayCount, value.size)
-                            for (n in 0 until value.size) {
-                                val vector = value[n] as Vector3D
-                                tempBuffer.setFloats(n * stride, vector.data, 0, stride)
-                            }
-                        }
-                        else -> error("Unknown type '$value'")
-                    }
-                    //if (true) {
-                    if (gl.webgl) {
-                        val tb = tempBufferM2
-                        for (n in 0 until arrayCount) {
-                            val itLocation = when (arrayCount) {
-                                1 -> location
-                                else -> gl.getUniformLocation(glProgram.programId, uniform.indexNames[n])
-                            }
-                            val f32 = tb.f32
-                            //println("uniformName[$uniformName] = $itLocation")
-                            arraycopy(tempBuffer.f32, 0, tb.f32, 0, stride)
-
-                            when (uniform.type) {
-                                VarType.Float1 -> gl.uniform1f(itLocation, f32[0])
-                                VarType.Float2 -> gl.uniform2f(itLocation, f32[0], f32[1])
-                                VarType.Float3 -> gl.uniform3f(itLocation, f32[0], f32[1], f32[2])
-                                VarType.Float4 -> gl.uniform4f(itLocation, f32[0], f32[1], f32[2], f32[3])
-                                else -> Unit
-                            }
-                        }
-                    } else {
-                        val tb = tempBuffer
-                        val f32 = tb.f32
-                        if (arrayCount == 1) {
-                            when (uniform.type) {
-                                VarType.Float1 -> gl.uniform1f(location, f32[0])
-                                VarType.Float2 -> gl.uniform2f(location, f32[0], f32[1])
-                                VarType.Float3 -> gl.uniform3f(location, f32[0], f32[1], f32[2])
-                                VarType.Float4 -> gl.uniform4f(location, f32[0], f32[1], f32[2], f32[3])
-                                else -> Unit
-                            }
+                        val tex = unit.texture
+                        if (tex != null) {
+                            // @TODO: This might be enqueuing commands, we shouldn't do that here.
+                            textureBindEnsuring(tex)
+                            textureSetWrap(tex)
+                            textureSetFilter(tex, unit.linear, unit.trilinear ?: unit.linear)
                         } else {
-                            when (uniform.type) {
-                                VarType.Float1 -> gl.uniform1fv(location, arrayCount, tempBuffer)
-                                VarType.Float2 -> gl.uniform2fv(location, arrayCount, tempBuffer)
-                                VarType.Float3 -> gl.uniform3fv(location, arrayCount, tempBuffer)
-                                VarType.Float4 -> gl.uniform4fv(location, arrayCount, tempBuffer)
-                                else -> Unit
-                            }
+                            gl.bindTexture(KmlGl.TEXTURE_2D, 0)
                         }
+                    //}
+                }
+                else -> Unit
+            }
+
+            //val oldValue = glProgram.cache[uniform]
+            //if (value == oldValue) {
+            //    return@fastForEach
+            //}
+            //glProgram.cache[uniform] = value
+
+            //println("uniform: $uniform, arrayCount=${uniform.arrayCount}, stride=${uniform.elementCount}, value=$value old=$oldValue")
+
+            // Store into a direct buffer
+            //arraycopy(value.data, 0, tempData, 0, value.data.size)
+            val data = value.data
+
+            //println("uniform=$uniform, data=${value.data}")
+
+            when (uniformType.kind) {
+                VarKind.TFLOAT -> when (uniform.type) {
+                    VarType.Mat2 -> gl.uniformMatrix2fv(location, declArrayCount, false, data)
+                    VarType.Mat3 -> gl.uniformMatrix3fv(location, declArrayCount, false, data)
+                    VarType.Mat4 -> gl.uniformMatrix4fv(location, declArrayCount, false, data)
+                    else -> when (uniformType.elementCount) {
+                        1 -> gl.uniform1fv(location, declArrayCount, data)
+                        2 -> gl.uniform2fv(location, declArrayCount, data)
+                        3 -> gl.uniform3fv(location, declArrayCount, data)
+                        4 -> gl.uniform4fv(location, declArrayCount, data)
                     }
                 }
-                else -> invalidOp("Don't know how to set uniform ${uniform.type}")
+                else -> when (uniformType.elementCount) {
+                    1 -> gl.uniform1iv(location, declArrayCount, data)
+                    2 -> gl.uniform2iv(location, declArrayCount, data)
+                    3 -> gl.uniform3iv(location, declArrayCount, data)
+                    4 -> gl.uniform4iv(location, declArrayCount, data)
+                }
             }
         }
     }
 
 
-    fun textureSetFilter(tex: AG.Texture, linear: Boolean, trilinear: Boolean = linear) {
+    fun textureSetFilter(tex: AGTexture, linear: Boolean, trilinear: Boolean = linear) {
         val minFilter = if (tex.mipmaps) {
             when {
                 linear -> when {
@@ -656,13 +476,13 @@ class AGQueueProcessorOpenGL(
         gl.texParameteri(tex.implForcedTexTarget.toGl(), KmlGl.TEXTURE_MAG_FILTER, magFilter)
     }
 
-    fun textureSetWrap(tex: AG.Texture) {
+    fun textureSetWrap(tex: AGTexture) {
         gl.texParameteri(tex.implForcedTexTarget.toGl(), KmlGl.TEXTURE_WRAP_S, KmlGl.CLAMP_TO_EDGE)
         gl.texParameteri(tex.implForcedTexTarget.toGl(), KmlGl.TEXTURE_WRAP_T, KmlGl.CLAMP_TO_EDGE)
         if (tex.implForcedTexTarget.dims >= 3) gl.texParameteri(tex.implForcedTexTarget.toGl(), KmlGl.TEXTURE_WRAP_R, KmlGl.CLAMP_TO_EDGE)
     }
 
-    override fun readPixels(x: Int, y: Int, width: Int, height: Int, data: Any, kind: AG.ReadKind) {
+    override fun readPixels(x: Int, y: Int, width: Int, height: Int, data: Any, kind: AGReadKind) {
         val bytesPerPixel = when (data) {
             is IntArray -> 4
             is FloatArray -> 4
@@ -670,30 +490,30 @@ class AGQueueProcessorOpenGL(
             else -> TODO()
         }
         val area = width * height
-        fbuffer(area * bytesPerPixel) { buffer ->
+        BufferTemp(area * bytesPerPixel) { buffer ->
             when (kind) {
-                AG.ReadKind.COLOR -> gl.readPixels(x, y, width, height, KmlGl.RGBA, KmlGl.UNSIGNED_BYTE, buffer)
-                AG.ReadKind.DEPTH -> gl.readPixels(x, y, width, height, KmlGl.DEPTH_COMPONENT, KmlGl.FLOAT, buffer)
-                AG.ReadKind.STENCIL -> gl.readPixels(x, y, width, height, KmlGl.STENCIL_INDEX, KmlGl.UNSIGNED_BYTE, buffer)
+                AGReadKind.COLOR -> gl.readPixels(x, y, width, height, KmlGl.RGBA, KmlGl.UNSIGNED_BYTE, buffer)
+                AGReadKind.DEPTH -> gl.readPixels(x, y, width, height, KmlGl.DEPTH_COMPONENT, KmlGl.FLOAT, buffer)
+                AGReadKind.STENCIL -> gl.readPixels(x, y, width, height, KmlGl.STENCIL_INDEX, KmlGl.UNSIGNED_BYTE, buffer)
             }
             when (data) {
-                is IntArray -> buffer.getAlignedArrayInt32(0, data, 0, area)
-                is FloatArray -> buffer.getAlignedArrayFloat32(0, data, 0, area)
-                is ByteArray -> buffer.getArrayInt8(0, data, 0, area)
+                is IntArray -> buffer.getArrayInt32(0, data, size = area)
+                is FloatArray -> buffer.getArrayFloat32(0, data, size = area)
+                is ByteArray -> buffer.getArrayInt8(0, data, size = area)
                 else -> TODO()
             }
             //println("readColor.HASH:" + bitmap.computeHash())
         }
     }
 
-    override fun readPixelsToTexture(textureId: Int, x: Int, y: Int, width: Int, height: Int, kind: AG.ReadKind) {
+    override fun readPixelsToTexture(textureId: Int, x: Int, y: Int, width: Int, height: Int, kind: AGReadKind) {
         //println("BEFORE:" + gl.getError())
         //textureBindEnsuring(tex)
-        textureBind(textureId, AG.TextureTargetKind.TEXTURE_2D, -1)
+        textureBind(textureId, AGTextureTargetKind.TEXTURE_2D, -1)
         //println("BIND:" + gl.getError())
         gl.copyTexImage2D(KmlGl.TEXTURE_2D, 0, KmlGl.RGBA, x, y, width, height, 0)
 
-        //val data = FBuffer.alloc(800 * 800 * 4)
+        //val data = Buffer.alloc(800 * 800 * 4)
         //for (n in 0 until 800 * 800) data.setInt(n, Colors.RED.value)
         //gl.texImage2D(KmlGl.TEXTURE_2D, 0, KmlGl.RGBA, 800, 800, 0, KmlGl.RGBA, KmlGl.UNSIGNED_BYTE, data)
         //println("COPY_TEX:" + gl.getError())
@@ -720,14 +540,14 @@ class AGQueueProcessorOpenGL(
         tex.glId = 0
     }
 
-    override fun textureBind(textureId: Int, target: AG.TextureTargetKind, implForcedTexId: Int) {
+    override fun textureBind(textureId: Int, target: AGTextureTargetKind, implForcedTexId: Int) {
         val glId = implForcedTexId.takeIf { it >= 0 } ?: textures[textureId]?.glId ?: 0
         //if (glId == -1) println("glId=$glId")
         //println("textureBind: $glId, textureId=$textureId, target=$target, implForcedTexId=$implForcedTexId")
         gl.bindTexture(target.toGl(), glId)
     }
 
-    override fun textureBindEnsuring(tex: AG.Texture?) {
+    override fun textureBindEnsuring(tex: AGTexture?) {
         if (tex == null) return gl.bindTexture(KmlGl.TEXTURE_2D, 0)
 
         // Context lost
@@ -748,15 +568,15 @@ class AGQueueProcessorOpenGL(
         if (!tex.generating) {
             tex.generating = true
             when (source) {
-                is AG.SyncBitmapSourceList -> {
+                is AGSyncBitmapSourceList -> {
                     tex.tempBitmaps = source.gen()
                     tex.generated = true
                 }
-                is AG.SyncBitmapSource -> {
+                is AGSyncBitmapSource -> {
                     tex.tempBitmaps = listOf(source.gen())
                     tex.generated = true
                 }
-                is AG.AsyncBitmapSource -> {
+                is AGAsyncBitmapSource -> {
                     launchImmediately(source.coroutineContext) {
                         tex.tempBitmaps = listOf(source.gen())
                         tex.generated = true
@@ -795,12 +615,12 @@ class AGQueueProcessorOpenGL(
         gl.bindTexture(gl.TEXTURE_2D, 0)
     }
 
-    override fun textureUpdate(textureId: Int, target: AG.TextureTargetKind, index: Int, bmp: Bitmap?, source: AG.BitmapSourceBase, doMipmaps: Boolean, premultiplied: Boolean) {
+    override fun textureUpdate(textureId: Int, target: AGTextureTargetKind, index: Int, bmp: Bitmap?, source: AGBitmapSourceBase, doMipmaps: Boolean, premultiplied: Boolean) {
         //textureBind(textureId, target, -1)
         _textureUpdate(textureId, target, index, bmp, source, doMipmaps, premultiplied)
     }
 
-    fun _textureUpdate(textureId: Int, target: AG.TextureTargetKind, index: Int, bmp: Bitmap?, source: AG.BitmapSourceBase, doMipmaps: Boolean, premultiplied: Boolean) {
+    fun _textureUpdate(textureId: Int, target: AGTextureTargetKind, index: Int, bmp: Bitmap?, source: AGBitmapSourceBase, doMipmaps: Boolean, premultiplied: Boolean) {
         val bytesPerPixel = if (source.rgba) 4 else 1
 
         val isFloat = bmp is FloatBitmap32
@@ -811,7 +631,7 @@ class AGQueueProcessorOpenGL(
         }
 
         val texTarget = when (target) {
-            AG.TextureTargetKind.TEXTURE_CUBE_MAP -> KmlGl.TEXTURE_CUBE_MAP_POSITIVE_X + index
+            AGTextureTargetKind.TEXTURE_CUBE_MAP -> KmlGl.TEXTURE_CUBE_MAP_POSITIVE_X + index
             else -> target.toGl()
         }
 
@@ -821,7 +641,6 @@ class AGQueueProcessorOpenGL(
         if (bmp == null) {
             gl.texImage2D(target.toGl(), 0, type, source.width, source.height, 0, type, KmlGl.UNSIGNED_BYTE, null)
         } else {
-
             if (bmp is NativeImage) {
                 if (bmp.area != 0) {
                     prepareTexImage2D()
@@ -854,14 +673,14 @@ class AGQueueProcessorOpenGL(
         }
     }
 
-    private fun createBufferForBitmap(bmp: Bitmap?, premultiplied: Boolean): FBuffer? = when (bmp) {
+    private fun createBufferForBitmap(bmp: Bitmap?, premultiplied: Boolean): Buffer? = when (bmp) {
         null -> null
         is NativeImage -> unsupported("Should not call createBufferForBitmap with a NativeImage")
-        is Bitmap8 -> FBuffer(bmp.area).also { mem -> arraycopy(bmp.data, 0, mem.arrayByte, 0, bmp.area) }
-        is FloatBitmap32 -> FBuffer(bmp.area * 4 * 4).also { mem -> arraycopy(bmp.data, 0, mem.arrayFloat, 0, bmp.area * 4) }
-        else -> FBuffer(bmp.area * 4).also { mem ->
+        is Bitmap8 -> Buffer(bmp.area).also { mem -> arraycopy(bmp.data, 0, mem.i8, 0, bmp.area) }
+        is FloatBitmap32 -> Buffer(bmp.area * 4 * 4).also { mem -> arraycopy(bmp.data, 0, mem.f32, 0, bmp.area * 4) }
+        else -> Buffer(bmp.area * 4).also { mem ->
             val abmp: Bitmap32 = if (premultiplied) bmp.toBMP32IfRequired().premultipliedIfRequired() else bmp.toBMP32IfRequired().depremultipliedIfRequired()
-            arraycopy(abmp.ints, 0, mem.arrayInt, 0, abmp.area)
+            arraycopy(abmp.ints, 0, mem.i32, 0, abmp.area)
         }
     }
 

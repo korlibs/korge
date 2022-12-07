@@ -2,8 +2,7 @@ package com.soywiz.korau.mod
 
 import com.soywiz.klock.TimeSpan
 import com.soywiz.klock.seconds
-import com.soywiz.kmem.Uint8Buffer
-import com.soywiz.kmem.toUint8Buffer
+import com.soywiz.kmem.*
 import com.soywiz.korau.format.AudioDecodingProps
 import com.soywiz.korau.format.AudioFormat
 import com.soywiz.korau.sound.AudioSamples
@@ -27,7 +26,7 @@ abstract class BaseModuleTracker {
                 val time: TimeSpan? = when (props.exactTimings) {
                     true -> {
                         val mod = createTracker()
-                        if (!mod.parse(data.readAll().toUint8Buffer())) return null
+                        if (!mod.parse(data.readAll().toNBufferUInt8())) return null
                         mod.totalLengthInSamples?.let { samples -> (samples.toDouble() / mod.samplerate.toDouble()).seconds }
                     }
                     else -> null
@@ -41,7 +40,7 @@ abstract class BaseModuleTracker {
 
         override suspend fun decodeStream(data: AsyncStream, props: AudioDecodingProps): AudioStream? {
             val mod = createTracker()
-            if (!mod.parse(data.readAll().toUint8Buffer())) return null
+            if (!mod.parse(data.readAll().toNBufferUInt8())) return null
             return mod.createAudioStream()
         }
     }
@@ -63,7 +62,7 @@ abstract class BaseModuleTracker {
     var totalLengthInSamples: Long? = null
 
     suspend fun createSoundFromFile(file: VfsFile, soundProvider: NativeSoundProvider = nativeSoundProvider): Sound {
-        parseAndInit(file.readBytes().toUint8Buffer())
+        parseAndInit(file.readBytes().toNBufferUInt8())
         return createSound(soundProvider)
     }
 

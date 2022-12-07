@@ -6,31 +6,12 @@
 
 package com.soywiz.korag
 
-import com.soywiz.kds.ConcurrentPool
-import com.soywiz.kds.Deque
-import com.soywiz.kds.FloatDeque
-import com.soywiz.kds.IntDeque
-import com.soywiz.kds.IntSet
-import com.soywiz.kds.Pool
-import com.soywiz.kds.fastCastTo
+import com.soywiz.kds.*
 import com.soywiz.kds.lock.NonRecursiveLock
-import com.soywiz.kmem.FBuffer
-import com.soywiz.kmem.extract
-import com.soywiz.kmem.extract16
-import com.soywiz.kmem.extract24
-import com.soywiz.kmem.extract4
-import com.soywiz.kmem.extract8
-import com.soywiz.kmem.extractBool
-import com.soywiz.kmem.finsert
-import com.soywiz.kmem.finsert16
-import com.soywiz.kmem.finsert24
-import com.soywiz.kmem.finsert4
-import com.soywiz.kmem.finsert8
+import com.soywiz.kmem.*
 import com.soywiz.korag.annotation.KoragExperimental
 import com.soywiz.korag.shader.Program
 import com.soywiz.korag.shader.ProgramConfig
-import com.soywiz.korag.shader.UniformLayout
-import com.soywiz.korio.annotations.KorIncomplete
 import com.soywiz.korio.annotations.KorInternal
 import com.soywiz.korma.geom.Rectangle
 import com.soywiz.krypto.encoding.hex
@@ -79,8 +60,6 @@ class AGGlobalState(val checked: Boolean = false) {
     internal var renderThreadId: Long = -1L
     internal var renderThreadName: String? = null
     internal val vaoIndices = AGManagedObjectPool("vao", checked = checked)
-    internal val uboIndices = AGManagedObjectPool("ubo", checked = checked)
-    internal val bufferIndices = AGManagedObjectPool("buffer", checked = checked)
     internal val programIndices = AGManagedObjectPool("program", checked = checked)
     internal val textureIndices = AGManagedObjectPool("texture", checked = checked)
     internal val frameBufferIndices = AGManagedObjectPool("frame", checked = checked)
@@ -206,9 +185,6 @@ class AGList(val globalState: AGGlobalState) {
         }
     }
 
-    val tempUBOs = Pool { uboCreate() }
-    private val uniformValuesPool = Pool { AG.UniformValues() }
-
     @KorInternal
     fun AGQueueProcessor.processBlocking(maxCount: Int = 1): Boolean {
         var pending = maxCount
@@ -236,7 +212,7 @@ class AGList(val globalState: AGGlobalState) {
                     return true
                 }
                 CMD_CONTEXT_LOST -> processor.contextLost()
-                CMD_DEPTH_FUNCTION -> processor.depthFunction(AGCompareMode.VALUES[data.extract4(0)])
+                CMD_DEPTH_FUNCTION -> processor.depthFunction(AGCompareMode(data.extract4(0)))
                 CMD_ENABLE -> processor.enableDisable(AGEnable.VALUES[data.extract4(0)], enable = true)
                 CMD_DISABLE -> processor.enableDisable(AGEnable.VALUES[data.extract4(0)], enable = false)
                 CMD_COLOR_MASK -> processor.colorMask(
@@ -247,18 +223,18 @@ class AGList(val globalState: AGGlobalState) {
                 )
 
                 CMD_BLEND_EQ -> processor.blendEquation(
-                    AGBlendEquation.VALUES[data.extract4(0)], AGBlendEquation.VALUES[data.extract4(4)]
+                    AGBlendEquation(data.extract4(0)), AGBlendEquation(data.extract4(4))
                 )
 
                 CMD_BLEND_FUNC -> processor.blendFunction(
-                    AGBlendFactor.VALUES[data.extract4(0)],
-                    AGBlendFactor.VALUES[data.extract4(4)],
-                    AGBlendFactor.VALUES[data.extract4(8)],
-                    AGBlendFactor.VALUES[data.extract4(12)],
+                    AGBlendFactor(data.extract4(0)),
+                    AGBlendFactor(data.extract4(4)),
+                    AGBlendFactor(data.extract4(8)),
+                    AGBlendFactor(data.extract4(12)),
                 )
 
-                CMD_CULL_FACE -> processor.cullFace(AGCullFace.VALUES[data.extract4(0)])
-                CMD_FRONT_FACE -> processor.frontFace(AGFrontFace.VALUES[data.extract4(0)])
+                CMD_CULL_FACE -> processor.cullFace(AGCullFace(data.extract4(0)))
+                CMD_FRONT_FACE -> processor.frontFace(AGFrontFace(data.extract4(0)))
                 // Programs
                 CMD_PROGRAM_CREATE -> processor.programCreate(data.extract16(0), readExtra(), readExtra())
                 CMD_PROGRAM_DELETE -> {
@@ -270,37 +246,36 @@ class AGList(val globalState: AGGlobalState) {
                 CMD_PROGRAM_USE -> processor.programUse(data.extract16(0))
                 // Draw
                 CMD_DRAW -> processor.draw(
-                    AGDrawType.VALUES[data.extract4(0)],
+                    AGDrawType(data.extract4(0)),
                     readInt(), readInt(), readInt(),
-                    AGIndexType.VALUES.getOrNull(data.extract4(4)),
+                    AGIndexType(data.extract4(4)),
                     readExtra()
                 )
 
                 CMD_READ_PIXELS -> processor.readPixels(
                     readInt(), readInt(), readInt(), readInt(),
                     readExtra(),
-                    AG.ReadKind.VALUES[data.extract4(0)]
+                    AGReadKind(data.extract4(0))
                 )
 
                 CMD_READ_PIXELS_TO_TEXTURE -> processor.readPixelsToTexture(
                     readInt(), readInt(), readInt(), readInt(), readInt(),
-                    AG.ReadKind.VALUES[data.extract4(0)]
+                    AGReadKind(data.extract4(0))
                 )
                 // Uniforms
-                CMD_UNIFORMS_SET -> processor.uniformsSet(readExtra(), readExtra())
                 CMD_DEPTH_MASK -> processor.depthMask(data.extract(0))
                 CMD_DEPTH_RANGE -> processor.depthRange(readFloat(), readFloat())
                 CMD_SYNC -> readExtra<CompletableDeferred<Unit>>().complete(Unit)
                 CMD_STENCIL_FUNC -> processor.stencilFunction(
-                    AGCompareMode.VALUES[data.extract4(0)],
+                    AGCompareMode(data.extract4(0)),
                     data.extract8(8),
                     data.extract8(16),
                 )
 
                 CMD_STENCIL_OP -> processor.stencilOperation(
-                    AG.StencilOp.VALUES[data.extract4(0)],
-                    AG.StencilOp.VALUES[data.extract4(4)],
-                    AG.StencilOp.VALUES[data.extract4(8)],
+                    AGStencilOp(data.extract4(0)),
+                    AGStencilOp(data.extract4(4)),
+                    AGStencilOp(data.extract4(8)),
                 )
                 //CMD_STENCIL_MASK -> processor.stencilMask(data.extract8(0))
                 CMD_STENCIL_MASK -> processor.stencilMask(readInt())
@@ -311,33 +286,10 @@ class AGList(val globalState: AGGlobalState) {
                 CMD_CLEAR_DEPTH -> processor.clearDepth(readFloat())
                 CMD_CLEAR_STENCIL -> processor.clearStencil(data.extract24(0))
                 // VAO
-                CMD_VAO_CREATE -> processor.vaoCreate(data.extract16(0))
-                CMD_VAO_DELETE -> {
-                    val id = data.extract16(0)
-                    processor.vaoDelete(id)
-                    globalState.vaoIndices.free(id)
-                }
-
-                CMD_VAO_SET -> processor.vaoSet(data.extract16(0), AG.VertexArrayObject(readExtra()))
-                CMD_VAO_USE -> processor.vaoUse(data.extract16(0))
+                CMD_VAO_USE -> processor.vaoUse(AGVertexArrayObject(readExtra<FastArrayList<AGVertexData>>()))
+                CMD_VAO_UNUSE -> processor.vaoUse(AGVertexArrayObject(readExtra<FastArrayList<AGVertexData>>()))
                 // UBO
-                CMD_UBO_CREATE -> processor.uboCreate(data.extract16(0))
-                CMD_UBO_DELETE -> {
-                    val id = data.extract16(0)
-                    processor.uboDelete(id)
-                    globalState.uboIndices.free(id)
-                }
-
-                CMD_UBO_SET -> {
-                    val ubo = readExtra<AG.UniformValues>()
-                    processor.uboSet(data.extract16(0), ubo)
-                    uniformValuesPool.free(ubo)
-                }
-
-                CMD_UBO_USE -> processor.uboUse(data.extract16(0))
-                // BUFFER
-                CMD_BUFFER_CREATE -> processor.bufferCreate(data.extract16(0))
-                CMD_BUFFER_DELETE -> processor.bufferDelete(data.extract16(0))
+                CMD_UNIFORMS_SET -> processor.uniformsSet(readExtra())
                 // TEXTURES
                 CMD_TEXTURE_CREATE -> processor.textureCreate(data.extract16(0))
                 CMD_TEXTURE_DELETE -> {
@@ -348,14 +300,14 @@ class AGList(val globalState: AGGlobalState) {
 
                 CMD_TEXTURE_BIND -> processor.textureBind(
                     data.extract16(0),
-                    AG.TextureTargetKind.VALUES[data.extract4(16)],
+                    AGTextureTargetKind.VALUES[data.extract4(16)],
                     readInt()
                 )
 
                 CMD_TEXTURE_BIND_ENSURING -> processor.textureBindEnsuring(readExtra())
                 CMD_TEXTURE_UPDATE -> processor.textureUpdate(
                     textureId = data.extract16(0),
-                    target = AG.TextureTargetKind.VALUES[data.extract4(16)],
+                    target = AGTextureTargetKind.VALUES[data.extract4(16)],
                     index = readInt(),
                     bmp = readExtra(),
                     source = readExtra(),
@@ -514,7 +466,7 @@ class AGList(val globalState: AGGlobalState) {
         currentWrite.add(CMD(CMD_PROGRAM_USE).finsert16(programId, 0))
     }
 
-    fun useProgram(program: AG.AgProgram) {
+    fun useProgram(program: AGProgram) {
         program.ensure(this)
         useProgram(program.programId)
     }
@@ -535,10 +487,10 @@ class AGList(val globalState: AGGlobalState) {
 
     fun updateTexture(
         textureId: Int,
-        target: AG.TextureTargetKind,
+        target: AGTextureTargetKind,
         index: Int,
         data: Any?,
-        source: AG.BitmapSourceBase,
+        source: AGBitmapSourceBase,
         doMipmaps: Boolean,
         premultiplied: Boolean
     ) {
@@ -550,23 +502,14 @@ class AGList(val globalState: AGGlobalState) {
         )
     }
 
-    fun bindTexture(textureId: Int, target: AG.TextureTargetKind, implForcedTexId: Int = -1) {
+    fun bindTexture(textureId: Int, target: AGTextureTargetKind, implForcedTexId: Int = -1) {
         currentWrite.addInt(implForcedTexId)
         currentWrite.add(CMD(CMD_TEXTURE_BIND).finsert16(textureId, 0).finsert4(target.ordinal, 16))
     }
 
-    fun bindTextureEnsuring(texture: AG.Texture?) {
+    fun bindTextureEnsuring(texture: AGTexture?) {
         currentWrite.addExtra(texture)
         currentWrite.add(CMD(CMD_TEXTURE_BIND_ENSURING))
-    }
-
-    ////////////////////////////////////////
-    // UNIFORMS
-    ////////////////////////////////////////
-
-    fun uniformsSet(layout: UniformLayout, data: FBuffer) {
-        currentWrite.addExtra(layout, data)
-        currentWrite.add(CMD(CMD_UNIFORMS_SET))
     }
 
     ////////////////////////////////////////
@@ -578,22 +521,22 @@ class AGList(val globalState: AGGlobalState) {
         vertexCount: Int,
         offset: Int = 0,
         instances: Int = 1,
-        indexType: AGIndexType? = null,
-        indices: AG.Buffer? = null
+        indexType: AGIndexType = AGIndexType.NONE,
+        indices: AGBuffer? = null
     ) {
         currentWrite.addInt(vertexCount, offset, instances)
         currentWrite.addExtra(indices)
-        currentWrite.add(CMD(CMD_DRAW).finsert4(type.ordinal, 0).finsert4(indexType?.ordinal ?: 0xF, 4))
+        currentWrite.add(CMD(CMD_DRAW).finsert4(type.ordinal, 0).finsert4(indexType.ordinal, 4))
     }
 
-    fun stencilFunction(compareMode: AG.CompareMode, referenceValue: Int, readMask: Int) {
+    fun stencilFunction(compareMode: AGCompareMode, referenceValue: Int, readMask: Int) {
         currentWrite.add(CMD(CMD_STENCIL_FUNC).finsert4(compareMode.ordinal, 0).finsert8(referenceValue, 8).finsert8(readMask, 16))
     }
 
     fun stencilOperation(
-        actionOnDepthFail: AG.StencilOp,
-        actionOnDepthPassStencilFail: AG.StencilOp,
-        actionOnBothPass: AG.StencilOp
+        actionOnDepthFail: AGStencilOp,
+        actionOnDepthPassStencilFail: AGStencilOp,
+        actionOnBothPass: AGStencilOp
     ) {
         currentWrite.add(
             CMD(CMD_STENCIL_OP).finsert4(actionOnDepthFail.ordinal, 0).finsert4(actionOnDepthPassStencilFail.ordinal, 4)
@@ -610,77 +553,43 @@ class AGList(val globalState: AGGlobalState) {
     ////////////////////////////////////////
     // VAO: Vertex Array Object
     ////////////////////////////////////////
-    fun vaoCreate(): Int {
-        val id = globalState.vaoIndices.alloc()
-        currentWrite.add(CMD(CMD_VAO_CREATE).finsert16(id, 0))
-        return id
-    }
-
-    fun vaoDelete(id: Int) {
-        currentWrite.add(CMD(CMD_VAO_DELETE).finsert16(id, 0))
-    }
-
-    fun vaoSet(id: Int, vao: AG.VertexArrayObject) {
+    fun vaoUse(vao: AGVertexArrayObject) {
         currentWrite.addExtra(vao.list)
-        currentWrite.add(CMD(CMD_VAO_SET).finsert16(id, 0))
+        currentWrite.add(CMD(CMD_VAO_USE))
     }
 
-    fun vaoUse(id: Int) {
-        currentWrite.add(CMD(CMD_VAO_USE).finsert16(id, 0))
+    fun vaoUnuse(vao: AGVertexArrayObject) {
+        currentWrite.addExtra(vao.list)
+        currentWrite.add(CMD(CMD_VAO_UNUSE))
+    }
+
+    inline fun vertexArrayObjectSet(vao: AGVertexArrayObject, block: () -> Unit) {
+        vaoUse(vao)
+        try {
+            block()
+        } finally {
+            vaoUnuse(vao)
+        }
     }
 
     ////////////////////////////////////////
     // UBO: Uniform Buffer Object
     ////////////////////////////////////////
-    fun uboCreate(): Int {
-        val id = globalState.uboIndices.alloc()
-        currentWrite.add(CMD(CMD_UBO_CREATE).finsert16(id, 0))
-        return id
+    fun uniformsSet(ubo: AGUniformValues) {
+        currentWrite.addExtra(ubo)
+        currentWrite.add(CMD(CMD_UNIFORMS_SET))
     }
 
-    fun uboDelete(id: Int) {
-        currentWrite.add(CMD(CMD_UBO_DELETE).finsert16(id, 0))
-    }
-
-    fun uboSet(id: Int, ubo: AG.UniformValues) {
-        val uboCopy = uniformValuesPool.alloc()
-        uboCopy.setTo(ubo)
-        currentWrite.addExtra(uboCopy)
-        currentWrite.add(CMD(CMD_UBO_SET).finsert16(id, 0))
-    }
-
-    // @TODO: If we have a layout we can have the objects already arranged.
-    // @TODO: We have to put only integers and floats here, so textures should use the textureId for example
-    @KorIncomplete
-    fun uboSet(id: Int, data: FBuffer, layout: UniformLayout) {
-        TODO()
-    }
-
-    fun uboUse(id: Int) {
-        currentWrite.add(CMD(CMD_UBO_USE).finsert16(id, 0))
-    }
-
-    fun readPixels(x: Int, y: Int, width: Int, height: Int, data: Any, kind: AG.ReadKind) {
+    fun readPixels(x: Int, y: Int, width: Int, height: Int, data: Any, kind: AGReadKind) {
         currentWrite.addInt(x, y, width, height)
         currentWrite.addExtra(data)
         currentWrite.add(CMD(CMD_READ_PIXELS).finsert4(kind.ordinal, 0))
     }
 
-    fun readPixelsToTexture(textureId: Int, x: Int, y: Int, width: Int, height: Int, kind: AG.ReadKind) {
+    fun readPixelsToTexture(textureId: Int, x: Int, y: Int, width: Int, height: Int, kind: AGReadKind) {
         currentWrite.addInt(textureId)
         currentWrite.addInt(x, y, width, height)
         currentWrite.add(CMD(CMD_READ_PIXELS_TO_TEXTURE).finsert4(kind.ordinal, 0))
-    }
-
-    // BUFFERS
-    fun bufferCreate(): Int {
-        val id = globalState.bufferIndices.alloc()
-        currentWrite.add(CMD(CMD_BUFFER_CREATE).finsert16(id, 0))
-        return id
-    }
-
-    fun bufferDelete(id: Int) {
-        currentWrite.add(CMD(CMD_BUFFER_DELETE).finsert16(id, 0))
     }
 
     ////////////////////////////////////////
@@ -693,7 +602,6 @@ class AGList(val globalState: AGGlobalState) {
     }
 
     fun frameBufferDelete(id: Int) {
-        globalState.uboIndices.free(id)
         currentWrite.add(CMD(CMD_FRAMEBUFFER_DELETE).finsert16(id, 0))
     }
 
@@ -748,8 +656,6 @@ class AGList(val globalState: AGGlobalState) {
         private const val CMD_TEXTURE_UPDATE = 0x42
         private const val CMD_TEXTURE_BIND = 0x43
         private const val CMD_TEXTURE_BIND_ENSURING = 0x44
-        // Uniform
-        private const val CMD_UNIFORMS_SET = 0x50
         // Attributes
         private const val CMD_ATTRIBUTE_SET = 0x60
         // Render Buffer
@@ -763,20 +669,10 @@ class AGList(val globalState: AGGlobalState) {
         private const val CMD_STENCIL_OP = 0x81
         private const val CMD_STENCIL_MASK = 0x82
         // VAO - Vertex Array Object
-        private const val CMD_VAO_CREATE = 0x90
-        private const val CMD_VAO_DELETE = 0x91
-        private const val CMD_VAO_SET = 0x92
-        private const val CMD_VAO_USE = 0x93
-        // UBO - Uniform Buffer Object
-        private const val CMD_UBO_CREATE = 0xA0
-        private const val CMD_UBO_DELETE = 0xA1
-        private const val CMD_UBO_SET = 0xA2
-        private const val CMD_UBO_USE = 0xA3
-        // BUFFERS
-        private const val CMD_BUFFER_CREATE = 0xB0
-        private const val CMD_BUFFER_DELETE = 0xB1
-        private const val CMD_BUFFER_SET = 0xB2
-        private const val CMD_BUFFER_USE = 0xB3
+        private const val CMD_VAO_USE = 0x90
+        private const val CMD_VAO_UNUSE = 0x91
+        // UNIFORMS
+        private const val CMD_UNIFORMS_SET = 0xA2
         // FRAME BUFFERS
         private const val CMD_FRAMEBUFFER_CREATE = 0xC0
         private const val CMD_FRAMEBUFFER_DELETE = 0xC1

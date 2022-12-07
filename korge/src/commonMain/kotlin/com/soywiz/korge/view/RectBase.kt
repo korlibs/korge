@@ -66,11 +66,11 @@ open class RectBase(
 
     var wrapTexture: Boolean = false
     var program: Program? = null
-    private var _programUniforms: AG.UniformValues? = null
-    var programUniforms: AG.UniformValues
+    private var _programUniforms: AGUniformValues? = null
+    var programUniforms: AGUniformValues
         set(value) { _programUniforms = value }
         get()  {
-            if (_programUniforms == null) _programUniforms = AG.UniformValues()
+            if (_programUniforms == null) _programUniforms = AGUniformValues()
             return _programUniforms!!
         }
 

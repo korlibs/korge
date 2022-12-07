@@ -2,8 +2,7 @@ package com.soywiz.korge.render
 
 import com.soywiz.kgl.KmlGl
 import com.soywiz.kgl.KmlGlProxyLogToString
-import com.soywiz.korag.AG
-import com.soywiz.korag.DefaultShaders
+import com.soywiz.korag.*
 import com.soywiz.korag.gl.SimpleAGOpengl
 import com.soywiz.korag.log.LogAG
 import com.soywiz.korim.bitmap.Bitmap32
@@ -98,15 +97,12 @@ class AgBitmapTextureManagerTest {
         val tex1 = tm.getTextureBase(fixedNativeImage)
         tex1.base?.forcedTexId = fixedNativeImage
         ag.commandsSync { list ->
-            list.tempUBOs {
-                val program = list.createProgram(DefaultShaders.PROGRAM_DEFAULT)
-                list.useProgram(program)
-                list.uboSet(it, AG.UniformValues(
-                    DefaultShaders.u_Tex to AG.TextureUnit(tex1.base),
-                    DefaultShaders.u_Tex2 to AG.TextureUnit(tex0.base),
-                ))
-                list.uboUse(it)
-            }
+            val program = list.createProgram(DefaultShaders.PROGRAM_DEFAULT)
+            list.useProgram(program)
+            list.uniformsSet(AGUniformValues {
+                it[DefaultShaders.u_Tex] = AGTextureUnit(0, tex1.base)
+                it[DefaultShaders.u_Tex2] = AGTextureUnit(1, tex0.base)
+            })
         }
         val tex2 = tm.getTextureBase(image1)
         val tex3 = tm.getTextureBase(fixedNativeImage2)
@@ -136,7 +132,7 @@ class AgBitmapTextureManagerTest {
                 texParameteri(36197, 10240, 9729)
                 activeTexture(33985)
                 bindTexture(3553, 6001)
-                texImage2D(3553, 0, 6408, 1, 1, 0, 6408, 5121, FBuffer(size=4))
+                texImage2D(3553, 0, 6408, 1, 1, 0, 6408, 5121, Buffer(size=4))
                 texParameteri(3553, 10242, 33071)
                 texParameteri(3553, 10243, 33071)
                 texParameteri(3553, 10241, 9729)

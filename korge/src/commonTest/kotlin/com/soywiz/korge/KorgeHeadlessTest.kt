@@ -71,7 +71,7 @@ class KorgeHeadlessTest {
 
             views.gameWindow.close() // We close the window, finalizing the test here
         }
-        gameWindow.bitmap.showImageAndWait()
-        println(gameWindow.bitmap)
+        //gameWindow.bitmap.showImageAndWait()
+        //println(gameWindow.bitmap)
     }
 }

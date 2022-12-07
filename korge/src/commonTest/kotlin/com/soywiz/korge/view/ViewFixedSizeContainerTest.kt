@@ -1,5 +1,6 @@
 package com.soywiz.korge.view
 
+import com.soywiz.korag.*
 import com.soywiz.korag.log.LogBaseAG
 import com.soywiz.korge.tests.ViewsForTesting
 import com.soywiz.korim.color.Colors
@@ -21,8 +22,8 @@ class ViewFixedSizeContainerTest : ViewsForTesting(
         delayFrame()
         val log = arrayListOf<Any?>()
         testRenderContext(object : LogBaseAG() {
-            override fun draw(batch: Batch) {
-                log += batch.scissor?.rect
+            override fun draw(batch: AGBatch) {
+                log += batch.scissor.toRectOrNull()
             }
         }) {
             stage.render(it)

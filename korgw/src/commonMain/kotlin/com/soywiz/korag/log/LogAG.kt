@@ -6,20 +6,8 @@ import com.soywiz.kds.fastArrayListOf
 import com.soywiz.kds.linkedHashMapOf
 import com.soywiz.kds.mapInt
 import com.soywiz.kds.toIntArrayList
-import com.soywiz.kmem.FBuffer
-import com.soywiz.kmem.clamp01
-import com.soywiz.korag.AG
-import com.soywiz.korag.AGBlendEquation
-import com.soywiz.korag.AGBlendFactor
-import com.soywiz.korag.AGCompareMode
-import com.soywiz.korag.AGCullFace
-import com.soywiz.korag.AGDrawType
-import com.soywiz.korag.AGEnable
-import com.soywiz.korag.AGFrontFace
-import com.soywiz.korag.AGIndexType
-import com.soywiz.korag.AGList
-import com.soywiz.korag.AGQueueProcessor
-import com.soywiz.korag.processBlockingAll
+import com.soywiz.kmem.*
+import com.soywiz.korag.*
 import com.soywiz.korag.shader.Attribute
 import com.soywiz.korag.shader.Program
 import com.soywiz.korag.shader.ProgramConfig
@@ -191,7 +179,7 @@ open class LogBaseAG(
 		clearColor: Boolean,
 		clearDepth: Boolean,
 		clearStencil: Boolean,
-        scissor: AG.Scissor?,
+        scissor: AGScissor,
 	) {
         log("clear($color, $depth, $stencil, $clearColor, $clearDepth, $clearStencil)", Kind.CLEAR)
     }
@@ -203,7 +191,7 @@ open class LogBaseAG(
 
 	override fun dispose() = log("dispose()", Kind.DISPOSE)
 
-	inner class LogTexture(val id: Int, premultiplied: Boolean) : Texture(premultiplied) {
+	inner class LogTexture(val id: Int, premultiplied: Boolean) : AGTexture(this, premultiplied) {
 		override fun uploadedSource() {
 			log("$this.uploadedBitmap($source, ${source.width}, ${source.height})", Kind.TEXTURE_UPLOAD)
 		}
@@ -215,19 +203,16 @@ open class LogBaseAG(
 		override fun toString(): String = "Texture[$id]"
 	}
 
-	inner class LogBuffer(val id: Int, list: AGList) : Buffer(list) {
-		val logmem: FBuffer? get() = mem
-		val logmemOffset get() = memOffset
-		val logmemLength get() = memLength
+	inner class LogBuffer(val id: Int, list: AGList) : AGBuffer(this, list) {
+		val logmem: com.soywiz.kmem.Buffer? get() = mem
 		override fun afterSetMem() {
             super.afterSetMem()
             log("$this.afterSetMem(mem[${mem!!.size}])", LogBaseAG.Kind.BUFFER)
         }
-		override fun close(list: AGList) = log("$this.close()", LogBaseAG.Kind.BUFFER)
 		override fun toString(): String = "Buffer[$id]"
 	}
 
-	inner class LogRenderBuffer(override val id: Int, val isMain: Boolean) : RenderBuffer() {
+	inner class LogFrameBuffer(override val id: Int, val isMain: Boolean) : AGFrameBuffer(this) {
         override fun setSize(x: Int, y: Int, width: Int, height: Int, fullWidth: Int, fullHeight: Int) {
             super.setSize(x, y, width, height, fullWidth, fullHeight)
             log("$this.setSize($width, $height)", Kind.FRAME_BUFFER)
@@ -246,13 +231,13 @@ open class LogBaseAG(
 	private var bufferId = 0
 	private var renderBufferId = 0
 
-	override fun createTexture(premultiplied: Boolean, targetKind: TextureTargetKind): Texture =
+	override fun createTexture(premultiplied: Boolean, targetKind: AGTextureTargetKind): AGTexture =
 		LogTexture(textureId++, premultiplied).apply { log("createTexture():$id", Kind.TEXTURE) }
 
-	override fun createBuffer(): Buffer =
+	override fun createBuffer(): AGBuffer =
         commandsNoWait { LogBuffer(bufferId++, _list).apply { log("createBuffer():$id", Kind.BUFFER) } }
 
-    data class VertexAttributeEx(val index: Int, val attribute: Attribute, val pos: Int, val data: VertexData) {
+    data class VertexAttributeEx(val index: Int, val attribute: Attribute, val pos: Int, val data: AGVertexData) {
         val layout = data.layout
         val buffer = data.buffer as LogBuffer
     }
@@ -283,11 +268,11 @@ open class LogBaseAG(
             log("${if (enable) "enable" else "disable"}: $kind", Kind.ENABLE_DISABLE)
         }
 
-        override fun readPixelsToTexture(textureId: Int, x: Int, y: Int, width: Int, height: Int, kind: ReadKind) {
+        override fun readPixelsToTexture(textureId: Int, x: Int, y: Int, width: Int, height: Int, kind: AGReadKind) {
             log("readPixelsToTexture($textureId, $x, $y, $width, $height, $kind)", Kind.READ)
         }
 
-        override fun readPixels(x: Int, y: Int, width: Int, height: Int, data: Any, kind: ReadKind) =
+        override fun readPixels(x: Int, y: Int, width: Int, height: Int, data: Any, kind: AGReadKind) =
             log("readPixels($x, $y, $width, $height, $kind)", Kind.READ)
 
         override fun draw(
@@ -295,18 +280,18 @@ open class LogBaseAG(
             vertexCount: Int,
             offset: Int,
             instances: Int,
-            indexType: AGIndexType?,
-            indices: Buffer?
+            indexType: AGIndexType,
+            indices: AGBuffer?
         ) {
             val _indices: IntArrayList? = when {
                 indices != null -> {
                     val indexMem = (indices as LogBuffer).logmem!!
                     val range = offset until offset + vertexCount
                     when (indexType) {
-                        IndexType.UBYTE -> range.mapInt { indexMem.getAlignedUInt8(it) }
-                        IndexType.USHORT -> range.mapInt { indexMem.getAlignedUInt16(it) }
-                        IndexType.UINT -> range.mapInt { indexMem.getAlignedInt32(it) }
-                        null -> null
+                        AGIndexType.UBYTE -> range.mapInt { indexMem.getUInt8(it) }
+                        AGIndexType.USHORT -> range.mapInt { indexMem.getUInt16(it) }
+                        AGIndexType.UINT -> range.mapInt { indexMem.getInt32(it) }
+                        else -> null
                     }
                 }
                 else -> null
@@ -331,7 +316,7 @@ open class LogBaseAG(
                         val attribute = vlae.attribute
                         val vm = vlae.buffer.logmem!!
                         val attributeType = attribute.type
-                        val o = (index * vlae.layout.totalSize) + vlae.pos + vlae.buffer.logmemOffset
+                        val o = (index * vlae.layout.totalSize) + vlae.pos
                         val acount = attributeType.elementCount
 
                         val info: List<Number> = when (attributeType.kind) {
@@ -357,18 +342,13 @@ open class LogBaseAG(
             }
         }
 
-        override fun bufferCreate(id: Int) = log("bufferCreate: $id", Kind.BUFFER)
-        override fun bufferDelete(id: Int) = log("bufferDelete: $id", Kind.BUFFER)
-        override fun uniformsSet(layout: UniformLayout, data: FBuffer) = log("uniformsSet: $layout", Kind.UNIFORM)
-        override fun uboCreate(id: Int) = log("uboCreate: $id", Kind.UNIFORM)
-        override fun uboDelete(id: Int) = log("uboDelete: $id", Kind.UNIFORM)
-        override fun uboSet(id: Int, ubo: UniformValues) {
-            log("uboSet: $id", Kind.UNIFORM)
-            ubo.fastForEach { uniform, value ->
-                log("uboSet.uniform: $uniform = ${UniformValues.valueToString(value)}", Kind.UNIFORM_VALUES)
+        override fun uniformsSet(ubo: AGUniformValues) {
+            log("uboSet:", Kind.UNIFORM)
+            ubo.fastForEach { uniformValue ->
+                log("uboSet.uniform: ${uniformValue.uniform} = ${AGUniformValues.valueToString(uniformValue)}", Kind.UNIFORM_VALUES)
             }
         }
-        override fun uboUse(id: Int) = log("uboUse: $id", Kind.UNIFORM)
+
         override fun cullFace(face: AGCullFace) = log("cullFace: $face", Kind.OTHER)
         override fun frontFace(face: AGFrontFace) = log("frontFace: $face", Kind.OTHER)
         override fun blendEquation(rgb: AGBlendEquation, a: AGBlendEquation) = log("blendEquation: $rgb, $a", Kind.OTHER)
@@ -377,12 +357,12 @@ open class LogBaseAG(
         override fun depthFunction(depthTest: AGCompareMode) = log("depthFunction: $depthTest", Kind.OTHER)
         override fun depthMask(depth: Boolean) = log("depthMask: $depth", Kind.OTHER)
         override fun depthRange(near: Float, far: Float) = log("depthRange: $near, $far", Kind.OTHER)
-        override fun stencilFunction(compareMode: CompareMode, referenceValue: Int, readMask: Int) = log("stencilFunction: $compareMode, $referenceValue, $readMask", Kind.OTHER)
+        override fun stencilFunction(compareMode: AGCompareMode, referenceValue: Int, readMask: Int) = log("stencilFunction: $compareMode, $referenceValue, $readMask", Kind.OTHER)
 
         override fun stencilOperation(
-            actionOnDepthFail: StencilOp,
-            actionOnDepthPassStencilFail: StencilOp,
-            actionOnBothPass: StencilOp
+            actionOnDepthFail: AGStencilOp,
+            actionOnDepthPassStencilFail: AGStencilOp,
+            actionOnBothPass: AGStencilOp
         ) = log("stencilOperation: $actionOnDepthFail, $actionOnDepthPassStencilFail, $actionOnBothPass", Kind.OTHER)
 
         override fun stencilMask(writeMask: Int) = log("stencilMask: $writeMask", Kind.OTHER)
@@ -401,30 +381,25 @@ open class LogBaseAG(
         }
         override fun programDelete(programId: Int) = log("programDelete: $programId", Kind.SHADER)
         override fun programUse(programId: Int) = log("programUse: $programId", Kind.SHADER)
-        override fun vaoCreate(id: Int) = log("vaoCreate: $id", Kind.VERTEX)
-        override fun vaoDelete(id: Int) = log("vaoDelete: $id", Kind.VERTEX)
-        private var vertexData: FastArrayList<VertexData> = fastArrayListOf()
-        override fun vaoSet(id: Int, vao: VertexArrayObject) {
-            log("vaoSet: $id, $vao", Kind.VERTEX)
-            vertexData = vao.list
-        }
-        override fun vaoUse(id: Int) = log("vaoUse: $id", Kind.VERTEX)
+        private var vertexData: FastArrayList<AGVertexData> = fastArrayListOf()
+        override fun vaoUse(vao: AGVertexArrayObject) = log("vaoUse: $vao", Kind.VERTEX)
+        override fun vaoUnuse(vao: AGVertexArrayObject) = log("vaoUse: $vao", Kind.VERTEX)
         override fun textureCreate(textureId: Int) = log("textureCreate: $textureId", Kind.TEXTURE)
         override fun textureDelete(textureId: Int) = log("textureDelete: $textureId", Kind.TEXTURE)
         override fun textureUpdate(
             textureId: Int,
-            target: TextureTargetKind,
+            target: AGTextureTargetKind,
             index: Int,
             bmp: Bitmap?,
-            source: BitmapSourceBase,
+            source: AGBitmapSourceBase,
             doMipmaps: Boolean,
             premultiplied: Boolean
         ) {
             log("textureUpdate: $textureId, $target, $index, $bmp, $source, $doMipmaps, $premultiplied", Kind.TEXTURE_UPLOAD)
         }
 
-        override fun textureBind(textureId: Int, target: TextureTargetKind, implForcedTexId: Int) = log("textureBind: $textureId", Kind.TEXTURE)
-        override fun textureBindEnsuring(tex: Texture?) = log("textureBindEnsuring: $tex", Kind.TEXTURE)
+        override fun textureBind(textureId: Int, target: AGTextureTargetKind, implForcedTexId: Int) = log("textureBind: $textureId", Kind.TEXTURE)
+        override fun textureBindEnsuring(tex: AGTexture?) = log("textureBindEnsuring: $tex", Kind.TEXTURE)
         override fun textureSetFromFrameBuffer(textureId: Int, x: Int, y: Int, width: Int, height: Int) = log("textureSetFromFrameBuffer: $textureId, $x, $y, $width, $height", Kind.TEXTURE)
         override fun frameBufferCreate(id: Int) = log("frameBufferCreate: $id", Kind.FRAME_BUFFER)
         override fun frameBufferDelete(id: Int) = log("frameBufferDelete: $id", Kind.FRAME_BUFFER)
@@ -453,11 +428,11 @@ open class LogBaseAG(
     }
 
     override fun disposeTemporalPerFrameStuff() = log("disposeTemporalPerFrameStuff()", Kind.DISPOSE)
-	override fun createRenderBuffer(): RenderBuffer =
-		LogRenderBuffer(renderBufferId++, isMain = false).apply { log("createRenderBuffer():$id", Kind.FRAME_BUFFER) }
+	override fun createRenderBuffer(): AGFrameBuffer =
+		LogFrameBuffer(renderBufferId++, isMain = false).apply { log("createRenderBuffer():$id", Kind.FRAME_BUFFER) }
 
-    override fun createMainRenderBuffer(): RenderBuffer =
-        LogRenderBuffer(renderBufferId++, isMain = true).apply { log("createMainRenderBuffer():$id", Kind.FRAME_BUFFER) }
+    override fun createMainRenderBuffer(): AGFrameBuffer =
+        LogFrameBuffer(renderBufferId++, isMain = true).apply { log("createMainRenderBuffer():$id", Kind.FRAME_BUFFER) }
 
     override fun flipInternal() = log("flipInternal()", Kind.FLIP)
 	override fun readColor(bitmap: Bitmap32, x: Int, y: Int) = log("$this.readBitmap($bitmap, $x, $y)", Kind.READ)

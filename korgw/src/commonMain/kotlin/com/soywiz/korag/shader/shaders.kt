@@ -191,22 +191,32 @@ sealed class Variable(val name: String, type: VarType, val arrayCount: Int, val 
     override fun hashCode(): Int = mhashcode()
 }
 
+sealed class VariableWithOffset(
+    name: String,
+    type: VarType,
+    arrayCount: Int,
+    precision: Precision = Precision.DEFAULT,
+    val offset: Int? = null,
+) : Variable(name, type, arrayCount, precision) {
+}
+
 open class Attribute(
 	name: String,
 	type: VarType,
 	val normalized: Boolean,
-	val offset: Int? = null,
+	offset: Int? = null,
 	val active: Boolean = true,
     precision: Precision = Precision.DEFAULT,
     val divisor: Int = 0,
-    val fixedLocation: Int? = null
-) : Variable(name, type, precision) {
+    val fixedLocation: Int
+) : VariableWithOffset(name, type, 1, precision, offset) {
 	constructor(
         name: String,
         type: VarType,
         normalized: Boolean,
-        precision: Precision = Precision.DEFAULT
-    ) : this(name, type, normalized, null, true, precision)
+        precision: Precision = Precision.DEFAULT,
+        fixedLocation: Int
+    ) : this(name, type, normalized, null, true, precision, fixedLocation = fixedLocation)
 
     fun copy(
         name: String = this.name,
@@ -215,12 +225,14 @@ open class Attribute(
         offset: Int? = this.offset,
         active: Boolean = this.active,
         precision: Precision = this.precision,
-        divisor: Int = this.divisor
-    ) = Attribute(name, type, normalized, offset, active, precision, divisor)
+        divisor: Int = this.divisor,
+        fixedLocation: Int = this.fixedLocation,
+    ) = Attribute(name, type, normalized, offset, active, precision, divisor, fixedLocation = fixedLocation)
     fun inactived() = copy(active = false)
     fun withDivisor(divisor: Int) = copy(divisor = divisor)
+    fun withFixedLocation(fixedLocation: Int) = copy(fixedLocation = fixedLocation)
 	override fun toString(): String = "Attribute($name)"
-    fun toStringEx(): String = "Attribute($name, type=$type, normalized=$normalized, offset=$offset, active=$active, precision=$precision, divisor=$divisor)"
+    fun toStringEx(): String = "Attribute($name, type=$type, normalized=$normalized, offset=$offset, active=$active, precision=$precision, divisor=$divisor, fixedLocation=$fixedLocation)"
     override fun equals(other: Any?): Boolean = mequals<Attribute>(other) && this.normalized == (other as Attribute).normalized && this.offset == other.offset && this.active == other.active
     override fun hashCode(): Int {
         var out = mhashcode()
@@ -232,15 +244,16 @@ open class Attribute(
 
     operator fun getValue(thisRef: Any?, property: KProperty<*>): Attribute = this
 
-    class Provider(val type: VarType, val normalized: Boolean, val precision: Precision = Precision.DEFAULT) {
-        operator fun provideDelegate(thisRef: Any?, property: KProperty<*>): Attribute = Attribute(property.name, type, normalized, precision)
+    class Provider(val type: VarType, val normalized: Boolean, val precision: Precision = Precision.DEFAULT, val fixedLocation: Int) {
+        operator fun provideDelegate(thisRef: Any?, property: KProperty<*>): Attribute = Attribute(property.name, type, normalized, precision, fixedLocation)
     }
 }
 fun Attribute(
     type: VarType,
     normalized: Boolean,
-    precision: Precision = Precision.DEFAULT
-): Attribute.Provider = Attribute.Provider(type, normalized, precision)
+    precision: Precision = Precision.DEFAULT,
+    fixedLocation: Int,
+): Attribute.Provider = Attribute.Provider(type, normalized, precision, fixedLocation)
 
 open class Varying(name: String, type: VarType, arrayCount: Int, precision: Precision = Precision.DEFAULT) : Variable(name, type, arrayCount, precision) {
     constructor(name: String, type: VarType, precision: Precision = Precision.DEFAULT) : this(name, type, 1, precision)
@@ -255,7 +268,11 @@ open class Varying(name: String, type: VarType, arrayCount: Int, precision: Prec
 }
 fun Varying(type: VarType, arrayCount: Int = 1, precision: Precision = Precision.DEFAULT): Varying.Provider = Varying.Provider(type, arrayCount, precision)
 
-open class Uniform(name: String, type: VarType, arrayCount: Int, precision: Precision = Precision.DEFAULT) : Variable(name, type, arrayCount, precision) {
+open class Uniform(name: String, type: VarType, arrayCount: Int, precision: Precision = Precision.DEFAULT, offset: Int? = null) : VariableWithOffset(
+    name, type, arrayCount, precision, offset
+) {
+    val totalElementCount: Int get() = type.elementCount * arrayCount
+
     constructor(name: String, type: VarType, precision: Precision = Precision.DEFAULT) : this(name, type, 1, precision)
 	override fun toString(): String = "Uniform($name)"
     override fun equals(other: Any?): Boolean = mequals<Uniform>(other)
@@ -1021,15 +1038,15 @@ inline fun FragmentShader(callback: Program.Builder.() -> Unit): FragmentShader 
 	return FragmentShader(builder._buildFuncs())
 }
 
-typealias UniformLayout = ProgramLayout
-typealias VertexLayout = ProgramLayout
+typealias UniformLayout = ProgramLayout<Uniform>
+typealias VertexLayout = ProgramLayout<Attribute>
 
-class ProgramLayout(attr: List<Attribute>, private val layoutSize: Int?) {
+open class ProgramLayout<TVariable : VariableWithOffset>(attr: List<TVariable>, private val layoutSize: Int?) {
 	private val myattr = attr
 	val attributes = attr
-	constructor(attributes: List<Attribute>) : this(attributes, null)
-	constructor(vararg attributes: Attribute) : this(attributes.toFastList(), null)
-	constructor(vararg attributes: Attribute, layoutSize: Int? = null) : this(attributes.toFastList(), layoutSize)
+	constructor(attributes: List<TVariable>) : this(attributes, null)
+	constructor(vararg attributes: TVariable) : this(attributes.toFastList(), null)
+	constructor(vararg attributes: TVariable, layoutSize: Int? = null) : this(attributes.toFastList(), layoutSize)
 
 	private var _lastPos: Int = 0
 
@@ -1053,5 +1070,6 @@ class ProgramLayout(attr: List<Attribute>, private val layoutSize: Int?) {
     /** Size in bytes for each vertex */
 	val totalSize: Int = layoutSize ?: _lastPos.nextAlignedTo(maxAlignment)
 
-	override fun toString(): String = "VertexLayout[${myattr.joinToString(", ") { it.name }}]"
+    protected fun names(): String = myattr.joinToString(", ") { it.name }
+	override fun toString(): String = "VertexLayout[${names()}]"
 }

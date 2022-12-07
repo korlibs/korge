@@ -1,8 +1,6 @@
 package com.soywiz.korge.view.filter
 
-import com.soywiz.korag.AG
-import com.soywiz.korag.DefaultShaders
-import com.soywiz.korag.FragmentShaderDefault
+import com.soywiz.korag.*
 import com.soywiz.korag.shader.Program
 import com.soywiz.korge.render.RenderContext
 import com.soywiz.korge.render.Texture
@@ -58,11 +56,11 @@ class ViewRenderPhaseBackdropFilter(var filter: Filter) : ViewRenderPhase {
                         super.render(view, ctx)
                     }
                 }) { mask ->
-                    batcher.setTemporalUniform(
+                    batcher.keepUniform(
                         DefaultShaders.u_Tex2,
-                        AG.TextureUnit(mask.base.base),
                         flush = true
                     ) {
+                        it[DefaultShaders.u_Tex2] = AGTextureUnit(6, mask.base.base)
                         //batcher.drawQuad(bgrtex, x = 0f, y = 0f, program = MERGE_ALPHA)
                         batcher.drawQuad(
                             bgrtex!!, x = 0f, y = 0f, m = view.parent!!.globalMatrix, program = MERGE_ALPHA,

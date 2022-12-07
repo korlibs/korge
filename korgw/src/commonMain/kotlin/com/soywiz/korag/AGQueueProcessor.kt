@@ -1,6 +1,6 @@
 package com.soywiz.korag
 
-import com.soywiz.kmem.FBuffer
+import com.soywiz.kmem.*
 import com.soywiz.korag.shader.Program
 import com.soywiz.korag.shader.ProgramConfig
 import com.soywiz.korag.shader.UniformLayout
@@ -18,19 +18,12 @@ interface AGQueueProcessor {
     // ENABLE / DISABLE
     fun enableDisable(kind: AGEnable, enable: Boolean)
     // READ
-    fun readPixels(x: Int, y: Int, width: Int, height: Int, data: Any, kind: AG.ReadKind)
-    fun readPixelsToTexture(textureId: Int, x: Int, y: Int, width: Int, height: Int, kind: AG.ReadKind)
+    fun readPixels(x: Int, y: Int, width: Int, height: Int, data: Any, kind: AGReadKind)
+    fun readPixelsToTexture(textureId: Int, x: Int, y: Int, width: Int, height: Int, kind: AGReadKind)
     // DRAW
-    fun draw(type: AGDrawType, vertexCount: Int, offset: Int = 0, instances: Int = 1, indexType: AGIndexType? = null, indices: AG.Buffer? = null)
-    // Buffers
-    fun bufferCreate(id: Int)
-    fun bufferDelete(id: Int)
-    // Uniforms + UBO
-    fun uniformsSet(layout: UniformLayout, data: FBuffer)
-    fun uboCreate(id: Int)
-    fun uboDelete(id: Int)
-    fun uboSet(id: Int, ubo: AG.UniformValues)
-    fun uboUse(id: Int)
+    fun draw(type: AGDrawType, vertexCount: Int, offset: Int = 0, instances: Int = 1, indexType: AGIndexType = AGIndexType.NONE, indices: AGBuffer? = null)
+    // Uniforms
+    fun uniformsSet(ubo: AGUniformValues)
     // Faces
     fun cullFace(face: AGCullFace)
     fun frontFace(face: AGFrontFace)
@@ -44,8 +37,8 @@ interface AGQueueProcessor {
     fun depthMask(depth: Boolean)
     fun depthRange(near: Float, far: Float)
     // Stencil
-    fun stencilFunction(compareMode: AG.CompareMode, referenceValue: Int, readMask: Int)
-    fun stencilOperation(actionOnDepthFail: AG.StencilOp, actionOnDepthPassStencilFail: AG.StencilOp, actionOnBothPass: AG.StencilOp)
+    fun stencilFunction(compareMode: AGCompareMode, referenceValue: Int, readMask: Int)
+    fun stencilOperation(actionOnDepthFail: AGStencilOp, actionOnDepthPassStencilFail: AGStencilOp, actionOnBothPass: AGStencilOp)
     fun stencilMask(writeMask: Int)
     // Scissors & Viewport
     fun scissor(x: Int, y: Int, width: Int, height: Int)
@@ -60,24 +53,22 @@ interface AGQueueProcessor {
     fun programDelete(programId: Int)
     fun programUse(programId: Int)
     // VAO
-    fun vaoCreate(id: Int)
-    fun vaoDelete(id: Int)
-    fun vaoSet(id: Int, vao: AG.VertexArrayObject)
-    fun vaoUse(id: Int)
+    fun vaoUnuse(vao: AGVertexArrayObject)
+    fun vaoUse(vao: AGVertexArrayObject)
     // TEXTURES
     fun textureCreate(textureId: Int)
     fun textureDelete(textureId: Int)
     fun textureUpdate(
         textureId: Int,
-        target: AG.TextureTargetKind,
+        target: AGTextureTargetKind,
         index: Int,
         bmp: Bitmap?,
-        source: AG.BitmapSourceBase,
+        source: AGBitmapSourceBase,
         doMipmaps: Boolean,
         premultiplied: Boolean
     )
-    fun textureBind(textureId: Int, target: AG.TextureTargetKind, implForcedTexId: Int)
-    fun textureBindEnsuring(tex: AG.Texture?)
+    fun textureBind(textureId: Int, target: AGTextureTargetKind, implForcedTexId: Int)
+    fun textureBindEnsuring(tex: AGTexture?)
     fun textureSetFromFrameBuffer(textureId: Int, x: Int, y: Int, width: Int, height: Int)
     // FRAME BUFFER
     fun frameBufferCreate(id: Int)

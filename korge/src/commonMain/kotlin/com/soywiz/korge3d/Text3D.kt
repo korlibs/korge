@@ -2,7 +2,7 @@ package com.soywiz.korge3d
 
 import com.soywiz.kds.iterators.fastForEachWithIndex
 import com.soywiz.kmem.clamp
-import com.soywiz.korag.AG
+import com.soywiz.korag.*
 import com.soywiz.korge.render.Texture
 import com.soywiz.korge.ui.DefaultUIBitmapFont
 import com.soywiz.korim.font.BitmapFont
@@ -26,15 +26,15 @@ class Text3D(
         mat.identity()
     }
 
-    private val uniformValues = AG.UniformValues()
-    private val rs = AG.RenderState(depthFunc = AG.CompareMode.LESS_EQUAL)
+    private val uniformValues = AGUniformValues()
+    private val rs = AGRenderState.DEFAULT.withDepthFunc(depthFunc = AGCompareMode.LESS_EQUAL)
     private val tempMat1 = Matrix3D()
     private val tempMat2 = Matrix3D()
     private val tempMat3 = Matrix3D()
     private val identity = Matrix3D()
 
 
-    fun AG.UniformValues.setMaterialLight(
+    fun AGUniformValues.setMaterialLight(
         ctx: RenderContext3D,
         uniform: Shaders3D.MaterialLightUniform,
         actual: Material3D.Light
@@ -74,7 +74,7 @@ class Text3D(
                         mesh.hasTexture
                     ),
                     vertexCount = mesh.vertexCount,
-                    blending = AG.Blending.NONE,
+                    blending = AGBlending.NONE,
                     //vertexCount = 6 * 6,
                     uniforms = uniformValues.apply {
                         this[u_ProjMat] = ctx.projCameraMat

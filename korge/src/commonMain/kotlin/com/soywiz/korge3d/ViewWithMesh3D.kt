@@ -4,7 +4,7 @@ import com.soywiz.kds.get
 import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.kds.iterators.fastForEachWithIndex
 import com.soywiz.kmem.clamp
-import com.soywiz.korag.AG
+import com.soywiz.korag.*
 import com.soywiz.korma.geom.Matrix3D
 import com.soywiz.korma.geom.invert
 
@@ -19,9 +19,9 @@ open class ViewWithMesh3D(
     var skeleton: Skeleton3D? = null
 ) : View3D() {
 
-    private val uniformValues = AG.UniformValues()
-    private val rs = AG.RenderState(depthFunc = AG.CompareMode.LESS_EQUAL)
-    //private val rs = AG.RenderState(depthFunc = AG.CompareMode.ALWAYS)
+    private val uniformValues = AGUniformValues()
+    private val rs = AGRenderState.DEFAULT.withDepthFunc(depthFunc = AGCompareMode.LESS_EQUAL)
+    //private val rs = AGRenderState(depthFunc = AGCompareMode.ALWAYS)
 
     private val tempMat1 = Matrix3D()
     private val tempMat2 = Matrix3D()
@@ -31,7 +31,7 @@ open class ViewWithMesh3D(
         mat.identity()
     }
 
-    fun AG.UniformValues.setMaterialLight(
+    fun AGUniformValues.setMaterialLight(
         ctx: RenderContext3D,
         uniform: Shaders3D.MaterialLightUniform,
         actual: Material3D.Light
@@ -78,7 +78,7 @@ open class ViewWithMesh3D(
                             mesh.hasTexture
                         ),
                         vertexCount = mesh.vertexCount,
-                        blending = AG.Blending.NONE,
+                        blending = AGBlending.NONE,
                         //vertexCount = 6 * 6,
                         uniforms = uniformValues.apply {
                             this[u_ProjMat] = ctx.projCameraMat

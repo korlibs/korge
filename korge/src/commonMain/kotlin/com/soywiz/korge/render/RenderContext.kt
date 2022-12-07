@@ -1,6 +1,7 @@
 package com.soywiz.korge.render
 
 import com.soywiz.kds.*
+import com.soywiz.kds.iterators.*
 import com.soywiz.korag.*
 import com.soywiz.korag.log.*
 import com.soywiz.korag.shader.Uniform
@@ -50,11 +51,11 @@ class RenderContext constructor(
     val viewMat2D: Matrix = Matrix()
 
     @KorgeInternal
-    val uniforms: AG.UniformValues by lazy {
-        AG.UniformValues(
-            DefaultShaders.u_ProjMat to projMat,
-            DefaultShaders.u_ViewMat to viewMat,
-        )
+    val uniforms: AGUniformValues by lazy {
+        AGUniformValues {
+            it[DefaultShaders.u_ProjMat] = projMat
+            it[DefaultShaders.u_ViewMat] = viewMat
+        }
     }
 
     inline fun <T> setTemporalProjectionMatrixTransform(m: Matrix, block: () -> T): T =
@@ -75,12 +76,14 @@ class RenderContext constructor(
 
     fun updateStandardUniforms() {
         //println("updateStandardUniforms: ag.currentSize(${ag.currentWidth}, ${ag.currentHeight}) : ${ag.currentRenderBuffer}")
-        if (flipRenderTexture && ag.renderingToTexture) {
+        if (flipRenderTexture && ag.isRenderingToTexture) {
             projMat.setToOrtho(tempRect.setBounds(0, ag.currentHeight, ag.currentWidth, 0), -1f, 1f)
         } else {
             projMat.setToOrtho(tempRect.setBounds(0, 0, ag.currentWidth, ag.currentHeight), -1f, 1f)
             projMat.multiply(projMat, projectionMatrixTransform.toMatrix3D(tempMat3d))
         }
+        uniforms[DefaultShaders.u_ProjMat] = projMat
+        uniforms[DefaultShaders.u_ViewMat] = viewMat
     }
 
     /**
@@ -106,45 +109,47 @@ class RenderContext constructor(
         }
     }
 
+    @PublishedApi internal val uniformsPool = Pool { AGUniformValues() }
+
     /**
-     * Executes [callback] while setting temporarily an [uniform] to a [value]
+     * Executes [callback] while restoring [uniform] to its current value after [callback] is exexcuted.
      */
-    inline fun setTemporalUniform(uniform: Uniform, value: Any?, flush: Boolean = true, callback: (AG.UniformValues) -> Unit) {
-        val old = this.uniforms[uniform]
-        if (flush) flush()
-        this.uniforms.putOrRemove(uniform, value)
-        try {
-            callback(this.uniforms)
-        } finally {
+    inline fun keepUniform(uniform: Uniform, flush: Boolean = true, callback: (AGUniformValues) -> Unit) {
+        uniformsPool.alloc { tempUniforms ->
+            tempUniforms[uniform].set(this.uniforms[uniform])
             if (flush) flush()
-            this.uniforms.putOrRemove(uniform, old)
+            try {
+                callback(this.uniforms)
+            } finally {
+                if (flush) flush()
+                this.uniforms[uniform].set(tempUniforms[uniform])
+            }
         }
     }
 
-    inline fun <reified T> setTemporalUniforms(uniforms: Array<Uniform>, values: Array<T>, count: Int = values.size, olds: Array<T?> = arrayOfNulls<T>(count), flush: Boolean = true, callback: (AG.UniformValues) -> Unit) {
-        if (flush) flush()
-        for (n in 0 until count) {
-            olds[n] = this.uniforms[uniforms[n]] as T?
-            this.uniforms.putOrRemove(uniforms[n], values[n])
-        }
-        try {
-            callback(this.uniforms)
-        } finally {
+    /**
+     * Executes [callback] while restoring [uniforms] to its current value after [callback] is exexcuted.
+     */
+    inline fun keepUniforms(uniforms: Array<Uniform>, flush: Boolean = true, callback: (AGUniformValues) -> Unit) {
+        uniformsPool.alloc { tempUniforms ->
+            uniforms.fastForEach { tempUniforms[it].set(this.uniforms[it]) }
             if (flush) flush()
-            for (n in 0 until count) {
-                val m = olds.size - 1 - n
-                this.uniforms.putOrRemove(uniforms[m], olds[m])
+            try {
+                callback(this.uniforms)
+            } finally {
+                if (flush) flush()
+                uniforms.fastForEach { this.uniforms[it].set(tempUniforms[it]) }
             }
         }
     }
 
     @PublishedApi
-    internal val tempOldUniformsList: Pool<AG.UniformValues> = Pool { AG.UniformValues() }
+    internal val tempOldUniformsList: Pool<AGUniformValues> = Pool { AGUniformValues() }
 
     /**
      * Executes [callback] while setting temporarily a set of [uniforms]
      */
-    inline fun setTemporalUniforms(uniforms: AG.UniformValues?, callback: (AG.UniformValues) -> Unit) {
+    inline fun setTemporalUniforms(uniforms: AGUniformValues?, callback: (AGUniformValues) -> Unit) {
         tempOldUniformsList { tempOldUniforms ->
             if (uniforms != null && uniforms.isNotEmpty()) {
                 flush()
@@ -189,9 +194,9 @@ class RenderContext constructor(
     @KorgeInternal
     val batch = BatchBuilder2D(this, batchMaxQuads)
 
-    val dynamicVertexBufferPool = Pool { ag.createVertexBuffer() }
+    val dynamicVertexBufferPool = Pool { ag.createBuffer() }
     val dynamicVertexDataPool = Pool { ag.createVertexData() }
-    val dynamicIndexBufferPool = Pool { ag.createIndexBuffer() }
+    val dynamicIndexBufferPool = Pool { ag.createBuffer() }
 
     @OptIn(KorgeInternal::class)
     inline fun useBatcher(block: (BatchBuilder2D) -> Unit) = batch.use(block)
@@ -234,28 +239,23 @@ class RenderContext constructor(
         flushers(Unit)
 	}
 
-    @PublishedApi
-    internal val renderToTextureScissors = Pool { AG.Scissor() }
-
     inline fun renderToFrameBuffer(
-        frameBuffer: AG.RenderBuffer,
+        frameBuffer: AGFrameBuffer,
         clear: Boolean = true,
-        render: (AG.RenderBuffer) -> Unit,
+        render: (AGFrameBuffer) -> Unit,
     ) {
         flush()
         ag.setRenderBufferTemporally(frameBuffer) {
             useBatcher { batch ->
                 val oldScissors = batch.scissor
-                renderToTextureScissors.alloc { scissor ->
-                    batch.scissor = scissor.setTo(0, 0, frameBuffer.width, frameBuffer.height)
-                    //batch.scissor = null
-                    try {
-                        if (clear) ag.clear(Colors.TRANSPARENT_BLACK)
-                        render(frameBuffer)
-                        flush()
-                    } finally {
-                        batch.scissor = oldScissors
-                    }
+                batch.scissor = AGScissor(0, 0, frameBuffer.width, frameBuffer.height)
+                //batch.scissor = null
+                try {
+                    if (clear) ag.clear(Colors.TRANSPARENT_BLACK)
+                    render(frameBuffer)
+                    flush()
+                } finally {
+                    batch.scissor = oldScissors
                 }
             }
         }
@@ -269,7 +269,7 @@ class RenderContext constructor(
      */
     inline fun renderToTexture(
         width: Int, height: Int,
-        render: (AG.RenderBuffer) -> Unit = {},
+        render: (AGFrameBuffer) -> Unit = {},
         hasDepth: Boolean = false, hasStencil: Boolean = true, msamples: Int = 1,
         use: (texture: Texture) -> Unit
     ) {
@@ -322,7 +322,7 @@ class RenderContext constructor(
      */
     fun getTex(bmp: BmpSlice): Texture = agBitmapTextureManager.getTexture(bmp)
 	fun getTex(bmp: BitmapCoords): TextureCoords = agBitmapTextureManager.getTexture(bmp)
-    fun getBuffer(buffer: AgCachedBuffer): AG.Buffer = agBufferManager.getBuffer(buffer)
+    fun getBuffer(buffer: AgCachedBuffer): AGBuffer = agBufferManager.getBuffer(buffer)
 
     /**
      * Allocates a [Texture.Base] from a [Bitmap]. A Texture.Base doesn't have region information.
