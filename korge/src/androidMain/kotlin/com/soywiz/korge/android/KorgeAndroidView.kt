@@ -20,7 +20,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 @Suppress("unused")
-open class KorgeAndroidView(
+open class KorgeAndroidView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0,
@@ -47,7 +47,7 @@ open class KorgeAndroidView(
         agOpenGl = null
         cleanUpResourcesVfs()
 
-        CoroutineScope(Dispatchers.Main).launch {
+        findViewTreeLifecycleOwner()?.lifecycleScope?.launch {
             mGLView?.let { removeView(it) }
         }
 
