@@ -363,8 +363,8 @@ open class GpuShapeView(
         globalAlpha: Double,
         strokeInfo: StrokeInfo,
         forceClosed: Boolean? = null,
-        stencilOpFunc: AGStencilOpFuncState? = null,
-        stencilRef: AGStencilReferenceState = AGStencilReferenceState.DEFAULT,
+        stencilOpFunc: AGStencilOpFunc? = null,
+        stencilRef: AGStencilReference = AGStencilReference.DEFAULT,
     ) {
         val gpuShapeViewCommands = this.gpuShapeViewCommands
 
@@ -521,7 +521,7 @@ open class GpuShapeView(
                     startIndex = pathData.vertexStart,
                     endIndex = pathData.vertexEnd,
                     paintShader = paintShader,
-                    colorMask = AGColorMaskState(true),
+                    colorMask = AGColorMask(true),
                     blendMode = renderBlendMode,
                 )
             }
@@ -543,8 +543,8 @@ open class GpuShapeView(
                 Winding.EVEN_ODD -> {
                     stencilReferenceValue = 0b00000001
                     stencilCompare = AGCompareMode.EQUAL
-                    val stencilOpFunc = AGStencilOpFuncState.DEFAULT.withEnabled(enabled = true).withCompareMode(compareMode = AGCompareMode.ALWAYS).withActionOnBothPass(AGStencilOp.INVERT)
-                    val stencilRef = AGStencilReferenceState.DEFAULT.withWriteMask(writeMask = 0b00000001)
+                    val stencilOpFunc = AGStencilOpFunc.DEFAULT.withEnabled(enabled = true).withCompareMode(compareMode = AGCompareMode.ALWAYS).withActionOnBothPass(AGStencilOp.INVERT)
+                    val stencilRef = AGStencilReference.DEFAULT.withWriteMask(writeMask = 0b00000001)
                     pathDataList.fastForEach { pathData ->
                         writeStencil(pathData.vertexStart, pathData.vertexEnd, stencilOpFunc, stencilRef, cullFace = AGCullFace.BOTH)
                     }
@@ -552,8 +552,8 @@ open class GpuShapeView(
                 Winding.NON_ZERO -> {
                     stencilReferenceValue = 0b00000000
                     stencilCompare = AGCompareMode.NOT_EQUAL
-                    val stencilOpFunc = AGStencilOpFuncState.DEFAULT.withEnabled(true).withCompareMode(AGCompareMode.ALWAYS)
-                    val stencilRef = AGStencilReferenceState.DEFAULT.withWriteMask(0xFF)
+                    val stencilOpFunc = AGStencilOpFunc.DEFAULT.withEnabled(true).withCompareMode(AGCompareMode.ALWAYS)
+                    val stencilRef = AGStencilReference.DEFAULT.withWriteMask(0xFF)
                     pathDataList.fastForEach { pathData ->
                         writeStencil(pathData.vertexStart, pathData.vertexEnd, stencilOpFunc.withActionOnBothPass(actionOnBothPass = AGStencilOp.INCREMENT_WRAP), stencilRef, cullFace = AGCullFace.FRONT)
                         writeStencil(pathData.vertexStart, pathData.vertexEnd, stencilOpFunc.withActionOnBothPass(actionOnBothPass = AGStencilOp.DECREMENT_WRAP), stencilRef, cullFace = AGCullFace.BACK)
@@ -566,8 +566,8 @@ open class GpuShapeView(
                 if (winding == Winding.NON_ZERO) {
                     writeStencil(
                         clipDataStart, clipDataEnd,
-                        AGStencilOpFuncState.DEFAULT.withEnabled(true).withCompareMode(AGCompareMode.NOT_EQUAL).withActionOnBothPass(AGStencilOp.INVERT),
-                        AGStencilReferenceState.DEFAULT.withReadMask(0).withWriteMask(0xFF),
+                        AGStencilOpFunc.DEFAULT.withEnabled(true).withCompareMode(AGCompareMode.NOT_EQUAL).withActionOnBothPass(AGStencilOp.INVERT),
+                        AGStencilReference.DEFAULT.withReadMask(0).withWriteMask(0xFF),
                         cullFace = AGCullFace.FRONT
                     )
                 }
@@ -575,8 +575,8 @@ open class GpuShapeView(
 
                 writeStencil(
                     clipDataStart, clipDataEnd,
-                    AGStencilOpFuncState.DEFAULT.withEnabled(true).withCompareMode(AGCompareMode.ALWAYS).withActionOnBothPass(AGStencilOp.INVERT),
-                    AGStencilReferenceState.DEFAULT.withWriteMask(0b00000010),
+                    AGStencilOpFunc.DEFAULT.withEnabled(true).withCompareMode(AGCompareMode.ALWAYS).withActionOnBothPass(AGStencilOp.INVERT),
+                    AGStencilReference.DEFAULT.withWriteMask(0b00000010),
                     AGCullFace.BOTH
                 )
                 stencilReferenceValue = 0b00000011
@@ -603,8 +603,8 @@ open class GpuShapeView(
                     miterLimit = 5.0,
                 ),
                 forceClosed = true,
-                stencilOpFunc = if (!drawFill) null else AGStencilOpFuncState.DEFAULT.withEnabled(true).withCompareMode(stencilCompare.inverted()),
-                stencilRef = AGStencilReferenceState.DEFAULT.withReferenceValue(stencilReferenceValue).withWriteMask(0)
+                stencilOpFunc = if (!drawFill) null else AGStencilOpFunc.DEFAULT.withEnabled(true).withCompareMode(stencilCompare.inverted()),
+                stencilRef = AGStencilReference.DEFAULT.withReferenceValue(stencilReferenceValue).withWriteMask(0)
             )
         }
 
@@ -616,13 +616,13 @@ open class GpuShapeView(
         // renderFill
     }
 
-    private fun writeStencil(pathDataStart: Int, pathDataEnd: Int, stencilOpFunc: AGStencilOpFuncState, stencilRef: AGStencilReferenceState, cullFace: AGCullFace) {
+    private fun writeStencil(pathDataStart: Int, pathDataEnd: Int, stencilOpFunc: AGStencilOpFunc, stencilRef: AGStencilReference, cullFace: AGCullFace) {
         gpuShapeViewCommands.draw(
             AGDrawType.TRIANGLE_FAN,
             startIndex = pathDataStart,
             endIndex = pathDataEnd,
             paintShader = GpuShapeViewPrograms.stencilPaintShader,
-            colorMask = AGColorMaskState(false, false, false, false),
+            colorMask = AGColorMask(false, false, false, false),
             blendMode = BlendMode.NONE,
             stencilOpFunc = stencilOpFunc,
             stencilRef = stencilRef,
@@ -655,9 +655,9 @@ open class GpuShapeView(
         gpuShapeViewCommands.draw(
             AGDrawType.TRIANGLE_FAN,
             paintShader = paintShader,
-            colorMask = AGColorMaskState(true),
-            stencilOpFunc = AGStencilOpFuncState.DEFAULT.withEnabled(true).withCompareMode(stencilCompare),
-            stencilRef = AGStencilReferenceState.DEFAULT.withReferenceValue(stencilReferenceValue).withWriteMask(0),
+            colorMask = AGColorMask(true),
+            stencilOpFunc = AGStencilOpFunc.DEFAULT.withEnabled(true).withCompareMode(stencilCompare),
+            stencilRef = AGStencilReference.DEFAULT.withReferenceValue(stencilReferenceValue).withWriteMask(0),
             startIndex = vstart,
             endIndex = vend,
             blendMode = renderBlendMode,

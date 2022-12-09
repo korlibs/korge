@@ -22,7 +22,7 @@ fun AGList.setBlendingState(blending: AGBlending? = null) {
     }
 }
 
-fun AGList.setRenderState(renderState: AGRenderState) {
+fun AGList.setRenderState(renderState: AGDepthAndFrontFace) {
     enableDisable(AGEnable.CULL_FACE, renderState.frontFace != AGFrontFace.BOTH) {
         frontFace(renderState.frontFace)
     }
@@ -35,11 +35,11 @@ fun AGList.setRenderState(renderState: AGRenderState) {
     }
 }
 
-fun AGList.setColorMaskState(colorMask: AGColorMaskState?) {
+fun AGList.setColorMaskState(colorMask: AGColorMask?) {
     colorMask(colorMask?.red ?: true, colorMask?.green ?: true, colorMask?.blue ?: true, colorMask?.alpha ?: true)
 }
 
-fun AGList.setStencilState(stencilOpFunc: AGStencilOpFuncState?, stencilRef: AGStencilReferenceState) {
+fun AGList.setStencilState(stencilOpFunc: AGStencilOpFunc?, stencilRef: AGStencilReference) {
     if (stencilOpFunc != null && stencilOpFunc.enabled) {
         enable(AGEnable.STENCIL)
         stencilFunction(stencilOpFunc.compareMode, stencilRef.referenceValue, stencilRef.readMask)
@@ -106,10 +106,10 @@ fun AGList.setScissorState(currentRenderBuffer: AGBaseFrameBuffer?, mainRenderBu
 
 fun AGList.setState(
     blending: AGBlending = AGBlending.NORMAL,
-    stencilOpFunc: AGStencilOpFuncState = AGStencilOpFuncState.DEFAULT,
-    stencilRef: AGStencilReferenceState = AGStencilReferenceState.DEFAULT,
-    colorMask: AGColorMaskState = AGColorMaskState.ALL_ENABLED,
-    renderState: AGRenderState = AGRenderState.DEFAULT,
+    stencilOpFunc: AGStencilOpFunc = AGStencilOpFunc.DEFAULT,
+    stencilRef: AGStencilReference = AGStencilReference.DEFAULT,
+    colorMask: AGColorMask = AGColorMask.ALL_ENABLED,
+    renderState: AGDepthAndFrontFace = AGDepthAndFrontFace.DEFAULT,
 ) {
     setBlendingState(blending)
     setRenderState(renderState)

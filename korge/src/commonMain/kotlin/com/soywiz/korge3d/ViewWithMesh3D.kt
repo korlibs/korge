@@ -20,7 +20,7 @@ open class ViewWithMesh3D(
 ) : View3D() {
 
     private val uniformValues = AGUniformValues()
-    private val rs = AGRenderState.DEFAULT.withDepthFunc(depthFunc = AGCompareMode.LESS_EQUAL)
+    private val rs = AGDepthAndFrontFace.DEFAULT.withDepthFunc(depthFunc = AGCompareMode.LESS_EQUAL)
     //private val rs = AGRenderState(depthFunc = AGCompareMode.ALWAYS)
 
     private val tempMat1 = Matrix3D()

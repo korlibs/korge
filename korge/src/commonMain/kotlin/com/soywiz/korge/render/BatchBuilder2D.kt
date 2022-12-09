@@ -2,7 +2,6 @@
 
 package com.soywiz.korge.render
 
-import com.soywiz.kds.fastArrayListOf
 import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.klogger.Logger
 import com.soywiz.kmem.*
@@ -130,13 +129,13 @@ class BatchBuilder2D constructor(
 	init { logger.trace { "BatchBuilder2D[4]" } }
 
     /** The current stencil state. If you change it, you must call the [flush] method to ensure everything has been drawn. */
-	var stencilRef = AGStencilReferenceState.DEFAULT
-    var stencilOpFunc = AGStencilOpFuncState.DEFAULT
+	var stencilRef = AGStencilReference.DEFAULT
+    var stencilOpFunc = AGStencilOpFunc.DEFAULT
 
 	init { logger.trace { "BatchBuilder2D[5]" } }
 
     /** The current color mask state. If you change it, you must call the [flush] method to ensure everything has been drawn. */
-	var colorMask = AGColorMaskState()
+	var colorMask = AGColorMask()
 
 	init { logger.trace { "BatchBuilder2D[6]" } }
 

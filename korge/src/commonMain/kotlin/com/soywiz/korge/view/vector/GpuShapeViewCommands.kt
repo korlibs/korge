@@ -64,9 +64,9 @@ class GpuShapeViewCommands {
     fun draw(
         drawType: AGDrawType,
         paintShader: GpuShapeViewPrograms.PaintShader?,
-        colorMask: AGColorMaskState? = null,
-        stencilOpFunc: AGStencilOpFuncState? = null,
-        stencilRef: AGStencilReferenceState = AGStencilReferenceState.DEFAULT,
+        colorMask: AGColorMask? = null,
+        stencilOpFunc: AGStencilOpFunc? = null,
+        stencilRef: AGStencilReference = AGStencilReference.DEFAULT,
         blendMode: BlendMode? = null,
         cullFace: AGCullFace? = null,
         startIndex: Int = this.verticesStartIndex,
@@ -249,9 +249,9 @@ class GpuShapeViewCommands {
         var vertexEnd: Int = 0,
         var paintShader: GpuShapeViewPrograms.PaintShader?,
         var program: Program? = null,
-        var colorMask: AGColorMaskState? = null,
-        var stencilOpFunc: AGStencilOpFuncState? = null,
-        var stencilRef: AGStencilReferenceState = AGStencilReferenceState.DEFAULT,
+        var colorMask: AGColorMask? = null,
+        var stencilOpFunc: AGStencilOpFunc? = null,
+        var stencilRef: AGStencilReference = AGStencilReference.DEFAULT,
         var blendMode: BlendMode? = null,
         var cullFace: AGCullFace? = null
     ) : ICommand {
