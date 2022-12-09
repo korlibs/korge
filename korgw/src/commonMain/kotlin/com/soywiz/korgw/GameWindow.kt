@@ -220,7 +220,7 @@ open class GameWindowCoroutineDispatcher : CoroutineDispatcher(), Delay, Closeab
                     val task = lock { (if (tasks.isNotEmpty()) tasks.dequeue() else null) } ?: break
                     val time = measureTime {
                         try {
-                            task?.run()
+                            task.run()
                         } catch (e: Throwable) {
                             e.printStackTrace()
                         } finally {
@@ -254,7 +254,7 @@ open class GameWindowCoroutineDispatcher : CoroutineDispatcher(), Delay, Closeab
             timedTasks.removeHead().continuation?.resume(Unit)
         }
         while (tasks.isNotEmpty()) {
-            tasks.dequeue()?.run()
+            tasks.dequeue().run()
         }
     }
 
