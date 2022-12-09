@@ -7,18 +7,12 @@ createTexture():0
 Texture[0].uploadedBitmap(800, 600)
 RenderBuffer[0].setSize(800, 600)
 createMainRenderBuffer():0
-RenderBuffer[0].set()
 clear(#00000000, 1.0, 0, true, true, true)
-disposeTemporalPerFrameStuff()
-flipInternal()
-finish
-RenderBuffer[0].set()
 clear(#00000000, 1.0, 0, true, true, true)
 createTexture():1
 createRenderBuffer():1
 Texture[1].uploadedBitmap(512, 512)
 RenderBuffer[1].setSize(512, 512)
-RenderBuffer[1].set()
 clear(#00000000, 1.0, 0, true, true, true)
 createTexture():2
 Texture[2].uploadedBitmap(1, 1)
@@ -26,79 +20,11 @@ Buffer[0].afterSetMem(mem[96])
 Buffer[1].afterSetMem(mem[16384])
 Buffer[2].afterSetMem(mem[16384])
 Buffer[3].afterSetMem(mem[12])
-enable: SCISSOR
-scissor: 0, 0, 512, 512
-vaoUse: AGVertexArrayObject(list=[AGVertexData(_buffer=Buffer[0], layout=VertexLayout[a_Pos, a_Tex, a_Col, a_Col2]), AGVertexData(_buffer=Buffer[1], layout=VertexLayout[a_TexIndex]), AGVertexData(_buffer=Buffer[2], layout=VertexLayout[a_Wrap])])
-uboSet:
-uboSet.uniform: Uniform(u_ProjMat) = AGValue[TFLOAT]([[0.00390625, 0, 0, 0, 0, 0.00390625, 0, 0, 0, 0, -1, 0, -1, -1, 0, 1]])
-uboSet.uniform: Uniform(u_ViewMat) = AGValue[TFLOAT]([[1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]])
-uboSet.uniform: Uniform(u_Tex0) = AGValue[TINT]([[0]])
-uboSet.uniform: Uniform(u_Tex1) = AGValue[TINT]([[1]])
-uboSet.uniform: Uniform(u_Tex2) = AGValue[TINT]([[2]])
-uboSet.uniform: Uniform(u_Tex3) = AGValue[TINT]([[3]])
-uboSet.uniform: Uniform(u_OutputPre) = AGValue[TBOOL]([[1]])
-enable: BLEND
-blendEquation: ADD, ADD
-blendFunction: ONE, ONE_MINUS_SOURCE_ALPHA, ONE, ONE_MINUS_SOURCE_ALPHA
-disable: CULL_FACE
-depthMask: true
-depthRange: 0.0, 1.0
-disable: DEPTH
-colorMask: true, true, true, true
-disable: STENCIL
-stencilMask: 0
-draw: TRIANGLES, offset=0, count=6, instances=1, indexType=USHORT
-::draw.indices: [0, 1, 2, 3, 0, 2]
-::draw.attributes[0]: []
-::draw.vertex[0]: 
-::draw.vertex[1]: 
-::draw.vertex[2]: 
-::draw.vertex[3]: 
-vaoUse: AGVertexArrayObject(list=[AGVertexData(_buffer=Buffer[0], layout=VertexLayout[a_Pos, a_Tex, a_Col, a_Col2]), AGVertexData(_buffer=Buffer[1], layout=VertexLayout[a_TexIndex]), AGVertexData(_buffer=Buffer[2], layout=VertexLayout[a_Wrap])])
-RenderBuffer[0].set()
+execute(AGBatch(frameBuffer=RenderBuffer[0], vertexData=AGVertexArrayObject(list=[AGVertexData(_buffer=Buffer[0], layout=VertexLayout[a_Pos, a_Tex, a_Col, a_Col2]), AGVertexData(_buffer=Buffer[1], layout=VertexLayout[a_TexIndex]), AGVertexData(_buffer=Buffer[2], layout=VertexLayout[a_Wrap])]), indices=Buffer[3], indexType=USHORT, program=Program(name=BatchBuilder2D.Tinted.NoAdd, attributes=[a_Tex, a_TexIndex, a_Wrap, a_Col, a_Col2, a_Pos], uniforms=[u_ProjMat, u_ViewMat, u_Tex0, u_Tex1, u_Tex2, u_Tex3, u_OutputPre]), uniforms=com.soywiz.korag.AGUniformValues@71c91820, blending=Blending(outRGB = (srcRGB * srcA) + (dstRGB * (1 - srcA)), outA = (srcA * 1) + (dstA * (1 - srcA))), stencilOpFunc=AGStencilOpFunc(data=5591072), stencilRef=AGStencilReference(data=16776960), colorMask=AGColorMask(data=15), depthAndFrontFace=AGDepthAndFrontFace(data=33550336), scissor=Scissor(x=101, y=0, width=411, height=512), cullFace=NONE, drawType=TRIANGLES, drawOffset=0, vertexCount=6, instances=1))
 createTexture():3
 Texture[3].uploadedBitmap(64, 64)
 Buffer[0].afterSetMem(mem[96])
 Buffer[1].afterSetMem(mem[16384])
 Buffer[2].afterSetMem(mem[16384])
 Buffer[3].afterSetMem(mem[12])
-enable: SCISSOR
-scissor: 101, 0, 600, 600
-vaoUse: AGVertexArrayObject(list=[AGVertexData(_buffer=Buffer[0], layout=VertexLayout[a_Pos, a_Tex, a_Col, a_Col2]), AGVertexData(_buffer=Buffer[1], layout=VertexLayout[a_TexIndex]), AGVertexData(_buffer=Buffer[2], layout=VertexLayout[a_Wrap])])
-uboSet:
-uboSet.uniform: Uniform(u_ProjMat) = AGValue[TFLOAT]([[0.0029296875, 0, 0, 0, 0, -0.00390625, 0, 0, 0, 0, -1, 0, -0.7480469, 1, 0, 1]])
-uboSet.uniform: Uniform(u_ViewMat) = AGValue[TFLOAT]([[1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]])
-uboSet.uniform: Uniform(u_Tex0) = AGValue[TINT]([[0]])
-uboSet.uniform: Uniform(u_Tex1) = AGValue[TINT]([[1]])
-uboSet.uniform: Uniform(u_Tex2) = AGValue[TINT]([[2]])
-uboSet.uniform: Uniform(u_Tex3) = AGValue[TINT]([[3]])
-uboSet.uniform: Uniform(u_OutputPre) = AGValue[TBOOL]([[0]])
-uboSet.uniform: Uniform(effectTextureSize) = AGValue[TFLOAT]([[512, 512]])
-uboSet.uniform: Uniform(u_MaxTexCoords) = AGValue[TFLOAT]([[1, 1]])
-uboSet.uniform: Uniform(u_StdTexDerivates) = AGValue[TFLOAT]([[0.001953125, 0.001953125]])
-uboSet.uniform: Uniform(u_Ratio) = AGValue[TFLOAT]([[0.5]])
-uboSet.uniform: Uniform(u_Mask) = AGValue[TINT]([[0]])
-uboSet.uniform: Uniform(u_Reversed) = AGValue[TFLOAT]([[0]])
-uboSet.uniform: Uniform(u_Smooth) = AGValue[TFLOAT]([[1]])
-uboSet.uniform: Uniform(u_filterScale) = AGValue[TFLOAT]([[1]])
-enable: BLEND
-blendEquation: ADD, ADD
-blendFunction: SOURCE_ALPHA, ONE_MINUS_SOURCE_ALPHA, ONE, ONE_MINUS_SOURCE_ALPHA
-disable: CULL_FACE
-depthMask: true
-depthRange: 0.0, 1.0
-disable: DEPTH
-colorMask: true, true, true, true
-disable: STENCIL
-stencilMask: 0
-draw: TRIANGLES, offset=0, count=6, instances=1, indexType=USHORT
-::draw.indices: [0, 1, 2, 3, 0, 2]
-::draw.attributes[0]: []
-::draw.vertex[0]: 
-::draw.vertex[1]: 
-::draw.vertex[2]: 
-::draw.vertex[3]: 
-vaoUse: AGVertexArrayObject(list=[AGVertexData(_buffer=Buffer[0], layout=VertexLayout[a_Pos, a_Tex, a_Col, a_Col2]), AGVertexData(_buffer=Buffer[1], layout=VertexLayout[a_TexIndex]), AGVertexData(_buffer=Buffer[2], layout=VertexLayout[a_Wrap])])
-disposeTemporalPerFrameStuff()
-flipInternal()
-finish
+execute(AGBatch(frameBuffer=RenderBuffer[0], vertexData=AGVertexArrayObject(list=[AGVertexData(_buffer=Buffer[0], layout=VertexLayout[a_Pos, a_Tex, a_Col, a_Col2]), AGVertexData(_buffer=Buffer[1], layout=VertexLayout[a_TexIndex]), AGVertexData(_buffer=Buffer[2], layout=VertexLayout[a_Wrap])]), indices=Buffer[3], indexType=USHORT, program=Program(name=program-null-null, attributes=[a_Tex, a_TexIndex, a_Wrap, a_Col, a_Col2, a_Pos], uniforms=[u_ProjMat, u_ViewMat, u_Tex0, u_Tex1, u_Tex2, u_Tex3, u_OutputPre, u_Mask, u_MaxTexCoords, u_Reversed, u_Ratio, u_Smooth]), uniforms=com.soywiz.korag.AGUniformValues@71c91820, blending=Blending(outRGB = (srcRGB * srcA) + (dstRGB * (1 - srcA)), outA = (srcA * 1) + (dstA * (1 - srcA))), stencilOpFunc=AGStencilOpFunc(data=5591072), stencilRef=AGStencilReference(data=16776960), colorMask=AGColorMask(data=15), depthAndFrontFace=AGDepthAndFrontFace(data=33550336), scissor=Scissor(x=101, y=0, width=600, height=600), cullFace=NONE, drawType=TRIANGLES, drawOffset=0, vertexCount=6, instances=1))

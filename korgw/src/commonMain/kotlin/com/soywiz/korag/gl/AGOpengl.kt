@@ -3,9 +3,7 @@ package com.soywiz.korag.gl
 import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
 import com.soywiz.kds.lock.*
-import com.soywiz.kgl.KmlGl
-import com.soywiz.kgl.KmlGlState
-import com.soywiz.kgl.getIntegerv
+import com.soywiz.kgl.*
 import com.soywiz.klogger.*
 import com.soywiz.kmem.*
 import com.soywiz.korag.*
@@ -25,8 +23,6 @@ class AGOpengl(val gl: KmlGl) : AG() {
         RuntimeException("Error Compiling Shader : $debugName type=$type : ${errorInt.hex} : '$error' : source='$str', gl.versionInt=${gl.versionInt}, gl.versionString='${gl.versionString}', gl=$gl")
 
     override val parentFeatures: AGFeatures get() = gl
-
-    val multithreadedRendering: Boolean get() = false
 
     override fun flip() {
         disposeTemporalPerFrameStuff()
@@ -139,7 +135,18 @@ class AGOpengl(val gl: KmlGl) : AG() {
         return nprogram
     }
 
-    override fun draw(batch: AGBatch) {
+    override fun execute(command: AGCommand) {
+        when (command) {
+            is AGBatch -> this.draw(command)
+            is AGBlitPixels -> TODO()
+            is AGClear -> this.clear(command.color, command.depth, command.stencil, command.clearColor, command.clearDepth, command.clearStencil)
+            is AGDiscardFrameBuffer -> TODO()
+            AGFinish -> this.finish()
+            is AGReadPixelsToTexture -> TODO()
+        }
+    }
+
+    fun draw(batch: AGBatch) {
         //println("SCISSOR: $scissor")
 
         //finalScissor.setTo(0, 0, backWidth, backHeight)
@@ -158,7 +165,7 @@ class AGOpengl(val gl: KmlGl) : AG() {
             val blending = batch.blending
             if (currentBlending != blending) {
                 currentBlending = blending
-                enableDisable(AGEnable.BLEND, blending.enabled) {
+                gl.enableDisable(KmlGl.BLEND, blending.enabled) {
                     gl.blendEquationSeparate(blending.eqRGB.toGl(), blending.eqA.toGl())
                     gl.blendFuncSeparate(blending.srcRGB.toGl(), blending.dstRGB.toGl(), blending.srcA.toGl(), blending.dstA.toGl())
                 }
@@ -275,10 +282,6 @@ class AGOpengl(val gl: KmlGl) : AG() {
         //    false
         //}
 
-    }
-
-    fun enableDisable(kind: AGEnable, enable: Boolean) {
-        gl.enableDisable(kind.toGl(), enable)
     }
 
     fun cullFace(face: AGCullFace) {
@@ -695,43 +698,15 @@ class AGOpengl(val gl: KmlGl) : AG() {
     private val AGFrameBuffer.gl: GLFrameBuffer get() = gl(glGlobalState)
     private val AGTexture.gl: GLTexture get() = gl(glGlobalState)
 
-    fun enable(kind: AGEnable): Unit {
-        gl.enable(kind.toGl())
-    }
-    fun disable(kind: AGEnable): Unit {
-        gl.disable(kind.toGl())
-    }
-
-    fun enableBlend(): Unit = enable(AGEnable.BLEND)
-    fun enableCullFace(): Unit = enable(AGEnable.CULL_FACE)
-    fun enableDepth(): Unit = enable(AGEnable.DEPTH)
-    fun enableScissor(): Unit = enable(AGEnable.SCISSOR)
-    fun enableStencil(): Unit = enable(AGEnable.STENCIL)
-    fun disableBlend(): Unit = disable(AGEnable.BLEND)
-    fun disableCullFace(): Unit = disable(AGEnable.CULL_FACE)
-    fun disableDepth(): Unit = disable(AGEnable.DEPTH)
-    fun disableScissor(): Unit = disable(AGEnable.SCISSOR)
-    fun disableStencil(): Unit = disable(AGEnable.STENCIL)
-
-    inline fun enableDisable(kind: AGEnable, enable: Boolean, block: () -> Unit = {}) {
-        if (enable) {
-            enable(kind)
-            block()
-        } else {
-            disable(kind)
-        }
-    }
-
-
     fun setDepthAndFrontFace(renderState: AGDepthAndFrontFace) {
-        enableDisable(AGEnable.CULL_FACE, renderState.frontFace != AGFrontFace.BOTH) {
+        gl.enableDisable(KmlGl.CULL_FACE, renderState.frontFace != AGFrontFace.BOTH) {
             gl.frontFace(renderState.frontFace.toGl())
         }
 
         gl.depthMask(renderState.depthMask)
         gl.depthRangef(renderState.depthNear, renderState.depthFar)
 
-        enableDisable(AGEnable.DEPTH, renderState.depthFunc != AGCompareMode.ALWAYS) {
+        gl.enableDisable(KmlGl.DEPTH_TEST, renderState.depthFunc != AGCompareMode.ALWAYS) {
             gl.depthFunc(renderState.depthFunc.toGl())
         }
     }
@@ -777,7 +752,7 @@ class AGOpengl(val gl: KmlGl) : AG() {
 
             //println("[MAIN_BUFFER] realScissors: $realScissors")
 
-            enable(AGEnable.SCISSOR)
+            gl.enable(KmlGl.SCISSOR_TEST)
             if (realScissors != null) {
                 scissor(realScissors.x.toInt(), realScissors.y.toInt(), realScissors.width.toInt(), realScissors.height.toInt())
             } else {
@@ -786,7 +761,7 @@ class AGOpengl(val gl: KmlGl) : AG() {
         } else {
             //println("[RENDER_TARGET] scissor: $scissor")
 
-            enableDisable(AGEnable.SCISSOR, scissor != AGScissor.NIL) {
+            gl.enableDisable(KmlGl.SCISSOR_TEST, scissor != AGScissor.NIL) {
                 scissor(scissor.x, scissor.y, scissor.width, scissor.height)
             }
         }
@@ -794,18 +769,4 @@ class AGOpengl(val gl: KmlGl) : AG() {
 
     internal var renderThreadId: Long = -1L
     internal var renderThreadName: String? = null
-    //var programIndex = KorAtomicInt(0)
-    private val lock = NonRecursiveLock()
-
-    enum class AGEnable {
-        BLEND, CULL_FACE, DEPTH, SCISSOR, STENCIL;
-    }
-
-    fun AGEnable.toGl(): Int = when (this) {
-        AGEnable.BLEND -> KmlGl.BLEND
-        AGEnable.CULL_FACE -> KmlGl.CULL_FACE
-        AGEnable.DEPTH -> KmlGl.DEPTH_TEST
-        AGEnable.SCISSOR -> KmlGl.SCISSOR_TEST
-        AGEnable.STENCIL -> KmlGl.STENCIL_TEST
-    }
 }

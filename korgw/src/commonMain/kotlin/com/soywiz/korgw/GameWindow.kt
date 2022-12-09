@@ -89,6 +89,9 @@ data class GameWindowCreationConfig(
     val multithreaded: Boolean? = null,
     val hdr: Boolean? = null,
     val msaa: Int? = null,
+    val checkGl: Boolean = false,
+    val logGl: Boolean = false,
+    val cacheGl: Boolean = false,
 )
 
 expect fun CreateDefaultGameWindow(config: GameWindowCreationConfig): GameWindow

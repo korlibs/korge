@@ -156,12 +156,16 @@ open class LogBaseAG(
 	width: Int = 640,
 	height: Int = 480,
 ) : DummyAG(width, height) {
-    enum class Kind { DRAW, DRAW_DETAILS, CLEAR, METRICS, FLIP, READ, REPAINT, DISPOSE, TEXTURE_UPLOAD, CLOSE, FRAME_BUFFER, BUFFER, TEXTURE, SHADER, OTHER, UNIFORM, UNIFORM_VALUES, SCISSORS, VIEWPORT, VERTEX, ENABLE_DISABLE, CONTEXT_LOST, FLUSH }
+    enum class Kind { COMMAND, DRAW, DRAW_DETAILS, CLEAR, METRICS, FLIP, READ, REPAINT, DISPOSE, TEXTURE_UPLOAD, CLOSE, FRAME_BUFFER, BUFFER, TEXTURE, SHADER, OTHER, UNIFORM, UNIFORM_VALUES, SCISSORS, VIEWPORT, VERTEX, ENABLE_DISABLE, CONTEXT_LOST, FLUSH }
 
 	open fun log(str: String, kind: Kind) {
 	}
 
-	override fun clear(
+    override fun execute(command: AGCommand) {
+        log("execute($command)", Kind.COMMAND)
+    }
+
+    override fun clear(
 		color: RGBA,
 		depth: Float,
 		stencil: Int,

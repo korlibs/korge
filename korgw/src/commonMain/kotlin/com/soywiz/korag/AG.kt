@@ -12,6 +12,8 @@ import com.soywiz.korim.color.*
 import com.soywiz.korio.annotations.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korma.geom.*
+import kotlinx.coroutines.channels.*
+import kotlinx.coroutines.flow.*
 import kotlin.math.*
 
 interface AGWindow : AGContainer {
@@ -23,6 +25,12 @@ interface AGFeatures {
     val isInstancedSupported: Boolean get() = parentFeatures?.isInstancedSupported ?: false
     val isStorageMultisampleSupported: Boolean get() = parentFeatures?.isStorageMultisampleSupported ?: false
     val isFloatTextureSupported: Boolean get() = parentFeatures?.isFloatTextureSupported ?: false
+}
+
+class AGToCommandChannel(val channel: Channel<AGCommand>) : AG() {
+    override fun execute(command: AGCommand) {
+        channel.trySend(command)
+    }
 }
 
 abstract class AG() : AGFeatures, AGCommandExecutor, Extra by Extra.Mixin() {
@@ -139,22 +147,9 @@ abstract class AG() : AGFeatures, AGCommandExecutor, Extra by Extra.Mixin() {
 
     private val batch by lazy { AGBatch(mainFrameBuffer) }
 
-    override fun execute(command: AGCommand) {
-        when (command) {
-            is AGClear -> clear(command)
-            is AGBatch -> draw(batch)
-            is AGBlitPixels -> blit(command)
-            is AGReadPixelsToTexture -> TODO()
-            is AGDiscardFrameBuffer -> TODO()
-        }
-    }
-
     open fun blit(command: AGBlitPixels) {
 
     }
-
-    open fun clear(clear: AGClear) = Unit
-    abstract fun draw(batch: AGBatch)
 
     fun AGUniformValues.useExternalSampler(): Boolean {
         var useExternalSampler = false
@@ -220,6 +215,7 @@ abstract class AG() : AGFeatures, AGCommandExecutor, Extra by Extra.Mixin() {
         clearStencil: Boolean = true,
         scissor: AGScissor = AGScissor.NIL,
     ) {
+        execute(AGClear(currentFrameBufferOrMain, color, depth, stencil, clearColor, clearDepth, clearStencil))
     }
 
 

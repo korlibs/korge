@@ -27,4 +27,4 @@ Particle[24](initialized=true,pos=(-15.0,-2.1),start=(0.0,0.0),velocity=(1.3,-71
 Particle[25](initialized=true,pos=(-9.9,-2.2),start=(0.0,0.0),velocity=(3.2,-108.1),scale=0.5,rotation=0.degrees,time=0.0/3.5,color=#ff4f009d,colorDelta=0.0,0.0,0.0,-0.2),radialAcceleration=0.0,tangentialAcceleration=0.0,emitRadius=100.0,emitRadiusDelta=-28.9,scaleDelta=-0.1,emitRotation=270.3,emitRotationDelta=0.0
 Particle[26](initialized=true,pos=(-5.0,-0.7),start=(0.0,0.0),velocity=(1.6,-71.1),scale=0.4,rotation=0.degrees,time=0.0/3.0,color=#ff4f009d,colorDelta=0.0,0.0,0.0,-0.2),radialAcceleration=0.0,tangentialAcceleration=0.0,emitRadius=100.0,emitRadiusDelta=-33.9,scaleDelta=-0.1,emitRotation=268.2,emitRotationDelta=0.0
 )
-draw: TRIANGLE_FAN, offset=0, count=4, instances=27, indexType=null
+

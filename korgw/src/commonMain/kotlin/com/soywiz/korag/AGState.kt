@@ -731,6 +731,8 @@ fun AGCommandExecutor.draw(batch: AGBatch): Unit = execute(batch)
 
 sealed interface AGCommand
 
+object AGFinish : AGCommand
+
 /**
  *
  */

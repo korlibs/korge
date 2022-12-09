@@ -19,8 +19,13 @@ class MaskedViewTest : ViewsForTesting() {
         masked.solidRect(64, 64)
 
         testRenderContext(object : LogBaseAG() {
-            override fun draw(batch: AGBatch) {
-                stencils += batch.stencilFull
+            override fun execute(command: AGCommand) {
+                when (command) {
+                    is AGBatch -> {
+                        stencils += command.stencilFull
+                    }
+                    else -> Unit
+                }
             }
         }) { ctx ->
             @Suppress("EXPERIMENTAL_API_USAGE")

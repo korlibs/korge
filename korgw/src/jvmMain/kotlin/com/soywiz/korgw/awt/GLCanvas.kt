@@ -4,12 +4,11 @@ import com.soywiz.kgl.*
 import com.soywiz.korag.gl.*
 import com.soywiz.korgw.*
 import com.soywiz.korgw.platform.*
-import com.sun.jna.*
 import java.awt.*
 import java.io.*
 
 open class GLCanvas constructor(checkGl: Boolean = true, val logGl: Boolean = false, cacheGl: Boolean = false) : Canvas(), GameWindowConfig, Closeable {
-    val ag: AGOpengl = AwtAg(checkGl, logGl, cacheGl)
+    val ag: AGOpengl = AGOpenglAWT(checkGl, logGl, cacheGl)
     var ctx: BaseOpenglContext? = null
     val gl = ag.gl
 

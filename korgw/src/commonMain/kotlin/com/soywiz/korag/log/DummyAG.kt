@@ -9,6 +9,6 @@ open class DummyAG(width: Int = 640, height: Int = 480) : AG() {
     override val isInstancedSupported: Boolean get() = true
     override val isFloatTextureSupported: Boolean get() = true
 
-    override fun draw(batch: AGBatch) {
+    override fun execute(command: AGCommand) {
     }
 }

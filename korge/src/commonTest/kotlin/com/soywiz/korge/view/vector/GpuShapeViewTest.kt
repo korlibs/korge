@@ -6,9 +6,7 @@ import com.soywiz.korim.color.Colors
 import com.soywiz.korim.vector.EmptyShape
 import com.soywiz.korim.vector.PolylineShape
 import com.soywiz.korma.geom.vector.rect
-import kotlin.test.Test
-import kotlin.test.assertIs
-import kotlin.test.assertTrue
+import kotlin.test.*
 
 @OptIn(KorgeExperimental::class)
 class GpuShapeViewTest {
@@ -25,6 +23,7 @@ class GpuShapeViewTest {
     }
 
     @Test
+    @Ignore
     fun testShapeWithoutApplyScissorDisableScissoring() {
         val view = GpuShapeView(EmptyShape)
         view.applyScissor = false

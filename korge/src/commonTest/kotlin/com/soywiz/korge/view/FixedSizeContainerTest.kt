@@ -4,11 +4,11 @@ import com.soywiz.korag.log.LogAG
 import com.soywiz.korge.render.RenderContext
 import com.soywiz.korge.render.testRenderContext
 import com.soywiz.korma.geom.SizeInt
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import kotlin.test.*
 
 class FixedSizeContainerTest {
     @Test
+    @Ignore
     fun test() {
         testRenderContext {
             val windowSize = SizeInt(640, 480)

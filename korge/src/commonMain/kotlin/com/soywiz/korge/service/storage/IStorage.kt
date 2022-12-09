@@ -23,16 +23,16 @@ interface IStorageKey<T> {
     var value: T
 }
 
-class StorageKey<T>(val storage: IStorage, val key: String, val serialize: (T) -> String, val deserialize: (String) -> T) : IStorageKey<T> {
+class StorageKey<T>(val storage: IStorage, val key: String, val serialize: (T) -> String, val deserialize: (String?) -> T) : IStorageKey<T> {
     override val isDefined: Boolean get() = storage.contains(key)
     override var value: T
-        get() = deserialize(storage[key])
+        get() = deserialize(storage.getOrNull(key))
         set(value) {
             storage[key] = serialize(value)
         }
 }
 
-fun <T> IStorage.item(key: String, serialize: (T) -> String, deserialize: (String) -> T): StorageKey<T> = StorageKey(this, key, serialize, deserialize)
+fun <T> IStorage.item(key: String, serialize: (T) -> String, deserialize: (String?) -> T): StorageKey<T> = StorageKey(this, key, serialize, deserialize)
 fun IStorage.itemBool(key: String): StorageKey<Boolean> = item(key, { "$it" }, { it.toBoolean() })
-fun IStorage.itemInt(key: String): StorageKey<Int> = item(key, { "$it" }, { it.toInt() })
-fun IStorage.itemDouble(key: String): StorageKey<Double> = item(key, { "$it" }, { it.toDouble() })
+fun IStorage.itemInt(key: String): StorageKey<Int> = item(key, { "$it" }, { it?.toInt() ?: 0 })
+fun IStorage.itemDouble(key: String): StorageKey<Double> = item(key, { "$it" }, { it?.toDouble() ?: 0.0 })

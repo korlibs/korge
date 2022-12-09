@@ -19,8 +19,7 @@ import java.io.*
 import javax.imageio.*
 import javax.swing.*
 
-class AwtGameWindow(checkGl: Boolean, logGl: Boolean, config: GameWindowCreationConfig) : BaseAwtGameWindow(config) {
-    override val ag: AGOpengl = AwtAg(checkGl, logGl, cacheGl = false)
+class AwtGameWindow(config: GameWindowCreationConfig) : BaseAwtGameWindow(AGOpenglAWT(config)) {
 
     /*
     fun JFrame.isFullScreen(): Boolean {

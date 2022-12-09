@@ -28,10 +28,9 @@ import java.awt.event.MouseEvent
 import javax.swing.*
 import kotlin.system.*
 
-abstract class BaseAwtGameWindow(val config: GameWindowCreationConfig) : GameWindow(), ClipboardOwner {
-    abstract override val ag: AGOpengl
-
-
+abstract class BaseAwtGameWindow(
+    override val ag: AGOpengl
+) : GameWindow(), ClipboardOwner {
     private val localGraphicsEnvironment : GraphicsEnvironment by lazy(LazyThreadSafetyMode.PUBLICATION) {
         GraphicsEnvironment.getLocalGraphicsEnvironment()
     }
@@ -184,7 +183,6 @@ abstract class BaseAwtGameWindow(val config: GameWindowCreationConfig) : GameWin
                 component.repaint()
             }
         }
-        val frame = this
 
         ensureContext()
 

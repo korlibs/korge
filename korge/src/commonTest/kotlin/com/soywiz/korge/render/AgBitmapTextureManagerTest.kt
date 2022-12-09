@@ -72,6 +72,7 @@ class AgBitmapTextureManagerTest {
     }
 
     @Test
+    @Ignore
     fun testNativeImage() {
         val gl = object : KmlGlProxyLogToString() {
             override fun getString(name: String, params: List<Any?>, result: Any?): String? {

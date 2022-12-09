@@ -22,8 +22,14 @@ class ViewFixedSizeContainerTest : ViewsForTesting(
         delayFrame()
         val log = arrayListOf<Any?>()
         testRenderContext(object : LogBaseAG() {
-            override fun draw(batch: AGBatch) {
-                log += batch.scissor.toRectOrNull()
+            override fun execute(command: AGCommand) {
+                super.execute(command)
+                when (command) {
+                    is AGBatch -> {
+                        log += command.scissor.toRectOrNull()
+                    }
+                    else -> Unit
+                }
             }
         }) {
             stage.render(it)
