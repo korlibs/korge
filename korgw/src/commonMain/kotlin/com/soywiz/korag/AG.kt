@@ -2,11 +2,9 @@ package com.soywiz.korag
 
 import com.soywiz.kds.*
 import com.soywiz.klogger.*
-import com.soywiz.kmem.unit.*
 import com.soywiz.korag.shader.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
-import com.soywiz.korma.geom.*
 import kotlinx.coroutines.channels.*
 
 interface AGWindow : AGContainer {
@@ -20,17 +18,12 @@ interface AGFeatures {
     val isFloatTextureSupported: Boolean get() = parentFeatures?.isFloatTextureSupported ?: false
 }
 
-class AGToCommandChannel(val channel: Channel<AGCommand>) : AG() {
-    override fun execute(command: AGCommand) {
-        channel.trySend(command)
-    }
-}
-
-abstract class AG : AGFeatures, AGCommandExecutor, Extra by Extra.Mixin() {
+abstract class AG : AGFeatures, Extra by Extra.Mixin() {
     companion object {
         const val defaultPixelsPerInch : Double = 96.0
     }
 
+    val mainFrameBuffer: AGFrameBuffer = AGFrameBuffer(isMain = true)
     var contextVersion: Int = 0
         private set
 
@@ -40,99 +33,15 @@ abstract class AG : AGFeatures, AGCommandExecutor, Extra by Extra.Mixin() {
         //printStackTrace("AG.contextLost")
     }
 
-    open fun beforeDoRender() {
+    open fun beforeDoRender() = Unit
+    open fun dispose() = Unit
+    open fun finish() {
+        execute(AGFinish)
     }
+    open fun startFrame() = Unit
+    open fun endFrame() = Unit
 
-    fun resized(width: Int, height: Int) {
-        resized(0, 0, width, height, width, height)
-    }
-
-    open fun resized(x: Int, y: Int, width: Int, height: Int, fullWidth: Int, fullHeight: Int) {
-        mainFrameBuffer.setSize(x, y, width, height, fullWidth, fullHeight)
-    }
-
-    open fun dispose() {
-    }
-
-    fun drawV2(
-        frameBuffer: AGFrameBuffer,
-        vertexData: AGVertexArrayObject,
-        program: Program,
-        type: AGDrawType,
-        vertexCount: Int,
-        indices: AGBuffer? = null,
-        indexType: AGIndexType = AGIndexType.USHORT,
-        offset: Int = 0,
-        blending: AGBlending = AGBlending.NORMAL,
-        uniforms: AGUniformValues = AGUniformValues.EMPTY,
-        stencilRef: AGStencilReference = AGStencilReference.DEFAULT,
-        stencilOpFunc: AGStencilOpFunc = AGStencilOpFunc.DEFAULT,
-        colorMask: AGColorMask = AGColorMask.ALL_ENABLED,
-        renderState: AGDepthAndFrontFace = AGDepthAndFrontFace.DEFAULT,
-        scissor: AGScissor = AGScissor.NIL,
-        instances: Int = 1
-    ) = draw(batch.also { batch ->
-        batch.frameBuffer = frameBuffer.base
-        batch.frameBufferInfo = frameBuffer.info
-        batch.vertexData = vertexData
-        batch.program = program
-        batch.drawType = type
-        batch.vertexCount = vertexCount
-        batch.indices = indices
-        batch.indexType = indexType
-        batch.drawOffset = offset
-        batch.blending = blending
-        batch.uniforms = uniforms
-        batch.stencilRef = stencilRef
-        batch.stencilOpFunc = stencilOpFunc
-        batch.colorMask = colorMask
-        batch.depthAndFrontFace = renderState
-        batch.scissor = scissor
-        batch.instances = instances
-    })
-
-    private val batch: AGBatch by lazy { AGBatch(mainFrameBuffer.base, mainFrameBuffer.info) }
-
-    open fun blit(command: AGBlitPixels) {
-
-    }
-
-    fun AGUniformValues.useExternalSampler(): Boolean {
-        var useExternalSampler = false
-        this.fastForEach { value ->
-            val uniform = value.uniform
-            val uniformType = uniform.type
-            when (uniformType) {
-                VarType.Sampler2D -> {
-                    val unit = value.nativeValue?.fastCastTo<AGTextureUnit>()
-                    val tex = (unit?.texture?.fastCastTo<AGTexture?>())
-                    if (tex != null) {
-                        if (tex.implForcedTexTarget == AGTextureTargetKind.EXTERNAL_TEXTURE) {
-                            useExternalSampler = true
-                        }
-                    }
-                }
-                else -> Unit
-            }
-        }
-        //println("useExternalSampler=$useExternalSampler")
-        return useExternalSampler
-    }
-
-    internal val allFrameBuffers = LinkedHashSet<AGFrameBufferBase>()
-    private val frameBufferCount: Int get() = allFrameBuffers.size
-    private val frameBuffersMemory: ByteUnits get() = ByteUnits.fromBytes(allFrameBuffers.sumOf { it.estimatedMemoryUsage.bytesLong })
-
-    val mainFrameBuffer: AGFrameBuffer = AGFrameBuffer(isMain = true)
-
-    var lastRenderContextId = 0
-
-    open fun flip() {
-    }
-
-    open fun startFrame() {
-    }
-    open fun endFrame() {
+    protected open fun execute(command: AGCommand) {
     }
 
     open fun clear(
@@ -149,27 +58,84 @@ abstract class AG : AGFeatures, AGCommandExecutor, Extra by Extra.Mixin() {
         execute(AGClear(frameBuffer, frameBufferInfo, color, depth, stencil, clearColor, clearDepth, clearStencil))
     }
 
-
-    private val finalScissorBL = Rectangle()
-    @PublishedApi internal val tempRect = Rectangle()
-
-    open fun flush() {
+    open fun draw(
+        frameBuffer: AGFrameBufferBase,
+        frameBufferInfo: AGFrameBufferInfo,
+        vertexData: AGVertexArrayObject,
+        program: Program,
+        drawType: AGDrawType,
+        vertexCount: Int,
+        indices: AGBuffer? = null,
+        indexType: AGIndexType = AGIndexType.USHORT,
+        drawOffset: Int = 0,
+        blending: AGBlending = AGBlending.NORMAL,
+        uniforms: AGUniformValues = AGUniformValues.EMPTY,
+        stencilRef: AGStencilReference = AGStencilReference.DEFAULT,
+        stencilOpFunc: AGStencilOpFunc = AGStencilOpFunc.DEFAULT,
+        colorMask: AGColorMask = AGColorMask.ALL_ENABLED,
+        depthAndFrontFace: AGDepthAndFrontFace = AGDepthAndFrontFace.DEFAULT,
+        scissor: AGScissor = AGScissor.NIL,
+        cullFace: AGCullFace = AGCullFace.NONE,
+        instances: Int = 1
+    ) {
+        execute(AGBatch(frameBuffer, frameBufferInfo, vertexData, indices, indexType, program, uniforms, blending, stencilOpFunc, stencilRef, colorMask, depthAndFrontFace, scissor, cullFace, drawType, drawOffset, vertexCount, instances))
     }
 
-    open fun readToTexture(frameBuffer: AGFrameBufferBase, frameBufferInfo: AGFrameBufferInfo, texture: AGTexture, x: Int, y: Int, width: Int, height: Int) {
-    }
-
-    open fun readToMemory(frameBuffer: AGFrameBufferBase, frameBufferInfo: AGFrameBufferInfo, x: Int, y: Int, width: Int, height: Int, data: Any, kind: AGReadKind) {
-    }
+    open fun readToTexture(frameBuffer: AGFrameBufferBase, frameBufferInfo: AGFrameBufferInfo, texture: AGTexture, x: Int, y: Int, width: Int, height: Int): Unit = Unit
+    open fun readToMemory(frameBuffer: AGFrameBufferBase, frameBufferInfo: AGFrameBufferInfo, x: Int, y: Int, width: Int, height: Int, data: Any, kind: AGReadKind): Unit = Unit
+    protected open fun readStats(out: AGStats) = Unit
 
     private val stats = AGStats()
     fun getStats(out: AGStats = stats): AGStats {
         readStats(out)
         return out
     }
-    protected open fun readStats(out: AGStats) {
+}
+
+// @TODO: Reuse objects
+class AGToCommandChannel(val channel: SendChannel<AGCommand>) : AG() {
+    override fun execute(command: AGCommand) {
+        channel.trySend(command)
     }
 }
+
+suspend fun AG.executeUntilFinish(flow: ReceiveChannel<AGCommand>) {
+    while (true) {
+        val command = flow.receive()
+        command.execute(this)
+        if (command is AGFinish) break
+    }
+}
+
+fun AG.execute(command: AGCommand) {
+    command.execute(this)
+}
+
+fun AG.draw(batch: AGBatch) {
+    batch.execute(this)
+}
+
+fun AG.draw(
+    frameBuffer: AGFrameBuffer,
+    vertexData: AGVertexArrayObject,
+    program: Program,
+    drawType: AGDrawType,
+    vertexCount: Int,
+    indices: AGBuffer? = null,
+    indexType: AGIndexType = AGIndexType.USHORT,
+    drawOffset: Int = 0,
+    blending: AGBlending = AGBlending.NORMAL,
+    uniforms: AGUniformValues = AGUniformValues.EMPTY,
+    stencilRef: AGStencilReference = AGStencilReference.DEFAULT,
+    stencilOpFunc: AGStencilOpFunc = AGStencilOpFunc.DEFAULT,
+    colorMask: AGColorMask = AGColorMask.ALL_ENABLED,
+    depthAndFrontFace: AGDepthAndFrontFace = AGDepthAndFrontFace.DEFAULT,
+    scissor: AGScissor = AGScissor.NIL,
+    cullFace: AGCullFace = AGCullFace.NONE,
+    instances: Int = 1
+): Unit = this.draw(
+    frameBuffer.base, frameBuffer.info, vertexData, program, drawType, vertexCount, indices, indexType, drawOffset, blending, uniforms, stencilRef, stencilOpFunc, colorMask, depthAndFrontFace, scissor, cullFace, instances
+)
 
 fun AG.clear(
     frameBuffer: AGFrameBuffer,

@@ -675,14 +675,15 @@ data class AGVertexData(
     constructor(vararg attributes: Attribute, layoutSize: Int? = null) : this(VertexLayout(*attributes, layoutSize = layoutSize))
 }
 
-interface AGCommandExecutor {
-    fun execute(command: AGCommand)
+sealed interface AGCommand {
+    fun execute(ag: AG)
 }
-fun AGCommandExecutor.draw(batch: AGBatch): Unit = execute(batch)
 
-sealed interface AGCommand
-
-object AGFinish : AGCommand
+object AGFinish : AGCommand {
+    override fun execute(ag: AG) {
+        ag.finish()
+    }
+}
 
 /**
  *
@@ -699,7 +700,11 @@ data class AGClear(
     var clearColor: Boolean,
     var clearDepth: Boolean,
     var clearStencil: Boolean,
-) : AGCommand
+) : AGCommand {
+    override fun execute(ag: AG) {
+        ag.clear(frameBuffer, frameBufferInfo, color, depth, stencil, clearColor, clearDepth, clearStencil)
+    }
+}
 
 /**
  * Can be emulated by rendering a quad using the texture of the framebuffer and disabling blending modes
@@ -713,7 +718,11 @@ data class AGBlitPixels(
     var srcFrameBuffer: AGFrameBufferBase,
     var srcFrameBufferInfo: AGFrameBufferInfo,
     var src: AGScissor,
-) : AGCommand
+) : AGCommand {
+    override fun execute(ag: AG) {
+        TODO()
+    }
+}
 
 /**
  * Reads pixels from a [region] inside a [frameBuffer] into a [texture].
@@ -723,14 +732,22 @@ data class AGReadPixelsToTexture(
     var frameBufferInfo: AGFrameBufferInfo,
     var region: AGScissor,
     var texture: AGTexture,
-) : AGCommand
+) : AGCommand {
+    override fun execute(ag: AG) {
+        TODO()
+    }
+}
 
 /**
  * Releases memory for this [frameBuffer]
  */
 data class AGDiscardFrameBuffer(
     var frameBuffer: AGFrameBufferBase,
-) : AGCommand
+) : AGCommand {
+    override fun execute(ag: AG) {
+        TODO()
+    }
+}
 
 /**
  * Incrementally sets a new state diffing with the previous state, and renders primitives.
@@ -766,4 +783,8 @@ data class AGBatch(
             stencilOpFunc = value.opFunc
             stencilRef = value.ref
         }
+
+    override fun execute(ag: AG) {
+        ag.draw(frameBuffer, frameBufferInfo, vertexData, program, drawType, vertexCount, indices, indexType, drawOffset, blending, uniforms, stencilRef, stencilOpFunc, colorMask, depthAndFrontFace, scissor, cullFace, instances)
+    }
 }

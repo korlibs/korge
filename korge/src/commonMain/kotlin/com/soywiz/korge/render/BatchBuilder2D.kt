@@ -895,7 +895,7 @@ class BatchBuilder2D constructor(
     fun getDefaultProgram(): Program = PROGRAM
     fun getDefaultProgramForTexture(): Program = getDefaultProgram()
 
-    /** When there are vertices pending, this performs a [AG.drawV2] call flushing all the buffered geometry pending to draw */
+    /** When there are vertices pending, this performs a [AG.draw] call flushing all the buffered geometry pending to draw */
 	fun flush(uploadVertices: Boolean = true, uploadIndices: Boolean = true) {
         //println("vertexCount=${vertexCount}")
 		if (vertexCount > 0) {
@@ -915,20 +915,20 @@ class BatchBuilder2D constructor(
 
             val program = currentProgram ?: PROGRAM
             //println("program=$program, currentTexN[0]=${currentTexN[0]}")
-            ag.drawV2(
+            ag.draw(
                 ctx.currentFrameBuffer,
                 vertexData = vertexData,
                 indices = indexBuffer,
                 program = program,
                 //program = PROGRAM_PRE,
-                type = AGDrawType.TRIANGLES,
+                drawType = AGDrawType.TRIANGLES,
                 blending = factors.factors(ctx.isRenderingToTexture),
                 uniforms = uniforms,
                 stencilOpFunc = stencilOpFunc,
                 stencilRef = stencilRef,
                 colorMask = colorMask,
                 scissor = scissor,
-                offset = 0,
+                drawOffset = 0,
                 vertexCount = indexPos,
             )
             beforeFlush(this)

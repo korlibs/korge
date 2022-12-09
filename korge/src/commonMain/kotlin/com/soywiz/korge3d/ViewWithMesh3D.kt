@@ -66,12 +66,12 @@ open class ViewWithMesh3D(
 
                 Shaders3D.apply {
                     val meshMaterial = mesh.material
-                    ag.drawV2(
+                    ag.draw(
                         ctx.rctx.currentFrameBuffer,
                         vertexData = vertexData,
                         indices = indexBuffer,
                         indexType = mesh.indexType,
-                        type = mesh.drawType,
+                        drawType = mesh.drawType,
                         program = mesh.program ?: ctx.shaders.getProgram3D(
                             ctx.lights.size.clamp(0, 4),
                             mesh.maxWeights,
@@ -137,7 +137,7 @@ open class ViewWithMesh3D(
                                 )
                             }
                         },
-                        renderState = rs
+                        depthAndFrontFace = rs
                     )
                 }
             }

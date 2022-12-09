@@ -174,10 +174,10 @@ class SkyBox(
                     .setColumn(3, 0f, 0f, 0f, 0f)
                     .setRow(3, 0f, 0f, 0f, 0f)
                     .translate(center)
-                ctx.ag.drawV2(
+                ctx.ag.draw(
                     ctx.rctx.currentFrameBuffer,
                     vertexData = AGVertexArrayObject(AGVertexData(layout, vertexBuffer)),
-                    type = AGDrawType.TRIANGLES,
+                    drawType = AGDrawType.TRIANGLES,
                     program = skyBoxProgram,
                     vertexCount = 36,
                     indices = indexBuffer,
@@ -188,7 +188,7 @@ class SkyBox(
                         this[u_ViewMat] = viewNoTrans
                         this[u_SkyBox] = cubeMapTexUnit
                     },
-                    renderState = rs
+                    depthAndFrontFace = rs
                 )
             }
         }

@@ -1,8 +1,6 @@
 package com.soywiz.korge.view.fast
 import com.soywiz.kds.Extra
-import com.soywiz.kds.FastArrayList
 import com.soywiz.kds.IntArrayList
-import com.soywiz.kds.fastArrayListOf
 import com.soywiz.kmem.*
 import com.soywiz.korag.*
 import com.soywiz.korag.shader.Attribute
@@ -174,11 +172,11 @@ open class FSprites(val maxSize: Int) {
                             //ctx.batch.setStateFast()
                             sprites.uploadVertices(ctx)
                             ctx.xyBuffer.buffer.upload(xyData)
-                            ctx.ag.drawV2(
+                            ctx.ag.draw(
                                 ctx.currentFrameBuffer,
                                 vertexData = ctx.buffers,
                                 program = program,
-                                type = AGDrawType.TRIANGLE_FAN,
+                                drawType = AGDrawType.TRIANGLE_FAN,
                                 vertexCount = 4,
                                 instances = sprites.size,
                                 uniforms = uniforms,

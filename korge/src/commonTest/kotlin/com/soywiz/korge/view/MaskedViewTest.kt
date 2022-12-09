@@ -19,6 +19,7 @@ class MaskedViewTest : ViewsForTesting() {
         masked.solidRect(64, 64)
 
         testRenderContext(object : AGBaseLog() {
+
             override fun execute(command: AGCommand) {
                 when (command) {
                     is AGBatch -> {

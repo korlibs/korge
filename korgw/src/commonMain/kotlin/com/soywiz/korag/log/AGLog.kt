@@ -3,9 +3,7 @@ package com.soywiz.korag.log
 import com.soywiz.kds.linkedHashMapOf
 import com.soywiz.kmem.*
 import com.soywiz.korag.*
-import com.soywiz.korag.shader.Attribute
-import com.soywiz.korag.shader.Shader
-import com.soywiz.korag.shader.ShaderType
+import com.soywiz.korag.shader.*
 import com.soywiz.korag.shader.gl.GlslGenerator
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.color.RGBA
@@ -152,25 +150,11 @@ open class AGBaseLog(width: Int = 640, height: Int = 480) : AGDummy(width, heigh
 	open fun log(str: String, kind: Kind) {
 	}
 
-    override fun execute(command: AGCommand) {
-        log("execute($command)", Kind.COMMAND)
+    override fun execute(command: AGCommand){
+        log("$command", Kind.COMMAND)
     }
 
-    override fun clear(
-        frameBuffer: AGFrameBufferBase,
-        frameBufferInfo: AGFrameBufferInfo,
-		color: RGBA,
-		depth: Float,
-		stencil: Int,
-		clearColor: Boolean,
-		clearDepth: Boolean,
-		clearStencil: Boolean,
-        scissor: AGScissor,
-	) {
-        log("clear($frameBuffer, $frameBufferInfo, $color, $depth, $stencil, $clearColor, $clearDepth, $clearStencil)", Kind.CLEAR)
-    }
-
-	override fun dispose() = log("dispose()", Kind.DISPOSE)
+    override fun dispose() = log("dispose()", Kind.DISPOSE)
 
 	private var textureId = 0
 	private var bufferId = 0
@@ -202,5 +186,5 @@ open class AGBaseLog(width: Int = 640, height: Int = 480) : AGDummy(width, heigh
         else -> this
     }
 
-    override fun flip() = log("flip()", Kind.FLIP)
+    override fun finish() = log("finish()", Kind.FLIP)
 }

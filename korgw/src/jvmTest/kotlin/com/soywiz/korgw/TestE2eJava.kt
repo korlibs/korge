@@ -44,12 +44,12 @@ class TestE2eJava {
                             -1f, +1f,
                             +1f, +1f
                         ))
-                        ag.drawV2(
+                        ag.draw(
                             //ctx.rctx.currentFrameBuffer,
                             ag.mainFrameBuffer,
                             AGVertexArrayObject(AGVertexData(DefaultShaders.LAYOUT_DEBUG, vertices)),
                             program = DefaultShaders.PROGRAM_DEBUG,
-                            type = AGDrawType.TRIANGLES,
+                            drawType = AGDrawType.TRIANGLES,
                             vertexCount = 3,
                             uniforms = AGUniformValues(
                                 //DefaultShaders.u_ProjMat to Matrix3D().setToOrtho(0f, 0f, WIDTH.toFloat(), HEIGHT.toFloat(), -1f, +1f)

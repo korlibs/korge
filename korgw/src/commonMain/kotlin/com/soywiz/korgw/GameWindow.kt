@@ -703,7 +703,7 @@ open class GameWindow :
     }
 
     fun dispatchReshapeEventEx(x: Int, y: Int, width: Int, height: Int, fullWidth: Int, fullHeight: Int) {
-        ag.resized(x, y, width, height, fullWidth, fullHeight)
+        ag.mainFrameBuffer.setSize(x, y, width, height, fullWidth, fullHeight)
         dispatch(reshapeEvent.apply {
             this.x = x
             this.y = y

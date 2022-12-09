@@ -4,14 +4,12 @@ import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
 import com.soywiz.kgl.*
 import com.soywiz.kmem.*
-import com.soywiz.kmem.unit.*
 import com.soywiz.korag.*
 import com.soywiz.korag.shader.*
 import com.soywiz.korag.shader.gl.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korio.lang.*
-import com.soywiz.korma.geom.*
 import com.soywiz.krypto.encoding.hex
 
 class AGOpengl(val gl: KmlGl) : AG() {
@@ -19,14 +17,6 @@ class AGOpengl(val gl: KmlGl) : AG() {
         RuntimeException("Error Compiling Shader : $debugName type=$type : ${errorInt.hex} : '$error' : source='$str', gl.versionInt=${gl.versionInt}, gl.versionString='${gl.versionString}', gl=$gl")
 
     override val parentFeatures: AGFeatures get() = gl
-
-    override fun flip() {
-        finish()
-    }
-
-    override fun flush() {
-        gl.flush()
-    }
 
     protected val glGlobalState by lazy { GLGlobalState(gl, this) }
 
@@ -81,7 +71,6 @@ class AGOpengl(val gl: KmlGl) : AG() {
         gl.clear(mask)
     }
 
-
     //////////////
 
     // @TODO: Simplify this. Why do we need external? Maybe we could copy external textures into normal ones to avoid issues
@@ -110,35 +99,42 @@ class AGOpengl(val gl: KmlGl) : AG() {
         return nprogram
     }
 
-    override fun execute(command: AGCommand) {
-        when (command) {
-            is AGBatch -> this.draw(command)
-            is AGBlitPixels -> TODO()
-            is AGClear -> this.clear(command.frameBuffer, command.frameBufferInfo, command.color, command.depth, command.stencil, command.clearColor, command.clearDepth, command.clearStencil)
-            is AGDiscardFrameBuffer -> TODO()
-            AGFinish -> this.finish()
-            is AGReadPixelsToTexture -> TODO()
-        }
-    }
-
-    fun draw(batch: AGBatch) {
+    override fun draw(
+        frameBuffer: AGFrameBufferBase,
+        frameBufferInfo: AGFrameBufferInfo,
+        vertexData: AGVertexArrayObject,
+        program: Program,
+        drawType: AGDrawType,
+        vertexCount: Int,
+        indices: AGBuffer?,
+        indexType: AGIndexType,
+        drawOffset: Int,
+        blending: AGBlending,
+        uniforms: AGUniformValues,
+        stencilRef: AGStencilReference,
+        stencilOpFunc: AGStencilOpFunc,
+        colorMask: AGColorMask,
+        depthAndFrontFace: AGDepthAndFrontFace,
+        scissor: AGScissor,
+        cullFace: AGCullFace,
+        instances: Int
+    ) {
         //println("SCISSOR: $scissor")
 
         //finalScissor.setTo(0, 0, backWidth, backHeight)
 
-        bindFrameBuffer(batch.frameBuffer, batch.frameBufferInfo)
-        setScissorState(batch.scissor)
+        bindFrameBuffer(frameBuffer, frameBufferInfo)
+        setScissorState(scissor)
 
-        getProgram(batch.program, config = when {
-            batch.uniforms.useExternalSampler() -> ProgramConfig.EXTERNAL_TEXTURE_SAMPLER
+        getProgram(program, config = when {
+            uniforms.useExternalSampler() -> ProgramConfig.EXTERNAL_TEXTURE_SAMPLER
             else -> ProgramConfig.DEFAULT
         }, use = true)
 
-        vaoUse(batch.vertexData)
+        vaoUse(vertexData)
         try {
-            uniformsSet(batch.uniforms)
+            uniformsSet(uniforms)
 
-            val blending = batch.blending
             if (currentBlending != blending) {
                 currentBlending = blending
                 gl.enableDisable(KmlGl.BLEND, blending.enabled) {
@@ -147,11 +143,9 @@ class AGOpengl(val gl: KmlGl) : AG() {
                 }
             }
 
-            setDepthAndFrontFace(batch.depthAndFrontFace)
-            setColorMaskState(batch.colorMask)
+            setDepthAndFrontFace(depthAndFrontFace)
+            setColorMaskState(colorMask)
 
-            val stencilOpFunc = batch.stencilOpFunc
-            val stencilRef = batch.stencilRef
             if (currentStencilOpFunc != stencilOpFunc || currentStencilRef != stencilRef) {
                 currentStencilOpFunc = stencilOpFunc
                 currentStencilRef = stencilRef
@@ -174,18 +168,18 @@ class AGOpengl(val gl: KmlGl) : AG() {
             //gl.getIntegerv(KmlGl.VIEWPORT, viewport)
             //println("viewport=${viewport.getAlignedInt32(0)},${viewport.getAlignedInt32(1)},${viewport.getAlignedInt32(2)},${viewport.getAlignedInt32(3)}")
 
-            batch.indices?.let { bindBuffer(it, AGBufferKind.INDEX) }
+            indices?.let { bindBuffer(it, AGBufferKind.INDEX) }
 
-            val indexType = if (batch.indices != null) batch.indexType else AGIndexType.NONE
+            val indexType = if (indices != null) indexType else AGIndexType.NONE
             if (indexType != AGIndexType.NONE) when {
-                batch.instances != 1 -> gl.drawElementsInstanced(batch.drawType.toGl(), batch.vertexCount, indexType.toGl(), batch.drawOffset, batch.instances)
-                else -> gl.drawElements(batch.drawType.toGl(), batch.vertexCount, indexType.toGl(), batch.drawOffset)
+                instances != 1 -> gl.drawElementsInstanced(drawType.toGl(), vertexCount, indexType.toGl(), drawOffset, instances)
+                else -> gl.drawElements(drawType.toGl(), vertexCount, indexType.toGl(), drawOffset)
             } else when {
-                batch.instances != 1 -> gl.drawArraysInstanced(batch.drawType.toGl(), batch.drawOffset, batch.vertexCount, batch.instances)
-                else -> gl.drawArrays(batch.drawType.toGl(), batch.drawOffset, batch.vertexCount)
+                instances != 1 -> gl.drawArraysInstanced(drawType.toGl(), drawOffset, vertexCount, instances)
+                else -> gl.drawArrays(drawType.toGl(), drawOffset, vertexCount)
             }
         } finally {
-            vaoUnuse(batch.vertexData)
+            vaoUnuse(vertexData)
         }
     }
 
@@ -238,7 +232,7 @@ class AGOpengl(val gl: KmlGl) : AG() {
     //var doPrintTimer = Stopwatch().also { it.start() }
     //var doPrint = false
 
-    fun finish() {
+    override fun finish() {
         gl.flush()
         //gl.finish()
 
@@ -727,5 +721,27 @@ class AGOpengl(val gl: KmlGl) : AG() {
 
     override fun readStats(out: AGStats) {
         glGlobalState.readStats(out)
+    }
+
+    fun AGUniformValues.useExternalSampler(): Boolean {
+        var useExternalSampler = false
+        this.fastForEach { value ->
+            val uniform = value.uniform
+            val uniformType = uniform.type
+            when (uniformType) {
+                VarType.Sampler2D -> {
+                    val unit = value.nativeValue?.fastCastTo<AGTextureUnit>()
+                    val tex = (unit?.texture?.fastCastTo<AGTexture?>())
+                    if (tex != null) {
+                        if (tex.implForcedTexTarget == AGTextureTargetKind.EXTERNAL_TEXTURE) {
+                            useExternalSampler = true
+                        }
+                    }
+                }
+                else -> Unit
+            }
+        }
+        //println("useExternalSampler=$useExternalSampler")
+        return useExternalSampler
     }
 }

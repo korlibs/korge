@@ -169,11 +169,11 @@ class LineRenderBatcher(
             ctx.updateStandardUniforms()
             //projMat.setToOrtho(tempRect.setBounds(0, 0, ag.backWidth, ag.backHeight), -1f, 1f)
 
-            ag.drawV2(
+            ag.draw(
                 ctx.currentFrameBuffer,
                 vertexData,
                 program = program,
-                type = AGDrawType.LINES,
+                drawType = AGDrawType.LINES,
                 vertexCount = vertexCount,
                 uniforms = uniforms,
                 blending = blendMode.factors

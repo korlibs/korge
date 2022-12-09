@@ -45,11 +45,11 @@ class AGTextureDrawer(val ag: AG) {
         setVertex(3, right, bottom, texRight, texBottom)
 
         vertices.upload(verticesData)
-        ag.drawV2(
+        ag.draw(
             frameBuffer,
             vertexData = vertexData,
             program = program,
-            type = AGDrawType.TRIANGLE_STRIP,
+            drawType = AGDrawType.TRIANGLE_STRIP,
             vertexCount = 4,
             uniforms = uniforms,
             blending = AGBlending.NONE

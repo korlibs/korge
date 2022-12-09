@@ -64,10 +64,10 @@ class Text3D(
 
             Shaders3D.apply {
                 val meshMaterial = mesh.material
-                ag.drawV2(
+                ag.draw(
                     ctx.rctx.currentFrameBuffer,
                     vertexData,
-                    type = mesh.drawType,
+                    drawType = mesh.drawType,
                     program = mesh.program ?: ctx.shaders.getProgram3D(
                         ctx.lights.size.clamp(0, 4),
                         mesh.maxWeights,
@@ -111,7 +111,7 @@ class Text3D(
                             )
                         }
                     },
-                    renderState = rs
+                    depthAndFrontFace = rs
                 )
             }
         }
