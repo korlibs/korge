@@ -6,8 +6,9 @@ createBuffer():4
 createBuffer():5
 createBuffer():6
 createBuffer():7
-textureCreate: 1
 createTexture():0
+createTexture():1
+Texture[1].uploadedBitmap(16, 16)
 RenderBuffer[0].setSize(16, 16)
 createMainRenderBuffer():0
 Buffer[4].afterSetMem(mem[96])

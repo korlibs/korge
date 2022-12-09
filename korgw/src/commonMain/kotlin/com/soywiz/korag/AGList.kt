@@ -7,15 +7,16 @@
 package com.soywiz.korag
 
 import com.soywiz.kds.*
-import com.soywiz.kds.lock.NonRecursiveLock
+import com.soywiz.kds.lock.*
+import com.soywiz.kgl.*
 import com.soywiz.kmem.*
-import com.soywiz.korag.annotation.KoragExperimental
-import com.soywiz.korag.shader.Program
-import com.soywiz.korag.shader.ProgramConfig
-import com.soywiz.korio.annotations.KorInternal
-import com.soywiz.korma.geom.Rectangle
-import com.soywiz.krypto.encoding.hex
-import kotlinx.coroutines.CompletableDeferred
+import com.soywiz.korag.annotation.*
+import com.soywiz.korag.gl.*
+import com.soywiz.korag.shader.*
+import com.soywiz.korio.annotations.*
+import com.soywiz.korma.geom.*
+import com.soywiz.krypto.encoding.*
+import kotlinx.coroutines.*
 
 @KorInternal
 inline fun AGQueueProcessor.processBlocking(list: AGList, maxCount: Int = 1) {
@@ -259,7 +260,7 @@ class AGList(val globalState: AGGlobalState) {
                 )
 
                 CMD_READ_PIXELS_TO_TEXTURE -> processor.readPixelsToTexture(
-                    readInt(), readInt(), readInt(), readInt(), readInt(),
+                    readExtra(), readInt(), readInt(), readInt(), readInt(),
                     AGReadKind(data.extract4(0))
                 )
                 // Uniforms
@@ -287,46 +288,13 @@ class AGList(val globalState: AGGlobalState) {
                 CMD_CLEAR_STENCIL -> processor.clearStencil(data.extract24(0))
                 // VAO
                 CMD_VAO_USE -> processor.vaoUse(AGVertexArrayObject(readExtra<FastArrayList<AGVertexData>>()))
-                CMD_VAO_UNUSE -> processor.vaoUse(AGVertexArrayObject(readExtra<FastArrayList<AGVertexData>>()))
+                CMD_VAO_UNUSE -> processor.vaoUnuse(AGVertexArrayObject(readExtra<FastArrayList<AGVertexData>>()))
                 // UBO
                 CMD_UNIFORMS_SET -> processor.uniformsSet(readExtra())
                 // TEXTURES
-                CMD_TEXTURE_CREATE -> processor.textureCreate(data.extract16(0))
-                CMD_TEXTURE_DELETE -> {
-                    val textureId = data.extract16(0)
-                    processor.textureDelete(textureId)
-                    globalState.textureIndices.free(textureId)
-                }
-
-                CMD_TEXTURE_BIND -> processor.textureBind(
-                    data.extract16(0),
-                    AGTextureTargetKind.VALUES[data.extract4(16)],
-                    readInt()
-                )
-
-                CMD_TEXTURE_BIND_ENSURING -> processor.textureBindEnsuring(readExtra())
-                CMD_TEXTURE_UPDATE -> processor.textureUpdate(
-                    textureId = data.extract16(0),
-                    target = AGTextureTargetKind.VALUES[data.extract4(16)],
-                    index = readInt(),
-                    bmp = readExtra(),
-                    source = readExtra(),
-                    doMipmaps = data.extract(20),
-                    premultiplied = data.extract(21)
-                )
+                CMD_TEXTURE_BIND -> processor.textureBind(readExtra(), AGTextureTargetKind(data.extract4(0)))
                 // FRAMEBUFFERS
-                CMD_FRAMEBUFFER_CREATE -> processor.frameBufferCreate(data.extract16(0))
-                CMD_FRAMEBUFFER_DELETE -> processor.frameBufferDelete(data.extract16(0))
-                CMD_FRAMEBUFFER_SET -> processor.frameBufferSet(
-                    data.extract16(0),
-                    readInt(),
-                    readInt(),
-                    readInt(),
-                    data.extractBool(17),
-                    data.extractBool(18)
-                )
-
-                CMD_FRAMEBUFFER_USE -> processor.frameBufferUse(data.extract16(0))
+                CMD_FRAMEBUFFER_SET -> processor.frameBufferSet(readExtra())
                 else -> TODO("Unknown AG command ${cmd.hex}")
             }
         }
@@ -475,41 +443,9 @@ class AGList(val globalState: AGGlobalState) {
     // TEXTURES
     ////////////////////////////////////////
 
-    fun createTexture(): Int {
-        val textureId = globalState.textureIndices.alloc()
-        currentWrite.add(CMD(CMD_TEXTURE_CREATE).finsert16(textureId, 0))
-        return textureId
-    }
-
-    fun deleteTexture(textureId: Int) {
-        currentWrite.add(CMD(CMD_TEXTURE_DELETE).finsert16(textureId, 0))
-    }
-
-    fun updateTexture(
-        textureId: Int,
-        target: AGTextureTargetKind,
-        index: Int,
-        data: Any?,
-        source: AGBitmapSourceBase,
-        doMipmaps: Boolean,
-        premultiplied: Boolean
-    ) {
-        currentWrite.addExtra(data, source)
-        currentWrite.addInt(index)
-        currentWrite.add(
-            CMD(CMD_TEXTURE_UPDATE).finsert16(textureId, 0).finsert4(target.ordinal, 16).finsert(doMipmaps, 20)
-                .finsert(premultiplied, 21)
-        )
-    }
-
-    fun bindTexture(textureId: Int, target: AGTextureTargetKind, implForcedTexId: Int = -1) {
-        currentWrite.addInt(implForcedTexId)
-        currentWrite.add(CMD(CMD_TEXTURE_BIND).finsert16(textureId, 0).finsert4(target.ordinal, 16))
-    }
-
-    fun bindTextureEnsuring(texture: AGTexture?) {
+    fun bindTexture(texture: AGTexture?, target: AGTextureTargetKind) {
         currentWrite.addExtra(texture)
-        currentWrite.add(CMD(CMD_TEXTURE_BIND_ENSURING))
+        currentWrite.add(CMD(CMD_TEXTURE_BIND).finsert4(target.ordinal, 0))
     }
 
     ////////////////////////////////////////
@@ -586,8 +522,8 @@ class AGList(val globalState: AGGlobalState) {
         currentWrite.add(CMD(CMD_READ_PIXELS).finsert4(kind.ordinal, 0))
     }
 
-    fun readPixelsToTexture(textureId: Int, x: Int, y: Int, width: Int, height: Int, kind: AGReadKind) {
-        currentWrite.addInt(textureId)
+    fun readPixelsToTexture(texture: AGTexture, x: Int, y: Int, width: Int, height: Int, kind: AGReadKind) {
+        currentWrite.addExtra(texture)
         currentWrite.addInt(x, y, width, height)
         currentWrite.add(CMD(CMD_READ_PIXELS_TO_TEXTURE).finsert4(kind.ordinal, 0))
     }
@@ -595,23 +531,9 @@ class AGList(val globalState: AGGlobalState) {
     ////////////////////////////////////////
     // Frame Buffers
     ////////////////////////////////////////
-    fun frameBufferCreate(): Int {
-        val id = globalState.frameBufferIndices.alloc()
-        currentWrite.add(CMD(CMD_FRAMEBUFFER_CREATE).finsert16(id, 0))
-        return id
-    }
-
-    fun frameBufferDelete(id: Int) {
-        currentWrite.add(CMD(CMD_FRAMEBUFFER_DELETE).finsert16(id, 0))
-    }
-
-    fun frameBufferSet(id: Int, textureId: Int, width: Int, height: Int, hasStencil: Boolean, hasDepth: Boolean) {
-        currentWrite.addInt(textureId, width, height)
-        currentWrite.add(CMD(CMD_FRAMEBUFFER_SET).finsert16(id, 0).finsert(hasStencil, 17).finsert(hasDepth, 18))
-    }
-
-    fun frameBufferUse(id: Int) {
-        currentWrite.add(CMD(CMD_FRAMEBUFFER_USE).finsert16(id, 0))
+    fun frameBufferSet(frameBuffer: AGFrameBuffer) {
+        currentWrite.addExtra(frameBuffer)
+        currentWrite.add(CMD(CMD_FRAMEBUFFER_SET))
     }
 
     companion object {
@@ -651,11 +573,7 @@ class AGList(val globalState: AGGlobalState) {
         private const val CMD_PROGRAM_USE = 0x32
         private const val CMD_PROGRAM_USE_EXT = 0x33
         // Textures
-        private const val CMD_TEXTURE_CREATE = 0x40
-        private const val CMD_TEXTURE_DELETE = 0x41
-        private const val CMD_TEXTURE_UPDATE = 0x42
-        private const val CMD_TEXTURE_BIND = 0x43
-        private const val CMD_TEXTURE_BIND_ENSURING = 0x44
+        private const val CMD_TEXTURE_BIND = 0x40
         // Attributes
         private const val CMD_ATTRIBUTE_SET = 0x60
         // Render Buffer
@@ -674,9 +592,6 @@ class AGList(val globalState: AGGlobalState) {
         // UNIFORMS
         private const val CMD_UNIFORMS_SET = 0xA2
         // FRAME BUFFERS
-        private const val CMD_FRAMEBUFFER_CREATE = 0xC0
-        private const val CMD_FRAMEBUFFER_DELETE = 0xC1
         private const val CMD_FRAMEBUFFER_SET = 0xC2
-        private const val CMD_FRAMEBUFFER_USE = 0xC3
     }
 }

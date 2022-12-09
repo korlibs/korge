@@ -4,15 +4,18 @@ createBuffer():2
 createBuffer():3
 createBuffer():4
 clear(#000000ff, 1.0, 0, true, true, true)
+createTexture():0
+Texture[0].uploadedBitmap(1280, 720)
 RenderBuffer[0].setSize(1280, 720)
 createMainRenderBuffer():0
+createTexture():1
 createRenderBuffer():1
+Texture[1].uploadedBitmap(64, 64)
 RenderBuffer[1].setSize(64, 64)
 RenderBuffer[1].set()
 clear(#00000000, 1.0, 0, true, true, true)
-textureCreate: 1
-createTexture():0
-Texture[0].uploadedBitmap(SyncBitmapSource(rgba=true, width=10, height=10), 10, 10)
+createTexture():2
+Texture[2].uploadedBitmap(10, 10)
 Buffer[0].afterSetMem(mem[96])
 Buffer[1].afterSetMem(mem[16384])
 Buffer[2].afterSetMem(mem[16384])
@@ -46,9 +49,9 @@ draw: TRIANGLES, offset=0, count=6, instances=1, indexType=USHORT
 ::draw.vertex[2]: 
 ::draw.vertex[3]: 
 vaoUse: AGVertexArrayObject(list=[AGVertexData(_buffer=Buffer[0], layout=VertexLayout[a_Pos, a_Tex, a_Col, a_Col2]), AGVertexData(_buffer=Buffer[1], layout=VertexLayout[a_TexIndex]), AGVertexData(_buffer=Buffer[2], layout=VertexLayout[a_Wrap])])
-textureCreate: 2
-createTexture():1
+createTexture():3
 createRenderBuffer():2
+Texture[3].uploadedBitmap(64, 64)
 RenderBuffer[2].setSize(64, 64)
 RenderBuffer[2].set()
 clear(#00000000, 1.0, 0, true, true, true)
@@ -91,9 +94,9 @@ draw: TRIANGLES, offset=0, count=6, instances=1, indexType=USHORT
 ::draw.vertex[2]: 
 ::draw.vertex[3]: 
 vaoUse: AGVertexArrayObject(list=[AGVertexData(_buffer=Buffer[0], layout=VertexLayout[a_Pos, a_Tex, a_Col, a_Col2]), AGVertexData(_buffer=Buffer[1], layout=VertexLayout[a_TexIndex]), AGVertexData(_buffer=Buffer[2], layout=VertexLayout[a_Wrap])])
-textureCreate: 3
-createTexture():2
+createTexture():4
 createRenderBuffer():3
+Texture[4].uploadedBitmap(64, 64)
 RenderBuffer[3].setSize(64, 64)
 RenderBuffer[3].set()
 clear(#00000000, 1.0, 0, true, true, true)
@@ -137,8 +140,6 @@ draw: TRIANGLES, offset=0, count=6, instances=1, indexType=USHORT
 ::draw.vertex[2]: 
 ::draw.vertex[3]: 
 vaoUse: AGVertexArrayObject(list=[AGVertexData(_buffer=Buffer[0], layout=VertexLayout[a_Pos, a_Tex, a_Col, a_Col2]), AGVertexData(_buffer=Buffer[1], layout=VertexLayout[a_TexIndex]), AGVertexData(_buffer=Buffer[2], layout=VertexLayout[a_Wrap])])
-textureCreate: 4
-createTexture():3
 Buffer[0].afterSetMem(mem[96])
 Buffer[1].afterSetMem(mem[16384])
 Buffer[2].afterSetMem(mem[16384])

@@ -1,8 +1,7 @@
 RenderBuffer[0].set()
 clear(#00000000, 1.0, 0, true, true, true)
-textureCreate: 1
-createTexture():0
-Texture[0].uploadedBitmap(SyncBitmapSource(rgba=true, width=32, height=32), 32, 32)
+createTexture():1
+Texture[1].uploadedBitmap(32, 32)
 createBuffer():5
 Buffer[5].afterSetMem(mem[128])
 createBuffer():6
@@ -75,23 +74,26 @@ varying vec4 v_Col;
 varying lowp float v_TexId;
 varying mediump vec2 v_Tex;
 void main() {
-	vec4 temp1;
-	vec4 temp0;
+	vec2 temp3;
+	vec2 temp4;
+	float temp5;
+	float temp6;
 	mat2 temp2;
-	temp1.xy = (a_uv1 - a_uv0);
+	vec4 temp0;
+	temp3 = (a_uv1 - a_uv0);
 	v_Col = a_colMul;
 	v_TexId = a_texId;
 	if ((a_texId == 0.0)) {
-		temp1.zw = u_texSize0;
+		temp4 = u_texSize0;
 	}
 	else {
-		temp1.zw = u_texSize1;
+		temp4 = u_texSize1;
 	}
-	v_Tex = (vec2(mix(a_uv0.x, a_uv1.x, a_xy.x), mix(a_uv0.y, a_uv1.y, a_xy.y)) * temp1.zw);
-	temp0.x = cos(a_rangle);
-	temp0.y = sin(a_rangle);
-	temp2 = mat2(temp0.x, (-(temp0.y)), temp0.y, temp0.x);
-	temp0.zw = (temp1.xy * a_scale);
+	v_Tex = (vec2(mix(a_uv0.x, a_uv1.x, a_xy.x), mix(a_uv0.y, a_uv1.y, a_xy.y)) * temp4);
+	temp5 = cos(a_rangle);
+	temp6 = sin(a_rangle);
+	temp2 = mat2(temp5, (-(temp6)), temp6, temp5);
+	temp0.zw = (temp3 * a_scale);
 	temp0.xy = (temp2 * ((a_xy - a_axy) * temp0.zw));
 	gl_Position = ((u_ProjMat * u_ViewMat) * vec4((temp0.xy + vec2(a_rxy.x, a_rxy.y)), 0.0, 1.0));
 }

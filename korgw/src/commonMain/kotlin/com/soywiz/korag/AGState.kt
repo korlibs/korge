@@ -39,10 +39,19 @@ inline class AGReadKind(val ordinal: Int) {
 }
 
 //TODO: there are other possible values
-enum class AGTextureTargetKind(val dims: Int) {
-    TEXTURE_2D(2), TEXTURE_3D(3), TEXTURE_CUBE_MAP(3), EXTERNAL_TEXTURE(2);
+inline class AGTextureTargetKind(val ordinal: Int) {
+    val dims: Int get() = when (this) {
+        TEXTURE_2D -> 2
+        TEXTURE_3D -> 3
+        TEXTURE_CUBE_MAP -> 3
+        EXTERNAL_TEXTURE -> 3
+        else -> 0
+    }
     companion object {
-        val VALUES = values()
+        val TEXTURE_2D = AGTextureTargetKind(0)
+        val TEXTURE_3D = AGTextureTargetKind(1)
+        val TEXTURE_CUBE_MAP = AGTextureTargetKind(2)
+        val EXTERNAL_TEXTURE = AGTextureTargetKind(3)
     }
 }
 
@@ -594,7 +603,7 @@ interface AGBaseFrameBuffer : Closeable {
     fun scissor(scissor: RectangleInt?)
 }
 
-open class AGBaseFrameBufferImpl(val ag: AG) : AGBaseFrameBuffer {
+open class AGBaseFrameBufferImpl(val ag: AG) : AGObject(), AGBaseFrameBuffer {
     override var x = 0
     override var y = 0
     override var width = AG.RenderBufferConsts.DEFAULT_INITIAL_WIDTH
@@ -631,92 +640,53 @@ open class AGBaseFrameBufferImpl(val ag: AG) : AGBaseFrameBuffer {
 }
 
 open class AGFrameBuffer(ag: AG) : AGBaseFrameBufferImpl(ag) {
-    open val id: Int = -1
-    private var cachedTexVersion = -1
-    private var _tex: AGTexture? = null
-    protected var nsamples: Int = 1
-    protected var hasDepth: Boolean = true
-    protected var hasStencil: Boolean = true
+    var nsamples: Int = 1; protected set
+    val hasStencilAndDepth: Boolean get() = hasDepth && hasStencil
+    var hasStencil: Boolean = true; protected set
+    var hasDepth: Boolean = true; protected set
 
-    val tex: AGTexture
-        get() {
-            if (cachedTexVersion != ag.contextVersion) {
-                cachedTexVersion = ag.contextVersion
-                _tex = ag.createTexture(premultiplied = true).manualUpload().apply { isFbo = true }
-            }
-            return _tex!!
-        }
+    val tex: AGTexture = ag.createTexture(premultiplied = true).also { it.isFbo = true }
 
-    protected var dirty = true
+    init {
+        //ag.frameRenderBuffers += this
+    }
+
+    override fun close() {
+        super.close()
+        tex.close()
+        //ag.frameRenderBuffers -= this
+    }
+
 
     override fun setSize(x: Int, y: Int, width: Int, height: Int, fullWidth: Int, fullHeight: Int) {
-        if (
-            this.x != x ||this.y != y ||
-            this.width != width || this.height != height ||
-            this.fullWidth != fullWidth || this.fullHeight != fullHeight
-        ) {
-            super.setSize(x, y, width, height, fullWidth, fullHeight)
-            dirty = true
-        }
+        if (this.x == x && this.y == y && this.width == width && this.height == height && this.fullWidth == fullWidth && this.fullHeight == fullHeight) return
+        super.setSize(x, y, width, height, fullWidth, fullHeight)
+        tex.upload(NullBitmap(width, height))
+        markAsDirty()
     }
 
     fun setSamples(samples: Int) {
-        if (this.nsamples != samples) {
-            nsamples = samples
-            dirty = true
-        }
+        if (this.nsamples == samples) return
+        nsamples = samples
+        markAsDirty()
     }
 
     fun setExtra(hasDepth: Boolean = true, hasStencil: Boolean = true) {
-        if (this.hasDepth != hasDepth || this.hasStencil != hasStencil) {
-            this.hasDepth = hasDepth
-            this.hasStencil = hasStencil
-            dirty = true
-        }
+        if (this.hasDepth == hasDepth && this.hasStencil == hasStencil) return
+        this.hasDepth = hasDepth
+        this.hasStencil = hasStencil
+        markAsDirty()
     }
 
-    override fun set(): Unit = Unit
-    fun readBitmap(bmp: Bitmap32) = ag.readColor(bmp)
-    fun readDepth(width: Int, height: Int, out: FloatArray): Unit = ag.readDepth(width, height, out)
-    override fun close() {
-        super.close()
-        cachedTexVersion = -1
-        _tex?.close()
-        _tex = null
-    }
-}
-
-class AGFinalFrameBuffer(ag: AG) : AGFrameBuffer(ag) {
-    override val id = ag.lastRenderContextId++
-
-    var frameBufferId: Int = -1
-
-    // http://wangchuan.github.io/coding/2016/05/26/multisampling-fbo.html
     override fun set() {
         ag.setViewport(this)
-
-        ag.commandsNoWait { list ->
-            if (dirty) {
-                if (frameBufferId < 0) {
-                    frameBufferId = list.frameBufferCreate()
-                }
-                list.frameBufferSet(frameBufferId, tex.texId, width, height, hasStencil, hasDepth)
-            }
-            list.frameBufferUse(frameBufferId)
-        }
+        ag.commandsNoWait { it.frameBufferSet(this) }
     }
 
-    override fun close() {
-        super.close()
-        ag.commandsNoWait { list ->
-            if (frameBufferId >= 0) {
-                list.frameBufferDelete(frameBufferId)
-                frameBufferId = -1
-            }
-        }
-    }
+    fun readBitmap(bmp: Bitmap32) = ag.readColor(bmp)
+    fun readDepth(width: Int, height: Int, out: FloatArray): Unit = ag.readDepth(width, height, out)
 
-    override fun toString(): String = "GlRenderBuffer[$id]($width, $height)"
+    override fun toString(): String = "GlRenderBuffer($width, $height)"
 }
 
 data class AGConfig(val antialiasHint: Boolean = true)

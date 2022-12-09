@@ -7,6 +7,7 @@ import com.soywiz.kgl.getProgramiv
 import com.soywiz.kgl.getShaderInfoLog
 import com.soywiz.kgl.getShaderiv
 import com.soywiz.klogger.Console
+import com.soywiz.korag.*
 import com.soywiz.korag.shader.Program
 import com.soywiz.korag.shader.Shader
 import com.soywiz.korag.shader.gl.GlslConfig
@@ -14,6 +15,8 @@ import com.soywiz.korag.shader.gl.GlslGenerator
 import com.soywiz.korag.shader.gl.toNewGlslString
 
 internal data class GLProgramInfo(var programId: Int, var vertexId: Int, var fragmentId: Int) {
+    val cache = AGUniformValues()
+
     val cachedAttribLocations = FastStringMap<Int>()
     val cachedUniformLocations = FastStringMap<Int>()
 

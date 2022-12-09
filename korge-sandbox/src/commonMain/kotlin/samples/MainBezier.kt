@@ -4,8 +4,7 @@ import com.soywiz.klock.seconds
 import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.tween.get
 import com.soywiz.korge.tween.tween
-import com.soywiz.korge.view.SContainer
-import com.soywiz.korge.view.addUpdater
+import com.soywiz.korge.view.*
 import com.soywiz.korge.view.vector.gpuShapeView
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.vector.EmptyShape
@@ -22,7 +21,9 @@ import kotlin.random.Random
 
 class MainBezier : Scene() {
     override suspend fun SContainer.sceneMain() {
-        val shape = gpuShapeView(EmptyShape)
+        //val shape = gpuShapeView(EmptyShape)
+        //val shape = graphics(EmptyShape, renderer = GraphicsRenderer.SYSTEM)
+        val shape = graphics(EmptyShape, renderer = GraphicsRenderer.GPU)
         fun getRandomPoint() = Point(Random[100..500], Random[100..500])
         class Bez {
             var p1 = getRandomPoint()
