@@ -44,10 +44,6 @@ abstract class AG() : AGFeatures, AGCommandExecutor, Extra by Extra.Mixin() {
         //printStackTrace("AG.contextLost")
     }
 
-    val tempVertexBufferPool = Pool { createBuffer() }
-    val tempIndexBufferPool = Pool { createBuffer() }
-    val tempTexturePool = Pool { createTexture() }
-
     open val maxTextureSize = Size(2048, 2048)
 
     open fun beforeDoRender() {
@@ -127,7 +123,8 @@ abstract class AG() : AGFeatures, AGCommandExecutor, Extra by Extra.Mixin() {
         scissor: AGScissor = AGScissor.NIL,
         instances: Int = 1
     ) = draw(batch.also { batch ->
-        batch.frameBuffer = frameBuffer
+        batch.frameBuffer = frameBuffer.base
+        batch.frameBufferInfo = frameBuffer.info
         batch.vertexData = vertexData
         batch.program = program
         batch.drawType = type
@@ -145,7 +142,7 @@ abstract class AG() : AGFeatures, AGCommandExecutor, Extra by Extra.Mixin() {
         batch.instances = instances
     })
 
-    private val batch by lazy { AGBatch(mainFrameBuffer) }
+    private val batch: AGBatch by lazy { AGBatch(mainFrameBuffer.base, mainFrameBuffer.info) }
 
     open fun blit(command: AGBlitPixels) {
 
@@ -175,7 +172,7 @@ abstract class AG() : AGFeatures, AGCommandExecutor, Extra by Extra.Mixin() {
 
     open fun disposeTemporalPerFrameStuff() = Unit
 
-    internal val allFrameBuffers = LinkedHashSet<AGFrameBuffer>()
+    internal val allFrameBuffers = LinkedHashSet<AGFrameBufferBase>()
     private val frameBufferCount: Int get() = allFrameBuffers.size
     private val frameBuffersMemory: ByteUnits get() = ByteUnits.fromBytes(allFrameBuffers.sumOf { it.estimatedMemoryUsage.bytesLong })
 
@@ -191,8 +188,8 @@ abstract class AG() : AGFeatures, AGCommandExecutor, Extra by Extra.Mixin() {
 
     var lastRenderContextId = 0
 
-    open fun createMainFrameBuffer(): AGFrameBuffer = AGFrameBuffer(this, isMain = true)
-    open fun createFrameBuffer(): AGFrameBuffer = AGFrameBuffer(this, isMain = false)
+    open fun createMainFrameBuffer(): AGFrameBuffer = AGFrameBuffer(AGFrameBufferBase(this, isMain = true))
+    open fun createFrameBuffer(): AGFrameBuffer = AGFrameBuffer(AGFrameBufferBase(this, isMain = false))
 
     //open fun createRenderBuffer() = RenderBuffer()
 
@@ -206,7 +203,8 @@ abstract class AG() : AGFeatures, AGCommandExecutor, Extra by Extra.Mixin() {
     open fun endFrame() {
     }
 
-    open fun clear(
+    fun clear(
+        frameBuffer: AGFrameBuffer,
         color: RGBA = Colors.TRANSPARENT_BLACK,
         depth: Float = 1f,
         stencil: Int = 0,
@@ -215,16 +213,26 @@ abstract class AG() : AGFeatures, AGCommandExecutor, Extra by Extra.Mixin() {
         clearStencil: Boolean = true,
         scissor: AGScissor = AGScissor.NIL,
     ) {
-        execute(AGClear(currentFrameBufferOrMain, color, depth, stencil, clearColor, clearDepth, clearStencil))
+        clear(frameBuffer.base, frameBuffer.info, color, depth, stencil, clearColor, clearDepth, clearStencil, scissor)
+    }
+
+    open fun clear(
+        frameBuffer: AGFrameBufferBase,
+        frameBufferInfo: AGFrameBufferInfo,
+        color: RGBA = Colors.TRANSPARENT_BLACK,
+        depth: Float = 1f,
+        stencil: Int = 0,
+        clearColor: Boolean = true,
+        clearDepth: Boolean = true,
+        clearStencil: Boolean = true,
+        scissor: AGScissor = AGScissor.NIL,
+    ) {
+        execute(AGClear(frameBuffer, frameBufferInfo, color, depth, stencil, clearColor, clearDepth, clearStencil))
     }
 
 
     private val finalScissorBL = Rectangle()
     @PublishedApi internal val tempRect = Rectangle()
-
-    fun clearStencil(stencil: Int = 0, scissor: AGScissor = AGScissor.NIL) = clear(clearColor = false, clearDepth = false, clearStencil = true, stencil = stencil, scissor = scissor)
-    fun clearDepth(depth: Float = 1f, scissor: AGScissor = AGScissor.NIL) = clear(clearColor = false, clearDepth = true, clearStencil = false, depth = depth, scissor = scissor)
-    fun clearColor(color: RGBA = Colors.TRANSPARENT_BLACK, scissor: AGScissor = AGScissor.NIL) = clear(clearColor = true, clearDepth = false, clearStencil = false, color = color, scissor = scissor)
 
     open fun flush() {
     }
@@ -247,9 +255,6 @@ abstract class AG() : AGFeatures, AGCommandExecutor, Extra by Extra.Mixin() {
             if (tex != null) drawTexture(frameBuffer, tex)
         }
     }
-
-    open fun setFrameBuffer(frameBuffer: AGFrameBuffer?): AGFrameBuffer? = null
-
 
     // @TODO: Rename to Sync and add Suspend versions
     fun readPixel(x: Int, y: Int): RGBA {

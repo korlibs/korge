@@ -166,6 +166,8 @@ open class LogBaseAG(
     }
 
     override fun clear(
+        frameBuffer: AGFrameBufferBase,
+        frameBufferInfo: AGFrameBufferInfo,
 		color: RGBA,
 		depth: Float,
 		stencil: Int,
@@ -174,7 +176,7 @@ open class LogBaseAG(
 		clearStencil: Boolean,
         scissor: AGScissor,
 	) {
-        log("clear($color, $depth, $stencil, $clearColor, $clearDepth, $clearStencil)", Kind.CLEAR)
+        log("clear($frameBuffer, $frameBufferInfo, $color, $depth, $stencil, $clearColor, $clearDepth, $clearStencil)", Kind.CLEAR)
     }
 
 	override var backWidth: Int = width; set(value) { field = value; log("backWidth = $value", Kind.METRICS) }

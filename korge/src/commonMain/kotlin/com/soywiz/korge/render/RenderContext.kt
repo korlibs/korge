@@ -84,6 +84,8 @@ class RenderContext constructor(
     private val tempRect = Rectangle()
     private val tempMat3d = Matrix3D()
 
+    val tempTexturePool: Pool<AGTexture> = Pool { ag.createTexture() }
+
     fun updateStandardUniforms() {
         //println("updateStandardUniforms: ag.currentSize(${ag.currentWidth}, ${ag.currentHeight}) : ${ag.currentFrameBuffer}")
         if (flipRenderTexture && ag.isRenderingToTexture) {
@@ -256,6 +258,18 @@ class RenderContext constructor(
             ag.currentFrameBuffer = value
         }
 
+    fun clear(
+        color: RGBA = Colors.TRANSPARENT_BLACK,
+        depth: Float = 1f,
+        stencil: Int = 0,
+        clearColor: Boolean = true,
+        clearDepth: Boolean = true,
+        clearStencil: Boolean = true,
+        scissor: AGScissor = AGScissor.NIL,
+    ) {
+        ag.clear(currentFrameBuffer.base, currentFrameBuffer.info, color, depth, stencil, clearColor, clearDepth, clearStencil, scissor)
+    }
+
     inline fun renderToFrameBuffer(
         frameBuffer: AGFrameBuffer,
         clear: Boolean = true,
@@ -268,7 +282,7 @@ class RenderContext constructor(
                 batch.scissor = AGScissor(0, 0, frameBuffer.width, frameBuffer.height)
                 //batch.scissor = null
                 try {
-                    if (clear) ag.clear(Colors.TRANSPARENT_BLACK)
+                    if (clear) clear(Colors.TRANSPARENT_BLACK)
                     render(frameBuffer)
                     flush()
                 } finally {
@@ -356,7 +370,7 @@ class RenderContext constructor(
 
     val frameFrameBuffers = LinkedHashSet<AGFrameBuffer>()
     val frameBuffers = Pool<AGFrameBuffer>() { ag.createFrameBuffer() }
-    val frameBufferStack = FastArrayList<AGFrameBuffer?>()
+    val frameBufferStack = FastArrayList<AGFrameBuffer>()
 
     inline fun doRender(block: () -> Unit) {
         ag.beforeDoRender()
@@ -425,7 +439,7 @@ class RenderContext constructor(
         flush()
         tempAllocateFrameBuffer(width, height, hasDepth, hasStencil, msamples) { rb ->
             setFrameBufferTemporally(rb) {
-                ag.clear(Colors.TRANSPARENT_BLACK) // transparent
+                clear(Colors.TRANSPARENT_BLACK) // transparent
                 render(rb)
             }
             use(rb.tex, rb.width, rb.height)
@@ -458,19 +472,13 @@ class RenderContext constructor(
         return bmp
     }
 
-    fun getFrameBufferAtStackPoint(offset: Int): AGFrameBuffer {
-        if (offset == 0) return ag.currentFrameBufferOrMain
-        return frameBufferStack.getOrNull(frameBufferStack.size + offset) ?: mainFrameBuffer
-    }
-
     fun pushFrameBuffer(frameBuffer: AGFrameBuffer) {
         frameBufferStack.add(currentFrameBuffer)
-        ag.setFrameBuffer(frameBuffer)
+        currentFrameBuffer = frameBuffer
     }
 
     fun popFrameBuffer() {
-        ag.setFrameBuffer(frameBufferStack.last())
-        frameBufferStack.removeAt(frameBufferStack.size - 1)
+        currentFrameBuffer = frameBufferStack.removeAt(frameBufferStack.size - 1)
     }
 }
 

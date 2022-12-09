@@ -1,8 +1,10 @@
+viewport(0, 0, 128, 128)
 enable(3089)
 scissor(0, 0, 128, 128)
 stencilMask(-1)
 clearStencil(0)
 clear(1024)
+viewport(0, 0, 128, 128)
 enable(3089)
 scissor(0, 0, 128, 128)
 createProgram() = 1001

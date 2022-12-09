@@ -535,6 +535,42 @@ fun Rectangle?.toAGScissor(): AGScissor {
 fun BoundsBuilder.add(scissor: AGScissor) {
     add(scissor.x, scissor.y)
 }
+
+inline class AGFrameBufferInfo(val data: Int) {
+    val width: Int get() = data.extract14(0)
+    val height: Int get() = data.extract14(14)
+    val size: AGSize get() = AGSize(width, height)
+    val hasDepth: Boolean get() = data.extractBool(28)
+    val hasStencil: Boolean get() = data.extractBool(29)
+    private val samplesBits: Int get() = data.extract2(30)
+    val samples: Int get() = 1 shl samplesBits
+    val hasStencilAndDepth: Boolean  get() = hasDepth && hasStencil
+
+    fun withSize(width: Int = this.width, height: Int = this.height): AGFrameBufferInfo = AGFrameBufferInfo(data.insert14(width, 0).insert14(height, 14))
+    fun withHasDepth(hasDepth: Boolean): AGFrameBufferInfo = AGFrameBufferInfo(data.insert(hasDepth, 28))
+    fun withHasStencil(hasStencil: Boolean): AGFrameBufferInfo = AGFrameBufferInfo(data.insert(hasStencil, 29))
+    fun withSamples(samples: Int): AGFrameBufferInfo = withSamplesBits(ilog2(samples))
+    private fun withSamplesBits(bits: Int): AGFrameBufferInfo = AGFrameBufferInfo(data.insert2(bits, 30))
+
+    override fun toString(): String = "AGFrameBufferInfo(width=$width, height=$height, hasDepth=$hasDepth, hasStencil=$hasStencil, samples=$samples)"
+
+    companion object {
+        val DEFAULT = AGFrameBufferInfo(0)
+        val INVALID = AGFrameBufferInfo(-1)
+    }
+}
+
+inline class AGSize(val data: Int) {
+    val width: Int get() = data.extract16(0)
+    val height: Int get() = data.extract16(16)
+
+    fun with(width: Int = this.width, height: Int = this.height): AGSize = AGSize(0.insert(width, 0, 16).insert(height, 16, 16))
+    companion object {
+        val INVALID: AGSize get() = AGSize(-2)
+        operator fun invoke(width: Int, height: Int): AGSize = AGSize(0).with(width, height)
+    }
+}
+
 inline class AGScissor(val data: Long) {
     constructor(xy: Int, wh: Int) : this(Long.fromLowHigh(xy, wh))
     constructor(x: Int, y: Int, width: Int, height: Int) : this(0.insert16(x, 0).insert16(y, 16), 0.insert16(width, 0).insert16(height, 16))
@@ -608,7 +644,29 @@ interface AGFactory {
     //fun createFastWindow(title: String, width: Int, height: Int, config: AGConfig): AGWindow
 }
 
-open class AGFrameBuffer(val ag: AG, val isMain: Boolean) : AGObject() {
+open class AGFrameBufferBase(val ag: AG, val isMain: Boolean) : AGObject() {
+    val tex: AGTexture = ag.createTexture(premultiplied = true).also { it.isFbo = true }
+    var estimatedMemoryUsage: ByteUnits = ByteUnits.fromBytes(0)
+
+    init {
+        ag.allFrameBuffers += this
+    }
+
+    override fun close() {
+        ag.allFrameBuffers -= this
+        tex.close()
+        //ag.frameRenderBuffers -= this
+    }
+
+    override fun toString(): String = "AGFrameBufferBase(isMain=$isMain)"
+}
+
+open class AGFrameBuffer(val base: AGFrameBufferBase) : Closeable {
+    constructor(ag: AG, isMain: Boolean) : this(AGFrameBufferBase(ag, isMain))
+    val ag: AG get() = base.ag
+    val isMain: Boolean get() = base.isMain
+    val tex: AGTexture get() = base.tex
+    val info: AGFrameBufferInfo get() = AGFrameBufferInfo(0).withSize(width, height).withSamples(nsamples).withHasDepth(hasDepth).withHasStencil(hasStencil)
     companion object {
         const val DEFAULT_INITIAL_WIDTH = 128
         const val DEFAULT_INITIAL_HEIGHT = 128
@@ -618,8 +676,6 @@ open class AGFrameBuffer(val ag: AG, val isMain: Boolean) : AGObject() {
     val hasStencilAndDepth: Boolean get() = hasDepth && hasStencil
     var hasStencil: Boolean = true; protected set
     var hasDepth: Boolean = true; protected set
-
-    val tex: AGTexture = ag.createTexture(premultiplied = true).also { it.isFbo = true }
 
     init {
         //ag.frameRenderBuffers += this
@@ -631,20 +687,18 @@ open class AGFrameBuffer(val ag: AG, val isMain: Boolean) : AGObject() {
 
     var x = 0
     var y = 0
-    var width = AGFrameBuffer.DEFAULT_INITIAL_WIDTH
-    var height = AGFrameBuffer.DEFAULT_INITIAL_HEIGHT
-    var fullWidth = AGFrameBuffer.DEFAULT_INITIAL_WIDTH
-    var fullHeight = AGFrameBuffer.DEFAULT_INITIAL_HEIGHT
+    var width = DEFAULT_INITIAL_WIDTH
+    var height = DEFAULT_INITIAL_HEIGHT
+    var fullWidth = DEFAULT_INITIAL_WIDTH
+    var fullHeight = DEFAULT_INITIAL_HEIGHT
     private val _scissor = RectangleInt()
     var scissor: RectangleInt? = null
-
-    var estimatedMemoryUsage: ByteUnits = ByteUnits.fromBytes(0)
 
     open fun setSize(x: Int, y: Int, width: Int, height: Int, fullWidth: Int = width, fullHeight: Int = height) {
         if (this.x == x && this.y == y && this.width == width && this.height == height && this.fullWidth == fullWidth && this.fullHeight == fullHeight) return
         tex.upload(NullBitmap(width, height))
 
-        estimatedMemoryUsage = ByteUnits.fromBytes(fullWidth * fullHeight * (4 + 4))
+        base.estimatedMemoryUsage = ByteUnits.fromBytes(fullWidth * fullHeight * (4 + 4))
 
         this.x = x
         this.y = y
@@ -659,13 +713,8 @@ open class AGFrameBuffer(val ag: AG, val isMain: Boolean) : AGObject() {
         this.scissor = scissor?.let { _scissor.setTo(it) }
     }
 
-    init {
-        ag.allFrameBuffers += this
-    }
-
     override fun close() {
-        ag.allFrameBuffers -= this
-        tex.close()
+        base.close()
         //ag.frameRenderBuffers -= this
     }
 
@@ -681,6 +730,10 @@ open class AGFrameBuffer(val ag: AG, val isMain: Boolean) : AGObject() {
         this.hasDepth = hasDepth
         this.hasStencil = hasStencil
         markAsDirty()
+    }
+
+    private fun markAsDirty() {
+        //base.markAsDirty()
     }
 
     fun readBitmap(bmp: Bitmap32) = ag.readColor(bmp)
@@ -738,8 +791,9 @@ object AGFinish : AGCommand
  */
 data class AGClear(
     // Frame Buffer
-    var frameBuffer: AGFrameBuffer,
-    // Reference balues
+    var frameBuffer: AGFrameBufferBase,
+    var frameBufferInfo: AGFrameBufferInfo,
+    // Reference values
     var color: RGBA,
     var depth: Float,
     var stencil: Int,
@@ -755,9 +809,11 @@ data class AGClear(
  * @see <https://registry.khronos.org/OpenGL-Refpages/gl4/html/glBlitFramebuffer.xhtml>
  */
 data class AGBlitPixels(
-    var dstFrameBuffer: AGFrameBuffer,
+    var dstFrameBuffer: AGFrameBufferBase,
+    var dstFrameBufferInfo: AGFrameBufferInfo,
     var dst: AGScissor,
-    var srcFrameBuffer: AGFrameBuffer,
+    var srcFrameBuffer: AGFrameBufferBase,
+    var srcFrameBufferInfo: AGFrameBufferInfo,
     var src: AGScissor,
 ) : AGCommand
 
@@ -765,7 +821,8 @@ data class AGBlitPixels(
  * Reads pixels from a [region] inside a [frameBuffer] into a [texture].
  */
 data class AGReadPixelsToTexture(
-    var frameBuffer: AGFrameBuffer,
+    var frameBuffer: AGFrameBufferBase,
+    var frameBufferInfo: AGFrameBufferInfo,
     var region: AGScissor,
     var texture: AGTexture,
 ) : AGCommand
@@ -774,7 +831,7 @@ data class AGReadPixelsToTexture(
  * Releases memory for this [frameBuffer]
  */
 data class AGDiscardFrameBuffer(
-    var frameBuffer: AGFrameBuffer,
+    var frameBuffer: AGFrameBufferBase,
 ) : AGCommand
 
 /**
@@ -782,7 +839,8 @@ data class AGDiscardFrameBuffer(
  */
 data class AGBatch(
     // Frame Buffer
-    var frameBuffer: AGFrameBuffer,
+    var frameBuffer: AGFrameBufferBase,
+    var frameBufferInfo: AGFrameBufferInfo,
     // Vertex & Index data
     var vertexData: AGVertexArrayObject = AGVertexArrayObject(AGVertexData(null)),
     var indices: AGBuffer? = null,

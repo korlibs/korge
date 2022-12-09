@@ -122,7 +122,7 @@ object TestGameWindow {
             gameWindow.loop {
                 val ag = gameWindow.ag
                 gameWindow.onRenderEvent {
-                    ag.clear(RGBA(64, 96, step % 256, 255))
+                    ag.clear(ag.mainFrameBuffer, RGBA(64, 96, step % 256, 255))
                     step++
                 }
                 //println("HELLO")

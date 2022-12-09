@@ -40,12 +40,11 @@ internal class GLBuffer(state: GLGlobalState) : GLBaseObject(state) {
     }
 }
 
-internal fun AGFrameBuffer.gl(state: GLGlobalState): GLFrameBuffer = this.createOnce(state) { GLFrameBuffer(state, this) }
-internal class GLFrameBuffer(state: GLGlobalState, val ag: AGFrameBuffer) : GLBaseObject(state) {
+internal fun AGFrameBufferBase.gl(state: GLGlobalState): GLFrameBuffer = this.createOnce(state) { GLFrameBuffer(state, this) }
+internal class GLFrameBuffer(state: GLGlobalState, val ag: AGFrameBufferBase) : GLBaseObject(state) {
     var renderBufferId = gl.genRenderbuffer()
     var frameBufferId = gl.genFramebuffer()
-    val width: Int get() = ag.width
-    val height: Int get() = ag.height
+    var info: AGFrameBufferInfo = AGFrameBufferInfo.INVALID
 
     override fun delete() {
         gl.deleteRenderbuffer(renderBufferId)

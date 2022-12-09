@@ -38,7 +38,7 @@ class TestE2eJava {
                 val ag = gameWindow.ag
                 gameWindow.onRenderEvent {
                     try {
-                        ag.clear(Colors.DARKGREY)
+                        ag.clear(ag.mainFrameBuffer, Colors.DARKGREY)
                         val vertices = ag.createBuffer(floatArrayOf(
                             -1f, -1f,
                             -1f, +1f,

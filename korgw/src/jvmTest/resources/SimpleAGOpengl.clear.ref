@@ -1,3 +1,5 @@
+viewport(0, 0, 128, 128)
+bindFramebuffer(36160, 0)
 colorMask(true, true, true, true)
 clearColor(0.0, 0.0, 0.0, 0.0)
 depthMask(true)

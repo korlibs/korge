@@ -1,3 +1,4 @@
+viewport(0, 0, 128, 128)
 enable(3089)
 scissor(0, 28, 128, 72)
 createProgram() = 1001

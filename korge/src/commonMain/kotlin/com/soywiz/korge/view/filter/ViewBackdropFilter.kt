@@ -34,7 +34,7 @@ class ViewRenderPhaseBackdropFilter(var filter: Filter) : ViewRenderPhase {
     var bgrtex: Texture? = null
 
     override fun beforeRender(view: View, ctx: RenderContext) {
-        val bgtex = ctx.ag.tempTexturePool.alloc()
+        val bgtex = ctx.tempTexturePool.alloc()
         val width = ctx.ag.currentFrameBufferOrMain.width
         val height = ctx.ag.currentFrameBufferOrMain.height
         ctx.ag.readColorTexture(bgtex, 0, 0, width, height)
@@ -42,7 +42,7 @@ class ViewRenderPhaseBackdropFilter(var filter: Filter) : ViewRenderPhase {
     }
 
     override fun afterRender(view: View, ctx: RenderContext) {
-        bgrtex?.let { ctx.ag.tempTexturePool.free(it.base.base!!) }
+        bgrtex?.let { ctx.tempTexturePool.free(it.base.base!!) }
         bgrtex = null
     }
 

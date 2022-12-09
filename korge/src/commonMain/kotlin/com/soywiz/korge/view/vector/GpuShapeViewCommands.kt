@@ -146,7 +146,7 @@ class GpuShapeViewCommands {
                             }
 
                             is ClearCommand -> {
-                                ag.clear(stencil = cmd.i, clearColor = false, clearStencil = true, clearDepth = false)
+                                ctx.clear(stencil = cmd.i, clearColor = false, clearStencil = true, clearDepth = false)
                             }
 
                             is ShapeCommand -> {
@@ -172,7 +172,8 @@ class GpuShapeViewCommands {
                                 tempUniforms[BatchBuilder2D.u_OutputPre] = outPremultiplied
 
                                 ag.draw(AGBatch(
-                                    ctx.currentFrameBuffer,
+                                    ctx.currentFrameBuffer.base,
+                                    ctx.currentFrameBuffer.info,
                                     vertexData = vertices,
                                     uniforms = tempUniforms,
                                     stencilOpFunc = cmd.stencilOpFunc,
@@ -192,7 +193,7 @@ class GpuShapeViewCommands {
             }
         }
         for (tex in texturesToDelete) {
-            ag.tempTexturePool.free(tex)
+            ctx.tempTexturePool.free(tex)
         }
         texturesToDelete.clear()
     }
@@ -200,7 +201,7 @@ class GpuShapeViewCommands {
     private fun resolve(ctx: RenderContext, uniforms: AGUniformValues, texUniforms: Map<Uniform, Bitmap>) {
         var unitId = 0
         for ((uniform, value) in texUniforms) {
-            val tex = ctx.ag.tempTexturePool.alloc()
+            val tex = ctx.tempTexturePool.alloc()
             tex.upload(value)
             uniforms[uniform] = AGTextureUnit(unitId++, tex)
             texturesToDelete.add(tex)

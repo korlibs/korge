@@ -10,7 +10,7 @@ class AGOpenglTest {
     fun testClear() {
         val gl = KmlGlProxyLogToString()
         val ag = AGOpengl(gl)
-        ag.clear()
+        ag.clear(ag.mainFrameBuffer)
         assertEqualsJvmFileReference("SimpleAGOpengl.clear.ref", gl.log.joinToString("\n"))
     }
 }

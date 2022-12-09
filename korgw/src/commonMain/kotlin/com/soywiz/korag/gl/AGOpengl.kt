@@ -2,21 +2,16 @@ package com.soywiz.korag.gl
 
 import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
-import com.soywiz.kds.lock.*
 import com.soywiz.kgl.*
-import com.soywiz.klogger.*
 import com.soywiz.kmem.*
 import com.soywiz.korag.*
 import com.soywiz.korag.shader.*
 import com.soywiz.korag.shader.gl.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
-import com.soywiz.korio.async.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korma.geom.*
 import com.soywiz.krypto.encoding.hex
-import kotlin.contracts.*
-import kotlin.jvm.*
 
 class AGOpengl(val gl: KmlGl) : AG() {
     class ShaderException(val str: String, val error: String, val errorInt: Int, val gl: KmlGl, val debugName: String?, val type: Int) :
@@ -34,34 +29,12 @@ class AGOpengl(val gl: KmlGl) : AG() {
         gl.flush()
     }
 
-    internal fun setViewport(buffer: AGFrameBuffer) {
-        gl.viewport(buffer.x, buffer.y, buffer.width, buffer.height)
-        //println("VIEWPORT: $x, $y, $width, $height")
-        //println("setViewport: ${buffer.x}, ${buffer.y}, ${buffer.width}, ${buffer.height}")
-    }
-
-    override fun setFrameBuffer(frameBuffer: AGFrameBuffer?): AGFrameBuffer? {
-        val old = currentFrameBuffer
-        //currentRenderBuffer?.unset()
-        currentFrameBuffer = frameBuffer
-        if (frameBuffer != null) {
-            setViewport(frameBuffer)
-            if (!frameBuffer.isMain) {
-                bindFrameBuffer(frameBuffer)
-            } else {
-                bindFrameBuffer(null)
-            }
-        }
-        return old
-    }
-
     protected val glGlobalState by lazy { GLGlobalState(gl, this) }
 
     //val queue = Deque<(gl: GL) -> Unit>()
 
     fun sync() {
     }
-
 
     override fun contextLost() {
         super.contextLost()
@@ -83,7 +56,8 @@ class AGOpengl(val gl: KmlGl) : AG() {
         textureBind(null, AGTextureTargetKind.TEXTURE_2D)
     }
 
-    override fun clear(color: RGBA, depth: Float, stencil: Int, clearColor: Boolean, clearDepth: Boolean, clearStencil: Boolean, scissor: AGScissor) {
+    override fun clear(frameBuffer: AGFrameBufferBase, frameBufferInfo: AGFrameBufferInfo, color: RGBA, depth: Float, stencil: Int, clearColor: Boolean, clearDepth: Boolean, clearStencil: Boolean, scissor: AGScissor) {
+        bindFrameBuffer(frameBuffer, frameBufferInfo)
         //println("CLEAR: $color, $depth")
         setScissorState(this, scissor)
         //gl.disable(KmlGl.SCISSOR_TEST)
@@ -139,7 +113,7 @@ class AGOpengl(val gl: KmlGl) : AG() {
         when (command) {
             is AGBatch -> this.draw(command)
             is AGBlitPixels -> TODO()
-            is AGClear -> this.clear(command.color, command.depth, command.stencil, command.clearColor, command.clearDepth, command.clearStencil)
+            is AGClear -> this.clear(command.frameBuffer, command.frameBufferInfo, command.color, command.depth, command.stencil, command.clearColor, command.clearDepth, command.clearStencil)
             is AGDiscardFrameBuffer -> TODO()
             AGFinish -> this.finish()
             is AGReadPixelsToTexture -> TODO()
@@ -150,6 +124,8 @@ class AGOpengl(val gl: KmlGl) : AG() {
         //println("SCISSOR: $scissor")
 
         //finalScissor.setTo(0, 0, backWidth, backHeight)
+
+        bindFrameBuffer(batch.frameBuffer, batch.frameBufferInfo)
 
         setScissorState(this, batch.scissor)
 
@@ -244,10 +220,12 @@ class AGOpengl(val gl: KmlGl) : AG() {
         currentColorMask = AGColorMask.INVALID
         currentProgram = null
         backBufferFrameBufferBinding = gl.getIntegerv(KmlGl.FRAMEBUFFER_BINDING)
+        _currentFrameBuffer = -1
+        _currentViewportSize = AGSize.INVALID
     }
 
     override fun endFrame() {
-        bindFrameBuffer(null)
+        bindFrameBuffer(mainFrameBuffer.base, mainFrameBuffer.info)
     }
 
     fun listStart() {
@@ -642,9 +620,18 @@ class AGOpengl(val gl: KmlGl) : AG() {
         return old
     }
 
-    fun bindFrameBuffer(frameBuffer: AGFrameBuffer?) {
-        if (frameBuffer == null) {
-            gl.bindFramebuffer(KmlGl.FRAMEBUFFER, backBufferFrameBufferBinding)
+    private var _currentViewportSize: AGSize = AGSize.INVALID
+    private var _currentFrameBuffer: Int = -1
+
+    fun bindFrameBuffer(frameBuffer: AGFrameBufferBase, info: AGFrameBufferInfo) {
+        if (_currentViewportSize != info.size) {
+            gl.viewport(0, 0, info.width, info.height)
+        }
+        if (frameBuffer.isMain) {
+            if (_currentFrameBuffer != backBufferFrameBufferBinding) {
+                _currentFrameBuffer = backBufferFrameBufferBinding
+                gl.bindFramebuffer(KmlGl.FRAMEBUFFER, backBufferFrameBufferBinding)
+            }
             return
         }
         // Ensure everything has been executed already. @TODO: We should remove this since this is a bottleneck
@@ -652,19 +639,22 @@ class AGOpengl(val gl: KmlGl) : AG() {
         val tex = fb.ag.tex
         // http://wangchuan.github.io/coding/2016/05/26/multisampling-fbo.html
         val doMsaa = false
-        val internalFormat = when {
-            fb.ag.hasStencilAndDepth -> KmlGl.DEPTH_STENCIL
-            fb.ag.hasStencil -> KmlGl.STENCIL_INDEX8 // On android this is buggy somehow?
-            fb.ag.hasDepth -> KmlGl.DEPTH_COMPONENT
-            else -> 0
-        }
-        val texTarget = when {
-            doMsaa -> KmlGl.TEXTURE_2D_MULTISAMPLE
-            else -> KmlGl.TEXTURE_2D
-        }
 
-        frameBuffer.update {
-            tex.bitmap = NullBitmap(frameBuffer.width, frameBuffer.height, false)
+        if (fb.info != info) {
+            fb.info = info
+
+            val internalFormat = when {
+                info.hasStencilAndDepth -> KmlGl.DEPTH_STENCIL
+                info.hasStencil -> KmlGl.STENCIL_INDEX8 // On android this is buggy somehow?
+                info.hasDepth -> KmlGl.DEPTH_COMPONENT
+                else -> 0
+            }
+            val texTarget = when {
+                doMsaa -> KmlGl.TEXTURE_2D_MULTISAMPLE
+                else -> KmlGl.TEXTURE_2D
+            }
+
+            tex.bitmap = NullBitmap(info.width, info.height, false)
             val old = selectTextureUnit(tempTextureUnit)
             textureBind(tex, AGTextureTargetKind.TEXTURE_2D)
             selectTextureUnit(old)
@@ -675,7 +665,7 @@ class AGOpengl(val gl: KmlGl) : AG() {
             gl.bindRenderbuffer(KmlGl.RENDERBUFFER, fb.renderBufferId)
             if (internalFormat != 0) {
                 //gl.renderbufferStorageMultisample(KmlGl.RENDERBUFFER, fb.nsamples, internalFormat, fb.width, fb.height)
-                gl.renderbufferStorage(KmlGl.RENDERBUFFER, internalFormat, fb.width, fb.height)
+                gl.renderbufferStorage(KmlGl.RENDERBUFFER, internalFormat, info.width, info.height)
             }
             gl.bindRenderbuffer(KmlGl.RENDERBUFFER, 0)
             //gl.renderbufferStorageMultisample()
@@ -689,13 +679,16 @@ class AGOpengl(val gl: KmlGl) : AG() {
             }
         }
 
-        gl.bindFramebuffer(KmlGl.FRAMEBUFFER, fb.frameBufferId)
+        if (_currentFrameBuffer != fb.frameBufferId) {
+            _currentFrameBuffer = fb.frameBufferId
+            gl.bindFramebuffer(KmlGl.FRAMEBUFFER, fb.frameBufferId)
+        }
         //val status = gl.checkFramebufferStatus(KmlGl.FRAMEBUFFER)
         //if (status != KmlGl.FRAMEBUFFER_COMPLETE) { gl.bindFramebuffer(KmlGl.FRAMEBUFFER, 0); error("Error getting framebuffer") }
     }
 
     private val AGBuffer.gl: GLBuffer get() = gl(glGlobalState)
-    private val AGFrameBuffer.gl: GLFrameBuffer get() = gl(glGlobalState)
+    private val AGFrameBufferBase.gl: GLFrameBuffer get() = gl(glGlobalState)
     private val AGTexture.gl: GLTexture get() = gl(glGlobalState)
 
     fun setDepthAndFrontFace(renderState: AGDepthAndFrontFace) {
