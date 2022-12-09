@@ -597,7 +597,7 @@ open class GameWindow :
         if (doInitialize) {
             doInitialize = false
             //ag.mainRenderBuffer.setSize(0, 0, width, height)
-            println("---------------- Trigger AG.initialized ag.mainRenderBuffer.setSize ($width, $height) --------------")
+            println("---------------- Trigger AG.initialized ag.mainFrameBuffer.setSize ($width, $height) --------------")
             dispatch(initEvent)
         }
         try {

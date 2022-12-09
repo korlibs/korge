@@ -63,7 +63,7 @@ open class FixedSizeContainer(
             //if (hasRotation || hasNegativeScale) {
             if (hasRotation) {
             //if (true) {
-                // Use a renderbuffer instead
+                // Use a framebuffer instead
                 val old = renderingInternal
                 try {
                     renderingInternal = true

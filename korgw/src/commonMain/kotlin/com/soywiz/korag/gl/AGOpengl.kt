@@ -37,8 +37,8 @@ abstract class AGOpengl(checked: Boolean = false) : AG(checked) {
 
     override fun flip() {
         disposeTemporalPerFrameStuff()
-        renderBuffers.free(frameRenderBuffers)
-        if (frameRenderBuffers.isNotEmpty()) frameRenderBuffers.clear()
+        frameBuffers.free(frameFrameBuffers)
+        if (frameFrameBuffers.isNotEmpty()) frameFrameBuffers.clear()
         flipInternal()
         finish()
     }
@@ -53,14 +53,14 @@ abstract class AGOpengl(checked: Boolean = false) : AG(checked) {
         //println("setViewport: ${buffer.x}, ${buffer.y}, ${buffer.width}, ${buffer.height}")
     }
 
-    override fun setRenderBuffer(renderBuffer: AGFrameBuffer?): AGFrameBuffer? {
-        val old = currentRenderBuffer
+    override fun setFrameBuffer(frameBuffer: AGFrameBuffer?): AGFrameBuffer? {
+        val old = currentFrameBuffer
         //currentRenderBuffer?.unset()
-        currentRenderBuffer = renderBuffer
-        if (renderBuffer != null) {
-            setViewport(renderBuffer)
-            if (!renderBuffer.isMain) {
-                bindFrameBuffer(renderBuffer)
+        currentFrameBuffer = frameBuffer
+        if (frameBuffer != null) {
+            setViewport(frameBuffer)
+            if (!frameBuffer.isMain) {
+                bindFrameBuffer(frameBuffer)
             } else {
                 bindFrameBuffer(null)
             }
@@ -755,7 +755,7 @@ abstract class AGOpengl(checked: Boolean = false) : AG(checked) {
     }
 
     fun setScissorState(ag: AG, scissor: AGScissor = AGScissor.NIL) =
-        setScissorState(ag.currentRenderBuffer, ag.mainFrameBuffer, scissor)
+        setScissorState(ag.currentFrameBuffer, ag.mainFrameBuffer, scissor)
 
     fun setScissorState(currentRenderBuffer: AGFrameBuffer?, mainRenderBuffer: AGFrameBuffer, scissor: AGScissor = AGScissor.NIL) {
         if (currentRenderBuffer == null) return

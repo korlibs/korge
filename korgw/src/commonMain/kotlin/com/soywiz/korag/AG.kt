@@ -74,7 +74,7 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, AGCommandExecutor,
         startFrame()
         try {
             //mainRenderBuffer.init()
-            setRenderBufferTemporally(mainFrameBuffer) {
+            setFrameBufferTemporally(mainFrameBuffer) {
                 block()
             }
         } finally {
@@ -108,8 +108,8 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, AGCommandExecutor,
     val realBackWidth get() = mainFrameBuffer.fullWidth
     val realBackHeight get() = mainFrameBuffer.fullHeight
 
-    val currentWidth: Int get() = currentRenderBuffer?.width ?: mainFrameBuffer.width
-    val currentHeight: Int get() = currentRenderBuffer?.height ?: mainFrameBuffer.height
+    val currentWidth: Int get() = currentFrameBuffer?.width ?: mainFrameBuffer.width
+    val currentHeight: Int get() = currentFrameBuffer?.height ?: mainFrameBuffer.height
 
     var contextVersion: Int = 0
 
@@ -220,17 +220,17 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, AGCommandExecutor,
 
     open fun disposeTemporalPerFrameStuff() = Unit
 
-    val frameRenderBuffers = LinkedHashSet<AGFrameBuffer>()
-    val renderBuffers = Pool<AGFrameBuffer>() { createFrameBuffer() }
+    val frameFrameBuffers = LinkedHashSet<AGFrameBuffer>()
+    val frameBuffers = Pool<AGFrameBuffer>() { createFrameBuffer() }
 
-    object RenderBufferConsts {
+    object FrameBufferConsts {
         const val DEFAULT_INITIAL_WIDTH = 128
         const val DEFAULT_INITIAL_HEIGHT = 128
     }
 
-    internal val allRenderBuffers = LinkedHashSet<AGFrameBuffer>()
-    private val renderBufferCount: Int get() = allRenderBuffers.size
-    private val renderBuffersMemory: ByteUnits get() = ByteUnits.fromBytes(allRenderBuffers.sumOf { it.estimatedMemoryUsage.bytesLong })
+    internal val allFrameBuffers = LinkedHashSet<AGFrameBuffer>()
+    private val frameBufferCount: Int get() = allFrameBuffers.size
+    private val frameBuffersMemory: ByteUnits get() = ByteUnits.fromBytes(allFrameBuffers.sumOf { it.estimatedMemoryUsage.bytesLong })
 
     @KoragExperimental
     var agTarget = AGTarget.DISPLAY
@@ -278,15 +278,14 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, AGCommandExecutor,
     fun clearDepth(depth: Float = 1f, scissor: AGScissor = AGScissor.NIL) = clear(clearColor = false, clearDepth = true, clearStencil = false, depth = depth, scissor = scissor)
     fun clearColor(color: RGBA = Colors.TRANSPARENT_BLACK, scissor: AGScissor = AGScissor.NIL) = clear(clearColor = true, clearDepth = false, clearStencil = false, color = color, scissor = scissor)
 
-
-    var adjustFrameRenderBufferSize = false
-    //var adjustFrameRenderBufferSize = true
+    var adjustFrameBufferSize = false
+    //var adjustFrameBufferSize = true
 
     //open fun fixWidthForRenderToTexture(width: Int): Int = kotlin.math.max(64, width).nextPowerOfTwo
     //open fun fixHeightForRenderToTexture(height: Int): Int = kotlin.math.max(64, height).nextPowerOfTwo
 
-    open fun fixWidthForRenderToTexture(width: Int): Int = if (adjustFrameRenderBufferSize) width.nextMultipleOf(64) else width
-    open fun fixHeightForRenderToTexture(height: Int): Int = if (adjustFrameRenderBufferSize) height.nextMultipleOf(64) else height
+    open fun fixWidthForRenderToTexture(width: Int): Int = if (adjustFrameBufferSize) width.nextMultipleOf(64) else width
+    open fun fixHeightForRenderToTexture(height: Int): Int = if (adjustFrameBufferSize) height.nextMultipleOf(64) else height
 
     //open fun fixWidthForRenderToTexture(width: Int): Int = width
     //open fun fixHeightForRenderToTexture(height: Int): Int = height
@@ -295,17 +294,17 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, AGCommandExecutor,
     open fun flush() {
     }
 
-    val renderBufferStack = FastArrayList<AGFrameBuffer?>()
+    val frameBufferStack = FastArrayList<AGFrameBuffer?>()
 
 
     //@PublishedApi
     @KoragExperimental
-    var currentRenderBuffer: AGFrameBuffer? = null
+    var currentFrameBuffer: AGFrameBuffer? = null
         protected set
 
-    val currentRenderBufferOrMain: AGFrameBuffer get() = currentRenderBuffer ?: mainFrameBuffer
+    val currentFrameBufferOrMain: AGFrameBuffer get() = currentFrameBuffer ?: mainFrameBuffer
 
-    val isRenderingToWindow: Boolean get() = currentRenderBufferOrMain === mainFrameBuffer
+    val isRenderingToWindow: Boolean get() = currentFrameBufferOrMain === mainFrameBuffer
     val isRenderingToTexture: Boolean get() = !isRenderingToWindow
 
     inline fun backupTexture(frameBuffer: AGFrameBuffer, tex: AGTexture?, callback: () -> Unit) {
@@ -319,20 +318,20 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, AGCommandExecutor,
         }
     }
 
-    inline fun setRenderBufferTemporally(rb: AGFrameBuffer, callback: (AGFrameBuffer) -> Unit) {
-        pushRenderBuffer(rb)
+    inline fun setFrameBufferTemporally(rb: AGFrameBuffer, callback: (AGFrameBuffer) -> Unit) {
+        pushFrameBuffer(rb)
         try {
             callback(rb)
         } finally {
-            popRenderBuffer()
+            popFrameBuffer()
         }
     }
     inline fun tempAllocateFrameBuffer(width: Int, height: Int, hasDepth: Boolean = false, hasStencil: Boolean = true, msamples: Int = 1, block: (rb: AGFrameBuffer) -> Unit) {
-        val rb = unsafeAllocateFrameRenderBuffer(width, height, hasDepth = hasDepth, hasStencil = hasStencil, msamples = msamples)
+        val rb = unsafeAllocateFrameBuffer(width, height, hasDepth = hasDepth, hasStencil = hasStencil, msamples = msamples)
         try {
             block(rb)
         } finally {
-            unsafeFreeFrameRenderBuffer(rb)
+            unsafeFreeFrameBuffer(rb)
         }
     }
 
@@ -345,11 +344,11 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, AGCommandExecutor,
     }
 
     @KoragExperimental
-    fun unsafeAllocateFrameRenderBuffer(width: Int, height: Int, hasDepth: Boolean = false, hasStencil: Boolean = true, msamples: Int = 1, onlyThisFrame: Boolean = true): AGFrameBuffer {
+    fun unsafeAllocateFrameBuffer(width: Int, height: Int, hasDepth: Boolean = false, hasStencil: Boolean = true, msamples: Int = 1, onlyThisFrame: Boolean = true): AGFrameBuffer {
         val realWidth = fixWidthForRenderToTexture(max(width, 64))
         val realHeight = fixHeightForRenderToTexture(max(height, 64))
-        val rb = renderBuffers.alloc()
-        if (onlyThisFrame) frameRenderBuffers += rb
+        val rb = frameBuffers.alloc()
+        if (onlyThisFrame) frameFrameBuffers += rb
         rb.setSize(0, 0, realWidth, realHeight, realWidth, realHeight)
         rb.setExtra(hasDepth = hasDepth, hasStencil = hasStencil)
         rb.setSamples(msamples)
@@ -358,10 +357,10 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, AGCommandExecutor,
     }
 
     @KoragExperimental
-    fun unsafeFreeFrameRenderBuffer(rb: AGFrameBuffer) {
-        if (frameRenderBuffers.remove(rb)) {
+    fun unsafeFreeFrameBuffer(rb: AGFrameBuffer) {
+        if (frameFrameBuffers.remove(rb)) {
         }
-        renderBuffers.free(rb)
+        frameBuffers.free(rb)
     }
 
     @OptIn(KoragExperimental::class)
@@ -373,7 +372,7 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, AGCommandExecutor,
     ) {
         flush()
         tempAllocateFrameBuffer(width, height, hasDepth, hasStencil, msamples) { rb ->
-            setRenderBufferTemporally(rb) {
+            setFrameBufferTemporally(rb) {
                 clear(Colors.TRANSPARENT_BLACK) // transparent
                 render(rb)
             }
@@ -393,23 +392,21 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, AGCommandExecutor,
         }, hasDepth = hasDepth, hasStencil = hasStencil, msamples = msamples, use = { _, _, _ -> })
     }
 
-    open fun setRenderBuffer(renderBuffer: AGFrameBuffer?): AGFrameBuffer? {
-        return null
+    open fun setFrameBuffer(frameBuffer: AGFrameBuffer?): AGFrameBuffer? = null
+
+    fun getFrameBufferAtStackPoint(offset: Int): AGFrameBuffer {
+        if (offset == 0) return currentFrameBufferOrMain
+        return frameBufferStack.getOrNull(frameBufferStack.size + offset) ?: mainFrameBuffer
     }
 
-    fun getRenderBufferAtStackPoint(offset: Int): AGFrameBuffer {
-        if (offset == 0) return currentRenderBufferOrMain
-        return renderBufferStack.getOrNull(renderBufferStack.size + offset) ?: mainFrameBuffer
+    fun pushFrameBuffer(frameBuffer: AGFrameBuffer) {
+        frameBufferStack.add(currentFrameBuffer)
+        setFrameBuffer(frameBuffer)
     }
 
-    fun pushRenderBuffer(renderBuffer: AGFrameBuffer) {
-        renderBufferStack.add(currentRenderBuffer)
-        setRenderBuffer(renderBuffer)
-    }
-
-    fun popRenderBuffer() {
-        setRenderBuffer(renderBufferStack.last())
-        renderBufferStack.removeAt(renderBufferStack.size - 1)
+    fun popFrameBuffer() {
+        setFrameBuffer(frameBufferStack.last())
+        frameBufferStack.removeAt(frameBufferStack.size - 1)
     }
 
     // @TODO: Rename to Sync and add Suspend versions
@@ -418,12 +415,9 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, AGCommandExecutor,
         return if (isRenderingToTexture) RGBAPremultiplied(rawColor).depremultiplied else RGBA(rawColor)
     }
 
-    open fun readColor(bitmap: Bitmap32, x: Int = 0, y: Int = 0) {
-    }
-    open fun readDepth(width: Int, height: Int, out: FloatArray) {
-    }
-    open fun readStencil(bitmap: Bitmap8) {
-    }
+    open fun readColor(bitmap: Bitmap32, x: Int = 0, y: Int = 0) = Unit
+    open fun readDepth(width: Int, height: Int, out: FloatArray) = Unit
+    open fun readStencil(bitmap: Bitmap8) = Unit
     fun readDepth(out: FloatArray2): Unit = readDepth(out.width, out.height, out.data)
     open fun readColorTexture(texture: AGTexture, x: Int = 0, y: Int = 0, width: Int = backWidth, height: Int = backHeight): Unit = TODO()
     fun readColor(): Bitmap32 = Bitmap32(backWidth, backHeight, premultiplied = isRenderingToTexture).apply { readColor(this) }
@@ -455,8 +449,8 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, AGCommandExecutor,
         out.texturesCount = this.texturesCount
         out.buffersMemory = this.buffersMemory
         out.buffersCount = this.buffersCount
-        out.renderBuffersMemory = this.renderBuffersMemory
-        out.renderBuffersCount = this.renderBufferCount
+        out.frameBuffersMemory = this.frameBuffersMemory
+        out.frameBuffersCount = this.frameBufferCount
         out.texturesCreated = this.createdTextureCount
         out.texturesDeleted = this.deletedTextureCount
         out.programCount = this.programCount

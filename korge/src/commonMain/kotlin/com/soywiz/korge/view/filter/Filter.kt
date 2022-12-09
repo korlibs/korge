@@ -150,7 +150,7 @@ class RenderToTextureResult() : Disposable {
 
     override fun dispose() {
         if (fb == null || ctx == null) return
-        fb?.let { ctx?.ag?.unsafeFreeFrameRenderBuffer(it) }
+        fb?.let { ctx?.ag?.unsafeFreeFrameBuffer(it) }
         filter = null
         texture = null
         fb = null
@@ -180,7 +180,7 @@ fun Filter.renderToTextureWithBorderUnsafe(
     //println("texWidth=$newTexWidth,$newTexHeight")
 
     ctx.flush()
-    val fb: AGFrameBuffer = ctx.ag.unsafeAllocateFrameRenderBuffer(newTexWidth, newTexHeight)
+    val fb: AGFrameBuffer = ctx.ag.unsafeAllocateFrameBuffer(newTexWidth, newTexHeight)
     result.borderLeft = borderLeft
     result.borderTop = borderTop
     result.newTexWidth = newTexWidth

@@ -626,10 +626,10 @@ open class AGFrameBuffer(val ag: AG, val isMain: Boolean) : AGObject() {
 
     var x = 0
     var y = 0
-    var width = AG.RenderBufferConsts.DEFAULT_INITIAL_WIDTH
-    var height = AG.RenderBufferConsts.DEFAULT_INITIAL_HEIGHT
-    var fullWidth = AG.RenderBufferConsts.DEFAULT_INITIAL_WIDTH
-    var fullHeight = AG.RenderBufferConsts.DEFAULT_INITIAL_HEIGHT
+    var width = AG.FrameBufferConsts.DEFAULT_INITIAL_WIDTH
+    var height = AG.FrameBufferConsts.DEFAULT_INITIAL_HEIGHT
+    var fullWidth = AG.FrameBufferConsts.DEFAULT_INITIAL_WIDTH
+    var fullHeight = AG.FrameBufferConsts.DEFAULT_INITIAL_HEIGHT
     private val _scissor = RectangleInt()
     var scissor: RectangleInt? = null
 
@@ -655,11 +655,11 @@ open class AGFrameBuffer(val ag: AG, val isMain: Boolean) : AGObject() {
     }
 
     init {
-        ag.allRenderBuffers += this
+        ag.allFrameBuffers += this
     }
 
     override fun close() {
-        ag.allRenderBuffers -= this
+        ag.allFrameBuffers -= this
         tex.close()
         //ag.frameRenderBuffers -= this
     }
@@ -681,7 +681,7 @@ open class AGFrameBuffer(val ag: AG, val isMain: Boolean) : AGObject() {
     fun readBitmap(bmp: Bitmap32) = ag.readColor(bmp)
     fun readDepth(width: Int, height: Int, out: FloatArray): Unit = ag.readDepth(width, height, out)
 
-    override fun toString(): String = "GlRenderBuffer($width, $height)"
+    override fun toString(): String = "GlFrameBuffer($width, $height)"
 }
 
 data class AGConfig(val antialiasHint: Boolean = true)

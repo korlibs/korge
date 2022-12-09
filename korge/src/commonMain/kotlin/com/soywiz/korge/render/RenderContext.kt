@@ -75,7 +75,7 @@ class RenderContext constructor(
     private val tempMat3d = Matrix3D()
 
     fun updateStandardUniforms() {
-        //println("updateStandardUniforms: ag.currentSize(${ag.currentWidth}, ${ag.currentHeight}) : ${ag.currentRenderBuffer}")
+        //println("updateStandardUniforms: ag.currentSize(${ag.currentWidth}, ${ag.currentHeight}) : ${ag.currentFrameBuffer}")
         if (flipRenderTexture && ag.isRenderingToTexture) {
             projMat.setToOrtho(tempRect.setBounds(0, ag.currentHeight, ag.currentWidth, 0), -1f, 1f)
         } else {
@@ -250,7 +250,7 @@ class RenderContext constructor(
         render: (AGFrameBuffer) -> Unit,
     ) {
         flush()
-        ag.setRenderBufferTemporally(frameBuffer) {
+        ag.setFrameBufferTemporally(frameBuffer) {
             useBatcher { batch ->
                 val oldScissors = batch.scissor
                 batch.scissor = AGScissor(0, 0, frameBuffer.width, frameBuffer.height)
