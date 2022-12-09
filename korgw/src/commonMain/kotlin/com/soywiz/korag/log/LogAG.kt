@@ -196,15 +196,6 @@ open class LogBaseAG(
 		override fun toString(): String = "Texture[$id]"
 	}
 
-	inner class LogBuffer(val id: Int) : AGBuffer(this) {
-		val logmem: com.soywiz.kmem.Buffer? get() = mem
-		override fun afterSetMem() {
-            super.afterSetMem()
-            log("$this.afterSetMem(mem[${mem!!.size}])", LogBaseAG.Kind.BUFFER)
-        }
-		override fun toString(): String = "Buffer[$id]"
-	}
-
 	inner class LogFrameBuffer(val id: Int, isMain: Boolean) : AGFrameBuffer(this@LogBaseAG, isMain) {
         override fun setSize(x: Int, y: Int, width: Int, height: Int, fullWidth: Int, fullHeight: Int) {
             super.setSize(x, y, width, height, fullWidth, fullHeight)
@@ -226,11 +217,10 @@ open class LogBaseAG(
 	override fun createTexture(premultiplied: Boolean, targetKind: AGTextureTargetKind): AGTexture =
 		LogTexture(textureId++, premultiplied).apply { log("createTexture():$id", Kind.TEXTURE) }
 
-	override fun createBuffer(): AGBuffer = LogBuffer(bufferId++).apply { log("createBuffer():$id", Kind.BUFFER) }
 
     data class VertexAttributeEx(val index: Int, val attribute: Attribute, val pos: Int, val data: AGVertexData) {
         val layout = data.layout
-        val buffer = data.buffer as LogBuffer
+        val buffer = data.buffer
     }
 
     class ShaderInfo(val shader: Shader, val id: Int, val code: String) {
@@ -254,14 +244,13 @@ open class LogBaseAG(
         else -> this
     }
 
-    override fun disposeTemporalPerFrameStuff() = log("disposeTemporalPerFrameStuff()", Kind.DISPOSE)
 	override fun createFrameBuffer(): AGFrameBuffer =
 		LogFrameBuffer(renderBufferId++, isMain = false).apply { log("createRenderBuffer():$id", Kind.FRAME_BUFFER) }
 
     override fun createMainFrameBuffer(): AGFrameBuffer =
         LogFrameBuffer(renderBufferId++, isMain = true).apply { log("createMainRenderBuffer():$id", Kind.FRAME_BUFFER) }
 
-    override fun flipInternal() = log("flipInternal()", Kind.FLIP)
+    override fun flip() = log("flip()", Kind.FLIP)
 	override fun readColor(bitmap: Bitmap32, x: Int, y: Int) = log("$this.readBitmap($bitmap, $x, $y)", Kind.READ)
 	override fun readDepth(width: Int, height: Int, out: FloatArray) = log("$this.readDepth($width, $height, $out)", Kind.READ)
 }

@@ -756,12 +756,6 @@ interface AGContainer {
     fun repaint(): Unit
 }
 
-@KoragExperimental
-enum class AGTarget {
-    DISPLAY,
-    OFFSCREEN
-}
-
 /** List<VertexData> -> VAO */
 @JvmInline
 value class AGVertexArrayObject(
@@ -770,11 +764,11 @@ value class AGVertexArrayObject(
     constructor(vararg datas: AGVertexData) : this(fastArrayListOf(*datas))
 }
 
-data class AGVertexData constructor(
-    var _buffer: AGBuffer?,
-    var layout: VertexLayout = VertexLayout()
+data class AGVertexData(
+    var layout: VertexLayout = VertexLayout(),
+    val buffer: AGBuffer = AGBuffer(),
 ) {
-    val buffer: AGBuffer get() = _buffer!!
+    constructor(vararg attributes: Attribute, layoutSize: Int? = null) : this(VertexLayout(*attributes, layoutSize = layoutSize))
 }
 
 interface AGCommandExecutor {
@@ -842,7 +836,7 @@ data class AGBatch(
     var frameBuffer: AGFrameBufferBase,
     var frameBufferInfo: AGFrameBufferInfo,
     // Vertex & Index data
-    var vertexData: AGVertexArrayObject = AGVertexArrayObject(AGVertexData(null)),
+    var vertexData: AGVertexArrayObject = AGVertexArrayObject(AGVertexData()),
     var indices: AGBuffer? = null,
     var indexType: AGIndexType = AGIndexType.USHORT,
     // Program & Uniforms

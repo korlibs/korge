@@ -121,10 +121,10 @@ class BatchBuilder2D constructor(
 
 	init { logger.trace { "BatchBuilder2D[3]" } }
 
-	private val vertexBuffer = ag.createBuffer()
-    private val texIndexVertexBuffer = ag.createBuffer()
-    private val texWrapVertexBuffer = ag.createBuffer()
-	private val indexBuffer = ag.createBuffer()
+	private val vertexBuffer = AGBuffer()
+    private val texIndexVertexBuffer = AGBuffer()
+    private val texWrapVertexBuffer = AGBuffer()
+	private val indexBuffer = AGBuffer()
 
 	init { logger.trace { "BatchBuilder2D[4]" } }
 
@@ -869,9 +869,9 @@ class BatchBuilder2D constructor(
     }
 
     private val vertexData = AGVertexArrayObject(
-        AGVertexData(vertexBuffer, LAYOUT),
-        AGVertexData(texIndexVertexBuffer, LAYOUT_TEX_INDEX),
-        AGVertexData(texWrapVertexBuffer, LAYOUT_WRAP),
+        AGVertexData(LAYOUT, vertexBuffer),
+        AGVertexData(LAYOUT_TEX_INDEX, texIndexVertexBuffer),
+        AGVertexData(LAYOUT_WRAP, texWrapVertexBuffer),
     )
 
     fun updateStandardUniforms() {

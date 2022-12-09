@@ -16,10 +16,7 @@ class AgBufferManager(
 ) {
     private val buffers = FastIdentityMap<AgCachedBuffer, AGBuffer>()
     private val referencedBuffersSinceGC = AgFastSet<AgCachedBuffer>()
-    private val bufferPool = Pool {
-        //println("CREATE BUFFER")
-        ag.createBuffer()
-    }
+    private val bufferPool = Pool { AGBuffer() }
 
     fun getBuffer(cached: AgCachedBuffer): AGBuffer {
         referencedBuffersSinceGC.add(cached)

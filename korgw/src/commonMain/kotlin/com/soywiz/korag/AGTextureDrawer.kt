@@ -5,9 +5,9 @@ import com.soywiz.korag.shader.*
 
 class AGTextureDrawer(val ag: AG) {
     val VERTEX_COUNT = 4
-    val vertices = ag.createBuffer()
+    val vertices = AGBuffer()
     val vertexLayout = VertexLayout(DefaultShaders.a_Pos, DefaultShaders.a_Tex)
-    val vertexData = AGVertexArrayObject(AGVertexData(vertices, vertexLayout))
+    val vertexData = AGVertexArrayObject(AGVertexData(vertexLayout, vertices))
     val verticesData = Buffer(VERTEX_COUNT * vertexLayout.totalSize)
     val program = Program(VertexShader {
         DefaultShaders {

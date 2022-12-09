@@ -38,19 +38,16 @@ abstract class AG() : AGFeatures, AGCommandExecutor, Extra by Extra.Mixin() {
         const val defaultPixelsPerInch : Double = 96.0
     }
 
+    var contextVersion: Int = 0
+        private set
+
     open fun contextLost() {
         Console.info("AG.contextLost()", this)
         contextVersion++
         //printStackTrace("AG.contextLost")
     }
 
-    open val maxTextureSize = Size(2048, 2048)
-
     open fun beforeDoRender() {
-    }
-
-    open fun offscreenRendering(callback: () -> Unit) {
-        callback()
     }
 
     fun resized(width: Int, height: Int) {
@@ -75,8 +72,6 @@ abstract class AG() : AGFeatures, AGCommandExecutor, Extra by Extra.Mixin() {
     val currentWidth: Int get() = currentFrameBuffer?.width ?: mainFrameBuffer.width
     val currentHeight: Int get() = currentFrameBuffer?.height ?: mainFrameBuffer.height
 
-    var contextVersion: Int = 0
-
     //protected fun setViewport(v: IntArray) = setViewport(v[0], v[1], v[2], v[3])
 
     var createdTextureCount = 0
@@ -86,24 +81,12 @@ abstract class AG() : AGFeatures, AGCommandExecutor, Extra by Extra.Mixin() {
     private val texturesCount: Int get() = textures.size
     private val texturesMemory: ByteUnits get() = ByteUnits.fromBytes(textures.sumOf { it.estimatedMemoryUsage.bytesLong })
 
-    internal val buffers = LinkedHashSet<AGBuffer>()
-    private val buffersCount: Int get() = buffers.size
-    private val buffersMemory: ByteUnits get() = ByteUnits.fromBytes(buffers.sumOf { it.estimatedMemoryUsage.bytesLong })
-
-    val dummyTexture by lazy { createTexture() }
-
     fun createTexture(): AGTexture = createTexture(premultiplied = true)
     fun createTexture(bmp: Bitmap, mipmaps: Boolean = false): AGTexture = createTexture(bmp.premultiplied).upload(bmp, mipmaps)
     @Deprecated("This will copy the data")
     fun createTexture(bmp: BitmapSlice<Bitmap>, mipmaps: Boolean = false): AGTexture = createTexture(bmp.premultiplied).upload(bmp, mipmaps)
     fun createTexture(bmp: Bitmap, mipmaps: Boolean = false, premultiplied: Boolean = true): AGTexture = createTexture(premultiplied).upload(bmp, mipmaps)
     open fun createTexture(premultiplied: Boolean, targetKind: AGTextureTargetKind = AGTextureTargetKind.TEXTURE_2D): AGTexture = AGTexture(this, premultiplied, targetKind)
-    open fun createBuffer(): AGBuffer = AGBuffer(this)
-
-    fun createVertexData(vararg attributes: Attribute, layoutSize: Int? = null) = AGVertexData(createBuffer(), VertexLayout(*attributes, layoutSize = layoutSize))
-    fun createBuffer(data: Buffer) = createBuffer().apply { upload(data) }
-    fun createBuffer(data: ShortArray, offset: Int = 0, length: Int = data.size - offset) = createBuffer().apply { upload(data, offset, length) }
-    fun createBuffer(data: FloatArray, offset: Int = 0, length: Int = data.size - offset) = createBuffer().apply { upload(data, offset, length) }
 
     fun drawV2(
         frameBuffer: AGFrameBuffer,
@@ -170,20 +153,12 @@ abstract class AG() : AGFeatures, AGCommandExecutor, Extra by Extra.Mixin() {
         return useExternalSampler
     }
 
-    open fun disposeTemporalPerFrameStuff() = Unit
-
     internal val allFrameBuffers = LinkedHashSet<AGFrameBufferBase>()
     private val frameBufferCount: Int get() = allFrameBuffers.size
     private val frameBuffersMemory: ByteUnits get() = ByteUnits.fromBytes(allFrameBuffers.sumOf { it.estimatedMemoryUsage.bytesLong })
 
-    @KoragExperimental
-    var agTarget = AGTarget.DISPLAY
-
     val mainFrameBuffer: AGFrameBuffer by lazy {
-        when (agTarget) {
-            AGTarget.DISPLAY -> createMainFrameBuffer()
-            AGTarget.OFFSCREEN -> createFrameBuffer()
-        }
+        createMainFrameBuffer()
     }
 
     var lastRenderContextId = 0
@@ -195,8 +170,6 @@ abstract class AG() : AGFeatures, AGCommandExecutor, Extra by Extra.Mixin() {
 
     open fun flip() {
     }
-
-    open fun flipInternal() = Unit
 
     open fun startFrame() {
     }
@@ -272,8 +245,6 @@ abstract class AG() : AGFeatures, AGCommandExecutor, Extra by Extra.Mixin() {
 
     //////////////
 
-    val flipRenderTexture = true
-
     val textureDrawer by lazy { AGTextureDrawer(this) }
     fun drawTexture(frameBuffer: AGFrameBuffer, tex: AGTexture) {
         textureDrawer.draw(frameBuffer, tex, -1f, +1f, +1f, -1f)
@@ -292,15 +263,10 @@ abstract class AG() : AGFeatures, AGCommandExecutor, Extra by Extra.Mixin() {
     internal var programCount = 0
 
     fun getStats(out: AGStats = stats): AGStats {
-        out.texturesMemory = this.texturesMemory
-        out.texturesCount = this.texturesCount
-        out.buffersMemory = this.buffersMemory
-        out.buffersCount = this.buffersCount
-        out.frameBuffersMemory = this.frameBuffersMemory
-        out.frameBuffersCount = this.frameBufferCount
-        out.texturesCreated = this.createdTextureCount
-        out.texturesDeleted = this.deletedTextureCount
-        out.programCount = this.programCount
+        readStats(out)
         return out
+    }
+
+    protected open fun readStats(out: AGStats) {
     }
 }

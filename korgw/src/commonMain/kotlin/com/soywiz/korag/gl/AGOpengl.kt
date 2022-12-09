@@ -4,6 +4,7 @@ import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
 import com.soywiz.kgl.*
 import com.soywiz.kmem.*
+import com.soywiz.kmem.unit.*
 import com.soywiz.korag.*
 import com.soywiz.korag.shader.*
 import com.soywiz.korag.shader.gl.*
@@ -20,8 +21,6 @@ class AGOpengl(val gl: KmlGl) : AG() {
     override val parentFeatures: AGFeatures get() = gl
 
     override fun flip() {
-        disposeTemporalPerFrameStuff()
-        flipInternal()
         finish()
     }
 
@@ -299,6 +298,7 @@ class AGOpengl(val gl: KmlGl) : AG() {
         gl.bindBuffer(target.toGl(), bufferInfo.id)
         buffer.update {
             val mem = buffer.mem ?: Buffer(0)
+            bufferInfo.estimatedBytes = mem.sizeInBytes
             gl.bufferData(target.toGl(), mem.sizeInBytes, mem, KmlGl.STATIC_DRAW)
         }
     }
@@ -762,4 +762,9 @@ class AGOpengl(val gl: KmlGl) : AG() {
 
     internal var renderThreadId: Long = -1L
     internal var renderThreadName: String? = null
+
+
+    override fun readStats(out: AGStats) {
+        glGlobalState.readStats(out)
+    }
 }

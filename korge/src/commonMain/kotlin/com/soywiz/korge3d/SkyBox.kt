@@ -176,7 +176,7 @@ class SkyBox(
                     .translate(center)
                 ctx.ag.drawV2(
                     ctx.rctx.currentFrameBuffer,
-                    vertexData = AGVertexArrayObject(AGVertexData(vertexBuffer, layout)),
+                    vertexData = AGVertexArrayObject(AGVertexData(layout, vertexBuffer)),
                     type = AGDrawType.TRIANGLES,
                     program = skyBoxProgram,
                     vertexCount = 36,

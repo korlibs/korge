@@ -3,12 +3,19 @@ package com.soywiz.korag.gl
 import com.soywiz.kds.*
 import com.soywiz.kds.lock.*
 import com.soywiz.kgl.*
+import com.soywiz.kmem.unit.*
 import com.soywiz.korag.*
 import com.soywiz.korag.AGNativeObject
 
 class GLGlobalState(val gl: KmlGl, val ag: AG) {
+    internal val buffers = mutableSetOf<GLBuffer>()
     internal val objectsToDeleteLock = Lock()
     internal val objectsToDelete = fastArrayListOf<GLBaseObject>()
+
+    fun readStats(out: AGStats) {
+        out.buffersCount = buffers.size
+        out.buffersMemory = ByteUnits.fromBytes(buffers.sumOf { it.estimatedBytes })
+    }
 }
 
 internal class GLBaseProgram(globalState: GLGlobalState, val programInfo: GLProgramInfo) : GLBaseObject(globalState) {
@@ -34,7 +41,12 @@ internal open class GLBaseObject(val globalState: GLGlobalState) : AGNativeObjec
 internal fun AGBuffer.gl(state: GLGlobalState): GLBuffer = this.createOnce(state) { GLBuffer(state) }
 internal class GLBuffer(state: GLGlobalState) : GLBaseObject(state) {
     var id = gl.genBuffer()
+    var estimatedBytes: Int = 0
+    init {
+        globalState.buffers += this
+    }
     override fun delete() {
+        globalState.buffers -= this
         gl.deleteBuffer(id)
         id = -1
     }

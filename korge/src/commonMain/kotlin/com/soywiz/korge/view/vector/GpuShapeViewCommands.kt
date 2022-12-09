@@ -129,9 +129,10 @@ class GpuShapeViewCommands {
                     val vertices = AGVertexArrayObject(
                         fastArrayListOf(
                             AGVertexData(
+                                GpuShapeViewPrograms.LAYOUT_POS_TEX_FILL_DIST,
                                 ctx.getBuffer(
                                     vertices
-                                ), GpuShapeViewPrograms.LAYOUT_POS_TEX_FILL_DIST
+                                ),
                             )
                         )
                     )

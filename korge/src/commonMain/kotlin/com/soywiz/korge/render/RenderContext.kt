@@ -206,9 +206,7 @@ class RenderContext constructor(
     @KorgeInternal
     val batch = BatchBuilder2D(this, batchMaxQuads)
 
-    val dynamicVertexBufferPool = Pool { ag.createBuffer() }
-    val dynamicVertexDataPool = Pool { ag.createVertexData() }
-    val dynamicIndexBufferPool = Pool { ag.createBuffer() }
+    val dynamicVertexBufferPool = Pool { AGBuffer() }
 
     @OptIn(KorgeInternal::class)
     inline fun useBatcher(block: (BatchBuilder2D) -> Unit) = batch.use(block)

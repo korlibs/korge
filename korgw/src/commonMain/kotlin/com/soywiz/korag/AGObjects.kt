@@ -28,23 +28,8 @@ open class AGObject : Closeable {
     }
 }
 
-open class AGBuffer constructor(val ag: AG) : AGObject() {
-    var estimatedMemoryUsage: ByteUnits = ByteUnits.fromBytes(0)
-    var dirty: Boolean = true
+class AGBuffer : AGObject() {
     internal var mem: Buffer? = null
-
-    init {
-        ag.buffers += this
-    }
-
-    override fun close() {
-        super.close()
-        ag.buffers -= this
-    }
-
-    open fun afterSetMem() {
-        estimatedMemoryUsage = ByteUnits.fromBytes(mem?.sizeInBytes ?: 0)
-    }
 
     fun upload(data: ByteArray, offset: Int = 0, length: Int = data.size - offset): AGBuffer = upload(Int8Buffer(data, offset, length).buffer)
     fun upload(data: FloatArray, offset: Int = 0, length: Int = data.size - offset): AGBuffer = upload(Float32Buffer(data, offset, length).buffer)
@@ -53,10 +38,11 @@ open class AGBuffer constructor(val ag: AG) : AGObject() {
     fun upload(data: Buffer, offset: Int, length: Int = data.size - offset): AGBuffer = upload(data.sliceWithSize(offset, length))
     fun upload(data: Buffer): AGBuffer {
         mem = data.clone()
-        afterSetMem()
         markAsDirty()
         return this
     }
+
+    override fun toString(): String = "AGBuffer(${mem?.sizeInBytes ?: 0})"
 }
 
 data class AGTextureUnit constructor(

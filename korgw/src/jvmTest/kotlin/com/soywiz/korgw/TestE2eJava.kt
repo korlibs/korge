@@ -39,7 +39,7 @@ class TestE2eJava {
                 gameWindow.onRenderEvent {
                     try {
                         ag.clear(ag.mainFrameBuffer, Colors.DARKGREY)
-                        val vertices = ag.createBuffer(floatArrayOf(
+                        val vertices = AGBuffer().upload(floatArrayOf(
                             -1f, -1f,
                             -1f, +1f,
                             +1f, +1f
@@ -47,7 +47,7 @@ class TestE2eJava {
                         ag.drawV2(
                             //ctx.rctx.currentFrameBuffer,
                             ag.mainFrameBuffer,
-                            AGVertexArrayObject(AGVertexData(vertices, DefaultShaders.LAYOUT_DEBUG)),
+                            AGVertexArrayObject(AGVertexData(DefaultShaders.LAYOUT_DEBUG, vertices)),
                             program = DefaultShaders.PROGRAM_DEBUG,
                             type = AGDrawType.TRIANGLES,
                             vertexCount = 3,
