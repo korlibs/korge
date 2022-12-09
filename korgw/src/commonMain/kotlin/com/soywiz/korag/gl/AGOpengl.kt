@@ -135,7 +135,7 @@ abstract class AGOpengl(val checked: Boolean = false) : AG() {
         val nprogram: GLBaseProgram = map.getOrPut(program) {
             GLBaseProgram(glGlobalState, GLShaderCompiler.programCreate(
                 gl,
-                this.config.copy(programConfig = config),
+                this.glslConfig.copy(programConfig = config),
                 program, debugName = program.name
             ))
         }
@@ -225,7 +225,7 @@ abstract class AGOpengl(val checked: Boolean = false) : AG() {
         readPixels(0, 0, bitmap.width, bitmap.height, bitmap.data, AGReadKind.STENCIL)
     }
 
-    val config: GlslConfig by lazy {
+    val glslConfig: GlslConfig by lazy {
         GlslConfig(
             gles = gl.gles,
             android = gl.android,

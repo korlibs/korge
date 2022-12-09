@@ -27,7 +27,7 @@ fun jsObject(vararg pairs: Pair<String, Any?>): dynamic {
 val korgwCanvasQuery: String? by lazy { window.asDynamic().korgwCanvasQuery.unsafeCast<String?>() }
 val isCanvasCreatedAndHandled get() = korgwCanvasQuery == null
 
-open class AGWebgl(val config: AGConfig, val glDecorator: (KmlGl) -> KmlGl = { it }) : AGOpengl(), AGContainer {
+open class AGWebgl(config: AGConfig, val glDecorator: (KmlGl) -> KmlGl = { it }) : AGOpengl(), AGContainer {
 	override val ag: AG = this
 
     open fun getCanvas(): HTMLCanvasElement {
