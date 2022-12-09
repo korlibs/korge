@@ -609,6 +609,11 @@ interface AGFactory {
 }
 
 open class AGFrameBuffer(val ag: AG, val isMain: Boolean) : AGObject() {
+    companion object {
+        const val DEFAULT_INITIAL_WIDTH = 128
+        const val DEFAULT_INITIAL_HEIGHT = 128
+    }
+
     var nsamples: Int = 1; protected set
     val hasStencilAndDepth: Boolean get() = hasDepth && hasStencil
     var hasStencil: Boolean = true; protected set
@@ -626,10 +631,10 @@ open class AGFrameBuffer(val ag: AG, val isMain: Boolean) : AGObject() {
 
     var x = 0
     var y = 0
-    var width = AG.FrameBufferConsts.DEFAULT_INITIAL_WIDTH
-    var height = AG.FrameBufferConsts.DEFAULT_INITIAL_HEIGHT
-    var fullWidth = AG.FrameBufferConsts.DEFAULT_INITIAL_WIDTH
-    var fullHeight = AG.FrameBufferConsts.DEFAULT_INITIAL_HEIGHT
+    var width = AGFrameBuffer.DEFAULT_INITIAL_WIDTH
+    var height = AGFrameBuffer.DEFAULT_INITIAL_HEIGHT
+    var fullWidth = AGFrameBuffer.DEFAULT_INITIAL_WIDTH
+    var fullHeight = AGFrameBuffer.DEFAULT_INITIAL_HEIGHT
     private val _scissor = RectangleInt()
     var scissor: RectangleInt? = null
 

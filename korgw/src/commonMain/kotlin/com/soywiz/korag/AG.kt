@@ -223,11 +223,6 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, AGCommandExecutor,
     val frameFrameBuffers = LinkedHashSet<AGFrameBuffer>()
     val frameBuffers = Pool<AGFrameBuffer>() { createFrameBuffer() }
 
-    object FrameBufferConsts {
-        const val DEFAULT_INITIAL_WIDTH = 128
-        const val DEFAULT_INITIAL_HEIGHT = 128
-    }
-
     internal val allFrameBuffers = LinkedHashSet<AGFrameBuffer>()
     private val frameBufferCount: Int get() = allFrameBuffers.size
     private val frameBuffersMemory: ByteUnits get() = ByteUnits.fromBytes(allFrameBuffers.sumOf { it.estimatedMemoryUsage.bytesLong })

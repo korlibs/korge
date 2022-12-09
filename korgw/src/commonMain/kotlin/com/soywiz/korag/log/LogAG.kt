@@ -201,7 +201,7 @@ open class LogBaseAG(
 		override fun toString(): String = "Buffer[$id]"
 	}
 
-	inner class LogFrameBuffer(val id: Int, isMain: Boolean) : AGFrameBuffer(this, isMain) {
+	inner class LogFrameBuffer(val id: Int, isMain: Boolean) : AGFrameBuffer(this@LogBaseAG, isMain) {
         override fun setSize(x: Int, y: Int, width: Int, height: Int, fullWidth: Int, fullHeight: Int) {
             super.setSize(x, y, width, height, fullWidth, fullHeight)
             log("$this.setSize($width, $height)", Kind.FRAME_BUFFER)
