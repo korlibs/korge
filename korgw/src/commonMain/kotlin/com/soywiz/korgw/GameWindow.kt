@@ -268,6 +268,7 @@ interface GameWindowConfig {
 open class GameWindow :
     EventDispatcher.Mixin(),
     DialogInterfaceProvider,
+    DeviceDimensionsProvider,
     CoroutineContext.Element,
     AGWindow,
     GameWindowConfig,

@@ -55,7 +55,7 @@ class Views constructor(
     val gameId: String = "korgegame",
     val settingsFolder: String? = null,
     val batchMaxQuads: Int = BatchBuilder2D.DEFAULT_BATCH_QUADS,
-    val bp: BoundsProvider = BoundsProvider.Base()
+    val bp: BoundsProvider = BoundsProvider.Base(),
 ) :
     Extra by Extra.Mixin(),
     EventDispatcher by EventDispatcher.Mixin(),
@@ -64,22 +64,17 @@ class Views constructor(
     DialogInterfaceProvider by gameWindow,
     Closeable,
     ResourcesContainer,
-    InvalidateNotifier
+    InvalidateNotifier,
+    DeviceDimensionsProvider by gameWindow
 {
     override val views = this
 
     var rethrowRenderError = false
     var forceRenderEveryFrame: Boolean by gameWindow::continuousRenderMode
 
-    private val INCH_TO_CM = 2.54
-
-    val devicePixelRatio: Double get() = ag.devicePixelRatio
-    /** Approximate on iOS */
-    val pixelsPerInch: Double get() = ag.pixelsPerInch
-    /** Approximate on iOS */
-    val pixelsPerCm: Double get() = ag.pixelsPerInch / INCH_TO_CM
     val virtualPixelsPerInch: Double get() = pixelsPerInch / globalToWindowScaleAvg
-    val virtualPixelsPerCm: Double get() = virtualPixelsPerInch / INCH_TO_CM
+    val virtualPixelsPerCm: Double get() = virtualPixelsPerInch / DeviceDimensionsProvider.INCH_TO_CM
+
 
     val keys get() = input.keys
 
@@ -106,7 +101,7 @@ class Views constructor(
     var name: String? = null
     var currentVfs: VfsFile = resourcesVfs
     var imageFormats = RegisteredImageFormats
-	val renderContext = RenderContext(ag, this, stats, coroutineContext, batchMaxQuads)
+	val renderContext = RenderContext(ag, this, gameWindow, stats, coroutineContext, batchMaxQuads)
 	@KorgeDeprecated val agBitmapTextureManager get() = renderContext.agBitmapTextureManager
     @KorgeDeprecated val agBufferManager get() = renderContext.agBufferManager
 	var clearEachFrame = true

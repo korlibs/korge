@@ -47,7 +47,8 @@ open class KorgeAndroidView @JvmOverloads constructor(
         agOpenGl = null
         cleanUpResourcesVfs()
 
-        findViewTreeLifecycleOwner()?.lifecycleScope?.launch {
+        //findViewTreeLifecycleOwner()?.lifecycleScope?.launch { // @TODO: Not available in dependencies. Check if we can somehow get this other way.
+        CoroutineScope(Dispatchers.Main).launch {
             mGLView?.let { removeView(it) }
         }
 

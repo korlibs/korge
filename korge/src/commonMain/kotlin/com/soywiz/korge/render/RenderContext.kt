@@ -10,6 +10,7 @@ import com.soywiz.korag.shader.Uniform
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.stat.*
 import com.soywiz.korge.view.*
+import com.soywiz.korgw.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korio.async.*
@@ -39,11 +40,18 @@ class RenderContext constructor(
     /** The Accelerated Graphics object that allows direct rendering */
 	val ag: AG,
 	val bp: BoundsProvider = BoundsProvider.Base(),
+    val deviceDimensionsProvider: DeviceDimensionsProvider = (bp as? DeviceDimensionsProvider?) ?: DeviceDimensionsProvider.DEFAULT,
     /** Object storing all the rendering [Stats] like number of batches, number of vertices etc. */
 	val stats: Stats = Stats(),
 	val coroutineContext: CoroutineContext = EmptyCoroutineContext,
     val batchMaxQuads: Int = BatchBuilder2D.DEFAULT_BATCH_QUADS
-) : Extra by Extra.Mixin(), BoundsProvider by bp, AGFeatures by ag, Closeable {
+) :
+    Extra by Extra.Mixin(),
+    BoundsProvider by bp,
+    AGFeatures by ag,
+    DeviceDimensionsProvider by deviceDimensionsProvider,
+    Closeable
+{
     val projectionMatrixTransform = Matrix()
     val projectionMatrixTransformInv = Matrix()
     private val projMat: Matrix3D = Matrix3D()
@@ -187,7 +195,7 @@ class RenderContext constructor(
     var debugExtraFontScale : Double = 1.0
     var debugExtraFontColor : RGBA = Colors.WHITE
 
-    val debugOverlayScale: Double get() = kotlin.math.round(ag.computedPixelRatio * debugExtraFontScale).coerceAtLeast(1.0)
+    val debugOverlayScale: Double get() = kotlin.math.round(computedPixelRatio * debugExtraFontScale).coerceAtLeast(1.0)
 
     var stencilIndex: Int = 0
 

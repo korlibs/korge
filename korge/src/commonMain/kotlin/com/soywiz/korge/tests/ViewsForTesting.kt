@@ -39,7 +39,8 @@ open class ViewsForTesting(
         override fun now(): DateTime = time
     }
 	val dispatcher = FastGameWindowCoroutineDispatcher()
-    class TestGameWindow(initialSize: SizeInt, val dispatcher: FastGameWindowCoroutineDispatcher) : GameWindowLog() {
+    inner class TestGameWindow(initialSize: SizeInt, val dispatcher: FastGameWindowCoroutineDispatcher) : GameWindowLog() {
+        override val devicePixelRatio: Double get() = this@ViewsForTesting.devicePixelRatio
         override var width: Int = initialSize.width
         override var height: Int = initialSize.height
         override val coroutineDispatcher = dispatcher
@@ -53,7 +54,6 @@ open class ViewsForTesting(
 
     open fun createAg(): AG {
         return object : LogAG(windowSize.width, windowSize.height) {
-            override val devicePixelRatio: Double get() = this@ViewsForTesting.devicePixelRatio
             override fun log(str: String, kind: Kind) {
                 if (this@ViewsForTesting.log && filterLogDraw(str, kind)) {
                     super.log(str, kind)

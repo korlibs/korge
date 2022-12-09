@@ -11,6 +11,7 @@ import com.soywiz.korim.format.*
 import com.soywiz.korim.format.ns.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.Size
 import kotlinx.cinterop.*
 import kotlinx.coroutines.*
 import platform.AppKit.*
@@ -472,6 +473,29 @@ class MyDefaultGameWindow : GameWindow() {
     }
 
     override val ag: AG = MacAGNative(window)
+
+    override val devicePixelRatio: Double
+        get() {
+            //return NSScreen.mainScreen?.backingScaleFactor?.toDouble() ?: field
+            return window.backingScaleFactor
+        }
+
+    override val pixelsPerInch: Double
+        get() {
+            val screen = window.screen ?: return 96.0
+            val screenSizeInPixels = screen.visibleFrame.useContents { Size(size.width, size.height) }
+            val screenSizeInMillimeters = CGDisplayScreenSize(((screen.deviceDescription["NSScreenNumber"]) as NSNumber).unsignedIntValue).useContents { Size(width, height) }
+
+            val dpmm = screenSizeInPixels.width / screenSizeInMillimeters.width
+            val dpi = dpmm / 0.0393701
+
+            //println("screenSizeInPixels=$screenSizeInPixels")
+            //println("screenSizeInMillimeters=$screenSizeInMillimeters")
+            //println("dpmm=$dpmm")
+            //println("dpi=$dpi")
+
+            return dpi // 1 millimeter -> 0.0393701 inches
+        }
 
     //override val width: Int get() = window.frame.width.toInt()
     //override val height: Int get() = window.frame.height.toInt()

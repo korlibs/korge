@@ -70,7 +70,7 @@ open class CachedContainer(
 
         val renderScale = when (ctx.views?.gameWindow?.quality) {
             GameWindow.Quality.PERFORMANCE -> 1.0
-            else -> ctx.ag.devicePixelRatio
+            else -> ctx.devicePixelRatio
         }
         //val renderScale = 1.0
 

@@ -413,6 +413,8 @@ open class IosGameWindow(
 
     override val ag: AG = IosAGNative()
 
+    override val pixelsPerInch: Double get() = UIScreen.mainScreen.scale.toDouble() * 160.0
+
     //override var fps: Int get() = 60; set(value) = Unit
     //override var title: String get() = ""; set(value) = Unit
     //override val width: Int get() = 512

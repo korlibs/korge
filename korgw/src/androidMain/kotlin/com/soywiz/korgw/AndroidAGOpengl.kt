@@ -4,7 +4,7 @@ import android.content.*
 import com.soywiz.kgl.*
 import com.soywiz.korag.gl.*
 
-class AndroidAGOpengl(
+class AndroidAGOpengl constructor(
     val androidContext: Context,
     val agCheck: Boolean = false,
     val mGLView: (() -> KorgwSurfaceView?)? = null,
@@ -16,9 +16,6 @@ class AndroidAGOpengl(
     override fun repaint() {
         mGLView?.invoke()?.invalidate()
     }
-
-    // @TODO: Cache somehow?
-    override val pixelsPerInch: Double get() = androidContext.resources.displayMetrics.xdpi.toDouble()
 
     init {
         println("KorgwActivityAGOpengl: Created ag $this for ${this@AndroidAGOpengl} with gl=$gl")

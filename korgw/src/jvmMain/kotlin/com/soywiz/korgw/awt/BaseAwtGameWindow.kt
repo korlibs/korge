@@ -4,6 +4,7 @@ import com.soywiz.kds.*
 import com.soywiz.kgl.*
 import com.soywiz.klock.*
 import com.soywiz.kmem.*
+import com.soywiz.korag.*
 import com.soywiz.korev.*
 import com.soywiz.korgw.*
 import com.soywiz.korgw.internal.MicroDynamic
@@ -32,6 +33,37 @@ import kotlin.system.*
 
 abstract class BaseAwtGameWindow(val config: GameWindowCreationConfig) : GameWindow(), ClipboardOwner {
     abstract override val ag: AwtAg
+
+
+    private val localGraphicsEnvironment : GraphicsEnvironment by lazy(LazyThreadSafetyMode.PUBLICATION) {
+        GraphicsEnvironment.getLocalGraphicsEnvironment()
+    }
+
+    override val devicePixelRatio: Double get() {
+        if (GraphicsEnvironment.isHeadless()) {
+            return super.devicePixelRatio
+        }
+        // transform
+        // https://stackoverflow.com/questions/20767708/how-do-you-detect-a-retina-display-in-java
+        val config = component.graphicsConfiguration
+            ?: localGraphicsEnvironment.defaultScreenDevice.defaultConfiguration
+        return config.defaultTransform.scaleX
+    }
+
+    //override val pixelsPerInch: Double by lazy(LazyThreadSafetyMode.PUBLICATION) {
+    override val pixelsPerInch: Double get() {
+        if (GraphicsEnvironment.isHeadless()) {
+            return AG.defaultPixelsPerInch
+        }
+        // maybe this is not just windows specific :
+        // https://stackoverflow.com/questions/32586883/windows-scaling
+        // somehow this value is not update when you change the scaling in the windows settings while the jvm is running :(
+        return Toolkit.getDefaultToolkit().screenResolution.toDouble()
+    }
+
+    override val pixelsPerLogicalInchRatio: Double by lazy(LazyThreadSafetyMode.PUBLICATION) {
+        pixelsPerInch / AG.defaultPixelsPerInch
+    }
 
     //val fvsync get() = vsync
     val fvsync get() = false

@@ -22,7 +22,7 @@ import kotlin.jvm.*
 
 open class SimpleAGOpengl<TKmlGl : KmlGl>(override val gl: TKmlGl, override val nativeComponent: Any = Unit, checked: Boolean = false) : AGOpengl(checked)
 
-abstract class AGOpengl(checked: Boolean = false) : AG(checked) {
+abstract class AGOpengl(val checked: Boolean = false) : AG() {
     class ShaderException(val str: String, val error: String, val errorInt: Int, val gl: KmlGl, val debugName: String?, val type: Int) :
         RuntimeException("Error Compiling Shader : $debugName type=$type : ${errorInt.hex} : '$error' : source='$str', gl.versionInt=${gl.versionInt}, gl.versionString='${gl.versionString}', gl=$gl")
 

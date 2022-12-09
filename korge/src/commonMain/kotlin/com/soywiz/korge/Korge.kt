@@ -319,8 +319,8 @@ object Korge {
             return views.windowToGlobalCoords(x, y, out)
         }
 
-        fun getRealX(x: Double, scaleCoords: Boolean): Double = if (scaleCoords) x * ag.devicePixelRatio else x
-        fun getRealY(y: Double, scaleCoords: Boolean): Double = if (scaleCoords) y * ag.devicePixelRatio else y
+        fun getRealX(x: Double, scaleCoords: Boolean): Double = if (scaleCoords) x * views.devicePixelRatio else x
+        fun getRealY(y: Double, scaleCoords: Boolean): Double = if (scaleCoords) y * views.devicePixelRatio else y
 
         /*
         fun updateTouch(id: Int, x: Double, y: Double, start: Boolean, end: Boolean) {

@@ -81,16 +81,9 @@ actual fun CreateDefaultGameWindow(config: GameWindowCreationConfig): GameWindow
 private val swapIntervalEXT by GLFuncNull<(CPointer<Display>?, GLXDrawable, Int) -> Unit>("swapIntervalEXT")
 
 //class X11Ag(val window: X11GameWindow, override val gl: KmlGl = LogKmlGlProxy(X11KmlGl())) : AGOpengl() {
-class X11AgOpengl(val window: X11GameWindow, override val gl: KmlGl = com.soywiz.kgl.KmlGlNative()) : AGOpengl() {
+class X11AgOpengl constructor(val window: X11GameWindow, override val gl: KmlGl = com.soywiz.kgl.KmlGlNative()) : AGOpengl() {
     override val nativeComponent: Any = window
 
-    override val pixelsPerInch: Double by TimedCache<Double>(0.5.seconds) {
-        val str = X11.XResourceManagerString(window.d)?.toKStringFromUtf8() ?: ""
-        val Xftdpi = str.lines().firstOrNull { it.contains("Xft.dpi") }
-        val dpiInt = Xftdpi?.split(':')?.lastOrNull()?.trim()?.toDoubleOrNull()
-        //println("X11AgOpengl.pixelsPerInch: str=$str, dpiInt=$dpiInt")
-        kotlin.math.max(dpiInt ?: 96.0, 96.0)
-    }
 }
 
 // https://www.khronos.org/opengl/wiki/Tutorial:_OpenGL_3.0_Context_Creation_(GLX)
@@ -154,6 +147,16 @@ class X11GameWindow : EventLoopGameWindow() {
 
     //init { println("X11GameWindow") }
     override val ag: X11AgOpengl by lazy { X11AgOpengl(this) }
+
+
+    override val pixelsPerInch: Double by TimedCache<Double>(0.5.seconds) {
+        val str = X11.XResourceManagerString(this@X11GameWindow.d)?.toKStringFromUtf8() ?: ""
+        val Xftdpi = str.lines().firstOrNull { it.contains("Xft.dpi") }
+        val dpiInt = Xftdpi?.split(':')?.lastOrNull()?.trim()?.toDoubleOrNull()
+        //println("X11AgOpengl.pixelsPerInch: str=$str, dpiInt=$dpiInt")
+        kotlin.math.max(dpiInt ?: 96.0, 96.0)
+    }
+
     override var width: Int = 200; private set
     override var height: Int = 200; private set
     override var title: String = "Korgw"

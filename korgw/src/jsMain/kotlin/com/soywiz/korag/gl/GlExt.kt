@@ -54,15 +54,6 @@ open class AGWebgl(val config: AGConfig, val glDecorator: (KmlGl) -> KmlGl = { i
 	}
 
 	override val nativeComponent: Any = canvas
-	val tDevicePixelRatio get() = window.devicePixelRatio.toDouble()
-	override val devicePixelRatio get() = when {
-		tDevicePixelRatio <= 0.0 -> 1.0
-		tDevicePixelRatio.isNaN() -> 1.0
-		tDevicePixelRatio.isInfinite() -> 1.0
-		else -> tDevicePixelRatio
-	}
-    // @TODO: Improve this: https://gist.github.com/scryptonite/5242987
-    override val pixelsPerInch: Double get() = 96.0 * devicePixelRatio
 
     init {
 		canvas.addEventListener("webglcontextlost", { e ->
