@@ -1,16 +1,12 @@
 package com.soywiz.korag
 
 import com.soywiz.kds.iterators.*
-import com.soywiz.klock.*
 import com.soywiz.klogger.*
 import com.soywiz.kmem.*
 import com.soywiz.kmem.unit.*
 import com.soywiz.korag.gl.*
-import com.soywiz.korag.shader.*
-import com.soywiz.korag.shader.gl.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korio.lang.*
-import kotlin.coroutines.*
 
 internal interface AGNativeObject {
     fun markToDelete()
@@ -68,6 +64,7 @@ data class AGTextureUnit constructor(
     var texture: AGTexture? = null,
     var linear: Boolean = true,
     var trilinear: Boolean? = null,
+    var wrap: AGWrapMode = AGWrapMode.CLAMP_TO_EDGE,
 ) {
     fun set(texture: AGTexture?, linear: Boolean, trilinear: Boolean? = null) {
         this.texture = texture

@@ -13,7 +13,6 @@ import com.soywiz.korag.shader.*
 import com.soywiz.korag.shader.gl.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
-import com.soywiz.korim.color.arraycopy
 import com.soywiz.korio.annotations.KorIncomplete
 import com.soywiz.korio.annotations.KorInternal
 import com.soywiz.korio.async.*
@@ -22,7 +21,6 @@ import com.soywiz.korma.geom.*
 import com.soywiz.krypto.encoding.hex
 import kotlin.contracts.*
 import kotlin.jvm.*
-import kotlin.native.concurrent.SharedImmutable
 
 open class SimpleAGOpengl<TKmlGl : KmlGl>(override val gl: TKmlGl, override val nativeComponent: Any = Unit, checked: Boolean = false) : AGOpengl(checked) {
 
@@ -75,7 +73,7 @@ abstract class AGOpengl(checked: Boolean = false) : AG(checked) {
         return old
     }
 
-    protected val glGlobalState by lazy { GLGlobalState(gl, _globalState) }
+    protected val glGlobalState by lazy { GLGlobalState(gl, this) }
 
     //val queue = Deque<(gl: GL) -> Unit>()
 
@@ -86,7 +84,7 @@ abstract class AGOpengl(checked: Boolean = false) : AG(checked) {
     override fun contextLost() {
         Console.info("AG.contextLost()", this)
         //printStackTrace("AG.contextLost")
-        globalState.contextVersion++
+        contextVersion++
         gl.handleContextLost()
         gl.graphicExtensions // Ensure extensions are available outside the GL thread
     }
@@ -151,7 +149,7 @@ abstract class AGOpengl(checked: Boolean = false) : AG(checked) {
             mask = mask or KmlGl.DEPTH_BUFFER_BIT
         }
         if (clearStencil) {
-            gl.stencilMask(0xFF)
+            gl.stencilMask(-1)
             gl.clearStencil(stencil)
             mask = mask or KmlGl.STENCIL_BUFFER_BIT
         }
@@ -189,42 +187,37 @@ abstract class AGOpengl(checked: Boolean = false) : AG(checked) {
     }
 
     override fun draw(batch: AGBatch) {
-        val instances = batch.instances
-        val program = batch.program
-        val type = batch.drawType
-        val vertexCount = batch.vertexCount
-        val indices = batch.indices
-        val indexType = batch.indexType
-        val offset = batch.drawOffset
-        val blending = batch.blending
-        val uniforms = batch.uniforms
-        val stencilRef = batch.stencilRef
-        val stencilOpFunc = batch.stencilOpFunc
-        val colorMask = batch.colorMask
-        val renderState = batch.depthAndFrontFace
-        val scissor = batch.scissor
-
         //println("SCISSOR: $scissor")
 
         //finalScissor.setTo(0, 0, backWidth, backHeight)
 
-        setScissorState(this, scissor)
+        setScissorState(this, batch.scissor)
 
-        getProgram(program, config = when {
-            uniforms.useExternalSampler() -> ProgramConfig.EXTERNAL_TEXTURE_SAMPLER
+        getProgram(batch.program, config = when {
+            batch.uniforms.useExternalSampler() -> ProgramConfig.EXTERNAL_TEXTURE_SAMPLER
             else -> ProgramConfig.DEFAULT
         }, use = true)
 
         vaoUse(batch.vertexData)
         try {
-            uniformsSet(uniforms)
-            setState(blending, stencilOpFunc, stencilRef, colorMask, renderState)
+            uniformsSet(batch.uniforms)
+            setBlendingState(batch.blending)
+            setDepthAndFrontFace(batch.depthAndFrontFace)
+            setColorMaskState(batch.colorMask)
+            setStencilState(batch.stencilOpFunc, batch.stencilRef)
+
 
             //val viewport = Buffer(4 * 4)
             //gl.getIntegerv(KmlGl.VIEWPORT, viewport)
             //println("viewport=${viewport.getAlignedInt32(0)},${viewport.getAlignedInt32(1)},${viewport.getAlignedInt32(2)},${viewport.getAlignedInt32(3)}")
 
-            draw(type, vertexCount, offset, instances, if (indices != null) indexType else AGIndexType.NONE, indices)
+            draw(
+                batch.drawType, batch.vertexCount,
+                batch.drawOffset,
+                batch.instances,
+                if (batch.indices != null) batch.indexType else AGIndexType.NONE,
+                batch.indices
+            )
         } finally {
             vaoUnuse(batch.vertexData)
         }
@@ -240,38 +233,24 @@ abstract class AGOpengl(checked: Boolean = false) : AG(checked) {
         readPixels(0, 0, bitmap.width, bitmap.height, bitmap.data, AGReadKind.STENCIL)
     }
 
-    val globalState: AGGlobalState = glGlobalState.agGlobalState
-
-    class FastResources<T : Any>(val create: (id: Int) -> T) {
-        private val resources = arrayListOf<T?>()
-        operator fun get(id: Int): T? = getOrNull(id)
-        fun getOrNull(id: Int): T? = resources.getOrNull(id)
-        fun getOrCreate(id: Int): T = getOrNull(id) ?: create(id).also {
-            while (resources.size <= id) resources.add(null)
-            resources[id] = it
-        }
-        fun tryGetAndDelete(id: Int): T? = getOrNull(id).also { delete(id) }
-        fun delete(id: Int) {
-            if (id < resources.size) resources[id] = null
-        }
+    val config: GlslConfig by lazy {
+        GlslConfig(
+            gles = gl.gles,
+            android = gl.android,
+        )
     }
 
-    val config: GlslConfig = GlslConfig(
-        gles = gl.gles,
-        android = gl.android,
-    )
-
     fun listStart() {
-        if (globalState.renderThreadId == -1L) {
-            globalState.renderThreadId = currentThreadId
-            globalState.renderThreadName = currentThreadName
+        if (renderThreadId == -1L) {
+            renderThreadId = currentThreadId
+            renderThreadName = currentThreadName
             if (currentThreadName?.contains("DefaultDispatcher-worker") == true) {
                 println("DefaultDispatcher-worker!")
                 printStackTrace()
             }
         }
-        if (globalState.renderThreadId != currentThreadId) {
-            println("AGQueueProcessorOpenGL.listStart: CALLED FROM DIFFERENT THREAD! ${globalState.renderThreadName}:${globalState.renderThreadId} != $currentThreadName:$currentThreadId")
+        if (renderThreadId != currentThreadId) {
+            println("AGQueueProcessorOpenGL.listStart: CALLED FROM DIFFERENT THREAD! ${renderThreadName}:${renderThreadId} != $currentThreadName:$currentThreadId")
             printStackTrace()
         }
     }
@@ -299,39 +278,13 @@ abstract class AGOpengl(checked: Boolean = false) : AG(checked) {
         gl.enableDisable(kind.toGl(), enable)
     }
 
-    fun colorMask(red: Boolean, green: Boolean, blue: Boolean, alpha: Boolean) {
-        gl.colorMask(red, green, blue, alpha)
-    }
-
-    fun blendEquation(rgb: AGBlendEquation, a: AGBlendEquation) {
-        gl.blendEquationSeparate(rgb.toGl(), a.toGl())
-    }
-
-    fun blendFunction(srcRgb: AGBlendFactor, dstRgb: AGBlendFactor, srcA: AGBlendFactor, dstA: AGBlendFactor) {
-        gl.blendFuncSeparate(srcRgb.toGl(), dstRgb.toGl(), srcA.toGl(), dstA.toGl())
-    }
-
     fun cullFace(face: AGCullFace) {
         gl.cullFace(face.toGl())
-    }
-
-    fun frontFace(face: AGFrontFace) {
-        gl.frontFace(face.toGl())
-    }
-
-    fun depthFunction(depthTest: AGCompareMode) {
-        gl.depthFunc(depthTest.toGl())
     }
 
     ///////////////////////////////////////
     // PROGRAMS
     ///////////////////////////////////////
-
-    // BUFFERS
-    class BufferInfo(val id: Int) {
-        var glId = 0
-        var cachedVersion = -1
-    }
 
     private fun deletePendingObjects() {
         while (true) {
@@ -392,26 +345,6 @@ abstract class AGOpengl(checked: Boolean = false) : AG(checked) {
                 gl.drawArrays(type.toGl(), offset, vertexCount)
             }
         }
-    }
-
-    ///////////////////////////////////////
-    // UNIFORMS
-    ///////////////////////////////////////
-    fun depthRange(near: Float, far: Float) {
-        gl.depthRangef(near, far)
-    }
-
-    fun stencilFunction(compareMode: AGCompareMode, referenceValue: Int, readMask: Int) {
-        gl.stencilFunc(compareMode.toGl(), referenceValue, readMask)
-    }
-
-    // @TODO: Separate
-    fun stencilOperation(
-        actionOnDepthFail: AGStencilOp,
-        actionOnDepthPassStencilFail: AGStencilOp,
-        actionOnBothPass: AGStencilOp
-    ) {
-        gl.stencilOp(actionOnDepthFail.toGl(), actionOnDepthPassStencilFail.toGl(), actionOnBothPass.toGl())
     }
 
     fun scissor(x: Int, y: Int, width: Int, height: Int) {
@@ -509,8 +442,16 @@ abstract class AGOpengl(checked: Boolean = false) : AG(checked) {
                             VarType.Sampler2D -> AGTextureTargetKind.TEXTURE_2D
                             else -> AGTextureTargetKind.TEXTURE_CUBE_MAP
                         })
-                        textureSetWrap(tex)
-                        textureSetFilter(tex, unit.linear, unit.trilinear ?: unit.linear)
+
+                        gl.texParameteri(tex.implForcedTexTarget.toGl(), KmlGl.TEXTURE_WRAP_S, unit.wrap.toGl())
+                        gl.texParameteri(tex.implForcedTexTarget.toGl(), KmlGl.TEXTURE_WRAP_T, unit.wrap.toGl())
+                        if (tex.implForcedTexTarget.dims >= 3) {
+                            gl.texParameteri(tex.implForcedTexTarget.toGl(), KmlGl.TEXTURE_WRAP_R, unit.wrap.toGl())
+                        }
+
+                        gl.texParameteri(tex.implForcedTexTarget.toGl(), KmlGl.TEXTURE_MIN_FILTER, unit.minFilter())
+                        gl.texParameteri(tex.implForcedTexTarget.toGl(), KmlGl.TEXTURE_MAG_FILTER, unit.magFilter())
+
                     } else {
                         gl.bindTexture(KmlGl.TEXTURE_2D, 0)
                     }
@@ -556,32 +497,25 @@ abstract class AGOpengl(checked: Boolean = false) : AG(checked) {
     }
 
 
-    fun textureSetFilter(tex: AGTexture, linear: Boolean, trilinear: Boolean = linear) {
-        val minFilter = if (tex.mipmaps) {
-            when {
-                linear -> when {
-                    trilinear -> KmlGl.LINEAR_MIPMAP_LINEAR
-                    else -> KmlGl.LINEAR_MIPMAP_NEAREST
-                }
-                else -> when {
-                    trilinear -> KmlGl.NEAREST_MIPMAP_LINEAR
-                    else -> KmlGl.NEAREST_MIPMAP_NEAREST
-                }
+    fun AGTextureUnit.minFilter(): Int = texture.minFilter(linear, trilinear ?: linear)
+    fun AGTextureUnit.magFilter(): Int = texture.magFilter(linear, trilinear ?: linear)
+
+    fun AGTexture?.minFilter(linear: Boolean, trilinear: Boolean = linear): Int = if (this?.mipmaps == true) {
+        when {
+            linear -> when {
+                trilinear -> KmlGl.LINEAR_MIPMAP_LINEAR
+                else -> KmlGl.LINEAR_MIPMAP_NEAREST
             }
-        } else {
-            if (linear) KmlGl.LINEAR else KmlGl.NEAREST
+            else -> when {
+                trilinear -> KmlGl.NEAREST_MIPMAP_LINEAR
+                else -> KmlGl.NEAREST_MIPMAP_NEAREST
+            }
         }
-        val magFilter = if (linear) KmlGl.LINEAR else KmlGl.NEAREST
-
-        gl.texParameteri(tex.implForcedTexTarget.toGl(), KmlGl.TEXTURE_MIN_FILTER, minFilter)
-        gl.texParameteri(tex.implForcedTexTarget.toGl(), KmlGl.TEXTURE_MAG_FILTER, magFilter)
+    } else {
+        if (linear) KmlGl.LINEAR else KmlGl.NEAREST
     }
 
-    fun textureSetWrap(tex: AGTexture) {
-        gl.texParameteri(tex.implForcedTexTarget.toGl(), KmlGl.TEXTURE_WRAP_S, KmlGl.CLAMP_TO_EDGE)
-        gl.texParameteri(tex.implForcedTexTarget.toGl(), KmlGl.TEXTURE_WRAP_T, KmlGl.CLAMP_TO_EDGE)
-        if (tex.implForcedTexTarget.dims >= 3) gl.texParameteri(tex.implForcedTexTarget.toGl(), KmlGl.TEXTURE_WRAP_R, KmlGl.CLAMP_TO_EDGE)
-    }
+    fun AGTexture?.magFilter(linear: Boolean, trilinear: Boolean = linear): Int = if (linear) KmlGl.LINEAR else KmlGl.NEAREST
 
     fun readPixels(x: Int, y: Int, width: Int, height: Int, data: Any, kind: AGReadKind) {
         val bytesPerPixel = when (data) {
@@ -618,11 +552,6 @@ abstract class AGOpengl(checked: Boolean = false) : AG(checked) {
         //for (n in 0 until 800 * 800) data.setInt(n, Colors.RED.value)
         //gl.texImage2D(KmlGl.TEXTURE_2D, 0, KmlGl.RGBA, 800, 800, 0, KmlGl.RGBA, KmlGl.UNSIGNED_BYTE, data)
         //println("COPY_TEX:" + gl.getError())
-    }
-
-    // TEXTURES
-    class TextureInfo(val id: Int) {
-        var glId: Int = -1
     }
 
     fun textureBind(tex: AGTexture?, target: AGTextureTargetKind) {
@@ -835,36 +764,36 @@ abstract class AGOpengl(checked: Boolean = false) : AG(checked) {
     fun setBlendingState(blending: AGBlending? = null) {
         val blending = blending ?: AGBlending.NORMAL
         enableDisable(AGEnable.BLEND, blending.enabled) {
-            blendEquation(blending.eqRGB, blending.eqA)
-            blendFunction(blending.srcRGB, blending.dstRGB, blending.srcA, blending.dstA)
+            gl.blendEquationSeparate(blending.eqRGB.toGl(), blending.eqA.toGl())
+            gl.blendFuncSeparate(blending.srcRGB.toGl(), blending.dstRGB.toGl(), blending.srcA.toGl(), blending.dstA.toGl())
         }
     }
 
-    fun setRenderState(renderState: AGDepthAndFrontFace) {
+    fun setDepthAndFrontFace(renderState: AGDepthAndFrontFace) {
         enableDisable(AGEnable.CULL_FACE, renderState.frontFace != AGFrontFace.BOTH) {
-            frontFace(renderState.frontFace)
+            gl.frontFace(renderState.frontFace.toGl())
         }
 
         gl.depthMask(renderState.depthMask)
-        depthRange(renderState.depthNear, renderState.depthFar)
+        gl.depthRangef(renderState.depthNear, renderState.depthFar)
 
         enableDisable(AGEnable.DEPTH, renderState.depthFunc != AGCompareMode.ALWAYS) {
-            depthFunction(renderState.depthFunc)
+            gl.depthFunc(renderState.depthFunc.toGl())
         }
     }
 
     fun setColorMaskState(colorMask: AGColorMask?) {
-        colorMask(colorMask?.red ?: true, colorMask?.green ?: true, colorMask?.blue ?: true, colorMask?.alpha ?: true)
+        gl.colorMask(colorMask?.red ?: true, colorMask?.green ?: true, colorMask?.blue ?: true, colorMask?.alpha ?: true)
     }
 
     fun setStencilState(stencilOpFunc: AGStencilOpFunc?, stencilRef: AGStencilReference) {
         if (stencilOpFunc != null && stencilOpFunc.enabled) {
             enable(AGEnable.STENCIL)
-            stencilFunction(stencilOpFunc.compareMode, stencilRef.referenceValue, stencilRef.readMask)
-            stencilOperation(
-                stencilOpFunc.actionOnDepthFail,
-                stencilOpFunc.actionOnDepthPassStencilFail,
-                stencilOpFunc.actionOnBothPass
+            gl.stencilFunc(stencilOpFunc.compareMode.toGl(), stencilRef.referenceValue, stencilRef.readMask)
+            gl.stencilOp(
+                stencilOpFunc.actionOnDepthFail.toGl(),
+                stencilOpFunc.actionOnDepthPassStencilFail.toGl(),
+                stencilOpFunc.actionOnBothPass.toGl()
             )
             gl.stencilMask(stencilRef.writeMask)
         } else {
@@ -922,39 +851,20 @@ abstract class AGOpengl(checked: Boolean = false) : AG(checked) {
         }
     }
 
-    fun setState(
-        blending: AGBlending = AGBlending.NORMAL,
-        stencilOpFunc: AGStencilOpFunc = AGStencilOpFunc.DEFAULT,
-        stencilRef: AGStencilReference = AGStencilReference.DEFAULT,
-        colorMask: AGColorMask = AGColorMask.ALL_ENABLED,
-        renderState: AGDepthAndFrontFace = AGDepthAndFrontFace.DEFAULT,
-    ) {
-        setBlendingState(blending)
-        setRenderState(renderState)
-        setColorMaskState(colorMask)
-        setStencilState(stencilOpFunc, stencilRef)
-    }
-
-}
-
-enum class AGEnable {
-    BLEND, CULL_FACE, DEPTH, SCISSOR, STENCIL;
-}
-
-class AGGlobalState(val checked: Boolean = false) {
-    internal var contextVersion = 0
     internal var renderThreadId: Long = -1L
     internal var renderThreadName: String? = null
     //var programIndex = KorAtomicInt(0)
     private val lock = NonRecursiveLock()
-}
 
-@SharedImmutable
-val KmlGl.versionString by Extra.PropertyThis<KmlGl, String> {
-    getString(SHADING_LANGUAGE_VERSION)
-}
+    enum class AGEnable {
+        BLEND, CULL_FACE, DEPTH, SCISSOR, STENCIL;
+    }
 
-@SharedImmutable
-val KmlGl.versionInt by Extra.PropertyThis<KmlGl, Int> {
-    versionString.replace(".", "").trim().toIntOrNull() ?: 100
+    fun AGEnable.toGl(): Int = when (this) {
+        AGEnable.BLEND -> KmlGl.BLEND
+        AGEnable.CULL_FACE -> KmlGl.CULL_FACE
+        AGEnable.DEPTH -> KmlGl.DEPTH_TEST
+        AGEnable.SCISSOR -> KmlGl.SCISSOR_TEST
+        AGEnable.STENCIL -> KmlGl.STENCIL_TEST
+    }
 }

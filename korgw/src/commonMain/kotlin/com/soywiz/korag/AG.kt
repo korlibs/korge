@@ -114,8 +114,7 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, AGCommandExecutor,
     val currentWidth: Int get() = currentRenderBuffer?.width ?: mainRenderBuffer.width
     val currentHeight: Int get() = currentRenderBuffer?.height ?: mainRenderBuffer.height
 
-    protected val _globalState = AGGlobalState(checked)
-    var contextVersion: Int by _globalState::contextVersion
+    var contextVersion: Int = 0
 
     //protected fun setViewport(v: IntArray) = setViewport(v[0], v[1], v[2], v[3])
 

@@ -55,6 +55,13 @@ inline class AGTextureTargetKind(val ordinal: Int) {
     }
 }
 
+inline class AGWrapMode(val ordinal: Int) {
+    companion object {
+        val CLAMP_TO_EDGE = AGWrapMode(0)
+        val REPEAT = AGWrapMode(1)
+        val MIRRORED_REPEAT = AGWrapMode(2)
+    }
+}
 
 /** 2 bits required for encoding */
 inline class AGBlendEquation(val ordinal: Int) {

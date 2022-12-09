@@ -7,7 +7,7 @@ import com.soywiz.korag.*
 import com.soywiz.korag.AGNativeObject
 import com.soywiz.korag.shader.*
 
-class GLGlobalState(val gl: KmlGl, val agGlobalState: AGGlobalState) {
+class GLGlobalState(val gl: KmlGl, val ag: AG) {
     internal val objectsToDeleteLock = Lock()
     internal val objectsToDelete = fastArrayListOf<GLBaseObject>()
 }
@@ -70,8 +70,8 @@ internal class GLTexture(state: GLGlobalState) : GLBaseObject(state) {
 ////////////////
 
 internal fun <T : AGObject, R: AGNativeObject> T.createOnce(state: GLGlobalState, block: (T) -> R): R {
-    if (this._native == null || this._cachedContextVersion != state.agGlobalState.contextVersion) {
-        this._cachedContextVersion = state.agGlobalState.contextVersion
+    if (this._native == null || this._cachedContextVersion != state.ag.contextVersion) {
+        this._cachedContextVersion = state.ag.contextVersion
         this._native = block(this)
     }
     return this._native as R
