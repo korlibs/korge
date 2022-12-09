@@ -14,9 +14,6 @@ import com.soywiz.korgw.x11.*
 import com.soywiz.korim.awt.*
 import com.soywiz.korim.color.*
 import com.soywiz.korio.async.*
-import com.soywiz.korio.file.*
-import com.soywiz.korio.file.std.*
-import com.soywiz.korio.net.URL
 import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 import com.sun.jna.*
@@ -30,7 +27,6 @@ import java.awt.datatransfer.Transferable
 import java.awt.event.*
 import java.awt.event.KeyEvent
 import java.awt.event.MouseEvent
-import java.net.*
 import javax.swing.*
 import kotlin.system.*
 
@@ -223,24 +219,24 @@ abstract class BaseAwtGameWindow(val config: GameWindowCreationConfig) : GameWin
 
             if (component is JFrame) {
                 //println("component.width: ${contentComponent.width}x${contentComponent.height}")
-                ag.mainRenderBuffer.setSize(
+                ag.mainFrameBuffer.setSize(
                     0, 0, (contentComponent.width * factor).toInt(), (contentComponent.height * factor).toInt(),
                 )
             } else {
-                ag.mainRenderBuffer.scissor(scissor)
+                ag.mainFrameBuffer.scissor(scissor)
                 if (viewport != null) {
                     //val window = SwingUtilities.getWindowAncestor(contentComponent)
                     //println("window=${window.width}x${window.height} : factor=$factor")
 
                     val frameOrComponent = (window as? JFrame)?.contentPane ?: windowOrComponent
 
-                    ag.mainRenderBuffer.setSize(
+                    ag.mainFrameBuffer.setSize(
                         viewport.x, viewport.y, viewport.width, viewport.height,
                         (frameOrComponent.width * factor).toInt(),
                         (frameOrComponent.height * factor).toInt(),
                     )
                 } else {
-                    ag.mainRenderBuffer.setSize(
+                    ag.mainFrameBuffer.setSize(
                         0, 0, (component.width * factor).toInt(), (component.height * factor).toInt(),
                     )
                 }
@@ -252,12 +248,12 @@ abstract class BaseAwtGameWindow(val config: GameWindowCreationConfig) : GameWin
                 reshaped = false
                 //println("RESHAPED!")
                 dispatchReshapeEventEx(
-                    ag.mainRenderBuffer.x,
-                    ag.mainRenderBuffer.y,
-                    ag.mainRenderBuffer.width,
-                    ag.mainRenderBuffer.height,
-                    ag.mainRenderBuffer.fullWidth,
-                    ag.mainRenderBuffer.fullHeight,
+                    ag.mainFrameBuffer.x,
+                    ag.mainFrameBuffer.y,
+                    ag.mainFrameBuffer.width,
+                    ag.mainFrameBuffer.height,
+                    ag.mainFrameBuffer.fullWidth,
+                    ag.mainFrameBuffer.fullHeight,
                 )
             }
 

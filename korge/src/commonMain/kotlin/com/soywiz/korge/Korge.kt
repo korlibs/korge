@@ -553,7 +553,7 @@ object Korge {
                 renderBlock(event)
 
             } else {
-                views.ag.doRender {
+                views.renderContext.doRender {
                     if (!renderShown) {
                         //println("!!!!!!!!!!!!! views.gameWindow.addEventListener<RenderEvent>")
                         renderShown = true

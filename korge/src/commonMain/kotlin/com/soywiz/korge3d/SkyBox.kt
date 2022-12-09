@@ -1,6 +1,5 @@
 package com.soywiz.korge3d
 
-import com.soywiz.kds.*
 import com.soywiz.korag.*
 import com.soywiz.korag.shader.FragmentShader
 import com.soywiz.korag.shader.Precision
@@ -155,7 +154,7 @@ class SkyBox(
     }
 
     private val uniformValues = AGUniformValues()
-    private val rs = AGRenderState.DEFAULT.withDepthMask(depthMask = false).withDepthFunc(depthFunc = AGCompareMode.LESS_EQUAL)
+    private val rs = AGDepthAndFrontFace.DEFAULT.withDepthMask(depthMask = false).withDepthFunc(depthFunc = AGCompareMode.LESS_EQUAL)
 
     private val cubeMapTexUnit = AGTextureUnit(0)
     private val viewNoTrans = Matrix3D()
@@ -176,6 +175,7 @@ class SkyBox(
                     .setRow(3, 0f, 0f, 0f, 0f)
                     .translate(center)
                 ctx.ag.drawV2(
+                    ctx.rctx.currentFrameBuffer,
                     vertexData = AGVertexArrayObject(AGVertexData(vertexBuffer, layout)),
                     type = AGDrawType.TRIANGLES,
                     program = skyBoxProgram,

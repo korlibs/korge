@@ -28,7 +28,7 @@ open class CachedContainer(
     //var cache: Boolean = cache
 
     inner class CacheTexture(val ctx: RenderContext) : Closeable {
-        val rb = ctx.ag.unsafeAllocateFrameRenderBuffer(16, 16, onlyThisFrame = false)
+        val rb = ctx.unsafeAllocateFrameBuffer(16, 16, onlyThisFrame = false)
         val texBase = TextureBase(rb.tex, 16, 16)
         var tex = Texture(texBase)
 
@@ -40,7 +40,7 @@ open class CachedContainer(
         }
         override fun close() {
             _cacheTex = null
-            ctx.ag.unsafeFreeFrameRenderBuffer(rb)
+            ctx.unsafeFreeFrameBuffer(rb)
         }
     }
 

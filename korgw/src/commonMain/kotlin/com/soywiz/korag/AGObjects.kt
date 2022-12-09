@@ -1,16 +1,12 @@
 package com.soywiz.korag
 
 import com.soywiz.kds.iterators.*
-import com.soywiz.klock.*
 import com.soywiz.klogger.*
 import com.soywiz.kmem.*
 import com.soywiz.kmem.unit.*
 import com.soywiz.korag.gl.*
-import com.soywiz.korag.shader.*
-import com.soywiz.korag.shader.gl.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korio.lang.*
-import kotlin.coroutines.*
 
 internal interface AGNativeObject {
     fun markToDelete()
@@ -32,7 +28,7 @@ open class AGObject : Closeable {
     }
 }
 
-open class AGBuffer constructor(val ag: AG, val list: AGList) : AGObject() {
+open class AGBuffer constructor(val ag: AG) : AGObject() {
     var estimatedMemoryUsage: ByteUnits = ByteUnits.fromBytes(0)
     var dirty: Boolean = true
     internal var mem: Buffer? = null
@@ -63,47 +59,12 @@ open class AGBuffer constructor(val ag: AG, val list: AGList) : AGObject() {
     }
 }
 
-class AGProgram(val ag: AG, val program: Program, val programConfig: ProgramConfig) : AGObject() {
-    var cachedVersion = -1
-    var programId = 0
-
-    fun ensure(list: AGList) {
-        if (cachedVersion != ag.contextVersion) {
-            val time = measureTime {
-                ag.programCount++
-                programId = list.createProgram(program, programConfig)
-                cachedVersion = ag.contextVersion
-            }
-            if (GlslGenerator.DEBUG_GLSL) {
-                Console.info("AG: Created program ${program.name} with id ${programId} in time=$time")
-            }
-        }
-    }
-
-    fun use(list: AGList) {
-        ensure(list)
-        list.useProgram(programId)
-    }
-
-    fun unuse(list: AGList) {
-        ensure(list)
-        list.useProgram(0)
-    }
-
-    fun close(list: AGList) {
-        if (programId != 0) {
-            ag.programCount--
-            list.deleteProgram(programId)
-        }
-        programId = 0
-    }
-}
-
 data class AGTextureUnit constructor(
     val index: Int,
     var texture: AGTexture? = null,
     var linear: Boolean = true,
     var trilinear: Boolean? = null,
+    var wrap: AGWrapMode = AGWrapMode.CLAMP_TO_EDGE,
 ) {
     fun set(texture: AGTexture?, linear: Boolean, trilinear: Boolean? = null) {
         this.texture = texture

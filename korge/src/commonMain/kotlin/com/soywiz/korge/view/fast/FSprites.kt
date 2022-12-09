@@ -175,6 +175,7 @@ open class FSprites(val maxSize: Int) {
                             sprites.uploadVertices(ctx)
                             ctx.xyBuffer.buffer.upload(xyData)
                             ctx.ag.drawV2(
+                                ctx.currentFrameBuffer,
                                 vertexData = ctx.buffers,
                                 program = program,
                                 type = AGDrawType.TRIANGLE_FAN,

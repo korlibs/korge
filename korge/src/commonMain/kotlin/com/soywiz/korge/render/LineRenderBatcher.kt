@@ -170,6 +170,7 @@ class LineRenderBatcher(
             //projMat.setToOrtho(tempRect.setBounds(0, 0, ag.backWidth, ag.backHeight), -1f, 1f)
 
             ag.drawV2(
+                ctx.currentFrameBuffer,
                 vertexData,
                 program = program,
                 type = AGDrawType.LINES,

@@ -70,13 +70,15 @@ class BoundsBuilder {
 
     fun add(x: Int, y: Int): BoundsBuilder = add(x.toDouble(), y.toDouble())
     fun add(x: Float, y: Float): BoundsBuilder = add(x.toDouble(), y.toDouble())
-
     fun add(x: Double, y: Double, transform: Matrix?): BoundsBuilder = if (transform != null) add(transform.transformX(x, y), transform.transformY(x, y)) else add(x, y)
     fun add(x: Int, y: Int, transform: Matrix?): BoundsBuilder = add(x.toDouble(), y.toDouble(), transform)
     fun add(x: Float, y: Float, transform: Matrix?): BoundsBuilder = add(x.toDouble(), y.toDouble(), transform)
 
     fun add(point: IPoint): BoundsBuilder = add(point.x, point.y)
     fun add(point: IPoint, transform: Matrix): BoundsBuilder = add(point.x, point.y, transform)
+
+    fun addRect(x: Int, y: Int, width: Int, height: Int): BoundsBuilder = addRect(x.toDouble(), y.toDouble(), width.toDouble(), height.toDouble())
+    fun addRect(x: Double, y: Double, width: Double, height: Double): BoundsBuilder = add(x, y).add(x + width, y + height)
 
     fun add(ps: Iterable<IPoint>): BoundsBuilder {
         for (p in ps) add(p)

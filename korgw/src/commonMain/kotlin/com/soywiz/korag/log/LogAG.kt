@@ -1,25 +1,15 @@
 package com.soywiz.korag.log
 
-import com.soywiz.kds.FastArrayList
-import com.soywiz.kds.IntArrayList
-import com.soywiz.kds.fastArrayListOf
 import com.soywiz.kds.linkedHashMapOf
-import com.soywiz.kds.mapInt
-import com.soywiz.kds.toIntArrayList
 import com.soywiz.kmem.*
 import com.soywiz.korag.*
 import com.soywiz.korag.shader.Attribute
-import com.soywiz.korag.shader.Program
-import com.soywiz.korag.shader.ProgramConfig
 import com.soywiz.korag.shader.Shader
 import com.soywiz.korag.shader.ShaderType
-import com.soywiz.korag.shader.VarKind
 import com.soywiz.korag.shader.gl.GlslGenerator
-import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korio.annotations.KorInternal
-import com.soywiz.korio.util.niceStr
 
 /*
 open class ComposedAG(val agBase: AG, val agExtra: AG) : AG(), AGFeatures by agBase {
@@ -202,7 +192,7 @@ open class LogBaseAG(
 		override fun toString(): String = "Texture[$id]"
 	}
 
-	inner class LogBuffer(val id: Int, list: AGList) : AGBuffer(this, list) {
+	inner class LogBuffer(val id: Int) : AGBuffer(this) {
 		val logmem: com.soywiz.kmem.Buffer? get() = mem
 		override fun afterSetMem() {
             super.afterSetMem()
@@ -211,12 +201,11 @@ open class LogBaseAG(
 		override fun toString(): String = "Buffer[$id]"
 	}
 
-	inner class LogFrameBuffer(val id: Int, val isMain: Boolean) : AGFrameBuffer(this) {
+	inner class LogFrameBuffer(val id: Int, isMain: Boolean) : AGFrameBuffer(this@LogBaseAG, isMain) {
         override fun setSize(x: Int, y: Int, width: Int, height: Int, fullWidth: Int, fullHeight: Int) {
             super.setSize(x, y, width, height, fullWidth, fullHeight)
             log("$this.setSize($width, $height)", Kind.FRAME_BUFFER)
         }
-        override fun set() = log("$this.set()", Kind.FRAME_BUFFER)
 		override fun close() = log("$this.close()", Kind.FRAME_BUFFER)
 		override fun toString(): String = "RenderBuffer[$id]"
         init {
@@ -233,8 +222,7 @@ open class LogBaseAG(
 	override fun createTexture(premultiplied: Boolean, targetKind: AGTextureTargetKind): AGTexture =
 		LogTexture(textureId++, premultiplied).apply { log("createTexture():$id", Kind.TEXTURE) }
 
-	override fun createBuffer(): AGBuffer =
-        commandsNoWait { LogBuffer(bufferId++, _list).apply { log("createBuffer():$id", Kind.BUFFER) } }
+	override fun createBuffer(): AGBuffer = LogBuffer(bufferId++).apply { log("createBuffer():$id", Kind.BUFFER) }
 
     data class VertexAttributeEx(val index: Int, val attribute: Attribute, val pos: Int, val data: AGVertexData) {
         val layout = data.layout
@@ -256,152 +244,6 @@ open class LogBaseAG(
         }
     }
 
-    val agProcessor = object : AGQueueProcessor {
-        override fun flush() = log("flush", Kind.FLUSH)
-
-        override fun finish() = log("finish", Kind.CLOSE)
-
-        override fun contextLost() { log("contextLost", Kind.CONTEXT_LOST) }
-
-        override fun enableDisable(kind: AGEnable, enable: Boolean) {
-            log("${if (enable) "enable" else "disable"}: $kind", Kind.ENABLE_DISABLE)
-        }
-
-        override fun readPixelsToTexture(tex: AGTexture, x: Int, y: Int, width: Int, height: Int, kind: AGReadKind) {
-            log("readPixelsToTexture(${(tex as? LogTexture)?.id}, $x, $y, $width, $height, $kind)", Kind.READ)
-        }
-
-        override fun readPixels(x: Int, y: Int, width: Int, height: Int, data: Any, kind: AGReadKind) =
-            log("readPixels($x, $y, $width, $height, $kind)", Kind.READ)
-
-        override fun draw(
-            type: AGDrawType,
-            vertexCount: Int,
-            offset: Int,
-            instances: Int,
-            indexType: AGIndexType,
-            indices: AGBuffer?
-        ) {
-            val _indices: IntArrayList? = when {
-                indices != null -> {
-                    val indexMem = (indices as LogBuffer).logmem!!
-                    val range = offset until offset + vertexCount
-                    when (indexType) {
-                        AGIndexType.UBYTE -> range.mapInt { indexMem.getUInt8(it) }
-                        AGIndexType.USHORT -> range.mapInt { indexMem.getUInt16(it) }
-                        AGIndexType.UINT -> range.mapInt { indexMem.getInt32(it) }
-                        else -> null
-                    }
-                }
-                else -> null
-            }
-            val _indicesSure: IntArrayList = _indices ?: (0 until vertexCount).mapInt { offset + it }
-            log("draw: $type, offset=$offset, count=$vertexCount, instances=$instances, indexType=$indexType", Kind.DRAW)
-            log("::draw.indices: $_indicesSure", Kind.DRAW_DETAILS)
-
-            val vertexLayoutAttributesEx = vertexData.flatMap { vd ->
-                vd.layout.attributes.zip(vd.layout.attributePositions).mapIndexed { index, pair ->
-                    VertexAttributeEx(index, pair.first, pair.second, vd)
-                }
-            }
-
-            log("::draw.attributes[${vertexData.size}]: ${vertexLayoutAttributesEx.map { it.attribute }}", Kind.DRAW_DETAILS)
-
-            for (doInstances in listOf(false, true)) {
-                for (index in if (doInstances) IntArray(instances) { it }.toIntArrayList() else _indicesSure.sorted().distinct()) {
-                    val attributes = arrayListOf<String>()
-                    for (vlae in vertexLayoutAttributesEx) {
-                        if ((vlae.attribute.divisor == 0) == doInstances) continue
-                        val attribute = vlae.attribute
-                        val vm = vlae.buffer.logmem!!
-                        val attributeType = attribute.type
-                        val o = (index * vlae.layout.totalSize) + vlae.pos
-                        val acount = attributeType.elementCount
-
-                        val info: List<Number> = when (attributeType.kind) {
-                            VarKind.TBOOL -> (0 until acount).map { vm.getUnalignedInt8(o + it * 1) }.map { if (attribute.normalized) it.toFloat() / Byte.MAX_VALUE else it }
-                            VarKind.TBYTE -> (0 until acount).map { vm.getUnalignedInt8(o + it * 1) }.map { if (attribute.normalized) it.toFloat() / Byte.MAX_VALUE else it }
-                            VarKind.TUNSIGNED_BYTE -> (0 until acount).map { vm.getUnalignedUInt8(o + it * 1) }.map { if (attribute.normalized) it.toFloat() / 0xFF else it }
-                            VarKind.TSHORT -> (0 until acount).map { vm.getUnalignedInt16(o + it * 2) }.map { if (attribute.normalized) it.toFloat() / Short.MAX_VALUE else it }
-                            VarKind.TUNSIGNED_SHORT -> (0 until acount).map { vm.getUnalignedUInt16(o + it * 2) }.map { if (attribute.normalized) it.toFloat() / 0xFFFF else it }
-                            VarKind.TINT -> (0 until acount).map { vm.getUnalignedInt32(o + it * 4) }.map { if (attribute.normalized) (it.toFloat() / Int.MAX_VALUE) else it }
-                            VarKind.TFLOAT -> (0 until acount).map { vm.getUnalignedFloat32(o + it * 4) }.map { if (attribute.normalized) it.clamp01() else it }
-                        }
-
-                        attributes += "${attribute.name}[${info.joinToString(",") { if (it is Float) it.niceStr else it.toString() }}]"
-                    }
-                    if (doInstances) {
-                        if (attributes.isNotEmpty()) {
-                            log("::draw.instance[$index]: ${attributes.joinToString(", ")}", Kind.DRAW_DETAILS)
-                        }
-                    } else {
-                        log("::draw.vertex[$index]: ${attributes.joinToString(", ")}", Kind.DRAW_DETAILS)
-                    }
-                }
-            }
-        }
-
-        override fun uniformsSet(uniforms: AGUniformValues) {
-            log("uboSet:", Kind.UNIFORM)
-            uniforms.fastForEach { uniformValue ->
-                log("uboSet.uniform: ${uniformValue.uniform} = ${AGUniformValues.valueToString(uniformValue)}", Kind.UNIFORM_VALUES)
-            }
-        }
-
-        override fun cullFace(face: AGCullFace) = log("cullFace: $face", Kind.OTHER)
-        override fun frontFace(face: AGFrontFace) = log("frontFace: $face", Kind.OTHER)
-        override fun blendEquation(rgb: AGBlendEquation, a: AGBlendEquation) = log("blendEquation: $rgb, $a", Kind.OTHER)
-        override fun blendFunction(srcRgb: AGBlendFactor, dstRgb: AGBlendFactor, srcA: AGBlendFactor, dstA: AGBlendFactor) = log("blendFunction: $srcRgb, $dstRgb, $srcA, $dstA", Kind.OTHER)
-        override fun colorMask(red: Boolean, green: Boolean, blue: Boolean, alpha: Boolean) = log("colorMask: $red, $green, $blue, $alpha", Kind.OTHER)
-        override fun depthFunction(depthTest: AGCompareMode) = log("depthFunction: $depthTest", Kind.OTHER)
-        override fun depthMask(depth: Boolean) = log("depthMask: $depth", Kind.OTHER)
-        override fun depthRange(near: Float, far: Float) = log("depthRange: $near, $far", Kind.OTHER)
-        override fun stencilFunction(compareMode: AGCompareMode, referenceValue: Int, readMask: Int) = log("stencilFunction: $compareMode, $referenceValue, $readMask", Kind.OTHER)
-
-        override fun stencilOperation(
-            actionOnDepthFail: AGStencilOp,
-            actionOnDepthPassStencilFail: AGStencilOp,
-            actionOnBothPass: AGStencilOp
-        ) = log("stencilOperation: $actionOnDepthFail, $actionOnDepthPassStencilFail, $actionOnBothPass", Kind.OTHER)
-
-        override fun stencilMask(writeMask: Int) = log("stencilMask: $writeMask", Kind.OTHER)
-        override fun scissor(x: Int, y: Int, width: Int, height: Int) = log("scissor: $x, $y, $width, $height", Kind.SCISSORS)
-        override fun viewport(x: Int, y: Int, width: Int, height: Int) = log("viewport: $x, $y, $width, $height", Kind.VIEWPORT)
-
-        override fun clear(color: Boolean, depth: Boolean, stencil: Boolean) = log("clear: color=$color, depth=$depth, stencil=$stencil", Kind.CLEAR)
-        override fun clearColor(red: Float, green: Float, blue: Float, alpha: Float) = log("createColor: $red, $green, $blue, $alpha", Kind.CLEAR)
-        override fun clearDepth(depth: Float) = log("createDepth: $depth", Kind.CLEAR)
-        override fun clearStencil(stencil: Int) = log("createStencil: $stencil", Kind.CLEAR)
-
-        override fun programCreate(programId: Int, program: Program, programConfig: ProgramConfig?) {
-            val fragmentGlSl = GlslGenerator(ShaderType.FRAGMENT).generate(program.fragment)
-            val vertexGlSl = GlslGenerator(ShaderType.VERTEX).generate(program.vertex)
-            log("programCreate: $programId, $program, $programConfig\nprogramCreate.fragment:${fragmentGlSl}\nprogramCreate.vertex:${vertexGlSl}", Kind.SHADER)
-        }
-        override fun programDelete(programId: Int) = log("programDelete: $programId", Kind.SHADER)
-        override fun programUse(programId: Int) = log("programUse: $programId", Kind.SHADER)
-        private var vertexData: FastArrayList<AGVertexData> = fastArrayListOf()
-        override fun vaoUse(vao: AGVertexArrayObject) = log("vaoUse: $vao", Kind.VERTEX)
-        override fun vaoUnuse(vao: AGVertexArrayObject) = log("vaoUse: $vao", Kind.VERTEX)
-
-        override fun textureBind(tex: AGTexture?, target: AGTextureTargetKind) {
-            log("textureBind: $tex", Kind.TEXTURE)
-        }
-
-        override fun textureSetFromFrameBuffer(tex: AGTexture, x: Int, y: Int, width: Int, height: Int) {
-            log("textureSetFromFrameBuffer: $tex, $x, $y, $width, $height", Kind.TEXTURE)
-        }
-
-        override fun frameBufferSet(frameBuffer: AGFrameBuffer) {
-            log("frameBuffer: $frameBuffer", Kind.TEXTURE)
-        }
-    }
-
-    override fun executeList(list: AGList) {
-        list.listFlush()
-        agProcessor.processBlockingAll(list)
-    }
-
     fun Any?.convertToStriangle(): Any? = when (this) {
         is IntArray -> this.toList()
         is FloatArray -> this.toList()
@@ -409,10 +251,10 @@ open class LogBaseAG(
     }
 
     override fun disposeTemporalPerFrameStuff() = log("disposeTemporalPerFrameStuff()", Kind.DISPOSE)
-	override fun createRenderBuffer(): AGFrameBuffer =
+	override fun createFrameBuffer(): AGFrameBuffer =
 		LogFrameBuffer(renderBufferId++, isMain = false).apply { log("createRenderBuffer():$id", Kind.FRAME_BUFFER) }
 
-    override fun createMainRenderBuffer(): AGFrameBuffer =
+    override fun createMainFrameBuffer(): AGFrameBuffer =
         LogFrameBuffer(renderBufferId++, isMain = true).apply { log("createMainRenderBuffer():$id", Kind.FRAME_BUFFER) }
 
     override fun flipInternal() = log("flipInternal()", Kind.FLIP)

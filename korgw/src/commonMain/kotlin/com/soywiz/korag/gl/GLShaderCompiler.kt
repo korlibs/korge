@@ -1,7 +1,6 @@
 package com.soywiz.korag.gl
 
-import com.soywiz.kds.FastStringMap
-import com.soywiz.kds.getOrPut
+import com.soywiz.kds.*
 import com.soywiz.kgl.KmlGl
 import com.soywiz.kgl.getProgramiv
 import com.soywiz.kgl.getShaderInfoLog
@@ -13,6 +12,7 @@ import com.soywiz.korag.shader.Shader
 import com.soywiz.korag.shader.gl.GlslConfig
 import com.soywiz.korag.shader.gl.GlslGenerator
 import com.soywiz.korag.shader.gl.toNewGlslString
+import kotlin.native.concurrent.*
 
 internal data class GLProgramInfo(var programId: Int, var vertexId: Int, var fragmentId: Int) {
     val cache = AGUniformValues()
@@ -106,4 +106,14 @@ internal object GLShaderCompiler {
         }
         return shaderId
     }
+}
+
+@SharedImmutable
+val KmlGl.versionString by Extra.PropertyThis<KmlGl, String> {
+    getString(SHADING_LANGUAGE_VERSION)
+}
+
+@SharedImmutable
+val KmlGl.versionInt by Extra.PropertyThis<KmlGl, Int> {
+    versionString.replace(".", "").trim().toIntOrNull() ?: 100
 }

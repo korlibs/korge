@@ -220,7 +220,7 @@ open class GameWindowCoroutineDispatcher : CoroutineDispatcher(), Delay, Closeab
                     val task = lock { (if (tasks.isNotEmpty()) tasks.dequeue() else null) } ?: break
                     val time = measureTime {
                         try {
-                            task?.run()
+                            task.run()
                         } catch (e: Throwable) {
                             e.printStackTrace()
                         } finally {
@@ -254,7 +254,7 @@ open class GameWindowCoroutineDispatcher : CoroutineDispatcher(), Delay, Closeab
             timedTasks.removeHead().continuation?.resume(Unit)
         }
         while (tasks.isNotEmpty()) {
-            tasks.dequeue()?.run()
+            tasks.dequeue().run()
         }
     }
 
@@ -590,14 +590,14 @@ open class GameWindow :
             }
             if (surfaceChanged) {
                 surfaceChanged = false
-                ag.mainRenderBuffer.setSize(surfaceX, surfaceY, surfaceWidth, surfaceHeight)
+                ag.mainFrameBuffer.setSize(surfaceX, surfaceY, surfaceWidth, surfaceHeight)
                 dispatchReshapeEvent(surfaceX, surfaceY, surfaceWidth, surfaceHeight)
             }
         }
         if (doInitialize) {
             doInitialize = false
             //ag.mainRenderBuffer.setSize(0, 0, width, height)
-            println("---------------- Trigger AG.initialized ag.mainRenderBuffer.setSize ($width, $height) --------------")
+            println("---------------- Trigger AG.initialized ag.mainFrameBuffer.setSize ($width, $height) --------------")
             dispatch(initEvent)
         }
         try {

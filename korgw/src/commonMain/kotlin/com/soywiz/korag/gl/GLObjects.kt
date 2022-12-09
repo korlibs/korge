@@ -6,19 +6,28 @@ import com.soywiz.kgl.*
 import com.soywiz.korag.*
 import com.soywiz.korag.AGNativeObject
 
-class GLGlobalState(val gl: KmlGl, val agGlobalState: AGGlobalState) {
+class GLGlobalState(val gl: KmlGl, val ag: AG) {
     internal val objectsToDeleteLock = Lock()
     internal val objectsToDelete = fastArrayListOf<GLBaseObject>()
 }
 
-internal open class GLBaseObject(val glboalState: GLGlobalState) : AGNativeObject {
-    val gl: KmlGl = glboalState.gl
+internal class GLBaseProgram(globalState: GLGlobalState, val programInfo: GLProgramInfo) : GLBaseObject(globalState) {
+    override fun delete() {
+        programInfo.delete(gl)
+    }
+    fun use() {
+        programInfo.use(gl)
+    }
+}
+
+internal open class GLBaseObject(val globalState: GLGlobalState) : AGNativeObject {
+    val gl: KmlGl = globalState.gl
 
     open fun delete() {
     }
 
     final override fun markToDelete() {
-        glboalState.objectsToDeleteLock { glboalState.objectsToDelete += this }
+        globalState.objectsToDeleteLock { globalState.objectsToDelete += this }
     }
 }
 
@@ -60,8 +69,8 @@ internal class GLTexture(state: GLGlobalState) : GLBaseObject(state) {
 ////////////////
 
 internal fun <T : AGObject, R: AGNativeObject> T.createOnce(state: GLGlobalState, block: (T) -> R): R {
-    if (this._native == null || this._cachedContextVersion != state.agGlobalState.contextVersion) {
-        this._cachedContextVersion = state.agGlobalState.contextVersion
+    if (this._native == null || this._cachedContextVersion != state.ag.contextVersion) {
+        this._cachedContextVersion = state.ag.contextVersion
         this._native = block(this)
     }
     return this._native as R

@@ -53,17 +53,12 @@ class AgBufferManager(
     }
 
     fun delete(buffer: List<AgCachedBuffer>) {
-        ag.commandsNoWait { list ->
-            buffer.fastForEach { delete(it, list) }
-        }
-    }
-    fun delete(buffer: AgCachedBuffer) {
-        ag.commandsNoWait { delete(buffer, it) }
+        buffer.fastForEach { delete(it) }
     }
 
     val empty = Buffer(0)
 
-    fun delete(buffer: AgCachedBuffer, list: AGList) {
+    fun delete(buffer: AgCachedBuffer) {
         val buf = buffers.getAndRemove(buffer)
         buf?.let {
             it.upload(empty)
