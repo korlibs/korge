@@ -1,26 +1,18 @@
 package com.soywiz.korge.lipsync
 
 import com.soywiz.korau.format.*
-import com.soywiz.korau.format.mp3.FastMP3Decoder
-import com.soywiz.korau.sound.AudioData
-import com.soywiz.korau.sound.readAudioData
-import com.soywiz.korge.resources.ResourceProcessor
-import com.soywiz.korio.dynamic.mapper.Mapper
-import com.soywiz.korio.dynamic.serialization.parseTyped
-import com.soywiz.korio.file.VfsFile
-import com.soywiz.korio.file.baseName
-import com.soywiz.korio.file.std.openAsZip
-import com.soywiz.korio.file.std.tempVfs
-import com.soywiz.korio.serialization.json.Json
-import com.soywiz.korio.util.AsyncOnce
-import com.soywiz.korio.util.OS
-import com.soywiz.korio.util.basename
-import com.soywiz.korio.util.jvmFallback
+import com.soywiz.korau.format.mp3.*
+import com.soywiz.korau.sound.*
+import com.soywiz.korge.resources.*
+import com.soywiz.korio.dynamic.*
+import com.soywiz.korio.file.*
+import com.soywiz.korio.file.std.*
+import com.soywiz.korio.serialization.json.*
+import com.soywiz.korio.util.*
+import com.soywiz.krypto.*
 import com.soywiz.krypto.encoding.*
-import com.soywiz.krypto.sha1
-import java.io.File
-import java.net.URL
-import java.util.*
+import java.io.*
+import java.net.*
 
 open class LipsyncResourceProcessor : ResourceProcessor("voice.wav", "voice.mp3", "voice.ogg") {
 	companion object : LipsyncResourceProcessor() {
@@ -122,8 +114,13 @@ open class LipsyncResourceProcessor : ResourceProcessor("voice.wav", "voice.mp3"
 			tempFile.write(data.toWav())
 			rhubarb.toJvmFile().setExecutable(true, false)
 			val result = tempVfs.execToString(listOf(rhubarb.absolutePath, "-f", "json", tempFile.absolutePath))
-			Mapper.jvmFallback()
-			return Json.parseTyped<RhubarbFile>(result, Mapper)
+            val info = Json.parse(result).dyn
+            return RhubarbFile(
+                info["metadata"].let { Metadata(it["soundFile"].str, it["duration"].double) },
+                info["mouthCues"].list.map {
+                    MouthCue(it["start"].double, it["end"].double, it["value"].str)
+                }
+            )
 		} finally {
 			tempFile.delete()
 		}

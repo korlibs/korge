@@ -1,16 +1,14 @@
 package com.soywiz.korge.storage
 
-import com.soywiz.korge.service.storage.item
-import com.soywiz.korge.service.storage.storage
-import com.soywiz.korge.tests.ViewsForTesting
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import com.soywiz.korge.service.storage.*
+import com.soywiz.korge.tests.*
+import kotlin.test.*
 
 class NativeStorageTest : ViewsForTesting() {
     @Test
     fun test() = viewsTest {
         views.storage.removeAll()
-        val demo = views.storage.item<Int>("hello")
+        val demo = views.storage.itemInt("hello")
         assertEquals(false, demo.isDefined)
         assertEquals(0, demo.value)
         //assertFailsWith<Throwable> { demo.value }
