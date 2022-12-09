@@ -88,10 +88,10 @@ class RenderContext constructor(
 
     fun updateStandardUniforms() {
         //println("updateStandardUniforms: ag.currentSize(${ag.currentWidth}, ${ag.currentHeight}) : ${ag.currentFrameBuffer}")
-        if (flipRenderTexture && ag.isRenderingToTexture) {
-            projMat.setToOrtho(tempRect.setBounds(0, ag.currentHeight, ag.currentWidth, 0), -1f, 1f)
+        if (flipRenderTexture && currentFrameBuffer.isTexture) {
+            projMat.setToOrtho(tempRect.setBounds(0, currentFrameBuffer.height, currentFrameBuffer.width, 0), -1f, 1f)
         } else {
-            projMat.setToOrtho(tempRect.setBounds(0, 0, ag.currentWidth, ag.currentHeight), -1f, 1f)
+            projMat.setToOrtho(tempRect.setBounds(0, 0, currentFrameBuffer.width, currentFrameBuffer.height), -1f, 1f)
             projMat.multiply(projMat, projectionMatrixTransform.toMatrix3D(tempMat3d))
         }
         uniforms[DefaultShaders.u_ProjMat] = projMat
@@ -249,12 +249,23 @@ class RenderContext constructor(
         flushers(Unit)
 	}
 
+    var currentFrameBuffer: AGFrameBuffer = ag.mainFrameBuffer
+    val currentFrameBufferOrMain: AGFrameBuffer get() = currentFrameBuffer ?: mainFrameBuffer
+    val isRenderingToWindow: Boolean get() = currentFrameBufferOrMain === mainFrameBuffer
+    val isRenderingToTexture: Boolean get() = !isRenderingToWindow
+
+    // On MacOS components, this will be the size of the component
+    open val backWidth: Int get() = mainFrameBuffer.width
+    open val backHeight: Int get() = mainFrameBuffer.height
+
+    // On MacOS components, this will be the full size of the window
+    val realBackWidth get() = mainFrameBuffer.fullWidth
+    val realBackHeight get() = mainFrameBuffer.fullHeight
+
+    val currentWidth: Int get() = currentFrameBuffer?.width ?: mainFrameBuffer.width
+    val currentHeight: Int get() = currentFrameBuffer?.height ?: mainFrameBuffer.height
+
     val mainFrameBuffer: AGFrameBuffer get() = ag.mainFrameBuffer
-    var currentFrameBuffer: AGFrameBuffer
-        get() = ag.currentFrameBufferOrMain
-        set(value) {
-            ag.currentFrameBuffer = value
-        }
 
     fun clear(
         color: RGBA = Colors.TRANSPARENT_BLACK,
@@ -465,7 +476,7 @@ class RenderContext constructor(
         renderToTextureInternal(bmp.width, bmp.height, render = {
             callback()
             //println("renderToBitmap.readColor: $currentRenderBuffer")
-            ag.readColor(bmp)
+            ag.readColor(currentFrameBuffer, bmp)
         }, hasDepth = hasDepth, hasStencil = hasStencil, msamples = msamples, use = { _, _, _ -> })
         return bmp
     }
@@ -495,7 +506,7 @@ class RenderContext constructor(
 
     inline fun backupTexture(frameBuffer: AGFrameBuffer, tex: AGTexture?, callback: () -> Unit) {
         if (tex != null) {
-            ag.readColorTexture(tex, 0, 0, ag.backWidth, ag.backHeight)
+            ag.readToTexture(currentFrameBuffer, tex, 0, 0, currentFrameBuffer.width, currentFrameBuffer.height)
         }
         try {
             callback()

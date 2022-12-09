@@ -114,6 +114,7 @@ class AGTexture(
 }
 
 open class AGFrameBufferBase(val isMain: Boolean) : AGObject() {
+    val isTexture: Boolean get() = !isMain
     val tex: AGTexture = AGTexture(premultiplied = true).also { it.isFbo = true }
     var estimatedMemoryUsage: ByteUnits = ByteUnits.fromBytes(0)
 
@@ -127,6 +128,7 @@ open class AGFrameBufferBase(val isMain: Boolean) : AGObject() {
 
 open class AGFrameBuffer(val base: AGFrameBufferBase) : Closeable {
     constructor(isMain: Boolean = false) : this(AGFrameBufferBase(isMain))
+    val isTexture: Boolean get() = base.isTexture
     val isMain: Boolean get() = base.isMain
     val tex: AGTexture get() = base.tex
     val info: AGFrameBufferInfo get() = AGFrameBufferInfo(0).withSize(width, height).withSamples(nsamples).withHasDepth(hasDepth).withHasStencil(hasStencil)
@@ -148,6 +150,10 @@ open class AGFrameBuffer(val base: AGFrameBufferBase) : Closeable {
     var fullHeight = DEFAULT_INITIAL_HEIGHT
     private val _scissor = RectangleInt()
     var scissor: RectangleInt? = null
+
+    open fun setSize(width: Int, height: Int) {
+        setSize(0, 0, width, height)
+    }
 
     open fun setSize(x: Int, y: Int, width: Int, height: Int, fullWidth: Int = width, fullHeight: Int = height) {
         if (this.x == x && this.y == y && this.width == width && this.height == height && this.fullWidth == fullWidth && this.fullHeight == fullHeight) return

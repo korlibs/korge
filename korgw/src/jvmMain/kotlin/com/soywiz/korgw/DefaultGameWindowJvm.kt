@@ -1,10 +1,7 @@
 package com.soywiz.korgw
 
 import SdlGameWindowJvm
-import com.soywiz.korag.AG
-import com.soywiz.korag.AGConfig
-import com.soywiz.korag.AGFactory
-import com.soywiz.korag.AGWindow
+import com.soywiz.korag.*
 import com.soywiz.korev.*
 import com.soywiz.korgw.awt.AwtGameWindow
 //import com.soywiz.korgw.jogl.JoglGameWindow

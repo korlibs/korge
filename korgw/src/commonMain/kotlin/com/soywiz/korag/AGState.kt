@@ -607,6 +607,7 @@ inline class AGScissor(val data: Long) {
     companion object {
         val EMPTY = AGScissor(0, 0)
         val FULL = AGScissor(0, 0x7FFF7FFF)
+        val INVALID = AGScissor(-2, 0x7FFF7FFF)
         val NIL = AGScissor(-1, 0x7FFF7FFF)
         fun fromBounds(left: Int, top: Int, right: Int, bottom: Int): AGScissor = AGScissor(left, top, right - left, bottom - top)
         fun fromBounds(left: Double, top: Double, right: Double, bottom: Double): AGScissor = AGScissor(left, top, right - left, bottom - top)

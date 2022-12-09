@@ -2,19 +2,12 @@ package com.soywiz.korag
 
 import com.soywiz.kds.*
 import com.soywiz.klogger.*
-import com.soywiz.kmem.*
 import com.soywiz.kmem.unit.*
-import com.soywiz.korag.annotation.*
-import com.soywiz.korag.gl.*
 import com.soywiz.korag.shader.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
-import com.soywiz.korio.annotations.*
-import com.soywiz.korio.lang.*
 import com.soywiz.korma.geom.*
 import kotlinx.coroutines.channels.*
-import kotlinx.coroutines.flow.*
-import kotlin.math.*
 
 interface AGWindow : AGContainer {
 }
@@ -60,26 +53,6 @@ abstract class AG : AGFeatures, AGCommandExecutor, Extra by Extra.Mixin() {
 
     open fun dispose() {
     }
-
-    // On MacOS components, this will be the size of the component
-    open val backWidth: Int get() = mainFrameBuffer.width
-    open val backHeight: Int get() = mainFrameBuffer.height
-
-    // On MacOS components, this will be the full size of the window
-    val realBackWidth get() = mainFrameBuffer.fullWidth
-    val realBackHeight get() = mainFrameBuffer.fullHeight
-
-    val currentWidth: Int get() = currentFrameBuffer?.width ?: mainFrameBuffer.width
-    val currentHeight: Int get() = currentFrameBuffer?.height ?: mainFrameBuffer.height
-
-    //protected fun setViewport(v: IntArray) = setViewport(v[0], v[1], v[2], v[3])
-
-    var createdTextureCount = 0
-    var deletedTextureCount = 0
-
-    internal val textures = LinkedHashSet<AGTexture>()
-    private val texturesCount: Int get() = textures.size
-    private val texturesMemory: ByteUnits get() = ByteUnits.fromBytes(textures.sumOf { it.estimatedMemoryUsage.bytesLong })
 
     fun drawV2(
         frameBuffer: AGFrameBuffer,
@@ -162,19 +135,6 @@ abstract class AG : AGFeatures, AGCommandExecutor, Extra by Extra.Mixin() {
     open fun endFrame() {
     }
 
-    fun clear(
-        frameBuffer: AGFrameBuffer,
-        color: RGBA = Colors.TRANSPARENT_BLACK,
-        depth: Float = 1f,
-        stencil: Int = 0,
-        clearColor: Boolean = true,
-        clearDepth: Boolean = true,
-        clearStencil: Boolean = true,
-        scissor: AGScissor = AGScissor.NIL,
-    ) {
-        clear(frameBuffer.base, frameBuffer.info, color, depth, stencil, clearColor, clearDepth, clearStencil, scissor)
-    }
-
     open fun clear(
         frameBuffer: AGFrameBufferBase,
         frameBufferInfo: AGFrameBufferInfo,
@@ -196,30 +156,11 @@ abstract class AG : AGFeatures, AGCommandExecutor, Extra by Extra.Mixin() {
     open fun flush() {
     }
 
-    //@PublishedApi
-    var currentFrameBuffer: AGFrameBuffer? = null
-
-    val currentFrameBufferOrMain: AGFrameBuffer get() = currentFrameBuffer ?: mainFrameBuffer
-
-    val isRenderingToWindow: Boolean get() = currentFrameBufferOrMain === mainFrameBuffer
-    val isRenderingToTexture: Boolean get() = !isRenderingToWindow
-
-    // @TODO: Rename to Sync and add Suspend versions
-    fun readPixel(x: Int, y: Int): RGBA {
-        val rawColor = Bitmap32(1, 1, premultiplied = isRenderingToTexture).also { readColor(it, x, y) }.ints[0]
-        return if (isRenderingToTexture) RGBAPremultiplied(rawColor).depremultiplied else RGBA(rawColor)
+    open fun readToTexture(frameBuffer: AGFrameBufferBase, frameBufferInfo: AGFrameBufferInfo, texture: AGTexture, x: Int, y: Int, width: Int, height: Int) {
     }
 
-    open fun readColor(bitmap: Bitmap32, x: Int = 0, y: Int = 0) = Unit
-    open fun readDepth(width: Int, height: Int, out: FloatArray) = Unit
-    open fun readStencil(bitmap: Bitmap8) = Unit
-    fun readDepth(out: FloatArray2): Unit = readDepth(out.width, out.height, out.data)
-    open fun readColorTexture(texture: AGTexture, x: Int = 0, y: Int = 0, width: Int = backWidth, height: Int = backHeight): Unit = TODO()
-    fun readColor(): Bitmap32 = Bitmap32(backWidth, backHeight, premultiplied = isRenderingToTexture).apply { readColor(this) }
-    fun readDepth(): FloatArray2 = FloatArray2(backWidth, backHeight) { 0f }.apply { readDepth(this) }
-
-    //////////////
-
+    open fun readToMemory(frameBuffer: AGFrameBufferBase, frameBufferInfo: AGFrameBufferInfo, x: Int, y: Int, width: Int, height: Int, data: Any, kind: AGReadKind) {
+    }
 
     private val stats = AGStats()
     fun getStats(out: AGStats = stats): AGStats {
@@ -229,3 +170,35 @@ abstract class AG : AGFeatures, AGCommandExecutor, Extra by Extra.Mixin() {
     protected open fun readStats(out: AGStats) {
     }
 }
+
+fun AG.clear(
+    frameBuffer: AGFrameBuffer,
+    color: RGBA = Colors.TRANSPARENT_BLACK,
+    depth: Float = 1f,
+    stencil: Int = 0,
+    clearColor: Boolean = true,
+    clearDepth: Boolean = true,
+    clearStencil: Boolean = true,
+    scissor: AGScissor = AGScissor.NIL,
+) {
+    clear(frameBuffer.base, frameBuffer.info, color, depth, stencil, clearColor, clearDepth, clearStencil, scissor)
+}
+
+fun AG.readPixel(frameBuffer: AGFrameBuffer, x: Int, y: Int): RGBA {
+    val rawColor = Bitmap32(1, 1, premultiplied = frameBuffer.isTexture).also { readColor(frameBuffer, it, x, y) }.ints[0]
+    return if (frameBuffer.isTexture) RGBAPremultiplied(rawColor).depremultiplied else RGBA(rawColor)
+}
+
+fun AG.readColor(frameBuffer: AGFrameBuffer, bitmap: Bitmap32, x: Int = 0, y: Int = 0) {
+    readToMemory(frameBuffer.base, frameBuffer.info, x, y, bitmap.width, bitmap.height, bitmap.ints, AGReadKind.COLOR)
+}
+fun AG.readDepth(frameBuffer: AGFrameBuffer, width: Int, height: Int, out: FloatArray) {
+    readToMemory(frameBuffer.base, frameBuffer.info, 0, 0, width, height, out, AGReadKind.DEPTH)
+}
+fun AG.readStencil(frameBuffer: AGFrameBuffer, bitmap: Bitmap8) {
+    readToMemory(frameBuffer.base, frameBuffer.info, 0, 0, bitmap.width, bitmap.height, bitmap.data, AGReadKind.STENCIL)
+}
+fun AG.readDepth(frameBuffer: AGFrameBuffer, out: FloatArray2): Unit = readDepth(frameBuffer, out.width, out.height, out.data)
+fun AG.readToTexture(frameBuffer: AGFrameBuffer, texture: AGTexture, x: Int = 0, y: Int = 0, width: Int = frameBuffer.width, height: Int = frameBuffer.height): Unit = TODO()
+fun AG.readColor(frameBuffer: AGFrameBuffer): Bitmap32 = Bitmap32(frameBuffer.width, frameBuffer.height, premultiplied = frameBuffer.isTexture).apply { readColor(frameBuffer, this) }
+fun AG.readDepth(frameBuffer: AGFrameBuffer): FloatArray2 = FloatArray2(frameBuffer.width, frameBuffer.height) { 0f }.apply { readDepth(frameBuffer, this) }

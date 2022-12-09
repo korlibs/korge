@@ -511,7 +511,7 @@ object Korge {
             //try { throw Exception() } catch (e: Throwable) { e.printStackTrace() }
             //println("eventDispatcher.addEventListener<ReshapeEvent>: ${ag.backWidth}x${ag.backHeight} : ${e.width}x${e.height}")
             //println("resized. ${ag.backWidth}, ${ag.backHeight}")
-            views.resized(ag.backWidth, ag.backHeight)
+            views.resized(ag.mainFrameBuffer.width, ag.mainFrameBuffer.height)
         }
 
         //println("eventDispatcher.dispatch(ReshapeEvent(0, 0, views.nativeWidth, views.nativeHeight)) : ${views.nativeWidth}x${views.nativeHeight}")

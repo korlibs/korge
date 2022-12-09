@@ -165,7 +165,7 @@ class GpuShapeViewCommands {
                                 val texUnit = tempUniforms[DefaultShaders.u_Tex] as? AGTextureUnit?
                                 val premultiplied = texUnit?.texture?.premultiplied ?: false
                                 //val premultiplied = false
-                                val outPremultiplied = ag.isRenderingToTexture
+                                val outPremultiplied = ctx.isRenderingToTexture
 
                                 //println("outPremultiplied=$outPremultiplied, blendMode=${cmd.blendMode?.name}")
 

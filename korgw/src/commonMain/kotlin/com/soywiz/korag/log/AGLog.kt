@@ -127,19 +127,13 @@ open class ComposedAG(val agBase: AG, val agExtra: AG) : AG(), AGFeatures by agB
 }
 */
 
-open class AGPrint(
-    width: Int = 640,
-    height: Int = 480
-) : AGBaseLog(width, height) {
+open class AGPrint(width: Int = 640, height: Int = 480) : AGBaseLog(width, height) {
     override fun log(str: String, kind: Kind) {
         println("PrintAG: $str")
     }
 }
 
-open class AGLog(
-    width: Int = 640,
-    height: Int = 480,
-) : AGBaseLog(width, height) {
+open class AGLog(width: Int = 640, height: Int = 480) : AGBaseLog(width, height) {
     val log = arrayListOf<String>()
     fun clearLog() = log.clear()
     fun getLogAsString(): String = log.joinToString("\n")
@@ -152,10 +146,7 @@ open class AGLog(
 }
 
 @OptIn(KorInternal::class)
-open class AGBaseLog(
-	width: Int = 640,
-	height: Int = 480,
-) : AGDummy(width, height) {
+open class AGBaseLog(width: Int = 640, height: Int = 480) : AGDummy(width, height) {
     enum class Kind { COMMAND, DRAW, DRAW_DETAILS, CLEAR, METRICS, FLIP, READ, REPAINT, DISPOSE, TEXTURE_UPLOAD, CLOSE, FRAME_BUFFER, BUFFER, TEXTURE, SHADER, OTHER, UNIFORM, UNIFORM_VALUES, SCISSORS, VIEWPORT, VERTEX, ENABLE_DISABLE, CONTEXT_LOST, FLUSH }
 
 	open fun log(str: String, kind: Kind) {
@@ -178,9 +169,6 @@ open class AGBaseLog(
 	) {
         log("clear($frameBuffer, $frameBufferInfo, $color, $depth, $stencil, $clearColor, $clearDepth, $clearStencil)", Kind.CLEAR)
     }
-
-	override var backWidth: Int = width; set(value) { field = value; log("backWidth = $value", Kind.METRICS) }
-	override var backHeight: Int = height; set(value) { field = value; log("backHeight = $value", Kind.METRICS) }
 
 	override fun dispose() = log("dispose()", Kind.DISPOSE)
 
@@ -215,6 +203,4 @@ open class AGBaseLog(
     }
 
     override fun flip() = log("flip()", Kind.FLIP)
-	override fun readColor(bitmap: Bitmap32, x: Int, y: Int) = log("$this.readBitmap($bitmap, $x, $y)", Kind.READ)
-	override fun readDepth(width: Int, height: Int, out: FloatArray) = log("$this.readDepth($width, $height, $out)", Kind.READ)
 }

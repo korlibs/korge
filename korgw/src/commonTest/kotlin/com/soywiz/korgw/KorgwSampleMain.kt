@@ -1,5 +1,6 @@
 package com.soywiz.korgw
 
+import com.soywiz.korag.*
 import com.soywiz.korev.MouseEvent
 import com.soywiz.korev.addEventListener
 import com.soywiz.korim.color.Colors

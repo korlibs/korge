@@ -68,6 +68,7 @@ open class ViewsForTesting(
         viewsLog.views.virtualHeight = virtualSize.height
         viewsLog.views.resized(windowSize.width, windowSize.height)
     } }
+
 	val injector get() = viewsLog.injector
     val logAgOrNull get() = ag as? AGLog?
     val logAg get() = logAgOrNull ?: error("Must call ViewsForTesting(log = true) to access logAg")
@@ -79,10 +80,7 @@ open class ViewsForTesting(
 	val mouse: IPoint get() = input.mouse
 
     fun resizeGameWindow(width: Int, height: Int, scaleMode: ScaleMode = views.scaleMode, scaleAnchor: Anchor = views.scaleAnchor) {
-        logAgOrNull?.backWidth = width
-        logAgOrNull?.backHeight = height
-        dummyAg?.backWidth = width
-        dummyAg?.backHeight = height
+        ag.mainFrameBuffer.setSize(0, 0, width, height)
         gameWindow.width = width
         gameWindow.height = height
         views.scaleAnchor = scaleAnchor

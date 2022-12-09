@@ -888,7 +888,7 @@ class BatchBuilder2D constructor(
 
     fun updateStandardUniformsPre() {
         //uniforms[u_InputPre] = currentTexN[0]?.premultiplied == true
-        uniforms[u_OutputPre] = ag.isRenderingToTexture
+        uniforms[u_OutputPre] = ctx.isRenderingToTexture
     }
 
     fun getIsPremultiplied(texture: AGTexture?): Boolean = texture?.premultiplied == true
@@ -922,7 +922,7 @@ class BatchBuilder2D constructor(
                 program = program,
                 //program = PROGRAM_PRE,
                 type = AGDrawType.TRIANGLES,
-                blending = factors.factors(ag.isRenderingToTexture),
+                blending = factors.factors(ctx.isRenderingToTexture),
                 uniforms = uniforms,
                 stencilOpFunc = stencilOpFunc,
                 stencilRef = stencilRef,

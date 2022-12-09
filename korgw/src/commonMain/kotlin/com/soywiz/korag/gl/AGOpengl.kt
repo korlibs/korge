@@ -47,7 +47,9 @@ class AGOpengl(val gl: KmlGl) : AG() {
 
     fun createGlState() = KmlGlState(gl)
 
-    override fun readColorTexture(texture: AGTexture, x: Int, y: Int, width: Int, height: Int) {
+    override fun readToTexture(frameBuffer: AGFrameBufferBase, frameBufferInfo: AGFrameBufferInfo, texture: AGTexture, x: Int, y: Int, width: Int, height: Int) {
+        bindFrameBuffer(frameBuffer, frameBufferInfo)
+        setScissorState(AGScissor.FULL)
         //gl.flush()
         //gl.finish()
         textureBind(texture, AGTextureTargetKind.TEXTURE_2D)
@@ -58,7 +60,7 @@ class AGOpengl(val gl: KmlGl) : AG() {
     override fun clear(frameBuffer: AGFrameBufferBase, frameBufferInfo: AGFrameBufferInfo, color: RGBA, depth: Float, stencil: Int, clearColor: Boolean, clearDepth: Boolean, clearStencil: Boolean, scissor: AGScissor) {
         bindFrameBuffer(frameBuffer, frameBufferInfo)
         //println("CLEAR: $color, $depth")
-        setScissorState(this, scissor)
+        setScissorState(scissor)
         //gl.disable(KmlGl.SCISSOR_TEST)
         var mask = 0
         if (clearColor) {
@@ -125,8 +127,7 @@ class AGOpengl(val gl: KmlGl) : AG() {
         //finalScissor.setTo(0, 0, backWidth, backHeight)
 
         bindFrameBuffer(batch.frameBuffer, batch.frameBufferInfo)
-
-        setScissorState(this, batch.scissor)
+        setScissorState(batch.scissor)
 
         getProgram(batch.program, config = when {
             batch.uniforms.useExternalSampler() -> ProgramConfig.EXTERNAL_TEXTURE_SAMPLER
@@ -188,16 +189,6 @@ class AGOpengl(val gl: KmlGl) : AG() {
         }
     }
 
-    override fun readColor(bitmap: Bitmap32, x: Int, y: Int) {
-        readPixels(x, y, bitmap.width, bitmap.height, bitmap.ints, AGReadKind.COLOR)
-    }
-    override fun readDepth(width: Int, height: Int, out: FloatArray) {
-        readPixels(0, 0, width, height, out, AGReadKind.DEPTH)
-    }
-    override fun readStencil(bitmap: Bitmap8) {
-        readPixels(0, 0, bitmap.width, bitmap.height, bitmap.data, AGReadKind.STENCIL)
-    }
-
     val glslConfig: GlslConfig by lazy {
         GlslConfig(
             gles = gl.gles,
@@ -211,8 +202,10 @@ class AGOpengl(val gl: KmlGl) : AG() {
     private var currentColorMask: AGColorMask = AGColorMask.INVALID
     private var currentProgram: GLBaseProgram? = null
     var backBufferFrameBufferBinding: Int = 0
+    private var currentScissor: AGScissor = AGScissor.INVALID
 
     override fun startFrame() {
+        currentScissor = AGScissor.INVALID
         currentBlending = AGBlending.INVALID
         currentStencilOpFunc = AGStencilOpFunc.INVALID
         currentStencilRef = AGStencilReference.INVALID
@@ -473,7 +466,9 @@ class AGOpengl(val gl: KmlGl) : AG() {
 
     fun AGTexture?.magFilter(linear: Boolean, trilinear: Boolean = linear): Int = if (linear) KmlGl.LINEAR else KmlGl.NEAREST
 
-    fun readPixels(x: Int, y: Int, width: Int, height: Int, data: Any, kind: AGReadKind) {
+    override fun readToMemory(frameBuffer: AGFrameBufferBase, frameBufferInfo: AGFrameBufferInfo, x: Int, y: Int, width: Int, height: Int, data: Any, kind: AGReadKind) {
+        bindFrameBuffer(frameBuffer, frameBufferInfo)
+
         val bytesPerPixel = when (data) {
             is IntArray -> 4
             is FloatArray -> 4
@@ -717,49 +712,9 @@ class AGOpengl(val gl: KmlGl) : AG() {
         }
     }
 
-    fun setScissorState(ag: AG, scissor: AGScissor = AGScissor.NIL) =
-        setScissorState(ag.currentFrameBuffer, ag.mainFrameBuffer, scissor)
-
-    fun setScissorState(currentRenderBuffer: AGFrameBuffer?, mainRenderBuffer: AGFrameBuffer, scissor: AGScissor = AGScissor.NIL) {
-        if (currentRenderBuffer == null) return
-
-        //println("applyScissorState")
-        val finalScissorBL = tempRect
-
-        val realBackWidth = mainRenderBuffer.fullWidth
-        val realBackHeight = mainRenderBuffer.fullHeight
-
-        if (currentRenderBuffer === mainRenderBuffer) {
-            var realScissors: Rectangle? = finalScissorBL
-            realScissors?.setTo(0.0, 0.0, realBackWidth.toDouble(), realBackHeight.toDouble())
-            if (scissor != AGScissor.NIL) {
-                tempRect.setTo(
-                    currentRenderBuffer.x + scissor.x,
-                    ((currentRenderBuffer.y + currentRenderBuffer.height) - (scissor.y + scissor.height)),
-                    (scissor.width),
-                    scissor.height
-                )
-                realScissors = realScissors?.intersection(tempRect, realScissors)
-            }
-
-            //println("currentRenderBuffer: $currentRenderBuffer")
-
-            val renderBufferScissor = currentRenderBuffer.scissor
-            if (renderBufferScissor != null) {
-                realScissors = realScissors?.intersection(renderBufferScissor.rect, realScissors)
-            }
-
-            //println("[MAIN_BUFFER] realScissors: $realScissors")
-
-            gl.enable(KmlGl.SCISSOR_TEST)
-            if (realScissors != null) {
-                scissor(realScissors.x.toInt(), realScissors.y.toInt(), realScissors.width.toInt(), realScissors.height.toInt())
-            } else {
-                scissor(0, 0, 0, 0)
-            }
-        } else {
-            //println("[RENDER_TARGET] scissor: $scissor")
-
+    fun setScissorState(scissor: AGScissor) {
+        if (currentScissor != scissor) {
+            currentScissor = scissor
             gl.enableDisable(KmlGl.SCISSOR_TEST, scissor != AGScissor.NIL) {
                 scissor(scissor.x, scissor.y, scissor.width, scissor.height)
             }

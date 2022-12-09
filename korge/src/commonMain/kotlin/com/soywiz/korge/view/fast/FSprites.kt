@@ -169,7 +169,7 @@ open class FSprites(val maxSize: Int) {
                 batch.keepUniforms(u_i_texSizeN) { uniforms ->
                     for (n in 0 until texs.size) uniforms[u_i_texSizeN[n]] = u_i_texSizeDataN[n]
                     batch.keepUniform(BatchBuilder2D.u_OutputPre) {
-                        it[BatchBuilder2D.u_OutputPre] = ctx.ag.isRenderingToTexture
+                        it[BatchBuilder2D.u_OutputPre] = ctx.isRenderingToTexture
                         batch.setViewMatrixTemp(globalMatrix) {
                             //ctx.batch.setStateFast()
                             sprites.uploadVertices(ctx)
@@ -183,7 +183,7 @@ open class FSprites(val maxSize: Int) {
                                 instances = sprites.size,
                                 uniforms = uniforms,
                                 //renderState = AGRenderState(depthFunc = AGCompareMode.LESS),
-                                blending = blending.factors(ctx.ag.isRenderingToTexture)
+                                blending = blending.factors(ctx.isRenderingToTexture)
                             )
                             sprites.unloadVertices(ctx)
                         }

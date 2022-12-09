@@ -57,7 +57,7 @@ class TestE2eJava {
                         )
                         // @TODO:     java.lang.UnsatisfiedLinkError: Error looking up function 'glDeleteBuffers': The specified procedure could not be found. on windows Github/actions
                         // vertices.close()
-                        ag.readColor(bmp)
+                        ag.readColor(ag.mainFrameBuffer, bmp)
                         step++
                     } catch (e: Throwable) {
                         exception = e
