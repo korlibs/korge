@@ -46,7 +46,6 @@ interface AGFeatures {
     val isFloatTextureSupported: Boolean get() = parentFeatures?.isFloatTextureSupported ?: false
 }
 
-@OptIn(KorIncomplete::class)
 abstract class AG(val checked: Boolean = false) : AGFeatures, AGCommandExecutor, Extra by Extra.Mixin() {
     companion object {
         const val defaultPixelsPerInch : Double = 96.0
@@ -184,9 +183,13 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, AGCommandExecutor,
         when (command) {
             is AGClear -> clear(command)
             is AGBatch -> draw(batch)
-            is AGBlitPixels -> TODO()
+            is AGBlitPixels -> blit(command)
             is AGReadPixelsToTexture -> TODO()
         }
+    }
+
+    open fun blit(command: AGBlitPixels) {
+
     }
 
     open fun clear(clear: AGClear) = Unit
@@ -425,9 +428,9 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, AGCommandExecutor,
 
     //////////////
 
-    val textureDrawer by lazy { AGTextureDrawer(this) }
     val flipRenderTexture = true
 
+    val textureDrawer by lazy { AGTextureDrawer(this) }
     fun drawTexture(tex: AGTexture) {
         textureDrawer.draw(tex, -1f, +1f, +1f, -1f)
     }

@@ -398,6 +398,7 @@ inline class AGBlending(val data: Int) {
             eq: AGBlendEquation = AGBlendEquation.ADD,
         ): AGBlending = AGBlending(0).withSRC(src).withDST(dst).withEQ(eq)
 
+        val INVALID = AGBlending(-1)
         val NONE = AGBlending(AGBlendFactor.ONE, AGBlendFactor.ZERO, AGBlendFactor.ONE, AGBlendFactor.ZERO)
         val NORMAL = AGBlending(
             //GL_ONE, GL_ONE_MINUS_SRC_ALPHA <-- premultiplied
@@ -437,6 +438,7 @@ inline class AGColorMask(
     ): AGColorMask = AGColorMask(red, green, blue, alpha)
 
     companion object {
+        val INVALID = AGColorMask(-1)
         internal val DUMMY = AGColorMask()
         val DEFAULT = AGColorMask(true)
         val ALL_ENABLED = AGColorMask(true)
@@ -475,6 +477,7 @@ inline class AGStencilFullState private constructor(private val data: Long) {
 
 inline class AGStencilReference(val data: Int) {
     companion object {
+        val INVALID = AGStencilReference(-1)
         val DEFAULT = AGStencilReference(0).withReferenceValue(0).withReadMask(0xFF).withWriteMask(0xFF)
     }
 
@@ -489,6 +492,7 @@ inline class AGStencilReference(val data: Int) {
 
 inline class AGStencilOpFunc(val data: Int) {
     companion object {
+        val INVALID = AGStencilOpFunc(-1)
         val DEFAULT = AGStencilOpFunc(0)
             .withEnabled(false)
             .withTriangleFace(AGTriangleFace.FRONT_AND_BACK)
@@ -762,7 +766,7 @@ data class AGClear(
 /**
  * Can be emulated by rendering a quad using the texture of the framebuffer and disabling blending modes
  *
- * @see https://registry.khronos.org/OpenGL-Refpages/gl4/html/glBlitFramebuffer.xhtml
+ * @see <https://registry.khronos.org/OpenGL-Refpages/gl4/html/glBlitFramebuffer.xhtml>
  */
 data class AGBlitPixels(
     var dstFrameBuffer: AGFrameBuffer,

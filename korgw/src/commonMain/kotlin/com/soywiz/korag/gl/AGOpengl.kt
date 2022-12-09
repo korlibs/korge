@@ -22,11 +22,8 @@ import com.soywiz.krypto.encoding.hex
 import kotlin.contracts.*
 import kotlin.jvm.*
 
-open class SimpleAGOpengl<TKmlGl : KmlGl>(override val gl: TKmlGl, override val nativeComponent: Any = Unit, checked: Boolean = false) : AGOpengl(checked) {
+open class SimpleAGOpengl<TKmlGl : KmlGl>(override val gl: TKmlGl, override val nativeComponent: Any = Unit, checked: Boolean = false) : AGOpengl(checked)
 
-}
-
-@OptIn(KorIncomplete::class, KorInternal::class)
 abstract class AGOpengl(checked: Boolean = false) : AG(checked) {
     class ShaderException(val str: String, val error: String, val errorInt: Int, val gl: KmlGl, val debugName: String?, val type: Int) :
         RuntimeException("Error Compiling Shader : $debugName type=$type : ${errorInt.hex} : '$error' : source='$str', gl.versionInt=${gl.versionInt}, gl.versionString='${gl.versionString}', gl=$gl")
@@ -139,7 +136,7 @@ abstract class AGOpengl(checked: Boolean = false) : AG(checked) {
         //gl.disable(KmlGl.SCISSOR_TEST)
         var mask = 0
         if (clearColor) {
-            gl.colorMask(true, true, true, true)
+            setColorMaskState(AGColorMask.ALL_ENABLED)
             gl.clearColor(color.rf, color.gf, color.bf, color.af)
             mask = mask or KmlGl.COLOR_BUFFER_BIT
         }
@@ -166,7 +163,6 @@ abstract class AGOpengl(checked: Boolean = false) : AG(checked) {
     //private val externalPrograms = FastIdentityMap<Program, AgProgram>()
     private val normalPrograms = HashMap<Program, GLBaseProgram>()
     private val externalPrograms = HashMap<Program, GLBaseProgram>()
-    private var currentProgram: GLBaseProgram? = null
 
     private fun getProgram(program: Program, config: ProgramConfig = ProgramConfig.DEFAULT, use: Boolean = true): GLBaseProgram {
         val map = if (config.externalTextureSampler) externalPrograms else normalPrograms
@@ -201,11 +197,38 @@ abstract class AGOpengl(checked: Boolean = false) : AG(checked) {
         vaoUse(batch.vertexData)
         try {
             uniformsSet(batch.uniforms)
-            setBlendingState(batch.blending)
+
+            val blending = batch.blending
+            if (currentBlending != blending) {
+                currentBlending = blending
+                enableDisable(AGEnable.BLEND, blending.enabled) {
+                    gl.blendEquationSeparate(blending.eqRGB.toGl(), blending.eqA.toGl())
+                    gl.blendFuncSeparate(blending.srcRGB.toGl(), blending.dstRGB.toGl(), blending.srcA.toGl(), blending.dstA.toGl())
+                }
+            }
+
             setDepthAndFrontFace(batch.depthAndFrontFace)
             setColorMaskState(batch.colorMask)
-            setStencilState(batch.stencilOpFunc, batch.stencilRef)
 
+            val stencilOpFunc = batch.stencilOpFunc
+            val stencilRef = batch.stencilRef
+            if (currentStencilOpFunc != stencilOpFunc || currentStencilRef != stencilRef) {
+                currentStencilOpFunc = stencilOpFunc
+                currentStencilRef = stencilRef
+                if (stencilOpFunc.enabled) {
+                    gl.enable(KmlGl.STENCIL_TEST)
+                    gl.stencilFunc(stencilOpFunc.compareMode.toGl(), stencilRef.referenceValue, stencilRef.readMask)
+                    gl.stencilOp(
+                        stencilOpFunc.actionOnDepthFail.toGl(),
+                        stencilOpFunc.actionOnDepthPassStencilFail.toGl(),
+                        stencilOpFunc.actionOnBothPass.toGl()
+                    )
+                    gl.stencilMask(stencilRef.writeMask)
+                } else {
+                    gl.disable(KmlGl.STENCIL_TEST)
+                    gl.stencilMask(0)
+                }
+            }
 
             //val viewport = Buffer(4 * 4)
             //gl.getIntegerv(KmlGl.VIEWPORT, viewport)
@@ -238,6 +261,20 @@ abstract class AGOpengl(checked: Boolean = false) : AG(checked) {
             gles = gl.gles,
             android = gl.android,
         )
+    }
+
+    private var currentBlending: AGBlending = AGBlending.INVALID
+    private var currentStencilOpFunc: AGStencilOpFunc = AGStencilOpFunc.INVALID
+    private var currentStencilRef: AGStencilReference = AGStencilReference.INVALID
+    private var currentColorMask: AGColorMask = AGColorMask.INVALID
+    private var currentProgram: GLBaseProgram? = null
+
+    override fun startFrame() {
+        currentBlending = AGBlending.INVALID
+        currentStencilOpFunc = AGStencilOpFunc.INVALID
+        currentStencilRef = AGStencilReference.INVALID
+        currentColorMask = AGColorMask.INVALID
+        currentProgram = null
     }
 
     fun listStart() {
@@ -761,14 +798,6 @@ abstract class AGOpengl(checked: Boolean = false) : AG(checked) {
     }
 
 
-    fun setBlendingState(blending: AGBlending? = null) {
-        val blending = blending ?: AGBlending.NORMAL
-        enableDisable(AGEnable.BLEND, blending.enabled) {
-            gl.blendEquationSeparate(blending.eqRGB.toGl(), blending.eqA.toGl())
-            gl.blendFuncSeparate(blending.srcRGB.toGl(), blending.dstRGB.toGl(), blending.srcA.toGl(), blending.dstA.toGl())
-        }
-    }
-
     fun setDepthAndFrontFace(renderState: AGDepthAndFrontFace) {
         enableDisable(AGEnable.CULL_FACE, renderState.frontFace != AGFrontFace.BOTH) {
             gl.frontFace(renderState.frontFace.toGl())
@@ -782,23 +811,10 @@ abstract class AGOpengl(checked: Boolean = false) : AG(checked) {
         }
     }
 
-    fun setColorMaskState(colorMask: AGColorMask?) {
-        gl.colorMask(colorMask?.red ?: true, colorMask?.green ?: true, colorMask?.blue ?: true, colorMask?.alpha ?: true)
-    }
-
-    fun setStencilState(stencilOpFunc: AGStencilOpFunc?, stencilRef: AGStencilReference) {
-        if (stencilOpFunc != null && stencilOpFunc.enabled) {
-            enable(AGEnable.STENCIL)
-            gl.stencilFunc(stencilOpFunc.compareMode.toGl(), stencilRef.referenceValue, stencilRef.readMask)
-            gl.stencilOp(
-                stencilOpFunc.actionOnDepthFail.toGl(),
-                stencilOpFunc.actionOnDepthPassStencilFail.toGl(),
-                stencilOpFunc.actionOnBothPass.toGl()
-            )
-            gl.stencilMask(stencilRef.writeMask)
-        } else {
-            disable(AGEnable.STENCIL)
-            gl.stencilMask(0)
+    fun setColorMaskState(colorMask: AGColorMask) {
+        if (currentColorMask != colorMask) {
+            currentColorMask = colorMask
+            gl.colorMask(colorMask.red, colorMask.green, colorMask.blue, colorMask.alpha)
         }
     }
 
