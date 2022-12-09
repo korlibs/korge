@@ -202,13 +202,16 @@ abstract class AGOpengl(checked: Boolean = false) : AG(checked) {
             //gl.getIntegerv(KmlGl.VIEWPORT, viewport)
             //println("viewport=${viewport.getAlignedInt32(0)},${viewport.getAlignedInt32(1)},${viewport.getAlignedInt32(2)},${viewport.getAlignedInt32(3)}")
 
-            draw(
-                batch.drawType, batch.vertexCount,
-                batch.drawOffset,
-                batch.instances,
-                if (batch.indices != null) batch.indexType else AGIndexType.NONE,
-                batch.indices
-            )
+            batch.indices?.let { bindBuffer(it, AGBufferKind.INDEX) }
+
+            val indexType = if (batch.indices != null) batch.indexType else AGIndexType.NONE
+            if (indexType != AGIndexType.NONE) when {
+                batch.instances != 1 -> gl.drawElementsInstanced(batch.drawType.toGl(), batch.vertexCount, indexType.toGl(), batch.drawOffset, batch.instances)
+                else -> gl.drawElements(batch.drawType.toGl(), batch.vertexCount, indexType.toGl(), batch.drawOffset)
+            } else when {
+                batch.instances != 1 -> gl.drawArraysInstanced(batch.drawType.toGl(), batch.drawOffset, batch.vertexCount, batch.instances)
+                else -> gl.drawArrays(batch.drawType.toGl(), batch.drawOffset, batch.vertexCount)
+            }
         } finally {
             vaoUnuse(batch.vertexData)
         }
@@ -327,34 +330,6 @@ abstract class AGOpengl(checked: Boolean = false) : AG(checked) {
         buffer.update {
             val mem = buffer.mem ?: Buffer(0)
             gl.bufferData(target.toGl(), mem.sizeInBytes, mem, KmlGl.STATIC_DRAW)
-        }
-    }
-
-    ///////////////////////////////////////
-    // DRAW
-    ///////////////////////////////////////
-    fun draw(
-        type: AGDrawType,
-        vertexCount: Int,
-        offset: Int,
-        instances: Int,
-        indexType: AGIndexType,
-        indices: AGBuffer?
-    ) {
-        indices?.let { bindBuffer(it, AGBufferKind.INDEX) }
-
-        if (indexType != AGIndexType.NONE) {
-            if (instances != 1) {
-                gl.drawElementsInstanced(type.toGl(), vertexCount, indexType.toGl(), offset, instances)
-            } else {
-                gl.drawElements(type.toGl(), vertexCount, indexType.toGl(), offset)
-            }
-        } else {
-            if (instances != 1) {
-                gl.drawArraysInstanced(type.toGl(), offset, vertexCount, instances)
-            } else {
-                gl.drawArrays(type.toGl(), offset, vertexCount)
-            }
         }
     }
 
