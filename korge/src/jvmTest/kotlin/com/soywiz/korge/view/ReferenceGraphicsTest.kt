@@ -15,7 +15,7 @@ import com.soywiz.korim.vector.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
-import kotlin.test.Test
+import kotlin.test.*
 
 class ReferenceGraphicsTest : ViewsForTesting(
     windowSize = SizeInt(200, 200),
@@ -111,6 +111,7 @@ class ReferenceGraphicsTest : ViewsForTesting(
 
     @Test
     @OptIn(KorgeExperimental::class)
+    @Ignore
     fun testGpuShapeView() = viewsTest {
         val korgeBitmap = resourcesVfs["korge.png"].readBitmap()
         val view = gpuShapeView({
