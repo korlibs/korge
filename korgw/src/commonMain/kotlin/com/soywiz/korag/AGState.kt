@@ -265,12 +265,14 @@ inline class AGFrontFace(val ordinal: Int) {
 /** 2 Bits required for encoding */
 inline class AGCullFace(val ordinal: Int) {
     companion object {
-        val BOTH = AGCullFace(0)
-        val FRONT = AGCullFace(1)
-        val BACK = AGCullFace(2)
+        val NONE = AGCullFace(0)
+        val BOTH = AGCullFace(1)
+        val FRONT = AGCullFace(2)
+        val BACK = AGCullFace(3)
     }
 
     override fun toString(): String = when (this) {
+        NONE -> "NONE"
         BOTH -> "BOTH"
         FRONT -> "FRONT"
         BACK -> "BACK"
@@ -515,6 +517,13 @@ inline class AGFullState(val data: Int32Buffer = Int32Buffer(6)) {
     var scissor: AGScissor ; get() = AGScissor(data[4], data[5]) ; set(value) { data[4] = value.xy; data[5] = value.wh }
 }
 
+fun Rectangle?.toAGScissor(): AGScissor {
+    if (this == null) return AGScissor.NIL
+    return AGScissor(x.toInt(), y.toInt(), width.toInt(), height.toInt())
+}
+fun BoundsBuilder.add(scissor: AGScissor) {
+    add(scissor.x, scissor.y)
+}
 inline class AGScissor(val data: Long) {
     constructor(xy: Int, wh: Int) : this(Long.fromLowHigh(xy, wh))
     constructor(x: Int, y: Int, width: Int, height: Int) : this(0.insert16(x, 0).insert16(y, 16), 0.insert16(width, 0).insert16(height, 16))
@@ -727,16 +736,46 @@ data class AGVertexData constructor(
 
 interface AGCommand
 
+/**
+ *
+ */
 data class AGClear(
+    // Frame Buffer
     var frameBuffer: AGFrameBuffer? = null,
+    // Reference balues
     var color: RGBA,
     var depth: Float,
     var stencil: Int,
+    // Mask
     var clearColor: Boolean,
     var clearDepth: Boolean,
-    var clearStencil: Boolean
+    var clearStencil: Boolean,
 ) : AGCommand
 
+/**
+ * Can be emulated by rendering a quad using the texture of the framebuffer and disabling blending modes
+ *
+ * @see https://registry.khronos.org/OpenGL-Refpages/gl4/html/glBlitFramebuffer.xhtml
+ */
+data class AGBlitPixels(
+    var dstFrameBuffer: AGFrameBuffer,
+    var dst: AGScissor,
+    var srcFrameBuffer: AGFrameBuffer,
+    var src: AGScissor,
+) : AGCommand
+
+/**
+ * Reads pixels from a [region] inside a [frameBuffer] into a [texture].
+ */
+data class AGReadPixelsToTexture(
+    var frameBuffer: AGFrameBuffer,
+    var region: AGScissor,
+    var texture: AGTexture,
+) : AGCommand
+
+/**
+ * Incrementally sets a new state diffing with the previous state, and renders primitives.
+ */
 data class AGBatch(
     // Frame Buffer
     var frameBuffer: AGFrameBuffer? = null,
@@ -754,9 +793,10 @@ data class AGBatch(
     var colorMask: AGColorMask = AGColorMask.DEFAULT,
     var depthAndFrontFace: AGDepthAndFrontFace = AGDepthAndFrontFace.DEFAULT,
     var scissor: AGScissor = AGScissor.NIL,
+    var cullFace: AGCullFace = AGCullFace.NONE,
     // Draw
-    var type: AGDrawType = AGDrawType.TRIANGLES,
-    var vertexOffset: Int = 0,
+    var drawType: AGDrawType = AGDrawType.TRIANGLES,
+    var drawOffset: Int = 0,
     var vertexCount: Int = 0,
     var instances: Int = 1
 ) : AGCommand {

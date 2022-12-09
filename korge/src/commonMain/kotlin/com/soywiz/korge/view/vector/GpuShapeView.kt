@@ -156,7 +156,7 @@ open class GpuShapeView(
         validShape = true
         gpuShapeViewCommands.clear()
         gpuShapeViewCommands.clearStencil()
-        gpuShapeViewCommands.setScissor(null)
+        gpuShapeViewCommands.setScissor(AGScissor.NIL)
         lastCommandWasClipped = true
         renderShape(shape)
         gpuShapeViewCommands.finish()
@@ -363,7 +363,7 @@ open class GpuShapeView(
         globalAlpha: Double,
         strokeInfo: StrokeInfo,
         forceClosed: Boolean? = null,
-        stencilOpFunc: AGStencilOpFunc? = null,
+        stencilOpFunc: AGStencilOpFunc = AGStencilOpFunc.DEFAULT,
         stencilRef: AGStencilReference = AGStencilReference.DEFAULT,
     ) {
         val gpuShapeViewCommands = this.gpuShapeViewCommands
@@ -373,7 +373,7 @@ open class GpuShapeView(
             forceClosed = forceClosed
         )
 
-        gpuShapeViewCommands.setScissor(null)
+        gpuShapeViewCommands.setScissor(AGScissor.NIL)
 
         pointsList.fastForEach { points ->
             val startIndex = gpuShapeViewCommands.verticesStart()
@@ -411,7 +411,7 @@ open class GpuShapeView(
         }
     }
 
-    class PointsResult(val bounds: Rectangle, val vertexCount: Int, val vertexStart: Int, val vertexEnd: Int)
+    class PointsResult(val bounds: AGScissor, val vertexCount: Int, val vertexStart: Int, val vertexEnd: Int)
 
     private fun getPointsForPath(points: PointArrayList, type: AGDrawType): PointsResult? {
         if (points.size < 3) return null
@@ -442,7 +442,7 @@ open class GpuShapeView(
             gpuShapeViewCommands.addVertex(x.toFloat(), y.toFloat(), len = len, maxLen = maxLen)
         }
         val vertexEnd = gpuShapeViewCommands.verticesEnd()
-        return PointsResult(bb.getBounds(), points.size + 2, vertexStart, vertexEnd)
+        return PointsResult(bb.getBounds().toAGScissor(), points.size + 2, vertexStart, vertexEnd)
     }
 
     private fun getPointsForPath(path: VectorPath, type: AGDrawType): PointsResult? {
@@ -492,20 +492,20 @@ open class GpuShapeView(
         //val isSimpleDraw = false
         val pathDataList = getPointsForPathList(shape.path, if (isSimpleDraw) AGDrawType.TRIANGLE_STRIP else AGDrawType.TRIANGLE_FAN)
         val pathBoundsNoExpended = BoundsBuilder().also { bb -> pathDataList.fastForEach { bb.add(it.bounds) } }.getBounds()
-        val pathBounds = pathBoundsNoExpended.clone().expand(2, 2, 2, 2)
+        val pathBounds: AGScissor = pathBoundsNoExpended.clone().expand(2, 2, 2, 2).toAGScissor()
 
         val clipDataStart = gpuShapeViewCommands.verticesStart()
         val clipData = shape.clip?.let { getPointsForPath(it, AGDrawType.TRIANGLE_FAN) }
         val clipDataEnd = gpuShapeViewCommands.verticesEnd()
-        val clipBounds = clipData?.bounds
+        val clipBounds: AGScissor = clipData?.bounds ?: AGScissor.NIL
 
         //println("shapeIsConvex=$shapeIsConvex, isSimpleDraw=$isSimpleDraw, drawAntialiasingBorder=$drawAntialiasingBorder, pathBounds=$pathBounds")
 
         if (!isSimpleDraw || lastCommandWasClipped) {
             lastCommandWasClipped = true
             gpuShapeViewCommands.setScissor(when {
-                isSimpleDraw -> null
-                clipBounds != null -> Rectangle().also { it.setToIntersection(pathBounds, clipBounds) }
+                isSimpleDraw -> AGScissor.NIL
+                clipBounds != AGScissor.NIL -> AGScissor.combine(pathBounds, clipBounds)
                 else -> pathBounds
             })
             //gpuShapeViewCommands.clearStencil(0)
@@ -603,7 +603,7 @@ open class GpuShapeView(
                     miterLimit = 5.0,
                 ),
                 forceClosed = true,
-                stencilOpFunc = if (!drawFill) null else AGStencilOpFunc.DEFAULT.withEnabled(true).withCompareMode(stencilCompare.inverted()),
+                stencilOpFunc = if (!drawFill) AGStencilOpFunc.DEFAULT else AGStencilOpFunc.DEFAULT.withEnabled(true).withCompareMode(stencilCompare.inverted()),
                 stencilRef = AGStencilReference.DEFAULT.withReferenceValue(stencilReferenceValue).withWriteMask(0)
             )
         }
@@ -635,7 +635,7 @@ open class GpuShapeView(
     private fun writeFill(
         paintShader: GpuShapeViewPrograms.PaintShader,
         stencilReferenceValue: Int,
-        pathBounds: Rectangle,
+        pathBounds: AGScissor,
         pathDataList: List<PointsResult>,
         stencilCompare: AGCompareMode, //= AGCompareMode.EQUAL
     ) {
