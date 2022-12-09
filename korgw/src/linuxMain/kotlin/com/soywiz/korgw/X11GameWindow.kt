@@ -80,12 +80,6 @@ actual fun CreateDefaultGameWindow(config: GameWindowCreationConfig): GameWindow
 // https://www.khronos.org/registry/OpenGL/extensions/EXT/EXT_swap_control.txt
 private val swapIntervalEXT by GLFuncNull<(CPointer<Display>?, GLXDrawable, Int) -> Unit>("swapIntervalEXT")
 
-//class X11Ag(val window: X11GameWindow, override val gl: KmlGl = LogKmlGlProxy(X11KmlGl())) : AGOpengl() {
-class X11AgOpengl constructor(val window: X11GameWindow, override val gl: KmlGl = com.soywiz.kgl.KmlGlNative()) : AGOpengl() {
-    override val nativeComponent: Any = window
-
-}
-
 // https://www.khronos.org/opengl/wiki/Tutorial:_OpenGL_3.0_Context_Creation_(GLX)
 class X11OpenglContext(val d: CPointer<Display>?, val w: Window, val doubleBuffered: Boolean = true) {
     companion object {
@@ -146,7 +140,7 @@ class X11GameWindow : EventLoopGameWindow() {
     override val dialogInterface = ZenityDialogs
 
     //init { println("X11GameWindow") }
-    override val ag: X11AgOpengl by lazy { X11AgOpengl(this) }
+    override val ag: AGOpengl = AGOpengl(com.soywiz.kgl.KmlGlNative())
 
 
     override val pixelsPerInch: Double by TimedCache<Double>(0.5.seconds) {

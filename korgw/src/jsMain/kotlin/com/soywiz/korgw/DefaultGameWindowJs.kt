@@ -1,6 +1,5 @@
 package com.soywiz.korgw
 
-import com.soywiz.klock.PerformanceCounter
 import com.soywiz.korag.*
 import com.soywiz.korag.gl.*
 import com.soywiz.korev.*
@@ -27,7 +26,9 @@ open class JsGameWindow : GameWindow() {
     }
 }
 
-open class BrowserCanvasJsGameWindow : JsGameWindow() {
+open class BrowserCanvasJsGameWindow(
+    val canvas: HTMLCanvasElement = AGDefaultCanvas()
+) : JsGameWindow() {
     val tDevicePixelRatio get() = window.devicePixelRatio.toDouble()
     override val devicePixelRatio get() = when {
         tDevicePixelRatio <= 0.0 -> 1.0
@@ -38,8 +39,7 @@ open class BrowserCanvasJsGameWindow : JsGameWindow() {
     // @TODO: Improve this: https://gist.github.com/scryptonite/5242987
     //override val pixelsPerInch: Double get() = 96.0 * devicePixelRatio
 
-    override val ag: AGWebgl = AGWebgl(AGConfig())
-    val canvas get() = ag.canvas
+    override val ag: AGOpengl = AGWebgl(AGConfig(), canvas)
     override val dialogInterface: DialogInterfaceJs = DialogInterfaceJs()
     private var isTouchDeviceCache: Boolean? = null
     fun is_touch_device(): Boolean {

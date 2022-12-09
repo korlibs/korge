@@ -5,6 +5,7 @@ import com.soywiz.kgl.*
 import com.soywiz.klock.*
 import com.soywiz.kmem.*
 import com.soywiz.korag.*
+import com.soywiz.korag.gl.*
 import com.soywiz.korev.*
 import com.soywiz.korgw.*
 import com.soywiz.korgw.internal.MicroDynamic
@@ -32,7 +33,7 @@ import javax.swing.*
 import kotlin.system.*
 
 abstract class BaseAwtGameWindow(val config: GameWindowCreationConfig) : GameWindow(), ClipboardOwner {
-    abstract override val ag: AwtAg
+    abstract override val ag: AGOpengl
 
 
     private val localGraphicsEnvironment : GraphicsEnvironment by lazy(LazyThreadSafetyMode.PUBLICATION) {
@@ -180,8 +181,6 @@ abstract class BaseAwtGameWindow(val config: GameWindowCreationConfig) : GameWin
 
     fun framePaint(g: Graphics) {
         //println("framePaint")
-
-        ag.isGlAvailable = true
 
         if (fvsync) {
             EventQueue.invokeLater {

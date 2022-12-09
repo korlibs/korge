@@ -176,8 +176,6 @@ open class LogBaseAG(
 	override var backWidth: Int = width; set(value) { field = value; log("backWidth = $value", Kind.METRICS) }
 	override var backHeight: Int = height; set(value) { field = value; log("backHeight = $value", Kind.METRICS) }
 
-	override fun repaint() = log("repaint()", Kind.REPAINT)
-
 	override fun dispose() = log("dispose()", Kind.DISPOSE)
 
 	inner class LogTexture(val id: Int, premultiplied: Boolean) : AGTexture(this, premultiplied) {

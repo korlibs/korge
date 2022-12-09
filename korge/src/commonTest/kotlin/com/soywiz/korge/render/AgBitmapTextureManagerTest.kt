@@ -3,7 +3,7 @@ package com.soywiz.korge.render
 import com.soywiz.kgl.KmlGl
 import com.soywiz.kgl.KmlGlProxyLogToString
 import com.soywiz.korag.*
-import com.soywiz.korag.gl.SimpleAGOpengl
+import com.soywiz.korag.gl.*
 import com.soywiz.korag.log.LogAG
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.bitmap.ForcedTexNativeImage
@@ -79,7 +79,7 @@ class AgBitmapTextureManagerTest {
                 return super.getString(name, params, result)
             }
         }
-        val ag = SimpleAGOpengl(gl, checked = true)
+        val ag = AGOpengl(gl)
         val tm = AgBitmapTextureManager(ag)
 
         class FixedNativeImage(

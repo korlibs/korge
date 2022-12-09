@@ -8,9 +8,9 @@ import kotlin.test.*
 class AGOpenglTest {
     @Test
     fun testClear() {
-        val proxy = KmlGlProxyLogToString()
-        val ag = SimpleAGOpengl(proxy)
+        val gl = KmlGlProxyLogToString()
+        val ag = AGOpengl(gl)
         ag.clear()
-        assertEqualsJvmFileReference("SimpleAGOpengl.clear.ref", ag.gl.log.joinToString("\n"))
+        assertEqualsJvmFileReference("SimpleAGOpengl.clear.ref", gl.log.joinToString("\n"))
     }
 }

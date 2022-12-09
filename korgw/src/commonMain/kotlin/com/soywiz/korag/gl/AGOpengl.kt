@@ -20,16 +20,9 @@ import com.soywiz.krypto.encoding.hex
 import kotlin.contracts.*
 import kotlin.jvm.*
 
-open class SimpleAGOpengl<TKmlGl : KmlGl>(override val gl: TKmlGl, override val nativeComponent: Any = Unit, checked: Boolean = false) : AGOpengl(checked)
-
-abstract class AGOpengl(val checked: Boolean = false) : AG() {
+class AGOpengl(val gl: KmlGl) : AG() {
     class ShaderException(val str: String, val error: String, val errorInt: Int, val gl: KmlGl, val debugName: String?, val type: Int) :
         RuntimeException("Error Compiling Shader : $debugName type=$type : ${errorInt.hex} : '$error' : source='$str', gl.versionInt=${gl.versionInt}, gl.versionString='${gl.versionString}', gl=$gl")
-
-    open var isGlAvailable = true
-
-    @Deprecated("Do not use directly")
-    abstract val gl: KmlGl
 
     override val parentFeatures: AGFeatures get() = gl
 
@@ -75,9 +68,7 @@ abstract class AGOpengl(val checked: Boolean = false) : AG() {
 
 
     override fun contextLost() {
-        Console.info("AG.contextLost()", this)
-        //printStackTrace("AG.contextLost")
-        contextVersion++
+        super.contextLost()
         gl.handleContextLost()
         gl.graphicExtensions // Ensure extensions are available outside the GL thread
     }

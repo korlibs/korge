@@ -472,7 +472,7 @@ class MyDefaultGameWindow : GameWindow() {
         //println("doRender[4]")
     }
 
-    override val ag: AG = MacAGNative(window)
+    override val ag: AG = AGNative()
 
     override val devicePixelRatio: Double
         get() {

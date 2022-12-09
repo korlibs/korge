@@ -21,13 +21,6 @@ import java.nio.ByteBuffer
 import kotlin.coroutines.*
 import kotlin.system.*
 
-class MacAG(val window: Long, val checkGl: Boolean, val logGl:Boolean) : AGOpengl() {
-    //override val glSlVersion = 140
-    //override val glSlVersion = 100
-    override val gl: KmlGl = MacKmlGL().checkedIf(checkGl).logIf(logGl)
-    override val nativeComponent: Any = window
-}
-
 //open class MacKmlGL : NativeKgl(MacGL)
 open class MacKmlGL : NativeKgl(DirectGL)
 
@@ -279,7 +272,8 @@ class MacGameWindow(val checkGl: Boolean, val logGl: Boolean) : GameWindow() {
 
     override val key: CoroutineContext.Key<*>
         get() = super.key
-    override val ag: MacAG = MacAG(window, checkGl, logGl)
+
+    override val ag: AGOpengl = AGOpengl(MacKmlGL().checkedIf(checkGl).logIf(logGl))
     override val coroutineDispatcher: GameWindowCoroutineDispatcher
         get() = super.coroutineDispatcher
     override var title: String

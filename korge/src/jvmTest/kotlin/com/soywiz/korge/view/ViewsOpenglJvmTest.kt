@@ -19,10 +19,7 @@ class ViewsOpenglJvmTest : ViewsForTesting(log = true) {
         }
     }
 
-    override fun createAg(): AG = object : AGOpengl() {
-        override val gl: KmlGl = logGl
-        override val nativeComponent: Any = Unit
-    }
+    override fun createAg(): AG = AGOpengl(logGl)
 
     // This checks that the texture is generated with the default size (dirty=true fix)
     @Test

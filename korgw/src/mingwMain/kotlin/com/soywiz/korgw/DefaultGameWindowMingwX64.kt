@@ -2,6 +2,7 @@ package com.soywiz.korgw
 
 import com.soywiz.kmem.*
 import com.soywiz.korag.*
+import com.soywiz.korag.gl.*
 import com.soywiz.korev.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korma.geom.*
@@ -103,7 +104,7 @@ class WindowsGameWindow : EventLoopGameWindow() {
     val agNativeComponent = Any()
     var hwnd: HWND? = null
     var glRenderContext: HGLRC? = null
-    override val ag: AG = Win32AGOpengl({ hwnd })
+    override val ag: AG = AGNative()
 
     override val pixelsPerInch: Double get() {
         try {

@@ -27,10 +27,6 @@ open class SDLKmlGl : NativeKgl(SDL) {
     override val gles: Boolean = true
     override val linux: Boolean = true
 }
-class SDLAg(window: SdlGameWindowJvm, val checkGl: Boolean, override val gl: KmlGl = SDLKmlGl().checkedIf(checkGl)) :
-    AGOpengl() {
-    override val nativeComponent: Any = window
-}
 
 interface GL : INativeGL, Library
 
@@ -48,7 +44,7 @@ const val SDL_SUCCESS = 0
 val NULLPTR = Pointer(0)
 
 class SdlGameWindowJvm(checkGl: Boolean) : EventLoopGameWindow() {
-    override val ag: AGOpengl by lazy { SDLAg(this, checkGl) }
+    override val ag: AGOpengl = AGOpengl(SDLKmlGl().checkedIf(checkGl))
 
     override var title: String = "Korgw"
         set(value) {

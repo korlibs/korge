@@ -30,10 +30,9 @@ abstract class AG() : AGFeatures, AGCommandExecutor, Extra by Extra.Mixin() {
         const val defaultPixelsPerInch : Double = 96.0
     }
 
-    abstract val nativeComponent: Any
-
     open fun contextLost() {
         Console.info("AG.contextLost()", this)
+        contextVersion++
         //printStackTrace("AG.contextLost")
     }
 
@@ -48,9 +47,6 @@ abstract class AG() : AGFeatures, AGCommandExecutor, Extra by Extra.Mixin() {
 
     open fun offscreenRendering(callback: () -> Unit) {
         callback()
-    }
-
-    open fun repaint() {
     }
 
     fun resized(width: Int, height: Int) {

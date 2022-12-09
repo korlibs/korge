@@ -1,12 +1,14 @@
 package com.soywiz.korgw
 
 import com.soywiz.kds.Pool
+import com.soywiz.kgl.*
 import com.soywiz.klock.measureTime
 import com.soywiz.korag.*
 
 import com.soywiz.klogger.Console
 import com.soywiz.kmem.KmemGC
 import com.soywiz.kmem.hasFlags
+import com.soywiz.korag.gl.*
 import com.soywiz.korev.GameButton
 import com.soywiz.korev.GamePadConnectionEvent
 import com.soywiz.korev.ISoftKeyboardConfig
@@ -411,7 +413,7 @@ open class IosGameWindow(
 ) : GameWindow() {
     override val dialogInterface = DialogInterfaceIos()
 
-    override val ag: AG = IosAGNative()
+    override val ag: AG = AGOpengl(KmlGlNative(gles = true).checkedIf(checked = false))
 
     override val pixelsPerInch: Double get() = UIScreen.mainScreen.scale.toDouble() * 160.0
 
