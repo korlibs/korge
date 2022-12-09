@@ -96,7 +96,7 @@ class AgBitmapTextureManagerTest {
         val tex0 = tm.getTextureBase(image1)
         val tex1 = tm.getTextureBase(fixedNativeImage)
         tex1.base?.forcedTexId = fixedNativeImage
-        ag.commandsSync { list ->
+        ag.commands { list ->
             val program = list.createProgram(DefaultShaders.PROGRAM_DEFAULT)
             list.useProgram(program)
             list.uniformsSet(AGUniformValues {
@@ -109,16 +109,16 @@ class AgBitmapTextureManagerTest {
         tex3.base?.forcedTexId = fixedNativeImage
         tm.afterRender()
         tm.gc()
-        ag.commandsSync {  } // Ensure commands are executed
+        ag.commands {  } // Ensure commands are executed
 
         val tex4 = tm.getTextureBase(image1)
         tm.afterRender()
         tm.gc()
-        ag.commandsSync {  } // Ensure commands are executed
+        ag.commands {  } // Ensure commands are executed
 
         tm.afterRender()
         tm.gc()
-        ag.commandsSync {  } // Ensure commands are executed
+        ag.commands {  } // Ensure commands are executed
 
         assertEquals(
             """

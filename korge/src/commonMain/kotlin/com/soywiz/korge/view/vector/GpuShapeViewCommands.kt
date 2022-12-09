@@ -123,7 +123,7 @@ class GpuShapeViewCommands {
                 tempMat.premultiply(globalMatrix)
                 batcher.setViewMatrixTemp(tempMat) {
                     globalMatrix.decompose(decomposed)
-                    ag.commandsNoWait { list ->
+                    ag.commands { list ->
                         // applyScissor is for using the ctx.batch.scissor infrastructure
                         if (!applyScissor) {
                             list.disableScissor()

@@ -680,7 +680,7 @@ open class AGFrameBuffer(ag: AG) : AGBaseFrameBufferImpl(ag) {
 
     override fun set() {
         ag.setViewport(this)
-        ag.commandsNoWait { it.frameBufferSet(this) }
+        ag.commands { it.frameBufferSet(this) }
     }
 
     fun readBitmap(bmp: Bitmap32) = ag.readColor(bmp)

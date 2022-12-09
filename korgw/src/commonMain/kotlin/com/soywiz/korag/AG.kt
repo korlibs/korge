@@ -57,7 +57,7 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
     open fun contextLost() {
         Console.info("AG.contextLost()", this)
         //printStackTrace("AG.contextLost")
-        commandsSync { it.contextLost() }
+        commands { it.contextLost() }
     }
 
     val tempVertexBufferPool = Pool { createBuffer() }
@@ -136,7 +136,7 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
     fun createTexture(bmp: BitmapSlice<Bitmap>, mipmaps: Boolean = false): AGTexture = createTexture(bmp.premultiplied).upload(bmp, mipmaps)
     fun createTexture(bmp: Bitmap, mipmaps: Boolean = false, premultiplied: Boolean = true): AGTexture = createTexture(premultiplied).upload(bmp, mipmaps)
     open fun createTexture(premultiplied: Boolean, targetKind: AGTextureTargetKind = AGTextureTargetKind.TEXTURE_2D): AGTexture = AGTexture(this, premultiplied, targetKind)
-    open fun createBuffer(): AGBuffer = commandsNoWaitNoExecute { AGBuffer(this, it) }
+    open fun createBuffer(): AGBuffer = AGBuffer(this)
 
     fun createVertexData(vararg attributes: Attribute, layoutSize: Int? = null) = AGVertexData(createBuffer(), VertexLayout(*attributes, layoutSize = layoutSize))
     fun createBuffer(data: Buffer) = createBuffer().apply { upload(data) }
@@ -199,7 +199,7 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
 
         //finalScissor.setTo(0, 0, backWidth, backHeight)
 
-        commandsNoWait { list ->
+        commands { list ->
             list.setScissorState(this, scissor)
 
             getProgram(program, config = when {
@@ -270,7 +270,7 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
     open fun createMainRenderBuffer(): AGBaseFrameBuffer = AGBaseFrameBufferImpl(this)
 
     internal fun setViewport(buffer: AGBaseFrameBuffer) {
-        commandsNoWait { it.viewport(buffer.x, buffer.y, buffer.width, buffer.height) }
+        commands { it.viewport(buffer.x, buffer.y, buffer.width, buffer.height) }
         //println("setViewport: ${buffer.x}, ${buffer.y}, ${buffer.width}, ${buffer.height}")
     }
 
@@ -285,7 +285,7 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
         renderBuffers.free(frameRenderBuffers)
         if (frameRenderBuffers.isNotEmpty()) frameRenderBuffers.clear()
         flipInternal()
-        commandsSync { it.finish() }
+        commands { it.finish() }
     }
 
     open fun flipInternal() = Unit
@@ -302,7 +302,7 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
         clearStencil: Boolean = true,
         scissor: AGScissor = AGScissor.NIL,
     ) {
-        commandsNoWait { list ->
+        commands { list ->
             //println("CLEAR: $color, $depth")
             list.setScissorState(this, scissor)
             //gl.disable(KmlGl.SCISSOR_TEST)
@@ -418,7 +418,7 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
         hasDepth: Boolean = false, hasStencil: Boolean = false, msamples: Int = 1,
         use: (tex: AGTexture, texWidth: Int, texHeight: Int) -> Unit
     ) {
-        commandsNoWait { list ->
+        commands { list ->
             list.flush()
         }
         tempAllocateFrameBuffer(width, height, hasDepth, hasStencil, msamples) { rb ->
@@ -472,13 +472,13 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
     }
 
     open fun readColor(bitmap: Bitmap32, x: Int = 0, y: Int = 0) {
-        commandsSync { it.readPixels(x, y, bitmap.width, bitmap.height, bitmap.ints, AGReadKind.COLOR) }
+        commands { it.readPixels(x, y, bitmap.width, bitmap.height, bitmap.ints, AGReadKind.COLOR) }
     }
     open fun readDepth(width: Int, height: Int, out: FloatArray) {
-        commandsSync { it.readPixels(0, 0, width, height, out, AGReadKind.DEPTH) }
+        commands { it.readPixels(0, 0, width, height, out, AGReadKind.DEPTH) }
     }
     open fun readStencil(bitmap: Bitmap8) {
-        commandsSync { it.readPixels(0, 0, bitmap.width, bitmap.height, bitmap.data, AGReadKind.STENCIL) }
+        commands { it.readPixels(0, 0, bitmap.width, bitmap.height, bitmap.data, AGReadKind.STENCIL) }
     }
     fun readDepth(out: FloatArray2): Unit = readDepth(out.width, out.height, out.data)
     open fun readColorTexture(texture: AGTexture, x: Int = 0, y: Int = 0, width: Int = backWidth, height: Int = backHeight): Unit = TODO()
@@ -519,59 +519,17 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
 
     val multithreadedRendering: Boolean get() = false
 
-    @OptIn(ExperimentalContracts::class)
-    @Deprecated("Use commandsNoWait instead")
-    inline fun <T> commands(block: (AGList) -> T): T {
-        contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-        return commandsNoWait(block)
-    }
-
     /**
      * Queues commands, and wait for them to be executed synchronously
      */
     @OptIn(ExperimentalContracts::class)
-    inline fun <T> commandsSync(block: (AGList) -> T): T {
+    inline fun <T> commands(block: (AGList) -> T): T {
         contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
         val result = block(_list)
         if (multithreadedRendering) {
             runBlockingNoJs { _list.sync() }
         } else {
             _executeList(_list)
-        }
-        return result
-    }
-
-    /**
-     * Queues commands without waiting
-     */
-    @OptIn(ExperimentalContracts::class)
-    inline fun <T> commandsNoWait(block: (AGList) -> T): T {
-        contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-        val result = block(_list)
-        if (!multithreadedRendering) _executeList(_list)
-        return result
-    }
-
-    /**
-     * Queues commands without waiting. In non-multithreaded mode, not even executing
-     */
-    @OptIn(ExperimentalContracts::class)
-    inline fun <T> commandsNoWaitNoExecute(block: (AGList) -> T): T {
-        contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-        return block(_list)
-    }
-
-    /**
-     * Queues commands and suspend until they are executed
-     */
-    @OptIn(ExperimentalContracts::class)
-    suspend inline fun <T> commandsSuspend(block: (AGList) -> T): T {
-        contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-        val result = block(_list)
-        if (!multithreadedRendering) {
-            _executeList(_list)
-        } else {
-            _list.sync()
         }
         return result
     }

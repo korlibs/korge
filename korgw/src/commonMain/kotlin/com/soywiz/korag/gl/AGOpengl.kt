@@ -38,14 +38,14 @@ abstract class AGOpengl(checked: Boolean = false) : AG(checked) {
 
         return object : AGBaseFrameBufferImpl(this) {
             override fun init() {
-                commandsSync {  }
+                commands {  }
                 backBufferTextureBinding2d = gl.getIntegerv(KmlGl.TEXTURE_BINDING_2D)
                 backBufferRenderBufferBinding = gl.getIntegerv(KmlGl.RENDERBUFFER_BINDING)
                 backBufferFrameBufferBinding = gl.getIntegerv(KmlGl.FRAMEBUFFER_BINDING)
             }
 
             override fun set() {
-                commandsSync {  }
+                commands {  }
                 setViewport(this)
                 gl.bindTexture(KmlGl.TEXTURE_2D, backBufferTextureBinding2d)
                 gl.bindRenderbuffer(KmlGl.RENDERBUFFER, backBufferRenderBufferBinding)
@@ -53,7 +53,7 @@ abstract class AGOpengl(checked: Boolean = false) : AG(checked) {
             }
 
             override fun unset() {
-                commandsSync {  }
+                commands {  }
                 backBufferTextureBinding2d = gl.getIntegerv(KmlGl.TEXTURE_BINDING_2D)
                 backBufferRenderBufferBinding = gl.getIntegerv(KmlGl.RENDERBUFFER_BINDING)
                 backBufferFrameBufferBinding = gl.getIntegerv(KmlGl.FRAMEBUFFER_BINDING)
@@ -77,9 +77,9 @@ abstract class AGOpengl(checked: Boolean = false) : AG(checked) {
     override fun readColorTexture(texture: AGTexture, x: Int, y: Int, width: Int, height: Int) {
         //gl.flush()
         //gl.finish()
-        commandsSync { it.bindTexture(texture, AGTextureTargetKind.TEXTURE_2D) }
+        commands { it.bindTexture(texture, AGTextureTargetKind.TEXTURE_2D) }
         gl.copyTexImage2D(gl.TEXTURE_2D, 0, gl.RGBA, x, y, width, height, 0)
-        commandsSync { it.bindTexture(null, AGTextureTargetKind.TEXTURE_2D) }
+        commands { it.bindTexture(null, AGTextureTargetKind.TEXTURE_2D) }
     }
 }
 

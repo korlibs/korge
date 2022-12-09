@@ -37,7 +37,7 @@ class AGQueueProcessorOpenGLTest {
         ag.contextLost()
         list.bindTexture(tex, AGTextureTargetKind.TEXTURE_2D)
         processor.processBlocking(list, -1)
-        ag.commandsSync {  }
+        ag.commands {  }
         assertEqualsJvmFileReference("com/soywiz/korag/AGQueueProcessorContextLost.ref", gl.getLogAsString())
     }
 }

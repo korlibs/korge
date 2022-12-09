@@ -32,7 +32,7 @@ open class AGObject : Closeable {
     }
 }
 
-open class AGBuffer constructor(val ag: AG, val list: AGList) : AGObject() {
+open class AGBuffer constructor(val ag: AG) : AGObject() {
     var estimatedMemoryUsage: ByteUnits = ByteUnits.fromBytes(0)
     var dirty: Boolean = true
     internal var mem: Buffer? = null

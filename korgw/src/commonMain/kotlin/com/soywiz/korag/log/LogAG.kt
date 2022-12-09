@@ -202,7 +202,7 @@ open class LogBaseAG(
 		override fun toString(): String = "Texture[$id]"
 	}
 
-	inner class LogBuffer(val id: Int, list: AGList) : AGBuffer(this, list) {
+	inner class LogBuffer(val id: Int) : AGBuffer(this) {
 		val logmem: com.soywiz.kmem.Buffer? get() = mem
 		override fun afterSetMem() {
             super.afterSetMem()
@@ -233,8 +233,7 @@ open class LogBaseAG(
 	override fun createTexture(premultiplied: Boolean, targetKind: AGTextureTargetKind): AGTexture =
 		LogTexture(textureId++, premultiplied).apply { log("createTexture():$id", Kind.TEXTURE) }
 
-	override fun createBuffer(): AGBuffer =
-        commandsNoWait { LogBuffer(bufferId++, _list).apply { log("createBuffer():$id", Kind.BUFFER) } }
+	override fun createBuffer(): AGBuffer = LogBuffer(bufferId++).apply { log("createBuffer():$id", Kind.BUFFER) }
 
     data class VertexAttributeEx(val index: Int, val attribute: Attribute, val pos: Int, val data: AGVertexData) {
         val layout = data.layout
