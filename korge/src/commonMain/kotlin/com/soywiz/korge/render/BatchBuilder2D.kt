@@ -2,6 +2,7 @@
 
 package com.soywiz.korge.render
 
+import com.soywiz.kds.*
 import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.klogger.Logger
 import com.soywiz.kmem.*
@@ -71,7 +72,12 @@ class BatchBuilder2D constructor(
     val ag: AG = ctx.ag
 	init {
         logger.trace { "BatchBuilder2D[0]" }
-        ctx.flushers.add { flush() }
+        ctx.flushers.add {
+            when (it) {
+                RenderContext.FlushKind.STATE -> createBatchIfRequired()
+                RenderContext.FlushKind.FULL -> flush()
+            }
+        }
     }
 
 	var flipRenderTexture = true
@@ -201,6 +207,9 @@ class BatchBuilder2D constructor(
 	}
 
     fun _addVertex(vd: Buffer, vp: Int, x: Float, y: Float, u: Float, v: Float, colorMul: Int, colorAdd: Int, texIndex: Int = currentTexIndex, premultiplied: Boolean, wrap: Boolean): Int {
+        if (vp + 6 >= vd.sizeInBytes * 4) {
+            error("WOOPS!")
+        }
         vd.setFloat32(vp + 0, x)
         vd.setFloat32(vp + 1, y)
         vd.setFloat32(vp + 2, u)
@@ -446,7 +455,7 @@ class BatchBuilder2D constructor(
 	}
 
 	private fun checkAvailable(indices: Int, vertices: Int): Boolean {
-		return (this.indexPos + indices < maxIndices) || (this.vertexPos + vertices < maxVertices)
+		return (this.indexPos + indices < maxIndices) && (this.vertexPos + vertices < maxVertices)
 	}
 
 	fun ensure(indices: Int, vertices: Int): Boolean {
@@ -477,7 +486,7 @@ class BatchBuilder2D constructor(
         val isCurrentStateFast = isCurrentStateFast(tex, smoothing, blendMode, program)
         //println("isCurrentStateFast=$isCurrentStateFast, tex=$tex, currentTex=$currentTex, currentTex2=$currentTex2")
         if (isCurrentStateFast) return
-        flush()
+        createBatchIfRequired()
         currentTexIndex = 0
         currentTexN[0] = tex
         currentSmoothing = smoothing
@@ -712,7 +721,8 @@ class BatchBuilder2D constructor(
 
     companion object {
         val MAX_BATCH_QUADS = 16383
-        val DEFAULT_BATCH_QUADS = 4096
+        val DEFAULT_BATCH_QUADS = 0x1000
+        //val DEFAULT_BATCH_QUADS = 0x2000
         //val DEFAULT_BATCH_QUADS = MAX_BATCH_QUADS
 
         init { logger.trace { "BatchBuilder2D.Companion[0]" } }
@@ -895,16 +905,41 @@ class BatchBuilder2D constructor(
     fun getDefaultProgram(): Program = PROGRAM
     fun getDefaultProgramForTexture(): Program = getDefaultProgram()
 
+    private val batches = fastArrayListOf<AGBatch>()
+
+    private var lastIndexPos = 0
+
+    fun createBatchIfRequired() {
+        if (lastIndexPos == indexPos) return
+        updateStandardUniforms()
+
+        batches += AGBatch(
+            ctx.currentFrameBuffer.base,
+            ctx.currentFrameBuffer.info,
+            vertexData = vertexData,
+            indices = indexBuffer,
+            program = currentProgram ?: PROGRAM,
+            //program = PROGRAM_PRE,
+            drawType = AGDrawType.TRIANGLES,
+            blending = currentBlendMode.factors(ctx.isRenderingToTexture),
+            uniforms = uniforms.cloneReadOnly(),
+            stencilOpFunc = stencilOpFunc,
+            stencilRef = stencilRef,
+            colorMask = colorMask,
+            scissor = scissor,
+            drawOffset = lastIndexPos * 2,
+            vertexCount = indexPos - lastIndexPos,
+        )
+        lastIndexPos = indexPos
+    }
+
     /** When there are vertices pending, this performs a [AG.draw] call flushing all the buffered geometry pending to draw */
 	fun flush(uploadVertices: Boolean = true, uploadIndices: Boolean = true) {
+        createBatchIfRequired()
+
         //println("vertexCount=${vertexCount}")
-		if (vertexCount > 0) {
-            updateStandardUniforms()
-
+		if (batches.isNotEmpty()) {
 			//println("ORTHO: ${ag.backHeight.toFloat()}, ${ag.backWidth.toFloat()}")
-
-			val factors = currentBlendMode
-
 			if (uploadVertices) uploadVertices()
             if (uploadIndices) uploadIndices()
 
@@ -913,29 +948,15 @@ class BatchBuilder2D constructor(
 			//println("RENDER: $realFactors")
             //println("DRAW: $uniforms")
 
-            val program = currentProgram ?: PROGRAM
             //println("program=$program, currentTexN[0]=${currentTexN[0]}")
-            ag.draw(
-                ctx.currentFrameBuffer,
-                vertexData = vertexData,
-                indices = indexBuffer,
-                program = program,
-                //program = PROGRAM_PRE,
-                drawType = AGDrawType.TRIANGLES,
-                blending = factors.factors(ctx.isRenderingToTexture),
-                uniforms = uniforms,
-                stencilOpFunc = stencilOpFunc,
-                stencilRef = stencilRef,
-                colorMask = colorMask,
-                scissor = scissor,
-                drawOffset = 0,
-                vertexCount = indexPos,
-            )
+            batches.fastForEach { ag.draw(it) }
+            batches.clear()
             beforeFlush(this)
 		}
 
 		vertexCount = 0
 		vertexPos = 0
+        lastIndexPos = 0
 		indexPos = 0
         for (n in 0 until maxTextures) currentTexN[n] = null
         currentTexIndex = 0

@@ -33,6 +33,7 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
         //printStackTrace("AG.contextLost")
     }
 
+    // @TODO: Unify beforeDoRender, startFrame  ---  dispose, finish & endFrame
     open fun beforeDoRender() = Unit
     open fun dispose() = Unit
     open fun finish() {

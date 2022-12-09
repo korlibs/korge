@@ -29,6 +29,22 @@ suspend fun main() = Korge(
 ) {
     //uiButton("HELLO WORLD!", width = 300.0).position(0, 0); return@Korge
     //solidRect(100, 100, Colors.RED).xy(300, 300).filters(BlurFilter()); return@Korge
+    if (false) {
+        views.forceRenderEveryFrame = true
+        container {
+            scale = 0.5
+            uiVerticalStack {
+                for (row in 0 until 40) {
+                    uiHorizontalStack {
+                        for (col in 0 until 20) {
+                            uiButton("Button$col$row")
+                        }
+                    }
+                }
+            }
+        }
+        return@Korge
+    }
 
     demoSelector(
         //Demo(::MainJSMpeg),

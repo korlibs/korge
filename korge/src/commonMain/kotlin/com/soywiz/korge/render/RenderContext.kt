@@ -164,7 +164,7 @@ class RenderContext constructor(
     inline fun setTemporalUniforms(uniforms: AGUniformValues?, callback: (AGUniformValues) -> Unit) {
         tempOldUniformsList { tempOldUniforms ->
             if (uniforms != null && uniforms.isNotEmpty()) {
-                flush()
+                flush(FlushKind.STATE)
                 tempOldUniforms.setTo(this.uniforms)
                 this.uniforms.put(uniforms)
             }
@@ -172,7 +172,7 @@ class RenderContext constructor(
                 callback(this.uniforms)
             } finally {
                 if (uniforms != null && uniforms.isNotEmpty()) {
-                    flush()
+                    flush(FlushKind.STATE)
                     this.uniforms.setTo(tempOldUniforms)
                 }
             }
@@ -184,7 +184,9 @@ class RenderContext constructor(
     val agBufferManager = AgBufferManager(ag)
 
     /** Allows to register handlers when the [flush] method is called */
-    val flushers = Signal<Unit>()
+    val flushers = Signal<FlushKind>()
+
+    enum class FlushKind { STATE, FULL }
 
     val views: Views? = bp as? Views?
 
@@ -244,9 +246,8 @@ class RenderContext constructor(
      * You should call this if you plan to render something else not managed via [batch],
      * so all the pending vertices are drawn.
      */
-	fun flush() {
-        currentBatcher = null
-        flushers(Unit)
+	fun flush(kind: FlushKind = FlushKind.FULL) {
+        flushers(kind)
 	}
 
     var currentFrameBuffer: AGFrameBuffer = ag.mainFrameBuffer
@@ -364,8 +365,9 @@ class RenderContext constructor(
 
     inline fun <T> useBatcher(batcher: T, block: (T) -> Unit) {
         if (currentBatcher !== batcher) {
-            flush()
+            //println("currentBatcher=$currentBatcher, batcher=$batcher")
             currentBatcher = batcher
+            flush()
         }
         block(batcher)
     }
