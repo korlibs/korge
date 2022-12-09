@@ -96,6 +96,8 @@ class AGUniformValues(val capacity: Int = 8 * 1024) {
         operator fun invoke(block: (AGUniformValues) -> Unit): AGUniformValues = AGUniformValues().also(block)
         fun valueToString(value: AGValue): String = value.toString()
     }
+
+    override fun toString(): String = "AGUniformValues(${values.joinToString(", ") { "${it.uniform.name}=" + valueToString(it) }})"
 }
 
 open class AGValue(val type: VarType, val arrayCount: Int, val data: Buffer, var nativeValue: Any?) {
