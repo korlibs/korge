@@ -1,25 +1,15 @@
 package com.soywiz.korag.log
 
-import com.soywiz.kds.FastArrayList
-import com.soywiz.kds.IntArrayList
-import com.soywiz.kds.fastArrayListOf
 import com.soywiz.kds.linkedHashMapOf
-import com.soywiz.kds.mapInt
-import com.soywiz.kds.toIntArrayList
 import com.soywiz.kmem.*
 import com.soywiz.korag.*
 import com.soywiz.korag.shader.Attribute
-import com.soywiz.korag.shader.Program
-import com.soywiz.korag.shader.ProgramConfig
 import com.soywiz.korag.shader.Shader
 import com.soywiz.korag.shader.ShaderType
-import com.soywiz.korag.shader.VarKind
 import com.soywiz.korag.shader.gl.GlslGenerator
-import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korio.annotations.KorInternal
-import com.soywiz.korio.util.niceStr
 
 /*
 open class ComposedAG(val agBase: AG, val agExtra: AG) : AG(), AGFeatures by agBase {
@@ -211,12 +201,11 @@ open class LogBaseAG(
 		override fun toString(): String = "Buffer[$id]"
 	}
 
-	inner class LogFrameBuffer(val id: Int, val isMain: Boolean) : AGFrameBuffer(this) {
+	inner class LogFrameBuffer(val id: Int, isMain: Boolean) : AGFrameBuffer(this, isMain) {
         override fun setSize(x: Int, y: Int, width: Int, height: Int, fullWidth: Int, fullHeight: Int) {
             super.setSize(x, y, width, height, fullWidth, fullHeight)
             log("$this.setSize($width, $height)", Kind.FRAME_BUFFER)
         }
-        override fun set() = log("$this.set()", Kind.FRAME_BUFFER)
 		override fun close() = log("$this.close()", Kind.FRAME_BUFFER)
 		override fun toString(): String = "RenderBuffer[$id]"
         init {

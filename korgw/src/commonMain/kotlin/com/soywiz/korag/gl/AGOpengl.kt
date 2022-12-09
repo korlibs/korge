@@ -13,8 +13,6 @@ import com.soywiz.korag.shader.*
 import com.soywiz.korag.shader.gl.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
-import com.soywiz.korio.annotations.KorIncomplete
-import com.soywiz.korio.annotations.KorInternal
 import com.soywiz.korio.async.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korma.geom.*
@@ -49,22 +47,22 @@ abstract class AGOpengl(checked: Boolean = false) : AG(checked) {
         gl.flush()
     }
 
-    internal fun setViewport(buffer: AGBaseFrameBuffer) {
+    internal fun setViewport(buffer: AGFrameBuffer) {
         gl.viewport(buffer.x, buffer.y, buffer.width, buffer.height)
         //println("VIEWPORT: $x, $y, $width, $height")
         //println("setViewport: ${buffer.x}, ${buffer.y}, ${buffer.width}, ${buffer.height}")
     }
 
-    override fun setRenderBuffer(renderBuffer: AGBaseFrameBuffer?): AGBaseFrameBuffer? {
+    override fun setRenderBuffer(renderBuffer: AGFrameBuffer?): AGFrameBuffer? {
         val old = currentRenderBuffer
-        currentRenderBuffer?.unset()
+        //currentRenderBuffer?.unset()
         currentRenderBuffer = renderBuffer
         if (renderBuffer != null) {
             setViewport(renderBuffer)
-            if (renderBuffer is AGFrameBuffer) {
+            if (!renderBuffer.isMain) {
                 frameBufferSet(renderBuffer)
             } else {
-                renderBuffer.set()
+                frameBufferSet(null)
             }
         }
         return old
@@ -88,36 +86,6 @@ abstract class AGOpengl(checked: Boolean = false) : AG(checked) {
 
     open fun setSwapInterval(value: Int) {
         //gl.swapInterval = 0
-    }
-
-    override fun createMainRenderBuffer(): AGBaseFrameBufferImpl {
-        var backBufferTextureBinding2d: Int = 0
-        var backBufferRenderBufferBinding: Int = 0
-        var backBufferFrameBufferBinding: Int = 0
-
-        return object : AGBaseFrameBufferImpl(this) {
-            override fun init() {
-                sync() // Ensure commands are executed
-                backBufferTextureBinding2d = gl.getIntegerv(KmlGl.TEXTURE_BINDING_2D)
-                backBufferRenderBufferBinding = gl.getIntegerv(KmlGl.RENDERBUFFER_BINDING)
-                backBufferFrameBufferBinding = gl.getIntegerv(KmlGl.FRAMEBUFFER_BINDING)
-            }
-
-            override fun set() {
-                sync()
-                setViewport(this)
-                gl.bindTexture(KmlGl.TEXTURE_2D, backBufferTextureBinding2d)
-                gl.bindRenderbuffer(KmlGl.RENDERBUFFER, backBufferRenderBufferBinding)
-                gl.bindFramebuffer(KmlGl.FRAMEBUFFER, backBufferFrameBufferBinding)
-            }
-
-            override fun unset() {
-                sync()
-                backBufferTextureBinding2d = gl.getIntegerv(KmlGl.TEXTURE_BINDING_2D)
-                backBufferRenderBufferBinding = gl.getIntegerv(KmlGl.RENDERBUFFER_BINDING)
-                backBufferFrameBufferBinding = gl.getIntegerv(KmlGl.FRAMEBUFFER_BINDING)
-            }
-        }
     }
 
     fun createGlState() = KmlGlState(gl)
@@ -268,6 +236,7 @@ abstract class AGOpengl(checked: Boolean = false) : AG(checked) {
     private var currentStencilRef: AGStencilReference = AGStencilReference.INVALID
     private var currentColorMask: AGColorMask = AGColorMask.INVALID
     private var currentProgram: GLBaseProgram? = null
+    var backBufferFrameBufferBinding: Int = 0
 
     override fun startFrame() {
         currentBlending = AGBlending.INVALID
@@ -275,6 +244,11 @@ abstract class AGOpengl(checked: Boolean = false) : AG(checked) {
         currentStencilRef = AGStencilReference.INVALID
         currentColorMask = AGColorMask.INVALID
         currentProgram = null
+        backBufferFrameBufferBinding = gl.getIntegerv(KmlGl.FRAMEBUFFER_BINDING)
+    }
+
+    override fun endFrame() {
+        frameBufferSet(null)
     }
 
     fun listStart() {
@@ -719,7 +693,11 @@ abstract class AGOpengl(checked: Boolean = false) : AG(checked) {
         return old
     }
 
-    fun frameBufferSet(frameBuffer: AGFrameBuffer) {
+    fun frameBufferSet(frameBuffer: AGFrameBuffer?) {
+        if (frameBuffer == null) {
+            gl.bindFramebuffer(KmlGl.FRAMEBUFFER, backBufferFrameBufferBinding)
+            return
+        }
         // Ensure everything has been executed already. @TODO: We should remove this since this is a bottleneck
         val fb = frameBuffer.gl
         val tex = fb.ag.tex
@@ -821,7 +799,7 @@ abstract class AGOpengl(checked: Boolean = false) : AG(checked) {
     fun setScissorState(ag: AG, scissor: AGScissor = AGScissor.NIL) =
         setScissorState(ag.currentRenderBuffer, ag.mainRenderBuffer, scissor)
 
-    fun setScissorState(currentRenderBuffer: AGBaseFrameBuffer?, mainRenderBuffer: AGBaseFrameBuffer, scissor: AGScissor = AGScissor.NIL) {
+    fun setScissorState(currentRenderBuffer: AGFrameBuffer?, mainRenderBuffer: AGFrameBuffer, scissor: AGScissor = AGScissor.NIL) {
         if (currentRenderBuffer == null) return
 
         //println("applyScissorState")

@@ -5,7 +5,6 @@ import com.soywiz.kds.lock.*
 import com.soywiz.kgl.*
 import com.soywiz.korag.*
 import com.soywiz.korag.AGNativeObject
-import com.soywiz.korag.shader.*
 
 class GLGlobalState(val gl: KmlGl, val ag: AG) {
     internal val objectsToDeleteLock = Lock()

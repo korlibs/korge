@@ -12,7 +12,6 @@ import com.soywiz.korag.annotation.KoragExperimental
 import com.soywiz.korag.gl.*
 import com.soywiz.korag.shader.Attribute
 import com.soywiz.korag.shader.Program
-import com.soywiz.korag.shader.ProgramConfig
 import com.soywiz.korag.shader.VarType
 import com.soywiz.korag.shader.VertexLayout
 import com.soywiz.korim.bitmap.Bitmap
@@ -23,15 +22,9 @@ import com.soywiz.korim.bitmap.Bitmaps
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.color.RGBAPremultiplied
-import com.soywiz.korio.annotations.KorIncomplete
-import com.soywiz.korio.async.runBlockingNoJs
 import com.soywiz.korio.lang.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.math.nextMultipleOf
-import kotlin.contracts.ExperimentalContracts
-import kotlin.contracts.InvocationKind
-import kotlin.contracts.contract
-import kotlin.jvm.JvmOverloads
 import kotlin.math.*
 
 
@@ -78,9 +71,14 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, AGCommandExecutor,
 
     inline fun doRender(block: () -> Unit) {
         beforeDoRender()
-        mainRenderBuffer.init()
-        setRenderBufferTemporally(mainRenderBuffer) {
-            block()
+        startFrame()
+        try {
+            //mainRenderBuffer.init()
+            setRenderBufferTemporally(mainRenderBuffer) {
+                block()
+            }
+        } finally {
+            endFrame()
         }
     }
 
@@ -227,7 +225,7 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, AGCommandExecutor,
         const val DEFAULT_INITIAL_HEIGHT = 128
     }
 
-    internal val allRenderBuffers = LinkedHashSet<AGBaseFrameBuffer>()
+    internal val allRenderBuffers = LinkedHashSet<AGFrameBuffer>()
     private val renderBufferCount: Int get() = allRenderBuffers.size
     private val renderBuffersMemory: ByteUnits get() = ByteUnits.fromBytes(allRenderBuffers.sumOf { it.estimatedMemoryUsage.bytesLong })
 
@@ -235,18 +233,17 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, AGCommandExecutor,
     @KoragExperimental
     var agTarget = AGTarget.DISPLAY
 
-    val mainRenderBuffer: AGBaseFrameBuffer by lazy {
+    val mainRenderBuffer: AGFrameBuffer by lazy {
         when (agTarget) {
             AGTarget.DISPLAY -> createMainRenderBuffer()
             AGTarget.OFFSCREEN -> createRenderBuffer()
         }
     }
 
-    open fun createMainRenderBuffer(): AGBaseFrameBuffer = AGBaseFrameBufferImpl(this)
-
     var lastRenderContextId = 0
 
-    open fun createRenderBuffer(): AGFrameBuffer = AGFrameBuffer(this)
+    open fun createMainRenderBuffer(): AGFrameBuffer = AGFrameBuffer(this, isMain = true)
+    open fun createRenderBuffer(): AGFrameBuffer = AGFrameBuffer(this, isMain = false)
 
     //open fun createRenderBuffer() = RenderBuffer()
 
@@ -256,6 +253,8 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, AGCommandExecutor,
     open fun flipInternal() = Unit
 
     open fun startFrame() {
+    }
+    open fun endFrame() {
     }
 
     open fun clear(
@@ -277,14 +276,14 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, AGCommandExecutor,
     fun clearDepth(depth: Float = 1f, scissor: AGScissor = AGScissor.NIL) = clear(clearColor = false, clearDepth = true, clearStencil = false, depth = depth, scissor = scissor)
     fun clearColor(color: RGBA = Colors.TRANSPARENT_BLACK, scissor: AGScissor = AGScissor.NIL) = clear(clearColor = true, clearDepth = false, clearStencil = false, color = color, scissor = scissor)
 
-    val renderBufferStack = FastArrayList<AGBaseFrameBuffer?>()
+    val renderBufferStack = FastArrayList<AGFrameBuffer?>()
 
     //@PublishedApi
     @KoragExperimental
-    var currentRenderBuffer: AGBaseFrameBuffer? = null
+    var currentRenderBuffer: AGFrameBuffer? = null
         protected set
 
-    val currentRenderBufferOrMain: AGBaseFrameBuffer get() = currentRenderBuffer ?: mainRenderBuffer
+    val currentRenderBufferOrMain: AGFrameBuffer get() = currentRenderBuffer ?: mainRenderBuffer
 
     val isRenderingToWindow: Boolean get() = currentRenderBufferOrMain === mainRenderBuffer
     val isRenderingToTexture: Boolean get() = !isRenderingToWindow
@@ -300,7 +299,7 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, AGCommandExecutor,
         }
     }
 
-    inline fun setRenderBufferTemporally(rb: AGBaseFrameBuffer, callback: (AGBaseFrameBuffer) -> Unit) {
+    inline fun setRenderBufferTemporally(rb: AGFrameBuffer, callback: (AGFrameBuffer) -> Unit) {
         pushRenderBuffer(rb)
         try {
             callback(rb)
@@ -390,16 +389,16 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, AGCommandExecutor,
         }, hasDepth = hasDepth, hasStencil = hasStencil, msamples = msamples, use = { _, _, _ -> })
     }
 
-    open fun setRenderBuffer(renderBuffer: AGBaseFrameBuffer?): AGBaseFrameBuffer? {
+    open fun setRenderBuffer(renderBuffer: AGFrameBuffer?): AGFrameBuffer? {
         return null
     }
 
-    fun getRenderBufferAtStackPoint(offset: Int): AGBaseFrameBuffer {
+    fun getRenderBufferAtStackPoint(offset: Int): AGFrameBuffer {
         if (offset == 0) return currentRenderBufferOrMain
         return renderBufferStack.getOrNull(renderBufferStack.size + offset) ?: mainRenderBuffer
     }
 
-    fun pushRenderBuffer(renderBuffer: AGBaseFrameBuffer) {
+    fun pushRenderBuffer(renderBuffer: AGFrameBuffer) {
         renderBufferStack.add(currentRenderBuffer)
         setRenderBuffer(renderBuffer)
     }

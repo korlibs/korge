@@ -608,59 +608,7 @@ interface AGFactory {
     //fun createFastWindow(title: String, width: Int, height: Int, config: AGConfig): AGWindow
 }
 
-interface AGBaseFrameBuffer : Closeable {
-    val x: Int
-    val y: Int
-    val width: Int
-    val height: Int
-    val fullWidth: Int
-    val fullHeight: Int
-    val scissor: RectangleInt?
-    val estimatedMemoryUsage: ByteUnits
-    fun setSize(x: Int, y: Int, width: Int, height: Int, fullWidth: Int = width, fullHeight: Int = height)
-    fun init() = Unit
-    fun set() = Unit
-    fun unset() = Unit
-    fun scissor(scissor: RectangleInt?)
-}
-
-open class AGBaseFrameBufferImpl(val ag: AG) : AGObject(), AGBaseFrameBuffer {
-    override var x = 0
-    override var y = 0
-    override var width = AG.RenderBufferConsts.DEFAULT_INITIAL_WIDTH
-    override var height = AG.RenderBufferConsts.DEFAULT_INITIAL_HEIGHT
-    override var fullWidth = AG.RenderBufferConsts.DEFAULT_INITIAL_WIDTH
-    override var fullHeight = AG.RenderBufferConsts.DEFAULT_INITIAL_HEIGHT
-    private val _scissor = RectangleInt()
-    override var scissor: RectangleInt? = null
-
-    override var estimatedMemoryUsage: ByteUnits = ByteUnits.fromBytes(0)
-
-    override fun setSize(x: Int, y: Int, width: Int, height: Int, fullWidth: Int, fullHeight: Int) {
-        estimatedMemoryUsage = ByteUnits.fromBytes(fullWidth * fullHeight * (4 + 4))
-
-        this.x = x
-        this.y = y
-        this.width = width
-        this.height = height
-        this.fullWidth = fullWidth
-        this.fullHeight = fullHeight
-    }
-
-    override fun scissor(scissor: RectangleInt?) {
-        this.scissor = scissor?.let { _scissor.setTo(it) }
-    }
-
-    init {
-        ag.allRenderBuffers += this
-    }
-
-    override fun close() {
-        ag.allRenderBuffers -= this
-    }
-}
-
-open class AGFrameBuffer(ag: AG) : AGBaseFrameBufferImpl(ag) {
+open class AGFrameBuffer(val ag: AG, val isMain: Boolean) : AGObject() {
     var nsamples: Int = 1; protected set
     val hasStencilAndDepth: Boolean get() = hasDepth && hasStencil
     var hasStencil: Boolean = true; protected set
@@ -672,19 +620,50 @@ open class AGFrameBuffer(ag: AG) : AGBaseFrameBufferImpl(ag) {
         //ag.frameRenderBuffers += this
     }
 
+    //fun init() = Unit
+    //fun set() = Unit
+    //fun unset() = Unit
+
+    var x = 0
+    var y = 0
+    var width = AG.RenderBufferConsts.DEFAULT_INITIAL_WIDTH
+    var height = AG.RenderBufferConsts.DEFAULT_INITIAL_HEIGHT
+    var fullWidth = AG.RenderBufferConsts.DEFAULT_INITIAL_WIDTH
+    var fullHeight = AG.RenderBufferConsts.DEFAULT_INITIAL_HEIGHT
+    private val _scissor = RectangleInt()
+    var scissor: RectangleInt? = null
+
+    var estimatedMemoryUsage: ByteUnits = ByteUnits.fromBytes(0)
+
+    open fun setSize(x: Int, y: Int, width: Int, height: Int, fullWidth: Int = width, fullHeight: Int = height) {
+        if (this.x == x && this.y == y && this.width == width && this.height == height && this.fullWidth == fullWidth && this.fullHeight == fullHeight) return
+        tex.upload(NullBitmap(width, height))
+
+        estimatedMemoryUsage = ByteUnits.fromBytes(fullWidth * fullHeight * (4 + 4))
+
+        this.x = x
+        this.y = y
+        this.width = width
+        this.height = height
+        this.fullWidth = fullWidth
+        this.fullHeight = fullHeight
+        markAsDirty()
+    }
+
+    fun scissor(scissor: RectangleInt?) {
+        this.scissor = scissor?.let { _scissor.setTo(it) }
+    }
+
+    init {
+        ag.allRenderBuffers += this
+    }
+
     override fun close() {
-        super.close()
+        ag.allRenderBuffers -= this
         tex.close()
         //ag.frameRenderBuffers -= this
     }
 
-
-    override fun setSize(x: Int, y: Int, width: Int, height: Int, fullWidth: Int, fullHeight: Int) {
-        if (this.x == x && this.y == y && this.width == width && this.height == height && this.fullWidth == fullWidth && this.fullHeight == fullHeight) return
-        super.setSize(x, y, width, height, fullWidth, fullHeight)
-        tex.upload(NullBitmap(width, height))
-        markAsDirty()
-    }
 
     fun setSamples(samples: Int) {
         if (this.nsamples == samples) return
