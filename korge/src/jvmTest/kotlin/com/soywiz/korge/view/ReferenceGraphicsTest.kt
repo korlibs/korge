@@ -43,7 +43,7 @@ class ReferenceGraphicsTest : ViewsForTesting(
         circle(64.0, fill = Colors.RED, stroke = Colors.BLUE, strokeThickness = 32.0).xy(50, 50).centered.rotation(30.degrees)
 
         val bmp = BitmapSlice(
-            Bitmap32(64, 64) { x, y -> Colors.PURPLE },
+            Bitmap32(64, 64) { x, y -> Colors.PURPLE }.premultipliedIfRequired(),
             RectangleInt(0, 0, 64, 64),
             null,
             RectangleInt(64, 64, 196, 196)

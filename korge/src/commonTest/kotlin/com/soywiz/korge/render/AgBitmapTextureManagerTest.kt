@@ -17,7 +17,7 @@ class AgBitmapTextureManagerTest {
 
 	@Test
 	fun test() {
-		val bmp1 = Bitmap32(32, 32)
+		val bmp1 = Bitmap32(32, 32, premultiplied = true)
 		val slice1 = bmp1.sliceWithSize(0, 0, 16, 16)
 		val slice2 = bmp1.sliceWithSize(16, 0, 16, 16)
 		val tex1a = tm.getTexture(slice1)
@@ -45,7 +45,7 @@ class AgBitmapTextureManagerTest {
     @Test
     fun testMaxMemoryKeepsTextureForLater() {
         tm.maxCachedMemory = 4096L
-        val bmp1 = Bitmap32(32, 32)
+        val bmp1 = Bitmap32(32, 32, premultiplied = true)
         val slice1a = bmp1.sliceWithSize(0, 0, 16, 16)
         val slice1b = bmp1.sliceWithSize(16, 0, 16, 16)
         val tex1a = tm.getTexture(slice1a)
@@ -58,7 +58,7 @@ class AgBitmapTextureManagerTest {
         tm.gc()
         tm.gc()
         assertEquals(1, tm.getBitmapsWithTextureInfoCopy().size)
-        val bmp2 = Bitmap32(32, 32)
+        val bmp2 = Bitmap32(32, 32, premultiplied = true)
         val slice2a = bmp2.sliceWithSize(0, 0, 16, 16)
         val tex22a = tm.getTexture(slice2a)
         assertEquals(8192L, tm.managedTextureMemory)

@@ -41,8 +41,8 @@ class TiledMapTest : ViewsForTesting() {
 	@Test
 	fun testRenderInBounds() {
 		val renderTilesCounter = views.stats.counter("renderedTiles")
-		val tileset = TileSet(Bitmap32(32, 32).slice(), 32, 32)
-		val map = TileMap(Bitmap32(200, 200), tileset)
+		val tileset = TileSet(Bitmap32(32, 32, premultiplied = true).slice(), 32, 32)
+		val map = TileMap(Bitmap32(200, 200, premultiplied = true), tileset)
 		views.stage += map
 		views.frameUpdateAndRender()
 		assertEquals(DefaultViewport.WIDTH, views.actualVirtualWidth)
@@ -75,8 +75,8 @@ class TiledMapTest : ViewsForTesting() {
 
     @Test
     fun testMultiTexture() = suspendTestNoJs {
-        val tileSet = TileSet(listOf(TileSetTileInfo(1, Bitmap32(32, 32, Colors.RED).slice()), TileSetTileInfo(2, Bitmap32(32, 32, Colors.BLUE).slice())), 32, 32)
-        val tileMap = TileMap(Bitmap32(32, 32), tileSet)
+        val tileSet = TileSet(listOf(TileSetTileInfo(1, Bitmap32(32, 32, Colors.RED.premultiplied).slice()), TileSetTileInfo(2, Bitmap32(32, 32, Colors.BLUE.premultiplied).slice())), 32, 32)
+        val tileMap = TileMap(Bitmap32(32, 32, premultiplied = true), tileSet)
         tileMap.stackedIntMap[0, 0, 0] = 0
         tileMap.stackedIntMap[1, 0, 0] = 1
         tileMap.render(views.renderContext)
