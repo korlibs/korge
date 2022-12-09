@@ -67,6 +67,7 @@ open class ViewWithMesh3D(
                 Shaders3D.apply {
                     val meshMaterial = mesh.material
                     ag.drawV2(
+                        ctx.rctx.currentFrameBuffer,
                         vertexData = vertexData,
                         indices = indexBuffer,
                         indexType = mesh.indexType,

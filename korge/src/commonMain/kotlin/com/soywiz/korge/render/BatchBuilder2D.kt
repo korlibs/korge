@@ -916,6 +916,7 @@ class BatchBuilder2D constructor(
             val program = currentProgram ?: PROGRAM
             //println("program=$program, currentTexN[0]=${currentTexN[0]}")
             ag.drawV2(
+                ctx.currentFrameBuffer,
                 vertexData = vertexData,
                 indices = indexBuffer,
                 program = program,

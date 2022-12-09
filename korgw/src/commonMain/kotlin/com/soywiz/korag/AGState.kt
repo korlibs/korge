@@ -731,7 +731,7 @@ sealed interface AGCommand
  */
 data class AGClear(
     // Frame Buffer
-    var frameBuffer: AGFrameBuffer? = null,
+    var frameBuffer: AGFrameBuffer,
     // Reference balues
     var color: RGBA,
     var depth: Float,
@@ -764,11 +764,18 @@ data class AGReadPixelsToTexture(
 ) : AGCommand
 
 /**
+ * Releases memory for this [frameBuffer]
+ */
+data class AGDiscardFrameBuffer(
+    var frameBuffer: AGFrameBuffer,
+) : AGCommand
+
+/**
  * Incrementally sets a new state diffing with the previous state, and renders primitives.
  */
 data class AGBatch(
     // Frame Buffer
-    var frameBuffer: AGFrameBuffer? = null,
+    var frameBuffer: AGFrameBuffer,
     // Vertex & Index data
     var vertexData: AGVertexArrayObject = AGVertexArrayObject(AGVertexData(null)),
     var indices: AGBuffer? = null,

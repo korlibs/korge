@@ -30,7 +30,7 @@ class AGTextureDrawer(val ag: AG) {
         verticesData.setFloat32(offset + 3, ty)
     }
 
-    fun draw(tex: AGTexture, left: Float, top: Float, right: Float, bottom: Float) {
+    fun draw(frameBuffer: AGFrameBuffer, tex: AGTexture, left: Float, top: Float, right: Float, bottom: Float) {
         //tex.upload(Bitmap32(32, 32) { x, y -> Colors.RED })
         uniforms[DefaultShaders.u_Tex] = AGTextureUnit(0, tex)
 
@@ -46,6 +46,7 @@ class AGTextureDrawer(val ag: AG) {
 
         vertices.upload(verticesData)
         ag.drawV2(
+            frameBuffer,
             vertexData = vertexData,
             program = program,
             type = AGDrawType.TRIANGLE_STRIP,

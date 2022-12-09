@@ -142,6 +142,7 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, AGCommandExecutor,
     fun createBuffer(data: FloatArray, offset: Int = 0, length: Int = data.size - offset) = createBuffer().apply { upload(data, offset, length) }
 
     fun drawV2(
+        frameBuffer: AGFrameBuffer,
         vertexData: AGVertexArrayObject,
         program: Program,
         type: AGDrawType,
@@ -158,6 +159,7 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, AGCommandExecutor,
         scissor: AGScissor = AGScissor.NIL,
         instances: Int = 1
     ) = draw(batch.also { batch ->
+        batch.frameBuffer = frameBuffer
         batch.vertexData = vertexData
         batch.program = program
         batch.drawType = type
@@ -175,7 +177,7 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, AGCommandExecutor,
         batch.instances = instances
     })
 
-    private val batch = AGBatch()
+    private val batch by lazy { AGBatch(mainFrameBuffer) }
 
     override fun execute(command: AGCommand) {
         when (command) {
@@ -183,6 +185,7 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, AGCommandExecutor,
             is AGBatch -> draw(batch)
             is AGBlitPixels -> blit(command)
             is AGReadPixelsToTexture -> TODO()
+            is AGDiscardFrameBuffer -> TODO()
         }
     }
 
@@ -275,37 +278,6 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, AGCommandExecutor,
     fun clearDepth(depth: Float = 1f, scissor: AGScissor = AGScissor.NIL) = clear(clearColor = false, clearDepth = true, clearStencil = false, depth = depth, scissor = scissor)
     fun clearColor(color: RGBA = Colors.TRANSPARENT_BLACK, scissor: AGScissor = AGScissor.NIL) = clear(clearColor = true, clearDepth = false, clearStencil = false, color = color, scissor = scissor)
 
-    val renderBufferStack = FastArrayList<AGFrameBuffer?>()
-
-    //@PublishedApi
-    @KoragExperimental
-    var currentRenderBuffer: AGFrameBuffer? = null
-        protected set
-
-    val currentRenderBufferOrMain: AGFrameBuffer get() = currentRenderBuffer ?: mainFrameBuffer
-
-    val isRenderingToWindow: Boolean get() = currentRenderBufferOrMain === mainFrameBuffer
-    val isRenderingToTexture: Boolean get() = !isRenderingToWindow
-
-    inline fun backupTexture(tex: AGTexture?, callback: () -> Unit) {
-        if (tex != null) {
-            readColorTexture(tex, 0, 0, backWidth, backHeight)
-        }
-        try {
-            callback()
-        } finally {
-            if (tex != null) drawTexture(tex)
-        }
-    }
-
-    inline fun setRenderBufferTemporally(rb: AGFrameBuffer, callback: (AGFrameBuffer) -> Unit) {
-        pushRenderBuffer(rb)
-        try {
-            callback(rb)
-        } finally {
-            popRenderBuffer()
-        }
-    }
 
     var adjustFrameRenderBufferSize = false
     //var adjustFrameRenderBufferSize = true
@@ -319,6 +291,42 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, AGCommandExecutor,
     //open fun fixWidthForRenderToTexture(width: Int): Int = width
     //open fun fixHeightForRenderToTexture(height: Int): Int = height
 
+
+    open fun flush() {
+    }
+
+    val renderBufferStack = FastArrayList<AGFrameBuffer?>()
+
+
+    //@PublishedApi
+    @KoragExperimental
+    var currentRenderBuffer: AGFrameBuffer? = null
+        protected set
+
+    val currentRenderBufferOrMain: AGFrameBuffer get() = currentRenderBuffer ?: mainFrameBuffer
+
+    val isRenderingToWindow: Boolean get() = currentRenderBufferOrMain === mainFrameBuffer
+    val isRenderingToTexture: Boolean get() = !isRenderingToWindow
+
+    inline fun backupTexture(frameBuffer: AGFrameBuffer, tex: AGTexture?, callback: () -> Unit) {
+        if (tex != null) {
+            readColorTexture(tex, 0, 0, backWidth, backHeight)
+        }
+        try {
+            callback()
+        } finally {
+            if (tex != null) drawTexture(frameBuffer, tex)
+        }
+    }
+
+    inline fun setRenderBufferTemporally(rb: AGFrameBuffer, callback: (AGFrameBuffer) -> Unit) {
+        pushRenderBuffer(rb)
+        try {
+            callback(rb)
+        } finally {
+            popRenderBuffer()
+        }
+    }
     inline fun tempAllocateFrameBuffer(width: Int, height: Int, hasDepth: Boolean = false, hasStencil: Boolean = true, msamples: Int = 1, block: (rb: AGFrameBuffer) -> Unit) {
         val rb = unsafeAllocateFrameRenderBuffer(width, height, hasDepth = hasDepth, hasStencil = hasStencil, msamples = msamples)
         try {
@@ -338,8 +346,8 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, AGCommandExecutor,
 
     @KoragExperimental
     fun unsafeAllocateFrameRenderBuffer(width: Int, height: Int, hasDepth: Boolean = false, hasStencil: Boolean = true, msamples: Int = 1, onlyThisFrame: Boolean = true): AGFrameBuffer {
-        val realWidth = fixWidthForRenderToTexture(kotlin.math.max(width, 64))
-        val realHeight = fixHeightForRenderToTexture(kotlin.math.max(height, 64))
+        val realWidth = fixWidthForRenderToTexture(max(width, 64))
+        val realHeight = fixHeightForRenderToTexture(max(height, 64))
         val rb = renderBuffers.alloc()
         if (onlyThisFrame) frameRenderBuffers += rb
         rb.setSize(0, 0, realWidth, realHeight, realWidth, realHeight)
@@ -354,9 +362,6 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, AGCommandExecutor,
         if (frameRenderBuffers.remove(rb)) {
         }
         renderBuffers.free(rb)
-    }
-
-    open fun flush() {
     }
 
     @OptIn(KoragExperimental::class)
@@ -429,15 +434,15 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, AGCommandExecutor,
     val flipRenderTexture = true
 
     val textureDrawer by lazy { AGTextureDrawer(this) }
-    fun drawTexture(tex: AGTexture) {
-        textureDrawer.draw(tex, -1f, +1f, +1f, -1f)
+    fun drawTexture(frameBuffer: AGFrameBuffer, tex: AGTexture) {
+        textureDrawer.draw(frameBuffer, tex, -1f, +1f, +1f, -1f)
     }
 
     private val drawTempTexture: AGTexture by lazy { createTexture() }
 
-    fun drawBitmap(bmp: Bitmap) {
+    fun drawBitmap(frameBuffer: AGFrameBuffer, bmp: Bitmap) {
         drawTempTexture.upload(bmp, mipmaps = false)
-        drawTexture(drawTempTexture)
+        drawTexture(frameBuffer, drawTempTexture)
         drawTempTexture.upload(Bitmaps.transparent.bmp)
     }
 

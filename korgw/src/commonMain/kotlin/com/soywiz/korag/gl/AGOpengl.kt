@@ -60,9 +60,9 @@ abstract class AGOpengl(checked: Boolean = false) : AG(checked) {
         if (renderBuffer != null) {
             setViewport(renderBuffer)
             if (!renderBuffer.isMain) {
-                frameBufferSet(renderBuffer)
+                bindFrameBuffer(renderBuffer)
             } else {
-                frameBufferSet(null)
+                bindFrameBuffer(null)
             }
         }
         return old
@@ -248,7 +248,7 @@ abstract class AGOpengl(checked: Boolean = false) : AG(checked) {
     }
 
     override fun endFrame() {
-        frameBufferSet(null)
+        bindFrameBuffer(null)
     }
 
     fun listStart() {
@@ -667,24 +667,6 @@ abstract class AGOpengl(checked: Boolean = false) : AG(checked) {
         }
     }
 
-    // FRAME BUFFER
-    inner class FrameBufferInfo {
-        var cachedVersion = -1
-        var texColor = -1
-        var renderbuffer = -1
-        var framebuffer = -1
-        var width = -1
-        var height = -1
-        var hasDepth = false
-        var hasStencil = false
-        var nsamples: Int = 1
-
-        val hasStencilAndDepth: Boolean get() = when {
-            //gl.android -> hasStencil || hasDepth // stencil8 causes strange bug artifacts in Android (at least in one of my devices)
-            else -> hasStencil && hasDepth
-        }
-    }
-
     private var currentTextureUnit = 0
     private fun selectTextureUnit(index: Int): Int {
         val old = currentTextureUnit
@@ -693,7 +675,7 @@ abstract class AGOpengl(checked: Boolean = false) : AG(checked) {
         return old
     }
 
-    fun frameBufferSet(frameBuffer: AGFrameBuffer?) {
+    fun bindFrameBuffer(frameBuffer: AGFrameBuffer?) {
         if (frameBuffer == null) {
             gl.bindFramebuffer(KmlGl.FRAMEBUFFER, backBufferFrameBufferBinding)
             return
@@ -730,16 +712,17 @@ abstract class AGOpengl(checked: Boolean = false) : AG(checked) {
             }
             gl.bindRenderbuffer(KmlGl.RENDERBUFFER, 0)
             //gl.renderbufferStorageMultisample()
+            gl.bindFramebuffer(KmlGl.FRAMEBUFFER, fb.frameBufferId)
+            gl.framebufferTexture2D(KmlGl.FRAMEBUFFER, KmlGl.COLOR_ATTACHMENT0, KmlGl.TEXTURE_2D, fb.ag.tex.gl.id, 0)
+            if (internalFormat != 0) {
+                gl.framebufferRenderbuffer(KmlGl.FRAMEBUFFER, internalFormat, KmlGl.RENDERBUFFER, fb.renderBufferId)
+            } else {
+                gl.framebufferRenderbuffer(KmlGl.FRAMEBUFFER, KmlGl.STENCIL_ATTACHMENT, KmlGl.RENDERBUFFER, 0)
+                gl.framebufferRenderbuffer(KmlGl.DEPTH_ATTACHMENT, KmlGl.STENCIL_ATTACHMENT, KmlGl.RENDERBUFFER, 0)
+            }
         }
 
         gl.bindFramebuffer(KmlGl.FRAMEBUFFER, fb.frameBufferId)
-        gl.framebufferTexture2D(KmlGl.FRAMEBUFFER, KmlGl.COLOR_ATTACHMENT0, KmlGl.TEXTURE_2D, fb.ag.tex.gl.id, 0)
-        if (internalFormat != 0) {
-            gl.framebufferRenderbuffer(KmlGl.FRAMEBUFFER, internalFormat, KmlGl.RENDERBUFFER, fb.renderBufferId)
-        } else {
-            gl.framebufferRenderbuffer(KmlGl.FRAMEBUFFER, KmlGl.STENCIL_ATTACHMENT, KmlGl.RENDERBUFFER, 0)
-            gl.framebufferRenderbuffer(KmlGl.DEPTH_ATTACHMENT, KmlGl.STENCIL_ATTACHMENT, KmlGl.RENDERBUFFER, 0)
-        }
         //val status = gl.checkFramebufferStatus(KmlGl.FRAMEBUFFER)
         //if (status != KmlGl.FRAMEBUFFER_COMPLETE) { gl.bindFramebuffer(KmlGl.FRAMEBUFFER, 0); error("Error getting framebuffer") }
     }

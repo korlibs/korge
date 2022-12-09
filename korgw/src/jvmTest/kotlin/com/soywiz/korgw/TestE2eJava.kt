@@ -45,6 +45,8 @@ class TestE2eJava {
                             +1f, +1f
                         ))
                         ag.drawV2(
+                            //ctx.rctx.currentFrameBuffer,
+                            ag.mainFrameBuffer,
                             AGVertexArrayObject(AGVertexData(vertices, DefaultShaders.LAYOUT_DEBUG)),
                             program = DefaultShaders.PROGRAM_DEBUG,
                             type = AGDrawType.TRIANGLES,

@@ -65,6 +65,7 @@ class Text3D(
             Shaders3D.apply {
                 val meshMaterial = mesh.material
                 ag.drawV2(
+                    ctx.rctx.currentFrameBuffer,
                     vertexData,
                     type = mesh.drawType,
                     program = mesh.program ?: ctx.shaders.getProgram3D(

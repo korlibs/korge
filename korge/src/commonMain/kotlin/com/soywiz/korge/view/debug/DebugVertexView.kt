@@ -118,6 +118,7 @@ class DebugVertexView(pointsList: List<IVectorArrayList>, color: RGBA = Colors.W
             )
             batches.fastForEach { batch ->
                 ctx.ag.drawV2(
+                    ctx.currentFrameBuffer,
                     vData,
                     type = type,
                     program = PROGRAM,

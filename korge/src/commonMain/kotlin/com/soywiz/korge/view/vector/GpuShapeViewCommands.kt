@@ -172,6 +172,7 @@ class GpuShapeViewCommands {
                                 tempUniforms[BatchBuilder2D.u_OutputPre] = outPremultiplied
 
                                 ag.draw(AGBatch(
+                                    ctx.currentFrameBuffer,
                                     vertexData = vertices,
                                     uniforms = tempUniforms,
                                     stencilOpFunc = cmd.stencilOpFunc,
