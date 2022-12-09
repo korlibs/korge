@@ -1,6 +1,5 @@
 package com.soywiz.korge.view
 
-import com.soywiz.korag.AG
 import com.soywiz.korag.log.LogAG
 import com.soywiz.korge.render.RenderContext
 import com.soywiz.korge.render.testRenderContext

@@ -2,7 +2,9 @@ package com.soywiz.korge.render
 
 import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
+import com.soywiz.kmem.unit.*
 import com.soywiz.korag.*
+import com.soywiz.korag.annotation.*
 import com.soywiz.korag.log.*
 import com.soywiz.korag.shader.Uniform
 import com.soywiz.korge.internal.*
@@ -240,9 +242,11 @@ class RenderContext constructor(
 	}
 
     val mainFrameBuffer: AGFrameBuffer get() = ag.mainFrameBuffer
-    var currentFrameBuffer: AGFrameBuffer = mainFrameBuffer
-
-    val tempFrameBuffers = Pool { ag.createFrameBuffer() }
+    var currentFrameBuffer: AGFrameBuffer
+        get() = ag.currentFrameBufferOrMain
+        set(value) {
+            ag.currentFrameBuffer = value
+        }
 
     inline fun renderToFrameBuffer(
         frameBuffer: AGFrameBuffer,
@@ -250,7 +254,7 @@ class RenderContext constructor(
         render: (AGFrameBuffer) -> Unit,
     ) {
         flush()
-        ag.setFrameBufferTemporally(frameBuffer) {
+        setFrameBufferTemporally(frameBuffer) {
             useBatcher { batch ->
                 val oldScissors = batch.scissor
                 batch.scissor = AGScissor(0, 0, frameBuffer.width, frameBuffer.height)
@@ -279,7 +283,7 @@ class RenderContext constructor(
         use: (texture: Texture) -> Unit
     ) {
 		flush()
-        ag.tempAllocateFrameBuffer(width, height, hasDepth = hasDepth, hasStencil = hasStencil, msamples = msamples) { fb ->
+        tempAllocateFrameBuffer(width, height, hasDepth = hasDepth, hasStencil = hasStencil, msamples = msamples) { fb ->
             renderToFrameBuffer(fb) { render(it) }
             use(Texture(fb).slice(0, 0, width, height))
             flush()
@@ -287,38 +291,13 @@ class RenderContext constructor(
 	}
 
     /**
-     * Sets the render buffer temporarily to [bmp] [Bitmap32] and calls the [callback] render method that should perform all the renderings inside.
-     */
-	inline fun renderToBitmap(
-        bmp: Bitmap32,
-        hasDepth: Boolean = false, hasStencil: Boolean = false, msamples: Int = 1,
-        callback: () -> Unit
-    ): Bitmap32 {
-		flush()
-		ag.renderToBitmap(bmp, hasDepth, hasStencil, msamples) {
-			callback()
-			flush()
-		}
-		return bmp
-	}
-
-    inline fun renderToBitmap(
-        width: Int, height: Int,
-        hasDepth: Boolean = false, hasStencil: Boolean = false, msamples: Int = 1,
-        callback: () -> Unit
-    ): Bitmap32 =
-        renderToBitmap(
-            Bitmap32(width, height),
-            hasDepth = hasDepth, hasStencil = hasStencil, msamples = msamples,
-            callback = callback
-        )
-
-    /**
      * Finishes the drawing and flips the screen. Called by the KorGe engine at the end of the frame.
      */
 	fun finish() {
 		ag.flip()
-	}
+        frameBuffers.free(frameFrameBuffers)
+        if (frameFrameBuffers.isNotEmpty()) frameFrameBuffers.clear()
+    }
 
     /**
      * Temporarily allocates a [Texture] with its coords from a [BmpSlice].
@@ -363,6 +342,127 @@ class RenderContext constructor(
     override fun close() {
         agBitmapTextureManager.close()
         agAutoFreeManager.close()
+    }
+
+    /////////////// FROM AG ///////////////////
+
+    val frameFrameBuffers = LinkedHashSet<AGFrameBuffer>()
+    val frameBuffers = Pool<AGFrameBuffer>() { ag.createFrameBuffer() }
+    val frameBufferStack = FastArrayList<AGFrameBuffer?>()
+
+    inline fun doRender(block: () -> Unit) {
+        ag.beforeDoRender()
+        ag.startFrame()
+        try {
+            //mainRenderBuffer.init()
+            setFrameBufferTemporally(mainFrameBuffer) {
+                block()
+            }
+        } finally {
+            ag.endFrame()
+        }
+    }
+
+    inline fun setFrameBufferTemporally(rb: AGFrameBuffer, callback: (AGFrameBuffer) -> Unit) {
+        pushFrameBuffer(rb)
+        try {
+            callback(rb)
+        } finally {
+            popFrameBuffer()
+        }
+    }
+    inline fun tempAllocateFrameBuffer(width: Int, height: Int, hasDepth: Boolean = false, hasStencil: Boolean = true, msamples: Int = 1, block: (rb: AGFrameBuffer) -> Unit) {
+        val rb = unsafeAllocateFrameBuffer(width, height, hasDepth = hasDepth, hasStencil = hasStencil, msamples = msamples)
+        try {
+            block(rb)
+        } finally {
+            unsafeFreeFrameBuffer(rb)
+        }
+    }
+
+    inline fun tempAllocateFrameBuffers2(width: Int, height: Int, hasDepth: Boolean = false, hasStencil: Boolean = true, msamples: Int = 1, block: (rb0: AGFrameBuffer, rb1: AGFrameBuffer) -> Unit) {
+        tempAllocateFrameBuffer(width, height, hasDepth, hasStencil, msamples) { rb0 ->
+            tempAllocateFrameBuffer(width, height, hasDepth, hasStencil, msamples) { rb1 ->
+                block(rb0, rb1)
+            }
+        }
+    }
+
+    @KoragExperimental
+    fun unsafeAllocateFrameBuffer(width: Int, height: Int, hasDepth: Boolean = false, hasStencil: Boolean = true, msamples: Int = 1, onlyThisFrame: Boolean = true): AGFrameBuffer {
+        val realWidth = kotlin.math.max(width, 64)
+        val realHeight = kotlin.math.max(height, 64)
+        val rb = frameBuffers.alloc()
+        if (onlyThisFrame) frameFrameBuffers += rb
+        rb.setSize(0, 0, realWidth, realHeight, realWidth, realHeight)
+        rb.setExtra(hasDepth = hasDepth, hasStencil = hasStencil)
+        rb.setSamples(msamples)
+        //println("unsafeAllocateFrameRenderBuffer($width, $height), real($realWidth, $realHeight), $rb")
+        return rb
+    }
+
+    @KoragExperimental
+    fun unsafeFreeFrameBuffer(rb: AGFrameBuffer) {
+        if (frameFrameBuffers.remove(rb)) {
+        }
+        frameBuffers.free(rb)
+    }
+
+    inline fun renderToTextureInternal(
+        width: Int, height: Int,
+        render: (rb: AGFrameBuffer) -> Unit,
+        hasDepth: Boolean = false, hasStencil: Boolean = false, msamples: Int = 1,
+        use: (tex: AGTexture, texWidth: Int, texHeight: Int) -> Unit
+    ) {
+        flush()
+        tempAllocateFrameBuffer(width, height, hasDepth, hasStencil, msamples) { rb ->
+            setFrameBufferTemporally(rb) {
+                ag.clear(Colors.TRANSPARENT_BLACK) // transparent
+                render(rb)
+            }
+            use(rb.tex, rb.width, rb.height)
+        }
+    }
+
+    inline fun renderToBitmap(
+        width: Int, height: Int,
+        hasDepth: Boolean = false, hasStencil: Boolean = false, msamples: Int = 1,
+        callback: () -> Unit
+    ): Bitmap32 = renderToBitmap(
+        Bitmap32(width, height, premultiplied = true),
+        hasDepth = hasDepth, hasStencil = hasStencil, msamples = msamples,
+        callback = callback
+    )
+
+    /**
+     * Sets the render buffer temporarily to [bmp] [Bitmap32] and calls the [callback] render method that should perform all the renderings inside.
+     */
+    inline fun renderToBitmap(
+        bmp: Bitmap32,
+        hasDepth: Boolean = false, hasStencil: Boolean = false, msamples: Int = 1,
+        callback: () -> Unit
+    ): Bitmap32 {
+        renderToTextureInternal(bmp.width, bmp.height, render = {
+            callback()
+            //println("renderToBitmap.readColor: $currentRenderBuffer")
+            ag.readColor(bmp)
+        }, hasDepth = hasDepth, hasStencil = hasStencil, msamples = msamples, use = { _, _, _ -> })
+        return bmp
+    }
+
+    fun getFrameBufferAtStackPoint(offset: Int): AGFrameBuffer {
+        if (offset == 0) return ag.currentFrameBufferOrMain
+        return frameBufferStack.getOrNull(frameBufferStack.size + offset) ?: mainFrameBuffer
+    }
+
+    fun pushFrameBuffer(frameBuffer: AGFrameBuffer) {
+        frameBufferStack.add(currentFrameBuffer)
+        ag.setFrameBuffer(frameBuffer)
+    }
+
+    fun popFrameBuffer() {
+        ag.setFrameBuffer(frameBufferStack.last())
+        frameBufferStack.removeAt(frameBufferStack.size - 1)
     }
 }
 

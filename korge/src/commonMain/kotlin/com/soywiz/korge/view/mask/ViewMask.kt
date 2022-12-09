@@ -50,7 +50,7 @@ class ViewRenderPhaseMask(var mask: View) : ViewRenderPhase {
             val maskBounds = mask.getLocalBoundsOptimized()
             val boundsWidth = maskBounds.width.toInt()
             val boundsHeight = maskBounds.height.toInt()
-            ctx.ag.tempAllocateFrameBuffers2(boundsWidth, boundsHeight) { maskFB, viewFB ->
+            ctx.tempAllocateFrameBuffers2(boundsWidth, boundsHeight) { maskFB, viewFB ->
                 batcher.setViewMatrixTemp(mask.globalMatrixInv) {
                     ctx.renderToFrameBuffer(maskFB) {
                         ctx.ag.clear(color = Colors.TRANSPARENT_BLACK)

@@ -37,8 +37,6 @@ abstract class AGOpengl(checked: Boolean = false) : AG(checked) {
 
     override fun flip() {
         disposeTemporalPerFrameStuff()
-        frameBuffers.free(frameFrameBuffers)
-        if (frameFrameBuffers.isNotEmpty()) frameFrameBuffers.clear()
         flipInternal()
         finish()
     }

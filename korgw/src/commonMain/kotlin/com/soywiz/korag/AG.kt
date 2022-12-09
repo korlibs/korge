@@ -1,32 +1,18 @@
 package com.soywiz.korag
 
-import com.soywiz.kds.Extra
-import com.soywiz.kds.FastArrayList
-import com.soywiz.kds.FloatArray2
-import com.soywiz.kds.Pool
-import com.soywiz.kds.fastCastTo
-import com.soywiz.klogger.Console
+import com.soywiz.kds.*
+import com.soywiz.klogger.*
 import com.soywiz.kmem.*
-import com.soywiz.kmem.unit.ByteUnits
-import com.soywiz.korag.annotation.KoragExperimental
+import com.soywiz.kmem.unit.*
+import com.soywiz.korag.annotation.*
 import com.soywiz.korag.gl.*
-import com.soywiz.korag.shader.Attribute
-import com.soywiz.korag.shader.Program
-import com.soywiz.korag.shader.VarType
-import com.soywiz.korag.shader.VertexLayout
-import com.soywiz.korim.bitmap.Bitmap
-import com.soywiz.korim.bitmap.Bitmap32
-import com.soywiz.korim.bitmap.Bitmap8
-import com.soywiz.korim.bitmap.BitmapSlice
-import com.soywiz.korim.bitmap.Bitmaps
-import com.soywiz.korim.color.Colors
-import com.soywiz.korim.color.RGBA
-import com.soywiz.korim.color.RGBAPremultiplied
+import com.soywiz.korag.shader.*
+import com.soywiz.korim.bitmap.*
+import com.soywiz.korim.color.*
+import com.soywiz.korio.annotations.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korma.geom.*
-import com.soywiz.korma.math.nextMultipleOf
 import kotlin.math.*
-
 
 interface AGWindow : AGContainer {
 }
@@ -67,19 +53,6 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, AGCommandExecutor,
     open val computedPixelRatio: Double get() = devicePixelRatio * pixelsPerLogicalInchRatio
 
     open fun beforeDoRender() {
-    }
-
-    inline fun doRender(block: () -> Unit) {
-        beforeDoRender()
-        startFrame()
-        try {
-            //mainRenderBuffer.init()
-            setFrameBufferTemporally(mainFrameBuffer) {
-                block()
-            }
-        } finally {
-            endFrame()
-        }
     }
 
     open fun offscreenRendering(callback: () -> Unit) {
@@ -220,9 +193,6 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, AGCommandExecutor,
 
     open fun disposeTemporalPerFrameStuff() = Unit
 
-    val frameFrameBuffers = LinkedHashSet<AGFrameBuffer>()
-    val frameBuffers = Pool<AGFrameBuffer>() { createFrameBuffer() }
-
     internal val allFrameBuffers = LinkedHashSet<AGFrameBuffer>()
     private val frameBufferCount: Int get() = allFrameBuffers.size
     private val frameBuffersMemory: ByteUnits get() = ByteUnits.fromBytes(allFrameBuffers.sumOf { it.estimatedMemoryUsage.bytesLong })
@@ -273,29 +243,11 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, AGCommandExecutor,
     fun clearDepth(depth: Float = 1f, scissor: AGScissor = AGScissor.NIL) = clear(clearColor = false, clearDepth = true, clearStencil = false, depth = depth, scissor = scissor)
     fun clearColor(color: RGBA = Colors.TRANSPARENT_BLACK, scissor: AGScissor = AGScissor.NIL) = clear(clearColor = true, clearDepth = false, clearStencil = false, color = color, scissor = scissor)
 
-    var adjustFrameBufferSize = false
-    //var adjustFrameBufferSize = true
-
-    //open fun fixWidthForRenderToTexture(width: Int): Int = kotlin.math.max(64, width).nextPowerOfTwo
-    //open fun fixHeightForRenderToTexture(height: Int): Int = kotlin.math.max(64, height).nextPowerOfTwo
-
-    open fun fixWidthForRenderToTexture(width: Int): Int = if (adjustFrameBufferSize) width.nextMultipleOf(64) else width
-    open fun fixHeightForRenderToTexture(height: Int): Int = if (adjustFrameBufferSize) height.nextMultipleOf(64) else height
-
-    //open fun fixWidthForRenderToTexture(width: Int): Int = width
-    //open fun fixHeightForRenderToTexture(height: Int): Int = height
-
-
     open fun flush() {
     }
 
-    val frameBufferStack = FastArrayList<AGFrameBuffer?>()
-
-
     //@PublishedApi
-    @KoragExperimental
     var currentFrameBuffer: AGFrameBuffer? = null
-        protected set
 
     val currentFrameBufferOrMain: AGFrameBuffer get() = currentFrameBuffer ?: mainFrameBuffer
 
@@ -313,96 +265,8 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, AGCommandExecutor,
         }
     }
 
-    inline fun setFrameBufferTemporally(rb: AGFrameBuffer, callback: (AGFrameBuffer) -> Unit) {
-        pushFrameBuffer(rb)
-        try {
-            callback(rb)
-        } finally {
-            popFrameBuffer()
-        }
-    }
-    inline fun tempAllocateFrameBuffer(width: Int, height: Int, hasDepth: Boolean = false, hasStencil: Boolean = true, msamples: Int = 1, block: (rb: AGFrameBuffer) -> Unit) {
-        val rb = unsafeAllocateFrameBuffer(width, height, hasDepth = hasDepth, hasStencil = hasStencil, msamples = msamples)
-        try {
-            block(rb)
-        } finally {
-            unsafeFreeFrameBuffer(rb)
-        }
-    }
-
-    inline fun tempAllocateFrameBuffers2(width: Int, height: Int, hasDepth: Boolean = false, hasStencil: Boolean = true, msamples: Int = 1, block: (rb0: AGFrameBuffer, rb1: AGFrameBuffer) -> Unit) {
-        tempAllocateFrameBuffer(width, height, hasDepth, hasStencil, msamples) { rb0 ->
-            tempAllocateFrameBuffer(width, height, hasDepth, hasStencil, msamples) { rb1 ->
-                block(rb0, rb1)
-            }
-        }
-    }
-
-    @KoragExperimental
-    fun unsafeAllocateFrameBuffer(width: Int, height: Int, hasDepth: Boolean = false, hasStencil: Boolean = true, msamples: Int = 1, onlyThisFrame: Boolean = true): AGFrameBuffer {
-        val realWidth = fixWidthForRenderToTexture(max(width, 64))
-        val realHeight = fixHeightForRenderToTexture(max(height, 64))
-        val rb = frameBuffers.alloc()
-        if (onlyThisFrame) frameFrameBuffers += rb
-        rb.setSize(0, 0, realWidth, realHeight, realWidth, realHeight)
-        rb.setExtra(hasDepth = hasDepth, hasStencil = hasStencil)
-        rb.setSamples(msamples)
-        //println("unsafeAllocateFrameRenderBuffer($width, $height), real($realWidth, $realHeight), $rb")
-        return rb
-    }
-
-    @KoragExperimental
-    fun unsafeFreeFrameBuffer(rb: AGFrameBuffer) {
-        if (frameFrameBuffers.remove(rb)) {
-        }
-        frameBuffers.free(rb)
-    }
-
-    @OptIn(KoragExperimental::class)
-    inline fun renderToTexture(
-        width: Int, height: Int,
-        render: (rb: AGFrameBuffer) -> Unit,
-        hasDepth: Boolean = false, hasStencil: Boolean = false, msamples: Int = 1,
-        use: (tex: AGTexture, texWidth: Int, texHeight: Int) -> Unit
-    ) {
-        flush()
-        tempAllocateFrameBuffer(width, height, hasDepth, hasStencil, msamples) { rb ->
-            setFrameBufferTemporally(rb) {
-                clear(Colors.TRANSPARENT_BLACK) // transparent
-                render(rb)
-            }
-            use(rb.tex, rb.width, rb.height)
-        }
-    }
-
-    inline fun renderToBitmap(
-        bmp: Bitmap32,
-        hasDepth: Boolean = false, hasStencil: Boolean = false, msamples: Int = 1,
-        render: () -> Unit
-    ) {
-        renderToTexture(bmp.width, bmp.height, render = {
-            render()
-            //println("renderToBitmap.readColor: $currentRenderBuffer")
-            readColor(bmp)
-        }, hasDepth = hasDepth, hasStencil = hasStencil, msamples = msamples, use = { _, _, _ -> })
-    }
-
     open fun setFrameBuffer(frameBuffer: AGFrameBuffer?): AGFrameBuffer? = null
 
-    fun getFrameBufferAtStackPoint(offset: Int): AGFrameBuffer {
-        if (offset == 0) return currentFrameBufferOrMain
-        return frameBufferStack.getOrNull(frameBufferStack.size + offset) ?: mainFrameBuffer
-    }
-
-    fun pushFrameBuffer(frameBuffer: AGFrameBuffer) {
-        frameBufferStack.add(currentFrameBuffer)
-        setFrameBuffer(frameBuffer)
-    }
-
-    fun popFrameBuffer() {
-        setFrameBuffer(frameBufferStack.last())
-        frameBufferStack.removeAt(frameBufferStack.size - 1)
-    }
 
     // @TODO: Rename to Sync and add Suspend versions
     fun readPixel(x: Int, y: Int): RGBA {
