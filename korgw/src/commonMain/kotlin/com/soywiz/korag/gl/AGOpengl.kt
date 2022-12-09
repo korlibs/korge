@@ -298,7 +298,7 @@ class AGOpengl(val gl: KmlGl) : AG() {
         gl.bindBuffer(target.toGl(), bufferInfo.id)
         buffer.update {
             val mem = buffer.mem ?: Buffer(0)
-            bufferInfo.estimatedBytes = mem.sizeInBytes
+            bufferInfo.estimatedBytes = mem.sizeInBytes.toLong()
             gl.bufferData(target.toGl(), mem.sizeInBytes, mem, KmlGl.STATIC_DRAW)
         }
     }
@@ -529,6 +529,8 @@ class AGOpengl(val gl: KmlGl) : AG() {
 
                 //println("UPDATE BITMAP")
 
+                var totalSize = 0L
+
                 for ((index, bmp) in bmps.withIndex()) {
                     val isFloat = bmp is FloatBitmap32
 
@@ -583,10 +585,14 @@ class AGOpengl(val gl: KmlGl) : AG() {
                         }
                     }
 
+                    totalSize += tex.width * tex.height * 4
+
                     if (tex.mipmaps) {
                         gl.generateMipmap(texTarget)
                     }
                 }
+
+                glTex.estimatedBytes = totalSize
             }
         }
     }

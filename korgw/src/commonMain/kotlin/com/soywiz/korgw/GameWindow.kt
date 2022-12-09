@@ -16,7 +16,7 @@ import com.soywiz.kmem.setBits
 import com.soywiz.korag.AG
 import com.soywiz.korag.AGWindow
 import com.soywiz.korag.annotation.KoragExperimental
-import com.soywiz.korag.log.DummyAG
+import com.soywiz.korag.log.AGDummy
 import com.soywiz.korev.DestroyEvent
 import com.soywiz.korev.DisposeEvent
 import com.soywiz.korev.DropFileEvent
@@ -390,7 +390,7 @@ open class GameWindow :
     }
 
     //override val ag: AG = LogAG()
-    override val ag: AG = DummyAG()
+    override val ag: AG = AGDummy()
 
     open val coroutineDispatcher: GameWindowCoroutineDispatcher = GameWindowCoroutineDispatcher()
 

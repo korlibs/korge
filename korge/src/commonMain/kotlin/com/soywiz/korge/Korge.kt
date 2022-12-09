@@ -8,7 +8,7 @@ import com.soywiz.klock.milliseconds
 import com.soywiz.klogger.Console
 import com.soywiz.klogger.Logger
 import com.soywiz.kmem.*
-import com.soywiz.korag.log.PrintAG
+import com.soywiz.korag.log.AGPrint
 import com.soywiz.korev.DestroyEvent
 import com.soywiz.korev.DropFileEvent
 import com.soywiz.korev.EventDispatcher
@@ -209,7 +209,7 @@ object Korge {
             //val views = Views(gameWindow.getCoroutineDispatcherWithCurrentContext() + SupervisorJob(), ag, injector, input, timeProvider, stats, gameWindow)
             val views: Views = Views(
                 coroutineContext = coroutineContext + gameWindow.coroutineDispatcher + AsyncInjectorContext(injector) + SupervisorJob(),
-                ag = if (debugAg) PrintAG() else ag,
+                ag = if (debugAg) AGPrint() else ag,
                 injector = injector,
                 input = input,
                 timeProvider = timeProvider,

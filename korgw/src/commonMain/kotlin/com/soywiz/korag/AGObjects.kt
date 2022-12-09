@@ -59,10 +59,8 @@ data class AGTextureUnit constructor(
     }
 }
 
-// @TODO: Move most of this to AGQueueProcessorOpenGL, avoid cyclic dependency and simplify
-open class AGTexture constructor(
-    val ag: AG,
-    open val premultiplied: Boolean,
+class AGTexture(
+    val premultiplied: Boolean,
     val targetKind: AGTextureTargetKind = AGTextureTargetKind.TEXTURE_2D
 ) : AGObject(), Closeable {
     var isFbo: Boolean = false
@@ -71,7 +69,6 @@ open class AGTexture constructor(
     /** [MultiBitmap] for multiple bitmaps (ie. cube map) */
     var bitmap: Bitmap? = null
     var mipmaps: Boolean = false; internal set
-    var cachedVersion = ag.contextVersion
     var forcedTexId: ForcedTexId? = null
     val implForcedTexId: Int get() = forcedTexId?.forcedTexId ?: -1
     val implForcedTexTarget: AGTextureTargetKind get() = forcedTexId?.forcedTexTarget?.let { AGTextureTargetKind.fromGl(it) } ?: targetKind
@@ -79,16 +76,6 @@ open class AGTexture constructor(
     val width: Int get() = bitmap?.width ?: 0
     val height: Int get() = bitmap?.height ?: 0
     val depth: Int get() = (bitmap as? MultiBitmap?)?.bitmaps?.size ?: 1
-
-    init {
-        ag.createdTextureCount++
-        ag.textures += this
-    }
-
-    override fun close() {
-        super.close()
-        ag.textures -= this
-    }
 
     private fun checkBitmaps(bmp: Bitmap) {
         if (!bmp.premultiplied) {
@@ -106,7 +93,6 @@ open class AGTexture constructor(
         this.forcedTexId = (bmp as? ForcedTexId?)
         this.bitmap = bmp
         estimatedMemoryUsage = ByteUnits.fromBytes(width * height * depth * 4)
-        uploadedSource()
         markAsDirty()
         this.requestMipmaps = mipmaps
         return this
@@ -115,9 +101,6 @@ open class AGTexture constructor(
     fun upload(bmp: BitmapSlice<Bitmap>?, mipmaps: Boolean = false): AGTexture {
         // @TODO: Optimize to avoid copying?
         return upload(bmp?.extract(), mipmaps)
-    }
-
-    protected open fun uploadedSource() {
     }
 
     fun doMipmaps(bitmap: Bitmap?, requestMipmaps: Boolean): Boolean {

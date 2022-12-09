@@ -6,15 +6,27 @@ import com.soywiz.kgl.*
 import com.soywiz.kmem.unit.*
 import com.soywiz.korag.*
 import com.soywiz.korag.AGNativeObject
+import com.soywiz.korio.concurrent.atomic.*
 
 class GLGlobalState(val gl: KmlGl, val ag: AG) {
-    internal val buffers = mutableSetOf<GLBuffer>()
+    var texturesCreated = korAtomic(0)
+    var texturesDeleted = korAtomic(0)
+    var texturesSize = korAtomic(0L)
+
+    var buffersCreated = korAtomic(0)
+    var buffersDeleted = korAtomic(0)
+    var buffersSize = korAtomic(0L)
+
     internal val objectsToDeleteLock = Lock()
     internal val objectsToDelete = fastArrayListOf<GLBaseObject>()
 
     fun readStats(out: AGStats) {
-        out.buffersCount = buffers.size
-        out.buffersMemory = ByteUnits.fromBytes(buffers.sumOf { it.estimatedBytes })
+        out.buffersCount = buffersCreated.value - buffersDeleted.value
+        out.buffersMemory = ByteUnits.fromBytes(buffersSize.value)
+        out.texturesCount = texturesCreated.value - texturesDeleted.value
+        out.texturesCreated = texturesCreated.value
+        out.texturesDeleted = texturesDeleted.value
+        out.texturesMemory = ByteUnits.fromBytes(texturesSize.value)
     }
 }
 
@@ -41,12 +53,16 @@ internal open class GLBaseObject(val globalState: GLGlobalState) : AGNativeObjec
 internal fun AGBuffer.gl(state: GLGlobalState): GLBuffer = this.createOnce(state) { GLBuffer(state) }
 internal class GLBuffer(state: GLGlobalState) : GLBaseObject(state) {
     var id = gl.genBuffer()
-    var estimatedBytes: Int = 0
+    var estimatedBytes: Long = 0L
+        set(value) {
+            globalState.buffersSize.addAndGet(+value -field)
+            field = value
+        }
     init {
-        globalState.buffers += this
+        globalState.buffersCreated.incrementAndGet()
     }
     override fun delete() {
-        globalState.buffers -= this
+        globalState.buffersDeleted.incrementAndGet()
         gl.deleteBuffer(id)
         id = -1
     }
@@ -70,8 +86,18 @@ internal fun AGTexture.gl(state: GLGlobalState): GLTexture = this.createOnce(sta
 internal class GLTexture(state: GLGlobalState) : GLBaseObject(state) {
     var id = gl.genTexture()
     var cachedContentVersion: Int = -2
+    var estimatedBytes = 0L
+        set(value) {
+            globalState.texturesSize.addAndGet(+value -field)
+            field = value
+        }
+
+    init {
+        globalState.texturesCreated.incrementAndGet()
+    }
 
     override fun delete() {
+        globalState.texturesDeleted.incrementAndGet()
         gl.deleteTexture(id)
         id = -1
     }

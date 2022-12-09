@@ -514,7 +514,7 @@ open class GameWindowLog : GameWindow() {
 class ViewsLog constructor(
 	override val coroutineContext: CoroutineContext,
 	val injector: AsyncInjector = AsyncInjector(),
-	val ag: AG = LogAG(),
+	val ag: AG = AGLog(),
 	val input: Input = Input(),
 	val timeProvider: TimeProvider = TimeProvider,
 	val stats: Stats = Stats(),

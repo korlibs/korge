@@ -1,20 +1,8 @@
-createTexture():0
-Texture[0].uploadedBitmap(1280, 720)
 RenderBuffer[0].setSize(1280, 720)
 createMainRenderBuffer():0
 clear(AGFrameBufferBase(isMain=true), AGFrameBufferInfo(width=1280, height=720, hasDepth=true, hasStencil=true, samples=1), #00000000, 1.0, 0, true, true, true)
 flip()
 clear(AGFrameBufferBase(isMain=true), AGFrameBufferInfo(width=1280, height=720, hasDepth=true, hasStencil=true, samples=1), #00000000, 1.0, 0, true, true, true)
-createTexture():1
-Texture[1].uploadedBitmap(16, 16)
-createTexture():2
-Texture[2].uploadedBitmap(16, 16)
-createTexture():3
-Texture[3].uploadedBitmap(16, 16)
-createTexture():4
-Texture[4].uploadedBitmap(16, 16)
-createTexture():5
-Texture[5].uploadedBitmap(16, 16)
 execute(AGBatch(frameBuffer=AGFrameBufferBase(isMain=true), frameBufferInfo=AGFrameBufferInfo(width=1280, height=720, hasDepth=true, hasStencil=true, samples=1), vertexData=AGVertexArrayObject(list=[AGVertexData(layout=VertexLayout[a_Pos, a_Tex, a_Col, a_Col2], buffer=AGBuffer(768)), AGVertexData(layout=VertexLayout[a_TexIndex], buffer=AGBuffer(16384)), AGVertexData(layout=VertexLayout[a_Wrap], buffer=AGBuffer(16384))]), indices=AGBuffer(96), indexType=USHORT, program=Program(name=BatchBuilder2D.Tinted.NoAdd, attributes=[a_Tex, a_TexIndex, a_Wrap, a_Col, a_Col2, a_Pos], uniforms=[u_ProjMat, u_ViewMat, u_Tex0, u_Tex1, u_Tex2, u_Tex3, u_OutputPre]), uniforms=AGUniformValues(u_ProjMat=AGValue[TFLOAT]([[0.0015625, 0, 0, 0, 0, -0.0027777778, 0, 0, 0, 0, -1, 0, -1, 1, 0, 1]]), u_ViewMat=AGValue[TFLOAT]([[1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]]), u_Tex0=AGValue[TINT]([[0]]), u_Tex1=AGValue[TINT]([[1]]), u_Tex2=AGValue[TINT]([[2]]), u_Tex3=AGValue[TINT]([[3]]), u_OutputPre=AGValue[TBOOL]([[0]])), blending=Blending(outRGB = (srcRGB * srcA) + (dstRGB * (1 - srcA)), outA = (srcA * 1) + (dstA * (1 - srcA))), stencilOpFunc=AGStencilOpFunc(data=5591072), stencilRef=AGStencilReference(data=16776960), colorMask=AGColorMask(data=15), depthAndFrontFace=AGDepthAndFrontFace(data=33550336), scissor=Scissor(x=0, y=0, width=1280, height=720), cullFace=NONE, drawType=TRIANGLES, drawOffset=0, vertexCount=48, instances=1))
 execute(AGBatch(frameBuffer=AGFrameBufferBase(isMain=true), frameBufferInfo=AGFrameBufferInfo(width=1280, height=720, hasDepth=true, hasStencil=true, samples=1), vertexData=AGVertexArrayObject(list=[AGVertexData(layout=VertexLayout[a_Pos, a_Tex, a_Col, a_Col2], buffer=AGBuffer(192)), AGVertexData(layout=VertexLayout[a_TexIndex], buffer=AGBuffer(16384)), AGVertexData(layout=VertexLayout[a_Wrap], buffer=AGBuffer(16384))]), indices=AGBuffer(24), indexType=USHORT, program=Program(name=BatchBuilder2D.Tinted.NoAdd, attributes=[a_Tex, a_TexIndex, a_Wrap, a_Col, a_Col2, a_Pos], uniforms=[u_ProjMat, u_ViewMat, u_Tex0, u_Tex1, u_Tex2, u_Tex3, u_OutputPre]), uniforms=AGUniformValues(u_ProjMat=AGValue[TFLOAT]([[0.0015625, 0, 0, 0, 0, -0.0027777778, 0, 0, 0, 0, -1, 0, -1, 1, 0, 1]]), u_ViewMat=AGValue[TFLOAT]([[1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]]), u_Tex0=AGValue[TINT]([[0]]), u_Tex1=AGValue[TINT]([[1]]), u_Tex2=AGValue[TINT]([[2]]), u_Tex3=AGValue[TINT]([[3]]), u_OutputPre=AGValue[TBOOL]([[0]])), blending=Blending(outRGB = (srcRGB * srcA) + (dstRGB * (1 - srcA)), outA = (srcA * 1) + (dstA * (1 - srcA))), stencilOpFunc=AGStencilOpFunc(data=5591072), stencilRef=AGStencilReference(data=16776960), colorMask=AGColorMask(data=15), depthAndFrontFace=AGDepthAndFrontFace(data=33550336), scissor=Scissor(x=0, y=0, width=1280, height=720), cullFace=NONE, drawType=TRIANGLES, drawOffset=0, vertexCount=12, instances=1))
 flip()

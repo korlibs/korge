@@ -1,7 +1,7 @@
 package com.soywiz.korge.view
 
 import com.soywiz.korag.*
-import com.soywiz.korag.log.LogBaseAG
+import com.soywiz.korag.log.AGBaseLog
 import com.soywiz.korge.render.MaskStates
 import com.soywiz.korge.render.VertexInfo
 import com.soywiz.korge.tests.ViewsForTesting
@@ -18,7 +18,7 @@ class MaskedViewTest : ViewsForTesting() {
         masked.mask = SolidRect(32.0, 32.0)
         masked.solidRect(64, 64)
 
-        testRenderContext(object : LogBaseAG() {
+        testRenderContext(object : AGBaseLog() {
             override fun execute(command: AGCommand) {
                 when (command) {
                     is AGBatch -> {

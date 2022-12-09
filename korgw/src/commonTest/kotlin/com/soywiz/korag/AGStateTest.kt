@@ -6,7 +6,7 @@ import kotlin.test.*
 class AGStateTest {
     @Test
     fun test() {
-        val fb = LogAG().createFrameBuffer()
+        val fb = AGLog().createFrameBuffer()
         fb.setSize(0, 0, 200, 600)
         fb.setExtra(hasDepth = false, hasStencil = true)
         fb.setSamples(4)

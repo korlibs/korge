@@ -2,9 +2,8 @@ package com.soywiz.korge.render
 
 import com.soywiz.kgl.KmlGl
 import com.soywiz.kgl.KmlGlProxyLogToString
-import com.soywiz.korag.*
 import com.soywiz.korag.gl.*
-import com.soywiz.korag.log.LogAG
+import com.soywiz.korag.log.AGLog
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.bitmap.ForcedTexNativeImage
 import com.soywiz.korim.bitmap.sliceWithSize
@@ -12,7 +11,7 @@ import com.soywiz.korim.color.Colors
 import kotlin.test.*
 
 class AgBitmapTextureManagerTest {
-    val ag = LogAG()
+    val ag = AGLog()
     val tm = AgBitmapTextureManager(ag)
 
 	@Test

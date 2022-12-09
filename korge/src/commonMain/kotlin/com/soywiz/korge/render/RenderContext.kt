@@ -487,4 +487,4 @@ inline fun <T : AG> testRenderContext(ag: T, bp: BoundsProvider = BoundsProvider
     return ag
 }
 
-inline fun testRenderContext(bp: BoundsProvider = BoundsProvider.Base(), block: (RenderContext) -> Unit): LogAG = testRenderContext(LogAG(), bp, block)
+inline fun testRenderContext(bp: BoundsProvider = BoundsProvider.Base(), block: (RenderContext) -> Unit): AGLog = testRenderContext(AGLog(), bp, block)

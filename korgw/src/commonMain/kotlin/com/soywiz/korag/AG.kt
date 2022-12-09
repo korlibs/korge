@@ -33,7 +33,7 @@ class AGToCommandChannel(val channel: Channel<AGCommand>) : AG() {
     }
 }
 
-abstract class AG() : AGFeatures, AGCommandExecutor, Extra by Extra.Mixin() {
+abstract class AG : AGFeatures, AGCommandExecutor, Extra by Extra.Mixin() {
     companion object {
         const val defaultPixelsPerInch : Double = 96.0
     }
@@ -86,7 +86,7 @@ abstract class AG() : AGFeatures, AGCommandExecutor, Extra by Extra.Mixin() {
     @Deprecated("This will copy the data")
     fun createTexture(bmp: BitmapSlice<Bitmap>, mipmaps: Boolean = false): AGTexture = createTexture(bmp.premultiplied).upload(bmp, mipmaps)
     fun createTexture(bmp: Bitmap, mipmaps: Boolean = false, premultiplied: Boolean = true): AGTexture = createTexture(premultiplied).upload(bmp, mipmaps)
-    open fun createTexture(premultiplied: Boolean, targetKind: AGTextureTargetKind = AGTextureTargetKind.TEXTURE_2D): AGTexture = AGTexture(this, premultiplied, targetKind)
+    open fun createTexture(premultiplied: Boolean, targetKind: AGTextureTargetKind = AGTextureTargetKind.TEXTURE_2D): AGTexture = AGTexture(premultiplied, targetKind)
 
     fun drawV2(
         frameBuffer: AGFrameBuffer,

@@ -13,7 +13,7 @@ import kotlin.random.*
 import kotlin.test.*
 
 class ParticleEmitterViewTest : ViewsForTesting(log = true) {
-    override fun filterLogDraw(str: String, kind: LogBaseAG.Kind): Boolean = kind == LogBaseAG.Kind.DRAW
+    override fun filterLogDraw(str: String, kind: AGBaseLog.Kind): Boolean = kind == AGBaseLog.Kind.DRAW
 
     val particleEmitter = SingleFileMemoryVfs("""
         <particleEmitterConfig>

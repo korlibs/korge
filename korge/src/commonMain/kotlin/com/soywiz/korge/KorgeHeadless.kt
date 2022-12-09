@@ -15,7 +15,7 @@ import com.soywiz.korma.geom.*
 object KorgeHeadless {
     class HeadlessGameWindow(override val width: Int = 640, override val height: Int = 480, val draw: Boolean = false) : GameWindow() {
         //override val ag: AG = if (draw) AGSoftware(width, height) else DummyAG(width, height)
-        override val ag: AG = DummyAG(width, height)
+        override val ag: AG = AGDummy(width, height)
     }
 
     suspend operator fun invoke(config: Korge.Config) = Korge(config.copy(gameWindow = HeadlessGameWindow()))

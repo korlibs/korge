@@ -1,6 +1,6 @@
 package com.soywiz.korge.view
 
-import com.soywiz.korag.log.LogBaseAG
+import com.soywiz.korag.log.AGBaseLog
 import com.soywiz.korge.annotations.*
 import com.soywiz.korge.test.assertEqualsFileReference
 import com.soywiz.korge.tests.ViewsForTesting
@@ -24,7 +24,7 @@ class ReferenceGraphicsTest : ViewsForTesting(
 ) {
     //override fun filterLogDraw(str: String, kind: LogBaseAG.Kind): Boolean = kind == LogBaseAG.Kind.DRAW || kind == LogBaseAG.Kind.SHADER
     //override fun filterLogDraw(str: String, kind: LogBaseAG.Kind): Boolean = kind != LogBaseAG.Kind.DRAW_DETAILS
-    override fun filterLogDraw(str: String, kind: LogBaseAG.Kind): Boolean = true
+    override fun filterLogDraw(str: String, kind: AGBaseLog.Kind): Boolean = true
 
     private suspend fun testFrame() {
         logAg.clearLog()
@@ -199,8 +199,8 @@ class ReferenceGraphicsTest : ViewsForTesting(
         }
         logAg.logFilter = { str, kind ->
             when (kind) {
-                LogBaseAG.Kind.SHADER, LogBaseAG.Kind.DRAW_DETAILS -> false
-                LogBaseAG.Kind.UNIFORM, LogBaseAG.Kind.UNIFORM_VALUES -> true
+                AGBaseLog.Kind.SHADER, AGBaseLog.Kind.DRAW_DETAILS -> false
+                AGBaseLog.Kind.UNIFORM, AGBaseLog.Kind.UNIFORM_VALUES -> true
                 //else -> true
                 else -> false
             }

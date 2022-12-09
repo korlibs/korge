@@ -45,15 +45,15 @@ open class ViewsForTesting(
         override var height: Int = initialSize.height
         override val coroutineDispatcher = dispatcher
     }
-    open fun filterLogDraw(str: String, kind: LogBaseAG.Kind): Boolean {
-        return kind != LogBaseAG.Kind.SHADER
+    open fun filterLogDraw(str: String, kind: AGBaseLog.Kind): Boolean {
+        return kind != AGBaseLog.Kind.SHADER
     }
 
 	val gameWindow = TestGameWindow(windowSize, dispatcher)
     val ag: AG by lazy { createAg() }
 
     open fun createAg(): AG {
-        return object : LogAG(windowSize.width, windowSize.height) {
+        return object : AGLog(windowSize.width, windowSize.height) {
             override fun log(str: String, kind: Kind) {
                 if (this@ViewsForTesting.log && filterLogDraw(str, kind)) {
                     super.log(str, kind)
@@ -69,9 +69,9 @@ open class ViewsForTesting(
         viewsLog.views.resized(windowSize.width, windowSize.height)
     } }
 	val injector get() = viewsLog.injector
-    val logAgOrNull get() = ag as? LogAG?
+    val logAgOrNull get() = ag as? AGLog?
     val logAg get() = logAgOrNull ?: error("Must call ViewsForTesting(log = true) to access logAg")
-    val dummyAg get() = ag as? DummyAG?
+    val dummyAg get() = ag as? AGDummy?
 	val input get() = viewsLog.input
 	val views get() = viewsLog.views
     val stage get() = views.stage

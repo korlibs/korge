@@ -127,19 +127,19 @@ open class ComposedAG(val agBase: AG, val agExtra: AG) : AG(), AGFeatures by agB
 }
 */
 
-open class PrintAG(
+open class AGPrint(
     width: Int = 640,
     height: Int = 480
-) : LogBaseAG(width, height) {
+) : AGBaseLog(width, height) {
     override fun log(str: String, kind: Kind) {
         println("PrintAG: $str")
     }
 }
 
-open class LogAG(
+open class AGLog(
     width: Int = 640,
     height: Int = 480,
-) : LogBaseAG(width, height) {
+) : AGBaseLog(width, height) {
     val log = arrayListOf<String>()
     fun clearLog() = log.clear()
     fun getLogAsString(): String = log.joinToString("\n")
@@ -152,10 +152,10 @@ open class LogAG(
 }
 
 @OptIn(KorInternal::class)
-open class LogBaseAG(
+open class AGBaseLog(
 	width: Int = 640,
 	height: Int = 480,
-) : DummyAG(width, height) {
+) : AGDummy(width, height) {
     enum class Kind { COMMAND, DRAW, DRAW_DETAILS, CLEAR, METRICS, FLIP, READ, REPAINT, DISPOSE, TEXTURE_UPLOAD, CLOSE, FRAME_BUFFER, BUFFER, TEXTURE, SHADER, OTHER, UNIFORM, UNIFORM_VALUES, SCISSORS, VIEWPORT, VERTEX, ENABLE_DISABLE, CONTEXT_LOST, FLUSH }
 
 	open fun log(str: String, kind: Kind) {
@@ -184,19 +184,7 @@ open class LogBaseAG(
 
 	override fun dispose() = log("dispose()", Kind.DISPOSE)
 
-	inner class LogTexture(val id: Int, premultiplied: Boolean) : AGTexture(this, premultiplied) {
-		override fun uploadedSource() {
-			log("$this.uploadedBitmap(${width}, ${height})", Kind.TEXTURE_UPLOAD)
-		}
-
-		override fun close() {
-			super.close()
-			log("$this.close()", Kind.CLOSE)
-		}
-		override fun toString(): String = "Texture[$id]"
-	}
-
-	inner class LogFrameBuffer(val id: Int, isMain: Boolean) : AGFrameBuffer(this@LogBaseAG, isMain) {
+	inner class LogFrameBuffer(val id: Int, isMain: Boolean) : AGFrameBuffer(this@AGBaseLog, isMain) {
         override fun setSize(x: Int, y: Int, width: Int, height: Int, fullWidth: Int, fullHeight: Int) {
             super.setSize(x, y, width, height, fullWidth, fullHeight)
             log("$this.setSize($width, $height)", Kind.FRAME_BUFFER)
@@ -205,7 +193,7 @@ open class LogBaseAG(
 		override fun toString(): String = "RenderBuffer[$id]"
         init {
             if (isMain) {
-                setSize(0, 0, this@LogBaseAG.backWidth, this@LogBaseAG.backHeight)
+                setSize(0, 0, this@AGBaseLog.backWidth, this@AGBaseLog.backHeight)
             }
         }
 	}
@@ -213,10 +201,6 @@ open class LogBaseAG(
 	private var textureId = 0
 	private var bufferId = 0
 	private var renderBufferId = 0
-
-	override fun createTexture(premultiplied: Boolean, targetKind: AGTextureTargetKind): AGTexture =
-		LogTexture(textureId++, premultiplied).apply { log("createTexture():$id", Kind.TEXTURE) }
-
 
     data class VertexAttributeEx(val index: Int, val attribute: Attribute, val pos: Int, val data: AGVertexData) {
         val layout = data.layout
