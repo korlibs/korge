@@ -1,4 +1,4 @@
-clear(AGFrameBufferBase(isMain=true), AGFrameBufferInfo(width=200, height=200, hasDepth=true, hasStencil=true, samples=1), #00000000, 1.0, 0, true, true, true)
+clear(AGFrameBufferBase(isMain=true), AGFrameBufferInfo(width=128, height=128, hasDepth=true, hasStencil=true, samples=1), #00000000, 1.0, 0, true, true, true)
 flip()
 Rectangle(x=-15, y=-14, width=30, height=28)
 Rectangle(x=-15, y=-14, width=30, height=28)

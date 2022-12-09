@@ -7,6 +7,7 @@ import com.soywiz.kmem.unit.*
 import com.soywiz.korag.gl.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korio.lang.*
+import com.soywiz.korma.geom.*
 
 internal interface AGNativeObject {
     fun markToDelete()
@@ -60,7 +61,7 @@ data class AGTextureUnit constructor(
 }
 
 class AGTexture(
-    val premultiplied: Boolean,
+    val premultiplied: Boolean = true,
     val targetKind: AGTextureTargetKind = AGTextureTargetKind.TEXTURE_2D
 ) : AGObject(), Closeable {
     var isFbo: Boolean = false
@@ -110,4 +111,85 @@ class AGTexture(
     }
 
     override fun toString(): String = "AGTexture(pre=$premultiplied)"
+}
+
+open class AGFrameBufferBase(val isMain: Boolean) : AGObject() {
+    val tex: AGTexture = AGTexture(premultiplied = true).also { it.isFbo = true }
+    var estimatedMemoryUsage: ByteUnits = ByteUnits.fromBytes(0)
+
+    override fun close() {
+        tex.close()
+        //ag.frameRenderBuffers -= this
+    }
+
+    override fun toString(): String = "AGFrameBufferBase(isMain=$isMain)"
+}
+
+open class AGFrameBuffer(val base: AGFrameBufferBase) : Closeable {
+    constructor(isMain: Boolean = false) : this(AGFrameBufferBase(isMain))
+    val isMain: Boolean get() = base.isMain
+    val tex: AGTexture get() = base.tex
+    val info: AGFrameBufferInfo get() = AGFrameBufferInfo(0).withSize(width, height).withSamples(nsamples).withHasDepth(hasDepth).withHasStencil(hasStencil)
+    companion object {
+        const val DEFAULT_INITIAL_WIDTH = 128
+        const val DEFAULT_INITIAL_HEIGHT = 128
+    }
+
+    var nsamples: Int = 1; protected set
+    val hasStencilAndDepth: Boolean get() = hasDepth && hasStencil
+    var hasStencil: Boolean = true; protected set
+    var hasDepth: Boolean = true; protected set
+
+    var x = 0
+    var y = 0
+    var width = DEFAULT_INITIAL_WIDTH
+    var height = DEFAULT_INITIAL_HEIGHT
+    var fullWidth = DEFAULT_INITIAL_WIDTH
+    var fullHeight = DEFAULT_INITIAL_HEIGHT
+    private val _scissor = RectangleInt()
+    var scissor: RectangleInt? = null
+
+    open fun setSize(x: Int, y: Int, width: Int, height: Int, fullWidth: Int = width, fullHeight: Int = height) {
+        if (this.x == x && this.y == y && this.width == width && this.height == height && this.fullWidth == fullWidth && this.fullHeight == fullHeight) return
+        tex.upload(NullBitmap(width, height))
+
+        base.estimatedMemoryUsage = ByteUnits.fromBytes(fullWidth * fullHeight * (4 + 4))
+
+        this.x = x
+        this.y = y
+        this.width = width
+        this.height = height
+        this.fullWidth = fullWidth
+        this.fullHeight = fullHeight
+        markAsDirty()
+    }
+
+    fun scissor(scissor: RectangleInt?) {
+        this.scissor = scissor?.let { _scissor.setTo(it) }
+    }
+
+    override fun close() {
+        base.close()
+        //ag.frameRenderBuffers -= this
+    }
+
+
+    fun setSamples(samples: Int) {
+        if (this.nsamples == samples) return
+        nsamples = samples
+        markAsDirty()
+    }
+
+    fun setExtra(hasDepth: Boolean = true, hasStencil: Boolean = true) {
+        if (this.hasDepth == hasDepth && this.hasStencil == hasStencil) return
+        this.hasDepth = hasDepth
+        this.hasStencil = hasStencil
+        markAsDirty()
+    }
+
+    private fun markAsDirty() {
+        //base.markAsDirty()
+    }
+
+    override fun toString(): String = "GlFrameBuffer($width, $height)"
 }

@@ -84,7 +84,7 @@ class RenderContext constructor(
     private val tempRect = Rectangle()
     private val tempMat3d = Matrix3D()
 
-    val tempTexturePool: Pool<AGTexture> = Pool { ag.createTexture() }
+    val tempTexturePool: Pool<AGTexture> = Pool { AGTexture() }
 
     fun updateStandardUniforms() {
         //println("updateStandardUniforms: ag.currentSize(${ag.currentWidth}, ${ag.currentHeight}) : ${ag.currentFrameBuffer}")
@@ -367,7 +367,7 @@ class RenderContext constructor(
     /////////////// FROM AG ///////////////////
 
     val frameFrameBuffers = LinkedHashSet<AGFrameBuffer>()
-    val frameBuffers = Pool<AGFrameBuffer>() { ag.createFrameBuffer() }
+    val frameBuffers: Pool<AGFrameBuffer> = Pool { AGFrameBuffer() }
     val frameBufferStack = FastArrayList<AGFrameBuffer>()
 
     inline fun doRender(block: () -> Unit) {
@@ -477,6 +477,31 @@ class RenderContext constructor(
 
     fun popFrameBuffer() {
         currentFrameBuffer = frameBufferStack.removeAt(frameBufferStack.size - 1)
+    }
+
+
+    val textureDrawer by lazy { AGTextureDrawer(ag) }
+    fun drawTexture(frameBuffer: AGFrameBuffer, tex: AGTexture) {
+        textureDrawer.draw(frameBuffer, tex, -1f, +1f, +1f, -1f)
+    }
+
+    private val drawTempTexture: AGTexture by lazy { AGTexture() }
+
+    fun drawBitmap(frameBuffer: AGFrameBuffer, bmp: Bitmap) {
+        drawTempTexture.upload(bmp, mipmaps = false)
+        drawTexture(frameBuffer, drawTempTexture)
+        drawTempTexture.upload(Bitmaps.transparent.bmp)
+    }
+
+    inline fun backupTexture(frameBuffer: AGFrameBuffer, tex: AGTexture?, callback: () -> Unit) {
+        if (tex != null) {
+            ag.readColorTexture(tex, 0, 0, ag.backWidth, ag.backHeight)
+        }
+        try {
+            callback()
+        } finally {
+            if (tex != null) drawTexture(frameBuffer, tex)
+        }
     }
 }
 

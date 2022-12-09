@@ -81,13 +81,6 @@ abstract class AG : AGFeatures, AGCommandExecutor, Extra by Extra.Mixin() {
     private val texturesCount: Int get() = textures.size
     private val texturesMemory: ByteUnits get() = ByteUnits.fromBytes(textures.sumOf { it.estimatedMemoryUsage.bytesLong })
 
-    fun createTexture(): AGTexture = createTexture(premultiplied = true)
-    fun createTexture(bmp: Bitmap, mipmaps: Boolean = false): AGTexture = createTexture(bmp.premultiplied).upload(bmp, mipmaps)
-    @Deprecated("This will copy the data")
-    fun createTexture(bmp: BitmapSlice<Bitmap>, mipmaps: Boolean = false): AGTexture = createTexture(bmp.premultiplied).upload(bmp, mipmaps)
-    fun createTexture(bmp: Bitmap, mipmaps: Boolean = false, premultiplied: Boolean = true): AGTexture = createTexture(premultiplied).upload(bmp, mipmaps)
-    open fun createTexture(premultiplied: Boolean, targetKind: AGTextureTargetKind = AGTextureTargetKind.TEXTURE_2D): AGTexture = AGTexture(premultiplied, targetKind)
-
     fun drawV2(
         frameBuffer: AGFrameBuffer,
         vertexData: AGVertexArrayObject,
@@ -157,16 +150,9 @@ abstract class AG : AGFeatures, AGCommandExecutor, Extra by Extra.Mixin() {
     private val frameBufferCount: Int get() = allFrameBuffers.size
     private val frameBuffersMemory: ByteUnits get() = ByteUnits.fromBytes(allFrameBuffers.sumOf { it.estimatedMemoryUsage.bytesLong })
 
-    val mainFrameBuffer: AGFrameBuffer by lazy {
-        createMainFrameBuffer()
-    }
+    val mainFrameBuffer: AGFrameBuffer = AGFrameBuffer(isMain = true)
 
     var lastRenderContextId = 0
-
-    open fun createMainFrameBuffer(): AGFrameBuffer = AGFrameBuffer(AGFrameBufferBase(this, isMain = true))
-    open fun createFrameBuffer(): AGFrameBuffer = AGFrameBuffer(AGFrameBufferBase(this, isMain = false))
-
-    //open fun createRenderBuffer() = RenderBuffer()
 
     open fun flip() {
     }
@@ -218,17 +204,6 @@ abstract class AG : AGFeatures, AGCommandExecutor, Extra by Extra.Mixin() {
     val isRenderingToWindow: Boolean get() = currentFrameBufferOrMain === mainFrameBuffer
     val isRenderingToTexture: Boolean get() = !isRenderingToWindow
 
-    inline fun backupTexture(frameBuffer: AGFrameBuffer, tex: AGTexture?, callback: () -> Unit) {
-        if (tex != null) {
-            readColorTexture(tex, 0, 0, backWidth, backHeight)
-        }
-        try {
-            callback()
-        } finally {
-            if (tex != null) drawTexture(frameBuffer, tex)
-        }
-    }
-
     // @TODO: Rename to Sync and add Suspend versions
     fun readPixel(x: Int, y: Int): RGBA {
         val rawColor = Bitmap32(1, 1, premultiplied = isRenderingToTexture).also { readColor(it, x, y) }.ints[0]
@@ -245,28 +220,12 @@ abstract class AG : AGFeatures, AGCommandExecutor, Extra by Extra.Mixin() {
 
     //////////////
 
-    val textureDrawer by lazy { AGTextureDrawer(this) }
-    fun drawTexture(frameBuffer: AGFrameBuffer, tex: AGTexture) {
-        textureDrawer.draw(frameBuffer, tex, -1f, +1f, +1f, -1f)
-    }
-
-    private val drawTempTexture: AGTexture by lazy { createTexture() }
-
-    fun drawBitmap(frameBuffer: AGFrameBuffer, bmp: Bitmap) {
-        drawTempTexture.upload(bmp, mipmaps = false)
-        drawTexture(frameBuffer, drawTempTexture)
-        drawTempTexture.upload(Bitmaps.transparent.bmp)
-    }
 
     private val stats = AGStats()
-
-    internal var programCount = 0
-
     fun getStats(out: AGStats = stats): AGStats {
         readStats(out)
         return out
     }
-
     protected open fun readStats(out: AGStats) {
     }
 }

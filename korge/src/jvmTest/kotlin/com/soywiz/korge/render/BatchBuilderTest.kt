@@ -1,5 +1,6 @@
 package com.soywiz.korge.render
 
+import com.soywiz.korag.*
 import com.soywiz.korag.log.*
 import com.soywiz.korge.test.*
 import kotlin.test.*
@@ -10,7 +11,7 @@ class BatchBuilderTest {
 
 	@Test
 	fun simpleBatch() {
-		val tex = Texture(ag.createTexture(), 100, 100)
+		val tex = Texture(AGTexture(), 100, 100)
 		bb.drawQuad(tex, 0f, 0f, premultiplied = tex.premultiplied, wrap = false)
 		bb.flush()
 
@@ -19,7 +20,7 @@ class BatchBuilderTest {
 
 	@Test
 	fun batch2() {
-		val tex = Texture(ag.createTexture(), 100, 100)
+		val tex = Texture(AGTexture(), 100, 100)
 		bb.drawQuad(tex, 0f, 0f, premultiplied = tex.premultiplied, wrap = false)
 		bb.drawQuad(tex, 100f, 0f, premultiplied = tex.premultiplied, wrap = false)
 		bb.flush()

@@ -184,20 +184,6 @@ open class AGBaseLog(
 
 	override fun dispose() = log("dispose()", Kind.DISPOSE)
 
-	inner class LogFrameBuffer(val id: Int, isMain: Boolean) : AGFrameBuffer(this@AGBaseLog, isMain) {
-        override fun setSize(x: Int, y: Int, width: Int, height: Int, fullWidth: Int, fullHeight: Int) {
-            super.setSize(x, y, width, height, fullWidth, fullHeight)
-            log("$this.setSize($width, $height)", Kind.FRAME_BUFFER)
-        }
-		override fun close() = log("$this.close()", Kind.FRAME_BUFFER)
-		override fun toString(): String = "RenderBuffer[$id]"
-        init {
-            if (isMain) {
-                setSize(0, 0, this@AGBaseLog.backWidth, this@AGBaseLog.backHeight)
-            }
-        }
-	}
-
 	private var textureId = 0
 	private var bufferId = 0
 	private var renderBufferId = 0
@@ -227,12 +213,6 @@ open class AGBaseLog(
         is FloatArray -> this.toList()
         else -> this
     }
-
-	override fun createFrameBuffer(): AGFrameBuffer =
-		LogFrameBuffer(renderBufferId++, isMain = false).apply { log("createRenderBuffer():$id", Kind.FRAME_BUFFER) }
-
-    override fun createMainFrameBuffer(): AGFrameBuffer =
-        LogFrameBuffer(renderBufferId++, isMain = true).apply { log("createMainRenderBuffer():$id", Kind.FRAME_BUFFER) }
 
     override fun flip() = log("flip()", Kind.FLIP)
 	override fun readColor(bitmap: Bitmap32, x: Int, y: Int) = log("$this.readBitmap($bitmap, $x, $y)", Kind.READ)

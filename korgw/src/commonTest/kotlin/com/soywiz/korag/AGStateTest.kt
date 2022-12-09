@@ -1,12 +1,11 @@
 package com.soywiz.korag
 
-import com.soywiz.korag.log.*
 import kotlin.test.*
 
 class AGStateTest {
     @Test
     fun test() {
-        val fb = AGLog().createFrameBuffer()
+        val fb = AGFrameBuffer()
         fb.setSize(0, 0, 200, 600)
         fb.setExtra(hasDepth = false, hasStencil = true)
         fb.setSamples(4)
