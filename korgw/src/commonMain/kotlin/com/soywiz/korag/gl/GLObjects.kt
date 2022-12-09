@@ -5,20 +5,30 @@ import com.soywiz.kds.lock.*
 import com.soywiz.kgl.*
 import com.soywiz.korag.*
 import com.soywiz.korag.AGNativeObject
+import com.soywiz.korag.shader.*
 
 class GLGlobalState(val gl: KmlGl, val agGlobalState: AGGlobalState) {
     internal val objectsToDeleteLock = Lock()
     internal val objectsToDelete = fastArrayListOf<GLBaseObject>()
 }
 
-internal open class GLBaseObject(val glboalState: GLGlobalState) : AGNativeObject {
-    val gl: KmlGl = glboalState.gl
+internal class GLBaseProgram(globalState: GLGlobalState, val programInfo: GLProgramInfo) : GLBaseObject(globalState) {
+    override fun delete() {
+        programInfo.delete(gl)
+    }
+    fun use() {
+        programInfo.use(gl)
+    }
+}
+
+internal open class GLBaseObject(val globalState: GLGlobalState) : AGNativeObject {
+    val gl: KmlGl = globalState.gl
 
     open fun delete() {
     }
 
     final override fun markToDelete() {
-        glboalState.objectsToDeleteLock { glboalState.objectsToDelete += this }
+        globalState.objectsToDeleteLock { globalState.objectsToDelete += this }
     }
 }
 

@@ -63,42 +63,6 @@ open class AGBuffer constructor(val ag: AG) : AGObject() {
     }
 }
 
-class AGProgram(val ag: AG, val program: Program, val programConfig: ProgramConfig) : AGObject() {
-    var cachedVersion = -1
-    var programId = 0
-
-    fun ensure(list: AGList) {
-        if (cachedVersion != ag.contextVersion) {
-            val time = measureTime {
-                ag.programCount++
-                programId = list.createProgram(program, programConfig)
-                cachedVersion = ag.contextVersion
-            }
-            if (GlslGenerator.DEBUG_GLSL) {
-                Console.info("AG: Created program ${program.name} with id ${programId} in time=$time")
-            }
-        }
-    }
-
-    fun use(list: AGList) {
-        ensure(list)
-        list.useProgram(programId)
-    }
-
-    fun unuse(list: AGList) {
-        ensure(list)
-        list.useProgram(0)
-    }
-
-    fun close(list: AGList) {
-        if (programId != 0) {
-            ag.programCount--
-            list.deleteProgram(programId)
-        }
-        programId = 0
-    }
-}
-
 data class AGTextureUnit constructor(
     val index: Int,
     var texture: AGTexture? = null,

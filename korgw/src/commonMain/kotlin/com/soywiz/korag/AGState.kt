@@ -688,11 +688,6 @@ open class AGFrameBuffer(ag: AG) : AGBaseFrameBufferImpl(ag) {
         markAsDirty()
     }
 
-    override fun set() {
-        ag.setViewport(this)
-        ag.commands { it.frameBufferSet(this) }
-    }
-
     fun readBitmap(bmp: Bitmap32) = ag.readColor(bmp)
     fun readDepth(width: Int, height: Int, out: FloatArray): Unit = ag.readDepth(width, height, out)
 
@@ -734,7 +729,12 @@ data class AGVertexData constructor(
     val buffer: AGBuffer get() = _buffer!!
 }
 
-interface AGCommand
+interface AGCommandExecutor {
+    fun execute(command: AGCommand)
+}
+fun AGCommandExecutor.draw(batch: AGBatch): Unit = execute(batch)
+
+sealed interface AGCommand
 
 /**
  *

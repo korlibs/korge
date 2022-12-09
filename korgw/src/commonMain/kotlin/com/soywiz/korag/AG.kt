@@ -47,7 +47,7 @@ interface AGFeatures {
 }
 
 @OptIn(KorIncomplete::class)
-abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mixin() {
+abstract class AG(val checked: Boolean = false) : AGFeatures, AGCommandExecutor, Extra by Extra.Mixin() {
     companion object {
         const val defaultPixelsPerInch : Double = 96.0
     }
@@ -57,7 +57,6 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
     open fun contextLost() {
         Console.info("AG.contextLost()", this)
         //printStackTrace("AG.contextLost")
-        commands { it.contextLost() }
     }
 
     val tempVertexBufferPool = Pool { createBuffer() }
@@ -114,6 +113,9 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
 
     val currentWidth: Int get() = currentRenderBuffer?.width ?: mainRenderBuffer.width
     val currentHeight: Int get() = currentRenderBuffer?.height ?: mainRenderBuffer.height
+
+    protected val _globalState = AGGlobalState(checked)
+    var contextVersion: Int by _globalState::contextVersion
 
     //protected fun setViewport(v: IntArray) = setViewport(v[0], v[1], v[2], v[3])
 
@@ -179,46 +181,17 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
 
     private val batch = AGBatch()
 
-    open fun draw(batch: AGBatch) {
-        val instances = batch.instances
-        val program = batch.program
-        val type = batch.drawType
-        val vertexCount = batch.vertexCount
-        val indices = batch.indices
-        val indexType = batch.indexType
-        val offset = batch.drawOffset
-        val blending = batch.blending
-        val uniforms = batch.uniforms
-        val stencilRef = batch.stencilRef
-        val stencilOpFunc = batch.stencilOpFunc
-        val colorMask = batch.colorMask
-        val renderState = batch.depthAndFrontFace
-        val scissor = batch.scissor
-
-        //println("SCISSOR: $scissor")
-
-        //finalScissor.setTo(0, 0, backWidth, backHeight)
-
-        commands { list ->
-            list.setScissorState(this, scissor)
-
-            getProgram(program, config = when {
-                uniforms.useExternalSampler() -> ProgramConfig.EXTERNAL_TEXTURE_SAMPLER
-                else -> ProgramConfig.DEFAULT
-            }).use(list)
-
-            list.vertexArrayObjectSet(batch.vertexData) {
-                list.uniformsSet(uniforms)
-                list.setState(blending, stencilOpFunc, stencilRef, colorMask, renderState)
-
-                //val viewport = Buffer(4 * 4)
-                //gl.getIntegerv(KmlGl.VIEWPORT, viewport)
-                //println("viewport=${viewport.getAlignedInt32(0)},${viewport.getAlignedInt32(1)},${viewport.getAlignedInt32(2)},${viewport.getAlignedInt32(3)}")
-
-                list.draw(type, vertexCount, offset, instances, if (indices != null) indexType else AGIndexType.NONE, indices)
-            }
+    override fun execute(command: AGCommand) {
+        when (command) {
+            is AGClear -> clear(command)
+            is AGBatch -> draw(batch)
+            is AGBlitPixels -> TODO()
+            is AGReadPixelsToTexture -> TODO()
         }
     }
+
+    open fun clear(clear: AGClear) = Unit
+    abstract fun draw(batch: AGBatch)
 
     fun AGUniformValues.useExternalSampler(): Boolean {
         var useExternalSampler = false
@@ -269,23 +242,13 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
 
     open fun createMainRenderBuffer(): AGBaseFrameBuffer = AGBaseFrameBufferImpl(this)
 
-    internal fun setViewport(buffer: AGBaseFrameBuffer) {
-        commands { it.viewport(buffer.x, buffer.y, buffer.width, buffer.height) }
-        //println("setViewport: ${buffer.x}, ${buffer.y}, ${buffer.width}, ${buffer.height}")
-    }
-
     var lastRenderContextId = 0
 
     open fun createRenderBuffer(): AGFrameBuffer = AGFrameBuffer(this)
 
     //open fun createRenderBuffer() = RenderBuffer()
 
-    fun flip() {
-        disposeTemporalPerFrameStuff()
-        renderBuffers.free(frameRenderBuffers)
-        if (frameRenderBuffers.isNotEmpty()) frameRenderBuffers.clear()
-        flipInternal()
-        commands { it.finish() }
+    open fun flip() {
     }
 
     open fun flipInternal() = Unit
@@ -302,29 +265,11 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
         clearStencil: Boolean = true,
         scissor: AGScissor = AGScissor.NIL,
     ) {
-        commands { list ->
-            //println("CLEAR: $color, $depth")
-            list.setScissorState(this, scissor)
-            //gl.disable(KmlGl.SCISSOR_TEST)
-            if (clearColor) {
-                list.colorMask(true, true, true, true)
-                list.clearColor(color.rf, color.gf, color.bf, color.af)
-            }
-            if (clearDepth) {
-                list.depthMask(true)
-                list.clearDepth(depth)
-            }
-            if (clearStencil) {
-                list.stencilMask(-1)
-                list.clearStencil(stencil)
-            }
-            list.clear(clearColor, clearDepth, clearStencil)
-        }
     }
 
 
     private val finalScissorBL = Rectangle()
-    private val tempRect = Rectangle()
+    @PublishedApi internal val tempRect = Rectangle()
 
     fun clearStencil(stencil: Int = 0, scissor: AGScissor = AGScissor.NIL) = clear(clearColor = false, clearDepth = false, clearStencil = true, stencil = stencil, scissor = scissor)
     fun clearDepth(depth: Float = 1f, scissor: AGScissor = AGScissor.NIL) = clear(clearColor = false, clearDepth = true, clearStencil = false, depth = depth, scissor = scissor)
@@ -335,7 +280,7 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
     //@PublishedApi
     @KoragExperimental
     var currentRenderBuffer: AGBaseFrameBuffer? = null
-        private set
+        protected set
 
     val currentRenderBufferOrMain: AGBaseFrameBuffer get() = currentRenderBuffer ?: mainRenderBuffer
 
@@ -411,6 +356,9 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
         renderBuffers.free(rb)
     }
 
+    open fun flush() {
+    }
+
     @OptIn(KoragExperimental::class)
     inline fun renderToTexture(
         width: Int, height: Int,
@@ -418,9 +366,7 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
         hasDepth: Boolean = false, hasStencil: Boolean = false, msamples: Int = 1,
         use: (tex: AGTexture, texWidth: Int, texHeight: Int) -> Unit
     ) {
-        commands { list ->
-            list.flush()
-        }
+        flush()
         tempAllocateFrameBuffer(width, height, hasDepth, hasStencil, msamples) { rb ->
             setRenderBufferTemporally(rb) {
                 clear(Colors.TRANSPARENT_BLACK) // transparent
@@ -442,12 +388,8 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
         }, hasDepth = hasDepth, hasStencil = hasStencil, msamples = msamples, use = { _, _, _ -> })
     }
 
-    fun setRenderBuffer(renderBuffer: AGBaseFrameBuffer?): AGBaseFrameBuffer? {
-        val old = currentRenderBuffer
-        currentRenderBuffer?.unset()
-        currentRenderBuffer = renderBuffer
-        renderBuffer?.set()
-        return old
+    open fun setRenderBuffer(renderBuffer: AGBaseFrameBuffer?): AGBaseFrameBuffer? {
+        return null
     }
 
     fun getRenderBufferAtStackPoint(offset: Int): AGBaseFrameBuffer {
@@ -472,35 +414,15 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
     }
 
     open fun readColor(bitmap: Bitmap32, x: Int = 0, y: Int = 0) {
-        commands { it.readPixels(x, y, bitmap.width, bitmap.height, bitmap.ints, AGReadKind.COLOR) }
     }
     open fun readDepth(width: Int, height: Int, out: FloatArray) {
-        commands { it.readPixels(0, 0, width, height, out, AGReadKind.DEPTH) }
     }
     open fun readStencil(bitmap: Bitmap8) {
-        commands { it.readPixels(0, 0, bitmap.width, bitmap.height, bitmap.data, AGReadKind.STENCIL) }
     }
     fun readDepth(out: FloatArray2): Unit = readDepth(out.width, out.height, out.data)
     open fun readColorTexture(texture: AGTexture, x: Int = 0, y: Int = 0, width: Int = backWidth, height: Int = backHeight): Unit = TODO()
     fun readColor(): Bitmap32 = Bitmap32(backWidth, backHeight, premultiplied = isRenderingToTexture).apply { readColor(this) }
     fun readDepth(): FloatArray2 = FloatArray2(backWidth, backHeight) { 0f }.apply { readDepth(this) }
-
-    //////////////
-
-    internal var programCount = 0
-    // @TODO: Simplify this. Why do we need external? Maybe we could copy external textures into normal ones to avoid issues
-    //private val programs = FastIdentityMap<Program, FastIdentityMap<ProgramConfig, AgProgram>>()
-    //private val programs = HashMap<Program, FastIdentityMap<ProgramConfig, AgProgram>>()
-    //private val normalPrograms = FastIdentityMap<Program, AgProgram>()
-    //private val externalPrograms = FastIdentityMap<Program, AgProgram>()
-    private val normalPrograms = HashMap<Program, AGProgram>()
-    private val externalPrograms = HashMap<Program, AGProgram>()
-
-    @JvmOverloads
-    fun getProgram(program: Program, config: ProgramConfig = ProgramConfig.DEFAULT): AGProgram {
-        val map = if (config.externalTextureSampler) externalPrograms else normalPrograms
-        return map.getOrPut(program) { AGProgram(this, program, config) }
-    }
 
     //////////////
 
@@ -513,33 +435,6 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
 
     private val drawTempTexture: AGTexture by lazy { createTexture() }
 
-    protected val _globalState = AGGlobalState(checked)
-    var contextVersion: Int by _globalState::contextVersion
-    @PublishedApi internal val _list = _globalState.createList()
-
-    val multithreadedRendering: Boolean get() = false
-
-    /**
-     * Queues commands, and wait for them to be executed synchronously
-     */
-    @OptIn(ExperimentalContracts::class)
-    inline fun <T> commands(block: (AGList) -> T): T {
-        contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-        val result = block(_list)
-        if (multithreadedRendering) {
-            runBlockingNoJs { _list.sync() }
-        } else {
-            _executeList(_list)
-        }
-        return result
-    }
-
-    @PublishedApi
-    internal fun _executeList(list: AGList) = executeList(list)
-
-    protected open fun executeList(list: AGList) {
-    }
-
     fun drawBitmap(bmp: Bitmap) {
         drawTempTexture.upload(bmp, mipmaps = false)
         drawTexture(drawTempTexture)
@@ -547,6 +442,8 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
     }
 
     private val stats = AGStats()
+
+    internal var programCount = 0
 
     fun getStats(out: AGStats = stats): AGStats {
         out.texturesMemory = this.texturesMemory
