@@ -8,7 +8,6 @@ import com.soywiz.korag.*
 import com.soywiz.korag.gl.*
 import com.soywiz.korev.*
 import com.soywiz.korgw.*
-import com.soywiz.korgw.internal.MicroDynamic
 import com.soywiz.korgw.osx.*
 import com.soywiz.korgw.platform.*
 import com.soywiz.korgw.win32.*
@@ -16,16 +15,13 @@ import com.soywiz.korgw.x11.*
 import com.soywiz.korim.awt.*
 import com.soywiz.korim.color.*
 import com.soywiz.korio.async.*
+import com.soywiz.korio.dynamic.*
 import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 import com.sun.jna.*
 import kotlinx.coroutines.*
 import java.awt.*
-import java.awt.datatransfer.Clipboard
-import java.awt.datatransfer.ClipboardOwner
-import java.awt.datatransfer.DataFlavor
-import java.awt.datatransfer.StringSelection
-import java.awt.datatransfer.Transferable
+import java.awt.datatransfer.*
 import java.awt.event.*
 import java.awt.event.KeyEvent
 import java.awt.event.MouseEvent
@@ -736,25 +732,25 @@ abstract class BaseAwtGameWindow(val config: GameWindowCreationConfig) : GameWin
             try {
                 when (method.name) {
                     "magnify" -> {
-                        val magnification = MicroDynamic { args[0].invoke("getMagnification") } as Double
+                        val magnification = args[0].dyn.dynamicInvoke("getMagnification")
                         //println("magnify: $magnification")
                         queue {
                             dispatch(gestureEvent.also {
                                 it.type = GestureEvent.Type.MAGNIFY
                                 it.id = 0
-                                it.amount = magnification
+                                it.amount = magnification.double
                             })
                         }
                     }
 
                     "rotate" -> {
-                        val rotation = MicroDynamic { args[0].invoke("getRotation") } as Double
+                        val rotation = args[0].dyn.dynamicInvoke("getRotation")
                         //println("rotate: $rotation")
                         queue {
                             dispatch(gestureEvent.also {
                                 it.type = GestureEvent.Type.ROTATE
                                 it.id = 0
-                                it.amount = rotation
+                                it.amount = rotation.double
                             })
                         }
                     }
@@ -783,14 +779,12 @@ abstract class BaseAwtGameWindow(val config: GameWindowCreationConfig) : GameWin
             } catch (e: Throwable) {
                 e.printStackTrace()
             }
-            MicroDynamic.invokeCatching { args[0].invoke("consume") }
+            args[0].dyn.dynamicInvoke("consume")
         }
 
-        MicroDynamic.invokeCatching {
-            val clazz = getClass("com.apple.eawt.event.GestureUtilities")
-            println(" -- GestureUtilities=$clazz")
-            clazz.invoke("addGestureListenerTo", contentComponent, gestureListener)
-        }
+        val clazz = Dyn.global["com.apple.eawt.event.GestureUtilities"]
+        println(" -- GestureUtilities=$clazz")
+        clazz.dynamicInvoke("addGestureListenerTo", contentComponent, gestureListener)
 
         //val value = (contentComponent as JComponent).getClientProperty("com.apple.eawt.event.internalGestureHandler");
         //println("value $value");

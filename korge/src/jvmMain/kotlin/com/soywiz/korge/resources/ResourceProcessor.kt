@@ -1,10 +1,8 @@
 package com.soywiz.korge.resources
 
-import com.soywiz.korio.dynamic.mapper.Mapper
 import com.soywiz.korio.file.*
 import com.soywiz.korio.file.std.localVfs
 import com.soywiz.korio.util.AsyncOnce
-import com.soywiz.korio.util.jvmFallback
 import kotlinx.coroutines.runBlocking
 import java.io.*
 import java.util.*
@@ -71,8 +69,6 @@ abstract class ResourceProcessor @JvmOverloads constructor(
 	}
 
 	class Group(val classLoader: ClassLoader) {
-		val MAPPER_ONCE = Mapper.jvmFallback()
-
 		val defaultResourceProcessors by lazy {
 			ServiceLoader.load(ResourceProcessor::class.java, classLoader).toMutableList()
 		}

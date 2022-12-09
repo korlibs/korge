@@ -6,11 +6,7 @@ import com.soywiz.korim.bitmap.slice
 import com.soywiz.korim.format.ImageEncodingProps
 import com.soywiz.korim.format.PNG
 import com.soywiz.korim.format.readBitmap
-import com.soywiz.korio.dynamic.mapper.*
-import com.soywiz.korio.dynamic.serialization.stringifyTyped
 import com.soywiz.korio.file.*
-import com.soywiz.korio.serialization.json.Json
-import com.soywiz.korio.util.*
 
 open class AtlasResourceProcessor : ResourceProcessor("atlas") {
 	companion object : AtlasResourceProcessor()
