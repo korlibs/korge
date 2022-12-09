@@ -122,10 +122,10 @@ class Views constructor(
 
     /** Native width in pixels (in retina displays this will be twice the window width). Use [virtualWidth] instead */
     @KorgeInternal
-	val nativeWidth get() = ag.mainRenderBuffer.width
+	val nativeWidth get() = ag.mainFrameBuffer.width
     /** Native height in pixels (in retina displays this will be twice the window height). Use [virtualHeight] instead */
     @KorgeInternal
-	val nativeHeight get() = ag.mainRenderBuffer.height
+	val nativeHeight get() = ag.mainFrameBuffer.height
 
     // Later updated
     /** The defined virtual width */

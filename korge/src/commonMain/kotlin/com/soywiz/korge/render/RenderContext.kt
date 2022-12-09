@@ -239,6 +239,11 @@ class RenderContext constructor(
         flushers(Unit)
 	}
 
+    val mainFrameBuffer: AGFrameBuffer get() = ag.mainFrameBuffer
+    var currentFrameBuffer: AGFrameBuffer = mainFrameBuffer
+
+    val tempFrameBuffers = Pool { ag.createFrameBuffer() }
+
     inline fun renderToFrameBuffer(
         frameBuffer: AGFrameBuffer,
         clear: Boolean = true,

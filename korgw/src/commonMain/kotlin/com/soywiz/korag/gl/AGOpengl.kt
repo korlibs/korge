@@ -797,7 +797,7 @@ abstract class AGOpengl(checked: Boolean = false) : AG(checked) {
     }
 
     fun setScissorState(ag: AG, scissor: AGScissor = AGScissor.NIL) =
-        setScissorState(ag.currentRenderBuffer, ag.mainRenderBuffer, scissor)
+        setScissorState(ag.currentRenderBuffer, ag.mainFrameBuffer, scissor)
 
     fun setScissorState(currentRenderBuffer: AGFrameBuffer?, mainRenderBuffer: AGFrameBuffer, scissor: AGScissor = AGScissor.NIL) {
         if (currentRenderBuffer == null) return

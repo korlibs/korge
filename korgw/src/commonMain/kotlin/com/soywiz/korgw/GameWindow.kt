@@ -590,7 +590,7 @@ open class GameWindow :
             }
             if (surfaceChanged) {
                 surfaceChanged = false
-                ag.mainRenderBuffer.setSize(surfaceX, surfaceY, surfaceWidth, surfaceHeight)
+                ag.mainFrameBuffer.setSize(surfaceX, surfaceY, surfaceWidth, surfaceHeight)
                 dispatchReshapeEvent(surfaceX, surfaceY, surfaceWidth, surfaceHeight)
             }
         }

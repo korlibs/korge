@@ -251,10 +251,10 @@ open class LogBaseAG(
     }
 
     override fun disposeTemporalPerFrameStuff() = log("disposeTemporalPerFrameStuff()", Kind.DISPOSE)
-	override fun createRenderBuffer(): AGFrameBuffer =
+	override fun createFrameBuffer(): AGFrameBuffer =
 		LogFrameBuffer(renderBufferId++, isMain = false).apply { log("createRenderBuffer():$id", Kind.FRAME_BUFFER) }
 
-    override fun createMainRenderBuffer(): AGFrameBuffer =
+    override fun createMainFrameBuffer(): AGFrameBuffer =
         LogFrameBuffer(renderBufferId++, isMain = true).apply { log("createMainRenderBuffer():$id", Kind.FRAME_BUFFER) }
 
     override fun flipInternal() = log("flipInternal()", Kind.FLIP)

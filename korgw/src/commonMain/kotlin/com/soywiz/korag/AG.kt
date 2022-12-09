@@ -74,7 +74,7 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, AGCommandExecutor,
         startFrame()
         try {
             //mainRenderBuffer.init()
-            setRenderBufferTemporally(mainRenderBuffer) {
+            setRenderBufferTemporally(mainFrameBuffer) {
                 block()
             }
         } finally {
@@ -94,22 +94,22 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, AGCommandExecutor,
     }
 
     open fun resized(x: Int, y: Int, width: Int, height: Int, fullWidth: Int, fullHeight: Int) {
-        mainRenderBuffer.setSize(x, y, width, height, fullWidth, fullHeight)
+        mainFrameBuffer.setSize(x, y, width, height, fullWidth, fullHeight)
     }
 
     open fun dispose() {
     }
 
     // On MacOS components, this will be the size of the component
-    open val backWidth: Int get() = mainRenderBuffer.width
-    open val backHeight: Int get() = mainRenderBuffer.height
+    open val backWidth: Int get() = mainFrameBuffer.width
+    open val backHeight: Int get() = mainFrameBuffer.height
 
     // On MacOS components, this will be the full size of the window
-    val realBackWidth get() = mainRenderBuffer.fullWidth
-    val realBackHeight get() = mainRenderBuffer.fullHeight
+    val realBackWidth get() = mainFrameBuffer.fullWidth
+    val realBackHeight get() = mainFrameBuffer.fullHeight
 
-    val currentWidth: Int get() = currentRenderBuffer?.width ?: mainRenderBuffer.width
-    val currentHeight: Int get() = currentRenderBuffer?.height ?: mainRenderBuffer.height
+    val currentWidth: Int get() = currentRenderBuffer?.width ?: mainFrameBuffer.width
+    val currentHeight: Int get() = currentRenderBuffer?.height ?: mainFrameBuffer.height
 
     var contextVersion: Int = 0
 
@@ -218,7 +218,7 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, AGCommandExecutor,
     open fun disposeTemporalPerFrameStuff() = Unit
 
     val frameRenderBuffers = LinkedHashSet<AGFrameBuffer>()
-    val renderBuffers = Pool<AGFrameBuffer>() { createRenderBuffer() }
+    val renderBuffers = Pool<AGFrameBuffer>() { createFrameBuffer() }
 
     object RenderBufferConsts {
         const val DEFAULT_INITIAL_WIDTH = 128
@@ -229,21 +229,20 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, AGCommandExecutor,
     private val renderBufferCount: Int get() = allRenderBuffers.size
     private val renderBuffersMemory: ByteUnits get() = ByteUnits.fromBytes(allRenderBuffers.sumOf { it.estimatedMemoryUsage.bytesLong })
 
-
     @KoragExperimental
     var agTarget = AGTarget.DISPLAY
 
-    val mainRenderBuffer: AGFrameBuffer by lazy {
+    val mainFrameBuffer: AGFrameBuffer by lazy {
         when (agTarget) {
-            AGTarget.DISPLAY -> createMainRenderBuffer()
-            AGTarget.OFFSCREEN -> createRenderBuffer()
+            AGTarget.DISPLAY -> createMainFrameBuffer()
+            AGTarget.OFFSCREEN -> createFrameBuffer()
         }
     }
 
     var lastRenderContextId = 0
 
-    open fun createMainRenderBuffer(): AGFrameBuffer = AGFrameBuffer(this, isMain = true)
-    open fun createRenderBuffer(): AGFrameBuffer = AGFrameBuffer(this, isMain = false)
+    open fun createMainFrameBuffer(): AGFrameBuffer = AGFrameBuffer(this, isMain = true)
+    open fun createFrameBuffer(): AGFrameBuffer = AGFrameBuffer(this, isMain = false)
 
     //open fun createRenderBuffer() = RenderBuffer()
 
@@ -283,9 +282,9 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, AGCommandExecutor,
     var currentRenderBuffer: AGFrameBuffer? = null
         protected set
 
-    val currentRenderBufferOrMain: AGFrameBuffer get() = currentRenderBuffer ?: mainRenderBuffer
+    val currentRenderBufferOrMain: AGFrameBuffer get() = currentRenderBuffer ?: mainFrameBuffer
 
-    val isRenderingToWindow: Boolean get() = currentRenderBufferOrMain === mainRenderBuffer
+    val isRenderingToWindow: Boolean get() = currentRenderBufferOrMain === mainFrameBuffer
     val isRenderingToTexture: Boolean get() = !isRenderingToWindow
 
     inline fun backupTexture(tex: AGTexture?, callback: () -> Unit) {
@@ -395,7 +394,7 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, AGCommandExecutor,
 
     fun getRenderBufferAtStackPoint(offset: Int): AGFrameBuffer {
         if (offset == 0) return currentRenderBufferOrMain
-        return renderBufferStack.getOrNull(renderBufferStack.size + offset) ?: mainRenderBuffer
+        return renderBufferStack.getOrNull(renderBufferStack.size + offset) ?: mainFrameBuffer
     }
 
     fun pushRenderBuffer(renderBuffer: AGFrameBuffer) {
