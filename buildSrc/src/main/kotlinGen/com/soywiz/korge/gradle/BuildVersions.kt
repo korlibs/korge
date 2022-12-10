@@ -2,7 +2,7 @@ package com.soywiz.korge.gradle
 
 object BuildVersions {
     const val GIT = "main"
-    const val KOTLIN = "1.8.0-Beta"
+    const val KOTLIN = "1.8.0-RC"
     const val NODE_JS = "16.9.1"
     const val JNA = "5.12.1"
     const val COROUTINES = "1.6.4"
