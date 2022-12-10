@@ -116,6 +116,10 @@ fun AG.draw(batch: AGBatch) {
     batch.execute(this)
 }
 
+fun AG.draw(batch: AGMultiBatch) {
+    batch.execute(this)
+}
+
 fun AG.draw(
     frameBuffer: AGFrameBuffer,
     vertexData: AGVertexArrayObject,

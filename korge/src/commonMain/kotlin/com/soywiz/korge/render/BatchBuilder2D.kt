@@ -949,7 +949,7 @@ class BatchBuilder2D constructor(
             //println("DRAW: $uniforms")
 
             //println("program=$program, currentTexN[0]=${currentTexN[0]}")
-            batches.fastForEach { ag.draw(it) }
+            ag.draw(AGMultiBatch(batches.toList()))
             batches.clear()
             beforeFlush(this)
 		}

@@ -29,7 +29,8 @@ suspend fun main() = Korge(
 ) {
     //uiButton("HELLO WORLD!", width = 300.0).position(0, 0); return@Korge
     //solidRect(100, 100, Colors.RED).xy(300, 300).filters(BlurFilter()); return@Korge
-    if (false) {
+    //if (false) {
+    run {
         views.forceRenderEveryFrame = true
         container {
             scale = 0.5

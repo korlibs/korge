@@ -81,7 +81,7 @@ class AGOpengl(val gl: KmlGl) : AG() {
     private val normalPrograms = HashMap<Program, GLBaseProgram>()
     private val externalPrograms = HashMap<Program, GLBaseProgram>()
 
-    private fun getProgram(program: Program, config: ProgramConfig = ProgramConfig.DEFAULT, use: Boolean = true): GLBaseProgram {
+    private fun useProgram(program: Program, config: ProgramConfig = ProgramConfig.DEFAULT) {
         val map = if (config.externalTextureSampler) externalPrograms else normalPrograms
         val nprogram: GLBaseProgram = map.getOrPut(program) {
             GLBaseProgram(glGlobalState, GLShaderCompiler.programCreate(
@@ -91,12 +91,11 @@ class AGOpengl(val gl: KmlGl) : AG() {
             ))
         }
         //nprogram.agProgram._native = nprogram.
-        if (use) {
-            //nprogram.
+        //nprogram.
+        if (currentProgram != nprogram) {
             currentProgram = nprogram
             nprogram.use()
         }
-        return nprogram
     }
 
     override fun draw(
@@ -140,10 +139,10 @@ class AGOpengl(val gl: KmlGl) : AG() {
             //println("REUSING: currentVertexData=$currentVertexData, vertexData=$vertexData")
         }
 
-        getProgram(program, config = when {
+        useProgram(program, config = when {
             uniforms.useExternalSampler() -> ProgramConfig.EXTERNAL_TEXTURE_SAMPLER
             else -> ProgramConfig.DEFAULT
-        }, use = true)
+        })
         uniformsSet(uniforms)
 
         if (currentBlending != blending) {
@@ -206,6 +205,7 @@ class AGOpengl(val gl: KmlGl) : AG() {
     private var currentStencilOpFunc: AGStencilOpFunc = AGStencilOpFunc.INVALID
     private var currentStencilRef: AGStencilReference = AGStencilReference.INVALID
     private var currentColorMask: AGColorMask = AGColorMask.INVALID
+    private var currentRenderState: AGDepthAndFrontFace = AGDepthAndFrontFace.INVALID
     private var currentProgram: GLBaseProgram? = null
     var backBufferFrameBufferBinding: Int = 0
     private var currentScissor: AGScissor = AGScissor.INVALID
@@ -217,6 +217,7 @@ class AGOpengl(val gl: KmlGl) : AG() {
         currentStencilOpFunc = AGStencilOpFunc.INVALID
         currentStencilRef = AGStencilReference.INVALID
         currentColorMask = AGColorMask.INVALID
+        currentRenderState = AGDepthAndFrontFace.INVALID
         currentProgram = null
         backBufferFrameBufferBinding = gl.getIntegerv(KmlGl.FRAMEBUFFER_BINDING)
         _currentFrameBuffer = -1
@@ -709,15 +710,18 @@ class AGOpengl(val gl: KmlGl) : AG() {
     private val AGTexture.gl: GLTexture get() = gl(glGlobalState)
 
     fun setDepthAndFrontFace(renderState: AGDepthAndFrontFace) {
-        gl.enableDisable(KmlGl.CULL_FACE, renderState.frontFace != AGFrontFace.BOTH) {
-            gl.frontFace(renderState.frontFace.toGl())
-        }
+        if (currentRenderState != renderState) {
+            currentRenderState = renderState
+            gl.enableDisable(KmlGl.CULL_FACE, renderState.frontFace != AGFrontFace.BOTH) {
+                gl.frontFace(renderState.frontFace.toGl())
+            }
 
-        gl.depthMask(renderState.depthMask)
-        gl.depthRangef(renderState.depthNear, renderState.depthFar)
+            gl.depthMask(renderState.depthMask)
+            gl.depthRangef(renderState.depthNear, renderState.depthFar)
 
-        gl.enableDisable(KmlGl.DEPTH_TEST, renderState.depthFunc != AGCompareMode.ALWAYS) {
-            gl.depthFunc(renderState.depthFunc.toGl())
+            gl.enableDisable(KmlGl.DEPTH_TEST, renderState.depthFunc != AGCompareMode.ALWAYS) {
+                gl.depthFunc(renderState.depthFunc.toGl())
+            }
         }
     }
 
