@@ -31,7 +31,7 @@ suspend fun RawSocketWebSocketClient(
     url: String,
     protocols: List<String>? = null,
     origin: String? = null,
-    wskey: String? = DEFAULT_WSKEY,
+    wskey: String = DEFAULT_WSKEY,
     debug: Boolean = false,
     connect: Boolean = true,
     headers: Http.Headers = Http.Headers(),
@@ -41,7 +41,7 @@ suspend fun RawSocketWebSocketClient(
     if (OS.isJsBrowserOrWorker) error("RawSocketWebSocketClient is not supported on JS browser. Use WebSocketClient instead")
     val uri = URL(url)
     val secure: Boolean = uri.isSecureScheme
-    return RawSocketWebSocketClient(coroutineContext, AsyncClient.create(secure = secure), uri, protocols, debug, origin, wskey ?: "mykey", headers, masked).also {
+    return RawSocketWebSocketClient(coroutineContext, AsyncClient.create(secure = secure), uri, protocols, debug, origin, wskey, headers, masked).also {
         init(it)
         if (connect) it.internalConnect()
     }
