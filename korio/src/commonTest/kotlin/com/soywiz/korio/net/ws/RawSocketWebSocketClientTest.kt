@@ -14,8 +14,7 @@ import com.soywiz.korio.stream.write16BE
 import com.soywiz.korio.stream.writeBytes
 import com.soywiz.korio.stream.writeString
 import com.soywiz.krypto.encoding.hex
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import kotlin.test.*
 
 class RawRawSocketWebSocketClient {
     @Test
@@ -126,5 +125,12 @@ class RawRawSocketWebSocketClient {
         ws.internalReadPackets()
         ws.close()
         assertEquals("open,close[1002,testing!]", log.joinToString(","))
+    }
+
+    @Test
+    fun testWrongSizeWSKey() = suspendTestNoJs {
+        assertFailsWith<IllegalStateException> {
+            RawSocketWebSocketClient("ws://127.0.0.1/test", wskey = "...", connect = false)
+        }
     }
 }
