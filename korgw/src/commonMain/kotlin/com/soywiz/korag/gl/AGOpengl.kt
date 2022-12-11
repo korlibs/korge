@@ -409,15 +409,7 @@ class AGOpengl(val gl: KmlGl) : AG() {
                             else -> AGTextureTargetKind.TEXTURE_CUBE_MAP
                         })
 
-                        gl.texParameteri(tex.implForcedTexTarget.toGl(), KmlGl.TEXTURE_WRAP_S, unit.wrap.toGl())
-                        gl.texParameteri(tex.implForcedTexTarget.toGl(), KmlGl.TEXTURE_WRAP_T, unit.wrap.toGl())
-                        if (tex.implForcedTexTarget.dims >= 3) {
-                            gl.texParameteri(tex.implForcedTexTarget.toGl(), KmlGl.TEXTURE_WRAP_R, unit.wrap.toGl())
-                        }
-
-                        gl.texParameteri(tex.implForcedTexTarget.toGl(), KmlGl.TEXTURE_MIN_FILTER, unit.minFilter())
-                        gl.texParameteri(tex.implForcedTexTarget.toGl(), KmlGl.TEXTURE_MAG_FILTER, unit.magFilter())
-
+                        textureParameters(tex.implForcedTexTarget, unit.wrap, unit.minFilter(), unit.magFilter(), tex.implForcedTexTarget.dims)
                     } else {
                         gl.bindTexture(KmlGl.TEXTURE_2D, 0)
                     }
@@ -462,6 +454,36 @@ class AGOpengl(val gl: KmlGl) : AG() {
         }
     }
 
+    class TextureUnitParams(val index: Int) {
+        var wrap: AGWrapMode = AGWrapMode(-1)
+        var min: Int = -1
+        var mag: Int = -1
+    }
+
+    val textureParams = Array(32) { TextureUnitParams(it) }
+
+    private fun textureParameters(implForcedTexTarget: AGTextureTargetKind, wrap: AGWrapMode, minFilter: Int, magFilter: Int, dims: Int) {
+        val params = textureParams[currentTextureUnit]
+
+        val glTarget = implForcedTexTarget.toGl()
+
+        if (params.wrap != wrap) {
+            params.wrap = wrap
+            val glWrap = wrap.toGl()
+            gl.texParameteri(glTarget, KmlGl.TEXTURE_WRAP_S, glWrap)
+            gl.texParameteri(glTarget, KmlGl.TEXTURE_WRAP_T, glWrap)
+            if (dims >= 3) {
+                gl.texParameteri(glTarget, KmlGl.TEXTURE_WRAP_R, glWrap)
+            }
+        }
+
+        if (params.min != minFilter || params.mag != magFilter) {
+            params.min = minFilter
+            params.mag = magFilter
+            gl.texParameteri(glTarget, KmlGl.TEXTURE_MIN_FILTER, minFilter)
+            gl.texParameteri(glTarget, KmlGl.TEXTURE_MAG_FILTER, magFilter)
+        }
+    }
 
     fun AGTextureUnit.minFilter(): Int = texture.minFilter(linear, trilinear ?: linear)
     fun AGTextureUnit.magFilter(): Int = texture.magFilter(linear, trilinear ?: linear)
@@ -612,11 +634,11 @@ class AGOpengl(val gl: KmlGl) : AG() {
     private val tempTextureUnit = 7
 
     fun textureSetFromFrameBuffer(tex: AGTexture, x: Int, y: Int, width: Int, height: Int) {
-        val old = selectTextureUnit(tempTextureUnit)
-        gl.bindTexture(gl.TEXTURE_2D, tex.gl.id)
-        gl.copyTexImage2D(gl.TEXTURE_2D, 0, gl.RGBA, x, y, width, height, 0)
-        gl.bindTexture(gl.TEXTURE_2D, 0)
-        selectTextureUnit(old)
+        selectTextureUnitTemp(tempTextureUnit) {
+            gl.bindTexture(gl.TEXTURE_2D, tex.gl.id)
+            gl.copyTexImage2D(gl.TEXTURE_2D, 0, gl.RGBA, x, y, width, height, 0)
+            gl.bindTexture(gl.TEXTURE_2D, 0)
+        }
     }
 
     private fun createBufferForBitmap(bmp: Bitmap?): Buffer? = when (bmp) {
@@ -633,9 +655,20 @@ class AGOpengl(val gl: KmlGl) : AG() {
     private var currentTextureUnit = 0
     private fun selectTextureUnit(index: Int): Int {
         val old = currentTextureUnit
-        currentTextureUnit = index
-        gl.activeTexture(KmlGl.TEXTURE0 + index)
+        if (currentTextureUnit != index) {
+            currentTextureUnit = index
+            gl.activeTexture(KmlGl.TEXTURE0 + index)
+        }
         return old
+    }
+
+    private inline fun selectTextureUnitTemp(index: Int, block: () -> Unit) {
+        val old = selectTextureUnit(index)
+        try {
+            block()
+        } finally {
+            selectTextureUnit(old)
+        }
     }
 
     private var _currentViewportSize: AGSize = AGSize.INVALID
@@ -673,13 +706,13 @@ class AGOpengl(val gl: KmlGl) : AG() {
             }
 
             tex.bitmap = NullBitmap(info.width, info.height, false)
-            val old = selectTextureUnit(tempTextureUnit)
-            textureBind(tex, AGTextureTargetKind.TEXTURE_2D)
-            selectTextureUnit(old)
-            gl.texParameteri(texTarget, KmlGl.TEXTURE_MAG_FILTER, KmlGl.LINEAR)
-            gl.texParameteri(texTarget, KmlGl.TEXTURE_MIN_FILTER, KmlGl.LINEAR)
-            //gl.texImage2D(texTarget, 0, KmlGl.RGBA, fb.ag.width, fb.ag.height, 0, KmlGl.RGBA, KmlGl.UNSIGNED_BYTE, null)
-            gl.bindTexture(texTarget, 0)
+            selectTextureUnitTemp(tempTextureUnit) {
+                textureBind(tex, AGTextureTargetKind.TEXTURE_2D)
+                gl.texParameteri(texTarget, KmlGl.TEXTURE_MAG_FILTER, KmlGl.LINEAR)
+                gl.texParameteri(texTarget, KmlGl.TEXTURE_MIN_FILTER, KmlGl.LINEAR)
+                //gl.texImage2D(texTarget, 0, KmlGl.RGBA, fb.ag.width, fb.ag.height, 0, KmlGl.RGBA, KmlGl.UNSIGNED_BYTE, null)
+                //gl.bindTexture(texTarget, 0)
+            }
             gl.bindRenderbuffer(KmlGl.RENDERBUFFER, fb.renderBufferId)
             if (internalFormat != 0) {
                 //gl.renderbufferStorageMultisample(KmlGl.RENDERBUFFER, fb.nsamples, internalFormat, fb.width, fb.height)

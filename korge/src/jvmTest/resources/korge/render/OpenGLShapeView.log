@@ -53,7 +53,6 @@ uniform1fv(7003, 1, [1])
 getUniformLocation(1001, "u_GlobalPixelScale") = 7004
 uniform1fv(7004, 1, [10])
 getUniformLocation(1001, "u_Tex") = 7005
-activeTexture(33984)
 bindTexture(3553, 0)
 getUniformLocation(1001, "u_InputPre") = 7006
 getUniformLocation(1001, "u_OutputPre") = 7007

@@ -355,9 +355,14 @@ class RenderContext constructor(
      */
     fun refGcCloseable(closeable: Closeable) = agAutoFreeManager.reference(closeable)
 
+    internal fun beforeRender() {
+        batch.beforeRender()
+    }
+
     internal fun afterRender() {
         flush()
         finish()
+        batch.afterRender()
         agAutoFreeManager.afterRender()
         agBitmapTextureManager.afterRender()
         agBufferManager.afterRender()

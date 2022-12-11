@@ -238,10 +238,10 @@ class RenderContext2D(
                 val R = (width + padding.leftPlusRight).toFloat()
                 val B = (height + padding.topPlusBottom).toFloat()
 
-                var l = -padding.left.toFloat()
-                var t = -padding.top.toFloat()
-                var r = (width + padding.right).toFloat()
-                var b = (height + padding.bottom).toFloat()
+                val l = -padding.left.toFloat()
+                val t = -padding.top.toFloat()
+                val r = (width + padding.right).toFloat()
+                val b = (height + padding.bottom).toFloat()
 
                 val vertices = TexturedVertexArray(6, TexturedVertexArray.QUAD_INDICES)
                 vertices.quad(
@@ -257,7 +257,6 @@ class RenderContext2D(
                 )
                 batch.setStateFast(Bitmaps.white, filtering, blendMode, program, icount = 6, vcount = 4)
                 batch.drawVertices(vertices, null, premultiplied = true, wrap = true)
-
             }
         }
     }
