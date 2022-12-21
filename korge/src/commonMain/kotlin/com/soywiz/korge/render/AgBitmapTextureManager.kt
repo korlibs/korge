@@ -4,11 +4,7 @@ import com.soywiz.kds.*
 import com.soywiz.korag.*
 import com.soywiz.korge.annotations.KorgeExperimental
 import com.soywiz.korge.internal.KorgeInternal
-import com.soywiz.korim.bitmap.Bitmap
-import com.soywiz.korim.bitmap.BitmapCoords
-import com.soywiz.korim.bitmap.BmpCoordsWithInstance
-import com.soywiz.korim.bitmap.BmpSlice
-import com.soywiz.korim.bitmap.MultiBitmap
+import com.soywiz.korim.bitmap.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korma.geom.Rectangle
 
@@ -121,7 +117,7 @@ class AgBitmapTextureManager(
             // @TODO: Use dirtyRegion to upload only a fragment of the image
             managedTextureMemory -= textureInfo.usedMemory
             try {
-                base.update(bitmap, bitmap.mipmaps)
+                base.update(bitmap, bitmap.mipmaps, bitmap.baseMipmapLevel, bitmap.maxMipmapLevel)
             } finally {
                 textureInfo.usedMemory = bitmap.estimateSizeInBytes
                 managedTextureMemory += textureInfo.usedMemory

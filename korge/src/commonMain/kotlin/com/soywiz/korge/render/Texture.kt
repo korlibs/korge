@@ -24,11 +24,11 @@ class TextureBase(
         base?.close()
         base = null
     }
-    fun update(bmp: Bitmap, mipmaps: Boolean = bmp.mipmaps) {
+    fun update(bmp: Bitmap, mipmaps: Boolean, baseMipmapLevel: Int, maxMipmapLevel: Int) {
         if (bmp is MultiBitmap) {
             base?.upload(bmp.bitmaps, bmp.width, bmp.height)
         } else {
-            base?.upload(bmp, mipmaps)
+            base?.upload(bmp, mipmaps, baseMipmapLevel, maxMipmapLevel)
         }
     }
 
@@ -133,8 +133,8 @@ class Texture(
     /**
      * Updates this texture from a [bmp] and optionally generates [mipmaps].
      */
-	fun update(bmp: Bitmap32, mipmaps: Boolean = false) {
-		base.update(bmp, mipmaps)
+	fun update(bmp: Bitmap32, mipmaps: Boolean = false, baseMipmapLevel: Int = 0, maxMipmapLevel: Int = 1000) {
+		base.update(bmp, mipmaps, baseMipmapLevel, maxMipmapLevel)
 	}
 
     /**

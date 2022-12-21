@@ -66,6 +66,8 @@ class AGTexture(
 ) : AGObject(), Closeable {
     var isFbo: Boolean = false
     var requestMipmaps: Boolean = false
+    var baseMipmapLevel: Int = 0
+    var maxMipmapLevel: Int = 1000
 
     /** [MultiBitmap] for multiple bitmaps (ie. cube map) */
     var bitmap: Bitmap? = null
@@ -89,19 +91,21 @@ class AGTexture(
         return upload(MultiBitmap(width, height, list))
     }
 
-    fun upload(bmp: Bitmap?, mipmaps: Boolean = false): AGTexture {
+    fun upload(bmp: Bitmap?, mipmaps: Boolean = false, baseMipmapLevel: Int = 0, maxMipmapLevel: Int = 1000): AGTexture {
         bmp?.let { checkBitmaps(it) }
         this.forcedTexId = (bmp as? ForcedTexId?)
         this.bitmap = bmp
         estimatedMemoryUsage = ByteUnits.fromBytes(width * height * depth * 4)
         markAsDirty()
         this.requestMipmaps = mipmaps
+        this.baseMipmapLevel = baseMipmapLevel
+        this.maxMipmapLevel = maxMipmapLevel
         return this
     }
 
-    fun upload(bmp: BitmapSlice<Bitmap>?, mipmaps: Boolean = false): AGTexture {
+    fun upload(bmp: BitmapSlice<Bitmap>?, mipmaps: Boolean = false, baseMipmapLevel: Int = 0, maxMipmapLevel: Int = 1000): AGTexture {
         // @TODO: Optimize to avoid copying?
-        return upload(bmp?.extract(), mipmaps)
+        return upload(bmp?.extract(), mipmaps, baseMipmapLevel, maxMipmapLevel)
     }
 
     fun doMipmaps(bitmap: Bitmap?, requestMipmaps: Boolean): Boolean {

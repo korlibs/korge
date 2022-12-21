@@ -498,22 +498,6 @@ class RenderContext constructor(
 
     private val drawTempTexture: AGTexture by lazy { AGTexture() }
 
-    fun drawBitmap(frameBuffer: AGFrameBuffer, bmp: Bitmap) {
-        drawTempTexture.upload(bmp, mipmaps = false)
-        drawTexture(frameBuffer, drawTempTexture)
-        drawTempTexture.upload(Bitmaps.transparent.bmp)
-    }
-
-    inline fun backupTexture(frameBuffer: AGFrameBuffer, tex: AGTexture?, callback: () -> Unit) {
-        if (tex != null) {
-            ag.readToTexture(currentFrameBuffer, tex, 0, 0, currentFrameBuffer.width, currentFrameBuffer.height)
-        }
-        try {
-            callback()
-        } finally {
-            if (tex != null) drawTexture(frameBuffer, tex)
-        }
-    }
 }
 
 inline fun <T : AG> testRenderContext(ag: T, bp: BoundsProvider = BoundsProvider.Base(), block: (RenderContext) -> Unit): T {

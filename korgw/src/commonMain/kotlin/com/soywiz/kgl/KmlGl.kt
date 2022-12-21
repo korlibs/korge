@@ -144,6 +144,8 @@ abstract class KmlGl : Extra by Extra.Mixin(), IKmlGl, AGFeatures {
     inline val DONT_CARE: Int get() = KmlGl.DONT_CARE
     inline val FASTEST: Int get() = KmlGl.FASTEST
     inline val NICEST: Int get() = KmlGl.NICEST
+    inline val TEXTURE_BASE_LEVEL: Int get() = KmlGl.TEXTURE_BASE_LEVEL
+    inline val TEXTURE_MAX_LEVEL: Int get() = KmlGl.TEXTURE_MAX_LEVEL
     inline val GENERATE_MIPMAP_HINT: Int get() = KmlGl.GENERATE_MIPMAP_HINT
     inline val BYTE: Int get() = KmlGl.BYTE
     inline val UNSIGNED_BYTE: Int get() = KmlGl.UNSIGNED_BYTE
@@ -454,6 +456,8 @@ abstract class KmlGl : Extra by Extra.Mixin(), IKmlGl, AGFeatures {
         const val DONT_CARE: Int = 0x1100
         const val FASTEST: Int = 0x1101
         const val NICEST: Int = 0x1102
+        const val TEXTURE_BASE_LEVEL: Int = 0x813C
+        const val TEXTURE_MAX_LEVEL: Int = 0x813D
         const val GENERATE_MIPMAP_HINT: Int = 0x8192
         const val BYTE: Int = 0x1400
         const val UNSIGNED_BYTE: Int = 0x1401
