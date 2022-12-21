@@ -267,7 +267,6 @@ open class FSprites(val maxSize: Int) {
                 SET(out, out * v_Col)
                 IF(out["a"] le 0f.lit) { DISCARD() }
                 //SET(out, vec4(1f.lit, 0f.lit, 0f.lit, 1f.lit))
-                BatchBuilder2D.DO_OUTPUT_FROM(this, out)
             }, name = "FSprites$maxTexs")
         }
 
