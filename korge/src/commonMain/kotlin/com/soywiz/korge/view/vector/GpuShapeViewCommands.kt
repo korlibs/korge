@@ -169,9 +169,6 @@ class GpuShapeViewCommands {
 
                                 //println("outPremultiplied=$outPremultiplied, blendMode=${cmd.blendMode?.name}")
 
-                                tempUniforms[GpuShapeViewPrograms.u_InputPre] = premultiplied.toInt().toFloat()
-                                tempUniforms[BatchBuilder2D.u_OutputPre] = outPremultiplied
-
                                 ag.draw(AGBatch(
                                     ctx.currentFrameBuffer.base,
                                     ctx.currentFrameBuffer.info,
