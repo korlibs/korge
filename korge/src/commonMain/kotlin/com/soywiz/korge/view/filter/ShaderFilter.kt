@@ -1,20 +1,15 @@
 package com.soywiz.korge.view.filter
 
-import com.soywiz.kmem.toIntCeil
+import com.soywiz.kmem.*
 import com.soywiz.korag.*
 import com.soywiz.korag.shader.*
-import com.soywiz.korge.render.BatchBuilder2D
-import com.soywiz.korge.render.RenderContext
-import com.soywiz.korge.render.Texture
-import com.soywiz.korge.view.BlendMode
-import com.soywiz.korge.view.View
+import com.soywiz.korge.render.*
+import com.soywiz.korge.view.*
 import com.soywiz.korge.view.filter.ShaderFilter.Companion.fragmentCoords
 import com.soywiz.korge.view.filter.ShaderFilter.Companion.fragmentCoords01
 import com.soywiz.korge.view.filter.ShaderFilter.Companion.tex
-import com.soywiz.korim.color.ColorAdd
-import com.soywiz.korim.color.RGBA
-import com.soywiz.korma.geom.Matrix
-import com.soywiz.korma.geom.MutableMarginInt
+import com.soywiz.korim.color.*
+import com.soywiz.korma.geom.*
 
 /**
  * Abstract class for [View] [Filter]s that paints the [Texture] using a [FragmentShader] ([fragment]).
@@ -60,17 +55,6 @@ abstract class ShaderFilter : Filter {
 
         protected fun createProgram(vertex: VertexShader, fragment: FragmentShader): Program {
             return Program(vertex, fragment.appending {
-                BatchBuilder2D.DO_INPUT_OUTPUT(this, out)
-                //// Premultiplied
-                //if (!premultiplied) {
-                //    SET(out["rgb"], out["rgb"] * out["a"])
-                //}
-
-                // Color multiply and addition
-                // @TODO: Kotlin.JS BUG
-                //out setTo (out * BatchBuilder2D.v_ColMul) + ((BatchBuilder2D.v_ColAdd - vec4(.5f, .5f, .5f, .5f)) * 2f)
-                //SET(out, (out * BatchBuilder2D.v_ColMul) + ((BatchBuilder2D.v_ColAdd - vec4(.5f.lit, .5f.lit, .5f.lit, .5f.lit)) * 2f.lit))
-
                 // Required for shape masks:
                 IF(out["a"] le 0f.lit) { DISCARD() }
             })

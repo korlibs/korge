@@ -100,7 +100,6 @@ open class ShadedView(
         inline fun buildShader(name: String? = null, callback: ProgramBuilderDefault.() -> Unit): Program {
             return BatchBuilder2D.PROGRAM.copy(name = name ?: BatchBuilder2D.PROGRAM.name, fragment = FragmentShaderDefault {
                 callback()
-                BatchBuilder2D.DO_OUTPUT_FROM(this, out)
             })
         }
     }
