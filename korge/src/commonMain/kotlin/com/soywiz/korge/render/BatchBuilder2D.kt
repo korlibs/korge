@@ -889,7 +889,7 @@ class BatchBuilder2D constructor(
                 program = program,
                 //program = PROGRAM_PRE,
                 drawType = AGDrawType.TRIANGLES,
-                blending = factors.factors(premultiplied = true),
+                blending = factors.factors,
                 uniforms = uniforms,
                 stencilOpFunc = stencilOpFunc,
                 stencilRef = stencilRef,

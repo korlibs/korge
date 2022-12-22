@@ -163,9 +163,6 @@ class GpuShapeViewCommands {
                                 tempUniforms[GpuShapeViewPrograms.u_GlobalPixelScale] = pixelScale
 
                                 val texUnit = tempUniforms[DefaultShaders.u_Tex] as? AGTextureUnit?
-                                val premultiplied = texUnit?.texture?.premultiplied ?: false
-                                //val premultiplied = false
-                                val outPremultiplied = ctx.isRenderingToTexture
 
                                 //println("outPremultiplied=$outPremultiplied, blendMode=${cmd.blendMode?.name}")
 
@@ -177,7 +174,7 @@ class GpuShapeViewCommands {
                                     stencilOpFunc = cmd.stencilOpFunc,
                                     stencilRef = cmd.stencilRef,
                                     colorMask = cmd.colorMask,
-                                    blending = (cmd.blendMode ?: BlendMode.NORMAL).factors(outPremultiplied),
+                                    blending = (cmd.blendMode ?: BlendMode.NORMAL).factors,
                                     cullFace = cmd.cullFace,
                                     drawType = cmd.drawType,
                                     drawOffset = cmd.vertexIndex,

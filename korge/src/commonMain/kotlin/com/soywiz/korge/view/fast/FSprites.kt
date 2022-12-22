@@ -179,7 +179,7 @@ open class FSprites(val maxSize: Int) {
                             instances = sprites.size,
                             uniforms = uniforms,
                             //renderState = AGRenderState(depthFunc = AGCompareMode.LESS),
-                            blending = blending.factors(ctx.isRenderingToTexture)
+                            blending = blending.factors
                         )
                         sprites.unloadVertices(ctx)
                     }

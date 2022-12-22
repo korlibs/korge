@@ -1,9 +1,11 @@
 package com.soywiz.korge.view
 
 import com.soywiz.korag.*
+import com.soywiz.korge.view.BlendMode.Companion.ADD
+import com.soywiz.korge.view.BlendMode.Companion.MULTIPLY
+import com.soywiz.korge.view.BlendMode.Companion.NORMAL
 import com.soywiz.korge.view.property.*
-import com.soywiz.korim.color.RGBA
-import com.soywiz.korim.color.RGBAf
+import com.soywiz.korim.color.*
 
 /**
  * Determines how pixels should be blended. The most common blend modes are: [NORMAL] (normal mix) and [ADD] (additive blending) along with [MULTIPLY] and others.
@@ -17,24 +19,18 @@ import com.soywiz.korim.color.RGBAf
  */
 data class BlendMode(
     val factors: AGBlending,
-    /** Factors to use when the output has non-premultiplied-alpha, and it is full opaque (typically the final output buffer) */
-    val nonPremultipliedFactors: AGBlending = factors,
     val name: String? = null,
 ) {
-    val _hashCode: Int = factors.hashCode() + nonPremultipliedFactors.hashCode() * 7 + name.hashCode() * 17
+    val _hashCode: Int = factors.hashCode() + name.hashCode() * 7
     override fun hashCode(): Int = _hashCode
-    override fun equals(other: Any?): Boolean = (this === other) || (other is BlendMode && this.factors == other.factors && nonPremultipliedFactors == other.nonPremultipliedFactors && name == other.name)
+    override fun equals(other: Any?): Boolean = (this === other) || (other is BlendMode && this.factors == other.factors && name == other.name)
     override fun toString(): String = name ?: super.toString()
 
-    fun factors(premultiplied: Boolean): AGBlending = if (premultiplied) factors else nonPremultipliedFactors
-
-    fun apply(premultiplied: Boolean, src: RGBAf, dst: RGBAf, out: RGBAf = RGBAf()): RGBAf {
-        val factors = factors(premultiplied)
+    fun apply(src: RGBAf, dst: RGBAf, out: RGBAf = RGBAf()): RGBAf {
         return factors.apply(src, dst, out)
     }
 
-    fun apply(premultiplied: Boolean, src: RGBA, dst: RGBA): RGBA {
-        val factors = factors(premultiplied)
+    fun apply(src: RGBA, dst: RGBA): RGBA {
         return factors.apply(src, dst)
     }
 
@@ -46,13 +42,13 @@ data class BlendMode(
 
     companion object {
         /** Mixes the source and destination colors using the source alpha value */
-        val NORMAL = BlendMode(name = "NORMAL", factors = AGBlending.NORMAL_PRE, nonPremultipliedFactors = AGBlending.NORMAL)
+        val NORMAL = BlendMode(name = "NORMAL", factors = AGBlending.NORMAL_PRE)
         /** Not an actual blending. It is used to indicate that the next non-inherit BlendMode from its ancestors will be used. */
         val INHERIT = NORMAL.copy(name = "INHERIT")
         /** Doesn't blend at all. Just replaces the colors. */
         val NONE = BlendMode(name = "NONE", factors = AGBlending(AGBlendFactor.ONE, AGBlendFactor.ZERO)) // REPLACE
         /** Additive mixing for lighting effects */
-        val ADD = BlendMode(name = "ADD", factors = AGBlending.ADD_PRE, nonPremultipliedFactors = AGBlending.ADD)
+        val ADD = BlendMode(name = "ADD", factors = AGBlending.ADD_PRE)
 
         // Unchecked
         val MULTIPLY = BlendMode(name = "MULTIPLY", factors = AGBlending(AGBlendFactor.DESTINATION_COLOR, AGBlendFactor.ONE_MINUS_SOURCE_ALPHA))
