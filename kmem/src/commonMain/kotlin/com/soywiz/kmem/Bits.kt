@@ -113,11 +113,23 @@ inline fun Int.extract6(offset: Int): Int = (this ushr offset) and 0b111111
 /** Extracts 7 bits at [offset] from [this] [Int] */
 inline fun Int.extract7(offset: Int): Int = (this ushr offset) and 0b1111111
 /** Extracts 8 bits at [offset] from [this] [Int] */
-inline fun Int.extract8(offset: Int): Int = (this ushr offset) and 0xFF
+inline fun Int.extract8(offset: Int): Int = (this ushr offset) and 0b11111111
+/** Extracts 9 bits at [offset] from [this] [Int] */
+inline fun Int.extract9(offset: Int): Int = (this ushr offset) and 0b111111111
+/** Extracts 10 bits at [offset] from [this] [Int] */
+inline fun Int.extract10(offset: Int): Int = (this ushr offset) and 0b1111111111
+/** Extracts 11 bits at [offset] from [this] [Int] */
+inline fun Int.extract11(offset: Int): Int = (this ushr offset) and 0b11111111111
 /** Extracts 12 bits at [offset] from [this] [Int] */
-inline fun Int.extract12(offset: Int): Int = (this ushr offset) and 0xFFF
+inline fun Int.extract12(offset: Int): Int = (this ushr offset) and 0b111111111111
+/** Extracts 13 bits at [offset] from [this] [Int] */
+inline fun Int.extract13(offset: Int): Int = (this ushr offset) and 0b1111111111111
+/** Extracts 14 bits at [offset] from [this] [Int] */
+inline fun Int.extract14(offset: Int): Int = (this ushr offset) and 0b11111111111111
+/** Extracts 15 bits at [offset] from [this] [Int] */
+inline fun Int.extract15(offset: Int): Int = (this ushr offset) and 0b111111111111111
 /** Extracts 16 bits at [offset] from [this] [Int] */
-inline fun Int.extract16(offset: Int): Int = (this ushr offset) and 0xFFFF
+inline fun Int.extract16(offset: Int): Int = (this ushr offset) and 0b1111111111111111
 /** Extracts 24 bits at [offset] from [this] [Int] */
 inline fun Int.extract24(offset: Int): Int = (this ushr offset) and 0xFFFFFF
 
@@ -153,6 +165,13 @@ public fun Int.insert(value: Int, offset: Int, count: Int): Int {
 
 public fun Int.insert24(value: Int, offset: Int): Int = insertMask(value, offset, 0xFFFFFF)
 public fun Int.insert16(value: Int, offset: Int): Int = insertMask(value, offset, 0xFFFF)
+public fun Int.insert15(value: Int, offset: Int): Int = insertMask(value, offset, 0b111111111111111)
+public fun Int.insert14(value: Int, offset: Int): Int = insertMask(value, offset, 0b11111111111111)
+public fun Int.insert13(value: Int, offset: Int): Int = insertMask(value, offset, 0b1111111111111)
+public fun Int.insert12(value: Int, offset: Int): Int = insertMask(value, offset, 0b111111111111)
+public fun Int.insert11(value: Int, offset: Int): Int = insertMask(value, offset, 0b11111111111)
+public fun Int.insert10(value: Int, offset: Int): Int = insertMask(value, offset, 0b1111111111)
+public fun Int.insert9(value: Int, offset: Int): Int = insertMask(value, offset, 0b111111111)
 public fun Int.insert8(value: Int, offset: Int): Int = insertMask(value, offset, 0b11111111)
 public fun Int.insert7(value: Int, offset: Int): Int = insertMask(value, offset, 0b1111111)
 public fun Int.insert6(value: Int, offset: Int): Int = insertMask(value, offset, 0b111111)

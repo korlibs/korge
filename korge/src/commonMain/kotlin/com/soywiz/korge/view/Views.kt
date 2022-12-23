@@ -55,7 +55,7 @@ class Views constructor(
     val gameId: String = "korgegame",
     val settingsFolder: String? = null,
     val batchMaxQuads: Int = BatchBuilder2D.DEFAULT_BATCH_QUADS,
-    val bp: BoundsProvider = BoundsProvider.Base()
+    val bp: BoundsProvider = BoundsProvider.Base(),
 ) :
     Extra by Extra.Mixin(),
     EventDispatcher by EventDispatcher.Mixin(),
@@ -64,22 +64,17 @@ class Views constructor(
     DialogInterfaceProvider by gameWindow,
     Closeable,
     ResourcesContainer,
-    InvalidateNotifier
+    InvalidateNotifier,
+    DeviceDimensionsProvider by gameWindow
 {
     override val views = this
 
     var rethrowRenderError = false
     var forceRenderEveryFrame: Boolean by gameWindow::continuousRenderMode
 
-    private val INCH_TO_CM = 2.54
-
-    val devicePixelRatio: Double get() = ag.devicePixelRatio
-    /** Approximate on iOS */
-    val pixelsPerInch: Double get() = ag.pixelsPerInch
-    /** Approximate on iOS */
-    val pixelsPerCm: Double get() = ag.pixelsPerInch / INCH_TO_CM
     val virtualPixelsPerInch: Double get() = pixelsPerInch / globalToWindowScaleAvg
-    val virtualPixelsPerCm: Double get() = virtualPixelsPerInch / INCH_TO_CM
+    val virtualPixelsPerCm: Double get() = virtualPixelsPerInch / DeviceDimensionsProvider.INCH_TO_CM
+
 
     val keys get() = input.keys
 
@@ -106,7 +101,7 @@ class Views constructor(
     var name: String? = null
     var currentVfs: VfsFile = resourcesVfs
     var imageFormats = RegisteredImageFormats
-	val renderContext = RenderContext(ag, this, stats, coroutineContext, batchMaxQuads)
+	val renderContext = RenderContext(ag, this, gameWindow, stats, coroutineContext, batchMaxQuads)
 	@KorgeDeprecated val agBitmapTextureManager get() = renderContext.agBitmapTextureManager
     @KorgeDeprecated val agBufferManager get() = renderContext.agBufferManager
 	var clearEachFrame = true
@@ -122,10 +117,10 @@ class Views constructor(
 
     /** Native width in pixels (in retina displays this will be twice the window width). Use [virtualWidth] instead */
     @KorgeInternal
-	val nativeWidth get() = ag.mainRenderBuffer.width
+	val nativeWidth get() = ag.mainFrameBuffer.width
     /** Native height in pixels (in retina displays this will be twice the window height). Use [virtualHeight] instead */
     @KorgeInternal
-	val nativeHeight get() = ag.mainRenderBuffer.height
+	val nativeHeight get() = ag.mainFrameBuffer.height
 
     // Later updated
     /** The defined virtual width */
@@ -314,7 +309,7 @@ class Views constructor(
 
 	fun render() {
         ag.startFrame()
-		if (clearEachFrame) ag.clear(clearColor, stencil = 0, depth = 1f, clearColor = true, clearStencil = true, clearDepth = true)
+		if (clearEachFrame) renderContext.clear(clearColor, stencil = 0, depth = 1f, clearColor = true, clearStencil = true, clearDepth = true)
         onBeforeRender(renderContext)
         renderContext.flush()
 		stage.render(renderContext)
@@ -519,7 +514,7 @@ open class GameWindowLog : GameWindow() {
 class ViewsLog constructor(
 	override val coroutineContext: CoroutineContext,
 	val injector: AsyncInjector = AsyncInjector(),
-	val ag: AG = LogAG(),
+	val ag: AG = AGLog(),
 	val input: Input = Input(),
 	val timeProvider: TimeProvider = TimeProvider,
 	val stats: Stats = Stats(),
@@ -538,12 +533,6 @@ class ViewsLog constructor(
         }
     }
 }
-
-fun Views.texture(bmp: Bitmap, mipmaps: Boolean = false): Texture = Texture(TextureBase(ag.createTexture(bmp, mipmaps), bmp.width, bmp.height))
-fun Views.texture(bmp: BitmapSlice<Bitmap>, mipmaps: Boolean = false): Texture = Texture(TextureBase(ag.createTexture(bmp, mipmaps), bmp.width, bmp.height))
-fun Bitmap.texture(views: Views, mipmaps: Boolean = false) = views.texture(this, mipmaps)
-fun Views.texture(width: Int, height: Int, mipmaps: Boolean = false) = texture(Bitmap32(width, height), mipmaps)
-suspend fun Views.texture(bmp: ByteArray, mipmaps: Boolean = false): Texture = texture(nativeImageFormatProvider.decode(bmp), mipmaps)
 
 interface ViewsContainer {
 	val views: Views

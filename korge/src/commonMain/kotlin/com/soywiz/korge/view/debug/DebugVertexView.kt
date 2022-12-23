@@ -1,6 +1,5 @@
 package com.soywiz.korge.view.debug
 
-import com.soywiz.kds.fastArrayListOf
 import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.korag.*
 import com.soywiz.korag.shader.FragmentShader
@@ -114,16 +113,17 @@ class DebugVertexView(pointsList: List<IVectorArrayList>, color: RGBA = Colors.W
         ctx.dynamicVertexBufferPool.alloc { vb ->
             vb.upload(this@DebugVertexView.buffer)
             val vData = AGVertexArrayObject(
-                AGVertexData(vb, DefaultShaders.LAYOUT_DEBUG)
+                AGVertexData(DefaultShaders.LAYOUT_DEBUG, vb)
             )
             batches.fastForEach { batch ->
-                ctx.ag.drawV2(
+                ctx.ag.draw(
+                    ctx.currentFrameBuffer,
                     vData,
-                    type = type,
+                    drawType = type,
                     program = PROGRAM,
                     uniforms = this.uniforms,
                     vertexCount = batch.count,
-                    offset = batch.offset,
+                    drawOffset = batch.offset,
                     blending = renderBlendMode.factors
                 )
             }

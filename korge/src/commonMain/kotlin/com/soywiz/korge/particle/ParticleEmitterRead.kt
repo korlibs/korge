@@ -76,7 +76,7 @@ suspend fun VfsFile.readParticleEmitter(): ParticleEmitter {
     emitter.texture = try {
         file.parent[emitter.textureName?.takeIf { it.isNotBlank() } ?: "texture.png"].readBitmapSlice()
     } catch (e: FileNotFoundException) {
-        Bitmap32(64, 64).context2d {
+        Bitmap32(64, 64, premultiplied = true).context2d {
             fill(createRadialGradient(32.0, 32.0, 0.0, 32.0, 32.0, 32.0)
                 .addColorStop(0.0, Colors.WHITE)
                 .addColorStop(0.4, Colors.WHITE)

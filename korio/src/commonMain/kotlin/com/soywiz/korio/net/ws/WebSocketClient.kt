@@ -53,11 +53,11 @@ suspend fun WebSocketClient.readString() = onStringMessage.waitOneBase()
 suspend fun WebSocketClient.readBinary() = onBinaryMessage.waitOneBase()
 
 expect suspend fun WebSocketClient(
-	url: String,
-	protocols: List<String>?,
-	origin: String?,
-	wskey: String?,
-	debug: Boolean,
+    url: String,
+    protocols: List<String>?,
+    origin: String?,
+    wskey: String,
+    debug: Boolean,
     headers: Http.Headers,
     dummy: Boolean,
     wsInit: WebSocketClient.() -> Unit = {},
@@ -67,7 +67,7 @@ suspend fun WebSocketClient(
     url: String,
     protocols: List<String>? = null,
     origin: String? = null,
-    wskey: String? = DEFAULT_WSKEY,
+    wskey: String = DEFAULT_WSKEY,
     debug: Boolean = false,
     headers: Http.Headers = Http.Headers(),
     wsInit: WebSocketClient.() -> Unit = {},

@@ -1,40 +1,16 @@
 package com.soywiz.korgw
 
-import X11Embed.Atom
-import X11Embed.AtomVar
-import X11Embed.Display
-import X11Embed.Status
-import X11Embed.Window
-import X11Embed.XEvent
-import X11Embed.XKeyEvent
-import com.soywiz.kgl.CDisplayPointer
-import com.soywiz.kgl.CString
-import com.soywiz.kgl.GLFuncNull
-import com.soywiz.kgl.GLLib
-import com.soywiz.kgl.GLXDrawable
-import com.soywiz.kgl.KeySym
-import com.soywiz.kgl.KmlGl
-import com.soywiz.kgl.NativeBaseKmlGl
-import com.soywiz.kgl.XVisualInfo
-import com.soywiz.klock.PerformanceCounter
-import com.soywiz.klock.TimeSpan
-import com.soywiz.klock.seconds
-import com.soywiz.kmem.Platform
-import com.soywiz.kmem.dyn.DynamicLibrary
-import com.soywiz.kmem.dyn.func
-import com.soywiz.kmem.startAddressOf
-import com.soywiz.kmem.toInt
-import com.soywiz.kmem.write32LE
-import com.soywiz.korag.gl.AGOpengl
-import com.soywiz.korev.Key
-import com.soywiz.korev.MouseButton
-import com.soywiz.korev.MouseEvent
-import com.soywiz.korim.bitmap.Bitmap
-import com.soywiz.korim.color.RGBA
-import com.soywiz.korio.lang.TimedCache
+import X11Embed.*
+import com.soywiz.kgl.*
+import com.soywiz.klock.*
+import com.soywiz.kmem.*
+import com.soywiz.kmem.dyn.*
+import com.soywiz.korag.gl.*
+import com.soywiz.korev.*
+import com.soywiz.korim.bitmap.*
+import com.soywiz.korio.lang.*
 import kotlinx.cinterop.*
-import platform.posix.fflush
-import platform.posix.stdout
+import platform.posix.*
 
 internal object X11 : DynamicLibrary("libX11.so") {
     val XDefaultScreen by func<(d: CDisplayPointer) -> Int>()
@@ -63,7 +39,33 @@ internal object X11 : DynamicLibrary("libX11.so") {
     val XChangeProperty by func<(display: CDisplayPointer, w: Window, property: Atom, type: Atom, format: Int, mode: Int, data: CPointer<ByteVar>, nelements: Int) -> Unit>()
     val XDeleteProperty by func<(display: CDisplayPointer, w: Window, property: Atom) -> Unit>()
 
-}
+    val XOpenIM by func<(COpaquePointer?, Int, Int, Int) -> COpaquePointer?>()
+    val XCreateIC by func<(COpaquePointer?, COpaquePointer?, COpaquePointer?, COpaquePointer?, COpaquePointer?, COpaquePointer?, COpaquePointer?, COpaquePointer?) -> COpaquePointer?>()
+    val XSetICFocus by func<(COpaquePointer?) -> Int>()
+    val XFilterEvent by func<(event: CPointer<XEvent>, type: Int) -> Int>()
+
+    //val XLookupString by func<(event_struct: CPointer<XKeyEvent>, buffer_return: CPointer<ByteVar>, bytes_buffer: Int, keysym_return: CPointer<IntVar>?, status_in_out: COpaquePointer?) -> Int>()
+    //int Xutf8LookupString(XIC ic, XKeyPressedEvent *event, char *buffer_return, int bytes_buffer, KeySym *keysym_return, Status *status_return);
+    val Xutf8LookupString by func<(ic: COpaquePointer?, event: CPointer<XKeyEvent>?, buffer_return: CPointer<ByteVar>?, bytes_buffer: Int, keysym_return: CPointer<IntVar>?, status_return: CPointer<IntVar>?) -> Int>()
+    }
+
+const val None = 0
+
+const val XBufferOverflow =		-1
+const val XLookupNone =		1
+const val XLookupChars =		2
+const val XLookupKeySym =		3
+const val XLookupBoth =		4
+
+const val XIMPreeditArea =		0x0001
+const val XIMPreeditCallbacks =	0x0002
+const val XIMPreeditPosition =	0x0004
+const val XIMPreeditNothing =	0x0008
+const val XIMPreeditNone =		0x0010
+const val XIMStatusArea =		0x0100
+const val XIMStatusCallbacks =	0x0200
+const val XIMStatusNothing =	0x0400
+const val XIMStatusNone =		0x0800
 
 
 //actual fun CreateDefaultGameWindow(): GameWindow = glutGameWindow
@@ -79,19 +81,6 @@ actual fun CreateDefaultGameWindow(config: GameWindowCreationConfig): GameWindow
 
 // https://www.khronos.org/registry/OpenGL/extensions/EXT/EXT_swap_control.txt
 private val swapIntervalEXT by GLFuncNull<(CPointer<Display>?, GLXDrawable, Int) -> Unit>("swapIntervalEXT")
-
-//class X11Ag(val window: X11GameWindow, override val gl: KmlGl = LogKmlGlProxy(X11KmlGl())) : AGOpengl() {
-class X11AgOpengl(val window: X11GameWindow, override val gl: KmlGl = com.soywiz.kgl.KmlGlNative()) : AGOpengl() {
-    override val nativeComponent: Any = window
-
-    override val pixelsPerInch: Double by TimedCache<Double>(0.5.seconds) {
-        val str = X11.XResourceManagerString(window.d)?.toKStringFromUtf8() ?: ""
-        val Xftdpi = str.lines().firstOrNull { it.contains("Xft.dpi") }
-        val dpiInt = Xftdpi?.split(':')?.lastOrNull()?.trim()?.toDoubleOrNull()
-        //println("X11AgOpengl.pixelsPerInch: str=$str, dpiInt=$dpiInt")
-        kotlin.math.max(dpiInt ?: 96.0, 96.0)
-    }
-}
 
 // https://www.khronos.org/opengl/wiki/Tutorial:_OpenGL_3.0_Context_Creation_(GLX)
 class X11OpenglContext(val d: CPointer<Display>?, val w: Window, val doubleBuffered: Boolean = true) {
@@ -153,7 +142,17 @@ class X11GameWindow : EventLoopGameWindow() {
     override val dialogInterface = ZenityDialogs
 
     //init { println("X11GameWindow") }
-    override val ag: X11AgOpengl by lazy { X11AgOpengl(this) }
+    override val ag: AGOpengl = AGOpengl(com.soywiz.kgl.KmlGlNative())
+
+
+    override val pixelsPerInch: Double by TimedCache<Double>(0.5.seconds) {
+        val str = X11.XResourceManagerString(this@X11GameWindow.d)?.toKStringFromUtf8() ?: ""
+        val Xftdpi = str.lines().firstOrNull { it.contains("Xft.dpi") }
+        val dpiInt = Xftdpi?.split(':')?.lastOrNull()?.trim()?.toDoubleOrNull()
+        //println("X11AgOpengl.pixelsPerInch: str=$str, dpiInt=$dpiInt")
+        kotlin.math.max(dpiInt ?: 96.0, 96.0)
+    }
+
     override var width: Int = 200; private set
     override var height: Int = 200; private set
     override var title: String = "Korgw"
@@ -300,6 +299,9 @@ class X11GameWindow : EventLoopGameWindow() {
         if (d == null || w == NilWin) return
     }
 
+    var xim: COpaquePointer? = null
+    var xic: COpaquePointer? = null
+
     override fun doInitialize() {
         println("doInitialize")
 
@@ -359,6 +361,17 @@ class X11GameWindow : EventLoopGameWindow() {
                     X11.XSetWMProtocols(d, w, protocolsArray, 1)
                 }
 
+
+                xim = X11.XOpenIM(d, 0, 0, 0)
+                xic = X11.XCreateIC(
+                    xim,
+                    "inputStyle".cstr.getPointer(mem), (XIMPreeditNothing or XIMStatusNothing).toLong().toCPointer(),
+                    "clientWindow".cstr.getPointer(mem), w.toLong().toCPointer(),
+                    "focusWindow".cstr.getPointer(mem), w.toLong().toCPointer(),
+                    null
+                )
+                X11.XSetICFocus(xic)
+
                 //println("/doInitialize")
             }
         } catch (e: Throwable) {
@@ -370,6 +383,8 @@ class X11GameWindow : EventLoopGameWindow() {
     lateinit var ctx: X11OpenglContext
 
     val doubleBuffered = false
+    val mem = Arena()
+    val composeStatus: CPointer<IntVar> = mem.allocArray<IntVar>(16)
     //val doubleBuffered = true
 
     override fun close(exitCode: Int) {
@@ -383,10 +398,14 @@ class X11GameWindow : EventLoopGameWindow() {
         linuxJoyEventAdapter.updateGamepads(this@X11GameWindow)
         //println("doHandleEvents")
         val e = alloc<XEvent>()
+        val TEMP_SIZE = 64
+        val temp = allocArray<ByteVar>(TEMP_SIZE)
+        val status = alloc<IntVar>()
         loop@ while (running) {
             //println("---")
             if (X11.XPending(d) == 0) return
             X11.XNextEvent(d, e.ptr)
+            if (X11.XFilterEvent(e.ptr, None) != 0) continue
             //println("EVENT: ${e.type}")
             when (e.type) {
                 Expose -> if (e.xexpose.count == 0) render(doUpdate = false)
@@ -408,9 +427,22 @@ class X11GameWindow : EventLoopGameWindow() {
                         if (pressing) com.soywiz.korev.KeyEvent.Type.DOWN else com.soywiz.korev.KeyEvent.Type.UP
                     val keyCode = e.xkey.keycode.toInt()
                     val kkey = XK_KeyMap[X11.XLookupKeysym(e.xkey.ptr, 0).toInt()] ?: Key.UNKNOWN
+
                     //println("KEY: $ev, ${keyCode.toChar()}, $kkey, $keyCode, keySym=$kkey")
                     dispatchKeyEvent(ev, 0, keyCode.toInt().toChar(), kkey, keyCode.toInt().convert())
-                    //break@loop
+
+                    if (pressing) {
+                        // https://gist.github.com/baines/5a49f1334281b2685af5dcae81a6fa8a
+                        val result = X11.Xutf8LookupString(xic, e.xkey.ptr, temp, TEMP_SIZE - 1, null, status.ptr)
+                        val str = temp.toKStringFromUtf8()
+                        //println("pressing=$pressing, result=$result, temp=${temp.toKStringFromUtf8()}, status.value=${status.value}")
+                        when (status.value) {
+                            XLookupChars, XLookupBoth -> {
+                                dispatchKeyEvent(KeyEvent.Type.TYPE, 0, str.getOrElse(0) { '\u0000' }, kkey, keyCode.toInt().convert(), str)
+                            }
+                        }
+                    }
+                //break@loop
                 }
                 MotionNotify, ButtonPress, ButtonRelease -> {
                     val mot = e.xmotion

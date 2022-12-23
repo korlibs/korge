@@ -1,7 +1,6 @@
 package com.soywiz.korge.bitmapfont
 
 import com.soywiz.korag.log.*
-import com.soywiz.korge.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.test.*
 import com.soywiz.korim.font.*
@@ -11,7 +10,7 @@ import kotlin.coroutines.*
 import kotlin.test.*
 
 class BitmapFontTest {
-	val ag = object : LogAG() {
+	val ag = object : AGLog() {
         override fun log(str: String, kind: Kind) {
             if (kind != Kind.SHADER) {
                 super.log(str, kind)

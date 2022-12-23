@@ -3,7 +3,7 @@ package com.soywiz.korge.render
 import com.soywiz.korag.*
 
 object MaskStates {
-    class RenderState(val stencilOpFunc: AGStencilOpFuncState, val stencilRef: AGStencilReferenceState, val colorMask: AGColorMaskState) {
+    class RenderState(val stencilOpFunc: AGStencilOpFunc, val stencilRef: AGStencilReference, val colorMask: AGColorMask) {
         val stencilFull get() = AGStencilFullState(stencilOpFunc, stencilRef)
 
         @Suppress("DEPRECATION")
@@ -22,18 +22,18 @@ object MaskStates {
     }
 
     val STATE_NONE = RenderState(
-        AGStencilOpFuncState.DEFAULT,
-        AGStencilReferenceState.DEFAULT,
-        AGColorMaskState.ALL_ENABLED,
+        AGStencilOpFunc.DEFAULT,
+        AGStencilReference.DEFAULT,
+        AGColorMask.ALL_ENABLED,
     )
     val STATE_SHAPE = RenderState(
-        AGStencilOpFuncState.DEFAULT.withEnabled(true).withCompareMode(AGCompareMode.ALWAYS).withAction(AGStencilOp.SET),
-        AGStencilReferenceState.DEFAULT.withReferenceValue(0).withReadMask(0x00).withWriteMask(0xFF),
-        AGColorMaskState.ALL_DISABLED
+        AGStencilOpFunc.DEFAULT.withEnabled(true).withCompareMode(AGCompareMode.ALWAYS).withAction(AGStencilOp.SET),
+        AGStencilReference.DEFAULT.withReferenceValue(0).withReadMask(0x00).withWriteMask(0xFF),
+        AGColorMask.ALL_DISABLED
     )
     val STATE_CONTENT = RenderState(
-        AGStencilOpFuncState.DEFAULT.withEnabled(true).withCompareMode(AGCompareMode.EQUAL).withAction(AGStencilOp.KEEP),
-        AGStencilReferenceState.DEFAULT.withReferenceValue(0).withReadMask(0xFF).withWriteMask(0x00),
-        AGColorMaskState.ALL_ENABLED
+        AGStencilOpFunc.DEFAULT.withEnabled(true).withCompareMode(AGCompareMode.EQUAL).withAction(AGStencilOp.KEEP),
+        AGStencilReference.DEFAULT.withReferenceValue(0).withReadMask(0xFF).withWriteMask(0x00),
+        AGColorMask.ALL_ENABLED
     )
 }

@@ -18,15 +18,10 @@ import com.soywiz.korim.color.RGBA
 import com.sun.jna.*
 import com.sun.jna.platform.unix.X11.*
 
-//class X11Ag(val window: X11GameWindow, override val gl: KmlGl = LogKmlGlProxy(X11KmlGl())) : AGOpengl() {
-class X11Ag(val window: X11GameWindow, val checkGl: Boolean, override val gl: KmlGl = X11KmlGl().checkedIf(checkGl)) : AGOpengl() {
-    override val nativeComponent: Any = window
-}
-
 class X11GameWindow(val checkGl: Boolean) : EventLoopGameWindow() {
     override val dialogInterface: DialogInterface = ZenityDialogs()
 
-    override val ag: X11Ag by lazy { X11Ag(this, checkGl) }
+    override val ag: AGOpengl = AGOpengl(X11KmlGl().checkedIf(checkGl))
     override var width: Int = 200; private set
     override var height: Int = 200; private set
     override var title: String = "Korgw"

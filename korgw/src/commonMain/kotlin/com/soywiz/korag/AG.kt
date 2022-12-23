@@ -1,38 +1,11 @@
 package com.soywiz.korag
 
-import com.soywiz.kds.Extra
-import com.soywiz.kds.FastArrayList
-import com.soywiz.kds.FloatArray2
-import com.soywiz.kds.Pool
-import com.soywiz.kds.fastCastTo
-import com.soywiz.klogger.Console
-import com.soywiz.kmem.*
-import com.soywiz.kmem.unit.ByteUnits
-import com.soywiz.korag.annotation.KoragExperimental
-import com.soywiz.korag.shader.Attribute
-import com.soywiz.korag.shader.Program
-import com.soywiz.korag.shader.ProgramConfig
-import com.soywiz.korag.shader.VarType
-import com.soywiz.korag.shader.VertexLayout
-import com.soywiz.korim.bitmap.Bitmap
-import com.soywiz.korim.bitmap.Bitmap32
-import com.soywiz.korim.bitmap.Bitmap8
-import com.soywiz.korim.bitmap.BitmapSlice
-import com.soywiz.korim.bitmap.Bitmaps
-import com.soywiz.korim.color.Colors
-import com.soywiz.korim.color.RGBA
-import com.soywiz.korim.color.RGBAPremultiplied
-import com.soywiz.korio.annotations.KorIncomplete
-import com.soywiz.korio.async.runBlockingNoJs
-import com.soywiz.korio.lang.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.math.nextMultipleOf
-import kotlin.contracts.ExperimentalContracts
-import kotlin.contracts.InvocationKind
-import kotlin.contracts.contract
-import kotlin.jvm.JvmOverloads
-import kotlin.math.*
-
+import com.soywiz.kds.*
+import com.soywiz.klogger.*
+import com.soywiz.korag.shader.*
+import com.soywiz.korim.bitmap.*
+import com.soywiz.korim.color.*
+import kotlinx.coroutines.channels.*
 
 interface AGWindow : AGContainer {
 }
@@ -45,253 +18,35 @@ interface AGFeatures {
     val isFloatTextureSupported: Boolean get() = parentFeatures?.isFloatTextureSupported ?: false
 }
 
-@OptIn(KorIncomplete::class)
-abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mixin() {
+abstract class AG : AGFeatures, Extra by Extra.Mixin() {
     companion object {
         const val defaultPixelsPerInch : Double = 96.0
     }
 
-    abstract val nativeComponent: Any
+    val mainFrameBuffer: AGFrameBuffer = AGFrameBuffer(isMain = true)
+    var contextVersion: Int = 0
+        private set
 
     open fun contextLost() {
         Console.info("AG.contextLost()", this)
+        contextVersion++
         //printStackTrace("AG.contextLost")
-        commandsSync { it.contextLost() }
     }
 
-    val tempVertexBufferPool = Pool { createBuffer() }
-    val tempIndexBufferPool = Pool { createBuffer() }
-    val tempTexturePool = Pool { createTexture() }
-
-    open val maxTextureSize = Size(2048, 2048)
-
-    open val devicePixelRatio: Double = 1.0
-    open val pixelsPerLogicalInchRatio: Double = 1.0
-    /** Approximate on iOS */
-    open val pixelsPerInch: Double = defaultPixelsPerInch
-    // Use this in the debug handler, while allowing people to access raw devicePixelRatio without the noise of window scaling
-    // I really dont know if "/" or "*" or right but in my mathematical mind "pixelsPerLogicalInchRatio" must increase and not decrease the scale
-    // maybe it is pixelsPerLogicalInchRatio / devicePixelRatio ?
-    open val computedPixelRatio: Double get() = devicePixelRatio * pixelsPerLogicalInchRatio
-
-    open fun beforeDoRender() {
+    open fun beforeDoRender() = Unit
+    open fun dispose() = Unit
+    open fun finish() {
+        execute(AGFinish)
     }
+    open fun startFrame() = Unit
+    open fun endFrame() = Unit
 
-    inline fun doRender(block: () -> Unit) {
-        beforeDoRender()
-        mainRenderBuffer.init()
-        setRenderBufferTemporally(mainRenderBuffer) {
-            block()
-        }
-    }
-
-    open fun offscreenRendering(callback: () -> Unit) {
-        callback()
-    }
-
-    open fun repaint() {
-    }
-
-    fun resized(width: Int, height: Int) {
-        resized(0, 0, width, height, width, height)
-    }
-
-    open fun resized(x: Int, y: Int, width: Int, height: Int, fullWidth: Int, fullHeight: Int) {
-        mainRenderBuffer.setSize(x, y, width, height, fullWidth, fullHeight)
-    }
-
-    open fun dispose() {
-    }
-
-    // On MacOS components, this will be the size of the component
-    open val backWidth: Int get() = mainRenderBuffer.width
-    open val backHeight: Int get() = mainRenderBuffer.height
-
-    // On MacOS components, this will be the full size of the window
-    val realBackWidth get() = mainRenderBuffer.fullWidth
-    val realBackHeight get() = mainRenderBuffer.fullHeight
-
-    val currentWidth: Int get() = currentRenderBuffer?.width ?: mainRenderBuffer.width
-    val currentHeight: Int get() = currentRenderBuffer?.height ?: mainRenderBuffer.height
-
-    //protected fun setViewport(v: IntArray) = setViewport(v[0], v[1], v[2], v[3])
-
-    var createdTextureCount = 0
-    var deletedTextureCount = 0
-
-    internal val textures = LinkedHashSet<AGTexture>()
-    private val texturesCount: Int get() = textures.size
-    private val texturesMemory: ByteUnits get() = ByteUnits.fromBytes(textures.sumOf { it.estimatedMemoryUsage.bytesLong })
-
-    internal val buffers = LinkedHashSet<AGBuffer>()
-    private val buffersCount: Int get() = buffers.size
-    private val buffersMemory: ByteUnits get() = ByteUnits.fromBytes(buffers.sumOf { it.estimatedMemoryUsage.bytesLong })
-
-    val dummyTexture by lazy { createTexture() }
-
-    fun createTexture(): AGTexture = createTexture(premultiplied = true)
-    fun createTexture(bmp: Bitmap, mipmaps: Boolean = false): AGTexture = createTexture(bmp.premultiplied).upload(bmp, mipmaps)
-    fun createTexture(bmp: BitmapSlice<Bitmap>, mipmaps: Boolean = false): AGTexture = createTexture(bmp.premultiplied).upload(bmp, mipmaps)
-    fun createTexture(bmp: Bitmap, mipmaps: Boolean = false, premultiplied: Boolean = true): AGTexture = createTexture(premultiplied).upload(bmp, mipmaps)
-    open fun createTexture(premultiplied: Boolean, targetKind: AGTextureTargetKind = AGTextureTargetKind.TEXTURE_2D): AGTexture = AGTexture(this, premultiplied, targetKind)
-    open fun createBuffer(): AGBuffer = commandsNoWaitNoExecute { AGBuffer(this, it) }
-
-    fun createVertexData(vararg attributes: Attribute, layoutSize: Int? = null) = AGVertexData(createBuffer(), VertexLayout(*attributes, layoutSize = layoutSize))
-    fun createBuffer(data: Buffer) = createBuffer().apply { upload(data) }
-    fun createBuffer(data: ShortArray, offset: Int = 0, length: Int = data.size - offset) = createBuffer().apply { upload(data, offset, length) }
-    fun createBuffer(data: FloatArray, offset: Int = 0, length: Int = data.size - offset) = createBuffer().apply { upload(data, offset, length) }
-
-    fun drawV2(
-        vertexData: AGVertexArrayObject,
-        program: Program,
-        type: AGDrawType,
-        vertexCount: Int,
-        indices: AGBuffer? = null,
-        indexType: AGIndexType = AGIndexType.USHORT,
-        offset: Int = 0,
-        blending: AGBlending = AGBlending.NORMAL,
-        uniforms: AGUniformValues = AGUniformValues.EMPTY,
-        stencilRef: AGStencilReferenceState = AGStencilReferenceState.DEFAULT,
-        stencilOpFunc: AGStencilOpFuncState = AGStencilOpFuncState.DEFAULT,
-        colorMask: AGColorMaskState = AGColorMaskState.ALL_ENABLED,
-        renderState: AGRenderState = AGRenderState.DEFAULT,
-        scissor: AGScissor = AGScissor.NIL,
-        instances: Int = 1
-    ) = draw(batch.also { batch ->
-        batch.vertexData = vertexData
-        batch.program = program
-        batch.type = type
-        batch.vertexCount = vertexCount
-        batch.indices = indices
-        batch.indexType = indexType
-        batch.offset = offset
-        batch.blending = blending
-        batch.uniforms = uniforms
-        batch.stencilRef = stencilRef
-        batch.stencilOpFunc = stencilOpFunc
-        batch.colorMask = colorMask
-        batch.renderState = renderState
-        batch.scissor = scissor
-        batch.instances = instances
-    })
-
-    private val batch = AGBatch()
-
-    open fun draw(batch: AGBatch) {
-        val instances = batch.instances
-        val program = batch.program
-        val type = batch.type
-        val vertexCount = batch.vertexCount
-        val indices = batch.indices
-        val indexType = batch.indexType
-        val offset = batch.offset
-        val blending = batch.blending
-        val uniforms = batch.uniforms
-        val stencilRef = batch.stencilRef
-        val stencilOpFunc = batch.stencilOpFunc
-        val colorMask = batch.colorMask
-        val renderState = batch.renderState
-        val scissor = batch.scissor
-
-        //println("SCISSOR: $scissor")
-
-        //finalScissor.setTo(0, 0, backWidth, backHeight)
-
-        commandsNoWait { list ->
-            list.setScissorState(this, scissor)
-
-            getProgram(program, config = when {
-                uniforms.useExternalSampler() -> ProgramConfig.EXTERNAL_TEXTURE_SAMPLER
-                else -> ProgramConfig.DEFAULT
-            }).use(list)
-
-            list.vertexArrayObjectSet(batch.vertexData) {
-                list.uniformsSet(uniforms)
-                list.setState(blending, stencilOpFunc, stencilRef, colorMask, renderState)
-
-                //val viewport = Buffer(4 * 4)
-                //gl.getIntegerv(KmlGl.VIEWPORT, viewport)
-                //println("viewport=${viewport.getAlignedInt32(0)},${viewport.getAlignedInt32(1)},${viewport.getAlignedInt32(2)},${viewport.getAlignedInt32(3)}")
-
-                list.draw(type, vertexCount, offset, instances, if (indices != null) indexType else AGIndexType.NONE, indices)
-            }
-        }
-    }
-
-    fun AGUniformValues.useExternalSampler(): Boolean {
-        var useExternalSampler = false
-        this.fastForEach { value ->
-            val uniform = value.uniform
-            val uniformType = uniform.type
-            when (uniformType) {
-                VarType.Sampler2D -> {
-                    val unit = value.nativeValue?.fastCastTo<AGTextureUnit>()
-                    val tex = (unit?.texture?.fastCastTo<AGTexture?>())
-                    if (tex != null) {
-                        if (tex.implForcedTexTarget == AGTextureTargetKind.EXTERNAL_TEXTURE) {
-                            useExternalSampler = true
-                        }
-                    }
-                }
-                else -> Unit
-            }
-        }
-        //println("useExternalSampler=$useExternalSampler")
-        return useExternalSampler
-    }
-
-    open fun disposeTemporalPerFrameStuff() = Unit
-
-    val frameRenderBuffers = LinkedHashSet<AGFrameBuffer>()
-    val renderBuffers = Pool<AGFrameBuffer>() { createRenderBuffer() }
-
-    object RenderBufferConsts {
-        const val DEFAULT_INITIAL_WIDTH = 128
-        const val DEFAULT_INITIAL_HEIGHT = 128
-    }
-
-    internal val allRenderBuffers = LinkedHashSet<AGBaseFrameBuffer>()
-    private val renderBufferCount: Int get() = allRenderBuffers.size
-    private val renderBuffersMemory: ByteUnits get() = ByteUnits.fromBytes(allRenderBuffers.sumOf { it.estimatedMemoryUsage.bytesLong })
-
-
-    @KoragExperimental
-    var agTarget = AGTarget.DISPLAY
-
-    val mainRenderBuffer: AGBaseFrameBuffer by lazy {
-        when (agTarget) {
-            AGTarget.DISPLAY -> createMainRenderBuffer()
-            AGTarget.OFFSCREEN -> createRenderBuffer()
-        }
-    }
-
-    open fun createMainRenderBuffer(): AGBaseFrameBuffer = AGBaseFrameBufferImpl(this)
-
-    internal fun setViewport(buffer: AGBaseFrameBuffer) {
-        commandsNoWait { it.viewport(buffer.x, buffer.y, buffer.width, buffer.height) }
-        //println("setViewport: ${buffer.x}, ${buffer.y}, ${buffer.width}, ${buffer.height}")
-    }
-
-    var lastRenderContextId = 0
-
-    open fun createRenderBuffer(): AGFrameBuffer = AGFinalFrameBuffer(this)
-
-    //open fun createRenderBuffer() = RenderBuffer()
-
-    fun flip() {
-        disposeTemporalPerFrameStuff()
-        renderBuffers.free(frameRenderBuffers)
-        if (frameRenderBuffers.isNotEmpty()) frameRenderBuffers.clear()
-        flipInternal()
-        commandsSync { it.finish() }
-    }
-
-    open fun flipInternal() = Unit
-
-    open fun startFrame() {
+    protected open fun execute(command: AGCommand) {
     }
 
     open fun clear(
+        frameBuffer: AGFrameBufferBase,
+        frameBufferInfo: AGFrameBufferInfo,
         color: RGBA = Colors.TRANSPARENT_BLACK,
         depth: Float = 1f,
         stencil: Int = 0,
@@ -300,304 +55,116 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
         clearStencil: Boolean = true,
         scissor: AGScissor = AGScissor.NIL,
     ) {
-        commandsNoWait { list ->
-            //println("CLEAR: $color, $depth")
-            list.setScissorState(this, scissor)
-            //gl.disable(KmlGl.SCISSOR_TEST)
-            if (clearColor) {
-                list.colorMask(true, true, true, true)
-                list.clearColor(color.rf, color.gf, color.bf, color.af)
-            }
-            if (clearDepth) {
-                list.depthMask(true)
-                list.clearDepth(depth)
-            }
-            if (clearStencil) {
-                list.stencilMask(-1)
-                list.clearStencil(stencil)
-            }
-            list.clear(clearColor, clearDepth, clearStencil)
-        }
+        execute(AGClear(frameBuffer, frameBufferInfo, color, depth, stencil, clearColor, clearDepth, clearStencil))
     }
 
-
-    private val finalScissorBL = Rectangle()
-    private val tempRect = Rectangle()
-
-    fun clearStencil(stencil: Int = 0, scissor: AGScissor = AGScissor.NIL) = clear(clearColor = false, clearDepth = false, clearStencil = true, stencil = stencil, scissor = scissor)
-    fun clearDepth(depth: Float = 1f, scissor: AGScissor = AGScissor.NIL) = clear(clearColor = false, clearDepth = true, clearStencil = false, depth = depth, scissor = scissor)
-    fun clearColor(color: RGBA = Colors.TRANSPARENT_BLACK, scissor: AGScissor = AGScissor.NIL) = clear(clearColor = true, clearDepth = false, clearStencil = false, color = color, scissor = scissor)
-
-    val renderBufferStack = FastArrayList<AGBaseFrameBuffer?>()
-
-    //@PublishedApi
-    @KoragExperimental
-    var currentRenderBuffer: AGBaseFrameBuffer? = null
-        private set
-
-    val currentRenderBufferOrMain: AGBaseFrameBuffer get() = currentRenderBuffer ?: mainRenderBuffer
-
-    val isRenderingToWindow: Boolean get() = currentRenderBufferOrMain === mainRenderBuffer
-    val isRenderingToTexture: Boolean get() = !isRenderingToWindow
-
-    inline fun backupTexture(tex: AGTexture?, callback: () -> Unit) {
-        if (tex != null) {
-            readColorTexture(tex, 0, 0, backWidth, backHeight)
-        }
-        try {
-            callback()
-        } finally {
-            if (tex != null) drawTexture(tex)
-        }
-    }
-
-    inline fun setRenderBufferTemporally(rb: AGBaseFrameBuffer, callback: (AGBaseFrameBuffer) -> Unit) {
-        pushRenderBuffer(rb)
-        try {
-            callback(rb)
-        } finally {
-            popRenderBuffer()
-        }
-    }
-
-    var adjustFrameRenderBufferSize = false
-    //var adjustFrameRenderBufferSize = true
-
-    //open fun fixWidthForRenderToTexture(width: Int): Int = kotlin.math.max(64, width).nextPowerOfTwo
-    //open fun fixHeightForRenderToTexture(height: Int): Int = kotlin.math.max(64, height).nextPowerOfTwo
-
-    open fun fixWidthForRenderToTexture(width: Int): Int = if (adjustFrameRenderBufferSize) width.nextMultipleOf(64) else width
-    open fun fixHeightForRenderToTexture(height: Int): Int = if (adjustFrameRenderBufferSize) height.nextMultipleOf(64) else height
-
-    //open fun fixWidthForRenderToTexture(width: Int): Int = width
-    //open fun fixHeightForRenderToTexture(height: Int): Int = height
-
-    inline fun tempAllocateFrameBuffer(width: Int, height: Int, hasDepth: Boolean = false, hasStencil: Boolean = true, msamples: Int = 1, block: (rb: AGFrameBuffer) -> Unit) {
-        val rb = unsafeAllocateFrameRenderBuffer(width, height, hasDepth = hasDepth, hasStencil = hasStencil, msamples = msamples)
-        try {
-            block(rb)
-        } finally {
-            unsafeFreeFrameRenderBuffer(rb)
-        }
-    }
-
-    inline fun tempAllocateFrameBuffers2(width: Int, height: Int, hasDepth: Boolean = false, hasStencil: Boolean = true, msamples: Int = 1, block: (rb0: AGFrameBuffer, rb1: AGFrameBuffer) -> Unit) {
-        tempAllocateFrameBuffer(width, height, hasDepth, hasStencil, msamples) { rb0 ->
-            tempAllocateFrameBuffer(width, height, hasDepth, hasStencil, msamples) { rb1 ->
-                block(rb0, rb1)
-            }
-        }
-    }
-
-    @KoragExperimental
-    fun unsafeAllocateFrameRenderBuffer(width: Int, height: Int, hasDepth: Boolean = false, hasStencil: Boolean = true, msamples: Int = 1, onlyThisFrame: Boolean = true): AGFrameBuffer {
-        val realWidth = fixWidthForRenderToTexture(kotlin.math.max(width, 64))
-        val realHeight = fixHeightForRenderToTexture(kotlin.math.max(height, 64))
-        val rb = renderBuffers.alloc()
-        if (onlyThisFrame) frameRenderBuffers += rb
-        rb.setSize(0, 0, realWidth, realHeight, realWidth, realHeight)
-        rb.setExtra(hasDepth = hasDepth, hasStencil = hasStencil)
-        rb.setSamples(msamples)
-        //println("unsafeAllocateFrameRenderBuffer($width, $height), real($realWidth, $realHeight), $rb")
-        return rb
-    }
-
-    @KoragExperimental
-    fun unsafeFreeFrameRenderBuffer(rb: AGFrameBuffer) {
-        if (frameRenderBuffers.remove(rb)) {
-        }
-        renderBuffers.free(rb)
-    }
-
-    @OptIn(KoragExperimental::class)
-    inline fun renderToTexture(
-        width: Int, height: Int,
-        render: (rb: AGFrameBuffer) -> Unit,
-        hasDepth: Boolean = false, hasStencil: Boolean = false, msamples: Int = 1,
-        use: (tex: AGTexture, texWidth: Int, texHeight: Int) -> Unit
+    open fun draw(
+        frameBuffer: AGFrameBufferBase,
+        frameBufferInfo: AGFrameBufferInfo,
+        vertexData: AGVertexArrayObject,
+        program: Program,
+        drawType: AGDrawType,
+        vertexCount: Int,
+        indices: AGBuffer? = null,
+        indexType: AGIndexType = AGIndexType.USHORT,
+        drawOffset: Int = 0,
+        blending: AGBlending = AGBlending.NORMAL,
+        uniforms: AGUniformValues = AGUniformValues.EMPTY,
+        stencilRef: AGStencilReference = AGStencilReference.DEFAULT,
+        stencilOpFunc: AGStencilOpFunc = AGStencilOpFunc.DEFAULT,
+        colorMask: AGColorMask = AGColorMask.ALL_ENABLED,
+        depthAndFrontFace: AGDepthAndFrontFace = AGDepthAndFrontFace.DEFAULT,
+        scissor: AGScissor = AGScissor.NIL,
+        cullFace: AGCullFace = AGCullFace.NONE,
+        instances: Int = 1
     ) {
-        commandsNoWait { list ->
-            list.flush()
-        }
-        tempAllocateFrameBuffer(width, height, hasDepth, hasStencil, msamples) { rb ->
-            setRenderBufferTemporally(rb) {
-                clear(Colors.TRANSPARENT_BLACK) // transparent
-                render(rb)
-            }
-            use(rb.tex, rb.width, rb.height)
-        }
+        execute(AGBatch(frameBuffer, frameBufferInfo, vertexData, indices, indexType, program, uniforms, blending, stencilOpFunc, stencilRef, colorMask, depthAndFrontFace, scissor, cullFace, drawType, drawOffset, vertexCount, instances))
     }
 
-    inline fun renderToBitmap(
-        bmp: Bitmap32,
-        hasDepth: Boolean = false, hasStencil: Boolean = false, msamples: Int = 1,
-        render: () -> Unit
-    ) {
-        renderToTexture(bmp.width, bmp.height, render = {
-            render()
-            //println("renderToBitmap.readColor: $currentRenderBuffer")
-            readColor(bmp)
-        }, hasDepth = hasDepth, hasStencil = hasStencil, msamples = msamples, use = { _, _, _ -> })
-    }
-
-    fun setRenderBuffer(renderBuffer: AGBaseFrameBuffer?): AGBaseFrameBuffer? {
-        val old = currentRenderBuffer
-        currentRenderBuffer?.unset()
-        currentRenderBuffer = renderBuffer
-        renderBuffer?.set()
-        return old
-    }
-
-    fun getRenderBufferAtStackPoint(offset: Int): AGBaseFrameBuffer {
-        if (offset == 0) return currentRenderBufferOrMain
-        return renderBufferStack.getOrNull(renderBufferStack.size + offset) ?: mainRenderBuffer
-    }
-
-    fun pushRenderBuffer(renderBuffer: AGBaseFrameBuffer) {
-        renderBufferStack.add(currentRenderBuffer)
-        setRenderBuffer(renderBuffer)
-    }
-
-    fun popRenderBuffer() {
-        setRenderBuffer(renderBufferStack.last())
-        renderBufferStack.removeAt(renderBufferStack.size - 1)
-    }
-
-    // @TODO: Rename to Sync and add Suspend versions
-    fun readPixel(x: Int, y: Int): RGBA {
-        val rawColor = Bitmap32(1, 1, premultiplied = isRenderingToTexture).also { readColor(it, x, y) }.ints[0]
-        return if (isRenderingToTexture) RGBAPremultiplied(rawColor).depremultiplied else RGBA(rawColor)
-    }
-
-    open fun readColor(bitmap: Bitmap32, x: Int = 0, y: Int = 0) {
-        commandsSync { it.readPixels(x, y, bitmap.width, bitmap.height, bitmap.ints, AGReadKind.COLOR) }
-    }
-    open fun readDepth(width: Int, height: Int, out: FloatArray) {
-        commandsSync { it.readPixels(0, 0, width, height, out, AGReadKind.DEPTH) }
-    }
-    open fun readStencil(bitmap: Bitmap8) {
-        commandsSync { it.readPixels(0, 0, bitmap.width, bitmap.height, bitmap.data, AGReadKind.STENCIL) }
-    }
-    fun readDepth(out: FloatArray2): Unit = readDepth(out.width, out.height, out.data)
-    open fun readColorTexture(texture: AGTexture, x: Int = 0, y: Int = 0, width: Int = backWidth, height: Int = backHeight): Unit = TODO()
-    fun readColor(): Bitmap32 = Bitmap32(backWidth, backHeight, premultiplied = isRenderingToTexture).apply { readColor(this) }
-    fun readDepth(): FloatArray2 = FloatArray2(backWidth, backHeight) { 0f }.apply { readDepth(this) }
-
-    //////////////
-
-    internal var programCount = 0
-    // @TODO: Simplify this. Why do we need external? Maybe we could copy external textures into normal ones to avoid issues
-    //private val programs = FastIdentityMap<Program, FastIdentityMap<ProgramConfig, AgProgram>>()
-    //private val programs = HashMap<Program, FastIdentityMap<ProgramConfig, AgProgram>>()
-    //private val normalPrograms = FastIdentityMap<Program, AgProgram>()
-    //private val externalPrograms = FastIdentityMap<Program, AgProgram>()
-    private val normalPrograms = HashMap<Program, AGProgram>()
-    private val externalPrograms = HashMap<Program, AGProgram>()
-
-    @JvmOverloads
-    fun getProgram(program: Program, config: ProgramConfig = ProgramConfig.DEFAULT): AGProgram {
-        val map = if (config.externalTextureSampler) externalPrograms else normalPrograms
-        return map.getOrPut(program) { AGProgram(this, program, config) }
-    }
-
-    //////////////
-
-    val textureDrawer by lazy { AGTextureDrawer(this) }
-    val flipRenderTexture = true
-
-    fun drawTexture(tex: AGTexture) {
-        textureDrawer.draw(tex, -1f, +1f, +1f, -1f)
-    }
-
-    private val drawTempTexture: AGTexture by lazy { createTexture() }
-
-    protected val _globalState = AGGlobalState(checked)
-    var contextVersion: Int by _globalState::contextVersion
-    @PublishedApi internal val _list = _globalState.createList()
-
-    val multithreadedRendering: Boolean get() = false
-
-    @OptIn(ExperimentalContracts::class)
-    @Deprecated("Use commandsNoWait instead")
-    inline fun <T> commands(block: (AGList) -> T): T {
-        contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-        return commandsNoWait(block)
-    }
-
-    /**
-     * Queues commands, and wait for them to be executed synchronously
-     */
-    @OptIn(ExperimentalContracts::class)
-    inline fun <T> commandsSync(block: (AGList) -> T): T {
-        contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-        val result = block(_list)
-        if (multithreadedRendering) {
-            runBlockingNoJs { _list.sync() }
-        } else {
-            _executeList(_list)
-        }
-        return result
-    }
-
-    /**
-     * Queues commands without waiting
-     */
-    @OptIn(ExperimentalContracts::class)
-    inline fun <T> commandsNoWait(block: (AGList) -> T): T {
-        contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-        val result = block(_list)
-        if (!multithreadedRendering) _executeList(_list)
-        return result
-    }
-
-    /**
-     * Queues commands without waiting. In non-multithreaded mode, not even executing
-     */
-    @OptIn(ExperimentalContracts::class)
-    inline fun <T> commandsNoWaitNoExecute(block: (AGList) -> T): T {
-        contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-        return block(_list)
-    }
-
-    /**
-     * Queues commands and suspend until they are executed
-     */
-    @OptIn(ExperimentalContracts::class)
-    suspend inline fun <T> commandsSuspend(block: (AGList) -> T): T {
-        contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-        val result = block(_list)
-        if (!multithreadedRendering) {
-            _executeList(_list)
-        } else {
-            _list.sync()
-        }
-        return result
-    }
-
-    @PublishedApi
-    internal fun _executeList(list: AGList) = executeList(list)
-
-    protected open fun executeList(list: AGList) {
-    }
-
-    fun drawBitmap(bmp: Bitmap) {
-        drawTempTexture.upload(bmp, mipmaps = false)
-        drawTexture(drawTempTexture)
-        drawTempTexture.upload(Bitmaps.transparent)
-    }
+    open fun readToTexture(frameBuffer: AGFrameBufferBase, frameBufferInfo: AGFrameBufferInfo, texture: AGTexture, x: Int, y: Int, width: Int, height: Int): Unit = Unit
+    open fun readToMemory(frameBuffer: AGFrameBufferBase, frameBufferInfo: AGFrameBufferInfo, x: Int, y: Int, width: Int, height: Int, data: Any, kind: AGReadKind): Unit = Unit
+    protected open fun readStats(out: AGStats) = Unit
 
     private val stats = AGStats()
-
     fun getStats(out: AGStats = stats): AGStats {
-        out.texturesMemory = this.texturesMemory
-        out.texturesCount = this.texturesCount
-        out.buffersMemory = this.buffersMemory
-        out.buffersCount = this.buffersCount
-        out.renderBuffersMemory = this.renderBuffersMemory
-        out.renderBuffersCount = this.renderBufferCount
-        out.texturesCreated = this.createdTextureCount
-        out.texturesDeleted = this.deletedTextureCount
-        out.programCount = this.programCount
+        readStats(out)
         return out
     }
 }
+
+// @TODO: Reuse objects
+class AGToCommandChannel(val channel: SendChannel<AGCommand>) : AG() {
+    override fun execute(command: AGCommand) {
+        channel.trySend(command)
+    }
+}
+
+suspend fun AG.executeUntilFinish(flow: ReceiveChannel<AGCommand>) {
+    while (true) {
+        val command = flow.receive()
+        command.execute(this)
+        if (command is AGFinish) break
+    }
+}
+
+fun AG.execute(command: AGCommand) {
+    command.execute(this)
+}
+
+fun AG.draw(batch: AGBatch) {
+    batch.execute(this)
+}
+
+fun AG.draw(
+    frameBuffer: AGFrameBuffer,
+    vertexData: AGVertexArrayObject,
+    program: Program,
+    drawType: AGDrawType,
+    vertexCount: Int,
+    indices: AGBuffer? = null,
+    indexType: AGIndexType = AGIndexType.USHORT,
+    drawOffset: Int = 0,
+    blending: AGBlending = AGBlending.NORMAL,
+    uniforms: AGUniformValues = AGUniformValues.EMPTY,
+    stencilRef: AGStencilReference = AGStencilReference.DEFAULT,
+    stencilOpFunc: AGStencilOpFunc = AGStencilOpFunc.DEFAULT,
+    colorMask: AGColorMask = AGColorMask.ALL_ENABLED,
+    depthAndFrontFace: AGDepthAndFrontFace = AGDepthAndFrontFace.DEFAULT,
+    scissor: AGScissor = AGScissor.NIL,
+    cullFace: AGCullFace = AGCullFace.NONE,
+    instances: Int = 1
+): Unit = this.draw(
+    frameBuffer.base, frameBuffer.info, vertexData, program, drawType, vertexCount, indices, indexType, drawOffset, blending, uniforms, stencilRef, stencilOpFunc, colorMask, depthAndFrontFace, scissor, cullFace, instances
+)
+
+fun AG.clear(
+    frameBuffer: AGFrameBuffer,
+    color: RGBA = Colors.TRANSPARENT_BLACK,
+    depth: Float = 1f,
+    stencil: Int = 0,
+    clearColor: Boolean = true,
+    clearDepth: Boolean = true,
+    clearStencil: Boolean = true,
+    scissor: AGScissor = AGScissor.NIL,
+) {
+    clear(frameBuffer.base, frameBuffer.info, color, depth, stencil, clearColor, clearDepth, clearStencil, scissor)
+}
+
+fun AG.readPixel(frameBuffer: AGFrameBuffer, x: Int, y: Int): RGBA {
+    val rawColor = Bitmap32(1, 1, premultiplied = frameBuffer.isTexture).also { readColor(frameBuffer, it, x, y) }.ints[0]
+    return if (frameBuffer.isTexture) RGBAPremultiplied(rawColor).depremultiplied else RGBA(rawColor)
+}
+
+fun AG.readColor(frameBuffer: AGFrameBuffer, bitmap: Bitmap32, x: Int = 0, y: Int = 0) {
+    readToMemory(frameBuffer.base, frameBuffer.info, x, y, bitmap.width, bitmap.height, bitmap.ints, AGReadKind.COLOR)
+}
+fun AG.readDepth(frameBuffer: AGFrameBuffer, width: Int, height: Int, out: FloatArray) {
+    readToMemory(frameBuffer.base, frameBuffer.info, 0, 0, width, height, out, AGReadKind.DEPTH)
+}
+fun AG.readStencil(frameBuffer: AGFrameBuffer, bitmap: Bitmap8) {
+    readToMemory(frameBuffer.base, frameBuffer.info, 0, 0, bitmap.width, bitmap.height, bitmap.data, AGReadKind.STENCIL)
+}
+fun AG.readDepth(frameBuffer: AGFrameBuffer, out: FloatArray2): Unit = readDepth(frameBuffer, out.width, out.height, out.data)
+fun AG.readToTexture(frameBuffer: AGFrameBuffer, texture: AGTexture, x: Int = 0, y: Int = 0, width: Int = frameBuffer.width, height: Int = frameBuffer.height): Unit = TODO()
+fun AG.readColor(frameBuffer: AGFrameBuffer): Bitmap32 = Bitmap32(frameBuffer.width, frameBuffer.height, premultiplied = frameBuffer.isTexture).apply { readColor(frameBuffer, this) }
+fun AG.readDepth(frameBuffer: AGFrameBuffer): FloatArray2 = FloatArray2(frameBuffer.width, frameBuffer.height) { 0f }.apply { readDepth(frameBuffer, this) }

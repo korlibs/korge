@@ -135,8 +135,8 @@ internal class BindLengthComponent(override val view: BaseView) : UpdateComponen
         context.fontSize = 16.0 // @TODO: Can we store something in the views?
         context.viewportWidth = if (views.clipBorders || views.scaleAnchor != Anchor.TOP_LEFT) views.virtualWidthDouble else views.actualVirtualWidth.toDouble()
         context.viewportHeight = if (views.clipBorders || views.scaleAnchor != Anchor.TOP_LEFT) views.virtualHeightDouble else views.actualVirtualHeight.toDouble()
-        context.pixelRatio = views.ag.devicePixelRatio * scaleAvgInv
-        context.pixelsPerInch = views.ag.pixelsPerInch * scaleAvgInv
+        context.pixelRatio = views.devicePixelRatio * scaleAvgInv
+        context.pixelsPerInch = views.pixelsPerInch * scaleAvgInv
         for (horizontal in arrayOf(false, true)) {
             val size = if (horizontal) container.width else container.height
             context.size = size.toInt()

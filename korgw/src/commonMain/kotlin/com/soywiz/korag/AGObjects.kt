@@ -1,16 +1,13 @@
 package com.soywiz.korag
 
 import com.soywiz.kds.iterators.*
-import com.soywiz.klock.*
 import com.soywiz.klogger.*
 import com.soywiz.kmem.*
 import com.soywiz.kmem.unit.*
 import com.soywiz.korag.gl.*
-import com.soywiz.korag.shader.*
-import com.soywiz.korag.shader.gl.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korio.lang.*
-import kotlin.coroutines.*
+import com.soywiz.korma.geom.*
 
 internal interface AGNativeObject {
     fun markToDelete()
@@ -32,18 +29,8 @@ open class AGObject : Closeable {
     }
 }
 
-open class AGBuffer constructor(val ag: AG, val list: AGList) : AGObject() {
-    var estimatedMemoryUsage: ByteUnits = ByteUnits.fromBytes(0)
-    var dirty: Boolean = true
+class AGBuffer : AGObject() {
     internal var mem: Buffer? = null
-
-    init {
-        ag.buffers += this
-    }
-
-    open fun afterSetMem() {
-        estimatedMemoryUsage = ByteUnits.fromBytes(mem?.sizeInBytes ?: 0)
-    }
 
     fun upload(data: ByteArray, offset: Int = 0, length: Int = data.size - offset): AGBuffer = upload(Int8Buffer(data, offset, length).buffer)
     fun upload(data: FloatArray, offset: Int = 0, length: Int = data.size - offset): AGBuffer = upload(Float32Buffer(data, offset, length).buffer)
@@ -51,47 +38,12 @@ open class AGBuffer constructor(val ag: AG, val list: AGList) : AGObject() {
     fun upload(data: ShortArray, offset: Int = 0, length: Int = data.size - offset): AGBuffer = upload(Int16Buffer(data, offset, length).buffer)
     fun upload(data: Buffer, offset: Int, length: Int = data.size - offset): AGBuffer = upload(data.sliceWithSize(offset, length))
     fun upload(data: Buffer): AGBuffer {
-        mem = data
-        afterSetMem()
+        mem = data.clone()
         markAsDirty()
         return this
     }
-}
 
-class AGProgram(val ag: AG, val program: Program, val programConfig: ProgramConfig) : AGObject() {
-    var cachedVersion = -1
-    var programId = 0
-
-    fun ensure(list: AGList) {
-        if (cachedVersion != ag.contextVersion) {
-            val time = measureTime {
-                ag.programCount++
-                programId = list.createProgram(program, programConfig)
-                cachedVersion = ag.contextVersion
-            }
-            if (GlslGenerator.DEBUG_GLSL) {
-                Console.info("AG: Created program ${program.name} with id ${programId} in time=$time")
-            }
-        }
-    }
-
-    fun use(list: AGList) {
-        ensure(list)
-        list.useProgram(programId)
-    }
-
-    fun unuse(list: AGList) {
-        ensure(list)
-        list.useProgram(0)
-    }
-
-    fun close(list: AGList) {
-        if (programId != 0) {
-            ag.programCount--
-            list.deleteProgram(programId)
-        }
-        programId = 0
-    }
+    override fun toString(): String = "AGBuffer(${mem?.sizeInBytes ?: 0})"
 }
 
 data class AGTextureUnit constructor(
@@ -99,6 +51,7 @@ data class AGTextureUnit constructor(
     var texture: AGTexture? = null,
     var linear: Boolean = true,
     var trilinear: Boolean? = null,
+    var wrap: AGWrapMode = AGWrapMode.CLAMP_TO_EDGE,
 ) {
     fun set(texture: AGTexture?, linear: Boolean, trilinear: Boolean? = null) {
         this.texture = texture
@@ -107,39 +60,23 @@ data class AGTextureUnit constructor(
     }
 }
 
-// @TODO: Move most of this to AGQueueProcessorOpenGL, avoid cyclic dependency and simplify
-open class AGTexture constructor(
-    val ag: AG,
-    open val premultiplied: Boolean,
+class AGTexture(
+    val premultiplied: Boolean = true,
     val targetKind: AGTextureTargetKind = AGTextureTargetKind.TEXTURE_2D
 ) : AGObject(), Closeable {
     var isFbo: Boolean = false
     var requestMipmaps: Boolean = false
+
+    /** [MultiBitmap] for multiple bitmaps (ie. cube map) */
+    var bitmap: Bitmap? = null
     var mipmaps: Boolean = false; internal set
-    var source: AGBitmapSourceBase = AGSyncBitmapSource.NIL
-    internal var uploaded: Boolean = false
-    internal var generating: Boolean = false
-    internal var generated: Boolean = false
-    internal var tempBitmaps: List<Bitmap?>? = null
-    var ready: Boolean = false; internal set
-
-    var cachedVersion = ag.contextVersion
-    var texId = ag.commandsNoWait { it.createTexture() }
-
     var forcedTexId: ForcedTexId? = null
     val implForcedTexId: Int get() = forcedTexId?.forcedTexId ?: -1
     val implForcedTexTarget: AGTextureTargetKind get() = forcedTexId?.forcedTexTarget?.let { AGTextureTargetKind.fromGl(it) } ?: targetKind
-
-    init {
-        ag.createdTextureCount++
-        ag.textures += this
-    }
-
-    internal fun invalidate() {
-        uploaded = false
-        generating = false
-        generated = false
-    }
+    var estimatedMemoryUsage: ByteUnits = ByteUnits.fromBytes(0L)
+    val width: Int get() = bitmap?.width ?: 0
+    val height: Int get() = bitmap?.height ?: 0
+    val depth: Int get() = (bitmap as? MultiBitmap?)?.bitmaps?.size ?: 1
 
     private fun checkBitmaps(bmp: Bitmap) {
         if (!bmp.premultiplied) {
@@ -149,18 +86,17 @@ open class AGTexture constructor(
 
     fun upload(list: List<Bitmap>, width: Int, height: Int): AGTexture {
         list.fastForEach { checkBitmaps(it) }
-        return upload(AGSyncBitmapSourceList(rgba = true, width = width, height = height, depth = list.size) { list })
+        return upload(MultiBitmap(width, height, list))
     }
 
     fun upload(bmp: Bitmap?, mipmaps: Boolean = false): AGTexture {
         bmp?.let { checkBitmaps(it) }
         this.forcedTexId = (bmp as? ForcedTexId?)
-        return upload(
-            if (bmp != null) AGSyncBitmapSource(
-                rgba = bmp.bpp > 8,
-                width = bmp.width,
-                height = bmp.height
-            ) { bmp } else AGSyncBitmapSource.NIL, mipmaps)
+        this.bitmap = bmp
+        estimatedMemoryUsage = ByteUnits.fromBytes(width * height * depth * 4)
+        markAsDirty()
+        this.requestMipmaps = mipmaps
+        return this
     }
 
     fun upload(bmp: BitmapSlice<Bitmap>?, mipmaps: Boolean = false): AGTexture {
@@ -168,123 +104,98 @@ open class AGTexture constructor(
         return upload(bmp?.extract(), mipmaps)
     }
 
-    var estimatedMemoryUsage: ByteUnits = ByteUnits.fromBytes(0L)
-
-    fun upload(source: AGBitmapSourceBase, mipmaps: Boolean = false): AGTexture {
-        this.source = source
-        estimatedMemoryUsage = ByteUnits.fromBytes(source.width * source.height * source.depth * 4)
-        uploadedSource()
-        invalidate()
-        this.requestMipmaps = mipmaps
-        return this
+    fun doMipmaps(bitmap: Bitmap?, requestMipmaps: Boolean): Boolean {
+        val width = bitmap?.width ?: 0
+        val height = bitmap?.height ?: 0
+        return requestMipmaps && width.isPowerOfTwo && height.isPowerOfTwo
     }
 
-    protected open fun uploadedSource() {
-    }
+    override fun toString(): String = "AGTexture(pre=$premultiplied)"
+}
 
-    fun uploadAndBindEnsuring(bmp: Bitmap?, mipmaps: Boolean = false): AGTexture = upload(bmp, mipmaps).bindEnsuring()
-    fun uploadAndBindEnsuring(bmp: BitmapSlice<Bitmap>?, mipmaps: Boolean = false): AGTexture = upload(bmp, mipmaps).bindEnsuring()
-    fun uploadAndBindEnsuring(source: AGBitmapSourceBase, mipmaps: Boolean = false): AGTexture = upload(source, mipmaps).bindEnsuring()
+open class AGFrameBufferBase(val isMain: Boolean) : AGObject() {
+    val isTexture: Boolean get() = !isMain
+    val tex: AGTexture = AGTexture(premultiplied = true).also { it.isFbo = true }
+    var estimatedMemoryUsage: ByteUnits = ByteUnits.fromBytes(0)
 
-    fun doMipmaps(source: AGBitmapSourceBase, requestMipmaps: Boolean): Boolean {
-        return requestMipmaps && source.width.isPowerOfTwo && source.height.isPowerOfTwo
-    }
-
-    open fun bind(): Unit = ag.commandsNoWait { it.bindTexture(texId, implForcedTexTarget, implForcedTexId) }
-    open fun unbind(): Unit = ag.commandsNoWait { it.bindTexture(0, implForcedTexTarget) }
-
-    private var closed = false
     override fun close() {
-        if (!alreadyClosed) {
-            alreadyClosed = true
-            source = AGSyncBitmapSource.NIL
-            tempBitmaps = null
-            ag.deletedTextureCount++
-            ag.textures -= this
-            //Console.log("CLOSED TEXTURE: $texId")
-            //printTexStats()
-        }
-
-        if (!closed) {
-            closed = true
-            if (cachedVersion == ag.contextVersion) {
-                if (texId != 0) {
-                    ag.commandsNoWait { it.deleteTexture(texId) }
-                    texId = 0
-                }
-            } else {
-                //println("YAY! NO DELETE texture because in new context and would remove the wrong texture: $texId")
-            }
-        } else {
-            //println("ALREADY CLOSED TEXTURE: $texId")
-        }
+        tex.close()
+        //ag.frameRenderBuffers -= this
     }
 
-    override fun toString(): String = "AGOpengl.GlTexture($texId, pre=$premultiplied)"
-    fun manualUpload(): AGTexture {
-        uploaded = true
-        return this
-    }
-
-    fun bindEnsuring(): AGTexture {
-        ag.commandsNoWait { it.bindTextureEnsuring(this) }
-        return this
-    }
-
-    open fun actualSyncUpload(source: AGBitmapSourceBase, bmps: List<Bitmap?>?, requestMipmaps: Boolean) {
-        //this.bind() // Already bound
-        this.mipmaps = doMipmaps(source, requestMipmaps)
-    }
-
-    private var alreadyClosed = false
-
-    private fun printTexStats() {
-        //Console.log("create=$createdCount, delete=$deletedCount, alive=${createdCount - deletedCount}")
-    }
+    override fun toString(): String = "AGFrameBufferBase(isMain=$isMain)"
 }
 
-interface AGBitmapSourceBase {
-    val rgba: Boolean
-    val width: Int
-    val height: Int
-    val depth: Int get() = 1
-}
-
-class AGSyncBitmapSourceList(
-    override val rgba: Boolean,
-    override val width: Int,
-    override val height: Int,
-    override val depth: Int,
-    val gen: () -> List<Bitmap>?
-) : AGBitmapSourceBase {
+open class AGFrameBuffer(val base: AGFrameBufferBase) : Closeable {
+    constructor(isMain: Boolean = false) : this(AGFrameBufferBase(isMain))
+    val isTexture: Boolean get() = base.isTexture
+    val isMain: Boolean get() = base.isMain
+    val tex: AGTexture get() = base.tex
+    val info: AGFrameBufferInfo get() = AGFrameBufferInfo(0).withSize(width, height).withSamples(nsamples).withHasDepth(hasDepth).withHasStencil(hasStencil)
     companion object {
-        val NIL = AGSyncBitmapSourceList(true, 0, 0, 0) { null }
+        const val DEFAULT_INITIAL_WIDTH = 128
+        const val DEFAULT_INITIAL_HEIGHT = 128
     }
 
-    override fun toString(): String = "SyncBitmapSourceList(rgba=$rgba, width=$width, height=$height)"
-}
+    var nsamples: Int = 1; protected set
+    val hasStencilAndDepth: Boolean get() = hasDepth && hasStencil
+    var hasStencil: Boolean = true; protected set
+    var hasDepth: Boolean = true; protected set
 
-class AGSyncBitmapSource(
-    override val rgba: Boolean,
-    override val width: Int,
-    override val height: Int,
-    val gen: () -> Bitmap?
-) : AGBitmapSourceBase {
-    companion object {
-        val NIL = AGSyncBitmapSource(true, 0, 0) { null }
+    var x = 0
+    var y = 0
+    var width = DEFAULT_INITIAL_WIDTH
+    var height = DEFAULT_INITIAL_HEIGHT
+    var fullWidth = DEFAULT_INITIAL_WIDTH
+    var fullHeight = DEFAULT_INITIAL_HEIGHT
+    private val _scissor = RectangleInt()
+    var scissor: RectangleInt? = null
+
+    open fun setSize(width: Int, height: Int) {
+        setSize(0, 0, width, height)
     }
 
-    override fun toString(): String = "SyncBitmapSource(rgba=$rgba, width=$width, height=$height)"
-}
+    open fun setSize(x: Int, y: Int, width: Int, height: Int, fullWidth: Int = width, fullHeight: Int = height) {
+        if (this.x == x && this.y == y && this.width == width && this.height == height && this.fullWidth == fullWidth && this.fullHeight == fullHeight) return
+        tex.upload(NullBitmap(width, height))
 
-class AGAsyncBitmapSource(
-    val coroutineContext: CoroutineContext,
-    override val rgba: Boolean,
-    override val width: Int,
-    override val height: Int,
-    val gen: suspend () -> Bitmap?
-) : AGBitmapSourceBase {
-    companion object {
-        val NIL = AGAsyncBitmapSource(EmptyCoroutineContext, true, 0, 0) { null }
+        base.estimatedMemoryUsage = ByteUnits.fromBytes(fullWidth * fullHeight * (4 + 4))
+
+        this.x = x
+        this.y = y
+        this.width = width
+        this.height = height
+        this.fullWidth = fullWidth
+        this.fullHeight = fullHeight
+        markAsDirty()
     }
+
+    fun scissor(scissor: RectangleInt?) {
+        this.scissor = scissor?.let { _scissor.setTo(it) }
+    }
+
+    override fun close() {
+        base.close()
+        //ag.frameRenderBuffers -= this
+    }
+
+
+    fun setSamples(samples: Int) {
+        if (this.nsamples == samples) return
+        nsamples = samples
+        markAsDirty()
+    }
+
+    fun setExtra(hasDepth: Boolean = true, hasStencil: Boolean = true) {
+        if (this.hasDepth == hasDepth && this.hasStencil == hasStencil) return
+        this.hasDepth = hasDepth
+        this.hasStencil = hasStencil
+        markAsDirty()
+    }
+
+    private fun markAsDirty() {
+        //base.markAsDirty()
+    }
+
+    override fun toString(): String = "GlFrameBuffer($width, $height)"
 }

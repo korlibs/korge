@@ -1,22 +1,14 @@
 package com.soywiz.korgw
 
-import com.soywiz.kgl.KmlGl
-import com.soywiz.kgl.KmlGlNative
-import com.soywiz.korag.gl.AGOpengl
-import com.soywiz.korev.Key
-import com.soywiz.korev.KeyEvent
-import com.soywiz.korev.MouseButton
-import com.soywiz.korev.MouseEvent
+import com.soywiz.kgl.*
+import com.soywiz.korag.gl.*
+import com.soywiz.korev.*
 import com.soywiz.korgw.sdl2.*
 
 private val sdl by lazy { SDL() }
 
-class SDLAg(window: SdlGameWindowNative, override val gl: KmlGl = KmlGlNative()) : AGOpengl() {
-    override val nativeComponent: Any = window
-}
-
 class SdlGameWindowNative : EventLoopGameWindow() {
-    override val ag: SDLAg by lazy { SDLAg(this) }
+    override val ag: AGOpengl = AGOpengl(KmlGlNative())
 
     var w: SDL.Window? = null
     var r: SDL.Renderer? = null

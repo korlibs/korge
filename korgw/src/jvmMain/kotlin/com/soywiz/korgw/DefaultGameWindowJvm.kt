@@ -1,10 +1,7 @@
 package com.soywiz.korgw
 
 import SdlGameWindowJvm
-import com.soywiz.korag.AG
-import com.soywiz.korag.AGConfig
-import com.soywiz.korag.AGFactory
-import com.soywiz.korag.AGWindow
+import com.soywiz.korag.*
 import com.soywiz.korev.*
 import com.soywiz.korgw.awt.AwtGameWindow
 //import com.soywiz.korgw.jogl.JoglGameWindow
@@ -38,10 +35,12 @@ actual fun CreateDefaultGameWindow(config: GameWindowCreationConfig): GameWindow
         ?: System.getProperty("korgw.log.opengl")?.toBooleanOrNull()
         ?: false
 
+    val realConfig = config.copy(checkGl = checkGl, logGl = logGl)
+
     return when (engine) {
         "default" -> when {
             //OS.isLinux -> X11GameWindow(checkGl)
-            else -> AwtGameWindow(checkGl, logGl, config)
+            else -> AwtGameWindow(realConfig)
         }
         "jna" -> when {
             OS.isMac -> {
@@ -49,19 +48,19 @@ actual fun CreateDefaultGameWindow(config: GameWindowCreationConfig): GameWindow
                     isOSXMainThread -> MacGameWindow(checkGl, logGl)
                     else -> {
                         println("WARNING. Slower startup: NOT in main thread! Using AWT! (on mac use -XstartOnFirstThread when possible)")
-                        AwtGameWindow(checkGl, logGl, config)
+                        AwtGameWindow(realConfig)
                     }
                 }
             }
             //OS.isLinux -> X11GameWindow(checkGl)
-            OS.isLinux -> AwtGameWindow(checkGl, logGl, config)
+            OS.isLinux -> AwtGameWindow(realConfig)
             //OS.isWindows -> com.soywiz.korgw.win32.Win32GameWindow()
-            OS.isWindows -> AwtGameWindow(checkGl, logGl, config)
+            OS.isWindows -> AwtGameWindow(realConfig)
             else -> X11GameWindow(checkGl)
         }
         "awt" -> when {
             OS.isMac && isOSXMainThread -> MacGameWindow(checkGl,logGl)
-            else -> AwtGameWindow(checkGl, logGl, config)
+            else -> AwtGameWindow(realConfig)
         }
         //"jogl" -> {
         //    if (isOSXMainThread) {
@@ -120,7 +119,7 @@ object TestGameWindow {
             gameWindow.loop {
                 val ag = gameWindow.ag
                 gameWindow.onRenderEvent {
-                    ag.clear(RGBA(64, 96, step % 256, 255))
+                    ag.clear(ag.mainFrameBuffer, RGBA(64, 96, step % 256, 255))
                     step++
                 }
                 //println("HELLO")

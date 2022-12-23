@@ -170,6 +170,8 @@ open class Animator @PublishedApi internal constructor(
         return this
     }
 
+    val isActive: Boolean get() = updater != null && !rootAnimationNode.isEmpty()
+
     /**
      * Finishes all the pending animations and sets all the properties to their final state.
      */

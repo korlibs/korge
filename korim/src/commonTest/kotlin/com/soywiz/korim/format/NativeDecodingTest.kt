@@ -43,17 +43,20 @@ class NativeDecodingTest {
 
     @Test
     fun testReadAsumePremultiplied() = suspendTest {
-        for (preferKotlinDecoder in listOf(false, true)) {
-            val atlas = resourcesVfs["pma/spineboy-pma.atlas"]
-                .readAtlas(ImageDecodingProps(premultiplied = false, asumePremultiplied = true, preferKotlinDecoder = preferKotlinDecoder))
-            val bitmaps = atlas.textures.map { it.value.bmp }.distinct()
-            assertEquals(1, bitmaps.size)
-            val bitmap = bitmaps[0]
-            val color1 = bitmap.getRgbaRaw(190, 50)
-            val color = if (color1 == Colors["#1c2a6d6e"]) Colors["#1c296d6e"] else color1 // Accept premultiplication lossy rounding error: https://stackoverflow.com/questions/43412842/reconstruct-original-16-bit-raw-pixel-data-from-the-html5-canvas
-            assertEquals(Colors["#1c296d6e"] to true, color to bitmap.premultiplied)
-            //assertEquals(Colors["#1c2a6d6e"] to true, bitmaps[0].getRgba(190, 50) to bitmaps[0].premultiplied)
-            //assertEquals(Colors["#1c2a6d6e"].asPremultiplied(), bitmaps[0].getRgbaPremultiplied(190, 50))
+        RegisteredImageFormats.temporalRegister(PNG) {
+            for (preferKotlinDecoder in listOf(false, true)) {
+                val atlas = resourcesVfs["pma/spineboy-pma.atlas"]
+                    .readAtlas(ImageDecodingProps(premultiplied = false, asumePremultiplied = true, preferKotlinDecoder = preferKotlinDecoder))
+                val bitmaps = atlas.textures.map { it.value.bmp }.distinct()
+                assertEquals(1, bitmaps.size)
+                val bitmap = bitmaps[0]
+                val color1 = bitmap.getRgbaRaw(190, 50)
+                val color =
+                    if (color1 == Colors["#1c2a6d6e"]) Colors["#1c296d6e"] else color1 // Accept premultiplication lossy rounding error: https://stackoverflow.com/questions/43412842/reconstruct-original-16-bit-raw-pixel-data-from-the-html5-canvas
+                assertEquals(Colors["#1c296d6e"] to true, color to bitmap.premultiplied)
+                //assertEquals(Colors["#1c2a6d6e"] to true, bitmaps[0].getRgba(190, 50) to bitmaps[0].premultiplied)
+                //assertEquals(Colors["#1c2a6d6e"].asPremultiplied(), bitmaps[0].getRgbaPremultiplied(190, 50))
+            }
         }
     }
 

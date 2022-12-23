@@ -43,7 +43,7 @@ class MaskedView : Container() {
                     setMaskState(ctx, MaskStates.STATE_NONE)
                     //println("ctx.stencilIndex: ${ctx.stencilIndex}")
                     ctx.stencilIndex = 0
-                    ctx.ag.clear(clearColor = false, clearDepth = false, clearStencil = true, stencil = ctx.stencilIndex)
+                    ctx.clear(clearColor = false, clearDepth = false, clearStencil = true, stencil = ctx.stencilIndex)
                 }
             }
         }

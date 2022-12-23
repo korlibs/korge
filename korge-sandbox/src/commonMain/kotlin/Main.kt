@@ -27,7 +27,7 @@ suspend fun main() = Korge(
     //forceRenderEveryFrame = true
     //debugAg = true,
 ) {
-    //uiButton("HELLO WORLD!", width = 300.0).position(100, 100); return@Korge
+    //uiButton("HELLO WORLD!", width = 300.0).position(0, 0); return@Korge
     //solidRect(100, 100, Colors.RED).xy(300, 300).filters(BlurFilter()); return@Korge
 
     demoSelector(
@@ -40,7 +40,9 @@ suspend fun main() = Korge(
         //Demo(::MainAnimations),
         //Demo(::MainCache),
         //Demo(::MainEditor),
-        Demo(::MainUI),
+        //Demo(::MainUI),
+        //Demo(::MainBezier),
+        Demo(::MainBunnymark),
         //Demo(::MainFilters),
         //Demo(::MainGpuVectorRendering),
         //Demo(::MainTextMetrics),

@@ -39,21 +39,21 @@ open class ViewsForTesting(
         override fun now(): DateTime = time
     }
 	val dispatcher = FastGameWindowCoroutineDispatcher()
-    class TestGameWindow(initialSize: SizeInt, val dispatcher: FastGameWindowCoroutineDispatcher) : GameWindowLog() {
+    inner class TestGameWindow(initialSize: SizeInt, val dispatcher: FastGameWindowCoroutineDispatcher) : GameWindowLog() {
+        override val devicePixelRatio: Double get() = this@ViewsForTesting.devicePixelRatio
         override var width: Int = initialSize.width
         override var height: Int = initialSize.height
         override val coroutineDispatcher = dispatcher
     }
-    open fun filterLogDraw(str: String, kind: LogBaseAG.Kind): Boolean {
-        return kind != LogBaseAG.Kind.SHADER
+    open fun filterLogDraw(str: String, kind: AGBaseLog.Kind): Boolean {
+        return kind != AGBaseLog.Kind.SHADER
     }
 
 	val gameWindow = TestGameWindow(windowSize, dispatcher)
     val ag: AG by lazy { createAg() }
 
     open fun createAg(): AG {
-        return object : LogAG(windowSize.width, windowSize.height) {
-            override val devicePixelRatio: Double get() = this@ViewsForTesting.devicePixelRatio
+        return object : AGLog(windowSize.width, windowSize.height) {
             override fun log(str: String, kind: Kind) {
                 if (this@ViewsForTesting.log && filterLogDraw(str, kind)) {
                     super.log(str, kind)
@@ -68,10 +68,11 @@ open class ViewsForTesting(
         viewsLog.views.virtualHeight = virtualSize.height
         viewsLog.views.resized(windowSize.width, windowSize.height)
     } }
+
 	val injector get() = viewsLog.injector
-    val logAgOrNull get() = ag as? LogAG?
+    val logAgOrNull get() = ag as? AGLog?
     val logAg get() = logAgOrNull ?: error("Must call ViewsForTesting(log = true) to access logAg")
-    val dummyAg get() = ag as? DummyAG?
+    val dummyAg get() = ag as? AGDummy?
 	val input get() = viewsLog.input
 	val views get() = viewsLog.views
     val stage get() = views.stage
@@ -79,10 +80,7 @@ open class ViewsForTesting(
 	val mouse: IPoint get() = input.mouse
 
     fun resizeGameWindow(width: Int, height: Int, scaleMode: ScaleMode = views.scaleMode, scaleAnchor: Anchor = views.scaleAnchor) {
-        logAgOrNull?.backWidth = width
-        logAgOrNull?.backHeight = height
-        dummyAg?.backWidth = width
-        dummyAg?.backHeight = height
+        ag.mainFrameBuffer.setSize(0, 0, width, height)
         gameWindow.width = width
         gameWindow.height = height
         views.scaleAnchor = scaleAnchor

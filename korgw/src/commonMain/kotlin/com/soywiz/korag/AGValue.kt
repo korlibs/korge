@@ -96,6 +96,8 @@ class AGUniformValues(val capacity: Int = 8 * 1024) {
         operator fun invoke(block: (AGUniformValues) -> Unit): AGUniformValues = AGUniformValues().also(block)
         fun valueToString(value: AGValue): String = value.toString()
     }
+
+    override fun toString(): String = "AGUniformValues(${values.joinToString(", ") { "${it.uniform.name}=" + valueToString(it) }})"
 }
 
 open class AGValue(val type: VarType, val arrayCount: Int, val data: Buffer, var nativeValue: Any?) {
@@ -129,8 +131,8 @@ open class AGValue(val type: VarType, val arrayCount: Int, val data: Buffer, var
     }
 
     fun set(value: Float) = when (kind) {
-        VarKind.TFLOAT -> data.setFloat32(0, value)
-        else -> set(value.toInt())
+        VarKind.TFLOAT -> f32[0] = value
+        else -> i32[0] = value.toInt()
     }
 
     fun set(value: Double) = set(value.toFloat())
@@ -138,30 +140,38 @@ open class AGValue(val type: VarType, val arrayCount: Int, val data: Buffer, var
     fun set(v0: Double, v1: Double, v2: Double) = set(v0.toFloat(), v1.toFloat(), v2.toFloat())
     fun set(v0: Double, v1: Double, v2: Double, v3: Double) = set(v0.toFloat(), v1.toFloat(), v2.toFloat(), v3.toFloat())
 
-    fun set(v0: Float, v1: Float) {
-        tempFloatsLock {
-            tempFloats[0] = v0
-            tempFloats[1] = v1
-            set(tempFloats, 0, 2)
+    fun set(v0: Float, v1: Float) = _set(v0, v1, 0f, 0f, 2)
+    fun set(v0: Float, v1: Float, v2: Float) = _set(v0, v1, v2, 0f, 3)
+    fun set(v0: Float, v1: Float, v2: Float, v3: Float) = _set(v0, v1, v2, v3, 4)
+
+    private fun _set(v0: Float, v1: Float, v2: Float, v3: Float, size: Int = 4) {
+        val msize = min(size, this.data.size / 4)
+        if (kind == VarKind.TFLOAT) {
+            if (msize >= 1) f32[0] = v0
+            if (msize >= 2) f32[1] = v1
+            if (msize >= 3) f32[2] = v2
+            if (msize >= 4) f32[3] = v3
+        } else {
+            if (msize >= 1) i32[0] = v0.toInt()
+            if (msize >= 2) i32[1] = v1.toInt()
+            if (msize >= 3) i32[2] = v2.toInt()
+            if (msize >= 4) i32[3] = v3.toInt()
         }
     }
 
-    fun set(v0: Float, v1: Float, v2: Float) {
-        tempFloatsLock {
-            tempFloats[0] = v0
-            tempFloats[1] = v1
-            tempFloats[2] = v2
-            set(tempFloats, 0, 3)
+    private inline fun _setFloatArray(size: Int, gen: (index: Int) -> Float) {
+        if (kind == VarKind.TFLOAT) {
+            for (n in 0 until min(size, this.f32.size)) f32[n] = gen(n)
+        } else {
+            for (n in 0 until min(size, this.i32.size)) i32[n] = gen(n).toInt()
         }
     }
 
-    fun set(v0: Float, v1: Float, v2: Float, v3: Float) {
-        tempFloatsLock {
-            tempFloats[0] = v0
-            tempFloats[1] = v1
-            tempFloats[2] = v2
-            tempFloats[3] = v3
-            set(tempFloats, 0, 4)
+    private inline fun _setIntArray(size: Int, gen: (index: Int) -> Int) {
+        if (kind == VarKind.TFLOAT) {
+            for (n in 0 until min(size, this.f32.size)) f32[n] = gen(n).toFloat()
+        } else {
+            for (n in 0 until min(size, this.i32.size)) i32[n] = gen(n)
         }
     }
 
@@ -174,12 +184,8 @@ open class AGValue(val type: VarType, val arrayCount: Int, val data: Buffer, var
     fun set(value: RGBAPremultiplied) = set(value.rf, value.gf, value.bf, value.af)
     fun set(mat: Matrix3D) = tempMatrixLock { set(tempMatrix.also { it[0] = mat }) }
 
-
     fun set(value: BooleanArray, offset: Int = 0, size: Int = value.size - offset) {
-        tempIntsLock {
-            for (n in 0 until size) tempInts[n] = value[offset + n].toInt()
-            set(tempInts, 0, size)
-        }
+        _setIntArray(size) { value[offset + it].toInt() }
     }
 
     fun set(value: IntArray, offset: Int = 0, size: Int = value.size - offset) {
@@ -237,8 +243,6 @@ open class AGValue(val type: VarType, val arrayCount: Int, val data: Buffer, var
     override fun hashCode(): Int = data.hashCode()
 
     companion object {
-        private val tempIntsLock = NonRecursiveLock()
-        private val tempInts = IntArray(64 * (4 * 4))
         private val tempFloatsLock = NonRecursiveLock()
         private val tempFloats = FloatArray(64 * (4 * 4))
         private val tempMatrixLock = NonRecursiveLock()

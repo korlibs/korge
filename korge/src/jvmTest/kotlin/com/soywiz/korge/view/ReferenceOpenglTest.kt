@@ -15,7 +15,7 @@ import org.junit.*
 
 class ReferenceOpenglTest : ViewsForTesting() {
     val gl = KmlGlProxyLogToString()
-    override fun createAg(): AG = SimpleAGOpengl(gl)
+    override fun createAg(): AG = AGOpengl(gl)
 
     @Test
     fun testOpengl() = viewsTest {

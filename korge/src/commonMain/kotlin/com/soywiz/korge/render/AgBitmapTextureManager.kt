@@ -101,7 +101,7 @@ class AgBitmapTextureManager(
             textureInfoPool.alloc().also {
                 val base = it.textureBase
                 base.version = -1
-                base.base = ag.createTexture(bitmap.premultiplied, targetKind = when (bitmap) {
+                base.base = AGTexture(bitmap.premultiplied, targetKind = when (bitmap) {
                     is MultiBitmap -> AGTextureTargetKind.TEXTURE_CUBE_MAP
                     else -> AGTextureTargetKind.TEXTURE_2D
                 })

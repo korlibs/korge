@@ -1,34 +1,16 @@
 package com.soywiz.korge.view.vector
 
-import com.soywiz.kmem.toInt
 import com.soywiz.korag.*
-import com.soywiz.korag.shader.Attribute
-import com.soywiz.korag.shader.Operand
-import com.soywiz.korag.shader.Precision
-import com.soywiz.korag.shader.Program
-import com.soywiz.korag.shader.Uniform
-import com.soywiz.korag.shader.VarType
-import com.soywiz.korag.shader.Varying
-import com.soywiz.korag.shader.VertexLayout
-import com.soywiz.korge.internal.KorgeInternal
-import com.soywiz.korge.render.BatchBuilder2D
+import com.soywiz.korag.shader.*
+import com.soywiz.korge.internal.*
 import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.RgbaPremultipliedArray
-import com.soywiz.korim.color.toVector3D
-import com.soywiz.korim.paint.BitmapPaint
-import com.soywiz.korim.paint.ColorPaint
-import com.soywiz.korim.paint.GradientKind
-import com.soywiz.korim.paint.GradientPaint
-import com.soywiz.korim.paint.NonePaint
-import com.soywiz.korim.paint.Paint
-import com.soywiz.korma.geom.Matrix
-import com.soywiz.korma.geom.Vector3D
-import com.soywiz.korma.geom.toMatrix3D
-import kotlin.math.PI
+import com.soywiz.korim.color.*
+import com.soywiz.korim.paint.*
+import com.soywiz.korma.geom.*
+import kotlin.math.*
 
 @KorgeInternal
 object GpuShapeViewPrograms {
-    val u_InputPre = Uniform("u_InputPre", VarType.Float1)
     val u_ProgramType = Uniform("u_ProgramType", VarType.Float1)
     //val u_LineWidth = Uniform("u_LineWidth", VarType.Float1)
     val u_Color = Uniform("u_Color", VarType.Float4)
@@ -151,8 +133,6 @@ object GpuShapeViewPrograms {
             // Update global alpha
             val aaAlpha = 1f.lit - smoothstep(v_MaxDist * u_GlobalPixelScale - 1.5f.lit, v_MaxDist * u_GlobalPixelScale, abs(v_Dist * u_GlobalPixelScale))
             SET(out, out * u_ColorMul * u_GlobalAlpha * aaAlpha)
-
-            BatchBuilder2D.DO_OUTPUT_FROM(this, out)
         },
     )
 

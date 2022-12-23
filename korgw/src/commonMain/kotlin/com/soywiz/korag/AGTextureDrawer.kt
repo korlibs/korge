@@ -5,9 +5,9 @@ import com.soywiz.korag.shader.*
 
 class AGTextureDrawer(val ag: AG) {
     val VERTEX_COUNT = 4
-    val vertices = ag.createBuffer()
+    val vertices = AGBuffer()
     val vertexLayout = VertexLayout(DefaultShaders.a_Pos, DefaultShaders.a_Tex)
-    val vertexData = AGVertexArrayObject(AGVertexData(vertices, vertexLayout))
+    val vertexData = AGVertexArrayObject(AGVertexData(vertexLayout, vertices))
     val verticesData = Buffer(VERTEX_COUNT * vertexLayout.totalSize)
     val program = Program(VertexShader {
         DefaultShaders {
@@ -30,7 +30,7 @@ class AGTextureDrawer(val ag: AG) {
         verticesData.setFloat32(offset + 3, ty)
     }
 
-    fun draw(tex: AGTexture, left: Float, top: Float, right: Float, bottom: Float) {
+    fun draw(frameBuffer: AGFrameBuffer, tex: AGTexture, left: Float, top: Float, right: Float, bottom: Float) {
         //tex.upload(Bitmap32(32, 32) { x, y -> Colors.RED })
         uniforms[DefaultShaders.u_Tex] = AGTextureUnit(0, tex)
 
@@ -45,10 +45,11 @@ class AGTextureDrawer(val ag: AG) {
         setVertex(3, right, bottom, texRight, texBottom)
 
         vertices.upload(verticesData)
-        ag.drawV2(
+        ag.draw(
+            frameBuffer,
             vertexData = vertexData,
             program = program,
-            type = AGDrawType.TRIANGLE_STRIP,
+            drawType = AGDrawType.TRIANGLE_STRIP,
             vertexCount = 4,
             uniforms = uniforms,
             blending = AGBlending.NONE

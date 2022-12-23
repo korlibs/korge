@@ -1,14 +1,9 @@
 package com.soywiz.korio.serialization.yaml
 
-import com.soywiz.korio.dynamic.mapper.ObjectMapper
-import com.soywiz.korio.dynamic.serialization.decodeToType
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import kotlin.test.*
 
 // http://nodeca.github.io/js-yaml/
 class YamlTest {
-	val mapper = ObjectMapper()
-
 	@kotlin.test.Test
 	fun basic() {
 		assertEquals("str", Yaml.read("str"))
@@ -143,21 +138,6 @@ class YamlTest {
 
 	enum class MyEnum { DEMO, HELLO, WORLD }
 	data class ClassWithEnum(val size: Int = 70, val a: MyEnum = MyEnum.HELLO)
-
-	@kotlin.test.Test
-	fun decodeToType() {
-		mapper.registerEnum(MyEnum.values())
-		mapper.registerType { ClassWithEnum(it["size"]?.gen() ?: 70, it["a"]?.gen() ?: MyEnum.HELLO) }
-
-		assertEquals(
-			ClassWithEnum(a = MyEnum.WORLD),
-			Yaml.decodeToType<ClassWithEnum>(
-				"""
-				|a: WORLD
-			""".trimMargin(), mapper
-			)
-		)
-	}
 
     @Test
     fun testChunk() {

@@ -77,8 +77,8 @@ class LineRenderBatcher(
 
     internal val uniforms get() = ctx.uniforms
 
-    private val vertexBuffer = ag.createBuffer()
-    private val vertexData = AGVertexArrayObject(AGVertexData(vertexBuffer, LAYOUT))
+    private val vertexBuffer = AGBuffer()
+    private val vertexData = AGVertexArrayObject(AGVertexData(LAYOUT, vertexBuffer))
     private val program = Program(VERTEX, FRAGMENT)
     private val maxVertexCount = 1024
     private val vertices = Buffer.allocDirect(6 * 4 * maxVertexCount)
@@ -169,10 +169,11 @@ class LineRenderBatcher(
             ctx.updateStandardUniforms()
             //projMat.setToOrtho(tempRect.setBounds(0, 0, ag.backWidth, ag.backHeight), -1f, 1f)
 
-            ag.drawV2(
+            ag.draw(
+                ctx.currentFrameBuffer,
                 vertexData,
                 program = program,
-                type = AGDrawType.LINES,
+                drawType = AGDrawType.LINES,
                 vertexCount = vertexCount,
                 uniforms = uniforms,
                 blending = blendMode.factors

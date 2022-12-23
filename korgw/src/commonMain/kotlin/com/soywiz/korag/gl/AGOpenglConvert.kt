@@ -51,14 +51,6 @@ fun AGIndexType.toGl(): Int = when (this) {
     else -> unreachable
 }
 
-fun AGEnable.toGl(): Int = when (this) {
-    AGEnable.BLEND -> KmlGl.BLEND
-    AGEnable.CULL_FACE -> KmlGl.CULL_FACE
-    AGEnable.DEPTH -> KmlGl.DEPTH_TEST
-    AGEnable.SCISSOR -> KmlGl.SCISSOR_TEST
-    AGEnable.STENCIL -> KmlGl.STENCIL_TEST
-}
-
 fun AGBlendEquation.toGl(): Int = when (this) {
     AGBlendEquation.ADD -> KmlGl.FUNC_ADD
     AGBlendEquation.SUBTRACT -> KmlGl.FUNC_SUBTRACT
@@ -105,6 +97,7 @@ fun AGTextureTargetKind.toGl(): Int = when (this) {
     AGTextureTargetKind.TEXTURE_3D -> KmlGl.TEXTURE_3D
     AGTextureTargetKind.TEXTURE_CUBE_MAP -> KmlGl.TEXTURE_CUBE_MAP
     AGTextureTargetKind.EXTERNAL_TEXTURE -> KmlGl.TEXTURE_EXTERNAL_OES
+    else -> this.ordinal
 }
 
 fun AGTextureTargetKind.Companion.fromGl(value: Int): AGTextureTargetKind = when (value) {
@@ -119,6 +112,13 @@ fun AGTextureTargetKind.Companion.fromGl(value: Int): AGTextureTargetKind = when
     KmlGl.TEXTURE_CUBE_MAP_POSITIVE_Z -> AGTextureTargetKind.TEXTURE_CUBE_MAP
     KmlGl.TEXTURE_CUBE_MAP_NEGATIVE_Z -> AGTextureTargetKind.TEXTURE_CUBE_MAP
     else -> TODO("Unknown TextureTargetKind: $value")
+}
+
+fun AGWrapMode.toGl(): Int = when (this) {
+    AGWrapMode.CLAMP_TO_EDGE -> KmlGl.CLAMP_TO_EDGE
+    AGWrapMode.REPEAT -> KmlGl.REPEAT
+    AGWrapMode.MIRRORED_REPEAT -> KmlGl.MIRRORED_REPEAT
+    else -> KmlGl.CLAMP_TO_EDGE
 }
 
 fun VarType.toGl(): Int = when (this.kind) {

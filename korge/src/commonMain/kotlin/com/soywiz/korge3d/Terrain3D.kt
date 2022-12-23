@@ -61,7 +61,7 @@ class Terrain3D(
 
 
     private val uniformValues = AGUniformValues()
-    private val rs = AGRenderState.DEFAULT.withDepthFunc(depthFunc = AGCompareMode.LESS_EQUAL)
+    private val rs = AGDepthAndFrontFace.DEFAULT.withDepthFunc(depthFunc = AGCompareMode.LESS_EQUAL)
     private val tempMat1 = Matrix3D()
     private val tempMat2 = Matrix3D()
     private val tempMat3 = Matrix3D()
@@ -134,16 +134,17 @@ class Terrain3D(
 
     override fun render(ctx: RenderContext3D) {
         val ag = ctx.ag
-        val indexBuffer = ag.createBuffer()
+        val indexBuffer = AGBuffer() // @TODO: This is wrong
         ctx.useDynamicVertexData(mesh.vertexBuffers) { vertexData ->
             indexBuffer.upload(mesh.indexBuffer)
             Shaders3D.apply {
                 val meshMaterial = mesh.material
-                ag.drawV2(
+                ag.draw(
+                    ctx.rctx.currentFrameBuffer,
                     vertexData = vertexData,
                     indices = indexBuffer,
                     indexType = mesh.indexType,
-                    type = mesh.drawType,
+                    drawType = mesh.drawType,
                     program = mesh.program ?: ctx.shaders.getProgram3D(
                         ctx.lights.size.clamp(0, 4),
                         mesh.maxWeights,
@@ -182,9 +183,10 @@ class Terrain3D(
                             )
                         }
                     },
-                    renderState = rs
+                    depthAndFrontFace = rs
                 )
             }
         }
+        indexBuffer.close()
     }
 }

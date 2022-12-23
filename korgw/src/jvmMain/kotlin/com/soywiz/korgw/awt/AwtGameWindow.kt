@@ -1,13 +1,13 @@
 package com.soywiz.korgw.awt
 
 import com.soywiz.kmem.*
+import com.soywiz.korag.gl.*
 import com.soywiz.korev.*
 import com.soywiz.korgw.*
-import com.soywiz.korgw.internal.*
-import com.soywiz.korgw.internal.MicroDynamic.invoke
 import com.soywiz.korgw.platform.*
 import com.soywiz.korim.awt.*
 import com.soywiz.korim.bitmap.*
+import com.soywiz.korio.dynamic.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
@@ -19,8 +19,7 @@ import java.io.*
 import javax.imageio.*
 import javax.swing.*
 
-class AwtGameWindow(checkGl: Boolean, logGl: Boolean, config: GameWindowCreationConfig) : BaseAwtGameWindow(config) {
-    override val ag: AwtAg = AwtAg(this, checkGl, logGl)
+class AwtGameWindow(config: GameWindowCreationConfig) : BaseAwtGameWindow(AGOpenglAWT(config)) {
 
     /*
     fun JFrame.isFullScreen(): Boolean {
@@ -106,9 +105,7 @@ class AwtGameWindow(checkGl: Boolean, logGl: Boolean, config: GameWindowCreation
                     runCatching {
                         val awtImage = ImageIO.read(awtImageURL)
                         kotlin.runCatching {
-                            MicroDynamic {
-                                getClass("java.awt.Taskbar").invoke("getTaskbar").invoke("setIconImage", awtImage)
-                            }
+                            Dyn.global["java.awt.Taskbar"].dynamicInvoke("getTaskbar").dynamicInvoke("setIconImage", awtImage)
                         }
                         frame.iconImage = awtImage.getScaledInstance(32, 32, Image.SCALE_SMOOTH)
                     }
@@ -136,10 +133,8 @@ class AwtGameWindow(checkGl: Boolean, logGl: Boolean, config: GameWindowCreation
                 }
                 */
                 try {
-                    MicroDynamic {
-                        getClass("com.apple.eawt.FullScreenUtilities").invoke("setWindowCanFullScreen", frame, true)
-                        //getClass("com.apple.eawt.FullScreenUtilities").invoke("addFullScreenListenerTo", frame, listener)
-                    }
+                    Dyn.global["com.apple.eawt.FullScreenUtilities"].dynamicInvoke("setWindowCanFullScreen", frame, true)
+                    //Dyn.global["com.apple.eawt.FullScreenUtilities"].invoke("addFullScreenListenerTo", frame, listener)
                 } catch (e: Throwable) {
                     if (e::class.qualifiedName != "java.lang.reflect.InaccessibleObjectException") {
                         e.printStackTrace()
@@ -180,9 +175,7 @@ class AwtGameWindow(checkGl: Boolean, logGl: Boolean, config: GameWindowCreation
             val awtImage = value?.toAwt()
             if (awtImage != null) {
                 kotlin.runCatching {
-                    MicroDynamic {
-                        getClass("java.awt.Taskbar").invoke("getTaskbar").invoke("setIconImage", awtImage)
-                    }
+                    Dyn.global["java.awt.Taskbar"].dynamicInvoke("getTaskbar").dynamicInvoke("setIconImage", awtImage)
                 }
                 frame.iconImage = awtImage
             }
@@ -239,11 +232,10 @@ class AwtGameWindow(checkGl: Boolean, logGl: Boolean, config: GameWindowCreation
                         if (fullscreen != value) {
                             queue {
                                 try {
-                                    MicroDynamic {
-                                        //println("INVOKE!: ${getClass("com.apple.eawt.Application").invoke("getApplication")}")
-                                        getClass("com.apple.eawt.Application").invoke("getApplication")
-                                            .invoke("requestToggleFullScreen", frame)
-                                    }
+                                    //println("INVOKE!: ${getClass("com.apple.eawt.Application").invoke("getApplication")}")
+                                    Dyn.global["com.apple.eawt.Application"]
+                                        .dynamicInvoke("getApplication")
+                                        .dynamicInvoke("requestToggleFullScreen", frame)
                                 } catch (e: Throwable) {
                                     if (e::class.qualifiedName != "java.lang.reflect.InaccessibleObjectException") {
                                         e.printStackTrace()

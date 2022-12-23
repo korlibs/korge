@@ -10,11 +10,8 @@ actual object AGOpenglFactory {
 
 object AGFactoryNative : AGFactory {
 	override val supportsNativeFrame: Boolean = false
-	override fun create(nativeControl: Any?, config: AGConfig): AG = AGNative()
+	override fun create(nativeControl: Any?, config: AGConfig): AG = AGOpengl(KmlGlNative())
 	override fun createFastWindow(title: String, width: Int, height: Int): AGWindow = TODO()
 }
 
-open class AGNative() : AGOpengl() {
-	override val nativeComponent = Any()
-	override val gl: KmlGl = com.soywiz.kgl.KmlGlNative()
-}
+fun AGNative(gl: KmlGl = com.soywiz.kgl.KmlGlNative()): AGOpengl = AGOpengl(gl)
