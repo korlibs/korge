@@ -295,35 +295,18 @@ class RenderContext2D(
 
     /** Temporarily sets the [scissor] (visible rendering area) to [scissor] is executed. */
     inline fun scissor(scissor: AGScissor, block: () -> Unit) {
-        val oldScissor = batch.scissor
-        scissorStart(scissor)
-        try {
+        batch.scissor(getTransformedScissor(scissor)) {
             block()
-        } finally {
-            scissorEnd(oldScissor)
         }
     }
 
-    @PublishedApi
-    internal fun scissorStart(scissor: AGScissor) {
-        batch.flush()
-        if (scissor != AGScissor.NIL) {
-            val left = m.transformX(scissor.left, scissor.top)
-            val top = m.transformY(scissor.left, scissor.top)
-            val right = m.transformX(scissor.right, scissor.bottom)
-            val bottom = m.transformY(scissor.right, scissor.bottom)
+    @PublishedApi internal fun getTransformedScissor(scissor: AGScissor): AGScissor {
+        val left = m.transformX(scissor.left, scissor.top)
+        val top = m.transformY(scissor.left, scissor.top)
+        val right = m.transformX(scissor.right, scissor.bottom)
+        val bottom = m.transformY(scissor.right, scissor.bottom)
 
-            batch.scissor = AGScissor.fromBounds(left, top, right, bottom)
-            //println("batch.scissor: ${batch.scissor}")
-        } else {
-            batch.scissor = AGScissor.NIL
-        }
-    }
-
-    @PublishedApi
-    internal fun scissorEnd(oldScissor: AGScissor) {
-        batch.flush()
-        batch.scissor = oldScissor
+        return AGScissor.fromBounds(left, top, right, bottom)
     }
 }
 

@@ -167,9 +167,24 @@ class BatchBuilder2D constructor(
 	init { logger.trace { "BatchBuilder2D[6]" } }
 
     /** The current scissor state. If you change it, you must call the [flush] method to ensure everything has been drawn. */
-	var scissor: AGScissor = AGScissor.NIL
+	@PublishedApi internal var _scissor: AGScissor = AGScissor.NIL
 
-	private val identity = Matrix()
+    val scissor: AGScissor get() = _scissor
+
+    inline fun <T> scissor(scissor: AGScissor, block: () -> T): T {
+        val temp = this._scissor
+        flushPartial()
+        this._scissor = scissor
+        try {
+            return block()
+        } finally {
+            flushPartial()
+            this._scissor = temp
+        }
+    }
+
+
+    private val identity = Matrix()
 
 	init { logger.trace { "BatchBuilder2D[7]" } }
 
@@ -926,7 +941,7 @@ class BatchBuilder2D constructor(
             stencilOpFunc = stencilOpFunc,
             stencilRef = stencilRef,
             colorMask = colorMask,
-            scissor = scissor,
+            scissor = _scissor,
             drawOffset = lastIndexPos * 2,
             vertexCount = (indexPos - lastIndexPos),
         )

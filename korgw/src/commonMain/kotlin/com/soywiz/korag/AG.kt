@@ -36,14 +36,11 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
     // @TODO: Unify beforeDoRender, startFrame  ---  dispose, finish & endFrame
     open fun beforeDoRender() = Unit
     open fun dispose() = Unit
-    open fun finish() {
-        execute(AGFinish)
-    }
+    open fun finish() = execute(AGFinish)
     open fun startFrame() = Unit
     open fun endFrame() = Unit
 
-    protected open fun execute(command: AGCommand) {
-    }
+    protected open fun execute(command: AGCommand) = Unit
 
     open fun clear(
         frameBuffer: AGFrameBufferBase,
@@ -55,9 +52,7 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
         clearDepth: Boolean = true,
         clearStencil: Boolean = true,
         scissor: AGScissor = AGScissor.NIL,
-    ) {
-        execute(AGClear(frameBuffer, frameBufferInfo, color, depth, stencil, clearColor, clearDepth, clearStencil))
-    }
+    ) = execute(AGClear(frameBuffer, frameBufferInfo, color, depth, stencil, clearColor, clearDepth, clearStencil))
 
     open fun draw(
         frameBuffer: AGFrameBufferBase,
@@ -78,19 +73,14 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
         scissor: AGScissor = AGScissor.NIL,
         cullFace: AGCullFace = AGCullFace.NONE,
         instances: Int = 1
-    ) {
-        execute(AGBatch(frameBuffer, frameBufferInfo, vertexData, indices, indexType, program, uniforms, blending, stencilOpFunc, stencilRef, colorMask, depthAndFrontFace, scissor, cullFace, drawType, drawOffset, vertexCount, instances))
-    }
+    ) = execute(AGBatch(frameBuffer, frameBufferInfo, vertexData, indices, indexType, program, uniforms, blending, stencilOpFunc, stencilRef, colorMask, depthAndFrontFace, scissor, cullFace, drawType, drawOffset, vertexCount, instances))
 
     open fun readToTexture(frameBuffer: AGFrameBufferBase, frameBufferInfo: AGFrameBufferInfo, texture: AGTexture, x: Int, y: Int, width: Int, height: Int): Unit = Unit
     open fun readToMemory(frameBuffer: AGFrameBufferBase, frameBufferInfo: AGFrameBufferInfo, x: Int, y: Int, width: Int, height: Int, data: Any, kind: AGReadKind): Unit = Unit
     protected open fun readStats(out: AGStats) = Unit
 
     private val stats = AGStats()
-    fun getStats(out: AGStats = stats): AGStats {
-        readStats(out)
-        return out
-    }
+    fun getStats(out: AGStats = stats): AGStats = out.also { readStats(it) }
 }
 
 // @TODO: Reuse objects
@@ -108,17 +98,9 @@ suspend fun AG.executeUntilFinish(flow: ReceiveChannel<AGCommand>) {
     }
 }
 
-fun AG.execute(command: AGCommand) {
-    command.execute(this)
-}
-
-fun AG.draw(batch: AGBatch) {
-    batch.execute(this)
-}
-
-fun AG.draw(batch: AGMultiBatch) {
-    batch.execute(this)
-}
+fun AG.execute(command: AGCommand) = command.execute(this)
+fun AG.draw(batch: AGBatch) = batch.execute(this)
+fun AG.draw(batch: AGMultiBatch) = batch.execute(this)
 
 fun AG.draw(
     frameBuffer: AGFrameBuffer,
@@ -151,25 +133,17 @@ fun AG.clear(
     clearDepth: Boolean = true,
     clearStencil: Boolean = true,
     scissor: AGScissor = AGScissor.NIL,
-) {
-    clear(frameBuffer.base, frameBuffer.info, color, depth, stencil, clearColor, clearDepth, clearStencil, scissor)
-}
+) = clear(frameBuffer.base, frameBuffer.info, color, depth, stencil, clearColor, clearDepth, clearStencil, scissor)
 
 fun AG.readPixel(frameBuffer: AGFrameBuffer, x: Int, y: Int): RGBA {
     val rawColor = Bitmap32(1, 1, premultiplied = frameBuffer.isTexture).also { readColor(frameBuffer, it, x, y) }.ints[0]
     return if (frameBuffer.isTexture) RGBAPremultiplied(rawColor).depremultiplied else RGBA(rawColor)
 }
 
-fun AG.readColor(frameBuffer: AGFrameBuffer, bitmap: Bitmap32, x: Int = 0, y: Int = 0) {
-    readToMemory(frameBuffer.base, frameBuffer.info, x, y, bitmap.width, bitmap.height, bitmap.ints, AGReadKind.COLOR)
-}
-fun AG.readDepth(frameBuffer: AGFrameBuffer, width: Int, height: Int, out: FloatArray) {
-    readToMemory(frameBuffer.base, frameBuffer.info, 0, 0, width, height, out, AGReadKind.DEPTH)
-}
-fun AG.readStencil(frameBuffer: AGFrameBuffer, bitmap: Bitmap8) {
-    readToMemory(frameBuffer.base, frameBuffer.info, 0, 0, bitmap.width, bitmap.height, bitmap.data, AGReadKind.STENCIL)
-}
+fun AG.readColor(frameBuffer: AGFrameBuffer, bitmap: Bitmap32, x: Int = 0, y: Int = 0) = readToMemory(frameBuffer.base, frameBuffer.info, x, y, bitmap.width, bitmap.height, bitmap.ints, AGReadKind.COLOR)
+fun AG.readDepth(frameBuffer: AGFrameBuffer, width: Int, height: Int, out: FloatArray) = readToMemory(frameBuffer.base, frameBuffer.info, 0, 0, width, height, out, AGReadKind.DEPTH)
+fun AG.readStencil(frameBuffer: AGFrameBuffer, bitmap: Bitmap8) = readToMemory(frameBuffer.base, frameBuffer.info, 0, 0, bitmap.width, bitmap.height, bitmap.data, AGReadKind.STENCIL)
 fun AG.readDepth(frameBuffer: AGFrameBuffer, out: FloatArray2): Unit = readDepth(frameBuffer, out.width, out.height, out.data)
-fun AG.readToTexture(frameBuffer: AGFrameBuffer, texture: AGTexture, x: Int = 0, y: Int = 0, width: Int = frameBuffer.width, height: Int = frameBuffer.height): Unit = TODO()
+fun AG.readToTexture(frameBuffer: AGFrameBuffer, texture: AGTexture, x: Int = 0, y: Int = 0, width: Int = frameBuffer.width, height: Int = frameBuffer.height): Unit = readToTexture(frameBuffer.base, frameBuffer.info, texture, x, y, width, height)
 fun AG.readColor(frameBuffer: AGFrameBuffer): Bitmap32 = Bitmap32(frameBuffer.width, frameBuffer.height, premultiplied = frameBuffer.isTexture).apply { readColor(frameBuffer, this) }
 fun AG.readDepth(frameBuffer: AGFrameBuffer): FloatArray2 = FloatArray2(frameBuffer.width, frameBuffer.height) { 0f }.apply { readDepth(frameBuffer, this) }

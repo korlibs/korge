@@ -285,18 +285,11 @@ class RenderContext constructor(
         clear: Boolean = true,
         render: (AGFrameBuffer) -> Unit,
     ) {
-        flush()
         setFrameBufferTemporally(frameBuffer) {
             useBatcher { batch ->
-                val oldScissors = batch.scissor
-                batch.scissor = AGScissor(0, 0, frameBuffer.width, frameBuffer.height)
-                //batch.scissor = null
-                try {
+                batch.scissor(AGScissor(0, 0, frameBuffer.width, frameBuffer.height)) {
                     if (clear) clear(Colors.TRANSPARENT_BLACK)
                     render(frameBuffer)
-                    flush()
-                } finally {
-                    batch.scissor = oldScissors
                 }
             }
         }
