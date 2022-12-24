@@ -1,9 +1,14 @@
 plugins {
     kotlin("multiplatform")
-    id("io.kotest.multiplatform") version "5.0.2"
+    id("io.kotest.multiplatform") version "5.5.4"
 }
 
 kotlin {
+
+    macosArm64()
+    macosX64()
+    iosArm64()
+    iosSimulatorArm64()
 
     sourceSets {
         val commonMain by getting {
@@ -13,7 +18,7 @@ kotlin {
         }
         val darwinTest by getting {
             dependencies {
-                implementation("io.kotest:kotest-framework-engine:5.0.2")
+                implementation("io.kotest:kotest-framework-engine:5.5.4")
             }
         }
     }
