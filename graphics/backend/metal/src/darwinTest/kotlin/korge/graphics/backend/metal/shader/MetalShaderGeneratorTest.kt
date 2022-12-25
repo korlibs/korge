@@ -6,6 +6,10 @@ import com.soywiz.korio.util.*
 import io.kotest.core.spec.style.*
 import io.kotest.matchers.*
 
+/**
+ * should match specification
+ * https://developer.apple.com/metal/Metal-Shading-Language-Specification.pdf
+ */
 class MetalShaderGeneratorTest : StringSpec({
 
     val vertexShader = VertexShader {
