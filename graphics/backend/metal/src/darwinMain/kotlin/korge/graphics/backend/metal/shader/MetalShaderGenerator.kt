@@ -1,6 +1,5 @@
 package korge.graphics.backend.metal.shader
 
-import com.soywiz.klogger.*
 import com.soywiz.korag.shader.*
 import com.soywiz.korag.shader.gl.*
 import com.soywiz.korio.util.*
@@ -22,7 +21,11 @@ class MetalShaderGenerator(
     fun generateResult(root: Program.Stm, funcs: List<FuncDecl>): Result {
         val types = GlobalsProgramVisitor()
 
-        val mainFunc = FuncDecl("main", VarType.TVOID, listOf(), root)
+
+        val mainFunc = when (kind) {
+            ShaderType.FRAGMENT -> FuncDecl("fragment main", VarType.Float4, listOf(), root)
+            ShaderType.VERTEX -> FuncDecl("vertex main", VarType.Float2, listOf(), root)
+        }
         types.visit(mainFunc)
 
         val customFuncs = funcs.filter { it.ref.name in types.funcRefs }.reversed().distinctBy { it.ref.name }
@@ -31,6 +34,12 @@ class MetalShaderGenerator(
         val allFuncs = customFuncs + listOf(mainFunc)
 
         val result = Indenter {
+
+            // include metal std library
+            line("#include <metal_stdlib>")
+
+            // use metal namespace to use std type short name
+            line("using namespace metal;")
 
             for (it in types.attributes) line("$IN ${precToString(it.precision)}${typeToString(it.type)} ${it.name}${it.arrayDecl};")
             for (it in types.uniforms) line("$UNIFORM ${precToString(it.precision)}${typeToString(it.type)} ${it.name}${it.arrayDecl};")
