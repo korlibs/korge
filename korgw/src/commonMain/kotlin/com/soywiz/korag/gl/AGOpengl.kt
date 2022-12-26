@@ -81,7 +81,7 @@ class AGOpengl(val gl: KmlGl) : AG() {
     private val normalPrograms = HashMap<Program, GLBaseProgram>()
     private val externalPrograms = HashMap<Program, GLBaseProgram>()
 
-    private fun getProgram(program: Program, config: ProgramConfig = ProgramConfig.DEFAULT, use: Boolean = true): GLBaseProgram {
+    private fun useProgram(program: Program, config: ProgramConfig = ProgramConfig.DEFAULT) {
         val map = if (config.externalTextureSampler) externalPrograms else normalPrograms
         val nprogram: GLBaseProgram = map.getOrPut(program) {
             GLBaseProgram(glGlobalState, GLShaderCompiler.programCreate(
@@ -91,12 +91,11 @@ class AGOpengl(val gl: KmlGl) : AG() {
             ))
         }
         //nprogram.agProgram._native = nprogram.
-        if (use) {
-            //nprogram.
+        //nprogram.
+        if (currentProgram != nprogram) {
             currentProgram = nprogram
             nprogram.use()
         }
-        return nprogram
     }
 
     override fun draw(
@@ -126,61 +125,72 @@ class AGOpengl(val gl: KmlGl) : AG() {
         bindFrameBuffer(frameBuffer, frameBufferInfo)
         setScissorState(scissor)
 
-        getProgram(program, config = when {
+        if (currentVertexData?.list != vertexData.list) {
+        //if (true) {
+            //println("vertexData=$vertexData")
+            currentVertexData?.let { vaoUnuse(it) }
+            currentVertexData = vertexData
+            vaoUse(vertexData)
+            //println("NOT REUSING: vertexData=$vertexData")
+        } else {
+            vertexData.list.fastForEach { entry ->
+                bindBuffer(entry.buffer, AGBufferKind.VERTEX, onlyUpdate = true)
+            }
+            //println("REUSING: currentVertexData=$currentVertexData, vertexData=$vertexData")
+        }
+
+        useProgram(program, config = when {
             uniforms.useExternalSampler() -> ProgramConfig.EXTERNAL_TEXTURE_SAMPLER
             else -> ProgramConfig.DEFAULT
-        }, use = true)
+        })
+        uniformsSet(uniforms)
 
-        vaoUse(vertexData)
-        try {
-            uniformsSet(uniforms)
-
-            if (currentBlending != blending) {
-                currentBlending = blending
-                gl.enableDisable(KmlGl.BLEND, blending.enabled) {
-                    gl.blendEquationSeparate(blending.eqRGB.toGl(), blending.eqA.toGl())
-                    gl.blendFuncSeparate(blending.srcRGB.toGl(), blending.dstRGB.toGl(), blending.srcA.toGl(), blending.dstA.toGl())
-                }
+        if (currentBlending != blending) {
+            currentBlending = blending
+            gl.enableDisable(KmlGl.BLEND, blending.enabled) {
+                gl.blendEquationSeparate(blending.eqRGB.toGl(), blending.eqA.toGl())
+                gl.blendFuncSeparate(blending.srcRGB.toGl(), blending.dstRGB.toGl(), blending.srcA.toGl(), blending.dstA.toGl())
             }
-
-            setDepthAndFrontFace(depthAndFrontFace)
-            setColorMaskState(colorMask)
-
-            if (currentStencilOpFunc != stencilOpFunc || currentStencilRef != stencilRef) {
-                currentStencilOpFunc = stencilOpFunc
-                currentStencilRef = stencilRef
-                if (stencilOpFunc.enabled) {
-                    gl.enable(KmlGl.STENCIL_TEST)
-                    gl.stencilFunc(stencilOpFunc.compareMode.toGl(), stencilRef.referenceValue, stencilRef.readMask)
-                    gl.stencilOp(
-                        stencilOpFunc.actionOnDepthFail.toGl(),
-                        stencilOpFunc.actionOnDepthPassStencilFail.toGl(),
-                        stencilOpFunc.actionOnBothPass.toGl()
-                    )
-                    gl.stencilMask(stencilRef.writeMask)
-                } else {
-                    gl.disable(KmlGl.STENCIL_TEST)
-                    gl.stencilMask(0)
-                }
-            }
-
-            //val viewport = Buffer(4 * 4)
-            //gl.getIntegerv(KmlGl.VIEWPORT, viewport)
-            //println("viewport=${viewport.getAlignedInt32(0)},${viewport.getAlignedInt32(1)},${viewport.getAlignedInt32(2)},${viewport.getAlignedInt32(3)}")
-
-            indices?.let { bindBuffer(it, AGBufferKind.INDEX) }
-
-            val indexType = if (indices != null) indexType else AGIndexType.NONE
-            if (indexType != AGIndexType.NONE) when {
-                instances != 1 -> gl.drawElementsInstanced(drawType.toGl(), vertexCount, indexType.toGl(), drawOffset, instances)
-                else -> gl.drawElements(drawType.toGl(), vertexCount, indexType.toGl(), drawOffset)
-            } else when {
-                instances != 1 -> gl.drawArraysInstanced(drawType.toGl(), drawOffset, vertexCount, instances)
-                else -> gl.drawArrays(drawType.toGl(), drawOffset, vertexCount)
-            }
-        } finally {
-            vaoUnuse(vertexData)
         }
+
+        setDepthAndFrontFace(depthAndFrontFace)
+        setColorMaskState(colorMask)
+
+        if (currentStencilOpFunc != stencilOpFunc || currentStencilRef != stencilRef) {
+            currentStencilOpFunc = stencilOpFunc
+            currentStencilRef = stencilRef
+            if (stencilOpFunc.enabled) {
+                gl.enable(KmlGl.STENCIL_TEST)
+                gl.stencilFunc(stencilOpFunc.compareMode.toGl(), stencilRef.referenceValue, stencilRef.readMask)
+                gl.stencilOp(
+                    stencilOpFunc.actionOnDepthFail.toGl(),
+                    stencilOpFunc.actionOnDepthPassStencilFail.toGl(),
+                    stencilOpFunc.actionOnBothPass.toGl()
+                )
+                gl.stencilMask(stencilRef.writeMask)
+            } else {
+                gl.disable(KmlGl.STENCIL_TEST)
+                gl.stencilMask(0)
+            }
+        }
+
+        //val viewport = Buffer(4 * 4)
+        //gl.getIntegerv(KmlGl.VIEWPORT, viewport)
+        //println("viewport=${viewport.getAlignedInt32(0)},${viewport.getAlignedInt32(1)},${viewport.getAlignedInt32(2)},${viewport.getAlignedInt32(3)}")
+
+        indices?.let { bindBuffer(it, AGBufferKind.INDEX) }
+
+        val indexType = if (indices != null) indexType else AGIndexType.NONE
+        if (indexType != AGIndexType.NONE) when {
+            instances != 1 -> gl.drawElementsInstanced(drawType.toGl(), vertexCount, indexType.toGl(), drawOffset, instances)
+            else -> gl.drawElements(drawType.toGl(), vertexCount, indexType.toGl(), drawOffset)
+        } else when {
+            instances != 1 -> gl.drawArraysInstanced(drawType.toGl(), drawOffset, vertexCount, instances)
+            else -> gl.drawArrays(drawType.toGl(), drawOffset, vertexCount)
+        }
+
+        //currentVertexData?.let { vaoUnuse(it) }
+
     }
 
     val glslConfig: GlslConfig by lazy {
@@ -190,20 +200,24 @@ class AGOpengl(val gl: KmlGl) : AG() {
         )
     }
 
+    private var currentVertexData: AGVertexArrayObject? = null
     private var currentBlending: AGBlending = AGBlending.INVALID
     private var currentStencilOpFunc: AGStencilOpFunc = AGStencilOpFunc.INVALID
     private var currentStencilRef: AGStencilReference = AGStencilReference.INVALID
     private var currentColorMask: AGColorMask = AGColorMask.INVALID
+    private var currentRenderState: AGDepthAndFrontFace = AGDepthAndFrontFace.INVALID
     private var currentProgram: GLBaseProgram? = null
     var backBufferFrameBufferBinding: Int = 0
     private var currentScissor: AGScissor = AGScissor.INVALID
 
     override fun startFrame() {
+        currentVertexData = null
         currentScissor = AGScissor.INVALID
         currentBlending = AGBlending.INVALID
         currentStencilOpFunc = AGStencilOpFunc.INVALID
         currentStencilRef = AGStencilReference.INVALID
         currentColorMask = AGColorMask.INVALID
+        currentRenderState = AGDepthAndFrontFace.INVALID
         currentProgram = null
         backBufferFrameBufferBinding = gl.getIntegerv(KmlGl.FRAMEBUFFER_BINDING)
         _currentFrameBuffer = -1
@@ -211,6 +225,8 @@ class AGOpengl(val gl: KmlGl) : AG() {
     }
 
     override fun endFrame() {
+        currentVertexData?.let { vaoUnuse(it) }
+        currentVertexData = null
         bindFrameBuffer(mainFrameBuffer.base, mainFrameBuffer.info)
     }
 
@@ -237,6 +253,9 @@ class AGOpengl(val gl: KmlGl) : AG() {
     }
 
     override fun finish() {
+        currentVertexData?.let { vaoUnuse(it) }
+        currentVertexData = null
+
         gl.flush()
         //gl.finish()
 
@@ -284,12 +303,17 @@ class AGOpengl(val gl: KmlGl) : AG() {
         }
     }
 
-    private fun bindBuffer(buffer: AGBuffer, target: AGBufferKind) {
+    private fun bindBuffer(buffer: AGBuffer?, target: AGBufferKind, onlyUpdate: Boolean = false) {
+        if (buffer == null) {
+            gl.bindBuffer(target.toGl(), 0)
+            return
+        }
         val bufferInfo = buffer.gl
-        gl.bindBuffer(target.toGl(), bufferInfo.id)
+        if (!onlyUpdate) gl.bindBuffer(target.toGl(), bufferInfo.id)
         buffer.update {
             val mem = buffer.mem ?: Buffer(0)
             bufferInfo.estimatedBytes = mem.sizeInBytes.toLong()
+            if (onlyUpdate) gl.bindBuffer(target.toGl(), bufferInfo.id)
             gl.bufferData(target.toGl(), mem.sizeInBytes, mem, KmlGl.STATIC_DRAW)
         }
     }
@@ -301,8 +325,7 @@ class AGOpengl(val gl: KmlGl) : AG() {
 
     fun vaoUnuse(vao: AGVertexArrayObject) {
         vao.list.fastForEach { entry ->
-            val vattrs = entry.layout.attributes
-            vattrs.fastForEach { att ->
+            entry.layout.attributes.fastForEach { att ->
                 if (att.active) {
                     val loc = att.fixedLocation
                     if (loc >= 0) {
@@ -328,7 +351,7 @@ class AGOpengl(val gl: KmlGl) : AG() {
 
             bindBuffer(vertices, AGBufferKind.VERTEX)
             val totalSize = vertexLayout.totalSize
-            for (n in 0 until vattrspos.size) {
+            for (n in vattrspos.indices) {
                 val att = vattrs[n]
                 if (!att.active) continue
                 val off = vattrspos[n]
@@ -390,15 +413,7 @@ class AGOpengl(val gl: KmlGl) : AG() {
                             else -> AGTextureTargetKind.TEXTURE_CUBE_MAP
                         })
 
-                        gl.texParameteri(tex.implForcedTexTarget.toGl(), KmlGl.TEXTURE_WRAP_S, unit.wrap.toGl())
-                        gl.texParameteri(tex.implForcedTexTarget.toGl(), KmlGl.TEXTURE_WRAP_T, unit.wrap.toGl())
-                        if (tex.implForcedTexTarget.dims >= 3) {
-                            gl.texParameteri(tex.implForcedTexTarget.toGl(), KmlGl.TEXTURE_WRAP_R, unit.wrap.toGl())
-                        }
-
-                        gl.texParameteri(tex.implForcedTexTarget.toGl(), KmlGl.TEXTURE_MIN_FILTER, unit.minFilter())
-                        gl.texParameteri(tex.implForcedTexTarget.toGl(), KmlGl.TEXTURE_MAG_FILTER, unit.magFilter())
-
+                        textureParameters(tex.implForcedTexTarget, unit.wrap, unit.minFilter(), unit.magFilter(), tex.implForcedTexTarget.dims)
                     } else {
                         gl.bindTexture(KmlGl.TEXTURE_2D, 0)
                     }
@@ -443,6 +458,36 @@ class AGOpengl(val gl: KmlGl) : AG() {
         }
     }
 
+    class TextureUnitParams(val index: Int) {
+        var wrap: AGWrapMode = AGWrapMode(-1)
+        var min: Int = -1
+        var mag: Int = -1
+    }
+
+    val textureParams = Array(32) { TextureUnitParams(it) }
+
+    private fun textureParameters(implForcedTexTarget: AGTextureTargetKind, wrap: AGWrapMode, minFilter: Int, magFilter: Int, dims: Int) {
+        val params = textureParams[currentTextureUnit]
+
+        val glTarget = implForcedTexTarget.toGl()
+
+        if (params.wrap != wrap) {
+            params.wrap = wrap
+            val glWrap = wrap.toGl()
+            gl.texParameteri(glTarget, KmlGl.TEXTURE_WRAP_S, glWrap)
+            gl.texParameteri(glTarget, KmlGl.TEXTURE_WRAP_T, glWrap)
+            if (dims >= 3) {
+                gl.texParameteri(glTarget, KmlGl.TEXTURE_WRAP_R, glWrap)
+            }
+        }
+
+        if (params.min != minFilter || params.mag != magFilter) {
+            params.min = minFilter
+            params.mag = magFilter
+            gl.texParameteri(glTarget, KmlGl.TEXTURE_MIN_FILTER, minFilter)
+            gl.texParameteri(glTarget, KmlGl.TEXTURE_MAG_FILTER, magFilter)
+        }
+    }
 
     fun AGTextureUnit.minFilter(): Int = texture.minFilter(linear, trilinear ?: linear)
     fun AGTextureUnit.magFilter(): Int = texture.magFilter(linear, trilinear ?: linear)
@@ -593,11 +638,11 @@ class AGOpengl(val gl: KmlGl) : AG() {
     private val tempTextureUnit = 7
 
     fun textureSetFromFrameBuffer(tex: AGTexture, x: Int, y: Int, width: Int, height: Int) {
-        val old = selectTextureUnit(tempTextureUnit)
-        gl.bindTexture(gl.TEXTURE_2D, tex.gl.id)
-        gl.copyTexImage2D(gl.TEXTURE_2D, 0, gl.RGBA, x, y, width, height, 0)
-        gl.bindTexture(gl.TEXTURE_2D, 0)
-        selectTextureUnit(old)
+        selectTextureUnitTemp(tempTextureUnit) {
+            gl.bindTexture(gl.TEXTURE_2D, tex.gl.id)
+            gl.copyTexImage2D(gl.TEXTURE_2D, 0, gl.RGBA, x, y, width, height, 0)
+            gl.bindTexture(gl.TEXTURE_2D, 0)
+        }
     }
 
     private fun createBufferForBitmap(bmp: Bitmap?): Buffer? = when (bmp) {
@@ -614,9 +659,20 @@ class AGOpengl(val gl: KmlGl) : AG() {
     private var currentTextureUnit = 0
     private fun selectTextureUnit(index: Int): Int {
         val old = currentTextureUnit
-        currentTextureUnit = index
-        gl.activeTexture(KmlGl.TEXTURE0 + index)
+        if (currentTextureUnit != index) {
+            currentTextureUnit = index
+            gl.activeTexture(KmlGl.TEXTURE0 + index)
+        }
         return old
+    }
+
+    private inline fun selectTextureUnitTemp(index: Int, block: () -> Unit) {
+        val old = selectTextureUnit(index)
+        try {
+            block()
+        } finally {
+            selectTextureUnit(old)
+        }
     }
 
     private var _currentViewportSize: AGSize = AGSize.INVALID
@@ -654,13 +710,13 @@ class AGOpengl(val gl: KmlGl) : AG() {
             }
 
             tex.bitmap = NullBitmap(info.width, info.height, false)
-            val old = selectTextureUnit(tempTextureUnit)
-            textureBind(tex, AGTextureTargetKind.TEXTURE_2D)
-            selectTextureUnit(old)
-            gl.texParameteri(texTarget, KmlGl.TEXTURE_MAG_FILTER, KmlGl.LINEAR)
-            gl.texParameteri(texTarget, KmlGl.TEXTURE_MIN_FILTER, KmlGl.LINEAR)
-            //gl.texImage2D(texTarget, 0, KmlGl.RGBA, fb.ag.width, fb.ag.height, 0, KmlGl.RGBA, KmlGl.UNSIGNED_BYTE, null)
-            gl.bindTexture(texTarget, 0)
+            selectTextureUnitTemp(tempTextureUnit) {
+                textureBind(tex, AGTextureTargetKind.TEXTURE_2D)
+                gl.texParameteri(texTarget, KmlGl.TEXTURE_MAG_FILTER, KmlGl.LINEAR)
+                gl.texParameteri(texTarget, KmlGl.TEXTURE_MIN_FILTER, KmlGl.LINEAR)
+                //gl.texImage2D(texTarget, 0, KmlGl.RGBA, fb.ag.width, fb.ag.height, 0, KmlGl.RGBA, KmlGl.UNSIGNED_BYTE, null)
+                //gl.bindTexture(texTarget, 0)
+            }
             gl.bindRenderbuffer(KmlGl.RENDERBUFFER, fb.renderBufferId)
             if (internalFormat != 0) {
                 //gl.renderbufferStorageMultisample(KmlGl.RENDERBUFFER, fb.nsamples, internalFormat, fb.width, fb.height)
@@ -691,15 +747,18 @@ class AGOpengl(val gl: KmlGl) : AG() {
     private val AGTexture.gl: GLTexture get() = gl(glGlobalState)
 
     fun setDepthAndFrontFace(renderState: AGDepthAndFrontFace) {
-        gl.enableDisable(KmlGl.CULL_FACE, renderState.frontFace != AGFrontFace.BOTH) {
-            gl.frontFace(renderState.frontFace.toGl())
-        }
+        if (currentRenderState != renderState) {
+            currentRenderState = renderState
+            gl.enableDisable(KmlGl.CULL_FACE, renderState.frontFace != AGFrontFace.BOTH) {
+                gl.frontFace(renderState.frontFace.toGl())
+            }
 
-        gl.depthMask(renderState.depthMask)
-        gl.depthRangef(renderState.depthNear, renderState.depthFar)
+            gl.depthMask(renderState.depthMask)
+            gl.depthRangef(renderState.depthNear, renderState.depthFar)
 
-        gl.enableDisable(KmlGl.DEPTH_TEST, renderState.depthFunc != AGCompareMode.ALWAYS) {
-            gl.depthFunc(renderState.depthFunc.toGl())
+            gl.enableDisable(KmlGl.DEPTH_TEST, renderState.depthFunc != AGCompareMode.ALWAYS) {
+                gl.depthFunc(renderState.depthFunc.toGl())
+            }
         }
     }
 

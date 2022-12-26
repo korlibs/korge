@@ -29,6 +29,24 @@ suspend fun main() = Korge(
 ) {
     //uiButton("HELLO WORLD!", width = 300.0).position(0, 0); return@Korge
     //solidRect(100, 100, Colors.RED).xy(300, 300).filters(BlurFilter()); return@Korge
+    if (false) {
+    //run {
+        views.forceRenderEveryFrame = true
+        container {
+            scale = 0.5
+            uiVerticalStack {
+                //for (row in 0 until 20) {
+                for (row in 0 until 40) {
+                    uiHorizontalStack {
+                        for (col in 0 until 20) {
+                            uiButton("Button%02d%02d".format(col, row))
+                        }
+                    }
+                }
+            }
+        }
+        return@Korge
+    }
 
     demoSelector(
         //Demo(::MainJSMpeg),
@@ -42,7 +60,8 @@ suspend fun main() = Korge(
         //Demo(::MainEditor),
         //Demo(::MainUI),
         //Demo(::MainBezier),
-        Demo(::MainBunnymark),
+        //Demo(::MainBunnymark),
+        Demo(::MainStressButtons),
         //Demo(::MainFilters),
         //Demo(::MainGpuVectorRendering),
         //Demo(::MainTextMetrics),
@@ -54,6 +73,7 @@ suspend fun main() = Korge(
         //Demo(::MainSvgAnimation),
         //Demo(::MainVectorNinePatch),
         listOf(
+            Demo(::MainStressButtons),
             Demo(::MainVectorNinePatch),
             Demo(::MainGraphicsText),
             Demo(::MainRpgScene),

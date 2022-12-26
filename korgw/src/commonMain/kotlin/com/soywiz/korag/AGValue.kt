@@ -12,6 +12,7 @@ import kotlin.math.*
 class AGUniformValue constructor(val uniform: Uniform, data: Buffer, nativeValue: Any?) : AGValue(uniform, data, nativeValue) {
     override fun equals(other: Any?): Boolean = other is AGUniformValue && this.uniform == uniform && this.data == other.data && this.nativeValue == other.nativeValue
     override fun hashCode(): Int = uniform.hashCode() + super.hashCode()
+    override fun toString(): String = "AGUniformValue[$uniform][${super.toString()}]"
 }
 
 class AGUniformValues(val capacity: Int = 8 * 1024) {
@@ -251,7 +252,7 @@ open class AGValue(val type: VarType, val arrayCount: Int, val data: Buffer, var
 
     override fun toString(): String {
         return buildString {
-            append("AGValue[$kind](")
+            append("AGValue[$type](")
             append('[')
             for (i in 0 until arrayCount) {
                 if (i != 0) append(",")
@@ -265,6 +266,10 @@ open class AGValue(val type: VarType, val arrayCount: Int, val data: Buffer, var
                     }
                 }
                 append(']')
+            }
+            if (nativeValue != null) {
+                append(',')
+                append(nativeValue)
             }
             append(']')
             append(")")

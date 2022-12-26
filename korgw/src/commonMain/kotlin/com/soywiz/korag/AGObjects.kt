@@ -110,7 +110,7 @@ class AGTexture(
         return requestMipmaps && width.isPowerOfTwo && height.isPowerOfTwo
     }
 
-    override fun toString(): String = "AGTexture(pre=$premultiplied)"
+    override fun toString(): String = "AGTexture(size=$width,$height,pre=$premultiplied)"
 }
 
 open class AGFrameBufferBase(val isMain: Boolean) : AGObject() {
