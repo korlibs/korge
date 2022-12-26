@@ -27,7 +27,7 @@ class CubeMap(
     val bottom: Bitmap,
     val back: Bitmap,
     val front: Bitmap,
-) : MultiBitmap(right.width, right.height, listOf(right, left, top, bottom, back, front)) {
+) : MultiBitmap(listOf(right, left, top, bottom, back, front)) {
     val faces: List<Bitmap> get() = bitmaps
 }
 

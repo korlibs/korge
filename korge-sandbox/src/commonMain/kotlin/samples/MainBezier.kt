@@ -22,8 +22,8 @@ import kotlin.random.Random
 class MainBezier : Scene() {
     override suspend fun SContainer.sceneMain() {
         //val shape = gpuShapeView(EmptyShape)
-        //val shape = graphics(EmptyShape, renderer = GraphicsRenderer.SYSTEM)
-        val shape = graphics(EmptyShape, renderer = GraphicsRenderer.GPU)
+        val shape = graphics(EmptyShape, renderer = GraphicsRenderer.SYSTEM)
+        //val shape = graphics(EmptyShape, renderer = GraphicsRenderer.GPU)
         fun getRandomPoint() = Point(Random[100..500], Random[100..500])
         class Bez {
             var p1 = getRandomPoint()

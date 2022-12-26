@@ -160,7 +160,7 @@ open class FSprites(val maxSize: Int) {
                     val ttex = ctx.agBitmapTextureManager.getTextureBase(tex)
                     u_i_texSizeDataN[n][0] = 1f / ttex.width.toFloat()
                     u_i_texSizeDataN[n][1] = 1f / ttex.height.toFloat()
-                    batch.textureUnitN[n].set(ttex.base, smoothing)
+                    batch.uniforms[BatchBuilder2D.u_TexN[n]].set(ttex.base, AGTextureUnitInfo(n, linear = smoothing))
                     //println(ttex.base)
                 }
                 //batch.setTemporalUniform(u_i_texSizeN[0], u_i_texSizeDataN[0]) {

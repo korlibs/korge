@@ -9,9 +9,15 @@ import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 import kotlin.math.*
 
-class AGUniformValue constructor(val uniform: Uniform, data: Buffer, nativeValue: Any?) : AGValue(uniform, data, nativeValue) {
-    override fun equals(other: Any?): Boolean = other is AGUniformValue && this.uniform == uniform && this.data == other.data && this.nativeValue == other.nativeValue
+class AGUniformValue constructor(
+    val uniform: Uniform,
+    data: Buffer,
+    texture: AGTexture?,
+    textureUnitInfo: AGTextureUnitInfo
+) : AGValue(uniform, data, texture, textureUnitInfo) {
+    override fun equals(other: Any?): Boolean = other is AGUniformValue && this.uniform == uniform && this.data == other.data && this.texture == other.texture && this.textureUnitInfo == other.textureUnitInfo
     override fun hashCode(): Int = uniform.hashCode() + super.hashCode()
+    override fun toString(): String = "AGUniformValue[$uniform][${super.toString()}]"
 }
 
 class AGUniformValues(val capacity: Int = 8 * 1024) {
@@ -52,7 +58,7 @@ class AGUniformValues(val capacity: Int = 8 * 1024) {
         val out = AGUniformValues(allocOffset)
         arraycopy(this.data, 0, out.data, 0, allocOffset)
         values.fastForEach { value ->
-            out.values.add(AGUniformValue(value.uniform, out.data.sliceWithSize(value.data.byteOffset, value.data.sizeInBytes), value.nativeValue))
+            out.values.add(AGUniformValue(value.uniform, out.data.sliceWithSize(value.data.byteOffset, value.data.sizeInBytes), value.texture, value.textureUnitInfo))
         }
         return out
     }
@@ -64,7 +70,7 @@ class AGUniformValues(val capacity: Int = 8 * 1024) {
         }
         val dataSize = uniform.totalElementCount * 4
         if (allocOffset + dataSize >= this.data.size) error("this=$this : uniform=$uniform, allocOffset=$allocOffset, dataSize=$dataSize")
-        val out = AGUniformValue(uniform, data.sliceWithSize(allocOffset, dataSize), null)
+        val out = AGUniformValue(uniform, data.sliceWithSize(allocOffset, dataSize), null, AGTextureUnitInfo.INVALID)
         values.add(out)
         allocOffset += dataSize
         return out
@@ -73,6 +79,7 @@ class AGUniformValues(val capacity: Int = 8 * 1024) {
     operator fun set(uniform: Uniform, value: Unit) { this[uniform].set(value) }
     operator fun set(uniform: Uniform, value: AGValue) { this[uniform].set(value) }
     operator fun set(uniform: Uniform, value: AGTextureUnit) { this[uniform].set(value) }
+    fun set(uniform: Uniform, value: AGTexture?, info: AGTextureUnitInfo) { this[uniform].set(value, info) }
     operator fun set(uniform: Uniform, value: Boolean) { this[uniform].set(value) }
     operator fun set(uniform: Uniform, value: BooleanArray) { this[uniform].set(value) }
     operator fun set(uniform: Uniform, value: Int) { this[uniform].set(value) }
@@ -100,8 +107,19 @@ class AGUniformValues(val capacity: Int = 8 * 1024) {
     override fun toString(): String = "AGUniformValues(${values.joinToString(", ") { "${it.uniform.name}=" + valueToString(it) }})"
 }
 
-open class AGValue(val type: VarType, val arrayCount: Int, val data: Buffer, var nativeValue: Any?) {
-    constructor(variable: Variable, data: Buffer, nativeValue: Any?) : this(variable.type, variable.arrayCount, data, nativeValue)
+open class AGValue(
+    val type: VarType,
+    val arrayCount: Int,
+    val data: Buffer,
+    var texture: AGTexture?,
+    var textureUnitInfo: AGTextureUnitInfo,
+) {
+    constructor(
+        variable: Variable,
+        data: Buffer,
+        texture: AGTexture?,
+        textureUnitInfo: AGTextureUnitInfo
+    ) : this(variable.type, variable.arrayCount, data, texture, textureUnitInfo)
 
     val kind: VarKind = type.kind
     val stride: Int = type.elementCount
@@ -117,12 +135,18 @@ open class AGValue(val type: VarType, val arrayCount: Int, val data: Buffer, var
 
     fun set(value: AGValue) {
         arraycopy(value.data, 0, this.data, 0, min(this.data.size, value.data.size))
-        this.nativeValue = value.nativeValue
+        this.texture = value.texture
+        this.textureUnitInfo = value.textureUnitInfo
     }
 
     fun set(value: AGTextureUnit) {
-        set(value.index)
-        nativeValue = value
+        set(value.texture, value.info)
+    }
+
+    fun set(value: AGTexture?, info: AGTextureUnitInfo) {
+        set(info.index)
+        texture = value
+        textureUnitInfo = info
     }
 
     fun set(value: Int) = when (kind) {
@@ -239,7 +263,7 @@ open class AGValue(val type: VarType, val arrayCount: Int, val data: Buffer, var
         }
     }
 
-    override fun equals(other: Any?): Boolean = other is AGValue && this.data == other.data && this.nativeValue == other.nativeValue
+    override fun equals(other: Any?): Boolean = other is AGValue && this.data == other.data && this.texture == other.texture && this.textureUnitInfo == other.textureUnitInfo
     override fun hashCode(): Int = data.hashCode()
 
     companion object {
@@ -251,7 +275,7 @@ open class AGValue(val type: VarType, val arrayCount: Int, val data: Buffer, var
 
     override fun toString(): String {
         return buildString {
-            append("AGValue[$kind](")
+            append("AGValue[$type](")
             append('[')
             for (i in 0 until arrayCount) {
                 if (i != 0) append(",")
@@ -265,6 +289,12 @@ open class AGValue(val type: VarType, val arrayCount: Int, val data: Buffer, var
                     }
                 }
                 append(']')
+            }
+            if (texture != null) {
+                append(',')
+                append(texture)
+                append(',')
+                append(textureUnitInfo)
             }
             append(']')
             append(")")

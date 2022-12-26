@@ -239,6 +239,9 @@ class Views constructor(
         onAfterRender {
             renderContext.afterRender()
         }
+        onBeforeRender {
+            renderContext.beforeRender()
+        }
         installFpsDebugOverlay()
     }
 
