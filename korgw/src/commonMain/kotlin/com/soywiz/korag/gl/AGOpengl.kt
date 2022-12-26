@@ -248,6 +248,10 @@ class AGOpengl(val gl: KmlGl) : AG() {
     //var doPrintTimer = Stopwatch().also { it.start() }
     //var doPrint = false
 
+    override fun beforeDoRender() {
+        gl.beforeDoRender(contextVersion)
+    }
+
     override fun finish() {
         currentVertexData?.let { vaoUnuse(it) }
         currentVertexData = null

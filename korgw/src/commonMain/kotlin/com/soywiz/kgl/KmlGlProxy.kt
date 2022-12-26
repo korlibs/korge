@@ -45,7 +45,29 @@ open class KmlGlProxy(parent: KmlGl) : KmlGlFastProxy(parent) {
 
 	open fun before(name: String, params: List<Any?>): Unit = Unit
 	open fun after(name: String, params: List<Any?>, result: Any?): Unit = Unit
-	override fun activeTexture(texture: Int) {
+
+    override fun beforeDoRender(contextVersion: Int) {
+        val sparams = listOf<Any?>(contextVersion)
+        before("beforeDoRender", sparams)
+        val res = parent.beforeDoRender(contextVersion)
+        after("beforeDoRender", sparams, res)
+    }
+
+    override fun startFrame() {
+        val sparams = listOf<Any?>()
+        before("startFrame", sparams)
+        val res = parent.endFrame()
+        after("startFrame", sparams, res)
+    }
+
+    override fun endFrame() {
+        val sparams = listOf<Any?>()
+        before("endFrame", sparams)
+        val res = parent.endFrame()
+        after("endFrame", sparams, res)
+    }
+
+    override fun activeTexture(texture: Int) {
 		val sparams = listOf<Any?>(texture)
 		before("activeTexture", sparams)
 		val res = parent.activeTexture(texture)

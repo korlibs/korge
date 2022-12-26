@@ -3,34 +3,21 @@
 package com.soywiz.korge.render
 
 import com.soywiz.kds.*
-import com.soywiz.kds.iterators.fastForEach
-import com.soywiz.klogger.Logger
+import com.soywiz.kds.iterators.*
+import com.soywiz.klogger.*
 import com.soywiz.kmem.*
 import com.soywiz.korag.*
-import com.soywiz.korag.shader.Attribute
-import com.soywiz.korag.shader.FragmentShader
-import com.soywiz.korag.shader.Operand
-import com.soywiz.korag.shader.Precision
-import com.soywiz.korag.shader.Program
-import com.soywiz.korag.shader.Uniform
-import com.soywiz.korag.shader.VarType
-import com.soywiz.korag.shader.Varying
-import com.soywiz.korag.shader.VertexLayout
-import com.soywiz.korge.internal.KorgeInternal
-import com.soywiz.korge.view.BlendMode
+import com.soywiz.korag.shader.*
+import com.soywiz.korge.internal.*
+import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.ColorAdd
-import com.soywiz.korim.color.Colors
-import com.soywiz.korim.color.RGBA
-import com.soywiz.korio.async.Signal
-import com.soywiz.korio.util.OS
-import com.soywiz.korma.geom.Matrix
-import com.soywiz.korma.geom.Matrix3D
-import com.soywiz.korma.geom.Point
-import kotlin.jvm.JvmOverloads
-import kotlin.math.min
-import kotlin.native.concurrent.SharedImmutable
-import kotlin.native.concurrent.ThreadLocal
+import com.soywiz.korim.color.*
+import com.soywiz.korio.async.*
+import com.soywiz.korio.util.*
+import com.soywiz.korma.geom.*
+import kotlin.jvm.*
+import kotlin.math.*
+import kotlin.native.concurrent.*
 
 @SharedImmutable
 private val logger = Logger("BatchBuilder2D")
@@ -783,26 +770,7 @@ class BatchBuilder2D constructor(
         //val u_Tex0 = Uniform("u_Tex0", VarType.TextureUnit)
 
         //val u_DoWrap: Uniform = Uniform("u_DoWrap", VarType.Bool1)
-        //val u_InputPre: Uniform = Uniform("u_InputPre", VarType.Bool1)
-        val u_OutputPre: Uniform = Uniform("u_OutputPre", VarType.Bool1)
         val u_TexN: Array<Uniform> = Array(BB_MAX_TEXTURES) { Uniform("u_Tex$it", VarType.Sampler2D) }
-
-        fun DO_OUTPUT_FROM(builder: Program.Builder, out: Operand, u_OutputPre: Operand = BatchBuilder2D.u_OutputPre) {
-            builder.apply {
-                // We come from premultiplied, but output wants straight
-                IF(u_OutputPre.not()) {
-                    SET(out["rgb"], out["rgb"] / out["a"])
-                }
-            }
-        }
-
-        fun DO_INPUT_OUTPUT(builder: Program.Builder, out: Operand) {
-            builder.apply {
-                IF(u_OutputPre.not()) {
-                    SET(out["rgb"], out["rgb"] / out["a"])
-                }
-            }
-        }
 
         //val u_Tex0 = DefaultShaders.u_Tex
         //val u_Tex1 = Uniform("u_Tex1", VarType.TextureUnit)
@@ -895,7 +863,6 @@ class BatchBuilder2D constructor(
                 }
             }
             IF(out["a"] le 0f.lit) { DISCARD() }
-            DO_OUTPUT_FROM(this, out)
         }
 
 		//init { println(PROGRAM_PRE.fragment.toGlSl()) }
@@ -913,7 +880,7 @@ class BatchBuilder2D constructor(
         ctx.updateStandardUniforms()
         for (n in 0 until maxTextures) textureUnitN[n].set(currentTexN[n], currentSmoothing)
         //uniforms[u_InputPre] = currentTexN[0]?.premultiplied == true
-        uniforms[u_OutputPre] = ctx.isRenderingToTexture
+        //uniforms[u_OutputPre] = ctx.isRenderingToTexture
     }
 
     fun getIsPremultiplied(texture: AGTexture?): Boolean = texture?.premultiplied == true
