@@ -78,8 +78,7 @@ class AGUniformValues(val capacity: Int = 8 * 1024) {
 
     operator fun set(uniform: Uniform, value: Unit) { this[uniform].set(value) }
     operator fun set(uniform: Uniform, value: AGValue) { this[uniform].set(value) }
-    operator fun set(uniform: Uniform, value: AGTextureUnit) { this[uniform].set(value) }
-    fun set(uniform: Uniform, value: AGTexture?, info: AGTextureUnitInfo) { this[uniform].set(value, info) }
+    fun set(uniform: Uniform, value: AGTexture?, info: AGTextureUnitInfo = AGTextureUnitInfo.DEFAULT) { this[uniform].set(value, info) }
     operator fun set(uniform: Uniform, value: Boolean) { this[uniform].set(value) }
     operator fun set(uniform: Uniform, value: BooleanArray) { this[uniform].set(value) }
     operator fun set(uniform: Uniform, value: Int) { this[uniform].set(value) }
@@ -139,12 +138,8 @@ open class AGValue(
         this.textureUnitInfo = value.textureUnitInfo
     }
 
-    fun set(value: AGTextureUnit) {
-        set(value.texture, value.info)
-    }
-
-    fun set(value: AGTexture?, info: AGTextureUnitInfo) {
-        set(info.index)
+    fun set(value: AGTexture?, info: AGTextureUnitInfo = AGTextureUnitInfo.DEFAULT) {
+        set(-1)
         texture = value
         textureUnitInfo = info
     }

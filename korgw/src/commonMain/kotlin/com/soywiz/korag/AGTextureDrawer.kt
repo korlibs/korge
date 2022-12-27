@@ -32,7 +32,7 @@ class AGTextureDrawer(val ag: AG) {
 
     fun draw(frameBuffer: AGFrameBuffer, tex: AGTexture, left: Float, top: Float, right: Float, bottom: Float) {
         //tex.upload(Bitmap32(32, 32) { x, y -> Colors.RED })
-        uniforms[DefaultShaders.u_Tex] = AGTextureUnit(0, tex)
+        uniforms.set(DefaultShaders.u_Tex, tex)
 
         val texLeft = -1f
         val texRight = +1f

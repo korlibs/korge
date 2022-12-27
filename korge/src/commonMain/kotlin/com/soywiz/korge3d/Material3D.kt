@@ -27,7 +27,6 @@ data class Material3D(
 
 	@Korge3DExperimental
 	data class LightTexture(val bitmap: Bitmap?) : Light("texture") {
-		val textureUnit = AGTextureUnit(0)
 	}
 
 	val kind: String = "${emission.kind}_${ambient.kind}_${diffuse.kind}_${specular.kind}"

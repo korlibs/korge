@@ -52,8 +52,6 @@ getUniformLocation(1001, "u_GlobalAlpha") = 7003
 uniform1fv(7003, 1, [1])
 getUniformLocation(1001, "u_GlobalPixelScale") = 7004
 uniform1fv(7004, 1, [10])
-getUniformLocation(1001, "u_Tex") = 7005
-bindTexture(3553, 0)
 enable(3042)
 blendEquationSeparate(32774, 32774)
 blendFuncSeparate(1, 771, 1, 771)

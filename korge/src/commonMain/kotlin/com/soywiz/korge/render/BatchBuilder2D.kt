@@ -200,7 +200,7 @@ class BatchBuilder2D constructor(
 	//)
 
     init {
-        for (n in 0 until maxTextures) ctx.uniforms.set(u_TexN[n], null, AGTextureUnitInfo(index = n))
+        for (n in 0 until maxTextures) ctx.uniforms.set(u_TexN[n], null, AGTextureUnitInfo())
     }
 
 	init { logger.trace { "BatchBuilder2D[11]" } }
@@ -862,7 +862,7 @@ class BatchBuilder2D constructor(
         //println("updateStandardUniforms: ag.currentSize(${ag.currentWidth}, ${ag.currentHeight}) : ${ag.currentRenderBuffer}")
         ctx.updateStandardUniforms()
         for (n in 0 until maxTextures) {
-            uniforms[u_TexN[n]].set(currentTexN[n], AGTextureUnitInfo(n, linear = currentSmoothing))
+            uniforms[u_TexN[n]].set(currentTexN[n], AGTextureUnitInfo(linear = currentSmoothing))
         }
         //uniforms[u_InputPre] = currentTexN[0]?.premultiplied == true
         //uniforms[u_OutputPre] = ctx.isRenderingToTexture

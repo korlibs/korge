@@ -49,43 +49,24 @@ class AGBuffer : AGObject() {
 inline class AGTextureUnitInfo private constructor(val data: Int) {
     companion object {
         val INVALID = AGTextureUnitInfo(-1)
-        val DEFAULT = AGTextureUnitInfo(0).withIndex(0).withLinearTrilinear(true, true).withWrap(AGWrapMode.CLAMP_TO_EDGE)
+        val DEFAULT = AGTextureUnitInfo(0).withLinearTrilinear(true, true).withWrap(AGWrapMode.CLAMP_TO_EDGE)
 
         operator fun invoke(
-            index: Int,
             wrap: AGWrapMode = AGWrapMode.CLAMP_TO_EDGE,
             linear: Boolean = true,
             trilinear: Boolean = linear
-        ): AGTextureUnitInfo = AGTextureUnitInfo(0).withIndex(index).withWrap(wrap).withLinear(linear).withTrilinear(trilinear)
+        ): AGTextureUnitInfo = AGTextureUnitInfo(0).withWrap(wrap).withLinearTrilinear(linear, trilinear)
     }
-    val index: Int get() = data.extract8(0)
-    val wrap: AGWrapMode get() = AGWrapMode(data.extract2(8))
-    val linear: Boolean get() = data.extract(10)
-    val trilinear: Boolean get() = data.extract(11)
+    val wrap: AGWrapMode get() = AGWrapMode(data.extract2(0))
+    val linear: Boolean get() = data.extract(2)
+    val trilinear: Boolean get() = data.extract(3)
 
-    fun withIndex(index: Int): AGTextureUnitInfo = AGTextureUnitInfo(data.insert8(index, 0))
-    fun withWrap(wrap: AGWrapMode): AGTextureUnitInfo = AGTextureUnitInfo(data.insert2(wrap.ordinal, 8))
-    fun withLinear(linear: Boolean): AGTextureUnitInfo = AGTextureUnitInfo(data.insert(linear, 10))
-    fun withTrilinear(trilinear: Boolean): AGTextureUnitInfo = AGTextureUnitInfo(data.insert(trilinear, 11))
+    fun withWrap(wrap: AGWrapMode): AGTextureUnitInfo = AGTextureUnitInfo(data.insert2(wrap.ordinal, 0))
+    fun withLinear(linear: Boolean): AGTextureUnitInfo = AGTextureUnitInfo(data.insert(linear, 2))
+    fun withTrilinear(trilinear: Boolean): AGTextureUnitInfo = AGTextureUnitInfo(data.insert(trilinear, 3))
     fun withLinearTrilinear(linear: Boolean, trilinear: Boolean): AGTextureUnitInfo = withLinear(linear).withTrilinear(trilinear)
-}
 
-data class AGTextureUnit constructor(
-    val index: Int,
-    var texture: AGTexture? = null,
-    var linear: Boolean = true,
-    var trilinear: Boolean? = null,
-    var wrap: AGWrapMode = AGWrapMode.CLAMP_TO_EDGE,
-) {
-    val info: AGTextureUnitInfo get() = AGTextureUnitInfo(0).withIndex(index).withLinear(linear).withTrilinear(trilinear ?: linear).withWrap(wrap)
-
-    fun set(texture: AGTexture?, linear: Boolean, trilinear: Boolean? = null) {
-        this.texture = texture
-        this.linear = linear
-        this.trilinear = trilinear
-    }
-
-    fun clone() = AGTextureUnit(index, texture, linear, trilinear, wrap)
+    override fun toString(): String = "AGTextureUnitInfo(wrap=$wrap, linear=$linear, trilinear=$trilinear)"
 }
 
 class AGTexture(

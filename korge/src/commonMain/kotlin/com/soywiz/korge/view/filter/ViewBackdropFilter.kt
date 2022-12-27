@@ -60,7 +60,7 @@ class ViewRenderPhaseBackdropFilter(var filter: Filter) : ViewRenderPhase {
                         DefaultShaders.u_Tex2,
                         flush = true
                     ) {
-                        it[DefaultShaders.u_Tex2] = AGTextureUnit(6, mask.base.base)
+                        it.set(DefaultShaders.u_Tex2, mask.base.base)
                         //batcher.drawQuad(bgrtex, x = 0f, y = 0f, program = MERGE_ALPHA)
                         batcher.drawQuad(
                             bgrtex!!, x = 0f, y = 0f, m = view.parent!!.globalMatrix, program = MERGE_ALPHA,

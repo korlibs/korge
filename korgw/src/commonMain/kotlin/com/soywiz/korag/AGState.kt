@@ -61,6 +61,13 @@ inline class AGWrapMode(val ordinal: Int) {
         val REPEAT = AGWrapMode(1)
         val MIRRORED_REPEAT = AGWrapMode(2)
     }
+
+    override fun toString(): String = when (this) {
+        CLAMP_TO_EDGE -> "CLAMP_TO_EDGE"
+        REPEAT -> "REPEAT"
+        MIRRORED_REPEAT -> "MIRRORED_REPEAT"
+        else -> "<$ordinal>"
+    }
 }
 
 /** 2 bits required for encoding */
