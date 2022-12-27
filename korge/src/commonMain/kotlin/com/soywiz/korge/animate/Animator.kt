@@ -350,7 +350,9 @@ open class Animator @PublishedApi internal constructor(
 
         var executed = false
 
-        override fun reset() = Unit
+        override fun reset() {
+            executed = false
+        }
         override fun update(dt: TimeSpan): TimeSpan {
             complete()
             return dt
