@@ -31,7 +31,7 @@ open class ViewWithMesh3D(
         mat.identity()
     }
 
-    fun AGUniformValues.setMaterialLight(
+    fun AGUniformContainer.setMaterialLight(
         ctx: RenderContext3D,
         uniform: Shaders3D.MaterialLightUniform,
         actual: Material3D.Light
@@ -134,7 +134,7 @@ open class ViewWithMesh3D(
                                     light.quadraticAttenuation
                                 )
                             }
-                        },
+                        }.cloneReadOnlyToUniformBlockValues(),
                         depthAndFrontFace = rs
                     )
                 }

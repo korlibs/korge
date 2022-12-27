@@ -51,6 +51,8 @@ inline class AGTextureUnitInfo private constructor(val data: Int) {
         val INVALID = AGTextureUnitInfo(-1)
         val DEFAULT = AGTextureUnitInfo(0).withLinearTrilinear(true, true).withWrap(AGWrapMode.CLAMP_TO_EDGE)
 
+        fun raw(data: Int): AGTextureUnitInfo = AGTextureUnitInfo(data)
+
         operator fun invoke(
             wrap: AGWrapMode = AGWrapMode.CLAMP_TO_EDGE,
             linear: Boolean = true,

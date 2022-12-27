@@ -1,6 +1,7 @@
 package com.soywiz.korag
 
 import com.soywiz.kds.*
+import com.soywiz.kds.iterators.*
 import com.soywiz.kds.lock.*
 import com.soywiz.kmem.*
 import com.soywiz.korag.shader.*
@@ -12,15 +13,27 @@ import kotlin.math.*
 class AGUniformValue constructor(
     val uniform: Uniform,
     data: Buffer,
-    texture: AGTexture?,
-    textureUnitInfo: AGTextureUnitInfo
+    texture: AGTexture? = null,
+    textureUnitInfo: AGTextureUnitInfo = AGTextureUnitInfo.DEFAULT
 ) : AGValue(uniform, data, texture, textureUnitInfo) {
     override fun equals(other: Any?): Boolean = other is AGUniformValue && this.uniform == uniform && this.data == other.data && this.texture == other.texture && this.textureUnitInfo == other.textureUnitInfo
     override fun hashCode(): Int = uniform.hashCode() + super.hashCode()
     override fun toString(): String = "AGUniformValue[$uniform][${super.toString()}]"
 }
 
-class AGUniformValues(val capacity: Int = 8 * 1024) {
+interface AGUniformContainer {
+    fun getAllUniformValues(): List<AGUniformValue>
+    operator fun get(uniform: Uniform): AGUniformValue
+}
+
+fun AGUniformContainer.copyTo(other: AGUniformContainer) {
+    for (value in this.getAllUniformValues()) {
+        other[value.uniform].set(value)
+    }
+}
+
+@Deprecated("")
+class AGUniformValues(val capacity: Int = 8 * 1024) : AGUniformContainer {
     private val data = Buffer(capacity)
     private var allocOffset = 0
 
@@ -63,7 +76,7 @@ class AGUniformValues(val capacity: Int = 8 * 1024) {
         return out
     }
 
-    operator fun get(uniform: Uniform): AGUniformValue {
+    override operator fun get(uniform: Uniform): AGUniformValue {
         for (n in 0 until values.size) {
             val value = values[n]
             if (value.uniform == uniform) return value
@@ -76,25 +89,9 @@ class AGUniformValues(val capacity: Int = 8 * 1024) {
         return out
     }
 
-    operator fun set(uniform: Uniform, value: Unit) { this[uniform].set(value) }
-    operator fun set(uniform: Uniform, value: AGValue) { this[uniform].set(value) }
-    fun set(uniform: Uniform, value: AGTexture?, info: AGTextureUnitInfo = AGTextureUnitInfo.DEFAULT) { this[uniform].set(value, info) }
-    operator fun set(uniform: Uniform, value: Boolean) { this[uniform].set(value) }
-    operator fun set(uniform: Uniform, value: BooleanArray) { this[uniform].set(value) }
-    operator fun set(uniform: Uniform, value: Int) { this[uniform].set(value) }
-    operator fun set(uniform: Uniform, value: IntArray) { this[uniform].set(value) }
-    operator fun set(uniform: Uniform, value: Float) { this[uniform].set(value) }
-    operator fun set(uniform: Uniform, value: FloatArray) { this[uniform].set(value) }
-    operator fun set(uniform: Uniform, value: Double) { this[uniform].set(value) }
-    operator fun set(uniform: Uniform, value: Matrix3D) { this[uniform].set(value) }
-    operator fun set(uniform: Uniform, value: IPoint) { this[uniform].set(value) }
-    operator fun set(uniform: Uniform, value: Vector3D) { this[uniform].set(value) }
-    operator fun set(uniform: Uniform, value: RGBAf) { this[uniform].set(value) }
-    operator fun set(uniform: Uniform, value: RGBA) { this[uniform].set(value) }
-    operator fun set(uniform: Uniform, value: RGBAPremultiplied) { this[uniform].set(value) }
-    operator fun set(uniform: Uniform, value: Array<Vector3D>) { this[uniform].set(value) }
-    operator fun set(uniform: Uniform, value: Array<Matrix3D>) { this[uniform].set(value) }
-    operator fun set(uniform: Uniform, value: Array<FloatArray>) { this[uniform].set(value) }
+    override fun getAllUniformValues(): List<AGUniformValue> {
+        return values
+    }
 
     companion object {
         @PublishedApi internal val EMPTY = AGUniformValues()
@@ -105,6 +102,27 @@ class AGUniformValues(val capacity: Int = 8 * 1024) {
 
     override fun toString(): String = "AGUniformValues(${values.joinToString(", ") { "${it.uniform.name}=" + valueToString(it) }})"
 }
+
+
+operator fun AGUniformContainer.set(uniform: Uniform, value: Unit) { this[uniform].set(value) }
+operator fun AGUniformContainer.set(uniform: Uniform, value: AGValue) { this[uniform].set(value) }
+fun AGUniformContainer.set(uniform: Uniform, value: AGTexture?, info: AGTextureUnitInfo = AGTextureUnitInfo.DEFAULT) { this[uniform].set(value, info) }
+operator fun AGUniformContainer.set(uniform: Uniform, value: Boolean) { this[uniform].set(value) }
+operator fun AGUniformContainer.set(uniform: Uniform, value: BooleanArray) { this[uniform].set(value) }
+operator fun AGUniformContainer.set(uniform: Uniform, value: Int) { this[uniform].set(value) }
+operator fun AGUniformContainer.set(uniform: Uniform, value: IntArray) { this[uniform].set(value) }
+operator fun AGUniformContainer.set(uniform: Uniform, value: Float) { this[uniform].set(value) }
+operator fun AGUniformContainer.set(uniform: Uniform, value: FloatArray) { this[uniform].set(value) }
+operator fun AGUniformContainer.set(uniform: Uniform, value: Double) { this[uniform].set(value) }
+operator fun AGUniformContainer.set(uniform: Uniform, value: Matrix3D) { this[uniform].set(value) }
+operator fun AGUniformContainer.set(uniform: Uniform, value: IPoint) { this[uniform].set(value) }
+operator fun AGUniformContainer.set(uniform: Uniform, value: Vector3D) { this[uniform].set(value) }
+operator fun AGUniformContainer.set(uniform: Uniform, value: RGBAf) { this[uniform].set(value) }
+operator fun AGUniformContainer.set(uniform: Uniform, value: RGBA) { this[uniform].set(value) }
+operator fun AGUniformContainer.set(uniform: Uniform, value: RGBAPremultiplied) { this[uniform].set(value) }
+operator fun AGUniformContainer.set(uniform: Uniform, value: Array<Vector3D>) { this[uniform].set(value) }
+operator fun AGUniformContainer.set(uniform: Uniform, value: Array<Matrix3D>) { this[uniform].set(value) }
+operator fun AGUniformContainer.set(uniform: Uniform, value: Array<FloatArray>) { this[uniform].set(value) }
 
 open class AGValue(
     val type: VarType,
@@ -126,6 +144,10 @@ open class AGValue(
     val totalBytes: Int = type.bytesSize * arrayCount
 
     //val data: Buffer = Buffer(type.bytesSize * arrayCount * 4)
+    val i8: Int8Buffer = data.i8
+    val u8: Uint8Buffer = data.u8
+    val i16: Int16Buffer = data.i16
+    val u16: Uint16Buffer = data.u16
     val i32: Int32Buffer = data.i32
     val f32: Float32Buffer = data.f32
 
@@ -277,10 +299,13 @@ open class AGValue(
                 append('[')
                 for (n in 0 until stride) {
                     if (n != 0) append(", ")
-                    if (kind == VarKind.TFLOAT) {
-                        append(f32[i * stride + n].niceStr)
-                    } else {
-                        append(i32[i * stride + n])
+                    when (kind) {
+                        VarKind.TFLOAT -> append(f32[i * stride + n].niceStr)
+                        VarKind.TBYTE -> append(i8[i * stride + n])
+                        VarKind.TUNSIGNED_BYTE -> append(u8[i * stride + n])
+                        VarKind.TSHORT -> append(i16[i * stride + n])
+                        VarKind.TUNSIGNED_SHORT -> append(u16[i * stride + n])
+                        else -> append(i32[i * stride + n])
                     }
                 }
                 append(']')
@@ -295,4 +320,118 @@ open class AGValue(
             append(")")
         }
     }
+}
+
+class UniformBlockData(val block: UniformBlock) : AGUniformContainer {
+    val data: Buffer = Buffer(block.totalSize)
+    val values: List<AGUniformValue> = block.itemsWithInfo.map {
+        val uniform = it.uniform
+        val position = it.offset
+        val size = it.size
+        AGUniformValue(uniform, data.sliceWithSize(position, size), null, AGTextureUnitInfo.DEFAULT)
+    }
+    val valuesByUniform = values.associateBy { it.uniform }
+    override fun getAllUniformValues(): List<AGUniformValue> = values
+    override operator fun get(uniform: Uniform): AGUniformValue = valuesByUniform[uniform] ?: error("Can't get uniform $uniform in $this")
+
+    override fun toString(): String = "UniformBlockData[$block]($values)"
+}
+
+class UniformBlockBuffer(val block: UniformBlock, val maxElements: Int) {
+    val tempBuffer = Buffer(block.totalSize)
+    val buffer = Buffer(block.totalSize * maxElements)
+    val textures = arrayOfNulls<AGTexture>(block.numElements * maxElements)
+    val textureUnitInfos = IntArray(block.numElements * maxElements)
+
+    val tempValues: UniformBlockData = UniformBlockData(block)
+
+    operator fun set(index: Int, data: UniformBlockData) {
+        if (data.block != block) error("${data.block} != $block")
+        arraycopy(data.data, 0, this.buffer, index * block.totalSize, block.totalSize)
+        for (n in 0 until block.numElements) {
+            this.textures[index * block.numElements + n] = data.values[n].texture
+            this.textureUnitInfos[index * block.numElements + n] = data.values[n].textureUnitInfo.data
+        }
+    }
+    fun copyIndexTo(index: Int, data: UniformBlockData) {
+        if (data.block != block) error("${data.block} != $block")
+        arraycopy(this.buffer, index * block.totalSize, data.data, 0, block.totalSize)
+
+        for (n in 0 until block.numElements) {
+            data.values[n].texture = this.textures[index * block.numElements + n]
+            data.values[n].textureUnitInfo = AGTextureUnitInfo.raw(this.textureUnitInfos[index * block.numElements + n])
+        }
+    }
+
+    fun readValues(index: Int, out: UniformBlockData = tempValues): UniformBlockData {
+        copyIndexTo(index, out)
+        return out
+    }
+
+    var lastIndex = 0
+        private set
+
+    fun reset() {
+        lastIndex = 0
+    }
+
+    fun put(data: UniformBlockData): Int {
+        val index = lastIndex++
+        this[index] = data
+        return index
+    }
+
+    override fun toString(): String {
+        return buildString {
+            append("UniformBlockBuffer[$maxElements](")
+            for (n in 0 until maxElements) {
+                val temp = readValues(n)
+                if (n > 0) append(", ")
+                append(temp)
+            }
+            append(")")
+        }
+    }
+}
+
+class AGUniformBlockValues(val buffers: List<UniformBlockBuffer>, val indices: IntArray) {
+    companion object {
+        val EMPTY = AGUniformBlockValues(emptyList(), intArrayOf())
+    }
+    inline fun forEachBlock(block: (UniformBlockData) -> Unit) {
+        for (n in 0 until kotlin.math.min(buffers.size, indices.size)) {
+            val buffer = buffers[n]
+            val index = indices[n]
+            block(buffer.readValues(index))
+        }
+    }
+
+    inline fun forEachValue(block: (AGUniformValue) -> Unit) {
+        forEachBlock {
+            it.values.fastForEach { block(it) }
+        }
+    }
+
+    inline fun fastForEach(block: (AGUniformValue) -> Unit) {
+        forEachValue { block(it) }
+    }
+
+    override fun toString(): String = "AGUniformBlockValues(buffers=$buffers, indices=${indices.size})"
+}
+
+@Deprecated("")
+fun AGUniformBlockValuesSimple(block: AGUniformContainer.() -> Unit): AGUniformBlockValues {
+    val temp = AGUniformValues()
+    block(temp)
+    return temp.cloneReadOnlyToUniformBlockValues()
+}
+
+@Deprecated("")
+fun AGUniformValues.cloneReadOnlyToUniformBlockValues(): AGUniformBlockValues {
+    val allUniformBlock = UniformBlock(this.getAllUniformValues().map { it.uniform })
+    val data = UniformBlockData(allUniformBlock)
+    val buffer = UniformBlockBuffer(allUniformBlock, 1)
+    this.copyTo(data)
+    buffer[0] = data
+    return AGUniformBlockValues(listOf(buffer), intArrayOf(0))
 }

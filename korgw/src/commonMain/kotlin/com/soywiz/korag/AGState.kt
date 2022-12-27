@@ -770,7 +770,8 @@ data class AGBatch(
     var indexType: AGIndexType = AGIndexType.USHORT,
     // Program & Uniforms
     var program: Program = DefaultShaders.PROGRAM_DEBUG,
-    var uniforms: AGUniformValues = AGUniformValues.EMPTY,
+    //var uniforms: AGUniformValues = AGUniformValues.EMPTY,
+    var uniforms: AGUniformBlockValues = AGUniformBlockValues.EMPTY,
     // State
     var blending: AGBlending = AGBlending.NORMAL,
     var stencilOpFunc: AGStencilOpFunc = AGStencilOpFunc.DEFAULT,

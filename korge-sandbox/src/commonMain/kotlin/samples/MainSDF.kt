@@ -1,5 +1,6 @@
 package samples
 
+import com.soywiz.korag.*
 import com.soywiz.korag.shader.Uniform
 import com.soywiz.korag.shader.VarType
 import com.soywiz.korge.render.*

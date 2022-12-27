@@ -1,6 +1,7 @@
 package com.soywiz.korge.render
 
 import com.soywiz.kds.iterators.*
+import com.soywiz.korag.*
 import com.soywiz.korag.shader.*
 import com.soywiz.korge.annotations.*
 import com.soywiz.korge.view.*

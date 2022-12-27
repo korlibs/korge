@@ -107,7 +107,7 @@ class Text3D(
                                 light.quadraticAttenuation
                             )
                         }
-                    },
+                    }.cloneReadOnlyToUniformBlockValues(),
                     depthAndFrontFace = rs
                 )
             }

@@ -1,6 +1,7 @@
 package com.soywiz.korgw
 
 import com.soywiz.korag.*
+import com.soywiz.korag.shader.*
 import com.soywiz.korev.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
@@ -51,7 +52,7 @@ class TestE2eJava {
                             program = DefaultShaders.PROGRAM_DEBUG,
                             drawType = AGDrawType.TRIANGLES,
                             vertexCount = 3,
-                            uniforms = AGUniformValues(
+                            uniforms = AGUniformBlockValues(listOf(), intArrayOf()
                                 //DefaultShaders.u_ProjMat to Matrix3D().setToOrtho(0f, 0f, WIDTH.toFloat(), HEIGHT.toFloat(), -1f, +1f)
                             )
                         )

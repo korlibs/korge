@@ -184,7 +184,7 @@ class SkyBox(
                         this[u_ProjMat] = projection
                         this[u_ViewMat] = viewNoTrans
                         this.set(u_SkyBox, ctx.textureManager.getTextureBase(cubemap).base)
-                    },
+                    }.cloneReadOnlyToUniformBlockValues(),
                     depthAndFrontFace = rs
                 )
             }

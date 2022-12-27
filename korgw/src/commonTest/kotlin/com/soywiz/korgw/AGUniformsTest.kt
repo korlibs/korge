@@ -1,6 +1,7 @@
 package com.soywiz.korgw
 
 import com.soywiz.kmem.*
+import com.soywiz.korag.*
 import com.soywiz.korag.shader.*
 import com.soywiz.korma.geom.*
 import kotlin.test.*
@@ -19,6 +20,10 @@ class AGUniformsTest {
         data[projMatrix].set(Matrix3D().multiply(3f))
         val index2 = buffer.put(data)
         //println(buffer.buffer.f32.toFloatArray().toList())
+
+        AGUniformBlockValues(listOf(buffer, buffer), intArrayOf(0, 1)).forEachValue {
+            println(it)
+        }
 
         assertEquals(listOf(0, 1), listOf(index1, index2))
 

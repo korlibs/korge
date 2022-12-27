@@ -20,7 +20,8 @@ class AGTextureDrawer(val ag: AG) {
             SET(out, texture2D(u_Tex, v_Tex["xy"]))
         }
     })
-    val uniforms = AGUniformValues()
+    //val uniforms = AGUniformValues()
+    //uniforms: AGUniformBlockValues = AGUniformBlockValues.EMPTY,
 
     fun setVertex(n: Int, px: Float, py: Float, tx: Float, ty: Float) {
         val offset = n * 4
@@ -31,9 +32,14 @@ class AGTextureDrawer(val ag: AG) {
     }
 
     fun draw(frameBuffer: AGFrameBuffer, tex: AGTexture, left: Float, top: Float, right: Float, bottom: Float) {
-        //tex.upload(Bitmap32(32, 32) { x, y -> Colors.RED })
-        uniforms.set(DefaultShaders.u_Tex, tex)
+        val uTexBlock = UniformBlock(DefaultShaders.u_Tex)
+        val udata = UniformBlockData(uTexBlock)
+        udata[DefaultShaders.u_Tex].set(tex)
+        val buffer = UniformBlockBuffer(uTexBlock, 1)
+        buffer[0] = udata
+        val uniforms = AGUniformBlockValues(listOf(buffer), intArrayOf(0))
 
+        //tex.upload(Bitmap32(32, 32) { x, y -> Colors.RED })
         val texLeft = -1f
         val texRight = +1f
         val texTop = -1f

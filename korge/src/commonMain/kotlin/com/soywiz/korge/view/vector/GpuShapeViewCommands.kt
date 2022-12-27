@@ -170,7 +170,7 @@ class GpuShapeViewCommands {
                                     ctx.currentFrameBuffer.base,
                                     ctx.currentFrameBuffer.info,
                                     vertexData = vertices,
-                                    uniforms = tempUniforms,
+                                    uniforms = tempUniforms.cloneReadOnlyToUniformBlockValues(),
                                     stencilOpFunc = cmd.stencilOpFunc,
                                     stencilRef = cmd.stencilRef,
                                     colorMask = cmd.colorMask,

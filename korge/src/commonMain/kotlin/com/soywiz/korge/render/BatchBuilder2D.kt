@@ -890,7 +890,7 @@ class BatchBuilder2D constructor(
             //program = PROGRAM_PRE,
             drawType = AGDrawType.TRIANGLES,
             blending = currentBlendMode.factors,
-            uniforms = uniforms.cloneReadOnly(),
+            uniforms = uniforms.cloneReadOnlyToUniformBlockValues(),
             stencilOpFunc = stencilOpFunc,
             stencilRef = stencilRef,
             colorMask = colorMask,

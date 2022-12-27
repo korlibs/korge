@@ -113,7 +113,8 @@ class AGOpengl(val gl: KmlGl) : AG() {
         indexType: AGIndexType,
         drawOffset: Int,
         blending: AGBlending,
-        uniforms: AGUniformValues,
+        uniforms: AGUniformBlockValues,
+        //uniforms: AGUniformValues,
         stencilRef: AGStencilReference,
         stencilOpFunc: AGStencilOpFunc,
         colorMask: AGColorMask,
@@ -386,7 +387,8 @@ class AGOpengl(val gl: KmlGl) : AG() {
     }
 
     // UBO
-    fun uniformsSet(uniforms: AGUniformValues) {
+    fun uniformsSet(uniforms: AGUniformBlockValues) {
+    //fun uniformsSet(uniforms: AGUniformValues) {
         val glProgram = currentProgram ?: return
 
         //if (doPrint) println("-----------")
@@ -829,7 +831,8 @@ class AGOpengl(val gl: KmlGl) : AG() {
         glGlobalState.readStats(out)
     }
 
-    fun AGUniformValues.useExternalSampler(): Boolean {
+    //fun AGUniformValues.useExternalSampler(): Boolean {
+    fun AGUniformBlockValues.useExternalSampler(): Boolean {
         var useExternalSampler = false
         this.fastForEach { value ->
             val uniform = value.uniform

@@ -7,11 +7,13 @@
 package com.soywiz.korag.shader
 
 import com.soywiz.kds.*
+import com.soywiz.kds.iterators.*
 import com.soywiz.kmem.*
 import com.soywiz.korag.*
 import com.soywiz.korag.annotation.KoragExperimental
 import com.soywiz.korio.lang.Closeable
 import com.soywiz.korio.lang.invalidOp
+import com.soywiz.korma.math.*
 import kotlin.reflect.*
 
 enum class VarKind(val bytesSize: Int) {
@@ -1043,8 +1045,15 @@ typealias VertexLayout = ProgramLayout<Attribute>
 
 inline val ProgramLayout<Attribute>.attributes: List<Attribute> get() = items
 inline val ProgramLayout<Attribute>.attributePositions: IntArrayList get() = _positions
+inline val ProgramLayoutItem<Attribute>.attribute: Attribute get() = item
 
-open class ProgramLayout<TVariable : VariableWithOffset>(
+class ProgramLayoutItem<TVariable : VariableWithOffset>(
+    val item: TVariable,
+    val offset: Int,
+    val size: Int = item.type.bytesSize
+)
+
+class ProgramLayout<TVariable : VariableWithOffset>(
     @PublishedApi internal val items: List<TVariable>,
     private val layoutSize: Int?
 ) {
@@ -1052,6 +1061,7 @@ open class ProgramLayout<TVariable : VariableWithOffset>(
 	constructor(vararg attributes: TVariable, layoutSize: Int? = null) : this(attributes.toFastList(), layoutSize)
 
 	private var _lastPos: Int = 0
+    val numElements = items.size
 
 	val alignments: IntArrayList = items.mapInt {
 		val a = it.type.kind.bytesSize
@@ -1068,6 +1078,10 @@ open class ProgramLayout<TVariable : VariableWithOffset>(
 		out
 	}
 
+    val itemsWithInfo: List<ProgramLayoutItem<TVariable>> = items.indices.map {
+        ProgramLayoutItem(items[it], _positions[it])
+    }
+
 	val maxAlignment: Int = alignments.maxOrNull() ?: 1
     /** Size in bytes for each vertex */
 	val totalSize: Int = layoutSize ?: _lastPos.nextAlignedTo(maxAlignment)
@@ -1080,40 +1094,4 @@ typealias UniformLayout = ProgramLayout<Uniform>
 typealias UniformBlock = ProgramLayout<Uniform>
 inline val ProgramLayout<Uniform>.uniforms: List<Uniform> get() = items
 inline val ProgramLayout<Uniform>.uniformPositions: IntArrayList get() = _positions
-
-class UniformBlockData(val block: UniformBlock) {
-    val data = Buffer(block.totalSize)
-    val values = (0 until block.uniformPositions.size).map { index ->
-        val uniform = block.uniforms[index]
-        val position = block.uniformPositions[index]
-        val size = uniform.type.bytesSize
-        AGUniformValue(uniform, data.sliceWithSize(position, size), null, AGTextureUnitInfo.DEFAULT)
-    }
-    val valuesByUniform = values.associateBy { it.uniform }
-    operator fun get(uniform: Uniform): AGUniformValue = valuesByUniform[uniform] ?: error("Can't get uniform $uniform in $this")
-}
-
-class UniformBlockBuffer(val block: UniformBlock, val maxElements: Int) {
-    val buffer = Buffer(block.totalSize * maxElements)
-    operator fun set(index: Int, data: UniformBlockData) {
-        if (data.block != block) error("${data.block} != $block")
-        arraycopy(data.data, 0, this.buffer, index * block.totalSize, block.totalSize)
-    }
-    fun copyIndexTo(index: Int, data: UniformBlockData) {
-        if (data.block != block) error("${data.block} != $block")
-        arraycopy(this.buffer, index * block.totalSize, data.data, 0, block.totalSize)
-    }
-
-    var lastIndex = 0
-        private set
-
-    fun reset() {
-        lastIndex = 0
-    }
-
-    fun put(data: UniformBlockData): Int {
-        val index = lastIndex++
-        this[index] = data
-        return index
-    }
-}
+inline val ProgramLayoutItem<Uniform>.uniform: Uniform get() = item
