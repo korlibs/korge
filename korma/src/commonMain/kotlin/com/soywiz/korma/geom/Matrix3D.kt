@@ -119,21 +119,21 @@ class Matrix3D {
         return this
     }
 
-    fun setColumns4x4(f: FloatArray, offset: Int) = setColumns(
+    fun setColumns4x4(f: FloatArray, offset: Int): Matrix3D = setColumns(
         f[offset + 0], f[offset + 1], f[offset + 2], f[offset + 3],
         f[offset + 4], f[offset + 5], f[offset + 6], f[offset + 7],
         f[offset + 8], f[offset + 9], f[offset + 10], f[offset + 11],
         f[offset + 12], f[offset + 13], f[offset + 14], f[offset + 15]
     )
 
-    fun setRows4x4(f: FloatArray, offset: Int) = setRows(
+    fun setRows4x4(f: FloatArray, offset: Int): Matrix3D = setRows(
         f[offset + 0], f[offset + 1], f[offset + 2], f[offset + 3],
         f[offset + 4], f[offset + 5], f[offset + 6], f[offset + 7],
         f[offset + 8], f[offset + 9], f[offset + 10], f[offset + 11],
         f[offset + 12], f[offset + 13], f[offset + 14], f[offset + 15]
     )
 
-    fun setColumns3x3(f: FloatArray, offset: Int) = setColumns(
+    fun setColumns3x3(f: FloatArray, offset: Int): Matrix3D = setColumns(
         f[offset + 0], f[offset + 1], f[offset + 2], 0f,
         f[offset + 3], f[offset + 4], f[offset + 5], 0f,
         f[offset + 6], f[offset + 7], f[offset + 8], 0f,
@@ -419,8 +419,9 @@ class Matrix3D {
         rv30.toFloat(), rv31.toFloat(), rv32.toFloat(), rv33.toFloat(),
     )
 
-    fun multiply(scale: Float, l: Matrix3D = this) = this.apply {
+    fun multiply(scale: Float, l: Matrix3D = this): Matrix3D {
         for (n in 0 until 16) this.data[n] = l.data[n] * scale
+        return this
     }
 
     fun copyFrom(that: Matrix3D): Matrix3D {
