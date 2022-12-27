@@ -5,8 +5,7 @@ import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.kds.toCaseInsensitiveMap
 import com.soywiz.korio.file.VfsFile
 import com.soywiz.korio.lang.eachBuilder
-import com.soywiz.korio.util.Indenter
-import com.soywiz.korio.util.StrReader
+import com.soywiz.korio.util.*
 import kotlin.collections.Iterable
 import kotlin.collections.Iterator
 import kotlin.collections.LinkedHashMap
@@ -246,10 +245,7 @@ data class Xml(
 		fun decode(r: StrReader): String = buildString {
 			while (!r.eof) {
 				@Suppress("LiftReturnOrAssignment") // Performance?
-				val plain = r.readUntil('&')
-				if (plain != null) {
-					append(plain)
-				}
+                append(r.readUntil('&'))
 				if (r.eof) break
 
 				r.skipExpect('&')
@@ -266,11 +262,11 @@ data class Xml(
 
 	object Stream {
 		fun parse(str: String): Iterable<Element> = parse(StrReader(str))
-		fun parse(r: StrReader): Iterable<Element> = Xml2Iterable(r)
+		fun parse(r: BaseStrReader): Iterable<Element> = Xml2Iterable(r)
 
-		private fun StrReader.matchStringOrId(): String? = matchSingleOrDoubleQuoteString() ?: matchIdentifier()
+		private fun BaseStrReader.matchStringOrId(): String? = matchSingleOrDoubleQuoteString() ?: matchIdentifier()
 
-		private fun xmlSequence(r: StrReader) = sequence<Element> {
+		private fun xmlSequence(r: BaseStrReader): Sequence<Element> = sequence<Element> {
 			while (!r.eof) {
 				val str = r.readUntil('<') ?: ""
 				if (str.isNotEmpty()) {
@@ -280,29 +276,26 @@ data class Xml(
 				if (r.eof) break
 
 				r.skipExpect('<')
-				var res: Element? = null
-				when {
+                val res: Element = when {
 					r.tryExpect("![CDATA[") -> {
-						val start = r.pos
-						while (!r.eof) {
-							val end = r.pos
-							if (r.tryExpect("]]>")) {
-								res = Element.Text(r.createRange(start, end).text).also { it.cdata = true }
-								break
-							}
-							r.readChar()
-						}
+                        val text = r.slice {
+                            while (!r.eof) {
+                                if (r.tryExpect("]]>", consume = false)) break
+                                r.skip(1)
+                            }
+                        }
+                        r.readExpect("]]>")
+                        Element.Text(text).also { it.cdata = true }
 					}
 					r.tryExpect("!--") -> {
-						val start = r.pos
-						while (!r.eof) {
-							val end = r.pos
-							if (r.tryExpect("-->")) {
-								res = Element.CommentTag(r.createRange(start, end).text)
-								break
-							}
-							r.readChar()
-						}
+                        val text = r.slice {
+                            while (!r.eof) {
+                                if (r.tryExpect("-->", consume = false)) break
+                                r.skip(1)
+                            }
+                        }
+                        r.readExpect("-->")
+                        Element.CommentTag(text)
 					}
 					else -> {
 						r.skipSpaces()
@@ -335,7 +328,7 @@ data class Xml(
 						val openclose = r.tryExpect('/')
 						val processingInstructionEnd = r.tryExpect('?')
 						r.skipExpect('>')
-						res = when {
+						when {
 							processingInstruction || processingEntityOrDocType -> Element.ProcessingInstructionTag(name, attributes)
 							openclose -> Element.OpenCloseTag(name, attributes)
 							close -> Element.CloseTag(name)
@@ -344,13 +337,11 @@ data class Xml(
 					}
 				}
 
-				if (res != null) {
-					yield(res)
-				}
+                yield(res)
 			}
 		}
 
-		class Xml2Iterable(val reader2: StrReader) : Iterable<Element> {
+		class Xml2Iterable(val reader2: BaseStrReader) : Iterable<Element> {
 			val reader = reader2.clone()
 			override fun iterator(): Iterator<Element> = xmlSequence(reader).iterator()
 		}

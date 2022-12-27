@@ -294,7 +294,7 @@ class DequeSyncStreamBase(val deque: ByteArrayDeque = ByteArrayDeque()) : SyncSt
     }
 }
 
-fun DequeSyncStream() = DequeSyncStreamBase().toSyncStream()
+fun DequeSyncStream(): SyncStream = DequeSyncStreamBase().toSyncStream()
 
 inline fun MemorySyncStreamToByteArray(initialCapacity: Int = 4096, callback: SyncStream.() -> Unit): ByteArray {
 	val buffer = ByteArrayBuilder(initialCapacity)
