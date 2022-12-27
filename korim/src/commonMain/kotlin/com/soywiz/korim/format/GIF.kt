@@ -36,6 +36,7 @@ object GIF : ImageFormat("gif") {
         val frames = arrayListOf<ImageFrame>()
         while (GifDec.gd_get_frame(gif) >= 1) {
             val out = Bitmap32(gif.width, gif.height, premultiplied = false)
+            out.bitmapName = "gif${frames.size}"
             val time = (max(gif.gce.delay, 1) * 10).milliseconds
             try {
                 GifDec.gd_render_frame(gif, RgbaArray(out.ints))

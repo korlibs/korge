@@ -94,9 +94,11 @@ internal class GLTexture(state: GLGlobalState) : GLBaseObject(state) {
 
     init {
         globalState.texturesCreated.incrementAndGet()
+        //println("CREATED texture=$id")
     }
 
     override fun delete() {
+        //println("DELETE texture=$id")
         globalState.texturesDeleted.incrementAndGet()
         gl.deleteTexture(id)
         id = -1

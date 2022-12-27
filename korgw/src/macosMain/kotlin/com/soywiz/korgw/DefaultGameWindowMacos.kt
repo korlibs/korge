@@ -306,6 +306,7 @@ class MyDefaultGameWindow : GameWindow() {
     val windowStyle = NSWindowStyleMaskTitled or NSWindowStyleMaskMiniaturizable or
         NSWindowStyleMaskClosable or NSWindowStyleMaskResizable
 
+    @Suppress("OPT_IN_USAGE")
     val attrs: UIntArray by lazy {
         val antialias = (this.quality != GameWindow.Quality.PERFORMANCE)
         val antialiasArray = if (antialias) intArrayOf(
@@ -324,7 +325,7 @@ class MyDefaultGameWindow : GameWindow() {
             NSOpenGLPFAStencilSize.convert(), 8.convert(),
             NSOpenGLPFAAccumSize.convert(), 0.convert(),
             0.convert()
-        ).toUIntArray()
+        ).asUIntArray()
     }
 
     val pixelFormat by lazy {
