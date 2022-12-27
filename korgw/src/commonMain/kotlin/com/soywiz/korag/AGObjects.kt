@@ -49,6 +49,7 @@ class AGBuffer : AGObject() {
 inline class AGTextureUnitInfo private constructor(val data: Int) {
     companion object {
         val INVALID = AGTextureUnitInfo(-1)
+        val DEFAULT = AGTextureUnitInfo(0).withIndex(0).withLinearTrilinear(true, true).withWrap(AGWrapMode.CLAMP_TO_EDGE)
 
         operator fun invoke(
             index: Int,
@@ -66,6 +67,7 @@ inline class AGTextureUnitInfo private constructor(val data: Int) {
     fun withWrap(wrap: AGWrapMode): AGTextureUnitInfo = AGTextureUnitInfo(data.insert2(wrap.ordinal, 8))
     fun withLinear(linear: Boolean): AGTextureUnitInfo = AGTextureUnitInfo(data.insert(linear, 10))
     fun withTrilinear(trilinear: Boolean): AGTextureUnitInfo = AGTextureUnitInfo(data.insert(trilinear, 11))
+    fun withLinearTrilinear(linear: Boolean, trilinear: Boolean): AGTextureUnitInfo = withLinear(linear).withTrilinear(trilinear)
 }
 
 data class AGTextureUnit constructor(

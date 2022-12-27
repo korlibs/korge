@@ -29,6 +29,7 @@ suspend fun main() = Korge(
 ) {
     //sceneContainer(views).changeTo({ MainGifAnimation() }); return@Korge
     //sceneContainer(views).changeTo({ MainStressButtons() }); return@Korge
+    //sceneContainer(views).changeTo({ MainTransitionFilter() }); return@Korge
 
     demoSelector(
         //Demo(::MainJSMpeg),
@@ -43,9 +44,10 @@ suspend fun main() = Korge(
         //Demo(::MainUI),
         //Demo(::MainBezier),
         //Demo(::MainBunnymark),
-        Demo(::MainStressButtons),
+        //Demo(::MainStressButtons),
         //Demo(::MainGifAnimation),
-        //Demo(::MainFilters),
+        //Demo(::MainTransitionFilter),
+        Demo(::MainFilters),
         //Demo(::MainGpuVectorRendering),
         //Demo(::MainTextMetrics),
         //Demo(::MainBunnymark),
