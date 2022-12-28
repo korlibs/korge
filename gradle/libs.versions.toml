@@ -4,16 +4,16 @@ jcodec = "0.2.5"
 proguard-gradle = "7.2.2"
 kotlin = "1.8.0"
 kotlinx-coroutines = "1.6.4"
-kotlinx-serialization = "1.4.0"
-kotlinx-atomicfu = "0.18.3"
+kotlinx-serialization = "1.4.1"
+kotlinx-atomicfu = "0.18.5"
 node = "16.9.1"
-android-build-gradle = "7.0.4"
+android-build-gradle = "7.3.0"
 gson = "2.8.6"
 #gradle-publish-plugin = "1.0.0"
 gradle-publish-plugin = "0.14.0"
 closure-compiler = "v20210808"
 # https://repo.maven.apache.org/maven2/org/jetbrains/intellij/deps/intellij-coverage-agent/
-kover-agent = "1.0.688"
+kover-agent = "1.0.691"
 
 [libraries]
 kover-intellij-agent = { module = "org.jetbrains.intellij.deps:intellij-coverage-agent", version.ref = "kover-agent" }
