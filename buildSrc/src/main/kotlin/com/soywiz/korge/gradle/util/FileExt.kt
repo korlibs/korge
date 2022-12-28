@@ -20,6 +20,7 @@ fun File.getFirstRegexOrFail(regex: Regex) = this.getFirstRegexOrNull(regex)
 fun File.writeTextIfChanged(text: String, charset: Charset = Charsets.UTF_8) {
     val originalText = this.takeIf { it.exists() }?.readText(charset)
     if (originalText != text) {
+        if (!parentFile.isDirectory) parentFile.mkdirs()
         writeText(text, charset)
     }
 }

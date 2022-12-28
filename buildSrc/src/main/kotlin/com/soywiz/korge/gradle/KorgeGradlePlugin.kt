@@ -13,6 +13,7 @@ import org.gradle.plugins.ide.idea.model.*
 import org.gradle.util.*
 import org.jetbrains.kotlin.gradle.dsl.*
 import java.io.*
+import kotlin.KotlinVersion as KotlinKotlinVersion
 
 class KorgeGradleApply(val project: Project) {
 	fun apply(includeIndirectAndroid: Boolean = true) = project {
@@ -39,26 +40,7 @@ class KorgeGradleApply(val project: Project) {
 
         logger.info("Korge Gradle plugin: ${BuildVersions.ALL}")
 
-        project.tasks.create("showKorgeVersions", Task::class.java) {
-            doLast {
-                println("Build-time:")
-                for ((key, value) in mapOf(
-                    "os.name" to System.getProperty("os.name"),
-                    "os.version" to System.getProperty("os.version"),
-                    "java.vendor" to System.getProperty("java.vendor"),
-                    "java.version" to System.getProperty("java.version"),
-                    "gradle.version" to GradleVersion.current(),
-                    "groovy.version" to GroovySystem.getVersion(),
-                    "kotlin.version" to KotlinVersion.CURRENT,
-                )) {
-                    println(" - $key: $value")
-                }
-                println("Korge Gradle plugin:")
-                for ((key, value) in BuildVersions.ALL) {
-                    println(" - $key: $value")
-                }
-            }
-        }
+        KorgeVersionsTask.registerShowKorgeVersions(project)
 
         project.korge.init(includeIndirectAndroid)
 
