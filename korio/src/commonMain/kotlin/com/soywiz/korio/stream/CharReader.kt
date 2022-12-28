@@ -4,7 +4,8 @@ import com.soywiz.kds.*
 import com.soywiz.korio.lang.*
 
 interface CharReader {
-    fun read(out: StringBuilder, count: Int)
+    fun read(out: StringBuilder, count: Int): Int
+    fun clone(): CharReader
 }
 fun CharReader.read(count: Int): String = buildString { read(this, count) }
 
@@ -17,7 +18,9 @@ class CharReaderFromSyncStream(val stream: SyncStream, val charset: Charset, val
     private val buffer = ByteArrayDeque()
     private var tempStringBuilder = StringBuilder()
 
-    override fun read(out: StringBuilder, count: Int) {
+    override fun clone(): CharReader = CharReaderFromSyncStream(stream.clone(), charset, chunkSize)
+
+    override fun read(out: StringBuilder, count: Int): Int {
         while (buffer.availableRead < temp.size) {
             val readCount = stream.read(temp)
             if (readCount <= 0) break
@@ -34,8 +37,9 @@ class CharReaderFromSyncStream(val stream: SyncStream, val charset: Charset, val
         //println("tempStringBuilder=$tempStringBuilder")
 
         val slice = tempStringBuilder.substring(0, kotlin.math.min(count, tempStringBuilder.length))
-        tempStringBuilder = tempStringBuilder.removeRange(0, slice.length) as StringBuilder
+        tempStringBuilder = StringBuilder(slice.length).append(tempStringBuilder.substring(slice.length))
 
         out.append(slice)
+        return slice.length
     }
 }

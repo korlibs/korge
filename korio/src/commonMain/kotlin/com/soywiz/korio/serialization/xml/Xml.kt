@@ -5,6 +5,7 @@ import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.kds.toCaseInsensitiveMap
 import com.soywiz.korio.file.VfsFile
 import com.soywiz.korio.lang.eachBuilder
+import com.soywiz.korio.stream.*
 import com.soywiz.korio.util.*
 import kotlin.collections.Iterable
 import kotlin.collections.Iterator
@@ -263,6 +264,7 @@ data class Xml(
 	object Stream {
 		fun parse(str: String): Iterable<Element> = parse(StrReader(str))
 		fun parse(r: BaseStrReader): Iterable<Element> = Xml2Iterable(r)
+        fun parse(r: CharReader): Iterable<Element> = Xml2Iterable(CharReaderStrReader(r))
 
 		private fun BaseStrReader.matchStringOrId(): String? = matchSingleOrDoubleQuoteString() ?: matchIdentifier()
 
@@ -347,15 +349,13 @@ data class Xml(
 		}
 
 		sealed class Element {
-			class ProcessingInstructionTag(val name: String, val attributes: Map<String, String>) : Element()
-			class OpenCloseTag(val name: String, val attributes: Map<String, String>) : Element()
-			class OpenTag(val name: String, val attributes: Map<String, String>) : Element()
-			class CommentTag(val text: String) : Element()
-			class CloseTag(val name: String) : Element()
-			class Text(val text: String) : Element() {
-                var cdata: Boolean = false
-            }
-		}
+            data class ProcessingInstructionTag(val name: String, val attributes: Map<String, String>) : Element()
+			data class OpenCloseTag(val name: String, val attributes: Map<String, String>) : Element()
+            data class OpenTag(val name: String, val attributes: Map<String, String>) : Element()
+            data class CommentTag(val text: String) : Element()
+            data class CloseTag(val name: String) : Element()
+            data class Text(val text: String, var cdata: Boolean = false) : Element()
+        }
 	}
 }
 
