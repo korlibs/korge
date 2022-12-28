@@ -34,8 +34,10 @@ class JsCharset(val textEncoder: TextEncoder, val textDecoder: TextDecoder) : Ch
         out.append(textEncoder.encode(src.substring(start, end)).toByteArray())
     }
 
-    override fun decode(out: StringBuilder, src: ByteArray, start: Int, end: Int) {
+    override fun decode(out: StringBuilder, src: ByteArray, start: Int, end: Int): Int {
         out.append(textDecoder.decode(src.unsafeCast<Uint8Array>().subarray(start, end)))
+        // @TODO: This charset won't support partial characters.
+        return end - start
     }
 
     override fun equals(other: Any?): Boolean = other is JsCharset && this.name == other.name
