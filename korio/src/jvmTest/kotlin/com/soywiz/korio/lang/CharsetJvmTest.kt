@@ -35,4 +35,25 @@ class CharsetJvmTest {
         assertEquals("68656c6c6fc4e3bac3", text.toByteArray(charset).hexLower)
         assertEquals(text, text.toByteArray(charset).toString(charset))
     }
+
+    @Test
+    fun testPlatformCharsetPartialDecode() {
+        val charset = platformCharsetProvider.invoke("GB2312", "GB-2312")!!
+        val text = "hello你好"
+        val bytes = text.toByteArray(charset)
+        val out = StringBuilder()
+        val outIncomplete = StringBuilder()
+        val read = charset.decode(out, bytes, 1, bytes.size)
+        val readIncomplete = charset.decode(outIncomplete, bytes, 1, bytes.size - 1)
+        assertEquals(
+            """
+                'ello你好' - 8
+                'ello你' - 7
+            """.trimIndent(),
+            """
+                '$out' - $read
+                '$outIncomplete' - $readIncomplete
+            """.trimIndent()
+        )
+    }
 }
