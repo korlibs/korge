@@ -9,6 +9,8 @@ inline fun Iterable<Int>.toIntList(): IntArrayList = IntArrayList().also { for (
 inline fun Iterable<Float>.toFloatList(): FloatArrayList = FloatArrayList().also { for (v in this) it.add(v) }
 inline fun Iterable<Double>.toDoubleList(): DoubleArrayList = DoubleArrayList().also { for (v in this) it.add(v) }
 
+fun <T> Iterator<T>.toList(): List<T> = asSequence().toList()
+
 //  MAP
 inline fun IntRange.mapInt(callback: (Int) -> Int): IntArrayList = IntArrayList((this.endInclusive - this.start).coerceAtLeast(0) / this.step + 1).also { for (v in this.start .. this.endInclusive step this.step) it.add(callback(v)) }
 inline fun IntArrayList.mapInt(callback: (Int) -> Int): IntArrayList = IntArrayList(size).also { out -> this.fastForEach { out.add(callback(it)) } }

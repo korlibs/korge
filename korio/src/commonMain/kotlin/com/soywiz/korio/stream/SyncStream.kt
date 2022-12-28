@@ -215,6 +215,24 @@ inline fun <T> SyncStream.keepPosition(callback: () -> T): T {
 	}
 }
 
+class SequenceSyncStreamBase(val sequence: Sequence<ByteArray>) : SyncStreamBase() {
+    override val seekable: Boolean = false
+    val iterator = sequence.iterator()
+    val deque = ByteArrayDeque()
+
+    override fun read(position: Long, buffer: ByteArray, offset: Int, len: Int): Int {
+        while (deque.availableRead < len) {
+            if (!iterator.hasNext()) break
+            deque.write(iterator.next())
+        }
+        return deque.read(buffer, offset, len)
+    }
+}
+
+fun sequenceSyncStream(block: suspend SequenceScope<ByteArray>.() -> Unit): SyncStream {
+    return SequenceSyncStreamBase(sequence { block() }).toSyncStream()
+}
+
 class SliceSyncStreamBase(internal val base: SyncStreamBase, internal val baseStart: Long, internal val baseEnd: Long) :
 	SyncStreamBase() {
     override val separateReadWrite: Boolean get() = base.separateReadWrite
