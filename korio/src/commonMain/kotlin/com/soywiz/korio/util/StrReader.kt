@@ -16,15 +16,31 @@ abstract class BaseStrReader {
     abstract val pos: Int
     val hasMore: Boolean get() = !eof
 
-    abstract fun peekChar(): Char
     abstract fun peekOffset(offset: Int = 0): Char
     abstract fun peek(count: Int): String
 
-    abstract fun readChar(): Char
-    abstract fun readUntil(char: Char): String?
+    open fun peekChar(): Char = peekOffset(0)
+    open fun readChar(): Char {
+        val out = peekChar()
+        skip(1)
+        return out
+    }
+    open fun readUntil(char: Char): String? {
+        val out = StringBuilder()
+        while (hasMore) {
+            val result = peekChar()
+            if (result == char) break
+            out.append(result)
+            skip(1)
+        }
+        return out.toString()
+    }
 
     abstract fun skip(count: Int = 1): BaseStrReader
-    abstract fun skipExpect(expected: Char)
+    fun skipExpect(expected: Char) {
+        val readed = this.readChar()
+        if (readed != expected) throw IllegalArgumentException("Expected '$expected' but found '$readed' at $pos")
+    }
     abstract fun tryLit(lit: String, consume: Boolean = true): String?
 
     abstract fun clone(): BaseStrReader
@@ -99,6 +115,89 @@ abstract class BaseStrReader {
     inline fun matchWhile(check: (Char) -> Boolean): String = slice { skipWhile(check) }
 }
 
+class CharReaderStrReader(val reader: CharReader) : BaseStrReader() {
+    val deque = CharDeque()
+
+    private var buffer = StringBuilder()
+    private var bufferingPos = -1
+    private var _eof: Boolean = false
+    override val eof: Boolean get() {
+        ensure(1)
+        return _eof && deque.isEmpty()
+    }
+    override var pos: Int = 0
+        private set
+
+    fun ensure(count: Int) {
+        if (count > 0 && deque.size < count) {
+            val read = reader.read(count)
+            if (read.isEmpty()) _eof = true
+            deque.addAll(read.toCharArray())
+        }
+    }
+
+    override fun peekOffset(offset: Int): Char {
+        check(offset >= 0)
+        ensure(offset + 1)
+        if (deque.size <= offset) return '\u0000'
+        return deque[offset]
+    }
+
+    override fun peek(count: Int): String {
+        ensure(count)
+        return buildString(count) {
+            for (n in 0 until min(deque.size, count)) append(deque[n])
+        }
+    }
+
+    override fun skip(count: Int): BaseStrReader {
+        ensure(count)
+        for (n in 0 until count) {
+            val res = deque.removeFirst()
+            if (bufferingPos >= 0) {
+                buffer.append(res)
+            }
+            pos++
+        }
+        return this
+    }
+
+    override fun tryLit(lit: String, consume: Boolean): String? {
+        ensure(lit.length)
+        for (n in 0 until lit.length) {
+            if (peekOffset(n) != lit[n]) return null
+        }
+        skip(lit.length)
+        return lit
+    }
+
+    override fun clone(): BaseStrReader {
+        //TODO("Not yet implemented")
+
+        return CharReaderStrReader(reader.clone()).also {
+            for (n in 0 until this.deque.size) it.deque.add(this.deque[n])
+            it.buffer.append(this.buffer)
+            it._eof = this._eof
+            it.bufferingPos = this.bufferingPos
+            it.pos = this.pos
+        }
+    }
+
+    override fun startBuffering(): Int {
+        bufferingPos = pos
+        return pos
+    }
+
+    override fun endBuffering(start: Int): String {
+        val out = buffer.substring(start - bufferingPos, pos - bufferingPos)
+        if (bufferingPos == start) {
+            bufferingPos = -1
+            buffer.clear()
+        }
+        return out
+    }
+}
+
 class StrReader(val str: String, val file: String = "file", override var pos: Int = 0) : BaseStrReader() {
     private val tempCharArray = CharArray(str.length)
 
@@ -160,11 +259,6 @@ class StrReader(val str: String, val file: String = "file", override var pos: In
     }
 
     fun readRemaining(): String = read(available)
-
-    override fun skipExpect(expected: Char) {
-        val readed = this.readChar()
-        if (readed != expected) throw IllegalArgumentException("Expected '$expected' but found '$readed' at $pos")
-    }
 
     @Deprecated("This overload is slow")
     fun expect(expected: Char): String {
