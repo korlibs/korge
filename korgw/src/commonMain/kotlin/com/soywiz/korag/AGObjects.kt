@@ -46,18 +46,27 @@ class AGBuffer : AGObject() {
     override fun toString(): String = "AGBuffer(${mem?.sizeInBytes ?: 0})"
 }
 
-data class AGTextureUnit constructor(
-    val index: Int,
-    var texture: AGTexture? = null,
-    var linear: Boolean = true,
-    var trilinear: Boolean? = null,
-    var wrap: AGWrapMode = AGWrapMode.CLAMP_TO_EDGE,
-) {
-    fun set(texture: AGTexture?, linear: Boolean, trilinear: Boolean? = null) {
-        this.texture = texture
-        this.linear = linear
-        this.trilinear = trilinear
+inline class AGTextureUnitInfo private constructor(val data: Int) {
+    companion object {
+        val INVALID = AGTextureUnitInfo(-1)
+        val DEFAULT = AGTextureUnitInfo(0).withLinearTrilinear(true, true).withWrap(AGWrapMode.CLAMP_TO_EDGE)
+
+        operator fun invoke(
+            wrap: AGWrapMode = AGWrapMode.CLAMP_TO_EDGE,
+            linear: Boolean = true,
+            trilinear: Boolean = linear
+        ): AGTextureUnitInfo = AGTextureUnitInfo(0).withWrap(wrap).withLinearTrilinear(linear, trilinear)
     }
+    val wrap: AGWrapMode get() = AGWrapMode(data.extract2(0))
+    val linear: Boolean get() = data.extract(2)
+    val trilinear: Boolean get() = data.extract(3)
+
+    fun withWrap(wrap: AGWrapMode): AGTextureUnitInfo = AGTextureUnitInfo(data.insert2(wrap.ordinal, 0))
+    fun withLinear(linear: Boolean): AGTextureUnitInfo = AGTextureUnitInfo(data.insert(linear, 2))
+    fun withTrilinear(trilinear: Boolean): AGTextureUnitInfo = AGTextureUnitInfo(data.insert(trilinear, 3))
+    fun withLinearTrilinear(linear: Boolean, trilinear: Boolean): AGTextureUnitInfo = withLinear(linear).withTrilinear(trilinear)
+
+    override fun toString(): String = "AGTextureUnitInfo(wrap=$wrap, linear=$linear, trilinear=$trilinear)"
 }
 
 class AGTexture(
@@ -84,11 +93,6 @@ class AGTexture(
         }
     }
 
-    fun upload(list: List<Bitmap>, width: Int, height: Int): AGTexture {
-        list.fastForEach { checkBitmaps(it) }
-        return upload(MultiBitmap(width, height, list))
-    }
-
     fun upload(bmp: Bitmap?, mipmaps: Boolean = false): AGTexture {
         bmp?.let { checkBitmaps(it) }
         this.forcedTexId = (bmp as? ForcedTexId?)
@@ -110,7 +114,7 @@ class AGTexture(
         return requestMipmaps && width.isPowerOfTwo && height.isPowerOfTwo
     }
 
-    override fun toString(): String = "AGTexture(pre=$premultiplied)"
+    override fun toString(): String = "AGTexture(size=$width,$height,pre=$premultiplied)"
 }
 
 open class AGFrameBufferBase(val isMain: Boolean) : AGObject() {

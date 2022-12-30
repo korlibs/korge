@@ -248,7 +248,19 @@ class Bitmap32(
     fun invert() = xor(RGBA(255, 255, 255, 0))
 	fun xor(value: RGBA) = updateColors { RGBA(it.value xor value.value) }
 
-	override fun toString(): String = "Bitmap32($width, $height)"
+	override fun toString(): String {
+        return buildString {
+            append("Bitmap32(")
+            append(width)
+            append(", ")
+            append(height)
+            if (bitmapName != null) {
+                append(", name=")
+                append(bitmapName)
+            }
+            append(")")
+        }
+    }
 
 	override fun swapRows(y0: Int, y1: Int) {
 		val s0 = index(0, y0)

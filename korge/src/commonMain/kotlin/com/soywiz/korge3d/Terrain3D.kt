@@ -124,10 +124,7 @@ class Terrain3D(
                 this[uniform.u_color] = actual.colorVec
             }
             is Material3D.LightTexture -> {
-                actual.textureUnit.texture =
-                    actual.bitmap?.let { ctx.rctx.agBitmapTextureManager.getTextureBase(it).base }
-                actual.textureUnit.linear = true
-                this[uniform.u_texUnit] = actual.textureUnit
+                this.set(uniform.u_texUnit, actual.bitmap?.let { ctx.rctx.agBitmapTextureManager.getTextureBase(it).base }, AGTextureUnitInfo.DEFAULT.withLinear(true))
             }
         }
     }

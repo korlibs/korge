@@ -27,7 +27,7 @@ class CubeMap(
     val bottom: Bitmap,
     val back: Bitmap,
     val front: Bitmap,
-) : MultiBitmap(right.width, right.height, listOf(right, left, top, bottom, back, front)) {
+) : MultiBitmap(listOf(right, left, top, bottom, back, front)) {
     val faces: List<Bitmap> get() = bitmaps
 }
 
@@ -156,13 +156,10 @@ class SkyBox(
     private val uniformValues = AGUniformValues()
     private val rs = AGDepthAndFrontFace.DEFAULT.withDepthMask(depthMask = false).withDepthFunc(depthFunc = AGCompareMode.LESS_EQUAL)
 
-    private val cubeMapTexUnit = AGTextureUnit(0)
     private val viewNoTrans = Matrix3D()
 
     override fun render(ctx: RenderContext3D) {
         //println("----------- SkyBox render ---------------")
-        cubeMapTexUnit.texture = ctx.textureManager.getTextureBase(cubemap).base
-
         ctx.dynamicIndexBufferPool.alloc { indexBuffer ->
             ctx.dynamicVertexBufferPool.alloc { vertexBuffer ->
                 vertexBuffer.upload(skyboxVertices)
@@ -186,7 +183,7 @@ class SkyBox(
                     uniforms = uniformValues.apply {
                         this[u_ProjMat] = projection
                         this[u_ViewMat] = viewNoTrans
-                        this[u_SkyBox] = cubeMapTexUnit
+                        this.set(u_SkyBox, ctx.textureManager.getTextureBase(cubemap).base)
                     },
                     depthAndFrontFace = rs
                 )

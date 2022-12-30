@@ -46,13 +46,22 @@ internal fun ilog2Ceil(v: Int): Int = kotlin.math.ceil(kotlin.math.log2(v.toDoub
 internal fun <T> arraycopy(src: Array<T>, srcPos: Int, dst: Array<T>, dstPos: Int, size: Int) =
     src.copyInto(dst, dstPos, srcPos, srcPos + size)
 
+internal fun arraycopy(src: BooleanArray, srcPos: Int, dst: BooleanArray, dstPos: Int, size: Int) =
+    src.copyInto(dst, dstPos, srcPos, srcPos + size)
+
 internal fun arraycopy(src: ByteArray, srcPos: Int, dst: ByteArray, dstPos: Int, size: Int) =
     src.copyInto(dst, dstPos, srcPos, srcPos + size)
 
 internal fun arraycopy(src: ShortArray, srcPos: Int, dst: ShortArray, dstPos: Int, size: Int) =
     src.copyInto(dst, dstPos, srcPos, srcPos + size)
 
+internal fun arraycopy(src: CharArray, srcPos: Int, dst: CharArray, dstPos: Int, size: Int) =
+    src.copyInto(dst, dstPos, srcPos, srcPos + size)
+
 internal fun arraycopy(src: IntArray, srcPos: Int, dst: IntArray, dstPos: Int, size: Int) =
+    src.copyInto(dst, dstPos, srcPos, srcPos + size)
+
+internal fun arraycopy(src: LongArray, srcPos: Int, dst: LongArray, dstPos: Int, size: Int) =
     src.copyInto(dst, dstPos, srcPos, srcPos + size)
 
 internal fun arraycopy(src: FloatArray, srcPos: Int, dst: FloatArray, dstPos: Int, size: Int) =

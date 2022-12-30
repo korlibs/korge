@@ -3,6 +3,21 @@ package com.soywiz.kds
 import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.kds.lock.NonRecursiveLock
 
+class TemporalPool<T : Any>(private val reset: (T) -> Unit = {}, preallocate: Int = 0, private val gen: (Int) -> T) {
+    private val lock = NonRecursiveLock()
+    private val pool = ConcurrentPool<T>(reset, preallocate, gen)
+    private val toFree = fastArrayListOf<T>()
+
+    fun alloc(): T = lock { pool.alloc().also { toFree += it } }
+
+    fun freeAll() {
+        lock {
+            toFree.fastForEach { pool.free(it) }
+            toFree.clear()
+        }
+    }
+}
+
 open class ConcurrentPool<T : Any>(private val reset: (T) -> Unit = {}, preallocate: Int = 0, private val gen: (Int) -> T)
     : Pool<T>(reset, preallocate, gen) {
     private val lock = NonRecursiveLock()

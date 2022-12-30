@@ -30,7 +30,14 @@ abstract class Charset(val name: String) {
     open fun estimateNumberOfBytesForCharacters(nchars: Int): Int = nchars * 2
 
 	abstract fun encode(out: ByteArrayBuilder, src: CharSequence, start: Int = 0, end: Int = src.length)
-	abstract fun decode(out: StringBuilder, src: ByteArray, start: Int = 0, end: Int = src.size)
+
+    /**
+     * Decodes the [src] [ByteArray] [start]-[end] range using this [Charset]
+     * and writes the result into the [out] [StringBuilder].
+     *
+     * Returns the number of consumed bytes ([end]-[start] if not under-flowing) and less if a character is not complete.
+     **/
+    abstract fun decode(out: StringBuilder, src: ByteArray, start: Int = 0, end: Int = src.size): Int
 
 	companion object {
         inline fun <T> registerProvider(provider: CharsetProvider, block: () -> T): T {
@@ -136,10 +143,10 @@ open class UTC8CharsetBase(name: String) : Charset(name) {
         }
 	}
 
-	override fun decode(out: StringBuilder, src: ByteArray, start: Int, end: Int) {
+	override fun decode(out: StringBuilder, src: ByteArray, start: Int, end: Int): Int {
 		if ((start < 0 || start > src.size) || (end < 0 || end > src.size)) error("Out of bounds")
 		var i = start
-		while (i < end) {
+		loop@while (i < end) {
 			val c = src[i].toInt() and 0xFF
 
             when (c shr 4) {
@@ -150,16 +157,19 @@ open class UTC8CharsetBase(name: String) : Charset(name) {
                 }
                 in 0b1100..0b1101 -> {
                     // 110x xxxx   10xx xxxx
+                    if (i + 1 >= end) break@loop
                     out.appendCodePointV((c and 0x1F shl 6 or (src[i + 1].toInt() and 0x3F)))
                     i += 2
                 }
                 0b1110 -> {
                     // 1110 xxxx  10xx xxxx  10xx xxxx
+                    if (i + 2 >= end) break@loop
                     out.appendCodePointV((c and 0x0F shl 12 or (src[i + 1].toInt() and 0x3F shl 6) or (src[i + 2].toInt() and 0x3F)))
                     i += 3
                 }
                 0b1111 -> {
                     // 1111 0xxx 10xx xxxx  10xx xxxx  10xx xxxx
+                    if (i + 3 >= end) break@loop
                     out.appendCodePointV(0
                         .insert(src[i + 0].toInt().extract(0, 3), 18, 3)
                         .insert(src[i + 1].toInt().extract(0, 6), 12, 6)
@@ -176,6 +186,7 @@ open class UTC8CharsetBase(name: String) : Charset(name) {
                 }
             }
 		}
+        return i - start
 	}
 }
 
@@ -196,10 +207,11 @@ open class SingleByteCharset(name: String, val conv: String) : BaseSingleByteCha
 		}
 	}
 
-	override fun decode(out: StringBuilder, src: ByteArray, start: Int, end: Int) {
+	override fun decode(out: StringBuilder, src: ByteArray, start: Int, end: Int): Int {
 		for (n in start until end) {
 			out.append(conv[src[n].toInt() and 0xFF])
 		}
+        return end - start
 	}
 }
 
@@ -212,11 +224,14 @@ class UTF16Charset(val le: Boolean) : Charset("UTF-16-" + (if (le) "LE" else "BE
     override fun estimateNumberOfCharactersForBytes(nbytes: Int): Int = nbytes * 2
     override fun estimateNumberOfBytesForCharacters(nchars: Int): Int = nchars * 2
 
-	override fun decode(out: StringBuilder, src: ByteArray, start: Int, end: Int) {
+	override fun decode(out: StringBuilder, src: ByteArray, start: Int, end: Int): Int {
+        var consumed = 0
 		for (n in start until end step 2) {
 		    val char = src.readS16(n, le).toChar()
 		    out.append(char)
+            consumed += 2
         }
+        return consumed
 	}
 
 	override fun encode(out: ByteArrayBuilder, src: CharSequence, start: Int, end: Int) {

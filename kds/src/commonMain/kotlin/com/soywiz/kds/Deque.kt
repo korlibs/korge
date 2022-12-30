@@ -1067,3 +1067,843 @@ open class ByteDeque(initialCapacity: Int) : MutableCollection<Byte> {
     }
 }
 
+
+
+// Char
+
+
+/**
+ * Deque structure supporting constant time of appending/removing from the start or the end of the list
+ * when there is room in the underlying array.
+ */
+@Template
+open class CharDeque(initialCapacity: Int) : MutableCollection<Char> {
+    private var _start: Int = 0
+    private var _size: Int = 0
+    private var data: CharArray = CharArray(initialCapacity) as CharArray
+    private val _data: CharArray get() = data.fastCastTo()
+    private val capacity: Int get() = data.size
+
+    constructor() : this(initialCapacity = 16)
+
+    override val size: Int get() = _size
+
+    override fun isEmpty(): Boolean = size == 0
+
+    private fun resizeIfRequiredFor(count: Int) {
+        if (size + count > capacity) {
+            val i = this.data
+            val istart = this._start
+            val _o = CharArray(maxOf(this.data.size + 7, maxOf(size + count, this.data.size * 2)))
+            val o = _o as CharArray
+            copyCyclic(i, istart, o, this._size)
+            this.data = o
+            this._start = 0
+        }
+    }
+
+    private fun copyCyclic(i: CharArray, istart: Int, o: CharArray, count: Int) {
+        val size1 = min(i.size - istart, count)
+        val size2 = count - size1
+        arraycopy(i, istart, o, 0, size1)
+        if (size2 > 0) arraycopy(i, 0, o, size1, size2)
+    }
+
+    fun addLast(item: Char) {
+        resizeIfRequiredFor(1)
+        _addLast(item)
+    }
+
+    fun addFirst(item: Char) {
+        resizeIfRequiredFor(1)
+        _start = (_start - 1) umod capacity
+        _size++
+        data[_start] = item
+    }
+
+    fun addAll(array: CharArray): Boolean = _addAll(array.size) { array[it] }
+    fun addAll(list: List<Char>): Boolean = _addAll(list.size) { list[it] }
+    fun addAll(items: Iterable<Char>): Boolean = addAll(items.toList())
+    override fun addAll(elements: Collection<Char>): Boolean = addAll(elements.toList())
+
+    fun addAllFirst(items: CharArray): Boolean = _addAllFirst(items.size) { items[it] }
+    fun addAllFirst(items: List<Char>): Boolean = _addAllFirst(items.size) { items[it] }
+    fun addAllFirst(items: Iterable<Char>): Boolean = addAllFirst(items.toList())
+    fun addAllFirst(items: Collection<Char>): Boolean = addAllFirst(items.toList())
+
+    private inline fun _addAll(count: Int, block: (Int) -> Char): Boolean {
+        resizeIfRequiredFor(count)
+        val base = _start + _size
+        for (n in 0 until count) data[(base + n) % capacity] = block(n)
+        _size += count
+        return true
+    }
+
+    private inline fun _addAllFirst(count: Int, block: (Int) -> Char): Boolean {
+        resizeIfRequiredFor(count)
+        _start = (_start - count) umod capacity
+        _size += count
+        var pos = _start
+        for (n in 0 until count) data[pos++ umod capacity] = block(n)
+        return true
+    }
+
+    private fun _addLast(item: Char) {
+        data[(_start + _size) % capacity] = item
+        _size++
+    }
+
+    private fun nullify(index: Int) {
+        _data[index] = '\u0000' // Prevent leaks
+    }
+
+    fun removeFirst(): Char {
+        if (_size <= 0) throw IndexOutOfBoundsException()
+        val out = first
+        nullify(_start)
+        _start = (_start + 1) % capacity;
+        _size--
+        return out
+    }
+
+    fun removeLast(): Char {
+        if (_size <= 0) throw IndexOutOfBoundsException()
+        val out = last
+        nullify(internalIndex(size - 1))
+        _size--
+        return out
+    }
+
+    fun removeAt(index: Int): Char {
+        if (index < 0 || index >= size) throw IndexOutOfBoundsException()
+        if (index == 0) return removeFirst()
+        if (index == size - 1) return removeLast()
+
+        // @TODO: We could use two arraycopy per branch to prevent umodding twice per element.
+        val old = this[index]
+        if (index < size / 2) {
+            for (n in index downTo 1) this[n] = this[n - 1]
+            _start = (_start + 1) umod capacity
+        } else {
+            for (n in index until size - 1) this[n] = this[n + 1]
+        }
+
+        _size--
+        return old
+    }
+
+    override fun add(element: Char): Boolean = true.apply { addLast(element) }
+    override fun clear() { _size = 0 }
+    override fun remove(element: Char): Boolean {
+        val index = indexOf(element)
+        if (index >= 0) removeAt(index)
+        return (index >= 0)
+    }
+
+    override fun removeAll(elements: Collection<Char>): Boolean = _removeRetainAll(elements, retain = false)
+    override fun retainAll(elements: Collection<Char>): Boolean = _removeRetainAll(elements, retain = true)
+
+    private fun _removeRetainAll(elements: Collection<Char>, retain: Boolean): Boolean {
+        val eset = elements.toSet()
+        val _temp = this.data.copyOf()
+        var tsize = 0
+        val osize = size
+        for (n in 0 until size) {
+            val c = this[n]
+            if ((c in eset) == retain) {
+                _temp[tsize++] = c
+            }
+        }
+        this.data = _temp
+        this._start = 0
+        this._size = tsize
+        return tsize != osize
+    }
+
+    val first: Char get() = data[_start]
+    val last: Char get() = data[internalIndex(size - 1)]
+
+    private fun internalIndex(index: Int) = (_start + index) umod capacity
+
+    operator fun set(index: Int, value: Char) { data[internalIndex(index)] = value }
+    operator fun get(index: Int): Char = data[internalIndex(index)]
+
+    fun getOrNull(index: Int): Char? = if (index in indices) get(index) else null
+
+    override fun contains(element: Char): Boolean = (0 until size).any { this[it] == element }
+
+    fun indexOf(element: Char): Int {
+        for (n in 0 until size) if (this[n] == element) return n
+        return -1
+    }
+
+    override fun containsAll(elements: Collection<Char>): Boolean {
+        val emap = elements.map { it to 0 }.toLinkedMap()
+        for (it in 0 until size) {
+            val e = this[it]
+            if (e in emap) emap[e] = 1
+        }
+        return emap.values.all { it == 1 }
+    }
+
+    override fun iterator(): MutableIterator<Char> {
+        val that = this
+        return object : MutableIterator<Char> {
+            var index = 0
+            override fun next(): Char = that[index++]
+            override fun hasNext(): Boolean = index < size
+            override fun remove() { removeAt(--index) }
+        }
+    }
+
+    override fun hashCode(): Int = contentHashCode(size) { this[it] }
+
+    override fun equals(other: Any?): Boolean {
+        if (other !is CharDeque) return false
+        if (other.size != this.size) return false
+        for (n in 0 until size) if (this[n] != other[n]) return false
+        return true
+    }
+
+    override fun toString(): String {
+        val sb = StringBuilder()
+        sb.append('[')
+        for (n in 0 until size) {
+            sb.append(this[n])
+            if (n != size - 1) sb.append(", ")
+        }
+        sb.append(']')
+        return sb.toString()
+    }
+}
+
+
+
+// Short
+
+
+/**
+ * Deque structure supporting constant time of appending/removing from the start or the end of the list
+ * when there is room in the underlying array.
+ */
+@Template
+open class ShortDeque(initialCapacity: Int) : MutableCollection<Short> {
+    private var _start: Int = 0
+    private var _size: Int = 0
+    private var data: ShortArray = ShortArray(initialCapacity) as ShortArray
+    private val _data: ShortArray get() = data.fastCastTo()
+    private val capacity: Int get() = data.size
+
+    constructor() : this(initialCapacity = 16)
+
+    override val size: Int get() = _size
+
+    override fun isEmpty(): Boolean = size == 0
+
+    private fun resizeIfRequiredFor(count: Int) {
+        if (size + count > capacity) {
+            val i = this.data
+            val istart = this._start
+            val _o = ShortArray(maxOf(this.data.size + 7, maxOf(size + count, this.data.size * 2)))
+            val o = _o as ShortArray
+            copyCyclic(i, istart, o, this._size)
+            this.data = o
+            this._start = 0
+        }
+    }
+
+    private fun copyCyclic(i: ShortArray, istart: Int, o: ShortArray, count: Int) {
+        val size1 = min(i.size - istart, count)
+        val size2 = count - size1
+        arraycopy(i, istart, o, 0, size1)
+        if (size2 > 0) arraycopy(i, 0, o, size1, size2)
+    }
+
+    fun addLast(item: Short) {
+        resizeIfRequiredFor(1)
+        _addLast(item)
+    }
+
+    fun addFirst(item: Short) {
+        resizeIfRequiredFor(1)
+        _start = (_start - 1) umod capacity
+        _size++
+        data[_start] = item
+    }
+
+    fun addAll(array: ShortArray): Boolean = _addAll(array.size) { array[it] }
+    fun addAll(list: List<Short>): Boolean = _addAll(list.size) { list[it] }
+    fun addAll(items: Iterable<Short>): Boolean = addAll(items.toList())
+    override fun addAll(elements: Collection<Short>): Boolean = addAll(elements.toList())
+
+    fun addAllFirst(items: ShortArray): Boolean = _addAllFirst(items.size) { items[it] }
+    fun addAllFirst(items: List<Short>): Boolean = _addAllFirst(items.size) { items[it] }
+    fun addAllFirst(items: Iterable<Short>): Boolean = addAllFirst(items.toList())
+    fun addAllFirst(items: Collection<Short>): Boolean = addAllFirst(items.toList())
+
+    private inline fun _addAll(count: Int, block: (Int) -> Short): Boolean {
+        resizeIfRequiredFor(count)
+        val base = _start + _size
+        for (n in 0 until count) data[(base + n) % capacity] = block(n)
+        _size += count
+        return true
+    }
+
+    private inline fun _addAllFirst(count: Int, block: (Int) -> Short): Boolean {
+        resizeIfRequiredFor(count)
+        _start = (_start - count) umod capacity
+        _size += count
+        var pos = _start
+        for (n in 0 until count) data[pos++ umod capacity] = block(n)
+        return true
+    }
+
+    private fun _addLast(item: Short) {
+        data[(_start + _size) % capacity] = item
+        _size++
+    }
+
+    private fun nullify(index: Int) {
+        _data[index] = 0.toShort() // Prevent leaks
+    }
+
+    fun removeFirst(): Short {
+        if (_size <= 0) throw IndexOutOfBoundsException()
+        val out = first
+        nullify(_start)
+        _start = (_start + 1) % capacity;
+        _size--
+        return out
+    }
+
+    fun removeLast(): Short {
+        if (_size <= 0) throw IndexOutOfBoundsException()
+        val out = last
+        nullify(internalIndex(size - 1))
+        _size--
+        return out
+    }
+
+    fun removeAt(index: Int): Short {
+        if (index < 0 || index >= size) throw IndexOutOfBoundsException()
+        if (index == 0) return removeFirst()
+        if (index == size - 1) return removeLast()
+
+        // @TODO: We could use two arraycopy per branch to prevent umodding twice per element.
+        val old = this[index]
+        if (index < size / 2) {
+            for (n in index downTo 1) this[n] = this[n - 1]
+            _start = (_start + 1) umod capacity
+        } else {
+            for (n in index until size - 1) this[n] = this[n + 1]
+        }
+
+        _size--
+        return old
+    }
+
+    override fun add(element: Short): Boolean = true.apply { addLast(element) }
+    override fun clear() { _size = 0 }
+    override fun remove(element: Short): Boolean {
+        val index = indexOf(element)
+        if (index >= 0) removeAt(index)
+        return (index >= 0)
+    }
+
+    override fun removeAll(elements: Collection<Short>): Boolean = _removeRetainAll(elements, retain = false)
+    override fun retainAll(elements: Collection<Short>): Boolean = _removeRetainAll(elements, retain = true)
+
+    private fun _removeRetainAll(elements: Collection<Short>, retain: Boolean): Boolean {
+        val eset = elements.toSet()
+        val _temp = this.data.copyOf()
+        var tsize = 0
+        val osize = size
+        for (n in 0 until size) {
+            val c = this[n]
+            if ((c in eset) == retain) {
+                _temp[tsize++] = c
+            }
+        }
+        this.data = _temp
+        this._start = 0
+        this._size = tsize
+        return tsize != osize
+    }
+
+    val first: Short get() = data[_start]
+    val last: Short get() = data[internalIndex(size - 1)]
+
+    private fun internalIndex(index: Int) = (_start + index) umod capacity
+
+    operator fun set(index: Int, value: Short) { data[internalIndex(index)] = value }
+    operator fun get(index: Int): Short = data[internalIndex(index)]
+
+    fun getOrNull(index: Int): Short? = if (index in indices) get(index) else null
+
+    override fun contains(element: Short): Boolean = (0 until size).any { this[it] == element }
+
+    fun indexOf(element: Short): Int {
+        for (n in 0 until size) if (this[n] == element) return n
+        return -1
+    }
+
+    override fun containsAll(elements: Collection<Short>): Boolean {
+        val emap = elements.map { it to 0 }.toLinkedMap()
+        for (it in 0 until size) {
+            val e = this[it]
+            if (e in emap) emap[e] = 1
+        }
+        return emap.values.all { it == 1 }
+    }
+
+    override fun iterator(): MutableIterator<Short> {
+        val that = this
+        return object : MutableIterator<Short> {
+            var index = 0
+            override fun next(): Short = that[index++]
+            override fun hasNext(): Boolean = index < size
+            override fun remove() { removeAt(--index) }
+        }
+    }
+
+    override fun hashCode(): Int = contentHashCode(size) { this[it] }
+
+    override fun equals(other: Any?): Boolean {
+        if (other !is ShortDeque) return false
+        if (other.size != this.size) return false
+        for (n in 0 until size) if (this[n] != other[n]) return false
+        return true
+    }
+
+    override fun toString(): String {
+        val sb = StringBuilder()
+        sb.append('[')
+        for (n in 0 until size) {
+            sb.append(this[n])
+            if (n != size - 1) sb.append(", ")
+        }
+        sb.append(']')
+        return sb.toString()
+    }
+}
+
+
+
+// Long
+
+
+/**
+ * Deque structure supporting constant time of appending/removing from the start or the end of the list
+ * when there is room in the underlying array.
+ */
+@Template
+open class LongDeque(initialCapacity: Int) : MutableCollection<Long> {
+    private var _start: Int = 0
+    private var _size: Int = 0
+    private var data: LongArray = LongArray(initialCapacity) as LongArray
+    private val _data: LongArray get() = data.fastCastTo()
+    private val capacity: Int get() = data.size
+
+    constructor() : this(initialCapacity = 16)
+
+    override val size: Int get() = _size
+
+    override fun isEmpty(): Boolean = size == 0
+
+    private fun resizeIfRequiredFor(count: Int) {
+        if (size + count > capacity) {
+            val i = this.data
+            val istart = this._start
+            val _o = LongArray(maxOf(this.data.size + 7, maxOf(size + count, this.data.size * 2)))
+            val o = _o as LongArray
+            copyCyclic(i, istart, o, this._size)
+            this.data = o
+            this._start = 0
+        }
+    }
+
+    private fun copyCyclic(i: LongArray, istart: Int, o: LongArray, count: Int) {
+        val size1 = min(i.size - istart, count)
+        val size2 = count - size1
+        arraycopy(i, istart, o, 0, size1)
+        if (size2 > 0) arraycopy(i, 0, o, size1, size2)
+    }
+
+    fun addLast(item: Long) {
+        resizeIfRequiredFor(1)
+        _addLast(item)
+    }
+
+    fun addFirst(item: Long) {
+        resizeIfRequiredFor(1)
+        _start = (_start - 1) umod capacity
+        _size++
+        data[_start] = item
+    }
+
+    fun addAll(array: LongArray): Boolean = _addAll(array.size) { array[it] }
+    fun addAll(list: List<Long>): Boolean = _addAll(list.size) { list[it] }
+    fun addAll(items: Iterable<Long>): Boolean = addAll(items.toList())
+    override fun addAll(elements: Collection<Long>): Boolean = addAll(elements.toList())
+
+    fun addAllFirst(items: LongArray): Boolean = _addAllFirst(items.size) { items[it] }
+    fun addAllFirst(items: List<Long>): Boolean = _addAllFirst(items.size) { items[it] }
+    fun addAllFirst(items: Iterable<Long>): Boolean = addAllFirst(items.toList())
+    fun addAllFirst(items: Collection<Long>): Boolean = addAllFirst(items.toList())
+
+    private inline fun _addAll(count: Int, block: (Int) -> Long): Boolean {
+        resizeIfRequiredFor(count)
+        val base = _start + _size
+        for (n in 0 until count) data[(base + n) % capacity] = block(n)
+        _size += count
+        return true
+    }
+
+    private inline fun _addAllFirst(count: Int, block: (Int) -> Long): Boolean {
+        resizeIfRequiredFor(count)
+        _start = (_start - count) umod capacity
+        _size += count
+        var pos = _start
+        for (n in 0 until count) data[pos++ umod capacity] = block(n)
+        return true
+    }
+
+    private fun _addLast(item: Long) {
+        data[(_start + _size) % capacity] = item
+        _size++
+    }
+
+    private fun nullify(index: Int) {
+        _data[index] = 0L // Prevent leaks
+    }
+
+    fun removeFirst(): Long {
+        if (_size <= 0) throw IndexOutOfBoundsException()
+        val out = first
+        nullify(_start)
+        _start = (_start + 1) % capacity;
+        _size--
+        return out
+    }
+
+    fun removeLast(): Long {
+        if (_size <= 0) throw IndexOutOfBoundsException()
+        val out = last
+        nullify(internalIndex(size - 1))
+        _size--
+        return out
+    }
+
+    fun removeAt(index: Int): Long {
+        if (index < 0 || index >= size) throw IndexOutOfBoundsException()
+        if (index == 0) return removeFirst()
+        if (index == size - 1) return removeLast()
+
+        // @TODO: We could use two arraycopy per branch to prevent umodding twice per element.
+        val old = this[index]
+        if (index < size / 2) {
+            for (n in index downTo 1) this[n] = this[n - 1]
+            _start = (_start + 1) umod capacity
+        } else {
+            for (n in index until size - 1) this[n] = this[n + 1]
+        }
+
+        _size--
+        return old
+    }
+
+    override fun add(element: Long): Boolean = true.apply { addLast(element) }
+    override fun clear() { _size = 0 }
+    override fun remove(element: Long): Boolean {
+        val index = indexOf(element)
+        if (index >= 0) removeAt(index)
+        return (index >= 0)
+    }
+
+    override fun removeAll(elements: Collection<Long>): Boolean = _removeRetainAll(elements, retain = false)
+    override fun retainAll(elements: Collection<Long>): Boolean = _removeRetainAll(elements, retain = true)
+
+    private fun _removeRetainAll(elements: Collection<Long>, retain: Boolean): Boolean {
+        val eset = elements.toSet()
+        val _temp = this.data.copyOf()
+        var tsize = 0
+        val osize = size
+        for (n in 0 until size) {
+            val c = this[n]
+            if ((c in eset) == retain) {
+                _temp[tsize++] = c
+            }
+        }
+        this.data = _temp
+        this._start = 0
+        this._size = tsize
+        return tsize != osize
+    }
+
+    val first: Long get() = data[_start]
+    val last: Long get() = data[internalIndex(size - 1)]
+
+    private fun internalIndex(index: Int) = (_start + index) umod capacity
+
+    operator fun set(index: Int, value: Long) { data[internalIndex(index)] = value }
+    operator fun get(index: Int): Long = data[internalIndex(index)]
+
+    fun getOrNull(index: Int): Long? = if (index in indices) get(index) else null
+
+    override fun contains(element: Long): Boolean = (0 until size).any { this[it] == element }
+
+    fun indexOf(element: Long): Int {
+        for (n in 0 until size) if (this[n] == element) return n
+        return -1
+    }
+
+    override fun containsAll(elements: Collection<Long>): Boolean {
+        val emap = elements.map { it to 0 }.toLinkedMap()
+        for (it in 0 until size) {
+            val e = this[it]
+            if (e in emap) emap[e] = 1
+        }
+        return emap.values.all { it == 1 }
+    }
+
+    override fun iterator(): MutableIterator<Long> {
+        val that = this
+        return object : MutableIterator<Long> {
+            var index = 0
+            override fun next(): Long = that[index++]
+            override fun hasNext(): Boolean = index < size
+            override fun remove() { removeAt(--index) }
+        }
+    }
+
+    override fun hashCode(): Int = contentHashCode(size) { this[it] }
+
+    override fun equals(other: Any?): Boolean {
+        if (other !is LongDeque) return false
+        if (other.size != this.size) return false
+        for (n in 0 until size) if (this[n] != other[n]) return false
+        return true
+    }
+
+    override fun toString(): String {
+        val sb = StringBuilder()
+        sb.append('[')
+        for (n in 0 until size) {
+            sb.append(this[n])
+            if (n != size - 1) sb.append(", ")
+        }
+        sb.append(']')
+        return sb.toString()
+    }
+}
+
+
+
+// Boolean
+
+
+/**
+ * Deque structure supporting constant time of appending/removing from the start or the end of the list
+ * when there is room in the underlying array.
+ */
+@Template
+open class BooleanDeque(initialCapacity: Int) : MutableCollection<Boolean> {
+    private var _start: Int = 0
+    private var _size: Int = 0
+    private var data: BooleanArray = BooleanArray(initialCapacity) as BooleanArray
+    private val _data: BooleanArray get() = data.fastCastTo()
+    private val capacity: Int get() = data.size
+
+    constructor() : this(initialCapacity = 16)
+
+    override val size: Int get() = _size
+
+    override fun isEmpty(): Boolean = size == 0
+
+    private fun resizeIfRequiredFor(count: Int) {
+        if (size + count > capacity) {
+            val i = this.data
+            val istart = this._start
+            val _o = BooleanArray(maxOf(this.data.size + 7, maxOf(size + count, this.data.size * 2)))
+            val o = _o as BooleanArray
+            copyCyclic(i, istart, o, this._size)
+            this.data = o
+            this._start = 0
+        }
+    }
+
+    private fun copyCyclic(i: BooleanArray, istart: Int, o: BooleanArray, count: Int) {
+        val size1 = min(i.size - istart, count)
+        val size2 = count - size1
+        arraycopy(i, istart, o, 0, size1)
+        if (size2 > 0) arraycopy(i, 0, o, size1, size2)
+    }
+
+    fun addLast(item: Boolean) {
+        resizeIfRequiredFor(1)
+        _addLast(item)
+    }
+
+    fun addFirst(item: Boolean) {
+        resizeIfRequiredFor(1)
+        _start = (_start - 1) umod capacity
+        _size++
+        data[_start] = item
+    }
+
+    fun addAll(array: BooleanArray): Boolean = _addAll(array.size) { array[it] }
+    fun addAll(list: List<Boolean>): Boolean = _addAll(list.size) { list[it] }
+    fun addAll(items: Iterable<Boolean>): Boolean = addAll(items.toList())
+    override fun addAll(elements: Collection<Boolean>): Boolean = addAll(elements.toList())
+
+    fun addAllFirst(items: BooleanArray): Boolean = _addAllFirst(items.size) { items[it] }
+    fun addAllFirst(items: List<Boolean>): Boolean = _addAllFirst(items.size) { items[it] }
+    fun addAllFirst(items: Iterable<Boolean>): Boolean = addAllFirst(items.toList())
+    fun addAllFirst(items: Collection<Boolean>): Boolean = addAllFirst(items.toList())
+
+    private inline fun _addAll(count: Int, block: (Int) -> Boolean): Boolean {
+        resizeIfRequiredFor(count)
+        val base = _start + _size
+        for (n in 0 until count) data[(base + n) % capacity] = block(n)
+        _size += count
+        return true
+    }
+
+    private inline fun _addAllFirst(count: Int, block: (Int) -> Boolean): Boolean {
+        resizeIfRequiredFor(count)
+        _start = (_start - count) umod capacity
+        _size += count
+        var pos = _start
+        for (n in 0 until count) data[pos++ umod capacity] = block(n)
+        return true
+    }
+
+    private fun _addLast(item: Boolean) {
+        data[(_start + _size) % capacity] = item
+        _size++
+    }
+
+    private fun nullify(index: Int) {
+        _data[index] = false // Prevent leaks
+    }
+
+    fun removeFirst(): Boolean {
+        if (_size <= 0) throw IndexOutOfBoundsException()
+        val out = first
+        nullify(_start)
+        _start = (_start + 1) % capacity;
+        _size--
+        return out
+    }
+
+    fun removeLast(): Boolean {
+        if (_size <= 0) throw IndexOutOfBoundsException()
+        val out = last
+        nullify(internalIndex(size - 1))
+        _size--
+        return out
+    }
+
+    fun removeAt(index: Int): Boolean {
+        if (index < 0 || index >= size) throw IndexOutOfBoundsException()
+        if (index == 0) return removeFirst()
+        if (index == size - 1) return removeLast()
+
+        // @TODO: We could use two arraycopy per branch to prevent umodding twice per element.
+        val old = this[index]
+        if (index < size / 2) {
+            for (n in index downTo 1) this[n] = this[n - 1]
+            _start = (_start + 1) umod capacity
+        } else {
+            for (n in index until size - 1) this[n] = this[n + 1]
+        }
+
+        _size--
+        return old
+    }
+
+    override fun add(element: Boolean): Boolean = true.apply { addLast(element) }
+    override fun clear() { _size = 0 }
+    override fun remove(element: Boolean): Boolean {
+        val index = indexOf(element)
+        if (index >= 0) removeAt(index)
+        return (index >= 0)
+    }
+
+    override fun removeAll(elements: Collection<Boolean>): Boolean = _removeRetainAll(elements, retain = false)
+    override fun retainAll(elements: Collection<Boolean>): Boolean = _removeRetainAll(elements, retain = true)
+
+    private fun _removeRetainAll(elements: Collection<Boolean>, retain: Boolean): Boolean {
+        val eset = elements.toSet()
+        val _temp = this.data.copyOf()
+        var tsize = 0
+        val osize = size
+        for (n in 0 until size) {
+            val c = this[n]
+            if ((c in eset) == retain) {
+                _temp[tsize++] = c
+            }
+        }
+        this.data = _temp
+        this._start = 0
+        this._size = tsize
+        return tsize != osize
+    }
+
+    val first: Boolean get() = data[_start]
+    val last: Boolean get() = data[internalIndex(size - 1)]
+
+    private fun internalIndex(index: Int) = (_start + index) umod capacity
+
+    operator fun set(index: Int, value: Boolean) { data[internalIndex(index)] = value }
+    operator fun get(index: Int): Boolean = data[internalIndex(index)]
+
+    fun getOrNull(index: Int): Boolean? = if (index in indices) get(index) else null
+
+    override fun contains(element: Boolean): Boolean = (0 until size).any { this[it] == element }
+
+    fun indexOf(element: Boolean): Int {
+        for (n in 0 until size) if (this[n] == element) return n
+        return -1
+    }
+
+    override fun containsAll(elements: Collection<Boolean>): Boolean {
+        val emap = elements.map { it to 0 }.toLinkedMap()
+        for (it in 0 until size) {
+            val e = this[it]
+            if (e in emap) emap[e] = 1
+        }
+        return emap.values.all { it == 1 }
+    }
+
+    override fun iterator(): MutableIterator<Boolean> {
+        val that = this
+        return object : MutableIterator<Boolean> {
+            var index = 0
+            override fun next(): Boolean = that[index++]
+            override fun hasNext(): Boolean = index < size
+            override fun remove() { removeAt(--index) }
+        }
+    }
+
+    override fun hashCode(): Int = contentHashCode(size) { this[it] }
+
+    override fun equals(other: Any?): Boolean {
+        if (other !is BooleanDeque) return false
+        if (other.size != this.size) return false
+        for (n in 0 until size) if (this[n] != other[n]) return false
+        return true
+    }
+
+    override fun toString(): String {
+        val sb = StringBuilder()
+        sb.append('[')
+        for (n in 0 until size) {
+            sb.append(this[n])
+            if (n != size - 1) sb.append(", ")
+        }
+        sb.append(']')
+        return sb.toString()
+    }
+}
+

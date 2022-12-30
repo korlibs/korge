@@ -31,5 +31,5 @@ actual val platformSyncIO: SyncIO = object : SyncIO {
     override fun mkdir(path: String): Boolean = File(path).mkdir()
     override fun rmdir(path: String): Boolean = File(path).takeIf { it.isDirectory }?.delete() ?: false
     override fun delete(path: String): Boolean = File(path).takeIf { !it.isDirectory }?.delete() ?: false
-    override fun list(path: String): List<String> = File(path).list().toList()
+    override fun list(path: String): List<String> = File(path).list()?.toList() ?: emptyList()
 }

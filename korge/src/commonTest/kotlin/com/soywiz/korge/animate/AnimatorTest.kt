@@ -8,7 +8,7 @@ import com.soywiz.korge.tween._interpolateAngle
 import com.soywiz.korge.tween.denormalized
 import com.soywiz.korge.tween.get
 import com.soywiz.korge.tween.tween
-import com.soywiz.korge.view.solidRect
+import com.soywiz.korge.view.*
 import com.soywiz.korim.color.Colors
 import com.soywiz.korma.geom.degrees
 import com.soywiz.korma.interpolation.Easing
@@ -63,5 +63,73 @@ class AnimatorTest : ViewsForTesting() {
             log += view.rotation.degrees.toIntRound()
         }
         assertEquals("350,316,282,248,214,180,146,112,78,44,10", log.joinToString(","))
+    }
+
+    @Test
+    fun testBlockLooped() {
+        val rlog = arrayListOf<String>()
+        val log = arrayListOf<String>()
+        fun log() { rlog += log.joinToString(",") }
+        val view = DummyView()
+        view.animator(parallel = true) {
+            sequence(looped = true) {
+                block { log += "a" }
+                wait(0.5.seconds)
+                block { log += "b" }
+                wait(0.5.seconds)
+            }
+        }
+        view.updateSingleView(0.seconds)
+        log()
+        repeat(6) {
+            view.updateSingleView(0.5.seconds)
+            log()
+        }
+        assertEquals(
+            """
+                a
+                a
+                a,b
+                a,b,a
+                a,b,a,b
+                a,b,a,b,a
+                a,b,a,b,a,b
+            """.trimIndent(),
+            rlog.joinToString("\n")
+        )
+    }
+
+    @Test
+    fun testBlockNotLooped() {
+        val rlog = arrayListOf<String>()
+        val log = arrayListOf<String>()
+        fun log() { rlog += log.joinToString(",") }
+        val view = DummyView()
+        view.animator(parallel = true) {
+            sequence(looped = false) {
+                block { log += "a" }
+                wait(0.5.seconds)
+                block { log += "b" }
+                wait(0.5.seconds)
+            }
+        }
+        view.updateSingleView(0.seconds)
+        log()
+        repeat(6) {
+            view.updateSingleView(0.5.seconds)
+            log()
+        }
+        assertEquals(
+            """
+                a
+                a
+                a,b
+                a,b
+                a,b
+                a,b
+                a,b
+            """.trimIndent(),
+            rlog.joinToString("\n")
+        )
     }
 }

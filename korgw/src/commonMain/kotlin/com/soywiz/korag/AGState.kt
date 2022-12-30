@@ -61,6 +61,13 @@ inline class AGWrapMode(val ordinal: Int) {
         val REPEAT = AGWrapMode(1)
         val MIRRORED_REPEAT = AGWrapMode(2)
     }
+
+    override fun toString(): String = when (this) {
+        CLAMP_TO_EDGE -> "CLAMP_TO_EDGE"
+        REPEAT -> "REPEAT"
+        MIRRORED_REPEAT -> "MIRRORED_REPEAT"
+        else -> "<$ordinal>"
+    }
 }
 
 /** 2 bits required for encoding */
@@ -450,6 +457,7 @@ inline class AGColorMask(
 inline class AGDepthAndFrontFace(val data: Int) {
     companion object {
         operator fun invoke(): AGDepthAndFrontFace = DEFAULT
+        val INVALID = AGDepthAndFrontFace(-2)
         val DEFAULT = AGDepthAndFrontFace(0).withDepth(0f, 1f).withDepthMask(true).withDepthFunc(AGCompareMode.ALWAYS).withFrontFace(AGFrontFace.BOTH)
     }
 
@@ -786,5 +794,13 @@ data class AGBatch(
 
     override fun execute(ag: AG) {
         ag.draw(frameBuffer, frameBufferInfo, vertexData, program, drawType, vertexCount, indices, indexType, drawOffset, blending, uniforms, stencilRef, stencilOpFunc, colorMask, depthAndFrontFace, scissor, cullFace, instances)
+    }
+}
+
+data class AGMultiBatch(
+    val list: List<AGBatch>
+) : AGCommand {
+    override fun execute(ag: AG) {
+        list.fastForEach { it.execute(ag) }
     }
 }

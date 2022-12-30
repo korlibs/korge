@@ -238,10 +238,10 @@ class RenderContext2D(
                 val R = (width + padding.leftPlusRight).toFloat()
                 val B = (height + padding.topPlusBottom).toFloat()
 
-                var l = -padding.left.toFloat()
-                var t = -padding.top.toFloat()
-                var r = (width + padding.right).toFloat()
-                var b = (height + padding.bottom).toFloat()
+                val l = -padding.left.toFloat()
+                val t = -padding.top.toFloat()
+                val r = (width + padding.right).toFloat()
+                val b = (height + padding.bottom).toFloat()
 
                 val vertices = TexturedVertexArray(6, TexturedVertexArray.QUAD_INDICES)
                 vertices.quad(
@@ -257,7 +257,6 @@ class RenderContext2D(
                 )
                 batch.setStateFast(Bitmaps.white, filtering, blendMode, program, icount = 6, vcount = 4)
                 batch.drawVertices(vertices, null, premultiplied = true, wrap = true)
-
             }
         }
     }
@@ -296,35 +295,18 @@ class RenderContext2D(
 
     /** Temporarily sets the [scissor] (visible rendering area) to [scissor] is executed. */
     inline fun scissor(scissor: AGScissor, block: () -> Unit) {
-        val oldScissor = batch.scissor
-        scissorStart(scissor)
-        try {
+        batch.scissor(getTransformedScissor(scissor)) {
             block()
-        } finally {
-            scissorEnd(oldScissor)
         }
     }
 
-    @PublishedApi
-    internal fun scissorStart(scissor: AGScissor) {
-        batch.flush()
-        if (scissor != AGScissor.NIL) {
-            val left = m.transformX(scissor.left, scissor.top)
-            val top = m.transformY(scissor.left, scissor.top)
-            val right = m.transformX(scissor.right, scissor.bottom)
-            val bottom = m.transformY(scissor.right, scissor.bottom)
+    @PublishedApi internal fun getTransformedScissor(scissor: AGScissor): AGScissor {
+        val left = m.transformX(scissor.left, scissor.top)
+        val top = m.transformY(scissor.left, scissor.top)
+        val right = m.transformX(scissor.right, scissor.bottom)
+        val bottom = m.transformY(scissor.right, scissor.bottom)
 
-            batch.scissor = AGScissor.fromBounds(left, top, right, bottom)
-            //println("batch.scissor: ${batch.scissor}")
-        } else {
-            batch.scissor = AGScissor.NIL
-        }
-    }
-
-    @PublishedApi
-    internal fun scissorEnd(oldScissor: AGScissor) {
-        batch.flush()
-        batch.scissor = oldScissor
+        return AGScissor.fromBounds(left, top, right, bottom)
     }
 }
 

@@ -52,12 +52,13 @@ class MyNSOpenGLView(
 
     //var customCursor: NSCursor? = null
 
-    override fun resetCursorRects() {
-        val cursor = defaultGameWindow.cursor
-        val nsCursor = cursor.nsCursor
-        addCursorRect(bounds, nsCursor)
-        println("MyNSOpenGLView.resetCursorRects: bounds=${bounds.toRectangle()}, cursor=$cursor, nsCursor=$nsCursor")
-    }
+    // @TODO: Broken in Kotlin 1.8.0: https://youtrack.jetbrains.com/issue/KT-55653/Since-Kotlin-1.8.0-NSView.resetCursorRects-doesnt-exist-anymore-and-cannot-override-it
+    //override fun resetCursorRects() {
+    //    val cursor = defaultGameWindow.cursor
+    //    val nsCursor = cursor.nsCursor
+    //    addCursorRect(bounds, nsCursor)
+    //    println("MyNSOpenGLView.resetCursorRects: bounds=${bounds.toRectangle()}, cursor=$cursor, nsCursor=$nsCursor")
+    //}
 
     fun dispatchFlagIfRequired(event: NSEvent, mask: Int, key: Key) {
         val old = (lastModifierFlags and mask) != 0
@@ -306,6 +307,7 @@ class MyDefaultGameWindow : GameWindow() {
     val windowStyle = NSWindowStyleMaskTitled or NSWindowStyleMaskMiniaturizable or
         NSWindowStyleMaskClosable or NSWindowStyleMaskResizable
 
+    @Suppress("OPT_IN_USAGE")
     val attrs: UIntArray by lazy {
         val antialias = (this.quality != GameWindow.Quality.PERFORMANCE)
         val antialiasArray = if (antialias) intArrayOf(
@@ -324,7 +326,7 @@ class MyDefaultGameWindow : GameWindow() {
             NSOpenGLPFAStencilSize.convert(), 8.convert(),
             NSOpenGLPFAAccumSize.convert(), 0.convert(),
             0.convert()
-        ).toUIntArray()
+        ).asUIntArray()
     }
 
     val pixelFormat by lazy {
@@ -408,7 +410,13 @@ class MyDefaultGameWindow : GameWindow() {
         set(value) {
             if (field == value) return
             field = value
-            window.contentView?.let { window.invalidateCursorRectsForView(it) }
+
+            if (true) {
+                field.nsCursor.set()
+            } else {
+                // @TODO: Broken in Kotlin 1.8.0: https://youtrack.jetbrains.com/issue/KT-55653/Since-Kotlin-1.8.0-NSView.resetCursorRects-doesnt-exist-anymore-and-cannot-override-it
+                //window.contentView?.let { window.invalidateCursorRectsForView(it) }
+            }
         }
 
     private fun doWindowDidResize() {

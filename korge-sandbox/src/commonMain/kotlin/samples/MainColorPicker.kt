@@ -24,6 +24,7 @@ class MainColorPicker : Scene() {
             move {
                 val bmp = stage!!.unsafeRenderToBitmapSync(views!!.renderContext, Rectangle(views.stage.mouseX - 5.0, views.stage.mouseY - 5.0, 10.0, 10.0), views!!.globalToWindowScaleAvg)
                 magnifier.bitmap = bmp.slice()
+                invalidateRender()
             }
         }
         addUpdater {

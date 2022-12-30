@@ -162,7 +162,7 @@ class GpuShapeViewCommands {
                                 //val pixelScale = 1f
                                 tempUniforms[GpuShapeViewPrograms.u_GlobalPixelScale] = pixelScale
 
-                                val texUnit = tempUniforms[DefaultShaders.u_Tex] as? AGTextureUnit?
+                                //val texUnit = tempUniforms[DefaultShaders.u_Tex] as? AGTextureUnit?
 
                                 //println("outPremultiplied=$outPremultiplied, blendMode=${cmd.blendMode?.name}")
 
@@ -194,11 +194,10 @@ class GpuShapeViewCommands {
     }
 
     private fun resolve(ctx: RenderContext, uniforms: AGUniformValues, texUniforms: Map<Uniform, Bitmap>) {
-        var unitId = 0
         for ((uniform, value) in texUniforms) {
             val tex = ctx.tempTexturePool.alloc()
             tex.upload(value)
-            uniforms[uniform] = AGTextureUnit(unitId++, tex)
+            uniforms.set(uniform, tex)
             texturesToDelete.add(tex)
         }
     }
