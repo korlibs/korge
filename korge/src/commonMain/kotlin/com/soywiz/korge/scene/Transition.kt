@@ -20,7 +20,8 @@ class TransitionView() : Container() {
     }
 
     /** [Transition] that will be used to render [prev] and [next] */
-    private var transition: Transition = AlphaTransition
+    internal var transition: Transition = AlphaTransition
+        private set
     private lateinit var transitionProcess: TransitionProcess
     val prev: View get() = this[0]
 	val next: View get() = this[1]
@@ -33,6 +34,8 @@ class TransitionView() : Container() {
 		setViews(this.next, next)
         this.transitionProcess.start(this.prev, this.next)
 	}
+
+    override fun toString(): String = super.toString() + ":ratio=$ratio:transition=$transition"
 
     fun endTransition() {
         this.ratio = 1.0
@@ -66,20 +69,23 @@ interface Transition {
     fun create(): TransitionProcess
 }
 
-fun TransitionProcess(render: (ctx: RenderContext, prev: View, next: View, ratio: Double) -> Unit): TransitionProcess =
+fun TransitionProcess(name: String = "Transition", render: (ctx: RenderContext, prev: View, next: View, ratio: Double) -> Unit): TransitionProcess =
     object : TransitionProcess {
         override fun render(ctx: RenderContext, prev: View, next: View, ratio: Double) = render(ctx, prev, next, ratio)
+        override fun toString(): String = name
     }
 
-fun Transition(render: (ctx: RenderContext, prev: View, next: View, ratio: Double) -> Unit): Transition {
+fun Transition(name: String = "Transition", render: (ctx: RenderContext, prev: View, next: View, ratio: Double) -> Unit): Transition {
     return object : Transition, TransitionProcess {
         override fun create(): TransitionProcess = this
         override fun render(ctx: RenderContext, prev: View, next: View, ratio: Double) = render(ctx, prev, next, ratio)
+        override fun toString(): String = name
     }
 }
 
-fun TransitionCreate(block: () -> TransitionProcess): Transition = object : Transition {
+fun TransitionCreate(name: String = "Transition", block: () -> TransitionProcess): Transition = object : Transition {
     override fun create(): TransitionProcess = block()
+    override fun toString(): String = name
 }
 
 /*
@@ -93,6 +99,8 @@ class Transition(
 
 /** Creates a new [Transition] with an [Easing] specified */
 fun Transition.withEasing(easing: Easing) = object : Transition {
+    override fun toString(): String = "${this@withEasing}.withEasing"
+
     override fun create(): TransitionProcess {
         val process = this@withEasing.create()
         return object : TransitionProcess {
@@ -107,7 +115,7 @@ fun Transition.withEasing(easing: Easing) = object : Transition {
 
 /** A [Transition] that will blend [prev] and [next] by adjusting its alphas */
 @SharedImmutable
-val AlphaTransition = Transition { ctx, prev, next, ratio ->
+val AlphaTransition = Transition("AlphaTransition") { ctx, prev, next, ratio ->
 	val prevAlpha = prev.alpha
 	val nextAlpha = next.alpha
 	try {
@@ -129,9 +137,9 @@ fun MaskTransition(
     reversed: Boolean = false,
     spread: Double = 1.0,
     filtering: Boolean = true,
-) = TransitionCreate {
+) = TransitionCreate("MaskTransition") {
     val filter = TransitionFilter(transition, reversed, spread, filtering = filtering)
-    TransitionProcess { ctx, prev, next, ratio ->
+    TransitionProcess("MaskTransition") { ctx, prev, next, ratio ->
             filter.ratio = ratio
             prev.render(ctx)
             next.renderFiltered(ctx, filter)
