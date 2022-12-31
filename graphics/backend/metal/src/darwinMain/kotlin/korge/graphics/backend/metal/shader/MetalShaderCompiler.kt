@@ -11,7 +11,7 @@ object MetalShaderCompiler {
 
     fun compile(device: MTLDeviceProtocol, program: Program): MetalProgram {
         return program.toMetalShaders(device)
-            .toProgram(device)
+            .toCompiledProgram(device)
     }
 }
 
@@ -33,7 +33,7 @@ private fun MetalShaderGenerator.Result.toFunction(device: MTLDeviceProtocol): M
 private fun MTLLibraryProtocol.toFunction() = newFunctionWithName("main")
     ?: error("fail to create function")
 
-private fun Pair<MTLFunctionProtocol, MTLFunctionProtocol>.toProgram(device: MTLDeviceProtocol) =
+private fun Pair<MTLFunctionProtocol, MTLFunctionProtocol>.toCompiledProgram(device: MTLDeviceProtocol) =
     let { (vertex, fragment) -> createPipelineState(device, vertex, fragment) }
         .toMetalProgram()
 
