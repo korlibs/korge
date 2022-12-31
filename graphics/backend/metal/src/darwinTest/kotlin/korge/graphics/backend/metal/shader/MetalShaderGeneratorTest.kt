@@ -27,14 +27,14 @@ class MetalShaderGeneratorTest : StringSpec({
             }
 
             "struct VertexInput" {
-                +"float4 computedPosition [[position]];"
+                +"float4 position [[position]];"
                 +"float4 color;"
             }
 
             "vertex VertexOutput vertexMain(device const VertexInput* vertexInput [[buffer(0)]], const device SceneMatrices& sceneMatrices [[ buffer(1) ]], unsigned int vertexId [[ vertex_id ]])" {
                 +"vertexInput vertex = vertexInput[vertexId];"
                 +"VertexOutput vertexOutput = VertexOutput;"
-                +"vertexOutput.computedPosition = sceneMatrices.projectionMatrix * sceneMatrices.viewModelMatrix * float4(vertex.position, 1.0);"
+                +"vertexOutput.position = sceneMatrices.projectionMatrix * sceneMatrices.viewModelMatrix * float4(vertex.position, 1.0);"
                 +"vertexOutput.color = v.color;"
                 +"return vertexOutput"
             }

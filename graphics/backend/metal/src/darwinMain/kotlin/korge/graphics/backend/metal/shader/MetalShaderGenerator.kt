@@ -68,13 +68,17 @@ class MetalShaderGenerator(
 
     private fun Indenter.generateVertexMainFunction() {
         line("vertex VertexOutput $vertexMainFunctionName() {")
-        //TODO to complete
+        val generator = MetalShaderBodyGenerator(ShaderType.VERTEX)
+        generator.visit(vertexShader.stm)
+        line(generator.programIndenter)
         line("}")
     }
 
     private fun Indenter.generateFragmentMainFunction() {
         line("vertex float4 $fragmentMainFunctionName() {")
-        //TODO to complete
+        val generator = MetalShaderBodyGenerator(ShaderType.FRAGMENT)
+        generator.visit(fragmentShader.stm)
+        line(generator.programIndenter)
         line("}")
     }
 
