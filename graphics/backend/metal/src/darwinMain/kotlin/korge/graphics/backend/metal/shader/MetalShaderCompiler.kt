@@ -5,20 +5,17 @@ import com.soywiz.korag.shader.Shader
 import korge.graphics.backend.metal.MetalProgram
 import kotlinx.cinterop.*
 import platform.Foundation.NSError
-import platform.Metal.MTLDeviceProtocol
-import platform.Metal.MTLFunctionProtocol
-import platform.Metal.MTLLibraryProtocol
+import platform.Metal.*
 
 object MetalShaderCompiler {
 
     fun compile(device: MTLDeviceProtocol, program: Program): MetalProgram {
         return program.toMetalShaders(device)
-            .toProgram()
+            .toProgram(device)
     }
 }
 
-private fun Program.toMetalShaders(device: MTLDeviceProtocol)
-    = vertex.toFunction(device) to fragment.toFunction(device)
+private fun Program.toMetalShaders(device: MTLDeviceProtocol) = vertex.toFunction(device) to fragment.toFunction(device)
 
 private fun Shader.toFunction(device: MTLDeviceProtocol) = toNewMetalShaderStringResult()
     .toFunction(device)
@@ -36,6 +33,27 @@ private fun MetalShaderGenerator.Result.toFunction(device: MTLDeviceProtocol): M
 private fun MTLLibraryProtocol.toFunction() = newFunctionWithName("main")
     ?: error("fail to create function")
 
+private fun Pair<MTLFunctionProtocol, MTLFunctionProtocol>.toProgram(device: MTLDeviceProtocol) =
+    let { (vertex, fragment) -> createPipelineState(device, vertex, fragment) }
+        .toMetalProgram()
 
-private fun Pair<MTLFunctionProtocol, MTLFunctionProtocol>.toProgram() =
-    let { (vertex, fragment) -> MetalProgram(vertex, fragment) }
+private fun createPipelineState(
+    device: MTLDeviceProtocol,
+    vertexFunction: MTLFunctionProtocol,
+    fragmentFunction: MTLFunctionProtocol
+): MTLRenderPipelineStateProtocol {
+    memScoped {
+        val renderPipelineDescriptor = MTLRenderPipelineDescriptor().apply {
+            setVertexFunction(vertexFunction)
+            setFragmentFunction(fragmentFunction)
+        }
+
+        val errorPtr = alloc<ObjCObjectVar<NSError?>>()
+        return device.newRenderPipelineStateWithDescriptor(renderPipelineDescriptor, errorPtr.ptr).let {
+            errorPtr.value?.let { error -> error(error.localizedDescription) }
+            it ?: error("fail to create metal render pipeline state")
+        }
+    }
+}
+
+private fun MTLRenderPipelineStateProtocol.toMetalProgram() = MetalProgram(this)

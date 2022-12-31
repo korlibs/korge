@@ -3,11 +3,14 @@ package korge.graphics.backend.metal
 import com.soywiz.korag.*
 import com.soywiz.korag.shader.Program
 import korge.graphics.backend.metal.shader.MetalShaderCompiler
-import platform.Metal.MTLCreateSystemDefaultDevice
+import kotlinx.cinterop.*
+import platform.Metal.*
+import platform.QuartzCore.*
 
-class AGMetal : AG() {
+class AGMetal(private val drawable: CAMetalDrawableProtocol) : AG() {
 
-    private val device = MTLCreateSystemDefaultDevice() ?: error("fail to create device")
+    private val device = MTLCreateSystemDefaultDevice() ?: error("fail to create metal device")
+    private val commandQueue = device.newCommandQueue() ?: error("fail to create metal command queue")
     private val programs = HashMap<Program, MetalProgram>()
 
     override fun draw(
@@ -30,10 +33,39 @@ class AGMetal : AG() {
         cullFace: AGCullFace,
         instances: Int
     ) {
-        val currentProgram = getProgram(
-            program
-        )
-        TODO()
+        autoreleasepool {
+            val currentProgram = getProgram(
+                program
+            )
+
+            val commandBuffer = commandQueue.commandBuffer() ?: error("fail to get command buffer")
+
+            val renderPassDescriptor = MTLRenderPassDescriptor()
+            (renderPassDescriptor.colorAttachments as? List<MTLRenderPassColorAttachmentDescriptor>)
+                ?.get(0)
+                ?.let {
+                    //it.texture = drawable.texture
+                    it.loadAction = MTLLoadActionClear
+                    it.clearColor = MTLClearColorMake(0.85, 0.85, 0.85, 1.0)
+
+                }
+
+            val renderCommanderEncoder = commandBuffer.renderCommandEncoderWithDescriptor(renderPassDescriptor)
+                ?: error("fail to get render commander encoder")
+
+            renderCommanderEncoder.apply {
+                setRenderPipelineState(currentProgram.renderPipelineState)
+                //TODO: complete
+
+                endEncoding()
+            }
+
+
+            commandBuffer.presentDrawable(drawable)
+            commandBuffer.commit()
+
+            TODO()
+        }
     }
 
 
