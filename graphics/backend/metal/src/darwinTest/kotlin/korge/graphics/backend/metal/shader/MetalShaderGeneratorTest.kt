@@ -26,7 +26,7 @@ class MetalShaderGeneratorTest : StringSpec({
             +"#include <metal_stdlib>"
             +"using namespace metal;"
 
-            "v2f vertex main()" {
+            "void vertex main()" {
                 +"vec4 temp0;"
                 "if (true)" {
                     +"temp0 = (1 * 2);"

@@ -16,22 +16,20 @@ class MetalShaderGenerator(
         val varyings: List<Varying>
     )
 
-    fun generateResult(shader: Shader): Result = generateResult(shader.stm, shader.funcs)
+    fun generateResult(shader: Shader): Result = generateResult(shader.stm, shader.functions)
 
-    fun generateResult(root: Program.Stm, funcs: List<FuncDecl>): Result {
+    private fun generateResult(root: Program.Stm, customFunctions: List<FuncDecl>): Result {
         val types = GlobalsProgramVisitor()
 
-
-        val mainFunc = when (kind) {
+        val mainFunction = when (kind) {
             ShaderType.FRAGMENT -> FuncDecl("fragment main", VarType.Float4, listOf(), root)
             ShaderType.VERTEX -> FuncDecl("vertex main", VarType.Float2, listOf(), root)
-        }
-        types.visit(mainFunc)
+        }.also(types::visit)
 
-        val customFuncs = funcs.filter { it.ref.name in types.funcRefs }.reversed().distinctBy { it.ref.name }
-        for (func in funcs) types.visit(mainFunc)
-
-        val allFuncs = customFuncs + listOf(mainFunc)
+        val allFunctions = customFunctions.filter { it.ref.name in types.funcRefs }
+            .reversed()
+            .distinctBy { it.ref.name }
+            .plus(mainFunction)
 
         val result = Indenter {
 
@@ -48,17 +46,17 @@ class MetalShaderGenerator(
                 line("$OUT ${precToString(it.precision)}${typeToString(it.type)} ${it.name};")
             }
 
-            for (func in allFuncs) {
-                val gen = MetalShaderBodyGenerator(kind)
-                gen.visit(func)
+            for (function in allFunctions) {
+                val generator = MetalShaderBodyGenerator(kind)
+                generator.visit(function)
 
-                val argsStrings = func.args.map { "${typeToString(it.second)} ${it.first}" }
+                val argsStrings = function.args.map { "${typeToString(it.second)} ${it.first}" }
 
-                line("${typeToString(func.rettype)} ${func.name}(${argsStrings.joinToString(", ")})") {
-                    for (temp in gen.temps) {
+                line("${typeToString(function.rettype)} ${function.name}(${argsStrings.joinToString(", ")})") {
+                    for (temp in generator.temps) {
                         line(precToString(temp.precision) + typeToString(temp.type) + " " + temp.name + ";")
                     }
-                    line(gen.programIndenter)
+                    line(generator.programIndenter)
                 }
             }
         }.toString()
@@ -71,6 +69,6 @@ class MetalShaderGenerator(
         )
     }
 
-    fun generate(root: Program.Stm, funcs: List<FuncDecl>): String = generateResult(root, funcs).result
-    fun generate(root: Shader): String = generate(root.stm, root.funcs)
+    fun generate(root: Program.Stm, customFunctions: List<FuncDecl>): String = generateResult(root, customFunctions).result
+    fun generate(root: Shader): String = generate(root.stm, root.functions)
 }

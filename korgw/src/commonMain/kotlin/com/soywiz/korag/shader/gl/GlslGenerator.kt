@@ -101,7 +101,7 @@ class GlslGenerator constructor(
         val varyings: List<Varying>
     )
 
-    fun generateResult(shader: Shader): Result = generateResult(shader.stm, shader.funcs)
+    fun generateResult(shader: Shader): Result = generateResult(shader.stm, shader.functions)
 
     fun generateResult(root: Program.Stm, funcs: List<FuncDecl>): Result {
         val types = GlobalsProgramVisitor()
@@ -115,6 +115,7 @@ class GlslGenerator constructor(
 
         //println("types.funcRefs=${types.funcRefs}")
         val customFuncs = funcs.filter { it.ref.name in types.funcRefs }.reversed().distinctBy { it.ref.name }
+        //TODO: is it relevant to visit mainFunc for each existing function ?
         for (func in funcs) types.visit(mainFunc)
 
         val allFuncs = customFuncs + listOf(mainFunc)
@@ -200,7 +201,7 @@ class GlslGenerator constructor(
     }
 
 	fun generate(root: Program.Stm, funcs: List<FuncDecl>): String = generateResult(root, funcs).result
-    fun generate(root: Shader): String = generate(root.stm, root.funcs)
+    fun generate(root: Shader): String = generate(root.stm, root.functions)
 
 }
 

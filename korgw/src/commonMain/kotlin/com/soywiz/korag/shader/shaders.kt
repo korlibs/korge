@@ -816,7 +816,7 @@ data class Program(val vertex: VertexShader, val fragment: FragmentShader, val n
             } else {
                 outputStms.add(shader.stm)
             }
-            context.outputFuncs.addAll(shader.funcs)
+            context.outputFuncs.addAll(shader.functions)
         }
 		fun SET(target: Operand, expr: Operand) { outputStms += Stm.Set(target, expr) }
 		fun DISCARD() { outputStms += Stm.Discard }
@@ -981,10 +981,10 @@ data class Program(val vertex: VertexShader, val fragment: FragmentShader, val n
 	}
 }
 
-data class Shader(val type: ShaderType, val stm: Program.Stm, val funcs: List<FuncDecl>, val name: String? = null) {
+data class Shader(val type: ShaderType, val stm: Program.Stm, val functions: List<FuncDecl>, val name: String? = null) {
     private val stmHashCode = stm.hashCode()
-    private val funcsHashCode = funcs.hashCode()
-    private val cachedHashCode = (type.hashCode() * 17) + stmHashCode + (funcsHashCode * 53)
+    private val functionsHashCode = functions.hashCode()
+    private val cachedHashCode = (type.hashCode() * 17) + stmHashCode + (functionsHashCode * 53)
 
     val isRaw get() = stm is Program.Stm.Raw
 
@@ -1000,7 +1000,7 @@ data class Shader(val type: ShaderType, val stm: Program.Stm, val funcs: List<Fu
         }.visit(stm)
     }.toSet()
 
-    override fun equals(other: Any?): Boolean = (this === other) || (other is Shader && (this.type == other.type) && (this.cachedHashCode == other.cachedHashCode) && (this.stm == other.stm) && (this.funcs == other.funcs))
+    override fun equals(other: Any?): Boolean = (this === other) || (other is Shader && (this.type == other.type) && (this.cachedHashCode == other.cachedHashCode) && (this.stm == other.stm) && (this.functions == other.functions))
     override fun hashCode(): Int = cachedHashCode
 }
 
