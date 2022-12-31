@@ -213,7 +213,7 @@ class SceneContainer(
         time: TimeSpan = 0.seconds,
         transition: Transition = defaultTransition
     ): T {
-        return changeTo(T::class, gen, injects, time, transition, remap = true)
+        return changeTo(T::class, gen, injects = injects, time = time, transition = transition, remap = true)
     }
 
     suspend inline fun <T : Scene> changeTo(

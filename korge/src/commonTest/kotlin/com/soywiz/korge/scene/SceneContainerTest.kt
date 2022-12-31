@@ -1,9 +1,11 @@
 package com.soywiz.korge.scene
 
-import com.soywiz.korge.tests.ViewsForTesting
-import com.soywiz.korge.view.SContainer
-import com.soywiz.korge.view.SolidRect
-import com.soywiz.korim.color.Colors
+import com.soywiz.klock.*
+import com.soywiz.korge.tests.*
+import com.soywiz.korge.view.*
+import com.soywiz.korge.view.filter.*
+import com.soywiz.korim.color.*
+import kotlin.test.*
 
 class SceneContainerTest : ViewsForTesting() {
 	data class SceneInfo(val name: String)
@@ -55,4 +57,19 @@ class SceneContainerTest : ViewsForTesting() {
 	//		mylog.joinToString(", ")
 	//	)
 	//}
+
+    @Test
+    //fun testVerifyTransitionIsUsed() = suspendTest {
+    fun testVerifyTransitionIsUsed() = viewsTest {
+        //val log = ViewsLog(coroutineContext)
+        //log.injector.mapSingleton { ResourcesRoot() }
+        val sceneContainer = sceneContainer(views)
+        val startTime = time
+        sceneContainer.changeTo({ EmptyScene() }, time = 0.5.seconds, transition = MaskTransition(TransitionFilter.Transition.HORIZONTAL))
+        val transitionView = sceneContainer.firstChild as TransitionView
+        assertEquals("MaskTransition", transitionView.transition.toString())
+        assertEquals(1.0, transitionView.ratio)
+        val endTime = time
+        assertTrue { endTime - startTime in 0.5.seconds..0.75.seconds }
+    }
 }
