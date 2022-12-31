@@ -12,35 +12,42 @@ import io.kotest.matchers.*
  */
 class MetalShaderGeneratorTest : StringSpec({
 
-    val vertexShader = VertexShader {
-        IF(true.lit) {
-            DefaultShaders.t_Temp0 setTo 1.lit * 2.lit
-        } ELSE {
-            DefaultShaders.t_Temp0 setTo 3.lit * 4.lit
-        }
-    }
+    val vertexShader = DefaultShaders.VERTEX_DEFAULT
+    val fragmentShader = DefaultShaders.FRAGMENT_SOLID_COLOR
 
     "check that vertex metal shader is correctly generated" {
 
-        vertexShader shouldProduceShader {
+        vertexShader to fragmentShader shouldProduceShader {
             +"#include <metal_stdlib>"
             +"using namespace metal;"
 
-            "void vertex main()" {
-                +"vec4 temp0;"
-                "if (true)" {
-                    +"temp0 = (1 * 2);"
-                }
-                "else" {
-                    +"temp0 = (3 * 4);"
-                }
+            "struct VertexInput" {
+                +"packed_float3 position;"
+                +"packed_float3 color;"
+            }
+
+            "struct VertexInput" {
+                +"float4 computedPosition [[position]];"
+                +"float4 color;"
+            }
+
+            "vertex VertexOutput vertexMain(device const VertexInput* vertexInput [[buffer(0)]], const device SceneMatrices& sceneMatrices [[ buffer(1) ]], unsigned int vertexId [[ vertex_id ]])" {
+                +"vertexInput vertex = vertexInput[vertexId];"
+                +"VertexOutput vertexOutput = VertexOutput;"
+                +"vertexOutput.computedPosition = sceneMatrices.projectionMatrix * sceneMatrices.viewModelMatrix * float4(vertex.position, 1.0);"
+                +"vertexOutput.color = v.color;"
+                +"return vertexOutput"
+            }
+
+            "fragment float4 fragmentMain(VertexOut vertexOutput [[stage_in]])" {
+                +"return float4(vertexOutput.color)"
             }
         }
     }
 })
 
 
-infix fun Shader.shouldProduceShader(block: Indenter.() -> Unit) {
+infix fun Pair<VertexShader, FragmentShader>.shouldProduceShader(block: Indenter.() -> Unit) {
     val metalShaderAsString = toNewMetalShaderStringResult().result
     val expectedShaderAsString = Indenter {
         block()

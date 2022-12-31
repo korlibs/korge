@@ -1,7 +1,6 @@
 package korge.graphics.backend.metal.shader
 
-import com.soywiz.korag.shader.Program
-import com.soywiz.korag.shader.Shader
+import com.soywiz.korag.shader.*
 import korge.graphics.backend.metal.MetalProgram
 import kotlinx.cinterop.*
 import platform.Foundation.NSError
@@ -15,23 +14,25 @@ object MetalShaderCompiler {
     }
 }
 
-private fun Program.toMetalShaders(device: MTLDeviceProtocol) = vertex.toFunction(device) to fragment.toFunction(device)
+private fun Program.toMetalShaders(device: MTLDeviceProtocol) = (vertex to fragment)
+    .toFunctionsLibrary(device)
+    .let { it.toFunction(vertexMainFunctionName) to it.toFunction(fragmentMainFunctionName) }
 
-private fun Shader.toFunction(device: MTLDeviceProtocol) = toNewMetalShaderStringResult()
-    .toFunction(device)
+private fun Pair<VertexShader, FragmentShader>.toFunctionsLibrary(device: MTLDeviceProtocol) = toNewMetalShaderStringResult()
+    .toFunctionsLibrary(device)
 
-private fun MetalShaderGenerator.Result.toFunction(device: MTLDeviceProtocol): MTLFunctionProtocol {
+private fun MetalShaderGenerator.Result.toFunctionsLibrary(device: MTLDeviceProtocol): MTLLibraryProtocol {
     memScoped {
         val errorPtr = alloc<ObjCObjectVar<NSError?>>()
         return device.newLibraryWithSource(result, null, errorPtr.ptr).let {
             errorPtr.value?.let { error -> error(error.localizedDescription) }
             it ?: error("fail to create library")
-        }.toFunction()
+        }
     }
 }
 
-private fun MTLLibraryProtocol.toFunction() = newFunctionWithName("main")
-    ?: error("fail to create function")
+private fun MTLLibraryProtocol.toFunction(name: String) = newFunctionWithName(name)
+    ?: error("fail to create function with name $name using metal function library")
 
 private fun Pair<MTLFunctionProtocol, MTLFunctionProtocol>.toCompiledProgram(device: MTLDeviceProtocol) =
     let { (vertex, fragment) -> createPipelineState(device, vertex, fragment) }

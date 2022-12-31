@@ -3,9 +3,7 @@ package korge.graphics.backend.metal.shader
 import com.soywiz.korag.shader.*
 import com.soywiz.korio.util.*
 
-internal class MetalShaderBodyGenerator(
-    val kind: ShaderType
-) : Program.Visitor<String>(""), BaseMetalShaderGenerator {
+internal class MetalShaderBodyGenerator : Program.Visitor<String>(""), BaseMetalShaderGenerator {
     val temps = LinkedHashSet<Temp>()
     val programIndenter = Indenter()
 
@@ -75,16 +73,7 @@ internal class MetalShaderBodyGenerator(
 
     override fun visit(stm: Program.Stm.Raw) = TODO()
 
-    override fun visit(operand: Variable): String {
-        super.visit(operand)
-        return when (operand) {
-            is Output -> when (kind) {
-                ShaderType.VERTEX -> TODO()
-                ShaderType.FRAGMENT -> TODO()
-            }
-            else -> operand.name
-        }
-    }
+    override fun visit(operand: Variable): String = TODO()
 
     override fun visit(temp: Temp): String {
         temps += temp

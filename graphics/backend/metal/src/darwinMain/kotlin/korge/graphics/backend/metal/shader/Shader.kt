@@ -2,6 +2,7 @@ package korge.graphics.backend.metal.shader
 
 import com.soywiz.korag.shader.*
 
-fun Shader.toNewMetalShaderStringResult() = MetalShaderGenerator(type)
-    .generateResult(this)
+fun Pair<VertexShader, FragmentShader>.toNewMetalShaderStringResult() = let { (vertexShader, fragmentShader) ->
+    MetalShaderGenerator(vertexShader, fragmentShader) }
+    .generateResult()
 

@@ -58,10 +58,4 @@ internal interface BaseMetalShaderGenerator {
         }
     }
 
-    val Variable.arrayDecl get() = if (arrayCount != 1) "[$arrayCount]" else ""
-
-    val IN: String get() = TODO()
-    val OUT: String get() = TODO()
-    val UNIFORM: String get() = TODO()
-    val gl_FragColor: String get() = TODO()
 }

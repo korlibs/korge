@@ -4,8 +4,12 @@ import com.soywiz.korag.shader.*
 import com.soywiz.korag.shader.gl.*
 import com.soywiz.korio.util.*
 
+internal const val vertexMainFunctionName = "vertexMain"
+internal const val fragmentMainFunctionName = "fragmentMain"
+
 class MetalShaderGenerator(
-    private val kind: ShaderType
+    private val vertexShader: VertexShader,
+    private val fragmentShader: FragmentShader
 ) : BaseMetalShaderGenerator {
 
     data class Result(
@@ -16,59 +20,85 @@ class MetalShaderGenerator(
         val varyings: List<Varying>
     )
 
-    fun generateResult(shader: Shader): Result = generateResult(shader.stm, shader.functions)
+    fun generateResult(): Result = generateResult(vertexShader.stm, fragmentShader.stm, vertexShader.functions + fragmentShader.functions)
 
-    private fun generateResult(root: Program.Stm, customFunctions: List<FuncDecl>): Result {
+    private fun generateResult(vertexInstructions: Program.Stm, fragmentInstructions: Program.Stm, customFunctions: List<FuncDecl>): Result {
         val types = GlobalsProgramVisitor()
 
-        val mainFunction = when (kind) {
-            ShaderType.FRAGMENT -> FuncDecl("fragment main", VarType.Float4, listOf(), root)
-            ShaderType.VERTEX -> FuncDecl("vertex main", VarType.Float2, listOf(), root)
-        }.also(types::visit)
-
-        val allFunctions = customFunctions.filter { it.ref.name in types.funcRefs }
-            .reversed()
-            .distinctBy { it.ref.name }
-            .plus(mainFunction)
+        FuncDecl("main", VarType.TVOID, listOf(), vertexInstructions)
+            .also(types::visit)
 
         val result = Indenter {
 
-            // include metal std library
-            line("#include <metal_stdlib>")
+            addHeaders()
 
-            // use metal namespace to use std type short name
-            line("using namespace metal;")
+            declareInputStructure()
+            declareOutputStructure()
 
-            for (it in types.attributes) line("$IN ${precToString(it.precision)}${typeToString(it.type)} ${it.name}${it.arrayDecl};")
-            for (it in types.uniforms) line("$UNIFORM ${precToString(it.precision)}${typeToString(it.type)} ${it.name}${it.arrayDecl};")
-            for (it in types.varyings) {
-                if (it is Output) continue
-                line("$OUT ${precToString(it.precision)}${typeToString(it.type)} ${it.name};")
-            }
+            customFunctions.filter { it.ref.name in types.funcRefs }
+                .reversed()
+                .distinctBy { it.ref.name }
+                .let { generationFunctions(it) }
 
-            for (function in allFunctions) {
-                val generator = MetalShaderBodyGenerator(kind)
-                generator.visit(function)
+            generateVertexMainFunction()
+            generateFragmentMainFunction()
 
-                val argsStrings = function.args.map { "${typeToString(it.second)} ${it.first}" }
 
-                line("${typeToString(function.rettype)} ${function.name}(${argsStrings.joinToString(", ")})") {
-                    for (temp in generator.temps) {
-                        line(precToString(temp.precision) + typeToString(temp.type) + " " + temp.name + ";")
-                    }
-                    line(generator.programIndenter)
-                }
-            }
         }.toString()
 
         return Result(
-            this, if (root is Program.Stm.Raw) root.string(GlslConfig.NAME) else result,
+            this, result,
             attributes = types.attributes.toList(),
             uniforms = types.uniforms.toList(),
             varyings = types.varyings.toList()
         )
     }
 
-    fun generate(root: Program.Stm, customFunctions: List<FuncDecl>): String = generateResult(root, customFunctions).result
-    fun generate(root: Shader): String = generate(root.stm, root.functions)
+    private fun Indenter.declareInputStructure() {
+        line("struct VertexInput {")
+        //TODO to complete
+        line("}")
+    }
+
+    private fun Indenter.declareOutputStructure() {
+        line("struct VertexOutput {")
+        //TODO to complete
+        line("}")
+    }
+
+    private fun Indenter.generateVertexMainFunction() {
+        line("vertex VertexOutput $vertexMainFunctionName() {")
+        //TODO to complete
+        line("}")
+    }
+
+    private fun Indenter.generateFragmentMainFunction() {
+        line("vertex float4 $fragmentMainFunctionName() {")
+        //TODO to complete
+        line("}")
+    }
+
+    private fun Indenter.generationFunctions(functions: List<FuncDecl>) {
+        for (function in functions) {
+            val generator = MetalShaderBodyGenerator()
+            generator.visit(function)
+
+            val argsStrings = function.args.map { "${typeToString(it.second)} ${it.first}" }
+
+            line("${typeToString(function.rettype)} ${function.name}(${argsStrings.joinToString(", ")})") {
+                for (temp in generator.temps) {
+                    line(precToString(temp.precision) + typeToString(temp.type) + " " + temp.name + ";")
+                }
+                line(generator.programIndenter)
+            }
+        }
+    }
+
+}
+private fun Indenter.addHeaders() {
+    // include metal std library
+    line("#include <metal_stdlib>")
+
+    // use metal namespace to use std type short name
+    line("using namespace metal;")
 }
