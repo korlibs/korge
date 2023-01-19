@@ -5,6 +5,7 @@ package com.soywiz.korgw.platform
 import com.soywiz.kmem.*
 import com.soywiz.kmem.Platform
 import com.soywiz.kmem.dyn.*
+import com.soywiz.korgw.win32.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.time.*
 import com.soywiz.korio.util.*
@@ -209,7 +210,9 @@ object DirectGL : INativeGL {
     init {
         try {
             if (nativeOpenGLLibraryPath == null) error("Can't get OpenGL library")
+
             traceTime("OpenGL Native.register") {
+                //println("Native.register")
                 Native.register(
                     DirectGL::class.java,
                     NativeLibrary.getInstance(
@@ -217,13 +220,19 @@ object DirectGL : INativeGL {
                         mutableMapOf<String, Any?>().apply {
                             if (Platform.isWindows) {
                                 this[Library.OPTION_SYMBOL_PROVIDER] = SymbolProvider { handle, name, parent ->
-                                    val ptr = Win32.wglGetProcAddress(name)
+                                    val ptr = Win32OpenglLoader.loadFunctionCached(name)
                                     //println("LOADING $name: ${ptr.address}, $parent")
                                     //error(name)
                                     if (ptr.address == 0L) {
-                                        parent.getSymbolAddress(handle, name, null)
+                                        try {
+                                            parent.getSymbolAddress(handle, name, null)
+                                        } catch (e: UnsatisfiedLinkError) {
+                                            0L
+                                        }
                                     } else {
                                         ptr.address
+                                    }.also {
+                                        println(" -> $it")
                                     }
                                 }
                             }
@@ -231,17 +240,13 @@ object DirectGL : INativeGL {
                     )
                 )
             }
-            loaded = true
         } catch (e: Throwable) {
             com.soywiz.klogger.Console.error("Failed to initialize OpenAL: arch=$arch, OS.rawName=${OS.rawName}, nativeOpenGLLibraryPath=$nativeOpenGLLibraryPath, message=${e.message}")
-            //e.printStackTrace()
+            e.printStackTrace()
+        } finally {
+            //println("/Native.register")
+            loaded = true
         }
-    }
-
-    interface Win32 : Library {
-        fun wglGetProcAddress(name: String): Pointer
-
-        companion object : Win32 by Native.load("opengl32", Win32::class.java)
     }
 }
 
