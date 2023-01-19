@@ -5,6 +5,7 @@ import com.soywiz.kmem.*
 import com.soywiz.kmem.Platform
 import com.soywiz.kmem.dyn.*
 import com.soywiz.korgw.osx.*
+import com.soywiz.korgw.platform.*
 import com.soywiz.korgw.win32.*
 import com.soywiz.korgw.x11.*
 import com.sun.jna.*
@@ -19,9 +20,6 @@ actual fun KmlGlContextDefault(window: Any?, parent: KmlGlContext?): KmlGlContex
 }
 
 open class Win32KmlGlContext(window: Any? = null, parent: KmlGlContext? = null) : KmlGlContext(window, Win32KmlGl, parent) {
-    init {
-        Win32GL.preloadFunctionsOnce()
-    }
     val dummyName = "OffScreen_WGL_korgw"
     val CS_VREDRAW = 1
     val CS_HREDRAW = 2
@@ -98,7 +96,7 @@ open class Win32KmlGlContext(window: Any? = null, parent: KmlGlContext? = null) 
 
     val extensions by lazy {
         (0 until Win32KmlGl.getIntegerv(Win32OpenglContext.GL_NUM_EXTENSIONS)).map {
-            Win32GL.glGetStringi(Win32KmlGl.EXTENSIONS, it)
+            DirectGL.glGetStringi(Win32KmlGl.EXTENSIONS, it)
         }.toSet()
     }
 
@@ -138,9 +136,9 @@ open class Win32KmlGlContext(window: Any? = null, parent: KmlGlContext? = null) 
     }
 
     private fun makeCurrent(hDC: WinDef.HDC?, hRC: WinDef.HGLRC?) {
-        if (!Win32.wglMakeCurrent(hDC, hRC)) {
+        if (!WGL.wglMakeCurrent(hDC, hRC)) {
             val error = Win32.GetLastError()
-            Console.error("Win32.wglMakeCurrent($hDC, $hRC).error = $error")
+            Console.error("WGL.wglMakeCurrent($hDC, $hRC).error = $error")
         }
     }
 
@@ -152,7 +150,7 @@ open class Win32KmlGlContext(window: Any? = null, parent: KmlGlContext? = null) 
     override fun close() {
         unset()
         Win32.ReleaseDC(hWND, hDC)
-        Win32.wglDeleteContext(hRC)
+        WGL.wglDeleteContext(hRC)
     }
 
     companion object {

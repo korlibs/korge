@@ -1,31 +1,24 @@
 package com.soywiz.korgw.win32
 
-import com.soywiz.kgl.checkError
-import com.soywiz.kgl.getIntegerv
+import com.soywiz.kgl.*
 import com.soywiz.klogger.Console
-import com.soywiz.korgw.GameWindow
-import com.soywiz.korgw.GameWindowConfig
-import com.soywiz.korgw.platform.BaseOpenglContext
-import com.soywiz.korgw.platform.INativeGL
-import com.soywiz.korgw.platform.NativeKgl
-import com.soywiz.korgw.platform.DirectGL
-import com.soywiz.korim.bitmap.Bitmap32
-import com.soywiz.korio.lang.Environment
+import com.soywiz.korgw.*
+import com.soywiz.korgw.platform.*
+import com.soywiz.korim.bitmap.*
+import com.soywiz.korio.lang.*
 import com.sun.jna.*
 import com.sun.jna.Function
-import com.sun.jna.platform.win32.OpenGL32
-import com.sun.jna.platform.win32.WinDef
+import com.sun.jna.platform.win32.*
 import com.sun.jna.platform.win32.WinDef.*
-import com.sun.jna.platform.win32.WinGDI
-import com.sun.jna.platform.win32.WinUser
-import com.sun.jna.ptr.PointerByReference
-import java.awt.Component
-import java.io.File
-import java.lang.reflect.Method
-import java.lang.reflect.Proxy
+import com.sun.jna.ptr.*
+import com.sun.jna.win32.*
+import java.awt.*
+import java.io.*
+import java.lang.reflect.*
+import java.util.concurrent.*
 
 //open class Win32KmlGl : CheckErrorsKmlGlProxy(NativeKgl(Win32GL)) {
-open class Win32KmlGl : NativeKgl(Win32GL) {
+open class Win32KmlGl : NativeKgl(DirectGL) {
     companion object : Win32KmlGl()
 
     var vertexArrayCachedVersion = -1
@@ -45,9 +38,8 @@ open class Win32KmlGl : NativeKgl(Win32GL) {
     }
 }
 
-interface Win32GL : INativeGL, Library {
-    fun wglGetProcAddress(name: String): Pointer
-
+//interface Win32GL : INativeGL, StdCallLibrary {
+interface Win32GL : StdCallLibrary {
     //fun wglChoosePixelFormat(hDC: HDC, piAttribIList: Pointer?, pfAttribFList: Pointer?, nMaxFormats: Int, piFormats: Pointer?, nNumFormats: Pointer?): Int
     //fun wglCreateContextAttribs(hDC: HDC, hshareContext: WinGDI.PIXELFORMATDESCRIPTOR.ByReference, attribList: Pointer?): Int
 
@@ -55,112 +47,138 @@ interface Win32GL : INativeGL, Library {
     //fun wglCreateContextAttribsARB(hDC: HDC, hshareContext: WinGDI.PIXELFORMATDESCRIPTOR.ByReference?, attribList: Pointer?): Int
     fun wglCreateContextAttribsARB(hDC: HDC, hshareContext: WinGDI.PIXELFORMATDESCRIPTOR.ByReference?, attribList: IntArray?): HGLRC?
 
-    companion object : Win32GLBase(Win32GLLoader())
+    companion object : Win32GL by Win32OpenglLoader.OpenglLoadProxy()
+}
 
-    class Win32GLLoader {
-        var preloaded = false
-        val funcs = LinkedHashMap<String, Function>()
-        //val opengl32Lib by lazy { NativeLibrary.getInstance("opengl32") }
-        val opengl32Lib = NativeLibrary.getInstance("opengl32")
+interface WGL : StdCallLibrary {
+    fun wglGetProcAddress(name: String): Pointer?
+    fun wglGetCurrentContext(): HGLRC?
+    fun wglGetCurrentDC(): HDC?
+    fun wglMakeCurrent(windowDC: HDC?, hglrc: HGLRC?): Boolean
+    fun wglCreateContext(windowDC: HDC?): HGLRC?
+    fun wglDeleteContext(hglrc: HGLRC?): Boolean
 
-        init {
-            if (Environment["DEBUG_OPENGL32_LOAD"] == "true") {
-                println("opengl32Lib=$opengl32Lib, CWD=${File(".").absoluteFile}")
-            }
+    //fun wglChoosePixelFormatARB(hDC: HDC, piAttribIList: IntArray?, pfAttribFList: FloatArray?, nMaxFormats: Int, piFormats: Pointer?, nNumFormats: Pointer?): Int
+    //fun wglCreateContextAttribsARB(hDC: HDC, hshareContext: WinGDI.PIXELFORMATDESCRIPTOR.ByReference?, attribList: IntArray?): HGLRC?
+
+    companion object : WGL by Native.load("opengl32", WGL::class.java)
+}
+
+object Win32OpenglLoader {
+    // https://gist.github.com/nickrolfe/1127313ed1dbf80254b614a721b3ee9c
+    val dummyName = "Dummy_WGL_korgw"
+    val CS_VREDRAW = 1
+    val CS_HREDRAW = 2
+    val CS_OWNDC = 0x0020
+    val CW_USEDEFAULT = 0x80000000L.toInt()
+    val winClass = WinUser.WNDCLASSEX().also {
+        it.style = CS_HREDRAW or CS_VREDRAW or CS_OWNDC
+        it.lpfnWndProc = WinUser.WindowProc { hwnd, uMsg, wParam, lParam -> Win32.DefWindowProc(hwnd, uMsg, wParam, lParam) }
+        it.hInstance = Win32.GetModuleHandle(null)
+        it.lpszClassName = dummyName
+    }
+    val opengl32Lib = NativeLibrary.getInstance("opengl32")
+
+    init {
+        Win32.RegisterClassEx(winClass)
+    }
+    //val hWND = HWND(Native.getWindowPointer(Window(Frame())))
+    val hWND = Win32.CreateWindowEx(
+        0, dummyName, "Dummy OpenGL Window",
+        0, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
+        null, null, winClass.hInstance, null
+    )
+    val hDC = Win32.GetDC(hWND)
+    val pfd = WinGDI.PIXELFORMATDESCRIPTOR.ByReference().also { pfd ->
+        pfd.nSize = pfd.size().toShort()
+        pfd.nVersion = 1
+        pfd.dwFlags =
+            WinGDI.PFD_DRAW_TO_WINDOW or WinGDI.PFD_SUPPORT_OPENGL or (if (true) WinGDI.PFD_DOUBLEBUFFER else 0)
+        //pfd.dwFlags = WinGDI.PFD_DRAW_TO_WINDOW or WinGDI.PFD_SUPPORT_OPENGL;
+        pfd.iPixelType = WinGDI.PFD_TYPE_RGBA.toByte()
+        pfd.cColorBits = 24
+        pfd.cStencilBits = 8.toByte()
+        //pfd.cColorBits = 24
+        //pfd.cDepthBits = 16
+        //pfd.cDepthBits = 32
+        pfd.cDepthBits = 24
+    }
+    val pf = Win32.ChoosePixelFormat(hDC, pfd).also { pf ->
+        Win32.SetPixelFormat(hDC, pf, pfd)
+    }
+    //DescribePixelFormat(hDC, pf, sizeof(PIXELFORMATDESCRIPTOR), &pfd);
+
+    //val attribs = intArrayOf(
+    //    WGL_CONTEXT_MAJOR_VERSION_ARB, 3,
+    //    WGL_CONTEXT_MINOR_VERSION_ARB, 3
+    //)
+
+    //hRC = wglCreateContextAttribsARB (hDC, null, attribs);
+    val hRC = WGL.wglCreateContext(hDC)
+
+    inline fun <T> makeCurrentTemporarily(block: () -> T): T {
+        val oldRC = WGL.wglGetCurrentContext()
+        val oldDC = WGL.wglGetCurrentDC()
+        try {
+            WGL.wglMakeCurrent(hDC, hRC)
+            return block()
+        } finally {
+            WGL.wglMakeCurrent(oldDC, oldRC)
         }
+    }
 
-        fun loadFunction(name: String): Function? =
-            OpenGL32.INSTANCE.wglGetProcAddress(name)?.let { Function.getFunction(it) }
+    fun ensureAnyOpenglContext() {
+        if (WGL.wglGetCurrentContext() == null) {
+            WGL.wglMakeCurrent(hDC, hRC)
+        }
+    }
+
+    fun loadFunction(name: String): Function? {
+        return makeCurrentTemporarily {
+            WGL.wglGetProcAddress(name)?.let { Function.getFunction(it) }
                 ?: try { opengl32Lib.getFunction(name) } catch (e: UnsatisfiedLinkError) { null }
+        }
+    }
 
-        fun loadFunctionCached(name: String): Function = funcs.getOrPut(name) {
+    fun loadFunctionCached(name: String): Function {
+        return funcs.getOrPut(name) {
             loadFunction(name) ?: error("Can't find opengl method $name")
         }
+    }
 
-        fun OpenglLoadProxy(): Win32GL {
-            try {
-                val classLoader = Win32KmlGl::class.java.classLoader
-                return Proxy.newProxyInstance(
-                    classLoader,
-                    arrayOf(Win32GL::class.java)
-                ) { obj: Any?, method: Method, args: Array<Any?>? ->
-                    loadFunctionCached(method.name).invoke(method.returnType, args)
-                } as Win32GL
-            } catch (e: Throwable) {
-                e.printStackTrace()
-                throw e
-            }
+    fun close() {
+        WGL.wglMakeCurrent(hDC, null)
+        WGL.wglDeleteContext(hRC)
+        Win32.ReleaseDC(hWND, hDC)
+        Win32.DestroyWindow(hWND)
+        opengl32Lib.close()
+    }
+
+    private val funcs = ConcurrentHashMap<String, Function>()
+    //val opengl32Lib by lazy { NativeLibrary.getInstance("opengl32") }
+
+    init {
+        if (Environment["DEBUG_OPENGL32_LOAD"] == "true") {
+            println("opengl32Lib=$opengl32Lib, CWD=${File(".").absoluteFile}")
         }
     }
 
-    open class Win32GLBase(val loader: Win32GLLoader) : Win32GL by loader.OpenglLoadProxy() {
-        fun preloadFunctionsOnce() {
-            if (loader.preloaded) return
-            loader.preloaded = true
-            preloadFunctions()
+    fun OpenglLoadProxy(): Win32GL {
+        try {
+            val classLoader = Win32KmlGl::class.java.classLoader
+            return Proxy.newProxyInstance(
+                classLoader,
+                arrayOf(Win32GL::class.java)
+            ) { obj: Any?, method: Method, args: Array<Any?>? ->
+                loadFunctionCached(method.name).invoke(method.returnType, args)
+            } as Win32GL
+        } catch (e: Throwable) {
+            e.printStackTrace()
+            throw e
         }
-
-        fun preloadFunctions() {
-            // https://gist.github.com/nickrolfe/1127313ed1dbf80254b614a721b3ee9c
-            val dummyName = "Dummy_WGL_korgw"
-            val CS_VREDRAW = 1
-            val CS_HREDRAW = 2
-            val CS_OWNDC = 0x0020
-            val CW_USEDEFAULT = 0x80000000L.toInt()
-            val winClass = WinUser.WNDCLASSEX().also {
-                it.style = CS_HREDRAW or CS_VREDRAW or CS_OWNDC
-                it.lpfnWndProc = WinUser.WindowProc { hwnd, uMsg, wParam, lParam -> Win32.DefWindowProc(hwnd, uMsg, wParam, lParam) }
-                it.hInstance = Win32.GetModuleHandle(null)
-                it.lpszClassName = dummyName
-            }
-            Win32.RegisterClassEx(winClass)
-            //val hWND = HWND(Native.getWindowPointer(Window(Frame())))
-            val hWND = Win32.CreateWindowEx(
-                0, dummyName, "Dummy OpenGL Window",
-                0, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
-                null, null, winClass.hInstance, null
-            )
-            val hDC = Win32.GetDC(hWND)
-            val pfd = WinGDI.PIXELFORMATDESCRIPTOR.ByReference().also { pfd ->
-                pfd.nSize = pfd.size().toShort()
-                pfd.nVersion = 1
-                pfd.dwFlags =
-                    WinGDI.PFD_DRAW_TO_WINDOW or WinGDI.PFD_SUPPORT_OPENGL or (if (true) WinGDI.PFD_DOUBLEBUFFER else 0)
-                //pfd.dwFlags = WinGDI.PFD_DRAW_TO_WINDOW or WinGDI.PFD_SUPPORT_OPENGL;
-                pfd.iPixelType = WinGDI.PFD_TYPE_RGBA.toByte()
-                pfd.cColorBits = 24
-                pfd.cStencilBits = 8.toByte()
-                //pfd.cColorBits = 24
-                //pfd.cDepthBits = 16
-                //pfd.cDepthBits = 32
-                pfd.cDepthBits = 24
-            }
-            val pf = Win32.ChoosePixelFormat(hDC, pfd)
-            Win32.SetPixelFormat(hDC, pf, pfd)
-            //DescribePixelFormat(hDC, pf, sizeof(PIXELFORMATDESCRIPTOR), &pfd);
-
-            //val attribs = intArrayOf(
-            //    WGL_CONTEXT_MAJOR_VERSION_ARB, 3,
-            //    WGL_CONTEXT_MINOR_VERSION_ARB, 3
-            //)
-
-            //hRC = wglCreateContextAttribsARB (hDC, null, attribs);
-            val hRC = Win32.wglCreateContext(hDC)
-
-            Win32.wglMakeCurrent(hDC, hRC)
-
-            loader.loadFunctionCached("wglChoosePixelFormatARB")
-            loader.loadFunctionCached("wglCreateContextAttribsARB")
-
-            Win32.wglMakeCurrent(hDC, null)
-            Win32.wglDeleteContext(hRC)
-            Win32.ReleaseDC(hWND, hDC)
-            Win32.DestroyWindow(hWND)
-        }
-
-
     }
 }
+
 
 private fun Bitmap32.toWin32Icon(): HICON? {
     val bmp = this.clone().flipY().toBMP32()
@@ -215,7 +233,7 @@ private fun Bitmap32.scaled(width: Int, height: Int): Bitmap32 {
 }
 
 // https://www.khronos.org/opengl/wiki/Creating_an_OpenGL_Context_(WGL)
-class Win32OpenglContext(val gwconfig: GameWindowConfig, val hWnd: WinDef.HWND, val hDC: WinDef.HDC, val doubleBuffered: Boolean = false, val component: Component? = null) : BaseOpenglContext {
+class Win32OpenglContext(val gwconfig: GameWindowConfig, val hWnd: WinDef.HWND, val hDC: HDC, val doubleBuffered: Boolean = false, val component: Component? = null) : BaseOpenglContext {
 
     //val pfd = WinGDI.PIXELFORMATDESCRIPTOR.ByReference().also { pfd ->
     //    pfd.nSize = pfd.size().toShort()
@@ -243,7 +261,6 @@ class Win32OpenglContext(val gwconfig: GameWindowConfig, val hWnd: WinDef.HWND, 
     var hRC: HGLRC? = null
 
     fun init() = this.apply {
-        Win32GL.preloadFunctionsOnce()
         pf = run {
             val attribList = intArrayOf(
                 WGL_DRAW_TO_WINDOW_ARB, GL_TRUE,
@@ -309,7 +326,7 @@ class Win32OpenglContext(val gwconfig: GameWindowConfig, val hWnd: WinDef.HWND, 
 
     val extensions by lazy {
         (0 until Win32KmlGl.getIntegerv(GL_NUM_EXTENSIONS)).map {
-            Win32GL.glGetStringi(Win32KmlGl.EXTENSIONS, it)
+            DirectGL.glGetStringi(Win32KmlGl.EXTENSIONS, it)
         }.toSet()
     }
 
@@ -318,7 +335,7 @@ class Win32OpenglContext(val gwconfig: GameWindowConfig, val hWnd: WinDef.HWND, 
     }
 
     override fun getCurrent(): Any? {
-        return Win32.wglGetCurrentContext()
+        return WGL.wglGetCurrentContext()
     }
 
     val GL_MULTISAMPLE = 0x809D
@@ -327,9 +344,9 @@ class Win32OpenglContext(val gwconfig: GameWindowConfig, val hWnd: WinDef.HWND, 
         //println("makeCurrent")
         makeCurrent(hDC, hRC)
         when (gwconfig.quality) {
-            GameWindow.Quality.QUALITY -> Win32GL.glEnable(GL_MULTISAMPLE)
+            GameWindow.Quality.QUALITY -> DirectGL.glEnable(GL_MULTISAMPLE)
             GameWindow.Quality.PERFORMANCE,
-            GameWindow.Quality.AUTOMATIC -> Win32GL.glDisable(GL_MULTISAMPLE)
+            GameWindow.Quality.AUTOMATIC -> DirectGL.glDisable(GL_MULTISAMPLE)
         }
 
     }
@@ -339,9 +356,9 @@ class Win32OpenglContext(val gwconfig: GameWindowConfig, val hWnd: WinDef.HWND, 
     }
 
     private fun makeCurrent(hDC: HDC?, hRC: WinDef.HGLRC?) {
-        if (!Win32.wglMakeCurrent(hDC, hRC)) {
+        if (!WGL.wglMakeCurrent(hDC, hRC)) {
             val error = Win32.GetLastError()
-            Console.error("Win32.wglMakeCurrent($hDC, $hRC).error = $error")
+            Console.error("WGL.wglMakeCurrent($hDC, $hRC).error = $error")
         }
     }
 
@@ -355,7 +372,7 @@ class Win32OpenglContext(val gwconfig: GameWindowConfig, val hWnd: WinDef.HWND, 
     override fun dispose() {
         releaseCurrent()
         Win32.ReleaseDC(hWnd, hDC)
-        Win32.wglDeleteContext(hRC)
+        WGL.wglDeleteContext(hRC)
     }
 
     private var wglSwapIntervalEXTSet: Boolean = false
@@ -369,7 +386,7 @@ class Win32OpenglContext(val gwconfig: GameWindowConfig, val hWnd: WinDef.HWND, 
     private fun getSwapInterval(): SwapIntervalCallback? {
         if (!wglSwapIntervalEXTSet) {
             wglSwapIntervalEXTSet = true
-            swapIntervalEXTPointer = Win32.wglGetProcAddress("wglSwapIntervalEXT")
+            swapIntervalEXTPointer = WGL.wglGetProcAddress("wglSwapIntervalEXT")
 
             swapIntervalEXT = when {
                 swapIntervalEXTPointer != Pointer.NULL -> CallbackReference.getCallback(SwapIntervalCallback::class.java, swapIntervalEXTPointer) as? SwapIntervalCallback?
