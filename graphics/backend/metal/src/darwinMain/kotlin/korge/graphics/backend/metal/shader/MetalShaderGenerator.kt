@@ -1,5 +1,6 @@
 package korge.graphics.backend.metal.shader
 
+import com.soywiz.korag.*
 import com.soywiz.korag.shader.*
 import com.soywiz.korag.shader.gl.*
 import com.soywiz.korio.util.*
@@ -32,7 +33,7 @@ class MetalShaderGenerator(
 
             addHeaders()
 
-            declareInputStructure()
+            declareInputStructure(types.attributes)
             declareOutputStructure()
 
             customFunctions.filter { it.ref.name in types.funcRefs }
@@ -54,16 +55,22 @@ class MetalShaderGenerator(
         )
     }
 
-    private fun Indenter.declareInputStructure() {
-        line("struct VertexInput {")
-        //TODO to complete
-        line("}")
+    private fun Indenter.declareInputStructure(attributes: LinkedHashSet<Attribute>) {
+        if (attributes.isEmpty()) return
+        val generator = MetalShaderBodyGenerator(ShaderType.VERTEX)
+
+        "struct VertexInput" {
+            attributes.forEach {
+                +"${generator.typeToString(it.type)} ${it.name};"
+            }
+        }
     }
 
     private fun Indenter.declareOutputStructure() {
-        line("struct VertexOutput {")
-        //TODO to complete
-        line("}")
+
+        "struct VertexOutput" {
+            //TODO to complete
+        }
     }
 
     private fun Indenter.generateVertexMainFunction() {
@@ -99,6 +106,16 @@ class MetalShaderGenerator(
     }
 
 }
+
+private fun Attribute.toMetalName(): String {
+    return when (this) {
+        DefaultShaders.a_Tex -> "texture"
+        DefaultShaders.a_Col -> "color"
+        DefaultShaders.a_Pos -> "position"
+        else -> error("unreachable statement")
+    }
+}
+
 private fun Indenter.addHeaders() {
     // include metal std library
     line("#include <metal_stdlib>")

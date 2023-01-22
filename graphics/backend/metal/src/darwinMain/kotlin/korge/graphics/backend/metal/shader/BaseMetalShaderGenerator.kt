@@ -17,40 +17,40 @@ internal interface BaseMetalShaderGenerator {
 
     fun typeToString(type: VarType) = when (type) {
         VarType.TVOID -> "void"
-        VarType.Byte4 -> "vec4"
-        VarType.Mat2 -> "mat2"
-        VarType.Mat3 -> "mat3"
-        VarType.Mat4 -> "mat4"
-        VarType.Sampler1D -> "sampler1D"
-        VarType.Sampler2D -> "sampler2D"
-        VarType.Sampler3D -> "sampler3D"
-        VarType.SamplerCube -> "samplerCube"
+        VarType.Byte4 -> "char4"
+        VarType.Mat2 -> "matrix_float2x2"
+        VarType.Mat3 -> "matrix_float3x3"
+        VarType.Mat4 -> "matrix_float4x4"
+        VarType.Sampler1D -> "sampler"
+        VarType.Sampler2D -> "sampler"
+        VarType.Sampler3D -> "sampler"
+        VarType.SamplerCube -> "sampler"
         else -> {
             when (type.kind) {
                 VarKind.TBOOL -> {
                     when (type.elementCount) {
                         1 -> "bool"
-                        2 -> "bvec2"
-                        3 -> "bvec3"
-                        4 -> "bvec4"
+                        2 -> "half2"
+                        3 -> "half3"
+                        4 -> "half4"
                         else -> errorType(type)
                     }
                 }
                 VarKind.TBYTE, VarKind.TUNSIGNED_BYTE, VarKind.TSHORT, VarKind.TUNSIGNED_SHORT, VarKind.TFLOAT -> {
                     when (type.elementCount) {
                         1 -> "float"
-                        2 -> "vec2"
-                        3 -> "vec3"
-                        4 -> "vec4"
+                        2 -> "float2"
+                        3 -> "float3"
+                        4 -> "float4"
                         else -> errorType(type)
                     }
                 }
                 VarKind.TINT -> {
                     when (type.elementCount) {
                         1 -> "int"
-                        2 -> "ivec2"
-                        3 -> "ivec3"
-                        4 -> "ivec4"
+                        2 -> "int2"
+                        3 -> "int3"
+                        4 -> "int4"
                         else -> errorType(type)
                     }
                 }
