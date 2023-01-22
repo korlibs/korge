@@ -7,7 +7,7 @@ object BuildVersions {
     const val JNA = "5.13.0"
     const val COROUTINES = "1.6.4"
     const val ANDROID_BUILD = "7.0.4"
-    const val KOTLIN_SERIALIZATION = "1.4.0"
+    const val KOTLIN_SERIALIZATION = "1.4.1"
     const val KRYPTO = "999.0.0.999"
     const val KLOCK = "999.0.0.999"
     const val KDS = "999.0.0.999"
