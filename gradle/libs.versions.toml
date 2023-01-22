@@ -13,7 +13,7 @@ gson = "2.8.6"
 gradle-publish-plugin = "0.14.0"
 closure-compiler = "v20210808"
 # https://repo.maven.apache.org/maven2/org/jetbrains/intellij/deps/intellij-coverage-agent/
-kover-agent = "1.0.688"
+kover-agent = "1.0.692"
 
 [libraries]
 kover-intellij-agent = { module = "org.jetbrains.intellij.deps:intellij-coverage-agent", version.ref = "kover-agent" }
