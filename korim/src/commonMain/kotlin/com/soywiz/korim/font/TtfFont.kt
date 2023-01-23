@@ -1762,20 +1762,21 @@ abstract class BaseTtfFont(
         var skipCount = 1
         if (g != null) {
             val subs = substitutionsCodePoints[codePoint]
-            if (reader != null && subs != null) {
-                //for (v in subs.map) println(v.key.toCodePointIntArray().toList())
-                for (count in kotlin.math.min(reader.available, subs.maxSequence) downTo 2) {
-                    val sub = reader.substr(0, count)
-                    val replacement = subs.map[sub]
-                    //println("sub=${sub.toCodePointIntArray().toList()}")
-                    if (replacement != null) {
-                        //println("replacement=$replacement")
-                        skipCount = sub.length
-                        g = getGlyphByIndex(replacement.first()) ?: break
-                        break
-                    }
-                }
-            }
+//            if (reader != null && subs != null) {
+//                //for (v in subs.map) println(v.key.toCodePointIntArray().toList())
+//                for (count in kotlin.math.min(reader.available, subs.maxSequence) downTo 2) {
+//                    val sub = reader.substr(0, count)
+//                    val replacement = subs.map[sub]
+//                    //println("sub=${sub.toCodePointIntArray().toList()}")
+//                    if (replacement != null) {
+//                        //println("replacement=$replacement")
+//                        skipCount = sub.length
+//                        g = getGlyphByIndex(replacement.first()) ?: break
+//                        break
+//                    }
+//                }
+//            }
+
         }
         reader?.skip(skipCount)
         return g

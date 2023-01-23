@@ -1,5 +1,8 @@
 package com.soywiz.korim.font.ttf
 
+import com.soywiz.korge.*
+import com.soywiz.korge.testing.*
+import com.soywiz.korge.view.*
 import com.soywiz.korim.font.*
 import com.soywiz.korim.vector.format.*
 import com.soywiz.korio.async.*
@@ -61,4 +64,15 @@ class TtfFontTest {
     //            )
     //    }.showImageAndWait()
     //}
+
+    @Test
+    fun disableLigaturesWorks() = korgeScreenshotTest() {
+        val ttfFont = resourcesVfs["fnt/AtkinsonHyperlegible-Bold.ttf"].readTtfFont()
+
+        text("hello world", font = ttfFont)
+
+        it.recordGolden(this, "text")
+
+        it.endTest()
+    }
 }

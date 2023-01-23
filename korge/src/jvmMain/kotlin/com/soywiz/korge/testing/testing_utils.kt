@@ -26,9 +26,17 @@ import com.soywiz.korma.geom.ISizeInt
 import kotlinx.coroutines.sync.Mutex
 import java.awt.HeadlessException
 
+val DEFAULT_KORGE_TEST_CONFIG_FN = {
+    Korge.Config(
+        windowSize = ISizeInt.invoke(512, 512),
+        virtualSize = ISizeInt(512, 512),
+        bgcolor = Colors.BLACK
+    )
+}
+
 @OptIn(KorgeExperimental::class)
 inline fun korgeScreenshotTest(
-    korgeConfig: Korge.Config,
+    korgeConfig: Korge.Config = DEFAULT_KORGE_TEST_CONFIG_FN(),
     settings: KorgeScreenshotValidationSettings = KorgeScreenshotValidationSettings(),
     crossinline callback: suspend Stage.(korgeScreenshotTester: KorgeScreenshotTester) -> Unit = {},
 ) {
@@ -84,7 +92,7 @@ inline fun korgeScreenshotTest(
                         val viewsToAlign = mutableListOf<View>()
                         container {
                             viewsToAlign += text("Test method name: ${results.testMethodName}")
-//                            val testResultSection = container {
+                            //                            val testResultSection = container {
                             viewsToAlign += text("Golden name: ${testResult.goldenName}")
                             viewsToAlign += container {
                                 val fn = { headerText: String, bitmap: Bitmap? ->
@@ -130,7 +138,10 @@ inline fun korgeScreenshotTest(
 
                             val separator = "\n * "
                             viewsToAlign += container {
-                                val textResultString = testResult.validationErrors.joinToString(separator=separator, prefix=separator) {
+                                val textResultString = testResult.validationErrors.joinToString(
+                                    separator = separator,
+                                    prefix = separator
+                                ) {
                                     it.errorMessaage
                                 }
                                 text("Validation errors:$textResultString")
@@ -156,7 +167,6 @@ inline fun korgeScreenshotTest(
                             viewsToAlign.windowed(2) {
                                 it[1].alignTopToBottomOf(it[0])
                             }
-
 
                             val sectionBg =
                                 solidRect(scaledWidth, scaledHeight, Colors.DARKSLATEGRAY)

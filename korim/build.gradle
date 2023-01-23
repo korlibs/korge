@@ -6,5 +6,6 @@ com.soywiz.korlibs.NativeTools.configureAllCInterop(project, "stb_image")
 dependencies {
 	add("commonMainApi", project(":korio"))
 	add("commonMainApi", project(":korma"))
+	add("commonMainApi", project(":korge"))
     //add("commonTestApi", project(":korma-shape"))
 }
