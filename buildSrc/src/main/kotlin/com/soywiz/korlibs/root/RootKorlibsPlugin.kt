@@ -1,5 +1,7 @@
 package com.soywiz.korlibs.root
 
+import com.android.build.gradle.*
+import com.android.build.gradle.internal.tasks.*
 import com.soywiz.korge.gradle.targets.*
 import com.soywiz.korge.gradle.targets.android.*
 import com.soywiz.korge.gradle.targets.ios.*
@@ -10,129 +12,51 @@ import com.soywiz.korge.gradle.util.create
 import com.soywiz.korlibs.*
 import com.soywiz.korlibs.modules.*
 import com.soywiz.korlibs.modules.KorgeJavaExec
-import kotlinx.kover.api.*
 import org.gradle.api.*
 import org.gradle.api.Project
 import org.gradle.api.file.*
-import org.gradle.api.reporting.*
 import org.gradle.api.tasks.*
 import org.gradle.api.tasks.testing.*
 import org.gradle.jvm.tasks.*
 import org.gradle.kotlin.dsl.*
 import org.gradle.plugins.ide.idea.IdeaPlugin
 import org.gradle.plugins.ide.idea.model.*
-import org.gradle.testing.base.plugins.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import org.jetbrains.kotlin.gradle.tasks.*
 import java.io.*
 import java.net.*
 import java.nio.file.*
-import kotlin.reflect.*
-
-//val headlessTests = true
-//val headlessTests = System.getenv("NON_HEADLESS_TESTS") != "true"
-val headlessTests: Boolean get() = System.getenv("CI") == "true" || System.getenv("HEADLESS_TESTS") == "true"
-val useMimalloc: Boolean get() = true
-//val useMimalloc = false
-
-val Project._libs: Dyn get() = rootProject.extensions.getByName("libs").dyn
-val Project.kotlinVersion: String get() = _libs["versions"]["kotlin"].dynamicInvoke("get").casted()
-val Project.nodeVersion: String get() = _libs["versions"]["node"].dynamicInvoke("get").casted()
-val Project.androidBuildGradleVersion: String get() = _libs["versions"]["android"]["build"]["gradle"].dynamicInvoke("get").casted()
-val Project.realKotlinVersion: String get() = (System.getenv("FORCED_KOTLIN_VERSION") ?: kotlinVersion)
-val forcedVersion = System.getenv("FORCED_VERSION")
-
-val Project.hasAndroidSdk by LazyExt { AndroidSdk.hasAndroidSdk(project) }
-val Project.enabledSandboxResourceProcessor: Boolean by LazyExt { rootProject.findProperty("enabledSandboxResourceProcessor") == "true" }
-val Project.gitVersion: String by LazyExt {
-    try {
-        Runtime.getRuntime().exec("git describe --abbrev=8 --tags --dirty".split(" ").toTypedArray(), arrayOf(), rootDir).inputStream.reader()
-            .readText().lines().first().trim()
-    } catch (e: Throwable) {
-        e.printStackTrace()
-        "unknown"
-    }
-}
-
-val Project.currentJavaVersion by LazyExt { com.soywiz.korlibs.currentJavaVersion() }
-fun Project.hasBuildGradle() = listOf("build.gradle", "build.gradle.kts").any { File(projectDir, it).exists() }
-val Project.isSample: Boolean get() = project.path.startsWith(":samples:") || project.path.startsWith(":korge-sandbox") || project.path.startsWith(":korge-editor") || project.path.startsWith(":korge-starter-kit")
-fun Project.mustAutoconfigureKMM(): Boolean =
-    project.name != "korge-gradle-plugin" &&
-        project.name != "korge-reload-agent" &&
-        project.hasBuildGradle()
-
-fun getKorgeProcessResourcesTaskName(target: org.jetbrains.kotlin.gradle.plugin.KotlinTarget, compilation: org.jetbrains.kotlin.gradle.plugin.KotlinCompilation<*>): String =
-    "korgeProcessedResources${target.name.capitalize()}${compilation.name.capitalize()}"
-
-fun Project.nonSamples(block: Project.() -> Unit) {
-    subprojects {
-        if (!project.isSample && project.hasBuildGradle()) {
-            block()
-        }
-    }
-}
-
-fun Project.samples(block: Project.() -> Unit) {
-    subprojects {
-        if (project.isSample && project.hasBuildGradle()) {
-            block()
-        }
-    }
-}
-fun Project.symlinktree(fromFolder: File, intoFolder: File) {
-    try {
-        if (!intoFolder.isDirectory && !Files.isSymbolicLink(intoFolder.toPath())) {
-            runCatching { intoFolder.delete() }
-            runCatching { intoFolder.deleteRecursively() }
-            Files.createSymbolicLink(intoFolder.toPath(), intoFolder.parentFile.toPath().relativize(fromFolder.toPath()))
-        }
-    } catch (e: Throwable) {
-        e.printStackTrace()
-        copy {
-            val it = this
-            it.from(fromFolder)
-            it.into(intoFolder)
-            it.duplicatesStrategy = DuplicatesStrategy.INCLUDE
-        }
-    }
-}
-
-fun Project.runServer(blocking: Boolean) {
-    if (_webServer == null) {
-        val address = "0.0.0.0"
-        val port = 8080
-        val server = staticHttpServer(File(project.buildDir, "www"), address = address, port = port)
-        _webServer = server
-        try {
-            val openAddress = when (address) {
-                "0.0.0.0" -> "127.0.0.1"
-                else -> address
-            }
-            openBrowser("http://$openAddress:${server.port}/index.html")
-            if (blocking) {
-                while (true) {
-                    Thread.sleep(1000L)
-                }
-            }
-        } finally {
-            if (blocking) {
-                println("Stopping web server...")
-                server.server.stop(0)
-                _webServer = null
-            }
-        }
-    }
-    _webServer?.updateVersion?.incrementAndGet()
-}
-
-
-internal var _webServer: DecoratedHttpServer? = null
 
 object RootKorlibsPlugin {
     @JvmStatic
     fun doInit(rootProject: Project) {
         rootProject.init()
+    }
+
+    fun Project.init() {
+        initPlugins()
+        initRootKotlinJvmTarget()
+        initVersions()
+        initAllRepositories()
+        initIdeaExcludes()
+        initGroupOverrides()
+        initNodeJSFixes()
+        configureMavenCentralRelease()
+        initDuplicatesStrategy()
+        initSymlinkTrees()
+        initShowSystemInfoWhenLinkingInWindows()
+        com.soywiz.korge.gradle.KorgeVersionsTask.registerShowKorgeVersions(project)
+        initInstallAndCheckLinuxLibs()
+        initCatalog()
+        configureKover()
+        initBuildVersions()
+        initAndroidFixes()
+        initPublishing()
+        initKMM()
+        initSamples()
+        initShortcuts()
+        initTests()
+        initCrossTests()
     }
 
     fun Project.initRootKotlinJvmTarget() {
@@ -297,36 +221,6 @@ object RootKorlibsPlugin {
 
     }
 
-    fun Project.initKover() {
-        rootProject.allprojects {
-            apply<kotlinx.kover.KoverPlugin>()
-        }
-
-        rootProject.koverMerged {
-            enable()
-        }
-
-        // https://repo.maven.apache.org/maven2/org/jetbrains/intellij/deps/intellij-coverage-agent/1.0.688/
-        //val koverVersion = "1.0.688"
-        val koverVersion = rootProject._libs["versions"]["kover"]["agent"].dynamicInvoke("get").casted<String>()
-
-        rootProject.allprojects {
-            kover {
-                engine.set(kotlinx.kover.api.IntellijEngine(koverVersion))
-            }
-            extensions.getByType(kotlinx.kover.api.KoverProjectConfig::class.java).apply {
-                engine.set(kotlinx.kover.api.IntellijEngine(koverVersion))
-            }
-            tasks.withType<Test> {
-                extensions.configure(kotlinx.kover.api.KoverTaskExtension::class) {
-                    //generateXml = false
-                    //generateHtml = true
-                    //coverageEngine = kotlinx.kover.api.CoverageEngine.INTELLIJ
-                    excludes.add(".*BuildConfig")
-                }
-            }
-        }
-    }
 
     fun Project.initBuildVersions() {
 
@@ -363,23 +257,224 @@ object RootKorlibsPlugin {
         rootProject.file("korge-gradle-plugin/build/srcgen/com/soywiz/korge/gradle/BuildVersions.kt").writeTextIfChanged(createBuildVersions(git = true))
     }
 
-    fun Project.init() {
-        initRootKotlinJvmTarget()
-        initVersions()
-        initAllRepositories()
-        initIdeaExcludes()
-        initGroupOverrides()
-        initNodeJSFixes()
-        configureMavenCentralRelease()
-        initDuplicatesStrategy()
-        initSymlinkTrees()
-        initShowSystemInfoWhenLinkingInWindows()
-        com.soywiz.korge.gradle.KorgeVersionsTask.registerShowKorgeVersions(project)
-        initInstallAndCheckLinuxLibs()
-        initCatalog()
-        initKover()
-        initBuildVersions()
+    fun Project.initAndroidApplication() {
+        //apply(plugin = "com.android.application")
+        val androidApplicationId = "com.korge.samples.${project.name.replace("-", "_")}"
+        val korgeGradlePluginResources = File(rootProject.projectDir, "buildSrc/src/main/resources")
+        val android = extensions.getByName<TestedExtension>("android")
+        android.apply {
+            lintOptions {
+                // @TODO: ../../build.gradle: All com.android.support libraries must use the exact same version specification (mixing versions can lead to runtime crashes). Found versions 28.0.0, 26.1.0. Examples include com.android.support:animated-vector-drawable:28.0.0 and com.android.support:customtabs:26.1.0
+                disable("GradleCompatible")
+            }
+            // @TODO: Is this required?
+            //kotlinOptions {
+            //    jvmTarget = "1.8"
+            //    freeCompilerArgs += "-Xmulti-platform"
+            //}
+            packagingOptions {
+                exclude("META-INF/DEPENDENCIES")
+                exclude("META-INF/LICENSE")
+                exclude("META-INF/LICENSE.txt")
+                exclude("META-INF/license.txt")
+                exclude("META-INF/NOTICE")
+                exclude("META-INF/NOTICE.txt")
+                exclude("META-INF/notice.txt")
+                exclude("META-INF/LGPL*")
+                exclude("META-INF/AL2.0")
+                exclude("META-INF/*.kotlin_module")
+                exclude("**/*.kotlin_metadata")
+                exclude("**/*.kotlin_builtins")
+            }
+            compileSdkVersion(28)
+            defaultConfig {
+                multiDexEnabled = true
+                applicationId = androidApplicationId
+                minSdk = 16
+                targetSdk = 28
+                versionCode = 1
+                versionName = "1.0"
+                testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+                manifestPlaceholders.clear()
+            }
+            signingConfigs {
+                this.maybeCreate("release").apply {
+                    //storeFile file(findProperty('RELEASE_STORE_FILE') ?: "korge.keystore")
+                    storeFile = File(korgeGradlePluginResources, "korge.keystore")
+                    storePassword = findProperty("RELEASE_STORE_PASSWORD")?.toString() ?: "password"
+                    keyAlias = findProperty("RELEASE_KEY_ALIAS")?.toString() ?: "korge"
+                    keyPassword = findProperty("RELEASE_KEY_PASSWORD")?.toString() ?: "password"
+                }
+            }
+            buildTypes {
+                this.maybeCreate("debug").apply {
+                    isMinifyEnabled = false
+                    signingConfig = signingConfigs.maybeCreate("release")
+                }
+                this.maybeCreate("release").apply {
+                    isMinifyEnabled = true
+                    proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), File(rootProject.rootDir, "proguard-rules.pro"))
+                    signingConfig = signingConfigs.maybeCreate("release")
+                }
+            }
+            sourceSets {
+                maybeCreate("main").apply {
+                    manifest.srcFile(File(project.buildDir, "AndroidManifest.xml"))
+                    java.srcDirs("${project.buildDir}/androidsrc")
+                    res.srcDirs("${project.buildDir}/androidres")
+                    assets.srcDirs(
+                        "${project.projectDir}/src/commonMain/resources",
+                        "${project.projectDir}/src/androidMain/resources",
+                        "${project.projectDir}/src/main/resources",
+                        "${project.projectDir}/build/commonMain/korgeProcessedResources/metadata/main",
+                    )
+                    //java.srcDirs += ["C:\\Users\\soywi\\projects\\korlibs\\korge-hello-world\\src\\commonMain\\kotlin", "C:\\Users\\soywi\\projects\\korlibs\\korge-hello-world\\src\\androidMain\\kotlin", "C:\\Users\\soywi\\projects\\korlibs\\korge-hello-world\\src\\main\\java"]
+                }
+            }
+        }
 
+        val mainDir = project.buildDir
+
+        val createAndroidManifest = tasks.create("createAndroidManifest") {
+            doFirst {
+                mainDir.mkdirs()
+                File(mainDir, "AndroidManifest.xml").text = """
+            <?xml version="1.0" encoding="utf-8"?>
+            <manifest
+                xmlns:android="http://schemas.android.com/apk/res/android"
+                package="${androidApplicationId}"
+            >
+                <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
+                <uses-feature android:name="android.software.leanback" android:required="false" />
+                <application
+                    android:allowBackup="true"
+                    android:label="${project.name}"
+                    android:icon="@mipmap/icon"
+                    android:roundIcon="@android:drawable/sym_def_app_icon"
+                    android:theme="@android:style/Theme.Holo.NoActionBar"
+                    android:supportsRtl="true"
+                >
+                    <activity android:name=".MainActivity"
+                        android:banner="@drawable/app_banner"
+                        android:icon="@drawable/app_icon"
+                        android:label="unnamed"
+                        android:logo="@drawable/app_icon"
+                        android:screenOrientation="sensor"
+                        android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
+                    >
+                        <intent-filter>
+                            <action android:name="android.intent.action.MAIN"/>
+                            <category android:name="android.intent.category.LAUNCHER"/>
+                        </intent-filter>
+                    </activity>
+                </application>
+            </manifest>
+            
+        """.trim()
+
+//println(project.name)
+
+                File(mainDir, "androidsrc").mkdirs()
+
+                File(mainDir, "androidres/drawable").mkdirs()
+                File(mainDir, "androidres/mipmap").mkdirs()
+
+                File(mainDir, "androidres/drawable/app_banner.png").bytes = File(korgeGradlePluginResources, "banners/korge.png").bytes
+                File(mainDir, "androidres/drawable/app_icon.png").bytes = File(korgeGradlePluginResources, "icons/korge.png").bytes
+                File(mainDir, "androidres/mipmap/icon.png").bytes = File(korgeGradlePluginResources, "icons/korge.png").bytes
+
+                File(mainDir, "androidsrc/MainActivity.kt").text = """
+            package ${androidApplicationId}
+            import com.soywiz.korio.android.withAndroidContext
+            import com.soywiz.korgw.*
+            import main
+            class MainActivity : KorgwActivity(config = GameWindowCreationConfig(msaa = 4)) {
+                override suspend fun activityMain() {
+                    main()
+                }
+            }
+        """.trim()
+            }
+        }
+
+//tasks.getByName("installDebug").dependsOn("createAndroidManifest")
+
+        fun execOutput(vararg args: String): String {
+            var out = ""
+            ByteArrayOutputStream().also { os ->
+                val result = exec {
+                    commandLine(*args)
+                    standardOutput = os
+                }
+                result.assertNormalExitValue()
+                out = os.toString()
+            }
+            return out
+        }
+
+        tasks.create("onlyRunAndroid") {
+            doFirst {
+                val adb = "${AndroidSdk.guessAndroidSdkPath()}/platform-tools/adb"
+                exec {
+                    commandLine(adb, "shell", "am", "start", "-n", "${androidApplicationId}/${androidApplicationId}.MainActivity")
+                }
+
+                var pid = ""
+                for (n in 0 until 10) {
+                    try {
+                        pid = execOutput(adb, "shell", "pidof", androidApplicationId)
+                        break
+                    } catch (e: Throwable) {
+                        Thread.sleep(500L)
+                        if (n == 9) throw e
+                    }
+                }
+                println(pid)
+                exec {
+                    commandLine(adb, "logcat", "--pid=${pid.trim()}")
+                }
+            }
+        }
+
+        fun ordered(vararg dependencyPaths: String): List<Task> {
+            val dependencies = dependencyPaths.map { tasks.getByPath(it) }
+            for (n in 0 until dependencies.size - 1) {
+                dependencies[n + 1].mustRunAfter(dependencies[n])
+            }
+            return dependencies
+        }
+
+        afterEvaluate {
+            //InstallVariantTask id = installDebug
+            tasks.getByName("installRelease", InstallVariantTask::class).apply {
+                installOptions = listOf("-r")
+            }
+            //println(installDebug.class)
+
+            tasks.create("runAndroidDebug") {
+                dependsOn(ordered("createAndroidManifest", "installDebug"))
+                finalizedBy("onlyRunAndroid")
+            }
+
+            tasks.create("runAndroidRelease") {
+                dependsOn(ordered("createAndroidManifest", "installRelease"))
+                finalizedBy("onlyRunAndroid")
+            }
+
+            tasks.findByName("generateDebugBuildConfig")
+                ?.dependsOn(createAndroidManifest)
+        }
+
+    }
+
+    fun Project.initPlugins() {
+        apply(plugin = "java")
+        apply(plugin = "kotlin-multiplatform")
+        apply(plugin = "signing")
+        apply(plugin = "maven-publish")
+    }
+
+    fun Project.initAndroidFixes() {
         /*
         allprojects {
             //println("GROUP: $group")
@@ -398,7 +493,9 @@ object RootKorlibsPlugin {
             }
         }
         */
+    }
 
+    fun Project.initPublishing() {
 
         rootProject.afterEvaluate {
             rootProject.nonSamples {
@@ -503,11 +600,9 @@ object RootKorlibsPlugin {
                 */
             }
         }
+    }
 
-
-        //println("currentJavaVersion=${com.soywiz.korlibs.currentJavaVersion()}")
-        ///
-
+    fun Project.initKMM() {
         rootProject.subprojects {
             val doConfigure = mustAutoconfigureKMM()
 
@@ -520,15 +615,65 @@ object RootKorlibsPlugin {
                 // AppData\Local\Android\Sdk\tools\bin>sdkmanager --licenses
                 apply(plugin = "kotlin-multiplatform")
 
+                //initAndroidProject()
                 if (hasAndroid) {
                     if (isSample) {
                         apply(plugin = "com.android.application")
                     } else {
                         apply(plugin = "com.android.library")
                     }
-                    apply(from = "${rootProject.rootDir}/build.android.gradle")
+
+                    //apply(from = "${rootProject.rootDir}/build.android.gradle")
+
+                    //apply(plugin = "kotlin-android")
+                    //apply(plugin = "kotlin-android-extensions")
+                    // apply plugin: 'kotlin-android'
+                    // apply plugin: 'kotlin-android-extensions'
+                    val android = extensions.getByName<TestedExtension>("android")
+                    android.apply {
+                        compileSdkVersion(project.findProperty("android.compile.sdk.version")?.toString()?.toIntOrNull() ?: 30)
+                        buildToolsVersion(project.findProperty("android.buildtools.version")?.toString() ?: "30.0.2")
+
+                        defaultConfig {
+                            multiDexEnabled = true
+                            minSdkVersion(project.findProperty("android.min.sdk.version")?.toString()?.toIntOrNull() ?: 16) // Previously 18
+                            targetSdkVersion(project.findProperty("android.target.sdk.version")?.toString()?.toIntOrNull() ?: 30)
+                            testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+                            //testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+                        }
+                    }
+
+                    dependencies {
+                        add("androidTestImplementation", "androidx.test:core:1.4.0")
+                        add("androidTestImplementation", "androidx.test.ext:junit:1.1.2")
+                        add("androidTestImplementation", "androidx.test.espresso:espresso-core:3.3.0")
+                        //androidTestImplementation 'com.android.support.test:runner:1.0.2'
+                    }
+
+                    android.apply {
+                        sourceSets {
+                            maybeCreate("main").apply {
+                                if (System.getenv("ANDROID_TESTS") == "true") {
+                                    assets.srcDirs(
+                                        "src/commonMain/resources",
+                                        "src/commonTest/resources",
+                                    )
+                                } else {
+                                    assets.srcDirs("src/commonMain/resources",)
+                                }
+                            }
+                            maybeCreate("test").apply {
+                                assets.srcDirs(
+                                    "src/commonTest/resources",
+                                )
+                            }
+                        }
+                    }
+
+
                     if (isSample) {
-                        apply(from = "${rootProject.rootDir}/build.android.application.gradle")
+                        initAndroidApplication()
+                        //apply(from = "${rootProject.rootDir}/build.android.application.gradle")
                     }
                 }
 
@@ -632,7 +777,19 @@ object RootKorlibsPlugin {
                         }
                     }
                     if (hasAndroid) {
-                        apply(from = "${rootProject.rootDir}/build.android.srcset.gradle")
+                        kotlin {
+                            android {
+                                publishAllLibraryVariants()
+                                publishLibraryVariantsGroupedByFlavor = true
+                                //this.attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.androidJvm)
+                                compilations.all {
+                                    kotlinOptions.jvmTarget = "1.8"
+                                    kotlinOptions.suppressWarnings = true
+                                    kotlinOptions.freeCompilerArgs = listOf("-Xno-param-assertions")
+                                }
+                            }
+                        }
+
                     }
 
                     val desktopAndMobileTargets = ArrayList<org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget>().apply {
@@ -864,7 +1021,9 @@ object RootKorlibsPlugin {
                 }
             }
         }
+    }
 
+    fun Project.initSamples() {
         rootProject.samples {
             // @TODO: Patch, because runDebugReleaseExecutableMacosArm64 is not created!
             if (isMacos && isArm && doEnableKotlinNative) {
@@ -1287,9 +1446,13 @@ object RootKorlibsPlugin {
                 }
             }
         }
+    }
 
 
+    //println("currentJavaVersion=${com.soywiz.korlibs.currentJavaVersion()}")
+    ///
 
+    fun Project.initShortcuts() {
         rootProject.subprojects {
             afterEvaluate {
                 tasks {
@@ -1389,6 +1552,14 @@ object RootKorlibsPlugin {
                         }
                     }
                 }
+            }
+        }
+    }
+
+    fun Project.initTests() {
+        rootProject.subprojects {
+            //tasks.withType(Test::class.java).all {
+            afterEvaluate {
                 //tasks.withType(Test::class.java).all {
                 tasks.withType(AbstractTestTask::class.java).all {
                     testLogging {
@@ -1397,6 +1568,14 @@ object RootKorlibsPlugin {
                         exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
                     }
                 }
+
+            }
+        }
+    }
+
+    fun Project.initCrossTests() {
+        rootProject.subprojects {
+            afterEvaluate {
                 tasks {
                     afterEvaluate {
                         for (type in CrossExecType.VALID_LIST) {
@@ -1429,3 +1608,103 @@ object RootKorlibsPlugin {
         }
     }
 }
+
+//val headlessTests = true
+//val headlessTests = System.getenv("NON_HEADLESS_TESTS") != "true"
+val headlessTests: Boolean get() = System.getenv("CI") == "true" || System.getenv("HEADLESS_TESTS") == "true"
+val useMimalloc: Boolean get() = true
+//val useMimalloc = false
+
+val Project._libs: Dyn get() = rootProject.extensions.getByName("libs").dyn
+val Project.kotlinVersion: String get() = _libs["versions"]["kotlin"].dynamicInvoke("get").casted()
+val Project.nodeVersion: String get() = _libs["versions"]["node"].dynamicInvoke("get").casted()
+val Project.androidBuildGradleVersion: String get() = _libs["versions"]["android"]["build"]["gradle"].dynamicInvoke("get").casted()
+val Project.realKotlinVersion: String get() = (System.getenv("FORCED_KOTLIN_VERSION") ?: kotlinVersion)
+val forcedVersion = System.getenv("FORCED_VERSION")
+
+val Project.hasAndroidSdk by LazyExt { AndroidSdk.hasAndroidSdk(project) }
+val Project.enabledSandboxResourceProcessor: Boolean by LazyExt { rootProject.findProperty("enabledSandboxResourceProcessor") == "true" }
+val Project.gitVersion: String by LazyExt {
+    try {
+        Runtime.getRuntime().exec("git describe --abbrev=8 --tags --dirty".split(" ").toTypedArray(), arrayOf(), rootDir).inputStream.reader()
+            .readText().lines().first().trim()
+    } catch (e: Throwable) {
+        e.printStackTrace()
+        "unknown"
+    }
+}
+
+val Project.currentJavaVersion by LazyExt { com.soywiz.korlibs.currentJavaVersion() }
+fun Project.hasBuildGradle() = listOf("build.gradle", "build.gradle.kts").any { File(projectDir, it).exists() }
+val Project.isSample: Boolean get() = project.path.startsWith(":samples:") || project.path.startsWith(":korge-sandbox") || project.path.startsWith(":korge-editor") || project.path.startsWith(":korge-starter-kit")
+fun Project.mustAutoconfigureKMM(): Boolean =
+    project.name != "korge-gradle-plugin" &&
+        project.name != "korge-reload-agent" &&
+        project.hasBuildGradle()
+
+fun getKorgeProcessResourcesTaskName(target: org.jetbrains.kotlin.gradle.plugin.KotlinTarget, compilation: org.jetbrains.kotlin.gradle.plugin.KotlinCompilation<*>): String =
+    "korgeProcessedResources${target.name.capitalize()}${compilation.name.capitalize()}"
+
+fun Project.nonSamples(block: Project.() -> Unit) {
+    subprojects {
+        if (!project.isSample && project.hasBuildGradle()) {
+            block()
+        }
+    }
+}
+
+fun Project.samples(block: Project.() -> Unit) {
+    subprojects {
+        if (project.isSample && project.hasBuildGradle()) {
+            block()
+        }
+    }
+}
+fun Project.symlinktree(fromFolder: File, intoFolder: File) {
+    try {
+        if (!intoFolder.isDirectory && !Files.isSymbolicLink(intoFolder.toPath())) {
+            runCatching { intoFolder.delete() }
+            runCatching { intoFolder.deleteRecursively() }
+            Files.createSymbolicLink(intoFolder.toPath(), intoFolder.parentFile.toPath().relativize(fromFolder.toPath()))
+        }
+    } catch (e: Throwable) {
+        e.printStackTrace()
+        copy {
+            val it = this
+            it.from(fromFolder)
+            it.into(intoFolder)
+            it.duplicatesStrategy = DuplicatesStrategy.INCLUDE
+        }
+    }
+}
+
+fun Project.runServer(blocking: Boolean) {
+    if (_webServer == null) {
+        val address = "0.0.0.0"
+        val port = 8080
+        val server = staticHttpServer(File(project.buildDir, "www"), address = address, port = port)
+        _webServer = server
+        try {
+            val openAddress = when (address) {
+                "0.0.0.0" -> "127.0.0.1"
+                else -> address
+            }
+            openBrowser("http://$openAddress:${server.port}/index.html")
+            if (blocking) {
+                while (true) {
+                    Thread.sleep(1000L)
+                }
+            }
+        } finally {
+            if (blocking) {
+                println("Stopping web server...")
+                server.server.stop(0)
+                _webServer = null
+            }
+        }
+    }
+    _webServer?.updateVersion?.incrementAndGet()
+}
+
+
+internal var _webServer: DecoratedHttpServer? = null

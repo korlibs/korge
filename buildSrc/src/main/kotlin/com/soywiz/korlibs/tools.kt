@@ -17,6 +17,7 @@ import java.net.*
 // Extensions
 operator fun File.get(name: String) = File(this, name)
 
+var File.bytes get() = this.readBytes(); set(value) { this.also { it.parentFile.mkdirs() }.writeBytes(value) }
 var File.text get() = this.readText(); set(value) { this.also { it.parentFile.mkdirs() }.writeText(value) }
 fun File.ensureParents() = this.apply { this.parentFile.mkdirs() }
 
