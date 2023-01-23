@@ -300,21 +300,21 @@ object RootKorlibsPlugin {
             signingConfigs {
                 this.maybeCreate("release").apply {
                     //storeFile file(findProperty('RELEASE_STORE_FILE') ?: "korge.keystore")
-                    storeFile = File(korgeGradlePluginResources, "korge.keystore")
-                    storePassword = findProperty("RELEASE_STORE_PASSWORD")?.toString() ?: "password"
-                    keyAlias = findProperty("RELEASE_KEY_ALIAS")?.toString() ?: "korge"
-                    keyPassword = findProperty("RELEASE_KEY_PASSWORD")?.toString() ?: "password"
+                    storeFile(File(korgeGradlePluginResources, "korge.keystore"))
+                    storePassword(findProperty("RELEASE_STORE_PASSWORD")?.toString() ?: "password")
+                    keyAlias(findProperty("RELEASE_KEY_ALIAS")?.toString() ?: "korge")
+                    keyPassword(findProperty("RELEASE_KEY_PASSWORD")?.toString() ?: "password")
                 }
             }
             buildTypes {
                 this.maybeCreate("debug").apply {
-                    isMinifyEnabled = false
-                    signingConfig = signingConfigs.maybeCreate("release")
+                    minifyEnabled(false)
+                    setSigningConfig(signingConfigs.maybeCreate("release"))
                 }
                 this.maybeCreate("release").apply {
-                    isMinifyEnabled = true
+                    minifyEnabled(true)
                     proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), File(rootProject.rootDir, "proguard-rules.pro"))
-                    signingConfig = signingConfigs.maybeCreate("release")
+                    setSigningConfig(signingConfigs.maybeCreate("release"))
                 }
             }
             sourceSets {
@@ -337,80 +337,23 @@ object RootKorlibsPlugin {
 
         val createAndroidManifest = tasks.create("createAndroidManifest") {
             doFirst {
-                mainDir.mkdirs()
-                File(mainDir, "AndroidManifest.xml").text = """
-            <?xml version="1.0" encoding="utf-8"?>
-            <manifest
-                xmlns:android="http://schemas.android.com/apk/res/android"
-                package="${androidApplicationId}"
-            >
-                <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
-                <uses-feature android:name="android.software.leanback" android:required="false" />
-                <application
-                    android:allowBackup="true"
-                    android:label="${project.name}"
-                    android:icon="@mipmap/icon"
-                    android:roundIcon="@android:drawable/sym_def_app_icon"
-                    android:theme="@android:style/Theme.Holo.NoActionBar"
-                    android:supportsRtl="true"
-                >
-                    <activity android:name=".MainActivity"
-                        android:banner="@drawable/app_banner"
-                        android:icon="@drawable/app_icon"
-                        android:label="unnamed"
-                        android:logo="@drawable/app_icon"
-                        android:screenOrientation="sensor"
-                        android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
-                    >
-                        <intent-filter>
-                            <action android:name="android.intent.action.MAIN"/>
-                            <category android:name="android.intent.category.LAUNCHER"/>
-                        </intent-filter>
-                    </activity>
-                </application>
-            </manifest>
-            
-        """.trim()
+                val generated = AndroidGenerated(
+                    icons = KorgeIconProvider(File(korgeGradlePluginResources, "icons/korge.png"), File(korgeGradlePluginResources, "banners/korge.png")),
+                    ifNotExists = true,
+                    androidPackageName = androidApplicationId,
+                    realEntryPoint = "main",
+                    androidMsaa = 4,
+                    androidAppName = project.name,
+                )
 
-//println(project.name)
-
-                File(mainDir, "androidsrc").mkdirs()
-
-                File(mainDir, "androidres/drawable").mkdirs()
-                File(mainDir, "androidres/mipmap").mkdirs()
-
-                File(mainDir, "androidres/drawable/app_banner.png").bytes = File(korgeGradlePluginResources, "banners/korge.png").bytes
-                File(mainDir, "androidres/drawable/app_icon.png").bytes = File(korgeGradlePluginResources, "icons/korge.png").bytes
-                File(mainDir, "androidres/mipmap/icon.png").bytes = File(korgeGradlePluginResources, "icons/korge.png").bytes
-
-                File(mainDir, "androidsrc/MainActivity.kt").text = """
-            package ${androidApplicationId}
-            import com.soywiz.korio.android.withAndroidContext
-            import com.soywiz.korgw.*
-            import main
-            class MainActivity : KorgwActivity(config = GameWindowCreationConfig(msaa = 4)) {
-                override suspend fun activityMain() {
-                    main()
-                }
-            }
-        """.trim()
+                generated.writeResources(File(mainDir, "androidres"))
+                generated.writeMainActivity(File(mainDir, "androidsrc"))
+                generated.writeKeystore(mainDir)
+                generated.writeAndroidManifest(mainDir)
             }
         }
 
-//tasks.getByName("installDebug").dependsOn("createAndroidManifest")
-
-        fun execOutput(vararg args: String): String {
-            var out = ""
-            ByteArrayOutputStream().also { os ->
-                val result = exec {
-                    commandLine(*args)
-                    standardOutput = os
-                }
-                result.assertNormalExitValue()
-                out = os.toString()
-            }
-            return out
-        }
+        //tasks.getByName("installDebug").dependsOn("createAndroidManifest")
 
         tasks.create("onlyRunAndroid") {
             doFirst {
@@ -825,26 +768,6 @@ object RootKorlibsPlugin {
                     //    nonNative: [js, jvmAndroid]
                     sourceSets {
 
-                        data class PairSourceSet(val main: org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet, val test: org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet) {
-                            fun get(test: Boolean) = if (test) this.test else this.main
-                            fun dependsOn(other: PairSourceSet) {
-                                main.dependsOn(other.main)
-                                test.dependsOn(other.test)
-                            }
-                        }
-
-                        //fun createPairSourceSet(name: String, vararg dependencies: PairSourceSet, block: org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet.(test: Boolean) -> Unit = { }): PairSourceSet {
-                        fun createPairSourceSet(name: String, dependency: PairSourceSet? = null, block: org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet.(test: Boolean) -> Unit = { }): PairSourceSet { val dependencies = listOfNotNull(dependency)
-                            //println("${project.name}: CREATED SOURCE SET: \"${name}Main\"")
-                            val main = maybeCreate("${name}Main").apply { block(false) }
-                            val test = maybeCreate("${name}Test").apply { block(true) }
-                            return PairSourceSet(main, test).also {
-                                for (dependency in dependencies) {
-                                    it.dependsOn(dependency)
-                                }
-                            }
-                        }
-
                         val common = createPairSourceSet("common") { test ->
                             dependencies {
                                 if (test) {
@@ -1203,22 +1126,6 @@ object RootKorlibsPlugin {
                         dependsOn("jsBrowserProductionRun")
                     }
 
-                    fun runNativeTaskNameWin(kind: String): String {
-                        return "run${kind}ExecutableMingwX64"
-                    }
-
-                    fun runNativeTaskName(kind: String): String {
-                        return when {
-                            isWindows -> runNativeTaskNameWin(kind)
-                            isMacos -> if (isArm) "run${kind}ExecutableMacosArm64" else "run${kind}ExecutableMacosX64"
-                            else -> "run${kind}ExecutableLinuxX64"
-                        }
-                    }
-
-                    fun Task.dependsOnNativeTask(kind: String) {
-                        dependsOn(runNativeTaskName(kind))
-                    }
-
                     val runNativeDebug by creating {
                         group = "run"
                         dependsOnNativeTask("Debug")
@@ -1333,17 +1240,17 @@ object RootKorlibsPlugin {
                         // @TODO: Determine the package of the main file
                         doLast {
                             mainEntrypointFile.also { it.parentFile.mkdirs() }.writeText("""
-                        package entrypoint
-
-                        import kotlinx.coroutines.*
-                        import main
-
-                        fun main(args: Array<String>) {
-                            runBlocking {
-                                main()
-                            }
-                        }
-                    """.trimIndent())
+                                package entrypoint
+        
+                                import kotlinx.coroutines.*
+                                import main
+        
+                                fun main(args: Array<String>) {
+                                    runBlocking {
+                                        main()
+                                    }
+                                }
+                            """.trimIndent())
                         }
                     }
 
@@ -1448,6 +1355,21 @@ object RootKorlibsPlugin {
         }
     }
 
+    fun runNativeTaskNameWin(kind: String): String {
+        return "run${kind}ExecutableMingwX64"
+    }
+
+    fun runNativeTaskName(kind: String): String {
+        return when {
+            isWindows -> runNativeTaskNameWin(kind)
+            isMacos -> if (isArm) "run${kind}ExecutableMacosArm64" else "run${kind}ExecutableMacosX64"
+            else -> "run${kind}ExecutableLinuxX64"
+        }
+    }
+
+    fun Task.dependsOnNativeTask(kind: String) {
+        dependsOn(runNativeTaskName(kind))
+    }
 
     //println("currentJavaVersion=${com.soywiz.korlibs.currentJavaVersion()}")
     ///
@@ -1705,6 +1627,19 @@ fun Project.runServer(blocking: Boolean) {
         }
     }
     _webServer?.updateVersion?.incrementAndGet()
+}
+
+fun Project.execOutput(vararg args: String): String {
+    var out = ""
+    ByteArrayOutputStream().also { os ->
+        val result = exec {
+            commandLine(*args)
+            standardOutput = os
+        }
+        result.assertNormalExitValue()
+        out = os.toString()
+    }
+    return out
 }
 
 
