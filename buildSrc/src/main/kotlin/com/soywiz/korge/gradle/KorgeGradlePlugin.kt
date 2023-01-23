@@ -4,6 +4,7 @@ import com.soywiz.korge.gradle.targets.*
 import com.soywiz.korge.gradle.targets.linux.*
 import com.soywiz.korge.gradle.targets.linux.LDLibraries
 import com.soywiz.korge.gradle.util.*
+import com.soywiz.korge.gradle.util.KDynamic.Companion.get
 import groovy.lang.*
 import org.gradle.api.*
 import org.gradle.api.Project

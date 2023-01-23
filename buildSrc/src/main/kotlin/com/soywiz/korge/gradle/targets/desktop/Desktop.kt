@@ -6,6 +6,7 @@ import com.soywiz.korge.gradle.targets.apple.*
 import com.soywiz.korge.gradle.targets.native.*
 import com.soywiz.korge.gradle.targets.windows.*
 import com.soywiz.korge.gradle.util.*
+import com.soywiz.korge.gradle.util.KDynamic.Companion.get
 import com.soywiz.korge.gradle.util.get
 import org.gradle.api.*
 import org.gradle.api.file.*
