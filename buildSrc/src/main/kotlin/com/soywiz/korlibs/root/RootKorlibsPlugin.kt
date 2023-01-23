@@ -1665,6 +1665,7 @@ fun Project.symlinktree(fromFolder: File, intoFolder: File) {
         if (!intoFolder.isDirectory && !Files.isSymbolicLink(intoFolder.toPath())) {
             runCatching { intoFolder.delete() }
             runCatching { intoFolder.deleteRecursively() }
+            intoFolder.parentFile.mkdirs()
             Files.createSymbolicLink(intoFolder.toPath(), intoFolder.parentFile.toPath().relativize(fromFolder.toPath()))
         }
     } catch (e: Throwable) {
