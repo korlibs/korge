@@ -1618,7 +1618,7 @@ val useMimalloc: Boolean get() = true
 val Project._libs: Dyn get() = rootProject.extensions.getByName("libs").dyn
 val Project.kotlinVersion: String get() = _libs["versions"]["kotlin"].dynamicInvoke("get").casted()
 val Project.nodeVersion: String get() = _libs["versions"]["node"].dynamicInvoke("get").casted()
-val Project.androidBuildGradleVersion: String get() = _libs["versions"]["android"]["build"]["gradle"].dynamicInvoke("get").casted()
+val Project.androidBuildGradleVersion: String get() = _libs["versions"]["android"]["build"]["gradle"]["java11"].dynamicInvoke("get").casted()
 val Project.realKotlinVersion: String get() = (System.getenv("FORCED_KOTLIN_VERSION") ?: kotlinVersion)
 val forcedVersion = System.getenv("FORCED_VERSION")
 

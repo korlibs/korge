@@ -83,9 +83,13 @@ dependencies {
     implementation(libs.kover)
     implementation(libs.dokka)
 
-    implementation(libs.android.build.gradle)
+    if (System.getProperty("java.version").startsWith("1.8") || System.getProperty("java.version").startsWith("9")) {
+        implementation(libs.android.build.gradle.java8)
+    } else {
+        implementation(libs.android.build.gradle.java11)
+    }
 
-	implementation(gradleApi())
+    implementation(gradleApi())
 	implementation(localGroovy())
     //compileOnly(gradleKotlinDsl())
 

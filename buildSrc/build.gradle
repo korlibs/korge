@@ -6,23 +6,20 @@ plugins {
 }
 
 def kotlinVersion = libs.versions.kotlin.get()
-def androidBuildGradleVersion
-if (System.getProperty("java.version").startsWith("1.8") || System.getProperty("java.version").startsWith("9")) {
-    androidBuildGradleVersion = "4.2.0"
-} else {
-    androidBuildGradleVersion = libs.versions.android.build.gradle.get()
-}
 
 dependencies {
     implementation(libs.kover)
     implementation(libs.dokka)
-    implementation(libs.android.build.gradle)
-    implementation(libs.kotlin.gradle.plugin)
-
     implementation(libs.proguard.gradle)
     implementation(libs.closure.compiler)
     implementation(libs.gson)
     implementation(libs.gradle.publish.plugin)
+    implementation(libs.kotlin.gradle.plugin)
+    if (System.getProperty("java.version").startsWith("1.8") || System.getProperty("java.version").startsWith("9")) {
+        implementation(libs.android.build.gradle.java8)
+    } else {
+        implementation(libs.android.build.gradle.java11)
+    }
 }
 
 repositories {
