@@ -20,28 +20,6 @@ open class LambdaClosure<T, TR>(val lambda: (value: T) -> TR) : Closure<T>(Unit)
 inline fun <reified T : Task> TaskContainer.create(name: String, callback: T.() -> Unit = {}) = create(name, T::class.java).apply(callback)
 inline fun <reified T : Task> TaskContainer.createTyped(name: String, callback: T.() -> Unit = {}) = create(name, T::class.java).apply(callback)
 
-inline fun <reified T : Task> Project.addTask(
-	name: String,
-	group: String = "",
-	description: String = "",
-	overwrite: Boolean = true,
-	dependsOn: List<Any?> = listOf(),
-	noinline configure: T.(T) -> Unit = {}
-): T {
-	return project.task(
-		mapOf(
-			"type" to T::class.java,
-			"group" to group,
-			"description" to description
-            //, "overwrite" to overwrite // Not compatible with gradle 6
-		), name, LambdaClosure { it: T ->
-			configure(it, it)
-		}
-	).dependsOn(dependsOn.map { when (it) {
-		is Task -> it.name
-		else -> it.toString()
-	}}) as T
-}
 
 inline fun ignoreErrors(action: () -> Unit) {
 	try {

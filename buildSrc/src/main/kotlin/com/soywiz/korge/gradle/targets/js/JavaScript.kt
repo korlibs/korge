@@ -1,14 +1,15 @@
 package com.soywiz.korge.gradle.targets.js
 
 import com.soywiz.korge.gradle.*
+import com.soywiz.korge.gradle.gkotlin
+import com.soywiz.korge.gradle.kotlin
 import com.soywiz.korge.gradle.targets.*
 import com.soywiz.korge.gradle.targets.windows.*
 import com.soywiz.korge.gradle.util.*
+import com.soywiz.korlibs.*
 import org.gradle.api.*
 import org.gradle.api.file.*
 import org.gradle.api.tasks.*
-import org.gradle.kotlin.dsl.the
-import org.gradle.kotlin.dsl.withType
 import org.jetbrains.kotlin.gradle.plugin.*
 import java.io.*
 
@@ -17,7 +18,7 @@ private object JavaScriptClass
 fun Project.configureJavaScript() {
     if (gkotlin.targets.findByName("js") != null) return
 
-    rootProject.plugins.withType<org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin>().configureEach {
+    rootProject.plugins.withType(org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin::class.java).allThis {
         try {
             rootProject.the<org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension>().nodeVersion =
                 BuildVersions.NODE_JS
@@ -39,7 +40,7 @@ fun Project.configureJavaScript() {
 
 			this.attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.js)
 
-			compilations.all {
+			compilations.allThis {
 				kotlinOptions.apply {
 					sourceMap = korge.sourceMaps
 					//metaInfo = true
@@ -59,7 +60,7 @@ fun Project.configureJavaScript() {
     val generatedIndexHtmlDir = File(project.buildDir, "processedResources-www")
 
     afterEvaluate {
-        val jsCreateIndexHtml = project.tasks.create("jsCreateIndexHtml", JsCreateIndexTask::class.java).also { task ->
+        val jsCreateIndexHtml = project.tasks.createThis<JsCreateIndexTask>("jsCreateIndexHtml").also { task ->
             val jsMainCompilation = kotlin.js().compilations["main"]!!
             val resourcesFolders: List<File> = jsMainCompilation.allKotlinSourceSets
                 .flatMap { it.resources.srcDirs } + listOf(File(rootProject.rootDir, "_template"))

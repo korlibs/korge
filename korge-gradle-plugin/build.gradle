@@ -1,10 +1,4 @@
-import org.apache.tools.ant.taskdefs.optional.unix.Symlink
-import org.gradle.api.publish.maven.internal.publication.DefaultMavenPom
-
-import java.nio.file.Files
-
 plugins {
-    id "org.gradle.kotlin.kotlin-dsl" version "2.3.3"
     id "java"
     id "java-gradle-plugin"
     id "maven-publish"

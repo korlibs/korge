@@ -1,22 +1,21 @@
 package com.soywiz.korge.gradle
 
 import org.gradle.api.Project
+import org.gradle.api.artifacts.repositories.*
 import java.net.URI
 
 fun Project.configureRepositories() {
-	repositories.apply {
-		mavenLocal().content {
-			excludeGroup("Kotlin/Native")
-		}
-        mavenCentral().content {
-            excludeGroup("Kotlin/Native")
-        }
-        google().content {
-            excludeGroup("Kotlin/Native")
-        }
+    fun ArtifactRepository.config() {
+        content { it.excludeGroup("Kotlin/Native") }
+    }
+
+    repositories.apply {
+		mavenLocal().config()
+        mavenCentral().config()
+        google().config()
         if (kotlinVersionIsDev) {
-            maven { url = uri("https://maven.pkg.jetbrains.space/kotlin/p/kotlin/temporary") }
-            maven { url = uri("https://maven.pkg.jetbrains.space/public/p/kotlinx-coroutines/maven") }
+            maven { it.url = uri("https://maven.pkg.jetbrains.space/kotlin/p/kotlin/temporary") }
+            maven { it.url = uri("https://maven.pkg.jetbrains.space/public/p/kotlinx-coroutines/maven") }
         }
         //println("kotlinVersion=$kotlinVersion")
 	}

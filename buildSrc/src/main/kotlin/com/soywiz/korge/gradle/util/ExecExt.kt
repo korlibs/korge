@@ -26,11 +26,13 @@ class LoggerOutputStream(val logger: org.gradle.api.logging.Logger, val prefix: 
 }
 */
 
+fun Project.execThis(block: ExecSpec.() -> Unit): ExecResult = exec(block)
+
 fun Project.execLogger(action: (ExecSpec) -> Unit): ExecResult {
-    return exec {
+    return execThis {
         action(this)
-        //standardOutput = LoggerOutputStream(logger, "OUT")
-        //errorOutput = LoggerOutputStream(logger, "ERR")
+        //it.standardOutput = LoggerOutputStream(logger, "OUT")
+        //it.errorOutput = LoggerOutputStream(logger, "ERR")
         debugExecSpec(this)
     }
 }
@@ -44,7 +46,7 @@ fun ExecSpec.commandLineCompat(vararg args: String): ExecSpec {
 
 fun Project.execOutput(vararg cmds: String, log: Boolean = true): String {
     val stdout = ByteArrayOutputStream()
-    exec {
+    execThis {
         commandLineCompat(*cmds)
         standardOutput = stdout
         //errorOutput = stdout

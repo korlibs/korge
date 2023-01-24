@@ -6,16 +6,13 @@ import com.soywiz.korge.gradle.kotlin
 import com.soywiz.korge.gradle.targets.*
 import com.soywiz.korge.gradle.util.*
 import com.soywiz.korlibs.*
-import com.soywiz.korlibs.modules.*
 import org.gradle.api.*
 import org.gradle.api.file.*
 import org.gradle.api.tasks.*
 import org.gradle.api.tasks.bundling.*
 import org.gradle.api.tasks.testing.*
 import org.gradle.jvm.tasks.Jar
-import org.gradle.kotlin.dsl.creating
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
-import proguard.*
 import proguard.gradle.*
 import java.io.File
 
@@ -34,38 +31,38 @@ fun Project.configureJvm() {
 
     gkotlin.jvm {
         testRuns["test"].executionTask.configure {
-            useJUnit()
+            it.useJUnit()
             //it.useJUnitPlatform()
         }
     }
-	project.tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile::class.java).all {
+	project.tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile::class.java).allThis {
         kotlinOptions {
             this.jvmTarget = korge.jvmTarget
         }
     }
 
-	project.addTask<KorgeJavaExec>("runJvm", group = GROUP_KORGE) { task ->
+	project.tasks.createThis<KorgeJavaExec>("runJvm") {
 		group = GROUP_KORGE_RUN
 		dependsOn("jvmMainClasses")
 		project.afterEvaluate {
 			val beforeJava9 = JvmAddOpens.beforeJava9
-		    if (!beforeJava9) task.jvmArgs(project.korge.javaAddOpens)
-			task.mainClass.set(korge.realJvmMainClassName)
+		    if (!beforeJava9) jvmArgs(project.korge.javaAddOpens)
+			mainClass.set(korge.realJvmMainClassName)
 		}
 	}
     val timeBeforeCompilationFile = File(project.buildDir, "timeBeforeCompilation")
 
-    project.addTask<Task>("compileKotlinJvmAndNotifyBefore") { task ->
-        task.doFirst {
+    project.tasks.createThis<Task>("compileKotlinJvmAndNotifyBefore") {
+        doFirst {
             KorgeReloadNotifier.beforeBuild(timeBeforeCompilationFile)
         }
     }
     afterEvaluate {
         tasks.findByName("compileKotlinJvm")?.mustRunAfter("compileKotlinJvmAndNotifyBefore")
     }
-    project.addTask<Task>("compileKotlinJvmAndNotify") { task ->
-        task.dependsOn("compileKotlinJvmAndNotifyBefore", "compileKotlinJvm")
-        task.doFirst {
+    project.tasks.createThis<Task>("compileKotlinJvmAndNotify") {
+        dependsOn("compileKotlinJvmAndNotifyBefore", "compileKotlinJvm")
+        doFirst {
             KorgeReloadNotifier.afterBuild(timeBeforeCompilationFile, httpPort)
         }
     }
@@ -84,24 +81,24 @@ fun Project.configureJvm() {
             false -> "runJvmAutoreload"
             true -> "runJvmAutoreloadWithRedefinition"
         }
-        project.addTask<KorgeJavaExecWithAutoreload>(taskName, group = GROUP_KORGE) { task ->
-            task.enableRedefinition = enableRedefinition
+        project.tasks.createThis<KorgeJavaExecWithAutoreload>(taskName) {
+            this.enableRedefinition = enableRedefinition
             group = GROUP_KORGE_RUN
             dependsOn("jvmMainClasses", "compileKotlinJvm")
             project.afterEvaluate {
                 val beforeJava9 = JvmAddOpens.beforeJava9
-                if (!beforeJava9) task.jvmArgs(project.korge.javaAddOpens)
-                task.mainClass.set(korge.realJvmMainClassName)
+                if (!beforeJava9) jvmArgs(project.korge.javaAddOpens)
+                mainClass.set(korge.realJvmMainClassName)
             }
         }
     }
 
 	project.afterEvaluate {
 		for (entry in korge.extraEntryPoints) {
-			project.addTask<KorgeJavaExec>("runJvm${entry.name.capitalize()}", group = GROUP_KORGE) { task ->
+			project.tasks.createThis<KorgeJavaExec>("runJvm${entry.name.capitalize()}") {
 				group = GROUP_KORGE_RUN
 				dependsOn("jvmMainClasses")
-				task.mainClass.set(entry.jvmMainClassName)
+				mainClass.set(entry.jvmMainClassName)
 			}
 		}
 	}
@@ -202,7 +199,7 @@ private fun Project.configureJvmTest() {
     jvmTest.classpath += project.files().from(project.getCompilationKorgeProcessedResourcesFolder(mainJvmCompilation))
 	jvmTest.jvmArgs = (jvmTest.jvmArgs ?: listOf()) + listOf("-Djava.awt.headless=true")
 
-    val jvmTestFix = tasks.create("jvmTestFix", Test::class.java) {
+    val jvmTestFix = tasks.createThis<Test>("jvmTestFix") {
         group = "verification"
         environment("UPDATE_TEST_REF", "true")
         testClassesDirs = jvmTest.testClassesDirs
@@ -259,10 +256,10 @@ open class PatchedProGuardTask : ProGuardTask() {
 
 private fun Project.addProguard() {
 	// packageJvmFatJar
-	val packageJvmFatJar = project.addTask<org.gradle.jvm.tasks.Jar>("packageJvmFatJar", group = GROUP_KORGE) { task ->
-        task.archiveBaseName.set("${project.name}-all")
-		task.group = GROUP_KORGE_PACKAGE
-		task.exclude(
+	val packageJvmFatJar = project.tasks.createThis<org.gradle.jvm.tasks.Jar>("packageJvmFatJar") {
+        archiveBaseName.set("${project.name}-all")
+		group = GROUP_KORGE_PACKAGE
+		exclude(
 			"com/sun/jna/aix-ppc/**",
 			"com/sun/jna/aix-ppc64/**",
 			"com/sun/jna/freebsd-x86/**",
@@ -281,13 +278,12 @@ private fun Project.addProguard() {
             "natives/macosarm64/**",
             "META-INF/*.kotlin_module",
 		)
-        task.duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-        task.doFirst {
-            task.from(project.files().from(project.getCompilationKorgeProcessedResourcesFolder(mainJvmCompilation)))
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+        doFirst {
+            from(project.files().from(project.getCompilationKorgeProcessedResourcesFolder(mainJvmCompilation)))
         }
 		project.afterEvaluate {
-			task.manifest {
-                val manifest = this
+			manifest { manifest ->
 				manifest.attributes(
 					mapOf(
 						"Implementation-Title" to korge.realJvmMainClassName,
@@ -298,52 +294,50 @@ private fun Project.addProguard() {
 			}
 			//it.from()
 			//fileTree()
-			task.from(closure {
+			from(closure {
 				project.gkotlin.targets.jvm.compilations.main.runtimeDependencyFiles.map { if (it.isDirectory) it else project.zipTree(it) as Any }
 				//listOf<File>()
 			})
-			task.with(project.getTasksByName("jvmJar", true).first() as CopySpec)
+			with(project.getTasksByName("jvmJar", true).first() as CopySpec)
 		}
 	}
 
 	val runJvm = tasks.getByName("runJvm") as JavaExec
 
-	project.addTask<PatchedProGuardTask>("packageJvmFatJarProguard", group = GROUP_KORGE, dependsOn = listOf(
-		packageJvmFatJar
-	)
-	) { task ->
-		task.group = GROUP_KORGE_PACKAGE
+	project.tasks.createThis<PatchedProGuardTask>("packageJvmFatJarProguard") {
+        dependsOn(packageJvmFatJar)
+		group = GROUP_KORGE_PACKAGE
 		project.afterEvaluate {
-			task.libraryjars("${System.getProperty("java.home")}/lib/rt.jar")
+			libraryjars("${System.getProperty("java.home")}/lib/rt.jar")
 			// Support newer java versions that doesn't have rt.jar
-			task.libraryjars(project.fileTree("${System.getProperty("java.home")}/jmods/") {
-                include("**/java.*.jmod")
+			libraryjars(project.fileTree("${System.getProperty("java.home")}/jmods/") {
+                it.include("**/java.*.jmod")
 			})
 			//println(packageJvmFatJar.outputs.files.toList())
-			task.injars(packageJvmFatJar.outputs.files.toList())
-			task.outjars(File(buildDir, "/libs/${project.name}-all-proguard.jar"))
-			task.dontwarn()
-			task.ignorewarnings()
+			injars(packageJvmFatJar.outputs.files.toList())
+			outjars(File(buildDir, "/libs/${project.name}-all-proguard.jar"))
+			dontwarn()
+			ignorewarnings()
 			if (!project.korge.proguardObfuscate) {
-				task.dontobfuscate()
+				dontobfuscate()
 			}
-			task.assumenosideeffects("""
+			assumenosideeffects("""
                 class kotlin.jvm.internal.Intrinsics {
                     static void checkParameterIsNotNull(java.lang.Object, java.lang.String);
                 }
             """.trimIndent())
 
-			task.keepnames("class com.sun.jna.** { *; }")
-			task.keepnames("class * extends com.sun.jna.** { *; }")
+			keepnames("class com.sun.jna.** { *; }")
+			keepnames("class * extends com.sun.jna.** { *; }")
 			//task.keepnames("class org.jcodec.** { *; }")
-			task.keepattributes()
-			task.keep("class * implements com.sun.jna.** { *; }")
-			task.keep("class com.sun.jna.** { *; }")
-			task.keep("class ${project.korge.realJvmMainClassName} { *; }")
-			task.keep("class org.jcodec.** { *; }")
+			keepattributes()
+			keep("class * implements com.sun.jna.** { *; }")
+			keep("class com.sun.jna.** { *; }")
+			keep("class ${project.korge.realJvmMainClassName} { *; }")
+			keep("class org.jcodec.** { *; }")
 
 			if (runJvm.mainClass.get().isNotBlank()) {
-				task.keep("""public class ${runJvm.mainClass.get()} { public static void main(java.lang.String[]); }""")
+				keep("""public class ${runJvm.mainClass.get()} { public static void main(java.lang.String[]); }""")
 			}
 		}
 

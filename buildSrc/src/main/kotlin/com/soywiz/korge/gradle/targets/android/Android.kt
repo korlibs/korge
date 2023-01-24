@@ -6,6 +6,7 @@ import com.soywiz.korge.gradle.targets.*
 import com.soywiz.korge.gradle.targets.jvm.KorgeJavaExec
 import org.gradle.api.DefaultTask
 import org.gradle.api.Project
+import org.gradle.api.Task
 import org.gradle.api.tasks.GradleBuild
 import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 import java.io.File
@@ -26,11 +27,9 @@ fun Project.configureAndroidIndirect() {
 	}.orEmpty()
 	val topLevelDependencies = mutableListOf<String>()
 
-	configurations.all {
-        val conf = this
+	configurations.all { conf ->
 		if (conf.attributes.getAttribute(KotlinPlatformType.attribute)?.name == "jvm") {
-			conf.resolutionStrategy.eachDependency {
-                val dep = this
+			conf.resolutionStrategy.eachDependency { dep ->
 				if (topLevelDependencies.isEmpty() && !conf.name.removePrefix("jvm").startsWith("Test")) {
 					topLevelDependencies.addAll(conf.incoming.dependencies.map { "${it.group}:${it.name}" })
 				}
@@ -60,7 +59,7 @@ fun Project.configureAndroidIndirect() {
 
     val runJvm by lazy { (tasks["runJvm"] as KorgeJavaExec) }
 
-    val prepareAndroidBootstrap = tasks.create("prepareAndroidBootstrap") {
+    val prepareAndroidBootstrap = tasks.createThis<Task>("prepareAndroidBootstrap") {
 		dependsOn("compileTestKotlinJvm") // So artifacts are resolved
         dependsOn("jvmMainClasses")
         val overwrite = korge.overwriteAndroidFiles
@@ -313,7 +312,7 @@ fun Project.configureAndroidIndirect() {
         }
 	}
 
-	val bundleAndroid = tasks.create("bundleAndroid", GradleBuild::class.java) {
+	val bundleAndroid = tasks.createThis<GradleBuild>("bundleAndroid") {
         group = GROUP_KORGE_INSTALL
         dependsOn(prepareAndroidBootstrap)
         buildFile = File(buildDir, "platforms/android/build.gradle")
@@ -321,7 +320,7 @@ fun Project.configureAndroidIndirect() {
         tasks = listOf("bundleDebugAar")
 	}
 
-	val buildAndroidAar = tasks.create("buildAndroidAar", GradleBuild::class.java) {
+	val buildAndroidAar = tasks.createThis<GradleBuild>("buildAndroidAar") {
         dependsOn(bundleAndroid)
 	}
 

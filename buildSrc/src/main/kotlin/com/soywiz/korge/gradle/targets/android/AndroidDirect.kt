@@ -91,13 +91,13 @@ fun Project.configureAndroidDirect() {
             val resolvedArtifacts = LinkedHashMap<String, String>()
 
             project.configurations.all {
-                resolutionStrategy.eachDependency {
-                    val cleanFullName = "${requested.group}:${requested.name}".removeSuffix("-js").removeSuffix("-jvm")
+                it.resolutionStrategy.eachDependency {
+                    val cleanFullName = "${it.requested.group}:${it.requested.name}".removeSuffix("-js").removeSuffix("-jvm")
                     //println("RESOLVE ARTIFACT: ${it.requested}")
                     //if (cleanFullName.startsWith("org.jetbrains.intellij.deps:trove4j")) return@eachDependency
                     //if (cleanFullName.startsWith("org.jetbrains:annotations")) return@eachDependency
                     if (isKorlibsDependency(cleanFullName)) {
-                        resolvedArtifacts[cleanFullName] = requested.version.toString()
+                        resolvedArtifacts[cleanFullName] = it.requested.version.toString()
                     }
                 }
             }

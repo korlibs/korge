@@ -13,7 +13,7 @@ object NativeTools {
                 for (target in nativeTargets(project)) {
                     if (target.isMingw) {
                         target.compilations["main"].cinterops {
-                            maybeCreate(name)
+                            it.maybeCreate(name)
                         }
                     }
                 }
@@ -29,7 +29,7 @@ object NativeTools {
                 for (target in nativeTargets(project)) {
                     if (target.isLinux) {
                         target.compilations["main"].cinterops {
-                            maybeCreate(name)
+                            it.maybeCreate(name)
                         }
                     }
                 }
@@ -43,7 +43,7 @@ object NativeTools {
             project.kotlin {
                 for (target in allNativeTargets(project)) {
                     target.compilations["main"].cinterops {
-                        maybeCreate(name)
+                        it.maybeCreate(name)
                     }
                 }
             }

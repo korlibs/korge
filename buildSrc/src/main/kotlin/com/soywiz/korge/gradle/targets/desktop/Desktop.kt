@@ -76,11 +76,11 @@ fun Project.configureNativeDesktop() {
 			}
 			val taskName = "copyResourcesToExecutableTest_${target.capitalize()}"
 			val targetTestTask = project.tasks.getByName("${target}Test") as KotlinNativeTest
-			val task = project.addTask<Copy>(taskName) { task ->
+			val task = project.tasks.createThis<Copy>(taskName) {
 				for (sourceSet in project.gkotlin.sourceSets) {
-					task.from(sourceSet.resources)
+					from(sourceSet.resources)
 				}
-				task.into(targetTestTask.executableFolder)
+				into(targetTestTask.executableFolder)
 			}
 			targetTestTask.dependsOn(task)
 		}
@@ -129,14 +129,14 @@ fun Project.addNativeRun() {
                 val appRcObjFile = File(buildDir, "app.obj")
                 val appIcoFile = File(buildDir, "icon.ico")
 
-                val copyTask = project.addTask<Copy>("copyResourcesToExecutable$ctargetKind") { task ->
-                    task.dependsOn(compilation.compileKotlinTask)
-                    task.duplicatesStrategy = DuplicatesStrategy.INCLUDE
+                val copyTask = project.tasks.createThis<Copy>("copyResourcesToExecutable$ctargetKind") {
+                    dependsOn(compilation.compileKotlinTask)
+                    duplicatesStrategy = DuplicatesStrategy.INCLUDE
                     for (sourceSet in project.gkotlin.sourceSets) {
-                        task.from(sourceSet.resources)
+                        from(sourceSet.resources)
                     }
                     //println("executableFile.parentFile: ${executableFile.parentFile}")
-                    task.into(executableFile.parentFile)
+                    into(executableFile.parentFile)
                     if (isMingwX64) {
                         //if (false) {
                         doLast {
@@ -193,21 +193,32 @@ fun Project.addNativeRun() {
                 }
 
                 //addTask<Exec>("runNative$ctargetKind", dependsOn = listOf("linkMain${ckind}Executable$ctarget", copyTask), group = GROUP_KORGE) { task ->
-                addTask<Exec>("runNative$ctargetKind", dependsOn = listOf("link${ckind}Executable$ctarget", copyTask), group = GROUP_KORGE) { task: Exec ->
-                    task.group = GROUP_KORGE_RUN
-                    task.executable = executableFile.absolutePath
-                    task.args()
+                tasks.createThis<Exec>("runNative$ctargetKind") {
+                    dependsOn("link${ckind}Executable$ctarget", copyTask)
+                    group = GROUP_KORGE_RUN
+                    executable = executableFile.absolutePath
+                    args()
                 }
             }
-            addTask<Task>("runNative$ctarget", dependsOn = listOf("runNative${ctarget}Release"), group = GROUP_KORGE) { task ->
-                task.group = GROUP_KORGE_RUN
+            tasks.createThis<Task>("runNative$ctarget") {
+                dependsOn("runNative${ctarget}Release")
+                group = GROUP_KORGE_RUN
             }
         }
     }
 
-    addTask<Task>("runNative", dependsOn = listOf("runNative$cnativeTarget"), group = GROUP_KORGE_RUN)
-    addTask<Task>("runNativeDebug", dependsOn = listOf("runNative${cnativeTarget}Debug"), group = GROUP_KORGE_RUN)
-    addTask<Task>("runNativeRelease", dependsOn = listOf("runNative${cnativeTarget}Release"), group = GROUP_KORGE_RUN)
+    tasks.createThis<Task>("runNative") {
+        dependsOn("runNative$cnativeTarget")
+        group = GROUP_KORGE_RUN
+    }
+    tasks.createThis<Task>("runNativeDebug") {
+        dependsOn("runNative${cnativeTarget}Debug")
+        group = GROUP_KORGE_RUN
+    }
+    tasks.createThis<Task>("runNativeRelease") {
+        dependsOn("runNative${cnativeTarget}Release")
+        group = GROUP_KORGE_RUN
+    }
 
     afterEvaluate {
         if (isMacos) {
@@ -220,14 +231,12 @@ fun Project.addNativeRun() {
                     //(ktarget as KotlinNativeTarget).attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.native)
                     val compilation = ktarget.compilations.main as KotlinNativeCompilation
 
-                    addTask<Task>(
+                    tasks.createThis<Task>(
                         "package${nativeTargetName.capitalize()}App${buildTypeLC.capitalize()}", // @TODO: What happens on macosArm64?
-                        group = GROUP_KORGE_PACKAGE,
-                        dependsOn = listOf(compilation.getLinkTask(NativeOutputKind.EXECUTABLE, buildType, project))
                         //dependsOn = listOf("link${buildType.name.capitalize()}ExecutableMacosX64")
                     ) {
-
                         group = GROUP_KORGE_PACKAGE
+                        dependsOn(compilation.getLinkTask(NativeOutputKind.EXECUTABLE, buildType, project))
                         doLast {
                             val compilation = gkotlin.targets.getByName(nativeTargetName).compilations.main as KotlinNativeCompilation
                             val executableFile = compilation.getBinary(NativeOutputKind.EXECUTABLE, buildType)
@@ -237,8 +246,7 @@ fun Project.addNativeRun() {
                             val resourcesFolder = File(appFolderContents, "Resources").apply { mkdirs() }
                             File(appFolderContents, "Info.plist").writeText(InfoPlistBuilder.build(korge))
                             File(resourcesFolder, "${korge.exeBaseName}.icns").writeBytes(IcnsBuilder.build(korge.getIconBytes()))
-                            copy {
-                                val copy = this
+                            copy { copy ->
                                 copy.duplicatesStrategy = DuplicatesStrategy.INCLUDE
                                 for (sourceSet in project.gkotlin.sourceSets) {
                                     copy.from(sourceSet.resources)
@@ -259,11 +267,11 @@ fun Project.addNativeRun() {
                 val buildType = if (kind == NativeBuildType.DEBUG) NativeBuildType.DEBUG else NativeBuildType.RELEASE
                 val linkTask = compilation.getLinkTask(NativeOutputKind.EXECUTABLE, buildType, project)
 
-                addTask<Task>(
+                tasks.createThis<Task>(
                     "packageMingwX64App${kind.name.capitalize()}",
-                    group = GROUP_KORGE_PACKAGE,
-                    dependsOn = listOf(linkTask)
                 ) {
+                    dependsOn(linkTask)
+                    group = GROUP_KORGE_PACKAGE
                     val inputFile = linkTask.binary.outputFile
                     val strippedFile = File(inputFile.parentFile, inputFile.nameWithoutExtension + "-stripped.exe")
                     doLast {

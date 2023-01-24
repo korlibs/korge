@@ -500,7 +500,7 @@ class KorgeExtension(val project: Project) {
 	fun dependencyNodeModule(name: String, version: String) = project {
 		val node = extensions.getByType(NodeExtension::class.java)
 
-		val installNodeModule = tasks.create<NpmTask>("installJs${name.capitalize()}") {
+		val installNodeModule = tasks.createThis<NpmTask>("installJs${name.capitalize()}") {
 			onlyIf { !File(node.nodeModulesDir, name).exists() }
 			setArgs(arrayListOf("install", "$name@$version"))
 		}
