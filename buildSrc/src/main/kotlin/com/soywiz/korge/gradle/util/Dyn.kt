@@ -245,7 +245,7 @@ inline class Dyn(val value: Any?) : Comparable<Dyn> {
     val orNull: Dyn? get() = value?.dyn
     val mapAny: Map<Any?, Any?> get() = if (value is Map<*, *>) value as Map<Any?, Any?> else LinkedHashMap()
     val listAny: List<Any?> get() = if (value == null) listOf() else if (value is List<*>) value else if (value is Iterable<*>) value.toList() else listOf(value)
-    val keysAny: List<Any?> get() = if (value is Map<*, *>) keys.toList() else listOf()
+    val keysAny: List<Any?> get() = if (value is Map<*, *>) value.keys.toList() else listOf()
 
     val map: Map<Dyn, Dyn> get() = mapAny.map { it.key.dyn to it.value.dyn }.toMap()
     val list: List<Dyn> get() = listAny.map { it.dyn }
