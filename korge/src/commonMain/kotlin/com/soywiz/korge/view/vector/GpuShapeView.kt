@@ -220,7 +220,9 @@ open class GpuShapeView(
                 bufferWidth = currentFrameBuffer.width
                 bufferHeight = currentFrameBuffer.height
                 //println("bufferWidth=$bufferWidth, bufferHeight=$bufferHeight")
+                //println("ctx.currentFrameBuffer: ${ctx.currentFrameBuffer}")
                 ctx.renderToTexture(bufferWidth, bufferHeight, {
+                    //println("!!Render to texture!! :: ctx.currentFrameBuffer: ${ctx.currentFrameBuffer}")
                     renderCommands(ctx, doRequireTexture)
                 }, hasDepth = false, hasStencil = true, msamples = 1) { texture ->
                     ctx.useBatcher {
@@ -442,6 +444,7 @@ open class GpuShapeView(
             gpuShapeViewCommands.addVertex(x.toFloat(), y.toFloat(), len = len, maxLen = maxLen)
         }
         val vertexEnd = gpuShapeViewCommands.verticesEnd()
+        //println("bb.getBounds()=${bb.getBounds()} - ${bb.getBounds().toAGScissor()}")
         return PointsResult(bb.getBounds().toAGScissor(), points.size + 2, vertexStart, vertexEnd)
     }
 
@@ -491,8 +494,11 @@ open class GpuShapeView(
         val isSimpleDraw = shapeIsConvex && shape.clip == null && !debugDrawOnlyAntialiasedBorder
         //val isSimpleDraw = false
         val pathDataList = getPointsForPathList(shape.path, if (isSimpleDraw) AGDrawType.TRIANGLE_STRIP else AGDrawType.TRIANGLE_FAN)
-        val pathBoundsNoExpended = BoundsBuilder().also { bb -> pathDataList.fastForEach { bb.add(it.bounds) } }.getBounds()
-        val pathBounds: AGScissor = pathBoundsNoExpended.clone().expand(2, 2, 2, 2).toAGScissor()
+        val pathBoundsNoExpanded = BoundsBuilder().also { bb -> pathDataList.fastForEach {
+            //println("bounds=${it.bounds}")
+            bb.add(it.bounds)
+        } }.getBounds()
+        val pathBounds: AGScissor = pathBoundsNoExpanded.clone().expand(2, 2, 2, 2).toAGScissor()
 
         val clipDataStart = gpuShapeViewCommands.verticesStart()
         val clipData = shape.clip?.let { getPointsForPath(it, AGDrawType.TRIANGLE_FAN) }
