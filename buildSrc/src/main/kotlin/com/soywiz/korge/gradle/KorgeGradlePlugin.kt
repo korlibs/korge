@@ -3,6 +3,7 @@ package com.soywiz.korge.gradle
 import com.soywiz.korge.gradle.targets.*
 import com.soywiz.korge.gradle.targets.linux.LDLibraries
 import com.soywiz.korge.gradle.util.*
+import com.soywiz.korlibs.*
 import org.gradle.api.*
 import org.gradle.api.Project
 import org.gradle.api.plugins.*
@@ -122,8 +123,28 @@ open class KorgeGradlePlugin : Plugin<Project> {
 		//TODO PABLO changed to have the android tasks enabled again
 		KorgeGradleApply(project).apply(includeIndirectAndroid = true)
 
+        project.configureAutoVersions()
+
 		//for (res in project.getResourcesFolders()) println("- $res")
 	}
+}
+
+fun Project.configureAutoVersions() {
+    allprojectsThis {
+        configurations.all {
+            it.resolutionStrategy.eachDependency { details ->
+                //println("DETAILS: ${details.requested} : '${details.requested.group}' : '${details.requested.name}' :  '${details.requested.version}'")
+                val groupWithName = "${details.requested.group}:${details.requested.name}"
+                if (details.requested.version.isNullOrBlank()) {
+                    val version = korge.versionSubstitutions[groupWithName]
+                    if (version != null) {
+                        details.useVersion(version)
+                        details.because("korge.versionSubstitutions: '$groupWithName' -> $version")
+                    }
+                }
+            }
+        }
+    }
 }
 
 fun Project.configureBuildScriptClasspathTasks() {

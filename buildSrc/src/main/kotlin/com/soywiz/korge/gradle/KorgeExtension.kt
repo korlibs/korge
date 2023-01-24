@@ -284,6 +284,14 @@ class KorgeExtension(val project: Project) {
     var sourceMaps: Boolean = false
 	var supressWarnings: Boolean = false
 
+    val versionSubstitutions = LinkedHashMap<String, String>().also {
+        it["com.soywiz.korlibs.korge2:korge"] = BuildVersions.KORGE
+    }
+
+    fun versionSubstitution(groupName: String, version: String) {
+        versionSubstitutions[groupName] = version
+    }
+
     /**
      * Determines whether the standard console will be available on Windows or not
      * by setting the windows subsystem to console or windows.
