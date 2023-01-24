@@ -2,6 +2,7 @@ package com.soywiz.korlibs.root
 
 import com.android.build.gradle.*
 import com.android.build.gradle.internal.tasks.*
+import com.soywiz.korge.gradle.*
 import com.soywiz.korge.gradle.targets.*
 import com.soywiz.korge.gradle.targets.android.*
 import com.soywiz.korge.gradle.targets.ios.*
@@ -10,8 +11,11 @@ import com.soywiz.korge.gradle.targets.native.*
 import com.soywiz.korge.gradle.util.*
 import com.soywiz.korge.gradle.util.create
 import com.soywiz.korlibs.*
+import com.soywiz.korlibs.gkotlin
+import com.soywiz.korlibs.kotlin
 import com.soywiz.korlibs.modules.*
 import com.soywiz.korlibs.modules.KorgeJavaExec
+import com.soywiz.korlibs.tasks
 import org.gradle.api.*
 import org.gradle.api.Project
 import org.gradle.api.artifacts.repositories.*
@@ -34,6 +38,7 @@ object RootKorlibsPlugin {
     }
 
     fun Project.init() {
+        configureBuildScriptClasspathTasks()
         initPlugins()
         initRootKotlinJvmTarget()
         initVersions()

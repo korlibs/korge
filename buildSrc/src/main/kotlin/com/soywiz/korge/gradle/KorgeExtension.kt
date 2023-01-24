@@ -183,6 +183,7 @@ class KorgeExtension(val project: Project) {
      * Android SDK not required if tasks are not executed.
      * The project can be opened on Android Studio.
      */
+    @Deprecated("Use targetAndroidDirect instead")
     fun targetAndroidIndirect() {
         target("android") {
             project.configureAndroidIndirect()
@@ -282,6 +283,14 @@ class KorgeExtension(val project: Project) {
 
     var sourceMaps: Boolean = false
 	var supressWarnings: Boolean = false
+
+    val versionSubstitutions = LinkedHashMap<String, String>().also {
+        it["com.soywiz.korlibs.korge2:korge"] = BuildVersions.KORGE
+    }
+
+    fun versionSubstitution(groupName: String, version: String) {
+        versionSubstitutions[groupName] = version
+    }
 
     /**
      * Determines whether the standard console will be available on Windows or not
