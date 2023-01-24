@@ -579,8 +579,8 @@ object RootKorlibsPlugin {
 
                         defaultConfig {
                             multiDexEnabled = true
-                            minSdkVersion(project.findProperty("android.min.sdk.version")?.toString()?.toIntOrNull() ?: 16) // Previously 18
-                            targetSdkVersion(project.findProperty("android.target.sdk.version")?.toString()?.toIntOrNull() ?: 30)
+                            minSdk = project.findProperty("android.min.sdk.version")?.toString()?.toIntOrNull() ?: 16 // Previously 18
+                            targetSdk = project.findProperty("android.target.sdk.version")?.toString()?.toIntOrNull() ?: 30
                             testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
                             //testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
                         }

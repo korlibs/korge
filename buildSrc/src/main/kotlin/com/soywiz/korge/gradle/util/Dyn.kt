@@ -1,5 +1,6 @@
 package com.soywiz.korge.gradle.util
 
+import groovy.lang.*
 import java.lang.reflect.*
 import kotlin.math.*
 
@@ -218,6 +219,7 @@ inline class Dyn(val value: Any?) : Comparable<Dyn> {
     private fun _getOrThrow(key: Any?, doThrow: Boolean): Dyn = when (value) {
         null -> if (doThrow) throw NullPointerException("Trying to access '$key'") else null.dyn
         is Map<*, *> -> (value as Map<Any?, Any?>)[key].dyn
+        is GroovyObject -> value.getProperty(key.toString()).dyn
         is List<*> -> value[key.dyn.toInt()].dyn
         else -> dynApi.get(value, key.toString()).dyn
     }
@@ -377,30 +379,10 @@ private fun String.toIntSafe(radix: Int = 10) = this.toIntOrNull(radix)
 private fun String.toDoubleSafe() = this.toDoubleOrNull()
 private fun String.toLongSafe(radix: Int = 10) = this.toLongOrNull(radix)
 
-interface DynApi {
-    val global: Any? get() = null
-
-    fun get(instance: Any?, key: String): Any?
-    fun set(instance: Any?, key: String, value: Any?)
-    fun invoke(instance: Any?, key: String, args: Array<out Any?>): Any?
-
-    fun getOrThrow(instance: Any?, key: String): Any? = get(instance, key)
-    fun invokeOrThrow(instance: Any?, key: String, args: Array<out Any?>): Any? = invoke(instance, key, args)
-
-    suspend fun suspendGet(instance: Any?, key: String): Any? = get(instance, key)
-    suspend fun suspendSet(instance: Any?, key: String, value: Any?): Unit = set(instance, key, value)
-    suspend fun suspendInvoke(instance: Any?, key: String, args: Array<out Any?>): Any? = invoke(instance, key, args)
-}
-
-val defaultDynApi: DynApi get() = DynamicInternal
-
-// @TODO: We should be able to plug-in a kotlinx-serialization version for this
-var dynApi: DynApi = DynamicInternal
-
-internal object DynamicInternal : DynApi {
+internal object dynApi {
     class JavaPackage(val name: String)
 
-    override val global: Any? = JavaPackage("")
+    val global: Any? = JavaPackage("")
 
     private fun tryGetField(clazz: Class<*>, name: String): Field? {
         val field = runCatching { clazz.getDeclaredField(name) }.getOrNull()
@@ -437,9 +419,9 @@ internal object DynamicInternal : DynApi {
         }
     }
 
-    override fun get(instance: Any?, key: String): Any? = getBase(instance, key, doThrow = false)
+    fun get(instance: Any?, key: String): Any? = getBase(instance, key, doThrow = false)
 
-    override fun set(instance: Any?, key: String, value: Any?) {
+    fun set(instance: Any?, key: String, value: Any?) {
         if (instance == null) return
 
         val static = instance is Class<*>
@@ -457,17 +439,21 @@ internal object DynamicInternal : DynApi {
         }
     }
 
-    override fun getOrThrow(instance: Any?, key: String): Any? {
+    fun getOrThrow(instance: Any?, key: String): Any? {
         return getBase(instance, key, doThrow = true)
     }
 
-    override fun invoke(instance: Any?, key: String, args: Array<out Any?>): Any? {
+    fun invoke(instance: Any?, key: String, args: Array<out Any?>): Any? {
         return invokeBase(instance, key, args, doThrow = false)
     }
 
-    override fun invokeOrThrow(instance: Any?, key: String, args: Array<out Any?>): Any? {
+    fun invokeOrThrow(instance: Any?, key: String, args: Array<out Any?>): Any? {
         return invokeBase(instance, key, args, doThrow = true)
     }
+
+    suspend fun suspendGet(instance: Any?, key: String): Any? = get(instance, key)
+    suspend fun suspendSet(instance: Any?, key: String, value: Any?): Unit = set(instance, key, value)
+    suspend fun suspendInvoke(instance: Any?, key: String, args: Array<out Any?>): Any? = invoke(instance, key, args)
 
     fun getBase(instance: Any?, key: String, doThrow: Boolean): Any? {
         if (instance == null) {

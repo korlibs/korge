@@ -3,7 +3,6 @@ package com.soywiz.korge.gradle.targets.windows
 import com.soywiz.korge.gradle.util.*
 import org.gradle.api.*
 import java.io.*
-import com.soywiz.korge.gradle.util.get
 import org.gradle.kotlin.dsl.support.*
 import java.net.*
 
