@@ -130,8 +130,8 @@ open class AGFrameBufferBase(val isMain: Boolean) : AGObject() {
     override fun toString(): String = "AGFrameBufferBase(isMain=$isMain)"
 }
 
-open class AGFrameBuffer(val base: AGFrameBufferBase) : Closeable {
-    constructor(isMain: Boolean = false) : this(AGFrameBufferBase(isMain))
+open class AGFrameBuffer(val base: AGFrameBufferBase, val id: Int = -1) : Closeable {
+    constructor(isMain: Boolean = false, id: Int = -1) : this(AGFrameBufferBase(isMain), id)
     val isTexture: Boolean get() = base.isTexture
     val isMain: Boolean get() = base.isMain
     val tex: AGTexture get() = base.tex
@@ -201,5 +201,5 @@ open class AGFrameBuffer(val base: AGFrameBufferBase) : Closeable {
         //base.markAsDirty()
     }
 
-    override fun toString(): String = "GlFrameBuffer($width, $height)"
+    override fun toString(): String = "AGFrameBuffer(${if (isMain) "main" else "$id"}, $width, $height)"
 }

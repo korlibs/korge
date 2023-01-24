@@ -8,6 +8,7 @@ import com.soywiz.korge.input.*
 import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.ui.uiButton
 import com.soywiz.korge.view.*
+import com.soywiz.korge.view.filter.*
 import com.soywiz.korge.view.vector.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
@@ -24,6 +25,19 @@ import com.soywiz.korma.geom.vector.StrokeInfo
 
 class MainGpuVectorRendering : Scene() {
     override suspend fun SContainer.sceneMain() {
+        gpuShapeView {  }
+
+        graphics(GraphicsRenderer.GPU) {
+            it.antialiased = false
+            //it.debugDrawOnlyAntialiasedBorder = false
+            fill(Colors.GREEN, winding = Winding.EVEN_ODD) {
+                //circle(100, 100, 100)
+                //circleHole(100, 100, 50)
+                rect(100, 100, 100, 100)
+                rectHole(120, 120, 30, 30)
+            }
+        }//.filters(BlurFilter())
+        //return
 
         //return
 

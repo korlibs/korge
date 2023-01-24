@@ -12,6 +12,7 @@ import kotlin.math.min
 typealias SDFBitmap = DistanceBitmap
 
 // http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.102.7988&rep=rep1&type=pdf
+// https://github.com/dy/bitmap-sdf/blob/78de3569d32404a7009f62bea3befca55838118a/index.js
 // Dead Reckoning Algorithm
 class DistanceBitmap(
     val width: Int,
