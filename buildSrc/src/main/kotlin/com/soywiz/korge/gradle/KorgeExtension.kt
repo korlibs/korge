@@ -183,6 +183,7 @@ class KorgeExtension(val project: Project) {
      * Android SDK not required if tasks are not executed.
      * The project can be opened on Android Studio.
      */
+    @Deprecated("Use targetAndroidDirect instead")
     fun targetAndroidIndirect() {
         target("android") {
             project.configureAndroidIndirect()
