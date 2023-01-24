@@ -5,6 +5,8 @@ plugins {
     id "org.jetbrains.kotlin.jvm" version "1.7.10"
 }
 
+def isJava8or9 = System.getProperty("java.version").startsWith("1.8") || System.getProperty("java.version").startsWith("9")
+
 dependencies {
     implementation(libs.kover)
     implementation(libs.dokka)
@@ -13,7 +15,7 @@ dependencies {
     implementation(libs.gson)
     implementation(libs.gradle.publish.plugin)
     implementation(libs.kotlin.gradle.plugin)
-    if (System.getProperty("java.version").startsWith("1.8") || System.getProperty("java.version").startsWith("9")) {
+    if (isJava8or9) {
         implementation(libs.android.build.gradle.java8)
     } else {
         implementation(libs.android.build.gradle.java11)
@@ -40,5 +42,10 @@ java {
     targetCompatibility = JavaVersion.VERSION_1_8
     sourceSets.main.java {
         srcDir("src/main/kotlinGen")
+        if (isJava8or9) {
+            srcDir("src/main/kotlin8")
+        } else {
+            srcDir("src/main/kotlin11")
+        }
     }
 }
