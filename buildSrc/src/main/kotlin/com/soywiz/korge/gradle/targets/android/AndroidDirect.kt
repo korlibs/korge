@@ -1,11 +1,19 @@
 package com.soywiz.korge.gradle.targets.android
 
+import com.android.build.api.dsl.*
+import com.android.build.api.dsl.BuildType
+import com.android.build.api.dsl.DefaultConfig
 import com.android.build.gradle.internal.dsl.*
-import com.android.builder.core.*
 import com.soywiz.korge.gradle.*
-import com.soywiz.korge.gradle.targets.*
-import com.soywiz.korge.gradle.util.*
 import org.gradle.api.*
+import kotlin.collections.*
+
+// this tries to resolve inconsistency between versions (one using this receiver and others using it)
+fun <DefaultConfigT : DefaultConfig> CommonExtension<*, *, DefaultConfigT, *>.defaultConfigThis(action: DefaultConfigT.() -> Unit) = defaultConfig(action)
+fun <BuildTypeT : BuildType> CommonExtension<*, BuildTypeT, *, *>.buildTypesThis(action: NamedDomainObjectContainer<BuildTypeT>.() -> Unit) = buildTypes(action)
+fun CommonExtension<*, *, *, *>.packagingOptionsThis(action: com.android.build.api.dsl.PackagingOptions.() -> Unit) = packagingOptions(action)
+fun CommonExtension<*, *, *, *>.signingConfigsThis(action: NamedDomainObjectContainer<out ApkSigningConfig>.() -> Unit) = signingConfigs(action)
+fun CommonExtension<*, *, *, *>.sourceSetsThis(action: NamedDomainObjectContainer<out AndroidSourceSet>.() -> Unit) = sourceSets(action)
 
 fun Project.configureAndroidDirect() {
     project.ensureAndroidLocalPropertiesWithSdkDir()
@@ -32,13 +40,13 @@ fun Project.configureAndroidDirect() {
         //    installOptions = listOf("-r")
         //    timeOutInMs = project.korge.androidTimeoutMs
         //}
-        packagingOptions {
+        packagingOptionsThis {
             for (pattern in project.korge.androidExcludePatterns) {
                 resources.excludes.add(pattern)
             }
         }
         compileSdk = project.korge.androidCompileSdk
-        defaultConfig {
+        defaultConfigThis {
             multiDexEnabled = true
             applicationId = project.korge.id
             minSdk = project.korge.androidMinSdk
@@ -49,7 +57,7 @@ fun Project.configureAndroidDirect() {
             //val manifestPlaceholdersStr = korge.configs.map { it.key + ":" + it.value.quoted }.joinToString(", ")
             //manifestPlaceholders = if (manifestPlaceholdersStr.isEmpty()) "[:]" else "[$manifestPlaceholdersStr]" }
         }
-        signingConfigs {
+        signingConfigsThis {
             maybeCreate("release").apply {
                 storeFile = project.file(project.findProperty("RELEASE_STORE_FILE") ?: korge.androidReleaseSignStoreFile)
                 storePassword = project.findProperty("RELEASE_STORE_PASSWORD")?.toString() ?: korge.androidReleaseSignStorePassword
@@ -57,7 +65,7 @@ fun Project.configureAndroidDirect() {
                 keyPassword = project.findProperty("RELEASE_KEY_PASSWORD")?.toString() ?: korge.androidReleaseSignKeyPassword
             }
         }
-        buildTypes {
+        buildTypesThis {
             maybeCreate("debug").apply {
                 isMinifyEnabled = false
                 signingConfig = signingConfigs.getByName("release")
@@ -68,7 +76,7 @@ fun Project.configureAndroidDirect() {
                 signingConfig = signingConfigs.getByName("release")
             }
         }
-        sourceSets {
+        sourceSetsThis {
             maybeCreate("main").apply {
                 val (resourcesSrcDirs, kotlinSrcDirs) = androidGetResourcesFolders()
                 //println("@ANDROID_DIRECT:")
