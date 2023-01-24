@@ -1,27 +1,17 @@
 package com.soywiz.korge.gradle.targets.desktop
 
-import com.soywiz.korge.gradle.gkotlin
 import com.soywiz.korge.gradle.kotlin
-import com.soywiz.korge.gradle.util.get
-import org.gradle.api.Project
-import org.gradle.api.Task
-import org.gradle.api.tasks.Copy
-import org.gradle.api.tasks.Exec
-import org.gradle.kotlin.dsl.extra
-import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeCompilation
-import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
-import org.jetbrains.kotlin.gradle.plugin.mpp.NativeOutputKind
-import org.jetbrains.kotlin.gradle.tasks.KotlinNativeLink
-import java.io.File
-import com.soywiz.korge.gradle.targets.native.NativeBuildTypes
-import com.soywiz.korge.gradle.targets.CrossExecType
-import com.soywiz.korge.gradle.targets.native.getCompileTask
+import com.soywiz.korge.gradle.targets.*
 import com.soywiz.korge.gradle.targets.native.*
-import org.gradle.api.Action
-import org.gradle.api.internal.plugins.DslObject
-import org.gradle.api.reporting.ReportingExtension
-import org.gradle.testing.base.plugins.TestingBasePlugin
-import org.jetbrains.kotlin.gradle.plugin.mpp.AbstractKotlinNativeTargetPreset
+import com.soywiz.korge.gradle.targets.native.getCompileTask
+import com.soywiz.korlibs.*
+import org.gradle.api.*
+import org.gradle.api.internal.plugins.*
+import org.gradle.api.reporting.*
+import org.gradle.api.tasks.*
+import org.gradle.testing.base.plugins.*
+import org.jetbrains.kotlin.gradle.plugin.mpp.*
+import org.jetbrains.kotlin.gradle.tasks.*
 
 fun Project.configureNativeDesktopCross() {
     if (com.soywiz.korge.gradle.targets.isWindows) return
@@ -33,7 +23,7 @@ fun Project.configureNativeDesktopCross() {
                 executable {}
             }
         }
-        val mainCompilation = target.compilations["main"]
+        val mainCompilation = target.compilations.main
         for (type in NativeBuildTypes.TYPES) {
             mainCompilation.getCompileTask(NativeOutputKind.EXECUTABLE, type, project).dependsOn(prepareKotlinNativeBootstrap)
         }

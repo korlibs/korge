@@ -5,19 +5,12 @@ import com.soywiz.korge.gradle.targets.*
 import com.soywiz.korge.gradle.targets.desktop.*
 import com.soywiz.korge.gradle.targets.native.*
 import com.soywiz.korge.gradle.util.*
-import com.soywiz.korge.gradle.util.get
-import com.soywiz.korge.gradle.targets.ios.IosProjectTools
 import org.gradle.api.*
 import org.gradle.api.file.*
 import org.gradle.api.tasks.*
-import org.intellij.lang.annotations.Language
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
-import org.jetbrains.kotlin.gradle.tasks.KotlinNativeLink
+import org.jetbrains.kotlin.gradle.tasks.*
 import java.io.*
-import java.security.cert.CertificateFactory
-import java.security.cert.X509Certificate
-import java.util.*
-import javax.security.auth.x500.X500Principal
 
 fun Project.configureNativeIos() {
 	val prepareKotlinNativeBootstrapIos = tasks.create("prepareKotlinNativeBootstrapIos") {

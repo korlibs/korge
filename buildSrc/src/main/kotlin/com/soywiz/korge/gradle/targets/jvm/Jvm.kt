@@ -1,8 +1,11 @@
 package com.soywiz.korge.gradle.targets.jvm
 
 import com.soywiz.korge.gradle.*
+import com.soywiz.korge.gradle.gkotlin
+import com.soywiz.korge.gradle.kotlin
 import com.soywiz.korge.gradle.targets.*
 import com.soywiz.korge.gradle.util.*
+import com.soywiz.korlibs.*
 import com.soywiz.korlibs.modules.*
 import org.gradle.api.*
 import org.gradle.api.file.*
@@ -295,8 +298,8 @@ private fun Project.addProguard() {
 			}
 			//it.from()
 			//fileTree()
-			task.from(GroovyClosure(project) {
-				(project.gkotlin.targets["jvm"]["compilations"]["main"]["runtimeDependencyFiles"] as FileCollection).map { if (it.isDirectory) it else project.zipTree(it) as Any }
+			task.from(closure {
+				project.gkotlin.targets.jvm.compilations.main.runtimeDependencyFiles.map { if (it.isDirectory) it else project.zipTree(it) as Any }
 				//listOf<File>()
 			})
 			task.with(project.getTasksByName("jvmJar", true).first() as CopySpec)
@@ -318,7 +321,7 @@ private fun Project.addProguard() {
 			})
 			//println(packageJvmFatJar.outputs.files.toList())
 			task.injars(packageJvmFatJar.outputs.files.toList())
-			task.outjars(buildDir["/libs/${project.name}-all-proguard.jar"])
+			task.outjars(File(buildDir, "/libs/${project.name}-all-proguard.jar"))
 			task.dontwarn()
 			task.ignorewarnings()
 			if (!project.korge.proguardObfuscate) {

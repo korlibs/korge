@@ -1,19 +1,16 @@
 package com.soywiz.korge.gradle
 
 import com.soywiz.korge.gradle.targets.*
-import com.soywiz.korge.gradle.targets.linux.*
 import com.soywiz.korge.gradle.targets.linux.LDLibraries
 import com.soywiz.korge.gradle.util.*
-import groovy.lang.*
 import org.gradle.api.*
 import org.gradle.api.Project
 import org.gradle.api.plugins.*
 import org.gradle.api.tasks.*
+import org.gradle.kotlin.dsl.*
 import org.gradle.plugins.ide.idea.model.*
-import org.gradle.util.*
 import org.jetbrains.kotlin.gradle.dsl.*
 import java.io.*
-import kotlin.KotlinVersion as KotlinKotlinVersion
 
 class KorgeGradleApply(val project: Project) {
 	fun apply(includeIndirectAndroid: Boolean = true) = project {
@@ -77,7 +74,8 @@ class KorgeGradleApply(val project: Project) {
 
 	private fun Project.configureIdea() {
 		project.plugins.applyOnce("idea")
-		(project["idea"] as IdeaModel).apply {
+
+        project.extensions.getByName<IdeaModel>("idea").apply {
 			module {
                 val module = this
                 module.excludeDirs = module.excludeDirs.also {

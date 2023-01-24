@@ -328,118 +328,163 @@ fun Project.configureAndroidIndirect() {
     installAndroidRun(listOf(prepareAndroidBootstrap.name), direct = false)
 }
 
-fun writeAndroidManifest(outputFolder: File, korge: KorgeExtension, info: AndroidInfo) {
-	val androidPackageName = korge.id
-	val androidAppName = korge.name
-	val ifNotExists = korge.overwriteAndroidFiles
-	File(outputFolder, "src/main/AndroidManifest.xml").also { it.parentFile.mkdirs() }.conditionally(ifNotExists) {
-		ensureParents().writeTextIfChanged(Indenter {
-			line("<?xml version=\"1.0\" encoding=\"utf-8\"?>")
-			line("<manifest")
-            indent {
-                //line("xmlns:tools=\"http://schemas.android.com/tools\"")
-                line("xmlns:android=\"http://schemas.android.com/apk/res/android\"")
-                line("package=\"$androidPackageName\"")
-            }
-            line(">")
-			indent {
-                line("<uses-feature android:name=\"android.hardware.touchscreen\" android:required=\"false\" />")
-                line("<uses-feature android:name=\"android.software.leanback\" android:required=\"false\" />")
+class AndroidGenerated(
+    val icons: KorgeIconProvider,
+    val ifNotExists: Boolean,
+    val androidPackageName: String,
+    val realEntryPoint: String = "main",
+    val androidMsaa: Int? = null,
+    val androidInit: List<String> = emptyList(),
+    val orientation: Orientation = Orientation.DEFAULT,
+    val androidAppName: String = "androidAppName",
+    val androidManifestChunks: Set<String> = emptySet(),
+    val androidManifestApplicationChunks: Set<String> = emptySet(),
+    val androidManifest: List<String> = emptyList(),
+    val androidLibrary: Boolean = true,
+) {
+    fun writeResources(folder: File) {
+        File(folder, "mipmap-mdpi/icon.png").conditionally(ifNotExists) {
+            ensureParents().writeBytesIfChanged(icons.getIconBytes())
+        }
+        File(folder, "drawable/app_icon.png").conditionally(ifNotExists) {
+            ensureParents().writeBytesIfChanged(icons.getIconBytes())
+        }
+        File(folder, "drawable/app_banner.png").conditionally(ifNotExists) {
+            ensureParents().writeBytesIfChanged(icons.getBannerBytes(432, 243))
+        }
+    }
 
-				line("<application")
-				indent {
-					line("")
-                    //line("tools:replace=\"android:appComponentFactory\"")
-					line("android:allowBackup=\"true\"")
+    fun writeMainActivity(outputFolder: File) {
+        File(outputFolder, "MainActivity.kt").conditionally(ifNotExists) {
+            ensureParents().writeTextIfChanged(Indenter {
+                line("package $androidPackageName")
 
-					if (!korge.androidLibrary) {
-						line("android:label=\"$androidAppName\"")
-						line("android:icon=\"@mipmap/icon\"")
-						// // line("android:icon=\"@android:drawable/sym_def_app_icon\"")
-						line("android:roundIcon=\"@android:drawable/sym_def_app_icon\"")
-						line("android:theme=\"@android:style/Theme.Holo.NoActionBar\"")
-					}
+                line("import com.soywiz.korio.android.withAndroidContext")
+                line("import com.soywiz.korgw.*")
+                line("import $realEntryPoint")
 
-
-					line("android:supportsRtl=\"true\"")
-				}
-				line(">")
-				indent {
-					for (text in korge.plugins.pluginExts.getAndroidManifestApplication() + info.androidManifest) {
-						line(text)
-					}
-					for (text in korge.androidManifestApplicationChunks) {
-						line(text)
-					}
-
-					line("<activity android:name=\".MainActivity\"")
-					indent {
-                        val orientationString = when (korge.orientation) {
-                            Orientation.LANDSCAPE -> "landscape"
-                            Orientation.PORTRAIT -> "portrait"
-                            Orientation.DEFAULT -> "sensor"
+                line("class MainActivity : KorgwActivity(config = GameWindowCreationConfig(msaa = ${androidMsaa ?: 1}))") {
+                    line("override suspend fun activityMain()") {
+                        //line("withAndroidContext(this)") { // @TODO: Probably we should move this to KorgwActivity itself
+                        for (text in androidInit) {
+                            line(text)
                         }
-                        line("android:banner=\"@drawable/app_banner\"")
-                        line("android:icon=\"@drawable/app_icon\"")
-                        line("android:label=\"$androidAppName\"")
-                        line("android:logo=\"@drawable/app_icon\"")
-                        line("android:configChanges=\"orientation|screenSize|screenLayout|keyboardHidden\"")
-                        line("android:screenOrientation=\"$orientationString\"")
-					}
-					line(">")
-
-					if (!korge.androidLibrary) {
-						indent {
-							line("<intent-filter>")
-							indent {
-								line("<action android:name=\"android.intent.action.MAIN\"/>")
-								line("<category android:name=\"android.intent.category.LAUNCHER\"/>")
-							}
-							line("</intent-filter>")
-						}
-					}
-					line("</activity>")
-				}
-				line("</application>")
-				for (text in korge.androidManifestChunks) {
-					line(text)
-				}
-			}
-			line("</manifest>")
-		}.toString())
-	}
-	File(outputFolder, "korge.keystore").conditionally(ifNotExists) {
-		ensureParents().writeBytesIfChanged(getResourceBytes("korge.keystore"))
-	}
-	File(outputFolder, "src/main/res/mipmap-mdpi/icon.png").conditionally(ifNotExists) {
-		ensureParents().writeBytesIfChanged(korge.getIconBytes())
-	}
-    File(outputFolder, "src/main/res/drawable/app_icon.png").conditionally(ifNotExists) {
-        ensureParents().writeBytesIfChanged(korge.getIconBytes())
+                        line("${realEntryPoint}()")
+                        //}
+                    }
+                }
+            }.toString())
+        }
     }
-    File(outputFolder, "src/main/res/drawable/app_banner.png").conditionally(ifNotExists) {
-        ensureParents().writeBytesIfChanged(korge.getBannerBytes(432, 243))
+
+    fun writeAndroidManifest(outputFolder: File) {
+        File(outputFolder, "AndroidManifest.xml").also { it.parentFile.mkdirs() }.conditionally(ifNotExists) {
+            ensureParents().writeTextIfChanged(Indenter {
+                line("<?xml version=\"1.0\" encoding=\"utf-8\"?>")
+                line("<manifest")
+                indent {
+                    //line("xmlns:tools=\"http://schemas.android.com/tools\"")
+                    line("xmlns:android=\"http://schemas.android.com/apk/res/android\"")
+                    line("package=\"$androidPackageName\"")
+                }
+                line(">")
+                indent {
+                    line("<uses-feature android:name=\"android.hardware.touchscreen\" android:required=\"false\" />")
+                    line("<uses-feature android:name=\"android.software.leanback\" android:required=\"false\" />")
+
+                    line("<application")
+                    indent {
+                        line("")
+                        //line("tools:replace=\"android:appComponentFactory\"")
+                        line("android:allowBackup=\"true\"")
+
+                        if (!androidLibrary) {
+                            line("android:label=\"$androidAppName\"")
+                            line("android:icon=\"@mipmap/icon\"")
+                            // // line("android:icon=\"@android:drawable/sym_def_app_icon\"")
+                            line("android:roundIcon=\"@android:drawable/sym_def_app_icon\"")
+                            line("android:theme=\"@android:style/Theme.Holo.NoActionBar\"")
+                        }
+
+
+                        line("android:supportsRtl=\"true\"")
+                    }
+                    line(">")
+                    indent {
+                        for (text in androidManifest) {
+                            line(text)
+                        }
+                        for (text in androidManifestApplicationChunks) {
+                            line(text)
+                        }
+
+                        line("<activity android:name=\".MainActivity\"")
+                        indent {
+                            val orientationString = when (orientation) {
+                                Orientation.LANDSCAPE -> "landscape"
+                                Orientation.PORTRAIT -> "portrait"
+                                Orientation.DEFAULT -> "sensor"
+                            }
+                            line("android:banner=\"@drawable/app_banner\"")
+                            line("android:icon=\"@drawable/app_icon\"")
+                            line("android:label=\"$androidAppName\"")
+                            line("android:logo=\"@drawable/app_icon\"")
+                            line("android:configChanges=\"orientation|screenSize|screenLayout|keyboardHidden\"")
+                            line("android:screenOrientation=\"$orientationString\"")
+                        }
+                        line(">")
+
+                        if (!androidLibrary) {
+                            indent {
+                                line("<intent-filter>")
+                                indent {
+                                    line("<action android:name=\"android.intent.action.MAIN\"/>")
+                                    line("<category android:name=\"android.intent.category.LAUNCHER\"/>")
+                                }
+                                line("</intent-filter>")
+                            }
+                        }
+                        line("</activity>")
+                    }
+                    line("</application>")
+                    for (text in androidManifestChunks) {
+                        line(text)
+                    }
+                }
+                line("</manifest>")
+            }.toString())
+        }
     }
-	File(outputFolder, "src/main/java/MainActivity.kt").conditionally(ifNotExists) {
-		ensureParents().writeTextIfChanged(Indenter {
-			line("package $androidPackageName")
 
-			line("import com.soywiz.korio.android.withAndroidContext")
-			line("import com.soywiz.korgw.*")
-			line("import ${korge.realEntryPoint}")
+    fun writeKeystore(outputFolder: File) {
+        File(outputFolder, "korge.keystore").conditionally(ifNotExists) {
+            ensureParents().writeBytesIfChanged(getResourceBytes("korge.keystore"))
+        }
+    }
+}
 
-			line("class MainActivity : KorgwActivity(config = GameWindowCreationConfig(msaa = ${korge.androidMsaa}))") {
-				line("override suspend fun activityMain()") {
-					//line("withAndroidContext(this)") { // @TODO: Probably we should move this to KorgwActivity itself
-						for (text in korge.plugins.pluginExts.getAndroidInit() + info.androidInit) {
-							line(text)
-						}
-						line("${korge.realEntryPoint}()")
-					//}
-				}
-			}
-		}.toString())
-	}
+fun writeAndroidManifest(outputFolder: File, korge: KorgeExtension, info: AndroidInfo) {
+	val ifNotExists = korge.overwriteAndroidFiles
+
+    val generated = AndroidGenerated(
+        icons = korge.iconProvider,
+        ifNotExists = ifNotExists,
+        androidPackageName = korge.id,
+        androidInit = korge.plugins.pluginExts.getAndroidInit() + info.androidInit,
+        androidMsaa = korge.androidMsaa,
+        orientation = korge.orientation,
+        realEntryPoint = korge.realEntryPoint,
+        androidAppName = korge.name,
+        androidManifestChunks = korge.androidManifestChunks,
+        androidManifestApplicationChunks = korge.androidManifestApplicationChunks,
+        androidManifest = korge.plugins.pluginExts.getAndroidManifestApplication() + info.androidManifest,
+        androidLibrary = korge.androidLibrary,
+    )
+
+    generated.writeKeystore(outputFolder)
+    generated.writeAndroidManifest(File(outputFolder, "src/main"))
+    generated.writeResources(File(outputFolder, "src/main/res"))
+    generated.writeMainActivity(File(outputFolder, "src/main/java"))
 }
 
 class AndroidInfo(val map: Map<String, Any?>?) {

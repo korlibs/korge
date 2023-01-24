@@ -1,22 +1,18 @@
 package com.soywiz.korge.gradle.targets.desktop
 
 import com.soywiz.korge.gradle.*
+import com.soywiz.korge.gradle.gkotlin
 import com.soywiz.korge.gradle.targets.*
 import com.soywiz.korge.gradle.targets.apple.*
 import com.soywiz.korge.gradle.targets.native.*
 import com.soywiz.korge.gradle.targets.windows.*
 import com.soywiz.korge.gradle.util.*
-import com.soywiz.korge.gradle.util.get
+import com.soywiz.korlibs.*
 import org.gradle.api.*
 import org.gradle.api.file.*
-import org.gradle.api.internal.plugins.DslObject
-import org.gradle.api.reporting.ReportingExtension
 import org.gradle.api.tasks.*
-import org.gradle.kotlin.dsl.extra
-import org.gradle.testing.base.plugins.TestingBasePlugin
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import org.jetbrains.kotlin.gradle.targets.native.tasks.*
-import org.jetbrains.kotlin.gradle.tasks.KotlinNativeLink
 import java.io.*
 
 fun Project.configureNativeDesktop() {
@@ -117,10 +113,10 @@ fun Project.addNativeRun() {
                 val ctargetKind = "$ctarget$ckind"
                 val buildType = if (kind == NativeBuildType.DEBUG) NativeBuildType.DEBUG else NativeBuildType.RELEASE
 
-                val ktarget = gkotlin.targets[target]
+                val ktarget = gkotlin.targets.getByName(target)
                 //(ktarget as KotlinNativeTarget).attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.native)
 
-                val compilation = ktarget["compilations"]["main"] as KotlinNativeCompilation
+                val compilation = ktarget.compilations.main as KotlinNativeCompilation
 
                 if (isMingwX64) {
                     //compilation.getLinkTask(NativeOutputKind.EXECUTABLE, buildType, project).dependsOn(mingwX64SelectPatchedMemoryManager)
@@ -128,10 +124,10 @@ fun Project.addNativeRun() {
 
                 val executableFile = compilation.getBinary(NativeOutputKind.EXECUTABLE, buildType)
 
-                val appResFile = buildDir["app.res"]
-                val appRcFile = buildDir["app.rc"]
-                val appRcObjFile = buildDir["app.obj"]
-                val appIcoFile = buildDir["icon.ico"]
+                val appResFile = File(buildDir, "app.res")
+                val appRcFile = File(buildDir, "app.rc")
+                val appRcObjFile = File(buildDir, "app.obj")
+                val appIcoFile = File(buildDir, "icon.ico")
 
                 val copyTask = project.addTask<Copy>("copyResourcesToExecutable$ctargetKind") { task ->
                     task.dependsOn(compilation.compileKotlinTask)
@@ -222,7 +218,7 @@ fun Project.addNativeRun() {
 
                     val ktarget = gkotlin.targets[nativeTargetName]
                     //(ktarget as KotlinNativeTarget).attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.native)
-                    val compilation = ktarget["compilations"]["main"] as KotlinNativeCompilation
+                    val compilation = ktarget.compilations.main as KotlinNativeCompilation
 
                     addTask<Task>(
                         "package${nativeTargetName.capitalize()}App${buildTypeLC.capitalize()}", // @TODO: What happens on macosArm64?
@@ -233,14 +229,14 @@ fun Project.addNativeRun() {
 
                         group = GROUP_KORGE_PACKAGE
                         doLast {
-                            val compilation = gkotlin.targets[nativeTargetName]["compilations"]["main"] as KotlinNativeCompilation
+                            val compilation = gkotlin.targets.getByName(nativeTargetName).compilations.main as KotlinNativeCompilation
                             val executableFile = compilation.getBinary(NativeOutputKind.EXECUTABLE, buildType)
-                            val appFolder = buildDir["${korge.name}-${nativeTargetName}-${buildTypeLC}.app"].apply { mkdirs() }
-                            val appFolderContents = appFolder["Contents"].apply { mkdirs() }
-                            val appMacOSFolder = appFolderContents["MacOS"].apply { mkdirs() }
-                            val resourcesFolder = appFolderContents["Resources"].apply { mkdirs() }
-                            appFolderContents["Info.plist"].writeText(InfoPlistBuilder.build(korge))
-                            resourcesFolder["${korge.exeBaseName}.icns"].writeBytes(IcnsBuilder.build(korge.getIconBytes()))
+                            val appFolder = File(buildDir, "${korge.name}-${nativeTargetName}-${buildTypeLC}.app").apply { mkdirs() }
+                            val appFolderContents = File(appFolder, "Contents").apply { mkdirs() }
+                            val appMacOSFolder = File(appFolderContents, "MacOS").apply { mkdirs() }
+                            val resourcesFolder = File(appFolderContents, "Resources").apply { mkdirs() }
+                            File(appFolderContents, "Info.plist").writeText(InfoPlistBuilder.build(korge))
+                            File(resourcesFolder, "${korge.exeBaseName}.icns").writeBytes(IcnsBuilder.build(korge.getIconBytes()))
                             copy {
                                 val copy = this
                                 copy.duplicatesStrategy = DuplicatesStrategy.INCLUDE
@@ -249,8 +245,8 @@ fun Project.addNativeRun() {
                                 }
                                 copy.into(resourcesFolder)
                             }
-                            executableFile.copyTo(appMacOSFolder[korge.exeBaseName], overwrite = true)
-                            appMacOSFolder[korge.exeBaseName].setExecutable(true)
+                            executableFile.copyTo(File(appMacOSFolder, korge.exeBaseName), overwrite = true)
+                            File(appMacOSFolder, korge.exeBaseName).setExecutable(true)
                         }
                     }
                 }
@@ -258,7 +254,7 @@ fun Project.addNativeRun() {
         }
         if (isWindows) {
             val target = "mingwX64"
-            val compilation = gkotlin.targets[target]["compilations"]["main"] as KotlinNativeCompilation
+            val compilation = gkotlin.targets.getByName(target).compilations.main as KotlinNativeCompilation
             for (kind in NativeBuildTypes.TYPES) {
                 val buildType = if (kind == NativeBuildType.DEBUG) NativeBuildType.DEBUG else NativeBuildType.RELEASE
                 val linkTask = compilation.getLinkTask(NativeOutputKind.EXECUTABLE, buildType, project)
@@ -269,7 +265,7 @@ fun Project.addNativeRun() {
                     dependsOn = listOf(linkTask)
                 ) {
                     val inputFile = linkTask.binary.outputFile
-                    val strippedFile = inputFile.parentFile[inputFile.nameWithoutExtension + "-stripped.exe"]
+                    val strippedFile = File(inputFile.parentFile, inputFile.nameWithoutExtension + "-stripped.exe")
                     doLast {
                         val bytes = inputFile.readBytes()
                         bytes[0xDC] = 2 // Convert exe into WINDOW_GUI(2) subsystem (prevents opening a console window)

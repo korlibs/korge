@@ -17,6 +17,7 @@ import java.net.*
 // Extensions
 operator fun File.get(name: String) = File(this, name)
 
+var File.bytes get() = this.readBytes(); set(value) { this.also { it.parentFile.mkdirs() }.writeBytes(value) }
 var File.text get() = this.readText(); set(value) { this.also { it.parentFile.mkdirs() }.writeText(value) }
 fun File.ensureParents() = this.apply { this.parentFile.mkdirs() }
 
@@ -48,12 +49,12 @@ operator fun DependencyHandler.invoke(callback: DependencyHandler.() -> Unit) = 
 operator fun KotlinMultiplatformExtension.invoke(callback: KotlinMultiplatformExtension.() -> Unit) = callback(this)
 fun Project.tasks(callback: TaskContainer.() -> Unit) = this.tasks.apply(callback)
 
-operator fun <T> NamedDomainObjectCollection<T>.get(name: String) = this.getByName(name)
-val NamedDomainObjectCollection<KotlinTarget>.js get() = this["js"] as KotlinOnlyTarget<KotlinJsCompilation>
-val NamedDomainObjectCollection<KotlinTarget>.jvm get() = this["jvm"] as KotlinOnlyTarget<KotlinJvmCompilation>
-val NamedDomainObjectCollection<KotlinTarget>.metadata get() = this["metadata"] as KotlinOnlyTarget<KotlinCommonCompilation>
-val <T : KotlinCompilation<*>> NamedDomainObjectContainer<T>.main get() = this["main"]
-val <T : KotlinCompilation<*>> NamedDomainObjectContainer<T>.test get() = this["test"]
+operator fun <T> NamedDomainObjectCollection<T>.get(name: String): T = this.getByName(name)
+val NamedDomainObjectCollection<KotlinTarget>.js: KotlinOnlyTarget<KotlinJsCompilation> get() = this["js"] as KotlinOnlyTarget<KotlinJsCompilation>
+val NamedDomainObjectCollection<KotlinTarget>.jvm: KotlinOnlyTarget<KotlinJvmCompilation> get() = this["jvm"] as KotlinOnlyTarget<KotlinJvmCompilation>
+val NamedDomainObjectCollection<KotlinTarget>.metadata: KotlinOnlyTarget<KotlinCommonCompilation> get() = this["metadata"] as KotlinOnlyTarget<KotlinCommonCompilation>
+val <T : KotlinCompilation<*>> NamedDomainObjectContainer<T>.main: T get() = this["main"]
+val <T : KotlinCompilation<*>> NamedDomainObjectContainer<T>.test: T get() = this["test"]
 
 inline fun <reified T : Task> TaskContainer.create(name: String, callback: T.() -> Unit) = create<T>(name, T::class.java).apply(callback)
 

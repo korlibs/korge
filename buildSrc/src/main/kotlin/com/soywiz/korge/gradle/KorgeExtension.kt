@@ -517,7 +517,7 @@ class KorgeExtension(val project: Project) {
 	fun dependencyCInterops(name: String, targets: List<String>) = project {
 		cinterops += CInteropTargets(name, targets)
 		for (target in targets) {
-			((kotlin.targets[target] as AbstractKotlinTarget).compilations["main"] as KotlinNativeCompilation).apply {
+			((kotlin.targets.findByName(target) as AbstractKotlinTarget).compilations["main"] as KotlinNativeCompilation).apply {
 				cinterops.apply {
 					maybeCreate(name).apply {
 					}
