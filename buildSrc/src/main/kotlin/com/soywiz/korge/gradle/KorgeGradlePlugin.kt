@@ -7,7 +7,6 @@ import org.gradle.api.*
 import org.gradle.api.Project
 import org.gradle.api.plugins.*
 import org.gradle.api.tasks.*
-import org.gradle.kotlin.dsl.*
 import org.gradle.plugins.ide.idea.model.*
 import org.jetbrains.kotlin.gradle.dsl.*
 import java.io.*
@@ -77,7 +76,7 @@ class KorgeGradleApply(val project: Project) {
 
         project.extensions.getByName<IdeaModel>("idea").apply {
 			module {
-                val module = this
+                val module = it
                 module.excludeDirs = module.excludeDirs.also {
                     it.addAll(listOf(
                         ".gradle", ".idea", "gradle", "node_modules", "classes", "docs", "dependency-cache",

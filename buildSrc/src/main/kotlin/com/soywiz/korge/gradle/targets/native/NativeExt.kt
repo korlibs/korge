@@ -2,14 +2,8 @@ package com.soywiz.korge.gradle.targets.native
 
 import com.android.build.gradle.internal.crash.afterEvaluate
 import com.soywiz.korge.gradle.*
-import com.soywiz.korge.gradle.targets.CrossExecType
-import com.soywiz.korge.gradle.util.*
+import com.soywiz.korlibs.*
 import org.gradle.api.*
-import org.gradle.api.internal.project.*
-import org.gradle.api.reporting.ReportingExtension
-import org.gradle.api.tasks.Exec
-import org.gradle.kotlin.dsl.*
-import org.gradle.testing.base.plugins.TestingBasePlugin
 import org.jetbrains.kotlin.gradle.plugin.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import org.jetbrains.kotlin.gradle.targets.native.tasks.*
@@ -33,7 +27,7 @@ fun KotlinTarget.configureKotlinNativeTarget(project: Project) {
     // mimalloc is broken on raspberry pi
     if (project.korge.useMimalloc && !targetName.contains("Arm32Hfp")) {
         compilations.all {
-            kotlinOptions.freeCompilerArgs += listOf(
+            it.kotlinOptions.freeCompilerArgs += listOf(
                 "-Xallocator=mimalloc",
                 // https://kotlinlang.slack.com/archives/C3SGXARS6/p1620909233323100?thread_ts=1619349974.244300&cid=C3SGXARS6
                 // https://github.com/JetBrains/kotlin/blob/ec6c25ef7ee3e9d89bf9a03c01e4dd91789000f5/kotlin-native/konan/konan.properties#L875
@@ -48,12 +42,14 @@ fun KotlinTarget.configureKotlinNativeTarget(project: Project) {
     //project.setProperty("kotlin.native.binary.memoryModel", "experimental") // Could not set unknown property 'kotlin.native.binary.memoryModel' for root project 'e2e-sample' of type org.gradle.api.Project.
     (this as? KotlinNativeTarget?)?.apply {
         compilations.all {
-            kotlinOptions.freeCompilerArgs += listOf(
+            it.kotlinOptions.freeCompilerArgs += listOf(
                 "-Xbinary=memoryModel=experimental",
                 // @TODO: https://youtrack.jetbrains.com/issue/KT-49234#focus=Comments-27-5293935.0-0
                 //"-Xdisable-phases=RemoveRedundantCallsToFileInitializersPhase",
             )
         }
-        binaries.all { binaryOptions["memoryModel"] = "experimental" }
+        binaries.allThis {
+            binaryOptions["memoryModel"] = "experimental"
+        }
     }
 }

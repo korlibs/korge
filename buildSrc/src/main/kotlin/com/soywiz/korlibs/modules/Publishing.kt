@@ -1,6 +1,8 @@
 package com.soywiz.korlibs.modules
 
+import com.soywiz.korge.gradle.util.*
 import com.soywiz.korlibs.*
+import com.soywiz.korlibs.create
 import groovy.util.*
 import groovy.xml.*
 import org.gradle.api.*
@@ -8,7 +10,6 @@ import org.gradle.api.publish.*
 import org.gradle.api.publish.maven.*
 import org.gradle.internal.impldep.com.amazonaws.util.XpathUtils.*
 import org.gradle.jvm.tasks.Jar
-import org.gradle.kotlin.dsl.*
 
 fun Project.getCustomProp(name: String, default: String): String? {
     val props = if (extra.has("props")) extra["props"] as? Map<String, String>? else null
@@ -21,12 +22,12 @@ fun Project.configurePublishing(multiplatform: Boolean = true) {
 
     plugins.apply("maven-publish")
 
-    val javadocJar = tasks.create<Jar>("javadocJar") {
-        classifier = "javadoc"
+    val javadocJar = tasks.createThis<Jar>("javadocJar") {
+        archiveClassifier.set("javadoc")
     }
 
-    val sourcesJar = tasks.create<Jar>("sourceJar") {
-        classifier = "sources"
+    val sourcesJar = tasks.createThis<Jar>("sourceJar") {
+        archiveClassifier.set("sources")
         if (multiplatform) {
 
             val mySourceSet = gkotlin.sourceSets["jvmMain"]
@@ -41,18 +42,18 @@ fun Project.configurePublishing(multiplatform: Boolean = true) {
         }
     }
 
-    //val emptyJar = tasks.create<Jar>("emptyJar") {}
+    //val emptyJar = tasks.createThis<Jar>("emptyJar") {}
 
     publishing.apply {
         when {
             customMavenUrl != null -> {
                 repositories {
-                    maven {
-                        credentials {
-                            username = project.customMavenUser
-                            password = project.customMavenPass
+                    it.maven {
+                        it.credentials {
+                            it.username = project.customMavenUser
+                            it.password = project.customMavenPass
                         }
-                        url = uri(project.customMavenUrl!!)
+                        it.url = uri(project.customMavenUrl!!)
                     }
                 }
             }
@@ -63,25 +64,24 @@ fun Project.configurePublishing(multiplatform: Boolean = true) {
             }
             else -> {
                 repositories {
-                    maven {
-                        credentials {
-                            username = publishUser
-                            password = publishPassword
+                    it.maven {
+                        it.credentials {
+                            it.username = publishUser
+                            it.password = publishPassword
                         }
-                        url = when {
+                        it.url = when {
                             version.toString().contains("-SNAPSHOT") -> uri("https://oss.sonatype.org/content/repositories/snapshots/")
                             project.stagedRepositoryId != null -> uri("https://oss.sonatype.org/service/local/staging/deployByRepositoryId/${project.stagedRepositoryId}/")
                             else -> uri("https://oss.sonatype.org/service/local/staging/deploy/maven2/")
                         }
-                        doOnce("showDeployTo") { logger.info("DEPLOY mavenRepository: $url") }
+                        doOnce("showDeployTo") { logger.info("DEPLOY mavenRepository: ${it.url}") }
                     }
                 }
             }
         }
         afterEvaluate {
             //println(gkotlin.sourceSets.names)
-            publications.withType<MavenPublication> {
-                val publication = this
+            publications.withType(MavenPublication::class.java, Action { publication ->
                 //println("Publication: $publication : ${publication.name} : ${publication.artifactId}")
                 if (publication.name == "kotlinMultiplatform") {
                     //publication.artifact(sourcesJar) {}
@@ -113,28 +113,27 @@ fun Project.configurePublishing(multiplatform: Boolean = true) {
                         pom.description.set(project.description ?: project.getCustomProp("project.description", project.description ?: project.name))
                         pom.url.set(project.getCustomProp("project.scm.url", defaultGitUrl))
                         pom.licenses {
-                            license {
-                                this.name.set(project.getCustomProp("project.license.name", "MIT"))
-                                this.url.set(project.getCustomProp("project.license.url", "https://raw.githubusercontent.com/korlibs/$baseProjectName/master/LICENSE"))
+                            it.license {
+                                it.name.set(project.getCustomProp("project.license.name", "MIT"))
+                                it.url.set(project.getCustomProp("project.license.url", "https://raw.githubusercontent.com/korlibs/$baseProjectName/master/LICENSE"))
                             }
                         }
                         pom.developers {
-                            developer {
-                                this.id.set(project.getCustomProp("project.author.id", "soywiz"))
-                                this.name.set(project.getCustomProp("project.author.name", "Carlos Ballesteros Velasco"))
-                                this.email.set(project.getCustomProp("project.author.email", "soywiz@gmail.com"))
+                            it.developer {
+                                it.id.set(project.getCustomProp("project.author.id", "soywiz"))
+                                it.name.set(project.getCustomProp("project.author.name", "Carlos Ballesteros Velasco"))
+                                it.email.set(project.getCustomProp("project.author.email", "soywiz@gmail.com"))
                             }
                         }
                         pom.scm {
-                            this.url.set(project.getCustomProp("project.scm.url", defaultGitUrl))
+                            it.url.set(project.getCustomProp("project.scm.url", defaultGitUrl))
                         }
                     }
                     if (publication.pom.packaging == "aar") {
                         publication.pom.withXml {
                             //println("baseProjectName=$baseProjectName")
-                            this.asNode().apply {
-                                val nodes: NodeList =
-                                    this.getAt(QName("dependencies")).getAt("dependency").getAt("scope")
+                            it.asNode().apply {
+                                val nodes: NodeList = this.getAt(QName("dependencies")).getAt("dependency").getAt("scope")
                                 for (node in nodes as List<Node>) {
                                     node.setValue("compile")
                                 }
@@ -142,7 +141,7 @@ fun Project.configurePublishing(multiplatform: Boolean = true) {
                         }
                     }
                 }
-            }
+            })
         }
     }
 }

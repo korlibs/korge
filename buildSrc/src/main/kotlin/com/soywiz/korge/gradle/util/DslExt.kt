@@ -1,9 +1,17 @@
 package com.soywiz.korge.gradle.util
 
+import com.soywiz.korlibs.*
 import kotlinx.kover.api.*
 import org.gradle.api.*
+import org.gradle.api.plugins.*
 import org.gradle.api.tasks.*
 import kotlin.reflect.*
+
+fun <T> ExtensionContainer.getByName(name: String): T = getByName(name) as T
+
+inline fun <reified T : Task> TaskContainer.createThis(name: String, vararg params: Any, block: T.() -> Unit = {}): T {
+    return create(name, T::class.java, *params).apply(block)
+}
 
 fun org.gradle.api.Project.`koverMerged`(configure: Action<KoverMergedConfig>): Unit = (this as org.gradle.api.plugins.ExtensionAware).extensions.configure("koverMerged", configure)
 fun org.gradle.api.Project.`kover`(configure: Action<kotlinx.kover.api.KoverProjectConfig>): Unit = (this as org.gradle.api.plugins.ExtensionAware).extensions.configure("kover", configure)

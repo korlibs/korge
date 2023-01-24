@@ -1,5 +1,6 @@
 package com.soywiz.korge.gradle
 
+import com.soywiz.korge.gradle.util.*
 import groovy.lang.*
 import org.gradle.api.*
 import org.gradle.util.*
@@ -7,7 +8,7 @@ import org.jetbrains.kotlin.gradle.plugin.*
 
 object KorgeVersionsTask {
     fun registerShowKorgeVersions(project: Project) {
-        project.tasks.create("showKorgeVersions", Task::class.java) {
+        project.tasks.createThis<Task>("showKorgeVersions") {
             doLast {
                 println("Build-time:")
                 for ((key, value) in mapOf(

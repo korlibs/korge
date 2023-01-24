@@ -29,14 +29,16 @@ class KorgeBundles(val project: Project) {
     fun sha256Tree(tree: FileTree): String {
         val files = LinkedHashMap<String, File>()
         tree.visit {
-            if (!isDirectory) {
-                val mpath = path.trim('/')
-                val rpath = "/$mpath"
-                when {
-                    rpath.contains("/.git") -> Unit
-                    rpath.endsWith("/.DS_Store") -> Unit
-                    rpath.endsWith("/thumbs.db") -> Unit
-                    else -> files[mpath] = file
+            it.apply {
+                if (!isDirectory) {
+                    val mpath = path.trim('/')
+                    val rpath = "/$mpath"
+                    when {
+                        rpath.contains("/.git") -> Unit
+                        rpath.endsWith("/.DS_Store") -> Unit
+                        rpath.endsWith("/thumbs.db") -> Unit
+                        else -> files[mpath] = file
+                    }
                 }
             }
         }
@@ -77,8 +79,8 @@ class KorgeBundles(val project: Project) {
             //println("SHA256: ${sha256Tree(tree)}")
 
             project.sync {
-                from(tree)
-                into(outputDir)
+                it.from(tree)
+                it.into(outputDir)
             }
         } else {
             logger.info("KorGE.bundle: Already unzipped $zipFile")
@@ -111,7 +113,7 @@ class KorgeBundles(val project: Project) {
             for (repo in repositories) {
                 logger.info("KorGE.bundle.repository: $repo")
                 project.repositories.maven {
-                    url = project.uri(repo.url)
+                    it.url = project.uri(repo.url)
                 }
             }
             for (dep in dependencies) {
@@ -129,8 +131,7 @@ class KorgeBundles(val project: Project) {
             logger.info("KorGE.bundle: $outputDir")
             for (target in project.gkotlin.targets) {
                 logger.info("  target: $target")
-                target.compilations.all {
-                    val compilation = this
+                target.compilations.all { compilation ->
                     logger.info("    compilation: $compilation")
 
                     val sourceSets = compilation.kotlinSourceSets.toMutableSet()
@@ -210,7 +211,7 @@ class KorgeBundles(val project: Project) {
         if (!matchingReg && !existsDotGitFolder) {
             packDir.mkdirs()
             logger.warn("KorGE.bundle: Git cloning $repo @ $ref...")
-            project.exec {
+            project.execThis {
                 workingDir(packDir)
                 commandLine("git", "-c", "core.autocrlf=false", "clone", repo, ".")
             }.assertNormalExitValue()
@@ -219,12 +220,12 @@ class KorgeBundles(val project: Project) {
         }
 
         if (!matchingReg) {
-            project.exec {
+            project.execThis {
                 workingDir(packDir)
                 commandLine("git", "-c", "core.autocrlf=false", "reset", "--hard", ref)
             }.assertNormalExitValue()
             project.delete {
-                delete(File(packDir, ".git"))
+                it.delete(File(packDir, ".git"))
             }
             packEnsure.writeText(ref)
         } else {

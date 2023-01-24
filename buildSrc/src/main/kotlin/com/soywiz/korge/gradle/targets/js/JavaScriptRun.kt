@@ -3,9 +3,10 @@ package com.soywiz.korge.gradle.targets.js
 import com.soywiz.korge.gradle.*
 import com.soywiz.korge.gradle.targets.*
 import com.soywiz.korge.gradle.util.*
+import com.soywiz.korlibs.*
 import org.gradle.api.*
-import org.gradle.kotlin.dsl.*
 import org.jetbrains.kotlin.gradle.targets.js.npm.tasks.*
+import java.io.*
 import java.lang.management.*
 
 internal var _webServer: DecoratedHttpServer? = null
@@ -15,7 +16,7 @@ fun Project.configureJavascriptRun() {
         if (_webServer == null) {
             val address = korge.webBindAddress
             val port = korge.webBindPort
-            val server = staticHttpServer(project.buildDir["www"], address = address, port = port)
+            val server = staticHttpServer(File(project.buildDir, "www"), address = address, port = port)
             _webServer = server
             try {
                 val openAddress = when (address) {
@@ -39,45 +40,45 @@ fun Project.configureJavascriptRun() {
         _webServer?.updateVersion?.incrementAndGet()
     }
 
-    val runJsRelease = project.addTask<Task>(name = "runJsRelease") { task ->
-        task.group = GROUP_KORGE_RUN
-        task.dependsOn("browserReleaseEsbuild")
+    val runJsRelease = project.tasks.createThis<Task>(name = "runJsRelease") {
+        group = GROUP_KORGE_RUN
+        dependsOn("browserReleaseEsbuild")
         doLast {
             runServer(!project.gradle.startParameter.isContinuous)
         }
     }
 
-    val runJsDebug = project.addTask<Task>(name = "runJsDebug") { task ->
-        task.group = GROUP_KORGE_RUN
-        task.dependsOn("browserDebugEsbuild")
+    val runJsDebug = project.tasks.createThis<Task>("runJsDebug") {
+        group = GROUP_KORGE_RUN
+        dependsOn("browserDebugEsbuild")
         doLast {
             runServer(!project.gradle.startParameter.isContinuous)
         }
     }
 
     // @TODO: jsBrowserProductionRun is much faster than jsBrowserDevelopmentRun at runtime. Why is that??
-    val runJs = project.addTask<Task>(name = "runJs") { task ->
-        task.group = GROUP_KORGE_RUN
+    val runJs = project.tasks.createThis<Task>("runJs") {
+        group = GROUP_KORGE_RUN
         dependsOn(runJsRelease)
     }
 
-    val runJsWebpack = project.addTask<Task>(name = "runJsWebpack") { task ->
-        task.group = GROUP_KORGE_RUN
+    val runJsWebpack = project.tasks.createThis<Task>(name = "runJsWebpack") {
+        group = GROUP_KORGE_RUN
         dependsOn("jsBrowserProductionRun")
     }
 
-    val runJsWebpackDebug = project.addTask<Task>(name = "runJsWebpackDebug") { task ->
-        task.group = GROUP_KORGE_RUN
+    val runJsWebpackDebug = project.tasks.createThis<Task>(name = "runJsWebpackDebug") {
+        group = GROUP_KORGE_RUN
         dependsOn("jsBrowserDevelopmentRun")
     }
 
-    val runJsWebpackRelease = project.addTask<Task>(name = "runJsWebpackRelease") { task ->
-        task.group = GROUP_KORGE_RUN
+    val runJsWebpackRelease = project.tasks.createThis<Task>(name = "runJsWebpackRelease") {
+        group = GROUP_KORGE_RUN
         dependsOn("jsBrowserProductionRun")
     }
 
-    val jsStopWeb = project.addTask<Task>(name = "jsStopWeb") { task ->
-        task.doLast {
+    val jsStopWeb = project.tasks.createThis<Task>(name = "jsStopWeb") {
+        doLast {
             println("jsStopWeb: ${ManagementFactory.getRuntimeMXBean().name}-${Thread.currentThread()}")
             _webServer?.server?.stop(0)
             _webServer = null
@@ -86,7 +87,7 @@ fun Project.configureJavascriptRun() {
 
     // https://blog.jetbrains.com/kotlin/2021/10/control-over-npm-dependencies-in-kotlin-js/
     allprojects {
-        tasks.withType<KotlinNpmInstallTask> {
+        tasks.withType(KotlinNpmInstallTask::class.java).allThis {
             args += "--ignore-scripts"
         }
     }

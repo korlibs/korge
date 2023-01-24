@@ -72,7 +72,7 @@ class IosSdk(val project: Project) {
         }
     }
 
-    //tasks.create<Task>("iosLaunchSimulator") {
+    //tasks.createThis<Task>("iosLaunchSimulator") {
     //	dependsOn("iosInstallSimulator")
     //	doLast {
     //		val udid = appleGetDevices().firstOrNull { it.name == "iPhone 7" }?.udid ?: error("Can't find iPhone 7 device")
