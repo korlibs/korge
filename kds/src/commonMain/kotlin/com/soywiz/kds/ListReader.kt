@@ -8,6 +8,7 @@ class ListReader<T>(val list: List<T>) {
     val size: Int get() = list.size
     val eof: Boolean get() = position >= list.size
     val hasMore: Boolean get() = position < list.size
+    fun peekOrNull(): T? = list.getOrNull(position)
     fun peek(): T = list[position]
     fun peek(offset: Int): T = list[position + offset]
     fun skip(count: Int = 1) = this.apply { this.position += count }
