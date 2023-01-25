@@ -7,6 +7,7 @@ class ListReader<T> constructor(val list: List<T>, val ctx: T? = null) {
     val size: Int get() = list.size
     val eof: Boolean get() = position >= list.size
     val hasMore: Boolean get() = position < list.size
+    fun peekOrNull(): T? = list.getOrNull(position)
     fun peek(): T = list.getOrNull(position) ?: throw OutOfBoundsException(this, position)
     fun tryPeek(ahead: Int): T? = list.getOrNull(position + ahead)
     fun skip(count: Int = 1) = this.apply { this.position += count }
