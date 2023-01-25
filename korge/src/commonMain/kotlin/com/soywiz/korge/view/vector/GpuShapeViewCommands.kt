@@ -139,17 +139,19 @@ class GpuShapeViewCommands {
                     var scissor = AGScissor.NIL
                     //list.vertexArrayObjectSet(ag, GpuShapeViewPrograms.LAYOUT_POS_TEX_FILL_DIST, bufferVertexData) {
                     val uniforms = batcher.uniforms
+                    //println("----")
+                    //println("----")
+                    //println("----")
                     commands.fastForEach { cmd ->
+                        //println("cmd:$cmd :: ${ctx.currentFrameBuffer}")
                         when (cmd) {
                             //is FinishCommand -> list.flush()
                             is ScissorCommand -> {
                                 scissor = cmd.scissor
                             }
-
                             is ClearCommand -> {
                                 ctx.clear(stencil = cmd.i, clearColor = false, clearStencil = true, clearDepth = false)
                             }
-
                             is ShapeCommand -> {
                                 val paintShader = cmd.paintShader
                                 //println("cmd.vertexCount=${cmd.vertexCount}, cmd.vertexIndex=${cmd.vertexIndex}, paintShader=$paintShader")
@@ -157,6 +159,7 @@ class GpuShapeViewCommands {
                                 //println(paintShader.uniforms)
                                 tempUniforms.clear()
                                 paintShader?.uniforms?.let { resolve(ctx, it, paintShader.texUniforms) }
+                                tempUniforms.put(uniforms)
                                 tempUniforms.put(paintShader?.uniforms)
                                 val pixelScale = decomposed.scaleAvg / ctx.bp.globalToWindowScaleAvg
                                 //val pixelScale = 1f
@@ -169,7 +172,10 @@ class GpuShapeViewCommands {
                                 ag.draw(AGBatch(
                                     ctx.currentFrameBuffer.base,
                                     ctx.currentFrameBuffer.info,
+                                    program = cmd.program ?: program,
                                     vertexData = vertices,
+                                    //indices = indices,
+                                    scissor = scissor.applyMatrixBounds(tempMat),
                                     uniforms = tempUniforms,
                                     stencilOpFunc = cmd.stencilOpFunc,
                                     stencilRef = cmd.stencilRef,

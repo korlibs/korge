@@ -6,17 +6,19 @@ import groovy.xml.XmlUtil
 import org.apache.tools.ant.taskdefs.condition.*
 import org.gradle.api.*
 import org.gradle.api.artifacts.dsl.*
+import org.gradle.api.plugins.*
 import org.gradle.api.tasks.*
-import org.gradle.kotlin.dsl.*
 import org.jetbrains.kotlin.gradle.dsl.*
 import org.jetbrains.kotlin.gradle.plugin.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import java.io.*
 import java.net.*
+import java.util.zip.*
 
 // Extensions
 operator fun File.get(name: String) = File(this, name)
 
+var File.bytes get() = this.readBytes(); set(value) { this.also { it.parentFile.mkdirs() }.writeBytes(value) }
 var File.text get() = this.readText(); set(value) { this.also { it.parentFile.mkdirs() }.writeText(value) }
 fun File.ensureParents() = this.apply { this.parentFile.mkdirs() }
 
@@ -34,13 +36,15 @@ fun Project.extractArchive(archive: File, output: File) {
     println("Extracting $archive into $output ...")
     copy {
         when {
-            archive.name.endsWith(".tar.gz") -> from(tarTree(resources.gzip(archive)))
-            archive.name.endsWith(".zip") -> from(zipTree(archive))
+            archive.name.endsWith(".tar.gz") -> it.from(tarTree(resources.gzip(archive)))
+            archive.name.endsWith(".zip") -> it.from(zipTree(archive))
             else -> error("Unsupported archive $archive")
         }
-        into(output)
+        it.into(output)
     }
 }
+
+val Project.extra: ExtraPropertiesExtension get() = rootProject.extensions.getByType(ExtraPropertiesExtension::class.java)
 
 // Gradle extensions
 operator fun Project.invoke(callback: Project.() -> Unit) = callback(this)
@@ -48,12 +52,28 @@ operator fun DependencyHandler.invoke(callback: DependencyHandler.() -> Unit) = 
 operator fun KotlinMultiplatformExtension.invoke(callback: KotlinMultiplatformExtension.() -> Unit) = callback(this)
 fun Project.tasks(callback: TaskContainer.() -> Unit) = this.tasks.apply(callback)
 
-operator fun <T> NamedDomainObjectCollection<T>.get(name: String) = this.getByName(name)
-val NamedDomainObjectCollection<KotlinTarget>.js get() = this["js"] as KotlinOnlyTarget<KotlinJsCompilation>
-val NamedDomainObjectCollection<KotlinTarget>.jvm get() = this["jvm"] as KotlinOnlyTarget<KotlinJvmCompilation>
-val NamedDomainObjectCollection<KotlinTarget>.metadata get() = this["metadata"] as KotlinOnlyTarget<KotlinCommonCompilation>
-val <T : KotlinCompilation<*>> NamedDomainObjectContainer<T>.main get() = this["main"]
-val <T : KotlinCompilation<*>> NamedDomainObjectContainer<T>.test get() = this["test"]
+inline fun <reified T> Project.the(): T {
+    return extensions.getByType<T>()
+}
+inline fun <reified T> ExtensionContainer.getByType() = getByType(T::class.java)
+
+inline fun <reified T> DomainObjectCollection<T>.withType(): DomainObjectCollection<T> = withType(T::class.java)
+inline fun <reified T : Plugin<*>> PluginCollection<T>.withType(): PluginCollection<T> = withType(T::class.java)
+inline fun <T> DomainObjectCollection<T>.allThis(noinline block: T.() -> Unit) = this.all(block)
+
+inline fun <reified T: Task> TaskCollection<*>.withType(noinline block: T.() -> Unit) {
+    return (this as TaskCollection<T>).withType(T::class.java).configureEach(block)
+}
+inline fun <reified T> ExtensionContainer.configure(noinline block: T.() -> Unit) {
+    return configure(T::class.java, Action { block(it) })
+}
+
+operator fun <T> NamedDomainObjectCollection<T>.get(name: String): T = this.getByName(name)
+val NamedDomainObjectCollection<KotlinTarget>.js: KotlinOnlyTarget<KotlinJsCompilation> get() = this["js"] as KotlinOnlyTarget<KotlinJsCompilation>
+val NamedDomainObjectCollection<KotlinTarget>.jvm: KotlinOnlyTarget<KotlinJvmCompilation> get() = this["jvm"] as KotlinOnlyTarget<KotlinJvmCompilation>
+val NamedDomainObjectCollection<KotlinTarget>.metadata: KotlinOnlyTarget<KotlinCommonCompilation> get() = this["metadata"] as KotlinOnlyTarget<KotlinCommonCompilation>
+val <T : KotlinCompilation<*>> NamedDomainObjectContainer<T>.main: T get() = this["main"]
+val <T : KotlinCompilation<*>> NamedDomainObjectContainer<T>.test: T get() = this["test"]
 
 inline fun <reified T : Task> TaskContainer.create(name: String, callback: T.() -> Unit) = create<T>(name, T::class.java).apply(callback)
 
@@ -62,6 +82,9 @@ fun Project.gkotlin(callback: KotlinMultiplatformExtension.() -> Unit) = gkotlin
 
 val Project.kotlin get() = extensions.getByType<KotlinMultiplatformExtension>()
 fun Project.kotlin(callback: KotlinMultiplatformExtension.() -> Unit) = gkotlin.apply(callback)
+
+fun Project.allprojectsThis(block: Project.() -> Unit) = allprojects(block)
+fun Project.subprojectsThis(block: Project.() -> Unit) = subprojects(block)
 
 // Groovy tools
 fun Node.toXmlString() = XmlUtil.serialize(this)
@@ -78,4 +101,16 @@ fun currentJavaVersion(): Int {
     val versionElements = System.getProperty("java.version").split("\\.".toRegex()).toTypedArray() + arrayOf("-1", "-1")
     val discard = versionElements[0].toInt()
     return if (discard == 1) versionElements[1].toInt() else discard
+}
+
+fun unzipTo(output: File, zipFileName: File) {
+    ZipFile(zipFileName).use { zip ->
+        zip.entries().asSequence().forEach { entry ->
+            zip.getInputStream(entry).use { input ->
+                File(entry.name).outputStream().use { output ->
+                    input.copyTo(output)
+                }
+            }
+        }
+    }
 }

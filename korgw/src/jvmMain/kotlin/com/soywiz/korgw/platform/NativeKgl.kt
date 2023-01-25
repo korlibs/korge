@@ -6,7 +6,7 @@ import com.soywiz.korim.awt.AwtNativeImage
 import com.soywiz.korim.bitmap.NativeImage
 import com.sun.jna.NativeLong
 
-open class NativeKgl(private val gl: INativeGL) : KmlGlWithExtensions() {
+open class NativeKgl constructor(private val gl: INativeGL) : KmlGlWithExtensions() {
     override fun activeTexture(texture: Int): Unit = gl.glActiveTexture(texture)
     override fun attachShader(program: Int, shader: Int): Unit = gl.glAttachShader(program, shader)
     override fun bindAttribLocation(program: Int, index: Int, name: String): Unit = gl.glBindAttribLocation(program, index, name)

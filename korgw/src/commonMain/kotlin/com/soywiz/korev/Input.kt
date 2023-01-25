@@ -48,8 +48,9 @@ enum class Key {
 	KP_DECIMAL, KP_DIVIDE, KP_MULTIPLY,
 	KP_SUBTRACT, KP_ADD, KP_COMMA, KP_DOT, KP_ENTER, KP_EQUAL, KP_SEPARATOR,
     KP_LEFT_PAREN, KP_RIGHT_PAREN,
-	LEFT_SHIFT, LEFT_CONTROL, LEFT_ALT, LEFT_SUPER,
-	RIGHT_SHIFT, RIGHT_CONTROL, RIGHT_ALT, RIGHT_SUPER,
+
+    SHIFT, CONTROL, ALT, SUPER,
+
 	MENU, BACK,
 
 	BACKQUOTE, QUOTE,
@@ -158,7 +159,16 @@ enum class Key {
 		val NUMPAD7 = N7
 		val NUMPAD8 = N8
 		val NUMPAD9 = N9
-	}
+
+        @Deprecated("", ReplaceWith("CONTROL", "com.soywiz.korev.Key.CONTROL")) val LEFT_CONTROL get() = CONTROL
+        @Deprecated("", ReplaceWith("CONTROL", "com.soywiz.korev.Key.CONTROL")) val RIGHT_CONTROL get() = CONTROL
+        @Deprecated("", ReplaceWith("SHIFT", "com.soywiz.korev.Key.SHIFT")) val LEFT_SHIFT get() = SHIFT
+        @Deprecated("", ReplaceWith("SHIFT", "com.soywiz.korev.Key.SHIFT")) val RIGHT_SHIFT get() = SHIFT
+        @Deprecated("", ReplaceWith("ALT", "com.soywiz.korev.Key.ALT")) val LEFT_ALT get() = ALT
+        @Deprecated("", ReplaceWith("ALT", "com.soywiz.korev.Key.ALT")) val RIGHT_ALT get() = ALT
+        @Deprecated("", ReplaceWith("SUPER", "com.soywiz.korev.Key.SUPER")) val LEFT_SUPER get() = SUPER
+        @Deprecated("", ReplaceWith("SUPER", "com.soywiz.korev.Key.SUPER")) val RIGHT_SUPER get() = SUPER
+    }
 }
 
 enum class GameStick(val id: Int) {

@@ -5,22 +5,15 @@ import com.soywiz.korge.gradle.targets.*
 import com.soywiz.korge.gradle.targets.desktop.*
 import com.soywiz.korge.gradle.targets.native.*
 import com.soywiz.korge.gradle.util.*
-import com.soywiz.korge.gradle.util.get
-import com.soywiz.korge.gradle.targets.ios.IosProjectTools
 import org.gradle.api.*
 import org.gradle.api.file.*
 import org.gradle.api.tasks.*
-import org.intellij.lang.annotations.Language
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
-import org.jetbrains.kotlin.gradle.tasks.KotlinNativeLink
+import org.jetbrains.kotlin.gradle.tasks.*
 import java.io.*
-import java.security.cert.CertificateFactory
-import java.security.cert.X509Certificate
-import java.util.*
-import javax.security.auth.x500.X500Principal
 
 fun Project.configureNativeIos() {
-	val prepareKotlinNativeBootstrapIos = tasks.create("prepareKotlinNativeBootstrapIos") {
+	val prepareKotlinNativeBootstrapIos = tasks.createThis<Task>("prepareKotlinNativeBootstrapIos") {
         doLast {
             File(buildDir, "platforms/native-ios/bootstrap.kt").apply {
                 parentFile.mkdirs()
@@ -69,7 +62,7 @@ fun Project.configureNativeIos() {
     val iosXcodegenExt = project.iosXcodegenExt
     val iosSdkExt = project.iosSdkExt
 
-    tasks.create("installXcodeGen") {
+    tasks.createThis<Task>("installXcodeGen") {
         onlyIf { !iosXcodegenExt.isInstalled() }
         doLast { iosXcodegenExt.install() }
 	}
@@ -88,7 +81,7 @@ fun Project.configureNativeIos() {
 		}
 	}
 
-	val prepareKotlinNativeIosProject = tasks.create("prepareKotlinNativeIosProject") {
+	val prepareKotlinNativeIosProject = tasks.createThis<Task>("prepareKotlinNativeIosProject") {
 		dependsOn("installXcodeGen", "prepareKotlinNativeBootstrapIos", prepareKotlinNativeBootstrap, copyIosResources)
 		doLast {
 			// project.yml requires these folders to be available or it will fail
@@ -112,7 +105,7 @@ fun Project.configureNativeIos() {
 		}
 	}
 
-	tasks.create("iosShutdownSimulator", Task::class.java) {
+	tasks.createThis<Task>("iosShutdownSimulator") {
 		doFirst {
 			execLogger { it.commandLine("xcrun", "simctl", "shutdown", "booted") }
 		}
@@ -120,7 +113,7 @@ fun Project.configureNativeIos() {
 
     val iphoneVersion = korge.preferredIphoneSimulatorVersion
 
-	val iosCreateIphone = tasks.create("iosCreateIphone", Task::class.java) {
+	val iosCreateIphone = tasks.createThis<Task>("iosCreateIphone") {
 		onlyIf { iosSdkExt.appleGetDevices().none { it.name == "iPhone $iphoneVersion" } }
 		doFirst {
             val result = execOutput("xcrun", "simctl", "list")
@@ -131,7 +124,7 @@ fun Project.configureNativeIos() {
 		}
 	}
 
-	tasks.create("iosBootSimulator", Task::class.java) {
+	tasks.createThis<Task>("iosBootSimulator") {
 		onlyIf { iosSdkExt.appleGetBootedDevice() == null }
 		dependsOn(iosCreateIphone)
 		doLast {
@@ -157,7 +150,7 @@ fun Project.configureNativeIos() {
 			val arch = if (simulator) "X64" else "Arm64"
 			val arch2 = if (simulator) "x86_64" else "arm64"
 			val sdkName = if (simulator) "iphonesimulator" else "iphoneos"
-			tasks.create("iosBuild$simulatorSuffix$debugSuffix", Exec::class.java) {
+			tasks.createThis<Exec>("iosBuild$simulatorSuffix$debugSuffix") {
 				//task.dependsOn(prepareKotlinNativeIosProject, "linkMain${debugSuffix}FrameworkIos$arch")
                 val linkTaskName = "link${debugSuffix}FrameworkIos$arch"
 				dependsOn(prepareKotlinNativeIosProject, linkTaskName)
@@ -177,7 +170,7 @@ fun Project.configureNativeIos() {
 			}
 		}
 
-		val installIosSimulator = tasks.create("installIosSimulator$debugSuffix", Task::class.java) {
+		val installIosSimulator = tasks.createThis<Task>("installIosSimulator$debugSuffix") {
 			val buildTaskName = "iosBuildSimulator$debugSuffix"
 			group = GROUP_KORGE_INSTALL
 
@@ -189,7 +182,7 @@ fun Project.configureNativeIos() {
 			}
 		}
 
-		val installIosDevice = tasks.create("installIosDevice$debugSuffix", Task::class.java) {
+		val installIosDevice = tasks.createThis<Task>("installIosDevice$debugSuffix") {
 			group = GROUP_KORGE_INSTALL
 			val buildTaskName = "iosBuildDevice$debugSuffix"
 			dependsOn("installIosDeploy", buildTaskName)
@@ -221,20 +214,20 @@ fun Project.configureNativeIos() {
         }
     }
 
-	tasks.create("iosEraseAllSimulators") {
+	tasks.createThis<Task>("iosEraseAllSimulators") {
 		doLast { execLogger { it.commandLine("osascript", "-e", "tell application \"iOS Simulator\" to quit") } }
 		doLast { execLogger { it.commandLine("osascript", "-e", "tell application \"Simulator\" to quit") } }
 		doLast { execLogger { it.commandLine("xcrun", "simctl", "erase", "all") } }
 	}
 
-	tasks.create("installIosDeploy", Task::class.java) {
+	tasks.createThis<Task>("installIosDeploy") {
 		onlyIf { !iosDeployExt.isInstalled }
         doFirst {
             iosDeployExt.installIfRequired()
         }
 	}
 
-    tasks.create("updateIosDeploy", Task::class.java) {
+    tasks.createThis<Task>("updateIosDeploy") {
         doFirst {
             iosDeployExt.update()
         }

@@ -1,19 +1,19 @@
 package com.soywiz.korge.gradle
 
 import com.soywiz.korge.gradle.targets.*
-import com.soywiz.korge.gradle.targets.linux.*
 import com.soywiz.korge.gradle.targets.linux.LDLibraries
 import com.soywiz.korge.gradle.util.*
-import groovy.lang.*
+import com.soywiz.korlibs.*
 import org.gradle.api.*
 import org.gradle.api.Project
 import org.gradle.api.plugins.*
 import org.gradle.api.tasks.*
+import org.gradle.api.tasks.diagnostics.*
+import org.gradle.internal.classloader.*
 import org.gradle.plugins.ide.idea.model.*
-import org.gradle.util.*
 import org.jetbrains.kotlin.gradle.dsl.*
 import java.io.*
-import kotlin.KotlinVersion as KotlinKotlinVersion
+import java.net.*
 
 class KorgeGradleApply(val project: Project) {
 	fun apply(includeIndirectAndroid: Boolean = true) = project {
@@ -77,9 +77,10 @@ class KorgeGradleApply(val project: Project) {
 
 	private fun Project.configureIdea() {
 		project.plugins.applyOnce("idea")
-		(project["idea"] as IdeaModel).apply {
+
+        project.extensions.getByName<IdeaModel>("idea").apply {
 			module {
-                val module = this
+                val module = it
                 module.excludeDirs = module.excludeDirs.also {
                     it.addAll(listOf(
                         ".gradle", ".idea", "gradle", "node_modules", "classes", "docs", "dependency-cache",
@@ -117,12 +118,96 @@ class KorgeGradleApply(val project: Project) {
 
 open class KorgeGradlePlugin : Plugin<Project> {
 	override fun apply(project: Project) {
+        project.configureBuildScriptClasspathTasks()
 
 		//TODO PABLO changed to have the android tasks enabled again
 		KorgeGradleApply(project).apply(includeIndirectAndroid = true)
 
+        project.configureAutoVersions()
+
 		//for (res in project.getResourcesFolders()) println("- $res")
 	}
+}
+
+fun Project.configureAutoVersions() {
+    allprojectsThis {
+        configurations.all {
+            it.resolutionStrategy.eachDependency { details ->
+                //println("DETAILS: ${details.requested} : '${details.requested.group}' : '${details.requested.name}' :  '${details.requested.version}'")
+                val groupWithName = "${details.requested.group}:${details.requested.name}"
+                if (details.requested.version.isNullOrBlank()) {
+                    val version = korge.versionSubstitutions[groupWithName]
+                    if (version != null) {
+                        details.useVersion(version)
+                        details.because("korge.versionSubstitutions: '$groupWithName' -> $version")
+                    }
+                }
+            }
+        }
+    }
+}
+
+fun Project.configureBuildScriptClasspathTasks() {
+    // https://gist.github.com/xconnecting/4037220
+    val printBuildScriptClasspath = project.tasks.createThis<DependencyReportTask>("printBuildScriptClasspath") {
+        configurations = project.buildscript.configurations
+    }
+    val printBuildScriptClasspath2 = project.tasks.createThis<Task>("printBuildScriptClasspath2") {
+        doFirst {
+            fun getClassLoaderChain(classLoader: ClassLoader, out: ArrayList<ClassLoader> = arrayListOf()): List<ClassLoader> {
+                var current: ClassLoader? = classLoader
+                while (current != null) {
+                    out.add(current)
+                    current = current.parent
+                }
+                return out
+            }
+
+            fun printClassLoader(classLoader: ClassLoader) {
+                when (classLoader) {
+                    is URLClassLoader -> {
+                        println(classLoader.urLs.joinToString("\n"))
+                    }
+                    is ClassLoaderHierarchy -> {
+                        classLoader.visit(object : ClassLoaderVisitor() {
+                            override fun visit(classLoader: ClassLoader) {
+                                super.visit(classLoader)
+                            }
+
+                            override fun visitSpec(spec: ClassLoaderSpec) {
+                                super.visitSpec(spec)
+                            }
+
+                            override fun visitClassPath(classPath: Array<out URL>) {
+                                classPath.forEach { println(it) }
+                            }
+
+                            override fun visitParent(classLoader: ClassLoader) {
+                                super.visitParent(classLoader)
+                            }
+                        })
+                    }
+                }
+            }
+
+            println("Class loaders:")
+            val classLoaders = getClassLoaderChain(Thread.currentThread().contextClassLoader)
+            for (classLoader in classLoaders.reversed()) {
+                println(" - $classLoader")
+            }
+
+            for (classLoader in classLoaders.reversed()) {
+                println("")
+                println("$classLoader:")
+                println("--------------")
+                printClassLoader(classLoader)
+            }
+            //println(ClassLoader.getSystemClassLoader())
+            //println((Thread.currentThread().contextClassLoader as URLClassLoader).parent.urLs.joinToString("\n"))
+            //println((KorgeGradlePlugin::class.java.classLoader as URLClassLoader).urLs.joinToString("\n"))
+        }
+    }
+
 }
 
 val Project.gkotlin get() = properties["kotlin"] as KotlinMultiplatformExtension

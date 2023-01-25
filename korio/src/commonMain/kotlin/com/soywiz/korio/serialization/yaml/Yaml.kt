@@ -77,7 +77,7 @@ object Yaml {
                         if (s.read().str != "[") invalidOp
                         val olist = arrayListOf<Any?>()
                         array@ while (s.peek().str != "]") {
-                            olist += readOrString(s, level, SET_COMMA_END_ARRAY)
+                            olist += readOrString(s, level, SET_COMMA_END_ARRAY, supportNonSpaceSymbols = false)
                             val p = s.peek().str
                             when (p) {
                                 "," -> { s.read(); continue@array }
@@ -90,7 +90,8 @@ object Yaml {
                     }
                     else -> {
                         val keyIds = s.readId()
-                        if (s.eof || s.peek().str != ":") {
+                        val sp = s.peekOrNull() ?: Token.EOF
+                        if (s.eof || (sp.str != ":" || (sp is Token.SYMBOL && !sp.isNextWhite))) {
                             val key = parseStr(keyIds)
                             if (TRACE) println("${levelStr}LIT: $key")
                             return key
@@ -99,7 +100,11 @@ object Yaml {
                             if (map == null) map = LinkedHashMap()
                             if (s.read().str != ":") invalidOp
                             if (TRACE) println("${levelStr}MAP[$key]...")
-                            val value = readOrString(s, level, EMPTY_SET)
+                            val next = s.peekOrNull()
+                            val nextStr = next?.str
+                            val hasSpaces = next is Token.SYMBOL && next.isNextWhite
+                            val nextIsSpecialSymbol = nextStr == "[" || nextStr == "{" || (nextStr == "-" && hasSpaces)
+                            val value = readOrString(s, level, EMPTY_SET, supportNonSpaceSymbols = !nextIsSpecialSymbol)
                             lastMapKey = key
                             lastMapValue = value
                             map[key] = value
@@ -120,7 +125,7 @@ object Yaml {
         val tokens = arrayListOf<Token>()
         while (hasMore) {
             val token = peek()
-            if (token is Token.ID || token is Token.STR || ((token is Token.SYMBOL) && token.str == "-")) {
+            if (token is Token.ID || token is Token.STR || ((token is Token.SYMBOL) && token.str == "-") || ((token is Token.SYMBOL) && token.str == ":" && !token.isNextWhite)) {
                 tokens.add(token)
                 read()
             } else {
@@ -130,8 +135,9 @@ object Yaml {
         return tokens
     }
 
-    fun readOrString(s: ListReader<Token>, level: Int, delimiters: Set<String>): Any? {
-        return if (s.peek() is Token.ID) {
+    fun readOrString(s: ListReader<Token>, level: Int, delimiters: Set<String>, supportNonSpaceSymbols: Boolean): Any? {
+        val sp = s.peek()
+        return if (sp is Token.ID || (supportNonSpaceSymbols && sp is Token.SYMBOL && !sp.isNextWhite)) {
             var str = ""
             str@while (s.hasMore) {
                 val p = s.peek()
@@ -177,7 +183,7 @@ object Yaml {
                 val c = read()
                 when (c) {
                     ':', '-', '[', ']', ',' -> {
-                        flush(); out += Token.SYMBOL("$c")
+                        flush(); out += Token.SYMBOL("$c", peek())
                     }
                     '#' -> {
                         flush(); readUntilLineEnd(); skip(); continue@linestart
@@ -202,6 +208,10 @@ object Yaml {
         val str: String
         val ustr get() = str
 
+        object EOF : Token {
+            override val str: String = ""
+        }
+
         data class LINE(override val str: String, val level: Int) : Token {
             override fun toString(): String = "LINE($level)"
         }
@@ -211,7 +221,9 @@ object Yaml {
             override val ustr = str.unquote()
         }
 
-        data class SYMBOL(override val str: String) : Token
+        data class SYMBOL(override val str: String, val next: Char) : Token {
+            val isNextWhite: Boolean get() = next == ' ' || next == '\t' || next == '\n' || next == '\r'
+        }
     }
 
     private fun StrReader.readUntilLineEnd() = this.readUntil { it == '\n' }

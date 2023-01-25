@@ -3,6 +3,7 @@ package com.soywiz.korge.gradle
 import com.soywiz.korge.gradle.targets.*
 import com.soywiz.korge.gradle.targets.jvm.KorgeJavaExec
 import com.soywiz.korge.gradle.util.*
+import com.soywiz.korlibs.*
 import org.gradle.api.*
 import org.gradle.api.file.*
 import org.gradle.api.tasks.*
@@ -27,22 +28,22 @@ fun getKorgeProcessResourcesTaskName(targetName: String, compilationName: String
     "korgeProcessedResources${targetName.capitalize()}${compilationName.capitalize()}"
 
 fun Project.addGenResourcesTasks(): Project {
-    tasks.withType(Copy::class.java).all {
-        //this.duplicatesStrategy = org.gradle.api.file.DuplicatesStrategy.WARN
-        this.duplicatesStrategy = org.gradle.api.file.DuplicatesStrategy.EXCLUDE
+    tasks.withType(Copy::class.java).configureEach {
+        //it.duplicatesStrategy = org.gradle.api.file.DuplicatesStrategy.WARN
+        it.duplicatesStrategy = org.gradle.api.file.DuplicatesStrategy.EXCLUDE
         //println("Task $this")
     }
 
     val runJvm by lazy { (tasks["runJvm"] as KorgeJavaExec) }
 
-    tasks.create("listKorgeTargets", Task::class.java) {
+    tasks.createThis<Task>("listKorgeTargets") {
         group = GROUP_KORGE_LIST
         doLast {
             println("gkotlin.targets: ${gkotlin.targets.names}")
         }
     }
 
-    tasks.create("listKorgePlugins", Task::class.java) {
+    tasks.createThis<Task>("listKorgePlugins") {
         group = GROUP_KORGE_LIST
         if (korge.searchResourceProcessorsInMainSourceSet) {
             dependsOn("jvmMainClasses")
@@ -63,14 +64,14 @@ fun Project.addGenResourcesTasks(): Project {
             //val compilation = project.kotlin.targets.getByName(config.targetName).compilations.getByName(config.compilationName)
             val folders: List<String> = compilation.allKotlinSourceSets.flatMap { it.resources.srcDirs }.filter { it != processedResourcesFolder }.map { it.toString() }
 
-            val korgeProcessedResources = tasks.create(
+            val korgeProcessedResources = tasks.createThis<KorgeProcessedResourcesTask>(
                 getKorgeProcessResourcesTaskName(target, compilation),
-                KorgeProcessedResourcesTask::class.java,
                 KorgeProcessedResourcesTaskConfig(
                     isJvm, target.name, compilation.name, runJvm.korgeClassPath,
                     project.korge.getIconBytes(),
                 )
-            ).also { task ->
+            ) {
+                val task = this
                 task.group = GROUP_KORGE_RESOURCES
                 if (korge.searchResourceProcessorsInMainSourceSet) {
                     task.dependsOn("jvmMainClasses")
@@ -112,7 +113,7 @@ open class KorgeProcessedResourcesTask @Inject constructor(
         //URLClassLoader(prepareResourceProcessingClasses.outputs.files.toList().map { it.toURL() }.toTypedArray(), ClassLoader.getSystemClassLoader()).use { classLoader ->
 
         if (config.isJvm) {
-            processedResourcesFolder["@appicon.png"].writeBytes(config.iconBytes)
+            File(processedResourcesFolder, "@appicon.png").writeBytes(config.iconBytes)
             //processedResourcesFolder["@appicon-16.png"].writeBytes(korge.getIconBytes(16))
             //processedResourcesFolder["@appicon-32.png"].writeBytes(korge.getIconBytes(32))
             //processedResourcesFolder["@appicon-64.png"].writeBytes(korge.getIconBytes(64))

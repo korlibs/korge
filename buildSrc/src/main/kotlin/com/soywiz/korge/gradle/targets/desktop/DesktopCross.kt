@@ -1,27 +1,18 @@
 package com.soywiz.korge.gradle.targets.desktop
 
-import com.soywiz.korge.gradle.gkotlin
 import com.soywiz.korge.gradle.kotlin
-import com.soywiz.korge.gradle.util.get
-import org.gradle.api.Project
-import org.gradle.api.Task
-import org.gradle.api.tasks.Copy
-import org.gradle.api.tasks.Exec
-import org.gradle.kotlin.dsl.extra
-import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeCompilation
-import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
-import org.jetbrains.kotlin.gradle.plugin.mpp.NativeOutputKind
-import org.jetbrains.kotlin.gradle.tasks.KotlinNativeLink
-import java.io.File
-import com.soywiz.korge.gradle.targets.native.NativeBuildTypes
-import com.soywiz.korge.gradle.targets.CrossExecType
-import com.soywiz.korge.gradle.targets.native.getCompileTask
+import com.soywiz.korge.gradle.targets.*
 import com.soywiz.korge.gradle.targets.native.*
-import org.gradle.api.Action
-import org.gradle.api.internal.plugins.DslObject
-import org.gradle.api.reporting.ReportingExtension
-import org.gradle.testing.base.plugins.TestingBasePlugin
-import org.jetbrains.kotlin.gradle.plugin.mpp.AbstractKotlinNativeTargetPreset
+import com.soywiz.korge.gradle.targets.native.getCompileTask
+import com.soywiz.korge.gradle.util.*
+import com.soywiz.korlibs.*
+import org.gradle.api.*
+import org.gradle.api.internal.plugins.*
+import org.gradle.api.reporting.*
+import org.gradle.api.tasks.*
+import org.gradle.testing.base.plugins.*
+import org.jetbrains.kotlin.gradle.plugin.mpp.*
+import org.jetbrains.kotlin.gradle.tasks.*
 
 fun Project.configureNativeDesktopCross() {
     if (com.soywiz.korge.gradle.targets.isWindows) return
@@ -33,7 +24,7 @@ fun Project.configureNativeDesktopCross() {
                 executable {}
             }
         }
-        val mainCompilation = target.compilations["main"]
+        val mainCompilation = target.compilations.main
         for (type in NativeBuildTypes.TYPES) {
             mainCompilation.getCompileTask(NativeOutputKind.EXECUTABLE, type, project).dependsOn(prepareKotlinNativeBootstrap)
         }
@@ -49,7 +40,7 @@ fun Project.configureNativeDesktopCross() {
                 val linkTask = project.tasks.findByName(linkTaskName) as? KotlinNativeLink?
                 //println("!!!!!!!!!linkTaskName=$linkTaskName :: $linkTask")
                 linkTask ?: continue
-                project.tasks.create("runNative${deb}${type.interpCapital}", Exec::class.java) {
+                project.tasks.createThis<Exec>("runNative${deb}${type.interpCapital}") {
                     group = "run"
                     dependsOn(linkTask)
                     commandLineCross(linkTask.binary.outputFile.absolutePath, type = type)
@@ -60,7 +51,7 @@ fun Project.configureNativeDesktopCross() {
 
             val linkDebugTest = project.tasks.findByName("linkDebugTest${type.nameWithArchCapital}") as? KotlinNativeLink?
             if (linkDebugTest != null) {
-                project.tasks.create("${type.nameWithArch}Test${type.interpCapital}", KotlinNativeCrossTest::class.java, Action {
+                project.tasks.createThis<KotlinNativeCrossTest>("${type.nameWithArch}Test${type.interpCapital}") {
                     val link = linkDebugTest
                     val testResultsDir = project.buildDir.resolve(TestingBasePlugin.TEST_RESULTS_DIR_NAME)
                     val testReportsDir = project.extensions.getByType(ReportingExtension::class.java).baseDir.resolve(TestingBasePlugin.TESTS_DIR_NAME)
@@ -78,7 +69,7 @@ fun Project.configureNativeDesktopCross() {
                     this.environment("WINEDEBUG", "-all")
                     group = "verification"
                     dependsOn(link)
-                })
+                }
             }
         }
     }

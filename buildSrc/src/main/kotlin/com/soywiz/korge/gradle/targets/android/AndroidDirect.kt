@@ -1,11 +1,10 @@
 package com.soywiz.korge.gradle.targets.android
 
+import com.android.build.api.dsl.*
 import com.android.build.gradle.internal.dsl.*
-import com.android.builder.core.*
 import com.soywiz.korge.gradle.*
-import com.soywiz.korge.gradle.targets.*
-import com.soywiz.korge.gradle.util.*
 import org.gradle.api.*
+import kotlin.collections.*
 
 fun Project.configureAndroidDirect() {
     project.ensureAndroidLocalPropertiesWithSdkDir()
@@ -28,17 +27,17 @@ fun Project.configureAndroidDirect() {
             targetCompatibility = JavaVersion.VERSION_1_8
         }
         // @TODO: Android Build Gradle newer version
-        //installation {
-        //    installOptions = listOf("-r")
-        //    timeOutInMs = project.korge.androidTimeoutMs
-        //}
-        packagingOptions {
+        installation {
+            installOptions = listOf("-r")
+            timeOutInMs = project.korge.androidTimeoutMs
+        }
+        packagingOptionsThis {
             for (pattern in project.korge.androidExcludePatterns) {
                 resources.excludes.add(pattern)
             }
         }
         compileSdk = project.korge.androidCompileSdk
-        defaultConfig {
+        defaultConfigThis {
             multiDexEnabled = true
             applicationId = project.korge.id
             minSdk = project.korge.androidMinSdk
@@ -49,7 +48,7 @@ fun Project.configureAndroidDirect() {
             //val manifestPlaceholdersStr = korge.configs.map { it.key + ":" + it.value.quoted }.joinToString(", ")
             //manifestPlaceholders = if (manifestPlaceholdersStr.isEmpty()) "[:]" else "[$manifestPlaceholdersStr]" }
         }
-        signingConfigs {
+        signingConfigsThis {
             maybeCreate("release").apply {
                 storeFile = project.file(project.findProperty("RELEASE_STORE_FILE") ?: korge.androidReleaseSignStoreFile)
                 storePassword = project.findProperty("RELEASE_STORE_PASSWORD")?.toString() ?: korge.androidReleaseSignStorePassword
@@ -57,7 +56,7 @@ fun Project.configureAndroidDirect() {
                 keyPassword = project.findProperty("RELEASE_KEY_PASSWORD")?.toString() ?: korge.androidReleaseSignKeyPassword
             }
         }
-        buildTypes {
+        buildTypesThis {
             maybeCreate("debug").apply {
                 isMinifyEnabled = false
                 signingConfig = signingConfigs.getByName("release")
@@ -68,7 +67,7 @@ fun Project.configureAndroidDirect() {
                 signingConfig = signingConfigs.getByName("release")
             }
         }
-        sourceSets {
+        sourceSetsThis {
             maybeCreate("main").apply {
                 val (resourcesSrcDirs, kotlinSrcDirs) = androidGetResourcesFolders()
                 //println("@ANDROID_DIRECT:")
@@ -91,13 +90,13 @@ fun Project.configureAndroidDirect() {
             val resolvedArtifacts = LinkedHashMap<String, String>()
 
             project.configurations.all {
-                resolutionStrategy.eachDependency {
-                    val cleanFullName = "${requested.group}:${requested.name}".removeSuffix("-js").removeSuffix("-jvm")
+                it.resolutionStrategy.eachDependency {
+                    val cleanFullName = "${it.requested.group}:${it.requested.name}".removeSuffix("-js").removeSuffix("-jvm")
                     //println("RESOLVE ARTIFACT: ${it.requested}")
                     //if (cleanFullName.startsWith("org.jetbrains.intellij.deps:trove4j")) return@eachDependency
                     //if (cleanFullName.startsWith("org.jetbrains:annotations")) return@eachDependency
                     if (isKorlibsDependency(cleanFullName)) {
-                        resolvedArtifacts[cleanFullName] = requested.version.toString()
+                        resolvedArtifacts[cleanFullName] = it.requested.version.toString()
                     }
                 }
             }

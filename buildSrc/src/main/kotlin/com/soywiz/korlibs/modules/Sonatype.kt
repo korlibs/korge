@@ -20,7 +20,7 @@ val Project.sonatypePublishPassword get() = sonatypePublishPasswordNull ?: error
 
 fun Project.configureMavenCentralRelease() {
 	if (rootProject.tasks.findByName("releaseMavenCentral") == null) {
-        rootProject.tasks.create("releaseMavenCentral").also { task ->
+        rootProject.tasks.createThis<Task>("releaseMavenCentral").also { task ->
 			task.doLast {
 				if (!Sonatype.fromProject(rootProject).releaseGroupId(rootProject.group.toString())) {
 					error("Can't promote artifacts. Check log for details")
@@ -30,7 +30,7 @@ fun Project.configureMavenCentralRelease() {
 	}
 
     if (rootProject.tasks.findByName("checkReleasingMavenCentral") == null) {
-        rootProject.tasks.create("checkReleasingMavenCentral").also { task ->
+        rootProject.tasks.createThis<Task>("checkReleasingMavenCentral").also { task ->
             task.doLast {
                 println("stagedRepositoryId=${rootProject.stagedRepositoryId}")
                 if (rootProject.stagedRepositoryId.isNullOrEmpty()) {
@@ -40,7 +40,7 @@ fun Project.configureMavenCentralRelease() {
         }
     }
     if (rootProject.tasks.findByName("startReleasingMavenCentral") == null) {
-        rootProject.tasks.create("startReleasingMavenCentral").also { task ->
+        rootProject.tasks.createThis<Task>("startReleasingMavenCentral").also { task ->
             task.doLast {
                 val sonatype = Sonatype.fromProject(rootProject)
                 val profileId = sonatype.findProfileIdByGroupId("com.soywiz")

@@ -182,7 +182,7 @@ private val isMacos get() = Os.isFamily(Os.FAMILY_MAC)
 private val isLinux get() = Os.isFamily(Os.FAMILY_UNIX) && !isMacos
 
 fun Project.openBrowser(url: String) {
-    exec {
+    execThis {
         when {
             isWindows -> {
                 commandLine("cmd", "/c", "explorer.exe $url")

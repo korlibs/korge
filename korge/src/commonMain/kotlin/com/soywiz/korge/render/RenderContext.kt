@@ -109,6 +109,7 @@ class RenderContext constructor(
                 temp2d.copyFrom(this.viewMat2D)
                 this.viewMat2D.copyFrom(matrix)
                 this.viewMat.copyFrom(matrix)
+                uniforms[DefaultShaders.u_ViewMat] = this.viewMat
                 //println("viewMat: $viewMat, matrix: $matrix")
                 try {
                     callback()
@@ -116,6 +117,7 @@ class RenderContext constructor(
                     flush()
                     this.viewMat.copyFrom(temp)
                     this.viewMat2D.copyFrom(temp2d)
+                    uniforms[DefaultShaders.u_ViewMat] = this.viewMat
                 }
             }
         }
@@ -378,7 +380,7 @@ class RenderContext constructor(
     /////////////// FROM AG ///////////////////
 
     val frameFrameBuffers = LinkedHashSet<AGFrameBuffer>()
-    val frameBuffers: Pool<AGFrameBuffer> = Pool { AGFrameBuffer() }
+    val frameBuffers: Pool<AGFrameBuffer> = Pool { AGFrameBuffer(id = it) }
     val frameBufferStack = FastArrayList<AGFrameBuffer>()
 
     inline fun doRender(block: () -> Unit) {

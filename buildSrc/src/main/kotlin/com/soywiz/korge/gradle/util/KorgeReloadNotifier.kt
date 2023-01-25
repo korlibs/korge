@@ -1,10 +1,7 @@
 package com.soywiz.korge.gradle.util
 
-import com.soywiz.korge.gradle.util.KDynamic.Companion.toLongOrNull
-import java.io.File
-import java.net.HttpURLConnection
-import java.net.URI
-import java.net.URL
+import java.io.*
+import java.net.*
 
 object KorgeReloadNotifier {
     @JvmStatic

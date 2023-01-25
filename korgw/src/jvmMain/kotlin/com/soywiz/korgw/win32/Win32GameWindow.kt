@@ -168,8 +168,8 @@ class Win32GameWindow : GameWindow() {
                     //FillRect(hdc, ps.rcPaint, (HBRUSH) (COLOR_WINDOW+1));
                     //EndPaint(hwnd, ps);
                     glCtx?.makeCurrent()
-                    Win32.wglMakeCurrent(hDC, hRC)
-                    Win32.glClearColor(.3f, .6f, .9f, 1f)
+                    WGL.wglMakeCurrent(hDC, hRC)
+                    GL.glClearColor(.3f, .6f, .9f, 1f)
 
                     Win32.glClear(MyOpenGL32.GL_COLOR_BUFFER_BIT)
                     //println(

@@ -43,8 +43,10 @@ class AGOpengl(val gl: KmlGl) : AG() {
         //gl.finish()
         selectTextureUnitTemp(TEMP_TEXTURE_UNIT) {
             textureBind(texture, AGTextureTargetKind.TEXTURE_2D)
-            gl.texParameteri(gl.TEXTURE_2D, KmlGl.TEXTURE_BASE_LEVEL, 0)
-            gl.texParameteri(gl.TEXTURE_2D, KmlGl.TEXTURE_MAX_LEVEL, 0)
+            if (!gl.webgl) {
+                gl.texParameteri(gl.TEXTURE_2D, KmlGl.TEXTURE_BASE_LEVEL, 0)
+                gl.texParameteri(gl.TEXTURE_2D, KmlGl.TEXTURE_MAX_LEVEL, 0)
+            }
             gl.copyTexImage2D(gl.TEXTURE_2D, 0, gl.RGBA, x, y, width, height, 0)
             textureUnitParameters(AGTextureTargetKind.TEXTURE_2D, AGWrapMode.CLAMP_TO_EDGE, KmlGl.LINEAR, KmlGl.LINEAR, 2)
             textureBind(null, AGTextureTargetKind.TEXTURE_2D)
@@ -68,6 +70,7 @@ class AGOpengl(val gl: KmlGl) : AG() {
             mask = mask or KmlGl.DEPTH_BUFFER_BIT
         }
         if (clearStencil) {
+            currentStencilOpFunc = AGStencilOpFunc.INVALID
             gl.stencilMask(-1)
             gl.clearStencil(stencil)
             mask = mask or KmlGl.STENCIL_BUFFER_BIT
@@ -161,20 +164,31 @@ class AGOpengl(val gl: KmlGl) : AG() {
         setColorMaskState(colorMask)
 
         if (currentStencilOpFunc != stencilOpFunc || currentStencilRef != stencilRef) {
+        //if (true) {
             currentStencilOpFunc = stencilOpFunc
             currentStencilRef = stencilRef
             if (stencilOpFunc.enabled) {
                 gl.enable(KmlGl.STENCIL_TEST)
-                gl.stencilFunc(stencilOpFunc.compareMode.toGl(), stencilRef.referenceValue, stencilRef.readMask)
-                gl.stencilOp(
-                    stencilOpFunc.actionOnDepthFail.toGl(),
-                    stencilOpFunc.actionOnDepthPassStencilFail.toGl(),
-                    stencilOpFunc.actionOnBothPass.toGl()
-                )
-                gl.stencilMask(stencilRef.writeMask)
+                //stencilOpFunc.triangleFace.ordinal
+
+                gl.stencilFuncSeparate(KmlGl.FRONT_AND_BACK, stencilOpFunc.compareModeFront.toGl(), stencilRef.referenceValueFront, stencilRef.readMaskFront)
+                gl.stencilOpSeparate(KmlGl.FRONT_AND_BACK, stencilOpFunc.actionOnDepthFailFront.toGl(), stencilOpFunc.actionOnDepthPassStencilFailFront.toGl(), stencilOpFunc.actionOnBothPassFront.toGl())
+                gl.stencilMaskSeparate(KmlGl.FRONT_AND_BACK, stencilRef.writeMaskFront)
+
+                /*
+                gl.stencilFuncSeparate(KmlGl.FRONT, stencilOpFunc.compareModeFront.toGl(), stencilRef.referenceValueFront, stencilRef.readMaskFront)
+                gl.stencilFuncSeparate(KmlGl.BACK, stencilOpFunc.compareModeBack.toGl(), stencilRef.referenceValueBack, stencilRef.readMaskBack)
+                gl.stencilOpSeparate(KmlGl.FRONT, stencilOpFunc.actionOnDepthFailFront.toGl(), stencilOpFunc.actionOnDepthPassStencilFailFront.toGl(), stencilOpFunc.actionOnBothPassFront.toGl())
+                gl.stencilOpSeparate(KmlGl.BACK, stencilOpFunc.actionOnDepthFailBack.toGl(), stencilOpFunc.actionOnDepthPassStencilFailBack.toGl(), stencilOpFunc.actionOnBothPassBack.toGl())
+                gl.stencilMaskSeparate(KmlGl.FRONT, stencilRef.writeMaskFront)
+                gl.stencilMaskSeparate(KmlGl.FRONT, stencilRef.writeMaskBack)
+
+                 */
+                //println("ENABLE STENCIL: writeMask=${stencilRef.writeMask}, func=[${stencilOpFunc.compareMode}, ${stencilRef.referenceValue}, ${stencilRef.readMask}], op=[${stencilOpFunc.actionOnDepthFail}, ${stencilOpFunc.actionOnDepthPassStencilFail}, ${stencilOpFunc.actionOnBothPass}]")
             } else {
                 gl.disable(KmlGl.STENCIL_TEST)
                 gl.stencilMask(0)
+                //println("DISABLE STENCIL")
             }
         }
 
@@ -185,6 +199,7 @@ class AGOpengl(val gl: KmlGl) : AG() {
         indices?.let { bindBuffer(it, AGBufferKind.INDEX) }
 
         val indexType = if (indices != null) indexType else AGIndexType.NONE
+        //println("GLDRAW: drawOffset=$drawOffset, vertexCount=$vertexCount, instances=$instances")
         if (indexType != AGIndexType.NONE) when {
             instances != 1 -> gl.drawElementsInstanced(drawType.toGl(), vertexCount, indexType.toGl(), drawOffset, instances)
             else -> gl.drawElements(drawType.toGl(), vertexCount, indexType.toGl(), drawOffset)
@@ -229,8 +244,10 @@ class AGOpengl(val gl: KmlGl) : AG() {
         _currentViewportSize = AGSize.INVALID
         textureParams.fastForEach { it.reset() }
         gl.activeTexture(KmlGl.TEXTURE0)
-        gl.texParameteri(gl.TEXTURE_2D, KmlGl.TEXTURE_BASE_LEVEL, 0)
-        gl.texParameteri(gl.TEXTURE_2D, KmlGl.TEXTURE_MAX_LEVEL, 0)
+        if (!gl.webgl) {
+            gl.texParameteri(gl.TEXTURE_2D, KmlGl.TEXTURE_BASE_LEVEL, 0)
+            gl.texParameteri(gl.TEXTURE_2D, KmlGl.TEXTURE_MAX_LEVEL, 0)
+        }
     }
 
     override fun endFrame() {
@@ -639,8 +656,10 @@ class AGOpengl(val gl: KmlGl) : AG() {
                         gl.pixelStorei(KmlGl.UNPACK_SWAP_BYTES, KmlGl.GTRUE)
                     }
 
-                    gl.texParameteri(texTarget, KmlGl.TEXTURE_BASE_LEVEL, 0)
-                    gl.texParameteri(texTarget, KmlGl.TEXTURE_MAX_LEVEL, 0)
+                    if (!gl.webgl) {
+                        gl.texParameteri(texTarget, KmlGl.TEXTURE_BASE_LEVEL, 0)
+                        gl.texParameteri(texTarget, KmlGl.TEXTURE_MAX_LEVEL, 0)
+                    }
 
                     when (bmp) {
                         null -> gl.texImage2D(target.toGl(), 0, type, tex.width, tex.height, 0, type, KmlGl.UNSIGNED_BYTE, null)
@@ -722,6 +741,7 @@ class AGOpengl(val gl: KmlGl) : AG() {
     private var _currentFrameBuffer: Int = -1
 
     fun bindFrameBuffer(frameBuffer: AGFrameBufferBase, info: AGFrameBufferInfo) {
+        //println("bindFrameBuffer: $frameBuffer, info=$info")
         if (_currentViewportSize != info.size) {
             gl.viewport(0, 0, info.width, info.height)
         }
@@ -761,6 +781,7 @@ class AGOpengl(val gl: KmlGl) : AG() {
                 //gl.bindTexture(texTarget, 0)
             }
             gl.bindRenderbuffer(KmlGl.RENDERBUFFER, fb.renderBufferId)
+            //println("renderBuffer : fb.renderBufferId=${fb.renderBufferId}, internalFormat=$internalFormat, info.width=${info.width}, info.height=${info.height}")
             if (internalFormat != 0) {
                 //gl.renderbufferStorageMultisample(KmlGl.RENDERBUFFER, fb.nsamples, internalFormat, fb.width, fb.height)
                 gl.renderbufferStorage(KmlGl.RENDERBUFFER, internalFormat, info.width, info.height)
@@ -770,10 +791,17 @@ class AGOpengl(val gl: KmlGl) : AG() {
             gl.bindFramebuffer(KmlGl.FRAMEBUFFER, fb.frameBufferId)
             gl.framebufferTexture2D(KmlGl.FRAMEBUFFER, KmlGl.COLOR_ATTACHMENT0, KmlGl.TEXTURE_2D, fb.ag.tex.gl.id, 0)
             if (internalFormat != 0) {
-                gl.framebufferRenderbuffer(KmlGl.FRAMEBUFFER, internalFormat, KmlGl.RENDERBUFFER, fb.renderBufferId)
+                //println("framebufferRenderbuffer: FRAMEBUFFER, $internalFormat, RENDERBUFFER, ${fb.renderBufferId}")
+                gl.framebufferRenderbuffer(KmlGl.FRAMEBUFFER, when {
+                    info.hasStencilAndDepth -> KmlGl.DEPTH_STENCIL_ATTACHMENT
+                    info.hasStencil -> KmlGl.STENCIL_ATTACHMENT // On android this is buggy somehow?
+                    info.hasDepth -> KmlGl.DEPTH_ATTACHMENT
+                    else -> 0
+                }, KmlGl.RENDERBUFFER, fb.renderBufferId)
             } else {
+                //println("framebufferRenderbuffer: FRAMEBUFFER, STENCIL_ATTACHMENT/DEPTH_ATTACHMENT, RENDERBUFFER, 0")
                 gl.framebufferRenderbuffer(KmlGl.FRAMEBUFFER, KmlGl.STENCIL_ATTACHMENT, KmlGl.RENDERBUFFER, 0)
-                gl.framebufferRenderbuffer(KmlGl.DEPTH_ATTACHMENT, KmlGl.STENCIL_ATTACHMENT, KmlGl.RENDERBUFFER, 0)
+                gl.framebufferRenderbuffer(KmlGl.FRAMEBUFFER, KmlGl.DEPTH_ATTACHMENT, KmlGl.RENDERBUFFER, 0)
             }
         }
 
