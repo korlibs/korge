@@ -98,13 +98,16 @@ class LazyBitmapFont(
                     }
 
                     val entry = atlas.add(rbmp, Unit)
-                    val slice = entry.slice
+                    val slice = entry.slice.sliceWithBounds(border, border, entry.slice.width - border, entry.slice.height - border)
+
                     //val slice = bmp.slice()
                     //val fm = result.fmetrics
                     val g = result.glyphs.first()
                     //val fm = it.data.fmetrics
                     val m = g.metrics
                     val xadvance = m.xadvance
+
+                    //println("codePoint='$codePoint': $slice, gx=${g.x}, gy=${g.y}")
 
                     //println("codePoint=$codePoint, char='${codePoint.toChar()}', xadvance=${xadvance}, height=${m.height}, top=${m.top}, ascent=${fm.ascent}, slice=$slice")
                     //BitmapFont.Glyph(fontSize, codePoint, entry.slice, 0, (m.height - m.top + fm.ascent).toInt(), xadvance.toInt())
