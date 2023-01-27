@@ -351,15 +351,26 @@ interface IRectangleInt {
     }
 }
 
-val IRectangleInt.left get() = x
-val IRectangleInt.top get() = y
-val IRectangleInt.right get() = x + width
-val IRectangleInt.bottom get() = y + height
+fun IRectangleInt.sliceWithBounds(left: Int, top: Int, right: Int, bottom: Int): IRectangleInt {
+    val left = left.coerceIn(0, this.width)
+    val right = right.coerceIn(0, this.width)
+    val top = top.coerceIn(0, this.height)
+    val bottom = bottom.coerceIn(0, this.height)
+    return RectangleInt.fromBounds(this.x + left, this.y + top, this.x + right, this.y + bottom)
+}
 
-val IRectangleInt.topLeft get() = PointInt(left, top)
-val IRectangleInt.topRight get() = PointInt(right, top)
-val IRectangleInt.bottomLeft get() = PointInt(left, bottom)
-val IRectangleInt.bottomRight get() = PointInt(right, bottom)
+fun IRectangleInt.sliceWithSize(x: Int, y: Int, width: Int, height: Int): IRectangleInt =
+    sliceWithBounds(x, y, x + width, y + height)
+
+val IRectangleInt.left: Int get() = x
+val IRectangleInt.top: Int get() = y
+val IRectangleInt.right: Int get() = x + width
+val IRectangleInt.bottom: Int get() = y + height
+
+val IRectangleInt.topLeft: PointInt get() = PointInt(left, top)
+val IRectangleInt.topRight: PointInt get() = PointInt(right, top)
+val IRectangleInt.bottomLeft: PointInt get() = PointInt(left, bottom)
+val IRectangleInt.bottomRight: PointInt get() = PointInt(right, bottom)
 
 inline class RectangleInt(val rect: Rectangle) : IRectangleInt {
     override var x: Int
