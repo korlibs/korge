@@ -1,25 +1,68 @@
 package com.soywiz.korim.format
 
-import com.soywiz.kds.Extra
+import com.soywiz.kds.*
+import com.soywiz.kmem.*
 import com.soywiz.korim.atlas.MutableAtlasUnit
-import com.soywiz.korim.bitmap.BitmapCoords
-import com.soywiz.korim.bitmap.BmpCoordsWithT
-import com.soywiz.korim.bitmap.flippedX
-import com.soywiz.korim.bitmap.flippedY
-import com.soywiz.korim.bitmap.rotatedRight
+import com.soywiz.korim.bitmap.*
 import com.soywiz.korio.file.VfsFile
 import com.soywiz.korma.geom.ISizeInt
 import kotlin.native.concurrent.ThreadLocal
 
-data class ImageOrientation(
-    val rotation: Rotation = Rotation.R0,
-    val flipX: Boolean = false,
-    val flipY: Boolean = false,
-) {
-    enum class Rotation { R0, R90, R180, R270 }
+// TL, TR, BR, BL
+inline class ImageOrientation(val data: Int) {
+    val rotation: Rotation get() = Rotation[data.extract2(0)]
+    val flipX: Boolean get() = data.extractBool(2)
+    val flipY: Boolean get() = data.extractBool(3)
+    constructor(rotation: Rotation = Rotation.R0, flipX: Boolean = false, flipY: Boolean = false) : this(
+        0.insert2(rotation.ordinal, 0).insert(flipX, 2).insert(flipY, 3)
+    )
+
+    fun flippedX(): ImageOrientation = ImageOrientation(rotation, !flipX, flipY)
+    fun flippedY(): ImageOrientation = ImageOrientation(rotation, flipX, !flipY)
+    fun rotatedLeft(): ImageOrientation = ImageOrientation(rotation.rotatedLeft(), flipX, flipY)
+    fun rotatedRight(): ImageOrientation = ImageOrientation(rotation.rotatedRight(), flipX, flipY)
+
+    val indices: IntArray get() = INDICES[data.extract4(0)]
+
+    enum class Rotation {
+        R0, R90, R180, R270;
+
+        fun rotatedLeft(): Rotation = Rotation[(ordinal - 1) umod 4]
+        fun rotatedRight(): Rotation = Rotation[(ordinal + 1) umod 4]
+
+        companion object {
+            val VALUES = values()
+            operator fun get(index: Int): Rotation = VALUES[index umod VALUES.size]
+        }
+    }
+
+    object Indices {
+        const val TL = 0
+        const val TR = 1
+        const val BR = 2
+        const val BL = 3
+    }
 
     companion object {
-        val ORIGINAL = ImageOrientation()
+        private val INDICES = Array(16) {
+            val orientation = ImageOrientation(it)
+            val out = intArrayOf(0, 1, 2, 3)
+            val rotation = orientation.rotation
+            val flipX: Boolean = orientation.flipX
+            val flipY: Boolean = orientation.flipY
+            if (flipX) {
+                out.swap(Indices.TL, Indices.TR)
+                out.swap(Indices.BL, Indices.BR)
+            }
+            if (flipY) {
+                out.swap(Indices.TL, Indices.BL)
+                out.swap(Indices.TR, Indices.BR)
+            }
+            out.rotateRight(rotation.ordinal)
+            return@Array out
+        }
+
+        val ORIGINAL = ImageOrientation(Rotation.R0)
         val MIRROR_HORIZONTAL = ImageOrientation(flipX = true)
         val ROTATE_180 = ImageOrientation(Rotation.R180)
         val MIRROR_VERTICAL = ImageOrientation(flipY = true)
@@ -29,7 +72,7 @@ data class ImageOrientation(
         val ROTATE_270 = ImageOrientation(rotation = Rotation.R270)
     }
 
-    val isRotatedDeg90CwOrCcw = rotation == Rotation.R90 || rotation == Rotation.R270
+    val isRotatedDeg90CwOrCcw: Boolean get() = data.extractBool(1) // equivalent to (rotation == Rotation.R90 || rotation == Rotation.R270)
 
     /*
     1 = Horizontal (normal)
