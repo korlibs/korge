@@ -19,16 +19,16 @@ inline class ImageOrientation(val data: Int) {
 
     fun flippedX(): ImageOrientation = ImageOrientation(rotation, !flipX, flipY)
     fun flippedY(): ImageOrientation = ImageOrientation(rotation, flipX, !flipY)
-    fun rotatedLeft(): ImageOrientation = ImageOrientation(rotation.rotatedLeft(), flipX, flipY)
-    fun rotatedRight(): ImageOrientation = ImageOrientation(rotation.rotatedRight(), flipX, flipY)
+    fun rotatedLeft(offset: Int = 1): ImageOrientation = ImageOrientation(rotation.rotatedLeft(offset), flipX, flipY)
+    fun rotatedRight(offset: Int = 1): ImageOrientation = ImageOrientation(rotation.rotatedRight(offset), flipX, flipY)
 
     val indices: IntArray get() = INDICES[data.extract4(0)]
 
     enum class Rotation {
         R0, R90, R180, R270;
 
-        fun rotatedLeft(): Rotation = Rotation[(ordinal - 1) umod 4]
-        fun rotatedRight(): Rotation = Rotation[(ordinal + 1) umod 4]
+        fun rotatedLeft(offset: Int = 1): Rotation = Rotation[(ordinal - offset) umod 4]
+        fun rotatedRight(offset: Int = 1): Rotation = Rotation[(ordinal + offset) umod 4]
 
         companion object {
             val VALUES = values()
