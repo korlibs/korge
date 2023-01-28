@@ -351,21 +351,33 @@ interface IRectangleInt {
     }
 }
 
-fun IRectangleInt.sliceWithBounds(left: Int, top: Int, right: Int, bottom: Int): IRectangleInt {
-    val left = left.coerceIn(0, this.width)
-    val right = right.coerceIn(0, this.width)
-    val top = top.coerceIn(0, this.height)
-    val bottom = bottom.coerceIn(0, this.height)
+fun IRectangleInt.clone(): RectangleInt = RectangleInt(x, y, width, height)
+
+fun IRectangleInt.expanded(border: IMarginInt): IRectangleInt {
+    return clone().expand(border)
+}
+
+/** Inline expand the rectangle */
+fun RectangleInt.expand(border: IMarginInt): RectangleInt {
+    return this.setBoundsTo(left - border.left, top - border.top, right + border.right, bottom + border.bottom)
+}
+
+fun IRectangleInt.sliceWithBounds(left: Int, top: Int, right: Int, bottom: Int, clamped: Boolean = true): IRectangleInt {
+    val left = if (!clamped) left else left.coerceIn(0, this.width)
+    val right = if (!clamped) right else right.coerceIn(0, this.width)
+    val top = if (!clamped) top else top.coerceIn(0, this.height)
+    val bottom = if (!clamped) bottom else bottom.coerceIn(0, this.height)
     return RectangleInt.fromBounds(this.x + left, this.y + top, this.x + right, this.y + bottom)
 }
 
-fun IRectangleInt.sliceWithSize(x: Int, y: Int, width: Int, height: Int): IRectangleInt =
-    sliceWithBounds(x, y, x + width, y + height)
+fun IRectangleInt.sliceWithSize(x: Int, y: Int, width: Int, height: Int, clamped: Boolean = true): IRectangleInt =
+    sliceWithBounds(x, y, x + width, y + height, clamped)
 
 val IRectangleInt.left: Int get() = x
 val IRectangleInt.top: Int get() = y
 val IRectangleInt.right: Int get() = x + width
 val IRectangleInt.bottom: Int get() = y + height
+val IRectangleInt.area: Int get() = width * height
 
 val IRectangleInt.topLeft: PointInt get() = PointInt(left, top)
 val IRectangleInt.topRight: PointInt get() = PointInt(right, top)
@@ -441,6 +453,19 @@ inline class RectangleInt(val rect: Rectangle) : IRectangleInt {
 
     override fun toString(): String = "Rectangle(x=$x, y=$y, width=$width, height=$height)"
     fun toStringBounds(): String = "Rectangle([$left,$top]-[$right,$bottom])"
+    fun copyFrom(rect: IRectangleInt): RectangleInt {
+        setTo(rect.x, rect.y, rect.width, rect.height)
+        return this
+    }
+
+    fun setToUnion(a: IRectangleInt, b: IRectangleInt) {
+        setToBounds(
+            min(a.left, b.left),
+            min(a.top, b.top),
+            max(a.right, b.right),
+            max(a.bottom, b.bottom)
+        )
+    }
 }
 
 fun RectangleInt.setTo(that: IRectangleInt) = setTo(that.x, that.y, that.width, that.height)
@@ -450,14 +475,13 @@ fun RectangleInt.setTo(x: Int, y: Int, width: Int, height: Int): RectangleInt {
     this.y = y
     this.width = width
     this.height = height
-
     return this
 }
+fun RectangleInt.setToBounds(left: Int, top: Int, right: Int, bottom: Int): RectangleInt = setTo(left, top, right - left, bottom - top)
 
 fun RectangleInt.setPosition(x: Int, y: Int): RectangleInt {
     this.x = x
     this.y = y
-
     return this
 }
 
@@ -508,8 +532,8 @@ fun IRectangleInt.getAnchorPosition(anchor: Anchor, out: PointInt = PointInt()):
 fun Rectangle.asInt() = RectangleInt(this)
 fun RectangleInt.asDouble() = this.rect
 
-val IRectangle.int get() = RectangleInt(x, y, width, height)
-val IRectangleInt.float get() = Rectangle(x, y, width, height)
+val IRectangle.int: RectangleInt get() = RectangleInt(x, y, width, height)
+val IRectangleInt.float: Rectangle get() = Rectangle(x, y, width, height)
 
 fun IRectangleInt.anchor(ax: Double, ay: Double): PointInt =
     PointInt((x + width * ax).toInt(), (y + height * ay).toInt())

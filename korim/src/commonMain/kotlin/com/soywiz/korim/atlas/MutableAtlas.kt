@@ -9,9 +9,8 @@ import com.soywiz.korim.bitmap.isFullyTransparent
 import com.soywiz.korim.bitmap.slice
 import com.soywiz.korim.bitmap.sliceWithBounds
 import com.soywiz.korim.bitmap.sliceWithSize
-import com.soywiz.korma.geom.RectangleInt
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.binpack.BinPacker
-import com.soywiz.korma.geom.expand
 import kotlin.collections.LinkedHashMap
 import kotlin.collections.arrayListOf
 import kotlin.collections.map
@@ -32,6 +31,8 @@ class MutableAtlas<T>(
     val allowToGrow: Boolean = true,
     val growMethod: GrowMethod = GrowMethod.NEW_IMAGES
 ) {
+    private val borderMargin = IMarginInt(border)
+
     constructor(
         width: Int = 2048,
         height: Int = width,
@@ -117,7 +118,7 @@ class MutableAtlas<T>(
                 )
                 val dstX = slice.left
                 val dstY = slice.top
-                val boundsWithBorder = slice.bounds.rect.clone().expand(border, border, border, border)
+                val boundsWithBorder: IRectangleInt = slice.bounds.expanded(borderMargin)
                 this.bitmap.lock(boundsWithBorder) {
                     this.bitmap.draw(bmp, dstX, dstY)
                     this.bitmap.expandBorder(slice.bounds, border)
