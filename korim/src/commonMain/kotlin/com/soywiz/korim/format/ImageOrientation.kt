@@ -24,6 +24,8 @@ inline class ImageOrientation(val data: Int) {
 
     val indices: IntArray get() = INDICES[data.extract4(0)]
 
+    override fun toString(): String = "ImageOrientation(rotation=$rotation, flipX=$flipX, flipY=$flipY)"
+
     enum class Rotation {
         R0, R90, R180, R270;
 
@@ -73,17 +75,6 @@ inline class ImageOrientation(val data: Int) {
     }
 
     val isRotatedDeg90CwOrCcw: Boolean get() = data.extractBool(0) // equivalent to (rotation == Rotation.R90 || rotation == Rotation.R270)
-
-    /*
-    1 = Horizontal (normal)
-    2 = Mirror horizontal
-    3 = Rotate 180
-    4 = Mirror vertical
-    5 = Mirror horizontal and rotate 270 CW
-    6 = Rotate 90 CW
-    7 = Mirror horizontal and rotate 90 CW
-    8 = Rotate 270 CW
-    */
 }
 
 fun <T : ISizeInt> BmpCoordsWithT<T>.withImageOrientation(orientation: ImageOrientation): BmpCoordsWithT<T> {
