@@ -15,10 +15,7 @@ import com.soywiz.korim.color.asNonPremultiplied
 import com.soywiz.korim.color.asPremultiplied
 import com.soywiz.korim.vector.Context2d
 import com.soywiz.korio.lang.invalidOp
-import com.soywiz.korma.geom.ISizeInt
-import com.soywiz.korma.geom.Rectangle
-import com.soywiz.korma.geom.Size
-import com.soywiz.korma.geom.Sizeable
+import com.soywiz.korma.geom.*
 import kotlin.math.min
 
 abstract class Bitmap(
@@ -51,10 +48,10 @@ abstract class Bitmap(
     @Deprecated("Do not use")
 	var texture: Any? = null
 
-    var dirtyRegion: Rectangle? = null
+    var dirtyRegion: IRectangleInt? = null
         private set
 
-    private val dirtyRegionObj: Rectangle = Rectangle()
+    private val dirtyRegionObj: RectangleInt = RectangleInt()
 
     /** Specifies whether mipmaps should be created for this [Bitmap] */
     var mipmaps: Boolean = false
@@ -74,7 +71,7 @@ abstract class Bitmap(
     }
 
     open fun lock() = Unit
-    open fun unlock(rect: Rectangle? = null): Int {
+    open fun unlock(rect: IRectangleInt? = null): Int {
         if (rect != null) {
             if (dirtyRegion == null) {
                 dirtyRegionObj.copyFrom(rect)
@@ -88,7 +85,7 @@ abstract class Bitmap(
         return ++contentVersion
     }
 
-    inline fun lock(rect: Rectangle? = null, doLock: Boolean = true, block: () -> Unit): Int {
+    inline fun lock(rect: IRectangleInt? = null, doLock: Boolean = true, block: () -> Unit): Int {
         if (doLock) lock()
         try {
             block()

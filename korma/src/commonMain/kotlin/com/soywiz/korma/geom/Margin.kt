@@ -52,6 +52,8 @@ data class MutableMargin(
     }
 }
 
+typealias IMarginInt = MarginInt
+
 interface MarginInt {
     val top: Int
     val right: Int
