@@ -63,7 +63,8 @@ class TtfFont(
     freeze: Boolean = false,
     extName: String? = null,
     onlyReadMetadata: Boolean = false,
-) : BaseTtfFont(d, freeze, extName, onlyReadMetadata) {
+    enableLigatures: Boolean = true,
+) : BaseTtfFont(d, freeze, extName, onlyReadMetadata, enableLigatures) {
     private val tablesByName = LinkedHashMap<String, Table>()
 
     init {
@@ -109,13 +110,15 @@ abstract class BaseTtfFont(
     protected val freeze: Boolean = false,
     protected val extName: String? = null,
     protected val onlyReadMetadata: Boolean = false,
+    protected val enableLigatures: Boolean = true,
 ) : VectorFont, Extra by Extra.Mixin() {
     constructor(
         d: ByteArray,
         freeze: Boolean = false,
         extName: String? = null,
         onlyReadMetadata: Boolean = false,
-    ) : this(d.openFastStream(), freeze, extName, onlyReadMetadata)
+        enableLigatures: Boolean = true
+    ) : this(d.openFastStream(), freeze, extName, onlyReadMetadata, enableLigatures)
 
     fun getAllBytes() = s.getAllBytes()
     fun getAllBytesUnsafe() = s.getBackingArrayUnsafe()
@@ -1760,22 +1763,22 @@ abstract class BaseTtfFont(
     fun getGlyphByReader(reader: WStringReader?, codePoint: Int, cache: Boolean = true): Glyph? {
         var g = getGlyphByCodePoint(codePoint)
         var skipCount = 1
-        if (g != null) {
+        if (enableLigatures && g != null) {
             val subs = substitutionsCodePoints[codePoint]
-//            if (reader != null && subs != null) {
-//                //for (v in subs.map) println(v.key.toCodePointIntArray().toList())
-//                for (count in kotlin.math.min(reader.available, subs.maxSequence) downTo 2) {
-//                    val sub = reader.substr(0, count)
-//                    val replacement = subs.map[sub]
-//                    //println("sub=${sub.toCodePointIntArray().toList()}")
-//                    if (replacement != null) {
-//                        //println("replacement=$replacement")
-//                        skipCount = sub.length
-//                        g = getGlyphByIndex(replacement.first()) ?: break
-//                        break
-//                    }
-//                }
-//            }
+            if (reader != null && subs != null) {
+                //for (v in subs.map) println(v.key.toCodePointIntArray().toList())
+                for (count in kotlin.math.min(reader.available, subs.maxSequence) downTo 2) {
+                    val sub = reader.substr(0, count)
+                    val replacement = subs.map[sub]
+                    //println("sub=${sub.toCodePointIntArray().toList()}")
+                    if (replacement != null) {
+                        //println("replacement=$replacement")
+                        skipCount = sub.length
+                        g = getGlyphByIndex(replacement.first()) ?: break
+                        break
+                    }
+                }
+            }
 
         }
         reader?.skip(skipCount)
@@ -2252,4 +2255,11 @@ internal inline class Fixed(val data: Int) {
 suspend fun VfsFile.readTtfFont(
     preload: Boolean = false,
     onlyReadMetadata: Boolean = false,
-): TtfFont = TtfFont(this.readAll(), freeze = preload, extName = this.baseName, onlyReadMetadata = onlyReadMetadata)
+    enableLigatures: Boolean = true,
+): TtfFont = TtfFont(
+    this.readAll(),
+    freeze = preload,
+    extName = this.baseName,
+    onlyReadMetadata = onlyReadMetadata,
+    enableLigatures = enableLigatures
+)

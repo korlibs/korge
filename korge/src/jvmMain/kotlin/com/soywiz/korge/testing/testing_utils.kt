@@ -30,7 +30,7 @@ val DEFAULT_KORGE_TEST_CONFIG_FN = {
     Korge.Config(
         windowSize = ISizeInt.invoke(512, 512),
         virtualSize = ISizeInt(512, 512),
-        bgcolor = Colors.BLACK
+        bgcolor = Colors.RED
     )
 }
 

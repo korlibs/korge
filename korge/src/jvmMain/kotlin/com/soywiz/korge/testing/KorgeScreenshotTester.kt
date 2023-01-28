@@ -82,7 +82,7 @@ class KorgeScreenshotTester(
         goldenName: String,
         settingOverride: KorgeScreenshotValidationSettings = defaultValidationSettings
     ) {
-        val bitmap = view.renderToBitmap(views)
+        val bitmap = view.renderToBitmap(views, includeBackground = true)
         require(!recordedGoldenNames.contains(goldenName)) {
             """
                 Golden collision for name: $goldenName
