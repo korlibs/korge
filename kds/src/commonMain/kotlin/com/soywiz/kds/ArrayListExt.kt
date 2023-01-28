@@ -113,12 +113,6 @@ fun IntArrayList.toDoubleArrayList(): DoubleArrayList {
     return out
 }
 
-fun <T> MutableList<T>.swap(lIndex: Int, rIndex: Int) {
-    val temp = this[lIndex]
-    this[lIndex] = this[rIndex]
-    this[rIndex] = temp
-}
-
 fun <T> List<T>.rotated(offset: Int): List<T> = ArrayList<T>(this.size).also {
     for (n in 0 until this.size) it.add(this.getCyclic(n - offset))
 }
