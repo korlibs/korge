@@ -72,7 +72,7 @@ inline class ImageOrientation(val data: Int) {
         val ROTATE_270 = ImageOrientation(rotation = Rotation.R270)
     }
 
-    val isRotatedDeg90CwOrCcw: Boolean get() = data.extractBool(1) // equivalent to (rotation == Rotation.R90 || rotation == Rotation.R270)
+    val isRotatedDeg90CwOrCcw: Boolean get() = data.extractBool(0) // equivalent to (rotation == Rotation.R90 || rotation == Rotation.R270)
 
     /*
     1 = Horizontal (normal)
