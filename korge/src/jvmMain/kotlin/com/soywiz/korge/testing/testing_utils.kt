@@ -92,7 +92,6 @@ inline fun korgeScreenshotTest(
                         val viewsToAlign = mutableListOf<View>()
                         container {
                             viewsToAlign += text("Test method name: ${results.testMethodName}")
-                            //                            val testResultSection = container {
                             viewsToAlign += text("Golden name: ${testResult.goldenName}")
                             viewsToAlign += container {
                                 val fn = { headerText: String, bitmap: Bitmap? ->
