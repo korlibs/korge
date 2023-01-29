@@ -1,7 +1,8 @@
 package korge.graphics.backend.metal.shader
 
+import com.soywiz.korag.DefaultShaders
 import com.soywiz.korag.shader.*
-import com.soywiz.korio.util.*
+import com.soywiz.korio.util.Indenter
 
 internal class MetalShaderBodyGenerator(
     val kind: ShaderType? = null
@@ -43,10 +44,15 @@ internal class MetalShaderBodyGenerator(
     override fun visit(operand: Program.Vector): String =
         typeToString(operand.type) + "(" + operand.ops.joinToString(", ") { visit(it) } + ")"
 
-    override fun visit(operand: Program.Unop): String = "(" + operand.op + "("  + visit(operand.right) + ")" + ")"
-    override fun visit(operand: Program.Binop): String = "(" + visit(operand.left) + " " + operand.op + " " + visit(operand.right) + ")"
-    override fun visit(func: Program.BaseFunc): String = func.name + "(" + func.ops.joinToString(", ") { visit(it) } + ")"
-    override fun visit(ternary: Program.Ternary): String = "((${visit(ternary.cond)}) ? (${visit(ternary.otrue)}) : (${visit(ternary.ofalse)}))"
+    override fun visit(operand: Program.Unop): String = "(" + operand.op + "(" + visit(operand.right) + ")" + ")"
+    override fun visit(operand: Program.Binop): String =
+        "(" + visit(operand.left) + " " + operand.op + " " + visit(operand.right) + ")"
+
+    override fun visit(func: Program.BaseFunc): String =
+        func.name + "(" + func.ops.joinToString(", ") { visit(it) } + ")"
+
+    override fun visit(ternary: Program.Ternary): String =
+        "((${visit(ternary.cond)}) ? (${visit(ternary.otrue)}) : (${visit(ternary.ofalse)}))"
 
     override fun visit(stm: Program.Stm.If) {
         programIndenter.apply {
@@ -79,11 +85,19 @@ internal class MetalShaderBodyGenerator(
         super.visit(operand)
         return when (operand) {
             is Output -> when (kind) {
-                ShaderType.VERTEX -> "vertexOutput.position"
+                ShaderType.VERTEX -> "out.${DefaultShaders.v_Col.name}"
                 ShaderType.FRAGMENT -> "return"
                 else -> error("unreachable statement")
             }
-            else -> operand.name
+
+            else -> when (operand) {
+                DefaultShaders.v_Col, DefaultShaders.v_Col -> when (kind) {
+                    ShaderType.VERTEX -> "out.${operand.name}"
+                    else -> "in.${operand.name}"
+                }
+
+                else -> operand.name
+            }
         }
     }
 

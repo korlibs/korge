@@ -3,10 +3,11 @@ plugins {
     id("io.kotest.multiplatform") version "5.5.4"
 }
 
+
 kotlin {
 
     macosArm64()
-    macosX64()
+    val nativeTarget = macosX64()
     iosArm64()
     iosSimulatorArm64()
 
@@ -23,4 +24,13 @@ kotlin {
         }
     }
 
+    nativeTarget.apply {
+        binaries {
+            executable {
+                entryPoint = "main"
+
+            }
+
+        }
+    }
 }

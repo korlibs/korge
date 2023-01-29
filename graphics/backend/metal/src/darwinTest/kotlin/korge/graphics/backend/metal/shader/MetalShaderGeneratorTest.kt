@@ -2,6 +2,7 @@ package korge.graphics.backend.metal.shader
 
 import com.soywiz.korag.*
 import com.soywiz.korag.shader.*
+import com.soywiz.korag.shader.gl.*
 import com.soywiz.korio.util.*
 import io.kotest.core.spec.style.*
 import io.kotest.matchers.*
@@ -14,6 +15,14 @@ class MetalShaderGeneratorTest : StringSpec({
 
     val vertexShader = DefaultShaders.VERTEX_DEFAULT
     val fragmentShader = DefaultShaders.FRAGMENT_SOLID_COLOR
+
+    vertexShader.toNewGlslStringResult()
+        .result
+        .let(::println)
+
+    fragmentShader.toNewGlslStringResult()
+        .result
+        .let(::println)
 
     "check that vertex metal shader is correctly generated" {
 

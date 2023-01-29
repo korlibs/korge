@@ -34,7 +34,7 @@ class MetalShaderGenerator(
             addHeaders()
 
             declareInputStructure(types.attributes)
-            declareOutputStructure()
+            declareOutputStructure(types.varyings)
 
             customFunctions.filter { it.ref.name in types.funcRefs }
                 .reversed()
@@ -66,27 +66,33 @@ class MetalShaderGenerator(
         }
     }
 
-    private fun Indenter.declareOutputStructure() {
+    private fun Indenter.declareOutputStructure(attributes: LinkedHashSet<Varying>) {
+        if (attributes.isEmpty()) return
+        val generator = MetalShaderBodyGenerator(ShaderType.VERTEX)
 
-        "struct VertexOutput" {
-            //TODO to complete
+        "struct v2f" {
+            attributes.forEach {
+                +"${generator.typeToString(it.type)} ${it.name};"
+            }
         }
     }
 
     private fun Indenter.generateVertexMainFunction() {
-        line("vertex VertexOutput $vertexMainFunctionName() {")
-        val generator = MetalShaderBodyGenerator(ShaderType.VERTEX)
-        generator.visit(vertexShader.stm)
-        line(generator.programIndenter)
-        line("}")
+        "vertex v2f $vertexMainFunctionName(uint vertexId [[vertex_id]],)" {
+            line("v2f out;")
+            val generator = MetalShaderBodyGenerator(ShaderType.VERTEX)
+            generator.visit(vertexShader.stm)
+            line(generator.programIndenter)
+            line("return out;")
+        }
     }
 
     private fun Indenter.generateFragmentMainFunction() {
-        line("vertex float4 $fragmentMainFunctionName() {")
-        val generator = MetalShaderBodyGenerator(ShaderType.FRAGMENT)
-        generator.visit(fragmentShader.stm)
-        line(generator.programIndenter)
-        line("}")
+        "vertex float4 $fragmentMainFunctionName( v2f in [[stage_in]] )" {
+            val generator = MetalShaderBodyGenerator(ShaderType.FRAGMENT)
+            generator.visit(fragmentShader.stm)
+            line(generator.programIndenter)
+        }
     }
 
     private fun Indenter.generationFunctions(functions: List<FuncDecl>) {
