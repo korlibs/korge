@@ -68,10 +68,10 @@ class UIImage(
                 0,
                 realL.toFloat(), realT.toFloat(), (realR - realL).toFloat(), (realB - realT).toFloat(),
                 globalMatrix,
-                ratioL.convertRange(0f, 1f, bitmap.tl_x, bitmap.tr_x), ratioT.convertRange(0f, 1f, bitmap.tl_y, bitmap.bl_y),
-                ratioR.convertRange(0f, 1f, bitmap.tl_x, bitmap.tr_x), ratioT.convertRange(0f, 1f, bitmap.tr_y, bitmap.br_y),
-                ratioL.convertRange(0f, 1f, bitmap.bl_x, bitmap.br_x), ratioB.convertRange(0f, 1f, bitmap.tl_y, bitmap.bl_y),
-                ratioR.convertRange(0f, 1f, bitmap.bl_x, bitmap.br_x), ratioB.convertRange(0f, 1f, bitmap.tr_y, bitmap.br_y),
+                ratioL.convertRange(0f, 1f, bitmap.tlX, bitmap.trX), ratioT.convertRange(0f, 1f, bitmap.tlY, bitmap.blY),
+                ratioR.convertRange(0f, 1f, bitmap.tlX, bitmap.trX), ratioT.convertRange(0f, 1f, bitmap.trY, bitmap.brY),
+                ratioL.convertRange(0f, 1f, bitmap.blX, bitmap.brX), ratioB.convertRange(0f, 1f, bitmap.tlY, bitmap.blY),
+                ratioR.convertRange(0f, 1f, bitmap.blX, bitmap.brX), ratioB.convertRange(0f, 1f, bitmap.trY, bitmap.brY),
                 renderColorMul, renderColorAdd
             )
         }

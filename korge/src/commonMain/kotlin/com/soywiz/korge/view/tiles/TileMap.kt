@@ -431,15 +431,15 @@ abstract class BaseTileMap(
                             val p3X = p0X + dVX
                             val p3Y = p0Y + dVY
 
-                            tempX[0] = tex.tl_x
-                            tempX[1] = tex.tr_x
-                            tempX[2] = tex.br_x
-                            tempX[3] = tex.bl_x
+                            tempX[0] = tex.tlX
+                            tempX[1] = tex.trX
+                            tempX[2] = tex.brX
+                            tempX[3] = tex.blX
 
-                            tempY[0] = tex.tl_y
-                            tempY[1] = tex.tr_y
-                            tempY[2] = tex.br_y
-                            tempY[3] = tex.bl_y
+                            tempY[0] = tex.tlY
+                            tempY[1] = tex.trY
+                            tempY[2] = tex.brY
+                            tempY[3] = tex.blY
 
                             computeIndices(flipX = flipX, flipY = flipY, rotate = rotate, indices = indices)
 

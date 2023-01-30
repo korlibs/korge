@@ -171,10 +171,10 @@ open class FastSprite(tex: BmpSlice) {
     var color = Colors.WHITE
     var visible: Boolean = true
 
-    val tx0: Float get() = tex.tl_x
-    val ty0: Float get() = tex.tl_y
-    val tx1: Float get() = tex.br_x
-    val ty1: Float get() = tex.br_y
+    val tx0: Float get() = tex.tlX
+    val ty0: Float get() = tex.tlY
+    val tx1: Float get() = tex.brX
+    val ty1: Float get() = tex.brY
     val width: Float get() = tex.width.toFloat()
     val height: Float get() = tex.height.toFloat()
 

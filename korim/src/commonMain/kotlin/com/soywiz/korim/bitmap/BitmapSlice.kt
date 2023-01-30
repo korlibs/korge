@@ -17,7 +17,6 @@ import com.soywiz.korma.geom.PointInt
 import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.geom.RectangleInt
 import com.soywiz.korma.geom.SizeInt
-import com.soywiz.korma.geom.setBoundsTo
 import com.soywiz.korma.geom.setTo
 import kotlin.math.min
 import kotlin.math.roundToInt
@@ -25,18 +24,24 @@ import kotlin.math.roundToInt
 interface BmpCoords {
     val premultiplied: Boolean
 
-    val tl_x: Float
-    val tl_y: Float
-
-    val tr_x: Float
-    val tr_y: Float
-
-    val br_x: Float
-    val br_y: Float
-
-    val bl_x: Float
-    val bl_y: Float
+    val tlX: Float
+    val tlY: Float
+    val trX: Float
+    val trY: Float
+    val brX: Float
+    val brY: Float
+    val blX: Float
+    val blY: Float
 }
+
+val BmpCoords.tl_x: Float get() = tlX
+val BmpCoords.tl_y: Float get() = tlY
+val BmpCoords.tr_x: Float get() = trX
+val BmpCoords.tr_y: Float get() = trY
+val BmpCoords.br_x: Float get() = brX
+val BmpCoords.br_y: Float get() = brY
+val BmpCoords.bl_x: Float get() = blX
+val BmpCoords.bl_y: Float get() = blY
 
 interface BmpCoordsWithT<T : ISizeInt> : BmpCoords, Closeable, Resourceable<BmpCoordsWithT<T>> {
     override fun getOrNull(): BmpCoordsWithT<T>? = this
@@ -45,17 +50,17 @@ interface BmpCoordsWithT<T : ISizeInt> : BmpCoords, Closeable, Resourceable<BmpC
     val baseHeight: Int get() = base.height
     val name: String? get() = null
     val base: T
-    val left: Int get() = (tl_x * baseWidth).toInt()
-    val top: Int get() = (tl_y * baseHeight).toInt()
-    val width: Int get() = (Point.distance(tl_x * baseWidth, tl_y * baseHeight, tr_x * baseWidth, tr_y * baseHeight)).toInt()
-    val height: Int get() = (Point.distance(tl_x * baseWidth, tl_y * baseHeight, bl_x * baseWidth, bl_y * baseHeight)).toInt()
+    val left: Int get() = (tlX * baseWidth).toInt()
+    val top: Int get() = (tlY * baseHeight).toInt()
+    val width: Int get() = (Point.distance(tlX * baseWidth, tlY * baseHeight, trX * baseWidth, trY * baseHeight)).toInt()
+    val height: Int get() = (Point.distance(tlX * baseWidth, tlY * baseHeight, blX * baseWidth, blY * baseHeight)).toInt()
     val virtFrame: RectangleInt? get() = null
     val frameOffsetX: Int get() = virtFrame?.x ?: 0
     val frameOffsetY: Int get() = virtFrame?.y ?: 0
     val frameWidth: Int get() = virtFrame?.width ?: width
     val frameHeight: Int get() = virtFrame?.height ?: height
     val area: Int get() = width * height
-    val isRotatedInBaseDeg90 get() = (width > 1 && tl_x == tr_x) || (height > 1 && tl_y == bl_y)
+    val isRotatedInBaseDeg90 get() = (width > 1 && tlX == trX) || (height > 1 && tlY == blY)
     override fun close() = Unit
     val sizeString: String get() = "${width}x${height}"
 
@@ -79,8 +84,8 @@ interface BmpCoordsWithT<T : ISizeInt> : BmpCoords, Closeable, Resourceable<BmpC
         bounds.height = if (ioRotated) bounds.height.clamp(0, width - bounds.x) else bounds.height.clamp(0, height - bounds.y)
 
         // Calculate bmpCoords based on parentCoords
-        val dx = br_x - tl_x
-        val dy = br_y - tl_y
+        val dx = brX - tlX
+        val dy = brY - tlY
         val x = bounds.x.toFloat()
         val y = bounds.y.toFloat()
         val w = bounds.width.toFloat()
@@ -96,8 +101,8 @@ interface BmpCoordsWithT<T : ISizeInt> : BmpCoords, Closeable, Resourceable<BmpC
         val _x = if (isRotatedInBaseDeg90) y else x
         val _y = if (isRotatedInBaseDeg90) x else y
 
-        val tlX = tl_x + _x / _bw * dx
-        val tlY = tl_y + _y / _bh * dy
+        val tlX = tlX + _x / _bw * dx
+        val tlY = tlY + _y / _bh * dy
         val brX = tlX + xDim / _bw * dx
         val brY = tlY + yDim / _bh * dy
         val trX = if (isRotatedInBaseDeg90) tlX else brX
@@ -146,20 +151,20 @@ val BaseBmpSlice.bmpBase get() = base
 
 data class BmpCoordsWithInstance<T : ISizeInt>(
     override val base: T,
-    override val tl_x: Float = 0f, override val tl_y: Float = 0f,
-    override val tr_x: Float = 1f, override val tr_y: Float = 0f,
-    override val br_x: Float = 1f, override val br_y: Float = 1f,
-    override val bl_x: Float = 0f, override val bl_y: Float = 1f,
+    override val tlX: Float = 0f, override val tlY: Float = 0f,
+    override val trX: Float = 1f, override val trY: Float = 0f,
+    override val brX: Float = 1f, override val brY: Float = 1f,
+    override val blX: Float = 0f, override val blY: Float = 1f,
     override val name: String? = null,
     override val virtFrame: RectangleInt? = null,
     override val premultiplied: Boolean,
-) : BmpCoordsWithInstanceBase<T>(base, tl_x, tl_y, tr_x, tr_y, br_x, br_y, bl_x, bl_y, name, virtFrame, premultiplied) {
+) : BmpCoordsWithInstanceBase<T>(base, tlX, tlY, trX, trY, brX, brY, blX, blY, name, virtFrame, premultiplied) {
     constructor(base: T, coords: BmpCoords, name: String? = null, virtFrame: RectangleInt? = null) : this(
         base,
-        coords.tl_x, coords.tl_y,
-        coords.tr_x, coords.tr_y,
-        coords.br_x, coords.br_y,
-        coords.bl_x, coords.bl_y,
+        coords.tlX, coords.tlY,
+        coords.trX, coords.trY,
+        coords.brX, coords.brY,
+        coords.blX, coords.blY,
         name,
         virtFrame,
         coords.premultiplied
@@ -168,20 +173,20 @@ data class BmpCoordsWithInstance<T : ISizeInt>(
 
 open class BmpCoordsWithInstanceBase<T : ISizeInt>(
     override val base: T,
-    override val tl_x: Float = 0f, override val tl_y: Float = 0f,
-    override val tr_x: Float = 1f, override val tr_y: Float = 0f,
-    override val br_x: Float = 1f, override val br_y: Float = 1f,
-    override val bl_x: Float = 0f, override val bl_y: Float = 1f,
+    override val tlX: Float = 0f, override val tlY: Float = 0f,
+    override val trX: Float = 1f, override val trY: Float = 0f,
+    override val brX: Float = 1f, override val brY: Float = 1f,
+    override val blX: Float = 0f, override val blY: Float = 1f,
     override val name: String? = null,
     override val virtFrame: RectangleInt? = null,
     override val premultiplied: Boolean,
 ) : BmpCoordsWithT<T> {
     constructor(base: T, coords: BmpCoords, name: String? = null, virtFrame: RectangleInt? = null) : this(
         base,
-        coords.tl_x, coords.tl_y,
-        coords.tr_x, coords.tr_y,
-        coords.br_x, coords.br_y,
-        coords.bl_x, coords.bl_y,
+        coords.tlX, coords.tlY,
+        coords.trX, coords.trY,
+        coords.brX, coords.brY,
+        coords.blX, coords.blY,
         name,
         virtFrame,
         coords.premultiplied
@@ -195,20 +200,20 @@ open class BmpCoordsWithInstanceBase<T : ISizeInt>(
 
 open class MutableBmpCoordsWithInstanceBase<T : ISizeInt>(
     override var base: T,
-    override var tl_x: Float, override var tl_y: Float,
-    override var tr_x: Float, override var tr_y: Float,
-    override var br_x: Float, override var br_y: Float,
-    override var bl_x: Float, override var bl_y: Float,
+    override var tlX: Float, override var tlY: Float,
+    override var trX: Float, override var trY: Float,
+    override var brX: Float, override var brY: Float,
+    override var blX: Float, override var blY: Float,
     override var name: String? = null,
     override var virtFrame: RectangleInt? = null,
     override var premultiplied: Boolean
 ) : BmpCoordsWithT<T> {
     constructor(base: T, coords: BmpCoords, name: String? = null, virtFrame: RectangleInt? = null) : this(
         base,
-        coords.tl_x, coords.tl_y,
-        coords.tr_x, coords.tr_y,
-        coords.br_x, coords.br_y,
-        coords.bl_x, coords.bl_y,
+        coords.tlX, coords.tlY,
+        coords.trX, coords.trY,
+        coords.brX, coords.brY,
+        coords.blX, coords.blY,
         name,
         virtFrame,
         coords.premultiplied
@@ -222,21 +227,21 @@ open class MutableBmpCoordsWithInstanceBase<T : ISizeInt>(
         bl_x: Float, bl_y: Float,
         virtFrame: RectangleInt? = null,
     ) {
-        this.tl_x = tl_x
-        this.tl_y = tl_y
-        this.tr_x = tr_x
-        this.tr_y = tr_y
-        this.br_x = br_x
-        this.br_y = br_y
-        this.bl_x = bl_x
-        this.bl_y = bl_y
+        this.tlX = tl_x
+        this.tlY = tl_y
+        this.trX = tr_x
+        this.trY = tr_y
+        this.brX = br_x
+        this.brY = br_y
+        this.blX = bl_x
+        this.blY = bl_y
         this.virtFrame = virtFrame
     }
 
     fun setTo(coords: BmpCoords, virtFrame: RectangleInt? = null) {
         setTo(
-            coords.tl_x, coords.tl_y, coords.tr_x, coords.tr_y,
-            coords.br_x, coords.br_y, coords.bl_x, coords.bl_y,
+            coords.tlX, coords.tlY, coords.trX, coords.trY,
+            coords.brX, coords.brY, coords.blX, coords.blY,
             virtFrame
         )
     }
@@ -280,17 +285,17 @@ open class UntransformedSizeBmpCoordsWithInstance<T : ISizeInt>(
 
 fun <T : ISizeInt> BmpCoordsWithT<T>.copy(
     base: T = this.base,
-    tl_x: Float = this.tl_x, tl_y: Float = this.tl_y,
-    tr_x: Float = this.tr_x, tr_y: Float = this.tr_y,
-    br_x: Float = this.br_x, br_y: Float = this.br_y,
-    bl_x: Float = this.bl_x, bl_y: Float = this.bl_y,
+    tl_x: Float = this.tlX, tl_y: Float = this.tlY,
+    tr_x: Float = this.trX, tr_y: Float = this.trY,
+    br_x: Float = this.brX, br_y: Float = this.brY,
+    bl_x: Float = this.blX, bl_y: Float = this.blY,
     name: String? = this.name,
     virtFrame: RectangleInt? = null,
     premultiplied: Boolean = this.premultiplied,
 ): BmpCoordsWithInstance<T> = BmpCoordsWithInstance(base, tl_x, tl_y, tr_x, tr_y, br_x, br_y, bl_x, bl_y, name, virtFrame, premultiplied)
 
 fun <T : ISizeInt> BmpCoordsWithT<T>.rotatedLeft(): BmpCoordsWithInstance<T> =
-    copy(base, tr_x, tr_y, br_x, br_y, bl_x, bl_y, tl_x, tl_y,
+    copy(base, trX, trY, brX, brY, blX, blY, tlX, tlY,
         virtFrame = if (virtFrame != null) {
             RectangleInt(frameOffsetY, frameWidth - width - frameOffsetX, frameHeight, frameWidth)
         } else {
@@ -299,7 +304,7 @@ fun <T : ISizeInt> BmpCoordsWithT<T>.rotatedLeft(): BmpCoordsWithInstance<T> =
     )
 
 fun <T : ISizeInt> BmpCoordsWithT<T>.rotatedRight(): BmpCoordsWithInstance<T> =
-    copy(base, bl_x, bl_y, tl_x, tl_y, tr_x, tr_y, br_x, br_y,
+    copy(base, blX, blY, tlX, tlY, trX, trY, brX, brY,
         virtFrame = if (virtFrame != null) {
             RectangleInt(frameHeight - height - frameOffsetY, frameOffsetX, frameHeight, frameWidth)
         } else {
@@ -308,7 +313,7 @@ fun <T : ISizeInt> BmpCoordsWithT<T>.rotatedRight(): BmpCoordsWithInstance<T> =
     )
 
 fun <T : ISizeInt> BmpCoordsWithT<T>.flippedX(): BmpCoordsWithInstance<T> =
-    copy(base, tr_x, tr_y, tl_x, tl_y, bl_x, bl_y, br_x, br_y,
+    copy(base, trX, trY, tlX, tlY, blX, blY, brX, brY,
         virtFrame = if (virtFrame != null) {
             RectangleInt(frameWidth - width - frameOffsetX, frameOffsetY, frameWidth, frameHeight)
         } else {
@@ -317,7 +322,7 @@ fun <T : ISizeInt> BmpCoordsWithT<T>.flippedX(): BmpCoordsWithInstance<T> =
     )
 
 fun <T : ISizeInt> BmpCoordsWithT<T>.flippedY(): BmpCoordsWithInstance<T> =
-    copy(base, bl_x, bl_y, br_x, br_y, tr_x, tr_y, tl_x, tl_y,
+    copy(base, blX, blY, brX, brY, trX, trY, tlX, tlY,
         virtFrame = if (virtFrame != null) {
             RectangleInt(frameOffsetX, frameHeight - height - frameOffsetY, frameWidth, frameHeight)
         } else {
@@ -327,18 +332,18 @@ fun <T : ISizeInt> BmpCoordsWithT<T>.flippedY(): BmpCoordsWithInstance<T> =
 
 fun <T : ISizeInt> BmpCoordsWithT<T>.transformed(m: Matrix): BmpCoordsWithInstance<T> = copy(
     base,
-    m.transformXf(tl_x, tl_y), m.transformYf(tl_x, tl_y),
-    m.transformXf(tr_x, tr_y), m.transformYf(tr_x, tr_y),
-    m.transformXf(br_x, br_y), m.transformYf(br_x, br_y),
-    m.transformXf(bl_x, bl_y), m.transformYf(bl_x, bl_y),
+    m.transformXf(tlX, tlY), m.transformYf(tlX, tlY),
+    m.transformXf(trX, trY), m.transformYf(trX, trY),
+    m.transformXf(brX, brY), m.transformYf(brX, brY),
+    m.transformXf(blX, blY), m.transformYf(blX, blY),
 )
 
 fun <T : ISizeInt> BmpCoordsWithT<T>.transformed(m: Matrix3D): BmpCoordsWithInstance<T> {
     // @TODO: This allocates
-    val v1 = m.transform(tl_x, tl_y, 0f, 1f)
-    val v2 = m.transform(tr_x, tr_y, 0f, 1f)
-    val v3 = m.transform(br_x, br_y, 0f, 1f)
-    val v4 = m.transform(bl_x, bl_y, 0f, 1f)
+    val v1 = m.transform(tlX, tlY, 0f, 1f)
+    val v2 = m.transform(trX, trY, 0f, 1f)
+    val v3 = m.transform(brX, brY, 0f, 1f)
+    val v4 = m.transform(blX, blY, 0f, 1f)
     return copy(base, v1.x, v1.y, v2.x, v2.y, v3.x, v3.y, v4.x, v4.y)
 }
 
@@ -407,14 +412,14 @@ abstract class BmpSlice(
 
     var parent: Any? = null
 
-    override val tl_x: Float get() = this.bmpCoords.tl_x
-    override val tl_y: Float get() = this.bmpCoords.tl_y
-    override val tr_x: Float get() = this.bmpCoords.tr_x
-    override val tr_y: Float get() = this.bmpCoords.tr_y
-    override val br_x: Float get() = this.bmpCoords.br_x
-    override val br_y: Float get() = this.bmpCoords.br_y
-    override val bl_x: Float get() = this.bmpCoords.bl_x
-    override val bl_y: Float get() = this.bmpCoords.bl_y
+    override val tlX: Float get() = this.bmpCoords.tlX
+    override val tlY: Float get() = this.bmpCoords.tlY
+    override val trX: Float get() = this.bmpCoords.trX
+    override val trY: Float get() = this.bmpCoords.trY
+    override val brX: Float get() = this.bmpCoords.brX
+    override val brY: Float get() = this.bmpCoords.brY
+    override val blX: Float get() = this.bmpCoords.blX
+    override val blY: Float get() = this.bmpCoords.blY
 
     @Deprecated("This value has no effect")
     var rotated: Boolean = false
@@ -423,12 +428,12 @@ abstract class BmpSlice(
     val rotatedAngle: Int = 0
 
     private val pixelOffsets: IntArray by lazy {
-        val x = (tl_x * baseWidth).roundToInt()
-        val y = (tl_y * baseHeight).roundToInt()
-        val xOff = if (tl_x > br_x) x - 1 else x
-        val yOff = if (tl_y > br_y) y - 1 else y
-        val xDir = if (tl_x < br_x) 1 else -1
-        val yDir = if (tl_y < br_y) 1 else -1
+        val x = (tlX * baseWidth).roundToInt()
+        val y = (tlY * baseHeight).roundToInt()
+        val xOff = if (tlX > brX) x - 1 else x
+        val yOff = if (tlY > brY) y - 1 else y
+        val xDir = if (tlX < brX) 1 else -1
+        val yDir = if (tlY < brY) 1 else -1
 
         if (isRotatedInBaseDeg90) {
             intArrayOf(xOff, yOff, 0, xDir, 0, yDir)
@@ -511,11 +516,11 @@ abstract class BmpSlice(
     open fun slice(rect: Rectangle, name: String? = null, imageOrientation: ImageOrientation = ImageOrientation.ORIGINAL): BmpSlice = slice(rect.toInt(), name, imageOrientation)
 
     internal fun <T: Bitmap> extractWithBase(base: T): T {
-        val x = (min(min(tl_x, tr_x), min(bl_x, br_x)) * baseWidth).roundToInt()
-        val y = (min(min(tl_y, tr_y), min(bl_y, br_y)) * baseHeight).roundToInt()
+        val x = (min(min(tlX, trX), min(blX, brX)) * baseWidth).roundToInt()
+        val y = (min(min(tlY, trY), min(blY, brY)) * baseHeight).roundToInt()
         val rotated = isRotatedInBaseDeg90
-        val reverseX = width > 1 && if (rotated) tl_y > br_y else tl_x > br_x
-        val reverseY = height > 1 && if (rotated) tl_x > br_x else tl_y > br_y
+        val reverseX = width > 1 && if (rotated) tlY > brY else tlX > brX
+        val reverseY = height > 1 && if (rotated) tlX > brX else tlY > brY
 
         val offsetX = if (reverseX) {
             frameWidth - width - frameOffsetX

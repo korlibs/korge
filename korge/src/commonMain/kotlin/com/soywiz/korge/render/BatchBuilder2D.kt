@@ -284,10 +284,10 @@ class BatchBuilder2D constructor(
         addQuadIndices()
         var vp = vertexPos
         val vd = vertices
-        vp += _addVertex(vd, vp, x0, y0, tex.tl_x, tex.tl_y, colorMul.value, colorAdd.value, texIndex, premultiplied, wrap)
-        vp += _addVertex(vd, vp, x1, y1, tex.tr_x, tex.tr_y, colorMul.value, colorAdd.value, texIndex, premultiplied, wrap)
-        vp += _addVertex(vd, vp, x2, y2, tex.br_x, tex.br_y, colorMul.value, colorAdd.value, texIndex, premultiplied, wrap)
-        vp += _addVertex(vd, vp, x3, y3, tex.bl_x, tex.bl_y, colorMul.value, colorAdd.value, texIndex, premultiplied, wrap)
+        vp += _addVertex(vd, vp, x0, y0, tex.tlX, tex.tlY, colorMul.value, colorAdd.value, texIndex, premultiplied, wrap)
+        vp += _addVertex(vd, vp, x1, y1, tex.trX, tex.trY, colorMul.value, colorAdd.value, texIndex, premultiplied, wrap)
+        vp += _addVertex(vd, vp, x2, y2, tex.brX, tex.brY, colorMul.value, colorAdd.value, texIndex, premultiplied, wrap)
+        vp += _addVertex(vd, vp, x3, y3, tex.blX, tex.blY, colorMul.value, colorAdd.value, texIndex, premultiplied, wrap)
         vertexPos = vp
         vertexCount += 4
 	}
@@ -599,9 +599,9 @@ class BatchBuilder2D constructor(
 		val p_dU = pt2.setToSub(ptt1.setToTransform(m, ptt1.setTo(x + width, y)), p_o)
 		val p_dV = pt3.setToSub(ptt1.setToTransform(m, ptt1.setTo(x, y + height)), p_o)
 
-		val t_o = pt4.setTo(tex.tl_x, tex.tl_y)
-		val t_dU = pt5.setToSub(ptt1.setTo(tex.tr_x, tex.tr_y), t_o)
-		val t_dV = pt6.setToSub(ptt1.setTo(tex.bl_x, tex.bl_y), t_o)
+		val t_o = pt4.setTo(tex.tlX, tex.tlY)
+		val t_dU = pt5.setToSub(ptt1.setTo(tex.trX, tex.trY), t_o)
+		val t_dV = pt6.setToSub(ptt1.setTo(tex.blX, tex.blY), t_o)
 
 		val start = vertexCount
 
