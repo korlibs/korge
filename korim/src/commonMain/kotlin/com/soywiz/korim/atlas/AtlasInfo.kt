@@ -99,7 +99,7 @@ data class AtlasInfo(
         val name: String,
         val frame: Rect,
         val virtFrame: Rect? = null,
-        val imageOrientation: ImageOrientation = ImageOrientation.ROTATE_0,
+        val imageOrientation: ImageOrientation = ImageOrientation.NORMAL,
     ) {
         @Deprecated("Use primary constructor")
         constructor(
@@ -145,7 +145,15 @@ data class AtlasInfo(
 
         // @TODO: Rename to path or name
         //@IgnoreSerialization
-        val filename get() = name
+        val filename: String get() = name
+
+        // Used by Spine
+        @Suppress("unused")
+        val srcWidth: Int = if (imageOrientation.isRotatedDeg90CwOrCcw) frame.h else frame.w
+
+        // Used by Spine
+        @Suppress("unused")
+        val srcHeight: Int = if (imageOrientation.isRotatedDeg90CwOrCcw) frame.w else frame.h
     }
 
     val app: String get() = meta.app
