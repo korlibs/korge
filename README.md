@@ -83,3 +83,7 @@ now they are available via kproject in these repositories:
 ### Level Loading
 
 * <https://github.com/korlibs/korge-ldtk>
+
+### Formats
+
+* <https://github.com/korlibs/korge-formats> (JPEG)
