@@ -10,6 +10,7 @@ import com.soywiz.korge.view.anchor
 import com.soywiz.korge.view.image
 import com.soywiz.korge.view.position
 import com.soywiz.korge.view.scale
+import com.soywiz.korim.bitmap.*
 import com.soywiz.korma.geom.degrees
 import com.soywiz.korma.interpolation.Easing
 

@@ -1,106 +1,25 @@
 package com.soywiz.korim.format
 
 import com.soywiz.kds.*
-import com.soywiz.kmem.*
 import com.soywiz.korim.atlas.MutableAtlasUnit
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korio.file.VfsFile
-import com.soywiz.korma.geom.ISizeInt
+import com.soywiz.korma.geom.slice.*
 import kotlin.native.concurrent.ThreadLocal
 
-// TL, TR, BR, BL
-inline class ImageOrientation(val data: Int) {
-    val rotation: Rotation get() = Rotation[data.extract2(0)]
-    val flipX: Boolean get() = data.extractBool(2)
-    val flipY: Boolean get() = data.extractBool(3)
-    constructor(rotation: Rotation = Rotation.R0, flipX: Boolean = false, flipY: Boolean = false) : this(
-        0.insert2(rotation.ordinal, 0).insert(flipX, 2).insert(flipY, 3)
-    )
+typealias ImageOrientation = SliceOrientation
 
-    fun flippedX(): ImageOrientation = ImageOrientation(rotation, !flipX, flipY)
-    fun flippedY(): ImageOrientation = ImageOrientation(rotation, flipX, !flipY)
-    fun rotatedLeft(offset: Int = 1): ImageOrientation = ImageOrientation(rotation.rotatedLeft(offset), flipX, flipY)
-    fun rotatedRight(offset: Int = 1): ImageOrientation = ImageOrientation(rotation.rotatedRight(offset), flipX, flipY)
-
-    val indices: IntArray get() = INDICES[data.extract4(0)]
-
-    override fun toString(): String = "ImageOrientation(rotation=$rotation, flipX=$flipX, flipY=$flipY)"
-
-    enum class Rotation {
-        R0, R90, R180, R270;
-
-        fun rotatedLeft(offset: Int = 1): Rotation = Rotation[(ordinal - offset) umod 4]
-        fun rotatedRight(offset: Int = 1): Rotation = Rotation[(ordinal + offset) umod 4]
-
-        companion object {
-            val VALUES = values()
-            operator fun get(index: Int): Rotation = VALUES[index umod VALUES.size]
-        }
-    }
-
-    object Indices {
-        const val TL = 0
-        const val TR = 1
-        const val BR = 2
-        const val BL = 3
-    }
-
-    companion object {
-        private val INDICES = Array(16) {
-            val orientation = ImageOrientation(it)
-            val out = intArrayOf(0, 1, 2, 3)
-            val rotation = orientation.rotation
-            val flipX: Boolean = orientation.flipX
-            val flipY: Boolean = orientation.flipY
-            if (flipX) {
-                out.swap(Indices.TL, Indices.TR)
-                out.swap(Indices.BL, Indices.BR)
-            }
-            if (flipY) {
-                out.swap(Indices.TL, Indices.BL)
-                out.swap(Indices.TR, Indices.BR)
-            }
-            out.rotateRight(rotation.ordinal)
-            return@Array out
-        }
-
-        val ORIGINAL = ImageOrientation(Rotation.R0)
-        val MIRROR_HORIZONTAL = ImageOrientation(flipX = true)
-        val ROTATE_180 = ImageOrientation(Rotation.R180)
-        val MIRROR_VERTICAL = ImageOrientation(flipY = true)
-        val MIRROR_HORIZONTAL_ROTATE_270 = ImageOrientation(flipX = true, rotation = Rotation.R270)
-        val ROTATE_90 = ImageOrientation(rotation = Rotation.R90)
-        val MIRROR_HORIZONTAL_ROTATE_90 = ImageOrientation(flipX = true, rotation = Rotation.R90)
-        val ROTATE_270 = ImageOrientation(rotation = Rotation.R270)
-    }
-
-    val isRotatedDeg90CwOrCcw: Boolean get() = data.extractBool(0) // equivalent to (rotation == Rotation.R90 || rotation == Rotation.R270)
-}
-
-fun <T : ISizeInt> BmpCoordsWithT<T>.withImageOrientation(orientation: ImageOrientation): BmpCoordsWithT<T> {
-    var result = this
-    if (orientation.flipX) result = result.flippedX()
-    if (orientation.flipY) result = result.flippedY()
-    return when (orientation.rotation) {
-        ImageOrientation.Rotation.R0 -> result
-        ImageOrientation.Rotation.R90 -> result.rotatedRight()
-        ImageOrientation.Rotation.R180 -> result.rotatedRight().rotatedRight()
-        ImageOrientation.Rotation.R270 -> result.rotatedRight().rotatedRight().rotatedRight()
-    }
-}
-
-suspend fun VfsFile.readBitmapSliceWithOrientation(props: ImageDecodingProps = ImageDecodingProps.DEFAULT, name: String? = null, atlas: MutableAtlasUnit? = null): BitmapCoords {
+suspend fun VfsFile.readBitmapSliceWithOrientation(props: ImageDecodingProps = ImageDecodingProps.DEFAULT, name: String? = null, atlas: MutableAtlasUnit? = null): BmpSlice {
     // @TODO: Support other formats providing orientation information in addition to EXIF?
     val result = kotlin.runCatching { EXIF.readExifFromJpeg(this) }
     val slice = readBitmapSlice(name, atlas, props)
-    return if (result.isSuccess) {
-        slice.withImageOrientation(result.getOrThrow().orientationSure)
-    } else {
-        slice
+    return when {
+        result.isSuccess -> slice.copy(orientation = result.getOrThrow().orientationSure)
+        else -> slice
     }
 }
 
 @ThreadLocal
 var ImageInfo.orientation: ImageOrientation? by Extra.Property { null }
-val ImageInfo?.orientationSure: ImageOrientation get() = this?.orientation ?: ImageOrientation.ORIGINAL
+val ImageInfo?.orientationSure: ImageOrientation get() = this?.orientation ?: ImageOrientation.ROTATE_0
 

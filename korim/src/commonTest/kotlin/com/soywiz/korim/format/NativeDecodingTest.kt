@@ -1,9 +1,7 @@
 package com.soywiz.korim.format
 
 import com.soywiz.korim.atlas.readAtlas
-import com.soywiz.korim.bitmap.Bitmap32
-import com.soywiz.korim.bitmap.NativeImage
-import com.soywiz.korim.bitmap.context2d
+import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.color.RGBAPremultiplied

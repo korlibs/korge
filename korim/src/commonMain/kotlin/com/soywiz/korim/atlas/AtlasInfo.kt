@@ -1,7 +1,6 @@
 package com.soywiz.korim.atlas
 
 import com.soywiz.kds.ListReader
-import com.soywiz.korim.atlas.AtlasInfo.Companion.toRect
 import com.soywiz.korim.format.ImageOrientation
 import com.soywiz.korio.dynamic.*
 import com.soywiz.korio.serialization.json.Json
@@ -96,15 +95,12 @@ data class AtlasInfo(
         val regions: List<Region>
     )
 
-    data class Region(
+    data class Region constructor(
         val name: String,
         val frame: Rect,
         val virtFrame: Rect? = null,
-        val imageOrientation: ImageOrientation = ImageOrientation.ORIGINAL,
+        val imageOrientation: ImageOrientation = ImageOrientation.ROTATE_0,
     ) {
-        val srcWidth get() = if (imageOrientation.isRotatedDeg90CwOrCcw) frame.h else frame.w
-        val srcHeight get() = if (imageOrientation.isRotatedDeg90CwOrCcw) frame.w else frame.h
-
         @Deprecated("Use primary constructor")
         constructor(
             name: String,
@@ -125,7 +121,7 @@ data class AtlasInfo(
                     Rect(spriteSourceSize.x, spriteSourceSize.y, sourceSize.width, sourceSize.height)
                 else -> null
             },
-            imageOrientation = if (rotated) ImageOrientation.ROTATE_90 else ImageOrientation.ORIGINAL
+            imageOrientation = if (rotated) ImageOrientation.ROTATE_90 else ImageOrientation.ROTATE_0
         )
 
         @Deprecated("Use imageOrientation", ReplaceWith("imageOrientation == ImageOrientation.ROTATE_90", imports = ["com.soywiz.korim.format.ImageOrientation"]))
@@ -150,20 +146,6 @@ data class AtlasInfo(
         // @TODO: Rename to path or name
         //@IgnoreSerialization
         val filename get() = name
-
-        fun applyRotation() = if (imageOrientation == ImageOrientation.ROTATE_90) {
-            this.copy(
-                frame = frame.copy(w = frame.h, h = frame.w),
-                virtFrame = virtFrame?.copy(
-                    x = virtFrame.y,
-                    y = virtFrame.x,
-                    w = virtFrame.h,
-                    h = virtFrame.w
-                )
-            )
-        } else {
-            this
-        }
     }
 
     val app: String get() = meta.app
@@ -202,10 +184,15 @@ data class AtlasInfo(
             val rotated = it["rotated"].bool
             val sourceSize = it["sourceSize"].toSize()
             val spriteSourceSize = it["spriteSourceSize"].toRect()
+
+            val sW = sourceSize.width
+            val sH = sourceSize.height
+            val frame = it["frame"].toRect()
+
             return Region(name = name,
-                frame = it["frame"].toRect(),
-                virtFrame = Rect(spriteSourceSize.x, spriteSourceSize.y, sourceSize.width, sourceSize.height),
-                imageOrientation = if (rotated) ImageOrientation.ROTATE_270 else ImageOrientation.ORIGINAL)
+                frame = if (!rotated) frame else Rect(frame.x, frame.y, frame.h, frame.w),
+                virtFrame = Rect(spriteSourceSize.x, spriteSourceSize.y, sW, sH),
+                imageOrientation = if (rotated) ImageOrientation.ROTATE_270 else ImageOrientation.ROTATE_0)
         }
 
         // @TODO: kotlinx-serialization?
@@ -292,21 +279,6 @@ data class AtlasInfo(
 
             return AtlasInfo(
                 (xml.children("SubTexture") + xml.children("sprite")).map {
-                    val rotated = it.boolean("rotated", false)
-                    var rect = Rect(
-                        it.int("x"),
-                        it.int("y"),
-                        it.intNull("width") ?: it.int("w"),
-                        it.intNull("height") ?: it.int("h")
-                    )
-                    val imageOrientation: ImageOrientation
-                    if (rotated) {
-                        rect = rect.copy(w = rect.h, h = rect.w)
-                        imageOrientation = ImageOrientation.ROTATE_270
-                    } else {
-                        imageOrientation = ImageOrientation.ORIGINAL
-                    }
-
                     val virtFrame = Rect(
                         it.int("frameX", 0) * -1,
                         it.int("frameY", 0) * -1,
@@ -315,9 +287,14 @@ data class AtlasInfo(
                     )
                     Region(
                         name = it.strNull("name") ?: it.str("n"),
-                        frame = rect,
+                        frame = Rect(
+                            it.int("x"),
+                            it.int("y"),
+                            it.intNull("width") ?: it.int("w"),
+                            it.intNull("height") ?: it.int("h")
+                        ),
                         virtFrame = if (virtFrame.w != 0 || virtFrame.h != 0) virtFrame else null,
-                        imageOrientation = imageOrientation
+                        imageOrientation = if (it.boolean("rotated", false)) ImageOrientation.ROTATE_270 else ImageOrientation.ROTATE_0
                     )
                 }, Meta(
                     app = "Unknown",
@@ -409,16 +386,21 @@ data class AtlasInfo(
                             "offset" -> offset = value.point()
                         }
                     }
+                    val orientation = when {
+                        rotate -> ImageOrientation.ROTATE_90
+                        else -> ImageOrientation.ROTATE_0
+                    }
+
+                    val w = if (!rotate) size.width else size.height
+                    val h = if (!rotate) size.height else size.width
+                    val oW = orig.width
+                    val oH = orig.height
 
                     currentEntryList.add(Region(
                         name = name,
-                        frame = Rect(xy.x.toInt(), xy.y.toInt(), size.width, size.height),
-                        virtFrame = Rect(offset.x.toInt(), orig.height - size.height - offset.y.toInt(), orig.width, orig.height), // In Spine atlas format offset is defined from left and bottom
-                        imageOrientation = if (rotate) {
-                            ImageOrientation.ROTATE_90
-                        } else {
-                            ImageOrientation.ORIGINAL
-                        }
+                        frame = Rect(xy.x.toInt(), xy.y.toInt(), w, h),
+                        virtFrame = Rect(offset.x.toInt(), orig.height - size.height - offset.y.toInt(), oW, oH), // In Spine atlas format offset is defined from left and bottom
+                        imageOrientation = orientation
                     ))
                 }
             }

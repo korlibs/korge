@@ -5,6 +5,7 @@ import com.soywiz.kmem.clamp
 import com.soywiz.korag.*
 import com.soywiz.korge.render.Texture
 import com.soywiz.korge.ui.DefaultUIBitmapFont
+import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.font.BitmapFont
 import com.soywiz.korma.geom.Matrix3D
 import com.soywiz.korma.geom.Vector3D

@@ -1,8 +1,7 @@
 package com.soywiz.korim.paint
 
 import com.soywiz.kmem.clamp01
-import com.soywiz.korim.bitmap.Bitmap32
-import com.soywiz.korim.bitmap.Bitmaps
+import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.color.RGBAPremultiplied

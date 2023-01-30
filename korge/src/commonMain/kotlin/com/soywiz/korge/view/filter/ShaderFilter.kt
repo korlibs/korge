@@ -168,7 +168,7 @@ abstract class ShaderFilter : Filter {
                 //println("renderColorMulInt=" + RGBA(renderColorMulInt))
                 //println("blendMode:$blendMode")
 
-                val slice = texture.sliceBoundsUnclamped(-marginLeft, -marginTop, texture.width + marginRight, texture.height + marginBottom)
+                val slice = texture.sliceWithBounds(-marginLeft, -marginTop, texture.width + marginRight, texture.height + marginBottom, clamped = false)
 
                 //println("matrix=$matrix, slice=$slice, marginLeft=$marginLeft")
                 batch.drawQuad(

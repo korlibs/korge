@@ -184,7 +184,7 @@ class Bitmap32(
 	}
 
     @KorimInternal
-	fun _draw(src: BitmapSlice<Bitmap32>, dx: Int = 0, dy: Int = 0, mix: Boolean) {
+	fun _draw(src: BmpSlice32, dx: Int = 0, dy: Int = 0, mix: Boolean) {
 		val b = src.bounds
 		_draw(src.bmp, dx, dy, b.left, b.top, b.right, b.bottom, mix = mix)
 	}
@@ -192,12 +192,12 @@ class Bitmap32(
     fun put(src: Bitmap32, dx: Int = 0, dy: Int = 0) = _drawPut(false, src, dx, dy)
 	fun draw(src: Bitmap32, dx: Int = 0, dy: Int = 0) = _drawPut(true, src, dx, dy)
 
-	fun put(src: BitmapSlice<Bitmap32>, dx: Int = 0, dy: Int = 0) = _draw(src, dx, dy, mix = false)
-	fun draw(src: BitmapSlice<Bitmap32>, dx: Int = 0, dy: Int = 0) = _draw(src, dx, dy, mix = true)
+	fun put(src: BmpSlice32, dx: Int = 0, dy: Int = 0) = _draw(src, dx, dy, mix = false)
+	fun draw(src: BmpSlice32, dx: Int = 0, dy: Int = 0) = _draw(src, dx, dy, mix = true)
 
-	fun drawUnoptimized(src: BitmapSlice<Bitmap>, dx: Int = 0, dy: Int = 0, mix: Boolean = true) {
+	fun drawUnoptimized(src: BmpSlice, dx: Int = 0, dy: Int = 0, mix: Boolean = true) {
 		if (src.bmpBase is Bitmap32) {
-			_draw(src as BitmapSlice<Bitmap32>, dx, dy, mix = mix)
+			_draw(src as BmpSlice32, dx, dy, mix = mix)
 		} else {
 			drawUnoptimized(src.bmpBase, dx, dy, src.left, src.top, src.right, src.bottom, mix = mix)
 		}
@@ -572,12 +572,15 @@ class Bitmap32(
 }
 
 
-fun BitmapSlice<Bitmap32>.isFullyTransparent(): Boolean {
+fun BmpSlice32.isFullyTransparent(): Boolean {
     val bmp = this.bmp
     val data = RgbaArray(this.bmp.ints)
     val width = right - left
     for (y in top until bottom) {
         val index = bmp.index(left, y)
+        check(index >= 0 && index <= data.size - width) {
+            "left=$left, top=$top, right=$right, bottom=$bottom"
+        }
         for (n in 0 until width) if (data[index + n].a != 0) return false
     }
     return true

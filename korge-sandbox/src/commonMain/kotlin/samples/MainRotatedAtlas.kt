@@ -7,10 +7,7 @@ import com.soywiz.korge.view.solidRect
 import com.soywiz.korge.view.xy
 import com.soywiz.korim.atlas.Atlas
 import com.soywiz.korim.atlas.readAtlas
-import com.soywiz.korim.bitmap.Bitmap
-import com.soywiz.korim.bitmap.BitmapSlice
-import com.soywiz.korim.bitmap.asBitmapSlice
-import com.soywiz.korim.bitmap.virtFrame
+import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.format.ImageOrientation
 import com.soywiz.korio.file.std.resourcesVfs
@@ -43,12 +40,12 @@ class MainRotatedAtlas : Scene() {
             for (i in 1..6) {
                 solidRect(100, 100, BG.color).xy(x, y)
                 image(when(i) {
-                    1 -> atlas1.sliceWithSize(0, 0, 50, 60, "a$i").asBitmapSlice<Bitmap>().virtFrame(25, 20, 100, 100)
-                    2 -> atlas1.sliceWithSize(50, 0, 50, 60, "a$i").asBitmapSlice<Bitmap>().virtFrame(25, 20, 100, 100)
-                    3 -> atlas2.sliceWithSize(0, 0, 50, 60, "a$i").asBitmapSlice<Bitmap>().virtFrame(25, 20, 100, 100)
-                    4 -> atlas2.sliceWithSize(50, 0, 50, 60, "a$i").asBitmapSlice<Bitmap>().virtFrame(25, 20, 100, 100)
-                    5 -> atlas3.sliceWithSize(0, 0, 100, 10, "a$i").asBitmapSlice<Bitmap>().virtFrame(0, 45, 100, 100)
-                    else -> (atlas3.sliceWithSize(0, 10, 10, 100, "a$i", ImageOrientation.ROTATE_270) as BitmapSlice<Bitmap>).virtFrame(45, 0, 100, 100)
+                    1 -> atlas1.sliceWithSize(0, 0, 60, 50, "a$i").virtFrame(25, 20, 100, 100)
+                    2 -> atlas1.sliceWithSize(0, 50, 60, 50, "a$i").virtFrame(25, 20, 100, 100)
+                    3 -> atlas2.sliceWithSize(0, 0, 60, 50, "a$i").virtFrame(25, 20, 100, 100)
+                    4 -> atlas2.sliceWithSize(0, 50, 60, 50, "a$i").virtFrame(25, 20, 100, 100)
+                    5 -> atlas3.sliceWithSize(10, 0, 10, 100, "a$i").virtFrame(0, 45, 100, 100)
+                    else -> atlas3.sliceWithSize(0, 0, 10, 100, "a$i").rotatedLeft().virtFrame(45, 0, 100, 100)
                 }).xy(x, y).also {
                     if (i == 3) {
                         x = 0
@@ -63,9 +60,9 @@ class MainRotatedAtlas : Scene() {
         generateImages(resourcesVfs["atlastest/atlas-test.xml"].readAtlas(), "")
 
         generateImages(resourcesVfs["atlastest/atlas-test-spine.atlas.txt"].readAtlas(), "")
-
+//
         generateImages(resourcesVfs["atlastest/atlas-test.json"].readAtlas(), ".png")
-
+//
         generateImages(resourcesVfs["atlastest/atlas.xml"].readAtlas())
     }
 }

@@ -312,7 +312,7 @@ class RenderContext constructor(
 		flush()
         tempAllocateFrameBuffer(width, height, hasDepth = hasDepth, hasStencil = hasStencil, msamples = msamples) { fb ->
             renderToFrameBuffer(fb) { render(it) }
-            use(Texture(fb).slice(0, 0, width, height))
+            use(Texture(fb).sliceWithSize(0, 0, width, height))
             flush()
         }
 	}

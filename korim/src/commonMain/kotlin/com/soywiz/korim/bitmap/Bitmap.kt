@@ -219,26 +219,25 @@ abstract class Bitmap(
     open fun flipX(): Bitmap {
         for (x in 0 until width / 2) swapColumns(x, width - x - 1)
         return this
-    }
+	}
 
     fun flippedY(): Bitmap = clone().flipY()
     fun flippedX(): Bitmap = clone().flipX()
 
-    fun rotated(rotation: ImageOrientation.Rotation): Bitmap = when (rotation) {
-        ImageOrientation.Rotation.R0 -> this.clone()
-        ImageOrientation.Rotation.R90 -> this.transposed().flipX()
-        //ImageOrientation.Rotation.R180 -> this.clone().flipX()//.flipY()
-        ImageOrientation.Rotation.R180 -> this.transposed().flipX().transposed().flipX()
-        ImageOrientation.Rotation.R270 -> this.transposed().flipY()
+    fun rotated(rotation: ImageRotation): Bitmap = when (rotation) {
+        ImageRotation.R0 -> this.clone()
+        ImageRotation.R90 -> this.transposed().flipX()
+        //ImageRotation.R180 -> this.clone().flipX()//.flipY()
+        ImageRotation.R180 -> this.transposed().flipX().transposed().flipX()
+        ImageRotation.R270 -> this.transposed().flipY()
     }
 
-    fun rotatedRight(): Bitmap = rotated(ImageOrientation.Rotation.R90)
-    fun rotatedLeft(): Bitmap = rotated(ImageOrientation.Rotation.R270)
+    fun rotatedRight(): Bitmap = rotated(ImageRotation.R90)
+    fun rotatedLeft(): Bitmap = rotated(ImageRotation.R270)
 
     fun oriented(orientation: ImageOrientation): Bitmap {
         val out = this.clone()
         if (orientation.flipX) out.flipX()
-        if (orientation.flipY) out.flipY()
         return out.rotated(orientation.rotation)
     }
 
@@ -251,13 +250,13 @@ abstract class Bitmap(
     }
 
     open fun swapRows(y0: Int, y1: Int) {
-        for (x in 0 until width) {
-            val c0 = getInt(x, y0)
-            val c1 = getInt(x, y1)
-            setInt(x, y0, c1)
-            setInt(x, y1, c0)
-        }
-    }
+		for (x in 0 until width) {
+			val c0 = getInt(x, y0)
+			val c1 = getInt(x, y1)
+			setInt(x, y0, c1)
+			setInt(x, y1, c0)
+		}
+	}
 
     open fun swapColumns(x0: Int, x1: Int) {
         for (y in 0 until height) {

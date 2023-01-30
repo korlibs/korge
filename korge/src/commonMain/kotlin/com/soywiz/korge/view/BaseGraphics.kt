@@ -5,11 +5,7 @@ import com.soywiz.kmem.toIntCeil
 import com.soywiz.korge.annotations.KorgeExperimental
 import com.soywiz.korge.render.RenderContext
 import com.soywiz.korge.view.internal.InternalViewAutoscaling
-import com.soywiz.korim.bitmap.Bitmap
-import com.soywiz.korim.bitmap.Bitmaps
-import com.soywiz.korim.bitmap.NativeImageOrBitmap32
-import com.soywiz.korim.bitmap.context2d
-import com.soywiz.korim.bitmap.slice
+import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.vector.Context2d
 import com.soywiz.korma.geom.BoundsBuilder
 import com.soywiz.korma.geom.Rectangle

@@ -5,15 +5,7 @@ import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.korge.scene.debugBmpFontSync
 import com.soywiz.korge.view.RenderableView
 import com.soywiz.korge.view.ViewRenderer
-import com.soywiz.korim.bitmap.Bitmap
-import com.soywiz.korim.bitmap.Bitmap32
-import com.soywiz.korim.bitmap.BitmapSlice
-import com.soywiz.korim.bitmap.NativeImage
-import com.soywiz.korim.bitmap.NinePatchBmpSlice
-import com.soywiz.korim.bitmap.asNinePatchSimple
-import com.soywiz.korim.bitmap.context2d
-import com.soywiz.korim.bitmap.mipmaps
-import com.soywiz.korim.bitmap.sliceWithSize
+import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.color.mix
@@ -126,21 +118,21 @@ var UISkinable.buttonTextAlignment: TextAlignment get() = getSkinProperty("butto
 
 fun UISkinable.getUiIconFromSkinBitmap(index: Int, kind: Int = 0) = uiSkinBitmap.sliceWithSize(64 * kind, 64 * (index + 1), 64, 64)
 
-var UISkinable.iconCheck: BitmapSlice<Bitmap32> get() = getSkinProperty("iconCheck") { getUiIconFromSkinBitmap(0) }; set(value) { setSkinProperty("iconCheck", value) }
-var UISkinable.iconUp: BitmapSlice<Bitmap32> get() = getSkinProperty("iconUp") { getUiIconFromSkinBitmap(1) }; set(value) { setSkinProperty("iconUp", value) }
-var UISkinable.iconRight: BitmapSlice<Bitmap32> get() = getSkinProperty("iconRight") { getUiIconFromSkinBitmap(2) }; set(value) { setSkinProperty("iconRight", value) }
-var UISkinable.iconDown: BitmapSlice<Bitmap32> get() = getSkinProperty("iconDown") { getUiIconFromSkinBitmap(3) }; set(value) { setSkinProperty("iconDown", value) }
-var UISkinable.iconLeft: BitmapSlice<Bitmap32> get() = getSkinProperty("iconLeft") { getUiIconFromSkinBitmap(4) }; set(value) { setSkinProperty("iconLeft", value) }
+var UISkinable.iconCheck: BmpSlice32 get() = getSkinProperty("iconCheck") { getUiIconFromSkinBitmap(0) }; set(value) { setSkinProperty("iconCheck", value) }
+var UISkinable.iconUp: BmpSlice32 get() = getSkinProperty("iconUp") { getUiIconFromSkinBitmap(1) }; set(value) { setSkinProperty("iconUp", value) }
+var UISkinable.iconRight: BmpSlice32 get() = getSkinProperty("iconRight") { getUiIconFromSkinBitmap(2) }; set(value) { setSkinProperty("iconRight", value) }
+var UISkinable.iconDown: BmpSlice32 get() = getSkinProperty("iconDown") { getUiIconFromSkinBitmap(3) }; set(value) { setSkinProperty("iconDown", value) }
+var UISkinable.iconLeft: BmpSlice32 get() = getSkinProperty("iconLeft") { getUiIconFromSkinBitmap(4) }; set(value) { setSkinProperty("iconLeft", value) }
 
-var UISkinable.comboBoxShrinkIcon: BitmapSlice<Bitmap32> get() = getSkinProperty("comboBoxShrinkIcon") { iconUp }; set(value) { setSkinProperty("comboBoxShrinkIcon", value) }
-var UISkinable.comboBoxExpandIcon: BitmapSlice<Bitmap32> get() = getSkinProperty("comboBoxExpandIcon") { iconDown }; set(value) { setSkinProperty("comboBoxExpandIcon", value) }
+var UISkinable.comboBoxShrinkIcon: BmpSlice32 get() = getSkinProperty("comboBoxShrinkIcon") { iconUp }; set(value) { setSkinProperty("comboBoxShrinkIcon", value) }
+var UISkinable.comboBoxExpandIcon: BmpSlice32 get() = getSkinProperty("comboBoxExpandIcon") { iconDown }; set(value) { setSkinProperty("comboBoxExpandIcon", value) }
 
-var UISkinable.checkBoxIcon: BitmapSlice<Bitmap32> get() = getSkinProperty("checkBoxIcon") { iconCheck }; set(value) { setSkinProperty("checkBoxIcon", value) }
+var UISkinable.checkBoxIcon: BmpSlice32 get() = getSkinProperty("checkBoxIcon") { iconCheck }; set(value) { setSkinProperty("checkBoxIcon", value) }
 
-var UISkinable.scrollbarIconLeft: BitmapSlice<Bitmap32> get() = getSkinProperty("scrollbarIconLeft") { iconLeft }; set(value) { setSkinProperty("scrollbarIconLeft", value) }
-var UISkinable.scrollbarIconRight: BitmapSlice<Bitmap32> get() = getSkinProperty("scrollbarIconRight") { iconRight }; set(value) { setSkinProperty("scrollbarIconRight", value) }
-var UISkinable.scrollbarIconUp: BitmapSlice<Bitmap32> get() = getSkinProperty("scrollbarIconUp") { iconUp }; set(value) { setSkinProperty("scrollbarIconUp", value) }
-var UISkinable.scrollbarIconDown: BitmapSlice<Bitmap32> get() = getSkinProperty("scrollbarIconDown") { iconDown }; set(value) { setSkinProperty("scrollbarIconDown", value) }
+var UISkinable.scrollbarIconLeft: BmpSlice32 get() = getSkinProperty("scrollbarIconLeft") { iconLeft }; set(value) { setSkinProperty("scrollbarIconLeft", value) }
+var UISkinable.scrollbarIconRight: BmpSlice32 get() = getSkinProperty("scrollbarIconRight") { iconRight }; set(value) { setSkinProperty("scrollbarIconRight", value) }
+var UISkinable.scrollbarIconUp: BmpSlice32 get() = getSkinProperty("scrollbarIconUp") { iconUp }; set(value) { setSkinProperty("scrollbarIconUp", value) }
+var UISkinable.scrollbarIconDown: BmpSlice32 get() = getSkinProperty("scrollbarIconDown") { iconDown }; set(value) { setSkinProperty("scrollbarIconDown", value) }
 
 inline fun UISkin(name: String? = null, block: UISkin.() -> Unit): UISkin = UISkin(name).apply(block)
 

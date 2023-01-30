@@ -3,10 +3,7 @@ package com.soywiz.korge.view
 import com.soywiz.klock.milliseconds
 import com.soywiz.klock.seconds
 import com.soywiz.korge.tests.ViewsForTesting
-import com.soywiz.korim.bitmap.Bitmap
-import com.soywiz.korim.bitmap.Bitmap32
-import com.soywiz.korim.bitmap.BmpSlice
-import com.soywiz.korim.bitmap.extract
+import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.format.readBitmap
 import com.soywiz.korio.file.std.resourcesVfs
 import kotlinx.coroutines.CompletableDeferred

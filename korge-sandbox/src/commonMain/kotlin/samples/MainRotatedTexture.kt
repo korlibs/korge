@@ -3,13 +3,12 @@ package samples
 import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.view.SContainer
 import com.soywiz.korge.view.image
-import com.soywiz.korim.bitmap.flippedX
-import com.soywiz.korim.bitmap.rotatedRight
-import com.soywiz.korim.bitmap.transformed
+import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.format.readBitmapSlice
 import com.soywiz.korio.file.std.resourcesVfs
 import com.soywiz.korma.geom.Matrix
 import com.soywiz.korma.geom.degrees
+import com.soywiz.korma.geom.slice.*
 
 class MainRotatedTexture : Scene() {
     override suspend fun SContainer.sceneMain() {

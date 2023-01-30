@@ -13,7 +13,7 @@ import com.soywiz.korma.geom.Rectangle
 @KorgeInternal
 data class TextureWithBitmapSlice(
 	val texture: BmpSlice,
-	val bitmapSlice: BitmapSlice<Bitmap>,
+	val bitmapSlice: BmpSlice,
 	val scale: Double,
 	val bounds: Rectangle
 )

@@ -49,7 +49,7 @@ class UIImage(
             cachedGlobalMatrix.copyFrom(globalMatrix)
 
             // @TODO: Can we generalize this to be placed in KorMA?
-            val bitmapSize = bitmap.bounds.size.size
+            val bitmapSize = RectangleInt(bitmap.bounds).size.size
             val finalRect = bitmapSize.applyScaleMode(Rectangle(0.0, 0.0, width, height), scaleMode, contentAnchor)
 
             val realL = finalRect.left.clamp(0.0, width)

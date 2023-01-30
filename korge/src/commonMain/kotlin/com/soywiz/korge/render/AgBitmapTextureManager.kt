@@ -4,13 +4,10 @@ import com.soywiz.kds.*
 import com.soywiz.korag.*
 import com.soywiz.korge.annotations.KorgeExperimental
 import com.soywiz.korge.internal.KorgeInternal
-import com.soywiz.korim.bitmap.Bitmap
-import com.soywiz.korim.bitmap.BitmapCoords
-import com.soywiz.korim.bitmap.BmpCoordsWithInstance
-import com.soywiz.korim.bitmap.BmpSlice
-import com.soywiz.korim.bitmap.MultiBitmap
+import com.soywiz.korim.bitmap.*
 import com.soywiz.korio.lang.*
-import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.slice.*
 
 /**
  * Class in charge of automatically handling [AGTexture] <-> [Bitmap] conversion.
@@ -147,11 +144,11 @@ class AgBitmapTextureManager(
 
         val info = getTextureInfo(slice.base)
 
-		val texture = info.slices.getOrPut(slice) {
+		val texture: TextureCoords = info.slices.getOrPut(slice) {
             if (slice is BmpSlice) {
-                Texture(info.textureBase).slice(Rectangle(slice.left, slice.top, slice.width, slice.height))
+                Texture(info.textureBase).slice(RectangleInt(slice.left, slice.top, slice.width, slice.height))
             } else {
-                BmpCoordsWithInstance(info.textureBase, slice)
+                TextureCoords(info.textureBase, slice)
             }
         }
 

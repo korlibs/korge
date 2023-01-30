@@ -1,14 +1,10 @@
 package com.soywiz.korge.render
 
-import com.soywiz.kmem.*
 import com.soywiz.korag.*
-import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.format.*
-import com.soywiz.korio.*
-import com.soywiz.korio.file.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.slice.*
 
 /**
  * Represents a full texture region wraping a [base] [AGTexture] and specifying its [width] and [height]
@@ -19,6 +15,7 @@ class TextureBase(
     override var height: Int
 ) : Closeable, ISizeInt {
     var version = -1
+    @Deprecated("")
     val premultiplied get() = base?.premultiplied == true
     override fun close() {
         base?.close()
@@ -31,12 +28,41 @@ class TextureBase(
     override fun toString(): String = "TextureBase($base)"
 }
 
-interface BmpCoordsWithTextureBase : BmpCoords {
-    val base: TextureBase
+@Deprecated("", ReplaceWith("base.premultiplied"))
+val TextureCoords.premultiplied: Boolean get() = base.premultiplied
+
+typealias TextureCoords = SliceCoordsWithBase<TextureBase>
+typealias Texture = RectSlice<TextureBase>
+
+/**
+ * Updates this texture from a [bmp] and optionally generates [mipmaps].
+ */
+fun Texture.update(bmp: Bitmap32, mipmaps: Boolean = false) {
+    container.update(bmp, mipmaps)
 }
 
-typealias TextureCoords = BmpCoordsWithT<TextureBase>
+//fun TextureNew.xcoord(x: Int): Float = (this.rect.x + x).toFloat() / width.toFloat()
+//fun TextureNew.ycoord(y: Int): Float = (this.rect.y + y).toFloat() / height.toFloat()
 
+fun Texture.close() {
+    container.close()
+}
+
+/**
+ * Creates a [Texture] from a texture [agBase] and its wanted size [width], [height].
+ */
+fun Texture(agBase: AGTexture, width: Int, height: Int): Texture =
+    Texture(TextureBase(agBase, width, height), IRectangleInt(0, 0, width, height))
+
+fun Texture(base: TextureBase, left: Int = 0, top: Int = 0, right: Int = base.width, bottom: Int = base.height): Texture =
+    Texture(base, RectangleInt.fromBounds(left, top, right, bottom))
+
+/**
+ * Creates a [Texture] from a frame buffer [frameBuffer] with the right size of the frameBuffer.
+ */
+fun Texture(frameBuffer: AGFrameBuffer): Texture = Texture(frameBuffer.tex, frameBuffer.width, frameBuffer.height)
+
+/*
 /**
  * A [Texture] is a region (delimited by [left], [top], [right] and [bottom]) of a [Texture.Base].
  * A [Texture.Base] wraps a [AGTexture] but adds [width] and [height] information.
@@ -51,7 +77,10 @@ class Texture(
 	val right: Int = base.width,
     /** Bottom position of the region of the texture in pixels */
 	val bottom: Int = base.height
-) : Closeable, TextureCoords {
+) : Closeable, TextureCoords, NewTextureCoords {
+
+    //override val container: TextureBase get() = base
+
     /** Whether the texture is multiplied or not */
 	override val premultiplied get() = base.premultiplied
     /** Left position of the region of the texture in pixels */
@@ -87,12 +116,12 @@ class Texture(
     /**
      * Creates a slice of this texture, by [x], [y], [width] and [height].
      */
-	fun slice(x: Int, y: Int, width: Int, height: Int) = sliceBounds(x, y, x + width, y + height)
+	fun slice(x: Int, y: Int, width: Int, height: Int): Texture = sliceBounds(x, y, x + width, y + height)
 
     /**
      * Createa a slice of this texture by [rect].
      */
-	fun slice(rect: Rectangle) = slice(rect.x.toInt(), rect.y.toInt(), rect.width.toInt(), rect.height.toInt())
+	fun slice(rect: Rectangle): Texture = slice(rect.x.toInt(), rect.y.toInt(), rect.width.toInt(), rect.height.toInt())
 
     /**
      * Creates a slice of this texture by its bounds [left], [top], [right], [bottom].
@@ -143,6 +172,7 @@ class Texture(
     fun xcoord(x: Int): Float = (this.x + x).toFloat() / base.width.toFloat()
     fun ycoord(y: Int): Float = (this.y + y).toFloat() / base.height.toFloat()
 }
+*/
 
 //suspend fun VfsFile.readTexture(ag: AG, imageFormats: ImageFormats, mipmaps: Boolean = true): Texture {
 //	//println("VfsFile.readTexture[1]")

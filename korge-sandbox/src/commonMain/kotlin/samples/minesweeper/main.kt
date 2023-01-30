@@ -7,8 +7,10 @@ import com.soywiz.korge.scene.ScaledScene
 import com.soywiz.korge.view.Container
 import com.soywiz.korge.view.SContainer
 import com.soywiz.korge.view.image
+import com.soywiz.korim.bitmap.*
 import com.soywiz.korma.geom.Anchor
 import com.soywiz.korma.geom.ScaleMode
+import com.soywiz.korma.geom.slice.*
 
 // Ported from here: https://github.com/soywiz/lunea/tree/master/samples/busca
 class MainMineSweeper : ScaledScene(640, 480) {
@@ -28,7 +30,7 @@ class MainProcess(parent: Container) : Process(parent) {
 		image(readImage("bg.jpg")).dockedTo(Anchor.TOP_LEFT, ScaleMode.EXACT)
 		val light = readImage("light.png")
 		val imageSet = readImage("cells.png")
-		val images = imageSet.split(imageSet.height, imageSet.height)
+		val images = imageSet.splitInRows(imageSet.height, imageSet.height)
 		val click = readSound("click.wav")
 		val boom = readSound("boom.wav")
 

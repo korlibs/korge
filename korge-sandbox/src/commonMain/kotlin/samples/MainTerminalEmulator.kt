@@ -9,6 +9,7 @@ import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.format.*
 import com.soywiz.korio.file.std.*
+import com.soywiz.korma.geom.slice.*
 
 class MainTerminalEmulator : Scene() {
     override suspend fun SContainer.sceneMain() {
@@ -21,7 +22,7 @@ class MainTerminalEmulator : Scene() {
                 .premultipliedIfRequired()
                 .apply { updateColors { if (it == Colors.BLACK) Colors.TRANSPARENT_BLACK else it } }
                 .slice()
-                .split(16, 16)
+                .splitInRows(16, 16)
                 .toTypedArray()
 
             val terminalEmulatorView = TerminalEmulatorView(128, 64, glyphs).xy(32, 32)
