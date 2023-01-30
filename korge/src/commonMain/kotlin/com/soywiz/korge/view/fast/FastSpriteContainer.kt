@@ -7,6 +7,7 @@ import com.soywiz.korge.view.Container
 import com.soywiz.korge.view.View
 import com.soywiz.korge.view.ViewDslMarker
 import com.soywiz.korge.view.addTo
+import com.soywiz.korim.bitmap.*
 import kotlin.math.min
 
 inline fun Container.fastSpriteContainer(

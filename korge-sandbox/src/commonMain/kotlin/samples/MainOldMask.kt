@@ -11,6 +11,7 @@ import com.soywiz.korge.view.image
 import com.soywiz.korge.view.position
 import com.soywiz.korge.view.scale
 import com.soywiz.korge.view.text
+import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.bitmap.effect.BitmapEffect
 import com.soywiz.korim.bitmap.effect.applyEffect
 import com.soywiz.korim.color.Colors

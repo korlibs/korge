@@ -103,7 +103,7 @@ class AGTexture(
         return this
     }
 
-    fun upload(bmp: BitmapSlice<Bitmap>?, mipmaps: Boolean = false): AGTexture {
+    fun upload(bmp: BmpSlice?, mipmaps: Boolean = false): AGTexture {
         // @TODO: Optimize to avoid copying?
         return upload(bmp?.extract(), mipmaps)
     }

@@ -216,7 +216,7 @@ class UITextEdit(textArg: String, fontArg: TtfFont, sizeArg: Double, colorArg: R
     constructor(textArg: String, fontArg: TtfFont) : this(textArg, fontArg, 32.0, Colors.BLACK)
     constructor(fontArg: TtfFont) : this("", fontArg)
 
-    fun render(): BitmapSlice<Bitmap> {
+    fun render(): BmpSlice {
         val asc = font.ascender / 72
         val dsc = asc / 2
         val h = (size + asc + 0.5).toInt()

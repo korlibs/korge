@@ -36,15 +36,15 @@ class KorgeMultithreadedTest {
             runBlocking {
                 val imageInfo = resourcesVfs["Exif5-2x.png"].readImageInfo(PNG)
                 log.add("orientationSure=${imageInfo?.orientationSure}")
-                imageInfo?.orientation = ImageOrientation.MIRROR_HORIZONTAL
+                imageInfo?.orientation = ImageOrientation.MIRROR_HORIZONTAL_ROTATE_0
                 log.add("orientationSure=${imageInfo?.orientationSure}")
             }
             log
         }
         assertEquals(
             """
-                orientationSure=ImageOrientation(rotation=R270, flipX=true, flipY=false)
-                orientationSure=ImageOrientation(rotation=R0, flipX=true, flipY=false)
+                orientationSure=MIRROR_HORIZONTAL_ROTATE_270
+                orientationSure=MIRROR_HORIZONTAL_ROTATE_0
             """.trimIndent(),
             result.joinToString("\n")
         )

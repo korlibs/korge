@@ -19,8 +19,7 @@ import com.soywiz.korge.view.moveWithCollisions
 import com.soywiz.korge.view.scale
 import com.soywiz.korge.view.xy
 import com.soywiz.korim.atlas.MutableAtlasUnit
-import com.soywiz.korim.bitmap.Bitmap
-import com.soywiz.korim.bitmap.Bitmap32
+import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.format.ASE
 import com.soywiz.korim.format.readBitmapSlice
@@ -31,6 +30,7 @@ import com.soywiz.korim.tiles.tiled.readTiledMap
 import com.soywiz.korio.file.std.resourcesVfs
 import com.soywiz.korma.geom.Point
 import com.soywiz.korma.geom.shape.Shape2d
+import com.soywiz.korma.geom.slice.*
 import com.soywiz.korma.geom.vector.circle
 import com.soywiz.korma.geom.vector.rect
 import com.soywiz.korma.geom.vector.star
@@ -41,7 +41,7 @@ class MainVampire : Scene() {
 
         val sw = Stopwatch().start()
 
-        resourcesVfs["korim.png"].readBitmapSlice().split(32, 32).toAtlas(atlas = atlas)
+        resourcesVfs["korim.png"].readBitmapSlice().splitInRows(32, 32).toAtlas(atlas = atlas)
         val korim = resourcesVfs["korim.png"].readBitmapSlice(atlas = atlas)
         val characters = resourcesVfs["characters.ase"].readImageDataContainer(ASE.toProps(), atlas = atlas)
         val slices = resourcesVfs["slice-example.ase"].readImageDataContainer(ASE.toProps(), atlas = atlas)

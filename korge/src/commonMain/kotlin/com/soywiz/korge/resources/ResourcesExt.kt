@@ -1,6 +1,6 @@
 package com.soywiz.korge.resources
 
-import com.soywiz.korim.bitmap.mipmaps
+import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.font.readBitmapFont
 import com.soywiz.korim.font.readFont
 import com.soywiz.korim.font.readTtfFont

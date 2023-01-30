@@ -6,8 +6,7 @@ import com.soywiz.korge.view.Container
 import com.soywiz.korge.view.SmoothedBmpSlice
 import com.soywiz.korge.view.ViewDslMarker
 import com.soywiz.korge.view.addTo
-import com.soywiz.korim.bitmap.BitmapCoords
-import com.soywiz.korim.bitmap.BmpSlice
+import com.soywiz.korim.bitmap.*
 
 inline fun Container.repeatedImageView(
     bitmap: BmpSlice,

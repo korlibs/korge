@@ -2,8 +2,7 @@ package com.soywiz.korim.tiles
 
 import com.soywiz.kds.IntArray2
 import com.soywiz.kds.each
-import com.soywiz.korim.bitmap.Bitmap32
-import com.soywiz.korim.bitmap.BitmapSlice
+import com.soywiz.korim.bitmap.*
 
 data class TileMapData(
     var data: IntArray2,
@@ -25,7 +24,7 @@ fun TileMapData.renderTo(out: Bitmap32, x: Int, y: Int) {
         if (info != null) {
             val px = x + tx * tileSet.width
             val py = y + ty * tileSet.height
-            out.put(info.slice as BitmapSlice<Bitmap32>, px, py)
+            out.put(info.slice as BmpSlice32, px, py)
         }
     }
 }

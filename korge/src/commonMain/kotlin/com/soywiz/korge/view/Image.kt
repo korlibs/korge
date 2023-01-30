@@ -14,13 +14,17 @@ inline fun Container.image(
 ): Image = Image(texture, anchorX, anchorY).addTo(this, callback)
 
 inline fun Container.image(
+    texture: BitmapCoords, anchorX: Double = 0.0, anchorY: Double = 0.0, callback: @ViewDslMarker Image.() -> Unit = {}
+): Image = Image(texture, anchorX, anchorY).addTo(this, callback)
+
+inline fun Container.image(
 	texture: Bitmap, anchorX: Double = 0.0, anchorY: Double = 0.0, callback: @ViewDslMarker Image.() -> Unit = {}
 ): Image = Image(texture, anchorX, anchorY).addTo(this, callback)
 
 //typealias Sprite = Image
 
 open class BaseImage(
-    bitmap: Resourceable<out BaseBmpSlice>,
+    bitmap: Resourceable<out BitmapCoords>,
     anchorX: Double = 0.0,
     anchorY: Double = anchorX,
     hitShape: VectorPath? = null,
@@ -32,11 +36,18 @@ open class BaseImage(
         anchorY: Double = anchorX,
         hitShape: VectorPath? = null,
         smoothing: Boolean = true
-    ) : this(bitmap.slice(), anchorX, anchorY, hitShape, smoothing)
+    ) : this(Resourceable(bitmap.slice()), anchorX, anchorY, hitShape, smoothing)
+    constructor(
+        bmpCoords: BitmapCoords,
+        anchorX: Double = 0.0,
+        anchorY: Double = anchorX,
+        hitShape: VectorPath? = null,
+        smoothing: Boolean = true
+    ) : this(Resourceable(bmpCoords), anchorX, anchorY, hitShape, smoothing)
 
     private var setBitmapSource: Boolean = false
 
-    var bitmap: BaseBmpSlice
+    var bitmap: BitmapCoords
         get() = baseBitmap
         set(value) {
             if (baseBitmap == value) return
@@ -46,7 +57,7 @@ open class BaseImage(
         }
 
     // @TODO: We might want to repaint when the source has been loaded
-    var bitmapSrc: Resourceable<out BaseBmpSlice> = bitmap
+    var bitmapSrc: Resourceable<out BitmapCoords> = bitmap
         set(value) {
             if (field == value) return
             setBitmapSource = false
@@ -110,17 +121,25 @@ open class BaseImage(
 }
 
 interface SmoothedBmpSlice {
-    var bitmap: BaseBmpSlice
+    var bitmap: BitmapCoords
     var smoothing: Boolean
 }
 
 class Image(
-	bitmap: Resourceable<out BaseBmpSlice>,
+	bitmap: Resourceable<out BitmapCoords>,
 	anchorX: Double = 0.0,
 	anchorY: Double = anchorX,
 	hitShape: VectorPath? = null,
 	smoothing: Boolean = true
 ) : BaseImage(bitmap, anchorX, anchorY, hitShape, smoothing), ViewFileRef by ViewFileRef.Mixin(), SmoothedBmpSlice {
+    constructor(
+        bitmap: BitmapCoords,
+        anchorX: Double = 0.0,
+        anchorY: Double = anchorX,
+        hitShape: VectorPath? = null,
+        smoothing: Boolean = true
+    ) : this(Resourceable(bitmap), anchorX, anchorY, hitShape, smoothing)
+
     @Suppress("unused")
     @ViewProperty
     @ViewPropertyFileRef(["png", "jpg"])

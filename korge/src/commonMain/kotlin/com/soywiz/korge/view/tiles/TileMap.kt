@@ -20,11 +20,6 @@ import com.soywiz.korge.view.View
 import com.soywiz.korge.view.ViewDslMarker
 import com.soywiz.korge.view.addTo
 import com.soywiz.korge.view.addUpdater
-import com.soywiz.korim.bitmap.Bitmap
-import com.soywiz.korim.bitmap.Bitmap32
-import com.soywiz.korim.bitmap.BitmapCoords
-import com.soywiz.korim.bitmap.Bitmaps
-import com.soywiz.korim.bitmap.BmpCoordsWithT
 import com.soywiz.korim.tiles.TileMapOrientation
 import com.soywiz.korim.tiles.TileMapStaggerAxis
 import com.soywiz.korim.tiles.TileMapStaggerIndex
@@ -34,6 +29,7 @@ import com.soywiz.korma.geom.Size
 import com.soywiz.korma.geom.setTo
 import com.soywiz.kmem.extract5
 import com.soywiz.kmem.insert
+import com.soywiz.korim.bitmap.*
 import kotlin.math.min
 import com.soywiz.korma.math.min
 import com.soywiz.korma.math.max
@@ -521,7 +517,7 @@ open class TileMap(
     staggerIndex: TileMapStaggerIndex? = null,
     tileSize: Size = Size(tileset.width.toDouble(), tileset.height.toDouble()),
 ) : BaseTileMap(intMap, smoothing, staggerAxis, staggerIndex, tileSize) {
-    override var tilesetTextures: Array<BmpCoordsWithT<Bitmap>?> = emptyArray<BitmapCoords?>()
+    override var tilesetTextures: Array<BitmapCoords?> = emptyArray<BitmapCoords?>()
     var animationIndex: IntArray = IntArray(0)
     var animationElapsed: DoubleArray = DoubleArray(0)
 

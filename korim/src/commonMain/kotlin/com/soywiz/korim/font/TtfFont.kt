@@ -14,9 +14,7 @@ import com.soywiz.kmem.extract16Signed
 import com.soywiz.kmem.extractSigned
 import com.soywiz.kmem.insert16
 import com.soywiz.korim.annotation.KorimInternal
-import com.soywiz.korim.bitmap.Bitmap
-import com.soywiz.korim.bitmap.Bitmaps
-import com.soywiz.korim.bitmap.Palette
+import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.color.RgbaArray
