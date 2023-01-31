@@ -4,8 +4,7 @@ import com.soywiz.korio.async.suspendTest
 import com.soywiz.korio.file.std.resourcesVfs
 import com.soywiz.korio.lang.*
 import com.soywiz.korma.geom.Rectangle
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import kotlin.test.*
 
 class TTfTest {
     @Test
@@ -53,39 +52,29 @@ class TTfTest {
 
     @Test
     fun ligaturesEnabledWorks() = suspendTest {
-        val ttfFontWithLigatures =
+        val font =
             resourcesVfs["font_atkinson/AtkinsonHyperlegible-Bold.ttf"].readTtfFont()
 
         val reader = WStringReader("1/4")
 
-        val glyphs = mutableListOf<BaseTtfFont.Glyph>()
-
-        while (reader.hasMore) {
-            val c = reader.peek().codePoint
-            val g = ttfFontWithLigatures.getGlyphByReader(reader, c)!!
-            glyphs.add(g)
-        }
-
         // The string parses to {'¼'}
-        assertEquals(glyphs.size, 1)
+        assertContentEquals(
+            font.getGlyphsByReader(reader).map { it.index },
+            listOf(104)
+        )
     }
 
     @Test
     fun ligaturesDisabledWorks() = suspendTest {
-        val ttfFontWithoutLigatures =
+        val font =
             resourcesVfs["font_atkinson/AtkinsonHyperlegible-Bold.ttf"].readTtfFont(enableLigatures = false)
 
         val reader = WStringReader("1/4")
 
-        val glyphs = mutableListOf<BaseTtfFont.Glyph>()
-
-        while (reader.hasMore) {
-            val c = reader.peek().codePoint
-            val g = ttfFontWithoutLigatures.getGlyphByReader(reader, c)!!
-            glyphs.add(g)
-        }
-
         // The string parses to {'1', '/', '4'}
-        assertEquals(glyphs.size, 3)
+        assertContentEquals(
+            font.getGlyphsByReader(reader).map { it.index },
+            listOf(6, 134, 9)
+        )
     }
 }

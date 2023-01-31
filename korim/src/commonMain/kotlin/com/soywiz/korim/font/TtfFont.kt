@@ -1790,6 +1790,15 @@ abstract class BaseTtfFont(
     fun getGlyphByWChar(char: WChar, cache: Boolean = true): Glyph? = getGlyphByCodePoint(char.code, cache)
     fun getGlyphByChar(char: Char, cache: Boolean = true): Glyph? = getGlyphByCodePoint(char.code, cache)
 
+    fun getGlyphsByReader(reader: WStringReader, out: MutableList<Glyph> = arrayListOf()): List<Glyph> {
+        while (reader.hasMore) {
+            val c = reader.peek().codePoint
+            val g = getGlyphByReader(reader, c)!!
+            out.add(g)
+        }
+        return out
+    }
+
     operator fun get(char: Char) = getGlyphByChar(char)
     operator fun get(codePoint: Int) = getGlyphByCodePoint(codePoint)
     operator fun get(codePoint: WChar) = getGlyphByCodePoint(codePoint.code)
