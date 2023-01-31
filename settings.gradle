@@ -19,7 +19,6 @@ boolean inCI = isPropertyTrue("CI")
 boolean disabledExtraKorgeLibs = isPropertyTrue("DISABLED_EXTRA_KORGE_LIBS")
 
 include(":kbignum")
-include(":luak")
 include(":klock")
 include(":klogger")
 include(":korinject")
