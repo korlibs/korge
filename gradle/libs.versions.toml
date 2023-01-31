@@ -21,6 +21,7 @@ closure-compiler = "v20210808"
 [libraries]
 kotlin-serialization = { module = "org.jetbrains.kotlin:kotlin-serialization", version.ref = "kotlin" }
 kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 dokka = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version.ref = "dokka" }
 kover = { module = "org.jetbrains.kotlinx:kover", version.ref = "kover" }
 kover-intellij-agent = { module = "org.jetbrains.intellij.deps:intellij-coverage-agent", version.ref = "kover-agent" }
