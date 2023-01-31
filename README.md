@@ -87,3 +87,7 @@ now they are available via kproject in these repositories:
 ### Formats
 
 * <https://github.com/korlibs/korge-formats> (JPEG)
+
+## Scripting
+
+* <https://github.com/korlibs/korge-luak> (LUA)
