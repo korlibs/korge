@@ -23,13 +23,10 @@ import com.soywiz.korge.view.addUpdater
 import com.soywiz.korim.tiles.TileMapOrientation
 import com.soywiz.korim.tiles.TileMapStaggerAxis
 import com.soywiz.korim.tiles.TileMapStaggerIndex
-import com.soywiz.korma.geom.Point
-import com.soywiz.korma.geom.Rectangle
-import com.soywiz.korma.geom.Size
-import com.soywiz.korma.geom.setTo
 import com.soywiz.kmem.extract5
 import com.soywiz.kmem.insert
 import com.soywiz.korim.bitmap.*
+import com.soywiz.korma.geom.*
 import kotlin.math.min
 import com.soywiz.korma.math.min
 import com.soywiz.korma.math.max
@@ -225,29 +222,27 @@ abstract class BaseTileMap(
 
         val renderTilesCounter = ctx.stats.counter("renderedTiles")
 
-        val posX = m.transformX(0.0, 0.0)
-        val posY = m.transformY(0.0, 0.0)
-        val dUX = m.transformX(tileWidth, 0.0) - posX
-        val dUY = m.transformY(tileWidth, 0.0) - posY
-        val dVX = m.transformX(0.0, tileHeight) - posX
-        val dVY = m.transformY(0.0, tileHeight) - posY
+
+        val pos = m.transform(Point(0, 0))
+        val dUXY = m.transform(tileWidth, 0.0) - pos
+        val dVXY = m.transform(0.0, tileHeight) - pos
         val initY = if (staggerAxis != null) {
             val it = (tileSize.height - tileHeight)
-            min(m.transformX(it, 0.0) - posX, m.transformY(0.0, it))
+            min(m.transformX(it, 0.0) - pos.x, m.transformY(0.0, it))
         } else {
             0.0
         }
         val nextTileX = (tileSize.width / if (staggerAxis == TileMapStaggerAxis.X) 2.0 else 1.0).let { width ->
-            min(m.transformX(width, 0.0) - posX, m.transformY(0.0, width) - posY)
+            min(m.transformX(width, 0.0) - pos.x, m.transformY(0.0, width) - pos.y)
         }
         val nextTileY = (tileSize.height / if (staggerAxis == TileMapStaggerAxis.Y) 2.0 else 1.0).let { height ->
-            min(m.transformX(height, 0.0) - posX, m.transformY(0.0, height) - posY)
+            min(m.transformX(height, 0.0) - pos.x, m.transformY(0.0, height) - pos.y)
         }
         val staggerX = (tileWidth / 2.0).let{ width ->
-            min(m.transformX(width, 0.0) - posX, m.transformY(0.0, width) - posY)
+            min(m.transformX(width, 0.0) - pos.x, m.transformY(0.0, width) - pos.y)
         }
         val staggerY = (tileSize.height / 2.0).let{ height ->
-            min(m.transformX(height, 0.0) - posX, m.transformY(0.0, height) - posY)
+            min(m.transformX(height, 0.0) - pos.x, m.transformY(0.0, height) - pos.y)
         }
 
         val colMul = renderColorMul
@@ -260,21 +255,18 @@ abstract class BaseTileMap(
         val pp3 = globalToLocal(Point(currentVirtualRect.left, currentVirtualRect.bottom))
         val mapTileWidth = tileSize.width
         val mapTileHeight = tileSize.height / if (staggerAxis == TileMapStaggerAxis.Y) 2.0 else 1.0
-        val mx0 = ((pp0.x / mapTileWidth) + 1).toInt()
-        val mx1 = ((pp1.x / mapTileWidth) + 1).toInt()
-        val mx2 = ((pp2.x / mapTileWidth) + 1).toInt()
-        val mx3 = ((pp3.x / mapTileWidth) + 1).toInt()
-        val my0 = ((pp0.y / mapTileHeight) + 1).toInt()
-        val my1 = ((pp1.y / mapTileHeight) + 1).toInt()
-        val my2 = ((pp2.y / mapTileHeight) + 1).toInt()
-        val my3 = ((pp3.y / mapTileHeight) + 1).toInt()
+
+        val m0 = ((pp0 / Point(mapTileWidth, mapTileHeight)) + Point(1)).int
+        val m1 = ((pp1 / Point(mapTileWidth, mapTileHeight)) + Point(1)).int
+        val m2 = ((pp2 / Point(mapTileWidth, mapTileHeight)) + Point(1)).int
+        val m3 = ((pp3 / Point(mapTileWidth, mapTileHeight)) + Point(1)).int
 
         //println("currentVirtualRect=$currentVirtualRect, mx=[$mx0, $mx1, $mx2, $mx3], my=[$my0, $my1, $my2, $my3], pp0=$pp0, pp1=$pp1, pp2=$pp2, pp3=$pp3")
 
-        val ymin = min(my0, my1, my2, my3) - 1
-        val ymax = max(my0, my1, my2, my3)
-        val xmin = min(mx0, mx1, mx2, mx3) - 1
-        val xmax = max(mx0, mx1, mx2, mx3)
+        val ymin = min(m0.y, m1.y, m2.y, m3.y) - 1
+        val ymax = max(m0.y, m1.y, m2.y, m3.y)
+        val xmin = min(m0.x, m1.x, m2.x, m3.x) - 1
+        val xmax = max(m0.x, m1.x, m2.x, m3.x)
 
         //println("$xmin,$xmax")
 
@@ -364,8 +356,7 @@ abstract class BaseTileMap(
                         val rotate = cell.rotate
                         val offsetX = cell.offsetX
                         val offsetY = cell.offsetY
-                        val rationalOffsetX = offsetX * invTileWidth
-                        val rationalOffsetY = offsetY * invTileHeight
+                        val rationalOffset = Point(offsetX * invTileWidth, offsetY * invTileHeight)
 
                         val staggerOffsetX = when (staggerAxis.takeIf { staggered }) {
                             TileMapStaggerAxis.Y -> staggerX
@@ -407,19 +398,15 @@ abstract class BaseTileMap(
                         //println("info=${info.identityHashCode()}")
 
                         run {
-                            val px = x + rationalOffsetX
-                            val py = y + rationalOffsetY
-                            val p0X = posX + (nextTileX * px) + (dVX * py) + staggerOffsetX
-                            val p0Y = posY + (dUY * px) + (nextTileY * py) + staggerOffsetY + initY
+                            val pp = Point(x + rationalOffset.x, y + rationalOffset.y)
+                            val p0 = Point(
+                                pos.x + (nextTileX * pp.x) + (dVXY.x * pp.y) + staggerOffsetX,
+                                pos.y + (dUXY.y * pp.x) + (nextTileY * pp.y) + staggerOffsetY + initY
+                            )
 
-                            val p1X = p0X + dUX
-                            val p1Y = p0Y + dUY
-
-                            val p2X = p0X + dUX + dVX
-                            val p2Y = p0Y + dUY + dVY
-
-                            val p3X = p0X + dVX
-                            val p3Y = p0Y + dVY
+                            val p1 = p0 + dUXY
+                            val p2 = p0 + dUXY + dVXY
+                            val p3 = p0 + dVXY
 
                             tempX[0] = tex.tlX
                             tempX[1] = tex.trX
@@ -433,10 +420,10 @@ abstract class BaseTileMap(
 
                             computeIndices(flipX = flipX, flipY = flipY, rotate = rotate, indices = indices)
 
-                            info.vertices.quadV(p0X, p0Y, tempX[indices[0]], tempY[indices[0]], colMul, colAdd)
-                            info.vertices.quadV(p1X, p1Y, tempX[indices[1]], tempY[indices[1]], colMul, colAdd)
-                            info.vertices.quadV(p2X, p2Y, tempX[indices[2]], tempY[indices[2]], colMul, colAdd)
-                            info.vertices.quadV(p3X, p3Y, tempX[indices[3]], tempY[indices[3]], colMul, colAdd)
+                            info.vertices.quadV(p0.x, p0.y, tempX[indices[0]], tempY[indices[0]], colMul, colAdd)
+                            info.vertices.quadV(p1.x, p1.y, tempX[indices[1]], tempY[indices[1]], colMul, colAdd)
+                            info.vertices.quadV(p2.x, p2.y, tempX[indices[2]], tempY[indices[2]], colMul, colAdd)
+                            info.vertices.quadV(p3.x, p3.y, tempX[indices[3]], tempY[indices[3]], colMul, colAdd)
                         }
 
                         info.vertices.icount += 6
