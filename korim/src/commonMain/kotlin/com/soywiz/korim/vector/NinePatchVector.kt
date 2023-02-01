@@ -16,8 +16,8 @@ class NinePatchVector(
     val size = oldSize ?: path.getBounds().let { Size(it.right, it.bottom) }
     private val tempPoints = PointArrayList()
 
-    fun getScaledPointAt(point: IPoint, newSize: ISize, out: Point = Point()): IPoint =
-        slices.getScaledPointAt(point, size, newSize, out)
+    fun getScaledPointAt(point: IPoint, newSize: ISize): Point =
+        slices.getScaledPointAt(point, size, newSize)
 
     private inline fun transformPoints(newSize: ISize, gen: PointArrayList.() -> Unit): PointArrayList {
         tempPoints.clear()

@@ -18,8 +18,8 @@ fun Rectangle2D.Float.toKorma(out: Rectangle = Rectangle()): Rectangle =
 fun java.awt.Rectangle.toKorma(out: RectangleInt = RectangleInt()): RectangleInt =
     out.also { out.setTo(this.x, this.y, this.width, this.height) }
 
-fun java.awt.geom.Dimension2D.toKorma(out: Size = Size()) =
-    out.also { out.setTo(this.width, this.height) }
+fun java.awt.geom.Dimension2D.toKorma(): Size =
+    Size(this.width, this.height)
 
 fun Size.toAwt(out: java.awt.geom.Dimension2D = java.awt.Dimension()) =
     out.also { out.setSize(this.width, this.height) }

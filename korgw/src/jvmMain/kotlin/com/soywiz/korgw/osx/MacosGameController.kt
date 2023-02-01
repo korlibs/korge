@@ -68,7 +68,7 @@ class GCControllerDirectionPad(id: Long) : ObjcRef(id) {
     val y: Double get() = yAxis.value
 
     private val _point: Point = Point()
-    val point: IPoint get() = _point.setTo(x, y)
+    val point: Point get() = Point(x, y)
 
     companion object {
         inline operator fun getValue(obj: ObjcRef, property: KProperty<*>): GCControllerDirectionPad =

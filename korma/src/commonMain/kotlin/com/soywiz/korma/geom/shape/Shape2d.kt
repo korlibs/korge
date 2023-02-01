@@ -10,6 +10,7 @@ import com.soywiz.korma.geom.vector.applyTransform
 import com.soywiz.korma.geom.vector.ellipse
 import com.soywiz.korma.geom.vector.polygon
 import com.soywiz.korma.internal.niceStr
+import kotlin.jvm.*
 import kotlin.math.PI
 import kotlin.math.hypot
 import kotlin.math.max
@@ -45,7 +46,7 @@ abstract class Shape2d {
     abstract val closed: Boolean
     abstract fun containsPoint(x: Double, y: Double): Boolean
     fun containsPoint(x: Double, y: Double, mat: Matrix) = containsPoint(mat.transformX(x, y), mat.transformY(x, y))
-    open fun getBounds(out: com.soywiz.korma.geom.Rectangle = com.soywiz.korma.geom.Rectangle()): com.soywiz.korma.geom.Rectangle {
+    open fun getBounds(out: com.soywiz.korma.geom.Rectangle = Rectangle()): com.soywiz.korma.geom.Rectangle {
         var minx = Double.POSITIVE_INFINITY
         var miny = Double.POSITIVE_INFINITY
         var maxx = Double.NEGATIVE_INFINITY
@@ -60,9 +61,11 @@ abstract class Shape2d {
         }
         return out.setBounds(minx, miny, maxx, maxy)
     }
-    open fun getCenter(): com.soywiz.korma.geom.Point {
-        return getBounds().center
-    }
+    open val center: Point get() = getBounds().center
+    //@JvmName("getShape2dCenter")
+    //fun getCenter(): Point {
+    //    return getBounds().center
+    //}
     companion object {
         fun intersects(l: Shape2d, ml: Matrix?, r: Shape2d, mr: Matrix?, tempMatrix: Matrix? = Matrix()): Boolean {
             //println("Shape2d.intersects:"); println(" - l=$l[$ml]"); println(" - r=$r[$mr]")
@@ -193,7 +196,7 @@ abstract class Shape2d {
         }
     }
     data class Circle(val x: Double, val y: Double, override val radius: Double, val totalPoints: Int = 32) : BaseEllipse(x, y, radius, radius, Angle.ZERO, totalPoints), ICircle {
-        override val center: IPoint = IPoint(x, y)
+        override val center: Point = Point(x, y)
         companion object {
             operator fun invoke(x: Float, y: Float, radius: Float, totalPoints: Int = 32) = Circle(x.toDouble(), y.toDouble(), radius.toDouble(), totalPoints)
             operator fun invoke(x: Int, y: Int, radius: Int, totalPoints: Int = 32) = Circle(x.toDouble(), y.toDouble(), radius.toDouble(), totalPoints)

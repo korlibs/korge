@@ -15,11 +15,10 @@ fun VectorPath.sdf(width: Int, height: Int): FloatArray2 = sdf(FloatArray2(width
 fun VectorPath.sdf(data: FloatArray2): FloatArray2 {
     val path = this
     val curvesList = path.toCurvesList()
-    val p = Point()
     val pp = Bezier.ProjectedPoint()
     for (y in 0 until data.height) {
         for (x in 0 until data.width) {
-            p.setTo(x + 0.5, y + 0.5)
+            val p = Point(x + 0.5, y + 0.5)
             val inside = path.containsPoint(p)
             var min = Double.POSITIVE_INFINITY
             curvesList.fastForEach { curves ->
@@ -68,7 +67,7 @@ fun VectorPath.msdf(data: FloatBitmap32): FloatBitmap32 {
 
     for (y in 0 until data.height) {
         for (x in 0 until data.width) {
-            p.setTo(x + 0.5, y + 0.5)
+            val p = Point(x + 0.5, y + 0.5)
             val inside = path.containsPoint(p)
             val allDist = allColorizedCurves.allProjected.closestDistance(p)
             val redDist = allColorizedCurves.redProjected.closestDistance(p)
@@ -116,13 +115,10 @@ class ProjectCurvesLookup(val beziers: List<Bezier>) {
     private val tempProjected = Bezier.ProjectedPoint()
     private val tempPoint = Point()
 
-    fun closestDistance(point: IPoint): Double {
-        closest(point, tempPoint)
-        return Point.distance(point, tempPoint)
-    }
+    fun closestDistance(point: Point): Double = Point.distance(point, closest(point))
 
-    fun closest(point: IPoint, out: Point = Point()): IPoint {
-        if (beziers.isEmpty()) return out.setTo(0, 0)
+    fun closest(point: Point): Point {
+        if (beziers.isEmpty()) return Point(0, 0)
 
         var minDistSq: Double = Double.POSITIVE_INFINITY
         //var closest: BezierWithInfo = beziers.first()
@@ -140,12 +136,13 @@ class ProjectCurvesLookup(val beziers: List<Bezier>) {
         var bminDistSq = Double.POSITIVE_INFINITY
         //val keep = beziers.filter { it.outerCircle.distanceClosestSquared(point) <= minDistSq }
         //println("keep=${keep.size}, total=${beziers.size}")
+        var out = Point()
         beziers.fastForEach {
             if (it.outerCircle.distanceClosestSquared(point) > minDistSq) return@fastForEach
             it.project(point, tempProjected)
             if (tempProjected.dSq < bminDistSq) {
                 bminDistSq = tempProjected.dSq
-                out.copyFrom(tempProjected.p)
+                out = tempProjected.p
             }
         }
 

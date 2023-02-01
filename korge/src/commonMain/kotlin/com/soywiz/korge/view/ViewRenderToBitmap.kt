@@ -1,5 +1,6 @@
 package com.soywiz.korge.view
 
+import com.soywiz.kds.*
 import com.soywiz.korge.annotations.*
 import com.soywiz.korge.render.*
 import com.soywiz.korim.bitmap.*
@@ -10,7 +11,11 @@ import kotlinx.coroutines.*
  * Asynchronously renders this [View] (with the provided [views]) to a [Bitmap32] and returns it.
  * The rendering will happen before the next frame.
  */
-suspend fun View.renderToBitmap(views: Views, region: Rectangle? = null, scale: Double = 1.0, outPoint: Point = Point(), includeBackground: Boolean = false): Bitmap32 {
+suspend fun View.renderToBitmap(
+    views: Views, region: Rectangle? = null, scale: Double = 1.0,
+    outPoint: Holder<Point> = Holder(Point()),
+    includeBackground: Boolean = false
+): Bitmap32 {
 	val done = CompletableDeferred<Bitmap32>()
 
     // This will help to trigger a re-rendering in the case nothing else changed
@@ -28,7 +33,10 @@ suspend fun View.renderToBitmap(views: Views, region: Rectangle? = null, scale: 
 }
 
 @KorgeExperimental
-fun View.unsafeRenderToBitmapSync(ctx: RenderContext, region: Rectangle? = null, scale: Double = 1.0, outPoint: Point = Point()): Bitmap32 {
+fun View.unsafeRenderToBitmapSync(
+    ctx: RenderContext, region: Rectangle? = null, scale: Double = 1.0,
+    outPoint: Holder<Point> = Holder(Point())
+): Bitmap32 {
     val view = this
     val bounds = getLocalBoundsOptimizedAnchored(includeFilters = true)
 
@@ -48,7 +56,7 @@ fun View.unsafeRenderToBitmapSync(ctx: RenderContext, region: Rectangle? = null,
                     matrix.pretranslate(-region.x, -region.y)
                 }
                 matrix.translate(-bounds.x, -bounds.y)
-                outPoint.setTo(bounds.x, bounds.y)
+                outPoint.value = Point(bounds.x, bounds.y)
                 batch.setViewMatrixTemp(matrix) {
                     view.render(ctx)
                 }

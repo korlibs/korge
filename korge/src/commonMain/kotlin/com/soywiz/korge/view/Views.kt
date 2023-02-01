@@ -218,9 +218,9 @@ class Views constructor(
     private val tempViewsPool = Pool { FastArrayList<View>() }
     private val tempCompsPool = Pool { FastArrayList<Component>() }
     //private val tempViews = FastArrayList<View>()
-	private val virtualSize = SizeInt()
-	private val actualSize = SizeInt()
-	private val targetSize = SizeInt()
+	private var virtualSize = SizeInt()
+	private var actualSize = SizeInt()
+	private var targetSize = SizeInt()
 
     @KorgeInternal
     val actualWidth get() = actualSize.width
@@ -390,12 +390,14 @@ class Views constructor(
 		val actualWidth = width
 		val actualHeight = height
 		//println("RESIZED: $width, $height")
-		actualSize.setTo(actualWidth, actualHeight)
+		actualSize = SizeInt(actualWidth, actualHeight)
 		resized()
 	}
 
 
 	fun resized() {
+        val virtualSizeHolder = Holder<SizeInt>(SizeInt())
+        val targetSizeHolder = Holder<SizeInt>(SizeInt())
 		//println("$e : ${views.ag.backWidth}x${views.ag.backHeight}")
         bp.setBoundsInfo(
             virtualWidth,
@@ -403,9 +405,11 @@ class Views constructor(
             actualSize,
             scaleMode,
             scaleAnchor,
-            virtualSize,
-            targetSize
+            virtualSizeHolder,
+            targetSizeHolder
         )
+        this.virtualSize = virtualSizeHolder.value
+        this.targetSize = targetSizeHolder.value
 
         //println("RESIZED: $virtualSize, $actualSize, $targetSize")
 
@@ -652,15 +656,15 @@ interface BoundsProvider {
     val globalToWindowScaleY: Double get() = globalToWindowTransform.scaleY
     val globalToWindowScaleAvg: Double get() = globalToWindowTransform.scaleAvg
 
-    fun windowToGlobalCoords(pos: IPoint, out: Point = Point()): Point = windowToGlobalMatrix.transform(pos, out)
-    fun windowToGlobalCoords(x: Double, y: Double, out: Point = Point()): Point = windowToGlobalMatrix.transform(x, y, out)
+    fun windowToGlobalCoords(pos: IPoint, out: Point = Point()): Point = windowToGlobalMatrix.transform(pos)
+    fun windowToGlobalCoords(x: Double, y: Double, out: Point = Point()): Point = windowToGlobalMatrix.transform(x, y)
     fun windowToGlobalCoordsX(x: Double, y: Double): Double = windowToGlobalMatrix.transformX(x, y)
     fun windowToGlobalCoordsY(x: Double, y: Double): Double = windowToGlobalMatrix.transformY(x, y)
     fun windowToGlobalCoordsX(pos: IPoint): Double = windowToGlobalCoordsX(pos.x, pos.y)
     fun windowToGlobalCoordsY(pos: IPoint): Double = windowToGlobalCoordsY(pos.x, pos.y)
 
-    fun globalToWindowCoords(pos: IPoint, out: Point = Point()): Point = globalToWindowMatrix.transform(pos, out)
-    fun globalToWindowCoords(x: Double, y: Double, out: Point = Point()): Point = globalToWindowMatrix.transform(x, y, out)
+    fun globalToWindowCoords(pos: IPoint, out: Point = Point()): Point = globalToWindowMatrix.transform(pos)
+    fun globalToWindowCoords(x: Double, y: Double, out: Point = Point()): Point = globalToWindowMatrix.transform(x, y)
     fun globalToWindowCoordsX(x: Double, y: Double): Double = globalToWindowMatrix.transformX(x, y)
     fun globalToWindowCoordsY(x: Double, y: Double): Double = globalToWindowMatrix.transformY(x, y)
     fun globalToWindowCoordsX(pos: IPoint): Double = globalToWindowCoordsX(pos.x, pos.y)
@@ -681,14 +685,14 @@ fun BoundsProvider.setBoundsInfo(
     actualSize: SizeInt,
     scaleMode: ScaleMode = ScaleMode.FILL,
     anchor: Anchor = Anchor.CENTER,
-    virtualSize: SizeInt = SizeInt(),
-    targetSize: SizeInt = SizeInt()
+    virtualSize: Holder<SizeInt> = Holder(SizeInt()),
+    targetSize: Holder<SizeInt> = Holder(SizeInt()),
 ) {
-    virtualSize.setTo(virtualWidth, virtualHeight)
-    scaleMode(virtualSize, actualSize, targetSize)
+    virtualSize.value = SizeInt(virtualWidth, virtualHeight)
+    targetSize.value = scaleMode(virtualSize.value, actualSize)
 
-    val ratioX = targetSize.width.toDouble() / virtualWidth.toDouble()
-    val ratioY = targetSize.height.toDouble() / virtualHeight.toDouble()
+    val ratioX = targetSize.value.width.toDouble() / virtualWidth.toDouble()
+    val ratioY = targetSize.value.height.toDouble() / virtualHeight.toDouble()
     val actualVirtualWidth = (actualSize.width / ratioX).toIntRound()
     val actualVirtualHeight = (actualSize.height / ratioY).toIntRound()
 

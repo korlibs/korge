@@ -228,8 +228,6 @@ class RenderContext constructor(
     val matrixPool = Pool(reset = { it.identity() }, preallocate = 8) { Matrix() }
     /** Pool of [Matrix3D] objects that could be used temporarily by renders */
     val matrix3DPool = Pool(reset = { it.identity() }, preallocate = 8) { Matrix3D() }
-    /** Pool of [Point] objects that could be used temporarily by renders */
-    val pointPool = Pool(reset = { it.setTo(0, 0) }, preallocate = 8) { Point() }
     /** Pool of [Rectangle] objects that could be used temporarily by renders */
     val rectPool = Pool(reset = { it.setTo(0, 0, 0, 0) }, preallocate = 8) { Rectangle() }
 

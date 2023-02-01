@@ -34,7 +34,7 @@ open class UIVerticalList(provider: Provider, width: Double = 200.0) : UIView(wi
     private var dirty = false
     private val viewsByIndex = LinkedHashMap<Int, View>()
     private val lastArea = Rectangle()
-    private val lastPoint = Point()
+    private var lastPoint = Point()
     private val tempRect = Rectangle()
     private val tempPoint = Point()
     var provider: Provider = provider
@@ -81,12 +81,12 @@ open class UIVerticalList(provider: Provider, width: Double = 200.0) : UIView(wi
         //if (stage == null) return
         val area = getVisibleGlobalArea(tempRect)
         //val area = getVisibleWindowArea(tempRect)
-        val point = globalXY(tempPoint)
+        val point = globalXY()
         val numItems = provider.numItems
         if (dirty || area != lastArea || point != lastPoint) {
             dirty = false
             lastArea.copyFrom(area)
-            lastPoint.copyFrom(point)
+            lastPoint = point
 
             //val nheight = provider.fixedHeight?.toDouble() ?: 20.0
             //val nItems = (area.height / nheight).toIntCeil()

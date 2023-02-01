@@ -201,12 +201,10 @@ data class Matrix(
     )
 
     /** Transform point without translation */
-    fun deltaTransformPoint(point: IPoint, out: Point = Point()) = deltaTransformPoint(point.x, point.y, out)
-    fun deltaTransformPoint(x: Float, y: Float, out: Point = Point()): Point = deltaTransformPoint(x.toDouble(), y.toDouble(), out)
-    fun deltaTransformPoint(x: Double, y: Double, out: Point = Point()): Point {
-        out.x = deltaTransformX(x, y)
-        out.y = deltaTransformY(x, y)
-        return out
+    fun deltaTransformPoint(point: IPoint): Point = deltaTransformPoint(point.x, point.y)
+    fun deltaTransformPoint(x: Float, y: Float): Point = deltaTransformPoint(x.toDouble(), y.toDouble())
+    fun deltaTransformPoint(x: Double, y: Double): Point {
+        return Point(deltaTransformX(x, y), deltaTransformY(x, y))
     }
 
     fun deltaTransformX(x: Double, y: Double): Double = (x * a) + (y * c)
@@ -295,10 +293,10 @@ data class Matrix(
     }
 
     // Transform points
-    fun transform(p: IPoint, out: Point = Point()): Point = transform(p.x, p.y, out)
-    fun transform(px: Double, py: Double, out: Point = Point()): Point = out.setTo(transformX(px, py), transformY(px, py))
-    fun transform(px: Float, py: Float, out: Point = Point()): Point = out.setTo(transformX(px, py), transformY(px, py))
-    fun transform(px: Int, py: Int, out: Point = Point()): Point = out.setTo(transformX(px, py), transformY(px, py))
+    fun transform(p: IPoint): Point = transform(p.x, p.y)
+    fun transform(px: Double, py: Double): Point = Point(transformX(px, py), transformY(px, py))
+    fun transform(px: Float, py: Float): Point = Point(transformX(px, py), transformY(px, py))
+    fun transform(px: Int, py: Int): Point = Point(transformX(px, py), transformY(px, py))
 
     fun transformX(p: IPoint): Double = transformX(p.x, p.y)
     fun transformX(px: Double, py: Double): Double = this.a * px + this.c * py + this.tx
@@ -389,17 +387,17 @@ data class Matrix(
     }
 
     data class Transform(
-        override var x: Double = 0.0, override var y: Double = 0.0,
+        var x: Double = 0.0, var y: Double = 0.0,
         var scaleX: Double = 1.0, var scaleY: Double = 1.0,
         var skewX: Angle = 0.radians, var skewY: Angle = 0.radians,
         var rotation: Angle = 0.radians
-    ) : MutableInterpolable<Transform>, Interpolable<Transform>, XY, XYf {
+    ) : MutableInterpolable<Transform>, Interpolable<Transform> {
 
-        override var xf: Float
+        var xf: Float
             get() = x.toFloat()
             set(value) { x = value.toDouble() }
 
-        override var yf: Float
+        var yf: Float
             get() = y.toFloat()
             set(value) { y = value.toDouble() }
 

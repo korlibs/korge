@@ -3,7 +3,6 @@ package com.soywiz.korma.geom.collider
 import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.korma.geom.Angle
 import com.soywiz.korma.geom.Point
-import com.soywiz.korma.geom.angleTo
 import com.soywiz.korma.geom.degrees
 import com.soywiz.korma.geom.div
 import com.soywiz.korma.geom.plus

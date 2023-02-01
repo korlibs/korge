@@ -1,7 +1,9 @@
 package com.soywiz.korma.geom
 
+import kotlin.jvm.*
+
 interface ICircle {
-    val center: IPoint
+    val center: Point
     val radius: Double
     val radiusSquared: Double get() = radius * radius
 }
@@ -29,11 +31,11 @@ fun ICircle.distanceFarthestSquared(p: IPoint): Double {
     return distanceToCenterSquared(p) + radiusSquared
 }
 
-fun ICircle.projectedPoint(point: IPoint, out: Point = Point()): Point {
+fun ICircle.projectedPoint(point: IPoint): Point {
     //if (point == this.center) return out.copyFrom(center)
 
     val circle = this
     val pos = point
     val angle = Angle.between(circle.center, pos)
-    return out.setToPolar(circle.center, angle, circle.radius)
+    return Point.fromPolar(circle.center, angle, circle.radius)
 }

@@ -59,7 +59,6 @@ abstract class View internal constructor(
 ) : BaseView(), Renderable
     , Extra
     , BView
-    , XY
     , HitTestable
     , WithHitShape2d
 //, EventDispatcher by EventDispatcher.Mixin()
@@ -270,7 +269,7 @@ abstract class View internal constructor(
     private var _skewY: Angle = Angle.ZERO
     private var _rotation: Angle = Angle.ZERO
 
-    private val _pos = Point()
+    private var _pos = Point()
 
     protected open fun setXY(x: Double, y: Double) {
         ensureTransform()
@@ -281,11 +280,6 @@ abstract class View internal constructor(
         }
     }
 
-    fun getPosition(out: Point = Point()): Point {
-        out.copyFrom(out)
-        return out
-    }
-
     /** Position of the view. **@NOTE**: If [pos] coordinates are manually changed, you should call [View.invalidateMatrix] later to keep the matrix in sync */
     //uiEditableValue(Pair(view::x, view::y), min = -1000.0, max = +1000.0, clamp = false, name = "position")
     @ViewProperty(min = -1000.0, max = +1000.0, name = "position")
@@ -294,16 +288,13 @@ abstract class View internal constructor(
         set(value) = setXY(value.x, value.y)
 
     var posOpt: Point
-        get() {
-            _pos.setTo(x, y)
-            return _pos
-        }
+        get() = _pos
         set(value) {
-            setXY(value.x, value.y)
+            _pos = value
         }
 
     /** Local X position of this view */
-    override var x: Double
+    var x: Double
         get() {
             ensureTransform()
             return _x
@@ -311,7 +302,7 @@ abstract class View internal constructor(
         set(v) { setXY(v, y) }
 
     /** Local Y position of this view */
-    override var y: Double
+    var y: Double
         get() {
             ensureTransform()
             return _y
@@ -420,8 +411,8 @@ abstract class View internal constructor(
         )
     }
 
-    fun globalXY(out: Point = Point()): Point = out.setTo(globalX, globalY)
-    fun localXY(out: Point = Point()): Point = out.setTo(x, y)
+    fun globalXY(): Point = Point(globalX, globalY)
+    fun localXY(): Point = Point(x, y)
 
     /**
      * Changes the [width] and [height] to match the parameters.
@@ -809,8 +800,8 @@ abstract class View internal constructor(
     fun localMouseY(views: Views): Double = this.globalMatrixInv.transformY(views.input.mouse)
 
     /** Computes the local X and Y coordinate of the mouse using the coords from the [Views] object. You can use the [target] parameter to specify a target [Point] to avoid allocation. */
-    fun localMouseXY(views: Views, target: Point = Point()): Point =
-        target.setTo(localMouseX(views), localMouseY(views))
+    fun localMouseXY(views: Views): Point =
+        Point(localMouseX(views), localMouseY(views))
 
     /**
      * Invalidates the [localMatrix] [Matrix], so it gets updated from the decomposed properties: [x], [y], [scaleX], [scaleY], [rotation], [skewX] and [skewY].
@@ -993,10 +984,10 @@ abstract class View internal constructor(
 
     // Version with root-most object as reference
     /** Converts the global point [p] (using root/stage as reference) into the local coordinate system. Allows to define [out] to avoid allocation. */
-    fun globalToLocal(p: IPoint, out: Point = Point()): Point = globalToLocalXY(p.x, p.y, out)
+    fun globalToLocal(p: IPoint): Point = globalToLocalXY(p.x, p.y)
 
     /** Converts the global point [x] [y] (using root/stage as reference) into the local coordinate system. Allows to define [out] to avoid allocation. */
-    fun globalToLocalXY(x: Double, y: Double, out: Point = Point()): Point = this.globalMatrixInv.transform(x, y, out)
+    fun globalToLocalXY(x: Double, y: Double): Point = this.globalMatrixInv.transform(x, y)
 
     /** Converts the global point [x], [y] (using root/stage as reference) into the X in the local coordinate system. */
     fun globalToLocalX(x: Double, y: Double): Double = this.globalMatrixInv.transformX(x, y)
@@ -1006,17 +997,17 @@ abstract class View internal constructor(
 
     fun globalToLocalDX(x0: Double, y0: Double, x1: Double, y1: Double): Double = globalToLocalX(x1, y1) - globalToLocalX(x0, y0)
     fun globalToLocalDY(x0: Double, y0: Double, x1: Double, y1: Double): Double = globalToLocalY(x1, y1) - globalToLocalY(x0, y0)
-    fun globalToLocalDXY(x0: Double, y0: Double, x1: Double, y1: Double, out: Point = Point()): Point = out.setTo(
+    fun globalToLocalDXY(x0: Double, y0: Double, x1: Double, y1: Double): Point = Point(
         globalToLocalDX(x0, y0, x1, y1),
         globalToLocalDY(x0, y0, x1, y1),
     )
-    fun globalToLocalDXY(p0: IPoint, p1: IPoint, out: Point = Point()): Point = globalToLocalDXY(p0.x, p0.y, p1.x, p1.y, out)
+    fun globalToLocalDXY(p0: IPoint, p1: IPoint): Point = globalToLocalDXY(p0.x, p0.y, p1.x, p1.y)
 
     /** Converts the local point [p] into a global point (using root/stage as reference). Allows to define [out] to avoid allocation. */
     fun localToGlobal(p: IPoint, out: Point = Point()): Point = localToGlobalXY(p.x, p.y, out)
 
     /** Converts the local point [x], [y] into a global point (using root/stage as reference). Allows to define [out] to avoid allocation. */
-    fun localToGlobalXY(x: Double, y: Double, out: Point = Point()): Point = this.globalMatrix.transform(x, y, out)
+    fun localToGlobalXY(x: Double, y: Double, out: Point = Point()): Point = this.globalMatrix.transform(x, y)
 
     /** Converts the local point [x], [y] into a global X coordinate (using root/stage as reference). */
     fun localToGlobalX(x: Double, y: Double): Double = this.globalMatrix.transformX(x, y)
@@ -1030,7 +1021,7 @@ abstract class View internal constructor(
     fun renderToLocal(p: IPoint, out: Point = Point()): Point = renderToLocalXY(p.x, p.y, out)
 
     /** Converts a point [x], [y] in the nearest ancestor marked as [View.Reference] into the local coordinate system. Allows to define [out] to avoid allocation. */
-    fun renderToLocalXY(x: Double, y: Double, out: Point = Point()): Point = this.globalMatrixInv.transform(x, y, out)
+    fun renderToLocalXY(x: Double, y: Double, out: Point = Point()): Point = this.globalMatrixInv.transform(x, y)
 
     /** Converts a point [x], [y] in the nearest ancestor marked as [View.Reference] into the local X coordinate. */
     fun renderToLocalX(x: Double, y: Double): Double = this.globalMatrixInv.transformX(x, y)
@@ -1041,11 +1032,11 @@ abstract class View internal constructor(
 
     /** Converts the local point [p] into a point in the nearest ancestor masked as [View.Reference]. Allows to define [out] to avoid allocation. */
     @Deprecated("")
-    fun localToRender(p: IPoint, out: Point = Point()): Point = localToRenderXY(p.x, p.y, out)
+    fun localToRender(p: IPoint): Point = localToRenderXY(p.x, p.y)
 
     /** Converts the local point [x],[y] into a point in the nearest ancestor masked as [View.Reference]. Allows to define [out] to avoid allocation. */
     @Deprecated("")
-    fun localToRenderXY(x: Double, y: Double, out: Point = Point()): Point = this.globalMatrix.transform(x, y, out)
+    fun localToRenderXY(x: Double, y: Double): Point = this.globalMatrix.transform(x, y)
 
     /** Converts the local point [x],[y] into a X coordinate in the nearest ancestor masked as [View.Reference]. */
     @Deprecated("")
@@ -1062,16 +1053,16 @@ abstract class View internal constructor(
 
     /** Converts the local point [x], [y] into a point in window coordinates. */
     fun localToWindowXY(views: Views, x: Double, y: Double, out: Point = Point()): Point {
-        this.globalMatrix.transform(x, y, out)
-        views.globalToWindowMatrix.transform(out, out)
+        this.globalMatrix.transform(x, y)
+        views.globalToWindowMatrix.transform(out)
         return out
     }
 
     /** Converts the local point [x], [y] into a X coordinate in window coordinates. */
-    fun localToWindowX(views: Views, x: Double, y: Double): Double = Point.POOL { localToWindowXY(views, x, y, it).x }
+    fun localToWindowX(views: Views, x: Double, y: Double): Double = localToWindowXY(views, x, y).x
 
     /** Converts the local point [x], [y] into a Y coordinate in window coordinates. */
-    fun localToWindowY(views: Views, x: Double, y: Double): Double = Point.POOL { localToWindowXY(views, x, y, it).y }
+    fun localToWindowY(views: Views, x: Double, y: Double): Double = localToWindowXY(views, x, y).y
 
     var hitTestEnabled = true
 
@@ -1566,13 +1557,13 @@ abstract class View internal constructor(
         this@apply.copyPropsFrom(this@View)
     }
 
-    fun globalLocalBoundsPointRatio(anchor: Anchor, out: Point = Point()): Point = globalLocalBoundsPointRatio(anchor.sx, anchor.sy, out)
+    fun globalLocalBoundsPointRatio(anchor: Anchor, out: Point = Point()): Point = globalLocalBoundsPointRatio(anchor.sx, anchor.sy)
 
-    fun globalLocalBoundsPointRatio(ratioX: Double, ratioY: Double, out: Point = Point()): Point {
+    fun globalLocalBoundsPointRatio(ratioX: Double, ratioY: Double): Point {
         val bounds = getLocalBoundsOptimizedAnchored()
         val x = ratioX.interpolate(bounds.left, bounds.right)
         val y = ratioY.interpolate(bounds.top, bounds.bottom)
-        return out.setTo(localToGlobalX(x, y), localToGlobalY(x, y))
+        return Point(localToGlobalX(x, y), localToGlobalY(x, y))
     }
 
     fun getGlobalMatrixWithAnchor(out: Matrix = Matrix()): Matrix {
@@ -2011,7 +2002,7 @@ fun <T : View> T.positionY(y: Int): T = positionY(y.toDouble())
 
 fun View.getPositionRelativeTo(view: View, out: Point = Point()): Point {
     val mat = this.parent!!.getConcatMatrix(view, inclusive = false)
-    return mat.transform(x, y, out)
+    return mat.transform(x, y)
 }
 
 fun View.setPositionRelativeTo(view: View, pos: Point) {
@@ -2024,13 +2015,13 @@ fun View.setPositionRelativeTo(view: View, pos: Point) {
 
 fun View.getPointRelativeTo(pos: Point, view: View, out: Point = Point()): Point {
     val mat = this.getConcatMatrix(view, inclusive = false)
-    return mat.transform(pos, out)
+    return mat.transform(pos)
 }
 
 fun View.getPointRelativeToInv(pos: Point, view: View, out: Point = Point()): Point {
     val mat = this.getConcatMatrix(view, inclusive = false)
     val matInv = mat.inverted()
-    matInv.transform(pos, out)
+    matInv.transform(pos)
     return out
 }
 

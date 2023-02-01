@@ -593,7 +593,7 @@ class ClipperOffset(private val miterLimit: Double = 2.0, private val arcToleran
     @Suppress("unused")
     fun clear() {
         polyNodes.childs.clear()
-        lowest.x = -1.0
+        lowest = Point(-1.0, lowest.y)
     }
 
     private fun doMiter(j: Int, k: Int, r: Double) {
@@ -1255,7 +1255,7 @@ class DefaultClipper(initOptions: Int = 0) : ClipperBase(Clipper.PRESERVE_COLINE
         while (e != null) {
             e.prevInSEL = e.prevInAEL
             e.nextInSEL = e.nextInAEL
-            e.current.x = Edge.topX(e, topY)
+            e.current = e.current.copy(x = Edge.topX(e, topY))
             e = e.nextInAEL
         }
 
@@ -2057,68 +2057,70 @@ class DefaultClipper(initOptions: Int = 0) : ClipperBase(Clipper.PRESERVE_COLINE
 
     private fun intersectPoint(edge1: Edge, edge2: Edge, ipV: Array<Point>) {
         ipV[0] = Point()
-        val ip = ipV[0]
 
         val b1: Double
         val b2: Double
         //nb: with very large coordinate values, it's possible for SlopesEqual() to
         //return false but for the edge.Dx value be equal due to double precision rounding.
         if (edge1.deltaX == edge2.deltaX) {
-            ip.y = edge1.current.y
-            ip.x = Edge.topX(edge1, ip.y)
+            ipV[0] = Point(Edge.topX(edge1, ipV[0].y), edge1.current.y)
             return
         }
+        var ipx: Double
+        var ipy: Double
 
         if (edge1.delta.x == 0.0) {
-            ip.x = edge1.bot.x
+            ipx = edge1.bot.x
             if (edge2.isHorizontal) {
-                ip.y = edge2.bot.y
+                ipy = edge2.bot.y
             } else {
                 b2 = edge2.bot.y - edge2.bot.x / edge2.deltaX
-                ip.y = round(ip.x / edge2.deltaX + b2)
+                ipy = round(ipx / edge2.deltaX + b2)
             }
         } else if (edge2.delta.x == 0.0) {
-            ip.x = edge2.bot.x
+            ipx = edge2.bot.x
             if (edge1.isHorizontal) {
-                ip.y = edge1.bot.y
+                ipy = edge1.bot.y
             } else {
                 b1 = edge1.bot.y - edge1.bot.x / edge1.deltaX
-                ip.y = round(ip.x / edge1.deltaX + b1)
+                ipy = round(ipx / edge1.deltaX + b1)
             }
         } else {
             b1 = edge1.bot.x - edge1.bot.y * edge1.deltaX
             b2 = edge2.bot.x - edge2.bot.y * edge2.deltaX
             val q = (b2 - b1) / (edge1.deltaX - edge2.deltaX)
-            ip.y = round(q)
-            if (abs(edge1.deltaX) < abs(edge2.deltaX)) {
-                ip.x = round(edge1.deltaX * q + b1)
+            ipy = round(q)
+            ipx = if (abs(edge1.deltaX) < abs(edge2.deltaX)) {
+                round(edge1.deltaX * q + b1)
             } else {
-                ip.x = round(edge2.deltaX * q + b2)
+                round(edge2.deltaX * q + b2)
             }
         }
 
-        if (ip.y < edge1.top.y || ip.y < edge2.top.y) {
+        if (ipy < edge1.top.y || ipy < edge2.top.y) {
             if (edge1.top.y > edge2.top.y) {
-                ip.y = edge1.top.y
+                ipy = edge1.top.y
             } else {
-                ip.y = edge2.top.y
+                ipy = edge2.top.y
             }
             if (abs(edge1.deltaX) < abs(edge2.deltaX)) {
-                ip.x = Edge.topX(edge1, ip.y)
+                ipx = Edge.topX(edge1, ipy)
             } else {
-                ip.x = Edge.topX(edge2, ip.y)
+                ipx = Edge.topX(edge2, ipy)
             }
         }
         //finally, don't allow 'ip' to be BELOW curr.getY() (ie bottom of scanbeam) ...
-        if (ip.y > edge1.current.y) {
-            ip.y = edge1.current.y
+        if (ipy > edge1.current.y) {
+            ipy = edge1.current.y
             //better to use the more vertical edge to derive X ...
             if (abs(edge1.deltaX) > abs(edge2.deltaX)) {
-                ip.x = Edge.topX(edge2, ip.y)
+                ipx = Edge.topX(edge2, ipy)
             } else {
-                ip.x = Edge.topX(edge1, ip.y)
+                ipx = Edge.topX(edge1, ipy)
             }
         }
+
+        ipV[0] = Point(ipx, ipy)
     }
 
     private fun joinCommonEdges() {
@@ -2265,8 +2267,7 @@ class DefaultClipper(initOptions: Int = 0) : ClipperBase(Clipper.PRESERVE_COLINE
                     }
                     addEdgeToSEL(e)
                 } else {
-                    e.current.x = Edge.topX(e, topY)
-                    e.current.y = topY
+                    e.current = Point(Edge.topX(e, topY), topY)
                 }
 
                 if (strictlySimple) {
@@ -3231,11 +3232,11 @@ class DefaultClipper(initOptions: Int = 0) : ClipperBase(Clipper.PRESERVE_COLINE
 class Edge {
     enum class Side { LEFT, RIGHT }
 
-    var bot: Point = Point(); set(v) { field.copyFrom(v) }
-    var current: Point = Point(); set(v) { field.copyFrom(v) }
-    var top: Point = Point(); set(v) { field.copyFrom(v) }
+    var bot: Point = Point(); set(v) { field = v }
+    var current: Point = Point(); set(v) { field = v }
+    var top: Point = Point(); set(v) { field = v }
 
-    val delta: Point = Point()
+    var delta: Point = Point()
     var deltaX: Double = 0.0
 
     var polyTyp: Clipper.PolyType? = null
@@ -3372,8 +3373,8 @@ class Edge {
         //progression of the bounds - ie so their xbots will align with the
         //adjoining lower edge. [Helpful in the ProcessHorizontal() method.]
         val temp = top.x
-        top.x = bot.x
-        bot.x = temp
+        top = Point(bot.x, top.y)
+        bot = Point(temp, bot.y)
 
         //temp = top.z
         //top.z = bot.z
@@ -3386,8 +3387,7 @@ class Edge {
         "TEdge [Bot=$bot, Curr=$current, Top=$top, Delta=$delta, Dx=$deltaX, PolyTyp=$polyTyp, Side=$side, WindDelta=$windDelta, WindCnt=$windCnt, WindCnt2=$windCnt2, OutIdx=$outIdx, Next=$next, Prev=$prev, NextInLML=$nextInLML, NextInAEL=$nextInAEL, PrevInAEL=$prevInAEL, NextInSEL=$nextInSEL, PrevInSEL=$prevInSEL]"
 
     fun updateDeltaX() {
-        delta.x = top.x - bot.x
-        delta.y = top.y - bot.y
+        delta = Point(top.x - bot.x, top.y - bot.y)
         deltaX = (if (delta.y == 0.0) HORIZONTAL else delta.x / delta.y)
     }
 

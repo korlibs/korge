@@ -17,7 +17,6 @@ import com.soywiz.korma.geom.shape.buildVectorPath
 import com.soywiz.korma.geom.sine
 import com.soywiz.korma.geom.tangent
 import com.soywiz.korma.geom.times
-import com.soywiz.korma.geom.unit
 import com.soywiz.korma.geom.vector.VectorBuilder
 import com.soywiz.korma.geom.vector.arc
 import com.soywiz.korma.geom.vector.isEmpty
@@ -125,12 +124,12 @@ object Arc {
     private fun triangleFindSideFromSideAndHypot(side: Double, hypot: Double): Double =
         kotlin.math.sqrt(hypot * hypot - side * side)
 
-    fun findArcCenter(p1: IPoint, p2: IPoint, radius: Double, out: Point = Point()): IPoint {
+    fun findArcCenter(p1: IPoint, p2: IPoint, radius: Double): Point {
         val tangent = p2 - p1
-        val normal = tangent.mutable.setToNormal().normalized
+        val normal = tangent.normalized
         val mid = (p1 + p2) / 2.0
         val lineLen = triangleFindSideFromSideAndHypot(Point.distance(p1, mid), radius)
-        return out.copyFrom(mid + normal * lineLen)
+        return mid + normal * lineLen
     }
 
     fun createArc(p1: IPoint, p2: IPoint, radius: Double, counterclockwise: Boolean = false): Curves =

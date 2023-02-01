@@ -32,8 +32,8 @@ class BezierCurveTest {
         assertEquals(Point(232.5, 352.5), curve.derivative(0.5))
         assertEquals(Point(-120, -90), curve.derivative(1.0))
 
-        assertEquals(Point(0.97, -0.24), curve.normal(0.0).mutable.setToRoundDecimalPlaces(2))
-        assertEquals(Point(-0.83, 0.55), curve.normal(0.5).mutable.setToRoundDecimalPlaces(2))
+        assertEquals(Point(0.97, -0.24), curve.normal(0.0).roundDecimalPlaces(2))
+        assertEquals(Point(-0.83, 0.55), curve.normal(0.5).roundDecimalPlaces(2))
         assertEquals(Point(0.6, -0.8), curve.normal(1.0))
 
         assertEquals(Point(0, 0), curve.compute(0.0))

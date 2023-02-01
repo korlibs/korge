@@ -14,7 +14,6 @@ import com.soywiz.korma.geom.vector.circle
 import com.soywiz.korma.geom.vector.line
 import com.soywiz.korma.geom.vector.lineTo
 import com.soywiz.korma.geom.vector.moveTo
-import com.soywiz.korma.triangle.poly2tri.Poly2Tri
 import com.soywiz.korma.triangle.triangulate.triangulate
 
 class MainTriangulation : Scene() {

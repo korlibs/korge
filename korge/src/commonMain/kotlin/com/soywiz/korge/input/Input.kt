@@ -57,16 +57,16 @@ class Input : Extra by Extra.Mixin() {
     var clickDistance = 20.0 // @TODO: We should take into account pointSize/DPI
 
     // Mouse coordinates relative to the Stage
-    private val _mouse: Point = Point(-1000.0, -1000.0)
-    private val _mouseDown: Point = Point(-1000.0, -1000.0)
-    val mouse: IPoint get() = _mouse
+    private var _mouse: Point = Point(-1000.0, -1000.0)
+    private var _mouseDown: Point = Point(-1000.0, -1000.0)
+    val mouse: Point get() = _mouse
     val mouseDown: IPoint get() = _mouseDown
 
     @KorgeInternal fun setMouseGlobalXY(x: Double, y: Double, down: Boolean = false) {
-        val point = if (down) _mouseDown else _mouse
+        val p = Point(x, y)
+        if (down) _mouseDown = p else _mouse = p
         //println("setMouseGlobalXY: x=$x, y=$y, down=$down")
         //if (x == 5.0) println("-----")
-        point.setTo(x, y)
     }
 
     /** BitField with pressed mouse buttons */

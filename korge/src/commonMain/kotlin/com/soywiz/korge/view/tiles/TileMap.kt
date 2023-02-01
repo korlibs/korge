@@ -149,12 +149,6 @@ abstract class BaseTileMap(
     var repeatX = TileMapRepeat.NONE
     var repeatY = TileMapRepeat.NONE
 
-    private val t0 = Point(0, 0)
-    private val tt0 = Point(0, 0)
-    private val tt1 = Point(0, 0)
-    private val tt2 = Point(0, 0)
-    private val tt3 = Point(0, 0)
-
     protected var contentVersion = 0
     private var cachedContentVersion = 0
 
@@ -260,10 +254,10 @@ abstract class BaseTileMap(
         val colAdd = renderColorAdd
 
         // @TODO: Bounds in clipped view
-        val pp0 = globalToLocal(t0.setTo(currentVirtualRect.left, currentVirtualRect.top), tt0)
-        val pp1 = globalToLocal(t0.setTo(currentVirtualRect.right, currentVirtualRect.bottom), tt1)
-        val pp2 = globalToLocal(t0.setTo(currentVirtualRect.right, currentVirtualRect.top), tt2)
-        val pp3 = globalToLocal(t0.setTo(currentVirtualRect.left, currentVirtualRect.bottom), tt3)
+        val pp0 = globalToLocal(Point(currentVirtualRect.left, currentVirtualRect.top))
+        val pp1 = globalToLocal(Point(currentVirtualRect.right, currentVirtualRect.bottom))
+        val pp2 = globalToLocal(Point(currentVirtualRect.right, currentVirtualRect.top))
+        val pp3 = globalToLocal(Point(currentVirtualRect.left, currentVirtualRect.bottom))
         val mapTileWidth = tileSize.width
         val mapTileHeight = tileSize.height / if (staggerAxis == TileMapStaggerAxis.Y) 2.0 else 1.0
         val mx0 = ((pp0.x / mapTileWidth) + 1).toInt()

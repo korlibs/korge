@@ -17,7 +17,6 @@ import com.soywiz.korma.geom.Line
 import com.soywiz.korma.geom.Matrix
 import com.soywiz.korma.geom.Point
 import com.soywiz.korma.geom.PointArrayList
-import com.soywiz.korma.geom.PointPool
 import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.geom.bezier.*
 import com.soywiz.korma.geom.degrees
@@ -94,7 +93,6 @@ open class GpuShapeView(
     private val bb = BoundsBuilder()
     var bufferWidth = 1000
     var bufferHeight = 1000
-    private val pointsScope = PointPool(128)
     private val ab = SegmentInfo()
     private val bc = SegmentInfo()
     //private var notifyAboutEvenOdd = false
@@ -294,25 +292,23 @@ open class GpuShapeView(
         fun p0(index: Int) = if (index == 0) s0 else e0
         fun p1(index: Int) = if (index == 0) s1 else e1
 
-        fun setTo(s: Point, e: Point, lineWidth: Double, scope: PointPool) {
+        fun setTo(s: Point, e: Point, lineWidth: Double) {
             this.s = s
             this.e = e
-            scope.apply {
-                line = Line(s, e)
-                angleSE = Angle.between(s, e)
-                angleSE0 = angleSE - 90.degrees
-                angleSE1 = angleSE + 90.degrees
-                s0 = Point(s, angleSE0, length = lineWidth)
-                s1 = Point(s, angleSE1, length = lineWidth)
-                e0 = Point(e, angleSE0, length = lineWidth)
-                e1 = Point(e, angleSE1, length = lineWidth)
+            line = Line(s, e)
+            angleSE = Angle.between(s, e)
+            angleSE0 = angleSE - 90.degrees
+            angleSE1 = angleSE + 90.degrees
+            s0 = Point.fromPolar(s, angleSE0, length = lineWidth)
+            s1 = Point.fromPolar(s, angleSE1, length = lineWidth)
+            e0 = Point.fromPolar(e, angleSE0, length = lineWidth)
+            e1 = Point.fromPolar(e, angleSE1, length = lineWidth)
 
-                s0s = Point(s0, angleSE + 180.degrees, length = lineWidth)
-                s1s = Point(s1, angleSE + 180.degrees, length = lineWidth)
+            s0s = Point.fromPolar(s0, angleSE + 180.degrees, length = lineWidth)
+            s1s = Point.fromPolar(s1, angleSE + 180.degrees, length = lineWidth)
 
-                e0s = Point(e0, angleSE, length = lineWidth)
-                e1s = Point(e1, angleSE, length = lineWidth)
-            }
+            e0s = Point.fromPolar(e0, angleSE, length = lineWidth)
+            e1s = Point.fromPolar(e1, angleSE, length = lineWidth)
         }
     }
 
@@ -327,24 +323,22 @@ open class GpuShapeView(
     }
 
     private fun pointsAddCubicOrLine(
-        scope: PointPool, fix: IPoint,
+        fix: IPoint,
         p0: IPoint, p0s: IPoint, p1s: IPoint, p1: IPoint,
         lineWidth: Double,
         reverse: Boolean = false,
         start: Boolean = true,
     ) {
         val NPOINTS = 15
-        scope.apply {
-            for (i in 0..NPOINTS) {
-                val ratio = i.toDouble() / NPOINTS.toDouble()
-                val pos = when {
-                    start -> Bezier.cubicCalc(p0, p0s, p1s, p1, ratio, MPoint())
-                    else -> Bezier.cubicCalc(p1, p1s, p0s, p0, ratio, MPoint())
-                }
-                when {
-                    reverse -> pointsAdd(fix, pos, lineWidth.toFloat())
-                    else -> pointsAdd(pos, fix, lineWidth.toFloat())
-                }
+        for (i in 0..NPOINTS) {
+            val ratio = i.toDouble() / NPOINTS.toDouble()
+            val pos = when {
+                start -> Bezier.cubicCalc(p0, p0s, p1s, p1, ratio)
+                else -> Bezier.cubicCalc(p1, p1s, p0s, p0, ratio)
+            }
+            when {
+                reverse -> pointsAdd(fix, pos, lineWidth.toFloat())
+                else -> pointsAdd(pos, fix, lineWidth.toFloat())
             }
         }
     }

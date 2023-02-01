@@ -38,8 +38,8 @@ val IPointArrayList.firstX: Double get() = getX(0)
 val IPointArrayList.firstY: Double get() = getY(0)
 val IPointArrayList.lastX: Double get() = getX(size - 1)
 val IPointArrayList.lastY: Double get() = getY(size - 1)
-fun IPointArrayList.firstPoint(out: Point = Point()): Point = out.setTo(firstX, firstY)
-fun IPointArrayList.lastPoint(out: Point = Point()): Point = out.setTo(lastX, lastY)
+fun IPointArrayList.firstPoint(): Point = Point(firstX, firstY)
+fun IPointArrayList.lastPoint(): Point = Point(lastX, lastY)
 
 fun IPointArrayList.orientation(): Orientation {
     if (size < 3) return Orientation.COLLINEAR
@@ -65,7 +65,7 @@ inline fun IPointArrayList.fastForEachWithIndex(block: (index: Int, x: Double, y
     }
 }
 
-fun IPointArrayList.getPoint(index: Int, out: Point = Point()): Point = out.setTo(getX(index), getY(index))
+fun IPointArrayList.getPoint(index: Int): Point = Point(getX(index), getY(index))
 fun IPointArrayList.getIPoint(index: Int): IPoint = IPoint(getX(index), getY(index))
 
 fun IPointArrayList.toList(): List<Point> = (0 until size).map { getPoint(it) }
@@ -75,9 +75,9 @@ fun IPointArrayList.toIPoints(): List<IPoint> = (0 until size).map { getIPoint(i
 
 fun <T> IPointArrayList.map(gen: (x: Double, y: Double) -> T): List<T> = (0 until size).map { gen(getX(it), getY(it)) }
 
-fun IPointArrayList.mapPoints(temp: Point = Point(), gen: (x: Double, y: Double, out: Point) -> IPoint): IPointArrayList {
+fun IPointArrayList.mapPoints(gen: (x: Double, y: Double) -> Point): IPointArrayList {
     val out = PointArrayList(this.size)
-    fastForEach { x, y -> out.add(gen(x, y, temp)) }
+    fastForEach { x, y -> out.add(gen(x, y)) }
     return out
 }
 
@@ -144,7 +144,6 @@ open class PointArrayList(capacity: Int = 7) : IPointArrayList, Extra by Extra.M
     fun add(x: Int, y: Int) = add(x.toDouble(), y.toDouble())
 
     fun add(p: Point) = add(p.x, p.y)
-    fun add(p: IPoint) = add(p.x, p.y)
     fun add(p: IPointArrayList) = this.apply { p.fastForEach { x, y -> add(x, y) } }
     fun addReverse(p: IPointArrayList) = this.apply { p.fastForEachReverse { x, y -> add(x, y) } }
     fun add(p: IPointArrayList, index: Int) {
@@ -271,7 +270,7 @@ interface IPointIntArrayList {
     fun getY(index: Int): Int
 }
 
-fun IPointIntArrayList.getPoint(index: Int, out: PointInt = PointInt()): PointInt = out.setTo(getX(index), getY(index))
+fun IPointIntArrayList.getPoint(index: Int): PointInt = PointInt(getX(index), getY(index))
 fun IPointIntArrayList.getIPoint(index: Int): IPointInt = IPointInt(getX(index), getY(index))
 fun IPointIntArrayList.toPoints(): List<PointInt> = (0 until size).map { getPoint(it) }
 fun IPointIntArrayList.toIPoints(): List<IPointInt> = (0 until size).map { getIPoint(it) }
@@ -308,10 +307,11 @@ open class PointIntArrayList(capacity: Int = 7) : IPointIntArrayList, Extra by E
 
     companion object {
         operator fun invoke(capacity: Int = 7, callback: PointIntArrayList.() -> Unit): PointIntArrayList = PointIntArrayList(capacity).apply(callback)
-        operator fun invoke(points: List<IPointInt>): PointIntArrayList = PointIntArrayList(points.size) {
+        operator fun invoke(points: List<PointInt>): PointIntArrayList = PointIntArrayList(points.size) {
             for (n in points.indices) add(points[n].x, points[n].y)
         }
-        operator fun invoke(vararg points: IPointInt): PointIntArrayList = PointIntArrayList(points.size) {
+        operator fun <T : PointInt> invoke(vararg points: T): PointIntArrayList = PointIntArrayList(points.size) {
+        //operator fun invoke(vararg points: PointInt): PointIntArrayList = PointIntArrayList(points.size) {
             for (n in points.indices) add(points[n].x, points[n].y)
         }
     }

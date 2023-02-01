@@ -24,9 +24,8 @@ interface ISize {
 }
 
 fun Point.asSize(): Size = Size(this)
-fun IPoint.asSize(): ISize = Size(Point(this))
 
-inline class Size(val p: Point) : MutableInterpolable<Size>, Interpolable<Size>, ISize, Sizeable {
+inline class Size(val p: Point) : Interpolable<Size>, ISize, Sizeable {
     companion object {
         operator fun invoke(): Size = Size(Point(0, 0))
         operator fun invoke(width: Double, height: Double): Size = Size(Point(width, height))
@@ -38,31 +37,20 @@ inline class Size(val p: Point) : MutableInterpolable<Size>, Interpolable<Size>,
 
     override val size: Size get() = this
 
-    override var width: Double
-        set(value) { p.x = value }
+    override val width: Double
         get() = p.x
-    override var height: Double
-        set(value) { p.y = value }
+    override val height: Double
         get() = p.y
 
-    fun setTo(width: Double, height: Double): Size {
-        this.width = width
-        this.height = height
-        return this
-    }
-    fun setTo(width: Int, height: Int) = setTo(width.toDouble(), height.toDouble())
-    fun setTo(width: Float, height: Float) = setTo(width.toDouble(), height.toDouble())
-    fun setTo(that: ISize) = setTo(that.width, that.height)
-
-    fun setToScaled(sx: Double, sy: Double) = setTo((this.width * sx), (this.height * sy))
-    fun setToScaled(sx: Float, sy: Float) = setToScaled(sx.toDouble(), sy.toDouble())
-    fun setToScaled(sx: Int, sy: Int) = setToScaled(sx.toDouble(), sy.toDouble())
+    fun scaled(sx: Double, sy: Double): Size = Size(p * Point(sx, sy))
+    fun scaled(sx: Float, sy: Float): Size = Size(p * Point(sx, sy))
+    fun scaled(sx: Int, sy: Int): Size = Size(p * Point(sx, sy))
 
     fun clone() = Size(width, height)
 
-    override fun interpolateWith(ratio: Double, other: Size): Size = Size(0, 0).setToInterpolated(ratio, this, other)
+    override fun interpolateWith(ratio: Double, other: Size): Size = interpolated(ratio, this, other)
 
-    override fun setToInterpolated(ratio: Double, l: Size, r: Size): Size = this.setTo(
+    fun interpolated(ratio: Double, l: Size, r: Size): Size = Size(
         ratio.interpolate(l.width, r.width),
         ratio.interpolate(l.height, r.height)
     )
@@ -79,6 +67,9 @@ interface ISizeInt {
     }
 }
 
+val Size.int: SizeInt get() = SizeInt(this)
+val SizeInt.double: Size get() = this.size
+
 inline class SizeInt(val size: Size) : ISizeInt {
     companion object {
         operator fun invoke(): SizeInt = SizeInt(Size(0, 0))
@@ -88,29 +79,18 @@ inline class SizeInt(val size: Size) : ISizeInt {
 
     fun clone() = SizeInt(size.clone())
 
-    override var width: Int
-        set(value) { size.width = value.toDouble() }
+    override val width: Int
         get() = size.width.toInt()
-    override var height: Int
-        set(value) { size.height = value.toDouble() }
+    override val height: Int
         get() = size.height.toInt()
 
     //override fun toString(): String = "SizeInt($width, $height)"
     override fun toString(): String = "SizeInt(width=$width, height=$height)"
 }
 
-fun SizeInt.setTo(width: Int, height: Int) : SizeInt {
-    this.width = width
-    this.height = height
-
-    return this
-}
-
-fun SizeInt.setTo(that: ISizeInt) = setTo(that.width, that.height)
-
-fun SizeInt.setToScaled(sx: Double, sy: Double) = setTo((this.width * sx).toInt(), (this.height * sy).toInt())
-fun SizeInt.setToScaled(sx: Int, sy: Int) = setToScaled(sx.toDouble(), sy.toDouble())
-fun SizeInt.setToScaled(sx: Float, sy: Float) = setToScaled(sx.toDouble(), sy.toDouble())
+fun SizeInt.scaled(sx: Double, sy: Double): SizeInt = SizeInt(this.size.scaled(sx, sy))
+fun SizeInt.scaled(sx: Int, sy: Int): SizeInt = SizeInt(this.size.scaled(sx, sy))
+fun SizeInt.scaled(sx: Float, sy: Float): SizeInt = SizeInt(this.size.scaled(sx, sy))
 
 fun SizeInt.anchoredIn(container: RectangleInt, anchor: Anchor, out: RectangleInt = RectangleInt()): RectangleInt {
     return out.setTo(
@@ -126,8 +106,8 @@ operator fun SizeInt.times(v: Double) = SizeInt(Size((width * v).toInt(), (heigh
 operator fun SizeInt.times(v: Int) = this * v.toDouble()
 operator fun SizeInt.times(v: Float) = this * v.toDouble()
 
-fun SizeInt.getAnchorPosition(anchor: Anchor, out: PointInt = PointInt(0, 0)): PointInt =
-    out.setTo((width * anchor.sx).toInt(), (height * anchor.sy).toInt())
+fun SizeInt.getAnchorPosition(anchor: Anchor): PointInt =
+    PointInt((width * anchor.sx).toInt(), (height * anchor.sy).toInt())
 
 fun Size.asInt(): SizeInt = SizeInt(this)
 fun SizeInt.asDouble(): Size = this.size

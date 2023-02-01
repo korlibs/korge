@@ -75,6 +75,6 @@ class BezierTest {
     @Test
     fun testTangent() {
         val bezier = Bezier(Point(74.58, 36.96), Point(74.58, 36.96), Point(77.04, 27.36), Point(71.76, 32.64))
-        assertEquals(Point(0.2482, -0.9687), bezier.tangent(0.0).setToRoundDecimalPlaces(4))
+        assertEquals(Point(0.2482, -0.9687), bezier.tangent(0.0).roundDecimalPlaces(4))
     }
 }

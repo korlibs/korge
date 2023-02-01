@@ -14,7 +14,7 @@ class LineTest {
         assertEquals(64.0, line2.length, absoluteTolerance = tolerance)
         assertEquals(180.0, line1.angle.degrees, absoluteTolerance = tolerance)
         assertEquals(222.95459151111274, line2.angle.degrees, absoluteTolerance = tolerance)
-        assertEquals(Point(260.0, 158.0), line1.getSegmentIntersectionPoint(line2)?.round())
+        assertEquals(Point(260.0, 158.0), line1.getSegmentIntersectionPoint(line2)?.rounded())
     }
 
     @Test

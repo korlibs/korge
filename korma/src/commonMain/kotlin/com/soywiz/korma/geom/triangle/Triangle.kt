@@ -221,16 +221,16 @@ class TriangleList(val points: PointArrayList, val indices: ShortArray, val numT
     internal val tempTriangle: MutableTriangle = MutableTriangle()
 
     class MutableTriangle : Triangle {
-        override val p0 = Point()
-        override val p1 = Point()
-        override val p2 = Point()
+        override var p0 = Point()
+        override var p1 = Point()
+        override var p2 = Point()
         override fun toString(): String = "Triangle($p0, $p1, $p2)"
     }
 
     fun getTriangle(index: Int, out: MutableTriangle = MutableTriangle()): MutableTriangle {
-        points.getPoint(indices[index * 3 + 0].toInt() and 0xFFFF, out.p0)
-        points.getPoint(indices[index * 3 + 1].toInt() and 0xFFFF, out.p1)
-        points.getPoint(indices[index * 3 + 2].toInt() and 0xFFFF, out.p2)
+        out.p0 = points.getPoint(indices[index * 3 + 0].toInt() and 0xFFFF)
+        out.p1 = points.getPoint(indices[index * 3 + 1].toInt() and 0xFFFF)
+        out.p2 = points.getPoint(indices[index * 3 + 2].toInt() and 0xFFFF)
         return out
     }
 
