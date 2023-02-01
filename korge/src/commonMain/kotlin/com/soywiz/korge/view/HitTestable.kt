@@ -1,18 +1,13 @@
 package com.soywiz.korge.view
 
 import com.soywiz.kds.iterators.fastForEach
-import com.soywiz.kmem.extract
-import com.soywiz.kmem.insert
 import com.soywiz.korma.geom.Angle
 import com.soywiz.korma.geom.Point
 import com.soywiz.korma.geom.Vector2D
-import com.soywiz.korma.geom.angleTo
 import com.soywiz.korma.geom.cosine
 import com.soywiz.korma.geom.degrees
-import com.soywiz.korma.geom.div
 import com.soywiz.korma.geom.plus
 import com.soywiz.korma.geom.times
-import com.soywiz.korma.geom.vector.VectorPath
 
 @Deprecated("", replaceWith = ReplaceWith("com.soywiz.korma.geom.collider.HitTestable"))
 typealias HitTestable = com.soywiz.korma.geom.collider.HitTestable

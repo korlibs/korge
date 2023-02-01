@@ -36,13 +36,13 @@ class Edge {
 
         fun areParallel(a: Edge, b: Edge) = ((a.by - a.ay) * (b.ax - b.bx)) - ((b.by - b.ay) * (a.ax - a.bx)) == 0
 
-        fun getIntersectXY(a: Edge, b: Edge, out: Point = Point()): Point? {
-            getIntersectXY(a, b) { x, y -> return out.setTo(x, y) }
+        fun getIntersectXY(a: Edge, b: Edge): Point? {
+            getIntersectXY(a, b) { x, y -> return Point(x, y) }
             return null
         }
 
-        fun getIntersectXYInt(a: Edge, b: Edge, out: PointInt = PointInt()): PointInt? {
-            getIntersectXY(a, b) { x, y -> return out.setTo(x.toInt(), y.toInt()) }
+        fun getIntersectXYInt(a: Edge, b: Edge): PointInt? {
+            getIntersectXY(a, b) { x, y -> return PointInt(x.toInt(), y.toInt()) }
             return null
         }
 

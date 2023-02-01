@@ -104,7 +104,7 @@ private fun <T : View> T.onMouseDragInternal(
     var cy = 0.0
     val view = this
 
-    val mousePos = Point()
+    var mousePos = Point()
 
     fun views() = view.stage!!.views
 
@@ -112,7 +112,7 @@ private fun <T : View> T.onMouseDragInternal(
         val views = views()
         //println("views.globalMouse=${views.globalMouseXY}, views.nativeMouse=${views.nativeMouseXY}")
         //mousePos.copyFrom(views.globalMouseXY)
-        mousePos.copyFrom(views.globalMouseXY)
+        mousePos = views.globalMouseXY
     }
 
     fun handle(it: MouseEvents, state: MouseDragState) {
@@ -167,56 +167,56 @@ fun <T : View> T.onMouseDrag(
 ): T = onMouseDragInternal(timeProvider, info, callback).first
 
 open class DraggableInfo(view: View) : MouseDragInfo(view) {
-    val viewStartXY = Point()
+    var viewStartXY = Point()
 
     var viewStartX: Double
         get() = viewStartXY.x;
         set(value) {
-            viewStartXY.x = value
+            viewStartXY = viewStartXY.copy(x = value)
         }
     var viewStartY: Double
         get() = viewStartXY.y;
         set(value) {
-            viewStartXY.y = value
+            viewStartXY = viewStartXY.copy(y = value)
         }
 
-    val viewPrevXY = Point()
+    var viewPrevXY = Point()
 
     var viewPrevX: Double
         get() = viewPrevXY.x;
         set(value) {
-            viewPrevXY.x = value
+            viewPrevXY = viewPrevXY.copy(x = value)
         }
     var viewPrevY: Double
         get() = viewPrevXY.y;
         set(value) {
-            viewPrevXY.y = value
+            viewPrevXY = viewPrevXY.copy(y = value)
         }
 
-    val viewNextXY = Point()
+    var viewNextXY = Point()
 
     var viewNextX: Double
         get() = viewNextXY.x;
         set(value) {
-            viewNextXY.x = value
+            viewNextXY = viewNextXY.copy(x = value)
         }
     var viewNextY: Double
         get() = viewNextXY.y;
         set(value) {
-            viewNextXY.y = value
+            viewNextXY = viewNextXY.copy(y = value)
         }
 
-    val viewDeltaXY = Point()
+    var viewDeltaXY = Point()
 
     var viewDeltaX: Double
         get() = viewDeltaXY.x;
         set(value) {
-            viewDeltaXY.x = value
+            viewDeltaXY = viewDeltaXY.copy(x = value)
         }
     var viewDeltaY: Double
         get() = viewDeltaXY.y;
         set(value) {
-            viewDeltaXY.y = value
+            viewDeltaXY = viewDeltaXY.copy(y = value)
         }
 }
 
@@ -237,15 +237,15 @@ private fun <T : View> T.draggableInternal(
     val info = DraggableInfo(view)
     val onMouseDragCloseable = selector.onMouseDragCloseable(info = info) {
         if (info.start) {
-            info.viewStartXY.copyFrom(view.pos)
+            info.viewStartXY = view.pos
         }
         //println("localDXY=${info.localDX(view)},${info.localDY(view)}")
-        info.viewPrevXY.copyFrom(view.pos)
-        info.viewNextXY.setTo(
+        info.viewPrevXY = view.pos
+        info.viewNextXY = Point(
             info.viewStartX + info.localDX(view),
             info.viewStartY + info.localDY(view)
         )
-        info.viewDeltaXY.setTo(info.viewNextX - info.viewPrevX, info.viewNextY - info.viewPrevY)
+        info.viewDeltaXY = Point(info.viewNextX - info.viewPrevX, info.viewNextY - info.viewPrevY)
         if (autoMove) {
             view.xy(info.viewNextXY)
         }

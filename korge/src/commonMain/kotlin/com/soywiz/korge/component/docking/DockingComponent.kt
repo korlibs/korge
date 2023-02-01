@@ -12,7 +12,7 @@ import com.soywiz.korma.geom.Size
 import com.soywiz.korma.interpolation.interpolate
 
 fun <T : View> T.dockedTo(anchor: Anchor, scaleMode: ScaleMode = ScaleMode.NO_SCALE, offset: Point = Point(), hook: (View) -> Unit = {}): T {
-    DockingComponent(this, anchor, scaleMode, Point().copyFrom(offset), hook).attach()
+    DockingComponent(this, anchor, scaleMode, offset, hook).attach()
     return this
 }
 
@@ -25,8 +25,7 @@ class DockingComponent(
 ) :
     ResizeComponent {
     val initialViewSize = Size(view.width, view.height)
-    private val actualVirtualSize = Size(0, 0)
-    private val targetSize = Size(0, 0)
+    private var actualVirtualSize = Size(0, 0)
 
     init {
         view.deferWithViews { views ->
@@ -45,8 +44,8 @@ class DockingComponent(
         //view.alignX(views.stage, anchor.sx, true)
         //view.alignY(views.stage, anchor.sy, true)
         if (scaleMode != ScaleMode.NO_SCALE) {
-            actualVirtualSize.setTo(views.actualVirtualWidth, views.actualVirtualHeight)
-            val size = scaleMode.invoke(initialViewSize, actualVirtualSize, targetSize)
+            actualVirtualSize = Size(views.actualVirtualWidth, views.actualVirtualHeight)
+            val size = scaleMode(initialViewSize, actualVirtualSize)
             view.setSize(size.width, size.height)
         }
         view.invalidate()

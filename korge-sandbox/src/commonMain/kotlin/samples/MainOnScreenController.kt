@@ -79,7 +79,7 @@ class MainOnScreenController : Scene() {
             }
 
             var dragging = false
-            val start = Point(0, 0)
+            var start = Point(0, 0)
 
             view.addComponent(object : MouseComponent {
                 override val view: View = view
@@ -91,8 +91,7 @@ class MainOnScreenController : Scene() {
                     when (event.type) {
                         MouseEvent.Type.DOWN -> {
                             if (px >= width / 2) return
-                            start.x = px
-                            start.y = py
+                            start = Point(px, py)
                             ball.alpha = 0.3
                             dragging = true
                         }

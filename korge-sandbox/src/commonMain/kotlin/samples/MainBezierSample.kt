@@ -79,6 +79,7 @@ class MainBezierSample : Scene() {
     }
 
     fun Container.createPointController(point: Point, color: Paint, onMove: () -> Unit) {
+        var point: Point = point
         lateinit var circle: View
         lateinit var text: Text
         val anchorView = container {
@@ -95,8 +96,7 @@ class MainBezierSample : Scene() {
         }
         updateText()
         anchorView.draggable(circle) {
-            point.x = anchorView.x
-            point.y = anchorView.y
+            point = Point(anchorView.x, anchorView.y)
             updateText()
             onMove()
         }

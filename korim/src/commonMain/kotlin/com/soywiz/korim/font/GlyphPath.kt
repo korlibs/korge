@@ -13,8 +13,8 @@ data class GlyphPath(
     var path: VectorPath = VectorPath(),
     var colorShape: Shape? = null,
     var bitmap: Bitmap? = null,
-    val bitmapOffset: Point = Point(0, 0),
-    val bitmapScale: Point = Point(1, 1),
+    var bitmapOffset: Point = Point(0, 0),
+    var bitmapScale: Point = Point(1, 1),
     val transform: Matrix = Matrix(),
     var scale: Double = 1.0
 ) : Drawable {

@@ -56,16 +56,7 @@ import com.soywiz.korio.async.launch
 import com.soywiz.korio.async.launchImmediately
 import com.soywiz.korio.file.VfsFile
 import com.soywiz.korio.lang.Closeable
-import com.soywiz.korma.geom.Anchor
-import com.soywiz.korma.geom.Angle
-import com.soywiz.korma.geom.IRectangle
-import com.soywiz.korma.geom.ISize
-import com.soywiz.korma.geom.Point
-import com.soywiz.korma.geom.Rectangle
-import com.soywiz.korma.geom.absoluteValue
-import com.soywiz.korma.geom.degrees
-import com.soywiz.korma.geom.minus
-import com.soywiz.korma.geom.times
+import com.soywiz.korma.geom.*
 import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Delay
@@ -283,7 +274,7 @@ open class GameWindow :
 
     data class CustomCursor(val shape: Shape, val name: String = "custom") : ICursor, Extra by Extra.Mixin() {
         val bounds: IRectangle = this.shape.bounds
-        fun createBitmap(size: ISize? = null, native: Boolean = true) = shape.renderWithHotspot(fit = size, native = native)
+        fun createBitmap(size: Size? = null, native: Boolean = true) = shape.renderWithHotspot(fit = size, native = native)
     }
 
     enum class Cursor : ICursor {

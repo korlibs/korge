@@ -46,8 +46,7 @@ import com.soywiz.korio.stream.openFastStream
 import com.soywiz.korio.stream.openUse
 import com.soywiz.korio.stream.readBytesUpTo
 import com.soywiz.korio.stream.toSyncStream
-import com.soywiz.korma.geom.Matrix
-import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.IVectorPath
 import com.soywiz.korma.geom.vector.VectorPath
 import com.soywiz.korma.geom.vector.lineTo
@@ -155,11 +154,11 @@ abstract class BaseTtfFont(
             //println("bitmapEntry=$bitmapEntry")
             val scaleX = unitsPerEm.toDouble() / bitmapEntry.info.ppemX.toDouble()
             val scaleY = unitsPerEm.toDouble() / bitmapEntry.info.ppemY.toDouble()
-            path.bitmapOffset.setTo(
+            path.bitmapOffset = Point(
                 0.0,
                 ((-bitmapEntry.height - bitmapEntry.descender) * scaleY),
             )
-            path.bitmapScale.setTo(
+            path.bitmapScale = Point(
                 scaleX,
                 scaleY,
             )

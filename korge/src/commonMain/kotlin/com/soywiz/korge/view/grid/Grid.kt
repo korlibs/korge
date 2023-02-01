@@ -10,7 +10,7 @@ import com.soywiz.korma.geom.RectangleInt
 import com.soywiz.korma.geom.vector.rect
 
 interface Grid {
-    fun snap(point: Point, out: Point = Point()): Point
+    fun snap(point: Point): Point
     fun draw(ctx: RenderContext, width: Double, height: Double, m: Matrix)
 }
 
@@ -25,8 +25,8 @@ open class OrthographicGrid(
             height = value
         }
 
-    override fun snap(point: Point, out: Point): Point {
-        return out.setTo(
+    override fun snap(point: Point): Point {
+        return Point(
             point.x.nearestAlignedTo(width.toDouble()),
             point.y.nearestAlignedTo(height.toDouble()),
         )

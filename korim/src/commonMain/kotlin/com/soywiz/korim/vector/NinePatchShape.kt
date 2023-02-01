@@ -15,8 +15,8 @@ import com.soywiz.korma.geom.vector.VectorPath
 class NinePatchShape(val shape: Shape, val slices: NinePatchSlices2D) {
     val size: ISize = shape.bounds.bottomRight.asSize()
 
-    fun getScaledPointAt(point: IPoint, newSize: ISize, out: Point = Point()): IPoint =
-        slices.getScaledPointAt(point, size, newSize, out)
+    fun getScaledPointAt(point: IPoint, newSize: ISize): Point =
+        slices.getScaledPointAt(point, size, newSize)
 
     fun transform(newSize: ISize): Shape {
         return shape.scaleNinePatch(newSize, slices)

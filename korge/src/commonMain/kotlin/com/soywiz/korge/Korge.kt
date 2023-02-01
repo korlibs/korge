@@ -304,8 +304,8 @@ object Korge {
 
         val input = views.input
         val ag = views.ag
-        val downPos = Point()
-        val upPos = Point()
+        var downPos = Point()
+        var upPos = Point()
         var downTime = DateTime.EPOCH
         var moveTime = DateTime.EPOCH
         var upTime = DateTime.EPOCH
@@ -347,7 +347,7 @@ object Korge {
             input.setMouseGlobalXY(x, y, down = false)
             input.setMouseGlobalXY(x, y, down = true)
             views.mouseUpdated()
-            downPos.copyFrom(input.mouse)
+            downPos = input.mouse
             downTime = DateTime.now()
             input.mouseInside = true
         }
@@ -357,7 +357,7 @@ object Korge {
             input.toggleButton(button, false)
             input.setMouseGlobalXY(x, y, down = false)
             views.mouseUpdated()
-            upPos.copyFrom(views.input.mouse)
+            upPos = views.input.mouse
         }
 
         fun mouseMove(type: String, x: Double, y: Double, inside: Boolean) {

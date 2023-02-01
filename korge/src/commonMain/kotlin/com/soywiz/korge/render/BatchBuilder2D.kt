@@ -171,23 +171,6 @@ class BatchBuilder2D constructor(
 
 	init { logger.trace { "BatchBuilder2D[7]" } }
 
-	private val ptt1 = Point()
-	private val ptt2 = Point()
-
-	private val pt1 = Point()
-	private val pt2 = Point()
-	private val pt3 = Point()
-	private val pt4 = Point()
-	private val pt5 = Point()
-
-	private val pt6 = Point()
-	private val pt7 = Point()
-	private val pt8 = Point()
-
-	init { logger.trace { "BatchBuilder2D[8]" } }
-
-	init { logger.trace { "BatchBuilder2D[9]" } }
-
     //@KorgeInternal val textureUnit0 = AG.TextureUnit(null, linear = false)
     //@KorgeInternal val textureUnit1 = AG.TextureUnit(null, linear = false)
 
@@ -595,13 +578,13 @@ class BatchBuilder2D constructor(
 		setStateFast(tex.base, filtering, blendMode, program, icount = 6 * 9, vcount = 4 * 4)
         val texIndex: Int = currentTexIndex
 
-		val p_o = pt1.setToTransform(m, ptt1.setTo(x, y))
-		val p_dU = pt2.setToSub(ptt1.setToTransform(m, ptt1.setTo(x + width, y)), p_o)
-		val p_dV = pt3.setToSub(ptt1.setToTransform(m, ptt1.setTo(x, y + height)), p_o)
+		val p_o = Point(x, y).transformed(m)
+		val p_dU = Point(x + width, y).transformed(m) - p_o
+		val p_dV = Point(x, y + height).transformed(m) - p_o
 
-		val t_o = pt4.setTo(tex.tlX, tex.tlY)
-		val t_dU = pt5.setToSub(ptt1.setTo(tex.trX, tex.trY), t_o)
-		val t_dV = pt6.setToSub(ptt1.setTo(tex.blX, tex.blY), t_o)
+		val t_o = Point(tex.tlX, tex.tlY)
+		val t_dU = Point(tex.trX, tex.trY) - t_o
+		val t_dV = Point(tex.blX, tex.blY) - t_o
 
 		val start = vertexCount
 
@@ -611,23 +594,8 @@ class BatchBuilder2D constructor(
 			for (cx in 0 until 4) {
 				val posCutX = posCuts[cx].x
 				val texCutX = texCuts[cx].x
-
-				val p = pt7.setToAdd(
-					p_o,
-					ptt1.setToAdd(
-						ptt1.setToMul(p_dU, posCutX),
-						ptt2.setToMul(p_dV, posCutY)
-					)
-				)
-
-				val t = pt8.setToAdd(
-					t_o,
-					ptt1.setToAdd(
-						ptt1.setToMul(t_dU, texCutX),
-						ptt2.setToMul(t_dV, texCutY)
-					)
-				)
-
+				val p = p_o + ((p_dU * posCutX) + p_dV * posCutY)
+				val t = t_o + ((t_dU * texCutX) + (t_dV * texCutY))
 				addVertex(p.x.toFloat(), p.y.toFloat(), t.x.toFloat(), t.y.toFloat(), colorMul, colorAdd, texIndex, premultiplied, wrap)
 			}
 		}

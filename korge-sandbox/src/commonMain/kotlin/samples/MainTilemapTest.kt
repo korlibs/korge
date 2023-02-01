@@ -19,7 +19,6 @@ import com.soywiz.korio.util.niceStr
 import com.soywiz.korma.geom.Angle
 import com.soywiz.korma.geom.Point
 import com.soywiz.korma.geom.Point.Companion.Zero
-import com.soywiz.korma.geom.angleTo
 import com.soywiz.korma.geom.degrees
 import com.soywiz.korma.geom.minus
 import kotlin.math.pow
@@ -73,7 +72,7 @@ class MainTilemapTest : Scene() {
             if (isDown) {
                 if (!wasDown) {
                     wasDown = true
-                    downVals.mouse.copyFrom(input.mouse)
+                    downVals.mouse = (input.mouse)
                     downVals.camAngle = cameraContainer.cameraAngle
                     downVals.camPos = Point(cameraContainer.cameraX, cameraContainer.cameraY)
                 } else {

@@ -103,14 +103,14 @@ data class Curves(val beziers: List<Bezier>, val closed: Boolean) : Curve, Extra
         return block(info, ratioInCurve)
     }
 
-    override fun calc(t: Double, target: Point): Point =
-        findTInCurve(t) { info, ratioInCurve -> info.curve.calc(ratioInCurve, target) }
+    override fun calc(t: Double): Point =
+        findTInCurve(t) { info, ratioInCurve -> info.curve.calc(ratioInCurve) }
 
-    override fun normal(t: Double, target: Point): Point =
-        findTInCurve(t) { info, ratioInCurve -> info.curve.normal(ratioInCurve, target) }
+    override fun normal(t: Double): Point =
+        findTInCurve(t) { info, ratioInCurve -> info.curve.normal(ratioInCurve) }
 
-    override fun tangent(t: Double, target: Point): Point =
-        findTInCurve(t) { info, ratioInCurve -> info.curve.tangent(ratioInCurve, target) }
+    override fun tangent(t: Double): Point =
+        findTInCurve(t) { info, ratioInCurve -> info.curve.tangent(ratioInCurve) }
 
     override fun ratioFromLength(length: Double): Double {
         if (length <= 0.0) return 0.0

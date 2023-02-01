@@ -14,11 +14,8 @@ import com.soywiz.korma.geom.absoluteValue
 import com.soywiz.korma.geom.degrees
 import com.soywiz.korma.geom.fastForEachGeneric
 import com.soywiz.korma.geom.interpolate
-import com.soywiz.korma.geom.length
 import com.soywiz.korma.geom.lineIntersectionPoint
 import com.soywiz.korma.geom.minus
-import com.soywiz.korma.geom.mutable
-import com.soywiz.korma.geom.normalized
 import com.soywiz.korma.geom.plus
 import com.soywiz.korma.geom.projectedPoint
 import com.soywiz.korma.geom.umod
@@ -29,9 +26,7 @@ import com.soywiz.korma.geom.vector.VectorPath
 import com.soywiz.korma.geom.vector.toCurvesList
 import com.soywiz.korma.interpolation.interpolate
 import com.soywiz.kmem.clamp
-import com.soywiz.korma.math.isNanOrInfinite
 import kotlin.math.absoluteValue
-import kotlin.math.sign
 
 // @TODO
 //private fun Curves.toStrokeCurves(join: LineJoin, startCap: LineCap, endCap: LineCap): Curves {
@@ -90,7 +85,7 @@ class StrokePointsBuilder(
 
     fun addPointRelative(center: IPoint, pos: IPoint, sign: Double = 1.0) {
         val dist = pos - center
-        val normal = if (sign < 0.0) dist.mutable.neg() else dist
+        val normal = if (sign < 0.0) -dist.mutable else dist
         //if (!center.x.isFinite() || !normal.x.isFinite()) TODO("Non finite value detected detected: center=$center, pos=$pos, sign=$sign, dist=$dist, normal=$normal")
         addPoint(center, normal.normalized, dist.length * sign)
     }
@@ -175,12 +170,12 @@ class StrokePointsBuilder(
             //val p5 = p3
 
             if (generateDebug) {
-                debugSegments.add(nextLine1.scalePoints(1000.0).clone())
-                debugSegments.add(currLine1.scalePoints(1000.0).clone())
-                debugSegments.add(nextLine0.scalePoints(1000.0).clone())
-                debugSegments.add(currLine0.scalePoints(1000.0).clone())
-                debugSegments.add(Line.fromPointAndDirection(commonPoint, currTangent).scalePoints(1000.0).clone())
-                debugSegments.add(Line.fromPointAndDirection(commonPoint, nextTangent).scalePoints(1000.0).clone())
+                debugSegments.add(nextLine1.scaledPoints(1000.0).clone())
+                debugSegments.add(currLine1.scaledPoints(1000.0).clone())
+                debugSegments.add(nextLine0.scaledPoints(1000.0).clone())
+                debugSegments.add(currLine0.scaledPoints(1000.0).clone())
+                debugSegments.add(Line.fromPointAndDirection(commonPoint, currTangent).scaledPoints(1000.0).clone())
+                debugSegments.add(Line.fromPointAndDirection(commonPoint, nextTangent).scaledPoints(1000.0).clone())
                 debugPoints.add(p3)
                 debugPoints.add(p4)
                 debugPoints.add(p5)
@@ -223,7 +218,7 @@ class StrokePointsBuilder(
     fun addCap(curr: Curve, ratio: Double, kind: LineCap) {
         when (kind) {
             LineCap.SQUARE, LineCap.ROUND -> {
-                val derivate = curr.normal(ratio).setToNormal().also { if (ratio == 1.0) it.neg() }
+                val derivate = curr.normal(ratio).normalized.also { if (ratio == 1.0) -it }
                 when (kind) {
                     LineCap.SQUARE -> {
                         //val w = if (ratio == 1.0) -width else width

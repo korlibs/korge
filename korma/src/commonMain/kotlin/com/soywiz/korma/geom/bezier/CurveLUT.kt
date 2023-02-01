@@ -30,7 +30,6 @@ data class CurveLUT(val curve: Curve, val points: PointArrayList, val ts: Double
     val estimatedLength: Double get() = estimatedLengths.last()
     val steps: Int get() = points.size - 1
     val size: Int get() = points.size
-    val temp = Point()
 
     fun clear() {
         points.clear()
@@ -61,7 +60,7 @@ data class CurveLUT(val curve: Curve, val points: PointArrayList, val ts: Double
     }
 
     data class Estimation(var point: Point = Point(), var ratio: Double = 0.0, var length: Double = 0.0) {
-        fun roundDecimalDigits(places: Int): Estimation = Estimation(point.copy().setToRoundDecimalPlaces(places), ratio.roundDecimalPlaces(places), length.roundDecimalPlaces(places))
+        fun roundDecimalDigits(places: Int): Estimation = Estimation(point.roundDecimalPlaces(places), ratio.roundDecimalPlaces(places), length.roundDecimalPlaces(places))
         override fun toString(): String = "Estimation(point=${point.niceStr}, ratio=${ratio.niceStr}, length=${length.niceStr})"
     }
 
@@ -74,7 +73,7 @@ data class CurveLUT(val curve: Curve, val points: PointArrayList, val ts: Double
         if (ratio == 0.0) {
             this.ratio = ratio0
             this.length = length0
-            this.point.setTo(pointX0, pointY0)
+            this.point = Point(pointX0, pointY0)
         } else {
             val ratio1 = ts[index + 1]
             val length1 = estimatedLengths[index + 1]
@@ -82,7 +81,7 @@ data class CurveLUT(val curve: Curve, val points: PointArrayList, val ts: Double
             val pointY1 = points.getY(index + 1)
             this.ratio = ratio.interpolate(ratio0, ratio1)
             this.length = ratio.interpolate(length0, length1)
-            this.point.setToInterpolated(ratio, pointX0, pointY0, pointX1, pointY1)
+            this.point = Point.interpolated(ratio, Point(pointX0, pointY0), Point(pointX1, pointY1))
         }
 
         return this

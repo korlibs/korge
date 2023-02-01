@@ -47,14 +47,14 @@ fun <T : View> T.onSwipe(
     var movedBottom = false
 
     val view = this
-    val mousePos = Point()
+    var mousePos = Point()
     val swipeInfo = SwipeInfo(0.0, 0.0, SwipeDirection.TOP)
 
     fun views() = view.stage!!.views
 
     fun updateMouse() {
         val views = views()
-        mousePos.setTo(
+        mousePos = Point(
             views.globalMouseX,
             views.globalMouseY
         )

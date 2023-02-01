@@ -291,7 +291,6 @@ object SegmentIntToTrapezoidIntList {
 
 fun VectorPath.toSegments(scale: Int = 1): FSegmentsInt {
     val segments = FSegmentsInt()
-    val p = Point()
     fun emit(x0: Double, y0: Double, x1: Double, y1: Double) {
         //println("EMIT")
         segments.add((x0 * scale).toIntRound(), (y0 * scale).toIntRound(), (x1 * scale).toIntRound(), (y1 * scale).toIntRound())
@@ -302,7 +301,7 @@ fun VectorPath.toSegments(scale: Int = 1): FSegmentsInt {
         var oldY = 0.0
         for (n in 0 .. len) {
             val ratio = n.toDouble() / len
-            bezier.calc(ratio, p)
+            val p = bezier.calc(ratio)
             if (n > 0) {
                 emit(oldX, oldY, p.x, p.y)
             }

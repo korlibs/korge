@@ -284,10 +284,7 @@ class GamepadInfo constructor(
     val ry: Double get() = this[GameButton.RY]
 
 	operator fun get(button: GameButton): Double = mapping.get(button, this)
-    operator fun get(stick: GameStick): Point = axesData[stick.id].apply {
-        this.x = getX(stick)
-        this.y = getY(stick)
-    }
+    operator fun get(stick: GameStick): Point = Point(getX(stick), getY(stick)).also { axesData[stick.id] = it }
     fun getX(stick: GameStick) = when (stick) {
         GameStick.LEFT -> get(GameButton.LX)
         GameStick.RIGHT -> get(GameButton.RX)

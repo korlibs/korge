@@ -47,13 +47,13 @@ class TouchEvents(override val view: View) : TouchComponent {
 
     fun Info.copyFrom(touch: Touch) = this.apply {
         this.id = touch.id
-        this.global.setTo(touch.x, touch.y)
-        view.globalToLocalXY(touch.x, touch.y, this.local)
+        this.global = Point(touch.x, touch.y)
+        view.globalToLocalXY(touch.x, touch.y)
     }
 
     fun Info.start() = this.apply {
-        this.startLocal.copyFrom(this.local)
-        this.startGlobal.copyFrom(this.global)
+        this.startLocal = (this.local)
+        this.startGlobal = (this.global)
     }
 
     private val infoPool = Pool { Info(it) }

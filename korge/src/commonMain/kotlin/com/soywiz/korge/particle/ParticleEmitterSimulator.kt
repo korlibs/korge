@@ -135,8 +135,8 @@ class ParticleEmitterSimulator(
             ParticleEmitter.Type.RADIAL -> {
                 particle.emitRotation += particle.emitRotationDelta * elapsedTime.toDouble()
                 particle.emitRadius += (particle.emitRadiusDelta * elapsedTime).toFloat()
-                particle.x = emitter.sourcePosition.xf - cos(particle.emitRotation).toFloat() * particle.emitRadius
-                particle.y = emitter.sourcePosition.yf - sin(particle.emitRotation).toFloat() * particle.emitRadius
+                particle.x = emitter.sourcePosition.x.toFloat() - cos(particle.emitRotation).toFloat() * particle.emitRadius
+                particle.y = emitter.sourcePosition.y.toFloat() - sin(particle.emitRotation).toFloat() * particle.emitRadius
             }
             ParticleEmitter.Type.GRAVITY -> {
                 val distanceX = particle.x - particle.startX

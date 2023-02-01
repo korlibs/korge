@@ -252,10 +252,10 @@ data class Rectangle(
     fun getMiddlePoint(out: Point = Point()): Point = getAnchoredPosition(Anchor.CENTER, out)
 
     fun getAnchoredPosition(anchor: Anchor, out: Point = Point()): Point =
-        getAnchoredPosition(anchor.sx, anchor.sy, out)
+        getAnchoredPosition(anchor.sx, anchor.sy)
 
-    fun getAnchoredPosition(anchorX: Double, anchorY: Double, out: Point = Point()): Point =
-        out.setTo(left + width * anchorX, top + height * anchorY)
+    fun getAnchoredPosition(anchorX: Double, anchorY: Double): Point =
+        Point(left + width * anchorX, top + height * anchorY)
 
     fun toInt(): RectangleInt = RectangleInt(x.toInt(), y.toInt(), width.toInt(), height.toInt())
     fun floor(): Rectangle {
@@ -492,11 +492,8 @@ fun RectangleInt.setSize(width: Int, height: Int): RectangleInt {
     return this
 }
 
-fun RectangleInt.getPosition(out: PointInt = PointInt()): PointInt = out.setTo(x, y)
-fun RectangleInt.getSize(out: SizeInt = SizeInt()): SizeInt = out.setTo(width, height)
-
-val RectangleInt.position get() = getPosition()
-val RectangleInt.size get() = getSize()
+val RectangleInt.position: PointInt get() = PointInt(x, y)
+val RectangleInt.size: SizeInt get() = SizeInt(width, height)
 
 fun RectangleInt.setBoundsTo(left: Int, top: Int, right: Int, bottom: Int) =
     setTo(left, top, right - left, bottom - top)
@@ -526,8 +523,8 @@ fun IRectangleInt.anchoredIn(
         height
     )
 
-fun IRectangleInt.getAnchorPosition(anchor: Anchor, out: PointInt = PointInt()): PointInt =
-    out.setTo((x + width * anchor.sx).toInt(), (y + height * anchor.sy).toInt())
+fun IRectangleInt.getAnchorPosition(anchor: Anchor): PointInt =
+    PointInt((x + width * anchor.sx).toInt(), (y + height * anchor.sy).toInt())
 
 fun Rectangle.asInt() = RectangleInt(this)
 fun RectangleInt.asDouble() = this.rect

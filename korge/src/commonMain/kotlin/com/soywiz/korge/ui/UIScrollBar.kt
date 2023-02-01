@@ -115,7 +115,7 @@ open class UIScrollBar(
         var initRatio = 0.0
         var startRatio = 0.0
         thumb.onMouseDrag {
-            val lmouse = background.localMouseXY(views, tempP)
+            val lmouse = background.localMouseXY(views)
             val curPosition = if (isHorizontal) lmouse.x else lmouse.y
             val size = if (isHorizontal) background.width - thumb.width else background.height - thumb.height
             val curRatio = curPosition / size

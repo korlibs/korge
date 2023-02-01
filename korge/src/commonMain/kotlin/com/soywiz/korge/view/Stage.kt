@@ -50,15 +50,11 @@ class Stage(override val views: Views) : FixedSizeContainer()
         gameWindow.runBlockingNoJs(this.coroutineContext, block)
 
     /** Mouse coordinates relative to the [Stage] singleton */
-    val mouseXY: Point = Point(0.0, 0.0)
-        get() {
-            field.setTo(mouseX, mouseY)
-            return field
-        }
+    val mouseXY: Point get() = Point(mouseX, mouseY)
     /** Mouse X coordinate relative to the [Stage] singleton */
-    val mouseX get() = localMouseX(views)
+    val mouseX: Double get() = localMouseX(views)
     /** Mouse Y coordinate relative to the [Stage] singleton */
-    val mouseY get() = localMouseY(views)
+    val mouseY: Double get() = localMouseY(views)
 
     //override fun getLocalBoundsInternal(out: Rectangle) {
     //    out.setTo(0.0, 0.0, views.virtualWidth, views.virtualHeight)

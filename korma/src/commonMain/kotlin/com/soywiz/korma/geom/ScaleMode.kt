@@ -10,7 +10,7 @@ class ScaleMode(
 
     fun transformW(iw: Double, ih: Double, cw: Double, ch: Double) = transform(0, iw, ih, cw, ch)
     fun transformH(iw: Double, ih: Double, cw: Double, ch: Double) = transform(1, iw, ih, cw, ch)
-    fun transform(iw: Double, ih: Double, cw: Double, ch: Double, target: Size = Size()) = target.setTo(
+    fun transform(iw: Double, ih: Double, cw: Double, ch: Double): Size = Size(
         transformW(iw, ih, cw, ch),
         transformH(iw, ih, cw, ch)
     )
@@ -18,10 +18,10 @@ class ScaleMode(
     fun transformW(item: Size, container: Size) = transformW(item.width, item.height, container.width, container.height)
     fun transformH(item: Size, container: Size) = transformH(item.width, item.height, container.width, container.height)
 
-    operator fun invoke(item: ISize, container: ISize, target: Size = Size()): Size =
-        transform(item.width, item.height, container.width, container.height, target)
+    operator fun invoke(item: Size, container: Size): Size =
+        transform(item.width, item.height, container.width, container.height)
 
-    operator fun invoke(item: ISizeInt, container: ISizeInt, target: SizeInt = SizeInt()): SizeInt = target.setTo(
+    operator fun invoke(item: SizeInt, container: SizeInt): SizeInt = SizeInt(
         transformW(item.width.toDouble(), item.height.toDouble(), container.width.toDouble(), container.height.toDouble()).toInt(),
         transformH(item.width.toDouble(), item.height.toDouble(), container.width.toDouble(), container.height.toDouble()).toInt()
     )
@@ -63,21 +63,21 @@ fun Rectangle.applyScaleMode(
     container: Rectangle, mode: ScaleMode, anchor: Anchor, out: Rectangle = Rectangle()
 ): Rectangle = this.size.applyScaleMode(container, mode, anchor, out)
 
-fun Size.applyScaleMode(container: Rectangle, mode: ScaleMode, anchor: Anchor, out: Rectangle = Rectangle(), tempSize: Size = Size()): Rectangle {
-    val outSize = this.applyScaleMode(container.size, mode, tempSize)
+fun Size.applyScaleMode(container: Rectangle, mode: ScaleMode, anchor: Anchor, out: Rectangle = Rectangle()): Rectangle {
+    val outSize = this.applyScaleMode(container.size, mode)
     out.setToAnchoredRectangle(Rectangle(0.0, 0.0, outSize.width, outSize.height), anchor, container)
     return out
 }
 
-fun SizeInt.applyScaleMode(container: RectangleInt, mode: ScaleMode, anchor: Anchor, out: RectangleInt = RectangleInt(), tempSize: SizeInt = SizeInt()): RectangleInt =
-    this.asDouble().applyScaleMode(container.asDouble(), mode, anchor, out.asDouble(), tempSize.asDouble()).asInt()
+fun SizeInt.applyScaleMode(container: RectangleInt, mode: ScaleMode, anchor: Anchor, out: RectangleInt = RectangleInt()): RectangleInt =
+    this.asDouble().applyScaleMode(container.asDouble(), mode, anchor, out.asDouble()).asInt()
 
-fun SizeInt.applyScaleMode(container: SizeInt, mode: ScaleMode, out: SizeInt = SizeInt(0, 0)): SizeInt =
-    mode(this, container, out)
-fun Size.applyScaleMode(container: Size, mode: ScaleMode, out: Size = Size(0, 0)): Size =
-    mode(this, container, out)
+fun SizeInt.applyScaleMode(container: SizeInt, mode: ScaleMode): SizeInt =
+    mode(this, container)
+fun Size.applyScaleMode(container: Size, mode: ScaleMode): Size =
+    mode(this, container)
 
-fun SizeInt.fitTo(container: SizeInt, out: SizeInt = SizeInt(0, 0)): SizeInt =
-    applyScaleMode(container, ScaleMode.SHOW_ALL, out)
-fun Size.fitTo(container: Size, out: Size = Size(0, 0)): Size =
-    applyScaleMode(container, ScaleMode.SHOW_ALL, out)
+fun SizeInt.fitTo(container: SizeInt): SizeInt =
+    applyScaleMode(container, ScaleMode.SHOW_ALL)
+fun Size.fitTo(container: Size): Size =
+    applyScaleMode(container, ScaleMode.SHOW_ALL)

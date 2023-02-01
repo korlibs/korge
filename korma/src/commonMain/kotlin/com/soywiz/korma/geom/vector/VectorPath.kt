@@ -360,10 +360,10 @@ class VectorPath(
         return false
     }
 
-    fun getLineIntersection(line: Line, out: LineIntersection = LineIntersection()): LineIntersection? {
+    fun getLineIntersection(line: Line): LineIntersection? {
         // Directs from outside the shape, to inside the shape
 //        if (this.containsPoint(line.b) && !this.containsPoint(line.a)) {
-            return this.scanline.getLineIntersection(line, out)
+            return this.scanline.getLineIntersection(line)
         //}
         //return null
     }
@@ -460,10 +460,8 @@ class VectorPath(
     internal val tempPoint = Point()
 
     inline fun transformPoints(transform: (p: Point) -> IPoint): VectorPath {
-        val point = tempPoint
         for (n in 0 until data.size step 2) {
-            point.setTo(data[n + 0], data[n + 1])
-            val p = transform(point)
+            val p = transform(Point(data[n + 0], data[n + 1]))
             data[n + 0] = p.x
             data[n + 1] = p.y
         }
@@ -473,7 +471,7 @@ class VectorPath(
 
     fun scale(sx: Double, sy: Double = sx): VectorPath {
         return transformPoints { p ->
-            p.setTo(p.x * sx, p.y * sy)
+            Point(p.x * sx, p.y * sy)
         }
     }
 
@@ -584,7 +582,7 @@ fun BoundsBuilder.add(path: VectorPath, transform: Matrix? = null) {
 }
 
 fun VectorPath.applyTransform(m: Matrix?): VectorPath = when {
-    m != null -> transformPoints { m.transform(it, it) }
+    m != null -> transformPoints { m.transform(it) }
     else -> this
 }
 
