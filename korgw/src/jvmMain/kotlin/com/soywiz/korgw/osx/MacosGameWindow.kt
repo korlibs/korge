@@ -35,7 +35,7 @@ interface MacGL : INativeGL, Library {
     fun CGLGetCurrentContext(): Pointer?
     fun CGLDestroyContext(ctx: Pointer?)
 
-    companion object : MacGL by NativeLoad("OpenGL")
+    companion object : MacGL by NativeLoad(nativeOpenGLLibraryPath)
 }
 
 private fun ByteArray.toNSData(): Long = NSClass("NSData").alloc().msgSend("initWithBytes:length:", ByteBuffer.wrap(this), this.size)
