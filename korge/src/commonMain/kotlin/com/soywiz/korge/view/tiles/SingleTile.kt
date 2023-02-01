@@ -7,6 +7,7 @@ import com.soywiz.korge.view.SmoothedBmpSlice
 import com.soywiz.korge.view.ViewDslMarker
 import com.soywiz.korge.view.addTo
 import com.soywiz.korim.bitmap.*
+import com.soywiz.korma.geom.*
 
 inline fun Container.repeatedImageView(
     bitmap: BmpSlice,
@@ -35,8 +36,7 @@ open class SingleTile(
                 this.height = value.height.toDouble()
                 tileWidth = width
                 tileHeight = height
-                tileSize.width = width
-                tileSize.height = height
+                tileSize = Size(width, height)
                 contentVersion++
             }
         }

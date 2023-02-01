@@ -17,10 +17,9 @@ fun <T : View> T.addUpdater(referenceFps: Frequency, first: Boolean = true, upda
 }
 
 
-fun View.Companion.convertViewSpace(src: View, srcPoint: IPoint, dst: View, dstPoint: Point = Point()): IPoint {
-    src.localToGlobal(srcPoint, dstPoint)
-    return dst.globalToLocal(dstPoint, dstPoint)
+fun View.Companion.convertViewSpace(src: View, srcPoint: IPoint, dst: View): Point {
+    return dst.globalToLocal(src.localToGlobal(srcPoint))
 }
 
-fun View.convertToSpace(srcPoint: IPoint, dst: View, dstPoint: Point = Point()): IPoint =
-    View.Companion.convertViewSpace(this, srcPoint, dst, dstPoint)
+fun View.convertToSpace(srcPoint: IPoint, dst: View): Point =
+    View.Companion.convertViewSpace(this, srcPoint, dst)

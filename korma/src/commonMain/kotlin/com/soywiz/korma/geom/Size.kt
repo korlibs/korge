@@ -7,25 +7,11 @@ import com.soywiz.korma.interpolation.interpolate
 import kotlin.math.max
 import kotlin.math.min
 
-interface ISize {
-    val width: Double
-    val height: Double
-
-    val area: Double get() = width * height
-    val perimeter: Double get() = width * 2 + height * 2
-    val min: Double get() = min(width, height)
-    val max: Double get() = max(width, height)
-
-    companion object {
-        operator fun invoke(width: Double, height: Double): ISize = Size(Point(width, height))
-        operator fun invoke(width: Int, height: Int): ISize = Size(Point(width, height))
-        operator fun invoke(width: Float, height: Float): ISize = Size(Point(width, height))
-    }
-}
+typealias ISize = Size
 
 fun Point.asSize(): Size = Size(this)
 
-inline class Size(val p: Point) : Interpolable<Size>, ISize, Sizeable {
+inline class Size(val p: Point) : Interpolable<Size>, Sizeable {
     companion object {
         operator fun invoke(): Size = Size(Point(0, 0))
         operator fun invoke(width: Double, height: Double): Size = Size(Point(width, height))
@@ -37,10 +23,15 @@ inline class Size(val p: Point) : Interpolable<Size>, ISize, Sizeable {
 
     override val size: Size get() = this
 
-    override val width: Double
-        get() = p.x
-    override val height: Double
-        get() = p.y
+    val width: Double get() = p.x
+    val height: Double get() = p.y
+
+    val area: Double get() = width * height
+    val perimeter: Double get() = width * 2 + height * 2
+    val min: Double get() = min(width, height)
+    val max: Double get() = max(width, height)
+
+
 
     fun scaled(sx: Double, sy: Double): Size = Size(p * Point(sx, sy))
     fun scaled(sx: Float, sy: Float): Size = Size(p * Point(sx, sy))

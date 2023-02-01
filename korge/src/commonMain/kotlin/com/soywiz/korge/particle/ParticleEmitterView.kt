@@ -64,7 +64,7 @@ class ParticleEmitterView(
     var emitterPos: Point
         get() = simulator.emitterPos
         set(value) {
-            simulator.emitterPos.copyFrom(value)
+            simulator.emitterPos = value
         }
     var emitterXY: Point
         get() = emitterPos
@@ -74,18 +74,18 @@ class ParticleEmitterView(
     var emitterX: Double
         get() = emitterPos.x
         set(value) {
-            emitterPos.x = value
+            emitterPos = emitterPos.copy(x = value)
         }
     var emitterY: Double
         get() = emitterPos.y
         set(value) {
-            emitterPos.y = value
+            emitterPos = emitterPos.copy(y = value)
         }
 
     @ViewProperty
     var localCoords: Boolean = localCoords
 
-    private val lastPosition = Point(globalX, globalY)
+    private var lastPosition = Point(globalX, globalY)
 
     //override fun setXY(x: Double, y: Double) {
     //    if (localCoords) {
@@ -118,7 +118,7 @@ class ParticleEmitterView(
 
             simulator.simulate(dt, dx, dy)
 
-            lastPosition.setTo(gx, gy)
+            lastPosition = Point(gx, gy)
             if (autoInvalidateRenderer) invalidateRender()
         }
     }

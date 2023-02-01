@@ -301,39 +301,27 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
     var upPosGlobal = Point()
 
     @KorgeInternal
-    val startedPosGlobal = Point()
+    var startedPosGlobal = Point()
 
     @KorgeInternal
-    val lastPosGlobal = Point()
+    var lastPosGlobal = Point()
 
     @KorgeInternal
-    val currentPosGlobal = Point()
+    var currentPosGlobal = Point()
 
     // Local variants
-    private val _downPosLocal: Point = Point()
-    private val _upPosLocal: Point = Point()
-    private val _startedPosLocal = Point()
-    private val _lastPosLocal = Point()
-    private val _currentPosLocal = Point()
-
-    val startedPosLocal get() = view.globalToLocal(startedPosGlobal, _startedPosLocal)
-    val lastPosLocal get() = view.globalToLocal(lastPosGlobal, _lastPosLocal)
-    val currentPosLocal get() = view.globalToLocal(currentPosGlobal, _currentPosLocal)
-    val downPosLocal get() = view.globalToLocal(downPosGlobal, _downPosLocal)
-    val upPosLocal get() = view.globalToLocal(upPosGlobal, _upPosLocal)
+    val startedPosLocal: Point get() = view.globalToLocal(startedPosGlobal)
+    val lastPosLocal: Point get() = view.globalToLocal(lastPosGlobal)
+    val currentPosLocal: Point get() = view.globalToLocal(currentPosGlobal)
+    val downPosLocal: Point get() = view.globalToLocal(downPosGlobal)
+    val upPosLocal: Point get() = view.globalToLocal(upPosGlobal)
 
     // Stage-based variants
-    private val _downPosStage: Point = Point()
-    private val _upPosStage: Point = Point()
-    private val _startedPosStage = Point()
-    private val _lastPosStage = Point()
-    private val _currentPosStage = Point()
-
-    val startedPosStage get() = views.stage.globalToLocal(startedPosGlobal, _startedPosStage)
-    val lastPosStage get() = views.stage.globalToLocal(lastPosGlobal, _lastPosStage)
-    val currentPosStage get() = views.stage.globalToLocal(currentPosGlobal, _currentPosStage)
-    val downPosStage get() = views.stage.globalToLocal(downPosGlobal, _downPosStage)
-    val upPosStage get() = views.stage.globalToLocal(upPosGlobal, _upPosStage)
+    val startedPosStage: Point get() = views.stage.globalToLocal(startedPosGlobal)
+    val lastPosStage: Point get() = views.stage.globalToLocal(lastPosGlobal)
+    val currentPosStage: Point get() = views.stage.globalToLocal(currentPosGlobal)
+    val downPosStage: Point get() = views.stage.globalToLocal(downPosGlobal)
+    val upPosStage: Point get() = views.stage.globalToLocal(upPosGlobal)
 
     var clickedCount = 0
 
@@ -401,7 +389,7 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
         when (event.type) {
             MouseEvent.Type.UP -> {
                 lastEventUp.copyFrom(event)
-                upPosGlobal.copyFrom(views.input.mouse)
+                upPosGlobal = views.input.mouse
                 upPosTime = PerformanceCounter.reference
                 val elapsedTime = upPosTime - downPosTime
                 if (
@@ -427,7 +415,7 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
 
                 //this.lastEventDown = event
                 downPosTime = PerformanceCounter.reference
-                downPosGlobal.copyFrom(views.input.mouse)
+                downPosGlobal = views.input.mouse
                 if (downImmediate.hasListeners) {
                     if (isOver) {
                         downImmediate(this@MouseEvents)
@@ -486,7 +474,7 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
         val overChanged = (lastOver != over)
         val insideChanged = (lastInside != inside)
         val pressingChanged = pressing != lastPressing
-        currentPosGlobal.copyFrom(views.input.mouse)
+        currentPosGlobal = views.input.mouse
 
         //println("$hitTest, ${input.mouse}, $over, $pressing, $overChanged, $pressingChanged")
 
@@ -504,7 +492,7 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
             out(this)
         }
         if (pressingChanged && pressing) {
-            startedPosGlobal.copyFrom(currentPosGlobal)
+            startedPosGlobal = currentPosGlobal
             if (over) {
                 down(this)
             }
@@ -541,7 +529,7 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
         lastOver = over
         lastInside = inside
         lastPressing = pressing
-        lastPosGlobal.copyFrom(currentPosGlobal)
+        lastPosGlobal = currentPosGlobal
         clickedCount = 0
     }
 

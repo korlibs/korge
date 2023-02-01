@@ -72,35 +72,6 @@ fun UIEditableNumberPropsList(vararg mut: KMutableProperty0<Double>, min: Double
 }
 
 @KorgeExperimental
-fun UIEditableIntPropsList(vararg mut: KMutableProperty0<Int>, min: Int = 0, max: Int = 1000): Array<UIEditableNumberProps> {
-    return mut.map { mut ->
-        UIEditableNumberProps(UIProperty(set = { mut.set(it.toInt()) }, get = { mut.get().toDouble() }), min.toDouble(), max.toDouble(), 0, true)
-    }.toTypedArray()
-}
-
-@KorgeExperimental
-fun UIEditableAnglePropsList(vararg mut: KMutableProperty0<Angle>, min: Angle = -360.degrees, max: Angle = +360.degrees, clamped: Boolean = true): Array<UIEditableNumberProps> {
-    return mut.map { mut ->
-        UIEditableNumberProps(UIProperty(set = { mut.set(it.degrees) }, get = { mut.get().degrees }), min.degrees, max.degrees, 0, clamped)
-    }.toTypedArray()
-}
-
-@KorgeExperimental
-fun UIEditableColorPropsList(prop: KProperty0<RGBAf>): Array<UIEditableNumberProps> {
-    return UIEditableNumberPropsList(prop.get()::rd, prop.get()::gd, prop.get()::bd, prop.get()::ad, min = 0.0, max = 1.0)
-}
-
-@KorgeExperimental
-fun UIEditablePointPropsList(prop: KProperty0<Point>, min: Double = -1000.0, max: Double = +1000.0): Array<UIEditableNumberProps> {
-    return UIEditableNumberPropsList(prop.get()::x, prop.get()::y, min = min, max = max)
-}
-
-@KorgeExperimental
-fun UIEditableBooleanPropsList(prop: KMutableProperty0<Boolean>): Array<UIEditableBooleanProps> {
-    return arrayOf(UIEditableBooleanProps(prop.toUI()))
-}
-
-@KorgeExperimental
 open class UIPropertyNumberRow(title: String, vararg propsList: UIEditableNumberProps, width: Double = 128.0, height: Double = 20.0) : UIPropertyRow(title, width, height) {
     init {
         container.apply {

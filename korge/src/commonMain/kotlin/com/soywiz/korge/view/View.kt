@@ -984,7 +984,7 @@ abstract class View internal constructor(
 
     // Version with root-most object as reference
     /** Converts the global point [p] (using root/stage as reference) into the local coordinate system. Allows to define [out] to avoid allocation. */
-    fun globalToLocal(p: IPoint): Point = globalToLocalXY(p.x, p.y)
+    fun globalToLocal(p: Point): Point = globalToLocalXY(p.x, p.y)
 
     /** Converts the global point [x] [y] (using root/stage as reference) into the local coordinate system. Allows to define [out] to avoid allocation. */
     fun globalToLocalXY(x: Double, y: Double): Point = this.globalMatrixInv.transform(x, y)

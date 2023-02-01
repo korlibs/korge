@@ -150,7 +150,7 @@ class CameraContainer(
     fun follow(view: View?, setImmediately: Boolean = false) {
         following = view
         if (setImmediately) {
-            val point = getFollowingXY(tempPoint)
+            val point = getFollowingXY()
             cameraX = point.x
             cameraY = point.y
             sourceCamera.x = cameraX
@@ -189,12 +189,12 @@ class CameraContainer(
         onCompletedTransition.waitOne()
     }
 
-    fun getFollowingXY(out: Point = Point()): Point {
+    fun getFollowingXY(): Point {
         val followGlobalX = following!!.globalX
         val followGlobalY = following!!.globalY
-        val localToContentX = content!!.globalToLocalX(followGlobalX, followGlobalY)
-        val localToContentY = content!!.globalToLocalY(followGlobalX, followGlobalY)
-        return out.setTo(localToContentX, localToContentY)
+        val localToContentX = content.globalToLocalX(followGlobalX, followGlobalY)
+        val localToContentY = content.globalToLocalY(followGlobalX, followGlobalY)
+        return Point(localToContentX, localToContentY)
     }
 
     private val tempPoint = Point()
@@ -205,7 +205,7 @@ class CameraContainer(
         addUpdater {
             when {
                 following != null -> {
-                    val point = getFollowingXY(tempPoint)
+                    val point = getFollowingXY()
                     cameraX = 0.1.interpolate(currentCamera.x, point.x)
                     cameraY = 0.1.interpolate(currentCamera.y, point.y)
                     sourceCamera.x = cameraX

@@ -60,8 +60,8 @@ class NinePatch(
 		//val ratioX = 1.0
 		//val ratioY = 1.0
 
-		posCuts[1].setTo(texLeftWidth * actualRatioX / width, texTopHeight * actualRatioY / height)
-		posCuts[2].setTo(1.0 - texRighttWidth * actualRatioX / width, 1.0 - texBottomHeight * actualRatioY / height)
+		posCuts[1] = Point(texLeftWidth * actualRatioX / width, texTopHeight * actualRatioY / height)
+		posCuts[2] = Point(1.0 - texRighttWidth * actualRatioX / width, 1.0 - texBottomHeight * actualRatioY / height)
 
         ctx.useBatcher { batch ->
             batch.drawNinePatch(

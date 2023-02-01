@@ -7,12 +7,7 @@ import com.soywiz.korim.bitmap.BitmapWithHotspot
 import com.soywiz.korim.bitmap.NativeImage
 import com.soywiz.korim.bitmap.NativeImageOrBitmap32
 import com.soywiz.korim.bitmap.context2d
-import com.soywiz.korma.geom.ISize
-import com.soywiz.korma.geom.Point
-import com.soywiz.korma.geom.PointInt
-import com.soywiz.korma.geom.Rectangle
-import com.soywiz.korma.geom.ScaleMode
-import com.soywiz.korma.geom.topLeft
+import com.soywiz.korma.geom.*
 
 interface Drawable {
     fun draw(c: Context2d)
@@ -38,7 +33,7 @@ interface BoundsDrawable : SizedDrawable {
     override val height: Int get() = bounds.height.toInt()
 }
 
-fun BoundsDrawable.renderWithHotspot(scale: Double? = null, fit: ISize? = null, native: Boolean = true): BitmapWithHotspot<Bitmap> {
+fun BoundsDrawable.renderWithHotspot(scale: Double? = null, fit: Size? = null, native: Boolean = true): BitmapWithHotspot<Bitmap> {
     val bounds = this.bounds
     val rscale = when {
         fit != null -> {

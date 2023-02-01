@@ -89,10 +89,10 @@ fun KMutableProperty0<IPoint>.incr(dx: Double, dy: Double): V2<IPoint> {
     val start: Point = Point(0, 0)
     val value: Point = Point(0, 0)
     return V2(this, start, value, { it, _, _ ->
-        value.setTo(start.x + dx, start.y + dy)
+        Point(start.x + dx, start.y + dy)
         value
     }, includeStart = false, initialization = {
-        start.copyFrom(this.get())
+        this.get()
     })
 }
 fun KMutableProperty0<IPoint>.incr(dx: Number, dy: Number): V2<IPoint> = incr(dx.toDouble(), dy.toDouble())
@@ -173,7 +173,7 @@ inline operator fun KMutableProperty0<IPoint>.get(range: IPointArrayList): V2<IP
             val index = ratioIndex.toIntFloor()
             val index1 = (index + 1).coerceAtMost(range.size)
             val sratio = fract(ratioIndex)
-            temp.setTo(
+            Point(
                 sratio.interpolate(range.getX(index), range.getX(index1)),
                 sratio.interpolate(range.getY(index), range.getY(index1))
             )
