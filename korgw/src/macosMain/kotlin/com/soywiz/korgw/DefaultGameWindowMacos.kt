@@ -713,7 +713,8 @@ fun displayCallback(
     // Wait for this in the case we take more time than the frame time to not collapse this
     NSOperationQueue.mainQueue.addOperations(
         listOf(NSBlockOperation().also { it.addExecutionBlock(doDisplayCallbackRender) }),
-        waitUntilFinished = true
+        //waitUntilFinished = true
+        waitUntilFinished = false // ISSUE: https://github.com/korlibs/korge/issues/1078
     )
     //NSOperationQueue.mainQueue.addOperationWithBlock(doDisplayCallbackRender)
     return kCVReturnSuccess
