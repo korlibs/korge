@@ -61,7 +61,7 @@ class MainBVH : Scene() {
             }
         }
         val center = Point(width / 2, height / 2)
-        val dir = Point(-1, -1)
+        var dir = Point(-1, -1)
         val ray = Ray(center, dir)
         val statusText = text("", font = DefaultTtfFontAsBitmap)
         var selectedRectangle = Rectangle(Point(100, 100) - Point(50, 50), Size(100, 100))
@@ -95,7 +95,7 @@ class MainBVH : Scene() {
             val mousePos = localMouseXY(views)
             val angle = Point.angleFull(center, mousePos)
             //println("center=$center, mousePos=$mousePos, angle = $angle")
-            dir.setTo(angle.cosine, angle.sine)
+            dir = Point(angle.cosine, angle.sine)
             rayLine.setPoints(center, center + (dir * 1000))
 
             updateRay()
