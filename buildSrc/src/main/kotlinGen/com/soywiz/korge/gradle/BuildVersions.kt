@@ -2,12 +2,12 @@ package com.soywiz.korge.gradle
 
 object BuildVersions {
     const val GIT = "main"
-    const val KOTLIN = "1.8.0"
+    const val KOTLIN = "1.8.10"
     const val NODE_JS = "16.9.1"
     const val JNA = "5.13.0"
     const val COROUTINES = "1.6.4"
     const val ANDROID_BUILD = "7.0.4"
-    const val KOTLIN_SERIALIZATION = "1.4.1"
+    const val KOTLIN_SERIALIZATION = "1.5.0-RC"
     const val KRYPTO = "999.0.0.999"
     const val KLOCK = "999.0.0.999"
     const val KDS = "999.0.0.999"
