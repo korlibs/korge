@@ -61,7 +61,8 @@ class TtfFont(
     freeze: Boolean = false,
     extName: String? = null,
     onlyReadMetadata: Boolean = false,
-) : BaseTtfFont(d, freeze, extName, onlyReadMetadata) {
+    enableLigatures: Boolean = true,
+) : BaseTtfFont(d, freeze, extName, onlyReadMetadata, enableLigatures) {
     private val tablesByName = LinkedHashMap<String, Table>()
 
     init {
@@ -107,13 +108,15 @@ abstract class BaseTtfFont(
     protected val freeze: Boolean = false,
     protected val extName: String? = null,
     protected val onlyReadMetadata: Boolean = false,
+    protected val enableLigatures: Boolean = true,
 ) : VectorFont, Extra by Extra.Mixin() {
     constructor(
         d: ByteArray,
         freeze: Boolean = false,
         extName: String? = null,
         onlyReadMetadata: Boolean = false,
-    ) : this(d.openFastStream(), freeze, extName, onlyReadMetadata)
+        enableLigatures: Boolean = true
+    ) : this(d.openFastStream(), freeze, extName, onlyReadMetadata, enableLigatures)
 
     fun getAllBytes() = s.getAllBytes()
     fun getAllBytesUnsafe() = s.getBackingArrayUnsafe()
@@ -1758,7 +1761,7 @@ abstract class BaseTtfFont(
     fun getGlyphByReader(reader: WStringReader?, codePoint: Int, cache: Boolean = true): Glyph? {
         var g = getGlyphByCodePoint(codePoint)
         var skipCount = 1
-        if (g != null) {
+        if (enableLigatures && g != null) {
             val subs = substitutionsCodePoints[codePoint]
             if (reader != null && subs != null) {
                 //for (v in subs.map) println(v.key.toCodePointIntArray().toList())
@@ -1774,6 +1777,7 @@ abstract class BaseTtfFont(
                     }
                 }
             }
+
         }
         reader?.skip(skipCount)
         return g
@@ -1783,6 +1787,15 @@ abstract class BaseTtfFont(
     }
     fun getGlyphByWChar(char: WChar, cache: Boolean = true): Glyph? = getGlyphByCodePoint(char.code, cache)
     fun getGlyphByChar(char: Char, cache: Boolean = true): Glyph? = getGlyphByCodePoint(char.code, cache)
+
+    fun getGlyphsByReader(reader: WStringReader, out: MutableList<Glyph> = arrayListOf()): List<Glyph> {
+        while (reader.hasMore) {
+            val c = reader.peek().codePoint
+            val g = getGlyphByReader(reader, c)!!
+            out.add(g)
+        }
+        return out
+    }
 
     operator fun get(char: Char) = getGlyphByChar(char)
     operator fun get(codePoint: Int) = getGlyphByCodePoint(codePoint)
@@ -2249,4 +2262,11 @@ internal inline class Fixed(val data: Int) {
 suspend fun VfsFile.readTtfFont(
     preload: Boolean = false,
     onlyReadMetadata: Boolean = false,
-): TtfFont = TtfFont(this.readAll(), freeze = preload, extName = this.baseName, onlyReadMetadata = onlyReadMetadata)
+    enableLigatures: Boolean = true,
+): TtfFont = TtfFont(
+    this.readAll(),
+    freeze = preload,
+    extName = this.baseName,
+    onlyReadMetadata = onlyReadMetadata,
+    enableLigatures = enableLigatures
+)
