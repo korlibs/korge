@@ -77,7 +77,6 @@ suspend fun main() = Korge(
             Demo(::MainOnScreenController),
             Demo(::MainScenes),
             Demo(::MainKTree),
-            Demo(::MainLipSync),
             Demo(::MainInput),
             Demo(::MainGestures),
             Demo(::MainFilters),
