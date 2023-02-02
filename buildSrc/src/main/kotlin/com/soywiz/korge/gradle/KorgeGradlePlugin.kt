@@ -118,12 +118,12 @@ class KorgeGradleApply(val project: Project) {
 
 open class KorgeGradlePlugin : Plugin<Project> {
 	override fun apply(project: Project) {
+        project.configureAutoVersions()
+
         project.configureBuildScriptClasspathTasks()
 
 		//TODO PABLO changed to have the android tasks enabled again
 		KorgeGradleApply(project).apply(includeIndirectAndroid = true)
-
-        project.configureAutoVersions()
 
 		//for (res in project.getResourcesFolders()) println("- $res")
 	}
