@@ -9,7 +9,7 @@ pluginManagement {
 	}
 }
 
-//rootProject.name = "korlibs"
+rootProject.name = "${rootDir.name}-root"
 
 boolean isPropertyTrue(String name) {
     return System.getenv(name) == "true" || System.getProperty(name) == "true"
@@ -38,8 +38,4 @@ include(":korge-sandbox")
 
 if (!inCI) {
     // include(":korge-benchmarks")
-}
-
-if (!disabledExtraKorgeLibs) {
-    include(":luak")
 }
