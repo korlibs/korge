@@ -95,3 +95,7 @@ now they are available via kproject in these repositories:
 ## Video
 
 * <https://github.com/korlibs/korge-video>
+
+## Other
+
+* <https://github.com/korlibs/korge-lipsync> (Rhubarb LipSync integration with resource processor)
