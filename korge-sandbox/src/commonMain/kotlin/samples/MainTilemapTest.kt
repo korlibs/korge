@@ -1,29 +1,19 @@
 package samples
 
-import com.soywiz.korge.input.onMagnify
-import com.soywiz.korge.input.onScroll
-import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.view.SContainer
-import com.soywiz.korge.view.addUpdater
-import com.soywiz.korge.view.camera.cameraContainer
-import com.soywiz.korge.view.centerOn
-import com.soywiz.korge.view.text
-import com.soywiz.korge.view.tiles.TileMap
-import com.soywiz.korge.view.tiles.TileSet
-import com.soywiz.korge.view.tiles.tileMap
-import com.soywiz.korim.atlas.MutableAtlasUnit
-import com.soywiz.korim.atlas.add
-import com.soywiz.korim.bitmap.Bitmap32
-import com.soywiz.korim.color.Colors
-import com.soywiz.korio.util.niceStr
-import com.soywiz.korma.geom.Angle
-import com.soywiz.korma.geom.Point
+import com.soywiz.korge.input.*
+import com.soywiz.korge.scene.*
+import com.soywiz.korge.view.*
+import com.soywiz.korge.view.camera.*
+import com.soywiz.korge.view.tiles.*
+import com.soywiz.korim.atlas.*
+import com.soywiz.korim.bitmap.*
+import com.soywiz.korim.color.*
+import com.soywiz.korim.tiles.*
+import com.soywiz.korio.util.*
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.Point.Companion.Zero
-import com.soywiz.korma.geom.angleTo
-import com.soywiz.korma.geom.degrees
-import com.soywiz.korma.geom.minus
-import kotlin.math.pow
-import kotlin.random.Random
+import kotlin.math.*
+import kotlin.random.*
 
 class MainTilemapTest : Scene() {
     override suspend fun SContainer.sceneMain() {

@@ -5,7 +5,6 @@ import com.soywiz.korev.Event
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.particle.*
 import com.soywiz.korge.scene.*
-import com.soywiz.korge.tiled.*
 import com.soywiz.korge.view.*
 import com.soywiz.korge.view.Container
 import com.soywiz.korge.view.Image
@@ -301,7 +300,6 @@ internal class ViewsDebuggerComponent constructor(
         list.add(ViewFactory("Container") { Container() })
         list.add(ViewFactory("TreeViewRef") { TreeViewRef() })
         list.add(ViewFactory("ParticleEmitter") { ParticleEmitterView(ParticleEmitter()) })
-        list.add(ViewFactory("TiledMapViewRef") { TiledMapViewRef() })
         list.add(ViewFactory("9-Patch") { NinePatchEx(NinePatchBmpSlice(Bitmap32(62, 62))) })
         for (registration in views.ktreeSerializer.registrationsExt) {
             list.add(ViewFactory(registration.name) { registration.factory() })
