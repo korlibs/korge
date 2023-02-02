@@ -5,7 +5,7 @@ import com.soywiz.kds.internal.*
 interface IStackedIntArray2 {
     /** Annotation of where in [startX] this stack would be placed in a bigger container, not used for set or get methods */
     val startX: Int
-    /** Annotation of where in [endY] this stack would be placed in a bigger container, not used for set or get methods */
+    /** Annotation of where in [startY] this stack would be placed in a bigger container, not used for set or get methods */
     val startY: Int
 
     /** [width] of the data available here, get and set methods use values in the range x=0 until [width] */
