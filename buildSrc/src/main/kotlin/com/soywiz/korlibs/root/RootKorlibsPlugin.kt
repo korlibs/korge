@@ -108,7 +108,7 @@ object RootKorlibsPlugin {
                     module {
                         it.excludeDirs = it.excludeDirs + listOf(
                             file(".gradle"), file("src2"), file("original"), file("original-tests"), file("old-rendering"),
-                            file("gradle"), file(".idea"), file("build"), file("@old"), file("_template"),
+                            file("gradle/wrapper"), file(".idea"), file("build"), file("@old"), file("_template"),
                             file("e2e-sample"), file("e2e-test"), file("experiments"),
                         )
                     }
