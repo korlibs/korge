@@ -24,6 +24,56 @@ import com.soywiz.korma.geom.radians
 @PublishedApi
 internal const val FSPRITES_STRIDE = 8
 
+// inline
+data class FSprite(
+    val sprites: FSprites,
+    val id: Int
+) {
+    inline val offset: Int get() = id
+    inline val index: Int get() = offset / FSPRITES_STRIDE
+
+    inline private val i32: Int32Buffer get() = sprites.data.i32
+    inline private val f32: Float32Buffer get() = sprites.data.f32
+    inline private val icolorMul32 get() = sprites.dataColorMul.i32
+
+    var x: Float get() = f32[offset + 0] ; set(value) { f32[offset + 0] = value }
+    var y: Float get() = f32[offset + 1] ; set(value) { f32[offset + 1] = value }
+    var scaleX: Float get() = f32[offset + 2] ; set(value) { f32[offset + 2] = value }
+    var scaleY: Float get() = f32[offset + 3] ; set(value) { f32[offset + 3] = value }
+    var radiansf: Float get() = f32[offset + 4] ; set(value) { f32[offset + 4] = value }
+    var anchorRaw: Int get() = i32[offset + 5] ; set(value) { i32[offset + 5] = value }
+    var tex0Raw: Int get() = i32[offset + 6] ; set(value) { i32[offset + 6] = value }
+    var tex1Raw: Int get() = i32[offset + 7] ; set(value) { i32[offset + 7] = value }
+
+    var colorMul: RGBA get() = RGBA(icolorMul32[index]) ; set(value) { icolorMul32[index] = value.value }
+
+    var angle: Angle get() = radiansf.radians ; set(value) { radiansf = value.radians.toFloat() }
+
+    var anchorX: Float get() = FSprites.unpackAnchorComponent(anchorRaw ushr 0); set(value) { anchorRaw = FSprites.packAnchorComponent(value) or (anchorRaw and 0xFFFF.inv()) }
+    var anchorY: Float get() = FSprites.unpackAnchorComponent(anchorRaw ushr 16); set(value) { anchorRaw = (FSprites.packAnchorComponent(value) shl 16) or (anchorRaw and 0xFFFF) }
+
+    fun setAnchor(x: Float, y: Float) {
+        anchorRaw = FSprites.packAnchor(x, y)
+    }
+
+    fun setPos(x: Float, y: Float) = xy(x, y)
+
+    fun xy(x: Float, y: Float) {
+        this.x = x
+        this.y = y
+    }
+
+    fun scale(sx: Float, sy: Float = sx) {
+        this.scaleX = sx
+        this.scaleY = sy
+    }
+
+    fun setTex(tex: BmpSlice) {
+        tex0Raw = tex.left or (tex.top shl 16)
+        tex1Raw = tex.right or (tex.bottom shl 16)
+    }
+}
+
 open class FSprites(val maxSize: Int) {
     var size = 0
     val available: Int get() = maxSize - size
@@ -31,7 +81,7 @@ open class FSprites(val maxSize: Int) {
     val dataColorMul = Buffer(maxSize * 4)
     private val freeItems = IntArrayList()
     private val i32 = data.i32
-    private val f32 = data.f32
+    private val f32: Float32Buffer = data.f32
     private val icolorMul32 = dataColorMul.i32
 
     fun uploadVertices(ctx: RenderContext) {
@@ -54,7 +104,7 @@ open class FSprites(val maxSize: Int) {
     }
 
     fun alloc(): FSprite =
-        FSprite(when {
+        FSprite(this, when {
             freeItems.isNotEmpty() -> freeItems.removeAt(freeItems.size - 1)
             else -> size++ * FSPRITES_STRIDE
         }).also { it.reset() }
@@ -64,42 +114,6 @@ open class FSprites(val maxSize: Int) {
         item.colorMul = Colors.TRANSPARENT_BLACK // Hide this
     }
 
-    var FSprite.x: Float get() = f32[offset + 0] ; set(value) { f32[offset + 0] = value }
-    var FSprite.y: Float get() = f32[offset + 1] ; set(value) { f32[offset + 1] = value }
-    var FSprite.scaleX: Float get() = f32[offset + 2] ; set(value) { f32[offset + 2] = value }
-    var FSprite.scaleY: Float get() = f32[offset + 3] ; set(value) { f32[offset + 3] = value }
-    var FSprite.radiansf: Float get() = f32[offset + 4] ; set(value) { f32[offset + 4] = value }
-    var FSprite.anchorRaw: Int get() = i32[offset + 5] ; set(value) { i32[offset + 5] = value }
-    var FSprite.tex0Raw: Int get() = i32[offset + 6] ; set(value) { i32[offset + 6] = value }
-    var FSprite.tex1Raw: Int get() = i32[offset + 7] ; set(value) { i32[offset + 7] = value }
-
-    var FSprite.colorMul: RGBA get() = RGBA(icolorMul32[index]) ; set(value) { icolorMul32[index] = value.value }
-
-    var FSprite.angle: Angle get() = radiansf.radians ; set(value) { radiansf = value.radians.toFloat() }
-
-    var FSprite.anchorX: Float get() = unpackAnchorComponent(anchorRaw ushr 0) ; set(value) { anchorRaw = packAnchorComponent(value) or (anchorRaw and 0xFFFF.inv()) }
-    var FSprite.anchorY: Float get() = unpackAnchorComponent(anchorRaw ushr 16) ; set(value) { anchorRaw = (packAnchorComponent(value) shl 16) or (anchorRaw and 0xFFFF) }
-
-    fun FSprite.setAnchor(x: Float, y: Float) {
-        anchorRaw = packAnchor(x, y)
-    }
-
-    fun FSprite.setPos(x: Float, y: Float) = xy(x, y)
-
-    fun FSprite.xy(x: Float, y: Float) {
-        this.x = x
-        this.y = y
-    }
-
-    fun FSprite.scale(sx: Float, sy: Float = sx) {
-        this.scaleX = sx
-        this.scaleY = sy
-    }
-
-    fun FSprite.setTex(tex: BmpSlice) {
-        tex0Raw = tex.left or (tex.top shl 16)
-        tex1Raw = tex.right or (tex.bottom shl 16)
-    }
 
     fun createView(tex: Bitmap) = FView(this, tex)
     fun createView(vararg texs: Bitmap) = FView(this, texs as Array<Bitmap>)
@@ -267,24 +281,19 @@ open class FSprites(val maxSize: Int) {
         val vprograms = Array(MAX_SUPPORTED_TEXTURES + 1) { createProgram(it) }
         //val vprograms by lazy { Array(MAX_SUPPORTED_TEXTURES + 1) { createProgram(it) } }
 
-        private fun unpackAnchorComponent(v: Int): Float = (v and 0xFFFF).toFloat() / 0xFFFF
-        private fun packAnchorComponent(v: Float): Int = (v.clamp01() * 0xFFFF).toInt() and 0xFFFF
+        internal fun unpackAnchorComponent(v: Int): Float = (v and 0xFFFF).toFloat() / 0xFFFF
+        internal fun packAnchorComponent(v: Float): Int = (v.clamp01() * 0xFFFF).toInt() and 0xFFFF
         fun packAnchor(x: Float, y: Float): Int = (packAnchorComponent(x) and 0xFFFF) or (packAnchorComponent(y) shl 16)
     }
-}
 
-inline class FSprite(val id: Int) {
-    val offset get() = id
-    val index get() = offset / FSPRITES_STRIDE
-    //val offset get() = index * STRIDE
+    fun forIndex(index: Int): FSprite = FSprite(this, index * FSPRITES_STRIDE)
+    fun forId(id: Int): FSprite = FSprite(this, id)
 }
-
-fun FSpriteFromIndex(index: Int) = FSprite(index * FSPRITES_STRIDE)
 
 inline fun <T : FSprites> T.fastForEach(callback: T.(sprite: FSprite) -> Unit) {
     var m = 0
     for (n in 0 until size) {
-        callback(FSprite(m))
+        callback(forIndex(m))
         m += FSPRITES_STRIDE
     }
 }

@@ -62,10 +62,10 @@ class MainTerminalEmulator : Scene() {
         fun setGlyph(col: Int, row: Int, char: Char, fgcolor: RGBA, bgcolor: RGBA = Colors.BLACK, flipX: Boolean = false, flipY: Boolean = false) {
             if (col !in 0 until columns || row !in 0 until rows) return
             bgFSprites.apply {
-                FSprite(bgMat[col, row]).colorMul = bgcolor
+                this.forId(bgMat[col, row]).colorMul = bgcolor
             }
             fgFSprites.apply {
-                val fsprite = FSprite(fgMat[col, row])
+                val fsprite = this.forId(fgMat[col, row])
                 fsprite.colorMul = fgcolor
                 fsprite.setTex(glyphs[char.code])
                 fsprite.scale(if (flipX) -1f else 1f, if (flipY) -1f else 1f)
@@ -80,13 +80,13 @@ class MainTerminalEmulator : Scene() {
             for (row in 0 until rows) {
                 for (col in 0 until columns) {
                     fgFSprites.apply {
-                        val fsprite = FSprite(fgMat[col, row])
+                        val fsprite = this.forId(fgMat[col, row])
                         fsprite.x = col * 16f + 8f
                         fsprite.y = row * 16f + 8f
                         fsprite.setAnchor(.5f, .5f)
                     }
                     bgFSprites.apply {
-                        val fsprite = FSprite(bgMat[col, row])
+                        val fsprite = this.forId(bgMat[col, row])
                         fsprite.x = col * 16f + 8f
                         fsprite.y = row * 16f + 8f
                         fsprite.setAnchor(.5f, .5f)

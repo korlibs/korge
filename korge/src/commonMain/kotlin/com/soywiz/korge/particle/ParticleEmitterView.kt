@@ -163,7 +163,7 @@ class ParticleEmitterView(
             if (p.alive) {
                 //if (p.x == 0f && p.y == 0f) println("00: ${p.index}")
                 sprites.apply {
-                    val fsprite = FSpriteFromIndex(sprites.size++)
+                    val fsprite = this.forIndex(sprites.size++)
                     //println("FSPRITE: ${fsprite.index}")
                     fsprite.setTex(tex)
                     fsprite.colorMul = p.color * this@ParticleEmitterView.colorMul
