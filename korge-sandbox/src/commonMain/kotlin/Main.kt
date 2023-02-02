@@ -32,7 +32,6 @@ suspend fun main() = Korge(
     //sceneContainer(views).changeTo({ MainTransitionFilter() }); return@Korge
 
     demoSelector(
-        //Demo(::MainJSMpeg),
         //Demo(::MainGraphicsText),
         //Demo(::MainTextBounds),
         //Demo(::MainEditor),
@@ -67,7 +66,6 @@ suspend fun main() = Korge(
             Demo(::MainImageOrientationTest),
             Demo(::MainRpgScene),
             Demo(::MainCache),
-            Demo(::MainJSMpeg),
             Demo(::MainSDF),
             Demo(::MainTextInput),
             Demo(::MainBlending),
@@ -84,7 +82,6 @@ suspend fun main() = Korge(
             Demo(::MainGestures),
             Demo(::MainFilters),
             Demo(::MainCoroutine),
-            Demo(::MainVideo),
             Demo(::MainPong),
             Demo(::MainUI),
             Demo(::MainOldMask),
