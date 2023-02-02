@@ -9,7 +9,7 @@ pluginManagement {
 	}
 }
 
-rootProject.name = "korlibs"
+//rootProject.name = "korlibs"
 
 boolean isPropertyTrue(String name) {
     return System.getenv(name) == "true" || System.getProperty(name) == "true"
