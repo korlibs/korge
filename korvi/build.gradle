@@ -1,7 +1,0 @@
-description = "Portable Audio library for Kotlin"
-
-dependencies {
-	add("commonMainApi", project(":korim"))
-	add("commonMainApi", project(":korau"))
-	add("jvmMainApi", libs.jcodec.core)
-}

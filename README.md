@@ -91,3 +91,7 @@ now they are available via kproject in these repositories:
 ## Scripting
 
 * <https://github.com/korlibs/korge-luak> (LUA)
+
+## Video
+
+* <https://github.com/korlibs/korge-video>
