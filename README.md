@@ -84,9 +84,9 @@ now they are available via kproject in these repositories:
 
 * <https://github.com/korlibs/korge-ldtk>
 
-### Formats
+### Image Formats
 
-* <https://github.com/korlibs/korge-formats> (JPEG)
+* <https://github.com/korlibs/korge-image-formats> (Pure Kotlin JPEG Encoder/Decoder)
 
 ## Scripting
 
