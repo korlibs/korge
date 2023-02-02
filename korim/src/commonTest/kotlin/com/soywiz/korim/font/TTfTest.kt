@@ -59,8 +59,8 @@ class TTfTest {
 
         // The string parses to {'¼'}
         assertContentEquals(
-            font.getGlyphsByReader(reader).map { it.index },
-            listOf(104)
+            listOf(104),
+            font.getGlyphsByReader(reader).map { it.index }
         )
     }
 
@@ -73,8 +73,8 @@ class TTfTest {
 
         // The string parses to {'1', '/', '4'}
         assertContentEquals(
-            font.getGlyphsByReader(reader).map { it.index },
-            listOf(6, 134, 9)
+            listOf(6, 134, 9),
+            font.getGlyphsByReader(reader).map { it.index }
         )
     }
 }

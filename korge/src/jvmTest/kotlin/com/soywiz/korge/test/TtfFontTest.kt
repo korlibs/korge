@@ -15,15 +15,15 @@ class TtfFontTest {
         val ttfFontWithoutLigatures =
             resourcesVfs["font_atkinson/AtkinsonHyperlegible-Bold.ttf"].readTtfFont(enableLigatures = false)
 
-        val t1 = text("with ligatures: 41/41", font = ttfFontWithLigatures, textSize = 40.0) {
-            centerOnStage()
-        }
-        text("without ligatures: 41/41", font = ttfFontWithoutLigatures, textSize = 40.0) {
-            centerOnStage()
-            alignTopToBottomOf(t1)
+        val c = container {
+            val t1 = text("41/41", font = ttfFontWithLigatures, textSize = 40.0) {
+            }
+            text("41/41", font = ttfFontWithoutLigatures, textSize = 40.0) {
+                alignTopToBottomOf(t1)
+            }
         }
 
-        it.recordGolden(this, "text")
+        it.recordGolden(c, "text")
 
         it.endTest()
     }
