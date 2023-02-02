@@ -69,7 +69,6 @@ suspend fun main() = Korge(
             Demo(::MainSDF),
             Demo(::MainTextInput),
             Demo(::MainBlending),
-            Demo(::MainXM),
             Demo(::MainVector),
             Demo(::MainText),
             Demo(::MainAtlas),

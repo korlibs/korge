@@ -88,6 +88,10 @@ now they are available via kproject in these repositories:
 
 * <https://github.com/korlibs/korge-image-formats> (Pure Kotlin JPEG Encoder/Decoder)
 
+### AudioFormats
+
+* <https://github.com/korlibs/korge-audio-formats> (MOD, XM, S3M, MIDI (WIP), OPUS (WIP))
+
 ## Scripting
 
 * <https://github.com/korlibs/korge-luak> (LUA)
