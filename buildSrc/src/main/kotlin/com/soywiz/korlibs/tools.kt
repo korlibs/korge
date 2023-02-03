@@ -97,6 +97,14 @@ fun Project.doOnce(uniqueName: String, block: () -> Unit) {
     }
 }
 
+fun Project.doOncePerProject(uniqueName: String, block: () -> Unit) {
+    val key = "doOnceProject-$uniqueName"
+    if (!project.extra.has(key)) {
+        project.extra.set(key, true)
+        block()
+    }
+}
+
 fun currentJavaVersion(): Int {
     val versionElements = System.getProperty("java.version").split("\\.".toRegex()).toTypedArray() + arrayOf("-1", "-1")
     val discard = versionElements[0].toInt()

@@ -17,7 +17,6 @@ import com.soywiz.korlibs.gkotlin
 import com.soywiz.korlibs.kotlin
 import com.soywiz.korlibs.modules.*
 import com.soywiz.korlibs.modules.KorgeJavaExec
-import com.soywiz.korlibs.root._webServer
 import com.soywiz.korlibs.tasks
 import org.gradle.api.*
 import org.gradle.api.Project
@@ -698,7 +697,10 @@ object RootKorlibsPlugin {
                                 //kotlinOptions.sourceMap = true
                             }
                         }
+                        configureJSTestsOnce()
                     }
+                    //configureJSTests()
+
 
                     if (hasAndroid) {
                         kotlin {
@@ -1139,7 +1141,6 @@ object RootKorlibsPlugin {
                         binaries.executable()
                     }
                 }
-                configureJSTests()
 
                 tasks.getByName("jsProcessResources").apply {
                     //println(this.outputs.files.toList())
