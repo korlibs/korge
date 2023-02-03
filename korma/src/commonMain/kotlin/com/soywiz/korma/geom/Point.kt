@@ -60,14 +60,14 @@ class Point(
         /** Constructs a point from polar coordinates determined by an [angle] and a [length]. Angle 0 is pointing to the right, and the direction is counter-clock-wise */
         fun fromPolar(x: Double, y: Double, angle: Angle, length: Double = 1.0): Point = Point(x + angle.cosine * length, y + angle.sine * length)
         fun fromPolar(angle: Angle, length: Double = 1.0): Point = fromPolar(0.0, 0.0, angle, length)
-        fun fromPolar(base: IPoint, angle: Angle, length: Double = 1.0): Point = fromPolar(base.x, base.y, angle, length)
+        fun fromPolar(base: Point, angle: Angle, length: Double = 1.0): Point = fromPolar(base.x, base.y, angle, length)
 
-        fun direction(a: IPoint, b: IPoint): Point = Point(b.x - a.x, b.y - b.y)
-        fun middle(a: IPoint, b: IPoint): Point = Point((a.x + b.x) * 0.5, (a.y + b.y) * 0.5)
-        fun angleArc(a: IPoint, b: IPoint): Angle = Angle.fromRadians(acos((a.dot(b)) / (a.length * b.length)))
+        fun direction(a: Point, b: Point): Point = Point(b.x - a.x, b.y - b.y)
+        fun middle(a: Point, b: Point): Point = Point((a.x + b.x) * 0.5, (a.y + b.y) * 0.5)
+        fun angleArc(a: Point, b: Point): Angle = Angle.fromRadians(acos((a.dot(b)) / (a.length * b.length)))
         @Deprecated("")
-        fun angle(a: IPoint, b: IPoint): Angle = angleArc(a, b)
-        fun angleFull(a: IPoint, b: IPoint): Angle = Angle.between(a, b)
+        fun angle(a: Point, b: Point): Angle = angleArc(a, b)
+        fun angleFull(a: Point, b: Point): Angle = Angle.between(a, b)
 
         fun interpolated(ratio: Double, a: Point, b: Point): Point = Point(ratio.interpolate(a.x, b.x), ratio.interpolate(a.y, b.y))
 
@@ -133,57 +133,58 @@ class Point(
 
     /** Rotates the vector/point -90 degrees (not normalizing it) */
 
-    operator fun unaryMinus(): Point = Point(-this.x, -this.y)
-    operator fun unaryPlus(): Point = this
+    inline operator fun unaryMinus(): Point = Point(-this.x, -this.y)
+    inline operator fun unaryPlus(): Point = this
 
-    operator fun plus(that: IPoint): Point = Point(this.x + that.x, this.y + that.y)
-    operator fun minus(that: IPoint): Point = Point(this.x - that.x, this.y - that.y)
-    operator fun times(that: IPoint): Point = Point(this.x * that.x, this.y * that.y)
-    operator fun div(that: IPoint): Point = Point(this.x / that.x, this.y / that.y)
-    infix fun dot(that: IPoint): Double = this.x * that.x + this.y * that.y
+    inline operator fun plus(that: Point): Point = Point(this.x + that.x, this.y + that.y)
+    inline operator fun minus(that: Point): Point = Point(this.x - that.x, this.y - that.y)
+    inline operator fun times(that: Point): Point = Point(this.x * that.x, this.y * that.y)
+    inline operator fun div(that: Point): Point = Point(this.x / that.x, this.y / that.y)
+    inline infix fun dot(that: Point): Double = this.x * that.x + this.y * that.y
 
-    operator fun times(scale: Double): Point = Point(this.x * scale, this.y * scale)
-    operator fun times(scale: Float): Point = this * scale.toDouble()
-    operator fun times(scale: Int): Point = this * scale.toDouble()
+    inline operator fun times(scale: Double): Point = Point(this.x * scale, this.y * scale)
+    inline operator fun times(scale: Float): Point = this * scale.toDouble()
+    inline operator fun times(scale: Int): Point = this * scale.toDouble()
 
-    operator fun div(scale: Double): Point = Point(this.x / scale, this.y / scale)
-    operator fun div(scale: Float): Point = this / scale.toDouble()
-    operator fun div(scale: Int): Point = this / scale.toDouble()
+    inline operator fun div(scale: Double): Point = Point(this.x / scale, this.y / scale)
+    inline operator fun div(scale: Float): Point = this / scale.toDouble()
+    inline operator fun div(scale: Int): Point = this / scale.toDouble()
 
-    fun distanceTo(x: Double, y: Double): Double = hypot(x - this.x, y - this.y)
-    fun distanceTo(x: Int, y: Int): Double = distanceTo(x.toDouble(), y.toDouble())
-    fun distanceTo(x: Float, y: Float): Float = distanceTo(x.toDouble(), y.toDouble()).toFloat()
+    inline fun distanceTo(x: Double, y: Double): Double = hypot(x - this.x, y - this.y)
+    inline fun distanceTo(x: Int, y: Int): Double = distanceTo(x.toDouble(), y.toDouble())
+    inline fun distanceTo(x: Float, y: Float): Float = distanceTo(x.toDouble(), y.toDouble()).toFloat()
 
-    fun distanceTo(that: Point): Double = distanceTo(that.x, that.y)
-    fun angleTo(other: Point): Angle = Angle.between(this.x, this.y, other.x, other.y)
-    fun transformed(mat: Matrix): Point = Point(mat.transformX(x, y), mat.transformY(x, y))
-    fun transformX(m: Matrix?): Double = m?.transformX(this) ?: x
-    fun transformY(m: Matrix?): Double = m?.transformY(this) ?: y
+    inline fun distanceTo(that: Point): Double = distanceTo(that.x, that.y)
+    inline fun angleTo(other: Point): Angle = Angle.between(this.x, this.y, other.x, other.y)
+    inline fun transformed(mat: Matrix): Point = Point(mat.transformX(x, y), mat.transformY(x, y))
+    inline fun transformX(m: Matrix?): Double = m?.transformX(this) ?: x
+    inline fun transformY(m: Matrix?): Double = m?.transformY(this) ?: y
 
-    operator fun get(index: Int) = when (index) {
-        0 -> this.x; 1 -> this.y
+    operator fun get(index: Int): Double = when (index) {
+        0 -> this.x
+        1 -> this.y
         else -> throw IndexOutOfBoundsException("IPoint doesn't have $index component")
     }
 
     @Deprecated("")
-    val mutable: Point get() = Point(this.x, this.y)
+    inline val mutable: Point get() = Point(this.x, this.y)
     @Deprecated("")
-    val immutable: Point get() = Point(this.x, this.y)
-    @Deprecated("")
-    fun copy(): Point = Point(this.x, this.y)
+    inline val immutable: Point get() = Point(this.x, this.y)
+    //@Deprecated("")
+    //inline fun copy(x: Double = this.x, y: Double = this.y): Point = Point(x, y)
 
-    fun roundDecimalPlaces(places: Int): Point = Point(x.roundDecimalPlaces(places), y.roundDecimalPlaces(places))
+    inline fun roundDecimalPlaces(places: Int): Point = Point(x.roundDecimalPlaces(places), y.roundDecimalPlaces(places))
 
-    fun floored(): Point = Point(kotlin.math.floor(x), kotlin.math.floor(y))
-    fun rounded(): Point = Point(kotlin.math.round(x), kotlin.math.round(y))
-    fun ceiled(): Point = Point(kotlin.math.ceil(x), kotlin.math.ceil(y))
+    inline fun floored(): Point = Point(kotlin.math.floor(x), kotlin.math.floor(y))
+    inline fun rounded(): Point = Point(kotlin.math.round(x), kotlin.math.round(y))
+    inline fun ceiled(): Point = Point(kotlin.math.ceil(x), kotlin.math.ceil(y))
 
 
-    val unit: Point get() = this / this.length
-    val squaredLength: Double get() = (x * x) + (y * y)
-    val length: Double get() = hypot(this.x, this.y)
-    val magnitude: Double get() = hypot(this.x, this.y)
-    val normalized: Point
+    inline val unit: Point get() = this / this.length
+    inline val squaredLength: Double get() = (x * x) + (y * y)
+    inline val length: Double get() = hypot(this.x, this.y)
+    inline val magnitude: Double get() = hypot(this.x, this.y)
+    inline val normalized: Point
         get() {
             val imag = 1.0 / magnitude
             return Point(this.x * imag, this.y * imag)

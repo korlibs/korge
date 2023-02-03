@@ -171,10 +171,8 @@ fun Triangle.pointCW(p: IPoint): IPoint = this.point(getPointIndexOffset(p, -1))
 fun Triangle.pointCCW(p: IPoint): IPoint = this.point(getPointIndexOffset(p, +1))
 fun Triangle.oppositePoint(t: Triangle, p: IPoint): IPoint = this.pointCW(t.pointCW(p))
 
-fun Triangle(p0: IPoint, p1: IPoint, p2: IPoint, fixOrientation: Boolean = false, checkOrientation: Boolean = true): Triangle {
-    @Suppress("NAME_SHADOWING")
+fun Triangle(p0: Point, p1: Point, p2: Point, fixOrientation: Boolean = false, checkOrientation: Boolean = true): Triangle {
     var p1 = p1
-    @Suppress("NAME_SHADOWING")
     var p2 = p2
     if (fixOrientation) {
         if (Orientation.orient2d(p0, p1, p2) == Orientation.CLOCK_WISE) {
