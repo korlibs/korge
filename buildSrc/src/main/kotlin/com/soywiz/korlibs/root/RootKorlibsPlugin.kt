@@ -758,20 +758,7 @@ object RootKorlibsPlugin {
                     }.toList()
 
                     for (target in desktopAndMobileTargets) {
-                        target.compilations.allThis {
-                            // https://github.com/JetBrains/kotlin/blob/ec6c25ef7ee3e9d89bf9a03c01e4dd91789000f5/kotlin-native/konan/konan.properties#L875
-                            kotlinOptions.freeCompilerArgs = ArrayList<String>().apply {
-                                // Raspberry Pi doesn't support mimalloc at this time
-                                if (useMimalloc && !target.name.contains("Arm32Hfp")) add("-Xallocator=mimalloc")
-                                add("-Xoverride-konan-properties=clangFlags.mingw_x64=-cc1 -emit-obj -disable-llvm-passes -x ir -target-cpu x86-64")
-                            }
-                            kotlinOptions.freeCompilerArgs += listOf(
-                                "-Xbinary=memoryModel=experimental",
-                                // @TODO: https://youtrack.jetbrains.com/issue/KT-49234#focus=Comments-27-5293935.0-0
-                                //"-Xdisable-phases=RemoveRedundantCallsToFileInitializersPhase",
-                            )
-                            kotlinOptions.suppressWarnings = true
-                        }
+                        target.configureKotlinNativeTarget(project)
                     }
 
                     // common
@@ -1551,7 +1538,6 @@ object RootKorlibsPlugin {
 //val headlessTests = true
 //val headlessTests = System.getenv("NON_HEADLESS_TESTS") != "true"
 val headlessTests: Boolean get() = System.getenv("CI") == "true" || System.getenv("HEADLESS_TESTS") == "true"
-val useMimalloc: Boolean get() = true
 //val useMimalloc = false
 
 val Project._libs: Dyn get() = rootProject.extensions.getByName("libs").dyn
