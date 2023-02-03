@@ -22,7 +22,7 @@ class GamePadEvents(override val view: View) : GamepadComponent {
 	val button = Signal<GamePadButtonEvent>()
 	val connection = Signal<GamePadConnectionEvent>()
 
-    @Deprecated("")
+    @Deprecated("GamepadEvents.stick is deprecated, please use GamepadEvents.button")
 	fun stick(playerId: Int, stick: GameStick, callback: suspend (x: Double, y: Double) -> Unit) {
 		stick { e -> if (e.gamepad == playerId && e.stick == stick) launchImmediately(coroutineContext) { callback(e.x, e.y) } }
 	}

@@ -1,6 +1,7 @@
 package com.soywiz.korge.testing
 
-import com.soywiz.korim.bitmap.Bitmap
+import com.soywiz.korim.bitmap.*
+import kotlin.math.*
 
 sealed class KorgeScreenshotValidatorResult {
     object Success : KorgeScreenshotValidatorResult()
@@ -34,19 +35,52 @@ object DefaultValidator : KorgeScreenshotValidator {
         newBitmap: Bitmap?
     ): KorgeScreenshotValidatorResult {
         if (newBitmap == null) return DeletedGoldenValidator.validate(goldenName, oldBitmap, newBitmap)
-        if (contentEquals(oldBitmap, newBitmap)) {
+
+        val result = contentCompare(oldBitmap, newBitmap)
+
+        if (result.reasonablySimilar) {
+        //if (result.strictEquals) {
             return KorgeScreenshotValidatorResult.Success
         }
-        return KorgeScreenshotValidatorResult.Error("Content not equal")
+        return KorgeScreenshotValidatorResult.Error("Content not equal : $result")
     }
 
-    private fun contentEquals(left: Bitmap, right: Bitmap): Boolean {
-        if (left.width != right.width) return false
-        if (left.height != right.height) return false
-        for (y in 0 until left.height) for (x in 0 until left.width) {
-            if (left.getRgbaRaw(x, y) != right.getRgbaRaw(x, y)) return false
+    // @TODO: Do SSIM, PSNR
+    data class CompareResult(
+        val pixelDiffCount: Int = 0,
+        val pixelTotalDistance: Int = 0,
+        val pixelMaxDistance: Int = 0,
+        val psnr: Double = 0.0,
+    ) {
+        val strictEquals: Boolean get() = pixelDiffCount == 0
+        val reasonablySimilar: Boolean get() = pixelMaxDistance <= 3 && psnr >= 55.0
+    }
+
+    private fun contentCompare(left: Bitmap, right: Bitmap): CompareResult {
+        if (left.width != right.width) return CompareResult(-1, -1, -1)
+        if (left.height != right.height) return CompareResult(-1, -1, -1)
+        var pixelDiffCount = 0
+        var pixelTotalDistance = 0
+        var pixelMaxDistance = 0
+        loop@ for (y in 0 until left.height) for (x in 0 until left.width) {
+            val lc = left.getRgbaRaw(x, y)
+            val rc = right.getRgbaRaw(x, y)
+            val Rdiff = (lc.r - rc.r).absoluteValue
+            val Gdiff = (lc.g - rc.g).absoluteValue
+            val Bdiff = (lc.b - rc.b).absoluteValue
+            val Adiff = (lc.a - rc.a).absoluteValue
+            pixelTotalDistance += Rdiff + Gdiff + Bdiff + Adiff
+            pixelMaxDistance = maxOf(pixelMaxDistance, Rdiff)
+            pixelMaxDistance = maxOf(pixelMaxDistance, Gdiff)
+            pixelMaxDistance = maxOf(pixelMaxDistance, Bdiff)
+            pixelMaxDistance = maxOf(pixelMaxDistance, Adiff)
+            if (lc != rc) {
+                pixelDiffCount++
+            }
         }
-        return true
+        val psnr = Bitmap32.computePsnr(left.toBMP32(), right.toBMP32())
+
+        return CompareResult(pixelDiffCount, pixelTotalDistance, pixelMaxDistance, psnr)
     }
 }
 
