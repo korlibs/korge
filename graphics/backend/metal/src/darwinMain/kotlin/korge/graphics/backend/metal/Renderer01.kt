@@ -33,8 +33,8 @@ class Renderer01(device: MTLDeviceProtocol) : Renderer(device) {
 
             renderCommanderEncoder.apply {
                 setRenderPipelineState(renderPipelineStateProtocol)
-                setVertexBuffer(vertexPositionsBuffer, 0, 0)
-                setVertexBuffer(vertexColorsBuffer, 0, 1)
+                setVertexBuffer(vertexColorsBuffer, 0, 0)
+                setVertexBuffer(vertexPositionsBuffer, 0, 1)
                 drawPrimitives(MTLPrimitiveTypeTriangle, 0, 3)
             }
 
@@ -49,7 +49,7 @@ class Renderer01(device: MTLDeviceProtocol) : Renderer(device) {
 
         val vertexShader = VertexShader {
             SET(DefaultShaders.v_Col, DefaultShaders.a_Col)
-            SET(out, vec4(DefaultShaders.a_Pos, 1f.lit))
+            SET(out, vec4(DefaultShaders.a_Pos, 1f.lit, 1f.lit))
         }
         val fragmentShader = FragmentShader {
             SET(out, DefaultShaders.v_Col)
@@ -63,35 +63,38 @@ class Renderer01(device: MTLDeviceProtocol) : Renderer(device) {
             .result
             .also(::println)
 
-        (vertexShader to fragmentShader).toNewMetalShaderStringResult()
-            .result
-            .also(::println)
-
-        val shaderSrc = """
+        var shaderSrc = """
                 #include <metal_stdlib>
                 using namespace metal;
         
                 struct v2f
                 {
+                    float4 v_Col;
                     float4 position [[position]];
-                    float4 color;
                 };
         
-                v2f vertex vertexMain( uint vertexId [[vertex_id]],
-                                       device const float3* positions [[buffer(0)]],
-                                       device const float3* colors [[buffer(1)]] )
+                vertex v2f vertexMain( uint vertexId [[vertex_id]],
+                                       device const float4* colors [[buffer(0)]],
+                                       device const float2* positions [[buffer(1)]] )
                 {
                     v2f o;
-                    o.position = float4( positions[ vertexId ], 1.0 );
-                    o.color = float4 ( colors[ vertexId ], 1.0 );
+                    o.position = float4( positions[ vertexId ], 0.0, 1.0 );
+                    o.v_Col =  colors[ vertexId ];
                     return o;
                 }
         
-                float4 fragment fragmentMain( v2f in [[stage_in]] )
+                fragment float4 fragmentMain( v2f in [[stage_in]] )
                 {
-                    return in.color;
+                    float4 out;
+                    out = in.v_Col;
+                    return out;
                 }
         """.trimIndent()
+
+        shaderSrc =
+            (vertexShader to fragmentShader).toNewMetalShaderStringResult()
+            .result
+            .also(::println)
 
         val errorPtr = alloc<ObjCObjectVar<NSError?>>()
         val library = device.newLibraryWithSource(shaderSrc, null, errorPtr.ptr).let {
@@ -120,9 +123,9 @@ class Renderer01(device: MTLDeviceProtocol) : Renderer(device) {
         val numVertices = 3
 
         val position = allocArrayOf(
-            -0.8f, 0.8f, 0.0f, 0.0f,
-            0.0f, -0.8f, 0.0f, 0.0f,
-            +0.8f, 0.8f, 0.0f, 0.0f
+            -0.8f, 0.8f,
+            0.0f, -0.8f,
+            +0.8f, 0.8f
         )
 
         val colors = allocArrayOf(
@@ -131,7 +134,7 @@ class Renderer01(device: MTLDeviceProtocol) : Renderer(device) {
             0.8f, 0.0f, 1f, 0.0f
         )
 
-        val positionsDataSize = numVertices * sizeOf<FloatVar>() * 4
+        val positionsDataSize = numVertices * sizeOf<FloatVar>() * 2
         val colorDataSize = numVertices * sizeOf<FloatVar>() * 4
         println("positionsDataSize $positionsDataSize colorDataSize $colorDataSize")
 

@@ -85,13 +85,17 @@ internal class MetalShaderBodyGenerator(
         super.visit(operand)
         return when (operand) {
             is Output -> when (kind) {
-                ShaderType.VERTEX -> "out.${DefaultShaders.v_Col.name}"
-                ShaderType.FRAGMENT -> "return"
+                ShaderType.VERTEX -> "out.position"
+                ShaderType.FRAGMENT -> "out"
                 else -> error("unreachable statement")
             }
 
             else -> when (operand) {
-                DefaultShaders.v_Col, DefaultShaders.v_Col -> when (kind) {
+                DefaultShaders.a_Col, DefaultShaders.a_Pos, DefaultShaders.a_Tex -> when (kind) {
+                    ShaderType.VERTEX -> "${operand.name}[ vertexId ]"
+                    else -> operand.name
+                }
+                DefaultShaders.v_Col -> when (kind) {
                     ShaderType.VERTEX -> "out.${operand.name}"
                     else -> "in.${operand.name}"
                 }

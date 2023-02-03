@@ -33,7 +33,6 @@ class MetalShaderGenerator(
 
             addHeaders()
 
-            declareInputStructure(types.attributes)
             declareOutputStructure(types.varyings)
 
             customFunctions.filter { it.ref.name in types.funcRefs }
@@ -41,7 +40,7 @@ class MetalShaderGenerator(
                 .distinctBy { it.ref.name }
                 .let { generationFunctions(it) }
 
-            generateVertexMainFunction()
+            generateVertexMainFunction(types.attributes)
             generateFragmentMainFunction()
 
 
@@ -72,15 +71,25 @@ class MetalShaderGenerator(
 
         "struct v2f" {
             attributes.forEach {
-                +"${generator.typeToString(it.type)} ${it.name};"
+                val name = if (it == Output) "position [[position]]" else it.name
+                +"${generator.typeToString(it.type)} $name;"
             }
         }
+        line(";")
     }
 
-    private fun Indenter.generateVertexMainFunction() {
-        "vertex v2f $vertexMainFunctionName(uint vertexId [[vertex_id]],)" {
+    private fun Indenter.generateVertexMainFunction(attributes: LinkedHashSet<Attribute>) {
+        val generator = MetalShaderBodyGenerator(ShaderType.VERTEX)
+        val parameters = mutableListOf("uint vertexId [[vertex_id]]")
+
+        attributes.forEachIndexed { index, attribute ->
+            parameters.add(
+                "device const ${generator.typeToString(attribute.type)}* ${attribute.name} [[buffer($index)]]"
+            )
+        }
+
+        "vertex v2f $vertexMainFunctionName(${parameters.joinToString(",")})" {
             line("v2f out;")
-            val generator = MetalShaderBodyGenerator(ShaderType.VERTEX)
             generator.visit(vertexShader.stm)
             line(generator.programIndenter)
             line("return out;")
@@ -88,10 +97,12 @@ class MetalShaderGenerator(
     }
 
     private fun Indenter.generateFragmentMainFunction() {
-        "vertex float4 $fragmentMainFunctionName( v2f in [[stage_in]] )" {
+        "fragment float4 $fragmentMainFunctionName( v2f in [[stage_in]] )" {
+            line("float4 out;")
             val generator = MetalShaderBodyGenerator(ShaderType.FRAGMENT)
             generator.visit(fragmentShader.stm)
             line(generator.programIndenter)
+            line("return out;")
         }
     }
 
