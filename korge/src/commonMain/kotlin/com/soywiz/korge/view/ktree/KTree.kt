@@ -2,54 +2,25 @@
 
 package com.soywiz.korge.view.ktree
 
-import com.soywiz.kds.Extra
-import com.soywiz.kds.extraCache
-import com.soywiz.kds.iterators.fastForEach
-import com.soywiz.korge.annotations.KorgeExperimental
-import com.soywiz.korge.particle.ParticleEmitter
-import com.soywiz.korge.particle.ParticleEmitterView
-import com.soywiz.korge.render.RenderContext
-import com.soywiz.korge.tiled.TiledMapViewRef
-import com.soywiz.korge.ui.UIButton
-import com.soywiz.korge.ui.UICheckBox
-import com.soywiz.korge.ui.UIProgressBar
-import com.soywiz.korge.ui.UIRadioButton
-import com.soywiz.korge.ui.UITextButton
-import com.soywiz.korge.ui.textSize
+import com.soywiz.kds.*
+import com.soywiz.kds.iterators.*
+import com.soywiz.korge.annotations.*
+import com.soywiz.korge.particle.*
+import com.soywiz.korge.render.*
+import com.soywiz.korge.ui.*
 import com.soywiz.korge.view.*
-import com.soywiz.korge.view.grid.OrthographicGrid
+import com.soywiz.korge.view.grid.*
 import com.soywiz.korge.view.property.*
 import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.Colors
-import com.soywiz.korim.color.RGBA
-import com.soywiz.korim.text.HorizontalAlign
-import com.soywiz.korim.text.VerticalAlign
-import com.soywiz.korio.file.VfsFile
-import com.soywiz.korio.file.extensionLC
-import com.soywiz.korio.serialization.xml.Xml
-import com.soywiz.korio.serialization.xml.readXml
-import com.soywiz.korma.geom.Angle
-import com.soywiz.korma.geom.degrees
-import com.soywiz.korma.geom.radians
-import kotlinx.coroutines.CancellationException
-import kotlin.collections.LinkedHashMap
-import kotlin.collections.Map
-import kotlin.collections.MutableMap
-import kotlin.collections.arrayListOf
-import kotlin.collections.filterNotNull
-import kotlin.collections.firstOrNull
-import kotlin.collections.listOf
-import kotlin.collections.map
-import kotlin.collections.mapOf
-import kotlin.collections.mutableSetOf
-import kotlin.collections.plusAssign
+import com.soywiz.korim.color.*
+import com.soywiz.korim.text.*
+import com.soywiz.korio.file.*
+import com.soywiz.korio.serialization.xml.*
+import com.soywiz.korma.geom.*
+import kotlinx.coroutines.*
 import kotlin.collections.set
-import kotlin.collections.toList
-import kotlin.jvm.JvmName
-import kotlin.reflect.KClass
-import kotlin.reflect.KMutableProperty0
-import kotlin.reflect.KMutableProperty1
-import kotlin.reflect.KProperty0
+import kotlin.jvm.*
+import kotlin.reflect.*
 
 //views.serializer.registerExtension(PhysicsKTreeSerializerExtension)
 
@@ -242,7 +213,6 @@ open class KTreeSerializer(val views: Views) : KTreeSerializerHolder, Extra by E
             "vectorimage" -> view = VectorImage.createDefault()
             "treeviewref" -> view = TreeViewRef()
             "particle" -> view = ParticleEmitterView(ParticleEmitter())
-            "tiledmapref" -> view = TiledMapViewRef()
             "ninepatch" -> view = NinePatchEx(NinePatchBitmap32(Bitmap32(62, 62)))
             "ktree" -> view = KTreeRoot(100.0, 100.0)
             else -> {
@@ -416,7 +386,6 @@ open class KTreeSerializer(val views: Views) : KTreeSerializerHolder, Extra by E
                 is Image -> Xml("image", rproperties)
                 is VectorImage -> Xml("vectorimage", rproperties)
                 is TreeViewRef -> Xml("treeviewref", rproperties)
-                is TiledMapViewRef -> Xml("tiledmapref", rproperties)
                 is Text -> Xml("text", rproperties)
                 is UITextButton -> Xml("uitextbutton", rproperties)
                 is Container -> Xml("container", rproperties) {
