@@ -1,0 +1,12 @@
+// x=Settings/Project
+// y=PluginManagementSpec/Project
+y.repositories {
+    mavenLocal()
+    mavenCentral()
+    google()
+    gradlePluginPortal()
+    maven { url = x.uri("https://maven.pkg.jetbrains.space/kotlin/p/kotlin/temporary") }
+    maven { url = x.uri("https://maven.pkg.jetbrains.space/kotlin/p/kotlin/dev") }
+    maven { url = x.uri("https://maven.pkg.jetbrains.space/public/p/kotlinx-coroutines/maven") }
+    maven { url = x.uri("https://oss.sonatype.org/content/repositories/snapshots/") }
+}
