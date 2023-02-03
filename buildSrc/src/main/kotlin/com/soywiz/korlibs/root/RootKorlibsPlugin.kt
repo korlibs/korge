@@ -54,7 +54,6 @@ object RootKorlibsPlugin {
         initInstallAndCheckLinuxLibs()
         initCatalog()
         configureKover()
-        initBuildVersions()
         initAndroidFixes()
         initPublishing()
         initKMM()
@@ -238,41 +237,6 @@ object RootKorlibsPlugin {
 
     }
 
-
-    fun Project.initBuildVersions() {
-
-        // Build versions
-        val projectVersion = project.version
-        fun createBuildVersions(git: Boolean): String =  """
-            package com.soywiz.korge.gradle
-            
-            object BuildVersions {
-                const val GIT = "${if (git) project.gitVersion else "main"}"
-                const val KOTLIN = "${project.realKotlinVersion}"
-                const val NODE_JS = "${project.nodeVersion}"
-                const val JNA = "${project._libs["versions"]["jna"].dynamicInvoke("get").casted<String>()}"
-                const val COROUTINES = "${project._libs["versions"]["kotlinx"]["coroutines"].dynamicInvoke("get").casted<String>()}"
-                const val ANDROID_BUILD = "${project.androidBuildGradleVersion}"
-                const val KOTLIN_SERIALIZATION = "${project._libs["versions"]["kotlinx"]["serialization"].dynamicInvoke("get").casted<String>()}"
-                const val KRYPTO = "$projectVersion"
-                const val KLOCK = "$projectVersion"
-                const val KDS = "$projectVersion"
-                const val KMEM = "$projectVersion"
-                const val KORMA = "$projectVersion"
-                const val KORIO = "$projectVersion"
-                const val KORIM = "$projectVersion"
-                const val KORAU = "$projectVersion"
-                const val KORGW = "$projectVersion"
-                const val KORGE = "$projectVersion"
-            
-                val ALL_PROPERTIES by lazy { listOf(::GIT, ::KRYPTO, ::KLOCK, ::KDS, ::KMEM, ::KORMA, ::KORIO, ::KORIM, ::KORAU, ::KORGW, ::KORGE, ::KOTLIN, ::JNA, ::COROUTINES, ::ANDROID_BUILD, ::KOTLIN_SERIALIZATION) }
-                val ALL by lazy { ALL_PROPERTIES.associate { it.name to it.get() } }
-            }
-        """.trimIndent()
-
-        rootProject.file("buildSrc/src/main/kotlinGen/com/soywiz/korge/gradle/BuildVersions.kt").writeTextIfChanged(createBuildVersions(git = false))
-        rootProject.file("korge-gradle-plugin/build/srcgen/com/soywiz/korge/gradle/BuildVersions.kt").writeTextIfChanged(createBuildVersions(git = true))
-    }
 
     fun Project.initAndroidApplication() {
         //apply(plugin = "com.android.application")
@@ -1549,15 +1513,6 @@ val forcedVersion = System.getenv("FORCED_VERSION")
 
 val Project.hasAndroidSdk by LazyExt { AndroidSdk.hasAndroidSdk(project) }
 val Project.enabledSandboxResourceProcessor: Boolean by LazyExt { rootProject.findProperty("enabledSandboxResourceProcessor") == "true" }
-val Project.gitVersion: String by LazyExt {
-    try {
-        Runtime.getRuntime().exec("git describe --abbrev=8 --tags --dirty".split(" ").toTypedArray(), arrayOf(), rootDir).inputStream.reader()
-            .readText().lines().first().trim()
-    } catch (e: Throwable) {
-        e.printStackTrace()
-        "unknown"
-    }
-}
 
 val Project.currentJavaVersion by LazyExt { com.soywiz.korlibs.currentJavaVersion() }
 fun Project.hasBuildGradle() = listOf("build.gradle", "build.gradle.kts").any { File(projectDir, it).exists() }
