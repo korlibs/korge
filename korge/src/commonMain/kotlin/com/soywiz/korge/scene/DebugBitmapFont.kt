@@ -2,9 +2,7 @@ package com.soywiz.korge.scene
 
 import com.soywiz.kds.IntMap
 import com.soywiz.kds.toIntMap
-import com.soywiz.korim.bitmap.Bitmap
-import com.soywiz.korim.bitmap.BitmapSlice
-import com.soywiz.korim.bitmap.slice
+import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.font.BitmapFont
 import com.soywiz.korim.format.PNG
 import com.soywiz.korim.format.readBitmap
@@ -17,7 +15,7 @@ private val DEBUG_FONT_BYTES: ByteArray get() = "iVBORw0KGgoAAAANSUhEUgAAAMAAAAD
 @ThreadLocal // It is mutable because of the Extra, so can't use SharedImmutable
 var debugBmpFontOrNull: BitmapFont? = null
 
-fun debugBmpFont(tex: BitmapSlice<Bitmap>): BitmapFont {
+fun debugBmpFont(tex: BmpSlice): BitmapFont {
     val fntAdvance = 7.0
     val fntWidth = 8.0
     val fntHeight = 8.0

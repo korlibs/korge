@@ -1,8 +1,6 @@
 package com.soywiz.korge.view.filter
 
-import com.soywiz.korge.render.BatchBuilder2D
-import com.soywiz.korge.render.RenderContext
-import com.soywiz.korge.render.Texture
+import com.soywiz.korge.render.*
 import com.soywiz.korge.view.BlendMode
 import com.soywiz.korim.color.ColorAdd
 import com.soywiz.korim.color.RGBA

@@ -6,8 +6,7 @@ import com.soywiz.korev.KeyEvent
 import com.soywiz.korev.MouseButton
 import com.soywiz.korev.MouseEvent
 import com.soywiz.korgw.EventLoopGameWindow
-import com.soywiz.korgw.platform.INativeGL
-import com.soywiz.korgw.platform.NativeKgl
+import com.soywiz.korgw.platform.*
 import com.soywiz.korgw.sdl2.SDLKeyCode
 import com.soywiz.korgw.sdl2.SDL_Keycode_Table
 import com.soywiz.korgw.sdl2.jna.ISDL
@@ -34,8 +33,7 @@ object SDL :
     ISDL by Native.load(System.getenv("SDL2_PATH") ?: "SDL2", ISDL::class.java),
     GL by Native.load(
         System.getenv("GLLIB_PATH") ?: (when {
-            OS.isMac -> "OpenGL"
-            else -> "libGL"
+            else -> nativeOpenGLLibraryPath
         }),
         GL::class.java
     )

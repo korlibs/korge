@@ -108,7 +108,7 @@ class ASETest {
         )
         assertEquals(Size(16, 144), tileSet.base.size)
         for (n in 0..8) {
-            assertEquals(RectangleInt(0, (n * 16), 16, 16), tileSet.texturesMap[n]!!.slice.bmpCoords.getRectInt())
+            assertEquals(RectangleInt(0, (n * 16), 16, 16), tileSet.texturesMap[n]!!.slice.rect)
         }
     }
 }

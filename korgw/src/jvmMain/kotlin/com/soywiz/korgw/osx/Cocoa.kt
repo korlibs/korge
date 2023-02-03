@@ -1,6 +1,11 @@
 package com.soywiz.korgw.osx
+import com.soywiz.korgw.platform.*
+import com.soywiz.korio.lang.*
 import com.sun.jna.*
 import java.util.concurrent.*
+import kotlin.collections.toString
+import kotlin.text.Charsets
+import kotlin.text.toCharArray
 
 //inline class ID(val id: Long)
 typealias ID = Long
@@ -27,9 +32,8 @@ internal interface GL : Library {
     fun glFlush()
     fun CGLSetParameter(vararg args: Any?)
     fun CGLEnable(vararg args: Any?)
-    companion object : GL by NativeLoad("OpenGL") {
+    companion object : GL by NativeLoad(nativeOpenGLLibraryPath) {
         const val GL_COLOR_BUFFER_BIT = 0x00004000
-        val NATIVE = NativeLibrary.getInstance("OpenGL")
     }
 }
 

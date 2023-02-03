@@ -187,7 +187,7 @@ class TexturedVertexArray(vcount: Int, val indices: ShortArray, icount: Int = in
 
     @OptIn(KorgeInternal::class)
     fun quad(index: Int, x: Float, y: Float, width: Float, height: Float, matrix: Matrix, bmp: BmpCoords, colMul: RGBA, colAdd: ColorAdd) {
-        quad(index, x, y, width, height, matrix, bmp.tl_x, bmp.tl_y, bmp.tr_x, bmp.tr_y, bmp.bl_x, bmp.bl_y, bmp.br_x, bmp.br_y, colMul, colAdd)
+        quad(index, x, y, width, height, matrix, bmp.tlX, bmp.tlY, bmp.trX, bmp.trY, bmp.blX, bmp.blY, bmp.brX, bmp.brY, colMul, colAdd)
     }
     @OptIn(KorgeInternal::class)
     fun quad(

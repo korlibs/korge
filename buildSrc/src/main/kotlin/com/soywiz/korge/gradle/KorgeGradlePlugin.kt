@@ -83,7 +83,7 @@ class KorgeGradleApply(val project: Project) {
                 val module = it
                 module.excludeDirs = module.excludeDirs.also {
                     it.addAll(listOf(
-                        ".gradle", ".idea", "gradle", "node_modules", "classes", "docs", "dependency-cache",
+                        ".gradle", ".idea", "gradle/wrapper", "node_modules", "classes", "docs", "dependency-cache",
                         "libs", "reports", "resources", "test-results", "tmp", "bundles", "modules",
                     ).map { file(it) })
                 }
@@ -118,12 +118,12 @@ class KorgeGradleApply(val project: Project) {
 
 open class KorgeGradlePlugin : Plugin<Project> {
 	override fun apply(project: Project) {
+        project.configureAutoVersions()
+
         project.configureBuildScriptClasspathTasks()
 
 		//TODO PABLO changed to have the android tasks enabled again
 		KorgeGradleApply(project).apply(includeIndirectAndroid = true)
-
-        project.configureAutoVersions()
 
 		//for (res in project.getResourcesFolders()) println("- $res")
 	}

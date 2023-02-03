@@ -2,18 +2,14 @@ package com.soywiz.korim.atlas
 
 import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.kmem.nextPowerOfTwo
-import com.soywiz.korim.bitmap.Bitmap32
-import com.soywiz.korim.bitmap.BitmapSlice
-import com.soywiz.korim.bitmap.BmpSlice
-import com.soywiz.korim.bitmap.extract
-import com.soywiz.korim.bitmap.slice
+import com.soywiz.korim.bitmap.*
 import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.geom.Size
 import com.soywiz.korma.geom.binpack.BinPacker
 import kotlin.jvm.JvmName
 
 object AtlasPacker {
-    data class Entry<T>(val item: T, val originalSlice: BmpSlice, val slice: BitmapSlice<Bitmap32>, val rectWithBorder: Rectangle, val rect: Rectangle)
+    data class Entry<T>(val item: T, val originalSlice: BmpSlice, val slice: BmpSlice32, val rectWithBorder: Rectangle, val rect: Rectangle)
 
     data class AtlasResult<T>(val tex: Bitmap32, val atlas: Atlas, val packedItems: List<Entry<T>>) : AtlasLookup {
         val packedItemsByItem = packedItems.associateBy { it.item }

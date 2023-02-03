@@ -1,17 +1,13 @@
 package com.soywiz.korim.atlas
 
-import com.soywiz.korim.bitmap.Bitmap
-import com.soywiz.korim.bitmap.BitmapSlice
-import com.soywiz.korim.bitmap.BmpSlice
-import com.soywiz.korim.bitmap.asumePremultiplied
-import com.soywiz.korim.bitmap.virtFrame
+import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.format.ImageDecodingProps
 import com.soywiz.korim.format.readBitmapSlice
 import com.soywiz.korio.file.VfsFile
 
-class Atlas(val textures: Map<String, BitmapSlice<Bitmap>>, val info: AtlasInfo = AtlasInfo()) : AtlasLookup {
-    constructor(texture: BitmapSlice<Bitmap>, info: AtlasInfo = AtlasInfo()) : this(mapOf(info.pages.first().fileName to texture), info)
-    constructor(slices: List<BitmapSlice<Bitmap>>) : this(slices.mapIndexed { index, bmp -> (bmp.name.takeIf { it != "unknown" } ?: "$index") to bmp }.toMap())
+class Atlas(val textures: Map<String, BmpSlice>, val info: AtlasInfo = AtlasInfo()) : AtlasLookup {
+    constructor(texture: BmpSlice, info: AtlasInfo = AtlasInfo()) : this(mapOf(info.pages.first().fileName to texture), info)
+    constructor(slices: List<BmpSlice>) : this(slices.mapIndexed { index, bmp -> (bmp.name.takeIf { it != "unknown" } ?: "$index") to bmp }.toMap())
 
     val texture get() = textures.values.first()
 

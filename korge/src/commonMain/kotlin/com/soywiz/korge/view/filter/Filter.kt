@@ -145,7 +145,7 @@ class RenderToTextureResult() : Disposable {
                 }
             }
         }
-        newtex = Texture(fb).slice(0, 0, newTexWidth, newTexHeight)
+        newtex = Texture(fb).sliceWithSize(0, 0, newTexWidth, newTexHeight)
     }
 
     override fun dispose() {

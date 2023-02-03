@@ -9,7 +9,7 @@ pluginManagement {
 	}
 }
 
-rootProject.name = "korlibs"
+rootProject.name = "${rootDir.name}-root"
 
 boolean isPropertyTrue(String name) {
     return System.getenv(name) == "true" || System.getProperty(name) == "true"
@@ -21,7 +21,6 @@ boolean disabledExtraKorgeLibs = isPropertyTrue("DISABLED_EXTRA_KORGE_LIBS")
 include(":graphics:foundation")
 include(":graphics:backend:metal")
 include(":kbignum")
-include(":luak")
 include(":klock")
 include(":klogger")
 include(":korinject")
@@ -34,7 +33,6 @@ include(":korio")
 include(":korim")
 include(":korau")
 include(":korgw")
-include(":korvi")
 include(":korge")
 include(":korge-gradle-plugin")
 include(":korge-reload-agent")
@@ -42,8 +40,4 @@ include(":korge-sandbox")
 
 if (!inCI) {
     // include(":korge-benchmarks")
-}
-
-if (!disabledExtraKorgeLibs) {
-    include(":luak")
 }

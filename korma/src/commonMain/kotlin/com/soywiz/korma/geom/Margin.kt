@@ -52,6 +52,8 @@ data class MutableMargin(
     }
 }
 
+typealias IMarginInt = MarginInt
+
 interface MarginInt {
     val top: Int
     val right: Int
@@ -59,11 +61,14 @@ interface MarginInt {
     val left: Int
 
     companion object {
+        val ZERO: IMarginInt = MarginInt(0)
         operator fun invoke(top: Int, right: Int, bottom: Int, left: Int): MarginInt = MutableMarginInt(top, right, bottom, left)
         operator fun invoke(vertical: Int, horizontal: Int): MarginInt = MutableMarginInt(vertical, horizontal)
         operator fun invoke(margin: Int): MarginInt = MutableMarginInt(margin)
     }
 }
+
+val IMarginInt.isNotZero: Boolean get() = top != 0 || left != 0 || right != 0 || bottom != 0
 
 val MarginInt.leftPlusRight: Int get() = left + right
 val MarginInt.topPlusBottom: Int get() = top + bottom

@@ -5,7 +5,7 @@ import com.soywiz.kds.FastArrayList
 import com.soywiz.kds.iterators.fastForEachWithIndex
 import com.soywiz.kds.toFastList
 import com.soywiz.kmem.clamp
-import com.soywiz.korim.color.Colors
+import com.soywiz.korim.color.*
 import com.soywiz.korim.format.ImageDecodingProps
 import com.soywiz.korim.format.ImageFormat
 import com.soywiz.korim.format.readBitmap
@@ -217,8 +217,8 @@ open class NinePatchBmpSlice(
             return NinePatchBmpSlice(
                 content = content,
                 info = run {
-                    val topPixels = bmpSlice.readPixels(0, 0, bmpSlice.width, 1)
-                    val leftPixels = bmpSlice.readPixels(0, 0, 1, bmpSlice.height)
+                    val topPixels = RgbaArray(bmpSlice.readPixelsUnsafe(0, 0, bmpSlice.width, 1))
+                    val leftPixels = RgbaArray(bmpSlice.readPixelsUnsafe(0, 0, 1, bmpSlice.height))
                     NinePatchInfo(
                         (1 until bmpSlice.width - 1).computeRle { topPixels[it].a != 0 },
                         (1 until bmpSlice.height - 1).computeRle { leftPixels[it].a != 0 },

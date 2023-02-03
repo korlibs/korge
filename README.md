@@ -83,3 +83,23 @@ now they are available via kproject in these repositories:
 ### Level Loading
 
 * <https://github.com/korlibs/korge-ldtk>
+
+### Image Formats
+
+* <https://github.com/korlibs/korge-image-formats> (Pure Kotlin JPEG Encoder/Decoder)
+
+### AudioFormats
+
+* <https://github.com/korlibs/korge-audio-formats> (MOD, XM, S3M, MIDI (WIP), OPUS (WIP))
+
+## Scripting
+
+* <https://github.com/korlibs/korge-luak> (LUA)
+
+## Video
+
+* <https://github.com/korlibs/korge-video>
+
+## Other
+
+* <https://github.com/korlibs/korge-lipsync> (Rhubarb LipSync integration with resource processor)

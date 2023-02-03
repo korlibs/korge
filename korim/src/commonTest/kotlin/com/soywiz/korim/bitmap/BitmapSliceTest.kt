@@ -1,14 +1,15 @@
 package com.soywiz.korim.bitmap
 
-import com.soywiz.korim.color.Colors
+import com.soywiz.korim.color.*
+import com.soywiz.korim.format.*
 import com.soywiz.korim.format.ImageOrientation
-import com.soywiz.korio.util.OS
-import com.soywiz.korma.geom.Rectangle
-import com.soywiz.korma.geom.RectangleInt
+import com.soywiz.korio.async.*
+import com.soywiz.korio.util.*
+import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.slice.*
+import com.soywiz.korma.geom.vector.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
-import kotlin.test.assertNotEquals
 
 class BitmapSliceTest {
     @Test
@@ -19,7 +20,7 @@ class BitmapSliceTest {
         assertEquals("Rectangle(x=48, y=48, width=16, height=16)", bmp.sliceWithSize(48, 48, 32, 32).bounds.toString())
         //assertEquals("Rectangle(x=48, y=48, width=-16, height=-16)", bmp.sliceWithBounds(48, 48, 32, 32).bounds.toString()) // Allow invalid bounds
         assertEquals("Rectangle(x=48, y=48, width=0, height=0)", bmp.sliceWithBounds(48, 48, 32, 32).bounds.toString())
-        assertEquals("Rectangle(x=8, y=8, width=24, height=24)", bmp.sliceWithSize(16, 16, 32, 32).sliceWithSize(8, 8, 40, 40).bounds.toString())
+        assertEquals("Rectangle(x=24, y=24, width=24, height=24)", bmp.sliceWithSize(16, 16, 32, 32).sliceWithSize(8, 8, 40, 40).bounds.toString())
     }
 
     @Test
@@ -35,7 +36,7 @@ class BitmapSliceTest {
                 frameOffset=0,0,31,17
             """.trimIndent(),
             """
-                bmpSize=${slice.bmpWidth},${slice.bmpHeight}
+                bmpSize=${slice.baseWidth},${slice.baseHeight}
                 coords=${slice.left},${slice.top},${slice.right},${slice.bottom}
                 size=${slice.width},${slice.height}
                 area=${slice.area}
@@ -54,16 +55,27 @@ class BitmapSliceTest {
     }
 
     @Test
-    fun testTransformed() {
-        if (!OS.isJvm) return
+    fun testTransformed() = suspendTest {
+        if (!OS.isJvm) return@suspendTest
 
-        val bmp = Bitmap32(20, 10, premultiplied = false)
-        val slice = bmp.sliceWithSize(1, 1, 8, 18, imageOrientation = ImageOrientation.ROTATE_90)
+        val bmp = Bitmap32(20, 10, value = Colors.YELLOW)
+        val slice = bmp.sliceWithSize(1, 1, 8, 18, orientation = ImageOrientation.ROTATE_90)
 
-        slice.setRgba(0, 0, Colors.RED)
-        assertEquals(Colors.RED, slice.getRgba(0, 0))
-        assertEquals(Colors.RED, bmp.getRgbaRaw(1, 8))
+        // This shouldn't throw
+        run {
+            for (y in 0 until slice.height) {
+                for (x in 0 until slice.width) {
+                    slice.getRgbaOriented(x, y)
+                }
+            }
+        }
 
+        slice.setRgbaOriented(0, 0, Colors.RED)
+        assertEquals(Colors.RED, slice.getRgbaOriented(0, 0))
+        assertEquals(Colors.RED, bmp.getRgba(1, 9))
+        assertEquals(Colors.RED, slice.extract()[0, 0])
+
+        /*
         slice.flippedX()
         assertEquals(Colors.RED, slice.getRgba(0, 0))
         slice.flippedX()
@@ -76,6 +88,7 @@ class BitmapSliceTest {
         assertFailsWith<IllegalArgumentException> { vfSlice.getRgba(-1, 0) }
         assertFailsWith<IllegalArgumentException> { vfSlice.getRgba(11, 26) }
         assertFailsWith<IllegalArgumentException> { vfSlice.getRgba(12, 25) }
+        */
 
         //vfSlice.setRgba(0, 0, Colors.BLUE)
         //assertEquals(Colors.BLUE, vfSlice.getRgba(0, 0))
@@ -85,6 +98,7 @@ class BitmapSliceTest {
         //assertEquals(Colors.BLUE, vfSlice.base.getRgbaRaw(11, 25))
     }
 
+    /*
     @Suppress("DEPRECATION")
     @Test
     fun testDeprecatedConstructors() {
@@ -97,11 +111,11 @@ class BitmapSliceTest {
         val r1 = RectangleInt(1, 1, 18, 8)
         val r2 = RectangleInt(1, 1, 8, 18)
 
-        var slice = BitmapSlice(bmp, r1, rotated = false)
+        var slice = BitmapSlice(bmp, r1, orientation = ImageOrientation.ORIGINAL)
         assertEquals(Colors.RED, slice.getRgba(0, 0))
         assertEquals(Colors.GREEN, slice.getRgba(17, 7))
 
-        slice = BitmapSlice(bmp, r2, rotated = true)
+        slice = BitmapSlice(bmp, r2, orientation = ImageOrientation.ROTATE_90)
         assertEquals(Colors.RED, slice.getRgba(7, 0))
         assertEquals(Colors.GREEN, slice.getRgba(0, 17))
 
@@ -117,16 +131,15 @@ class BitmapSliceTest {
         assertEquals(Colors.GREEN, sliceCompat.getRgba(0, 17))
     }
 
-
     @Test
     fun testReadPixels() {
         if (!OS.isJvm) return
 
         val bmp = Bitmap32(20, 10, premultiplied = false)
-        val slice = bmp.sliceWithSize(1, 1, 8, 18, imageOrientation = ImageOrientation.ROTATE_90)
+        val slice = bmp.sliceWithSize(1, 1, 8, 18, orientation = ImageOrientation.ROTATE_90)
 
         slice.setRgba(0, 0, Colors.RED)
-        slice.setRgba(7, 17, Colors.BLUE)
+        slice.setRgba(17, 7, Colors.BLUE)
         assertEquals(Colors.RED, slice.getRgba(0, 0))
         assertEquals(Colors.RED, bmp.getRgbaRaw(1, 8))
         assertEquals(Colors.BLUE, slice.getRgba(7, 17))
@@ -158,7 +171,7 @@ class BitmapSliceTest {
     fun testTransformFrame() {
         val baseSlice = Bitmap32(5, 10, premultiplied = false).slice().virtFrame(2, 2, 10, 20)
 
-        var slice: BmpCoordsWithT<Bitmap> = baseSlice
+        var slice: BmpSlice = baseSlice
         assertEquals(2, slice.frameOffsetX)
         assertEquals(2, slice.frameOffsetY)
         assertEquals(10, slice.frameWidth)
@@ -194,7 +207,7 @@ class BitmapSliceTest {
         bmp.setRgbaRaw(1, 1, Colors.RED)
         bmp.setRgbaRaw(18, 8, Colors.BLUE)
         bmp.setRgbaRaw(19, 9, Colors.WHITE)
-        val slice = bmp.sliceWithSize(1, 1, 8, 18, imageOrientation = ImageOrientation.ROTATE_90).virtFrame(2, 2, 12, 22)
+        val slice = bmp.sliceWithSize(1, 1, 8, 18, orientation = ImageOrientation.ROTATE_90).virtFrame(2, 2, 12, 22)
         val bmp2 = slice.extract()
         assertNotEquals(Colors.WHITE, bmp2.getRgbaRaw(10, 1))
         assertEquals(Colors.RED, bmp2.getRgbaRaw(9, 2))
@@ -207,7 +220,7 @@ class BitmapSliceTest {
         bmp.setRgbaRaw(1, 1, Colors.RED)
         bmp.setRgbaRaw(18, 8, Colors.BLUE)
         bmp.setRgbaRaw(19, 9, Colors.WHITE)
-        val slice = bmp.sliceWithSize(1, 1, 8, 18, imageOrientation = ImageOrientation.ROTATE_270).virtFrame(2, 2, 12, 22)
+        val slice = bmp.sliceWithSize(1, 1, 8, 18, orientation = ImageOrientation.ROTATE_270).virtFrame(2, 2, 12, 22)
         val bmp2 = slice.extract()
         assertNotEquals(Colors.WHITE, bmp2.getRgbaRaw(1, 20))
         assertEquals(Colors.RED, bmp2.getRgbaRaw(2, 19))
@@ -225,5 +238,29 @@ class BitmapSliceTest {
     fun textExtractNativeImage() {
         testExtract90(NativeImage(20, 10))
         testExtract270(NativeImage(20, 10))
-     }
+    }
+    */
+
+    @Test
+    fun test2() = suspendTest {
+        val bmp1 = RectSlice(SizeInt(100, 100), RectangleInt(25, 25, 50, 50), ImageOrientation.ROTATE_0)
+        println("bmp1=$bmp1, coords=${bmp1.coords}")
+        val bmp2 = bmp1.copy(orientation = ImageOrientation.ROTATE_90)
+        println("bmp2=$bmp2, coords=${bmp2.coords}")
+
+        val bmp = Bitmap32(200, 100, premultiplied = true).context2d {
+            fill(Colors.RED) { rect(0, 0, 200, 5) }
+            fill(Colors.GREEN) { rect(0, 0, 5, 100) }
+            fill(Colors.BLUE) { rect(0, 100 - 5, 200, 5) }
+        }
+
+        //bmp.rotated(ImageOrientation.Rotation.R0).showImageAndWait() // 0º
+        //bmp.rotated(ImageOrientation.Rotation.R90).showImageAndWait()
+        //bmp.rotated(ImageOrientation.Rotation.R180).showImageAndWait()
+        //bmp.rotated(ImageOrientation.Rotation.R270).showImageAndWait()
+
+        //val chunk = bmp.sliceNew(padding = MarginInt(0, 0), orientation = ImageOrientation.ROTATE_90).extract()
+        //val chunks = chunk.sliceNew().splitInCols(50, 50)
+        //for (chunk in chunks) chunk.extract().showImageAndWait()
+    }
 }

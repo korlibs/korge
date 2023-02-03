@@ -2,13 +2,7 @@ package com.soywiz.korim.format
 
 import com.soywiz.korim.atlas.MutableAtlas
 import com.soywiz.korim.atlas.MutableAtlasUnit
-import com.soywiz.korim.bitmap.Bitmap
-import com.soywiz.korim.bitmap.Bitmap32
-import com.soywiz.korim.bitmap.BitmapSlice
-import com.soywiz.korim.bitmap.BmpSlice
-import com.soywiz.korim.bitmap.NativeImage
-import com.soywiz.korim.bitmap.asumePremultiplied
-import com.soywiz.korim.bitmap.slice
+import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.vector.SizedDrawable
 import com.soywiz.korim.vector.format.readSVG
 import com.soywiz.korio.file.VfsFile
@@ -68,7 +62,7 @@ suspend fun VfsFile.readBitmapSlice(
     name: String? = null,
     atlas: MutableAtlasUnit? = null,
     props: ImageDecodingProps = ImageDecodingProps.DEFAULT,
-): BitmapSlice<Bitmap> {
+): BmpSlice {
     val result = readBitmap(props = props)
     return when {
         atlas != null -> atlas.add(result.toBMP32IfRequired(), Unit, name).slice
@@ -93,8 +87,8 @@ suspend fun VfsFile.readBitmapInfo(format: ImageFormat): ImageInfo? =
 
 // Atlas variants
 
-fun BmpSlice.toAtlas(atlas: MutableAtlasUnit): BitmapSlice<Bitmap32> = atlas.add(this, Unit).slice
-fun List<BmpSlice>.toAtlas(atlas: MutableAtlasUnit): List<BitmapSlice<Bitmap32>> = this.map { it.toAtlas(atlas) }
+fun BmpSlice.toAtlas(atlas: MutableAtlasUnit): BmpSlice32 = atlas.add(this, Unit).slice
+fun List<BmpSlice>.toAtlas(atlas: MutableAtlasUnit): List<BmpSlice32> = this.map { it.toAtlas(atlas) }
 
 suspend fun VfsFile.readVectorImage(): SizedDrawable = readSVG()
 

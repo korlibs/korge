@@ -252,7 +252,7 @@ object DirectGL : INativeGL {
 
 private val arch by lazy { System.getProperty("os.arch").toLowerCase() }
 
-val nativeOpenGLLibraryPath: String? by lazy {
+val nativeOpenGLLibraryPath: String by lazy {
     Environment["OPENGL_LIB_PATH"]?.let { path ->
         return@lazy path
     }
@@ -262,7 +262,7 @@ val nativeOpenGLLibraryPath: String? by lazy {
         OS.isWindows -> "opengl32"
         else -> {
             println("  - Unknown/Unsupported OS")
-            null
+            "libGL"
         }
     }
 }

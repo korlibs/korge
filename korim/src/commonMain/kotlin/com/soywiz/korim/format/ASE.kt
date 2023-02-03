@@ -15,12 +15,7 @@ import com.soywiz.kmem.extract
 import com.soywiz.kmem.hasBitSet
 import com.soywiz.kmem.readIntArray
 import com.soywiz.kmem.readIntArrayLE
-import com.soywiz.korim.bitmap.Bitmap
-import com.soywiz.korim.bitmap.Bitmap32
-import com.soywiz.korim.bitmap.Bitmap8
-import com.soywiz.korim.bitmap.BmpSlice
-import com.soywiz.korim.bitmap.Palette
-import com.soywiz.korim.bitmap.slice
+import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.color.RgbaArray
@@ -41,6 +36,7 @@ import com.soywiz.korio.stream.readU16LE
 import com.soywiz.korio.stream.readU32LE
 import com.soywiz.korio.stream.readU8
 import com.soywiz.korma.geom.RectangleInt
+import com.soywiz.korma.geom.slice.*
 import com.soywiz.krypto.encoding.hex
 
 // Aseprite: https://github.com/aseprite/aseprite/blob/main/docs/ase-file-specs.md
@@ -537,7 +533,7 @@ object ASE : ImageFormatWithContainer("ase") {
                             val data = compressedData.uncompress(ZLib)
                             val ints = data.readIntArrayLE(0, tileWidth * tileHeight * ntiles)
                             val bitmap = Bitmap32(tileWidth, tileHeight * ntiles, RgbaArray(ints))
-                            tiles = bitmap.slice().split(tileWidth, tileHeight)
+                            tiles = bitmap.slice().splitInRows(tileWidth, tileHeight)
                         }
                         image.tilesets[tilesetId] = AseTileset(
                             tilesetId,
