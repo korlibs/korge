@@ -1,4 +1,4 @@
-name: RUN_NO_CACHE
+name: RUN_WITH_CACHE
 
 on: workflow_dispatch
 
@@ -19,6 +19,7 @@ jobs:
         with:
           java-version: 1.8
           cache: 'gradle'
+          distribution: 'temurin'
       - run: CALL gradlew.bat --no-daemon -DCI=true
         shell: cmd
       - run: CALL gradlew.bat --no-daemon jvmTest publishMingwX64PublicationToMavenLocal -DCI=true
@@ -34,6 +35,7 @@ jobs:
         with:
           java-version: 1.8
           cache: 'gradle'
+          distribution: 'temurin'
       - run: ./gradlew -DCI=true
       - run: ./gradlew jvmTest publishMacosX64PublicationToMavenLocal publishMacosArm64PublicationToMavenLocal -DCI=true
         env:
@@ -47,6 +49,7 @@ jobs:
         with:
           java-version: 1.8
           cache: 'gradle'
+          distribution: 'temurin'
       - run: ./gradlew -DCI=true
       - run: ./gradlew publishIosArm64PublicationToMavenLocal publishIosX64PublicationToMavenLocal publishIosSimulatorArm64PublicationToMavenLocal -DCI=true
         env:
@@ -60,6 +63,7 @@ jobs:
         with:
           java-version: 1.8
           cache: 'gradle'
+          distribution: 'temurin'
       - run: sudo apt-get install xvfb
       - run: xvfb-run --auto-servernum ./gradlew --no-daemon -DCI=true
       - run: xvfb-run --auto-servernum ./gradlew --no-daemon publishKotlinMultiplatformPublicationToMavenLocal publishJvmPublicationToMavenLocal -DCI=true
@@ -72,6 +76,7 @@ jobs:
         with:
           java-version: 1.8
           cache: 'gradle'
+          distribution: 'temurin'
       - run: sudo apt-get install xvfb
       - run: xvfb-run --auto-servernum ./gradlew --no-daemon -DCI=true
       - run: xvfb-run --auto-servernum ./gradlew --no-daemon publishJsPublicationToMavenLocal publishAndroidPublicationToMavenLocal -DCI=true
@@ -84,6 +89,7 @@ jobs:
         with:
           java-version: 1.8
           cache: 'gradle'
+          distribution: 'temurin'
       - run: sudo apt-get install xvfb
       - run: xvfb-run --auto-servernum ./gradlew --no-daemon -DCI=true
       - run: xvfb-run --auto-servernum ./gradlew --no-daemon jvmTest publishLinuxX64PublicationToMavenLocal -DCI=true
