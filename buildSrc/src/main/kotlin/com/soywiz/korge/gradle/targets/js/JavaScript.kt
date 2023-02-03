@@ -31,11 +31,6 @@ fun Project.configureJavaScript() {
 		js(KotlinJsCompilerType.IR) {
             browser {
                 binaries.executable()
-                testTask {
-                    useKarma {
-                        useChromeHeadless()
-                    }
-                }
             }
 
 			this.attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.js)
@@ -82,6 +77,23 @@ fun Project.configureJavaScript() {
     configureWebpackFixes()
     configureJavascriptRun()
     configureClosureCompiler()
+    configureJSTests()
+}
+
+fun Project.configureJSTests() {
+    val js = gkotlin.js()
+    js.browser {
+        testRuns.getByName(KotlinTargetWithTests.DEFAULT_TEST_RUN_NAME).executionTask.configure {
+            it.useKarma {
+                useChromeHeadless()
+            }
+        }
+    }
+    js.nodejs {
+        testRuns.getByName(KotlinTargetWithTests.DEFAULT_TEST_RUN_NAME).executionTask.configure {
+            it.useMocha()
+        }
+    }
 }
 
 abstract class JsCreateIndexTask : DefaultTask() {

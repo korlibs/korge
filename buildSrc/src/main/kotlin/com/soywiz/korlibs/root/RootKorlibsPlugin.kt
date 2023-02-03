@@ -4,8 +4,10 @@ import com.android.build.gradle.*
 import com.android.build.gradle.internal.tasks.*
 import com.soywiz.korge.gradle.*
 import com.soywiz.korge.gradle.targets.*
+import com.soywiz.korge.gradle.targets.all.*
 import com.soywiz.korge.gradle.targets.android.*
 import com.soywiz.korge.gradle.targets.ios.*
+import com.soywiz.korge.gradle.targets.js.*
 import com.soywiz.korge.gradle.targets.jvm.*
 import com.soywiz.korge.gradle.targets.native.*
 import com.soywiz.korge.gradle.util.*
@@ -15,6 +17,7 @@ import com.soywiz.korlibs.gkotlin
 import com.soywiz.korlibs.kotlin
 import com.soywiz.korlibs.modules.*
 import com.soywiz.korlibs.modules.KorgeJavaExec
+import com.soywiz.korlibs.root._webServer
 import com.soywiz.korlibs.tasks
 import org.gradle.api.*
 import org.gradle.api.Project
@@ -30,6 +33,7 @@ import org.jetbrains.kotlin.gradle.tasks.*
 import java.io.*
 import java.net.*
 import java.nio.file.*
+import kotlin.apply
 
 object RootKorlibsPlugin {
     @JvmStatic
@@ -61,6 +65,13 @@ object RootKorlibsPlugin {
         initShortcuts()
         initTests()
         initCrossTests()
+        initAllTargets()
+    }
+
+    fun Project.initAllTargets() {
+        rootProject.afterEvaluate {
+            rootProject.rootEnableFeaturesOnAllTargets()
+        }
     }
 
     fun Project.initRootKotlinJvmTarget() {
@@ -670,8 +681,8 @@ object RootKorlibsPlugin {
                     jvm {
                         compilations.allThis {
                             kotlinOptions.jvmTarget = "1.8"
-                            kotlinOptions.suppressWarnings = true
-                            kotlinOptions.freeCompilerArgs = listOf("-Xno-param-assertions")
+                            compilerOptions.options.freeCompilerArgs.add("-Xno-param-assertions")
+                            //kotlinOptions.freeCompilerArgs.add("-Xno-param-assertions")
                             //kotlinOptions.
 
                             // @TODO:
@@ -685,21 +696,10 @@ object RootKorlibsPlugin {
                         browser {
                             compilations.allThis {
                                 //kotlinOptions.sourceMap = true
-                                kotlinOptions.suppressWarnings = true
-                            }
-                            testTask {
-                                useKarma {
-                                    useChromeHeadless()
-                                    useConfigDirectory(File(rootDir, "karma.config.d"))
-                                }
-                            }
-                        }
-                        nodejs {
-                            testTask {
-                                useMocha()
                             }
                         }
                     }
+
                     if (hasAndroid) {
                         kotlin {
                             android {
@@ -708,8 +708,7 @@ object RootKorlibsPlugin {
                                 //this.attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.androidJvm)
                                 compilations.allThis {
                                     kotlinOptions.jvmTarget = "1.8"
-                                    kotlinOptions.suppressWarnings = true
-                                    kotlinOptions.freeCompilerArgs = listOf("-Xno-param-assertions")
+                                    compilerOptions.options.freeCompilerArgs.add("-Xno-param-assertions")
                                 }
                             }
                         }
@@ -1061,9 +1060,9 @@ object RootKorlibsPlugin {
                                 dependsOn(compileDevelopmentExecutableKotlinJs)
                                 //task.dependsOn(browserPrepareEsbuild)
 
-                                val jsPath = project.tasks.getByName(compileDevelopmentExecutableKotlinJs).outputs.files.first {
+                                val jsPath = project.tasks.getByName(compileDevelopmentExecutableKotlinJs).outputs.files.firstOrNull() {
                                     it.extension.toLowerCase() == "js"
-                                }
+                                } ?: "unknown-js.js"
 
                                 val output = File(wwwFolder, "${project.name}.js")
                                 inputs.file(jsPath)
@@ -1140,6 +1139,7 @@ object RootKorlibsPlugin {
                         binaries.executable()
                     }
                 }
+                configureJSTests()
 
                 tasks.getByName("jsProcessResources").apply {
                     //println(this.outputs.files.toList())
