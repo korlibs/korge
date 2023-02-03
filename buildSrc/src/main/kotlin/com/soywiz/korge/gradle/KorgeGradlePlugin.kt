@@ -125,7 +125,7 @@ open class KorgeGradlePlugin : Plugin<Project> {
 		//TODO PABLO changed to have the android tasks enabled again
 		KorgeGradleApply(project).apply(includeIndirectAndroid = true)
 
-		//for (res in project.getResourcesFolders()) println("- $res")
+        //for (res in project.getResourcesFolders()) println("- $res")
 	}
 }
 
