@@ -3,36 +3,6 @@ name: RUN_WITH_CACHE
 on: workflow_dispatch
 
 jobs:
-  publish-windows:
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v1
-      - name: Set up JDK 1.8
-        uses: actions/setup-java@v3
-        with:
-          java-version: 8
-          cache: 'gradle'
-          distribution: 'temurin'
-      - run: CALL gradlew.bat --no-daemon -DCI=true
-        shell: cmd
-      - run: CALL gradlew.bat --no-daemon jvmTest publishMingwX64PublicationToMavenLocal -DCI=true
-        shell: cmd
-        env:
-          DISABLE_JAVASCRIPT_TEST: true
-  publish-mac:
-    runs-on: macos-11
-    steps:
-      - uses: actions/checkout@v1
-      - name: Set up JDK 1.8
-        uses: actions/setup-java@v3
-        with:
-          java-version: 8
-          cache: 'gradle'
-          distribution: 'temurin'
-      - run: ./gradlew -DCI=true
-      - run: ./gradlew jvmTest publishMacosX64PublicationToMavenLocal publishMacosArm64PublicationToMavenLocal -DCI=true
-        env:
-          DISABLE_JAVASCRIPT_TEST: true
   publish-jvm-multiplatform:
     runs-on: ubuntu-latest
     steps:
@@ -46,29 +16,3 @@ jobs:
       - run: sudo apt-get install xvfb
       - run: xvfb-run --auto-servernum ./gradlew --no-daemon -DCI=true
       - run: xvfb-run --auto-servernum ./gradlew --no-daemon publishKotlinMultiplatformPublicationToMavenLocal publishJvmPublicationToMavenLocal -DCI=true
-  publish-js-android:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v1
-      - name: Set up JDK 1.8
-        uses: actions/setup-java@v3
-        with:
-          java-version: 8
-          cache: 'gradle'
-          distribution: 'temurin'
-      - run: sudo apt-get install xvfb
-      - run: xvfb-run --auto-servernum ./gradlew --no-daemon -DCI=true
-      - run: xvfb-run --auto-servernum ./gradlew --no-daemon publishJsPublicationToMavenLocal publishAndroidPublicationToMavenLocal -DCI=true
-  publish-linux:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v1
-      - name: Set up JDK 1.8
-        uses: actions/setup-java@v3
-        with:
-          java-version: 8
-          cache: 'gradle'
-          distribution: 'temurin'
-      - run: sudo apt-get install xvfb
-      - run: xvfb-run --auto-servernum ./gradlew --no-daemon -DCI=true
-      - run: xvfb-run --auto-servernum ./gradlew --no-daemon jvmTest publishLinuxX64PublicationToMavenLocal -DCI=true
