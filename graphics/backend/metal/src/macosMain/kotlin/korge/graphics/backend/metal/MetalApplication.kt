@@ -38,12 +38,13 @@ class MetalApplication(
                     frame.height * 0.5
                 )
             }
+
             val window = NSWindow(windowRect, windowStyle, NSBackingStoreBuffered, false)
             val device = MTLCreateSystemDefaultDevice() ?: error("fail to create device")
             val renderer = rendererProvider(device)
-            val mtkView = MTKView(window.frame, device).apply {
+            val mtkView = MTKView(windowRect, device).apply {
                 colorPixelFormat = MTLPixelFormatBGRA8Unorm_sRGB
-                clearColor = MTLClearColorMake(1.0, 0.0, 0.0, 1.0)
+                clearColor = MTLClearColorMake(0.0, 0.0, 0.0, 1.0)
             }
 
             application.delegate = object : NSObject(), NSApplicationDelegateProtocol {
@@ -77,6 +78,7 @@ class MetalApplication(
 
                     window.orderFrontRegardless()
                     window.center()
+                    window.level = NSFloatingWindowLevel
                 }
 
                 override fun applicationWillTerminate(notification: NSNotification) {
