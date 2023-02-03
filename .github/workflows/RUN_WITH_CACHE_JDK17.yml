@@ -1,4 +1,4 @@
-name: RUN_WITH_CACHE
+name: RUN_WITH_CACHE_JDK17
 
 on: workflow_dispatch
 
