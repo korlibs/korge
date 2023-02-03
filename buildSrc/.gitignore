@@ -1,3 +1,3 @@
-./.gradle
+/.gradle
 /build
-./src/main/kotlinGen
+/src/main/kotlinGen
