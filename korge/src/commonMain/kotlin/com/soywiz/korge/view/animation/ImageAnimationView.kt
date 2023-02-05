@@ -14,7 +14,7 @@ inline fun Container.imageAnimationView(
     animation: ImageAnimation? = null,
     direction: ImageAnimation.Direction? = null,
     block: @ViewDslMarker ImageAnimationView<Image>.() -> Unit = {}
-) = ImageAnimationView(animation, direction) { Image(Bitmaps.transparent) }.addTo(this, block)
+): ImageAnimationView<Image> = ImageAnimationView(animation, direction) { Image(Bitmaps.transparent) }.addTo(this, block)
 
 fun ImageAnimationView(
     animation: ImageAnimation? = null,
