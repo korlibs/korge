@@ -153,7 +153,6 @@ suspend fun main() = Korge(
             Demo(::MainSound),
             Demo(::MainTiledBackground),
             Demo(::MainAseprite),
-            Demo(::MainAseParallaxSample),
         )
     )
 }

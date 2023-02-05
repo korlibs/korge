@@ -16,12 +16,6 @@ inline fun Container.imageAnimationView(
     block: @ViewDslMarker ImageAnimationView<Image>.() -> Unit = {}
 ) = ImageAnimationView(animation, direction) { Image(Bitmaps.transparent) }.addTo(this, block)
 
-inline fun Container.repeatedImageAnimationView(
-    animation: ImageAnimation? = null,
-    direction: ImageAnimation.Direction? = null,
-    block: @ViewDslMarker ImageAnimationView<SingleTile>.() -> Unit = {}
-) = ImageAnimationView(animation, direction) { SingleTile(Bitmaps.transparent) }.addTo(this, block)
-
 fun ImageAnimationView(
     animation: ImageAnimation? = null,
     direction: ImageAnimation.Direction? = null,

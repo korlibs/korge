@@ -87,15 +87,16 @@ inline class TileInfo(val data: Int) {
 
 }
 
-abstract class BaseTileMap(
-    stackedIntMap: IStackedIntArray2,
+class TileMap(
+    var stackedIntMap: IStackedIntArray2 = StackedIntArray2(1, 1, 0),
+    tileset: TileSet = TileSet.EMPTY,
     var smoothing: Boolean = true,
+    val orientation: TileMapOrientation? = null,
     val staggerAxis: TileMapStaggerAxis? = null,
     val staggerIndex: TileMapStaggerIndex? = null,
-    var tileSize: Size = Size()
+    var tileSize: Size = Size(tileset.width.toDouble(), tileset.height.toDouble()),
+//) : BaseTileMap(intMap, smoothing, staggerAxis, staggerIndex, tileSize) {
 ) : View() {
-    var stackedIntMap: IStackedIntArray2 = stackedIntMap
-
     @Deprecated("Use stackedIntMap instead", level = DeprecationLevel.HIDDEN)
     var intMap: IntArray2
         get() = (stackedIntMap as StackedIntArray2).data.first()
@@ -119,8 +120,6 @@ abstract class BaseTileMap(
             unlock()
         }
     }
-
-    abstract val tilesetTextures: Array<BitmapCoords?>
 
     var tileWidth: Double = 0.0
     var tileHeight: Double = 0.0
@@ -484,19 +483,8 @@ abstract class BaseTileMap(
             //batch.flush()
         }
     }
-}
 
-@OptIn(KorgeInternal::class)
-open class TileMap(
-    intMap: IStackedIntArray2 = StackedIntArray2(1, 1, 0),
-    tileset: TileSet = TileSet.EMPTY,
-    smoothing: Boolean = true,
-    val orientation: TileMapOrientation? = null,
-    staggerAxis: TileMapStaggerAxis? = null,
-    staggerIndex: TileMapStaggerIndex? = null,
-    tileSize: Size = Size(tileset.width.toDouble(), tileset.height.toDouble()),
-) : BaseTileMap(intMap, smoothing, staggerAxis, staggerIndex, tileSize) {
-    override var tilesetTextures: Array<BitmapCoords?> = emptyArray<BitmapCoords?>()
+    var tilesetTextures: Array<BitmapCoords?> = emptyArray<BitmapCoords?>()
     var animationIndex: IntArray = IntArray(0)
     var animationElapsed: DoubleArray = DoubleArray(0)
 
@@ -580,19 +568,20 @@ open class TileMap(
         out.setTo(0, 0, tileWidth * stackedIntMap.width, tileHeight * stackedIntMap.height)
     }
 
+    fun repeat(repeatX: TileMapRepeat, repeatY: TileMapRepeat = repeatX): TileMap {
+        this.repeatX = repeatX
+        this.repeatY = repeatY
+        return this
+    }
+
+    fun repeat(repeatX: Boolean = false, repeatY: Boolean = false): TileMap {
+        this.repeatX = if (repeatX) TileMapRepeat.REPEAT else TileMapRepeat.NONE
+        this.repeatY = if (repeatY) TileMapRepeat.REPEAT else TileMapRepeat.NONE
+        return this
+    }
+
     //override fun hitTest(x: Double, y: Double): View? {
     //    return if (checkGlobalBounds(x, y, 0.0, 0.0, tileWidth * intMap.width, tileHeight * intMap.height)) this else null
     //}
 }
 
-fun <T : BaseTileMap> T.repeat(repeatX: TileMapRepeat, repeatY: TileMapRepeat = repeatX): T {
-    this.repeatX = repeatX
-    this.repeatY = repeatY
-    return this
-}
-
-fun <T : BaseTileMap> T.repeat(repeatX: Boolean = false, repeatY: Boolean = false): T {
-    this.repeatX = if (repeatX) TileMapRepeat.REPEAT else TileMapRepeat.NONE
-    this.repeatY = if (repeatY) TileMapRepeat.REPEAT else TileMapRepeat.NONE
-    return this
-}
