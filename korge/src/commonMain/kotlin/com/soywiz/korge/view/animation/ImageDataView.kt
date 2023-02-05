@@ -1,9 +1,6 @@
 package com.soywiz.korge.view.animation
 
-import com.soywiz.korge.view.Container
-import com.soywiz.korge.view.View
-import com.soywiz.korge.view.ViewDslMarker
-import com.soywiz.korge.view.addTo
+import com.soywiz.korge.view.*
 import com.soywiz.korim.format.ImageData
 
 /**
@@ -19,10 +16,9 @@ inline fun Container.imageDataView(
     animation: String? = null,
     playing: Boolean = false,
     smoothing: Boolean = true,
-    repeating: Boolean = false,
     block: @ViewDslMarker ImageDataView.() -> Unit = {}
 )
-    = ImageDataView(data, animation, playing, smoothing, repeating).addTo(this, block)
+    = ImageDataView(data, animation, playing, smoothing).addTo(this, block)
 
 /**
  * @example
@@ -57,9 +53,13 @@ open class ImageDataView(
     animation: String? = null,
     playing: Boolean = false,
     smoothing: Boolean = true,
-    repeating: Boolean = false
 ) : Container() {
-    private val animationView = if (repeating) repeatedImageAnimationView() else imageAnimationView()
+    // Here we can create repeated in korge-parallax if required
+    protected open fun createAnimationView(): ImageAnimationView<out SmoothedBmpSlice> {
+        return imageAnimationView()
+    }
+
+    open val animationView: ImageAnimationView<out SmoothedBmpSlice> = createAnimationView()
 
     fun getLayer(name: String): View? {
         return animationView.getLayer(name)
