@@ -3,8 +3,13 @@ package com.soywiz.korau.sound
 import com.soywiz.korau.sound.backends.*
 
 actual val nativeSoundProvider: NativeSoundProvider by lazy {
-    (null as? NativeSoundProvider?)
-        ?: alsaNativeSoundProvider
-        ?: openalNativeSoundProvider
-        ?: DummyNativeSoundProvider
+    try {
+        (null as? NativeSoundProvider?)
+            ?: alsaNativeSoundProvider
+            ?: openalNativeSoundProvider
+            ?: DummyNativeSoundProvider
+    } catch (e: Throwable) {
+        e.printStackTrace()
+        DummyNativeSoundProvider
+    }
 }
