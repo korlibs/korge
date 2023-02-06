@@ -19,7 +19,14 @@ inline fun <T> kmemScoped(block: KArena.() -> T): T {
 
 expect val POINTER_SIZE: Int
 expect val LONG_SIZE: Int
-expect class KPointer
+
+typealias KNativeLong = KPointer
+typealias KPointer = KPointerTT<out KPointed>
+//expect class KPointer
+expect abstract class KPointed
+expect class KPointerTT<T : KPointed>
+expect class KFunctionTT<T : Function<*>> : KPointed
+//expect class NativeLong
 
 inline class KPointerT<T>(val pointer: KPointer)
 
@@ -36,8 +43,10 @@ operator fun KPointerT<Double>.set(offset: Int, value: Double) = pointer.setDoub
 //expect fun KPointerAlloc(size: Int): KPointer = TODO()
 //expect fun KPointerFree(address: Long) = TODO()
 
-expect fun KPointerCreate(address: Long): KPointer
+expect fun KPointer(address: Long): KPointer
 expect val KPointer.address: Long
+
+fun Long.toKPointer(): KPointer = KPointer(this)
 
 expect fun KPointer.getByte(offset: Int): Byte
 expect fun KPointer.setByte(offset: Int, value: Byte)
@@ -53,7 +62,7 @@ expect fun KPointer.getLong(offset: Int): Long
 expect fun KPointer.setLong(offset: Int, value: Long)
 
 fun KPointer.getPointer(offset: Int): KPointer {
-    return if (POINTER_SIZE == 8) KPointerCreate(getLong(offset)) else KPointerCreate(getInt(offset).toLong())
+    return if (POINTER_SIZE == 8) KPointer(getLong(offset)) else KPointer(getInt(offset).toLong())
 }
 fun KPointer.setPointer(offset: Int, value: KPointer) {
     if (POINTER_SIZE == 8) setLong(offset, value.address) else setInt(offset, value.address.toInt())
