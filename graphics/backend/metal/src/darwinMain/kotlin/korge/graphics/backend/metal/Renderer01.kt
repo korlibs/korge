@@ -2,151 +2,99 @@ package korge.graphics.backend.metal
 
 import com.soywiz.korag.*
 import com.soywiz.korag.shader.*
-import com.soywiz.korag.shader.gl.*
-import korge.graphics.backend.metal.shader.*
 import kotlinx.cinterop.*
-import platform.Foundation.NSError
-import platform.Foundation.NSMakeRange
 import platform.Metal.*
-import platform.MetalKit.MTKView
-import platform.posix.memmove
+import platform.MetalKit.*
 
 class Renderer01(device: MTLDeviceProtocol) : Renderer(device) {
 
-    private lateinit var vertexPositionsBuffer: MTLBufferProtocol
-    private lateinit var vertexColorsBuffer: MTLBufferProtocol
-    private lateinit var renderPipelineStateProtocol: MTLRenderPipelineStateProtocol
+    private var ag: AGMetal? = null
 
-    init {
-        buildShaders()
-        buildBuffers()
+    private val vertexShader = VertexShader {
+        SET(DefaultShaders.v_Col, DefaultShaders.a_Col)
+        SET(out, vec4(DefaultShaders.a_Pos, 1f.lit, 1f.lit))
     }
+    private val fragmentShader = FragmentShader {
+        SET(out, DefaultShaders.v_Col)
+    }
+
+    private val program = Program(vertexShader, fragmentShader)
+
+    private val vertexData = AGVertexArrayObject(
+        AGVertexData(
+            layout = VertexLayout(DefaultShaders.a_Col),
+            buffer = AGBuffer().upload(floatArrayOf(
+                1f, 1f, 1f, 0.0f, // White
+                1f, 0f, 0f, 0.0f, // Red
+                0f, 1f, 0.0f, 0.0f, // Blue
+                0f, 0.0f, 1f, 0.0f, // Green
+            ))
+        ),
+        AGVertexData(
+            layout = VertexLayout(DefaultShaders.a_Pos),
+            buffer = AGBuffer().upload(floatArrayOf(
+                0f, 0f,
+                1f, 0f,
+                1f, 1f,
+                0f, 1f
+            ))
+        )
+    )
+
+    private val indices = AGBuffer().upload(intArrayOf(0, 1, 2, 2, 3, 0))
 
     override fun drawOnView(view: MTKView) {
-        autoreleasepool {
-
-            val commandBuffer = commandQueue.commandBuffer() ?: error("fail to get command buffer")
-            val currentRenderPassDescriptor =
-                view.currentRenderPassDescriptor() ?: error("fail to get render pass descriptor")
-            val renderCommanderEncoder = commandBuffer.renderCommandEncoderWithDescriptor(currentRenderPassDescriptor)
-                ?: error("fail to get render commander encoder")
-
-            renderCommanderEncoder.apply {
-                setRenderPipelineState(renderPipelineStateProtocol)
-                setVertexBuffer(vertexColorsBuffer, 0, 0)
-                setVertexBuffer(vertexPositionsBuffer, 0, 1)
-                drawPrimitives(MTLPrimitiveTypeTriangle, 0, 3)
-            }
-
-            renderCommanderEncoder.endEncoding()
-            commandBuffer.presentDrawable(view.currentDrawable()!!)
-            commandBuffer.commit()
-
-        }
-    }
-
-    private fun buildShaders() = memScoped {
-
-        val vertexShader = VertexShader {
-            SET(DefaultShaders.v_Col, DefaultShaders.a_Col)
-            SET(out, vec4(DefaultShaders.a_Pos, 1f.lit, 1f.lit))
-        }
-        val fragmentShader = FragmentShader {
-            SET(out, DefaultShaders.v_Col)
+        if (ag == null) {
+            ag = AGMetal(view)
         }
 
-        vertexShader.toNewGlslStringResult()
-            .result
-            .also(::println)
+        val width = view.drawableSize.useContents { width }.toInt()
+        val height = view.drawableSize.useContents { height }.toInt()
+        val frameBuffer = AGFrameBufferBase(false)
+        val frameBufferInfo = AGFrameBufferInfo(0)
+            .withSize(width, height)
+            .withSamples(1)
+            .withHasDepth(true)
+            .withHasStencil(true)
 
-        fragmentShader.toNewGlslStringResult()
-            .result
-            .also(::println)
 
-        var shaderSrc = """
-                #include <metal_stdlib>
-                using namespace metal;
-        
-                struct v2f
-                {
-                    float4 v_Col;
-                    float4 position [[position]];
-                };
-        
-                vertex v2f vertexMain( uint vertexId [[vertex_id]],
-                                       device const float4* colors [[buffer(0)]],
-                                       device const float2* positions [[buffer(1)]] )
-                {
-                    v2f o;
-                    o.position = float4( positions[ vertexId ], 0.0, 1.0 );
-                    o.v_Col =  colors[ vertexId ];
-                    return o;
-                }
-        
-                fragment float4 fragmentMain( v2f in [[stage_in]] )
-                {
-                    float4 out;
-                    out = in.v_Col;
-                    return out;
-                }
-        """.trimIndent()
-
-        shaderSrc =
-            (vertexShader to fragmentShader).toNewMetalShaderStringResult()
-            .result
-            .also(::println)
-
-        val errorPtr = alloc<ObjCObjectVar<NSError?>>()
-        val library = device.newLibraryWithSource(shaderSrc, null, errorPtr.ptr).let {
-            errorPtr.value?.let { error -> error(error.localizedDescription) }
-            it ?: error("fail to create library")
-        }
-
-        val vertexFunction = library.newFunctionWithName("vertexMain")
-        val fragmentFunction = library.newFunctionWithName("fragmentMain")
-        val renderPipelineDescriptor = MTLRenderPipelineDescriptor().apply {
-            setVertexFunction(vertexFunction)
-            setFragmentFunction(fragmentFunction)
-            colorAttachments.objectAtIndexedSubscript(0)
-                .setPixelFormat(MTLPixelFormatBGRA8Unorm_sRGB)
-        }
-
-        renderPipelineStateProtocol =
-            device.newRenderPipelineStateWithDescriptor(renderPipelineDescriptor, errorPtr.ptr).let {
-                errorPtr.value?.let { error -> error(error.localizedDescription) }
-                it ?: error("fail to create render pipeline state")
-            }
-
-    }
-
-    private fun buildBuffers() = memScoped {
-        val numVertices = 3
-
-        val position = allocArrayOf(
-            -0.8f, 0.8f,
-            0.0f, -0.8f,
-            +0.8f, 0.8f
+        ag?.draw(
+            frameBuffer,
+            frameBufferInfo,
+            vertexData,
+            program,
+            drawType = AGDrawType.TRIANGLES,
+            vertexCount = 6, // Draw 2 triangles
+            indices,
+            indexType = AGIndexType.UINT, // Change to short
+            drawOffset = 0, // This value can be != of 0 ?
+            blending = AGBlending.NORMAL, // Pure guess
+            uniforms = AGUniformValues(), // Not yet supported on shader generation
+            //AGUniformValues(
+            //  u_ProjMat=AGUniformValue[Uniform(u_ProjMat)][AGValue[Mat4]([[0.0015625, 0, 0, 0, 0, -0.0027777778, 0, 0, 0, 0, -1, 0, -1, 1, 0, 1]])],
+            //  u_ViewMat=AGUniformValue[Uniform(u_ViewMat)][AGValue[Mat4]([[1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]])],
+            //  u_Tex0=AGUniformValue[Uniform(u_Tex0)][AGValue[Sampler2D]([[-1],AGTexture(size=1,1,pre=true),AGTextureUnitInfo(wrap=CLAMP_TO_EDGE, linear=true, trilinear=true)])], u_Tex1=AGUniformValue[Uniform(u_Tex1)][AGValue[Sampler2D]([[-1]])],
+            //  u_Tex2=AGUniformValue[Uniform(u_Tex2)][AGValue[Sampler2D]([[-1]])], u_Tex3=AGUniformValue[Uniform(u_Tex3)][AGValue[Sampler2D]([[-1]])],
+            //  u_Radius=AGUniformValue[Uniform(u_Radius)][AGValue[Float4]([[6, 6, 6, 6]])],
+            //  u_Size=AGUniformValue[Uniform(u_Size)][AGValue[Float2]([[200, 32]])],
+            //  u_BackgroundColor=AGUniformValue[Uniform(u_BackgroundColor)][AGValue[Float4]([[1, 1, 1, 1]])],
+            //  u_HighlightPos=AGUniformValue[Uniform(u_HighlightPos)][AGValue[Float2]([[0, 0]])],
+            //  u_HighlightRadius=AGUniformValue[Uniform(u_HighlightRadius)][AGValue[Float1]([[0]])],
+            //  u_HighlightColor=AGUniformValue[Uniform(u_HighlightColor)][AGValue[Float4]([[1, 1, 1, 1]])],
+            //  u_BorderSizeHalf=AGUniformValue[Uniform(u_BorderSizeHalf)][AGValue[Float1]([[0.5]])],
+            //  u_BorderColor=AGUniformValue[Uniform(u_BorderColor)][AGValue[Float4]([[0.7411765, 0.7411765, 0.7411765, 1]])],
+            //  u_ShadowColor=AGUniformValue[Uniform(u_ShadowColor)][AGValue[Float4]([[0, 0, 0, 0.29803923]])],
+            //  u_ShadowOffset=AGUniformValue[Uniform(u_ShadowOffset)][AGValue[Float2]([[0, 0]])],
+            //  u_ShadowRadius=AGUniformValue[Uniform(u_ShadowRadius)][AGValue[Float1]([[10]])])
+            stencilRef = AGStencilReference.DEFAULT, // Pure guess
+            stencilOpFunc = AGStencilOpFunc.DEFAULT, // Pure guess
+            colorMask = AGColorMask.DEFAULT,// Pure guess
+            depthAndFrontFace= AGDepthAndFrontFace.DEFAULT,// Pure guess
+            scissor= AGScissor.FULL,// Pure guess
+            cullFace= AGCullFace.NONE,// Pure guess
+            instances = 1// Pure guess
         )
-
-        val colors = allocArrayOf(
-            1f, 0.3f, 0.2f, 0.0f,
-            0.8f, 1f, 0.0f, 0.0f,
-            0.8f, 0.0f, 1f, 0.0f
-        )
-
-        val positionsDataSize = numVertices * sizeOf<FloatVar>() * 2
-        val colorDataSize = numVertices * sizeOf<FloatVar>() * 4
-        println("positionsDataSize $positionsDataSize colorDataSize $colorDataSize")
-
-        vertexPositionsBuffer = device.newBufferWithLength(positionsDataSize.toULong(), MTLResourceStorageModeManaged)
-            ?: error("fail to create vertexPositionsBuffer")
-        vertexColorsBuffer = device.newBufferWithLength(colorDataSize.toULong(), MTLResourceStorageModeManaged)
-            ?: error("fail to create vertexColorsBuffer")
-
-        memmove(vertexPositionsBuffer.contents(), position.reinterpret<CPointed>(), positionsDataSize.toULong())
-        memmove(vertexColorsBuffer.contents(), colors.reinterpret<CPointed>(), colorDataSize.toULong())
-
-        vertexPositionsBuffer.didModifyRange(NSMakeRange(0, vertexPositionsBuffer.length))
-        vertexColorsBuffer.didModifyRange(NSMakeRange(0, vertexColorsBuffer.length))
     }
+
+
 }

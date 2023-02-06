@@ -47,6 +47,8 @@ private fun createPipelineState(
         val renderPipelineDescriptor = MTLRenderPipelineDescriptor().apply {
             setVertexFunction(vertexFunction)
             setFragmentFunction(fragmentFunction)
+            colorAttachments.objectAtIndexedSubscript(0)
+                .setPixelFormat(MTLPixelFormatBGRA8Unorm_sRGB)
         }
 
         val errorPtr = alloc<ObjCObjectVar<NSError?>>()

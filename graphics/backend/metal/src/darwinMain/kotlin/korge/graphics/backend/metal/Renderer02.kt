@@ -8,11 +8,10 @@ import kotlinx.cinterop.*
 import kotlinx.cinterop.nativeHeap.alloc
 import platform.CoreFoundation.*
 import platform.CoreGraphics.*
-import platform.Foundation.NSError
-import platform.Foundation.NSMakeRange
+import platform.Foundation.*
 import platform.ImageIO.*
 import platform.Metal.*
-import platform.MetalKit.MTKView
+import platform.MetalKit.*
 import platform.posix.*
 
 class Renderer02(device: MTLDeviceProtocol) : Renderer(device) {
@@ -25,11 +24,18 @@ class Renderer02(device: MTLDeviceProtocol) : Renderer(device) {
     private lateinit var renderPipelineStateProtocol: MTLRenderPipelineStateProtocol
     private lateinit var texture: MTLTextureProtocol
 
+    private val vertexShader = VertexShader {
+        SET(DefaultShaders.v_Col, DefaultShaders.a_Col)
+        SET(out, vec4(DefaultShaders.a_Pos, 1f.lit, 1f.lit))
+    }
+    private val fragmentShader = FragmentShader {
+        SET(out, DefaultShaders.v_Col)
+    }
     init {
         buildShaders()
         buildBuffers()
-        buildTextures()
-        createSampler()
+        /*buildTextures()
+        createSampler()*/
     }
 
     private fun createSampler() {
@@ -41,6 +47,7 @@ class Renderer02(device: MTLDeviceProtocol) : Renderer(device) {
     }
 
     override fun drawOnView(view: MTKView) {
+
         autoreleasepool {
 
             val commandBuffer = commandQueue.commandBuffer() ?: error("fail to get command buffer")
@@ -51,11 +58,11 @@ class Renderer02(device: MTLDeviceProtocol) : Renderer(device) {
 
             renderCommanderEncoder.apply {
                 setRenderPipelineState(renderPipelineStateProtocol)
-                setFragmentTexture(texture, 0)
+                //setFragmentTexture(texture, 0)
                 setVertexBuffer(vertexColorsBuffer, 0, 0)
-                setVertexBuffer(textureCoordinateBuffer, 0, 1)
-                setVertexBuffer(vertexPositionsBuffer, 0, 2)
-                setFragmentSamplerState(samplerState, 0)
+                //setVertexBuffer(textureCoordinateBuffer, 0, 1)
+                setVertexBuffer(vertexPositionsBuffer, 0, 1)
+                //setFragmentSamplerState(samplerState, 0)
                 drawIndexedPrimitives(MTLPrimitiveTypeTriangle, 6u, MTLIndexTypeUInt32, indexBuffer, 0)
             }
 
@@ -67,15 +74,6 @@ class Renderer02(device: MTLDeviceProtocol) : Renderer(device) {
     }
 
     private fun buildShaders() = memScoped {
-
-        val vertexShader = VertexShader {
-            SET(DefaultShaders.v_Col, DefaultShaders.a_Col)
-            SET(DefaultShaders.v_Tex, DefaultShaders.a_Tex)
-            SET(out, vec4(DefaultShaders.a_Pos, 1f.lit, 1f.lit))
-        }
-        val fragmentShader = FragmentShader {
-            SET(out, texture2D(DefaultShaders.u_Tex, DefaultShaders.v_Tex["xy"])["rgba"] * DefaultShaders.v_Col)
-        }
 
         vertexShader.toNewGlslStringResult()
             .result
@@ -118,7 +116,7 @@ class Renderer02(device: MTLDeviceProtocol) : Renderer(device) {
                 }
         """.trimIndent()
 
-        //shaderSrc =
+        shaderSrc =
         (vertexShader to fragmentShader).toNewMetalShaderStringResult()
             .result
             .also(::println)
@@ -242,6 +240,7 @@ public fun NativePlacement.allocArrayOf(vararg elements: Int): CArrayPointer<Int
 }
 
 
+/*
 fun MTLTextureProtocol.toCGImage(): CGImageRef {
     val rowBytes = width * 4u
     val region = MTLRegionMake2D(0, 0, width, height)
@@ -266,3 +265,11 @@ fun MTLTextureProtocol.toCGImage(): CGImageRef {
 
     return CGBitmapContextCreateImage(context) ?: error("")
 }
+
+fun loadTexture(device: MTLDeviceProtocol, textureName: String): MTLTextureProtocol? {
+    val textureLoader = MTKTextureLoader(device)
+    NSBundle.mainBundle.url
+    val textureURL = Bundle.main.url(forResource: textureName, withExtension: "png")
+
+    return textureLoader.newTexture(URL: textureURL, null)
+}*/
