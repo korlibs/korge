@@ -2,6 +2,7 @@ package com.soywiz.kmem.dyn
 
 import com.sun.jna.FromNativeContext
 import com.sun.jna.Memory
+import com.sun.jna.NativeLong
 import com.sun.jna.NativeMapped
 import com.sun.jna.Pointer
 
@@ -24,6 +25,7 @@ actual class KPointerTT<T : KPointed>(val optr: Pointer?, val ref: T? = null) {
 fun <T : KPointed> KPointer(ptr: Pointer): KPointerTT<T> = KPointerTT<T>(ptr, null)
 val Pointer.kpointer: KPointer get() = KPointer(this)
 actual class KFunctionTT<T : Function<*>>(val func: T) : KPointed()
+//actual typealias NativeLong = com.sun.jna.NativeLong
 
 //actual typealias KPointer = Pointer
 actual abstract class KStructureBase : NativeMapped {

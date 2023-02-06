@@ -1,6 +1,7 @@
 package com.soywiz.kmem.dyn
 
 import kotlinx.cinterop.*
+import platform.posix.*
 
 actual class KArena actual constructor() {
     private val arena = Arena()
@@ -14,6 +15,7 @@ actual val LONG_SIZE: Int = 8
 actual typealias KPointed = CPointed
 actual typealias KPointerTT<T> = CPointer<T>
 actual typealias KFunctionTT<T> = CFunction<T>
+//@kotlinx.cinterop.UnsafeNumber actual typealias NativeLong = size_t
 
 actual abstract class KStructureBase {
     actual abstract val pointer: KPointer?

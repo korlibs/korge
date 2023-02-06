@@ -25,6 +25,7 @@ typealias KPointer = KPointerTT<out KPointed>
 expect abstract class KPointed
 expect class KPointerTT<T : KPointed>
 expect class KFunctionTT<T : Function<*>> : KPointed
+//expect class NativeLong
 
 inline class KPointerT<T>(val pointer: KPointer)
 

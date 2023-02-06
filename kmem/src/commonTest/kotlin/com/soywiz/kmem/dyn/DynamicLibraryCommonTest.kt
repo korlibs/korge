@@ -28,14 +28,14 @@ class DynamicLibraryCommonTest {
             mem.setByte(0, 1)
             mem.setByte(1, 2)
             mem.setByte(2, 3)
-            assertEquals(3, C.strlen.invoke(mem))
+            assertEquals(3, C.strlen(mem))
             assertEquals(1.0, C.cos(0.0), 0.001)
             val ptr = C.malloc(10) ?: error("malloc returned null")
             try {
                 ptr.setByte(0, 1)
                 ptr.setByte(1, 2)
                 ptr.setByte(2, 0)
-                assertEquals(2, C.strlen.invoke(ptr))
+                assertEquals(2, C.strlen(ptr))
             } finally {
                 C.free(ptr)
             }
