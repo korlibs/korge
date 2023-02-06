@@ -4,9 +4,17 @@ import com.sun.jna.*
 
 public actual open class DynamicLibraryBase actual constructor(names: List<String>) : DynamicSymbolResolver {
     val library: NativeLibrary? = run {
+        var ex: Throwable? = null
         for (name in names) {
-            val instance = NativeLibrary.getInstance(name)
-            if (instance != null) return@run instance
+            try {
+                val instance = NativeLibrary.getInstance(name)
+                if (instance != null) return@run instance
+            } catch (e: Throwable) {
+                if (ex == null) ex = e
+            }
+        }
+        if (ex != null) {
+            ex?.printStackTrace()
         }
         null
     }
