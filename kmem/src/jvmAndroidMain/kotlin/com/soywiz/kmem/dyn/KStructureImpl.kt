@@ -2,7 +2,6 @@ package com.soywiz.kmem.dyn
 
 import com.sun.jna.FromNativeContext
 import com.sun.jna.Memory
-import com.sun.jna.NativeLong
 import com.sun.jna.NativeMapped
 import com.sun.jna.Pointer
 
@@ -34,7 +33,7 @@ actual abstract class KStructureBase : NativeMapped {
     override fun toNative(): Any? = this.pointer
     override fun fromNative(nativeValue: Any?, context: FromNativeContext?): Any = this::class.constructors.first().call(nativeValue)
 }
-actual fun KPointerCreate(address: Long): KPointer = KPointer(Pointer(address))
+actual fun KPointer(address: Long): KPointer = KPointer(Pointer(address))
 actual val KPointer.address: Long get() = Pointer.nativeValue(this.ptr)
 
 val Pointer.address: Long get() = Pointer.nativeValue(this)

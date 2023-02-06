@@ -16,7 +16,7 @@ actual class KFunctionTT<T : Function<*>>(val func: T) : KPointed()
 actual abstract class KStructureBase {
     actual abstract val pointer: KPointer?
 }
-actual fun KPointerCreate(address: Long): KPointer = TODO()
+actual fun KPointer(address: Long): KPointer = TODO()
 actual val KPointer.address: Long get() = TODO()
 
 actual fun KPointer.getByte(offset: Int): Byte = TODO()

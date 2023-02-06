@@ -20,7 +20,7 @@ actual typealias KFunctionTT<T> = CFunction<T>
 actual abstract class KStructureBase {
     actual abstract val pointer: KPointer?
 }
-actual fun KPointerCreate(address: Long): KPointer = address.toCPointer<ByteVar>() as KPointer
+actual fun KPointer(address: Long): KPointer = address.toCPointer<ByteVar>() as KPointer
 actual val KPointer.address: Long get() = this.toLong()
 
 private inline fun <T : CPointed> KPointer.offset(offset: Int): CPointer<T> = interpretCPointer<T>(this.rawValue + offset.toLong())!!
