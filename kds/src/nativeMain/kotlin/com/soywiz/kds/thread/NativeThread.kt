@@ -2,10 +2,10 @@ package com.soywiz.kds.thread
 
 import kotlin.native.concurrent.*
 
-class NativeThread(val code: () -> Unit) {
-    var isDaemon: Boolean = false
+actual class NativeThread actual constructor(val code: () -> Unit) {
+    actual var isDaemon: Boolean = false
 
-    fun start() {
+    actual fun start() {
         val worker = Worker.start()
         worker.executeAfter {
             try {
@@ -16,7 +16,7 @@ class NativeThread(val code: () -> Unit) {
         }
     }
 
-    fun interrupt() {
+    actual fun interrupt() {
         // No operation
     }
 }
