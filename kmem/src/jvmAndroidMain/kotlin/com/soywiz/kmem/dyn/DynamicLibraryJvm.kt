@@ -18,11 +18,20 @@ public open class DynamicFun<T : Function<*>>(
     val clazz: KClass<T>,
     val funcType: KType
 ) : DynamicFunLibraryNotNull<T>(library, name) {
+    fun Type.getFinalClass(): Class<*> {
+        return when (this) {
+            is Class<*> -> this
+            is ParameterizedType  -> this.rawType.getFinalClass()
+            else -> TODO("$this")
+        }
+    }
+
     override fun getValue(obj: Any?, property: KProperty<*>): KPointerTT<KFunctionTT<T>> {
         val rname = name ?: property.name
         val symbol: KPointer = library.getSymbol(rname) ?: error("Can't find symbol '$rname'")
         val func = com.sun.jna.Function.getFunction(symbol.ptr)
-        val retType = funcType.arguments.last().type!!.javaType as Class<*>
+        val jtype = funcType.arguments.last().type!!.javaType
+        val retType: Class<*> = jtype.getFinalClass()
         val classLoader = this::class.java.classLoader
         val interfaces = arrayOf(clazz.java)
 
@@ -33,6 +42,7 @@ public open class DynamicFun<T : Function<*>>(
             retType.isAssignableFrom(Float::class.java) -> Proxy.newProxyInstance(classLoader, interfaces) { _, _, args -> func.invokeFloat(convertArgs(args)) }
             retType.isAssignableFrom(Int::class.java) -> Proxy.newProxyInstance(classLoader, interfaces) { _, _, args -> func.invokeInt(convertArgs(args)) }
             retType.isAssignableFrom(Pointer::class.java) -> Proxy.newProxyInstance(classLoader, interfaces) { _, _, args -> func.invokePointer(convertArgs(args)) }
+            retType.isAssignableFrom(KPointerTT::class.java) -> Proxy.newProxyInstance(classLoader, interfaces) { _, _, args -> KPointerTT<KPointed>(func.invokePointer(convertArgs(args))) }
             else -> Proxy.newProxyInstance(classLoader, interfaces) { _, _, args -> func.invokeDouble(args) }
         } as T))
     }
