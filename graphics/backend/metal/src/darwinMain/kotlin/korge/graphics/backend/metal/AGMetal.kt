@@ -1,9 +1,11 @@
 package korge.graphics.backend.metal
 
+import com.soywiz.kgl.*
 import com.soywiz.kmem.*
 import com.soywiz.korag.*
-import com.soywiz.korag.shader.Program
-import korge.graphics.backend.metal.shader.MetalShaderCompiler
+import com.soywiz.korag.shader.*
+import com.soywiz.korio.lang.*
+import korge.graphics.backend.metal.shader.*
 import kotlinx.cinterop.*
 import platform.Foundation.*
 import platform.Metal.*
@@ -39,17 +41,20 @@ class AGMetal(private val view: MTKView) : AG() {
         instances: Int
     ) {
         autoreleasepool { // TODO: Check if that necessary
+
             val currentProgram = getProgram(
                 program
             )
 
             val commandBuffer = commandQueue.commandBuffer() ?: error("fail to get command buffer")
-            val renderPassDescriptor = view.currentRenderPassDescriptor ?: error("fail to get current render pass descriptor")
+            val renderPassDescriptor =
+                view.currentRenderPassDescriptor ?: error("fail to get current render pass descriptor")
 
             val renderCommanderEncoder = commandBuffer.renderCommandEncoderWithDescriptor(renderPassDescriptor)
                 ?: error("fail to get render commander encoder")
 
             renderCommanderEncoder.apply {
+                setViewport(frameBufferInfo.toViewPort())
                 setRenderPipelineState(currentProgram.renderPipelineState)
 
                 // TODO: support texture
@@ -61,7 +66,7 @@ class AGMetal(private val view: MTKView) : AG() {
                 }
 
                 if (indices != null) {
-                    drawIndexedPrimitives(MTLPrimitiveTypeTriangle, 6u, MTLIndexTypeUInt32, indices.toMetal, 0)
+                    drawIndexedPrimitives(drawType.toMetal(), vertexCount.toULong(), indexType.toMetal(), indices.toMetal, 0)
                 } else {
                     TODO("Not yet supported, rendering without vertex indexes")
                 }
@@ -70,7 +75,7 @@ class AGMetal(private val view: MTKView) : AG() {
                 endEncoding()
             }
 
-            val drawable = view.currentDrawable ?:  error("fail to get current drawable")
+            val drawable = view.currentDrawable ?: error("fail to get current drawable")
             commandBuffer.presentDrawable(drawable)
             commandBuffer.commit()
         }
@@ -83,7 +88,7 @@ class AGMetal(private val view: MTKView) : AG() {
                 val memory = mem ?: error("cannot create buffer from null memory")
                 val size = memory.sizeInBytes.toULong()
                 val buffer = device.newBufferWithLength(size, MTLResourceStorageModeManaged)
-                        ?: error("fail to create metal buffer")
+                    ?: error("fail to create metal buffer")
 
                 memory.data.usePinned {
                     memmove(buffer.contents(), it.startAddressOf, size)
@@ -91,11 +96,13 @@ class AGMetal(private val view: MTKView) : AG() {
                 }
 
                 buffer
-        }
+            }
 
     private fun getProgram(program: Program) = programs
         .getOrPut(program) {
             MetalShaderCompiler.compile(device, program)
         }
 }
+
+
 

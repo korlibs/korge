@@ -2,7 +2,6 @@ package korge.graphics.backend.metal
 
 import com.soywiz.korag.*
 import com.soywiz.korag.shader.*
-import kotlinx.cinterop.*
 import platform.Metal.*
 import platform.MetalKit.*
 
@@ -41,15 +40,15 @@ class Renderer01(device: MTLDeviceProtocol) : Renderer(device) {
         )
     )
 
-    private val indices = AGBuffer().upload(intArrayOf(0, 1, 2, 2, 3, 0))
+    private val indices = AGBuffer().upload(shortArrayOf(0, 1, 2, 2, 3, 0))
 
     override fun drawOnView(view: MTKView) {
         if (ag == null) {
             ag = AGMetal(view)
         }
 
-        val width = view.drawableSize.useContents { width }.toInt()
-        val height = view.drawableSize.useContents { height }.toInt()
+        val width = 1024//view.drawableSize.useContents { width }.toInt()
+        val height = 768//view.drawableSize.useContents { height }.toInt()
         val frameBuffer = AGFrameBufferBase(false)
         val frameBufferInfo = AGFrameBufferInfo(0)
             .withSize(width, height)
@@ -66,7 +65,7 @@ class Renderer01(device: MTLDeviceProtocol) : Renderer(device) {
             drawType = AGDrawType.TRIANGLES,
             vertexCount = 6, // Draw 2 triangles
             indices,
-            indexType = AGIndexType.UINT, // Change to short
+            indexType = AGIndexType.USHORT,
             drawOffset = 0, // This value can be != of 0 ?
             blending = AGBlending.NORMAL, // Pure guess
             uniforms = AGUniformValues(), // Not yet supported on shader generation
