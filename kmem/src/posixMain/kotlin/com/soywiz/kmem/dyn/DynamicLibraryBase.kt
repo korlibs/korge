@@ -23,7 +23,8 @@ public actual open class DynamicLibraryBase actual constructor(val names: List<S
             val handle = dlopen(name, RTLD_LAZY)
             //println("name: $name, handle: $handle")
             handle
-        } ?: error("Can't load $names")
+        }
+        //?: error("Can't load $names")
     init {
         if (DEBUG_DYNAMIC_LIB) println("Loaded '$names'...$handle")
         if (handle == null) println("Couldn't load '$names' library")
