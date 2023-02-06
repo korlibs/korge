@@ -5,7 +5,6 @@ import com.soywiz.korag.shader.*
 import com.soywiz.korag.shader.gl.*
 import korge.graphics.backend.metal.shader.*
 import kotlinx.cinterop.*
-import kotlinx.cinterop.nativeHeap.alloc
 import platform.CoreFoundation.*
 import platform.CoreGraphics.*
 import platform.Foundation.*
@@ -34,8 +33,8 @@ class Renderer02(device: MTLDeviceProtocol) : Renderer(device) {
     init {
         buildShaders()
         buildBuffers()
-        /*buildTextures()
-        createSampler()*/
+        buildTextures()
+        createSampler()
     }
 
     private fun createSampler() {
@@ -58,11 +57,11 @@ class Renderer02(device: MTLDeviceProtocol) : Renderer(device) {
 
             renderCommanderEncoder.apply {
                 setRenderPipelineState(renderPipelineStateProtocol)
-                //setFragmentTexture(texture, 0)
+                setFragmentTexture(texture, 0)
                 setVertexBuffer(vertexColorsBuffer, 0, 0)
-                //setVertexBuffer(textureCoordinateBuffer, 0, 1)
-                setVertexBuffer(vertexPositionsBuffer, 0, 1)
-                //setFragmentSamplerState(samplerState, 0)
+                setVertexBuffer(textureCoordinateBuffer, 0, 1)
+                setVertexBuffer(vertexPositionsBuffer, 0, 2)
+                setFragmentSamplerState(samplerState, 0)
                 drawIndexedPrimitives(MTLPrimitiveTypeTriangle, 6u, MTLIndexTypeUInt32, indexBuffer, 0)
             }
 
@@ -107,16 +106,16 @@ class Renderer02(device: MTLDeviceProtocol) : Renderer(device) {
                 }
         
                 fragment float4 fragmentMain( v2f in [[stage_in]], 
-                    texture2d<float> tex [[texture(0)]], 
+                    texture2d<float> texture [[texture(0)]], 
                     sampler sampler [[sampler(0)]])
                 {
                     float4 out;
-                    out = in.v_Col - tex.sample(sampler, in.v_Tex);
+                    out = in.v_Col * texture.sample(sampler, in.v_Tex);
                     return out;
                 }
         """.trimIndent()
 
-        shaderSrc =
+        //shaderSrc =
         (vertexShader to fragmentShader).toNewMetalShaderStringResult()
             .result
             .also(::println)
@@ -148,9 +147,9 @@ class Renderer02(device: MTLDeviceProtocol) : Renderer(device) {
 
         vertexColorsBuffer = createBufferUsing(
             1f, 1f, 1f, 0.0f, // White
-            1f, 0f, 0f, 0.0f, // Red
-            0f, 1f, 0.0f, 0.0f, // Blue
-            0f, 0.0f, 1f, 0.0f, // Green
+            1f, 1f, 1f, 0.0f, // White
+            1f, 1f, 1f, 0.0f, // White
+            1f, 1f, 0.2f, 0.0f, // White
         )
 
         vertexPositionsBuffer = createBufferUsing(
@@ -198,33 +197,33 @@ class Renderer02(device: MTLDeviceProtocol) : Renderer(device) {
     private fun buildTextures() = memScoped {
         println("buildTextures")
 
-        val tw = 128uL
-        val th = 128uL
+        val width = 128uL
+        val height = 128uL
 
         val mtlTextureDescriptor = MTLTextureDescriptor()
-        mtlTextureDescriptor.width = tw
-        mtlTextureDescriptor.height = th
-        mtlTextureDescriptor.pixelFormat = MTLPixelFormatA8Unorm
+        mtlTextureDescriptor.width = width
+        mtlTextureDescriptor.height = height
+        mtlTextureDescriptor.pixelFormat = MTLPixelFormatRGBA8Unorm
         mtlTextureDescriptor.textureType = MTLTextureType2D
         mtlTextureDescriptor.storageMode = MTLStorageModeManaged
-        mtlTextureDescriptor.usage = MTLResourceUsageSample or MTLResourceUsageRead
+        mtlTextureDescriptor.usage = MTLResourceUsageWrite or MTLResourceUsageRead
 
         texture = device.newTextureWithDescriptor(mtlTextureDescriptor) ?: error("fail to create texture")
 
-        val pTextureData = allocArray<UIntVar>((tw * th * 4u).toInt())
-        for (y in (0 until th.toInt())) {
-            for (x in (0 until tw.toInt())) {
+        val pTextureData = allocArray<UByteVar>((width * height * 4u).toInt())
+        for (y in (0 until height.toInt())) {
+            for (x in (0 until width.toInt())) {
 
-                val i = y * tw.toInt() + x
+                val i = y * width.toInt() + x
 
-                pTextureData[i * 4 + 0] = 255u
+                pTextureData[i * 4 + 0] = (255u - x.toUByte()).toUByte()
                 pTextureData[i * 4 + 1] = 255u
-                pTextureData[i * 4 + 2] = 255u
-                pTextureData[i * 4 + 3] = 255u
+                pTextureData[i * 4 + 2] = (255u - y.toUByte()).toUByte()
+                pTextureData[i * 4 + 3] = 100u
             }
         }
 
-        texture.replaceRegion(MTLRegionMake2D(0uL, 0uL, tw, th), 0, pTextureData, tw * 4uL)
+        texture.replaceRegion(MTLRegionMake2D(0uL, 0uL, width, height), 0, pTextureData, width * 4uL)
 
     }
 }
