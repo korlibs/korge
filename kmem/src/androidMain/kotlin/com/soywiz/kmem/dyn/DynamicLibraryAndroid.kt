@@ -19,7 +19,7 @@ public open class DynamicFun<T : Function<*>>(
     override fun getValue(obj: Any?, property: KProperty<*>): KPointerTT<KFunctionTT<T>> {
         // @TODO: We can call the global scope maybe?
         //return { } as T
-        TODO()
+        return KPointerTT(byteArrayOf())
     }
 }
 

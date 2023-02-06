@@ -20,10 +20,11 @@ class DynamicLibraryCommonTest {
     //    println(type.arguments)
     //}
 
+    val shouldRun: Boolean get() = !Platform.isJs && !Platform.isAndroid
+
     @Test
     fun testLibC() {
-        if (Platform.isJs) return
-        if (Platform.isAndroid) return
+        if (!shouldRun) return
 
         kmemScoped {
             val mem = allocBytes(32)
@@ -46,6 +47,8 @@ class DynamicLibraryCommonTest {
 
     @Test
     fun testLibM() {
+        if (!shouldRun) return
+
         assertEquals(1.0, M.cos(0.0), 0.001)
     }
 }
