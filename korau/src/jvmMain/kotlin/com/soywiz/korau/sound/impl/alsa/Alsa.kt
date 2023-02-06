@@ -1,31 +1,87 @@
 package com.soywiz.korau.sound.impl.alsa
 
+import com.soywiz.kds.lock.*
 import com.soywiz.klock.*
+import com.soywiz.kmem.*
 import com.soywiz.korau.sound.*
-import com.sun.jna.Library
+import com.soywiz.korio.async.*
+import com.soywiz.korio.file.std.*
 import com.sun.jna.Memory
 import com.sun.jna.Native
 import com.sun.jna.Pointer
-import java.util.Random
+import kotlinx.coroutines.*
+import kotlin.coroutines.*
 
-object AlsaTest {
-    @JvmStatic fun main(args: Array<String>) {
-        val cmpPtr = Memory(1024L).also { it.clear() }
-        val params = Memory(1024L).also { it.clear() }
-        val temp = Memory(1024L).also { it.clear() }
+object ALSAExample {
+    @JvmStatic
+    fun main(args: Array<String>) {
+        runBlocking {
+            val sp = ALSANativeSoundProvider()
+            //val sp = JnaOpenALNativeSoundProvider()
+            val job1 = launch(coroutineContext) {
+                //sp.playAndWait(AudioTone.generate(10.seconds, 400.0).toStream())
+                sp.playAndWait(resourcesVfs["Snowland.mp3"].readMusic().toStream())
+            }
+            val job2 = launch(coroutineContext) {
+                //sp.playAndWait(AudioTone.generate(10.seconds, 200.0).toStream())
+            }
+            println("Waiting...")
+            job1.join()
+            job2.join()
+            println("Done")
+        }
+    }
+}
 
-        val channels = 2
-        val rate = 44100
+class ALSANativeSoundProvider : NativeSoundProvider() {
+    override fun createPlatformAudioOutput(coroutineContext: CoroutineContext, freq: Int): PlatformAudioOutput {
+        return ALSAPlatformAudioOutput(this, coroutineContext, freq)
+    }
+}
+
+class ALSAPlatformAudioOutput(
+    val soundProvider: ALSANativeSoundProvider,
+    coroutineContext: CoroutineContext,
+    frequency: Int,
+) : PlatformAudioOutput(coroutineContext, frequency) {
+    val channels = 2
+    val cmpPtr = Memory(1024L).also { it.clear() }
+    val params = Memory(1024L).also { it.clear() }
+    val temp = Memory(1024L).also { it.clear() }
+    var pcm: Pointer? = Pointer.NULL
+    private val lock = Lock()
+    val sdeque = AudioSamplesDeque(channels)
+    var running = true
+    var thread: Thread? = null
+
+    init {
+        start()
+    }
+
+    override suspend fun add(samples: AudioSamples, offset: Int, size: Int) {
+        if (!ASound2.initialized) return super.add(samples, offset, size)
+
+        while (running && lock { sdeque.availableRead > 4 * 1024 }) {
+            delay(10.milliseconds)
+        }
+        lock { sdeque.write(samples, offset, size) }
+    }
+
+    override fun start() {
+        sdeque.clear()
+        running = true
+
+        if (!ASound2.initialized) return
 
         //cmpPtr.clear()
         //cmpPtr.setLong(0L, 0L)
-        println("test")
+        //println("test")
         ASound2.snd_pcm_open(cmpPtr, "default", ASound2.SND_PCM_STREAM_PLAYBACK, 0).also {
             if (it != 0) error("Can't initialize ALSA")
         }
-        val pcm = cmpPtr.getPointer(0L)
-        println("pcm=$pcm")
-        println(ASound2.snd_pcm_hw_params_any(pcm, params))
+        pcm = cmpPtr.getPointer(0L)
+        //println("pcm=$pcm")
+        ASound2.snd_pcm_hw_params_any(pcm, params)
         ASound2.snd_pcm_hw_params_set_access(pcm, params, ASound2.SND_PCM_ACCESS_RW_INTERLEAVED).also {
             if (it != 0) error("Error calling snd_pcm_hw_params_set_access=$it")
         }
@@ -35,15 +91,15 @@ object AlsaTest {
         ASound2.snd_pcm_hw_params_set_channels(pcm, params, channels).also {
             if (it != 0) error("Error calling snd_pcm_hw_params_set_channels=$it")
         }
-        ASound2.snd_pcm_hw_params_set_rate(pcm, params, rate, +1).also {
+        ASound2.snd_pcm_hw_params_set_rate(pcm, params, frequency, +1).also {
             if (it != 0) error("Error calling snd_pcm_hw_params_set_rate=$it")
         }
         ASound2.snd_pcm_hw_params(pcm, params).also {
             if (it != 0) error("Error calling snd_pcm_hw_params=$it")
         }
 
-        println(ASound2.snd_pcm_name(pcm))
-        println(ASound2.snd_pcm_state_name(ASound2.snd_pcm_state(pcm)))
+        //println(ASound2.snd_pcm_name(pcm))
+        //println(ASound2.snd_pcm_state_name(ASound2.snd_pcm_state(pcm)))
         ASound2.snd_pcm_hw_params_get_channels(params, temp).also {
             if (it != 0) error("Error calling snd_pcm_hw_params_get_channels=$it")
         }
@@ -52,11 +108,65 @@ object AlsaTest {
         val crate = temp.getInt(0L)
         ASound2.snd_pcm_hw_params_get_period_size(params, temp, null).also { if (it != 0) error("Error calling snd_pcm_hw_params_get_period_size=$it") }
         val frames = temp.getInt(0L)
-        println("cchannels: $cchannels, rate=$crate, frames=$frames")
+        //println("cchannels: $cchannels, rate=$crate, frames=$frames")
         val buff = Memory((frames * channels * 2).toLong()).also { it.clear() }
         ASound2.snd_pcm_hw_params_get_period_time(params, temp, null).also { if (it != 0) error("Error calling snd_pcm_hw_params_get_period_size=$it") }
         //val random = Random(0L)
+        thread = Thread {
+            val samples = AudioSamplesInterleaved(channels, frames)
+            try {
+                mainLoop@ while (running) {
+                    while (lock { sdeque.availableRead < frames }) {
+                        if (!running) break@mainLoop
+                        Thread.sleep(1L)
+                    }
+                    val readCount = lock { sdeque.read(samples, 0, frames) }
+                    //println("readCount=$readCount")
+                    val panning = this.panning.toFloat()
+                    //val panning = -1f
+                    //val panning = +0f
+                    //val panning = +1f
+                    val volume = this.volume.toFloat().clamp01()
+                    for (ch in 0 until channels) {
+                        val pan = (if (ch == 0) -panning else +panning) + 1f
+                        val npan = pan.clamp01()
+                        val rscale: Float = npan * volume
+                        //println("panning=$panning, volume=$volume, pan=$pan, npan=$npan, rscale=$rscale")
+                        for (n in 0 until readCount) {
+                            buff.setShort(
+                                ((n * channels + ch) * 2).toLong(),
+                                (samples[ch, n] * rscale).toInt().toShort()
+                            )
+                        }
+                    }
+                    val result = ASound2.snd_pcm_writei(pcm, buff, frames)
+                    //println("result=$result")
+                    if (result == -ASound2.EPIPE) {
+                        ASound2.snd_pcm_prepare(pcm)
+                    }
+                }
+            } catch (e: InterruptedException) {
+                // Done
+            }
+        }.also {
+            it.isDaemon = true
+            it.start()
+        }
+    }
 
+    override fun stop() {
+        running = false
+        thread?.interrupt()
+        if (!ASound2.initialized) return
+
+        ASound2.snd_pcm_drain(pcm)
+        ASound2.snd_pcm_close(pcm)
+    }
+}
+
+object AlsaTest {
+    @JvmStatic fun main(args: Array<String>) {
+        /*
         val data = AudioTone.generate(1.seconds, 400.0)
 
         var nn = 0
@@ -73,76 +183,65 @@ object AlsaTest {
                 ASound2.snd_pcm_prepare(pcm)
             }
         }
+        */
 
-        ASound2.snd_pcm_drain(pcm)
-        ASound2.snd_pcm_close(pcm)
     }
 }
 
 object ASound2 {
-    @JvmStatic external fun snd_pcm_open(pcmp: Pointer, name: String, stream: Int, mode: Int): Int
-    @JvmStatic external fun snd_pcm_hw_params_any(pcmp: Pointer, params: Pointer): Int
-    @JvmStatic external fun snd_pcm_hw_params_set_access(pcmp: Pointer, params: Pointer, access: Int): Int
-    @JvmStatic external fun snd_pcm_hw_params_set_format(pcmp: Pointer, params: Pointer, format: Int): Int
-    @JvmStatic external fun snd_pcm_hw_params_set_channels(pcmp: Pointer, params: Pointer, channels: Int): Int
-    @JvmStatic external fun snd_pcm_hw_params_set_rate(pcmp: Pointer, params: Pointer, rate: Int, dir: Int): Int
-    @JvmStatic external fun snd_pcm_hw_params(pcmp: Pointer, params: Pointer): Int
-    @JvmStatic external fun snd_pcm_name(pcmp: Pointer): String
-    @JvmStatic external fun snd_pcm_state(pcm: Pointer): Int
+    var initialized = false
+
+    @JvmStatic external fun snd_pcm_open(pcmPtr: Pointer?, name: String, stream: Int, mode: Int): Int
+    @JvmStatic external fun snd_pcm_hw_params_any(pcm: Pointer?, params: Pointer): Int
+    @JvmStatic external fun snd_pcm_hw_params_set_access(pcm: Pointer?, params: Pointer, access: Int): Int
+    @JvmStatic external fun snd_pcm_hw_params_set_format(pcm: Pointer?, params: Pointer, format: Int): Int
+    @JvmStatic external fun snd_pcm_hw_params_set_channels(pcm: Pointer?, params: Pointer, channels: Int): Int
+    @JvmStatic external fun snd_pcm_hw_params_set_rate(pcm: Pointer?, params: Pointer, rate: Int, dir: Int): Int
+    @JvmStatic external fun snd_pcm_hw_params(pcm: Pointer?, params: Pointer): Int
+    @JvmStatic external fun snd_pcm_name(pcm: Pointer?): String
+    @JvmStatic external fun snd_pcm_state(pcm: Pointer?): Int
     @JvmStatic external fun snd_pcm_state_name(state: Int): String
     @JvmStatic external fun snd_pcm_hw_params_get_channels(params: Pointer, out: Pointer): Int
     @JvmStatic external fun snd_pcm_hw_params_get_rate(params: Pointer?, value: Pointer?, dir: Pointer?): Int
     @JvmStatic external fun snd_pcm_hw_params_get_period_size(params: Pointer?, value: Pointer?, dir: Pointer?): Int
     @JvmStatic external fun snd_pcm_hw_params_get_period_time(params: Pointer?, value: Pointer?, dir: Pointer?): Int
-    @JvmStatic external fun snd_pcm_writei(pcm: Pointer, buffer: Pointer, size: Int): Int
-    @JvmStatic external fun snd_pcm_prepare(pcm: Pointer): Int
-    @JvmStatic external fun snd_pcm_drain(pcm: Pointer): Int
-    @JvmStatic external fun snd_pcm_close(pcm: Pointer): Int
+    @JvmStatic external fun snd_pcm_writei(pcm: Pointer?, buffer: Pointer, size: Int): Int
+    @JvmStatic external fun snd_pcm_prepare(pcm: Pointer?): Int
+    @JvmStatic external fun snd_pcm_drain(pcm: Pointer?): Int
+    @JvmStatic external fun snd_pcm_close(pcm: Pointer?): Int
 
-    const val EPIPE = 32	/* Broken pipe */
-    const val EBADFD = 77	/* File descriptor in bad state */
-    const val ESTRPIPE = 86	/* Streams pipe error */
-
+    const val EPIPE = 32	// Broken pipe
+    const val EBADFD = 77	// File descriptor in bad state
+    const val ESTRPIPE = 86	// Streams pipe error
 
     const val SND_PCM_STREAM_PLAYBACK = 0
     const val SND_PCM_STREAM_CAPTURE = 1
 
-
-    /** mmap access with simple interleaved channels */
-    const val SND_PCM_ACCESS_MMAP_INTERLEAVED = 0
-    /** mmap access with simple non interleaved channels */
-    const val SND_PCM_ACCESS_MMAP_NONINTERLEAVED = 1
-    /** mmap access with complex placement */
-    const val SND_PCM_ACCESS_MMAP_COMPLEX = 2
-    /** snd_pcm_readi/snd_pcm_writei access */
-    const val SND_PCM_ACCESS_RW_INTERLEAVED = 3
-    /** snd_pcm_readn/snd_pcm_writen access */
-    const val SND_PCM_ACCESS_RW_NONINTERLEAVED = 4
+    const val SND_PCM_ACCESS_MMAP_INTERLEAVED = 0 // mmap access with simple interleaved channels
+    const val SND_PCM_ACCESS_MMAP_NONINTERLEAVED = 1 // mmap access with simple non interleaved channels
+    const val SND_PCM_ACCESS_MMAP_COMPLEX = 2 // mmap access with complex placement
+    const val SND_PCM_ACCESS_RW_INTERLEAVED = 3 // snd_pcm_readi/snd_pcm_writei access
+    const val SND_PCM_ACCESS_RW_NONINTERLEAVED = 4 // /snd_pcm_writen access
 
     const val SND_PCM_FORMAT_S16_LE = 2
 
-    /** Open */
-    const val SND_PCM_STATE_OPEN = 0
-    /** Setup installed */
-    const val SND_PCM_STATE_SETUP = 1
-    /** Ready to start */
-    const val SND_PCM_STATE_PREPARED = 2
-    /** Running */
-    const val SND_PCM_STATE_RUNNING = 3
-    /** Stopped: underrun (playback) or overrun (capture) detected */
-    const val SND_PCM_STATE_XRUN = 4
-    /** Draining: running (playback) or stopped (capture) */
-    const val SND_PCM_STATE_DRAINING = 5
-    /** Paused */
-    const val SND_PCM_STATE_PAUSED = 6
-    /** Hardware is suspended */
-    const val SND_PCM_STATE_SUSPENDED = 7
-    /** Hardware is disconnected */
-    const val SND_PCM_STATE_DISCONNECTED = 8
-
+    const val SND_PCM_STATE_OPEN = 0 // Open
+    const val SND_PCM_STATE_SETUP = 1 // Setup installed
+    const val SND_PCM_STATE_PREPARED = 2 // Ready to start
+    const val SND_PCM_STATE_RUNNING = 3 // Running
+    const val SND_PCM_STATE_XRUN = 4 // Stopped: underrun (playback) or overrun (capture) detected
+    const val SND_PCM_STATE_DRAINING = 5 // Draining: running (playback) or stopped (capture)
+    const val SND_PCM_STATE_PAUSED = 6 // Paused
+    const val SND_PCM_STATE_SUSPENDED = 7 // Hardware is suspended
+    const val SND_PCM_STATE_DISCONNECTED = 8 // Hardware is disconnected
 
     init {
-        Native.register("libasound.so.2")
+        try {
+            Native.register("libasound.so.2")
+            initialized = true
+        } catch (e: Throwable) {
+            e.printStackTrace()
+        }
     }
 }
 
