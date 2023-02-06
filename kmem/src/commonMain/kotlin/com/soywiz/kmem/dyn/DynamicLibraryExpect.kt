@@ -2,7 +2,7 @@ package com.soywiz.kmem.dyn
 
 //expect class FunctionRef<T : Function<*>>
 
-expect inline fun <reified T : Function<*>> DynamicLibrary.sfunc(name: String? = null): DynamicFunLibraryNotNull<T>
+expect inline fun <reified T : Function<*>> DynamicLibrary.func(name: String? = null): DynamicFunLibraryNotNull<T>
 //expect inline fun <reified T : Function<*>> DynamicLibrary.sfuncNull(name: String? = null): DynamicFunLibraryNull<T>
 
 

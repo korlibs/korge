@@ -4,10 +4,10 @@ import kotlinx.cinterop.*
 import kotlin.native.internal.NativePtr
 import kotlin.reflect.*
 
-public actual inline fun <reified T : Function<*>> DynamicLibrary.sfunc(name: String?): DynamicFunLibraryNotNull<T> = DynamicFun<T>(this, name)
+public actual inline fun <reified T : Function<*>> DynamicLibrary.func(name: String?): DynamicFunLibraryNotNull<T> = DynamicFun<T>(this, name)
 //public actual inline fun <reified T : Function<*>> DynamicLibrary.sfuncNull(name: String?): DynamicFunLibraryNull<T> = DynamicFunNull<T>(this, name)
 
-public inline fun <reified T : Function<*>> DynamicLibrary.func(name: String? = null): DynamicFun<T> = DynamicFun<T>(this, name)
+//public inline fun <reified T : Function<*>> DynamicLibrary.func(name: String? = null): DynamicFun<T> = DynamicFun<T>(this, name)
 public inline fun <reified T : Function<*>> DynamicLibrary.funcNull(name: String? = null): DynamicFunNull<T> = DynamicFunNull<T>(this, name)
 
 public open class DynamicFun<T : Function<*>>(library: DynamicSymbolResolver, name: String? = null) : DynamicFunLibraryNotNull<T>(library, name) {

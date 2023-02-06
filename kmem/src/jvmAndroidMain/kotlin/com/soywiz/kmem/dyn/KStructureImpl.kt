@@ -22,6 +22,7 @@ actual class KPointerTT<T : KPointed>(val optr: Pointer?, val ref: T? = null) {
     val ptr: Pointer get() = optr!!
 }
 fun <T : KPointed> KPointer(ptr: Pointer): KPointerTT<T> = KPointerTT<T>(ptr, null)
+val Pointer.kpointer: KPointer get() = KPointer(this)
 actual class KFunctionTT<T : Function<*>>(val func: T) : KPointed()
 
 //actual typealias KPointer = Pointer
@@ -33,6 +34,8 @@ actual abstract class KStructureBase : NativeMapped {
 }
 actual fun KPointerCreate(address: Long): KPointer = KPointer(Pointer(address))
 actual val KPointer.address: Long get() = Pointer.nativeValue(this.ptr)
+
+val Pointer.address: Long get() = Pointer.nativeValue(this)
 
 actual fun KPointer.getByte(offset: Int): Byte = this.ptr.getByte(offset.toLong())
 actual fun KPointer.setByte(offset: Int, value: Byte): Unit = this.ptr.setByte(offset.toLong(), value)

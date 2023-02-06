@@ -2,14 +2,13 @@ package com.soywiz.kmem.dyn
 
 import com.soywiz.kmem.*
 import kotlinx.cinterop.*
-import kotlin.reflect.*
 import kotlin.test.*
 
 class DynamicLibraryCommonTest {
     //object C : DynamicLibrary(Platform.C_LIBRARY_NAME) {
     object C : DynamicLibrary("libSystem.dylib", "libc", "MSVCRT") {
-        //val cos by func<(value: Double) -> Double>()
-        val strlen by sfunc<(value: KPointer?) -> Int>()
+        val cos by func<(value: Double) -> Double>()
+        val strlen by func<(value: KPointer?) -> Int>()
     }
 
     //inline fun <reified T> typeOfTest() {
@@ -27,7 +26,8 @@ class DynamicLibraryCommonTest {
             mem.setByte(0, 1)
             mem.setByte(1, 2)
             mem.setByte(2, 3)
-            println(C.strlen.invoke(mem))
+            assertEquals(3, C.strlen.invoke(mem))
+            assertEquals(1.0, C.cos(0.0), 0.001)
         }
     }
 }
