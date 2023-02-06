@@ -11,10 +11,6 @@ import platform.MetalKit.*
 import platform.QuartzCore.*
 import platform.posix.*
 
-private const val maxSupportedIndex = 6uL
-private val indexTypeSize = sizeOf<IntVar>().toULong()
-private val vertexBufferMaxSize = 1024uL * 1024uL
-
 class AGMetal(private val view: MTKView) : AG() {
 
     private val device = MTLCreateSystemDefaultDevice() ?: error("fail to create metal device")
