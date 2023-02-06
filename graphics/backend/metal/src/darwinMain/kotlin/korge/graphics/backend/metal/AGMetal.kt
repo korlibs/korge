@@ -90,11 +90,6 @@ class AGMetal(private val view: MTKView) : AG() {
                     buffer.didModifyRange(NSMakeRange(0, buffer.length))
                 }
 
-                println("buffer created with size $size")
-                val values = buffer.contents()!!.reinterpret<FloatVar>()
-                (0 until (size / 4u).toInt()).forEach {
-                    println(values[it])
-                }
                 buffer
         }
 
