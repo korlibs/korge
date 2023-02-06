@@ -1,13 +1,13 @@
-package com.soywiz.korau.sound
+package com.soywiz.korau.sound.backends
 
 import com.soywiz.kds.lock.*
 import com.soywiz.kds.thread.*
 import com.soywiz.klock.*
 import com.soywiz.kmem.*
 import com.soywiz.kmem.dyn.*
+import com.soywiz.korau.sound.*
 import com.soywiz.korio.async.*
 import kotlinx.cinterop.*
-import kotlinx.coroutines.*
 import kotlin.coroutines.*
 
 val alsaNativeSoundProvider: ALSANativeSoundProvider? by lazy {
