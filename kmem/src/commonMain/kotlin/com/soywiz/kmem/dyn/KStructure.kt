@@ -19,7 +19,12 @@ inline fun <T> kmemScoped(block: KArena.() -> T): T {
 
 expect val POINTER_SIZE: Int
 expect val LONG_SIZE: Int
-expect class KPointer
+
+typealias KPointer = KPointerTT<out KPointed>
+//expect class KPointer
+expect abstract class KPointed
+expect class KPointerTT<T : KPointed>
+expect class KFunctionTT<T : Function<*>> : KPointed
 
 inline class KPointerT<T>(val pointer: KPointer)
 

@@ -9,6 +9,7 @@ import com.soywiz.korau.format.AudioDecodingProps
 import com.soywiz.korau.sound.*
 import com.soywiz.korio.async.delay
 import com.soywiz.korio.async.launchImmediately
+import com.soywiz.korio.lang.*
 import kotlinx.cinterop.*
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
@@ -316,7 +317,18 @@ typealias CFloatArray = CArrayPointer<FloatVar>?
 typealias CDoubleArray = CArrayPointer<DoubleVar>?
 
 @Suppress("unused")
-internal object AL : DynamicLibrary("libopenal.so.1") {
+internal object AL : DynamicLibrary(
+    Environment["OPENAL_LIB_PATH"],
+    when {
+        Platform.isWindows -> "OpenAL32.dll"
+        Platform.isMac -> "OpenAL"
+        Platform.isLinux -> "libopenal.so.1"
+        else -> "libopenal"
+    },
+    "libopenal",
+    "libopenal.so.1",
+    "OpenAL"
+) {
     val alDopplerFactor by func<(value: Float) -> Unit>()
     val alDopplerVelocity by func<(value: Float) -> Unit>()
     val alSpeedOfSound by func<(value: Float) -> Unit>()

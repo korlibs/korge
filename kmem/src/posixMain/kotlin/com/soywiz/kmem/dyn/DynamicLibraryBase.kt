@@ -8,16 +8,17 @@ import platform.posix.dlsym
 
 internal val DEBUG_DYNAMIC_LIB = platform.posix.getenv("DEBUG_DYNAMIC_LIB")?.toKString() == "true"
 
-public actual open class DynamicLibraryBase actual constructor(val name: String) : DynamicSymbolResolver {
-    val handle = dlopen(name, RTLD_LAZY)
+public actual open class DynamicLibraryBase actual constructor(val names: List<String>) : DynamicSymbolResolver {
+    val name: String get() = names.firstOrNull() ?: "At least one name should be provided"
+    val handle = names.firstNotNullOfOrNull { dlopen(it, RTLD_LAZY) }
     init {
-        if (DEBUG_DYNAMIC_LIB) println("Loaded '$name'...$handle")
-        if (handle == null) println("Couldn't load '$name' library")
+        if (DEBUG_DYNAMIC_LIB) println("Loaded '$names'...$handle")
+        if (handle == null) println("Couldn't load '$names' library")
     }
     public actual val isAvailable get() = handle != null
     override fun getSymbol(name: String): KPointer? {
         if (DEBUG_DYNAMIC_LIB) println("Requesting ${this.name}.$name...")
-        val out = if (handle == null) null else dlsym(handle, name)?.rawValue
+        val out = if (handle == null) null else dlsym(handle, name)
         if (DEBUG_DYNAMIC_LIB) println("Got ${this.name}.$name...$out")
         return out
     }
