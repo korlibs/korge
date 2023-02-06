@@ -69,13 +69,12 @@ class MetalShaderGenerator(
         if (attributes.isEmpty()) return
         val generator = MetalShaderBodyGenerator(ShaderType.VERTEX)
 
-        "struct v2f" {
+        "struct v2f"(expressionSuffix = ";") {
             attributes.forEach {
                 val name = if (it == Output) "position [[position]]" else it.name
                 +"${generator.typeToString(it.type)} $name;"
             }
         }
-        line(";")
     }
 
     private fun Indenter.generateVertexMainFunction(attributes: LinkedHashSet<Attribute>) {

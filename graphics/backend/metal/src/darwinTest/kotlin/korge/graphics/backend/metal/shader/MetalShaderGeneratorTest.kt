@@ -30,26 +30,24 @@ class MetalShaderGeneratorTest : StringSpec({
             +"#include <metal_stdlib>"
             +"using namespace metal;"
 
-            "struct VertexInput" {
-                +"packed_float3 position;"
-                +"packed_float3 color;"
-            }
-
-            "struct VertexInput" {
+            "struct v2f"(expressionSuffix = ";") {
+                +"float2 v_Tex;"
+                +"float4 v_Col;"
                 +"float4 position [[position]];"
-                +"float4 color;"
             }
 
-            "vertex VertexOutput vertexMain(device const VertexInput* vertexInput [[buffer(0)]], const device SceneMatrices& sceneMatrices [[ buffer(1) ]], unsigned int vertexId [[ vertex_id ]])" {
-                +"vertexInput vertex = vertexInput[vertexId];"
-                +"VertexOutput vertexOutput = VertexOutput;"
-                +"vertexOutput.position = sceneMatrices.projectionMatrix * sceneMatrices.viewModelMatrix * float4(vertex.position, 1.0);"
-                +"vertexOutput.color = v.color;"
-                +"return vertexOutput"
+            "vertex v2f vertexMain(uint vertexId [[vertex_id]],device const float2* a_Tex [[buffer(0)]],device const float4* a_Col [[buffer(1)]],device const float2* a_Pos [[buffer(2)]])" {
+                +"v2f out;"
+                +"v_Tex = a_Tex[ vertexId ];"
+                +"out.v_Col = a_Col[ vertexId ];"
+                +"out.position = ((u_ProjMat * u_ViewMat) * float4(a_Pos[ vertexId ], 0.0, 1.0));"
+                +"return out;"
             }
 
-            "fragment float4 fragmentMain(VertexOut vertexOutput [[stage_in]])" {
-                +"return float4(vertexOutput.color)"
+            "fragment float4 fragmentMain( v2f in [[stage_in]] )" {
+                +"float4 out;"
+                +"out = in.v_Col;"
+                +"return out;"
             }
         }
     }
