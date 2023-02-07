@@ -21,6 +21,8 @@ private inline fun <T : CPointed> KPointer.offset(offset: Int) = interpretCPoint
 
 actual fun KPointer.getByte(offset: Int): Byte = offset<ByteVar>(offset)[0]
 actual fun KPointer.setByte(offset: Int, value: Byte) { offset<ByteVar>(offset)[0] = value }
+actual fun KPointer.getShort(offset: Int): Short = offset<ShortVar>(offset)[0]
+actual fun KPointer.setShort(offset: Int, value: Short) { offset<ShortVar>(offset)[0] = value }
 actual fun KPointer.getInt(offset: Int): Int = offset<IntVar>(offset)[0]
 actual fun KPointer.setInt(offset: Int, value: Int) { offset<IntVar>(offset)[0] = value }
 actual fun KPointer.getFloat(offset: Int): Float = offset<FloatVar>(offset)[0]
