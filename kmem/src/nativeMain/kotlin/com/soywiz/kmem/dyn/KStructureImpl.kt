@@ -22,6 +22,7 @@ actual abstract class KStructureBase {
 }
 actual fun KPointer(address: Long): KPointer = address.toCPointer<ByteVar>() as KPointer
 actual val KPointer.address: Long get() = this.toLong()
+inline fun <T : CPointed> KPointer?.toCPointer(): CPointer<T>? = interpretCPointer(this.rawValue)
 
 private inline fun <T : CPointed> KPointer.offset(offset: Int): CPointer<T> = interpretCPointer<T>(this.rawValue + offset.toLong())!!
 

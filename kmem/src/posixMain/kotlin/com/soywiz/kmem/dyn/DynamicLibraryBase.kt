@@ -1,6 +1,6 @@
 package com.soywiz.kmem.dyn
 
-import kotlinx.cinterop.toKString
+import kotlinx.cinterop.*
 import platform.posix.RTLD_LAZY
 import platform.posix.dlclose
 import platform.posix.dlopen
