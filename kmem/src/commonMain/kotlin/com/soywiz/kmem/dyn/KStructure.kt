@@ -41,6 +41,8 @@ expect val KPointer.address: Long
 
 expect fun KPointer.getByte(offset: Int): Byte
 expect fun KPointer.setByte(offset: Int, value: Byte)
+expect fun KPointer.getShort(offset: Int): Short
+expect fun KPointer.setShort(offset: Int, value: Short)
 expect fun KPointer.getInt(offset: Int): Int
 expect fun KPointer.setInt(offset: Int, value: Int)
 expect fun KPointer.getFloat(offset: Int): Float
@@ -74,8 +76,9 @@ open class KStructure(pointer: KPointer?) : KStructureBase() {
     val layout: KMemLayoutBuilder = KMemLayoutBuilder()
 
     val size: Int get() = layout.size
-    fun byte(): KMemDelegateByteProperty = layout.byte()
     fun bool(): KMemDelegateBoolProperty = layout.bool()
+    fun byte(): KMemDelegateByteProperty = layout.byte()
+    fun short(): KMemDelegateShortProperty = layout.short()
     fun int(): KMemDelegateIntProperty = layout.int()
     fun double(): KMemDelegateDoubleProperty = layout.double()
     fun long(): KMemDelegateLongProperty = layout.long()
@@ -111,8 +114,9 @@ open class KMemLayoutBuilder {
     //fun int() = alloc(Int.SIZE_BYTES)
     //fun nativeLong() = alloc(NativeLong.SIZE)
 
-    fun byte(): KMemDelegateByteProperty = KMemDelegateByteProperty(alloc(Byte.SIZE_BYTES))
     fun bool(): KMemDelegateBoolProperty = KMemDelegateBoolProperty(alloc(Int.SIZE_BYTES))
+    fun byte(): KMemDelegateByteProperty = KMemDelegateByteProperty(alloc(Byte.SIZE_BYTES))
+    fun short(): KMemDelegateShortProperty = KMemDelegateShortProperty(alloc(Short.SIZE_BYTES))
     fun int() = KMemDelegateIntProperty(alloc(Int.SIZE_BYTES))
     fun long() = KMemDelegateLongProperty(alloc(Long.SIZE_BYTES))
     fun float() = KMemDelegateFloatProperty(alloc(4))
@@ -132,6 +136,13 @@ inline class KMemDelegateByteProperty(val offset: Int) {
 inline class KMemDelegateBoolProperty(val offset: Int) {
     operator fun getValue(obj: KStructure, property: KProperty<*>): Boolean = obj.pointerSure.getInt(offset) != 0
     operator fun setValue(obj: KStructure, property: KProperty<*>, i: Boolean) { obj.pointerSure.setInt(offset, if (i) 1 else 0) }
+}
+
+inline class KMemDelegateShortProperty(val offset: Int) {
+    fun get(pointer: KPointer): Short = pointer.getShort(offset)
+    fun set(pointer: KPointer, value: Short) = pointer.setShort(offset, value)
+    operator fun getValue(obj: KStructure, property: KProperty<*>): Short = get(obj.pointerSure)
+    operator fun setValue(obj: KStructure, property: KProperty<*>, i: Short): Unit = set(obj.pointerSure, i)
 }
 
 inline class KMemDelegateIntProperty(val offset: Int) {

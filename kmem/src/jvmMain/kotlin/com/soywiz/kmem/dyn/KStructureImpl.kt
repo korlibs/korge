@@ -28,6 +28,8 @@ actual val KPointer.address: Long get() = Pointer.nativeValue(this)
 
 actual fun KPointer.getByte(offset: Int): Byte = this.getByte(offset.toLong())
 actual fun KPointer.setByte(offset: Int, value: Byte): Unit = this.setByte(offset.toLong(), value)
+actual fun KPointer.getShort(offset: Int): Short = this.getShort(offset.toLong())
+actual fun KPointer.setShort(offset: Int, value: Short): Unit = this.setShort(offset.toLong(), value)
 actual fun KPointer.getInt(offset: Int): Int = this.getInt(offset.toLong())
 actual fun KPointer.setInt(offset: Int, value: Int): Unit = this.setInt(offset.toLong(), value)
 actual fun KPointer.getFloat(offset: Int): Float = this.getFloat(offset.toLong())

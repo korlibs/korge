@@ -16,6 +16,8 @@ actual val KPointer.address: Long get() = TODO()
 
 actual fun KPointer.getByte(offset: Int): Byte = TODO()
 actual fun KPointer.setByte(offset: Int, value: Byte): Unit = TODO()
+actual fun KPointer.getShort(offset: Int): Short = TODO()
+actual fun KPointer.setShort(offset: Int, value: Short): Unit = TODO()
 actual fun KPointer.getInt(offset: Int): Int = TODO()
 actual fun KPointer.setInt(offset: Int, value: Int): Unit = TODO()
 actual fun KPointer.getFloat(offset: Int): Float = TODO()
