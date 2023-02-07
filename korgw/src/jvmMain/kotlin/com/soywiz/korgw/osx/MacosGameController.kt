@@ -1,6 +1,7 @@
 package com.soywiz.korgw.osx
 
 import com.soywiz.kmem.*
+import com.soywiz.kmem.dyn.osx.*
 import com.soywiz.korev.*
 import com.soywiz.korio.annotations.*
 import com.soywiz.korio.util.*

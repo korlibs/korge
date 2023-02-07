@@ -1,22 +1,21 @@
 package com.soywiz.korau.sound
 
-import com.soywiz.klogger.Console
-import com.soywiz.korau.format.AudioFormat
-import com.soywiz.korau.format.AudioFormats
-import com.soywiz.korau.format.OGG
-import com.soywiz.korau.format.WAV
-import com.soywiz.korau.format.mp3.MP3Decoder
-import com.soywiz.korau.sound.impl.jna.JnaOpenALNativeSoundProvider
-import com.soywiz.korau.sound.impl.jna.OpenALException
-import com.soywiz.korio.time.traceTime
-import java.util.*
+import com.soywiz.klogger.*
+import com.soywiz.kmem.*
+import com.soywiz.korau.sound.backends.*
+import com.soywiz.korau.sound.impl.jna.*
+import com.soywiz.korio.time.*
 
 private val dummyNativeSoundProvider by lazy { DummyNativeSoundProvider() }
 
-private val nativeSoundProviderDeferred by lazy {
+private val nativeSoundProviderDeferred: NativeSoundProvider by lazy {
     try {
-        traceTime("OpenAL") {
-            JnaOpenALNativeSoundProvider()
+        traceTime("SoundProvider") {
+            when {
+                Platform.isLinux -> alsaNativeSoundProvider
+                Platform.isApple -> jvmCoreAudioNativeSoundProvider
+                else -> JnaOpenALNativeSoundProvider()
+            } ?: dummyNativeSoundProvider
         }
     } catch (e: UnsatisfiedLinkError) {
         dummyNativeSoundProvider
