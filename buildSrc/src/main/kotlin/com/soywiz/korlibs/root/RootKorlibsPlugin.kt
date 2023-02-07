@@ -213,14 +213,14 @@ object RootKorlibsPlugin {
             (!(File("/usr/include/GL/glut.h").exists()) || !(File("/usr/include/AL/al.h").exists()))
         ) {
             rootProject.execThis { commandLine("sudo", "apt-get", "update") }
-            rootProject.execThis { commandLine("sudo", "apt-get", "-y", "install", "freeglut3-dev", "libopenal-dev") }
+            rootProject.execThis { commandLine("sudo", "apt-get", "-y", "install", "freeglut3") }
             // execThis { commandLine("sudo", "apt-get", "-y", "install", "libgtk-3-dev") }
         }
         if (isLinux) {
             project.logger.info("LD folders: ${LDLibraries.ldFolders}")
-            for (lib in listOf("libGL.so.1", "libopenal.so.1")) {
+            for (lib in listOf("libGL.so.1")) {
                 if (!LDLibraries.hasLibrary(lib)) {
-                    System.err.println("Can't find $lib. Please: sudo apt-get -y install freeglut3 libopenal1")
+                    System.err.println("Can't find $lib. Please: sudo apt-get -y install freeglut3")
                 }
             }
         }
