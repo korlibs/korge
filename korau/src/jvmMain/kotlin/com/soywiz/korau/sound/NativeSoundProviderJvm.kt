@@ -14,6 +14,7 @@ private val nativeSoundProviderDeferred: NativeSoundProvider by lazy {
             when {
                 Platform.isLinux -> alsaNativeSoundProvider
                 Platform.isApple -> jvmCoreAudioNativeSoundProvider
+                Platform.isWindows -> jvmWaveOutNativeSoundProvider
                 else -> JnaOpenALNativeSoundProvider()
             } ?: dummyNativeSoundProvider
         }
