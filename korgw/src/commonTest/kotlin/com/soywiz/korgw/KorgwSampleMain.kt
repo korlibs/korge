@@ -1,5 +1,6 @@
 package com.soywiz.korgw
 
+import com.soywiz.korag.*
 import com.soywiz.korev.MouseEvent
 import com.soywiz.korev.addEventListener
 import com.soywiz.korim.color.Colors
@@ -20,7 +21,7 @@ fun main(args: Array<String>) = Korio {
         var n = 0
         onRenderEvent {
             //println("render")
-            ag.clear(if (n % 2 == 0) Colors.GREEN else Colors.RED)
+            ag.clear(ag.mainFrameBuffer, if (n % 2 == 0) Colors.GREEN else Colors.RED)
             n++
             //ag.flip()
         }

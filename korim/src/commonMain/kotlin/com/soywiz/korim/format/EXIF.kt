@@ -115,15 +115,15 @@ object EXIF {
             when (tagNumber) {
                 0x112 -> { // Orientation
                     info.orientation = when (readUShort(0)) {
-                        1 -> ImageOrientation.ORIGINAL
-                        2 -> ImageOrientation.MIRROR_HORIZONTAL
-                        3 -> ImageOrientation.ROTATE_180
-                        4 -> ImageOrientation.MIRROR_VERTICAL
-                        5 -> ImageOrientation.MIRROR_HORIZONTAL_ROTATE_270
-                        6 -> ImageOrientation.ROTATE_90
-                        7 -> ImageOrientation.MIRROR_HORIZONTAL_ROTATE_90
-                        8 -> ImageOrientation.ROTATE_270
-                        else -> ImageOrientation.ORIGINAL
+                        1 -> ImageOrientation.NORMAL // 1 = Horizontal (normal)
+                        2 -> ImageOrientation.MIRROR_HORIZONTAL // 2 = Mirror horizontal
+                        3 -> ImageOrientation.ROTATE_180 // 3 = Rotate 180
+                        4 -> ImageOrientation.MIRROR_VERTICAL // 4 = Mirror vertical
+                        5 -> ImageOrientation.MIRROR_HORIZONTAL_ROTATE_270 // 5 = Mirror horizontal and rotate 270 CW
+                        6 -> ImageOrientation.ROTATE_90 // 6 = Rotate 90 CW
+                        7 -> ImageOrientation.MIRROR_HORIZONTAL_ROTATE_90 // 7 = Mirror horizontal and rotate 90 CW
+                        8 -> ImageOrientation.ROTATE_270 // 8 = Rotate 270 CW
+                        else -> ImageOrientation.NORMAL
                     }
                 }
             }

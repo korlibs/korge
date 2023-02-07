@@ -1,7 +1,7 @@
 package com.soywiz.korge.particle
 
 import com.soywiz.kds.iterators.fastForEach
-import com.soywiz.korag.AG
+import com.soywiz.korag.*
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.bitmap.context2d
 import com.soywiz.korim.bitmap.slice
@@ -20,13 +20,13 @@ suspend fun VfsFile.readParticleEmitter(): ParticleEmitter {
     val emitter = ParticleEmitter()
     val particleXml = file.readXml()
 
-    //var blendFuncSource = AG.BlendFactor.ONE
-    //var blendFuncDestination = AG.BlendFactor.ONE
+    //var blendFuncSource = AGBlendFactor.ONE
+    //var blendFuncDestination = AGBlendFactor.ONE
 
     particleXml.allChildrenNoComments.fastForEach { item ->
         fun point() = Point(item.double("x"), item.double("y"))
         fun scalar() = item.double("value")
-        fun blendFactor() = ParticleEmitter.blendFactorMap[scalar().toInt()] ?: AG.BlendFactor.ONE
+        fun blendFactor() = ParticleEmitter.blendFactorMap[scalar().toInt()] ?: AGBlendFactor.ONE
         fun type() = ParticleEmitter.typeMap[scalar().toInt()] ?: ParticleEmitter.Type.GRAVITY
 
         fun angle() = item.double("value").degrees
@@ -76,7 +76,7 @@ suspend fun VfsFile.readParticleEmitter(): ParticleEmitter {
     emitter.texture = try {
         file.parent[emitter.textureName?.takeIf { it.isNotBlank() } ?: "texture.png"].readBitmapSlice()
     } catch (e: FileNotFoundException) {
-        Bitmap32(64, 64).context2d {
+        Bitmap32(64, 64, premultiplied = true).context2d {
             fill(createRadialGradient(32.0, 32.0, 0.0, 32.0, 32.0, 32.0)
                 .addColorStop(0.0, Colors.WHITE)
                 .addColorStop(0.4, Colors.WHITE)

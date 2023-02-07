@@ -86,6 +86,7 @@ object TemplateGenerator {
             .replace("<TGen : Any>", "")
             .replace("<*/*_TGen_*/>", "")
             .replace("null/*TGen*/", when (kind) {
+                "Boolean" -> "false"
                 "Byte" -> "0.toByte()"
                 "Short" -> "0.toShort()"
                 "Char" -> "'\\u0000'"

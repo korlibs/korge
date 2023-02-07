@@ -26,7 +26,7 @@ internal object GLLib : DynamicLibrary("libGLX.so.0") {
 }
 
 internal actual fun glGetProcAddressAnyOrNull(name: String): COpaquePointer? = memScoped {
-    GLLib.glXGetProcAddress(name.cstr.placeTo(this)) ?: GLLib.getSymbol(name)?.let { interpretCPointer(it) }
+    GLLib.glXGetProcAddress(name.cstr.placeTo(this)) ?: GLLib.getSymbol(name)?.toCPointer()
 }
 
 actual class KmlGlNative actual constructor() : NativeBaseKmlGl() {

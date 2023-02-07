@@ -72,9 +72,7 @@ class TransitionFilter(
     }
 
     override val programProvider: ProgramProvider get() = TransitionFilter
-    private val textureUnit = AG.TextureUnit()
     private val s_ratio = uniforms.storageFor(u_Ratio)
-    private val s_tex = uniforms.storageForTextureUnit(u_Mask, textureUnit)
     @ViewProperty
     var reversed: Boolean by uniforms.storageFor(u_Reversed).boolDelegateX(reversed)
     @ViewProperty
@@ -83,6 +81,7 @@ class TransitionFilter(
     var ratio: Double by s_ratio.doubleDelegateX(ratio)
 
     override fun updateUniforms(ctx: RenderContext, filterScale: Double) {
-        textureUnit.texture = ctx.getTex(transition.bmp).base
+        uniforms.set(u_Mask, ctx.getTex(transition.bmp).base, AGTextureUnitInfo.DEFAULT)
+        //println("ratio=$ratio, s_ratio=$s_ratio, uniformValue=${uniforms[u_Ratio].f32[0]}")
     }
 }

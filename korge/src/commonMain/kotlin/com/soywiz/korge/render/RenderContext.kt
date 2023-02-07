@@ -1,12 +1,16 @@
 package com.soywiz.korge.render
 
 import com.soywiz.kds.*
+import com.soywiz.kds.iterators.*
+import com.soywiz.kmem.unit.*
 import com.soywiz.korag.*
+import com.soywiz.korag.annotation.*
 import com.soywiz.korag.log.*
 import com.soywiz.korag.shader.Uniform
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.stat.*
 import com.soywiz.korge.view.*
+import com.soywiz.korgw.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korio.async.*
@@ -36,11 +40,18 @@ class RenderContext constructor(
     /** The Accelerated Graphics object that allows direct rendering */
 	val ag: AG,
 	val bp: BoundsProvider = BoundsProvider.Base(),
+    val deviceDimensionsProvider: DeviceDimensionsProvider = (bp as? DeviceDimensionsProvider?) ?: DeviceDimensionsProvider.DEFAULT,
     /** Object storing all the rendering [Stats] like number of batches, number of vertices etc. */
 	val stats: Stats = Stats(),
 	val coroutineContext: CoroutineContext = EmptyCoroutineContext,
     val batchMaxQuads: Int = BatchBuilder2D.DEFAULT_BATCH_QUADS
-) : Extra by Extra.Mixin(), BoundsProvider by bp, AGFeatures by ag, Closeable {
+) :
+    Extra by Extra.Mixin(),
+    BoundsProvider by bp,
+    AGFeatures by ag,
+    DeviceDimensionsProvider by deviceDimensionsProvider,
+    Closeable
+{
     val projectionMatrixTransform = Matrix()
     val projectionMatrixTransformInv = Matrix()
     private val projMat: Matrix3D = Matrix3D()
@@ -50,11 +61,11 @@ class RenderContext constructor(
     val viewMat2D: Matrix = Matrix()
 
     @KorgeInternal
-    val uniforms: AG.UniformValues by lazy {
-        AG.UniformValues(
-            DefaultShaders.u_ProjMat to projMat,
-            DefaultShaders.u_ViewMat to viewMat,
-        )
+    val uniforms: AGUniformValues by lazy {
+        AGUniformValues {
+            it[DefaultShaders.u_ProjMat] = projMat
+            it[DefaultShaders.u_ViewMat] = viewMat
+        }
     }
 
     inline fun <T> setTemporalProjectionMatrixTransform(m: Matrix, block: () -> T): T =
@@ -73,14 +84,18 @@ class RenderContext constructor(
     private val tempRect = Rectangle()
     private val tempMat3d = Matrix3D()
 
+    val tempTexturePool: Pool<AGTexture> = Pool { AGTexture() }
+
     fun updateStandardUniforms() {
-        //println("updateStandardUniforms: ag.currentSize(${ag.currentWidth}, ${ag.currentHeight}) : ${ag.currentRenderBuffer}")
-        if (flipRenderTexture && ag.renderingToTexture) {
-            projMat.setToOrtho(tempRect.setBounds(0, ag.currentHeight, ag.currentWidth, 0), -1f, 1f)
+        //println("updateStandardUniforms: ag.currentSize(${ag.currentWidth}, ${ag.currentHeight}) : ${ag.currentFrameBuffer}")
+        if (flipRenderTexture && currentFrameBuffer.isTexture) {
+            projMat.setToOrtho(tempRect.setBounds(0, currentFrameBuffer.height, currentFrameBuffer.width, 0), -1f, 1f)
         } else {
-            projMat.setToOrtho(tempRect.setBounds(0, 0, ag.currentWidth, ag.currentHeight), -1f, 1f)
+            projMat.setToOrtho(tempRect.setBounds(0, 0, currentFrameBuffer.width, currentFrameBuffer.height), -1f, 1f)
             projMat.multiply(projMat, projectionMatrixTransform.toMatrix3D(tempMat3d))
         }
+        uniforms[DefaultShaders.u_ProjMat] = projMat
+        uniforms[DefaultShaders.u_ViewMat] = viewMat
     }
 
     /**
@@ -94,6 +109,7 @@ class RenderContext constructor(
                 temp2d.copyFrom(this.viewMat2D)
                 this.viewMat2D.copyFrom(matrix)
                 this.viewMat.copyFrom(matrix)
+                uniforms[DefaultShaders.u_ViewMat] = this.viewMat
                 //println("viewMat: $viewMat, matrix: $matrix")
                 try {
                     callback()
@@ -101,53 +117,56 @@ class RenderContext constructor(
                     flush()
                     this.viewMat.copyFrom(temp)
                     this.viewMat2D.copyFrom(temp2d)
+                    uniforms[DefaultShaders.u_ViewMat] = this.viewMat
                 }
             }
         }
     }
 
+    @PublishedApi internal val uniformsPool = Pool { AGUniformValues() }
+
     /**
-     * Executes [callback] while setting temporarily an [uniform] to a [value]
+     * Executes [callback] while restoring [uniform] to its current value after [callback] is exexcuted.
      */
-    inline fun setTemporalUniform(uniform: Uniform, value: Any?, flush: Boolean = true, callback: (AG.UniformValues) -> Unit) {
-        val old = this.uniforms[uniform]
-        if (flush) flush()
-        this.uniforms.putOrRemove(uniform, value)
-        try {
-            callback(this.uniforms)
-        } finally {
+    inline fun keepUniform(uniform: Uniform, flush: Boolean = true, callback: (AGUniformValues) -> Unit) {
+        uniformsPool.alloc { tempUniforms ->
+            tempUniforms[uniform].set(this.uniforms[uniform])
             if (flush) flush()
-            this.uniforms.putOrRemove(uniform, old)
+            try {
+                callback(this.uniforms)
+            } finally {
+                if (flush) flush()
+                this.uniforms[uniform].set(tempUniforms[uniform])
+            }
         }
     }
 
-    inline fun <reified T> setTemporalUniforms(uniforms: Array<Uniform>, values: Array<T>, count: Int = values.size, olds: Array<T?> = arrayOfNulls<T>(count), flush: Boolean = true, callback: (AG.UniformValues) -> Unit) {
-        if (flush) flush()
-        for (n in 0 until count) {
-            olds[n] = this.uniforms[uniforms[n]] as T?
-            this.uniforms.putOrRemove(uniforms[n], values[n])
-        }
-        try {
-            callback(this.uniforms)
-        } finally {
+    /**
+     * Executes [callback] while restoring [uniforms] to its current value after [callback] is exexcuted.
+     */
+    inline fun keepUniforms(uniforms: Array<Uniform>, flush: Boolean = true, callback: (AGUniformValues) -> Unit) {
+        uniformsPool.alloc { tempUniforms ->
+            uniforms.fastForEach { tempUniforms[it].set(this.uniforms[it]) }
             if (flush) flush()
-            for (n in 0 until count) {
-                val m = olds.size - 1 - n
-                this.uniforms.putOrRemove(uniforms[m], olds[m])
+            try {
+                callback(this.uniforms)
+            } finally {
+                if (flush) flush()
+                uniforms.fastForEach { this.uniforms[it].set(tempUniforms[it]) }
             }
         }
     }
 
     @PublishedApi
-    internal val tempOldUniformsList: Pool<AG.UniformValues> = Pool { AG.UniformValues() }
+    internal val tempOldUniformsList: Pool<AGUniformValues> = Pool { AGUniformValues() }
 
     /**
      * Executes [callback] while setting temporarily a set of [uniforms]
      */
-    inline fun setTemporalUniforms(uniforms: AG.UniformValues?, callback: (AG.UniformValues) -> Unit) {
+    inline fun setTemporalUniforms(uniforms: AGUniformValues?, callback: (AGUniformValues) -> Unit) {
         tempOldUniformsList { tempOldUniforms ->
             if (uniforms != null && uniforms.isNotEmpty()) {
-                flush()
+                flush(FlushKind.STATE)
                 tempOldUniforms.setTo(this.uniforms)
                 this.uniforms.put(uniforms)
             }
@@ -155,7 +174,7 @@ class RenderContext constructor(
                 callback(this.uniforms)
             } finally {
                 if (uniforms != null && uniforms.isNotEmpty()) {
-                    flush()
+                    flush(FlushKind.STATE)
                     this.uniforms.setTo(tempOldUniforms)
                 }
             }
@@ -167,7 +186,9 @@ class RenderContext constructor(
     val agBufferManager = AgBufferManager(ag)
 
     /** Allows to register handlers when the [flush] method is called */
-    val flushers = Signal<Unit>()
+    val flushers = Signal<FlushKind>()
+
+    enum class FlushKind { STATE, FULL }
 
     val views: Views? = bp as? Views?
 
@@ -180,7 +201,7 @@ class RenderContext constructor(
     var debugExtraFontScale : Double = 1.0
     var debugExtraFontColor : RGBA = Colors.WHITE
 
-    val debugOverlayScale: Double get() = kotlin.math.round(ag.computedPixelRatio * debugExtraFontScale).coerceAtLeast(1.0)
+    val debugOverlayScale: Double get() = kotlin.math.round(computedPixelRatio * debugExtraFontScale).coerceAtLeast(1.0)
 
     var stencilIndex: Int = 0
 
@@ -189,9 +210,7 @@ class RenderContext constructor(
     @KorgeInternal
     val batch = BatchBuilder2D(this, batchMaxQuads)
 
-    val dynamicVertexBufferPool = Pool { ag.createVertexBuffer() }
-    val dynamicVertexDataPool = Pool { ag.createVertexData() }
-    val dynamicIndexBufferPool = Pool { ag.createIndexBuffer() }
+    val dynamicVertexBufferPool = Pool { AGBuffer() }
 
     @OptIn(KorgeInternal::class)
     inline fun useBatcher(block: (BatchBuilder2D) -> Unit) = batch.use(block)
@@ -229,33 +248,50 @@ class RenderContext constructor(
      * You should call this if you plan to render something else not managed via [batch],
      * so all the pending vertices are drawn.
      */
-	fun flush() {
-        currentBatcher = null
-        flushers(Unit)
+	fun flush(kind: FlushKind = FlushKind.FULL) {
+        flushers(kind)
 	}
 
-    @PublishedApi
-    internal val renderToTextureScissors = Pool { AG.Scissor() }
+    var currentFrameBuffer: AGFrameBuffer = ag.mainFrameBuffer
+    val currentFrameBufferOrMain: AGFrameBuffer get() = currentFrameBuffer ?: mainFrameBuffer
+    val isRenderingToWindow: Boolean get() = currentFrameBufferOrMain === mainFrameBuffer
+    val isRenderingToTexture: Boolean get() = !isRenderingToWindow
+
+    // On MacOS components, this will be the size of the component
+    open val backWidth: Int get() = mainFrameBuffer.width
+    open val backHeight: Int get() = mainFrameBuffer.height
+
+    // On MacOS components, this will be the full size of the window
+    val realBackWidth get() = mainFrameBuffer.fullWidth
+    val realBackHeight get() = mainFrameBuffer.fullHeight
+
+    val currentWidth: Int get() = currentFrameBuffer?.width ?: mainFrameBuffer.width
+    val currentHeight: Int get() = currentFrameBuffer?.height ?: mainFrameBuffer.height
+
+    val mainFrameBuffer: AGFrameBuffer get() = ag.mainFrameBuffer
+
+    fun clear(
+        color: RGBA = Colors.TRANSPARENT_BLACK,
+        depth: Float = 1f,
+        stencil: Int = 0,
+        clearColor: Boolean = true,
+        clearDepth: Boolean = true,
+        clearStencil: Boolean = true,
+        scissor: AGScissor = AGScissor.NIL,
+    ) {
+        ag.clear(currentFrameBuffer.base, currentFrameBuffer.info, color, depth, stencil, clearColor, clearDepth, clearStencil, scissor)
+    }
 
     inline fun renderToFrameBuffer(
-        frameBuffer: AG.RenderBuffer,
+        frameBuffer: AGFrameBuffer,
         clear: Boolean = true,
-        render: (AG.RenderBuffer) -> Unit,
+        render: (AGFrameBuffer) -> Unit,
     ) {
-        flush()
-        ag.setRenderBufferTemporally(frameBuffer) {
+        setFrameBufferTemporally(frameBuffer) {
             useBatcher { batch ->
-                val oldScissors = batch.scissor
-                renderToTextureScissors.alloc { scissor ->
-                    batch.scissor = scissor.setTo(0, 0, frameBuffer.width, frameBuffer.height)
-                    //batch.scissor = null
-                    try {
-                        if (clear) ag.clear(Colors.TRANSPARENT_BLACK)
-                        render(frameBuffer)
-                        flush()
-                    } finally {
-                        batch.scissor = oldScissors
-                    }
+                batch.scissor(AGScissor(0, 0, frameBuffer.width, frameBuffer.height)) {
+                    if (clear) clear(Colors.TRANSPARENT_BLACK)
+                    render(frameBuffer)
                 }
             }
         }
@@ -269,51 +305,26 @@ class RenderContext constructor(
      */
     inline fun renderToTexture(
         width: Int, height: Int,
-        render: (AG.RenderBuffer) -> Unit = {},
+        render: (AGFrameBuffer) -> Unit = {},
         hasDepth: Boolean = false, hasStencil: Boolean = true, msamples: Int = 1,
         use: (texture: Texture) -> Unit
     ) {
 		flush()
-        ag.tempAllocateFrameBuffer(width, height, hasDepth = hasDepth, hasStencil = hasStencil, msamples = msamples) { fb ->
+        tempAllocateFrameBuffer(width, height, hasDepth = hasDepth, hasStencil = hasStencil, msamples = msamples) { fb ->
             renderToFrameBuffer(fb) { render(it) }
-            use(Texture(fb).slice(0, 0, width, height))
+            use(Texture(fb).sliceWithSize(0, 0, width, height))
             flush()
         }
 	}
 
     /**
-     * Sets the render buffer temporarily to [bmp] [Bitmap32] and calls the [callback] render method that should perform all the renderings inside.
-     */
-	inline fun renderToBitmap(
-        bmp: Bitmap32,
-        hasDepth: Boolean = false, hasStencil: Boolean = false, msamples: Int = 1,
-        callback: () -> Unit
-    ): Bitmap32 {
-		flush()
-		ag.renderToBitmap(bmp, hasDepth, hasStencil, msamples) {
-			callback()
-			flush()
-		}
-		return bmp
-	}
-
-    inline fun renderToBitmap(
-        width: Int, height: Int,
-        hasDepth: Boolean = false, hasStencil: Boolean = false, msamples: Int = 1,
-        callback: () -> Unit
-    ): Bitmap32 =
-        renderToBitmap(
-            Bitmap32(width, height),
-            hasDepth = hasDepth, hasStencil = hasStencil, msamples = msamples,
-            callback = callback
-        )
-
-    /**
      * Finishes the drawing and flips the screen. Called by the KorGe engine at the end of the frame.
      */
 	fun finish() {
-		ag.flip()
-	}
+		ag.finish()
+        frameBuffers.free(frameFrameBuffers)
+        if (frameFrameBuffers.isNotEmpty()) frameFrameBuffers.clear()
+    }
 
     /**
      * Temporarily allocates a [Texture] with its coords from a [BmpSlice].
@@ -322,7 +333,7 @@ class RenderContext constructor(
      */
     fun getTex(bmp: BmpSlice): Texture = agBitmapTextureManager.getTexture(bmp)
 	fun getTex(bmp: BitmapCoords): TextureCoords = agBitmapTextureManager.getTexture(bmp)
-    fun getBuffer(buffer: AgCachedBuffer): AG.Buffer = agBufferManager.getBuffer(buffer)
+    fun getBuffer(buffer: AgCachedBuffer): AGBuffer = agBufferManager.getBuffer(buffer)
 
     /**
      * Allocates a [Texture.Base] from a [Bitmap]. A Texture.Base doesn't have region information.
@@ -339,9 +350,14 @@ class RenderContext constructor(
      */
     fun refGcCloseable(closeable: Closeable) = agAutoFreeManager.reference(closeable)
 
+    internal fun beforeRender() {
+        batch.beforeRender()
+    }
+
     internal fun afterRender() {
         flush()
         finish()
+        batch.afterRender()
         agAutoFreeManager.afterRender()
         agBitmapTextureManager.afterRender()
         agBufferManager.afterRender()
@@ -349,8 +365,9 @@ class RenderContext constructor(
 
     inline fun <T> useBatcher(batcher: T, block: (T) -> Unit) {
         if (currentBatcher !== batcher) {
-            flush()
+            //println("currentBatcher=$currentBatcher, batcher=$batcher")
             currentBatcher = batcher
+            flush()
         }
         block(batcher)
     }
@@ -358,6 +375,146 @@ class RenderContext constructor(
     override fun close() {
         agBitmapTextureManager.close()
         agAutoFreeManager.close()
+    }
+
+    /////////////// FROM AG ///////////////////
+
+    val frameFrameBuffers = LinkedHashSet<AGFrameBuffer>()
+    val frameBuffers: Pool<AGFrameBuffer> = Pool { AGFrameBuffer(id = it) }
+    val frameBufferStack = FastArrayList<AGFrameBuffer>()
+
+    inline fun doRender(block: () -> Unit) {
+        ag.beforeDoRender()
+        ag.startFrame()
+        try {
+            //mainRenderBuffer.init()
+            setFrameBufferTemporally(mainFrameBuffer) {
+                block()
+            }
+        } finally {
+            ag.endFrame()
+        }
+    }
+
+    inline fun setFrameBufferTemporally(rb: AGFrameBuffer, callback: (AGFrameBuffer) -> Unit) {
+        pushFrameBuffer(rb)
+        try {
+            callback(rb)
+        } finally {
+            popFrameBuffer()
+        }
+    }
+    inline fun tempAllocateFrameBuffer(width: Int, height: Int, hasDepth: Boolean = false, hasStencil: Boolean = true, msamples: Int = 1, block: (rb: AGFrameBuffer) -> Unit) {
+        val rb = unsafeAllocateFrameBuffer(width, height, hasDepth = hasDepth, hasStencil = hasStencil, msamples = msamples)
+        try {
+            block(rb)
+        } finally {
+            unsafeFreeFrameBuffer(rb)
+        }
+    }
+
+    inline fun tempAllocateFrameBuffers2(width: Int, height: Int, hasDepth: Boolean = false, hasStencil: Boolean = true, msamples: Int = 1, block: (rb0: AGFrameBuffer, rb1: AGFrameBuffer) -> Unit) {
+        tempAllocateFrameBuffer(width, height, hasDepth, hasStencil, msamples) { rb0 ->
+            tempAllocateFrameBuffer(width, height, hasDepth, hasStencil, msamples) { rb1 ->
+                block(rb0, rb1)
+            }
+        }
+    }
+
+    @KoragExperimental
+    fun unsafeAllocateFrameBuffer(width: Int, height: Int, hasDepth: Boolean = false, hasStencil: Boolean = true, msamples: Int = 1, onlyThisFrame: Boolean = true): AGFrameBuffer {
+        val realWidth = kotlin.math.max(width, 64)
+        val realHeight = kotlin.math.max(height, 64)
+        val rb = frameBuffers.alloc()
+        if (onlyThisFrame) frameFrameBuffers += rb
+        rb.setSize(0, 0, realWidth, realHeight, realWidth, realHeight)
+        rb.setExtra(hasDepth = hasDepth, hasStencil = hasStencil)
+        rb.setSamples(msamples)
+        //println("unsafeAllocateFrameRenderBuffer($width, $height), real($realWidth, $realHeight), $rb")
+        return rb
+    }
+
+    @KoragExperimental
+    fun unsafeFreeFrameBuffer(rb: AGFrameBuffer) {
+        if (frameFrameBuffers.remove(rb)) {
+        }
+        frameBuffers.free(rb)
+    }
+
+    inline fun renderToTextureInternal(
+        width: Int, height: Int,
+        render: (rb: AGFrameBuffer) -> Unit,
+        hasDepth: Boolean = false, hasStencil: Boolean = false, msamples: Int = 1,
+        use: (tex: AGTexture, texWidth: Int, texHeight: Int) -> Unit
+    ) {
+        flush()
+        tempAllocateFrameBuffer(width, height, hasDepth, hasStencil, msamples) { rb ->
+            setFrameBufferTemporally(rb) {
+                clear(Colors.TRANSPARENT_BLACK) // transparent
+                render(rb)
+            }
+            use(rb.tex, rb.width, rb.height)
+        }
+    }
+
+    inline fun renderToBitmap(
+        width: Int, height: Int,
+        hasDepth: Boolean = false, hasStencil: Boolean = false, msamples: Int = 1,
+        callback: () -> Unit
+    ): Bitmap32 = renderToBitmap(
+        Bitmap32(width, height, premultiplied = true),
+        hasDepth = hasDepth, hasStencil = hasStencil, msamples = msamples,
+        callback = callback
+    )
+
+    /**
+     * Sets the render buffer temporarily to [bmp] [Bitmap32] and calls the [callback] render method that should perform all the renderings inside.
+     */
+    inline fun renderToBitmap(
+        bmp: Bitmap32,
+        hasDepth: Boolean = false, hasStencil: Boolean = false, msamples: Int = 1,
+        callback: () -> Unit
+    ): Bitmap32 {
+        renderToTextureInternal(bmp.width, bmp.height, render = {
+            callback()
+            //println("renderToBitmap.readColor: $currentRenderBuffer")
+            ag.readColor(currentFrameBuffer, bmp)
+        }, hasDepth = hasDepth, hasStencil = hasStencil, msamples = msamples, use = { _, _, _ -> })
+        return bmp
+    }
+
+    fun pushFrameBuffer(frameBuffer: AGFrameBuffer) {
+        frameBufferStack.add(currentFrameBuffer)
+        currentFrameBuffer = frameBuffer
+    }
+
+    fun popFrameBuffer() {
+        currentFrameBuffer = frameBufferStack.removeAt(frameBufferStack.size - 1)
+    }
+
+
+    val textureDrawer by lazy { AGTextureDrawer(ag) }
+    fun drawTexture(frameBuffer: AGFrameBuffer, tex: AGTexture) {
+        textureDrawer.draw(frameBuffer, tex, -1f, +1f, +1f, -1f)
+    }
+
+    private val drawTempTexture: AGTexture by lazy { AGTexture() }
+
+    fun drawBitmap(frameBuffer: AGFrameBuffer, bmp: Bitmap) {
+        drawTempTexture.upload(bmp, mipmaps = false)
+        drawTexture(frameBuffer, drawTempTexture)
+        drawTempTexture.upload(Bitmaps.transparent.bmp)
+    }
+
+    inline fun backupTexture(frameBuffer: AGFrameBuffer, tex: AGTexture?, callback: () -> Unit) {
+        if (tex != null) {
+            ag.readToTexture(currentFrameBuffer, tex, 0, 0, currentFrameBuffer.width, currentFrameBuffer.height)
+        }
+        try {
+            callback()
+        } finally {
+            if (tex != null) drawTexture(frameBuffer, tex)
+        }
     }
 }
 
@@ -368,4 +525,4 @@ inline fun <T : AG> testRenderContext(ag: T, bp: BoundsProvider = BoundsProvider
     return ag
 }
 
-inline fun testRenderContext(bp: BoundsProvider = BoundsProvider.Base(), block: (RenderContext) -> Unit): LogAG = testRenderContext(LogAG(), bp, block)
+inline fun testRenderContext(bp: BoundsProvider = BoundsProvider.Base(), block: (RenderContext) -> Unit): AGLog = testRenderContext(AGLog(), bp, block)

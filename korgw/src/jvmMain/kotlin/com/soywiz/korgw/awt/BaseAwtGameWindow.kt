@@ -4,9 +4,12 @@ import com.soywiz.kds.*
 import com.soywiz.kgl.*
 import com.soywiz.klock.*
 import com.soywiz.kmem.*
+import com.soywiz.kmem.Platform
+import com.soywiz.kmem.dyn.osx.*
+import com.soywiz.korag.*
+import com.soywiz.korag.gl.*
 import com.soywiz.korev.*
 import com.soywiz.korgw.*
-import com.soywiz.korgw.internal.MicroDynamic
 import com.soywiz.korgw.osx.*
 import com.soywiz.korgw.platform.*
 import com.soywiz.korgw.win32.*
@@ -14,28 +17,51 @@ import com.soywiz.korgw.x11.*
 import com.soywiz.korim.awt.*
 import com.soywiz.korim.color.*
 import com.soywiz.korio.async.*
-import com.soywiz.korio.file.*
-import com.soywiz.korio.file.std.*
-import com.soywiz.korio.net.URL
+import com.soywiz.korio.dynamic.*
 import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 import com.sun.jna.*
 import kotlinx.coroutines.*
 import java.awt.*
-import java.awt.datatransfer.Clipboard
-import java.awt.datatransfer.ClipboardOwner
-import java.awt.datatransfer.DataFlavor
-import java.awt.datatransfer.StringSelection
-import java.awt.datatransfer.Transferable
+import java.awt.datatransfer.*
 import java.awt.event.*
 import java.awt.event.KeyEvent
 import java.awt.event.MouseEvent
-import java.net.*
 import javax.swing.*
 import kotlin.system.*
 
-abstract class BaseAwtGameWindow(val config: GameWindowCreationConfig) : GameWindow(), ClipboardOwner {
-    abstract override val ag: AwtAg
+abstract class BaseAwtGameWindow(
+    override val ag: AGOpengl
+) : GameWindow(), ClipboardOwner {
+    private val localGraphicsEnvironment : GraphicsEnvironment by lazy(LazyThreadSafetyMode.PUBLICATION) {
+        GraphicsEnvironment.getLocalGraphicsEnvironment()
+    }
+
+    override val devicePixelRatio: Double get() {
+        if (GraphicsEnvironment.isHeadless()) {
+            return super.devicePixelRatio
+        }
+        // transform
+        // https://stackoverflow.com/questions/20767708/how-do-you-detect-a-retina-display-in-java
+        val config = component.graphicsConfiguration
+            ?: localGraphicsEnvironment.defaultScreenDevice.defaultConfiguration
+        return config.defaultTransform.scaleX
+    }
+
+    //override val pixelsPerInch: Double by lazy(LazyThreadSafetyMode.PUBLICATION) {
+    override val pixelsPerInch: Double get() {
+        if (GraphicsEnvironment.isHeadless()) {
+            return AG.defaultPixelsPerInch
+        }
+        // maybe this is not just windows specific :
+        // https://stackoverflow.com/questions/32586883/windows-scaling
+        // somehow this value is not update when you change the scaling in the windows settings while the jvm is running :(
+        return Toolkit.getDefaultToolkit().screenResolution.toDouble()
+    }
+
+    override val pixelsPerLogicalInchRatio: Double by lazy(LazyThreadSafetyMode.PUBLICATION) {
+        pixelsPerInch / AG.defaultPixelsPerInch
+    }
 
     //val fvsync get() = vsync
     val fvsync get() = false
@@ -153,15 +179,12 @@ abstract class BaseAwtGameWindow(val config: GameWindowCreationConfig) : GameWin
     fun framePaint(g: Graphics) {
         //println("framePaint")
 
-        ag.isGlAvailable = true
-
         if (fvsync) {
             EventQueue.invokeLater {
                 //println("repaint!")
                 component.repaint()
             }
         }
-        val frame = this
 
         ensureContext()
 
@@ -223,24 +246,24 @@ abstract class BaseAwtGameWindow(val config: GameWindowCreationConfig) : GameWin
 
             if (component is JFrame) {
                 //println("component.width: ${contentComponent.width}x${contentComponent.height}")
-                ag.mainRenderBuffer.setSize(
+                ag.mainFrameBuffer.setSize(
                     0, 0, (contentComponent.width * factor).toInt(), (contentComponent.height * factor).toInt(),
                 )
             } else {
-                ag.mainRenderBuffer.scissor(scissor)
+                ag.mainFrameBuffer.scissor(scissor)
                 if (viewport != null) {
                     //val window = SwingUtilities.getWindowAncestor(contentComponent)
                     //println("window=${window.width}x${window.height} : factor=$factor")
 
                     val frameOrComponent = (window as? JFrame)?.contentPane ?: windowOrComponent
 
-                    ag.mainRenderBuffer.setSize(
+                    ag.mainFrameBuffer.setSize(
                         viewport.x, viewport.y, viewport.width, viewport.height,
                         (frameOrComponent.width * factor).toInt(),
                         (frameOrComponent.height * factor).toInt(),
                     )
                 } else {
-                    ag.mainRenderBuffer.setSize(
+                    ag.mainFrameBuffer.setSize(
                         0, 0, (component.width * factor).toInt(), (component.height * factor).toInt(),
                     )
                 }
@@ -252,12 +275,12 @@ abstract class BaseAwtGameWindow(val config: GameWindowCreationConfig) : GameWin
                 reshaped = false
                 //println("RESHAPED!")
                 dispatchReshapeEventEx(
-                    ag.mainRenderBuffer.x,
-                    ag.mainRenderBuffer.y,
-                    ag.mainRenderBuffer.width,
-                    ag.mainRenderBuffer.height,
-                    ag.mainRenderBuffer.fullWidth,
-                    ag.mainRenderBuffer.fullHeight,
+                    ag.mainFrameBuffer.x,
+                    ag.mainFrameBuffer.y,
+                    ag.mainFrameBuffer.width,
+                    ag.mainFrameBuffer.height,
+                    ag.mainFrameBuffer.fullWidth,
+                    ag.mainFrameBuffer.fullHeight,
                 )
             }
 
@@ -709,25 +732,25 @@ abstract class BaseAwtGameWindow(val config: GameWindowCreationConfig) : GameWin
             try {
                 when (method.name) {
                     "magnify" -> {
-                        val magnification = MicroDynamic { args[0].invoke("getMagnification") } as Double
+                        val magnification = args[0].dyn.dynamicInvoke("getMagnification")
                         //println("magnify: $magnification")
                         queue {
                             dispatch(gestureEvent.also {
                                 it.type = GestureEvent.Type.MAGNIFY
                                 it.id = 0
-                                it.amount = magnification
+                                it.amount = magnification.double
                             })
                         }
                     }
 
                     "rotate" -> {
-                        val rotation = MicroDynamic { args[0].invoke("getRotation") } as Double
+                        val rotation = args[0].dyn.dynamicInvoke("getRotation")
                         //println("rotate: $rotation")
                         queue {
                             dispatch(gestureEvent.also {
                                 it.type = GestureEvent.Type.ROTATE
                                 it.id = 0
-                                it.amount = rotation
+                                it.amount = rotation.double
                             })
                         }
                     }
@@ -756,14 +779,12 @@ abstract class BaseAwtGameWindow(val config: GameWindowCreationConfig) : GameWin
             } catch (e: Throwable) {
                 e.printStackTrace()
             }
-            MicroDynamic.invokeCatching { args[0].invoke("consume") }
+            args[0].dyn.dynamicInvoke("consume")
         }
 
-        MicroDynamic.invokeCatching {
-            val clazz = getClass("com.apple.eawt.event.GestureUtilities")
-            println(" -- GestureUtilities=$clazz")
-            clazz.invoke("addGestureListenerTo", contentComponent, gestureListener)
-        }
+        val clazz = Dyn.global["com.apple.eawt.event.GestureUtilities"]
+        println(" -- GestureUtilities=$clazz")
+        clazz.dynamicInvoke("addGestureListenerTo", contentComponent, gestureListener)
 
         //val value = (contentComponent as JComponent).getClientProperty("com.apple.eawt.event.internalGestureHandler");
         //println("value $value");
@@ -802,5 +823,34 @@ abstract class BaseAwtGameWindow(val config: GameWindowCreationConfig) : GameWin
     }
 
     override fun lostOwnership(clipboard: Clipboard?, contents: Transferable?) {
+    }
+
+    override val hapticFeedbackGenerateSupport: Boolean get() = true
+    override fun hapticFeedbackGenerate(kind: HapticFeedbackKind) {
+        when {
+            Platform.os.isMac -> {
+                val KIND_GENERIC = 0
+                val KIND_ALIGNMENT = 1
+                val KIND_LEVEL_CHANGE = 2
+
+                val PERFORMANCE_TIME_DEFAULT = 0
+                val PERFORMANCE_TIME_NOW = 1
+                val PERFORMANCE_TIME_DRAW_COMPLETED = 2
+
+                val kindInt = when (kind) {
+                    HapticFeedbackKind.GENERIC -> KIND_GENERIC
+                    HapticFeedbackKind.ALIGNMENT -> KIND_ALIGNMENT
+                    HapticFeedbackKind.LEVEL_CHANGE -> KIND_LEVEL_CHANGE
+                }
+                val performanceTime = PERFORMANCE_TIME_NOW
+
+                NSClass("NSHapticFeedbackManager")
+                    .msgSend("defaultPerformer")
+                    .msgSend("performFeedbackPattern:performanceTime:", kindInt.toLong(), performanceTime.toLong())
+            }
+            else -> {
+                super.hapticFeedbackGenerate(kind)
+            }
+        }
     }
 }

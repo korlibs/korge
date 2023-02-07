@@ -5,9 +5,8 @@ import com.soywiz.kds.Pool
 import com.soywiz.kds.getAndRemove
 import com.soywiz.kds.getOrPut
 import com.soywiz.kds.iterators.fastForEach
-import com.soywiz.kmem.FBuffer
-import com.soywiz.korag.AG
-import com.soywiz.korag.AGList
+import com.soywiz.kmem.*
+import com.soywiz.korag.*
 
 /**
  * Class to handle cached buffers, that are freed after a few frames of not being used
@@ -15,18 +14,15 @@ import com.soywiz.korag.AGList
 class AgBufferManager(
     val ag: AG
 ) {
-    private val buffers = FastIdentityMap<AgCachedBuffer, AG.Buffer>()
+    private val buffers = FastIdentityMap<AgCachedBuffer, AGBuffer>()
     private val referencedBuffersSinceGC = AgFastSet<AgCachedBuffer>()
-    private val bufferPool = Pool {
-        //println("CREATE BUFFER")
-        ag.createBuffer()
-    }
+    private val bufferPool = Pool { AGBuffer() }
 
-    fun getBuffer(cached: AgCachedBuffer): AG.Buffer {
+    fun getBuffer(cached: AgCachedBuffer): AGBuffer {
         referencedBuffersSinceGC.add(cached)
         return buffers.getOrPut(cached) {
             bufferPool.alloc().also {
-                it.upload(cached.data, cached.dataOffset, cached.dataLen)
+                it.upload(cached.data)
             }
         }
     }
@@ -54,17 +50,12 @@ class AgBufferManager(
     }
 
     fun delete(buffer: List<AgCachedBuffer>) {
-        ag.commandsNoWait { list ->
-            buffer.fastForEach { delete(it, list) }
-        }
+        buffer.fastForEach { delete(it) }
     }
+
+    val empty = Buffer(0)
+
     fun delete(buffer: AgCachedBuffer) {
-        ag.commandsNoWait { delete(buffer, it) }
-    }
-
-    val empty = FBuffer(0)
-
-    fun delete(buffer: AgCachedBuffer, list: AGList) {
         val buf = buffers.getAndRemove(buffer)
         buf?.let {
             it.upload(empty)
@@ -75,4 +66,4 @@ class AgBufferManager(
 }
 
 //class AgCachedBuffer(val kind: AG.BufferKind, val data: Any, val dataOffset: Int = 0, val dataLen: Int = -1)
-class AgCachedBuffer(val data: Any, val dataOffset: Int = 0, val dataLen: Int = -1)
+class AgCachedBuffer(val data: Buffer)

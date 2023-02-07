@@ -11,11 +11,11 @@ class MultiTextureFastRender : ViewsForTesting(log = true) {
     @Test
     @Suppress("UNUSED_CHANGED_VALUE")
     fun test() = viewsTest {
-        val tex0 = Bitmap32(16, 16) { x, y -> Colors.RED }
-        val tex1 = Bitmap32(16, 16) { x, y -> Colors.GREEN }
-        val tex2 = Bitmap32(16, 16) { x, y -> Colors.BLUE }
-        val tex3 = Bitmap32(16, 16) { x, y -> Colors.YELLOW }
-        val tex4 = Bitmap32(16, 16) { x, y -> Colors.PINK }
+        val tex0 = Bitmap32(16, 16) { x, y -> Colors.RED }.premultipliedIfRequired()
+        val tex1 = Bitmap32(16, 16) { x, y -> Colors.GREEN }.premultipliedIfRequired()
+        val tex2 = Bitmap32(16, 16) { x, y -> Colors.BLUE }.premultipliedIfRequired()
+        val tex3 = Bitmap32(16, 16) { x, y -> Colors.YELLOW }.premultipliedIfRequired()
+        val tex4 = Bitmap32(16, 16) { x, y -> Colors.PINK }.premultipliedIfRequired()
         var n = 0
         image(tex0).xy(16 * n, 16 * n); n++
         image(tex1).xy(16 * n, 16 * n); n++

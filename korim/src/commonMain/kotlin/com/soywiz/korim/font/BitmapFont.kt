@@ -11,16 +11,8 @@ import com.soywiz.kmem.nextPowerOfTwo
 import com.soywiz.kmem.toIntCeil
 import com.soywiz.korim.atlas.MutableAtlas
 import com.soywiz.korim.atlas.MutableAtlasUnit
-import com.soywiz.korim.bitmap.Bitmap
-import com.soywiz.korim.bitmap.Bitmap32
-import com.soywiz.korim.bitmap.BitmapChannel
-import com.soywiz.korim.bitmap.BitmapSlice
-import com.soywiz.korim.bitmap.Bitmaps
-import com.soywiz.korim.bitmap.BmpSlice
-import com.soywiz.korim.bitmap.context2d
+import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.bitmap.effect.BitmapEffect
-import com.soywiz.korim.bitmap.mipmaps
-import com.soywiz.korim.bitmap.slice
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.format.ImageDecodingProps
@@ -210,7 +202,7 @@ interface BitmapFont : Font {
     data class Glyph(
         val fontSize: Double,
         val id: Int,
-        val texture: BitmapSlice<Bitmap>,
+        val texture: BmpSlice,
         val xoffset: Int,
         val yoffset: Int,
         val xadvance: Int
@@ -269,7 +261,7 @@ suspend fun VfsFile.readBitmapFont(
 ) : BitmapFont {
 	val fntFile = this
 	val content = fntFile.readString().trim()
-	val textures = hashMapOf<Int, BitmapSlice<Bitmap>>()
+	val textures = hashMapOf<Int, BmpSlice>()
 
     return when {
         content.startsWith('<') -> readBitmapFontXml(content, fntFile, textures, props, mipmaps, atlas)
@@ -282,7 +274,7 @@ suspend fun VfsFile.readBitmapFont(
 private suspend fun readBitmapFontJson(
     content: String,
     fntFile: VfsFile,
-    textures: HashMap<Int, BitmapSlice<Bitmap>>,
+    textures: HashMap<Int, BmpSlice>,
     props: ImageDecodingProps = ImageDecodingProps.DEFAULT,
     mipmaps: Boolean = true,
     atlas: MutableAtlasUnit? = null
@@ -342,7 +334,7 @@ private suspend fun readBitmapFontJson(
 private suspend fun readBitmapFontTxt(
 	content: String,
 	fntFile: VfsFile,
-	textures: HashMap<Int, BitmapSlice<Bitmap>>,
+	textures: HashMap<Int, BmpSlice>,
 	props: ImageDecodingProps = ImageDecodingProps.DEFAULT,
     mipmaps: Boolean = true,
     atlas: MutableAtlasUnit? = null
@@ -411,7 +403,7 @@ private suspend fun readBitmapFontTxt(
 private suspend fun readBitmapFontXml(
 	content: String,
 	fntFile: VfsFile,
-	textures: MutableMap<Int, BitmapSlice<Bitmap>>,
+	textures: MutableMap<Int, BmpSlice>,
     props: ImageDecodingProps = ImageDecodingProps.DEFAULT,
     mipmaps: Boolean = true,
     atlas: MutableAtlasUnit? = null

@@ -16,18 +16,20 @@ fun tryGetResourceBytes(path: String): ByteArray? =
 fun getResourceBytes(path: String): ByteArray = tryGetResourceBytes(path) ?: error("Can't find resource '$path'")
 fun getResourceString(path: String): String = getResourceBytes(path).toString(Charsets.UTF_8)
 
-fun KorgeExtension.getIconBytes(): ByteArray = KorgeIconProvider(this).getIconBytes()
-fun KorgeExtension.getBannerBytes(): ByteArray = KorgeIconProvider(this).getBannerBytes()
+val KorgeExtension.iconProvider: KorgeIconProvider get() = KorgeIconProvider(this)
 
-fun KorgeExtension.getIconBytes(width: Int, height: Int = width): ByteArray = ImageIO.read(getIconBytes().inputStream()).getScaledInstance(width, height).toBufferedImage().encodePNG()
-fun KorgeExtension.getBannerBytes(width: Int, height: Int = width): ByteArray = ImageIO.read(getBannerBytes().inputStream()).getScaledInstance(width, height).toBufferedImage().encodePNG()
+fun KorgeExtension.getIconBytes(): ByteArray = iconProvider.getIconBytes()
+fun KorgeExtension.getBannerBytes(): ByteArray = iconProvider.getBannerBytes()
+
+fun KorgeExtension.getIconBytes(width: Int, height: Int = width): ByteArray = iconProvider.getIconBytes(width, height)
+fun KorgeExtension.getBannerBytes(width: Int, height: Int = width): ByteArray = iconProvider.getBannerBytes(width, height)
 
 class KorgeIconProvider(val icon: File? = null, val banner: File? = null) {
     constructor(korge: KorgeExtension) : this(korge.icon, korge.banner)
     constructor(project: Project) : this(project.korge)
 
-    fun iconExists() = icon != null && icon!!.exists()
-    fun bannerExists() = banner != null && banner!!.exists()
+    fun iconExists(): Boolean = icon != null && icon.exists()
+    fun bannerExists(): Boolean = banner != null && banner.exists()
 
     fun getIconBytes(): ByteArray = when {
         iconExists() -> icon!!.readBytes()
@@ -40,8 +42,7 @@ class KorgeIconProvider(val icon: File? = null, val banner: File? = null) {
         else -> getResourceBytes("/banners/korge.png")
     }
 
-
-    fun getIconBytes(width: Int, height: Int = width): ByteArray =  ImageIO.read(getIconBytes().inputStream()).getScaledInstance(width, height).toBufferedImage().encodePNG()
-    fun getBannerBytes(width: Int, height: Int = width): ByteArray =  ImageIO.read(getBannerBytes().inputStream()).getScaledInstance(width, height).toBufferedImage().encodePNG()
+    fun getIconBytes(width: Int, height: Int = width): ByteArray = ImageIO.read(getIconBytes().inputStream()).getScaledInstance(width, height).toBufferedImage().encodePNG()
+    fun getBannerBytes(width: Int, height: Int = width): ByteArray = ImageIO.read(getBannerBytes().inputStream()).getScaledInstance(width, height).toBufferedImage().encodePNG()
 
 }

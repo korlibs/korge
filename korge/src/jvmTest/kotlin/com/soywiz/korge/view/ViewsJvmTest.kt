@@ -13,7 +13,7 @@ import com.soywiz.korma.geom.*
 import kotlin.test.*
 
 class ViewsJvmTest : ViewsForTesting(log = true) {
-	val tex = Bitmap32(10, 10)
+	val tex = Bitmap32(10, 10, premultiplied = true)
 
 	@Test
 	fun name() {
@@ -24,7 +24,7 @@ class ViewsJvmTest : ViewsForTesting(log = true) {
 			"""
 				Stage
 				 Container
-				  Image:bitmap=BitmapSlice(null:SizeInt(width=10, height=10))
+				  Image:bitmap=RectSlice(null:Rectangle(x=0, y=0, width=10, height=10))
 			""".trimIndent(),
 			views.stage.dumpToString()
 		)
@@ -56,7 +56,7 @@ class ViewsJvmTest : ViewsForTesting(log = true) {
             """
 				Stage
 				 Container
-				  Image:bitmap=BitmapSlice(null:SizeInt(width=10, height=10))
+				  Image:bitmap=RectSlice(null:Rectangle(x=0, y=0, width=10, height=10))
 			""".trimIndent(),
             views.stage.dumpToString()
         )

@@ -77,10 +77,11 @@ class LineRenderBatcher(
 
     internal val uniforms get() = ctx.uniforms
 
-    private val vertexBuffer = ag.createVertexBuffer()
+    private val vertexBuffer = AGBuffer()
+    private val vertexData = AGVertexArrayObject(AGVertexData(LAYOUT, vertexBuffer))
     private val program = Program(VERTEX, FRAGMENT)
     private val maxVertexCount = 1024
-    private val vertices = FBuffer.alloc(6 * 4 * maxVertexCount)
+    private val vertices = Buffer.allocDirect(6 * 4 * maxVertexCount)
     private val tempRect = Rectangle()
     @PublishedApi
     internal val viewMat = Matrix3D()
@@ -169,10 +170,10 @@ class LineRenderBatcher(
             //projMat.setToOrtho(tempRect.setBounds(0, 0, ag.backWidth, ag.backHeight), -1f, 1f)
 
             ag.draw(
-                vertices = vertexBuffer,
+                ctx.currentFrameBuffer,
+                vertexData,
                 program = program,
-                type = AG.DrawType.LINES,
-                vertexLayout = LAYOUT,
+                drawType = AGDrawType.LINES,
                 vertexCount = vertexCount,
                 uniforms = uniforms,
                 blending = blendMode.factors
@@ -191,9 +192,9 @@ class LineRenderBatcher(
     }
 
     private fun addVertex(x: Float, y: Float, color: RGBA = this.color, m: Matrix = currentMatrix) {
-        vertices.setAlignedFloat32(vertexPos + 0, m.transformXf(x, y))
-        vertices.setAlignedFloat32(vertexPos + 1, m.transformYf(x, y))
-        vertices.setAlignedInt32(vertexPos + 2, color.value)
+        vertices.setFloat32(vertexPos + 0, m.transformXf(x, y))
+        vertices.setFloat32(vertexPos + 1, m.transformYf(x, y))
+        vertices.setInt32(vertexPos + 2, color.value)
         vertexPos += LAYOUT.totalSize / Int.SIZE_BYTES
         vertexCount++
     }

@@ -1,27 +1,15 @@
 package com.soywiz.korge.view.filter
 
-import com.soywiz.kmem.toIntCeil
-import com.soywiz.korag.AG
-import com.soywiz.korag.DefaultShaders
-import com.soywiz.korag.shader.FragmentShader
-import com.soywiz.korag.shader.Operand
-import com.soywiz.korag.shader.Program
-import com.soywiz.korag.shader.Uniform
-import com.soywiz.korag.shader.VarType
-import com.soywiz.korag.shader.VertexShader
-import com.soywiz.korag.shader.appending
-import com.soywiz.korge.render.BatchBuilder2D
-import com.soywiz.korge.render.RenderContext
-import com.soywiz.korge.render.Texture
-import com.soywiz.korge.view.BlendMode
-import com.soywiz.korge.view.View
+import com.soywiz.kmem.*
+import com.soywiz.korag.*
+import com.soywiz.korag.shader.*
+import com.soywiz.korge.render.*
+import com.soywiz.korge.view.*
 import com.soywiz.korge.view.filter.ShaderFilter.Companion.fragmentCoords
 import com.soywiz.korge.view.filter.ShaderFilter.Companion.fragmentCoords01
 import com.soywiz.korge.view.filter.ShaderFilter.Companion.tex
-import com.soywiz.korim.color.ColorAdd
-import com.soywiz.korim.color.RGBA
-import com.soywiz.korma.geom.Matrix
-import com.soywiz.korma.geom.MutableMarginInt
+import com.soywiz.korim.color.*
+import com.soywiz.korma.geom.*
 
 /**
  * Abstract class for [View] [Filter]s that paints the [Texture] using a [FragmentShader] ([fragment]).
@@ -67,17 +55,6 @@ abstract class ShaderFilter : Filter {
 
         protected fun createProgram(vertex: VertexShader, fragment: FragmentShader): Program {
             return Program(vertex, fragment.appending {
-                BatchBuilder2D.DO_INPUT_OUTPUT(this, out)
-                //// Premultiplied
-                //if (!premultiplied) {
-                //    SET(out["rgb"], out["rgb"] * out["a"])
-                //}
-
-                // Color multiply and addition
-                // @TODO: Kotlin.JS BUG
-                //out setTo (out * BatchBuilder2D.v_ColMul) + ((BatchBuilder2D.v_ColAdd - vec4(.5f, .5f, .5f, .5f)) * 2f)
-                //SET(out, (out * BatchBuilder2D.v_ColMul) + ((BatchBuilder2D.v_ColAdd - vec4(.5f.lit, .5f.lit, .5f.lit, .5f.lit)) * 2f.lit))
-
                 // Required for shape masks:
                 IF(out["a"] le 0f.lit) { DISCARD() }
             })
@@ -100,14 +77,14 @@ abstract class ShaderFilter : Filter {
     private val textureMaxTexCoords = FloatArray(2)
     private val textureStdTexDerivates = FloatArray(2)
 
-    val scaledUniforms = AG.UniformValues()
+    val scaledUniforms = AGUniformValues()
 
-    val uniforms = AG.UniformValues(
+    val uniforms = AGUniformValues {
         //Filter.u_Time to timeHolder,
-        u_TextureSize to textureSizeHolder,
-        u_MaxTexCoords to textureMaxTexCoords,
-        u_StdTexDerivates to textureStdTexDerivates,
-    )
+        it[u_TextureSize] = textureSizeHolder
+        it[u_MaxTexCoords] = textureMaxTexCoords
+        it[u_StdTexDerivates] = textureStdTexDerivates
+    }
 
     override fun computeBorder(out: MutableMarginInt, texWidth: Int, texHeight: Int) {
         out.setTo(0)
@@ -115,7 +92,7 @@ abstract class ShaderFilter : Filter {
 
     ///** The [VertexShader] used this this [Filter] */
     //open val vertex: VertexShader = BatchBuilder2D.VERTEX
-    ///** The [FragmentShader] used this this [Filter]. This is usually overriden. */
+    ///** The [FragmentShader] used this [Filter]. This is usually overriden. */
     //open val fragment: FragmentShader = Filter.DEFAULT_FRAGMENT
     //private val programPremult: Program by lazy { createProgram(vertex, fragment, true) }
     //private val programNormal: Program by lazy { createProgram(vertex, fragment, false) }
@@ -128,18 +105,18 @@ abstract class ShaderFilter : Filter {
 
     private fun _updateUniforms(ctx: RenderContext, filterScale: Double) {
         uniforms[u_filterScale] = filterScale
-        scaledUniforms.fastForEach { uniform, value ->
-            when (value) {
-                is FloatArray -> {
-                    if (uniform !in uniforms) {
-                        uniforms[uniform] = value.copyOf()
-                    }
-                    val out = (uniforms[uniform] as FloatArray)
-                    for (n in out.indices) out[n] = (value[n] * filterScale).toFloat()
+        uniforms[u_TextureSize] = textureSizeHolder
+        uniforms[u_MaxTexCoords] = textureMaxTexCoords
+        uniforms[u_StdTexDerivates] = textureStdTexDerivates
+
+        scaledUniforms.fastForEach { value ->
+            when (value.type.kind) {
+                VarKind.TFLOAT -> {
+                    val out = uniforms[value.uniform].f32
+                    for (n in 0 until out.size) out[n] = (value.f32[n] * filterScale).toFloat()
                 }
                 else -> TODO()
             }
-
         }
         updateUniforms(ctx, filterScale)
     }
@@ -191,7 +168,7 @@ abstract class ShaderFilter : Filter {
                 //println("renderColorMulInt=" + RGBA(renderColorMulInt))
                 //println("blendMode:$blendMode")
 
-                val slice = texture.sliceBoundsUnclamped(-marginLeft, -marginTop, texture.width + marginRight, texture.height + marginBottom)
+                val slice = texture.sliceWithBounds(-marginLeft, -marginTop, texture.width + marginRight, texture.height + marginBottom, clamped = false)
 
                 //println("matrix=$matrix, slice=$slice, marginLeft=$marginLeft")
                 batch.drawQuad(

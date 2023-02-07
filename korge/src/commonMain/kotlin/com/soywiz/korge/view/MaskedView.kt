@@ -16,7 +16,6 @@ class MaskedView : Container() {
             }
         }
 
-    private val tempLocalRenderState = MaskStates.LocalRenderState()
     override fun renderInternal(ctx: RenderContext) {
         if (!visible) return
         val useMask = mask != null
@@ -44,13 +43,13 @@ class MaskedView : Container() {
                     setMaskState(ctx, MaskStates.STATE_NONE)
                     //println("ctx.stencilIndex: ${ctx.stencilIndex}")
                     ctx.stencilIndex = 0
-                    ctx.ag.clear(clearColor = false, clearDepth = false, clearStencil = true, stencil = ctx.stencilIndex)
+                    ctx.clear(clearColor = false, clearDepth = false, clearStencil = true, stencil = ctx.stencilIndex)
                 }
             }
         }
     }
 
     private fun setMaskState(ctx: RenderContext, state: MaskStates.RenderState) {
-        state.set(ctx, ctx.stencilIndex, tempLocalRenderState)
+        state.set(ctx, ctx.stencilIndex)
     }
 }

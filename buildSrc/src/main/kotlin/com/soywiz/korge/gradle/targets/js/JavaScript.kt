@@ -1,15 +1,17 @@
 package com.soywiz.korge.gradle.targets.js
 
 import com.soywiz.korge.gradle.*
+import com.soywiz.korge.gradle.gkotlin
+import com.soywiz.korge.gradle.kotlin
 import com.soywiz.korge.gradle.targets.*
 import com.soywiz.korge.gradle.targets.windows.*
 import com.soywiz.korge.gradle.util.*
+import com.soywiz.korlibs.*
 import org.gradle.api.*
 import org.gradle.api.file.*
 import org.gradle.api.tasks.*
-import org.gradle.kotlin.dsl.the
-import org.gradle.kotlin.dsl.withType
 import org.jetbrains.kotlin.gradle.plugin.*
+import org.jetbrains.kotlin.gradle.targets.js.dsl.*
 import java.io.*
 
 private object JavaScriptClass
@@ -17,7 +19,7 @@ private object JavaScriptClass
 fun Project.configureJavaScript() {
     if (gkotlin.targets.findByName("js") != null) return
 
-    rootProject.plugins.withType<org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin>().configureEach {
+    rootProject.plugins.withType(org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin::class.java).allThis {
         try {
             rootProject.the<org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension>().nodeVersion =
                 BuildVersions.NODE_JS
@@ -30,16 +32,11 @@ fun Project.configureJavaScript() {
 		js(KotlinJsCompilerType.IR) {
             browser {
                 binaries.executable()
-                testTask {
-                    useKarma {
-                        useChromeHeadless()
-                    }
-                }
             }
 
 			this.attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.js)
 
-			compilations.all {
+			compilations.allThis {
 				kotlinOptions.apply {
 					sourceMap = korge.sourceMaps
 					//metaInfo = true
@@ -47,6 +44,7 @@ fun Project.configureJavaScript() {
 					suppressWarnings = korge.supressWarnings
 				}
 			}
+            configureJSTestsOnce()
 		}
 
         sourceSets.maybeCreate("jsTest").apply {
@@ -59,7 +57,7 @@ fun Project.configureJavaScript() {
     val generatedIndexHtmlDir = File(project.buildDir, "processedResources-www")
 
     afterEvaluate {
-        val jsCreateIndexHtml = project.tasks.create("jsCreateIndexHtml", JsCreateIndexTask::class.java).also { task ->
+        val jsCreateIndexHtml = project.tasks.createThis<JsCreateIndexTask>("jsCreateIndexHtml").also { task ->
             val jsMainCompilation = kotlin.js().compilations["main"]!!
             val resourcesFolders: List<File> = jsMainCompilation.allKotlinSourceSets
                 .flatMap { it.resources.srcDirs } + listOf(File(rootProject.rootDir, "_template"))
@@ -81,6 +79,27 @@ fun Project.configureJavaScript() {
     configureWebpackFixes()
     configureJavascriptRun()
     configureClosureCompiler()
+}
+
+fun KotlinJsTargetDsl.configureJSTestsOnce() {
+    browser {
+        //testTask { useKarma { useChromeHeadless() } }
+        testRuns.getByName(KotlinTargetWithTests.DEFAULT_TEST_RUN_NAME).executionTask.configure {
+            it.useKarma {
+                useChromeHeadless()
+                val karmaConfigDFile = File(project.rootProject.rootDir, "karma.config.d")
+                if (karmaConfigDFile.exists()) {
+                    useConfigDirectory(karmaConfigDFile)
+                }
+            }
+        }
+    }
+    nodejs {
+        //testTask { useMocha() }
+        testRuns.getByName(KotlinTargetWithTests.DEFAULT_TEST_RUN_NAME).executionTask.configure {
+            it.useMocha()
+        }
+    }
 }
 
 abstract class JsCreateIndexTask : DefaultTask() {

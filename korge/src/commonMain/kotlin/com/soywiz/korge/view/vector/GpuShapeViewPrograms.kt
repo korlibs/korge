@@ -1,37 +1,16 @@
 package com.soywiz.korge.view.vector
 
-import com.soywiz.kmem.toInt
-import com.soywiz.korag.AG
-import com.soywiz.korag.DefaultShaders
-import com.soywiz.korag.FragmentShaderDefault
-import com.soywiz.korag.VertexShaderDefault
-import com.soywiz.korag.shader.Attribute
-import com.soywiz.korag.shader.Operand
-import com.soywiz.korag.shader.Precision
-import com.soywiz.korag.shader.Program
-import com.soywiz.korag.shader.Uniform
-import com.soywiz.korag.shader.VarType
-import com.soywiz.korag.shader.Varying
-import com.soywiz.korag.shader.VertexLayout
-import com.soywiz.korge.internal.KorgeInternal
-import com.soywiz.korge.render.BatchBuilder2D
-import com.soywiz.korim.bitmap.Bitmap32
-import com.soywiz.korim.color.RgbaPremultipliedArray
-import com.soywiz.korim.color.toVector3D
-import com.soywiz.korim.paint.BitmapPaint
-import com.soywiz.korim.paint.ColorPaint
-import com.soywiz.korim.paint.GradientKind
-import com.soywiz.korim.paint.GradientPaint
-import com.soywiz.korim.paint.NonePaint
-import com.soywiz.korim.paint.Paint
-import com.soywiz.korma.geom.Matrix
-import com.soywiz.korma.geom.Vector3D
-import com.soywiz.korma.geom.toMatrix3D
-import kotlin.math.PI
+import com.soywiz.korag.*
+import com.soywiz.korag.shader.*
+import com.soywiz.korge.internal.*
+import com.soywiz.korim.bitmap.*
+import com.soywiz.korim.color.*
+import com.soywiz.korim.paint.*
+import com.soywiz.korma.geom.*
+import kotlin.math.*
 
 @KorgeInternal
 object GpuShapeViewPrograms {
-    val u_InputPre = Uniform("u_InputPre", VarType.Float1)
     val u_ProgramType = Uniform("u_ProgramType", VarType.Float1)
     //val u_LineWidth = Uniform("u_LineWidth", VarType.Float1)
     val u_Color = Uniform("u_Color", VarType.Float4)
@@ -41,8 +20,8 @@ object GpuShapeViewPrograms {
     val u_Transform = Uniform("u_Transform", VarType.Mat4)
     val u_Gradientp0 = Uniform("u_Gradientp0", VarType.Float3)
     val u_Gradientp1 = Uniform("u_Gradientp1", VarType.Float3)
-    val a_MaxDist: Attribute = Attribute("a_MaxDist", VarType.Float1, normalized = false, precision = Precision.MEDIUM)
-    val a_Dist: Attribute = Attribute("a_Dist", VarType.Float1, normalized = false, precision = Precision.MEDIUM)
+    val a_MaxDist: Attribute = Attribute("a_MaxDist", VarType.Float1, normalized = false, precision = Precision.MEDIUM, fixedLocation = 4)
+    val a_Dist: Attribute = Attribute("a_Dist", VarType.Float1, normalized = false, precision = Precision.MEDIUM, fixedLocation = 5)
     val v_MaxDist: Varying = Varying("v_MaxDist", VarType.Float1, precision = Precision.MEDIUM)
     val v_Dist: Varying = Varying("v_Dist", VarType.Float1, precision = Precision.MEDIUM)
     val LAYOUT = VertexLayout(DefaultShaders.a_Pos)
@@ -154,21 +133,19 @@ object GpuShapeViewPrograms {
             // Update global alpha
             val aaAlpha = 1f.lit - smoothstep(v_MaxDist * u_GlobalPixelScale - 1.5f.lit, v_MaxDist * u_GlobalPixelScale, abs(v_Dist * u_GlobalPixelScale))
             SET(out, out * u_ColorMul * u_GlobalAlpha * aaAlpha)
-
-            BatchBuilder2D.DO_OUTPUT_FROM(this, out)
         },
     )
 
     ///////////////
     data class PaintShader(
-        val uniforms: AG.UniformValues = AG.UniformValues(),
-        val texUniforms: AG.UniformValues = AG.UniformValues(),
+        val uniforms: AGUniformValues = AGUniformValues(),
+        val texUniforms: Map<Uniform, Bitmap> = emptyMap(),
         val program: Program = PROGRAM_COMBINED
     )
 
     val stencilPaintShader = PaintShader(
-        AG.UniformValues(u_ProgramType to PROGRAM_TYPE_STENCIL.toFloat(),),
-        AG.UniformValues(),
+        AGUniformValues { it[u_ProgramType] = PROGRAM_TYPE_STENCIL.toFloat() },
+        emptyMap(),
     )
 
     fun paintToShaderInfo(
@@ -181,12 +158,12 @@ object GpuShapeViewPrograms {
             null
         }
         is ColorPaint -> {
-            PaintShader(AG.UniformValues(
-                u_ProgramType to PROGRAM_TYPE_COLOR.toFloat(),
-                u_Color to paint.toVector3D(),
-                u_GlobalAlpha to globalAlpha.toFloat(),
+            PaintShader(AGUniformValues {
+                it[u_ProgramType] = PROGRAM_TYPE_COLOR.toFloat()
+                it[u_Color] = paint.toVector3D()
+                it[u_GlobalAlpha] = globalAlpha.toFloat()
                 //u_LineWidth to lineWidth.toFloat(),
-            ), AG.UniformValues())
+            }, emptyMap())
 
         }
         is BitmapPaint -> {
@@ -202,15 +179,16 @@ object GpuShapeViewPrograms {
             //val mat = (paint.transform * stateTransform)
             //mat.scale(1.0 / paint.bitmap.width, 1.0 / paint.bitmap.height)
             //println("mat=$mat")
-            PaintShader(AG.UniformValues(
-                u_ProgramType to PROGRAM_TYPE_BITMAP.toFloat(),
-                u_Transform to mat.toMatrix3D(), // @TODO: Why is this transposed???
-                u_GlobalAlpha to globalAlpha.toFloat(),
-                //u_LineWidth to lineWidth.toFloat(),
-                //}, GpuShapeView.PROGRAM_BITMAP)
-            ), AG.UniformValues(
-                DefaultShaders.u_Tex to paint.bitmap
-            ))
+            PaintShader(
+                AGUniformValues {
+                    it[u_ProgramType] = PROGRAM_TYPE_BITMAP.toFloat()
+                    it[u_Transform] = mat.toMatrix3D() // @TODO: Why is this transposed???
+                    it[u_GlobalAlpha] = globalAlpha.toFloat()
+                    //u_LineWidth to lineWidth.toFloat(),
+                    //}, GpuShapeView.PROGRAM_BITMAP)
+                }, mapOf(
+                    DefaultShaders.u_Tex to paint.bitmap
+                ))
         }
         is GradientPaint -> {
             val gradientBitmap = Bitmap32(256, 1, premultiplied = true)
@@ -230,18 +208,18 @@ object GpuShapeViewPrograms {
                 else -> npaint.transform.inverted()
             }
             PaintShader(
-                AG.UniformValues(
-                    u_ProgramType to when (paint.kind) {
+                AGUniformValues {
+                    it[u_ProgramType] = when (paint.kind) {
                         GradientKind.RADIAL -> PROGRAM_TYPE_GRADIENT_RADIAL
                         GradientKind.SWEEP -> PROGRAM_TYPE_GRADIENT_SWEEP
                         else -> PROGRAM_TYPE_GRADIENT_LINEAR
-                    },
-                    u_Transform to mat.toMatrix3D(),
-                    u_Gradientp0 to Vector3D(paint.x0.toFloat(), paint.y0.toFloat(), paint.r0.toFloat()),
-                    u_Gradientp1 to Vector3D(paint.x1.toFloat(), paint.y1.toFloat(), paint.r1.toFloat()),
-                    u_GlobalAlpha to globalAlpha.toFloat(),
-                    //u_LineWidth to lineWidth.toFloat(),
-                ), AG.UniformValues(
+                    }
+                    it[u_Transform] = mat.toMatrix3D()
+                    it[u_Gradientp0] = Vector3D(paint.x0.toFloat(), paint.y0.toFloat(), paint.r0.toFloat())
+                    it[u_Gradientp1] = Vector3D(paint.x1.toFloat(), paint.y1.toFloat(), paint.r1.toFloat())
+                    it[u_GlobalAlpha] = globalAlpha.toFloat()
+                    //it[u_LineWidth] = lineWidth.toFloat()
+                }, mapOf(
                     DefaultShaders.u_Tex to gradientBitmap
                 )
                 //when (paint.kind) {

@@ -1,8 +1,6 @@
 package com.soywiz.korge.view.filter
 
-import com.soywiz.korag.AG
-import com.soywiz.korag.DefaultShaders
-import com.soywiz.korag.FragmentShaderDefault
+import com.soywiz.korag.*
 import com.soywiz.korag.shader.Program
 import com.soywiz.korge.render.RenderContext
 import com.soywiz.korge.render.Texture
@@ -36,20 +34,20 @@ class ViewRenderPhaseBackdropFilter(var filter: Filter) : ViewRenderPhase {
     var bgrtex: Texture? = null
 
     override fun beforeRender(view: View, ctx: RenderContext) {
-        val bgtex = ctx.ag.tempTexturePool.alloc()
-        val width = ctx.ag.currentRenderBufferOrMain.width
-        val height = ctx.ag.currentRenderBufferOrMain.height
-        ctx.ag.readColorTexture(bgtex, 0, 0, width, height)
+        val bgtex = ctx.tempTexturePool.alloc()
+        val width = ctx.currentFrameBufferOrMain.width
+        val height = ctx.currentFrameBufferOrMain.height
+        ctx.ag.readToTexture(ctx.currentFrameBufferOrMain, bgtex, 0, 0, width, height)
         bgrtex = Texture(bgtex, width, height)
     }
 
     override fun afterRender(view: View, ctx: RenderContext) {
-        bgrtex?.let { ctx.ag.tempTexturePool.free(it.base.base!!) }
+        bgrtex?.let { ctx.tempTexturePool.free(it.base.base!!) }
         bgrtex = null
     }
 
     override fun render(view: View, ctx: RenderContext) {
-        //println(ctx.ag.renderBufferStack)
+        //println(ctx.ag.frameBufferStack)
         //println("width=$width, height=$height")
         ctx.renderToTexture(bgrtex!!.width, bgrtex!!.height, {
             ctx.useBatcher { batcher ->
@@ -58,11 +56,11 @@ class ViewRenderPhaseBackdropFilter(var filter: Filter) : ViewRenderPhase {
                         super.render(view, ctx)
                     }
                 }) { mask ->
-                    batcher.setTemporalUniform(
+                    batcher.keepUniform(
                         DefaultShaders.u_Tex2,
-                        AG.TextureUnit(mask.base.base),
                         flush = true
                     ) {
+                        it.set(DefaultShaders.u_Tex2, mask.base.base)
                         //batcher.drawQuad(bgrtex, x = 0f, y = 0f, program = MERGE_ALPHA)
                         batcher.drawQuad(
                             bgrtex!!, x = 0f, y = 0f, m = view.parent!!.globalMatrix, program = MERGE_ALPHA,

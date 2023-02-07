@@ -11,6 +11,7 @@ import com.soywiz.korim.format.*
 import com.soywiz.korim.format.ns.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.Size
 import kotlinx.cinterop.*
 import kotlinx.coroutines.*
 import platform.AppKit.*
@@ -51,12 +52,13 @@ class MyNSOpenGLView(
 
     //var customCursor: NSCursor? = null
 
-    override fun resetCursorRects() {
-        val cursor = defaultGameWindow.cursor
-        val nsCursor = cursor.nsCursor
-        addCursorRect(bounds, nsCursor)
-        println("MyNSOpenGLView.resetCursorRects: bounds=${bounds.toRectangle()}, cursor=$cursor, nsCursor=$nsCursor")
-    }
+    // @TODO: Broken in Kotlin 1.8.0: https://youtrack.jetbrains.com/issue/KT-55653/Since-Kotlin-1.8.0-NSView.resetCursorRects-doesnt-exist-anymore-and-cannot-override-it
+    //override fun resetCursorRects() {
+    //    val cursor = defaultGameWindow.cursor
+    //    val nsCursor = cursor.nsCursor
+    //    addCursorRect(bounds, nsCursor)
+    //    println("MyNSOpenGLView.resetCursorRects: bounds=${bounds.toRectangle()}, cursor=$cursor, nsCursor=$nsCursor")
+    //}
 
     fun dispatchFlagIfRequired(event: NSEvent, mask: Int, key: Key) {
         val old = (lastModifierFlags and mask) != 0
@@ -305,6 +307,7 @@ class MyDefaultGameWindow : GameWindow() {
     val windowStyle = NSWindowStyleMaskTitled or NSWindowStyleMaskMiniaturizable or
         NSWindowStyleMaskClosable or NSWindowStyleMaskResizable
 
+    @Suppress("OPT_IN_USAGE")
     val attrs: UIntArray by lazy {
         val antialias = (this.quality != GameWindow.Quality.PERFORMANCE)
         val antialiasArray = if (antialias) intArrayOf(
@@ -323,7 +326,7 @@ class MyDefaultGameWindow : GameWindow() {
             NSOpenGLPFAStencilSize.convert(), 8.convert(),
             NSOpenGLPFAAccumSize.convert(), 0.convert(),
             0.convert()
-        ).toUIntArray()
+        ).asUIntArray()
     }
 
     val pixelFormat by lazy {
@@ -407,7 +410,13 @@ class MyDefaultGameWindow : GameWindow() {
         set(value) {
             if (field == value) return
             field = value
-            window.contentView?.let { window.invalidateCursorRectsForView(it) }
+
+            if (true) {
+                field.nsCursor.set()
+            } else {
+                // @TODO: Broken in Kotlin 1.8.0: https://youtrack.jetbrains.com/issue/KT-55653/Since-Kotlin-1.8.0-NSView.resetCursorRects-doesnt-exist-anymore-and-cannot-override-it
+                //window.contentView?.let { window.invalidateCursorRectsForView(it) }
+            }
         }
 
     private fun doWindowDidResize() {
@@ -471,7 +480,30 @@ class MyDefaultGameWindow : GameWindow() {
         //println("doRender[4]")
     }
 
-    override val ag: AG = MacAGNative(window)
+    override val ag: AG = AGNative()
+
+    override val devicePixelRatio: Double
+        get() {
+            //return NSScreen.mainScreen?.backingScaleFactor?.toDouble() ?: field
+            return window.backingScaleFactor
+        }
+
+    override val pixelsPerInch: Double
+        get() {
+            val screen = window.screen ?: return 96.0
+            val screenSizeInPixels = screen.visibleFrame.useContents { Size(size.width, size.height) }
+            val screenSizeInMillimeters = CGDisplayScreenSize(((screen.deviceDescription["NSScreenNumber"]) as NSNumber).unsignedIntValue).useContents { Size(width, height) }
+
+            val dpmm = screenSizeInPixels.width / screenSizeInMillimeters.width
+            val dpi = dpmm / 0.0393701
+
+            //println("screenSizeInPixels=$screenSizeInPixels")
+            //println("screenSizeInMillimeters=$screenSizeInMillimeters")
+            //println("dpmm=$dpmm")
+            //println("dpi=$dpi")
+
+            return dpi // 1 millimeter -> 0.0393701 inches
+        }
 
     //override val width: Int get() = window.frame.width.toInt()
     //override val height: Int get() = window.frame.height.toInt()
@@ -650,6 +682,18 @@ class MyDefaultGameWindow : GameWindow() {
         if (items.isNullOrEmpty()) return null
         return items.last().stringForType(NSPasteboardTypeString)?.let { TextClipboardData(it) }
     }
+
+    override val hapticFeedbackGenerateSupport: Boolean get() = true
+    override fun hapticFeedbackGenerate(kind: HapticFeedbackKind) {
+        NSHapticFeedbackManager.defaultPerformer.performFeedbackPattern(
+            when (kind) {
+                HapticFeedbackKind.GENERIC -> NSHapticFeedbackPatternGeneric
+                HapticFeedbackKind.ALIGNMENT -> NSHapticFeedbackPatternAlignment
+                HapticFeedbackKind.LEVEL_CHANGE -> NSHapticFeedbackPatternLevelChange
+            },
+            NSHapticFeedbackPerformanceTimeNow
+        )
+    }
 }
 
 actual fun CreateDefaultGameWindow(config: GameWindowCreationConfig): GameWindow = MyDefaultGameWindow()
@@ -681,7 +725,8 @@ fun displayCallback(
     // Wait for this in the case we take more time than the frame time to not collapse this
     NSOperationQueue.mainQueue.addOperations(
         listOf(NSBlockOperation().also { it.addExecutionBlock(doDisplayCallbackRender) }),
-        waitUntilFinished = true
+        //waitUntilFinished = true
+        waitUntilFinished = false // ISSUE: https://github.com/korlibs/korge/issues/1078
     )
     //NSOperationQueue.mainQueue.addOperationWithBlock(doDisplayCallbackRender)
     return kCVReturnSuccess

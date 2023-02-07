@@ -31,7 +31,7 @@ object Win32NativeSoundProvider : NativeSoundProvider(), Disposable {
     val workerPool get() = Win32NativeSoundProvider_WaveOutProcess
 
     override fun createPlatformAudioOutput(coroutineContext: CoroutineContext, freq: Int): PlatformAudioOutput =
-        Win32PlatformAudioOutput(Win32NativeSoundProvider, coroutineContext, freq)
+        Win32PlatformAudioOutput(this, coroutineContext, freq)
 
     override fun dispose() {
         while (Win32NativeSoundProvider_workerPool.itemsInPool > 0) {

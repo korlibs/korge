@@ -29,8 +29,9 @@ class MainSvgAnimation : Scene() {
             }
         }
 
-        val gpuTigger = measureTime({
-            gpuShapeView({ }) {
+        val shape = measureTime({
+            //graphics({}, renderer = GraphicsRenderer.SYSTEM) {
+            graphics({}, renderer = GraphicsRenderer.GPU) {
                 xy(0, 0)
                 //scale(3.0 * svgScale)
                 //rotation(15.degrees)
@@ -49,7 +50,7 @@ class MainSvgAnimation : Scene() {
 
         addUpdater { dt ->
             svg.updateStyles(dt)
-            gpuTigger.updateShape {
+            shape.updateShape {
                 buildGraphics()
             }
         }

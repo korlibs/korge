@@ -1,16 +1,12 @@
-import org.apache.tools.ant.taskdefs.optional.unix.Symlink
-import org.gradle.api.publish.maven.internal.publication.DefaultMavenPom
-
-import java.nio.file.Files
-
 plugins {
-    id "org.gradle.kotlin.kotlin-dsl" version "2.3.3"
     id "java"
     id "java-gradle-plugin"
     id "maven-publish"
     id "com.gradle.plugin-publish"
     id "org.jetbrains.kotlin.jvm"
 }
+
+def isJava8or9 = System.getProperty("java.version").startsWith("1.8") || System.getProperty("java.version").startsWith("9")
 
 description = "Multiplatform Game Engine written in Kotlin"
 group = "com.soywiz.korlibs.korge.plugins"
@@ -63,6 +59,11 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
 
 kotlin.sourceSets.main.each {
     it.kotlin.srcDirs(new File(buildDir, "srcgen"), new File(buildDir, "srcgen2"))
+    if (isJava8or9) {
+        it.kotlin.srcDirs(new File(buildDir, "srcgen2_8"))
+    } else {
+        it.kotlin.srcDirs(new File(buildDir, "srcgen2_11"))
+    }
 }
 java.sourceSets.main.each {
     it.resources.srcDirs(new File(buildDir, "srcgen2res"))
@@ -72,18 +73,24 @@ com.soywiz.korlibs.NativeTools.groovyConfigurePublishing(project, false)
 com.soywiz.korlibs.NativeTools.groovyConfigureSigning(project)
 
 dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin")
-    implementation("org.jetbrains.kotlin:kotlin-serialization")
-
-    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin")
+    implementation(libs.kotlin.gradle.plugin)
+    implementation(libs.kotlin.serialization)
 
     implementation(libs.proguard.gradle)
     implementation(libs.closure.compiler)
     implementation(libs.gson)
+    implementation(libs.gradle.publish.plugin)
 
-    implementation("com.android.tools.build:gradle:${libs.versions.android.build.gradle.get()}")
+    implementation(libs.kover)
+    implementation(libs.dokka)
 
-	implementation(gradleApi())
+    if (isJava8or9) {
+        implementation(libs.android.build.gradle.java8)
+    } else {
+        implementation(libs.android.build.gradle.java11)
+    }
+
+    implementation(gradleApi())
 	implementation(localGroovy())
     //compileOnly(gradleKotlinDsl())
 

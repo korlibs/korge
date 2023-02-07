@@ -3,9 +3,9 @@ package com.soywiz.korge3d
 import com.soywiz.kds.ShortArrayList
 import com.soywiz.kds.fastArrayListOf
 import com.soywiz.kds.floatArrayListOf
-import com.soywiz.korag.AG
+import com.soywiz.korag.*
 import com.soywiz.korag.shader.VertexLayout
-import com.soywiz.korge3d.internal.toFBuffer
+import com.soywiz.korge3d.internal.toNBuffer
 import com.soywiz.korge3d.internal.vector3DTemps
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
@@ -16,7 +16,7 @@ import kotlin.math.sin
 
 @Korge3DExperimental
 class MeshBuilder3D(
-    val drawType: AG.DrawType = AG.DrawType.TRIANGLES
+    val drawType: AGDrawType = AGDrawType.TRIANGLES
 ) {
     val layout = VertexLayout(
         Shaders3D.a_pos,
@@ -27,7 +27,7 @@ class MeshBuilder3D(
     operator fun invoke(callback: MeshBuilder3D.() -> Unit): Mesh3D = this.apply(callback).build()
 
     companion object {
-        operator fun invoke(drawType: AG.DrawType = AG.DrawType.TRIANGLES, callback: MeshBuilder3D.() -> Unit): Mesh3D = MeshBuilder3D(drawType).apply(callback).build()
+        operator fun invoke(drawType: AGDrawType = AGDrawType.TRIANGLES, callback: MeshBuilder3D.() -> Unit): Mesh3D = MeshBuilder3D(drawType).apply(callback).build()
         private const val PIf = PI.toFloat()
     }
 
@@ -237,11 +237,11 @@ class MeshBuilder3D(
 
     fun build(): Mesh3D = Mesh3D(
         fastArrayListOf(BufferWithVertexLayout(
-            buffer = vertexData.toFBuffer(),
+            buffer = vertexData.toNBuffer(),
             layout = layout
         )),
-        indexData.toFBuffer(),
-        AG.IndexType.USHORT,
+        indexData.toNBuffer(),
+        AGIndexType.USHORT,
         indexData.size,
         null,
         drawType,

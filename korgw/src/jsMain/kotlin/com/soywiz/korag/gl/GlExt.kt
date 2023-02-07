@@ -1,9 +1,7 @@
 package com.soywiz.korag.gl
 
 import com.soywiz.kgl.*
-import com.soywiz.kmem.*
 import com.soywiz.korag.*
-import com.soywiz.korim.bitmap.*
 import org.w3c.dom.*
 import kotlinx.browser.*
 
@@ -27,71 +25,33 @@ fun jsObject(vararg pairs: Pair<String, Any?>): dynamic {
 val korgwCanvasQuery: String? by lazy { window.asDynamic().korgwCanvasQuery.unsafeCast<String?>() }
 val isCanvasCreatedAndHandled get() = korgwCanvasQuery == null
 
-open class AGWebgl(val config: AGConfig, val glDecorator: (KmlGl) -> KmlGl = { it }) : AGOpengl(), AGContainer {
-	override val ag: AG = this
+fun AGDefaultCanvas(): HTMLCanvasElement {
+    return (korgwCanvasQuery?.let { document.querySelector(it) as HTMLCanvasElement })
+        ?: (document.createElement("canvas") as HTMLCanvasElement)
+}
 
-    open fun getCanvas(): HTMLCanvasElement {
-        return (korgwCanvasQuery?.let { document.querySelector(it) as HTMLCanvasElement })
-            ?: (document.createElement("canvas") as HTMLCanvasElement)
-    }
+fun AGWebgl(config: AGConfig, canvas: HTMLCanvasElement = AGDefaultCanvas()): AGOpengl = AGOpengl(
+    KmlGlJsCanvas(
+        canvas, jsObject(
+            "premultipliedAlpha" to false, // To be like the other targets
+            "alpha" to false,
+            "stencil" to true,
+            "antialias" to config.antialiasHint
+        )
+    )
+).also { ag ->
+    (window.asDynamic()).ag = ag
 
-	val canvas by lazy { getCanvas() }
+    // https://www.khronos.org/webgl/wiki/HandlingContextLost
+    // https://gist.github.com/mattdesl/9995467
 
-	val glOpts = jsObject(
-        "premultipliedAlpha" to false, // To be like the other targets
-		"alpha" to false,
-		"stencil" to true,
-        "antialias" to config.antialiasHint
-	)
-	//val gl: GL = (canvas.getContext("webgl", glOpts) ?: canvas.getContext("experimental-webgl", glOpts)) as GL
-	//override val gl = KmlGlCached(KmlGlJsCanvas(canvas, glOpts))
-    val baseGl = KmlGlJsCanvas(canvas, glOpts)
-    override val gl = glDecorator(baseGl)
+    canvas.addEventListener("webglcontextlost", { e ->
+        //contextVersion++
+        e.preventDefault()
+    }, false)
 
-    init {
-		(window.asDynamic()).ag = this
-		//(window.asDynamic()).gl = gl
-	}
-
-	override val nativeComponent: Any = canvas
-	val tDevicePixelRatio get() = window.devicePixelRatio.toDouble()
-	override val devicePixelRatio get() = when {
-		tDevicePixelRatio <= 0.0 -> 1.0
-		tDevicePixelRatio.isNaN() -> 1.0
-		tDevicePixelRatio.isInfinite() -> 1.0
-		else -> tDevicePixelRatio
-	}
-    // @TODO: Improve this: https://gist.github.com/scryptonite/5242987
-    override val pixelsPerInch: Double get() = 96.0 * devicePixelRatio
-
-    init {
-		canvas.addEventListener("webglcontextlost", { e ->
-			//contextVersion++
-			e.preventDefault()
-		}, false)
-
-		canvas.addEventListener("webglcontextrestored", { e ->
-			contextVersion++
-			//e.preventDefault()
-		}, false)
-
-		//fun handleOnResized() {
-		//	ag.resized(canvas.width, canvas.height)
-		//}
-//
-		//window.addEventListener("resize", { e ->
-		//	handleOnResized()
-		//	//e.preventDefault()
-		//}, false)
-//
-		//handleOnResized()
-	}
-
-	override fun repaint() {
-	}
-
-	override fun dispose() {
-		// https://www.khronos.org/webgl/wiki/HandlingContextLost
-		// https://gist.github.com/mattdesl/9995467
-	}
+    canvas.addEventListener("webglcontextrestored", { e ->
+        ag.contextLost()
+        //e.preventDefault()
+    }, false)
 }

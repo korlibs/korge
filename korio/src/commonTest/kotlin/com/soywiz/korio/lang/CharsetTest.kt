@@ -72,12 +72,33 @@ class CharsetTest {
 
         val charset = object : Charset(MYDEMOCharsetName) {
             override fun encode(out: ByteArrayBuilder, src: CharSequence, start: Int, end: Int): Unit = TODO()
-            override fun decode(out: StringBuilder, src: ByteArray, start: Int, end: Int): Unit = TODO()
+            override fun decode(out: StringBuilder, src: ByteArray, start: Int, end: Int): Int = TODO()
         }
         Charset.registerProvider({ normalizedName, _ -> if (normalizedName == "DEMO") charset else null }) {
             assertEquals(MYDEMOCharsetName, Charset.forName("DEMO").name)
             assertEquals(MYDEMOCharsetName, Charset.forName("DE-_mo").name)
             assertFailsWith<InvalidArgumentException> { Charset.forName("MY-UNKNOWN-CHARSET") }
         }
+    }
+
+    @Test
+    fun testPartialDecode() {
+        val charset = UTF8
+        val text = "hello你好"
+        val bytes = text.toByteArray(charset)
+        val out = StringBuilder()
+        val outIncomplete = StringBuilder()
+        val read = charset.decode(out, bytes, 1, bytes.size)
+        val readIncomplete = charset.decode(outIncomplete, bytes, 1, bytes.size - 1)
+        assertEquals(
+            """
+                'ello你好' - 10
+                'ello你' - 7
+            """.trimIndent(),
+            """
+                '$out' - $read
+                '$outIncomplete' - $readIncomplete
+            """.trimIndent()
+        )
     }
 }

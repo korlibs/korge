@@ -44,11 +44,11 @@ class Stage3DView(val stage3D: Stage3D) : View() {
 	private val ctx3D = RenderContext3D()
 	override fun renderInternal(ctx: RenderContext) {
 		ctx.flush()
-		ctx.ag.clear(depth = 1f, clearColor = false)
+		ctx.clear(depth = 1f, clearColor = false)
 		//ctx.ag.clear(color = Colors.RED)
 		ctx3D.ag = ctx.ag
 		ctx3D.rctx = ctx
-		ctx3D.projMat.copyFrom(stage3D.camera.getProjMatrix(ctx.ag.backWidth.toDouble(), ctx.ag.backHeight.toDouble()))
+		ctx3D.projMat.copyFrom(stage3D.camera.getProjMatrix(ctx.backWidth.toDouble(), ctx.backHeight.toDouble()))
 		ctx3D.cameraMat.copyFrom(stage3D.camera.transform.matrix)
 		ctx3D.ambientColor.setToColorPremultiplied(stage3D.ambientColor).scale(stage3D.ambientPower)
 		ctx3D.cameraMatInv.invert(stage3D.camera.transform.matrix)

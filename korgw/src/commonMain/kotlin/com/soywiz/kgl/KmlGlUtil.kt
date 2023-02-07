@@ -149,23 +149,23 @@ class KmlGlBuffer(val gl: KmlGl, val type: Int, val buf: Int) {
 		}
 	}
 
-	fun setData(data: FBuffer, size: Int = data.size): KmlGlBuffer {
+	fun setData(data: Buffer, size: Int = data.size): KmlGlBuffer {
 		bind()
 		gl.bufferData(type, size, data, gl.STATIC_DRAW)
 		return this
 	}
 
 	fun dispose() {
-		fbuffer(4) {
+		BufferTemp(4) {
 			gl.deleteBuffers(1, it)
 		}
 	}
 }
 
 fun KmlGl.createBuffer(type: Int): KmlGlBuffer {
-	val id = fbuffer(4) {
+	val id = BufferTemp(4) {
 		genBuffers(1, it)
-		it.getInt(0)
+		it.getInt32(0)
 	}
 	return KmlGlBuffer(this, type, id)
 }
@@ -207,85 +207,22 @@ inline fun KmlGlVertexLayout.drawElements(
 	}
 }
 
-class KmlGlTex(val gl: KmlGl, val tex: Int) {
-	var width = 0
-	var height = 0
-
-	var smooth: Boolean = true
-	var clampToEdge: Boolean = true
-
-	fun bind(unit: Int) = gl.run {
-		activeTexture(TEXTURE0 + unit)
-		bindTexture(TEXTURE_2D, tex)
-		texParameteri(TEXTURE_2D, TEXTURE_MIN_FILTER, if (smooth) gl.LINEAR else gl.NEAREST)
-		texParameteri(TEXTURE_2D, TEXTURE_MAG_FILTER, if (smooth) gl.LINEAR else gl.NEAREST)
-		texParameteri(TEXTURE_2D, TEXTURE_WRAP_S, if (clampToEdge) gl.CLAMP_TO_EDGE else gl.REPEAT)
-		texParameteri(TEXTURE_2D, TEXTURE_WRAP_T, if (clampToEdge) gl.CLAMP_TO_EDGE else gl.REPEAT)
-	}
-
-	fun upload(
-		width: Int,
-		height: Int,
-		data: FBuffer,
-		format: Int = gl.RGBA,
-		type: Int = gl.UNSIGNED_BYTE
-	): KmlGlTex {
-		bind(0)
-		gl.texImage2D(gl.TEXTURE_2D, 0, format, width, height, 0, format, type, data)
-		this.width = width
-		this.height = height
-		return this
-	}
-
-	fun upload(width: Int, height: Int, data: IntArray, format: Int = gl.RGBA, type: Int = gl.UNSIGNED_BYTE): KmlGlTex {
-		return data.toTempBuffer { upload(width, height, it, format, type) }
-	}
-
-	fun upload(data: NativeImage, format: Int = gl.RGBA, type: Int = gl.UNSIGNED_BYTE): KmlGlTex {
-		bind(0)
-		gl.texImage2D(gl.TEXTURE_2D, 0, format, format, type, data)
-		this.width = data.width
-		this.height = data.height
-		return this
-	}
-
-	fun dispose() {
-		fbuffer(1) {
-			it.setInt(0, tex)
-			gl.deleteTextures(1, it)
-		}
-	}
-}
-
-fun KmlGl.createKmlTexture(): KmlGlTex {
-	val buf = fbuffer(4) {
-		genTextures(1, it)
-		it.getInt(0)
-	}
-	return KmlGlTex(this, buf).upload(1, 1, FBuffer(4))
-}
-
-fun KmlGl.uniformTex(location: Int, tex: KmlGlTex, unit: Int) {
-	tex.bind(unit)
-	uniform1i(location, unit)
-}
-
 object KmlGlUtil {
 	fun ortho(
 		width: Int,
 		height: Int,
 		near: Float = 0f,
 		far: Float = 1f,
-		out: Float32Buffer = Float32BufferAlloc(4 * 16)
-	): MemBuffer {
+		out: Float32Buffer = Float32Buffer(4 * 16)
+	): Float32Buffer {
 		return ortho(height.toFloat(), 0f, 0f, width.toFloat(), near, far, out)
 	}
 
 	fun ortho(
 		bottom: Float, top: Float, left: Float, right: Float,
 		near: Float, far: Float,
-		M: Float32Buffer = Float32BufferAlloc(16)
-	): MemBuffer {
+		M: Float32Buffer = Float32Buffer(16)
+	): Float32Buffer {
 		// set OpenGL perspective projection matrix
 		M[0] = 2 / (right - left)
 		M[1] = 0f
@@ -306,7 +243,7 @@ object KmlGlUtil {
 		M[13] = -(top + bottom) / (top - bottom)
 		M[14] = -(far + near) / (far - near)
 		M[15] = 1f
-		return M.mem
+		return M
 	}
 }
 

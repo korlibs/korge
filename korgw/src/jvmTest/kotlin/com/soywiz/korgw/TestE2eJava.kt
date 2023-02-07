@@ -38,25 +38,26 @@ class TestE2eJava {
                 val ag = gameWindow.ag
                 gameWindow.onRenderEvent {
                     try {
-                        ag.clear(Colors.DARKGREY)
-                        val vertices = ag.createVertexBuffer(floatArrayOf(
+                        ag.clear(ag.mainFrameBuffer, Colors.DARKGREY)
+                        val vertices = AGBuffer().upload(floatArrayOf(
                             -1f, -1f,
                             -1f, +1f,
                             +1f, +1f
                         ))
                         ag.draw(
-                            vertices,
+                            //ctx.rctx.currentFrameBuffer,
+                            ag.mainFrameBuffer,
+                            AGVertexArrayObject(AGVertexData(DefaultShaders.LAYOUT_DEBUG, vertices)),
                             program = DefaultShaders.PROGRAM_DEBUG,
-                            type = AG.DrawType.TRIANGLES,
-                            vertexLayout = DefaultShaders.LAYOUT_DEBUG,
+                            drawType = AGDrawType.TRIANGLES,
                             vertexCount = 3,
-                            uniforms = AG.UniformValues(
+                            uniforms = AGUniformValues(
                                 //DefaultShaders.u_ProjMat to Matrix3D().setToOrtho(0f, 0f, WIDTH.toFloat(), HEIGHT.toFloat(), -1f, +1f)
                             )
                         )
                         // @TODO:     java.lang.UnsatisfiedLinkError: Error looking up function 'glDeleteBuffers': The specified procedure could not be found. on windows Github/actions
                         // vertices.close()
-                        ag.readColor(bmp)
+                        ag.readColor(ag.mainFrameBuffer, bmp)
                         step++
                     } catch (e: Throwable) {
                         exception = e

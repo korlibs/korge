@@ -1,8 +1,8 @@
 package com.soywiz.korte.dynamic
 
-import com.soywiz.korte.internal.quote
-import kotlin.math.pow
-import kotlin.reflect.KClass
+import com.soywiz.korte.internal.*
+import kotlin.math.*
+import kotlin.reflect.*
 
 //expect class DynamicBase {
 //	//fun getFields(obj: Any?): List<String>
@@ -206,7 +206,7 @@ object Dynamic2 {
 
     suspend fun callAny(any: Any?, methodName: Any?, args: List<Any?>, mapper: ObjectMapper2): Any? = when (any) {
         null -> null
-        any is Dynamic2Callable -> (any as Dynamic2Callable).dynamic2Call(methodName, args)
+        (any is Dynamic2Callable) -> (any as Dynamic2Callable).dynamic2Call(methodName, args)
         else -> mapper.invokeAsync(any::class as KClass<Any>, any, DynamicContext { methodName.toDynamicString() }, args)
     }
 

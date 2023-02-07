@@ -96,7 +96,7 @@ class DirectionalBlurFilter(
         uniforms[u_radius] = radius
         uniforms[u_constant1] = constant1 * (1.0 / scaleSum)
         uniforms[u_constant2] = constant2
-        uniforms[u_direction] = Vector3D(angle.cosine, angle.sine, 0.0)
+        uniforms[u_direction].set(angle.cosine, angle.sine)
     }
 
     override val programProvider: ProgramProvider get() = DirectionalBlurFilter

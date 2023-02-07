@@ -13,7 +13,6 @@ uniform sampler2D u_Tex0;
 uniform sampler2D u_Tex1;
 uniform sampler2D u_Tex2;
 uniform sampler2D u_Tex3;
-uniform bool u_OutputPre;
 varying lowp float v_Wrap;
 varying mediump vec2 v_Tex;
 varying lowp float v_TexIndex;
@@ -47,8 +46,5 @@ void main() {
 	gl_FragColor = ((gl_FragColor * v_Col) + temp0);
 	if ((gl_FragColor.a <= 0.0)) {
 		discard;
-	}
-	if ((!(u_OutputPre))) {
-		gl_FragColor.rgb = (gl_FragColor.rgb / gl_FragColor.a);
 	}
 }

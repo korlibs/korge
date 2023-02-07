@@ -65,7 +65,7 @@ assertEquals(80, 77.nextAlignedTo(10))
 val v = byteArray.readS32LE(10)
 
 // Buffers
-val mem = FBuffer.alloc(10)
+val mem = Buffer(10)
 for (n in 0 until 8) mem[n] = n
 assertEquals(0x03020100, mem.getAlignedInt32(0))
 assertEquals(0x07060504, mem.getAlignedInt32(1))

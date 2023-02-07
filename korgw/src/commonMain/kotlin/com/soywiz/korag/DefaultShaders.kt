@@ -30,7 +30,6 @@ interface IDefaultShaders {
     val t_Temp0: Temp get() = DefaultShaders.t_Temp0
     val t_Temp1: Temp get() = DefaultShaders.t_Temp1
     val t_TempMat2: Temp get() = DefaultShaders.t_TempMat2
-    val textureUnit: AG.TextureUnit get() = DefaultShaders.textureUnit
 }
 
 object DefaultShaders {
@@ -40,17 +39,15 @@ object DefaultShaders {
 
 	val u_ProjMat: Uniform = Uniform("u_ProjMat", VarType.Mat4)
 	val u_ViewMat: Uniform = Uniform("u_ViewMat", VarType.Mat4)
-	val a_Pos: Attribute = Attribute("a_Pos", VarType.Float2, normalized = false, precision = Precision.HIGH)
-	val a_Tex: Attribute = Attribute("a_Tex", VarType.Float2, normalized = false, precision = Precision.MEDIUM)
-	val a_Col: Attribute = Attribute("a_Col", VarType.Byte4, normalized = true, precision = Precision.LOW)
+	val a_Pos: Attribute = Attribute("a_Pos", VarType.Float2, normalized = false, precision = Precision.HIGH, fixedLocation = 0)
+	val a_Tex: Attribute = Attribute("a_Tex", VarType.Float2, normalized = false, precision = Precision.MEDIUM, fixedLocation = 1)
+	val a_Col: Attribute = Attribute("a_Col", VarType.Byte4, normalized = true, precision = Precision.LOW, fixedLocation = 2)
 	val v_Tex: Varying = Varying("v_Tex", VarType.Float2, precision = Precision.MEDIUM)
 	val v_Col: Varying = Varying("v_Col", VarType.Byte4)
 
 	val t_Temp0: Temp = Temp(0, VarType.Float4)
 	val t_Temp1: Temp = Temp(1, VarType.Float4)
     val t_TempMat2: Temp = Temp(2, VarType.Mat2)
-
-	val textureUnit: AG.TextureUnit = AG.TextureUnit()
 
 	val LAYOUT_DEFAULT: VertexLayout = VertexLayout(a_Pos, a_Tex, a_Col)
 

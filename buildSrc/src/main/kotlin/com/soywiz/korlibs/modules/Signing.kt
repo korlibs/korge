@@ -1,7 +1,6 @@
 package com.soywiz.korlibs.modules
 
 import org.gradle.api.*
-import org.gradle.kotlin.dsl.*
 import org.gradle.plugins.signing.*
 import com.soywiz.korlibs.*
 

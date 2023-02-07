@@ -7,6 +7,7 @@ import com.soywiz.korge.view.Container
 import com.soywiz.korge.view.View
 import com.soywiz.korge.view.ViewDslMarker
 import com.soywiz.korge.view.addTo
+import com.soywiz.korim.bitmap.*
 import kotlin.math.min
 
 inline fun Container.fastSpriteContainer(
@@ -96,7 +97,7 @@ class FastSpriteContainer(val useRotation: Boolean = false, var smoothing: Boole
     private fun renderInternalBatch(bb: BatchBuilder2D, m: Int, batchSize: Int, colorMul: Int, colorAdd: Int) {
         val sprites = this.sprites
         var vp = bb.vertexPos
-        val vd = bb.verticesFast32
+        val vd = bb.vertices
         val mMax = min(sprites.size, m + batchSize)
         var count = mMax - m
         val fsprite = sprites.first()

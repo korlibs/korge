@@ -104,27 +104,30 @@ open class UIVerticalList(provider: Provider, width: Double = 200.0) : UIView(wi
             //println("transform=${transform.scaleAvg}")
             val fromIndex = getIndexAtY((-point.y + tempRect.top) / transform.scaleY).clamp(0, numItems - 1)
             var toIndex = fromIndex
-            for (index in fromIndex until numItems) {
-                val view = viewsByIndex.getOrPut(index) {
-                    val itemHeight = provider.getItemHeight(index)
-                    provider.getItemView(index, this)
-                        .also { addChild(it) }
-                        .position(0.0, provider.getItemY(index))
-                        .size(width, itemHeight.toDouble())
-                }
-                view.zIndex = index.toDouble()
-                toIndex = index
+            //println("numItems=$numItems")
+            if (numItems > 0) {
+                for (index in fromIndex until numItems) {
+                    val view = viewsByIndex.getOrPut(index) {
+                        val itemHeight = provider.getItemHeight(index)
+                        provider.getItemView(index, this)
+                            .also { addChild(it) }
+                            .position(0.0, provider.getItemY(index))
+                            .size(width, itemHeight.toDouble())
+                    }
+                    view.zIndex = index.toDouble()
+                    toIndex = index
 
-                //val localViewY = view.localToGlobalY(0.0, view.height)
+                    //val localViewY = view.localToGlobalY(0.0, view.height)
 
-                //println(":: ${view.localToGlobalY(0.0, view.height)}, ${area.bottom}")
+                    //println(":: ${view.localToGlobalY(0.0, view.height)}, ${area.bottom}")
 
-                //if (view.localToRenderY(0.0, view.height) >= area.bottom) {
-                if (view.localToGlobalY(0.0, view.height) >= area.bottom) {
-                //if (view.localToWindowY(stage!!.views, 0.0, view.height) >= area.bottom) {
-                //if (false) {
-                    //println("localViewY=localViewY, globalY=${view.localToGlobalY(0.0, view.height)}")
-                    break
+                    //if (view.localToRenderY(0.0, view.height) >= area.bottom) {
+                    if (view.localToGlobalY(0.0, view.height) >= area.bottom) {
+                        //if (view.localToWindowY(stage!!.views, 0.0, view.height) >= area.bottom) {
+                        //if (false) {
+                        //println("localViewY=localViewY, globalY=${view.localToGlobalY(0.0, view.height)}")
+                        break
+                    }
                 }
             }
             //println("area=$area, point=$point, nItems=${toIndex - fromIndex}, fromIndex=$fromIndex, toIndex=$toIndex, globalBounds=${this.globalBounds}")

@@ -3,12 +3,11 @@ package com.soywiz.korge.render
 import com.soywiz.kds.Extra
 import com.soywiz.kds.Pool
 import com.soywiz.klogger.Logger
-import com.soywiz.korag.AG
+import com.soywiz.korag.*
 import com.soywiz.korag.shader.*
 import com.soywiz.korge.internal.KorgeInternal
 import com.soywiz.korge.view.*
-import com.soywiz.korim.bitmap.Bitmaps
-import com.soywiz.korim.bitmap.BmpSlice
+import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.shape.*
@@ -53,7 +52,7 @@ class RenderContext2D(
     @KorgeInternal
 	val mpool = Pool<Matrix> { Matrix() }
 
-    val _tempProgramUniforms = AG.UniformValues()
+    val _tempProgramUniforms = AGUniformValues()
 
 	init { logger.trace { "RenderContext2D[1]" } }
 
@@ -219,7 +218,7 @@ class RenderContext2D(
         width: Double,
         height: Double,
         program: Program,
-        uniforms: AG.UniformValues,
+        uniforms: AGUniformValues,
         padding: Margin = Margin.EMPTY,
     ) {
         val ctx = batch.ctx
@@ -238,10 +237,10 @@ class RenderContext2D(
                 val R = (width + padding.leftPlusRight).toFloat()
                 val B = (height + padding.topPlusBottom).toFloat()
 
-                var l = -padding.left.toFloat()
-                var t = -padding.top.toFloat()
-                var r = (width + padding.right).toFloat()
-                var b = (height + padding.bottom).toFloat()
+                val l = -padding.left.toFloat()
+                val t = -padding.top.toFloat()
+                val r = (width + padding.right).toFloat()
+                val b = (height + padding.bottom).toFloat()
 
                 val vertices = TexturedVertexArray(6, TexturedVertexArray.QUAD_INDICES)
                 vertices.quad(
@@ -257,7 +256,6 @@ class RenderContext2D(
                 )
                 batch.setStateFast(Bitmaps.white, filtering, blendMode, program, icount = 6, vcount = 4)
                 batch.drawVertices(vertices, null, premultiplied = true, wrap = true)
-
             }
         }
     }
@@ -282,7 +280,7 @@ class RenderContext2D(
 	}
 
     /** Temporarily sets the [scissor] (visible rendering area) to [x], [y], [width] and [height] while [block] is executed. */
-    inline fun scissor(x: Int, y: Int, width: Int, height: Int, block: () -> Unit) = scissor(tempScissor.setTo(x, y, width, height), block)
+    inline fun scissor(x: Int, y: Int, width: Int, height: Int, block: () -> Unit) = scissor(AGScissor(x, y, width, height), block)
 
     /** Temporarily sets the [scissor] (visible rendering area) to [x], [y], [width] and [height] while [block] is executed. */
     inline fun scissor(x: Double, y: Double, width: Double, height: Double, block: () -> Unit) = scissor(x.toInt(), y.toInt(), width.toInt(), height.toInt(), block)
@@ -292,56 +290,23 @@ class RenderContext2D(
 
     /** Temporarily sets the [scissor] (visible rendering area) to [rect] is executed. */
     inline fun scissor(rect: Rectangle?, block: () -> Unit) =
-        scissor(rect?.let { tempScissor.setTo(it) }, block)
+        scissor(AGScissor(rect), block)
 
     /** Temporarily sets the [scissor] (visible rendering area) to [scissor] is executed. */
-    inline fun scissor(scissor: AG.Scissor?, block: () -> Unit) {
-        val oldScissor = batch.scissor
-        val returnScissor = scissorStart(scissor)
-        try {
+    inline fun scissor(scissor: AGScissor, block: () -> Unit) {
+        batch.scissor(getTransformedScissor(scissor)) {
             block()
-        } finally {
-            scissorEnd(oldScissor, returnScissor)
         }
     }
 
-    @PublishedApi
-    internal val scissorPool = Pool(8) { AG.Scissor() }
+    @PublishedApi internal fun getTransformedScissor(scissor: AGScissor): AGScissor {
+        val left = m.transformX(scissor.left, scissor.top)
+        val top = m.transformY(scissor.left, scissor.top)
+        val right = m.transformX(scissor.right, scissor.bottom)
+        val bottom = m.transformY(scissor.right, scissor.bottom)
 
-    @PublishedApi
-    internal fun scissorStart(scissor: AG.Scissor?): AG.Scissor? {
-        var returnScissor: AG.Scissor? = null
-
-        batch.flush()
-        if (scissor != null) {
-            val left = m.transformX(scissor.left, scissor.top)
-            val top = m.transformY(scissor.left, scissor.top)
-            val right = m.transformX(scissor.right, scissor.bottom)
-            val bottom = m.transformY(scissor.right, scissor.bottom)
-
-            returnScissor = scissorPool.alloc().setTo(left, top, right - left, bottom - top)
-
-            batch.scissor = returnScissor
-            //println("batch.scissor: ${batch.scissor}")
-        } else {
-            batch.scissor = null
-        }
-
-        return returnScissor
+        return AGScissor.fromBounds(left, top, right, bottom)
     }
-
-    @PublishedApi
-    internal fun scissorEnd(oldScissor: AG.Scissor?, returnScissor: AG.Scissor?) {
-        if (returnScissor != null) {
-            scissorPool.free(returnScissor)
-        }
-
-        batch.flush()
-        batch.scissor = oldScissor
-    }
-
-    @PublishedApi
-    internal val tempScissor: AG.Scissor = AG.Scissor()
 }
 
 inline fun View.renderCtx2d(ctx: RenderContext, crossinline block: (RenderContext2D) -> Unit) {

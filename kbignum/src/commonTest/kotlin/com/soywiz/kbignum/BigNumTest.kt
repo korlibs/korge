@@ -1,11 +1,17 @@
 package com.soywiz.kbignum
 
-import com.soywiz.kbignum.BigNum
-import com.soywiz.kbignum.bi
-import com.soywiz.kbignum.bn
 import kotlin.test.*
 
 class BigNumTest {
+    @Test
+    fun testBigNum() {
+        assertEquals(1.bi, 1L.bi)
+        assertEquals("1".bi, "1".bi)
+        assertEquals("1".bi, "1".bi(16))
+        assertEquals(1.bn, 1L.bn)
+        assertEquals("1".bn, "1".bn)
+    }
+
 	@Test
 	fun testToString() {
 		assertEquals("0.019", BigNum(19.bi, 3).toString())

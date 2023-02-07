@@ -2,7 +2,7 @@ package com.soywiz.korge3d
 
 import com.soywiz.kds.iterators.fastForEachWithIndex
 import com.soywiz.kmem.clamp
-import com.soywiz.korag.AG
+import com.soywiz.korag.*
 import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korma.geom.Matrix3D
 import com.soywiz.korma.geom.Vector3D
@@ -56,12 +56,12 @@ class Terrain3D(
     var stepX = 1f
     var stepZ = 1f
 
-    private val meshBuilder3D = MeshBuilder3D(AG.DrawType.TRIANGLE_STRIP)
+    private val meshBuilder3D = MeshBuilder3D(AGDrawType.TRIANGLE_STRIP)
     private var mesh: Mesh3D = createMesh()
 
 
-    private val uniformValues = AG.UniformValues()
-    private val rs = AG.RenderState(depthFunc = AG.CompareMode.LESS_EQUAL)
+    private val uniformValues = AGUniformValues()
+    private val rs = AGDepthAndFrontFace.DEFAULT.withDepthFunc(depthFunc = AGCompareMode.LESS_EQUAL)
     private val tempMat1 = Matrix3D()
     private val tempMat2 = Matrix3D()
     private val tempMat3 = Matrix3D()
@@ -114,7 +114,7 @@ class Terrain3D(
         return meshBuilder3D.build()
     }
 
-    fun AG.UniformValues.setMaterialLight(
+    fun AGUniformValues.setMaterialLight(
         ctx: RenderContext3D,
         uniform: Shaders3D.MaterialLightUniform,
         actual: Material3D.Light
@@ -124,26 +124,24 @@ class Terrain3D(
                 this[uniform.u_color] = actual.colorVec
             }
             is Material3D.LightTexture -> {
-                actual.textureUnit.texture =
-                    actual.bitmap?.let { ctx.rctx.agBitmapTextureManager.getTextureBase(it).base }
-                actual.textureUnit.linear = true
-                this[uniform.u_texUnit] = actual.textureUnit
+                this.set(uniform.u_texUnit, actual.bitmap?.let { ctx.rctx.agBitmapTextureManager.getTextureBase(it).base }, AGTextureUnitInfo.DEFAULT.withLinear(true))
             }
         }
     }
 
     override fun render(ctx: RenderContext3D) {
         val ag = ctx.ag
-        val indexBuffer = ag.createIndexBuffer()
+        val indexBuffer = AGBuffer() // @TODO: This is wrong
         ctx.useDynamicVertexData(mesh.vertexBuffers) { vertexData ->
             indexBuffer.upload(mesh.indexBuffer)
             Shaders3D.apply {
                 val meshMaterial = mesh.material
-                ag.drawV2(
+                ag.draw(
+                    ctx.rctx.currentFrameBuffer,
                     vertexData = vertexData,
                     indices = indexBuffer,
                     indexType = mesh.indexType,
-                    type = mesh.drawType,
+                    drawType = mesh.drawType,
                     program = mesh.program ?: ctx.shaders.getProgram3D(
                         ctx.lights.size.clamp(0, 4),
                         mesh.maxWeights,
@@ -151,7 +149,7 @@ class Terrain3D(
                         mesh.hasTexture
                     ),
                     vertexCount = mesh.vertexCount,
-                    blending = AG.Blending.NONE,
+                    blending = AGBlending.NONE,
                     //vertexCount = 6 * 6,
                     uniforms = uniformValues.apply {
                         this[u_ProjMat] = ctx.projCameraMat
@@ -182,9 +180,10 @@ class Terrain3D(
                             )
                         }
                     },
-                    renderState = rs
+                    depthAndFrontFace = rs
                 )
             }
         }
+        indexBuffer.close()
     }
 }

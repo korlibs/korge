@@ -8,16 +8,7 @@ import com.soywiz.kds.toMap
 import com.soywiz.klock.TimeSpan
 import com.soywiz.kmem.nextPowerOfTwo
 import com.soywiz.kmem.toIntCeil
-import com.soywiz.korim.bitmap.Bitmap
-import com.soywiz.korim.bitmap.Bitmap32
-import com.soywiz.korim.bitmap.BitmapCoords
-import com.soywiz.korim.bitmap.BitmapSlice
-import com.soywiz.korim.bitmap.Bitmaps
-import com.soywiz.korim.bitmap.BmpSlice
-import com.soywiz.korim.bitmap.mipmaps
-import com.soywiz.korim.bitmap.putSliceWithBorder
-import com.soywiz.korim.bitmap.slice
-import com.soywiz.korim.bitmap.sliceWithSize
+import com.soywiz.korim.bitmap.*
 import kotlin.math.sqrt
 
 data class TileSetAnimationFrame(
@@ -96,7 +87,7 @@ class TileSet(
         }
 
 		operator fun invoke(
-            base: BitmapSlice<Bitmap>,
+            base: BmpSlice,
             tileWidth: Int = base.width,
             tileHeight: Int = base.height,
             columns: Int = -1,
@@ -128,8 +119,8 @@ class TileSet(
             tilecount: Int,
             spacing: Int,
             margin :Int
-        ): List<BitmapSlice<Bitmap32>> {
-            return ArrayList<BitmapSlice<Bitmap32>>().apply {
+        ): List<BmpSlice32> {
+            return ArrayList<BmpSlice32>().apply {
                 loop@ for (y in 0 until bmp.height / tileheight) {
                     for (x in 0 until columns) {
                         add(bmp.sliceWithSize(
@@ -167,7 +158,7 @@ class TileSet(
 		fun fromBitmapSlices(
             tilewidth: Int,
             tileheight: Int,
-            bmpSlices: List<BitmapSlice<Bitmap32>>,
+            bmpSlices: List<BmpSlice32>,
             border: Int = 1,
             mipmaps: Boolean = false,
             collisionsMap: IntMap<TileShapeInfo> = IntMap(),
@@ -184,7 +175,7 @@ class TileSet(
 			val fullArea = bmpSlices.size.nextPowerOfTwo * barea
 			val expectedSide = sqrt(fullArea.toDouble()).toIntCeil().nextPowerOfTwo
 
-            val premultiplied = bmpSlices.any { it.premultiplied }
+            val premultiplied = bmpSlices.any { it.base.premultiplied }
 
 			val out = Bitmap32(expectedSide, expectedSide, premultiplied = premultiplied).mipmaps(mipmaps)
 			val texs = IntMap<TileSetTileInfo>()

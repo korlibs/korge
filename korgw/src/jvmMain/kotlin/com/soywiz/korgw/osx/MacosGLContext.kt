@@ -1,6 +1,7 @@
 package com.soywiz.korgw.osx
 
 import com.soywiz.kgl.*
+import com.soywiz.kmem.dyn.osx.*
 import com.soywiz.korag.*
 import com.soywiz.korag.gl.*
 import com.soywiz.korgw.*

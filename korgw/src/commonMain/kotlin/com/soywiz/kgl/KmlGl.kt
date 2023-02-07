@@ -333,6 +333,8 @@ abstract class KmlGl : Extra by Extra.Mixin(), IKmlGl, AGFeatures {
     inline val TEXTURE_2D_MULTISAMPLE: Int get() = KmlGl.TEXTURE_2D_MULTISAMPLE
 
     companion object {
+        const val TEXTURE_BASE_LEVEL = 0x813C
+        const val TEXTURE_MAX_LEVEL = 0x813D
 
         const val DEPTH_BUFFER_BIT: Int = 0x0100
         const val STENCIL_BUFFER_BIT: Int = 0x0400

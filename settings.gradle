@@ -1,15 +1,8 @@
 pluginManagement {
-	repositories {
-        mavenLocal()
-		mavenCentral()
-		gradlePluginPortal()
-        maven { url = uri("https://maven.pkg.jetbrains.space/kotlin/p/kotlin/temporary") }
-        maven { url = uri("https://maven.pkg.jetbrains.space/public/p/kotlinx-coroutines/maven") }
-        maven { url = uri("https://oss.sonatype.org/content/repositories/snapshots/") }
-	}
+    Eval.xy(this, it, file('./gradle/repositories.settings.gradle').text)
 }
 
-rootProject.name = "korlibs"
+rootProject.name = "${rootDir.name}-root"
 
 boolean isPropertyTrue(String name) {
     return System.getenv(name) == "true" || System.getProperty(name) == "true"
@@ -19,7 +12,6 @@ boolean inCI = isPropertyTrue("CI")
 boolean disabledExtraKorgeLibs = isPropertyTrue("DISABLED_EXTRA_KORGE_LIBS")
 
 include(":kbignum")
-include(":luak")
 include(":klock")
 include(":klogger")
 include(":korinject")
@@ -32,7 +24,6 @@ include(":korio")
 include(":korim")
 include(":korau")
 include(":korgw")
-include(":korvi")
 include(":korge")
 include(":korge-gradle-plugin")
 include(":korge-reload-agent")
@@ -40,8 +31,4 @@ include(":korge-sandbox")
 
 if (!inCI) {
     // include(":korge-benchmarks")
-}
-
-if (!disabledExtraKorgeLibs) {
-    include(":luak")
 }

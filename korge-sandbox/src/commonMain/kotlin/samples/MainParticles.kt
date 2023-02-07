@@ -22,7 +22,7 @@ class MainParticles : Scene() {
                 val localMouse = localMouseXY(views)
                 val stageMouse = stage!!.mouseXY.copy()
                 //println("localMouse=$localMouse, stageMouse=$stageMouse")
-                particlesView.emitterPos = localMouseXY(views)
+                particlesView.emitterPos = localMouseXY(views) * scale
                 //particlesView.setGlobalXY(stage!!.mouseXY)
                 //println(stage!!.mouseXY)
                 //particlesView.x = stage.mouseX

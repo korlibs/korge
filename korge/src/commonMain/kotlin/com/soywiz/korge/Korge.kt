@@ -8,7 +8,7 @@ import com.soywiz.klock.milliseconds
 import com.soywiz.klogger.Console
 import com.soywiz.klogger.Logger
 import com.soywiz.kmem.*
-import com.soywiz.korag.log.PrintAG
+import com.soywiz.korag.log.AGPrint
 import com.soywiz.korev.DestroyEvent
 import com.soywiz.korev.DropFileEvent
 import com.soywiz.korev.EventDispatcher
@@ -209,7 +209,7 @@ object Korge {
             //val views = Views(gameWindow.getCoroutineDispatcherWithCurrentContext() + SupervisorJob(), ag, injector, input, timeProvider, stats, gameWindow)
             val views: Views = Views(
                 coroutineContext = coroutineContext + gameWindow.coroutineDispatcher + AsyncInjectorContext(injector) + SupervisorJob(),
-                ag = if (debugAg) PrintAG() else ag,
+                ag = if (debugAg) AGPrint() else ag,
                 injector = injector,
                 input = input,
                 timeProvider = timeProvider,
@@ -319,8 +319,8 @@ object Korge {
             return views.windowToGlobalCoords(x, y, out)
         }
 
-        fun getRealX(x: Double, scaleCoords: Boolean): Double = if (scaleCoords) x * ag.devicePixelRatio else x
-        fun getRealY(y: Double, scaleCoords: Boolean): Double = if (scaleCoords) y * ag.devicePixelRatio else y
+        fun getRealX(x: Double, scaleCoords: Boolean): Double = if (scaleCoords) x * views.devicePixelRatio else x
+        fun getRealY(y: Double, scaleCoords: Boolean): Double = if (scaleCoords) y * views.devicePixelRatio else y
 
         /*
         fun updateTouch(id: Int, x: Double, y: Double, start: Boolean, end: Boolean) {
@@ -511,7 +511,7 @@ object Korge {
             //try { throw Exception() } catch (e: Throwable) { e.printStackTrace() }
             //println("eventDispatcher.addEventListener<ReshapeEvent>: ${ag.backWidth}x${ag.backHeight} : ${e.width}x${e.height}")
             //println("resized. ${ag.backWidth}, ${ag.backHeight}")
-            views.resized(ag.backWidth, ag.backHeight)
+            views.resized(ag.mainFrameBuffer.width, ag.mainFrameBuffer.height)
         }
 
         //println("eventDispatcher.dispatch(ReshapeEvent(0, 0, views.nativeWidth, views.nativeHeight)) : ${views.nativeWidth}x${views.nativeHeight}")
@@ -553,7 +553,7 @@ object Korge {
                 renderBlock(event)
 
             } else {
-                views.ag.doRender {
+                views.renderContext.doRender {
                     if (!renderShown) {
                         //println("!!!!!!!!!!!!! views.gameWindow.addEventListener<RenderEvent>")
                         renderShown = true

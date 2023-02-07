@@ -16,7 +16,7 @@ import com.soywiz.kmem.setBits
 import com.soywiz.korag.AG
 import com.soywiz.korag.AGWindow
 import com.soywiz.korag.annotation.KoragExperimental
-import com.soywiz.korag.log.DummyAG
+import com.soywiz.korag.log.AGDummy
 import com.soywiz.korev.DestroyEvent
 import com.soywiz.korev.DisposeEvent
 import com.soywiz.korev.DropFileEvent
@@ -89,6 +89,9 @@ data class GameWindowCreationConfig(
     val multithreaded: Boolean? = null,
     val hdr: Boolean? = null,
     val msaa: Int? = null,
+    val checkGl: Boolean = false,
+    val logGl: Boolean = false,
+    val cacheGl: Boolean = false,
 )
 
 expect fun CreateDefaultGameWindow(config: GameWindowCreationConfig): GameWindow
@@ -220,7 +223,7 @@ open class GameWindowCoroutineDispatcher : CoroutineDispatcher(), Delay, Closeab
                     val task = lock { (if (tasks.isNotEmpty()) tasks.dequeue() else null) } ?: break
                     val time = measureTime {
                         try {
-                            task?.run()
+                            task.run()
                         } catch (e: Throwable) {
                             e.printStackTrace()
                         } finally {
@@ -254,7 +257,7 @@ open class GameWindowCoroutineDispatcher : CoroutineDispatcher(), Delay, Closeab
             timedTasks.removeHead().continuation?.resume(Unit)
         }
         while (tasks.isNotEmpty()) {
-            tasks.dequeue()?.run()
+            tasks.dequeue().run()
         }
     }
 
@@ -268,6 +271,7 @@ interface GameWindowConfig {
 open class GameWindow :
     EventDispatcher.Mixin(),
     DialogInterfaceProvider,
+    DeviceDimensionsProvider,
     CoroutineContext.Element,
     AGWindow,
     GameWindowConfig,
@@ -386,7 +390,7 @@ open class GameWindow :
     }
 
     //override val ag: AG = LogAG()
-    override val ag: AG = DummyAG()
+    override val ag: AG = AGDummy()
 
     open val coroutineDispatcher: GameWindowCoroutineDispatcher = GameWindowCoroutineDispatcher()
 
@@ -590,14 +594,14 @@ open class GameWindow :
             }
             if (surfaceChanged) {
                 surfaceChanged = false
-                ag.mainRenderBuffer.setSize(surfaceX, surfaceY, surfaceWidth, surfaceHeight)
+                ag.mainFrameBuffer.setSize(surfaceX, surfaceY, surfaceWidth, surfaceHeight)
                 dispatchReshapeEvent(surfaceX, surfaceY, surfaceWidth, surfaceHeight)
             }
         }
         if (doInitialize) {
             doInitialize = false
             //ag.mainRenderBuffer.setSize(0, 0, width, height)
-            println("---------------- Trigger AG.initialized ag.mainRenderBuffer.setSize ($width, $height) --------------")
+            println("---------------- Trigger AG.initialized ag.mainFrameBuffer.setSize ($width, $height) --------------")
             dispatch(initEvent)
         }
         try {
@@ -699,7 +703,7 @@ open class GameWindow :
     }
 
     fun dispatchReshapeEventEx(x: Int, y: Int, width: Int, height: Int, fullWidth: Int, fullHeight: Int) {
-        ag.resized(x, y, width, height, fullWidth, fullHeight)
+        ag.mainFrameBuffer.setSize(x, y, width, height, fullWidth, fullHeight)
         dispatch(reshapeEvent.apply {
             this.x = x
             this.y = y
@@ -861,6 +865,12 @@ open class GameWindow :
                 running = false
             }
         }
+    }
+
+    enum class HapticFeedbackKind { GENERIC, ALIGNMENT, LEVEL_CHANGE }
+
+    open val hapticFeedbackGenerateSupport: Boolean get() = false
+    open fun hapticFeedbackGenerate(kind: HapticFeedbackKind) {
     }
 
     open suspend fun clipboardWrite(data: ClipboardData) {

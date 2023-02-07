@@ -2,7 +2,7 @@ package com.soywiz.korge.particle
 
 import com.soywiz.kds.flip
 import com.soywiz.klock.TimeSpan
-import com.soywiz.korag.AG
+import com.soywiz.korag.*
 import com.soywiz.korge.view.property.*
 import com.soywiz.korim.bitmap.BmpSlice
 import com.soywiz.korim.color.RGBAf
@@ -81,9 +81,9 @@ class ParticleEmitter() {
     @ViewProperty(groupName = "rotation")
 	var rotatePerSecondVariance = 0.0.degrees
     @ViewProperty
-    var blendFuncSource = AG.BlendFactor.SOURCE_ALPHA
+    var blendFuncSource = AGBlendFactor.SOURCE_ALPHA
     @ViewProperty
-    var blendFuncDestination = AG.BlendFactor.ONE
+    var blendFuncDestination = AGBlendFactor.ONE
     @ViewProperty(groupName = "rotation")
 	var rotationStart = 0.0.degrees
     @ViewProperty(groupName = "rotation")
@@ -100,16 +100,16 @@ class ParticleEmitter() {
 
     companion object {
         val blendFactorMap = mapOf(
-            0 to AG.BlendFactor.ZERO,
-            1 to AG.BlendFactor.ONE,
-            0x300 to AG.BlendFactor.SOURCE_COLOR,
-            0x301 to AG.BlendFactor.ONE_MINUS_SOURCE_COLOR,
-            0x302 to AG.BlendFactor.SOURCE_ALPHA,
-            0x303 to AG.BlendFactor.ONE_MINUS_SOURCE_ALPHA,
-            0x304 to AG.BlendFactor.DESTINATION_ALPHA,
-            0x305 to AG.BlendFactor.ONE_MINUS_DESTINATION_ALPHA,
-            0x306 to AG.BlendFactor.DESTINATION_COLOR,
-            0x307 to AG.BlendFactor.ONE_MINUS_DESTINATION_COLOR,
+            0 to AGBlendFactor.ZERO,
+            1 to AGBlendFactor.ONE,
+            0x300 to AGBlendFactor.SOURCE_COLOR,
+            0x301 to AGBlendFactor.ONE_MINUS_SOURCE_COLOR,
+            0x302 to AGBlendFactor.SOURCE_ALPHA,
+            0x303 to AGBlendFactor.ONE_MINUS_SOURCE_ALPHA,
+            0x304 to AGBlendFactor.DESTINATION_ALPHA,
+            0x305 to AGBlendFactor.ONE_MINUS_DESTINATION_ALPHA,
+            0x306 to AGBlendFactor.DESTINATION_COLOR,
+            0x307 to AGBlendFactor.ONE_MINUS_DESTINATION_COLOR,
         )
         val blendFactorMapReversed = blendFactorMap.flip()
         val typeMap = Type.values().associateBy { it.index }

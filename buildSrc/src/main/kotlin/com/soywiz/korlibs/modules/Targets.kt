@@ -1,8 +1,6 @@
 package com.soywiz.korlibs.modules
 
 import org.gradle.api.*
-import org.gradle.kotlin.dsl.*
-import org.jetbrains.kotlin.gradle.plugin.*
 import com.soywiz.korge.gradle.targets.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 

@@ -138,6 +138,26 @@ class YamlTest {
         )
     }
 
+    enum class MyEnum { DEMO, HELLO, WORLD }
+    data class ClassWithEnum(val size: Int = 70, val a: MyEnum = MyEnum.HELLO)
+
+    @Test
+    fun testArrayInMap() {
+        val yamlStr = """
+        tags: [lorem,lorem-ipsum]
+        """.trimIndent()
+        //println(Yaml.tokenize(yamlStr))
+        Yaml.decode(yamlStr).also {
+            assertEquals(
+                mapOf(
+                    "tags" to listOf("lorem", "lorem-ipsum"),
+                ),
+                it
+            )
+        }
+
+    }
+
     @Test
     fun testChunk() {
         val yamlStr = """
@@ -165,9 +185,7 @@ class YamlTest {
             Yaml.decode(yamlStr)
         )
         assertEquals(
-            mapOf(
-                "layout" to null
-            ),
+            "layout:null",
             Yaml.decode("layout:null")
         )
     }
@@ -275,5 +293,20 @@ class YamlTest {
                   fail: true
             """.trimIndent())
         )
+    }
+
+    @Test
+    fun testDoubleColon() {
+        assertEquals(listOf(
+            "git::adder::korlibs/kproject::/modules/adder::54f73b01cea9cb2e8368176ac45f2fca948e57db",
+        ), Yaml.decode("""
+            - git::adder::korlibs/kproject::/modules/adder::54f73b01cea9cb2e8368176ac45f2fca948e57db
+        """.trimIndent()))
+
+        assertEquals(listOf(mapOf(
+            "git::adder" to ":korlibs/kproject::/modules/adder::54f73b01cea9cb2e8368176ac45f2fca948e57db",
+        )), Yaml.decode("""
+            - git::adder: :korlibs/kproject::/modules/adder::54f73b01cea9cb2e8368176ac45f2fca948e57db
+        """.trimIndent()))
     }
 }

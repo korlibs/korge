@@ -1,21 +1,28 @@
 package com.soywiz.kmem.dyn
 
 actual class KArena actual constructor() {
-    actual fun allocBytes(size: Int): KPointer = ByteArray(size)
+    actual fun allocBytes(size: Int): KPointer = KPointer(ByteArray(size))
     actual fun clear(): Unit = Unit
 }
 
 actual val POINTER_SIZE: Int = 4
 actual val LONG_SIZE: Int = 8
-actual typealias KPointer = ByteArray
+
+actual abstract class KPointed
+actual class KPointerTT<T : KPointed>(val ptr: ByteArray)
+fun <T : KPointed> KPointer(ptr: ByteArray): KPointerTT<T> = KPointerTT<T>(ptr)
+actual class KFunctionTT<T : Function<*>>(val func: T) : KPointed()
+
 actual abstract class KStructureBase {
     actual abstract val pointer: KPointer?
 }
-actual fun KPointerCreate(address: Long): KPointer = TODO()
+actual fun KPointer(address: Long): KPointer = TODO()
 actual val KPointer.address: Long get() = TODO()
 
 actual fun KPointer.getByte(offset: Int): Byte = TODO()
 actual fun KPointer.setByte(offset: Int, value: Byte): Unit = TODO()
+actual fun KPointer.getShort(offset: Int): Short = TODO()
+actual fun KPointer.setShort(offset: Int, value: Short): Unit = TODO()
 actual fun KPointer.getInt(offset: Int): Int = TODO()
 actual fun KPointer.setInt(offset: Int, value: Int): Unit = TODO()
 actual fun KPointer.getFloat(offset: Int): Float = TODO()

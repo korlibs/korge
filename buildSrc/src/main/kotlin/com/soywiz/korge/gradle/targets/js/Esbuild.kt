@@ -1,10 +1,10 @@
 package com.soywiz.korge.gradle.targets.js
 
 import com.soywiz.korge.gradle.*
+import com.soywiz.korge.gradle.util.*
 import org.gradle.api.*
 import org.gradle.api.file.*
 import org.gradle.api.tasks.*
-import org.gradle.kotlin.dsl.*
 import java.io.*
 
 fun Project.configureEsbuild() {
@@ -29,7 +29,7 @@ fun Project.configureEsbuild() {
     }
 
     if (rootProject.tasks.findByName(npmInstallEsbuild) == null) {
-        rootProject.tasks.create(npmInstallEsbuild, Exec::class) {
+        rootProject.tasks.createThis<Exec>(npmInstallEsbuild) {
             dependsOn("kotlinNodeJsSetup")
             onlyIf { !esbuildCmdCheck.exists() && !esbuildCmd.exists() }
 
@@ -48,7 +48,7 @@ fun Project.configureEsbuild() {
         }
     }
 
-    val browserEsbuildResources by tasks.creating(Copy::class) {
+    val browserEsbuildResources = tasks.createThis<Copy>("browserEsbuildResources") {
         duplicatesStrategy = DuplicatesStrategy.EXCLUDE
         from(project.tasks.getByName("jsProcessResources").outputs.files)
         afterEvaluate {
@@ -60,17 +60,17 @@ fun Project.configureEsbuild() {
         into(wwwFolder)
     }
 
-    val browserPrepareEsbuildPrepare by tasks.creating(Task::class) {
+    val browserPrepareEsbuildPrepare = tasks.createThis<Task>("browserPrepareEsbuildPrepare") {
         dependsOn(browserEsbuildResources)
         dependsOn("::npmInstallEsbuild")
     }
 
-    val browserPrepareEsbuildDebug by tasks.creating(Task::class) {
+    val browserPrepareEsbuildDebug = tasks.createThis<Task>("browserPrepareEsbuildDebug") {
         dependsOn("compileDevelopmentExecutableKotlinJs")
         dependsOn(browserPrepareEsbuildPrepare)
     }
 
-    val browserPrepareEsbuildRelease by tasks.creating(Task::class) {
+    val browserPrepareEsbuildRelease = tasks.createThis<Task>("browserPrepareEsbuildRelease") {
         dependsOn("compileProductionExecutableKotlinJs")
         dependsOn(browserPrepareEsbuildPrepare)
     }
@@ -89,7 +89,7 @@ fun Project.configureEsbuild() {
 
             // browserDebugEsbuild
             // browserReleaseEsbuild
-            tasks.create("browser${debugPrefix}Esbuild${runSuffix}", Exec::class) {
+            tasks.createThis<Exec>("browser${debugPrefix}Esbuild${runSuffix}") {
                 group = "kotlin browser"
                 dependsOn(browserPrepareEsbuild)
 

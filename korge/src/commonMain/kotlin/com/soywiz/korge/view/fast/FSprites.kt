@@ -1,34 +1,24 @@
 package com.soywiz.korge.view.fast
 import com.soywiz.kds.Extra
-import com.soywiz.kds.FastArrayList
 import com.soywiz.kds.IntArrayList
-import com.soywiz.kds.fastArrayListOf
 import com.soywiz.kmem.*
-import com.soywiz.korag.AG
-import com.soywiz.korag.DefaultShaders
-import com.soywiz.korag.FragmentShaderDefault
-import com.soywiz.korag.VertexShaderDefault
+import com.soywiz.korag.*
 import com.soywiz.korag.shader.Attribute
-import com.soywiz.korag.shader.FragmentShader
 import com.soywiz.korag.shader.Operand
 import com.soywiz.korag.shader.Precision
 import com.soywiz.korag.shader.Program
 import com.soywiz.korag.shader.Uniform
 import com.soywiz.korag.shader.VarType
 import com.soywiz.korag.shader.Varying
-import com.soywiz.korag.shader.VertexShader
 import com.soywiz.korge.render.BatchBuilder2D
 import com.soywiz.korge.render.RenderContext
 import com.soywiz.korge.view.BlendMode
 import com.soywiz.korge.view.View
-import com.soywiz.korim.bitmap.Bitmap
-import com.soywiz.korim.bitmap.Bitmaps
-import com.soywiz.korim.bitmap.BmpSlice
+import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korma.geom.Angle
 import com.soywiz.korma.geom.Matrix
-import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.geom.radians
 
 @PublishedApi
@@ -36,9 +26,9 @@ internal const val FSPRITES_STRIDE = 8
 
 open class FSprites(val maxSize: Int) {
     var size = 0
-    val available get() = maxSize - size
-    val data = FBuffer(maxSize * FSPRITES_STRIDE * 4)
-    val dataColorMul = FBuffer(maxSize * 4)
+    val available: Int get() = maxSize - size
+    val data = Buffer(maxSize * FSPRITES_STRIDE * 4)
+    val dataColorMul = Buffer(maxSize * 4)
     private val freeItems = IntArrayList()
     private val i32 = data.i32
     private val f32 = data.f32
@@ -168,28 +158,28 @@ open class FSprites(val maxSize: Int) {
                     val ttex = ctx.agBitmapTextureManager.getTextureBase(tex)
                     u_i_texSizeDataN[n][0] = 1f / ttex.width.toFloat()
                     u_i_texSizeDataN[n][1] = 1f / ttex.height.toFloat()
-                    batch.textureUnitN[n].set(ttex.base, smoothing)
+                    batch.uniforms[BatchBuilder2D.u_TexN[n]].set(ttex.base, AGTextureUnitInfo(linear = smoothing))
                     //println(ttex.base)
                 }
                 //batch.setTemporalUniform(u_i_texSizeN[0], u_i_texSizeDataN[0]) {
-                batch.setTemporalUniforms(u_i_texSizeN, u_i_texSizeDataN, texs.size, olds) { uniforms ->
-                    batch.setTemporalUniform(BatchBuilder2D.u_OutputPre, ctx.ag.isRenderingToTexture) {
-                        batch.setViewMatrixTemp(globalMatrix) {
-                            //ctx.batch.setStateFast()
-                            sprites.uploadVertices(ctx)
-                            ctx.xyBuffer.buffer.upload(xyData)
-                            ctx.ag.drawV2(
-                                vertexData = ctx.buffers,
-                                program = program,
-                                type = AG.DrawType.TRIANGLE_FAN,
-                                vertexCount = 4,
-                                instances = sprites.size,
-                                uniforms = uniforms,
-                                //renderState = AG.RenderState(depthFunc = AG.CompareMode.LESS),
-                                blending = blending.factors(ctx.ag.isRenderingToTexture)
-                            )
-                            sprites.unloadVertices(ctx)
-                        }
+                batch.keepUniforms(u_i_texSizeN) { uniforms ->
+                    for (n in 0 until texs.size) uniforms[u_i_texSizeN[n]] = u_i_texSizeDataN[n]
+                    batch.setViewMatrixTemp(globalMatrix) {
+                        //ctx.batch.setStateFast()
+                        sprites.uploadVertices(ctx)
+                        ctx.xyBuffer.buffer.upload(xyData)
+                        ctx.ag.draw(
+                            ctx.currentFrameBuffer,
+                            vertexData = ctx.buffers,
+                            program = program,
+                            drawType = AGDrawType.TRIANGLE_FAN,
+                            vertexCount = 4,
+                            instances = sprites.size,
+                            uniforms = uniforms,
+                            //renderState = AGRenderState(depthFunc = AGCompareMode.LESS),
+                            blending = blending.factors
+                        )
+                        sprites.unloadVertices(ctx)
                     }
                 }
                 batch.onInstanceCount(sprites.size)
@@ -201,33 +191,33 @@ open class FSprites(val maxSize: Int) {
         private val xyData = floatArrayOf(0f, 0f, /**/ 1f, 0f, /**/ 1f, 1f, /**/ 0f, 1f)
 
         val u_i_texSizeN = Array(MAX_SUPPORTED_TEXTURES + 1) { Uniform("u_texSize$it", VarType.Float2) }
-        val a_xy = Attribute("a_xy", VarType.Float2, false)
+        val a_xy = Attribute("a_xy", VarType.Float2, false, fixedLocation = 0)
 
-        val a_pos = Attribute("a_rxy", VarType.Float2, false).withDivisor(1)
-        val a_scale = Attribute("a_scale", VarType.Float2, true).withDivisor(1)
-        val a_angle = Attribute("a_rangle", VarType.Float1, false).withDivisor(1)
-        val a_anchor = Attribute("a_axy", VarType.UShort2, true).withDivisor(1)
-        val a_uv0 = Attribute("a_uv0", VarType.UShort2, false).withDivisor(1)
-        val a_uv1 = Attribute("a_uv1", VarType.UShort2, false).withDivisor(1)
-        val a_colMul = Attribute("a_colMul", VarType.Byte4, normalized = true, precision = Precision.LOW).withDivisor(1)
+        val a_pos = Attribute("a_rxy", VarType.Float2, false, fixedLocation = 1).withDivisor(1)
+        val a_scale = Attribute("a_scale", VarType.Float2, true, fixedLocation = 2).withDivisor(1)
+        val a_angle = Attribute("a_rangle", VarType.Float1, false, fixedLocation = 3).withDivisor(1)
+        val a_anchor = Attribute("a_axy", VarType.UShort2, true, fixedLocation = 4).withDivisor(1)
+        val a_uv0 = Attribute("a_uv0", VarType.UShort2, false, fixedLocation = 5).withDivisor(1)
+        val a_uv1 = Attribute("a_uv1", VarType.UShort2, false, fixedLocation = 6).withDivisor(1)
+        val a_colMul = Attribute("a_colMul", VarType.Byte4, normalized = true, precision = Precision.LOW, fixedLocation = 7).withDivisor(1)
 
-        val a_texId = Attribute("a_texId", VarType.UByte1, normalized = false, precision = Precision.LOW).withDivisor(1)
+        val a_texId = Attribute("a_texId", VarType.UByte1, normalized = false, precision = Precision.LOW, fixedLocation = 8).withDivisor(1)
         val v_TexId = Varying("v_TexId", VarType.Float1, precision = Precision.LOW)
 
-        val RenderContext.xyBuffer by Extra.PropertyThis<RenderContext, AG.VertexData> {
-            ag.createVertexData(a_xy)
+        val RenderContext.xyBuffer by Extra.PropertyThis<RenderContext, AGVertexData> {
+            AGVertexData(a_xy)
         }
-        val RenderContext.fastSpriteBuffer by Extra.PropertyThis<RenderContext, AG.VertexData> {
-            ag.createVertexData(a_pos, a_scale, a_angle, a_anchor, a_uv0, a_uv1)
+        val RenderContext.fastSpriteBuffer by Extra.PropertyThis<RenderContext, AGVertexData> {
+            AGVertexData(a_pos, a_scale, a_angle, a_anchor, a_uv0, a_uv1)
         }
-        val RenderContext.fastSpriteBufferMul by Extra.PropertyThis<RenderContext, AG.VertexData> {
-            ag.createVertexData(a_colMul)
+        val RenderContext.fastSpriteBufferMul by Extra.PropertyThis<RenderContext, AGVertexData> {
+            AGVertexData(a_colMul)
         }
-        val RenderContext.fastSpriteBufferTexId by Extra.PropertyThis<RenderContext, AG.VertexData> {
-            ag.createVertexData(a_texId)
+        val RenderContext.fastSpriteBufferTexId by Extra.PropertyThis<RenderContext, AGVertexData> {
+            AGVertexData(a_texId)
         }
-        val RenderContext.buffers by Extra.PropertyThis<RenderContext, FastArrayList<AG.VertexData>> {
-            fastArrayListOf(xyBuffer, fastSpriteBuffer, fastSpriteBufferMul, fastSpriteBufferTexId)
+        val RenderContext.buffers by Extra.PropertyThis<RenderContext, AGVertexArrayObject> {
+            AGVertexArrayObject(xyBuffer, fastSpriteBuffer, fastSpriteBufferMul, fastSpriteBufferTexId)
         }
 
         fun createProgram(maxTexs: Int = 4): Program {
@@ -239,8 +229,8 @@ open class FSprites(val maxSize: Int) {
             return Program(VertexShaderDefault {
                 //SET(out, (u_ProjMat * u_ViewMat) * vec4(vec2(a_x, a_y), 0f.lit, 1f.lit))
                 //SET(v_color, texture2D(u_Tex, vec2(vec1(id) / 4f.lit, 0f.lit)))
-                val baseSize = t_Temp1["xy"]
-                val texSize = t_Temp1["zw"]
+                val baseSize = TEMP(VarType.Float2)
+                val texSize = TEMP(VarType.Float2)
                 SET(baseSize, a_uv1 - a_uv0)
                 SET(v_Col, a_colMul)
                 SET(v_TexId, a_texId)
@@ -252,8 +242,9 @@ open class FSprites(val maxSize: Int) {
                     mix(a_uv0.x, a_uv1.x, a_xy.x),
                     mix(a_uv0.y, a_uv1.y, a_xy.y),
                 ) * texSize)
-                val cos = t_Temp0["x"]
-                val sin = t_Temp0["y"]
+
+                val cos = TEMP(VarType.Float1)
+                val sin = TEMP(VarType.Float1)
                 SET(cos, cos(a_angle))
                 SET(sin, sin(a_angle))
                 SET(t_TempMat2, mat2(
@@ -270,8 +261,6 @@ open class FSprites(val maxSize: Int) {
                 blockN(v_TexId) { SET(out, texture2D(BatchBuilder2D.u_TexN[it], v_Tex["xy"])) }
                 SET(out, out * v_Col)
                 IF(out["a"] le 0f.lit) { DISCARD() }
-                //SET(out, vec4(1f.lit, 0f.lit, 0f.lit, 1f.lit))
-                BatchBuilder2D.DO_OUTPUT_FROM(this, out)
             }, name = "FSprites$maxTexs")
         }
 

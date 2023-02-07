@@ -113,11 +113,23 @@ inline fun Int.extract6(offset: Int): Int = (this ushr offset) and 0b111111
 /** Extracts 7 bits at [offset] from [this] [Int] */
 inline fun Int.extract7(offset: Int): Int = (this ushr offset) and 0b1111111
 /** Extracts 8 bits at [offset] from [this] [Int] */
-inline fun Int.extract8(offset: Int): Int = (this ushr offset) and 0xFF
+inline fun Int.extract8(offset: Int): Int = (this ushr offset) and 0b11111111
+/** Extracts 9 bits at [offset] from [this] [Int] */
+inline fun Int.extract9(offset: Int): Int = (this ushr offset) and 0b111111111
+/** Extracts 10 bits at [offset] from [this] [Int] */
+inline fun Int.extract10(offset: Int): Int = (this ushr offset) and 0b1111111111
+/** Extracts 11 bits at [offset] from [this] [Int] */
+inline fun Int.extract11(offset: Int): Int = (this ushr offset) and 0b11111111111
 /** Extracts 12 bits at [offset] from [this] [Int] */
-inline fun Int.extract12(offset: Int): Int = (this ushr offset) and 0xFFF
+inline fun Int.extract12(offset: Int): Int = (this ushr offset) and 0b111111111111
+/** Extracts 13 bits at [offset] from [this] [Int] */
+inline fun Int.extract13(offset: Int): Int = (this ushr offset) and 0b1111111111111
+/** Extracts 14 bits at [offset] from [this] [Int] */
+inline fun Int.extract14(offset: Int): Int = (this ushr offset) and 0b11111111111111
+/** Extracts 15 bits at [offset] from [this] [Int] */
+inline fun Int.extract15(offset: Int): Int = (this ushr offset) and 0b111111111111111
 /** Extracts 16 bits at [offset] from [this] [Int] */
-inline fun Int.extract16(offset: Int): Int = (this ushr offset) and 0xFFFF
+inline fun Int.extract16(offset: Int): Int = (this ushr offset) and 0b1111111111111111
 /** Extracts 24 bits at [offset] from [this] [Int] */
 inline fun Int.extract24(offset: Int): Int = (this ushr offset) and 0xFFFFFF
 
@@ -136,7 +148,7 @@ public fun Int.extractShort(offset: Int): Short = (this ushr offset).toShort()
 /** Extracts [count] at [offset] from [this] [Int] and convert the possible values into the range 0x00..[scale] */
 public fun Int.extractScaled(offset: Int, count: Int, scale: Int): Int = (extract(offset, count) * scale) / count.mask()
 /** Extracts [count] at [offset] from [this] [Int] and convert the possible values into the range 0.0..1.0 */
-public fun Int.extractScaledf01(offset: Int, count: Int): Double = extract(offset, count).toDouble() / count.mask().toDouble()
+public fun Int.extractScaledf01(offset: Int, count: Int): Float = extract(offset, count).toFloat() / count.mask().toFloat()
 
 /** Extracts [count] at [offset] from [this] [Int] and convert the possible values into the range 0x00..0xFF */
 public fun Int.extractScaledFF(offset: Int, count: Int): Int = extractScaled(offset, count, 0xFF)
@@ -153,6 +165,13 @@ public fun Int.insert(value: Int, offset: Int, count: Int): Int {
 
 public fun Int.insert24(value: Int, offset: Int): Int = insertMask(value, offset, 0xFFFFFF)
 public fun Int.insert16(value: Int, offset: Int): Int = insertMask(value, offset, 0xFFFF)
+public fun Int.insert15(value: Int, offset: Int): Int = insertMask(value, offset, 0b111111111111111)
+public fun Int.insert14(value: Int, offset: Int): Int = insertMask(value, offset, 0b11111111111111)
+public fun Int.insert13(value: Int, offset: Int): Int = insertMask(value, offset, 0b1111111111111)
+public fun Int.insert12(value: Int, offset: Int): Int = insertMask(value, offset, 0b111111111111)
+public fun Int.insert11(value: Int, offset: Int): Int = insertMask(value, offset, 0b11111111111)
+public fun Int.insert10(value: Int, offset: Int): Int = insertMask(value, offset, 0b1111111111)
+public fun Int.insert9(value: Int, offset: Int): Int = insertMask(value, offset, 0b111111111)
 public fun Int.insert8(value: Int, offset: Int): Int = insertMask(value, offset, 0b11111111)
 public fun Int.insert7(value: Int, offset: Int): Int = insertMask(value, offset, 0b1111111)
 public fun Int.insert6(value: Int, offset: Int): Int = insertMask(value, offset, 0b111111)
@@ -188,6 +207,8 @@ public fun Int.insert(value: Boolean, offset: Int): Int {
 
 public fun Int.insertScaled(value: Int, offset: Int, count: Int, scale: Int): Int = insert((value * count.mask()) / scale, offset, count)
 public fun Int.insertScaledFF(value: Int, offset: Int, count: Int): Int = if (count == 0) this else this.insertScaled(value, offset, count, 0xFF)
+/** Extracts [count] at [offset] from [this] [Int] and convert the possible values into the range 0.0..1.0 */
+public fun Int.insertScaledf01(value: Float, offset: Int, count: Int): Int = this.insert((value.clamp01() * offset.mask()).toInt(), offset, count)
 
 
 /** Check if [this] has all the bits set in [bits] set */
@@ -217,3 +238,10 @@ public fun Int.with(bits: Int): Int = this or bits
 
 public fun Long.without(bits: Long): Long = this and bits.inv()
 public fun Long.with(bits: Long): Long = this or bits
+
+/** Get high 32-bits of this Long */
+val Long.high: Int get() = (this ushr 32).toInt()
+/** Get low 32-bits of this Long */
+val Long.low: Int get() = this.toInt()
+
+fun Long.Companion.fromLowHigh(low: Int, high: Int): Long = (low.toLong() and 0xFFFFFFFFL) or (high.toLong() shl 32)

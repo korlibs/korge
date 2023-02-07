@@ -1,6 +1,6 @@
 package com.soywiz.korge.view
 
-import com.soywiz.korim.bitmap.Bitmap32
+import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.Colors
 import com.soywiz.korio.async.suspendTest
 import kotlin.test.Test

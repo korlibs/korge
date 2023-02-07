@@ -77,6 +77,17 @@ class Graphics(
             gpuGraphics?.antialiased = true
             invalidateRender()
         }
+
+    @ViewProperty
+    var debugDrawOnlyAntialiasedBorder: Boolean = true
+        set(value) {
+            if (field == value) return
+            field = value
+            //softGraphics?.debugDrawOnlyAntialiasedBorder = true
+            gpuGraphics?.debugDrawOnlyAntialiasedBorder = true
+            invalidateRender()
+        }
+
     @ViewProperty
     var smoothing: Boolean = true
         set(value) {

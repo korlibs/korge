@@ -533,7 +533,7 @@ internal val XK_KeyMap: IntMap<Key> by lazy {
 internal fun KStructure.display() = pointer<X11.Display?>()
 internal fun KStructure.window() = pointer<X11.Window?>()
 
-internal class XConfigureEvent(p: Pointer? = null) : KStructure(p) {
+internal class XConfigureEvent(p: KPointer? = null) : KStructure(p) {
     var type by int()
     var serial by nativeLong()
     var send_event by int()
@@ -549,7 +549,7 @@ internal class XConfigureEvent(p: Pointer? = null) : KStructure(p) {
     var override_redirect by int()
 }
 
-internal class XKeyEvent(p: Pointer? = null) : KStructure(p) {
+internal class XKeyEvent(p: KPointer? = null) : KStructure(p) {
     var type by int()
     var serial by nativeLong()
     var send_event by int()
@@ -567,7 +567,7 @@ internal class XKeyEvent(p: Pointer? = null) : KStructure(p) {
     var same_screen by int()
 }
 
-internal class MyXMotionEvent(p: Pointer? = null) : KStructure(p) {
+internal class MyXMotionEvent(p: KPointer? = null) : KStructure(p) {
     var type by int()
     var serial by nativeLong()
     var send_event by int()
@@ -583,6 +583,24 @@ internal class MyXMotionEvent(p: Pointer? = null) : KStructure(p) {
     var state by int()
     var button by int()
     var same_screen by int()
+}
+
+object EGL {
+    external fun eglGetDisplay(displayType: Long): Pointer?
+    external fun eglInitialize(display: Pointer?, major: Pointer?, minor: Pointer?): Boolean
+    external fun eglTerminate(display: Pointer?): Pointer
+    external fun eglChooseConfig(display: Pointer?, attribList: Pointer, configs: Pointer, configSize: Int, numConfig: Pointer): Boolean
+    external fun eglCreatePbufferSurface(display: Pointer?, config: Pointer?, attribList: Pointer?): Pointer?
+    external fun eglBindAPI(api: Int)
+    external fun eglCreateContext(display: Pointer?, config: Pointer?, shareContext: Pointer?, attribList: Pointer?): Pointer?
+    external fun eglMakeCurrent(display: Pointer?, draw: Pointer?, read: Pointer?, context: Pointer?): Boolean
+    external fun eglDestroyContext(display: Pointer?, context: Pointer?): Boolean
+    external fun eglDestroySurface(display: Pointer?, surface: Pointer?)
+    external fun eglSwapBuffers(display: Pointer?, eglSurface: Pointer?): Boolean
+
+    init {
+        Native.register("EGL")
+    }
 }
 
 object X :

@@ -1,6 +1,6 @@
 package com.soywiz.korge.view
 
-import com.soywiz.korag.log.LogAG
+import com.soywiz.korag.log.AGLog
 import com.soywiz.korge.render.RenderContext
 import com.soywiz.korge.render.VertexInfo
 import com.soywiz.korge.render.testRenderContext
@@ -113,7 +113,7 @@ class NinePatchTest : ViewsForTesting() {
 
     @Test
     fun testNinePatchColorInvalidation() {
-        val ctx = RenderContext(LogAG())
+        val ctx = RenderContext(AGLog())
         val container = Container()
         val ninePatch = container.ninePatch(NinePatchBmpSlice(Bitmap32(32, 32, premultiplied = true)), 16.0, 16.0)
         ninePatch.render(ctx)

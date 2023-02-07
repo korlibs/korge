@@ -6,8 +6,7 @@ import com.soywiz.korev.KeyEvent
 import com.soywiz.korev.MouseButton
 import com.soywiz.korev.MouseEvent
 import com.soywiz.korgw.EventLoopGameWindow
-import com.soywiz.korgw.platform.INativeGL
-import com.soywiz.korgw.platform.NativeKgl
+import com.soywiz.korgw.platform.*
 import com.soywiz.korgw.sdl2.SDLKeyCode
 import com.soywiz.korgw.sdl2.SDL_Keycode_Table
 import com.soywiz.korgw.sdl2.jna.ISDL
@@ -27,10 +26,6 @@ open class SDLKmlGl : NativeKgl(SDL) {
     override val gles: Boolean = true
     override val linux: Boolean = true
 }
-class SDLAg(window: SdlGameWindowJvm, val checkGl: Boolean, override val gl: KmlGl = SDLKmlGl().checkedIf(checkGl)) :
-    AGOpengl() {
-    override val nativeComponent: Any = window
-}
 
 interface GL : INativeGL, Library
 
@@ -38,8 +33,7 @@ object SDL :
     ISDL by Native.load(System.getenv("SDL2_PATH") ?: "SDL2", ISDL::class.java),
     GL by Native.load(
         System.getenv("GLLIB_PATH") ?: (when {
-            OS.isMac -> "OpenGL"
-            else -> "libGL"
+            else -> nativeOpenGLLibraryPath
         }),
         GL::class.java
     )
@@ -48,7 +42,7 @@ const val SDL_SUCCESS = 0
 val NULLPTR = Pointer(0)
 
 class SdlGameWindowJvm(checkGl: Boolean) : EventLoopGameWindow() {
-    override val ag: AGOpengl by lazy { SDLAg(this, checkGl) }
+    override val ag: AGOpengl = AGOpengl(SDLKmlGl().checkedIf(checkGl))
 
     override var title: String = "Korgw"
         set(value) {

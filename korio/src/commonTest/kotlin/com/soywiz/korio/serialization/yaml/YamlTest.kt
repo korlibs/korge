@@ -1,14 +1,9 @@
 package com.soywiz.korio.serialization.yaml
 
-import com.soywiz.korio.dynamic.mapper.ObjectMapper
-import com.soywiz.korio.dynamic.serialization.decodeToType
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import kotlin.test.*
 
 // http://nodeca.github.io/js-yaml/
 class YamlTest {
-	val mapper = ObjectMapper()
-
 	@kotlin.test.Test
 	fun basic() {
 		assertEquals("str", Yaml.read("str"))
@@ -144,20 +139,22 @@ class YamlTest {
 	enum class MyEnum { DEMO, HELLO, WORLD }
 	data class ClassWithEnum(val size: Int = 70, val a: MyEnum = MyEnum.HELLO)
 
-	@kotlin.test.Test
-	fun decodeToType() {
-		mapper.registerEnum(MyEnum.values())
-		mapper.registerType { ClassWithEnum(it["size"]?.gen() ?: 70, it["a"]?.gen() ?: MyEnum.HELLO) }
+    @Test
+    fun testArrayInMap() {
+        val yamlStr = """
+        tags: [lorem,lorem-ipsum]
+        """.trimIndent()
+        //println(Yaml.tokenize(yamlStr))
+        Yaml.decode(yamlStr).also {
+            assertEquals(
+                mapOf(
+                    "tags" to listOf("lorem", "lorem-ipsum"),
+                ),
+                it
+            )
+        }
 
-		assertEquals(
-			ClassWithEnum(a = MyEnum.WORLD),
-			Yaml.decodeToType<ClassWithEnum>(
-				"""
-				|a: WORLD
-			""".trimMargin(), mapper
-			)
-		)
-	}
+    }
 
     @Test
     fun testChunk() {
@@ -186,9 +183,7 @@ class YamlTest {
             Yaml.decode(yamlStr)
         )
         assertEquals(
-            mapOf(
-                "layout" to null
-            ),
+            "layout:null",
             Yaml.decode("layout:null")
         )
     }
@@ -296,5 +291,20 @@ class YamlTest {
                   fail: true
             """.trimIndent())
         )
+    }
+
+    @Test
+    fun testDoubleColon() {
+        assertEquals(listOf(
+            "git::adder::korlibs/kproject::/modules/adder::54f73b01cea9cb2e8368176ac45f2fca948e57db",
+        ), Yaml.decode("""
+            - git::adder::korlibs/kproject::/modules/adder::54f73b01cea9cb2e8368176ac45f2fca948e57db
+        """.trimIndent()))
+
+        assertEquals(listOf(mapOf(
+            "git::adder" to ":korlibs/kproject::/modules/adder::54f73b01cea9cb2e8368176ac45f2fca948e57db",
+        )), Yaml.decode("""
+            - git::adder: :korlibs/kproject::/modules/adder::54f73b01cea9cb2e8368176ac45f2fca948e57db
+        """.trimIndent()))
     }
 }

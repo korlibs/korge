@@ -1,7 +1,8 @@
 package com.soywiz.korge.view
 
-import com.soywiz.korag.log.LogAG
+import com.soywiz.korag.log.AGLog
 import com.soywiz.korge.render.RenderContext
+import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.Colors
 import com.soywiz.korio.async.suspendTest
 import com.soywiz.korio.util.OS
@@ -255,4 +256,4 @@ class GraphicsTest {
     }
 }
 
-fun TestRenderContext() = RenderContext(LogAG())
+fun TestRenderContext() = RenderContext(AGLog())

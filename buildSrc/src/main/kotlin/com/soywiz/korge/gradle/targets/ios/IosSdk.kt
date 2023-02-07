@@ -59,12 +59,12 @@ class IosSdk(val project: Project) {
         return Regex("OU=(\\w+)").find(subjectStr)?.groups?.get(1)?.value
     }
 
-    fun appleGetDevices(os: String = "iOS"): List<IosDevice> = KDynamic {
-        val res = Json.parse(project.execOutput("xcrun", "simctl", "list", "-j", "devices"))
+    fun appleGetDevices(os: String = "iOS"): List<IosDevice> {
+        val res = Json.parse(project.execOutput("xcrun", "simctl", "list", "-j", "devices")).dyn
         val devices = res["devices"]
         val oses = devices.keys.map { it.str }
         val iosOses = oses.filter { it.contains(os) }
-        iosOses.map { devices[it].list }.flatten().map {
+        return iosOses.map { devices[it].list }.flatten().map {
             //println(it)
             IosDevice(it["state"].str == "Booted", it["isAvailable"].bool, it["name"].str, it["udid"].str).also {
                 //println(it)
@@ -72,7 +72,7 @@ class IosSdk(val project: Project) {
         }
     }
 
-    //tasks.create<Task>("iosLaunchSimulator") {
+    //tasks.createThis<Task>("iosLaunchSimulator") {
     //	dependsOn("iosInstallSimulator")
     //	doLast {
     //		val udid = appleGetDevices().firstOrNull { it.name == "iPhone 7" }?.udid ?: error("Can't find iPhone 7 device")

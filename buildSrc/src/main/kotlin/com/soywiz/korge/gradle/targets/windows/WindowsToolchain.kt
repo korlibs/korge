@@ -1,10 +1,10 @@
 package com.soywiz.korge.gradle.targets.windows
 
 import com.soywiz.korge.gradle.util.*
+import com.soywiz.korge.gradle.util.get
+import com.soywiz.korlibs.*
 import org.gradle.api.*
 import java.io.*
-import com.soywiz.korge.gradle.util.get
-import org.gradle.kotlin.dsl.support.*
 import java.net.*
 
 /**
@@ -38,10 +38,10 @@ object WindowsToolchain {
 }
 
 fun Project.compileWindowsRC(rcFile: File, objFile: File, log: Boolean = true): File {
-    exec {
+    execThis {
         commandLine(WindowsToolchain.windres.absolutePath, rcFile.path, "-O", "coff", objFile.absolutePath)
 		workingDir(rcFile.parentFile)
-		environment("PATH", System.getenv("PATH") + ";" + listOfNotNull(WindowsToolchain.path.absolutePath, WindowsToolchain.path2?.absolutePath).joinToString(";"))
+        environment("PATH", System.getenv("PATH") + ";" + listOfNotNull(WindowsToolchain.path.absolutePath, WindowsToolchain.path2?.absolutePath).joinToString(";"))
 		if (log) {
             logger.info("WindowsToolchain.path.absolutePath: ${WindowsToolchain.path.absolutePath}")
             logger.info("WindowsToolchain.path2.absolutePath: ${WindowsToolchain.path2?.absolutePath}")
@@ -53,14 +53,14 @@ fun Project.compileWindowsRC(rcFile: File, objFile: File, log: Boolean = true): 
 
 fun Project.compileWindowsRES(rcFile: File, resFile: File, log: Boolean = true): File {
     /*
-    exec {
-        it.commandLine(WindowsToolchain.rc.absolutePath, rcFile.path)
-        it.workingDir(rcFile.parentFile)
-        it.environment("PATH", System.getenv("PATH") + ";" + listOfNotNull(WindowsToolchain.path.absolutePath, WindowsToolchain.path2?.absolutePath).joinToString(";"))
+    execThis {
+        commandLine(WindowsToolchain.rc.absolutePath, rcFile.path)
+        workingDir(rcFile.parentFile)
+        environment("PATH", System.getenv("PATH") + ";" + listOfNotNull(WindowsToolchain.path.absolutePath, WindowsToolchain.path2?.absolutePath).joinToString(";"))
     }
     return File(rcFile.parentFile, "${rcFile.nameWithoutExtension}.res")
      */
-    exec {
+    execThis {
     //rh.exe -open .\in\resources.rc -save .\out\resources.res -action compile -log NUL
         workingDir = rcFile.parentFile
         commandLine(
@@ -75,7 +75,7 @@ fun Project.compileWindowsRES(rcFile: File, resFile: File, log: Boolean = true):
 }
 
 fun Project.replaceExeWithRes(exe: File, res: File) {
-    exec {
+    execThis {
         commandLine(
             WindowsToolchain.resourceHackerExe.absolutePath,
             "-open", exe.path,
@@ -88,10 +88,10 @@ fun Project.replaceExeWithRes(exe: File, res: File) {
 }
 
 fun Project.stripWindowsExe(exe: File, log: Boolean = true): File {
-	exec {
+	execThis {
         commandLine(WindowsToolchain.strip.absolutePath, exe.absolutePath)
-		workingDir(exe.parentFile)
-		environment("PATH", System.getenv("PATH") + ";" + WindowsToolchain.path.absolutePath)
+        workingDir(exe.parentFile)
+        environment("PATH", System.getenv("PATH") + ";" + WindowsToolchain.path.absolutePath)
 		if (log) {
 			debugExecSpec(this)
 		}

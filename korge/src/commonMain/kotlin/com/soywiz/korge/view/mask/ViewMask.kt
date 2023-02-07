@@ -1,9 +1,7 @@
 package com.soywiz.korge.view.mask
 
 import com.soywiz.kds.extraProperty
-import com.soywiz.korag.AG
-import com.soywiz.korag.DefaultShaders
-import com.soywiz.korag.FragmentShaderDefault
+import com.soywiz.korag.*
 import com.soywiz.korag.annotation.KoragExperimental
 import com.soywiz.korag.shader.Program
 import com.soywiz.korge.render.RenderContext
@@ -52,10 +50,10 @@ class ViewRenderPhaseMask(var mask: View) : ViewRenderPhase {
             val maskBounds = mask.getLocalBoundsOptimized()
             val boundsWidth = maskBounds.width.toInt()
             val boundsHeight = maskBounds.height.toInt()
-            ctx.ag.tempAllocateFrameBuffers2(boundsWidth, boundsHeight) { maskFB, viewFB ->
+            ctx.tempAllocateFrameBuffers2(boundsWidth, boundsHeight) { maskFB, viewFB ->
                 batcher.setViewMatrixTemp(mask.globalMatrixInv) {
                     ctx.renderToFrameBuffer(maskFB) {
-                        ctx.ag.clear(color = Colors.TRANSPARENT_BLACK)
+                        ctx.clear(color = Colors.TRANSPARENT_BLACK)
                         val oldVisible = mask.visible
                         try {
                             mask.visible = true
@@ -65,13 +63,14 @@ class ViewRenderPhaseMask(var mask: View) : ViewRenderPhase {
                         }
                     }
                     ctx.renderToFrameBuffer(viewFB) {
-                        ctx.ag.clear(color = Colors.TRANSPARENT_BLACK)
+                        ctx.clear(color = Colors.TRANSPARENT_BLACK)
                         view.renderNextPhase(ctx)
                     }
                 }
                 //batcher.drawQuad(Texture(maskFB), 100f, 200f, m = view.parent!!.globalMatrix)
                 //batcher.drawQuad(Texture(viewFB), 300f, 200f, m = view.parent!!.globalMatrix)
-                batcher.setTemporalUniform(DefaultShaders.u_Tex2, AG.TextureUnit(maskFB.tex), flush = true) {
+                batcher.keepUniform(DefaultShaders.u_Tex2, flush = true) {
+                    it.set(DefaultShaders.u_Tex2, maskFB.tex)
                     batcher.drawQuad(
                         Texture(viewFB), m = mask.globalMatrix, program = MERGE_ALPHA_PROGRAM,
                     )

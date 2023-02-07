@@ -1,6 +1,5 @@
 package com.soywiz.korgw
 
-import com.soywiz.klock.PerformanceCounter
 import com.soywiz.korag.*
 import com.soywiz.korag.gl.*
 import com.soywiz.korev.*
@@ -27,9 +26,20 @@ open class JsGameWindow : GameWindow() {
     }
 }
 
-open class BrowserCanvasJsGameWindow : JsGameWindow() {
-    override val ag: AGWebgl = AGWebgl(AGConfig())
-    val canvas get() = ag.canvas
+open class BrowserCanvasJsGameWindow(
+    val canvas: HTMLCanvasElement = AGDefaultCanvas()
+) : JsGameWindow() {
+    val tDevicePixelRatio get() = window.devicePixelRatio.toDouble()
+    override val devicePixelRatio get() = when {
+        tDevicePixelRatio <= 0.0 -> 1.0
+        tDevicePixelRatio.isNaN() -> 1.0
+        tDevicePixelRatio.isInfinite() -> 1.0
+        else -> tDevicePixelRatio
+    }
+    // @TODO: Improve this: https://gist.github.com/scryptonite/5242987
+    //override val pixelsPerInch: Double get() = 96.0 * devicePixelRatio
+
+    override val ag: AGOpengl = AGWebgl(AGConfig(), canvas)
     override val dialogInterface: DialogInterfaceJs = DialogInterfaceJs()
     private var isTouchDeviceCache: Boolean? = null
     fun is_touch_device(): Boolean {
@@ -94,7 +104,7 @@ open class BrowserCanvasJsGameWindow : JsGameWindow() {
     private fun onResized() {
         isTouchDeviceCache = null
         if (isCanvasCreatedAndHandled) {
-            val scale = quality.computeTargetScale(window.innerWidth, window.innerHeight, ag.devicePixelRatio)
+            val scale = quality.computeTargetScale(window.innerWidth, window.innerHeight, devicePixelRatio)
             val canvasWidth = (window.innerWidth * scale).toInt()
             val canvasHeight = (window.innerHeight * scale).toInt()
             canvas.width = canvasWidth

@@ -2,7 +2,6 @@ package com.soywiz.korge.gradle.targets.ios
 
 import com.soywiz.korge.gradle.util.FileList
 import com.soywiz.korge.gradle.util.execLogger
-import com.soywiz.korge.gradle.util.get
 import com.soywiz.korge.gradle.util.projectExtension
 import com.soywiz.korge.gradle.util.takeIfExists
 import org.gradle.api.Project
@@ -14,11 +13,11 @@ val Project.iosXcodegenExt by projectExtension {
 
 class IosXcodegen(val project: Project) {
     val korlibsFolder = File(System.getProperty("user.home") + "/.korlibs").apply { mkdirs() }
-    val xcodeGenFolder = korlibsFolder["XcodeGen"]
+    val xcodeGenFolder = File(korlibsFolder, "XcodeGen")
     val xcodeGenLocalExecutable = File("/usr/local/bin/xcodegen")
     val xcodeGenExecutable = FileList(
-        xcodeGenFolder[".build/release/xcodegen"],
-        xcodeGenFolder[".build/apple/Products/Release/xcodegen"],
+        File(xcodeGenFolder, ".build/release/xcodegen"),
+        File(xcodeGenFolder, ".build/apple/Products/Release/xcodegen"),
     )
     val xcodeGenGitTag = "2.25.0"
     val xcodeGenExe: File
@@ -26,7 +25,7 @@ class IosXcodegen(val project: Project) {
 
     fun isInstalled(): Boolean = xcodeGenLocalExecutable.exists() || xcodeGenExecutable.exists()
     fun install() {
-        if (!xcodeGenFolder[".git"].isDirectory) {
+        if (!File(xcodeGenFolder, ".git").isDirectory) {
             project.execLogger {
                 //it.commandLine("git", "clone", "--depth", "1", "--branch", xcodeGenGitTag, "https://github.com/yonaskolb/XcodeGen.git")
                 it.commandLine("git", "clone", "https://github.com/yonaskolb/XcodeGen.git")

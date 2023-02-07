@@ -25,7 +25,7 @@ class BlobAsyncBaseStream(val blob: Blob) : AsyncStreamBase() {
         val reader = FileReader()
         reader.onload = {
             val ab = reader.result.unsafeCast<ArrayBuffer>()
-            val minLen = min(ab.size, len)
+            val minLen = min(ab.byteLength, len)
             arraycopy(Int8Array(ab).toByteArray(), 0, buffer, offset, minLen)
             deferred.complete(minLen)
         }

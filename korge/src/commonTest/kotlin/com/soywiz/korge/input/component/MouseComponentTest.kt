@@ -20,7 +20,7 @@ class MouseComponentTest : ViewsForTesting() {
 	@Test
 	fun name() = viewsTest {
 		val log = arrayListOf<String>()
-		val tex = Bitmap32(16, 16)
+		val tex = Bitmap32(16, 16, premultiplied = true)
 		val image = Image(tex)
 		views.stage += image
 

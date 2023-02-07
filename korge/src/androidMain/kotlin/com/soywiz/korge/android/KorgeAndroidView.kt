@@ -3,12 +3,12 @@ package com.soywiz.korge.android
 import android.content.Context
 import android.util.AttributeSet
 import android.widget.RelativeLayout
+import com.soywiz.kgl.*
 import com.soywiz.korag.gl.AGOpengl
 import com.soywiz.korev.InitEvent
 import com.soywiz.korev.RenderEvent
 import com.soywiz.korge.Korge
 import com.soywiz.korge.scene.Module
-import com.soywiz.korgw.AndroidAGOpengl
 import com.soywiz.korgw.AndroidGameWindowNoActivity
 import com.soywiz.korgw.GameWindowCreationConfig
 import com.soywiz.korio.Korio
@@ -20,7 +20,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 @Suppress("unused")
-open class KorgeAndroidView(
+open class KorgeAndroidView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0,
@@ -47,6 +47,7 @@ open class KorgeAndroidView(
         agOpenGl = null
         cleanUpResourcesVfs()
 
+        //findViewTreeLifecycleOwner()?.lifecycleScope?.launch { // @TODO: Not available in dependencies. Check if we can somehow get this other way.
         CoroutineScope(Dispatchers.Main).launch {
             mGLView?.let { removeView(it) }
         }
@@ -61,7 +62,7 @@ open class KorgeAndroidView(
     fun loadModule(config: Korge.Config) {
         unloadModule() // Unload module if already loaded
 
-        agOpenGl = AndroidAGOpengl(context, agCheck = false) { mGLView }
+        agOpenGl = AGOpengl(KmlGlAndroid { mGLView?.clientVersion ?: -1 }.checkedIf(checked = false).logIf(log = false))
         gameWindow = AndroidGameWindowNoActivity(config.windowSize?.width ?: config.finalWindowSize.width,
             config.finalWindowSize.height, agOpenGl!!, context, this.config) { mGLView!! }
         mGLView = com.soywiz.korgw.KorgwSurfaceView(this, context, gameWindow!!, this.config)

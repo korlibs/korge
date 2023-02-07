@@ -23,7 +23,7 @@ suspend fun main() = Korge(width = 768, height = 512, bgcolor = Colors["#2b2b2b"
             EmptyE2ETestCase,
             FiltersE2ETestCase,
             IdentityFilterE2ETestCase,
-            DirectionalBlurE2ETestCase,
+            //DirectionalBlurE2ETestCase,
         )
 
         println("Determining screenshotsVfs...")

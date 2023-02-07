@@ -4,7 +4,6 @@ import com.soywiz.kmem.*
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korio.util.toStringDecimal
 import com.soywiz.korma.geom.Angle
-import com.soywiz.korma.geom.degrees
 import com.soywiz.korma.geom.radians
 
 internal const val PARTICLE_STRIDE = 27
@@ -14,7 +13,7 @@ inline class Particle(val index: Int) {
 }
 
 open class ParticleContainer(val max: Int) {
-    val data = FBuffer(max * PARTICLE_STRIDE * Float.SIZE_BYTES)
+    val data = Buffer.allocDirect(max * PARTICLE_STRIDE * Float.SIZE_BYTES)
     val f32 = data.f32
 
     var Particle.rotation: Angle get() = rotationRadians.radians; set(value) { rotationRadians = value.radians.toFloat() }

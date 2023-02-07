@@ -1,9 +1,11 @@
 package com.soywiz.korge.view
 
-import com.soywiz.korag.AG
+import com.soywiz.korag.*
+import com.soywiz.korge.view.BlendMode.Companion.ADD
+import com.soywiz.korge.view.BlendMode.Companion.MULTIPLY
+import com.soywiz.korge.view.BlendMode.Companion.NORMAL
 import com.soywiz.korge.view.property.*
-import com.soywiz.korim.color.RGBA
-import com.soywiz.korim.color.RGBAf
+import com.soywiz.korim.color.*
 
 /**
  * Determines how pixels should be blended. The most common blend modes are: [NORMAL] (normal mix) and [ADD] (additive blending) along with [MULTIPLY] and others.
@@ -16,25 +18,19 @@ import com.soywiz.korim.color.RGBAf
  * ```
  */
 data class BlendMode(
-    val factors: AG.Blending,
-    /** Factors to use when the output has non-premultiplied-alpha, and it is full opaque (typically the final output buffer) */
-    val nonPremultipliedFactors: AG.Blending = factors,
+    val factors: AGBlending,
     val name: String? = null,
 ) {
-    val _hashCode: Int = factors.hashCode() + nonPremultipliedFactors.hashCode() * 7 + name.hashCode() * 17
+    val _hashCode: Int = factors.hashCode() + name.hashCode() * 7
     override fun hashCode(): Int = _hashCode
-    override fun equals(other: Any?): Boolean = (this === other) || (other is BlendMode && this.factors == other.factors && nonPremultipliedFactors == other.nonPremultipliedFactors && name == other.name)
+    override fun equals(other: Any?): Boolean = (this === other) || (other is BlendMode && this.factors == other.factors && name == other.name)
     override fun toString(): String = name ?: super.toString()
 
-    fun factors(premultiplied: Boolean): AG.Blending = if (premultiplied) factors else nonPremultipliedFactors
-
-    fun apply(premultiplied: Boolean, src: RGBAf, dst: RGBAf, out: RGBAf = RGBAf()): RGBAf {
-        val factors = factors(premultiplied)
+    fun apply(src: RGBAf, dst: RGBAf, out: RGBAf = RGBAf()): RGBAf {
         return factors.apply(src, dst, out)
     }
 
-    fun apply(premultiplied: Boolean, src: RGBA, dst: RGBA): RGBA {
-        val factors = factors(premultiplied)
+    fun apply(src: RGBA, dst: RGBA): RGBA {
         return factors.apply(src, dst)
     }
 
@@ -46,64 +42,64 @@ data class BlendMode(
 
     companion object {
         /** Mixes the source and destination colors using the source alpha value */
-        val NORMAL = BlendMode(name = "NORMAL", factors = AG.Blending.NORMAL_PRE, nonPremultipliedFactors = AG.Blending.NORMAL)
+        val NORMAL = BlendMode(name = "NORMAL", factors = AGBlending.NORMAL_PRE)
         /** Not an actual blending. It is used to indicate that the next non-inherit BlendMode from its ancestors will be used. */
         val INHERIT = NORMAL.copy(name = "INHERIT")
         /** Doesn't blend at all. Just replaces the colors. */
-        val NONE = BlendMode(name = "NONE", factors = AG.Blending(AG.BlendFactor.ONE, AG.BlendFactor.ZERO)) // REPLACE
+        val NONE = BlendMode(name = "NONE", factors = AGBlending(AGBlendFactor.ONE, AGBlendFactor.ZERO)) // REPLACE
         /** Additive mixing for lighting effects */
-        val ADD = BlendMode(name = "ADD", factors = AG.Blending.ADD_PRE, nonPremultipliedFactors = AG.Blending.ADD)
+        val ADD = BlendMode(name = "ADD", factors = AGBlending.ADD_PRE)
 
         // Unchecked
-        val MULTIPLY = BlendMode(name = "MULTIPLY", factors = AG.Blending(AG.BlendFactor.DESTINATION_COLOR, AG.BlendFactor.ONE_MINUS_SOURCE_ALPHA))
-        val SCREEN = BlendMode(name = "SCREEN", factors = AG.Blending(AG.BlendFactor.ONE, AG.BlendFactor.ONE_MINUS_SOURCE_COLOR))
+        val MULTIPLY = BlendMode(name = "MULTIPLY", factors = AGBlending(AGBlendFactor.DESTINATION_COLOR, AGBlendFactor.ONE_MINUS_SOURCE_ALPHA))
+        val SCREEN = BlendMode(name = "SCREEN", factors = AGBlending(AGBlendFactor.ONE, AGBlendFactor.ONE_MINUS_SOURCE_COLOR))
 
-        val ERASE = BlendMode(name = "ERASE", factors = AG.Blending(AG.BlendFactor.ZERO, AG.BlendFactor.ONE_MINUS_SOURCE_ALPHA))
-        val MASK = BlendMode(name = "MASK", factors = AG.Blending(AG.BlendFactor.ZERO, AG.BlendFactor.SOURCE_ALPHA))
-        val BELOW = BlendMode(name = "BELOW", factors = AG.Blending(AG.BlendFactor.ONE_MINUS_DESTINATION_ALPHA, AG.BlendFactor.DESTINATION_ALPHA))
+        val ERASE = BlendMode(name = "ERASE", factors = AGBlending(AGBlendFactor.ZERO, AGBlendFactor.ONE_MINUS_SOURCE_ALPHA))
+        val MASK = BlendMode(name = "MASK", factors = AGBlending(AGBlendFactor.ZERO, AGBlendFactor.SOURCE_ALPHA))
+        val BELOW = BlendMode(name = "BELOW", factors = AGBlending(AGBlendFactor.ONE_MINUS_DESTINATION_ALPHA, AGBlendFactor.DESTINATION_ALPHA))
         val SUBTRACT = BlendMode(
-            name = "SUBTRACT", factors = AG.Blending(
-                AG.BlendFactor.SOURCE_ALPHA, AG.BlendFactor.DESTINATION_ALPHA,
-                AG.BlendFactor.ONE, AG.BlendFactor.ONE,
-                AG.BlendEquation.REVERSE_SUBTRACT
+            name = "SUBTRACT", factors = AGBlending(
+                AGBlendFactor.SOURCE_ALPHA, AGBlendFactor.DESTINATION_ALPHA,
+                AGBlendFactor.ONE, AGBlendFactor.ONE,
+                AGBlendEquation.REVERSE_SUBTRACT
             )
         )
-        val INVERT = BlendMode(name = "INVERT", factors = AG.Blending(AG.BlendFactor.ONE_MINUS_DESTINATION_COLOR, AG.BlendFactor.ZERO))
+        val INVERT = BlendMode(name = "INVERT", factors = AGBlending(AGBlendFactor.ONE_MINUS_DESTINATION_COLOR, AGBlendFactor.ZERO))
 
         // Unimplemented
         val LIGHTEN = BlendMode(
             name = "LIGHTEN",
-            factors = AG.Blending(
-                AG.BlendFactor.SOURCE_ALPHA, AG.BlendFactor.DESTINATION_ALPHA,
-                AG.BlendFactor.ONE, AG.BlendFactor.ONE
+            factors = AGBlending(
+                AGBlendFactor.SOURCE_ALPHA, AGBlendFactor.DESTINATION_ALPHA,
+                AGBlendFactor.ONE, AGBlendFactor.ONE
             )
         )
         val DARKEN = BlendMode(
             name = "DARKEN",
-            factors = AG.Blending(
-                AG.BlendFactor.SOURCE_ALPHA, AG.BlendFactor.DESTINATION_ALPHA,
-                AG.BlendFactor.ONE, AG.BlendFactor.ONE
+            factors = AGBlending(
+                AGBlendFactor.SOURCE_ALPHA, AGBlendFactor.DESTINATION_ALPHA,
+                AGBlendFactor.ONE, AGBlendFactor.ONE
             )
         )
         val DIFFERENCE = BlendMode(
             name = "DIFFERENCE",
-            factors = AG.Blending(
-                AG.BlendFactor.SOURCE_ALPHA, AG.BlendFactor.DESTINATION_ALPHA,
-                AG.BlendFactor.ONE, AG.BlendFactor.ONE
+            factors = AGBlending(
+                AGBlendFactor.SOURCE_ALPHA, AGBlendFactor.DESTINATION_ALPHA,
+                AGBlendFactor.ONE, AGBlendFactor.ONE
             )
         )
         val ALPHA = BlendMode(
             name = "ALPHA",
-            factors = AG.Blending(
-                AG.BlendFactor.SOURCE_ALPHA, AG.BlendFactor.DESTINATION_ALPHA,
-                AG.BlendFactor.ONE, AG.BlendFactor.ONE
+            factors = AGBlending(
+                AGBlendFactor.SOURCE_ALPHA, AGBlendFactor.DESTINATION_ALPHA,
+                AGBlendFactor.ONE, AGBlendFactor.ONE
             )
         )
         val HARDLIGHT = BlendMode(
             name = "HARDLIGHT",
-            factors = AG.Blending(
-                AG.BlendFactor.SOURCE_ALPHA, AG.BlendFactor.DESTINATION_ALPHA,
-                AG.BlendFactor.ONE, AG.BlendFactor.ONE
+            factors = AGBlending(
+                AGBlendFactor.SOURCE_ALPHA, AGBlendFactor.DESTINATION_ALPHA,
+                AGBlendFactor.ONE, AGBlendFactor.ONE
             )
         )
 

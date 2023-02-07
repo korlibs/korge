@@ -183,6 +183,7 @@ class KorgeExtension(val project: Project) {
      * Android SDK not required if tasks are not executed.
      * The project can be opened on Android Studio.
      */
+    @Deprecated("Use targetAndroidDirect instead")
     fun targetAndroidIndirect() {
         target("android") {
             project.configureAndroidIndirect()
@@ -258,7 +259,6 @@ class KorgeExtension(val project: Project) {
     val DEFAULT_JVM_TARGET = "1.8"
     //val DEFAULT_JVM_TARGET = "1.6"
 	var jvmTarget: String = project.findProject("jvm.target")?.toString() ?: DEFAULT_JVM_TARGET
-    var useMimalloc = true
 	var androidLibrary: Boolean = project.findProperty("android.library") == "true"
     var overwriteAndroidFiles: Boolean = project.findProperty("overwrite.android.files") == "false"
     var id: String = "com.unknown.unknownapp"
@@ -282,6 +282,14 @@ class KorgeExtension(val project: Project) {
 
     var sourceMaps: Boolean = false
 	var supressWarnings: Boolean = false
+
+    val versionSubstitutions = LinkedHashMap<String, String>().also {
+        it["com.soywiz.korlibs.korge2:korge"] = BuildVersions.KORGE
+    }
+
+    fun versionSubstitution(groupName: String, version: String) {
+        versionSubstitutions[groupName] = version
+    }
 
     /**
      * Determines whether the standard console will be available on Windows or not
@@ -500,7 +508,7 @@ class KorgeExtension(val project: Project) {
 	fun dependencyNodeModule(name: String, version: String) = project {
 		val node = extensions.getByType(NodeExtension::class.java)
 
-		val installNodeModule = tasks.create<NpmTask>("installJs${name.capitalize()}") {
+		val installNodeModule = tasks.createThis<NpmTask>("installJs${name.capitalize()}") {
 			onlyIf { !File(node.nodeModulesDir, name).exists() }
 			setArgs(arrayListOf("install", "$name@$version"))
 		}
@@ -517,7 +525,7 @@ class KorgeExtension(val project: Project) {
 	fun dependencyCInterops(name: String, targets: List<String>) = project {
 		cinterops += CInteropTargets(name, targets)
 		for (target in targets) {
-			((kotlin.targets[target] as AbstractKotlinTarget).compilations["main"] as KotlinNativeCompilation).apply {
+			((kotlin.targets.findByName(target) as AbstractKotlinTarget).compilations["main"] as KotlinNativeCompilation).apply {
 				cinterops.apply {
 					maybeCreate(name).apply {
 					}

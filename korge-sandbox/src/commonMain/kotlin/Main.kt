@@ -11,7 +11,6 @@ import samples.asteroids.*
 import samples.connect4.*
 import samples.minesweeper.*
 import samples.pong.*
-import samples.rpg.*
 
 val DEFAULT_KORGE_BG_COLOR = Colors.DARKCYAN.mix(Colors.BLACK, 0.8)
 
@@ -27,11 +26,11 @@ suspend fun main() = Korge(
     //forceRenderEveryFrame = true
     //debugAg = true,
 ) {
-    //uiButton("HELLO WORLD!", width = 300.0).position(100, 100); return@Korge
-    //solidRect(100, 100, Colors.RED).xy(300, 300).filters(BlurFilter()); return@Korge
+    //sceneContainer(views).changeTo({ MainGifAnimation() }); return@Korge
+    //sceneContainer(views).changeTo({ MainStressButtons() }); return@Korge
+    //sceneContainer(views).changeTo({ MainTransitionFilter() }); return@Korge
 
     demoSelector(
-        //Demo(::MainJSMpeg),
         //Demo(::MainGraphicsText),
         //Demo(::MainTextBounds),
         //Demo(::MainEditor),
@@ -40,7 +39,17 @@ suspend fun main() = Korge(
         //Demo(::MainAnimations),
         //Demo(::MainCache),
         //Demo(::MainEditor),
-        Demo(::MainUI),
+        //Demo(::MainUI),
+        //Demo(::MainBezier),
+        //Demo(::MainBunnymark),
+        //Demo(::MainStressButtons),
+        //Demo(::MainGifAnimation),
+        //Demo(::MainTransitionFilter),
+        //Demo(::MainFilters),
+        //Demo(::MainGpuVectorRendering),
+        //Demo(::MainRotatedAtlas),
+        Demo(::MainImageOrientationTest),
+        //Demo(::MainGpuVectorRendering),
         //Demo(::MainTextMetrics),
         //Demo(::MainBunnymark),
         //Demo(::MainBlur),
@@ -50,15 +59,14 @@ suspend fun main() = Korge(
         //Demo(::MainSvgAnimation),
         //Demo(::MainVectorNinePatch),
         listOf(
+            Demo(::MainStressButtons),
             Demo(::MainVectorNinePatch),
             Demo(::MainGraphicsText),
-            Demo(::MainRpgScene),
+            Demo(::MainImageOrientationTest),
             Demo(::MainCache),
-            Demo(::MainJSMpeg),
             Demo(::MainSDF),
             Demo(::MainTextInput),
             Demo(::MainBlending),
-            Demo(::MainXM),
             Demo(::MainVector),
             Demo(::MainText),
             Demo(::MainAtlas),
@@ -66,15 +74,12 @@ suspend fun main() = Korge(
             Demo(::MainOnScreenController),
             Demo(::MainScenes),
             Demo(::MainKTree),
-            Demo(::MainLipSync),
             Demo(::MainInput),
             Demo(::MainGestures),
             Demo(::MainFilters),
             Demo(::MainCoroutine),
-            Demo(::MainVideo),
             Demo(::MainPong),
             Demo(::MainUI),
-            Demo(::MainLua),
             Demo(::MainOldMask),
             Demo(::MainNinePatch),
             Demo(::MainTweens),
@@ -134,7 +139,6 @@ suspend fun main() = Korge(
             Demo(::MainBezier),
             Demo(::MainUITreeView),
             Demo(::MainUIImageTester),
-            Demo(::MainVampire),
             Demo(::MainCircles),
             Demo(::MainEmoji),
             Demo(::MainBVH),
@@ -147,10 +151,8 @@ suspend fun main() = Korge(
             Demo(::MainGpuVectorRendering2),
             Demo(::MainGpuVectorRendering3),
             Demo(::MainSound),
-            Demo(::MainTilemapWithScroll),
             Demo(::MainTiledBackground),
             Demo(::MainAseprite),
-            Demo(::MainAseParallaxSample),
         )
     )
 }

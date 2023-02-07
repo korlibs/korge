@@ -19,19 +19,16 @@ class ViewsOpenglJvmTest : ViewsForTesting(log = true) {
         }
     }
 
-    override fun createAg(): AG = object : AGOpengl() {
-        override val gl: KmlGl = logGl
-        override val nativeComponent: Any = Unit
-    }
+    override fun createAg(): AG = AGOpengl(logGl)
 
     // This checks that the texture is generated with the default size (dirty=true fix)
     @Test
     fun testIdentityFilterFor128x128() {
-        views.stage += Image(NativeImage(AG.RenderBufferConsts.DEFAULT_INITIAL_WIDTH, AG.RenderBufferConsts.DEFAULT_INITIAL_HEIGHT)).also {
+        views.stage += Image(NativeImage(AGFrameBuffer.DEFAULT_INITIAL_WIDTH, AGFrameBuffer.DEFAULT_INITIAL_HEIGHT)).also {
             it.filter = IdentityFilter
         }
         views.render()
-        assertEqualsFileReference("korge/render/ViewsJvmTestOpenglFilterIdentityDefaultRenderBufferSize.log", logGl.getLogAsString())
+        assertEqualsFileReference("korge/render/ViewsJvmTestOpenglFilterIdentityDefaultFrameBufferSize.log", logGl.getLogAsString())
     }
 
     @Test

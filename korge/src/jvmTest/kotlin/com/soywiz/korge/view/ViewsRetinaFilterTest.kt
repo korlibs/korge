@@ -18,7 +18,7 @@ class ViewsRetinaFilterTest : ViewsForTesting(
         //println("stage.scale=${stage.scale}")
         //stage.scale = 2.0
         val container = container {
-            image(Bitmap32(512, 512, Colors.RED))
+            image(Bitmap32(512, 512, Colors.RED.premultiplied))
             //solidRect(512, 512, Colors.RED)
                 .filters(
                     SwizzleColorsFilter("rrra"),

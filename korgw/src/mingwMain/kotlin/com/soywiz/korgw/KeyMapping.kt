@@ -2,9 +2,207 @@ package com.soywiz.korgw
 
 import com.soywiz.korev.Key
 
+// -	0x0A-0B	Reserved
+// -	0x0E-0F	Undefined
+//-	0x3A-40	Undefined
+// -	0x5E	Reserved
+// -	0x88-8F	Unassigned
+//0x92-96	OEM specific
+//-	0x97-9F	Unassigned
+// -	0xB8-B9	Reserved
+//-	0xC1-D7	Reserved
+//-	0xD8-DA	Unassigned
+//-	0xE0	Reserved
+//0xE9-F5	OEM specific
 
-const val VK_ABNT_C1 = 0xC1
-const val VK_ABNT_C2 = 0xC2
+const val VK_LBUTTON = 0x01 // Left mouse button
+const val VK_RBUTTON = 0x02 // Right mouse button
+const val VK_CANCEL = 0x03 // Control-break processing
+const val VK_MBUTTON = 0x04 // Middle mouse button (three-button mouse)
+const val VK_XBUTTON1 = 0x05 // X1 mouse button
+const val VK_XBUTTON2 = 0x06 // X2 mouse button
+const val VK_UNDEFINED_07 = 0x07 // Undefined
+const val VK_BACK = 0x08 // BACKSPACE key
+const val VK_TAB = 0x09 // TAB key
+const val VK_CLEAR = 0x0C // CLEAR key
+const val VK_RETURN = 0x0D // ENTER key
+const val VK_SHIFT = 0x10 // SHIFT key
+const val VK_CONTROL = 0x11 // CTRL key
+const val VK_MENU = 0x12 // ALT key
+const val VK_PAUSE = 0x13 // PAUSE key
+const val VK_CAPITAL = 0x14 // CAPS LOCK key
+const val VK_KANA = 0x15 // IME Kana mode
+const val VK_HANGUEL = 0x15 // IME Hanguel mode (maintained for compatibility; use VK_HANGUL)
+const val VK_HANGUL = 0x15 // IME Hangul mode
+const val VK_IME_ON = 0x16 // IME On
+const val VK_JUNJA = 0x17 // IME Junja mode
+const val VK_FINAL = 0x18 // IME final mode
+const val VK_HANJA = 0x19 // IME Hanja mode
+const val VK_KANJI = 0x19 // IME Kanji mode
+const val VK_IME_OFF = 0x1A // IME Off
+const val VK_ESCAPE = 0x1B // ESC key
+const val VK_CONVERT = 0x1C // IME convert
+const val VK_NONCONVERT = 0x1D // IME nonconvert
+const val VK_ACCEPT = 0x1E // IME accept
+const val VK_MODECHANGE = 0x1F // IME mode change request
+const val VK_SPACE = 0x20 // SPACEBAR
+const val VK_PRIOR = 0x21 // PAGE UP key
+const val VK_NEXT = 0x22 // PAGE DOWN key
+const val VK_END = 0x23 // END key
+const val VK_HOME = 0x24 // HOME key
+const val VK_LEFT = 0x25 // LEFT ARROW key
+const val VK_UP = 0x26 // UP ARROW key
+const val VK_RIGHT = 0x27 // RIGHT ARROW key
+const val VK_DOWN = 0x28 // DOWN ARROW key
+const val VK_SELECT = 0x29 // SELECT key
+const val VK_PRINT = 0x2A // PRINT key
+const val VK_EXECUTE = 0x2B // EXECUTE key
+const val VK_SNAPSHOT = 0x2C // PRINT SCREEN key
+const val VK_INSERT = 0x2D // INS key
+const val VK_DELETE = 0x2E // DEL key
+const val VK_HELP = 0x2F // HELP key
+const val VK_KEY_0 = 0x30 // 0 key
+const val VK_KEY_1 = 0x31 // 1 key
+const val VK_KEY_2 = 0x32 // 2 key
+const val VK_KEY_3 = 0x33 // 3 key
+const val VK_KEY_4 = 0x34 // 4 key
+const val VK_KEY_5 = 0x35 // 5 key
+const val VK_KEY_6 = 0x36 // 6 key
+const val VK_KEY_7 = 0x37 // 7 key
+const val VK_KEY_8 = 0x38 // 8 key
+const val VK_KEY_9 = 0x39 // 9 key
+const val VK_KEY_A = 0x41 // A key
+const val VK_KEY_B = 0x42 // B key
+const val VK_KEY_C = 0x43 // C key
+const val VK_KEY_D = 0x44 // D key
+const val VK_KEY_E = 0x45 // E key
+const val VK_KEY_F = 0x46 // F key
+const val VK_KEY_G = 0x47 // G key
+const val VK_KEY_H = 0x48 // H key
+const val VK_KEY_I = 0x49 // I key
+const val VK_KEY_J = 0x4A // J key
+const val VK_KEY_K = 0x4B // K key
+const val VK_KEY_L = 0x4C // L key
+const val VK_KEY_M = 0x4D // M key
+const val VK_KEY_N = 0x4E // N key
+const val VK_KEY_O = 0x4F // O key
+const val VK_KEY_P = 0x50 // P key
+const val VK_KEY_Q = 0x51 // Q key
+const val VK_KEY_R = 0x52 // R key
+const val VK_KEY_S = 0x53 // S key
+const val VK_KEY_T = 0x54 // T key
+const val VK_KEY_U = 0x55 // U key
+const val VK_KEY_V = 0x56 // V key
+const val VK_KEY_W = 0x57 // W key
+const val VK_KEY_X = 0x58 // X key
+const val VK_KEY_Y = 0x59 // Y key
+const val VK_KEY_Z = 0x5A // Z key
+const val VK_LWIN = 0x5B // Left Windows key (Natural keyboard)
+const val VK_RWIN = 0x5C // Right Windows key (Natural keyboard)
+const val VK_APPS = 0x5D // Applications key (Natural keyboard)
+const val VK_SLEEP = 0x5F // Computer Sleep key
+const val VK_NUMPAD0 = 0x60 // Numeric keypad 0 key
+const val VK_NUMPAD1 = 0x61 // Numeric keypad 1 key
+const val VK_NUMPAD2 = 0x62 // Numeric keypad 2 key
+const val VK_NUMPAD3 = 0x63 // Numeric keypad 3 key
+const val VK_NUMPAD4 = 0x64 // Numeric keypad 4 key
+const val VK_NUMPAD5 = 0x65 // Numeric keypad 5 key
+const val VK_NUMPAD6 = 0x66 // Numeric keypad 6 key
+const val VK_NUMPAD7 = 0x67 // Numeric keypad 7 key
+const val VK_NUMPAD8 = 0x68 // Numeric keypad 8 key
+const val VK_NUMPAD9 = 0x69 // Numeric keypad 9 key
+const val VK_MULTIPLY = 0x6A // Multiply key
+const val VK_ADD = 0x6B // Add key
+const val VK_SEPARATOR = 0x6C // Separator key
+const val VK_SUBTRACT = 0x6D // Subtract key
+const val VK_DECIMAL = 0x6E // Decimal key
+const val VK_DIVIDE = 0x6F // Divide key
+const val VK_F1 = 0x70 // F1 key
+const val VK_F2 = 0x71 // F2 key
+const val VK_F3 = 0x72 // F3 key
+const val VK_F4 = 0x73 // F4 key
+const val VK_F5 = 0x74 // F5 key
+const val VK_F6 = 0x75 // F6 key
+const val VK_F7 = 0x76 // F7 key
+const val VK_F8 = 0x77 // F8 key
+const val VK_F9 = 0x78 // F9 key
+const val VK_F10 = 0x79 // F10 key
+const val VK_F11 = 0x7A // F11 key
+const val VK_F12 = 0x7B // F12 key
+const val VK_F13 = 0x7C // F13 key
+const val VK_F14 = 0x7D // F14 key
+const val VK_F15 = 0x7E // F15 key
+const val VK_F16 = 0x7F // F16 key
+const val VK_F17 = 0x80 // F17 key
+const val VK_F18 = 0x81 // F18 key
+const val VK_F19 = 0x82 // F19 key
+const val VK_F20 = 0x83 // F20 key
+const val VK_F21 = 0x84 // F21 key
+const val VK_F22 = 0x85 // F22 key
+const val VK_F23 = 0x86 // F23 key
+const val VK_F24 = 0x87 // F24 key
+const val VK_NUMLOCK = 0x90 // NUM LOCK key
+const val VK_SCROLL = 0x91 // SCROLL LOCK key
+const val VK_OEM_92 = 0x92
+const val VK_OEM_93 = 0x93
+const val VK_OEM_94 = 0x94
+const val VK_OEM_95 = 0x95
+const val VK_OEM_96 = 0x96
+const val VK_LSHIFT = 0xA0 // Left SHIFT key
+const val VK_RSHIFT = 0xA1 // Right SHIFT key
+const val VK_LCONTROL = 0xA2 // Left CONTROL key
+const val VK_RCONTROL = 0xA3 // Right CONTROL key
+const val VK_LMENU = 0xA4 // Left ALT key
+const val VK_RMENU = 0xA5 // Right ALT key
+const val VK_BROWSER_BACK = 0xA6 // Browser Back key
+const val VK_BROWSER_FORWARD = 0xA7 // Browser Forward key
+const val VK_BROWSER_REFRESH = 0xA8 // Browser Refresh key
+const val VK_BROWSER_STOP = 0xA9 // Browser Stop key
+const val VK_BROWSER_SEARCH = 0xAA // Browser Search key
+const val VK_BROWSER_FAVORITES = 0xAB // Browser Favorites key
+const val VK_BROWSER_HOME = 0xAC // Browser Start and Home key
+const val VK_VOLUME_MUTE = 0xAD // Volume Mute key
+const val VK_VOLUME_DOWN = 0xAE // Volume Down key
+const val VK_VOLUME_UP = 0xAF // Volume Up key
+const val VK_MEDIA_NEXT_TRACK = 0xB0 // Next Track key
+const val VK_MEDIA_PREV_TRACK = 0xB1 // Previous Track key
+const val VK_MEDIA_STOP = 0xB2 // Stop Media key
+const val VK_MEDIA_PLAY_PAUSE = 0xB3 // Play/Pause Media key
+const val VK_LAUNCH_MAIL = 0xB4 // Start Mail key
+const val VK_LAUNCH_MEDIA_SELECT = 0xB5 // Select Media key
+const val VK_LAUNCH_APP1 = 0xB6 // Start Application 1 key
+const val VK_LAUNCH_APP2 = 0xB7 // Start Application 2 key
+const val VK_OEM_1 = 0xBA // Used for miscellaneous characters; it can vary by keyboard. For the US standard keyboard, the ';:' key
+const val VK_OEM_PLUS = 0xBB // For any country/region, the '+' key
+const val VK_OEM_COMMA = 0xBC // For any country/region, the ',' key
+const val VK_OEM_MINUS = 0xBD // For any country/region, the '-' key
+const val VK_OEM_PERIOD = 0xBE // For any country/region, the '.' key
+const val VK_OEM_2 = 0xBF // Used for miscellaneous characters; it can vary by keyboard. For the US standard keyboard, the '/?' key
+const val VK_OEM_3 = 0xC0 // Used for miscellaneous characters; it can vary by keyboard. For the US standard keyboard, the '`~' key
+const val VK_OEM_4 = 0xDB // Used for miscellaneous characters; it can vary by keyboard. For the US standard keyboard, the '[{' key
+const val VK_OEM_5 = 0xDC // Used for miscellaneous characters; it can vary by keyboard. For the US standard keyboard, the '\|' key
+const val VK_OEM_6 = 0xDD // Used for miscellaneous characters; it can vary by keyboard. For the US standard keyboard, the ']}' key
+const val VK_OEM_7 = 0xDE // Used for miscellaneous characters; it can vary by keyboard. For the US standard keyboard, the 'single-quote/double-quote' key
+const val VK_OEM_8 = 0xDF // Used for miscellaneous characters; it can vary by keyboard.
+const val VK_OEM_E1 = 0xE1 // OEM specific
+const val VK_OEM_102 = 0xE2 // The <> keys on the US standard keyboard, or the \\| key on the non-US 102-key keyboard
+const val VK_OEM_E3 = 0xE3 // OEM E3
+const val VK_OEM_E4 = 0xE4 // OEM E4
+const val VK_PROCESSKEY = 0xE5 // IME PROCESS key
+const val VK_OEM_E6 = 0xE6 // OEM specific
+const val VK_PACKET = 0xE7 // Used to pass Unicode characters as if they were keystrokes. The VK_PACKET key is the low word of a 32-bit Virtual Key value used for non-keyboard input methods. For more information, see Remark in KEYBDINPUT, SendInput, WM_KEYDOWN, and WM_KEYUP
+const val VK_UNASIGNED_E8 = 0xE8 // Unassigned
+const val VK_ATTN = 0xF6 // Attn key
+const val VK_CRSEL = 0xF7 // CrSel key
+const val VK_EXSEL = 0xF8 // ExSel key
+const val VK_EREOF = 0xF9 // Erase EOF key
+const val VK_PLAY = 0xFA // Play key
+const val VK_ZOOM = 0xFB // Zoom key
+const val VK_NONAME = 0xFC // Reserved
+const val VK_PA1 = 0xFD // PA1 key
+const val VK_OEM_CLEAR = 0xFE // Clear key
+
+/*
 const val VK_ADD = 0x6B
 const val VK_ATTN = 0xF6
 const val VK_BACK = 0x08
@@ -17,8 +215,6 @@ const val VK_EREOF = 0xF9
 const val VK_ESCAPE = 0x1B
 const val VK_EXECUTE = 0x2B
 const val VK_EXSEL = 0xF8
-const val VK_ICO_CLEAR = 0xE6
-const val VK_ICO_HELP = 0xE3
 const val VK_KEY_0 = 0x30
 const val VK_KEY_1 = 0x31
 const val VK_KEY_2 = 0x32
@@ -67,38 +263,6 @@ const val VK_NUMPAD6 = 0x66
 const val VK_NUMPAD7 = 0x67
 const val VK_NUMPAD8 = 0x68
 const val VK_NUMPAD9 = 0x69
-const val VK_OEM_1 = 0xBA
-const val VK_OEM_102 = 0xE2
-const val VK_OEM_2 = 0xBF
-const val VK_OEM_3 = 0xC0
-const val VK_OEM_4 = 0xDB
-const val VK_OEM_5 = 0xDC
-const val VK_OEM_6 = 0xDD
-const val VK_OEM_7 = 0xDE
-const val VK_OEM_8 = 0xDF
-const val VK_OEM_ATTN = 0xF0
-const val VK_OEM_AUTO = 0xF3
-const val VK_OEM_AX = 0xE1
-const val VK_OEM_BACKTAB = 0xF5
-const val VK_OEM_CLEAR = 0xFE
-const val VK_OEM_COMMA = 0xBC
-const val VK_OEM_COPY = 0xF2
-const val VK_OEM_CUSEL = 0xEF
-const val VK_OEM_ENLW = 0xF4
-const val VK_OEM_FINISH = 0xF1
-const val VK_OEM_FJ_LOYA = 0x95
-const val VK_OEM_FJ_MASSHOU = 0x93
-const val VK_OEM_FJ_ROYA = 0x96
-const val VK_OEM_FJ_TOUROKU = 0x94
-const val VK_OEM_JUMP = 0xEA
-const val VK_OEM_MINUS = 0xBD
-const val VK_OEM_PA1 = 0xEB
-const val VK_OEM_PA2 = 0xEC
-const val VK_OEM_PA3 = 0xED
-const val VK_OEM_PERIOD = 0xBE
-const val VK_OEM_PLUS = 0xBB
-const val VK_OEM_RESET = 0xE9
-const val VK_OEM_WSCTRL = 0xEE
 const val VK_PA1 = 0xFD
 const val VK_PACKET = 0xE7
 const val VK_PLAY = 0xFA
@@ -110,7 +274,6 @@ const val VK_SPACE = 0x20
 const val VK_SUBTRACT = 0x6D
 const val VK_TAB = 0x09
 const val VK_ZOOM = 0xFB
-const val VK__none_ = 0xFF
 const val VK_ACCEPT = 0x1E
 const val VK_APPS = 0x5D
 const val VK_BROWSER_BACK = 0xA6
@@ -152,7 +315,6 @@ const val VK_F9 = 0x78
 const val VK_FINAL = 0x18
 const val VK_HELP = 0x2F
 const val VK_HOME = 0x24
-const val VK_ICO_00 = 0xE4
 const val VK_INSERT = 0x2D
 const val VK_JUNJA = 0x17
 const val VK_KANA = 0x15
@@ -176,7 +338,6 @@ const val VK_MODECHANGE = 0x1F
 const val VK_NEXT = 0x22
 const val VK_NONCONVERT = 0x1D
 const val VK_NUMLOCK = 0x90
-const val VK_OEM_FJ_JISHO = 0x92
 const val VK_PAUSE = 0x13
 const val VK_PRINT = 0x2A
 const val VK_PRIOR = 0x21
@@ -195,6 +356,35 @@ const val VK_VOLUME_MUTE = 0xAD
 const val VK_VOLUME_UP = 0xAF
 const val VK_XBUTTON1 = 0x05
 const val VK_XBUTTON2 = 0x06
+*/
+
+const val VK_OEM_ATTN = 0xF0
+const val VK_OEM_AUTO = 0xF3
+const val VK_OEM_AX = 0xE1
+const val VK_OEM_BACKTAB = 0xF5
+const val VK_OEM_COPY = 0xF2
+const val VK_OEM_CUSEL = 0xEF
+const val VK_OEM_ENLW = 0xF4
+const val VK_OEM_FINISH = 0xF1
+const val VK_OEM_FJ_LOYA = 0x95
+const val VK_OEM_FJ_MASSHOU = 0x93
+const val VK_OEM_FJ_ROYA = 0x96
+const val VK_OEM_FJ_TOUROKU = 0x94
+const val VK_OEM_JUMP = 0xEA
+const val VK_OEM_PA1 = 0xEB
+const val VK_OEM_PA2 = 0xEC
+const val VK_OEM_PA3 = 0xED
+const val VK_OEM_RESET = 0xE9
+const val VK_OEM_WSCTRL = 0xEE
+const val VK_OEM_FJ_JISHO = 0x92
+const val VK_ICO_00 = 0xE4
+
+const val VK_ICO_CLEAR = 0xE6
+const val VK_ICO_HELP = 0xE3
+const val VK_ABNT_C1 = 0xC1
+const val VK_ABNT_C2 = 0xC2
+
+const val VK__none_ = 0xFF
 
 val KEYS = mapOf(
     VK_ABNT_C1 to Key.ABNT_C1,
@@ -389,4 +579,11 @@ val KEYS = mapOf(
     VK_VOLUME_UP to Key.VOLUME_UP,
     VK_XBUTTON1 to Key.XBUTTON1,
     VK_XBUTTON2 to Key.XBUTTON2,
+
+    VK_SHIFT to Key.SHIFT,
+    VK_CONTROL to Key.CONTROL,
+    VK_MENU to Key.ALT,
+    VK_PAUSE to Key.PAUSE,
+    VK_CAPITAL to Key.CAPS_LOCK,
+    VK_KANA to Key.KANA,
 )

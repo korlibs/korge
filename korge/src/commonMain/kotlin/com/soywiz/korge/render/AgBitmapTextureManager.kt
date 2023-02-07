@@ -1,19 +1,16 @@
 package com.soywiz.korge.render
 
 import com.soywiz.kds.*
-import com.soywiz.korag.AG
+import com.soywiz.korag.*
 import com.soywiz.korge.annotations.KorgeExperimental
 import com.soywiz.korge.internal.KorgeInternal
-import com.soywiz.korim.bitmap.Bitmap
-import com.soywiz.korim.bitmap.BitmapCoords
-import com.soywiz.korim.bitmap.BmpCoordsWithInstance
-import com.soywiz.korim.bitmap.BmpSlice
-import com.soywiz.korim.bitmap.MultiBitmap
+import com.soywiz.korim.bitmap.*
 import com.soywiz.korio.lang.*
-import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.slice.*
 
 /**
- * Class in charge of automatically handling [AG.Texture] <-> [Bitmap] conversion.
+ * Class in charge of automatically handling [AGTexture] <-> [Bitmap] conversion.
  *
  * To simplify texture storage (which usually require uploading to the GPU, and releasing it once not used),
  * the [AgBitmapTextureManager] allows to get temporal textures that are available
@@ -101,9 +98,9 @@ class AgBitmapTextureManager(
             textureInfoPool.alloc().also {
                 val base = it.textureBase
                 base.version = -1
-                base.base = ag.createTexture(bitmap.premultiplied, targetKind = when (bitmap) {
-                    is MultiBitmap -> AG.TextureTargetKind.TEXTURE_CUBE_MAP
-                    else -> AG.TextureTargetKind.TEXTURE_2D
+                base.base = AGTexture(bitmap.premultiplied, targetKind = when (bitmap) {
+                    is MultiBitmap -> AGTextureTargetKind.TEXTURE_CUBE_MAP
+                    else -> AGTextureTargetKind.TEXTURE_2D
                 })
                 base.width = bitmap.width
                 base.height = bitmap.height
@@ -147,11 +144,11 @@ class AgBitmapTextureManager(
 
         val info = getTextureInfo(slice.base)
 
-		val texture = info.slices.getOrPut(slice) {
+		val texture: TextureCoords = info.slices.getOrPut(slice) {
             if (slice is BmpSlice) {
-                Texture(info.textureBase).slice(Rectangle(slice.left, slice.top, slice.width, slice.height))
+                Texture(info.textureBase).slice(RectangleInt(slice.left, slice.top, slice.width, slice.height))
             } else {
-                BmpCoordsWithInstance(info.textureBase, slice)
+                TextureCoords(info.textureBase, slice)
             }
         }
 

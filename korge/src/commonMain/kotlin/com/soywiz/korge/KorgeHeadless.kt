@@ -1,27 +1,21 @@
 package com.soywiz.korge
 
-import com.soywiz.klock.TimeProvider
-import com.soywiz.korag.AG
-import com.soywiz.korag.log.DummyAG
-import com.soywiz.korag.software.AGSoftware
-import com.soywiz.korge.internal.DefaultViewport
-import com.soywiz.korge.view.Stage
-import com.soywiz.korgw.GameWindow
-import com.soywiz.korim.bitmap.Bitmap
-import com.soywiz.korim.bitmap.Bitmap32
-import com.soywiz.korim.color.Colors
-import com.soywiz.korim.color.RGBA
-import com.soywiz.korim.format.ImageFormat
-import com.soywiz.korim.format.ImageFormats
-import com.soywiz.korinject.AsyncInjector
-import com.soywiz.korma.geom.Anchor
-import com.soywiz.korma.geom.ScaleMode
+import com.soywiz.klock.*
+import com.soywiz.korag.*
+import com.soywiz.korag.log.*
+import com.soywiz.korge.internal.*
+import com.soywiz.korge.view.*
+import com.soywiz.korgw.*
+import com.soywiz.korim.bitmap.*
+import com.soywiz.korim.color.*
+import com.soywiz.korim.format.*
+import com.soywiz.korinject.*
+import com.soywiz.korma.geom.*
 
 object KorgeHeadless {
     class HeadlessGameWindow(override val width: Int = 640, override val height: Int = 480, val draw: Boolean = false) : GameWindow() {
-        override val ag: AG = if (draw) AGSoftware(width, height) else DummyAG(width, height)
-        val agSoftware: AGSoftware get() = ag as AGSoftware
-        val bitmap: Bitmap32 get() = agSoftware.bitmap
+        //override val ag: AG = if (draw) AGSoftware(width, height) else DummyAG(width, height)
+        override val ag: AG = AGDummy(width, height)
     }
 
     suspend operator fun invoke(config: Korge.Config) = Korge(config.copy(gameWindow = HeadlessGameWindow()))

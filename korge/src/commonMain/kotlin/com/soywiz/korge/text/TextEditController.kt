@@ -386,14 +386,21 @@ class TextEditController(
             down {
                 if (!focused) return@down
                 when (it.key) {
-                    Key.C, Key.V, Key.Z, Key.A -> {
+                    Key.C, Key.V, Key.Z, Key.A, Key.X -> {
                         if (it.isNativeCtrl()) {
                             when (it.key) {
                                 Key.Z -> {
                                     if (it.shift) redo() else undo()
                                 }
-                                Key.C -> {
-                                    gameWindow.clipboardWrite(TextClipboardData(selectionText))
+                                Key.C, Key.X -> {
+                                    if (selectionText.isNotEmpty()) {
+                                        gameWindow.clipboardWrite(TextClipboardData(selectionText))
+                                    }
+                                    if (it.key == Key.X) {
+                                        val selection = selectionRange
+                                        text = text.withoutRange(selectionRange)
+                                        moveToIndex(false, selection.first)
+                                    }
                                 }
                                 Key.V -> {
                                     val rtext = (gameWindow.clipboardRead() as? TextClipboardData?)?.text

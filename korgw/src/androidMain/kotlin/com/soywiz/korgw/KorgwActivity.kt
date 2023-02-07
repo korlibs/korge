@@ -54,7 +54,7 @@ abstract class KorgwActivity(
         //ag = AGOpenglFactory.create(this).create(this, AGConfig())
 
         mGLView = KorgwSurfaceView(this, this, gameWindow, config)
-        ag = AndroidAGOpengl(this, agCheck) { mGLView }
+        ag = AGOpengl(KmlGlAndroid { mGLView?.clientVersion ?: -1 }.checkedIf(checked = agCheck).logIf(log = false))
 
         gameWindow.initializeAndroid()
         setContentView(mGLView)

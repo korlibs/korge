@@ -119,10 +119,6 @@ interface BigIntConstructor {
     }
 }
 
-internal fun validateRadix(value: String, radix: Int) {
-    for (c in value) digit(c, radix)
-}
-
 expect val BigIntNativeFactory: BigIntConstructor
 
 fun BigInt(value: Int): BigInt = BigIntNativeFactory.create(value)

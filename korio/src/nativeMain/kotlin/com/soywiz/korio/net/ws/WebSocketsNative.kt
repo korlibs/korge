@@ -6,7 +6,7 @@ actual suspend fun WebSocketClient(
 	url: String,
 	protocols: List<String>?,
 	origin: String?,
-	wskey: String?,
+	wskey: String,
 	debug: Boolean,
     headers: Http.Headers,
     dummy: Boolean,

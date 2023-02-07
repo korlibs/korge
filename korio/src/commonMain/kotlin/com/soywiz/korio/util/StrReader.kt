@@ -1,18 +1,204 @@
 package com.soywiz.korio.util
 
-import com.soywiz.kds.FloatArrayList
-import com.soywiz.kds.IntArrayList
+import com.soywiz.kds.*
 import com.soywiz.kds.iterators.fastForEach
-import com.soywiz.korio.lang.IOException
-import com.soywiz.korio.lang.String_fromCharArray
-import com.soywiz.korio.lang.invalidOp
-import com.soywiz.korio.lang.substr
-import com.soywiz.korio.lang.substringEquals
+import com.soywiz.korio.lang.*
+import com.soywiz.korio.stream.*
 import kotlin.collections.*
 import kotlin.math.max
 import kotlin.math.min
 
-class StrReader(val str: String, val file: String = "file", var pos: Int = 0) {
+/**
+ * @TODO: Make this an interface, but inline functions would need to be extension methods breaking source-compatibility
+ **/
+abstract class BaseStrReader {
+    abstract val eof: Boolean
+    abstract val pos: Int
+    val hasMore: Boolean get() = !eof
+
+    abstract fun peekOffset(offset: Int = 0): Char
+    abstract fun peek(count: Int): String
+
+    open fun peekChar(): Char = peekOffset(0)
+    open fun readChar(): Char {
+        val out = peekChar()
+        skip(1)
+        return out
+    }
+    open fun readUntil(char: Char): String? {
+        val out = StringBuilder()
+        while (hasMore) {
+            val result = peekChar()
+            if (result == char) break
+            out.append(result)
+            skip(1)
+        }
+        return out.toString()
+    }
+
+    abstract fun skip(count: Int = 1): BaseStrReader
+    fun skipExpect(expected: Char) {
+        val readed = this.readChar()
+        if (readed != expected) throw IllegalArgumentException("Expected '$expected' but found '$readed' at $pos")
+    }
+    abstract fun tryLit(lit: String, consume: Boolean = true): String?
+
+    abstract fun clone(): BaseStrReader
+
+    open fun startBuffering(): Int = pos
+    abstract fun endBuffering(start: Int): String
+
+    inline fun slice(action: () -> Unit): String {
+        val start = startBuffering()
+        try {
+            action()
+        } finally {
+            return endBuffering(start)
+        }
+    }
+
+    open fun skipSpaces(): BaseStrReader {
+        this.skipWhile { it.isWhitespaceFast() }
+        return this
+    }
+
+    @Deprecated("", ReplaceWith("peekChar()"))
+    fun peek(): Char = peekChar()
+
+    fun tryRead(str: String): Boolean = tryLit(str, consume = true) != null
+
+    fun matchIdentifier(): String? = matchWhile { it.isLetterDigitOrUnderscore() || it == '-' || it == '~' || it == ':' }.takeIf { it.isNotEmpty() }
+
+    fun matchSingleOrDoubleQuoteString(): String? = when (this.peekChar()) {
+        '\'', '"' -> {
+            this.slice {
+                val quoteType = this.readChar()
+                this.readUntil(quoteType)
+                this.readChar()
+            }
+        }
+        else -> null
+    }
+
+    fun tryExpect(str: String, consume: Boolean = true): Boolean {
+        for (n in 0 until str.length) {
+            if (this.peekOffset(n) != str[n]) return false
+        }
+        if (consume) skip(str.length)
+        return true
+    }
+
+    fun tryExpect(str: Char): Boolean {
+        if (peekChar() != str) return false
+        skip(1)
+        return true
+    }
+
+    fun read(count: Int): String = this.peek(count).apply { skip(count) }
+
+    fun readExpect(expected: String): String {
+        val readed = this.read(expected.length)
+        if (readed != expected) throw IllegalArgumentException("Expected '$expected' but found '$readed' at $pos")
+        return readed
+    }
+
+    inline fun skipWhile(filter: (Char) -> Boolean) {
+        while (hasMore && filter(this.peekChar())) {
+            this.readChar()
+        }
+    }
+
+    inline fun skipUntil(filter: (Char) -> Boolean): Unit {
+        while (hasMore && !filter(this.peekChar())) this.readChar()
+    }
+
+    inline fun matchWhile(check: (Char) -> Boolean): String = slice { skipWhile(check) }
+}
+
+class CharReaderStrReader(val reader: CharReader) : BaseStrReader() {
+    val deque = CharDeque()
+
+    private var buffer = StringBuilder()
+    private var bufferingPos = -1
+    private var _eof: Boolean = false
+    override val eof: Boolean get() {
+        ensure(1)
+        return _eof && deque.isEmpty()
+    }
+    override var pos: Int = 0
+        private set
+
+    fun ensure(count: Int) {
+        if (count > 0 && deque.size < count) {
+            val read = reader.read(count)
+            if (read.isEmpty()) _eof = true
+            deque.addAll(read.toCharArray())
+        }
+    }
+
+    override fun peekOffset(offset: Int): Char {
+        check(offset >= 0)
+        ensure(offset + 1)
+        if (deque.size <= offset) return '\u0000'
+        return deque[offset]
+    }
+
+    override fun peek(count: Int): String {
+        ensure(count)
+        return buildString(count) {
+            for (n in 0 until min(deque.size, count)) append(deque[n])
+        }
+    }
+
+    override fun skip(count: Int): BaseStrReader {
+        ensure(count)
+        for (n in 0 until count) {
+            val res = deque.removeFirst()
+            if (bufferingPos >= 0) {
+                buffer.append(res)
+            }
+            pos++
+        }
+        return this
+    }
+
+    override fun tryLit(lit: String, consume: Boolean): String? {
+        ensure(lit.length)
+        for (n in 0 until lit.length) {
+            if (peekOffset(n) != lit[n]) return null
+        }
+        skip(lit.length)
+        return lit
+    }
+
+    override fun clone(): BaseStrReader {
+        //TODO("Not yet implemented")
+
+        return CharReaderStrReader(reader.clone()).also {
+            for (n in 0 until this.deque.size) it.deque.add(this.deque[n])
+            it.buffer.append(this.buffer)
+            it._eof = this._eof
+            it.bufferingPos = this.bufferingPos
+            it.pos = this.pos
+        }
+    }
+
+    override fun startBuffering(): Int {
+        bufferingPos = pos
+        return pos
+    }
+
+    override fun endBuffering(start: Int): String {
+        val out = buffer.substring(start - bufferingPos, pos - bufferingPos)
+        if (bufferingPos == start) {
+            bufferingPos = -1
+            buffer.clear()
+        }
+        return out
+    }
+}
+
+class StrReader(val str: String, val file: String = "file", override var pos: Int = 0) : BaseStrReader() {
     private val tempCharArray = CharArray(str.length)
 
     companion object {
@@ -21,8 +207,7 @@ class StrReader(val str: String, val file: String = "file", var pos: Int = 0) {
 
     val length: Int = this.str.length
     val available: Int get() = length - this.pos
-    val eof: Boolean get() = (this.pos >= this.str.length)
-    val hasMore: Boolean get() = (this.pos < this.str.length)
+    override val eof: Boolean get() = (this.pos >= this.str.length)
 
     fun reset() { this.pos = 0 }
     fun createRange(range: IntRange): TRange = createRange(range.start, range.endInclusive + 1)
@@ -34,18 +219,19 @@ class StrReader(val str: String, val file: String = "file", var pos: Int = 0) {
         return range
     }
 
-    inline fun slice(action: () -> Unit): String? {
-        val start = this.pos
-        action()
-        val end = this.pos
-        return if (end > start) this.slice(start, end) else null
-    }
+    override fun endBuffering(start: Int): String = slice(start, pos)
 
-    fun slice(start: Int, end: Int): String = this.str.substring(start, end)
-    fun peek(count: Int): String = substr(this.pos, count)
-    fun peek(): Char = if (hasMore) this.str[this.pos] else '\u0000'
-    fun peekChar(): Char = if (hasMore) this.str[this.pos] else '\u0000'
-    fun read(count: Int): String = this.peek(count).apply { skip(count) }
+    override fun skipSpaces(): StrReader {
+        super.skipSpaces()
+        return this
+    }
+    fun slice(start: Int, end: Int): String {
+        if (start == end) return ""
+        return this.str.substring(start, end)
+    }
+    override fun peek(count: Int): String = substr(this.pos, count)
+    override fun peekChar(): Char = if (hasMore) this.str[this.pos] else '\u0000'
+
     fun skipUntil(char: Char) {
         val skipPos = this.str.indexOf(char, pos)
         pos = (if (skipPos >= 0) skipPos else length)
@@ -55,18 +241,7 @@ class StrReader(val str: String, val file: String = "file", var pos: Int = 0) {
         if (hasMore && peekChar() == char) skip(1)
     }
     //inline fun skipWhile(check: (Char) -> Boolean) = run { while (check(this.peekChar())) this.skip(1) }
-    inline fun skipWhile(filter: (Char) -> Boolean) {
-        while (hasMore && filter(this.peekChar())) {
-            this.readChar()
-        }
-    }
-
-    inline fun skipUntil(filter: (Char) -> Boolean) =
-        run { while (hasMore && !filter(this.peekChar())) this.readChar() }
-
-    inline fun matchWhile(check: (Char) -> Boolean): String? = slice { skipWhile(check) }
-
-    fun readUntil(char: Char) = this.slice { skipUntil(char) }
+    override fun readUntil(char: Char) = this.slice { skipUntil(char) }
     fun readUntilIncluded(char: Char) = this.slice { skipUntilIncluded(char) }
     inline fun readWhile(filter: (Char) -> Boolean) = this.slice { skipWhile(filter) } ?: ""
     inline fun readUntil(filter: (Char) -> Boolean) = this.slice { skipUntil(filter) } ?: ""
@@ -74,7 +249,7 @@ class StrReader(val str: String, val file: String = "file", var pos: Int = 0) {
         this.pos -= count
         return this
     }
-    fun readChar(): Char = if (hasMore) this.str[posSkip(1)] else '\u0000'
+    override fun readChar(): Char = if (hasMore) this.str[posSkip(1)] else '\u0000'
     fun read(): Char = if (hasMore) this.str[posSkip(1)] else '\u0000'
     // @TODO: https://youtrack.jetbrains.com/issue/KT-29577
     private fun posSkip(count: Int): Int {
@@ -85,17 +260,6 @@ class StrReader(val str: String, val file: String = "file", var pos: Int = 0) {
 
     fun readRemaining(): String = read(available)
 
-    fun readExpect(expected: String): String {
-        val readed = this.read(expected.length)
-        if (readed != expected) throw IllegalArgumentException("Expected '$expected' but found '$readed' at $pos")
-        return readed
-    }
-
-    fun skipExpect(expected: Char) {
-        val readed = this.readChar()
-        if (readed != expected) throw IllegalArgumentException("Expected '$expected' but found '$readed' at $pos")
-    }
-
     @Deprecated("This overload is slow")
     fun expect(expected: Char): String {
         skipExpect(expected)
@@ -103,7 +267,7 @@ class StrReader(val str: String, val file: String = "file", var pos: Int = 0) {
         return this.read(1)
     }
 
-    fun skip(count: Int = 1): StrReader {
+    override fun skip(count: Int): StrReader {
         this.pos += count
         return this
     }
@@ -112,9 +276,9 @@ class StrReader(val str: String, val file: String = "file", var pos: Int = 0) {
         return this.str.substring(min(pos, this.length), min(pos + length, this.length))
     }
 
-    fun tryLit(lit: String): String? {
+    override fun tryLit(lit: String, consume: Boolean): String? {
         if (!String.substringEquals(this.str, this.pos, lit, 0, lit.length)) return null
-        this.pos += lit.length
+        if (consume) this.pos += lit.length
         return lit
     }
 
@@ -129,22 +293,6 @@ class StrReader(val str: String, val file: String = "file", var pos: Int = 0) {
             if (lits.contains(substr(this.pos, len))) return this.readRange(len)
         }
         return null
-    }
-
-    fun skipSpaces() = this.apply { this.skipWhile { it.isWhitespaceFast() } }
-
-    fun matchIdentifier() = matchWhile { it.isLetterDigitOrUnderscore() || it == '-' || it == '~' || it == ':' }
-    fun matchSingleOrDoubleQuoteString(): String? {
-        return when (this.peekChar()) {
-            '\'', '"' -> {
-                this.slice {
-                    val quoteType = this.readChar()
-                    this.readUntil(quoteType)
-                    this.readChar()
-                }
-            }
-            else -> null
-        }
     }
 
     fun tryRegex(v: Regex): String? {
@@ -169,15 +317,7 @@ class StrReader(val str: String, val file: String = "file", var pos: Int = 0) {
         return this.slice(startIndex, this.pos)
     }
 
-    fun clone(): StrReader = StrReader(str, file, pos)
-
-    fun tryRead(str: String): Boolean {
-        if (String.substringEquals(this.str, pos, str, 0, str.length)) {
-            skip(str.length)
-            return true
-        }
-        return false
-    }
+    override fun clone(): StrReader = StrReader(str, file, pos)
 
     class Literals(
         private val lits: Array<String>,
@@ -322,21 +462,7 @@ class StrReader(val str: String, val file: String = "file", var pos: Int = 0) {
         return NumberParser.parseDouble(this.str, start, end)
     }
 
-    fun tryExpect(str: String): Boolean {
-        for (n in 0 until str.length) {
-            if (this.peekOffset(n) != str[n]) return false
-        }
-        skip(str.length)
-        return true
-    }
-
-    fun tryExpect(str: Char): Boolean {
-        if (peekChar() != str) return false
-        skip(1)
-        return true
-    }
-
-    fun peekOffset(offset: Int = 0): Char = this.str.getOrElse(pos + offset) { '\u0000' }
+    override fun peekOffset(offset: Int): Char = this.str.getOrElse(pos + offset) { '\u0000' }
 
     fun readFloats(list: FloatArrayList = FloatArrayList(7)): FloatArrayList {
         while (!eof) {
