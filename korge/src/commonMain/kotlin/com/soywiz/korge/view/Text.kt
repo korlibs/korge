@@ -17,22 +17,7 @@ import com.soywiz.korio.resources.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
 
-/*
-// Example:
-val font = BitmapFont(DefaultTtfFont, 64.0)
 
-var offset = 0.degrees
-addUpdater { offset += 10.degrees }
-text2("Hello World!", color = Colors.RED, font = font, renderer = CreateStringTextRenderer { text, n, c, c1, g, advance ->
-    transform.identity()
-    val sin = sin(offset + (n * 360 / text.length).degrees)
-    transform.rotate(15.degrees)
-    transform.translate(0.0, sin * 16)
-    transform.scale(1.0, 1.0 + sin * 0.1)
-    put(c)
-    advance(advance)
-}).position(100, 100)
-*/
 inline fun Container.text(
     text: String, textSize: Double = Text.DEFAULT_TEXT_SIZE,
     color: RGBA = Colors.WHITE, font: Resourceable<out Font> = DefaultTtfFontAsBitmap,
@@ -92,7 +77,6 @@ open class Text(
             version++
             invalidate()
         }
-        //printStackTrace("setfont=$field")
     }
 
     @ViewProperty(min = 1.0, max = 300.0)
@@ -145,7 +129,6 @@ open class Text(
         get() = alignment.vertical
         set(value) { alignment = alignment.withVertical(value) }
 
-    //private lateinit var textToBitmapResult: TextToBitmapResult
     private val container = container()
     private val bitmapFontActions = Text2TextRendererActions()
     private var fontLoaded: Boolean = false
@@ -167,7 +150,7 @@ open class Text(
             invalidate()
         }
 
-    // @TODO: Use, font: Resourceable<out Font>
+    // @TODO: Use font: Resourceable<out Font>
     suspend fun forceLoadFontSource(currentVfs: VfsFile, sourceFile: String?) {
         fontSource = sourceFile
         fontLoaded = true
@@ -281,8 +264,6 @@ open class Text(
         }
         //container.colorMul = color
         val font: Font? = this.font.getOrNull()
-
-        //println("font=$font")
 
         if (autoSize && font is Font && boundsVersion != version) {
             boundsVersion = version
