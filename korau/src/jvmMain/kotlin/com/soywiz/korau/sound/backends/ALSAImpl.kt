@@ -14,7 +14,7 @@ actual object ASoundImpl : ASound2 {
     private val paramsAlloc = ConcurrentHashMap<Long, Memory>()
 
     override fun alloc_params(): Long {
-        val params = Memory(1024)
+        val params = Memory(1024).also { it.clear() }
         paramsAlloc[params.address] = params
         return params.address
     }
@@ -24,9 +24,9 @@ actual object ASoundImpl : ASound2 {
     }
 
     override fun snd_pcm_open(name: String, stream: Int, mode: Int): Long {
-        val memory = Memory(16L)
+        val memory = Memory(16L).also { it.clear() }
         A2.snd_pcm_open(memory, name, stream, mode)
-        return memory.getPointer(0L).address
+        return memory.getPointer(0L)?.address ?: 0L
     }
 
     override fun snd_pcm_hw_params_any(pcm: Long, params: Long): Int = A2.snd_pcm_hw_params_any(pcm.toCPointer(), params.toCPointer())
@@ -41,8 +41,8 @@ actual object ASoundImpl : ASound2 {
     override fun snd_pcm_state_name(state: Int): String = A2.snd_pcm_state_name(state).toKString()
 
     override fun snd_pcm_hw_params_get_period_size(params: Long): Int {
-        val tempOut = Memory(4)
-        val tempDir = Memory(4)
+        val tempOut = Memory(4).also { it.clear() }
+        val tempDir = Memory(4).also { it.clear() }
         A2.snd_pcm_hw_params_get_period_size(params.toCPointer(), tempOut, tempDir)
         return tempOut.getInt(0L)
     }

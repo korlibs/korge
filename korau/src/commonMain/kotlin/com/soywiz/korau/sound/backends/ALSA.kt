@@ -63,6 +63,12 @@ class ALSAPlatformAudioOutput(
         //cmpPtr.setLong(0L, 0L)
         //println("ALSANativeSoundProvider.snd_pcm_open")
         pcm = ASound2.snd_pcm_open("default", ASound2.SND_PCM_STREAM_PLAYBACK, 0)
+
+        if (pcm == 0L) {
+            println("Can't initialize ALSA")
+            return
+        }
+
         //println("ALSANativeSoundProvider.snd_pcm_open: pcm=$pcm")
         val params = ASound2.alloc_params()
         ASound2.snd_pcm_hw_params_any(pcm, params)
@@ -122,8 +128,10 @@ class ALSAPlatformAudioOutput(
         thread?.interrupt()
         if (!ASound2.initialized) return
 
-        ASound2.snd_pcm_drain(pcm)
-        ASound2.snd_pcm_close(pcm)
+        if (pcm != null) {
+            ASound2.snd_pcm_drain(pcm)
+            ASound2.snd_pcm_close(pcm)
+        }
     }
 }
 
