@@ -1,9 +1,8 @@
 package com.soywiz.kmem.dyn
 
-/*
 import com.soywiz.kmem.*
-import kotlinx.cinterop.*
 import kotlin.test.*
+import kotlinx.cinterop.invoke
 
 class DynamicLibraryCommonTest {
     //object C : DynamicLibrary(Platform.C_LIBRARY_NAME) {
@@ -53,4 +52,4 @@ class DynamicLibraryCommonTest {
         assertEquals(1.0, M.cos(0.0), 0.001)
     }
 }
-*/
+
