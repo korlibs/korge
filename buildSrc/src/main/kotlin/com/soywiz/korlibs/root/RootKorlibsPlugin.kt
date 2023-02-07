@@ -792,9 +792,10 @@ object RootKorlibsPlugin {
                             val native by lazy { createPairSourceSet("native", concurrent) }
                             val posix by lazy { createPairSourceSet("posix", native) }
                             val darwin by lazy { createPairSourceSet("darwin", posix) }
+                            val iosMacos by lazy { createPairSourceSet("iosMacos", darwin) }
 
                             val linux by lazy { createPairSourceSet("linux", posix) }
-                            val macos by lazy { createPairSourceSet("macos", darwin) }
+                            val macos by lazy { createPairSourceSet("macos", iosMacos) }
                             val mingw by lazy { createPairSourceSet("mingw", native) }
 
                             val nativeTargets = nativeTargets(project)
@@ -812,7 +813,7 @@ object RootKorlibsPlugin {
                             val iosTvos by lazy { createPairSourceSet("iosTvos", darwinMobile) }
                             val watchos by lazy { createPairSourceSet("watchos", darwinMobile) }
                             val tvos by lazy { createPairSourceSet("tvos", iosTvos) }
-                            val ios by lazy { createPairSourceSet("ios", iosTvos) }
+                            val ios by lazy { createPairSourceSet("ios", iosTvos, iosMacos) }
 
                             for (target in mobileTargets(project)) {
                                 val native = createPairSourceSet(target.name)

@@ -46,61 +46,7 @@ import platform.GameController.GCController
 import platform.GameController.GCControllerButtonInput
 import platform.GameController.GCControllerDirectionPad
 import platform.GameController.GCEventViewController
-import platform.UIKit.NSWritingDirection
-import platform.UIKit.NSWritingDirectionNatural
-import platform.UIKit.UIApplication
-import platform.UIKit.UIColor
-import platform.UIKit.UIEvent
-import platform.UIKit.UIKeyModifierAlternate
-import platform.UIKit.UIKeyModifierCommand
-import platform.UIKit.UIKeyModifierControl
-import platform.UIKit.UIKeyModifierShift
-import platform.UIKit.UIKeyboardAppearance
-import platform.UIKit.UIKeyboardAppearanceDefault
-import platform.UIKit.UIKeyboardType
-import platform.UIKit.UIKeyboardTypeASCIICapable
-import platform.UIKit.UIKeyboardTypeAlphabet
-import platform.UIKit.UIKeyboardTypeDecimalPad
-import platform.UIKit.UIKeyboardTypeDefault
-import platform.UIKit.UIKeyboardTypeEmailAddress
-import platform.UIKit.UIKeyboardTypeNamePhonePad
-import platform.UIKit.UIKeyboardTypeNumberPad
-import platform.UIKit.UIKeyboardTypeNumbersAndPunctuation
-import platform.UIKit.UIKeyboardTypePhonePad
-import platform.UIKit.UIKeyboardTypeTwitter
-import platform.UIKit.UIKeyboardTypeURL
-import platform.UIKit.UIKeyboardTypeWebSearch
-import platform.UIKit.UIPress
-import platform.UIKit.UIPressesEvent
-import platform.UIKit.UIReturnKeyType
-import platform.UIKit.UIScreen
-import platform.UIKit.UITextAutocapitalizationType
-import platform.UIKit.UITextAutocorrectionType
-import platform.UIKit.UITextContentType
-import platform.UIKit.UITextInputDelegateProtocol
-import platform.UIKit.UITextInputPasswordRules
-import platform.UIKit.UITextInputProtocol
-import platform.UIKit.UITextInputStringTokenizer
-import platform.UIKit.UITextInputTokenizerProtocol
-import platform.UIKit.UITextInputTraitsProtocol
-import platform.UIKit.UITextLayoutDirection
-import platform.UIKit.UITextPosition
-import platform.UIKit.UITextRange
-import platform.UIKit.UITextSmartDashesType
-import platform.UIKit.UITextSmartInsertDeleteType
-import platform.UIKit.UITextSmartQuotesType
-import platform.UIKit.UITextSpellCheckingType
-import platform.UIKit.UITextStorageDirection
-import platform.UIKit.UITouch
-import platform.UIKit.UIView
-import platform.UIKit.UIWindow
-import platform.UIKit.addSubview
-import platform.UIKit.backgroundColor
-import platform.UIKit.contentScaleFactor
-import platform.UIKit.multipleTouchEnabled
-import platform.UIKit.removeFromSuperview
-import platform.UIKit.setBounds
-import platform.UIKit.systemBackgroundColor
+import platform.UIKit.*
 import platform.darwin.NSInteger
 
 // @TODO: Do not remove! Called from a generated .kt file : platforms/native-ios/bootstrap.kt
@@ -667,6 +613,18 @@ open class IosGameWindow(
         prepareSoftKeyboardOnce()
         textField.removeFromSuperview()
         textField.resignFirstResponder()
+    }
+
+    val uiSelectionFeedbackGenerator by lazy { UISelectionFeedbackGenerator() }
+    val uiImpactFeedbackGenerator by lazy { UIImpactFeedbackGenerator() }
+
+    override val hapticFeedbackGenerateSupport: Boolean get() = true
+    override fun hapticFeedbackGenerate(kind: HapticFeedbackKind) {
+        when (kind) {
+            HapticFeedbackKind.GENERIC -> uiSelectionFeedbackGenerator.selectionChanged()
+            HapticFeedbackKind.ALIGNMENT -> uiSelectionFeedbackGenerator.selectionChanged()
+            HapticFeedbackKind.LEVEL_CHANGE -> uiImpactFeedbackGenerator.impactOccurred()
+        }
     }
 }
 
