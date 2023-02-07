@@ -11,8 +11,8 @@ class LocalVfsNativeTest {
         val homePath = Environment["HOME"]
         val expectedResult = if (homePath != null) homePath else "/tmp"
         assertEquals(
-            expectedResult.replace("/", ""),
-            userHomeVfs.absolutePath.replace("/", "")
+            expectedResult.trimEnd('/'),
+            userHomeVfs.absolutePath.trimEnd('/')
         )
     }
 
