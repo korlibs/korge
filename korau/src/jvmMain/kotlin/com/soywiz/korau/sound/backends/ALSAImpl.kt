@@ -49,6 +49,7 @@ actual object ASoundImpl : ASound2 {
 
     override fun snd_pcm_writei(pcm: Long, buffer: ShortArray, size: Int): Int {
         val mem = Memory((buffer.size * 2).toLong()).also { it.clear() }
+        for (n in 0 until buffer.size) mem.setShort(n * 2, buffer[n])
         return A2.snd_pcm_writei(pcm.toCPointer(), mem, size)
     }
 

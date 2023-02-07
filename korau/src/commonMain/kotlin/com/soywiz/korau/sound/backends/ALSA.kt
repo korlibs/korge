@@ -65,22 +65,18 @@ class ALSAPlatformAudioOutput(
         pcm = ASound2.snd_pcm_open("default", ASound2.SND_PCM_STREAM_PLAYBACK, 0)
         //println("ALSANativeSoundProvider.snd_pcm_open: pcm=$pcm")
         val params = ASound2.alloc_params()
-        try {
-            ASound2.snd_pcm_hw_params_any(pcm, params)
-            ASound2.snd_pcm_hw_params_set_access(pcm, params, ASound2.SND_PCM_ACCESS_RW_INTERLEAVED).also { if (it != 0) error("Error calling snd_pcm_hw_params_set_access=$it") }
-            ASound2.snd_pcm_hw_params_set_format(pcm, params, ASound2.SND_PCM_FORMAT_S16_LE).also { if (it != 0) error("Error calling snd_pcm_hw_params_set_format=$it") }
-            ASound2.snd_pcm_hw_params_set_channels(pcm, params, channels).also { if (it != 0) error("Error calling snd_pcm_hw_params_set_channels=$it") }
-            ASound2.snd_pcm_hw_params_set_rate(pcm, params, frequency, +1).also { if (it != 0) error("Error calling snd_pcm_hw_params_set_rate=$it") }
-            ASound2.snd_pcm_hw_params(pcm, params).also { if (it != 0) error("Error calling snd_pcm_hw_params=$it") }
-        } finally {
-            ASound2.free_params(params)
-        }
-
+        ASound2.snd_pcm_hw_params_any(pcm, params)
+        ASound2.snd_pcm_hw_params_set_access(pcm, params, ASound2.SND_PCM_ACCESS_RW_INTERLEAVED).also { if (it != 0) error("Error calling snd_pcm_hw_params_set_access=$it") }
+        ASound2.snd_pcm_hw_params_set_format(pcm, params, ASound2.SND_PCM_FORMAT_S16_LE).also { if (it != 0) error("Error calling snd_pcm_hw_params_set_format=$it") }
+        ASound2.snd_pcm_hw_params_set_channels(pcm, params, channels).also { if (it != 0) error("Error calling snd_pcm_hw_params_set_channels=$it") }
+        ASound2.snd_pcm_hw_params_set_rate(pcm, params, frequency, +1).also { if (it != 0) error("Error calling snd_pcm_hw_params_set_rate=$it") }
+        ASound2.snd_pcm_hw_params(pcm, params).also { if (it != 0) error("Error calling snd_pcm_hw_params=$it") }
         //println(ASound2.snd_pcm_name(pcm))
         //println(ASound2.snd_pcm_state_name(ASound2.snd_pcm_state(pcm)))
         //val cchannels = ASound2.snd_pcm_hw_params_get_channels(params)
         //val crate = ASound2.snd_pcm_hw_params_get_rate(params)
         val frames = ASound2.snd_pcm_hw_params_get_period_size(params)
+        ASound2.free_params(params)
         //val ptime = ASound2.snd_pcm_hw_params_get_period_time(params)
         //val random = Random(0L)
         //println("ALSANativeSoundProvider: Before starting Sound thread!")
