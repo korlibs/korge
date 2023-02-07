@@ -113,11 +113,14 @@ fun currentJavaVersion(): Int {
 
 fun unzipTo(output: File, zipFileName: File) {
     ZipFile(zipFileName).use { zip ->
-        zip.entries().asSequence().forEach { entry ->
-            zip.getInputStream(entry).use { input ->
-                File(entry.name).outputStream().use { output ->
-                    input.copyTo(output)
-                }
+        for (entry in zip.entries().asSequence()) {
+            val outFile = File(output, entry.name)
+            if (entry.isDirectory) {
+                outFile.mkdirs()
+            } else {
+                val bytes = zip.getInputStream(entry).use { it.readBytes() }
+                outFile.parentFile.mkdirs()
+                outFile.writeBytes(bytes)
             }
         }
     }
