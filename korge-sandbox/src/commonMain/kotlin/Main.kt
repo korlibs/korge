@@ -11,7 +11,6 @@ import samples.asteroids.*
 import samples.connect4.*
 import samples.minesweeper.*
 import samples.pong.*
-import samples.rpg.*
 
 val DEFAULT_KORGE_BG_COLOR = Colors.DARKCYAN.mix(Colors.BLACK, 0.8)
 
@@ -64,7 +63,6 @@ suspend fun main() = Korge(
             Demo(::MainVectorNinePatch),
             Demo(::MainGraphicsText),
             Demo(::MainImageOrientationTest),
-            Demo(::MainRpgScene),
             Demo(::MainCache),
             Demo(::MainSDF),
             Demo(::MainTextInput),
@@ -141,7 +139,6 @@ suspend fun main() = Korge(
             Demo(::MainBezier),
             Demo(::MainUITreeView),
             Demo(::MainUIImageTester),
-            Demo(::MainVampire),
             Demo(::MainCircles),
             Demo(::MainEmoji),
             Demo(::MainBVH),
@@ -154,10 +151,8 @@ suspend fun main() = Korge(
             Demo(::MainGpuVectorRendering2),
             Demo(::MainGpuVectorRendering3),
             Demo(::MainSound),
-            Demo(::MainTilemapWithScroll),
             Demo(::MainTiledBackground),
             Demo(::MainAseprite),
-            Demo(::MainAseParallaxSample),
         )
     )
 }

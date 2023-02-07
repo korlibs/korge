@@ -682,6 +682,18 @@ class MyDefaultGameWindow : GameWindow() {
         if (items.isNullOrEmpty()) return null
         return items.last().stringForType(NSPasteboardTypeString)?.let { TextClipboardData(it) }
     }
+
+    override val hapticFeedbackGenerateSupport: Boolean get() = true
+    override fun hapticFeedbackGenerate(kind: HapticFeedbackKind) {
+        NSHapticFeedbackManager.defaultPerformer.performFeedbackPattern(
+            when (kind) {
+                HapticFeedbackKind.GENERIC -> NSHapticFeedbackPatternGeneric
+                HapticFeedbackKind.ALIGNMENT -> NSHapticFeedbackPatternAlignment
+                HapticFeedbackKind.LEVEL_CHANGE -> NSHapticFeedbackPatternLevelChange
+            },
+            NSHapticFeedbackPerformanceTimeNow
+        )
+    }
 }
 
 actual fun CreateDefaultGameWindow(config: GameWindowCreationConfig): GameWindow = MyDefaultGameWindow()

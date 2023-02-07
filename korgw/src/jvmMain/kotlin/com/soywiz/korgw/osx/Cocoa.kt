@@ -1,320 +1,11 @@
 package com.soywiz.korgw.osx
+import com.soywiz.kmem.dyn.osx.*
 import com.soywiz.korgw.platform.*
+import com.soywiz.korgw.platform.NativeLoad
+import com.soywiz.korgw.platform.NativeName
 import com.soywiz.korio.lang.*
 import com.sun.jna.*
 import java.util.concurrent.*
-import kotlin.collections.toString
-import kotlin.text.Charsets
-import kotlin.text.toCharArray
-
-//inline class ID(val id: Long)
-typealias ID = Long
-
-annotation class NativeName(val name: String) {
-    companion object {
-        val OPTIONS = mapOf(
-            Library.OPTION_FUNCTION_MAPPER to FunctionMapper { _, method ->
-                method.getAnnotation(NativeName::class.java)?.name ?: method.name
-            }
-        )
-    }
-}
-
-typealias NSRectPtr = Pointer
-
-inline fun <reified T : Library> NativeLoad(name: String): T = Native.load(name, T::class.java, NativeName.OPTIONS) as T
-
-internal interface GL : Library {
-    fun glViewport(x: Int, y: Int, width: Int, height: Int)
-    fun glClearColor(r: Float, g: Float, b: Float, a: Float)
-    fun glClear(flags: Int)
-    fun glFinish()
-    fun glFlush()
-    fun CGLSetParameter(vararg args: Any?)
-    fun CGLEnable(vararg args: Any?)
-    companion object : GL by NativeLoad(nativeOpenGLLibraryPath) {
-        const val GL_COLOR_BUFFER_BIT = 0x00004000
-    }
-}
-
-// https://developer.apple.com/documentation/objectivec/objective-c_runtime
-interface ObjectiveC : Library {
-    fun objc_getClass(name: String): Long
-    fun objc_getProtocol(name: String): Long
-
-    fun class_addProtocol(a: Long, b: Long): Long
-    fun class_copyMethodList(clazz: Long, items: IntArray): Pointer
-
-    fun protocol_copyMethodDescriptionList(proto: Long, isRequiredMethod: Boolean, isInstanceMethod: Boolean, outCount: IntArray): Pointer
-
-    fun objc_registerClassPair(cls: Long)
-    fun objc_lookUpClass(name: String): Long
-
-    fun objc_msgSend(vararg args: Any?): Long
-    @NativeName("objc_msgSend")
-    fun objc_msgSendInt(vararg args: Any?): Int
-    @NativeName("objc_msgSend")
-    fun objc_msgSendCGFloat(vararg args: Any?): CGFloat
-    @NativeName("objc_msgSend")
-    fun objc_msgSendFloat(vararg args: Any?): Float
-    @NativeName("objc_msgSend")
-    fun objc_msgSendNSPoint(vararg args: Any?): NSPointRes
-    @NativeName("objc_msgSend")
-    fun objc_msgSendNSRect(vararg args: Any?): NSRectRes
-    @NativeName("objc_msgSend_stret")
-    fun objc_msgSend_stret(structPtr: Any?, vararg args: Any?): Unit
-
-    /*
-    fun objc_msgSend(a: Long, b: Long): Long
-    fun objc_msgSend(a: Long, b: Long, c: Long): Long
-    fun objc_msgSend(a: Long, b: Long, c: String): Long
-    fun objc_msgSend(a: Long, b: Long, c: ByteArray, d: Int, e: Int): Long
-    fun objc_msgSend(a: Long, b: Long, c: ByteArray, len: Int): Long
-    fun objc_msgSend(a: Long, b: Long, c: CharArray, len: Int): Long
-     */
-    fun method_getName(m: Long): Long
-
-    fun sel_registerName(name: String): Long
-
-    fun sel_getName(sel: Long): String
-    fun objc_allocateClassPair(clazz: Long, name: String, extraBytes: Int): Long
-    fun object_getIvar(obj: Long, ivar: Long): Long
-
-    fun class_getInstanceVariable(clazz: ID, name: String): ID
-    fun class_getProperty(clazz: ID, name: String): ID
-
-    fun class_addMethod(cls: Long, name: Long, imp: Callback, types: String): Long
-    fun class_conformsToProtocol(cls: Long, protocol: Long): Boolean
-
-    fun object_getClass(obj: ID): ID
-    fun class_getName(clazz: ID): String
-
-    fun object_getClassName(obj: ID): String
-
-    fun property_getName(prop: ID): String
-    fun property_getAttributes(prop: ID): String
-
-    companion object : ObjectiveC by NativeLoad("objc") {
-        //val NATIVE = NativeLibrary.getInstance("objc")
-    }
-}
-
-@PublishedApi
-internal fun __AllocateClass(name: String, base: String, vararg protocols: String): Long {
-    val clazz = ObjectiveC.objc_allocateClassPair(ObjectiveC.objc_getClass(base), name, 0)
-    for (protocol in protocols) {
-        val protocolId = ObjectiveC.objc_getProtocol(protocol)
-        if (protocolId != 0L) {
-            ObjectiveC.class_addProtocol(clazz, protocolId)
-        }
-    }
-    return clazz
-}
-
-inline fun AllocateClassAndRegister(name: String, base: String, vararg protocols: String, configure: AllocateClassMethodRegister.() -> Unit = {}): Long {
-    val clazz = __AllocateClass(name, base, *protocols)
-    try {
-        configure(AllocateClassMethodRegister(clazz))
-    } finally {
-        ObjectiveC.objc_registerClassPair(clazz)
-    }
-    return clazz
-}
-
-inline class AllocateClassMethodRegister(val clazz: Long) {
-    fun addMethod(sel: String, callback: Callback, types: String) {
-        ObjectiveC.class_addMethod(clazz, sel(sel), callback, types)
-    }
-}
-
-interface Foundation : Library {
-    fun NSLog(msg: Long): Unit
-    fun NSMakeRect(x: CGFloat, y: CGFloat, w: CGFloat, h: CGFloat): NSRect
-
-    //companion object : Foundation by Native.load("/System/Library/Frameworks/Foundation.framework/Versions/C/Foundation", Foundation::class.java) as Foundation
-    companion object : Foundation by Native.load("Foundation", Foundation::class.java, NativeName.OPTIONS) as Foundation {
-        val NATIVE = NativeLibrary.getInstance("Foundation")
-    }
-}
-
-interface Cocoa : Library {
-    companion object : Cocoa by Native.load("Cocoa", Cocoa::class.java, NativeName.OPTIONS) as Cocoa {
-        val NATIVE = NativeLibrary.getInstance("Cocoa")
-    }
-}
-
-interface AppKit : Library {
-    companion object : AppKit by Native.load("AppKit", AppKit::class.java, NativeName.OPTIONS) as AppKit {
-        val NATIVE = NativeLibrary.getInstance("AppKit")
-        val NSApp = NATIVE.getGlobalVariableAddress("NSApp").getLong(0L)
-    }
-}
-
-fun Foundation.NSLog(msg: NSString) = NSLog(msg.id)
-fun Foundation.NSLog(msg: String) = NSLog(NSString(msg))
-
-//typealias NSPointRes = Long
-typealias NSPointRes = MyNativeNSPoint.ByValue
-typealias NSRectRes = MyNativeNSRect.ByValue
-
-private val isArm64 = System.getProperty("os.arch") == "aarch64"
-
-// @TODO: Move Long to ObjcRef to not pollute Long scope
-open class ObjcRef(val id: Long) {
-}
-
-inline class ObjcSel(val id: Long) {
-    companion object {
-        private val selectors = ConcurrentHashMap<String, ObjcSel>()
-
-        operator fun invoke(name: String): ObjcSel =
-            selectors.getOrPut(name) { ObjcSel(ObjectiveC.sel_registerName(name)) }
-    }
-}
-
-fun sel(name: String): Long = ObjectiveC.sel_registerName(name)
-fun sel(name: ObjcSel): Long = name.id
-fun Long.msgSend(sel: ObjcSel, vararg args: Any?): Long = ObjectiveC.objc_msgSend(this, sel(sel), *args)
-fun Long.msgSend(sel: String, vararg args: Any?): Long = ObjectiveC.objc_msgSend(this, sel(sel), *args)
-fun Long.msgSendInt(sel: ObjcSel, vararg args: Any?): Int = ObjectiveC.objc_msgSendInt(this, sel(sel), *args)
-fun Long.msgSendInt(sel: String, vararg args: Any?): Int = ObjectiveC.objc_msgSendInt(this, sel(sel), *args)
-
-fun Long.msgSendFloat(sel: ObjcSel, vararg args: Any?): Float = ObjectiveC.objc_msgSendFloat(this, sel(sel), *args)
-fun Long.msgSendFloat(sel: String, vararg args: Any?): Float = ObjectiveC.objc_msgSendFloat(this, sel(sel), *args)
-
-fun Long.msgSendCGFloat(sel: ObjcSel, vararg args: Any?): CGFloat = ObjectiveC.objc_msgSendCGFloat(this, sel(sel), *args)
-fun Long.msgSendCGFloat(sel: String, vararg args: Any?): CGFloat = ObjectiveC.objc_msgSendCGFloat(this, sel(sel), *args)
-
-fun Long.msgSendNSPoint(sel: String, vararg args: Any?): NSPointRes = ObjectiveC.objc_msgSendNSPoint(this, sel(sel), *args)
-fun Long.msgSendNSRect(sel: String, vararg args: Any?): NSRectRes {
-    if (isArm64) {
-        return ObjectiveC.objc_msgSendNSRect(this, sel(sel), *args)
-    } else {
-        val rect = MyNSRect()
-        val out = NSRectRes()
-        this.msgSend_stret(rect, sel, *args)
-        out.x = rect.x
-        out.y = rect.y
-        out.width = rect.width
-        out.height = rect.height
-        return out
-    }
-}
-fun Long.msgSend_stret(output: Any?, sel: String, vararg args: Any?) {
-    if (isArm64) error("Not available on arm64")
-    ObjectiveC.objc_msgSend_stret(output, this, sel(sel), *args)
-}
-
-/*
-open class NSRECT : Structure {
-    var x: Double = 0.0
-    var y: Double = 0.0
-    var width: Double = 0.0
-    var height: Double = 0.0
-
-    constructor() : super() {}
-    constructor(peer: Pointer?) : super(peer) {}
-
-    override fun getFieldOrder() = listOf("x", "y", "width", "height")
-
-    class ByReference : NSRECT(), Structure.ByReference
-    class ByValue : NSRECT(), Structure.ByValue
-}
- */
-
-operator fun Long.invoke(sel: String, vararg args: Any?): Long = ObjectiveC.objc_msgSend(this, sel(sel), *args)
-
-open class NSObject(val id: Long) : IntegerType(8, id, false), NativeMapped {
-    fun msgSend(sel: String, vararg args: Any?): Long = ObjectiveC.objc_msgSend(id, sel(sel), *args)
-    fun msgSendInt(sel: String, vararg args: Any?): Int = ObjectiveC.objc_msgSendInt(id, sel(sel), *args)
-    fun msgSendCGFloat(sel: String, vararg args: Any?): CGFloat = ObjectiveC.objc_msgSendCGFloat(id, sel(sel), *args)
-    fun msgSendNSPoint(sel: String, vararg args: Any?): NSPointRes = ObjectiveC.objc_msgSendNSPoint(id, sel(sel), *args)
-    fun msgSend_stret(sel: String, vararg args: Any?): Unit = ObjectiveC.objc_msgSend_stret(id, sel(sel), *args)
-
-    fun alloc(): Long = msgSend("alloc")
-
-    companion object : NSClass("NSObject") {
-    }
-
-    override fun toByte(): Byte = id.toByte()
-    override fun toChar(): Char = id.toChar()
-    override fun toShort(): Short = id.toShort()
-    override fun toInt(): Int = id.toInt()
-    override fun toLong(): Long = id
-
-    override fun toNative(): Any = this.id
-
-    override fun fromNative(nativeValue: Any, context: FromNativeContext?): Any = NSObject((nativeValue as Number).toLong())
-    override fun nativeType(): Class<*> = Long::class.javaPrimitiveType!!
-}
-
-open class NSString(id: Long) : NSObject(id) {
-    constructor() : this("")
-    constructor(str: String) : this(OBJ_CLASS.msgSend("alloc").msgSend("initWithCharacters:length:", str.toCharArray(), str.length))
-
-    //val length: Int get() = ObjectiveC.object_getIvar(this.id, LENGTH_ivar).toInt()
-    val length: Int get() = this.msgSend("length").toInt()
-
-    val cString: String
-        get() {
-            val length = this.length
-            val ba = ByteArray(length + 1)
-            msgSend("getCString:maxLength:encoding:", ba, length + 1, 4)
-            val str = ba.toString(Charsets.UTF_8)
-            return str.substring(0, str.length - 1)
-        }
-
-    override fun toString(): String = cString
-
-    companion object : NSClass("NSString") {
-        val LENGTH_ivar = ObjectiveC.class_getProperty(OBJ_CLASS, "length")
-    }
-}
-
-open class NSClass(val name: String) : NSObject(ObjectiveC.objc_getClass(name)) {
-    val OBJ_CLASS = id
-}
-
-open class ObjcProtocol(val name: String) : NSObject(ObjectiveC.objc_getProtocol(name)) {
-    val OBJ_PROTOCOL = id
-}
-
-fun NSClass.listClassMethods(): List<String> = ObjC_listMethods(ObjectiveC.object_getClass(this.id))
-fun NSClass.listInstanceMethods(): List<String> = ObjC_listMethods(this.id)
-
-fun ObjC_listMethods(clazz: Long): List<String> {
-    val nitemsPtr = IntArray(1)
-    val items2 = ObjectiveC.class_copyMethodList(clazz, nitemsPtr)
-    val nitems = nitemsPtr[0]
-    val out = ArrayList<String>(nitems)
-    for (n in 0 until nitems) {
-        val ptr = items2.getNativeLong((Native.LONG_SIZE * n).toLong())
-        val mname = ObjectiveC.method_getName(ptr.toLong())
-        val selName = ObjectiveC.sel_getName(mname)
-        out.add(selName)
-    }
-    return out
-}
-
-fun ObjcProtocol.listMethods(): List<String> = ObjC_listProtocolMethods(this.id)
-
-fun ObjC_listProtocolMethods(protocol: Long): List<String> {
-    val nitemsPtr = IntArray(1)
-    val items2 = ObjectiveC.protocol_copyMethodDescriptionList(protocol, true, true, nitemsPtr)
-    val nitems = nitemsPtr[0]
-    val out = ArrayList<String>(nitems)
-    //println("nitems=$nitems")
-    for (n in 0 until nitems) {
-        val namePtr = items2.getNativeLong((Native.LONG_SIZE * n * 2 + 0).toLong())
-        val typesPtr = items2.getNativeLong((Native.LONG_SIZE * n * 2 + 1).toLong())
-        val selName = ObjectiveC.sel_getName(namePtr.toLong())
-        //val typesStr = Pointer(typesPtr.toLong()).getString(0L)
-        //println("$selName: $typesStr")
-        //val selName = ObjectiveC.sel_getName(mname)
-        out.add(selName)
-    }
-    return out
-}
 
 class NSApplication(id: Long) : NSObject(id) {
     fun setActivationPolicy(value: Int) = id.msgSend("setActivationPolicy:", value.toLong())
@@ -346,32 +37,6 @@ val applicationShouldTerminateCallback = object : ApplicationShouldTerminateCall
         running = false
         System.exit(0)
         return 0L
-    }
-}
-
-interface ObjcCallback : Callback {
-    operator fun invoke(self: Long, _sel: Long, sender: Long): Long
-}
-
-interface ObjcCallbackVoid : Callback {
-    operator fun invoke(self: Long, _sel: Long, sender: Long): Unit
-}
-
-fun ObjcCallback(callback: (self: Long, _sel: Long, sender: Long) -> Long): ObjcCallback {
-    return object : ObjcCallback {
-        override fun invoke(self: Long, _sel: Long, sender: Long): Long = callback(self, _sel, sender)
-    }
-}
-
-fun ObjcCallbackVoid(callback: (self: Long, _sel: Long, sender: Long) -> Unit): ObjcCallbackVoid {
-    return object : ObjcCallbackVoid {
-        override fun invoke(self: Long, _sel: Long, sender: Long): Unit = callback(self, _sel, sender)
-    }
-}
-
-fun ObjcCallbackVoidEmpty(callback: () -> Unit): ObjcCallbackVoid {
-    return object : ObjcCallbackVoid {
-        override fun invoke(self: Long, _sel: Long, sender: Long): Unit = callback()
     }
 }
 
@@ -618,6 +283,46 @@ inline fun autoreleasePool(body: () -> Unit) {
         autoreleasePool.msgSend("drain")
     }
 }
+
+internal interface GL : Library {
+    fun glViewport(x: Int, y: Int, width: Int, height: Int)
+    fun glClearColor(r: Float, g: Float, b: Float, a: Float)
+    fun glClear(flags: Int)
+    fun glFinish()
+    fun glFlush()
+    fun CGLSetParameter(vararg args: Any?)
+    fun CGLEnable(vararg args: Any?)
+    companion object : GL by NativeLoad(nativeOpenGLLibraryPath) {
+        const val GL_COLOR_BUFFER_BIT = 0x00004000
+    }
+}
+
+
+interface Foundation : Library {
+    fun NSLog(msg: Long): Unit
+    fun NSMakeRect(x: CGFloat, y: CGFloat, w: CGFloat, h: CGFloat): NSRect
+
+    //companion object : Foundation by Native.load("/System/Library/Frameworks/Foundation.framework/Versions/C/Foundation", Foundation::class.java) as Foundation
+    companion object : Foundation by Native.load("Foundation", Foundation::class.java, NativeName.OPTIONS) as Foundation {
+        val NATIVE = NativeLibrary.getInstance("Foundation")
+    }
+}
+
+interface Cocoa : Library {
+    companion object : Cocoa by Native.load("Cocoa", Cocoa::class.java, NativeName.OPTIONS) as Cocoa {
+        val NATIVE = NativeLibrary.getInstance("Cocoa")
+    }
+}
+
+interface AppKit : Library {
+    companion object : AppKit by Native.load("AppKit", AppKit::class.java, NativeName.OPTIONS) as AppKit {
+        val NATIVE = NativeLibrary.getInstance("AppKit")
+        val NSApp = NATIVE.getGlobalVariableAddress("NSApp").getLong(0L)
+    }
+}
+
+fun Foundation.NSLog(msg: NSString) = NSLog(msg.id)
+fun Foundation.NSLog(msg: String) = NSLog(NSString(msg))
 
 interface DisplayLinkCallback : Callback {
     fun callback(displayLink: Pointer?, inNow: Pointer?, inOutputTime: Pointer?, flagsIn: Pointer?, flagsOut: Pointer?, userInfo: Pointer?): Int

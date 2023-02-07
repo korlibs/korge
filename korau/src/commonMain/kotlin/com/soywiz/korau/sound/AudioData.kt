@@ -19,6 +19,8 @@ class AudioData(
     val rate: Int,
     val samples: AudioSamples
 ) {
+    inline val frequency: Int get() = rate
+
     val samplesInterleaved by lazy { samples.interleaved() }
 
     companion object {

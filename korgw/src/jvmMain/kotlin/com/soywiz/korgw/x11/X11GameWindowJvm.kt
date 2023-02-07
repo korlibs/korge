@@ -4,6 +4,7 @@ import com.soywiz.kgl.KmlGl
 import com.soywiz.kgl.checkedIf
 import com.soywiz.klock.PerformanceCounter
 import com.soywiz.klock.TimeSpan
+import com.soywiz.kmem.dyn.*
 import com.soywiz.kmem.toInt
 import com.soywiz.kmem.write32LE
 import com.soywiz.korag.gl.AGOpengl
@@ -218,7 +219,7 @@ class X11GameWindow(val checkGl: Boolean) : EventLoopGameWindow() {
                 ClientMessage, DestroyNotify -> close()
                 ConfigureNotify -> {
                     render(doUpdate = false) {
-                        val conf = XConfigureEvent(e.pointer)
+                        val conf = XConfigureEvent(e.pointer.kpointer)
                         width = conf.width
                         height = conf.height
                         dispatchReshapeEvent(conf.x, conf.y, conf.width, conf.height)
@@ -230,14 +231,14 @@ class X11GameWindow(val checkGl: Boolean) : EventLoopGameWindow() {
                     val pressing = e.type == KeyPress
                     val ev =
                         if (pressing) com.soywiz.korev.KeyEvent.Type.DOWN else com.soywiz.korev.KeyEvent.Type.UP
-                    val keyCode = XKeyEvent(e.pointer).keycode.toInt()
+                    val keyCode = XKeyEvent(e.pointer.kpointer).keycode.toInt()
                     val kkey = XK_KeyMap[X.XLookupKeysym(e, 0)] ?: Key.UNKNOWN
                     //println("KEY: $ev, ${keyCode.toChar()}, $kkey, $keyCode, keySym=$keySym")
                     dispatchKeyEvent(ev, 0, keyCode.toChar(), kkey, keyCode)
                     //break@loop
                 }
                 MotionNotify, ButtonPress, ButtonRelease -> {
-                    val mot = MyXMotionEvent(e.pointer)
+                    val mot = MyXMotionEvent(e.pointer.kpointer)
                     //val mot = e.xmotion
                     val but = e.xbutton
 

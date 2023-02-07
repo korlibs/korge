@@ -103,3 +103,4 @@ now they are available via kproject in these repositories:
 ## Other
 
 * <https://github.com/korlibs/korge-lipsync> (Rhubarb LipSync integration with resource processor)
+* <https://github.com/korlibs/korge-parallax> (Pseudo 3D Parallax Effect)

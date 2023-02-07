@@ -1,6 +1,7 @@
 package com.soywiz.korge.native
 
 import com.soywiz.korio.*
+import com.soywiz.korio.file.sync.*
 import com.soywiz.korio.posix.*
 import kotlinx.cinterop.*
 import platform.posix.*

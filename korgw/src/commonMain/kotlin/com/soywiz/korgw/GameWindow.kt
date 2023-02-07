@@ -867,6 +867,12 @@ open class GameWindow :
         }
     }
 
+    enum class HapticFeedbackKind { GENERIC, ALIGNMENT, LEVEL_CHANGE }
+
+    open val hapticFeedbackGenerateSupport: Boolean get() = false
+    open fun hapticFeedbackGenerate(kind: HapticFeedbackKind) {
+    }
+
     open suspend fun clipboardWrite(data: ClipboardData) {
     }
 

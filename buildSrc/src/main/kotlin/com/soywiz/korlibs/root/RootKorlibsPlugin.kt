@@ -4,8 +4,10 @@ import com.android.build.gradle.*
 import com.android.build.gradle.internal.tasks.*
 import com.soywiz.korge.gradle.*
 import com.soywiz.korge.gradle.targets.*
+import com.soywiz.korge.gradle.targets.all.*
 import com.soywiz.korge.gradle.targets.android.*
 import com.soywiz.korge.gradle.targets.ios.*
+import com.soywiz.korge.gradle.targets.js.*
 import com.soywiz.korge.gradle.targets.jvm.*
 import com.soywiz.korge.gradle.targets.native.*
 import com.soywiz.korge.gradle.util.*
@@ -30,6 +32,7 @@ import org.jetbrains.kotlin.gradle.tasks.*
 import java.io.*
 import java.net.*
 import java.nio.file.*
+import kotlin.apply
 
 object RootKorlibsPlugin {
     @JvmStatic
@@ -54,7 +57,6 @@ object RootKorlibsPlugin {
         initInstallAndCheckLinuxLibs()
         initCatalog()
         configureKover()
-        initBuildVersions()
         initAndroidFixes()
         initPublishing()
         initKMM()
@@ -62,6 +64,13 @@ object RootKorlibsPlugin {
         initShortcuts()
         initTests()
         initCrossTests()
+        initAllTargets()
+    }
+
+    fun Project.initAllTargets() {
+        rootProject.afterEvaluate {
+            rootProject.rootEnableFeaturesOnAllTargets()
+        }
     }
 
     fun Project.initRootKotlinJvmTarget() {
@@ -204,14 +213,14 @@ object RootKorlibsPlugin {
             (!(File("/usr/include/GL/glut.h").exists()) || !(File("/usr/include/AL/al.h").exists()))
         ) {
             rootProject.execThis { commandLine("sudo", "apt-get", "update") }
-            rootProject.execThis { commandLine("sudo", "apt-get", "-y", "install", "freeglut3-dev", "libopenal-dev") }
+            rootProject.execThis { commandLine("sudo", "apt-get", "-y", "install", "freeglut3") }
             // execThis { commandLine("sudo", "apt-get", "-y", "install", "libgtk-3-dev") }
         }
         if (isLinux) {
             project.logger.info("LD folders: ${LDLibraries.ldFolders}")
-            for (lib in listOf("libGL.so.1", "libopenal.so.1")) {
+            for (lib in listOf("libGL.so.1")) {
                 if (!LDLibraries.hasLibrary(lib)) {
-                    System.err.println("Can't find $lib. Please: sudo apt-get -y install freeglut3 libopenal1")
+                    System.err.println("Can't find $lib. Please: sudo apt-get -y install freeglut3")
                 }
             }
         }
@@ -238,41 +247,6 @@ object RootKorlibsPlugin {
 
     }
 
-
-    fun Project.initBuildVersions() {
-
-        // Build versions
-        val projectVersion = project.version
-        fun createBuildVersions(git: Boolean): String =  """
-            package com.soywiz.korge.gradle
-            
-            object BuildVersions {
-                const val GIT = "${if (git) project.gitVersion else "main"}"
-                const val KOTLIN = "${project.realKotlinVersion}"
-                const val NODE_JS = "${project.nodeVersion}"
-                const val JNA = "${project._libs["versions"]["jna"].dynamicInvoke("get").casted<String>()}"
-                const val COROUTINES = "${project._libs["versions"]["kotlinx"]["coroutines"].dynamicInvoke("get").casted<String>()}"
-                const val ANDROID_BUILD = "${project.androidBuildGradleVersion}"
-                const val KOTLIN_SERIALIZATION = "${project._libs["versions"]["kotlinx"]["serialization"].dynamicInvoke("get").casted<String>()}"
-                const val KRYPTO = "$projectVersion"
-                const val KLOCK = "$projectVersion"
-                const val KDS = "$projectVersion"
-                const val KMEM = "$projectVersion"
-                const val KORMA = "$projectVersion"
-                const val KORIO = "$projectVersion"
-                const val KORIM = "$projectVersion"
-                const val KORAU = "$projectVersion"
-                const val KORGW = "$projectVersion"
-                const val KORGE = "$projectVersion"
-            
-                val ALL_PROPERTIES by lazy { listOf(::GIT, ::KRYPTO, ::KLOCK, ::KDS, ::KMEM, ::KORMA, ::KORIO, ::KORIM, ::KORAU, ::KORGW, ::KORGE, ::KOTLIN, ::JNA, ::COROUTINES, ::ANDROID_BUILD, ::KOTLIN_SERIALIZATION) }
-                val ALL by lazy { ALL_PROPERTIES.associate { it.name to it.get() } }
-            }
-        """.trimIndent()
-
-        rootProject.file("buildSrc/src/main/kotlinGen/com/soywiz/korge/gradle/BuildVersions.kt").writeTextIfChanged(createBuildVersions(git = false))
-        rootProject.file("korge-gradle-plugin/build/srcgen/com/soywiz/korge/gradle/BuildVersions.kt").writeTextIfChanged(createBuildVersions(git = true))
-    }
 
     fun Project.initAndroidApplication() {
         //apply(plugin = "com.android.application")
@@ -706,8 +680,8 @@ object RootKorlibsPlugin {
                     jvm {
                         compilations.allThis {
                             kotlinOptions.jvmTarget = "1.8"
-                            kotlinOptions.suppressWarnings = true
-                            kotlinOptions.freeCompilerArgs = listOf("-Xno-param-assertions")
+                            compilerOptions.options.freeCompilerArgs.add("-Xno-param-assertions")
+                            //kotlinOptions.freeCompilerArgs.add("-Xno-param-assertions")
                             //kotlinOptions.
 
                             // @TODO:
@@ -721,21 +695,13 @@ object RootKorlibsPlugin {
                         browser {
                             compilations.allThis {
                                 //kotlinOptions.sourceMap = true
-                                kotlinOptions.suppressWarnings = true
-                            }
-                            testTask {
-                                useKarma {
-                                    useChromeHeadless()
-                                    useConfigDirectory(File(rootDir, "karma.config.d"))
-                                }
                             }
                         }
-                        nodejs {
-                            testTask {
-                                useMocha()
-                            }
-                        }
+                        configureJSTestsOnce()
                     }
+                    //configureJSTests()
+
+
                     if (hasAndroid) {
                         kotlin {
                             android {
@@ -744,8 +710,7 @@ object RootKorlibsPlugin {
                                 //this.attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.androidJvm)
                                 compilations.allThis {
                                     kotlinOptions.jvmTarget = "1.8"
-                                    kotlinOptions.suppressWarnings = true
-                                    kotlinOptions.freeCompilerArgs = listOf("-Xno-param-assertions")
+                                    compilerOptions.options.freeCompilerArgs.add("-Xno-param-assertions")
                                 }
                             }
                         }
@@ -758,20 +723,7 @@ object RootKorlibsPlugin {
                     }.toList()
 
                     for (target in desktopAndMobileTargets) {
-                        target.compilations.allThis {
-                            // https://github.com/JetBrains/kotlin/blob/ec6c25ef7ee3e9d89bf9a03c01e4dd91789000f5/kotlin-native/konan/konan.properties#L875
-                            kotlinOptions.freeCompilerArgs = ArrayList<String>().apply {
-                                // Raspberry Pi doesn't support mimalloc at this time
-                                if (useMimalloc && !target.name.contains("Arm32Hfp")) add("-Xallocator=mimalloc")
-                                add("-Xoverride-konan-properties=clangFlags.mingw_x64=-cc1 -emit-obj -disable-llvm-passes -x ir -target-cpu x86-64")
-                            }
-                            kotlinOptions.freeCompilerArgs += listOf(
-                                "-Xbinary=memoryModel=experimental",
-                                // @TODO: https://youtrack.jetbrains.com/issue/KT-49234#focus=Comments-27-5293935.0-0
-                                //"-Xdisable-phases=RemoveRedundantCallsToFileInitializersPhase",
-                            )
-                            kotlinOptions.suppressWarnings = true
-                        }
+                        target.configureKotlinNativeTarget(project)
                     }
 
                     // common
@@ -840,9 +792,10 @@ object RootKorlibsPlugin {
                             val native by lazy { createPairSourceSet("native", concurrent) }
                             val posix by lazy { createPairSourceSet("posix", native) }
                             val darwin by lazy { createPairSourceSet("darwin", posix) }
+                            val iosMacos by lazy { createPairSourceSet("iosMacos", darwin) }
 
                             val linux by lazy { createPairSourceSet("linux", posix) }
-                            val macos by lazy { createPairSourceSet("macos", darwin) }
+                            val macos by lazy { createPairSourceSet("macos", iosMacos) }
                             val mingw by lazy { createPairSourceSet("mingw", native) }
 
                             val nativeTargets = nativeTargets(project)
@@ -860,7 +813,7 @@ object RootKorlibsPlugin {
                             val iosTvos by lazy { createPairSourceSet("iosTvos", darwinMobile) }
                             val watchos by lazy { createPairSourceSet("watchos", darwinMobile) }
                             val tvos by lazy { createPairSourceSet("tvos", iosTvos) }
-                            val ios by lazy { createPairSourceSet("ios", iosTvos) }
+                            val ios by lazy { createPairSourceSet("ios", iosTvos, iosMacos) }
 
                             for (target in mobileTargets(project)) {
                                 val native = createPairSourceSet(target.name)
@@ -1110,9 +1063,9 @@ object RootKorlibsPlugin {
                                 dependsOn(compileDevelopmentExecutableKotlinJs)
                                 //task.dependsOn(browserPrepareEsbuild)
 
-                                val jsPath = project.tasks.getByName(compileDevelopmentExecutableKotlinJs).outputs.files.first {
+                                val jsPath = project.tasks.getByName(compileDevelopmentExecutableKotlinJs).outputs.files.firstOrNull() {
                                     it.extension.toLowerCase() == "js"
-                                }
+                                } ?: "unknown-js.js"
 
                                 val output = File(wwwFolder, "${project.name}.js")
                                 inputs.file(jsPath)
@@ -1551,7 +1504,6 @@ object RootKorlibsPlugin {
 //val headlessTests = true
 //val headlessTests = System.getenv("NON_HEADLESS_TESTS") != "true"
 val headlessTests: Boolean get() = System.getenv("CI") == "true" || System.getenv("HEADLESS_TESTS") == "true"
-val useMimalloc: Boolean get() = true
 //val useMimalloc = false
 
 val Project._libs: Dyn get() = rootProject.extensions.getByName("libs").dyn
@@ -1563,15 +1515,6 @@ val forcedVersion = System.getenv("FORCED_VERSION")
 
 val Project.hasAndroidSdk by LazyExt { AndroidSdk.hasAndroidSdk(project) }
 val Project.enabledSandboxResourceProcessor: Boolean by LazyExt { rootProject.findProperty("enabledSandboxResourceProcessor") == "true" }
-val Project.gitVersion: String by LazyExt {
-    try {
-        Runtime.getRuntime().exec("git describe --abbrev=8 --tags --dirty".split(" ").toTypedArray(), arrayOf(), rootDir).inputStream.reader()
-            .readText().lines().first().trim()
-    } catch (e: Throwable) {
-        e.printStackTrace()
-        "unknown"
-    }
-}
 
 val Project.currentJavaVersion by LazyExt { com.soywiz.korlibs.currentJavaVersion() }
 fun Project.hasBuildGradle() = listOf("build.gradle", "build.gradle.kts").any { File(projectDir, it).exists() }

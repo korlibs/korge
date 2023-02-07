@@ -3,6 +3,7 @@ package com.soywiz.korgw.osx
 import com.soywiz.kgl.KmlGl
 import com.soywiz.kgl.checkedIf
 import com.soywiz.kgl.logIf
+import com.soywiz.kmem.dyn.osx.*
 import com.soywiz.korag.gl.AGOpengl
 import com.soywiz.korev.Key
 import com.soywiz.korev.KeyEvent
