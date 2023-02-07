@@ -1,6 +1,7 @@
 package com.soywiz.korge.service.haptic
 
 import com.soywiz.kmem.Platform
+import com.soywiz.kmem.dyn.osx.*
 import com.soywiz.korge.view.Views
 import com.soywiz.korgw.osx.*
 

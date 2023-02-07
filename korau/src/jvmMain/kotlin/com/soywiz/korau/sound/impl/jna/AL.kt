@@ -238,7 +238,6 @@ val nativeOpenALLibraryPath: String? by lazy {
     }
     when {
         OS.isMac -> {
-            //getNativeFileLocalPath("natives/macosx64/libopenal.dylib")
             "OpenAL" // Mac already includes the OpenAL library
         }
         OS.isLinux -> "libopenal.so.1"
