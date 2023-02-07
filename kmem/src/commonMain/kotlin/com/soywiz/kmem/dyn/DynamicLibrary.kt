@@ -3,7 +3,7 @@ package com.soywiz.kmem.dyn
 import com.soywiz.kmem.atomic.KmemAtomicRef
 import kotlin.reflect.KProperty
 
-public open class DynamicLibrary(name: String) : DynamicLibraryBase(name) {
+public open class DynamicLibrary(vararg names: String?) : DynamicLibraryBase(names.filterNotNull()) {
 }
 
 public fun interface DynamicSymbolResolver {
@@ -31,4 +31,12 @@ public abstract class DynamicFunLibrary<T : Function<*>>(public val library: Dyn
     override fun getProcAddress(name: String): KPointer? = library.getSymbol(name)
 
     override fun toString(): String = "DynamicFunLibrary($library)"
+}
+
+public abstract class DynamicFunLibraryNotNull<T : Function<*>>(library: DynamicSymbolResolver, name: String? = null) : DynamicFunLibrary<T>(library, name) {
+    abstract operator fun getValue(obj: Any?, property: KProperty<*>): KPointerTT<KFunctionTT<T>>
+}
+
+public abstract class DynamicFunLibraryNull<T : Function<*>>(library: DynamicSymbolResolver, name: String? = null) : DynamicFunLibrary<T>(library, name) {
+    abstract operator fun getValue(obj: Any?, property: KProperty<*>): KPointerTT<KFunctionTT<T>>?
 }

@@ -33,7 +33,7 @@ class JvmWaveOutPlatformAudioOutput(
             val handlePtr = Memory(8L)
             val freq = frequency
             val blockAlign = (nchannels * Short.SIZE_BYTES)
-            val format = WAVEFORMATEX(Memory(WAVEFORMATEX().size.toLong())).also { format ->
+            val format = WAVEFORMATEX(Memory(WAVEFORMATEX().size.toLong()).also { it.clear() }.kpointer).also { format ->
                 format.wFormatTag = WINMM.WAVE_FORMAT_PCM.toShort()
                 format.nChannels = nchannels.toShort() // 2?
                 format.nSamplesPerSec = freq.toInt()
@@ -42,7 +42,7 @@ class JvmWaveOutPlatformAudioOutput(
                 format.nAvgBytesPerSec = freq * blockAlign
                 format.cbSize = format.size.toShort()
             }
-            WINMM.waveOutOpen(handlePtr, WINMM.WAVE_MAPPER, format.pointer, null, null, 0).also {
+            WINMM.waveOutOpen(handlePtr, WINMM.WAVE_MAPPER, format.pointer?.ptr, null, null, 0).also {
                 if (it != 0) println("WINMM.waveOutOpen: $it")
             }
             val handle = handlePtr.getPointer(0L)
@@ -90,8 +90,8 @@ class JvmWaveOutPlatformAudioOutput(
         val data = Array(nchannels) { ShortArray(totalSamples) }
         val totalBytes = (totalSamples * nchannels * Short.SIZE_BYTES)
         val dataMem = Memory(totalBytes.toLong())
-        val hdr = WAVEHDR(Memory(WAVEHDR().size.toLong())).also { hdr ->
-            hdr.lpData = KPointerT(dataMem)
+        val hdr = WAVEHDR(Memory(WAVEHDR().size.toLong()).kpointer).also { hdr ->
+            hdr.lpData = KPointerT(dataMem.kpointer)
             hdr.dwBufferLength = totalBytes
             hdr.dwFlags = 0
         }
@@ -101,19 +101,19 @@ class JvmWaveOutPlatformAudioOutput(
 
             for (ch in 0 until nchannels) {
                 for (n in 0 until totalSamples) {
-                    dataMem.setShort(((n * nchannels + ch) * Short.SIZE_BYTES), data[ch][n])
+                    dataMem.setShort(((n * nchannels + ch) * Short.SIZE_BYTES).toLong(), data[ch][n])
                 }
             }
             //if (hdr.isPrepared) dispose()
             if (!hdr.isPrepared) {
                 //println("-> prepare")
-                WINMM.waveOutPrepareHeader(handle, hdr.pointer, hdr.size)
+                WINMM.waveOutPrepareHeader(handle, hdr.pointer?.ptr, hdr.size)
             }
-            WINMM.waveOutWrite(handle, hdr.pointer, hdr.size)
+            WINMM.waveOutWrite(handle, hdr.pointer?.ptr, hdr.size)
         }
 
         fun dispose() {
-            WINMM.waveOutUnprepareHeader(handle, hdr.pointer, hdr.size)
+            WINMM.waveOutUnprepareHeader(handle, hdr.pointer?.ptr, hdr.size)
         }
 
         override fun toString(): String = "WaveHeader(id=$id, totalSamples=$totalSamples, nchannels=$nchannels, hdr=$hdr)"

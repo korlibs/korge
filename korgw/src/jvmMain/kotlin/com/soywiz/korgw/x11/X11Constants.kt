@@ -533,7 +533,7 @@ internal val XK_KeyMap: IntMap<Key> by lazy {
 internal fun KStructure.display() = pointer<X11.Display?>()
 internal fun KStructure.window() = pointer<X11.Window?>()
 
-internal class XConfigureEvent(p: Pointer? = null) : KStructure(p) {
+internal class XConfigureEvent(p: KPointer? = null) : KStructure(p) {
     var type by int()
     var serial by nativeLong()
     var send_event by int()
@@ -549,7 +549,7 @@ internal class XConfigureEvent(p: Pointer? = null) : KStructure(p) {
     var override_redirect by int()
 }
 
-internal class XKeyEvent(p: Pointer? = null) : KStructure(p) {
+internal class XKeyEvent(p: KPointer? = null) : KStructure(p) {
     var type by int()
     var serial by nativeLong()
     var send_event by int()
@@ -567,7 +567,7 @@ internal class XKeyEvent(p: Pointer? = null) : KStructure(p) {
     var same_screen by int()
 }
 
-internal class MyXMotionEvent(p: Pointer? = null) : KStructure(p) {
+internal class MyXMotionEvent(p: KPointer? = null) : KStructure(p) {
     var type by int()
     var serial by nativeLong()
     var send_event by int()
