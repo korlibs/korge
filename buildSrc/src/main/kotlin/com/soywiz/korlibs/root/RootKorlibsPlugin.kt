@@ -73,6 +73,7 @@ object RootKorlibsPlugin {
             if (this.name == "korge") {
                 configureMingwX64TestWithMesa()
             }
+        }
     }
 
     fun Project.initAllTargets() {
