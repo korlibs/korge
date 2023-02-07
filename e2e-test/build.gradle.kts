@@ -59,7 +59,6 @@ korge {
 // @see: https://amiralizadeh9480.medium.com/how-to-run-opengl-based-tests-on-github-actions-60f270b1ea2c
 tasks {
     val localOpengl32X64ZipFile = file("opengl32-x64.zip")
-    val linkDebugExecutableMingwX64 = findByName("linkDebugExecutableMingwX64") as? KotlinNativeLink?
     val downloadOpenglMesaForWindows by creating(Task::class) {
         onlyIf { !localOpengl32X64ZipFile.exists() }
         doLast {
@@ -67,6 +66,8 @@ tasks {
             localOpengl32X64ZipFile.writeBytes(url.readBytes())
         }
     }
+
+    val linkDebugExecutableMingwX64 = findByName("linkDebugExecutableMingwX64") as? KotlinNativeLink?
     if (linkDebugExecutableMingwX64 != null) {
         val upzipOpenglMingwX64 by creating(Copy::class) {
             dependsOn(downloadOpenglMesaForWindows)

@@ -62,6 +62,15 @@ object RootKorlibsPlugin {
         initShortcuts()
         initTests()
         initCrossTests()
+        initPatchTests()
+    }
+
+    fun Project.initPatchTests() {
+        subprojectsThis {
+            if (this.name == "korge") {
+                configureMingwX64TestWithMesa()
+            }
+        }
     }
 
     fun Project.initRootKotlinJvmTarget() {
