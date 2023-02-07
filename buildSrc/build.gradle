@@ -22,16 +22,7 @@ dependencies {
     }
 }
 
-repositories {
-    mavenLocal()
-    mavenCentral()
-    google()
-    maven { url = uri("https://plugins.gradle.org/m2/") }
-    maven { url = uri("https://maven.pkg.jetbrains.space/kotlin/p/kotlin/temporary") }
-    maven { url = uri("https://maven.pkg.jetbrains.space/kotlin/p/kotlin/dev") }
-    maven { url = uri("https://maven.pkg.jetbrains.space/public/p/kotlinx-coroutines/maven") }
-    maven { url = uri("https://oss.sonatype.org/content/repositories/snapshots/") }
-}
+Eval.xy(this, this, file("../gradle/repositories.settings.gradle").text)
 
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
     kotlinOptions.suppressWarnings = true
@@ -48,4 +39,74 @@ java {
             srcDir("src/main/kotlin11")
         }
     }
+}
+
+// Build versions
+
+String gitVersion = "unset"
+
+try {
+    gitVersion = file("../.git/ORIG_HEAD").text.trim()
+} catch (Throwable e) {
+}
+
+if (System.getenv("FORCED_VERSION") != null) {
+    try {
+        gitVersion = Runtime.getRuntime().exec("git describe --abbrev=8 --tags --dirty", new String[0], rootDir).inputStream.text.trim()
+    } catch (Throwable e) {
+        System.err.println(e.message)
+    }
+}
+
+Properties props = new Properties()
+props.load(new StringReader(file("../gradle.properties").text))
+
+String projectVersion = System.getenv("FORCED_VERSION")?.replaceFirst(~"^refs/tags/", "")?.replaceFirst(~"^v", "")?.replaceFirst(~"^w", "")
+    ?: props.version
+
+String realKotlinVersion = System.getenv("FORCED_KOTLIN_VERSION") ?: libs.versions.kotlin.get()
+
+String buildVersionsString = """
+package com.soywiz.korge.gradle
+
+object BuildVersions {
+    const val GIT = "---"
+    const val KOTLIN = "${realKotlinVersion}"
+    const val NODE_JS = "${libs.versions.node.get()}"
+    const val JNA = "${libs.versions.jna.get()}"
+    const val COROUTINES = "${libs.versions.kotlinx.coroutines.get()}"
+    const val ANDROID_BUILD = "${isJava8or9 ? libs.versions.android.build.gradle.java8.get() : libs.versions.android.build.gradle.java11.get()}"
+    const val KOTLIN_SERIALIZATION = "${libs.versions.kotlinx.serialization.get()}"
+    const val KRYPTO = "$projectVersion"
+    const val KLOCK = "$projectVersion"
+    const val KDS = "$projectVersion"
+    const val KMEM = "$projectVersion"
+    const val KORMA = "$projectVersion"
+    const val KORIO = "$projectVersion"
+    const val KORIM = "$projectVersion"
+    const val KORAU = "$projectVersion"
+    const val KORGW = "$projectVersion"
+    const val KORGE = "$projectVersion"
+
+    val ALL_PROPERTIES by lazy { listOf(::GIT, ::KRYPTO, ::KLOCK, ::KDS, ::KMEM, ::KORMA, ::KORIO, ::KORIM, ::KORAU, ::KORGW, ::KORGE, ::KOTLIN, ::JNA, ::COROUTINES, ::ANDROID_BUILD, ::KOTLIN_SERIALIZATION) }
+    val ALL by lazy { ALL_PROPERTIES.associate { it.name to it.get() } }
+}
+""".trim()
+
+String buildVersionsStringForBuildSrc = buildVersionsString
+String buildVersionsStringForPlugin = buildVersionsString.replace(
+    "const val GIT = \"---\"",
+    "const val GIT = \"${gitVersion}\""
+)
+
+File buildsVersionBuildSrcFile = file("../buildSrc/src/main/kotlinGen/com/soywiz/korge/gradle/BuildVersions.kt")
+File buildsVersionFilePlugin = file("../korge-gradle-plugin/build/srcgen/com/soywiz/korge/gradle/BuildVersions.kt")
+
+if (!buildsVersionBuildSrcFile.exists() || buildsVersionBuildSrcFile.text != buildVersionsStringForBuildSrc) {
+    buildsVersionBuildSrcFile.parentFile.mkdirs()
+    buildsVersionBuildSrcFile.text = buildVersionsStringForBuildSrc
+}
+if (!buildsVersionFilePlugin.exists() || buildsVersionFilePlugin.text != buildVersionsStringForPlugin) {
+    buildsVersionFilePlugin.parentFile.mkdirs()
+    buildsVersionFilePlugin.text = buildVersionsStringForPlugin
 }

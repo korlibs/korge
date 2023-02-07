@@ -11,6 +11,7 @@ import org.gradle.api.*
 import org.gradle.api.file.*
 import org.gradle.api.tasks.*
 import org.jetbrains.kotlin.gradle.plugin.*
+import org.jetbrains.kotlin.gradle.targets.js.dsl.*
 import java.io.*
 
 private object JavaScriptClass
@@ -31,11 +32,6 @@ fun Project.configureJavaScript() {
 		js(KotlinJsCompilerType.IR) {
             browser {
                 binaries.executable()
-                testTask {
-                    useKarma {
-                        useChromeHeadless()
-                    }
-                }
             }
 
 			this.attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.js)
@@ -48,6 +44,7 @@ fun Project.configureJavaScript() {
 					suppressWarnings = korge.supressWarnings
 				}
 			}
+            configureJSTestsOnce()
 		}
 
         sourceSets.maybeCreate("jsTest").apply {
@@ -82,6 +79,27 @@ fun Project.configureJavaScript() {
     configureWebpackFixes()
     configureJavascriptRun()
     configureClosureCompiler()
+}
+
+fun KotlinJsTargetDsl.configureJSTestsOnce() {
+    browser {
+        //testTask { useKarma { useChromeHeadless() } }
+        testRuns.getByName(KotlinTargetWithTests.DEFAULT_TEST_RUN_NAME).executionTask.configure {
+            it.useKarma {
+                useChromeHeadless()
+                val karmaConfigDFile = File(project.rootProject.rootDir, "karma.config.d")
+                if (karmaConfigDFile.exists()) {
+                    useConfigDirectory(karmaConfigDFile)
+                }
+            }
+        }
+    }
+    nodejs {
+        //testTask { useMocha() }
+        testRuns.getByName(KotlinTargetWithTests.DEFAULT_TEST_RUN_NAME).executionTask.configure {
+            it.useMocha()
+        }
+    }
 }
 
 abstract class JsCreateIndexTask : DefaultTask() {

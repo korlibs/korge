@@ -4,6 +4,8 @@ import com.soywiz.kds.*
 import com.soywiz.kgl.*
 import com.soywiz.klock.*
 import com.soywiz.kmem.*
+import com.soywiz.kmem.Platform
+import com.soywiz.kmem.dyn.osx.*
 import com.soywiz.korag.*
 import com.soywiz.korag.gl.*
 import com.soywiz.korev.*
@@ -821,5 +823,34 @@ abstract class BaseAwtGameWindow(
     }
 
     override fun lostOwnership(clipboard: Clipboard?, contents: Transferable?) {
+    }
+
+    override val hapticFeedbackGenerateSupport: Boolean get() = true
+    override fun hapticFeedbackGenerate(kind: HapticFeedbackKind) {
+        when {
+            Platform.os.isMac -> {
+                val KIND_GENERIC = 0
+                val KIND_ALIGNMENT = 1
+                val KIND_LEVEL_CHANGE = 2
+
+                val PERFORMANCE_TIME_DEFAULT = 0
+                val PERFORMANCE_TIME_NOW = 1
+                val PERFORMANCE_TIME_DRAW_COMPLETED = 2
+
+                val kindInt = when (kind) {
+                    HapticFeedbackKind.GENERIC -> KIND_GENERIC
+                    HapticFeedbackKind.ALIGNMENT -> KIND_ALIGNMENT
+                    HapticFeedbackKind.LEVEL_CHANGE -> KIND_LEVEL_CHANGE
+                }
+                val performanceTime = PERFORMANCE_TIME_NOW
+
+                NSClass("NSHapticFeedbackManager")
+                    .msgSend("defaultPerformer")
+                    .msgSend("performFeedbackPattern:performanceTime:", kindInt.toLong(), performanceTime.toLong())
+            }
+            else -> {
+                super.hapticFeedbackGenerate(kind)
+            }
+        }
     }
 }

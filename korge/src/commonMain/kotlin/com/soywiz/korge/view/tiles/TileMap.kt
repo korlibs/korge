@@ -1,38 +1,17 @@
 package com.soywiz.korge.view.tiles
 
 import com.soywiz.kds.*
-import com.soywiz.kds.iterators.fastForEach
-import com.soywiz.kds.iterators.fastForEachWithIndex
-import com.soywiz.klock.milliseconds
-import com.soywiz.kmem.clamp
-import com.soywiz.kmem.extract
-import com.soywiz.kmem.isEven
-import com.soywiz.kmem.isOdd
-import com.soywiz.kmem.nextPowerOfTwo
-import com.soywiz.kmem.umod
-import com.soywiz.korge.internal.KorgeInternal
-import com.soywiz.korge.render.ShrinkableTexturedVertexArray
-import com.soywiz.korge.render.RenderContext
-import com.soywiz.korge.render.TexturedVertexArray
-import com.soywiz.korge.view.Container
-import com.soywiz.korge.view.HitTestDirection
-import com.soywiz.korge.view.View
-import com.soywiz.korge.view.ViewDslMarker
-import com.soywiz.korge.view.addTo
-import com.soywiz.korge.view.addUpdater
-import com.soywiz.korim.tiles.TileMapOrientation
-import com.soywiz.korim.tiles.TileMapStaggerAxis
-import com.soywiz.korim.tiles.TileMapStaggerIndex
-import com.soywiz.korma.geom.Point
-import com.soywiz.korma.geom.Rectangle
-import com.soywiz.korma.geom.Size
-import com.soywiz.korma.geom.setTo
-import com.soywiz.kmem.extract5
-import com.soywiz.kmem.insert
+import com.soywiz.kds.iterators.*
+import com.soywiz.klock.*
+import com.soywiz.kmem.*
+import com.soywiz.korge.internal.*
+import com.soywiz.korge.render.*
+import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
-import kotlin.math.min
-import com.soywiz.korma.math.min
-import com.soywiz.korma.math.max
+import com.soywiz.korim.tiles.*
+import com.soywiz.korma.geom.*
+import com.soywiz.korma.math.*
+import kotlin.math.*
 
 inline fun Container.tileMap(
     map: IStackedIntArray2,
@@ -40,12 +19,9 @@ inline fun Container.tileMap(
     repeatX: TileMapRepeat = TileMapRepeat.NONE,
     repeatY: TileMapRepeat = repeatX,
     smoothing: Boolean = true,
-    orientation: TileMapOrientation? = null,
-    staggerAxis: TileMapStaggerAxis? = null,
-    staggerIndex: TileMapStaggerIndex? = null,
     tileSize: Size = Size(tileset.width.toDouble(), tileset.height.toDouble()),
     callback: @ViewDslMarker TileMap.() -> Unit = {},
-) = TileMap(map, tileset, smoothing, orientation, staggerAxis, staggerIndex, tileSize).repeat(repeatX, repeatY).addTo(this, callback)
+) = TileMap(map, tileset, smoothing, tileSize).repeat(repeatX, repeatY).addTo(this, callback)
 
 inline fun Container.tileMap(
     map: IntArray2,
@@ -53,12 +29,9 @@ inline fun Container.tileMap(
     repeatX: TileMapRepeat = TileMapRepeat.NONE,
     repeatY: TileMapRepeat = repeatX,
     smoothing: Boolean = true,
-    orientation: TileMapOrientation? = null,
-    staggerAxis: TileMapStaggerAxis? = null,
-    staggerIndex: TileMapStaggerIndex? = null,
     tileSize: Size = Size(tileset.width.toDouble(), tileset.height.toDouble()),
     callback: @ViewDslMarker TileMap.() -> Unit = {},
-) = TileMap(map, tileset, smoothing, orientation, staggerAxis, staggerIndex, tileSize).repeat(repeatX, repeatY).addTo(this, callback)
+) = TileMap(map, tileset, smoothing, tileSize).repeat(repeatX, repeatY).addTo(this, callback)
 
 @Deprecated("Use IStackedIntArray2 or IntArray2 as the map data")
 inline fun Container.tileMap(
@@ -67,12 +40,9 @@ inline fun Container.tileMap(
     repeatX: TileMapRepeat = TileMapRepeat.NONE,
     repeatY: TileMapRepeat = repeatX,
     smoothing: Boolean = true,
-    orientation: TileMapOrientation? = null,
-    staggerAxis: TileMapStaggerAxis? = null,
-    staggerIndex: TileMapStaggerIndex? = null,
     tileSize: Size = Size(tileset.width.toDouble(), tileset.height.toDouble()),
     callback: @ViewDslMarker TileMap.() -> Unit = {},
-) = TileMap(map.toIntArray2(), tileset, smoothing, orientation, staggerAxis, staggerIndex, tileSize).repeat(repeatX, repeatY).addTo(this, callback)
+) = TileMap(map.toIntArray2(), tileset, smoothing, tileSize).repeat(repeatX, repeatY).addTo(this, callback)
 
 @PublishedApi
 internal fun Bitmap32.toIntArray2() = IntArray2(width, height, ints)
@@ -108,15 +78,13 @@ inline class TileInfo(val data: Int) {
 
 }
 
-abstract class BaseTileMap(
-    stackedIntMap: IStackedIntArray2,
+class TileMap(
+    var stackedIntMap: IStackedIntArray2 = StackedIntArray2(1, 1, 0),
+    tileset: TileSet = TileSet.EMPTY,
     var smoothing: Boolean = true,
-    val staggerAxis: TileMapStaggerAxis? = null,
-    val staggerIndex: TileMapStaggerIndex? = null,
-    var tileSize: Size = Size()
+    var tileSize: Size = Size(tileset.width.toDouble(), tileset.height.toDouble()),
+//) : BaseTileMap(intMap, smoothing, staggerAxis, staggerIndex, tileSize) {
 ) : View() {
-    var stackedIntMap: IStackedIntArray2 = stackedIntMap
-
     @Deprecated("Use stackedIntMap instead", level = DeprecationLevel.HIDDEN)
     var intMap: IntArray2
         get() = (stackedIntMap as StackedIntArray2).data.first()
@@ -140,8 +108,6 @@ abstract class BaseTileMap(
             unlock()
         }
     }
-
-    abstract val tilesetTextures: Array<BitmapCoords?>
 
     var tileWidth: Double = 0.0
     var tileHeight: Double = 0.0
@@ -237,22 +203,10 @@ abstract class BaseTileMap(
         val dUY = m.transformY(tileWidth, 0.0) - posY
         val dVX = m.transformX(0.0, tileHeight) - posX
         val dVY = m.transformY(0.0, tileHeight) - posY
-        val initY = if (staggerAxis != null) {
-            val it = (tileSize.height - tileHeight)
-            min(m.transformX(it, 0.0) - posX, m.transformY(0.0, it))
-        } else {
-            0.0
-        }
-        val nextTileX = (tileSize.width / if (staggerAxis == TileMapStaggerAxis.X) 2.0 else 1.0).let { width ->
+        val nextTileX = (tileSize.width).let { width ->
             min(m.transformX(width, 0.0) - posX, m.transformY(0.0, width) - posY)
         }
-        val nextTileY = (tileSize.height / if (staggerAxis == TileMapStaggerAxis.Y) 2.0 else 1.0).let { height ->
-            min(m.transformX(height, 0.0) - posX, m.transformY(0.0, height) - posY)
-        }
-        val staggerX = (tileWidth / 2.0).let{ width ->
-            min(m.transformX(width, 0.0) - posX, m.transformY(0.0, width) - posY)
-        }
-        val staggerY = (tileSize.height / 2.0).let{ height ->
+        val nextTileY = (tileSize.height).let { height ->
             min(m.transformX(height, 0.0) - posX, m.transformY(0.0, height) - posY)
         }
 
@@ -265,7 +219,7 @@ abstract class BaseTileMap(
         val pp2 = globalToLocal(t0.setTo(currentVirtualRect.right, currentVirtualRect.top), tt2)
         val pp3 = globalToLocal(t0.setTo(currentVirtualRect.left, currentVirtualRect.bottom), tt3)
         val mapTileWidth = tileSize.width
-        val mapTileHeight = tileSize.height / if (staggerAxis == TileMapStaggerAxis.Y) 2.0 else 1.0
+        val mapTileHeight = tileSize.height
         val mx0 = ((pp0.x / mapTileWidth) + 1).toInt()
         val mx1 = ((pp1.x / mapTileWidth) + 1).toInt()
         val mx2 = ((pp2.x / mapTileWidth) + 1).toInt()
@@ -329,7 +283,6 @@ abstract class BaseTileMap(
         var iterationCount = 0
         var count = 0
         var nblocks = 0
-        val passes = if (staggerAxis == TileMapStaggerAxis.X) 2 else 1
 
         val quadIndexData = TexturedVertexArray.quadIndices(allocTilesClamped)
 
@@ -340,116 +293,38 @@ abstract class BaseTileMap(
 
         // @TODO: Try to reduce xy/min/max so we reduce continue. Maybe we can do a bisect or something, to allow huge out scalings
         for (y in ymin2 until ymax2) {
-            // interlace rows when staggered on X to ensure proper z-index
-            for (pass in 0 until passes) {
-            //for (pass in 0..0) {
-                for (x in xmin2 until xmax2) {
-                    iterationCount++
-                    val rx = repeatX.get(x, stackedIntMap.width)
-                    val ry = repeatY.get(y, stackedIntMap.height)
+            for (x in xmin2 until xmax2) {
+                iterationCount++
+                val rx = repeatX.get(x, stackedIntMap.width)
+                val ry = repeatY.get(y, stackedIntMap.height)
 
-                    if (rx < stackedIntMap.startX || rx >= stackedIntMap.endX) continue
-                    if (ry < stackedIntMap.startY || ry >= stackedIntMap.endY) continue
-                    if (staggerAxis == TileMapStaggerAxis.X) {
-                        val firstPass = staggerIndex == TileMapStaggerIndex.ODD && rx.isEven ||
-                            staggerIndex == TileMapStaggerIndex.EVEN && rx.isOdd
-                        val secondPass = staggerIndex == TileMapStaggerIndex.ODD && rx.isOdd ||
-                            staggerIndex == TileMapStaggerIndex.EVEN && rx.isEven
-                        if (pass == 0 && !firstPass) continue
-                        if (pass == 1 && !secondPass) continue
-                    }
-                    for (level in 0 until stackedIntMap.getStackLevel(rx, ry)) {
-                        val odd = if (staggerAxis == TileMapStaggerAxis.Y) ry.isOdd else rx.isOdd
-                        val staggered = if (odd) staggerIndex == TileMapStaggerIndex.ODD else staggerIndex == TileMapStaggerIndex.EVEN
-                        val cell = TileInfo(stackedIntMap[rx, ry, level])
-                        if (cell.isInvalid) continue
+                if (rx < stackedIntMap.startX || rx >= stackedIntMap.endX) continue
+                if (ry < stackedIntMap.startY || ry >= stackedIntMap.endY) continue
+                for (level in 0 until stackedIntMap.getStackLevel(rx, ry)) {
+                    val cell = TileInfo(stackedIntMap[rx, ry, level])
+                    if (cell.isInvalid) continue
 
-                        val cellData = cell.tile
-                        val flipX = cell.flipX
-                        val flipY = cell.flipY
-                        val rotate = cell.rotate
-                        val offsetX = cell.offsetX
-                        val offsetY = cell.offsetY
-                        val rationalOffsetX = offsetX * invTileWidth
-                        val rationalOffsetY = offsetY * invTileHeight
+                    val cellData = cell.tile
+                    val flipX = cell.flipX
+                    val flipY = cell.flipY
+                    val rotate = cell.rotate
+                    val offsetX = cell.offsetX
+                    val offsetY = cell.offsetY
+                    val rationalOffsetX = offsetX * invTileWidth
+                    val rationalOffsetY = offsetY * invTileHeight
 
-                        val staggerOffsetX = when (staggerAxis.takeIf { staggered }) {
-                            TileMapStaggerAxis.Y -> staggerX
-                            TileMapStaggerAxis.X -> 0.0
-                            else -> 0.0
-                        }
-                        val staggerOffsetY = when (staggerAxis.takeIf { staggered }) {
-                            TileMapStaggerAxis.Y -> 0.0
-                            TileMapStaggerAxis.X -> staggerY
-                            else -> 0.0
-                        }
+                    //println("CELL_DATA: $cellData")
 
-                        //println("staggerOffsetX=$staggerOffsetX, staggerOffsetY=$staggerOffsetY, initY=$initY")
+                    val tex = tilesetTextures.getOrNull(cellData) ?: continue
 
-                        //println("CELL_DATA: $cellData")
+                    count++
 
-                        val tex = tilesetTextures.getOrNull(cellData) ?: continue
+                    //println("CELL_DATA_TEX: $tex")
 
-                        count++
-
-                        //println("CELL_DATA_TEX: $tex")
-
-                        val info = verticesPerTex.getOrPut(tex.base) {
-                            infosPool.alloc().also { info ->
-                                info.tex = tex.base
-                                info.verticesList.clear()
-                                info.addNewVertices(
-                                    ShrinkableTexturedVertexArray(
-                                        TexturedVertexArray(
-                                            allocTilesClamped * 4,
-                                            quadIndexData
-                                        )
-                                    )
-                                )
-                                infos += info
-                                nblocks++
-                            }
-                        }
-                        //println("info=${info.identityHashCode()}")
-
-                        run {
-                            val px = x + rationalOffsetX
-                            val py = y + rationalOffsetY
-                            val p0X = posX + (nextTileX * px) + (dVX * py) + staggerOffsetX
-                            val p0Y = posY + (dUY * px) + (nextTileY * py) + staggerOffsetY + initY
-
-                            val p1X = p0X + dUX
-                            val p1Y = p0Y + dUY
-
-                            val p2X = p0X + dUX + dVX
-                            val p2Y = p0Y + dUY + dVY
-
-                            val p3X = p0X + dVX
-                            val p3Y = p0Y + dVY
-
-                            tempX[0] = tex.tlX
-                            tempX[1] = tex.trX
-                            tempX[2] = tex.brX
-                            tempX[3] = tex.blX
-
-                            tempY[0] = tex.tlY
-                            tempY[1] = tex.trY
-                            tempY[2] = tex.brY
-                            tempY[3] = tex.blY
-
-                            computeIndices(flipX = flipX, flipY = flipY, rotate = rotate, indices = indices)
-
-                            info.vertices.quadV(p0X, p0Y, tempX[indices[0]], tempY[indices[0]], colMul, colAdd)
-                            info.vertices.quadV(p1X, p1Y, tempX[indices[1]], tempY[indices[1]], colMul, colAdd)
-                            info.vertices.quadV(p2X, p2Y, tempX[indices[2]], tempY[indices[2]], colMul, colAdd)
-                            info.vertices.quadV(p3X, p3Y, tempX[indices[3]], tempY[indices[3]], colMul, colAdd)
-                        }
-
-                        info.vertices.icount += 6
-
-                        //println("info.icount=${info.icount}")
-
-                        if (info.vertices.icount >= MAX_TILES - 1) {
+                    val info = verticesPerTex.getOrPut(tex.base) {
+                        infosPool.alloc().also { info ->
+                            info.tex = tex.base
+                            info.verticesList.clear()
                             info.addNewVertices(
                                 ShrinkableTexturedVertexArray(
                                     TexturedVertexArray(
@@ -458,8 +333,59 @@ abstract class BaseTileMap(
                                     )
                                 )
                             )
+                            infos += info
                             nblocks++
                         }
+                    }
+                    //println("info=${info.identityHashCode()}")
+
+                    run {
+                        val px = x + rationalOffsetX
+                        val py = y + rationalOffsetY
+                        val p0X = posX + (nextTileX * px) + (dVX * py)
+                        val p0Y = posY + (dUY * px) + (nextTileY * py)
+
+                        val p1X = p0X + dUX
+                        val p1Y = p0Y + dUY
+
+                        val p2X = p0X + dUX + dVX
+                        val p2Y = p0Y + dUY + dVY
+
+                        val p3X = p0X + dVX
+                        val p3Y = p0Y + dVY
+
+                        tempX[0] = tex.tlX
+                        tempX[1] = tex.trX
+                        tempX[2] = tex.brX
+                        tempX[3] = tex.blX
+
+                        tempY[0] = tex.tlY
+                        tempY[1] = tex.trY
+                        tempY[2] = tex.brY
+                        tempY[3] = tex.blY
+
+                        computeIndices(flipX = flipX, flipY = flipY, rotate = rotate, indices = indices)
+
+                        info.vertices.quadV(p0X, p0Y, tempX[indices[0]], tempY[indices[0]], colMul, colAdd)
+                        info.vertices.quadV(p1X, p1Y, tempX[indices[1]], tempY[indices[1]], colMul, colAdd)
+                        info.vertices.quadV(p2X, p2Y, tempX[indices[2]], tempY[indices[2]], colMul, colAdd)
+                        info.vertices.quadV(p3X, p3Y, tempX[indices[3]], tempY[indices[3]], colMul, colAdd)
+                    }
+
+                    info.vertices.icount += 6
+
+                    //println("info.icount=${info.icount}")
+
+                    if (info.vertices.icount >= MAX_TILES - 1) {
+                        info.addNewVertices(
+                            ShrinkableTexturedVertexArray(
+                                TexturedVertexArray(
+                                    allocTilesClamped * 4,
+                                    quadIndexData
+                                )
+                            )
+                        )
+                        nblocks++
                     }
                 }
             }
@@ -505,19 +431,8 @@ abstract class BaseTileMap(
             //batch.flush()
         }
     }
-}
 
-@OptIn(KorgeInternal::class)
-open class TileMap(
-    intMap: IStackedIntArray2 = StackedIntArray2(1, 1, 0),
-    tileset: TileSet = TileSet.EMPTY,
-    smoothing: Boolean = true,
-    val orientation: TileMapOrientation? = null,
-    staggerAxis: TileMapStaggerAxis? = null,
-    staggerIndex: TileMapStaggerIndex? = null,
-    tileSize: Size = Size(tileset.width.toDouble(), tileset.height.toDouble()),
-) : BaseTileMap(intMap, smoothing, staggerAxis, staggerIndex, tileSize) {
-    override var tilesetTextures: Array<BitmapCoords?> = emptyArray<BitmapCoords?>()
+    var tilesetTextures: Array<BitmapCoords?> = emptyArray<BitmapCoords?>()
     var animationIndex: IntArray = IntArray(0)
     var animationElapsed: DoubleArray = DoubleArray(0)
 
@@ -543,21 +458,15 @@ open class TileMap(
         map: IntArray2,
         tileset: TileSet,
         smoothing: Boolean = true,
-        orientation: TileMapOrientation? = null,
-        staggerAxis: TileMapStaggerAxis? = null,
-        staggerIndex: TileMapStaggerIndex? = null,
         tileSize: Size = Size(tileset.width.toDouble(), tileset.height.toDouble()),
-    ) : this(map.toStacked(), tileset, smoothing, orientation, staggerAxis, staggerIndex, tileSize)
+    ) : this(map.toStacked(), tileset, smoothing, tileSize)
 
     constructor(
         map: Bitmap32,
         tileset: TileSet,
         smoothing: Boolean = true,
-        orientation: TileMapOrientation? = null,
-        staggerAxis: TileMapStaggerAxis? = null,
-        staggerIndex: TileMapStaggerIndex? = null,
         tileSize: Size = Size(tileset.width.toDouble(), tileset.height.toDouble()),
-    ) : this(map.toIntArray2().toStacked(), tileset, smoothing, orientation, staggerAxis, staggerIndex, tileSize)
+    ) : this(map.toIntArray2().toStacked(), tileset, smoothing, tileSize)
 
     fun pixelHitTest(x: Int, y: Int, direction: HitTestDirection): Boolean {
         //if (x < 0 || y < 0) return false // Outside bounds
@@ -601,19 +510,20 @@ open class TileMap(
         out.setTo(0, 0, tileWidth * stackedIntMap.width, tileHeight * stackedIntMap.height)
     }
 
+    fun repeat(repeatX: TileMapRepeat, repeatY: TileMapRepeat = repeatX): TileMap {
+        this.repeatX = repeatX
+        this.repeatY = repeatY
+        return this
+    }
+
+    fun repeat(repeatX: Boolean = false, repeatY: Boolean = false): TileMap {
+        this.repeatX = if (repeatX) TileMapRepeat.REPEAT else TileMapRepeat.NONE
+        this.repeatY = if (repeatY) TileMapRepeat.REPEAT else TileMapRepeat.NONE
+        return this
+    }
+
     //override fun hitTest(x: Double, y: Double): View? {
     //    return if (checkGlobalBounds(x, y, 0.0, 0.0, tileWidth * intMap.width, tileHeight * intMap.height)) this else null
     //}
 }
 
-fun <T : BaseTileMap> T.repeat(repeatX: TileMapRepeat, repeatY: TileMapRepeat = repeatX): T {
-    this.repeatX = repeatX
-    this.repeatY = repeatY
-    return this
-}
-
-fun <T : BaseTileMap> T.repeat(repeatX: Boolean = false, repeatY: Boolean = false): T {
-    this.repeatX = if (repeatX) TileMapRepeat.REPEAT else TileMapRepeat.NONE
-    this.repeatY = if (repeatY) TileMapRepeat.REPEAT else TileMapRepeat.NONE
-    return this
-}

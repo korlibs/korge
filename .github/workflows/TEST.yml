@@ -88,7 +88,7 @@ jobs:
     - { name: Testing JVM, run: ./gradlew jvmTest }
     - { name: Check sandbox compiles, run: "./gradlew :korge-sandbox:jvmJar" }
     - { name: Publish to maven local, run: ./gradlew publishJvmLocal }
-    - { name: e2e test, uses: GabrielBB/xvfb-action@v1, with: { working-directory: e2e-test, run: ./gradlew checkReferencesJvm } }
+    - { name: e2e test, uses: GabrielBB/xvfb-action@v1, with: { working-directory: e2e-test, run: ./gradlew checkReferencesJvm --stacktrace } }
 
   test-coverage:
     needs: changes
@@ -182,7 +182,7 @@ jobs:
       - { name: Publish gradle plugin, run: "./gradlew :korge-gradle-plugin:publishToMavenLocal" }
       - { name: Publish X64, run: ./gradlew publishLinuxX64PublicationToMavenLocal publishKotlinMultiplatformPublicationToMavenLocal }
       - { name: Stop gradle daemon, run: ./gradlew --stop }
-      - { name: e2e test, uses: GabrielBB/xvfb-action@v1, with: { working-directory: e2e-test, run: ./gradlew checkReferencesNative } }
+      - { name: e2e test, uses: GabrielBB/xvfb-action@v1, with: { working-directory: e2e-test, run: ./gradlew checkReferencesNative --stacktrace } }
 
   test-native-macos:
     needs: changes
@@ -199,7 +199,7 @@ jobs:
       - { name: Testing Kotlin/Native MacosX64, run: ./gradlew macosX64Test }
       - { name: Publish gradle plugin, run: "./gradlew :korge-gradle-plugin:publishToMavenLocal" }
       - { name: Publish X64, run: ./gradlew publishMacosX64PublicationToMavenLocal publishKotlinMultiplatformPublicationToMavenLocal }
-      - { name: e2e test, working-directory: e2e-test, run: ./gradlew checkReferencesNative }
+      - { name: e2e test, working-directory: e2e-test, run: ./gradlew checkReferencesNative --stacktrace }
       - { name: Publish Arm64, run: ./gradlew publishMacosArm64PublicationToMavenLocal }
 
   test-native-windows:
@@ -218,4 +218,4 @@ jobs:
       - { name: Testing Kotlin/Native MingwX64Test, shell: cmd, run: CALL gradlew.bat mingwX64Test }
       - { name: Publish gradle plugin, shell: cmd, run: "CALL gradlew.bat :korge-gradle-plugin:publishToMavenLocal" }
       - { name: Publish X64, shell: cmd, run: CALL gradlew.bat publishMingwX64PublicationToMavenLocal publishKotlinMultiplatformPublicationToMavenLocal }
-      - { name: e2e test, shell: cmd, working-directory: e2e-test, run: CALL gradlew.bat checkReferencesNative }
+      - { name: e2e test, shell: cmd, working-directory: e2e-test, run: CALL gradlew.bat checkReferencesNative --stacktrace }

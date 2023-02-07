@@ -6,6 +6,7 @@ import com.soywiz.korag.log.AGBaseLog
 import com.soywiz.korge.view.scale
 import com.soywiz.korge.view.viewsLog
 import com.soywiz.korim.bitmap.*
+import com.soywiz.korim.tiles.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.collider.*
 import com.soywiz.korma.geom.shape.*

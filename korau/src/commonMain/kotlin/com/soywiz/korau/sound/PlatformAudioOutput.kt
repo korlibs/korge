@@ -75,6 +75,15 @@ open class DequeBasedPlatformAudioOutput(
         }
     }
 
+    protected fun readShorts(out: Array<ShortArray>, offset: Int = 0, count: Int = out[0].size - offset, nchannels: Int = out.size) {
+        lock {
+            for (ch in 0 until nchannels) {
+                val outCh = out[ch]
+                for (n in 0 until count) outCh[offset + n] = _readShort(ch)
+            }
+        }
+    }
+
     final override val availableSamples: Int get() = lock { deque.availableRead }
     final override suspend fun add(samples: AudioSamples, offset: Int, size: Int) {
         lock { deque.write(samples, offset, size) }
