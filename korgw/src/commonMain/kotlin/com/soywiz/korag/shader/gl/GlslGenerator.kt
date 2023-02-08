@@ -134,9 +134,9 @@ class GlslGenerator constructor(
                         line("#version $version")
                     }
                 }
-                if (config.programConfig.externalTextureSampler) {
-                    line("#extension GL_OES_EGL_image_external : require")
-                }
+                //if (config.programConfig.externalTextureSampler) {
+                //    line("#extension GL_OES_EGL_image_external : require")
+                //}
                 line("#ifdef GL_ES")
                 indent {
                     line("precision highp float;")
@@ -337,7 +337,8 @@ interface BaseGlslGenerator {
         VarType.Mat3 -> "mat3"
         VarType.Mat4 -> "mat4"
         VarType.Sampler1D -> "sampler1D"
-        VarType.Sampler2D -> if (config.programConfig.externalTextureSampler) "samplerExternalOES" else "sampler2D"
+        VarType.Sampler2D -> "sampler2D"
+        //VarType.Sampler2D -> if (config.programConfig.externalTextureSampler) "samplerExternalOES" else "sampler2D"
         VarType.Sampler3D -> "sampler3D"
         VarType.SamplerCube -> "samplerCube"
         else -> {
