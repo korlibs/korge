@@ -29,7 +29,7 @@ class AGOpengl(val gl: KmlGl) : AG() {
         gl.handleContextLost()
         gl.graphicExtensions // Ensure extensions are available outside the GL thread
         normalPrograms.clear()
-        externalPrograms.clear()
+        //externalPrograms.clear()
     }
 
     open fun setSwapInterval(value: Int) {
