@@ -132,7 +132,7 @@ open class CGNativeImageFormatProvider : CGBaseNativeImageFormatProvider() {
                                                 ?: error("Couldn't create context for $iwidth, $iheight, premultiplied=$premultiplied")
 
                                             try {
-                                                val rect = CGRectMake(0.cg, 0.cg, iwidth.cg, iheight.cg)
+                                                val rect = CGRectMakeExt(0, 0, iwidth, iheight)
                                                 CGContextDrawImage(context, rect, cgImage)
                                                 CGContextFlush(context)
                                             } finally {

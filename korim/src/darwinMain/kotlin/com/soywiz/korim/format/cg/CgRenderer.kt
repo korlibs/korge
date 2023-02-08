@@ -133,7 +133,7 @@ class CoreGraphicsRenderer(val bmp: Bitmap32, val antialiasing: Boolean) : com.s
     private fun cgDrawBitmap(bmp: Bitmap32, ctx: CGContextRef?, colorSpace: CPointer<CGColorSpace>?, tiled: Boolean = false) {
         val image = transferBitmap32ToCGImage(bmp, colorSpace)
         try {
-            val rect = CGRectMake(0.cg, 0.cg, bmp.width.cg, bmp.height.cg)
+            val rect = CGRectMakeExt(0, 0, bmp.width, bmp.height)
 
             if (tiled) {
                 CGContextDrawTiledImage(ctx, rect, image)

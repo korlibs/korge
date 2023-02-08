@@ -18,7 +18,7 @@ fun CGImageRef.toBitmap32(): Bitmap32 {
         8.convert(), 0.convert(), colorSpace,
         CGImageAlphaInfo.kCGImageAlphaPremultipliedLast.value
     )
-    CGContextDrawImage(ctx, CGRectMake(0.cg, 0.cg, width.cg, height.cg), image)
+    CGContextDrawImage(ctx, CGRectMakeExt(0, 0, width, height), image)
     val out = Bitmap32(width, height, premultiplied = true)
     transferBitmap32CGContext(out, ctx, toBitmap = true)
     return out

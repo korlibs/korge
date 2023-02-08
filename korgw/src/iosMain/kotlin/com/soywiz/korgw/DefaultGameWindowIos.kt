@@ -18,8 +18,7 @@ import com.soywiz.korev.SoftKeyboardConfig
 import com.soywiz.korev.SoftKeyboardReturnKeyType
 import com.soywiz.korev.SoftKeyboardType
 import com.soywiz.korev.StandardGamepadMapping
-import com.soywiz.korim.format.cg.cg
-import com.soywiz.korim.format.cg.toCG
+import com.soywiz.korim.format.cg.*
 import com.soywiz.korma.geom.Point
 import com.soywiz.korma.geom.Rectangle
 import kotlinx.cinterop.CValue
@@ -406,14 +405,14 @@ open class IosGameWindow(
 
         override fun beginningOfDocument(): UITextPosition = bodPos
         override fun endOfDocument(): UITextPosition = eodPos
-        override fun caretRectForPosition(position: UITextPosition): CValue<CGRect> = CGRectMake(0.0.cg, 0.0.cg, 1.0.cg, 32.cg)
+        override fun caretRectForPosition(position: UITextPosition): CValue<CGRect> = CGRectMakeExt(0.0, 0.0, 1.0, 32.0)
         override fun characterRangeAtPoint(point: CValue<CGPoint>): UITextRange? = null
         override fun characterRangeByExtendingPosition(position: UITextPosition, inDirection: UITextLayoutDirection): UITextRange? = null
         override fun closestPositionToPoint(point: CValue<CGPoint>): UITextPosition? = null
         override fun closestPositionToPoint(point: CValue<CGPoint>, withinRange: UITextRange): UITextPosition? = null
         override fun comparePosition(position: UITextPosition, toPosition: UITextPosition): NSComparisonResult = 0
         override fun firstRectForRange(range: UITextRange): CValue<CGRect> =
-            CGRectMake(0.0.cg, 0.0.cg, 128.0.cg, 32.0.cg)
+            CGRectMakeExt(0.0, 0.0, 128.0, 32.0)
 
         override fun inputDelegate(): UITextInputDelegateProtocol? = null
         override fun markedTextRange(): UITextRange? = null
@@ -535,7 +534,7 @@ open class IosGameWindow(
 
     private fun prepareSoftKeyboardOnce() = memScoped {
         if (::textField.isInitialized) return@memScoped
-        val rect = CGRectMake((-1.0).cg, 0.0.cg, 1.0.cg, 32.0.cg)
+        val rect = CGRectMakeExt(-1.0, 0.0, 1.0, 32.0)
         textField = MyUITextComponent(this@IosGameWindow, rect)
     }
 
