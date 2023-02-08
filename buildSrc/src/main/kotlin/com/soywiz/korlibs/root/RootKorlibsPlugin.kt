@@ -1461,15 +1461,7 @@ object RootKorlibsPlugin {
         rootProject.subprojectsThis {
             //tasks.withType(Test::class.java).allThis {
             afterEvaluate {
-                //tasks.withType(Test::class.java).allThis {
-                tasks.withType(AbstractTestTask::class.java).allThis {
-                    testLogging {
-                        //setEvents(setOf("passed", "skipped", "failed", "standardOut", "standardError"))
-                        it.setEvents(setOf("skipped", "failed", "standardError"))
-                        it.exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
-                    }
-                }
-
+                it.configureTests()
             }
         }
     }

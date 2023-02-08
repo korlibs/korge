@@ -67,7 +67,7 @@ class KorgeGradleApply(val project: Project) {
             add("commonMainApi", "com.soywiz.korlibs.kds:kds:${kdsVersion}")
             add("commonMainApi", "com.soywiz.korlibs.krypto:krypto:${kryptoVersion}")
             add("commonMainApi", "com.soywiz.korlibs.korge2:korge:${korgeVersion}")
-			add("commonMainApi", "com.soywiz.korlibs.korma:korma:${kormaVersion}")
+            add("commonMainApi", "com.soywiz.korlibs.korma:korma:${kormaVersion}")
 			add("commonMainApi", "com.soywiz.korlibs.korio:korio:${korioVersion}")
 			add("commonMainApi", "com.soywiz.korlibs.korim:korim:${korimVersion}")
 			add("commonMainApi", "com.soywiz.korlibs.korau:korau:${korauVersion}")
