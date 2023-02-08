@@ -430,6 +430,7 @@ class AndroidGenerated(
                             line("android:logo=\"@drawable/app_icon\"")
                             line("android:configChanges=\"orientation|screenSize|screenLayout|keyboardHidden\"")
                             line("android:screenOrientation=\"$orientationString\"")
+                            line("android:exported=\"true\"")
                         }
                         line(">")
 
