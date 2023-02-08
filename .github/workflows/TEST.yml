@@ -162,6 +162,9 @@ jobs:
       - { name: Grant execute permission for gradlew, run: chmod +x gradlew }
       - { name: Start gradle, run: ./gradlew }
       - { name: Check compilation of iOS targets, run: ./gradlew publishIosArm64PublicationToMavenLocal publishIosX64PublicationToMavenLocal }
+      - { name: Check compilation of WatchOS targets, run: ./gradlew publishWatchosArm64PublicationToMavenLocal publishWatchosArm32PublicationToMavenLocal }
+      - { name: Check compilation of TvOS targets, run: ./gradlew publishTvosArm64PublicationToMavenLocal publishTvosX64PublicationToMavenLocal }
+      #- { name: Check compilation of TvOS targets, run: ./gradlew publishTvosArm64PublicationToMavenLocal publishTvosX64PublicationToMavenLocal publishTvosSimulatorArm64PublicationToMavenLocal }
       - { name: Run ios simulator tests, run: ./gradlew iosX64Test }
 
 
