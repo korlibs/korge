@@ -307,11 +307,12 @@ object Output : Varying("out", VarType.Float4) {
 }
 
 data class ProgramConfig(
-    val externalTextureSampler: Boolean = false
+    val dummy: Boolean = false,
+    //val externalTextureSampler: Boolean = false
 ) {
     companion object {
         val DEFAULT = ProgramConfig()
-        val EXTERNAL_TEXTURE_SAMPLER = ProgramConfig(externalTextureSampler = true)
+        //val EXTERNAL_TEXTURE_SAMPLER = ProgramConfig(externalTextureSampler = true)
     }
 }
 

@@ -88,10 +88,11 @@ class AGOpengl(val gl: KmlGl) : AG() {
     //private val normalPrograms = FastIdentityMap<Program, AgProgram>()
     //private val externalPrograms = FastIdentityMap<Program, AgProgram>()
     private val normalPrograms = HashMap<Program, GLBaseProgram>()
-    private val externalPrograms = HashMap<Program, GLBaseProgram>()
+    //private val externalPrograms = HashMap<Program, GLBaseProgram>()
 
     private fun useProgram(program: Program, config: ProgramConfig = ProgramConfig.DEFAULT) {
-        val map = if (config.externalTextureSampler) externalPrograms else normalPrograms
+        //val map = if (config.externalTextureSampler) externalPrograms else normalPrograms
+        val map = normalPrograms
         val nprogram: GLBaseProgram = map.getOrPut(program) {
             GLBaseProgram(glGlobalState, GLShaderCompiler.programCreate(
                 gl,
@@ -149,7 +150,7 @@ class AGOpengl(val gl: KmlGl) : AG() {
         }
 
         useProgram(program, config = when {
-            uniforms.useExternalSampler() -> ProgramConfig.EXTERNAL_TEXTURE_SAMPLER
+            //uniforms.useExternalSampler() -> ProgramConfig.EXTERNAL_TEXTURE_SAMPLER
             else -> ProgramConfig.DEFAULT
         })
         uniformsSet(uniforms)
@@ -860,24 +861,24 @@ class AGOpengl(val gl: KmlGl) : AG() {
         glGlobalState.readStats(out)
     }
 
-    fun AGUniformValues.useExternalSampler(): Boolean {
-        var useExternalSampler = false
-        this.fastForEach { value ->
-            val uniform = value.uniform
-            val uniformType = uniform.type
-            when (uniformType) {
-                VarType.Sampler2D -> {
-                    val tex = value.texture
-                    if (tex != null) {
-                        if (tex.implForcedTexTarget == AGTextureTargetKind.EXTERNAL_TEXTURE) {
-                            useExternalSampler = true
-                        }
-                    }
-                }
-                else -> Unit
-            }
-        }
-        //println("useExternalSampler=$useExternalSampler")
-        return useExternalSampler
-    }
+    //fun AGUniformValues.useExternalSampler(): Boolean {
+    //    var useExternalSampler = false
+    //    this.fastForEach { value ->
+    //        val uniform = value.uniform
+    //        val uniformType = uniform.type
+    //        when (uniformType) {
+    //            VarType.Sampler2D -> {
+    //                val tex = value.texture
+    //                if (tex != null) {
+    //                    if (tex.implForcedTexTarget == AGTextureTargetKind.EXTERNAL_TEXTURE) {
+    //                        useExternalSampler = true
+    //                    }
+    //                }
+    //            }
+    //            else -> Unit
+    //        }
+    //    }
+    //    //println("useExternalSampler=$useExternalSampler")
+    //    return useExternalSampler
+    //}
 }
