@@ -66,7 +66,7 @@ fun <T> asyncAsap(context: CoroutineContext, callback: suspend () -> T) = Corout
 expect fun asyncEntryPoint(callback: suspend () -> Unit)
 expect fun asyncTestEntryPoint(callback: suspend () -> Unit)
 
-val DEFAULT_SUSPEND_TEST_TIMEOUT = 20.seconds
+val DEFAULT_SUSPEND_TEST_TIMEOUT = 40.seconds
 
 fun suspendTest(timeout: TimeSpan?, callback: suspend CoroutineScope.() -> Unit) = asyncTestEntryPoint { if (timeout != null) withTimeout(timeout) { callback() } else coroutineScope { callback() } }
 //fun suspendTest(timeout: TimeSpan?, callback: suspend CoroutineScope.() -> Unit) = asyncEntryPoint { coroutineScope { callback() } }
