@@ -60,7 +60,7 @@ fun org.jetbrains.kotlin.gradle.dsl.KotlinTargetContainerWithPresetFunctions.mob
     val out = arrayListOf<KotlinNativeTarget>()
     out.addAll(listOf(iosX64(), iosArm64(), iosSimulatorArm64()))
     if (project.doEnableKotlinMobileWatchos) {
-        out.addAll(listOf(watchosX64(), watchosArm32(), watchosArm64(), watchosSimulatorArm64()))
+        out.addAll(listOf(watchosX64(), watchosArm64(), watchosSimulatorArm64()))
     }
     if (project.doEnableKotlinMobileTvos) {
         out.addAll(listOf(tvosX64(), tvosArm64(), tvosSimulatorArm64()))
