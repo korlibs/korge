@@ -3,18 +3,26 @@ package com.soywiz.korim.format
 import com.soywiz.kds.ExtraTypeCreate
 import com.soywiz.kds.setExtra
 import com.soywiz.korim.atlas.MutableAtlasUnit
-import com.soywiz.korim.tiles.render
+import com.soywiz.korim.bitmap.*
 import com.soywiz.korio.async.suspendTest
 import com.soywiz.korio.file.std.resourcesVfs
 import com.soywiz.korio.util.OS
 import com.soywiz.korma.geom.RectangleInt
 import com.soywiz.korma.geom.Size
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
+import kotlin.test.*
 
 class ASETest {
     val ASEDecoder = ImageDecodingProps(format = ASE)
+
+    @Test
+    fun testPremultiplied() = suspendTest({ !OS.isJs }) {
+        val noprem = resourcesVfs["vampire.ase"].readImageDataContainer(ASE.toProps(ImageDecodingProps.DEFAULT(premultiplied = false)))
+        val prem = resourcesVfs["vampire.ase"].readImageDataContainer(ASE.toProps(ImageDecodingProps.DEFAULT(premultiplied = true)))
+        assertEquals(true, prem.mainBitmap.premultiplied)
+        assertEquals(false, noprem.mainBitmap.premultiplied)
+        assertTrue { prem.imageDatas.first().frames.flatMap { it.layerData }.all { it.slice.bmp.premultiplied } }
+        assertTrue { noprem.imageDatas.first().frames.flatMap { it.layerData }.all { !it.slice.bmp.premultiplied } }
+    }
 
     @Test
     fun test() = suspendTest({ !OS.isJs }) {
