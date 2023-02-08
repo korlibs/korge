@@ -28,6 +28,8 @@ class AGOpengl(val gl: KmlGl) : AG() {
         super.contextLost()
         gl.handleContextLost()
         gl.graphicExtensions // Ensure extensions are available outside the GL thread
+        normalPrograms.clear()
+        externalPrograms.clear()
     }
 
     open fun setSwapInterval(value: Int) {
@@ -604,8 +606,9 @@ class AGOpengl(val gl: KmlGl) : AG() {
         //println("BINDTEXTURE: ${glTex?.id}")
         val texBitmap = tex?.bitmap
         if (glTex != null && texBitmap != null) {
-            if (glTex.cachedContentVersion != texBitmap.contentVersion) {
+            if (glTex.cachedContentVersion != texBitmap.contentVersion || glTex.cachedAGContextVersion != contextVersion) {
                 glTex.cachedContentVersion = texBitmap.contentVersion
+                glTex.cachedAGContextVersion = contextVersion
                 tex._cachedVersion = -1
                 tex._version++
             }
