@@ -18,9 +18,9 @@ internal interface BaseMetalShaderGenerator {
     fun typeToString(type: VarType) = when (type) {
         VarType.TVOID -> "void"
         VarType.Byte4 -> "char4"
-        VarType.Mat2 -> "matrix_float2x2"
-        VarType.Mat3 -> "matrix_float3x3"
-        VarType.Mat4 -> "matrix_float4x4"
+        VarType.Mat2 -> "float2x2"
+        VarType.Mat3 -> "float3x3"
+        VarType.Mat4 -> "float4x4"
         VarType.Sampler1D -> "sampler"
         VarType.Sampler2D -> "sampler"
         VarType.Sampler3D -> "sampler"

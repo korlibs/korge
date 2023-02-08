@@ -18,7 +18,7 @@ class AGMetal(private val view: MTKView) : AG() {
     private val device = MTLCreateSystemDefaultDevice() ?: error("fail to create metal device")
     private val commandQueue = device.newCommandQueue() ?: error("fail to create metal command queue")
     private val programs = HashMap<Program, MetalProgram>()
-    private val buffers = HashMap<AGBuffer, MTLBufferProtocol>()
+    private val buffers = HashMap<Buffer, MTLBufferProtocol>()
 
     override fun draw(
         frameBuffer: AGFrameBufferBase,
@@ -61,8 +61,15 @@ class AGMetal(private val view: MTKView) : AG() {
                 //setFragmentTexture(texture, 0)
                 //setFragmentSamplerState(samplerState, 0)
 
-                vertexData.list.fastForEachWithIndex { index, buffer ->
-                    setVertexBuffer(buffer.buffer.toMetal, 0, index.toULong())
+                var currentBuffer = 0uL
+                vertexData.list.fastForEach{ buffer ->
+                    setVertexBuffer(buffer.buffer.toMetal, 0, currentBuffer)
+                    currentBuffer += 1uL
+                }
+
+                uniforms.values.fastForEach { buffer ->
+                    setVertexBuffer(buffer.data.toMetal, 0, currentBuffer)
+                    currentBuffer += 1uL
                 }
 
                 if (indices != null) {
@@ -82,21 +89,23 @@ class AGMetal(private val view: MTKView) : AG() {
     }
 
 
-    private val AGBuffer.toMetal: MTLBufferProtocol
+    private val Buffer.toMetal: MTLBufferProtocol
         get() = buffers
             .getOrPut(this) {
-                val memory = mem ?: error("cannot create buffer from null memory")
-                val size = memory.sizeInBytes.toULong()
+                val size = sizeInBytes.toULong()
                 val buffer = device.newBufferWithLength(size, MTLResourceStorageModeManaged)
                     ?: error("fail to create metal buffer")
 
-                memory.data.usePinned {
+                data.usePinned {
                     memmove(buffer.contents(), it.startAddressOf, size)
                     buffer.didModifyRange(NSMakeRange(0, buffer.length))
                 }
 
                 buffer
             }
+
+    private val AGBuffer.toMetal: MTLBufferProtocol
+        get() = (mem ?: error("cannot create buffer from null memory")).toMetal
 
     private fun getProgram(program: Program) = programs
         .getOrPut(program) {

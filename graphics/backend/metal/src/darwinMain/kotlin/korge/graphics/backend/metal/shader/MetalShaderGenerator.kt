@@ -14,7 +14,6 @@ class MetalShaderGenerator(
 ) : BaseMetalShaderGenerator {
 
     data class Result(
-        val generator: MetalShaderGenerator,
         val result: String,
         val attributes: List<Attribute>,
         val uniforms: List<Uniform>,
@@ -40,14 +39,14 @@ class MetalShaderGenerator(
                 .distinctBy { it.ref.name }
                 .let { generationFunctions(it) }
 
-            generateVertexMainFunction(types.attributes)
+            generateVertexMainFunction(types.attributes, types.uniforms)
             generateFragmentMainFunction()
 
 
         }.toString()
 
         return Result(
-            this, result,
+            result,
             attributes = types.attributes.toList(),
             uniforms = types.uniforms.toList(),
             varyings = types.varyings.toList()
@@ -77,13 +76,23 @@ class MetalShaderGenerator(
         }
     }
 
-    private fun Indenter.generateVertexMainFunction(attributes: LinkedHashSet<Attribute>) {
+    private fun Indenter.generateVertexMainFunction(
+        attributes: LinkedHashSet<Attribute>,
+        uniforms: LinkedHashSet<Uniform>
+    ) {
         val generator = MetalShaderBodyGenerator(ShaderType.VERTEX)
         val parameters = mutableListOf("uint vertexId [[vertex_id]]")
 
         attributes.forEachIndexed { index, attribute ->
             parameters.add(
                 "device const ${generator.typeToString(attribute.type)}* ${attribute.name} [[buffer($index)]]"
+            )
+        }
+
+        uniforms.forEachIndexed { index, uniform ->
+            val uniformIndex = index + attributes.size
+            parameters.add(
+                "constant ${generator.typeToString(uniform.type)}& ${uniform.name} [[buffer($uniformIndex)]]"
             )
         }
 

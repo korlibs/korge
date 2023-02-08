@@ -19,6 +19,7 @@ private fun Program.toMetalShaders(device: MTLDeviceProtocol) = (vertex to fragm
     .let { it.toFunction(vertexMainFunctionName) to it.toFunction(fragmentMainFunctionName) }
 
 private fun Pair<VertexShader, FragmentShader>.toFunctionsLibrary(device: MTLDeviceProtocol) = toNewMetalShaderStringResult()
+    .also(::println)
     .toFunctionsLibrary(device)
 
 private fun MetalShaderGenerator.Result.toFunctionsLibrary(device: MTLDeviceProtocol): MTLLibraryProtocol {

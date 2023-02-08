@@ -1,7 +1,10 @@
 package korge.graphics.backend.metal
 
+import com.soywiz.kmem.*
 import com.soywiz.korag.*
 import com.soywiz.korag.shader.*
+import com.soywiz.korma.geom.*
+import kotlinx.cinterop.*
 import platform.Metal.*
 import platform.MetalKit.*
 
@@ -11,14 +14,20 @@ class Renderer01(device: MTLDeviceProtocol) : Renderer(device) {
 
     private val vertexShader = VertexShader {
         SET(DefaultShaders.v_Col, DefaultShaders.a_Col)
-        SET(out, vec4(DefaultShaders.a_Pos, 1f.lit, 1f.lit))
+        SET(out, DefaultShaders.u_ProjMat /* DefaultShaders.u_ViewMat*/ * vec4(DefaultShaders.a_Pos, 0f.lit, 1f.lit))
+        //SET(out, vec4(DefaultShaders.a_Pos, 0f.lit, 1f.lit))
+
+        //SET(out, DefaultShaders.u_ProjMat * DefaultShaders.u_ViewMat * vec4(1f.lit, 1f.lit, 0f.lit, 1f.lit))
     }
+
     private val fragmentShader = FragmentShader {
         SET(out, DefaultShaders.v_Col)
     }
 
     private val program = Program(vertexShader, fragmentShader)
 
+    private val vertex1 = 200f
+    private val vertex2 = 0f
     private val vertexData = AGVertexArrayObject(
         AGVertexData(
             layout = VertexLayout(DefaultShaders.a_Col),
@@ -32,10 +41,10 @@ class Renderer01(device: MTLDeviceProtocol) : Renderer(device) {
         AGVertexData(
             layout = VertexLayout(DefaultShaders.a_Pos),
             buffer = AGBuffer().upload(floatArrayOf(
-                0f, 0f,
-                1f, 0f,
-                1f, 1f,
-                0f, 1f
+                vertex1, vertex1,
+                vertex2, vertex1,
+                vertex2, vertex2,
+                vertex1, vertex2
             ))
         )
     )
@@ -43,12 +52,23 @@ class Renderer01(device: MTLDeviceProtocol) : Renderer(device) {
     private val indices = AGBuffer().upload(shortArrayOf(0, 1, 2, 2, 3, 0))
 
     override fun drawOnView(view: MTKView) {
+
+        val width = view.drawableSize.useContents { width }.toInt()
+        val height = view.drawableSize.useContents { height }.toInt()
+
         if (ag == null) {
             ag = AGMetal(view)
-        }
 
-        val width = 1024//view.drawableSize.useContents { width }.toInt()
-        val height = 768//view.drawableSize.useContents { height }.toInt()
+            Matrix3D()
+                .setToOrtho(0f, width.toFloat(), 0f, height.toFloat(), -1f, +1f)
+                .also(::println)
+
+            Matrix3D()
+                .setToOrtho(0f, width.toFloat(), 0f, height.toFloat(), -1f, +1f)
+                .transform(200f, 0f, 0f, 1f)
+                .also(::println)
+
+        }
         val frameBuffer = AGFrameBufferBase(false)
         val frameBufferInfo = AGFrameBufferInfo(0)
             .withSize(width, height)
@@ -68,12 +88,27 @@ class Renderer01(device: MTLDeviceProtocol) : Renderer(device) {
             indexType = AGIndexType.USHORT,
             drawOffset = 0, // This value can be != of 0 ?
             blending = AGBlending.NORMAL, // Pure guess
-            uniforms = AGUniformValues(), // Not yet supported on shader generation
+            uniforms = AGUniformValues().apply {
+                val floatBuffer = Matrix3D()
+                    .setToOrtho(0f, width.toFloat(), 0f, height.toFloat(), -1f, +1f)
+                    .data
+                    .let { Float32Buffer(it, 0, it.size) }
+                values.add(
+                    AGUniformValue(
+                        DefaultShaders.u_ProjMat,
+                        floatBuffer.buffer,
+                        texture = null,
+                        AGTextureUnitInfo.INVALID
+                    )
+                )
+            }, // Not yet supported on shader generation
             //AGUniformValues(
             //  u_ProjMat=AGUniformValue[Uniform(u_ProjMat)][AGValue[Mat4]([[0.0015625, 0, 0, 0, 0, -0.0027777778, 0, 0, 0, 0, -1, 0, -1, 1, 0, 1]])],
             //  u_ViewMat=AGUniformValue[Uniform(u_ViewMat)][AGValue[Mat4]([[1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]])],
-            //  u_Tex0=AGUniformValue[Uniform(u_Tex0)][AGValue[Sampler2D]([[-1],AGTexture(size=1,1,pre=true),AGTextureUnitInfo(wrap=CLAMP_TO_EDGE, linear=true, trilinear=true)])], u_Tex1=AGUniformValue[Uniform(u_Tex1)][AGValue[Sampler2D]([[-1]])],
-            //  u_Tex2=AGUniformValue[Uniform(u_Tex2)][AGValue[Sampler2D]([[-1]])], u_Tex3=AGUniformValue[Uniform(u_Tex3)][AGValue[Sampler2D]([[-1]])],
+            //  u_Tex0=AGUniformValue[Uniform(u_Tex0)][AGValue[Sampler2D]([[-1],AGTexture(size=1,1,pre=true),AGTextureUnitInfo(wrap=CLAMP_TO_EDGE, linear=true, trilinear=true)])],
+            //  u_Tex1=AGUniformValue[Uniform(u_Tex1)][AGValue[Sampler2D]([[-1]])],
+            //  u_Tex2=AGUniformValue[Uniform(u_Tex2)][AGValue[Sampler2D]([[-1]])],
+            //  u_Tex3=AGUniformValue[Uniform(u_Tex3)][AGValue[Sampler2D]([[-1]])],
             //  u_Radius=AGUniformValue[Uniform(u_Radius)][AGValue[Float4]([[6, 6, 6, 6]])],
             //  u_Size=AGUniformValue[Uniform(u_Size)][AGValue[Float2]([[200, 32]])],
             //  u_BackgroundColor=AGUniformValue[Uniform(u_BackgroundColor)][AGValue[Float4]([[1, 1, 1, 1]])],
