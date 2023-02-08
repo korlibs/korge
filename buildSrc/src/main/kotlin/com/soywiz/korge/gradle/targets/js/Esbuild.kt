@@ -93,9 +93,9 @@ fun Project.configureEsbuild() {
                 group = "kotlin browser"
                 dependsOn(browserPrepareEsbuild)
 
-                val jsPath = tasks.getByName("compile${productionInfix}ExecutableKotlinJs").outputs.files.first {
+                val jsPath = tasks.getByName("compile${productionInfix}ExecutableKotlinJs").outputs.files.firstOrNull {
                     it.extension.toLowerCase() == "js"
-                }
+                } ?: "unknown-js.js"
 
                 val output = File(wwwFolder, "${project.name}.js")
                 inputs.file(jsPath)
