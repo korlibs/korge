@@ -7,9 +7,9 @@ open class ImageDataContainer(
 ) {
     constructor(bitmap: Bitmap) : this(listOf(ImageData(bitmap)))
 
-    val imageDatasByName = imageDatas.associateBy { it.name }
-    val default = imageDatasByName[null] ?: imageDatas.first()
-    val mainBitmap get() = default.mainBitmap
+    val imageDatasByName: Map<String?, ImageData> = imageDatas.associateBy { it.name }
+    val default: ImageData = imageDatasByName[null] ?: imageDatas.first()
+    val mainBitmap: Bitmap get() = default.mainBitmap
 
     operator fun get(name: String?): ImageData? = imageDatasByName[name]
 }

@@ -119,4 +119,53 @@ class ASETest {
             assertEquals(RectangleInt(0, (n * 16), 16, 16), tileSet.texturesMap[n]!!.slice.rect)
         }
     }
+
+    @Test
+    fun testSlicesIssue() = suspendTest({ !OS.isJs }) {
+        val slicesCorrupted = resourcesVfs["vampire_slices_corrupted.ase"].readImageDataContainer(ASE.toProps())
+        val slicesFixed = resourcesVfs["vampire_slices_fixed.ase"].readImageDataContainer(ASE.toProps())
+
+        assertEquals(listOf("vampire", "vamp", "vampire"), slicesCorrupted.imageDatas.map { it.name })
+
+        assertEquals(listOf("vampire", "vamp"), slicesCorrupted.imageDatasByName.keys.toList())
+        assertEquals(listOf("vamp", "vampire"), slicesFixed.imageDatasByName.keys.toList())
+
+        // Corrupted data
+        assertEquals(
+            """
+                -3407867,-4718584:Rectangle(x=47, y=28, width=0, height=0)
+                -3407868,-4718585:Rectangle(x=49, y=29, width=0, height=0)
+                -3407867,-4718584:Rectangle(x=47, y=28, width=0, height=0)
+                -3407867,-4718584:Rectangle(x=47, y=28, width=0, height=0)
+                -3407867,-4718585:Rectangle(x=47, y=29, width=0, height=0)
+                -3407867,-4718584:Rectangle(x=47, y=28, width=0, height=0)
+                -3407867,-4718584:Rectangle(x=47, y=28, width=0, height=0)
+                -3407867,-4718585:Rectangle(x=47, y=29, width=0, height=0)
+                -3407868,-4718584:Rectangle(x=48, y=28, width=0, height=0)
+                -3407868,-4718584:Rectangle(x=48, y=28, width=0, height=0)
+                -3407868,-4718585:Rectangle(x=49, y=29, width=0, height=0)
+                -3407868,-4718584:Rectangle(x=48, y=28, width=0, height=0)
+            """.trimIndent(),
+            slicesCorrupted.imageDatas[0].frames.map { "${it.targetX},${it.targetY}:" + it.slice.bounds }.joinToString("\n")
+        )
+
+        // Valid data
+        assertEquals(
+            """
+                -8,-24:Rectangle(x=27, y=0, width=20, height=28)
+                -9,-25:Rectangle(x=28, y=0, width=21, height=29)
+                -8,-24:Rectangle(x=27, y=0, width=20, height=28)
+                -8,-24:Rectangle(x=27, y=0, width=20, height=28)
+                -8,-25:Rectangle(x=27, y=0, width=20, height=29)
+                -8,-24:Rectangle(x=27, y=0, width=20, height=28)
+                -8,-24:Rectangle(x=27, y=0, width=20, height=28)
+                -8,-25:Rectangle(x=27, y=0, width=20, height=29)
+                -9,-24:Rectangle(x=28, y=0, width=20, height=28)
+                -9,-24:Rectangle(x=28, y=0, width=20, height=28)
+                -9,-25:Rectangle(x=28, y=0, width=21, height=29)
+                -9,-24:Rectangle(x=28, y=0, width=20, height=28)
+            """.trimIndent(),
+            slicesCorrupted.imageDatas[1].frames.map { "${it.targetX},${it.targetY}:" + it.slice.bounds }.joinToString("\n")
+        )
+    }
 }
