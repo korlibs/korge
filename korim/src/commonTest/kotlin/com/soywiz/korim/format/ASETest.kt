@@ -3,18 +3,26 @@ package com.soywiz.korim.format
 import com.soywiz.kds.ExtraTypeCreate
 import com.soywiz.kds.setExtra
 import com.soywiz.korim.atlas.MutableAtlasUnit
-import com.soywiz.korim.tiles.render
+import com.soywiz.korim.bitmap.*
 import com.soywiz.korio.async.suspendTest
 import com.soywiz.korio.file.std.resourcesVfs
 import com.soywiz.korio.util.OS
 import com.soywiz.korma.geom.RectangleInt
 import com.soywiz.korma.geom.Size
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
+import kotlin.test.*
 
 class ASETest {
     val ASEDecoder = ImageDecodingProps(format = ASE)
+
+    @Test
+    fun testPremultiplied() = suspendTest({ !OS.isJs }) {
+        val noprem = resourcesVfs["vampire.ase"].readImageDataContainer(ASE.toProps(ImageDecodingProps.DEFAULT(premultiplied = false)))
+        val prem = resourcesVfs["vampire.ase"].readImageDataContainer(ASE.toProps(ImageDecodingProps.DEFAULT(premultiplied = true)))
+        assertEquals(true, prem.mainBitmap.premultiplied)
+        assertEquals(false, noprem.mainBitmap.premultiplied)
+        assertTrue { prem.imageDatas.first().frames.flatMap { it.layerData }.all { it.slice.bmp.premultiplied } }
+        assertTrue { noprem.imageDatas.first().frames.flatMap { it.layerData }.all { !it.slice.bmp.premultiplied } }
+    }
 
     @Test
     fun test() = suspendTest({ !OS.isJs }) {
@@ -110,5 +118,54 @@ class ASETest {
         for (n in 0..8) {
             assertEquals(RectangleInt(0, (n * 16), 16, 16), tileSet.texturesMap[n]!!.slice.rect)
         }
+    }
+
+    @Test
+    fun testSlicesIssue() = suspendTest({ !OS.isJs }) {
+        val slicesCorrupted = resourcesVfs["vampire_slices_corrupted.ase"].readImageDataContainer(ASE.toProps())
+        val slicesFixed = resourcesVfs["vampire_slices_fixed.ase"].readImageDataContainer(ASE.toProps())
+
+        assertEquals(listOf("vampire", "vamp", "vampire"), slicesCorrupted.imageDatas.map { it.name })
+
+        assertEquals(listOf("vampire", "vamp"), slicesCorrupted.imageDatasByName.keys.toList())
+        assertEquals(listOf("vamp", "vampire"), slicesFixed.imageDatasByName.keys.toList())
+
+        // Corrupted data
+        assertEquals(
+            """
+                -3407867,-4718584:Rectangle(x=47, y=28, width=0, height=0)
+                -3407868,-4718585:Rectangle(x=49, y=29, width=0, height=0)
+                -3407867,-4718584:Rectangle(x=47, y=28, width=0, height=0)
+                -3407867,-4718584:Rectangle(x=47, y=28, width=0, height=0)
+                -3407867,-4718585:Rectangle(x=47, y=29, width=0, height=0)
+                -3407867,-4718584:Rectangle(x=47, y=28, width=0, height=0)
+                -3407867,-4718584:Rectangle(x=47, y=28, width=0, height=0)
+                -3407867,-4718585:Rectangle(x=47, y=29, width=0, height=0)
+                -3407868,-4718584:Rectangle(x=48, y=28, width=0, height=0)
+                -3407868,-4718584:Rectangle(x=48, y=28, width=0, height=0)
+                -3407868,-4718585:Rectangle(x=49, y=29, width=0, height=0)
+                -3407868,-4718584:Rectangle(x=48, y=28, width=0, height=0)
+            """.trimIndent(),
+            slicesCorrupted.imageDatas[0].frames.map { "${it.targetX},${it.targetY}:" + it.slice.bounds }.joinToString("\n")
+        )
+
+        // Valid data
+        assertEquals(
+            """
+                -8,-24:Rectangle(x=27, y=0, width=20, height=28)
+                -9,-25:Rectangle(x=28, y=0, width=21, height=29)
+                -8,-24:Rectangle(x=27, y=0, width=20, height=28)
+                -8,-24:Rectangle(x=27, y=0, width=20, height=28)
+                -8,-25:Rectangle(x=27, y=0, width=20, height=29)
+                -8,-24:Rectangle(x=27, y=0, width=20, height=28)
+                -8,-24:Rectangle(x=27, y=0, width=20, height=28)
+                -8,-25:Rectangle(x=27, y=0, width=20, height=29)
+                -9,-24:Rectangle(x=28, y=0, width=20, height=28)
+                -9,-24:Rectangle(x=28, y=0, width=20, height=28)
+                -9,-25:Rectangle(x=28, y=0, width=21, height=29)
+                -9,-24:Rectangle(x=28, y=0, width=20, height=28)
+            """.trimIndent(),
+            slicesCorrupted.imageDatas[1].frames.map { "${it.targetX},${it.targetY}:" + it.slice.bounds }.joinToString("\n")
+        )
     }
 }

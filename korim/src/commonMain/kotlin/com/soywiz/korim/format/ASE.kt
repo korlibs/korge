@@ -354,7 +354,11 @@ object ASE : ImageFormatWithContainer("ase") {
                                 //val udata = if (celType == 2) data.uncompress(ZLib.Portable) else data
                                 //println("celType = $celType, width=$width, height=$height, data=${data.size}, udata=${udata.size}")
                                 val bmp = when (bitsPerPixel) {
-                                    32 -> Bitmap32(width, height, RgbaArray(udata.readIntArray(0, width * height, true)))
+                                    32 -> {
+                                        Bitmap32(width, height, RgbaArray(udata.readIntArray(0, width * height, true))).also {
+                                            if (props.premultipliedSure) it.premultiplyInplaceIfRequired()
+                                        }
+                                    }
                                     8 -> Bitmap8(width, height, udata, image.palette!!.colors)
                                     else -> error("Unsupported ASE mode")
                                 }
@@ -532,7 +536,9 @@ object ASE : ImageFormatWithContainer("ase") {
                             val compressedData = cs.readBytesExact(compressedDataLength) // (Tile Width) x (Tile Height x Number of Tiles)
                             val data = compressedData.uncompress(ZLib)
                             val ints = data.readIntArrayLE(0, tileWidth * tileHeight * ntiles)
-                            val bitmap = Bitmap32(tileWidth, tileHeight * ntiles, RgbaArray(ints))
+                            val bitmap = Bitmap32(tileWidth, tileHeight * ntiles, RgbaArray(ints)).also {
+                                if (props.premultipliedSure) it.premultiplyInplaceIfRequired()
+                            }
                             tiles = bitmap.slice().splitInRows(tileWidth, tileHeight)
                         }
                         image.tilesets[tilesetId] = AseTileset(
