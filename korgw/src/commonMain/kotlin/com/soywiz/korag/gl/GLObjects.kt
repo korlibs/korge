@@ -86,6 +86,7 @@ internal fun AGTexture.gl(state: GLGlobalState): GLTexture = this.createOnce(sta
 internal class GLTexture(state: GLGlobalState) : GLBaseObject(state) {
     var id = gl.genTexture()
     var cachedContentVersion: Int = -2
+    var cachedAGContextVersion: Int = -2
     var estimatedBytes = 0L
         set(value) {
             globalState.texturesSize.addAndGet(+value -field)
