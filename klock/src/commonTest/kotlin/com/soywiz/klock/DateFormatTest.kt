@@ -42,4 +42,11 @@ class DateFormatTest {
 
         assertFailsWith<DateException> { iso8601JsonFormat.parse("2020-01-01T13:12:30.1000000000Z").toString(DateFormat.FORMAT2) } //10S
     }
+
+    @Test
+    fun testTimezoneBug670() {
+        val expected = TimezoneOffset(9.hours)
+        val actual = DateFormat("z").parse("+09:00").offset
+        assertEquals(expected, actual)
+    }
 }
