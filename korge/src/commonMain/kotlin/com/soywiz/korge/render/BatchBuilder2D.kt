@@ -985,6 +985,7 @@ class BatchBuilder2D constructor(
 private val BATCH_BUILDER2D_PROGRAMS: Array<Program?> = arrayOfNulls(64)
 
 internal val BB_MAX_TEXTURES = when (OS.rawName) {
-    "linuxArm32Hfp",
+    "linuxArm32Hfp" -> 1
+    //"iosArm32" -> 1
     else -> 4
 }
