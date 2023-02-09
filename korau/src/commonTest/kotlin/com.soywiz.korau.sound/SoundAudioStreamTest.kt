@@ -1,6 +1,7 @@
 package com.soywiz.korau.sound
 
 import com.soywiz.klock.milliseconds
+import com.soywiz.klogger.*
 import com.soywiz.korau.format.AudioFormats
 import com.soywiz.korau.format.WAV
 import com.soywiz.korau.format.mp3.FastMP3Decoder
@@ -14,6 +15,8 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class SoundAudioStreamTest {
+    val logger = Logger("SoundAudioStreamTest")
+
     @Test
     fun testPlaySeveralTimes() = suspendTest({ doIOTest }) {
         val soundProvider = LogNativeSoundProvider()
@@ -42,10 +45,10 @@ class SoundAudioStreamTest {
             val sound2 = soundProvider.createSound(resourcesVfs[fileName], streaming = true)
             val wait = CompletableDeferred<Unit>()
             soundProvider.onAfterAdd.once {
-                println("currentThreadId:$currentThreadId")
+                logger.debug { "currentThreadId:$currentThreadId" }
                 wait.complete(Unit)
             }
-            println("currentThreadId:$currentThreadId")
+            logger.debug { "currentThreadId:$currentThreadId" }
             val channel = sound2.play()
             assertEquals("0ms/58.5ms", "${channel.current}/${channel.total}")
             wait.await()
