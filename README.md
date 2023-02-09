@@ -80,9 +80,10 @@ now they are available via kproject in these repositories:
 * <https://github.com/korlibs/korge-dragonbones>
 * <https://github.com/korlibs/korge-spine>
 
-### Level Loading
+### TileMaps / Level Loading
 
 * <https://github.com/korlibs/korge-ldtk>
+* <https://github.com/korlibs/korge-tiled>
 
 ### Image Formats
 
