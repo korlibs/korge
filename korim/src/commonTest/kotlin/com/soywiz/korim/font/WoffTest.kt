@@ -5,6 +5,7 @@ import com.soywiz.korio.file.std.*
 import kotlin.test.*
 
 class WoffTest {
+    /*
     @Test
     @Ignore //     java.lang.ArrayIndexOutOfBoundsException: Index 1297 out of bounds for length 1296
     fun test() = suspendTest {
@@ -15,4 +16,5 @@ class WoffTest {
         )
         //NativeImage(500, 500).context2d { drawText("HELLO WORLD", 100.0, 100.0, font = font, size = 64.0, fill = true) }.showImageAndWait()
     }
+    */
 }

@@ -9,6 +9,7 @@ import com.soywiz.kds.getCyclic
 import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.kds.mapInt
 import com.soywiz.kds.toIntArrayList
+import com.soywiz.klogger.*
 import com.soywiz.kmem.extract
 import com.soywiz.kmem.extract16Signed
 import com.soywiz.kmem.extractSigned
@@ -77,6 +78,8 @@ class TtfFont(
     override fun getTableNames(): Set<String> = tablesByName.keys
 
     companion object {
+        val logger = Logger("TTF")
+
         suspend fun readNames(s: AsyncInputOpenable): NamesInfo = s.openUse {
             readNames(it as AsyncStream)
         }
@@ -1491,7 +1494,7 @@ abstract class BaseTtfFont(
                                     }
                                 }
                                 else -> {
-                                    println("TTF.GSUB: Unsupported lookupType=$lookupType")
+                                    TtfFont.logger.info { "TTF.GSUB: Unsupported lookupType=$lookupType" }
                                 }
                             }
                         }

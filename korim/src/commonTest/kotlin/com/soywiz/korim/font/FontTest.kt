@@ -1,5 +1,6 @@
 package com.soywiz.korim.font
 
+import com.soywiz.klogger.*
 import com.soywiz.korim.atlas.MutableAtlasUnit
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.bitmap.context2d
@@ -22,6 +23,9 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class FontTest {
+    val logger = Logger("FontTest")
+
+    /*
     @Test
     @Ignore
     fun test() = suspendTest {
@@ -65,6 +69,8 @@ class FontTest {
         }
         //image.showImageAndWait()
     }
+
+     */
 
     @Test
     fun test2() = suspendTest {
@@ -161,7 +167,7 @@ class FontTest {
     fun testReadOpenTypeFont() = suspendTestNoBrowser {
         //assertFailsWith<UnsupportedOperationException> {
             val font1 = resourcesVfs["helvetica.otf"].readTtfFont(preload = true)
-            println("font1=$font1")
+            logger.debug { "font1=$font1" }
         //}
     }
 

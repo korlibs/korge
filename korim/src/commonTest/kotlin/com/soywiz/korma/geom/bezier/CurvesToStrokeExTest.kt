@@ -1,5 +1,6 @@
 package com.soywiz.korma.geom.bezier
 
+import com.soywiz.klogger.*
 import com.soywiz.korim.vector.format.pathSvg
 import com.soywiz.korma.geom.VectorArrayList
 import com.soywiz.korma.geom.shape.buildVectorPath
@@ -11,6 +12,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class CurvesToStrokeExTest {
+    val logger = Logger("CurvesToStrokeExTest")
     val path = buildVectorPath {
         pathSvg("m262.15-119.2s2.05-8-2.35-3.6c0,0-6.4,5.2-13.2,5.2,0,0-13.2,2-17.2,14,0,0-3.6,24.4,3.6,29.6,0,0,4.4,6.8,10.8,0.8s20.35-33.6,18.35-46z")
     }.roundDecimalPlaces(2)
@@ -20,7 +22,7 @@ class CurvesToStrokeExTest {
     @Test
     fun testStroke() {
         val stroke = path.toStrokePointsList(StrokeInfo(thickness = 10.0))
-        println(stroke)
+        logger.debug { stroke }
     }
 
     @Test
