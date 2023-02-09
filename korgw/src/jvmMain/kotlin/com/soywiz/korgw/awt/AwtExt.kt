@@ -3,7 +3,7 @@ package com.soywiz.korgw.awt
 import com.soywiz.kds.WeakMap
 import com.soywiz.kds.getOrPut
 import com.soywiz.kds.iterators.*
-import com.soywiz.klogger.Console
+import com.soywiz.klogger.*
 import java.awt.*
 
 private val ge = GraphicsEnvironment.getLocalGraphicsEnvironment()
@@ -20,9 +20,11 @@ fun Window.getScreenDevice(): GraphicsDevice {
 
 private val cachedRefreshRates = WeakMap<GraphicsDevice, Int>()
 
+private val graphicsDeviceLogger = Logger("GraphicsDeviceLogger")
+
 val GraphicsDevice.cachedRefreshRate: Int get() {
     return cachedRefreshRates.getOrPut(this) {
-        Console.info("COMPUTED REFRESH RATE for $it (${it.displayMode.refreshRate})")
+        graphicsDeviceLogger.info { "COMPUTED REFRESH RATE for $it (${it.displayMode.refreshRate})" }
         it.displayMode.refreshRate
     }
 }

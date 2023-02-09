@@ -2,6 +2,7 @@ package com.soywiz.korge.testing
 
 import com.soywiz.klock.DateFormat
 import com.soywiz.klock.DateTime
+import com.soywiz.klogger.*
 import com.soywiz.korge.view.View
 import com.soywiz.korge.view.Views
 import com.soywiz.korge.view.renderToBitmap
@@ -10,6 +11,8 @@ import com.soywiz.korim.format.readBitmap
 import com.soywiz.korim.format.writeBitmap
 import com.soywiz.korio.file.std.localCurrentDirVfs
 import kotlinx.coroutines.sync.Mutex
+
+private val logger = Logger("KorgeScreenshotTester")
 
 data class KorgeScreenshotTestingContext(
     val testClassName: String,
@@ -26,12 +29,12 @@ data class KorgeScreenshotTestingContext(
 
     init {
         val currentTime = DATE_FORMAT.format(localTestTime)
-        println("=".repeat(LINE_BREAK_WIDTH))
-        println("Korge Tester initializing...")
-        println("Local test time: $currentTime")
-        println("Goldens directory: ${testGoldensVfs.absolutePath}")
-        println("Temp directory: ${tempGoldensVfs.absolutePath}")
-        println("=".repeat(LINE_BREAK_WIDTH))
+        logger.info { "=".repeat(LINE_BREAK_WIDTH) }
+        logger.info { "Korge Tester initializing..." }
+        logger.info { "Local test time: $currentTime" }
+        logger.info { "Goldens directory: ${testGoldensVfs.absolutePath}" }
+        logger.info { "Temp directory: ${tempGoldensVfs.absolutePath}" }
+        logger.info { "=".repeat(LINE_BREAK_WIDTH) }
     }
 
     suspend fun init() {
@@ -44,8 +47,8 @@ data class KorgeScreenshotTestingContext(
             it.startsWith(prefix)
         }.map { it.removeSurrounding(prefix, ".png") }.toSet()
 
-        println("Existing golden names")
-        println(existingGoldenNames)
+        logger.info { "Existing golden names" }
+        logger.info { existingGoldenNames }
     }
 
     fun makeGoldenFileNameWithExtension(goldenName: String) =
@@ -97,9 +100,9 @@ class KorgeScreenshotTester(
     }
 
     private suspend fun processGoldenResults() {
-        println("Processing golden results")
+        logger.info { "Processing golden results" }
         recordedGoldenNames.forEach { (goldenName, validationSetting) ->
-            println("Processing: $goldenName")
+            logger.info { "Processing: $goldenName" }
             val goldenFileName =
                 context.makeGoldenFileNameWithExtension(
                     goldenName
@@ -142,7 +145,7 @@ class KorgeScreenshotTester(
     }
 
     suspend fun endTest() {
-        println("Ending test")
+        logger.info { "Ending test" }
         processGoldenResults()
 
         views.gameWindow.exitProcessOnExit = false
