@@ -1,7 +1,7 @@
 plugins {
     kotlin("multiplatform")
-    id("org.jetbrains.kotlinx.benchmark") version "0.4.4"
-    id("org.jetbrains.kotlin.plugin.allopen") version "1.6.0"
+    id("org.jetbrains.kotlinx.benchmark") version libs.versions.kotlinx.benchmark
+    id("org.jetbrains.kotlin.plugin.allopen") version libs.versions.kotlin
 }
 
 allOpen {
