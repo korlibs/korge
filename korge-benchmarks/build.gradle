@@ -1,5 +1,5 @@
 plugins {
-    kotlin("multiplatform")
+    id("org.jetbrains.kotlin.multiplatform")
     id("org.jetbrains.kotlinx.benchmark") version libs.versions.kotlinx.benchmark
     id("org.jetbrains.kotlin.plugin.allopen") version libs.versions.kotlin
 }
