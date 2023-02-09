@@ -6,6 +6,8 @@ import kotlin.test.*
 class EnvironmentTest {
 	@Test
 	fun testCaseInsensitive() {
+        if (OS.isJsBrowserOrWorker) return
+
         val path1 = Environment["pAth"]
         val path2 = Environment["PATH"]
         if (OS.isWindows) {
@@ -19,8 +21,10 @@ class EnvironmentTest {
 
     @Test
     fun testGetAllWorks() {
-        val envs = Environment.getAll().map { it.key }
-        assertTrue { envs.size >= 4 }
+        val envs = Environment.getAll().map { it.key } // Test that at least it doesn't crash
+        if (!OS.isJsBrowserOrWorker) {
+            assertTrue { envs.size >= 4 }
+        }
     }
 
     @Test
