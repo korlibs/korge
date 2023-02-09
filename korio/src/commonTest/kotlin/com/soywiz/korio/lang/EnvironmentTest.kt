@@ -1,15 +1,27 @@
 package com.soywiz.korio.lang
 
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import com.soywiz.korio.util.*
+import kotlin.test.*
 
 class EnvironmentTest {
 	@Test
-	fun test() {
-		println(Environment["path"])
-		println(Environment["PATH"])
-		println(Environment.getAll())
+	fun testCaseInsensitive() {
+        val path1 = Environment["pAth"]
+        val path2 = Environment["PATH"]
+        if (OS.isWindows) {
+            assertEquals(path1, path2)
+            assertNotNull(path2)
+        } else {
+            assertNull(path1)
+            assertNotNull(path2)
+        }
 	}
+
+    @Test
+    fun testGetAllWorks() {
+        val envs = Environment.getAll().map { it.key }
+        assertTrue { envs.size >= 4 }
+    }
 
     @Test
     fun testExpand() {
