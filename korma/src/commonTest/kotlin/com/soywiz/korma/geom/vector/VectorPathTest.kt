@@ -27,7 +27,7 @@ class VectorPathTest {
     fun testCircle() {
         val g = VectorPath()
         g.circle(0, 0, 100)
-        println(g.readStats())
+        assertEquals("Stats(moveTo=1, lineTo=0, quadTo=0, cubicTo=4, close=1)", g.readStats().toString())
         //println(g.numberOfIntersections(0, 0))
         assertEquals(true, g.containsPoint(0, -1))
         assertEquals(true, g.containsPoint(0, +1))

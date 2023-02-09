@@ -123,7 +123,7 @@ class BezierCurveTest {
         assertEquals(101, curve.lut.size)
         assertEquals(213.86206312975315, curve.length, 0.00001)
 
-        println(curve.lut.estimatedLengths.toString())
+        //println(curve.lut.estimatedLengths.toString())
         assertEquals(
             """
                 Estimation(point=(100, 25), ratio=0, length=0)
