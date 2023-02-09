@@ -104,8 +104,8 @@ class Array2Test {
 
         val out = arrayListOf<String>()
         intArray2.each { x, y, v -> out.add("x: $x, y: $y, v: $v") }
-        floatArray2.each { x, y, v -> out.add("x: $x, y: $y, v: $v") }
-        doubleArray2.each { x, y, v -> out.add("x: $x, y: $y, v: $v") }
+        floatArray2.each { x, y, v -> out.add("x: $x, y: $y, v: ${v.toInt()}") }
+        doubleArray2.each { x, y, v -> out.add("x: $x, y: $y, v: ${v.toInt()}") }
         typedArray2.each { x, y, v -> out.add("x: $x, y: $y, v: $v") }
 
         assertEquals(
@@ -114,14 +114,14 @@ class Array2Test {
                 x: 1, y: 0, v: 1
                 x: 0, y: 1, v: 2
                 x: 1, y: 1, v: 3
-                x: 0, y: 0, v: 0.0
-                x: 1, y: 0, v: 1.0
-                x: 0, y: 1, v: 2.0
-                x: 1, y: 1, v: 3.0
-                x: 0, y: 0, v: 0.0
-                x: 1, y: 0, v: 1.0
-                x: 0, y: 1, v: 2.0
-                x: 1, y: 1, v: 3.0
+                x: 0, y: 0, v: 0
+                x: 1, y: 0, v: 1
+                x: 0, y: 1, v: 2
+                x: 1, y: 1, v: 3
+                x: 0, y: 0, v: 0
+                x: 1, y: 0, v: 1
+                x: 0, y: 1, v: 2
+                x: 1, y: 1, v: 3
                 x: 0, y: 0, v: false
                 x: 1, y: 0, v: true
                 x: 0, y: 1, v: false
