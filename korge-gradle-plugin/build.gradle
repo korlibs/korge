@@ -13,13 +13,11 @@ group = "com.soywiz.korlibs.korge.plugins"
 //group = "com.soywiz.korge"
 //this.name = "com.soywiz.korge.gradle.plugin"
 
-pluginBundle {
-	website = "https://korge.soywiz.com/"
-	vcsUrl = "https://github.com/korlibs/korge-plugins"
-	tags = ["korge", "game", "engine", "game engine", "multiplatform", "kotlin"]
-}
-
 gradlePlugin {
+    website = "https://korge.soywiz.com/"
+    vcsUrl = "https://github.com/korlibs/korge-plugins"
+    //tags = ["korge", "game", "engine", "game engine", "multiplatform", "kotlin"]
+
 	plugins {
 		create("korge") {
             //PluginDeclaration decl = it

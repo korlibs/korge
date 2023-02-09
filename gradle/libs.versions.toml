@@ -15,8 +15,8 @@ node = "16.9.1"
 android-build-gradle-java8 = "4.2.0"
 android-build-gradle-java11 = "7.0.4"
 gson = "2.8.6"
-#gradle-publish-plugin = "1.0.0"
-gradle-publish-plugin = "0.14.0"
+gradle-publish-plugin = "1.1.0"
+#gradle-publish-plugin = "0.14.0"
 closure-compiler = "v20210808"
 # https://repo.maven.apache.org/maven2/org/jetbrains/intellij/deps/intellij-coverage-agent/
 
