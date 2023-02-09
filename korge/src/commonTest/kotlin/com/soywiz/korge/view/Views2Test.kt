@@ -1,5 +1,6 @@
 package com.soywiz.korge.view
 
+import com.soywiz.klogger.*
 import com.soywiz.korge.tests.ViewsForTesting
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.color.Colors
@@ -17,6 +18,8 @@ class Views2Test : ViewsForTesting(
     windowSize = SizeInt(1280, 720),
     virtualSize = SizeInt(640, 480)
 ) {
+    val logger = Logger("Views2Test")
+
     fun str() = "window(${gameWindow.width},${gameWindow.height}),virtual(${views.virtualWidth},${views.virtualHeight}),stage(${stage.x},${stage.y},${stage.width},${stage.height},${stage.scaleX},${stage.scaleY})"
 
     @Test
@@ -47,7 +50,7 @@ class Views2Test : ViewsForTesting(
         val rect = solidRect(RECT_WIDTH, RECT_HEIGHT, Colors.RED) {
             centerOnStage()
         }
-        println(str())
+        logger.info { str() }
         assertEquals(Point((virtualSize.width - RECT_WIDTH) / 2, (virtualSize.height - RECT_HEIGHT) / 2), rect.pos)
     }
 

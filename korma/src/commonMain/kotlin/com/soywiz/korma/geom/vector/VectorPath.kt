@@ -387,11 +387,11 @@ class VectorPath(
 
     class Stats {
         val stats = IntArray(5)
-        val moveTo get() = stats[Command.MOVE_TO]
-        val lineTo get() = stats[Command.LINE_TO]
-        val quadTo get() = stats[Command.QUAD_TO]
-        val cubicTo get() = stats[Command.CUBIC_TO]
-        val close get() = stats[Command.CLOSE]
+        val moveTo: Int get() = stats[Command.MOVE_TO]
+        val lineTo: Int get() = stats[Command.LINE_TO]
+        val quadTo: Int get() = stats[Command.QUAD_TO]
+        val cubicTo: Int get() = stats[Command.CUBIC_TO]
+        val close: Int get() = stats[Command.CLOSE]
         fun reset() {
             for (n in stats.indices) stats[n] = 0
         }

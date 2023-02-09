@@ -1,5 +1,6 @@
 package com.soywiz.korim.format
 
+import com.soywiz.klogger.*
 import com.soywiz.korim.atlas.MutableAtlas
 import com.soywiz.korim.atlas.MutableAtlasUnit
 import com.soywiz.korim.bitmap.*
@@ -102,6 +103,8 @@ suspend fun VfsFile.writeBitmap(
 
 //////////////////////////
 
+val imageLoadingLogger = Logger("ImageLoading")
+
 private suspend fun _readBitmap(
     file: VfsFile? = null,
     bytes: ByteArray? = null,
@@ -131,7 +134,10 @@ private suspend fun _readBitmap(
             when (e) {
                 is CancellationException -> throw e
                 is FileNotFoundException, is ImageDecoderNotFoundException -> Unit
-                else -> e.printStackTrace()
+                else -> {
+                    imageLoadingLogger.info { e }
+                    //e.printStackTrace()
+                }
             }
         }
     }

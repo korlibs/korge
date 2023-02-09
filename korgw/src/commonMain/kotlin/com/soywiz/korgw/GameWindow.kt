@@ -174,7 +174,7 @@ open class GameWindowCoroutineDispatcher : CoroutineDispatcher(), Delay, Closeab
             }
         })
         while (!completed) {
-            executePending(128.milliseconds)
+            executePending(256.milliseconds)
             if (completed) break
             blockingSleep(1.milliseconds)
         }
@@ -252,7 +252,7 @@ open class GameWindowCoroutineDispatcher : CoroutineDispatcher(), Delay, Closeab
 
     override fun close() {
         executePending(2.seconds)
-        println("GameWindowCoroutineDispatcher.close")
+        logger.info { "GameWindowCoroutineDispatcher.close" }
         while (timedTasks.isNotEmpty()) {
             timedTasks.removeHead().continuation?.resume(Unit)
         }
@@ -262,6 +262,10 @@ open class GameWindowCoroutineDispatcher : CoroutineDispatcher(), Delay, Closeab
     }
 
     override fun toString(): String = "GameWindowCoroutineDispatcher"
+
+    companion object {
+        val logger = Logger("GameWindow")
+    }
 }
 
 interface GameWindowConfig {
@@ -386,6 +390,8 @@ open class GameWindow :
 
     override val key: CoroutineContext.Key<*> get() = CoroutineKey
     companion object CoroutineKey : CoroutineContext.Key<GameWindow> {
+        val logger = Logger("GameWindow")
+
         val MenuItemSeparatror = MenuItem(null)
     }
 
@@ -531,7 +537,7 @@ open class GameWindow :
         closing = true
         running = false
         this.exitCode = exitCode
-        println("GameWindow.close")
+        logger.info { "GameWindow.close" }
         coroutineDispatcher.close()
         coroutineDispatcher.cancelChildren()
     }
@@ -664,8 +670,9 @@ open class GameWindow :
         try {
             val now = PerformanceCounter.reference
             val consumed = now - startTime
-            val remaining = (counterTimePerFrame - consumed) - 2.milliseconds // Do not push too much so give two extra milliseconds just in case
-            val timeForTasks = coroutineDispatcher.maxAllocatedTimeForTasksPerFrame ?: remaining
+            //val remaining = (counterTimePerFrame - consumed) - 2.milliseconds // Do not push too much so give two extra milliseconds just in case
+            //val timeForTasks = coroutineDispatcher.maxAllocatedTimeForTasksPerFrame ?: (remaining * 10) // We would be skipping up to 10 frames by default
+            val timeForTasks = coroutineDispatcher.maxAllocatedTimeForTasksPerFrame ?: (counterTimePerFrame * 10) // We would be skipping up to 10 frames by default
             val finalTimeForTasks = max(timeForTasks, 4.milliseconds) // Avoid having 0 milliseconds or even negative
             //println("         - frameUpdate: finalTimeForTasks=$finalTimeForTasks, startTime=$startTime, now=$now")
             coroutineDispatcher.executePending(finalTimeForTasks)

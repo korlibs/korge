@@ -13,13 +13,12 @@ import kotlin.test.assertEquals
 class ResourcesVfsTest {
     @Test
     fun name() = suspendTest({ OS.isJvm }) {
-        println("[A]")
+        //println("[A]")
         val listing = resourcesVfs["tresfolder"].list()
-        println("[B]")
+        //println("[B]")
+        //println("listing=$listing")
 
-        for (v in resourcesVfs["tresfolder"].list().filter { it.extensionLC == "txt" }.toList()) {
-            println(v)
-        }
+        //for (v in resourcesVfs["tresfolder"].list().filter { it.extensionLC == "txt" }.toList()) println(v)
 
         assertEquals(
             "[a.txt, b.txt]",

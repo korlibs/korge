@@ -24,7 +24,8 @@ class UrlVfsTest {
 	fun testRightRequests() = suspendTest {
 		val httpClient = LogHttpClient()
 		val url = UrlVfs("http://google.es/", httpClient)
-		println(url.readString())
+        val result = url.readString()
+		//println(result)
 		assertEquals(
 			listOf("GET, http://google.es/, Headers(), null"),
 			httpClient.log
@@ -35,7 +36,8 @@ class UrlVfsTest {
 	fun requestRightUrl() = suspendTest {
 		val httpClient = LogHttpClient()
 		val url = UrlVfs("http://google.es/demo/file.png", httpClient)
-		println(url.readString())
+        val result = url.readString()
+		//println(result)
 		assertEquals(
 			"[GET, http://google.es/demo/file.png, Headers(), null]",
 			httpClient.getAndClearLog().toString()

@@ -1,5 +1,6 @@
 package com.soywiz.korim.bitmap
 
+import com.soywiz.klogger.*
 import com.soywiz.korim.vector.*
 import com.soywiz.korio.async.suspendTest
 import com.soywiz.korio.util.*
@@ -9,6 +10,8 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class DistanceBitmapTest {
+    val logger = Logger("DistanceBitmapTest")
+
     @Test
     fun test1() = suspendTest {
         //val bmp = Bitmap32(256, 256) { _, _ -> Colors.TRANSPARENT_BLACK }
@@ -82,7 +85,7 @@ class DistanceBitmapTest {
         }
         val sdf = path.sdf(10, 10)
         val msdf = path.msdf(10, 10)
-        println(sdf)
-        println(msdf)
+        logger.debug { sdf }
+        logger.debug { msdf }
     }
 }

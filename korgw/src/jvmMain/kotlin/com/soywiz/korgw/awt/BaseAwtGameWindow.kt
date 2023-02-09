@@ -648,12 +648,12 @@ abstract class BaseAwtGameWindow(
         val displayLock = this.displayLinkLock
 
         if (displayLock != null) {
-            println("Using DisplayLink")
+            logger.info { "Using DisplayLink" }
         } else {
-            println("NOT Using DisplayLink")
+            logger.info { "NOT Using DisplayLink" }
         }
 
-        println("running: ${Thread.currentThread()}, fvsync=$fvsync")
+        logger.info { "running: ${Thread.currentThread()}, fvsync=$fvsync" }
 
         if (OS.isMac) {
             try {
@@ -700,7 +700,7 @@ abstract class BaseAwtGameWindow(
                 //println((end - start).timeSpan)
             }
         }
-        println("completed.running=$running")
+        logger.info { "completed.running=$running" }
         //timer.stop()
 
         if (OS.isMac && displayLink != Pointer.NULL) {
@@ -718,7 +718,7 @@ abstract class BaseAwtGameWindow(
     }
 
     private fun registerGestureListener() {
-        println("MacOS registering gesture listener...")
+        logger.info { "MacOS registering gesture listener..." }
 
         val gestureListener = java.lang.reflect.Proxy.newProxyInstance(
             ClassLoader.getSystemClassLoader(),
@@ -783,7 +783,7 @@ abstract class BaseAwtGameWindow(
         }
 
         val clazz = Dyn.global["com.apple.eawt.event.GestureUtilities"]
-        println(" -- GestureUtilities=$clazz")
+        logger.info { " -- GestureUtilities=$clazz" }
         clazz.dynamicInvoke("addGestureListenerTo", contentComponent, gestureListener)
 
         //val value = (contentComponent as JComponent).getClientProperty("com.apple.eawt.event.internalGestureHandler");

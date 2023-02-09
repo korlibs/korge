@@ -20,6 +20,7 @@ interface AGFeatures {
 
 abstract class AG : AGFeatures, Extra by Extra.Mixin() {
     companion object {
+        val logger = Logger("AG")
         const val defaultPixelsPerInch : Double = 96.0
     }
 
@@ -28,7 +29,8 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
         private set
 
     open fun contextLost() {
-        Console.info("AG.contextLost()", this)
+        logger.info { this }
+        logger.info { "AG.contextLost()" }
         contextVersion++
         //printStackTrace("AG.contextLost")
     }

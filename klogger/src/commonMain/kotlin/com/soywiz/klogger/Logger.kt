@@ -11,18 +11,31 @@ import com.soywiz.klogger.internal.*
  * ```
  * LOG_$loggerName=debug
  * ```
+ *
+ * For setting the default log level to something else:
+ *
+ * ```
+ * LOG_LEVEL=debug
+ * ```
  */
 class Logger private constructor(val name: String, val normalizedName: String, val dummy: Boolean) {
+    var optLevel: Level? = null
+    var optOutput: Output? = null
+
     /** [Level] of this [Logger]. If not set, it will use the [Logger.defaultLevel] */
-    var level: Level = Logger.defaultLevel ?: Level.WARN
+    var level: Level
+        get() = optLevel ?: defaultLevel ?: Level.WARN
+        set(value) { optLevel = value }
 
     /** [Output] of this [Logger]. If not set, it will use the [Logger.defaultOutput] */
-    var output: Output = Logger.defaultOutput
+    var output: Output
+        get() = optOutput ?: defaultOutput
+        set(value) { optOutput = value }
 
     ///** Check if the [level] is set for this [Logger] */
-    //val isLocalLevelSet: Boolean get() = Logger_levels[normalizedName] != null
+    val isLocalLevelSet: Boolean get() = optLevel != null
     ///** Check if the [output] is set for this [Logger] */
-    //val isLocalOutputSet: Boolean get() = Logger_outputs[normalizedName] != null
+    val isLocalOutputSet: Boolean get() = optOutput != null
 
     companion object {
         private val Logger_loggers: AtomicMap<String, Logger> = AtomicMap(emptyMap())
@@ -40,6 +53,11 @@ class Logger private constructor(val name: String, val normalizedName: String, v
                 val logger = Logger(name, normalizedName, true)
                 miniEnvironmentVariablesUC["LOG_$normalizedName"]?.also {
                     logger.level = Level[it]
+                }
+                if (Logger_loggers.value.isEmpty()) {
+                    miniEnvironmentVariablesUC["LOG_LEVEL"]?.also {
+                        defaultLevel = Level[it]
+                    }
                 }
                 Logger_loggers[normalizedName] = logger
             }

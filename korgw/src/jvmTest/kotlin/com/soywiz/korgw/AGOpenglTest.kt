@@ -22,7 +22,7 @@ class AGOpenglTest {
         val gl = KmlGlProxyLogToString()
         val ag = AGOpengl(gl)
         val fb = AGFrameBuffer().also { it.setSize(512, 512) }
-        val bmp = Bitmap32(16, 16, com.soywiz.korim.color.Colors.RED)
+        val bmp = Bitmap32(16, 16, com.soywiz.korim.color.Colors.RED).premultipliedIfRequired()
         val batch = AGBatch(
             fb.base, fb.info,
             AGVertexArrayObject(

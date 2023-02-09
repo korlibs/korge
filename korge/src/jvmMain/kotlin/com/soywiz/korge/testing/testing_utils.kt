@@ -64,7 +64,7 @@ inline fun korgeScreenshotTest(
         } catch (exception: HeadlessException) {
             // Running in a headless environment (e.g github tests).
             // Return to mark as passing.
-            return@suspendTest
+            return@suspendTest // @TODO: We should do offscreen rendering instead, or we are not testing anything on CI!
         }
 
         while (testingLock.isLocked) {

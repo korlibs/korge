@@ -4,6 +4,7 @@ package com.soywiz.korge.view.ktree
 
 import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
+import com.soywiz.klogger.*
 import com.soywiz.korge.annotations.*
 import com.soywiz.korge.particle.*
 import com.soywiz.korge.render.*
@@ -21,6 +22,8 @@ import kotlinx.coroutines.*
 import kotlin.collections.set
 import kotlin.jvm.*
 import kotlin.reflect.*
+
+val ktreeLogger = Logger("ktreeLogger")
 
 //views.serializer.registerExtension(PhysicsKTreeSerializerExtension)
 
@@ -319,7 +322,7 @@ open class KTreeSerializer(val views: Views) : KTreeSerializerHolder, Extra by E
             val extensionName = node.nameLC.removePrefix(__ex_)
             val extension = extensionsByName[extensionName]
             if (extension == null) {
-                println("Can't find extension $__ex_ : extensionName=$extensionName")
+                ktreeLogger.info { "Can't find extension $__ex_ : extensionName=$extensionName" }
             }
             extension?.setProps(this, view, node)
         }

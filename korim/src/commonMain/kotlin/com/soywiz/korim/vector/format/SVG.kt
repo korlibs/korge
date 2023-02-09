@@ -3,6 +3,7 @@ package com.soywiz.korim.vector.format
 import com.soywiz.kds.ListReader
 import com.soywiz.kds.mapWhile
 import com.soywiz.klock.TimeSpan
+import com.soywiz.klogger.*
 import com.soywiz.korim.annotation.KorimExperimental
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
@@ -300,13 +301,13 @@ class SVG(val root: Xml, val warningProcessor: ((message: String) -> Unit)? = nu
                         val idName = urlPattern.substr(1).toLowerCase()
                         val def = defs[idName]
                         if (def == null) {
-                            println(defs)
-                            println("Can't find svg definition '$idName'")
+                            logger.info { defs }
+                            logger.info { "Can't find svg definition '$idName'" }
                         }
                         //println("URL: def=$def")
                         def?.paint ?: NonePaint
                     } else {
-                        println("Unsupported $str")
+                        logger.info { "Unsupported $str" }
                         NonePaint
                     }
                 }
@@ -479,6 +480,8 @@ class SVG(val root: Xml, val warningProcessor: ((message: String) -> Unit)? = nu
     }
 
 	companion object {
+        val logger = Logger("SVG")
+
         val ColorDefaultBlack = Colors.WithDefault(Colors.BLACK)
 
         fun parseAttributesAndStyles(node: Xml): Map<String, String> {

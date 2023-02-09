@@ -3,6 +3,7 @@ package com.soywiz.korge.scene
 import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.klock.TimeSpan
 import com.soywiz.klock.seconds
+import com.soywiz.klogger.*
 import com.soywiz.korge.ReloadEvent
 import com.soywiz.korge.tween.get
 import com.soywiz.korge.tween.tween
@@ -232,7 +233,7 @@ class SceneContainer(
             sceneInjector.mapInstance(inject::class as KClass<Any>, inject)
         }
         val newScene = gen(sceneInjector)
-        println("Changing scene to... $clazz ... $newScene")
+        SceneContainer.logger.info { "Changing scene to... $clazz ... $newScene" }
         if (remap) {
             newScene.init(sceneInjector)
             views.injector.mapPrototype(newScene::class as KClass<T>) { gen(sceneInjector) }
@@ -326,6 +327,8 @@ class SceneContainer(
     private data class VisitEntry(val clazz: KClass<out Scene>, val injects: List<Any>)
 
     companion object {
+        val logger = Logger("SceneContainer")
+
         private val EMPTY_VISIT_ENTRY = VisitEntry(EmptyScene::class, listOf())
     }
 

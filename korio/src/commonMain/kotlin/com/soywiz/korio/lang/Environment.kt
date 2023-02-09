@@ -1,6 +1,6 @@
 package com.soywiz.korio.lang
 
-import com.soywiz.kds.toLinkedMap
+import com.soywiz.kds.*
 import kotlin.collections.LinkedHashMap
 import kotlin.collections.Map
 import kotlin.collections.MutableMap
@@ -20,7 +20,7 @@ internal expect object EnvironmentInternal {
 }
 
 @ThreadLocal
-private var customEnvironments: LinkedHashMap<String, String>? = null
+private var customEnvironments: CaseInsensitiveStringMap<String>? = null
 
 interface Environment {
     operator fun get(key: String): String?
@@ -31,7 +31,7 @@ interface Environment {
         override operator fun get(key: String): String? = customEnvironments?.get(key) ?: EnvironmentInternal[key]
         operator override fun set(key: String, value: String) {
             if (customEnvironments != null) {
-                customEnvironments = LinkedHashMap()
+                customEnvironments = CaseInsensitiveStringMap()
             }
             customEnvironments?.set(key, value)
         }

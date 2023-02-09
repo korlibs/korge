@@ -3,6 +3,7 @@ package com.soywiz.korge.view
 import com.soywiz.klock.milliseconds
 import com.soywiz.klock.seconds
 import com.soywiz.klock.timesPerSecond
+import com.soywiz.klogger.*
 import com.soywiz.korev.Event
 import com.soywiz.korev.dispatch
 import com.soywiz.korge.baseview.BaseView
@@ -25,6 +26,7 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class ViewsTest : ViewsForTesting() {
+    val logger = Logger("ViewsTest")
     val tex = Bitmap32(10, 10)
 
     @Test
@@ -142,9 +144,9 @@ class ViewsTest : ViewsForTesting() {
             }
             val zoomIn = solidRect(100, 100, Colors.RED) {
                 anchor(0.5, 1.0)
-                println("addZoomMap")
-                println(zoomOut.x)
-                println(zoomOut.getBounds(this))
+                logger.info { "addZoomMap" }
+                logger.info { zoomOut.x }
+                logger.info { zoomOut.getBounds(this) }
                 alignLeftToLeftOf(zoomOut)
                 alignBottomToTopOf(zoomOut, 10.0)
             }

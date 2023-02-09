@@ -1,5 +1,6 @@
 package com.soywiz.korim.font.ttf
 
+import com.soywiz.klogger.*
 import com.soywiz.korim.font.*
 import com.soywiz.korim.vector.format.*
 import com.soywiz.korio.async.*
@@ -9,6 +10,8 @@ import com.soywiz.korio.lang.*
 import kotlin.test.*
 
 class TtfFontTest {
+    val logger = Logger("TtfFontTest")
+
     lateinit var root: VfsFile
 
     fun ttfTest(callback: suspend () -> Unit) = suspendTest {
@@ -29,7 +32,7 @@ class TtfFontTest {
 
     @Test
     fun testColorFont() = suspendTest {
-        println(SystemFont.getEmojiFont().name)
+        logger.debug { SystemFont.getEmojiFont().name }
         val smileyGlyph = SystemFont.getEmojiFont().ttf[WString("😀")[0]]
         //Colors["#ffc83dff"]
         //println("smileyGlyph=${smileyGlyph?.codePoint},$smileyGlyph")

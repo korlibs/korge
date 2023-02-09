@@ -33,7 +33,7 @@ open class BVH2D<T>(
     fun intersect(
         ray: Ray,
         return_array: FastArrayList<BVH.IntersectResult<T>> = fastArrayListOf(),
-    ) = bvh.intersect(ray.toBVH(), return_array)
+    ): FastArrayList<BVH.IntersectResult<T>> = bvh.intersect(ray.toBVH(), return_array)
 
     fun search(
         rect: IRectangle,
