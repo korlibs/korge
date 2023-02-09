@@ -5,8 +5,7 @@ import kotlin.native.concurrent.TransferMode
 import kotlin.native.concurrent.Worker
 import kotlin.native.concurrent.freeze
 import kotlin.native.concurrent.isFrozen
-import kotlin.test.Test
-import kotlin.test.assertTrue
+import kotlin.test.*
 
 class LoggerMultithreadedTest {
 
@@ -28,7 +27,7 @@ class LoggerMultithreadedTest {
         assertTrue { logger.level == Logger.Level.INFO }
 
         val logger2 = Logger("WorkerLogger")
-        assertTrue { logger === logger2 }
+        assertSame(logger, logger2)
 
         val getLoggerLevel: () -> Logger.Level = {
             logger2.level
