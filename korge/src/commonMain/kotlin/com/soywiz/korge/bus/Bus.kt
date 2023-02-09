@@ -46,7 +46,7 @@ class Bus(
 class GlobalBus(
     val coroutineContext: CoroutineContext
 ) {
-	val perClassHandlers = HashMap<KClass<*>, ArrayList<suspend (Any) -> Unit>>()
+	private val perClassHandlers = HashMap<KClass<*>, ArrayList<suspend (Any) -> Unit>>()
 
 	suspend fun send(message: Any) {
 		val clazz = message::class
@@ -66,9 +66,13 @@ class GlobalBus(
 		val chandler = handler as (suspend (Any) -> Unit)
 		forClass(clazz).add(chandler)
 		return Closeable {
-			forClass(clazz).remove(chandler)
+            unregister(clazz, chandler)
 		}
 	}
+
+    fun <T : Any> unregister(clazz: KClass<out T>, handler: suspend (T) -> Unit) {
+        forClass(clazz).remove(handler)
+    }
 
     inline fun <reified T : Any> register(noinline handler: suspend (T) -> Unit): Closeable {
        return register(T::class, handler)
