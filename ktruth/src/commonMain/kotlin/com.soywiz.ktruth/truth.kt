@@ -1,4 +1,4 @@
-package com.soywiz.kortest
+package com.soywiz.ktruth
 
 import kotlin.test.*
 
