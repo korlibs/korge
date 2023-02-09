@@ -201,11 +201,11 @@ abstract class AbstractBigIntCompareWithJVMTest {
 
     @Test
     fun testToString2() {
-        println(BigInteger.valueOf(12345).toString(2))
-        println(BigInteger("12345").toString(2))
-        println(BigInteger("12345").toString(4))
-        println(BigInteger("12345").toString(10))
-        println(BigInteger("12345").toString(16))
+        assertEquals("11000000111001", BigInteger.valueOf(12345).toString(2))
+        assertEquals("11000000111001", BigInteger("12345").toString(2))
+        assertEquals("3000321", BigInteger("12345").toString(4))
+        assertEquals("12345", BigInteger("12345").toString(10))
+        assertEquals("3039", BigInteger("12345").toString(16))
     }
 
     // Big Integer

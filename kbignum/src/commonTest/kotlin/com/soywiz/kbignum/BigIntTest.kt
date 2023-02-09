@@ -63,7 +63,7 @@ abstract class AbstractBigIntTest {
 	@Test
 	fun testSubInt() {
 		val res = (-9999999).bi - (-8888888).bi
-		println("$res")
+            //println("$res")
 
 		val items = listOf(-9999999, -8888888, -100, -50, 0, +50, +100, +8888888, +9999999)
 		for (l in items) for (r in items) {
@@ -213,7 +213,7 @@ abstract class AbstractBigIntTest {
     @Test
     open fun testInv() {
         assertEquals(
-            listOf("0x0000".bi, "0xFFFF".bi, "0xedcb".bi),
+            listOf((-65536).bi, (-1).bi, (-4661).bi),
             listOf("0xFFFF".bi.inv(), "0x0000".bi.inv(), "0x1234".bi.inv())
         )
     }
@@ -229,10 +229,11 @@ abstract class AbstractBigIntTest {
 
     @Test
     fun testOtherToString2() {
-        println(12345.bi.toString(2))
-        println(12345.bi.toString(4))
-        println(12345.bi.toString(10))
-        println(12345.bi.toString(16))
+        assertEquals("11000000111001", 12345.bi.toString(2))
+        assertEquals("3000321", 12345.bi.toString(4))
+        assertEquals("12345", 12345.bi.toString(10))
+        assertEquals("3039", 12345.bi.toString(16))
+
         //assertEquals(1024, stats.iterations)
     }
 
@@ -349,11 +350,11 @@ class BigIntTestPlatform : AbstractBigIntTest() {
     override val String.bi: BigInt get() = BigInt(this)
     override fun String.bi(radix: Int): BigInt = BigInt(this, radix)
 
-    @Test
-    @Ignore // Disabled because in the JVM BigInteger.inv() works differently than in common
-    override fun testInv() {
-        super.testInv()
-    }
+    //@Test
+    //@Ignore // Disabled because in the JVM BigInteger.inv() works differently than in common
+    //override fun testInv() {
+    //    super.testInv()
+    //}
 
     @Test
     fun testEmpty() {}
