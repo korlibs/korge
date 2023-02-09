@@ -25,7 +25,11 @@ object AwtNativeImageFormatProvider : NativeImageFormatProvider() {
 
     override suspend fun decodeInternal(vfs: Vfs, path: String, props: ImageDecodingProps): NativeImageResult = when (vfs) {
         is LocalVfs -> AwtNativeImage(awtReadImageInWorker(File(path), props))
-        else -> AwtNativeImage(awtReadImageInWorker(vfs[path].readAll(), props))
+        else -> {
+            val bytes = vfs[path].readAll()
+            val bufferedImage = awtReadImageInWorker(bytes, props)
+            AwtNativeImage(bufferedImage)
+        }
     }.result(props)
 
     override suspend fun encodeSuspend(image: ImageDataContainer, props: ImageEncodingProps): ByteArray {
