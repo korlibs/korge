@@ -1,16 +1,25 @@
 package com.soywiz.korio.file.std
 
+import com.soywiz.klogger.*
+import com.soywiz.korio.lang.*
 import kotlin.test.Test
 
 class StandardPathsTest {
+    val logger = Logger(this::class.portableSimpleName)
+
     @Test
     fun test() {
-        println("StandardPathsTest:")
-        println("cwd=${StandardPaths.cwd}")
-        println("executableFile=${StandardPaths.executableFile}")
-        println("executableFolder=${StandardPaths.executableFolder}")
-        println("resourcesFolder=${StandardPaths.resourcesFolder}")
-        println("temp=${StandardPaths.temp}")
+        val cwd = StandardPaths.cwd
+        val executableFile = StandardPaths.executableFile
+        val executableFolder = StandardPaths.executableFolder
+        val resourcesFolder = StandardPaths.resourcesFolder
+        val temp = StandardPaths.temp
+        logger.debug { "StandardPathsTest:" }
+        logger.debug { "cwd=${cwd}" }
+        logger.debug { "executableFile=${executableFile}" }
+        logger.debug { "executableFolder=${executableFolder}" }
+        logger.debug { "resourcesFolder=${resourcesFolder}" }
+        logger.debug { "temp=${temp}" }
     }
 
     /*

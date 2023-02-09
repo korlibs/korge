@@ -104,7 +104,7 @@ class ZipVfsTest {
 				helloZip.listRecursive().map { it.fullName }.toList().toString()
 			)
 
-			println(helloZip.stat())
+			//println(helloZip.stat())
 			assertEquals(true, helloZip.exists())
 			assertEquals(true, helloZip.isDirectory())
 			assertEquals(true, helloZip["/"].isDirectory())
