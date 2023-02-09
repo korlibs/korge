@@ -349,11 +349,7 @@ class CommonBigInt private constructor(val data: UInt16ArrayZeroPad, override va
     override infix fun or(other: BigInt): CommonBigInt = bitwise(other as CommonBigInt, Int::or)
 	override infix fun xor(other: BigInt): CommonBigInt = bitwise(other as CommonBigInt, Int::xor)
 
-    override fun inv(): CommonBigInt = CommonBigInt(
-        UInt16ArrayZeroPad(this.data.size).also {
-            for (n in 0 until it.size) it[n] = this.data[n].inv()
-        }, 1
-    )
+    override fun inv(): CommonBigInt = -(this + 1)
 
 	private inline fun bitwise(other: CommonBigInt, op: (a: Int, b: Int) -> Int): CommonBigInt {
 		return CommonBigInt(
