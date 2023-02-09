@@ -6,8 +6,8 @@ import kotlin.test.*
 class ParallelTest {
     @Test
     fun test() {
-        println("ParallelTest.CONCURRENCY_COUNT: $CONCURRENCY_COUNT")
-        assertTrue { CONCURRENCY_COUNT >= 1 }
+        //println("ParallelTest.CONCURRENCY_COUNT: $CONCURRENCY_COUNT")
+        assertTrue("CONCURRENCY_COUNT:$CONCURRENCY_COUNT >= 1") { CONCURRENCY_COUNT >= 1 }
         //for (n in 0 until 3000) {
         for (n in 0 until 128) {
             val list = (0 until n).mapInt { it }
