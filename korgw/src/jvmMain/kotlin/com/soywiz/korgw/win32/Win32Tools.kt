@@ -143,7 +143,7 @@ object Win32OpenglLoader {
     fun loadFunctionCachedOrNull(name: String): Function? {
         if (!funcsSet.contains(name)) {
             funcsSet[name] = true
-            funcs[name] = loadFunction(name)
+            loadFunction(name)?.let { funcs[name] = it }
         }
         return funcs[name]
     }
