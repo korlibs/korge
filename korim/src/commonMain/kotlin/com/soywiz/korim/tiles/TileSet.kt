@@ -78,13 +78,21 @@ class TileSet(
 
         operator fun invoke(
             tiles: List<TileSetTileInfo>,
-            width: Int, height: Int,
+            width: Int = tiles.first().slice.width,
+            height: Int = tiles.first().slice.height,
             collisionsMap: IntMap<TileShapeInfo> = IntMap(),
         ): TileSet {
             val map = IntMap<TileSetTileInfo>()
             tiles.fastForEachWithIndex { index, value -> map[index] = value }
             return TileSet(map, width, height, collisionsMap = collisionsMap)
         }
+
+        operator fun invoke(
+            vararg tiles: TileSetTileInfo,
+            width: Int = tiles.first().slice.width,
+            height: Int = tiles.first().slice.height,
+            collisionsMap: IntMap<TileShapeInfo> = IntMap(),
+        ): TileSet = invoke(tiles.toList(), width, height, collisionsMap)
 
 		operator fun invoke(
             base: BmpSlice,
