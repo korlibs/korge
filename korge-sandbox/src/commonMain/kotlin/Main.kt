@@ -48,7 +48,8 @@ suspend fun main() = Korge(
         //Demo(::MainFilters),
         //Demo(::MainGpuVectorRendering),
         //Demo(::MainRotatedAtlas),
-        Demo(::MainImageOrientationTest),
+        //Demo(::MainImageOrientationTest),
+        Demo(::MainTiledBackground),
         //Demo(::MainGpuVectorRendering),
         //Demo(::MainTextMetrics),
         //Demo(::MainBunnymark),
@@ -180,7 +181,7 @@ suspend fun Stage.demoSelector(default: Demo, all: List<Demo>) {
     comboBox = uiComboBox<Demo>(width = 200.0, items = (listOf(default) + all).distinctBy { it.name }.sortedBy { it.name }) {
         this.viewportHeight = 600
         this.onSelectionUpdate.add {
-            println(it)
+            //println(it)
             launchImmediately { setDemo(it.selectedItem!!) }
         }
     }.alignLeftToLeftOf(stage, padding = 8.0).alignTopToTopOf(stage, padding = 8.0)
