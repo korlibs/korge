@@ -1,24 +1,31 @@
 package com.soywiz.korge.view
 
+import com.soywiz.klogger.*
 import com.soywiz.korge.annotations.*
 import com.soywiz.korge.render.*
 import com.soywiz.korim.bitmap.*
+import com.soywiz.korim.color.*
 import com.soywiz.korma.geom.*
 import kotlinx.coroutines.*
+
+private val logger = Logger("RenderToBitmap")
 
 /**
  * Asynchronously renders this [View] (with the provided [views]) to a [Bitmap32] and returns it.
  * The rendering will happen before the next frame.
  */
-suspend fun View.renderToBitmap(views: Views, region: Rectangle? = null, scale: Double = 1.0, outPoint: Point = Point(), includeBackground: Boolean = false): Bitmap32 {
+suspend fun View.renderToBitmap(views: Views? = this.stage?.views, region: Rectangle? = null, scale: Double = 1.0, outPoint: Point = Point(), includeBackground: Boolean = false): Bitmap32 {
+    if (views == null) {
+        logger.warn { "View.renderToBitmap Views not specified" }
+        return Bitmap32(1, 1, Colors.TRANSPARENT.premultiplied)
+    }
 	val done = CompletableDeferred<Bitmap32>()
 
     // This will help to trigger a re-rendering in the case nothing else changed
     views.stage.invalidateRender()
     views.onBeforeRender.once { ctx ->
         done.completeWith(kotlin.runCatching {
-            if (includeBackground) ctx.clear(views.clearColor)
-            unsafeRenderToBitmapSync(ctx, region, scale, outPoint).also {
+            unsafeRenderToBitmapSync(ctx, region, scale, outPoint, bgcolor = if (includeBackground) views.clearColor else Colors.TRANSPARENT).also {
                 //println("/renderToBitmap")
             }
         })
@@ -28,7 +35,7 @@ suspend fun View.renderToBitmap(views: Views, region: Rectangle? = null, scale: 
 }
 
 @KorgeExperimental
-fun View.unsafeRenderToBitmapSync(ctx: RenderContext, region: Rectangle? = null, scale: Double = 1.0, outPoint: Point = Point()): Bitmap32 {
+fun View.unsafeRenderToBitmapSync(ctx: RenderContext, region: Rectangle? = null, scale: Double = 1.0, outPoint: Point = Point(), bgcolor: RGBA = Colors.TRANSPARENT): Bitmap32 {
     val view = this
     val bounds = getLocalBoundsOptimizedAnchored(includeFilters = true)
 
@@ -41,6 +48,9 @@ fun View.unsafeRenderToBitmapSync(ctx: RenderContext, region: Rectangle? = null,
         //val ctx = RenderContext(views.ag, coroutineContext = views.coroutineContext)
         //views.ag.renderToBitmap(bmp) {
         ctx.renderToBitmap(bmp, hasStencil = true) {
+            if (bgcolor != Colors.TRANSPARENT) {
+                ctx.clear(bgcolor)
+            }
             ctx.useBatcher { batch ->
                 val matrix = view.globalMatrixInv.clone()
                 if (region != null) {
