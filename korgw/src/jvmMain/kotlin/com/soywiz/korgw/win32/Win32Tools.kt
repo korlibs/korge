@@ -140,10 +140,16 @@ object Win32OpenglLoader {
         }
     }
 
-    fun loadFunctionCached(name: String): Function {
-        return funcs.getOrPut(name) {
-            loadFunction(name) ?: error("Can't find opengl method $name")
+    fun loadFunctionCachedOrNull(name: String): Function? {
+        if (!funcsSet.contains(name)) {
+            funcsSet[name] = true
+            funcs[name] = loadFunction(name)
         }
+        return funcs[name]
+    }
+
+    fun loadFunctionCached(name: String): Function {
+        return loadFunctionCachedOrNull(name) ?: error("Can't find opengl method $name")
     }
 
     fun close() {
@@ -154,7 +160,8 @@ object Win32OpenglLoader {
         opengl32Lib.close()
     }
 
-    private val funcs = ConcurrentHashMap<String, Function>()
+    private val funcsSet = ConcurrentHashMap<String, Boolean>()
+    private val funcs = ConcurrentHashMap<String, Function?>()
     //val opengl32Lib by lazy { NativeLibrary.getInstance("opengl32") }
 
     init {

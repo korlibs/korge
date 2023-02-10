@@ -305,10 +305,17 @@ open class EGLKmlGlContext(window: Any? = null, parent: KmlGlContext? = null) : 
 }
 
 
+private interface CoreGraphics : Library {
+    fun CGMainDisplayID(): Int
+    companion object : CoreGraphics by NativeLoad("/System/Library/Frameworks/CoreGraphics.framework/Versions/A/CoreGraphics")
+}
+
 // http://renderingpipeline.com/2012/05/windowless-opengl-on-macos-x/
 open class MacKmlGlContext(window: Any? = null, parent: KmlGlContext? = null) : KmlGlContext(window, MacKmlGL(), parent) {
     init {
-        MacGL.CGLEnable(null, 0)
+        CoreGraphics.CGMainDisplayID()
+        //MacGL.CGLEnable(null, 0)
+
     }
     var ctx: com.sun.jna.Pointer? = run {
         val attributes = Memory(intArrayOf(

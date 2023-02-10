@@ -220,7 +220,7 @@ object DirectGL : INativeGL {
                         mutableMapOf<String, Any?>().apply {
                             if (Platform.isWindows) {
                                 this[Library.OPTION_SYMBOL_PROVIDER] = SymbolProvider { handle, name, parent ->
-                                    val ptr = Win32OpenglLoader.loadFunctionCached(name)
+                                    val ptr: Pointer = Win32OpenglLoader.loadFunctionCachedOrNull(name) ?: Pointer.NULL
                                     //println("LOADING $name: ${ptr.address}, $parent")
                                     //error(name)
                                     if (ptr.address == 0L) {
