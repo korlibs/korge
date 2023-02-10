@@ -220,9 +220,9 @@ open class EGLKmlGlContext(window: Any? = null, parent: KmlGlContext? = null) : 
         val majorPtr = Memory(8).also { it.clear() }
         val minorPtr = Memory(8).also { it.clear() }
         val initialize = EGL.eglInitialize(display, majorPtr, minorPtr)
-        if (!initialize) error("Can't initialize EGL")
         val major = majorPtr.getInt(0)
         val minor = minorPtr.getInt(0)
+        if (!initialize) error("Can't initialize EGL : errorCode=${EGL.eglGetError()}, display=$display, major=$major, minor=$minor")
         //println("display=$display, initialize=$initialize, major=${major}, minor=${minor}")
 
         //val attrib_list = Memory()

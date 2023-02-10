@@ -85,7 +85,7 @@ jobs:
     - { name: Gradle cache, uses: ./.github/actions/gradle-cache }
     - { name: Grant execute permission for gradlew, run: chmod +x gradlew }
     - { name: Start gradle, run: ./gradlew }
-    - { name: Testing JVM, run: ./gradlew jvmTest }
+    - { name: Testing JVM, uses: GabrielBB/xvfb-action@v1, with: { working-directory: e2e-test, run: ./gradlew jvmTest } }
     - { name: Check sandbox compiles, run: "./gradlew :korge-sandbox:jvmJar" }
     - { name: Publish to maven local, run: ./gradlew publishJvmLocal }
     - { name: e2e test, uses: GabrielBB/xvfb-action@v1, with: { working-directory: e2e-test, run: ./gradlew checkReferencesJvm --stacktrace } }
@@ -180,12 +180,12 @@ jobs:
       - { name: Gradle cache, uses: ./.github/actions/gradle-cache }
       - { name: Grant execute permission for gradlew, run: chmod +x gradlew }
       - { name: Start gradle, run: ./gradlew }
-      - { name: Testing JVM on Linux, run: ./gradlew jvmTest }
+      - { name: Testing JVM on Linux, uses: GabrielBB/xvfb-action@v1, with: { working-directory: e2e-test, run: ./gradlew jvmTest } }
       - { name: Testing Kotlin/Native Linux, run: ./gradlew linuxX64Test }
       - { name: Publish gradle plugin, run: "./gradlew :korge-gradle-plugin:publishToMavenLocal" }
       - { name: Publish X64, run: ./gradlew publishLinuxX64PublicationToMavenLocal publishKotlinMultiplatformPublicationToMavenLocal }
       - { name: Stop gradle daemon, run: ./gradlew --stop }
-      - { name: e2e test, uses: GabrielBB/xvfb-action@v1, with: { working-directory: e2e-test, run: ./gradlew checkReferencesNative --stacktrace } }
+      - { name: e2e test native, uses: GabrielBB/xvfb-action@v1, with: { working-directory: e2e-test, run: ./gradlew checkReferencesNative --stacktrace } }
 
   test-native-macos:
     needs: changes
