@@ -295,7 +295,7 @@ class Win32OpenglContext(val gwconfig: GameWindowConfig, val hWnd: WinDef.HWND, 
             val numFormats = numFormatsMemory.getInt(0)
             val pixelFormat = pixelFormatMemory.getInt(0)
             if (numFormats == 0) {
-                error("wglChoosePixelFormatARB: Can't get opengl formats, hDC=$hDC, numFormats=$numFormats, pixelFormat=$pixelFormat, result=$result")
+                error("wglChoosePixelFormatARB: Can't get opengl formats, hWnd=$hWnd, hDC=$hDC, numFormats=$numFormats, pixelFormat=$pixelFormat, result=$result")
             }
             pixelFormat
         }
