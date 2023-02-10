@@ -288,13 +288,16 @@ class Win32OpenglContext(val gwconfig: GameWindowConfig, val hWnd: WinDef.HWND, 
                 WGL_SAMPLES_ARB, 4,        // Number of samples
                 0, // End
             )
-            val pixelFormatMemory = Memory(8L)
-            val numFormatsMemory = Memory(8L)
-            pixelFormatMemory.setInt(0L, 0)
-            numFormatsMemory.setInt(0L, 0)
-            Win32GL.wglChoosePixelFormatARB(hDC, attribList, null, 1, pixelFormatMemory, numFormatsMemory)
-            if (numFormatsMemory.getInt(0) == 0) error("wglChoosePixelFormatARB: Can't get opengl formats")
-            pixelFormatMemory.getInt(0)
+            val pixelFormatMemory = Memory(8L).also { it.clear() }
+            val numFormatsMemory = Memory(8L).also { it.clear() }
+            // https://registry.khronos.org/OpenGL/extensions/ARB/WGL_ARB_pixel_format.txt
+            val result = Win32GL.wglChoosePixelFormatARB(hDC, attribList, null, 1, pixelFormatMemory, numFormatsMemory)
+            val numFormats = numFormatsMemory.getInt(0)
+            val pixelFormat = pixelFormatMemory.getInt(0)
+            if (numFormats == 0) {
+                error("wglChoosePixelFormatARB: Can't get opengl formats, hDC=$hDC, numFormats=$numFormats, pixelFormat=$pixelFormat, result=$result")
+            }
+            pixelFormat
         }
 
         pfd = WinGDI.PIXELFORMATDESCRIPTOR.ByReference().also { pfd ->
