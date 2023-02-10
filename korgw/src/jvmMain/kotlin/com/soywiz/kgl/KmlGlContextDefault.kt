@@ -382,10 +382,10 @@ open class MacKmlGlContextRaw(window: Any? = null, parent: KmlGlContext? = null)
     }
     var ctx: com.sun.jna.Pointer? = run {
         val attributes = Memory(intArrayOf(
-            kCGLPFAAccelerated,
             // Let's not specify profile version, so we are using old shader syntax
             //kCGLPFAOpenGLProfile, kCGLOGLPVersion_GL3_Core,
             //kCGLPFAOpenGLProfile, kCGLOGLPVersion_GL4_Core,
+            kCGLPFAAccelerated,
             kCGLPFAColorSize, 24,
             kCGLPFADepthSize, 16,
             kCGLPFAStencilSize, 8,
@@ -393,9 +393,9 @@ open class MacKmlGlContextRaw(window: Any? = null, parent: KmlGlContext? = null)
             //kCGLPFASupersample,
             0,
         ))
-        val num = Memory(4L)
-        val ctx = Memory(8L) // void**
-        val pix = Memory(8L) // void**
+        val num = Memory(4L).also { it.clear() }
+        val ctx = Memory(8L).also { it.clear() } // void**
+        val pix = Memory(8L).also { it.clear() } // void**
         checkError("CGLChoosePixelFormat", MacGL.CGLChoosePixelFormat(attributes, pix, num))
         checkError("CGLCreateContext", MacGL.CGLCreateContext(pix.getPointer(0L), (parent as? MacKmlGlContextRaw)?.ctx, ctx))
         checkError("CGLDestroyPixelFormat", MacGL.CGLDestroyPixelFormat(pix.getPointer(0L)))

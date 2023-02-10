@@ -22,16 +22,18 @@ class MacosGLContext(
         const val NSOpenGLPFAMultisample = 59
         const val NSOpenGLPFASampleBuffers = 55
         const val NSOpenGLPFASamples = 56
+        const val NSOpenGLPFAAccelerated = 73
         const val NSOpenGLPFADoubleBuffer = 5
         const val NSOpenGLPFAColorSize = 8
         const val NSOpenGLPFAAlphaSize = 11
         const val NSOpenGLPFADepthSize = 12
         const val NSOpenGLPFAStencilSize = 13
         const val NSOpenGLPFAAccumSize = 14
+
     }
 
     val attrs: IntArray by lazy {
-        val antialias = (this.quality != GameWindow.Quality.PERFORMANCE)
+        val antialias = (this.quality == GameWindow.Quality.QUALITY)
         val antialiasArray = if (antialias) intArrayOf(
             NSOpenGLPFAMultisample,
             NSOpenGLPFASampleBuffers, 1,
@@ -39,14 +41,14 @@ class MacosGLContext(
         ) else intArrayOf()
         intArrayOf(
             *antialiasArray,
-            //NSOpenGLPFAOpenGLProfile,
-            //NSOpenGLProfileVersion4_1Core,
-            NSOpenGLPFADoubleBuffer,
+            //NSOpenGLPFAOpenGLProfile, NSOpenGLProfileVersion4_1Core,
+            //NSOpenGLPFADoubleBuffer,
+            NSOpenGLPFAAccelerated,
             NSOpenGLPFAColorSize, 24,
-            NSOpenGLPFAAlphaSize, 8,
-            NSOpenGLPFADepthSize, 24,
+            NSOpenGLPFADepthSize, 16,
             NSOpenGLPFAStencilSize, 8,
-            NSOpenGLPFAAccumSize, 0,
+            //NSOpenGLPFAAlphaSize, 8,
+            //NSOpenGLPFAAccumSize, 0,
             0
         )
     }
