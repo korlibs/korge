@@ -37,6 +37,7 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
 
     // @TODO: Unify beforeDoRender, startFrame  ---  dispose, finish & endFrame
     open fun beforeDoRender() = Unit
+    open fun afterDoRender() = Unit
     open fun dispose() = Unit
     open fun finish() = execute(AGFinish)
     open fun startFrame() = Unit

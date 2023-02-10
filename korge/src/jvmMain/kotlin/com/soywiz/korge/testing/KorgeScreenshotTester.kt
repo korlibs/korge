@@ -83,7 +83,7 @@ class KorgeScreenshotTester(
         view: View,
         goldenName: String,
         settingOverride: KorgeScreenshotValidationSettings = defaultValidationSettings,
-        includeBackgroundColor: Boolean = true,
+        includeBackgroundColor: Boolean = false,
         posterize: Int = 0
     ) {
         val bitmap: Bitmap32 = view.renderToBitmap(views, includeBackground = includeBackgroundColor)

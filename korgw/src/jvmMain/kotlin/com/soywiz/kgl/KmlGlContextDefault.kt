@@ -11,6 +11,8 @@ import com.soywiz.korgw.x11.*
 import com.sun.jna.*
 import com.sun.jna.platform.win32.*
 
+val GLOBAL_HEADLESS_KML_CONTEXT by lazy { KmlGlContextDefault() }
+
 actual fun KmlGlContextDefault(window: Any?, parent: KmlGlContext?): KmlGlContext = when {
     Platform.isMac -> MacKmlGlContext(window, parent)
     //Platform.isLinux -> LinuxKmlGlContext(window, parent)
@@ -311,7 +313,9 @@ open class MacKmlGlContext(window: Any? = null, parent: KmlGlContext? = null) : 
     var ctx: com.sun.jna.Pointer? = run {
         val attributes = Memory(intArrayOf(
             kCGLPFAAccelerated,
-            kCGLPFAOpenGLProfile, kCGLOGLPVersion_GL4_Core,
+            // Let's not specify profile version, so we are using old shader syntax
+            //kCGLPFAOpenGLProfile, kCGLOGLPVersion_GL3_Core,
+            //kCGLPFAOpenGLProfile, kCGLOGLPVersion_GL4_Core,
             kCGLPFAColorSize, 24,
             kCGLPFADepthSize, 16,
             kCGLPFAStencilSize, 8,
@@ -357,7 +361,13 @@ open class MacKmlGlContext(window: Any? = null, parent: KmlGlContext? = null) : 
         // https://github.com/apitrace/apitrace/blob/master/retrace/glretrace_cgl.cpp
         const val kCGLPFAAccelerated = 73
         const val kCGLPFAOpenGLProfile = 99
-        const val kCGLOGLPVersion_GL4_Core = 16640
+        //const val kCGLOGLPVersion_GL4_Core = 16640
+
+        const val kCGLOGLPVersion_Legacy = 0x1000
+        const val kCGLOGLPVersion_3_2_Core = 0x3200
+        const val kCGLOGLPVersion_GL3_Core = 0x3200
+        const val kCGLOGLPVersion_GL4_Core = 0x4100
+
 
         const val kCGLPFAColorSize              = 8
         const val kCGLPFAAlphaSize              =11
