@@ -10,6 +10,7 @@ import com.soywiz.korio.lang.*
 import com.soywiz.korio.time.*
 import com.soywiz.korio.util.*
 import com.sun.jna.*
+import java.io.*
 import java.nio.ByteBuffer
 import java.nio.FloatBuffer
 import java.nio.IntBuffer
@@ -231,7 +232,7 @@ object DirectGL : INativeGL {
                                         }
                                         else -> ptr.address
                                     }.also {
-                                        if (it == 0L) println("$name -> $it")
+                                        if (it == 0L) println("$nativeOpenGLLibraryPath: $name -> $it")
                                     }
                                 }
                             }
@@ -258,7 +259,11 @@ val nativeOpenGLLibraryPath: String by lazy {
     when {
         OS.isMac -> "OpenGL"
         OS.isLinux -> "libGL"
-        OS.isWindows -> "opengl32"
+        OS.isWindows -> {
+            File(".", "opengl32.dll").takeIf { it.exists() }?.absolutePath
+                ?: "opengl32"
+            //File("C:\\Users\\soywiz\\projects\\korge\\korge\\opengl32_2.dll").absolutePath
+        }
         else -> {
             println("  - Unknown/Unsupported OS")
             "libGL"
