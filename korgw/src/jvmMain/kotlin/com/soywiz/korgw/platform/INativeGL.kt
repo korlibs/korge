@@ -223,16 +223,15 @@ object DirectGL : INativeGL {
                                     val ptr: Pointer? = Win32OpenglLoader.loadFunctionCachedOrNull(name)
                                     //println("LOADING $name: ${ptr.address}, $parent")
                                     //error(name)
-                                    if (ptr == null || ptr.address == 0L) {
-                                        try {
+                                    when {
+                                        ptr == null || ptr.address == 0L -> try {
                                             parent.getSymbolAddress(handle, name, null)
                                         } catch (e: UnsatisfiedLinkError) {
                                             0L
                                         }
-                                    } else {
-                                        ptr.address
+                                        else -> ptr.address
                                     }.also {
-                                        println(" -> $it")
+                                        println("$name -> $it")
                                     }
                                 }
                             }

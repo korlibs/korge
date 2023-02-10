@@ -133,10 +133,16 @@ object Win32OpenglLoader {
         }
     }
 
+    private fun __loadFunction(name: String): Function? {
+        return WGL.wglGetProcAddress(name)?.let { Function.getFunction(it) }
+            ?: try { opengl32Lib.getFunction(name) } catch (e: UnsatisfiedLinkError) { null }
+    }
+
     fun loadFunction(name: String): Function? {
-        return makeCurrentTemporarily {
-            WGL.wglGetProcAddress(name)?.let { Function.getFunction(it) }
-                ?: try { opengl32Lib.getFunction(name) } catch (e: UnsatisfiedLinkError) { null }
+        makeCurrentTemporarily {
+            __loadFunction(name)?.let { return it }
+            if (name.endsWith("ARB")) __loadFunction(name.removeSuffix("ARB"))?.let { return it }
+            return null
         }
     }
 
