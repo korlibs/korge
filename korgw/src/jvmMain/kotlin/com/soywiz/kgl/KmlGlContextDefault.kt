@@ -14,7 +14,8 @@ import com.sun.jna.platform.win32.*
 val GLOBAL_HEADLESS_KML_CONTEXT by lazy { KmlGlContextDefault() }
 
 actual fun KmlGlContextDefault(window: Any?, parent: KmlGlContext?): KmlGlContext = when {
-    Platform.isMac -> MacKmlGlContext(window, parent)
+    //Platform.isMac -> MacKmlGlContextRaw(window, parent)
+    Platform.isMac -> MacKmlGlContextManaged(window, parent)
     //Platform.isLinux -> LinuxKmlGlContext(window, parent)
     Platform.isLinux -> EGLKmlGlContext(window, parent)
     Platform.isWindows -> Win32KmlGlContext(window, parent)
@@ -310,8 +311,23 @@ private interface CoreGraphics : Library {
     companion object : CoreGraphics by NativeLoad("/System/Library/Frameworks/CoreGraphics.framework/Versions/A/CoreGraphics")
 }
 
+open class MacKmlGlContextManaged(window: Any? = null, parent: KmlGlContext? = null) : KmlGlContext(window, MacKmlGL(), parent) {
+    val glCtx: MacosGLContext = MacosGLContext(sharedContext = (parent as MacKmlGlContextManaged?)?.glCtx?.openGLContext ?: 0L)
+
+    override fun set() = glCtx.makeCurrent()
+    override fun unset() = glCtx.releaseCurrent()
+    override fun swap() = glCtx.swapBuffers()
+    override fun close() = glCtx.dispose()
+
+    //override fun set() = Unit
+    //override fun unset() = Unit
+    //override fun swap() = Unit
+    //override fun close() = Unit
+}
+
+
 // http://renderingpipeline.com/2012/05/windowless-opengl-on-macos-x/
-open class MacKmlGlContext(window: Any? = null, parent: KmlGlContext? = null) : KmlGlContext(window, MacKmlGL(), parent) {
+open class MacKmlGlContextRaw(window: Any? = null, parent: KmlGlContext? = null) : KmlGlContext(window, MacKmlGL(), parent) {
     init {
         CoreGraphics.CGMainDisplayID()
         //MacGL.CGLEnable(null, 0)
@@ -334,7 +350,7 @@ open class MacKmlGlContext(window: Any? = null, parent: KmlGlContext? = null) : 
         val ctx = Memory(8L) // void**
         val pix = Memory(8L) // void**
         checkError("CGLChoosePixelFormat", MacGL.CGLChoosePixelFormat(attributes, pix, num))
-        checkError("CGLCreateContext", MacGL.CGLCreateContext(pix.getPointer(0L), (parent as? MacKmlGlContext)?.ctx, ctx))
+        checkError("CGLCreateContext", MacGL.CGLCreateContext(pix.getPointer(0L), (parent as? MacKmlGlContextRaw)?.ctx, ctx))
         checkError("CGLDestroyPixelFormat", MacGL.CGLDestroyPixelFormat(pix.getPointer(0L)))
         ctx.getPointer(0L)
     }
