@@ -317,7 +317,6 @@ class Win32OpenglContext(val gwconfig: GameWindowConfig, val hWnd: WinDef.HWND, 
             0
         )).also {
             println("wglCreateContextAttribsARB.error: ${Native.getLastError()}")
-
         }
 
         Console.trace("hWnd: $hWnd, hDC: $hDC, hRC: $hRC, component: $component")

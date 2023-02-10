@@ -270,6 +270,10 @@ open class GameWindowCoroutineDispatcher : CoroutineDispatcher(), Delay, Closeab
 
 interface GameWindowConfig {
     val quality: GameWindow.Quality
+
+    class Impl(
+        override val quality: GameWindow.Quality = GameWindow.Quality.AUTOMATIC,
+    ) : GameWindowConfig
 }
 
 open class GameWindow :

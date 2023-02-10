@@ -4,10 +4,12 @@ import com.soywiz.klogger.*
 import com.soywiz.kmem.*
 import com.soywiz.kmem.Platform
 import com.soywiz.kmem.dyn.*
+import com.soywiz.korgw.*
 import com.soywiz.korgw.osx.*
 import com.soywiz.korgw.platform.*
 import com.soywiz.korgw.win32.*
 import com.soywiz.korgw.x11.*
+import com.soywiz.korio.lang.*
 import com.sun.jna.*
 import com.sun.jna.platform.win32.*
 
@@ -18,8 +20,53 @@ actual fun KmlGlContextDefault(window: Any?, parent: KmlGlContext?): KmlGlContex
     Platform.isMac -> MacKmlGlContextManaged(window, parent)
     //Platform.isLinux -> LinuxKmlGlContext(window, parent)
     Platform.isLinux -> EGLKmlGlContext(window, parent)
-    Platform.isWindows -> Win32KmlGlContext(window, parent)
+    //Platform.isWindows -> Win32KmlGlContext(window, parent)
+    Platform.isWindows -> Win32KmlGlContextManaged(window, parent)
     else -> error("Unsupported OS ${Platform.os}")
+}
+
+class Win32KmlGlContextManaged(window: Any? = null, parent: KmlGlContext? = null) : KmlGlContext(window, Win32KmlGl, parent) {
+    val win = Win32DummyWindow()
+    val glCtx = Win32OpenglContext(GameWindowConfig.Impl(), win.hWND, win.hDC)
+
+    override fun set() = glCtx.makeCurrent()
+    override fun unset() = glCtx.releaseCurrent()
+    override fun swap() = glCtx.swapBuffers()
+    override fun close() {
+        glCtx.dispose()
+        win.dispose()
+    }
+}
+
+class Win32DummyWindow : Disposable {
+    val hWND = Win32.CreateWindowEx(
+        0, dummyName, "Dummy OpenGL Window",
+        0, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
+        null, null, winClass.hInstance, null
+    )
+    val hDC = Win32.GetDC(hWND)
+
+    companion object {
+        val dummyName = "OffScreen_WGL_korgw"
+        val CS_VREDRAW = 1
+        val CS_HREDRAW = 2
+        val CS_OWNDC = 0x0020
+        val CW_USEDEFAULT = 0x80000000L.toInt()
+        val winClass = WinUser.WNDCLASSEX().also {
+            it.style = CS_HREDRAW or CS_VREDRAW or CS_OWNDC
+            it.lpfnWndProc = WinUser.WindowProc { hwnd, uMsg, wParam, lParam -> Win32.DefWindowProc(hwnd, uMsg, wParam, lParam) }
+            it.hInstance = Win32.GetModuleHandle(null)
+            it.lpszClassName = dummyName
+        }.also {
+            Win32.RegisterClassEx(it)
+        }
+        //val hWND = HWND(Native.getWindowPointer(Window(Frame())))
+    }
+
+    override fun dispose() {
+        Win32.ReleaseDC(hWND, hDC)
+        Win32.DestroyWindow(hWND)
+    }
 }
 
 open class Win32KmlGlContext(window: Any? = null, parent: KmlGlContext? = null) : KmlGlContext(window, Win32KmlGl, parent) {
