@@ -9,8 +9,7 @@ import com.soywiz.korge.view.position
 import com.soywiz.korge.view.scale
 import com.soywiz.korge.view.solidRect
 import com.soywiz.korim.color.Colors
-import com.soywiz.korim.format.readBitmap
-import com.soywiz.korim.format.showImageAndWait
+import com.soywiz.korim.format.*
 import com.soywiz.korio.async.suspendTest
 import com.soywiz.korio.file.std.resourcesVfs
 import com.soywiz.korma.geom.degrees
