@@ -58,8 +58,6 @@ class KorgeScreenshotTest {
         }
 
         it.recordGolden(rectContainer, "initial4", DIFF_BY_PIXELS_SETTINGS)
-
-        it.endTest()
     }
 
 }

@@ -33,7 +33,5 @@ class TileMapViewScreenshotTest {
 
         it.recordGolden(this, "offsetInfiniteTilemap2")
 
-        it.endTest()
-
     }
 }

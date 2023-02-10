@@ -57,6 +57,7 @@ inline fun korgeScreenshotTest(
         // This allows people to test their existing modules.
         existingMain?.invoke(this)
         callback(this, korgeScreenshotTester)
+        korgeScreenshotTester.endTest()
     })
     suspendTest {
         try {
