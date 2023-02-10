@@ -4,6 +4,7 @@ import com.soywiz.klogger.*
 import com.soywiz.korge.testing.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.color.*
+import com.soywiz.korio.lang.*
 import com.soywiz.korma.geom.*
 import org.junit.Test
 import kotlin.test.*
@@ -13,6 +14,7 @@ class KorgeHeadlessJvmTest {
 
     @Test
     fun testHeadlessTest() {
+        if (Environment["DISABLE_HEADLESS_TEST"] == "true") return
         var wasCalled = false
         logger.info { "1" }
         korgeOffscreenTest(width = 256, height = 256, bgcolor = Colors["#2b2b2b"]) {
