@@ -231,7 +231,7 @@ object DirectGL : INativeGL {
                                         }
                                         else -> ptr.address
                                     }.also {
-                                        println("$name -> $it")
+                                        if (it == 0L) println("$name -> $it")
                                     }
                                 }
                             }

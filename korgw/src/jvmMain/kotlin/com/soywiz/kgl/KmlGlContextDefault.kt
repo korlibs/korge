@@ -27,7 +27,7 @@ actual fun KmlGlContextDefault(window: Any?, parent: KmlGlContext?): KmlGlContex
 
 class Win32KmlGlContextManaged(window: Any? = null, parent: KmlGlContext? = null) : KmlGlContext(window, Win32KmlGl, parent) {
     val win = Win32DummyWindow()
-    val glCtx = Win32OpenglContext(GameWindowConfig.Impl(), win.hWND, win.hDC)
+    val glCtx = Win32OpenglContext(GameWindowConfig.Impl(), win.hWND, win.hDC).init()
 
     override fun set() = glCtx.makeCurrent()
     override fun unset() = glCtx.releaseCurrent()
