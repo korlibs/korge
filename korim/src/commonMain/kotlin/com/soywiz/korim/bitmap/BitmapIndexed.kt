@@ -97,6 +97,12 @@ abstract class BitmapIndexed(
 		}
 	}
 
+    fun computeMaxReferencedColors(): Int {
+        var maxRefColor = -1
+        for (n in 0 until area) maxRefColor = max(maxRefColor, getIntIndex(n))
+        return maxRefColor + 1
+    }
+
 	override fun toBMP32(): Bitmap32 = Bitmap32(width, height, premultiplied = premultiplied).also { outBmp ->
         val out = outBmp.ints
         val pal = this@BitmapIndexed.palette.ints

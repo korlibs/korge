@@ -174,6 +174,7 @@ data class ImageEncodingProps(
     val filename: String = "",
     val quality: Double = 0.81,
     override var extra: ExtraType = null,
+    val depremultiplyIfRequired: Boolean = true,
     val init: (ImageEncodingProps.() -> Unit)? = null
 ) : Extra {
     val extension: String get() = PathInfo(filename).extensionLC

@@ -1,15 +1,7 @@
 package com.soywiz.korim.format
 
-import com.soywiz.kmem.ByteArrayBuilder
-import com.soywiz.kmem.UByteArrayInt
-import com.soywiz.kmem.arraycopy
-import com.soywiz.kmem.asByteArray
-import com.soywiz.kmem.convertRangeClamped
-import com.soywiz.kmem.extract
-import com.soywiz.kmem.write8
-import com.soywiz.korim.bitmap.Bitmap
-import com.soywiz.korim.bitmap.Bitmap32
-import com.soywiz.korim.bitmap.Bitmap8
+import com.soywiz.kmem.*
+import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.RGB
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.color.RgbaArray
@@ -34,9 +26,7 @@ import com.soywiz.korio.stream.write8
 import com.soywiz.korio.stream.writeBytes
 import com.soywiz.korio.util.checksum.CRC32
 import com.soywiz.krypto.encoding.hex
-import kotlin.math.abs
-import kotlin.math.log2
-import kotlin.math.max
+import kotlin.math.*
 
 @Suppress("MemberVisibilityCanBePrivate")
 object PNG : ImageFormat("png") {
@@ -151,57 +141,136 @@ object PNG : ImageFormat("png") {
 			}
 		}
 
-		when (bitmap) {
-			is Bitmap8 -> {
-				writeHeader(Colorspace.INDEXED)
-				writeChunk("PLTE", initialCapacity = bitmap.palette.size * 3) {
-					for (c in bitmap.palette) {
-						write8(c.r)
-						write8(c.g)
-						write8(c.b)
-					}
-				}
-				writeChunk("tRNS", initialCapacity = bitmap.palette.size * 1) {
-					for (c in bitmap.palette) {
-						write8(c.a)
-					}
-				}
-
-				val out = ByteArray(height + width * height)
-				var pos = 0
-				for (y in 0 until height) {
-					out.write8(pos++, 0)
-					val index = bitmap.index(0, y)
-					arraycopy(bitmap.data, index, out, pos, width)
-					pos += width
-				}
-				writeChunk("IDAT", compress(out))
-			}
-			else -> {
-                val bmp = bitmap.toBMP32()
-				writeHeader(Colorspace.RGBA)
-
-				val out = ByteArray(height + width * height * 4)
-				var pos = 0
-				for (y in 0 until height) {
-					out.write8(pos++, 0) // no filter
-					val index = bmp.index(0, y)
-                    for (x in 0 until width) {
-                        val c = bmp.getRgbaAtIndex(index + x)
-                        out.write8(pos++, c.r)
-                        out.write8(pos++, c.g)
-                        out.write8(pos++, c.b)
-                        out.write8(pos++, c.a)
+        val bmp = when (bitmap) {
+            is BitmapIndexed -> {
+                val ncolors = bitmap.computeMaxReferencedColors()
+                writeHeader(Colorspace.INDEXED)
+                writeChunk("PLTE", initialCapacity = ncolors * 3) {
+                    for (n in 0 until ncolors) {
+                        val c = bitmap.palette[n]
+                        write8(c.r)
+                        write8(c.g)
+                        write8(c.b)
                     }
-				}
+                }
+                writeChunk("tRNS", initialCapacity = bitmap.palette.size * 1) {
+                    for (n in 0 until ncolors) {
+                        val c = bitmap.palette[n]
+                        write8(c.a)
+                    }
+                }
+                bitmap.tryToExactBitmap8() ?: bitmap
+            }
 
-				writeChunk("IDAT", compress(out))
-			}
-		}
+            else -> {
+                writeHeader(Colorspace.RGBA)
+                if (props.depremultiplyIfRequired) bitmap.toBMP32().depremultipliedIfRequired() else bitmap.toBMP32()
+            }
+        }
+        val bmp8: Bitmap8? = bmp as? Bitmap8?
+        val bmp32: Bitmap32? = bmp as? Bitmap32?
+
+        val Bpp = bitmap.bpp divCeil  8
+        val scanline = width * Bpp
+        val prev = UByteArrayInt(scanline)
+        val currs = Array(3) { UByteArrayInt(scanline) }
+        val curr = currs[0]
+        val currF1 = currs[1]
+        val currF2 = currs[2]
+        val tempScore = UByteArrayInt(256)
+        //val globalHistoriogram = UByteArrayInt(256)
+
+        val oscanline = scanline + 1
+        val out = ByteArray(height * oscanline)
+
+        val tryFilters = props.quality >= 0.5
+
+        for (y in 0 until height) {
+            val index = bmp.index(0, y)
+            var pos = 0
+            if (bmp32 != null) {
+                for (x in 0 until width) {
+                    val c = bmp32.getRgbaAtIndex(index + x)
+                    curr.data.write8(pos++, c.r)
+                    curr.data.write8(pos++, c.g)
+                    curr.data.write8(pos++, c.b)
+                    curr.data.write8(pos++, c.a)
+                }
+            } else if (bmp8 != null) {
+                for (x in 0 until width) {
+                    curr.data.write8(pos++, bmp8.getIntIndex(index + x))
+                }
+            }
+
+            // https://www.w3.org/TR/PNG-Filters.html
+            if (tryFilters) {
+                run { // filter1
+                    for (n in 0 until Bpp) currF1[n] = curr[n]
+                    for (n in Bpp until scanline) currF1[n] = (curr[n] - curr[n - Bpp]) and 0xFF
+                }
+                if (y > 0) {
+                    run { // filter2
+                        for (n in 0 until scanline) currF2[n] = (curr[n] - prev[n]) and 0xFF
+                    }
+                }
+            }
+
+            // @TODO: Here we could try other filters: ie. 3, 4, etc. and figure out the one and generate a score based on the repeated values (different values / magnitude of values)
+            //val filter = if (y == 0) 1 else 2
+            val filter = when {
+                //true -> 0
+                !tryFilters -> 0
+                props.quality < 0.9 -> if (y == 0) 1 else 2
+                else -> {
+                    val scores = currs.mapIndexed { index, bytes ->
+                        tempScore.fill(0)
+                        index to (if (y > 0 || index <= 1) compressionScore(bytes, tempScore) else Double.POSITIVE_INFINITY)
+                    }
+                    scores.minBy { it.second }.first.also { filter ->
+                        //println("Bpp=$Bpp, filter=$filter, scores=$scores")
+                    }
+                }
+            }
+
+            val outpos = y * oscanline
+            val currFiltered = currs[filter]
+
+            //updateHistoriogram(globalHistoriogram, currFiltered.asUByteArrayInt())
+
+            // Write filter + line data
+            out[outpos] = filter.toByte() // filter
+            arraycopy(currFiltered.data, 0, out, outpos + 1, scanline)
+
+            // Prev <- Curr
+            arraycopy(curr, 0, prev, 0, scanline)
+        }
+        //println(out.size)
+        //println(compress(out).size)
+        writeChunk("IDAT", compress(out))
 
 		writeChunk("IEND", initialCapacity = 0) {
 		}
 	}
+
+    fun updateHistoriogram(historiogram: UByteArrayInt, data: UByteArrayInt) {
+        for (n in 0 until data.size) {
+            historiogram[data[n].toUByte().toInt()]++
+        }
+    }
+
+    private fun compressionScore(data: UByteArrayInt, temp: UByteArrayInt): Double {
+        var score: Double = 0.0
+        temp.fill(0)
+        for (n in 0 until data.size) {
+            temp[data[n].toUByte().toInt()]++
+        }
+        for (n in 0 until 256) {
+            val count = temp[n] //+ globalHistoriogram[n]
+            if (count == 0) continue
+            score += (1.0 / count) * sqrt(1.0 + n)
+        }
+        return score
+    }
 
 	private fun readCommon(s: SyncStream, readHeader: Boolean, info: ImageInfo = ImageInfo()): Any? {
 		val magic = s.readS32BE()
@@ -389,4 +458,18 @@ object PNG : ImageFormat("png") {
 			else -> TODO("Filter: $filter")
 		}
 	}
+
+    // 6.2. Filter type 0: None
+    // 6.3. Filter type 1: Sub
+    //    Sub(x) = Raw(x) - Raw(x-bpp)
+    //    Sub(x) + Raw(x-bpp)
+    // 6.4. Filter type 2: Up
+    //    Up(x) = Raw(x) - Prior(x)
+    //    Up(x) + Prior(x)
+    // 6.5. Filter type 3: Average
+    //    Average(x) = Raw(x) - floor((Raw(x-bpp)+Prior(x))/2)
+    //    Average(x) + floor((Raw(x-bpp)+Prior(x))/2)
+    // 6.6. Filter type 4: Paeth
+    //    Paeth(x) = Raw(x) - PaethPredictor(Raw(x-bpp), Prior(x), Prior(x-bpp))
+    //    Paeth(x) + PaethPredictor(Raw(x-bpp), Prior(x), Prior(x-bpp))
 }
