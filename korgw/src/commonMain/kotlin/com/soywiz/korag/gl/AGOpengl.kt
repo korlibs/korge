@@ -12,8 +12,8 @@ import com.soywiz.korio.lang.*
 import com.soywiz.krypto.encoding.hex
 
 class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
-    class ShaderException(val str: String, val error: String, val errorInt: Int, val gl: KmlGl, val debugName: String?, val type: Int) :
-        RuntimeException("Error Compiling Shader : $debugName type=$type : ${errorInt.hex} : '$error' : source='$str', gl.versionInt=${gl.versionInt}, gl.versionString='${gl.versionString}', gl=$gl")
+    class ShaderException(val str: String, val error: String, val errorInt: Int, val gl: KmlGl, val debugName: String?, val type: Int, val shaderReturnInt: Int) :
+        RuntimeException("Error Compiling Shader : $debugName type=$type : ${errorInt.hex} : '$error' : source='$str', shaderReturnInt=$shaderReturnInt, gl.versionInt=${gl.versionInt}, gl.versionString='${gl.versionString}', gl=$gl")
 
     override val parentFeatures: AGFeatures get() = gl
 
