@@ -33,17 +33,6 @@ inline fun Container.tileMap(
     callback: @ViewDslMarker TileMap.() -> Unit = {},
 ) = TileMap(map, tileset, smoothing, tileSize).repeat(repeatX, repeatY).addTo(this, callback)
 
-@Deprecated("Use IStackedIntArray2 or IntArray2 as the map data")
-inline fun Container.tileMap(
-    map: Bitmap32,
-    tileset: TileSet,
-    repeatX: TileMapRepeat = TileMapRepeat.NONE,
-    repeatY: TileMapRepeat = repeatX,
-    smoothing: Boolean = true,
-    tileSize: Size = Size(tileset.width.toDouble(), tileset.height.toDouble()),
-    callback: @ViewDslMarker TileMap.() -> Unit = {},
-) = TileMap(map.toIntArray2(), tileset, smoothing, tileSize).repeat(repeatX, repeatY).addTo(this, callback)
-
 @PublishedApi
 internal fun Bitmap32.toIntArray2() = IntArray2(width, height, ints)
 
@@ -220,20 +209,20 @@ class TileMap(
         val pp3 = globalToLocal(t0.setTo(currentVirtualRect.left, currentVirtualRect.bottom), tt3)
         val mapTileWidth = tileSize.width
         val mapTileHeight = tileSize.height
-        val mx0 = ((pp0.x / mapTileWidth) + 1).toInt()
-        val mx1 = ((pp1.x / mapTileWidth) + 1).toInt()
-        val mx2 = ((pp2.x / mapTileWidth) + 1).toInt()
-        val mx3 = ((pp3.x / mapTileWidth) + 1).toInt()
-        val my0 = ((pp0.y / mapTileHeight) + 1).toInt()
-        val my1 = ((pp1.y / mapTileHeight) + 1).toInt()
-        val my2 = ((pp2.y / mapTileHeight) + 1).toInt()
-        val my3 = ((pp3.y / mapTileHeight) + 1).toInt()
+        val mx0 = ((pp0.x / mapTileWidth)).toIntCeil()
+        val mx1 = ((pp1.x / mapTileWidth)).toIntCeil()
+        val mx2 = ((pp2.x / mapTileWidth)).toIntCeil()
+        val mx3 = ((pp3.x / mapTileWidth)).toIntCeil()
+        val my0 = ((pp0.y / mapTileHeight)).toIntCeil()
+        val my1 = ((pp1.y / mapTileHeight)).toIntCeil()
+        val my2 = ((pp2.y / mapTileHeight)).toIntCeil()
+        val my3 = ((pp3.y / mapTileHeight)).toIntCeil()
 
         //println("currentVirtualRect=$currentVirtualRect, mx=[$mx0, $mx1, $mx2, $mx3], my=[$my0, $my1, $my2, $my3], pp0=$pp0, pp1=$pp1, pp2=$pp2, pp3=$pp3")
 
-        val ymin = min(my0, my1, my2, my3) - 1
+        val ymin = min(my0, my1, my2, my3)
         val ymax = max(my0, my1, my2, my3)
-        val xmin = min(mx0, mx1, mx2, mx3) - 1
+        val xmin = min(mx0, mx1, mx2, mx3)
         val xmax = max(mx0, mx1, mx2, mx3)
 
         //println("$xmin,$xmax")
@@ -242,23 +231,12 @@ class TileMap(
         val doRepeatY = repeatY != TileMapRepeat.NONE
         val doRepeatAny = doRepeatX || doRepeatY // Since if it is rotated, we might have problems. For no rotation we could repeat separately
 
-        val ymin2: Int
-        val ymax2: Int
-        val xmin2: Int
-        val xmax2: Int
+        val ymin2 = (if (doRepeatAny) ymin else ymin.clamp(stackedIntMap.startY, stackedIntMap.endY)) - 1
+        val ymax2 = (if (doRepeatAny) ymax else ymax.clamp(stackedIntMap.startY, stackedIntMap.endY)) + 1
+        val xmin2 = (if (doRepeatAny) xmin else xmin.clamp(stackedIntMap.startX, stackedIntMap.endX)) - 1
+        val xmax2 = (if (doRepeatAny) xmax else xmax.clamp(stackedIntMap.startX, stackedIntMap.endX)) + 1
 
-        //if (false) {
-        if (true) {
-            ymin2 = if (doRepeatAny) ymin else ymin.clamp(stackedIntMap.startY, stackedIntMap.endY)
-            ymax2 = if (doRepeatAny) ymax else ymax.clamp(stackedIntMap.startY, stackedIntMap.endY)
-            xmin2 = if (doRepeatAny) xmin else xmin.clamp(stackedIntMap.startX, stackedIntMap.endX)
-            xmax2 = if (doRepeatAny) xmax else xmax.clamp(stackedIntMap.startX, stackedIntMap.endX)
-        } else {
-            ymin2 = 0
-            ymax2 = stackedIntMap.height
-            xmin2 = 0
-            xmax2 = stackedIntMap.width
-        }
+        //println("xyminmax2=${xmin2},${ymin2} - ${xmax2},${ymax2}")
 
         val yheight = ymax2 - ymin2
         val xwidth = xmax2 - xmin2
@@ -301,6 +279,9 @@ class TileMap(
                 if (rx < stackedIntMap.startX || rx >= stackedIntMap.endX) continue
                 if (ry < stackedIntMap.startY || ry >= stackedIntMap.endY) continue
                 for (level in 0 until stackedIntMap.getStackLevel(rx, ry)) {
+
+                    //println("x=$x, y=$y, rx=$rx, ry=$ry, level=$level")
+
                     val cell = TileInfo(stackedIntMap[rx, ry, level])
                     if (cell.isInvalid) continue
 

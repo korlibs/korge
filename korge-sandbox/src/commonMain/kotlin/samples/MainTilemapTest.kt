@@ -1,5 +1,6 @@
 package samples
 
+import com.soywiz.kds.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.scene.*
 import com.soywiz.korge.view.*
@@ -100,16 +101,16 @@ class MainTilemapTest : Scene() {
     private fun makeDonutMap(
         mapWidth: Int,
         tileSet: TileSet
-    ): Bitmap32 {
+    ): IntArray2 {
         val rand = Random(3)
-        val mapValues2 = Bitmap32(mapWidth, mapWidth)
+        val mapValues2 = IntArray2(mapWidth, mapWidth, 0)
         val center = Point(mapWidth / 2, mapWidth / 2)
         for (x in 0 until mapWidth) for (y in 0 until mapWidth) {
             val p = Point(x, y)
             val dist = (p - center).length
             val onDisc = dist < mapWidth / 2
             val tooClose = dist < (mapWidth / 2) * 0.7
-            mapValues2.ints[x * mapWidth + y] =
+            mapValues2[x, y] =
                 if (onDisc && !tooClose) 1 + rand.nextInt(tileSet.texturesMap.size - 1) else 0
         }
         return mapValues2
