@@ -27,16 +27,36 @@ open class MacKmlGL : NativeKgl(DirectGL)
 
 
 interface MacGL : INativeGL, Library {
-    fun CGLSetParameter(vararg args: Any?)
-    fun CGLEnable(vararg args: Any?)
-    fun CGLChoosePixelFormat(attributes: Pointer, pix: Pointer, num: Pointer)
-    fun CGLCreateContext(pix: Pointer?, sharedCtx: Pointer?, ctx: Pointer?)
-    fun CGLDestroyPixelFormat(ctx: Pointer?)
-    fun CGLSetCurrentContext(ctx: Pointer?)
+    //fun CGLSetParameter(vararg args: Any?): Int
+    //fun CGLEnable(vararg args: Any?): Int
+    fun CGLChoosePixelFormat(attributes: Pointer, pix: Pointer, num: Pointer): Int
+    fun CGLCreateContext(pix: Pointer?, sharedCtx: Pointer?, ctx: Pointer?): Int
+    fun CGLDestroyPixelFormat(ctx: Pointer?): Int
+    fun CGLSetCurrentContext(ctx: Pointer?): Int
     fun CGLGetCurrentContext(): Pointer?
-    fun CGLDestroyContext(ctx: Pointer?)
+    fun CGLDestroyContext(ctx: Pointer?): Int
 
-    companion object : MacGL by NativeLoad(nativeOpenGLLibraryPath)
+    companion object : MacGL by NativeLoad(nativeOpenGLLibraryPath) {
+        const val kCGLNoError            = 0        /* no error */
+        const val kCGLBadAttribute       = 10000	/* invalid pixel format attribute  */
+        const val kCGLBadProperty        = 10001	/* invalid renderer property       */
+        const val kCGLBadPixelFormat     = 10002	/* invalid pixel format            */
+        const val kCGLBadRendererInfo    = 10003	/* invalid renderer info           */
+        const val kCGLBadContext         = 10004	/* invalid context                 */
+        const val kCGLBadDrawable        = 10005	/* invalid drawable                */
+        const val kCGLBadDisplay         = 10006	/* invalid graphics device         */
+        const val kCGLBadState           = 10007	/* invalid context state           */
+        const val kCGLBadValue           = 10008	/* invalid numerical value         */
+        const val kCGLBadMatch           = 10009	/* invalid share context           */
+        const val kCGLBadEnumeration     = 10010	/* invalid enumerant               */
+        const val kCGLBadOffScreen       = 10011	/* invalid offscreen drawable      */
+        const val kCGLBadFullScreen      = 10012	/* invalid fullscreen drawable     */
+        const val kCGLBadWindow          = 10013	/* invalid window                  */
+        const val kCGLBadAddress         = 10014	/* invalid pointer                 */
+        const val kCGLBadCodeModule      = 10015	/* invalid code module             */
+        const val kCGLBadAlloc           = 10016	/* invalid memory allocation       */
+        const val kCGLBadConnection      = 10017 	/* invalid CoreGraphics connection */
+    }
 }
 
 private fun ByteArray.toNSData(): Long = NSClass("NSData").alloc().msgSend("initWithBytes:length:", ByteBuffer.wrap(this), this.size)

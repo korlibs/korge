@@ -308,7 +308,7 @@ open class EGLKmlGlContext(window: Any? = null, parent: KmlGlContext? = null) : 
 // http://renderingpipeline.com/2012/05/windowless-opengl-on-macos-x/
 open class MacKmlGlContext(window: Any? = null, parent: KmlGlContext? = null) : KmlGlContext(window, MacKmlGL(), parent) {
     init {
-        MacGL.CGLEnable()
+        //MacGL.CGLEnable()
     }
     var ctx: com.sun.jna.Pointer? = run {
         val attributes = Memory(intArrayOf(
@@ -326,22 +326,23 @@ open class MacKmlGlContext(window: Any? = null, parent: KmlGlContext? = null) : 
         val num = Memory(4L)
         val ctx = Memory(8L) // void**
         val pix = Memory(8L) // void**
-        checkError(MacGL.CGLChoosePixelFormat(attributes, pix, num))
-        checkError(MacGL.CGLCreateContext(pix.getPointer(0L), (parent as? MacKmlGlContext)?.ctx, ctx))
-        MacGL.CGLDestroyPixelFormat(pix.getPointer(0L))
+        checkError("CGLChoosePixelFormat", MacGL.CGLChoosePixelFormat(attributes, pix, num))
+        checkError("CGLCreateContext", MacGL.CGLCreateContext(pix.getPointer(0L), (parent as? MacKmlGlContext)?.ctx, ctx))
+        checkError("CGLDestroyPixelFormat", MacGL.CGLDestroyPixelFormat(pix.getPointer(0L)))
         ctx.getPointer(0L)
     }
 
-    private fun <T> checkError(value: T): T {
+    private fun checkError(name: String, value: Int): Int {
+        if (value != MacGL.kCGLNoError) error("Error in $name, errorCode=$value")
         return value
     }
 
     override fun set() {
-        MacGL.CGLSetCurrentContext(ctx)
+        checkError("CGLSetCurrentContext:ctx", MacGL.CGLSetCurrentContext(ctx))
     }
 
     override fun unset() {
-        MacGL.CGLSetCurrentContext(null)
+        checkError("CGLSetCurrentContext:null", MacGL.CGLSetCurrentContext(null))
     }
 
     override fun swap() {
@@ -351,9 +352,9 @@ open class MacKmlGlContext(window: Any? = null, parent: KmlGlContext? = null) : 
     override fun close() {
         if (ctx == null) return
         if (MacGL.CGLGetCurrentContext() == ctx) {
-            MacGL.CGLSetCurrentContext(null)
+            checkError("CGLSetCurrentContext", MacGL.CGLSetCurrentContext(null))
         }
-        MacGL.CGLDestroyContext(ctx)
+        checkError("CGLDestroyContext", MacGL.CGLDestroyContext(ctx))
         ctx = null
     }
 
