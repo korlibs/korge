@@ -586,6 +586,36 @@ fun BmpSlice32.isFullyTransparent(): Boolean {
     return true
 }
 
+fun Bitmap32.posterize(nbits: Int = 4): Bitmap32 = this.clone().posterizeInplace(nbits)
+
+fun Bitmap32.posterizeInplace(nbits: Int = 4): Bitmap32 {
+    val add1 = 1 shl nbits
+    val lmask = ((1 shl nbits) - 1)
+    val hlmask = lmask / 2
+    val mask = 0xFF and lmask.inv()
+    val array = RgbaArray(this.ints)
+    for (n in 0 until area) {
+        val rgba = array[n]
+        val hR = rgba.r and mask
+        val hG = rgba.g and mask
+        val hB = rgba.b and mask
+        val hA = rgba.a and mask
+
+        val lR = rgba.r and lmask
+        val lG = rgba.g and lmask
+        val lB = rgba.b and lmask
+        val lA = rgba.a and lmask
+
+        array[n] = RGBA(
+            if (lR > hlmask) hR + add1 else hR,
+            if (lG > hlmask) hG + add1 else hG,
+            if (lB > hlmask) hB + add1 else hB,
+            if (lA > hlmask) hA + add1 else hA,
+        )
+    }
+    return this
+}
+
 fun Bitmap32.expandBorder(area: IRectangleInt, border: Int) {
     val data = this.ints
     var x0Index = index(area.left, area.top)
