@@ -23,7 +23,7 @@ class TtfFontTest {
             }
         }
 
-        it.recordGolden(c, "text")
+        it.recordGolden(c, "text", posterize = 5)
 
         it.endTest()
     }

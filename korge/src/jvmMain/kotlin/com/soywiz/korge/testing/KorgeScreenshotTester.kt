@@ -1,16 +1,15 @@
 package com.soywiz.korge.testing
 
-import com.soywiz.klock.DateFormat
-import com.soywiz.klock.DateTime
+import com.soywiz.klock.*
 import com.soywiz.klogger.*
-import com.soywiz.korge.view.View
-import com.soywiz.korge.view.Views
-import com.soywiz.korge.view.renderToBitmap
-import com.soywiz.korim.format.PNG
-import com.soywiz.korim.format.readBitmap
-import com.soywiz.korim.format.writeBitmap
-import com.soywiz.korio.file.std.localCurrentDirVfs
-import kotlinx.coroutines.sync.Mutex
+import com.soywiz.korge.view.*
+import com.soywiz.korim.bitmap.*
+import com.soywiz.korim.format.*
+import com.soywiz.korio.file.std.*
+import kotlinx.coroutines.sync.*
+import kotlin.collections.component1
+import kotlin.collections.component2
+import kotlin.collections.set
 
 private val logger = Logger("KorgeScreenshotTester")
 
@@ -84,9 +83,10 @@ class KorgeScreenshotTester(
         view: View,
         goldenName: String,
         settingOverride: KorgeScreenshotValidationSettings = defaultValidationSettings,
-        includeBackgroundColor: Boolean = true
+        includeBackgroundColor: Boolean = true,
+        posterize: Int = 0
     ) {
-        val bitmap = view.renderToBitmap(views, includeBackground = includeBackgroundColor)
+        val bitmap: Bitmap32 = view.renderToBitmap(views, includeBackground = includeBackgroundColor)
         require(!recordedGoldenNames.contains(goldenName)) {
             """
                 Golden collision for name: $goldenName
@@ -96,8 +96,51 @@ class KorgeScreenshotTester(
         recordedGoldenNames[goldenName] = settingOverride
         val fileName =
             context.makeGoldenFileNameWithExtension(goldenName)
-        context.tempGoldensVfs[fileName].writeBitmap(bitmap, PNG)
+
+        if (posterize > 0) {
+            bitmap.posterizeInplace(posterize)
+        }
+
+        val bmp = bitmap.tryToExactBitmap8() ?: bitmap.toBMP32IfRequired()
+
+        context.tempGoldensVfs[fileName].writeBitmap(bmp, PNG, ImageEncodingProps(quality = 1.0))
+
+        //try {
+        //    context.tempGoldensVfs[fileName].writeBytes(compress(bmp.toAwt(), "png").readBytes())
+        //} catch (e: Throwable) {
+        //    e.printStackTrace()
+        //    context.tempGoldensVfs[fileName].writeBitmap(bmp, PNG)
+        //}
     }
+
+    // @TODO: Create java native writer
+    //@Throws(Exception::class)
+    //protected fun compress(image: BufferedImage, formatName: String): InputStream {
+    //    var image = image
+    //    var formatName = formatName
+    //    if (formatName.lowercase(Locale.getDefault()) == "jpeg" || formatName.lowercase(Locale.getDefault()) == "jpg") {
+    //        //image = stripAlpha(image)
+    //    }
+    //    val byteArrayOutputStream = ByteArrayOutputStream()
+    //    val bos = BufferedOutputStream(byteArrayOutputStream)
+    //    if (formatName.lowercase(Locale.getDefault()) == "gif") {
+    //        formatName = "png"
+    //    }
+    //    val writerIter = ImageIO.getImageWritersByFormatName(formatName)
+    //    val writer = writerIter.next()
+    //    val iwp = writer.defaultWriteParam
+    //    if (formatName.lowercase(Locale.getDefault()) == "jpeg" || formatName.lowercase(Locale.getDefault()) == "jpg") {
+    //        iwp.compressionMode = ImageWriteParam.MODE_EXPLICIT
+    //        iwp.compressionQuality = 0.85f
+    //        iwp.progressiveMode = ImageWriteParam.MODE_DEFAULT
+    //    }
+    //    val output = MemoryCacheImageOutputStream(bos)
+    //    writer.output = output
+    //    val iomage = IIOImage(image, null, null)
+    //    writer.write(null, iomage, iwp)
+    //    bos.flush()
+    //    return ByteArrayInputStream(byteArrayOutputStream.toByteArray())
+    //}
 
     private suspend fun processGoldenResults() {
         logger.info { "Processing golden results" }
