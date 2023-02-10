@@ -28,7 +28,8 @@ open class MacKmlGL : NativeKgl(DirectGL)
 
 interface MacGL : INativeGL, Library {
     //fun CGLSetParameter(vararg args: Any?): Int
-    //fun CGLEnable(vararg args: Any?): Int
+    fun CGLEnable(ctx: Pointer?, enable: Int): Int
+    fun CGLDisable(ctx: Pointer?, enable: Int): Int
     fun CGLChoosePixelFormat(attributes: Pointer, pix: Pointer, num: Pointer): Int
     fun CGLCreateContext(pix: Pointer?, sharedCtx: Pointer?, ctx: Pointer?): Int
     fun CGLDestroyPixelFormat(ctx: Pointer?): Int

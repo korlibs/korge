@@ -308,7 +308,7 @@ open class EGLKmlGlContext(window: Any? = null, parent: KmlGlContext? = null) : 
 // http://renderingpipeline.com/2012/05/windowless-opengl-on-macos-x/
 open class MacKmlGlContext(window: Any? = null, parent: KmlGlContext? = null) : KmlGlContext(window, MacKmlGL(), parent) {
     init {
-        //MacGL.CGLEnable()
+        MacGL.CGLEnable(null, 0)
     }
     var ctx: com.sun.jna.Pointer? = run {
         val attributes = Memory(intArrayOf(
