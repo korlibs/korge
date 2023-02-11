@@ -84,7 +84,7 @@ class KorgeScreenshotTester(
         goldenName: String,
         settingOverride: KorgeScreenshotValidationSettings = defaultValidationSettings,
         includeBackgroundColor: Boolean = false,
-        posterize: Int = 0
+        posterize: Int = 0,
     ) {
         val bitmap: Bitmap32 = view.renderToBitmap(views, includeBackground = includeBackgroundColor)
         require(!recordedGoldenNames.contains(goldenName)) {

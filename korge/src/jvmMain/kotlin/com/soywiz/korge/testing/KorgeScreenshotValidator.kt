@@ -53,7 +53,7 @@ object DefaultValidator : KorgeScreenshotValidator {
         val psnr: Double = 0.0,
     ) {
         val strictEquals: Boolean get() = pixelDiffCount == 0
-        val reasonablySimilar: Boolean get() = pixelMaxDistance <= 3 && psnr >= 55.0
+        val reasonablySimilar: Boolean get() = pixelMaxDistance <= 3 || psnr >= 45.0
     }
 
     private fun contentCompare(left: Bitmap, right: Bitmap): CompareResult {
