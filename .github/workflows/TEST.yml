@@ -86,7 +86,7 @@ jobs:
     - { name: Grant execute permission for gradlew, run: chmod +x gradlew }
     - { name: Start gradle, run: ./gradlew }
     - { name: Building classes, run: ./gradlew compileTestKotlinJvm }
-    - { name: Testing JVM, run: xvfb-run -n :0 ./gradlew jvmTest }
+    - { name: Testing JVM, run: "xvfb-run -n :0 ./gradlew jvmTest" }
     - { name: Check sandbox compiles, run: "./gradlew :korge-sandbox:jvmJar" }
     - { name: Publish to maven local, run: ./gradlew publishJvmLocal }
     - { name: e2e test, working-directory: e2e-test, run: ./gradlew checkReferencesJvm --stacktrace }
