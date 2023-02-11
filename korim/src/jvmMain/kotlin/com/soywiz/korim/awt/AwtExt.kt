@@ -152,10 +152,12 @@ fun ImageIOReadFormat(s: InputStream, type: Int = AWT_INTERNAL_IMAGE_TYPE_PRE): 
 
 fun awtReadImage(data: ByteArray): BufferedImage = ImageIOReadFormat(ByteArrayInputStream(data))
 
-suspend fun awtReadImageInWorker(data: ByteArray, props: ImageDecodingProps): BufferedImage =
-    executeInWorkerJVM { ImageIOReadFormat(ByteArrayInputStream(data), props) }
+suspend fun awtReadImageInWorker(data: ByteArray, props: ImageDecodingProps): BufferedImage = withContext(Dispatchers.IO) {
+    ImageIOReadFormat(ByteArrayInputStream(data), props)
+}
 
-suspend fun awtReadImageInWorker(file: File, props: ImageDecodingProps): BufferedImage =
-    executeInWorkerJVM { FileInputStream(file).use { ImageIOReadFormat(it, props) } }
+suspend fun awtReadImageInWorker(file: File, props: ImageDecodingProps): BufferedImage = withContext(Dispatchers.IO) {
+    FileInputStream(file).use { ImageIOReadFormat(it, props) }
+}
 
 //var image = ImageIO.read(File("/Users/al/some-picture.jpg"))
