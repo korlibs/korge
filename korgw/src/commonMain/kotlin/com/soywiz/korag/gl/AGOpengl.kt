@@ -11,9 +11,9 @@ import com.soywiz.korim.color.*
 import com.soywiz.korio.lang.*
 import com.soywiz.krypto.encoding.hex
 
-class AGOpengl(val gl: KmlGl) : AG() {
-    class ShaderException(val str: String, val error: String, val errorInt: Int, val gl: KmlGl, val debugName: String?, val type: Int) :
-        RuntimeException("Error Compiling Shader : $debugName type=$type : ${errorInt.hex} : '$error' : source='$str', gl.versionInt=${gl.versionInt}, gl.versionString='${gl.versionString}', gl=$gl")
+class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
+    class ShaderException(val str: String, val error: String, val errorInt: Int, val gl: KmlGl, val debugName: String?, val type: Int, val shaderReturnInt: Int) :
+        RuntimeException("Error Compiling Shader : $debugName type=$type : ${errorInt.hex} : '$error' : source='$str', shaderReturnInt=$shaderReturnInt, gl.versionInt=${gl.versionInt}, gl.versionString='${gl.versionString}', gl=$gl")
 
     override val parentFeatures: AGFeatures get() = gl
 
@@ -233,6 +233,9 @@ class AGOpengl(val gl: KmlGl) : AG() {
     private var currentScissor: AGScissor = AGScissor.INVALID
 
     override fun startFrame() {
+        context?.set()
+        gl.beforeDoRender(contextVersion)
+
         currentVertexData = null
         currentScissor = AGScissor.INVALID
         currentBlending = AGBlending.INVALID
@@ -257,6 +260,7 @@ class AGOpengl(val gl: KmlGl) : AG() {
         currentVertexData?.let { vaoUnuse(it) }
         currentVertexData = null
         bindFrameBuffer(mainFrameBuffer.base, mainFrameBuffer.info)
+        context?.unset()
     }
 
     fun listStart() {
@@ -276,10 +280,6 @@ class AGOpengl(val gl: KmlGl) : AG() {
 
     //var doPrintTimer = Stopwatch().also { it.start() }
     //var doPrint = false
-
-    override fun beforeDoRender() {
-        gl.beforeDoRender(contextVersion)
-    }
 
     override fun finish() {
         currentVertexData?.let { vaoUnuse(it) }

@@ -1,3 +1,4 @@
+beforeDoRender(0)
 getIntegerv(36006, Buffer(size=4))
 activeTexture(33984)
 texParameteri(3553, 33084, 0)

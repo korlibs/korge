@@ -384,7 +384,6 @@ class RenderContext constructor(
     val frameBufferStack = FastArrayList<AGFrameBuffer>()
 
     inline fun doRender(block: () -> Unit) {
-        ag.beforeDoRender()
         ag.startFrame()
         try {
             //mainRenderBuffer.init()

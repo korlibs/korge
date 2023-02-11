@@ -116,7 +116,6 @@ object Korge {
             forceRenderEveryFrame = config.forceRenderEveryFrame,
             entry = {
                 //println("Korge views prepared for Config")
-                RegisteredImageFormats.register(*module.imageFormats.toTypedArray())
                 val injector = config.injector
                 injector.mapInstance(Module::class, module)
                 injector.mapInstance(Config::class, config)
@@ -173,6 +172,8 @@ object Korge {
         forceRenderEveryFrame: Boolean = true,
         entry: suspend Stage.() -> Unit
 	) {
+        RegisteredImageFormats.register(imageFormats)
+
         if (!OS.isJsBrowser) {
             configureLoggerFromProperties(localCurrentDirVfs["klogger.properties"])
         }

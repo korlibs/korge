@@ -13,9 +13,18 @@ import com.soywiz.korinject.*
 import com.soywiz.korma.geom.*
 
 object KorgeHeadless {
-    class HeadlessGameWindow(override val width: Int = 640, override val height: Int = 480, val draw: Boolean = false) : GameWindow() {
+    class HeadlessGameWindow(
+        override val width: Int = 640,
+        override val height: Int = 480,
+        val draw: Boolean = false,
+        override val ag: AG = AGDummy(width, height),
+        exitProcessOnClose: Boolean = false
+    ) : GameWindow() {
+        init {
+            this.exitProcessOnClose = exitProcessOnClose
+        }
         //override val ag: AG = if (draw) AGSoftware(width, height) else DummyAG(width, height)
-        override val ag: AG = AGDummy(width, height)
+        //override val ag: AG = AGDummy(width, height)
     }
 
     suspend operator fun invoke(config: Korge.Config) = Korge(config.copy(gameWindow = HeadlessGameWindow()))
@@ -27,8 +36,7 @@ object KorgeHeadless {
         icon: Bitmap? = null,
         iconPath: String? = null,
         //iconDrawable: SizedDrawable? = null,
-        //imageFormats: ImageFormat = ImageFormats(PNG),
-        imageFormats: ImageFormat = ImageFormats(),
+        imageFormats: ImageFormat = ImageFormats(PNG),
         quality: GameWindow.Quality = GameWindow.Quality.AUTOMATIC,
         targetFps: Double = 0.0,
         scaleAnchor: Anchor = Anchor.MIDDLE_CENTER,
@@ -45,14 +53,18 @@ object KorgeHeadless {
         blocking:Boolean = true,
         debugAg: Boolean = false,
         draw: Boolean = false,
+        ag: AG = AGDummy(width, height),
         entry: suspend Stage.() -> Unit
     ): HeadlessGameWindow {
-        val gameWindow = HeadlessGameWindow(width, height, draw = draw)
+        val gameWindow = HeadlessGameWindow(width, height, draw = draw, ag = ag)
+        gameWindow.exitProcessOnClose = false
         Korge(
             title, width, height, virtualWidth, virtualHeight, icon, iconPath, /*iconDrawable,*/ imageFormats, quality,
             targetFps, scaleAnchor, scaleMode, clipBorders, bgcolor, debug, debugFontExtraScale, debugFontColor,
             fullscreen, args, gameWindow, timeProvider, injector,
-            blocking = blocking,debugAg = debugAg, entry = entry
+            blocking = blocking, debugAg = debugAg, entry = {
+                entry()
+            }
         )
         return gameWindow
     }

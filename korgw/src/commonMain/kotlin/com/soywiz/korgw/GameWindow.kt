@@ -270,6 +270,10 @@ open class GameWindowCoroutineDispatcher : CoroutineDispatcher(), Delay, Closeab
 
 interface GameWindowConfig {
     val quality: GameWindow.Quality
+
+    class Impl(
+        override val quality: GameWindow.Quality = GameWindow.Quality.AUTOMATIC,
+    ) : GameWindowConfig
 }
 
 open class GameWindow :
@@ -527,7 +531,9 @@ open class GameWindow :
     // Alias for close
     fun exit(exitCode: Int = 0): Unit = close(exitCode)
 
-    var exitProcessOnExit: Boolean = true
+    var exitProcessOnClose: Boolean = true
+    @Deprecated("Use exitProcessOnClose instead")
+    var exitProcessOnExit: Boolean by ::exitProcessOnClose
     var exitCode = 0; private set
     var running = true; protected set
     private var closing = false

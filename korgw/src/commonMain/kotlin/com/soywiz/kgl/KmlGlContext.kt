@@ -4,7 +4,7 @@ import com.soywiz.korio.lang.*
 
 expect fun KmlGlContextDefault(window: Any? = null, parent: KmlGlContext? = null): KmlGlContext
 
-fun KmlGlContextDefaultTemp(block: (KmlGl) -> Unit) {
+inline fun KmlGlContextDefaultTemp(block: (KmlGl) -> Unit) {
     KmlGlContextDefault().use {
         it.set()
         try {

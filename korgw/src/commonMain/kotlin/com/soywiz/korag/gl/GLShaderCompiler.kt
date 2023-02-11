@@ -102,7 +102,7 @@ internal object GLShaderCompiler {
         val errorInt = gl.getError()
         if (out != gl.GTRUE) {
             val error = gl.getShaderInfoLog(shaderId)
-            throw AGOpengl.ShaderException(str, error, errorInt, gl, debugName, type)
+            throw AGOpengl.ShaderException(str, error, errorInt, gl, debugName, type, out)
         }
         return shaderId
     }
