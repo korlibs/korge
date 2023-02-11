@@ -12,6 +12,7 @@ import com.soywiz.korgw.x11.*
 import com.soywiz.korio.lang.*
 import com.sun.jna.*
 import com.sun.jna.platform.win32.*
+import java.util.concurrent.atomic.*
 
 val GLOBAL_HEADLESS_KML_CONTEXT by lazy { KmlGlContextDefault() }
 
@@ -268,9 +269,10 @@ open class EGLKmlGlContext(window: Any? = null, parent: KmlGlContext? = null) : 
         val majorPtr = Memory(8).also { it.clear() }
         val minorPtr = Memory(8).also { it.clear() }
         val initialize = EGL.eglInitialize(display, majorPtr, minorPtr)
+        INIT_COUNT.incrementAndGet()
         val major = majorPtr.getInt(0)
         val minor = minorPtr.getInt(0)
-        if (!initialize) error("Can't initialize EGL : errorCode=${EGL.eglGetError()}, display=$display, major=$major, minor=$minor")
+        if (!initialize) error("Can't initialize EGL : errorCode=${EGL.eglGetError()}, display=$display, major=$major, minor=$minor, initCount=${INIT_COUNT.get()}, terminateCount=${TERMINATE_COUNT.get()}")
         //println("display=$display, initialize=$initialize, major=${major}, minor=${minor}")
 
         //val attrib_list = Memory()
@@ -321,9 +323,14 @@ open class EGLKmlGlContext(window: Any? = null, parent: KmlGlContext? = null) : 
     override fun close() {
         EGL.eglDestroyContext(display, eglCtx);
         EGL.eglDestroySurface(display, eglSurface)
+        EGL.eglTerminate(display)
+        TERMINATE_COUNT.incrementAndGet()
     }
 
     companion object {
+        val INIT_COUNT = AtomicInteger(0)
+        val TERMINATE_COUNT = AtomicInteger(0)
+
         const val EGL_PBUFFER_BIT                   = 0x0001
         const val EGL_OPENGL_BIT                    = 0x0008
 

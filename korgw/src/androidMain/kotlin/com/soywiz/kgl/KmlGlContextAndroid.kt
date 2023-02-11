@@ -114,6 +114,7 @@ class AndroidKmlGlContext(window: Any?, parent: KmlGlContext?) : KmlGlContext(wi
     override fun close() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
             eglDestroyContext(display, context)
+            eglTerminate(display)
         } else {
             TODO("VERSION.SDK_INT < JELLY_BEAN_MR1")
         }
