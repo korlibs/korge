@@ -36,7 +36,7 @@ class HttpClientJvm : HttpClient() {
 		headers: Http.Headers,
 		content: AsyncInputStreamWithLength?
 	): Response {
-		val result = executeInWorkerJVM {
+		val result = withContext(Dispatchers.IO) {
 			val requestId = lastRequestId++
 			val id = "request[$clientId,$requestId]"
 
