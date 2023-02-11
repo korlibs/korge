@@ -4,18 +4,7 @@ import com.soywiz.kmem.arraycopy
 import com.soywiz.kmem.clamp
 import com.soywiz.kmem.toInt
 import com.soywiz.korim.annotation.KorimInternal
-import com.soywiz.korim.color.ColorFormat
-import com.soywiz.korim.color.ColorTransform
-import com.soywiz.korim.color.RGBA
-import com.soywiz.korim.color.RGBAPremultiplied
-import com.soywiz.korim.color.RgbaArray
-import com.soywiz.korim.color.RgbaPremultipliedArray
-import com.soywiz.korim.color.YCbCr
-import com.soywiz.korim.color.decode
-import com.soywiz.korim.color.encode
-import com.soywiz.korim.color.mix
-import com.soywiz.korim.color.toRGBA
-import com.soywiz.korim.color.toYCbCr
+import com.soywiz.korim.color.*
 import com.soywiz.korim.vector.Bitmap32Context2d
 import com.soywiz.korim.vector.Context2d
 import com.soywiz.korma.geom.IRectangleInt
@@ -387,8 +376,8 @@ class Bitmap32(
     //    }
     //}
 
-    fun scaleNearest(sx: Int, sy: Int): Bitmap32 = scaled(width * sx, height * sy, smooth = false)
-    fun scaleLinear(sx: Double, sy: Double): Bitmap32 = scaled((width * sx).toInt(), (height * sy).toInt(), smooth = true)
+    fun scaleNearest(sx: Int, sy: Int = sx): Bitmap32 = scaled(width * sx, height * sy, smooth = false)
+    fun scaleLinear(sx: Double, sy: Double = sx): Bitmap32 = scaled((width * sx).toInt(), (height * sy).toInt(), smooth = true)
 
     /**
      * Creates a new [Bitmap32] with the specified new dimensions [width]x[height]
@@ -589,13 +578,18 @@ fun BmpSlice32.isFullyTransparent(): Boolean {
 fun Bitmap32.posterize(nbits: Int = 4): Bitmap32 = this.clone().posterizeInplace(nbits)
 
 fun Bitmap32.posterizeInplace(nbits: Int = 4): Bitmap32 {
+    if (nbits == 0) return this
+
     val add1 = 1 shl nbits
     val lmask = ((1 shl nbits) - 1)
     val hlmask = lmask / 2
     val mask = 0xFF and lmask.inv()
     val array = RgbaArray(this.ints)
+    val parray = RgbaPremultipliedArray(this.ints)
     for (n in 0 until area) {
-        val rgba = array[n]
+        val rgba = if (premultiplied) parray[n].depremultiplied else array[n]
+        //val rgba = array[n]
+
         val hR = rgba.r and mask
         val hG = rgba.g and mask
         val hB = rgba.b and mask
@@ -606,12 +600,17 @@ fun Bitmap32.posterizeInplace(nbits: Int = 4): Bitmap32 {
         val lB = rgba.b and lmask
         val lA = rgba.a and lmask
 
-        array[n] = RGBA(
+        val orgba = RGBA(
             if (lR > hlmask) hR + add1 else hR,
             if (lG > hlmask) hG + add1 else hG,
             if (lB > hlmask) hB + add1 else hB,
             if (lA > hlmask) hA + add1 else hA,
         )
+        if (premultiplied) {
+            parray[n] = orgba.premultiplied
+        } else {
+            array[n] = orgba
+        }
     }
     return this
 }

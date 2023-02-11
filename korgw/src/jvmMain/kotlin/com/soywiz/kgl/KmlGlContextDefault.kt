@@ -4,9 +4,11 @@ import com.soywiz.klogger.*
 import com.soywiz.kmem.*
 import com.soywiz.kmem.Platform
 import com.soywiz.kmem.dyn.*
+import com.soywiz.kmem.dyn.osx.*
 import com.soywiz.korgw.*
 import com.soywiz.korgw.osx.*
 import com.soywiz.korgw.platform.*
+import com.soywiz.korgw.platform.NativeLoad
 import com.soywiz.korgw.win32.*
 import com.soywiz.korgw.x11.*
 import com.soywiz.korio.lang.*
@@ -17,8 +19,8 @@ import java.util.concurrent.atomic.*
 val GLOBAL_HEADLESS_KML_CONTEXT by lazy { KmlGlContextDefault() }
 
 actual fun KmlGlContextDefault(window: Any?, parent: KmlGlContext?): KmlGlContext = when {
-    //Platform.isMac -> MacKmlGlContextRaw(window, parent)
-    Platform.isMac -> MacKmlGlContextManaged(window, parent)
+    Platform.isMac -> MacKmlGlContextRaw(window, parent)
+    //Platform.isMac -> MacKmlGlContextManaged(window, parent)
     //Platform.isLinux -> LinuxKmlGlContext(window, parent)
     Platform.isLinux -> EGLKmlGlContext(window, parent)
     //Platform.isWindows -> Win32KmlGlContext(window, parent)
@@ -384,8 +386,7 @@ open class MacKmlGlContextManaged(window: Any? = null, parent: KmlGlContext? = n
 open class MacKmlGlContextRaw(window: Any? = null, parent: KmlGlContext? = null) : KmlGlContext(window, MacKmlGL(), parent) {
     init {
         CoreGraphics.CGMainDisplayID()
-        //MacGL.CGLEnable(null, 0)
-
+        NSClass("NSOpenGLPixelFormat").alloc().msgSend("initWithAttributes:", intArrayOf(0)) // This might help initializing CoreGraphics?
     }
     var ctx: com.sun.jna.Pointer? = run {
         val attributes = Memory(intArrayOf(

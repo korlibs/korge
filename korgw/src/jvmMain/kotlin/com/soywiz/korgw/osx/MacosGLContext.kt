@@ -80,8 +80,6 @@ class MacosGLContext(
         openGLContext.msgSend("clearDrawable")
     }
 
-
-
     fun setView(contentView: Long) {
         runOnMainThread {
             println("MacosGLContext.setView: $contentView")
@@ -96,12 +94,13 @@ class MacosGLContext(
 
     var callback: (() -> Unit)? = null
     val isMainThread: Boolean get() = NSThread.msgSend("isMainThread") != 0L
+    val myThreadExecutorCallback = ObjcCallbackVoid { self, _sel, sender ->
+        //println("MyThreadExecutor")
+        callback?.invoke()
+        callback = null
+    }
     val MyThreadExecutor = AllocateClassAndRegister("MyThreadExecutor", "NSObject") {
-        addMethod("main:", ObjcCallbackVoid { self, _sel, sender ->
-            //println("MyThreadExecutor")
-            callback?.invoke()
-            callback = null
-        }, "v@:@")
+        addMethod("main:", myThreadExecutorCallback, "v@:@")
     }
     val myThreadExecutorInstance = MyThreadExecutor.alloc().msgSend("init")
 
