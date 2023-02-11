@@ -206,6 +206,8 @@ class VfsFileTest {
         assertEquals("NodeVfs[/hello]", log.joinToString("\n"))
     }
 
+    suspend fun VfsFile.listPathsRecursively() = listRecursive().toList().map { it.path }.sorted()
+
     @Test
     fun testDeleteRecursively() = suspendTest {
         val vfs = MemoryVfs().root
@@ -214,16 +216,35 @@ class VfsFileTest {
         folder["test.txt"].writeString("hello")
         folder2["demo.txt"].writeString("demo")
 
-        suspend fun list() = vfs.listRecursive().toList().map { it.path }.sorted()
-
         assertEquals(
             "/test, /test/demo, /test/demo/lol, /test/demo/lol/test.txt, /test/demo2, /test/demo2/lol2, /test/demo2/lol2/demo.txt",
-            list().joinToString(", ")
+            vfs.listPathsRecursively().joinToString(", ")
         )
         vfs["test/demo"].deleteRecursively()
         assertEquals(
             "/test, /test/demo2, /test/demo2/lol2, /test/demo2/lol2/demo.txt",
-            list().joinToString(", ")
+            vfs.listPathsRecursively().joinToString(", ")
+        )
+    }
+
+    @Test
+    fun testCopyToRecursively() = suspendTest {
+        val vfs1 = MemoryVfsMix(
+            "hello/world.txt" to "test1",
+            "demo/a/test.txt" to "test2",
+            "demo/a/nice" to "test2",
+            "demo/b/lol.txt" to "test3",
+        )
+        val vfs2 = MemoryVfsMix()
+        vfs1.copyToRecursively(vfs2)
+
+        assertEquals(
+            "/demo, /demo/a, /demo/a/nice, /demo/a/test.txt, /demo/b, /demo/b/lol.txt, /hello, /hello/world.txt",
+            vfs1.listPathsRecursively().joinToString(", ")
+        )
+        assertEquals(
+            vfs1.listPathsRecursively().joinToString(", "),
+            vfs2.listPathsRecursively().joinToString(", ")
         )
     }
 }

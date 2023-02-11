@@ -58,7 +58,7 @@ data class VfsFile(
 
 	suspend fun listNames(): List<String> = listSimple().map { it.baseName }
 
-	suspend fun copyTo(target: AsyncOutputStream) = this.openUse { this.copyTo(target) }
+	suspend fun copyTo(target: AsyncOutputStream): Long = this.openUse { this.copyTo(target) }
 	suspend fun copyTo(target: VfsFile, vararg attributes: Vfs.Attribute): Long = this.openInputStream().use { target.writeStream(this, *attributes) }
 
 	fun withExtension(ext: String): VfsFile =
@@ -124,29 +124,22 @@ data class VfsFile(
     suspend fun mkdirs(attributes: List<Vfs.Attribute>) = vfs.mkdirs(this.path, attributes)
     suspend fun mkdirs(vararg attributes: Vfs.Attribute) = mkdirs(attributes.toList())
 
-    @Deprecated("Use copyRecursively instead", ReplaceWith("copyRecursively(target, *attributes, notify = notify)"))
-    suspend fun copyToTree(
-        target: VfsFile,
-        vararg attributes: Vfs.Attribute,
-        notify: suspend (Pair<VfsFile, VfsFile>) -> Unit = {}
-    ) = copyRecursively(target, *attributes, notify = notify)
-
     /**
      * Copies this [VfsFile] into the [target] VfsFile.
      *
      * If this node is a file, the content will be copied.
      * If the node is a directory, a tree structure with the same content will be created in the target destination.
      */
-    suspend fun copyRecursively(
+    suspend fun copyToRecursively(
 		target: VfsFile,
 		vararg attributes: Vfs.Attribute,
 		notify: suspend (Pair<VfsFile, VfsFile>) -> Unit = {}
 	) {
 		notify(this to target)
 		if (this.isDirectory()) {
-			target.mkdir()
+			target.mkdirs()
             list().collect { file ->
-                file.copyToTree(target[file.baseName], *attributes, notify = notify)
+                file.copyToRecursively(target[file.baseName], *attributes, notify = notify)
             }
 		} else {
 			//println("copyToTree: $this -> $target")
