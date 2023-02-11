@@ -20,7 +20,7 @@ class CopyToTreeTest {
 			)
 		)
 		val out = MemoryVfs()
-		mem.copyRecursively(out)
+		mem.copyToRecursively(out)
 		assertEquals(
 			"[/root.txt, /hello, /hello/world.txt]",
 			out.listRecursive().map { it.fullName }.toList().toString()
