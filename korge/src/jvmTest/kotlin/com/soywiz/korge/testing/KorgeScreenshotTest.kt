@@ -7,7 +7,7 @@ import org.junit.*
 
 class KorgeScreenshotTest {
     @Test
-    fun test1() = korgeOffscreenTest(
+    fun test1() = korgeScreenshotTest(
         width = 512, height = 512,
         bgcolor = Colors.RED
     ) {
@@ -29,7 +29,7 @@ class KorgeScreenshotTest {
             position(350, 350)
         }
 
-        assertScreenshot(rect2, "initial2")
+        assertScreenshot(rect2, "initial2", includeBackground = false)
 
         val rect3 = solidRect(150, 150, Colors.GREEN) {
             rotation = maxDegrees
@@ -38,7 +38,7 @@ class KorgeScreenshotTest {
             position(100, 350)
         }
 
-        assertScreenshot(this, "initial3")
+        assertScreenshot(this, "initial3", includeBackground = false)
 
         //val rectContainer = container {
         //    val a = 100

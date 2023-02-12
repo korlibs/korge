@@ -1,5 +1,6 @@
 package com.soywiz.korge.testing
 
+import com.soywiz.kds.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.awt.*
 import com.soywiz.korim.bitmap.*
@@ -9,23 +10,31 @@ import com.soywiz.korio.file.std.*
 import com.soywiz.korio.lang.*
 import java.awt.*
 import java.io.*
+import java.nio.file.Files
 import javax.swing.*
 import kotlin.math.*
 
 object BitmapComparer {
     data class CompareResult(
-        val pixelDiffCount: Int = 0,
-        val pixelTotalDistance: Int = 0,
-        val pixelMaxDistance: Int = 0,
+        val pixelDiffCount: Int = -1,
+        val pixelTotalDistance: Int = -1,
+        val pixelMaxDistance: Int = -1,
         val psnr: Double = 0.0,
+        val error: String = ""
     ) {
-        val strictEquals: Boolean get() = pixelDiffCount == 0
-        val reasonablySimilar: Boolean get() = pixelMaxDistance <= 3 || psnr >= 45.0
+        //val strictEquals: Boolean get() = pixelDiffCount == 0
+        //val reasonablySimilar: Boolean get() = pixelMaxDistance <= 3 || psnr >= 45.0
     }
 
     fun compare(left: Bitmap, right: Bitmap): CompareResult {
-        if (left.premultiplied != right.premultiplied) error("premultiplied left=${left.premultiplied}, right=${right.premultiplied}")
-        if (left.width != right.width || left.height != right.height) error("dimensions left=${left.width}x${left.height}, right=${right.width}x${right.height}")
+        if (left.premultiplied != right.premultiplied) {
+            return CompareResult(error = "premultiplied left=${left.premultiplied}, right=${right.premultiplied}")
+        }
+        if (left.width != right.width || left.height != right.height) {
+            return CompareResult(
+                error = "dimensions left=${left.width}x${left.height}, right=${right.width}x${right.height}"
+            )
+        }
         var pixelDiffCount = 0
         var pixelTotalDistance = 0
         var pixelMaxDistance = 0
@@ -51,28 +60,9 @@ object BitmapComparer {
     }
 }
 
-private fun showBitmapDiffDialog(referenceBitmap: Bitmap32, actualBitmap: Bitmap32, title: String): Boolean? {
+private fun showBitmapDiffDialog(referenceBitmap: Bitmap32, actualBitmap: Bitmap32, title: String): Boolean {
     var doAccept: Boolean? = null
-    val diff = Bitmap32.diff(actualBitmap, referenceBitmap)
-    var maxR = 0
-    var maxG = 0
-    var maxB = 0
-
-    diff.forEach { n, x, y ->
-        val c = diff[x, y]
-        maxR = max(maxR, c.r)
-        maxG = max(maxG, c.g)
-        maxB = max(maxB, c.b)
-    }
-    diff.forEach { n, x, y ->
-        val c = diff[x, y]
-        diff[x, y] = RGBA.float(
-            if (maxR == 0) 0f else c.rf / maxR.toFloat(),
-            if (maxG == 0) 0f else c.gf / maxG.toFloat(),
-            if (maxB == 0) 0f else c.bf / maxB.toFloat(),
-            1f
-        )
-    }
+    val diff = Bitmap32.diffEx(actualBitmap, referenceBitmap)
     val frame = JFrame()
     lateinit var accept: JButton
     lateinit var discard: JButton
@@ -94,41 +84,63 @@ private fun showBitmapDiffDialog(referenceBitmap: Bitmap32, actualBitmap: Bitmap
     frame.toFront()
     frame.repaint()
     while (frame.isVisible) Thread.sleep(100L)
-    return doAccept
+    return doAccept ?: false
 }
 
-suspend fun Stage.assertScreenshot(view: View, name: String, psnr: Double = 50.0, scale: Double = 1.0, posterize: Int = 0) {
+private var OffscreenStage.testIndex: Int by extraProperty { 0 }
+
+suspend fun OffscreenStage.assertScreenshot(
+    view: View = this,
+    name: String = "$testIndex",
+    psnr: Double = 40.0,
+    //scale: Double = 1.0,
+    posterize: Int = 0,
+    includeBackground: Boolean = true
+) {
+    testIndex++
     val updateTestRef = Environment["UPDATE_TEST_REF"] == "true"
-    val context = injector.getOrNull<OffscreenContext>() ?: OffscreenContext()
+    val interactive = Environment["INTERACTIVE_SCREENSHOT"] == "true"
+    val context = injector.getSyncOrNull<OffscreenContext>() ?: OffscreenContext()
     val outFile = File("testGoldens/${context.testClassName}/${context.testMethodName}_$name.png")
-    val actualBitmap = view.renderToBitmap(views).depremultiplied().posterizeInplace(posterize)
-    var doAccept: Boolean? = null
-    var updateReference = true
+    val actualBitmap = views.ag.startEndFrame { view.unsafeRenderToBitmapSync(views.renderContext, bgcolor = if (includeBackground) views.clearColor else Colors.TRANSPARENT).depremultiplied().posterizeInplace(posterize) }
+    var doAccept: Boolean? = false
+    var updateReference = updateTestRef
     if (outFile.exists()) {
-        val referenceBitmap = outFile.toVfs().readNativeImage(ImageDecodingProps.DEFAULT_STRAIGHT).toBMP32().posterizeInplace(posterize)
-        val ref = referenceBitmap.scaleLinear(scale, scale)
-        val act = actualBitmap.scaleLinear(scale)
-        val result = BitmapComparer.compare(ref, act)
+        val referenceBitmap = runBlockingNoJs { outFile.toVfs().readNativeImage(ImageDecodingProps.DEFAULT_STRAIGHT).toBMP32().posterizeInplace(posterize) }
+        //val ref = referenceBitmap.scaleLinear(scale, scale)
+        //val act = actualBitmap.scaleLinear(scale)
+        val result = BitmapComparer.compare(referenceBitmap, actualBitmap)
         if (!updateTestRef) {
             val similar = result.psnr >= psnr
-            if (!similar) {
-            //if (true) {
-                if (Environment["INTERACTIVE_SCREENSHOT"] == "true") {
-                //if (true) {
-                    doAccept = showBitmapDiffDialog(referenceBitmap, actualBitmap, "Bitmaps are not equal $referenceBitmap-$actualBitmap\n$result")
-
+            if (!similar && interactive) {
+                updateReference = showBitmapDiffDialog(referenceBitmap, actualBitmap, "Bitmaps are not equal $referenceBitmap-$actualBitmap\n$result\n${result.error}")
+            }
+            if (!updateReference) {
+                val baseName = "${context.testClassName}_${context.testMethodName}_$name.png"
+                val tempFile = File(Environment.tempPath, baseName)
+                val tempDiffFile = File(Environment.tempPath, "diff_$baseName")
+                if (!similar) {
+                    tempFile.writeBytes(PNG.encode(actualBitmap.tryToExactBitmap8() ?: actualBitmap, ImageEncodingProps(quality = 1.0)))
+                    tempDiffFile.writeBytes(PNG.encode(Bitmap32.diffEx(actualBitmap, referenceBitmap), ImageEncodingProps(quality = 1.0)))
                 }
-            }
-            if (doAccept != null) {
-                assert(similar) { "Bitmaps are not equal $ref-$act : $result.\nRun ./gradlew jvmTestFix to update goldens\nOr set INTERACTIVE_SCREENSHOT=true" }
-            }
-
-            if (doAccept == true) {
-                updateReference = false
+                assert(similar) {
+                    "Bitmaps are not equal $referenceBitmap-$actualBitmap : $result.\n" +
+                        "${result.error}\n" +
+                        "Run ./gradlew jvmTestFix to update goldens\n" +
+                        "Or set INTERACTIVE_SCREENSHOT=true\n" +
+                        "\n" +
+                        "Generated: ${tempFile.absoluteFile}\n" +
+                        "Diff: ${tempDiffFile.absoluteFile}\n" +
+                        "Expected Directory: ${outFile.parentFile.absoluteFile}\n" +
+                        "Expected File: ${outFile.absoluteFile}"
+                }
             }
         }
     }
     if (updateReference) {
+        outFile.parentFile.mkdirs()
         outFile.writeBytes(PNG.encode(actualBitmap.tryToExactBitmap8() ?: actualBitmap, ImageEncodingProps(quality = 1.0)))
+        println("Folder ${outFile.parentFile.absoluteFile}")
+        println("Updated ${outFile.absoluteFile}")
     }
 }

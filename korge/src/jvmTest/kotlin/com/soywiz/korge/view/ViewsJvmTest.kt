@@ -1,6 +1,6 @@
 package com.soywiz.korge.view
 
-import com.soywiz.korge.test.*
+import com.soywiz.korge.testing.*
 import com.soywiz.korge.tests.*
 import com.soywiz.korge.view.filter.*
 import com.soywiz.korim.bitmap.*
@@ -13,11 +13,11 @@ import com.soywiz.korma.geom.*
 import kotlin.test.*
 
 class ViewsJvmTest : ViewsForTesting(log = true) {
-	val tex = Bitmap32(10, 10, premultiplied = true)
+	val tex = Bitmap32(10, 10, Colors.GREEN.premultiplied)
 
 	@Test
-	fun name() {
-		views.stage += Container().apply {
+	fun name() = korgeScreenshotTest(20, 20) {
+		this += Container().apply {
 			this += Image(tex)
 		}
 		assertEquals(
@@ -28,8 +28,7 @@ class ViewsJvmTest : ViewsForTesting(log = true) {
 			""".trimIndent(),
 			views.stage.dumpToString()
 		)
-		views.render()
-        assertEqualsFileReference("korge/render/ViewsJvmTest1.log", logAg.getLogAsString())
+        assertScreenshot()
 	}
 
 	@Test
@@ -45,23 +44,22 @@ class ViewsJvmTest : ViewsForTesting(log = true) {
     }
 
     @Test
-    fun testFilter() {
-        views.stage += Container().apply {
+    fun testFilter() = korgeScreenshotTest(20, 20) {
+        this += Container().apply {
             this += Image(tex).also {
                 it.addFilter(ColorMatrixFilter(ColorMatrixFilter.GRAYSCALE_MATRIX))
                 it.addFilter(Convolute3Filter(Convolute3Filter.KERNEL_EDGE_DETECTION))
-            }
+            }.xy(4, 4)
         }
         assertEquals(
             """
-				Stage
-				 Container
-				  Image:bitmap=RectSlice(null:Rectangle(x=0, y=0, width=10, height=10))
-			""".trimIndent(),
+            Stage
+             Container
+              Image:pos=(4,4):bitmap=RectSlice(null:Rectangle(x=0, y=0, width=10, height=10))
+            """.trimIndent(),
             views.stage.dumpToString()
         )
-        views.render()
-        assertEqualsFileReference("korge/render/ViewsJvmTestFilter.log", logAg.getLogAsString())
+        assertScreenshot()
     }
 
     @Test

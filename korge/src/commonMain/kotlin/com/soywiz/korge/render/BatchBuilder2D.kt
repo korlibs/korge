@@ -875,10 +875,13 @@ class BatchBuilder2D constructor(
     private val batches = fastArrayListOf<AGBatch>()
 
     private var lastIndexPos = 0
+    var batchCount = 0
+    var fullBatchCount = 0
 
     fun createBatchIfRequired() {
         if (lastIndexPos == indexPos) return
         updateStandardUniforms()
+        batchCount++
 
         //println("BATCH: currentBuffers.vertexData=${currentBuffers.vertexData}")
         batches += AGBatch(
@@ -930,6 +933,7 @@ class BatchBuilder2D constructor(
             ag.draw(AGMultiBatch(batches.toList()))
             batches.clear()
             beforeFlush(this)
+            fullBatchCount++
 
             buffersListToReturn += currentBuffers
             currentBuffers = buffersList.alloc()

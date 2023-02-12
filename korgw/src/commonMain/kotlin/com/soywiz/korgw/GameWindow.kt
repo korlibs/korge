@@ -115,6 +115,9 @@ open class GameWindowCoroutineDispatcher : CoroutineDispatcher(), Delay, Closeab
 
     @PublishedApi internal val tasks = Queue<Runnable>()
     @PublishedApi internal val timedTasks = PriorityQueue<TimedTask> { a, b -> a.time.compareTo(b.time) }
+
+    protected val _tasks: Queue<Runnable> get() = tasks
+    protected val _timedTasks: PriorityQueue<TimedTask> get() = timedTasks
     val lock = NonRecursiveLock()
 
     fun hasTasks() = tasks.isNotEmpty()
@@ -184,7 +187,7 @@ open class GameWindowCoroutineDispatcher : CoroutineDispatcher(), Delay, Closeab
         return finalResult as T
     }
 
-    fun executePending(availableTime: TimeSpan) {
+    open fun executePending(availableTime: TimeSpan) {
         try {
             val startTime = now()
 

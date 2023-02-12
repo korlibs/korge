@@ -500,6 +500,8 @@ class RenderEvent() : Event(), TEvent<RenderEvent> {
         this.update = other.update
         this.render = other.render
     }
+
+    override fun toString(): String = "RenderEvent(update=$update, render=$render)"
 }
 
 class InitEvent() : TypedEvent<InitEvent>(InitEvent) {

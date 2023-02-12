@@ -3,7 +3,6 @@ package com.soywiz.korge.testing
 import com.soywiz.kgl.*
 import com.soywiz.korag.*
 import com.soywiz.korge.*
-import com.soywiz.korge.internal.*
 import com.soywiz.korge.view.*
 import com.soywiz.korgw.awt.*
 import com.soywiz.korim.color.*
@@ -28,11 +27,14 @@ class OffscreenContext(val testClassName: String, val testMethodName: String) {
     }
 }
 
-inline fun korgeOffscreenTest(
-    width: Int = DefaultViewport.WIDTH, height: Int = DefaultViewport.HEIGHT,
+class OffscreenStage(views: Views, val offscreenContext: OffscreenContext) : Stage(views)
+
+inline fun korgeScreenshotTest(
+    width: Int = 512, height: Int = 512,
     virtualWidth: Int = width, virtualHeight: Int = height,
     bgcolor: RGBA? = Colors.BLACK,
-    noinline callback: suspend Stage.() -> Unit
+    devicePixelRatio: Double = 1.0,
+    noinline callback: suspend OffscreenStage.() -> Unit
 ) {
     val offscreenContext = OffscreenContext()
 
@@ -43,10 +45,16 @@ inline fun korgeOffscreenTest(
 
     var exception: Throwable? = null
     suspendTestWithOffscreenAG { ag ->
-        KorgeHeadless(width = width, height = height, virtualWidth = virtualWidth, virtualHeight = virtualHeight, bgcolor = bgcolor, ag = ag) {
+        val korge = KorgeHeadless(
+            width = width, height = height,
+            virtualWidth = virtualWidth, virtualHeight = virtualHeight,
+            bgcolor = bgcolor,
+            ag = ag, devicePixelRatio = devicePixelRatio,
+            stageBuilder = { OffscreenStage(it, offscreenContext) }
+        ) {
             injector.mapInstance(offscreenContext)
             try {
-                callback()
+                callback(this as OffscreenStage)
             } catch (e: Throwable) {
                 exception = e
             } finally {

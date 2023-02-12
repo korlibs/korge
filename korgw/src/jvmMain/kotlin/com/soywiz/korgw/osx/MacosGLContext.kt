@@ -55,7 +55,9 @@ class MacosGLContext(
 
     val NSThread = NSClass("NSThread")
     val NSObject = NSClass("NSObject")
-    val pixelFormat = NSClass("NSOpenGLPixelFormat").alloc().msgSend("initWithAttributes:", attrs)
+    val pixelFormat = NSClass("NSOpenGLPixelFormat").alloc().msgSend("initWithAttributes:", attrs).also {
+        if (it == 0L) error("Can't initialize NSOpenGLPixelFormat")
+    }
     val openGLContext = NSClass("NSOpenGLContext").alloc().msgSend("initWithFormat:shareContext:", pixelFormat, sharedContext)
 
     init {

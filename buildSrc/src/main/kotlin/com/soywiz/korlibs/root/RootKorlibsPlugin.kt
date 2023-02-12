@@ -672,6 +672,14 @@ object RootKorlibsPlugin {
                             if (!JvmAddOpens.beforeJava9) jvmArgs(*JvmAddOpens.createAddOpensTypedArray())
                             if (headlessTests) systemProperty("java.awt.headless", "true")
                         }
+                        val jvmTestInteractive = tasks.createThis<Test>("jvmTestInteractive") {
+                            group = "verification"
+                            environment("INTERACTIVE_SCREENSHOT", "true")
+                            testClassesDirs = jvmTest.testClassesDirs
+                            classpath = jvmTest.classpath
+                            bootstrapClasspath = jvmTest.bootstrapClasspath
+                            if (!JvmAddOpens.beforeJava9) jvmArgs(*JvmAddOpens.createAddOpensTypedArray())
+                        }
                         if (!JvmAddOpens.beforeJava9) jvmTest.jvmArgs(*JvmAddOpens.createAddOpensTypedArray())
                         if (headlessTests) jvmTest.systemProperty("java.awt.headless", "true")
                     }

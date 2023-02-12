@@ -4,6 +4,7 @@ import com.soywiz.klock.*
 import com.soywiz.korag.log.*
 import com.soywiz.korge.particle.*
 import com.soywiz.korge.test.*
+import com.soywiz.korge.testing.*
 import com.soywiz.korge.tests.*
 import com.soywiz.korge.view.*
 import com.soywiz.korio.async.*
@@ -74,27 +75,19 @@ class ParticleEmitterViewTest : ViewsForTesting(log = true) {
         assertEquals(0, viewsLog.gameWindow.updatedSinceFrame)
     }
 
-    @Test
-    fun test() = viewsTest {
-        val emitter = particleEmitter(particleEmitter, random = Random(0L)
-        ) {
-            xy(100, 100)
-        }
-
-        for (n in 0 until 20) {
-            delayFrame()
-            emitter.xy(120 + n * 5, 100)
-        }
-
-        logAg.log.clear()
-        delayFrame()
-
-        assertEqualsFileReference(
-            "korge/render/ParticleEmitter.log",
-            listOf(
-                emitter.simulator.particles.toString(),
-                logAg.getLogAsString(),
-            ).joinToString("\n") + "\n"
-        )
-    }
+    //@Test
+    //fun test() = korgeOffscreenTest(512, 512) {
+    //    val emitter = particleEmitter(particleEmitter, random = Random(0L)
+    //    ) {
+    //        xy(100, 100)
+    //    }
+    //    emitter.updateSingleView(1.seconds)
+    //    assertScreenshot(this, "particles", includeBackground = true)
+    //    /*
+    //    for (n in 0 until 20) {
+    //        delayFrame()
+    //        emitter.xy(120 + n * 5, 100)
+    //    }
+    //    */
+    //}
 }

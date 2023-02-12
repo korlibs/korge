@@ -29,11 +29,11 @@ class NativeDecodingTest {
         val file = resourcesVfs["pma/spineboy-pma.png"]
         val bmp1 = file.readBitmapNative(props = ImageDecodingProps(premultiplied = false, asumePremultiplied = true))
         val bmp2 = file.readBitmapNoNative(props = ImageDecodingProps(premultiplied = false, asumePremultiplied = true, format = PNG))
-        val diff = Bitmap32.diff(bmp1, bmp2).sumOf { it.a + it.r + it.g + it.b }
+        val diff = Bitmap32.diff(bmp1, bmp2).premultiplied().sumOf { it.a + it.r + it.g + it.b }
         if (OS.isJsBrowserOrWorker) {
             // In JS has some small dis-adjustments because, to native read image pixels on JS we need Canvas,
             // and Canvas has a pre-multiplied alpha always, that leads to lossy rounding errors
-            assertTrue { diff < 61000 } //
+            assertTrue("diff=$diff < 61000") { diff < 61000 } //
         } else {
             assertEquals(0, diff)
         }

@@ -1,33 +1,20 @@
 package com.soywiz.korge.view
 
-import com.soywiz.korge.test.*
-import com.soywiz.korge.tests.*
-import com.soywiz.korma.geom.*
+import com.soywiz.korge.testing.*
+import com.soywiz.korim.bitmap.*
+import com.soywiz.korim.color.*
 import org.junit.*
 
-class ReferenceViewsTest : ViewsForTesting(
-    windowSize = SizeInt(200, 200),
-    virtualSize = SizeInt(100, 100),
-    log = true,
-) {
+class ReferenceViewsTest {
     @Test
-    fun testClippedContainerInFlippedContainerInTexture() = viewsTest {
-        val container = Container().apply {
+    fun testClippedContainerInFlippedContainerInTexture() = korgeScreenshotTest(512, 512) {
+        container {
             y = views.virtualHeightDouble; scaleY = -1.0
             clipContainer(150, 100) {
                 xy(75, 50)
-                solidRect(300, 400)
+                image(Bitmap32(300, 400) { x, y -> if (y <= 25) Colors.BLUE else Colors.RED }.premultiplied())
             }
         }
-        addChild(container)
-        delayFrame()
-        logAg.log.add("---------")
-        container.unsafeRenderToBitmapSync(views.renderContext)
-        assertEqualsFileReference(
-            "korge/render/ClippedContainerInFlippedContainerInTexture.log",
-            listOf(
-                logAg.getLogAsString(),
-            ).joinToString("\n")
-        )
+        assertScreenshot()
     }
 }

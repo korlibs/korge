@@ -1,14 +1,12 @@
 package com.soywiz.korge.view
 
-import com.soywiz.korag.log.AGBaseLog
 import com.soywiz.korge.annotations.*
-import com.soywiz.korge.test.assertEqualsFileReference
-import com.soywiz.korge.tests.ViewsForTesting
+import com.soywiz.korge.testing.*
 import com.soywiz.korge.view.fast.*
 import com.soywiz.korge.view.filter.*
 import com.soywiz.korge.view.vector.*
 import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.Colors
+import com.soywiz.korim.color.*
 import com.soywiz.korim.format.*
 import com.soywiz.korim.paint.*
 import com.soywiz.korim.vector.*
@@ -17,22 +15,9 @@ import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
 import kotlin.test.*
 
-class ReferenceGraphicsTest : ViewsForTesting(
-    windowSize = SizeInt(200, 200),
-    virtualSize = SizeInt(100, 100),
-    log = true,
-) {
-    //override fun filterLogDraw(str: String, kind: LogBaseAG.Kind): Boolean = kind == LogBaseAG.Kind.DRAW || kind == LogBaseAG.Kind.SHADER
-    //override fun filterLogDraw(str: String, kind: LogBaseAG.Kind): Boolean = kind != LogBaseAG.Kind.DRAW_DETAILS
-    override fun filterLogDraw(str: String, kind: AGBaseLog.Kind): Boolean = true
-
-    private suspend fun testFrame() {
-        logAg.clearLog()
-        delayFrame()
-    }
-
+class ReferenceGraphicsTest {
     @Test
-    fun testGraphics() = viewsTest {
+    fun testGraphics() = korgeScreenshotTest(300, 300) {
         cpuGraphics {
             fill(Colors.RED) {
                 rect(-60, -60, 70, 70)
@@ -49,15 +34,7 @@ class ReferenceGraphicsTest : ViewsForTesting(
         ).virtFrame(RectangleInt(64, 64, 196, 196))
         val image = image(bmp).anchor(0.5, 1.0).xy(200, 200).rotation(30.degrees)
 
-        testFrame()
-        assertEqualsFileReference(
-            "korge/render/Graphics.log",
-            listOf(
-                logAg.getLogAsString(),
-                image.getGlobalBounds().toString(),
-                image.getLocalBounds().toString()
-            ).joinToString("\n")
-        )
+        assertScreenshot(posterize = 6)
     }
 
     @Test
@@ -72,7 +49,7 @@ class ReferenceGraphicsTest : ViewsForTesting(
     @Test
     fun testFSprites4() = testFSpritesN(4)
 
-    fun testFSpritesN(N: Int) = viewsTest {
+    fun testFSpritesN(N: Int) = korgeScreenshotTest(512, 512) {
         val bmp = Bitmap32(32, 32, Colors.RED.premultiplied).slice()
         val sprites = FSprites(16)
         val anchorsX = listOf(.5f, .5f, .5f, .0f)
@@ -94,24 +71,13 @@ class ReferenceGraphicsTest : ViewsForTesting(
         val fview = FSprites.FView(sprites, Array(N) { bmp.bmpBase })
         addChild(fview)
 
-        testFrame()
-        "korge/render/FSprites.log"
-        "korge/render/FSprites1.log"
-        "korge/render/FSprites2.log"
-        "korge/render/FSprites3.log"
-        "korge/render/FSprites4.log"
-        assertEqualsFileReference(
-            "korge/render/FSprites$N.log",
-            listOf(
-                logAg.getLogAsString(),
-            ).joinToString("\n")
-        )
+        assertScreenshot(this, "N$N", includeBackground = true)
     }
 
     @Test
     @OptIn(KorgeExperimental::class)
     @Ignore
-    fun testGpuShapeView() = viewsTest {
+    fun testGpuShapeView() = korgeScreenshotTest(512, 512) {
         val korgeBitmap = resourcesVfs["korge.png"].readBitmap()
         val view = gpuShapeView({
             keep {
@@ -179,57 +145,24 @@ class ReferenceGraphicsTest : ViewsForTesting(
             rotation = 180.degrees
         }
 
-        testFrame()
-        assertEqualsFileReference(
-            "korge/render/GpuShapeView.log",
-            listOf(
-                logAg.getLogAsString(),
-                view.getGlobalBounds().toString(),
-                view.getLocalBounds().toString()
-            ).joinToString("\n")
-        )
+        assertScreenshot(posterize = 6)
     }
 
     @Test
-    fun testGpuShapeViewFilter() = viewsTest {
+    fun testGpuShapeViewFilter() = korgeScreenshotTest(400, 400) {
         container {
             scale = 1.2
             circle(100.0).xy(100, 100).filters(DropshadowFilter())
         }
-        logAg.logFilter = { str, kind ->
-            when (kind) {
-                AGBaseLog.Kind.SHADER, AGBaseLog.Kind.DRAW_DETAILS -> false
-                AGBaseLog.Kind.UNIFORM, AGBaseLog.Kind.UNIFORM_VALUES -> true
-                //else -> true
-                else -> false
-            }
-        }
-
-        testFrame()
-
-        //println(logAg.getLogAsString())
-
-        assertEqualsFileReference(
-            "korge/render/GpuShapeViewFilter.log",
-            listOf(
-                logAg.getLogAsString(),
-            ).joinToString("\n")
-        )
+        assertScreenshot()
     }
 
     @Test
-    fun testBlurFilterInEmptyContainer() = viewsTest {
-        val view = container {
+    //@Ignore
+    fun testBlurFilterInEmptyContainer() = korgeScreenshotTest(512, 512) {
+        val view = solidRect(100, 100) {
             filter = BlurFilter(4.0)
         }
-        testFrame()
-        assertEqualsFileReference(
-            "korge/render/BlurFilterEmptyContainer.log",
-            listOf(
-                logAg.getLogAsString(),
-                view.getGlobalBounds(includeFilters = true).toString(),
-                view.getLocalBoundsOptimized(includeFilters = true).toString()
-            ).joinToString("\n")
-        )
+        assertScreenshot(this, "blur", includeBackground = true)
     }
 }
