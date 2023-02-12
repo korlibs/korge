@@ -26,9 +26,11 @@ class MainTilemapTest : Scene() {
         val donutMap = makeDonutMap(mapSize, tileSet)
         lateinit var tilemap: TileMap
 
-        val cameraContainer = cameraContainer(stage!!.width, stage!!.height) {
+        //filters(IdentityFilter)
+        solidRect(width, height, Colors["#3e0000"])
+        val cameraContainer = cameraContainer(width, height) {
             tilemap = tileMap(donutMap, tileSet).centerOn(this)
-        }
+        }//.filters(BlurFilter())
         cameraContainer.cameraY = -80.0 * mapSize
         val statusOverlay = text("")
 

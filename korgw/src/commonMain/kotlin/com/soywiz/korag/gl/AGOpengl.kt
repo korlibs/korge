@@ -40,7 +40,7 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
 
     override fun readToTexture(frameBuffer: AGFrameBufferBase, frameBufferInfo: AGFrameBufferInfo, texture: AGTexture, x: Int, y: Int, width: Int, height: Int) {
         bindFrameBuffer(frameBuffer, frameBufferInfo)
-        setScissorState(AGScissor.FULL)
+        setScissorState(AGScissor.FULL, frameBuffer, frameBufferInfo)
         //gl.flush()
         //gl.finish()
         selectTextureUnitTemp(TEMP_TEXTURE_UNIT) {
@@ -58,7 +58,7 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
     override fun clear(frameBuffer: AGFrameBufferBase, frameBufferInfo: AGFrameBufferInfo, color: RGBA, depth: Float, stencil: Int, clearColor: Boolean, clearDepth: Boolean, clearStencil: Boolean, scissor: AGScissor) {
         bindFrameBuffer(frameBuffer, frameBufferInfo)
         //println("CLEAR: $color, $depth")
-        setScissorState(scissor)
+        setScissorState(scissor, frameBuffer, frameBufferInfo)
         //gl.disable(KmlGl.SCISSOR_TEST)
         var mask = 0
         if (clearColor) {
@@ -133,7 +133,7 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
         //finalScissor.setTo(0, 0, backWidth, backHeight)
 
         bindFrameBuffer(frameBuffer, frameBufferInfo)
-        setScissorState(scissor)
+        setScissorState(scissor, frameBuffer, frameBufferInfo)
 
         if (currentVertexData?.list != vertexData.list) {
         //if (true) {
@@ -345,11 +345,6 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
             if (onlyUpdate) gl.bindBuffer(target.toGl(), bufferInfo.id)
             gl.bufferData(target.toGl(), mem.sizeInBytes, mem, KmlGl.STATIC_DRAW)
         }
-    }
-
-    fun scissor(x: Int, y: Int, width: Int, height: Int) {
-        gl.scissor(x, y, width, height)
-        //println("SCISSOR: $x, $y, $width, $height")
     }
 
     fun vaoUnuse(vao: AGVertexArrayObject) {
@@ -844,11 +839,20 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
         }
     }
 
-    fun setScissorState(scissor: AGScissor) {
+    fun setScissorState(scissor: AGScissor, frameBuffer: AGFrameBufferBase, frameBufferInfo: AGFrameBufferInfo) {
+        //println("scissor=$scissor, frameBuffer=${frameBuffer.isMain}, frameBufferInfo=$frameBufferInfo")
+        val scissor = when {
+            scissor == AGScissor.NIL || scissor == AGScissor.FULL -> scissor
+            frameBuffer.isMain -> AGScissor.fromBounds(scissor.left, frameBufferInfo.height - scissor.bottom, scissor.right, frameBufferInfo.height - scissor.top)
+            else -> scissor
+        }
         if (currentScissor != scissor) {
             currentScissor = scissor
             gl.enableDisable(KmlGl.SCISSOR_TEST, scissor != AGScissor.NIL) {
-                scissor(scissor.x, scissor.y, scissor.width, scissor.height)
+                // Depending on the frame-buffer, y might be bottom based or top based
+                // for the main framebuffer (0, 0) is in the left, bottom part of the window
+                // while on texture framebuffers it is top-left
+                gl.scissor(scissor.x, scissor.y, scissor.width, scissor.height)
             }
         }
     }
