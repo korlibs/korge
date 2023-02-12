@@ -1,10 +1,6 @@
 package com.soywiz.korge.view
 
-import com.soywiz.kgl.*
-import com.soywiz.korag.*
-import com.soywiz.korag.gl.*
-import com.soywiz.korge.test.*
-import com.soywiz.korge.tests.*
+import com.soywiz.korge.testing.*
 import com.soywiz.korge.view.vector.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
@@ -13,20 +9,15 @@ import com.soywiz.korio.file.std.*
 import com.soywiz.korma.geom.vector.*
 import org.junit.*
 
-class ReferenceOpenglTest : ViewsForTesting() {
-    val gl = KmlGlProxyLogToString()
-    override fun createAg(): AG = AGOpengl(gl)
-
+class ReferenceOpenglTest {
     @Test
-    fun testOpengl() = viewsTest {
+    fun testOpengl() = korgeScreenshotTest(100, 100) {
         image(resourcesVfs["texture.png"].readBitmap().mipmaps())
-        gl.clearLog()
-        render(views.renderContext)
-        assertEqualsFileReference("korge/render/OpenGL.log", gl.getLogAsString())
+        assertScreenshot(posterize = 6)
     }
 
     @Test
-    fun testOpenglShapeView() = viewsTest {
+    fun testOpenglShapeView() = korgeScreenshotTest(500, 500) {
         container {
             xy(300, 300)
             val shape = gpuShapeView({
@@ -46,8 +37,6 @@ class ReferenceOpenglTest : ViewsForTesting() {
                 xy(-150, -150)
             }
         }
-        gl.clearLog()
-        render(views.renderContext)
-        assertEqualsFileReference("korge/render/OpenGLShapeView.log", gl.getLogAsString())
+        assertScreenshot()
     }
 }

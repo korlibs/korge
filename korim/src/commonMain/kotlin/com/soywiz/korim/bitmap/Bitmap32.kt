@@ -536,19 +536,50 @@ class Bitmap32(
             return MatchResult(sizeMatches = true, differentPixels = different, samePixels = same)
         }
 
+        fun diffEx(a: Bitmap, b: Bitmap): Bitmap32 {
+            val a32 = a.toBMP32IfRequired()
+            val b32 = b.toBMP32IfRequired()
+            val diff = diff(a32, b32)
+            var maxR = 0
+            var maxG = 0
+            var maxB = 0
+
+            diff.forEach { n, x, y ->
+                val c = diff[x, y]
+                maxR = max(maxR, c.r)
+                maxG = max(maxG, c.g)
+                maxB = max(maxB, c.b)
+            }
+
+            //println("maxR=$maxR,$maxG,$maxB")
+            diff.forEach { n, x, y ->
+                val c = diff[x, y]
+
+                diff[x, y] = RGBA.float(
+                    if (maxR == 0) 0f else c.r / maxR.toFloat(),
+                    if (maxG == 0) 0f else c.g / maxG.toFloat(),
+                    if (maxB == 0) 0f else c.b / maxB.toFloat(),
+                    1f
+                )
+
+                //if (c.rf != 0f) println("diff=$c -> ${diff[x, y]}")
+            }
+            return diff
+        }
+
         fun diff(a: Bitmap, b: Bitmap): Bitmap32 {
             if (a.width != b.width || a.height != b.height) throw IllegalArgumentException("$a not matches $b size")
-            val a32 = a.toBMP32()
-            val b32 = b.toBMP32()
-            val out = Bitmap32(a.width, a.height, premultiplied = true)
+            val a32 = a.toBMP32IfRequired()
+            val b32 = b.toBMP32IfRequired()
+            val out = Bitmap32(a.width, a.height, premultiplied = false)
             //showImageAndWait(a32)
             //showImageAndWait(b32)
             for (n in 0 until out.area) {
-                val c1 = a32.getRgbaPremultipliedAtIndex(n)
-                val c2 = b32.getRgbaPremultipliedAtIndex(n)
+                val c1 = a32.getRgbaAtIndex(n)
+                val c2 = b32.getRgbaAtIndex(n)
 
                 //println("%02X, %02X, %02X".format(RGBA.getR(c1), RGBA.getR(c2), dr))
-                out.setRgbaPremultipliedAtIndex(n, RGBAPremultiplied(abs(c1.r - c2.r), abs(c1.g - c2.g), abs(c1.b - c2.b), abs(c1.a - c2.a)))
+                out.ints[n] = RGBA(abs(c1.r - c2.r), abs(c1.g - c2.g), abs(c1.b - c2.b), abs(c1.a - c2.a)).value
 
                 //println("$dr, $dg, $db, $da : ${out.data[n]}")
             }

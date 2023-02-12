@@ -10,7 +10,7 @@ import kotlin.test.*
 
 class TileMapViewScreenshotTest {
     @Test
-    fun testTilemapScreenshotTest() = korgeOffscreenTest(
+    fun testTilemapScreenshotTest() = korgeScreenshotTest(
         width = 512, height = 512,
         bgcolor = Colors.RED
     ) {
@@ -22,11 +22,11 @@ class TileMapViewScreenshotTest {
         val tilemap = tileMap(IntArray2(2, 2, intArrayOf(0, 1, 1, 0)), repeatX = TileMapRepeat.REPEAT, repeatY = TileMapRepeat.REPEAT, tileset = tileset)
         tilemap.xy(3000, 1500)
 
-        assertScreenshot(this, "offsetInfiniteTilemap")
+        assertScreenshot(this, "offsetInfiniteTilemap", includeBackground = false)
 
         tilemap.xy(-3011, -1513)
 
-        assertScreenshot(this, "offsetInfiniteTilemap2")
+        assertScreenshot(this, "offsetInfiniteTilemap2", includeBackground = false)
 
     }
 }

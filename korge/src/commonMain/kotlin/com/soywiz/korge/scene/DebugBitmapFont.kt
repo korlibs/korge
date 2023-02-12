@@ -4,8 +4,7 @@ import com.soywiz.kds.IntMap
 import com.soywiz.kds.toIntMap
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.font.BitmapFont
-import com.soywiz.korim.format.PNG
-import com.soywiz.korim.format.readBitmap
+import com.soywiz.korim.format.*
 import com.soywiz.korio.stream.openAsync
 import com.soywiz.krypto.encoding.fromBase64
 import kotlin.native.concurrent.ThreadLocal
@@ -41,7 +40,10 @@ fun debugBmpFont(tex: BmpSlice): BitmapFont {
     }.toIntMap(), IntMap())
 }
 
-suspend fun debugBmpFont(): BitmapFont = debugBmpFont(DEBUG_FONT_BYTES.openAsync().readBitmap().slice())
+suspend fun debugBmpFont(): BitmapFont {
+    //debugBmpFontSync
+    return debugBmpFont(DEBUG_FONT_BYTES.openAsync().readBitmap(ImageDecodingProps(preferKotlinDecoder = true)).slice())
+}
 
 @Deprecated("Use debugBmpFont() instead")
 val debugBmpFontSync: BitmapFont get() {

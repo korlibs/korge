@@ -137,20 +137,24 @@ class AsyncInjector(val parent: AsyncInjector? = null, val level: Int = 0) {
     }
 
     inline fun <reified T : Any> getSync(ctx: RequestContext = RequestContext(T::class)): T = getSync(T::class, ctx)
+    inline fun <reified T : Any> getSyncOrNull(ctx: RequestContext = RequestContext(T::class)): T? = getSyncOrNull(T::class, ctx)
     fun <T : Any> getSync(clazz: KClass<T>, ctx: RequestContext = RequestContext(clazz)): T {
-        lateinit var rresult: T
+        return getSyncOrNull(clazz, ctx) ?: throw RuntimeException("Couldn't get instance of type $clazz synchronously")
+    }
+    fun <T : Any> getSyncOrNull(clazz: KClass<T>, ctx: RequestContext = RequestContext(clazz)): T? {
+        var rresult: T? = null
         var rexception: Throwable? = null
         suspend {
-            get(clazz, ctx)
-        }.startCoroutine(object : Continuation<T> {
+            getOrNull(clazz, ctx)
+        }.startCoroutine(object : Continuation<T?> {
             override val context: CoroutineContext = EmptyCoroutineContext
 
-            override fun resumeWith(result: Result<T>) {
+            override fun resumeWith(result: Result<T?>) {
                 val exception = result.exceptionOrNull()
                 if (exception != null) {
                     rexception = exception
                 } else {
-                    rresult = result.getOrThrow()
+                    rresult = result.getOrNull()
                 }
             }
         })

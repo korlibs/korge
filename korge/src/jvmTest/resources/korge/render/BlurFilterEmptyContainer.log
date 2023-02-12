@@ -1,4 +1,0 @@
-AGClear(frameBuffer=AGFrameBufferBase(isMain=true), frameBufferInfo=AGFrameBufferInfo(width=200, height=200, hasDepth=true, hasStencil=true, samples=1), color=#00000000, depth=1.0, stencil=0, clearColor=true, clearDepth=true, clearStencil=true)
-finish()
-Rectangle(x=-15, y=-14, width=30, height=28)
-Rectangle(x=-15, y=-14, width=30, height=28)

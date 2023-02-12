@@ -170,6 +170,7 @@ object Korge {
         batchMaxQuads: Int = BatchBuilder2D.DEFAULT_BATCH_QUADS,
         multithreaded: Boolean? = null,
         forceRenderEveryFrame: Boolean = true,
+        stageBuilder: (Views) -> Stage = { Stage(it) },
         entry: suspend Stage.() -> Unit
 	) {
         RegisteredImageFormats.register(imageFormats)
@@ -218,7 +219,8 @@ object Korge {
                 gameWindow = gameWindow,
                 gameId = gameId,
                 settingsFolder = settingsFolder,
-                batchMaxQuads = batchMaxQuads
+                batchMaxQuads = batchMaxQuads,
+                stageBuilder = stageBuilder
             ).also {
                 it.init()
             }
@@ -526,6 +528,7 @@ object Korge {
         val firstRenderDeferred = CompletableDeferred<Unit>()
 
         fun renderBlock(event: RenderEvent) {
+            //println("renderBlock: $event")
             try {
                 views.frameUpdateAndRender(
                     fixedSizeStep = fixedSizeStep,
@@ -549,10 +552,9 @@ object Korge {
         }
 
         views.gameWindow.onRenderEvent { event ->
-            //println("RenderEvent: $it")
+            //println("RenderEvent: $event")
             if (!event.render) {
                 renderBlock(event)
-
             } else {
                 views.renderContext.doRender {
                     if (!renderShown) {

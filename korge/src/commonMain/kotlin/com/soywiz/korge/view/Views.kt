@@ -56,6 +56,7 @@ class Views constructor(
     val settingsFolder: String? = null,
     val batchMaxQuads: Int = BatchBuilder2D.DEFAULT_BATCH_QUADS,
     val bp: BoundsProvider = BoundsProvider.Base(),
+    val stageBuilder: (Views) -> Stage = { Stage(it) }
 ) :
     Extra by Extra.Mixin(),
     EventDispatcher by EventDispatcher.Mixin(),
@@ -198,7 +199,7 @@ class Views constructor(
 	private val resizedEvent = ReshapeEvent(0, 0)
 
     /** Reference to the root node [Stage] */
-	val stage: Stage = Stage(this)
+	val stage: Stage = stageBuilder(this)
 
     /** Reference to the root node [Stage] (alias) */
 	val root = stage
@@ -531,7 +532,7 @@ class ViewsLog constructor(
     suspend fun init() {
         if (!initialized) {
             initialized = true
-            RegisteredImageFormats.register(PNG) // This might be required for Node.JS debug bitmap font in tests
+            RegisteredImageFormats.register(QOI, PNG) // This might be required for Node.JS debug bitmap font in tests
             views.init()
         }
     }

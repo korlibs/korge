@@ -1,5 +1,6 @@
 package com.soywiz.kgl
 
+import com.soywiz.kds.lock.*
 import com.soywiz.klogger.*
 import com.soywiz.kmem.*
 import com.soywiz.kmem.Platform
@@ -14,6 +15,8 @@ import com.soywiz.korgw.x11.*
 import com.soywiz.korio.lang.*
 import com.sun.jna.*
 import com.sun.jna.platform.win32.*
+import kotlinx.coroutines.sync.*
+import java.util.concurrent.Semaphore
 import java.util.concurrent.atomic.*
 
 val GLOBAL_HEADLESS_KML_CONTEXT by lazy { KmlGlContextDefault() }
@@ -21,8 +24,10 @@ val GLOBAL_HEADLESS_KML_CONTEXT by lazy { KmlGlContextDefault() }
 actual fun KmlGlContextDefault(window: Any?, parent: KmlGlContext?): KmlGlContext = when {
     Platform.isMac -> MacKmlGlContextRaw(window, parent)
     //Platform.isMac -> MacKmlGlContextManaged(window, parent)
+
     //Platform.isLinux -> LinuxKmlGlContext(window, parent)
     Platform.isLinux -> EGLKmlGlContext(window, parent)
+
     //Platform.isWindows -> Win32KmlGlContext(window, parent)
     Platform.isWindows -> Win32KmlGlContextManaged(window, parent)
     else -> error("Unsupported OS ${Platform.os}")
@@ -384,35 +389,10 @@ open class MacKmlGlContextManaged(window: Any? = null, parent: KmlGlContext? = n
 
 // http://renderingpipeline.com/2012/05/windowless-opengl-on-macos-x/
 open class MacKmlGlContextRaw(window: Any? = null, parent: KmlGlContext? = null) : KmlGlContext(window, MacKmlGL(), parent) {
-    init {
-        CoreGraphics.CGMainDisplayID()
-        NSClass("NSOpenGLPixelFormat").alloc().msgSend("initWithAttributes:", intArrayOf(0)) // This might help initializing CoreGraphics?
-    }
     var ctx: com.sun.jna.Pointer? = run {
-        val attributes = Memory(intArrayOf(
-            // Let's not specify profile version, so we are using old shader syntax
-            //kCGLPFAOpenGLProfile, kCGLOGLPVersion_GL3_Core,
-            //kCGLPFAOpenGLProfile, kCGLOGLPVersion_GL4_Core,
-            kCGLPFAAccelerated,
-            kCGLPFAColorSize, 24,
-            kCGLPFADepthSize, 16,
-            kCGLPFAStencilSize, 8,
-            kCGLPFADoubleBuffer,
-            //kCGLPFASupersample,
-            0,
-        ))
-        val num = Memory(4L).also { it.clear() }
         val ctx = Memory(8L).also { it.clear() } // void**
-        val pix = Memory(8L).also { it.clear() } // void**
-        checkError("CGLChoosePixelFormat", MacGL.CGLChoosePixelFormat(attributes, pix, num))
-        checkError("CGLCreateContext", MacGL.CGLCreateContext(pix.getPointer(0L), (parent as? MacKmlGlContextRaw)?.ctx, ctx))
-        checkError("CGLDestroyPixelFormat", MacGL.CGLDestroyPixelFormat(pix.getPointer(0L)))
+        checkError("CGLCreateContext", MacGL.CGLCreateContext(pix, (parent as? MacKmlGlContextRaw)?.ctx, ctx))
         ctx.getPointer(0L)
-    }
-
-    private fun checkError(name: String, value: Int): Int {
-        if (value != MacGL.kCGLNoError) error("Error in $name, errorCode=$value")
-        return value
     }
 
     override fun set() {
@@ -430,13 +410,56 @@ open class MacKmlGlContextRaw(window: Any? = null, parent: KmlGlContext? = null)
     override fun close() {
         if (ctx == null) return
         if (MacGL.CGLGetCurrentContext() == ctx) {
-            checkError("CGLSetCurrentContext", MacGL.CGLSetCurrentContext(null))
+            checkError("CGLSetCurrentContext:null", MacGL.CGLSetCurrentContext(null))
         }
         checkError("CGLDestroyContext", MacGL.CGLDestroyContext(ctx))
+        //println("CGLDestroyContext")
         ctx = null
     }
 
     companion object {
+
+        val pix: Pointer? by lazy {
+            //initializeMacOnce()
+            //CoreGraphics.CGMainDisplayID()
+            //NSClass("NSOpenGLPixelFormat").alloc().msgSend("initWithAttributes:", intArrayOf(0)) // This might help initializing CoreGraphics?
+
+            //checkError("CGLDestroyPixelFormat", MacGL.CGLDestroyPixelFormat(pix))
+
+            val attributes = Memory(intArrayOf(
+                // Let's not specify profile version, so we are using old shader syntax
+                //kCGLPFAOpenGLProfile, kCGLOGLPVersion_GL3_Core,
+                //kCGLPFAOpenGLProfile, kCGLOGLPVersion_GL4_Core,
+
+                kCGLPFAAccelerated,
+                kCGLPFAColorSize, 24,
+                kCGLPFADepthSize, 16,
+                kCGLPFAStencilSize, 8,
+                kCGLPFADoubleBuffer,
+
+                //kCGLPFASupersample,
+                0,
+            ))
+            val num = Memory(4L).also { it.clear() }
+            val pix = Memory(8L).also { it.clear() } // void**
+            try {
+                //println("ctx=${MacGL.CGLGetCurrentContext()}")
+                checkError("CGLChoosePixelFormat", MacGL.CGLChoosePixelFormat(attributes, pix, num).also {
+                    //println("CGLChoosePixelFormat: num=${num.getInt(0L)}, pix=${pix.getPointer(0L)}")
+                })
+                pix.getPointer(0L)
+            } catch (e: Throwable) {
+                e.printStackTrace()
+                null
+            }
+        }
+
+        private fun checkError(name: String, value: Int): Int {
+            val error = MacGL.Error[value]
+            if (error != MacGL.Error.kCGLNoError) error("Error in $name, errorCode=$value : $error")
+            return value
+        }
+
         // https://github.com/apitrace/apitrace/blob/master/retrace/glretrace_cgl.cpp
         const val kCGLPFAAccelerated = 73
         const val kCGLPFAOpenGLProfile = 99
@@ -448,12 +471,12 @@ open class MacKmlGlContextRaw(window: Any? = null, parent: KmlGlContext? = null)
         const val kCGLOGLPVersion_GL4_Core = 0x4100
 
 
-        const val kCGLPFAColorSize              = 8
-        const val kCGLPFAAlphaSize              =11
-        const val kCGLPFADepthSize              =12
-        const val kCGLPFAStencilSize            =13
-        const val kCGLPFAAccumSize              =14
-        const val kCGLPFADoubleBuffer           =5
+        const val kCGLPFAColorSize    = 8
+        const val kCGLPFAAlphaSize    = 11
+        const val kCGLPFADepthSize    = 12
+        const val kCGLPFAStencilSize  = 13
+        const val kCGLPFAAccumSize    = 14
+        const val kCGLPFADoubleBuffer = 5
 
     }
 }

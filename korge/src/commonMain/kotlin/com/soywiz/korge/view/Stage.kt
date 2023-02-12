@@ -18,7 +18,7 @@ import kotlinx.coroutines.*
  * Singleton root [View] and [Container] that contains a reference to the [Views] singleton and doesn't have any parent.
  */
 @RootViewDslMarker
-class Stage(override val views: Views) : FixedSizeContainer()
+open class Stage internal constructor(override val views: Views) : FixedSizeContainer()
     , View.Reference
     , CoroutineScope by views
     , EventDispatcher by EventDispatcher.Mixin()

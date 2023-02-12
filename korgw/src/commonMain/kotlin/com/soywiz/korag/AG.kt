@@ -43,6 +43,15 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
     open fun startFrame() = Unit
     open fun endFrame() = Unit
 
+    inline fun <T> startEndFrame(block: () -> T): T {
+        startFrame()
+        try {
+            return block()
+        } finally {
+            endFrame()
+        }
+    }
+
     protected open fun execute(command: AGCommand) = Unit
 
     open fun clear(

@@ -8,7 +8,7 @@ import org.junit.*
 
 class TtfFontTest {
     @Test
-    fun disableLigaturesWorks(): Unit = korgeOffscreenTest {
+    fun disableLigaturesWorks(): Unit = korgeScreenshotTest {
         val ttfFontWithLigatures =
             resourcesVfs["font_atkinson/AtkinsonHyperlegible-Bold.ttf"].readTtfFont()
         val ttfFontWithoutLigatures =
@@ -22,6 +22,6 @@ class TtfFontTest {
             }
         }
 
-        assertScreenshot(c, "text", posterize = 5)
+        assertScreenshot(c, "text", posterize = 5, includeBackground = false)
     }
 }
