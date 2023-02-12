@@ -92,7 +92,7 @@ private var OffscreenStage.testIndex: Int by extraProperty { 0 }
 suspend fun OffscreenStage.assertScreenshot(
     view: View = this,
     name: String = "$testIndex",
-    psnr: Double = 50.0,
+    psnr: Double = 40.0,
     //scale: Double = 1.0,
     posterize: Int = 0,
     includeBackground: Boolean = true

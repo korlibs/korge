@@ -33,7 +33,7 @@ class NativeDecodingTest {
         if (OS.isJsBrowserOrWorker) {
             // In JS has some small dis-adjustments because, to native read image pixels on JS we need Canvas,
             // and Canvas has a pre-multiplied alpha always, that leads to lossy rounding errors
-            assertTrue { diff < 61000 } //
+            assertTrue("diff=$diff < 61000") { diff < 61000 } //
         } else {
             assertEquals(0, diff)
         }
