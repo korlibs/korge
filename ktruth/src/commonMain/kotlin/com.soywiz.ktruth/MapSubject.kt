@@ -15,8 +15,10 @@ class MapSubject<K : Any, V : Any>(
 
         val expectedPairs = elements.toList().windowed(2, 2) {
 
-            assertTrue(keyType.isInstance(it[0]))
-            assertTrue(valueType.isInstance(it[1]))
+            assertTrue(keyType.isInstance(it[0]),
+                "Provided expected key is not the same instance of the key type: ${it[0]}")
+            assertTrue(valueType.isInstance(it[1]),
+                "Provided expected value is not the same instance of the value type: ${it[1]}")
 
             val key = it[0] as K
             val value = it[1] as V
