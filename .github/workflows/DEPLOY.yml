@@ -71,7 +71,37 @@ jobs:
         with:
           java-version: 1.8
       - run: ./gradlew checkReleasingMavenCentral
-      - run: ./gradlew publishIosArm64PublicationToMavenRepository publishIosX64PublicationToMavenRepository publishIosSimulatorArm64PublicationToMavenRepository publishWatchosX64PublicationToMavenRepository publishWatchosArm64PublicationToMavenRepository publishWatchosSimulatorArm64PublicationToMavenRepository publishTvosX64PublicationToMavenRepository publishTvosArm64PublicationToMavenRepository publishTvosSimulatorArm64PublicationToMavenRepository
+      - run: ./gradlew publishIosArm64PublicationToMavenRepository publishIosX64PublicationToMavenRepository publishIosSimulatorArm64PublicationToMavenRepository
+        env:
+          DISABLE_JAVASCRIPT_TEST: true
+  publish-tvos:
+    runs-on: macos-11
+    needs: [create-staging-repo]
+    env:
+      stagedRepositoryId: ${{needs.create-staging-repo.outputs.stagedRepositoryId}}
+    steps:
+      - uses: actions/checkout@v1
+      - name: Set up JDK 1.8
+        uses: actions/setup-java@v1
+        with:
+          java-version: 1.8
+      - run: ./gradlew checkReleasingMavenCentral
+      - run: ./gradlew publishTvosX64PublicationToMavenRepository publishTvosArm64PublicationToMavenRepository publishTvosSimulatorArm64PublicationToMavenRepository
+        env:
+          DISABLE_JAVASCRIPT_TEST: true
+  publish-watchos:
+    runs-on: macos-11
+    needs: [create-staging-repo]
+    env:
+      stagedRepositoryId: ${{needs.create-staging-repo.outputs.stagedRepositoryId}}
+    steps:
+      - uses: actions/checkout@v1
+      - name: Set up JDK 1.8
+        uses: actions/setup-java@v1
+        with:
+          java-version: 1.8
+      - run: ./gradlew checkReleasingMavenCentral
+      - run: ./gradlew publishWatchosX64PublicationToMavenRepository publishWatchosArm64PublicationToMavenRepository publishWatchosSimulatorArm64PublicationToMavenRepository
         env:
           DISABLE_JAVASCRIPT_TEST: true
   publish-jvm-multiplatform:
