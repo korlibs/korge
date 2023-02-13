@@ -73,18 +73,17 @@ class Graphics(
         set(value) {
             if (field == value) return
             field = value
-            softGraphics?.antialiased = true
-            gpuGraphics?.antialiased = true
+            softGraphics?.antialiased = value
+            gpuGraphics?.antialiased = value
             invalidateRender()
         }
 
     @ViewProperty
-    var debugDrawOnlyAntialiasedBorder: Boolean = true
+    var debugDrawOnlyAntialiasedBorder: Boolean = false
         set(value) {
             if (field == value) return
             field = value
-            //softGraphics?.debugDrawOnlyAntialiasedBorder = true
-            gpuGraphics?.debugDrawOnlyAntialiasedBorder = true
+            gpuGraphics?.debugDrawOnlyAntialiasedBorder = value
             invalidateRender()
         }
 
@@ -93,8 +92,8 @@ class Graphics(
         set(value) {
             if (field == value) return
             field = value
-            softGraphics?.smoothing = true
-            gpuGraphics?.smoothing = true
+            softGraphics?.smoothing = value
+            gpuGraphics?.smoothing = value
             invalidateRender()
         }
     @ViewProperty
@@ -102,8 +101,8 @@ class Graphics(
         set(value) {
             if (field == value) return
             field = value
-            softGraphics?.autoScaling = true
-            gpuGraphics?.autoScaling = true
+            softGraphics?.autoScaling = value
+            gpuGraphics?.autoScaling = value
             invalidateRender()
         }
 
@@ -145,11 +144,12 @@ class Graphics(
                     softGraphics = null
                 }
                 if (gpuGraphics == null) {
-                    gpuGraphics = gpuGraphics()
-                    gpuGraphics?.antialiased = antialiased
-                    gpuGraphics?.autoScaling = autoScaling
-                    gpuGraphics?.smoothing = smoothing
-                    gpuGraphics?.shape = shape
+                    gpuGraphics = gpuGraphics().also {
+                        it.antialiased = antialiased
+                        it.autoScaling = autoScaling
+                        it.smoothing = smoothing
+                        it.shape = shape
+                    }
                 }
             }
             else -> {
@@ -158,11 +158,12 @@ class Graphics(
                     gpuGraphics = null
                 }
                 if (softGraphics == null) {
-                    softGraphics = cpuGraphics()
-                    softGraphics?.antialiased = antialiased
-                    softGraphics?.autoScaling = autoScaling
-                    softGraphics?.smoothing = smoothing
-                    softGraphics?.shape = shape
+                    softGraphics = cpuGraphics().also {
+                        it.antialiased = antialiased
+                        it.autoScaling = autoScaling
+                        it.smoothing = smoothing
+                        it.shape = shape
+                    }
                 }
                 softGraphics?.useNativeRendering = (renderer == GraphicsRenderer.SYSTEM)
             }
