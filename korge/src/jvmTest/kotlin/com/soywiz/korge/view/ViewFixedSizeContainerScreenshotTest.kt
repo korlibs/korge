@@ -25,7 +25,8 @@ class ViewFixedSizeContainerScreenshotTest : ViewsForTesting(
             image(Bitmap32(100, 100) { x, y -> if (y <= 25) Colors.RED else Colors.BLUE}.premultiplied())
             xy(25, 25)
         }
-        assertScreenshot()
+        assertScreenshot(useTexture = true)
+        assertScreenshot(useTexture = false)
     }
 
     @Test
