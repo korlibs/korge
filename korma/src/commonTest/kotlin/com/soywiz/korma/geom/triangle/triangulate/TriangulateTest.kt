@@ -1,6 +1,6 @@
 package com.soywiz.korma.geom.triangle.triangulate
 
-import com.soywiz.korma.geom.Point
+import com.soywiz.korma.geom.MPoint
 import com.soywiz.korma.triangle.triangulate.triangulate
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -20,11 +20,11 @@ class TriangulateTest {
     @Test
     fun test2() {
         val points = listOf(
-            Point(3, 10),
-            Point(1, 5),
-            Point(3, 1),
-            Point(4, 0),
-            Point(6, 0)
+            MPoint(3, 10),
+            MPoint(1, 5),
+            MPoint(3, 1),
+            MPoint(4, 0),
+            MPoint(6, 0)
         )
 
         assertEquals(

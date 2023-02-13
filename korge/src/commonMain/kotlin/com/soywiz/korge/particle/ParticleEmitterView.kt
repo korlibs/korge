@@ -13,8 +13,8 @@ import com.soywiz.korim.format.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.*
 import com.soywiz.korma.geom.IPoint
-import com.soywiz.korma.geom.Point
-import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.MPoint
+import com.soywiz.korma.geom.MRectangle
 import kotlinx.coroutines.*
 import kotlin.random.*
 
@@ -50,7 +50,7 @@ class ParticleEmitterView(
     localCoords: Boolean = false,
     random: Random = Random,
 ) : View(), ViewFileRef by ViewFileRef.Mixin() {
-    var simulator = ParticleEmitterSimulator(emitter, Point(emitterPos), random)
+    var simulator = ParticleEmitterSimulator(emitter, MPoint(emitterPos), random)
 
     var timeUntilStop by simulator::timeUntilStop
     var emitting by simulator::emitting
@@ -61,12 +61,12 @@ class ParticleEmitterView(
         min = -1000.0,
         max = +1000.0,
     )
-    var emitterPos: Point
+    var emitterPos: MPoint
         get() = simulator.emitterPos
         set(value) {
             simulator.emitterPos.copyFrom(value)
         }
-    var emitterXY: Point
+    var emitterXY: MPoint
         get() = emitterPos
         set(value) {
             emitterPos = value
@@ -85,7 +85,7 @@ class ParticleEmitterView(
     @ViewProperty
     var localCoords: Boolean = localCoords
 
-    private val lastPosition = Point(globalX, globalY)
+    private val lastPosition = MPoint(globalX, globalY)
 
     //override fun setXY(x: Double, y: Double) {
     //    if (localCoords) {
@@ -189,7 +189,7 @@ class ParticleEmitterView(
     private var fsprites: FSprites? = null
     private val fviewInfo = FSprites.FViewInfo(1)
 
-    override fun getLocalBoundsInternal(out: Rectangle) {
+    override fun getLocalBoundsInternal(out: MRectangle) {
         out.setBounds(-30, -30, +30, +30)
     }
 

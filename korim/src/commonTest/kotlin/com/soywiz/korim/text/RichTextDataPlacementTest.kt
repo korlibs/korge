@@ -23,7 +23,7 @@ class RichTextDataPlacementTest {
 
         val texts = fonts.map { RichTextData("HELLO WORLD", font = it, textSize = 32.0) }
 
-        val placements = texts.map { it.place(Rectangle(0, 0, 300, 100), align = TextAlignment.MIDDLE_CENTER) }
+        val placements = texts.map { it.place(MRectangle(0, 0, 300, 100), align = TextAlignment.MIDDLE_CENTER) }
 
         for (font in fonts) logger.debug { font.naturalFontMetrics }
 

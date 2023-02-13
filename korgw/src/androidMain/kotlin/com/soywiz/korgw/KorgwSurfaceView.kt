@@ -16,7 +16,6 @@ import android.view.WindowManager
 import com.soywiz.kds.IntMap
 import com.soywiz.kds.buildIntArray
 import com.soywiz.kds.lock.NonRecursiveLock
-import com.soywiz.kds.toIntArrayList
 import com.soywiz.kds.toMap
 import com.soywiz.klock.PerformanceCounter
 import com.soywiz.klock.TimeSpan
@@ -30,8 +29,7 @@ import com.soywiz.korev.StandardGamepadMapping
 import com.soywiz.korev.Touch
 import com.soywiz.korev.TouchEvent
 import com.soywiz.korio.async.Signal
-import com.soywiz.korma.geom.Point
-import java.util.*
+import com.soywiz.korma.geom.MPoint
 import javax.microedition.khronos.egl.EGL10
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.egl.EGLDisplay
@@ -157,8 +155,8 @@ open class KorgwSurfaceView constructor(
                     }
                 }
                 gameWindow.dispatchGamepadUpdateStart()
-                val l = Point()
-                val r = Point()
+                val l = MPoint()
+                val r = MPoint()
                 for ((index, gamepad) in gamepads.withIndex()) {
                     val info = getGamepadInfo(gamepad.id)
                     if (!info.connected) {

@@ -5,34 +5,33 @@ import com.soywiz.kmem.clamp
 import com.soywiz.korag.*
 import com.soywiz.korge.render.Texture
 import com.soywiz.korge.ui.DefaultUIBitmapFont
-import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.font.BitmapFont
-import com.soywiz.korma.geom.Matrix3D
-import com.soywiz.korma.geom.Vector3D
+import com.soywiz.korma.geom.MMatrix3D
+import com.soywiz.korma.geom.MVector4
 import com.soywiz.korma.geom.invert
 
 @Korge3DExperimental
-fun Container3D.text3D(str: String, v1: Vector3D, v2: Vector3D, v3: Vector3D, v4: Vector3D): Text3D =
+fun Container3D.text3D(str: String, v1: MVector4, v2: MVector4, v3: MVector4, v4: MVector4): Text3D =
     Text3D(str, v1, v2, v3, v4).addTo(this)
 
 @Korge3DExperimental
 class Text3D(
     var text: String,
-    var v1: Vector3D, var v2: Vector3D, var v3: Vector3D, var v4: Vector3D
+    var v1: MVector4, var v2: MVector4, var v3: MVector4, var v4: MVector4
 ) : View3D() {
 
     var font: BitmapFont = DefaultUIBitmapFont
 
-    protected open fun prepareExtraModelMatrix(mat: Matrix3D) {
+    protected open fun prepareExtraModelMatrix(mat: MMatrix3D) {
         mat.identity()
     }
 
     private val uniformValues = AGUniformValues()
     private val rs = AGDepthAndFrontFace.DEFAULT.withDepthFunc(depthFunc = AGCompareMode.LESS_EQUAL)
-    private val tempMat1 = Matrix3D()
-    private val tempMat2 = Matrix3D()
-    private val tempMat3 = Matrix3D()
-    private val identity = Matrix3D()
+    private val tempMat1 = MMatrix3D()
+    private val tempMat2 = MMatrix3D()
+    private val tempMat3 = MMatrix3D()
+    private val identity = MMatrix3D()
 
 
     fun AGUniformValues.setMaterialLight(
@@ -122,14 +121,14 @@ class Text3D(
 
         var dx = 0.0
         var dy = 0.0
-        val dv1 = Vector3D(v1.x, v1.y, v1.z, v1.w)
-        val dv2 = Vector3D(v2.x, v2.y, v3.z, v2.w)
-        val dv3 = Vector3D(v3.x, v3.y, v3.z, v3.w)
-        val dv4 = Vector3D(v4.x, v4.y, v4.z, v4.w)
-        val t1 = Vector3D()
-        val t2 = Vector3D()
-        val t3 = Vector3D()
-        val t4 = Vector3D()
+        val dv1 = MVector4(v1.x, v1.y, v1.z, v1.w)
+        val dv2 = MVector4(v2.x, v2.y, v3.z, v2.w)
+        val dv3 = MVector4(v3.x, v3.y, v3.z, v3.w)
+        val dv4 = MVector4(v4.x, v4.y, v4.z, v4.w)
+        val t1 = MVector4()
+        val t2 = MVector4()
+        val t3 = MVector4()
+        val t4 = MVector4()
         for (n in str.indices) {
             val c1 = str[n].toInt()
             if (c1 == '\n'.toInt()) {

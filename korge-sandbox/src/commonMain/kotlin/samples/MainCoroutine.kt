@@ -8,7 +8,7 @@ import com.soywiz.korge.view.position
 import com.soywiz.korge.view.solidRect
 import com.soywiz.korim.color.Colors
 import com.soywiz.korio.async.launchImmediately
-import com.soywiz.korma.geom.Point
+import com.soywiz.korma.geom.MPoint
 import com.soywiz.korma.random.get
 import kotlin.random.Random
 
@@ -26,7 +26,7 @@ class MainCoroutine : ScaledScene(512, 512) {
                         val targetX = random[0, 512].toDouble()
                         val targetY = random[0, 512].toDouble()
 
-                        while (Point.distance(view.x, view.y, targetX, targetY) > 5.0) {
+                        while (MPoint.distance(view.x, view.y, targetX, targetY) > 5.0) {
                             when {
                                 view.x < targetX -> view.x += 2
                                 view.x > targetX -> view.x -= 2

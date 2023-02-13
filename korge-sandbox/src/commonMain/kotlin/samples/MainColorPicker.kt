@@ -12,7 +12,7 @@ import com.soywiz.korim.bitmap.Bitmaps
 import com.soywiz.korim.bitmap.slice
 import com.soywiz.korim.format.readBitmap
 import com.soywiz.korio.file.std.resourcesVfs
-import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.MRectangle
 
 class MainColorPicker : Scene() {
     override suspend fun SContainer.sceneMain() {
@@ -22,7 +22,7 @@ class MainColorPicker : Scene() {
 
         mouse {
             move {
-                val bmp = stage!!.unsafeRenderToBitmapSync(views!!.renderContext, Rectangle(views.stage.mouseX - 5.0, views.stage.mouseY - 5.0, 10.0, 10.0), views!!.globalToWindowScaleAvg)
+                val bmp = stage!!.unsafeRenderToBitmapSync(views!!.renderContext, MRectangle(views.stage.mouseX - 5.0, views.stage.mouseY - 5.0, 10.0, 10.0), views!!.globalToWindowScaleAvg)
                 magnifier.bitmap = bmp.slice()
                 invalidateRender()
             }

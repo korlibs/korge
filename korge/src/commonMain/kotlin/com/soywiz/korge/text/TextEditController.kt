@@ -61,7 +61,7 @@ class TextEditController(
         it.visible = false
     }
 
-    var padding: Margin = Margin(3.0, 2.0, 2.0, 2.0)
+    var padding: IMargin = IMargin(3.0, 2.0, 2.0, 2.0)
         set(value) {
             field = value
             onSizeChanged(this)
@@ -196,7 +196,7 @@ class TextEditController(
 
     fun getCaretAtIndex(index: Int): Bezier {
         val glyphPositions = textView.getGlyphMetrics().glyphs
-        if (glyphPositions.isEmpty()) return Bezier(Point(), Point())
+        if (glyphPositions.isEmpty()) return Bezier(MPoint(), MPoint())
         val glyph = glyphPositions[min(index, glyphPositions.size - 1)]
         return when {
             index < glyphPositions.size -> glyph.caretStart
@@ -216,7 +216,7 @@ class TextEditController(
     }
     */
 
-    fun getIndexAtPos(pos: Point): Int {
+    fun getIndexAtPos(pos: MPoint): Int {
         val glyphPositions = textView.getGlyphMetrics().glyphs
 
         var index = 0

@@ -4,15 +4,12 @@ import com.soywiz.kmem.clamp
 import com.soywiz.kmem.toIntCeil
 import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.BitmapWithHotspot
-import com.soywiz.korim.bitmap.NativeImage
 import com.soywiz.korim.bitmap.NativeImageOrBitmap32
 import com.soywiz.korim.bitmap.context2d
 import com.soywiz.korma.geom.ISize
-import com.soywiz.korma.geom.Point
-import com.soywiz.korma.geom.PointInt
-import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.MPointInt
+import com.soywiz.korma.geom.MRectangle
 import com.soywiz.korma.geom.ScaleMode
-import com.soywiz.korma.geom.topLeft
 
 interface Drawable {
     fun draw(c: Context2d)
@@ -31,7 +28,7 @@ interface SizedDrawable : Drawable {
 }
 
 interface BoundsDrawable : SizedDrawable {
-    val bounds: Rectangle
+    val bounds: MRectangle
     val left: Int get() = bounds.left.toInt()
     val top: Int get() = bounds.top.toInt()
     override val width: Int get() = bounds.width.toInt()
@@ -53,7 +50,7 @@ fun BoundsDrawable.renderWithHotspot(scale: Double? = null, fit: ISize? = null, 
         translate(-bounds.x, -bounds.y)
         draw(this@renderWithHotspot)
     }
-    return BitmapWithHotspot(image, PointInt(
+    return BitmapWithHotspot(image, MPointInt(
         (-bounds.left * rscale).toInt().clamp(0, image.width - 1),
         (-bounds.top * rscale).toInt().clamp(0, image.height - 1),
     ))

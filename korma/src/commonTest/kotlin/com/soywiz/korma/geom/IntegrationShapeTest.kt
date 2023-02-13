@@ -28,7 +28,7 @@ class IntegrationShapeTest {
 
     @Test
     fun triangulate() {
-        val shape = Rectangle(0, 0, 100, 100).toShape()
+        val shape = MRectangle(0, 0, 100, 100).toShape()
         //println(shape)
         //println(shape.getAllPoints())
         //println(shape.getAllPoints().toPoints())
@@ -42,11 +42,11 @@ class IntegrationShapeTest {
     fun pathFind() {
         assertEquals(
             "[(10, 10), (90, 90)]",
-            Rectangle(0, 0, 100, 100).toShape().pathFind(IPoint(10, 10), IPoint(90, 90)).toString()
+            MRectangle(0, 0, 100, 100).toShape().pathFind(IPoint(10, 10), IPoint(90, 90)).toString()
         )
         assertEquals(
             "[(10, 10), (100, 50), (120, 52)]",
-            (Rectangle(0, 0, 100, 100).toShape() + Rectangle(100, 50, 50, 50).toShape()).pathFind(
+            (MRectangle(0, 0, 100, 100).toShape() + MRectangle(100, 50, 50, 50).toShape()).pathFind(
                 IPoint(10, 10),
                 IPoint(120, 52)
             ).toString()

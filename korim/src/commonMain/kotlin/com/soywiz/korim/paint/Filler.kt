@@ -8,7 +8,7 @@ import com.soywiz.korim.color.RGBAPremultiplied
 import com.soywiz.korim.color.RgbaPremultipliedArray
 import com.soywiz.korim.vector.Context2d
 import com.soywiz.korim.vector.CycleMethod
-import com.soywiz.korma.geom.Matrix
+import com.soywiz.korma.geom.MMatrix
 
 abstract class BaseFiller {
     abstract fun fill(data: RgbaPremultipliedArray, offset: Int, x0: Int, x1: Int, y: Int)
@@ -35,9 +35,9 @@ class BitmapFiller : BaseFiller() {
     private var cycleX: CycleMethod = CycleMethod.NO_CYCLE
     private var cycleY: CycleMethod = CycleMethod.NO_CYCLE
     private var texture: Bitmap32 = Bitmaps.transparent.bmp
-    private var transform: Matrix = Matrix()
+    private var transform: MMatrix = MMatrix()
     private var linear: Boolean = true
-    private val compTrans = Matrix()
+    private val compTrans = MMatrix()
 
     fun set(fill: BitmapPaint, state: Context2d.State) = this.apply {
         this.cycleX = fill.cycleX
@@ -101,7 +101,7 @@ class GradientFiller : BaseFiller() {
 
     fun set(fill: GradientPaint, state: Context2d.State): GradientFiller {
         fill.fillColors(colors)
-        this.fill = fill.copy(transform = Matrix().apply {
+        this.fill = fill.copy(transform = MMatrix().apply {
             identity()
             preconcat(fill.transform)
             preconcat(state.transform)

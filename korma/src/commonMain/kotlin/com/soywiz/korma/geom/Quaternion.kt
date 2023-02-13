@@ -9,29 +9,45 @@ import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.sqrt
 
-// https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
 data class Quaternion(
-    var x: Double = 0.0,
-    var y: Double = 0.0,
-    var z: Double = 0.0,
-    var w: Double = 1.0
-) {
+    val x: Double,
+    val y: Double,
+    val z: Double,
+    val w: Double,
+)
+
+@Deprecated("Use Quaternion instead")
+interface IQuaternion {
+    val x: Double
+    val y: Double
+    val z: Double
+    val w: Double
+}
+
+// https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
+@Deprecated("Use Quaternion instead")
+data class MQuaternion(
+    override var x: Double = 0.0,
+    override var y: Double = 0.0,
+    override var z: Double = 0.0,
+    override var w: Double = 1.0
+) : IQuaternion {
     constructor(xyz: IVector3, w: Double) : this(xyz.x.toDouble(), xyz.y.toDouble(), xyz.z.toDouble(), w)
 
     val lengthSquared: Double get() = (x * x) + (y * y) + (z * z) + (w * w)
     val length: Double get() = sqrt(lengthSquared)
 
     companion object {
-        fun dotProduct(l: Quaternion, r: Quaternion): Double = l.x * r.x + l.y * r.y + l.z * r.z + l.w * r.w
-        operator fun invoke(x: Float, y: Float, z: Float, w: Float) = Quaternion(x.toDouble(), y.toDouble(), z.toDouble(), w.toDouble())
-        operator fun invoke(x: Int, y: Int, z: Int, w: Int) = Quaternion(x.toDouble(), y.toDouble(), z.toDouble(), w.toDouble())
-        fun toEuler(q: Quaternion, out: EulerRotation = EulerRotation()): EulerRotation = toEuler(q.x, q.y, q.z, q.w, out)
-        fun toEuler(x: Double, y: Double, z: Double, w: Double, euler: EulerRotation = EulerRotation()): EulerRotation =
+        fun dotProduct(l: MQuaternion, r: MQuaternion): Double = l.x * r.x + l.y * r.y + l.z * r.z + l.w * r.w
+        operator fun invoke(x: Float, y: Float, z: Float, w: Float) = MQuaternion(x.toDouble(), y.toDouble(), z.toDouble(), w.toDouble())
+        operator fun invoke(x: Int, y: Int, z: Int, w: Int) = MQuaternion(x.toDouble(), y.toDouble(), z.toDouble(), w.toDouble())
+        fun toEuler(q: MQuaternion, out: MEulerRotation = MEulerRotation()): MEulerRotation = toEuler(q.x, q.y, q.z, q.w, out)
+        fun toEuler(x: Double, y: Double, z: Double, w: Double, euler: MEulerRotation = MEulerRotation()): MEulerRotation =
             toEuler(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat(), euler)
-        fun toEuler(x: Int, y: Int, z: Int, w: Int, euler: EulerRotation = EulerRotation()): EulerRotation =
+        fun toEuler(x: Int, y: Int, z: Int, w: Int, euler: MEulerRotation = MEulerRotation()): MEulerRotation =
             toEuler(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat(), euler)
 
-        fun toEuler(x: Float, y: Float, z: Float, w: Float, out: EulerRotation = EulerRotation()): EulerRotation {
+        fun toEuler(x: Float, y: Float, z: Float, w: Float, out: MEulerRotation = MEulerRotation()): MEulerRotation {
             val sinrCosp = +2.0 * (w * x + y * z)
             val cosrCosp = +1.0 - 2.0 * (x * x + y * y)
             val roll = atan2(sinrCosp, cosrCosp)
@@ -55,37 +71,37 @@ data class Quaternion(
         else -> Double.NaN
     }
     inline fun setToFunc(callback: (Int) -> Double) = setTo(callback(0), callback(1), callback(2), callback(3))
-    fun setTo(x: Double, y: Double, z: Double, w: Double): Quaternion {
+    fun setTo(x: Double, y: Double, z: Double, w: Double): MQuaternion {
         this.x = x
         this.y = y
         this.z = z
         this.w = w
         return this
     }
-    fun setTo(x: Int, y: Int, z: Int, w: Int): Quaternion = setTo(x.toDouble(), y.toDouble(), z.toDouble(), w.toDouble())
-    fun setTo(x: Float, y: Float, z: Float, w: Float): Quaternion = setTo(x.toDouble(), y.toDouble(), z.toDouble(), w.toDouble())
-    fun setTo(euler: EulerRotation): Quaternion = EulerRotation.toQuaternion(euler, this)
-    fun setTo(other: Quaternion): Quaternion = setTo(other.x, other.y, other.z, other.w)
+    fun setTo(x: Int, y: Int, z: Int, w: Int): MQuaternion = setTo(x.toDouble(), y.toDouble(), z.toDouble(), w.toDouble())
+    fun setTo(x: Float, y: Float, z: Float, w: Float): MQuaternion = setTo(x.toDouble(), y.toDouble(), z.toDouble(), w.toDouble())
+    fun setTo(euler: MEulerRotation): MQuaternion = MEulerRotation.toQuaternion(euler, this)
+    fun setTo(other: MQuaternion): MQuaternion = setTo(other.x, other.y, other.z, other.w)
 
-    fun setEuler(x: Angle, y: Angle, z: Angle): Quaternion = EulerRotation.toQuaternion(x, y, z, this)
-    fun setEuler(euler: EulerRotation): Quaternion = EulerRotation.toQuaternion(euler, this)
+    fun setEuler(x: Angle, y: Angle, z: Angle): MQuaternion = MEulerRotation.toQuaternion(x, y, z, this)
+    fun setEuler(euler: MEulerRotation): MQuaternion = MEulerRotation.toQuaternion(euler, this)
 
-    fun copyFrom(other: Quaternion): Quaternion = this.setTo(other)
+    fun copyFrom(other: MQuaternion): MQuaternion = this.setTo(other)
 
-    operator fun unaryMinus(): Quaternion = Quaternion(-x, -y, -z, -w)
-    operator fun plus(other: Quaternion): Quaternion = Quaternion(x + other.x, y + other.y, z + other.z, w + other.w)
-    operator fun minus(other: Quaternion): Quaternion = Quaternion(x - other.x, y - other.y, z - other.z, w - other.w)
-    operator fun times(scale: Double): Quaternion = Quaternion(x * scale, y * scale, z * scale, w * scale)
+    operator fun unaryMinus(): MQuaternion = MQuaternion(-x, -y, -z, -w)
+    operator fun plus(other: MQuaternion): MQuaternion = MQuaternion(x + other.x, y + other.y, z + other.z, w + other.w)
+    operator fun minus(other: MQuaternion): MQuaternion = MQuaternion(x - other.x, y - other.y, z - other.z, w - other.w)
+    operator fun times(scale: Double): MQuaternion = MQuaternion(x * scale, y * scale, z * scale, w * scale)
 
     fun negate() = this.setTo(-x, -y, -z, -w)
 
-    inline fun setToFunc(l: Quaternion, r: Quaternion, func: (l: Double, r: Double) -> Double) = setTo(
+    inline fun setToFunc(l: MQuaternion, r: MQuaternion, func: (l: Double, r: Double) -> Double) = setTo(
         func(l.x, r.x),
         func(l.y, r.y),
         func(l.z, r.z),
         func(l.w, r.w)
     )
-    fun setToSlerp(left: Quaternion, right: Quaternion, t: Double, tleft: Quaternion = Quaternion(), tright: Quaternion = Quaternion()): Quaternion {
+    fun setToSlerp(left: MQuaternion, right: MQuaternion, t: Double, tleft: MQuaternion = MQuaternion(), tright: MQuaternion = MQuaternion()): MQuaternion {
         val tleft = tleft.copyFrom(left).normalize()
         val tright = tright.copyFrom(right).normalize()
 
@@ -107,14 +123,14 @@ data class Quaternion(
         return setToFunc(tleft, tright) { l, r -> (s0 * l) + (s1 * r) }
     }
 
-    fun setToNlerp(left: Quaternion, right: Quaternion, t: Double): Quaternion {
+    fun setToNlerp(left: MQuaternion, right: MQuaternion, t: Double): MQuaternion {
         val sign = if (dotProduct(left, right) < 0) -1 else +1
         return setToFunc { (1f - t) * left[it] + t * right[it] * sign }.normalize()
     }
 
-    fun setToInterpolated(left: Quaternion, right: Quaternion, t: Double): Quaternion = setToSlerp(left, right, t)
+    fun setToInterpolated(left: MQuaternion, right: MQuaternion, t: Double): MQuaternion = setToSlerp(left, right, t)
 
-    fun setFromRotationMatrix(m: Matrix3D) = this.apply {
+    fun setFromRotationMatrix(m: MMatrix3D) = this.apply {
         val q = this
         m.apply {
             val t = v00 + v11 + v22
@@ -139,11 +155,11 @@ data class Quaternion(
         }
     }
 
-    fun normalize(v: Quaternion = this): Quaternion {
-        val length = 1.0 / Vector3D.length(v.x, v.y, v.z, v.w)
+    fun normalize(v: MQuaternion = this): MQuaternion {
+        val length = 1.0 / MVector4.length(v.x, v.y, v.z, v.w)
         return this.setTo(v.x / length, v.y / length, v.z / length, v.w / length)
     }
-    fun toMatrix(out: Matrix3D = Matrix3D()): Matrix3D = out.multiply(
+    fun toMatrix(out: MMatrix3D = MMatrix3D()): MMatrix3D = out.multiply(
         // Left
         w, z, -y, x,
         -z, w, x, y,
@@ -156,7 +172,7 @@ data class Quaternion(
         x, y, z, w,
     )
 
-    fun inverted(out: Quaternion = Quaternion()): Quaternion {
+    fun inverted(out: MQuaternion = MQuaternion()): MQuaternion {
         val q = this
         val lengthSquared = q.lengthSquared
         return if (lengthSquared != 0.0) {
@@ -167,23 +183,23 @@ data class Quaternion(
         }
     }
 
-    val xyz get() = Vector3D(x, y, z)
+    val xyz get() = MVector4(x, y, z)
 
     // @TODO: Optimize
-    operator fun times(other: Quaternion): Quaternion {
+    operator fun times(other: MQuaternion): MQuaternion {
         val left = this
         val right = other
-        return Quaternion(
-            (left.xyz * right.w.toFloat()) + (right.xyz * left.w.toFloat()) + Vector3D().cross(left.xyz, right.xyz),
+        return MQuaternion(
+            (left.xyz * right.w.toFloat()) + (right.xyz * left.w.toFloat()) + MVector4().cross(left.xyz, right.xyz),
             left.w * right.w - left.xyz.dot(right.xyz)
         )
     }
 
     // @TODO: Optimize
-    fun transform(vec: Vector3D, out: Vector3D = Vector3D()): Vector3D {
-        val result4 = (this * Quaternion(vec.x, vec.y, vec.z, vec.w)) * this.inverted()
+    fun transform(vec: MVector4, out: MVector4 = MVector4()): MVector4 {
+        val result4 = (this * MQuaternion(vec.x, vec.y, vec.z, vec.w)) * this.inverted()
         return out.setTo(result4.x, result4.y, result4.z, result4.w)
     }
 }
 
-operator fun Double.times(scale: Quaternion): Quaternion = scale.times(this)
+operator fun Double.times(scale: MQuaternion): MQuaternion = scale.times(this)

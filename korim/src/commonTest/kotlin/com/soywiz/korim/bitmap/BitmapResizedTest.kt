@@ -4,7 +4,7 @@ import com.soywiz.korim.color.Colors
 import com.soywiz.korio.async.suspendTest
 import com.soywiz.korma.geom.Anchor
 import com.soywiz.korma.geom.ScaleMode
-import com.soywiz.korma.geom.Size
+import com.soywiz.korma.geom.MSize
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -20,7 +20,7 @@ class BitmapResizedTest {
     fun testResizedUpTo() = suspendTest {
         val bmp = Bitmap32(128, 256, Colors.RED)
         val out = bmp.resizedUpTo(32, 32)
-        assertEquals(Size(16, 32), out.size)
+        assertEquals(MSize(16, 32), out.size)
         //out.writeTo("/tmp/demo.png".uniVfs, PNG)
     }
 }

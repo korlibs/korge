@@ -1,4 +1,4 @@
 package com.soywiz.korma.geom
 
-data class Ray(val point: Point, val direction: Vector2D) {
+data class Ray(val point: MPoint, val direction: MVector2D) {
 }

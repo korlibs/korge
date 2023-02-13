@@ -17,6 +17,6 @@ class MeshTest {
 
     @Test
     fun testEmpty() {
-        assertEquals(Unit, Mesh().getLocalBoundsInternal(Rectangle()), "Doesn't throw with mutability exception")
+        assertEquals(Unit, Mesh().getLocalBoundsInternal(MRectangle()), "Doesn't throw with mutability exception")
     }
 }

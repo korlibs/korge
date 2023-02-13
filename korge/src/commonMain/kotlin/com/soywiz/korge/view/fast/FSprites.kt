@@ -18,7 +18,7 @@ import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korma.geom.Angle
-import com.soywiz.korma.geom.Matrix
+import com.soywiz.korma.geom.MMatrix
 import com.soywiz.korma.geom.radians
 
 @PublishedApi
@@ -137,7 +137,7 @@ open class FSprites(val maxSize: Int) {
             sprites: FSprites,
             info: FViewInfo,
             smoothing: Boolean,
-            globalMatrix: Matrix,
+            globalMatrix: MMatrix,
             blending: BlendMode
         ) {
             if (!ctx.isInstancedSupported) {

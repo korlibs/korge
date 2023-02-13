@@ -47,7 +47,7 @@ class TextBlock(
     @ViewProperty
     var ellipsis: String? = "..."; set(value) { field = value; invalidProps() }
     @ViewProperty
-    var padding: Margin = Margin.EMPTY; set(value) { field = value; invalidProps() }
+    var padding: IMargin = IMargin.EMPTY; set(value) { field = value; invalidProps() }
     @ViewProperty
     var autoSize: Boolean = false; set(value) { field = value; invalidateText() }
     //@ViewProperty(min = 0.0, max = 10.0, clampMin = true)
@@ -102,7 +102,7 @@ class TextBlock(
         bmp.context2d {
             drawRichText(
                 text,
-                bounds = Rectangle.fromBounds(padding.left, padding.top, width - padding.right, height - padding.bottom),
+                bounds = MRectangle.fromBounds(padding.left, padding.top, width - padding.right, height - padding.bottom),
                 includePartialLines = includePartialLines, wordWrap = wordWrap, ellipsis = ellipsis, align = align,
                 fill = fill, stroke = stroke, includeFirstLineAlways = true,
                 textRangeStart = textRangeStart, textRangeEnd = textRangeEnd
@@ -116,7 +116,7 @@ class TextBlock(
         if (allBitmap == true) {
             if (dirty || placements == null) {
                 dirty = false
-                placements = text.place(Rectangle(padding.left, padding.top, width - padding.right, height - padding.bottom), wordWrap, includePartialLines, ellipsis, fill, stroke, align, includeFirstLineAlways = includeFirstLineAlways)
+                placements = text.place(MRectangle(padding.left, padding.top, width - padding.right, height - padding.bottom), wordWrap, includePartialLines, ellipsis, fill, stroke, align, includeFirstLineAlways = includeFirstLineAlways)
             }
             image?.removeFromParent()
             image = null

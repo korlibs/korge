@@ -5,7 +5,6 @@ import com.soywiz.kmem.*
 import com.soywiz.korev.*
 import com.soywiz.korge.component.*
 import com.soywiz.korge.input.*
-import com.soywiz.korge.scene.ScaledScene
 import com.soywiz.korge.view.*
 import com.soywiz.korim.color.*
 import com.soywiz.korio.util.toStringDecimal
@@ -79,7 +78,7 @@ class MainOnScreenController : Scene() {
             }
 
             var dragging = false
-            val start = Point(0, 0)
+            val start = MPoint(0, 0)
 
             view.addComponent(object : MouseComponent {
                 override val view: View = view

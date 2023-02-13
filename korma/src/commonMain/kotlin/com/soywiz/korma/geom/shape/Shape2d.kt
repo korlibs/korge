@@ -15,21 +15,21 @@ import kotlin.math.hypot
 import kotlin.math.max
 import kotlin.math.min
 
-private fun Matrix?.tx(x: Double, y: Double) = this?.transformX(x, y) ?: x
-private fun Matrix?.ty(x: Double, y: Double) = this?.transformY(x, y) ?: y
-private fun Matrix?.dtx(x: Double, y: Double) = this?.deltaTransformX(x, y) ?: x
-private fun Matrix?.dty(x: Double, y: Double) = this?.deltaTransformY(x, y) ?: y
+private fun MMatrix?.tx(x: Double, y: Double) = this?.transformX(x, y) ?: x
+private fun MMatrix?.ty(x: Double, y: Double) = this?.transformY(x, y) ?: y
+private fun MMatrix?.dtx(x: Double, y: Double) = this?.deltaTransformX(x, y) ?: x
+private fun MMatrix?.dty(x: Double, y: Double) = this?.deltaTransformY(x, y) ?: y
 
 private fun optimizedIntersect(l: Shape2d.Circle, r: Shape2d.Circle): Boolean {
-    return Point.distance(l.x, l.y, r.x, r.y) < (l.radius + r.radius)
+    return MPoint.distance(l.x, l.y, r.x, r.y) < (l.radius + r.radius)
 }
 
-private fun optimizedIntersect(l: Shape2d.Circle, ml: Matrix?, r: Shape2d.Circle, mr: Matrix?): Boolean {
+private fun optimizedIntersect(l: Shape2d.Circle, ml: MMatrix?, r: Shape2d.Circle, mr: MMatrix?): Boolean {
     if (ml == null && mr == null) return optimizedIntersect(l, r)
     val radiusL = ml.dtx(l.radius, l.radius)
     val radiusR = mr.dtx(r.radius, r.radius)
     //println("radiusL=$radiusL, radiusR=$radiusR")
-    return Point.distance(
+    return MPoint.distance(
         ml.tx(l.x, l.y), ml.ty(l.x, l.y),
         mr.tx(r.x, r.y), mr.ty(r.x, r.y),
     ) < radiusL + radiusR
@@ -44,8 +44,8 @@ abstract class Shape2d {
     abstract val paths: List<IPointArrayList>
     abstract val closed: Boolean
     abstract fun containsPoint(x: Double, y: Double): Boolean
-    fun containsPoint(x: Double, y: Double, mat: Matrix) = containsPoint(mat.transformX(x, y), mat.transformY(x, y))
-    open fun getBounds(out: com.soywiz.korma.geom.Rectangle = com.soywiz.korma.geom.Rectangle()): com.soywiz.korma.geom.Rectangle {
+    fun containsPoint(x: Double, y: Double, mat: MMatrix) = containsPoint(mat.transformX(x, y), mat.transformY(x, y))
+    open fun getBounds(out: com.soywiz.korma.geom.MRectangle = com.soywiz.korma.geom.MRectangle()): com.soywiz.korma.geom.MRectangle {
         var minx = Double.POSITIVE_INFINITY
         var miny = Double.POSITIVE_INFINITY
         var maxx = Double.NEGATIVE_INFINITY
@@ -60,11 +60,11 @@ abstract class Shape2d {
         }
         return out.setBounds(minx, miny, maxx, maxy)
     }
-    open fun getCenter(): com.soywiz.korma.geom.Point {
+    open fun getCenter(): com.soywiz.korma.geom.MPoint {
         return getBounds().center
     }
     companion object {
-        fun intersects(l: Shape2d, ml: Matrix?, r: Shape2d, mr: Matrix?, tempMatrix: Matrix? = Matrix()): Boolean {
+        fun intersects(l: Shape2d, ml: MMatrix?, r: Shape2d, mr: MMatrix?, tempMatrix: MMatrix? = MMatrix()): Boolean {
             //println("Shape2d.intersects:"); println(" - l=$l[$ml]"); println(" - r=$r[$mr]")
 
             if (l.type == r.type) {
@@ -80,7 +80,7 @@ abstract class Shape2d {
             return _intersectsStep0(l, ml, r, mr, tempMatrix) || _intersectsStep0(r, mr, l, ml, tempMatrix)
         }
 
-        private fun _intersectsStep0(l: Shape2d, ml: Matrix?, r: Shape2d, mr: Matrix?, tempMatrix: Matrix? = Matrix()): Boolean {
+        private fun _intersectsStep0(l: Shape2d, ml: MMatrix?, r: Shape2d, mr: MMatrix?, tempMatrix: MMatrix? = MMatrix()): Boolean {
             if (tempMatrix != null && (ml != null || mr != null)) {
                 if (mr != null) tempMatrix.invert(mr) else tempMatrix.identity()
                 if (ml != null) tempMatrix.premultiply(ml)
@@ -109,7 +109,7 @@ abstract class Shape2d {
     }
 
     fun intersectsWith(that: Shape2d) = intersects(this, null, that, null, null)
-    fun intersectsWith(ml: Matrix?, that: Shape2d, mr: Matrix?) = intersects(this, ml, that, mr)
+    fun intersectsWith(ml: MMatrix?, that: Shape2d, mr: MMatrix?) = intersects(this, ml, that, mr)
 
     infix fun with(that: Shape2d): Shape2d {
         val left = this
@@ -162,7 +162,7 @@ abstract class Shape2d {
         val vectorPath by lazy {
             buildVectorPath(VectorPath()) {
                 ellipse(0.0, 0.0, ellipseRadiusX, ellipseRadiusY)
-            }.applyTransform(Matrix().pretranslate(ellipseX, ellipseY).prerotate(ellipseAngle))
+            }.applyTransform(MMatrix().pretranslate(ellipseX, ellipseY).prerotate(ellipseAngle))
         }
 
         override val paths: List<IPointArrayList> = when {
@@ -200,16 +200,16 @@ abstract class Shape2d {
         }
     }
 
-    data class Rectangle(val rect: com.soywiz.korma.geom.Rectangle) : Shape2d(), WithArea, IRectangle by rect {
+    data class Rectangle(val rect: com.soywiz.korma.geom.MRectangle) : Shape2d(), WithArea, IRectangle by rect {
         companion object {
             const val TYPE = 3
-            inline operator fun invoke(x: Double, y: Double, width: Double, height: Double) = Rectangle(com.soywiz.korma.geom.Rectangle(x, y, width, height))
-            inline operator fun invoke(x: Float, y: Float, width: Float, height: Float) = Rectangle(com.soywiz.korma.geom.Rectangle(x, y, width, height))
-            inline operator fun invoke(x: Int, y: Int, width: Int, height: Int) = Rectangle(com.soywiz.korma.geom.Rectangle(x, y, width, height))
+            inline operator fun invoke(x: Double, y: Double, width: Double, height: Double) = Rectangle(com.soywiz.korma.geom.MRectangle(x, y, width, height))
+            inline operator fun invoke(x: Float, y: Float, width: Float, height: Float) = Rectangle(com.soywiz.korma.geom.MRectangle(x, y, width, height))
+            inline operator fun invoke(x: Int, y: Int, width: Int, height: Int) = Rectangle(com.soywiz.korma.geom.MRectangle(x, y, width, height))
 
-            inline fun fromBounds(left: Double, top: Double, right: Double, down: Double) = Rectangle(com.soywiz.korma.geom.Rectangle.fromBounds(left, top, right, down))
-            inline fun fromBounds(left: Float, top: Float, right: Float, down: Float) = Rectangle(com.soywiz.korma.geom.Rectangle.fromBounds(left, top, right, down))
-            inline fun fromBounds(left: Int, top: Int, right: Int, down: Int) = Rectangle(com.soywiz.korma.geom.Rectangle.fromBounds(left, top, right, down))
+            inline fun fromBounds(left: Double, top: Double, right: Double, down: Double) = Rectangle(com.soywiz.korma.geom.MRectangle.fromBounds(left, top, right, down))
+            inline fun fromBounds(left: Float, top: Float, right: Float, down: Float) = Rectangle(com.soywiz.korma.geom.MRectangle.fromBounds(left, top, right, down))
+            inline fun fromBounds(left: Int, top: Int, right: Int, down: Int) = Rectangle(com.soywiz.korma.geom.MRectangle.fromBounds(left, top, right, down))
         }
 
         override val type: Int = TYPE
@@ -278,7 +278,7 @@ fun BoundsBuilder.add(shape: Shape2d) {
     for (path in shape.paths) add(path)
 }
 
-val Shape2d.bounds: Rectangle get() = BoundsBuilder().apply { add(this@bounds) }.getBounds()
+val Shape2d.bounds: MRectangle get() = BoundsBuilder().apply { add(this@bounds) }.getBounds()
 
 fun IRectangle.toShape() = Shape2d.Rectangle(x, y, width, height)
 
@@ -366,14 +366,14 @@ inline fun VectorPath.emitPoints2(
             joint(false)
         },
         quadTo = { x0, y0, x1, y1 ->
-            val sum = Point.distance(lx, ly, x0, y0) + Point.distance(x0, y0, x1, y1)
+            val sum = MPoint.distance(lx, ly, x0, y0) + MPoint.distance(x0, y0, x1, y1)
             approximateCurve(sum.toInt(), { ratio, get -> Bezier.quadCalc(lx, ly, x0, y0, x1, y1, ratio) { x, y -> get(x, y) } }, { x, y -> emit(x, y, false) })
             lx = x1
             ly = y1
             joint(false)
         },
         cubicTo = { x0, y0, x1, y1, x2, y2 ->
-            val sum = Point.distance(lx, ly, x0, y0) + Point.distance(x0, y0, x1, y1) + Point.distance(x1, y1, x2, y2)
+            val sum = MPoint.distance(lx, ly, x0, y0) + MPoint.distance(x0, y0, x1, y1) + MPoint.distance(x1, y1, x2, y2)
             approximateCurve(sum.toInt(), { ratio, get ->
                 Bezier.cubicCalc(lx, ly, x0, y0, x1, y1, x2, y2, ratio) { x, y -> get(x, y) }}, { x, y -> emit(x, y, false) })
             lx = x2
@@ -470,7 +470,7 @@ fun IPointArrayList.toRectangleOrNull(): Shape2d.Rectangle? {
     val right = xs.maxOrNull() ?: return null
     val top = ys.maxOrNull() ?: return null
     val bottom = ys.minOrNull() ?: return null
-    return Shape2d.Rectangle(Rectangle.fromBounds(top, left, right, bottom))
+    return Shape2d.Rectangle(MRectangle.fromBounds(top, left, right, bottom))
 }
 
 fun IPointArrayList.toShape2d(closed: Boolean = true): Shape2d {
@@ -480,7 +480,7 @@ fun IPointArrayList.toShape2d(closed: Boolean = true): Shape2d {
         val x1 = this.getX(2)
         val y1 = this.getY(2)
         if (this.getX(1) == x1 && this.getY(1) == y0 && this.getX(3) == x0 && this.getY(3) == y1) {
-            return Shape2d.Rectangle(Rectangle.fromBounds(x0, y0, x1, y1))
+            return Shape2d.Rectangle(MRectangle.fromBounds(x0, y0, x1, y1))
         }
     }
     return if (closed) Shape2d.Polygon(this) else Shape2d.Polyline(this)
@@ -501,10 +501,10 @@ fun VectorPath.toShape2dOld(closed: Boolean = true): Shape2d {
 }
 
 @Deprecated("", ReplaceWith("toPathPointList(m, emitClosePoint)"))
-fun VectorPath.toPathList(m: Matrix? = null, emitClosePoint: Boolean = false): List<IPointArrayList> =
+fun VectorPath.toPathList(m: MMatrix? = null, emitClosePoint: Boolean = false): List<IPointArrayList> =
     toPathPointList(m, emitClosePoint)
 
-fun VectorPath.toPathPointList(m: Matrix? = null, emitClosePoint: Boolean = false): List<IPointArrayList> {
+fun VectorPath.toPathPointList(m: MMatrix? = null, emitClosePoint: Boolean = false): List<IPointArrayList> {
     val paths = arrayListOf<PointArrayList>()
     var path = PointArrayList()
     var firstX = 0.0

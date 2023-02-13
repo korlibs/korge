@@ -1,7 +1,7 @@
 package com.soywiz.korge3d
 
 import com.soywiz.korge3d.internal.toFast
-import com.soywiz.korma.geom.Matrix3D
+import com.soywiz.korma.geom.MMatrix3D
 import com.soywiz.korma.geom.invert
 
 @Korge3DExperimental
@@ -10,7 +10,7 @@ open class Joint3D constructor(
 	val jname: String,
 	val jsid: String,
 	val jointParent: Joint3D? = null,
-	initialMatrix: Matrix3D
+	initialMatrix: MMatrix3D
 ) : Container3D() {
 	init {
 		this.transform.setMatrix(initialMatrix)
@@ -41,13 +41,13 @@ open class Joint3D constructor(
 data class Bone3D constructor(
 	val index: Int,
 	val name: String,
-	val invBindMatrix: Matrix3D
+	val invBindMatrix: MMatrix3D
 )
 
 @Korge3DExperimental
-data class Skin3D(val bindShapeMatrix: Matrix3D, val bones: List<Bone3D>) {
+data class Skin3D(val bindShapeMatrix: MMatrix3D, val bones: List<Bone3D>) {
 	val bindShapeMatrixInv = bindShapeMatrix.clone().invert()
-	val matrices = Array(bones.size) { Matrix3D() }
+	val matrices = Array(bones.size) { MMatrix3D() }
 }
 
 @Korge3DExperimental

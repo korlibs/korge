@@ -3,7 +3,7 @@ package com.soywiz.korma.geom
 import com.soywiz.kds.*
 
 class BoundsBuilder {
-    val tempRect = Rectangle()
+    val tempRect = MRectangle()
 
     companion object {
         val POOL: ConcurrentPool<BoundsBuilder> = ConcurrentPool<BoundsBuilder>({ it.reset() }) { BoundsBuilder() }
@@ -70,12 +70,12 @@ class BoundsBuilder {
 
     fun add(x: Int, y: Int): BoundsBuilder = add(x.toDouble(), y.toDouble())
     fun add(x: Float, y: Float): BoundsBuilder = add(x.toDouble(), y.toDouble())
-    fun add(x: Double, y: Double, transform: Matrix?): BoundsBuilder = if (transform != null) add(transform.transformX(x, y), transform.transformY(x, y)) else add(x, y)
-    fun add(x: Int, y: Int, transform: Matrix?): BoundsBuilder = add(x.toDouble(), y.toDouble(), transform)
-    fun add(x: Float, y: Float, transform: Matrix?): BoundsBuilder = add(x.toDouble(), y.toDouble(), transform)
+    fun add(x: Double, y: Double, transform: MMatrix?): BoundsBuilder = if (transform != null) add(transform.transformX(x, y), transform.transformY(x, y)) else add(x, y)
+    fun add(x: Int, y: Int, transform: MMatrix?): BoundsBuilder = add(x.toDouble(), y.toDouble(), transform)
+    fun add(x: Float, y: Float, transform: MMatrix?): BoundsBuilder = add(x.toDouble(), y.toDouble(), transform)
 
     fun add(point: IPoint): BoundsBuilder = add(point.x, point.y)
-    fun add(point: IPoint, transform: Matrix): BoundsBuilder = add(point.x, point.y, transform)
+    fun add(point: IPoint, transform: MMatrix): BoundsBuilder = add(point.x, point.y, transform)
 
     fun addRect(x: Int, y: Int, width: Int, height: Int): BoundsBuilder = addRect(x.toDouble(), y.toDouble(), width.toDouble(), height.toDouble())
     fun addRect(x: Double, y: Double, width: Double, height: Double): BoundsBuilder = add(x, y).add(x + width, y + height)
@@ -107,15 +107,15 @@ class BoundsBuilder {
         return this
     }
 
-    fun add(ps: Iterable<IPoint>, transform: Matrix): BoundsBuilder {
+    fun add(ps: Iterable<IPoint>, transform: MMatrix): BoundsBuilder {
         for (p in ps) add(p, transform)
         return this
     }
-    fun add(ps: IPointArrayList, transform: Matrix): BoundsBuilder {
+    fun add(ps: IPointArrayList, transform: MMatrix): BoundsBuilder {
         for (n in 0 until ps.size) add(ps.getX(n), ps.getY(n), transform)
         return this
     }
-    fun add(rect: IRectangle, transform: Matrix?): BoundsBuilder {
+    fun add(rect: IRectangle, transform: MMatrix?): BoundsBuilder {
         if (rect.isNotEmpty) {
             add(rect.left, rect.top, transform)
             add(rect.right, rect.top, transform)
@@ -125,9 +125,9 @@ class BoundsBuilder {
         return this
     }
 
-    fun getBoundsOrNull(out: Rectangle = Rectangle()): Rectangle? = if (npoints == 0) null else out.setBounds(xmin, ymin, xmax, ymax)
+    fun getBoundsOrNull(out: MRectangle = MRectangle()): MRectangle? = if (npoints == 0) null else out.setBounds(xmin, ymin, xmax, ymax)
 
-    fun getBounds(out: Rectangle = Rectangle()): Rectangle {
+    fun getBounds(out: MRectangle = MRectangle()): MRectangle {
         if (getBoundsOrNull(out) == null) {
             out.setBounds(0, 0, 0, 0)
         }

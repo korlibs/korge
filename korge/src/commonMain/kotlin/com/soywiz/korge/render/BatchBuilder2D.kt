@@ -44,9 +44,9 @@ class BatchBuilder2D constructor(
     val maxTextures = BB_MAX_TEXTURES
 
     @KorgeInternal
-    val viewMat: Matrix3D get() = ctx.viewMat
+    val viewMat: MMatrix3D get() = ctx.viewMat
     @KorgeInternal
-    val viewMat2D: Matrix get() = ctx.viewMat2D
+    val viewMat2D: MMatrix get() = ctx.viewMat2D
     @KorgeInternal
     val uniforms: AGUniformValues get() = ctx.uniforms
 
@@ -167,22 +167,22 @@ class BatchBuilder2D constructor(
     }
 
 
-    private val identity = Matrix()
+    private val identity = MMatrix()
 
 	init { logger.trace { "BatchBuilder2D[7]" } }
 
-	private val ptt1 = Point()
-	private val ptt2 = Point()
+	private val ptt1 = MPoint()
+	private val ptt2 = MPoint()
 
-	private val pt1 = Point()
-	private val pt2 = Point()
-	private val pt3 = Point()
-	private val pt4 = Point()
-	private val pt5 = Point()
+	private val pt1 = MPoint()
+	private val pt2 = MPoint()
+	private val pt3 = MPoint()
+	private val pt4 = MPoint()
+	private val pt5 = MPoint()
 
-	private val pt6 = Point()
-	private val pt7 = Point()
-	private val pt8 = Point()
+	private val pt6 = MPoint()
+	private val pt7 = MPoint()
+	private val pt8 = MPoint()
 
 	init { logger.trace { "BatchBuilder2D[8]" } }
 
@@ -385,7 +385,7 @@ class BatchBuilder2D constructor(
      */
     fun drawVertices(
         array: TexturedVertexArray,
-        matrix: Matrix?,
+        matrix: MMatrix?,
         vcount: Int = array.vcount,
         icount: Int = array.icount,
         texIndex: Int = currentTexIndex,
@@ -427,7 +427,7 @@ class BatchBuilder2D constructor(
         indexPos += icount
     }
 
-    private fun applyMatrix(matrix: Matrix, idx: Int, vcount: Int) {
+    private fun applyMatrix(matrix: MMatrix, idx: Int, vcount: Int) {
         val f32 = vertices.f32
         var idx = idx
 
@@ -441,8 +441,8 @@ class BatchBuilder2D constructor(
         for (n in 0 until vcount) {
             val x = f32[idx + 0]
             val y = f32[idx + 1]
-            f32[idx + 0] = Matrix.transformXf(ma, mb, mc, md, mtx, mty, x, y)
-            f32[idx + 1] = Matrix.transformYf(ma, mb, mc, md, mtx, mty, x, y)
+            f32[idx + 0] = MMatrix.transformXf(ma, mb, mc, md, mtx, mty, x, y)
+            f32[idx + 1] = MMatrix.transformYf(ma, mb, mc, md, mtx, mty, x, y)
             idx += VERTEX_INDEX_SIZE
         }
     }
@@ -452,7 +452,7 @@ class BatchBuilder2D constructor(
      */
     inline fun drawVertices(
         array: TexturedVertexArray, tex: TextureBase, smoothing: Boolean, blendMode: BlendMode,
-        vcount: Int = array.vcount, icount: Int = array.icount, program: Program? = null, matrix: Matrix? = null,
+        vcount: Int = array.vcount, icount: Int = array.icount, program: Program? = null, matrix: MMatrix? = null,
         premultiplied: Boolean = tex.premultiplied, wrap: Boolean = false
     ) {
         setStateFast(tex.base, smoothing, blendMode, program, icount, vcount)
@@ -551,7 +551,7 @@ class BatchBuilder2D constructor(
 
     /**
      * Draws/buffers a 9-patch image with the texture [tex] at [x], [y] with the total size of [width] and [height].
-     * [posCuts] and [texCuts] are [Point] an array of 4 points describing ratios (values between 0 and 1) inside the width/height of the area to be drawn,
+     * [posCuts] and [texCuts] are [MPoint] an array of 4 points describing ratios (values between 0 and 1) inside the width/height of the area to be drawn,
      * and the positions inside the texture.
      *
      * The 9-patch looks like this (dividing the image in 9 parts).
@@ -581,9 +581,9 @@ class BatchBuilder2D constructor(
         y: Float,
         width: Float,
         height: Float,
-        posCuts: Array<Point>,
-        texCuts: Array<Point>,
-        m: Matrix = identity,
+        posCuts: Array<MPoint>,
+        texCuts: Array<MPoint>,
+        m: MMatrix = identity,
         filtering: Boolean = true,
         colorMul: RGBA = Colors.WHITE,
         colorAdd: ColorAdd = ColorAdd.NEUTRAL,
@@ -659,7 +659,7 @@ class BatchBuilder2D constructor(
         y: Float = 0f,
         width: Float = tex.width.toFloat(),
         height: Float = tex.height.toFloat(),
-        m: Matrix = identity,
+        m: MMatrix = identity,
         filtering: Boolean = true,
         colorMul: RGBA = Colors.WHITE,
         colorAdd: ColorAdd = ColorAdd.NEUTRAL,
@@ -682,7 +682,7 @@ class BatchBuilder2D constructor(
         y: Float,
         width: Float,
         height: Float,
-        m: Matrix = identity,
+        m: MMatrix = identity,
         filtering: Boolean = true,
         colorMul: RGBA = Colors.WHITE,
         colorAdd: ColorAdd = ColorAdd.NEUTRAL,
@@ -698,7 +698,7 @@ class BatchBuilder2D constructor(
 
     fun drawQuadFast(
         x: Float, y: Float, width: Float, height: Float,
-        m: Matrix,
+        m: MMatrix,
         tex: BmpCoords,
         colorMul: RGBA, colorAdd: ColorAdd,
         premultiplied: Boolean = tex.premultiplied,
@@ -963,7 +963,7 @@ class BatchBuilder2D constructor(
     /**
      * Executes [callback] while setting temporarily the view matrix to [matrix]
      */
-	inline fun setViewMatrixTemp(matrix: Matrix, crossinline callback: () -> Unit) = ctx.setViewMatrixTemp(matrix, callback)
+	inline fun setViewMatrixTemp(matrix: MMatrix, crossinline callback: () -> Unit) = ctx.setViewMatrixTemp(matrix, callback)
 
     /**
      * Executes [callback] while restoring [uniform] to its current value after [callback] is exexcuted.

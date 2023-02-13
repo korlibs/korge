@@ -5,17 +5,17 @@ import com.soywiz.korim.vector.Context2d
 import com.soywiz.korim.vector.Drawable
 import com.soywiz.korim.vector.Shape
 import com.soywiz.korim.vector.draw
-import com.soywiz.korma.geom.Matrix
-import com.soywiz.korma.geom.Point
+import com.soywiz.korma.geom.MMatrix
+import com.soywiz.korma.geom.MPoint
 import com.soywiz.korma.geom.vector.VectorPath
 
 data class GlyphPath(
     var path: VectorPath = VectorPath(),
     var colorShape: Shape? = null,
     var bitmap: Bitmap? = null,
-    val bitmapOffset: Point = Point(0, 0),
-    val bitmapScale: Point = Point(1, 1),
-    val transform: Matrix = Matrix(),
+    val bitmapOffset: MPoint = MPoint(0, 0),
+    val bitmapScale: MPoint = MPoint(1, 1),
+    val transform: MMatrix = MMatrix(),
     var scale: Double = 1.0
 ) : Drawable {
     val isOnlyPath get() = bitmap == null && colorShape == null

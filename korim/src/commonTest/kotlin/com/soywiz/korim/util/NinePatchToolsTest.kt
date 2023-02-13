@@ -2,7 +2,7 @@ package com.soywiz.korim.util
 
 import com.soywiz.kds.DoubleArrayList
 import com.soywiz.kds.doubleArrayListOf
-import com.soywiz.korma.geom.Size
+import com.soywiz.korma.geom.MSize
 import com.soywiz.korma.geom.pointArrayListOf
 import com.soywiz.korma.geom.range.until
 import kotlin.test.Test
@@ -44,8 +44,8 @@ class NinePatchToolsTest {
                 pointArrayListOf(10.0, 10.0),
                 pointArrayListOf(15.0, 15.0),
             ),
-            oldSize = Size(15.0, 15.0),
-            newSize = Size(32.0, 64.0)
+            oldSize = MSize(15.0, 15.0),
+            newSize = MSize(32.0, 64.0)
         )
 
         assertEquals(

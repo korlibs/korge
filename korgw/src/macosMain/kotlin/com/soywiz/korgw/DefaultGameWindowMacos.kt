@@ -11,7 +11,7 @@ import com.soywiz.korim.format.*
 import com.soywiz.korim.format.ns.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.Size
+import com.soywiz.korma.geom.MSize
 import kotlinx.cinterop.*
 import kotlinx.coroutines.*
 import platform.AppKit.*
@@ -270,9 +270,9 @@ class MyNSOpenGLView(
         }
     }
 
-    var inputRect: Rectangle = Rectangle(0.0, 0.0, 0.0, 0.0)
+    var inputRect: MRectangle = MRectangle(0.0, 0.0, 0.0, 0.0)
 
-    fun setInputRectangle(windowRect: Rectangle) {
+    fun setInputRectangle(windowRect: MRectangle) {
         this.inputRect = windowRect
     }
 
@@ -354,7 +354,7 @@ class MyDefaultGameWindow : GameWindow() {
     private val openglView: MyNSOpenGLView = MyNSOpenGLView(this@MyDefaultGameWindow, NSMakeRect(0.0, 0.0, 16.0, 16.0), pixelFormat)
     var timer: NSTimer? = null
 
-    override fun setInputRectangle(windowRect: Rectangle) {
+    override fun setInputRectangle(windowRect: MRectangle) {
         openglView.setInputRectangle(windowRect)
     }
 
@@ -491,8 +491,8 @@ class MyDefaultGameWindow : GameWindow() {
     override val pixelsPerInch: Double
         get() {
             val screen = window.screen ?: return 96.0
-            val screenSizeInPixels = screen.visibleFrame.useContents { Size(size.width, size.height) }
-            val screenSizeInMillimeters = CGDisplayScreenSize(((screen.deviceDescription["NSScreenNumber"]) as NSNumber).unsignedIntValue).useContents { Size(width, height) }
+            val screenSizeInPixels = screen.visibleFrame.useContents { MSize(size.width, size.height) }
+            val screenSizeInMillimeters = CGDisplayScreenSize(((screen.deviceDescription["NSScreenNumber"]) as NSNumber).unsignedIntValue).useContents { MSize(width, height) }
 
             val dpmm = screenSizeInPixels.width / screenSizeInMillimeters.width
             val dpi = dpmm / 0.0393701

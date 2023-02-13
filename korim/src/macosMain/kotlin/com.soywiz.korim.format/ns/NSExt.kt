@@ -31,5 +31,5 @@ fun Bitmap32.toNSImage(): NSImage {
 
 fun IPoint.toNSPoint(): CValue<NSPoint> = NSMakePoint(x.toDouble(), y.cg.toDouble())
 fun IPointInt.toNSPoint(): CValue<NSPoint> = NSMakePoint(x.cg.toDouble(), y.cg.toDouble())
-fun CValue<NSPoint>.toPoint(): Point = useContents { Point(this.x, this.y) }
-fun CValue<NSRect>.toRectangle(): Rectangle = useContents { Rectangle(this.origin.x, this.origin.y, this.size.width, this.size.height) }
+fun CValue<NSPoint>.toPoint(): MPoint = useContents { MPoint(this.x, this.y) }
+fun CValue<NSRect>.toRectangle(): MRectangle = useContents { MRectangle(this.origin.x, this.origin.y, this.size.width, this.size.height) }

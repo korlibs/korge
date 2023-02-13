@@ -3,7 +3,7 @@ package com.soywiz.korge3d
 import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.korge.baseview.BaseView
 import com.soywiz.korma.geom.Angle
-import com.soywiz.korma.geom.Matrix3D
+import com.soywiz.korma.geom.MMatrix3D
 import com.soywiz.korma.geom.degrees
 
 @Korge3DExperimental
@@ -111,7 +111,7 @@ abstract class View3D : BaseView() {
 		}
 		get() = _parent
 
-	val modelMat = Matrix3D()
+	val modelMat = MMatrix3D()
 	//val position = Vector3D()
 
 

@@ -30,9 +30,9 @@ import com.soywiz.korio.resources.Resources
 import com.soywiz.korio.resources.ResourcesContainer
 import com.soywiz.korma.geom.Anchor
 import com.soywiz.korma.geom.ISize
-import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.MRectangle
 import com.soywiz.korma.geom.ScaleMode
-import com.soywiz.korma.geom.Size
+import com.soywiz.korma.geom.MSize
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -244,7 +244,7 @@ abstract class ScaledScene(
     }
 
     private fun onSizeChanged(sceneView: SContainer, width: Double, height: Double) {
-        val out = Rectangle(0.0, 0.0, width, height).place(Size(sceneWidth, sceneHeight), sceneAnchor, sceneScaleMode)
+        val out = MRectangle(0.0, 0.0, width, height).place(MSize(sceneWidth, sceneHeight), sceneAnchor, sceneScaleMode)
         sceneView
             .size(sceneWidth, sceneHeight)
             .xy(out.x, out.y)

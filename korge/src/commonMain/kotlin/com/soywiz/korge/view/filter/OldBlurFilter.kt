@@ -21,13 +21,13 @@ class OldBlurFilter(radius: Double = 4.0) : Filter {
     var radius: Double = radius
         set(value) { field = value.clamp(0.0, 32.0) }
     //override val border: Int get() = composed.border
-    override fun computeBorder(out: MutableMarginInt, texWidth: Int, texHeight: Int) = composed.computeBorder(out, texWidth, texHeight)
+    override fun computeBorder(out: MMarginInt, texWidth: Int, texHeight: Int) = composed.computeBorder(out, texWidth, texHeight)
 
     override val recommendedFilterScale: Double get() = if (radius <= 2.0) 1.0 else 1.0 / log2(radius * 0.5)
 
     override fun render(
         ctx: RenderContext,
-        matrix: Matrix,
+        matrix: MMatrix,
         texture: Texture,
         texWidth: Int,
         texHeight: Int,
@@ -40,7 +40,7 @@ class OldBlurFilter(radius: Double = 4.0) : Filter {
         val nsteps = (radius).toIntCeil()
         // Cache values
         while (gaussianBlurs.size < nsteps) {
-            gaussianBlurs.add(Convolute3Filter(Matrix3D(Convolute3Filter.KERNEL_GAUSSIAN_BLUR), gaussianBlurs.size.toDouble(), applyAlpha = true))
+            gaussianBlurs.add(Convolute3Filter(MMatrix3D(Convolute3Filter.KERNEL_GAUSSIAN_BLUR), gaussianBlurs.size.toDouble(), applyAlpha = true))
         }
 
         //println("border: $border")

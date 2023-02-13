@@ -8,7 +8,7 @@ import com.soywiz.korge.view.internal.InternalViewAutoscaling
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.vector.Context2d
 import com.soywiz.korma.geom.BoundsBuilder
-import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.MRectangle
 
 abstract class BaseGraphics(
     var autoScaling: Boolean = false,
@@ -152,23 +152,23 @@ abstract class BaseGraphics(
     internal val _sLeft get() = sLeft
     internal val _sTop get() = sTop
 
-    override fun getLocalBoundsInternal(out: Rectangle) {
+    override fun getLocalBoundsInternal(out: MRectangle) {
         _getLocalBoundsInternal(out)
     }
 
-    private val __localBounds: Rectangle = Rectangle()
+    private val __localBounds: MRectangle = MRectangle()
     //var boundsIncludeStrokes = false
     var boundsIncludeStrokes = true
-    private fun _getLocalBoundsInternal(out: Rectangle = __localBounds, strokes: Boolean = this.boundsIncludeStrokes): Rectangle {
+    private fun _getLocalBoundsInternal(out: MRectangle = __localBounds, strokes: Boolean = this.boundsIncludeStrokes): MRectangle {
         val bounds = boundsUnsafe(strokes = strokes)
         out.setTo(bounds.x - anchorDispX, bounds.y - anchorDispY, bounds.width, bounds.height)
         return out
     }
 
-    private val _localBoundsWithStrokes = Rectangle()
-    private val _localBounds = Rectangle()
+    private val _localBoundsWithStrokes = MRectangle()
+    private val _localBounds = MRectangle()
 
-    private fun boundsUnsafe(strokes: Boolean): Rectangle {
+    private fun boundsUnsafe(strokes: Boolean): MRectangle {
         if (_dirtyBounds) {
             _dirtyBounds = false
             bb.reset()
@@ -189,7 +189,7 @@ abstract class BaseGraphics(
         return if (strokes) _localBoundsWithStrokes else _localBounds
     }
 
-    fun getLocalBoundsInternalNoAnchor(out: Rectangle, includeStrokes: Boolean) {
+    fun getLocalBoundsInternalNoAnchor(out: MRectangle, includeStrokes: Boolean) {
         out.copyFrom(boundsUnsafe(includeStrokes))
     }
 }

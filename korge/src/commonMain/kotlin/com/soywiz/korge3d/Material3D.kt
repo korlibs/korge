@@ -1,11 +1,10 @@
 package com.soywiz.korge3d
 
-import com.soywiz.korag.*
 import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.color.setToColor
-import com.soywiz.korma.geom.Vector3D
+import com.soywiz.korma.geom.MVector4
 
 @Korge3DExperimental
 data class Material3D(
@@ -22,7 +21,7 @@ data class Material3D(
 
 	@Korge3DExperimental
 	data class LightColor(val color: RGBA) : Light("color") {
-		val colorVec = Vector3D().setToColor(color)
+		val colorVec = MVector4().setToColor(color)
 	}
 
 	@Korge3DExperimental

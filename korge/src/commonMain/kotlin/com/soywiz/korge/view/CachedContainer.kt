@@ -15,7 +15,7 @@ open class FixedSizeCachedContainer(
     override var height: Double = 100.0,
     cache: Boolean = true
 ) : CachedContainer(cache), View.Reference {
-    override fun getLocalBoundsInternal(out: Rectangle) {
+    override fun getLocalBoundsInternal(out: MRectangle) {
         out.setTo(0.0, 0.0, width, height)
     }
 }
@@ -45,10 +45,10 @@ open class CachedContainer(
     }
 
     private var _cacheTex: CacheTexture? = null
-    private val tempMat2d = Matrix()
+    private val tempMat2d = MMatrix()
     private var dirty = true
     private var scaledCache = -1.0
-    private var lbounds = Rectangle()
+    private var lbounds = MRectangle()
 
     override fun invalidateRender() {
         super.invalidateRender()

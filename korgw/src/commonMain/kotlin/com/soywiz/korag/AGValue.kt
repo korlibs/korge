@@ -86,14 +86,14 @@ class AGUniformValues(val capacity: Int = 8 * 1024) {
     operator fun set(uniform: Uniform, value: Float) { this[uniform].set(value) }
     operator fun set(uniform: Uniform, value: FloatArray) { this[uniform].set(value) }
     operator fun set(uniform: Uniform, value: Double) { this[uniform].set(value) }
-    operator fun set(uniform: Uniform, value: Matrix3D) { this[uniform].set(value) }
+    operator fun set(uniform: Uniform, value: MMatrix3D) { this[uniform].set(value) }
     operator fun set(uniform: Uniform, value: IPoint) { this[uniform].set(value) }
-    operator fun set(uniform: Uniform, value: Vector3D) { this[uniform].set(value) }
+    operator fun set(uniform: Uniform, value: MVector4) { this[uniform].set(value) }
     operator fun set(uniform: Uniform, value: RGBAf) { this[uniform].set(value) }
     operator fun set(uniform: Uniform, value: RGBA) { this[uniform].set(value) }
     operator fun set(uniform: Uniform, value: RGBAPremultiplied) { this[uniform].set(value) }
-    operator fun set(uniform: Uniform, value: Array<Vector3D>) { this[uniform].set(value) }
-    operator fun set(uniform: Uniform, value: Array<Matrix3D>) { this[uniform].set(value) }
+    operator fun set(uniform: Uniform, value: Array<MVector4>) { this[uniform].set(value) }
+    operator fun set(uniform: Uniform, value: Array<MMatrix3D>) { this[uniform].set(value) }
     operator fun set(uniform: Uniform, value: Array<FloatArray>) { this[uniform].set(value) }
 
     companion object {
@@ -194,14 +194,14 @@ open class AGValue(
         }
     }
 
-    fun set(value: Vector3D) = set(value.data)
+    fun set(value: MVector4) = set(value.data)
     fun set(value: RGBAf) = set(value.data, 0, 4)
     fun set(value: IPoint) = set(value.x.toFloat(), value.y.toFloat())
-    fun set(value: Margin) = set(value.top.toFloat(), value.right.toFloat(), value.bottom.toFloat(), value.left.toFloat())
+    fun set(value: IMargin) = set(value.top.toFloat(), value.right.toFloat(), value.bottom.toFloat(), value.left.toFloat())
     fun set(value: RectCorners) = set(value.topLeft.toFloat(), value.topRight.toFloat(), value.bottomRight.toFloat(), value.bottomLeft.toFloat())
     fun set(value: RGBA) = set(value.rf, value.gf, value.bf, value.af)
     fun set(value: RGBAPremultiplied) = set(value.rf, value.gf, value.bf, value.af)
-    fun set(mat: Matrix3D) = tempMatrixLock { set(tempMatrix.also { it[0] = mat }) }
+    fun set(mat: MMatrix3D) = tempMatrixLock { set(tempMatrix.also { it[0] = mat }) }
 
     fun set(value: BooleanArray, offset: Int = 0, size: Int = value.size - offset) {
         _setIntArray(size) { value[offset + it].toInt() }
@@ -238,14 +238,14 @@ open class AGValue(
         }
     }
 
-    fun set(vectors: Array<Vector3D>) {
+    fun set(vectors: Array<MVector4>) {
         for (n in 0 until min(vectors.size, arrayCount)) {
             val data = vectors[n].data
             f32.setArray(n * stride, data, 0, min(data.size, stride))
         }
     }
 
-    fun set(matArray: Array<Matrix3D>) {
+    fun set(matArray: Array<MMatrix3D>) {
         val arrayCount = min(arrayCount, matArray.size)
         val matSize = when (type) {
             VarType.Mat2 -> 2; VarType.Mat3 -> 3; VarType.Mat4 -> 4; else -> -1
@@ -265,7 +265,7 @@ open class AGValue(
         private val tempFloatsLock = NonRecursiveLock()
         private val tempFloats = FloatArray(64 * (4 * 4))
         private val tempMatrixLock = NonRecursiveLock()
-        private val tempMatrix = Array<Matrix3D>(1) { Matrix3D() }
+        private val tempMatrix = Array<MMatrix3D>(1) { MMatrix3D() }
     }
 
     override fun toString(): String {

@@ -19,7 +19,7 @@ inline fun Container.tileMap(
     repeatX: TileMapRepeat = TileMapRepeat.NONE,
     repeatY: TileMapRepeat = repeatX,
     smoothing: Boolean = true,
-    tileSize: Size = Size(tileset.width.toDouble(), tileset.height.toDouble()),
+    tileSize: MSize = MSize(tileset.width.toDouble(), tileset.height.toDouble()),
     callback: @ViewDslMarker TileMap.() -> Unit = {},
 ) = TileMap(map, tileset, smoothing, tileSize).repeat(repeatX, repeatY).addTo(this, callback)
 
@@ -29,7 +29,7 @@ inline fun Container.tileMap(
     repeatX: TileMapRepeat = TileMapRepeat.NONE,
     repeatY: TileMapRepeat = repeatX,
     smoothing: Boolean = true,
-    tileSize: Size = Size(tileset.width.toDouble(), tileset.height.toDouble()),
+    tileSize: MSize = MSize(tileset.width.toDouble(), tileset.height.toDouble()),
     callback: @ViewDslMarker TileMap.() -> Unit = {},
 ) = TileMap(map, tileset, smoothing, tileSize).repeat(repeatX, repeatY).addTo(this, callback)
 
@@ -71,7 +71,7 @@ class TileMap(
     var stackedIntMap: IStackedIntArray2 = StackedIntArray2(1, 1, 0),
     tileset: TileSet = TileSet.EMPTY,
     var smoothing: Boolean = true,
-    var tileSize: Size = Size(tileset.width.toDouble(), tileset.height.toDouble()),
+    var tileSize: MSize = MSize(tileset.width.toDouble(), tileset.height.toDouble()),
 //) : BaseTileMap(intMap, smoothing, staggerAxis, staggerIndex, tileSize) {
 ) : View() {
     @Deprecated("Use stackedIntMap instead", level = DeprecationLevel.HIDDEN)
@@ -104,11 +104,11 @@ class TileMap(
     var repeatX = TileMapRepeat.NONE
     var repeatY = TileMapRepeat.NONE
 
-    private val t0 = Point(0, 0)
-    private val tt0 = Point(0, 0)
-    private val tt1 = Point(0, 0)
-    private val tt2 = Point(0, 0)
-    private val tt3 = Point(0, 0)
+    private val t0 = MPoint(0, 0)
+    private val tt0 = MPoint(0, 0)
+    private val tt1 = MPoint(0, 0)
+    private val tt2 = MPoint(0, 0)
+    private val tt3 = MPoint(0, 0)
 
     protected var contentVersion = 0
     private var cachedContentVersion = 0
@@ -170,8 +170,8 @@ class TileMap(
     }
 
     private val infosPool = Pool(reset = { it.reset() }) { Info(Bitmaps.transparent.bmpBase, ShrinkableTexturedVertexArray(TexturedVertexArray.EMPTY)) }
-    private var lastVirtualRect = Rectangle(-1, -1, -1, -1)
-    private var currentVirtualRect = Rectangle(-1, -1, -1, -1)
+    private var lastVirtualRect = MRectangle(-1, -1, -1, -1)
+    private var currentVirtualRect = MRectangle(-1, -1, -1, -1)
 
     private val indices = IntArray(4)
     private val tempX = FloatArray(4)
@@ -434,7 +434,7 @@ class TileMap(
         tilesetTextures = Array(tileset.textures.size) { tileset.textures[it] }
         animationIndex = IntArray(tileset.textures.size) { 0 }
         animationElapsed = DoubleArray(tileset.textures.size) { 0.0 }
-        tileSize = Size(tileset.width.toDouble(), tileset.height.toDouble())
+        tileSize = MSize(tileset.width.toDouble(), tileset.height.toDouble())
         tileWidth = tileset.width.toDouble()
         tileHeight = tileset.height.toDouble()
     }
@@ -443,14 +443,14 @@ class TileMap(
         map: IntArray2,
         tileset: TileSet,
         smoothing: Boolean = true,
-        tileSize: Size = Size(tileset.width.toDouble(), tileset.height.toDouble()),
+        tileSize: MSize = MSize(tileset.width.toDouble(), tileset.height.toDouble()),
     ) : this(map.toStacked(), tileset, smoothing, tileSize)
 
     constructor(
         map: Bitmap32,
         tileset: TileSet,
         smoothing: Boolean = true,
-        tileSize: Size = Size(tileset.width.toDouble(), tileset.height.toDouble()),
+        tileSize: MSize = MSize(tileset.width.toDouble(), tileset.height.toDouble()),
     ) : this(map.toIntArray2().toStacked(), tileset, smoothing, tileSize)
 
     fun pixelHitTest(x: Int, y: Int, direction: HitTestDirection): Boolean {
@@ -491,7 +491,7 @@ class TileMap(
         }
     }
 
-    override fun getLocalBoundsInternal(out: Rectangle) {
+    override fun getLocalBoundsInternal(out: MRectangle) {
         out.setTo(0, 0, tileWidth * stackedIntMap.width, tileHeight * stackedIntMap.height)
     }
 

@@ -82,7 +82,7 @@ fun RichTextData.place(
 
 fun Context2d.drawRichText(
     text: RichTextData,
-    bounds: IRectangle = Rectangle(0, 0, width, height),
+    bounds: IRectangle = MRectangle(0, 0, width, height),
     wordWrap: Boolean = true,
     includePartialLines: Boolean = false,
     ellipsis: String? = null,

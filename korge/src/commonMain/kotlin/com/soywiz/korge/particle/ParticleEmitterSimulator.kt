@@ -3,7 +3,7 @@ package com.soywiz.korge.particle
 import com.soywiz.klock.TimeSpan
 import com.soywiz.klock.seconds
 import com.soywiz.korma.geom.Angle
-import com.soywiz.korma.geom.Point
+import com.soywiz.korma.geom.MPoint
 import com.soywiz.korma.geom.cos
 import com.soywiz.korma.geom.degrees
 import com.soywiz.korma.geom.div
@@ -17,7 +17,7 @@ import kotlin.random.Random
 
 class ParticleEmitterSimulator(
     private val emitter: ParticleEmitter,
-    var emitterPos: Point = Point(),
+    var emitterPos: MPoint = MPoint(),
     val random: Random = Random
 ) {
     var totalElapsedTime = 0.seconds
@@ -135,8 +135,8 @@ class ParticleEmitterSimulator(
             ParticleEmitter.Type.RADIAL -> {
                 particle.emitRotation += particle.emitRotationDelta * elapsedTime.toDouble()
                 particle.emitRadius += (particle.emitRadiusDelta * elapsedTime).toFloat()
-                particle.x = emitter.sourcePosition.xf - cos(particle.emitRotation).toFloat() * particle.emitRadius
-                particle.y = emitter.sourcePosition.yf - sin(particle.emitRotation).toFloat() * particle.emitRadius
+                particle.x = emitter.sourcePosition.x.toFloat() - cos(particle.emitRotation).toFloat() * particle.emitRadius
+                particle.y = emitter.sourcePosition.y.toFloat() - sin(particle.emitRotation).toFloat() * particle.emitRadius
             }
             ParticleEmitter.Type.GRAVITY -> {
                 val distanceX = particle.x - particle.startX

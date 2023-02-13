@@ -125,7 +125,7 @@ internal class BindLengthComponent(override val view: BaseView) : UpdateComponen
         }
     }
 
-    private val tempTransform = Matrix.Transform()
+    private val tempTransform = MMatrix.Transform()
     override fun update(views: Views, dt: TimeSpan) {
         this.views = views
         val container = (view as? View?)?.parent ?: views.stage

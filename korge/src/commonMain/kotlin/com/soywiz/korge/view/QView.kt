@@ -21,7 +21,7 @@ class QView(val views: List<View>) : List<View> by views, BView {
 
     operator fun get(name: String): QView = QView(views.mapNotNull { it.firstDescendantWith { it.name == name } })
 
-    fun position(): IPoint = first.pos
+    fun position(): IPoint = first.ipos
 
     fun <T> setProperty(prop: KMutableProperty1<View, T>, value: T) {
         views.fastForEach { prop.set(it, value) }

@@ -4,9 +4,9 @@ import com.soywiz.korge.render.RenderContext
 import com.soywiz.korge.render.useLineBatcher
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
-import com.soywiz.korma.geom.Point
+import com.soywiz.korma.geom.MPoint
 
-inline fun Container.line(a: Point, b: Point, color: RGBA = Colors.WHITE, callback: @ViewDslMarker Line.() -> Unit = {})
+inline fun Container.line(a: MPoint, b: MPoint, color: RGBA = Colors.WHITE, callback: @ViewDslMarker Line.() -> Unit = {})
     = Line(a.x, a.y, b.x, b.y, color).addTo(this, callback)
 
 inline fun Container.line(x0: Double, y0: Double, x1: Double, y1: Double, color: RGBA = Colors.WHITE, callback: @ViewDslMarker Line.() -> Unit = {})
@@ -28,7 +28,7 @@ class Line(
         colorMul = color
     }
 
-    fun setPoints(a: Point, b: Point) = setPoints(a.x, a.y, b.x, b.y)
+    fun setPoints(a: MPoint, b: MPoint) = setPoints(a.x, a.y, b.x, b.y)
 
     fun setPoints(x1: Double, y1: Double, x2: Double, y2: Double) {
         this.x1 = x1

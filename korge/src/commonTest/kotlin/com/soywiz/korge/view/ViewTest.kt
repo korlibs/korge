@@ -2,7 +2,7 @@ package com.soywiz.korge.view
 
 import com.soywiz.korge.tests.ViewsForTesting
 import com.soywiz.korim.bitmap.Bitmap32
-import com.soywiz.korma.geom.Point
+import com.soywiz.korma.geom.MPoint
 import com.soywiz.korma.geom.SizeInt
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -34,9 +34,9 @@ class ViewTest {
                 rect = solidRect(100, 100).position(30, 30)
             }
         }
-        assertEquals("(30, 30), (90, 90)", "${rect.pos}, ${rect.getPositionRelativeTo(container)}")
-        rect.setPositionRelativeTo(container, Point(240, 240))
-        assertEquals("(80, 80), (240, 240)", "${rect.pos}, ${rect.getPositionRelativeTo(container)}")
+        assertEquals("(30, 30), (90, 90)", "${rect.ipos}, ${rect.getPositionRelativeTo(container)}")
+        rect.setPositionRelativeTo(container, MPoint(240, 240))
+        assertEquals("(80, 80), (240, 240)", "${rect.ipos}, ${rect.getPositionRelativeTo(container)}")
     }
 
     @Test

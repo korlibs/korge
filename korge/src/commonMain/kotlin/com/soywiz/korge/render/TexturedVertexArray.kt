@@ -9,8 +9,8 @@ import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korma.geom.BoundsBuilder
 import com.soywiz.korma.geom.IPointArrayList
-import com.soywiz.korma.geom.Matrix
-import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.MMatrix
+import com.soywiz.korma.geom.MRectangle
 import com.soywiz.korma.geom.fastForEachWithIndex
 import com.soywiz.korma.geom.triangle.TriangleList
 import com.soywiz.korma.geom.vector.VectorPath
@@ -67,20 +67,20 @@ class TexturedVertexArray(vcount: Int, val indices: ShortArray, icount: Int = in
         /** Builds indices for drawing triangles when the vertices information is stored as quads (4 vertices per quad primitive) */
         inline fun quadIndices(quadCount: Int): ShortArray = TEXTURED_ARRAY_quadIndices(quadCount)
 
-        fun fromPath(path: VectorPath, colorMul: RGBA = Colors.WHITE, colorAdd: ColorAdd = ColorAdd.NEUTRAL, matrix: Matrix? = null, doClipper: Boolean = true): TexturedVertexArray {
+        fun fromPath(path: VectorPath, colorMul: RGBA = Colors.WHITE, colorAdd: ColorAdd = ColorAdd.NEUTRAL, matrix: MMatrix? = null, doClipper: Boolean = true): TexturedVertexArray {
             //return fromTriangles(path.triangulateEarCut(), colorMul, colorAdd, matrix)
             //return fromTriangles(path.triangulatePoly2tri(), colorMul, colorAdd, matrix)
             return fromTriangles(path.triangulateSafe(doClipper), colorMul, colorAdd, matrix)
         }
 
-        fun fromTriangles(triangles: TriangleList, colorMul: RGBA = Colors.WHITE, colorAdd: ColorAdd = ColorAdd.NEUTRAL, matrix: Matrix? = null): TexturedVertexArray {
+        fun fromTriangles(triangles: TriangleList, colorMul: RGBA = Colors.WHITE, colorAdd: ColorAdd = ColorAdd.NEUTRAL, matrix: MMatrix? = null): TexturedVertexArray {
             val tva = TexturedVertexArray(triangles.pointCount, triangles.indices, triangles.numIndices)
             tva.setSimplePoints(triangles.points, matrix, colorMul, colorAdd)
             return tva
         }
 
         /** This doesn't handle holes */
-        fun fromPointArrayList(points: IPointArrayList, colorMul: RGBA = Colors.WHITE, colorAdd: ColorAdd = ColorAdd.NEUTRAL, matrix: Matrix? = null): TexturedVertexArray {
+        fun fromPointArrayList(points: IPointArrayList, colorMul: RGBA = Colors.WHITE, colorAdd: ColorAdd = ColorAdd.NEUTRAL, matrix: MMatrix? = null): TexturedVertexArray {
             val indices = ShortArray((points.size - 2) * 3)
             for (n in 0 until points.size - 2) {
                 indices[n * 3 + 0] = (0).toShort()
@@ -94,7 +94,7 @@ class TexturedVertexArray(vcount: Int, val indices: ShortArray, icount: Int = in
 
     }
 
-    fun setSimplePoints(points: IPointArrayList, matrix: Matrix?, colorMul: RGBA = Colors.WHITE, colorAdd: ColorAdd = ColorAdd.NEUTRAL) {
+    fun setSimplePoints(points: IPointArrayList, matrix: MMatrix?, colorMul: RGBA = Colors.WHITE, colorAdd: ColorAdd = ColorAdd.NEUTRAL) {
         if (matrix != null) {
             points.fastForEachWithIndex { index, x, y ->
                 val xf = x.toFloat()
@@ -152,7 +152,7 @@ class TexturedVertexArray(vcount: Int, val indices: ShortArray, icount: Int = in
         return this
     }
     /** Sets the [x] and [y] with the [matrix] transform applied of the vertex previously selected calling [select] */
-    fun xy(x: Double, y: Double, matrix: Matrix) = setX(matrix.transformXf(x, y)).setY(matrix.transformYf(x, y))
+    fun xy(x: Double, y: Double, matrix: MMatrix) = setX(matrix.transformXf(x, y)).setY(matrix.transformYf(x, y))
     /** Sets the [x] and [y] of the vertex previously selected calling [select] */
     fun xy(x: Double, y: Double) = setX(x.toFloat()).setY(y.toFloat())
     /** Sets the [u] and [v] of the vertex previously selected calling [select] */
@@ -181,17 +181,17 @@ class TexturedVertexArray(vcount: Int, val indices: ShortArray, icount: Int = in
      * using the texture coords defined by [BmpSlice] and color transforms [colMul] and [colAdd]
      */
     @OptIn(KorgeInternal::class)
-    fun quad(index: Int, x: Double, y: Double, width: Double, height: Double, matrix: Matrix, bmp: BmpCoords, colMul: RGBA, colAdd: ColorAdd) {
+    fun quad(index: Int, x: Double, y: Double, width: Double, height: Double, matrix: MMatrix, bmp: BmpCoords, colMul: RGBA, colAdd: ColorAdd) {
         quad(index, x.toFloat(), y.toFloat(), width.toFloat(), height.toFloat(), matrix, bmp, colMul, colAdd)
     }
 
     @OptIn(KorgeInternal::class)
-    fun quad(index: Int, x: Float, y: Float, width: Float, height: Float, matrix: Matrix, bmp: BmpCoords, colMul: RGBA, colAdd: ColorAdd) {
+    fun quad(index: Int, x: Float, y: Float, width: Float, height: Float, matrix: MMatrix, bmp: BmpCoords, colMul: RGBA, colAdd: ColorAdd) {
         quad(index, x, y, width, height, matrix, bmp.tlX, bmp.tlY, bmp.trX, bmp.trY, bmp.blX, bmp.blY, bmp.brX, bmp.brY, colMul, colAdd)
     }
     @OptIn(KorgeInternal::class)
     fun quad(
-        index: Int, x: Float, y: Float, width: Float, height: Float, matrix: Matrix,
+        index: Int, x: Float, y: Float, width: Float, height: Float, matrix: MMatrix,
         tl_x: Float, tl_y: Float,
         tr_x: Float, tr_y: Float,
         bl_x: Float, bl_y: Float,
@@ -244,10 +244,10 @@ class TexturedVertexArray(vcount: Int, val indices: ShortArray, icount: Int = in
     private val bounds: BoundsBuilder = BoundsBuilder()
 
     /**
-     * Returns the bounds of the vertices defined in the indices from [min] to [max] (excluding) as [Rectangle]
-     * Allows to define the output as [out] to be allocation-free, setting the [out] [Rectangle] and returning it.
+     * Returns the bounds of the vertices defined in the indices from [min] to [max] (excluding) as [MRectangle]
+     * Allows to define the output as [out] to be allocation-free, setting the [out] [MRectangle] and returning it.
      */
-    fun getBounds(min: Int = 0, max: Int = vcount, out: Rectangle = Rectangle()): Rectangle {
+    fun getBounds(min: Int = 0, max: Int = vcount, out: MRectangle = MRectangle()): MRectangle {
         bounds.reset()
         for (n in min until max) {
             select(n)
@@ -287,7 +287,7 @@ class TexturedVertexArray(vcount: Int, val indices: ShortArray, icount: Int = in
         arraycopy(other.indices, 0, this.indices, 0, this.indices.size)
     }
 
-    fun applyMatrix(matrix: Matrix) {
+    fun applyMatrix(matrix: MMatrix) {
         for (n in 0 until vcount){
             select(n)
             val x = this.x

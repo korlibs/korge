@@ -1,6 +1,6 @@
 package com.soywiz.korim.vector
 
-import com.soywiz.korma.geom.Size
+import com.soywiz.korma.geom.MSize
 import com.soywiz.korma.geom.shape.buildVectorPath
 import com.soywiz.korma.geom.vector.rect
 import com.soywiz.korma.geom.vector.roundRect
@@ -20,8 +20,8 @@ class NinePatchVectorTest {
                 M0,0 L100,0 L100,100 L0,100 Z
             """.trimIndent(),
             """
-                ${vector.scaleNinePatch(Size(200, 200)).toSvgString()}
-                ${vector.scaleNinePatch(Size(50, 50)).toSvgString()}
+                ${vector.scaleNinePatch(MSize(200, 200)).toSvgString()}
+                ${vector.scaleNinePatch(MSize(50, 50)).toSvgString()}
                 ${vector.toSvgString()}
             """.trimIndent()
 
@@ -39,7 +39,7 @@ class NinePatchVectorTest {
                 M25,0 L75,0 Q100,0,100,24 L100,75 Q100,100,75,100 L24,100 Q0,100,0,75 L0,24 Q0,0,24,0 Z
             """.trimIndent(),
             """
-                ${vector.scaleNinePatch(Size(200, 200)).roundDecimalPlaces(1).toSvgString()}
+                ${vector.scaleNinePatch(MSize(200, 200)).roundDecimalPlaces(1).toSvgString()}
                 ${vector.toSvgString()}
             """.trimIndent()
 
@@ -58,8 +58,8 @@ class NinePatchVectorTest {
                 M25,0 L75,0 Q100,0,100,24 L100,75 Q100,100,75,100 L24,100 Q0,100,0,75 L0,24 Q0,0,24,0 Z
             """.trimIndent(),
             """
-                ${vector.scaleNinePatch(Size(50, 50)).roundDecimalPlaces(1).toSvgString()}
-                ${vector.scaleNinePatch(Size(50, 10)).roundDecimalPlaces(1).toSvgString()}
+                ${vector.scaleNinePatch(MSize(50, 50)).roundDecimalPlaces(1).toSvgString()}
+                ${vector.scaleNinePatch(MSize(50, 10)).roundDecimalPlaces(1).toSvgString()}
                 ${vector.toSvgString()}
             """.trimIndent()
 

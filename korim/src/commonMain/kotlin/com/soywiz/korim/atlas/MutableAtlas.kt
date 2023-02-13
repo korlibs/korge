@@ -3,7 +3,6 @@ package com.soywiz.korim.atlas
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.binpack.BinPacker
-import com.soywiz.korma.geom.slice.*
 import kotlin.collections.LinkedHashMap
 import kotlin.collections.arrayListOf
 import kotlin.collections.map

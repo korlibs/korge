@@ -7,7 +7,7 @@ import com.soywiz.korge.view.View
 import com.soywiz.korge.view.Views
 import com.soywiz.korge.view.xy
 import com.soywiz.korio.lang.Closeable
-import com.soywiz.korma.geom.Point
+import com.soywiz.korma.geom.MPoint
 
 open class MouseDragInfo(
     val view: View,
@@ -104,7 +104,7 @@ private fun <T : View> T.onMouseDragInternal(
     var cy = 0.0
     val view = this
 
-    val mousePos = Point()
+    val mousePos = MPoint()
 
     fun views() = view.stage!!.views
 
@@ -167,7 +167,7 @@ fun <T : View> T.onMouseDrag(
 ): T = onMouseDragInternal(timeProvider, info, callback).first
 
 open class DraggableInfo(view: View) : MouseDragInfo(view) {
-    val viewStartXY = Point()
+    val viewStartXY = MPoint()
 
     var viewStartX: Double
         get() = viewStartXY.x;
@@ -180,7 +180,7 @@ open class DraggableInfo(view: View) : MouseDragInfo(view) {
             viewStartXY.y = value
         }
 
-    val viewPrevXY = Point()
+    val viewPrevXY = MPoint()
 
     var viewPrevX: Double
         get() = viewPrevXY.x;
@@ -193,7 +193,7 @@ open class DraggableInfo(view: View) : MouseDragInfo(view) {
             viewPrevXY.y = value
         }
 
-    val viewNextXY = Point()
+    val viewNextXY = MPoint()
 
     var viewNextX: Double
         get() = viewNextXY.x;
@@ -206,7 +206,7 @@ open class DraggableInfo(view: View) : MouseDragInfo(view) {
             viewNextXY.y = value
         }
 
-    val viewDeltaXY = Point()
+    val viewDeltaXY = MPoint()
 
     var viewDeltaX: Double
         get() = viewDeltaXY.x;
@@ -237,10 +237,10 @@ private fun <T : View> T.draggableInternal(
     val info = DraggableInfo(view)
     val onMouseDragCloseable = selector.onMouseDragCloseable(info = info) {
         if (info.start) {
-            info.viewStartXY.copyFrom(view.pos)
+            info.viewStartXY.copyFrom(view.ipos)
         }
         //println("localDXY=${info.localDX(view)},${info.localDY(view)}")
-        info.viewPrevXY.copyFrom(view.pos)
+        info.viewPrevXY.copyFrom(view.ipos)
         info.viewNextXY.setTo(
             info.viewStartX + info.localDX(view),
             info.viewStartY + info.localDY(view)

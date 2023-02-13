@@ -9,9 +9,9 @@ import com.soywiz.korma.geom.IPoint
 import com.soywiz.korma.geom.IPointArrayList
 import com.soywiz.korma.geom.IRectangle
 import com.soywiz.korma.geom.IRectangleInt
-import com.soywiz.korma.geom.Matrix
+import com.soywiz.korma.geom.MMatrix
 import com.soywiz.korma.geom.PointArrayList
-import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.MRectangle
 import com.soywiz.korma.geom.bezier.Arc
 import com.soywiz.korma.geom.bezier.Bezier
 import com.soywiz.korma.geom.bezier.Curves
@@ -181,7 +181,7 @@ internal fun VectorBuilder._regularPolygonStar(points: Int, radiusSmall: Double 
  *  \________\
  *
  * */
-fun VectorBuilder.parallelogram(bounds: Rectangle, angle: Angle = 30.degrees, direction: Boolean = true) {
+fun VectorBuilder.parallelogram(bounds: MRectangle, angle: Angle = 30.degrees, direction: Boolean = true) {
     val dx = angle.sine * bounds.height
     val dx0 = if (direction) 0.0 else dx
     val dx1 = if (direction) dx else 0.0
@@ -334,7 +334,7 @@ fun VectorBuilder.rLineToV(ay: Double, relative: Boolean) = if (relative) rLineT
 fun VectorBuilder.rLineToV(ay: Float, relative: Boolean) = if (relative) rLineToV(ay) else lineToV(ay)
 fun VectorBuilder.rLineToV(ay: Int, relative: Boolean) = if (relative) rLineToV(ay) else lineToV(ay)
 
-fun VectorBuilder.transformed(m: Matrix): VectorBuilder {
+fun VectorBuilder.transformed(m: MMatrix): VectorBuilder {
     val im = m.inverted()
     val parent = this
     return object : VectorBuilder {
@@ -360,4 +360,4 @@ fun VectorBuilder.transformed(m: Matrix): VectorBuilder {
     }
 }
 
-fun <T> VectorBuilder.transformed(m: Matrix, block: VectorBuilder.() -> T): T = block(this.transformed(m))
+fun <T> VectorBuilder.transformed(m: MMatrix, block: VectorBuilder.() -> T): T = block(this.transformed(m))

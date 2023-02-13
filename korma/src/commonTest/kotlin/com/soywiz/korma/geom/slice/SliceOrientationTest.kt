@@ -63,17 +63,17 @@ class SliceOrientationTest {
 
     @Test
     fun testXY() {
-        assertEquals(PointInt(2, 1), SliceOrientation().getXY(10, 13, 2, 1))
-        assertEquals(PointInt(7, 1), SliceOrientation(flipX = true).getXY(10, 13, 2, 1))
-        assertEquals(PointInt(2, 11), SliceOrientation().flippedY().getXY(10, 13, 2, 1))
+        assertEquals(MPointInt(2, 1), SliceOrientation().getXY(10, 13, 2, 1))
+        assertEquals(MPointInt(7, 1), SliceOrientation(flipX = true).getXY(10, 13, 2, 1))
+        assertEquals(MPointInt(2, 11), SliceOrientation().flippedY().getXY(10, 13, 2, 1))
 
-        assertEquals(PointInt(0, 0), SliceOrientation(rotation = SliceRotation.R0).getXY(10, 13, 0, 0))
-        assertEquals(PointInt(12, 0), SliceOrientation(rotation = SliceRotation.R90).getXY(10, 13, 0, 0))
-        assertEquals(PointInt(9, 12), SliceOrientation(rotation = SliceRotation.R180).getXY(10, 13, 0, 0))
-        assertEquals(PointInt(0, 9), SliceOrientation(rotation = SliceRotation.R270).getXY(10, 13, 0, 0))
+        assertEquals(MPointInt(0, 0), SliceOrientation(rotation = SliceRotation.R0).getXY(10, 13, 0, 0))
+        assertEquals(MPointInt(12, 0), SliceOrientation(rotation = SliceRotation.R90).getXY(10, 13, 0, 0))
+        assertEquals(MPointInt(9, 12), SliceOrientation(rotation = SliceRotation.R180).getXY(10, 13, 0, 0))
+        assertEquals(MPointInt(0, 9), SliceOrientation(rotation = SliceRotation.R270).getXY(10, 13, 0, 0))
 
-        assertEquals(PointInt(11, 2), SliceOrientation(rotation = SliceRotation.R90).getXY(10, 13, 2, 1))
-        assertEquals(PointInt(7, 11), SliceOrientation(rotation = SliceRotation.R180).getXY(10, 13, 2, 1))
-        assertEquals(PointInt(1, 7), SliceOrientation(rotation = SliceRotation.R270).getXY(10, 13, 2, 1))
+        assertEquals(MPointInt(11, 2), SliceOrientation(rotation = SliceRotation.R90).getXY(10, 13, 2, 1))
+        assertEquals(MPointInt(7, 11), SliceOrientation(rotation = SliceRotation.R180).getXY(10, 13, 2, 1))
+        assertEquals(MPointInt(1, 7), SliceOrientation(rotation = SliceRotation.R270).getXY(10, 13, 2, 1))
     }
 }

@@ -5,7 +5,7 @@ import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.color.RgbaArray
 import com.soywiz.korim.vector.Context2d
 import com.soywiz.korim.vector.CycleMethod
-import com.soywiz.korma.geom.Matrix
+import com.soywiz.korma.geom.MMatrix
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -16,8 +16,8 @@ class GradientPaintTest {
 
         run {
             val filler = GradientFiller().set(
-                LinearGradientPaint(0.0, 0.0, 100.0, 100.0, transform = Matrix().scale(0.5).pretranslate(300, 0)),
-                Context2d.State(transform = Matrix(a = 2.0, b = 0.0, c = 0.0, d = 2.0, tx = 100.0, ty = 20.0))
+                LinearGradientPaint(0.0, 0.0, 100.0, 100.0, transform = MMatrix().scale(0.5).pretranslate(300, 0)),
+                Context2d.State(transform = MMatrix(a = 2.0, b = 0.0, c = 0.0, d = 2.0, tx = 100.0, ty = 20.0))
             )
             assertEquals(-0.5, filler.getRatio(300.0, 20.0), absoluteTolerance = 0.1)
             assertEquals(1.5, filler.getRatio(500.0, 220.0), absoluteTolerance = 0.1)
@@ -25,7 +25,7 @@ class GradientPaintTest {
         run {
             val filler = GradientFiller().set(
                 LinearGradientPaint(150.0, 0.0, 200.0, 50.0),
-                Context2d.State(transform = Matrix(a = 2.0, b = 0.0, c = 0.0, d = 2.0, tx = 100.0, ty = 20.0))
+                Context2d.State(transform = MMatrix(a = 2.0, b = 0.0, c = 0.0, d = 2.0, tx = 100.0, ty = 20.0))
             )
             assertEquals(-0.5, filler.getRatio(300.0, 20.0), absoluteTolerance = 0.1)
             assertEquals(1.5, filler.getRatio(500.0, 220.0), absoluteTolerance = 0.1)
@@ -37,7 +37,7 @@ class GradientPaintTest {
         run {
             val filler = GradientFiller().set(
                 RadialGradientPaint(150, 150, 30, 130, 180, 70),
-                Context2d.State(transform = Matrix(a = 2.0, b = 0.0, c = 0.0, d = 2.0, tx = 100.0, ty = 20.0))
+                Context2d.State(transform = MMatrix(a = 2.0, b = 0.0, c = 0.0, d = 2.0, tx = 100.0, ty = 20.0))
             )
             assertEquals(2.038292349534667, filler.getRatio(300.0, 220.0), absoluteTolerance = 0.01)
             assertEquals(-0.39444872453601043, filler.getRatio(400.0, 320.0), absoluteTolerance = 0.01)

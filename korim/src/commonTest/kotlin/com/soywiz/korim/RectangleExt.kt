@@ -2,10 +2,10 @@ package com.soywiz.korim
 
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.color.Colors
-import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.MRectangle
 import com.soywiz.korma.geom.bounds
 
-fun Iterable<Rectangle>.render(): Bitmap32 {
+fun Iterable<MRectangle>.render(): Bitmap32 {
     val colors = listOf(Colors.RED, Colors.GREEN, Colors.BLUE, Colors.BLACK)
     val bounds = this.bounds()
     val out = Bitmap32(bounds.width.toInt(), bounds.height.toInt(), premultiplied = false)

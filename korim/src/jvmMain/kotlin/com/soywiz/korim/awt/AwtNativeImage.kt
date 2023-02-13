@@ -10,8 +10,6 @@ import com.soywiz.korim.bitmap.ensureNative
 import com.soywiz.korim.color.BGRA
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
-import com.soywiz.korim.color.RgbaArray
-import com.soywiz.korim.color.arraycopy
 import com.soywiz.korim.paint.BitmapPaint
 import com.soywiz.korim.paint.ColorPaint
 import com.soywiz.korim.paint.GradientFiller
@@ -22,7 +20,7 @@ import com.soywiz.korim.paint.Paint
 import com.soywiz.korim.paint.TransformedPaint
 import com.soywiz.korim.vector.Context2d
 import com.soywiz.korim.vector.CycleMethod
-import com.soywiz.korma.geom.Matrix
+import com.soywiz.korma.geom.MMatrix
 import com.soywiz.korma.geom.vector.LineCap
 import com.soywiz.korma.geom.vector.LineJoin
 import com.soywiz.korma.geom.vector.VectorPath
@@ -39,14 +37,12 @@ import java.awt.Rectangle
 import java.awt.RenderingHints
 import java.awt.RenderingHints.*
 import java.awt.Transparency
-import java.awt.color.ColorSpace
 import java.awt.geom.AffineTransform
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
 import java.awt.image.BufferedImage
 import java.awt.image.ColorConvertOp
 import java.awt.image.ColorModel
-import java.awt.image.DataBufferByte
 import java.awt.image.DataBufferInt
 import java.awt.image.Raster
 import java.awt.image.WritableRaster
@@ -284,7 +280,7 @@ class AwtContext2dRender(val awtImage: BufferedImage, val antialiasing: Boolean 
 	//	}
 	//}
 
-	override fun drawImage(image: Bitmap, x: Double, y: Double, width: Double, height: Double, transform: Matrix) {
+	override fun drawImage(image: Bitmap, x: Double, y: Double, width: Double, height: Double, transform: MMatrix) {
 		//transform.toAwt()
 		//BufferedImageOp
 
@@ -543,12 +539,12 @@ class AwtContext2dRender(val awtImage: BufferedImage, val antialiasing: Boolean 
     }
 }
 
-fun AffineTransform.setToMatrix(t: Matrix) {
+fun AffineTransform.setToMatrix(t: MMatrix) {
     setTransform(t.a, t.b, t.c, t.d, t.tx, t.ty)
 }
 
-fun Matrix.toAwt() = AffineTransform(a, b, c, d, tx, ty)
-fun AffineTransform.toMatrix() = Matrix(scaleX, shearY, shearX, scaleY, translateX, translateY)
+fun MMatrix.toAwt() = AffineTransform(a, b, c, d, tx, ty)
+fun AffineTransform.toMatrix() = MMatrix(scaleX, shearY, shearX, scaleY, translateX, translateY)
 
 fun convertColor(c: RGBA): java.awt.Color = java.awt.Color(c.r, c.g, c.b, c.a)
 

@@ -66,7 +66,7 @@ class UIText(
         bpressing = false
     }
 
-    private val textBounds = Rectangle()
+    private val textBounds = MRectangle()
 
     override fun renderInternal(ctx: RenderContext) {
         background.visible = bgcolor.a != 0

@@ -1,39 +1,37 @@
 package com.soywiz.korma.geom
 
+data class Circle(override val center: IPoint, override val radius: Double) : ICircle {
+    override val radiusSquared: Double = radius * radius
+
+    constructor(x: Double, y: Double, radius: Double) : this(Point(x, y).mutable, radius)
+}
+
 interface ICircle {
     val center: IPoint
     val radius: Double
     val radiusSquared: Double get() = radius * radius
-}
 
-val ICircle.centerX: Double get() = center.x
-val ICircle.centerY: Double get() = center.y
+    val centerX: Double get() = center.x
+    val centerY: Double get() = center.y
 
-data class Circle(override val center: IPoint, override val radius: Double) : ICircle {
-    override val radiusSquared: Double = radius * radius
-
-    constructor(x: Double, y: Double, radius: Double) : this(IPoint(x, y), radius)
-}
-
-fun ICircle.distanceToCenterSquared(p: IPoint): Double {
-    return Point.distanceSquared(p, center)
-}
-
-// @TODO: Check if inside the circle
-fun ICircle.distanceClosestSquared(p: IPoint): Double {
-    return distanceToCenterSquared(p) - radiusSquared
-}
-
-// @TODO: Check if inside the circle
-fun ICircle.distanceFarthestSquared(p: IPoint): Double {
-    return distanceToCenterSquared(p) + radiusSquared
-}
-
-fun ICircle.projectedPoint(point: IPoint, out: Point = Point()): Point {
-    //if (point == this.center) return out.copyFrom(center)
-
-    val circle = this
-    val pos = point
-    val angle = Angle.between(circle.center, pos)
-    return out.setToPolar(circle.center, angle, circle.radius)
+    fun distanceToCenterSquared(p: IPoint): Double = MPoint.distanceSquared(p, center)
+    fun distanceToCenterSquared(p: Point): Double = Point.distanceSquared(p, center.point)
+    // @TODO: Check if inside the circle
+    fun distanceClosestSquared(p: Point): Double = distanceToCenterSquared(p) - radiusSquared
+    fun distanceClosestSquared(p: IPoint): Double = distanceToCenterSquared(p) - radiusSquared
+    // @TODO: Check if inside the circle
+    fun distanceFarthestSquared(p: Point): Double = distanceToCenterSquared(p) + radiusSquared
+    fun distanceFarthestSquared(p: IPoint): Double = distanceToCenterSquared(p) + radiusSquared
+    fun projectedPoint(point: IPoint, out: MPoint = MPoint()): MPoint {
+        val circle = this
+        val pos = point
+        val center = circle.center
+        val angle = Angle.between(center, pos)
+        return out.setToPolar(center, angle, circle.radius)
+    }
+    fun projectedPoint(point: Point): Point {
+        val circle = this
+        val center = circle.center.point
+        return Point.fromPolar(center, Angle.between(center, point), circle.radius)
+    }
 }

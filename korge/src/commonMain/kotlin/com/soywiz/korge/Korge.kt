@@ -63,7 +63,7 @@ import com.soywiz.korio.resources.Resources
 import com.soywiz.korio.util.OS
 import com.soywiz.korma.geom.Anchor
 import com.soywiz.korma.geom.ISizeInt
-import com.soywiz.korma.geom.Point
+import com.soywiz.korma.geom.MPoint
 import com.soywiz.korma.geom.ScaleMode
 import com.soywiz.korma.geom.SizeInt
 import kotlinx.coroutines.CompletableDeferred
@@ -307,8 +307,8 @@ object Korge {
 
         val input = views.input
         val ag = views.ag
-        val downPos = Point()
-        val upPos = Point()
+        val downPos = MPoint()
+        val upPos = MPoint()
         var downTime = DateTime.EPOCH
         var moveTime = DateTime.EPOCH
         var upTime = DateTime.EPOCH
@@ -316,9 +316,9 @@ object Korge {
         val mouseTouchId = -1
         views.forceRenderEveryFrame = forceRenderEveryFrame
 
-        val tempXY: Point = Point()
+        val tempXY: MPoint = MPoint()
         // devicePixelRatio might change at runtime by changing the resolution or changing the screen of the window
-        fun getRealXY(x: Double, y: Double, scaleCoords: Boolean, out: Point = tempXY): Point {
+        fun getRealXY(x: Double, y: Double, scaleCoords: Boolean, out: MPoint = tempXY): MPoint {
             return views.windowToGlobalCoords(x, y, out)
         }
 

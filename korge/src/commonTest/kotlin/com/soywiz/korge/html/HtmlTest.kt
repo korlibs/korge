@@ -3,7 +3,7 @@ package com.soywiz.korge.html
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.font.SystemFont
 import com.soywiz.korim.text.TextAlignment
-import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.MRectangle
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -16,9 +16,9 @@ class HtmlTest {
             Html.FontsCatalog(null, EmptyCoroutineContext)
         )
 		assertEquals("50%", doc.text)
-		doc.doPositioning(Html.MetricsProvider.Identity, Rectangle(0, 0, 100, 100))
-		assertEquals(Rectangle(48.5, 0.0, 3.0, 1.0), doc.bounds)
-		assertEquals(listOf(Rectangle(48.5, 0.0, 3.0, 1.0)), doc.allSpans.map { it.bounds })
+		doc.doPositioning(Html.MetricsProvider.Identity, MRectangle(0, 0, 100, 100))
+		assertEquals(MRectangle(48.5, 0.0, 3.0, 1.0), doc.bounds)
+		assertEquals(listOf(MRectangle(48.5, 0.0, 3.0, 1.0)), doc.allSpans.map { it.bounds })
 		val format = doc.firstFormat
 		assertEquals(SystemFont("Times New Roman", EmptyCoroutineContext), format.computedFace)
 		assertEquals(33, format.computedSize)

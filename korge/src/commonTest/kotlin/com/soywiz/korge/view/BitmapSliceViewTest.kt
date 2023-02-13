@@ -1,11 +1,5 @@
 package com.soywiz.korge.view
 
-import com.soywiz.korim.bitmap.Bitmap32
-import com.soywiz.korim.bitmap.slice
-import com.soywiz.korma.geom.Size
-import kotlin.test.Test
-import kotlin.test.assertEquals
-
 class BitmapSliceViewTest {
     //@Test
     //fun test() {

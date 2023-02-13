@@ -2,13 +2,10 @@ package com.soywiz.korim.style
 
 import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.kds.iterators.fastForEachReverse
-import com.soywiz.kds.linkedHashMapOf
 import com.soywiz.korim.annotation.KorimExperimental
-import com.soywiz.korma.geom.Matrix
+import com.soywiz.korma.geom.MMatrix
 import kotlin.jvm.JvmName
-import kotlin.reflect.KClass
 import kotlin.reflect.KMutableProperty1
-import kotlin.reflect.KProperty1
 
 @KorimExperimental
 open class DOM(val css: CSS) {
@@ -53,8 +50,8 @@ open class DOM(val css: CSS) {
         }
         class MatrixMapping(
             override val name: String,
-            override val property: KMutableProperty1<DomElement, Matrix?>
-        ) : Mapping<Matrix?> {
+            override val property: KMutableProperty1<DomElement, MMatrix?>
+        ) : Mapping<MMatrix?> {
             override fun set(element: DomElement, prop: String, value: Any?) {
                 property.set(element, getMatrix(prop, value))
             }
@@ -66,8 +63,8 @@ open class DOM(val css: CSS) {
             property as KMutableProperty1<DomElement, Double?>
         ) }
         @JvmName("addMatrix")
-        fun add(name: String, property: KMutableProperty1<out DomElement, out Matrix?>): DomPropertyMapping = this.apply { mappings[name] = MatrixMapping(name,
-            property as KMutableProperty1<DomElement, Matrix?>
+        fun add(name: String, property: KMutableProperty1<out DomElement, out MMatrix?>): DomPropertyMapping = this.apply { mappings[name] = MatrixMapping(name,
+            property as KMutableProperty1<DomElement, MMatrix?>
         ) }
     }
 
@@ -130,17 +127,17 @@ open class DOM(val css: CSS) {
     }
 
     companion object {
-        fun getTransform(prop: String, value: Any?): Matrix.Transform = when (value) {
-            is Matrix.Transform -> value
+        fun getTransform(prop: String, value: Any?): MMatrix.Transform = when (value) {
+            is MMatrix.Transform -> value
             is CSS.InterpolationResult -> value.getTransform(prop)
             is CSS.Expression -> value.transform
-            else -> Matrix.Transform()
+            else -> MMatrix.Transform()
         }
-        fun getMatrix(prop: String, value: Any?): Matrix = when (value) {
-            is Matrix -> value
+        fun getMatrix(prop: String, value: Any?): MMatrix = when (value) {
+            is MMatrix -> value
             is CSS.InterpolationResult -> value.getMatrix(prop)
             is CSS.Expression -> value.matrix
-            else -> Matrix()
+            else -> MMatrix()
         }
         fun getRatio(prop: String, value: Any?): Double = when (value) {
             is Double -> value

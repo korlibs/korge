@@ -59,7 +59,6 @@ abstract class View internal constructor(
 ) : BaseView(), Renderable
     , Extra
     , BView
-    , XY
     , HitTestable
     , WithHitShape2d
 //, EventDispatcher by EventDispatcher.Mixin()
@@ -270,7 +269,7 @@ abstract class View internal constructor(
     private var _skewY: Angle = Angle.ZERO
     private var _rotation: Angle = Angle.ZERO
 
-    private val _pos = Point()
+    private val _pos = MPoint()
 
     protected open fun setXY(x: Double, y: Double) {
         ensureTransform()
@@ -281,19 +280,25 @@ abstract class View internal constructor(
         }
     }
 
-    fun getPosition(out: Point = Point()): Point {
+    @Deprecated("Use pos instead")
+    fun getPosition(out: MPoint = MPoint()): MPoint {
         out.copyFrom(out)
         return out
     }
 
-    /** Position of the view. **@NOTE**: If [pos] coordinates are manually changed, you should call [View.invalidateMatrix] later to keep the matrix in sync */
+    /** Position of the view. **@NOTE**: If [ipos] coordinates are manually changed, you should call [View.invalidateMatrix] later to keep the matrix in sync */
     //uiEditableValue(Pair(view::x, view::y), min = -1000.0, max = +1000.0, clamp = false, name = "position")
     @ViewProperty(min = -1000.0, max = +1000.0, name = "position")
-    var pos: IPoint
+    var ipos: IPoint
+        get() = MPoint(x, y)
+        set(value) = setXY(value.x, value.y)
+
+    @ViewProperty(min = -1000.0, max = +1000.0, name = "position")
+    var pos: Point
         get() = Point(x, y)
         set(value) = setXY(value.x, value.y)
 
-    var posOpt: Point
+    var posOpt: MPoint
         get() {
             _pos.setTo(x, y)
             return _pos
@@ -303,7 +308,7 @@ abstract class View internal constructor(
         }
 
     /** Local X position of this view */
-    override var x: Double
+    var x: Double
         get() {
             ensureTransform()
             return _x
@@ -311,7 +316,7 @@ abstract class View internal constructor(
         set(v) { setXY(v, y) }
 
     /** Local Y position of this view */
-    override var y: Double
+    var y: Double
         get() {
             ensureTransform()
             return _y
@@ -411,7 +416,7 @@ abstract class View internal constructor(
             setGlobalXY(globalX, value)
         }
 
-    fun setGlobalXY(pos: Point) = setGlobalXY(pos.x, pos.y)
+    fun setGlobalXY(pos: MPoint) = setGlobalXY(pos.x, pos.y)
 
     fun setGlobalXY(x: Double, y: Double) {
         setXY(
@@ -420,8 +425,8 @@ abstract class View internal constructor(
         )
     }
 
-    fun globalXY(out: Point = Point()): Point = out.setTo(globalX, globalY)
-    fun localXY(out: Point = Point()): Point = out.setTo(x, y)
+    fun globalXY(out: MPoint = MPoint()): MPoint = out.setTo(globalX, globalY)
+    fun localXY(out: MPoint = MPoint()): MPoint = out.setTo(x, y)
 
     /**
      * Changes the [width] and [height] to match the parameters.
@@ -552,7 +557,7 @@ abstract class View internal constructor(
             this.colorMul = value
         }
 
-    private val tempTransform = Matrix.Transform()
+    private val tempTransform = MMatrix.Transform()
     //private val tempMatrix = Matrix2d()
 
     protected fun ensureTransform() {
@@ -590,26 +595,26 @@ abstract class View internal constructor(
             }
         }
 
-    /** Sets the local transform matrix that includes [x], [y], [scaleX], [scaleY], [rotation], [skewX] and [skewY] encoded into a [Matrix] */
-    fun setMatrix(matrix: Matrix) {
+    /** Sets the local transform matrix that includes [x], [y], [scaleX], [scaleY], [rotation], [skewX] and [skewY] encoded into a [MMatrix] */
+    fun setMatrix(matrix: MMatrix) {
         this._localMatrix.copyFrom(matrix)
         this.validLocalProps = false
         invalidate()
     }
 
     /** Like [setMatrix] but directly sets an interpolated version of the [l] and [r] matrices with the [ratio] */
-    fun setMatrixInterpolated(ratio: Double, l: Matrix, r: Matrix) {
+    fun setMatrixInterpolated(ratio: Double, l: MMatrix, r: MMatrix) {
         this._localMatrix.setToInterpolated(ratio, l, r)
         this.validLocalProps = false
         invalidate()
     }
 
     /**
-     * Sets the computed transform [Matrix] and all the decomposed transform properties at once.
+     * Sets the computed transform [MMatrix] and all the decomposed transform properties at once.
      * Normally this is used by animation libraries to set Views in a way that are fast to update
      * and to access.
      */
-    fun setComputedTransform(transform: Matrix.Computed) {
+    fun setComputedTransform(transform: MMatrix.Computed) {
         _localMatrix.copyFrom(transform.matrix)
         _setTransform(transform.transform)
         invalidate()
@@ -618,10 +623,10 @@ abstract class View internal constructor(
     }
 
     /**
-     * Sets the [Matrix.Transform] decomposed version of the transformation,
+     * Sets the [MMatrix.Transform] decomposed version of the transformation,
      * that directly includes [x], [y], [scaleX], [scaleY], [rotation], [skewX] and [skewY].
      */
-    fun setTransform(transform: Matrix.Transform) {
+    fun setTransform(transform: MMatrix.Transform) {
         _setTransform(transform)
         invalidate()
         validLocalProps = true
@@ -632,7 +637,7 @@ abstract class View internal constructor(
      * Like [setTransform] but without invalidation. If used at all, should be used with care and invalidate when required.
      */
     @KorgeInternal
-    fun _setTransform(t: Matrix.Transform) {
+    fun _setTransform(t: MMatrix.Transform) {
         //transform.toMatrix(_localMatrix)
         _x = t.x; _y = t.y
         _scaleX = t.scaleX; _scaleY = t.scaleY
@@ -647,13 +652,13 @@ abstract class View internal constructor(
     internal var validLocalProps = true
     internal var validLocalMatrix = true
 
-    private val _localMatrix = Matrix()
+    private val _localMatrix = MMatrix()
 
     /**
-     * Local transform [Matrix]. If you plan to change its components manually
+     * Local transform [MMatrix]. If you plan to change its components manually
      * instead of setting it directly, you should call the [View.invalidate] method.
      */
-    var localMatrix: Matrix
+    var localMatrix: MMatrix
         get() {
             if (!validLocalMatrix) {
                 validLocalMatrix = true
@@ -667,14 +672,14 @@ abstract class View internal constructor(
             invalidate()
         }
 
-    private var _globalMatrix = Matrix()
+    private var _globalMatrix = MMatrix()
     private var _globalMatrixVersion = -1
 
     /**
-     * Global transform [Matrix].
+     * Global transform [MMatrix].
      * Matrix that concatenates all the affine transforms of this view and its ancestors.
      */
-    var globalMatrix: Matrix
+    var globalMatrix: MMatrix
         get() {
             if (_globalMatrixVersion != this._version) {
                 _globalMatrixVersion = this._version
@@ -696,13 +701,13 @@ abstract class View internal constructor(
             }
         }
 
-    private val _globalMatrixInv = Matrix()
+    private val _globalMatrixInv = MMatrix()
     private var _globalMatrixInvVersion = -1
 
     /**
      * The inverted version of the [globalMatrix]
      */
-    val globalMatrixInv: Matrix
+    val globalMatrixInv: MMatrix
         get() {
             if (_globalMatrixInvVersion != this._version) {
                 _globalMatrixInvVersion = this._version
@@ -808,12 +813,12 @@ abstract class View internal constructor(
     /** Computes the local Y coordinate of the mouse using the coords from the [Views] object */
     fun localMouseY(views: Views): Double = this.globalMatrixInv.transformY(views.input.mouse)
 
-    /** Computes the local X and Y coordinate of the mouse using the coords from the [Views] object. You can use the [target] parameter to specify a target [Point] to avoid allocation. */
-    fun localMouseXY(views: Views, target: Point = Point()): Point =
+    /** Computes the local X and Y coordinate of the mouse using the coords from the [Views] object. You can use the [target] parameter to specify a target [MPoint] to avoid allocation. */
+    fun localMouseXY(views: Views, target: MPoint = MPoint()): MPoint =
         target.setTo(localMouseX(views), localMouseY(views))
 
     /**
-     * Invalidates the [localMatrix] [Matrix], so it gets updated from the decomposed properties: [x], [y], [scaleX], [scaleY], [rotation], [skewX] and [skewY].
+     * Invalidates the [localMatrix] [MMatrix], so it gets updated from the decomposed properties: [x], [y], [scaleX], [scaleY], [rotation], [skewX] and [skewY].
      */
     fun invalidateMatrix() {
         validLocalMatrix = false
@@ -942,10 +947,10 @@ abstract class View internal constructor(
                 }
             }
             lines.drawVector(Colors.RED) {
-                moveTo(localToGlobal(Point(local.left, local.top)))
-                lineTo(localToGlobal(Point(local.right, local.top)))
-                lineTo(localToGlobal(Point(local.right, local.bottom)))
-                lineTo(localToGlobal(Point(local.left, local.bottom)))
+                moveTo(localToGlobal(MPoint(local.left, local.top)))
+                lineTo(localToGlobal(MPoint(local.right, local.top)))
+                lineTo(localToGlobal(MPoint(local.right, local.bottom)))
+                lineTo(localToGlobal(MPoint(local.left, local.bottom)))
                 close()
             }
             lines.drawVector(Colors.YELLOW) {
@@ -993,10 +998,10 @@ abstract class View internal constructor(
 
     // Version with root-most object as reference
     /** Converts the global point [p] (using root/stage as reference) into the local coordinate system. Allows to define [out] to avoid allocation. */
-    fun globalToLocal(p: IPoint, out: Point = Point()): Point = globalToLocalXY(p.x, p.y, out)
+    fun globalToLocal(p: IPoint, out: MPoint = MPoint()): MPoint = globalToLocalXY(p.x, p.y, out)
 
     /** Converts the global point [x] [y] (using root/stage as reference) into the local coordinate system. Allows to define [out] to avoid allocation. */
-    fun globalToLocalXY(x: Double, y: Double, out: Point = Point()): Point = this.globalMatrixInv.transform(x, y, out)
+    fun globalToLocalXY(x: Double, y: Double, out: MPoint = MPoint()): MPoint = this.globalMatrixInv.transform(x, y, out)
 
     /** Converts the global point [x], [y] (using root/stage as reference) into the X in the local coordinate system. */
     fun globalToLocalX(x: Double, y: Double): Double = this.globalMatrixInv.transformX(x, y)
@@ -1006,17 +1011,17 @@ abstract class View internal constructor(
 
     fun globalToLocalDX(x0: Double, y0: Double, x1: Double, y1: Double): Double = globalToLocalX(x1, y1) - globalToLocalX(x0, y0)
     fun globalToLocalDY(x0: Double, y0: Double, x1: Double, y1: Double): Double = globalToLocalY(x1, y1) - globalToLocalY(x0, y0)
-    fun globalToLocalDXY(x0: Double, y0: Double, x1: Double, y1: Double, out: Point = Point()): Point = out.setTo(
+    fun globalToLocalDXY(x0: Double, y0: Double, x1: Double, y1: Double, out: MPoint = MPoint()): MPoint = out.setTo(
         globalToLocalDX(x0, y0, x1, y1),
         globalToLocalDY(x0, y0, x1, y1),
     )
-    fun globalToLocalDXY(p0: IPoint, p1: IPoint, out: Point = Point()): Point = globalToLocalDXY(p0.x, p0.y, p1.x, p1.y, out)
+    fun globalToLocalDXY(p0: IPoint, p1: IPoint, out: MPoint = MPoint()): MPoint = globalToLocalDXY(p0.x, p0.y, p1.x, p1.y, out)
 
     /** Converts the local point [p] into a global point (using root/stage as reference). Allows to define [out] to avoid allocation. */
-    fun localToGlobal(p: IPoint, out: Point = Point()): Point = localToGlobalXY(p.x, p.y, out)
+    fun localToGlobal(p: IPoint, out: MPoint = MPoint()): MPoint = localToGlobalXY(p.x, p.y, out)
 
     /** Converts the local point [x], [y] into a global point (using root/stage as reference). Allows to define [out] to avoid allocation. */
-    fun localToGlobalXY(x: Double, y: Double, out: Point = Point()): Point = this.globalMatrix.transform(x, y, out)
+    fun localToGlobalXY(x: Double, y: Double, out: MPoint = MPoint()): MPoint = this.globalMatrix.transform(x, y, out)
 
     /** Converts the local point [x], [y] into a global X coordinate (using root/stage as reference). */
     fun localToGlobalX(x: Double, y: Double): Double = this.globalMatrix.transformX(x, y)
@@ -1027,10 +1032,10 @@ abstract class View internal constructor(
 
     // Version with View.Reference as reference
     /** Converts a point [p] in the nearest ancestor marked as [View.Reference] into the local coordinate system. Allows to define [out] to avoid allocation. */
-    fun renderToLocal(p: IPoint, out: Point = Point()): Point = renderToLocalXY(p.x, p.y, out)
+    fun renderToLocal(p: IPoint, out: MPoint = MPoint()): MPoint = renderToLocalXY(p.x, p.y, out)
 
     /** Converts a point [x], [y] in the nearest ancestor marked as [View.Reference] into the local coordinate system. Allows to define [out] to avoid allocation. */
-    fun renderToLocalXY(x: Double, y: Double, out: Point = Point()): Point = this.globalMatrixInv.transform(x, y, out)
+    fun renderToLocalXY(x: Double, y: Double, out: MPoint = MPoint()): MPoint = this.globalMatrixInv.transform(x, y, out)
 
     /** Converts a point [x], [y] in the nearest ancestor marked as [View.Reference] into the local X coordinate. */
     fun renderToLocalX(x: Double, y: Double): Double = this.globalMatrixInv.transformX(x, y)
@@ -1041,11 +1046,11 @@ abstract class View internal constructor(
 
     /** Converts the local point [p] into a point in the nearest ancestor masked as [View.Reference]. Allows to define [out] to avoid allocation. */
     @Deprecated("")
-    fun localToRender(p: IPoint, out: Point = Point()): Point = localToRenderXY(p.x, p.y, out)
+    fun localToRender(p: IPoint, out: MPoint = MPoint()): MPoint = localToRenderXY(p.x, p.y, out)
 
     /** Converts the local point [x],[y] into a point in the nearest ancestor masked as [View.Reference]. Allows to define [out] to avoid allocation. */
     @Deprecated("")
-    fun localToRenderXY(x: Double, y: Double, out: Point = Point()): Point = this.globalMatrix.transform(x, y, out)
+    fun localToRenderXY(x: Double, y: Double, out: MPoint = MPoint()): MPoint = this.globalMatrix.transform(x, y, out)
 
     /** Converts the local point [x],[y] into a X coordinate in the nearest ancestor masked as [View.Reference]. */
     @Deprecated("")
@@ -1058,20 +1063,20 @@ abstract class View internal constructor(
 
 
     /** Converts the local point [p] into a point in window coordinates. */
-    fun localToWindow(views: Views, p: IPoint, out: Point = Point()): Point = localToWindowXY(views, p.x, p.y, out)
+    fun localToWindow(views: Views, p: IPoint, out: MPoint = MPoint()): MPoint = localToWindowXY(views, p.x, p.y, out)
 
     /** Converts the local point [x], [y] into a point in window coordinates. */
-    fun localToWindowXY(views: Views, x: Double, y: Double, out: Point = Point()): Point {
+    fun localToWindowXY(views: Views, x: Double, y: Double, out: MPoint = MPoint()): MPoint {
         this.globalMatrix.transform(x, y, out)
         views.globalToWindowMatrix.transform(out, out)
         return out
     }
 
     /** Converts the local point [x], [y] into a X coordinate in window coordinates. */
-    fun localToWindowX(views: Views, x: Double, y: Double): Double = Point.POOL { localToWindowXY(views, x, y, it).x }
+    fun localToWindowX(views: Views, x: Double, y: Double): Double = MPoint.POOL { localToWindowXY(views, x, y, it).x }
 
     /** Converts the local point [x], [y] into a Y coordinate in window coordinates. */
-    fun localToWindowY(views: Views, x: Double, y: Double): Double = Point.POOL { localToWindowXY(views, x, y, it).y }
+    fun localToWindowY(views: Views, x: Double, y: Double): Double = MPoint.POOL { localToWindowXY(views, x, y, it).y }
 
     var hitTestEnabled = true
 
@@ -1122,14 +1127,14 @@ abstract class View internal constructor(
                 }
             }
         }
-        val res = Matrix.POOL.alloc { tempMatrix1 ->
+        val res = MMatrix.POOL.alloc { tempMatrix1 ->
             hitTestShapeInternal(view.hitShape2d, view.getGlobalMatrixWithAnchor(tempMatrix1), direction)
         }
         if (res != null) return res
         return if (this is Stage) this else null
     }
 
-    fun hitTestShape(shape: Shape2d, matrix: Matrix, direction: HitTestDirection = HitTestDirection.ANY): View? {
+    fun hitTestShape(shape: Shape2d, matrix: MMatrix, direction: HitTestDirection = HitTestDirection.ANY): View? {
         if (!hitTestEnabled) return null
         if (!visible) return null
         if (_hitShape2d == null) {
@@ -1145,9 +1150,9 @@ abstract class View internal constructor(
     }
 
     open val customHitShape get() = false
-    protected open fun hitTestShapeInternal(shape: Shape2d, matrix: Matrix, direction: HitTestDirection): View? {
+    protected open fun hitTestShapeInternal(shape: Shape2d, matrix: MMatrix, direction: HitTestDirection): View? {
         //println("View.hitTestShapeInternal: $this, $shape")
-        if (Matrix.POOL.alloc2 { tempMatrix2, tempMatrix -> Shape2d.intersects(this.hitShape2d, getGlobalMatrixWithAnchor(tempMatrix2), shape, matrix, tempMatrix) }) {
+        if (MMatrix.POOL.alloc2 { tempMatrix2, tempMatrix -> Shape2d.intersects(this.hitShape2d, getGlobalMatrixWithAnchor(tempMatrix2), shape, matrix, tempMatrix) }) {
             //println(" -> true")
             return this
         }
@@ -1170,7 +1175,7 @@ abstract class View internal constructor(
         hitTestInternal(x, y)?.let { view ->
 
             // @TODO: This should not be required if we compute bounds
-            Rectangle.POOL { tempRect ->
+            MRectangle.POOL { tempRect ->
                 val area = getClippingAreaInternal(tempRect)
                 if (area != null && !area.contains(x, y)) return null
                 return view
@@ -1180,10 +1185,10 @@ abstract class View internal constructor(
     }
 
     @KorgeInternal
-    fun getClippingAreaInternal(out: Rectangle): Rectangle? {
+    fun getClippingAreaInternal(out: MRectangle): MRectangle? {
         out.setTo(Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY)
         var count = 0
-        Rectangle.POOL { _localBounds ->
+        MRectangle.POOL { _localBounds ->
             forEachAscendant(true) {
                 if (it !is Stage && it is FixedSizeContainer && it.clip) {
                     it.getGlobalBounds(_localBounds)
@@ -1367,11 +1372,11 @@ abstract class View internal constructor(
     //fun getConcatMatrix(target: View, out: Matrix = Matrix()): Matrix = getConcatMatrix(target, false, out)
 
     /**
-     * Gets the concatenated [Matrix] of this [View] up to the [target] view.
+     * Gets the concatenated [MMatrix] of this [View] up to the [target] view.
      * If [inclusive] is true, the concatenated matrix will include the [target] view too.
      * Allows to define an [out] matrix that will hold the result to prevent allocations.
      */
-    fun getConcatMatrix(target: View, out: Matrix = Matrix(), inclusive: Boolean = false): Matrix {
+    fun getConcatMatrix(target: View, out: MMatrix = MMatrix(), inclusive: Boolean = false): MMatrix {
         when {
             target === parent -> out.copyFrom(this.localMatrix)
             target === this -> out.identity()
@@ -1396,7 +1401,7 @@ abstract class View internal constructor(
         return out
     }
 
-    fun getConcatMatrixAccurateSlow(target: View, out: Matrix = Matrix(), inclusive: Boolean = false): Matrix {
+    fun getConcatMatrixAccurateSlow(target: View, out: MMatrix = MMatrix(), inclusive: Boolean = false): MMatrix {
         out.identity()
         if (target !== this) {
             var current: View? = this
@@ -1410,36 +1415,36 @@ abstract class View internal constructor(
     }
 
     /** Returns the global bounds of this object. Note this incurs in allocations. Use [getGlobalBounds] (out) to avoid it */
-    val windowBounds: Rectangle get() = getWindowBounds()
+    val windowBounds: MRectangle get() = getWindowBounds()
 
-    /** Returns the global bounds of this object. Allows to specify an [out] [Rectangle] to prevent allocations. */
+    /** Returns the global bounds of this object. Allows to specify an [out] [MRectangle] to prevent allocations. */
     @Deprecated("")
-    fun getWindowBounds(out: Rectangle = Rectangle()): Rectangle = getWindowBoundsOrNull(out) ?: getGlobalBounds(out)
+    fun getWindowBounds(out: MRectangle = MRectangle()): MRectangle = getWindowBoundsOrNull(out) ?: getGlobalBounds(out)
 
-    fun getWindowBoundsOrNull(out: Rectangle = Rectangle()): Rectangle? {
+    fun getWindowBoundsOrNull(out: MRectangle = MRectangle()): MRectangle? {
         val stage = root
         if (stage !is Stage) return null
         //return getBounds(stage, out, inclusive = true).applyTransform(stage.views.globalToWindowMatrix)
         return getWindowBounds(stage, out)
     }
 
-    fun getWindowBounds(bp: BoundsProvider, out: Rectangle = Rectangle()): Rectangle =
+    fun getWindowBounds(bp: BoundsProvider, out: MRectangle = MRectangle()): MRectangle =
         getGlobalBounds(out).applyTransform(bp.globalToWindowMatrix)
 
-    fun getRenderTargetBounds(ctx: RenderContext, out: Rectangle = Rectangle()): Rectangle {
+    fun getRenderTargetBounds(ctx: RenderContext, out: MRectangle = MRectangle()): MRectangle {
         //println("ctx.ag.isRenderingToWindow=${ctx.ag.isRenderingToWindow}")
         return if (ctx.isRenderingToWindow) getWindowBounds(ctx, out) else getGlobalBounds(out)
     }
 
-    fun getClippingBounds(ctx: RenderContext, out: Rectangle = Rectangle()): Rectangle =
+    fun getClippingBounds(ctx: RenderContext, out: MRectangle = MRectangle()): MRectangle =
         getRenderTargetBounds(ctx, out)
 
     /** Returns the global bounds of this object. Note this incurs in allocations. Use [getGlobalBounds] (out) to avoid it */
-    val globalBounds: Rectangle get() = getGlobalBounds()
+    val globalBounds: MRectangle get() = getGlobalBounds()
 
-    /** Returns the global bounds of this object. Allows to specify an [out] [Rectangle] to prevent allocations. */
+    /** Returns the global bounds of this object. Allows to specify an [out] [MRectangle] to prevent allocations. */
     //fun getGlobalBounds(out: Rectangle = Rectangle()): Rectangle = getBounds(root, out, inclusive = false)
-    fun getGlobalBounds(out: Rectangle = Rectangle(), includeFilters: Boolean = false): Rectangle = getBounds(root, out, inclusive = true, includeFilters = includeFilters)
+    fun getGlobalBounds(out: MRectangle = MRectangle(), includeFilters: Boolean = false): MRectangle = getBounds(root, out, inclusive = true, includeFilters = includeFilters)
 
     /** Tries to set the global bounds of the object. If there are rotations in the ancestors, this might not work as expected. */
     @KorgeUntested
@@ -1455,12 +1460,12 @@ abstract class View internal constructor(
     // @TODO: Would not include strokes
     //fun getRect(target: View? = this, out: Rectangle = Rectangle()): Rectangle = TODO()
 
-    /** Get the bounds of this view, using the [target] view as coordinate system. Not providing a [target] will return the local bounds. Allows to specify [out] [Rectangle] to prevent allocations. */
-    fun getBoundsNoAnchoring(target: View? = this, out: Rectangle = Rectangle(), inclusive: Boolean = false, includeFilters: Boolean = false): Rectangle {
+    /** Get the bounds of this view, using the [target] view as coordinate system. Not providing a [target] will return the local bounds. Allows to specify [out] [MRectangle] to prevent allocations. */
+    fun getBoundsNoAnchoring(target: View? = this, out: MRectangle = MRectangle(), inclusive: Boolean = false, includeFilters: Boolean = false): MRectangle {
         return getBounds(target, out, false, inclusive, includeFilters)
     }
 
-    protected fun _getBounds(concat: Matrix?, out: Rectangle = Rectangle(), doAnchoring: Boolean = true, includeFilters: Boolean = false): Rectangle {
+    protected fun _getBounds(concat: MMatrix?, out: MRectangle = MRectangle(), doAnchoring: Boolean = true, includeFilters: Boolean = false): MRectangle {
         getLocalBounds(out, doAnchoring, includeFilters)
 
         if (concat != null && !concat.isIdentity()) {
@@ -1487,8 +1492,8 @@ abstract class View internal constructor(
         return out
     }
 
-    fun getBounds(target: View? = this, out: Rectangle = Rectangle(), doAnchoring: Boolean = true, inclusive: Boolean = false, includeFilters: Boolean = false): Rectangle {
-        return Matrix.POOL { boundsTemp -> _getBounds(this.getConcatMatrix(target ?: this, boundsTemp, inclusive), out, doAnchoring, includeFilters) }
+    fun getBounds(target: View? = this, out: MRectangle = MRectangle(), doAnchoring: Boolean = true, inclusive: Boolean = false, includeFilters: Boolean = false): MRectangle {
+        return MMatrix.POOL { boundsTemp -> _getBounds(this.getConcatMatrix(target ?: this, boundsTemp, inclusive), out, doAnchoring, includeFilters) }
     }
 
     ///** Kind of bounds we are checking */
@@ -1500,19 +1505,19 @@ abstract class View internal constructor(
     //}
 
     /**
-     * **NOTE:** that if [out] is not provided, the [Rectangle] returned shouldn't stored and modified since it is owned by this class.
+     * **NOTE:** that if [out] is not provided, the [MRectangle] returned shouldn't stored and modified since it is owned by this class.
      */
-    fun getLocalBoundsOptimized(includeFilters: Boolean = false): Rectangle = getLocalBounds(_localBounds, includeFilters = includeFilters)
+    fun getLocalBoundsOptimized(includeFilters: Boolean = false): MRectangle = getLocalBounds(_localBounds, includeFilters = includeFilters)
 
-    fun getLocalBoundsOptimizedAnchored(includeFilters: Boolean = false): Rectangle = getLocalBounds(_localBounds, doAnchoring = true, includeFilters = includeFilters)
+    fun getLocalBoundsOptimizedAnchored(includeFilters: Boolean = false): MRectangle = getLocalBounds(_localBounds, doAnchoring = true, includeFilters = includeFilters)
 
     @Deprecated("Allocates")
-    fun getLocalBounds(doAnchoring: Boolean = true, includeFilters: Boolean = false): Rectangle = getLocalBounds(Rectangle(), doAnchoring, includeFilters)
+    fun getLocalBounds(doAnchoring: Boolean = true, includeFilters: Boolean = false): MRectangle = getLocalBounds(MRectangle(), doAnchoring, includeFilters)
 
     /**
-     * Get local bounds of the view. Allows to specify [out] [Rectangle] if you want to reuse an object.
+     * Get local bounds of the view. Allows to specify [out] [MRectangle] if you want to reuse an object.
      */
-    fun getLocalBounds(out: Rectangle, doAnchoring: Boolean = true, includeFilters: Boolean = false): Rectangle {
+    fun getLocalBounds(out: MRectangle, doAnchoring: Boolean = true, includeFilters: Boolean = false): MRectangle {
         getLocalBoundsInternal(out)
         val it = out
         if (!doAnchoring) {
@@ -1525,8 +1530,8 @@ abstract class View internal constructor(
         return it
     }
 
-    private val _localBounds: Rectangle = Rectangle()
-    open fun getLocalBoundsInternal(out: Rectangle) {
+    private val _localBounds: MRectangle = MRectangle()
+    open fun getLocalBoundsInternal(out: MRectangle) {
         out.clear()
     }
 
@@ -1566,16 +1571,16 @@ abstract class View internal constructor(
         this@apply.copyPropsFrom(this@View)
     }
 
-    fun globalLocalBoundsPointRatio(anchor: Anchor, out: Point = Point()): Point = globalLocalBoundsPointRatio(anchor.sx, anchor.sy, out)
+    fun globalLocalBoundsPointRatio(anchor: Anchor, out: MPoint = MPoint()): MPoint = globalLocalBoundsPointRatio(anchor.sx, anchor.sy, out)
 
-    fun globalLocalBoundsPointRatio(ratioX: Double, ratioY: Double, out: Point = Point()): Point {
+    fun globalLocalBoundsPointRatio(ratioX: Double, ratioY: Double, out: MPoint = MPoint()): MPoint {
         val bounds = getLocalBoundsOptimizedAnchored()
         val x = ratioX.interpolate(bounds.left, bounds.right)
         val y = ratioY.interpolate(bounds.top, bounds.bottom)
         return out.setTo(localToGlobalX(x, y), localToGlobalY(x, y))
     }
 
-    fun getGlobalMatrixWithAnchor(out: Matrix = Matrix()): Matrix {
+    fun getGlobalMatrixWithAnchor(out: MMatrix = MMatrix()): MMatrix {
         val view = this
         out.copyFrom(view.localMatrix)
         out.pretranslate(-view.anchorDispX, -view.anchorDispY)
@@ -1993,7 +1998,7 @@ fun <T : View> T.position(x: Float, y: Float): T = xy(x.toDouble(), y.toDouble()
 fun <T : View> T.position(x: Int, y: Int): T = xy(x.toDouble(), y.toDouble())
 
 fun <T : View> T.bounds(left: Double, top: Double, right: Double, bottom: Double): T = xy(left, top).size(right - left, bottom - top)
-fun <T : View> T.bounds(rect: Rectangle): T = bounds(rect.left, rect.top, rect.right, rect.bottom)
+fun <T : View> T.bounds(rect: MRectangle): T = bounds(rect.left, rect.top, rect.right, rect.bottom)
 
 fun <T : View> T.positionX(x: Double): T {
     this.x = x
@@ -2009,12 +2014,12 @@ fun <T : View> T.positionY(y: Double): T {
 fun <T : View> T.positionY(y: Float): T = positionY(y.toDouble())
 fun <T : View> T.positionY(y: Int): T = positionY(y.toDouble())
 
-fun View.getPositionRelativeTo(view: View, out: Point = Point()): Point {
+fun View.getPositionRelativeTo(view: View, out: MPoint = MPoint()): MPoint {
     val mat = this.parent!!.getConcatMatrix(view, inclusive = false)
     return mat.transform(x, y, out)
 }
 
-fun View.setPositionRelativeTo(view: View, pos: Point) {
+fun View.setPositionRelativeTo(view: View, pos: MPoint) {
     val mat = this.parent!!.getConcatMatrix(view, inclusive = false)
     val matInv = mat.inverted()
     val out = matInv.transform(pos)
@@ -2022,12 +2027,12 @@ fun View.setPositionRelativeTo(view: View, pos: Point) {
     this.y = out.y
 }
 
-fun View.getPointRelativeTo(pos: Point, view: View, out: Point = Point()): Point {
+fun View.getPointRelativeTo(pos: MPoint, view: View, out: MPoint = MPoint()): MPoint {
     val mat = this.getConcatMatrix(view, inclusive = false)
     return mat.transform(pos, out)
 }
 
-fun View.getPointRelativeToInv(pos: Point, view: View, out: Point = Point()): Point {
+fun View.getPointRelativeToInv(pos: MPoint, view: View, out: MPoint = MPoint()): MPoint {
     val mat = this.getConcatMatrix(view, inclusive = false)
     val matInv = mat.inverted()
     matInv.transform(pos, out)

@@ -185,9 +185,9 @@ internal class UiEditProperties(app: UiApplication, view: View?, val views: View
 
                 UiFourItemEditableValue(app, vv[0], vv[1], vv[2], vv[3])
             }
-            type.isSubtypeOf(Margin::class.starProjectedType) -> {
+            type.isSubtypeOf(IMargin::class.starProjectedType) -> {
                 @Suppress("UNCHECKED_CAST")
-                prop as KMutableProperty1<Any, Margin>
+                prop as KMutableProperty1<Any, IMargin>
                 val vv = listOf(
                     ObservableProperty("a", { prop.set(instance, prop.get(instance).duplicate(top = it)) }, { prop.get(instance).top }),
                     ObservableProperty("b", { prop.set(instance, prop.get(instance).duplicate(right = it)) }, { prop.get(instance).right }),

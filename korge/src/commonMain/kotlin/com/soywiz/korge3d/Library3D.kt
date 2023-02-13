@@ -8,7 +8,7 @@ import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.format.readBitmap
 import com.soywiz.korio.file.std.resourcesVfs
 import com.soywiz.korma.geom.Angle
-import com.soywiz.korma.geom.Matrix3D
+import com.soywiz.korma.geom.MMatrix3D
 
 @Korge3DExperimental
 data class Library3D(
@@ -47,7 +47,7 @@ data class Library3D(
 	var scenes = FastStringMap<Scene3D>()
 
 	open class Instance3D(val library: Library3D) {
-		val transform = Matrix3D()
+		val transform = MMatrix3D()
 		var def: Def? = null
 		val children = arrayListOf<Instance3D>()
 		var id: String = ""
@@ -110,17 +110,17 @@ data class Library3D(
 		val material: MaterialDef? = null
 	) : ObjectDef()
 
-	data class BoneDef constructor(val index: Int, val name: String, val invBindMatrix: Matrix3D) : Def() {
+	data class BoneDef constructor(val index: Int, val name: String, val invBindMatrix: MMatrix3D) : Def() {
 		lateinit var skin: SkinDef
 		fun toBone() = Bone3D(index, name, invBindMatrix.clone())
 	}
 
 	data class SkinDef(
-		val controllerId: String,
-		val controllerName: String,
-		val bindShapeMatrix: Matrix3D,
-		val skinSource: String,
-		val bones: List<BoneDef>
+        val controllerId: String,
+        val controllerName: String,
+        val bindShapeMatrix: MMatrix3D,
+        val skinSource: String,
+        val bones: List<BoneDef>
 	) : Def() {
 		fun toSkin() = Skin3D(bindShapeMatrix, bones.map { it.toBone() })
 	}

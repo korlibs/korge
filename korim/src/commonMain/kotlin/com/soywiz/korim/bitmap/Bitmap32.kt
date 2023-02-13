@@ -8,9 +8,9 @@ import com.soywiz.korim.color.*
 import com.soywiz.korim.vector.Bitmap32Context2d
 import com.soywiz.korim.vector.Context2d
 import com.soywiz.korma.geom.IRectangleInt
-import com.soywiz.korma.geom.Matrix3D
+import com.soywiz.korma.geom.MMatrix3D
 import com.soywiz.korma.geom.RectangleInt
-import com.soywiz.korma.geom.Vector3D
+import com.soywiz.korma.geom.MVector4
 import com.soywiz.korma.geom.bottom
 import com.soywiz.korma.geom.left
 import com.soywiz.korma.geom.right
@@ -298,7 +298,7 @@ class Bitmap32(
         updateColors(x, y, width, height) { RGBA(R[it.r], G[it.g], B[it.b], A[it.a]) }
 	}
 
-    fun applyColorMatrix(matrix: Matrix3D, x: Int = 0, y: Int = 0, width: Int = this.width - x, height: Int = this.height - y, temp: Vector3D = Vector3D()) {
+    fun applyColorMatrix(matrix: MMatrix3D, x: Int = 0, y: Int = 0, width: Int = this.width - x, height: Int = this.height - y, temp: MVector4 = MVector4()) {
         val v = temp
         updateColors(x, y, width, height) {
             v.setTo(it.rf, it.gf, it.bf, it.af)

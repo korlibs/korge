@@ -50,7 +50,7 @@ open class ComposedFilter private constructor(
         return out
     }
 
-    override fun computeBorder(out: MutableMarginInt, texWidth: Int, texHeight: Int) {
+    override fun computeBorder(out: MMarginInt, texWidth: Int, texHeight: Int) {
         var sumLeft = 0
         var sumTop = 0
         var sumRight = 0
@@ -70,7 +70,7 @@ open class ComposedFilter private constructor(
 
     final override fun render(
         ctx: RenderContext,
-        matrix: Matrix,
+        matrix: MMatrix,
         texture: Texture,
         texWidth: Int,
         texHeight: Int,

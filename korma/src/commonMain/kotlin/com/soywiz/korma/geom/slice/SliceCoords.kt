@@ -38,7 +38,7 @@ interface SliceCoordsWithBase<T : ISizeInt> : SliceCoords {
     val base: T
     val width: Int
     val height: Int
-    val padding: IMarginInt
+    val padding: com.soywiz.korma.geom.IMarginInt
 
     val sizeString: String get() = "${width}x${height}"
     val frameOffsetX: Int get() = padding.left
@@ -87,8 +87,8 @@ data class SliceCoordsImpl<T : ISizeInt>(
 
     val transformedWidth: Int = if (!flippedWidthHeight) base.width else base.height
     val transformedHeight: Int = if (!flippedWidthHeight) base.height else base.width
-    override val width: Int = (Point.distance(coords.tlX, coords.tlY, coords.trX, coords.trY) * transformedWidth).toInt()
-    override val height: Int = (Point.distance(coords.tlX, coords.tlY, coords.blX, coords.blY) * transformedHeight).toInt()
+    override val width: Int = (MPoint.distance(coords.tlX, coords.tlY, coords.trX, coords.trY) * transformedWidth).toInt()
+    override val height: Int = (MPoint.distance(coords.tlX, coords.tlY, coords.blX, coords.blY) * transformedHeight).toInt()
 
     override fun transformed(orientation: SliceOrientation): SliceCoordsWithBase<T> = SliceCoordsWithBase(base, (this as SliceCoords).transformed(orientation), name, flippedWidthHeight)
 
@@ -112,14 +112,14 @@ fun SliceCoords.transformed(orientation: SliceOrientation): RectCoords {
     )
 }
 
-fun SliceCoords.transformed(m: Matrix): RectCoords = RectCoords(
+fun SliceCoords.transformed(m: MMatrix): RectCoords = RectCoords(
     m.transformXf(tlX, tlY), m.transformYf(tlX, tlY),
     m.transformXf(trX, trY), m.transformYf(trX, trY),
     m.transformXf(brX, brY), m.transformYf(brX, brY),
     m.transformXf(blX, blY), m.transformYf(blX, blY),
 )
 
-fun SliceCoords.transformed(m: Matrix3D): RectCoords {
+fun SliceCoords.transformed(m: MMatrix3D): RectCoords {
     // @TODO: This allocates
     val v1 = m.transform(tlX, tlY, 0f, 1f)
     val v2 = m.transform(trX, trY, 0f, 1f)
@@ -130,12 +130,12 @@ fun SliceCoords.transformed(m: Matrix3D): RectCoords {
 
 // Special versions
 
-fun <T : ISizeInt> SliceCoordsWithBase<T>.transformed(m: Matrix): SliceCoordsWithBase<T> {
+fun <T : ISizeInt> SliceCoordsWithBase<T>.transformed(m: MMatrix): SliceCoordsWithBase<T> {
     val coords = (this as SliceCoords).transformed(m)
     return SliceCoordsImpl(base, coords, name)
 }
 
-fun <T : ISizeInt> SliceCoordsWithBase<T>.transformed(m: Matrix3D): SliceCoordsWithBase<T> {
+fun <T : ISizeInt> SliceCoordsWithBase<T>.transformed(m: MMatrix3D): SliceCoordsWithBase<T> {
     val coords = (this as SliceCoords).transformed(m)
     return SliceCoordsImpl(base, coords, name)
 }

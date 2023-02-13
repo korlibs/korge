@@ -7,6 +7,15 @@ import com.soywiz.korma.interpolation.interpolate
 import kotlin.math.max
 import kotlin.math.min
 
+data class Size(val width: Double, val height: Double) {
+    constructor() : this(0.0, 0.0)
+    constructor(width: Float, height: Float) : this(width.toDouble(), height.toDouble())
+    constructor(width: Int, height: Int) : this(width.toDouble(), height.toDouble())
+
+    override fun toString(): String = "Size(width=${width.niceStr}, height=${height.niceStr})"
+}
+
+@Deprecated("Use Size")
 interface ISize {
     val width: Double
     val height: Double
@@ -17,26 +26,27 @@ interface ISize {
     val max: Double get() = max(width, height)
 
     companion object {
-        operator fun invoke(width: Double, height: Double): ISize = Size(Point(width, height))
-        operator fun invoke(width: Int, height: Int): ISize = Size(Point(width, height))
-        operator fun invoke(width: Float, height: Float): ISize = Size(Point(width, height))
+        operator fun invoke(width: Double, height: Double): ISize = MSize(MPoint(width, height))
+        operator fun invoke(width: Int, height: Int): ISize = MSize(MPoint(width, height))
+        operator fun invoke(width: Float, height: Float): ISize = MSize(MPoint(width, height))
     }
 }
 
-fun Point.asSize(): Size = Size(this)
-fun IPoint.asSize(): ISize = Size(Point(this))
+fun MPoint.asSize(): MSize = MSize(this)
+fun IPoint.asSize(): ISize = MSize(MPoint(this))
 
-inline class Size(val p: Point) : MutableInterpolable<Size>, Interpolable<Size>, ISize, Sizeable {
+@Deprecated("Use Size")
+inline class MSize(val p: MPoint) : MutableInterpolable<MSize>, Interpolable<MSize>, ISize, Sizeable {
     companion object {
-        operator fun invoke(): Size = Size(Point(0, 0))
-        operator fun invoke(width: Double, height: Double): Size = Size(Point(width, height))
-        operator fun invoke(width: Int, height: Int): Size = Size(Point(width, height))
-        operator fun invoke(width: Float, height: Float): Size = Size(Point(width, height))
+        operator fun invoke(): MSize = MSize(MPoint(0, 0))
+        operator fun invoke(width: Double, height: Double): MSize = MSize(MPoint(width, height))
+        operator fun invoke(width: Int, height: Int): MSize = MSize(MPoint(width, height))
+        operator fun invoke(width: Float, height: Float): MSize = MSize(MPoint(width, height))
     }
 
-    fun copy() = Size(p.copy())
+    fun copy() = MSize(p.copy())
 
-    override val size: Size get() = this
+    override val size: MSize get() = this
 
     override var width: Double
         set(value) { p.x = value }
@@ -45,7 +55,7 @@ inline class Size(val p: Point) : MutableInterpolable<Size>, Interpolable<Size>,
         set(value) { p.y = value }
         get() = p.y
 
-    fun setTo(width: Double, height: Double): Size {
+    fun setTo(width: Double, height: Double): MSize {
         this.width = width
         this.height = height
         return this
@@ -58,11 +68,11 @@ inline class Size(val p: Point) : MutableInterpolable<Size>, Interpolable<Size>,
     fun setToScaled(sx: Float, sy: Float) = setToScaled(sx.toDouble(), sy.toDouble())
     fun setToScaled(sx: Int, sy: Int) = setToScaled(sx.toDouble(), sy.toDouble())
 
-    fun clone() = Size(width, height)
+    fun clone() = MSize(width, height)
 
-    override fun interpolateWith(ratio: Double, other: Size): Size = Size(0, 0).setToInterpolated(ratio, this, other)
+    override fun interpolateWith(ratio: Double, other: MSize): MSize = MSize(0, 0).setToInterpolated(ratio, this, other)
 
-    override fun setToInterpolated(ratio: Double, l: Size, r: Size): Size = this.setTo(
+    override fun setToInterpolated(ratio: Double, l: MSize, r: MSize): MSize = this.setTo(
         ratio.interpolate(l.width, r.width),
         ratio.interpolate(l.height, r.height)
     )
@@ -79,11 +89,11 @@ interface ISizeInt {
     }
 }
 
-inline class SizeInt(val size: Size) : ISizeInt {
+inline class SizeInt(val size: MSize) : ISizeInt {
     companion object {
-        operator fun invoke(): SizeInt = SizeInt(Size(0, 0))
-        operator fun invoke(x: Int, y: Int): SizeInt = SizeInt(Size(x, y))
-        operator fun invoke(that: ISizeInt): SizeInt = SizeInt(Size(that.width, that.height))
+        operator fun invoke(): SizeInt = SizeInt(MSize(0, 0))
+        operator fun invoke(x: Int, y: Int): SizeInt = SizeInt(MSize(x, y))
+        operator fun invoke(that: ISizeInt): SizeInt = SizeInt(MSize(that.width, that.height))
     }
 
     fun clone() = SizeInt(size.clone())
@@ -122,16 +132,16 @@ fun SizeInt.anchoredIn(container: RectangleInt, anchor: Anchor, out: RectangleIn
 }
 
 operator fun SizeInt.contains(v: SizeInt): Boolean = (v.width <= width) && (v.height <= height)
-operator fun SizeInt.times(v: Double) = SizeInt(Size((width * v).toInt(), (height * v).toInt()))
+operator fun SizeInt.times(v: Double) = SizeInt(MSize((width * v).toInt(), (height * v).toInt()))
 operator fun SizeInt.times(v: Int) = this * v.toDouble()
 operator fun SizeInt.times(v: Float) = this * v.toDouble()
 
-fun SizeInt.getAnchorPosition(anchor: Anchor, out: PointInt = PointInt(0, 0)): PointInt =
+fun SizeInt.getAnchorPosition(anchor: Anchor, out: MPointInt = MPointInt(0, 0)): MPointInt =
     out.setTo((width * anchor.sx).toInt(), (height * anchor.sy).toInt())
 
-fun Size.asInt(): SizeInt = SizeInt(this)
-fun SizeInt.asDouble(): Size = this.size
+fun MSize.asInt(): SizeInt = SizeInt(this)
+fun SizeInt.asDouble(): MSize = this.size
 
 interface Sizeable {
-    val size: Size
+    val size: MSize
 }

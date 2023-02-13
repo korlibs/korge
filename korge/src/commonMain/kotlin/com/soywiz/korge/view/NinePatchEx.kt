@@ -76,7 +76,7 @@ class NinePatchEx(
     internal var renderedVersion = 0
     private var tva: TexturedVertexArray? = null
     private var tvaCached: TexturedVertexArray? = null
-    private var cachedMatrix: Matrix = Matrix()
+    private var cachedMatrix: MMatrix = MMatrix()
     private var cachedRenderColorMul = Colors.WHITE
 
     private var cachedNinePatch: NinePatchBmpSlice? = null
@@ -98,7 +98,7 @@ class NinePatchEx(
         val indices = TexturedVertexArray.quadIndices(numQuads)
         val tva = TexturedVertexArray(numQuads * 4, indices)
         var index = 0
-        val matrix = Matrix()
+        val matrix = MMatrix()
         ninePatch.info.computeScale(viewBounds) { segment, x, y, width, height ->
             val bmpSlice = ninePatch.getSegmentBmpSlice(segment)
             tva.quad(index++ * 4,
@@ -113,7 +113,7 @@ class NinePatchEx(
         renderedVersion++
     }
 
-	override fun getLocalBoundsInternal(out: Rectangle) {
+	override fun getLocalBoundsInternal(out: MRectangle) {
 		out.setTo(0.0, 0.0, width, height)
 	}
 

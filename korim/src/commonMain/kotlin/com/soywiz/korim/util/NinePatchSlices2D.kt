@@ -2,7 +2,7 @@ package com.soywiz.korim.util
 
 import com.soywiz.korma.geom.IPoint
 import com.soywiz.korma.geom.ISize
-import com.soywiz.korma.geom.Point
+import com.soywiz.korma.geom.MPoint
 import com.soywiz.korma.geom.PointArrayList
 import com.soywiz.korma.geom.firstX
 import com.soywiz.korma.geom.firstY
@@ -38,7 +38,7 @@ data class NinePatchSlices2D(val x: NinePatchSlices, val y: NinePatchSlices) {
         positions: List<PointArrayList>, oldSize: ISize, newSize: ISize
     ): List<PointArrayList> = positions.map { transform2D(it, oldSize, newSize) }
 
-    fun getScaledPointAt(point: IPoint, oldSize: ISize, newSize: ISize, out: Point = Point()): IPoint {
+    fun getScaledPointAt(point: IPoint, oldSize: ISize, newSize: ISize, out: MPoint = MPoint()): IPoint {
         val p = pointArrayListOf(point)
         transform2DInplace(p, oldSize, newSize)
         out.setTo(p.firstX, p.firstY)

@@ -12,7 +12,7 @@ import com.soywiz.korge.view.size
 import com.soywiz.korgw.GameWindow
 import com.soywiz.korio.async.Signal
 import com.soywiz.korio.util.toStringDecimal
-import com.soywiz.korma.geom.Margin
+import com.soywiz.korma.geom.IMargin
 import kotlin.math.absoluteValue
 
 @KorgeExperimental
@@ -42,7 +42,7 @@ class UIEditableNumber(value: Double = 0.0, min: Double = 0.0, max: Double = 1.0
     private val textView = uiText("", width, height)
     private val textInputView = uiTextInput("", width, height)
         .also { it.visible = false }
-        .also { it.padding = Margin(0.0) }
+        .also { it.padding = IMargin(0.0) }
     var min: Double = min
     var max: Double = max
 

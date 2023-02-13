@@ -3,7 +3,7 @@ package com.soywiz.korim.font
 import com.soywiz.korio.async.suspendTest
 import com.soywiz.korio.file.std.resourcesVfs
 import com.soywiz.korio.lang.*
-import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.MRectangle
 import kotlin.test.*
 
 class TTfTest {
@@ -17,7 +17,7 @@ class TTfTest {
         val colorPath = glyph.colorEntry!!.getColorShape()
         assertEquals(1275, glyph.advanceWidth)
         assertEquals(
-            Rectangle(x = 32, y = -256, width = 1216, height = 1216),
+            MRectangle(x = 32, y = -256, width = 1216, height = 1216),
             glyph.metrics1px.bounds
         )
         //colorPath.scaled(0.01, 0.01).render().showImageAndWait()

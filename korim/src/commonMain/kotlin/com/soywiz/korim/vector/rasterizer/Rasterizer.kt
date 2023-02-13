@@ -3,7 +3,7 @@ package com.soywiz.korim.vector.rasterizer
 import com.soywiz.kds.IntArrayList
 import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.korma.annotations.KormaExperimental
-import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.MRectangle
 import com.soywiz.korma.geom.vector.PolygonScanline
 import com.soywiz.korma.geom.vector.RastScale
 import com.soywiz.korma.geom.vector.Winding
@@ -16,7 +16,7 @@ typealias RasterizerCallback = (x0: Int, x1: Int, y: Int) -> Unit
 @OptIn(KormaExperimental::class)
 class Rasterizer : RastScale() {
     var debug: Boolean = false
-    private val tempRect = Rectangle()
+    private val tempRect = MRectangle()
     var quality: Int = 2
 
     data class Stats(
@@ -53,7 +53,7 @@ class Rasterizer : RastScale() {
         clip.reset()
     }
 
-    fun rasterizeFill(bounds: Rectangle, quality: Int = this.quality, stats: Stats? = null, winding: Winding = Winding.NON_ZERO, callback: RasterizerCallback) {
+    fun rasterizeFill(bounds: MRectangle, quality: Int = this.quality, stats: Stats? = null, winding: Winding = Winding.NON_ZERO, callback: RasterizerCallback) {
         stats?.reset()
 
         //for (e in path.edges) println("e: ${e.toString(1.0 / RAST_FIXED_SCALE)}")

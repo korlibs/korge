@@ -36,7 +36,7 @@ open class FixedSizeContainer(
     open var clip: Boolean = false,
 ) : Container(), View.Reference {
 
-    override fun getLocalBoundsInternal(out: Rectangle) {
+    override fun getLocalBoundsInternal(out: MRectangle) {
         out.setTo(0.0, 0.0, width, height)
     }
 
@@ -46,10 +46,10 @@ open class FixedSizeContainer(
         return out
     }
 
-    private val tempBounds = Rectangle()
+    private val tempBounds = MRectangle()
     private var renderingInternal = false
 
-    private val tempRect = Rectangle()
+    private val tempRect = MRectangle()
 
     @OptIn(KorgeInternal::class)
     override fun renderInternal(ctx: RenderContext) {
@@ -112,7 +112,7 @@ open class FixedSizeContainer(
     }
 }
 
-fun View.getVisibleLocalArea(out: Rectangle = Rectangle()): Rectangle {
+fun View.getVisibleLocalArea(out: MRectangle = MRectangle()): MRectangle {
     getVisibleGlobalArea(out)
     val x0 = globalToLocalX(out.left, out.top)
     val x1 = globalToLocalX(out.right, out.top)
@@ -136,14 +136,14 @@ fun View.getNextClippingView(): View {
     return this
 }
 
-fun View.getVisibleGlobalArea(out: Rectangle = Rectangle()): Rectangle {
+fun View.getVisibleGlobalArea(out: MRectangle = MRectangle()): MRectangle {
     forEachAscendant(includeThis = true) {
         if ((it is FixedSizeContainer && it.clip) || it is Stage) return@getVisibleGlobalArea it.getGlobalBounds(out)
     }
     return out.setTo(0.0, 0.0, 4096.0, 4096.0)
 }
 
-fun View.getVisibleWindowArea(out: Rectangle = Rectangle()): Rectangle {
+fun View.getVisibleWindowArea(out: MRectangle = MRectangle()): MRectangle {
     forEachAscendant(includeThis = true) {
         if ((it is FixedSizeContainer && it.clip) || it is Stage) return@getVisibleWindowArea it.getWindowBounds(out)
     }

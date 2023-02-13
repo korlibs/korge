@@ -17,7 +17,7 @@ import com.soywiz.korev.Touch
 import com.soywiz.korev.TouchEvent
 import com.soywiz.korge.internal.KorgeInternal
 import com.soywiz.korma.geom.IPoint
-import com.soywiz.korma.geom.Point
+import com.soywiz.korma.geom.MPoint
 
 //@Singleton
 @OptIn(KorgeInternal::class)
@@ -57,8 +57,8 @@ class Input : Extra by Extra.Mixin() {
     var clickDistance = 20.0 // @TODO: We should take into account pointSize/DPI
 
     // Mouse coordinates relative to the Stage
-    private val _mouse: Point = Point(-1000.0, -1000.0)
-    private val _mouseDown: Point = Point(-1000.0, -1000.0)
+    private val _mouse: MPoint = MPoint(-1000.0, -1000.0)
+    private val _mouseDown: MPoint = MPoint(-1000.0, -1000.0)
     val mouse: IPoint get() = _mouse
     val mouseDown: IPoint get() = _mouseDown
 

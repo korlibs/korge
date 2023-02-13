@@ -6,7 +6,7 @@ import com.soywiz.korim.color.RgbaArray
 import com.soywiz.korim.vector.buildShape
 import com.soywiz.korim.vector.render
 import com.soywiz.korio.async.suspendTest
-import com.soywiz.korma.geom.Size
+import com.soywiz.korma.geom.MSize
 import com.soywiz.korma.geom.vector.Winding
 import com.soywiz.korma.geom.vector.circle
 import kotlin.test.Test
@@ -74,7 +74,7 @@ class NativeImageTest {
                 circle(50, 50, 25)
             }
         }.render()
-        assertEquals(Size(100, 100), image.size)
+        assertEquals(MSize(100, 100), image.size)
         assertEquals(1.0, image.getRgbaRaw(10, 50).ad)
         assertEquals(0.0, image.getRgbaRaw(50, 50).ad)
     }
@@ -87,7 +87,7 @@ class NativeImageTest {
                 circle(50, 50, 25)
             }
         }.render()
-        assertEquals(Size(100, 100), image.size)
+        assertEquals(MSize(100, 100), image.size)
         assertEquals(1.0, image.getRgbaRaw(10, 50).ad)
         assertEquals(1.0, image.getRgbaRaw(50, 50).ad)
     }

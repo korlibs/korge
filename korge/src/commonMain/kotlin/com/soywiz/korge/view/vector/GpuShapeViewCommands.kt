@@ -91,12 +91,12 @@ class GpuShapeViewCommands {
         vertices = AgCachedBuffer(Float32Buffer(bufferVertexData.toFloatArray()).buffer)
     }
 
-    private val decomposed = Matrix.Transform()
+    private val decomposed = MMatrix.Transform()
     private val tempColorMul = FloatArray(4)
     private val texturesToDelete = FastArrayList<AGTexture>()
     private val tempUniforms = AGUniformValues()
-    private val tempMat = Matrix()
-    fun render(ctx: RenderContext, globalMatrix: Matrix, localMatrix: Matrix, applyScissor: Boolean, colorMul: RGBA, doRequireTexture: Boolean) {
+    private val tempMat = MMatrix()
+    fun render(ctx: RenderContext, globalMatrix: MMatrix, localMatrix: MMatrix, applyScissor: Boolean, colorMul: RGBA, doRequireTexture: Boolean) {
         val vertices = this.vertices ?: return
         ctx.agBufferManager.delete(verticesToDelete)
         verticesToDelete.clear()

@@ -17,18 +17,10 @@ import com.soywiz.korim.vector.format.SVG
 import com.soywiz.korim.vector.format.SvgPath
 import com.soywiz.korio.serialization.xml.Xml
 import com.soywiz.korio.util.niceStr
-import com.soywiz.korma.geom.BoundsBuilder
-import com.soywiz.korma.geom.Matrix
-import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.bezier.Curves
 import com.soywiz.korma.geom.bezier.isConvex
-import com.soywiz.korma.geom.contains
-import com.soywiz.korma.geom.vector.StrokeInfo
-import com.soywiz.korma.geom.vector.VectorPath
-import com.soywiz.korma.geom.vector.add
-import com.soywiz.korma.geom.vector.applyTransform
-import com.soywiz.korma.geom.vector.strokeToFill
-import com.soywiz.korma.geom.vector.toCurvesList
+import com.soywiz.korma.geom.vector.*
 import kotlin.math.max
 import kotlin.math.round
 
@@ -49,7 +41,7 @@ import kotlin.math.round
  */
 
 class SvgBuilder(
-    val bounds: Rectangle,
+    val bounds: MRectangle,
     val scale: Double,
     val roundDecimalPlaces: Int = -1
 ) {
@@ -75,7 +67,7 @@ class SvgBuilder(
 				Xml.Tag("defs", mapOf(), defs),
 				Xml.Tag(
 					"g",
-					mapOf("transform" to Matrix().translate(-bounds.x, -bounds.y).scale(scale, scale).toSvg(roundDecimalPlaces)),
+					mapOf("transform" to MMatrix().translate(-bounds.x, -bounds.y).scale(scale, scale).toSvg(roundDecimalPlaces)),
 					nodes
 				)
 			) //+ nodes
@@ -85,13 +77,13 @@ class SvgBuilder(
 
 fun buildSvgXml(width: Int? = null, height: Int? = null, block: ShapeBuilder.() -> Unit): Xml = buildShape(width, height) { block() }.toSvg()
 
-private fun Matrix.toSvg(roundDecimalPlaces: Int = -1): String {
+private fun MMatrix.toSvg(roundDecimalPlaces: Int = -1): String {
     val places = roundDecimalPlaces
 	return when (getType()) {
-		Matrix.Type.IDENTITY -> "translate()"
-		Matrix.Type.TRANSLATE -> "translate(${tx.niceStr(places)}, ${ty.niceStr(places)})"
-		Matrix.Type.SCALE -> "scale(${a.niceStr(places)}, ${d.niceStr(places)})"
-		Matrix.Type.SCALE_TRANSLATE -> "translate(${tx.niceStr(places)}, ${ty.niceStr(places)}) scale(${a.niceStr(places)}, ${d.niceStr(places)})"
+		MMatrix.Type.IDENTITY -> "translate()"
+		MMatrix.Type.TRANSLATE -> "translate(${tx.niceStr(places)}, ${ty.niceStr(places)})"
+		MMatrix.Type.SCALE -> "scale(${a.niceStr(places)}, ${d.niceStr(places)})"
+		MMatrix.Type.SCALE_TRANSLATE -> "translate(${tx.niceStr(places)}, ${ty.niceStr(places)}) scale(${a.niceStr(places)}, ${d.niceStr(places)})"
 		else -> "matrix(${a.niceStr(places)}, ${b.niceStr(places)}, ${c.niceStr(places)}, ${d.niceStr(places)}, ${tx.niceStr(places)}, ${ty.niceStr(places)})"
 	}
 }
@@ -133,8 +125,8 @@ sealed interface Shape : BoundsDrawable {
     fun getPath(path: VectorPath = VectorPath()): VectorPath = path
 
     // Unoptimized version
-    fun getBounds(includeStrokes: Boolean): Rectangle = BoundsBuilder().also { addBounds(it, includeStrokes = includeStrokes) }.getBounds()
-    override val bounds: Rectangle get() = getBounds(includeStrokes = true)
+    fun getBounds(includeStrokes: Boolean): MRectangle = BoundsBuilder().also { addBounds(it, includeStrokes = includeStrokes) }.getBounds()
+    override val bounds: MRectangle get() = getBounds(includeStrokes = true)
 	fun containsPoint(x: Double, y: Double): Boolean = bounds.contains(x, y)
 }
 
@@ -148,7 +140,7 @@ fun Shape.optimize(): Shape {
     }
 }
 
-fun Shape.getBounds(out: Rectangle = Rectangle(), bb: BoundsBuilder = BoundsBuilder(), includeStrokes: Boolean = false): Rectangle {
+fun Shape.getBounds(out: MRectangle = MRectangle(), bb: BoundsBuilder = BoundsBuilder(), includeStrokes: Boolean = false): MRectangle {
 	bb.reset()
 	addBounds(bb, includeStrokes)
 	bb.getBounds(out)
@@ -172,7 +164,7 @@ interface StyledShape : Shape {
 	val path: VectorPath? get() = null
 	val clip: VectorPath?
 	val paint: Paint
-	val transform: Matrix
+	val transform: MMatrix
     val globalAlpha: Double
 
     fun getUntransformedPath(): VectorPath? {
@@ -321,7 +313,7 @@ data class FillShape(
     override val path: VectorPath,
     override val clip: VectorPath?,
     override val paint: Paint,
-    override val transform: Matrix = Matrix(),
+    override val transform: MMatrix = MMatrix(),
     override val globalAlpha: Double = 1.0,
 ) : StyledShape {
     val pathCurvesList: List<Curves> by lazy {
@@ -351,12 +343,12 @@ data class PolylineShape constructor(
     override val path: VectorPath,
     override val clip: VectorPath?,
     override val paint: Paint,
-    override val transform: Matrix,
+    override val transform: MMatrix,
     val strokeInfo: StrokeInfo,
     override val globalAlpha: Double = 1.0,
 ) : StyledShape {
     private val tempBB = BoundsBuilder()
-    private val tempRect = Rectangle()
+    private val tempRect = MRectangle()
 
     val thickness by strokeInfo::thickness
     val scaleMode by strokeInfo::scaleMode
@@ -440,7 +432,7 @@ class TextShape(
     val stroke: Paint?,
     val halign: HorizontalAlign = HorizontalAlign.LEFT,
     val valign: VerticalAlign = VerticalAlign.TOP,
-    override val transform: Matrix = Matrix(),
+    override val transform: MMatrix = MMatrix(),
     override val globalAlpha: Double = 1.0,
 ) : StyledShape {
     override val paint: Paint get() = fill ?: stroke ?: NonePaint
@@ -496,17 +488,17 @@ class TextShape(
     }
 }
 
-fun Shape.transformedShape(m: Matrix): Shape = when (this) {
+fun Shape.transformedShape(m: MMatrix): Shape = when (this) {
     is EmptyShape -> EmptyShape
     is CompoundShape -> CompoundShape(components.map { it.transformedShape(m) })
-    is FillShape -> FillShape(path.applyTransform(m), clip?.applyTransform(m), paint, Matrix().multiply(transform, m), globalAlpha)
-    is PolylineShape -> PolylineShape(path.applyTransform(m), clip?.applyTransform(m), paint, Matrix().multiply(transform, m), strokeInfo, globalAlpha)
-    is TextShape -> TextShape(text, x, y, font, fontSize, clip?.applyTransform(m), fill, stroke, halign, valign, Matrix().multiply(transform, m), globalAlpha)
+    is FillShape -> FillShape(path.applyTransform(m), clip?.applyTransform(m), paint, MMatrix().multiply(transform, m), globalAlpha)
+    is PolylineShape -> PolylineShape(path.applyTransform(m), clip?.applyTransform(m), paint, MMatrix().multiply(transform, m), strokeInfo, globalAlpha)
+    is TextShape -> TextShape(text, x, y, font, fontSize, clip?.applyTransform(m), fill, stroke, halign, valign, MMatrix().multiply(transform, m), globalAlpha)
     else -> TODO()
 }
 
-fun Shape.scaledShape(sx: Double, sy: Double = sx): Shape = transformedShape(Matrix().scale(sx, sy))
-fun Shape.translatedShape(x: Double = 0.0, y: Double = 0.0): Shape = transformedShape(Matrix().translate(x, y))
+fun Shape.scaledShape(sx: Double, sy: Double = sx): Shape = transformedShape(MMatrix().scale(sx, sy))
+fun Shape.translatedShape(x: Double = 0.0, y: Double = 0.0): Shape = transformedShape(MMatrix().translate(x, y))
 
 fun Shape.mapShape(map: (Shape) -> Shape): Shape {
     val result = map(this)

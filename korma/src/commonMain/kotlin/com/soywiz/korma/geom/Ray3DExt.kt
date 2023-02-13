@@ -6,7 +6,7 @@ import kotlin.math.min
 fun Ray3D.intersectRayAABox1(box: AABB3D) : Boolean {
     val ray = this
     // r.dir is unit direction vector of ray
-    val dirfrac = Vector3()
+    val dirfrac = MVector3()
     dirfrac.x = 1.0f / ray.dir.x
     dirfrac.y = 1.0f / ray.dir.y
     dirfrac.z = 1.0f / ray.dir.z

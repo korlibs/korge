@@ -6,7 +6,7 @@ import com.soywiz.korim.util.NinePatchSlices2D
 import com.soywiz.korim.vector.format.readSVG
 import com.soywiz.korio.async.suspendTest
 import com.soywiz.korio.file.std.resourcesVfs
-import com.soywiz.korma.geom.Size
+import com.soywiz.korma.geom.MSize
 import com.soywiz.korma.geom.range.until
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -16,7 +16,7 @@ class NinePatchShapeTest {
     @Test
     fun test() = suspendTest {
         val ninePatch = resourcesVfs["chat-bubble.svg"].readSVG().toShape().toNinePatchFromGuides(guideColor = Colors.FUCHSIA)
-        assertEquals(Size(128, 128), ninePatch.size)
+        assertEquals(MSize(128, 128), ninePatch.size)
         assertEquals(NinePatchSlices2D(
             NinePatchSlices(30.0 until 33.0, 80.0 until 100.0),
             NinePatchSlices(40.0 until 80.0)

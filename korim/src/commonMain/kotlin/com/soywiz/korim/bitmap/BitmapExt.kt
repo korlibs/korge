@@ -2,7 +2,7 @@ package com.soywiz.korim.bitmap
 
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korma.geom.Anchor
-import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.MRectangle
 import com.soywiz.korma.geom.ScaleMode
 import kotlin.math.absoluteValue
 
@@ -65,7 +65,7 @@ fun Bitmap.resized(out: Bitmap, scale: ScaleMode, anchor: Anchor): Bitmap {
     val width = out.width
     val height = out.height
     out.context2d(antialiased = true) {
-        val rect = Rectangle(0, 0, width, height).place(bmp.width.toDouble(), bmp.height.toDouble(), anchor, scale)
+        val rect = MRectangle(0, 0, width, height).place(bmp.width.toDouble(), bmp.height.toDouble(), anchor, scale)
         drawImage(bmp, rect.x, rect.y, rect.width, rect.height)
     }
     return out
@@ -76,7 +76,7 @@ fun Bitmap.resized(width: Int, height: Int, scale: ScaleMode, anchor: Anchor, na
     resized(if (native) NativeImage(width, height) else createWithThisFormat(width, height), scale, anchor)
 
 fun Bitmap.resizedUpTo(width: Int, height: Int, native: Boolean = true): Bitmap {
-    val rect = Rectangle(0, 0, width, height)
+    val rect = MRectangle(0, 0, width, height)
         .place(this.width.toDouble(), this.height.toDouble(), Anchor.TOP_LEFT, ScaleMode.FIT)
     return resized(rect.width.toInt(), rect.height.toInt(), ScaleMode.FILL, Anchor.TOP_LEFT, native)
 }

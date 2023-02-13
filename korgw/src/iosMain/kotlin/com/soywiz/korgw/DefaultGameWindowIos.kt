@@ -9,18 +9,14 @@ import com.soywiz.klogger.Console
 import com.soywiz.kmem.KmemGC
 import com.soywiz.kmem.hasFlags
 import com.soywiz.korag.gl.*
-import com.soywiz.korev.GameButton
-import com.soywiz.korev.GamePadConnectionEvent
 import com.soywiz.korev.ISoftKeyboardConfig
 import com.soywiz.korev.Key
 import com.soywiz.korev.KeyEvent
 import com.soywiz.korev.SoftKeyboardConfig
 import com.soywiz.korev.SoftKeyboardReturnKeyType
 import com.soywiz.korev.SoftKeyboardType
-import com.soywiz.korev.StandardGamepadMapping
 import com.soywiz.korim.format.cg.*
-import com.soywiz.korma.geom.Point
-import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.MRectangle
 import kotlinx.cinterop.CValue
 import kotlinx.cinterop.ExportObjCClass
 import kotlinx.cinterop.ObjCAction
@@ -29,7 +25,6 @@ import kotlinx.cinterop.memScoped
 import kotlinx.cinterop.useContents
 import platform.CoreGraphics.CGPoint
 import platform.CoreGraphics.CGRect
-import platform.CoreGraphics.CGRectMake
 import platform.EAGL.EAGLContext
 import platform.EAGL.kEAGLRenderingAPIOpenGLES2
 import platform.Foundation.NSBundle
@@ -41,9 +36,6 @@ import platform.GLKit.GLKView
 import platform.GLKit.GLKViewController
 import platform.GLKit.GLKViewDrawableDepthFormat24
 import platform.GLKit.GLKViewDrawableStencilFormat8
-import platform.GameController.GCController
-import platform.GameController.GCControllerButtonInput
-import platform.GameController.GCControllerDirectionPad
 import platform.GameController.GCEventViewController
 import platform.UIKit.*
 import platform.darwin.NSInteger
@@ -542,7 +534,7 @@ open class IosGameWindow(
         ?: UIApplication.sharedApplication.keyWindow
         ?: (UIApplication.sharedApplication.windows.first() as UIWindow)
 
-    override fun setInputRectangle(windowRect: Rectangle) {
+    override fun setInputRectangle(windowRect: MRectangle) {
         println("IosGameWindow.setInputRectangle: windowRect=$windowRect")
         prepareSoftKeyboardOnce()
         textField.setBounds(windowRect.toCG())

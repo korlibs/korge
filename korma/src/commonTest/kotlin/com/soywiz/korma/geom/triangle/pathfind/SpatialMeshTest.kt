@@ -1,6 +1,6 @@
 package com.soywiz.korma.geom.triangle.pathfind
 
-import com.soywiz.korma.geom.Point
+import com.soywiz.korma.geom.MPoint
 import com.soywiz.korma.geom.shape.*
 import com.soywiz.korma.geom.vector.*
 import com.soywiz.korma.triangle.pathfind.finder
@@ -19,8 +19,8 @@ class SpatialMeshTest {
         }.triangulateSafe()
 
         val finder = triangles.spatialMesh().finder()
-        assertEquals("[(10, 10), (80, 20), (90, 90)]", "${finder.find(Point(10, 10), Point(90, 90))}")
-        assertEquals("[(90, 10), (80, 20), (90, 90)]", "${finder.find(Point(90, 10), Point(90, 90))}")
-        assertFailsWith<Error>("Point2d not inside triangles") { finder.find(Point(-10, -10), Point(90, 90)) }
+        assertEquals("[(10, 10), (80, 20), (90, 90)]", "${finder.find(MPoint(10, 10), MPoint(90, 90))}")
+        assertEquals("[(90, 10), (80, 20), (90, 90)]", "${finder.find(MPoint(90, 10), MPoint(90, 90))}")
+        assertFailsWith<Error>("Point2d not inside triangles") { finder.find(MPoint(-10, -10), MPoint(90, 90)) }
     }
 }

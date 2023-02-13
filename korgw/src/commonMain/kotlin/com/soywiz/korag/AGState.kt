@@ -2,19 +2,11 @@ package com.soywiz.korag
 
 import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
-import com.soywiz.klock.*
-import com.soywiz.klogger.*
 import com.soywiz.kmem.*
-import com.soywiz.kmem.unit.*
-import com.soywiz.korag.annotation.*
-import com.soywiz.korag.gl.*
 import com.soywiz.korag.shader.*
-import com.soywiz.korag.shader.gl.*
-import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korma.geom.*
-import kotlin.coroutines.*
 import kotlin.jvm.*
 
 inline class AGReadKind(val ordinal: Int) {
@@ -580,7 +572,7 @@ inline class AGFullState(val data: Int32Buffer = Int32Buffer(8)) {
     var scissor: AGScissor ; get() = AGScissor(data[5], data[6]) ; set(value) { data[5] = value.xy; data[6] = value.wh }
 }
 
-fun Rectangle?.toAGScissor(): AGScissor {
+fun MRectangle?.toAGScissor(): AGScissor {
     if (this == null) return AGScissor.NIL
     return AGScissor(x.toInt(), y.toInt(), width.toInt(), height.toInt())
 }
@@ -651,8 +643,8 @@ inline class AGScissor(val data: Long) {
         return "Scissor(x=${x}, y=${y}, width=${width}, height=${height})"
     }
 
-    fun toRect(out: Rectangle = Rectangle()): Rectangle = out.setTo(x, y, width, height)
-    fun toRectOrNull(out: Rectangle = Rectangle()): Rectangle? {
+    fun toRect(out: MRectangle = MRectangle()): MRectangle = out.setTo(x, y, width, height)
+    fun toRectOrNull(out: MRectangle = MRectangle()): MRectangle? {
         if (this == NIL) return null
         return out.setTo(x, y, width, height)
     }
@@ -689,7 +681,7 @@ inline class AGScissor(val data: Long) {
     }
 }
 
-fun AGScissor.applyMatrixBounds(m: Matrix): AGScissor {
+fun AGScissor.applyMatrixBounds(m: MMatrix): AGScissor {
     val x0 = m.transformX(left, top)
     val x1 = m.transformX(right, top)
     val x2 = m.transformX(left, bottom)

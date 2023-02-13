@@ -2,9 +2,9 @@ package com.soywiz.korma.geom.vector
 
 import com.soywiz.korma.annotations.KormaExperimental
 import com.soywiz.korma.geom.Angle
-import com.soywiz.korma.geom.Line
-import com.soywiz.korma.geom.Point
-import com.soywiz.korma.geom.PointInt
+import com.soywiz.korma.geom.MLine
+import com.soywiz.korma.geom.MPoint
+import com.soywiz.korma.geom.MPointInt
 import com.soywiz.korma.geom.cosine
 import com.soywiz.korma.geom.minus
 import com.soywiz.korma.geom.sine
@@ -22,7 +22,7 @@ class Edge {
 
     companion object {
         operator fun invoke(ax: Int, ay: Int, bx: Int, by: Int, wind: Int = 0) = Edge().setTo(ax, ay, bx, by, wind)
-        operator fun invoke(a: PointInt, b: PointInt, wind: Int = 0) = this(a.x, a.y, b.x, b.y, wind)
+        operator fun invoke(a: MPointInt, b: MPointInt, wind: Int = 0) = this(a.x, a.y, b.x, b.y, wind)
 
         fun getIntersectY(a: Edge, b: Edge): Int {
             getIntersectXY(a, b) { x, y -> return y.toInt() }
@@ -36,12 +36,12 @@ class Edge {
 
         fun areParallel(a: Edge, b: Edge) = ((a.by - a.ay) * (b.ax - b.bx)) - ((b.by - b.ay) * (a.ax - a.bx)) == 0
 
-        fun getIntersectXY(a: Edge, b: Edge, out: Point = Point()): Point? {
+        fun getIntersectXY(a: Edge, b: Edge, out: MPoint = MPoint()): MPoint? {
             getIntersectXY(a, b) { x, y -> return out.setTo(x, y) }
             return null
         }
 
-        fun getIntersectXYInt(a: Edge, b: Edge, out: PointInt = PointInt()): PointInt? {
+        fun getIntersectXYInt(a: Edge, b: Edge, out: MPointInt = MPointInt()): MPointInt? {
             getIntersectXY(a, b) { x, y -> return out.setTo(x.toInt(), y.toInt()) }
             return null
         }
@@ -64,11 +64,11 @@ class Edge {
         }
 
         inline fun getIntersectXY(Ax: Double, Ay: Double, Bx: Double, By: Double, Cx: Double, Cy: Double, Dx: Double, Dy: Double, out: (x: Double, y: Double) -> Unit): Boolean {
-            return Line.getIntersectXY(Ax, Ay, Bx, By, Cx, Cy, Dx, Dy, out)
+            return MLine.getIntersectXY(Ax, Ay, Bx, By, Cx, Cy, Dx, Dy, out)
         }
 
-        fun getIntersectXY(Ax: Double, Ay: Double, Bx: Double, By: Double, Cx: Double, Cy: Double, Dx: Double, Dy: Double, out: Point = Point()): Point? {
-            return Line.getIntersectXY(Ax, Ay, Bx, By, Cx, Cy, Dx, Dy, out)
+        fun getIntersectXY(Ax: Double, Ay: Double, Bx: Double, By: Double, Cx: Double, Cy: Double, Dx: Double, Dy: Double, out: MPoint = MPoint()): MPoint? {
+            return MLine.getIntersectXY(Ax, Ay, Bx, By, Cx, Cy, Dx, Dy, out)
         }
     }
 

@@ -8,10 +8,8 @@ import com.soywiz.korim.bitmap.*
 import com.soywiz.korio.async.suspendTest
 import com.soywiz.korio.file.std.resourcesVfs
 import com.soywiz.korio.lang.assert
-import com.soywiz.korio.lang.substr
-import com.soywiz.korma.geom.Rectangle
-import com.soywiz.korma.geom.RectangleInt
-import com.soywiz.korma.geom.Size
+import com.soywiz.korma.geom.MRectangle
+import com.soywiz.korma.geom.MSize
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -25,13 +23,13 @@ class AtlasInfoTest {
         assertEquals("RGBA8888", atlas.format)
         assertEquals(124, atlas.frames.size)
         assertEquals(1.0, atlas.scale)
-        assertEquals(Size(1021, 1003), atlas.size.size)
+        assertEquals(MSize(1021, 1003), atlas.size.size)
 
         val firstFrame = atlas.frames.first()
         assertEquals("arms/forearm_jump_0.png", atlas.frames.map { it.name }.first())
-        assertEquals(Rectangle(993, 319, 28, 41), firstFrame.frame.rect)
-        assertEquals(Size(55, 47), firstFrame.sourceSize.size)
-        assertEquals(Rectangle(8, 7, 28, 41), firstFrame.spriteSourceSize.rect)
+        assertEquals(MRectangle(993, 319, 28, 41), firstFrame.frame.rect)
+        assertEquals(MSize(55, 47), firstFrame.sourceSize.size)
+        assertEquals(MRectangle(8, 7, 28, 41), firstFrame.spriteSourceSize.rect)
         assertEquals(true, firstFrame.rotated)
         assertEquals(true, firstFrame.trimmed)
     }

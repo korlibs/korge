@@ -2,8 +2,8 @@ package com.soywiz.korag.shader
 
 import com.soywiz.kmem.toInt
 import com.soywiz.korag.*
-import com.soywiz.korma.geom.Matrix3D
-import com.soywiz.korma.geom.Vector3D
+import com.soywiz.korma.geom.MMatrix3D
+import com.soywiz.korma.geom.MVector4
 import kotlin.reflect.KProperty
 
 class DoubleDelegatedUniform(val uniform: Uniform, val values: FloatArray, val index: Int, val onSet: (Double) -> Unit, default: Double, val storage: UniformFloatStorage) {
@@ -55,9 +55,9 @@ class Vector4DelegatedUniform(val uniform: Uniform, val values: FloatArray, val 
         storage.update()
     }
 
-    operator fun getValue(obj: Any, prop: KProperty<*>): Vector3D = Vector3D(values[0], values[1], values[2], values[3])
+    operator fun getValue(obj: Any, prop: KProperty<*>): MVector4 = MVector4(values[0], values[1], values[2], values[3])
 
-    operator fun setValue(obj: Any, prop: KProperty<*>, value: Vector3D) {
+    operator fun setValue(obj: Any, prop: KProperty<*>, value: MVector4) {
         values[0] = value.x
         values[1] = value.y
         values[2] = value.z
@@ -127,20 +127,20 @@ class UniformFloatStorage(val uniforms: AGUniformValues, val uniform: Uniform, v
     fun vector4Delegate(index: Int = 0) = Vector4DelegatedUniform(uniform, array, index, this)
 }
 
-class UniformValueStorageMatrix3D(val uniforms: AGUniformValues, val uniform: Uniform, val value: Matrix3D) {
+class UniformValueStorageMatrix3D(val uniforms: AGUniformValues, val uniform: Uniform, val value: MMatrix3D) {
     init {
         uniforms[uniform] = value
     }
 
     fun delegate() = this
 
-    fun setMatrix(value: Matrix3D) {
+    fun setMatrix(value: MMatrix3D) {
         this.value.copyFrom(value)
         uniforms[uniform] = this.value
     }
 
-    operator fun getValue(obj: Any, prop: KProperty<*>): Matrix3D = value
-    operator fun setValue(obj: Any, prop: KProperty<*>, value: Matrix3D) = setMatrix(value)
+    operator fun getValue(obj: Any, prop: KProperty<*>): MMatrix3D = value
+    operator fun setValue(obj: Any, prop: KProperty<*>, value: MMatrix3D) = setMatrix(value)
 }
 
 fun AGUniformValues.storageFor(uniform: Uniform, array: FloatArray = FloatArray(4)) =
@@ -148,8 +148,8 @@ fun AGUniformValues.storageFor(uniform: Uniform, array: FloatArray = FloatArray(
 //fun AGUniformValues.storageForMatrix2(uniform: Uniform, matrix: Matrix3D = Matrix3D()) = UniformValueStorage(this, uniform, matrix)
 //fun AGUniformValues.storageForMatrix3(uniform: Uniform, matrix: Matrix3D = Matrix3D()) = UniformValueStorage(this, uniform, matrix)
 //fun AGUniformValues.storageForMatrix4(uniform: Uniform, matrix: Matrix3D = Matrix3D()) = UniformValueStorage(this, uniform, matrix)
-fun AGUniformValues.storageForMatrix3D(uniform: Uniform, matrix: Matrix3D = Matrix3D()): UniformValueStorageMatrix3D {
-    return UniformValueStorageMatrix3D(this, uniform, Matrix3D()).also {
+fun AGUniformValues.storageForMatrix3D(uniform: Uniform, matrix: MMatrix3D = MMatrix3D()): UniformValueStorageMatrix3D {
+    return UniformValueStorageMatrix3D(this, uniform, MMatrix3D()).also {
         it.setMatrix(matrix)
     }
 }

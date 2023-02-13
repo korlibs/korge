@@ -2,7 +2,6 @@ package com.soywiz.korge.ui
 
 import com.soywiz.kds.*
 import com.soywiz.klock.*
-import com.soywiz.korev.*
 import com.soywiz.korge.baseview.*
 import com.soywiz.korge.component.*
 import com.soywiz.korge.input.*
@@ -86,7 +85,7 @@ open class UIView(
         onSizeChanged()
     }
 
-    override fun getLocalBoundsInternal(out: Rectangle) {
+    override fun getLocalBoundsInternal(out: MRectangle) {
         out.setTo(0.0, 0.0, width, height)
     }
 

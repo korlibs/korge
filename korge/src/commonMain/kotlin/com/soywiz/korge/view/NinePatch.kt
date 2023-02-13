@@ -2,8 +2,8 @@ package com.soywiz.korge.view
 
 import com.soywiz.korge.render.RenderContext
 import com.soywiz.korim.bitmap.BmpSlice
-import com.soywiz.korma.geom.Point
-import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.MPoint
+import com.soywiz.korma.geom.MRectangle
 import kotlin.math.min
 
 inline fun Container.ninePatch(
@@ -26,17 +26,17 @@ class NinePatch(
 	private val sTop = 0.0
 
 	val posCuts = arrayOf(
-		Point(0, 0),
-		Point(left, top),
-		Point(1.0 - right, 1.0 - bottom),
-		Point(1.0, 1.0)
+		MPoint(0, 0),
+		MPoint(left, top),
+		MPoint(1.0 - right, 1.0 - bottom),
+		MPoint(1.0, 1.0)
 	)
 
 	val texCuts = arrayOf(
-		Point(0, 0),
-		Point(left, top),
-		Point(1.0 - right, 1.0 - bottom),
-		Point(1.0, 1.0)
+		MPoint(0, 0),
+		MPoint(left, top),
+		MPoint(1.0 - right, 1.0 - bottom),
+		MPoint(1.0, 1.0)
 	)
 
 	override fun renderInternal(ctx: RenderContext) {
@@ -81,7 +81,7 @@ class NinePatch(
         }
 	}
 
-	override fun getLocalBoundsInternal(out: Rectangle) {
+	override fun getLocalBoundsInternal(out: MRectangle) {
 		out.setTo(sLeft, sTop, width, height)
 	}
 

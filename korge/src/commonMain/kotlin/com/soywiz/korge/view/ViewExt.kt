@@ -4,7 +4,7 @@ import com.soywiz.klock.Frequency
 import com.soywiz.klock.timesPerSecond
 import com.soywiz.korio.lang.Cancellable
 import com.soywiz.korma.geom.IPoint
-import com.soywiz.korma.geom.Point
+import com.soywiz.korma.geom.MPoint
 
 val Double.fps get() = this.timesPerSecond
 val Int.fps get() = this.timesPerSecond
@@ -17,10 +17,10 @@ fun <T : View> T.addUpdater(referenceFps: Frequency, first: Boolean = true, upda
 }
 
 
-fun View.Companion.convertViewSpace(src: View, srcPoint: IPoint, dst: View, dstPoint: Point = Point()): IPoint {
+fun View.Companion.convertViewSpace(src: View, srcPoint: IPoint, dst: View, dstPoint: MPoint = MPoint()): IPoint {
     src.localToGlobal(srcPoint, dstPoint)
     return dst.globalToLocal(dstPoint, dstPoint)
 }
 
-fun View.convertToSpace(srcPoint: IPoint, dst: View, dstPoint: Point = Point()): IPoint =
+fun View.convertToSpace(srcPoint: IPoint, dst: View, dstPoint: MPoint = MPoint()): IPoint =
     View.Companion.convertViewSpace(this, srcPoint, dst, dstPoint)

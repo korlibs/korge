@@ -5,8 +5,8 @@ import com.soywiz.korge.tests.ViewsForTesting
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.color.Colors
 import com.soywiz.korma.geom.Anchor
-import com.soywiz.korma.geom.Point
-import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.MPoint
+import com.soywiz.korma.geom.MRectangle
 import com.soywiz.korma.geom.ScaleMode
 import com.soywiz.korma.geom.SizeInt
 import kotlin.math.absoluteValue
@@ -51,7 +51,7 @@ class Views2Test : ViewsForTesting(
             centerOnStage()
         }
         logger.info { str() }
-        assertEquals(Point((virtualSize.width - RECT_WIDTH) / 2, (virtualSize.height - RECT_HEIGHT) / 2), rect.pos)
+        assertEquals(MPoint((virtualSize.width - RECT_WIDTH) / 2, (virtualSize.height - RECT_HEIGHT) / 2), rect.ipos)
     }
 
     @Test
@@ -68,11 +68,11 @@ class Views2Test : ViewsForTesting(
             centerOn(rect1)
         }
         assertEquals(
-            Point(
+            MPoint(
                 CONTAINER_X + (CONTAINER_WIDTH - RECT_WIDTH) / 2,
                 CONTAINER_Y + (CONTAINER_HEIGHT - RECT_HEIGHT) / 2
             ),
-            rect2.pos
+            rect2.ipos
         )
     }
 
@@ -101,18 +101,18 @@ class Views2Test : ViewsForTesting(
         assertEquals(6.66666, rect1.scaleY, 0.001)
 
         assertEquals(
-            Point(
+            MPoint(
                 CONTAINER_X + (CONTAINER_WIDTH - RECT_WIDTH) / 2,
                 CONTAINER_Y + (CONTAINER_HEIGHT - RECT_HEIGHT) / 2
             ),
-            rect2.pos
+            rect2.ipos
         )
     }
 
     @Test
     fun testImageLocalBounds() = viewsTest {
         val image = image(Bitmap32(10, 10, Colors.TRANSPARENT_BLACK)).size(100, 100).xy(50, 50)
-        assertEquals(Rectangle(0, 0, 10, 10).toStringBounds(), image.getLocalBoundsOptimizedAnchored().toStringBounds())
-        assertEquals(Rectangle(50, 50, 100, 100).toStringBounds(), image.getBounds(image.parent!!).toStringBounds())
+        assertEquals(MRectangle(0, 0, 10, 10).toStringBounds(), image.getLocalBoundsOptimizedAnchored().toStringBounds())
+        assertEquals(MRectangle(50, 50, 100, 100).toStringBounds(), image.getBounds(image.parent!!).toStringBounds())
     }
 }

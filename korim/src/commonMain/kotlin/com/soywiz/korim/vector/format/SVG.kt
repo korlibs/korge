@@ -22,8 +22,8 @@ import com.soywiz.korio.util.StrReader
 import com.soywiz.korio.util.isLetterOrDigit
 import com.soywiz.korio.util.isNumeric
 import com.soywiz.korio.util.reader
-import com.soywiz.korma.geom.Matrix
-import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.MMatrix
+import com.soywiz.korma.geom.MRectangle
 import com.soywiz.korma.geom.shape.getPoints2
 import com.soywiz.korma.geom.vector.LineCap
 import com.soywiz.korma.geom.vector.LineJoin
@@ -34,7 +34,6 @@ import com.soywiz.korma.geom.vector.isNotEmpty
 import com.soywiz.korma.geom.vector.roundRect
 import com.soywiz.korma.geom.vector.write
 import kotlin.collections.set
-import kotlin.reflect.KMutableProperty1
 
 class SVG(val root: Xml, val warningProcessor: ((message: String) -> Unit)? = null) : SizedDrawable {
 	//constructor(@Language("xml") str: String) : this(Xml(str))
@@ -49,7 +48,7 @@ class SVG(val root: Xml, val warningProcessor: ((message: String) -> Unit)? = nu
 	val dheight = root.double("height", 128.0)
 	val viewBox = root.getString("viewBox") ?: "0 0 $dwidth $dheight"
 	val viewBoxNumbers = viewBox.split(' ').map { it.trim().toDoubleOrNull() ?: 0.0 }
-	val viewBoxRectangle = Rectangle(
+	val viewBoxRectangle = MRectangle(
 		viewBoxNumbers.getOrElse(0) { 0.0 },
 		viewBoxNumbers.getOrElse(1) { 0.0 },
 		viewBoxNumbers.getOrElse(2) { dwidth },
@@ -111,7 +110,7 @@ class SVG(val root: Xml, val warningProcessor: ((message: String) -> Unit)? = nu
             "userSpaceOnUse" -> GradientUnits.USER_SPACE_ON_USE
             else -> GradientUnits.OBJECT_BOUNDING_BOX
         }
-        val gradientTransform: Matrix = def.getString("gradientTransform")?.let { CSS.parseTransform(it) } ?: Matrix()
+        val gradientTransform: MMatrix = def.getString("gradientTransform")?.let { CSS.parseTransform(it) } ?: MMatrix()
         val spreadMethod = when ((def.getString("spreadMethod") ?: "pad").lowercase()) {
             "pad" -> CycleMethod.NO_CYCLE
             "repeat" -> CycleMethod.REPEAT
@@ -203,7 +202,7 @@ class SVG(val root: Xml, val warningProcessor: ((message: String) -> Unit)? = nu
         }
 
         val attributes: Map<String, String> = parseAttributesAndStyles(xml)
-        var transform: Matrix? = attributes["transform"]?.let { CSS.parseTransform(it) }
+        var transform: MMatrix? = attributes["transform"]?.let { CSS.parseTransform(it) }
         var opacity: Double = attributes["opacity"]?.toDoubleOrNull() ?: 1.0
 
         val children = xml.allNodeChildren.mapNotNull {

@@ -2,12 +2,12 @@ package com.soywiz.korma.geom.triangle
 
 import com.soywiz.korma.geom.IPoint
 import com.soywiz.korma.geom.Orientation
-import com.soywiz.korma.geom.Point
+import com.soywiz.korma.geom.MPoint
 import com.soywiz.korma.geom.PointArrayList
 import com.soywiz.korma.geom.getPoint
 import kotlin.math.abs
 
-val Triangle.center get() = Point((p0.x + p1.x + p2.x) / 3, (p0.y + p1.y + p2.y) / 3)
+val Triangle.center get() = MPoint((p0.x + p1.x + p2.x) / 3, (p0.y + p1.y + p2.y) / 3)
 
 interface Triangle {
     val p0: IPoint
@@ -221,9 +221,9 @@ class TriangleList(val points: PointArrayList, val indices: ShortArray, val numT
     internal val tempTriangle: MutableTriangle = MutableTriangle()
 
     class MutableTriangle : Triangle {
-        override val p0 = Point()
-        override val p1 = Point()
-        override val p2 = Point()
+        override val p0 = MPoint()
+        override val p1 = MPoint()
+        override val p2 = MPoint()
         override fun toString(): String = "Triangle($p0, $p1, $p2)"
     }
 

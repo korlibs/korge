@@ -101,11 +101,11 @@ fun RenderContext2D.materialRoundRect(
         radius.bottomRight.toFloat(), radius.topRight.toFloat(),
         radius.bottomLeft.toFloat(), radius.topLeft.toFloat(),
     )
-    _tempProgramUniforms[MaterialRender.u_Size] = Point(width, height)
+    _tempProgramUniforms[MaterialRender.u_Size] = MPoint(width, height)
 
     _tempProgramUniforms[MaterialRender.u_BackgroundColor] = color.premultipliedFast
 
-    _tempProgramUniforms[MaterialRender.u_HighlightPos] = Point(highlightPos.x * width, highlightPos.y * height)
+    _tempProgramUniforms[MaterialRender.u_HighlightPos] = MPoint(highlightPos.x * width, highlightPos.y * height)
     _tempProgramUniforms[MaterialRender.u_HighlightRadius] = highlightRadius * kotlin.math.max(width, height) * 1.25
     _tempProgramUniforms[MaterialRender.u_HighlightColor] = highlightColor.premultipliedFast
 
@@ -113,10 +113,10 @@ fun RenderContext2D.materialRoundRect(
     _tempProgramUniforms[MaterialRender.u_BorderColor] = borderColor.premultipliedFast
 
     _tempProgramUniforms[MaterialRender.u_ShadowColor] = shadowColor.premultipliedFast
-    _tempProgramUniforms[MaterialRender.u_ShadowOffset] = Point(shadowOffset.x, shadowOffset.y)
+    _tempProgramUniforms[MaterialRender.u_ShadowOffset] = MPoint(shadowOffset.x, shadowOffset.y)
     _tempProgramUniforms[MaterialRender.u_ShadowRadius] = shadowRadius
 
-    quadPaddedCustomProgram(x, y, width, height, MaterialRender.PROGRAM, _tempProgramUniforms, Margin(shadowRadius + shadowOffset.length))
+    quadPaddedCustomProgram(x, y, width, height, MaterialRender.PROGRAM, _tempProgramUniforms, IMargin(shadowRadius + shadowOffset.length))
 }
 
 @KorgeExperimental
@@ -134,7 +134,7 @@ fun RenderContext2D.drawText(
     align: TextAlignment = TextAlignment.TOP_LEFT,
     includeFirstLineAlways: Boolean = true
 ) {
-    drawText(text.place(Rectangle(x, y, width, height), wordWrap, includePartialLines, ellipsis, fill, stroke, align, includeFirstLineAlways = includeFirstLineAlways))
+    drawText(text.place(MRectangle(x, y, width, height), wordWrap, includePartialLines, ellipsis, fill, stroke, align, includeFirstLineAlways = includeFirstLineAlways))
 }
 
 @KorgeExperimental

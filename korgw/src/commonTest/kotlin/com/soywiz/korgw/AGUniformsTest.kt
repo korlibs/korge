@@ -14,19 +14,19 @@ class AGUniformsTest {
         val block = UniformBlock(projMatrix, viewMatrix, color1, layoutSize = null)
         val data = UniformBlockData(block)
         val buffer = UniformBlockBuffer(block, 2)
-        data[projMatrix].set(Matrix3D().multiply(2f))
+        data[projMatrix].set(MMatrix3D().multiply(2f))
         val index1 = buffer.put(data)
-        data[projMatrix].set(Matrix3D().multiply(3f))
+        data[projMatrix].set(MMatrix3D().multiply(3f))
         val index2 = buffer.put(data)
         //println(buffer.buffer.f32.toFloatArray().toList())
 
         assertEquals(listOf(0, 1), listOf(index1, index2))
 
         buffer.copyIndexTo(index1, data)
-        assertEquals(Matrix3D().multiply(2f), Matrix3D().setColumns4x4(data[projMatrix].data.f32.toFloatArray(), 0))
+        assertEquals(MMatrix3D().multiply(2f), MMatrix3D().setColumns4x4(data[projMatrix].data.f32.toFloatArray(), 0))
 
         buffer.copyIndexTo(index2, data)
-        assertEquals(Matrix3D().multiply(3f), Matrix3D().setColumns4x4(data[projMatrix].data.f32.toFloatArray(), 0))
+        assertEquals(MMatrix3D().multiply(3f), MMatrix3D().setColumns4x4(data[projMatrix].data.f32.toFloatArray(), 0))
 
         //block.attributePositions
         //println(block.totalSize)
