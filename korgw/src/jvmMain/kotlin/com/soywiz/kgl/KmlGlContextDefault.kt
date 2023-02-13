@@ -15,9 +15,8 @@ import com.soywiz.korgw.x11.*
 import com.soywiz.korio.lang.*
 import com.sun.jna.*
 import com.sun.jna.platform.win32.*
-import kotlinx.coroutines.sync.*
-import java.util.concurrent.Semaphore
 import java.util.concurrent.atomic.*
+import kotlin.collections.buildList
 
 val GLOBAL_HEADLESS_KML_CONTEXT by lazy { KmlGlContextDefault() }
 
@@ -426,32 +425,49 @@ open class MacKmlGlContextRaw(window: Any? = null, parent: KmlGlContext? = null)
 
             //checkError("CGLDestroyPixelFormat", MacGL.CGLDestroyPixelFormat(pix))
 
-            val attributes = Memory(intArrayOf(
-                // Let's not specify profile version, so we are using old shader syntax
-                //kCGLPFAOpenGLProfile, kCGLOGLPVersion_GL3_Core,
-                //kCGLPFAOpenGLProfile, kCGLOGLPVersion_GL4_Core,
+            fun formatsProvider(): Sequence<IntArray> = sequence<IntArray> {
+                for (extra in listOf(true, false)) {
+                    for (accelerated in listOf(true, false)) {
+                        yield(buildList {
+                            // Let's not specify profile version, so we are using old shader syntax
+                            //kCGLPFAOpenGLProfile, kCGLOGLPVersion_GL3_Core,
+                            //kCGLPFAOpenGLProfile, kCGLOGLPVersion_GL4_Core,
+                            if (accelerated) add(kCGLPFAAccelerated)
+                            if (extra) {
+                                add(kCGLPFAColorSize); add(24)
+                                add(kCGLPFADepthSize); add(16)
+                                add(kCGLPFAStencilSize); add(8)
+                            }
+                            //kCGLPFADoubleBuffer,
+                            //kCGLPFASupersample,
+                            add(0)
+                        }.toIntArray())
+                    }
+                }
+            }
 
-                kCGLPFAAccelerated,
-                kCGLPFAColorSize, 24,
-                kCGLPFADepthSize, 16,
-                kCGLPFAStencilSize, 8,
-                kCGLPFADoubleBuffer,
-
-                //kCGLPFASupersample,
-                0,
-            ))
             val num = Memory(4L).also { it.clear() }
             val pix = Memory(8L).also { it.clear() } // void**
-            try {
-                //println("ctx=${MacGL.CGLGetCurrentContext()}")
-                checkError("CGLChoosePixelFormat", MacGL.CGLChoosePixelFormat(attributes, pix, num).also {
-                    //println("CGLChoosePixelFormat: num=${num.getInt(0L)}, pix=${pix.getPointer(0L)}")
-                })
-                pix.getPointer(0L)
-            } catch (e: Throwable) {
-                e.printStackTrace()
-                null
+            val exceptions = arrayListOf<Throwable>()
+            for (format in formatsProvider()) {
+                val attributes = Memory(format)
+                try {
+                    //println("ctx=${MacGL.CGLGetCurrentContext()}")
+                    checkError("CGLChoosePixelFormat", MacGL.CGLChoosePixelFormat(attributes, pix, num).also {
+                        //println("CGLChoosePixelFormat: num=${num.getInt(0L)}, pix=${pix.getPointer(0L)}")
+                    })
+                    return@lazy pix.getPointer(0L)
+                } catch (e: Throwable) {
+                    exceptions += e
+                    //e.printStackTrace()
+                }
             }
+            if (exceptions.isNotEmpty()) {
+                for (e in exceptions) {
+                    e.printStackTrace()
+                }
+            }
+            return@lazy null
         }
 
         private fun checkError(name: String, value: Int): Int {
