@@ -1,4 +1,3 @@
-
 import com.soywiz.korge.*
 import com.soywiz.korge.particle.*
 import com.soywiz.korge.scene.*
@@ -25,6 +24,7 @@ suspend fun main() = Korge(
     //scaleMode = ScaleMode.EXACT,
     //debug = true,
     debug = false,
+    //debugAg = true,
     multithreaded = true,
     forceRenderEveryFrame = false // Newly added optimization!
     //forceRenderEveryFrame = true
@@ -35,35 +35,7 @@ suspend fun main() = Korge(
     //sceneContainer(views).changeTo({ MainTransitionFilter() }); return@Korge
 
     demoSelector(
-        //Demo(::MainGraphicsText),
-        //Demo(::MainTextBounds),
-        //Demo(::MainEditor),
-        //Demo(::MainStage3d),
-        //Demo(::MainInput),
-        //Demo(::MainAnimations),
-        //Demo(::MainCache),
-        //Demo(::MainEditor),
-        //Demo(::MainUI),
-        //Demo(::MainBezier),
-        //Demo(::MainBunnymark),
-        //Demo(::MainStressButtons),
-        //Demo(::MainGifAnimation),
-        //Demo(::MainTransitionFilter),
-        //Demo(::MainFilters),
-        //Demo(::MainGpuVectorRendering),
-        //Demo(::MainRotatedAtlas),
-        //Demo(::MainImageOrientationTest),
-        //Demo(::MainTiledBackground),
-        Demo(::MainTilemapTest),
-        //Demo(::MainGpuVectorRendering),
-        //Demo(::MainTextMetrics),
-        //Demo(::MainBunnymark),
-        //Demo(::MainBlur),
-        //Demo(::MainSDF),
-        //Demo(::MainMSDF),
-        //Demo(::MainGestures),
-        //Demo(::MainSvgAnimation),
-        //Demo(::MainVectorNinePatch),
+        Demo(::MainGpuVectorRendering),
         listOf(
             Demo(::MainStressButtons),
             Demo(::MainVectorNinePatch),

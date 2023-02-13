@@ -112,14 +112,13 @@ suspend fun OffscreenStage.assertScreenshot(
         ).depremultiplied().posterizeInplace(posterize)
     }
 
-
     var updateReference = updateTestRef
     if (outFile.exists()) {
         val expectedBitmap = runBlockingNoJs { outFile.toVfs().readNativeImage(ImageDecodingProps.DEFAULT_STRAIGHT).toBMP32().posterizeInplace(posterize) }
         //val ref = referenceBitmap.scaleLinear(scale, scale)
         //val act = actualBitmap.scaleLinear(scale)
         val result = BitmapComparer.compare(expectedBitmap, actualBitmap)
-        if (!updateTestRef) {
+        if (!updateReference) {
             val similar = result.psnr >= psnr
             if (!similar && interactive) {
                 updateReference = showBitmapDiffDialog(expectedBitmap, actualBitmap, "Bitmaps are not equal $expectedBitmap-$actualBitmap\n$result\n${result.error}")

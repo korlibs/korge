@@ -279,10 +279,11 @@ inline class AGFrontFace(val ordinal: Int) {
 /** 2 Bits required for encoding */
 inline class AGCullFace(val ordinal: Int) {
     companion object {
+        val INVALID = AGCullFace(-1)
         val NONE = AGCullFace(0)
-        val BOTH = AGCullFace(1)
-        val FRONT = AGCullFace(2)
-        val BACK = AGCullFace(3)
+        val FRONT = AGCullFace(1)
+        val BACK = AGCullFace(2)
+        val BOTH = AGCullFace(3)
     }
 
     override fun toString(): String = when (this) {
