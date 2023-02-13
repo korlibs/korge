@@ -89,7 +89,7 @@ jobs:
     - { name: Start gradle, run: ./gradlew }
     - { name: Building classes, run: ./gradlew compileTestKotlinJvm }
     - { name: Testing JVM, run: "./gradlew jvmTest", env: { EGL_LOG_LEVEL: debug, LIBGL_DEBUG: verbose, LIBGL_ALWAYS_SOFTWARE: true, MESA_DEBUG: true } }
-    - { name: Archive Test Results, if: failure(), uses: actions/upload-artifact@v1, with: { name: screenshot-test-results-linux, retention-days: 21, path: "**/build/reports", if-no-files-found: ignore } }
+    - { name: Archive Test Results, if: failure(), uses: actions/upload-artifact@v3, with: { name: screenshot-test-results-linux, retention-days: 21, path: "**/build/reports", if-no-files-found: ignore } }
     - { name: Check sandbox compiles, run: "./gradlew :korge-sandbox:jvmJar" }
     - { name: Publish to maven local, run: ./gradlew publishJvmLocal }
     - { name: e2e test, working-directory: e2e-test, run: ./gradlew checkReferencesJvm --stacktrace }
@@ -239,7 +239,7 @@ jobs:
     - { name: Set up JDK 1.8, uses: actions/setup-java@v1, with: { java-version: 1.8 } }
     - { name: Gradle cache, uses: ./.github/actions/gradle-cache }
     - { name: Testing JVM on windows, shell: cmd, run: "CALL gradlew.bat jvmTest", env: { EGL_LOG_LEVEL: debug, LIBGL_DEBUG: verbose, LIBGL_ALWAYS_SOFTWARE: true, MESA_DEBUG: true } }
-    - { name: Archive Test Results, if: failure(), uses: actions/upload-artifact@v1, with: { name: screenshot-test-results-windows, retention-days: 21, path: "**/build/reports", if-no-files-found: ignore } }
+    - { name: Archive Test Results, if: failure(), uses: actions/upload-artifact@v3, with: { name: screenshot-test-results-windows, retention-days: 21, path: "**/build/reports", if-no-files-found: ignore } }
     - { name: Testing Kotlin/Native MingwX64Test, shell: cmd, run: CALL gradlew.bat mingwX64Test }
     - { name: Publish gradle plugin, shell: cmd, run: "CALL gradlew.bat :korge-gradle-plugin:publishToMavenLocal" }
     - { name: Publish X64, shell: cmd, run: CALL gradlew.bat publishMingwX64PublicationToMavenLocal publishKotlinMultiplatformPublicationToMavenLocal }
