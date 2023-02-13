@@ -35,7 +35,14 @@ suspend fun View.renderToBitmap(views: Views? = this.stage?.views, region: Recta
 }
 
 @KorgeExperimental
-fun View.unsafeRenderToBitmapSync(ctx: RenderContext, region: Rectangle? = null, scale: Double = 1.0, outPoint: Point = Point(), bgcolor: RGBA = Colors.TRANSPARENT): Bitmap32 {
+fun View.unsafeRenderToBitmapSync(
+    ctx: RenderContext,
+    region: Rectangle? = null,
+    scale: Double = 1.0,
+    outPoint: Point = Point(),
+    useTexture: Boolean = true,
+    bgcolor: RGBA = Colors.TRANSPARENT
+): Bitmap32 {
     val view = this
     val bounds = getLocalBoundsOptimizedAnchored(includeFilters = true)
 
@@ -47,7 +54,7 @@ fun View.unsafeRenderToBitmapSync(ctx: RenderContext, region: Rectangle? = null,
     ).also { bmp ->
         //val ctx = RenderContext(views.ag, coroutineContext = views.coroutineContext)
         //views.ag.renderToBitmap(bmp) {
-        ctx.renderToBitmap(bmp, hasStencil = true) {
+        ctx.renderToBitmap(bmp, hasStencil = true, useTexture = useTexture) {
             if (bgcolor != Colors.TRANSPARENT) {
                 ctx.clear(bgcolor)
             }

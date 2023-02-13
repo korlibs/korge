@@ -472,13 +472,25 @@ class RenderContext constructor(
     inline fun renderToBitmap(
         bmp: Bitmap32,
         hasDepth: Boolean = false, hasStencil: Boolean = false, msamples: Int = 1,
+        useTexture: Boolean = true,
         callback: () -> Unit
     ): Bitmap32 {
-        renderToTextureInternal(bmp.width, bmp.height, render = {
-            callback()
-            //println("renderToBitmap.readColor: $currentRenderBuffer")
-            ag.readColor(currentFrameBuffer, bmp)
-        }, hasDepth = hasDepth, hasStencil = hasStencil, msamples = msamples, use = { _, _, _ -> })
+        if (useTexture) {
+            renderToTextureInternal(bmp.width, bmp.height, render = {
+                callback()
+                //println("renderToBitmap.readColor: $currentRenderBuffer")
+                ag.readColor(currentFrameBuffer, bmp)
+            }, hasDepth = hasDepth, hasStencil = hasStencil, msamples = msamples, use = { _, _, _ -> })
+        } else {
+            setFrameBufferTemporally(mainFrameBuffer) {
+                updateStandardUniforms()
+                clear(Colors.TRANSPARENT_BLACK) // transparent
+                flush()
+                callback()
+                flush()
+                ag.readColor(mainFrameBuffer, bmp)
+            }
+        }
         return bmp
     }
 

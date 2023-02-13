@@ -10,7 +10,6 @@ import com.soywiz.korio.file.std.*
 import com.soywiz.korio.lang.*
 import java.awt.*
 import java.io.*
-import java.nio.file.Files
 import javax.swing.*
 import kotlin.math.*
 
@@ -95,15 +94,25 @@ suspend fun OffscreenStage.assertScreenshot(
     psnr: Double = 40.0,
     //scale: Double = 1.0,
     posterize: Int = 0,
-    includeBackground: Boolean = true
+    includeBackground: Boolean = true,
+    useTexture: Boolean = true,
 ) {
     testIndex++
     val updateTestRef = Environment["UPDATE_TEST_REF"] == "true"
     val interactive = Environment["INTERACTIVE_SCREENSHOT"] == "true"
     val context = injector.getSyncOrNull<OffscreenContext>() ?: OffscreenContext()
     val outFile = File("testGoldens/${context.testClassName}/${context.testMethodName}_$name.png")
-    val actualBitmap = views.ag.startEndFrame { view.unsafeRenderToBitmapSync(views.renderContext, bgcolor = if (includeBackground) views.clearColor else Colors.TRANSPARENT).depremultiplied().posterizeInplace(posterize) }
-    var doAccept: Boolean? = false
+    val actualBitmap = views.ag.startEndFrame {
+        //val currentFrameBuffer = views.renderContext.currentFrameBuffer
+        //Bitmap32(currentFrameBuffer.width, currentFrameBuffer.height).also { ag.readColor(currentFrameBuffer, it) }
+        view.unsafeRenderToBitmapSync(
+            views.renderContext,
+            bgcolor = if (includeBackground) views.clearColor else Colors.TRANSPARENT,
+            useTexture = useTexture
+        ).depremultiplied().posterizeInplace(posterize)
+    }
+
+
     var updateReference = updateTestRef
     if (outFile.exists()) {
         val referenceBitmap = runBlockingNoJs { outFile.toVfs().readNativeImage(ImageDecodingProps.DEFAULT_STRAIGHT).toBMP32().posterizeInplace(posterize) }

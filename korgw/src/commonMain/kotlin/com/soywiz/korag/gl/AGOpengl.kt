@@ -9,7 +9,7 @@ import com.soywiz.korag.shader.gl.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korio.lang.*
-import com.soywiz.krypto.encoding.hex
+import com.soywiz.krypto.encoding.*
 
 class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
     class ShaderException(val str: String, val error: String, val errorInt: Int, val gl: KmlGl, val debugName: String?, val type: Int, val shaderReturnInt: Int) :
@@ -557,8 +557,17 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
 
     fun AGTexture?.magFilter(linear: Boolean, trilinear: Boolean = linear): Int = if (linear) KmlGl.LINEAR else KmlGl.NEAREST
 
+    fun region(scissor: AGScissor, frameBuffer: AGFrameBufferBase, frameBufferInfo: AGFrameBufferInfo): AGScissor {
+        return when {
+            scissor == AGScissor.NIL || scissor == AGScissor.FULL -> scissor
+            frameBuffer.isMain -> AGScissor.fromBounds(scissor.left, frameBufferInfo.height - scissor.bottom, scissor.right, frameBufferInfo.height - scissor.top)
+            else -> scissor
+        }
+    }
+
     override fun readToMemory(frameBuffer: AGFrameBufferBase, frameBufferInfo: AGFrameBufferInfo, x: Int, y: Int, width: Int, height: Int, data: Any, kind: AGReadKind) {
         bindFrameBuffer(frameBuffer, frameBufferInfo)
+        val region = region(AGScissor(x, y, width, height), frameBuffer, frameBufferInfo)
 
         val bytesPerPixel = when (data) {
             is IntArray -> 4
@@ -566,18 +575,30 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
             is ByteArray -> 1
             else -> TODO()
         }
+        val flipY = frameBuffer.isMain
         val area = width * height
-        BufferTemp(area * bytesPerPixel) { buffer ->
-            when (kind) {
-                AGReadKind.COLOR -> gl.readPixels(x, y, width, height, KmlGl.RGBA, KmlGl.UNSIGNED_BYTE, buffer)
-                AGReadKind.DEPTH -> gl.readPixels(x, y, width, height, KmlGl.DEPTH_COMPONENT, KmlGl.FLOAT, buffer)
-                AGReadKind.STENCIL -> gl.readPixels(x, y, width, height, KmlGl.STENCIL_INDEX, KmlGl.UNSIGNED_BYTE, buffer)
-            }
-            when (data) {
-                is IntArray -> buffer.getArrayInt32(0, data, size = area)
-                is FloatArray -> buffer.getArrayFloat32(0, data, size = area)
-                is ByteArray -> buffer.getArrayInt8(0, data, size = area)
-                else -> TODO()
+        val stride = width * bytesPerPixel
+        BufferTemp(height * stride) { buffer ->
+            BufferTemp(stride) { temp ->
+                when (kind) {
+                    AGReadKind.COLOR -> gl.readPixels(region.x, region.y, region.width, region.height, KmlGl.RGBA, KmlGl.UNSIGNED_BYTE, buffer)
+                    AGReadKind.DEPTH -> gl.readPixels(region.x, region.y, region.width, region.height, KmlGl.DEPTH_COMPONENT, KmlGl.FLOAT, buffer)
+                    AGReadKind.STENCIL -> gl.readPixels(region.x, region.y, region.width, region.height, KmlGl.STENCIL_INDEX, KmlGl.UNSIGNED_BYTE, buffer)
+                }
+                when (data) {
+                    is IntArray -> buffer.getArrayInt32(0, data, size = area)
+                    is FloatArray -> buffer.getArrayFloat32(0, data, size = area)
+                    is ByteArray -> buffer.getArrayInt8(0, data, size = area)
+                    else -> TODO()
+                }
+                if (flipY) {
+                    when (data) {
+                        is IntArray -> Bitmap32(width, height, RgbaArray(data))
+                        is FloatArray -> FloatBitmap32(width, height, data)
+                        is ByteArray -> Bitmap8(width, height, data)
+                        else -> TODO()
+                    }.flipY()
+                }
             }
             //println("readColor.HASH:" + bitmap.computeHash())
         }
@@ -742,6 +763,7 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
     fun bindFrameBuffer(frameBuffer: AGFrameBufferBase, info: AGFrameBufferInfo) {
         //println("bindFrameBuffer: $frameBuffer, info=$info")
         if (_currentViewportSize != info.size) {
+            //println("viewport: 0, 0, ${info.width}, ${info.height}")
             gl.viewport(0, 0, info.width, info.height)
         }
         if (frameBuffer.isMain) {
@@ -841,11 +863,7 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
 
     fun setScissorState(scissor: AGScissor, frameBuffer: AGFrameBufferBase, frameBufferInfo: AGFrameBufferInfo) {
         //println("scissor=$scissor, frameBuffer=${frameBuffer.isMain}, frameBufferInfo=$frameBufferInfo")
-        val scissor = when {
-            scissor == AGScissor.NIL || scissor == AGScissor.FULL -> scissor
-            frameBuffer.isMain -> AGScissor.fromBounds(scissor.left, frameBufferInfo.height - scissor.bottom, scissor.right, frameBufferInfo.height - scissor.top)
-            else -> scissor
-        }
+        val scissor = region(scissor, frameBuffer, frameBufferInfo)
         if (currentScissor != scissor) {
             currentScissor = scissor
             gl.enableDisable(KmlGl.SCISSOR_TEST, scissor != AGScissor.NIL) {
