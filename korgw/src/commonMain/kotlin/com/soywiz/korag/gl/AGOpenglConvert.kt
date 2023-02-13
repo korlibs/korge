@@ -10,7 +10,7 @@ fun AGCullFace.toGl(): Int = when (this) {
     AGCullFace.BOTH -> KmlGl.FRONT_AND_BACK
     AGCullFace.FRONT -> KmlGl.FRONT
     AGCullFace.BACK -> KmlGl.BACK
-    else -> unreachable
+    else -> TODO("Invalid AGCullFace($this)")
 }
 
 fun AGFrontFace.toGl(): Int = when (this) {

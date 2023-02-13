@@ -552,7 +552,7 @@ open class GpuShapeView(
                     val stencilOpFunc = AGStencilOpFunc.DEFAULT.withEnabled(enabled = true).withCompareMode(compareMode = AGCompareMode.ALWAYS).withActionOnBothPass(AGStencilOp.INVERT)
                     val stencilRef = AGStencilReference.DEFAULT.withWriteMask(writeMask = 0b00000001)
                     pathDataList.fastForEach { pathData ->
-                        writeStencil(pathData.vertexStart, pathData.vertexEnd, stencilOpFunc, stencilRef, cullFace = AGCullFace.BOTH)
+                        writeStencil(pathData.vertexStart, pathData.vertexEnd, stencilOpFunc, stencilRef, cullFace = AGCullFace.NONE)
                     }
                 }
                 Winding.NON_ZERO -> {
