@@ -115,33 +115,36 @@ suspend fun OffscreenStage.assertScreenshot(
 
     var updateReference = updateTestRef
     if (outFile.exists()) {
-        val referenceBitmap = runBlockingNoJs { outFile.toVfs().readNativeImage(ImageDecodingProps.DEFAULT_STRAIGHT).toBMP32().posterizeInplace(posterize) }
+        val expectedBitmap = runBlockingNoJs { outFile.toVfs().readNativeImage(ImageDecodingProps.DEFAULT_STRAIGHT).toBMP32().posterizeInplace(posterize) }
         //val ref = referenceBitmap.scaleLinear(scale, scale)
         //val act = actualBitmap.scaleLinear(scale)
-        val result = BitmapComparer.compare(referenceBitmap, actualBitmap)
+        val result = BitmapComparer.compare(expectedBitmap, actualBitmap)
         if (!updateTestRef) {
             val similar = result.psnr >= psnr
             if (!similar && interactive) {
-                updateReference = showBitmapDiffDialog(referenceBitmap, actualBitmap, "Bitmaps are not equal $referenceBitmap-$actualBitmap\n$result\n${result.error}")
+                updateReference = showBitmapDiffDialog(expectedBitmap, actualBitmap, "Bitmaps are not equal $expectedBitmap-$actualBitmap\n$result\n${result.error}")
             }
             if (!updateReference) {
-                val baseName = "${context.testClassName}_${context.testMethodName}_$name.png"
-                val tempFile = File(Environment.tempPath, baseName)
-                val tempDiffFile = File(Environment.tempPath, "diff_$baseName")
+                val baseName = "${context.testClassName}_${context.testMethodName}_$name"
+                val base = File("build/reports/screenshotTest").also { it.mkdirs() }
+                val expectedFile = File(base, "$baseName.expt.png")
+                val actualFile = File(base, "$baseName.actual.png")
+                val diffFile = File(base, "$baseName.diff.png")
                 if (!similar) {
-                    tempFile.writeBytes(PNG.encode(actualBitmap.tryToExactBitmap8() ?: actualBitmap, ImageEncodingProps(quality = 1.0)))
+                    expectedFile.writeBytes(PNG.encode(expectedBitmap.tryToExactBitmap8() ?: actualBitmap, ImageEncodingProps(quality = 1.0)))
+                    actualFile.writeBytes(PNG.encode(actualBitmap.tryToExactBitmap8() ?: actualBitmap, ImageEncodingProps(quality = 1.0)))
                     kotlin.runCatching {
-                        tempDiffFile.writeBytes(PNG.encode(Bitmap32.diffEx(actualBitmap, referenceBitmap), ImageEncodingProps(quality = 1.0)))
+                        diffFile.writeBytes(PNG.encode(Bitmap32.diffEx(actualBitmap, expectedBitmap), ImageEncodingProps(quality = 1.0)))
                     }
                 }
                 assert(similar) {
-                    "Bitmaps are not equal $referenceBitmap-$actualBitmap : $result.\n" +
+                    "Bitmaps are not equal $expectedBitmap-$actualBitmap : $result.\n" +
                         "${result.error}\n" +
                         "Run ./gradlew jvmTestFix to update goldens\n" +
                         "Or set INTERACTIVE_SCREENSHOT=true\n" +
                         "\n" +
-                        "Generated: ${tempFile.absoluteFile}\n" +
-                        "Diff: ${tempDiffFile.absoluteFile}\n" +
+                        "Generated: ${actualFile.absoluteFile}\n" +
+                        "Diff: ${diffFile.absoluteFile}\n" +
                         "Expected Directory: ${outFile.parentFile.absoluteFile}\n" +
                         "Expected File: ${outFile.absoluteFile}"
                 }
