@@ -22,8 +22,8 @@ open class ShapeView(
     stroke: Paint = Colors.WHITE,
     strokeThickness: Double = 1.0,
     autoScaling: Boolean = true,
-    renderer: GraphicsRenderer = GraphicsRenderer.SYSTEM
-    //renderer: GraphicsRenderer = GraphicsRenderer.GPU
+    //renderer: GraphicsRenderer = GraphicsRenderer.SYSTEM
+    renderer: GraphicsRenderer = GraphicsRenderer.GPU
 ) : Container(), Anchorable, ViewLeaf {
     internal val shapeView = Graphics(renderer = renderer).addTo(this)
     init {

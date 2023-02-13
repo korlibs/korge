@@ -154,7 +154,7 @@ class ReferenceGraphicsTest {
             scale = 1.2
             circle(100.0).xy(100, 100).filters(DropshadowFilter())
         }
-        assertScreenshot()
+        assertScreenshot(posterize = 6)
     }
 
     @Test
