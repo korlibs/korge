@@ -166,6 +166,11 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
         setDepthAndFrontFace(depthAndFrontFace)
         setColorMaskState(colorMask)
 
+        if (currentCullFace != cullFace) {
+            currentCullFace = cullFace
+            cullFace(cullFace)
+        }
+
         if (currentStencilOpFunc != stencilOpFunc || currentStencilRef != stencilRef) {
         //if (true) {
             currentStencilOpFunc = stencilOpFunc
@@ -224,6 +229,7 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
 
     private var currentVertexData: AGVertexArrayObject? = null
     private var currentBlending: AGBlending = AGBlending.INVALID
+    private var currentCullFace: AGCullFace = AGCullFace.INVALID
     private var currentStencilOpFunc: AGStencilOpFunc = AGStencilOpFunc.INVALID
     private var currentStencilRef: AGStencilReference = AGStencilReference.INVALID
     private var currentColorMask: AGColorMask = AGColorMask.INVALID
@@ -239,6 +245,7 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
         currentVertexData = null
         currentScissor = AGScissor.INVALID
         currentBlending = AGBlending.INVALID
+        currentCullFace = AGCullFace.INVALID
         currentStencilOpFunc = AGStencilOpFunc.INVALID
         currentStencilRef = AGStencilReference.INVALID
         currentColorMask = AGColorMask.INVALID
@@ -301,7 +308,10 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
     }
 
     fun cullFace(face: AGCullFace) {
-        gl.cullFace(face.toGl())
+        if (gl.enableDisable(KmlGl.CULL_FACE, face.ordinal > AGCullFace.NONE.ordinal)) {
+            // @TODO: Move frontFace here too!
+            gl.cullFace(face.toGl())
+        }
     }
 
     ///////////////////////////////////////
@@ -841,9 +851,7 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
     fun setDepthAndFrontFace(renderState: AGDepthAndFrontFace) {
         if (currentRenderState != renderState) {
             currentRenderState = renderState
-            gl.enableDisable(KmlGl.CULL_FACE, renderState.frontFace != AGFrontFace.BOTH) {
-                gl.frontFace(renderState.frontFace.toGl())
-            }
+            gl.frontFace(renderState.frontFace.toGl())
 
             gl.depthMask(renderState.depthMask)
             gl.depthRangef(renderState.depthNear, renderState.depthFar)
