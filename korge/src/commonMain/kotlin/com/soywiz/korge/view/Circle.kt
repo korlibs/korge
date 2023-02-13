@@ -19,7 +19,7 @@ inline fun Container.circle(
     stroke: Paint = Colors.WHITE,
     strokeThickness: Double = 0.0,
     autoScaling: Boolean = true,
-    renderer: GraphicsRenderer = GraphicsRenderer.SYSTEM,
+    renderer: GraphicsRenderer = GraphicsRenderer.GPU,
     callback: @ViewDslMarker Circle.() -> Unit = {}
 ): Circle = Circle(radius, fill, stroke, strokeThickness, autoScaling, renderer).addTo(this, callback)
 
@@ -33,7 +33,7 @@ open class Circle(
     stroke: Paint = Colors.WHITE,
     strokeThickness: Double = 0.0,
     autoScaling: Boolean = true,
-    renderer: GraphicsRenderer = GraphicsRenderer.SYSTEM,
+    renderer: GraphicsRenderer = GraphicsRenderer.GPU,
 ) : ShapeView(shape = VectorPath(), fill = fill, stroke = stroke, strokeThickness = strokeThickness, autoScaling = autoScaling, renderer = renderer) {
     /** Radius of the circle */
     var radius: Double by uiObservable(radius) { updateGraphics() }
