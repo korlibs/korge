@@ -179,7 +179,16 @@ class TileMap(
 
     // @TODO: Use instanced rendering to support much more tiles at once
     private fun computeVertexIfRequired(ctx: RenderContext) {
+        currentVirtualRect.setBounds(ctx.virtualLeft, ctx.virtualTop, ctx.virtualRight, ctx.virtualBottom)
+        if (currentVirtualRect != lastVirtualRect) {
+            dirtyVertices = true
+            lastVirtualRect.copyFrom(currentVirtualRect)
+        }
+
         if (!dirtyVertices && cachedContentVersion == contentVersion) return
+
+        //println("currentVirtualRect=$currentVirtualRect")
+
         cachedContentVersion = contentVersion
         dirtyVertices = false
         val m = globalMatrix
@@ -388,11 +397,6 @@ class TileMap(
 
     override fun renderInternal(ctx: RenderContext) {
         if (!visible) return
-        currentVirtualRect.setBounds(ctx.virtualLeft, ctx.virtualTop, ctx.virtualRight, ctx.virtualBottom)
-        if (currentVirtualRect != lastVirtualRect) {
-            dirtyVertices = true
-            lastVirtualRect.copyFrom(currentVirtualRect)
-        }
         computeVertexIfRequired(ctx)
 
         //println("---")

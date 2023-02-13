@@ -121,7 +121,9 @@ suspend fun OffscreenStage.assertScreenshot(
                 val tempDiffFile = File(Environment.tempPath, "diff_$baseName")
                 if (!similar) {
                     tempFile.writeBytes(PNG.encode(actualBitmap.tryToExactBitmap8() ?: actualBitmap, ImageEncodingProps(quality = 1.0)))
-                    tempDiffFile.writeBytes(PNG.encode(Bitmap32.diffEx(actualBitmap, referenceBitmap), ImageEncodingProps(quality = 1.0)))
+                    kotlin.runCatching {
+                        tempDiffFile.writeBytes(PNG.encode(Bitmap32.diffEx(actualBitmap, referenceBitmap), ImageEncodingProps(quality = 1.0)))
+                    }
                 }
                 assert(similar) {
                     "Bitmaps are not equal $referenceBitmap-$actualBitmap : $result.\n" +
@@ -137,7 +139,7 @@ suspend fun OffscreenStage.assertScreenshot(
             }
         }
     }
-    if (updateReference) {
+    if (updateReference || !outFile.exists()) {
         outFile.parentFile.mkdirs()
         outFile.writeBytes(PNG.encode(actualBitmap.tryToExactBitmap8() ?: actualBitmap, ImageEncodingProps(quality = 1.0)))
         println("Folder ${outFile.parentFile.absoluteFile}")

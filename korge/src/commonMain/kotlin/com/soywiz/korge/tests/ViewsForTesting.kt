@@ -50,7 +50,11 @@ open class ViewsForTesting(
     }
 
 	val gameWindow = TestGameWindow(windowSize, dispatcher)
-    val ag: AG by lazy { createAg() }
+    val ag: AG by lazy {
+        createAg().also {
+            it.mainFrameBuffer.setSize(0, 0, windowSize.width, windowSize.height)
+        }
+    }
 
     open fun createAg(): AG {
         return object : AGLog(windowSize.width, windowSize.height) {
