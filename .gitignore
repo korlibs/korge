@@ -17,12 +17,3 @@ out.txt
 err.txt
 /korim/demo.png
 *.hprof
-/korvi/build/
-/luak/build/
-/kbox2d/build/
-/korge-box2d/build/
-/korge-dragonbones/build/
-/korge-fleks/build/
-/korge-spine/build/
-/korge-swf/build/
-/korge-testing/build/
