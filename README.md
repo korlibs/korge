@@ -124,7 +124,12 @@ now they are available via kproject in these repositories:
 
 * <https://github.com/korlibs/korge-video>
 
+## I18N
+
+* <https://github.com/korlibs/korge-services/tree/main/korge-i18n> (I18N support)
+
 ## Other
 
 * <https://github.com/korlibs/korge-lipsync> (Rhubarb LipSync integration with resource processor)
 * <https://github.com/korlibs/korge-parallax> (Pseudo 3D Parallax Effect)
+
