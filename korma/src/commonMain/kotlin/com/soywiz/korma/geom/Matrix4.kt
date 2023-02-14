@@ -1,5 +1,6 @@
 package com.soywiz.korma.geom
 
+import com.soywiz.korma.annotations.*
 import com.soywiz.korma.interpolation.interpolate
 import kotlin.math.abs
 import kotlin.math.floor
@@ -12,6 +13,7 @@ import kotlin.native.concurrent.ThreadLocal
 // @TODO: value class
 // Stored as four consecutive column vectors (effectively stored in column-major order) see https://en.wikipedia.org/wiki/Row-_and_column-major_order
 // v[Row][Column]
+@KormaExperimental
 data class Matrix4 internal constructor(
     val v00: Float, val v10: Float, val v20: Float, val v30: Float,
     val v01: Float, val v11: Float, val v21: Float, val v31: Float,
