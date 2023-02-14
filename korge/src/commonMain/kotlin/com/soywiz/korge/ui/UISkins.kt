@@ -13,7 +13,7 @@ import com.soywiz.korim.font.*
 import com.soywiz.korim.paint.*
 import com.soywiz.korim.text.TextAlignment
 import com.soywiz.korma.geom.IPoint
-import com.soywiz.korma.geom.Point
+import com.soywiz.korma.geom.MPoint
 import com.soywiz.korma.geom.degrees
 import com.soywiz.korma.geom.vector.LineCap
 import com.soywiz.korma.geom.vector.circle
@@ -101,7 +101,7 @@ var UISkinable.textSize: Double get() = getSkinProperty("textSize") { 16.0 } ; s
 var UISkinable.textColor: RGBA get() = getSkinProperty("textColor") { Colors.WHITE } ; set(value) { setSkinProperty("textColor", value) }
 var UISkinable.textAlignment: TextAlignment get() = getSkinProperty("textAlignment") { TextAlignment.LEFT } ; set(value) { setSkinProperty("textAlignment", value) }
 var UISkinable.shadowColor: RGBA get() = getSkinProperty("shadowColor") { Colors.BLACK.withAd(0.3) } ; set(value) { setSkinProperty("shadowColor", value) }
-var UISkinable.shadowPosition: IPoint get() = getSkinProperty("shadowPosition") { Point(1, 1) } ; set(value) { setSkinProperty("shadowPosition", value) }
+var UISkinable.shadowPosition: IPoint get() = getSkinProperty("shadowPosition") { MPoint(1, 1) } ; set(value) { setSkinProperty("shadowPosition", value) }
 
 var UISkinable.buttonNormal: NinePatchBmpSlice get() = getSkinProperty("buttonNormal") { uiSkinBitmap.sliceWithSize(0, 0, 64, 64).asNinePatchSimple(16, 16, 48, 48) }; set(value) { setSkinProperty("buttonNormal", value) }
 var UISkinable.buttonOver: NinePatchBmpSlice get() = getSkinProperty("buttonOver") { uiSkinBitmap.sliceWithSize(64, 0, 64, 64).asNinePatchSimple(16, 16, 48, 48) }; set(value) { setSkinProperty("buttonOver", value) }

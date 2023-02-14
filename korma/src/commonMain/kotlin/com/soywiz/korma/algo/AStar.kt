@@ -3,7 +3,7 @@ package com.soywiz.korma.algo
 import com.soywiz.kds.BooleanArray2
 import com.soywiz.kds.IntPriorityQueue
 import com.soywiz.korma.geom.IPointIntArrayList
-import com.soywiz.korma.geom.Point
+import com.soywiz.korma.geom.MPoint
 import com.soywiz.korma.geom.PointIntArrayList
 
 class AStar(val width: Int, val height: Int, val isBlocking: (x: Int, y: Int) -> Boolean) {
@@ -31,7 +31,7 @@ class AStar(val width: Int, val height: Int, val isBlocking: (x: Int, y: Int) ->
         val first = getNode(x0, y0)
         val dest = getNode(x1, y1)
         var closest = first
-        var closestDist = Point.distance(x0, y0, x1, y1)
+        var closestDist = MPoint.distance(x0, y0, x1, y1)
         if (!first.value) {
             queue.add(first.index)
             first.weight = 0
@@ -39,7 +39,7 @@ class AStar(val width: Int, val height: Int, val isBlocking: (x: Int, y: Int) ->
 
         while (queue.isNotEmpty()) {
             val last = AStarNode(queue.removeHead())
-            val dist = Point.distance(last.posX, last.posY, dest.posX, dest.posY)
+            val dist = MPoint.distance(last.posX, last.posY, dest.posX, dest.posY)
             if (dist < closestDist) {
                 closestDist = dist
                 closest = last

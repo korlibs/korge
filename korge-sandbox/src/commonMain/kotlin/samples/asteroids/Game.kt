@@ -146,7 +146,7 @@ class Game(val scene: MainAsteroids) {
     }
 }
 
-fun View.distanceTo(other: View) = Point.distance(x, y, other.x, other.y)
+fun View.distanceTo(other: View) = MPoint.distance(x, y, other.x, other.y)
 
 fun View.advance(amount: Double, rot: Angle = (-90).degrees) = this.apply {
     x += (this.rotation + rot).cosine * amount

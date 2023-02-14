@@ -77,7 +77,7 @@ open class UIBaseCheckBoxSkinMaterial(
                     borderColor = item.checkedRatio.interpolate(unselectedColor, selectedColor),
                     color = Colors.TRANSPARENT,
                     highlightRadius = item.checkedRatio.interpolate(0.0, 0.2),
-                    highlightPos = Point(0.5, 0.5),
+                    highlightPos = MPoint(0.5, 0.5),
                     highlightColor = selectedColor,
                 )
             }

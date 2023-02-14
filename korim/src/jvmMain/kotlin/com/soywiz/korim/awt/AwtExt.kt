@@ -4,9 +4,8 @@ import com.soywiz.kmem.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.format.*
-import com.soywiz.korio.async.*
 import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.MRectangle
 import kotlinx.coroutines.*
 import java.awt.*
 import java.awt.Point
@@ -66,7 +65,7 @@ fun awtShowImage(image: BufferedImage): JFrame {
             (g as? Graphics2D)?.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC)
             (g as? Graphics2D)?.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY)
             val scaleMode = ScaleMode.SHOW_ALL
-            val imageSize = Size(image.width, image.height)
+            val imageSize = MSize(image.width, image.height)
             val containerSize = g.clipBounds.toKorma()
             val out = containerSize.place(imageSize, Anchor.MIDDLE_CENTER, scaleMode).toInt()
             g.drawImage(image, out.x, out.y, out.width, out.height, null)
@@ -90,10 +89,10 @@ fun awtShowImage(image: BufferedImage): JFrame {
 }
 
 // @TODO: Move to KorMA
-private fun java.awt.Rectangle.toKorma(): Rectangle = Rectangle(this.x, this.y, this.width, this.height)
+private fun java.awt.Rectangle.toKorma(): MRectangle = MRectangle(this.x, this.y, this.width, this.height)
 
 // @TODO: Move to KorMA
-private fun Rectangle.place(item: Size, anchor: Anchor, scale: ScaleMode, out: Rectangle = Rectangle()): Rectangle {
+private fun MRectangle.place(item: MSize, anchor: Anchor, scale: ScaleMode, out: MRectangle = MRectangle()): MRectangle {
     val outSize = scale(item, this.size)
     val x = (this.width - outSize.width) * anchor.sx
     val y = (this.height - outSize.height) * anchor.sy

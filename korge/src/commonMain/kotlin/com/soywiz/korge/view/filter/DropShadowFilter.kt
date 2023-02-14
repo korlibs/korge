@@ -21,7 +21,7 @@ open class DropshadowFilter(
 ) : Filter {
     private val blur = BlurFilter(16.0)
 
-    override fun computeBorder(out: MutableMarginInt, texWidth: Int, texHeight: Int) {
+    override fun computeBorder(out: MMarginInt, texWidth: Int, texHeight: Int) {
         blur.computeBorder(out, texWidth, texHeight)
         if (dropX >= 0.0) out.right += dropX.toIntCeil() else out.left -= dropX.toIntCeil()
         if (dropY >= 0.0) out.bottom += dropY.toIntCeil() else out.top -= dropY.toIntCeil()
@@ -29,7 +29,7 @@ open class DropshadowFilter(
 
     override fun render(
         ctx: RenderContext,
-        matrix: Matrix,
+        matrix: MMatrix,
         texture: Texture,
         texWidth: Int,
         texHeight: Int,

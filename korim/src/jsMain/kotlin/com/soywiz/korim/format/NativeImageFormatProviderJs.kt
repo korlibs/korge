@@ -366,7 +366,7 @@ class CanvasContext2dRenderer(private val canvas: HTMLCanvasElementLike) : Rende
 		}
 	}
 
-    fun CanvasTransform.transform(m: Matrix) {
+    fun CanvasTransform.transform(m: MMatrix) {
         transform(m.a, m.b, m.c, m.d, m.tx, m.ty)
     }
 
@@ -378,7 +378,7 @@ class CanvasContext2dRenderer(private val canvas: HTMLCanvasElementLike) : Rende
 		}
 	}
 
-	override fun drawImage(image: Bitmap, x: Double, y: Double, width: Double, height: Double, transform: Matrix) {
+	override fun drawImage(image: Bitmap, x: Double, y: Double, width: Double, height: Double, transform: MMatrix) {
 		ctx.save()
 		try {
 			transform.run { ctx.setTransform(a, b, c, d, tx, ty) }

@@ -1,7 +1,7 @@
 package com.soywiz.korge.input
 
 import com.soywiz.korma.geom.Angle
-import com.soywiz.korma.geom.Point
+import com.soywiz.korma.geom.MPoint
 import com.soywiz.korma.geom.degrees
 import com.soywiz.korma.geom.minus
 
@@ -27,7 +27,7 @@ fun TouchEvents.swipeRecognizer(
             if (!completed) {
                 val i = it.infos[0]
 
-                val distance = Point.distance(i.startGlobal, i.global)
+                val distance = MPoint.distance(i.startGlobal, i.global)
                 if (distance >= thresold) {
                     val angle = Angle.between(i.startGlobal, i.global)
                     completed = true
@@ -69,8 +69,8 @@ fun TouchEvents.scaleRecognizer(
             val i1 = it.infos[1]
             info.started = info.completed
             info.completed = false
-            info.start = Point.distance(i0.startGlobal, i1.startGlobal)
-            info.current = Point.distance(i0.global, i1.global)
+            info.start = MPoint.distance(i0.startGlobal, i1.startGlobal)
+            info.current = MPoint.distance(i0.global, i1.global)
             if (info.started) {
                 start(info)
             }

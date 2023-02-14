@@ -86,7 +86,7 @@ abstract class ShaderFilter : Filter {
         it[u_StdTexDerivates] = textureStdTexDerivates
     }
 
-    override fun computeBorder(out: MutableMarginInt, texWidth: Int, texHeight: Int) {
+    override fun computeBorder(out: MMarginInt, texWidth: Int, texHeight: Int) {
         out.setTo(0)
     }
 
@@ -127,7 +127,7 @@ abstract class ShaderFilter : Filter {
 
     override fun render(
         ctx: RenderContext,
-        matrix: Matrix,
+        matrix: MMatrix,
         texture: Texture,
         texWidth: Int,
         texHeight: Int,

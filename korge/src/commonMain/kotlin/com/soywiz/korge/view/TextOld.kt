@@ -11,7 +11,7 @@ import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.font.BitmapFont
 import com.soywiz.korim.font.Font
-import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.MRectangle
 
 @KorgeDeprecated
 inline fun Container.textOld(
@@ -41,8 +41,8 @@ class TextOld : View(), IText, IHtml {
 
 	//var verticalAlign: Html.VerticalAlignment = Html.VerticalAlignment.TOP
     var fontsCatalog: Html.FontsCatalog = Html.DefaultFontCatalogWithoutSystemFonts
-	val textBounds = Rectangle(0, 0, 1024, 1024)
-	private val tempRect = Rectangle()
+	val textBounds = MRectangle(0, 0, 1024, 1024)
+	private val tempRect = MRectangle()
 	var _text: String = ""
 	var _html: String = ""
 	var document: Html.Document? = null
@@ -71,7 +71,7 @@ class TextOld : View(), IText, IHtml {
             }
         }
 
-	fun setTextBounds(rect: Rectangle) {
+	fun setTextBounds(rect: MRectangle) {
 		this.textBounds.copyFrom(rect)
 		autoSize = false
 	}
@@ -213,7 +213,7 @@ class TextOld : View(), IText, IHtml {
 		if (autoSize) recalculateBounds()
 	}
 
-	override fun getLocalBoundsInternal(out: Rectangle) {
+	override fun getLocalBoundsInternal(out: MRectangle) {
 		if (document != null) {
 			out.copyFrom(document!!.bounds)
 		} else {

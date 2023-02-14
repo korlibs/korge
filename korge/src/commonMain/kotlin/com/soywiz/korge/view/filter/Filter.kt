@@ -55,7 +55,7 @@ interface Filter {
 
     val recommendedFilterScale: Double get() = 1.0
 
-    fun computeBorder(out: MutableMarginInt, texWidth: Int, texHeight: Int) {
+    fun computeBorder(out: MMarginInt, texWidth: Int, texHeight: Int) {
         out.setTo(border)
     }
 
@@ -65,7 +65,7 @@ interface Filter {
      */
     fun render(
         ctx: RenderContext,
-        matrix: Matrix,
+        matrix: MMatrix,
         texture: Texture,
         texWidth: Int,
         texHeight: Int,
@@ -76,7 +76,7 @@ interface Filter {
     )
 }
 
-fun Filter.getBorder(texWidth: Int, texHeight: Int, out: MutableMarginInt = MutableMarginInt()): MarginInt {
+fun Filter.getBorder(texWidth: Int, texHeight: Int, out: MMarginInt = MMarginInt()): IMarginInt {
     computeBorder(out, texWidth, texHeight)
     return out
 }
@@ -84,12 +84,12 @@ fun Filter.getBorder(texWidth: Int, texHeight: Int, out: MutableMarginInt = Muta
 @Deprecated("")
 fun Filter.renderToTextureWithBorder(
     ctx: RenderContext,
-    matrix: Matrix,
+    matrix: MMatrix,
     texture: Texture,
     texWidth: Int,
     texHeight: Int,
     filterScale: Double,
-    block: (texture: Texture, matrix: Matrix) -> Unit,
+    block: (texture: Texture, matrix: MMatrix) -> Unit,
 ) {
     val filter = this
     val margin = filter.getBorder(texWidth, texHeight, ctx.tempMargin)
@@ -126,12 +126,12 @@ class RenderToTextureResult() : Disposable {
     var borderLeft: Int = 0
     var borderTop: Int = 0
     var filterScale: Double = 1.0
-    val matrix = Matrix()
+    val matrix = MMatrix()
     var texture: Texture? = null
     var fb: AGFrameBuffer? = null
     var newtex: Texture? = null
     var ctx: RenderContext? = null
-    private val tempMat = Matrix()
+    private val tempMat = MMatrix()
 
     fun render() {
         val fb = fb ?: return
@@ -162,7 +162,7 @@ class RenderToTextureResult() : Disposable {
 @KoragExperimental
 fun Filter.renderToTextureWithBorderUnsafe(
     ctx: RenderContext,
-    matrix: Matrix,
+    matrix: MMatrix,
     texture: Texture,
     texWidth: Int,
     texHeight: Int,
@@ -195,8 +195,8 @@ fun Filter.renderToTextureWithBorderUnsafe(
     return result
 }
 
-fun Filter.expandBorderRectangle(out: Rectangle) {
-    MutableMarginInt.POOL { temp -> out.expand(getBorder(out.width.toIntCeil(), out.height.toIntCeil(), temp)) }
+fun Filter.expandBorderRectangle(out: MRectangle) {
+    MMarginInt.POOL { temp -> out.expand(getBorder(out.width.toIntCeil(), out.height.toIntCeil(), temp)) }
 }
 
 @ThreadLocal

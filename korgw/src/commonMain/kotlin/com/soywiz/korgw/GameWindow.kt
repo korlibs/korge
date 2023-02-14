@@ -60,8 +60,8 @@ import com.soywiz.korma.geom.Anchor
 import com.soywiz.korma.geom.Angle
 import com.soywiz.korma.geom.IRectangle
 import com.soywiz.korma.geom.ISize
-import com.soywiz.korma.geom.Point
-import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.MPoint
+import com.soywiz.korma.geom.MRectangle
 import com.soywiz.korma.geom.absoluteValue
 import com.soywiz.korma.geom.degrees
 import com.soywiz.korma.geom.minus
@@ -377,7 +377,7 @@ open class GameWindow :
 
     open val isSoftKeyboardVisible: Boolean get() = false
 
-    open fun setInputRectangle(windowRect: Rectangle) {
+    open fun setInputRectangle(windowRect: MRectangle) {
     }
 
     open fun showSoftKeyboard(force: Boolean = true, config: ISoftKeyboardConfig? = null) {
@@ -764,8 +764,8 @@ open class GameWindow :
     }
 
     fun dispatchGamepadUpdateAdd(
-        leftStick: Point,
-        rightStick: Point,
+        leftStick: MPoint,
+        rightStick: MPoint,
         rawButtonsPressed: Int,
         mapping: GamepadMapping,
         name: String?,

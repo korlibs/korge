@@ -68,7 +68,7 @@ class GCControllerDirectionPad(id: Long) : ObjcRef(id) {
     val x: Double get() = xAxis.value
     val y: Double get() = yAxis.value
 
-    private val _point: Point = Point()
+    private val _point: MPoint = MPoint()
     val point: IPoint get() = _point.setTo(x, y)
 
     companion object {

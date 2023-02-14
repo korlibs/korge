@@ -9,11 +9,11 @@ import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.font.BitmapFont
 import com.soywiz.korim.font.Font
 import com.soywiz.korim.font.GlyphMetrics
-import com.soywiz.korma.geom.Matrix
-import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.MMatrix
+import com.soywiz.korma.geom.MRectangle
 import kotlin.math.max
 
-fun Font.getBounds(text: String, format: Html.Format, out: Rectangle = Rectangle()): Rectangle {
+fun Font.getBounds(text: String, format: Html.Format, out: MRectangle = MRectangle()): MRectangle {
 	//val font = getBitmapFont(format.computedFace, format.computedSize)
 	val font = this
     val textSize = format.computedSize.toDouble()
@@ -46,16 +46,16 @@ fun Font.getBounds(text: String, format: Html.Format, out: Rectangle = Rectangle
 }
 
 fun BitmapFont.drawText(
-	ctx: RenderContext,
-	textSize: Double,
-	str: String,
-	x: Int,
-	y: Int,
-	m: Matrix = Matrix(),
-	colMul: RGBA = Colors.WHITE,
-	colAdd: ColorAdd = ColorAdd.NEUTRAL,
-	blendMode: BlendMode = BlendMode.INHERIT,
-	filtering: Boolean = true
+    ctx: RenderContext,
+    textSize: Double,
+    str: String,
+    x: Int,
+    y: Int,
+    m: MMatrix = MMatrix(),
+    colMul: RGBA = Colors.WHITE,
+    colAdd: ColorAdd = ColorAdd.NEUTRAL,
+    blendMode: BlendMode = BlendMode.INHERIT,
+    filtering: Boolean = true
 ) {
 	val m2 = m.clone()
 	val scale = textSize / fontSize.toDouble()
@@ -95,16 +95,16 @@ fun BitmapFont.drawText(
 }
 
 fun RenderContext.drawText(
-	font: BitmapFont,
-	textSize: Double,
-	str: String,
-	x: Int,
-	y: Int,
-	m: Matrix = Matrix(),
-	colMul: RGBA = Colors.WHITE,
-	colAdd: ColorAdd = ColorAdd.NEUTRAL,
-	blendMode: BlendMode = BlendMode.INHERIT,
-	filtering: Boolean = true
+    font: BitmapFont,
+    textSize: Double,
+    str: String,
+    x: Int,
+    y: Int,
+    m: MMatrix = MMatrix(),
+    colMul: RGBA = Colors.WHITE,
+    colAdd: ColorAdd = ColorAdd.NEUTRAL,
+    blendMode: BlendMode = BlendMode.INHERIT,
+    filtering: Boolean = true
 ) {
 	font.drawText(this, textSize, str, x, y, m, colMul, colAdd, blendMode, filtering)
 }

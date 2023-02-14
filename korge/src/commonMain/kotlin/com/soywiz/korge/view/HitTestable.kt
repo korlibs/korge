@@ -1,18 +1,13 @@
 package com.soywiz.korge.view
 
 import com.soywiz.kds.iterators.fastForEach
-import com.soywiz.kmem.extract
-import com.soywiz.kmem.insert
 import com.soywiz.korma.geom.Angle
-import com.soywiz.korma.geom.Point
-import com.soywiz.korma.geom.Vector2D
-import com.soywiz.korma.geom.angleTo
+import com.soywiz.korma.geom.MPoint
+import com.soywiz.korma.geom.MVector2D
 import com.soywiz.korma.geom.cosine
 import com.soywiz.korma.geom.degrees
-import com.soywiz.korma.geom.div
 import com.soywiz.korma.geom.plus
 import com.soywiz.korma.geom.times
-import com.soywiz.korma.geom.vector.VectorPath
 
 @Deprecated("", replaceWith = ReplaceWith("com.soywiz.korma.geom.collider.HitTestable"))
 typealias HitTestable = com.soywiz.korma.geom.collider.HitTestable
@@ -27,7 +22,7 @@ private val MOVE_SCALES = arrayOf(+1.0, -1.0)
 // @TODO: if dx & dy are big, we should check intermediary positions to ensure we are not jumping to the other side of the object
 fun View.moveWithHitTestable(collision: HitTestable, dx: Double, dy: Double, hitTestDirection: HitTestDirection? = null) {
     val char = this
-    val deltaXY = Point(dx, dy)
+    val deltaXY = MPoint(dx, dy)
     val angle = Angle.between(0.0, 0.0, deltaXY.x, deltaXY.y)
     val length = deltaXY.length
     val oldX = char.x
@@ -36,7 +31,7 @@ fun View.moveWithHitTestable(collision: HitTestable, dx: Double, dy: Double, hit
         MOVE_SCALES.fastForEach { dscale ->
             val rangle = angle + dangle * dscale
             val lengthScale = dangle.cosine
-            val dpoint = Point.fromPolar(rangle, length * lengthScale)
+            val dpoint = MPoint.fromPolar(rangle, length * lengthScale)
             char.x = oldX + dpoint.x
             char.y = oldY + dpoint.y
             if (!collision.hitTestAny(
@@ -51,13 +46,13 @@ fun View.moveWithHitTestable(collision: HitTestable, dx: Double, dy: Double, hit
     char.y = oldY
 }
 
-fun View.moveWithCollisions(collision: List<View>, delta: Vector2D, kind: CollisionKind = CollisionKind.SHAPE) {
+fun View.moveWithCollisions(collision: List<View>, delta: MVector2D, kind: CollisionKind = CollisionKind.SHAPE) {
     return moveWithCollisions(collision, delta.x, delta.y, kind)
 }
 
 fun View.moveWithCollisions(collision: List<View>, dx: Double, dy: Double, kind: CollisionKind = CollisionKind.SHAPE) {
     val char = this
-    val deltaXY = Point(dx, dy)
+    val deltaXY = MPoint(dx, dy)
     val angle = Angle.between(0.0, 0.0, deltaXY.x, deltaXY.y)
     val length = deltaXY.length
     val oldX = char.x
@@ -66,7 +61,7 @@ fun View.moveWithCollisions(collision: List<View>, dx: Double, dy: Double, kind:
         MOVE_SCALES.fastForEach { dscale ->
             val rangle = angle + dangle * dscale
             val lengthScale = dangle.cosine
-            val dpoint = Point.fromPolar(rangle, length * lengthScale)
+            val dpoint = MPoint.fromPolar(rangle, length * lengthScale)
             char.x = oldX + dpoint.x
             char.y = oldY + dpoint.y
             //char.hitTestView(collision, kind)

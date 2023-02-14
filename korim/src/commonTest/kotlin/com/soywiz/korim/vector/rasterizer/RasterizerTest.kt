@@ -7,7 +7,7 @@ import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korio.async.suspendTest
 import com.soywiz.korio.util.niceStr
-import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.MRectangle
 import com.soywiz.korma.geom.cosine
 import com.soywiz.korma.geom.degrees
 import com.soywiz.korma.geom.sine
@@ -43,7 +43,7 @@ class RasterizerTest {
         rast.path.close()
         val log = arrayListOf<String>()
         val stats = Rasterizer.Stats()
-        rast.rasterizeFill(Rectangle(0, 0, 10, 10), quality = 8, stats = stats) { a, b, y ->
+        rast.rasterizeFill(MRectangle(0, 0, 10, 10), quality = 8, stats = stats) { a, b, y ->
             log += "rast(${(a.toDouble() / RastScale.RAST_FIXED_SCALE).niceStr}, ${(a.toDouble() / RastScale.RAST_FIXED_SCALE).niceStr}, ${(a.toDouble() / RastScale.RAST_FIXED_SCALE).niceStr})"
             //println(log.last())
         }

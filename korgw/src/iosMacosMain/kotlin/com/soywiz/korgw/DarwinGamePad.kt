@@ -2,9 +2,7 @@ package com.soywiz.korgw
 
 import com.soywiz.korev.*
 import com.soywiz.korma.geom.*
-import platform.CoreHaptics.*
 import platform.GameController.*
-import kotlin.native.internal.*
 
 class DarwinGamePad {
     val knownControllers = mutableSetOf<GCController>()
@@ -37,8 +35,8 @@ class DarwinGamePad {
             val mapping = StandardGamepadMapping
             for ((index, controller) in controllers.withIndex()) {
                 var buttonMask = 0
-                val leftStick = Point()
-                val rightStick = Point()
+                val leftStick = MPoint()
+                val rightStick = MPoint()
                 fun button(button: GameButton, pressed: Boolean) {
                     if (pressed) buttonMask = buttonMask or (1 shl button.ordinal)
                 }
@@ -48,7 +46,7 @@ class DarwinGamePad {
                         button(button, gcbutton.pressed)
                     }
                 }
-                fun stick(stick: Point, pad: GCControllerDirectionPad) {
+                fun stick(stick: MPoint, pad: GCControllerDirectionPad) {
                     stick.setTo(pad.xAxis.value, pad.yAxis.value)
                 }
 

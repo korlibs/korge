@@ -1,6 +1,5 @@
 package com.soywiz.korma.geom.trapezoid
 
-import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
 import com.soywiz.kmem.*
 import com.soywiz.korma.geom.*
@@ -291,7 +290,7 @@ object SegmentIntToTrapezoidIntList {
 
 fun VectorPath.toSegments(scale: Int = 1): FSegmentsInt {
     val segments = FSegmentsInt()
-    val p = Point()
+    val p = MPoint()
     fun emit(x0: Double, y0: Double, x1: Double, y1: Double) {
         //println("EMIT")
         segments.add((x0 * scale).toIntRound(), (y0 * scale).toIntRound(), (x1 * scale).toIntRound(), (y1 * scale).toIntRound())

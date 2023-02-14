@@ -23,7 +23,7 @@ class UIImage(
     scaleMode: ScaleMode = ScaleMode.NO_SCALE,
     contentAnchor: Anchor = Anchor.TOP_LEFT,
 ) : UIView(width, height) {
-    private val cachedGlobalMatrix = Matrix()
+    private val cachedGlobalMatrix = MMatrix()
     private var validCoords: Boolean = false
 
     @ViewProperty
@@ -50,7 +50,7 @@ class UIImage(
 
             // @TODO: Can we generalize this to be placed in KorMA?
             val bitmapSize = RectangleInt(bitmap.bounds).size.size
-            val finalRect = bitmapSize.applyScaleMode(Rectangle(0.0, 0.0, width, height), scaleMode, contentAnchor)
+            val finalRect = bitmapSize.applyScaleMode(MRectangle(0.0, 0.0, width, height), scaleMode, contentAnchor)
 
             val realL = finalRect.left.clamp(0.0, width)
             val realT = finalRect.top.clamp(0.0, height)

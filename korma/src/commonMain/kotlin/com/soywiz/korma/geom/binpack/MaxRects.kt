@@ -1,18 +1,18 @@
 package com.soywiz.korma.geom.binpack
 
 import com.soywiz.kds.fastArrayListOf
-import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.MRectangle
 
 class MaxRects(
     maxWidth: Double,
     maxHeight: Double
 ) : BinPacker.Algo {
-    var freeRectangles = fastArrayListOf<Rectangle>(Rectangle(0.0, 0.0, maxWidth, maxHeight))
+    var freeRectangles = fastArrayListOf<MRectangle>(MRectangle(0.0, 0.0, maxWidth, maxHeight))
 
-    override fun add(width: Double, height: Double): Rectangle? = quickInsert(width, height)
+    override fun add(width: Double, height: Double): MRectangle? = quickInsert(width, height)
 
-    fun quickInsert(width: Double, height: Double): Rectangle? {
-        if (width <= 0.0 && height <= 0.0) return Rectangle(0, 0, 0, 0)
+    fun quickInsert(width: Double, height: Double): MRectangle? {
+        if (width <= 0.0 && height <= 0.0) return MRectangle(0, 0, 0, 0)
         val newNode = quickFindPositionForNewNodeBestAreaFit(width, height)
 
         if (newNode.height == 0.0) return null
@@ -32,10 +32,10 @@ class MaxRects(
         return newNode
     }
 
-    private fun quickFindPositionForNewNodeBestAreaFit(width: Double, height: Double): Rectangle {
+    private fun quickFindPositionForNewNodeBestAreaFit(width: Double, height: Double): MRectangle {
         var score = Double.MAX_VALUE
         var areaFit: Double
-        val bestNode = Rectangle()
+        val bestNode = MRectangle()
 
         for (r in freeRectangles) {
             // Try to place the rectangle in upright (non-flipped) orientation.
@@ -54,8 +54,8 @@ class MaxRects(
         return bestNode
     }
 
-    private fun splitFreeNode(freeNode: Rectangle, usedNode: Rectangle): Boolean {
-        var newNode: Rectangle
+    private fun splitFreeNode(freeNode: MRectangle, usedNode: MRectangle): Boolean {
+        var newNode: MRectangle
         // Test with SAT if the rectangles even intersect.
         if (usedNode.left >= freeNode.right || usedNode.right <= freeNode.x || usedNode.top >= freeNode.bottom || usedNode.bottom <= freeNode.top) {
             return false
@@ -102,13 +102,13 @@ class MaxRects(
             val tmpRect = freeRectangles[i]
             while (j < len) {
                 val tmpRect2 = freeRectangles[j]
-                if (Rectangle.isContainedIn(tmpRect, tmpRect2)) {
+                if (MRectangle.isContainedIn(tmpRect, tmpRect2)) {
                     freeRectangles.removeAt(i)
                     --i
                     --len
                     break
                 }
-                if (Rectangle.isContainedIn(tmpRect2, tmpRect)) {
+                if (MRectangle.isContainedIn(tmpRect2, tmpRect)) {
                     freeRectangles.removeAt(j)
                     --len
                     --j

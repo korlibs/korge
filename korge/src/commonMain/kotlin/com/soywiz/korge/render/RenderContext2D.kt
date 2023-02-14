@@ -21,7 +21,7 @@ import kotlin.native.concurrent.SharedImmutable
 private val logger = Logger("RenderContext2D")
 
 /**
- * Helper class using [BatchBuilder2D] that keeps a chain of affine transforms [Matrix], [ColorTransform] and [blendMode]
+ * Helper class using [BatchBuilder2D] that keeps a chain of affine transforms [MMatrix], [ColorTransform] and [blendMode]
  * and allows to draw images and scissors with that transform.
  *
  * [keepMatrix], [keepBlendMode], [keepColor] and [keep] block methods allow to do transformations inside its blocks
@@ -50,14 +50,14 @@ class RenderContext2D(
     inline fun getTexture(slice: BmpSlice): TextureCoords = agBitmapTextureManager.getTexture(slice)
 
     @KorgeInternal
-	val mpool = Pool<Matrix> { Matrix() }
+	val mpool = Pool<MMatrix> { MMatrix() }
 
     val _tempProgramUniforms = AGUniformValues()
 
 	init { logger.trace { "RenderContext2D[1]" } }
 
     @KorgeInternal
-	val m = Matrix()
+	val m = MMatrix()
 
     /** Blending mode to be used in the renders */
 	var blendMode = BlendMode.NORMAL
@@ -67,7 +67,7 @@ class RenderContext2D(
 
 	init { logger.trace { "RenderContext2D[2]" } }
 
-    /** Executes [callback] restoring the initial transformation [Matrix] at the end */
+    /** Executes [callback] restoring the initial transformation [MMatrix] at the end */
 	inline fun <T> keepMatrix(crossinline callback: () -> T) = mpool.alloc { matrix ->
 		matrix.copyFrom(m)
 		try {
@@ -121,7 +121,7 @@ class RenderContext2D(
 	}
 
     /** Sets the current transform [matrix] */
-	fun setMatrix(matrix: Matrix) {
+	fun setMatrix(matrix: MMatrix) {
 		this.m.copyFrom(matrix)
 	}
 
@@ -202,7 +202,7 @@ class RenderContext2D(
         texturedVertexArrayNoTransform(TexturedVertexArray.fromTriangles(triangles, color, matrix = m), filtering)
     }
 
-    fun texturedVertexArrayNoTransform(texturedVertexArray: TexturedVertexArray, filtering: Boolean = this.filtering, matrix: Matrix? = null) {
+    fun texturedVertexArrayNoTransform(texturedVertexArray: TexturedVertexArray, filtering: Boolean = this.filtering, matrix: MMatrix? = null) {
         batch.setStateFast(Bitmaps.white, filtering, blendMode, null, icount = texturedVertexArray.icount, vcount = texturedVertexArray.vcount)
         batch.drawVertices(texturedVertexArray, matrix, premultiplied = Bitmaps.white.premultiplied, wrap = false)
     }
@@ -219,7 +219,7 @@ class RenderContext2D(
         height: Double,
         program: Program,
         uniforms: AGUniformValues,
-        padding: Margin = Margin.EMPTY,
+        padding: IMargin = IMargin.EMPTY,
     ) {
         val ctx = batch.ctx
         //programUniforms
@@ -289,7 +289,7 @@ class RenderContext2D(
     inline fun scissor(x: Float, y: Float, width: Float, height: Float, block: () -> Unit) = scissor(x.toInt(), y.toInt(), width.toInt(), height.toInt(), block)
 
     /** Temporarily sets the [scissor] (visible rendering area) to [rect] is executed. */
-    inline fun scissor(rect: Rectangle?, block: () -> Unit) =
+    inline fun scissor(rect: MRectangle?, block: () -> Unit) =
         scissor(AGScissor(rect), block)
 
     /** Temporarily sets the [scissor] (visible rendering area) to [scissor] is executed. */

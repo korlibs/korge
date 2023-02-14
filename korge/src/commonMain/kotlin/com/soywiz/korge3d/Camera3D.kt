@@ -1,8 +1,8 @@
 package com.soywiz.korge3d
 
 import com.soywiz.korma.geom.Angle
-import com.soywiz.korma.geom.Matrix3D
-import com.soywiz.korma.geom.Vector3D
+import com.soywiz.korma.geom.MMatrix3D
+import com.soywiz.korma.geom.MVector4
 import com.soywiz.korma.geom.cosine
 import com.soywiz.korma.geom.degrees
 import com.soywiz.korma.geom.minus
@@ -15,7 +15,7 @@ import com.soywiz.korma.geom.unaryMinus
 abstract class Camera3D : View3D() {
     //TODO: I don't think that a Camera should subtype View
 
-    private var projMat = Matrix3D()
+    private var projMat = MMatrix3D()
     private var width: Double = 0.0
     private var height: Double = 0.0
     protected var dirty = true
@@ -29,7 +29,7 @@ abstract class Camera3D : View3D() {
         }
     }
 
-    fun getProjMatrix(width: Double, height: Double): Matrix3D {
+    fun getProjMatrix(width: Double, height: Double): MMatrix3D {
         if (this.width != width || this.height != height) {
             this.dirty = true
             this.width = width
@@ -42,7 +42,7 @@ abstract class Camera3D : View3D() {
         return projMat
     }
 
-    protected abstract fun updateMatrix(mat: Matrix3D, width: Double, height: Double)
+    protected abstract fun updateMatrix(mat: MMatrix3D, width: Double, height: Double)
 
     override fun render(ctx: RenderContext3D) {
         // Do nothing except when debugging
@@ -66,7 +66,7 @@ abstract class Camera3D : View3D() {
             return this
         }
 
-        override fun updateMatrix(mat: Matrix3D, width: Double, height: Double) {
+        override fun updateMatrix(mat: MMatrix3D, width: Double, height: Double) {
             mat.setToPerspective(fov, if (height != 0.0) width / height else 1.0, near, far)
         }
 
@@ -76,17 +76,17 @@ abstract class Camera3D : View3D() {
     }
 
     //TODO: position, target and up are also stored in transform....do we need repetition here?
-    val position = Vector3D(0f, 1f, 10f)
+    val position = MVector4(0f, 1f, 10f)
     var yaw = -90.degrees
     var pitch = 0.0.degrees
     var roll = 0.0.degrees
     var zoom = 45.degrees
 
-     val front = Vector3D(0f, 0f, -1f)
-    private val worldUp = Vector3D(0f, 1f, 0f)
-    private val up = Vector3D(0f, 1f, 0f)
-    private val temp = Vector3D()
-    private val right = Vector3D().cross(front, up).normalize()
+     val front = MVector4(0f, 0f, -1f)
+    private val worldUp = MVector4(0f, 1f, 0f)
+    private val up = MVector4(0f, 1f, 0f)
+    private val temp = MVector4()
+    private val right = MVector4().cross(front, up).normalize()
 
 
     init {

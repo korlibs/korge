@@ -69,7 +69,7 @@ class MainMasks : Scene() {
                 circle(width * 0.5, height * 0.5, 300.0)
             }
             animate(looped = true) {
-                tween(circle3::pos[path], time = 2.seconds, easing = Easing.LINEAR)
+                tween(circle3::ipos[path], time = 2.seconds, easing = Easing.LINEAR)
             }
         }
 

@@ -8,9 +8,9 @@ import kotlin.test.assertTrue
 class RectangleTest {
     @Test
     fun name() {
-        val big = Rectangle.fromBounds(0, 0, 50, 50)
-        val small = Rectangle.fromBounds(10, 10, 20, 20)
-        val out = Rectangle.fromBounds(100, 10, 200, 20)
+        val big = MRectangle.fromBounds(0, 0, 50, 50)
+        val small = MRectangle.fromBounds(10, 10, 20, 20)
+        val out = MRectangle.fromBounds(100, 10, 200, 20)
         assertTrue(small in big)
         assertTrue(big !in small)
         assertTrue(small == (small intersection big))
@@ -23,24 +23,24 @@ class RectangleTest {
 
     @Test
     fun name2() {
-        val r1 = Rectangle(20, 0, 30, 10)
-        val r2 = Rectangle(100, 0, 100, 50)
+        val r1 = MRectangle(20, 0, 30, 10)
+        val r2 = MRectangle(100, 0, 100, 50)
         val ro = r1.copy()
         ro.setToAnchoredRectangle(ro, Anchor.MIDDLE_CENTER, r2)
         //Assert.assertEquals(Rectangle(0, 0, 0, 0), r1)
-        assertEquals(Rectangle(135, 20, 30, 10), ro)
+        assertEquals(MRectangle(135, 20, 30, 10), ro)
     }
 
     @Test
     fun testPlace() {
         val out =
-            Rectangle(0, 0, 100, 100).place(Size(50, 25), Anchor.MIDDLE_CENTER, ScaleMode.SHOW_ALL)
-        assertEquals(Rectangle(0, 25, 100, 50), out)
+            MRectangle(0, 0, 100, 100).place(MSize(50, 25), Anchor.MIDDLE_CENTER, ScaleMode.SHOW_ALL)
+        assertEquals(MRectangle(0, 25, 100, 50), out)
     }
 
     @Test
     fun corners() {
-        val rectangle = Rectangle(1, 20, 300, 4000)
+        val rectangle = MRectangle(1, 20, 300, 4000)
         assertEquals(IPoint(1, 20), rectangle.topLeft)
         assertEquals(IPoint(301, 20), rectangle.topRight)
         assertEquals(IPoint(1, 4020), rectangle.bottomLeft)
@@ -116,55 +116,55 @@ class RectangleTest {
     @Test
     fun testMargin() {
         assertEquals(
-            Rectangle.fromBounds(10, 10, 90, 90),
-            Rectangle(0, 0, 100, 100).without(Margin(10.0))
+            MRectangle.fromBounds(10, 10, 90, 90),
+            MRectangle(0, 0, 100, 100).without(IMargin(10.0))
         )
         assertEquals(
-            Rectangle.fromBounds(-10, -10, 110, 110),
-            Rectangle(0, 0, 100, 100).with(Margin(10.0))
+            MRectangle.fromBounds(-10, -10, 110, 110),
+            MRectangle(0, 0, 100, 100).with(IMargin(10.0))
         )
     }
 
     @Test
     fun testInt() {
-        assertEquals(RectangleInt(1, 2, 3, 4), Rectangle(1.1, 2.1, 3.1, 4.1).toInt())
+        assertEquals(RectangleInt(1, 2, 3, 4), MRectangle(1.1, 2.1, 3.1, 4.1).toInt())
     }
 
     @Test
     fun testExpand() {
         assertEquals(
-            Rectangle.fromBounds(-10, -15, 120, 125),
-            Rectangle.fromBounds(0, 0, 100, 100).expand(10, 15, 20, 25)
+            MRectangle.fromBounds(-10, -15, 120, 125),
+            MRectangle.fromBounds(0, 0, 100, 100).expand(10, 15, 20, 25)
         )
         assertEquals(
-            Rectangle.fromBounds(-10, -15, 120, 125),
-            Rectangle.fromBounds(0, 0, 100, 100)
-                .expand(Margin(left = 10.0, top = 15.0, right = 20.0, bottom = 25.0))
+            MRectangle.fromBounds(-10, -15, 120, 125),
+            MRectangle.fromBounds(0, 0, 100, 100)
+                .expand(IMargin(left = 10.0, top = 15.0, right = 20.0, bottom = 25.0))
         )
         assertEquals(
-            Rectangle.fromBounds(-10, -15, 120, 125),
-            Rectangle.fromBounds(0, 0, 100, 100)
-                .expand(MarginInt(left = 10, top = 15, right = 20, bottom = 25))
+            MRectangle.fromBounds(-10, -15, 120, 125),
+            MRectangle.fromBounds(0, 0, 100, 100)
+                .expand(IMarginInt(left = 10, top = 15, right = 20, bottom = 25))
         )
     }
 
     @Test
     fun constructWithPoints() {
         assertEquals(
-            IRectangle(Point(0, 0), Point(100, 100)),
-            Rectangle(0, 0, 100, 100)
+            IRectangle(MPoint(0, 0), MPoint(100, 100)),
+            MRectangle(0, 0, 100, 100)
         )
         assertEquals(
-            IRectangle(Point(100, 100), Point(0, 0)),
-            Rectangle(0, 0, 100, 100)
+            IRectangle(MPoint(100, 100), MPoint(0, 0)),
+            MRectangle(0, 0, 100, 100)
         )
         assertEquals(
-            IRectangle(Point(0, 100), Point(100, 0)),
-            Rectangle(0, 0, 100, 100)
+            IRectangle(MPoint(0, 100), MPoint(100, 0)),
+            MRectangle(0, 0, 100, 100)
         )
         assertEquals(
-            IRectangle(Point(100, 0), Point(0, 100)),
-            Rectangle(0, 0, 100, 100)
+            IRectangle(MPoint(100, 0), MPoint(0, 100)),
+            MRectangle(0, 0, 100, 100)
         )
     }
 }

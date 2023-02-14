@@ -2,7 +2,7 @@ package com.soywiz.korge3d
 
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
-import com.soywiz.korma.geom.Vector3D
+import com.soywiz.korma.geom.MVector4
 
 @Korge3DExperimental
 fun Container3D.light(
@@ -20,8 +20,8 @@ open class Light3D(
 	var linearAttenuation: Double = 0.0,
 	var quadraticAttenuation: Double = 0.00111109
 ) : View3D() {
-	internal val colorVec = Vector3D()
-	internal val attenuationVec = Vector3D()
+	internal val colorVec = MVector4()
+	internal val attenuationVec = MVector4()
 
 	fun setTo(
 		color: RGBA = Colors.WHITE,

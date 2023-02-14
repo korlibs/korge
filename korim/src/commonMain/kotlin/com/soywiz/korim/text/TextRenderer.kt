@@ -18,7 +18,7 @@ interface ITextRendererActions {
     var y: Double
     val lineHeight: Double
     var currentLineNum: Int
-    val transform: Matrix
+    val transform: MMatrix
 
     fun getKerning(leftCodePoint: Int, rightCodePoint: Int): Double
     fun getGlyphMetrics(reader: WStringReader?, codePoint: Int): GlyphMetrics
@@ -60,7 +60,7 @@ abstract class TextRendererActions : ITextRendererActions {
         font.getGlyphMetrics(fontSize, codePoint, glyphMetrics, reader)
 
     //var transformAnchor: Anchor = Anchor.BOTTOM_CENTER
-    override val transform: Matrix = Matrix()
+    override val transform: MMatrix = MMatrix()
     var paint: Paint? = null
     var tint: RGBA = Colors.WHITE // Ignored for now
 
@@ -132,7 +132,7 @@ class BoundBuilderTextRendererActions : TextRendererActions() {
         current.bounds.add(rx, ry)
     }
 
-    private fun add(rect: Rectangle) {
+    private fun add(rect: MRectangle) {
         val fx = rect.left
         val fy = rect.top
         val w = rect.width
@@ -189,7 +189,7 @@ class Text2TextRendererActions : TextRendererActions() {
     private val arraySY = doubleArrayListOf()
     private val arrayRot = doubleArrayListOf()
     val arrayMetrics = VectorArrayList(dimensions = 4)
-    private val tr = Matrix.Transform()
+    private val tr = MMatrix.Transform()
     val size get() = arrayX.size
 
     data class LineInfo(var maxTop: Double = 0.0, var minBottom: Double = 0.0, var maxLineHeight: Double = 0.0)
@@ -210,7 +210,7 @@ class Text2TextRendererActions : TextRendererActions() {
         return out
     }
 
-    fun getGlyphBounds(n: Int, out: Rectangle = Rectangle()): IRectangle {
+    fun getGlyphBounds(n: Int, out: MRectangle = MRectangle()): IRectangle {
         if (n >= size) {
             out.setTo(0, 0, 0, 0)
         } else {
@@ -224,7 +224,7 @@ class Text2TextRendererActions : TextRendererActions() {
         return out
     }
 
-    fun getBounds(out: Rectangle = Rectangle()): IRectangle {
+    fun getBounds(out: MRectangle = MRectangle()): IRectangle {
         if (size == 0) {
             out.setTo(0, 0, 0, 0)
             return out
@@ -454,7 +454,7 @@ fun <T> VectorBuilder.text(
     renderer: TextRenderer<T> = DefaultStringTextRenderer as TextRenderer<T>,
 ) {
     val vectorBuilder = this
-    val transform = Matrix()
+    val transform = MMatrix()
 
     val actions = object : TextRendererActions() {
         val metrics = renderer.measure(text, textSize, font)

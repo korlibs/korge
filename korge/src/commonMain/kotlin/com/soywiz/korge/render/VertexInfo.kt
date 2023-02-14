@@ -4,7 +4,7 @@ import com.soywiz.kmem.*
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korio.util.niceStr
-import com.soywiz.korma.geom.Point
+import com.soywiz.korma.geom.MPoint
 
 data class VertexInfo(
     var x: Float = 0f,
@@ -16,8 +16,8 @@ data class VertexInfo(
 ) {
     var texWidth: Int = -1
     var texHeight: Int = -1
-    val xy get() = Point(x, y)
-    val uv get() = Point(u, v)
+    val xy get() = MPoint(x, y)
+    val uv get() = MPoint(u, v)
     fun read(buffer: Buffer, n: Int) {
         val index = n * 6
         this.x = buffer.getFloat32(index + 0)

@@ -5,10 +5,8 @@ package com.soywiz.korim.format.cg
 import com.soywiz.kmem.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
-import com.soywiz.korim.font.*
 import com.soywiz.korim.vector.*
 import com.soywiz.korim.format.*
-import com.soywiz.korim.internal.*
 import com.soywiz.korim.paint.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
@@ -128,7 +126,7 @@ class CoreGraphicsRenderer(val bmp: Bitmap32, val antialiasing: Boolean) : com.s
     override val width: Int get() = bmp.width
     override val height: Int get() = bmp.height
 
-    fun Matrix.toCGAffineTransform() = CGAffineTransformMake(a.cg, b.cg, c.cg, d.cg, tx.cg, ty.cg)
+    fun MMatrix.toCGAffineTransform() = CGAffineTransformMake(a.cg, b.cg, c.cg, d.cg, tx.cg, ty.cg)
 
     private fun cgDrawBitmap(bmp: Bitmap32, ctx: CGContextRef?, colorSpace: CPointer<CGColorSpace>?, tiled: Boolean = false) {
         val image = transferBitmap32ToCGImage(bmp, colorSpace)

@@ -17,10 +17,10 @@ import com.soywiz.korge.view.xy
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.font.*
 import com.soywiz.korio.util.*
-import com.soywiz.korma.geom.Point
+import com.soywiz.korma.geom.MPoint
 import com.soywiz.korma.geom.Ray
-import com.soywiz.korma.geom.Rectangle
-import com.soywiz.korma.geom.Size
+import com.soywiz.korma.geom.MRectangle
+import com.soywiz.korma.geom.MSize
 import com.soywiz.korma.geom.cosine
 import com.soywiz.korma.geom.ds.BVH2D
 import com.soywiz.korma.geom.shape.buildVectorPath
@@ -60,11 +60,11 @@ class MainBVH : Scene() {
                 bvh.insertOrUpdate(view.getBounds(this), view)
             }
         }
-        val center = Point(width / 2, height / 2)
-        val dir = Point(-1, -1)
+        val center = MPoint(width / 2, height / 2)
+        val dir = MPoint(-1, -1)
         val ray = Ray(center, dir)
         val statusText = text("", font = DefaultTtfFontAsBitmap)
-        var selectedRectangle = Rectangle(Point(100, 100) - Point(50, 50), Size(100, 100))
+        var selectedRectangle = MRectangle(MPoint(100, 100) - MPoint(50, 50), MSize(100, 100))
         val rayLine = line(center, center + (dir * 1000), Colors.WHITE)
         val selectedRect = outline(buildVectorPath(VectorPath()) {
             rect(selectedRectangle)
@@ -75,7 +75,7 @@ class MainBVH : Scene() {
             var allObjectsSize = 0
             var rayObjectsSize = 0
             var rectangleObjectsSize = 0
-            val allObjects = bvh.search(Rectangle(0.0, 0.0, width, height))
+            val allObjects = bvh.search(MRectangle(0.0, 0.0, width, height))
             val time = measureTime {
                 val rayObjects = bvh.intersect(ray)
                 val rectangleObjects = bvh.search(selectedRectangle)
@@ -93,7 +93,7 @@ class MainBVH : Scene() {
         addUpdater {
             //println("moved")
             val mousePos = localMouseXY(views)
-            val angle = Point.angleFull(center, mousePos)
+            val angle = MPoint.angleFull(center, mousePos)
             //println("center=$center, mousePos=$mousePos, angle = $angle")
             dir.setTo(angle.cosine, angle.sine)
             rayLine.setPoints(center, center + (dir * 1000))
@@ -103,13 +103,13 @@ class MainBVH : Scene() {
 
         mouse {
             onDown {
-                selectedRectangle = Rectangle(stage!!.mouseXY - Point(50, 50), Size(100, 100))
+                selectedRectangle = MRectangle(stage!!.mouseXY - MPoint(50, 50), MSize(100, 100))
                 selectedRect.vectorPath = buildVectorPath(VectorPath()) {
                     rect(selectedRectangle)
                 }
             }
             onMouseDrag {
-                selectedRectangle = Rectangle(stage.mouseXY - Point(50, 50), Size(100, 100))
+                selectedRectangle = MRectangle(stage.mouseXY - MPoint(50, 50), MSize(100, 100))
                 selectedRect.vectorPath = buildVectorPath(VectorPath()) {
                     rect(selectedRectangle)
                 }

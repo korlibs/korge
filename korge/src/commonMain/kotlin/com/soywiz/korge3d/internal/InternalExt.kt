@@ -2,7 +2,7 @@ package com.soywiz.korge3d.internal
 
 import com.soywiz.kds.*
 import com.soywiz.kmem.*
-import com.soywiz.korma.geom.Vector3D
+import com.soywiz.korma.geom.MVector4
 import kotlin.native.concurrent.ThreadLocal
 
 internal fun <T : Any> Map<String, T>.toFast() = FastStringMap<T>().apply {
@@ -12,7 +12,7 @@ internal fun <T : Any> Map<String, T>.toFast() = FastStringMap<T>().apply {
 	}
 }
 
-internal operator fun Vector3D.get(char: Char): Float = when (char) {
+internal operator fun MVector4.get(char: Char): Float = when (char) {
 	'x', 'r' -> this[0]
 	'y', 'g' -> this[1]
 	'z', 'b' -> this[2]
@@ -22,7 +22,7 @@ internal operator fun Vector3D.get(char: Char): Float = when (char) {
 	else -> Float.NaN
 }
 
-internal fun Vector3D.swizzle(name: String, input: Vector3D = this): Vector3D {
+internal fun MVector4.swizzle(name: String, input: MVector4 = this): MVector4 {
 	val x = name.getOrElse(0) { '0' }
 	val y = name.getOrElse(1) { '0' }
 	val z = name.getOrElse(2) { '0' }
@@ -30,7 +30,7 @@ internal fun Vector3D.swizzle(name: String, input: Vector3D = this): Vector3D {
 	return this.setTo(input[x], input[y], input[z], input[w])
 }
 
-internal operator fun Vector3D.get(name: String): Vector3D = Vector3D().copyFrom(this).swizzle(name)
+internal operator fun MVector4.get(name: String): MVector4 = MVector4().copyFrom(this).swizzle(name)
 
 @ThreadLocal
 internal val vector3DTemps = Vector3DTemps()
@@ -39,14 +39,14 @@ internal class Vector3DTemps {
 	@PublishedApi
 	internal var pos = 0
 	@PublishedApi
-	internal val items = arrayListOf<Vector3D>(Vector3D(), Vector3D(), Vector3D())
+	internal val items = arrayListOf<MVector4>(MVector4(), MVector4(), MVector4())
 
-	fun alloc(): Vector3D {
+	fun alloc(): MVector4 {
 		val npos = pos++
 		return if (npos < items.size) {
 			items[npos]
 		} else {
-			val item = Vector3D()
+			val item = MVector4()
 			items.add(item)
 			item
 		}
@@ -61,8 +61,8 @@ internal class Vector3DTemps {
 		}
 	}
 
-	operator fun Vector3D.plus(that: Vector3D) = alloc().setToFunc { this[it] + that[it] }
-	operator fun Vector3D.minus(that: Vector3D) = alloc().setToFunc { this[it] - that[it] }
+	operator fun MVector4.plus(that: MVector4) = alloc().setToFunc { this[it] + that[it] }
+	operator fun MVector4.minus(that: MVector4) = alloc().setToFunc { this[it] - that[it] }
 }
 
 internal fun FloatArrayList.toNBuffer(): Buffer = toFloatArray().toNBuffer()

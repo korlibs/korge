@@ -37,17 +37,17 @@ class CachedContainerTest {
 
     @Test
     fun testMatrixOrder() {
-        val globalMatrix = Matrix().scale(2, 2).translate(50, 50)
+        val globalMatrix = MMatrix().scale(2, 2).translate(50, 50)
         val globalMatrixInv = globalMatrix.inverted()
         val renderScale = 2.0
-        val lbounds = Point(10, 20)
+        val lbounds = MPoint(10, 20)
 
-        val mat1 = Matrix().also {
+        val mat1 = MMatrix().also {
             it.copyFrom(globalMatrixInv)
             it.translate(-lbounds.x, -lbounds.y)
             it.scale(renderScale)
         }
-        val mat2 = Matrix().also {
+        val mat2 = MMatrix().also {
             it.copyFrom(globalMatrix)
             it.pretranslate(lbounds.x, lbounds.y)
             it.prescale(1.0 / renderScale)

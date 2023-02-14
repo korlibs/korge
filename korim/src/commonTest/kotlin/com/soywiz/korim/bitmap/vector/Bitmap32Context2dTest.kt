@@ -14,7 +14,7 @@ import com.soywiz.korim.paint.*
 import com.soywiz.korio.async.suspendTest
 import com.soywiz.korio.util.OS
 import com.soywiz.korma.geom.IPoint
-import com.soywiz.korma.geom.Matrix
+import com.soywiz.korma.geom.MMatrix
 import com.soywiz.korma.geom.vector.VectorBuilder
 import com.soywiz.korma.geom.vector.lineTo
 import com.soywiz.korma.geom.vector.moveTo
@@ -48,7 +48,7 @@ class Bitmap32Context2dTest {
                             //32.0, 8.0, 1.0,
                             stops = DoubleArrayList(0.0, 1.0),
                             colors = IntArrayList(Colors.BLUE.value, Colors.RED.value),
-                            transform = Matrix().scale(2.0, 0.75)
+                            transform = MMatrix().scale(2.0, 0.75)
                         )
                     )
                     if (true) {
@@ -88,7 +88,7 @@ class Bitmap32Context2dTest {
 
         val rendered = NativeImage(128, 128).context2d {
             rect(0, 0, 100, 100)
-            fill(BitmapPaint(img, Matrix()))
+            fill(BitmapPaint(img, MMatrix()))
         }
         val bmp = rendered.toBMP32()
 

@@ -45,7 +45,7 @@ class LazyBitmapFont(
             maxWidth = vfontMetrics.maxWidth,
         )
     }
-    override val naturalNonExistantGlyphMetrics: GlyphMetrics = GlyphMetrics(fontSize, false, 0, Rectangle(), 0.0)
+    override val naturalNonExistantGlyphMetrics: GlyphMetrics = GlyphMetrics(fontSize, false, 0, MRectangle(), 0.0)
 
     override fun getKerning(first: Int, second: Int): BitmapFont.Kerning? {
         val kerning = font.getKerning(fontSize, first, second)

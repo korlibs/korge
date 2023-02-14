@@ -5,11 +5,10 @@ import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.tween.get
 import com.soywiz.korge.tween.tween
 import com.soywiz.korge.view.*
-import com.soywiz.korge.view.vector.gpuShapeView
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.vector.EmptyShape
 import com.soywiz.korio.async.launch
-import com.soywiz.korma.geom.Point
+import com.soywiz.korma.geom.MPoint
 import com.soywiz.korma.geom.bezier.Bezier
 import com.soywiz.korma.geom.vector.circle
 import com.soywiz.korma.geom.vector.curve
@@ -24,7 +23,7 @@ class MainBezier : Scene() {
         //val shape = gpuShapeView(EmptyShape)
         val shape = graphics(EmptyShape, renderer = GraphicsRenderer.SYSTEM)
         //val shape = graphics(EmptyShape, renderer = GraphicsRenderer.GPU)
-        fun getRandomPoint() = Point(Random[100..500], Random[100..500])
+        fun getRandomPoint() = MPoint(Random[100..500], Random[100..500])
         class Bez {
             var p1 = getRandomPoint()
             var p2 = getRandomPoint()

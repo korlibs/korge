@@ -5,9 +5,9 @@ import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.korma.annotations.KormaExperimental
 import com.soywiz.korma.geom.BoundsBuilder
 import com.soywiz.korma.geom.IPointArrayList
-import com.soywiz.korma.geom.Point
+import com.soywiz.korma.geom.MPoint
 import com.soywiz.korma.geom.PointArrayList
-import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.MRectangle
 import com.soywiz.korma.geom.fastForEach
 import com.soywiz.korma.geom.firstX
 import com.soywiz.korma.geom.firstY
@@ -51,7 +51,7 @@ data class Curves(val beziers: List<Bezier>, val closed: Boolean) : Curve, Extra
         val curve: Bezier,
         val startLength: Double,
         val endLength: Double,
-        val bounds: Rectangle,
+        val bounds: MRectangle,
     ) {
         fun contains(length: Double): Boolean = length in startLength..endLength
 
@@ -73,7 +73,7 @@ data class Curves(val beziers: List<Bezier>, val closed: Boolean) : Curve, Extra
     val CurveInfo.startRatio: Double get() = this.startLength / this@Curves.length
     val CurveInfo.endRatio: Double get() = this.endLength / this@Curves.length
 
-    override fun getBounds(target: Rectangle): Rectangle {
+    override fun getBounds(target: MRectangle): MRectangle {
         bb.reset()
         infos.fastForEach { bb.addEvenEmpty(it.bounds) }
         return bb.getBounds(target)
@@ -103,13 +103,13 @@ data class Curves(val beziers: List<Bezier>, val closed: Boolean) : Curve, Extra
         return block(info, ratioInCurve)
     }
 
-    override fun calc(t: Double, target: Point): Point =
+    override fun calc(t: Double, target: MPoint): MPoint =
         findTInCurve(t) { info, ratioInCurve -> info.curve.calc(ratioInCurve, target) }
 
-    override fun normal(t: Double, target: Point): Point =
+    override fun normal(t: Double, target: MPoint): MPoint =
         findTInCurve(t) { info, ratioInCurve -> info.curve.normal(ratioInCurve, target) }
 
-    override fun tangent(t: Double, target: Point): Point =
+    override fun tangent(t: Double, target: MPoint): MPoint =
         findTInCurve(t) { info, ratioInCurve -> info.curve.tangent(ratioInCurve, target) }
 
     override fun ratioFromLength(length: Double): Double {

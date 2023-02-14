@@ -149,7 +149,7 @@ object GpuShapeViewPrograms {
     )
 
     fun paintToShaderInfo(
-        stateTransform: Matrix,
+        stateTransform: MMatrix,
         paint: Paint,
         globalAlpha: Double,
         lineWidth: Double,
@@ -167,7 +167,7 @@ object GpuShapeViewPrograms {
 
         }
         is BitmapPaint -> {
-            val mat = Matrix().apply {
+            val mat = MMatrix().apply {
                 identity()
                 preconcat(paint.transform)
                 preconcat(stateTransform)
@@ -196,7 +196,7 @@ object GpuShapeViewPrograms {
                 paint.fillColors(RgbaPremultipliedArray(gradientBitmap.ints))
             }
 
-            val npaint = paint.copy(transform = Matrix().apply {
+            val npaint = paint.copy(transform = MMatrix().apply {
                 identity()
                 preconcat(paint.transform)
                 preconcat(stateTransform)
@@ -215,8 +215,8 @@ object GpuShapeViewPrograms {
                         else -> PROGRAM_TYPE_GRADIENT_LINEAR
                     }
                     it[u_Transform] = mat.toMatrix3D()
-                    it[u_Gradientp0] = Vector3D(paint.x0.toFloat(), paint.y0.toFloat(), paint.r0.toFloat())
-                    it[u_Gradientp1] = Vector3D(paint.x1.toFloat(), paint.y1.toFloat(), paint.r1.toFloat())
+                    it[u_Gradientp0] = MVector4(paint.x0.toFloat(), paint.y0.toFloat(), paint.r0.toFloat())
+                    it[u_Gradientp1] = MVector4(paint.x1.toFloat(), paint.y1.toFloat(), paint.r1.toFloat())
                     it[u_GlobalAlpha] = globalAlpha.toFloat()
                     //it[u_LineWidth] = lineWidth.toFloat()
                 }, mapOf(

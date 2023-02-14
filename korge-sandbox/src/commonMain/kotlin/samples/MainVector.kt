@@ -15,7 +15,7 @@ import com.soywiz.korim.paint.LinearGradientPaint
 import com.soywiz.korim.paint.RadialGradientPaint
 import com.soywiz.korio.async.launchImmediately
 import com.soywiz.korio.file.std.resourcesVfs
-import com.soywiz.korma.geom.Matrix
+import com.soywiz.korma.geom.MMatrix
 import com.soywiz.korma.geom.cosine
 import com.soywiz.korma.geom.degrees
 import com.soywiz.korma.geom.sine
@@ -82,7 +82,7 @@ class MainVector : ScaledScene(1280, 720) {
                     }
                     keep {
                         translate(356, 320)
-                        fill(BitmapPaint(image, Matrix().scale(0.25, 0.25))) {
+                        fill(BitmapPaint(image, MMatrix().scale(0.25, 0.25))) {
                             rect(0, 0, 128, 128)
                         }
                     }

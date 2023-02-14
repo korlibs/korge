@@ -15,12 +15,12 @@ class NativeImageFormatProviderTest {
         val bmp5 = nativeImageFormatProvider.decode(resourcesVfs["kotlin8.png"])
         val bmp6 = nativeImageFormatProvider.decode(resourcesVfs["kotlin24.png"])
         val bmp7 = nativeImageFormatProvider.decode(resourcesVfs["kotlin32.png"])
-        assertEquals(Size(190, 190), bmp1.size)
-        assertEquals(Size(190, 190), bmp2.size)
-        assertEquals(Size(190, 190), bmp3.size)
+        assertEquals(MSize(190, 190), bmp1.size)
+        assertEquals(MSize(190, 190), bmp2.size)
+        assertEquals(MSize(190, 190), bmp3.size)
         //assertEquals(Size(190, 190), bmp4.size)
-        assertEquals(Size(190, 190), bmp5.size)
-        assertEquals(Size(190, 190), bmp6.size)
-        assertEquals(Size(190, 190), bmp7.size)
+        assertEquals(MSize(190, 190), bmp5.size)
+        assertEquals(MSize(190, 190), bmp6.size)
+        assertEquals(MSize(190, 190), bmp7.size)
     }
 }

@@ -14,7 +14,7 @@ import com.soywiz.korge.view.position
 import com.soywiz.korge.view.size
 import com.soywiz.korge.view.solidRect
 import com.soywiz.korio.async.Signal
-import com.soywiz.korma.geom.Point
+import com.soywiz.korma.geom.MPoint
 import kotlin.math.sign
 
 @Deprecated("Use UINewScrollable")
@@ -111,7 +111,7 @@ open class UIScrollBar(
             changeCurrent(pos.sign * 0.8 * this.pageSize)
         }
 
-        val tempP = Point()
+        val tempP = MPoint()
         var initRatio = 0.0
         var startRatio = 0.0
         thumb.onMouseDrag {

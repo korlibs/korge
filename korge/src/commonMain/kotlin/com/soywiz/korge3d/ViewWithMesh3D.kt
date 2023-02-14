@@ -5,7 +5,7 @@ import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.kds.iterators.fastForEachWithIndex
 import com.soywiz.kmem.clamp
 import com.soywiz.korag.*
-import com.soywiz.korma.geom.Matrix3D
+import com.soywiz.korma.geom.MMatrix3D
 import com.soywiz.korma.geom.invert
 
 @Korge3DExperimental
@@ -23,11 +23,11 @@ open class ViewWithMesh3D(
     private val rs = AGDepthAndFrontFace.DEFAULT.withDepthFunc(depthFunc = AGCompareMode.LESS_EQUAL)
     //private val rs = AGRenderState(depthFunc = AGCompareMode.ALWAYS)
 
-    private val tempMat1 = Matrix3D()
-    private val tempMat2 = Matrix3D()
-    private val tempMat3 = Matrix3D()
+    private val tempMat1 = MMatrix3D()
+    private val tempMat2 = MMatrix3D()
+    private val tempMat3 = MMatrix3D()
 
-    protected open fun prepareExtraModelMatrix(mat: Matrix3D) {
+    protected open fun prepareExtraModelMatrix(mat: MMatrix3D) {
         mat.identity()
     }
 
@@ -46,7 +46,7 @@ open class ViewWithMesh3D(
         }
     }
 
-    private val identity = Matrix3D()
+    private val identity = MMatrix3D()
     private val identityInv = identity.clone().invert()
 
     override fun render(ctx: RenderContext3D) {

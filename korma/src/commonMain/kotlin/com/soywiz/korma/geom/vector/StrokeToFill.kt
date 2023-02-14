@@ -5,7 +5,7 @@ import com.soywiz.kds.IntArrayList
 import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.korma.annotations.KormaExperimental
 import com.soywiz.korma.geom.Angle
-import com.soywiz.korma.geom.Point
+import com.soywiz.korma.geom.MPoint
 import com.soywiz.korma.geom.PointIntArrayList
 import com.soywiz.korma.geom.bezier.Bezier
 import com.soywiz.korma.geom.bezier.toDashes
@@ -58,12 +58,12 @@ class StrokeToFill {
     internal fun PointIntArrayList.addEdgePointA(e: Edge) = add(e.ax, e.ay)
     internal fun PointIntArrayList.addEdgePointB(e: Edge) = add(e.bx, e.by)
     internal fun PointIntArrayList.addEdgePointAB(e: Edge, point: EdgePoint) = if (point == EdgePoint.A) addEdgePointA(e) else addEdgePointB(e)
-    internal fun PointIntArrayList.add(e: Point?) { if (e != null) add(e.x.toInt(), e.y.toInt()) }
+    internal fun PointIntArrayList.add(e: MPoint?) { if (e != null) add(e.x.toInt(), e.y.toInt()) }
     internal fun PointIntArrayList.add(x: Double, y: Double) { add(x.toInt(), y.toInt()) }
 
-    private val tempP1 = Point()
-    private val tempP2 = Point()
-    private val tempP3 = Point()
+    private val tempP1 = MPoint()
+    private val tempP2 = MPoint()
+    private val tempP3 = MPoint()
 
     internal fun doJoin(out: PointIntArrayList, mainPrev: Edge, mainCurr: Edge, prev: Edge, curr: Edge, join: LineJoin, miterLimit: Double, scale: Double, forcedMiter: Boolean) {
         val rjoin = if (forcedMiter) LineJoin.MITER else join
@@ -72,7 +72,7 @@ class StrokeToFill {
                 val intersection2 = tempP1.setTo(mainPrev.bx, mainPrev.by)
                 val intersection = Edge.getIntersectXY(prev, curr, tempP3)
                 if (intersection != null) {
-                    val dist = Point.distance(intersection, intersection2)
+                    val dist = MPoint.distance(intersection, intersection2)
                     if (forcedMiter || dist <= miterLimit) {
                         out.add(intersection)
                     } else {
@@ -88,7 +88,7 @@ class StrokeToFill {
             LineJoin.ROUND -> {
                 val i = Edge.getIntersectXY(prev, curr, tempP3)
                 if (i != null) {
-                    val count = (Point.distance(prev.bx, prev.by, curr.ax, curr.ay) * scale).toInt().clamp(4, 64)
+                    val count = (MPoint.distance(prev.bx, prev.by, curr.ax, curr.ay) * scale).toInt().clamp(4, 64)
                     for (n in 0..count) {
                         out.add(Bezier.quadCalc(prev.bx.toDouble(), prev.by.toDouble(), i.x, i.y, curr.ax.toDouble(), curr.ay.toDouble(), n.toDouble() / count, tempP2))
                     }
@@ -122,7 +122,7 @@ class StrokeToFill {
                     l.add(lx2, ly2)
                     r.add(rx2, ry2)
                 } else {
-                    val count = (Point.distance(lx, ly, rx, ry) * scale).toInt().clamp(4, 64)
+                    val count = (MPoint.distance(lx, ly, rx, ry) * scale).toInt().clamp(4, 64)
                     l.add(lx, ly)
                     for (n in 0 .. count) {
                         val m = if (epoint == EdgePoint.A) n else count - n

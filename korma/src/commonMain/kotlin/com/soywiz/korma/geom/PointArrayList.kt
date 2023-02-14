@@ -15,7 +15,10 @@ interface IPointArrayList : IVectorArrayList, Extra {
     override fun get(index: Int, dim: Int): Double = if (dim == 0) getX(index) else getY(index)
     fun getX(index: Int): Double
     fun getY(index: Int): Double
+    fun get(index: Int, out: MPoint): IPoint = out.setTo(getX(index), getY(index))
 }
+
+operator fun IPointArrayList.get(index: Int): Point = Point(getX(index), getY(index))
 
 fun PointArrayList.setToRoundDecimalPlaces(places: Int): PointArrayList {
     fastForEachWithIndex { index, x, y -> this.setXY(index, x.roundDecimalPlaces(places), y.roundDecimalPlaces(places)) }
@@ -38,8 +41,8 @@ val IPointArrayList.firstX: Double get() = getX(0)
 val IPointArrayList.firstY: Double get() = getY(0)
 val IPointArrayList.lastX: Double get() = getX(size - 1)
 val IPointArrayList.lastY: Double get() = getY(size - 1)
-fun IPointArrayList.firstPoint(out: Point = Point()): Point = out.setTo(firstX, firstY)
-fun IPointArrayList.lastPoint(out: Point = Point()): Point = out.setTo(lastX, lastY)
+fun IPointArrayList.firstPoint(out: MPoint = MPoint()): MPoint = out.setTo(firstX, firstY)
+fun IPointArrayList.lastPoint(out: MPoint = MPoint()): MPoint = out.setTo(lastX, lastY)
 
 fun IPointArrayList.orientation(): Orientation {
     if (size < 3) return Orientation.COLLINEAR
@@ -65,17 +68,17 @@ inline fun IPointArrayList.fastForEachWithIndex(block: (index: Int, x: Double, y
     }
 }
 
-fun IPointArrayList.getPoint(index: Int, out: Point = Point()): Point = out.setTo(getX(index), getY(index))
+fun IPointArrayList.getPoint(index: Int, out: MPoint = MPoint()): MPoint = out.setTo(getX(index), getY(index))
 fun IPointArrayList.getIPoint(index: Int): IPoint = IPoint(getX(index), getY(index))
 
-fun IPointArrayList.toList(): List<Point> = (0 until size).map { getPoint(it) }
+fun IPointArrayList.toList(): List<MPoint> = (0 until size).map { getPoint(it) }
 
-fun IPointArrayList.toPoints(): List<Point> = (0 until size).map { getPoint(it) }
+fun IPointArrayList.toPoints(): List<MPoint> = (0 until size).map { getPoint(it) }
 fun IPointArrayList.toIPoints(): List<IPoint> = (0 until size).map { getIPoint(it) }
 
 fun <T> IPointArrayList.map(gen: (x: Double, y: Double) -> T): List<T> = (0 until size).map { gen(getX(it), getY(it)) }
 
-fun IPointArrayList.mapPoints(temp: Point = Point(), gen: (x: Double, y: Double, out: Point) -> IPoint): IPointArrayList {
+fun IPointArrayList.mapPoints(temp: MPoint = MPoint(), gen: (x: Double, y: Double, out: MPoint) -> IPoint): IPointArrayList {
     val out = PointArrayList(this.size)
     fastForEach { x, y -> out.add(gen(x, y, temp)) }
     return out
@@ -144,6 +147,7 @@ open class PointArrayList(capacity: Int = 7) : IPointArrayList, Extra by Extra.M
     fun add(x: Int, y: Int) = add(x.toDouble(), y.toDouble())
 
     fun add(p: Point) = add(p.x, p.y)
+    fun add(p: MPoint) = add(p.x, p.y)
     fun add(p: IPoint) = add(p.x, p.y)
     fun add(p: IPointArrayList) = this.apply { p.fastForEach { x, y -> add(x, y) } }
     fun addReverse(p: IPointArrayList) = this.apply { p.fastForEachReverse { x, y -> add(x, y) } }
@@ -162,9 +166,9 @@ open class PointArrayList(capacity: Int = 7) : IPointArrayList, Extra by Extra.M
     }
     fun clone(out: PointArrayList = PointArrayList()): PointArrayList = out.clear().add(this)
 
-    fun toList(): List<Point> {
-        val out = arrayListOf<Point>()
-        fastForEach { x, y -> out.add(Point(x, y)) }
+    fun toList(): List<MPoint> {
+        val out = arrayListOf<MPoint>()
+        fastForEach { x, y -> out.add(MPoint(x, y)) }
         return out
     }
 
@@ -206,7 +210,7 @@ open class PointArrayList(capacity: Int = 7) : IPointArrayList, Extra by Extra.M
     fun setXY(index: Int, x: Float, y: Float) = setXY(index, x.toDouble(), y.toDouble())
     fun setXY(index: Int, p: IPoint) = setXY(index, p.x, p.y)
 
-    fun transform(matrix: Matrix) {
+    fun transform(matrix: MMatrix) {
         for (n in 0 until size) {
             val x = getX(n)
             val y = getY(n)
@@ -251,7 +255,7 @@ open class PointArrayList(capacity: Int = 7) : IPointArrayList, Extra by Extra.M
     }
 
     object PointSortOpts : SortOps<PointArrayList>() {
-        override fun compare(p: PointArrayList, l: Int, r: Int): Int = Point.compare(p.getX(l), p.getY(l), p.getX(r), p.getY(r))
+        override fun compare(p: PointArrayList, l: Int, r: Int): Int = MPoint.compare(p.getX(l), p.getY(l), p.getX(r), p.getY(r))
         override fun swap(subject: PointArrayList, indexL: Int, indexR: Int) = subject.swap(indexL, indexR)
     }
 }
@@ -271,9 +275,9 @@ interface IPointIntArrayList {
     fun getY(index: Int): Int
 }
 
-fun IPointIntArrayList.getPoint(index: Int, out: PointInt = PointInt()): PointInt = out.setTo(getX(index), getY(index))
+fun IPointIntArrayList.getPoint(index: Int, out: MPointInt = MPointInt()): MPointInt = out.setTo(getX(index), getY(index))
 fun IPointIntArrayList.getIPoint(index: Int): IPointInt = IPointInt(getX(index), getY(index))
-fun IPointIntArrayList.toPoints(): List<PointInt> = (0 until size).map { getPoint(it) }
+fun IPointIntArrayList.toPoints(): List<MPointInt> = (0 until size).map { getPoint(it) }
 fun IPointIntArrayList.toIPoints(): List<IPointInt> = (0 until size).map { getIPoint(it) }
 fun IPointIntArrayList.contains(x: Int, y: Int): Boolean {
     for (n in 0 until size) if (getX(n) == x && getY(n) == y) return true
@@ -330,9 +334,9 @@ open class PointIntArrayList(capacity: Int = 7) : IPointIntArrayList, Extra by E
         }
     }
 
-    fun toList(): List<PointInt> {
-        val out = arrayListOf<PointInt>()
-        fastForEach { x, y -> out.add(PointInt(x, y)) }
+    fun toList(): List<MPointInt> {
+        val out = arrayListOf<MPointInt>()
+        fastForEach { x, y -> out.add(MPointInt(x, y)) }
         return out
     }
 
@@ -379,12 +383,12 @@ open class PointIntArrayList(capacity: Int = 7) : IPointIntArrayList, Extra by E
     }
 
     object PointSortOpts : SortOps<PointIntArrayList>() {
-        override fun compare(p: PointIntArrayList, l: Int, r: Int): Int = PointInt.compare(p.getX(l), p.getY(l), p.getX(r), p.getY(r))
+        override fun compare(p: PointIntArrayList, l: Int, r: Int): Int = MPointInt.compare(p.getX(l), p.getY(l), p.getX(r), p.getY(r))
         override fun swap(subject: PointIntArrayList, indexL: Int, indexR: Int) = subject.swap(indexL, indexR)
     }
 }
 
-inline fun <T> Iterable<T>.mapPoint(temp: Point = Point(), out: PointArrayList = PointArrayList(), block: Point.(value: T) -> Point): PointArrayList {
+inline fun <T> Iterable<T>.mapPoint(temp: MPoint = MPoint(), out: PointArrayList = PointArrayList(), block: MPoint.(value: T) -> MPoint): PointArrayList {
     for (v in this) {
         out.add(block(temp, v))
     }

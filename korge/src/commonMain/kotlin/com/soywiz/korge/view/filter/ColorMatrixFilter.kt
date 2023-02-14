@@ -15,20 +15,20 @@ import com.soywiz.korma.geom.*
  * - [ColorMatrixFilter.GRAYSCALE_MATRIX] - Used to make the colors grey
  * - [ColorMatrixFilter.IDENTITY_MATRIX]  - Doesn't modify the colors at all
  */
-class ColorMatrixFilter(colorMatrix: Matrix3D, blendRatio: Double = 1.0) : ShaderFilter() {
+class ColorMatrixFilter(colorMatrix: MMatrix3D, blendRatio: Double = 1.0) : ShaderFilter() {
 	companion object : BaseProgramProvider() {
 		private val u_ColorMatrix = Uniform("colorMatrix", VarType.Mat4)
 		private val u_BlendRatio = Uniform("blendRatio", VarType.Float1)
 
         /** A Matrix usable for [colorMatrix] that will transform any color into grayscale */
-		val GRAYSCALE_MATRIX = Matrix3D.fromColumns(
+		val GRAYSCALE_MATRIX = MMatrix3D.fromColumns(
 			0.33f, 0.33f, 0.33f, 0f,
 			0.59f, 0.59f, 0.59f, 0f,
 			0.11f, 0.11f, 0.11f, 0f,
 			0f, 0f, 0f, 1f
 		)
 
-        val SEPIA_MATRIX = Matrix3D.fromColumns(
+        val SEPIA_MATRIX = MMatrix3D.fromColumns(
             0.393f, 0.349f, 0.272f, 0f,
             0.769f, 0.686f, 0.534f, 0f,
             0.189f, 0.168f, 0.131f, 0f,
@@ -36,7 +36,7 @@ class ColorMatrixFilter(colorMatrix: Matrix3D, blendRatio: Double = 1.0) : Shade
         )
 
         /** A Matrix usable for [colorMatrix] that will preserve the original color */
-		val IDENTITY_MATRIX = Matrix3D.fromColumns(
+		val IDENTITY_MATRIX = MMatrix3D.fromColumns(
 			1f, 0f, 0f, 0f,
 			0f, 1f, 0f, 0f,
 			0f, 0f, 1f, 0f,
@@ -55,9 +55,9 @@ class ColorMatrixFilter(colorMatrix: Matrix3D, blendRatio: Double = 1.0) : Shade
         }
     }
 
-    /** The 4x4 [Matrix3D] that will be used for transforming each pixel components [r, g, b, a] */
+    /** The 4x4 [MMatrix3D] that will be used for transforming each pixel components [r, g, b, a] */
     @ViewProperty
-	var colorMatrix: Matrix3D by uniforms.storageForMatrix3D(u_ColorMatrix, colorMatrix)
+	var colorMatrix: MMatrix3D by uniforms.storageForMatrix3D(u_ColorMatrix, colorMatrix)
 
     /**
      * Ratio for blending the original color with the transformed color.

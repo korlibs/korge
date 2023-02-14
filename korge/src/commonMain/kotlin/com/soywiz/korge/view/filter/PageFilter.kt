@@ -72,7 +72,7 @@ class PageFilter(
 
     override val programProvider: ProgramProvider get() = PageFilter
 
-    override fun computeBorder(out: MutableMarginInt, texWidth: Int, texHeight: Int) {
+    override fun computeBorder(out: MMarginInt, texWidth: Int, texHeight: Int) {
         out.setTo(max(max(abs(hamplitude0), abs(hamplitude1)), abs(hamplitude2)).toIntCeil())
     }
 }

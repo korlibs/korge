@@ -76,7 +76,7 @@ data class PlacedGlyphMetrics constructor(
     val y: Double,
     val metrics: GlyphMetrics,
     val fontMetrics: FontMetrics,
-    val transform: Matrix,
+    val transform: MMatrix,
     val index: Int,
     val nline: Int,
 ) {
@@ -89,7 +89,7 @@ data class PlacedGlyphMetrics constructor(
                 metrics.xadvance,
                 fontMetrics.lineHeight
             )
-        }.applyTransform(Matrix().translate(x, y).premultiply(transform))
+        }.applyTransform(MMatrix().translate(x, y).premultiply(transform))
     }
     val boundsPathCurves: Curves by lazy {
         val curves = boundsPath.getCurves()
@@ -107,9 +107,9 @@ data class PlacedGlyphMetrics constructor(
         val middle = when (startEnd) {
             true -> caretStart.get(0.5)
             false -> caretEnd.get(0.5)
-            null -> Point.middle(caretStart.get(0.5), caretEnd.get(0.5))
+            null -> MPoint.middle(caretStart.get(0.5), caretEnd.get(0.5))
         }
-        return Point.distance(middle.x, middle.y, x, y)
+        return MPoint.distance(middle.x, middle.y, x, y)
     }
 
     fun distToPath(p: IPoint, startEnd: Boolean? = null): Double = distToPath(p.x, p.y, startEnd)
@@ -149,7 +149,7 @@ fun Font.renderGlyphToBitmap(
         renderGlyph()
     }
     val imageOut = image.toBMP32IfRequired().applyEffect(effect)
-    val glyph = PlacedGlyphMetrics(codePoint, gx + border, gy + border, gmetrics, fmetrics, Matrix(), 0, 0)
+    val glyph = PlacedGlyphMetrics(codePoint, gx + border, gy + border, gmetrics, fmetrics, MMatrix(), 0, 0)
     return TextToBitmapResult(imageOut, fmetrics, TextMetrics(), listOf(glyph), listOf(listOf(glyph)), buildShape(iwidth, iheight) {
         renderGlyph()
     })
@@ -220,7 +220,7 @@ fun <T> Font.drawText(
     textRangeStart: Int = 0,
     textRangeEnd: Int = Int.MAX_VALUE,
 
-    placed: (TextRendererActions.(codePoint: Int, x: Double, y: Double, size: Double, metrics: GlyphMetrics, fmetrics: FontMetrics, transform: Matrix) -> Unit)? = null
+    placed: (TextRendererActions.(codePoint: Int, x: Double, y: Double, size: Double, metrics: GlyphMetrics, fmetrics: FontMetrics, transform: MMatrix) -> Unit)? = null
 ): TextMetricsResult? {
     //println("drawText!!: text=$text, align=$align")
     val glyphs = if (outMetrics != null) MultiplePlacedGlyphMetrics() else null
@@ -333,14 +333,14 @@ fun <T> Font.getTextBounds(
     // Compute
     val bb = BoundsBuilder()
     var dy = 0.0
-    val lineBounds = FastArrayList<Rectangle>()
+    val lineBounds = FastArrayList<MRectangle>()
     val offsetY = actions.getAlignY(align.vertical, out.fontMetrics)
     //println("--")
     //println("offsetY=$offsetY, totalMaxLineHeight=${actions.totalMaxLineHeight}, align=$align")
     //printStackTrace()
     for (line in actions.lines) {
         val offsetX = line.getAlignX(align.horizontal)
-        val rect = Rectangle(
+        val rect = MRectangle(
             -offsetX,
             +offsetY + dy - out.ascent,
             line.maxX,

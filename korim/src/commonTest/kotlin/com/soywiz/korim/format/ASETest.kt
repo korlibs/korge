@@ -8,7 +8,7 @@ import com.soywiz.korio.async.suspendTest
 import com.soywiz.korio.file.std.resourcesVfs
 import com.soywiz.korio.util.OS
 import com.soywiz.korma.geom.RectangleInt
-import com.soywiz.korma.geom.Size
+import com.soywiz.korma.geom.MSize
 import kotlin.test.*
 
 class ASETest {
@@ -114,7 +114,7 @@ class ASETest {
             listOf(0, 1, 2, 3, 4, 5, 6, 7, 8),
             tileSet.texturesMap.keys.toList().sorted()
         )
-        assertEquals(Size(16, 144), tileSet.base.size)
+        assertEquals(MSize(16, 144), tileSet.base.size)
         for (n in 0..8) {
             assertEquals(RectangleInt(0, (n * 16), 16, 16), tileSet.texturesMap[n]!!.slice.rect)
         }

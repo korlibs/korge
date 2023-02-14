@@ -11,7 +11,6 @@ import com.soywiz.korim.color.ColorAdd
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.bezier.getEquidistantPoints
-import com.soywiz.korma.geom.bezier.getPoints
 import com.soywiz.korma.geom.vector.VectorPath
 import com.soywiz.korma.geom.vector.getCurves
 import com.soywiz.korma.interpolation.Easing
@@ -86,8 +85,8 @@ fun V2Lazy(callback: () -> V2<*>): V2<Unit> {
 }
 
 fun KMutableProperty0<IPoint>.incr(dx: Double, dy: Double): V2<IPoint> {
-    val start: Point = Point(0, 0)
-    val value: Point = Point(0, 0)
+    val start: MPoint = MPoint(0, 0)
+    val value: MPoint = MPoint(0, 0)
     return V2(this, start, value, { it, _, _ ->
         value.setTo(start.x + dx, start.y + dy)
         value
@@ -166,7 +165,7 @@ inline operator fun KMutableProperty0<IPoint>.get(path: VectorPath, includeLastP
 }]
 
 inline operator fun KMutableProperty0<IPoint>.get(range: IPointArrayList): V2<IPoint> {
-    val temp = Point()
+    val temp = MPoint()
     return V2(
         this, temp, temp, { ratio, _, _ ->
             val ratioIndex = ratio * (range.size - 1)

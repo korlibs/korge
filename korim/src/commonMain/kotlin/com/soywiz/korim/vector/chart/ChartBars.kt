@@ -5,7 +5,7 @@ import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.text.HorizontalAlign
 import com.soywiz.korim.text.VerticalAlign
 import com.soywiz.korim.vector.Context2d
-import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.MRectangle
 import kotlin.math.ceil
 import kotlin.math.floor
 import kotlin.math.log10
@@ -48,7 +48,7 @@ open class ChartBars(val list: List<DataPoint>) : Chart() {
         stroke(createColor(color))
     }
 
-    private fun Context2d.renderRefLine(rect: Rectangle, y: Double, value: String, important: Boolean) {
+    private fun Context2d.renderRefLine(rect: MRectangle, y: Double, value: String, important: Boolean) {
         val x = rect.left
         renderLine(x, y, rect.right, y, if (important) Colors.BLACK else Colors.DARKGREY)
         fillText(
@@ -64,7 +64,7 @@ open class ChartBars(val list: List<DataPoint>) : Chart() {
     val DataPoint.ratio get() = values.first() / maxValue
     val DataPoint.rRatio get() = values.first() / rMaxValue
 
-    private fun Context2d.renderReferenceLines(rect: Rectangle) {
+    private fun Context2d.renderReferenceLines(rect: MRectangle) {
         for (n in 0 until 5) {
             val ratio = n.toDouble() / 4
             renderRefLine(
@@ -78,7 +78,7 @@ open class ChartBars(val list: List<DataPoint>) : Chart() {
 
     enum class Fit(val angle: Double) { FULL(0.0), DEG45(-45.0), DEG90(-90.0) }
 
-    fun Context2d.renderBars(rect: Rectangle) {
+    fun Context2d.renderBars(rect: MRectangle) {
         val barWidth = rect.width / (list.size * 1.5 + 0.5)
         val barLeft = barWidth * 0.5
         val barSpace = barWidth * 1.5
@@ -121,6 +121,6 @@ open class ChartBars(val list: List<DataPoint>) : Chart() {
         //println("Context2d.renderChart:$width,$height")
         val hpadding = min(64.0, width * 0.1)
         val vpadding = min(64.0, height * 0.1)
-        renderBars(Rectangle.fromBounds(hpadding, vpadding, width - hpadding, height - vpadding))
+        renderBars(MRectangle.fromBounds(hpadding, vpadding, width - hpadding, height - vpadding))
     }
 }

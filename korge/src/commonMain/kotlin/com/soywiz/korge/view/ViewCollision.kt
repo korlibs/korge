@@ -3,8 +3,8 @@ package com.soywiz.korge.view
 import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.korio.lang.Cancellable
 import com.soywiz.korio.lang.threadLocal
-import com.soywiz.korma.geom.Matrix
-import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.MMatrix
+import com.soywiz.korma.geom.MRectangle
 import com.soywiz.korma.geom.shape.Shape2d
 import com.soywiz.korma.geom.vector.VectorPath
 import com.soywiz.korma.geom.vector.rect
@@ -16,15 +16,15 @@ import kotlin.collections.set
 
 @PublishedApi
 internal class ViewCollisionContext {
-    val tempMat = Matrix()
-    val tempRect1 = Rectangle()
-    val tempRect2 = Rectangle()
+    val tempMat = MMatrix()
+    val tempRect1 = MRectangle()
+    val tempRect2 = MRectangle()
     val tempVectorPath1 = listOf(VectorPath())
     val tempVectorPath2 = listOf(VectorPath())
 
-    val ident = Matrix()
-    val lmat = Matrix()
-    val rmat = Matrix()
+    val ident = MMatrix()
+    val lmat = MMatrix()
+    val rmat = MMatrix()
 
     fun getVectorPath(view: View, out: List<VectorPath>): List<VectorPath> {
         val hitShape = view.hitShape

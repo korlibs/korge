@@ -9,7 +9,7 @@ import com.soywiz.korim.format.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.util.*
-import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.MRectangle
 import kotlinx.coroutines.*
 import org.w3c.dom.events.*
 import org.w3c.dom.events.MouseEvent
@@ -487,7 +487,7 @@ open class BrowserCanvasJsGameWindow(
         }
     }
 
-    override fun setInputRectangle(windowRect: Rectangle) {
+    override fun setInputRectangle(windowRect: MRectangle) {
         ensureSoftKeyboardInput()
         softKeyboardInput?.style?.let { style ->
             style.left = "${(windowRect.left / canvasRatio)}px"

@@ -4,8 +4,8 @@ import com.soywiz.kds.iterators.fastForEachWithIndex
 import com.soywiz.kmem.clamp
 import com.soywiz.korag.*
 import com.soywiz.korim.bitmap.Bitmap
-import com.soywiz.korma.geom.Matrix3D
-import com.soywiz.korma.geom.Vector3D
+import com.soywiz.korma.geom.MMatrix3D
+import com.soywiz.korma.geom.MVector4
 
 interface HeightMap {
     operator fun get(x: Float, z: Float): Float
@@ -62,25 +62,25 @@ class Terrain3D(
 
     private val uniformValues = AGUniformValues()
     private val rs = AGDepthAndFrontFace.DEFAULT.withDepthFunc(depthFunc = AGCompareMode.LESS_EQUAL)
-    private val tempMat1 = Matrix3D()
-    private val tempMat2 = Matrix3D()
-    private val tempMat3 = Matrix3D()
+    private val tempMat1 = MMatrix3D()
+    private val tempMat2 = MMatrix3D()
+    private val tempMat3 = MMatrix3D()
 
     private fun getHeight(x: Float, z: Float) : Float  = heightMap[x,z] * heightScale
 
-    fun calcNormal(x: Float, z: Float): Vector3D {
+    fun calcNormal(x: Float, z: Float): MVector4 {
         val hl = getHeight(x - 1, z)
         val hr = getHeight(x + 1, z)
         val hf = getHeight(x, z + 1)
         val hb = getHeight(x, z - 1)
-        val v = Vector3D(hl - hr, 2f, hb - hf).normalize()
+        val v = MVector4(hl - hr, 2f, hb - hf).normalize()
         return v
     }
 
     fun createMesh(): Mesh3D {
         meshBuilder3D.reset()
-        val vec = Vector3D()
-        val tex = Vector3D() //TODO:
+        val vec = MVector4()
+        val tex = MVector4() //TODO:
         var z = 0f
         val adjX = (width / 2) + centerX
         val adjZ = (depth / 2) + centerZ

@@ -8,7 +8,7 @@ import com.soywiz.korge.view.append
 import com.soywiz.korge.view.size
 import com.soywiz.korim.color.RGBAf
 import com.soywiz.korma.geom.Angle
-import com.soywiz.korma.geom.Point
+import com.soywiz.korma.geom.MPoint
 import com.soywiz.korma.geom.degrees
 import com.soywiz.korma.geom.unaryMinus
 import com.soywiz.korma.geom.unaryPlus
@@ -91,7 +91,7 @@ fun UIEditableColorPropsList(prop: KProperty0<RGBAf>): Array<UIEditableNumberPro
 }
 
 @KorgeExperimental
-fun UIEditablePointPropsList(prop: KProperty0<Point>, min: Double = -1000.0, max: Double = +1000.0): Array<UIEditableNumberProps> {
+fun UIEditablePointPropsList(prop: KProperty0<MPoint>, min: Double = -1000.0, max: Double = +1000.0): Array<UIEditableNumberProps> {
     return UIEditableNumberPropsList(prop.get()::x, prop.get()::y, min = min, max = max)
 }
 

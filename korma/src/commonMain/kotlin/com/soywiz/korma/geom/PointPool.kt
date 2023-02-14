@@ -7,9 +7,8 @@ import kotlin.jvm.JvmName
 import kotlin.math.min
 import kotlin.math.max
 
-typealias PointScope = PointPool
-
 @Suppress("NOTHING_TO_INLINE")
+@Deprecated("Use Point instead, no pool needed")
 class PointPool(val capacity: Int = 16, preallocate: Boolean = false) {
     @PublishedApi
     internal var offset = 0
@@ -17,13 +16,13 @@ class PointPool(val capacity: Int = 16, preallocate: Boolean = false) {
     //@PublishedApi internal val points = Array(capacity) { com.soywiz.korma.geom.Point() }
     //@PublishedApi internal fun alloc(): Point = points[offset++]
 
-    @PublishedApi internal val points = FastArrayList<Point>()
-    @PublishedApi internal fun alloc(): Point {
+    @PublishedApi internal val points = FastArrayList<MPoint>()
+    @PublishedApi internal fun alloc(): MPoint {
         return if (offset < points.size) {
             points[offset++]
         } else {
             offset++
-            com.soywiz.korma.geom.Point().also { points.add(it) }
+            com.soywiz.korma.geom.MPoint().also { points.add(it) }
         }
     }
 
@@ -35,15 +34,15 @@ class PointPool(val capacity: Int = 16, preallocate: Boolean = false) {
         }
     }
 
-    fun MPoint(): Point = alloc()
+    fun MPoint(): MPoint = alloc()
     fun Point(x: Double, y: Double): IPoint = alloc().setTo(x, y)
     fun Point(x: Float, y: Float): IPoint = Point(x.toDouble(), y.toDouble())
     fun Point(x: Int, y: Int): IPoint = Point(x.toDouble(), y.toDouble())
     fun Point(): IPoint = Point(0.0, 0.0)
-    fun Point(angle: Angle, length: Double = 1.0): IPoint = Point.fromPolar(angle, length, alloc())
-    fun Point(base: IPoint, angle: Angle, length: Double = 1.0): IPoint = Point.fromPolar(base, angle, length, alloc())
-    fun Point(angle: Angle, length: Float = 1f): IPoint = Point.fromPolar(angle, length.toDouble(), alloc())
-    fun Point(base: IPoint, angle: Angle, length: Float = 1f): IPoint = Point.fromPolar(base, angle, length.toDouble(), alloc())
+    fun Point(angle: Angle, length: Double = 1.0): IPoint = MPoint.fromPolar(angle, length, alloc())
+    fun Point(base: IPoint, angle: Angle, length: Double = 1.0): IPoint = MPoint.fromPolar(base, angle, length, alloc())
+    fun Point(angle: Angle, length: Float = 1f): IPoint = MPoint.fromPolar(angle, length.toDouble(), alloc())
+    fun Point(base: IPoint, angle: Angle, length: Float = 1f): IPoint = MPoint.fromPolar(base, angle, length.toDouble(), alloc())
 
     fun abs(a: IPoint): IPoint = alloc().setTo(kotlin.math.abs(a.x), kotlin.math.abs(a.y))
     fun sqrt(a: IPoint): IPoint = alloc().setTo(kotlin.math.sqrt(a.x), kotlin.math.sqrt(a.y))
@@ -78,8 +77,8 @@ class PointPool(val capacity: Int = 16, preallocate: Boolean = false) {
     operator fun IPoint.rem(value: Float): IPoint = this % value.toDouble()
     operator fun IPoint.rem(value: Int): IPoint = this % value.toDouble()
 
-    operator fun IPointArrayList.get(index: Int): Point = MPoint().setTo(this.getX(index), this.getY(index))
-    fun IPointArrayList.getCyclic(index: Int): Point = this[index umod size]
+    operator fun IPointArrayList.get(index: Int): MPoint = MPoint().setTo(this.getX(index), this.getY(index))
+    fun IPointArrayList.getCyclic(index: Int): MPoint = this[index umod size]
 
     inline operator fun <T> invoke(callback: PointPool.() -> T): T {
         val oldOffset = offset

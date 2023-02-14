@@ -1,8 +1,7 @@
 package com.soywiz.korma.geom.triangle
 
 import com.soywiz.korma.geom.IPoint
-import com.soywiz.korma.geom.Point
-import com.soywiz.korma.geom.compare
+import com.soywiz.korma.geom.MPoint
 
 data class Edge internal constructor(
     val dummy: Boolean,
@@ -14,7 +13,7 @@ data class Edge internal constructor(
 
     companion object {
         operator fun invoke(p1: IPoint, p2: IPoint): Edge {
-            val comp = Point.compare(p1, p2)
+            val comp = MPoint.compare(p1, p2)
             if (comp == 0) throw Error("Repeat points")
             val p = if (comp < 0) p1 else p2
             val q = if (comp < 0) p2 else p1

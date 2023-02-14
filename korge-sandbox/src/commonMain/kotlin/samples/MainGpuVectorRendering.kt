@@ -8,7 +8,6 @@ import com.soywiz.korge.input.*
 import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.ui.uiButton
 import com.soywiz.korge.view.*
-import com.soywiz.korge.view.filter.*
 import com.soywiz.korge.view.vector.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
@@ -148,7 +147,7 @@ class MainGpuVectorRendering : Scene() {
                     globalAlpha = 0.75
                     fillStyle = BitmapPaint(
                         korgeBitmap,
-                        Matrix().translate(50, 50).scale(0.125),
+                        MMatrix().translate(50, 50).scale(0.125),
                         cycleX = CycleMethod.REPEAT,
                         cycleY = CycleMethod.REPEAT
                     )
@@ -159,7 +158,7 @@ class MainGpuVectorRendering : Scene() {
                     globalAlpha = 0.9
                     fillStyle =
                         //createLinearGradient(150.0, 0.0, 200.0, 50.0)
-                        createLinearGradient(0.0, 0.0, 100.0, 100.0, transform = Matrix().scale(0.5).pretranslate(300, 0))
+                        createLinearGradient(0.0, 0.0, 100.0, 100.0, transform = MMatrix().scale(0.5).pretranslate(300, 0))
                             //.addColorStop(0.0, Colors.BLACK).addColorStop(1.0, Colors.WHITE)
                             .addColorStop(0.0, Colors.RED).addColorStop(0.5, Colors.GREEN).addColorStop(1.0, Colors.BLUE)
                     clip({

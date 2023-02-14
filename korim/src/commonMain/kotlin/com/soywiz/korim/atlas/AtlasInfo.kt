@@ -32,14 +32,14 @@ data class AtlasInfo(
     )
 
     data class Rect(val x: Int, val y: Int, val w: Int, val h: Int) {
-        val rect get() = Rectangle(x, y, w, h)
+        val rect get() = MRectangle(x, y, w, h)
 
         fun toRectangleInt() : RectangleInt = RectangleInt(x, y, w, h)
         fun toMap() = mapOf("x" to x, "y" to y, "w" to w, "h" to h)
     }
 
     data class Size(val width: Int, val height: Int) {
-        val size get() = com.soywiz.korma.geom.Size(width, height)
+        val size get() = com.soywiz.korma.geom.MSize(width, height)
 
         fun toMap() = mapOf("w" to width, "h" to height)
     }
@@ -110,7 +110,7 @@ data class AtlasInfo(
             spriteSourceSize: Rect,
             trimmed: Boolean,
             orig: Size = Size(0, 0),
-            offset: Point = Point(),
+            offset: MPoint = MPoint(),
         ) : this(
             name = name,
             frame = frame,
@@ -141,7 +141,7 @@ data class AtlasInfo(
         val orig: Size get() = sourceSize
 
         @Deprecated("Use virtFrame", ReplaceWith("Point(virtFrame?.x ?: 0, virtFrame?.y ?: 0)"))
-        val offset: Point get() = Point(virtFrame?.x ?: 0, virtFrame?.y ?: 0)
+        val offset: MPoint get() = MPoint(virtFrame?.x ?: 0, virtFrame?.y ?: 0)
 
         // @TODO: Rename to path or name
         //@IgnoreSerialization
@@ -319,9 +319,9 @@ data class AtlasInfo(
             val r = ListReader(content.lines())
             var pageImage: Any? = null
 
-            fun String.point(): Point {
+            fun String.point(): MPoint {
                 val list = this.split(',', limit = 2)
-                return Point(list.first().trim().toInt(), list.last().trim().toInt())
+                return MPoint(list.first().trim().toInt(), list.last().trim().toInt())
             }
 
             fun String.size(): Size = point().let { Size(it.x.toInt(), it.y.toInt()) }
@@ -380,10 +380,10 @@ data class AtlasInfo(
                 } else {
                     val name = line
                     var rotate = false
-                    var xy = Point()
+                    var xy = MPoint()
                     var size = Size(0, 0)
                     var orig = Size(0, 0)
-                    var offset = Point()
+                    var offset = MPoint()
                     while (r.hasMore && r.peek().contains(':')) {
                         val (key, value) = r.read().trim().keyValue()
                         when (key) {

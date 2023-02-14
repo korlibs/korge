@@ -1,20 +1,16 @@
 package com.soywiz.korge.ui
 
-import com.soywiz.kds.iterators.*
 import com.soywiz.klock.*
-import com.soywiz.kmem.*
 import com.soywiz.korev.*
 import com.soywiz.korge.animate.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.tween.*
 import com.soywiz.korge.view.*
-import com.soywiz.korge.view.filter.*
 import com.soywiz.korge.view.property.*
 import com.soywiz.korgw.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.font.*
-import com.soywiz.korim.paint.*
 import com.soywiz.korim.text.*
 import com.soywiz.korio.async.*
 import com.soywiz.korma.geom.*
@@ -22,7 +18,6 @@ import com.soywiz.korma.interpolation.*
 import com.soywiz.korma.length.*
 import com.soywiz.korma.length.LengthExtensions.Companion.pt
 import kotlin.math.*
-import kotlin.reflect.*
 
 inline fun Container.uiButton(
     label: String,
@@ -285,7 +280,7 @@ open class UIButton(
     }
 
     fun simulateClick(views: Views) {
-        touch.simulateTapAt(views, localToGlobal(Point(width * 0.5, height * 0.5)))
+        touch.simulateTapAt(views, localToGlobal(MPoint(width * 0.5, height * 0.5)))
     }
 
     open fun updatedUIButton(down: Boolean? = null, over: Boolean? = null, px: Double = 0.0, py: Double = 0.0, immediate: Boolean = false) {
@@ -308,7 +303,7 @@ open class UIButton(
             //        button::highlightAlpha[1.0],
             //        button::highlightPos[Point(px / button.width, py / button.height), Point(px / button.width, py / button.height)],
             //    ))
-            background.addHighlight(Point(px, py))
+            background.addHighlight(MPoint(px, py))
                 /*
             button.highlightPos.setTo(px / button.width, py / button.height)
             button.animatorEffects.tween(

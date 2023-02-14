@@ -15,7 +15,7 @@ import com.soywiz.korge.view.hasAncestor
 import com.soywiz.korio.lang.Cancellable
 import com.soywiz.korio.lang.cancel
 import com.soywiz.korma.geom.Angle
-import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.MRectangle
 import com.soywiz.korma.geom.degrees
 import com.soywiz.korma.geom.interpolate
 import com.soywiz.korma.geom.plus
@@ -47,7 +47,7 @@ class CameraContainerOld(
     private val contentContainer = Container()
 
     val content: Container = object : Container(), Reference {
-        override fun getLocalBoundsInternal(out: Rectangle) {
+        override fun getLocalBoundsInternal(out: MRectangle) {
             out.setTo(0, 0, this@CameraContainerOld.width, this@CameraContainerOld.height)
         }
     }

@@ -12,7 +12,7 @@ import com.soywiz.korim.color.*
 import com.soywiz.korim.tiles.*
 import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.Point.Companion.Zero
+import com.soywiz.korma.geom.MPoint.Companion.Zero
 import kotlin.math.*
 import kotlin.random.*
 
@@ -55,9 +55,9 @@ class MainTilemapTest : Scene() {
 
         var wasDown = false
         val downVals = object {
-            var mouse: Point = Point()
+            var mouse: MPoint = MPoint()
             var camAngle: Angle = 0.degrees
-            var camPos: Point = Point()
+            var camPos: MPoint = MPoint()
         }
 
         addUpdater {
@@ -68,7 +68,7 @@ class MainTilemapTest : Scene() {
                     wasDown = true
                     downVals.mouse.copyFrom(input.mouse)
                     downVals.camAngle = cameraContainer.cameraAngle
-                    downVals.camPos = Point(cameraContainer.cameraX, cameraContainer.cameraY)
+                    downVals.camPos = MPoint(cameraContainer.cameraX, cameraContainer.cameraY)
                 } else {
                     val rightMouse = (mouseButtons and 4) != 0
                     if (rightMouse) {
@@ -106,9 +106,9 @@ class MainTilemapTest : Scene() {
     ): IntArray2 {
         val rand = Random(3)
         val mapValues2 = IntArray2(mapWidth, mapWidth, 0)
-        val center = Point(mapWidth / 2, mapWidth / 2)
+        val center = MPoint(mapWidth / 2, mapWidth / 2)
         for (x in 0 until mapWidth) for (y in 0 until mapWidth) {
-            val p = Point(x, y)
+            val p = MPoint(x, y)
             val dist = (p - center).length
             val onDisc = dist < mapWidth / 2
             val tooClose = dist < (mapWidth / 2) * 0.7

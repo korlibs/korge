@@ -79,7 +79,7 @@ open class UIComboBox<T>(
 
     private val selectedButton = uiButton("", width = width, height = height).also {
         it.textAlignment = TextAlignment.MIDDLE_LEFT
-        it.textView.padding = Margin(0.0, 8.0)
+        it.textView.padding = IMargin(0.0, 8.0)
         it.bgColorOut = Colors.WHITE
         it.bgColorOver = MaterialColors.GRAY_100
         it.bgColorDisabled = MaterialColors.GRAY_100
@@ -128,7 +128,7 @@ open class UIComboBox<T>(
             //val filter = "twe"
             val it = UIButton(richText = richText, width = width, height = itemHeight).apply {
                 this.textAlignment = TextAlignment.MIDDLE_LEFT
-                this.textView.padding = Margin(0.0, 8.0)
+                this.textView.padding = IMargin(0.0, 8.0)
                 this.radius = 0.pt
                 this.bgColorOut = MaterialColors.GRAY_50
                 this.bgColorOver = MaterialColors.GRAY_400
@@ -154,7 +154,7 @@ open class UIComboBox<T>(
     private fun ensureSelectedIsInVisibleArea(index: Int) {
         verticalList.updateList()
         itemsView.ensureRectIsVisible(
-            Rectangle(
+            MRectangle(
                 0.0, verticalList.provider.getItemY(index),
                 width,
                 verticalList.provider.getItemHeight(index)
@@ -262,10 +262,10 @@ open class UIComboBox<T>(
         //itemsView.size(width, viewportHeight.toDouble()).position(0.0, height)
         itemsView
             .size(width, viewportHeight.toDouble())
-            .setGlobalXY(localToGlobal(Point(0.0, height + 8.0)))
+            .setGlobalXY(localToGlobal(MPoint(0.0, height + 8.0)))
         itemsViewBackground
             .size(width, itemsView.height + 16)
-            .setGlobalXY(localToGlobal(Point(0.0, height)))
+            .setGlobalXY(localToGlobal(MPoint(0.0, height)))
         verticalList
             .size(width, verticalList.height)
 

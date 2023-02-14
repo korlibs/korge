@@ -8,7 +8,7 @@ import com.soywiz.korim.bitmap.BmpSlice
 import com.soywiz.korim.color.RGBAf
 import com.soywiz.korma.geom.Angle
 import com.soywiz.korma.geom.IPoint
-import com.soywiz.korma.geom.Point
+import com.soywiz.korma.geom.MPoint
 import com.soywiz.korma.geom.degrees
 
 //e: java.lang.UnsupportedOperationException: Class literal annotation arguments are not yet supported: Factory
@@ -21,9 +21,9 @@ class ParticleEmitter() {
     var textureName: String? = null
 	var texture: BmpSlice? = null
     @ViewProperty
-	var sourcePosition = Point()
+	var sourcePosition = MPoint()
     @ViewProperty
-	var sourcePositionVariance = Point()
+	var sourcePositionVariance = MPoint()
     @ViewProperty
 	var speed = 100.0
     @ViewProperty
@@ -37,7 +37,7 @@ class ParticleEmitter() {
     @ViewProperty
 	var angleVariance: Angle = 360.0.degrees
     @ViewProperty
-	var gravity = Point()
+	var gravity = MPoint()
     @ViewProperty
 	var radialAcceleration = 0.0
     @ViewProperty

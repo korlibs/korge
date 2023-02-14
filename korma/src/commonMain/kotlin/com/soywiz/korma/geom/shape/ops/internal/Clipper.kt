@@ -43,8 +43,8 @@ package com.soywiz.korma.geom.shape.ops.internal
 import com.soywiz.kds.FastArrayList
 import com.soywiz.korma.geom.BoundsBuilder
 import com.soywiz.korma.geom.IPoint
-import com.soywiz.korma.geom.Point
-import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.MPoint
+import com.soywiz.korma.geom.MRectangle
 import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.acos
@@ -130,7 +130,7 @@ abstract class ClipperBase protected constructor(val isPreserveCollinear: Boolea
         var isFlat = true
 
         //1. Basic (first) edge initialization ...
-        edges[1].current = Point(pg[1])
+        edges[1].current = MPoint(pg[1])
         rangeTest(pg[0])
         rangeTest(pg[highI])
         initEdge(edges[0], edges[1], edges[highI], pg[0])
@@ -458,13 +458,13 @@ abstract class ClipperBase protected constructor(val isPreserveCollinear: Boolea
         while (lm != null) {
             var e = lm.leftBound
             if (e != null) {
-                e.current = Point(e.bot)
+                e.current = MPoint(e.bot)
                 e.side = Edge.Side.LEFT
                 e.outIdx = Edge.UNASSIGNED
             }
             e = lm.rightBound
             if (e != null) {
-                e.current = Point(e.bot)
+                e.current = MPoint(e.bot)
                 e.side = Edge.Side.RIGHT
                 e.outIdx = Edge.UNASSIGNED
             }
@@ -477,17 +477,17 @@ abstract class ClipperBase protected constructor(val isPreserveCollinear: Boolea
         private fun initEdge(e: Edge, eNext: Edge, ePrev: Edge, pt: IPoint) {
             e.next = eNext
             e.prev = ePrev
-            e.current = Point(pt)
+            e.current = MPoint(pt)
             e.outIdx = Edge.UNASSIGNED
         }
 
         private fun initEdge2(e: Edge, polyType: Clipper.PolyType) {
             if (e.current.y >= e.next!!.current.y) {
-                e.bot = Point(e.current)
-                e.top = Point(e.next!!.current)
+                e.bot = MPoint(e.current)
+                e.top = MPoint(e.next!!.current)
             } else {
-                e.top = Point(e.current)
-                e.bot = Point(e.next!!.current)
+                e.top = MPoint(e.current)
+                e.bot = MPoint(e.next!!.current)
             }
             e.updateDeltaX()
             e.polyTyp = polyType
@@ -531,7 +531,7 @@ class ClipperOffset(private val miterLimit: Double = 2.0, private val arcToleran
 
     private var miterLim: Double = 0.0
     private var stepsPerRad: Double = 0.0
-    private var lowest = Point(-1.0, 0.0)
+    private var lowest = MPoint(-1.0, 0.0)
 
     private val polyNodes: PolyNode = PolyNode()
 
@@ -575,11 +575,11 @@ class ClipperOffset(private val miterLimit: Double = 2.0, private val arcToleran
             return
         }
         if (lowest.x < 0) {
-            lowest = Point((polyNodes.childCount - 1), k)
+            lowest = MPoint((polyNodes.childCount - 1), k)
         } else {
             val ip = polyNodes.getChildren()[lowest.x.toInt()].polygon[lowest.y.toInt()]
             if (newNode.polygon[k].y > ip.y || newNode.polygon[k].y == ip.y && newNode.polygon[k].x < ip.x) {
-                lowest = Point((polyNodes.childCount - 1), k)
+                lowest = MPoint((polyNodes.childCount - 1), k)
             }
         }
     }
@@ -1266,7 +1266,7 @@ class DefaultClipper(initOptions: Int = 0) : ClipperBase(Clipper.PRESERVE_COLINE
             e = sortedEdges
             while (e!!.nextInSEL != null) {
                 val eNext = e.nextInSEL
-                val pt = Array(1) { Point() }
+                val pt = Array(1) { MPoint() }
                 if (e.current.x > eNext!!.current.x) {
                     intersectPoint(e, eNext, pt)
                     val newNode = IntersectNode()
@@ -1439,7 +1439,7 @@ class DefaultClipper(initOptions: Int = 0) : ClipperBase(Clipper.PRESERVE_COLINE
         while (eNext != null && eNext !== eMaxPair) {
             val tmp = vector2(e.top)
             intersectEdges(e, eNext, tmp)
-            e.top = Point(tmp)
+            e.top = MPoint(tmp)
             swapPositionsInAEL(e, eNext)
             eNext = e.nextInAEL
         }
@@ -2055,8 +2055,8 @@ class DefaultClipper(initOptions: Int = 0) : ClipperBase(Clipper.PRESERVE_COLINE
         }
     }
 
-    private fun intersectPoint(edge1: Edge, edge2: Edge, ipV: Array<Point>) {
-        ipV[0] = Point()
+    private fun intersectPoint(edge1: Edge, edge2: Edge, ipV: Array<MPoint>) {
+        ipV[0] = MPoint()
         val ip = ipV[0]
 
         val b1: Double
@@ -2692,7 +2692,7 @@ class DefaultClipper(initOptions: Int = 0) : ClipperBase(Clipper.PRESERVE_COLINE
         e.nextInLML!!.windCnt2 = e.windCnt2
         e = e.nextInLML!!
         eV[0] = e
-        e.current = Point(e.bot)
+        e.current = MPoint(e.bot)
         e.prevInAEL = aelPrev
         e.nextInAEL = aelNext
         if (!e.isHorizontal) {
@@ -3231,11 +3231,11 @@ class DefaultClipper(initOptions: Int = 0) : ClipperBase(Clipper.PRESERVE_COLINE
 class Edge {
     enum class Side { LEFT, RIGHT }
 
-    var bot: Point = Point(); set(v) { field.copyFrom(v) }
-    var current: Point = Point(); set(v) { field.copyFrom(v) }
-    var top: Point = Point(); set(v) { field.copyFrom(v) }
+    var bot: MPoint = MPoint(); set(v) { field.copyFrom(v) }
+    var current: MPoint = MPoint(); set(v) { field.copyFrom(v) }
+    var top: MPoint = MPoint(); set(v) { field.copyFrom(v) }
 
-    val delta: Point = Point()
+    val delta: MPoint = MPoint()
     var deltaX: Double = 0.0
 
     var polyTyp: Clipper.PolyType? = null
@@ -3789,7 +3789,7 @@ class Paths private constructor(private val al: FastArrayList<Path>) : MutableLi
         return result
     }
 
-    val bounds: Rectangle
+    val bounds: MRectangle
         get() {
             //var i = 0
             //val cnt = size

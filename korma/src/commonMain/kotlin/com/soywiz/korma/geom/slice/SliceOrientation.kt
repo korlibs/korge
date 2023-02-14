@@ -78,7 +78,7 @@ inline class SliceOrientation(
             SliceRotation.R270 -> (w1 - x) // done
         }
     }
-    fun getXY(width: Int, height: Int, x: Int, y: Int, out: PointInt = PointInt()): IPointInt =
+    fun getXY(width: Int, height: Int, x: Int, y: Int, out: MPointInt = MPointInt()): IPointInt =
         out.setTo(getX(width, height, x, y), getY(width, height, x, y))
 
     object Indices {

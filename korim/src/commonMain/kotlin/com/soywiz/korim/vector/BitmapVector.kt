@@ -5,12 +5,11 @@ import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.bitmap.NativeImageOrBitmap32
 import com.soywiz.korim.bitmap.context2d
 import com.soywiz.korim.color.RGBA
-import com.soywiz.korim.color.RgbaArray
 import com.soywiz.korma.geom.*
 
 class BitmapVector(
     val shape: BoundsDrawable,
-    val bounds: Rectangle = shape.bounds,
+    val bounds: MRectangle = shape.bounds,
     val scale: Double = 1.0,
     val rasterizerMethod: ShapeRasterizerMethod = ShapeRasterizerMethod.X4,
     val antialiasing: Boolean = true,

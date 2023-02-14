@@ -15,7 +15,7 @@ fun VectorPath.sdf(width: Int, height: Int): FloatArray2 = sdf(FloatArray2(width
 fun VectorPath.sdf(data: FloatArray2): FloatArray2 {
     val path = this
     val curvesList = path.toCurvesList()
-    val p = Point()
+    val p = MPoint()
     val pp = Bezier.ProjectedPoint()
     for (y in 0 until data.height) {
         for (x in 0 until data.width) {
@@ -61,7 +61,7 @@ fun VectorPath.msdfBmp(width: Int, height: Int): Bitmap32 {
 fun VectorPath.msdf(data: FloatBitmap32): FloatBitmap32 {
     val path = this
     val curvesList = path.toCurvesList()
-    val p = Point()
+    val p = MPoint()
 
     val colorizedCurves = curvesList.map { it.beziers.colorize(it.closed) }
     val allColorizedCurves = ColorizedBeziers(colorizedCurves.flatMap { it.beziers })
@@ -114,14 +114,14 @@ class ColorizedBeziers(val beziers: List<ColoredBezier>) {
 
 class ProjectCurvesLookup(val beziers: List<Bezier>) {
     private val tempProjected = Bezier.ProjectedPoint()
-    private val tempPoint = Point()
+    private val tempPoint = MPoint()
 
     fun closestDistance(point: IPoint): Double {
         closest(point, tempPoint)
-        return Point.distance(point, tempPoint)
+        return MPoint.distance(point, tempPoint)
     }
 
-    fun closest(point: IPoint, out: Point = Point()): IPoint {
+    fun closest(point: IPoint, out: MPoint = MPoint()): IPoint {
         if (beziers.isEmpty()) return out.setTo(0, 0)
 
         var minDistSq: Double = Double.POSITIVE_INFINITY

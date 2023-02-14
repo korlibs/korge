@@ -250,7 +250,7 @@ class GamepadInfo constructor(
     companion object {
         val DEFAULT_NAME2 = "Wireless Controller"
     }
-    private val axesData: Array<Point> = Array(2) { Point() }
+    private val axesData: Array<MPoint> = Array(2) { MPoint() }
 
     val fullName: String get() = "$name - $name2"
 
@@ -284,7 +284,7 @@ class GamepadInfo constructor(
     val ry: Double get() = this[GameButton.RY]
 
 	operator fun get(button: GameButton): Double = mapping.get(button, this)
-    operator fun get(stick: GameStick): Point = axesData[stick.id].apply {
+    operator fun get(stick: GameStick): MPoint = axesData[stick.id].apply {
         this.x = getX(stick)
         this.y = getY(stick)
     }

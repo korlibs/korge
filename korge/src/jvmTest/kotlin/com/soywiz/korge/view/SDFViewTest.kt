@@ -2,7 +2,6 @@ package com.soywiz.korge.view
 
 import com.soywiz.korag.shader.*
 import com.soywiz.korge.render.*
-import com.soywiz.korge.scene.*
 import com.soywiz.korge.testing.*
 import com.soywiz.korim.color.*
 import com.soywiz.korma.geom.*
@@ -27,7 +26,7 @@ class SDFViewTest {
     open class CircleSDFView(width: Double = 100.0, height: Double = 100.0, var time: Double = 0.0) : ShadedView(PROGRAM, width, height) {
         var radius = 0.49
         var feather = 0.005
-        var center = Point(0.5, 0.5)
+        var center = MPoint(0.5, 0.5)
 
         override fun renderInternal(ctx: RenderContext) {
             this.programUniforms[u_Center] = center

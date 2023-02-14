@@ -14,16 +14,13 @@ import com.soywiz.korge.view.container
 import com.soywiz.korge.view.image
 import com.soywiz.korge.view.position
 import com.soywiz.korge.view.solidRect
-import com.soywiz.korge.view.tween.*
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.bitmap.context2d
 import com.soywiz.korim.color.ColorAdd
 import com.soywiz.korim.color.Colors
 import com.soywiz.korio.async.AsyncThread
 import com.soywiz.korio.async.launchImmediately
-import com.soywiz.korma.geom.Anchor
-import com.soywiz.korma.geom.Point
-import com.soywiz.korma.geom.ScaleMode
+import com.soywiz.korma.geom.MPoint
 import com.soywiz.korma.geom.vector.circle
 import com.soywiz.korma.geom.vector.rect
 
@@ -66,8 +63,8 @@ class MainConnect4 : ScaledScene(448, 384) {
         }
         image(skeleton)
 
-        fun getPosition(column: Int, row: Int): Point {
-            return Point(column * 64.0 + 32.0, row * 64.0 + 32.0)
+        fun getPosition(column: Int, row: Int): MPoint {
+            return MPoint(column * 64.0 + 32.0, row * 64.0 + 32.0)
         }
 
         fun createChip(column: Int, row: Int, chip: Chip): Image {

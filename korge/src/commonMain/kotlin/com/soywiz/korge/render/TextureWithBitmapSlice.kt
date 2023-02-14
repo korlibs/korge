@@ -1,10 +1,8 @@
 package com.soywiz.korge.render
 
 import com.soywiz.korge.internal.KorgeInternal
-import com.soywiz.korim.bitmap.Bitmap
-import com.soywiz.korim.bitmap.BitmapSlice
 import com.soywiz.korim.bitmap.BmpSlice
-import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.MRectangle
 
 /**
  * A [texture] wrap that includes [scale] and [bounds] information.
@@ -15,5 +13,5 @@ data class TextureWithBitmapSlice(
 	val texture: BmpSlice,
 	val bitmapSlice: BmpSlice,
 	val scale: Double,
-	val bounds: Rectangle
+	val bounds: MRectangle
 )

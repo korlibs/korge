@@ -3,7 +3,7 @@ package com.soywiz.korim.vector.renderer
 import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.paint.BitmapPaint
 import com.soywiz.korim.vector.Context2d
-import com.soywiz.korma.geom.Matrix
+import com.soywiz.korma.geom.MMatrix
 import com.soywiz.korma.geom.vector.VectorPath
 import com.soywiz.korma.geom.vector.Winding
 import com.soywiz.korma.geom.vector.rect
@@ -41,13 +41,13 @@ abstract class Renderer {
         y: Double,
         width: Double = image.width.toDouble(),
         height: Double = image.height.toDouble(),
-        transform: Matrix = Matrix()
+        transform: MMatrix = MMatrix()
     ) {
         render(
             Context2d.State(
                 transform = transform,
                 path = VectorPath().apply {
-                    if (transform.getType() == Matrix.Type.IDENTITY) {
+                    if (transform.getType() == MMatrix.Type.IDENTITY) {
                         rect(x, y, width, height)
                     } else {
                         transformed(transform) {
@@ -57,7 +57,7 @@ abstract class Renderer {
                 },
                 fillStyle = BitmapPaint(
                     image,
-                    transform = Matrix()
+                    transform = MMatrix()
                         .scale(width / image.width.toDouble(), height / image.height.toDouble())
                         .translate(x, y)
                 )
@@ -67,7 +67,7 @@ abstract class Renderer {
     inline fun drawImage(
         image: Bitmap,
         x: Number, y: Number, width: Number = image.width, height: Number = image.height,
-        transform: Matrix = Matrix()
+        transform: MMatrix = MMatrix()
     ) = drawImage(image, x.toDouble(), y.toDouble(), width.toDouble(), height.toDouble(), transform)
 
     open fun dispose() {

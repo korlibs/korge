@@ -117,7 +117,7 @@ class UIMaterialLayer(
 
     @ViewProperty
     private fun addHighlightAction() {
-        addHighlight(Point(0.5, 0.5))
+        addHighlight(MPoint(0.5, 0.5))
     }
 
     fun addHighlight(pos: IPoint) {
