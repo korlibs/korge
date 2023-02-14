@@ -96,6 +96,7 @@ now they are available via kproject in these repositories:
 
 ### Animations
 
+* Basic Tweens & animators (Integrated in KorGE)
 * <https://github.com/korlibs/korge-swf>
 
 ### Skeletal Libraries
@@ -105,15 +106,18 @@ now they are available via kproject in these repositories:
 
 ### TileMaps / Level Loading
 
+* Basic TileSet + TileMap functionality (Integrated in KorGE)
 * <https://github.com/korlibs/korge-ldtk>
 * <https://github.com/korlibs/korge-tiled>
 
 ### Image Formats
 
+* PNG, QOI, ASE, PSD, Native Decoders (Integrated in KorGE)
 * <https://github.com/korlibs/korge-image-formats> (Pure Kotlin JPEG Encoder/Decoder)
 
 ### AudioFormats
 
+* MP3, WAV (Integrated in KorGE)
 * <https://github.com/korlibs/korge-audio-formats> (MOD, XM, S3M, MIDI (WIP), OPUS (WIP))
 
 ## Scripting
