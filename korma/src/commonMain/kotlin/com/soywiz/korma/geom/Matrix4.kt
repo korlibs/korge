@@ -1,5 +1,6 @@
 package com.soywiz.korma.geom
 
+import com.soywiz.korma.annotations.*
 import com.soywiz.korma.interpolation.interpolate
 import kotlin.math.abs
 import kotlin.math.floor
@@ -12,12 +13,37 @@ import kotlin.native.concurrent.ThreadLocal
 // @TODO: value class
 // Stored as four consecutive column vectors (effectively stored in column-major order) see https://en.wikipedia.org/wiki/Row-_and_column-major_order
 // v[Row][Column]
+@KormaExperimental
 data class Matrix4 internal constructor(
     val v00: Float, val v10: Float, val v20: Float, val v30: Float,
     val v01: Float, val v11: Float, val v21: Float, val v31: Float,
     val v02: Float, val v12: Float, val v22: Float, val v32: Float,
     val v03: Float, val v13: Float, val v23: Float, val v33: Float,
 ) {
+    val c0: Vector4 get() = Vector4(v00, v10, v20, v30)
+    val c1: Vector4 get() = Vector4(v01, v11, v21, v31)
+    val c2: Vector4 get() = Vector4(v02, v12, v22, v32)
+    val c3: Vector4 get() = Vector4(v03, v13, v23, v33)
+    fun c(column: Int): Vector4 = when (column) {
+        0 -> c0
+        1 -> c1
+        2 -> c2
+        3 -> c3
+        else -> error("Invalid column $column")
+    }
+
+    val r0: Vector4 get() = Vector4(v00, v01, v02, v03)
+    val r1: Vector4 get() = Vector4(v10, v11, v12, v13)
+    val r2: Vector4 get() = Vector4(v20, v21, v22, v23)
+    val r3: Vector4 get() = Vector4(v30, v31, v32, v33)
+    fun r(row: Int): Vector4 = when (row) {
+        0 -> r0
+        1 -> r1
+        2 -> r2
+        3 -> r3
+        else -> error("Invalid row $row")
+    }
+
     companion object {
         fun fromColumns(
             v00: Float, v10: Float, v20: Float, v30: Float,

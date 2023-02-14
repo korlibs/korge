@@ -1,13 +1,15 @@
 package com.soywiz.korma.geom
 
+import com.soywiz.korma.annotations.*
 import com.soywiz.korma.internal.niceStr
 import com.soywiz.korma.interpolation.interpolate
 import com.soywiz.korma.math.almostEquals
 import kotlin.math.sqrt
 
+@KormaExperimental
 data class Vector3(val x: Float, val y: Float, val z: Float)
 
-@Deprecated("Use Vector3")
+//@Deprecated("Use Vector3")
 interface IVector3 {
     val x: Float
     val y: Float
@@ -21,7 +23,7 @@ operator fun IVector3.get(index: Int) = when (index) {
     else -> 0f
 }
 
-@Deprecated("Use Vector3")
+//@Deprecated("Use Vector3")
 interface IMVector3 : IVector3 {
     override var x: Float
     override var y: Float
@@ -38,10 +40,10 @@ operator fun IMVector3.set(index: Int, value: Float) {
     }
 }
 
-@Deprecated("Use Vector3")
-fun vec(x: Float, y: Float, z: Float): MVector3 = MVector3(x, y, z)
+//@Deprecated("Use Vector3")
+fun mvec(x: Float, y: Float, z: Float): MVector3 = MVector3(x, y, z)
 
-@Deprecated("Use Vector3")
+//@Deprecated("Use Vector3")
 class MVector3 : IMVector3 {
     val data: FloatArray = FloatArray(3)
 

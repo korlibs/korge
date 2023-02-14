@@ -1,5 +1,6 @@
 package com.soywiz.korma.geom
 
+import com.soywiz.korma.annotations.*
 import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.acos
@@ -9,6 +10,7 @@ import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.sqrt
 
+@KormaExperimental
 data class Quaternion(
     val x: Double,
     val y: Double,
@@ -16,7 +18,7 @@ data class Quaternion(
     val w: Double,
 )
 
-@Deprecated("Use Quaternion instead")
+//@Deprecated("Use Quaternion instead")
 interface IQuaternion {
     val x: Double
     val y: Double
@@ -25,7 +27,7 @@ interface IQuaternion {
 }
 
 // https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
-@Deprecated("Use Quaternion instead")
+//@Deprecated("Use Quaternion instead")
 data class MQuaternion(
     override var x: Double = 0.0,
     override var y: Double = 0.0,

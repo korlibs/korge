@@ -3,6 +3,7 @@
 package com.soywiz.korma.geom
 
 import com.soywiz.kds.*
+import com.soywiz.korma.annotations.*
 import com.soywiz.korma.interpolation.Interpolable
 import com.soywiz.korma.interpolation.MutableInterpolable
 import com.soywiz.korma.interpolation.interpolate
@@ -16,6 +17,7 @@ import kotlin.math.floor
 import kotlin.math.hypot
 import kotlin.math.sin
 
+@KormaExperimental
 data class Matrix(
     val a: Double,
     val b: Double,
@@ -25,7 +27,7 @@ data class Matrix(
     val ty: Double
 )
 
-@Deprecated("Use Matrix instead")
+//@Deprecated("Use Matrix instead")
 interface IMatrix {
     val a: Double
     val b: Double
@@ -35,7 +37,7 @@ interface IMatrix {
     val ty: Double
 }
 
-@Deprecated("Use Matrix instead")
+//@Deprecated("Use Matrix instead")
 data class MMatrix(
     override var a: Double = 1.0,
     override var b: Double = 0.0,

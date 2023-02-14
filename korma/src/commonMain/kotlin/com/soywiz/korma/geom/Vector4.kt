@@ -1,14 +1,15 @@
 package com.soywiz.korma.geom
 
-
+import com.soywiz.korma.annotations.*
 import com.soywiz.korma.internal.niceStr
 import com.soywiz.korma.interpolation.interpolate
 import com.soywiz.korma.math.almostEquals
 import kotlin.math.sqrt
 
+@KormaExperimental
 data class Vector4(val x: Float, val y: Float, val z: Float, val w: Float)
 
-@Deprecated("Use Vector4")
+//@Deprecated("Use Vector4")
 typealias MVector3D = MVector4
 
 /*
@@ -34,7 +35,7 @@ interface Vector4 : Vector3, IVector4 {
 */
 
 // @TODO: To inline class wrapping FloatArray?
-@Deprecated("Use Vector4")
+//@Deprecated("Use Vector4")
 class MVector4 : IMVector3 {
     val data = floatArrayOf(0f, 0f, 0f, 1f)
 

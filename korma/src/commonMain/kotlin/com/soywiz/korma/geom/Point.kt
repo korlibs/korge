@@ -8,9 +8,11 @@ import com.soywiz.korma.interpolation.Interpolable
 import com.soywiz.korma.interpolation.MutableInterpolable
 import com.soywiz.korma.interpolation.interpolate
 import com.soywiz.kmem.clamp
+import com.soywiz.korma.annotations.*
 import com.soywiz.korma.math.isAlmostEquals
 import com.soywiz.korma.math.isAlmostZero
 import com.soywiz.korma.math.roundDecimalPlaces
+import kotlin.jvm.*
 import kotlin.math.*
 
 typealias Vector2D = Point
@@ -21,26 +23,34 @@ typealias MVector2D = MPoint
 // VALUE CLASSES
 //////////////////////////////
 
-fun test() {
-    val p = (Point(1, 2) + Point(3, 4)) * 2
-}
+@KormaExperimental
+inline fun Point(x: Int, y: Int): Point = Point(x.toDouble(), y.toDouble())
+@KormaExperimental
+inline fun Point(x: Float, y: Float): Point = Point(x.toDouble(), y.toDouble())
 
+//data class Point(val x: Double, val y: Double) {
+// @JvmInline value
+@KormaExperimental
 data class Point(val x: Double, val y: Double) {
-    constructor(x: Int, y: Int) : this(x.toDouble(), y.toDouble())
-    constructor(x: Float, y: Float) : this(x.toDouble(), y.toDouble())
+    //constructor(x: Int, y: Int) : this(x.toDouble(), y.toDouble())
+    //constructor(x: Float, y: Float) : this(x.toDouble(), y.toDouble())
 
-    operator fun plus(that: Point): Point = Point(x + that.x, y + that.y)
-    operator fun minus(that: Point): Point = Point(x - that.x, y - that.y)
-    operator fun times(that: Point): Point = Point(x * that.x, y * that.y)
-    operator fun div(that: Point): Point = Point(x / that.x, y / that.y)
+    //operator fun component1(): Double = x
+    //operator fun component2(): Double = y
 
-    operator fun times(scale: Double): Point = Point(x * scale, y * scale)
-    operator fun times(scale: Float): Point = this * scale.toDouble()
-    operator fun times(scale: Int): Point = this * scale.toDouble()
 
-    operator fun div(scale: Double): Point = Point(x / scale, y / scale)
-    operator fun div(scale: Float): Point = this / scale.toDouble()
-    operator fun div(scale: Int): Point = this / scale.toDouble()
+    inline operator fun plus(that: Point): Point = Point(x + that.x, y + that.y)
+    inline operator fun minus(that: Point): Point = Point(x - that.x, y - that.y)
+    inline operator fun times(that: Point): Point = Point(x * that.x, y * that.y)
+    inline operator fun div(that: Point): Point = Point(x / that.x, y / that.y)
+
+    inline operator fun times(scale: Double): Point = Point(x * scale, y * scale)
+    inline operator fun times(scale: Float): Point = this * scale.toDouble()
+    inline operator fun times(scale: Int): Point = this * scale.toDouble()
+
+    inline operator fun div(scale: Double): Point = Point(x / scale, y / scale)
+    inline operator fun div(scale: Float): Point = this / scale.toDouble()
+    inline operator fun div(scale: Int): Point = this / scale.toDouble()
 
     fun distanceTo(x: Double, y: Double): Double = hypot(x - this.x, y - this.y)
     fun distanceTo(x: Float, y: Float): Double = this.distanceTo(x.toDouble(), y.toDouble())
@@ -52,7 +62,7 @@ data class Point(val x: Double, val y: Double) {
     fun angleTo(other: Point): Angle = Angle.between(this.x, this.y, other.x, other.y)
     val angle: Angle get() = Angle.between(0.0, 0.0, this.x, this.y)
 
-    fun transformed(m: MMatrix): Point = Point(m.transformX(x, y), m.transformY(x, y))
+    inline fun transformed(m: MMatrix): Point = Point(m.transformX(x, y), m.transformY(x, y))
     fun transformX(m: MMatrix?): Double = m?.transformX(x, y) ?: x
     fun transformY(m: MMatrix?): Double = m?.transformY(x, y) ?: y
     operator fun get(component: Int) = when (component) {
@@ -80,12 +90,15 @@ data class Point(val x: Double, val y: Double) {
         this.x.isAlmostEquals(other.x, epsilon) && this.y.isAlmostEquals(other.y, epsilon)
 
     companion object {
-        /** Constructs a point from polar coordinates determined by an [angle] and a [length]. Angle 0 is pointing to the right, and the direction is counter-clock-wise */
-        fun fromPolar(x: Double, y: Double, angle: Angle, length: Double = 1.0): Point = Point(x + angle.cosine * length, y + angle.sine * length)
-        fun fromPolar(base: Point, angle: Angle, length: Double = 1.0): Point = fromPolar(base.x, base.y, angle, length)
-        fun fromPolar(angle: Angle, length: Double = 1.0): Point = fromPolar(0.0, 0.0, angle, length)
+        //inline operator fun invoke(x: Int, y: Int): Point = Point(x.toDouble(), y.toDouble())
+        //inline operator fun invoke(x: Float, y: Float): Point = Point(x.toDouble(), y.toDouble())
 
-        fun middle(a: Point, b: Point): Point = (a + b) * 0.5
+        /** Constructs a point from polar coordinates determined by an [angle] and a [length]. Angle 0 is pointing to the right, and the direction is counter-clock-wise */
+        inline fun fromPolar(x: Double, y: Double, angle: Angle, length: Double = 1.0): Point = Point(x + angle.cosine * length, y + angle.sine * length)
+        inline fun fromPolar(base: Point, angle: Angle, length: Double = 1.0): Point = fromPolar(base.x, base.y, angle, length)
+        inline fun fromPolar(angle: Angle, length: Double = 1.0): Point = fromPolar(0.0, 0.0, angle, length)
+
+        inline fun middle(a: Point, b: Point): Point = (a + b) * 0.5
 
         fun angle(ax: Double, ay: Double, bx: Double, by: Double): Angle = Angle.between(ax, ay, bx, by)
         fun angle(x1: Double, y1: Double, x2: Double, y2: Double, x3: Double, y3: Double): Angle = Angle.between(x1 - x2, y1 - y2, x1 - x3, y1 - y3)
@@ -104,13 +117,13 @@ data class Point(val x: Double, val y: Double) {
         fun distanceSquared(x1: Double, y1: Double, x2: Double, y2: Double): Double = square(x1 - x2) + square(y1 - y2)
         fun distanceSquared(x1: Int, y1: Int, x2: Int, y2: Int): Int = square(x1 - x2) + square(y1 - y2)
 
-        fun direction(a: Point, b: Point): Point = b - a
+        inline fun direction(a: Point, b: Point): Point = b - a
 
         fun compare(l: Point, r: Point): Int = compare(l.x, l.y, r.x, r.y)
         fun compare(lx: Double, ly: Double, rx: Double, ry: Double): Int = ly.compareTo(ry).let { ret -> if (ret == 0) lx.compareTo(rx) else ret }
 
-        private fun square(x: Double) = x * x
-        private fun square(x: Int) = x * x
+        private fun square(x: Double): Double = x * x
+        private fun square(x: Int): Int = x * x
 
         fun dot(aX: Double, aY: Double, bX: Double, bY: Double): Double = (aX * bX) + (aY * bY)
         fun dot(a: Point, b: Point): Double = dot(a.x, a.y, b.x, b.y)
@@ -136,6 +149,7 @@ data class Point(val x: Double, val y: Double) {
     }
 }
 
+@KormaExperimental
 data class PointInt(val x: Int, val y: Int) {
     operator fun plus(that: PointInt): PointInt = PointInt(this.x + that.x, this.y + that.y)
     operator fun minus(that: PointInt): PointInt = PointInt(this.x - that.x, this.y - that.y)
@@ -148,7 +162,7 @@ data class PointInt(val x: Int, val y: Int) {
 // IMMUTABLE INTERFACES
 //////////////////////////////
 
-@Deprecated("Use Point instead")
+//@Deprecated("Use Point instead")
 interface IPoint {
     companion object {
         val ZERO: IPoint = MPoint(0, 0)
@@ -214,7 +228,7 @@ interface IPoint {
 
 fun IPoint.copy(x: Double = this.x, y: Double = this.y): IPoint = IPoint(x, y)
 
-@Deprecated("Use Point instead")
+//@Deprecated("Use Point instead")
 interface IMPoint : IPoint {
     override var x: Double
     override var y: Double
@@ -224,7 +238,7 @@ interface IMPoint : IPoint {
 // MUTABLE IMPLEMENTATIONS
 //////////////////////////////
 
-@Deprecated("Use Point instead")
+//@Deprecated("Use Point instead")
 data class MPoint(
     override var x: Double,
     override var y: Double
