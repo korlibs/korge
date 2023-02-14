@@ -10,12 +10,40 @@ import kotlin.native.concurrent.ThreadLocal
 
 // @TODO: WIP
 // @TODO: value class
-data class Matrix4(
-    val v00: Float, val v01: Float, val v02: Float, val v03: Float,
-    val v10: Float, val v11: Float, val v12: Float, val v13: Float,
-    val v20: Float, val v21: Float, val v22: Float, val v23: Float,
-    val v30: Float, val v31: Float, val v32: Float, val v33: Float,
-)
+// Stored as four consecutive column vectors (effectively stored in column-major order) see https://en.wikipedia.org/wiki/Row-_and_column-major_order
+// v[Row][Column]
+data class Matrix4 internal constructor(
+    val v00: Float, val v10: Float, val v20: Float, val v30: Float,
+    val v01: Float, val v11: Float, val v21: Float, val v31: Float,
+    val v02: Float, val v12: Float, val v22: Float, val v32: Float,
+    val v03: Float, val v13: Float, val v23: Float, val v33: Float,
+) {
+    companion object {
+        fun fromColumns(
+            v00: Float, v10: Float, v20: Float, v30: Float,
+            v01: Float, v11: Float, v21: Float, v31: Float,
+            v02: Float, v12: Float, v22: Float, v32: Float,
+            v03: Float, v13: Float, v23: Float, v33: Float,
+        ): Matrix4 = Matrix4(
+            v00, v10, v20, v30,
+            v01, v11, v21, v31,
+            v02, v12, v22, v32,
+            v03, v13, v23, v33,
+        )
+
+        fun fromRows(
+            v00: Float, v01: Float, v02: Float, v03: Float,
+            v10: Float, v11: Float, v12: Float, v13: Float,
+            v20: Float, v21: Float, v22: Float, v23: Float,
+            v30: Float, v31: Float, v32: Float, v33: Float,
+        ): Matrix4 = Matrix4(
+            v00, v10, v20, v30,
+            v01, v11, v21, v31,
+            v02, v12, v22, v32,
+            v03, v13, v23, v33,
+        )
+    }
+}
 
 enum class MajorOrder { ROW, COLUMN }
 
