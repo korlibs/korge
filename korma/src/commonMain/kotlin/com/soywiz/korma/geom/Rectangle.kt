@@ -1,6 +1,7 @@
 package com.soywiz.korma.geom
 
 import com.soywiz.kds.*
+import com.soywiz.korma.annotations.*
 import com.soywiz.korma.internal.niceStr
 import com.soywiz.korma.interpolation.Interpolable
 import com.soywiz.korma.interpolation.MutableInterpolable
@@ -11,6 +12,7 @@ import kotlin.math.max
 import kotlin.math.min
 
 // @TODO: Value Class
+@KormaExperimental
 data class Rectangle(
     val x: Double,
     val y: Double,
@@ -18,7 +20,7 @@ data class Rectangle(
     val height: Double,
 )
 
-@Deprecated("Use Rectangle instead")
+//@Deprecated("Use Rectangle instead")
 interface IRectangle {
     val x: Double
     val y: Double
@@ -111,7 +113,7 @@ fun IRectangle.contains(x: Double, y: Double) = (x >= left && x < right) && (y >
 fun IRectangle.contains(x: Float, y: Float) = contains(x.toDouble(), y.toDouble())
 fun IRectangle.contains(x: Int, y: Int) = contains(x.toDouble(), y.toDouble())
 
-@Deprecated("Use Rectangle instead")
+//@Deprecated("Use Rectangle instead")
 data class MRectangle(
     override var x: Double, override var y: Double,
     override var width: Double, override var height: Double

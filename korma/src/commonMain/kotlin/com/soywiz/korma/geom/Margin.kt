@@ -1,8 +1,10 @@
 package com.soywiz.korma.geom
 
 import com.soywiz.kds.*
+import com.soywiz.korma.annotations.*
 
 // @TODO: value class
+@KormaExperimental
 data class Margin(
     val top: Double,
     val right: Double,
@@ -11,6 +13,7 @@ data class Margin(
 )
 
 // @TODO: value class
+@KormaExperimental
 data class MarginInt(
     val top: Int,
     val right: Int,
@@ -18,7 +21,7 @@ data class MarginInt(
     val left: Int,
 )
 
-@Deprecated("Use Margin")
+//@Deprecated("Use Margin")
 interface IMargin {
     val top: Double
     val right: Double
@@ -47,7 +50,7 @@ val IMargin.topPlusBottom: Double get() = top + bottom
 val IMargin.horizontal: Double get() = (left + right) / 2
 val IMargin.vertical: Double get() = (top + bottom) / 2
 
-@Deprecated("Use Margin")
+//@Deprecated("Use Margin")
 data class MMargin(
     override var top: Double = 0.0,
     override var right: Double = 0.0,
@@ -70,7 +73,7 @@ data class MMargin(
     }
 }
 
-@Deprecated("Use MarginInt")
+//@Deprecated("Use MarginInt")
 interface IMarginInt {
     val top: Int
     val right: Int
@@ -93,7 +96,7 @@ val IMarginInt.topPlusBottom: Int get() = top + bottom
 val IMarginInt.horizontal: Int get() = (left + right) / 2
 val IMarginInt.vertical: Int get() = (top + bottom) / 2
 
-@Deprecated("Use MarginInt")
+//@Deprecated("Use MarginInt")
 data class MMarginInt(
     override var top: Int = 0,
     override var right: Int = 0,

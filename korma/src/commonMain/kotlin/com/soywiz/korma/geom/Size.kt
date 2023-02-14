@@ -1,5 +1,6 @@
 package com.soywiz.korma.geom
 
+import com.soywiz.korma.annotations.*
 import com.soywiz.korma.internal.niceStr
 import com.soywiz.korma.interpolation.Interpolable
 import com.soywiz.korma.interpolation.MutableInterpolable
@@ -7,6 +8,7 @@ import com.soywiz.korma.interpolation.interpolate
 import kotlin.math.max
 import kotlin.math.min
 
+@KormaExperimental
 data class Size(val width: Double, val height: Double) {
     constructor() : this(0.0, 0.0)
     constructor(width: Float, height: Float) : this(width.toDouble(), height.toDouble())
@@ -15,7 +17,7 @@ data class Size(val width: Double, val height: Double) {
     override fun toString(): String = "Size(width=${width.niceStr}, height=${height.niceStr})"
 }
 
-@Deprecated("Use Size")
+//@Deprecated("Use Size")
 interface ISize {
     val width: Double
     val height: Double
@@ -35,7 +37,7 @@ interface ISize {
 fun MPoint.asSize(): MSize = MSize(this)
 fun IPoint.asSize(): ISize = MSize(MPoint(this))
 
-@Deprecated("Use Size")
+//@Deprecated("Use Size")
 inline class MSize(val p: MPoint) : MutableInterpolable<MSize>, Interpolable<MSize>, ISize, Sizeable {
     companion object {
         operator fun invoke(): MSize = MSize(MPoint(0, 0))
