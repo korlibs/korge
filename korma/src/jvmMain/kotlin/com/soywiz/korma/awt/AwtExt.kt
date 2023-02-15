@@ -1,21 +1,20 @@
 package com.soywiz.korma.awt
 
 import com.soywiz.korma.geom.MRectangle
-import com.soywiz.korma.geom.RectangleInt
+import com.soywiz.korma.geom.MRectangleInt
 import com.soywiz.korma.geom.MSize
-import com.soywiz.korma.geom.setTo
 import java.awt.geom.Rectangle2D
 
 fun MRectangle.toAwt(out: Rectangle2D.Float = Rectangle2D.Float()): Rectangle2D.Float =
     out.also { it.setRect(this.x.toFloat(), this.y.toFloat(), this.width.toFloat(), this.height.toFloat()) }
 
-fun RectangleInt.toAwt(out: java.awt.Rectangle = java.awt.Rectangle()): java.awt.Rectangle =
+fun MRectangleInt.toAwt(out: java.awt.Rectangle = java.awt.Rectangle()): java.awt.Rectangle =
     out.also { out.setBounds(this.x, this.y, this.width, this.height) }
 
 fun Rectangle2D.Float.toKorma(out: MRectangle = MRectangle()): MRectangle =
     out.also { it.setTo(this.x, this.y, this.width, this.height) }
 
-fun java.awt.Rectangle.toKorma(out: RectangleInt = RectangleInt()): RectangleInt =
+fun java.awt.Rectangle.toKorma(out: MRectangleInt = MRectangleInt()): MRectangleInt =
     out.also { out.setTo(this.x, this.y, this.width, this.height) }
 
 fun java.awt.geom.Dimension2D.toKorma(out: MSize = MSize()) =

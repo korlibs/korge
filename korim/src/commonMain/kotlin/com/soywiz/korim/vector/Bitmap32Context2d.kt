@@ -18,7 +18,7 @@ import com.soywiz.korim.paint.GradientPaint
 import com.soywiz.korim.paint.NoneFiller
 import com.soywiz.korim.paint.NonePaint
 import com.soywiz.korim.vector.rasterizer.Rasterizer
-import com.soywiz.korma.geom.float
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.shape.emitPoints2
 import com.soywiz.korma.geom.vector.RastScale
 import com.soywiz.korma.geom.vector.StrokeToFill

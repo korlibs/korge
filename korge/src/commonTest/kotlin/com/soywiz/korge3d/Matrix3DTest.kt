@@ -1,27 +1,8 @@
 package com.soywiz.korge3d
 
-import com.soywiz.korma.geom.MEulerRotation
-import com.soywiz.korma.geom.MMatrix
-import com.soywiz.korma.geom.MMatrix3D
-import com.soywiz.korma.geom.MPoint
-import com.soywiz.korma.geom.Position3D
-import com.soywiz.korma.geom.MQuaternion
-import com.soywiz.korma.geom.Scale3D
-import com.soywiz.korma.geom.MVector4
-import com.soywiz.korma.geom.degrees
-import com.soywiz.korma.geom.fromRows
-import com.soywiz.korma.geom.getTRS
-import com.soywiz.korma.geom.invert
-import com.soywiz.korma.geom.setTRS
-import com.soywiz.korma.geom.setToMap
-import com.soywiz.korma.geom.times
-import com.soywiz.korma.geom.toMatrix3D
-import kotlin.math.abs
-import kotlin.math.pow
-import kotlin.math.round
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertTrue
+import com.soywiz.korma.geom.*
+import kotlin.math.*
+import kotlin.test.*
 
 class Matrix3DTest {
     val transMat = MMatrix3D.fromRows(

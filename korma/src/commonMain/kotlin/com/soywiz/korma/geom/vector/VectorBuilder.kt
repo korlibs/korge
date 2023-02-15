@@ -1,29 +1,9 @@
 package com.soywiz.korma.geom.vector
 
-import com.soywiz.korma.annotations.KorDslMarker
-import com.soywiz.korma.annotations.RootViewDslMarker
-import com.soywiz.korma.annotations.VectorDslMarker
-import com.soywiz.korma.annotations.ViewDslMarker
-import com.soywiz.korma.geom.Angle
-import com.soywiz.korma.geom.IPoint
-import com.soywiz.korma.geom.IPointArrayList
-import com.soywiz.korma.geom.IRectangle
-import com.soywiz.korma.geom.IRectangleInt
-import com.soywiz.korma.geom.MMatrix
-import com.soywiz.korma.geom.PointArrayList
-import com.soywiz.korma.geom.MRectangle
-import com.soywiz.korma.geom.bezier.Arc
-import com.soywiz.korma.geom.bezier.Bezier
-import com.soywiz.korma.geom.bezier.Curves
-import com.soywiz.korma.geom.bezier.toVectorPath
-import com.soywiz.korma.geom.cosine
-import com.soywiz.korma.geom.degrees
-import com.soywiz.korma.geom.minus
-import com.soywiz.korma.geom.plus
-import com.soywiz.korma.geom.sine
-import com.soywiz.korma.geom.times
-import com.soywiz.korma.geom.unaryMinus
-import kotlin.jvm.JvmName
+import com.soywiz.korma.annotations.*
+import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.bezier.*
+import kotlin.jvm.*
 
 @KorDslMarker
 @ViewDslMarker

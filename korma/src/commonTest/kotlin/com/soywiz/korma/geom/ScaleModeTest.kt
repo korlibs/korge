@@ -6,11 +6,11 @@ import kotlin.test.assertEquals
 class ScaleModeTest {
     @Test
     fun size() {
-        assertEquals(SizeInt(300, 300), SizeInt(100, 100).fitTo(SizeInt(600, 300)))
-        assertEquals(SizeInt(300, 300), SizeInt(100, 100).applyScaleMode(SizeInt(600, 300), ScaleMode.SHOW_ALL))
-        assertEquals(SizeInt(600, 600), SizeInt(100, 100).applyScaleMode(SizeInt(600, 300), ScaleMode.COVER))
-        assertEquals(SizeInt(600, 300), SizeInt(100, 100).applyScaleMode(SizeInt(600, 300), ScaleMode.EXACT))
-        assertEquals(SizeInt(100, 100), SizeInt(100, 100).applyScaleMode(SizeInt(600, 300), ScaleMode.NO_SCALE))
+        assertEquals(MSizeInt(300, 300), MSizeInt(100, 100).fitTo(MSizeInt(600, 300)))
+        assertEquals(MSizeInt(300, 300), MSizeInt(100, 100).applyScaleMode(MSizeInt(600, 300), ScaleMode.SHOW_ALL))
+        assertEquals(MSizeInt(600, 600), MSizeInt(100, 100).applyScaleMode(MSizeInt(600, 300), ScaleMode.COVER))
+        assertEquals(MSizeInt(600, 300), MSizeInt(100, 100).applyScaleMode(MSizeInt(600, 300), ScaleMode.EXACT))
+        assertEquals(MSizeInt(100, 100), MSizeInt(100, 100).applyScaleMode(MSizeInt(600, 300), ScaleMode.NO_SCALE))
     }
 
     @Test

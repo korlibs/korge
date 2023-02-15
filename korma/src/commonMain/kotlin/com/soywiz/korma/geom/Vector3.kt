@@ -6,55 +6,44 @@ import com.soywiz.korma.interpolation.interpolate
 import com.soywiz.korma.math.almostEquals
 import kotlin.math.sqrt
 
-@KormaExperimental
+@KormaValueApi
 data class Vector3(val x: Float, val y: Float, val z: Float)
 
 //@Deprecated("Use Vector3")
+@KormaMutableApi
 interface IVector3 {
     val x: Float
     val y: Float
     val z: Float
-}
 
-operator fun IVector3.get(index: Int) = when (index) {
-    0 -> x
-    1 -> y
-    2 -> z
-    else -> 0f
-}
-
-//@Deprecated("Use Vector3")
-interface IMVector3 : IVector3 {
-    override var x: Float
-    override var y: Float
-    override var z: Float
-
-    val vector: Vector3 get() = Vector3(x, y, z)
-}
-
-operator fun IMVector3.set(index: Int, value: Float) {
-    when (index) {
-        0 -> x = value
-        1 -> y = value
-        2 -> z = value
+    operator fun get(index: Int): Float = when (index) {
+        0 -> x
+        1 -> y
+        2 -> z
+        else -> 0f
     }
+
 }
 
 //@Deprecated("Use Vector3")
+@KormaMutableApi
 fun mvec(x: Float, y: Float, z: Float): MVector3 = MVector3(x, y, z)
 
 //@Deprecated("Use Vector3")
-class MVector3 : IMVector3 {
+@KormaMutableApi
+class MVector3 : IVector3 {
     val data: FloatArray = FloatArray(3)
 
     override var x: Float get() = data[0]; set(value) { data[0] = value }
     override var y: Float get() = data[1]; set(value) { data[1] = value }
     override var z: Float get() = data[2]; set(value) { data[2] = value }
 
+    val vector: Vector3 get() = Vector3(x, y, z)
+
     val lengthSquared: Float get() = (x * x) + (y * y) + (z * z)
     val length: Float get() = sqrt(lengthSquared)
 
-    operator fun get(index: Int): Float = data[index]
+    override operator fun get(index: Int): Float = data[index]
     operator fun set(index: Int, value: Float) { data[index] = value }
 
     companion object {
@@ -103,15 +92,15 @@ class MVector3 : IMVector3 {
 
     fun normalized(out: MVector3 = MVector3()): MVector3 = out.copyFrom(this).normalize()
 
-    fun dot(v2: MVector4): Float = this.x*v2.x + this.y*v2.y + this.z*v2.y
+    fun dot(v2: MVector3): Float = (this.x * v2.x) + (this.y * v2.y) + (this.z * v2.y)
 
-    operator fun plus(that: MVector4) = MVector4(this.x + that.x, this.y + that.y, this.z + that.z)
-    operator fun minus(that: MVector4) = MVector4(this.x - that.x, this.y - that.y, this.z - that.z)
-    operator fun times(scale: Float) = MVector4(x * scale, y * scale, z * scale)
+    operator fun plus(that: MVector3): MVector3 = MVector3(this.x + that.x, this.y + that.y, this.z + that.z)
+    operator fun minus(that: MVector3): MVector3 = MVector3(this.x - that.x, this.y - that.y, this.z - that.z)
+    operator fun times(scale: Float): MVector3 = MVector3(x * scale, y * scale, z * scale)
 
-    fun sub(l: MVector3, r: MVector3) = setTo(l.x - r.x, l.y - r.y, l.z - r.z)
-    fun add(l: MVector3, r: MVector3) = setTo(l.x + r.x, l.y + r.y, l.z + r.z)
-    fun cross(a: MVector3, b: MVector3) = setTo(
+    fun sub(l: MVector3, r: MVector3): MVector3 = setTo(l.x - r.x, l.y - r.y, l.z - r.z)
+    fun add(l: MVector3, r: MVector3): MVector3 = setTo(l.x + r.x, l.y + r.y, l.z + r.z)
+    fun cross(a: MVector3, b: MVector3): MVector3 = setTo(
         (a.y * b.z - a.z * b.y),
         (a.z * b.x - a.x * b.z),
         (a.x * b.y - a.y * b.x),

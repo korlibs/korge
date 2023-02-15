@@ -24,7 +24,7 @@ abstract class Bitmap(
     val bpp: Int,
     premultiplied: Boolean,
     val backingArray: Any?
-) : Sizeable, ISizeInt, Extra by Extra.Mixin() {
+) : ISizeable, ISizeInt, Extra by Extra.Mixin() {
     var bitmapName: String? = null
 
     var premultiplied: Boolean = premultiplied
@@ -51,7 +51,7 @@ abstract class Bitmap(
     var dirtyRegion: IRectangleInt? = null
         private set
 
-    private val dirtyRegionObj: RectangleInt = RectangleInt()
+    private val dirtyRegionObj: MRectangleInt = MRectangleInt()
 
     /** Specifies whether mipmaps should be created for this [Bitmap] */
     var mipmaps: Boolean = false

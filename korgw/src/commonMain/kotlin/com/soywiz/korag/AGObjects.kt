@@ -1,6 +1,5 @@
 package com.soywiz.korag
 
-import com.soywiz.kds.iterators.*
 import com.soywiz.klogger.*
 import com.soywiz.kmem.*
 import com.soywiz.kmem.unit.*
@@ -152,8 +151,8 @@ open class AGFrameBuffer(val base: AGFrameBufferBase, val id: Int = -1) : Closea
     var height = DEFAULT_INITIAL_HEIGHT
     var fullWidth = DEFAULT_INITIAL_WIDTH
     var fullHeight = DEFAULT_INITIAL_HEIGHT
-    private val _scissor = RectangleInt()
-    var scissor: RectangleInt? = null
+    private val _scissor = MRectangleInt()
+    var scissor: MRectangleInt? = null
 
     open fun setSize(width: Int, height: Int) {
         setSize(0, 0, width, height)
@@ -174,7 +173,7 @@ open class AGFrameBuffer(val base: AGFrameBufferBase, val id: Int = -1) : Closea
         markAsDirty()
     }
 
-    fun scissor(scissor: RectangleInt?) {
+    fun scissor(scissor: MRectangleInt?) {
         this.scissor = scissor?.let { _scissor.setTo(it) }
     }
 

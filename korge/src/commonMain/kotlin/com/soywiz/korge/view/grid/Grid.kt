@@ -6,7 +6,7 @@ import com.soywiz.korge.render.useLineBatcher
 import com.soywiz.korim.color.Colors
 import com.soywiz.korma.geom.MMatrix
 import com.soywiz.korma.geom.MPoint
-import com.soywiz.korma.geom.RectangleInt
+import com.soywiz.korma.geom.MRectangleInt
 import com.soywiz.korma.geom.vector.rect
 
 interface Grid {
@@ -41,7 +41,7 @@ open class OrthographicGrid(
         val transform = matrix.toTransform()
         ctx.useLineBatcher { ctxLine ->
             ctxLine.draw(matrix) {
-                val rect = RectangleInt(0, 0, width.toInt(), height.toInt())
+                val rect = MRectangleInt(0, 0, width.toInt(), height.toInt())
                 val dx = transform.scaleX * gridWidth
                 val dy = transform.scaleY * gridHeight
                 //println("dxy: $dx, $dy")

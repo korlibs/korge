@@ -16,15 +16,12 @@ import com.soywiz.korma.geom.IPoint
 import com.soywiz.korma.geom.MLine
 import com.soywiz.korma.geom.MMatrix
 import com.soywiz.korma.geom.MPoint
+import com.soywiz.korma.geom.MRectangle
 import com.soywiz.korma.geom.PointArrayList
 import com.soywiz.korma.geom.PointPool
-import com.soywiz.korma.geom.MRectangle
 import com.soywiz.korma.geom.bezier.*
 import com.soywiz.korma.geom.degrees
-import com.soywiz.korma.geom.expand
 import com.soywiz.korma.geom.fastForEachGeneric
-import com.soywiz.korma.geom.minus
-import com.soywiz.korma.geom.plus
 import com.soywiz.korma.geom.shape.*
 import com.soywiz.korma.geom.vector.*
 import kotlin.math.absoluteValue

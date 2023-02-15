@@ -1,34 +1,19 @@
 package samples
 
-import com.soywiz.kds.extraProperty
-import com.soywiz.klock.measureTime
-import com.soywiz.korge.input.mouse
-import com.soywiz.korge.input.onMouseDrag
-import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.view.SContainer
-import com.soywiz.korge.view.SolidRect
-import com.soywiz.korge.view.View
-import com.soywiz.korge.view.addUpdater
-import com.soywiz.korge.view.line
-import com.soywiz.korge.view.outline
-import com.soywiz.korge.view.solidRect
-import com.soywiz.korge.view.text
-import com.soywiz.korge.view.xy
-import com.soywiz.korim.color.Colors
+import com.soywiz.kds.*
+import com.soywiz.klock.*
+import com.soywiz.korge.input.*
+import com.soywiz.korge.scene.*
+import com.soywiz.korge.view.*
+import com.soywiz.korim.color.*
 import com.soywiz.korim.font.*
 import com.soywiz.korio.util.*
-import com.soywiz.korma.geom.MPoint
-import com.soywiz.korma.geom.Ray
-import com.soywiz.korma.geom.MRectangle
-import com.soywiz.korma.geom.MSize
-import com.soywiz.korma.geom.cosine
-import com.soywiz.korma.geom.ds.BVH2D
-import com.soywiz.korma.geom.shape.buildVectorPath
-import com.soywiz.korma.geom.sine
-import com.soywiz.korma.geom.vector.VectorPath
-import com.soywiz.korma.geom.vector.rect
-import com.soywiz.korma.random.get
-import kotlin.random.Random
+import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.ds.*
+import com.soywiz.korma.geom.shape.*
+import com.soywiz.korma.geom.vector.*
+import com.soywiz.korma.random.*
+import kotlin.random.*
 
 class MainBVH : Scene() {
     var SolidRect.movingDirection by extraProperty { -1 }
@@ -62,7 +47,7 @@ class MainBVH : Scene() {
         }
         val center = MPoint(width / 2, height / 2)
         val dir = MPoint(-1, -1)
-        val ray = Ray(center, dir)
+        val ray = MRay(center, dir)
         val statusText = text("", font = DefaultTtfFontAsBitmap)
         var selectedRectangle = MRectangle(MPoint(100, 100) - MPoint(50, 50), MSize(100, 100))
         val rayLine = line(center, center + (dir * 1000), Colors.WHITE)

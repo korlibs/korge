@@ -1,9 +1,6 @@
 package com.soywiz.korge.input
 
-import com.soywiz.korma.geom.Angle
-import com.soywiz.korma.geom.MPoint
-import com.soywiz.korma.geom.degrees
-import com.soywiz.korma.geom.minus
+import com.soywiz.korma.geom.*
 
 enum class SwipeRecognizerDirection(val dx: Int, val dy: Int) {
     UP(0, -1),

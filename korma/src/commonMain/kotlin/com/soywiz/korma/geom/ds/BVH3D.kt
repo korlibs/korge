@@ -4,7 +4,7 @@ import com.soywiz.kds.FastArrayList
 import com.soywiz.kds.ds.*
 import com.soywiz.kds.fastArrayListOf
 import com.soywiz.korma.geom.AABB3D
-import com.soywiz.korma.geom.Ray3D
+import com.soywiz.korma.geom.MRay3D
 
 fun BVHIntervals.toAABB3D(out: AABB3D = AABB3D()): AABB3D {
     out.min.setTo(a(0), a(1), a(2))
@@ -19,7 +19,7 @@ fun AABB3D.toBVH(out: BVHIntervals = BVHIntervals(3)): BVHIntervals {
     )
     return out
 }
-fun Ray3D.toBVH(out: BVHIntervals = BVHIntervals(3)): BVHIntervals {
+fun MRay3D.toBVH(out: BVHIntervals = BVHIntervals(3)): BVHIntervals {
     out.setTo(
         pos.x.toDouble(), dir.x.toDouble(),
         pos.y.toDouble(), dir.y.toDouble(),
@@ -30,19 +30,19 @@ fun Ray3D.toBVH(out: BVHIntervals = BVHIntervals(3)): BVHIntervals {
 
 /**
  * A Bounding Volume Hierarchy implementation for 3D.
- * It uses [AABB3D] to describe volumes and [Ray3D] for raycasting.
+ * It uses [AABB3D] to describe volumes and [MRay3D] for raycasting.
  */
 open class BVH3D<T>(
     val allowUpdateObjects: Boolean = true
 ) {
     val bvh = BVH<T>(allowUpdateObjects = allowUpdateObjects)
 
-    fun intersectRay(ray: Ray3D, rect: AABB3D? = null) = bvh.intersectRay(ray.toBVH(), rect?.toBVH())
+    fun intersectRay(ray: MRay3D, rect: AABB3D? = null) = bvh.intersectRay(ray.toBVH(), rect?.toBVH())
 
     fun envelope(): AABB3D = bvh.envelope().toAABB3D()
 
     fun intersect(
-        ray: Ray3D,
+        ray: MRay3D,
         return_array: FastArrayList<BVH.IntersectResult<T>> = fastArrayListOf(),
     ) = bvh.intersect(ray.toBVH(), return_array)
 

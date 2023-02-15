@@ -2,9 +2,7 @@ package com.soywiz.korma.geom.binpack
 
 import com.soywiz.kds.FastArrayList
 import com.soywiz.kds.iterators.fastForEach
-import com.soywiz.korma.geom.MRectangle
-import com.soywiz.korma.geom.MSize
-import com.soywiz.korma.geom.Sizeable
+import com.soywiz.korma.geom.*
 import kotlin.collections.Iterable
 import kotlin.collections.List
 import kotlin.collections.filterNotNull
@@ -31,7 +29,7 @@ class BinPacker(val width: Double, val height: Double, val algo: Algo = MaxRects
 
     val allocated = FastArrayList<MRectangle>()
 
-    fun <T> Algo.addBatch(items: Iterable<T>, getSize: (T) -> MSize): List<Pair<T, MRectangle?>> {
+    fun <T> Algo.addBatch(items: Iterable<T>, getSize: (T) -> ISize): List<Pair<T, MRectangle?>> {
         val its = items.toList()
         val out = hashMapOf<T, MRectangle?>()
         val sorted = its.map { it to getSize(it) }.sortedByDescending { it.second.area }
@@ -54,26 +52,26 @@ class BinPacker(val width: Double, val height: Double, val algo: Algo = MaxRects
     fun addOrNull(width: Int, height: Int): MRectangle? = addOrNull(width.toDouble(), height.toDouble())
     fun addOrNull(width: Float, height: Float): MRectangle? = addOrNull(width.toDouble(), height.toDouble())
 
-    fun <T> addBatch(items: Iterable<T>, getSize: (T) -> MSize): Result<T> {
+    fun <T> addBatch(items: Iterable<T>, getSize: (T) -> ISize): Result<T> {
         return Result(width, height, algo.addBatch(items, getSize))
     }
 
-    fun addBatch(items: Iterable<MSize>): List<MRectangle?> = algo.addBatch(items) { it }.map { it.second }
+    fun addBatch(items: Iterable<ISize>): List<MRectangle?> = algo.addBatch(items) { it }.map { it.second }
 
     companion object {
         operator fun invoke(width: Double, height: Double, algo: Algo = MaxRects(width, height)) = BinPacker(width, height, algo)
         operator fun invoke(width: Int, height: Int, algo: Algo = MaxRects(width.toDouble(), height.toDouble())) = BinPacker(width.toDouble(), height.toDouble(), algo)
         operator fun invoke(width: Float, height: Float, algo: Algo = MaxRects(width.toDouble(), height.toDouble())) = BinPacker(width.toDouble(), height.toDouble(), algo)
 
-        fun <T> pack(width: Double, height: Double, items: Iterable<T>, getSize: (T) -> MSize): Result<T> = BinPacker(width, height).addBatch(items, getSize)
-        fun <T> pack(width: Int, height: Int, items: Iterable<T>, getSize: (T) -> MSize): Result<T> = pack(width.toDouble(), height.toDouble(), items, getSize)
-        fun <T> pack(width: Float, height: Float, items: Iterable<T>, getSize: (T) -> MSize): Result<T> = pack(width.toDouble(), height.toDouble(), items, getSize)
+        fun <T> pack(width: Double, height: Double, items: Iterable<T>, getSize: (T) -> ISize): Result<T> = BinPacker(width, height).addBatch(items, getSize)
+        fun <T> pack(width: Int, height: Int, items: Iterable<T>, getSize: (T) -> ISize): Result<T> = pack(width.toDouble(), height.toDouble(), items, getSize)
+        fun <T> pack(width: Float, height: Float, items: Iterable<T>, getSize: (T) -> ISize): Result<T> = pack(width.toDouble(), height.toDouble(), items, getSize)
 
         fun <T> packSeveral(
             maxWidth: Double,
             maxHeight: Double,
             items: Iterable<T>,
-            getSize: (T) -> MSize
+            getSize: (T) -> ISize
         ): List<Result<T>> {
             var currentBinPacker = BinPacker(maxWidth, maxHeight)
             var currentPairs = FastArrayList<Pair<T, MRectangle>>()
@@ -125,8 +123,8 @@ class BinPacker(val width: Double, val height: Double, val algo: Algo = MaxRects
 
             return out
         }
-        fun <T : Sizeable> packSeveral(maxWidth: Int, maxHeight: Int, items: Iterable<T>): List<Result<T>> = packSeveral(maxWidth.toDouble(), maxHeight.toDouble(), items) { it.size }
-        fun <T : Sizeable> packSeveral(maxWidth: Float, maxHeight: Float, items: Iterable<T>): List<Result<T>> = packSeveral(maxWidth.toDouble(), maxHeight.toDouble(), items) { it.size }
+        fun <T : ISizeable> packSeveral(maxWidth: Int, maxHeight: Int, items: Iterable<T>): List<Result<T>> = packSeveral(maxWidth.toDouble(), maxHeight.toDouble(), items) { it.size }
+        fun <T : ISizeable> packSeveral(maxWidth: Float, maxHeight: Float, items: Iterable<T>): List<Result<T>> = packSeveral(maxWidth.toDouble(), maxHeight.toDouble(), items) { it.size }
     }
 
     class ImageDoNotFitException(val width: Double, val height: Double, val packer: BinPacker) : Throwable(

@@ -492,7 +492,7 @@ class TileMap(
     }
 
     override fun getLocalBoundsInternal(out: MRectangle) {
-        out.setTo(0, 0, tileWidth * stackedIntMap.width, tileHeight * stackedIntMap.height)
+        out.setTo(0.0, 0.0, tileWidth * stackedIntMap.width, tileHeight * stackedIntMap.height)
     }
 
     fun repeat(repeatX: TileMapRepeat, repeatY: TileMapRepeat = repeatX): TileMap {

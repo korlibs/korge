@@ -3,7 +3,7 @@ package com.soywiz.korge.view
 import com.soywiz.korag.log.AGLog
 import com.soywiz.korge.render.RenderContext
 import com.soywiz.korge.render.testRenderContext
-import com.soywiz.korma.geom.SizeInt
+import com.soywiz.korma.geom.MSizeInt
 import kotlin.test.*
 
 class FixedSizeContainerTest {
@@ -11,8 +11,8 @@ class FixedSizeContainerTest {
     @Ignore
     fun test() {
         testRenderContext {
-            val windowSize = SizeInt(640, 480)
-            val virtualSize = SizeInt(512, 512)
+            val windowSize = MSizeInt(640, 480)
+            val virtualSize = MSizeInt(512, 512)
             val ag: AGLog = AGLog(windowSize.width, windowSize.height)
             val bp: BoundsProvider = BoundsProvider.Base()
             bp.setBoundsInfo(virtualSize.width, virtualSize.height, windowSize)

@@ -1,24 +1,15 @@
 package samples
 
-import com.soywiz.klock.timesPerSecond
-import com.soywiz.korge.scene.ScaledScene
-import com.soywiz.korge.view.SContainer
-import com.soywiz.korge.view.Text
-import com.soywiz.korge.view.addFixedUpdater
-import com.soywiz.korge.view.position
-import com.soywiz.korge.view.text
-import com.soywiz.korim.bitmap.effect.BitmapEffect
-import com.soywiz.korim.color.Colors
-import com.soywiz.korim.font.BitmapFont
-import com.soywiz.korim.font.DefaultTtfFont
-import com.soywiz.korim.font.GlyphMetrics
-import com.soywiz.korim.paint.LinearGradientPaint
-import com.soywiz.korim.text.CreateStringTextRenderer
-import com.soywiz.korim.text.TextAlignment
-import com.soywiz.korio.lang.WStringReader
-import com.soywiz.korma.geom.degrees
-import com.soywiz.korma.geom.plus
-import com.soywiz.korma.geom.sin
+import com.soywiz.klock.*
+import com.soywiz.korge.scene.*
+import com.soywiz.korge.view.*
+import com.soywiz.korim.bitmap.effect.*
+import com.soywiz.korim.color.*
+import com.soywiz.korim.font.*
+import com.soywiz.korim.paint.*
+import com.soywiz.korim.text.*
+import com.soywiz.korio.lang.*
+import com.soywiz.korma.geom.*
 
 
 class MainText : ScaledScene(512, 160) {

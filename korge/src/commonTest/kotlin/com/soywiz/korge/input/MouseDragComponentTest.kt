@@ -6,13 +6,13 @@ import com.soywiz.korge.view.solidRect
 import com.soywiz.korim.color.Colors
 import com.soywiz.korma.geom.MMatrix
 import com.soywiz.korma.geom.MPoint
-import com.soywiz.korma.geom.SizeInt
+import com.soywiz.korma.geom.MSizeInt
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class MouseDragComponentTest : ViewsForTesting(
-    virtualSize = SizeInt(100, 100),
-    windowSize = SizeInt(200, 200),
+    virtualSize = MSizeInt(100, 100),
+    windowSize = MSizeInt(200, 200),
 ) {
     @Test
     fun testStageScale() = viewsTest {

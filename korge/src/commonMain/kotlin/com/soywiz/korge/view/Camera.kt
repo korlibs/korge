@@ -6,7 +6,6 @@ import com.soywiz.korge.tween.get
 import com.soywiz.korge.tween.tween
 import com.soywiz.korma.geom.MMatrix
 import com.soywiz.korma.geom.MRectangle
-import com.soywiz.korma.geom.setTo
 import com.soywiz.korma.interpolation.Easing
 
 /**
@@ -36,7 +35,7 @@ class Camera : Container(), View.Reference {
         get() = referenceParent?.height ?: 100.0
 
     override fun getLocalBoundsInternal(out: MRectangle) {
-		out.setTo(0, 0, width, height)
+		out.setTo(0.0, 0.0, width, height)
 	}
 
 	fun getLocalMatrixFittingGlobalRect(rect: MRectangle): MMatrix {

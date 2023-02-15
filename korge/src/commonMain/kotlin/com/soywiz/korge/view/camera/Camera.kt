@@ -20,7 +20,6 @@ import com.soywiz.korma.geom.MRectangle
 import com.soywiz.korma.geom.ScaleMode
 import com.soywiz.korma.geom.degrees
 import com.soywiz.korma.geom.interpolate
-import com.soywiz.korma.geom.setTo
 import com.soywiz.korma.interpolation.Easing
 import com.soywiz.korma.interpolation.MutableInterpolable
 import com.soywiz.korma.interpolation.interpolate
@@ -52,7 +51,7 @@ class CameraContainer(
     class ContentContainer(val cameraContainer: CameraContainer) : FixedSizeContainer(cameraContainer.width, cameraContainer.height), Reference {
         override fun getLocalBoundsInternal(out: MRectangle) {
             //out.setTo(0, 0, cameraContainer.width, cameraContainer.height)
-            out.setTo(0, 0, width, height)
+            out.setTo(0.0, 0.0, width, height)
         }
     }
 

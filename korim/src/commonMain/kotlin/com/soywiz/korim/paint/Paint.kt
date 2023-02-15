@@ -1,24 +1,13 @@
 package com.soywiz.korim.paint
 
-import com.soywiz.kds.DoubleArrayList
-import com.soywiz.kds.IDoubleArrayList
-import com.soywiz.kds.IntArrayList
-import com.soywiz.kmem.clamp
-import com.soywiz.korim.bitmap.Bitmap
+import com.soywiz.kds.*
+import com.soywiz.kmem.*
+import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
-import com.soywiz.korim.vector.CycleMethod
-import com.soywiz.korma.geom.Angle
-import com.soywiz.korma.geom.MMatrix
-import com.soywiz.korma.geom.MPoint
-import com.soywiz.korma.geom.degrees
-import com.soywiz.korma.geom.div
-import com.soywiz.korma.geom.unaryMinus
-import com.soywiz.korma.geom.vector.LineCap
-import com.soywiz.korma.geom.vector.LineJoin
-import com.soywiz.korma.geom.vector.LineScaleMode
-import com.soywiz.korma.geom.vector.StrokeInfo
-import com.soywiz.korma.geom.vector.VectorPath
-import kotlin.math.sqrt
+import com.soywiz.korim.vector.*
+import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.vector.*
+import kotlin.math.*
 
 interface Paint {
     fun clone(): Paint

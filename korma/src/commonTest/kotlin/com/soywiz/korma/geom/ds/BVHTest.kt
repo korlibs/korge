@@ -13,7 +13,7 @@ class BVHTest {
         tree.insertOrUpdate(MRectangle(50, 50, 20, 20), "2")
         //tree.remove(Rectangle(20, 15, 20, 20), "1")
 
-        val intersection = tree.intersect(Ray(MPoint(25, 100), MVector2D(0, -1)))
+        val intersection = tree.intersect(MRay(MPoint(25, 100), MVector2D(0, -1)))
         val rectSearch = tree.search(MRectangle(0.0, 0.0, 60.0, 60.0))
 
         //assertEquals(1, intersection.size)

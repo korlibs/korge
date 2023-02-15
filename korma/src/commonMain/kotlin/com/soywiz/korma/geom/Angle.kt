@@ -1,16 +1,10 @@
 package com.soywiz.korma.geom
 
-import com.soywiz.korma.geom.range.OpenRange
-import com.soywiz.korma.internal.niceStr
-import com.soywiz.korma.internal.umod
-import com.soywiz.korma.interpolation.interpolate
-import com.soywiz.korma.math.isAlmostEquals
-import com.soywiz.korma.math.roundDecimalPlaces
-import kotlin.math.PI
-import kotlin.math.absoluteValue
-import kotlin.math.atan2
-import kotlin.math.max
-import kotlin.math.min
+import com.soywiz.korma.geom.range.*
+import com.soywiz.korma.internal.*
+import com.soywiz.korma.interpolation.*
+import com.soywiz.korma.math.*
+import kotlin.math.*
 
 @PublishedApi internal const val PI2 = PI * 2.0
 @PublishedApi internal const val DEG2RAD = PI / 180.0
@@ -44,6 +38,7 @@ import kotlin.math.min
  *
  * The equivalent old [Angle] constructor is now [Angle.fromRadians]
  */
+//@KormaValueApi
 inline class Angle private constructor(
     /** [0..1] ratio -> [0..360] degrees */
     val ratio: Double
@@ -52,6 +47,62 @@ inline class Angle private constructor(
     val radians: Double get() = ratioToRadians(ratio)
     /** [0..360] degrees -> [0..PI * 2] radians -> [0..1] ratio */
     val degrees: Double get() = ratioToDegrees(ratio)
+
+    val cosine: Double get() = kotlin.math.cos(radians)
+    val sine: Double get() = kotlin.math.sin(radians)
+    val tangent: Double get() = kotlin.math.tan(radians)
+
+    val absoluteValue: Angle get() = fromRatio(ratio.absoluteValue)
+    fun shortDistanceTo(other: Angle): Angle = Angle.shortDistanceTo(this, other)
+    fun longDistanceTo(other: Angle): Angle = Angle.longDistanceTo(this, other)
+
+    operator fun times(scale: Double): Angle = fromRatio(this.ratio * scale)
+    operator fun div(scale: Double): Angle = fromRatio(this.ratio / scale)
+    operator fun times(scale: Float): Angle = this * scale.toDouble()
+    operator fun div(scale: Float): Angle = this / scale.toDouble()
+    operator fun times(scale: Int): Angle = this * scale.toDouble()
+    operator fun div(scale: Int): Angle = this / scale.toDouble()
+    operator fun rem(angle: Angle): Angle = fromRatio(this.ratio % angle.ratio)
+    infix fun umod(angle: Angle): Angle = fromRatio(this.ratio umod angle.ratio)
+
+    operator fun div(other: Angle): Double = this.ratio / other.ratio // Ratio
+    operator fun plus(other: Angle): Angle = fromRatio(this.ratio + other.ratio)
+    operator fun minus(other: Angle): Angle = fromRatio(this.ratio - other.ratio)
+    operator fun unaryMinus(): Angle = fromRatio(-ratio)
+    operator fun unaryPlus(): Angle = fromRatio(+ratio)
+
+    fun inBetweenInclusive(min: Angle, max: Angle): Boolean = inBetween(min, max, inclusive = true)
+    fun inBetweenExclusive(min: Angle, max: Angle): Boolean = inBetween(min, max, inclusive = false)
+
+    infix fun inBetween(range: ClosedRange<Angle>): Boolean = inBetween(range.start, range.endInclusive, inclusive = true)
+    infix fun inBetween(range: OpenRange<Angle>): Boolean = inBetween(range.start, range.endExclusive, inclusive = false)
+
+    fun inBetween(min: Angle, max: Angle, inclusive: Boolean): Boolean {
+        val nthis = this.normalized
+        val nmin = min.normalized
+        val nmax = max.normalized
+        @Suppress("ConvertTwoComparisonsToRangeCheck")
+        return when {
+            nmin > nmax -> nthis >= nmin || (if (inclusive) nthis <= nmax else nthis < nmax)
+            else -> nthis >= nmin && (if (inclusive) nthis <= nmax else nthis < nmax)
+        }
+    }
+
+    fun isAlmostEquals(other: Angle, diff: Double = 0.001): Boolean = this.ratio.isAlmostEquals(other.ratio, diff)
+    fun isAlmostZero(diff: Double = 0.001): Boolean = isAlmostEquals(ZERO, diff)
+    val normalized: Angle get() = fromRatio(ratio umod 1.0)
+
+    override operator fun compareTo(other: Angle): Int = this.ratio.compareTo(other.ratio)
+
+    //override fun compareTo(other: Angle): Int {
+    //    //return this.radians.compareTo(other.radians) // @TODO: Double.compareTo calls EnterFrame/LeaveFrame! because it uses a Double companion object
+    //    val left = this.ratio
+    //    val right = other.ratio
+    //    // @TODO: Handle infinite/NaN? Though usually this won't happen
+    //    if (left < right) return -1
+    //    if (left > right) return +1
+    //    return 0
+    //}
 
     override fun toString(): String = "${degrees.roundDecimalPlaces(2).niceStr}.degrees"
 
@@ -104,70 +155,18 @@ inline class Angle private constructor(
         inline fun between(o: IPoint, v1: IPoint, v2: IPoint): Angle = between(o.x, o.y, v1.x, v1.y, v2.x, v2.y)
         inline fun between(o: Point, v1: Point, v2: Point): Angle = between(o.x, o.y, v1.x, v1.y, v2.x, v2.y)
     }
-
-    override fun compareTo(other: Angle): Int {
-        //return this.radians.compareTo(other.radians) // @TODO: Double.compareTo calls EnterFrame/LeaveFrame! because it uses a Double companion object
-        val left = this.ratio
-        val right = other.ratio
-        // @TODO: Handle infinite/NaN? Though usually this won't happen
-        if (left < right) return -1
-        if (left > right) return +1
-        return 0
-    }
 }
 
-val Angle.cosine: Double get() = cos(this)
-val Angle.sine: Double get() = sin(this)
-val Angle.tangent: Double get() = tan(this)
-
-inline fun cos(angle: Angle): Double = kotlin.math.cos(angle.radians)
-inline fun sin(angle: Angle): Double = kotlin.math.sin(angle.radians)
-inline fun tan(angle: Angle): Double = kotlin.math.tan(angle.radians)
+inline fun cos(angle: Angle): Double = angle.cosine
+inline fun sin(angle: Angle): Double = angle.sine
+inline fun tan(angle: Angle): Double = angle.tangent
 inline fun abs(angle: Angle): Angle = Angle.fromRatio(angle.ratio.absoluteValue)
 inline fun min(a: Angle, b: Angle): Angle = Angle.fromRatio(min(a.ratio, b.ratio))
 inline fun max(a: Angle, b: Angle): Angle = Angle.fromRatio(max(a.ratio, b.ratio))
 
-val Angle.absoluteValue: Angle get() = Angle.fromRatio(ratio.absoluteValue)
-fun Angle.shortDistanceTo(other: Angle): Angle = Angle.shortDistanceTo(this, other)
-fun Angle.longDistanceTo(other: Angle): Angle = Angle.longDistanceTo(this, other)
-
-operator fun Angle.times(scale: Double): Angle = Angle.fromRatio(this.ratio * scale)
-operator fun Angle.div(scale: Double): Angle = Angle.fromRatio(this.ratio / scale)
-operator fun Angle.times(scale: Float): Angle = this * scale.toDouble()
-operator fun Angle.div(scale: Float): Angle = this / scale.toDouble()
-operator fun Angle.times(scale: Int): Angle = this * scale.toDouble()
-operator fun Angle.div(scale: Int): Angle = this / scale.toDouble()
-operator fun Angle.rem(angle: Angle): Angle = Angle.fromRatio(this.ratio % angle.ratio)
-infix fun Angle.umod(angle: Angle): Angle = Angle.fromRatio(this.ratio umod angle.ratio)
-
-operator fun Angle.div(other: Angle): Double = this.ratio / other.ratio // Ratio
-operator fun Angle.plus(other: Angle): Angle = Angle.fromRatio(this.ratio + other.ratio)
-operator fun Angle.minus(other: Angle): Angle = Angle.fromRatio(this.ratio - other.ratio)
-operator fun Angle.unaryMinus(): Angle = Angle.fromRatio(-ratio)
-operator fun Angle.unaryPlus(): Angle = Angle.fromRatio(+ratio)
-operator fun Angle.compareTo(other: Angle): Int = this.ratio.compareTo(other.ratio)
 operator fun ClosedRange<Angle>.contains(angle: Angle): Boolean = angle.inBetween(this.start, this.endInclusive, inclusive = true)
 operator fun OpenRange<Angle>.contains(angle: Angle): Boolean = angle.inBetween(this.start, this.endExclusive, inclusive = false)
-infix fun Angle.until(other: Angle) = OpenRange(this, other)
-
-fun Angle.inBetweenInclusive(min: Angle, max: Angle): Boolean = inBetween(min, max, inclusive = true)
-fun Angle.inBetweenExclusive(min: Angle, max: Angle): Boolean = inBetween(min, max, inclusive = false)
-
-infix fun Angle.inBetween(range: ClosedRange<Angle>): Boolean = inBetween(range.start, range.endInclusive, inclusive = true)
-infix fun Angle.inBetween(range: OpenRange<Angle>): Boolean = inBetween(range.start, range.endExclusive, inclusive = false)
-
-fun Angle.inBetween(min: Angle, max: Angle, inclusive: Boolean): Boolean {
-    val nthis = this.normalized
-    val nmin = min.normalized
-    val nmax = max.normalized
-    @Suppress("ConvertTwoComparisonsToRangeCheck")
-    return when {
-        nmin > nmax -> nthis >= nmin || (if (inclusive) nthis <= nmax else nthis < nmax)
-        else -> nthis >= nmin && (if (inclusive) nthis <= nmax else nthis < nmax)
-    }
-}
-
-fun Angle.isAlmostEquals(other: Angle, diff: Double = 0.001): Boolean = this.ratio.isAlmostEquals(other.ratio, diff)
+infix fun Angle.until(other: Angle): OpenRange<Angle> = OpenRange(this, other)
 
 val Double.degrees: Angle get() = Angle.fromDegrees(this)
 val Double.radians: Angle get() = Angle.fromRadians(this)
@@ -175,8 +174,6 @@ val Int.degrees: Angle get() = Angle.fromDegrees(this)
 val Int.radians: Angle get() = Angle.fromRadians(this)
 val Float.degrees: Angle get() = Angle.fromDegrees(this)
 val Float.radians: Angle get() = Angle.fromRadians(this)
-
-val Angle.normalized: Angle get() = Angle.fromRatio(ratio umod 1.0)
 
 @Deprecated("", ReplaceWith("this.interpolateAngleDenormalized(l, r)"))
 fun Double.interpolate(l: Angle, r: Angle): Angle = this.interpolateAngleDenormalized(l, r)

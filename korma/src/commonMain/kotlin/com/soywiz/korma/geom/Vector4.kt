@@ -6,7 +6,7 @@ import com.soywiz.korma.interpolation.interpolate
 import com.soywiz.korma.math.almostEquals
 import kotlin.math.sqrt
 
-@KormaExperimental
+@KormaValueApi
 data class Vector4(val x: Float, val y: Float, val z: Float, val w: Float)
 
 //@Deprecated("Use Vector4")
@@ -34,15 +34,31 @@ interface Vector4 : Vector3, IVector4 {
 }
 */
 
+@KormaMutableApi
+interface IVector4 {
+    val x: Float
+    val y: Float
+    val z: Float
+    val w: Float
+
+    operator fun get(index: Int): Float = when (index) {
+        0 -> x
+        1 -> y
+        2 -> z
+        3 -> w
+        else -> 0f
+    }
+}
+
 // @TODO: To inline class wrapping FloatArray?
-//@Deprecated("Use Vector4")
-class MVector4 : IMVector3 {
+@KormaMutableApi
+class MVector4 : IVector4 {
     val data = floatArrayOf(0f, 0f, 0f, 1f)
 
     override var x: Float get() = data[0]; set(value) { data[0] = value }
     override var y: Float get() = data[1]; set(value) { data[1] = value }
     override var z: Float get() = data[2]; set(value) { data[2] = value }
-    var w: Float get() = data[3]; set(value) { data[3] = value }
+    override var w: Float get() = data[3]; set(value) { data[3] = value }
 
     val lengthSquared: Float get() = (x * x) + (y * y) + (z * z) + (w * w)
     val length: Float get() = sqrt(lengthSquared)
@@ -50,7 +66,7 @@ class MVector4 : IMVector3 {
     val length3Squared: Float get() = (x * x) + (y * y) + (z * z)
     val length3: Float get() = sqrt(length3Squared)
 
-    operator fun get(index: Int): Float = data[index]
+    override operator fun get(index: Int): Float = data[index]
     operator fun set(index: Int, value: Float) { data[index] = value }
 
     companion object {
@@ -103,9 +119,9 @@ class MVector4 : IMVector3 {
 
     fun dot(v2: MVector4): Float = this.x*v2.x + this.y*v2.y + this.z*v2.y
 
-    operator fun plus(that: MVector4) = MVector4(this.x + that.x, this.y + that.y, this.z + that.z, this.w + that.w)
-    operator fun minus(that: MVector4) = MVector4(this.x - that.x, this.y - that.y, this.z - that.z, this.w - that.w)
-    operator fun times(scale: Float) = MVector4(x * scale, y * scale, z * scale, w * scale)
+    operator fun plus(that: MVector4): MVector4 = MVector4(this.x + that.x, this.y + that.y, this.z + that.z, this.w + that.w)
+    operator fun minus(that: MVector4): MVector4 = MVector4(this.x - that.x, this.y - that.y, this.z - that.z, this.w - that.w)
+    operator fun times(scale: Float): MVector4 = MVector4(x * scale, y * scale, z * scale, w * scale)
 
     fun sub(l: MVector4, r: MVector4): MVector4 = setTo(l.x - r.x, l.y - r.y, l.z - r.z, l.w - r.w)
     fun add(l: MVector4, r: MVector4): MVector4 = setTo(l.x + r.x, l.y + r.y, l.z + r.z, l.w + r.w)
@@ -121,14 +137,23 @@ class MVector4 : IMVector3 {
     override fun toString(): String = if (w == 1f) "(${x.niceStr}, ${y.niceStr}, ${z.niceStr})" else "(${x.niceStr}, ${y.niceStr}, ${z.niceStr}, ${w.niceStr})"
 }
 
-inline class IntVector3(val v: MVector4) {
-    val x: Int get() = v.x.toInt()
-    val y: Int get() = v.y.toInt()
-    val z: Int get() = v.z.toInt()
-    val w: Int get() = v.w.toInt()
+@KormaMutableApi
+interface IVector4Int {
+    val x: Int
+    val y: Int
+    val z: Int
+    val w: Int
 }
 
-fun MVector4.asIntVector3D() = IntVector3(this)
+@KormaMutableApi
+inline class MVector4Int(val v: MVector4) : IVector4Int {
+    override val x: Int get() = v.x.toInt()
+    override val y: Int get() = v.y.toInt()
+    override val z: Int get() = v.z.toInt()
+    override val w: Int get() = v.w.toInt()
+}
+
+fun MVector4.asIntVector3D() = MVector4Int(this)
 
 typealias Position3D = MVector4
 typealias Scale3D = MVector4

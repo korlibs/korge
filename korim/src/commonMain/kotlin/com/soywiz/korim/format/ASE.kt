@@ -27,7 +27,7 @@ import com.soywiz.korio.stream.readString
 import com.soywiz.korio.stream.readU16LE
 import com.soywiz.korio.stream.readU32LE
 import com.soywiz.korio.stream.readU8
-import com.soywiz.korma.geom.RectangleInt
+import com.soywiz.korma.geom.MRectangleInt
 import com.soywiz.korma.geom.slice.*
 import com.soywiz.krypto.encoding.hex
 
@@ -191,7 +191,7 @@ object ASE : ImageFormatWithContainer("ase") {
         val pivotX: Int,
         val pivotY: Int,
     ) {
-        val sliceFrame = RectangleInt(sliceXOrigin, sliceYOrigin, sliceWidth, sliceHeight)
+        val sliceFrame = MRectangleInt(sliceXOrigin, sliceYOrigin, sliceWidth, sliceHeight)
     }
 
     open class AseSlice(val name: String, val hasNinePatch: Boolean, val hasPivotInfo: Boolean) :
@@ -690,7 +690,7 @@ object ASE : ImageFormatWithContainer("ase") {
                 val layerData = cells.map { (key, value) ->
                     createImageFrameLayer(key, value)
                 }.map {
-                    val sliceFrame = RectangleInt(
+                    val sliceFrame = MRectangleInt(
                         sliceKey.sliceFrame.x - it.targetX, sliceKey.sliceFrame.y - it.targetY,
                         sliceKey.sliceFrame.width, sliceKey.sliceFrame.height
                     )

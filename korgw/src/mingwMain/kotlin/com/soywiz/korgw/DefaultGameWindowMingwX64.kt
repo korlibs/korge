@@ -410,20 +410,20 @@ class WindowsGameWindow : EventLoopGameWindow() {
     fun getWinStyle(fullscreen: Boolean, extra: Long = 0): Long = if (fullscreen) extra.without(WS_OVERLAPPEDWINDOW.toLong()).with(WS_POPUP.toLong()) else extra.with(WS_OVERLAPPEDWINDOW.toLong()).without(WS_POPUP.toLong())
     fun getWinExStyle(fullscreen: Boolean): Long = if (fullscreen) 0L else WS_EX_OVERLAPPEDWINDOW.toLong()
 
-    fun getBorderSize(): SizeInt {
+    fun getBorderSize(): MSizeInt {
         val w = 1000
         val h = 1000
         val out = getRealSize(w, h)
-        return SizeInt(out.width - w, out.height - h)
+        return MSizeInt(out.width - w, out.height - h)
     }
 
-    fun getRealSize(width: Int, height: Int): SizeInt {
+    fun getRealSize(width: Int, height: Int): MSizeInt {
         return memScoped {
             val rect = alloc<RECT>()
             rect.width = width
             rect.height = height
             AdjustWindowRectEx(rect.ptr, winStyle.convert(), hasMenu.toInt().convert(), winExStyle.convert())
-            SizeInt(rect.width, rect.height)
+            MSizeInt(rect.width, rect.height)
         }
     }
 

@@ -21,7 +21,7 @@ class ScaleMode(
     operator fun invoke(item: ISize, container: ISize, target: MSize = MSize()): MSize =
         transform(item.width, item.height, container.width, container.height, target)
 
-    operator fun invoke(item: ISizeInt, container: ISizeInt, target: SizeInt = SizeInt()): SizeInt = target.setTo(
+    operator fun invoke(item: ISizeInt, container: ISizeInt, target: MSizeInt = MSizeInt()): MSizeInt = target.setTo(
         transformW(item.width.toDouble(), item.height.toDouble(), container.width.toDouble(), container.height.toDouble()).toInt(),
         transformH(item.width.toDouble(), item.height.toDouble(), container.width.toDouble(), container.height.toDouble()).toInt()
     )
@@ -69,15 +69,15 @@ fun MSize.applyScaleMode(container: MRectangle, mode: ScaleMode, anchor: Anchor,
     return out
 }
 
-fun SizeInt.applyScaleMode(container: RectangleInt, mode: ScaleMode, anchor: Anchor, out: RectangleInt = RectangleInt(), tempSize: SizeInt = SizeInt()): RectangleInt =
-    this.asDouble().applyScaleMode(container.asDouble(), mode, anchor, out.asDouble(), tempSize.asDouble()).asInt()
+fun MSizeInt.applyScaleMode(container: MRectangleInt, mode: ScaleMode, anchor: Anchor, out: MRectangleInt = MRectangleInt(), tempSize: MSizeInt = MSizeInt()): MRectangleInt =
+    this.asDouble().applyScaleMode(container.float, mode, anchor, out.float, tempSize.asDouble()).int
 
-fun SizeInt.applyScaleMode(container: SizeInt, mode: ScaleMode, out: SizeInt = SizeInt(0, 0)): SizeInt =
+fun MSizeInt.applyScaleMode(container: MSizeInt, mode: ScaleMode, out: MSizeInt = MSizeInt(0, 0)): MSizeInt =
     mode(this, container, out)
 fun MSize.applyScaleMode(container: MSize, mode: ScaleMode, out: MSize = MSize(0, 0)): MSize =
     mode(this, container, out)
 
-fun SizeInt.fitTo(container: SizeInt, out: SizeInt = SizeInt(0, 0)): SizeInt =
+fun MSizeInt.fitTo(container: MSizeInt, out: MSizeInt = MSizeInt(0, 0)): MSizeInt =
     applyScaleMode(container, ScaleMode.SHOW_ALL, out)
 fun MSize.fitTo(container: MSize, out: MSize = MSize(0, 0)): MSize =
     applyScaleMode(container, ScaleMode.SHOW_ALL, out)

@@ -8,15 +8,15 @@ import com.soywiz.korma.geom.Anchor
 import com.soywiz.korma.geom.MPoint
 import com.soywiz.korma.geom.MRectangle
 import com.soywiz.korma.geom.ScaleMode
-import com.soywiz.korma.geom.SizeInt
+import com.soywiz.korma.geom.MSizeInt
 import kotlin.math.absoluteValue
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class Views2Test : ViewsForTesting(
-    windowSize = SizeInt(1280, 720),
-    virtualSize = SizeInt(640, 480)
+    windowSize = MSizeInt(1280, 720),
+    virtualSize = MSizeInt(640, 480)
 ) {
     val logger = Logger("Views2Test")
 

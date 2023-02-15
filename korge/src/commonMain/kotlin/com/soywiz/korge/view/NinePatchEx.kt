@@ -40,7 +40,7 @@ class NinePatchEx(
         }
 	var smoothing = true
 
-	private val bounds = RectangleInt()
+	private val bounds = MRectangleInt()
 
 	override fun renderInternal(ctx: RenderContext) {
 		if (!visible) return
@@ -80,7 +80,7 @@ class NinePatchEx(
     private var cachedRenderColorMul = Colors.WHITE
 
     private var cachedNinePatch: NinePatchBmpSlice? = null
-    private val cachedBounds = RectangleInt()
+    private val cachedBounds = MRectangleInt()
 
     private fun recomputeVerticesIfRequired() {
         val viewBounds = this.bounds

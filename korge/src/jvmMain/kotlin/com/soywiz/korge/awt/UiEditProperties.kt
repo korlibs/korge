@@ -173,9 +173,9 @@ internal class UiEditProperties(app: UiApplication, view: View?, val views: View
 
                 UiTwoItemEditableValue(app, vv[0], vv[1])
             }
-            type.isSubtypeOf(RectCorners::class.starProjectedType) -> {
+            type.isSubtypeOf(IRectCorners::class.starProjectedType) -> {
                 @Suppress("UNCHECKED_CAST")
-                prop as KMutableProperty1<Any, RectCorners>
+                prop as KMutableProperty1<Any, IRectCorners>
                 val vv = listOf(
                     ObservableProperty("a", { prop.set(instance, prop.get(instance).duplicate(topLeft = it)) }, { prop.get(instance).topLeft }),
                     ObservableProperty("b", { prop.set(instance, prop.get(instance).duplicate(topRight = it)) }, { prop.get(instance).topRight }),

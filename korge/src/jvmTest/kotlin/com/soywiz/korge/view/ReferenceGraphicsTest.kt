@@ -29,9 +29,9 @@ class ReferenceGraphicsTest {
 
         val bmp = BitmapSlice(
             Bitmap32(64, 64) { x, y -> Colors.PURPLE }.premultipliedIfRequired(),
-            RectangleInt(0, 0, 64, 64),
+            MRectangleInt(0, 0, 64, 64),
             name = null,
-        ).virtFrame(RectangleInt(64, 64, 196, 196))
+        ).virtFrame(MRectangleInt(64, 64, 196, 196))
         val image = image(bmp).anchor(0.5, 1.0).xy(200, 200).rotation(30.degrees)
 
         assertScreenshot(posterize = 6)

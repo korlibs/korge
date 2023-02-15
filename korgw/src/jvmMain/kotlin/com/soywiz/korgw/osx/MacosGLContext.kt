@@ -135,7 +135,7 @@ class MacosGLContext(
                 val fw = (frame.width * factor).toInt()
                 val fh = (frame.height * factor).toInt()
                 // factor=2.0, scissorBox: java.awt.Rectangle[x=0,y=0,width=2560,height=1496], viewport: java.awt.Rectangle[x=0,y=0,width=2560,height=1496]
-                val info = BaseOpenglContext.ContextInfo(RectangleInt(), RectangleInt(),)
+                val info = BaseOpenglContext.ContextInfo(MRectangleInt(), MRectangleInt(),)
                 info.scissors?.setTo(fx, fy, fw, fh)
                 info.viewport?.setTo(fx, fy, fw, fh)
                 println("info=$info")
@@ -187,7 +187,7 @@ class MacAWTOpenglContext(val gwconfig: GameWindowConfig, val c: Component, var 
     }
 
     val info = BaseOpenglContext.ContextInfo(
-        RectangleInt(), RectangleInt()
+        MRectangleInt(), MRectangleInt()
     )
 
     override val scaleFactor: Double get() = getDisplayScalingFactor(c)

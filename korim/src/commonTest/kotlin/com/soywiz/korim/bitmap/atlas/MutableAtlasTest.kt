@@ -3,7 +3,7 @@ package com.soywiz.korim.bitmap.atlas
 import com.soywiz.korim.atlas.MutableAtlas
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.Colors
-import com.soywiz.korma.geom.RectangleInt
+import com.soywiz.korma.geom.MRectangleInt
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
@@ -23,9 +23,9 @@ class MutableAtlasTest {
         assertEquals("a", slice1.name)
         assertEquals("b", slice2.name)
         assertEquals("c", slice3.name)
-        assertEquals(RectangleInt(2, 2, 10, 10), slice1.slice.bounds)
-        assertEquals(RectangleInt(2, 16, 10, 10), slice2.slice.bounds)
-        assertEquals(RectangleInt(2, 30, 10, 10), slice3.slice.bounds)
+        assertEquals(MRectangleInt(2, 2, 10, 10), slice1.slice.bounds)
+        assertEquals(MRectangleInt(2, 16, 10, 10), slice2.slice.bounds)
+        assertEquals(MRectangleInt(2, 30, 10, 10), slice3.slice.bounds)
         assertEquals(Colors.RED, atlas.bitmap[5, 5])
         assertEquals(Colors.GREEN, atlas.bitmap[5, 20])
         assertEquals(Colors.BLUE, atlas.bitmap[5, 35])

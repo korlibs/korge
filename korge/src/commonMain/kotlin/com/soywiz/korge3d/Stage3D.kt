@@ -8,7 +8,6 @@ import com.soywiz.korge.view.addTo
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.color.setToColorPremultiplied
-import com.soywiz.korma.geom.invert
 
 @Korge3DExperimental
 inline fun Container.scene3D(views: Views3D = Views3D(stage!!.views), callback: Stage3D.() -> Unit = {}): Stage3DView {

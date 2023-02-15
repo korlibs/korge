@@ -1,57 +1,49 @@
 package com.soywiz.korma.geom.vector
 
-import com.soywiz.korma.annotations.KormaExperimental
-import com.soywiz.korma.geom.Angle
-import com.soywiz.korma.geom.MLine
-import com.soywiz.korma.geom.MPoint
-import com.soywiz.korma.geom.MPointInt
-import com.soywiz.korma.geom.cosine
-import com.soywiz.korma.geom.minus
-import com.soywiz.korma.geom.sine
-import com.soywiz.korma.internal.floorCeil
-import kotlin.math.absoluteValue
-import kotlin.math.hypot
-import kotlin.math.max
-import kotlin.math.min
+import com.soywiz.korma.annotations.*
+import com.soywiz.korma.geom.*
+import com.soywiz.korma.internal.*
+import kotlin.math.*
 
 @Suppress("DuplicatedCode")
 @KormaExperimental
-class Edge {
+@KormaMutableApi
+class MEdge {
     fun getX(n: Int) = if (n == 0) this.ax else this.bx
     fun getY(n: Int) = if (n == 0) this.ay else this.by
 
     companion object {
-        operator fun invoke(ax: Int, ay: Int, bx: Int, by: Int, wind: Int = 0) = Edge().setTo(ax, ay, bx, by, wind)
+        operator fun invoke(ax: Int, ay: Int, bx: Int, by: Int, wind: Int = 0) = MEdge().setTo(ax, ay, bx, by, wind)
         operator fun invoke(a: MPointInt, b: MPointInt, wind: Int = 0) = this(a.x, a.y, b.x, b.y, wind)
 
-        fun getIntersectY(a: Edge, b: Edge): Int {
+        fun getIntersectY(a: MEdge, b: MEdge): Int {
             getIntersectXY(a, b) { x, y -> return y.toInt() }
             return Int.MIN_VALUE
         }
 
-        fun getIntersectX(a: Edge, b: Edge): Int {
+        fun getIntersectX(a: MEdge, b: MEdge): Int {
             getIntersectXY(a, b) { x, y -> return x.toInt() }
             return Int.MIN_VALUE
         }
 
-        fun areParallel(a: Edge, b: Edge) = ((a.by - a.ay) * (b.ax - b.bx)) - ((b.by - b.ay) * (a.ax - a.bx)) == 0
+        fun areParallel(a: MEdge, b: MEdge) = ((a.by - a.ay) * (b.ax - b.bx)) - ((b.by - b.ay) * (a.ax - a.bx)) == 0
 
-        fun getIntersectXY(a: Edge, b: Edge, out: MPoint = MPoint()): MPoint? {
+        fun getIntersectXY(a: MEdge, b: MEdge, out: MPoint = MPoint()): MPoint? {
             getIntersectXY(a, b) { x, y -> return out.setTo(x, y) }
             return null
         }
 
-        fun getIntersectXYInt(a: Edge, b: Edge, out: MPointInt = MPointInt()): MPointInt? {
+        fun getIntersectXYInt(a: MEdge, b: MEdge, out: MPointInt = MPointInt()): MPointInt? {
             getIntersectXY(a, b) { x, y -> return out.setTo(x.toInt(), y.toInt()) }
             return null
         }
 
-        fun angleBetween(a: Edge, b: Edge): Angle {
+        fun angleBetween(a: MEdge, b: MEdge): Angle {
             return b.angle - a.angle
         }
 
         // https://www.geeksforgeeks.org/program-for-point-of-intersection-of-two-lines/
-        inline fun getIntersectXY(a: Edge, b: Edge, out: (x: Double, y: Double) -> Unit): Boolean {
+        inline fun getIntersectXY(a: MEdge, b: MEdge, out: (x: Double, y: Double) -> Unit): Boolean {
             val Ax: Double = a.ax.toDouble()
             val Ay: Double = a.ay.toDouble()
             val Bx: Double = a.bx.toDouble()
@@ -87,7 +79,7 @@ class Edge {
 
     val length: Float get() = hypot(dx.toFloat(), dy.toFloat())
 
-    fun copyFrom(other: Edge) = setTo(other.ax, other.ay, other.bx, other.by, other.wind)
+    fun copyFrom(other: MEdge) = setTo(other.ax, other.ay, other.bx, other.by, other.wind)
 
     fun setTo(ax: Int, ay: Int, bx: Int, by: Int, wind: Int) = this.apply {
         this.ax = ax
@@ -102,7 +94,7 @@ class Edge {
         this.h = if (isCoplanarY) 0 else ay - (ax * dy) / dx
     }
 
-    fun setToHalf(a: Edge, b: Edge): Edge = this.apply {
+    fun setToHalf(a: MEdge, b: MEdge): MEdge = this.apply {
         val minY = min(a.minY, b.minY)
         val maxY = min(a.maxY, b.maxY)
         val minX = (a.intersectX(minY) + b.intersectX(minY)) / 2

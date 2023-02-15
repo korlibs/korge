@@ -1,32 +1,11 @@
 package com.soywiz.korma.geom.bezier
 
-import com.soywiz.kds.IDoubleArrayList
-import com.soywiz.kds.forEachRatio01
-import com.soywiz.kds.getCyclic
-import com.soywiz.korma.geom.Angle
-import com.soywiz.korma.geom.IPoint
-import com.soywiz.korma.geom.IPointArrayList
-import com.soywiz.korma.geom.MLine
-import com.soywiz.korma.geom.MPoint
-import com.soywiz.korma.geom.PointArrayList
-import com.soywiz.korma.geom.VectorArrayList
-import com.soywiz.korma.geom.absoluteValue
-import com.soywiz.korma.geom.degrees
-import com.soywiz.korma.geom.fastForEachGeneric
-import com.soywiz.korma.geom.interpolate
-import com.soywiz.korma.geom.lineIntersectionPoint
-import com.soywiz.korma.geom.minus
-import com.soywiz.korma.geom.plus
-import com.soywiz.korma.geom.projectedPoint
-import com.soywiz.korma.geom.umod
-import com.soywiz.korma.geom.vector.LineCap
-import com.soywiz.korma.geom.vector.LineJoin
-import com.soywiz.korma.geom.vector.StrokeInfo
-import com.soywiz.korma.geom.vector.VectorPath
-import com.soywiz.korma.geom.vector.toCurvesList
-import com.soywiz.korma.interpolation.interpolate
-import com.soywiz.kmem.clamp
-import kotlin.math.absoluteValue
+import com.soywiz.kds.*
+import com.soywiz.kmem.*
+import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.vector.*
+import com.soywiz.korma.interpolation.*
+import kotlin.math.*
 
 // @TODO
 //private fun Curves.toStrokeCurves(join: LineJoin, startCap: LineCap, endCap: LineCap): Curves {

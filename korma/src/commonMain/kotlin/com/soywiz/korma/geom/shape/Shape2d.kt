@@ -45,7 +45,7 @@ abstract class Shape2d {
     abstract val closed: Boolean
     abstract fun containsPoint(x: Double, y: Double): Boolean
     fun containsPoint(x: Double, y: Double, mat: MMatrix) = containsPoint(mat.transformX(x, y), mat.transformY(x, y))
-    open fun getBounds(out: com.soywiz.korma.geom.MRectangle = com.soywiz.korma.geom.MRectangle()): com.soywiz.korma.geom.MRectangle {
+    open fun getBounds(out: MRectangle = MRectangle()): MRectangle {
         var minx = Double.POSITIVE_INFINITY
         var miny = Double.POSITIVE_INFINITY
         var maxx = Double.NEGATIVE_INFINITY
@@ -60,9 +60,9 @@ abstract class Shape2d {
         }
         return out.setBounds(minx, miny, maxx, maxy)
     }
-    open fun getCenter(): com.soywiz.korma.geom.MPoint {
-        return getBounds().center
-    }
+
+    open val center: IPoint get() = getBounds().center
+
     companion object {
         fun intersects(l: Shape2d, ml: MMatrix?, r: Shape2d, mr: MMatrix?, tempMatrix: MMatrix? = MMatrix()): Boolean {
             //println("Shape2d.intersects:"); println(" - l=$l[$ml]"); println(" - r=$r[$mr]")
@@ -200,22 +200,24 @@ abstract class Shape2d {
         }
     }
 
-    data class Rectangle(val rect: com.soywiz.korma.geom.MRectangle) : Shape2d(), WithArea, IRectangle by rect {
+    data class Rectangle(val rect: MRectangle) : Shape2d(), WithArea, IRectangle by rect {
         companion object {
             const val TYPE = 3
-            inline operator fun invoke(x: Double, y: Double, width: Double, height: Double) = Rectangle(com.soywiz.korma.geom.MRectangle(x, y, width, height))
-            inline operator fun invoke(x: Float, y: Float, width: Float, height: Float) = Rectangle(com.soywiz.korma.geom.MRectangle(x, y, width, height))
-            inline operator fun invoke(x: Int, y: Int, width: Int, height: Int) = Rectangle(com.soywiz.korma.geom.MRectangle(x, y, width, height))
+            inline operator fun invoke(x: Double, y: Double, width: Double, height: Double) = Rectangle(MRectangle(x, y, width, height))
+            inline operator fun invoke(x: Float, y: Float, width: Float, height: Float) = Rectangle(MRectangle(x, y, width, height))
+            inline operator fun invoke(x: Int, y: Int, width: Int, height: Int) = Rectangle(MRectangle(x, y, width, height))
 
-            inline fun fromBounds(left: Double, top: Double, right: Double, down: Double) = Rectangle(com.soywiz.korma.geom.MRectangle.fromBounds(left, top, right, down))
-            inline fun fromBounds(left: Float, top: Float, right: Float, down: Float) = Rectangle(com.soywiz.korma.geom.MRectangle.fromBounds(left, top, right, down))
-            inline fun fromBounds(left: Int, top: Int, right: Int, down: Int) = Rectangle(com.soywiz.korma.geom.MRectangle.fromBounds(left, top, right, down))
+            inline fun fromBounds(left: Double, top: Double, right: Double, down: Double) = Rectangle(MRectangle.fromBounds(left, top, right, down))
+            inline fun fromBounds(left: Float, top: Float, right: Float, down: Float) = Rectangle(MRectangle.fromBounds(left, top, right, down))
+            inline fun fromBounds(left: Int, top: Int, right: Int, down: Int) = Rectangle(MRectangle.fromBounds(left, top, right, down))
         }
 
         override val type: Int = TYPE
         override val paths = listOf(PointArrayList(4) { add(x, y).add(x + width, y).add(x + width, y + height).add(x, y + height) })
         override val closed: Boolean = true
         override val area: Double get() = width * height
+        override val center: IPoint get() = super<IRectangle>.center
+
         override fun containsPoint(x: Double, y: Double) = (x in this.left..this.right) && (y in this.top..this.bottom)
         override fun toString(): String =
             "Rectangle(x=${x.niceStr}, y=${y.niceStr}, width=${width.niceStr}, height=${height.niceStr})"
