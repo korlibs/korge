@@ -25,8 +25,8 @@ import kotlin.jvm.*
 
 open class ViewsForTesting(
     val frameTime: TimeSpan = 10.milliseconds,
-    val windowSize: SizeInt = SizeInt(DefaultViewport.WIDTH, DefaultViewport.HEIGHT),
-    val virtualSize: SizeInt = SizeInt(windowSize.size.clone()),
+    val windowSize: MSizeInt = MSizeInt(DefaultViewport.WIDTH, DefaultViewport.HEIGHT),
+    val virtualSize: MSizeInt = MSizeInt(windowSize.size.clone()),
     val defaultDevicePixelRatio: Double = 1.0,
     val log: Boolean = false,
 ) {
@@ -39,7 +39,7 @@ open class ViewsForTesting(
         override fun now(): DateTime = time
     }
 	val dispatcher = FastGameWindowCoroutineDispatcher()
-    inner class TestGameWindow(initialSize: SizeInt, val dispatcher: FastGameWindowCoroutineDispatcher) : GameWindowLog() {
+    inner class TestGameWindow(initialSize: MSizeInt, val dispatcher: FastGameWindowCoroutineDispatcher) : GameWindowLog() {
         override val devicePixelRatio: Double get() = this@ViewsForTesting.devicePixelRatio
         override var width: Int = initialSize.width
         override var height: Int = initialSize.height

@@ -3,12 +3,14 @@ package com.soywiz.korma.geom
 import com.soywiz.kds.FastArrayList
 import com.soywiz.korma.internal.umod
 import com.soywiz.kmem.clamp
+import com.soywiz.korma.annotations.*
 import kotlin.jvm.JvmName
 import kotlin.math.min
 import kotlin.math.max
 
 @Suppress("NOTHING_TO_INLINE")
 @Deprecated("Use Point instead, no pool needed")
+@KormaMutableApi
 class PointPool(val capacity: Int = 16, preallocate: Boolean = false) {
     @PublishedApi
     internal var offset = 0

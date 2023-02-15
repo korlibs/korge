@@ -6,7 +6,6 @@ import com.soywiz.kds.iterators.fastForEachWithIndex
 import com.soywiz.kmem.clamp
 import com.soywiz.korag.*
 import com.soywiz.korma.geom.MMatrix3D
-import com.soywiz.korma.geom.invert
 
 @Korge3DExperimental
 inline fun Container3D.mesh(mesh: Mesh3D, callback: ViewWithMesh3D.() -> Unit = {}): ViewWithMesh3D {

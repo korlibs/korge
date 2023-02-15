@@ -8,7 +8,6 @@ import com.soywiz.korge.ui.DefaultUIBitmapFont
 import com.soywiz.korim.font.BitmapFont
 import com.soywiz.korma.geom.MMatrix3D
 import com.soywiz.korma.geom.MVector4
-import com.soywiz.korma.geom.invert
 
 @Korge3DExperimental
 fun Container3D.text3D(str: String, v1: MVector4, v2: MVector4, v3: MVector4, v4: MVector4): Text3D =

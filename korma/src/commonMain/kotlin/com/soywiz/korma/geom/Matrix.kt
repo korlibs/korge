@@ -17,7 +17,7 @@ import kotlin.math.floor
 import kotlin.math.hypot
 import kotlin.math.sin
 
-@KormaExperimental
+@KormaValueApi
 data class Matrix(
     val a: Double,
     val b: Double,
@@ -32,7 +32,7 @@ data class Matrix(
     )
 }
 
-//@Deprecated("Use Matrix instead")
+@KormaMutableApi
 interface IMatrix {
     val a: Double
     val b: Double
@@ -69,7 +69,7 @@ interface IMatrix {
     fun transformYf(px: Int, py: Int): Float = transformY(px.toDouble(), py.toDouble()).toFloat()
 }
 
-//@Deprecated("Use Matrix instead")
+@KormaMutableApi
 data class MMatrix(
     override var a: Double = 1.0,
     override var b: Double = 0.0,
@@ -202,6 +202,16 @@ data class MMatrix(
             tx * cosY - ty * sinX,
             tx * sinY + ty * cosX
         )
+    }
+
+    fun setToMultiply(l: MMatrix?, r: MMatrix?): MMatrix {
+        when {
+            l != null && r != null -> multiply(l, r)
+            l != null -> copyFrom(l)
+            r != null -> copyFrom(r)
+            else -> identity()
+        }
+        return this
     }
 
     fun scale(sx: Double, sy: Double = sx) = setTo(a * sx, b * sx, c * sy, d * sy, tx * sx, ty * sy)
@@ -570,13 +580,3 @@ data class MMatrix(
     override fun toString(): String = "Matrix(a=$a, b=$b, c=$c, d=$d, tx=$tx, ty=$ty)"
 }
 
-@JvmName("multiplyNullable")
-fun MMatrix.multiply(l: MMatrix?, r: MMatrix?): MMatrix {
-    when {
-        l != null && r != null -> multiply(l, r)
-        l != null -> copyFrom(l)
-        r != null -> copyFrom(r)
-        else -> identity()
-    }
-    return this
-}

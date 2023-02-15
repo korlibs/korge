@@ -198,7 +198,7 @@ open class AGValue(
     fun set(value: RGBAf) = set(value.data, 0, 4)
     fun set(value: IPoint) = set(value.x.toFloat(), value.y.toFloat())
     fun set(value: IMargin) = set(value.top.toFloat(), value.right.toFloat(), value.bottom.toFloat(), value.left.toFloat())
-    fun set(value: RectCorners) = set(value.topLeft.toFloat(), value.topRight.toFloat(), value.bottomRight.toFloat(), value.bottomLeft.toFloat())
+    fun set(value: IRectCorners) = set(value.topLeft.toFloat(), value.topRight.toFloat(), value.bottomRight.toFloat(), value.bottomLeft.toFloat())
     fun set(value: RGBA) = set(value.rf, value.gf, value.bf, value.af)
     fun set(value: RGBAPremultiplied) = set(value.rf, value.gf, value.bf, value.af)
     fun set(mat: MMatrix3D) = tempMatrixLock { set(tempMatrix.also { it[0] = mat }) }

@@ -1,24 +1,12 @@
 package com.soywiz.korma.geom.vector
 
-import com.soywiz.kds.IDoubleArrayList
-import com.soywiz.kds.IntArrayList
-import com.soywiz.kds.iterators.fastForEach
-import com.soywiz.korma.annotations.KormaExperimental
-import com.soywiz.korma.geom.Angle
-import com.soywiz.korma.geom.MPoint
-import com.soywiz.korma.geom.PointIntArrayList
-import com.soywiz.korma.geom.bezier.Bezier
-import com.soywiz.korma.geom.bezier.toDashes
-import com.soywiz.korma.geom.bezier.toVectorPath
-import com.soywiz.korma.geom.cosine
-import com.soywiz.korma.geom.degrees
-import com.soywiz.korma.geom.minus
-import com.soywiz.korma.geom.plus
-import com.soywiz.korma.geom.shape.emitPoints2
-import com.soywiz.korma.geom.sine
-import com.soywiz.korma.geom.unaryMinus
-import com.soywiz.korma.geom.unaryPlus
-import com.soywiz.kmem.clamp
+import com.soywiz.kds.*
+import com.soywiz.kds.iterators.*
+import com.soywiz.kmem.*
+import com.soywiz.korma.annotations.*
+import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.bezier.*
+import com.soywiz.korma.geom.shape.*
 
 // @TODO: Implement LineCap + LineJoin
 // @TODO: Use Curves and reuse code from [CurvesToStrokes]
@@ -39,15 +27,15 @@ class StrokeToFill {
     internal val fillPointsLeft = fillPoints[0]
     internal val fillPointsRight = fillPoints[1]
 
-    private val prevEdge = Edge()
-    private val prevEdgeLeft = Edge()
-    private val prevEdgeRight = Edge()
+    private val prevEdge = MEdge()
+    private val prevEdgeLeft = MEdge()
+    private val prevEdgeRight = MEdge()
 
-    private val currEdge = Edge()
-    private val currEdgeLeft = Edge()
-    private val currEdgeRight = Edge()
+    private val currEdge = MEdge()
+    private val currEdgeLeft = MEdge()
+    private val currEdgeRight = MEdge()
 
-    internal fun Edge.setEdgeDisplaced(edge: Edge, width: Int, angle: Angle) = this.apply {
+    internal fun MEdge.setEdgeDisplaced(edge: MEdge, width: Int, angle: Angle) = this.apply {
         val ldx = (width * angle.cosine)
         val ldy = (width * angle.sine)
         this.setTo((edge.ax + ldx).toInt(), (edge.ay + ldy).toInt(), (edge.bx + ldx).toInt(), (edge.by + ldy).toInt(), edge.wind)
@@ -55,9 +43,9 @@ class StrokeToFill {
 
     internal enum class EdgePoint(val n: Int) { A(0), B(1) }
 
-    internal fun PointIntArrayList.addEdgePointA(e: Edge) = add(e.ax, e.ay)
-    internal fun PointIntArrayList.addEdgePointB(e: Edge) = add(e.bx, e.by)
-    internal fun PointIntArrayList.addEdgePointAB(e: Edge, point: EdgePoint) = if (point == EdgePoint.A) addEdgePointA(e) else addEdgePointB(e)
+    internal fun PointIntArrayList.addEdgePointA(e: MEdge) = add(e.ax, e.ay)
+    internal fun PointIntArrayList.addEdgePointB(e: MEdge) = add(e.bx, e.by)
+    internal fun PointIntArrayList.addEdgePointAB(e: MEdge, point: EdgePoint) = if (point == EdgePoint.A) addEdgePointA(e) else addEdgePointB(e)
     internal fun PointIntArrayList.add(e: MPoint?) { if (e != null) add(e.x.toInt(), e.y.toInt()) }
     internal fun PointIntArrayList.add(x: Double, y: Double) { add(x.toInt(), y.toInt()) }
 
@@ -65,12 +53,12 @@ class StrokeToFill {
     private val tempP2 = MPoint()
     private val tempP3 = MPoint()
 
-    internal fun doJoin(out: PointIntArrayList, mainPrev: Edge, mainCurr: Edge, prev: Edge, curr: Edge, join: LineJoin, miterLimit: Double, scale: Double, forcedMiter: Boolean) {
+    internal fun doJoin(out: PointIntArrayList, mainPrev: MEdge, mainCurr: MEdge, prev: MEdge, curr: MEdge, join: LineJoin, miterLimit: Double, scale: Double, forcedMiter: Boolean) {
         val rjoin = if (forcedMiter) LineJoin.MITER else join
         when (rjoin) {
             LineJoin.MITER -> {
                 val intersection2 = tempP1.setTo(mainPrev.bx, mainPrev.by)
-                val intersection = Edge.getIntersectXY(prev, curr, tempP3)
+                val intersection = MEdge.getIntersectXY(prev, curr, tempP3)
                 if (intersection != null) {
                     val dist = MPoint.distance(intersection, intersection2)
                     if (forcedMiter || dist <= miterLimit) {
@@ -86,7 +74,7 @@ class StrokeToFill {
                 out.addEdgePointA(curr)
             }
             LineJoin.ROUND -> {
-                val i = Edge.getIntersectXY(prev, curr, tempP3)
+                val i = MEdge.getIntersectXY(prev, curr, tempP3)
                 if (i != null) {
                     val count = (MPoint.distance(prev.bx, prev.by, curr.ax, curr.ay) * scale).toInt().clamp(4, 64)
                     for (n in 0..count) {
@@ -100,7 +88,7 @@ class StrokeToFill {
         }
     }
 
-    internal fun doCap(l: PointIntArrayList, r: PointIntArrayList, left: Edge, right: Edge, epoint: EdgePoint, cap: LineCap, scale: Double) {
+    internal fun doCap(l: PointIntArrayList, r: PointIntArrayList, left: MEdge, right: MEdge, epoint: EdgePoint, cap: LineCap, scale: Double) {
         val angle = if (epoint == EdgePoint.A) -left.angle else +left.angle
         val lx = left.getX(epoint.n)
         val ly = left.getY(epoint.n)
@@ -174,7 +162,7 @@ class StrokeToFill {
                     doCap(fillPointsLeft, fillPointsRight, currEdgeLeft, currEdgeRight, EdgePoint.A, if (closed) LineCap.BUTT else startCap, scale)
                 }
                 isMiddle -> {
-                    val angle = Edge.angleBetween(prevEdge, currEdge)
+                    val angle = MEdge.angleBetween(prevEdge, currEdge)
                     //val leftAngle = !(angle > 0.degrees && angle < 180.degrees)
                     val leftAngle = angle > 0.degrees
 

@@ -8,8 +8,8 @@ import kotlin.test.assertTrue
 class RectangleIntTest {
     @Test
     fun name() {
-        assertEquals(SizeInt(25, 100), SizeInt(50, 200).fitTo(container = SizeInt(100, 100)))
-        assertEquals(SizeInt(50, 200), SizeInt(50, 200).fitTo(container = SizeInt(100, 200)))
+        assertEquals(MSizeInt(25, 100), MSizeInt(50, 200).fitTo(container = MSizeInt(100, 100)))
+        assertEquals(MSizeInt(50, 200), MSizeInt(50, 200).fitTo(container = MSizeInt(100, 200)))
     }
 
     @Test

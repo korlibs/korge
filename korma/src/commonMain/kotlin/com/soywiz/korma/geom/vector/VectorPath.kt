@@ -24,10 +24,6 @@ import com.soywiz.korma.math.isAlmostEquals
 import com.soywiz.korma.math.roundDecimalPlaces
 import kotlin.native.concurrent.ThreadLocal
 
-// @TODO: ThreadLocal on JVM
-@ThreadLocal
-private val tempMatrix: MMatrix = MMatrix()
-
 interface IVectorPath : VectorBuilder {
     fun toSvgString(): String
 }
@@ -334,7 +330,7 @@ class VectorPath(
     fun intersectsWith(right: VectorPath): Boolean = intersectsWith(identityMatrix, right, identityMatrix)
 
     // @TODO: Use trapezoids instead
-    fun intersectsWith(leftMatrix: MMatrix, right: VectorPath, rightMatrix: MMatrix): Boolean {
+    fun intersectsWith(leftMatrix: MMatrix, right: VectorPath, rightMatrix: MMatrix, tempMatrix: MMatrix = MMatrix()): Boolean {
         val left = this
         val leftScanline = left.scanline
         val rightScanline = right.scanline

@@ -1,16 +1,26 @@
 package com.soywiz.korma.geom
 
+import com.soywiz.korma.annotations.*
+
+@KormaValueApi
 data class EulerRotation(
     val x: Angle = 0.degrees,
     val y: Angle = 0.degrees,
     val z: Angle = 0.degrees
 )
 
+interface IEulerRotation {
+    val x: Angle
+    val y: Angle
+    val z: Angle
+}
+
+@KormaMutableApi
 data class MEulerRotation(
-    var x: Angle = 0.degrees,
-    var y: Angle = 0.degrees,
-    var z: Angle = 0.degrees
-) {
+    override var x: Angle = 0.degrees,
+    override var y: Angle = 0.degrees,
+    override var z: Angle = 0.degrees
+) : IEulerRotation {
     companion object {
         fun toQuaternion(roll: Angle, pitch: Angle, yaw: Angle, out: MQuaternion = MQuaternion()): MQuaternion {
             val cr = cos(roll * 0.5)

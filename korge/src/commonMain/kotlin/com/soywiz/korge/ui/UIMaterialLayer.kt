@@ -56,7 +56,7 @@ class UIMaterialLayer(
     @ViewProperty
     var bgColor: RGBA = Colors.WHITE; set(value) { field = value; invalidateRender() }
     @ViewProperty
-    var radius: RectCorners = RectCorners.EMPTY; set(value) { field = value; invalidateRender() }
+    var radius: IRectCorners = IRectCorners.EMPTY; set(value) { field = value; invalidateRender() }
 
     @ViewProperty
     var borderColor: RGBA = Colors.BLACK; set(value) { field = value; invalidateRender() }

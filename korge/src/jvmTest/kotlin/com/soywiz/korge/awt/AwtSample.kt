@@ -6,7 +6,7 @@ import com.soywiz.korge.view.solidRect
 import com.soywiz.korim.color.Colors
 import com.soywiz.korma.geom.Anchor
 import com.soywiz.korma.geom.ScaleMode
-import com.soywiz.korma.geom.SizeInt
+import com.soywiz.korma.geom.MSizeInt
 import kotlinx.coroutines.runBlocking
 import java.awt.Dimension
 import java.awt.GridLayout
@@ -22,7 +22,7 @@ object AwtSample {
             frame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
             frame.layout = GridLayout(5, 1)
             frame.add(JButton("[1]"))
-            frame.add(GLCanvasWithKorge(Korge.Config(virtualSize = SizeInt(512, 512), scaleMode = ScaleMode.NO_SCALE, scaleAnchor = Anchor.TOP_LEFT)) {
+            frame.add(GLCanvasWithKorge(Korge.Config(virtualSize = MSizeInt(512, 512), scaleMode = ScaleMode.NO_SCALE, scaleAnchor = Anchor.TOP_LEFT)) {
                 views.clearColor = Colors.RED
                 solidRect(100, 100, Colors.YELLOW)
             })

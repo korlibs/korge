@@ -1,24 +1,17 @@
-import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.kds.iterators.fastForEachWithIndex
-import com.soywiz.korge.GLCanvasKorge
 import com.soywiz.korge.GLCanvasWithKorge
 import com.soywiz.korge.Korge
 import com.soywiz.korge.input.onClick
 import com.soywiz.korge.jvmEnsureAddOpens
 import com.soywiz.korge.ui.*
-import com.soywiz.korge.view.descendantsWith
-import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.toRgba
-import com.soywiz.korio.async.launchImmediately
 import com.soywiz.korma.geom.Anchor
-import com.soywiz.korma.geom.SizeInt
+import com.soywiz.korma.geom.MSizeInt
 import java.awt.Component
 import java.awt.GridLayout
 import javax.swing.JButton
-import javax.swing.JComponent
 import javax.swing.JFrame
 import javax.swing.SwingUtilities
-import kotlin.coroutines.EmptyCoroutineContext
 
 object AwtSandboxSample {
     @JvmStatic
@@ -45,7 +38,7 @@ object AwtSandboxSample {
                         GLCanvasWithKorge(
                             Korge.Config(
                                 bgcolor = frame.background.toRgba(),
-                                virtualSize = SizeInt(UIButton.DEFAULT_WIDTH.toInt(), UIButton.DEFAULT_HEIGHT.toInt() * 3),
+                                virtualSize = MSizeInt(UIButton.DEFAULT_WIDTH.toInt(), UIButton.DEFAULT_HEIGHT.toInt() * 3),
                                 scaleAnchor = Anchor.CENTER
                             )
                         ) {

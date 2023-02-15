@@ -17,7 +17,6 @@ import com.soywiz.korio.file.VfsFile
 import com.soywiz.korio.file.std.resourcesVfs
 import com.soywiz.korma.geom.MMatrix3D
 import com.soywiz.korma.geom.MVector4
-import com.soywiz.korma.geom.translate
 import kotlinx.coroutines.coroutineScope
 
 class CubeMap(

@@ -139,7 +139,7 @@ open class UIButton(
     //var newSkin: NewUIButtonSkin = DefaultUISkin
 
     val background = uiMaterialLayer(width, height) {
-        radius = RectCorners(5.0)
+        radius = IRectCorners(5.0)
     }
     //internal val background = FastMaterialBackground(width, height).addTo(this)
     //    .also { it.colorMul = bgColorOut }
@@ -186,7 +186,7 @@ open class UIButton(
         val height = height
         background.setSize(width, height)
         //background.setSize(width, height)
-        background.radius = RectCorners(this.radiusPoints())
+        background.radius = IRectCorners(this.radiusPoints())
         background.shadowRadius = if (elevation) 10.0 else 0.0
         //textView.setSize(width, height)
 

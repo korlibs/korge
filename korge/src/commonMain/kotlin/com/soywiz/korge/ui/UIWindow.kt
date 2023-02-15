@@ -38,7 +38,7 @@ class UIWindow(title: String, width: Double = 256.0, height: Double = 256.0) : U
     var maxHeight = 4096.0
 
     private val bgMaterial = uiMaterialLayer(width, height) {
-        radius = RectCorners(12.0)
+        radius = IRectCorners(12.0)
         colorMul = if (isFocused) Colors["#394674"] else Colors["#999"]
         shadowColor = Colors.BLACK.withAd(0.9)
         shadowRadius = 20.0

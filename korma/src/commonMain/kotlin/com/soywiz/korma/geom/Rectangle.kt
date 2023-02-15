@@ -11,8 +11,8 @@ import com.soywiz.korma.math.roundDecimalPlaces
 import kotlin.math.max
 import kotlin.math.min
 
-inline fun Rectangle(x: Int, y: Int, width: Int, height: Int): Rectangle = Rectangle(x.toDouble(), y.toDouble(), width.toDouble(), height.toDouble())
-inline fun Rectangle(x: Float, y: Float, width: Float, height: Float): Rectangle = Rectangle(x.toDouble(), y.toDouble(), width.toDouble(), height.toDouble())
+@KormaValueApi inline fun Rectangle(x: Int, y: Int, width: Int, height: Int): Rectangle = Rectangle(x.toDouble(), y.toDouble(), width.toDouble(), height.toDouble())
+@KormaValueApi inline fun Rectangle(x: Float, y: Float, width: Float, height: Float): Rectangle = Rectangle(x.toDouble(), y.toDouble(), width.toDouble(), height.toDouble())
 
 @KormaValueApi
 data class Rectangle(
@@ -146,7 +146,7 @@ interface IRectangle {
 data class MRectangle(
     override var x: Double, override var y: Double,
     override var width: Double, override var height: Double
-) : MutableInterpolable<MRectangle>, Interpolable<MRectangle>, IRectangle, Sizeable {
+) : MutableInterpolable<MRectangle>, Interpolable<MRectangle>, IRectangle, ISizeable {
 
     companion object {
         val POOL: ConcurrentPool<MRectangle> = ConcurrentPool<MRectangle>({ it.clear() }) { MRectangle() }
@@ -474,7 +474,7 @@ interface IRectangleInt {
     fun sliceWithSize(x: Int, y: Int, width: Int, height: Int, clamped: Boolean = true): IRectangleInt =
         sliceWithBounds(x, y, x + width, y + height, clamped)
 
-    operator fun contains(v: SizeInt): Boolean = (v.width <= width) && (v.height <= height)
+    operator fun contains(v: MSizeInt): Boolean = (v.width <= width) && (v.height <= height)
     operator fun contains(that: IPoint) = contains(that.x, that.y)
     operator fun contains(that: IPointInt) = contains(that.x, that.y)
     fun contains(x: Double, y: Double) = (x >= left && x < right) && (y >= top && y < bottom)
@@ -540,7 +540,7 @@ inline class MRectangleInt(val rect: MRectangle) : IRectangleInt {
     }
 
     fun getPosition(out: MPointInt = MPointInt()): MPointInt = out.setTo(x, y)
-    fun getSize(out: SizeInt = SizeInt()): SizeInt = out.setTo(width, height)
+    fun getSize(out: MSizeInt = MSizeInt()): MSizeInt = out.setTo(width, height)
 
     val position get() = getPosition()
     val size get() = getSize()

@@ -65,7 +65,7 @@ import com.soywiz.korma.geom.Anchor
 import com.soywiz.korma.geom.ISizeInt
 import com.soywiz.korma.geom.MPoint
 import com.soywiz.korma.geom.ScaleMode
-import com.soywiz.korma.geom.SizeInt
+import com.soywiz.korma.geom.MSizeInt
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.coroutineScope
@@ -234,8 +234,8 @@ object Korge {
                 .mapInstance<Module>(object : Module() {
                     override val title = title
                     override val fullscreen: Boolean? = fullscreen
-                    override val windowSize = SizeInt(width, height)
-                    override val size = SizeInt(virtualWidth, virtualHeight)
+                    override val windowSize = MSizeInt(width, height)
+                    override val size = MSizeInt(virtualWidth, virtualHeight)
                 })
             views.debugViews = debug
             views.debugFontExtraScale = debugFontExtraScale

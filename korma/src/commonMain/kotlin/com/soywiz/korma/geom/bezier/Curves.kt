@@ -2,7 +2,7 @@ package com.soywiz.korma.geom.bezier
 
 import com.soywiz.kds.Extra
 import com.soywiz.kds.iterators.fastForEach
-import com.soywiz.korma.annotations.KormaExperimental
+import com.soywiz.korma.annotations.*
 import com.soywiz.korma.geom.BoundsBuilder
 import com.soywiz.korma.geom.IPointArrayList
 import com.soywiz.korma.geom.MPoint
@@ -200,6 +200,7 @@ fun List<Curve>.toVectorPath(out: VectorPath = VectorPath()): VectorPath {
 }
 
 @KormaExperimental
+@KormaMutableApi
 fun Curves.toNonCurveSimplePointList(out: PointArrayList = PointArrayList()): IPointArrayList? {
     val curves = this
     val beziers = curves.beziers//.flatMap { it.toSimpleList() }.map { it.curve }

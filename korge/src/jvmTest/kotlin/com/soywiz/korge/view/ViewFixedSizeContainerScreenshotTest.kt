@@ -12,8 +12,8 @@ import com.soywiz.korma.geom.*
 import kotlin.test.*
 
 class ViewFixedSizeContainerScreenshotTest : ViewsForTesting(
-    windowSize = SizeInt(150, 150),
-    virtualSize = SizeInt(150, 150),
+    windowSize = MSizeInt(150, 150),
+    virtualSize = MSizeInt(150, 150),
     log = true
 ) {
     val glLog = KmlGlProxyLogToString()

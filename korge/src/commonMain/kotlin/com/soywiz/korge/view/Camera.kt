@@ -6,7 +6,6 @@ import com.soywiz.korge.tween.get
 import com.soywiz.korge.tween.tween
 import com.soywiz.korma.geom.MMatrix
 import com.soywiz.korma.geom.MRectangle
-import com.soywiz.korma.geom.setTo
 import com.soywiz.korma.interpolation.Easing
 
 /**

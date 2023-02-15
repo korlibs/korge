@@ -4,7 +4,7 @@ import com.soywiz.kds.*
 import com.soywiz.korma.annotations.*
 
 // @TODO: value class
-@KormaExperimental
+@KormaValueApi
 data class Margin(
     val top: Double,
     val right: Double,
@@ -13,7 +13,7 @@ data class Margin(
 )
 
 // @TODO: value class
-@KormaExperimental
+@KormaValueApi
 data class MarginInt(
     val top: Int,
     val right: Int,
@@ -21,12 +21,18 @@ data class MarginInt(
     val left: Int,
 )
 
-//@Deprecated("Use Margin")
+@KormaMutableApi
 interface IMargin {
     val top: Double
     val right: Double
     val bottom: Double
     val left: Double
+
+    val isNotZero: Boolean get() = top != 0.0 || left != 0.0 || right != 0.0 || bottom != 0.0
+    val leftPlusRight: Double get() = left + right
+    val topPlusBottom: Double get() = top + bottom
+    val horizontal: Double get() = (left + right) / 2
+    val vertical: Double get() = (top + bottom) / 2
 
     fun duplicate(
         top: Double = this.top,
@@ -44,13 +50,7 @@ interface IMargin {
     }
 }
 
-val IMargin.leftPlusRight: Double get() = left + right
-val IMargin.topPlusBottom: Double get() = top + bottom
-
-val IMargin.horizontal: Double get() = (left + right) / 2
-val IMargin.vertical: Double get() = (top + bottom) / 2
-
-//@Deprecated("Use Margin")
+@KormaMutableApi
 data class MMargin(
     override var top: Double = 0.0,
     override var right: Double = 0.0,
@@ -73,12 +73,18 @@ data class MMargin(
     }
 }
 
-//@Deprecated("Use MarginInt")
+@KormaMutableApi
 interface IMarginInt {
     val top: Int
     val right: Int
     val bottom: Int
     val left: Int
+
+    val isNotZero: Boolean get() = top != 0 || left != 0 || right != 0 || bottom != 0
+    val leftPlusRight: Int get() = left + right
+    val topPlusBottom: Int get() = top + bottom
+    val horizontal: Int get() = (left + right) / 2
+    val vertical: Int get() = (top + bottom) / 2
 
     companion object {
         val ZERO: IMarginInt = IMarginInt(0)
@@ -88,15 +94,7 @@ interface IMarginInt {
     }
 }
 
-val IMarginInt.isNotZero: Boolean get() = top != 0 || left != 0 || right != 0 || bottom != 0
-
-val IMarginInt.leftPlusRight: Int get() = left + right
-val IMarginInt.topPlusBottom: Int get() = top + bottom
-
-val IMarginInt.horizontal: Int get() = (left + right) / 2
-val IMarginInt.vertical: Int get() = (top + bottom) / 2
-
-//@Deprecated("Use MarginInt")
+@KormaMutableApi
 data class MMarginInt(
     override var top: Int = 0,
     override var right: Int = 0,

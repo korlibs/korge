@@ -217,9 +217,9 @@ class Views constructor(
     private val tempViewsPool = Pool { FastArrayList<View>() }
     private val tempCompsPool = Pool { FastArrayList<Component>() }
     //private val tempViews = FastArrayList<View>()
-	private val virtualSize = SizeInt()
-	private val actualSize = SizeInt()
-	private val targetSize = SizeInt()
+	private val virtualSize = MSizeInt()
+	private val actualSize = MSizeInt()
+	private val targetSize = MSizeInt()
 
     @KorgeInternal
     val actualWidth get() = actualSize.width
@@ -677,11 +677,11 @@ interface BoundsProvider {
 fun BoundsProvider.setBoundsInfo(
     virtualWidth: Int,
     virtualHeight: Int,
-    actualSize: SizeInt,
+    actualSize: MSizeInt,
     scaleMode: ScaleMode = ScaleMode.FILL,
     anchor: Anchor = Anchor.CENTER,
-    virtualSize: SizeInt = SizeInt(),
-    targetSize: SizeInt = SizeInt()
+    virtualSize: MSizeInt = MSizeInt(),
+    targetSize: MSizeInt = MSizeInt()
 ) {
     virtualSize.setTo(virtualWidth, virtualHeight)
     scaleMode(virtualSize, actualSize, targetSize)

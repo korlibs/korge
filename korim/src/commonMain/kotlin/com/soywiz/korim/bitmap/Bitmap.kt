@@ -24,7 +24,7 @@ abstract class Bitmap(
     val bpp: Int,
     premultiplied: Boolean,
     val backingArray: Any?
-) : Sizeable, ISizeInt, Extra by Extra.Mixin() {
+) : ISizeable, ISizeInt, Extra by Extra.Mixin() {
     var bitmapName: String? = null
 
     var premultiplied: Boolean = premultiplied

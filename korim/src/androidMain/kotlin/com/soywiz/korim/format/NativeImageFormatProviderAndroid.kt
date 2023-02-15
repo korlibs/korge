@@ -95,7 +95,7 @@ object AndroidNativeImageFormatProvider : NativeImageFormatProvider() {
 
     override suspend fun decodeInternal(data: ByteArray, props: ImageDecodingProps): NativeImageResult {
         val info = decodeHeaderInternal(data)
-        val originalSize = SizeInt(info.width, info.height)
+        val originalSize = MSizeInt(info.width, info.height)
 
         return NativeImageResult(
             image = AndroidNativeImage(

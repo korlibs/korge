@@ -22,15 +22,14 @@ typealias MVector2D = MPoint
 // VALUE CLASSES
 //////////////////////////////
 
-@KormaValueApi
-inline fun Point(x: Int, y: Int): Point = Point(x.toDouble(), y.toDouble())
-@KormaValueApi
-inline fun Point(x: Float, y: Float): Point = Point(x.toDouble(), y.toDouble())
+@KormaValueApi inline fun Point(x: Int, y: Int): Point = Point(x.toDouble(), y.toDouble())
+@KormaValueApi inline fun Point(x: Float, y: Float): Point = Point(x.toDouble(), y.toDouble())
 
 //data class Point(val x: Double, val y: Double) {
 // @JvmInline value
 @KormaValueApi
 data class Point(val x: Double, val y: Double) {
+    constructor() : this(0.0, 0.0)
     //constructor(x: Int, y: Int) : this(x.toDouble(), y.toDouble())
     //constructor(x: Float, y: Float) : this(x.toDouble(), y.toDouble())
 

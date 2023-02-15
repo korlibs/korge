@@ -1,16 +1,10 @@
 package com.soywiz.korma.geom.convex
 
-import com.soywiz.korma.geom.Angle
-import com.soywiz.korma.geom.IPointArrayList
-import com.soywiz.korma.geom.PI2
-import com.soywiz.korma.geom.bezier.Curves
-import com.soywiz.korma.geom.bezier.toNonCurveSimplePointList
-import com.soywiz.korma.geom.plus
-import com.soywiz.korma.geom.vector.VectorPath
-import com.soywiz.korma.geom.vector.getCurvesList
-import com.soywiz.korma.math.isAlmostEquals
-import kotlin.math.PI
-import kotlin.math.absoluteValue
+import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.bezier.*
+import com.soywiz.korma.geom.vector.*
+import com.soywiz.korma.math.*
+import kotlin.math.*
 
 object Convex {
     fun isConvex(path: VectorPath): Boolean {

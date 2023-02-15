@@ -3,7 +3,6 @@ package com.soywiz.korge3d
 import com.soywiz.korge3d.internal.vector3DTemps
 import com.soywiz.korma.geom.MMatrix3D
 import com.soywiz.korma.geom.MVector4
-import com.soywiz.korma.geom.scale
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin

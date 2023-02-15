@@ -5,13 +5,13 @@ import com.soywiz.korag.log.AGBaseLog
 import com.soywiz.korge.tests.ViewsForTesting
 import com.soywiz.korim.color.Colors
 import com.soywiz.korma.geom.MRectangle
-import com.soywiz.korma.geom.SizeInt
+import com.soywiz.korma.geom.MSizeInt
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class ViewFixedSizeContainerTest : ViewsForTesting(
-    windowSize = SizeInt(1280, 720),
-    virtualSize = SizeInt(640, 480)
+    windowSize = MSizeInt(1280, 720),
+    virtualSize = MSizeInt(640, 480)
 ) {
     @Test
     fun testClipContainerScissors() = viewsTest {

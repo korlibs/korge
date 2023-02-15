@@ -7,12 +7,12 @@ class SizeIntTest {
     @Test
     fun cover() {
         assertEquals(
-            SizeInt(100, 400),
-            SizeInt(50, 200).applyScaleMode(container = SizeInt(100, 100), mode = ScaleMode.COVER)
+            MSizeInt(100, 400),
+            MSizeInt(50, 200).applyScaleMode(container = MSizeInt(100, 100), mode = ScaleMode.COVER)
         )
         assertEquals(
-            SizeInt(25, 100),
-            SizeInt(50, 200).applyScaleMode(container = SizeInt(25, 25), mode = ScaleMode.COVER)
+            MSizeInt(25, 100),
+            MSizeInt(50, 200).applyScaleMode(container = MSizeInt(25, 25), mode = ScaleMode.COVER)
         )
     }
 }

@@ -1,16 +1,9 @@
 package com.soywiz.korma.geom
 
 import com.soywiz.korma.annotations.*
-import kotlin.math.PI
-import kotlin.math.abs
-import kotlin.math.acos
-import kotlin.math.asin
-import kotlin.math.atan2
-import kotlin.math.cos
-import kotlin.math.sin
-import kotlin.math.sqrt
+import kotlin.math.*
 
-@KormaExperimental
+@KormaValueApi
 data class Quaternion(
     val x: Double,
     val y: Double,
@@ -18,7 +11,7 @@ data class Quaternion(
     val w: Double,
 )
 
-//@Deprecated("Use Quaternion instead")
+@KormaMutableApi
 interface IQuaternion {
     val x: Double
     val y: Double
@@ -27,7 +20,7 @@ interface IQuaternion {
 }
 
 // https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
-//@Deprecated("Use Quaternion instead")
+@KormaMutableApi
 data class MQuaternion(
     override var x: Double = 0.0,
     override var y: Double = 0.0,
@@ -185,14 +178,14 @@ data class MQuaternion(
         }
     }
 
-    val xyz get() = MVector4(x, y, z)
+    val xyz: MVector3 get() = MVector3(x, y, z)
 
     // @TODO: Optimize
     operator fun times(other: MQuaternion): MQuaternion {
         val left = this
         val right = other
         return MQuaternion(
-            (left.xyz * right.w.toFloat()) + (right.xyz * left.w.toFloat()) + MVector4().cross(left.xyz, right.xyz),
+            (left.xyz * right.w.toFloat()) + (right.xyz * left.w.toFloat()) + MVector3().cross(left.xyz, right.xyz),
             left.w * right.w - left.xyz.dot(right.xyz)
         )
     }

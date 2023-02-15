@@ -3,7 +3,6 @@ package com.soywiz.korma.awt
 import com.soywiz.korma.geom.MRectangle
 import com.soywiz.korma.geom.MRectangleInt
 import com.soywiz.korma.geom.MSize
-import com.soywiz.korma.geom.setTo
 import java.awt.geom.Rectangle2D
 
 fun MRectangle.toAwt(out: Rectangle2D.Float = Rectangle2D.Float()): Rectangle2D.Float =

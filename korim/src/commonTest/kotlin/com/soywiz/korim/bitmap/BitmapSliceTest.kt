@@ -245,7 +245,7 @@ class BitmapSliceTest {
 
     @Test
     fun test2() = suspendTest {
-        val bmp1 = RectSlice(SizeInt(100, 100), MRectangleInt(25, 25, 50, 50), ImageOrientation.ROTATE_0)
+        val bmp1 = RectSlice(MSizeInt(100, 100), MRectangleInt(25, 25, 50, 50), ImageOrientation.ROTATE_0)
         logger.debug { "bmp1=$bmp1, coords=${bmp1.coords}" }
         val bmp2 = bmp1.copy(orientation = ImageOrientation.ROTATE_90)
         logger.debug { "bmp2=$bmp2, coords=${bmp2.coords}" }

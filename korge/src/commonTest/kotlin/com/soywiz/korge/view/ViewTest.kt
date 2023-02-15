@@ -3,7 +3,7 @@ package com.soywiz.korge.view
 import com.soywiz.korge.tests.ViewsForTesting
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korma.geom.MPoint
-import com.soywiz.korma.geom.SizeInt
+import com.soywiz.korma.geom.MSizeInt
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -42,8 +42,8 @@ class ViewTest {
     @Test
     fun testConcatMatrix() {
         val viewsForTesting = ViewsForTesting(
-            windowSize = SizeInt(200, 200),
-            virtualSize = SizeInt(100, 100),
+            windowSize = MSizeInt(200, 200),
+            virtualSize = MSizeInt(100, 100),
         )
         lateinit var root: Container
         lateinit var middle: Container

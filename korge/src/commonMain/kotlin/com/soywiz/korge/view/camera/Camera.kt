@@ -20,7 +20,6 @@ import com.soywiz.korma.geom.MRectangle
 import com.soywiz.korma.geom.ScaleMode
 import com.soywiz.korma.geom.degrees
 import com.soywiz.korma.geom.interpolate
-import com.soywiz.korma.geom.setTo
 import com.soywiz.korma.interpolation.Easing
 import com.soywiz.korma.interpolation.MutableInterpolable
 import com.soywiz.korma.interpolation.interpolate
