@@ -13,7 +13,7 @@ class FTrianglesInt {
 
     operator fun get(index: Int): Item = Item(index)
     inline fun fastForEach(block: FTrianglesInt.(Item) -> Unit) { for (n in 0 until size) this.block(this[n]) }
-    fun toTriangleIntList(): List<TriangleInt> = map { it.toTriangleInt() }
+    fun toTriangleIntList(): List<MTriangleInt> = map { it.toTriangleInt() }
     inline fun <T> map(block: FTrianglesInt.(Item) -> T): List<T> = fastArrayListOf<T>().also { out -> fastForEach { out.add(block(it)) } }
 
     private fun Item.index(i: Int, c: Int): Int = indices[index * 3 + i] * 2 + c
@@ -31,7 +31,7 @@ class FTrianglesInt {
     var Item.y1: Int get() = coordY(1); set(value) { setCoordY(1, value) }
     var Item.x2: Int get() = coordX(2); set(value) { setCoordX(2, value) }
     var Item.y2: Int get() = coordY(2); set(value) { setCoordY(2, value) }
-    fun Item.toTriangleInt(out: TriangleInt = TriangleInt()): TriangleInt {
+    fun Item.toTriangleInt(out: MTriangleInt = MTriangleInt()): MTriangleInt {
         out.setTo(x0, y0, x1, y1, x2, y2)
         return out
     }
@@ -45,7 +45,7 @@ class FTrianglesInt {
     }
 
     fun add(v: Item): Item = add(v.x0, v.y0, v.x1, v.y1, v.x2, v.y2)
-    fun add(v: TriangleInt): Item = add(v.x0, v.y0, v.x1, v.y1, v.x2, v.y2)
+    fun add(v: MTriangleInt): Item = add(v.x0, v.y0, v.x1, v.y1, v.x2, v.y2)
 
     //fun addStrip(x0: Int, y0: Int, x1: Int, y1: Int, x2: Int, y2: Int, x3: Int, y3: Int): Item {
     //}
@@ -55,4 +55,4 @@ class FTrianglesInt {
     }
 }
 
-fun List<TriangleInt>.toFTrianglesInt(): FTrianglesInt = FTrianglesInt { this@toFTrianglesInt.fastForEach { add(it) } }
+fun List<MTriangleInt>.toFTrianglesInt(): FTrianglesInt = FTrianglesInt { this@toFTrianglesInt.fastForEach { add(it) } }

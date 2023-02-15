@@ -9,6 +9,7 @@ data class EulerRotation(
     val z: Angle = 0.degrees
 )
 
+@KormaMutableApi
 interface IEulerRotation {
     val x: Angle
     val y: Angle
