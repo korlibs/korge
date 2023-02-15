@@ -11,21 +11,83 @@ import com.soywiz.korma.math.roundDecimalPlaces
 import kotlin.math.max
 import kotlin.math.min
 
-// @TODO: Value Class
-@KormaExperimental
+inline fun Rectangle(x: Int, y: Int, width: Int, height: Int): Rectangle = Rectangle(x.toDouble(), y.toDouble(), width.toDouble(), height.toDouble())
+inline fun Rectangle(x: Float, y: Float, width: Float, height: Float): Rectangle = Rectangle(x.toDouble(), y.toDouble(), width.toDouble(), height.toDouble())
+
+@KormaValueApi
 data class Rectangle(
     val x: Double,
     val y: Double,
     val width: Double,
     val height: Double,
-)
+) {
+    operator fun times(scale: Double): Rectangle = Rectangle(x * scale, y * scale, width * scale, height * scale)
+    operator fun times(scale: Float): Rectangle = this * scale.toDouble()
+    operator fun times(scale: Int): Rectangle = this * scale.toDouble()
+
+    operator fun div(scale: Double): Rectangle = Rectangle(x / scale, y / scale, width / scale, height / scale)
+    operator fun div(scale: Float): Rectangle = this / scale.toDouble()
+    operator fun div(scale: Int): Rectangle = this / scale.toDouble()
+}
 
 //@Deprecated("Use Rectangle instead")
+@KormaMutableApi
 interface IRectangle {
     val x: Double
     val y: Double
     val width: Double
     val height: Double
+
+    operator fun contains(that: IPoint) = contains(that.x, that.y)
+    operator fun contains(that: IPointInt) = contains(that.x, that.y)
+    fun contains(x: Double, y: Double) = (x >= left && x < right) && (y >= top && y < bottom)
+    fun contains(x: Float, y: Float) = contains(x.toDouble(), y.toDouble())
+    fun contains(x: Int, y: Int) = contains(x.toDouble(), y.toDouble())
+
+    fun clone(): MRectangle = MRectangle(x, y, width, height)
+
+    val area: Double get() = width * height
+    val isEmpty: Boolean get() = width == 0.0 && height == 0.0
+    val isNotEmpty: Boolean get() = width != 0.0 || height != 0.0
+    val mutable: MRectangle get() = MRectangle(x, y, width, height)
+
+    val left get() = x
+    val top get() = y
+    val right get() = x + width
+    val bottom get() = y + height
+
+    val topLeft get() = MPoint(left, top)
+    val topRight get() = MPoint(right, top)
+    val bottomLeft get() = MPoint(left, bottom)
+    val bottomRight get() = MPoint(right, bottom)
+
+    val centerX: Double get() = (right + left) * 0.5
+    val centerY: Double get() = (bottom + top) * 0.5
+    val center: IPoint get() = MPoint(centerX, centerY)
+
+    /**
+     * Circle that touches or contains all the corners ([topLeft], [topRight], [bottomLeft], [bottomRight]) of the rectangle.
+     */
+    fun outerCircle(): Circle {
+        val centerX = centerX
+        val centerY = centerY
+        return Circle(center, MPoint.distance(centerX, centerY, right, top))
+    }
+
+
+    fun without(padding: IMargin): MRectangle = MRectangle.fromBounds(
+        left + padding.left,
+        top + padding.top,
+        right - padding.right,
+        bottom - padding.bottom
+    )
+
+    fun with(margin: IMargin): MRectangle = MRectangle.fromBounds(
+        left - margin.left,
+        top - margin.top,
+        right + margin.right,
+        bottom + margin.bottom
+    )
 
     companion object {
         inline operator fun invoke(
@@ -79,41 +141,8 @@ interface IRectangle {
     }
 }
 
-val IRectangle.area: Double get() = width * height
-fun IRectangle.clone(): MRectangle = MRectangle(x, y, width, height)
-val IRectangle.isNotEmpty: Boolean get() = width != 0.0 || height != 0.0
-val IRectangle.mutable: MRectangle get() = MRectangle(x, y, width, height)
-
-val IRectangle.left get() = x
-val IRectangle.top get() = y
-val IRectangle.right get() = x + width
-val IRectangle.bottom get() = y + height
-
-val IRectangle.topLeft get() = MPoint(left, top)
-val IRectangle.topRight get() = MPoint(right, top)
-val IRectangle.bottomLeft get() = MPoint(left, bottom)
-val IRectangle.bottomRight get() = MPoint(right, bottom)
-
-val IRectangle.centerX: Double get() = (right + left) * 0.5
-val IRectangle.centerY: Double get() = (bottom + top) * 0.5
-val IRectangle.center: MPoint get() = MPoint(centerX, centerY)
-
-/**
- * Circle that touches or contains all the corners ([topLeft], [topRight], [bottomLeft], [bottomRight]) of the rectangle.
- */
-fun IRectangle.outerCircle(): Circle {
-    val centerX = centerX
-    val centerY = centerY
-    return Circle(center, MPoint.distance(centerX, centerY, right, top))
-}
-
-operator fun IRectangle.contains(that: IPoint) = contains(that.x, that.y)
-operator fun IRectangle.contains(that: IPointInt) = contains(that.x, that.y)
-fun IRectangle.contains(x: Double, y: Double) = (x >= left && x < right) && (y >= top && y < bottom)
-fun IRectangle.contains(x: Float, y: Float) = contains(x.toDouble(), y.toDouble())
-fun IRectangle.contains(x: Int, y: Int) = contains(x.toDouble(), y.toDouble())
-
 //@Deprecated("Use Rectangle instead")
+@KormaMutableApi
 data class MRectangle(
     override var x: Double, override var y: Double,
     override var width: Double, override var height: Double
@@ -153,45 +182,11 @@ data class MRectangle(
         this.y = y
     }
 
-    val isEmpty: Boolean get() = area == 0.0
-    val isNotEmpty: Boolean get() = area != 0.0
-    val area: Double get() = width * height
-    @Deprecated("Use x or leftKeepingRight")
-    var left: Double
-        get() = x
-        set(value) {
-            x = value
-        }
-    @Deprecated("Use y or topKeepingBottom")
-    var top: Double
-        get() = y
-        set(value) {
-            y = value
-        }
+    override var left: Double ; get() = x; set(value) { width += (x - value); x = value }
+    override var top: Double ; get() = y; set(value) { height += (y - value); y = value }
 
-    var leftKeepingRight: Double
-        get() = x
-        set(value) {
-            width += (x - value)
-            x = value
-        }
-    var topKeepingBottom: Double
-        get() = y
-        set(value) {
-            height += (y - value)
-            y = value
-        }
-
-    var right: Double
-        get() = x + width
-        set(value) {
-            width = value - x
-        }
-    var bottom: Double
-        get() = y + height
-        set(value) {
-            height = value - y
-        }
+    override var right: Double ; get() = x + width ; set(value) { width = value - x }
+    override var bottom: Double ; get() = y + height ; set(value) { height = value - y }
 
     val position: MPoint get() = MPoint(x, y)
     override val size: MSize get() = MSize(width, height)
@@ -309,9 +304,9 @@ data class MRectangle(
         bottom: Number = top
     ): MRectangle = inflate(left.toDouble(), top.toDouble(), right.toDouble(), bottom.toDouble())
 
-    fun clear() = setTo(0.0, 0.0, 0.0, 0.0)
+    fun clear(): MRectangle = setTo(0.0, 0.0, 0.0, 0.0)
 
-    fun clone() = MRectangle(x, y, width, height)
+    override fun clone(): MRectangle = MRectangle(x, y, width, height)
 
     fun setToAnchoredRectangle(item: MRectangle, anchor: Anchor, container: MRectangle) =
         setToAnchoredRectangle(item.size, anchor, container)
@@ -322,6 +317,24 @@ data class MRectangle(
         item.width,
         item.height
     )
+
+    fun applyTransform(m: IMatrix): MRectangle {
+        val tl = m.transform(left, top)
+        val tr = m.transform(right, top)
+        val bl = m.transform(left, bottom)
+        val br = m.transform(right, bottom)
+
+        val minX = com.soywiz.korma.math.min(tl.x, tr.x, bl.x, br.x)
+        val minY = com.soywiz.korma.math.min(tl.y, tr.y, bl.y, br.y)
+        val maxX = com.soywiz.korma.math.max(tl.x, tr.x, bl.x, br.x)
+        val maxY = com.soywiz.korma.math.max(tl.y, tr.y, bl.y, br.y)
+
+        //val l = m.transformX(left, top)
+        //val t = m.transformY(left, top)
+        //val r = m.transformX(right, bottom)
+        //val b = m.transformY(right, bottom)
+        return setBounds(minX, minY, maxX, maxY)
+    }
 
     //override fun toString(): String = "Rectangle([${left.niceStr}, ${top.niceStr}]-[${right.niceStr}, ${bottom.niceStr}])"
     override fun toString(): String =
@@ -361,7 +374,7 @@ data class MRectangle(
     fun getAnchoredPosition(anchorX: Double, anchorY: Double, out: MPoint = MPoint()): MPoint =
         out.setTo(left + width * anchorX, top + height * anchorY)
 
-    fun toInt(): RectangleInt = RectangleInt(x.toInt(), y.toInt(), width.toInt(), height.toInt())
+    fun toInt(): MRectangleInt = MRectangleInt(x.toInt(), y.toInt(), width.toInt(), height.toInt())
     fun floor(): MRectangle {
         setTo(
             kotlin.math.floor(x),
@@ -412,152 +425,154 @@ data class MRectangle(
             height = -height
         }
     }
+
+    fun expand(left: Double, top: Double, right: Double, bottom: Double): MRectangle =
+        this.setToBounds(this.left - left, this.top - top, this.right + right, this.bottom + bottom)
+
+    fun expand(left: Int, top: Int, right: Int, bottom: Int): MRectangle =
+        expand(left.toDouble(), top.toDouble(), right.toDouble(), bottom.toDouble())
+
+    fun expand(margin: IMargin): MRectangle =
+        expand(margin.left, margin.top, margin.right, margin.bottom)
+
+    fun expand(margin: IMarginInt): MRectangle =
+        expand(margin.left, margin.top, margin.right, margin.bottom)
 }
-
-fun MRectangle.expand(left: Double, top: Double, right: Double, bottom: Double): MRectangle {
-    this.left -= left
-    this.top -= top
-    this.width += left + right
-    this.height += top + bottom
-    return this
-}
-
-fun MRectangle.expand(left: Int, top: Int, right: Int, bottom: Int): MRectangle =
-    expand(left.toDouble(), top.toDouble(), right.toDouble(), bottom.toDouble())
-
-fun MRectangle.expand(margin: IMargin): MRectangle =
-    expand(margin.left, margin.top, margin.right, margin.bottom)
-
-fun MRectangle.expand(margin: IMarginInt): MRectangle =
-    expand(margin.left, margin.top, margin.right, margin.bottom)
-
-@Deprecated("Use non-mixed Int or Double variants for now")
-inline fun MRectangle.setTo(x: Number, y: Number, width: Number, height: Number) =
-    this.setTo(x.toDouble(), y.toDouble(), width.toDouble(), height.toDouble())
 
 //////////// INT
 
+@KormaMutableApi
 interface IRectangleInt {
     val x: Int
     val y: Int
     val width: Int
     val height: Int
 
+    fun clone(): MRectangleInt = MRectangleInt(x, y, width, height)
+
+    fun expanded(border: com.soywiz.korma.geom.IMarginInt): IRectangleInt = clone().expand(border)
+
+    val left: Int get() = x
+    val top: Int get() = y
+    val right: Int get() = x + width
+    val bottom: Int get() = y + height
+    val area: Int get() = width * height
+
+    val topLeft: MPointInt get() = MPointInt(left, top)
+    val topRight: MPointInt get() = MPointInt(right, top)
+    val bottomLeft: MPointInt get() = MPointInt(left, bottom)
+    val bottomRight: MPointInt get() = MPointInt(right, bottom)
+
+    fun sliceWithBounds(left: Int, top: Int, right: Int, bottom: Int, clamped: Boolean = true): IRectangleInt {
+        val left = if (!clamped) left else left.coerceIn(0, this.width)
+        val right = if (!clamped) right else right.coerceIn(0, this.width)
+        val top = if (!clamped) top else top.coerceIn(0, this.height)
+        val bottom = if (!clamped) bottom else bottom.coerceIn(0, this.height)
+        return MRectangleInt.fromBounds(this.x + left, this.y + top, this.x + right, this.y + bottom)
+    }
+
+    fun sliceWithSize(x: Int, y: Int, width: Int, height: Int, clamped: Boolean = true): IRectangleInt =
+        sliceWithBounds(x, y, x + width, y + height, clamped)
+
+    operator fun contains(v: SizeInt): Boolean = (v.width <= width) && (v.height <= height)
+    operator fun contains(that: IPoint) = contains(that.x, that.y)
+    operator fun contains(that: IPointInt) = contains(that.x, that.y)
+    fun contains(x: Double, y: Double) = (x >= left && x < right) && (y >= top && y < bottom)
+    fun contains(x: Float, y: Float) = contains(x.toDouble(), y.toDouble())
+    fun contains(x: Int, y: Int) = contains(x.toDouble(), y.toDouble())
+
     companion object {
-        operator fun invoke(x: Int, y: Int, width: Int, height: Int): IRectangleInt =
-            RectangleInt(x, y, width, height)
-
-        operator fun invoke(x: Float, y: Float, width: Float, height: Float): IRectangleInt =
-            RectangleInt(x.toInt(), y.toInt(), width.toInt(), height.toInt())
-
-        operator fun invoke(x: Double, y: Double, width: Double, height: Double): IRectangleInt =
-            RectangleInt(x.toInt(), y.toInt(), width.toInt(), height.toInt())
+        operator fun invoke(x: Int, y: Int, width: Int, height: Int): IRectangleInt = MRectangleInt(x, y, width, height)
+        operator fun invoke(x: Float, y: Float, width: Float, height: Float): IRectangleInt = MRectangleInt(x.toInt(), y.toInt(), width.toInt(), height.toInt())
+        operator fun invoke(x: Double, y: Double, width: Double, height: Double): IRectangleInt = MRectangleInt(x.toInt(), y.toInt(), width.toInt(), height.toInt())
     }
 }
 
-fun IRectangleInt.clone(): RectangleInt = RectangleInt(x, y, width, height)
+@KormaMutableApi
+inline class MRectangleInt(val rect: MRectangle) : IRectangleInt {
+    override var x: Int ; get() = rect.x.toInt() ; set(value) { rect.x = value.toDouble() }
+    override var y: Int ; get() = rect.y.toInt() ; set(value) { rect.y = value.toDouble() }
+    override var width: Int ; get() = rect.width.toInt() ; set(value) { rect.width = value.toDouble() }
+    override var height: Int ; get() = rect.height.toInt() ; set(value) { rect.height = value.toDouble() }
+    override var left: Int ; get() = rect.left.toInt() ; set(value) { rect.left = value.toDouble() }
+    override var top: Int ; get() = rect.top.toInt() ; set(value) { rect.top = value.toDouble() }
+    override var right: Int ; get() = rect.right.toInt() ; set(value) { rect.right = value.toDouble() }
+    override var bottom: Int ; get() = rect.bottom.toInt() ; set(value) { rect.bottom = value.toDouble() }
 
-fun IRectangleInt.expanded(border: com.soywiz.korma.geom.IMarginInt): IRectangleInt {
-    return clone().expand(border)
-}
+    fun anchoredIn(
+        container: MRectangleInt,
+        anchor: Anchor,
+        out: MRectangleInt = MRectangleInt()
+    ): MRectangleInt = out.setTo(
+        ((container.width - this.width) * anchor.sx).toInt(),
+        ((container.height - this.height) * anchor.sy).toInt(),
+        width,
+        height
+    )
 
-/** Inline expand the rectangle */
-fun RectangleInt.expand(border: com.soywiz.korma.geom.IMarginInt): RectangleInt {
-    return this.setBoundsTo(left - border.left, top - border.top, right + border.right, bottom + border.bottom)
-}
+    fun getAnchorPosition(anchor: Anchor, out: MPointInt = MPointInt()): MPointInt =
+        out.setTo((x + width * anchor.sx).toInt(), (y + height * anchor.sy).toInt())
 
-fun IRectangleInt.sliceWithBounds(left: Int, top: Int, right: Int, bottom: Int, clamped: Boolean = true): IRectangleInt {
-    val left = if (!clamped) left else left.coerceIn(0, this.width)
-    val right = if (!clamped) right else right.coerceIn(0, this.width)
-    val top = if (!clamped) top else top.coerceIn(0, this.height)
-    val bottom = if (!clamped) bottom else bottom.coerceIn(0, this.height)
-    return RectangleInt.fromBounds(this.x + left, this.y + top, this.x + right, this.y + bottom)
-}
+    val center: IPoint get() = anchor(0.5, 0.5).double
+    inline fun anchor(ax: Number, ay: Number): MPointInt = anchor(ax.toDouble(), ay.toDouble())
+    fun anchor(ax: Double, ay: Double): MPointInt = MPointInt((x + width * ax).toInt(), (y + height * ay).toInt())
 
-fun IRectangleInt.sliceWithSize(x: Int, y: Int, width: Int, height: Int, clamped: Boolean = true): IRectangleInt =
-    sliceWithBounds(x, y, x + width, y + height, clamped)
+    fun setTo(that: IRectangleInt) = setTo(that.x, that.y, that.width, that.height)
+    fun setTo(x: Int, y: Int, width: Int, height: Int): MRectangleInt {
+        this.x = x
+        this.y = y
+        this.width = width
+        this.height = height
+        return this
+    }
+    fun setToBounds(left: Int, top: Int, right: Int, bottom: Int): MRectangleInt = setTo(left, top, right - left, bottom - top)
 
-val IRectangleInt.left: Int get() = x
-val IRectangleInt.top: Int get() = y
-val IRectangleInt.right: Int get() = x + width
-val IRectangleInt.bottom: Int get() = y + height
-val IRectangleInt.area: Int get() = width * height
+    fun setPosition(x: Int, y: Int): MRectangleInt {
+        this.x = x
+        this.y = y
+        return this
+    }
 
-val IRectangleInt.topLeft: MPointInt get() = MPointInt(left, top)
-val IRectangleInt.topRight: MPointInt get() = MPointInt(right, top)
-val IRectangleInt.bottomLeft: MPointInt get() = MPointInt(left, bottom)
-val IRectangleInt.bottomRight: MPointInt get() = MPointInt(right, bottom)
+    fun setSize(width: Int, height: Int): MRectangleInt {
+        this.width = width
+        this.height = height
+        return this
+    }
 
-inline class RectangleInt(val rect: MRectangle) : IRectangleInt {
-    override var x: Int
-        set(value) {
-            rect.x = value.toDouble()
-        }
-        get() = rect.x.toInt()
+    fun getPosition(out: MPointInt = MPointInt()): MPointInt = out.setTo(x, y)
+    fun getSize(out: SizeInt = SizeInt()): SizeInt = out.setTo(width, height)
 
-    override var y: Int
-        set(value) {
-            rect.y = value.toDouble()
-        }
-        get() = rect.y.toInt()
+    val position get() = getPosition()
+    val size get() = getSize()
 
-    override var width: Int
-        set(value) {
-            rect.width = value.toDouble()
-        }
-        get() = rect.width.toInt()
+    fun setBoundsTo(left: Int, top: Int, right: Int, bottom: Int) =
+        setTo(left, top, right - left, bottom - top)
 
-    override var height: Int
-        set(value) {
-            rect.height = value.toDouble()
-        }
-        get() = rect.height.toInt()
-
-    var left: Int
-        set(value) {
-            rect.left = value.toDouble()
-        }
-        get() = rect.left.toInt()
-
-    var top: Int
-        set(value) {
-            rect.top = value.toDouble()
-        }
-        get() = rect.top.toInt()
-
-    var right: Int
-        set(value) {
-            rect.right = value.toDouble()
-        }
-        get() = rect.right.toInt()
-
-    var bottom: Int
-        set(value) {
-            rect.bottom = value.toDouble()
-        }
-        get() = rect.bottom.toInt()
+    /** Inline expand the rectangle */
+    fun expand(border: com.soywiz.korma.geom.IMarginInt): MRectangleInt =
+        this.setBoundsTo(left - border.left, top - border.top, right + border.right, bottom + border.bottom)
 
     companion object {
-        operator fun invoke() = RectangleInt(MRectangle())
+        operator fun invoke() = MRectangleInt(MRectangle())
         operator fun invoke(x: Int, y: Int, width: Int, height: Int) =
-            RectangleInt(MRectangle(x, y, width, height))
+            MRectangleInt(MRectangle(x, y, width, height))
 
         operator fun invoke(x: Float, y: Float, width: Float, height: Float) =
-            RectangleInt(MRectangle(x, y, width, height))
+            MRectangleInt(MRectangle(x, y, width, height))
 
         operator fun invoke(x: Double, y: Double, width: Double, height: Double) =
-            RectangleInt(MRectangle(x, y, width, height))
+            MRectangleInt(MRectangle(x, y, width, height))
 
         operator fun invoke(other: IRectangleInt) =
-            RectangleInt(MRectangle(other.x, other.y, other.width, other.height))
+            MRectangleInt(MRectangle(other.x, other.y, other.width, other.height))
 
-        fun fromBounds(left: Int, top: Int, right: Int, bottom: Int): RectangleInt =
-            RectangleInt(left, top, right - left, bottom - top)
+        fun fromBounds(left: Int, top: Int, right: Int, bottom: Int): MRectangleInt =
+            MRectangleInt(left, top, right - left, bottom - top)
     }
 
     override fun toString(): String = "Rectangle(x=$x, y=$y, width=$width, height=$height)"
     fun toStringBounds(): String = "Rectangle([$left,$top]-[$right,$bottom])"
-    fun copyFrom(rect: IRectangleInt): RectangleInt {
+    fun copyFrom(rect: IRectangleInt): MRectangleInt {
         setTo(rect.x, rect.y, rect.width, rect.height)
         return this
     }
@@ -572,83 +587,20 @@ inline class RectangleInt(val rect: MRectangle) : IRectangleInt {
     }
 }
 
-fun RectangleInt.setTo(that: IRectangleInt) = setTo(that.x, that.y, that.width, that.height)
-
-fun RectangleInt.setTo(x: Int, y: Int, width: Int, height: Int): RectangleInt {
-    this.x = x
-    this.y = y
-    this.width = width
-    this.height = height
-    return this
-}
-fun RectangleInt.setToBounds(left: Int, top: Int, right: Int, bottom: Int): RectangleInt = setTo(left, top, right - left, bottom - top)
-
-fun RectangleInt.setPosition(x: Int, y: Int): RectangleInt {
-    this.x = x
-    this.y = y
-    return this
-}
-
-fun RectangleInt.setSize(width: Int, height: Int): RectangleInt {
-    this.width = width
-    this.height = height
-
-    return this
-}
-
-fun RectangleInt.getPosition(out: MPointInt = MPointInt()): MPointInt = out.setTo(x, y)
-fun RectangleInt.getSize(out: SizeInt = SizeInt()): SizeInt = out.setTo(width, height)
-
-val RectangleInt.position get() = getPosition()
-val RectangleInt.size get() = getSize()
-
-fun RectangleInt.setBoundsTo(left: Int, top: Int, right: Int, bottom: Int) =
-    setTo(left, top, right - left, bottom - top)
-
 ////////////////////
 
-operator fun IRectangleInt.contains(v: SizeInt): Boolean =
-    (v.width <= width) && (v.height <= height)
+@KormaMutableApi fun MRectangle.asInt() = MRectangleInt(this)
+@KormaMutableApi fun MRectangleInt.asDouble() = this.rect
 
-operator fun IRectangleInt.contains(that: IPoint) = contains(that.x, that.y)
-operator fun IRectangleInt.contains(that: IPointInt) = contains(that.x, that.y)
-fun IRectangleInt.contains(x: Double, y: Double) =
-    (x >= left && x < right) && (y >= top && y < bottom)
+@KormaMutableApi val IRectangle.int: MRectangleInt get() = MRectangleInt(x, y, width, height)
+@KormaMutableApi val IRectangleInt.float: MRectangle get() = MRectangle(x, y, width, height)
 
-fun IRectangleInt.contains(x: Float, y: Float) = contains(x.toDouble(), y.toDouble())
-fun IRectangleInt.contains(x: Int, y: Int) = contains(x.toDouble(), y.toDouble())
-
-fun IRectangleInt.anchoredIn(
-    container: RectangleInt,
-    anchor: Anchor,
-    out: RectangleInt = RectangleInt()
-): RectangleInt =
-    out.setTo(
-        ((container.width - this.width) * anchor.sx).toInt(),
-        ((container.height - this.height) * anchor.sy).toInt(),
-        width,
-        height
-    )
-
-fun IRectangleInt.getAnchorPosition(anchor: Anchor, out: MPointInt = MPointInt()): MPointInt =
-    out.setTo((x + width * anchor.sx).toInt(), (y + height * anchor.sy).toInt())
-
-fun MRectangle.asInt() = RectangleInt(this)
-fun RectangleInt.asDouble() = this.rect
-
-val IRectangle.int: RectangleInt get() = RectangleInt(x, y, width, height)
-val IRectangleInt.float: MRectangle get() = MRectangle(x, y, width, height)
-
-fun IRectangleInt.anchor(ax: Double, ay: Double): MPointInt =
-    MPointInt((x + width * ax).toInt(), (y + height * ay).toInt())
-
-inline fun IRectangleInt.anchor(ax: Number, ay: Number): MPointInt =
-    anchor(ax.toDouble(), ay.toDouble())
-
-val IRectangleInt.center get() = anchor(0.5, 0.5)
+@KormaValueApi val IRectangle.value: Rectangle get() = Rectangle(x, y, width, height)
+@KormaValueApi val IRectangleInt.value: Rectangle get() = Rectangle(x, y, width, height)
 
 ///////////////////////////
 
+@KormaMutableApi
 fun Iterable<IRectangle>.bounds(target: MRectangle = MRectangle()): MRectangle {
     var first = true
     var left = 0.0
@@ -670,38 +622,4 @@ fun Iterable<IRectangle>.bounds(target: MRectangle = MRectangle()): MRectangle {
         }
     }
     return target.setBounds(left, top, right, bottom)
-}
-
-fun MRectangle.without(padding: IMargin): MRectangle =
-    MRectangle.fromBounds(
-        left + padding.left,
-        top + padding.top,
-        right - padding.right,
-        bottom - padding.bottom
-    )
-
-fun MRectangle.with(margin: IMargin): MRectangle =
-    MRectangle.fromBounds(
-        left - margin.left,
-        top - margin.top,
-        right + margin.right,
-        bottom + margin.bottom
-    )
-
-fun MRectangle.applyTransform(m: MMatrix): MRectangle {
-    val tl = m.transform(left, top)
-    val tr = m.transform(right, top)
-    val bl = m.transform(left, bottom)
-    val br = m.transform(right, bottom)
-
-    val minX = com.soywiz.korma.math.min(tl.x, tr.x, bl.x, br.x)
-    val minY = com.soywiz.korma.math.min(tl.y, tr.y, bl.y, br.y)
-    val maxX = com.soywiz.korma.math.max(tl.x, tr.x, bl.x, br.x)
-    val maxY = com.soywiz.korma.math.max(tl.y, tr.y, bl.y, br.y)
-
-    //val l = m.transformX(left, top)
-    //val t = m.transformY(left, top)
-    //val r = m.transformX(right, bottom)
-    //val b = m.transformY(right, bottom)
-    return setBounds(minX, minY, maxX, maxY)
 }

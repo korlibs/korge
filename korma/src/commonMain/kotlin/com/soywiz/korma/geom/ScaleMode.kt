@@ -69,8 +69,8 @@ fun MSize.applyScaleMode(container: MRectangle, mode: ScaleMode, anchor: Anchor,
     return out
 }
 
-fun SizeInt.applyScaleMode(container: RectangleInt, mode: ScaleMode, anchor: Anchor, out: RectangleInt = RectangleInt(), tempSize: SizeInt = SizeInt()): RectangleInt =
-    this.asDouble().applyScaleMode(container.asDouble(), mode, anchor, out.asDouble(), tempSize.asDouble()).asInt()
+fun SizeInt.applyScaleMode(container: MRectangleInt, mode: ScaleMode, anchor: Anchor, out: MRectangleInt = MRectangleInt(), tempSize: SizeInt = SizeInt()): MRectangleInt =
+    this.asDouble().applyScaleMode(container.float, mode, anchor, out.float, tempSize.asDouble()).int
 
 fun SizeInt.applyScaleMode(container: SizeInt, mode: ScaleMode, out: SizeInt = SizeInt(0, 0)): SizeInt =
     mode(this, container, out)

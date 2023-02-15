@@ -83,9 +83,9 @@ class UIWindow(title: String, width: Double = 256.0, height: Double = 256.0) : U
                 val bounds = obounds.clone()
                 when {
                     anchor.sx < 0.5 -> {
-                        bounds.leftKeepingRight = it.cx
+                        bounds.left = it.cx
                         if (bounds.width !in window.minWidth..window.maxWidth) {
-                            bounds.leftKeepingRight = obounds.leftKeepingRight
+                            bounds.left = obounds.left
                         }
                     }
                     anchor.sx > 0.5 -> {
@@ -96,9 +96,9 @@ class UIWindow(title: String, width: Double = 256.0, height: Double = 256.0) : U
                 }
                 when {
                     anchor.sy < 0.5 -> {
-                        bounds.topKeepingBottom = it.cy
+                        bounds.top = it.cy
                         if (bounds.height !in window.minHeight..window.maxHeight) {
-                            bounds.topKeepingBottom = obounds.topKeepingBottom
+                            bounds.top = obounds.top
                         }
                     }
                     anchor.sy > 0.5 -> {

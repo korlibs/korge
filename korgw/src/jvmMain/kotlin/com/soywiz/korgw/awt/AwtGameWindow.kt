@@ -1,7 +1,6 @@
 package com.soywiz.korgw.awt
 
 import com.soywiz.kmem.*
-import com.soywiz.korag.gl.*
 import com.soywiz.korev.*
 import com.soywiz.korgw.*
 import com.soywiz.korgw.platform.*
@@ -200,7 +199,7 @@ class AwtGameWindow(config: GameWindowCreationConfig) : BaseAwtGameWindow(AGOpen
     private fun synchronizeDebugFrameCoordinates() {
         val displayMode = frame.getScreenDevice().displayMode
         //println("frame.location=${frame.location}, frame.size=${frame.size}, debugFrame.width=${debugFrame.width}, displayMode=${displayMode.width}x${displayMode.height}")
-        val frameBounds = RectangleInt(frame.location.x, frame.location.y, frame.size.width, frame.size.height)
+        val frameBounds = MRectangleInt(frame.location.x, frame.location.y, frame.size.width, frame.size.height)
         debugFrame.setLocation(frameBounds.right.clamp(0, (displayMode.width - debugFrame.width * 1.0).toInt()), frameBounds.top)
         debugFrame.setSize(debugFrame.width.coerceAtLeast(64), frameBounds.height)
     }

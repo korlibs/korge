@@ -14,7 +14,7 @@ class RectangleIntTest {
 
     @Test
     fun corners() {
-        val rectangle = RectangleInt(1, 20, 300, 4000)
+        val rectangle = MRectangleInt(1, 20, 300, 4000)
         assertEquals(IPointInt(1, 20), rectangle.topLeft)
         assertEquals(IPointInt(301, 20), rectangle.topRight)
         assertEquals(IPointInt(1, 4020), rectangle.bottomLeft)
@@ -32,7 +32,7 @@ class RectangleIntTest {
         val rect = IRectangleInt(10, 20, 100, 200)
         val point = IPointInt(11, 21)
 
-        assertTrue(point.float in rect)
+        assertTrue(point.double in rect)
         assertTrue(point in rect)
         assertTrue(rect.contains(point.x.toDouble(), point.y.toDouble()))
         assertTrue(rect.contains(point.x.toFloat(), point.y.toFloat()))
@@ -44,7 +44,7 @@ class RectangleIntTest {
         val rect = IRectangleInt(10, 20, 100, 200)
         val point = IPointInt(9, 21)
 
-        assertFalse(point.float in rect)
+        assertFalse(point.double in rect)
         assertFalse(point in rect)
         assertFalse(rect.contains(point.x.toDouble(), point.y.toDouble()))
         assertFalse(rect.contains(point.x.toFloat(), point.y.toFloat()))
@@ -56,7 +56,7 @@ class RectangleIntTest {
         val rect = IRectangleInt(10, 20, 100, 200)
         val point = IPointInt(11, 19)
 
-        assertFalse(point.float in rect)
+        assertFalse(point.double in rect)
         assertFalse(point in rect)
         assertFalse(rect.contains(point.x.toDouble(), point.y.toDouble()))
         assertFalse(rect.contains(point.x.toFloat(), point.y.toFloat()))
@@ -68,7 +68,7 @@ class RectangleIntTest {
         val rect = IRectangleInt(10, 20, 100, 200)
         val point = IPointInt(110, 21)
 
-        assertFalse(point.float in rect)
+        assertFalse(point.double in rect)
         assertFalse(point in rect)
         assertFalse(rect.contains(point.x.toDouble(), point.y.toDouble()))
         assertFalse(rect.contains(point.x.toFloat(), point.y.toFloat()))
@@ -80,7 +80,7 @@ class RectangleIntTest {
         val rect = IRectangleInt(10, 20, 100, 200)
         val point = IPointInt(11, 220)
 
-        assertFalse(point.float in rect)
+        assertFalse(point.double in rect)
         assertFalse(point in rect)
         assertFalse(rect.contains(point.x.toDouble(), point.y.toDouble()))
         assertFalse(rect.contains(point.x.toFloat(), point.y.toFloat()))

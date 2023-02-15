@@ -34,7 +34,7 @@ data class AtlasInfo(
     data class Rect(val x: Int, val y: Int, val w: Int, val h: Int) {
         val rect get() = MRectangle(x, y, w, h)
 
-        fun toRectangleInt() : RectangleInt = RectangleInt(x, y, w, h)
+        fun toRectangleInt() : MRectangleInt = MRectangleInt(x, y, w, h)
         fun toMap() = mapOf("x" to x, "y" to y, "w" to w, "h" to h)
     }
 

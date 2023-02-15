@@ -90,7 +90,7 @@ data class RectSlice<T : ISizeInt>(
     val virtFrame: IRectangleInt?
         get() {
             if (padding.left == 0 && padding.right == 0 && padding.top == 0 && padding.bottom == 0) return null
-            return RectangleInt.fromBounds(padding.left, padding.top, width + padding.leftPlusRight, height + padding.topPlusBottom)
+            return MRectangleInt.fromBounds(padding.left, padding.top, width + padding.leftPlusRight, height + padding.topPlusBottom)
         }
 
     fun virtFrame(x: Int, y: Int, width: Int, height: Int): RectSlice<T> {

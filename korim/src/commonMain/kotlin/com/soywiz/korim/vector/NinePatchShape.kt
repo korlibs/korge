@@ -9,7 +9,6 @@ import com.soywiz.korma.geom.IPoint
 import com.soywiz.korma.geom.ISize
 import com.soywiz.korma.geom.MPoint
 import com.soywiz.korma.geom.asSize
-import com.soywiz.korma.geom.bottomRight
 import com.soywiz.korma.geom.vector.VectorPath
 
 class NinePatchShape(val shape: Shape, val slices: NinePatchSlices2D) {

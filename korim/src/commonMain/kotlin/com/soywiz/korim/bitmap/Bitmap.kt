@@ -51,7 +51,7 @@ abstract class Bitmap(
     var dirtyRegion: IRectangleInt? = null
         private set
 
-    private val dirtyRegionObj: RectangleInt = RectangleInt()
+    private val dirtyRegionObj: MRectangleInt = MRectangleInt()
 
     /** Specifies whether mipmaps should be created for this [Bitmap] */
     var mipmaps: Boolean = false

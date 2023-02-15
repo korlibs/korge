@@ -89,7 +89,7 @@ class MutableAtlas<T>(
                 val bigEmptySlice = biggestEmptyEntry!!.slice
                 if (bigEmptySlice.width >= bmp.width && bigEmptySlice.height >= bmp.height) {
                     entry = Entry(
-                        bigEmptySlice.slice(RectangleInt(0, 0, bmp.width, bmp.height)),
+                        bigEmptySlice.slice(MRectangleInt(0, 0, bmp.width, bmp.height)),
                         data
                     )
                 }

@@ -52,7 +52,7 @@ class CameraContainer(
     class ContentContainer(val cameraContainer: CameraContainer) : FixedSizeContainer(cameraContainer.width, cameraContainer.height), Reference {
         override fun getLocalBoundsInternal(out: MRectangle) {
             //out.setTo(0, 0, cameraContainer.width, cameraContainer.height)
-            out.setTo(0, 0, width, height)
+            out.setTo(0.0, 0.0, width, height)
         }
     }
 

@@ -48,7 +48,7 @@ class CameraContainerOld(
 
     val content: Container = object : Container(), Reference {
         override fun getLocalBoundsInternal(out: MRectangle) {
-            out.setTo(0, 0, this@CameraContainerOld.width, this@CameraContainerOld.height)
+            out.setTo(0.0, 0.0, this@CameraContainerOld.width, this@CameraContainerOld.height)
         }
     }
 

@@ -6,10 +6,7 @@ import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.BitmapWithHotspot
 import com.soywiz.korim.bitmap.NativeImageOrBitmap32
 import com.soywiz.korim.bitmap.context2d
-import com.soywiz.korma.geom.ISize
-import com.soywiz.korma.geom.MPointInt
-import com.soywiz.korma.geom.MRectangle
-import com.soywiz.korma.geom.ScaleMode
+import com.soywiz.korma.geom.*
 
 interface Drawable {
     fun draw(c: Context2d)
@@ -50,7 +47,7 @@ fun BoundsDrawable.renderWithHotspot(scale: Double? = null, fit: ISize? = null, 
         translate(-bounds.x, -bounds.y)
         draw(this@renderWithHotspot)
     }
-    return BitmapWithHotspot(image, MPointInt(
+    return BitmapWithHotspot(image, PointInt(
         (-bounds.left * rscale).toInt().clamp(0, image.width - 1),
         (-bounds.top * rscale).toInt().clamp(0, image.height - 1),
     ))

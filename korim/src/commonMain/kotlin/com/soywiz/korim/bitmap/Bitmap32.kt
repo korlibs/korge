@@ -9,12 +9,8 @@ import com.soywiz.korim.vector.Bitmap32Context2d
 import com.soywiz.korim.vector.Context2d
 import com.soywiz.korma.geom.IRectangleInt
 import com.soywiz.korma.geom.MMatrix3D
-import com.soywiz.korma.geom.RectangleInt
+import com.soywiz.korma.geom.MRectangleInt
 import com.soywiz.korma.geom.MVector4
-import com.soywiz.korma.geom.bottom
-import com.soywiz.korma.geom.left
-import com.soywiz.korma.geom.right
-import com.soywiz.korma.geom.top
 import kotlin.js.JsName
 import kotlin.jvm.JvmName
 import kotlin.jvm.JvmOverloads
@@ -52,7 +48,7 @@ class Bitmap32(
 	}
 
 	private val temp = IntArray(max(width, height))
-    val bounds: IRectangleInt = RectangleInt(0, 0, width, height)
+    val bounds: IRectangleInt = MRectangleInt(0, 0, width, height)
 
     @Deprecated("Specify premultiplied instead")
     constructor(width: Int, height: Int) : this(width, height, premultiplied = false)

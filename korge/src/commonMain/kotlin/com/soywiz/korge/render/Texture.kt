@@ -55,7 +55,7 @@ fun Texture(agBase: AGTexture, width: Int, height: Int): Texture =
     Texture(TextureBase(agBase, width, height), IRectangleInt(0, 0, width, height))
 
 fun Texture(base: TextureBase, left: Int = 0, top: Int = 0, right: Int = base.width, bottom: Int = base.height): Texture =
-    Texture(base, RectangleInt.fromBounds(left, top, right, bottom))
+    Texture(base, MRectangleInt.fromBounds(left, top, right, bottom))
 
 /**
  * Creates a [Texture] from a frame buffer [frameBuffer] with the right size of the frameBuffer.

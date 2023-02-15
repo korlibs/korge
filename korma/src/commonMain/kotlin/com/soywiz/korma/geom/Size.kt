@@ -124,7 +124,7 @@ fun SizeInt.setToScaled(sx: Double, sy: Double) = setTo((this.width * sx).toInt(
 fun SizeInt.setToScaled(sx: Int, sy: Int) = setToScaled(sx.toDouble(), sy.toDouble())
 fun SizeInt.setToScaled(sx: Float, sy: Float) = setToScaled(sx.toDouble(), sy.toDouble())
 
-fun SizeInt.anchoredIn(container: RectangleInt, anchor: Anchor, out: RectangleInt = RectangleInt()): RectangleInt {
+fun SizeInt.anchoredIn(container: MRectangleInt, anchor: Anchor, out: MRectangleInt = MRectangleInt()): MRectangleInt {
     return out.setTo(
         ((container.width - this.width) * anchor.sx).toInt(),
         ((container.height - this.height) * anchor.sy).toInt(),

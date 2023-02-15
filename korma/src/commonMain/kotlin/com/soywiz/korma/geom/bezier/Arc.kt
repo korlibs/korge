@@ -9,7 +9,6 @@ import com.soywiz.korma.geom.cosine
 import com.soywiz.korma.geom.div
 import com.soywiz.korma.geom.min
 import com.soywiz.korma.geom.minus
-import com.soywiz.korma.geom.mutable
 import com.soywiz.korma.geom.normalized
 import com.soywiz.korma.geom.plus
 import com.soywiz.korma.geom.shape.buildVectorPath

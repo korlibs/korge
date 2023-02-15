@@ -21,7 +21,6 @@ import com.soywiz.korma.geom.PointPool
 import com.soywiz.korma.geom.MRectangle
 import com.soywiz.korma.geom.bezier.*
 import com.soywiz.korma.geom.degrees
-import com.soywiz.korma.geom.expand
 import com.soywiz.korma.geom.fastForEachGeneric
 import com.soywiz.korma.geom.minus
 import com.soywiz.korma.geom.plus

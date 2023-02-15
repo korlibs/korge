@@ -36,7 +36,7 @@ class Camera : Container(), View.Reference {
         get() = referenceParent?.height ?: 100.0
 
     override fun getLocalBoundsInternal(out: MRectangle) {
-		out.setTo(0, 0, width, height)
+		out.setTo(0.0, 0.0, width, height)
 	}
 
 	fun getLocalMatrixFittingGlobalRect(rect: MRectangle): MMatrix {

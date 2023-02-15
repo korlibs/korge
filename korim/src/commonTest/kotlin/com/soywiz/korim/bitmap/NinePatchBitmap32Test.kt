@@ -5,7 +5,7 @@ import com.soywiz.korim.format.PNG
 import com.soywiz.korim.format.readBitmap
 import com.soywiz.korio.async.suspendTestNoBrowser
 import com.soywiz.korio.file.std.resourcesVfs
-import com.soywiz.korma.geom.RectangleInt
+import com.soywiz.korma.geom.MRectangleInt
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -57,10 +57,10 @@ class NinePatchBitmap32Test {
             return arrayListOf<String>().apply {
                 val log = this
                 for (rect in listOf(
-                    RectangleInt(0, 0, 512, 256),
-                    RectangleInt(0, 0, 256, 512),
-                    RectangleInt(0, 0, 100, 100),
-                    RectangleInt(0, 0, 0, 0)
+                    MRectangleInt(0, 0, 512, 256),
+                    MRectangleInt(0, 0, 256, 512),
+                    MRectangleInt(0, 0, 100, 100),
+                    MRectangleInt(0, 0, 0, 0)
                 )) {
                     log += "$rect:"
                     ninePatch.info.computeScale(rect, new = new) { seg, x, y, width, height ->

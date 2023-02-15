@@ -146,7 +146,7 @@ class AgBitmapTextureManager(
 
 		val texture: TextureCoords = info.slices.getOrPut(slice) {
             if (slice is BmpSlice) {
-                Texture(info.textureBase).slice(RectangleInt(slice.left, slice.top, slice.width, slice.height))
+                Texture(info.textureBase).slice(MRectangleInt(slice.left, slice.top, slice.width, slice.height))
             } else {
                 TextureCoords(info.textureBase, slice)
             }

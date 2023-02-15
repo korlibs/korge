@@ -25,7 +25,12 @@ data class Matrix(
     val d: Double,
     val tx: Double,
     val ty: Double
-)
+) {
+    inline fun transform(p: Point): Point = Point(
+        this.a * p.x + this.c * p.y + this.tx,
+        this.d * p.y + this.b * p.x + this.ty
+    )
+}
 
 //@Deprecated("Use Matrix instead")
 interface IMatrix {
@@ -35,6 +40,33 @@ interface IMatrix {
     val d: Double
     val tx: Double
     val ty: Double
+
+
+    // Transform points
+    fun transform(p: IPoint, out: MPoint = MPoint()): MPoint = transform(p.x, p.y, out)
+    fun transform(px: Double, py: Double, out: MPoint = MPoint()): MPoint = out.setTo(transformX(px, py), transformY(px, py))
+    fun transform(px: Float, py: Float, out: MPoint = MPoint()): MPoint = out.setTo(transformX(px, py), transformY(px, py))
+    fun transform(px: Int, py: Int, out: MPoint = MPoint()): MPoint = out.setTo(transformX(px, py), transformY(px, py))
+
+    fun transformX(p: IPoint): Double = transformX(p.x, p.y)
+    fun transformX(px: Double, py: Double): Double = this.a * px + this.c * py + this.tx
+    fun transformX(px: Float, py: Float): Double = this.a * px + this.c * py + this.tx
+    fun transformX(px: Int, py: Int): Double = this.a * px + this.c * py + this.tx
+
+    fun transformY(p: IPoint): Double = transformY(p.x, p.y)
+    fun transformY(px: Double, py: Double): Double = this.d * py + this.b * px + this.ty
+    fun transformY(px: Float, py: Float): Double = this.d * py + this.b * px + this.ty
+    fun transformY(px: Int, py: Int): Double = this.d * py + this.b * px + this.ty
+
+    fun transformXf(p: IPoint): Float = transformX(p.x, p.y).toFloat()
+    fun transformXf(px: Double, py: Double): Float = transformX(px, py).toFloat()
+    fun transformXf(px: Float, py: Float): Float = transformX(px.toDouble(), py.toDouble()).toFloat()
+    fun transformXf(px: Int, py: Int): Float = transformX(px.toDouble(), py.toDouble()).toFloat()
+
+    fun transformYf(p: IPoint): Float = transformY(p.x, p.y).toFloat()
+    fun transformYf(px: Double, py: Double): Float = transformY(px, py).toFloat()
+    fun transformYf(px: Float, py: Float): Float = transformY(px.toDouble(), py.toDouble()).toFloat()
+    fun transformYf(px: Int, py: Int): Float = transformY(px.toDouble(), py.toDouble()).toFloat()
 }
 
 //@Deprecated("Use Matrix instead")
@@ -316,32 +348,6 @@ data class MMatrix(
         out.setMatrixNoReturn(this)
         return out
     }
-
-    // Transform points
-    fun transform(p: IPoint, out: MPoint = MPoint()): MPoint = transform(p.x, p.y, out)
-    fun transform(px: Double, py: Double, out: MPoint = MPoint()): MPoint = out.setTo(transformX(px, py), transformY(px, py))
-    fun transform(px: Float, py: Float, out: MPoint = MPoint()): MPoint = out.setTo(transformX(px, py), transformY(px, py))
-    fun transform(px: Int, py: Int, out: MPoint = MPoint()): MPoint = out.setTo(transformX(px, py), transformY(px, py))
-
-    fun transformX(p: IPoint): Double = transformX(p.x, p.y)
-    fun transformX(px: Double, py: Double): Double = this.a * px + this.c * py + this.tx
-    fun transformX(px: Float, py: Float): Double = this.a * px + this.c * py + this.tx
-    fun transformX(px: Int, py: Int): Double = this.a * px + this.c * py + this.tx
-
-    fun transformY(p: IPoint): Double = transformY(p.x, p.y)
-    fun transformY(px: Double, py: Double): Double = this.d * py + this.b * px + this.ty
-    fun transformY(px: Float, py: Float): Double = this.d * py + this.b * px + this.ty
-    fun transformY(px: Int, py: Int): Double = this.d * py + this.b * px + this.ty
-
-    fun transformXf(p: IPoint): Float = transformX(p.x, p.y).toFloat()
-    fun transformXf(px: Double, py: Double): Float = transformX(px, py).toFloat()
-    fun transformXf(px: Float, py: Float): Float = transformX(px.toDouble(), py.toDouble()).toFloat()
-    fun transformXf(px: Int, py: Int): Float = transformX(px.toDouble(), py.toDouble()).toFloat()
-
-    fun transformYf(p: IPoint): Float = transformY(p.x, p.y).toFloat()
-    fun transformYf(px: Double, py: Double): Float = transformY(px, py).toFloat()
-    fun transformYf(px: Float, py: Float): Float = transformY(px.toDouble(), py.toDouble()).toFloat()
-    fun transformYf(px: Int, py: Int): Float = transformY(px.toDouble(), py.toDouble()).toFloat()
 
     @Suppress("DuplicatedCode")
     fun transformRectangle(rectangle: MRectangle, delta: Boolean = false) {

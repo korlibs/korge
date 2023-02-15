@@ -11,7 +11,7 @@ import com.soywiz.korim.format.ImageFormat
 import com.soywiz.korim.format.readBitmap
 import com.soywiz.korio.file.VfsFile
 import com.soywiz.korio.util.length
-import com.soywiz.korma.geom.RectangleInt
+import com.soywiz.korma.geom.MRectangleInt
 import com.soywiz.korma.geom.vector.rect
 import kotlin.math.max
 import kotlin.math.min
@@ -68,7 +68,7 @@ class NinePatchInfo constructor(
 	val scaledWidth = xaxis.scaledLen
 	val scaledHeight = yaxis.scaledLen
 
-	class Segment(val info: NinePatchInfo, val rect: RectangleInt, val x: AxisSegment, val y: AxisSegment) : Extra by Extra.Mixin() {
+	class Segment(val info: NinePatchInfo, val rect: MRectangleInt, val x: AxisSegment, val y: AxisSegment) : Extra by Extra.Mixin() {
 		val scaleX: Boolean = x.scaled
 		val scaleY: Boolean = y.scaled
 
@@ -80,7 +80,7 @@ class NinePatchInfo constructor(
 		xsegments.map { x ->
 			Segment(
                 this,
-				RectangleInt.fromBounds(x.range.first, y.range.first, x.range.last + 1, y.range.last + 1),
+				MRectangleInt.fromBounds(x.range.first, y.range.first, x.range.last + 1, y.range.last + 1),
 				x, y
 			)
 		}.toFastList()
@@ -89,15 +89,15 @@ class NinePatchInfo constructor(
     //init { println("Created NinePatchInfo") }
 
     fun computeScale(
-        bounds: RectangleInt,
+        bounds: MRectangleInt,
         new: Boolean = true,
         callback: (segment: Segment, x: Int, y: Int, width: Int, height: Int) -> Unit
     ) = if (new) computeScaleNew(bounds, callback) else computeScaleOld(bounds, callback)
 
 	// Can be reused for textures using AG
 	fun computeScaleOld(
-		bounds: RectangleInt,
-		callback: (segment: Segment, x: Int, y: Int, width: Int, height: Int) -> Unit
+        bounds: MRectangleInt,
+        callback: (segment: Segment, x: Int, y: Int, width: Int, height: Int) -> Unit
 	) {
 		//println("scaleFixed=($scaleFixedX,$scaleFixedY)")
 		var ry = 0
@@ -124,7 +124,7 @@ class NinePatchInfo constructor(
     private val yComputed = IntArray(64)
 
     fun computeScaleNew(
-        bounds: RectangleInt,
+        bounds: MRectangleInt,
         callback: (segment: NinePatchInfo.Segment, x: Int, y: Int, width: Int, height: Int) -> Unit
     ) {
         //println("scaleFixed=($scaleFixedX,$scaleFixedY)")
@@ -238,10 +238,10 @@ open class NinePatchBmpSlice(
     fun getSegmentBmpSlice(segment: NinePatchInfo.Segment) = segment.bmpSlice!!
 
 	fun <T : Bitmap> drawTo(
-		other: T,
-		bounds: RectangleInt,
-		antialiased: Boolean = true,
-		drawRegions: Boolean = false
+        other: T,
+        bounds: MRectangleInt,
+        antialiased: Boolean = true,
+        drawRegions: Boolean = false
 	): T {
 		other.context2d(antialiased) {
 			info.computeScale(bounds) { seg, segLeft, segTop, segWidth, segHeight ->
@@ -257,7 +257,7 @@ open class NinePatchBmpSlice(
 	fun renderedNative(width: Int, height: Int, antialiased: Boolean = true, drawRegions: Boolean = false): NativeImage = drawTo(
         NativeImage(width, height),
         //Bitmap32(width, height),
-        RectangleInt(0, 0, width, height),
+        MRectangleInt(0, 0, width, height),
         antialiased = antialiased,
         drawRegions = drawRegions
     )

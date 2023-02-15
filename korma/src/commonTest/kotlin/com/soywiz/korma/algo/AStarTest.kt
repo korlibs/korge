@@ -2,9 +2,8 @@ package com.soywiz.korma.algo
 
 import com.soywiz.kds.BooleanArray2
 import com.soywiz.kds.map2
-import com.soywiz.korma.geom.IPointInt
-import com.soywiz.korma.geom.MPointInt
-import com.soywiz.korma.geom.toPoints
+import com.soywiz.korma.annotations.*
+import com.soywiz.korma.geom.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -67,7 +66,10 @@ class AStarTest {
     }
 
 
-    data class Result(val map: BooleanArray2, val start: IPointInt, val end: IPointInt)
+    data class Result(val map: BooleanArray2, @KormaMutableApi val mstart: MPointInt, @KormaMutableApi val mend: MPointInt) {
+        @KormaValueApi val start: PointInt get() = mstart.point
+        @KormaValueApi val end: PointInt get() = mend.point
+    }
 
     fun map(str: String): Result {
         var start = MPointInt(0, 0)

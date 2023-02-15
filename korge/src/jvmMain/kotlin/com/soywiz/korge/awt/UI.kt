@@ -48,7 +48,7 @@ internal open class UiComponent(val app: UiApplication, val component: NativeUiF
             root?.relayout()
         }
     var enabled by component::enabled
-    open var bounds: RectangleInt
+    open var bounds: MRectangleInt
         get() = component.bounds
         set(value) {
             component.bounds = value
@@ -98,7 +98,7 @@ internal open class UiContainer(app: UiApplication, val container: NativeUiFacto
         forEachChild { it.updateUI() }
     }
 
-    override var bounds: RectangleInt
+    override var bounds: MRectangleInt
         get() = super.bounds
         set(value) {
             super.bounds = value
@@ -226,7 +226,7 @@ internal object UiFillLayout : UiLayout {
         //container.bounds = bounds
         val padding = container.layoutChildrenPadding
         container.forEachChild { child ->
-            child.bounds = RectangleInt.fromBounds(padding, padding, bounds.width - padding, bounds.height - padding)
+            child.bounds = MRectangleInt.fromBounds(padding, padding, bounds.width - padding, bounds.height - padding)
         }
     }
 }
@@ -299,8 +299,8 @@ internal open class LineUiLayout(
             val size = ctx.computeChildSize(child)
             val value = size.getDirection(direction)
             val childBounds = when (direction) {
-                LayoutDirection.VERTICAL -> RectangleInt(0, cur, bounds.width, value)
-                LayoutDirection.HORIZONTAL -> RectangleInt(cur, 0, value, bounds.height)
+                LayoutDirection.VERTICAL -> MRectangleInt(0, cur, bounds.width, value)
+                LayoutDirection.HORIZONTAL -> MRectangleInt(cur, 0, value, bounds.height)
             }
             //println("$child: $childBounds")
             child.bounds = childBounds

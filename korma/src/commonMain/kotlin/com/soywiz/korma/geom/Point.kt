@@ -12,7 +12,6 @@ import com.soywiz.korma.annotations.*
 import com.soywiz.korma.math.isAlmostEquals
 import com.soywiz.korma.math.isAlmostZero
 import com.soywiz.korma.math.roundDecimalPlaces
-import kotlin.jvm.*
 import kotlin.math.*
 
 typealias Vector2D = Point
@@ -23,14 +22,14 @@ typealias MVector2D = MPoint
 // VALUE CLASSES
 //////////////////////////////
 
-@KormaExperimental
+@KormaValueApi
 inline fun Point(x: Int, y: Int): Point = Point(x.toDouble(), y.toDouble())
-@KormaExperimental
+@KormaValueApi
 inline fun Point(x: Float, y: Float): Point = Point(x.toDouble(), y.toDouble())
 
 //data class Point(val x: Double, val y: Double) {
 // @JvmInline value
-@KormaExperimental
+@KormaValueApi
 data class Point(val x: Double, val y: Double) {
     //constructor(x: Int, y: Int) : this(x.toDouble(), y.toDouble())
     //constructor(x: Float, y: Float) : this(x.toDouble(), y.toDouble())
@@ -149,8 +148,10 @@ data class Point(val x: Double, val y: Double) {
     }
 }
 
-@KormaExperimental
+@KormaValueApi
 data class PointInt(val x: Int, val y: Int) {
+    val mutable: IPointInt get() = MPointInt(x, y)
+
     operator fun plus(that: PointInt): PointInt = PointInt(this.x + that.x, this.y + that.y)
     operator fun minus(that: PointInt): PointInt = PointInt(this.x - that.x, this.y - that.y)
     operator fun times(that: PointInt): PointInt = PointInt(this.x * that.x, this.y * that.y)
@@ -163,6 +164,7 @@ data class PointInt(val x: Int, val y: Int) {
 //////////////////////////////
 
 //@Deprecated("Use Point instead")
+@KormaMutableApi
 interface IPoint {
     companion object {
         val ZERO: IPoint = MPoint(0, 0)
@@ -223,12 +225,12 @@ interface IPoint {
     val immutable: IPoint get() = IPoint(x, y)
     fun isAlmostEquals(other: IPoint, epsilon: Double = 0.000001): Boolean =
         this.x.isAlmostEquals(other.x, epsilon) && this.y.isAlmostEquals(other.y, epsilon)
-
 }
 
+@KormaMutableApi
 fun IPoint.copy(x: Double = this.x, y: Double = this.y): IPoint = IPoint(x, y)
 
-//@Deprecated("Use Point instead")
+@KormaMutableApi
 interface IMPoint : IPoint {
     override var x: Double
     override var y: Double
@@ -238,7 +240,7 @@ interface IMPoint : IPoint {
 // MUTABLE IMPLEMENTATIONS
 //////////////////////////////
 
-//@Deprecated("Use Point instead")
+@KormaMutableApi
 data class MPoint(
     override var x: Double,
     override var y: Double
@@ -491,6 +493,7 @@ data class MPoint(
     }
 }
 
+@KormaMutableApi
 interface IPointInt {
     val x: Int
     val y: Int
@@ -502,6 +505,7 @@ interface IPointInt {
     }
 }
 
+@KormaMutableApi
 inline class MPointInt(val p: MPoint) : IPointInt, Comparable<IPointInt>, MutableInterpolable<MPointInt> {
     override fun compareTo(other: IPointInt): Int = compare(this.x, this.y, other.x, other.y)
 
@@ -535,7 +539,7 @@ fun MPointInt.asDouble(): MPoint = this.p
 
 val MPoint.int get() = MPointInt(this.x.toInt(), this.y.toInt())
 val IPoint.int get() = MPointInt(this.x.toInt(), this.y.toInt())
-val IPointInt.float get() = IPoint(x.toDouble(), y.toDouble())
+val IPointInt.double get() = IPoint(x.toDouble(), y.toDouble())
 
 private inline fun getPolylineLength(size: Int, crossinline get: (n: Int, (x: Double, y: Double) -> Unit) -> Unit): Double {
     var out = 0.0

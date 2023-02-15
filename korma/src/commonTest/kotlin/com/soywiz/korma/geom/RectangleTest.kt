@@ -58,7 +58,7 @@ class RectangleTest {
         val rect = IRectangle(10, 20, 100, 200)
         val point = IPointInt(11, 21)
 
-        assertTrue(point.float in rect)
+        assertTrue(point.double in rect)
         assertTrue(point in rect)
         assertTrue(rect.contains(point.x.toDouble(), point.y.toDouble()))
         assertTrue(rect.contains(point.x.toFloat(), point.y.toFloat()))
@@ -70,7 +70,7 @@ class RectangleTest {
         val rect = IRectangle(10, 20, 100, 200)
         val point = IPointInt(9, 21)
 
-        assertFalse(point.float in rect)
+        assertFalse(point.double in rect)
         assertFalse(point in rect)
         assertFalse(rect.contains(point.x.toDouble(), point.y.toDouble()))
         assertFalse(rect.contains(point.x.toFloat(), point.y.toFloat()))
@@ -82,7 +82,7 @@ class RectangleTest {
         val rect = IRectangle(10, 20, 100, 200)
         val point = IPointInt(11, 19)
 
-        assertFalse(point.float in rect)
+        assertFalse(point.double in rect)
         assertFalse(point in rect)
         assertFalse(rect.contains(point.x.toDouble(), point.y.toDouble()))
         assertFalse(rect.contains(point.x.toFloat(), point.y.toFloat()))
@@ -94,7 +94,7 @@ class RectangleTest {
         val rect = IRectangle(10, 20, 100, 200)
         val point = IPointInt(110, 21)
 
-        assertFalse(point.float in rect)
+        assertFalse(point.double in rect)
         assertFalse(point in rect)
         assertFalse(rect.contains(point.x.toDouble(), point.y.toDouble()))
         assertFalse(rect.contains(point.x.toFloat(), point.y.toFloat()))
@@ -106,7 +106,7 @@ class RectangleTest {
         val rect = IRectangle(10, 20, 100, 200)
         val point = IPointInt(11, 220)
 
-        assertFalse(point.float in rect)
+        assertFalse(point.double in rect)
         assertFalse(point in rect)
         assertFalse(rect.contains(point.x.toDouble(), point.y.toDouble()))
         assertFalse(rect.contains(point.x.toFloat(), point.y.toFloat()))
@@ -127,7 +127,7 @@ class RectangleTest {
 
     @Test
     fun testInt() {
-        assertEquals(RectangleInt(1, 2, 3, 4), MRectangle(1.1, 2.1, 3.1, 4.1).toInt())
+        assertEquals(MRectangleInt(1, 2, 3, 4), MRectangle(1.1, 2.1, 3.1, 4.1).toInt())
     }
 
     @Test

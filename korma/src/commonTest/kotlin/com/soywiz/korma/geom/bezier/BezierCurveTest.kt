@@ -4,8 +4,6 @@ import com.soywiz.kds.*
 import com.soywiz.korma.geom.MLine
 import com.soywiz.korma.geom.MPoint
 import com.soywiz.korma.geom.MRectangle
-import com.soywiz.korma.geom.clone
-import com.soywiz.korma.geom.mutable
 import com.soywiz.korma.geom.pointArrayListOf
 import com.soywiz.korma.math.*
 import kotlin.test.*
