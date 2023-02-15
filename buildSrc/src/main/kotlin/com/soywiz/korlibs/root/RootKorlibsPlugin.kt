@@ -551,7 +551,7 @@ object RootKorlibsPlugin {
 
             if (doConfigure) {
                 val isSample = project.isSample
-                val hasAndroid = doEnableKotlinAndroid && hasAndroidSdk
+                val hasAndroid = doEnableKotlinAndroid && hasAndroidSdk && project.name != "korge-benchmarks"
                 //val hasAndroid = !isSample && true
                 val mustPublish = !isSample
 
