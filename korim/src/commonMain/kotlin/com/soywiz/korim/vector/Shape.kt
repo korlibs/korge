@@ -80,10 +80,10 @@ fun buildSvgXml(width: Int? = null, height: Int? = null, block: ShapeBuilder.() 
 private fun MMatrix.toSvg(roundDecimalPlaces: Int = -1): String {
     val places = roundDecimalPlaces
 	return when (getType()) {
-		MMatrix.Type.IDENTITY -> "translate()"
-		MMatrix.Type.TRANSLATE -> "translate(${tx.niceStr(places)}, ${ty.niceStr(places)})"
-		MMatrix.Type.SCALE -> "scale(${a.niceStr(places)}, ${d.niceStr(places)})"
-		MMatrix.Type.SCALE_TRANSLATE -> "translate(${tx.niceStr(places)}, ${ty.niceStr(places)}) scale(${a.niceStr(places)}, ${d.niceStr(places)})"
+		MatrixType.IDENTITY -> "translate()"
+		MatrixType.TRANSLATE -> "translate(${tx.niceStr(places)}, ${ty.niceStr(places)})"
+		MatrixType.SCALE -> "scale(${a.niceStr(places)}, ${d.niceStr(places)})"
+		MatrixType.SCALE_TRANSLATE -> "translate(${tx.niceStr(places)}, ${ty.niceStr(places)}) scale(${a.niceStr(places)}, ${d.niceStr(places)})"
 		else -> "matrix(${a.niceStr(places)}, ${b.niceStr(places)}, ${c.niceStr(places)}, ${d.niceStr(places)}, ${tx.niceStr(places)}, ${ty.niceStr(places)})"
 	}
 }

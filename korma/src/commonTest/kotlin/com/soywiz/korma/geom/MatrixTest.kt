@@ -26,21 +26,21 @@ class MatrixTest {
 
     @Test
     fun type() {
-        assertEquals(MMatrix.Type.IDENTITY, MMatrix(1, 0, 0, 1, 0, 0).getType())
-        assertEquals(MMatrix.Type.TRANSLATE, MMatrix(1, 0, 0, 1, 10, 0).getType())
-        assertEquals(MMatrix.Type.TRANSLATE, MMatrix(1, 0, 0, 1, 0, 10).getType())
-        assertEquals(MMatrix.Type.SCALE, MMatrix(1, 0, 0, 2, 0, 0).getType())
-        assertEquals(MMatrix.Type.SCALE, MMatrix(2, 0, 0, 1, 0, 0).getType())
-        assertEquals(MMatrix.Type.SCALE_TRANSLATE, MMatrix(2, 0, 0, 2, 10, 0).getType())
-        assertEquals(MMatrix.Type.COMPLEX, MMatrix(1, 1, 0, 1, 0, 0).getType())
+        assertEquals(MatrixType.IDENTITY, MMatrix(1, 0, 0, 1, 0, 0).getType())
+        assertEquals(MatrixType.TRANSLATE, MMatrix(1, 0, 0, 1, 10, 0).getType())
+        assertEquals(MatrixType.TRANSLATE, MMatrix(1, 0, 0, 1, 0, 10).getType())
+        assertEquals(MatrixType.SCALE, MMatrix(1, 0, 0, 2, 0, 0).getType())
+        assertEquals(MatrixType.SCALE, MMatrix(2, 0, 0, 1, 0, 0).getType())
+        assertEquals(MatrixType.SCALE_TRANSLATE, MMatrix(2, 0, 0, 2, 10, 0).getType())
+        assertEquals(MatrixType.COMPLEX, MMatrix(1, 1, 0, 1, 0, 0).getType())
 
-        assertEquals(MMatrix.Type.IDENTITY, MMatrix().getType())
-        assertEquals(MMatrix.Type.SCALE, MMatrix().apply { scale(2, 1) }.getType())
-        assertEquals(MMatrix.Type.SCALE, MMatrix().apply { scale(1, 2) }.getType())
-        assertEquals(MMatrix.Type.TRANSLATE, MMatrix().apply { translate(1, 0) }.getType())
-        assertEquals(MMatrix.Type.TRANSLATE, MMatrix().apply { translate(0, 1) }.getType())
-        assertEquals(MMatrix.Type.SCALE_TRANSLATE, MMatrix().apply { scale(2, 1).translate(0, 1) }.getType())
-        assertEquals(MMatrix.Type.COMPLEX, MMatrix().apply { rotate(90.degrees) }.getType())
+        assertEquals(MatrixType.IDENTITY, MMatrix().getType())
+        assertEquals(MatrixType.SCALE, MMatrix().apply { scale(2, 1) }.getType())
+        assertEquals(MatrixType.SCALE, MMatrix().apply { scale(1, 2) }.getType())
+        assertEquals(MatrixType.TRANSLATE, MMatrix().apply { translate(1, 0) }.getType())
+        assertEquals(MatrixType.TRANSLATE, MMatrix().apply { translate(0, 1) }.getType())
+        assertEquals(MatrixType.SCALE_TRANSLATE, MMatrix().apply { scale(2, 1).translate(0, 1) }.getType())
+        assertEquals(MatrixType.COMPLEX, MMatrix().apply { rotate(90.degrees) }.getType())
     }
 
     @Test

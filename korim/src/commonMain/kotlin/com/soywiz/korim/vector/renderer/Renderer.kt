@@ -3,7 +3,7 @@ package com.soywiz.korim.vector.renderer
 import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.paint.BitmapPaint
 import com.soywiz.korim.vector.Context2d
-import com.soywiz.korma.geom.MMatrix
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.VectorPath
 import com.soywiz.korma.geom.vector.Winding
 import com.soywiz.korma.geom.vector.rect
@@ -47,7 +47,7 @@ abstract class Renderer {
             Context2d.State(
                 transform = transform,
                 path = VectorPath().apply {
-                    if (transform.getType() == MMatrix.Type.IDENTITY) {
+                    if (transform.getType() == MatrixType.IDENTITY) {
                         rect(x, y, width, height)
                     } else {
                         transformed(transform) {
