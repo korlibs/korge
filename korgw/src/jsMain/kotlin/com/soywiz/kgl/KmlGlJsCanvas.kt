@@ -30,6 +30,7 @@ class KmlGlJsCanvas(val canvas: HTMLCanvasElement, val glOpts: dynamic) : KmlGlW
             it.getExtension("OES_standard_derivatives")
             it.getExtension("OES_texture_float")
             it.getExtension("OES_texture_float_linear")
+            it.getExtension("OES_element_index_uint")
             Unit
         }
         ?: run {
