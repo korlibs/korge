@@ -20,10 +20,7 @@ class DateTimeTz private constructor(
         fun utc(utc: DateTime, offset: TimezoneOffset) = DateTimeTz(utc + offset.time, offset)
 
         /** Creates a new local [DateTimeTz] from a [unix] time */
-        fun fromUnixLocal(unix: Long): DateTimeTz = fromUnixLocal(unix.toDouble())
-        /** Creates a new local [DateTimeTz] from a [unix] time */
-        @Deprecated("Use fromUnix instead")
-        fun fromUnixLocal(unix: Double): DateTimeTz = DateTime(unix).localUnadjusted
+        fun fromUnixLocal(unix: Long): DateTimeTz = DateTime(unix).localUnadjusted
 
         /** Creates a new local [DateTimeTz] from a [unix] time applied*/
         fun fromUnix(unix: Long): DateTimeTz {

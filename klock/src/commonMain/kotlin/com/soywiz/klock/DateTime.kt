@@ -196,19 +196,6 @@ value class DateTime(
         operator fun invoke(unix: Double) = fromUnixMillis(unix)
 
         /** Constructs a new [DateTime] from a [unix] timestamp in milliseconds. */
-        @Deprecated(
-            "Please use fromUnixMillis instead. To be deleted in 3.1.",
-            ReplaceWith("DateTime.fromUnixMillis(unix)")
-        )
-        fun fromUnix(unix: Double): DateTime = fromUnixMillis(unix)
-        /** Constructs a new [DateTime] from a [unix] timestamp in milliseconds. */
-        @Deprecated(
-            "Please use fromUnixMillis instead. To be deleted in 3.1.",
-            ReplaceWith("DateTime.fromUnixMillis(unix)")
-        )
-        fun fromUnix(unix: Long): DateTime = fromUnixMillis(unix)
-
-        /** Constructs a new [DateTime] from a [unix] timestamp in milliseconds. */
         fun fromUnixMillis(unix: Double): DateTime = DateTime(unix)
         /** Constructs a new [DateTime] from a [unix] timestamp in milliseconds. */
         fun fromUnixMillis(unix: Long): DateTime = fromUnixMillis(unix.toDouble())
@@ -222,19 +209,6 @@ value class DateTime(
         fun now(): DateTime = DateTime(KlockInternal.currentTime)
         /** Returns the current local time as [DateTimeTz]. */
         fun nowLocal(): DateTimeTz = DateTimeTz.nowLocal()
-
-        /** Returns the total milliseconds since unix epoch. The same as [nowUnixLong] but as double. To prevent allocation on targets without Long support. */
-        @Deprecated(
-            "Please use nowUnixMillis instead. To be deleted in 3.1.",
-            ReplaceWith("DateTime.nowUnixMillis()")
-        )
-        fun nowUnix(): Double = nowUnixMillis()
-        /** Returns the total milliseconds since unix epoch. */
-        @Deprecated(
-            "Please use nowUnixMillisLong instead. To be deleted in 3.1.",
-            ReplaceWith("DateTime.nowUnixMillisLong()")
-        )
-        fun nowUnixLong(): Long = nowUnixMillisLong()
 
         /** Returns the total milliseconds since unix epoch. The same as [nowUnixMillisLong] but as double. To prevent allocation on targets without Long support. */
         fun nowUnixMillis(): Double = KlockInternal.currentTime
