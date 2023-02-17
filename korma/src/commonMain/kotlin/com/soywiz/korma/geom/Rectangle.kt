@@ -260,8 +260,8 @@ data class MRectangle(
     override var right: Double ; get() = x + width ; set(value) { width = value - x }
     override var bottom: Double ; get() = y + height ; set(value) { height = value - y }
 
-    override val position: MPoint = MPoint(x, y)
-    override val size: MSize = MSize(width, height)
+    override val position: MPoint get() = MPoint(x, y)
+    override val size: MSize get() = MSize(width, height)
 
     fun setToBounds(left: Double, top: Double, right: Double, bottom: Double): MRectangle = setTo(left, top, right - left, bottom - top)
 
