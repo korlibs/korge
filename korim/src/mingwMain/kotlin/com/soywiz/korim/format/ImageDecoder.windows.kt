@@ -5,6 +5,7 @@ import com.soywiz.korim.color.*
 import com.soywiz.korio.concurrent.atomic.korAtomic
 import com.soywiz.korio.lang.*
 import kotlinx.cinterop.*
+import kotlinx.cinterop.invoke
 import platform.posix.*
 import platform.gdiplus.*
 import platform.windows.*

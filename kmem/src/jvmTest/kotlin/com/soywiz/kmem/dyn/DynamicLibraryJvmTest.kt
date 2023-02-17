@@ -3,7 +3,7 @@ package com.soywiz.kmem.dyn
 import com.soywiz.kmem.*
 import kotlin.test.*
 
-class DynamicLibraryCommonTest {
+class DynamicLibraryJvmTest {
     //object C : DynamicLibrary(Platform.C_LIBRARY_NAME) {
     object C : DynamicLibrary("libSystem.dylib", "libc", "MSVCRT") {
         val strlen by func<(value: KPointer?) -> Int>()

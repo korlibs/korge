@@ -7,6 +7,7 @@ import com.soywiz.korev.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korma.geom.*
 import kotlinx.cinterop.*
+import kotlinx.cinterop.invoke
 import platform.opengl32.*
 import platform.windows.*
 

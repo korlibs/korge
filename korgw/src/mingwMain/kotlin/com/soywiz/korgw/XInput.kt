@@ -3,6 +3,7 @@ package com.soywiz.korgw
 import com.soywiz.kmem.convertRangeClamped
 import com.soywiz.korev.*
 import kotlinx.cinterop.*
+import kotlinx.cinterop.invoke
 import platform.windows.GetProcAddress
 import platform.windows.LoadLibraryA
 

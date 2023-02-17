@@ -3,19 +3,6 @@ package com.soywiz.korau.sound.backends
 import com.soywiz.kmem.*
 import com.soywiz.kmem.dyn.*
 import com.soywiz.korau.sound.backends.*
-import com.soywiz.korau.sound.backends.A2.snd_pcm_close
-import com.soywiz.korau.sound.backends.A2.snd_pcm_drain
-import com.soywiz.korau.sound.backends.A2.snd_pcm_hw_params
-import com.soywiz.korau.sound.backends.A2.snd_pcm_hw_params_any
-import com.soywiz.korau.sound.backends.A2.snd_pcm_hw_params_get_period_size
-import com.soywiz.korau.sound.backends.A2.snd_pcm_hw_params_set_access
-import com.soywiz.korau.sound.backends.A2.snd_pcm_hw_params_set_format
-import com.soywiz.korau.sound.backends.A2.snd_pcm_name
-import com.soywiz.korau.sound.backends.A2.snd_pcm_open
-import com.soywiz.korau.sound.backends.A2.snd_pcm_prepare
-import com.soywiz.korau.sound.backends.A2.snd_pcm_state
-import com.soywiz.korau.sound.backends.A2.snd_pcm_state_name
-import com.soywiz.korau.sound.backends.A2.snd_pcm_writei
 import kotlinx.cinterop.*
 
 actual object ASoundImpl : ASound2 {

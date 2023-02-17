@@ -7,7 +7,7 @@ import com.soywiz.kmem.startAddressOf
 import kotlinx.cinterop.Arena
 import kotlinx.cinterop.alloc
 import kotlinx.cinterop.convert
-import kotlinx.cinterop.invoke
+import com.soywiz.kmem.dyn.invoke
 import kotlinx.cinterop.memScoped
 import kotlinx.cinterop.pin
 import kotlinx.cinterop.ptr
