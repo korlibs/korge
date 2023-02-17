@@ -79,9 +79,6 @@ data class Point(val x: Double, val y: Double) {
     fun ceil(): Point = Point(kotlin.math.ceil(x), kotlin.math.ceil(y))
     fun floor(): Point = Point(kotlin.math.floor(x), kotlin.math.floor(y))
 
-    fun mutable(out: MPoint = MPoint()): MPoint = out.setTo(x, y)
-    val mutable: MPoint get() = mutable()
-
     //fun copy(x: Double = this.x, y: Double = this.y): Point = Point(x, y)
 
     fun isAlmostEquals(other: Point, epsilon: Double = 0.000001): Boolean =
@@ -539,6 +536,10 @@ fun MPointInt.asDouble(): MPoint = this.p
 val MPoint.int get() = MPointInt(this.x.toInt(), this.y.toInt())
 val IPoint.int get() = MPointInt(this.x.toInt(), this.y.toInt())
 val IPointInt.double get() = IPoint(x.toDouble(), y.toDouble())
+
+fun Point.toMPoint(out: MPoint = MPoint()): MPoint = out.setTo(x, y)
+fun Point.mutable(out: MPoint = MPoint()): MPoint = out.setTo(x, y)
+val Point.mutable: MPoint get() = mutable()
 
 private inline fun getPolylineLength(size: Int, crossinline get: (n: Int, (x: Double, y: Double) -> Unit) -> Unit): Double {
     var out = 0.0

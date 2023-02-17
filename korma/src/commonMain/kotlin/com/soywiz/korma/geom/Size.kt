@@ -153,9 +153,10 @@ inline class MSizeInt(val size: MSize) : ISizeInt {
     override fun toString(): String = "SizeInt(width=$width, height=$height)"
 }
 
-
 fun MSize.asInt(): MSizeInt = MSizeInt(this)
 fun MSizeInt.asDouble(): MSize = this.size
 
 fun MPoint.asSize(): MSize = MSize(this)
 fun IPoint.asSize(): ISize = MSize(MPoint(this))
+
+fun Point.toSize(): Size = Size(x, y)
