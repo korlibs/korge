@@ -357,7 +357,7 @@ class Views constructor(
         val doRender2 = doRender && (forceRender || updatedSinceFrame > 0)
         if (doRender2) {
             if (printRendering) {
-                println("Views.frameUpdateAndRender[${DateTime.nowUnixLong()}]: doRender=$doRender2 -> [forceRender=$forceRender, updatedSinceFrame=$updatedSinceFrame]")
+                println("Views.frameUpdateAndRender[${DateTime.nowUnixMillisLong()}]: doRender=$doRender2 -> [forceRender=$forceRender, updatedSinceFrame=$updatedSinceFrame]")
             }
             render()
             startFrame()
