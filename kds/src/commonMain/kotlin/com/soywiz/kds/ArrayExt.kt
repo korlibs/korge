@@ -2,9 +2,6 @@ package com.soywiz.kds
 
 import com.soywiz.kds.internal.*
 
-@Deprecated("", ReplaceWith("Array<R>(size) { func(this[it]) }"))
-inline fun <reified T, reified R> Array<T>.mapArray(func: (T) -> R): Array<R> = Array<R>(size) { func(this[it]) }
-
 public fun <T> MutableList<T>.reverse(fromIndex: Int, toIndex: Int): Unit {
     if (fromIndex < 0 || toIndex > size) {
         throw IndexOutOfBoundsException("fromIndex: $fromIndex, toIndex: $toIndex, size: $size")
