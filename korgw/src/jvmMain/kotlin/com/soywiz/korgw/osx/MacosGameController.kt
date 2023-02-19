@@ -245,8 +245,6 @@ internal class MacosGamepadEventAdapter {
                         gamepad.set(GameButton.R3, ex.rightThumbstickButton)
                         gamepad.set(GameButton.L2, ex.leftTrigger)
                         gamepad.set(GameButton.R2, ex.rightTrigger)
-                        gamepad.set(GameButton.L3, ex.leftThumbstickButton)
-                        gamepad.set(GameButton.R3, ex.rightThumbstickButton)
                         gamepad.set(GameButton.LX, ex.leftThumbstick.x)
                         gamepad.set(GameButton.LY, ex.leftThumbstick.y)
                         gamepad.set(GameButton.RX, ex.rightThumbstick.x)

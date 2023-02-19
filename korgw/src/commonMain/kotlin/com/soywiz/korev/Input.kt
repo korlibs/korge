@@ -180,10 +180,10 @@ enum class GameStick(val id: Int) {
 
 enum class GameButton {
 	LEFT, RIGHT, UP, DOWN,
-	BUTTON0, // XBox: A, Playstation: Cross
-    BUTTON1, // XBox: B, Playstation: Circle
-    BUTTON2, // XBox: X, Playstation: Square
-    BUTTON3, // XBox: Y, Playstation: Triangle
+	BUTTON_SOUTH, // XBox: A, Playstation: Cross
+    BUTTON_EAST,  // XBox: B, Playstation: Circle
+    BUTTON_WEST,  // XBox: X, Playstation: Square
+    BUTTON_NORTH, // XBox: Y, Playstation: Triangle
 	SELECT, START, SYSTEM,
 	L1, R1,
 	L2, R2,
@@ -213,21 +213,26 @@ enum class GameButton {
         val BACK get() = SELECT
         val FORWARD get() = START
 
-        val XBOX_A get() = BUTTON0
-        val XBOX_B get() = BUTTON1
-        val XBOX_X get() = BUTTON2
-        val XBOX_Y get() = BUTTON3
+        val XBOX_A get() = BUTTON_SOUTH
+        val XBOX_B get() = BUTTON_EAST
+        val XBOX_X get() = BUTTON_WEST
+        val XBOX_Y get() = BUTTON_NORTH
 
-        val PS_CROSS get() = BUTTON0
-        val PS_CIRCLE get() = BUTTON1
-        val PS_SQUARE get() = BUTTON2
-        val PS_TRIANGLE get() = BUTTON3
+        val PS_CROSS get() = BUTTON_SOUTH
+        val PS_CIRCLE get() = BUTTON_EAST
+        val PS_SQUARE get() = BUTTON_WEST
+        val PS_TRIANGLE get() = BUTTON_NORTH
 
-        val GENERIC_BUTTON_DOWN get() = BUTTON0
-        val GENERIC_BUTTON_RIGHT get() = BUTTON1
-        val GENERIC_BUTTON_LEFT get() = BUTTON2
-        val GENERIC_BUTTON_UP get() = BUTTON3
-	}
+        val GENERIC_BUTTON_DOWN get() = BUTTON_SOUTH
+        val GENERIC_BUTTON_RIGHT get() = BUTTON_EAST
+        val GENERIC_BUTTON_LEFT get() = BUTTON_WEST
+        val GENERIC_BUTTON_UP get() = BUTTON_NORTH
+
+        @Deprecated("", ReplaceWith("BUTTON_SOUTH", "com.soywiz.korev.GameButton.BUTTON_SOUTH")) val BUTTON0 get() = BUTTON_SOUTH
+        @Deprecated("", ReplaceWith("BUTTON_EAST", "com.soywiz.korev.GameButton.BUTTON_EAST")) val BUTTON1 get() = BUTTON_EAST
+        @Deprecated("", ReplaceWith("BUTTON_WEST", "com.soywiz.korev.GameButton.BUTTON_WEST")) val BUTTON2 get() = BUTTON_WEST
+        @Deprecated("", ReplaceWith("BUTTON_NORTH", "com.soywiz.korev.GameButton.BUTTON_NORTH")) val BUTTON3 get() = BUTTON_NORTH
+    }
 }
 
 // http://blog.teamtreehouse.com/wp-content/uploads/2014/03/standardgamepad.png

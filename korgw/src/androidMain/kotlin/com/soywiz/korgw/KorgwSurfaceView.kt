@@ -226,10 +226,10 @@ open class KorgwSurfaceView constructor(
                 Key.XBUTTON_R1 -> GameButton.R1
                 Key.XBUTTON_R2 -> GameButton.R2
                 Key.XBUTTON_THUMBR -> GameButton.R3
-                Key.XBUTTON_A -> GameButton.BUTTON0
-                Key.XBUTTON_B -> GameButton.BUTTON1
-                Key.XBUTTON_X -> GameButton.BUTTON2
-                Key.XBUTTON_Y -> GameButton.BUTTON3
+                Key.XBUTTON_A -> GameButton.XBOX_A
+                Key.XBUTTON_B -> GameButton.XBOX_B
+                Key.XBUTTON_X -> GameButton.XBOX_X
+                Key.XBUTTON_Y -> GameButton.XBOX_Y
                 Key.XBUTTON_SELECT -> GameButton.SELECT
                 Key.XBUTTON_START -> GameButton.START
                 Key.XBUTTON_MODE -> GameButton.SYSTEM

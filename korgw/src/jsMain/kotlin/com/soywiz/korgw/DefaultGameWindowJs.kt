@@ -57,10 +57,10 @@ open class BrowserCanvasJsGameWindow(
 
     // https://blog.teamtreehouse.com/wp-content/uploads/2014/03/standardgamepad.png
     val BUTTONS_MAPPING = arrayOf(
-        GameButton.BUTTON0, // 0
-        GameButton.BUTTON1, // 1
-        GameButton.BUTTON2, // 2
-        GameButton.BUTTON3, // 3
+        GameButton.BUTTON_SOUTH, // 0
+        GameButton.BUTTON_EAST, // 1
+        GameButton.BUTTON_WEST, // 2
+        GameButton.BUTTON_NORTH, // 3
         GameButton.L1,      // 4
         GameButton.R1,      // 5
         GameButton.L2,      // 6

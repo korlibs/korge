@@ -430,7 +430,7 @@ data class GamePadUpdateEvent @JvmOverloads constructor(
 data class GamePadButtonEvent @JvmOverloads constructor(
     override var type: Type = Type.DOWN,
     var gamepad: Int = 0,
-    var button: GameButton = GameButton.BUTTON0,
+    var button: GameButton = GameButton.BUTTON_SOUTH,
     var value: Double = 0.0
 ) : Event(), TEvent<GamePadButtonEvent> {
     //companion object : EventType<GamePadButtonEvent>

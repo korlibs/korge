@@ -35,16 +35,16 @@ class DarwinGamePad {
             }
             gameWindow.dispatchGamepadUpdateStart()
             for ((index, controller) in controllers.withIndex()) {
-                fun button(button: GameButton, pressed: Boolean) {
-                    info.rawButtons[button.index] = if (pressed) 1f else 0f
+                fun button(button: GameButton, value: Float) {
+                    info.rawButtons[button.index] = value.toFloat()
                 }
 
                 fun button(button: GameButton, gcbutton: GCControllerButtonInput?) {
-                    if (gcbutton != null) button(button, gcbutton.pressed)
+                    if (gcbutton != null) button(button, gcbutton.value.toFloat())
                 }
                 fun stick(buttonX: GameButton, buttonY: GameButton, pad: GCControllerDirectionPad) {
-                    info.rawButtons[buttonX.index] = pad.xAxis.value.toFloat()
-                    info.rawButtons[buttonY.index] = pad.yAxis.value.toFloat()
+                    button(buttonX, pad.xAxis.value.toFloat())
+                    button(buttonY, pad.yAxis.value.toFloat())
                 }
 
                 // https://developer.apple.com/documentation/gamecontroller/gcmicrogamepad
@@ -55,19 +55,18 @@ class DarwinGamePad {
                 val extendedGamepad = controller.extendedGamepad
 
                 if (microGamepad != null) {
-                    button(GameButton.START, microGamepad.buttonMenu)
-                    button(GameButton.UP, microGamepad.dpad.up)
-                    button(GameButton.DOWN, microGamepad.dpad.down)
                     button(GameButton.LEFT, microGamepad.dpad.left)
                     button(GameButton.RIGHT, microGamepad.dpad.right)
+                    button(GameButton.UP, microGamepad.dpad.up)
+                    button(GameButton.DOWN, microGamepad.dpad.down)
                     button(GameButton.XBOX_A, microGamepad.buttonA)
                     button(GameButton.XBOX_X, microGamepad.buttonX)
-                    stick(GameButton.LX, GameButton.LY, microGamepad.dpad)
+                    button(GameButton.START, microGamepad.buttonMenu)
                 }
 
                 if (gamepad != null) {
-                    button(GameButton.XBOX_Y, gamepad.buttonY)
                     button(GameButton.XBOX_B, gamepad.buttonB)
+                    button(GameButton.XBOX_Y, gamepad.buttonY)
                     button(GameButton.L1, gamepad.leftShoulder)
                     button(GameButton.R1, gamepad.rightShoulder)
                 }
@@ -75,10 +74,10 @@ class DarwinGamePad {
                 if (extendedGamepad != null) {
                     button(GameButton.SYSTEM, extendedGamepad.buttonHome)
                     button(GameButton.SELECT, extendedGamepad.buttonOptions)
-                    button(GameButton.R1, extendedGamepad.rightShoulder)
-                    button(GameButton.R2, extendedGamepad.rightTrigger)
                     button(GameButton.L3, extendedGamepad.leftThumbstickButton)
                     button(GameButton.R3, extendedGamepad.rightThumbstickButton)
+                    button(GameButton.L2, extendedGamepad.leftTrigger)
+                    button(GameButton.R2, extendedGamepad.rightTrigger)
                     stick(GameButton.LX, GameButton.LY, extendedGamepad.leftThumbstick)
                     stick(GameButton.RX, GameButton.RY, extendedGamepad.rightThumbstick)
                 }
