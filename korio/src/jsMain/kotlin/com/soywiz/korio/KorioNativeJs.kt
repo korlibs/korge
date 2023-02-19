@@ -3,7 +3,6 @@ package com.soywiz.korio
 import com.soywiz.korio.runtime.browser.JsRuntimeBrowser
 import com.soywiz.korio.runtime.deno.JsRuntimeDeno
 import com.soywiz.korio.runtime.node.JsRuntimeNode
-import com.soywiz.korio.util.OS
 import org.w3c.dom.*
 import org.w3c.dom.events.*
 import org.w3c.performance.*

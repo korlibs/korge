@@ -5,8 +5,8 @@ import com.soywiz.kmem.internal.currentIsLittleEndian
 public enum class Endian {
     LITTLE_ENDIAN, BIG_ENDIAN;
 
-    val isLittle get() = this == LITTLE_ENDIAN
-    val isBig get() = this == BIG_ENDIAN
+    val isLittle: Boolean get() = this == LITTLE_ENDIAN
+    val isBig: Boolean get() = this == BIG_ENDIAN
 
     public companion object {
         val isLittleEndian: Boolean get() = currentIsLittleEndian

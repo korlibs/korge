@@ -1,6 +1,7 @@
 package com.soywiz.korio.file.std
 
-import com.soywiz.korio.util.OS
+import com.soywiz.kmem.*
+
 
 // @TODO: DRY, try to use buildShellExecCommandLineArray
 // @TODO: NodeJS fails on windows with special characters like & echo &
@@ -10,21 +11,17 @@ object ShellArgs {
     fun buildShellExecCommandLineArrayForExecl(cmdAndArgs: List<String>): List<String> = buildShellExecCommandLineArray(cmdAndArgs)
     fun buildShellExecCommandLineArrayForNodeSpawn(cmdAndArgs: List<String>): List<String> = (cmdAndArgs)
 
-    fun buildShellExecCommandLineArray(cmdAndArgs: List<String>): List<String> {
-        return when {
-            OS.isWindows -> listOf("cmd", "/c", ShellArgs.escapeshellCommandWin(cmdAndArgs))
-            OS.isLinux -> listOf("/bin/sh", "-c", cmdAndArgs.joinToString(" ") { ShellArgs.escapeshellargUnix(it) })
-            //OS.isLinux -> listOf("/bin/sh", "-c", "\"" + cmdAndArgs.joinToString(" ") { ShellArgs.escapeshellargUnix(it) } + "\"")
-            //OS.isLinux -> listOf("/bin/sh", "-c", "'" + cmdAndArgs.joinToString(" ") { ShellArgs.escapeshellargUnix(it) }.replace("'", "'\"'\"'") + "'")
-            else -> cmdAndArgs
-        }
+    fun buildShellExecCommandLineArray(cmdAndArgs: List<String>): List<String> = when {
+        Platform.isWindows -> listOf("cmd", "/c", ShellArgs.escapeshellCommandWin(cmdAndArgs))
+        Platform.isLinux -> listOf("/bin/sh", "-c", cmdAndArgs.joinToString(" ") { ShellArgs.escapeshellargUnix(it) })
+        //OS.isLinux -> listOf("/bin/sh", "-c", "\"" + cmdAndArgs.joinToString(" ") { ShellArgs.escapeshellargUnix(it) } + "\"")
+        //OS.isLinux -> listOf("/bin/sh", "-c", "'" + cmdAndArgs.joinToString(" ") { ShellArgs.escapeshellargUnix(it) }.replace("'", "'\"'\"'") + "'")
+        else -> cmdAndArgs
     }
 
-    fun buildShellExecCommandLine(cmdAndArgs: List<String>): String {
-        return when {
-            OS.isWindows -> cmdAndArgs.joinToString(" ") { ShellArgs.escapeshellargWin(it) }
-            else -> "/bin/sh -c '" + cmdAndArgs.joinToString(" ") { ShellArgs.escapeshellargUnix(it) }.replace("'", "'\"'\"'") + "'"
-        }
+    fun buildShellExecCommandLine(cmdAndArgs: List<String>): String = when {
+        Platform.isWindows -> cmdAndArgs.joinToString(" ") { ShellArgs.escapeshellargWin(it) }
+        else -> "/bin/sh -c '" + cmdAndArgs.joinToString(" ") { ShellArgs.escapeshellargUnix(it) }.replace("'", "'\"'\"'") + "'"
     }
 
     fun escapeshellCommandUnix(args: List<String>): String {

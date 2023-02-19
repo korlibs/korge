@@ -3,6 +3,8 @@ package com.soywiz.korgw.osx
 import com.soywiz.kgl.KmlGl
 import com.soywiz.kgl.checkedIf
 import com.soywiz.kgl.logIf
+import com.soywiz.kmem.*
+import com.soywiz.kmem.Platform
 import com.soywiz.kmem.dyn.osx.*
 import com.soywiz.korag.gl.AGOpengl
 import com.soywiz.korev.Key
@@ -15,7 +17,6 @@ import com.soywiz.korgw.platform.NativeLoad
 import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.format.PNG
 import com.soywiz.korio.async.launchImmediately
-import com.soywiz.korio.util.OS
 import com.soywiz.korio.util.Once
 import com.sun.jna.*
 import java.nio.ByteBuffer
@@ -75,11 +76,11 @@ private fun ByteArray.toNSData(): Long = NSClass("NSData").alloc().msgSend("init
 
 val NSThreadClass = NSClass("NSThread")
 
-internal val isOSXMainThread get() = OS.isMac && (NSThreadClass.msgSend("isMainThread") != 0L)
+internal val isOSXMainThread get() = Platform.isMac && (NSThreadClass.msgSend("isMainThread") != 0L)
 
 private val _initializeMacOnce = Once()
 fun initializeMacOnce() = _initializeMacOnce {
-    if (OS.isMac) {
+    if (Platform.isMac) {
         // https://indiestack.com/2016/12/touch-bar-crash-protection/
         //[[NSUserDefaults standardUserDefaults] registerDefaults:[NSDictionary dictionaryWithObject:[NSNumber numberWithBool:NO] forKey:@"NSFunctionBarAPIEnabled"]];
         NSClass("NSUserDefaults").msgSend("standardUserDefaults").msgSend(

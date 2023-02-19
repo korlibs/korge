@@ -2,11 +2,11 @@ package com.soywiz.korim.format
 
 import com.soywiz.kds.ExtraTypeCreate
 import com.soywiz.kds.setExtra
+import com.soywiz.kmem.*
 import com.soywiz.korim.atlas.MutableAtlasUnit
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korio.async.suspendTest
 import com.soywiz.korio.file.std.resourcesVfs
-import com.soywiz.korio.util.OS
 import com.soywiz.korma.geom.MRectangleInt
 import com.soywiz.ktruth.*
 import com.soywiz.korma.geom.MSize
@@ -16,7 +16,7 @@ class ASETest {
     val ASEDecoder = ImageDecodingProps(format = ASE)
 
     @Test
-    fun testPremultiplied() = suspendTest({ !OS.isJs }) {
+    fun testPremultiplied() = suspendTest({ !Platform.isJs }) {
         val noprem = resourcesVfs["vampire.ase"].readImageDataContainer(
             ASE.toProps(
                 ImageDecodingProps.DEFAULT(premultiplied = false)
@@ -40,7 +40,7 @@ class ASETest {
     }
 
     @Test
-    fun test() = suspendTest({ !OS.isJs }) {
+    fun test() = suspendTest({ !Platform.isJs }) {
         val atlas = MutableAtlasUnit(2048)
         val simple = resourcesVfs["simple.ase"].readImageData(ASEDecoder, atlas = atlas)
         val simple2 = resourcesVfs["simple2.ase"].readImageData(ASEDecoder, atlas = atlas)
@@ -130,7 +130,7 @@ class ASETest {
     }
 
     @Test
-    fun testBigAseImage() = suspendTest({ !OS.isJs && !OS.isAndroid }) {
+    fun testBigAseImage() = suspendTest({ !Platform.isJs && !Platform.isAndroid }) {
         val atlas = MutableAtlasUnit(2048)
         // complex example (empty cells within frames of an ase file with animations tags)
         val props3 = ASEDecoder.copy(extra = ExtraTypeCreate())
@@ -166,7 +166,7 @@ class ASETest {
     }
 
     @Test
-    fun testTilemap() = suspendTest({ !OS.isJs }) {
+    fun testTilemap() = suspendTest({ !Platform.isJs }) {
         val ase = resourcesVfs["asepritetilemap.aseprite"].readImageData(ASEDecoder)
         val tilemap = ase.frames[0].layerData[1].tilemap
         assertNotNull(tilemap)
@@ -197,7 +197,7 @@ class ASETest {
     }
 
     @Test
-    fun testSlicesIssue() = suspendTest({ !OS.isJs }) {
+    fun testSlicesIssue() = suspendTest({ !Platform.isJs }) {
         val slicesCorrupted =
             resourcesVfs["vampire_slices_corrupted.ase"].readImageDataContainer(ASE.toProps())
         val slicesFixed =
@@ -252,7 +252,7 @@ class ASETest {
     }
 
     @Test
-    fun readsOnlyVisibleLayers() = suspendTest({ !OS.isJs }) {
+    fun readsOnlyVisibleLayers() = suspendTest({ !Platform.isJs }) {
         val ase = resourcesVfs["ase_tests/ase_with_layers.aseprite"].readImageDataContainer(
             ASE.toProps(ImageDecodingProps.DEFAULT(premultiplied = false)).apply {
                 onlyReadVisibleLayers = true
@@ -275,7 +275,7 @@ class ASETest {
     }
 
     @Test
-    fun readsVisibleAndHiddenLayers() = suspendTest({ !OS.isJs }) {
+    fun readsVisibleAndHiddenLayers() = suspendTest({ !Platform.isJs }) {
         val ase = resourcesVfs["ase_tests/ase_with_layers.aseprite"].readImageDataContainer(
             ASE.toProps(ImageDecodingProps.DEFAULT(premultiplied = false)).apply {
                 onlyReadVisibleLayers = false

@@ -1,8 +1,8 @@
 package com.soywiz.korio.lang
 
+import com.soywiz.kmem.*
 import com.soywiz.korio.async.suspendTest
 import com.soywiz.korio.file.std.MemoryVfsMix
-import com.soywiz.korio.util.OS
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -20,7 +20,7 @@ class PropertiesTest {
 
     @Test
     fun testJvm() {
-        if (OS.isJvm) {
+        if (Platform.isJvm) {
             assertNotNull(SystemProperties["java.version"])
         }
     }

@@ -1,10 +1,10 @@
 package com.soywiz.korge.view
 
+import com.soywiz.kmem.*
 import com.soywiz.korag.log.AGLog
 import com.soywiz.korge.render.RenderContext
 import com.soywiz.korim.color.Colors
 import com.soywiz.korio.async.suspendTest
-import com.soywiz.korio.util.OS
 import com.soywiz.korio.util.niceStr
 import com.soywiz.korma.geom.Anchor
 import com.soywiz.korma.geom.MPoint
@@ -19,7 +19,7 @@ import kotlin.test.assertTrue
 
 class GraphicsTest {
     @Test
-    fun test() = suspendTest({ !OS.isAndroid }) {
+    fun test() = suspendTest({ !Platform.isAndroid }) {
         val g = CpuGraphics().updateShape(redrawNow = true) {
             fill(Colors.RED) {
                 rect(-50, -50, 100, 100)
@@ -36,7 +36,7 @@ class GraphicsTest {
     }
 
     @Test
-    fun testEmptyGraphics() = suspendTest({ !OS.isAndroid }) {
+    fun testEmptyGraphics() = suspendTest({ !Platform.isAndroid }) {
         val g = CpuGraphics().apply {
         }
         val rc = TestRenderContext()

@@ -1,5 +1,6 @@
 package com.soywiz.korgw
 
+import com.soywiz.kmem.*
 import com.soywiz.korag.*
 import com.soywiz.korag.gl.*
 import com.soywiz.korev.*
@@ -544,7 +545,7 @@ private external interface JsGamepadEvent {
 
 class NodeJsGameWindow : JsGameWindow()
 
-actual fun CreateDefaultGameWindow(config: GameWindowCreationConfig): GameWindow = if (OS.isJsNodeJs) NodeJsGameWindow() else BrowserCanvasJsGameWindow()
+actual fun CreateDefaultGameWindow(config: GameWindowCreationConfig): GameWindow = if (Platform.isJsNodeJs) NodeJsGameWindow() else BrowserCanvasJsGameWindow()
 
 /*
 public external open class TouchEvent(type: String, eventInitDict: MouseEventInit = definedExternally) : UIEvent {

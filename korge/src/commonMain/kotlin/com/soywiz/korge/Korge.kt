@@ -60,7 +60,6 @@ import com.soywiz.korio.dynamic.*
 import com.soywiz.korio.file.std.localCurrentDirVfs
 import com.soywiz.korio.file.std.resourcesVfs
 import com.soywiz.korio.resources.Resources
-import com.soywiz.korio.util.OS
 import com.soywiz.korma.geom.Anchor
 import com.soywiz.korma.geom.ISizeInt
 import com.soywiz.korma.geom.MPoint
@@ -175,7 +174,7 @@ object Korge {
 	) {
         RegisteredImageFormats.register(imageFormats)
 
-        if (!OS.isJsBrowser) {
+        if (!Platform.isJsBrowser) {
             configureLoggerFromProperties(localCurrentDirVfs["klogger.properties"])
         }
         val realGameWindow = (gameWindow ?: coroutineContext[GameWindow] ?: CreateDefaultGameWindow(GameWindowCreationConfig(multithreaded = multithreaded)))
@@ -185,7 +184,7 @@ object Korge {
         //realGameWindow.configure(width, height, title, icon, fullscreen)
         realGameWindow.loop {
             val gameWindow = this
-            if (OS.isNative) println("Korui[0]")
+            if (Platform.isNative) println("Korui[0]")
             gameWindow.registerTime("configureGameWindow") {
                 realGameWindow.configure(width, height, title, icon, fullscreen, bgcolor ?: Colors.BLACK)
             }
@@ -203,7 +202,7 @@ object Korge {
                 }
             }
             this.quality = quality
-            if (OS.isNative) println("CanvasApplicationEx.IN[0]")
+            if (Platform.isNative) println("CanvasApplicationEx.IN[0]")
             val input = Input()
             val stats = Stats()
 
@@ -266,8 +265,8 @@ object Korge {
                     }
                 }
             }
-            if (OS.isNative) println("CanvasApplicationEx.IN[1]")
-            if (OS.isNative) println("Korui[1]")
+            if (Platform.isNative) println("CanvasApplicationEx.IN[1]")
+            if (Platform.isNative) println("Korui[1]")
 
             if (blocking) {
                 // @TODO: Do not complete to prevent job cancelation?

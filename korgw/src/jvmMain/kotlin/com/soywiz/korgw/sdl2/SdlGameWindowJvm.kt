@@ -16,7 +16,6 @@ import com.soywiz.korgw.sdl2.jna.SDL_Window
 import com.soywiz.korgw.sdl2.jna.enums.*
 import com.soywiz.korgw.sdl2.jna.events.SDL_Event
 import com.soywiz.korgw.sdl2.jna.structs.SDL_DisplayMode
-import com.soywiz.korio.util.OS
 import com.sun.jna.Library
 import com.sun.jna.Native
 import com.sun.jna.Pointer

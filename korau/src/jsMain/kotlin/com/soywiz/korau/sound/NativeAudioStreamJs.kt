@@ -3,17 +3,17 @@ package com.soywiz.korau.sound
 import com.soywiz.kds.FloatArrayDeque
 import com.soywiz.klock.milliseconds
 import com.soywiz.klock.seconds
+import com.soywiz.kmem.*
 import com.soywiz.korau.internal.SampleConvert
 import com.soywiz.korau.internal.write
 import com.soywiz.korio.async.delay
 import com.soywiz.korio.lang.Cancellable
 import com.soywiz.korio.lang.cancel
-import com.soywiz.korio.util.OS
 import kotlinx.browser.document
 import kotlin.coroutines.CoroutineContext
 
 actual val nativeSoundProvider: NativeSoundProvider by lazy {
-    if (OS.isJsBrowser) {
+    if (Platform.isJsBrowser) {
         HtmlNativeSoundProvider()
     } else {
         DummyNativeSoundProvider

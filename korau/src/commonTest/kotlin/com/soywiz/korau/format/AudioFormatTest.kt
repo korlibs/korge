@@ -1,9 +1,9 @@
 package com.soywiz.korau.format
 
 import com.soywiz.klogger.*
+import com.soywiz.kmem.*
 import com.soywiz.korio.async.suspendTest
 import com.soywiz.korio.file.std.resourcesVfs
-import com.soywiz.korio.util.OS
 import doIOTest
 import kotlin.test.assertEquals
 
@@ -25,7 +25,7 @@ class AudioFormatTest {
 
     @kotlin.test.Test
     fun wavCorrupted() = suspendTest({ doIOTest }) {
-        logger.debug { "doIOTest[0]: ${OS.isAndroid}, ${OS.rawNameLC}" }
+        logger.debug { "doIOTest[0]: ${Platform.isAndroid}, ${Platform.rawOsName}" }
         assertEquals(
             "Info(duration=3842.902ms, channels=1)",
             resourcesVfs["boom.wav"].readSoundInfo(formats).toString()

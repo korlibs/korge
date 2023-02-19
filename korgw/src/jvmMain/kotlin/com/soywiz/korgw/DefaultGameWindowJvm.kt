@@ -1,20 +1,19 @@
 package com.soywiz.korgw
 
 import SdlGameWindowJvm
+import com.soywiz.kmem.*
 import com.soywiz.korag.*
 import com.soywiz.korev.*
 import com.soywiz.korgw.awt.AwtGameWindow
-//import com.soywiz.korgw.jogl.JoglGameWindow
 import com.soywiz.korgw.osx.MacGameWindow
 import com.soywiz.korgw.osx.initializeMacOnce
 import com.soywiz.korgw.osx.isOSXMainThread
 import com.soywiz.korgw.x11.X11GameWindow
 import com.soywiz.korim.color.RGBA
-import com.soywiz.korio.util.OS
 import kotlinx.coroutines.runBlocking
 
 actual fun CreateDefaultGameWindow(config: GameWindowCreationConfig): GameWindow {
-    if (OS.isMac) {
+    if (Platform.isMac) {
         initializeMacOnce()
     }
 
@@ -43,7 +42,7 @@ actual fun CreateDefaultGameWindow(config: GameWindowCreationConfig): GameWindow
             else -> AwtGameWindow(realConfig)
         }
         "jna" -> when {
-            OS.isMac -> {
+            Platform.isMac -> {
                 when {
                     isOSXMainThread -> MacGameWindow(checkGl, logGl)
                     else -> {
@@ -52,14 +51,14 @@ actual fun CreateDefaultGameWindow(config: GameWindowCreationConfig): GameWindow
                     }
                 }
             }
-            //OS.isLinux -> X11GameWindow(checkGl)
-            OS.isLinux -> AwtGameWindow(realConfig)
-            //OS.isWindows -> com.soywiz.korgw.win32.Win32GameWindow()
-            OS.isWindows -> AwtGameWindow(realConfig)
+            //Platform.isLinux -> X11GameWindow(checkGl)
+            Platform.isLinux -> AwtGameWindow(realConfig)
+            //Platform.isWindows -> com.soywiz.korgw.win32.Win32GameWindow()
+            Platform.isWindows -> AwtGameWindow(realConfig)
             else -> X11GameWindow(checkGl)
         }
         "awt" -> when {
-            OS.isMac && isOSXMainThread -> MacGameWindow(checkGl,logGl)
+            Platform.isMac && isOSXMainThread -> MacGameWindow(checkGl,logGl)
             else -> AwtGameWindow(realConfig)
         }
         //"jogl" -> {

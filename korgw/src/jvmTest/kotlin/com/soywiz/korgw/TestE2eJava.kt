@@ -1,5 +1,6 @@
 package com.soywiz.korgw
 
+import com.soywiz.kmem.*
 import com.soywiz.korag.*
 import com.soywiz.korev.*
 import com.soywiz.korim.bitmap.*
@@ -14,7 +15,7 @@ class TestE2eJava {
     @Ignore
     fun test() {
         // @TODO: java.lang.IllegalStateException: Can't find opengl method glGenBuffers
-        if (OS.isWindows) return
+        if (Platform.isWindows) return
         if (GraphicsEnvironment.isHeadless()) return
 
         val bmp = Bitmap32(64, 64)

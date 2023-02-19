@@ -3,8 +3,8 @@ package com.soywiz.korio.async
 import com.soywiz.klock.TimeSpan
 import com.soywiz.klock.seconds
 import com.soywiz.klogger.Console
+import com.soywiz.kmem.*
 import com.soywiz.korio.lang.Environment
-import com.soywiz.korio.util.OS
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
@@ -72,8 +72,8 @@ fun suspendTest(timeout: TimeSpan?, callback: suspend CoroutineScope.() -> Unit)
 //fun suspendTest(timeout: TimeSpan?, callback: suspend CoroutineScope.() -> Unit) = asyncEntryPoint { coroutineScope { callback() } }
 fun suspendTest(callback: suspend CoroutineScope.() -> Unit) = suspendTest(DEFAULT_SUSPEND_TEST_TIMEOUT, callback)
 fun suspendTest(cond: () -> Boolean, timeout: TimeSpan? = DEFAULT_SUSPEND_TEST_TIMEOUT, callback: suspend CoroutineScope.() -> Unit) = suspendTest(timeout) { if (cond()) callback() }
-fun suspendTestNoBrowser(callback: suspend CoroutineScope.() -> Unit) = suspendTest({ !OS.isJsBrowser }, callback = callback)
-fun suspendTestNoJs(callback: suspend CoroutineScope.() -> Unit) = suspendTest({ !OS.isJs }, callback = callback)
+fun suspendTestNoBrowser(callback: suspend CoroutineScope.() -> Unit) = suspendTest({ !Platform.isJsBrowser }, callback = callback)
+fun suspendTestNoJs(callback: suspend CoroutineScope.() -> Unit) = suspendTest({ !Platform.isJs }, callback = callback)
 
 @ThreadLocal
 val DEBUG_ASYNC_LAUNCH_ERRORS by lazy { Environment["DEBUG_ASYNC_LAUNCH_ERRORS"] == "true" }

@@ -1,13 +1,14 @@
 package com.soywiz.korio.async
 
 import com.soywiz.klock.*
+import com.soywiz.kmem.*
 import com.soywiz.korio.*
 import com.soywiz.korio.util.*
 import kotlin.test.*
 
 class PromiseJsTest {
     @Test
-    fun test() = suspendTest({ !OS.isJsNodeJs }) {
+    fun test() = suspendTest({ !Platform.isJsNodeJs }) {
         val startTime = DateTime.now()
         val value = delay(100)
         assertTrue(value is JsPromise<*>)

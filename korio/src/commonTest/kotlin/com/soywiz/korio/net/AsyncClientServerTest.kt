@@ -2,13 +2,13 @@ package com.soywiz.korio.net
 
 import com.soywiz.kds.Deque
 import com.soywiz.klogger.*
+import com.soywiz.kmem.*
 import com.soywiz.korio.async.asyncImmediately
 import com.soywiz.korio.async.launchImmediately
 import com.soywiz.korio.async.suspendTest
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.stream.readString
 import com.soywiz.korio.stream.writeString
-import com.soywiz.korio.util.OS
 import com.soywiz.korio.util.UUID
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.awaitAll
@@ -26,7 +26,7 @@ class AsyncClientServerTest {
 	}
 
     @Test
-	fun testClientServer() = suspendTest({ OS.isJvm || OS.isNativeDesktop || OS.isJsNodeJs }) {
+	fun testClientServer() = suspendTest({ Platform.isJvm || Platform.isNativeDesktop || Platform.isJsNodeJs }) {
         val server = AsyncServer(port = 0)
         //val server = AsyncServer(port = 29_999)
 

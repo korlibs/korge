@@ -374,7 +374,7 @@ data class KeyEvent constructor(
     val typeDown get() = type == Type.DOWN
     val typeUp get() = type == Type.UP
 
-    val ctrlOrMeta: Boolean get() = if (OS.isMac) meta else ctrl
+    val ctrlOrMeta: Boolean get() = if (Platform.isMac) meta else ctrl
 
     fun characters(): String = str ?: "$character"
 

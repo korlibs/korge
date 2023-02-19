@@ -1,16 +1,16 @@
 package com.soywiz.korim.bitmap
 
+import com.soywiz.kmem.*
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RgbaArray
 import com.soywiz.korio.async.suspendTest
-import com.soywiz.korio.util.OS
 import com.soywiz.korma.geom.vector.rect
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class Context2DCommonTest {
     @Test
-    fun testFillAlpha() = suspendTest({ !OS.isAndroid }) {
+    fun testFillAlpha() = suspendTest({ !Platform.isAndroid }) {
         val semiTransparentAlpha = Colors.FUCHSIA.withAd(0.5)
         val image = NativeImage(10, 10).context2d {
             fill(semiTransparentAlpha) {
@@ -21,7 +21,7 @@ class Context2DCommonTest {
     }
 
     @Test
-    fun testFillAlpha2() = suspendTest({ !OS.isAndroid }) {
+    fun testFillAlpha2() = suspendTest({ !Platform.isAndroid }) {
         //val image = NativeImage(3, 3).context2d {
         val image = Bitmap32(3, 3, premultiplied = true).context2d {
             fill(Colors.WHITE) {
