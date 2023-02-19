@@ -115,6 +115,7 @@ fun Project.configureJvm() {
 
     val jvmProcessResources = tasks.findByName("jvmProcessResources") as? Copy?
     jvmProcessResources?.duplicatesStrategy = org.gradle.api.file.DuplicatesStrategy.INCLUDE
+    jvmProcessResources?.dependsOn("korgeProcessedResourcesJvmMain")
 }
 
 private val Project.jvmCompilation: NamedDomainObjectSet<*> get() = kotlin.targets.getByName("jvm").compilations as NamedDomainObjectSet<*>
