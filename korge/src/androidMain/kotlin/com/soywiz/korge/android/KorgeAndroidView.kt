@@ -13,7 +13,6 @@ import com.soywiz.korgw.AndroidGameWindowNoActivity
 import com.soywiz.korgw.GameWindowCreationConfig
 import com.soywiz.korio.Korio
 import com.soywiz.korio.android.withAndroidContext
-import com.soywiz.korio.file.std.cleanUpResourcesVfs
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -45,7 +44,6 @@ open class KorgeAndroidView @JvmOverloads constructor(
         mGLView = null
         gameWindow = null
         agOpenGl = null
-        cleanUpResourcesVfs()
 
         //findViewTreeLifecycleOwner()?.lifecycleScope?.launch { // @TODO: Not available in dependencies. Check if we can somehow get this other way.
         CoroutineScope(Dispatchers.Main).launch {
