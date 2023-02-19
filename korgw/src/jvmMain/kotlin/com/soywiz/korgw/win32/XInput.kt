@@ -2,10 +2,7 @@ package com.soywiz.korgw.win32
 
 import com.soywiz.kmem.convertRangeClamped
 import com.soywiz.korev.*
-import com.soywiz.korgw.win32.XInputEventAdapter.XInputMapping.getRawAxe
-import com.soywiz.korgw.win32.XInputEventAdapter.XInputMapping.getRawButton
-import com.soywiz.korgw.win32.XInputEventAdapter.XInputMapping.getRawPressureButton
-import com.soywiz.korio.util.toStringUnsigned
+import com.soywiz.korev.gamepad.*
 import com.sun.jna.Library
 import com.sun.jna.Native
 import com.sun.jna.Structure
@@ -33,25 +30,6 @@ internal interface XInput : Library {
 }
 
 internal class XInputState() : Structure() {
-    companion object {
-        const val XINPUT_GAMEPAD_DPAD_UP = 0
-        const val XINPUT_GAMEPAD_DPAD_DOWN = 1
-        const val XINPUT_GAMEPAD_DPAD_LEFT = 2
-        const val XINPUT_GAMEPAD_DPAD_RIGHT = 3
-        const val XINPUT_GAMEPAD_START = 4
-        const val XINPUT_GAMEPAD_BACK = 5
-        const val XINPUT_GAMEPAD_LEFT_THUMB = 6
-        const val XINPUT_GAMEPAD_RIGHT_THUMB = 7
-        const val XINPUT_GAMEPAD_LEFT_SHOULDER = 8
-        const val XINPUT_GAMEPAD_RIGHT_SHOULDER = 9
-        const val XINPUT_GAMEPAD_UNKNOWN_10 = 10
-        const val XINPUT_GAMEPAD_UNKNOWN_11 = 11
-        const val XINPUT_GAMEPAD_A = 12
-        const val XINPUT_GAMEPAD_B = 13
-        const val XINPUT_GAMEPAD_X = 14
-        const val XINPUT_GAMEPAD_Y = 15
-    }
-
     @JvmField var dwPacketNumber: Int = 0 // offset: 0
     @JvmField var wButtons: Short = 0 // offset: 4
     @JvmField var bLeftTrigger: Byte = 0 // offset: 6
@@ -107,6 +85,7 @@ internal class XInputEventAdapter {
             if (connected) {
                 gamepad.mapping = XInputMapping
                 gamepad.rawButtonsPressed = (state.wButtons.toInt() and 0xFFFF)
+                //println("gamepad.rawButtonsPressed=${gamepad.rawButtonsPressed}")
                 gamepad.rawButtonsPressure[GameButton.L2.index] = convertUByteRangeToDouble(state.bLeftTrigger)
                 gamepad.rawButtonsPressure[GameButton.R2.index] = convertUByteRangeToDouble(state.bRightTrigger)
                 gamepad.rawAxes[0] = convertShortRangeToDouble(state.sThumbLX)
@@ -137,30 +116,7 @@ internal class XInputEventAdapter {
 
     }
 
-    object XInputMapping : GamepadMapping() {
-        override val id = "XInput"
 
-        override fun getButtonIndex(button: GameButton): Int = when (button) {
-            GameButton.XBOX_A -> XInputState.XINPUT_GAMEPAD_A
-            GameButton.XBOX_B -> XInputState.XINPUT_GAMEPAD_B
-            GameButton.XBOX_X -> XInputState.XINPUT_GAMEPAD_X
-            GameButton.XBOX_Y -> XInputState.XINPUT_GAMEPAD_Y
-            GameButton.L1     -> XInputState.XINPUT_GAMEPAD_LEFT_SHOULDER
-            GameButton.R1     -> XInputState.XINPUT_GAMEPAD_RIGHT_SHOULDER
-            GameButton.L2     -> GameButton.L2.index
-            GameButton.R2     -> GameButton.R2.index
-            GameButton.LEFT_THUMB -> XInputState.XINPUT_GAMEPAD_LEFT_THUMB
-            GameButton.RIGHT_THUMB -> XInputState.XINPUT_GAMEPAD_RIGHT_THUMB
-            GameButton.BACK -> XInputState.XINPUT_GAMEPAD_BACK
-            GameButton.START -> XInputState.XINPUT_GAMEPAD_START
-            GameButton.UP -> XInputState.XINPUT_GAMEPAD_DPAD_UP
-            GameButton.DOWN -> XInputState.XINPUT_GAMEPAD_DPAD_DOWN
-            GameButton.LEFT -> XInputState.XINPUT_GAMEPAD_DPAD_LEFT
-            GameButton.RIGHT -> XInputState.XINPUT_GAMEPAD_DPAD_RIGHT
-            GameButton.SYSTEM -> -1
-            else -> -1
-        }
-    }
 }
 
 /*

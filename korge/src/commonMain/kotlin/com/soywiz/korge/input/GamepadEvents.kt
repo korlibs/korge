@@ -89,6 +89,7 @@ class GamePadEvents(override val view: View) : GamepadComponent {
 			GameButton.BUTTONS.fastForEach { button ->
 				if (gamepad[button] != oldGamepad[button]) {
                     updateCount++
+                    //println("CHANGED: button=$button: ${gamepad[button]}")
 					button(buttonEvent.apply {
 						this.gamepad = gamepad.index
 						this.type = if (gamepad[button] != 0.0) GamePadButtonEvent.Type.DOWN else GamePadButtonEvent.Type.UP

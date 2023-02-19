@@ -35,7 +35,8 @@ suspend fun main() = Korge(
     //sceneContainer(views).changeTo({ MainTransitionFilter() }); return@Korge
 
     demoSelector(
-        Demo(::MainGpuVectorRendering),
+        //Demo(::MainGpuVectorRendering),
+        Demo(::MainInput),
         listOf(
             Demo(::MainStressButtons),
             Demo(::MainVectorNinePatch),

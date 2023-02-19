@@ -2,6 +2,7 @@ package com.soywiz.korgw
 
 import com.soywiz.kmem.convertRangeClamped
 import com.soywiz.korev.*
+import com.soywiz.korev.gamepad.*
 import kotlinx.cinterop.*
 import platform.windows.GetProcAddress
 import platform.windows.LoadLibraryA
@@ -15,28 +16,8 @@ internal val XInputGetState by lazy {
 internal const val ERROR_SUCCESS = 0
 internal const val ERROR_DEVICE_NOT_CONNECTED = 0x48F
 
+// https://learn.microsoft.com/en-us/windows/win32/api/xinput/ns-xinput-xinput_gamepad
 internal class XInputState {
-    companion object {
-        const val XINPUT_GAMEPAD_DPAD_UP = 0
-        const val XINPUT_GAMEPAD_DPAD_DOWN = 1
-        const val XINPUT_GAMEPAD_DPAD_LEFT = 2
-        const val XINPUT_GAMEPAD_DPAD_RIGHT = 3
-        const val XINPUT_GAMEPAD_START = 4
-        const val XINPUT_GAMEPAD_BACK = 5
-        const val XINPUT_GAMEPAD_LEFT_THUMB = 6
-        const val XINPUT_GAMEPAD_RIGHT_THUMB = 7
-        const val XINPUT_GAMEPAD_LEFT_SHOULDER = 8
-        const val XINPUT_GAMEPAD_RIGHT_SHOULDER = 9
-        const val XINPUT_GAMEPAD_UNKNOWN_10 = 10
-        const val XINPUT_GAMEPAD_UNKNOWN_11 = 11
-        const val XINPUT_GAMEPAD_A = 12
-        const val XINPUT_GAMEPAD_B = 13
-        const val XINPUT_GAMEPAD_X = 14
-        const val XINPUT_GAMEPAD_Y = 15
-
-        const val SIZE = 16
-    }
-
     var dwPacketNumber: Int = 0 // offset: 0
     var wButtons: Short = 0 // offset: 4, short = 2
     var bLeftTrigger: Byte = 0 // offset: 6
@@ -83,7 +64,7 @@ internal class XInputEventAdapter {
         for (n in 0 until MAX_GAMEPADS) {
             val prevConnected = gamepadsConnected[n]
             val connected = memScoped {
-                val data = allocArray<ByteVar>(XInputState.SIZE)
+                val data = allocArray<ByteVar>(XInputMapping.SIZE)
                 (XInputGetState?.invoke(n, data) == 0).also {
                     state.write(data)
                 }
@@ -117,35 +98,10 @@ internal class XInputEventAdapter {
         if (connectedCount > 0) {
             dispatcher.dispatch(gamePadUpdateEvent)
         }
-
-    }
-
-    object XInputMapping : GamepadMapping() {
-        override val id = "XInput"
-
-        override fun getButtonIndex(button: GameButton): Int = when (button) {
-            GameButton.XBOX_A -> XInputState.XINPUT_GAMEPAD_A
-            GameButton.XBOX_B -> XInputState.XINPUT_GAMEPAD_B
-            GameButton.XBOX_X -> XInputState.XINPUT_GAMEPAD_X
-            GameButton.XBOX_Y -> XInputState.XINPUT_GAMEPAD_Y
-            GameButton.L1     -> XInputState.XINPUT_GAMEPAD_LEFT_SHOULDER
-            GameButton.R1     -> XInputState.XINPUT_GAMEPAD_RIGHT_SHOULDER
-            GameButton.L2     -> GameButton.L2.index
-            GameButton.R2     -> GameButton.R2.index
-            GameButton.LEFT_THUMB -> XInputState.XINPUT_GAMEPAD_LEFT_THUMB
-            GameButton.RIGHT_THUMB -> XInputState.XINPUT_GAMEPAD_RIGHT_THUMB
-            GameButton.BACK -> XInputState.XINPUT_GAMEPAD_BACK
-            GameButton.START -> XInputState.XINPUT_GAMEPAD_START
-            GameButton.UP -> XInputState.XINPUT_GAMEPAD_DPAD_UP
-            GameButton.DOWN -> XInputState.XINPUT_GAMEPAD_DPAD_DOWN
-            GameButton.LEFT -> XInputState.XINPUT_GAMEPAD_DPAD_LEFT
-            GameButton.RIGHT -> XInputState.XINPUT_GAMEPAD_DPAD_RIGHT
-            GameButton.SYSTEM -> -1
-            else -> -1
-        }
     }
 }
 
+/*
 fun test() {
     memScoped {
         val state = XInputState()
@@ -155,3 +111,4 @@ fun test() {
         }
     }
 }
+*/
