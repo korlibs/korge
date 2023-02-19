@@ -1,7 +1,6 @@
 package com.soywiz.korev
 
 import com.soywiz.kmem.*
-import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 import kotlin.math.*
 
@@ -200,7 +199,7 @@ enum class GameButton {
 
 	companion object {
 		val BUTTONS = values()
-		val MAX = 32
+		const val MAX = 32
 
         val LEFT_SHOULDER get() = L1
         val RIGHT_SHOULDER get() = R1
@@ -230,16 +229,12 @@ enum class GameButton {
 	}
 }
 
-class GamepadInfo constructor(
+// http://blog.teamtreehouse.com/wp-content/uploads/2014/03/standardgamepad.png
+class GamepadInfo(
     var index: Int = 0,
     var connected: Boolean = false,
     var name: String = "unknown",
-    var mapping: GamepadMapping = StandardGamepadMapping,
-    var rawButtonsPressure: DoubleArray = DoubleArray(64),
-    var rawButtonsPressed: Int = 0,
-    val rawAxes: DoubleArray = DoubleArray(16),
-    var axesLength: Int = 0,
-    var buttonsLength: Int = 0,
+    var rawButtons: FloatArray = FloatArray(GameButton.MAX),
     var batteryLevel: Double = 1.0,
     var name2: String = DEFAULT_NAME2,
     var playerIndex: Int = index,
@@ -250,7 +245,6 @@ class GamepadInfo constructor(
     companion object {
         val DEFAULT_NAME2 = "Wireless Controller"
     }
-    private val axesData: Array<MPoint> = Array(2) { MPoint() }
 
     val fullName: String get() = "$name - $name2"
 
@@ -258,17 +252,11 @@ class GamepadInfo constructor(
 		this.index = that.index
 		this.name = that.name
         this.name2 = that.name2
-		this.mapping = that.mapping
-        this.rawButtonsPressed = that.rawButtonsPressed
 		this.connected = that.connected
-        this.axesLength = that.axesLength
-        this.buttonsLength = that.buttonsLength
         this.batteryLevel = that.batteryLevel
         this.playerIndex = that.playerIndex
         this.batteryStatus = that.batteryStatus
-        arraycopy(that.axesData, 0, this.axesData, 0, min(this.axesData.size, that.axesData.size))
-        arraycopy(that.rawButtonsPressure, 0, this.rawButtonsPressure, 0, min(this.rawButtonsPressure.size, that.rawButtonsPressure.size))
-		arraycopy(that.rawAxes, 0, this.rawAxes, 0, min(this.rawAxes.size, that.rawAxes.size))
+        arraycopy(that.rawButtons, 0, this.rawButtons, 0, min(this.rawButtons.size, that.rawButtons.size))
 	}
 
     val up: Boolean get() = this[GameButton.UP] != 0.0
@@ -283,14 +271,10 @@ class GamepadInfo constructor(
     val rx: Double get() = this[GameButton.RX]
     val ry: Double get() = this[GameButton.RY]
 
-	operator fun get(button: GameButton): Double {
-        //println("GET: $button")
-        return mapping.get(button, this)
-    }
-    operator fun get(stick: GameStick): MPoint = axesData[stick.id].apply {
-        this.x = getX(stick)
-        this.y = getY(stick)
-    }
+    private val stick = Array(2) { MPoint() }
+
+	operator fun get(button: GameButton): Double = rawButtons[button.index].toDouble()
+    operator fun get(stick: GameStick): MPoint = this.stick[stick.id].setTo(getX(stick), getY(stick))
     fun getX(stick: GameStick) = when (stick) {
         GameStick.LEFT -> get(GameButton.LX)
         GameStick.RIGHT -> get(GameButton.RX)
@@ -299,41 +283,5 @@ class GamepadInfo constructor(
         GameStick.LEFT -> get(GameButton.LY)
         GameStick.RIGHT -> get(GameButton.RY)
     }
-	override fun toString(): String = "Gamepad[$index][$fullName]" + mapping.toString(this)
-}
-
-abstract class GamepadMapping {
-	abstract val id: String
-	private fun Int.getButton(index: Int): Double = if (extract(index)) 1.0 else 0.0
-    fun GamepadInfo.getRawPressureButton(index: Int) = this.rawButtonsPressure[index]
-    fun GamepadInfo.getRawButton(index: Int): Double = this.rawButtonsPressed.getButton(index)
-    fun GamepadInfo.getRawAxe(index: Int) = this.rawAxes.getOrElse(index) { 0.0 }
-    open fun getButtonIndex(button: GameButton): Int = button.ordinal
-    open fun getAxeIndex(button: GameButton): Int = when (button) {
-        GameButton.LX -> 0
-        GameButton.LY -> 1
-        GameButton.RX -> 2
-        GameButton.RY -> 3
-        GameButton.L2 -> 4
-        GameButton.R2 -> 5
-        GameButton.DPADX -> 5
-        GameButton.DPADY -> 6
-        else -> 0
-    }
-    open fun get(button: GameButton, info: GamepadInfo): Double = when (button) {
-        GameButton.LX, GameButton.LY, GameButton.RX, GameButton.RY -> info.getRawAxe(getAxeIndex(button))
-        GameButton.L2, GameButton.R2 -> info.getRawPressureButton(button.index)
-        else -> info.getRawButton(getButtonIndex(button))
-    }
-
-	fun toString(info: GamepadInfo) = "$id(" + GameButton.values().joinToString(", ") {
-		"${it.name}=${get(it, info).niceStr(2)}"
-	} + ")"
-}
-
-// http://blog.teamtreehouse.com/wp-content/uploads/2014/03/standardgamepad.png
-open class StandardGamepadMapping : GamepadMapping() {
-    companion object : StandardGamepadMapping()
-
-	override val id = "Standard"
+	override fun toString(): String = "Gamepad[$index][$fullName]"
 }

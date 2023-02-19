@@ -55,6 +55,13 @@ open class BrowserCanvasJsGameWindow(
         return isTouchDeviceCache!!
     }
 
+    val AXES_MAPPING = arrayOf(
+        GameButton.LX, GameButton.LY,
+        GameButton.RX, GameButton.RY,
+        GameButton.L2, GameButton.R2,
+        GameButton.DPADX, GameButton.DPADY,
+    )
+
     @Suppress("UNUSED_PARAMETER")
     override fun updateGamepads() {
         try {
@@ -65,22 +72,16 @@ open class BrowserCanvasJsGameWindow(
                 for (gamepadId in 0 until gamepads.length) {
                     val controller = gamepads[gamepadId] ?: continue
                     val gamepad = gamePadUpdateEvent.gamepads.getOrNull(gamepadId) ?: continue
-                    val mapping = knownControllers[controller.id] ?: knownControllers[controller.mapping] ?: StandardGamepadMapping
                     gamepad.apply {
                         this.connected = controller.connected
                         this.index = controller.index
                         this.name = controller.id
-                        this.mapping = mapping
-                        this.axesLength = controller.axes.length
-                        this.buttonsLength = controller.buttons.length
-                        this.rawButtonsPressed = 0
                         for (n in 0 until controller.buttons.length) {
                             val button = controller.buttons[n]
-                            if (button.pressed) this.rawButtonsPressed = this.rawButtonsPressed or (1 shl n)
-                            this.rawButtonsPressure[n] = button.value
+                            this.rawButtons[n] = button.value.toFloat()
                         }
-                        for (n in 0 until controller.axes.length) {
-                            this.rawAxes[n] = controller.axes[n]
+                        for (n in 0 until kotlin.math.min(controller.axes.length, AXES_MAPPING.size)) {
+                            this.rawButtons[AXES_MAPPING[n].index] = controller.axes[n].toFloat()
                         }
                     }
                 }
@@ -575,18 +576,3 @@ external class Touch {
     val target: dynamic
 }
 */
-object Nimbus_111_1420_Safari_GamepadMapping : GamepadMapping() {
-    override val id = "111-1420-Nimbus"
-
-    override fun getButtonIndex(button: GameButton): Int = when (button) {
-        GameButton.SELECT -> -1
-        GameButton.START -> -1
-        GameButton.SYSTEM -> -1
-        else -> super.getButtonIndex(button)
-    }
-}
-
-val knownControllers = listOf(
-    StandardGamepadMapping,
-    Nimbus_111_1420_Safari_GamepadMapping
-).associateBy { it.id }

@@ -102,14 +102,10 @@ internal class LinuxJoyEventAdapter : Closeable {
 
         private var prevConnected = false
         var connected = false; private set
-        private var buttons = 0
-        private val axes = DoubleArray(16)
+        private val buttonsPressure = FloatArray(GameButton.MAX)
 
-        fun setButton(index: Int, value: Boolean) {
-            buttons = buttons.setBits(1 shl index, value)
-        }
         fun setButton(button: GameButton, value: Boolean) {
-            setButton(button.index, value)
+            buttonsPressure[button.index] = if (value) 1f else 0f
         }
 
         fun getConnectedChange(): Boolean? {
@@ -122,9 +118,8 @@ internal class LinuxJoyEventAdapter : Closeable {
 
         fun read(gamepad: GamepadInfo, index: Int) {
             gamepad.playerIndex = info.id
-            gamepad.rawButtonsPressed = buttons
             gamepad.name = info.baseName
-            arraycopy(axes, 0, gamepad.rawAxes, 0, 16)
+            arraycopy(buttonsPressure, 0, gamepad.rawButtons, 0, buttonsPressure.size)
         }
 
         val dispatcher = Dispatchers.createSingleThreadedDispatcher("index").also {
@@ -162,27 +157,8 @@ internal class LinuxJoyEventAdapter : Closeable {
                                     7 -> GameButton.DPADY
                                     else -> GameButton.BUTTON8
                                 }
-                                val dvalue = (value.toDouble() / 32767).clamp(-1.0, +1.0)
-                                val axeIndex = StandardGamepadMapping.getAxeIndex(axeButton)
-                                axes[axeIndex] = dvalue
-                                maxAxes = max(maxAxes, axeIndex)
-                                when (axeButton) {
-                                    GameButton.DPADX, GameButton.DPADY -> {
-                                        val L = if (axeButton == GameButton.DPADX) GameButton.LEFT else GameButton.UP
-                                        val R = if (axeButton == GameButton.DPADX) GameButton.RIGHT else GameButton.DOWN
-                                        when {
-                                            dvalue < 0.0 -> setButton(L, true)
-                                            dvalue > 0.0 -> setButton(R, true)
-                                            else -> {
-                                                setButton(L, false)
-                                                setButton(R, false)
-                                            }
-                                        }
-                                    }
-                                    GameButton.L2 -> setButton(GameButton.L2, dvalue >= -0.9)
-                                    GameButton.R2 -> setButton(GameButton.R2, dvalue >= -0.9)
-                                    else -> Unit
-                                }
+                                val fvalue = (value.toFloat() / 32767).clamp(-1f, +1f)
+                                buttonsPressure[axeButton.index] = fvalue
                             }
                             if (type hasFlags JS_EVENT_BUTTON) {
                                 val button = when (number) {

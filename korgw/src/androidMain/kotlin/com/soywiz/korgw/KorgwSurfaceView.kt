@@ -25,7 +25,6 @@ import com.soywiz.korev.GameButton
 import com.soywiz.korev.GamePadConnectionEvent
 import com.soywiz.korev.GamepadInfo
 import com.soywiz.korev.Key
-import com.soywiz.korev.StandardGamepadMapping
 import com.soywiz.korev.Touch
 import com.soywiz.korev.TouchEvent
 import com.soywiz.korio.async.Signal
@@ -163,9 +162,8 @@ open class KorgwSurfaceView constructor(
                         info.connected = true
                         gameWindow.dispatchGamepadConnectionEvent(GamePadConnectionEvent.Type.CONNECTED, index)
                     }
-                    l.setTo(info.rawAxes[0], info.rawAxes[1])
-                    r.setTo(info.rawAxes[2], info.rawAxes[3])
-                    gameWindow.dispatchGamepadUpdateAdd(l, r, info.rawButtonsPressed, StandardGamepadMapping, gamepad.name, 1.0)
+                    info.name = gamepad.name
+                    gameWindow.dispatchGamepadUpdateAdd(info)
                     //println("gamepad=$gamepad")
                 }
                 gameWindow.dispatchGamepadUpdateEnd()
@@ -242,7 +240,7 @@ open class KorgwSurfaceView constructor(
                 }
             }
             if (button != null) {
-                info.rawButtonsPressed = info.rawButtonsPressed.setBits(button.bitMask, press)
+                info.rawButtons[button.index] = if (press) 1f else 0f
                 return true
             }
         }
@@ -277,21 +275,21 @@ open class KorgwSurfaceView constructor(
         }
     }
 
-    private fun Double.withoutDeadRange(): Double {
+    private fun Float.withoutDeadRange(): Float {
         // @TODO: Should we query for the right value?
-        if (this.absoluteValue < 0.09) return 0.0
+        if (this.absoluteValue < 0.09f) return 0f
         return this
     }
 
     override fun onGenericMotionEvent(event: MotionEvent): Boolean {
         if (event.device.sources.hasBits(InputDevice.SOURCE_GAMEPAD)) {
             val info = getGamepadInfo(event.deviceId)
-            info.rawAxes[0] = event.getAxisValue(MotionEvent.AXIS_X).toDouble().withoutDeadRange()
-            info.rawAxes[1] = event.getAxisValue(MotionEvent.AXIS_Y).toDouble().withoutDeadRange()
-            info.rawAxes[2] = event.getAxisValue(MotionEvent.AXIS_RX).toDouble().withoutDeadRange()
-            info.rawAxes[3] = event.getAxisValue(MotionEvent.AXIS_RY).toDouble().withoutDeadRange()
-            info.rawAxes[4] = event.getAxisValue(MotionEvent.AXIS_LTRIGGER).toDouble().withoutDeadRange()
-            info.rawAxes[5] = event.getAxisValue(MotionEvent.AXIS_RTRIGGER).toDouble().withoutDeadRange()
+            info.rawButtons[GameButton.LX.index] = event.getAxisValue(MotionEvent.AXIS_X).withoutDeadRange()
+            info.rawButtons[GameButton.LY.index] = event.getAxisValue(MotionEvent.AXIS_Y).withoutDeadRange()
+            info.rawButtons[GameButton.RX.index] = event.getAxisValue(MotionEvent.AXIS_RX).withoutDeadRange()
+            info.rawButtons[GameButton.RY.index] = event.getAxisValue(MotionEvent.AXIS_RY).withoutDeadRange()
+            info.rawButtons[GameButton.LEFT_TRIGGER.index] = event.getAxisValue(MotionEvent.AXIS_LTRIGGER).withoutDeadRange()
+            info.rawButtons[GameButton.RIGHT_TRIGGER.index] = event.getAxisValue(MotionEvent.AXIS_RTRIGGER).withoutDeadRange()
             return true
         }
         return super.onGenericMotionEvent(event)
