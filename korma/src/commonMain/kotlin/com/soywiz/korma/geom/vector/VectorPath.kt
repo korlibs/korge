@@ -298,6 +298,7 @@ class VectorPath(
     fun containsPoint(x: Float, y: Float): Boolean = containsPoint(x.toDouble(), y.toDouble())
 
     private var _trapezoids: VectorPathTrapezoids? = null
+
     @KormaExperimental
     val trapezoids: VectorPathTrapezoids get() {
         if (_trapezoids == null || _trapezoids!!.version != this.version) {

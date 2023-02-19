@@ -113,8 +113,6 @@ open class PointArrayList(capacity: Int = 7) : IPointArrayList, Extra by Extra.M
         operator fun invoke(vararg values: Double): PointArrayList = fromGen(values.size) { values[it] }
         operator fun invoke(vararg values: Float): PointArrayList = fromGen(values.size) { values[it].toDouble() }
         operator fun invoke(vararg values: Int): PointArrayList = fromGen(values.size) { values[it].toDouble() }
-        @Deprecated("Boxing in K/N debug builds")
-        operator fun invoke(vararg values: Number): PointArrayList = fromGen(values.size) { values[it].toDouble() }
         inline fun fromGen(count: Int, gen: (Int) -> Double): PointArrayList {
             val size = count / 2
             val out = PointArrayList(size)
