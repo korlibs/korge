@@ -60,9 +60,9 @@ data class Point(val x: Double, val y: Double) {
     fun angleTo(other: Point): Angle = Angle.between(this.x, this.y, other.x, other.y)
     val angle: Angle get() = Angle.between(0.0, 0.0, this.x, this.y)
 
-    inline fun transformed(m: MMatrix): Point = Point(m.transformX(x, y), m.transformY(x, y))
-    fun transformX(m: MMatrix?): Double = m?.transformX(x, y) ?: x
-    fun transformY(m: MMatrix?): Double = m?.transformY(x, y) ?: y
+    inline fun transformed(m: Matrix): Point = m.transform(this)
+    fun transformX(m: Matrix): Double = m.transform(this).x
+    fun transformY(m: Matrix): Double = m.transform(this).y
     operator fun get(component: Int) = when (component) {
         0 -> x; 1 -> y
         else -> throw IndexOutOfBoundsException("Point doesn't have $component component")
@@ -78,9 +78,6 @@ data class Point(val x: Double, val y: Double) {
     fun round(): Point = Point(kotlin.math.round(x), kotlin.math.round(y))
     fun ceil(): Point = Point(kotlin.math.ceil(x), kotlin.math.ceil(y))
     fun floor(): Point = Point(kotlin.math.floor(x), kotlin.math.floor(y))
-
-    fun mutable(out: MPoint = MPoint()): MPoint = out.setTo(x, y)
-    val mutable: MPoint get() = mutable()
 
     //fun copy(x: Double = this.x, y: Double = this.y): Point = Point(x, y)
 
@@ -539,6 +536,10 @@ fun MPointInt.asDouble(): MPoint = this.p
 val MPoint.int get() = MPointInt(this.x.toInt(), this.y.toInt())
 val IPoint.int get() = MPointInt(this.x.toInt(), this.y.toInt())
 val IPointInt.double get() = IPoint(x.toDouble(), y.toDouble())
+
+fun Point.toMPoint(out: MPoint = MPoint()): MPoint = out.setTo(x, y)
+fun Point.mutable(out: MPoint = MPoint()): MPoint = out.setTo(x, y)
+val Point.mutable: MPoint get() = mutable()
 
 private inline fun getPolylineLength(size: Int, crossinline get: (n: Int, (x: Double, y: Double) -> Unit) -> Unit): Double {
     var out = 0.0

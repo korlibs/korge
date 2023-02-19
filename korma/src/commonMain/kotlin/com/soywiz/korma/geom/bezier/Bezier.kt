@@ -221,7 +221,7 @@ class Bezier(
         return _extrema
     }
 
-    private var _outerCircle: Circle? = null
+    private var _outerCircle: MCircle? = null
     val outerCircle: ICircle get() {
         if (_outerCircle == null) {
             _outerCircle = boundingBox.outerCircle()

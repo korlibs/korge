@@ -2,7 +2,6 @@ package com.soywiz.kds
 
 import com.soywiz.kds.atomic.KdsAtomicRef
 import com.soywiz.kds.fakemutable.asFakeMutable
-import com.soywiz.kds.sub.SubMutableList
 
 class CopyOnWriteFrozenList<T> : BaseMutableList<T> {
     private val list = KdsAtomicRef(emptyList<T>())

@@ -318,9 +318,7 @@ inline class AGIndexType(val ordinal: Int) {
         val NONE = AGIndexType(0)
         val UBYTE = AGIndexType(1)
         val USHORT = AGIndexType(2)
-        // https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/drawElements
-        @Deprecated("UINT is not always supported on webgl")
-        val UINT = AGIndexType(3)
+        val UINT = AGIndexType(3) // https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/drawElements
     }
 
     override fun toString(): String = when (this) {

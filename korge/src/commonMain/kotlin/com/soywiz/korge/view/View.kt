@@ -843,7 +843,7 @@ abstract class View internal constructor(
         invalidateRender()
     }
 
-    open fun onParentChanged() {
+    protected open fun onParentChanged() {
     }
 
     override fun invalidateRender() {

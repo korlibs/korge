@@ -16,6 +16,13 @@ data class Matrix4 internal constructor(
     val v02: Float, val v12: Float, val v22: Float, val v32: Float,
     val v03: Float, val v13: Float, val v23: Float, val v33: Float,
 ) {
+    constructor() : this(
+        1f, 0f, 0f, 0f,
+        0f, 1f, 0f, 0f,
+        0f, 0f, 1f, 0f,
+        0f, 0f, 0f, 1f,
+    )
+
     val c0: Vector4 get() = Vector4(v00, v10, v20, v30)
     val c1: Vector4 get() = Vector4(v01, v11, v21, v31)
     val c2: Vector4 get() = Vector4(v02, v12, v22, v32)
@@ -92,11 +99,62 @@ interface IMatrix3D {
     val v31: Float
     val v32: Float
     val v33: Float
+
+    fun getIndex(index: Int): Float
+
+    operator fun get(row: Int, column: Int): Float = getIndex(MMatrix3D.columnMajorIndex(row, column))
+
+
+    fun copyToFloatWxH(out: FloatArray, rows: Int, columns: Int, order: MajorOrder) {
+        copyToFloatWxH(out, rows, columns, order, 0)
+    }
+
+    fun copyToFloatWxH(out: FloatArray, rows: Int, columns: Int, order: MajorOrder, offset: Int) {
+        var n = offset
+        if (order == MajorOrder.ROW) {
+            for (column in 0 until columns) for (row in 0 until rows) out[n++] = getIndex(MMatrix3D.rowMajorIndex(row, column))
+        } else {
+            for (column in 0 until columns) for (row in 0 until rows) out[n++] = getIndex(MMatrix3D.columnMajorIndex(row, column))
+        }
+    }
+
+    fun copyToFloat2x2(out: FloatArray, order: MajorOrder) = copyToFloatWxH(out, 2, 2, order, 0)
+    fun copyToFloat3x3(out: FloatArray, order: MajorOrder) = copyToFloatWxH(out, 3, 3, order, 0)
+    fun copyToFloat4x4(out: FloatArray, order: MajorOrder) = copyToFloatWxH(out, 4, 4, order, 0)
+
+    fun copyToFloat2x2(out: FloatArray, order: MajorOrder, offset: Int) = copyToFloatWxH(out, 2, 2, order, offset)
+    fun copyToFloat3x3(out: FloatArray, order: MajorOrder, offset: Int) = copyToFloatWxH(out, 3, 3, order, offset)
+    fun copyToFloat4x4(out: FloatArray, order: MajorOrder, offset: Int) = copyToFloatWxH(out, 4, 4, order, offset)
+
+}
+
+interface IMMatrix3D : IMatrix3D {
+    override var v00: Float
+    override var v01: Float
+    override var v02: Float
+    override var v03: Float
+    override var v10: Float
+    override var v11: Float
+    override var v12: Float
+    override var v13: Float
+    override var v20: Float
+    override var v21: Float
+    override var v22: Float
+    override var v23: Float
+    override var v30: Float
+    override var v31: Float
+    override var v32: Float
+    override var v33: Float
+
+    fun setIndex(index: Int, value: Float): Unit
+    operator fun set(row: Int, column: Int, value: Float) = setIndex(MMatrix3D.columnMajorIndex(row, column), value)
+    operator fun set(row: Int, column: Int, value: Double) = this.set(row, column, value.toFloat())
+    operator fun set(row: Int, column: Int, value: Int) = this.set(row, column, value.toFloat())
 }
 
 // Stored as four consecutive column vectors (effectively stored in column-major order) see https://en.wikipedia.org/wiki/Row-_and_column-major_order
 @KormaMutableApi
-class MMatrix3D : IMatrix3D {
+class MMatrix3D : IMMatrix3D {
     val data: FloatArray = floatArrayOf(
         1f, 0f, 0f, 0f, // column-0
         0f, 1f, 0f, 0f, // column-1
@@ -259,10 +317,8 @@ class MMatrix3D : IMatrix3D {
         }
     }
 
-    operator fun get(row: Int, column: Int): Float = data[columnMajorIndex(row, column)]
-    operator fun set(row: Int, column: Int, value: Float) { data[columnMajorIndex(row, column)] = value }
-    operator fun set(row: Int, column: Int, value: Double) = this.set(row, column, value.toFloat())
-    operator fun set(row: Int, column: Int, value: Int) = this.set(row, column, value.toFloat())
+    override fun setIndex(index: Int, value: Float) { data[index] = value }
+    override fun getIndex(index: Int): Float = data[index]
 
     override var v00: Float get() = data[M00]; set(v) { data[M00] = v }
     override var v01: Float get() = data[M01]; set(v) { data[M01] = v }
@@ -798,27 +854,6 @@ class MMatrix3D : IMatrix3D {
     }
 
     fun extractProjection(out: MVector4 = MVector4()) = this.getColumnVector(3, out)
-
-    fun copyToFloatWxH(out: FloatArray, rows: Int, columns: Int, order: MajorOrder) {
-        copyToFloatWxH(out, rows, columns, order, 0)
-    }
-
-    fun copyToFloatWxH(out: FloatArray, rows: Int, columns: Int, order: MajorOrder, offset: Int) {
-        var n = offset
-        if (order == MajorOrder.ROW) {
-            for (column in 0 until columns) for (row in 0 until rows) out[n++] = data[MMatrix3D.rowMajorIndex(row, column)]
-        } else {
-            for (column in 0 until columns) for (row in 0 until rows) out[n++] = data[MMatrix3D.columnMajorIndex(row, column)]
-        }
-    }
-
-    fun copyToFloat2x2(out: FloatArray, order: MajorOrder) = copyToFloatWxH(out, 2, 2, order, 0)
-    fun copyToFloat3x3(out: FloatArray, order: MajorOrder) = copyToFloatWxH(out, 3, 3, order, 0)
-    fun copyToFloat4x4(out: FloatArray, order: MajorOrder) = copyToFloatWxH(out, 4, 4, order, 0)
-
-    fun copyToFloat2x2(out: FloatArray, order: MajorOrder, offset: Int) = copyToFloatWxH(out, 2, 2, order, offset)
-    fun copyToFloat3x3(out: FloatArray, order: MajorOrder, offset: Int) = copyToFloatWxH(out, 3, 3, order, offset)
-    fun copyToFloat4x4(out: FloatArray, order: MajorOrder, offset: Int) = copyToFloatWxH(out, 4, 4, order, offset)
 
     fun setRows(
         a00: Double, a01: Double, a02: Double, a03: Double,
