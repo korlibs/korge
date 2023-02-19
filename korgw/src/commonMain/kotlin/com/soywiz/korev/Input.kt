@@ -211,6 +211,7 @@ enum class GameButton {
         val RIGHT_THUMB get() = R3
 
         val BACK get() = SELECT
+        val FORWARD get() = START
 
         val XBOX_A get() = BUTTON0
         val XBOX_B get() = BUTTON1
@@ -266,6 +267,9 @@ class GamepadInfo(
     val start: Boolean get() = this[GameButton.START] != 0.0
     val select: Boolean get() = this[GameButton.SELECT] != 0.0
     val system: Boolean get() = this[GameButton.SYSTEM] != 0.0
+
+
+
     val lx: Double get() = this[GameButton.LX]
     val ly: Double get() = this[GameButton.LY]
     val rx: Double get() = this[GameButton.RX]

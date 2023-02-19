@@ -55,6 +55,27 @@ open class BrowserCanvasJsGameWindow(
         return isTouchDeviceCache!!
     }
 
+    // https://blog.teamtreehouse.com/wp-content/uploads/2014/03/standardgamepad.png
+    val BUTTONS_MAPPING = arrayOf(
+        GameButton.BUTTON0, // 0
+        GameButton.BUTTON1, // 1
+        GameButton.BUTTON2, // 2
+        GameButton.BUTTON3, // 3
+        GameButton.L1,      // 4
+        GameButton.R1,      // 5
+        GameButton.L2,      // 6
+        GameButton.R2,      // 7
+        GameButton.SELECT,  // 8
+        GameButton.START,   // 9
+        GameButton.L3,      // 10
+        GameButton.R3,      // 11
+        GameButton.UP,      // 12
+        GameButton.DOWN,    // 13
+        GameButton.LEFT,    // 14
+        GameButton.RIGHT,   // 15
+        GameButton.SYSTEM,  // 16
+    )
+
     val AXES_MAPPING = arrayOf(
         GameButton.LX, GameButton.LY,
         GameButton.RX, GameButton.RY,
@@ -76,9 +97,8 @@ open class BrowserCanvasJsGameWindow(
                         this.connected = controller.connected
                         this.index = controller.index
                         this.name = controller.id
-                        for (n in 0 until controller.buttons.length) {
-                            val button = controller.buttons[n]
-                            this.rawButtons[n] = button.value.toFloat()
+                        for (n in 0 until kotlin.math.min(controller.buttons.length, BUTTONS_MAPPING.size)) {
+                            this.rawButtons[BUTTONS_MAPPING[n].index] = controller.buttons[n].value.toFloat()
                         }
                         for (n in 0 until kotlin.math.min(controller.axes.length, AXES_MAPPING.size)) {
                             this.rawButtons[AXES_MAPPING[n].index] = controller.axes[n].toFloat()
