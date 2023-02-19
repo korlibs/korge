@@ -314,14 +314,15 @@ abstract class GamepadMapping {
         GameButton.LY -> 1
         GameButton.RX -> 2
         GameButton.RY -> 3
-        GameButton.LEFT_TRIGGER, GameButton.L2 -> 4
-        GameButton.RIGHT_TRIGGER, GameButton.R2 -> 5
+        GameButton.L2 -> 4
+        GameButton.R2 -> 5
         GameButton.DPADX -> 5
         GameButton.DPADY -> 6
         else -> 0
     }
     open fun get(button: GameButton, info: GamepadInfo): Double = when (button) {
         GameButton.LX, GameButton.LY, GameButton.RX, GameButton.RY -> info.getRawAxe(getAxeIndex(button))
+        GameButton.L2, GameButton.R2 -> info.getRawPressureButton(button.index)
         else -> info.getRawButton(getButtonIndex(button))
     }
 

@@ -24,11 +24,6 @@ object XInputMapping : GamepadMapping() {
 
     override val id = "XInput"
 
-    override fun get(button: GameButton, info: GamepadInfo): Double = when (button) {
-        GameButton.L2, GameButton.R2 -> info.rawButtonsPressure[button.index]
-        else -> super.get(button, info)
-    }
-
     override fun getButtonIndex(button: GameButton): Int = when (button) {
         GameButton.XBOX_A -> XINPUT_GAMEPAD_A
         GameButton.XBOX_B -> XINPUT_GAMEPAD_B
