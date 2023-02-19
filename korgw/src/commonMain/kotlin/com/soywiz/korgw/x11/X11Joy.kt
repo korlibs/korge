@@ -2,7 +2,6 @@ package com.soywiz.korgw.x11
 
 import com.soywiz.kds.*
 import com.soywiz.kds.diff.*
-import com.soywiz.kds.iterators.*
 import com.soywiz.klock.*
 import com.soywiz.kmem.*
 import com.soywiz.korev.*
@@ -146,7 +145,7 @@ internal class LinuxJoyEventAdapter : Closeable {
                             //println("JS_EVENT: time=$time, value=$value, type=$type, number=$number")
 
                             if (type hasFlags JS_EVENT_AXIS) {
-                                val axeButton = when (number) {
+                                val button = when (number) {
                                     0 -> GameButton.LY
                                     1 -> GameButton.LX
                                     2 -> GameButton.L2
@@ -158,7 +157,22 @@ internal class LinuxJoyEventAdapter : Closeable {
                                     else -> GameButton.BUTTON8
                                 }
                                 val fvalue = (value.toFloat() / 32767).clamp(-1f, +1f)
-                                buttonsPressure[axeButton.index] = fvalue
+                                when (button) {
+                                    GameButton.DPADX -> {
+                                        buttonsPressure[GameButton.LEFT.index] = (fvalue < 0f).toInt().toFloat()
+                                        buttonsPressure[GameButton.RIGHT.index] = (fvalue > 0f).toInt().toFloat()
+                                    }
+                                    GameButton.DPADY -> {
+                                        buttonsPressure[GameButton.UP.index] = (fvalue < 0f).toInt().toFloat()
+                                        buttonsPressure[GameButton.DOWN.index] = (fvalue > 0f).toInt().toFloat()
+                                    }
+                                    else -> {
+                                        buttonsPressure[button.index] = when (button) {
+                                            GameButton.L2, GameButton.R2 -> fvalue.convertRange(-1f, +1f, 0f, 1f)
+                                            else -> fvalue
+                                        }
+                                    }
+                                }
                             }
                             if (type hasFlags JS_EVENT_BUTTON) {
                                 val button = when (number) {
