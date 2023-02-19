@@ -168,6 +168,7 @@ internal class LinuxJoyEventAdapter : Closeable {
                                     }
                                     else -> {
                                         buttonsPressure[button.index] = when (button) {
+                                            GameButton.LY, GameButton.RY -> -fvalue
                                             GameButton.L2, GameButton.R2 -> fvalue.convertRange(-1f, +1f, 0f, 1f)
                                             else -> fvalue
                                         }
