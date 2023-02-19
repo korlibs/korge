@@ -207,7 +207,7 @@ class CameraOld(
                 ratio.interpolate(initialWidth, width),
                 ratio.interpolate(initialHeight, height),
                 ratio.interpolate(initialZoom, zoom),
-                ratio.interpolate(initialAngle, angle),
+                ratio.interpolateAngleDenormalized(initialAngle, angle),
                 ratio.interpolate(initialAnchorX, anchorX),
                 ratio.interpolate(initialAnchorY, anchorY)
             )
@@ -260,7 +260,7 @@ class CameraOld(
         width = ratio.interpolate(l.width, r.width),
         height = ratio.interpolate(l.height, r.height),
         zoom = ratio.interpolate(l.zoom, r.zoom),
-        angle = ratio.interpolate(l.angle, r.angle),
+        angle = ratio.interpolateAngleDenormalized(l.angle, r.angle),
         anchorX = ratio.interpolate(l.anchorX, r.anchorX),
         anchorY = ratio.interpolate(l.anchorY, r.anchorY)
     )
