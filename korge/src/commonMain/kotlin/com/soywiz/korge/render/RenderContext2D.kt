@@ -185,7 +185,7 @@ class RenderContext2D(
 
     // @TODO: It doesn't handle holes (it uses a triangle fan approach)
     fun simplePath(path: VectorPath, color: RGBA = this.multiplyColor, filtering: Boolean = this.filtering) {
-        for (points in path.toPathList()) {
+        for (points in path.toPathPointList()) {
             texturedVertexArrayNoTransform(TexturedVertexArray.fromPointArrayList(points, color, matrix = m), filtering)
         }
     }

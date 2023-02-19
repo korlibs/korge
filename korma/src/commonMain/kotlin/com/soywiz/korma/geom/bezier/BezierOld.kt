@@ -19,7 +19,7 @@ import kotlin.math.min
 
 //(x0,y0) is start point; (x1,y1),(x2,y2) is control points; (x3,y3) is end point.
 // https://pomax.github.io/bezierinfo/
-@Deprecated("Use BezierCurve instead")
+// Deprecated("Use BezierCurve instead")
 interface Bezier {
     val order: Int
     fun getBounds(target: Rectangle = Rectangle()): Rectangle
@@ -27,7 +27,7 @@ interface Bezier {
     fun length(steps: Int = recommendedDivisions()): Double
     fun recommendedDivisions(): Int = Curve.DEFAULT_STEPS
 
-    @Deprecated("Use BezierCurve instead")
+    // Deprecated("Use BezierCurve instead")
     class Quad(
         p0x: Double = 0.0, p0y: Double = 0.0,
         p1x: Double = 0.0, p1y: Double = 0.0,
@@ -76,7 +76,7 @@ interface Bezier {
         override fun toString(): String = "Bezier.Quad($p0, $p1, $p2)"
     }
 
-    @Deprecated("Use BezierCurve instead")
+    // Deprecated("Use BezierCurve instead")
     class Cubic(
         p0x: Double = 0.0, p0y: Double = 0.0,
         p1x: Double = 0.0, p1y: Double = 0.0,
@@ -205,7 +205,7 @@ interface Bezier {
         fun quadToCubic2(v0: Double, v1: Double, v2: Double) = v2 + (v1 - v2) * (2.0 / 3.0)
 
         // https://iquilezles.org/articles/bezierbbox/
-        @Deprecated("Allocates")
+        // Deprecated("Allocates")
         fun quadBounds(
             x0: Double, y0: Double,
             xc: Double, yc: Double,
@@ -240,7 +240,7 @@ interface Bezier {
             target: Point = Point()
         ): Point = quadCalc(x0, y0, xc, yc, x1, y1, t) { x, y -> target.setTo(x, y) }
 
-        @Deprecated("Allocates")
+        // Deprecated("Allocates")
         fun cubicBounds(
             x0: Double, y0: Double, x1: Double, y1: Double,
             x2: Double, y2: Double, x3: Double, y3: Double,
