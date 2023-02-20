@@ -279,18 +279,19 @@ open class KorgwSurfaceView constructor(
     }
 
     private fun GamepadInfo.setButton(button: GameButton, value: Float) {
-        rawButtons[button.index] = GamepadInfo.withoutDeadRange(value)
+        rawButtons[button.index] = value
     }
     private fun GamepadInfo.setButton(button: GameButton, value: Boolean) {
         setButton(button, value.toInt().toFloat())
     }
 
-    private fun GamepadInfo.setButtonAxis(button: GameButton, event: MotionEvent, axis1: Int, axis2: Int = -1, axis3: Int = -1, reverse: Boolean = false) {
+    private fun GamepadInfo.setButtonAxis(button: GameButton, event: MotionEvent, axis1: Int, axis2: Int = -1, axis3: Int = -1, reverse: Boolean = false, deadRange: Boolean = false) {
         val v1 = if (axis1 >= 0) event.getAxisValue(axis1) else 0f
         val v2 = if (axis2 >= 0) event.getAxisValue(axis2) else 0f
         val v3 = if (axis3 >= 0) event.getAxisValue(axis3) else 0f
         val value = if (v1 != 0f) v1 else if (v2 != 0f) v2 else if (v3 != 0f) v3 else 0f
-        setButton(button, if (reverse) -value else value)
+        val rvalue = if (deadRange) GamepadInfo.withoutDeadRange(value) else value
+        setButton(button, if (reverse) -rvalue else rvalue)
     }
 
     override fun onGenericMotionEvent(event: MotionEvent): Boolean {
@@ -310,10 +311,10 @@ open class KorgwSurfaceView constructor(
             info.setButton(GameButton.RIGHT, (hatX > 0f))
             info.setButton(GameButton.UP, (hatY < 0f))
             info.setButton(GameButton.DOWN, (hatY > 0f))
-            info.setButtonAxis(GameButton.LX, event, MotionEvent.AXIS_X)
-            info.setButtonAxis(GameButton.LY, event, MotionEvent.AXIS_Y, reverse = true)
-            info.setButtonAxis(GameButton.RX, event, MotionEvent.AXIS_RX, MotionEvent.AXIS_Z)
-            info.setButtonAxis(GameButton.RY, event, MotionEvent.AXIS_RY, MotionEvent.AXIS_RZ, reverse = true)
+            info.setButtonAxis(GameButton.LX, event, MotionEvent.AXIS_X, deadRange = true)
+            info.setButtonAxis(GameButton.LY, event, MotionEvent.AXIS_Y, deadRange = true, reverse = true)
+            info.setButtonAxis(GameButton.RX, event, MotionEvent.AXIS_RX, MotionEvent.AXIS_Z, deadRange = true)
+            info.setButtonAxis(GameButton.RY, event, MotionEvent.AXIS_RY, MotionEvent.AXIS_RZ, deadRange = true, reverse = true)
             info.setButtonAxis(GameButton.LEFT_TRIGGER, event, MotionEvent.AXIS_LTRIGGER, MotionEvent.AXIS_BRAKE)
             info.setButtonAxis(GameButton.RIGHT_TRIGGER, event, MotionEvent.AXIS_RTRIGGER, MotionEvent.AXIS_GAS)
             return true
