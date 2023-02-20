@@ -201,6 +201,11 @@ internal class MacosGamepadEventAdapter {
     private val gamePadUpdateEvent = GamePadUpdateEvent()
     private val gamePadConnectionEvent = GamePadConnectionEvent()
 
+    private fun GamepadInfo.set(button: GameButton, value: Double, deadRange: Boolean = false) { rawButtons[button.index] = GamepadInfo.withoutDeadRange(value.toFloat(), apply = deadRange) }
+    private fun GamepadInfo.set(button: GameButton, cbutton: GCControllerButtonInput, deadRange: Boolean = false) {
+        set(button, cbutton.value, deadRange)
+    }
+
     fun updateGamepads(dispatcher: EventDispatcher) {
         try {
             lib
@@ -215,46 +220,38 @@ internal class MacosGamepadEventAdapter {
 
                 gamepad.connected = connected
                 if (connected && ctrl != null) {
-                    gamepad.mapping = StandardGamepadMapping
                     //println("ctrl=$ctrl")
-                    var buttons = 0
 
                     val ex: GCExtendedGamepad? = ctrl.extendedGamepad
                     val base: GCGamepad? = ctrl.gamepad ?: ctrl.extendedGamepad
                     val micro: GCMicroGamepad? = ctrl.microGamepad ?: ctrl.gamepad ?: ctrl.extendedGamepad
                     if (micro != null) {
-                        buttons = buttons
-                            .insert(micro.dpad.left.pressed, GameButton.LEFT.index)
-                            .insert(micro.dpad.right.pressed, GameButton.RIGHT.index)
-                            .insert(micro.dpad.up.pressed, GameButton.UP.index)
-                            .insert(micro.dpad.down.pressed, GameButton.DOWN.index)
-                            .insert(micro.buttonA.pressed, GameButton.XBOX_A.index)
-                            .insert(micro.buttonX.pressed, GameButton.XBOX_X.index)
-                            .insert(micro.buttonMenu.pressed, GameButton.START.index)
+                        gamepad.set(GameButton.LEFT, micro.dpad.left)
+                        gamepad.set(GameButton.RIGHT, micro.dpad.right)
+                        gamepad.set(GameButton.UP, micro.dpad.up)
+                        gamepad.set(GameButton.DOWN, micro.dpad.down)
+                        gamepad.set(GameButton.XBOX_A, micro.buttonA)
+                        gamepad.set(GameButton.XBOX_X, micro.buttonX)
+                        gamepad.set(GameButton.START, micro.buttonMenu)
                     }
                     if (base != null) {
-                        buttons = buttons
-                            .insert(base.buttonB.pressed, GameButton.XBOX_B.index)
-                            .insert(base.buttonY.pressed, GameButton.XBOX_Y.index)
-                            .insert(base.leftShoulder.pressed, GameButton.L1.index)
-                            .insert(base.rightShoulder.pressed, GameButton.R1.index)
+                        gamepad.set(GameButton.XBOX_B, base.buttonB)
+                        gamepad.set(GameButton.XBOX_Y, base.buttonY)
+                        gamepad.set(GameButton.L1, base.leftShoulder)
+                        gamepad.set(GameButton.R1, base.rightShoulder)
                     }
                     if (ex != null) {
-                        buttons = buttons
-                            .insert(ex.buttonHome.pressed, GameButton.SYSTEM.index)
-                            .insert(ex.buttonOptions.pressed, GameButton.SELECT.index)
-                            .insert(ex.leftThumbstickButton.pressed, GameButton.L3.index)
-                            .insert(ex.rightThumbstickButton.pressed, GameButton.R3.index)
-                        gamepad.rawButtonsPressure[GameButton.L2.index] = ex.leftTrigger.value
-                        gamepad.rawButtonsPressure[GameButton.R2.index] = ex.rightTrigger.value
-                        gamepad.rawButtonsPressure[GameButton.L3.index] = ex.leftThumbstickButton.value
-                        gamepad.rawButtonsPressure[GameButton.R3.index] = ex.rightThumbstickButton.value
-                        gamepad.rawAxes[0] = ex.leftThumbstick.x
-                        gamepad.rawAxes[1] = ex.leftThumbstick.y
-                        gamepad.rawAxes[2] = ex.rightThumbstick.x
-                        gamepad.rawAxes[3] = ex.rightThumbstick.y
+                        gamepad.set(GameButton.SYSTEM, ex.buttonHome)
+                        gamepad.set(GameButton.SELECT, ex.buttonOptions)
+                        gamepad.set(GameButton.L3, ex.leftThumbstickButton)
+                        gamepad.set(GameButton.R3, ex.rightThumbstickButton)
+                        gamepad.set(GameButton.L2, ex.leftTrigger)
+                        gamepad.set(GameButton.R2, ex.rightTrigger)
+                        gamepad.set(GameButton.LX, ex.leftThumbstick.x, deadRange = true)
+                        gamepad.set(GameButton.LY, ex.leftThumbstick.y, deadRange = true)
+                        gamepad.set(GameButton.RX, ex.rightThumbstick.x, deadRange = true)
+                        gamepad.set(GameButton.RY, ex.rightThumbstick.y, deadRange = true)
                     }
-                    gamepad.rawButtonsPressed = buttons
                     gamepad.batteryLevel = ctrl.battery?.batteryLevel?.toDouble() ?: 1.0
                     //println("ctrl.battery?.batteryState=${ctrl.battery?.batteryState}")
                     gamepad.batteryStatus = when (ctrl.battery?.batteryState) {

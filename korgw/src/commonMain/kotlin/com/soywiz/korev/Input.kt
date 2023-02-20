@@ -1,7 +1,6 @@
 package com.soywiz.korev
 
 import com.soywiz.kmem.*
-import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 import kotlin.math.*
 
@@ -179,20 +178,55 @@ enum class GameStick(val id: Int) {
 	}
 }
 
+/**
+ * ```
+ *             ____________________________              __
+ *            / [__L2__]          [__R2__] \               |
+ *           / [__ L1 __]        [__ R1 __] \              | Front Triggers
+ *        __/________________________________\__         __|
+ *       /                                  _   \          |
+ *      /      /\           ___            (N)   \         |
+ *     /       ||      __  |SYS| __     _       _ \        | Main Pad
+ *    |    <===DP===> |SE|      |ST|   (W) -|- (E) |       |
+ *     \       ||    ___          ___       _     /        |
+ *     /\      \/   /   \        /   \     (S)   /\      __|
+ *    /  \________ | LS  | ____ |  RS | ________/  \       |
+ *   |         /  \ \___/ /    \ \___/ /  \         |      | Control Sticks
+ *   |        /    \_____/      \_____/    \        |    __|
+ *   |       /                              \       |
+ *    \_____/                                \_____/
+ *
+ *        |________|______|    |______|___________|
+ *          D-Pad    Left       Right   Action Pad
+ *         UP/DOWN   Stick      Stick
+ *        LEFT/RIGHT LX/LY/L3   RX/RY/R3
+ *                 |_____________|
+ *                     Menu Pad
+ * ```
+ */
 enum class GameButton {
-	LEFT, RIGHT, UP, DOWN,
-	BUTTON0, // XBox: A, Playstation: Cross
-    BUTTON1, // XBox: B, Playstation: Circle
-    BUTTON2, // XBox: X, Playstation: Square
-    BUTTON3, // XBox: Y, Playstation: Triangle
-	SELECT, START, SYSTEM,
-	L1, R1,
-	L2, R2,
-	L3, R3,
-	LX, LY,
-	RX, RY,
-	BUTTON4, BUTTON5, BUTTON6, BUTTON7, BUTTON8, RECORD,
-    DPADX, DPADY
+    /** D-PAD LEFT */ LEFT, /** D-PAD RIGHT */ RIGHT,
+    /** D-PAD UP */ UP, /** D-PAD DOWN */ DOWN,
+    /** XBox: A, Playstation: Cross */ BUTTON_SOUTH,
+    /** XBox: B, Playstation: Circle */ BUTTON_EAST,
+    /** XBox: X, Playstation: Square */ BUTTON_WEST,
+    /** XBox: Y, Playstation: Triangle */ BUTTON_NORTH,
+    /** SELECT OR BACK */ SELECT,
+    /** START OR FORWARD */ START,
+    /** SYSTEM OR MENU */ SYSTEM,
+    /** Left shoulder */ L1, /** Right shoulder */  R1,
+    /** Left trigger (pressure 0.0-1.0) */ L2, /** Right trigger (pressure 0.0-1.0) */  R2,
+    /** Left thumbstick */ L3, /** Right thumbstick */ R3,
+    /** Left stick X: -1=left, +1=right */ LX, /** Left stick Y: -1=down, +1=up */ LY,
+    /** Right stick X: -1=left, +1=right */ RX, /** Right stick Y: -1=down, +1=up */ RY,
+    /** Generic button 4 */ BUTTON4,
+    /** Generic button 5 */ BUTTON5,
+    /** Generic button 6 */ BUTTON6,
+    /** Generic button 7 */ BUTTON7,
+    /** Generic button 8 */ BUTTON8,
+    /** Record button */ RECORD,
+    /** Internal use DPAD-X */ DPADX,
+    /** Internal use DPAD-Y */ DPADY
     ;
 
     val index: Int get() = ordinal
@@ -200,7 +234,7 @@ enum class GameButton {
 
 	companion object {
 		val BUTTONS = values()
-		val MAX = 32
+		const val MAX = 32
 
         val LEFT_SHOULDER get() = L1
         val RIGHT_SHOULDER get() = R1
@@ -212,34 +246,36 @@ enum class GameButton {
         val RIGHT_THUMB get() = R3
 
         val BACK get() = SELECT
+        val FORWARD get() = START
 
-        val XBOX_A get() = BUTTON0
-        val XBOX_B get() = BUTTON1
-        val XBOX_X get() = BUTTON2
-        val XBOX_Y get() = BUTTON3
+        val XBOX_A get() = BUTTON_SOUTH
+        val XBOX_B get() = BUTTON_EAST
+        val XBOX_X get() = BUTTON_WEST
+        val XBOX_Y get() = BUTTON_NORTH
 
-        val PS_CROSS get() = BUTTON0
-        val PS_CIRCLE get() = BUTTON1
-        val PS_SQUARE get() = BUTTON2
-        val PS_TRIANGLE get() = BUTTON3
+        val PS_CROSS get() = BUTTON_SOUTH
+        val PS_CIRCLE get() = BUTTON_EAST
+        val PS_SQUARE get() = BUTTON_WEST
+        val PS_TRIANGLE get() = BUTTON_NORTH
 
-        val GENERIC_BUTTON_DOWN get() = BUTTON0
-        val GENERIC_BUTTON_RIGHT get() = BUTTON1
-        val GENERIC_BUTTON_LEFT get() = BUTTON2
-        val GENERIC_BUTTON_UP get() = BUTTON3
-	}
+        val GENERIC_BUTTON_DOWN get() = BUTTON_SOUTH
+        val GENERIC_BUTTON_RIGHT get() = BUTTON_EAST
+        val GENERIC_BUTTON_LEFT get() = BUTTON_WEST
+        val GENERIC_BUTTON_UP get() = BUTTON_NORTH
+
+        @Deprecated("", ReplaceWith("BUTTON_SOUTH", "com.soywiz.korev.GameButton.BUTTON_SOUTH")) val BUTTON0 get() = BUTTON_SOUTH
+        @Deprecated("", ReplaceWith("BUTTON_EAST", "com.soywiz.korev.GameButton.BUTTON_EAST")) val BUTTON1 get() = BUTTON_EAST
+        @Deprecated("", ReplaceWith("BUTTON_WEST", "com.soywiz.korev.GameButton.BUTTON_WEST")) val BUTTON2 get() = BUTTON_WEST
+        @Deprecated("", ReplaceWith("BUTTON_NORTH", "com.soywiz.korev.GameButton.BUTTON_NORTH")) val BUTTON3 get() = BUTTON_NORTH
+    }
 }
 
-class GamepadInfo constructor(
+// http://blog.teamtreehouse.com/wp-content/uploads/2014/03/standardgamepad.png
+class GamepadInfo(
     var index: Int = 0,
     var connected: Boolean = false,
     var name: String = "unknown",
-    var mapping: GamepadMapping = StandardGamepadMapping,
-    var rawButtonsPressure: DoubleArray = DoubleArray(64),
-    var rawButtonsPressed: Int = 0,
-    val rawAxes: DoubleArray = DoubleArray(16),
-    var axesLength: Int = 0,
-    var buttonsLength: Int = 0,
+    var rawButtons: FloatArray = FloatArray(GameButton.MAX),
     var batteryLevel: Double = 1.0,
     var name2: String = DEFAULT_NAME2,
     var playerIndex: Int = index,
@@ -249,8 +285,16 @@ class GamepadInfo constructor(
 
     companion object {
         val DEFAULT_NAME2 = "Wireless Controller"
+
+        fun withoutDeadRange(value: Float, margin: Float = 0.03f, apply: Boolean = true): Float {
+            if (apply && value.absoluteValue < margin) return 0f
+            return value
+        }
+        fun withoutDeadRange(value: Double, margin: Double = 0.03, apply: Boolean = true): Double {
+            if (apply && value.absoluteValue < margin) return 0.0
+            return value
+        }
     }
-    private val axesData: Array<MPoint> = Array(2) { MPoint() }
 
     val fullName: String get() = "$name - $name2"
 
@@ -258,17 +302,11 @@ class GamepadInfo constructor(
 		this.index = that.index
 		this.name = that.name
         this.name2 = that.name2
-		this.mapping = that.mapping
-        this.rawButtonsPressed = that.rawButtonsPressed
 		this.connected = that.connected
-        this.axesLength = that.axesLength
-        this.buttonsLength = that.buttonsLength
         this.batteryLevel = that.batteryLevel
         this.playerIndex = that.playerIndex
         this.batteryStatus = that.batteryStatus
-        arraycopy(that.axesData, 0, this.axesData, 0, min(this.axesData.size, that.axesData.size))
-        arraycopy(that.rawButtonsPressure, 0, this.rawButtonsPressure, 0, min(this.rawButtonsPressure.size, that.rawButtonsPressure.size))
-		arraycopy(that.rawAxes, 0, this.rawAxes, 0, min(this.rawAxes.size, that.rawAxes.size))
+        arraycopy(that.rawButtons, 0, this.rawButtons, 0, min(this.rawButtons.size, that.rawButtons.size))
 	}
 
     val up: Boolean get() = this[GameButton.UP] != 0.0
@@ -278,19 +316,18 @@ class GamepadInfo constructor(
     val start: Boolean get() = this[GameButton.START] != 0.0
     val select: Boolean get() = this[GameButton.SELECT] != 0.0
     val system: Boolean get() = this[GameButton.SYSTEM] != 0.0
+
+
+
     val lx: Double get() = this[GameButton.LX]
     val ly: Double get() = this[GameButton.LY]
     val rx: Double get() = this[GameButton.RX]
     val ry: Double get() = this[GameButton.RY]
 
-	operator fun get(button: GameButton): Double {
-        //println("GET: $button")
-        return mapping.get(button, this)
-    }
-    operator fun get(stick: GameStick): MPoint = axesData[stick.id].apply {
-        this.x = getX(stick)
-        this.y = getY(stick)
-    }
+    private val stick = Array(2) { MPoint() }
+
+	operator fun get(button: GameButton): Double = rawButtons[button.index].toDouble()
+    operator fun get(stick: GameStick): MPoint = this.stick[stick.id].setTo(getX(stick), getY(stick))
     fun getX(stick: GameStick) = when (stick) {
         GameStick.LEFT -> get(GameButton.LX)
         GameStick.RIGHT -> get(GameButton.RX)
@@ -299,41 +336,5 @@ class GamepadInfo constructor(
         GameStick.LEFT -> get(GameButton.LY)
         GameStick.RIGHT -> get(GameButton.RY)
     }
-	override fun toString(): String = "Gamepad[$index][$fullName]" + mapping.toString(this)
-}
-
-abstract class GamepadMapping {
-	abstract val id: String
-	private fun Int.getButton(index: Int): Double = if (extract(index)) 1.0 else 0.0
-    fun GamepadInfo.getRawPressureButton(index: Int) = this.rawButtonsPressure[index]
-    fun GamepadInfo.getRawButton(index: Int): Double = this.rawButtonsPressed.getButton(index)
-    fun GamepadInfo.getRawAxe(index: Int) = this.rawAxes.getOrElse(index) { 0.0 }
-    open fun getButtonIndex(button: GameButton): Int = button.ordinal
-    open fun getAxeIndex(button: GameButton): Int = when (button) {
-        GameButton.LX -> 0
-        GameButton.LY -> 1
-        GameButton.RX -> 2
-        GameButton.RY -> 3
-        GameButton.L2 -> 4
-        GameButton.R2 -> 5
-        GameButton.DPADX -> 5
-        GameButton.DPADY -> 6
-        else -> 0
-    }
-    open fun get(button: GameButton, info: GamepadInfo): Double = when (button) {
-        GameButton.LX, GameButton.LY, GameButton.RX, GameButton.RY -> info.getRawAxe(getAxeIndex(button))
-        GameButton.L2, GameButton.R2 -> info.getRawPressureButton(button.index)
-        else -> info.getRawButton(getButtonIndex(button))
-    }
-
-	fun toString(info: GamepadInfo) = "$id(" + GameButton.values().joinToString(", ") {
-		"${it.name}=${get(it, info).niceStr(2)}"
-	} + ")"
-}
-
-// http://blog.teamtreehouse.com/wp-content/uploads/2014/03/standardgamepad.png
-open class StandardGamepadMapping : GamepadMapping() {
-    companion object : StandardGamepadMapping()
-
-	override val id = "Standard"
+	override fun toString(): String = "Gamepad[$index][$fullName]"
 }

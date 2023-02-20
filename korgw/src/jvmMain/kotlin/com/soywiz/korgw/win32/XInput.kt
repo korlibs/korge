@@ -67,11 +67,6 @@ internal class XInputEventAdapter {
     private val joy by lazy { Win32Joy() }
     private val joyCapsW = JoyCapsW()
 
-    private fun convertShortRangeToDouble(value: Short): Double = value.toDouble().convertRangeClamped(Short.MIN_VALUE.toDouble(), Short.MAX_VALUE.toDouble(), -1.0, +1.0)
-    private fun convertUByteRangeToDouble(value: Byte): Double {
-        return (value.toInt() and 0xFF).toDouble().convertRangeClamped(0.0, 255.0, 0.0, +1.0)
-    }
-
     fun updateGamepadsWin32(dispatcher: EventDispatcher) {
         if (xinput == null) return
 
@@ -83,15 +78,10 @@ internal class XInputEventAdapter {
             val gamepad = gamePadUpdateEvent.gamepads[n]
             gamepad.connected = connected
             if (connected) {
-                gamepad.mapping = XInputMapping
-                gamepad.rawButtonsPressed = (state.wButtons.toInt() and 0xFFFF)
-                //println("gamepad.rawButtonsPressed=${gamepad.rawButtonsPressed}")
-                gamepad.rawButtonsPressure[GameButton.L2.index] = convertUByteRangeToDouble(state.bLeftTrigger)
-                gamepad.rawButtonsPressure[GameButton.R2.index] = convertUByteRangeToDouble(state.bRightTrigger)
-                gamepad.rawAxes[0] = convertShortRangeToDouble(state.sThumbLX)
-                gamepad.rawAxes[1] = convertShortRangeToDouble(state.sThumbLY)
-                gamepad.rawAxes[2] = convertShortRangeToDouble(state.sThumbRX)
-                gamepad.rawAxes[3] = convertShortRangeToDouble(state.sThumbRY)
+                XInputMapping.setController(
+                    gamepad,
+                    state.wButtons, state.bLeftTrigger, state.bRightTrigger, state.sThumbLX, state.sThumbLY, state.sThumbRX, state.sThumbRY
+                )
                 connectedCount++
             }
             if (prevConnected != connected) {

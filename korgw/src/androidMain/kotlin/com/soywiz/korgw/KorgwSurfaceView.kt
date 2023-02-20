@@ -19,13 +19,11 @@ import com.soywiz.kds.lock.NonRecursiveLock
 import com.soywiz.kds.toMap
 import com.soywiz.klock.PerformanceCounter
 import com.soywiz.klock.TimeSpan
-import com.soywiz.kmem.hasBits
-import com.soywiz.kmem.setBits
+import com.soywiz.kmem.*
 import com.soywiz.korev.GameButton
 import com.soywiz.korev.GamePadConnectionEvent
 import com.soywiz.korev.GamepadInfo
 import com.soywiz.korev.Key
-import com.soywiz.korev.StandardGamepadMapping
 import com.soywiz.korev.Touch
 import com.soywiz.korev.TouchEvent
 import com.soywiz.korio.async.Signal
@@ -163,9 +161,8 @@ open class KorgwSurfaceView constructor(
                         info.connected = true
                         gameWindow.dispatchGamepadConnectionEvent(GamePadConnectionEvent.Type.CONNECTED, index)
                     }
-                    l.setTo(info.rawAxes[0], info.rawAxes[1])
-                    r.setTo(info.rawAxes[2], info.rawAxes[3])
-                    gameWindow.dispatchGamepadUpdateAdd(l, r, info.rawButtonsPressed, StandardGamepadMapping, gamepad.name, 1.0)
+                    info.name = gamepad.name
+                    gameWindow.dispatchGamepadUpdateAdd(info)
                     //println("gamepad=$gamepad")
                 }
                 gameWindow.dispatchGamepadUpdateEnd()
@@ -211,9 +208,13 @@ open class KorgwSurfaceView constructor(
     fun onKey(keyCode: Int, event: KeyEvent, type: com.soywiz.korev.KeyEvent.Type, long: Boolean): Boolean {
         val char = keyCode.toChar()
         val key = AndroidKeyMap.KEY_MAP[keyCode] ?: Key.UNKNOWN
+        val sources = event.device?.sources ?: 0
+        val isGamepad = sources.hasBits(InputDevice.SOURCE_GAMEPAD)
+
+        //println("onKey: char=$char, keyCode=$keyCode, key=$key, sources=$sources, isGamepad=$isGamepad")
 
         //if (event.source.hasBits(InputDevice.SOURCE_GAMEPAD)) {
-        if (event.device?.sources?.hasBits(InputDevice.SOURCE_GAMEPAD) == true) {
+        if (isGamepad) {
             //println("GAMEPAD: $key")
             val info = getGamepadInfo(event.deviceId)
             val press = type == com.soywiz.korev.KeyEvent.Type.DOWN
@@ -228,10 +229,10 @@ open class KorgwSurfaceView constructor(
                 Key.XBUTTON_R1 -> GameButton.R1
                 Key.XBUTTON_R2 -> GameButton.R2
                 Key.XBUTTON_THUMBR -> GameButton.R3
-                Key.XBUTTON_A -> GameButton.BUTTON0
-                Key.XBUTTON_B -> GameButton.BUTTON1
-                Key.XBUTTON_X -> GameButton.BUTTON2
-                Key.XBUTTON_Y -> GameButton.BUTTON3
+                Key.XBUTTON_A -> GameButton.XBOX_A
+                Key.XBUTTON_B -> GameButton.XBOX_B
+                Key.XBUTTON_X -> GameButton.XBOX_X
+                Key.XBUTTON_Y -> GameButton.XBOX_Y
                 Key.XBUTTON_SELECT -> GameButton.SELECT
                 Key.XBUTTON_START -> GameButton.START
                 Key.XBUTTON_MODE -> GameButton.SYSTEM
@@ -242,7 +243,7 @@ open class KorgwSurfaceView constructor(
                 }
             }
             if (button != null) {
-                info.rawButtonsPressed = info.rawButtonsPressed.setBits(button.bitMask, press)
+                info.setButton(button, press)
                 return true
             }
         }
@@ -277,21 +278,45 @@ open class KorgwSurfaceView constructor(
         }
     }
 
-    private fun Double.withoutDeadRange(): Double {
-        // @TODO: Should we query for the right value?
-        if (this.absoluteValue < 0.09) return 0.0
-        return this
+    private fun GamepadInfo.setButton(button: GameButton, value: Float) {
+        rawButtons[button.index] = value
+    }
+    private fun GamepadInfo.setButton(button: GameButton, value: Boolean) {
+        setButton(button, value.toInt().toFloat())
+    }
+
+    private fun GamepadInfo.setButtonAxis(button: GameButton, event: MotionEvent, axis1: Int, axis2: Int = -1, axis3: Int = -1, reverse: Boolean = false, deadRange: Boolean = false) {
+        val v1 = if (axis1 >= 0) event.getAxisValue(axis1) else 0f
+        val v2 = if (axis2 >= 0) event.getAxisValue(axis2) else 0f
+        val v3 = if (axis3 >= 0) event.getAxisValue(axis3) else 0f
+        val value = if (v1 != 0f) v1 else if (v2 != 0f) v2 else if (v3 != 0f) v3 else 0f
+        val rvalue = if (deadRange) GamepadInfo.withoutDeadRange(value) else value
+        setButton(button, if (reverse) -rvalue else rvalue)
     }
 
     override fun onGenericMotionEvent(event: MotionEvent): Boolean {
-        if (event.device.sources.hasBits(InputDevice.SOURCE_GAMEPAD)) {
+        val sources = event.device?.sources ?: 0
+        val isGamepad = sources.hasBits(InputDevice.SOURCE_GAMEPAD)
+
+        //println("onGenericMotionEvent: sources=$sources, isGamepad=$isGamepad")
+
+        if (isGamepad) {
             val info = getGamepadInfo(event.deviceId)
-            info.rawAxes[0] = event.getAxisValue(MotionEvent.AXIS_X).toDouble().withoutDeadRange()
-            info.rawAxes[1] = event.getAxisValue(MotionEvent.AXIS_Y).toDouble().withoutDeadRange()
-            info.rawAxes[2] = event.getAxisValue(MotionEvent.AXIS_RX).toDouble().withoutDeadRange()
-            info.rawAxes[3] = event.getAxisValue(MotionEvent.AXIS_RY).toDouble().withoutDeadRange()
-            info.rawAxes[4] = event.getAxisValue(MotionEvent.AXIS_LTRIGGER).toDouble().withoutDeadRange()
-            info.rawAxes[5] = event.getAxisValue(MotionEvent.AXIS_RTRIGGER).toDouble().withoutDeadRange()
+            //println(" -> " + (0 until 47).associateWith { event.getAxisValue(it) }.filter { it.value != 0f })
+
+            val hatX = event.getAxisValue(MotionEvent.AXIS_HAT_X)
+            val hatY = event.getAxisValue(MotionEvent.AXIS_HAT_Y)
+
+            info.setButton(GameButton.LEFT, (hatX < 0f))
+            info.setButton(GameButton.RIGHT, (hatX > 0f))
+            info.setButton(GameButton.UP, (hatY < 0f))
+            info.setButton(GameButton.DOWN, (hatY > 0f))
+            info.setButtonAxis(GameButton.LX, event, MotionEvent.AXIS_X, deadRange = true)
+            info.setButtonAxis(GameButton.LY, event, MotionEvent.AXIS_Y, deadRange = true, reverse = true)
+            info.setButtonAxis(GameButton.RX, event, MotionEvent.AXIS_RX, MotionEvent.AXIS_Z, deadRange = true)
+            info.setButtonAxis(GameButton.RY, event, MotionEvent.AXIS_RY, MotionEvent.AXIS_RZ, deadRange = true, reverse = true)
+            info.setButtonAxis(GameButton.LEFT_TRIGGER, event, MotionEvent.AXIS_LTRIGGER, MotionEvent.AXIS_BRAKE)
+            info.setButtonAxis(GameButton.RIGHT_TRIGGER, event, MotionEvent.AXIS_RTRIGGER, MotionEvent.AXIS_GAS)
             return true
         }
         return super.onGenericMotionEvent(event)

@@ -2,7 +2,6 @@ package com.soywiz.korgw.x11
 
 import com.soywiz.kds.*
 import com.soywiz.kds.diff.*
-import com.soywiz.kds.iterators.*
 import com.soywiz.klock.*
 import com.soywiz.kmem.*
 import com.soywiz.korev.*
@@ -14,6 +13,9 @@ import kotlinx.coroutines.*
 import kotlin.coroutines.*
 import kotlin.math.*
 
+/**
+ * <https://www.kernel.org/doc/Documentation/input/gamepad.txt>
+ */
 internal class LinuxJoyEventAdapter : Closeable {
     private val gamePadUpdateEvent = GamePadUpdateEvent()
     private val gamePadConnectionEvent = GamePadConnectionEvent()
@@ -102,14 +104,10 @@ internal class LinuxJoyEventAdapter : Closeable {
 
         private var prevConnected = false
         var connected = false; private set
-        private var buttons = 0
-        private val axes = DoubleArray(16)
+        private val buttonsPressure = FloatArray(GameButton.MAX)
 
-        fun setButton(index: Int, value: Boolean) {
-            buttons = buttons.setBits(1 shl index, value)
-        }
         fun setButton(button: GameButton, value: Boolean) {
-            setButton(button.index, value)
+            buttonsPressure[button.index] = if (value) 1f else 0f
         }
 
         fun getConnectedChange(): Boolean? {
@@ -122,9 +120,8 @@ internal class LinuxJoyEventAdapter : Closeable {
 
         fun read(gamepad: GamepadInfo, index: Int) {
             gamepad.playerIndex = info.id
-            gamepad.rawButtonsPressed = buttons
             gamepad.name = info.baseName
-            arraycopy(axes, 0, gamepad.rawAxes, 0, 16)
+            arraycopy(buttonsPressure, 0, gamepad.rawButtons, 0, buttonsPressure.size)
         }
 
         val dispatcher = Dispatchers.createSingleThreadedDispatcher("index").also {
@@ -151,7 +148,7 @@ internal class LinuxJoyEventAdapter : Closeable {
                             //println("JS_EVENT: time=$time, value=$value, type=$type, number=$number")
 
                             if (type hasFlags JS_EVENT_AXIS) {
-                                val axeButton = when (number) {
+                                val button = when (number) {
                                     0 -> GameButton.LY
                                     1 -> GameButton.LX
                                     2 -> GameButton.L2
@@ -162,26 +159,24 @@ internal class LinuxJoyEventAdapter : Closeable {
                                     7 -> GameButton.DPADY
                                     else -> GameButton.BUTTON8
                                 }
-                                val dvalue = (value.toDouble() / 32767).clamp(-1.0, +1.0)
-                                val axeIndex = StandardGamepadMapping.getAxeIndex(axeButton)
-                                axes[axeIndex] = dvalue
-                                maxAxes = max(maxAxes, axeIndex)
-                                when (axeButton) {
-                                    GameButton.DPADX, GameButton.DPADY -> {
-                                        val L = if (axeButton == GameButton.DPADX) GameButton.LEFT else GameButton.UP
-                                        val R = if (axeButton == GameButton.DPADX) GameButton.RIGHT else GameButton.DOWN
-                                        when {
-                                            dvalue < 0.0 -> setButton(L, true)
-                                            dvalue > 0.0 -> setButton(R, true)
-                                            else -> {
-                                                setButton(L, false)
-                                                setButton(R, false)
-                                            }
+                                val fvalue = (value.toFloat() / 32767).clamp(-1f, +1f)
+                                when (button) {
+                                    GameButton.DPADX -> {
+                                        buttonsPressure[GameButton.LEFT.index] = (fvalue < 0f).toInt().toFloat()
+                                        buttonsPressure[GameButton.RIGHT.index] = (fvalue > 0f).toInt().toFloat()
+                                    }
+                                    GameButton.DPADY -> {
+                                        buttonsPressure[GameButton.UP.index] = (fvalue < 0f).toInt().toFloat()
+                                        buttonsPressure[GameButton.DOWN.index] = (fvalue > 0f).toInt().toFloat()
+                                    }
+                                    else -> {
+                                        buttonsPressure[button.index] = when (button) {
+                                            GameButton.LX, GameButton.RX -> GamepadInfo.withoutDeadRange(+fvalue)
+                                            GameButton.LY, GameButton.RY -> GamepadInfo.withoutDeadRange(-fvalue)
+                                            GameButton.L2, GameButton.R2 -> fvalue.convertRange(-1f, +1f, 0f, 1f)
+                                            else -> fvalue
                                         }
                                     }
-                                    GameButton.L2 -> setButton(GameButton.L2, dvalue >= -0.9)
-                                    GameButton.R2 -> setButton(GameButton.R2, dvalue >= -0.9)
-                                    else -> Unit
                                 }
                             }
                             if (type hasFlags JS_EVENT_BUTTON) {

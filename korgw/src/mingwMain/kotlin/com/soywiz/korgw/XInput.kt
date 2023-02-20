@@ -72,20 +72,13 @@ internal class XInputEventAdapter {
             val gamepad = gamePadUpdateEvent.gamepads[n]
             gamepad.connected = connected
             if (connected) {
-                gamepad.mapping = XInputMapping
-                gamepad.rawButtonsPressed = (state.wButtons.toInt() and 0xFFFF)
-                gamepad.rawButtonsPressure[GameButton.L2.index] = convertUByteRangeToDouble(state.bLeftTrigger)
-                gamepad.rawButtonsPressure[GameButton.R2.index] = convertUByteRangeToDouble(state.bRightTrigger)
-                gamepad.rawAxes[0] = convertShortRangeToDouble(state.sThumbLX)
-                gamepad.rawAxes[1] = convertShortRangeToDouble(state.sThumbLY)
-                gamepad.rawAxes[2] = convertShortRangeToDouble(state.sThumbRX)
-                gamepad.rawAxes[3] = convertShortRangeToDouble(state.sThumbRY)
+                XInputMapping.setController(
+                    gamepad,
+                    state.wButtons, state.bLeftTrigger, state.bRightTrigger, state.sThumbLX, state.sThumbLY, state.sThumbRX, state.sThumbRY
+                )
                 connectedCount++
             }
             if (prevConnected != connected) {
-                if (connected) {
-                }
-
                 gamepadsConnected[n] = connected
                 dispatcher.dispatch(gamePadConnectionEvent.also {
                     it.gamepad = n
