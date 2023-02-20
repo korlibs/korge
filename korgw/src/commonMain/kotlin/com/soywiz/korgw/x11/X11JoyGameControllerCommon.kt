@@ -1,36 +1,42 @@
 package com.soywiz.korgw.x11
 
 import com.soywiz.kds.*
-import com.soywiz.kds.diff.*
 import com.soywiz.kds.iterators.*
 import com.soywiz.klock.*
 import com.soywiz.kmem.*
 import com.soywiz.korev.*
-import com.soywiz.korgw.*
+import com.soywiz.korio.async.*
 import com.soywiz.korio.concurrent.*
+import com.soywiz.korio.concurrent.atomic.*
+import com.soywiz.korio.concurrent.atomic.KorAtomicInt
 import com.soywiz.korio.file.*
 import com.soywiz.korio.file.sync.*
 import com.soywiz.korio.lang.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
-import kotlin.math.*
 
 /**
  * <https://www.kernel.org/doc/Documentation/input/gamepad.txt>
  */
-internal class LinuxJoyEventAdapter : Closeable {
+internal class LinuxJoyEventAdapter(val syncIO: SyncIO = SyncIO) : Closeable {
+    companion object {
+        const val JS_EVENT_BUTTON = 0x01    /* button pressed/released */
+        const val JS_EVENT_AXIS = 0x02    /* joystick moved */
+        const val JS_EVENT_INIT = 0x80    /* initial state of device */
+    }
+
     data class DeviceInfo(val namedDevice: String, val finalDevice: String) : Extra by Extra.Mixin() {
-        val baseName = PathInfo(namedDevice).baseName.removePrefix("usb-").removeSuffix("-joystick")
+        val baseName = PathInfo(namedDevice).baseName.removePrefix("usb-").removeSuffix("-joystick").replace("_", " ")
         val id: Int = Regex("\\d+$").find(finalDevice)?.value?.toInt() ?: -1
         override fun toString(): String = "DeviceInfo[$id]($baseName)"
     }
 
     fun listJoysticks(): List<DeviceInfo> {
         val base = "/dev/input/by-id"
-        return SyncIO.list(base)
+        return syncIO.list(base)
             .map { "$base/$it" }
             .filter { it.endsWith("-joystick") }
-            .map { DeviceInfo(it, (SyncIO.readlink(it) ?: "")) }
+            .map { DeviceInfo(it, (syncIO.readlink(it) ?: "")) }
             .filter { it.finalDevice.contains("/js") }
             .sortedBy { it.id }
     }
@@ -46,25 +52,31 @@ internal class LinuxJoyEventAdapter : Closeable {
         }
     }
 
-    private val checkGamepadsRun = RunEvery(1.seconds)
+    private val checkGamepadsRun = RunEvery(0.1.seconds)
 
     var joysticks = listOf<DeviceInfo>()
 
     val readers = LinkedHashMap<Int, X11JoystickReader>()
     private val gamepad = GamepadInfo()
 
-    fun updateGamepads(gameWindow: GameWindow) {
-        //Dispatchers.Unconfined.launchUnscoped { listJoysticks() }
+    fun ensureJoysticks() {
+        joysticks = listJoysticks()
+    }
+
+    private fun getReader(device: DeviceInfo): X11JoystickReader =
+        readers.getOrPut(device.id) { X11JoystickReader(device, syncIO) }
+
+    fun updateGamepads(emitter: GamepadInfoEmitter) {
         checkGamepadsRun {
-            joysticks = listJoysticks()
+            //Dispatchers.Unconfined.launchUnscoped { ensureJoysticks() }
+            ensureJoysticks()
         }
-        gameWindow.dispatchGamepadUpdateStart()
+        emitter.dispatchGamepadUpdateStart()
         joysticks.fastForEach { device ->
-            val reader = readers.getOrPut(device.id) { X11JoystickReader(device) }
-            reader.read(gamepad)
-            gameWindow.dispatchGamepadUpdateAdd(gamepad)
+            getReader(device).read(gamepad)
+            emitter.dispatchGamepadUpdateAdd(gamepad)
         }
-        gameWindow.dispatchGamepadUpdateEnd()
+        emitter.dispatchGamepadUpdateEnd()
 
         val joystickDeviceIds = joysticks.map { it.id }.toSet()
         val deletedDeviceIds = readers.keys.filter { it !in joystickDeviceIds }
@@ -76,29 +88,13 @@ internal class LinuxJoyEventAdapter : Closeable {
         readers.clear()
     }
 
-    internal class X11JoystickReader(val info: DeviceInfo) : Closeable {
+    internal class X11JoystickReader(val info: DeviceInfo, val platformSyncIO: SyncIO) : Closeable {
         val index: Int = info.id
 
-        companion object {
-            const val JS_EVENT_BUTTON = 0x01    /* button pressed/released */
-            const val JS_EVENT_AXIS = 0x02    /* joystick moved */
-            const val JS_EVENT_INIT = 0x80    /* initial state of device */
-        }
-
-        private var prevConnected = false
-        var connected = false; private set
         private val buttonsPressure = FloatArray(GameButton.MAX)
 
         fun setButton(button: GameButton, value: Boolean) {
             buttonsPressure[button.index] = if (value) 1f else 0f
-        }
-
-        fun getConnectedChange(): Boolean? {
-            if (prevConnected != connected) {
-                prevConnected = connected
-                return connected
-            }
-            return null
         }
 
         fun read(gamepad: GamepadInfo) {
@@ -107,21 +103,20 @@ internal class LinuxJoyEventAdapter : Closeable {
             arraycopy(buttonsPressure, 0, gamepad.rawButtons, 0, buttonsPressure.size)
         }
 
+        private var running = true
+        val readCount = KorAtomicInt(0)
+        val once = CompletableDeferred<Unit>()
         val dispatcher = Dispatchers.createSingleThreadedDispatcher("index").also {
             it.dispatch(EmptyCoroutineContext, Runnable { threadMain() })
         }
 
         fun threadMain() {
-            while (true) {
+            val packet = ByteArray(8)
+            val isLittleEndian = Endian.NATIVE == Endian.LITTLE_ENDIAN
+            while (running) {
                 try {
-                    connected = false
                     val raf = platformSyncIO.open("/dev/input/js$index", "r")
-                    connected = true
-                    val packet = ByteArray(8)
-                    val isLittleEndian = Endian.NATIVE == Endian.LITTLE_ENDIAN
-                    var maxButtons = 0
-                    var maxAxes = 0
-                    while (true) {
+                    while (running) {
                         if (raf.read(packet) == 8) {
                             val time = packet.readS32(0, isLittleEndian)
                             val value = packet.readS16(4, isLittleEndian)
@@ -178,21 +173,23 @@ internal class LinuxJoyEventAdapter : Closeable {
                                     else -> GameButton.BUTTON8
                                 }
                                 setButton(button, value != 0)
-                                maxButtons = max(maxButtons, button.index)
                             }
                             //println("$time, $type, $number, $value: ${buttons.toStringUnsigned(2)}, ${axes.slice(0 until maxAxes).toList()}")
+                        } else {
+                            Thread_sleep(10L)
                         }
+                        readCount.incrementAndGet()
+                        once.complete(Unit)
                     }
                 } catch (e: Throwable) {
-                    //e.printStackTrace()
-                    Thread_sleep(1000L)
-                } finally {
-                    connected = false
+                    e.printStackTrace()
+                    Thread_sleep(100L)
                 }
             }
         }
 
         override fun close() {
+            running = false
             dispatcher.close()
         }
     }
