@@ -201,8 +201,10 @@ internal class MacosGamepadEventAdapter {
     private val gamePadUpdateEvent = GamePadUpdateEvent()
     private val gamePadConnectionEvent = GamePadConnectionEvent()
 
-    private fun GamepadInfo.set(button: GameButton, value: Double) { rawButtons[button.index] = value.toFloat() }
-    private fun GamepadInfo.set(button: GameButton, cbutton: GCControllerButtonInput) = set(button, cbutton.value)
+    private fun GamepadInfo.set(button: GameButton, value: Double, deadRange: Boolean = false) { rawButtons[button.index] = GamepadInfo.withoutDeadRange(value.toFloat(), apply = deadRange) }
+    private fun GamepadInfo.set(button: GameButton, cbutton: GCControllerButtonInput, deadRange: Boolean = false) {
+        set(button, cbutton.value, deadRange)
+    }
 
     fun updateGamepads(dispatcher: EventDispatcher) {
         try {
@@ -245,10 +247,10 @@ internal class MacosGamepadEventAdapter {
                         gamepad.set(GameButton.R3, ex.rightThumbstickButton)
                         gamepad.set(GameButton.L2, ex.leftTrigger)
                         gamepad.set(GameButton.R2, ex.rightTrigger)
-                        gamepad.set(GameButton.LX, ex.leftThumbstick.x)
-                        gamepad.set(GameButton.LY, ex.leftThumbstick.y)
-                        gamepad.set(GameButton.RX, ex.rightThumbstick.x)
-                        gamepad.set(GameButton.RY, ex.rightThumbstick.y)
+                        gamepad.set(GameButton.LX, ex.leftThumbstick.x, deadRange = true)
+                        gamepad.set(GameButton.LY, ex.leftThumbstick.y, deadRange = true)
+                        gamepad.set(GameButton.RX, ex.rightThumbstick.x, deadRange = true)
+                        gamepad.set(GameButton.RY, ex.rightThumbstick.y, deadRange = true)
                     }
                     gamepad.batteryLevel = ctrl.battery?.batteryLevel?.toDouble() ?: 1.0
                     //println("ctrl.battery?.batteryState=${ctrl.battery?.batteryState}")

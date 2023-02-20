@@ -251,8 +251,12 @@ class GamepadInfo(
     companion object {
         val DEFAULT_NAME2 = "Wireless Controller"
 
-        fun withoutDeadRange(value: Float, margin: Float = 0.09f): Float {
-            if (value.absoluteValue < margin) return 0f
+        fun withoutDeadRange(value: Float, margin: Float = 0.03f, apply: Boolean = true): Float {
+            if (apply && value.absoluteValue < margin) return 0f
+            return value
+        }
+        fun withoutDeadRange(value: Double, margin: Double = 0.03, apply: Boolean = true): Double {
+            if (apply && value.absoluteValue < margin) return 0.0
             return value
         }
     }

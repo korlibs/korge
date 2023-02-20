@@ -43,8 +43,8 @@ class DarwinGamePad {
                     if (gcbutton != null) button(button, gcbutton.value.toFloat())
                 }
                 fun stick(buttonX: GameButton, buttonY: GameButton, pad: GCControllerDirectionPad) {
-                    button(buttonX, pad.xAxis.value.toFloat())
-                    button(buttonY, pad.yAxis.value.toFloat())
+                    button(buttonX, GamepadInfo.withoutDeadRange(pad.xAxis.value.toFloat()))
+                    button(buttonY, GamepadInfo.withoutDeadRange(pad.yAxis.value.toFloat()))
                 }
 
                 // https://developer.apple.com/documentation/gamecontroller/gcmicrogamepad

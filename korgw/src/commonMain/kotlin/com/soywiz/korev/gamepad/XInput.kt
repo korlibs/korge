@@ -55,10 +55,10 @@ object XInputMapping {
         gamepad.setDigital(GameButton.XBOX_Y, buttons, XINPUT_GAMEPAD_Y)
         gamepad.rawButtons[GameButton.LEFT_TRIGGER.index] = convertUByteRangeToDouble(bLeftTrigger)
         gamepad.rawButtons[GameButton.RIGHT_TRIGGER.index] = convertUByteRangeToDouble(bRightTrigger)
-        gamepad.rawButtons[GameButton.LX.index] = convertShortRangeToDouble(sThumbLX)
-        gamepad.rawButtons[GameButton.LY.index] = convertShortRangeToDouble(sThumbLY)
-        gamepad.rawButtons[GameButton.RX.index] = convertShortRangeToDouble(sThumbRX)
-        gamepad.rawButtons[GameButton.RY.index] = convertShortRangeToDouble(sThumbRY)
+        gamepad.rawButtons[GameButton.LX.index] = GamepadInfo.withoutDeadRange(convertShortRangeToDouble(sThumbLX))
+        gamepad.rawButtons[GameButton.LY.index] = GamepadInfo.withoutDeadRange(convertShortRangeToDouble(sThumbLY))
+        gamepad.rawButtons[GameButton.RX.index] = GamepadInfo.withoutDeadRange(convertShortRangeToDouble(sThumbRX))
+        gamepad.rawButtons[GameButton.RY.index] = GamepadInfo.withoutDeadRange(convertShortRangeToDouble(sThumbRY))
     }
 
     private fun convertShortRangeToDouble(value: Short): Float = value.toFloat().convertRangeClamped(Short.MIN_VALUE.toFloat(), Short.MAX_VALUE.toFloat(), -1f, +1f)
