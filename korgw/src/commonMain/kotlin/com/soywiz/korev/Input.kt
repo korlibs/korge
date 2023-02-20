@@ -178,20 +178,55 @@ enum class GameStick(val id: Int) {
 	}
 }
 
+/**
+ * ```
+ *             ____________________________              __
+ *            / [__L2__]          [__R2__] \               |
+ *           / [__ L1 __]        [__ R1 __] \              | Front Triggers
+ *        __/________________________________\__         __|
+ *       /                                  _   \          |
+ *      /      /\           ___            (N)   \         |
+ *     /       ||      __  |SYS| __     _       _ \        | Main Pad
+ *    |    <===DP===> |SE|      |ST|   (W) -|- (E) |       |
+ *     \       ||    ___          ___       _     /        |
+ *     /\      \/   /   \        /   \     (S)   /\      __|
+ *    /  \________ | LS  | ____ |  RS | ________/  \       |
+ *   |         /  \ \___/ /    \ \___/ /  \         |      | Control Sticks
+ *   |        /    \_____/      \_____/    \        |    __|
+ *   |       /                              \       |
+ *    \_____/                                \_____/
+ *
+ *        |________|______|    |______|___________|
+ *          D-Pad    Left       Right   Action Pad
+ *         UP/DOWN   Stick      Stick
+ *        LEFT/RIGHT LX/LY/L3   RX/RY/R3
+ *                 |_____________|
+ *                     Menu Pad
+ * ```
+ */
 enum class GameButton {
-	LEFT, RIGHT, UP, DOWN,
-	BUTTON_SOUTH, // XBox: A, Playstation: Cross
-    BUTTON_EAST,  // XBox: B, Playstation: Circle
-    BUTTON_WEST,  // XBox: X, Playstation: Square
-    BUTTON_NORTH, // XBox: Y, Playstation: Triangle
-	SELECT, START, SYSTEM,
-	L1, R1,
-	L2, R2,
-	L3, R3,
-	LX, LY,
-	RX, RY,
-	BUTTON4, BUTTON5, BUTTON6, BUTTON7, BUTTON8, RECORD,
-    DPADX, DPADY
+    /** D-PAD LEFT */ LEFT, /** D-PAD RIGHT */ RIGHT,
+    /** D-PAD UP */ UP, /** D-PAD DOWN */ DOWN,
+    /** XBox: A, Playstation: Cross */ BUTTON_SOUTH,
+    /** XBox: B, Playstation: Circle */ BUTTON_EAST,
+    /** XBox: X, Playstation: Square */ BUTTON_WEST,
+    /** XBox: Y, Playstation: Triangle */ BUTTON_NORTH,
+    /** SELECT OR BACK */ SELECT,
+    /** START OR FORWARD */ START,
+    /** SYSTEM OR MENU */ SYSTEM,
+    /** Left shoulder */ L1, /** Right shoulder */  R1,
+    /** Left trigger (pressure 0.0-1.0) */ L2, /** Right trigger (pressure 0.0-1.0) */  R2,
+    /** Left thumbstick */ L3, /** Right thumbstick */ R3,
+    /** Left stick X: -1=left, +1=right */ LX, /** Left stick Y: -1=down, +1=up */ LY,
+    /** Right stick X: -1=left, +1=right */ RX, /** Right stick Y: -1=down, +1=up */ RY,
+    /** Generic button 4 */ BUTTON4,
+    /** Generic button 5 */ BUTTON5,
+    /** Generic button 6 */ BUTTON6,
+    /** Generic button 7 */ BUTTON7,
+    /** Generic button 8 */ BUTTON8,
+    /** Record button */ RECORD,
+    /** Internal use DPAD-X */ DPADX,
+    /** Internal use DPAD-Y */ DPADY
     ;
 
     val index: Int get() = ordinal

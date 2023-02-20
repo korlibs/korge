@@ -13,6 +13,9 @@ import kotlinx.coroutines.*
 import kotlin.coroutines.*
 import kotlin.math.*
 
+/**
+ * <https://www.kernel.org/doc/Documentation/input/gamepad.txt>
+ */
 internal class LinuxJoyEventAdapter : Closeable {
     private val gamePadUpdateEvent = GamePadUpdateEvent()
     private val gamePadConnectionEvent = GamePadConnectionEvent()
