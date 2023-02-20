@@ -73,8 +73,10 @@ internal class LinuxJoyEventAdapter(val syncIO: SyncIO = SyncIO) : Closeable {
         }
         emitter.dispatchGamepadUpdateStart()
         joysticks.fastForEach { device ->
-            getReader(device).read(gamepad)
+            val reader = getReader(device)
+            reader.read(gamepad)
             emitter.dispatchGamepadUpdateAdd(gamepad)
+            reader.dispatcher // Ensure dispatcher
         }
         emitter.dispatchGamepadUpdateEnd()
 
@@ -98,7 +100,6 @@ internal class LinuxJoyEventAdapter(val syncIO: SyncIO = SyncIO) : Closeable {
         }
 
         fun read(gamepad: GamepadInfo) {
-            //gamepad.index = info.id
             gamepad.name = info.baseName
             arraycopy(buttonsPressure, 0, gamepad.rawButtons, 0, buttonsPressure.size)
         }
@@ -106,9 +107,9 @@ internal class LinuxJoyEventAdapter(val syncIO: SyncIO = SyncIO) : Closeable {
         private var running = true
         val readCount = KorAtomicInt(0)
         val once = CompletableDeferred<Unit>()
-        val dispatcher = Dispatchers.createSingleThreadedDispatcher("index").also {
+        val dispatcher by lazy { Dispatchers.createSingleThreadedDispatcher("index").also {
             it.dispatch(EmptyCoroutineContext, Runnable { threadMain() })
-        }
+        } }
 
         fun threadMain() {
             val packet = ByteArray(8)
