@@ -488,9 +488,6 @@ class SVG(val root: Xml, val warningProcessor: ((message: String) -> Unit)? = nu
             node.getString("style")?.let { out.putAll(CSSDeclarations.parseToMap(it)) }
             return out
         }
-
-        @Deprecated("", ReplaceWith("SvgPath.tokenizePath(str)"))
-		fun tokenizePath(str: String): List<PathToken> = SvgPath.tokenizePath(str)
 	}
 
 	interface PathToken {
