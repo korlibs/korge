@@ -138,9 +138,9 @@ abstract class DXT(val format: String, val premultiplied: Boolean, val blockSize
 				ccArray[2] = RGBA.mixRgbFactor256(cc[0], cc[1], FACT_2_3)
 				ccArray[3] = RGBA.mixRgbFactor256(cc[0], cc[1], FACT_1_3)
 			} else {
-				ccArray[2] = RGBA.mixRgbFactor256(cc[0], cc[1], FACT_1_2)
-				ccArray[3] = Colors.TRANSPARENT_BLACK
-			}
+                ccArray[2] = RGBA.mixRgbFactor256(cc[0], cc[1], FACT_1_2)
+                ccArray[3] = Colors.TRANSPARENT
+            }
 		}
 
 		fun decodeDxt1Color(data: ByteArray, dataOffset: Int, cc: RgbaArray) {

@@ -54,7 +54,7 @@ open class UIBaseCheckBox<T : UIBaseCheckBox<T>>(
         }
 
     var skin: UIBaseCheckBoxSkin = UIBaseCheckBoxSkinMaterial
-    private val background = solidRect(width, height, Colors.TRANSPARENT_BLACK)
+    private val background = solidRect(width, height, Colors.TRANSPARENT)
     val canvas = renderableView {
         skin.render(ctx2d, this@UIBaseCheckBox.width, this@UIBaseCheckBox.height, this@UIBaseCheckBox, skinKind)
     }

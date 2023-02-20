@@ -61,7 +61,7 @@ open class FSprites(val maxSize: Int) {
 
     fun free(item: FSprite) {
         freeItems.add(item.id)
-        item.colorMul = Colors.TRANSPARENT_BLACK // Hide this
+        item.colorMul = Colors.TRANSPARENT // Hide this
     }
 
     var FSprite.x: Float get() = f32[offset + 0] ; set(value) { f32[offset + 0] = value }

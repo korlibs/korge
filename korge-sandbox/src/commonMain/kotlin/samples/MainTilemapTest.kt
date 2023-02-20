@@ -121,12 +121,12 @@ class MainTilemapTest : Scene() {
     private fun makeSimpleTileSet(tileWidth: Int): TileSet {
         val atlas = MutableAtlasUnit()
         val tileBitmaps =
-            listOf(Colors.TRANSPARENT_BLACK, Colors.GREEN, Colors.ORANGE, Colors.GREENYELLOW, Colors.YELLOW).map { c ->
+            listOf(Colors.TRANSPARENT, Colors.GREEN, Colors.ORANGE, Colors.GREENYELLOW, Colors.YELLOW).map { c ->
                 atlas.add(Bitmap32(tileWidth, tileWidth).also {
                     it.fill(c)
                     for (i in (tileWidth / 5) until (tileWidth * 4 / 5)) {
-                        it[i, tileWidth / 2] = Colors.TRANSPARENT_BLACK
-                        it[tileWidth / 2, i] = Colors.TRANSPARENT_BLACK
+                        it[i, tileWidth / 2] = Colors.TRANSPARENT
+                        it[tileWidth / 2, i] = Colors.TRANSPARENT
                     }
                 }).slice
             }

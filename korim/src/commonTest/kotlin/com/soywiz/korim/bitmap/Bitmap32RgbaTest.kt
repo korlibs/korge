@@ -23,7 +23,7 @@ class Bitmap32RgbaTest {
         assertEquals(Colors.RED, i[0, 0])
         assertEquals(Colors.GREEN, i[1, 0])
         assertEquals(Colors.BLUE, i[2, 0])
-        assertEquals(Colors.TRANSPARENT_BLACK, i[3, 0])
+        assertEquals(Colors.TRANSPARENT, i[3, 0])
     }
 
     @Test
@@ -33,6 +33,6 @@ class Bitmap32RgbaTest {
         assertEquals(Colors.RED, i[0, 0])
         assertEquals(Colors.GREEN, i[1, 0])
         assertEquals(Colors.BLUE, i[2, 0])
-        assertEquals(Colors.TRANSPARENT_BLACK, i[3, 0])
+        assertEquals(Colors.TRANSPARENT, i[3, 0])
     }
 }

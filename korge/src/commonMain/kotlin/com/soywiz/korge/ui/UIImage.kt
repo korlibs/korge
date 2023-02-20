@@ -27,16 +27,36 @@ class UIImage(
     private var validCoords: Boolean = false
 
     @ViewProperty
-    var bgcolor: RGBA = Colors.TRANSPARENT_BLACK
+    var bgcolor: RGBA = Colors.TRANSPARENT
+
     @ViewProperty
     var smoothing: Boolean = true
+
     @ViewProperty
-    var bitmap: BmpSlice = bitmap ; set(value) { if (field !== value) { field = value; validCoords = false } }
+    var bitmap: BmpSlice = bitmap;
+        set(value) {
+            if (field !== value) {
+                field = value; validCoords = false
+            }
+        }
+
     @ViewProperty
     @ViewPropertyProvider(ScaleMode.Provider::class)
-    var scaleMode: ScaleMode = scaleMode ; set(value) { if (field !== value) { field = value; validCoords = false } }
+    var scaleMode: ScaleMode = scaleMode;
+        set(value) {
+            if (field !== value) {
+                field = value; validCoords = false
+            }
+        }
+
     @ViewProperty
-    var contentAnchor: Anchor = contentAnchor ; set(value) { if (field !== value) { field = value; validCoords = false } }
+    var contentAnchor: Anchor = contentAnchor;
+        set(value) {
+            if (field !== value) {
+                field = value; validCoords = false
+            }
+        }
+
     override fun onSizeChanged() {
         validCoords = false
     }
@@ -66,18 +86,41 @@ class UIImage(
 
             vertices.quad(
                 0,
-                realL.toFloat(), realT.toFloat(), (realR - realL).toFloat(), (realB - realT).toFloat(),
+                realL.toFloat(),
+                realT.toFloat(),
+                (realR - realL).toFloat(),
+                (realB - realT).toFloat(),
                 globalMatrix,
-                ratioL.convertRange(0f, 1f, bitmap.tlX, bitmap.trX), ratioT.convertRange(0f, 1f, bitmap.tlY, bitmap.blY),
-                ratioR.convertRange(0f, 1f, bitmap.tlX, bitmap.trX), ratioT.convertRange(0f, 1f, bitmap.trY, bitmap.brY),
-                ratioL.convertRange(0f, 1f, bitmap.blX, bitmap.brX), ratioB.convertRange(0f, 1f, bitmap.tlY, bitmap.blY),
-                ratioR.convertRange(0f, 1f, bitmap.blX, bitmap.brX), ratioB.convertRange(0f, 1f, bitmap.trY, bitmap.brY),
-                renderColorMul, renderColorAdd
+                ratioL.convertRange(0f, 1f, bitmap.tlX, bitmap.trX),
+                ratioT.convertRange(0f, 1f, bitmap.tlY, bitmap.blY),
+                ratioR.convertRange(0f, 1f, bitmap.tlX, bitmap.trX),
+                ratioT.convertRange(0f, 1f, bitmap.trY, bitmap.brY),
+                ratioL.convertRange(0f, 1f, bitmap.blX, bitmap.brX),
+                ratioB.convertRange(0f, 1f, bitmap.tlY, bitmap.blY),
+                ratioR.convertRange(0f, 1f, bitmap.blX, bitmap.brX),
+                ratioB.convertRange(0f, 1f, bitmap.trY, bitmap.brY),
+                renderColorMul,
+                renderColorAdd
             )
         }
         ctx.useBatcher { batch ->
-            if (bgcolor.a != 0) batch.drawQuad(ctx.getTex(Bitmaps.white), 0f, 0f, width.toFloat(), height.toFloat(), globalMatrix, colorMul = bgcolor)
-            batch.drawVertices(vertices, ctx.getTex(bitmap).base, smoothing, renderBlendMode, premultiplied = bitmap.base.premultiplied, wrap = false)
+            if (bgcolor.a != 0) batch.drawQuad(
+                ctx.getTex(Bitmaps.white),
+                0f,
+                0f,
+                width.toFloat(),
+                height.toFloat(),
+                globalMatrix,
+                colorMul = bgcolor
+            )
+            batch.drawVertices(
+                vertices,
+                ctx.getTex(bitmap).base,
+                smoothing,
+                renderBlendMode,
+                premultiplied = bitmap.base.premultiplied,
+                wrap = false
+            )
         }
     }
 }

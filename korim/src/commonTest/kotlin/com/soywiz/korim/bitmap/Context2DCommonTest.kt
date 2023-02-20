@@ -28,10 +28,11 @@ class Context2DCommonTest {
                 rect(1, 1, 1, 1)
             }
         }.toBMP32().depremultipliedIfRequired()
-        assertEquals(listOf(
-            Colors.TRANSPARENT_BLACK, Colors.TRANSPARENT_BLACK, Colors.TRANSPARENT_BLACK,
-            Colors.TRANSPARENT_BLACK, Colors.WHITE, Colors.TRANSPARENT_BLACK,
-            Colors.TRANSPARENT_BLACK, Colors.TRANSPARENT_BLACK, Colors.TRANSPARENT_BLACK
-        ), RgbaArray(image.ints).toList())
+        assertEquals(
+            listOf(
+                Colors.TRANSPARENT, Colors.TRANSPARENT, Colors.TRANSPARENT,
+                Colors.TRANSPARENT, Colors.WHITE, Colors.TRANSPARENT,
+                Colors.TRANSPARENT, Colors.TRANSPARENT, Colors.TRANSPARENT
+            ), RgbaArray(image.ints).toList())
     }
 }
