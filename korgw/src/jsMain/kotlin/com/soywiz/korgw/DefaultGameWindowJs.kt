@@ -83,32 +83,28 @@ open class BrowserCanvasJsGameWindow(
         GameButton.DPADX, GameButton.DPADY,
     )
 
+    private val gamepad = GamepadInfo()
     @Suppress("UNUSED_PARAMETER")
     override fun updateGamepads() {
         try {
             if (navigator.getGamepads != null) {
                 val gamepads = navigator.getGamepads().unsafeCast<JsArray<JsGamePad?>>()
-                for (gp in gamePadUpdateEvent.gamepads) gp.connected = false
-                gamePadUpdateEvent.gamepadsLength = gamepads.length
-                var rgameIndex = 0
+                dispatchGamepadUpdateStart()
                 for (gamepadId in 0 until gamepads.length) {
                     val controller = gamepads[gamepadId] ?: continue
                     if (controller.mapping != "standard") continue
-                    val index = rgameIndex++
-                    val gamepad = gamePadUpdateEvent.gamepads.getOrNull(index) ?: continue
-                    gamepad.apply {
-                        this.connected = controller.connected
-                        this.name = controller.id
-                        for (n in 0 until kotlin.math.min(controller.buttons.length, BUTTONS_MAPPING.size)) {
-                            this.rawButtons[BUTTONS_MAPPING[n].index] = controller.buttons[n].value.toFloat()
-                        }
-                        for (n in 0 until kotlin.math.min(controller.axes.length, AXES_MAPPING.size)) {
-                            val value = controller.axes[n].toFloat()
-                            this.rawButtons[AXES_MAPPING[n].index] = GamepadInfo.withoutDeadRange(value, apply = n <= 3)
-                        }
+                    val gamepad = this@BrowserCanvasJsGameWindow.gamepad
+                    gamepad.name = controller.id
+                    for (n in 0 until kotlin.math.min(controller.buttons.length, BUTTONS_MAPPING.size)) {
+                        gamepad.rawButtons[BUTTONS_MAPPING[n].index] = controller.buttons[n].value.toFloat()
                     }
+                    for (n in 0 until kotlin.math.min(controller.axes.length, AXES_MAPPING.size)) {
+                        val value = controller.axes[n].toFloat()
+                        gamepad.rawButtons[AXES_MAPPING[n].index] = GamepadInfo.withoutDeadRange(value, apply = n <= 3)
+                    }
+                    dispatchGamepadUpdateAdd(gamepad)
                 }
-                dispatch(gamePadUpdateEvent)
+                dispatchGamepadUpdateEnd()
             }
         } catch (e: dynamic) {
             console.error(e)
@@ -426,41 +422,29 @@ open class BrowserCanvasJsGameWindow(
         window.addEventListener("keydown", { keyEvent(it.unsafeCast<KeyboardEvent>()) })
         window.addEventListener("keyup", { keyEvent(it.unsafeCast<KeyboardEvent>()) })
 
-        window.addEventListener("gamepadconnected", { e ->
-            //console.log("gamepadconnected")
-            val e = e.unsafeCast<JsGamepadEvent>()
-            dispatch(gamePadConnectionEvent.apply {
-                this.type = GamePadConnectionEvent.Type.CONNECTED
-                this.gamepad = e.gamepad.index
-            })
-        })
-        window.addEventListener("gamepaddisconnected", { e ->
-            //console.log("gamepaddisconnected")
-            val e = e.unsafeCast<JsGamepadEvent>()
-            dispatch(gamePadConnectionEvent.apply {
-                this.type = GamePadConnectionEvent.Type.DISCONNECTED
-                this.gamepad = e.gamepad.index
-            })
-        })
+        //window.addEventListener("gamepadconnected", { e ->
+        //    //console.log("gamepadconnected")
+        //    val e = e.unsafeCast<JsGamepadEvent>()
+        //    dispatch(gamePadConnectionEvent.apply {
+        //        this.type = GamePadConnectionEvent.Type.CONNECTED
+        //        this.gamepad = e.gamepad.index
+        //    })
+        //})
+        //window.addEventListener("gamepaddisconnected", { e ->
+        //    //console.log("gamepaddisconnected")
+        //    val e = e.unsafeCast<JsGamepadEvent>()
+        //    dispatch(gamePadConnectionEvent.apply {
+        //        this.type = GamePadConnectionEvent.Type.DISCONNECTED
+        //        this.gamepad = e.gamepad.index
+        //    })
+        //})
         window.addEventListener("resize", { onResized() })
-        canvas.ondragenter = {
-            dispatchDropfileEvent(DropFileEvent.Type.START, null)
-        }
-        canvas.ondragexit = {
-            dispatchDropfileEvent(DropFileEvent.Type.END, null)
-        }
-        canvas.ondragleave = {
-            dispatchDropfileEvent(DropFileEvent.Type.END, null)
-        }
-        canvas.ondragover = {
-            it.preventDefault()
-        }
-        canvas.ondragstart = {
-            dispatchDropfileEvent(DropFileEvent.Type.START, null)
-        }
-        canvas.ondragend = {
-            dispatchDropfileEvent(DropFileEvent.Type.END, null)
-        }
+        canvas.ondragenter = { dispatchDropfileEvent(DropFileEvent.Type.START, null) }
+        canvas.ondragexit = { dispatchDropfileEvent(DropFileEvent.Type.END, null) }
+        canvas.ondragleave = { dispatchDropfileEvent(DropFileEvent.Type.END, null) }
+        canvas.ondragover = { it.preventDefault() }
+        canvas.ondragstart = { dispatchDropfileEvent(DropFileEvent.Type.START, null) }
+        canvas.ondragend = { dispatchDropfileEvent(DropFileEvent.Type.END, null) }
         canvas.ondrop = {
             it.preventDefault()
             dispatchDropfileEvent(DropFileEvent.Type.END, null)

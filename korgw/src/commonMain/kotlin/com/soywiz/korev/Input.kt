@@ -293,6 +293,10 @@ class GamepadInfoEmitter(val dispatcher: EventDispatcher) {
             if (gamepadPrevConnected[it.index] != it.connected) {
                 gamepadPrevConnected[it.index] = it.connected
                 out.add(it.index)
+                // Clear stuff
+                if (!it.connected) {
+                    it.name = null
+                }
                 dispatcher.dispatch(gamePadConnectionEvent.apply {
                     this.type = GamePadConnectionEvent.Type.fromConnected(it.connected)
                     this.gamepad = it.index

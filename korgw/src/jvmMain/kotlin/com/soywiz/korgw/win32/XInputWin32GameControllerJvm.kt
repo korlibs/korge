@@ -59,7 +59,7 @@ internal class XInputState() : Structure() {
 
 internal class XInputEventAdapter {
     private val xinputState = XInputState()
-    private val gamePadUpdateEvent = GamePadUpdateEvent()
+    private val controllers = Array(GamepadInfo.MAX_CONTROLLERS) { GamepadInfo(it) }
     private val xinput: XInput? by lazy { XInput() }
     private val joy by lazy { Win32Joy() }
     private val joyCapsW = JoyCapsW()
@@ -71,7 +71,7 @@ internal class XInputEventAdapter {
         gameWindow.dispatchGamepadUpdateStart()
         for (n in 0 until GamepadInfo.MAX_CONTROLLERS) {
             val connected = xinput?.XInputGetState(n, state) == XInput.SUCCESS
-            val gamepad = gamePadUpdateEvent.gamepads[n]
+            val gamepad = controllers[n]
             if (connected) {
                 XInputMapping.setController(
                     gamepad,
