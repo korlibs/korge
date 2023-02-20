@@ -250,6 +250,11 @@ class GamepadInfo(
 
     companion object {
         val DEFAULT_NAME2 = "Wireless Controller"
+
+        fun withoutDeadRange(value: Float, margin: Float = 0.09f): Float {
+            if (value.absoluteValue < margin) return 0f
+            return value
+        }
     }
 
     val fullName: String get() = "$name - $name2"
