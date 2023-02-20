@@ -436,7 +436,7 @@ class MyDefaultGameWindow : GameWindow() {
     internal val backingScaleFactor: Double get() = window.backingScaleFactor.toDouble()
     internal var lastBackingScaleFactor = 0.0
 
-    val darwinGamePad = DarwinGamePad()
+    val darwinGamePad = DarwinGameControllerNative()
 
     fun doRender(update: Boolean) {
         //println("doRender[0]")

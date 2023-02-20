@@ -1,8 +1,8 @@
 package com.soywiz.korgw.win32
 
-import com.soywiz.kmem.convertRangeClamped
 import com.soywiz.korev.*
 import com.soywiz.korev.gamepad.*
+import com.soywiz.korgw.*
 import com.sun.jna.Library
 import com.sun.jna.Native
 import com.sun.jna.Structure
@@ -21,7 +21,7 @@ internal interface XInput : Library {
         }
 
         const val XINPUT_DLL_9_1_0 = "xinput9_1_0.dll"
-        const val ERROR_SUCCESS = 0
+        const val SUCCESS = 0
         const val ERROR_DEVICE_NOT_CONNECTED = 0x48F
         private fun load(): XInput = Native.load(XINPUT_DLL_9_1_0, XInput::class.java)
     }
@@ -58,55 +58,33 @@ internal class XInputState() : Structure() {
 }
 
 internal class XInputEventAdapter {
-    private val MAX_GAMEPADS = 4
-    private val gamepadsConnected = BooleanArray(MAX_GAMEPADS)
     private val xinputState = XInputState()
-    private val gamePadUpdateEvent = GamePadUpdateEvent()
-    private val gamePadConnectionEvent = GamePadConnectionEvent()
+    private val controllers = Array(GamepadInfo.MAX_CONTROLLERS) { GamepadInfo(it) }
     private val xinput: XInput? by lazy { XInput() }
     private val joy by lazy { Win32Joy() }
     private val joyCapsW = JoyCapsW()
 
-    fun updateGamepadsWin32(dispatcher: EventDispatcher) {
+    fun updateGamepadsWin32(gameWindow: GameWindow) {
         if (xinput == null) return
 
-        var connectedCount = 0
         val state = xinputState
-        for (n in 0 until MAX_GAMEPADS) {
-            val prevConnected = gamepadsConnected[n]
-            val connected = xinput?.XInputGetState(n, state) == XInput.ERROR_SUCCESS
-            val gamepad = gamePadUpdateEvent.gamepads[n]
-            gamepad.connected = connected
+        gameWindow.dispatchGamepadUpdateStart()
+        for (n in 0 until GamepadInfo.MAX_CONTROLLERS) {
+            val connected = xinput?.XInputGetState(n, state) == XInput.SUCCESS
+            val gamepad = controllers[n]
             if (connected) {
                 XInputMapping.setController(
                     gamepad,
                     state.wButtons, state.bLeftTrigger, state.bRightTrigger, state.sThumbLX, state.sThumbLY, state.sThumbRX, state.sThumbRY
                 )
-                connectedCount++
-            }
-            if (prevConnected != connected) {
-                if (connected) {
-                    if (joy?.joyGetDevCapsW(n, joyCapsW, JoyCapsW.SIZE) == 0) {
-                        gamepad.name = joyCapsW.name
-                    }
+                if (gamepad.name == null && joy?.joyGetDevCapsW(n, joyCapsW, JoyCapsW.SIZE) == 0) {
+                    gamepad.name = joyCapsW.name
                 }
-
-                gamepadsConnected[n] = connected
-                dispatcher.dispatch(gamePadConnectionEvent.also {
-                    it.gamepad = n
-                    it.type = if (connected) GamePadConnectionEvent.Type.CONNECTED else GamePadConnectionEvent.Type.DISCONNECTED
-                })
+                gameWindow.dispatchGamepadUpdateAdd(gamepad)
             }
         }
-        gamePadUpdateEvent.gamepadsLength = connectedCount
-
-        if (connectedCount > 0) {
-            dispatcher.dispatch(gamePadUpdateEvent)
-        }
-
+        gameWindow.dispatchGamepadUpdateEnd()
     }
-
-
 }
 
 /*

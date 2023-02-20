@@ -297,8 +297,6 @@ class Views constructor(
                         stage.forEachComponentOfTypeRecursive(GamepadComponent, tempComps) { it.onGamepadEvent(views, e) }
                     is GamePadUpdateEvent ->
                         stage.forEachComponentOfTypeRecursive(GamepadComponent, tempComps) { it.onGamepadEvent(views, e) }
-                    //is GamePadButtonEvent -> stagedViews.fastForEach { it._components?.gamepad?.fastForEach { it.onGamepadEvent(views, e) } }
-                    //is GamePadStickEvent -> stagedViews.fastForEach { it._components?.gamepad?.fastForEach { it.onGamepadEvent(views, e) } }
                     else -> {
                         stage.forEachComponentOfTypeRecursive(EventComponent, tempComps) { it.onEvent(e) }
                     }

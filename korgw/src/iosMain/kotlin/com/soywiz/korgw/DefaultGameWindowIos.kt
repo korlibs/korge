@@ -204,7 +204,7 @@ class MyGLKViewController(val entry: suspend () -> Unit)  : GLKViewController(nu
     val freeIds = Pool { it }
     var lastWidth = 0
     var lastHeight = 0
-    val darwinGamePad = DarwinGamePad()
+    val darwinGamePad = DarwinGameControllerNative()
 
     override fun viewDidLoad() {
         val view = this.view as? GLKView?
