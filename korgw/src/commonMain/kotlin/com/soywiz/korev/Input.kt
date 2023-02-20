@@ -1,5 +1,7 @@
 package com.soywiz.korev
 
+import com.soywiz.kds.*
+import com.soywiz.kds.iterators.*
 import com.soywiz.kmem.*
 import com.soywiz.korma.geom.*
 import kotlin.math.*
@@ -232,6 +234,9 @@ enum class GameButton {
     val index: Int get() = ordinal
     val bitMask: Int get() = 1 shl ordinal
 
+    val isXbox: Boolean get() = name.contains("xbox", ignoreCase = true) || name.contains("microsoft", ignoreCase = true) || name.contains("xinput", ignoreCase = true)
+    val isPlaystation: Boolean get() = name.contains("dualsense", ignoreCase = true) || name.contains("dualshock", ignoreCase = true) || name.contains("sony", ignoreCase = true)
+
 	companion object {
 		val BUTTONS = values()
 		const val MAX = 32
@@ -257,16 +262,45 @@ enum class GameButton {
         val PS_CIRCLE get() = BUTTON_EAST
         val PS_SQUARE get() = BUTTON_WEST
         val PS_TRIANGLE get() = BUTTON_NORTH
+    }
+}
 
-        val GENERIC_BUTTON_DOWN get() = BUTTON_SOUTH
-        val GENERIC_BUTTON_RIGHT get() = BUTTON_EAST
-        val GENERIC_BUTTON_LEFT get() = BUTTON_WEST
-        val GENERIC_BUTTON_UP get() = BUTTON_NORTH
+class GamepadInfoEmitter(val dispatcher: EventDispatcher) {
+    private val gamepadPrevConnected = BooleanArray(GamepadInfo.MAX_CONTROLLERS)
+    private val gamePadUpdateEvent = GamePadUpdateEvent()
+    private val gamePadConnectionEvent = GamePadConnectionEvent()
+    private val tempInts = IntArrayList()
 
-        @Deprecated("", ReplaceWith("BUTTON_SOUTH", "com.soywiz.korev.GameButton.BUTTON_SOUTH")) val BUTTON0 get() = BUTTON_SOUTH
-        @Deprecated("", ReplaceWith("BUTTON_EAST", "com.soywiz.korev.GameButton.BUTTON_EAST")) val BUTTON1 get() = BUTTON_EAST
-        @Deprecated("", ReplaceWith("BUTTON_WEST", "com.soywiz.korev.GameButton.BUTTON_WEST")) val BUTTON2 get() = BUTTON_WEST
-        @Deprecated("", ReplaceWith("BUTTON_NORTH", "com.soywiz.korev.GameButton.BUTTON_NORTH")) val BUTTON3 get() = BUTTON_NORTH
+    fun dispatchGamepadUpdateStart() {
+        gamePadUpdateEvent.gamepads.fastForEach { it.connected = false }
+        gamePadUpdateEvent.gamepadsLength = 0
+    }
+    fun dispatchGamepadUpdateAdd(info: GamepadInfo) {
+        val index = gamePadUpdateEvent.gamepadsLength++
+        val pad = gamePadUpdateEvent.gamepads[index]
+        pad.copyFrom(info)
+        pad.connected = true
+        pad.index = index
+    }
+    /**
+     * Triggers an update envent and potential CONNECTED/DISCONNECTED events.
+     *
+     * Returns a list of disconnected gamepads.
+     */
+    fun dispatchGamepadUpdateEnd(out: IntArrayList = tempInts): IntArrayList {
+        out.clear()
+        gamePadUpdateEvent.gamepads.fastForEach {
+            if (gamepadPrevConnected[it.index] != it.connected) {
+                gamepadPrevConnected[it.index] = it.connected
+                out.add(it.index)
+                dispatcher.dispatch(gamePadConnectionEvent.apply {
+                    this.type = GamePadConnectionEvent.Type.fromConnected(it.connected)
+                    this.gamepad = it.index
+                })
+            }
+        }
+        dispatcher.dispatch(gamePadUpdateEvent)
+        return out
     }
 }
 
@@ -274,29 +308,32 @@ enum class GameButton {
 class GamepadInfo(
     var index: Int = 0,
     var connected: Boolean = false,
-    var name: String = "unknown",
+    var name: String? = null,
     var rawButtons: FloatArray = FloatArray(GameButton.MAX),
     var batteryLevel: Double = 1.0,
     var name2: String = DEFAULT_NAME2,
-    var playerIndex: Int = index,
     var batteryStatus: BatteryStatus = BatteryStatus.UNKNOWN,
 ) {
     enum class BatteryStatus { CHARGING, DISCHARGING, FULL, UNKNOWN }
 
     companion object {
         val DEFAULT_NAME2 = "Wireless Controller"
+        const val MAX_CONTROLLERS = 4
+        //const val MAX_CONTROLLERS = 8
 
-        fun withoutDeadRange(value: Float, margin: Float = 0.03f, apply: Boolean = true): Float {
+        const val DEAD_RANGE = 0.06f
+
+        fun withoutDeadRange(value: Float, margin: Float = DEAD_RANGE, apply: Boolean = true): Float {
             if (apply && value.absoluteValue < margin) return 0f
             return value
         }
-        fun withoutDeadRange(value: Double, margin: Double = 0.03, apply: Boolean = true): Double {
+        fun withoutDeadRange(value: Double, margin: Double = DEAD_RANGE.toDouble(), apply: Boolean = true): Double {
             if (apply && value.absoluteValue < margin) return 0.0
             return value
         }
     }
 
-    val fullName: String get() = "$name - $name2"
+    val fullName: String get() = "${name ?: "unknown"} - $name2"
 
 	fun copyFrom(that: GamepadInfo) {
 		this.index = that.index
@@ -304,7 +341,6 @@ class GamepadInfo(
         this.name2 = that.name2
 		this.connected = that.connected
         this.batteryLevel = that.batteryLevel
-        this.playerIndex = that.playerIndex
         this.batteryStatus = that.batteryStatus
         arraycopy(that.rawButtons, 0, this.rawButtons, 0, min(this.rawButtons.size, that.rawButtons.size))
 	}
@@ -317,12 +353,23 @@ class GamepadInfo(
     val select: Boolean get() = this[GameButton.SELECT] != 0.0
     val system: Boolean get() = this[GameButton.SYSTEM] != 0.0
 
-
+    val north: Boolean get() = this[GameButton.BUTTON_NORTH] != 0.0
+    val west: Boolean get() = this[GameButton.BUTTON_WEST] != 0.0
+    val east: Boolean get() = this[GameButton.BUTTON_EAST] != 0.0
+    val south: Boolean get() = this[GameButton.BUTTON_SOUTH] != 0.0
 
     val lx: Double get() = this[GameButton.LX]
     val ly: Double get() = this[GameButton.LY]
     val rx: Double get() = this[GameButton.RX]
     val ry: Double get() = this[GameButton.RY]
+
+    val l1: Boolean get() = this[GameButton.L1] != 0.0
+    val l2: Double get() = this[GameButton.L2]
+    val l3: Boolean get() = this[GameButton.L3] != 0.0
+
+    val r1: Boolean get() = this[GameButton.R1] != 0.0
+    val r2: Double get() = this[GameButton.R2]
+    val r3: Boolean get() = this[GameButton.R3] != 0.0
 
     private val stick = Array(2) { MPoint() }
 

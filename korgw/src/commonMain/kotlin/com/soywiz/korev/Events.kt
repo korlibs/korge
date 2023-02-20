@@ -401,7 +401,12 @@ data class GamePadConnectionEvent(
     var gamepad: Int = 0
 ) : Event(), TEvent<GamePadConnectionEvent> {
 
-	enum class Type : EventType<GamePadConnectionEvent> { CONNECTED, DISCONNECTED }
+	enum class Type : EventType<GamePadConnectionEvent> {
+        CONNECTED, DISCONNECTED;
+        companion object {
+            fun fromConnected(connected: Boolean): Type = if (connected) CONNECTED else DISCONNECTED
+        }
+    }
 
     fun copyFrom(other: GamePadConnectionEvent) {
         this.type = other.type
@@ -412,7 +417,7 @@ data class GamePadConnectionEvent(
 @Suppress("ArrayInDataClass")
 data class GamePadUpdateEvent @JvmOverloads constructor(
     var gamepadsLength: Int = 0,
-    val gamepads: Array<GamepadInfo> = Array(8) { GamepadInfo(it) }
+    val gamepads: Array<GamepadInfo> = Array(GamepadInfo.MAX_CONTROLLERS) { GamepadInfo(it) },
 ) : Event(), TEvent<GamePadUpdateEvent> {
     override val type: EventType<GamePadUpdateEvent> get() = GamePadUpdateEvent
     companion object : EventType<GamePadUpdateEvent>

@@ -372,8 +372,6 @@ open class GameWindow :
     protected val touchBuilder = TouchBuilder()
     protected val touchEvent get() = touchBuilder.new
     protected val dropFileEvent = DropFileEvent()
-    protected val gamePadUpdateEvent = GamePadUpdateEvent()
-    protected val gamePadConnectionEvent = GamePadConnectionEvent()
 
     @KoragExperimental
     suspend fun <T> runBlockingNoJs(block: suspend () -> T): T {
@@ -694,31 +692,24 @@ open class GameWindow :
         return cancel1 || cancel2
     }
 
-    //private val gamePadConnectionEvent = GamePadConnectionEvent()
-    fun dispatchGamepadConnectionEvent(type: GamePadConnectionEvent.Type, gamepad: Int) {
-        dispatch(gamePadConnectionEvent.apply {
-            this.type = type
-            this.gamepad = gamepad
-        })
-    }
+    private val gamepadEmitter: GamepadInfoEmitter = GamepadInfoEmitter(this)
 
     //private val gamePadUpdateEvent = GamePadUpdateEvent()
     fun dispatchGamepadUpdateStart() {
-        gamePadUpdateEvent.gamepadsLength = 0
+        gamepadEmitter.dispatchGamepadUpdateStart()
     }
 
-    fun dispatchGamepadUpdateAdd(
-        info: GamepadInfo
-    ) {
-        val index = gamePadUpdateEvent.gamepadsLength++
-        val pad = gamePadUpdateEvent.gamepads[index]
-        pad.copyFrom(info)
-        pad.index = index
+    fun dispatchGamepadUpdateAdd(info: GamepadInfo) {
+        gamepadEmitter.dispatchGamepadUpdateAdd(info)
     }
 
-    fun dispatchGamepadUpdateEnd() {
-        dispatch(gamePadUpdateEvent)
-    }
+    /**
+     * Triggers an update envent and potential CONNECTED/DISCONNECTED events.
+     *
+     * Returns a list of disconnected gamepads.
+     */
+    fun dispatchGamepadUpdateEnd(out: IntArrayList = IntArrayList()): IntArrayList =
+        gamepadEmitter.dispatchGamepadUpdateEnd(out)
 
     fun dispatchKeyEventEx(
         type: KeyEvent.Type, id: Int, character: Char, key: Key, keyCode: Int,

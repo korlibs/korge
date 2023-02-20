@@ -90,18 +90,21 @@ open class BrowserCanvasJsGameWindow(
                 val gamepads = navigator.getGamepads().unsafeCast<JsArray<JsGamePad?>>()
                 for (gp in gamePadUpdateEvent.gamepads) gp.connected = false
                 gamePadUpdateEvent.gamepadsLength = gamepads.length
+                var rgameIndex = 0
                 for (gamepadId in 0 until gamepads.length) {
                     val controller = gamepads[gamepadId] ?: continue
-                    val gamepad = gamePadUpdateEvent.gamepads.getOrNull(gamepadId) ?: continue
+                    if (controller.mapping != "standard") continue
+                    val index = rgameIndex++
+                    val gamepad = gamePadUpdateEvent.gamepads.getOrNull(index) ?: continue
                     gamepad.apply {
                         this.connected = controller.connected
-                        this.index = controller.index
                         this.name = controller.id
                         for (n in 0 until kotlin.math.min(controller.buttons.length, BUTTONS_MAPPING.size)) {
                             this.rawButtons[BUTTONS_MAPPING[n].index] = controller.buttons[n].value.toFloat()
                         }
                         for (n in 0 until kotlin.math.min(controller.axes.length, AXES_MAPPING.size)) {
-                            this.rawButtons[AXES_MAPPING[n].index] = controller.axes[n].toFloat()
+                            val value = controller.axes[n].toFloat()
+                            this.rawButtons[AXES_MAPPING[n].index] = GamepadInfo.withoutDeadRange(value, apply = n <= 3)
                         }
                     }
                 }
