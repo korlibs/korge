@@ -9,6 +9,10 @@ private val XINPUT_DLL by lazy { LoadLibraryA("xinput9_1_0.dll") }
 private val XInputGetState by lazy {
     GetProcAddress(XINPUT_DLL, "XInputGetState")?.reinterpret<CFunction<(dwUserIndex: Int, pState: CPointer<ByteVar>?) -> Int>>()
 }
+private val WINMM_DLL by lazy { LoadLibraryA("Winmm.dll") }
+private val joyGetDevCapsWDyn by lazy {
+    GetProcAddress(WINMM_DLL, "joyGetDevCapsW")?.reinterpret<CFunction<(uJoyID: Int, pjc: CPointer<ByteVar>?, cbjc: Int) -> Int>>()
+}
 
 internal class XInputEventAdapter {
     private val xinputState = XInputState()
@@ -28,6 +32,17 @@ internal class XInputEventAdapter {
             }
             val gamepad = controllers[n]
             if (connected) {
+                if (gamepad.name == null && joyGetDevCapsWDyn != null) {
+                    gamepad.name = memScoped {
+                        val STRUCT_SIZE = 728
+                        //val caps = alloc<JOYCAPSW>()
+                        val data = allocArray<ByteVar>(STRUCT_SIZE)
+                        //joyGetDevCapsW(n.convert(), caps.ptr, sizeOf<JOYCAPSW>().convert())
+                        joyGetDevCapsWDyn!!(n, data, 728)
+                        val strPtr = (data + 4)?.reinterpret<UShortVar>()
+                        strPtr?.toKStringFromUtf16() ?: "invalid"
+                    }
+                }
                 XInputMapping.setController(
                     gamepad,
                     state.wButtons, state.bLeftTrigger, state.bRightTrigger, state.sThumbLX, state.sThumbLY, state.sThumbRX, state.sThumbRY
