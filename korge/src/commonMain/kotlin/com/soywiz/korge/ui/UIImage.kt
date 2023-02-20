@@ -33,7 +33,7 @@ class UIImage(
     var smoothing: Boolean = true
 
     @ViewProperty
-    var bitmap: BmpSlice = bitmap;
+    var bitmap: BmpSlice = bitmap
         set(value) {
             if (field !== value) {
                 field = value; validCoords = false
@@ -42,7 +42,7 @@ class UIImage(
 
     @ViewProperty
     @ViewPropertyProvider(ScaleMode.Provider::class)
-    var scaleMode: ScaleMode = scaleMode;
+    var scaleMode: ScaleMode = scaleMode
         set(value) {
             if (field !== value) {
                 field = value; validCoords = false
@@ -50,7 +50,7 @@ class UIImage(
         }
 
     @ViewProperty
-    var contentAnchor: Anchor = contentAnchor;
+    var contentAnchor: Anchor = contentAnchor
         set(value) {
             if (field !== value) {
                 field = value; validCoords = false

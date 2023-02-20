@@ -113,7 +113,7 @@ class MainTilemapTest : Scene() {
             val onDisc = dist < mapWidth / 2
             val tooClose = dist < (mapWidth / 2) * 0.7
             mapValues2[x, y] =
-                if (onDisc && !tooClose) 1 + rand.nextInt(tileSet.texturesMap.size - 1) else 0
+                if (onDisc && !tooClose) 1 + rand.nextInt(tileSet.tilesMap.size - 1) else 0
         }
         return mapValues2
     }

@@ -1,10 +1,7 @@
 package com.soywiz.korim.tiles
 
-import com.soywiz.kds.IntMap
-import com.soywiz.kds.iterators.fastForEach
+import com.soywiz.kds.*
 import com.soywiz.kds.iterators.fastForEachWithIndex
-import com.soywiz.kds.toIntMap
-import com.soywiz.kds.toMap
 import com.soywiz.klock.TimeSpan
 import com.soywiz.kmem.nextPowerOfTwo
 import com.soywiz.kmem.toIntCeil
@@ -19,23 +16,22 @@ data class TileSetAnimationFrame(
 data class TileSetTileInfo(
     val id: Int,
     val slice: BmpSlice,
-    val frames: List<TileSetAnimationFrame> = emptyList()
-)
+    val frames: List<TileSetAnimationFrame> = emptyList(),
+    val collision: TileShapeInfo? = null,
+) : Extra by Extra.Mixin()
 
 class TileSet(
-    val texturesMap: IntMap<TileSetTileInfo>,
+    val tilesMap: IntMap<TileSetTileInfo>,
 	//val textures: List<BmpSlice?>,
-    val width: Int = if (texturesMap.size == 0) 0 else texturesMap.firstValue().slice.width,
-    val height: Int = if (texturesMap.size == 0) 0 else texturesMap.firstValue().slice.height,
-    val collisionsMap: IntMap<TileShapeInfo> = IntMap(),
+    val width: Int = if (tilesMap.size == 0) 0 else tilesMap.firstValue().slice.width,
+    val height: Int = if (tilesMap.size == 0) 0 else tilesMap.firstValue().slice.height,
 ) {
-    override fun toString(): String = "TileSet(size=${width}x$height, tiles=${texturesMap.keys.toList()})"
+    override fun toString(): String = "TileSet(size=${width}x$height, tiles=${tilesMap.keys.toList()})"
 
-    val base: Bitmap by lazy { if (texturesMap.size == 0) Bitmaps.transparent.bmpBase else texturesMap.firstValue().slice.bmpBase }
-    val hasMultipleBaseBitmaps by lazy { texturesMap.values.any { it !== null && it.slice.bmpBase !== base } }
-    val infos by lazy { Array<TileSetTileInfo?>(texturesMap.keys.maxOrNull()?.plus(1) ?: 0) { texturesMap[it] } }
-    val textures by lazy { Array<BitmapCoords?>(texturesMap.keys.maxOrNull()?.plus(1) ?: 0) { texturesMap[it]?.slice } }
-    val collisions by lazy { Array<TileShapeInfo?>(texturesMap.keys.maxOrNull()?.plus(1) ?: 0) { collisionsMap[it] } }
+    val base: Bitmap by lazy { if (tilesMap.size == 0) Bitmaps.transparent.bmpBase else tilesMap.firstValue().slice.bmpBase }
+    val hasMultipleBaseBitmaps by lazy { tilesMap.values.any { it !== null && it.slice.bmpBase !== base } }
+    val infos by lazy { Array<TileSetTileInfo?>(tilesMap.keys.maxOrNull()?.plus(1) ?: 0) { tilesMap[it] } }
+    val textures by lazy { Array<BitmapCoords?>(tilesMap.keys.maxOrNull()?.plus(1) ?: 0) { tilesMap[it]?.slice } }
 	//init { if (hasMultipleBaseBitmaps) throw RuntimeException("All tiles in the set must have the same base texture") }
 
     //init {
@@ -47,52 +43,26 @@ class TileSet(
     fun getSlice(index: Int): BmpSlice? = getInfo(index)?.slice
 	operator fun get(index: Int): BmpSlice? = getSlice(index)
 
-    fun clone(): TileSet = TileSet(this.texturesMap.clone(), this.width, this.height)
+    fun clone(): TileSet = TileSet(this.tilesMap.clone(), this.width, this.height)
 
 	companion object {
         val EMPTY = TileSet(IntMap())
-
-        @Deprecated("")
-        operator fun invoke(
-            texturesMap: Map<Int, BmpSlice>,
-            width: Int = texturesMap.values.first().width,
-            height: Int = texturesMap.values.first().height,
-            collisionsMap: IntMap<TileShapeInfo> = IntMap(),
-        ) = TileSet(texturesMap.map { (key, value) -> key to TileSetTileInfo(key, value) }.toMap().toIntMap(), width, height, collisionsMap)
-
-		operator fun invoke(
-            textureMap: Map<Int, TileSetTileInfo>,
-            collisionsMap: IntMap<TileShapeInfo> = IntMap(),
-        ): TileSet = TileSet(textureMap.toIntMap(), collisionsMap = collisionsMap)
-
-        operator fun invoke(
-            tileSets: List<TileSet>,
-            collisionsMap: IntMap<TileShapeInfo> = IntMap(),
-        ): TileSet {
-            val map = IntMap<TileSetTileInfo>()
-            tileSets.fastForEach { tileSet ->
-                map.putAll(tileSet.texturesMap)
-            }
-            return TileSet(map, collisionsMap = collisionsMap)
-        }
 
         operator fun invoke(
             tiles: List<TileSetTileInfo>,
             width: Int = tiles.first().slice.width,
             height: Int = tiles.first().slice.height,
-            collisionsMap: IntMap<TileShapeInfo> = IntMap(),
         ): TileSet {
             val map = IntMap<TileSetTileInfo>()
             tiles.fastForEachWithIndex { index, value -> map[index] = value }
-            return TileSet(map, width, height, collisionsMap = collisionsMap)
+            return TileSet(map, width, height)
         }
 
         operator fun invoke(
             vararg tiles: TileSetTileInfo,
             width: Int = tiles.first().slice.width,
             height: Int = tiles.first().slice.height,
-            collisionsMap: IntMap<TileShapeInfo> = IntMap(),
-        ): TileSet = invoke(tiles.toList(), width, height, collisionsMap)
+        ): TileSet = invoke(tiles.toList(), width, height)
 
 		operator fun invoke(
             base: BmpSlice,
@@ -100,7 +70,6 @@ class TileSet(
             tileHeight: Int = base.height,
             columns: Int = -1,
             totalTiles: Int = -1,
-            collisionsMap: IntMap<TileShapeInfo> = IntMap(),
 		): TileSet {
 			val out = IntMap<TileSetTileInfo>()
 			val rows = base.height / tileHeight
@@ -116,7 +85,7 @@ class TileSet(
 				}
 			}
 
-			return TileSet(out, tileWidth, tileHeight, collisionsMap = collisionsMap)
+			return TileSet(out, tileWidth, tileHeight)
 		}
 
         fun extractBmpSlices(
@@ -158,9 +127,8 @@ class TileSet(
             bitmaps: List<Bitmap32>,
             border: Int = 1,
             mipmaps: Boolean = false,
-            collisionsMap: IntMap<TileShapeInfo> = IntMap(),
         ): TileSet {
-            return fromBitmapSlices(tilewidth, tileheight, bitmaps.map { it.slice() }, border, mipmaps, collisionsMap = collisionsMap)
+            return fromBitmapSlices(tilewidth, tileheight, bitmaps.map { it.slice() }, border, mipmaps)
         }
 
 		fun fromBitmapSlices(
@@ -169,7 +137,6 @@ class TileSet(
             bmpSlices: List<BmpSlice32>,
             border: Int = 1,
             mipmaps: Boolean = false,
-            collisionsMap: IntMap<TileShapeInfo> = IntMap(),
         ): TileSet {
 			check(bmpSlices.all { it.width == tilewidth && it.height == tileheight })
 			if (bmpSlices.isEmpty()) return TileSet(IntMap(), tilewidth, tileheight)
@@ -211,7 +178,7 @@ class TileSet(
 				}
 			}
 
-			return TileSet(texs, tilewidth, tileheight, collisionsMap = collisionsMap)
+			return TileSet(texs, tilewidth, tileheight)
 		}
 	}
 }
