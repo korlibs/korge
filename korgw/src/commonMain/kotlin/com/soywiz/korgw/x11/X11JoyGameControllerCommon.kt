@@ -132,11 +132,11 @@ internal class LinuxJoyEventAdapter : Closeable {
 
                             if (type hasFlags JS_EVENT_AXIS) {
                                 val button = when (number) {
-                                    0 -> GameButton.LY
-                                    1 -> GameButton.LX
+                                    0 -> GameButton.LX
+                                    1 -> GameButton.LY
                                     2 -> GameButton.L2
-                                    3 -> GameButton.RY
-                                    4 -> GameButton.RX
+                                    3 -> GameButton.RX
+                                    4 -> GameButton.RY
                                     5 -> GameButton.R2
                                     6 -> GameButton.DPADX
                                     7 -> GameButton.DPADY
