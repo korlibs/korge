@@ -210,10 +210,13 @@ internal class MacosGamepadEventAdapter {
         try {
             lib
             for (n in allControllers.indices) allControllers[n] = null
-            GCController.controllers().map { GCController(it) }.fastForEach {
-                val index = it.playerIndex
-                if (index in allControllers.indices) allControllers[index] = it
-            }
+            GCController.controllers()
+                //.sortedBy { it }
+                .map { GCController(it) }
+                .fastForEachWithIndex { index, it ->
+                    //println("index=$index")
+                    if (index in allControllers.indices) allControllers[index] = it
+                }
 
             gameWindow.dispatchGamepadUpdateStart()
             for (index in allControllers.indices) {
@@ -248,6 +251,7 @@ internal class MacosGamepadEventAdapter {
                     gamepad.set(GameButton.RX, ex.rightThumbstick.x, deadRange = true)
                     gamepad.set(GameButton.RY, ex.rightThumbstick.y, deadRange = true)
                 }
+                gamepad.name = ctrl.vendorName
                 gamepad.batteryLevel = ctrl.battery?.batteryLevel?.toDouble() ?: 1.0
                 //println("ctrl.battery?.batteryState=${ctrl.battery?.batteryState}")
                 gamepad.batteryStatus = when (ctrl.battery?.batteryState) {

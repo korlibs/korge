@@ -6,7 +6,7 @@ import platform.GameController.*
 
 class DarwinGameControllerNative {
     private val info = GamepadInfo()
-    private val allControllers = Array<GCController?>(8) { null }
+    private val allControllers = Array<GCController?>(GamepadInfo.MAX_CONTROLLERS) { null }
 
     private fun button(button: GameButton, value: Float) {
         info.rawButtons[button.index] = value
@@ -23,9 +23,9 @@ class DarwinGameControllerNative {
     @Suppress("RemoveRedundantCallsOfConversionMethods")
     fun updateGamepads(gameWindow: GameWindow) {
         for (n in allControllers.indices) allControllers[n] = null
-        GCController.controllers().fastForEach {
+        GCController.controllers().fastForEachWithIndex { index, it ->
             if (it is GCController) {
-                val index = it.playerIndex.toInt()
+                //val index = it.playerIndex.toInt()
                 if (index in allControllers.indices) allControllers[index] = it
             }
         }
