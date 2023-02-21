@@ -1,15 +1,10 @@
 package com.soywiz.korge.resources
 
-import com.soywiz.korinject.AsyncDependency
-import com.soywiz.korio.file.PathInfo
-import com.soywiz.korio.file.VfsFile
-import com.soywiz.korio.file.extensionLC
-import com.soywiz.korio.file.fullPathWithExtension
-import com.soywiz.korio.file.std.Mountable
-import com.soywiz.korio.file.std.MountableVfs
-import com.soywiz.korio.file.std.resourcesVfs
-import com.soywiz.korio.resources.ResourcePath
-import com.soywiz.korio.util.OS
+import com.soywiz.kmem.*
+import com.soywiz.korinject.*
+import com.soywiz.korio.file.*
+import com.soywiz.korio.file.std.*
+import com.soywiz.korio.resources.*
 
 //@Singleton
 class ResourcesRoot : AsyncDependency {
@@ -53,7 +48,7 @@ class ResourcesRoot : AsyncDependency {
 	}
 
 	suspend fun mapExtensionsJustInJS(vararg maps: Pair<String, String>) {
-		if (OS.isJs) {
+		if (Platform.isJs) {
 			mapExtensions(*maps)
 		}
 	}

@@ -1,8 +1,8 @@
 package com.soywiz.korau.sound.impl.jna
 
+import com.soywiz.kmem.*
 import com.soywiz.korio.lang.Environment
 import com.soywiz.korio.time.traceTime
-import com.soywiz.korio.util.OS
 import com.sun.jna.Native
 import com.sun.jna.Pointer
 import java.io.File
@@ -223,7 +223,7 @@ object AL {
             }
             loaded = true
         } catch (e: Throwable) {
-            com.soywiz.klogger.Console.error("Failed to initialize OpenAL: arch=$arch, OS.rawName=${OS.rawName}, nativeOpenALLibraryPath=$nativeOpenALLibraryPath, message=${e.message}")
+            com.soywiz.klogger.Console.error("Failed to initialize OpenAL: arch=$arch, OS.rawName=${Platform.rawOsName}, nativeOpenALLibraryPath=$nativeOpenALLibraryPath, message=${e.message}")
             //e.printStackTrace()
         }
     }
@@ -237,9 +237,9 @@ val nativeOpenALLibraryPath: String? by lazy {
         return@lazy null
     }
     when {
-        OS.isMac -> "OpenAL" // Mac already includes the OpenAL library
-        OS.isLinux -> "libopenal.so.1"
-        OS.isWindows -> "soft_oal.dll"
+        Platform.isMac -> "OpenAL" // Mac already includes the OpenAL library
+        Platform.isLinux -> "libopenal.so.1"
+        Platform.isWindows -> "soft_oal.dll"
         else -> {
             println("  - Unknown/Unsupported OS")
             null

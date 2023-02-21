@@ -15,8 +15,9 @@ class AESTest {
         val plainText = Hex.decode("00112233445566778899aabbccddeeff")
         val cipherKey = Hex.decode("000102030405060708090a0b0c0d0e0f")
         val cipherText = Hex.decode("69c4e0d86a7b0430d8cdb78070b4c55a")
-        assertEquals(plainText.toHexStringLower(), AES.decryptAes128Cbc(cipherText, cipherKey).toHexStringLower())
-        assertEquals(cipherText.toHexStringLower(), AES.encryptAes128Cbc(plainText, cipherKey).toHexStringLower())
+        val iv = ByteArray(16)
+        assertEquals(plainText.toHexStringLower(), AES.decryptAesCbc(cipherText, cipherKey, iv, CipherPadding.NoPadding).toHexStringLower())
+        assertEquals(cipherText.toHexStringLower(), AES.encryptAesCbc(plainText, cipherKey, iv, CipherPadding.NoPadding).toHexStringLower())
     }
 
     @Test
@@ -24,8 +25,9 @@ class AESTest {
         val plainText =
             Hex.decode("00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff")
         val cipherKey = Hex.decode("000102030405060708090a0b0c0d0e0f")
-        val cipherText = AES.encryptAes128Cbc(plainText, cipherKey)
-        assertEquals(plainText.toHexStringLower(), AES.decryptAes128Cbc(cipherText, cipherKey).toHexStringLower())
+        val iv = ByteArray(16)
+        val cipherText = AES.encryptAesCbc(plainText, cipherKey, iv, CipherPadding.NoPadding)
+        assertEquals(plainText.toHexStringLower(), AES.decryptAesCbc(cipherText, cipherKey, iv, CipherPadding.NoPadding).toHexStringLower())
     }
 
     @Test
@@ -220,7 +222,6 @@ class AESTest {
         val key = "11090c51a42c0b98cd2b7b7480d80dc86458258c010c306e60e94cde7f8eaffb".unhex
 
         AES.encryptAesCbc(data, key, iv, Padding.NoPadding)
-        AES.encryptAes128Cbc(data, key)
         // Data not aligned, and NoPadding used, it should fail
         //assertFailsWith<IllegalArgumentException> { AES.encryptAesCbc(data, key, iv, Padding.NoPadding) }
         //assertFailsWith<IllegalArgumentException> { AES.encryptAes128Cbc(data, key) }
@@ -230,7 +231,7 @@ class AESTest {
         )
         assertEquals(
             "6ed24a2790e3bb1a3cecd89c6d33b487cb2c38471ea7e3c2771ab537fb23875e",
-            AES.encryptAes128Cbc(data, key, iv, padding = Padding.ZeroPadding).hex
+            AES.encryptAesCbc(data, key, iv, padding = Padding.ZeroPadding).hex
         )
     }
 

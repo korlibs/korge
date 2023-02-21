@@ -9,7 +9,7 @@ class Bitmap1(
 	width: Int,
 	height: Int,
 	data: ByteArray = ByteArray((width * height) divCeil 8),
-	palette: RgbaArray = RgbaArray(intArrayOf(Colors.TRANSPARENT_BLACK.value, Colors.WHITE.value))
+	palette: RgbaArray = RgbaArray(intArrayOf(Colors.TRANSPARENT.value, Colors.WHITE.value))
 ) : BitmapIndexed(1, width, height, data, palette) {
     companion object {
         fun fromString(str: String, transform: (Char) -> Boolean = { it != '.' && it != ' ' }): Bitmap1 {
@@ -30,7 +30,7 @@ class Bitmap1(
 
 inline fun Bitmap32.toBitmap1(): Bitmap1 = toBitmap1 { it.a >= 0x3F }
 inline fun Bitmap32.toBitmap1(func: (value: RGBA) -> Boolean): Bitmap1 {
-    val out = Bitmap1(width, height, palette = RgbaArray(intArrayOf(Colors.TRANSPARENT_BLACK.value, Colors.WHITE.value)))
+    val out = Bitmap1(width, height, palette = RgbaArray(intArrayOf(Colors.TRANSPARENT.value, Colors.WHITE.value)))
     var n = 0
     for (y in 0 until height) {
         for (x in 0 until width) {

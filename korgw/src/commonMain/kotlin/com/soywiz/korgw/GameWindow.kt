@@ -372,8 +372,6 @@ open class GameWindow :
     protected val touchBuilder = TouchBuilder()
     protected val touchEvent get() = touchBuilder.new
     protected val dropFileEvent = DropFileEvent()
-    protected val gamePadUpdateEvent = GamePadUpdateEvent()
-    protected val gamePadConnectionEvent = GamePadConnectionEvent()
 
     @KoragExperimental
     suspend fun <T> runBlockingNoJs(block: suspend () -> T): T {
@@ -694,50 +692,24 @@ open class GameWindow :
         return cancel1 || cancel2
     }
 
-    //private val gamePadConnectionEvent = GamePadConnectionEvent()
-    fun dispatchGamepadConnectionEvent(type: GamePadConnectionEvent.Type, gamepad: Int) {
-        dispatch(gamePadConnectionEvent.apply {
-            this.type = type
-            this.gamepad = gamepad
-        })
-    }
+    val gamepadEmitter: GamepadInfoEmitter = GamepadInfoEmitter(this)
 
     //private val gamePadUpdateEvent = GamePadUpdateEvent()
     fun dispatchGamepadUpdateStart() {
-        gamePadUpdateEvent.gamepadsLength = 0
+        gamepadEmitter.dispatchGamepadUpdateStart()
     }
 
-    fun dispatchGamepadUpdateAdd(
-        leftStick: MPoint,
-        rightStick: MPoint,
-        rawButtonsPressed: Int,
-        mapping: GamepadMapping,
-        name: String?,
-        batteryLevel: Double,
-        name2: String? = null,
-        playerIndex: Int = -1,
-        batteryStatus: com.soywiz.korev.GamepadInfo.BatteryStatus? = null,
-    ) {
-        val index = gamePadUpdateEvent.gamepadsLength++
-        val pad = gamePadUpdateEvent.gamepads[index]
-        pad.mapping = mapping
-        pad.axesLength = 4
-        pad.buttonsLength = 32
-        pad.rawAxes[0] = leftStick.x
-        pad.rawAxes[1] = leftStick.y
-        pad.rawAxes[2] = rightStick.x
-        pad.rawAxes[3] = rightStick.y
-        pad.rawButtonsPressed = rawButtonsPressed
-        pad.name = name ?: "unknown"
-        pad.name2 = name2 ?: "unknown"
-        pad.batteryLevel = batteryLevel
-        pad.batteryStatus = batteryStatus ?: com.soywiz.korev.GamepadInfo.BatteryStatus.UNKNOWN
-        pad.playerIndex = playerIndex.takeIf { it >= 0 } ?: index
+    fun dispatchGamepadUpdateAdd(info: GamepadInfo) {
+        gamepadEmitter.dispatchGamepadUpdateAdd(info)
     }
 
-    fun dispatchGamepadUpdateEnd() {
-        dispatch(gamePadUpdateEvent)
-    }
+    /**
+     * Triggers an update envent and potential CONNECTED/DISCONNECTED events.
+     *
+     * Returns a list of disconnected gamepads.
+     */
+    fun dispatchGamepadUpdateEnd(out: IntArrayList = IntArrayList()): IntArrayList =
+        gamepadEmitter.dispatchGamepadUpdateEnd(out)
 
     fun dispatchKeyEventEx(
         type: KeyEvent.Type, id: Int, character: Char, key: Key, keyCode: Int,

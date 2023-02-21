@@ -3,12 +3,12 @@ package com.soywiz.korma.triangle.poly2tri
 import com.soywiz.kds.IntArrayList
 import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.korma.geom.PointArrayList
+import com.soywiz.korma.geom.shape.*
 import com.soywiz.korma.geom.shape.ops.internal.Clipper
 import com.soywiz.korma.geom.shape.ops.internal.DefaultClipper
 import com.soywiz.korma.geom.shape.ops.internal.executePaths
 import com.soywiz.korma.geom.shape.ops.internal.toClipperPaths
 import com.soywiz.korma.geom.shape.ops.internal.toPathList
-import com.soywiz.korma.geom.shape.toPathList
 import com.soywiz.korma.geom.triangle.TriangleList
 import com.soywiz.korma.geom.vector.VectorPath
 
@@ -19,7 +19,7 @@ fun VectorPath.triangulateSafe(doClipper: Boolean = true): TriangleList {
         clipper.addPaths(path.toClipperPaths(), Clipper.PolyType.SUBJECT, true)
         clipper.executePaths(Clipper.ClipType.UNION).toPathList()
     } else {
-        this.toPathList()
+        this.toPathPointList()
     }
 
     val sweep = Poly2Tri.SweepContext()

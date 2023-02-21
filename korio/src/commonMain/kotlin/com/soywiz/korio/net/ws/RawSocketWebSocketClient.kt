@@ -2,7 +2,7 @@ package com.soywiz.korio.net.ws
 
 import com.soywiz.klock.DateTime
 import com.soywiz.klock.milliseconds
-import com.soywiz.kmem.readU16BE
+import com.soywiz.kmem.*
 import com.soywiz.korio.async.delay
 import com.soywiz.korio.async.launchImmediately
 import com.soywiz.korio.experimental.KorioInternal
@@ -17,7 +17,6 @@ import com.soywiz.korio.net.http.HttpClient
 import com.soywiz.korio.stream.AsyncInputStream
 import com.soywiz.korio.stream.readLine
 import com.soywiz.korio.stream.writeBytes
-import com.soywiz.korio.util.OS
 import com.soywiz.korio.util.buildList
 import com.soywiz.korio.util.join
 import com.soywiz.krypto.encoding.toBase64
@@ -38,7 +37,7 @@ suspend fun RawSocketWebSocketClient(
     masked: Boolean = true,
     init: WebSocketClient.() -> Unit = {},
 ): WebSocketClient {
-    if (OS.isJsBrowserOrWorker) error("RawSocketWebSocketClient is not supported on JS browser. Use WebSocketClient instead")
+    if (Platform.isJsBrowserOrWorker) error("RawSocketWebSocketClient is not supported on JS browser. Use WebSocketClient instead")
     val uri = URL(url)
     val secure: Boolean = uri.isSecureScheme
     return RawSocketWebSocketClient(coroutineContext, AsyncClient.create(secure = secure), uri, protocols, debug, origin, wskey, headers, masked).also {
@@ -97,7 +96,7 @@ class RawSocketWebSocketClient(
 
     @KorioInternal
     suspend fun internalConnect() {
-        if (OS.isJsBrowserOrWorker) error("RawSocketWebSocketClient is not supported on JS browser. Use WebSocketClient instead")
+        if (Platform.isJsBrowserOrWorker) error("RawSocketWebSocketClient is not supported on JS browser. Use WebSocketClient instead")
 
         client.connect(host, port)
         client.writeBytes(buildHeader().toByteArray())

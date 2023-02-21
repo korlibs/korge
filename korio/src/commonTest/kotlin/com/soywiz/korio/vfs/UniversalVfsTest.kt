@@ -1,5 +1,6 @@
 package com.soywiz.korio.vfs
 
+import com.soywiz.kmem.*
 import com.soywiz.korio.async.suspendTest
 import com.soywiz.korio.file.std.LocalVfs
 import com.soywiz.korio.file.std.MemoryVfs
@@ -12,14 +13,13 @@ import com.soywiz.korio.file.std.registerUniSchemaTemporarily
 import com.soywiz.korio.file.std.uniVfs
 import com.soywiz.korio.lang.InvalidOperationException
 import com.soywiz.korio.net.http.LogHttpClient
-import com.soywiz.korio.util.OS
 import com.soywiz.korio.util.expectException
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class UniversalVfsTest {
-    private val fileIsLocalVfs get() = !OS.isJsBrowser && !OS.isNative
+    private val fileIsLocalVfs get() = !Platform.isJsBrowser && !Platform.isNative
 
 	@Test
 	fun testProperVfsIsResolved() {

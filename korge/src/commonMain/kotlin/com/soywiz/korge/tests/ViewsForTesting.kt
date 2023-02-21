@@ -280,7 +280,7 @@ open class ViewsForTesting(
     fun viewsTest(
         timeout: TimeSpan? = DEFAULT_SUSPEND_TEST_TIMEOUT,
         frameTime: TimeSpan = this.frameTime,
-        cond: () -> Boolean = { OS.isJvm && !OS.isAndroid },
+        cond: () -> Boolean = { Platform.isJvm && !Platform.isAndroid },
         //devicePixelRatio: Double = defaultDevicePixelRatio,
         forceRenderEveryFrame: Boolean = true,
         block: suspend Stage.() -> Unit

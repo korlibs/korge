@@ -1,12 +1,13 @@
 package com.soywiz.korio.util
 
+import com.soywiz.kmem.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class UUIDTest {
     @Test
     fun testRandom() {
-        if (OS.isAndroid) return // Do not test in android since Process is not mocked
+        if (Platform.isAndroid) return // Do not test in android since Process is not mocked
         val random = UUID.randomUUID()
         assertEquals(4, random.version)
         assertEquals(1, random.variant)

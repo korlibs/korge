@@ -89,8 +89,6 @@ class Bezier(
     constructor(vararg points: Double) : this(PointArrayList(*points))
     constructor(vararg points: Float) : this(PointArrayList(*points))
     constructor(vararg points: Int) : this(PointArrayList(*points))
-    @Deprecated("Boxing in K/N debug builds")
-    constructor(vararg points: Number) : this(PointArrayList(*points))
 
     fun copyFrom(bezier: IBezier): Bezier {
         this._points.copyFrom(bezier.points)
@@ -221,7 +219,7 @@ class Bezier(
         return _extrema
     }
 
-    private var _outerCircle: Circle? = null
+    private var _outerCircle: MCircle? = null
     val outerCircle: ICircle get() {
         if (_outerCircle == null) {
             _outerCircle = boundingBox.outerCircle()

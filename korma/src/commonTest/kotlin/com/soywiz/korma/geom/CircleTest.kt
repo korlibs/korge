@@ -5,7 +5,7 @@ import kotlin.test.Test
 class CircleTest {
     @Test
     fun testProjectedPoint() {
-        val circle = Circle(MPoint(100, 100), radius = 100.0)
+        val circle = MCircle(MPoint(100, 100), radius = 100.0)
         // Simple inner positions
         assertEquals(MPoint(200, 100), circle.projectedPoint(MPoint(110, 100)))
         assertEquals(MPoint(0, 100), circle.projectedPoint(MPoint(90, 100)))

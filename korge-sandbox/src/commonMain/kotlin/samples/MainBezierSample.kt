@@ -24,10 +24,7 @@ import com.soywiz.korim.paint.Paint
 import com.soywiz.korim.vector.ShapeBuilder
 import com.soywiz.korma.geom.MPoint
 import com.soywiz.korma.geom.bezier.Bezier
-import com.soywiz.korma.geom.vector.StrokeInfo
-import com.soywiz.korma.geom.vector.cubic
-import com.soywiz.korma.geom.vector.lineTo
-import com.soywiz.korma.geom.vector.moveTo
+import com.soywiz.korma.geom.vector.*
 
 class MainBezierSample : Scene() {
     override suspend fun SContainer.sceneMain() {
@@ -55,10 +52,10 @@ class MainBezierSample : Scene() {
             val cubic3 = split.rightCurve
 
             stroke(Colors.PURPLE, info = StrokeInfo(thickness = 4.0)) {
-                cubic(cubic2)
+                curve(cubic2)
             }
             stroke(Colors.YELLOW, info = StrokeInfo(thickness = 4.0)) {
-                cubic(cubic3)
+                curve(cubic3)
             }
         }
 

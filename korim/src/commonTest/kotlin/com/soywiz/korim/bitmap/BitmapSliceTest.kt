@@ -1,6 +1,7 @@
 package com.soywiz.korim.bitmap
 
 import com.soywiz.klogger.*
+import com.soywiz.kmem.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.format.ImageOrientation
 import com.soywiz.korio.async.*
@@ -58,7 +59,7 @@ class BitmapSliceTest {
 
     @Test
     fun testTransformed() = suspendTest {
-        if (!OS.isJvm) return@suspendTest
+        if (!Platform.isJvm) return@suspendTest
 
         val bmp = Bitmap32(20, 10, value = Colors.YELLOW)
         val slice = bmp.sliceWithSize(1, 1, 8, 18, orientation = ImageOrientation.ROTATE_90)

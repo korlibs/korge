@@ -11,6 +11,7 @@ interface Platform {
     val rawPlatformName: String
     val rawOsName: String
     val buildVariant: BuildVariant
+
     /**
      * JVM: true
      * Android: true
@@ -25,6 +26,32 @@ interface Platform {
     val isBigEndian: Boolean get() = endian == Endian.BIG_ENDIAN
     val isDebug: Boolean get() = buildVariant == BuildVariant.DEBUG
     val isRelease: Boolean get() = buildVariant == BuildVariant.RELEASE
+
+    val isWindows: Boolean get() = os.isWindows
+    val isUnix: Boolean get() = os.isPosix
+    val isPosix: Boolean get() = os.isPosix
+    val isLinux: Boolean get() = os.isLinux
+    val isMac: Boolean get() = os.isMac
+    val isApple: Boolean get() = os.isApple
+    val isAppleMobile: Boolean get() = os.isAppleMobile
+
+    val isIos: Boolean get() = os.isIos
+    val isAndroid: Boolean get() = os.isAndroid
+    val isWatchos: Boolean get() = os.isWatchos
+    val isTvos: Boolean get() = os.isTvos
+
+    val isJs: Boolean get() = runtime.isJs
+    val isNative: Boolean get() = runtime.isNative
+    val isNativeDesktop: Boolean get() = isNative && os.isDesktop
+    val isJvm: Boolean get() = runtime.isJvm
+
+    val isJsShell: Boolean get() = rawPlatformName == "js-shell"
+    val isJsNodeJs: Boolean get() = rawPlatformName == "js-node"
+    val isJsDenoJs: Boolean get() = rawPlatformName == "js-deno"
+    val isJsBrowser: Boolean get() = rawPlatformName == "js-web"
+    val isJsWorker: Boolean get() = rawPlatformName == "js-worker"
+    val isJsBrowserOrWorker: Boolean get() = isJsBrowser || isJsWorker
+
 
     companion object : Platform {
         override val endian: Endian get() = Endian.NATIVE
@@ -63,29 +90,3 @@ interface Platform {
         override val hasMultithreadedSharedHeap: Boolean
     ) : Platform
 }
-
-
-val Platform.isWindows: Boolean get() = os.isWindows
-val Platform.isUnix: Boolean get() = os.isPosix
-val Platform.isPosix: Boolean get() = os.isPosix
-val Platform.isLinux: Boolean get() = os.isLinux
-val Platform.isMac: Boolean get() = os.isMac
-val Platform.isApple: Boolean get() = os.isApple
-val Platform.isAppleMobile: Boolean get() = os.isAppleMobile
-
-val Platform.isIos: Boolean get() = os.isIos
-val Platform.isAndroid: Boolean get() = os.isAndroid
-val Platform.isWatchos: Boolean get() = os.isWatchos
-val Platform.isTvos: Boolean get() = os.isTvos
-
-val Platform.isJs: Boolean get() = runtime.isJs
-val Platform.isNative: Boolean get() = runtime.isNative
-val Platform.isNativeDesktop: Boolean get() = isNative && os.isDesktop
-val Platform.isJvm: Boolean get() = runtime.isJvm
-
-val Platform.isJsShell: Boolean get() = rawPlatformName == "js-shell"
-val Platform.isJsNodeJs: Boolean get() = rawPlatformName == "js-node"
-val Platform.isJsDenoJs: Boolean get() = rawPlatformName == "js-deno"
-val Platform.isJsBrowser: Boolean get() = rawPlatformName == "js-web"
-val Platform.isJsWorker: Boolean get() = rawPlatformName == "js-worker"
-val Platform.isJsBrowserOrWorker: Boolean get() = isJsBrowser || isJsWorker

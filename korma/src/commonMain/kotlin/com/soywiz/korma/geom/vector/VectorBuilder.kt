@@ -265,11 +265,6 @@ fun VectorBuilder.cubic(x0: Int, y0: Int, cx1: Int, cy1: Int, cx2: Int, cy2: Int
 fun VectorBuilder.quad(o: IPoint, c: IPoint, a: IPoint) = quad(o.x, o.y, c.x, c.y, a.x, a.y)
 fun VectorBuilder.cubic(o: IPoint, c1: IPoint, c2: IPoint, a: IPoint) = cubic(o.x, o.y, c1.x, c1.y, c2.x, c2.y, a.x, a.y)
 
-@Deprecated("Use Bezier instead")
-fun VectorBuilder.quad(curve: Bezier) = curve(curve)
-@Deprecated("Use Bezier instead")
-fun VectorBuilder.cubic(curve: Bezier) = curve(curve)
-
 fun VectorBuilder.curve(curve: Bezier) {
     val p = curve.points
     when (curve.order) {

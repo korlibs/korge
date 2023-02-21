@@ -39,18 +39,11 @@ open class StandardVfs {
     /** Contains files from `src/...Main/resources` and generated files by the build system */
     open val resourcesVfs: VfsFile get() = TODO()
     open val rootLocalVfs: VfsFile get() = TODO()
-
-    @Deprecated("")
-    open fun cleanUpResourcesVfs(): Unit {
-    }
 }
 
 expect val standardVfs: StandardVfs
 
 val resourcesVfs: VfsFile get() = standardVfs.resourcesVfs
-
-@Deprecated("")
-fun cleanUpResourcesVfs() = standardVfs.cleanUpResourcesVfs()
 
 /** @TODO */
 val rootLocalVfs: VfsFile get() = standardVfs.rootLocalVfs

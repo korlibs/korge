@@ -175,8 +175,6 @@ val Int.radians: Angle get() = Angle.fromRadians(this)
 val Float.degrees: Angle get() = Angle.fromDegrees(this)
 val Float.radians: Angle get() = Angle.fromRadians(this)
 
-@Deprecated("", ReplaceWith("this.interpolateAngleDenormalized(l, r)"))
-fun Double.interpolate(l: Angle, r: Angle): Angle = this.interpolateAngleDenormalized(l, r)
 fun Double.interpolateAngle(l: Angle, r: Angle): Angle = interpolateAngle(l, r, minimizeAngle = true)
 fun Double.interpolateAngleNormalized(l: Angle, r: Angle): Angle = interpolateAngle(l, r, minimizeAngle = true)
 fun Double.interpolateAngleDenormalized(l: Angle, r: Angle): Angle = interpolateAngle(l, r, minimizeAngle = false)

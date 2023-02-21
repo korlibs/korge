@@ -118,24 +118,24 @@ class Shape2dTest {
     @Test
     fun testToPaths() {
         val points = buildVectorPath {
-            moveTo(100, 100)
-            lineTo(400, 400)
-            lineTo(200, 500)
-            lineTo(500, 500)
-            lineTo(200, 700)
-            close()
+                moveTo(100, 100)
+                lineTo(400, 400)
+                lineTo(200, 500)
+                lineTo(500, 500)
+                lineTo(200, 700)
+                close()
 
-            moveTo(800, 600)
-            lineTo(900, 600)
-            lineTo(900, 400)
-            close()
+                moveTo(800, 600)
+                lineTo(900, 600)
+                lineTo(900, 400)
+                close()
 
-            moveTo(800, 100)
-            lineTo(800, 110)
+                moveTo(800, 100)
+                lineTo(800, 110)
 
-            moveTo(750, 100)
-            lineTo(750, 110)
-        }.toPathList()
+                moveTo(750, 100)
+                lineTo(750, 110)
+            }.toPathPointList()
 
         assertEquals("""
             closed : (100,100),(400,400),(200,500),(500,500),(200,700)

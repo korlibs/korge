@@ -1,9 +1,9 @@
 package com.soywiz.korma.geom
 
-data class Circle(override val center: IPoint, override val radius: Double) : ICircle {
-    override val radiusSquared: Double = radius * radius
+data class Circle(val center: Point, val radius: Double) {
+    constructor(x: Double, y: Double, radius: Double) : this(Point(x, y), radius)
 
-    constructor(x: Double, y: Double, radius: Double) : this(Point(x, y).mutable, radius)
+    val radiusSquared: Double get() = radius * radius
 }
 
 interface ICircle {
@@ -34,4 +34,10 @@ interface ICircle {
         val center = circle.center.point
         return Point.fromPolar(center, Angle.between(center, point), circle.radius)
     }
+}
+
+data class MCircle(override val center: IPoint, override val radius: Double) : ICircle {
+    constructor(x: Double, y: Double, radius: Double) : this(Point(x, y).mutable, radius)
+
+    override val radiusSquared: Double = radius * radius
 }

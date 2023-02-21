@@ -52,13 +52,13 @@ class RGBATest {
         assertEquals(Colors.RED, Colors.BLACK.withR(0xFF))
         assertEquals(Colors.FUCHSIA, Colors.RED.withB(0xFF))
         assertEquals(Colors.YELLOW, Colors.RED.withG(0xFF))
-        assertEquals(Colors.TRANSPARENT_BLACK, Colors.BLACK.withA(0))
+        assertEquals(Colors.TRANSPARENT, Colors.BLACK.withA(0))
         assertEquals(Colors.TRANSPARENT_WHITE, Colors.WHITE.withA(0))
 
         assertEquals(Colors.RED, Colors.BLACK.withR(300))
         assertEquals(Colors.FUCHSIA, Colors.RED.withB(300))
         assertEquals(Colors.YELLOW, Colors.RED.withG(300))
-        assertEquals(Colors.TRANSPARENT_BLACK, Colors.BLACK.withA(-100))
+        assertEquals(Colors.TRANSPARENT, Colors.BLACK.withA(-100))
         assertEquals(Colors.TRANSPARENT_WHITE, Colors.WHITE.withA(-100))
     }
 
@@ -75,12 +75,12 @@ class RGBATest {
 
     @Test
     fun testPremult() {
-        assertEquals("#00000000", Colors.TRANSPARENT_BLACK.premultipliedFast.toString())
+        assertEquals("#00000000", Colors.TRANSPARENT.premultipliedFast.toString())
         assertEquals("#00000000", Colors.TRANSPARENT_WHITE.premultipliedFast.toString())
         val black = Colors.WHITE.value
         val white = Colors.BLACK.value
         val bmp = Bitmap32(2, 2, RgbaArray(intArrayOf(black, white, white, black))).premultiplied()
-        bmp.updateColors { if (it == Colors.BLACK) Colors.TRANSPARENT_BLACK else it }
+        bmp.updateColors { if (it == Colors.BLACK) Colors.TRANSPARENT else it }
         //println(bmp)
     }
 

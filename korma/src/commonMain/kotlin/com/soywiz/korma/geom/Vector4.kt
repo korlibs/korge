@@ -9,7 +9,6 @@ import kotlin.math.sqrt
 @KormaValueApi
 data class Vector4(val x: Float, val y: Float, val z: Float, val w: Float)
 
-//@Deprecated("Use Vector4")
 typealias MVector3D = MVector4
 
 /*

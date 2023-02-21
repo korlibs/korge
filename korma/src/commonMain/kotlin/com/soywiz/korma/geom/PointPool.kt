@@ -9,7 +9,6 @@ import kotlin.math.min
 import kotlin.math.max
 
 @Suppress("NOTHING_TO_INLINE")
-@Deprecated("Use Point instead, no pool needed")
 @KormaMutableApi
 class PointPool(val capacity: Int = 16, preallocate: Boolean = false) {
     @PublishedApi

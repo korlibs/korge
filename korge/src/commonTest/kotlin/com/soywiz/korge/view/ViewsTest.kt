@@ -1,14 +1,11 @@
 package com.soywiz.korge.view
 
-import com.soywiz.klock.milliseconds
-import com.soywiz.klock.seconds
-import com.soywiz.klock.timesPerSecond
+import com.soywiz.klock.*
 import com.soywiz.klogger.*
 import com.soywiz.korev.Event
 import com.soywiz.korev.dispatch
 import com.soywiz.korge.baseview.BaseView
-import com.soywiz.korge.component.EventComponent
-import com.soywiz.korge.component.docking.sortChildrenByY
+import com.soywiz.korge.component.*
 import com.soywiz.korge.tests.ViewsForTesting
 import com.soywiz.korge.tween.get
 import com.soywiz.korge.tween.tween
@@ -449,4 +446,20 @@ class ViewsTest : ViewsForTesting() {
             log.joinToString("\n")
         )
     }
+
+    //// sorted
+
+    class SortedChildrenByComponent(override val view: Container, var comparator: Comparator<View>) : UpdateComponent {
+        override fun update(dt: TimeSpan) = view.sortChildrenBy(comparator)
+    }
+    private fun <T, T2 : Comparable<T2>> ((T) -> T2).toComparator() = Comparator { a: T, b: T -> this(a).compareTo(this(b)) }
+    fun <T2 : Comparable<T2>> Container.sortChildrenBy(selector: (View) -> T2) = sortChildrenBy(selector.toComparator())
+    fun Container.sortChildrenByY() = sortChildrenBy(View::y)
+    fun <T : Container> T.keepChildrenSortedBy(comparator: Comparator<View>): T {
+        SortedChildrenByComponent(this, comparator).attach()
+        return this
+    }
+    fun <T : Container, T2 : Comparable<T2>> T.keepChildrenSortedBy(selector: (View) -> T2): T = this.keepChildrenSortedBy(selector.toComparator())
+    fun <T : Container> T.keepChildrenSortedByY(): T = this.keepChildrenSortedBy(View::y)
+
 }

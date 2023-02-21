@@ -1,26 +1,17 @@
 package com.soywiz.korim.font
 
 import com.soywiz.klogger.*
-import com.soywiz.korim.atlas.MutableAtlasUnit
-import com.soywiz.korim.bitmap.Bitmap32
-import com.soywiz.korim.bitmap.context2d
-import com.soywiz.korim.color.Colors
-import com.soywiz.korim.paint.LinearGradientPaint
-import com.soywiz.korim.text.CreateStringTextRenderer
-import com.soywiz.korim.text.TextAlignment
-import com.soywiz.korim.vector.buildSvgXml
-import com.soywiz.korio.async.suspendTest
-import com.soywiz.korio.async.suspendTestNoBrowser
-import com.soywiz.korio.file.std.resourcesVfs
-import com.soywiz.korio.util.OS
-import com.soywiz.korma.geom.degrees
-import com.soywiz.korma.geom.int
-import com.soywiz.korma.geom.vector.circle
-import com.soywiz.korma.geom.vector.lineTo
-import com.soywiz.korma.geom.vector.moveTo
-import kotlin.test.Ignore
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import com.soywiz.kmem.*
+import com.soywiz.korim.atlas.*
+import com.soywiz.korim.bitmap.*
+import com.soywiz.korim.color.*
+import com.soywiz.korim.paint.*
+import com.soywiz.korim.text.*
+import com.soywiz.korio.async.*
+import com.soywiz.korio.file.std.*
+import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.vector.*
+import kotlin.test.*
 
 class FontTest {
     val logger = Logger("FontTest")
@@ -213,7 +204,7 @@ class FontTest {
     }
 
     @Test
-    fun testBitmapFonts() = suspendTest({ !OS.isJsNodeJs }) {
+    fun testBitmapFonts() = suspendTest({ !Platform.isJsNodeJs }) {
         val atlas = MutableAtlasUnit(512, 512, border = 1)
         val txtFont = resourcesVfs["reality_hyper_regular_17.fnt"].readBitmapFont(atlas = atlas)
         val xmlFont = resourcesVfs["example-font.xml"].readBitmapFont(atlas = atlas)

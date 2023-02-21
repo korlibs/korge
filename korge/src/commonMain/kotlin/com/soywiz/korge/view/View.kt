@@ -502,7 +502,7 @@ abstract class View internal constructor(
      * That means:
      * * [Colors.WHITE] would display the view without modifications
      * * [Colors.BLACK] would display a black shape
-     * * [Colors.TRANSPARENT_BLACK] would be equivalent to setting [alpha]=0
+     * * [Colors.TRANSPARENT] would be equivalent to setting [alpha]=0
      * * [Colors.RED] would only show the red component of the view
      */
     @ViewProperty
@@ -843,7 +843,7 @@ abstract class View internal constructor(
         invalidateRender()
     }
 
-    open fun onParentChanged() {
+    protected open fun onParentChanged() {
     }
 
     override fun invalidateRender() {

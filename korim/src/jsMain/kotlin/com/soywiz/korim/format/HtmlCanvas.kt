@@ -1,5 +1,6 @@
 package com.soywiz.korim.format
 
+import com.soywiz.kmem.*
 import com.soywiz.korio.util.*
 import org.khronos.webgl.*
 import org.w3c.dom.*
@@ -22,7 +23,7 @@ external interface HTMLImageElementLike : TexImageSource {
 
 object HtmlCanvas {
 	fun createCanvas(width: Int, height: Int): HTMLCanvasElementLike {
-		if (OS.isJsNodeJs) error("Canvas not available on Node.JS")
+		if (Platform.isJsNodeJs) error("Canvas not available on Node.JS")
         val out = document.createElement("canvas").unsafeCast<HTMLCanvasElement>()
         out.width = width
         out.height = height

@@ -65,7 +65,7 @@ class NBufferTest2 {
 	@Test
 	fun testNBuffer() {
 		val mem = Buffer.allocDirect(10)
-		for (n in 0 until 8) mem[n] = n
+		for (n in 0 until 8) mem.setUInt8(n, n)
 		assertEquals(0x03020100, mem.getInt32(0))
 		assertEquals(0x07060504, mem.getInt32(1))
 

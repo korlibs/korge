@@ -1,23 +1,17 @@
 package com.soywiz.korge.view
 
+import com.soywiz.kmem.*
 import com.soywiz.korag.log.AGLog
 import com.soywiz.korge.render.RenderContext
 import com.soywiz.korim.color.Colors
 import com.soywiz.korio.async.suspendTest
-import com.soywiz.korio.util.OS
 import com.soywiz.korio.util.niceStr
 import com.soywiz.korma.geom.Anchor
 import com.soywiz.korma.geom.MPoint
 import com.soywiz.korma.geom.MRectangle
 import com.soywiz.korma.geom.MSize
 import com.soywiz.korma.geom.bezier.Bezier
-import com.soywiz.korma.geom.vector.StrokeInfo
-import com.soywiz.korma.geom.vector.circle
-import com.soywiz.korma.geom.vector.cubic
-import com.soywiz.korma.geom.vector.line
-import com.soywiz.korma.geom.vector.lineTo
-import com.soywiz.korma.geom.vector.moveTo
-import com.soywiz.korma.geom.vector.rect
+import com.soywiz.korma.geom.vector.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -25,7 +19,7 @@ import kotlin.test.assertTrue
 
 class GraphicsTest {
     @Test
-    fun test() = suspendTest({ !OS.isAndroid }) {
+    fun test() = suspendTest({ !Platform.isAndroid }) {
         val g = CpuGraphics().updateShape(redrawNow = true) {
             fill(Colors.RED) {
                 rect(-50, -50, 100, 100)
@@ -42,7 +36,7 @@ class GraphicsTest {
     }
 
     @Test
-    fun testEmptyGraphics() = suspendTest({ !OS.isAndroid }) {
+    fun testEmptyGraphics() = suspendTest({ !Platform.isAndroid }) {
         val g = CpuGraphics().apply {
         }
         val rc = TestRenderContext()
@@ -177,10 +171,10 @@ class GraphicsTest {
             val cubic3 = Bezier(p0, p1, p2, p3).split(ratio).rightCurve
 
             stroke(Colors.PURPLE, info = StrokeInfo(thickness = 4.0)) {
-                cubic(cubic2)
+                curve(cubic2)
             }
             stroke(Colors.YELLOW, info = StrokeInfo(thickness = 4.0)) {
-                cubic(cubic3)
+                curve(cubic3)
             }
         }
         // assertEquals(Rectangle(25, 49, 209, 201), g.getLocalBounds()) // strokes = false

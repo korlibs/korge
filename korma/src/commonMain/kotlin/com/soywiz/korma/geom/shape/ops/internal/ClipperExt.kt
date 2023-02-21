@@ -3,9 +3,7 @@ package com.soywiz.korma.geom.shape.ops.internal
 import com.soywiz.korma.geom.IPoint
 import com.soywiz.korma.geom.IPointArrayList
 import com.soywiz.korma.geom.PointArrayList
-import com.soywiz.korma.geom.shape.Shape2d
-import com.soywiz.korma.geom.shape.buildVectorPath
-import com.soywiz.korma.geom.shape.toPathList
+import com.soywiz.korma.geom.shape.*
 import com.soywiz.korma.geom.toPoints
 import com.soywiz.korma.geom.vector.LineCap
 import com.soywiz.korma.geom.vector.LineJoin
@@ -49,7 +47,7 @@ fun Paths.toShape2d(): Shape2d {
 
 fun IPointArrayList.toClipperPath() = Path(toPoints())
 fun List<IPointArrayList>.toClipperPaths() = Paths(this.map { it.toClipperPath() })
-fun VectorPath.toClipperPaths() = this.toPathList().toClipperPaths()
+fun VectorPath.toClipperPaths() = this.toPathPointList().toClipperPaths()
 
 fun Shape2d.clipperOp(other: Shape2d, op: Clipper.ClipType): Shape2d {
     val clipper = DefaultClipper()
@@ -63,8 +61,8 @@ fun Shape2d.clipperOp(other: Shape2d, op: Clipper.ClipType): Shape2d {
 fun VectorPath.clipperOp(other: VectorPath, op: Clipper.ClipType): Shape2d {
     val clipper = DefaultClipper()
     val solution = Paths()
-    clipper.addPaths(this.toPathList().toClipperPaths(), Clipper.PolyType.CLIP, true)
-    clipper.addPaths(other.toPathList().toClipperPaths(), Clipper.PolyType.SUBJECT, true)
+    clipper.addPaths(this.toPathPointList().toClipperPaths(), Clipper.PolyType.CLIP, true)
+    clipper.addPaths(other.toPathPointList().toClipperPaths(), Clipper.PolyType.SUBJECT, true)
     clipper.execute(op, solution)
     return solution.toShape2d()
 }

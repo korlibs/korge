@@ -9,7 +9,6 @@ import kotlin.math.sqrt
 @KormaValueApi
 data class Vector3(val x: Float, val y: Float, val z: Float)
 
-//@Deprecated("Use Vector3")
 @KormaMutableApi
 interface IVector3 {
     val x: Float
@@ -25,11 +24,9 @@ interface IVector3 {
 
 }
 
-//@Deprecated("Use Vector3")
 @KormaMutableApi
 fun mvec(x: Float, y: Float, z: Float): MVector3 = MVector3(x, y, z)
 
-//@Deprecated("Use Vector3")
 @KormaMutableApi
 class MVector3 : IVector3 {
     val data: FloatArray = FloatArray(3)

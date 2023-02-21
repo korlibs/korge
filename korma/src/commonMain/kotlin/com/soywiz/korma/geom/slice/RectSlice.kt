@@ -140,9 +140,6 @@ data class RectSlice<T : ISizeInt>(
     }
 }
 
-@Deprecated("", ReplaceWith("splitInRows(width, height)"))
-fun <T : ISizeInt> RectSlice<T>.split(width: Int, height: Int): List<RectSlice<T>> = splitInRows(width, height)
-
 fun <T : ISizeInt> RectSlice<T>.split(width: Int, height: Int, inRows: Boolean): List<RectSlice<T>> {
     val nheight = this.height / height
     val nwidth = this.width / width

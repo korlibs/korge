@@ -13,13 +13,7 @@ import com.soywiz.korge.view.addUpdater
 import com.soywiz.korio.async.Signal
 import com.soywiz.korio.async.invoke
 import com.soywiz.korio.async.waitOne
-import com.soywiz.korma.geom.Anchor
-import com.soywiz.korma.geom.Angle
-import com.soywiz.korma.geom.MPoint
-import com.soywiz.korma.geom.MRectangle
-import com.soywiz.korma.geom.ScaleMode
-import com.soywiz.korma.geom.degrees
-import com.soywiz.korma.geom.interpolate
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.interpolation.Easing
 import com.soywiz.korma.interpolation.MutableInterpolable
 import com.soywiz.korma.interpolation.interpolate
@@ -341,7 +335,7 @@ data class Camera(
             posRatio.interpolate(l.x, r.x),
             posRatio.interpolate(l.y, r.y),
             ratio.interpolate(l.zoom, r.zoom),
-            ratio.interpolate(l.angle, r.angle), // @TODO: Fix KorMA angle interpolator
+            ratio.interpolateAngleDenormalized(l.angle, r.angle), // @TODO: Fix KorMA angle interpolator
             ratio.interpolate(l.anchorX, r.anchorX),
             ratio.interpolate(l.anchorY, r.anchorY)
         )
