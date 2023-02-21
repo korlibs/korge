@@ -55,7 +55,6 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
 
 kotlin.sourceSets.main.each {
     it.kotlin.srcDirs(new File(buildDir, "srcgen"), new File(buildDir, "srcgen2"))
-    it.kotlin.srcDirs(new File(buildDir, "srcgen2_11"))
 }
 java.sourceSets.main.each {
     it.resources.srcDirs(new File(buildDir, "srcgen2res"))
