@@ -5,7 +5,11 @@ import platform.posix.*
 
 actual class KArena actual constructor() {
     private val arena = Arena()
-    actual fun allocBytes(size: Int): KPointer = arena.allocArray<ByteVar>(size)
+    actual fun allocBytes(size: Int): KPointer {
+        return arena.allocArray<ByteVar>(size).also {
+            memset(it, 0, size.convert())
+        }
+    }
     actual fun clear(): Unit = arena.clear()
 }
 

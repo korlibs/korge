@@ -7,7 +7,10 @@ import com.sun.jna.Pointer
 
 actual class KArena actual constructor() {
     private val pointers = arrayListOf<Memory>()
-    actual fun allocBytes(size: Int): KPointer = KPointer(Memory(size.toLong()).also { pointers += it })
+    actual fun allocBytes(size: Int): KPointer = KPointer(Memory(size.toLong()).also {
+        it.clear()
+        pointers += it
+    })
     actual fun clear() {
         for (n in 0 until pointers.size) pointers[n].clear()
         pointers.clear()
