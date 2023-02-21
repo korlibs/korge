@@ -11,9 +11,9 @@ internal class Win32XInputEventAdapterCommon(val xinput: XInput?, val joy: Joy32
     fun updateGamepads(emitter: GamepadInfoEmitter) {
         if (xinput == null) return
 
+        emitter.dispatchGamepadUpdateStart()
         kmemScoped {
             val state = XInputState(allocBytes(XInputState().size))
-            emitter.dispatchGamepadUpdateStart()
             for (n in 0 until GamepadInfo.MAX_CONTROLLERS) {
                 val connected = xinput.XInputGetState(n, state) == XInput.SUCCESS
                 val gamepad = controllers[n]
