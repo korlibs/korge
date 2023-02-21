@@ -60,7 +60,6 @@ import com.soywiz.korio.dynamic.*
 import com.soywiz.korio.file.std.localCurrentDirVfs
 import com.soywiz.korio.file.std.resourcesVfs
 import com.soywiz.korio.resources.Resources
-import com.soywiz.korio.util.OS
 import com.soywiz.korma.geom.Anchor
 import com.soywiz.korma.geom.ISizeInt
 import com.soywiz.korma.geom.MPoint
@@ -175,7 +174,7 @@ object Korge {
 	) {
         RegisteredImageFormats.register(imageFormats)
 
-        if (!OS.isJsBrowser) {
+        if (!Platform.isJsBrowser) {
             configureLoggerFromProperties(localCurrentDirVfs["klogger.properties"])
         }
         val realGameWindow = (gameWindow ?: coroutineContext[GameWindow] ?: CreateDefaultGameWindow(GameWindowCreationConfig(multithreaded = multithreaded)))
@@ -185,7 +184,7 @@ object Korge {
         //realGameWindow.configure(width, height, title, icon, fullscreen)
         realGameWindow.loop {
             val gameWindow = this
-            if (OS.isNative) println("Korui[0]")
+            if (Platform.isNative) println("Korui[0]")
             gameWindow.registerTime("configureGameWindow") {
                 realGameWindow.configure(width, height, title, icon, fullscreen, bgcolor ?: Colors.BLACK)
             }
@@ -203,7 +202,7 @@ object Korge {
                 }
             }
             this.quality = quality
-            if (OS.isNative) println("CanvasApplicationEx.IN[0]")
+            if (Platform.isNative) println("CanvasApplicationEx.IN[0]")
             val input = Input()
             val stats = Stats()
 
@@ -249,7 +248,14 @@ object Korge {
             //Korge.prepareViews(views, gameWindow, bgcolor != null, bgcolor ?: Colors.TRANSPARENT_BLACK)
 
             gameWindow.registerTime("prepareViews") {
-                prepareViews(views, gameWindow, bgcolor != null, bgcolor ?: Colors.TRANSPARENT_BLACK, waitForFirstRender = true, forceRenderEveryFrame = forceRenderEveryFrame)
+                prepareViews(
+                    views,
+                    gameWindow,
+                    bgcolor != null,
+                    bgcolor ?: Colors.TRANSPARENT,
+                    waitForFirstRender = true,
+                    forceRenderEveryFrame = forceRenderEveryFrame
+                )
             }
 
             gameWindow.registerTime("completeViews") {
@@ -266,8 +272,8 @@ object Korge {
                     }
                 }
             }
-            if (OS.isNative) println("CanvasApplicationEx.IN[1]")
-            if (OS.isNative) println("Korui[1]")
+            if (Platform.isNative) println("CanvasApplicationEx.IN[1]")
+            if (Platform.isNative) println("Korui[1]")
 
             if (blocking) {
                 // @TODO: Do not complete to prevent job cancelation?
@@ -288,7 +294,7 @@ object Korge {
         views: Views,
         eventDispatcher: EventDispatcher,
         clearEachFrame: Boolean = true,
-        bgcolor: RGBA = Colors.TRANSPARENT_BLACK,
+        bgcolor: RGBA = Colors.TRANSPARENT,
         fixedSizeStep: TimeSpan = TimeSpan.NIL,
         forceRenderEveryFrame: Boolean = true
     ): CompletableDeferred<Unit> {
@@ -317,6 +323,7 @@ object Korge {
         views.forceRenderEveryFrame = forceRenderEveryFrame
 
         val tempXY: MPoint = MPoint()
+
         // devicePixelRatio might change at runtime by changing the resolution or changing the screen of the window
         fun getRealXY(x: Double, y: Double, scaleCoords: Boolean, out: MPoint = tempXY): MPoint {
             return views.windowToGlobalCoords(x, y, out)
@@ -381,7 +388,13 @@ object Korge {
 
         val mouseTouchEvent = TouchEvent()
 
-        fun dispatchSimulatedTouchEvent(x: Double, y: Double, button: MouseButton, type: TouchEvent.Type, status: Touch.Status) {
+        fun dispatchSimulatedTouchEvent(
+            x: Double,
+            y: Double,
+            button: MouseButton,
+            type: TouchEvent.Type,
+            status: Touch.Status
+        ) {
             mouseTouchEvent.screen = 0
             mouseTouchEvent.emulated = true
             mouseTouchEvent.currentTime = DateTime.now()
@@ -402,16 +415,19 @@ object Korge {
                     //updateTouch(mouseTouchId, x, y, start = true, end = false)
                     dispatchSimulatedTouchEvent(x, y, e.button, TouchEvent.Type.START, Touch.Status.ADD)
                 }
+
                 MouseEvent.Type.UP -> {
                     mouseUp("mouseUp", x, y, e.button)
                     //updateTouch(mouseTouchId, x, y, start = false, end = true)
                     dispatchSimulatedTouchEvent(x, y, e.button, TouchEvent.Type.END, Touch.Status.REMOVE)
                 }
+
                 MouseEvent.Type.DRAG -> {
                     mouseDrag("onMouseDrag", x, y)
                     //updateTouch(mouseTouchId, x, y, start = false, end = false)
                     dispatchSimulatedTouchEvent(x, y, e.button, TouchEvent.Type.MOVE, Touch.Status.KEEP)
                 }
+
                 MouseEvent.Type.MOVE -> mouseMove("mouseMove", x, y, inside = true)
                 MouseEvent.Type.CLICK -> Unit
                 MouseEvent.Type.ENTER -> mouseMove("mouseEnter", x, y, inside = true)
@@ -575,12 +591,13 @@ object Korge {
         views: Views,
         eventDispatcher: EventDispatcher,
         clearEachFrame: Boolean = true,
-        bgcolor: RGBA = Colors.TRANSPARENT_BLACK,
+        bgcolor: RGBA = Colors.TRANSPARENT,
         fixedSizeStep: TimeSpan = TimeSpan.NIL,
         waitForFirstRender: Boolean = true,
         forceRenderEveryFrame: Boolean = true
     ) {
-        val firstRenderDeferred = prepareViewsBase(views, eventDispatcher, clearEachFrame, bgcolor, fixedSizeStep, forceRenderEveryFrame)
+        val firstRenderDeferred =
+            prepareViewsBase(views, eventDispatcher, clearEachFrame, bgcolor, fixedSizeStep, forceRenderEveryFrame)
         if (waitForFirstRender) {
             firstRenderDeferred.await()
         }

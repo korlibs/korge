@@ -20,7 +20,7 @@ class MainTerminalEmulator : Scene() {
                 .readBitmap()
                 .toBMP32()
                 .premultipliedIfRequired()
-                .apply { updateColors { if (it == Colors.BLACK) Colors.TRANSPARENT_BLACK else it } }
+                .apply { updateColors { if (it == Colors.BLACK) Colors.TRANSPARENT else it } }
                 .slice()
                 .splitInRows(16, 16)
                 .toTypedArray()

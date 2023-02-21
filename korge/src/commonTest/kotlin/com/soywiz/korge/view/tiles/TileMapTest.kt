@@ -26,15 +26,10 @@ class TileMapTest {
     @Test
     fun testHitTest() {
         val tileSet = TileSet(intMapOf(
-            0 to TileSetTileInfo(0, Bitmap32(16, 16, premultiplied = true).slice()),
-            1 to TileSetTileInfo(0, Bitmap32(16, 16, premultiplied = true).slice()),
-            2 to TileSetTileInfo(0, Bitmap32(16, 16, premultiplied = true).slice()),
-            3 to TileSetTileInfo(0, Bitmap32(16, 16, premultiplied = true).slice()),
-        ), collisionsMap = intMapOf(
-            0 to com.soywiz.korim.tiles.TileShapeInfoImpl(HitTestDirectionFlags.NONE, Shape2d.Rectangle(0, 0, 16, 16), MMatrix()),
-            1 to com.soywiz.korim.tiles.TileShapeInfoImpl(HitTestDirectionFlags.NONE, Shape2d.Empty, MMatrix()),
-            2 to com.soywiz.korim.tiles.TileShapeInfoImpl(HitTestDirectionFlags.ALL, Shape2d.Empty, MMatrix()),
-            3 to com.soywiz.korim.tiles.TileShapeInfoImpl(HitTestDirectionFlags.ALL, Shape2d.Rectangle(0, 0, 16, 16), MMatrix()),
+            0 to TileSetTileInfo(0, Bitmap32(16, 16, premultiplied = true).slice(), collision = TileShapeInfoImpl(HitTestDirectionFlags.NONE, Shape2d.Rectangle(0, 0, 16, 16), MMatrix())),
+            1 to TileSetTileInfo(0, Bitmap32(16, 16, premultiplied = true).slice(), collision = TileShapeInfoImpl(HitTestDirectionFlags.NONE, Shape2d.Empty, MMatrix())),
+            2 to TileSetTileInfo(0, Bitmap32(16, 16, premultiplied = true).slice(), collision = TileShapeInfoImpl(HitTestDirectionFlags.ALL, Shape2d.Empty, MMatrix())),
+            3 to TileSetTileInfo(0, Bitmap32(16, 16, premultiplied = true).slice(), collision = TileShapeInfoImpl(HitTestDirectionFlags.ALL, Shape2d.Rectangle(0, 0, 16, 16), MMatrix())),
         ))
         val map = TileMap(SparseChunkedStackedIntArray2(StackedIntArray2(IntArray2(2, 2, intArrayOf(0, 1, 2, 3)))), tileSet)
         assertEquals(false, map.pixelHitTest(5, 5, HitTestDirection.DOWN))

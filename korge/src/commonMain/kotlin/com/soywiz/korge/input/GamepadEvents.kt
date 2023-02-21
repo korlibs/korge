@@ -6,6 +6,7 @@ import com.soywiz.korev.*
 import com.soywiz.korge.component.*
 import com.soywiz.korge.view.*
 import com.soywiz.korio.async.*
+import kotlin.jvm.*
 import kotlin.native.concurrent.*
 
 class GamePadEvents(override val view: View) : GamepadComponent {
@@ -14,20 +15,13 @@ class GamePadEvents(override val view: View) : GamepadComponent {
     @PublishedApi
     internal val coroutineContext get() = views.coroutineContext
 
-	val gamepads = GamePadUpdateEvent()
+    val gamepads = GamePadUpdateEvent()
 	val updated = Signal<GamePadUpdateEvent>()
     val updatedGamepad = Signal<GamepadInfo>()
-    @Deprecated("")
 	val stick = Signal<GamePadStickEvent>()
 	val button = Signal<GamePadButtonEvent>()
 	val connection = Signal<GamePadConnectionEvent>()
 
-    @Deprecated("GamepadEvents.stick is deprecated, please use GamepadEvents.button")
-	fun stick(playerId: Int, stick: GameStick, callback: suspend (x: Double, y: Double) -> Unit) {
-		stick { e -> if (e.gamepad == playerId && e.stick == stick) launchImmediately(coroutineContext) { callback(e.x, e.y) } }
-	}
-
-    @Deprecated("")
 	fun stick(callback: suspend (playerId: Int, stick: GameStick, x: Double, y: Double) -> Unit) {
 		stick { e -> launchImmediately(coroutineContext) { callback(e.gamepad, e.stick, e.x, e.y) } }
 	}
@@ -89,6 +83,7 @@ class GamePadEvents(override val view: View) : GamepadComponent {
 			GameButton.BUTTONS.fastForEach { button ->
 				if (gamepad[button] != oldGamepad[button]) {
                     updateCount++
+                    //println("CHANGED: button=$button: ${gamepad[button]}")
 					button(buttonEvent.apply {
 						this.gamepad = gamepad.index
 						this.type = if (gamepad[button] != 0.0) GamePadButtonEvent.Type.DOWN else GamePadButtonEvent.Type.UP
@@ -122,6 +117,40 @@ class GamePadEvents(override val view: View) : GamepadComponent {
         this.views = views
 		connection(event)
 	}
+}
+
+data class GamePadStickEvent(
+    var gamepad: Int = 0,
+    var stick: GameStick = GameStick.LEFT,
+    var x: Double = 0.0,
+    var y: Double = 0.0
+) : TypedEvent<GamePadStickEvent>(GamePadStickEvent) {
+    companion object : EventType<GamePadStickEvent>
+
+    fun copyFrom(other: GamePadStickEvent) {
+        this.gamepad = other.gamepad
+        this.stick = other.stick
+        this.x = other.x
+        this.y = other.y
+    }
+}
+
+data class GamePadButtonEvent @JvmOverloads constructor(
+    override var type: Type = Type.DOWN,
+    var gamepad: Int = 0,
+    var button: GameButton = GameButton.BUTTON_SOUTH,
+    var value: Double = 0.0
+) : Event(), TEvent<GamePadButtonEvent> {
+    //companion object : EventType<GamePadButtonEvent>
+
+    enum class Type : EventType<GamePadButtonEvent> { UP, DOWN }
+
+    fun copyFrom(other: GamePadButtonEvent) {
+        this.type = other.type
+        this.gamepad = other.gamepad
+        this.button = other.button
+        this.value = other.value
+    }
 }
 
 @ThreadLocal

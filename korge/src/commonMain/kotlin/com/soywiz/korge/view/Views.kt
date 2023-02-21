@@ -83,8 +83,8 @@ class Views constructor(
         when {
             settingsFolder != null -> settingsFolder!!
             else -> when {
-                OS.isMac -> "/Users/${Environment["USER"]}/Library/Preferences/$gameIdFolder"
-                OS.isWindows -> "${Environment["APPDATA"]}/$gameIdFolder"
+                Platform.isMac -> "/Users/${Environment["USER"]}/Library/Preferences/$gameIdFolder"
+                Platform.isWindows -> "${Environment["APPDATA"]}/$gameIdFolder"
                 else -> "${Environment["HOME"]}/.config/$gameIdFolder"
             }
         }
@@ -297,8 +297,6 @@ class Views constructor(
                         stage.forEachComponentOfTypeRecursive(GamepadComponent, tempComps) { it.onGamepadEvent(views, e) }
                     is GamePadUpdateEvent ->
                         stage.forEachComponentOfTypeRecursive(GamepadComponent, tempComps) { it.onGamepadEvent(views, e) }
-                    //is GamePadButtonEvent -> stagedViews.fastForEach { it._components?.gamepad?.fastForEach { it.onGamepadEvent(views, e) } }
-                    //is GamePadStickEvent -> stagedViews.fastForEach { it._components?.gamepad?.fastForEach { it.onGamepadEvent(views, e) } }
                     else -> {
                         stage.forEachComponentOfTypeRecursive(EventComponent, tempComps) { it.onEvent(e) }
                     }

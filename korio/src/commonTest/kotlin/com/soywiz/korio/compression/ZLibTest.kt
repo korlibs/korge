@@ -1,5 +1,6 @@
 package com.soywiz.korio.compression
 
+import com.soywiz.kmem.*
 import com.soywiz.korio.compression.deflate.Deflate
 import com.soywiz.korio.compression.deflate.DeflatePortable
 import com.soywiz.korio.compression.deflate.GZIP
@@ -7,7 +8,6 @@ import com.soywiz.korio.compression.deflate.ZLib
 import com.soywiz.korio.compression.lzma.Lzma
 import com.soywiz.korio.lang.UTF8
 import com.soywiz.korio.lang.toString
-import com.soywiz.korio.util.OS
 import com.soywiz.korio.util.checksum.CRC32
 import com.soywiz.korio.util.checksum.compute
 import com.soywiz.krypto.encoding.fromBase64
@@ -97,7 +97,7 @@ class ZLibTest {
 
 	@Test
 	fun lzmaCompressDecompress() {
-        if (OS.isAndroid) return
+        if (Platform.isAndroid) return
 		val compressedData = data.compress(Lzma)
 		val uncompressedData = compressedData.uncompress(Lzma)
 		assertEquals(data.size, uncompressedData.size)

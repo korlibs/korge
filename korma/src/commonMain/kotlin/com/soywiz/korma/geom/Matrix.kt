@@ -693,9 +693,9 @@ data class MMatrix(
             ratio.interpolate(l.y, r.y),
             ratio.interpolate(l.scaleX, r.scaleX),
             ratio.interpolate(l.scaleY, r.scaleY),
-            ratio.interpolate(l.rotation, r.rotation),
-            ratio.interpolate(l.skewX, r.skewX),
-            ratio.interpolate(l.skewY, r.skewY)
+            ratio.interpolateAngleDenormalized(l.rotation, r.rotation),
+            ratio.interpolateAngleDenormalized(l.skewX, r.skewX),
+            ratio.interpolateAngleDenormalized(l.skewY, r.skewY)
         )
 
         fun identity() {

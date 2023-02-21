@@ -28,7 +28,6 @@ interface ISizeable {
     val size: ISize
 }
 
-//@Deprecated("Use Size")
 @KormaMutableApi
 interface ISize {
     val width: Double
@@ -46,7 +45,6 @@ interface ISize {
     }
 }
 
-//@Deprecated("Use Size")
 @KormaMutableApi
 inline class MSize(val p: MPoint) : MutableInterpolable<MSize>, Interpolable<MSize>, ISize, ISizeable {
     companion object {

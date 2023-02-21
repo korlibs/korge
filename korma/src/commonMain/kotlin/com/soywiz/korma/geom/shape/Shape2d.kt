@@ -494,17 +494,13 @@ fun VectorPath.toShape2dNew(closed: Boolean = true): Shape2d = Shape2d.Path(this
 fun VectorPath.toShape2d(closed: Boolean = true): Shape2d = toShape2dOld(closed)
 
 fun VectorPath.toShape2dOld(closed: Boolean = true): Shape2d {
-    val items = toPathList().map { it.toShape2d(closed) }
+    val items = toPathPointList().map { it.toShape2d(closed) }
     return when (items.size) {
         0 -> Shape2d.Empty
         1 -> items.first()
         else -> Shape2d.Complex(items)
     }
 }
-
-@Deprecated("", ReplaceWith("toPathPointList(m, emitClosePoint)"))
-fun VectorPath.toPathList(m: MMatrix? = null, emitClosePoint: Boolean = false): List<IPointArrayList> =
-    toPathPointList(m, emitClosePoint)
 
 fun VectorPath.toPathPointList(m: MMatrix? = null, emitClosePoint: Boolean = false): List<IPointArrayList> {
     val paths = arrayListOf<PointArrayList>()

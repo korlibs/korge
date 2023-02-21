@@ -63,7 +63,7 @@ object ASE : ImageFormatWithContainer("ase") {
 
         open class Mixin : AseEntity {
             override var userData: String? = null
-            override var userDataColor: RGBA = Colors.TRANSPARENT_BLACK
+            override var userDataColor: RGBA = Colors.TRANSPARENT
         }
     }
 

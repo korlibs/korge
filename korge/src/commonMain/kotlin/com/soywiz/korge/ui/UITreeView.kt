@@ -77,11 +77,11 @@ private class UITreeViewVerticalListProviderAdapter<T>(val provider: UITreeViewP
         val node = items[index]
         val childCount = provider.getNumChildren(node.value)
         val container = UIFillLayeredContainer()
-        val background = container.solidRect(10, 10, Colors.TRANSPARENT_BLACK)
+        val background = container.solidRect(10, 10, Colors.TRANSPARENT)
         val stack = container.uiHorizontalStack(padding = 2.0)
         val child = provider.getViewForNode(node.value)
-        stack.solidRect(10 * node.indentation, 10, Colors.TRANSPARENT_BLACK)
-        val rect = stack.solidRect(10, 10, Colors.TRANSPARENT_BLACK)
+        stack.solidRect(10 * node.indentation, 10, Colors.TRANSPARENT)
+        val rect = stack.solidRect(10, 10, Colors.TRANSPARENT)
         fun updateIcon() {
             rect.color = when {
                 childCount > 0 -> {
@@ -90,11 +90,12 @@ private class UITreeViewVerticalListProviderAdapter<T>(val provider: UITreeViewP
                         else -> Colors.RED
                     }
                 }
-                else -> Colors.TRANSPARENT_BLACK
+
+                else -> Colors.TRANSPARENT
             }
             background.color = when {
                 selectedNode == node -> Colors["#191034"]
-                else -> Colors.TRANSPARENT_BLACK
+                else -> Colors.TRANSPARENT
             }
 
         }

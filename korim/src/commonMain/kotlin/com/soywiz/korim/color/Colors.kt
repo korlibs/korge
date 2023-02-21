@@ -12,8 +12,6 @@ object Colors {
 	val BLUE = RGBA(0x00, 0x00, 0xFF, 0xFF)
 
     val TRANSPARENT = RGBA(0x00, 0x00, 0x00, 0x00)
-    @Deprecated("Use TRANSPARENT", ReplaceWith("Colors.TRANSPARENT"))
-    val TRANSPARENT_BLACK get() = TRANSPARENT
 	val TRANSPARENT_WHITE = RGBA(0xFF, 0xFF, 0xFF, 0x00)
 
 	val ALICEBLUE = RGBA(240, 248, 255)
@@ -306,7 +304,7 @@ object Colors {
 		"yellow" to YELLOW
 	)
 
-	operator fun get(str: String): RGBA = get(str, Colors.TRANSPARENT_BLACK, errorOnDefault = true)
+	operator fun get(str: String): RGBA = get(str, TRANSPARENT, errorOnDefault = true)
 
 	operator fun get(str: String, default: RGBA, errorOnDefault: Boolean = false): RGBA {
         try {

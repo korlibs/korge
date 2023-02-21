@@ -1,5 +1,5 @@
 package com.soywiz.korio.net.ssl
 
-import com.soywiz.korio.util.*
+import com.soywiz.kmem.*
 
-actual fun DefaultSSLProcessor(): SSLProcessor = TODO("DefaultSSLProcessor not implemented in ${OS.rawName}")
+actual fun DefaultSSLProcessor(): SSLProcessor = TODO("DefaultSSLProcessor not implemented in ${Platform.rawOsName}")

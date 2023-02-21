@@ -135,7 +135,7 @@ object GifDec {
         val sigver2 = fd.readBytes(3)
         if (!sigver2.eqbytes("89a")) error("invalid version: ${sigver2.hex}")
         /* Width x Height */
-        val width  = read_num(fd);
+        val width = read_num(fd);
         val height = read_num(fd);
         /* FDSZ */
         val fdsz = fd.readU8()
@@ -155,9 +155,9 @@ object GifDec {
         /* Create gd_GIF Structure. */
         val gif = gd_GIF(fd, canvas = RgbaArray(width * height), frame = UByteArray(width * height))
         gif.fd = fd;
-        gif.width  = width;
+        gif.width = width;
         gif.height = height;
-        gif.depth  = depth;
+        gif.depth = depth;
         /* Read GCT */
         gif.gct.size = gct_sz;
         for (n in 0 until gif.gct.size) {
@@ -171,7 +171,7 @@ object GifDec {
         if (gif.bgindex != 0) {
             gif.frame.fill(gif.bgindex.toUByte(), 0, gif.width * gif.height)
         }
-        gif.palette.colors[gif.bgindex] = Colors.TRANSPARENT_BLACK
+        gif.palette.colors[gif.bgindex] = Colors.TRANSPARENT
         //val bgcolor = gif.palette.colors[gif.bgindex]
         //if (bgcolor.r != 0 || bgcolor.g != 0 || bgcolor.b != 0) {
         //    gif.canvas.fill(bgcolor, gif.width * gif.height)
@@ -475,7 +475,7 @@ object GifDec {
                 var i = gif.fy * gif.width+gif.fx;
                 for (j in 0 until gif.fh) {
                     for (k in 0 until gif.fw) {
-                        gif.canvas[i+k] = Colors.TRANSPARENT_BLACK
+                        gif.canvas[i + k] = Colors.TRANSPARENT
                     }
                     i += gif.width
                 }

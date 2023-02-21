@@ -1,5 +1,6 @@
 package com.soywiz.korio.lang
 
+import com.soywiz.kmem.*
 import com.soywiz.korio.util.*
 import kotlin.test.*
 
@@ -21,7 +22,7 @@ class EnvironmentTest {
     @Test
     fun testGetAllWorks() {
         val envs = Environment.getAll().map { it.key } // Test that at least it doesn't crash
-        if (!OS.isJsBrowserOrWorker) {
+        if (!Platform.isJsBrowserOrWorker) {
             assertTrue { envs.size >= 4 }
         }
     }

@@ -316,7 +316,7 @@ class WindowsGameWindow : EventLoopGameWindow() {
     }
 
     override fun doHandleEvents() {
-        xInputEventAdapter.updateGamepadsWin32(this)
+        xInputEventAdapter.updateGamepadsWin32(this.gamepadEmitter)
         memScoped {
             val msg = alloc<MSG>()
             while (

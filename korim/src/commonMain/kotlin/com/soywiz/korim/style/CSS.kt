@@ -429,7 +429,7 @@ class CSSReader(val tokens: ListReader<CSS.Companion.Token>) {
     this["animation"]?.let { CSS.parseAnimation(it.exprStr) }
 }
 
-fun CSS.InterpolationResult.getColor(key: String, default: RGBA = Colors.TRANSPARENT_BLACK): RGBA =
+fun CSS.InterpolationResult.getColor(key: String, default: RGBA = Colors.TRANSPARENT): RGBA =
     this.ratio.interpolate(k0[key]?.color ?: default, k1[key]?.color ?: default)
 fun CSS.InterpolationResult.getRatio(key: String, default: Double = 0.0): Double =
     this.ratio.interpolate(k0[key]?.ratio ?: default, k1[key]?.ratio ?: default)

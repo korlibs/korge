@@ -73,7 +73,7 @@ class UIWindow(title: String, width: Double = 256.0, height: Double = 256.0) : U
     class ScaleHandler(val window: UIWindow, val anchor: Anchor) {
         val isCorner = (anchor.sx == anchor.sy)
 
-        val view = window.solidRect(0.0, 0.0, Colors.TRANSPARENT_BLACK) {
+        val view = window.solidRect(0.0, 0.0, Colors.TRANSPARENT) {
             val sh = this
             anchor(Anchor.CENTER)
             cursor = GameWindow.Cursor.fromAnchorResize(anchor)
@@ -88,10 +88,12 @@ class UIWindow(title: String, width: Double = 256.0, height: Double = 256.0) : U
                             bounds.left = obounds.left
                         }
                     }
+
                     anchor.sx > 0.5 -> {
                         bounds.right = it.cx
                         bounds.width = bounds.width.clamp(window.minWidth, window.maxWidth)
                     }
+
                     else -> Unit
                 }
                 when {
@@ -101,10 +103,12 @@ class UIWindow(title: String, width: Double = 256.0, height: Double = 256.0) : U
                             bounds.top = obounds.top
                         }
                     }
+
                     anchor.sy > 0.5 -> {
                         bounds.bottom = it.cy
                         bounds.height = bounds.height.clamp(window.minHeight, window.maxHeight)
                     }
+
                     else -> Unit
                 }
                 window.setGlobalBounds(bounds)

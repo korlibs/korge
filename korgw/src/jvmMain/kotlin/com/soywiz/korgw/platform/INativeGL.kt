@@ -241,7 +241,7 @@ object DirectGL : INativeGL {
                 )
             }
         } catch (e: Throwable) {
-            com.soywiz.klogger.Console.error("Failed to initialize OpenAL: arch=$arch, OS.rawName=${OS.rawName}, nativeOpenGLLibraryPath=$nativeOpenGLLibraryPath, message=${e.message}")
+            com.soywiz.klogger.Console.error("Failed to initialize OpenAL: arch=$arch, OS.rawName=${Platform.rawOsName}, nativeOpenGLLibraryPath=$nativeOpenGLLibraryPath, message=${e.message}")
             e.printStackTrace()
         } finally {
             //println("/Native.register")
@@ -257,9 +257,9 @@ val nativeOpenGLLibraryPath: String by lazy {
         return@lazy path
     }
     when {
-        OS.isMac -> "OpenGL"
-        OS.isLinux -> "libGL"
-        OS.isWindows -> {
+        Platform.isMac -> "OpenGL"
+        Platform.isLinux -> "libGL"
+        Platform.isWindows -> {
             File(".", "opengl32.dll").takeIf { it.exists() }?.absolutePath
                 ?: "opengl32"
             //File("C:\\Users\\soywiz\\projects\\korge\\korge\\opengl32_2.dll").absolutePath

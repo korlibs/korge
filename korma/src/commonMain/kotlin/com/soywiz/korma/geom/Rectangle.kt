@@ -103,7 +103,6 @@ data class Rectangle(
     ) else null
 }
 
-//@Deprecated("Use Rectangle instead")
 @KormaMutableApi
 interface IRectangle {
     val x: Double
@@ -228,7 +227,6 @@ interface IRectangle {
     }
 }
 
-//@Deprecated("Use Rectangle instead")
 @KormaMutableApi
 data class MRectangle(
     override var x: Double, override var y: Double,

@@ -1,5 +1,6 @@
 package com.soywiz.korgw
 
+import com.soywiz.kmem.*
 import com.soywiz.korag.*
 import com.soywiz.korag.gl.*
 import com.soywiz.korev.*
@@ -54,36 +55,56 @@ open class BrowserCanvasJsGameWindow(
         return isTouchDeviceCache!!
     }
 
+    // https://blog.teamtreehouse.com/wp-content/uploads/2014/03/standardgamepad.png
+    val BUTTONS_MAPPING = arrayOf(
+        GameButton.BUTTON_SOUTH, // 0
+        GameButton.BUTTON_EAST, // 1
+        GameButton.BUTTON_WEST, // 2
+        GameButton.BUTTON_NORTH, // 3
+        GameButton.L1,      // 4
+        GameButton.R1,      // 5
+        GameButton.L2,      // 6
+        GameButton.R2,      // 7
+        GameButton.SELECT,  // 8
+        GameButton.START,   // 9
+        GameButton.L3,      // 10
+        GameButton.R3,      // 11
+        GameButton.UP,      // 12
+        GameButton.DOWN,    // 13
+        GameButton.LEFT,    // 14
+        GameButton.RIGHT,   // 15
+        GameButton.SYSTEM,  // 16
+    )
+
+    val AXES_MAPPING = arrayOf(
+        GameButton.LX, GameButton.LY,
+        GameButton.RX, GameButton.RY,
+        GameButton.L2, GameButton.R2,
+        GameButton.DPADX, GameButton.DPADY,
+    )
+
+    private val gamepad = GamepadInfo()
     @Suppress("UNUSED_PARAMETER")
     override fun updateGamepads() {
         try {
             if (navigator.getGamepads != null) {
                 val gamepads = navigator.getGamepads().unsafeCast<JsArray<JsGamePad?>>()
-                for (gp in gamePadUpdateEvent.gamepads) gp.connected = false
-                gamePadUpdateEvent.gamepadsLength = gamepads.length
+                dispatchGamepadUpdateStart()
                 for (gamepadId in 0 until gamepads.length) {
                     val controller = gamepads[gamepadId] ?: continue
-                    val gamepad = gamePadUpdateEvent.gamepads.getOrNull(gamepadId) ?: continue
-                    val mapping = knownControllers[controller.id] ?: knownControllers[controller.mapping] ?: StandardGamepadMapping
-                    gamepad.apply {
-                        this.connected = controller.connected
-                        this.index = controller.index
-                        this.name = controller.id
-                        this.mapping = mapping
-                        this.axesLength = controller.axes.length
-                        this.buttonsLength = controller.buttons.length
-                        this.rawButtonsPressed = 0
-                        for (n in 0 until controller.buttons.length) {
-                            val button = controller.buttons[n]
-                            if (button.pressed) this.rawButtonsPressed = this.rawButtonsPressed or (1 shl n)
-                            this.rawButtonsPressure[n] = button.value
-                        }
-                        for (n in 0 until controller.axes.length) {
-                            this.rawAxes[n] = controller.axes[n]
-                        }
+                    if (controller.mapping != "standard") continue
+                    val gamepad = this@BrowserCanvasJsGameWindow.gamepad
+                    gamepad.name = controller.id
+                    for (n in 0 until kotlin.math.min(controller.buttons.length, BUTTONS_MAPPING.size)) {
+                        gamepad.rawButtons[BUTTONS_MAPPING[n].index] = controller.buttons[n].value.toFloat()
                     }
+                    for (n in 0 until kotlin.math.min(controller.axes.length, AXES_MAPPING.size)) {
+                        val value = controller.axes[n].toFloat()
+                        gamepad.rawButtons[AXES_MAPPING[n].index] = GamepadInfo.withoutDeadRange(value, apply = n <= 3)
+                    }
+                    dispatchGamepadUpdateAdd(gamepad)
                 }
-                dispatch(gamePadUpdateEvent)
+                dispatchGamepadUpdateEnd()
             }
         } catch (e: dynamic) {
             console.error(e)
@@ -401,41 +422,29 @@ open class BrowserCanvasJsGameWindow(
         window.addEventListener("keydown", { keyEvent(it.unsafeCast<KeyboardEvent>()) })
         window.addEventListener("keyup", { keyEvent(it.unsafeCast<KeyboardEvent>()) })
 
-        window.addEventListener("gamepadconnected", { e ->
-            //console.log("gamepadconnected")
-            val e = e.unsafeCast<JsGamepadEvent>()
-            dispatch(gamePadConnectionEvent.apply {
-                this.type = GamePadConnectionEvent.Type.CONNECTED
-                this.gamepad = e.gamepad.index
-            })
-        })
-        window.addEventListener("gamepaddisconnected", { e ->
-            //console.log("gamepaddisconnected")
-            val e = e.unsafeCast<JsGamepadEvent>()
-            dispatch(gamePadConnectionEvent.apply {
-                this.type = GamePadConnectionEvent.Type.DISCONNECTED
-                this.gamepad = e.gamepad.index
-            })
-        })
+        //window.addEventListener("gamepadconnected", { e ->
+        //    //console.log("gamepadconnected")
+        //    val e = e.unsafeCast<JsGamepadEvent>()
+        //    dispatch(gamePadConnectionEvent.apply {
+        //        this.type = GamePadConnectionEvent.Type.CONNECTED
+        //        this.gamepad = e.gamepad.index
+        //    })
+        //})
+        //window.addEventListener("gamepaddisconnected", { e ->
+        //    //console.log("gamepaddisconnected")
+        //    val e = e.unsafeCast<JsGamepadEvent>()
+        //    dispatch(gamePadConnectionEvent.apply {
+        //        this.type = GamePadConnectionEvent.Type.DISCONNECTED
+        //        this.gamepad = e.gamepad.index
+        //    })
+        //})
         window.addEventListener("resize", { onResized() })
-        canvas.ondragenter = {
-            dispatchDropfileEvent(DropFileEvent.Type.START, null)
-        }
-        canvas.ondragexit = {
-            dispatchDropfileEvent(DropFileEvent.Type.END, null)
-        }
-        canvas.ondragleave = {
-            dispatchDropfileEvent(DropFileEvent.Type.END, null)
-        }
-        canvas.ondragover = {
-            it.preventDefault()
-        }
-        canvas.ondragstart = {
-            dispatchDropfileEvent(DropFileEvent.Type.START, null)
-        }
-        canvas.ondragend = {
-            dispatchDropfileEvent(DropFileEvent.Type.END, null)
-        }
+        canvas.ondragenter = { dispatchDropfileEvent(DropFileEvent.Type.START, null) }
+        canvas.ondragexit = { dispatchDropfileEvent(DropFileEvent.Type.END, null) }
+        canvas.ondragleave = { dispatchDropfileEvent(DropFileEvent.Type.END, null) }
+        canvas.ondragover = { it.preventDefault() }
+        canvas.ondragstart = { dispatchDropfileEvent(DropFileEvent.Type.START, null) }
+        canvas.ondragend = { dispatchDropfileEvent(DropFileEvent.Type.END, null) }
         canvas.ondrop = {
             it.preventDefault()
             dispatchDropfileEvent(DropFileEvent.Type.END, null)
@@ -544,7 +553,7 @@ private external interface JsGamepadEvent {
 
 class NodeJsGameWindow : JsGameWindow()
 
-actual fun CreateDefaultGameWindow(config: GameWindowCreationConfig): GameWindow = if (OS.isJsNodeJs) NodeJsGameWindow() else BrowserCanvasJsGameWindow()
+actual fun CreateDefaultGameWindow(config: GameWindowCreationConfig): GameWindow = if (Platform.isJsNodeJs) NodeJsGameWindow() else BrowserCanvasJsGameWindow()
 
 /*
 public external open class TouchEvent(type: String, eventInitDict: MouseEventInit = definedExternally) : UIEvent {
@@ -574,18 +583,3 @@ external class Touch {
     val target: dynamic
 }
 */
-object Nimbus_111_1420_Safari_GamepadMapping : GamepadMapping() {
-    override val id = "111-1420-Nimbus"
-
-    override fun getButtonIndex(button: GameButton): Int = when (button) {
-        GameButton.SELECT -> -1
-        GameButton.START -> -1
-        GameButton.SYSTEM -> -1
-        else -> super.getButtonIndex(button)
-    }
-}
-
-val knownControllers = listOf(
-    StandardGamepadMapping,
-    Nimbus_111_1420_Safari_GamepadMapping
-).associateBy { it.id }

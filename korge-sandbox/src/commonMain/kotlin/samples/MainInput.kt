@@ -34,14 +34,18 @@ class MainInput : ScaledScene(1920, 1080) {
             resizeText.text = "Resize ${nowTime()} $width,$height"
         }
 
-        gamepad {
-            updatedGamepad.invoke { gamepadText.text = "$it" }
+        fun updateGamepads() {
+            gamepadUpdate2Text.text = views.input.connectedGamepads.joinToString("\n") { "${it.index}:${it.fullName}" }
         }
 
         gamepad {
-            button.invoke { gamepadButtonText.text = "$it" }
-            stick.invoke { gamepadStickText.text = "$it" }
-            connection.invoke { gamepadConnectedText.text = "${nowTime()}:$it" }
+            updatedGamepad.invoke { gamepadText.text = "$it"; updateGamepads() }
+        }
+
+        gamepad {
+            button.invoke { gamepadButtonText.text = "$it"; updateGamepads() }
+            stick.invoke { gamepadStickText.text = "$it"; updateGamepads() }
+            connection.invoke { gamepadConnectedText.text = "${nowTime()}:$it"; updateGamepads() }
         }
 
         keys {

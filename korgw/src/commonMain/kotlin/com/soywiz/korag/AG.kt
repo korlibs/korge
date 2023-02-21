@@ -57,7 +57,7 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
     open fun clear(
         frameBuffer: AGFrameBufferBase,
         frameBufferInfo: AGFrameBufferInfo,
-        color: RGBA = Colors.TRANSPARENT_BLACK,
+        color: RGBA = Colors.TRANSPARENT,
         depth: Float = 1f,
         stencil: Int = 0,
         clearColor: Boolean = true,
@@ -138,7 +138,7 @@ fun AG.draw(
 
 fun AG.clear(
     frameBuffer: AGFrameBuffer,
-    color: RGBA = Colors.TRANSPARENT_BLACK,
+    color: RGBA = Colors.TRANSPARENT,
     depth: Float = 1f,
     stencil: Int = 0,
     clearColor: Boolean = true,

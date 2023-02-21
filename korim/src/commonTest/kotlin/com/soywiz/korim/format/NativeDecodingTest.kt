@@ -1,5 +1,6 @@
 package com.soywiz.korim.format
 
+import com.soywiz.kmem.*
 import com.soywiz.korim.atlas.readAtlas
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.Colors
@@ -8,7 +9,6 @@ import com.soywiz.korim.color.RGBAPremultiplied
 import com.soywiz.korim.color.asPremultiplied
 import com.soywiz.korio.async.suspendTest
 import com.soywiz.korio.file.std.resourcesVfs
-import com.soywiz.korio.util.OS
 import com.soywiz.korma.geom.vector.rect
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -21,7 +21,7 @@ class NativeDecodingTest {
     val colorStraight: RGBA = Colors["#02020281"]
 
     init {
-        if (OS.isJsNodeJs) RegisteredImageFormats.register(PNG)
+        if (Platform.isJsNodeJs) RegisteredImageFormats.register(PNG)
     }
 
     @Test
@@ -30,7 +30,7 @@ class NativeDecodingTest {
         val bmp1 = file.readBitmapNative(props = ImageDecodingProps(premultiplied = false, asumePremultiplied = true))
         val bmp2 = file.readBitmapNoNative(props = ImageDecodingProps(premultiplied = false, asumePremultiplied = true, format = PNG))
         val diff = Bitmap32.diff(bmp1, bmp2).premultiplied().sumOf { it.a + it.r + it.g + it.b }
-        if (OS.isJsBrowserOrWorker) {
+        if (Platform.isJsBrowserOrWorker) {
             // In JS has some small dis-adjustments because, to native read image pixels on JS we need Canvas,
             // and Canvas has a pre-multiplied alpha always, that leads to lossy rounding errors
             assertTrue("diff=$diff < 61000") { diff < 61000 } //

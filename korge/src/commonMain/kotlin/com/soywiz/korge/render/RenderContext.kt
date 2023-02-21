@@ -271,7 +271,7 @@ class RenderContext constructor(
     val mainFrameBuffer: AGFrameBuffer get() = ag.mainFrameBuffer
 
     fun clear(
-        color: RGBA = Colors.TRANSPARENT_BLACK,
+        color: RGBA = Colors.TRANSPARENT,
         depth: Float = 1f,
         stencil: Int = 0,
         clearColor: Boolean = true,
@@ -279,7 +279,17 @@ class RenderContext constructor(
         clearStencil: Boolean = true,
         scissor: AGScissor = AGScissor.NIL,
     ) {
-        ag.clear(currentFrameBuffer.base, currentFrameBuffer.info, color, depth, stencil, clearColor, clearDepth, clearStencil, scissor)
+        ag.clear(
+            currentFrameBuffer.base,
+            currentFrameBuffer.info,
+            color,
+            depth,
+            stencil,
+            clearColor,
+            clearDepth,
+            clearStencil,
+            scissor
+        )
     }
 
     inline fun renderToFrameBuffer(
@@ -290,7 +300,7 @@ class RenderContext constructor(
         setFrameBufferTemporally(frameBuffer) {
             useBatcher { batch ->
                 batch.scissor(AGScissor(0, 0, frameBuffer.width, frameBuffer.height)) {
-                    if (clear) clear(Colors.TRANSPARENT_BLACK)
+                    if (clear) clear(Colors.TRANSPARENT)
                     render(frameBuffer)
                 }
             }
@@ -449,7 +459,7 @@ class RenderContext constructor(
         flush()
         tempAllocateFrameBuffer(width, height, hasDepth, hasStencil, msamples) { rb ->
             setFrameBufferTemporally(rb) {
-                clear(Colors.TRANSPARENT_BLACK) // transparent
+                clear(Colors.TRANSPARENT) // transparent
                 render(rb)
             }
             use(rb.tex, rb.width, rb.height)
@@ -484,7 +494,7 @@ class RenderContext constructor(
         } else {
             setFrameBufferTemporally(mainFrameBuffer) {
                 updateStandardUniforms()
-                clear(Colors.TRANSPARENT_BLACK) // transparent
+                clear(Colors.TRANSPARENT) // transparent
                 flush()
                 callback()
                 flush()

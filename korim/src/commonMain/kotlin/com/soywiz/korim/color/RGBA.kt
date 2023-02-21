@@ -290,7 +290,7 @@ inline class RGBAPremultiplied(val value: Int) {
     val depremultipliedAccurate: RGBA get() {
         val alpha = ad
         return when (alpha) {
-            0.0 -> Colors.TRANSPARENT_BLACK
+            0.0 -> Colors.TRANSPARENT
             else -> {
                 val ialpha = 1.0 / alpha
                 RGBA((r * ialpha).toInt(), (g * ialpha).toInt(), (b * ialpha).toInt(), a)

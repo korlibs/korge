@@ -311,8 +311,6 @@ suspend fun SoundChannel.await(progress: SoundChannel.(current: TimeSpan, total:
 
 abstract class Sound(val creationCoroutineContext: CoroutineContext) : SoundProps, AudioStreamable {
     var defaultCoroutineContext = creationCoroutineContext
-    @Deprecated("Use defaultCoroutineContext instead", ReplaceWith("defaultCoroutineContext"))
-    val coroutineContext: CoroutineContext get() = defaultCoroutineContext
 
     open val name: String = "UnknownNativeSound"
     override var volume: Double = 1.0

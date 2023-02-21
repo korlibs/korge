@@ -159,7 +159,6 @@ data class PointInt(val x: Int, val y: Int) {
 // IMMUTABLE INTERFACES
 //////////////////////////////
 
-//@Deprecated("Use Point instead")
 @KormaMutableApi
 interface IPoint {
     companion object {
@@ -389,9 +388,6 @@ data class MPoint(
         out.setToPolar(Angle.between(0.0, 0.0, this.x, this.y) + rotation, this.length)
 
 
-    @Deprecated("Use non Number version")
-    inline fun setTo(x: Number, y: Number): MPoint = setTo(x.toDouble(), y.toDouble())
-
     companion object {
         val POOL: ConcurrentPool<MPoint> = ConcurrentPool<MPoint>({ it.setTo(0.0, 0.0) }) { MPoint() }
 
@@ -413,8 +409,6 @@ data class MPoint(
         /** Constructs a point from polar coordinates determined by an [angle] and a [length]. Angle 0 is pointing to the right, and the direction is counter-clock-wise */
         inline operator fun invoke(angle: Angle, length: Double = 1.0): MPoint = fromPolar(angle, length)
 
-        @Deprecated("")
-        fun angle(a: IPoint, b: IPoint): Angle = angleArc(a, b)
         fun angleArc(a: IPoint, b: IPoint): Angle = Angle.fromRadians(acos((a.dot(b)) / (a.length * b.length)))
         fun angleFull(a: IPoint, b: IPoint): Angle = Angle.between(a, b)
 

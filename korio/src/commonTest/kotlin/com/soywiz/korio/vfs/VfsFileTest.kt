@@ -1,6 +1,7 @@
 package com.soywiz.korio.vfs
 
 import com.soywiz.klock.*
+import com.soywiz.kmem.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.file.std.*
@@ -26,7 +27,7 @@ class VfsFileTest {
 	}
 
     @Test
-    fun testLocalRead() = suspendTest({ OS.isJvm }) {
+    fun testLocalRead() = suspendTest({ Platform.isJvm }) {
         val processedFileNamesWithSize = arrayListOf<String>()
         //println("************************************")
         localCurrentDirVfs.list().filter { it.baseName == "build.gradle" }.collect {

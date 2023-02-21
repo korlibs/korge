@@ -104,7 +104,7 @@ class UIMaterialLayer(
                     y = 0.0,
                     width = width,
                     height = height,
-                    color = Colors.TRANSPARENT_BLACK,
+                    color = Colors.TRANSPARENT,
                     radius = radius,
                     highlightPos = it.pos,
                     highlightRadius = it.radiusRatio,

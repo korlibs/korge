@@ -1,10 +1,11 @@
 package com.soywiz.korio.file.registry
 
+import com.soywiz.kmem.*
 import com.soywiz.korio.util.*
 import com.sun.jna.platform.win32.*
 
 actual object WindowsRegistry : WindowsRegistryBase() {
-    override val isSupported: Boolean get() = OS.isWindows
+    override val isSupported: Boolean get() = Platform.isWindows
 
     private fun parsePathEx(path: String): Pair<WinReg.HKEY, String>? =
         parsePath(path)?.let { Pair(WinReg.HKEY(it.first), it.second) }
