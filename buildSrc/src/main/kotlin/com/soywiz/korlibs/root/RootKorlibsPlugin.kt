@@ -565,6 +565,7 @@ object RootKorlibsPlugin {
                     // apply plugin: 'kotlin-android-extensions'
                     val android = extensions.getByName<TestedExtension>("android")
                     android.apply {
+                        namespace = "com.soywiz.${project.name.replace("-", ".")}"
                         compileSdkVersion(project.findProperty("android.compile.sdk.version")?.toString()?.toIntOrNull() ?: 30)
                         //buildToolsVersion(project.findProperty("android.buildtools.version")?.toString() ?: "30.0.2")
 
