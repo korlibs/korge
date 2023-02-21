@@ -12,8 +12,7 @@ dokka = "1.7.20"
 kover = "0.6.1"
 kover-agent = "1.0.692"
 node = "16.9.1"
-android-build-gradle-java8 = "4.2.0"
-android-build-gradle-java11 = "7.0.4"
+android-build-gradle = "7.0.4"
 gson = "2.8.6"
 gradle-publish-plugin = "1.1.0"
 #gradle-publish-plugin = "0.14.0"
@@ -33,8 +32,7 @@ jcodec-core = { module = "org.jcodec:jcodec", version.ref = "jcodec" }
 proguard-gradle = { module = "com.guardsquare:proguard-gradle", version.ref = "proguard-gradle" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinx-coroutines" }
-android-build-gradle-java8 = { module = "com.android.tools.build:gradle", version.ref = "android-build-gradle-java8" }
-android-build-gradle-java11 = { module = "com.android.tools.build:gradle", version.ref = "android-build-gradle-java11" }
+android-build-gradle = { module = "com.android.tools.build:gradle", version.ref = "android-build-gradle" }
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 gradle-publish-plugin = { module = "com.gradle.publish:plugin-publish-plugin", version.ref = "gradle-publish-plugin" }
 closure-compiler = { module = "com.google.javascript:closure-compiler", version.ref = "closure-compiler" }

@@ -6,8 +6,6 @@ plugins {
     id "org.jetbrains.kotlin.jvm"
 }
 
-def isJava8or9 = System.getProperty("java.version").startsWith("1.8") || System.getProperty("java.version").startsWith("9")
-
 description = "Multiplatform Game Engine written in Kotlin"
 group = "com.soywiz.korlibs.korge.plugins"
 //group = "com.soywiz.korge"
@@ -57,11 +55,7 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
 
 kotlin.sourceSets.main.each {
     it.kotlin.srcDirs(new File(buildDir, "srcgen"), new File(buildDir, "srcgen2"))
-    if (isJava8or9) {
-        it.kotlin.srcDirs(new File(buildDir, "srcgen2_8"))
-    } else {
-        it.kotlin.srcDirs(new File(buildDir, "srcgen2_11"))
-    }
+    it.kotlin.srcDirs(new File(buildDir, "srcgen2_11"))
 }
 java.sourceSets.main.each {
     it.resources.srcDirs(new File(buildDir, "srcgen2res"))
@@ -82,11 +76,7 @@ dependencies {
     implementation(libs.kover)
     implementation(libs.dokka)
 
-    if (isJava8or9) {
-        implementation(libs.android.build.gradle.java8)
-    } else {
-        implementation(libs.android.build.gradle.java11)
-    }
+    implementation(libs.android.build.gradle)
 
     implementation(gradleApi())
 	implementation(localGroovy())
