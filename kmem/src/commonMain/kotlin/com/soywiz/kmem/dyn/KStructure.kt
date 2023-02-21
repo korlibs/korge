@@ -119,7 +119,7 @@ open class KMemLayoutBuilder {
         offset
     }
 
-    private fun alloc(size: Int) = align(size).offset.also { this.offset += size }
+    private fun alloc(size: Int, align: Int = size) = align(align).offset.also { this.offset += size }
 
     //fun int() = alloc(Int.SIZE_BYTES)
     //fun nativeLong() = alloc(NativeLong.SIZE)
@@ -135,7 +135,7 @@ open class KMemLayoutBuilder {
     fun nativeLong() = KMemDelegateNativeLongProperty(alloc(LONG_SIZE))
     fun kpointer() = KMemDelegateKPointerProperty(alloc(POINTER_SIZE))
     fun <T> pointer() = KMemDelegatePointerProperty<T>(alloc(POINTER_SIZE))
-    fun fixedBytes(size: Int): KMemDelegateFixedBytesProperty = KMemDelegateFixedBytesProperty(alloc(size * Byte.SIZE_BYTES), size)
+    fun fixedBytes(size: Int, align: Int = 1): KMemDelegateFixedBytesProperty = KMemDelegateFixedBytesProperty(alloc(size * Byte.SIZE_BYTES, align), size)
 }
 
 

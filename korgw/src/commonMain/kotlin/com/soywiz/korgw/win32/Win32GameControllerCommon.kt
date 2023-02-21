@@ -88,7 +88,9 @@ internal class JoyCapsW(pointer: KPointer? = null) : KStructure(pointer) {
     var wPid: Short by short()
     var szPname by fixedBytes(32 * 2)
     var name: String
-        get() = szPname.toString(Charsets.UTF16_LE).trimEnd('\u0000')
+        get() = szPname.toString(Charsets.UTF16_LE).trimEnd('\u0000').also {
+            //println("JoyCapsW.name='$it'")
+        }
         set(value) {
             szPname = run {
                 ByteArray(szPname.size).also {
