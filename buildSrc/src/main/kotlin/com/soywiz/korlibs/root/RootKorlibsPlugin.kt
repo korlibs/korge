@@ -1525,7 +1525,7 @@ val forcedVersion = System.getenv("FORCED_VERSION")
 val Project.hasAndroidSdk by LazyExt { AndroidSdk.hasAndroidSdk(project) }
 val Project.enabledSandboxResourceProcessor: Boolean by LazyExt { rootProject.findProperty("enabledSandboxResourceProcessor") == "true" }
 
-val Project.currentJavaVersion by LazyExt { com.soywiz.korlibs.currentJavaVersion() }
+val Project.currentJavaVersion by LazyExt { currentJavaVersion() }
 fun Project.hasBuildGradle() = listOf("build.gradle", "build.gradle.kts").any { File(projectDir, it).exists() }
 val Project.isSample: Boolean get() = project.path.startsWith(":samples:") || project.path.startsWith(":korge-sandbox") || project.path.startsWith(":korge-editor") || project.path.startsWith(":korge-starter-kit")
 fun Project.mustAutoconfigureKMM(): Boolean =
