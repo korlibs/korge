@@ -306,7 +306,7 @@ abstract class BaseAwtGameWindow(
     override fun updateGamepads() {
         when {
             Platform.isWindows -> xinputEventAdapter.updateGamepadsWin32(this)
-            Platform.isLinux -> linuxJoyEventAdapter.updateGamepads(this)
+            Platform.isLinux -> linuxJoyEventAdapter.updateGamepads(this.gamepadEmitter)
             Platform.isMac -> macosGamepadEventAdapter.updateGamepads(this)
             else -> Unit //println("undetected OS: ${OS.rawName}")
         }
