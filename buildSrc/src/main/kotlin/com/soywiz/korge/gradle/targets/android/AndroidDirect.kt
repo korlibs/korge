@@ -28,16 +28,16 @@ fun Project.configureAndroidDirect() {
         }
         // @TODO: Android Build Gradle newer version
         installation {
-            installOptions = listOf("-r")
+            //installOptions = listOf("-r")
             timeOutInMs = project.korge.androidTimeoutMs
         }
-        packagingOptionsThis {
+        packagingOptions {
             for (pattern in project.korge.androidExcludePatterns) {
                 resources.excludes.add(pattern)
             }
         }
         compileSdk = project.korge.androidCompileSdk
-        defaultConfigThis {
+        defaultConfig {
             multiDexEnabled = true
             applicationId = project.korge.id
             minSdk = project.korge.androidMinSdk
@@ -48,7 +48,7 @@ fun Project.configureAndroidDirect() {
             //val manifestPlaceholdersStr = korge.configs.map { it.key + ":" + it.value.quoted }.joinToString(", ")
             //manifestPlaceholders = if (manifestPlaceholdersStr.isEmpty()) "[:]" else "[$manifestPlaceholdersStr]" }
         }
-        signingConfigsThis {
+        signingConfigs {
             maybeCreate("release").apply {
                 storeFile = project.file(project.findProperty("RELEASE_STORE_FILE") ?: korge.androidReleaseSignStoreFile)
                 storePassword = project.findProperty("RELEASE_STORE_PASSWORD")?.toString() ?: korge.androidReleaseSignStorePassword
@@ -56,7 +56,7 @@ fun Project.configureAndroidDirect() {
                 keyPassword = project.findProperty("RELEASE_KEY_PASSWORD")?.toString() ?: korge.androidReleaseSignKeyPassword
             }
         }
-        buildTypesThis {
+        buildTypes {
             maybeCreate("debug").apply {
                 isMinifyEnabled = false
                 signingConfig = signingConfigs.getByName("release")
@@ -67,7 +67,7 @@ fun Project.configureAndroidDirect() {
                 signingConfig = signingConfigs.getByName("release")
             }
         }
-        sourceSetsThis {
+        sourceSets {
             maybeCreate("main").apply {
                 val (resourcesSrcDirs, kotlinSrcDirs) = androidGetResourcesFolders()
                 //println("@ANDROID_DIRECT:")
