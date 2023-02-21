@@ -310,7 +310,7 @@ object RootKorlibsPlugin {
             }
             sourceSets {
                 it.maybeCreate("main").apply {
-                    manifest.srcFile(File(project.buildDir, "AndroidManifest.xml"))
+                    //manifest.srcFile(File(project.buildDir, "AndroidManifest.xml"))
                     java.srcDirs("${project.buildDir}/androidsrc")
                     res.srcDirs("${project.buildDir}/androidres")
                     assets.srcDirs(

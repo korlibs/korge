@@ -1,6 +1,5 @@
 package com.soywiz.korge.gradle.targets.android
 
-import com.android.build.api.dsl.*
 import com.android.build.gradle.internal.dsl.*
 import com.soywiz.korge.gradle.*
 import org.gradle.api.*
@@ -46,7 +45,7 @@ fun Project.configureAndroidDirect() {
             versionName = project.korge.version
             testInstrumentationRunner = "android.support.test.runner.AndroidJUnitRunner"
             //val manifestPlaceholdersStr = korge.configs.map { it.key + ":" + it.value.quoted }.joinToString(", ")
-            //manifestPlaceholders = if (manifestPlaceholdersStr.isEmpty()) "[:]" else "[$manifestPlaceholdersStr]" }
+            manifestPlaceholders.putAll(korge.configs)
         }
         signingConfigs {
             maybeCreate("release").apply {
