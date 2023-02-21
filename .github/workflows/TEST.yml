@@ -86,8 +86,8 @@ jobs:
     - { name: Set up JDK 1.8, uses: actions/setup-java@v1, with: { java-version: 1.8 } }
     - { name: Gradle cache, uses: ./.github/actions/gradle-cache }
     - { name: Grant execute permission for gradlew, run: chmod +x gradlew }
-    - { name: Start gradle, run: ./gradlew }
-    - { name: Building classes, run: ./gradlew compileTestKotlinJvm }
+    - { name: Start gradle, run: ./gradlew --stacktrace }
+    - { name: Building classes, run: ./gradlew --stacktrace compileTestKotlinJvm }
     - { name: Testing JVM, run: "./gradlew --stacktrace jvmTest", env: { EGL_LOG_LEVEL: debug, LIBGL_DEBUG: verbose, LIBGL_ALWAYS_SOFTWARE: true, MESA_DEBUG: true } }
     - { name: Archive Test Results, if: failure(), uses: actions/upload-artifact@v3, with: { name: screenshot-test-results-linux, retention-days: 21, path: "**/build/reports", if-no-files-found: ignore } }
     - { name: Check sandbox compiles, run: "./gradlew :korge-sandbox:jvmJar" }
