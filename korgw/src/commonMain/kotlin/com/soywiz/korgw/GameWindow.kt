@@ -692,7 +692,7 @@ open class GameWindow :
         return cancel1 || cancel2
     }
 
-    private val gamepadEmitter: GamepadInfoEmitter = GamepadInfoEmitter(this)
+    val gamepadEmitter: GamepadInfoEmitter = GamepadInfoEmitter(this)
 
     //private val gamePadUpdateEvent = GamePadUpdateEvent()
     fun dispatchGamepadUpdateStart() {

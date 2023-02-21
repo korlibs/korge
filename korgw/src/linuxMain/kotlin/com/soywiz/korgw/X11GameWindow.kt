@@ -395,7 +395,7 @@ class X11GameWindow : EventLoopGameWindow() {
     private val linuxJoyEventAdapter = com.soywiz.korgw.x11.LinuxJoyEventAdapter()
 
     override fun doHandleEvents() = memScoped {
-        linuxJoyEventAdapter.updateGamepads(this@X11GameWindow)
+        linuxJoyEventAdapter.updateGamepads(this@X11GameWindow.gamepadEmitter)
         //println("doHandleEvents")
         val e = alloc<XEvent>()
         val TEMP_SIZE = 64

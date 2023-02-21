@@ -3,6 +3,7 @@ package com.soywiz.korev
 import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
 import com.soywiz.kmem.*
+import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 import kotlin.jvm.*
 import kotlin.math.*
@@ -222,7 +223,20 @@ class GamepadInfo(
         GameStick.LEFT -> get(GameButton.LY)
         GameStick.RIGHT -> get(GameButton.RY)
     }
-    override fun toString(): String = "Gamepad[$index][$fullName]"
+    override fun toString(): String = buildString {
+        append("Gamepad[$index][$fullName]")
+        append("[")
+        var count = 0
+        for (button in GameButton.values()) {
+            val value = this@GamepadInfo[button]
+            if (value != 0.0) {
+                if (count > 0) append(",")
+                append("$button=${value.niceStr}")
+                count++
+            }
+        }
+        append("]")
+    }
 }
 
 data class GamePadConnectionEvent(
