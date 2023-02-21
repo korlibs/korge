@@ -576,7 +576,7 @@ object RootKorlibsPlugin {
                     val android = extensions.getByName<TestedExtension>("android")
                     android.apply {
                         compileSdkVersion(project.findProperty("android.compile.sdk.version")?.toString()?.toIntOrNull() ?: 30)
-                        buildToolsVersion(project.findProperty("android.buildtools.version")?.toString() ?: "30.0.2")
+                        //buildToolsVersion(project.findProperty("android.buildtools.version")?.toString() ?: "30.0.2")
 
                         defaultConfig {
                             it.multiDexEnabled = true
