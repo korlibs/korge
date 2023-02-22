@@ -1,5 +1,6 @@
-package com.soywiz.korge.bus
+package com.soywiz.korge.korbus
 
+import com.soywiz.korbus.*
 import com.soywiz.korinject.AsyncInjector
 import com.soywiz.korio.async.suspendTest
 import kotlin.test.Test

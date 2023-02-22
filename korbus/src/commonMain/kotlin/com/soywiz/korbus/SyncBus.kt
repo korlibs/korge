@@ -1,4 +1,4 @@
-package com.soywiz.korge.bus
+package com.soywiz.korbus
 
 import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.korinject.AsyncDestructor
