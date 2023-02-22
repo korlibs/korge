@@ -9,7 +9,7 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.reflect.KClass
 
 class Bus(
-	private val globalBus: GlobalBus,
+    private val globalBus: GlobalBus,
     val coroutineContext: CoroutineContext = globalBus.coroutineContext,
 ) : Closeable, AsyncDestructor {
 	private val closeables = arrayListOf<Closeable>()

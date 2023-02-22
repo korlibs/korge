@@ -1,0 +1,8 @@
+description = "Event bus for Kotlin"
+
+dependencies {
+	add("commonMainApi", libs.kotlinx.coroutines.core)
+    add("commonMainApi", project(":korinject"))
+    add("commonMainApi", project(":korio"))
+    add("commonMainApi", project(":kds"))
+}
