@@ -163,9 +163,10 @@ class KorgeExtension(val project: Project) {
      * Configures Android indirect. Alias for [targetAndroidIndirect]
      */
     fun targetAndroid() {
-        targetAndroidIndirect()
+        targetAndroid()
     }
 
+    /*
     /**
      * Configures android in this project tightly integrated, and creates src/main default stuff
      *
@@ -189,6 +190,7 @@ class KorgeExtension(val project: Project) {
             project.configureAndroidIndirect()
         }
     }
+    */
 
     /**
      * Configures Kotlin/Native iOS target (only on macOS)
@@ -206,22 +208,21 @@ class KorgeExtension(val project: Project) {
      *
      * gradle.properties:
      * - korge.enable.desktop=true
-     * - korge.enable.android.indirect=true
-     * - korge.enable.android.direct=true
+     * - korge.enable.android=true
      * - korge.enable.ios=true
      * - korge.enable.js=true
      *
      * Environment Variables:
      * - KORGE_ENABLE_DESKTOP
-     * - KORGE_ENABLE_ANDROID_INDIRECT
-     * - KORGE_ENABLE_ANDROID_DIRECT
+     * - KORGE_ENABLE_ANDROID
      * - KORGE_ENABLE_ANDROID_IOS
      * - KORGE_ENABLE_ANDROID_JS
      */
     fun targetDefault() {
         if (newDesktopEnabled) targetDesktop()
-        if (newAndroidIndirectEnabled) targetAndroidIndirect()
-        if (newAndroidDirectEnabled) targetAndroidDirect()
+        if (newAndroidEnabled) targetAndroid()
+        //if (newAndroidIndirectEnabled) targetAndroidIndirect()
+        //if (newAndroidDirectEnabled) targetAndroidDirect()
         if (newIosEnabled) targetIos()
         if (newJsEnabled) targetJs()
     }
@@ -306,8 +307,9 @@ class KorgeExtension(val project: Project) {
 	val nativeEnabled = (project.findProperty("disable.kotlin.native") != "true") && (System.getenv("DISABLE_KOTLIN_NATIVE") != "true")
 
     val newDesktopEnabled get() = project.findProperty("korge.enable.desktop") == "true" || System.getenv("KORGE_ENABLE_DESKTOP") == "true"
-    val newAndroidIndirectEnabled get() = project.findProperty("korge.enable.android.indirect") == "true" || System.getenv("KORGE_ENABLE_ANDROID_INDIRECT") == "true"
-    val newAndroidDirectEnabled get() = project.findProperty("korge.enable.android.direct") == "true" || System.getenv("KORGE_ENABLE_ANDROID_DIRECT") == "true"
+    val newAndroidEnabled get() = project.findProperty("korge.enable.android") == "true" || System.getenv("KORGE_ENABLE_ANDROID") == "true"
+    //val newAndroidIndirectEnabled get() = project.findProperty("korge.enable.android.indirect") == "true" || System.getenv("KORGE_ENABLE_ANDROID_INDIRECT") == "true"
+    //val newAndroidDirectEnabled get() = project.findProperty("korge.enable.android.direct") == "true" || System.getenv("KORGE_ENABLE_ANDROID_DIRECT") == "true"
     val newIosEnabled get() = project.findProperty("korge.enable.ios") == "true" || System.getenv("KORGE_ENABLE_IOS") == "true"
     val newJsEnabled get() = project.findProperty("korge.enable.js") == "true" || System.getenv("KORGE_ENABLE_JS") == "true"
 
