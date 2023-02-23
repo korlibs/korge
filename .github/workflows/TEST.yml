@@ -173,9 +173,8 @@ jobs:
     - { name: Gradle cache, uses: ./.github/actions/gradle-cache }
     - { name: Grant execute permission for gradlew, run: chmod +x gradlew }
     - { name: Start gradle, run: ./gradlew }
-    - { name: Check compilation of iOS X64 target, run: ./gradlew publishIosX64PublicationToMavenLocal }
     - { name: Run ios simulator tests, run: ./gradlew iosX64Test }
-    - { name: Check compilation of iOS Arm64 target, run: ./gradlew publishIosArm64PublicationToMavenLocal }
+    - { name: Check compilation of iOS targets, run: ./gradlew publishIosX64PublicationToMavenLocal publishIosArm64PublicationToMavenLocal }
     - { name: Check compilation of watchOS targets, run: ./gradlew publishWatchosArm64PublicationToMavenLocal publishWatchosX64PublicationToMavenLocal }
     - { name: Check compilation of tvOS targets, run: ./gradlew publishTvosArm64PublicationToMavenLocal publishTvosX64PublicationToMavenLocal }
     #- { name: Check compilation of TvOS targets, run: ./gradlew publishTvosArm64PublicationToMavenLocal publishTvosX64PublicationToMavenLocal publishTvosSimulatorArm64PublicationToMavenLocal }
