@@ -114,6 +114,7 @@ object AndroidNativeImageFormatProvider : NativeImageFormatProvider() {
                                     }
                                 }
                                 it.inSampleSize = props.getSampleSize(originalSize.width, originalSize.height)
+                                it.inMutable = true
                             }
                         )
                         if (bmp != null) {

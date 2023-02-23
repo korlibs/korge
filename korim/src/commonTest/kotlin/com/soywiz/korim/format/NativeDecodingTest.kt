@@ -122,4 +122,9 @@ class NativeDecodingTest {
         assertEquals(colorPremult.asPremultiplied(), bmp.getRgbaPremultiplied(x, y))
         assertEquals(colorStraight, bmp.getRgba(x, y))
     }
+
+    @Test
+    fun testNativeImageDecodedIsMutable() = suspendTest {
+        assertTrue { resourcesVfs["kotlin32.png"].readBitmap().flipX() is NativeImage }
+    }
 }
