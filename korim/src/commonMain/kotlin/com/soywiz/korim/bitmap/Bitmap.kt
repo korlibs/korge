@@ -83,11 +83,13 @@ abstract class Bitmap(
 
     inline fun lock(rect: IRectangleInt? = null, doLock: Boolean = true, block: () -> Unit): Int {
         if (doLock) lock()
+        var result: Int
         try {
             block()
         } finally {
-            return if (doLock) unlock(rect) else 0
+            result = if (doLock) unlock(rect) else 0
         }
+        return result
     }
 
     open fun readPixelsUnsafe(x: Int, y: Int, width: Int, height: Int, out: IntArray, offset: Int = 0) {
