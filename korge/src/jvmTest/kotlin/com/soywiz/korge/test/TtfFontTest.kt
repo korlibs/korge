@@ -16,8 +16,10 @@ class TtfFontTest {
 
         val c = container {
             val t1 = text("41/41", font = ttfFontWithLigatures, textSize = 40.0) {
+                this.graphicsRenderer = GraphicsRenderer.CPU
             }
             text("41/41", font = ttfFontWithoutLigatures, textSize = 40.0) {
+                this.graphicsRenderer = GraphicsRenderer.CPU
                 alignTopToBottomOf(t1)
             }
         }
