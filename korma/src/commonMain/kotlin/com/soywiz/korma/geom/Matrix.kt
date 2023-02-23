@@ -501,7 +501,7 @@ data class MMatrix(
     fun premultiply(la: Float, lb: Float, lc: Float, ld: Float, ltx: Float, lty: Float): MMatrix = premultiply(la.toDouble(), lb.toDouble(), lc.toDouble(), ld.toDouble(), ltx.toDouble(), lty.toDouble())
     fun premultiply(la: Int, lb: Int, lc: Int, ld: Int, ltx: Int, lty: Int): MMatrix = premultiply(la.toDouble(), lb.toDouble(), lc.toDouble(), ld.toDouble(), ltx.toDouble(), lty.toDouble())
 
-    fun multiply(l: MMatrix, r: MMatrix): MMatrix = setTo(
+    fun multiply(l: IMatrix, r: IMatrix): MMatrix = setTo(
         l.a * r.a + l.b * r.c,
         l.a * r.b + l.b * r.d,
         l.c * r.a + l.d * r.c,
@@ -527,7 +527,7 @@ data class MMatrix(
 
     fun isIdentity() = getType() == MatrixType.IDENTITY
 
-    fun invert(matrixToInvert: MMatrix = this): MMatrix {
+    fun invert(matrixToInvert: IMatrix = this): MMatrix {
         val src = matrixToInvert
         val dst = this
         val norm = src.a * src.d - src.b * src.c
@@ -546,9 +546,9 @@ data class MMatrix(
         return this
     }
 
-    fun concat(value: MMatrix): MMatrix = this.multiply(this, value)
-    fun preconcat(value: MMatrix): MMatrix = this.multiply(this, value)
-    fun postconcat(value: MMatrix): MMatrix = this.multiply(value, this)
+    fun concat(value: IMatrix): MMatrix = this.multiply(this, value)
+    fun preconcat(value: IMatrix): MMatrix = this.multiply(this, value)
+    fun postconcat(value: IMatrix): MMatrix = this.multiply(value, this)
 
     fun inverted(out: MMatrix = MMatrix()) = out.invert(this)
 
@@ -596,7 +596,7 @@ data class MMatrix(
 
     fun clone(): MMatrix = MMatrix(a, b, c, d, tx, ty)
 
-    operator fun times(that: MMatrix): MMatrix = MMatrix().multiply(this, that)
+    operator fun times(that: IMatrix): MMatrix = MMatrix().multiply(this, that)
     operator fun times(scale: Double): MMatrix = MMatrix().copyFrom(this).scale(scale)
 
     fun toTransform(out: Transform = Transform()): Transform {
@@ -708,7 +708,7 @@ data class MMatrix(
             rotation = 0.0.radians
         }
 
-        fun setMatrixNoReturn(matrix: MMatrix, pivotX: Double = 0.0, pivotY: Double = 0.0) {
+        fun setMatrixNoReturn(matrix: IMatrix, pivotX: Double = 0.0, pivotY: Double = 0.0) {
             val a = matrix.a
             val b = matrix.b
             val c = matrix.c
@@ -741,7 +741,7 @@ data class MMatrix(
             }
         }
 
-        fun setMatrix(matrix: MMatrix, pivotX: Double = 0.0, pivotY: Double = 0.0): Transform {
+        fun setMatrix(matrix: IMatrix, pivotX: Double = 0.0, pivotY: Double = 0.0): Transform {
             setMatrixNoReturn(matrix, pivotX, pivotY)
             return this
         }

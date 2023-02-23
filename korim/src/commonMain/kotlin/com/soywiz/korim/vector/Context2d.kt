@@ -1,6 +1,7 @@
 package com.soywiz.korim.vector
 
 import com.soywiz.kds.*
+import com.soywiz.kmem.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.font.*
@@ -57,7 +58,7 @@ open class Context2d constructor(
 		private inline fun <T> adjustState(state: State, callback: () -> T): T =
 			adjustMatrix(state.transform) { callback() }
 
-		override fun render(state: State, fill: Boolean, winding: Winding?): Unit = adjustState(state) { parent.render(state, fill, winding) }
+		override fun renderFinal(state: State, fill: Boolean, winding: Winding?): Unit = adjustState(state) { parent.render(state, fill, winding) }
 		//override fun renderText(state: State, font: Font, fontSize: Double, text: String, x: Double, y: Double, fill: Boolean): Unit =
 		//	adjustState(state) { parent.renderText(state, font, fontSize, text, x, y, fill) }
 
@@ -513,9 +514,7 @@ open class Context2d constructor(
 
     inline fun createLinearGradient(x0: Number, y0: Number, x1: Number, y1: Number, cycle: CycleMethod = CycleMethod.NO_CYCLE, transform: MMatrix = MMatrix(), block: GradientPaint.() -> Unit = {}) = LinearGradientPaint(x0, y0, x1, y1, cycle, transform, block)
     inline fun createRadialGradient(x0: Number, y0: Number, r0: Number, x1: Number, y1: Number, r1: Number, cycle: CycleMethod = CycleMethod.NO_CYCLE, transform: MMatrix = MMatrix(), block: GradientPaint.() -> Unit = {}) = RadialGradientPaint(x0, y0, r0, x1, y1, r1, cycle, transform, block)
-    @Deprecated("Only available on Android or Bitmap32")
-    inline fun createSweepGradient(x0: Number, y0: Number, transform: MMatrix = MMatrix(), block: GradientPaint.() -> Unit = {}) = SweepGradientPaint(x0, y0, transform, block)
-    inline fun createConicGradient(startAngle: Angle, x0: Number, y0: Number, transform: MMatrix = MMatrix(), block: GradientPaint.() -> Unit = {}) = ConicGradientPaint(startAngle, x0, y0, transform, block)
+    inline fun createSweepGradient(x0: Number, y0: Number, startAngle: Angle = Angle.ZERO, transform: MMatrix = MMatrix(), block: GradientPaint.() -> Unit = {}) = SweepGradientPaint(x0, y0, startAngle, transform, block)
 
     fun createColor(color: RGBA): RGBA = color
 	fun createPattern(
@@ -689,4 +688,16 @@ private fun VectorBuilder.write(path: VectorPath, m: MMatrix) {
         cubicTo = { x0, y0, x1, y1, x2, y2 -> cubicTo(m.transformX(x0, y0), m.transformY(x0, y0), m.transformX(x1, y1), m.transformY(x1, y1), m.transformX(x2, y2), m.transformY(x2, y2)) },
         close = { close() }
     )
+}
+
+fun Paint.toBitmapPaint(state: Context2d.State): BitmapPaint {
+    val filler: BaseFiller = this.toFiller(state)
+    val bb = BoundsBuilder()
+    state.path.getBounds(bb = bb)
+    state.clip?.getBounds(bb = bb)
+    val bounds = bb.getBounds().applyTransform(state.transform)
+    // @TODO: Make it work for negative x, y, and for other transforms
+    println("bounds=$bounds")
+    val bmp = Bitmap32(bounds.width.toIntCeil(), bounds.height.toIntCeil(), premultiplied = true).also { filler.fill(it) }
+    return BitmapPaint(bmp, MMatrix().translate(-bounds.left, -bounds.top))
 }

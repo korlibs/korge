@@ -14,7 +14,7 @@ actual val nativeImageFormatProvider: NativeImageFormatProvider = AwtNativeImage
 object AwtNativeImageFormatProvider : NativeImageFormatProvider() {
 	init {
 		// Try to detect junit and run then in headless mode
-		if (Thread.currentThread().stackTrace.contentDeepToString().contains("org.junit")) {
+		if (Thread.currentThread().stackTrace.contentDeepToString().contains("org.junit") && System.getenv("HEADLESS_TESTS") == "true") {
 			System.setProperty("java.awt.headless", "true")
 		}
 	}

@@ -10,14 +10,7 @@ import com.soywiz.korim.bitmap.ensureNative
 import com.soywiz.korim.color.BGRA
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
-import com.soywiz.korim.paint.BitmapPaint
-import com.soywiz.korim.paint.ColorPaint
-import com.soywiz.korim.paint.GradientFiller
-import com.soywiz.korim.paint.GradientInterpolationMethod
-import com.soywiz.korim.paint.GradientKind
-import com.soywiz.korim.paint.GradientPaint
-import com.soywiz.korim.paint.Paint
-import com.soywiz.korim.paint.TransformedPaint
+import com.soywiz.korim.paint.*
 import com.soywiz.korim.vector.Context2d
 import com.soywiz.korim.vector.CycleMethod
 import com.soywiz.korma.geom.MMatrix
@@ -359,7 +352,7 @@ class AwtContext2dRender(val awtImage: BufferedImage, val antialiasing: Boolean 
                             val valid = (pairs.size >= 2)
                             if (valid) {
                                 if (USE_ACCURATE_RADIAL_PAINT) {
-                                    AwtKorimGradientPaint(
+                                    AwtKorimGenericPaint(
                                         this,
                                         transform
                                     )
@@ -380,29 +373,36 @@ class AwtContext2dRender(val awtImage: BufferedImage, val antialiasing: Boolean 
                             }
                         }
                         else -> {
-                            AwtKorimGradientPaint(this, transform)
+                            AwtKorimGenericPaint(this, transform)
                         }
                     }
 
                 }
                 is BitmapPaint -> {
-                    object : java.awt.TexturePaint(
-                        this.bitmap.toAwt(),
-                        Rectangle2D.Double(0.0, 0.0, this.bitmap.width.toDouble(), this.bitmap.height.toDouble())
-                    ) {
-                        override fun createContext(
-                            cm: ColorModel?,
-                            deviceBounds: Rectangle?,
-                            userBounds: Rectangle2D?,
-                            xform: AffineTransform?,
-                            hints: RenderingHints?
-                        ): PaintContext {
-                            val out = AffineTransform()
-                            if (xform != null) {
-                                out.concatenate(xform)
+                    when {
+                        this.cycleX == CycleMethod.REPEAT && this.cycleY == CycleMethod.REPEAT -> {
+                            object : java.awt.TexturePaint(
+                                this.bitmap.toAwt(),
+                                Rectangle2D.Double(0.0, 0.0, this.bitmap.width.toDouble(), this.bitmap.height.toDouble())
+                            ) {
+                                override fun createContext(
+                                    cm: ColorModel?,
+                                    deviceBounds: Rectangle?,
+                                    userBounds: Rectangle2D?,
+                                    xform: AffineTransform?,
+                                    hints: RenderingHints?
+                                ): PaintContext {
+                                    val out = AffineTransform()
+                                    if (xform != null) {
+                                        out.concatenate(xform)
+                                    }
+                                    out.concatenate(t1)
+                                    return super.createContext(cm, deviceBounds, userBounds, out, this@AwtContext2dRender.hints)
+                                }
                             }
-                            out.concatenate(t1)
-                            return super.createContext(cm, deviceBounds, userBounds, out, this@AwtContext2dRender.hints)
+                        }
+                        else -> {
+                            AwtKorimGenericPaint(this, transform)
                         }
                     }
                 }
@@ -464,7 +464,7 @@ class AwtContext2dRender(val awtImage: BufferedImage, val antialiasing: Boolean 
         )
 	}
 
-	override fun render(state: Context2d.State, fill: Boolean, winding: Winding?) {
+	override fun renderFinal(state: Context2d.State, fill: Boolean, winding: Winding?) {
 		if (state.path.isEmpty()) return
 
         //println("AwtNativeImage.render: winding=$winding, state.path.winding=${state.path.winding}: ${state.path}")
@@ -483,11 +483,11 @@ class AwtContext2dRender(val awtImage: BufferedImage, val antialiasing: Boolean 
 	}
 
 
-    class AwtKorimGradientPaint(
-        val paint: GradientPaint,
+    class AwtKorimGenericPaint(
+        val paint: Paint,
         val stateTransform: AffineTransform
     ) : java.awt.Paint {
-        val filler = GradientFiller().set(paint, Context2d.State(transform = stateTransform.toMatrix()))
+        val filler = paint.toFiller(Context2d.State(transform = stateTransform.toMatrix()))
 
         override fun getTransparency(): Int = Transparency.TRANSLUCENT
 
@@ -523,7 +523,7 @@ class AwtContext2dRender(val awtImage: BufferedImage, val antialiasing: Boolean 
                     var n = 0
                     for (py in 0 until h) {
                         for (px in 0 until w) {
-                            val col = filler.getColor((x + px).toDouble(), (y + py).toDouble())
+                            val col = filler.getColor((x + px), (y + py))
                             //val col = Colors.RED
                             out[n++] = col.r
                             out[n++] = col.g

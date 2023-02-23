@@ -127,6 +127,11 @@ class CoreGraphicsRenderer(val bmp: Bitmap32, val antialiasing: Boolean) : com.s
     override val width: Int get() = bmp.width
     override val height: Int get() = bmp.height
 
+    override fun Paint.isPaintSupported(): Boolean = when {
+        this is GradientPaint && this.isSweep -> false
+        else -> true
+    }
+
     fun MMatrix.toCGAffineTransform() = CGAffineTransformMake(a.cg, b.cg, c.cg, d.cg, tx.cg, ty.cg)
 
     private fun cgDrawBitmap(bmp: Bitmap32, ctx: CGContextRef?, colorSpace: CPointer<CGColorSpace>?, tiled: Boolean = false) {
@@ -282,7 +287,7 @@ class CoreGraphicsRenderer(val bmp: Bitmap32, val antialiasing: Boolean) : com.s
                                                             CGContextDrawRadialGradient(ctx, gradient, start, style.r0.cg, end, style.r1.cg, options)
                                                         }
 
-                                                        GradientKind.CONIC -> {
+                                                        GradientKind.SWEEP -> {
                                                             // @TODO: Fix me! Can we implement it by creating a bitmap with the size of the vector path?
                                                             // https://stackoverflow.com/questions/40188058/how-to-draw-a-circle-path-with-color-gradient-stroke
                                                             CGContextDrawLinearGradient(ctx, gradient, start, end, options)
