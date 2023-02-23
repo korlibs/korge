@@ -596,19 +596,12 @@ object RootKorlibsPlugin {
                     android.apply {
                         sourceSets {
                             it.maybeCreate("main").apply {
-                                if (System.getenv("ANDROID_TESTS") == "true") {
-                                    assets.srcDirs(
-                                        "src/commonMain/resources",
-                                        "src/commonTest/resources",
-                                    )
-                                } else {
-                                    assets.srcDirs("src/commonMain/resources",)
-                                }
+                                assets.srcDirs("src/commonMain/resources",)
                             }
-                            it.maybeCreate("test").apply {
-                                assets.srcDirs(
-                                    "src/commonTest/resources",
-                                )
+                            for (name in listOf("test", "testDebug", "testRelease", "androidTest", "androidTestDebug", "androidTestRelease")) {
+                                it.maybeCreate(name).apply {
+                                    assets.srcDirs("src/commonTest/resources",)
+                                }
                             }
                         }
                     }

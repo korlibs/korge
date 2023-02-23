@@ -13,7 +13,6 @@ concurrency:
 env:
   CI: true
   SKIP_KORGE_SAMPLES: true
-  ANDROID_TESTS: true
   DISPLAY: ":99"
 
 jobs:
