@@ -124,7 +124,15 @@ inline class RGBA(val value: Int) : Comparable<RGBA>, Interpolable<RGBA>, Paint 
         return RGBAPremultiplied((value and 0x00FFFFFF.inv()) or RB or G)
     }
 
-    val premultipliedSlow: RGBAPremultiplied get() {
+    val premultipliedAccurate: RGBAPremultiplied get() {
+        val A = af
+        val R = (r * A).toInt()
+        val G = (g * A).toInt()
+        val B = (b * A).toInt()
+        return RGBAPremultiplied(R, G, B, a)
+    }
+
+    val premultipliedAccurateAlt: RGBAPremultiplied get() {
         val A = a
         val R = (r * A) / 255
         val G = (g * A) / 255
@@ -252,14 +260,29 @@ inline class RGBAPremultiplied(val value: Int) {
     }
 
     val depremultipliedAccurate: RGBA get() {
-        val alpha = ad
+        val alpha = a
         return when (alpha) {
-            0.0 -> Colors.TRANSPARENT
+            0 -> Colors.TRANSPARENT
             else -> {
-                val ialpha = 1.0 / alpha
-                RGBA((r * ialpha).toInt(), (g * ialpha).toInt(), (b * ialpha).toInt(), a)
+                val ialpha = 255f / alpha
+                RGBA((r * ialpha).toInt(), (g * ialpha).toInt(), (b * ialpha).toInt(), alpha)
             }
         }
+    }
+
+    val depremultipliedAccurateAlt: RGBA get() {
+        val A = a
+        if (A == 0x00) return RGBA(0)
+        if (A == 0xFF) return RGBA(this.value)
+        //val Af = A.toFloat() / 255f
+        val iAf = (255f / A.toFloat())
+        val Rp = r
+        val Gp = g
+        val Bp = b
+        val R = (Rp * iAf).roundToInt()
+        val G = (Gp * iAf).roundToInt()
+        val B = (Bp * iAf).roundToInt()
+        return RGBA.invoke(R, G, B, A)
     }
 
     val hexString: String get() = this.asNonPremultiplied().hexString

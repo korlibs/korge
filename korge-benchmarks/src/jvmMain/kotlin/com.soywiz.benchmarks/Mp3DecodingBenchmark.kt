@@ -7,7 +7,8 @@ import com.soywiz.korio.file.std.*
 import kotlinx.benchmark.*
 
 @State(Scope.Benchmark)
-@Measurement(iterations = 100, time = 3, timeUnit = BenchmarkTimeUnit.MICROSECONDS)
+@Measurement(iterations = 10, time = 100, timeUnit = BenchmarkTimeUnit.MILLISECONDS)
+@Warmup(iterations = 4, time = 100, timeUnit = BenchmarkTimeUnit.MILLISECONDS)
 @OutputTimeUnit(BenchmarkTimeUnit.MICROSECONDS)
 @BenchmarkMode(Mode.AverageTime)
 class Mp3DecodingBenchmark {
