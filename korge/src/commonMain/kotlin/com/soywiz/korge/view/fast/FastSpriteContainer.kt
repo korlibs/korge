@@ -51,7 +51,6 @@ class FastSpriteContainer(val useRotation: Boolean = false, var smoothing: Boole
 
     override fun renderInternal(ctx: RenderContext) {
         val colorMul = this.renderColorMul.value
-        val colorAdd = this.renderColorAdd.value
         val sprites = this.sprites
         if (sprites.isEmpty()) return
         ctx.flush()
@@ -81,7 +80,7 @@ class FastSpriteContainer(val useRotation: Boolean = false, var smoothing: Boole
                     val m = m2 * bb.maxQuads
                     //batchCount++
                     bb.indexPos = realIndexPos
-                    renderInternalBatch(bb, m, batchSize, colorMul, colorAdd)
+                    renderInternalBatch(bb, m, batchSize, colorMul)
                     flush(bb)
                 }
 
@@ -94,7 +93,7 @@ class FastSpriteContainer(val useRotation: Boolean = false, var smoothing: Boole
         bb.addQuadIndicesBatch(batchSize)
     }
 
-    private fun renderInternalBatch(bb: BatchBuilder2D, m: Int, batchSize: Int, colorMul: Int, colorAdd: Int) {
+    private fun renderInternalBatch(bb: BatchBuilder2D, m: Int, batchSize: Int, colorMul: Int) {
         val sprites = this.sprites
         var vp = bb.vertexPos
         val vd = bb.vertices
@@ -118,16 +117,14 @@ class FastSpriteContainer(val useRotation: Boolean = false, var smoothing: Boole
                     sprite.x0, sprite.y0, sprite.x1, sprite.y1,
                     sprite.x2, sprite.y2, sprite.x3, sprite.y3,
                     sprite.tx0, sprite.ty0, sprite.tx1, sprite.ty1,
-                    sprite.color.value, colorAdd,
-                    premultiplied = premultiplied, wrap = false,
+                    sprite.color.value, colorMul,
                 )
             } else {
                 vp = bb._addQuadVerticesFastNormalNonRotated(
                     vp, vd,
                     sprite.x0, sprite.y0, sprite.x1, sprite.y1,
                     sprite.tx0, sprite.ty0, sprite.tx1, sprite.ty1,
-                    sprite.color.value, colorAdd,
-                    premultiplied = premultiplied, wrap = false,
+                    sprite.color.value, colorMul,
                 )
             }
         }

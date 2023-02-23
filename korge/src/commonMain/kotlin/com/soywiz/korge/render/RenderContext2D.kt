@@ -157,8 +157,6 @@ class RenderContext2D(
             m = m,
             colorMul = color,
             blendMode = blendMode,
-            premultiplied = bmp.premultiplied,
-            wrap = false,
             program = program,
         )
     }
@@ -204,12 +202,12 @@ class RenderContext2D(
 
     fun texturedVertexArrayNoTransform(texturedVertexArray: TexturedVertexArray, filtering: Boolean = this.filtering, matrix: MMatrix? = null) {
         batch.setStateFast(Bitmaps.white, filtering, blendMode, null, icount = texturedVertexArray.icount, vcount = texturedVertexArray.vcount)
-        batch.drawVertices(texturedVertexArray, matrix, premultiplied = Bitmaps.white.premultiplied, wrap = false)
+        batch.drawVertices(texturedVertexArray, matrix)
     }
 
     fun texturedVertexArray(texturedVertexArray: TexturedVertexArray, filtering: Boolean = this.filtering) {
         batch.setStateFast(Bitmaps.white, filtering, blendMode, null, icount = texturedVertexArray.icount, vcount = texturedVertexArray.vcount)
-        batch.drawVertices(texturedVertexArray, m, premultiplied = Bitmaps.white.premultiplied, wrap = false)
+        batch.drawVertices(texturedVertexArray, m)
     }
 
     fun quadPaddedCustomProgram(
@@ -252,10 +250,9 @@ class RenderContext2D(
                     l, b,
                     r, b,
                     multiplyColor,
-                    ColorAdd.NEUTRAL
                 )
                 batch.setStateFast(Bitmaps.white, filtering, blendMode, program, icount = 6, vcount = 4)
-                batch.drawVertices(vertices, null, premultiplied = true, wrap = true)
+                batch.drawVertices(vertices, null)
             }
         }
     }
@@ -274,8 +271,6 @@ class RenderContext2D(
 			m = m,
 			colorMul = multiplyColor,
 			blendMode = blendMode,
-            premultiplied = texture.premultiplied,
-            wrap = false,
 		)
 	}
 

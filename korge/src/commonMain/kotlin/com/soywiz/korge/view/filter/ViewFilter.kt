@@ -75,8 +75,8 @@ fun View.renderFiltered(
         val addx = -bounds.x + edgeSize
         val addy = -bounds.y + edgeSize
 
-        //println("FILTER: $texWidth, $texHeight : $globalMatrixInv, $globalMatrix, addx=$addx, addy=$addy, renderColorAdd=$renderColorAdd, renderColorMulInt=$renderColorMulInt, blendMode=$blendMode")
-        //println("FILTER($this): $texWidth, $texHeight : bounds=${bounds} addx=$addx, addy=$addy, renderColorAdd=$renderColorAdd, renderColorMul=$renderColorMul, blendMode=$blendMode")
+        //println("FILTER: $texWidth, $texHeight : $globalMatrixInv, $globalMatrix, addx=$addx, addy=$addy, renderColorMulInt=$renderColorMulInt, blendMode=$blendMode")
+        //println("FILTER($this): $texWidth, $texHeight : bounds=${bounds} addx=$addx, addy=$addy, renderColorMul=$renderColorMul, blendMode=$blendMode")
 
         ctx.renderToTexture(texWidth, texHeight, render = {
             tempMat2d.copyFrom(globalMatrixInv)
@@ -87,7 +87,7 @@ fun View.renderFiltered(
             //println("texWidth=$texWidth, texHeight=$texHeight, $bounds, addx=$addx, addy=$addy, globalMatrix=$globalMatrix, globalMatrixInv:$globalMatrixInv, tempMat2d=$tempMat2d")
             @Suppress("DEPRECATION")
             ctx.batch.setViewMatrixTemp(tempMat2d) {
-                // @TODO: Set blendMode to normal, colorMul to WHITE, colorAdd to NEUTRAL
+                // @TODO: Set blendMode to normal, colorMul to WHITE
                 //renderInternal(ctx)
                 if (first) {
                     renderFirstPhase(ctx)
@@ -106,7 +106,6 @@ fun View.renderFiltered(
                 texture,
                 texWidth,
                 texHeight,
-                renderColorAdd,
                 renderColorMul,
                 blendMode,
                 realFilterScale

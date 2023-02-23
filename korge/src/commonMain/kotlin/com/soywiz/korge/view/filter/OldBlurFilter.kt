@@ -31,7 +31,6 @@ class OldBlurFilter(radius: Double = 4.0) : Filter {
         texture: Texture,
         texWidth: Int,
         texHeight: Int,
-        renderColorAdd: ColorAdd,
         renderColorMul: RGBA,
         blendMode: BlendMode,
         filterScale: Double,
@@ -56,6 +55,6 @@ class OldBlurFilter(radius: Double = 4.0) : Filter {
             blur.weights.setToInterpolated(Convolute3Filter.KERNEL_IDENTITY, Convolute3Filter.KERNEL_GAUSSIAN_BLUR, ratio)
             blur.weights = blur.weights
         }
-        composed.render(ctx, matrix, texture, texWidth, texHeight, renderColorAdd, renderColorMul, blendMode, filterScale)
+        composed.render(ctx, matrix, texture, texWidth, texHeight, renderColorMul, blendMode, filterScale)
     }
 }

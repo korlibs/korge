@@ -99,7 +99,8 @@ class MainConnect4 : ScaledScene(448, 384) {
                                         is Action.Finish -> {
                                             for (pos in action.win.positions) {
                                                 val view = views[pos.column, pos.row]
-                                                tweenLazy({ view::colorAdd[ColorAdd(255, 255, 255, 0)] })
+                                                //tweenLazy({ view::colorAdd[ColorAdd(255, 255, 255, 0)] })
+                                                tweenLazy({ view::alpha[1.0] })
                                             }
                                         }
                                     }

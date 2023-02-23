@@ -4,7 +4,6 @@ import com.soywiz.kmem.*
 import com.soywiz.korge.internal.KorgeInternal
 import com.soywiz.korim.bitmap.BmpCoords
 import com.soywiz.korim.bitmap.BmpSlice
-import com.soywiz.korim.color.ColorAdd
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korma.geom.BoundsBuilder
@@ -67,20 +66,20 @@ class TexturedVertexArray(vcount: Int, val indices: ShortArray, icount: Int = in
         /** Builds indices for drawing triangles when the vertices information is stored as quads (4 vertices per quad primitive) */
         inline fun quadIndices(quadCount: Int): ShortArray = TEXTURED_ARRAY_quadIndices(quadCount)
 
-        fun fromPath(path: VectorPath, colorMul: RGBA = Colors.WHITE, colorAdd: ColorAdd = ColorAdd.NEUTRAL, matrix: MMatrix? = null, doClipper: Boolean = true): TexturedVertexArray {
-            //return fromTriangles(path.triangulateEarCut(), colorMul, colorAdd, matrix)
-            //return fromTriangles(path.triangulatePoly2tri(), colorMul, colorAdd, matrix)
-            return fromTriangles(path.triangulateSafe(doClipper), colorMul, colorAdd, matrix)
+        fun fromPath(path: VectorPath, colorMul: RGBA = Colors.WHITE, matrix: MMatrix? = null, doClipper: Boolean = true): TexturedVertexArray {
+            //return fromTriangles(path.triangulateEarCut(), colorMul, matrix)
+            //return fromTriangles(path.triangulatePoly2tri(), colorMul, matrix)
+            return fromTriangles(path.triangulateSafe(doClipper), colorMul, matrix)
         }
 
-        fun fromTriangles(triangles: TriangleList, colorMul: RGBA = Colors.WHITE, colorAdd: ColorAdd = ColorAdd.NEUTRAL, matrix: MMatrix? = null): TexturedVertexArray {
+        fun fromTriangles(triangles: TriangleList, colorMul: RGBA = Colors.WHITE, matrix: MMatrix? = null): TexturedVertexArray {
             val tva = TexturedVertexArray(triangles.pointCount, triangles.indices, triangles.numIndices)
-            tva.setSimplePoints(triangles.points, matrix, colorMul, colorAdd)
+            tva.setSimplePoints(triangles.points, matrix, colorMul)
             return tva
         }
 
         /** This doesn't handle holes */
-        fun fromPointArrayList(points: IPointArrayList, colorMul: RGBA = Colors.WHITE, colorAdd: ColorAdd = ColorAdd.NEUTRAL, matrix: MMatrix? = null): TexturedVertexArray {
+        fun fromPointArrayList(points: IPointArrayList, colorMul: RGBA = Colors.WHITE, matrix: MMatrix? = null): TexturedVertexArray {
             val indices = ShortArray((points.size - 2) * 3)
             for (n in 0 until points.size - 2) {
                 indices[n * 3 + 0] = (0).toShort()
@@ -88,28 +87,28 @@ class TexturedVertexArray(vcount: Int, val indices: ShortArray, icount: Int = in
                 indices[n * 3 + 2] = (n + 2).toShort()
             }
             val tva = TexturedVertexArray(points.size, indices)
-            tva.setSimplePoints(points, matrix, colorMul, colorAdd)
+            tva.setSimplePoints(points, matrix, colorMul)
             return tva
         }
 
     }
 
-    fun setSimplePoints(points: IPointArrayList, matrix: MMatrix?, colorMul: RGBA = Colors.WHITE, colorAdd: ColorAdd = ColorAdd.NEUTRAL) {
+    fun setSimplePoints(points: IPointArrayList, matrix: MMatrix?, colorMul: RGBA = Colors.WHITE) {
         if (matrix != null) {
             points.fastForEachWithIndex { index, x, y ->
                 val xf = x.toFloat()
                 val yf = y.toFloat()
-                this.set(index, matrix.transformXf(xf, yf), matrix.transformYf(xf, yf), 0f, 0f, colorMul, colorAdd)
+                this.set(index, matrix.transformXf(xf, yf), matrix.transformYf(xf, yf), 0f, 0f, colorMul)
             }
         } else {
-            points.fastForEachWithIndex { index, x, y -> this.set(index, x.toFloat(), y.toFloat(), 0f, 0f, colorMul, colorAdd) }
+            points.fastForEachWithIndex { index, x, y -> this.set(index, x.toFloat(), y.toFloat(), 0f, 0f, colorMul) }
         }
     }
 
     @PublishedApi internal var offset = 0
 
-    fun set(index: Int, x: Float, y: Float, u: Float, v: Float, colMul: RGBA, colAdd: ColorAdd) {
-        select(index).setX(x).setY(y).setU(u).setV(v).setCMul(colMul).setCAdd(colAdd)
+    fun set(index: Int, x: Float, y: Float, u: Float, v: Float, colMul: RGBA) {
+        select(index).setX(x).setY(y).setU(u).setV(v).setCMul(colMul)
     }
 
     fun setXY(x: Float, y: Float) {
@@ -146,48 +145,41 @@ class TexturedVertexArray(vcount: Int, val indices: ShortArray, icount: Int = in
         fast.setInt32(offset + 4, v.value)
         return this
     }
-    /** Sets the [cAdd] (additive color) of the vertex previously selected calling [select] */
-    inline fun setCAdd(v: ColorAdd): TexturedVertexArray {
-        fast.setInt32(offset + 5, v.value)
-        return this
-    }
     /** Sets the [x] and [y] with the [matrix] transform applied of the vertex previously selected calling [select] */
     fun xy(x: Double, y: Double, matrix: MMatrix) = setX(matrix.transformXf(x, y)).setY(matrix.transformYf(x, y))
     /** Sets the [x] and [y] of the vertex previously selected calling [select] */
     fun xy(x: Double, y: Double) = setX(x.toFloat()).setY(y.toFloat())
     /** Sets the [u] and [v] of the vertex previously selected calling [select] */
     fun uv(tx: Float, ty: Float) = setU(tx).setV(ty)
-    /** Sets the [cMul] and [cAdd] (multiplicative and additive colors) of the vertex previously selected calling [select] */
-    fun cols(colMul: RGBA, colAdd: ColorAdd) = setCMul(colMul).setCAdd(colAdd)
+    /** Sets the [cMul]  (multiplicative colors) of the vertex previously selected calling [select] */
+    fun cols(colMul: RGBA) = setCMul(colMul)
 
-    fun quadV(index: Int, x: Float, y: Float, u: Float, v: Float, colMul: RGBA, colAdd: ColorAdd) {
-        quadV(fast, index * TEXTURED_ARRAY_COMPONENTS_PER_VERTEX, x, y, u, v, colMul.value, colAdd.value)
+    fun quadV(index: Int, x: Float, y: Float, u: Float, v: Float, colMul: RGBA) {
+        quadV(fast, index * TEXTURED_ARRAY_COMPONENTS_PER_VERTEX, x, y, u, v, colMul.value)
     }
 
-    fun quadV(fast: Buffer, pos: Int, x: Float, y: Float, u: Float, v: Float, colMul: Int, colAdd: Int): Int {
+    fun quadV(fast: Buffer, pos: Int, x: Float, y: Float, u: Float, v: Float, colMul: Int): Int {
         fast.setFloat32(pos + 0, x)
         fast.setFloat32(pos + 1, y)
         fast.setFloat32(pos + 2, u)
         fast.setFloat32(pos + 3, v)
         fast.setInt32(pos + 4, colMul)
-        fast.setInt32(pos + 5, colAdd)
+        fast.setInt32(pos + 5, 0)
         return TEXTURED_ARRAY_COMPONENTS_PER_VERTEX
     }
 
-    fun quadV(index: Int, x: Double, y: Double, u: Float, v: Float, colMul: RGBA, colAdd: ColorAdd) = quadV(index, x.toFloat(), y.toFloat(), u, v, colMul, colAdd)
-
     /**
      * Sets a textured quad at vertice [index] with the region defined by [x],[y] [width]x[height] and the [matrix],
-     * using the texture coords defined by [BmpSlice] and color transforms [colMul] and [colAdd]
+     * using the texture coords defined by [BmpSlice] and color transforms [colMul]
      */
     @OptIn(KorgeInternal::class)
-    fun quad(index: Int, x: Double, y: Double, width: Double, height: Double, matrix: MMatrix, bmp: BmpCoords, colMul: RGBA, colAdd: ColorAdd) {
-        quad(index, x.toFloat(), y.toFloat(), width.toFloat(), height.toFloat(), matrix, bmp, colMul, colAdd)
+    fun quad(index: Int, x: Double, y: Double, width: Double, height: Double, matrix: MMatrix, bmp: BmpCoords, colMul: RGBA) {
+        quad(index, x.toFloat(), y.toFloat(), width.toFloat(), height.toFloat(), matrix, bmp, colMul)
     }
 
     @OptIn(KorgeInternal::class)
-    fun quad(index: Int, x: Float, y: Float, width: Float, height: Float, matrix: MMatrix, bmp: BmpCoords, colMul: RGBA, colAdd: ColorAdd) {
-        quad(index, x, y, width, height, matrix, bmp.tlX, bmp.tlY, bmp.trX, bmp.trY, bmp.blX, bmp.blY, bmp.brX, bmp.brY, colMul, colAdd)
+    fun quad(index: Int, x: Float, y: Float, width: Float, height: Float, matrix: MMatrix, bmp: BmpCoords, colMul: RGBA) {
+        quad(index, x, y, width, height, matrix, bmp.tlX, bmp.tlY, bmp.trX, bmp.trY, bmp.blX, bmp.blY, bmp.brX, bmp.brY, colMul)
     }
     @OptIn(KorgeInternal::class)
     fun quad(
@@ -196,7 +188,7 @@ class TexturedVertexArray(vcount: Int, val indices: ShortArray, icount: Int = in
         tr_x: Float, tr_y: Float,
         bl_x: Float, bl_y: Float,
         br_x: Float, br_y: Float,
-        colMul: RGBA, colAdd: ColorAdd,
+        colMul: RGBA,
     ) {
         val xw = x + width
         val yh = y + height
@@ -232,12 +224,11 @@ class TexturedVertexArray(vcount: Int, val indices: ShortArray, icount: Int = in
         val fast = this.fast
         var pos = index * TEXTURED_ARRAY_COMPONENTS_PER_VERTEX
         val cm = colMul.value
-        val ca = colAdd.value
 
-        pos += quadV(fast, pos, x0, y0, tl_x, tl_y, cm, ca)
-        pos += quadV(fast, pos, x1, y1, tr_x, tr_y, cm, ca)
-        pos += quadV(fast, pos, x2, y2, br_x, br_y, cm, ca)
-        pos += quadV(fast, pos, x3, y3, bl_x, bl_y, cm, ca)
+        pos += quadV(fast, pos, x0, y0, tl_x, tl_y, cm)
+        pos += quadV(fast, pos, x1, y1, tr_x, tr_y, cm)
+        pos += quadV(fast, pos, x2, y2, br_x, br_y, cm)
+        pos += quadV(fast, pos, x3, y3, bl_x, bl_y, cm)
     }
 
 
@@ -266,11 +257,9 @@ class TexturedVertexArray(vcount: Int, val indices: ShortArray, icount: Int = in
     val v: Float get() = fast.getFloat32(offset + 3)
     /** [cMul] (multiplicative color) at the previously vertex selected by calling [select] */
     val cMul: Int get() = fast.getInt32(offset + 4)
-    /** [cAdd] (additive color) at the previously vertex selected by calling [select] */
-    val cAdd: Int get() = fast.getInt32(offset + 5)
 
     /** Describes the vertice previously selected by calling [select] */
-    val vertexString: String get() = "V(xy=($x, $y),uv=$u, $v,cMul=$cMul,cAdd=$cAdd)"
+    val vertexString: String get() = "V(xy=($x, $y),uv=$u, $v,cMul=$cMul)"
 
     /** Describes a vertex at [index] */
     fun str(index: Int): String {
@@ -301,29 +290,12 @@ class TexturedVertexArray(vcount: Int, val indices: ShortArray, icount: Int = in
         arraycopy(this._data, 0, out._data, 0, _data.size)
         return out
     }
-
-    //class Item(private val data: IntArray, index: Int) {
-    //	val offset = index * TEXTURED_ARRAY_COMPONENTS_PER_VERTEX
-    //	var x: Float; get() = Float.fromBits(data[offset + 0]); set(v) { data[offset + 0] = v.toBits() }
-    //	var y: Float; get() = Float.fromBits(data[offset + 1]); set(v) { data[offset + 1] = v.toBits() }
-    //	var tx: Float; get() = Float.fromBits(data[offset + 2]); set(v) { data[offset + 2] = v.toBits() }
-    //	var ty: Float; get() = Float.fromBits(data[offset + 3]); set(v) { data[offset + 3] = v.toBits() }
-    //	var colMul: Int; get() = data[offset + 4]; set(v) { data[offset + 4] = v }
-    //	var colAdd: Int; get() = data[offset + 5]; set(v) { data[offset + 5] = v }
-    //	fun setXY(x: Double, y: Double, matrix: Matrix) {
-    //		this.x = matrix.transformX(x, y).toFloat()
-    //		this.y = matrix.transformY(x, y).toFloat()
-    //	}
-    //	fun setXY(x: Double, y: Double) { this.x = x.toFloat() }.also { this.y = y.toFloat() }
-    //	fun setTXY(tx: Float, ty: Float) { this.tx = tx }.also { this.ty = ty }
-    //	fun setCols(colMul: Int, colAdd: Int) { this.colMul = colMul }.also { this.colAdd = colAdd }
-    //}
 }
 
 // @TODO: Should we move this outside?
 class ShrinkableTexturedVertexArray(val vertices: TexturedVertexArray, var vcount: Int = 0, var icount: Int = 0) {
-    fun quadV(x: Double, y: Double, u: Float, v: Float, colMul: RGBA, colAdd: ColorAdd) {
-        vertices.quadV(vcount++, x, y, u, v, colMul, colAdd)
+    fun quadV(x: Double, y: Double, u: Float, v: Float, colMul: RGBA) {
+        vertices.quadV(vcount++, x.toFloat(), y.toFloat(), u, v, colMul)
     }
 
     fun reset() {
@@ -387,4 +359,3 @@ private fun IntArray.repeat(count: Int): IntArray {
 @PublishedApi internal const val VERTEX_INDEX_U = 2
 @PublishedApi internal const val VERTEX_INDEX_V = 3
 @PublishedApi internal const val VERTEX_INDEX_COL_MUL = 4
-@PublishedApi internal const val VERTEX_INDEX_COL_ADD = 5

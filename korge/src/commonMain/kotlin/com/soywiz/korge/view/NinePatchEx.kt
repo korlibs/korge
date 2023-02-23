@@ -66,7 +66,7 @@ class NinePatchEx(
                         tvaCached.applyMatrix(m)
                     }
                     ctx.useBatcher { batch ->
-                        batch.drawVertices(tvaCached, ctx.getTex(ninePatch.content.bmp), smoothing, blendMode, premultiplied = ninePatch.content.bmp.premultiplied, wrap = false)
+                        batch.drawVertices(tvaCached, ctx.getTex(ninePatch.content.bmp), smoothing, blendMode)
                     }
                 }
             }
@@ -104,7 +104,7 @@ class NinePatchEx(
             tva.quad(index++ * 4,
                 x.toFloat(), y.toFloat(),
                 width.toFloat(), height.toFloat(),
-                matrix, bmpSlice, renderColorMul, renderColorAdd
+                matrix, bmpSlice, renderColorMul
             )
         }
         this.tva = tva

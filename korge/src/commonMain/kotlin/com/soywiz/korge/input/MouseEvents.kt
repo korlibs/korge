@@ -86,8 +86,6 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
                                 height = bounds.height.toFloat(),
                                 colorMul = Colors.RED.withAd(0.3),
                                 m = mouseHit.globalMatrix,
-                                premultiplied = Bitmaps.white.premultiplied,
-                                wrap = false,
                             )
                             renderContext.drawText(
                                 debugBmpFont,
@@ -117,7 +115,6 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
                                 height = bounds.height.toFloat(),
                                 colorMul = RGBA(0x00, 0, 0xFF, 0x3F),
                                 m = mouseHitResultUsed.globalMatrix,
-                                premultiplied = Bitmaps.white.premultiplied, wrap = false,
                             )
                             var vview = mouseHitResultUsed
                             while (vview != null) {

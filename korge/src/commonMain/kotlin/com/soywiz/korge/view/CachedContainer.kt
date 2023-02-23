@@ -101,7 +101,6 @@ open class CachedContainer(
                     it.pretranslate(lbounds.x, lbounds.y)
                     it.prescale(1.0 / renderScale)
                 },
-                colorAdd = renderColorAdd,
                 colorMul = renderColorMul,
                 blendMode = blendMode,
             )

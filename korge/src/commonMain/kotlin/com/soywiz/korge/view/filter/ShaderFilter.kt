@@ -61,7 +61,7 @@ abstract class ShaderFilter : Filter {
         }
 
         /** The [VertexShader] used this [Filter] */
-        protected open val vertex: VertexShader = BatchBuilder2D.VERTEX
+        protected open val vertex: VertexShader = BatchBuilder2D.PROGRAM.vertex
 
         /** The [FragmentShader] used this [Filter]. This is usually overriden. */
         protected open val fragment: FragmentShader = Filter.DEFAULT_FRAGMENT
@@ -131,12 +131,20 @@ abstract class ShaderFilter : Filter {
         texture: Texture,
         texWidth: Int,
         texHeight: Int,
-        renderColorAdd: ColorAdd,
         renderColorMul: RGBA,
         blendMode: BlendMode,
         filterScale: Double,
     ) {
-        if (isIdentity) return IdentityFilter.render(ctx, matrix, texture, texWidth, texHeight, renderColorAdd, renderColorMul, blendMode, filterScale)
+        if (isIdentity) return IdentityFilter.render(
+            ctx,
+            matrix,
+            texture,
+            texWidth,
+            texHeight,
+            renderColorMul,
+            blendMode,
+            filterScale
+        )
 
         val _margin = getBorder(texWidth, texHeight, ctx.tempMargin)
         val marginLeft = (_margin.left * filterScale).toIntCeil()
@@ -177,7 +185,6 @@ abstract class ShaderFilter : Filter {
                     y = -marginTop.toFloat(),
                     m = matrix,
                     filtering = filtering,
-                    colorAdd = renderColorAdd,
                     colorMul = renderColorMul,
                     blendMode = blendMode,
                     //program = if (texture.premultiplied) programPremult else programNormal

@@ -72,11 +72,8 @@ class NinePatch(
                 texCuts = texCuts,
                 m = globalMatrix,
                 colorMul = renderColorMul,
-                colorAdd = renderColorAdd,
                 filtering = smoothing,
                 blendMode = renderBlendMode,
-                premultiplied = tex.base.premultiplied,
-                wrap = false
             )
         }
 	}

@@ -64,7 +64,6 @@ open class RectBase(
         //super.renderInternal(ctx)
 	}
 
-    var wrapTexture: Boolean = false
     var program: Program? = null
     private var _programUniforms: AGUniformValues? = null
     var programUniforms: AGUniformValues
@@ -81,14 +80,13 @@ open class RectBase(
                 batch.drawVertices(
                     vertices, ctx.getTex(baseBitmap).base, smoothing, renderBlendMode,
                     program = program,
-                    premultiplied = baseBitmap.base.premultiplied, wrap = wrapTexture
                 )
             }
         }
     }
 
     protected open fun computeVertices() {
-        vertices.quad(0, sLeft, sTop, bwidth, bheight, globalMatrix, baseBitmap, renderColorMul, renderColorAdd)
+        vertices.quad(0, sLeft, sTop, bwidth, bheight, globalMatrix, baseBitmap, renderColorMul)
     }
 
 	override fun getLocalBoundsInternal(out: MRectangle) {

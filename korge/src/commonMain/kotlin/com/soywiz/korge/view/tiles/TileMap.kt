@@ -209,7 +209,6 @@ class TileMap(
         }
 
         val colMul = renderColorMul
-        val colAdd = renderColorAdd
 
         // @TODO: Bounds in clipped view
         val pp0 = globalToLocal(t0.setTo(currentVirtualRect.left, currentVirtualRect.top), tt0)
@@ -356,10 +355,10 @@ class TileMap(
 
                         computeIndices(flipX = flipX, flipY = flipY, rotate = rotate, indices = indices)
 
-                        info.vertices.quadV(p0X, p0Y, tempX[indices[0]], tempY[indices[0]], colMul, colAdd)
-                        info.vertices.quadV(p1X, p1Y, tempX[indices[1]], tempY[indices[1]], colMul, colAdd)
-                        info.vertices.quadV(p2X, p2Y, tempX[indices[2]], tempY[indices[2]], colMul, colAdd)
-                        info.vertices.quadV(p3X, p3Y, tempX[indices[3]], tempY[indices[3]], colMul, colAdd)
+                        info.vertices.quadV(p0X, p0Y, tempX[indices[0]], tempY[indices[0]], colMul)
+                        info.vertices.quadV(p1X, p1Y, tempX[indices[1]], tempY[indices[1]], colMul)
+                        info.vertices.quadV(p2X, p2Y, tempX[indices[2]], tempY[indices[2]], colMul)
+                        info.vertices.quadV(p3X, p3Y, tempX[indices[3]], tempY[indices[3]], colMul)
                     }
 
                     info.vertices.icount += 6
@@ -409,7 +408,6 @@ class TileMap(
                         vertices.vertices,
                         ctx.getTex(info.tex),
                         smoothing, renderBlendMode, vertices.vcount, vertices.icount,
-                        premultiplied = info.tex.premultiplied, wrap = false,
                     )
                 }
             }
