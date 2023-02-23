@@ -239,44 +239,8 @@ inline class RGBAPremultiplied(val value: Int) {
     val bd: Double get() = b.toDouble() / 255.0
     val ad: Double get() = a.toDouble() / 255.0
 
-    // @TODO: Use SIMD
-    val depremultiplied: RGBA get() {
-        //return depremultipliedAccurate
-        //val A = (value ushr 24) + 1
-        //val R = (((value and 0x0000FF) shl 8) / A) and 0x0000F0
-        //val G = (((value and 0x00FF00) shl 8) / A) and 0x00FF00
-        //val B = (((value and 0xFF0000) shl 8) / A) and 0xFF0000
-        //return RGBA((value and 0x00FFFFFF.inv()) or B or G or R)
-
-        //val A = a
-        //val A1 = A + 1
-        //val R = ((r shl 8) / A1) and 0xFF
-        //val G = ((g shl 8) / A1) and 0xFF
-        //val B = ((b shl 8) / A1) and 0xFF
-        //return RGBA(R, G, B, A)
-
-        //val A = a
-        //val R = ((r * 255) / a) and 0xFF
-        //val G = ((g * 255) / a) and 0xFF
-        //val B = ((b * 255) / a) and 0xFF
-        //return RGBA(R, G, B, A)
-
-        val A = a
-        if (A == 0x00) return RGBA(0)
-        if (A == 0xFF) return RGBA(this.value)
-        //val Af = A.toFloat() / 255f
-        val iAf = (255f / A.toFloat())
-        val Rp = r
-        val Gp = g
-        val Bp = b
-        //val R = (Rp * iAf).toInt()
-        //val G = (Gp * iAf).toInt()
-        //val B = (Bp * iAf).toInt()
-        val R = (Rp * iAf).roundToInt()
-        val G = (Gp * iAf).roundToInt()
-        val B = (Bp * iAf).roundToInt()
-        return RGBA.invoke(R, G, B, A)
-    }
+    inline val depremultiplied: RGBA get() = depremultipliedAccurate
+    //inline val depremultiplied: RGBA get() = depremultipliedFast
 
     val depremultipliedFast: RGBA get() {
         val A = a

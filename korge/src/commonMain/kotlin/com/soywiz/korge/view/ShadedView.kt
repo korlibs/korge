@@ -82,7 +82,6 @@ open class ShadedView(
             l, b,
             r, b,
             renderColorMul,
-            renderColorAdd
         )
     }
 

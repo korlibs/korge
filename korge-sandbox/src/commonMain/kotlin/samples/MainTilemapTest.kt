@@ -122,7 +122,7 @@ class MainTilemapTest : Scene() {
         val atlas = MutableAtlasUnit()
         val tileBitmaps =
             listOf(Colors.TRANSPARENT, Colors.GREEN, Colors.ORANGE, Colors.GREENYELLOW, Colors.YELLOW).map { c ->
-                atlas.add(Bitmap32(tileWidth, tileWidth).also {
+                atlas.add(Bitmap32(tileWidth, tileWidth, premultiplied = true).also {
                     it.fill(c)
                     for (i in (tileWidth / 5) until (tileWidth * 4 / 5)) {
                         it[i, tileWidth / 2] = Colors.TRANSPARENT

@@ -15,20 +15,6 @@ typealias BitmapCoords = SliceCoordsWithBase<out Bitmap>
 typealias ImageRotation = SliceRotation
 typealias ImageOrientation = SliceOrientation
 
-@Deprecated("")
-val SliceCoords.premultiplied: Boolean get() = true
-@Deprecated("")
-val BmpSlice.premultiplied: Boolean get() = base.premultiplied
-
-@Deprecated("", ReplaceWith("tlX")) val SliceCoords.tl_x: Float get() = tlX
-@Deprecated("", ReplaceWith("tlY")) val SliceCoords.tl_y: Float get() = tlY
-@Deprecated("", ReplaceWith("trX")) val SliceCoords.tr_x: Float get() = trX
-@Deprecated("", ReplaceWith("trY")) val SliceCoords.tr_y: Float get() = trY
-@Deprecated("", ReplaceWith("brX")) val SliceCoords.br_x: Float get() = brX
-@Deprecated("", ReplaceWith("brY")) val SliceCoords.br_y: Float get() = brY
-@Deprecated("", ReplaceWith("blX")) val SliceCoords.bl_x: Float get() = blX
-@Deprecated("", ReplaceWith("blY")) val SliceCoords.bl_y: Float get() = blY
-
 val <T : ISizeInt> RectSlice<T>.bounds: IRectangleInt get() = rect
 
 val <T: Bitmap> RectSlice<T>.bmp: T get() = container

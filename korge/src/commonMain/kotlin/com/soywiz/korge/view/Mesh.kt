@@ -39,7 +39,6 @@ open class Mesh(
 		// @TODO: Render in one batch without matrix multiplication in CPU
 		val m = globalMatrix
 		val cmul = this.renderColorMul
-		val cadd = this.renderColorAdd
 		val vcount = vertices.size / 2
 		val isize = indices.size
 
@@ -63,7 +62,7 @@ open class Mesh(
                 val x = vertices[n * 2 + 0] + pivotXf
                 val y = vertices[n * 2 + 1] + pivotYf
 
-                tva.quadV(n, m.transformXf(x, y), m.transformYf(x, y), uvs[n * 2 + 0], uvs[n * 2 + 1], cmul, cadd)
+                tva.quadV(n, m.transformXf(x, y), m.transformYf(x, y), uvs[n * 2 + 0], uvs[n * 2 + 1], cmul)
                 bb.add(x, y)
             }
         }

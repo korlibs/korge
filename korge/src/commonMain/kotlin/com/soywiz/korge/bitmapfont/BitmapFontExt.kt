@@ -1,17 +1,12 @@
 package com.soywiz.korge.bitmapfont
 
-import com.soywiz.korge.html.Html
-import com.soywiz.korge.render.RenderContext
-import com.soywiz.korge.view.BlendMode
-import com.soywiz.korim.color.ColorAdd
-import com.soywiz.korim.color.Colors
-import com.soywiz.korim.color.RGBA
-import com.soywiz.korim.font.BitmapFont
-import com.soywiz.korim.font.Font
-import com.soywiz.korim.font.GlyphMetrics
-import com.soywiz.korma.geom.MMatrix
-import com.soywiz.korma.geom.MRectangle
-import kotlin.math.max
+import com.soywiz.korge.html.*
+import com.soywiz.korge.render.*
+import com.soywiz.korge.view.*
+import com.soywiz.korim.color.*
+import com.soywiz.korim.font.*
+import com.soywiz.korma.geom.*
+import kotlin.math.*
 
 fun Font.getBounds(text: String, format: Html.Format, out: MRectangle = MRectangle()): MRectangle {
 	//val font = getBitmapFont(format.computedFace, format.computedSize)
@@ -53,7 +48,6 @@ fun BitmapFont.drawText(
     y: Int,
     m: MMatrix = MMatrix(),
     colMul: RGBA = Colors.WHITE,
-    colAdd: ColorAdd = ColorAdd.NEUTRAL,
     blendMode: BlendMode = BlendMode.INHERIT,
     filtering: Boolean = true
 ) {
@@ -82,11 +76,8 @@ fun BitmapFont.drawText(
                 tex.height.toFloat(),
                 m = m2,
                 colorMul = colMul,
-                colorAdd = colAdd,
                 blendMode = blendMode,
                 filtering = filtering,
-                premultiplied = tex.base.premultiplied,
-                wrap = false,
             )
             val kerningOffset = kernings[BitmapFont.Kerning.buildKey(c1, c2)]?.amount ?: 0
             dx += glyph.xadvance + kerningOffset
@@ -102,9 +93,8 @@ fun RenderContext.drawText(
     y: Int,
     m: MMatrix = MMatrix(),
     colMul: RGBA = Colors.WHITE,
-    colAdd: ColorAdd = ColorAdd.NEUTRAL,
     blendMode: BlendMode = BlendMode.INHERIT,
     filtering: Boolean = true
 ) {
-	font.drawText(this, textSize, str, x, y, m, colMul, colAdd, blendMode, filtering)
+	font.drawText(this, textSize, str, x, y, m, colMul, blendMode, filtering)
 }

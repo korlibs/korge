@@ -40,7 +40,7 @@ import kotlin.math.*
  * ## Properties
  *
  * Basic transform properties of the [View] are [x], [y], [scaleX], [scaleY], [rotation], [skewX] and [skewY].
- * Regarding to how the views are drawn there are: [alpha], [colorMul] ([tint]), [colorAdd].
+ * Regarding to how the views are drawn there are: [alpha], [colorMul] ([tint]).
  *
  * [View] implements the [Extra] interface, thus allows to add arbitrary typed properties.
  * [View] implements the [EventDispatcher] interface, and allows to handle and dispatch events.
@@ -516,27 +516,6 @@ abstract class View internal constructor(
         }
 
     /**
-     * Deprecated, since color generation was not consistent between targets,
-     * and added an extra overhead that might not be needed for all the games.
-     *
-     * Additive part of the color transform.
-     * This Int is a packed version of R,G,B,A one-component byte values determining additive color transform.
-     * @NOTE: If you don't have this value computed, you can use [ColorTransform.aR] aB, aG and aA to control the
-     * per component values. You should call the [View.invalidate] method after that.
-     */
-    @Deprecated("Use ColorMatrixFilter instead")
-    var colorAdd: ColorAdd
-        //get() = ColorAdd.NEUTRAL
-        //set(_) = Unit
-        get() = _colorTransform.colorAdd;
-        set(v) {
-            if (v != _colorTransform.colorAdd) {
-                _colorTransform.colorAdd = v
-                invalidateColorTransform()
-            }
-        }
-
-    /**
      * Shortcut for adjusting the multiplicative alpha value manually.
      * Equivalent to [ColorTransform.mA] + [View.invalidate]
      */
@@ -722,7 +701,7 @@ abstract class View internal constructor(
     /**
      * The [ColorTransform] of this view.
      * If you plan to change its components manually, you should call the [View.invalidate] method.
-     * You can also use: [alpha], [colorMul] and [colorAdd] that won't require the [invalidate].
+     * You can also use: [alpha], [colorMul] that won't require the [invalidate].
      */
     var colorTransform: ColorTransform
         get() = _colorTransform
@@ -793,12 +772,6 @@ abstract class View internal constructor(
     val renderColorMul: RGBA get() {
         updateRenderColorTransformIfRequired()
         return _renderColorTransform.colorMul
-    }
-
-    /** The concatenated/global version of the local [colorAdd] */
-    val renderColorAdd: ColorAdd get() {
-        updateRenderColorTransformIfRequired()
-        return _renderColorTransform.colorAdd
     }
 
     /** The concatenated/global version of the local [alpha] */
@@ -990,7 +963,6 @@ abstract class View internal constructor(
         if (!visible) out += ":visible=$visible"
         if (alpha != 1.0) out += ":alpha=$alpha"
         if (this.colorMul.rgb != Colors.WHITE.rgb) out += ":colorMul=${this.colorMul.hexString}"
-        if (colorAdd != ColorAdd.NEUTRAL) out += ":colorAdd=${colorAdd.shex}"
         return out
     }
 
@@ -1544,7 +1516,6 @@ abstract class View internal constructor(
      */
     open fun copyPropsFrom(source: View) {
         this.name = source.name
-        this.colorAdd = source.colorAdd
         this.colorMul = source.colorMul
         this.setMatrix(source.localMatrix)
         this.visible = source.visible

@@ -148,7 +148,6 @@ class TextOld : View(), IText, IHtml {
     override fun renderInternal(ctx: RenderContext) {
         if (!visible) return
         val colorMul = renderColorMul
-        val colorAdd = renderColorAdd
         val m = globalMatrix
         if (document != null) {
             document!!.allSpans.fastForEach { span ->
@@ -159,7 +158,6 @@ class TextOld : View(), IText, IHtml {
                     span.bounds.x.toInt(), span.bounds.y.toInt(),
                     m,
                     colMul = RGBA.multiply(colorMul, format.computedColor),
-                    colAdd = colorAdd,
                     blendMode = renderBlendMode,
                     filtering = filtering
                 )
@@ -186,7 +184,6 @@ class TextOld : View(), IText, IHtml {
                         m = m,
                         filtering = false,
                         colorMul = RGBA.multiply(bgcolor, renderColorMul),
-                        colorAdd = colorAdd,
                         blendMode = renderBlendMode,
                     )
                 }
@@ -197,7 +194,6 @@ class TextOld : View(), IText, IHtml {
                 ctx, format.computedSize.toDouble(), text, px.toInt(), py.toInt(),
                 m,
                 colMul = RGBA.multiply(colorMul, format.computedColor),
-                colAdd = colorAdd,
                 blendMode = renderBlendMode,
                 filtering = filtering
             )

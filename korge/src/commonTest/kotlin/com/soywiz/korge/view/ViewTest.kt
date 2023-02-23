@@ -52,7 +52,7 @@ class ViewTest {
             scale(4, 2).position(20, 10)
             middle = container {
                 scale(7, 3).position(50, 30)
-                leaf = image(Bitmap32(32, 32)) {
+                leaf = image(Bitmap32(32, 32, premultiplied = false)) {
                     //anchor(Anchor.MIDDLE_CENTER)
                     scale(2, 5).position(70, 90)
                 }

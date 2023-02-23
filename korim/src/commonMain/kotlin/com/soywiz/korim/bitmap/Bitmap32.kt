@@ -24,25 +24,10 @@ class Bitmap32(
     width: Int,
     height: Int,
     val ints: IntArray = IntArray(width * height),
-    premultiplied: Boolean
+    //premultiplied: Boolean
+    premultiplied: Boolean = true
+    //premultiplied: Boolean = false
 ) : Bitmap(width, height, 32, premultiplied, ints), Iterable<RGBA> {
-    @Deprecated("This is unsafe and might throw if you are accessing the wrong premultiplied version", level = DeprecationLevel.HIDDEN)
-    val data = RgbaArray(ints)
-        get() {
-            if (premultiplied) {
-                error("Trying to access data in a premultiplied bitmap")
-            }
-            return field
-        }
-    @Deprecated("This is unsafe and might throw if you are accessing the wrong premultiplied version", level = DeprecationLevel.HIDDEN)
-    val dataPremult: RgbaPremultipliedArray = RgbaPremultipliedArray(ints)
-        get() {
-            if (!premultiplied) {
-                error("Trying to access dataPremult in a non-premultiplied bitmap")
-            }
-            return field
-        }
-
 	init {
 		if (ints.size < width * height) throw RuntimeException("Bitmap data is too short: width=$width, height=$height, data=ByteArray(${ints.size}), area=${width * height}")
 	}
@@ -50,8 +35,6 @@ class Bitmap32(
 	private val temp = IntArray(max(width, height))
     val bounds: IRectangleInt = MRectangleInt(0, 0, width, height)
 
-    @Deprecated("Specify premultiplied instead")
-    constructor(width: Int, height: Int) : this(width, height, premultiplied = false)
 	constructor(width: Int, height: Int, value: RGBA) : this(width, height, premultiplied = false) { ints.fill(value.value) }
     constructor(width: Int, height: Int, value: RgbaArray) : this(width, height, value.ints, premultiplied = false)
 	constructor(width: Int, height: Int, generator: (x: Int, y: Int) -> RGBA) : this(width, height, premultiplied = false) { setEach(callback = generator) }

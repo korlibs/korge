@@ -11,7 +11,7 @@ class NativeFontTest {
 		val bmpFont = BitmapFont(SystemFont("Arial"), 64, CharacterSet("ABCDEFGHIJKLMNOPQRSTUVWXYZ"))
         // This check possible issues on native
         bmpFont.registerTemporarily {
-            val bmp = Bitmap32(200, 200)
+            val bmp = Bitmap32(200, 200, premultiplied = true)
         }
 		//bmp.drawText(bmpFont, "HELLO")
 		//awtShowImage(bmp); Thread.sleep(10000)

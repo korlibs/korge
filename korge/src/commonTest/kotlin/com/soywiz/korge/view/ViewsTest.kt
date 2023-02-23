@@ -24,7 +24,7 @@ import kotlin.test.assertTrue
 
 class ViewsTest : ViewsForTesting() {
     val logger = Logger("ViewsTest")
-    val tex = Bitmap32(10, 10)
+    val tex = Bitmap32(10, 10, premultiplied = true)
 
     @Test
     fun testFixedUpdater() {

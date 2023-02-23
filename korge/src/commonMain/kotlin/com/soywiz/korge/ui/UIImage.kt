@@ -100,7 +100,6 @@ class UIImage(
                 ratioR.convertRange(0f, 1f, bitmap.blX, bitmap.brX),
                 ratioB.convertRange(0f, 1f, bitmap.trY, bitmap.brY),
                 renderColorMul,
-                renderColorAdd
             )
         }
         ctx.useBatcher { batch ->
@@ -118,8 +117,6 @@ class UIImage(
                 ctx.getTex(bitmap).base,
                 smoothing,
                 renderBlendMode,
-                premultiplied = bitmap.base.premultiplied,
-                wrap = false
             )
         }
     }

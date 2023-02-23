@@ -13,7 +13,12 @@ import com.soywiz.korma.geom.*
 abstract class BaseFiller {
     abstract fun getColor(x: Float, y: Float): RGBAPremultiplied
     fun getColor(x: Int, y: Int): RGBAPremultiplied = getColor(x.toFloat(), y.toFloat())
-    abstract fun fill(data: RgbaPremultipliedArray, offset: Int, x0: Int, x1: Int, y: Int)
+    open fun fill(data: RgbaPremultipliedArray, offset: Int, x0: Int, x1: Int, y: Int) {
+        val yFloat = y.toFloat()
+        for (n in x0..x1) {
+            data[offset + n] = getColor(n.toFloat(), yFloat)
+        }
+    }
     fun fill(bmp: Bitmap32, rect: IRectangleInt = bmp.bounds) {
         val cols = RgbaPremultipliedArray(bmp.ints)
         for (y in rect.top until rect.bottom) {
@@ -89,13 +94,6 @@ class BitmapFiller : BaseFiller() {
     fun lookupLinear(x: Float, y: Float): RGBA = texture.getRgbaSampled(x, y)
     fun lookupNearest(x: Float, y: Float): RGBA = texture[x.toInt(), y.toInt()]
 
-    override fun fill(data: RgbaPremultipliedArray, offset: Int, x0: Int, x1: Int, y: Int) {
-        val yFloat = y.toFloat()
-        for (n in x0..x1) {
-            data[offset + n] = getColor(n.toFloat(), yFloat)
-        }
-    }
-
     override fun getColor(x: Float, y: Float): RGBAPremultiplied {
         val mat = compTrans
         val tx = cycleX.apply(mat.transformXf(x.toFloat(), y) * iTexWidth) * texWidth
@@ -125,14 +123,7 @@ class GradientFiller : BaseFiller() {
     }
 
     private fun color(ratio: Float): RGBAPremultiplied = colors[(ratio.clamp01() * (NCOLORS - 1)).toInt()]
-
     fun getRatio(x: Double, y: Double): Double = getRatio(x.toFloat(), y.toFloat()).toDouble()
     fun getRatio(x: Float, y: Float): Float = fill.getRatioAt(x, y)
     override fun getColor(x: Float, y: Float): RGBAPremultiplied = color(getRatio(x, y))
-
-    // @TODO: Radial gradient
-    // @TODO: This doesn't seems to work properly
-    override fun fill(data: RgbaPremultipliedArray, offset: Int, x0: Int, x1: Int, y: Int) {
-        for (n in x0..x1) data[offset + n] = getColor(n.toFloat(), y.toFloat())
-    }
 }
