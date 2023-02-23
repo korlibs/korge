@@ -39,7 +39,7 @@ object Json {
         }
     }
 
-	fun parse(s: StrReader, context: Context = Context.DEFAULT): Any? = when (val ic = s.skipSpaces().peek()) {
+	fun parse(s: StrReader, context: Context = Context.DEFAULT): Any? = when (val ic = s.skipSpaces().peekChar()) {
 		'{' -> parseObject(s, context)
 		'[' -> parseArray(s, context)
 		//'-', '+', in '0'..'9' -> { // @TODO: Kotlin native doesn't optimize char ranges
@@ -84,7 +84,7 @@ object Json {
             when (s.skipSpaces().read()) {
                 ']' -> break@array; ',' -> continue@array; else -> s.unread()
             }
-            val v = s.peek()
+            val v = s.peekChar()
             if (out == null && context.optimizedNumericLists && (v in '0'..'9' || v == '-')) {
                 if (outNumber == null) {
                     outNumber = DoubleArrayList()
