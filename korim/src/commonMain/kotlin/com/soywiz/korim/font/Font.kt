@@ -195,14 +195,6 @@ fun <T> Font.renderTextToBitmap(
     return TextToBitmapResult(image, bounds.fontMetrics, bounds, glyphs.glyphs, glyphs.glyphsPerLine)
 }
 
-@Deprecated("", ReplaceWith("getTextBoundsWithGlyphs(size, text, renderer, align)"))
-fun <T> Font.measureTextGlyphs(
-    size: Double,
-    text: T,
-    renderer: TextRenderer<T> = DefaultStringTextRenderer as TextRenderer<T>,
-    align: TextAlignment = TextAlignment.BASELINE_LEFT
-): TextMetricsResult = getTextBoundsWithGlyphs(size, text, renderer, align)
-
 fun <T> Font.drawText(
     ctx: Context2d?,
     size: Double,

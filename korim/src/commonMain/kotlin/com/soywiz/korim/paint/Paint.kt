@@ -58,11 +58,8 @@ interface TransformedPaint : Paint {
 }
 
 enum class GradientKind {
-    LINEAR, RADIAL,
-    @Deprecated("Not available in some targets")
-    SWEEP;
+    LINEAR, RADIAL, SWEEP;
     companion object {
-        @Deprecated("Not available in some targets")
         val CONIC: GradientKind get() = SWEEP
     }
 }

@@ -95,7 +95,7 @@ data class AtlasInfo(
         val regions: List<Region>
     )
 
-    data class Region constructor(
+    data class Region(
         val name: String,
         val frame: Rect,
         val virtFrame: Rect? = null,

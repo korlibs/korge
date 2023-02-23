@@ -122,6 +122,7 @@ internal inline fun <T> cgKeepState(ctx: CGContextRef?, callback: () -> T): T {
     }
 }
 
+@OptIn(UnsafeNumber::class)
 class CoreGraphicsRenderer(val bmp: Bitmap32, val antialiasing: Boolean) : com.soywiz.korim.vector.renderer.BufferedRenderer() {
     override val width: Int get() = bmp.width
     override val height: Int get() = bmp.height
@@ -279,6 +280,12 @@ class CoreGraphicsRenderer(val bmp: Bitmap32, val antialiasing: Boolean) : com.s
 
                                                         GradientKind.RADIAL -> {
                                                             CGContextDrawRadialGradient(ctx, gradient, start, style.r0.cg, end, style.r1.cg, options)
+                                                        }
+
+                                                        GradientKind.CONIC -> {
+                                                            // @TODO: Fix me! Can we implement it by creating a bitmap with the size of the vector path?
+                                                            // https://stackoverflow.com/questions/40188058/how-to-draw-a-circle-path-with-color-gradient-stroke
+                                                            CGContextDrawLinearGradient(ctx, gradient, start, end, options)
                                                         }
 
                                                         else -> Unit

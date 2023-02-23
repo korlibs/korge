@@ -382,10 +382,10 @@ class Bitmap32(
      */
     @JvmOverloads
     fun scaled(width: Int, height: Int, smooth: Boolean = true): Bitmap32 {
-        val sx = width.toDouble() / this.width.toDouble()
-        val sy = height.toDouble() / this.height.toDouble()
-        val isx = 1.0 / sx
-        val isy = 1.0 / sy
+        val sx = width.toFloat() / this.width.toFloat()
+        val sy = height.toFloat() / this.height.toFloat()
+        val isx = 1f / sx
+        val isy = 1f / sy
         val out = Bitmap32(width, height, this.premultiplied)
         if (smooth) {
             out.setEach { x, y -> this@Bitmap32[(x * isx).toInt(), (y * isy).toInt()] }

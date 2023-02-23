@@ -44,10 +44,6 @@ abstract class Bitmap(
     /** Version of the content. lock+unlock mutates this version to allow for example to re-upload the bitmap to the GPU when synchronizing bitmaps into textures */
     var contentVersion: Int = 0
 
-    /** Associated texture object to this Bitmap that could be used by other engines */
-    @Deprecated("Do not use")
-    var texture: Any? = null
-
     var dirtyRegion: IRectangleInt? = null
         private set
 
@@ -148,9 +144,6 @@ abstract class Bitmap(
 
     fun getRgbaClampedBorder(x: Int, y: Int): RGBA = getRgbaRaw(x.clamp(0, width - 1), y.clamp(0, height - 1))
 
-    @Deprecated("Use float version")
-    fun getRgbaSampled(x: Double, y: Double): RGBA = getRgbaSampled(x.toFloat(), y.toFloat())
-
     fun getRgbaSampled(x: Float, y: Float): RGBA {
         val x0 = x.toIntFloor()
         val y0 = y.toIntFloor()
@@ -168,7 +161,7 @@ abstract class Bitmap(
         return RGBA.mixRgba4(c00, c10, c01, c11, xratio, yratio)
     }
 
-    fun getRgbaSampled(x: Double, y: Double, count: Int, row: RgbaArray) {
+    fun getRgbaSampled(x: Float, y: Float, count: Int, row: RgbaArray) {
         for (n in 0 until count) {
             row[n] = getRgbaSampled(x + n, y)
         }
