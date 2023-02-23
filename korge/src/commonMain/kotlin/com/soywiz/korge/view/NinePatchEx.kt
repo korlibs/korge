@@ -124,7 +124,7 @@ class NinePatchEx(
             currentVfs["$sourceFile"].readNinePatch()
         } catch (e: Throwable) {
             if (e is CancellationException) throw e
-            NinePatchBitmap32(Bitmap32(62, 62))
+            NinePatchBitmap32(Bitmap32(62, 62, premultiplied = true))
         }
     }
 

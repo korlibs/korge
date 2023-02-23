@@ -88,6 +88,9 @@ private fun showBitmapDiffDialog(referenceBitmap: Bitmap32, actualBitmap: Bitmap
 
 private var OffscreenStage.testIndex: Int by extraProperty { 0 }
 
+private fun Bitmap.toBitmap8Or32(): Bitmap = this.toBMP32().tryToExactBitmap8() ?: this
+//private fun Bitmap.toBitmap8Or32(): Bitmap = this.toBMP32()
+
 suspend fun OffscreenStage.assertScreenshot(
     view: View = this,
     name: String = "$testIndex",
@@ -114,12 +117,16 @@ suspend fun OffscreenStage.assertScreenshot(
 
     var updateReference = updateTestRef
     if (outFile.exists()) {
-        val expectedBitmap = runBlockingNoJs { outFile.toVfs().readNativeImage(ImageDecodingProps.DEFAULT_STRAIGHT).toBMP32().posterizeInplace(posterize) }
+        //val expectedBitmap = runBlockingNoJs { outFile.toVfs().readNativeImage(ImageDecodingProps.DEFAULT_STRAIGHT).toBMP32() }
+        val expectedBitmap = runBlockingNoJs { PNG.decode(outFile.readBytes(), ImageDecodingProps.DEFAULT_STRAIGHT).toBMP32() }
         //val ref = referenceBitmap.scaleLinear(scale, scale)
         //val act = actualBitmap.scaleLinear(scale)
         val result = BitmapComparer.compare(expectedBitmap, actualBitmap)
         if (!updateReference) {
             val similar = result.psnr >= psnr
+            if (similar) {
+                updateReference = false
+            }
             if (!similar && interactive) {
                 updateReference = showBitmapDiffDialog(expectedBitmap, actualBitmap, "Bitmaps are not equal $expectedBitmap-$actualBitmap\n$result\n${result.error}")
             }
@@ -130,8 +137,8 @@ suspend fun OffscreenStage.assertScreenshot(
                 val actualFile = File(base, "$baseName.actual.png")
                 val diffFile = File(base, "$baseName.diff.png")
                 if (!similar) {
-                    expectedFile.writeBytes(PNG.encode(expectedBitmap.tryToExactBitmap8() ?: actualBitmap, ImageEncodingProps(quality = 1.0)))
-                    actualFile.writeBytes(PNG.encode(actualBitmap.tryToExactBitmap8() ?: actualBitmap, ImageEncodingProps(quality = 1.0)))
+                    expectedFile.writeBytes(PNG.encode(expectedBitmap.toBitmap8Or32(), ImageEncodingProps(quality = 1.0)))
+                    actualFile.writeBytes(PNG.encode(actualBitmap.toBitmap8Or32(), ImageEncodingProps(quality = 1.0)))
                     kotlin.runCatching {
                         diffFile.writeBytes(PNG.encode(Bitmap32.diffEx(actualBitmap, expectedBitmap), ImageEncodingProps(quality = 1.0)))
                     }
@@ -152,8 +159,11 @@ suspend fun OffscreenStage.assertScreenshot(
     }
     if (updateReference || !outFile.exists()) {
         outFile.parentFile.mkdirs()
-        outFile.writeBytes(PNG.encode(actualBitmap.tryToExactBitmap8() ?: actualBitmap, ImageEncodingProps(quality = 1.0)))
-        println("Folder ${outFile.parentFile.absoluteFile}")
-        println("Updated ${outFile.absoluteFile}")
+        val bytes = PNG.encode(actualBitmap.toBitmap8Or32(), ImageEncodingProps(quality = 1.0))
+        if (!bytes.contentEquals(outFile.takeIf { it.exists() }?.readBytes())) {
+            outFile.writeBytes(bytes)
+            println("Folder ${outFile.parentFile.absoluteFile}")
+            println("Updated ${outFile.absoluteFile}")
+        }
     }
 }

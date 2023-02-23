@@ -9,8 +9,8 @@ import kotlin.test.*
 class Bitmap32JvmTest {
     @Test
     fun test() {
-        val src = Bitmap32(16, 16)
-        val dst = Bitmap32(32, 32)
+        val src = Bitmap32(16, 16, premultiplied = true)
+        val dst = Bitmap32(32, 32, premultiplied = true)
         Bitmap32.copyRect(src, 8, 8, dst, 0, 0, 16, 16)
         Bitmap32.copyRect(src, 0, 0, dst, 0, 0, 32, 32)
         Bitmap32.copyRect(src, 16, 16, dst, 0, 0, 32, 32)

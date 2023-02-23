@@ -24,7 +24,9 @@ class Bitmap32(
     width: Int,
     height: Int,
     val ints: IntArray = IntArray(width * height),
+    //premultiplied: Boolean
     premultiplied: Boolean = true
+    //premultiplied: Boolean = false
 ) : Bitmap(width, height, 32, premultiplied, ints), Iterable<RGBA> {
 	init {
 		if (ints.size < width * height) throw RuntimeException("Bitmap data is too short: width=$width, height=$height, data=ByteArray(${ints.size}), area=${width * height}")

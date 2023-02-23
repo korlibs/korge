@@ -10,5 +10,5 @@ import com.soywiz.korim.bitmap.Bitmap32
  */
 fun Bitmap32.ensurePowerOfTwo(): Bitmap32 = when {
     this.width.isPowerOfTwo && this.height.isPowerOfTwo -> this
-    else -> Bitmap32(this.width.nextPowerOfTwo, this.height.nextPowerOfTwo).also { it.put(this) }
+    else -> Bitmap32(this.width.nextPowerOfTwo, this.height.nextPowerOfTwo, this.premultiplied).also { it.put(this) }
 }
