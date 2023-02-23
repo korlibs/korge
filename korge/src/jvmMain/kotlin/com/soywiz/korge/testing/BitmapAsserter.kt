@@ -6,7 +6,6 @@ import com.soywiz.korim.awt.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.format.*
-import com.soywiz.korio.file.std.*
 import com.soywiz.korio.lang.*
 import java.awt.*
 import java.io.*
@@ -26,20 +25,22 @@ object BitmapComparer {
     }
 
     fun compare(left: Bitmap, right: Bitmap): CompareResult {
-        if (left.premultiplied != right.premultiplied) {
-            return CompareResult(error = "premultiplied left=${left.premultiplied}, right=${right.premultiplied}")
+        val L = left.toBMP32().premultipliedIfRequired()
+        val R = right.toBMP32().premultipliedIfRequired()
+        if (L.premultiplied != R.premultiplied) {
+            return CompareResult(error = "premultiplied left=${L.premultiplied}, right=${R.premultiplied}")
         }
-        if (left.width != right.width || left.height != right.height) {
+        if (L.width != R.width || L.height != R.height) {
             return CompareResult(
-                error = "dimensions left=${left.width}x${left.height}, right=${right.width}x${right.height}"
+                error = "dimensions left=${L.width}x${L.height}, right=${R.width}x${R.height}"
             )
         }
         var pixelDiffCount = 0
         var pixelTotalDistance = 0
         var pixelMaxDistance = 0
-        loop@ for (y in 0 until left.height) for (x in 0 until left.width) {
-            val lc = left.getRgbaRaw(x, y)
-            val rc = right.getRgbaRaw(x, y)
+        loop@ for (y in 0 until L.height) for (x in 0 until L.width) {
+            val lc = L.getRgbaPremultiplied(x, y)
+            val rc = R.getRgbaPremultiplied(x, y)
             val Rdiff = (lc.r - rc.r).absoluteValue
             val Gdiff = (lc.g - rc.g).absoluteValue
             val Bdiff = (lc.b - rc.b).absoluteValue
@@ -53,7 +54,7 @@ object BitmapComparer {
                 pixelDiffCount++
             }
         }
-        val psnr = Bitmap32.computePsnr(left.toBMP32(), right.toBMP32())
+        val psnr = Bitmap32.computePsnr(L.toBMP32(), R.toBMP32())
 
         return CompareResult(pixelDiffCount, pixelTotalDistance, pixelMaxDistance, psnr)
     }
