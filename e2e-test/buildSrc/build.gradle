@@ -1,5 +1,5 @@
 plugins {
-    id "org.gradle.kotlin.kotlin-dsl" version "2.3.3"
+    id "org.gradle.kotlin.kotlin-dsl" version "4.0.6"
 }
 
 repositories {
@@ -9,5 +9,6 @@ repositories {
 }
 
 dependencies {
-    implementation("com.soywiz.korlibs.korim:korim-jvm:3.0.0")
+    //implementation("com.soywiz.korlibs.korim:korim-jvm:3.0.0")
+    implementation("com.soywiz.korlibs.korim:korim-jvm:999.0.0.999")
 }
