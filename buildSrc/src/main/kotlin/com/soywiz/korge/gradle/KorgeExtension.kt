@@ -163,7 +163,9 @@ class KorgeExtension(val project: Project) {
      * Configures Android indirect. Alias for [targetAndroidIndirect]
      */
     fun targetAndroid() {
-        targetAndroid()
+        target("android") {
+            project.configureAndroidDirect()
+        }
     }
 
     /*
