@@ -71,10 +71,11 @@ open class CGNativeImageFormatProvider : CGBaseNativeImageFormatProvider() {
                             }
                             val imgSource = CGImageSourceCreateWithData(data = cfdata, options = null)
 
+                            //println("imgSource=$imgSource")
+
                             val dict = CFDictionaryCreateMutable(null, 0, null, null)
 
                             CFDictionaryAddValue(dict, kCGImageSourceShouldCache, kCFBooleanFalse)
-
                             CFDictionaryAddValue(dict, kCGImageSourceCreateThumbnailWithTransform, kCFBooleanFalse)
                             CFDictionaryAddValue(dict, kCGImageSourceCreateThumbnailFromImageAlways, kCFBooleanTrue)
 
@@ -93,6 +94,8 @@ open class CGNativeImageFormatProvider : CGBaseNativeImageFormatProvider() {
                             }
                             val iwidth = CGImageGetWidth(cgImage).toInt()
                             val iheight = CGImageGetHeight(cgImage).toInt()
+
+                            if (iwidth == 0 && iheight == 0) error("Couldn't decode image with CG")
 
                             // This might have channels changed? RGBA -> ARGB?, might be in float, etc.
                             // https://developer.apple.com/documentation/coregraphics/1455401-cgimagegetalphainfo
