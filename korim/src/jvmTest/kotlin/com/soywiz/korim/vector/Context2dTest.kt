@@ -8,10 +8,6 @@ import com.soywiz.korma.geom.vector.*
 import kotlin.test.*
 
 class Context2dTest {
-	init {
-		System.setProperty("java.awt.headless", "true");
-	}
-
 	@Test
 	fun testPropertiesAndKeep() {
 		val ctx = Context2d(com.soywiz.korim.vector.renderer.DummyRenderer)

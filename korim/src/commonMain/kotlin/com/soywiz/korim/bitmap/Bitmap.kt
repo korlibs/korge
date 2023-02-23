@@ -149,7 +149,7 @@ abstract class Bitmap(
     fun getRgbaSampled(x: Float, y: Float): RGBA {
         val x0 = x.toIntFloor()
         val y0 = y.toIntFloor()
-        if (x0 < 0 || y0 < 0 || x0 >= width || y0 > height) return Colors.TRANSPARENT
+        if (x0 < 0 || y0 < 0 || x0 >= width || y0 >= height) return Colors.TRANSPARENT
         val x1 = x.toIntCeil()
         val y1 = y.toIntCeil()
         val x1Inside = x1 < width - 1

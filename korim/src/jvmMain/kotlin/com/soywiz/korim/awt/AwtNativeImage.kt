@@ -464,7 +464,7 @@ class AwtContext2dRender(val awtImage: BufferedImage, val antialiasing: Boolean 
         )
 	}
 
-	override fun render(state: Context2d.State, fill: Boolean, winding: Winding?) {
+	override fun renderFinal(state: Context2d.State, fill: Boolean, winding: Winding?) {
 		if (state.path.isEmpty()) return
 
         //println("AwtNativeImage.render: winding=$winding, state.path.winding=${state.path.winding}: ${state.path}")
