@@ -78,6 +78,8 @@ jobs:
     if: ${{ needs.changes.outputs.testJvm == 'true' }}
     timeout-minutes: 120
     runs-on: ubuntu-latest
+    env:
+      ENABLE_BENCHMARKS: true
     steps:
     - { uses: actions/checkout@v3 }
     - { name: Install freeglut3 & openal, run: sudo apt-get update && sudo apt-get -y install freeglut3-dev libopenal-dev xvfb }
@@ -93,6 +95,7 @@ jobs:
     - { name: Publish to maven local, run: ./gradlew publishJvmLocal }
     - { name: e2e test, working-directory: e2e-test, run: ./gradlew checkReferencesJvm --stacktrace }
     - { name: Archive E2E Test Results, if: failure(), uses: actions/upload-artifact@v3, with: { name: e2e-test-results-linux-jvm, retention-days: 21, path: "**/e2e-test/build/screenshots", if-no-files-found: ignore } }
+    - { name: Run benchmarks, run: "./gradlew :korge-benchmarks:jvmBenchmark" }
     #- { name: e2e test, uses: GabrielBB/xvfb-action@v1, with: { working-directory: e2e-test, run: ./gradlew checkReferencesJvm --stacktrace } }
 
   test-coverage:
