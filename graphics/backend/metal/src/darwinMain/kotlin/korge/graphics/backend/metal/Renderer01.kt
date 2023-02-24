@@ -59,11 +59,11 @@ class Renderer01(device: MTLDeviceProtocol) : Renderer(device) {
         if (ag == null) {
             ag = AGMetal(view)
 
-            Matrix3D()
+            MMatrix3D()
                 .setToOrtho(0f, width.toFloat(), 0f, height.toFloat(), -1f, +1f)
                 .also(::println)
 
-            Matrix3D()
+            MMatrix3D()
                 .setToOrtho(0f, width.toFloat(), 0f, height.toFloat(), -1f, +1f)
                 .transform(200f, 0f, 0f, 1f)
                 .also(::println)
@@ -89,7 +89,7 @@ class Renderer01(device: MTLDeviceProtocol) : Renderer(device) {
             drawOffset = 0, // This value can be != of 0 ?
             blending = AGBlending.NORMAL, // Pure guess
             uniforms = AGUniformValues().apply {
-                val floatBuffer = Matrix3D()
+                val floatBuffer = MMatrix3D()
                     .setToOrtho(0f, width.toFloat(), 0f, height.toFloat(), -1f, +1f)
                     .data
                     .let { Float32Buffer(it, 0, it.size) }
