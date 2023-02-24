@@ -52,7 +52,7 @@ class MetalShaderGeneratorTest : StringSpec({
 
 
     "check that vertex metal shader is correctly generated" {
-z
+
         vertexShader to fragmentShader shouldProduceShader {
             +"#include <metal_stdlib>"
             +"using namespace metal;"
