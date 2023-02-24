@@ -20,6 +20,7 @@ interface AGFeatures {
 
 abstract class AG : AGFeatures, Extra by Extra.Mixin() {
     companion object {
+        val logger = Logger("AG")
         const val defaultPixelsPerInch : Double = 96.0
     }
 
@@ -28,24 +29,35 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
         private set
 
     open fun contextLost() {
-        Console.info("AG.contextLost()", this)
+        logger.info { this }
+        logger.info { "AG.contextLost()" }
         contextVersion++
         //printStackTrace("AG.contextLost")
     }
 
     // @TODO: Unify beforeDoRender, startFrame  ---  dispose, finish & endFrame
     open fun beforeDoRender() = Unit
+    open fun afterDoRender() = Unit
     open fun dispose() = Unit
     open fun finish() = execute(AGFinish)
     open fun startFrame() = Unit
     open fun endFrame() = Unit
+
+    inline fun <T> startEndFrame(block: () -> T): T {
+        startFrame()
+        try {
+            return block()
+        } finally {
+            endFrame()
+        }
+    }
 
     protected open fun execute(command: AGCommand) = Unit
 
     open fun clear(
         frameBuffer: AGFrameBufferBase,
         frameBufferInfo: AGFrameBufferInfo,
-        color: RGBA = Colors.TRANSPARENT_BLACK,
+        color: RGBA = Colors.TRANSPARENT,
         depth: Float = 1f,
         stencil: Int = 0,
         clearColor: Boolean = true,
@@ -126,7 +138,7 @@ fun AG.draw(
 
 fun AG.clear(
     frameBuffer: AGFrameBuffer,
-    color: RGBA = Colors.TRANSPARENT_BLACK,
+    color: RGBA = Colors.TRANSPARENT,
     depth: Float = 1f,
     stencil: Int = 0,
     clearColor: Boolean = true,

@@ -41,7 +41,7 @@ fun Bitmap32.dropShadowInplace(x: Int, y: Int, r: Int, color: RGBA = Colors.BLAC
             )
         }
     }.toBMP32()
-    this.fill(Colors.TRANSPARENT_BLACK)
+    this.fill(Colors.TRANSPARENT)
     this.draw(shadow, x - r, y - r)
     this.draw(copy, 0, 0)
 }

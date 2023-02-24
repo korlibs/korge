@@ -114,6 +114,11 @@ class GdiRenderer(val bitmap: Bitmap32, val antialiasing: Boolean) : BufferedRen
         val FLIP_POINTS = false
     }
 
+    override fun Paint.isPaintSupported(): Boolean = when {
+        this is GradientPaint && (this.isSweep || this.isRadial) -> false
+        else -> true
+    }
+
     override fun flushCommands(commands: List<RenderCommand>) {
         if (!FLIP_POINTS) bitmap.flipY()
         //println("flushCommands.flushCommands[${commands.size}]")
@@ -176,7 +181,7 @@ class GdiRenderer(val bitmap: Bitmap32, val antialiasing: Boolean) : BufferedRen
                                 GdipCreateMatrix(pmatrix)
                                 val matrix = pmatrix[0]
                                 //val transform = Matrix().copyFrom(style.transform)
-                                val transform = Matrix().apply {
+                                val transform = MMatrix().apply {
                                     identity()
                                     multiply(this, style.transform)
                                     multiply(this, state.transform)
@@ -233,20 +238,24 @@ class GdiRenderer(val bitmap: Bitmap32, val antialiasing: Boolean) : BufferedRen
                                                 //println(" -- transform=$transform, ${points[0].X}, ${points[0].Y}, ${points[1].X}, ${points[1].Y}")
                                             }
 
-                                            GradientKind.RADIAL -> {
-                                                // @TODO:
-                                                GdipCreateSolidFill(
-                                                    Colors.RED.toArgb(),
-                                                    pbrush
-                                                ).checkp("GdipCreateSolidFill")
-                                            }
-
-                                            GradientKind.SWEEP -> {
-                                                // @TODO:
-                                                GdipCreateSolidFill(
-                                                    Colors.RED.toArgb(),
-                                                    pbrush
-                                                ).checkp("GdipCreateSolidFill")
+                                            // Covered in: Paint.isPaintSupported
+                                            //GradientKind.RADIAL -> {
+                                            //    // @TODO:
+                                            //    GdipCreateSolidFill(
+                                            //        Colors.RED.toArgb(),
+                                            //        pbrush
+                                            //    ).checkp("GdipCreateSolidFill")
+                                            //}
+                                            //GradientKind.SWEEP -> {
+                                            //    // @TODO:
+                                            //    GdipCreateSolidFill(
+                                            //        Colors.RED.toArgb(),
+                                            //        pbrush
+                                            //    ).checkp("GdipCreateSolidFill")
+                                            //}
+                                            else -> {
+                                                GdipCreateSolidFill(Colors.RED.toArgb(), pbrush)
+                                                    .checkp("GdipCreateSolidFill")
                                             }
                                         }
                                     }

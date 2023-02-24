@@ -1,6 +1,7 @@
 package com.soywiz.korio.vfs
 
 import com.soywiz.klock.*
+import com.soywiz.kmem.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.file.std.*
@@ -26,17 +27,17 @@ class VfsFileTest {
 	}
 
     @Test
-    fun testLocalRead() = suspendTest({ OS.isJvm }) {
-        val processedFileNames = arrayListOf<String>()
-        println("************************************")
+    fun testLocalRead() = suspendTest({ Platform.isJvm }) {
+        val processedFileNamesWithSize = arrayListOf<String>()
+        //println("************************************")
         localCurrentDirVfs.list().filter { it.baseName == "build.gradle" }.collect {
             if (it.isFile()) {
-                println("$it: ${it.readAll().size}")
-                processedFileNames += it.baseName
+                //println("$it: ${it.readAll().size}")
+                processedFileNamesWithSize += "${it.baseName}:${it.readAll().size}"
             }
         }
-        println("************************************")
-        assertEquals(listOf("build.gradle"), processedFileNames)
+        //println("************************************")
+        assertEquals(listOf("build.gradle:501"), processedFileNamesWithSize)
     }
 
 	@Test
@@ -206,6 +207,8 @@ class VfsFileTest {
         assertEquals("NodeVfs[/hello]", log.joinToString("\n"))
     }
 
+    suspend fun VfsFile.listPathsRecursively() = listRecursive().toList().map { it.path }.sorted()
+
     @Test
     fun testDeleteRecursively() = suspendTest {
         val vfs = MemoryVfs().root
@@ -214,16 +217,35 @@ class VfsFileTest {
         folder["test.txt"].writeString("hello")
         folder2["demo.txt"].writeString("demo")
 
-        suspend fun list() = vfs.listRecursive().toList().map { it.path }.sorted()
-
         assertEquals(
             "/test, /test/demo, /test/demo/lol, /test/demo/lol/test.txt, /test/demo2, /test/demo2/lol2, /test/demo2/lol2/demo.txt",
-            list().joinToString(", ")
+            vfs.listPathsRecursively().joinToString(", ")
         )
         vfs["test/demo"].deleteRecursively()
         assertEquals(
             "/test, /test/demo2, /test/demo2/lol2, /test/demo2/lol2/demo.txt",
-            list().joinToString(", ")
+            vfs.listPathsRecursively().joinToString(", ")
+        )
+    }
+
+    @Test
+    fun testCopyToRecursively() = suspendTest {
+        val vfs1 = MemoryVfsMix(
+            "hello/world.txt" to "test1",
+            "demo/a/test.txt" to "test2",
+            "demo/a/nice" to "test2",
+            "demo/b/lol.txt" to "test3",
+        )
+        val vfs2 = MemoryVfsMix()
+        vfs1.copyToRecursively(vfs2)
+
+        assertEquals(
+            "/demo, /demo/a, /demo/a/nice, /demo/a/test.txt, /demo/b, /demo/b/lol.txt, /hello, /hello/world.txt",
+            vfs1.listPathsRecursively().joinToString(", ")
+        )
+        assertEquals(
+            vfs1.listPathsRecursively().joinToString(", "),
+            vfs2.listPathsRecursively().joinToString(", ")
         )
     }
 }

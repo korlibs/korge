@@ -9,7 +9,7 @@ import kotlin.test.assertEquals
 class SpriteAnimationCommonTest {
     @Test
     fun testSpriteAnimationGen() = suspendTest {
-        val bmp = Bitmap32(32, 32).apply {
+        val bmp = Bitmap32(32, 32, premultiplied = false).apply {
             fill(Colors.RED, 0, 0, 16, 16)
             fill(Colors.GREEN, 16, 0, 16, 16)
             fill(Colors.BLUE, 0, 16, 16, 16)

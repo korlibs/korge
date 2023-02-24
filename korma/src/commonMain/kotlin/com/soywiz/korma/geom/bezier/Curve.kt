@@ -2,11 +2,11 @@ package com.soywiz.korma.geom.bezier
 
 import com.soywiz.kds.forEachRatio01
 import com.soywiz.korma.geom.IPointArrayList
-import com.soywiz.korma.geom.Point
+import com.soywiz.korma.geom.MPoint
 import com.soywiz.korma.geom.PointArrayList
-import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.MRectangle
 
-fun Curve.calcOffset(t: Double, offset: Double, out: Point = Point()): Point {
+fun Curve.calcOffset(t: Double, offset: Double, out: MPoint = MPoint()): MPoint {
     calc(t, out)
     val px = out.x
     val py = out.y
@@ -21,10 +21,10 @@ fun Curve.calcOffset(t: Double, offset: Double, out: Point = Point()): Point {
 
 interface Curve {
     val order: Int
-    fun getBounds(target: Rectangle = Rectangle()): Rectangle
-    fun normal(t: Double, target: Point = Point()): Point
-    fun tangent(t: Double, target: Point = Point()): Point
-    fun calc(t: Double, target: Point = Point()): Point
+    fun getBounds(target: MRectangle = MRectangle()): MRectangle
+    fun normal(t: Double, target: MPoint = MPoint()): MPoint
+    fun tangent(t: Double, target: MPoint = MPoint()): MPoint
+    fun calc(t: Double, target: MPoint = MPoint()): MPoint
     fun ratioFromLength(length: Double): Double = TODO()
     val length: Double
     // @TODO: We should probably have a function to get ratios in the function to place the points maybe based on inflection points?
@@ -37,7 +37,7 @@ interface Curve {
 
 @PublishedApi
 internal fun Curve._getPoints(count: Int = this.recommendedDivisions(), equidistant: Boolean = false, out: PointArrayList = PointArrayList()): IPointArrayList {
-    val temp = Point()
+    val temp = MPoint()
     val curveLength = length
     forEachRatio01(count) { ratio ->
         val t = if (equidistant) ratioFromLength(ratio * curveLength) else ratio

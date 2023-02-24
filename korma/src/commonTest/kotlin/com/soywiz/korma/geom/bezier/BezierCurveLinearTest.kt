@@ -1,6 +1,6 @@
 package com.soywiz.korma.geom.bezier
 
-import com.soywiz.korma.geom.Point
+import com.soywiz.korma.geom.MPoint
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -14,6 +14,6 @@ class BezierCurveLinearTest {
 
     @Test
     fun testMidpointIsIndeedTheMidpoint() {
-        assertEquals(Point(50, 50), b.compute(0.5))
+        assertEquals(MPoint(50, 50), b.compute(0.5))
     }
 }

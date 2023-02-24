@@ -23,11 +23,11 @@ class AnimatorTest : ViewsForTesting() {
         animate(completeOnCancel = false) {
             moveTo(view, 100, 0)
             moveBy(view, y = +100.0)
-            block { log += "${view.pos}" }
+            block { log += "${view.ipos}" }
             moveBy(view, x = +10.0)
             moveTo(view, x = { view.x + 10 })
         }
-        assertEquals("(120, 100)", view.pos.toString())
+        assertEquals("(120, 100)", view.ipos.toString())
         assertEquals("[(100, 100)]", log.toString())
     }
 

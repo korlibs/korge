@@ -5,34 +5,40 @@ import com.soywiz.klogger.internal.*
 
 /**
  * Utility to log messages.
+ *
+ * In order to set loggers at runtime. Set environment variables:
+ *
+ * ```
+ * LOG_$loggerName=debug
+ * ```
+ *
+ * For setting the default log level to something else:
+ *
+ * ```
+ * LOG_LEVEL=debug
+ * ```
  */
-class Logger private constructor(val name: String, val dummy: Boolean) {
-    init {
-        Logger_loggers[name] = this
-        Logger_levels[name] = null
-        Logger_outputs[name] = null
-    }
+class Logger private constructor(val name: String, val normalizedName: String, val dummy: Boolean) {
+    var optLevel: Level? = null
+    var optOutput: Output? = null
 
     /** [Level] of this [Logger]. If not set, it will use the [Logger.defaultLevel] */
     var level: Level
-        set(value) { Logger_levels[name] = value }
-        get() = Logger_levels[name] ?: Logger.defaultLevel ?: Level.WARN
+        get() = optLevel ?: defaultLevel ?: Level.WARN
+        set(value) { optLevel = value }
 
     /** [Output] of this [Logger]. If not set, it will use the [Logger.defaultOutput] */
     var output: Output
-        set(value) { Logger_outputs[name] = value }
-        get() = Logger_outputs[name] ?: Logger.defaultOutput
+        get() = optOutput ?: defaultOutput
+        set(value) { optOutput = value }
 
-    /** Check if the [level] is set for this [Logger] */
-    val isLocalLevelSet: Boolean get() = Logger_levels[name] != null
-
-    /** Check if the [output] is set for this [Logger] */
-    val isLocalOutputSet: Boolean get() = Logger_outputs[name] != null
+    ///** Check if the [level] is set for this [Logger] */
+    val isLocalLevelSet: Boolean get() = optLevel != null
+    ///** Check if the [output] is set for this [Logger] */
+    val isLocalOutputSet: Boolean get() = optOutput != null
 
     companion object {
         private val Logger_loggers: AtomicMap<String, Logger> = AtomicMap(emptyMap())
-        private val Logger_levels: AtomicMap<String, Level?> = AtomicMap(emptyMap())
-        private val Logger_outputs: AtomicMap<String, Output?> = AtomicMap(emptyMap())
 
         /** The default [Level] used for all [Logger] that doesn't have its [Logger.level] set */
         var defaultLevel: Level? by KloggerAtomicRef(null)
@@ -41,16 +47,38 @@ class Logger private constructor(val name: String, val dummy: Boolean) {
         var defaultOutput: Output by KloggerAtomicRef(DefaultLogOutput)
 
         /** Gets a [Logger] from its [name] */
-        operator fun invoke(name: String) = Logger_loggers[name] ?: Logger(name, true)
+        operator fun invoke(name: String): Logger {
+            val normalizedName = normalizeName(name)
+            if (Logger_loggers[normalizedName] == null) {
+                val logger = Logger(name, normalizedName, true)
+                miniEnvironmentVariablesUC["LOG_$normalizedName"]?.also {
+                    logger.level = Level[it]
+                }
+                if (Logger_loggers.value.isEmpty()) {
+                    miniEnvironmentVariablesUC["LOG_LEVEL"]?.also {
+                        defaultLevel = Level[it]
+                    }
+                }
+                Logger_loggers[normalizedName] = logger
+            }
+            return Logger_loggers[normalizedName]!!
+        }
+
+        private fun normalizeName(name: String): String = name.replace('.', '_').replace('/', '_').uppercase()
 
         /** Gets a [Logger] from its [KClass.simpleName] */
-        inline operator fun <reified T : Any> invoke() = invoke(T::class.simpleName ?: "NoClassName")
+        inline operator fun <reified T : Any> invoke(): Logger = invoke(T::class.simpleName ?: "NoClassName")
     }
 
     /** Logging [Level] */
     enum class Level(val index: Int) {
         NONE(0), FATAL(1), ERROR(2),
-        WARN(3), INFO(4), DEBUG(5), TRACE(6)
+        WARN(3), INFO(4), DEBUG(5), TRACE(6);
+
+        companion object {
+            val BY_NAME = values().associateBy { it.name }
+            operator fun get(name: String): Level = BY_NAME[name.uppercase()] ?: NONE
+        }
     }
 
     /** Logging [Output] to handle logs */
@@ -70,25 +98,25 @@ class Logger private constructor(val name: String, val dummy: Boolean) {
     }
 
     /** Returns if this [Logger] has at least level [Level] */
-    fun isEnabled(level: Level) = level.index <= this.level.index
+    fun isEnabled(level: Level): Boolean = level.index <= this.level.index
 
     /** Returns if this [Logger] has at least level [Level.FATAL] */
-    inline val isFatalEnabled get() = isEnabled(Level.FATAL)
+    inline val isFatalEnabled: Boolean get() = isEnabled(Level.FATAL)
 
     /** Returns if this [Logger] has at least level [Level.ERROR] */
-    inline val isErrorEnabled get() = isEnabled(Level.ERROR)
+    inline val isErrorEnabled: Boolean get() = isEnabled(Level.ERROR)
 
     /** Returns if this [Logger] has at least level [Level.WARN] */
-    inline val isWarnEnabled get() = isEnabled(Level.WARN)
+    inline val isWarnEnabled: Boolean get() = isEnabled(Level.WARN)
 
     /** Returns if this [Logger] has at least level [Level.INFO] */
-    inline val isInfoEnabled get() = isEnabled(Level.INFO)
+    inline val isInfoEnabled: Boolean get() = isEnabled(Level.INFO)
 
     /** Returns if this [Logger] has at least level [Level.DEBUG] */
-    inline val isDebugEnabled get() = isEnabled(Level.DEBUG)
+    inline val isDebugEnabled: Boolean get() = isEnabled(Level.DEBUG)
 
     /** Returns if this [Logger] has at least level [Level.TRACE] */
-    inline val isTraceEnabled get() = isEnabled(Level.TRACE)
+    inline val isTraceEnabled: Boolean get() = isEnabled(Level.TRACE)
 
     /** Traces the lazily executed [msg] if the [Logger.level] is at least [level] */
     inline fun log(level: Level, msg: () -> Any?) { if (isEnabled(level)) actualLog(level, msg()) }

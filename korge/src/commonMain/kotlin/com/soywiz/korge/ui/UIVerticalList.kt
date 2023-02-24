@@ -33,10 +33,10 @@ open class UIVerticalList(provider: Provider, width: Double = 200.0) : UIView(wi
 
     private var dirty = false
     private val viewsByIndex = LinkedHashMap<Int, View>()
-    private val lastArea = Rectangle()
-    private val lastPoint = Point()
-    private val tempRect = Rectangle()
-    private val tempPoint = Point()
+    private val lastArea = MRectangle()
+    private val lastPoint = MPoint()
+    private val tempRect = MRectangle()
+    private val tempPoint = MPoint()
     var provider: Provider = provider
         set(value) {
             field = value
@@ -71,7 +71,7 @@ open class UIVerticalList(provider: Provider, width: Double = 200.0) : UIView(wi
         updateList()
     }
 
-    private val tempTransform = Matrix.Transform()
+    private val tempTransform = MMatrix.Transform()
 
     /**
      * Updates the list after size changes, but keeps its contents.

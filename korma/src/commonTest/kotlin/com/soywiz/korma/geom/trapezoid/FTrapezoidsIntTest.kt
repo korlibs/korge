@@ -43,9 +43,9 @@ class FTrapezoidsIntTest {
     fun testTriangulate() {
         assertEquals(
             """
-                TriangleInt(x0=-10, y0=10, x1=0, y1=0, x2=10, y2=10)
-                TriangleInt(x0=1, y0=3, x1=2, y1=3, x2=4, y2=6)
-                TriangleInt(x0=4, y0=6, x1=2, y1=3, x2=5, y2=6)
+                TriangleInt((-10, 10), (0, 0), (10, 10))
+                TriangleInt((1, 3), (2, 3), (4, 6))
+                TriangleInt((4, 6), (2, 3), (5, 6))
             """.trimIndent(),
             trapezoids.toTrapezoidIntList().triangulate().toTriangleIntList().toFTrianglesInt().toTriangleIntList().joinToString("\n")
         )

@@ -4,9 +4,8 @@ import com.soywiz.korev.Key
 import com.soywiz.korge.input.keys
 import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.view.*
-import com.soywiz.korge.view.vector.gpuShapeView
 import com.soywiz.korim.color.Colors
-import com.soywiz.korma.geom.Point
+import com.soywiz.korma.geom.MPoint
 import com.soywiz.korma.geom.bezier.Arc
 import com.soywiz.korma.geom.vector.StrokeInfo
 import com.soywiz.korma.geom.vector.circle
@@ -16,8 +15,8 @@ class MainArc : Scene() {
     override suspend fun SContainer.sceneMain() {
         //graphics(renderer = GraphicsRenderer.GPU) { shape ->
         graphics(renderer = GraphicsRenderer.SYSTEM) { shape ->
-            val p1 = Point(200, 100)
-            val p2 = Point(300, 200)
+            val p1 = MPoint(200, 100)
+            val p2 = MPoint(300, 200)
             val radius = 100.0
 
             stroke(Colors.BLUE, StrokeInfo(thickness = 10.0)) {

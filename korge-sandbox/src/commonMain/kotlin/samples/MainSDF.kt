@@ -24,7 +24,7 @@ class MainSDF : Scene() {
 open class CircleSDFView(width: Double = 100.0, height: Double = 100.0) : ShadedView(PROGRAM, width, height) {
     var radius = 0.49
     var feather = 0.005
-    var center = Point(0.5, 0.5)
+    var center = MPoint(0.5, 0.5)
     var time = 0.0
 
     init {

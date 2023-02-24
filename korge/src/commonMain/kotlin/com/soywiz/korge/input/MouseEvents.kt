@@ -86,8 +86,6 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
                                 height = bounds.height.toFloat(),
                                 colorMul = Colors.RED.withAd(0.3),
                                 m = mouseHit.globalMatrix,
-                                premultiplied = Bitmaps.white.premultiplied,
-                                wrap = false,
                             )
                             renderContext.drawText(
                                 debugBmpFont,
@@ -117,7 +115,6 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
                                 height = bounds.height.toFloat(),
                                 colorMul = RGBA(0x00, 0, 0xFF, 0x3F),
                                 m = mouseHitResultUsed.globalMatrix,
-                                premultiplied = Bitmaps.white.premultiplied, wrap = false,
                             )
                             var vview = mouseHitResultUsed
                             while (vview != null) {
@@ -295,26 +292,26 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
 
     // Global variants (Not related to the STAGE! but to the window coordinates, so can't be translated directly use *Stage variants instead or directly Stage.mouseXY!)
     @KorgeInternal
-    var downPosGlobal = Point()
+    var downPosGlobal = MPoint()
 
     @KorgeInternal
-    var upPosGlobal = Point()
+    var upPosGlobal = MPoint()
 
     @KorgeInternal
-    val startedPosGlobal = Point()
+    val startedPosGlobal = MPoint()
 
     @KorgeInternal
-    val lastPosGlobal = Point()
+    val lastPosGlobal = MPoint()
 
     @KorgeInternal
-    val currentPosGlobal = Point()
+    val currentPosGlobal = MPoint()
 
     // Local variants
-    private val _downPosLocal: Point = Point()
-    private val _upPosLocal: Point = Point()
-    private val _startedPosLocal = Point()
-    private val _lastPosLocal = Point()
-    private val _currentPosLocal = Point()
+    private val _downPosLocal: MPoint = MPoint()
+    private val _upPosLocal: MPoint = MPoint()
+    private val _startedPosLocal = MPoint()
+    private val _lastPosLocal = MPoint()
+    private val _currentPosLocal = MPoint()
 
     val startedPosLocal get() = view.globalToLocal(startedPosGlobal, _startedPosLocal)
     val lastPosLocal get() = view.globalToLocal(lastPosGlobal, _lastPosLocal)
@@ -323,11 +320,11 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
     val upPosLocal get() = view.globalToLocal(upPosGlobal, _upPosLocal)
 
     // Stage-based variants
-    private val _downPosStage: Point = Point()
-    private val _upPosStage: Point = Point()
-    private val _startedPosStage = Point()
-    private val _lastPosStage = Point()
-    private val _currentPosStage = Point()
+    private val _downPosStage: MPoint = MPoint()
+    private val _upPosStage: MPoint = MPoint()
+    private val _startedPosStage = MPoint()
+    private val _lastPosStage = MPoint()
+    private val _currentPosStage = MPoint()
 
     val startedPosStage get() = views.stage.globalToLocal(startedPosGlobal, _startedPosStage)
     val lastPosStage get() = views.stage.globalToLocal(lastPosGlobal, _lastPosStage)

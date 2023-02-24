@@ -94,7 +94,7 @@ data class GlyphMetrics(
     var size: Double = 0.0,
     var existing: Boolean = false,
     var codePoint: Int = 0,
-    val bounds: Rectangle = Rectangle(),
+    val bounds: MRectangle = MRectangle(),
     var xadvance: Double = 0.0,
 ) {
     val right: Double get() = bounds.right
@@ -129,12 +129,12 @@ data class GlyphMetrics(
 }
 
 data class TextMetrics constructor(
-    val bounds: Rectangle = Rectangle(),
-    var lineBounds: List<Rectangle> = emptyList(),
+    val bounds: MRectangle = MRectangle(),
+    var lineBounds: List<MRectangle> = emptyList(),
     val fontMetrics: FontMetrics = FontMetrics(),
     var nlines: Int = 0,
 ) {
-    val firstLineBounds: Rectangle get() = lineBounds.firstOrNull() ?: Rectangle()
+    val firstLineBounds: MRectangle get() = lineBounds.firstOrNull() ?: MRectangle()
 
     val left: Double get() = bounds.left
     val top: Double get() = bounds.top

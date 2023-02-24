@@ -15,20 +15,6 @@ typealias BitmapCoords = SliceCoordsWithBase<out Bitmap>
 typealias ImageRotation = SliceRotation
 typealias ImageOrientation = SliceOrientation
 
-@Deprecated("")
-val SliceCoords.premultiplied: Boolean get() = true
-@Deprecated("")
-val BmpSlice.premultiplied: Boolean get() = base.premultiplied
-
-@Deprecated("", ReplaceWith("tlX")) val SliceCoords.tl_x: Float get() = tlX
-@Deprecated("", ReplaceWith("tlY")) val SliceCoords.tl_y: Float get() = tlY
-@Deprecated("", ReplaceWith("trX")) val SliceCoords.tr_x: Float get() = trX
-@Deprecated("", ReplaceWith("trY")) val SliceCoords.tr_y: Float get() = trY
-@Deprecated("", ReplaceWith("brX")) val SliceCoords.br_x: Float get() = brX
-@Deprecated("", ReplaceWith("brY")) val SliceCoords.br_y: Float get() = brY
-@Deprecated("", ReplaceWith("blX")) val SliceCoords.bl_x: Float get() = blX
-@Deprecated("", ReplaceWith("blY")) val SliceCoords.bl_y: Float get() = blY
-
 val <T : ISizeInt> RectSlice<T>.bounds: IRectangleInt get() = rect
 
 val <T: Bitmap> RectSlice<T>.bmp: T get() = container
@@ -91,11 +77,11 @@ fun <T : Bitmap> RectSlice<T>.extract(): T {
     return out
 }
 
-fun <T : ISizeInt> SliceCoordsWithBase<T>.slice(bounds: IRectangleInt = IRectangleInt(0, 0, width, height), name: String? = null, orientation: ImageOrientation = ImageOrientation.ROTATE_0, padding: IMarginInt = IMarginInt.ZERO): RectSlice<T> =
+fun <T : ISizeInt> SliceCoordsWithBase<T>.slice(bounds: IRectangleInt = IRectangleInt(0, 0, width, height), name: String? = null, orientation: ImageOrientation = ImageOrientation.ROTATE_0, padding: com.soywiz.korma.geom.IMarginInt = IMarginInt.ZERO): RectSlice<T> =
     RectSlice(
         this.base,
         // @TODO: This shouldn't be necessary. But ASE test fails without this
-        RectangleInt.fromBounds(
+        MRectangleInt.fromBounds(
             bounds.left.clamp(0, width),
             bounds.top.clamp(0, height),
             bounds.right.clamp(0, width),
@@ -110,12 +96,12 @@ fun <T : ISizeInt> SliceCoordsWithBase<T>.slice(bounds: IRectangleInt = IRectang
 //fun <T : ISizeInt> CoordsWithContainer<T>.sliceWithSize(x: Int, y: Int, width: Int, height: Int, name: String? = null, orientation: ImageOrientation = ImageOrientation.ORIGINAL, padding: IMarginInt = MARGIN_INT_0): RectSlice<T> =
 //    slice(RectangleInt(x, y, width, height), name, orientation, padding)
 
-fun <T : Bitmap> T.slice(bounds: IRectangleInt = IRectangleInt(0, 0, width, height), name: String? = null, orientation: ImageOrientation = ImageOrientation.ROTATE_0, padding: IMarginInt = IMarginInt.ZERO): RectSlice<T> {
+fun <T : Bitmap> T.slice(bounds: IRectangleInt = IRectangleInt(0, 0, width, height), name: String? = null, orientation: ImageOrientation = ImageOrientation.ROTATE_0, padding: com.soywiz.korma.geom.IMarginInt = IMarginInt.ZERO): RectSlice<T> {
     val left = bounds.left.clamp(0, width)
     val top = bounds.top.clamp(0, height)
 
     return RectSlice(
-        this, RectangleInt.fromBounds(
+        this, MRectangleInt.fromBounds(
             left,
             top,
             bounds.right.clamp(left, width),
@@ -123,10 +109,10 @@ fun <T : Bitmap> T.slice(bounds: IRectangleInt = IRectangleInt(0, 0, width, heig
         ), orientation, padding, name
     )
 }
-fun <T : Bitmap> T.sliceWithBounds(left: Int, top: Int, right: Int, bottom: Int, name: String? = null, orientation: ImageOrientation = ImageOrientation.ROTATE_0, padding: IMarginInt = IMarginInt.ZERO): RectSlice<T> =
-    slice(RectangleInt(left, top, right - left, bottom - top), name, orientation, padding)
-fun <T : Bitmap> T.sliceWithSize(x: Int, y: Int, width: Int, height: Int, name: String? = null, orientation: ImageOrientation = ImageOrientation.ROTATE_0, padding: IMarginInt = IMarginInt.ZERO): RectSlice<T> =
-    slice(RectangleInt(x, y, width, height), name, orientation, padding)
+fun <T : Bitmap> T.sliceWithBounds(left: Int, top: Int, right: Int, bottom: Int, name: String? = null, orientation: ImageOrientation = ImageOrientation.ROTATE_0, padding: com.soywiz.korma.geom.IMarginInt = IMarginInt.ZERO): RectSlice<T> =
+    slice(MRectangleInt(left, top, right - left, bottom - top), name, orientation, padding)
+fun <T : Bitmap> T.sliceWithSize(x: Int, y: Int, width: Int, height: Int, name: String? = null, orientation: ImageOrientation = ImageOrientation.ROTATE_0, padding: com.soywiz.korma.geom.IMarginInt = IMarginInt.ZERO): RectSlice<T> =
+    slice(MRectangleInt(x, y, width, height), name, orientation, padding)
 
 val RectSlice<out Bitmap>.bmpWidth: Int get() = this.baseWidth
 val RectSlice<out Bitmap>.bmpHeight: Int get() = this.baseHeight
@@ -135,9 +121,9 @@ val RectSlice<out Bitmap>.bmpHeight: Int get() = this.baseHeight
 // http://pixijs.download/dev/docs/PIXI.Texture.html#Texture
 fun BitmapSliceCompat(
     bmp: Bitmap,
-    frame: Rectangle,
-    orig: Rectangle,
-    trim: Rectangle,
+    frame: MRectangle,
+    orig: MRectangle,
+    trim: MRectangle,
     rotated: Boolean,
     name: String = "unknown"
 ) = bmp.slice(frame.toInt(), name, if (rotated) ImageOrientation.ROTATE_90 else ImageOrientation.ROTATE_0)

@@ -5,6 +5,7 @@ import com.soywiz.korag.*
 import com.soywiz.korag.gl.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.test.*
+import com.soywiz.korge.testing.*
 import com.soywiz.korge.tests.*
 import com.soywiz.korge.view.filter.*
 import com.soywiz.korim.bitmap.*
@@ -23,17 +24,16 @@ class ViewsOpenglJvmTest : ViewsForTesting(log = true) {
 
     // This checks that the texture is generated with the default size (dirty=true fix)
     @Test
-    fun testIdentityFilterFor128x128() {
-        views.stage += Image(NativeImage(AGFrameBuffer.DEFAULT_INITIAL_WIDTH, AGFrameBuffer.DEFAULT_INITIAL_HEIGHT)).also {
+    fun testIdentityFilterFor128x128() = korgeScreenshotTest(200, 200) {
+        views.stage += Image(Bitmap32(102, 102, Colors.RED.premultiplied)).also {
             it.filter = IdentityFilter
         }
-        views.render()
-        assertEqualsFileReference("korge/render/ViewsJvmTestOpenglFilterIdentityDefaultFrameBufferSize.log", logGl.getLogAsString())
+        assertScreenshot()
     }
 
     @Test
-    fun testRenderToTextureWithStencil() {
-        views.stage += object : View() {
+    fun testRenderToTextureWithStencil() = korgeScreenshotTest(512, 512) {
+        this += object : View() {
             override fun renderInternal(ctx: RenderContext) {
                 ctx.renderToTexture(100, 100, render = {
                    ctx.useCtx2d { ctx2d ->
@@ -55,8 +55,7 @@ class ViewsOpenglJvmTest : ViewsForTesting(log = true) {
                 }
             }
         }
-        views.render()
-        assertEqualsFileReference("korge/render/ViewsJvmTestOpenglRenderToTextureWithStencil.log", logGl.getLogAsString())
+        assertScreenshot()
     }
 
 }

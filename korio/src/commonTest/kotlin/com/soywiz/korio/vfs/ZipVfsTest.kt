@@ -104,12 +104,12 @@ class ZipVfsTest {
 				helloZip.listRecursive().map { it.fullName }.toList().toString()
 			)
 
-			println(helloZip.stat())
+			//println(helloZip.stat())
 			assertEquals(true, helloZip.exists())
 			assertEquals(true, helloZip.isDirectory())
 			assertEquals(true, helloZip["/"].isDirectory())
 			val mem = MemoryVfs()
-			helloZip.copyToTree(mem)
+			helloZip.copyToRecursively(mem)
 			assertEquals(contents, mem["hello/compressedWorld.txt"].readString())
 		}
 	}
@@ -196,7 +196,7 @@ class ZipVfsTest {
 			}
 
 			val mem = MemoryVfs()
-			cblZip.copyToTree(mem)
+			cblZip.copyToRecursively(mem)
 			mem.listRecursive().collect {
 				if (!it.isDirectory()) {
 					assertEquals(sizes[it.fullName], it.size())

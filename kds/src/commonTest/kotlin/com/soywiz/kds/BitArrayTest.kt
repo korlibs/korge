@@ -42,22 +42,4 @@ class BitArrayTest {
         assertEquals(bitArray.toList(), booleanArray.toList())
         assertEquals(bitArray2.toList(), booleanArray2.toList())
     }
-
-    @OptIn(ExperimentalTime::class)
-    @Test
-    fun testPerformance() {
-        for (n in 0 until 50) {
-            println(measureTime {
-                val data = BooleanArray(100000)
-                for (n in 0 until data.size) data[n] = (n % 2) != 0
-            })
-        }
-        println("---")
-        for (n in 0 until 50) {
-            println(measureTime {
-                val data = BitArray(100000)
-                for (n in 0 until data.size) data[n] = (n % 2) != 0
-            })
-        }
-    }
 }

@@ -266,7 +266,7 @@ open class Container(
         removeChild(view)
     }
 
-    private val tempMatrix = Matrix()
+    private val tempMatrix = MMatrix()
     override fun renderInternal(ctx: RenderContext) {
         if (!visible) return
         renderChildrenInternal(ctx)
@@ -288,7 +288,7 @@ open class Container(
         //val bounds = this.getLocalBounds(Rectangle())
         var renderedCount = 0
         var culledCount = 0
-        Rectangle.POOL.alloc2 { tempRect2, tempRect ->
+        MRectangle.POOL.alloc2 { tempRect2, tempRect ->
             val bounds = clippingContainer?.getGlobalBounds(tempRect2)
             fastForEachChildRender { child: View ->
                 //if (bounds.intersects(child.getLocalBoundsOptimized(includeFilters = true))) {
@@ -310,9 +310,9 @@ open class Container(
     }
 
     private val bb = BoundsBuilder()
-    private val tempRect = Rectangle()
+    private val tempRect = MRectangle()
 
-    override fun getLocalBoundsInternal(out: Rectangle) {
+    override fun getLocalBoundsInternal(out: MRectangle) {
         bb.reset()
         fastForEachChild { child: View ->
             child.getBounds(this, tempRect)

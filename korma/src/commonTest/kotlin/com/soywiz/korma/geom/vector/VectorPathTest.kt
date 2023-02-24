@@ -1,7 +1,7 @@
 package com.soywiz.korma.geom.vector
 
-import com.soywiz.korma.geom.Matrix
-import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.MMatrix
+import com.soywiz.korma.geom.MRectangle
 import com.soywiz.korma.geom.bezier.Bezier
 import com.soywiz.korma.geom.shape.buildVectorPath
 import kotlin.test.Test
@@ -20,14 +20,14 @@ class VectorPathTest {
 
         assertEquals(true, g.containsPoint(50, 50))
         assertEquals(false, g.containsPoint(150, 50))
-        assertEquals(Rectangle(0, 0, 100, 100), g.getBounds())
+        assertEquals(MRectangle(0, 0, 100, 100), g.getBounds())
     }
 
     @Test
     fun testCircle() {
         val g = VectorPath()
         g.circle(0, 0, 100)
-        println(g.readStats())
+        assertEquals("Stats(moveTo=1, lineTo=0, quadTo=0, cubicTo=4, close=1)", g.readStats().toString())
         //println(g.numberOfIntersections(0, 0))
         assertEquals(true, g.containsPoint(0, -1))
         assertEquals(true, g.containsPoint(0, +1))
@@ -56,7 +56,7 @@ class VectorPathTest {
         assertEquals(false, g.containsPoint(50, 50))
         assertEquals(false, g.containsPoint(150, 50))
         assertEquals(true, g.containsPoint(20, 50))
-        assertEquals(Rectangle(0, 0, 100, 100), g.getBounds())
+        assertEquals(MRectangle(0, 0, 100, 100), g.getBounds())
         //g.filled(Context2d.Color(Colors.RED)).raster().showImageAndWaitExt()
     }
 
@@ -179,7 +179,7 @@ class VectorPathTest {
         rect(110, 0, 100, 100)
     }
 
-    val path2b = path2.clone().applyTransform(Matrix().scale(2.0))
+    val path2b = path2.clone().applyTransform(MMatrix().scale(2.0))
 
     @Test
     fun testToString() {
@@ -202,20 +202,20 @@ class VectorPathTest {
     fun testCollidesTransformed() {
         assertEquals(false, buildVectorPath(VectorPath()) {
             rect(0, 0, 15, 15)
-        }.intersectsWith(Matrix(), path2, Matrix().scale(2.0)))
+        }.intersectsWith(MMatrix(), path2, MMatrix().scale(2.0)))
         assertEquals(true, buildVectorPath(VectorPath()) {
             rect(0, 0, 15, 15)
-        }.intersectsWith(Matrix().scale(2.0, 2.0), path2, Matrix().scale(2.0)))
+        }.intersectsWith(MMatrix().scale(2.0, 2.0), path2, MMatrix().scale(2.0)))
         assertEquals(true, buildVectorPath(VectorPath()) {
             rect(0, 0, 15, 15)
-        }.intersectsWith(Matrix().scale(2.0, 2.0), path2, Matrix()))
+        }.intersectsWith(MMatrix().scale(2.0, 2.0), path2, MMatrix()))
 
-        assertEquals(true, VectorPath.intersects(path1, Matrix(), path1, Matrix()))
-        assertEquals(true, VectorPath.intersects(path1, Matrix().translate(101.0, 0.0), path1, Matrix().translate(101.0, 0.0)))
-        assertEquals(true, VectorPath.intersects(path1, Matrix().translate(50.0, 0.0), path1, Matrix().translate(100.0, 0.0)))
-        assertEquals(true, VectorPath.intersects(path1, Matrix().translate(100.0, 0.0), path1, Matrix().translate(50.0, 0.0)))
-        assertEquals(false, VectorPath.intersects(path1, Matrix().translate(101.0, 0.0), path1, Matrix()))
-        assertEquals(false, VectorPath.intersects(path1, Matrix(), path1, Matrix().translate(101.0, 0.0)))
+        assertEquals(true, VectorPath.intersects(path1, MMatrix(), path1, MMatrix()))
+        assertEquals(true, VectorPath.intersects(path1, MMatrix().translate(101.0, 0.0), path1, MMatrix().translate(101.0, 0.0)))
+        assertEquals(true, VectorPath.intersects(path1, MMatrix().translate(50.0, 0.0), path1, MMatrix().translate(100.0, 0.0)))
+        assertEquals(true, VectorPath.intersects(path1, MMatrix().translate(100.0, 0.0), path1, MMatrix().translate(50.0, 0.0)))
+        assertEquals(false, VectorPath.intersects(path1, MMatrix().translate(101.0, 0.0), path1, MMatrix()))
+        assertEquals(false, VectorPath.intersects(path1, MMatrix(), path1, MMatrix().translate(101.0, 0.0)))
     }
 
     @Test
@@ -245,10 +245,10 @@ class VectorPathTest {
         assertEquals(
             listOf(
                 listOf(
-                    Bezier(100, 0, 100, -55.23, 55.23, -100, 0, -100),
-                    Bezier(0, -100, -55.23, -100, -100, -55.23, -100, 0),
-                    Bezier(-100, 0, -100, 55.23, -55.23, 100, 0, 100),
-                    Bezier(0, 100, 55.23, 100, 100, 55.23, 100, 0),
+                    Bezier(100.0, 0.0, 100.0, -55.23, 55.23, -100.0, 0.0, -100.0),
+                    Bezier(0.0, -100.0, -55.23, -100.0, -100.0, -55.23, -100.0, 0.0),
+                    Bezier(-100.0, 0.0, -100.0, 55.23, -55.23, 100.0, 0.0, 100.0),
+                    Bezier(0.0, 100.0, 55.23, 100.0, 100.0, 55.23, 100.0, 0.0),
                 )
             ),
             buildVectorPath { circle(0, 0, 100) }.toCurvesList().map { it.beziers.map { it.roundDecimalPlaces(2) } }

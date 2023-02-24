@@ -2,9 +2,7 @@ package com.soywiz.klogger.test
 
 import com.soywiz.klogger.Logger
 import com.soywiz.klogger.atomic.KloggerAtomicRef
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertTrue
+import kotlin.test.*
 
 class LoggerTest {
 	private val out = KloggerAtomicRef(listOf<String>())
@@ -41,4 +39,10 @@ class LoggerTest {
         assertTrue { Logger.defaultLevel == Logger.Level.DEBUG }
     }
 
+    @Test
+    fun testSameInstance() {
+        val hello1 = Logger("hello")
+        val hello2 = Logger("hello")
+        assertSame(hello1, hello2)
+    }
 }

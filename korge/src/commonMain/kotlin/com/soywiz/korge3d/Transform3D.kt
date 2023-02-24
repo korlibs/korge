@@ -1,16 +1,6 @@
 package com.soywiz.korge3d
 
-import com.soywiz.korma.geom.Angle
-import com.soywiz.korma.geom.EulerRotation
-import com.soywiz.korma.geom.Matrix3D
-import com.soywiz.korma.geom.Position3D
-import com.soywiz.korma.geom.Quaternion
-import com.soywiz.korma.geom.Scale3D
-import com.soywiz.korma.geom.Vector3D
-import com.soywiz.korma.geom.getTRS
-import com.soywiz.korma.geom.plus
-import com.soywiz.korma.geom.setTRS
-import com.soywiz.korma.geom.setToLookAt
+import com.soywiz.korma.geom.*
 
 class Transform3D {
     @PublishedApi
@@ -19,20 +9,20 @@ class Transform3D {
     internal var transformDirty = false
 
     companion object {
-        private val identityMat = Matrix3D()
+        private val identityMat = MMatrix3D()
     }
 
-    val globalMatrixUncached: Matrix3D = Matrix3D()
+    val globalMatrixUncached: MMatrix3D = MMatrix3D()
         get() {
             val parent = parent?.globalMatrixUncached ?: identityMat
             field.multiply(parent, matrix)
             return field
         }
 
-    val globalMatrix: Matrix3D
+    val globalMatrix: MMatrix3D
         get() = globalMatrixUncached // @TODO: Cache!
 
-    val matrix: Matrix3D = Matrix3D()
+    val matrix: MMatrix3D = MMatrix3D()
         get() {
             if (matrixDirty) {
                 matrixDirty = false
@@ -50,9 +40,9 @@ class Transform3D {
             field?.children?.add(this)
         }
 
-    private val _translation = Vector3D(0, 0, 0)
-    private val _rotation = Quaternion()
-    private val _scale = Vector3D(1, 1, 1)
+    private val _translation = MVector4(0, 0, 0)
+    private val _rotation = MQuaternion()
+    private val _scale = MVector4(1, 1, 1)
     @PublishedApi
     internal var _eulerRotationDirty: Boolean = true
 
@@ -70,10 +60,10 @@ class Transform3D {
     }
 
     val translation: Position3D get() = updateTRSIfRequired()._translation
-    val rotation: Quaternion get() = updateTRSIfRequired()._rotation
+    val rotation: MQuaternion get() = updateTRSIfRequired()._rotation
     val scale: Scale3D get() = updateTRSIfRequired()._scale
 
-    var rotationEuler: EulerRotation = EulerRotation()
+    var rotationEuler: MEulerRotation = MEulerRotation()
         private set
         get() {
             if (_eulerRotationDirty) {
@@ -86,7 +76,7 @@ class Transform3D {
     /////////////////
     /////////////////
 
-    fun setMatrix(mat: Matrix3D): Transform3D {
+    fun setMatrix(mat: MMatrix3D): Transform3D {
         transformDirty = true
         this.matrix.copyFrom(mat)
         return this
@@ -100,7 +90,7 @@ class Transform3D {
     fun setTranslation(x: Double, y: Double, z: Double, w: Double = 1.0) = setTranslation(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat())
     fun setTranslation(x: Int, y: Int, z: Int, w: Int = 1) = setTranslation(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat())
 
-    fun setRotation(quat: Quaternion) = updatingTRS {
+    fun setRotation(quat: MQuaternion) = updatingTRS {
         updateTRSIfRequired()
         matrixDirty = true
         _eulerRotationDirty = true
@@ -115,7 +105,7 @@ class Transform3D {
     fun setRotation(x: Double, y: Double, z: Double, w: Double) = setRotation(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat())
     fun setRotation(x: Int, y: Int, z: Int, w: Int) = setRotation(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat())
 
-    fun setRotation(euler: EulerRotation) = updatingTRS {
+    fun setRotation(euler: MEulerRotation) = updatingTRS {
         _eulerRotationDirty = true
         rotation.setEuler(euler)
     }
@@ -143,31 +133,31 @@ class Transform3D {
     /////////////////
 
     @PublishedApi
-    internal val UP = Vector3D(0f, 1f, 0f)
+    internal val UP = MVector4(0f, 1f, 0f)
 
     @PublishedApi
-    internal val tempMat1 = Matrix3D()
+    internal val tempMat1 = MMatrix3D()
     @PublishedApi
-    internal val tempMat2 = Matrix3D()
+    internal val tempMat2 = MMatrix3D()
     @PublishedApi
-    internal val tempVec1 = Vector3D()
+    internal val tempVec1 = MVector4()
     @PublishedApi
-    internal val tempVec2 = Vector3D()
+    internal val tempVec2 = MVector4()
 
-    fun lookAt(tx: Float, ty: Float, tz: Float, up: Vector3D = UP): Transform3D {
+    fun lookAt(tx: Float, ty: Float, tz: Float, up: MVector4 = UP): Transform3D {
         tempMat1.setToLookAt(translation, tempVec1.setTo(tx, ty, tz, 1f), up)
         rotation.setFromRotationMatrix(tempMat1)
         return this
     }
-    fun lookAt(tx: Double, ty: Double, tz: Double, up: Vector3D = UP) = lookAt(tx.toFloat(), ty.toFloat(), tz.toFloat(), up)
-    fun lookAt(tx: Int, ty: Int, tz: Int, up: Vector3D = UP) = lookAt(tx.toFloat(), ty.toFloat(), tz.toFloat(), up)
+    fun lookAt(tx: Double, ty: Double, tz: Double, up: MVector4 = UP) = lookAt(tx.toFloat(), ty.toFloat(), tz.toFloat(), up)
+    fun lookAt(tx: Int, ty: Int, tz: Int, up: MVector4 = UP) = lookAt(tx.toFloat(), ty.toFloat(), tz.toFloat(), up)
 
     //setTranslation(px, py, pz)
     //lookUp(tx, ty, tz, up)
     fun setTranslationAndLookAt(
         px: Float, py: Float, pz: Float,
         tx: Float, ty: Float, tz: Float,
-        up: Vector3D = UP
+        up: MVector4 = UP
     ): Transform3D = setMatrix(
         matrix.multiply(
             tempMat1.setToTranslation(px, py, pz),
@@ -177,10 +167,10 @@ class Transform3D {
     fun setTranslationAndLookAt(
         px: Double, py: Double, pz: Double,
         tx: Double, ty: Double, tz: Double,
-        up: Vector3D = UP
+        up: MVector4 = UP
     ) = setTranslationAndLookAt(px.toFloat(), py.toFloat(), pz.toFloat(), tx.toFloat(), ty.toFloat(), tz.toFloat(), up)
 
-    private val tempEuler = EulerRotation()
+    private val tempEuler = MEulerRotation()
     fun rotate(x: Angle, y: Angle, z: Angle): Transform3D {
         val re = this.rotationEuler
         tempEuler.setTo(re.x+x,re.y+y, re.z+z)
@@ -188,7 +178,7 @@ class Transform3D {
         return this
     }
 
-    fun translate(vec:Vector3D) : Transform3D {
+    fun translate(vec:MVector4) : Transform3D {
         this.setTranslation( this.translation.x + vec.x, this.translation.y + vec.y, this.translation.z+vec.z )
         return this
     }

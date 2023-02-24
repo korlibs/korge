@@ -1,8 +1,8 @@
 package com.soywiz.korma.geom.bezier
 
-import com.soywiz.korma.geom.Point
+import com.soywiz.korma.geom.MPoint
 import com.soywiz.korma.geom.PointArrayList
-import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.MRectangle
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -30,16 +30,16 @@ class BezierCurveCubicTest {
             b.dpoints
         )
 
-        assertEquals(Point(0, 3), b.derivative(0.0))
-        assertEquals(Point(1.5, 0.0), b.derivative(0.5))
-        assertEquals(Point(0, -3), b.derivative(1.0))
+        assertEquals(MPoint(0, 3), b.derivative(0.0))
+        assertEquals(MPoint(1.5, 0.0), b.derivative(0.5))
+        assertEquals(MPoint(0, -3), b.derivative(1.0))
     }
 
     @Test
     fun testHasTheExpectedNormals() {
-        assertEquals(Point(-1, 0), b.normal(0.0))
-        assertEquals(Point(-0.0, 1.0), b.normal(0.5))
-        assertEquals(Point(1.0, 0.0), b.normal(1.0))
+        assertEquals(MPoint(-1, 0), b.normal(0.0))
+        assertEquals(MPoint(-0.0, 1.0), b.normal(0.5))
+        assertEquals(MPoint(1.0, 0.0), b.normal(1.0))
     }
 
     @Test
@@ -50,7 +50,7 @@ class BezierCurveCubicTest {
     @Test
     fun testHasTheCorrectAxisAlignedBoundingBox() {
         assertEquals(
-            Rectangle.fromBounds(0.0, 0.0, 1.0, 0.75),
+            MRectangle.fromBounds(0.0, 0.0, 1.0, 0.75),
             b.boundingBox
         )
     }
@@ -63,8 +63,8 @@ class BezierCurveCubicTest {
 
     @Test
     fun testFromPointSet() {
-        val M = Point(200 / 3.0, 100 / 3.0)
-        val pts = listOf(Point(0, 0), M, Point(100, 100))
+        val M = MPoint(200 / 3.0, 100 / 3.0)
+        val pts = listOf(MPoint(0, 0), M, MPoint(100, 100))
         run {
             val b: Bezier = Bezier.cubicFromPoints(pts[0], pts[1], pts[2])
             assertEquals(

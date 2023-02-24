@@ -588,6 +588,7 @@ internal class MyXMotionEvent(p: KPointer? = null) : KStructure(p) {
 object EGL {
     external fun eglGetDisplay(displayType: Long): Pointer?
     external fun eglInitialize(display: Pointer?, major: Pointer?, minor: Pointer?): Boolean
+    external fun eglGetError(): Int
     external fun eglTerminate(display: Pointer?): Pointer
     external fun eglChooseConfig(display: Pointer?, attribList: Pointer, configs: Pointer, configSize: Int, numConfig: Pointer): Boolean
     external fun eglCreatePbufferSurface(display: Pointer?, config: Pointer?, attribList: Pointer?): Pointer?

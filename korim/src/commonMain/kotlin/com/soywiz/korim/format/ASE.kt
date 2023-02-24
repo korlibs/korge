@@ -1,14 +1,6 @@
 package com.soywiz.korim.format
 
-import com.soywiz.kds.FastArrayList
-import com.soywiz.kds.FastIntMap
-import com.soywiz.kds.IntArray2
-import com.soywiz.kds.IntMap
-import com.soywiz.kds.get
-import com.soywiz.kds.getExtra
-import com.soywiz.kds.getExtraTyped
-import com.soywiz.kds.set
-import com.soywiz.kds.toLinkedMap
+import com.soywiz.kds.*
 import com.soywiz.klock.milliseconds
 import com.soywiz.kmem.clamp
 import com.soywiz.kmem.extract
@@ -35,9 +27,13 @@ import com.soywiz.korio.stream.readString
 import com.soywiz.korio.stream.readU16LE
 import com.soywiz.korio.stream.readU32LE
 import com.soywiz.korio.stream.readU8
-import com.soywiz.korma.geom.RectangleInt
+import com.soywiz.korma.geom.MRectangleInt
 import com.soywiz.korma.geom.slice.*
 import com.soywiz.krypto.encoding.hex
+
+// If this is true, only processes visible layers from the ASE file.
+// Otherwise, will process invisible layers as well.
+var ImageDecodingProps.onlyReadVisibleLayers: Boolean by extraProperty { true }
 
 // Aseprite: https://github.com/aseprite/aseprite/blob/main/docs/ase-file-specs.md
 // Aseprite 1.3: https://github.com/aseprite/aseprite/blob/4f2eae6b7754f432f960bc6cbacc4e6d26914abf/docs/ase-file-specs.md
@@ -60,12 +56,14 @@ object ASE : ImageFormatWithContainer("ase") {
     interface AseEntity {
         var userData: String?
         var userDataColor: RGBA
+
         companion object {
             operator fun invoke() = Mixin()
         }
+
         open class Mixin : AseEntity {
             override var userData: String? = null
-            override var userDataColor: RGBA = Colors.TRANSPARENT_BLACK
+            override var userDataColor: RGBA = Colors.TRANSPARENT
         }
     }
 
@@ -76,10 +74,12 @@ object ASE : ImageFormatWithContainer("ase") {
         val opacity: Int
         fun resolve(): AseCell = this
     }
+
     open class AseBitmapCell(
         override val bmp: Bitmap,
         override val x: Int, override val y: Int, override val opacity: Int,
     ) : AseEntity by AseEntity(), AseCell
+
     open class AseLinkedCell(
         val linkedCell: AseCell,
         override val x: Int, override val y: Int, override val opacity: Int,
@@ -87,6 +87,7 @@ object ASE : ImageFormatWithContainer("ase") {
         override val bmp: Bitmap get() = linkedCell.bmp
         override fun resolve(): AseCell = linkedCell.resolve()
     }
+
     open class AseTilemapCell(
         val data: IntArray2,
         val tileBitmask: Int,
@@ -99,6 +100,7 @@ object ASE : ImageFormatWithContainer("ase") {
     }
 
     open class AseLayer(
+        val originalAseIndex: Int,
         index: Int,
         name: String,
         val flags: Int,
@@ -140,11 +142,15 @@ object ASE : ImageFormatWithContainer("ase") {
             else -> BlendMode.NORMAL
         }
     }
-    open class AseLayerCell(val frameIndex: Int, val layer: AseLayer, val cell: AseCell) : AseEntity by AseEntity()
+
+    open class AseLayerCell(val frameIndex: Int, val layer: AseLayer, val cell: AseCell) :
+        AseEntity by AseEntity()
+
     open class AseFrame(val index: Int) : AseEntity by AseEntity() {
         var time = 0
         val celsByLayer = FastIntMap<AseCell>()
     }
+
     open class AsePalette(
         colors: RgbaArray,
         names: Array<String?>? = null,
@@ -185,10 +191,11 @@ object ASE : ImageFormatWithContainer("ase") {
         val pivotX: Int,
         val pivotY: Int,
     ) {
-        val sliceFrame = RectangleInt(sliceXOrigin, sliceYOrigin, sliceWidth, sliceHeight)
+        val sliceFrame = MRectangleInt(sliceXOrigin, sliceYOrigin, sliceWidth, sliceHeight)
     }
 
-    open class AseSlice(val name: String, val hasNinePatch: Boolean, val hasPivotInfo: Boolean) : AseEntity by AseEntity() {
+    open class AseSlice(val name: String, val hasNinePatch: Boolean, val hasPivotInfo: Boolean) :
+        AseEntity by AseEntity() {
         val keys = FastArrayList<AseSliceKey>()
 
         fun sortKeys() {
@@ -201,7 +208,8 @@ object ASE : ImageFormatWithContainer("ase") {
             keys.fastForEachReverse {
                 if (index >= it.frameIndex) return it
             }
-            return keys.firstOrNull() ?: error("No frames key frames for slice!")
+            return keys.firstOrNull()
+                ?: error("No frames key frames for slice!")
         }
     }
 
@@ -312,11 +320,13 @@ object ASE : ImageFormatWithContainer("ase") {
                             // Only read if not set already
                         }
                     }
+
                     0x0011 -> { // _PALETTE11 (deprecated)
                         if (image.palette == null) {
                             // Only read if not set already
                         }
                     }
+
                     0x2004 -> { // LAYER
                         val flags = cs.readU16LE()
                         val type = ImageLayer.Type.BY_ORDINAL[cs.readU16LE()]
@@ -332,10 +342,21 @@ object ASE : ImageFormatWithContainer("ase") {
                             else -> 0
                         }
                         //println("- layer = $name, childLevel = $childLevel, blendMode = $blendMode")
-                        val layer = AseLayer(image.layers.size, name, flags, type, childLevel, blendModeInt, opacity, tilesetIndex)
+                        val layer = AseLayer(
+                            image.layers.size,
+                            image.layers.size,
+                            name,
+                            flags,
+                            type,
+                            childLevel,
+                            blendModeInt,
+                            opacity,
+                            tilesetIndex
+                        )
                         image.layers.add(layer)
                         lastEntity = layer
                     }
+
                     0x2005 -> { // CEL
                         val layerIndex = cs.readU16LE()
                         val x = cs.readS16LE()
@@ -350,32 +371,49 @@ object ASE : ImageFormatWithContainer("ase") {
                                 //cs.skip(6)
                                 val data = cs.readAvailable()
                                 //println("size=${width * height * bytesPerPixel} width=$width, height=$height, bytesPerPixel=$bytesPerPixel, props=$props")
-                                val udata = if (celType == 2) data.uncompress(ZLib, width * height * bytesPerPixel) else data
+                                val udata = if (celType == 2) data.uncompress(
+                                    ZLib,
+                                    width * height * bytesPerPixel
+                                ) else data
                                 //val udata = if (celType == 2) data.uncompress(ZLib.Portable) else data
                                 //println("celType = $celType, width=$width, height=$height, data=${data.size}, udata=${udata.size}")
                                 val bmp = when (bitsPerPixel) {
-                                    32 -> Bitmap32(width, height, RgbaArray(udata.readIntArray(0, width * height, true)))
+                                    32 -> {
+                                        Bitmap32(
+                                            width,
+                                            height,
+                                            RgbaArray(udata.readIntArray(0, width * height, true))
+                                        ).also {
+                                            if (props.premultipliedSure) it.premultiplyInplaceIfRequired()
+                                        }
+                                    }
+
                                     8 -> Bitmap8(width, height, udata, image.palette!!.colors)
                                     else -> error("Unsupported ASE mode")
                                 }
                                 AseBitmapCell(bmp, x, y, opacity)
                             }
+
                             1 -> { // 1=Linked Cel
                                 val linkFrame = cs.readU16LE()
-                                val aseCell: AseCell = image.frames[linkFrame].celsByLayer[layerIndex]!!
+                                val aseCell: AseCell =
+                                    image.frames[linkFrame].celsByLayer[layerIndex]!!
                                 AseLinkedCell(aseCell, x, y, opacity)
                             }
+
                             3 -> { // 3=Compressed Tilemap
                                 val tilesWidth = cs.readU16LE()
                                 val tilesHeight = cs.readU16LE()
                                 val bitsPerTile = cs.readU16LE()
-                                val tileBitmask = cs.readS32LE() // Bitmask for tile ID (e.g. 0x1fffffff for 32-bit tiles)
+                                val tileBitmask =
+                                    cs.readS32LE() // Bitmask for tile ID (e.g. 0x1fffffff for 32-bit tiles)
                                 val bitmaskXFlip = cs.readS32LE()
                                 val bitmaskYFlip = cs.readS32LE()
                                 val bitmask90CWFlip = cs.readS32LE()
                                 val bytesPerTile = bitsPerTile / 8
                                 cs.skip(10) // Reserved
-                                val compressedData = cs.readAvailable().uncompress(ZLib, tilesWidth * tilesHeight * bytesPerTile)
+                                val compressedData = cs.readAvailable()
+                                    .uncompress(ZLib, tilesWidth * tilesHeight * bytesPerTile)
                                 val data = when (bitsPerTile) {
                                     32 -> compressedData.readIntArrayLE(0, tilesWidth * tilesHeight)
                                     else -> TODO("Only supported 32-bits per tile")
@@ -389,6 +427,7 @@ object ASE : ImageFormatWithContainer("ase") {
                                     x, y, opacity
                                 )
                             }
+
                             else -> error("Aseprite: Unknown celType=$celType")
                         }
                         lastEntity = cel
@@ -397,6 +436,7 @@ object ASE : ImageFormatWithContainer("ase") {
                             currentFrame.celsByLayer[layerIndex] = cel
                         }
                     }
+
                     0x2006 -> { // CEL_EXTRA
                         val flags = cs.readS32LE()
                         val x = cs.readFixedLE().double
@@ -406,12 +446,14 @@ object ASE : ImageFormatWithContainer("ase") {
                         cs.skip(16)
                         //lastCell!!.x
                     }
+
                     0x2007 -> { // COLOR_PROFILE
                         val type = cs.readU16LE()
                         val flags = cs.readU16LE()
                         val gamma = cs.readFixedLE()
                         cs.skip(8)
                     }
+
                     0x2008 -> { // External Files Chunk
                         val nentries = cs.readS32LE()
                         cs.skip(8) // Reserved
@@ -422,12 +464,15 @@ object ASE : ImageFormatWithContainer("ase") {
                             image.externalFiles[entryId] = externalFileName
                         }
                     }
+
                     0x2016 -> { // MASK (deprecated)
                         // Ignored
                     }
+
                     0x2017 -> { // PATH
                         // Not used
                     }
+
                     0x2018 -> { // TAGS
                         // Tags
                         val numTags = cs.readU16LE()
@@ -443,6 +488,7 @@ object ASE : ImageFormatWithContainer("ase") {
                             image.tags.add(tag)
                         }
                     }
+
                     0x2019 -> { // PALETTE
                         val numEntries = cs.readS32LE()
                         val changeStart = cs.readS32LE()
@@ -461,6 +507,7 @@ object ASE : ImageFormatWithContainer("ase") {
                         image.palette = AsePalette(colors, colorNames, changeStart, changeEnd)
                         lastEntity = image.palette
                     }
+
                     0x2020 -> { // USERDATA
                         val flags = cs.readS32LE()
                         if (flags.hasBitSet(0)) {
@@ -470,6 +517,7 @@ object ASE : ImageFormatWithContainer("ase") {
                             lastEntity?.userDataColor = cs.readRGBA()
                         }
                     }
+
                     0x2022 -> { // SLICE KEYS
                         val numSliceKeys = cs.readS32LE()
                         val sliceFlags = cs.readS32LE()
@@ -495,21 +543,24 @@ object ASE : ImageFormatWithContainer("ase") {
                             val pivotX = if (hasPivotInfo) cs.readS32LE() else 0
                             val pivotY = if (hasPivotInfo) cs.readS32LE() else 0
 
-                            slice.keys.add(AseSliceKey(
-                                sliceFrameIndex,
-                                sliceXOrigin,
-                                sliceYOrigin,
-                                sliceWidth,
-                                sliceHeight,
-                                centerXPos,
-                                centerYPos,
-                                centerWidth,
-                                centerHeight,
-                                pivotX,
-                                pivotY,
-                            ))
+                            slice.keys.add(
+                                AseSliceKey(
+                                    sliceFrameIndex,
+                                    sliceXOrigin,
+                                    sliceYOrigin,
+                                    sliceWidth,
+                                    sliceHeight,
+                                    centerXPos,
+                                    centerYPos,
+                                    centerWidth,
+                                    centerHeight,
+                                    pivotX,
+                                    pivotY,
+                                )
+                            )
                         }
                     }
+
                     0x2023 -> { // Tileset Chunk
                         val tilesetId = cs.readS32LE()
                         val tilesetFlags = cs.readS32LE()
@@ -529,10 +580,14 @@ object ASE : ImageFormatWithContainer("ase") {
                         }
                         if (includeTilesInsideThisFile) {
                             val compressedDataLength = cs.readS32LE()
-                            val compressedData = cs.readBytesExact(compressedDataLength) // (Tile Width) x (Tile Height x Number of Tiles)
+                            val compressedData =
+                                cs.readBytesExact(compressedDataLength) // (Tile Width) x (Tile Height x Number of Tiles)
                             val data = compressedData.uncompress(ZLib)
                             val ints = data.readIntArrayLE(0, tileWidth * tileHeight * ntiles)
-                            val bitmap = Bitmap32(tileWidth, tileHeight * ntiles, RgbaArray(ints))
+                            val bitmap =
+                                Bitmap32(tileWidth, tileHeight * ntiles, RgbaArray(ints)).also {
+                                    if (props.premultipliedSure) it.premultiplyInplaceIfRequired()
+                                }
                             tiles = bitmap.slice().splitInRows(tileWidth, tileHeight)
                         }
                         image.tilesets[tilesetId] = AseTileset(
@@ -545,13 +600,17 @@ object ASE : ImageFormatWithContainer("ase") {
                             tiles
                         )
                     }
+
                     else -> println("WARNING: Aseprite: Not implemented chunkType=${chunkType.hex}")
                 }
             }
         }
 
         val imageLayers = image.layers
-        val imageVisibleLayers = imageLayers.filter { it.isVisible && props.takeLayersByName(it.name as String) }
+        val imageLayersToProcess = imageLayers.filter {
+            val shouldProcess = if (props.onlyReadVisibleLayers) it.isVisible else true
+            shouldProcess && props.takeLayersByName(it.name as String)
+        }
 
         fun createImageFrameLayer(key: Int, value: AseCell): ImageFrameLayer {
             val resolved = value.resolve()
@@ -580,9 +639,10 @@ object ASE : ImageFormatWithContainer("ase") {
         }
 
         val frames = image.frames.mapNotNull { frame ->
-            // First collect within a frame only cells which are on a visible layer
             val cells = frame.celsByLayer.toLinkedMap().filter {
-                imageLayers[it.key].isVisible && props.takeLayersByName(imageLayers[it.key].name as String) }
+                val shouldProcess = if (props.onlyReadVisibleLayers) imageLayers[it.key].isVisible else true
+                shouldProcess && props.takeLayersByName(imageLayers[it.key].name as String)
+            }
             // Then create list of layer data from those cells and their corresponding visible layers
             val layerData = cells.map { (key, value) ->
                 createImageFrameLayer(key, value)
@@ -595,7 +655,12 @@ object ASE : ImageFormatWithContainer("ase") {
         }
 
         val animations = image.tags.map {
-            val framesRange = frames.slice(it.fromFrame.clamp(0, frames.size) .. it.toFrame.clamp(0, frames.size - 1))
+            val framesRange = frames.slice(
+                it.fromFrame.clamp(0, frames.size)..it.toFrame.clamp(
+                    0,
+                    frames.size - 1
+                )
+            )
             ImageAnimation(framesRange, it.direction, it.tagName)
         }
 
@@ -603,27 +668,29 @@ object ASE : ImageFormatWithContainer("ase") {
             frames = frames,
             width = imageWidth,
             height = imageHeight,
-            layers = imageVisibleLayers,
+            layers = imageLayersToProcess,
             animations = animations
         )
 
         // Create image data for all slices of frames but take only layers which are defined in "props"
         val datas = image.slices.mapNotNull { slice ->
             slice.sortKeys()
-            val maxWidth = slice.keys.map { it.sliceWidth }.maxOrNull() ?: 0
-            val maxHeight = slice.keys.map { it.sliceHeight }.maxOrNull() ?: 0
+            val maxWidth = slice.keys.map { it.sliceWidth }.maxOrNull()
+                ?: 0
+            val maxHeight = slice.keys.map { it.sliceHeight }.maxOrNull()
+                ?: 0
 
             val frames = image.frames.mapNotNull { frame ->
                 val sliceKey = slice.getSliceForFrame(frame.index)
-                // Collect cells which are on a visible layer and that layer should also be sliced
                 val cells = frame.celsByLayer.toLinkedMap().filter {
-                    imageLayers[it.key].isVisible && props.takeLayersByName(imageLayers[it.key].name as String)
+                    val shouldProcess = if (props.onlyReadVisibleLayers) imageLayers[it.key].isVisible else true
+                    shouldProcess && props.takeLayersByName(imageLayers[it.key].name as String)
                 }
                 // Create list of layer data from found cells and slice them
                 val layerData = cells.map { (key, value) ->
                     createImageFrameLayer(key, value)
                 }.map {
-                    val sliceFrame = RectangleInt(
+                    val sliceFrame = MRectangleInt(
                         sliceKey.sliceFrame.x - it.targetX, sliceKey.sliceFrame.y - it.targetY,
                         sliceKey.sliceFrame.width, sliceKey.sliceFrame.height
                     )
@@ -641,7 +708,12 @@ object ASE : ImageFormatWithContainer("ase") {
             if (frames.isNotEmpty() && props.slicingEnabled()) {
                 val animations = image.tags.map {
                     val framesRange =
-                        frames.slice(it.fromFrame.clamp(0, frames.size)..it.toFrame.clamp(0, frames.size - 1))
+                        frames.slice(
+                            it.fromFrame.clamp(0, frames.size)..it.toFrame.clamp(
+                                0,
+                                frames.size - 1
+                            )
+                        )
                     ImageAnimation(framesRange, it.direction, it.tagName)
                 }
                 //println("Add sliced layer: ${slice.name}")
@@ -649,7 +721,7 @@ object ASE : ImageFormatWithContainer("ase") {
                     frames = frames,
                     width = maxWidth,
                     height = maxHeight,
-                    layers = imageVisibleLayers,
+                    layers = imageLayersToProcess,
                     animations = animations,
                     name = slice.name
                 )
@@ -658,14 +730,19 @@ object ASE : ImageFormatWithContainer("ase") {
 
         // Finally the index in the layer details needs to be adjusted because the invisible layers do not exist
         // in ImageAnimationView objects. The index would be out of bounds otherwise.
-        imageVisibleLayers.forEachIndexed { index, element -> element.index = index }
+        imageLayersToProcess.forEachIndexed { index, element -> element.index = index }
 
         return ImageDataContainer(datas.ifEmpty { listOf(defaultData) })
     }
 
-    private fun ImageDecodingProps.takeLayersByName(name : String) : Boolean = getExtra("layers") == null || (getExtra("layers") as String).contains(name)
-    private fun ImageDecodingProps.slicingEnabled() : Boolean = getExtraTyped<Boolean>("disableSlicing") == null || !(getExtraTyped<Boolean>("disableSlicing")!!)
-    private fun ImageDecodingProps.useSlicePosition() : Boolean = getExtraTyped<Boolean>("useSlicePosition") != null && getExtraTyped<Boolean>("useSlicePosition")!!
+    private fun ImageDecodingProps.takeLayersByName(name: String): Boolean =
+        getExtra("layers") == null || (getExtra("layers") as String).contains(name)
+
+    private fun ImageDecodingProps.slicingEnabled(): Boolean =
+        getExtraTyped<Boolean>("disableSlicing") == null || !(getExtraTyped<Boolean>("disableSlicing")!!)
+
+    private fun ImageDecodingProps.useSlicePosition(): Boolean =
+        getExtraTyped<Boolean>("useSlicePosition") != null && getExtraTyped<Boolean>("useSlicePosition")!!
 
     fun SyncStream.readRGB(): RGBA = RGBA(readU8(), readU8(), readU8())
     fun SyncStream.readRGBA(): RGBA = RGBA(readS32LE())

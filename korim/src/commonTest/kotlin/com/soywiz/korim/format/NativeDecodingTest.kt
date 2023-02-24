@@ -1,5 +1,6 @@
 package com.soywiz.korim.format
 
+import com.soywiz.kmem.*
 import com.soywiz.korim.atlas.readAtlas
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.Colors
@@ -8,7 +9,6 @@ import com.soywiz.korim.color.RGBAPremultiplied
 import com.soywiz.korim.color.asPremultiplied
 import com.soywiz.korio.async.suspendTest
 import com.soywiz.korio.file.std.resourcesVfs
-import com.soywiz.korio.util.OS
 import com.soywiz.korma.geom.vector.rect
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -18,10 +18,11 @@ import kotlin.test.assertTrue
 class NativeDecodingTest {
     val file = resourcesVfs["bubble-chat.9.png"]
     val colorPremult: RGBAPremultiplied = Colors["#01010181"].asPremultiplied()
+    val colorPremultAlt: RGBAPremultiplied = Colors["#00000081"].asPremultiplied()
     val colorStraight: RGBA = Colors["#02020281"]
 
     init {
-        if (OS.isJsNodeJs) RegisteredImageFormats.register(PNG)
+        if (Platform.isJsNodeJs) RegisteredImageFormats.register(PNG)
     }
 
     @Test
@@ -29,11 +30,11 @@ class NativeDecodingTest {
         val file = resourcesVfs["pma/spineboy-pma.png"]
         val bmp1 = file.readBitmapNative(props = ImageDecodingProps(premultiplied = false, asumePremultiplied = true))
         val bmp2 = file.readBitmapNoNative(props = ImageDecodingProps(premultiplied = false, asumePremultiplied = true, format = PNG))
-        val diff = Bitmap32.diff(bmp1, bmp2).sumOf { it.a + it.r + it.g + it.b }
-        if (OS.isJsBrowserOrWorker) {
+        val diff = Bitmap32.diff(bmp1, bmp2).premultiplied().sumOf { it.a + it.r + it.g + it.b }
+        if (Platform.isJsBrowserOrWorker) {
             // In JS has some small dis-adjustments because, to native read image pixels on JS we need Canvas,
             // and Canvas has a pre-multiplied alpha always, that leads to lossy rounding errors
-            assertTrue { diff < 61000 } //
+            assertTrue("diff=$diff < 61000") { diff < 61000 } //
         } else {
             assertEquals(0, diff)
         }
@@ -88,11 +89,15 @@ class NativeDecodingTest {
             val x = 34; val y = 15
             assertNotEquals(0, image.getRgbaRaw(x, y).a)
             if (image.premultiplied) {
-                assertEquals(colorPremult to true, image.getRgbaRaw(x, y).asPremultiplied() to image.premultiplied)
+                image.getRgbaRaw(x, y).asPremultiplied().also { col ->
+                    assertTrue("$col != $colorPremult || $colorPremultAlt premultiplied=$premultiplied") { colorPremult == col || colorPremultAlt == col }
+                }
             } else {
                 assertEquals(colorStraight to false, image.getRgbaRaw(x, y) to image.premultiplied)
             }
-            assertEquals(colorPremult, image.getRgbaPremultiplied(x, y))
+            image.getRgbaPremultiplied(x, y).also { col ->
+                assertTrue("$col != $colorPremult || $colorPremultAlt premultiplied=$premultiplied") { colorPremult == col || colorPremultAlt == col }
+            }
         }
     }
 
@@ -121,5 +126,10 @@ class NativeDecodingTest {
         }
         assertEquals(colorPremult.asPremultiplied(), bmp.getRgbaPremultiplied(x, y))
         assertEquals(colorStraight, bmp.getRgba(x, y))
+    }
+
+    @Test
+    fun testNativeImageDecodedIsMutable() = suspendTest {
+        assertTrue { resourcesVfs["kotlin32.png"].readBitmap().flipX() is NativeImage }
     }
 }

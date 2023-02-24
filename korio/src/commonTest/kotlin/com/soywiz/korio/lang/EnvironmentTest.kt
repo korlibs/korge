@@ -1,15 +1,31 @@
 package com.soywiz.korio.lang
 
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import com.soywiz.kmem.*
+import com.soywiz.korio.util.*
+import kotlin.test.*
 
 class EnvironmentTest {
-	@Test
-	fun test() {
-		println(Environment["path"])
-		println(Environment["PATH"])
-		println(Environment.getAll())
-	}
+	//@Test
+	//fun testCaseInsensitive() {
+    //    if (OS.isJsBrowserOrWorker) return
+    //    val path1 = Environment["pAth"]
+    //    val path2 = Environment["PATH"]
+    //    if (OS.isWindows) {
+    //        assertEquals(path1, path2)
+    //        assertNotNull(path2)
+    //    } else {
+    //        assertNull(path1)
+    //        assertNotNull(path2)
+    //    }
+	//}
+
+    @Test
+    fun testGetAllWorks() {
+        val envs = Environment.getAll().map { it.key } // Test that at least it doesn't crash
+        if (!Platform.isJsBrowserOrWorker) {
+            assertTrue { envs.size >= 4 }
+        }
+    }
 
     @Test
     fun testExpand() {

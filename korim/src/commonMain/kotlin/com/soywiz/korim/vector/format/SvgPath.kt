@@ -5,7 +5,7 @@ import com.soywiz.korio.util.StrReader
 import com.soywiz.korio.util.isDigit
 import com.soywiz.korio.util.isWhitespaceFast
 import com.soywiz.korio.util.toStringDecimal
-import com.soywiz.korma.geom.Matrix
+import com.soywiz.korma.geom.MMatrix
 import com.soywiz.korma.geom.vector.VectorBuilder
 import com.soywiz.korma.geom.vector.VectorPath
 import com.soywiz.korma.geom.vector.rLineTo
@@ -349,6 +349,6 @@ object SvgPath {
 fun VectorPath.toSvgPathString(separator: String = " ", decimalPlaces: Int = 1): String =
     SvgPath.toSvgPathString(this, separator, decimalPlaces)
 
-fun VectorBuilder.pathSvg(path: String, m: Matrix? = null) {
+fun VectorBuilder.pathSvg(path: String, m: MMatrix? = null) {
     write(SvgPath.parse(path), m)
 }

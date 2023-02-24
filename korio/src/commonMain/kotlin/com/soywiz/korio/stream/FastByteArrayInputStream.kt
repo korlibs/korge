@@ -91,7 +91,11 @@ class FastByteArrayInputStream(val ba: ByteArray, offset: Int = 0, val start: In
         skip(nextPosition - offset)
 	}
 
-    fun readBytesExact(len: Int) = increment(len) { ba.copyOfRange(offset, offset + len) }
+    fun readBytesExact(len: Int): ByteArray {
+        val out = ba.copyOfRange(offset, offset + len)
+        offset += len
+        return out
+    }
     fun readAll() = readBytesExact(available)
 
 	// 8 bit
@@ -197,15 +201,6 @@ class FastByteArrayInputStream(val ba: ByteArray, offset: Int = 0, val start: In
 	}
 
 	fun readStringVL(charset: Charset = UTF8): String = readString(readU_VL(), charset)
-
-	// Tools
-    @Deprecated("")
-	private inline fun <T> increment(count: Int, callback: () -> T): T {
-        //if (offset + count > end) throw EOFException("${offset + count} > $end")
-		val out = callback()
-		offset += count
-		return out
-	}
 
     fun getAllBytes() = ba.copyOfRange(start, end)
     fun getBackingArrayUnsafe() = ba

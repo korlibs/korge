@@ -1,6 +1,7 @@
 package com.soywiz.korge
 
 import com.soywiz.klock.*
+import com.soywiz.klogger.*
 import com.soywiz.korag.shader.ShaderType
 import com.soywiz.korev.Key
 import com.soywiz.korge.input.keys
@@ -27,12 +28,14 @@ import kotlin.native.concurrent.*
 import kotlin.test.*
 
 class KorgeMultithreadedTest {
+    val logger = Logger("KorgeMultithreadedTest")
+
     @Test
     fun test() {
         val result = runInWorker {
-            println("[1]")
+            logger.info { "[1]" }
             val log = arrayListOf<String>()
-            println("[2]")
+            logger.info { "[2]" }
             runBlocking {
                 val imageInfo = resourcesVfs["Exif5-2x.png"].readImageInfo(PNG)
                 log.add("orientationSure=${imageInfo?.orientationSure}")
@@ -82,7 +85,7 @@ class KorgeMultithreadedTest {
                 path.getCurvesList()
                 val curves = path.getCurves()
 
-                assertEquals(Unit, Mesh().getLocalBoundsInternal(Rectangle()), "Doesn't throw with mutability exception")
+                assertEquals(Unit, Mesh().getLocalBoundsInternal(MRectangle()), "Doesn't throw with mutability exception")
 
                 log += "rect.filterScale=${rect.filterScale}"
                 log += "rect.mask=${rect.mask != null}"

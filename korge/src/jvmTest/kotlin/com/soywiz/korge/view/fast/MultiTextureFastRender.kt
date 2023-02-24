@@ -1,16 +1,19 @@
 package com.soywiz.korge.view.fast
 
 import com.soywiz.korge.test.*
+import com.soywiz.korge.testing.*
 import com.soywiz.korge.tests.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import org.junit.*
+import org.junit.Test
+import kotlin.test.*
 
 class MultiTextureFastRender : ViewsForTesting(log = true) {
     @Test
     @Suppress("UNUSED_CHANGED_VALUE")
-    fun test() = viewsTest {
+    fun test() = korgeScreenshotTest(180, 180) {
         val tex0 = Bitmap32(16, 16) { x, y -> Colors.RED }.premultipliedIfRequired()
         val tex1 = Bitmap32(16, 16) { x, y -> Colors.GREEN }.premultipliedIfRequired()
         val tex2 = Bitmap32(16, 16) { x, y -> Colors.BLUE }.premultipliedIfRequired()
@@ -27,7 +30,8 @@ class MultiTextureFastRender : ViewsForTesting(log = true) {
         image(tex3).xy(16 * n, 16 * n); n++
         image(tex4).xy(16 * n, 16 * n); n++
         image(tex4).xy(16 * n, 16 * n); n++
-        delayFrame()
-        assertEqualsFileReference("korge/fast/MultiTextureRendering.log", logAg.getLogAsString())
+        val batch = views.renderContext.batch
+        assertScreenshot()
+        assertEquals("2/1", "${batch.batchCount}/${batch.fullBatchCount}")
     }
 }

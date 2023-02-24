@@ -9,19 +9,14 @@ import com.soywiz.klogger.Console
 import com.soywiz.kmem.KmemGC
 import com.soywiz.kmem.hasFlags
 import com.soywiz.korag.gl.*
-import com.soywiz.korev.GameButton
-import com.soywiz.korev.GamePadConnectionEvent
 import com.soywiz.korev.ISoftKeyboardConfig
 import com.soywiz.korev.Key
 import com.soywiz.korev.KeyEvent
 import com.soywiz.korev.SoftKeyboardConfig
 import com.soywiz.korev.SoftKeyboardReturnKeyType
 import com.soywiz.korev.SoftKeyboardType
-import com.soywiz.korev.StandardGamepadMapping
-import com.soywiz.korim.format.cg.cg
-import com.soywiz.korim.format.cg.toCG
-import com.soywiz.korma.geom.Point
-import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korim.format.cg.*
+import com.soywiz.korma.geom.MRectangle
 import kotlinx.cinterop.CValue
 import kotlinx.cinterop.ExportObjCClass
 import kotlinx.cinterop.ObjCAction
@@ -30,7 +25,6 @@ import kotlinx.cinterop.memScoped
 import kotlinx.cinterop.useContents
 import platform.CoreGraphics.CGPoint
 import platform.CoreGraphics.CGRect
-import platform.CoreGraphics.CGRectMake
 import platform.EAGL.EAGLContext
 import platform.EAGL.kEAGLRenderingAPIOpenGLES2
 import platform.Foundation.NSBundle
@@ -42,9 +36,6 @@ import platform.GLKit.GLKView
 import platform.GLKit.GLKViewController
 import platform.GLKit.GLKViewDrawableDepthFormat24
 import platform.GLKit.GLKViewDrawableStencilFormat8
-import platform.GameController.GCController
-import platform.GameController.GCControllerButtonInput
-import platform.GameController.GCControllerDirectionPad
 import platform.GameController.GCEventViewController
 import platform.UIKit.*
 import platform.darwin.NSInteger
@@ -213,7 +204,7 @@ class MyGLKViewController(val entry: suspend () -> Unit)  : GLKViewController(nu
     val freeIds = Pool { it }
     var lastWidth = 0
     var lastHeight = 0
-    val darwinGamePad = DarwinGamePad()
+    val darwinGamePad = DarwinGameControllerNative()
 
     override fun viewDidLoad() {
         val view = this.view as? GLKView?
@@ -406,14 +397,14 @@ open class IosGameWindow(
 
         override fun beginningOfDocument(): UITextPosition = bodPos
         override fun endOfDocument(): UITextPosition = eodPos
-        override fun caretRectForPosition(position: UITextPosition): CValue<CGRect> = CGRectMake(0.0.cg, 0.0.cg, 1.0.cg, 32.cg)
+        override fun caretRectForPosition(position: UITextPosition): CValue<CGRect> = CGRectMakeExt(0.0, 0.0, 1.0, 32.0)
         override fun characterRangeAtPoint(point: CValue<CGPoint>): UITextRange? = null
         override fun characterRangeByExtendingPosition(position: UITextPosition, inDirection: UITextLayoutDirection): UITextRange? = null
         override fun closestPositionToPoint(point: CValue<CGPoint>): UITextPosition? = null
         override fun closestPositionToPoint(point: CValue<CGPoint>, withinRange: UITextRange): UITextPosition? = null
         override fun comparePosition(position: UITextPosition, toPosition: UITextPosition): NSComparisonResult = 0
         override fun firstRectForRange(range: UITextRange): CValue<CGRect> =
-            CGRectMake(0.0.cg, 0.0.cg, 128.0.cg, 32.0.cg)
+            CGRectMakeExt(0.0, 0.0, 128.0, 32.0)
 
         override fun inputDelegate(): UITextInputDelegateProtocol? = null
         override fun markedTextRange(): UITextRange? = null
@@ -535,7 +526,7 @@ open class IosGameWindow(
 
     private fun prepareSoftKeyboardOnce() = memScoped {
         if (::textField.isInitialized) return@memScoped
-        val rect = CGRectMake((-1.0).cg, 0.0.cg, 1.0.cg, 32.0.cg)
+        val rect = CGRectMakeExt(-1.0, 0.0, 1.0, 32.0)
         textField = MyUITextComponent(this@IosGameWindow, rect)
     }
 
@@ -543,7 +534,7 @@ open class IosGameWindow(
         ?: UIApplication.sharedApplication.keyWindow
         ?: (UIApplication.sharedApplication.windows.first() as UIWindow)
 
-    override fun setInputRectangle(windowRect: Rectangle) {
+    override fun setInputRectangle(windowRect: MRectangle) {
         println("IosGameWindow.setInputRectangle: windowRect=$windowRect")
         prepareSoftKeyboardOnce()
         textField.setBounds(windowRect.toCG())

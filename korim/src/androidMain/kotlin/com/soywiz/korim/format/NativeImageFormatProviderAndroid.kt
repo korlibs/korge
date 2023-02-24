@@ -95,7 +95,7 @@ object AndroidNativeImageFormatProvider : NativeImageFormatProvider() {
 
     override suspend fun decodeInternal(data: ByteArray, props: ImageDecodingProps): NativeImageResult {
         val info = decodeHeaderInternal(data)
-        val originalSize = SizeInt(info.width, info.height)
+        val originalSize = MSizeInt(info.width, info.height)
 
         return NativeImageResult(
             image = AndroidNativeImage(
@@ -114,6 +114,7 @@ object AndroidNativeImageFormatProvider : NativeImageFormatProvider() {
                                     }
                                 }
                                 it.inSampleSize = props.getSampleSize(originalSize.width, originalSize.height)
+                                it.inMutable = true
                             }
                         )
                         if (bmp != null) {
@@ -265,7 +266,7 @@ class AndroidContext2dRenderer(val bmp: android.graphics.Bitmap, val antialiasin
     }
 
     @Suppress("RemoveRedundantQualifierName")
-    fun convertPaint(c: com.soywiz.korim.paint.Paint, m: com.soywiz.korma.geom.Matrix, out: Paint, alpha: Double) {
+    fun convertPaint(c: com.soywiz.korim.paint.Paint, m: com.soywiz.korma.geom.MMatrix, out: Paint, alpha: Double) {
         when (c) {
             is com.soywiz.korim.paint.NonePaint -> {
                 out.shader = null
@@ -323,9 +324,9 @@ class AndroidContext2dRenderer(val bmp: android.graphics.Bitmap, val antialiasin
         }
     }
 
-    fun com.soywiz.korma.geom.Matrix.toAndroid() = android.graphics.Matrix().setTo(this)
+    fun com.soywiz.korma.geom.MMatrix.toAndroid() = android.graphics.Matrix().setTo(this)
 
-    fun android.graphics.Matrix.setTo(m: com.soywiz.korma.geom.Matrix) = this.apply {
+    fun android.graphics.Matrix.setTo(m: com.soywiz.korma.geom.MMatrix) = this.apply {
         matrixValues[Matrix.MSCALE_X] = m.a.toFloat()
         matrixValues[Matrix.MSKEW_X] = m.b.toFloat()
         matrixValues[Matrix.MSKEW_Y] = m.c.toFloat()
@@ -346,7 +347,7 @@ class AndroidContext2dRenderer(val bmp: android.graphics.Bitmap, val antialiasin
     private val androidClipPath = Path()
     private val androidPath = Path()
 
-    override fun render(state: Context2d.State, fill: Boolean, winding: Winding?) {
+    override fun renderFinal(state: Context2d.State, fill: Boolean, winding: Winding?) {
         setState(state, fill)
 
         keep {

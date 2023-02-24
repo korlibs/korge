@@ -1,3 +1,6 @@
 /.gradle
 /build
 /game.storage
+/libglapi.dll
+/opengl32.dll
+/opengl32-x64.zip

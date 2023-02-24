@@ -43,7 +43,7 @@ class FSegmentsInt(capacity: Int = 5) {
     inline fun filter(block: FSegmentsInt.(Item) -> Boolean): FSegmentsInt = FSegmentsInt().also {  out ->
         this@FSegmentsInt.fastForEach { if (this@FSegmentsInt.block(it)) out.add(it, this) }
     }
-    fun toSegmentIntList(): List<SegmentInt> = map { it.toSegmentInt() }
+    fun toSegmentIntList(): List<MSegmentInt> = map { it.toSegmentInt() }
 
     inline class Item(val index: Int) {
         inline fun <T> use(segments: FSegmentsInt, block: FSegmentsInt.(Item) -> T): T = block(segments, this)
@@ -73,10 +73,10 @@ class FSegmentsInt(capacity: Int = 5) {
     fun Item.y(x: Int): Int = y0 + (slope * (x - x0)).toIntRound()
     fun Item.containsX(x: Int): Boolean = x in xMin..xMax
     fun Item.containsY(y: Int): Boolean = y in yMin..yMax
-    fun Item.getIntersectY(other: Item): Int = SegmentInt.getIntersectY(x0, y0, x1, y1, other.x0, other.y0, other.x1, other.y1)
+    fun Item.getIntersectY(other: Item): Int = MSegmentInt.getIntersectY(x0, y0, x1, y1, other.x0, other.y0, other.x1, other.y1)
 
     fun Item.toStringDefault(): String = "Segment[$index](($x0, $y0), ($x1, $y1))"
-    fun Item.toSegmentInt(out: SegmentInt = SegmentInt()): SegmentInt = out.also { it.setTo(x0, y0, x1, y1) }
+    fun Item.toSegmentInt(out: MSegmentInt = MSegmentInt()): MSegmentInt = out.also { it.setTo(x0, y0, x1, y1) }
 
     fun add(x0: Int, y0: Int, x1: Int, y1: Int): Item {
         val index = size
@@ -85,10 +85,10 @@ class FSegmentsInt(capacity: Int = 5) {
     }
     fun add(v: Item): Item = add(v.x0, v.y0, v.x1, v.y1)
     fun add(v: Item, segments: FSegmentsInt): Item = segments.run { this@FSegmentsInt.add(v.x0, v.y0, v.x1, v.y1) }
-    fun add(v: SegmentInt): Item = add(v.x0, v.y0, v.x1, v.y1)
+    fun add(v: MSegmentInt): Item = add(v.x0, v.y0, v.x1, v.y1)
 }
 
-fun List<SegmentInt>.toFSegmentsInt(): FSegmentsInt = FSegmentsInt { this@toFSegmentsInt.fastForEach { add(it) } }
+fun List<MSegmentInt>.toFSegmentsInt(): FSegmentsInt = FSegmentsInt { this@toFSegmentsInt.fastForEach { add(it) } }
 
 fun FSegmentsInt.getAllYSorted(): IntArray {
     val set = IntArray(size * 2)

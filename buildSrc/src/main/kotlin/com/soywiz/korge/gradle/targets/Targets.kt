@@ -54,15 +54,12 @@ val KotlinTarget.isWin: Boolean get() = this.name == "mingwX64" || this.name == 
 val KotlinTarget.isMacosX64: Boolean get() = this.name == "macosX64"
 val KotlinTarget.isMacosArm64: Boolean get() = this.name == "macosArm64"
 //val KotlinTarget.isMacos: Boolean get() = isMacosX64 || isMacosArm64
-val KotlinTarget.isIosArm32: Boolean get() = this.name == "iosArm32"
 val KotlinTarget.isIosArm64: Boolean get() = this.name == "iosArm64"
 val KotlinTarget.isIosX64: Boolean get() = this.name == "iosX64"
 val KotlinTarget.isIosSimulatorArm64: Boolean get() = this.name == "iosSimulatorArm64"
-//val KotlinTarget.isIos: Boolean get() = isIosArm32 || isIosArm64 || isIosX64 || isIosSimulatorArm64
-val KotlinTarget.isWatchosX86: Boolean get() = this.name == "watchosX86"
-val KotlinTarget.isWatchosArm32: Boolean get() = this.name == "watchosArm32"
+//val KotlinTarget.isIos: Boolean get() = isIosArm64 || isIosX64 || isIosSimulatorArm64
 val KotlinTarget.isWatchosArm64: Boolean get() = this.name == "watchosArm64"
-//val KotlinTarget.isWatchos: Boolean get() = isWatchosX86 || isWatchosArm32 || isWatchosArm64
+//val KotlinTarget.isWatchos: Boolean get() = isWatchosArm64
 val KotlinTarget.isTvosX64: Boolean get() = this.name == "tvosX64"
 val KotlinTarget.isTvosArm64: Boolean get() = this.name == "tvosArm64"
 //val KotlinTarget.isTvos: Boolean get() = isTvosX64 || isTvosArm64

@@ -10,7 +10,6 @@ import com.soywiz.korio.lang.UTF8
 import com.soywiz.korio.lang.toString
 import com.soywiz.korio.stream.readAll
 import com.soywiz.korio.stream.slice
-import com.soywiz.korio.util.OS
 import com.soywiz.korio.util.expectException
 import kotlin.test.*
 
@@ -38,22 +37,22 @@ class LocalVfsTest {
 
 	@Test
 	fun testExec() = suspendTestNoBrowser {
-        if (OS.isAndroid) return@suspendTestNoBrowser
-        if (OS.isIos) return@suspendTestNoBrowser
+        if (Platform.isAndroid) return@suspendTestNoBrowser
+        if (Platform.isIos) return@suspendTestNoBrowser
         //val str = ">hello< '1^&) \" $ \\ \n \r \t \$test (|&,; 2" // @TODO: Couldn't get line breaks working on windows
         //val str = ">hello< '1^&) \" $ \\ \$test %test% (|&,; 2" // @TODO: Fails on windows/nodejs
         val str = "hello world"
         //val str = "1"
 		when {
-			OS.isJsBrowserOrWorker -> Unit // Skip
+            Platform.isJsBrowserOrWorker -> Unit // Skip
 			else -> assertEquals(str, temp.execToString(listOf("echo", str)).trim())
 		}
 	}
 
     @Test
     fun testExecNonExistant() = suspendTestNoBrowser {
-        if (OS.isAndroid) return@suspendTestNoBrowser
-        if (OS.isIos) return@suspendTestNoBrowser
+        if (Platform.isAndroid) return@suspendTestNoBrowser
+        if (Platform.isIos) return@suspendTestNoBrowser
         val message = assertFailsWith<FileNotFoundException> {
             localCurrentDirVfs["directory-that-does-not-exist"].execToString("echo", "1")
         }
@@ -73,9 +72,9 @@ class LocalVfsTest {
 
 	@Test
 	fun openModeRead() = suspendTestNoBrowser {
-        if (OS.isAndroid) return@suspendTestNoBrowser
+        if (Platform.isAndroid) return@suspendTestNoBrowser
 		when {
-			OS.isJsBrowserOrWorker -> Unit // Ignore
+            Platform.isJsBrowserOrWorker -> Unit // Ignore
 			else -> {
 				existing1.writeString("hello")
 				val readBytes = existing1.openUse(VfsOpenMode.READ) { readAll() }
@@ -93,10 +92,13 @@ class LocalVfsTest {
         file.delete()
         try {
             file.writeString("123")
-            println("testUnixPermissions[before]:attribute=${file.getAttribute<Vfs.UnixPermissions>()}")
+            val oldPermission = file.getAttribute<Vfs.UnixPermissions>()
+            //println("testUnixPermissions[before]:attribute=${file.getAttribute<Vfs.UnixPermissions>()}")
             file.chmod(Vfs.UnixPermissions(chmod))
-            println("testUnixPermissions[after]:attribute=${file.getAttribute<Vfs.UnixPermissions>()}")
-            assertEquals(chmod, file.getAttribute<Vfs.UnixPermissions>()!!.rbits)
+            val newPermission = file.getAttribute<Vfs.UnixPermissions>()
+            //println("testUnixPermissions[after]:attribute=${file.getAttribute<Vfs.UnixPermissions>()}")
+            assertNotEquals(oldPermission!!.rbits, newPermission!!.rbits)
+            assertEquals(chmod, newPermission!!.rbits)
             assertEquals(chmod, file.stat().permissions.rbits)
         } finally {
             file.delete()

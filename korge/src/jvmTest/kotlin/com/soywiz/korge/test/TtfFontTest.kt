@@ -4,12 +4,11 @@ import com.soywiz.korge.testing.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.font.*
 import com.soywiz.korio.file.std.*
-import org.junit.Test
+import org.junit.*
 
 class TtfFontTest {
-
     @Test
-    fun disableLigaturesWorks(): Unit = korgeScreenshotTest() {
+    fun disableLigaturesWorks(): Unit = korgeScreenshotTest {
         val ttfFontWithLigatures =
             resourcesVfs["font_atkinson/AtkinsonHyperlegible-Bold.ttf"].readTtfFont()
         val ttfFontWithoutLigatures =
@@ -17,14 +16,14 @@ class TtfFontTest {
 
         val c = container {
             val t1 = text("41/41", font = ttfFontWithLigatures, textSize = 40.0) {
+                this.graphicsRenderer = GraphicsRenderer.CPU
             }
             text("41/41", font = ttfFontWithoutLigatures, textSize = 40.0) {
+                this.graphicsRenderer = GraphicsRenderer.CPU
                 alignTopToBottomOf(t1)
             }
         }
 
-        it.recordGolden(c, "text")
-
-        it.endTest()
+        assertScreenshot(c, "text", posterize = 5, includeBackground = false, psnr = 35.0)
     }
 }

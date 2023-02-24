@@ -4,26 +4,26 @@ import kotlin.math.max
 import kotlin.math.min
 
 
-data class AABB3D(val min: Vector3 = Vector3(), val max: Vector3) {
-    var minX get() = min.x; set(value) { min.x = value }
-    var minY get() = min.y; set(value) { min.y = value }
-    var minZ get() = min.z; set(value) { min.z = value }
+data class AABB3D(val min: MVector3 = MVector3(), val max: MVector3) {
+    var minX: Float get() = min.x; set(value) { min.x = value }
+    var minY: Float get() = min.y; set(value) { min.y = value }
+    var minZ: Float get() = min.z; set(value) { min.z = value }
 
-    var maxX get() = max.x; set(value) { max.x = value }
-    var maxY get() = max.y; set(value) { max.y = value }
-    var maxZ get() = max.z; set(value) { max.z = value }
+    var maxX: Float get() = max.x; set(value) { max.x = value }
+    var maxY: Float get() = max.y; set(value) { max.y = value }
+    var maxZ: Float get() = max.z; set(value) { max.z = value }
 
-    val sizeX get() = maxX - minX
-    val sizeY get() = maxY - minY
-    val sizeZ get() = maxZ - minZ
+    val sizeX: Float get() = maxX - minX
+    val sizeY: Float get() = maxY - minY
+    val sizeZ: Float get() = maxZ - minZ
 
     companion object {
         operator fun invoke(min: Float = Float.POSITIVE_INFINITY, max: Float = Float.NEGATIVE_INFINITY): AABB3D =
-            AABB3D(Vector3(min, min, min), Vector3(max, max, max))
+            AABB3D(MVector3(min, min, min), MVector3(max, max, max))
 
         fun fromSphere(pos: IVector3, radius: Float): AABB3D = AABB3D(
-            Vector3(pos.x - radius, pos.y - radius, pos.z - radius),
-            Vector3(pos.x + radius, pos.y + radius, pos.z + radius)
+            MVector3(pos.x - radius, pos.y - radius, pos.z - radius),
+            MVector3(pos.x + radius, pos.y + radius, pos.z + radius)
         )
     }
 
@@ -64,8 +64,8 @@ data class AABB3D(val min: Vector3 = Vector3(), val max: Vector3) {
         return out
     }
 
-    fun intersectsSphere(sphere: Sphere3D): Boolean = intersectsSphere(sphere.origin, sphere.radius)
-    fun intersectsSphere(origin: Vector3, radius: Float): Boolean = !(origin.x + radius < minX ||
+    fun intersectsSphere(sphere: ISphere3D): Boolean = intersectsSphere(sphere.origin, sphere.radius)
+    fun intersectsSphere(origin: IVector3, radius: Float): Boolean = !(origin.x + radius < minX ||
         origin.y + radius < minY ||
         origin.z + radius < minZ ||
         origin.x - radius > maxX ||

@@ -5,11 +5,7 @@ import com.soywiz.korim.font.Font
 import com.soywiz.korim.paint.BitmapPaint
 import com.soywiz.korim.paint.Paint
 import com.soywiz.korim.vector.renderer.DummyRenderer
-import com.soywiz.korma.annotations.KorDslMarker
-import com.soywiz.korma.annotations.RootViewDslMarker
-import com.soywiz.korma.annotations.VectorDslMarker
-import com.soywiz.korma.annotations.ViewDslMarker
-import com.soywiz.korma.geom.Matrix
+import com.soywiz.korma.geom.MMatrix
 import com.soywiz.korma.geom.vector.LineCap
 import com.soywiz.korma.geom.vector.LineJoin
 import com.soywiz.korma.geom.vector.LineScaleMode
@@ -99,12 +95,12 @@ open class ShapeBuilder(width: Int?, height: Int?) : Context2d(DummyRenderer), D
         )
     }
 
-    override fun rendererDrawImage(image: Bitmap, x: Double, y: Double, width: Double, height: Double, transform: Matrix) {
+    override fun rendererDrawImage(image: Bitmap, x: Double, y: Double, width: Double, height: Double, transform: MMatrix) {
         rendererRender(State(
             transform = transform,
             path = VectorPath().apply { rect(x, y, width, height) },
             fillStyle = BitmapPaint(image,
-                transform = Matrix()
+                transform = MMatrix()
                     .scale(width / image.width.toDouble(), height / image.height.toDouble())
                     .translate(x, y)
             )

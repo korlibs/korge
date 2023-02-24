@@ -1,26 +1,15 @@
 package samples
 
-import com.soywiz.korev.GameButton
-import com.soywiz.korev.GameStick
-import com.soywiz.korev.Key
-import com.soywiz.korge.input.gamepad
-import com.soywiz.korge.input.keys
-import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.view.SContainer
-import com.soywiz.korge.view.container
-import com.soywiz.korge.view.vector.GpuShapeView
-import com.soywiz.korge.view.vector.gpuShapeView
-import com.soywiz.korge.view.xy
-import com.soywiz.korgw.GameWindow
-import com.soywiz.korim.color.Colors
-import com.soywiz.korim.paint.LinearGradientPaint
-import com.soywiz.korma.geom.degrees
-import com.soywiz.korma.geom.minus
-import com.soywiz.korma.geom.plus
-import com.soywiz.korma.geom.times
-import com.soywiz.korma.geom.vector.LineCap
-import com.soywiz.korma.geom.vector.LineJoin
-import com.soywiz.korma.geom.vector.rect
+import com.soywiz.korev.*
+import com.soywiz.korge.input.*
+import com.soywiz.korge.scene.*
+import com.soywiz.korge.view.*
+import com.soywiz.korge.view.vector.*
+import com.soywiz.korgw.*
+import com.soywiz.korim.color.*
+import com.soywiz.korim.paint.*
+import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.vector.*
 
 class MainGpuVectorRendering2 : Scene() {
     override suspend fun SContainer.sceneMain() {

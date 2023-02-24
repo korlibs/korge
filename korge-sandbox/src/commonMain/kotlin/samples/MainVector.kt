@@ -1,29 +1,18 @@
 package samples
 
-import com.soywiz.klock.measureTimeWithResult
-import com.soywiz.korge.scene.ScaledScene
-import com.soywiz.korge.ui.uiCheckBox
+import com.soywiz.klock.*
+import com.soywiz.korge.scene.*
+import com.soywiz.korge.ui.*
 import com.soywiz.korge.view.SContainer
 import com.soywiz.korge.view.image
-import com.soywiz.korim.bitmap.NativeImageOrBitmap32
-import com.soywiz.korim.bitmap.context2d
-import com.soywiz.korim.color.Colors
-import com.soywiz.korim.color.RGBA
-import com.soywiz.korim.format.readBitmap
-import com.soywiz.korim.paint.BitmapPaint
-import com.soywiz.korim.paint.LinearGradientPaint
-import com.soywiz.korim.paint.RadialGradientPaint
-import com.soywiz.korio.async.launchImmediately
-import com.soywiz.korio.file.std.resourcesVfs
-import com.soywiz.korma.geom.Matrix
-import com.soywiz.korma.geom.cosine
-import com.soywiz.korma.geom.degrees
-import com.soywiz.korma.geom.sine
-import com.soywiz.korma.geom.times
-import com.soywiz.korma.geom.vector.LineCap
-import com.soywiz.korma.geom.vector.StrokeInfo
-import com.soywiz.korma.geom.vector.moveTo
-import com.soywiz.korma.geom.vector.rect
+import com.soywiz.korim.bitmap.*
+import com.soywiz.korim.color.*
+import com.soywiz.korim.format.*
+import com.soywiz.korim.paint.*
+import com.soywiz.korio.async.*
+import com.soywiz.korio.file.std.*
+import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.vector.*
 
 class MainVector : ScaledScene(1280, 720) {
     companion object {
@@ -82,7 +71,7 @@ class MainVector : ScaledScene(1280, 720) {
                     }
                     keep {
                         translate(356, 320)
-                        fill(BitmapPaint(image, Matrix().scale(0.25, 0.25))) {
+                        fill(BitmapPaint(image, MMatrix().scale(0.25, 0.25))) {
                             rect(0, 0, 128, 128)
                         }
                     }

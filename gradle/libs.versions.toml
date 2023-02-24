@@ -7,6 +7,7 @@ kotlin = "1.8.10"
 kotlinx-coroutines = "1.6.4"
 kotlinx-serialization = "1.5.0-RC"
 kotlinx-atomicfu = "0.19.0"
+kotlinx-benchmark = "0.4.7"
 dokka = "1.7.20"
 kover = "0.6.1"
 kover-agent = "1.0.692"
@@ -22,6 +23,7 @@ closure-compiler = "v20210808"
 [libraries]
 kotlin-serialization = { module = "org.jetbrains.kotlin:kotlin-serialization", version.ref = "kotlin" }
 kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 dokka = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version.ref = "dokka" }
 kover = { module = "org.jetbrains.kotlinx:kover", version.ref = "kover" }
 kover-intellij-agent = { module = "org.jetbrains.intellij.deps:intellij-coverage-agent", version.ref = "kover-agent" }

@@ -1,7 +1,7 @@
 package com.soywiz.korim.bitmap
 
-import com.soywiz.korim.color.RGBA
-import com.soywiz.korim.color.RgbaArray
+import com.soywiz.kds.*
+import com.soywiz.korim.color.*
 
 class Bitmap8(
 	width: Int,
@@ -44,4 +44,24 @@ class Bitmap8(
             height: Int
         ) = src.copy(srcX, srcY, dst, dstX, dstY, width, height)
     }
+}
+
+fun Bitmap.tryToExactBitmap8(): Bitmap8? {
+    if (this is BitmapIndexed) {
+        return Bitmap8(width, height, ByteArray(width * height) { this.getIntIndex(it).toByte() }, RgbaArray(this.palette.ints.copyOf(256)))
+    }
+
+    val bmp = this.toBMP32IfRequired().depremultipliedIfRequired()
+    val bmpInts = bmp.ints
+    val palette = Palette(RgbaArray(256))
+    val colors = IntIntMap()
+    var ncolor = 0
+    for (color in bmpInts) {
+         if (!colors.contains(color)) {
+            palette.colors[ncolor] = if (bmp.premultiplied) RGBAPremultiplied(color).depremultiplied else RGBA(color)
+            colors[color] = ncolor++
+        }
+        if (colors.size >= 256) return null
+    }
+    return Bitmap8(bmp.width, bmp.height, ByteArray(bmp.width * bmp.height) { colors[bmpInts[it]].toByte() }, palette.colors)
 }

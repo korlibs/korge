@@ -4,9 +4,7 @@ import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.color.RGBAPremultiplied
 import com.soywiz.korim.color.RgbaArray
 import com.soywiz.korim.color.RgbaPremultipliedArray
-import com.soywiz.korim.format.ImageEncodingProps
-import com.soywiz.korim.format.PNG
-import com.soywiz.korim.format.nativeImageFormatProvider
+import com.soywiz.korim.format.*
 import com.soywiz.korim.vector.Drawable
 import com.soywiz.korim.vector.SizedDrawable
 import com.soywiz.krypto.encoding.toBase64
@@ -131,7 +129,7 @@ fun NativeImage(
             }
         }
 	} catch (e: Throwable) {
-		e.printStackTrace()
+        imageLoadingLogger.error { e }
 	}
 	return bmp
 }

@@ -9,12 +9,12 @@ import com.soywiz.kmem.*
 import com.soywiz.korma.annotations.KormaExperimental
 import com.soywiz.korma.geom.BoundsBuilder
 import com.soywiz.korma.geom.IPoint
-import com.soywiz.korma.geom.Line
+import com.soywiz.korma.geom.MLine
 import com.soywiz.korma.geom.LineIntersection
-import com.soywiz.korma.geom.Matrix
-import com.soywiz.korma.geom.Point
+import com.soywiz.korma.geom.MMatrix
+import com.soywiz.korma.geom.MPoint
 import com.soywiz.korma.geom.PointArrayList
-import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.MRectangle
 import com.soywiz.korma.geom.bezier.Bezier
 import com.soywiz.korma.geom.bezier.Curves
 import com.soywiz.korma.geom.bezier.toCurves
@@ -23,10 +23,6 @@ import com.soywiz.korma.internal.niceStr
 import com.soywiz.korma.math.isAlmostEquals
 import com.soywiz.korma.math.roundDecimalPlaces
 import kotlin.native.concurrent.ThreadLocal
-
-// @TODO: ThreadLocal on JVM
-@ThreadLocal
-private val tempMatrix: Matrix = Matrix()
 
 interface IVectorPath : VectorBuilder {
     fun toSvgString(): String
@@ -50,11 +46,11 @@ class VectorPath(
     override fun hashCode(): Int = commands.hashCode() + (data.hashCode() * 13) + (winding.ordinal * 111)
 
     companion object {
-        private val identityMatrix = Matrix()
+        private val identityMatrix = MMatrix()
 
         inline operator fun invoke(winding: Winding = Winding.DEFAULT, callback: VectorPath.() -> Unit): VectorPath = VectorPath(winding = winding).apply(callback)
 
-        fun intersects(left: VectorPath, leftTransform: Matrix, right: VectorPath, rightTransform: Matrix): Boolean =
+        fun intersects(left: VectorPath, leftTransform: MMatrix, right: VectorPath, rightTransform: MMatrix): Boolean =
             left.intersectsWith(leftTransform, right, rightTransform)
 
         fun intersects(left: VectorPath, right: VectorPath): Boolean = left.intersectsWith(right)
@@ -130,9 +126,6 @@ class VectorPath(
             }
         )
     }
-
-    @Deprecated("Use trapezoids instead")
-    fun getAllLines(): List<Line> = scanline.getAllLines()
 
     inline fun visitEdgesSimple(
         line: (x0: Double, y0: Double, x1: Double, y1: Double) -> Unit,
@@ -232,7 +225,7 @@ class VectorPath(
             val y = data[data.size - 3]
             val x1 = data[data.size - 2]
             val y1 = data[data.size - 1]
-            if (Point.isCollinear(x0, y0, x, y, x1, y1)) {
+            if (MPoint.isCollinear(x0, y0, x, y, x1, y1)) {
                 removeLastCommand()
                 data[data.size - 2] = x1
                 data[data.size - 1] = y1
@@ -269,26 +262,10 @@ class VectorPath(
         return true
     }
 
-    fun getBounds(out: Rectangle = Rectangle(), bb: BoundsBuilder = BoundsBuilder()): Rectangle {
+    fun getBounds(out: MRectangle = MRectangle(), bb: BoundsBuilder = BoundsBuilder()): MRectangle {
         bb.reset()
         bb.add(this)
         return bb.getBounds(out)
-    }
-
-    @Deprecated("Use toPathList that aproximates curves")
-    fun getPoints(): List<IPoint> = getPointList().toList()
-
-    @Deprecated("Use toPathList that aproximates curves")
-    fun getPointList(): PointArrayList {
-        val points = PointArrayList()
-        this.visitCmds(
-            moveTo = { x, y -> points.add(x, y) },
-            lineTo = { x, y -> points.add(x, y) },
-            quadTo = { x1, y1, x2, y2 -> points.add(x2, y2) },
-            cubicTo = { x1, y1, x2, y2, x3, y3 -> points.add(x3, y3) },
-            close = { }
-        )
-        return points
     }
 
     // http://erich.realtimerendering.com/ptinpoly/
@@ -297,11 +274,12 @@ class VectorPath(
     // I run a semi-infinite ray horizontally (increasing x, fixed y) out from the test point, and count how many edges it crosses.
     // At each crossing, the ray switches between inside and outside. This is called the Jordan curve theorem.
     fun containsPoint(x: Double, y: Double): Boolean = trapezoids.containsPoint(x, y, this.winding)
-    fun containsPoint(p: Point): Boolean = containsPoint(p.x, p.y, this.winding)
+    fun containsPoint(p: MPoint): Boolean = containsPoint(p.x, p.y, this.winding)
     fun containsPoint(x: Int, y: Int): Boolean = containsPoint(x.toDouble(), y.toDouble())
     fun containsPoint(x: Float, y: Float): Boolean = containsPoint(x.toDouble(), y.toDouble())
 
     private var _trapezoids: VectorPathTrapezoids? = null
+
     @KormaExperimental
     val trapezoids: VectorPathTrapezoids get() {
         if (_trapezoids == null || _trapezoids!!.version != this.version) {
@@ -310,10 +288,9 @@ class VectorPath(
         return _trapezoids!!
     }
 
-    @Deprecated("Use trapezoids instead")
     private var _scanline: PolygonScanline? = null
+
     @KormaExperimental
-    @Deprecated("Use trapezoids instead")
     val scanline: PolygonScanline get() {
         if (_scanline == null) _scanline = PolygonScanline()
         val scanline = _scanline!!
@@ -334,7 +311,7 @@ class VectorPath(
     fun intersectsWith(right: VectorPath): Boolean = intersectsWith(identityMatrix, right, identityMatrix)
 
     // @TODO: Use trapezoids instead
-    fun intersectsWith(leftMatrix: Matrix, right: VectorPath, rightMatrix: Matrix): Boolean {
+    fun intersectsWith(leftMatrix: MMatrix, right: VectorPath, rightMatrix: MMatrix, tempMatrix: MMatrix = MMatrix()): Boolean {
         val left = this
         val leftScanline = left.scanline
         val rightScanline = right.scanline
@@ -360,7 +337,7 @@ class VectorPath(
         return false
     }
 
-    fun getLineIntersection(line: Line, out: LineIntersection = LineIntersection()): LineIntersection? {
+    fun getLineIntersection(line: MLine, out: LineIntersection = LineIntersection()): LineIntersection? {
         // Directs from outside the shape, to inside the shape
 //        if (this.containsPoint(line.b) && !this.containsPoint(line.a)) {
             return this.scanline.getLineIntersection(line, out)
@@ -387,11 +364,11 @@ class VectorPath(
 
     class Stats {
         val stats = IntArray(5)
-        val moveTo get() = stats[Command.MOVE_TO]
-        val lineTo get() = stats[Command.LINE_TO]
-        val quadTo get() = stats[Command.QUAD_TO]
-        val cubicTo get() = stats[Command.CUBIC_TO]
-        val close get() = stats[Command.CLOSE]
+        val moveTo: Int get() = stats[Command.MOVE_TO]
+        val lineTo: Int get() = stats[Command.LINE_TO]
+        val quadTo: Int get() = stats[Command.QUAD_TO]
+        val cubicTo: Int get() = stats[Command.CUBIC_TO]
+        val close: Int get() = stats[Command.CLOSE]
         fun reset() {
             for (n in stats.indices) stats[n] = 0
         }
@@ -420,7 +397,7 @@ class VectorPath(
         }
     }
 
-    fun write(path: VectorPath, transform: Matrix = identityMatrix) {
+    fun write(path: VectorPath, transform: MMatrix = identityMatrix) {
         this.commands += path.commands
         if (transform.isIdentity()) {
             this.data += path.data
@@ -457,9 +434,9 @@ class VectorPath(
     override fun toString(): String = "VectorPath(${toSvgString()})"
 
     @PublishedApi
-    internal val tempPoint = Point()
+    internal val tempPoint = MPoint()
 
-    inline fun transformPoints(transform: (p: Point) -> IPoint): VectorPath {
+    inline fun transformPoints(transform: (p: MPoint) -> IPoint): VectorPath {
         val point = tempPoint
         for (n in 0 until data.size step 2) {
             point.setTo(data[n + 0], data[n + 1])
@@ -528,9 +505,9 @@ fun VectorBuilder.write(path: VectorPath) {
     )
 }
 
-fun VectorBuilder.moveTo(x: Double, y: Double, m: Matrix?) = if (m != null) moveTo(m.transformX(x, y), m.transformY(x, y)) else moveTo(x, y)
-fun VectorBuilder.lineTo(x: Double, y: Double, m: Matrix?) = if (m != null) lineTo(m.transformX(x, y), m.transformY(x, y)) else lineTo(x, y)
-fun VectorBuilder.quadTo(cx: Double, cy: Double, ax: Double, ay: Double, m: Matrix?) =
+fun VectorBuilder.moveTo(x: Double, y: Double, m: MMatrix?) = if (m != null) moveTo(m.transformX(x, y), m.transformY(x, y)) else moveTo(x, y)
+fun VectorBuilder.lineTo(x: Double, y: Double, m: MMatrix?) = if (m != null) lineTo(m.transformX(x, y), m.transformY(x, y)) else lineTo(x, y)
+fun VectorBuilder.quadTo(cx: Double, cy: Double, ax: Double, ay: Double, m: MMatrix?) =
     if (m != null) {
         quadTo(
             m.transformX(cx, cy), m.transformY(cx, cy),
@@ -539,7 +516,7 @@ fun VectorBuilder.quadTo(cx: Double, cy: Double, ax: Double, ay: Double, m: Matr
     } else {
         quadTo(cx, cy, ax, ay)
     }
-fun VectorBuilder.cubicTo(cx1: Double, cy1: Double, cx2: Double, cy2: Double, ax: Double, ay: Double, m: Matrix?) =
+fun VectorBuilder.cubicTo(cx1: Double, cy1: Double, cx2: Double, cy2: Double, ax: Double, ay: Double, m: MMatrix?) =
     if (m != null) {
         cubicTo(
             m.transformX(cx1, cy1), m.transformY(cx1, cy1),
@@ -551,11 +528,11 @@ fun VectorBuilder.cubicTo(cx1: Double, cy1: Double, cx2: Double, cy2: Double, ax
     }
 
 
-fun VectorBuilder.path(path: VectorPath, m: Matrix?) {
+fun VectorBuilder.path(path: VectorPath, m: MMatrix?) {
     write(path, m)
 }
 
-fun VectorBuilder.write(path: VectorPath, m: Matrix?) {
+fun VectorBuilder.write(path: VectorPath, m: MMatrix?) {
     path.visitCmds(
         moveTo = { x, y -> moveTo(x, y, m) },
         lineTo = { x, y -> lineTo(x, y, m) },
@@ -565,7 +542,7 @@ fun VectorBuilder.write(path: VectorPath, m: Matrix?) {
     )
 }
 
-fun BoundsBuilder.add(path: VectorPath, transform: Matrix? = null) {
+fun BoundsBuilder.add(path: VectorPath, transform: MMatrix? = null) {
     val curvesList = path.getCurvesList()
     if (curvesList.isEmpty() && path.isNotEmpty()) {
         path.visit(object : VectorPath.Visitor {
@@ -583,7 +560,7 @@ fun BoundsBuilder.add(path: VectorPath, transform: Matrix? = null) {
     //println("BoundsBuilder.add.path: " + bb.getBounds())
 }
 
-fun VectorPath.applyTransform(m: Matrix?): VectorPath = when {
+fun VectorPath.applyTransform(m: MMatrix?): VectorPath = when {
     m != null -> transformPoints { m.transform(it, it) }
     else -> this
 }

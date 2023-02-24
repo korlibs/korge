@@ -4,28 +4,13 @@ import com.soywiz.kmem.arraycopy
 import com.soywiz.kmem.clamp
 import com.soywiz.kmem.toInt
 import com.soywiz.korim.annotation.KorimInternal
-import com.soywiz.korim.color.ColorFormat
-import com.soywiz.korim.color.ColorTransform
-import com.soywiz.korim.color.RGBA
-import com.soywiz.korim.color.RGBAPremultiplied
-import com.soywiz.korim.color.RgbaArray
-import com.soywiz.korim.color.RgbaPremultipliedArray
-import com.soywiz.korim.color.YCbCr
-import com.soywiz.korim.color.decode
-import com.soywiz.korim.color.encode
-import com.soywiz.korim.color.mix
-import com.soywiz.korim.color.toRGBA
-import com.soywiz.korim.color.toYCbCr
+import com.soywiz.korim.color.*
 import com.soywiz.korim.vector.Bitmap32Context2d
 import com.soywiz.korim.vector.Context2d
 import com.soywiz.korma.geom.IRectangleInt
-import com.soywiz.korma.geom.Matrix3D
-import com.soywiz.korma.geom.RectangleInt
-import com.soywiz.korma.geom.Vector3D
-import com.soywiz.korma.geom.bottom
-import com.soywiz.korma.geom.left
-import com.soywiz.korma.geom.right
-import com.soywiz.korma.geom.top
+import com.soywiz.korma.geom.MMatrix3D
+import com.soywiz.korma.geom.MRectangleInt
+import com.soywiz.korma.geom.MVector4
 import kotlin.js.JsName
 import kotlin.jvm.JvmName
 import kotlin.jvm.JvmOverloads
@@ -39,34 +24,17 @@ class Bitmap32(
     width: Int,
     height: Int,
     val ints: IntArray = IntArray(width * height),
-    premultiplied: Boolean
+    //premultiplied: Boolean
+    premultiplied: Boolean = true
+    //premultiplied: Boolean = false
 ) : Bitmap(width, height, 32, premultiplied, ints), Iterable<RGBA> {
-    @Deprecated("This is unsafe and might throw if you are accessing the wrong premultiplied version", level = DeprecationLevel.HIDDEN)
-    val data = RgbaArray(ints)
-        get() {
-            if (premultiplied) {
-                error("Trying to access data in a premultiplied bitmap")
-            }
-            return field
-        }
-    @Deprecated("This is unsafe and might throw if you are accessing the wrong premultiplied version", level = DeprecationLevel.HIDDEN)
-    val dataPremult: RgbaPremultipliedArray = RgbaPremultipliedArray(ints)
-        get() {
-            if (!premultiplied) {
-                error("Trying to access dataPremult in a non-premultiplied bitmap")
-            }
-            return field
-        }
-
 	init {
 		if (ints.size < width * height) throw RuntimeException("Bitmap data is too short: width=$width, height=$height, data=ByteArray(${ints.size}), area=${width * height}")
 	}
 
 	private val temp = IntArray(max(width, height))
-    val bounds: IRectangleInt = RectangleInt(0, 0, width, height)
+    val bounds: IRectangleInt = MRectangleInt(0, 0, width, height)
 
-    @Deprecated("Specify premultiplied instead")
-    constructor(width: Int, height: Int) : this(width, height, premultiplied = false)
 	constructor(width: Int, height: Int, value: RGBA) : this(width, height, premultiplied = false) { ints.fill(value.value) }
     constructor(width: Int, height: Int, value: RgbaArray) : this(width, height, value.ints, premultiplied = false)
 	constructor(width: Int, height: Int, generator: (x: Int, y: Int) -> RGBA) : this(width, height, premultiplied = false) { setEach(callback = generator) }
@@ -309,7 +277,7 @@ class Bitmap32(
         updateColors(x, y, width, height) { RGBA(R[it.r], G[it.g], B[it.b], A[it.a]) }
 	}
 
-    fun applyColorMatrix(matrix: Matrix3D, x: Int = 0, y: Int = 0, width: Int = this.width - x, height: Int = this.height - y, temp: Vector3D = Vector3D()) {
+    fun applyColorMatrix(matrix: MMatrix3D, x: Int = 0, y: Int = 0, width: Int = this.width - x, height: Int = this.height - y, temp: MVector4 = MVector4()) {
         val v = temp
         updateColors(x, y, width, height) {
             v.setTo(it.rf, it.gf, it.bf, it.af)
@@ -387,8 +355,8 @@ class Bitmap32(
     //    }
     //}
 
-    fun scaleNearest(sx: Int, sy: Int): Bitmap32 = scaled(width * sx, height * sy, smooth = false)
-    fun scaleLinear(sx: Double, sy: Double): Bitmap32 = scaled((width * sx).toInt(), (height * sy).toInt(), smooth = true)
+    fun scaleNearest(sx: Int, sy: Int = sx): Bitmap32 = scaled(width * sx, height * sy, smooth = false)
+    fun scaleLinear(sx: Double, sy: Double = sx): Bitmap32 = scaled((width * sx).toInt(), (height * sy).toInt(), smooth = true)
 
     /**
      * Creates a new [Bitmap32] with the specified new dimensions [width]x[height]
@@ -397,10 +365,10 @@ class Bitmap32(
      */
     @JvmOverloads
     fun scaled(width: Int, height: Int, smooth: Boolean = true): Bitmap32 {
-        val sx = width.toDouble() / this.width.toDouble()
-        val sy = height.toDouble() / this.height.toDouble()
-        val isx = 1.0 / sx
-        val isy = 1.0 / sy
+        val sx = width.toFloat() / this.width.toFloat()
+        val sy = height.toFloat() / this.height.toFloat()
+        val isx = 1f / sx
+        val isy = 1f / sy
         val out = Bitmap32(width, height, this.premultiplied)
         if (smooth) {
             out.setEach { x, y -> this@Bitmap32[(x * isx).toInt(), (y * isy).toInt()] }
@@ -547,19 +515,50 @@ class Bitmap32(
             return MatchResult(sizeMatches = true, differentPixels = different, samePixels = same)
         }
 
+        fun diffEx(a: Bitmap, b: Bitmap): Bitmap32 {
+            val a32 = a.toBMP32IfRequired()
+            val b32 = b.toBMP32IfRequired()
+            val diff = diff(a32, b32)
+            var maxR = 0
+            var maxG = 0
+            var maxB = 0
+
+            diff.forEach { n, x, y ->
+                val c = diff[x, y]
+                maxR = max(maxR, c.r)
+                maxG = max(maxG, c.g)
+                maxB = max(maxB, c.b)
+            }
+
+            //println("maxR=$maxR,$maxG,$maxB")
+            diff.forEach { n, x, y ->
+                val c = diff[x, y]
+
+                diff[x, y] = RGBA.float(
+                    if (maxR == 0) 0f else c.r / maxR.toFloat(),
+                    if (maxG == 0) 0f else c.g / maxG.toFloat(),
+                    if (maxB == 0) 0f else c.b / maxB.toFloat(),
+                    1f
+                )
+
+                //if (c.rf != 0f) println("diff=$c -> ${diff[x, y]}")
+            }
+            return diff
+        }
+
         fun diff(a: Bitmap, b: Bitmap): Bitmap32 {
             if (a.width != b.width || a.height != b.height) throw IllegalArgumentException("$a not matches $b size")
-            val a32 = a.toBMP32()
-            val b32 = b.toBMP32()
-            val out = Bitmap32(a.width, a.height, premultiplied = true)
+            val a32 = a.toBMP32IfRequired()
+            val b32 = b.toBMP32IfRequired()
+            val out = Bitmap32(a.width, a.height, premultiplied = false)
             //showImageAndWait(a32)
             //showImageAndWait(b32)
             for (n in 0 until out.area) {
-                val c1 = a32.getRgbaPremultipliedAtIndex(n)
-                val c2 = b32.getRgbaPremultipliedAtIndex(n)
+                val c1 = a32.getRgbaAtIndex(n)
+                val c2 = b32.getRgbaAtIndex(n)
 
                 //println("%02X, %02X, %02X".format(RGBA.getR(c1), RGBA.getR(c2), dr))
-                out.setRgbaPremultipliedAtIndex(n, RGBAPremultiplied(abs(c1.r - c2.r), abs(c1.g - c2.g), abs(c1.b - c2.b), abs(c1.a - c2.a)))
+                out.ints[n] = RGBA(abs(c1.r - c2.r), abs(c1.g - c2.g), abs(c1.b - c2.b), abs(c1.a - c2.a)).value
 
                 //println("$dr, $dg, $db, $da : ${out.data[n]}")
             }
@@ -584,6 +583,46 @@ fun BmpSlice32.isFullyTransparent(): Boolean {
         for (n in 0 until width) if (data[index + n].a != 0) return false
     }
     return true
+}
+
+fun Bitmap32.posterize(nbits: Int = 4): Bitmap32 = this.clone().posterizeInplace(nbits)
+
+fun Bitmap32.posterizeInplace(nbits: Int = 4): Bitmap32 {
+    if (nbits == 0) return this
+
+    val add1 = 1 shl nbits
+    val lmask = ((1 shl nbits) - 1)
+    val hlmask = lmask / 2
+    val mask = 0xFF and lmask.inv()
+    val array = RgbaArray(this.ints)
+    val parray = RgbaPremultipliedArray(this.ints)
+    for (n in 0 until area) {
+        val rgba = if (premultiplied) parray[n].depremultiplied else array[n]
+        //val rgba = array[n]
+
+        val hR = rgba.r and mask
+        val hG = rgba.g and mask
+        val hB = rgba.b and mask
+        val hA = rgba.a and mask
+
+        val lR = rgba.r and lmask
+        val lG = rgba.g and lmask
+        val lB = rgba.b and lmask
+        val lA = rgba.a and lmask
+
+        val orgba = RGBA(
+            if (lR > hlmask) hR + add1 else hR,
+            if (lG > hlmask) hG + add1 else hG,
+            if (lB > hlmask) hB + add1 else hB,
+            if (lA > hlmask) hA + add1 else hA,
+        )
+        if (premultiplied) {
+            parray[n] = orgba.premultiplied
+        } else {
+            array[n] = orgba
+        }
+    }
+    return this
 }
 
 fun Bitmap32.expandBorder(area: IRectangleInt, border: Int) {

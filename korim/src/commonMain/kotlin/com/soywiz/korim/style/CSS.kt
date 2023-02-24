@@ -20,7 +20,7 @@ import com.soywiz.korio.lang.substr
 import com.soywiz.korio.util.StrReader
 import com.soywiz.korio.util.reader
 import com.soywiz.korma.geom.Angle
-import com.soywiz.korma.geom.Matrix
+import com.soywiz.korma.geom.MMatrix
 import com.soywiz.korma.geom.degrees
 import com.soywiz.korma.geom.radians
 import com.soywiz.korma.interpolation.Easing
@@ -160,7 +160,7 @@ class CSS(val allRules: List<IRuleSet>, unit: Unit = Unit) {
                     }
                     '/' -> {
                         // Comment
-                        if (ss.peek() == '*') {
+                        if (ss.peekChar() == '*') {
                             flush()
                             ss.skip()
                             ss.readUntil { ss.matchLit("*/") != null }
@@ -236,10 +236,10 @@ class CSS(val allRules: List<IRuleSet>, unit: Unit = Unit) {
             return args
         }
 
-        fun parseTransform(str: String): Matrix {
+        fun parseTransform(str: String): MMatrix {
             val tokens = tokenize(str).map { it.str.lowercase() }
             val tr = ListReader(tokens)
-            val out = Matrix()
+            val out = MMatrix()
             //println("Not implemented: parseTransform: $str: $tokens")
             while (tr.hasMore) {
                 val id = tr.read().lowercase()
@@ -429,13 +429,13 @@ class CSSReader(val tokens: ListReader<CSS.Companion.Token>) {
     this["animation"]?.let { CSS.parseAnimation(it.exprStr) }
 }
 
-fun CSS.InterpolationResult.getColor(key: String, default: RGBA = Colors.TRANSPARENT_BLACK): RGBA =
+fun CSS.InterpolationResult.getColor(key: String, default: RGBA = Colors.TRANSPARENT): RGBA =
     this.ratio.interpolate(k0[key]?.color ?: default, k1[key]?.color ?: default)
 fun CSS.InterpolationResult.getRatio(key: String, default: Double = 0.0): Double =
     this.ratio.interpolate(k0[key]?.ratio ?: default, k1[key]?.ratio ?: default)
-fun CSS.InterpolationResult.getMatrix(key: String, default: Matrix = Matrix()): Matrix =
+fun CSS.InterpolationResult.getMatrix(key: String, default: MMatrix = MMatrix()): MMatrix =
     this.ratio.interpolate(k0[key]?.matrix ?: default, k1[key]?.matrix ?: default)
-fun CSS.InterpolationResult.getTransform(key: String, default: Matrix.Transform = Matrix.Transform()): Matrix.Transform =
+fun CSS.InterpolationResult.getTransform(key: String, default: MMatrix.Transform = MMatrix.Transform()): MMatrix.Transform =
     this.ratio.interpolate(k0[key]?.transform ?: default, k1[key]?.transform ?: default)
 fun CSS.InterpolationResult.getEasing(key: String, default: Easing = Easing.LINEAR): Easing =
     k0[key]?.easing ?: default

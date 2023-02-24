@@ -1,13 +1,34 @@
 package com.soywiz.korma.geom.trapezoid
 
+import com.soywiz.korma.annotations.*
+import com.soywiz.korma.geom.*
+
+@KormaValueApi
 data class TriangleInt(
-    var x0: Int, var y0: Int,
-    var x1: Int, var y1: Int,
-    var x2: Int, var y2: Int,
-) {
+    val p0: PointInt,
+    val p1: PointInt,
+    val p2: PointInt,
+)
+
+@KormaMutableApi
+interface ITriangleInt {
+    val x0: Int
+    val y0: Int
+    val x1: Int
+    val y1: Int
+    val x2: Int
+    val y2: Int
+}
+
+@KormaMutableApi
+data class MTriangleInt(
+    override var x0: Int, override var y0: Int,
+    override var x1: Int, override var y1: Int,
+    override var x2: Int, override var y2: Int,
+) : ITriangleInt {
     constructor() : this(0, 0, 0, 0, 0, 0)
 
-    fun copyFrom(other: TriangleInt) {
+    fun copyFrom(other: MTriangleInt) {
         setTo(other.x0, other.y0, other.x1, other.y1, other.x2, other.y2)
     }
 
@@ -23,4 +44,6 @@ data class TriangleInt(
         this.x2 = x2
         this.y2 = y2
     }
+
+    override fun toString(): String = "TriangleInt(($x0, $y0), ($x1, $y1), ($x2, $y2))"
 }

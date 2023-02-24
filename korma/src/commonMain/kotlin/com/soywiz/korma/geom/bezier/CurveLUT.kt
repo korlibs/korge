@@ -23,14 +23,14 @@ data class CurveLUT(val curve: Curve, val points: PointArrayList, val ts: Double
         while (_estimatedLengths.size < size) {
             val pos = _estimatedLengths.size
             val prev = _estimatedLengths.last()
-            _estimatedLengths.add(prev + Point.distance(points.getX(pos - 1), points.getY(pos - 1), points.getX(pos), points.getY(pos)))
+            _estimatedLengths.add(prev + MPoint.distance(points.getX(pos - 1), points.getY(pos - 1), points.getX(pos), points.getY(pos)))
         }
         return _estimatedLengths
     }
     val estimatedLength: Double get() = estimatedLengths.last()
     val steps: Int get() = points.size - 1
     val size: Int get() = points.size
-    val temp = Point()
+    val temp = MPoint()
 
     fun clear() {
         points.clear()
@@ -51,7 +51,7 @@ data class CurveLUT(val curve: Curve, val points: PointArrayList, val ts: Double
         var mdistSq: Double = Double.POSITIVE_INFINITY
         var mpos: Int = 0
         for (n in 0 until size) {
-            val d = Point.distanceSquared(this.points.getX(n), this.points.getY(n), point.x, point.y)
+            val d = MPoint.distanceSquared(this.points.getX(n), this.points.getY(n), point.x, point.y)
             if (d < mdistSq) {
                 mdistSq = d
                 mpos = n
@@ -60,7 +60,7 @@ data class CurveLUT(val curve: Curve, val points: PointArrayList, val ts: Double
         return ClosestResult(mdistSq = mdistSq, mpos = mpos)
     }
 
-    data class Estimation(var point: Point = Point(), var ratio: Double = 0.0, var length: Double = 0.0) {
+    data class Estimation(var point: MPoint = MPoint(), var ratio: Double = 0.0, var length: Double = 0.0) {
         fun roundDecimalDigits(places: Int): Estimation = Estimation(point.copy().setToRoundDecimalPlaces(places), ratio.roundDecimalPlaces(places), length.roundDecimalPlaces(places))
         override fun toString(): String = "Estimation(point=${point.niceStr}, ratio=${ratio.niceStr}, length=${length.niceStr})"
     }

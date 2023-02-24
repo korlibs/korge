@@ -52,13 +52,13 @@ class RenderContext constructor(
     DeviceDimensionsProvider by deviceDimensionsProvider,
     Closeable
 {
-    val projectionMatrixTransform = Matrix()
-    val projectionMatrixTransformInv = Matrix()
-    private val projMat: Matrix3D = Matrix3D()
+    val projectionMatrixTransform = MMatrix()
+    val projectionMatrixTransformInv = MMatrix()
+    private val projMat: MMatrix3D = MMatrix3D()
     @KorgeInternal
-    val viewMat: Matrix3D = Matrix3D()
+    val viewMat: MMatrix3D = MMatrix3D()
     @KorgeInternal
-    val viewMat2D: Matrix = Matrix()
+    val viewMat2D: MMatrix = MMatrix()
 
     @KorgeInternal
     val uniforms: AGUniformValues by lazy {
@@ -68,7 +68,7 @@ class RenderContext constructor(
         }
     }
 
-    inline fun <T> setTemporalProjectionMatrixTransform(m: Matrix, block: () -> T): T =
+    inline fun <T> setTemporalProjectionMatrixTransform(m: MMatrix, block: () -> T): T =
         this.projectionMatrixTransform.keepMatrix {
             flush()
             this.projectionMatrixTransform.copyFrom(m)
@@ -81,8 +81,8 @@ class RenderContext constructor(
 
     var flipRenderTexture = true
     //var flipRenderTexture = false
-    private val tempRect = Rectangle()
-    private val tempMat3d = Matrix3D()
+    private val tempRect = MRectangle()
+    private val tempMat3d = MMatrix3D()
 
     val tempTexturePool: Pool<AGTexture> = Pool { AGTexture() }
 
@@ -101,7 +101,7 @@ class RenderContext constructor(
     /**
      * Executes [callback] while setting temporarily the view matrix to [matrix]
      */
-    inline fun setViewMatrixTemp(matrix: Matrix, crossinline callback: () -> Unit) {
+    inline fun setViewMatrixTemp(matrix: MMatrix, crossinline callback: () -> Unit) {
         matrix3DPool.alloc { temp ->
             matrixPool.alloc { temp2d ->
                 flush()
@@ -224,18 +224,18 @@ class RenderContext constructor(
     @OptIn(KorgeInternal::class)
     inline fun useCtx2d(block: (RenderContext2D) -> Unit) { useBatcher(batch) { block(ctx2d) } }
 
-    /** Pool of [Matrix] objects that could be used temporarily by renders */
-    val matrixPool = Pool(reset = { it.identity() }, preallocate = 8) { Matrix() }
-    /** Pool of [Matrix3D] objects that could be used temporarily by renders */
-    val matrix3DPool = Pool(reset = { it.identity() }, preallocate = 8) { Matrix3D() }
-    /** Pool of [Point] objects that could be used temporarily by renders */
-    val pointPool = Pool(reset = { it.setTo(0, 0) }, preallocate = 8) { Point() }
-    /** Pool of [Rectangle] objects that could be used temporarily by renders */
-    val rectPool = Pool(reset = { it.setTo(0, 0, 0, 0) }, preallocate = 8) { Rectangle() }
+    /** Pool of [MMatrix] objects that could be used temporarily by renders */
+    val matrixPool = Pool(reset = { it.identity() }, preallocate = 8) { MMatrix() }
+    /** Pool of [MMatrix3D] objects that could be used temporarily by renders */
+    val matrix3DPool = Pool(reset = { it.identity() }, preallocate = 8) { MMatrix3D() }
+    /** Pool of [MPoint] objects that could be used temporarily by renders */
+    val pointPool = Pool(reset = { it.setTo(0, 0) }, preallocate = 8) { MPoint() }
+    /** Pool of [MRectangle] objects that could be used temporarily by renders */
+    val rectPool = Pool(reset = { it.setTo(0, 0, 0, 0) }, preallocate = 8) { MRectangle() }
 
-    val tempMargin: MutableMarginInt = MutableMarginInt()
+    val tempMargin: MMarginInt = MMarginInt()
 
-    val identityMatrix = Matrix()
+    val identityMatrix = MMatrix()
 
     /**
      * Allows to toggle whether stencil-based masks are enabled or not.
@@ -271,7 +271,7 @@ class RenderContext constructor(
     val mainFrameBuffer: AGFrameBuffer get() = ag.mainFrameBuffer
 
     fun clear(
-        color: RGBA = Colors.TRANSPARENT_BLACK,
+        color: RGBA = Colors.TRANSPARENT,
         depth: Float = 1f,
         stencil: Int = 0,
         clearColor: Boolean = true,
@@ -279,7 +279,17 @@ class RenderContext constructor(
         clearStencil: Boolean = true,
         scissor: AGScissor = AGScissor.NIL,
     ) {
-        ag.clear(currentFrameBuffer.base, currentFrameBuffer.info, color, depth, stencil, clearColor, clearDepth, clearStencil, scissor)
+        ag.clear(
+            currentFrameBuffer.base,
+            currentFrameBuffer.info,
+            color,
+            depth,
+            stencil,
+            clearColor,
+            clearDepth,
+            clearStencil,
+            scissor
+        )
     }
 
     inline fun renderToFrameBuffer(
@@ -290,7 +300,7 @@ class RenderContext constructor(
         setFrameBufferTemporally(frameBuffer) {
             useBatcher { batch ->
                 batch.scissor(AGScissor(0, 0, frameBuffer.width, frameBuffer.height)) {
-                    if (clear) clear(Colors.TRANSPARENT_BLACK)
+                    if (clear) clear(Colors.TRANSPARENT)
                     render(frameBuffer)
                 }
             }
@@ -384,7 +394,6 @@ class RenderContext constructor(
     val frameBufferStack = FastArrayList<AGFrameBuffer>()
 
     inline fun doRender(block: () -> Unit) {
-        ag.beforeDoRender()
         ag.startFrame()
         try {
             //mainRenderBuffer.init()
@@ -450,7 +459,7 @@ class RenderContext constructor(
         flush()
         tempAllocateFrameBuffer(width, height, hasDepth, hasStencil, msamples) { rb ->
             setFrameBufferTemporally(rb) {
-                clear(Colors.TRANSPARENT_BLACK) // transparent
+                clear(Colors.TRANSPARENT) // transparent
                 render(rb)
             }
             use(rb.tex, rb.width, rb.height)
@@ -473,13 +482,25 @@ class RenderContext constructor(
     inline fun renderToBitmap(
         bmp: Bitmap32,
         hasDepth: Boolean = false, hasStencil: Boolean = false, msamples: Int = 1,
+        useTexture: Boolean = true,
         callback: () -> Unit
     ): Bitmap32 {
-        renderToTextureInternal(bmp.width, bmp.height, render = {
-            callback()
-            //println("renderToBitmap.readColor: $currentRenderBuffer")
-            ag.readColor(currentFrameBuffer, bmp)
-        }, hasDepth = hasDepth, hasStencil = hasStencil, msamples = msamples, use = { _, _, _ -> })
+        if (useTexture) {
+            renderToTextureInternal(bmp.width, bmp.height, render = {
+                callback()
+                //println("renderToBitmap.readColor: $currentRenderBuffer")
+                ag.readColor(currentFrameBuffer, bmp)
+            }, hasDepth = hasDepth, hasStencil = hasStencil, msamples = msamples, use = { _, _, _ -> })
+        } else {
+            setFrameBufferTemporally(mainFrameBuffer) {
+                updateStandardUniforms()
+                clear(Colors.TRANSPARENT) // transparent
+                flush()
+                callback()
+                flush()
+                ag.readColor(mainFrameBuffer, bmp)
+            }
+        }
         return bmp
     }
 

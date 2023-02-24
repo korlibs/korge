@@ -1,5 +1,6 @@
 package com.soywiz.korgw.platform
 
+import com.soywiz.kmem.*
 import com.soywiz.korag.*
 import com.soywiz.korgw.*
 import com.soywiz.korgw.osx.*
@@ -7,7 +8,6 @@ import com.soywiz.korgw.win32.Win32OpenglContext
 import com.soywiz.korgw.x11.X
 import com.soywiz.korgw.x11.X11OpenglContext
 import com.soywiz.korio.lang.*
-import com.soywiz.korio.util.OS
 import com.soywiz.korma.geom.*
 import com.sun.jna.Native
 import com.sun.jna.platform.unix.X11
@@ -18,8 +18,8 @@ interface BaseOpenglContext : Disposable {
     val isCore: Boolean get() = false
     val scaleFactor: Double get() = 1.0
     data class ContextInfo(
-        val scissors: RectangleInt? = null,
-        val viewport: RectangleInt? = null
+        val scissors: MRectangleInt? = null,
+        val viewport: MRectangleInt? = null
     ) {
         companion object {
             val DEFAULT = ContextInfo()
@@ -74,7 +74,7 @@ object DummyOpenglContext : BaseOpenglContext {
 
 fun glContextFromComponent(c: Component, gwconfig: GameWindowConfig): BaseOpenglContext {
     return when {
-        OS.isMac -> {
+        Platform.isMac -> {
             try {
                 MacAWTOpenglContext(gwconfig = gwconfig, c)
             } catch (e: Throwable) {
@@ -83,7 +83,7 @@ fun glContextFromComponent(c: Component, gwconfig: GameWindowConfig): BaseOpengl
                 DummyOpenglContext
             }
         }
-        OS.isWindows -> Win32OpenglContext(c, gwconfig, doubleBuffered = true).init()
+        Platform.isWindows -> Win32OpenglContext(c, gwconfig, doubleBuffered = true).init()
         else -> {
             try {
                 val display = X.XOpenDisplay(null)

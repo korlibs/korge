@@ -1,9 +1,7 @@
 package samples.asteroids
 
 import com.soywiz.kds.Extra
-import com.soywiz.korim.bitmap.Bitmap32
-import com.soywiz.korim.bitmap.NativeImage
-import com.soywiz.korim.bitmap.context2d
+import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.Colors
 import com.soywiz.korma.geom.vector.LineCap
 import com.soywiz.korma.geom.vector.lineToV
@@ -39,7 +37,7 @@ class Assets(val shipSize: Int = 24) {
 		}
 	}
 
-    val asteroidBitmap = Bitmap32(asteroidSize, asteroidSize).context2d { // Let's use software vector rendering here for testing purposes
+    val asteroidBitmap = Bitmap32Context2d(asteroidSize, asteroidSize) { // Let's use software vector rendering here for testing purposes
 		lineWidth = 0.05
 		lineCap = LineCap.ROUND
 		stroke(Colors.WHITE) {

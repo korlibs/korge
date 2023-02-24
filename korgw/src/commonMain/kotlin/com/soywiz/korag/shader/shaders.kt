@@ -307,24 +307,25 @@ object Output : Varying("out", VarType.Float4) {
 }
 
 data class ProgramConfig(
-    val externalTextureSampler: Boolean = false
+    val dummy: Boolean = false,
+    //val externalTextureSampler: Boolean = false
 ) {
     companion object {
         val DEFAULT = ProgramConfig()
-        val EXTERNAL_TEXTURE_SAMPLER = ProgramConfig(externalTextureSampler = true)
+        //val EXTERNAL_TEXTURE_SAMPLER = ProgramConfig(externalTextureSampler = true)
     }
 }
 
 inline fun Shader.appending(block: Program.Builder.() -> Unit): FragmentShader {
     // @TODO: Raw shaders don't support appending
     if (this.isRaw) return this
-    val pair = Program.Builder(this.type).WITH(this).also(block)._buildFuncs()
+    val pair = ProgramBuilderDefault().WITH(this).also(block)._buildFuncs()
     return Shader(this.type, pair.first, pair.second)
 }
 
-inline fun Program.replacingVertex(extraName: String, block: Program.Builder.() -> Unit): Program =
+inline fun Program.replacingVertex(extraName: String, block: ProgramBuilderDefault.() -> Unit): Program =
     this.copy(vertex = VertexShader(block), name = "$name-$extraName")
-inline fun Program.replacingFragment(extraName: String, block: Program.Builder.() -> Unit): Program =
+inline fun Program.replacingFragment(extraName: String, block: ProgramBuilderDefault.() -> Unit): Program =
     this.copy(fragment = FragmentShader(block), name = "$name-$extraName")
 
 inline fun Program.appendingVertex(extraName: String, block: Program.Builder.() -> Unit): Program =
@@ -616,10 +617,6 @@ data class Program(val vertex: VertexShader, val fragment: FragmentShader, val n
         internal val outputStms: ArrayList<Stm> = arrayListOf<Stm>()
 
         constructor(parent: Builder) : this(parent.context)
-
-        // Drop ShaderType since it is not used
-        @Deprecated("")
-        constructor(type: ShaderType) : this()
 
         //fun createChildBuilder(): Builder = Builder(type)
         fun createChildBuilder(): Builder = Builder(this)
@@ -1027,14 +1024,14 @@ fun VertexShader(stm: Program.Stm, glsl: String) = VertexShader(mapOf(NAME_GLSL 
 @Deprecated("Use FragmentShaderRawGlSl instead")
 fun FragmentShader(stm: Program.Stm, glsl: String) = FragmentShader(mapOf(NAME_GLSL to glsl), stm)
 
-inline fun VertexShader(callback: Program.Builder.() -> Unit): VertexShader {
-	val builder = Program.Builder(ShaderType.VERTEX)
+inline fun VertexShader(callback: ProgramBuilderDefault.() -> Unit): VertexShader {
+	val builder = ProgramBuilderDefault()
 	builder.callback()
 	return VertexShader(builder._buildFuncs())
 }
 
-inline fun FragmentShader(callback: Program.Builder.() -> Unit): FragmentShader {
-	val builder = Program.Builder(ShaderType.FRAGMENT)
+inline fun FragmentShader(callback: ProgramBuilderDefault.() -> Unit): FragmentShader {
+	val builder = ProgramBuilderDefault()
 	builder.callback()
 	return FragmentShader(builder._buildFuncs())
 }

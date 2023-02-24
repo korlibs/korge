@@ -27,10 +27,11 @@ include(":korim")
 include(":korau")
 include(":korgw")
 include(":korge")
+include(":ktruth")
 include(":korge-gradle-plugin")
 include(":korge-reload-agent")
 include(":korge-sandbox")
 
-if (!inCI) {
-    // include(":korge-benchmarks")
+if (!inCI || System.getenv("ENABLE_BENCHMARKS") == "true") {
+    include(":korge-benchmarks")
 }

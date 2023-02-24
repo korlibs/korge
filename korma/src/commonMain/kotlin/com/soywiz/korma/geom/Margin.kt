@@ -1,41 +1,62 @@
 package com.soywiz.korma.geom
 
 import com.soywiz.kds.*
+import com.soywiz.korma.annotations.*
 
-interface Margin {
+// @TODO: value class
+@KormaValueApi
+data class Margin(
+    val top: Double,
+    val right: Double,
+    val bottom: Double,
+    val left: Double,
+)
+
+// @TODO: value class
+@KormaValueApi
+data class MarginInt(
+    val top: Int,
+    val right: Int,
+    val bottom: Int,
+    val left: Int,
+)
+
+@KormaMutableApi
+interface IMargin {
     val top: Double
     val right: Double
     val bottom: Double
     val left: Double
+
+    val isNotZero: Boolean get() = top != 0.0 || left != 0.0 || right != 0.0 || bottom != 0.0
+    val leftPlusRight: Double get() = left + right
+    val topPlusBottom: Double get() = top + bottom
+    val horizontal: Double get() = (left + right) / 2
+    val vertical: Double get() = (top + bottom) / 2
 
     fun duplicate(
         top: Double = this.top,
         right: Double = this.right,
         bottom: Double = this.bottom,
         left: Double = this.left,
-    ): Margin = MutableMargin(top, right, bottom, left)
+    ): IMargin = MMargin(top, right, bottom, left)
 
     companion object {
-        val EMPTY: Margin = MutableMargin()
+        val EMPTY: IMargin = MMargin()
 
-        operator fun invoke(top: Double, right: Double, bottom: Double, left: Double): Margin = MutableMargin(top, right, bottom, left)
-        operator fun invoke(vertical: Double, horizontal: Double): Margin = MutableMargin(vertical, horizontal)
-        operator fun invoke(margin: Double): Margin = MutableMargin(margin)
+        operator fun invoke(top: Double, right: Double, bottom: Double, left: Double): IMargin = MMargin(top, right, bottom, left)
+        operator fun invoke(vertical: Double, horizontal: Double): IMargin = MMargin(vertical, horizontal)
+        operator fun invoke(margin: Double): IMargin = MMargin(margin)
     }
 }
 
-val Margin.leftPlusRight: Double get() = left + right
-val Margin.topPlusBottom: Double get() = top + bottom
-
-val Margin.horizontal: Double get() = (left + right) / 2
-val Margin.vertical: Double get() = (top + bottom) / 2
-
-data class MutableMargin(
+@KormaMutableApi
+data class MMargin(
     override var top: Double = 0.0,
     override var right: Double = 0.0,
     override var bottom: Double = 0.0,
     override var left: Double = 0.0
-) : Margin {
+) : IMargin {
     constructor(vertical: Double, horizontal: Double) : this(vertical, horizontal, vertical, horizontal)
     constructor(margin: Double) : this(margin, margin, margin, margin)
 
@@ -47,43 +68,41 @@ data class MutableMargin(
         this.left = left
         this.bottom = bottom
     }
-    fun copyFrom(other: Margin) {
+    fun copyFrom(other: IMargin) {
         setTo(other.top, other.right, other.bottom, other.left)
     }
 }
 
-typealias IMarginInt = MarginInt
-
-interface MarginInt {
+@KormaMutableApi
+interface IMarginInt {
     val top: Int
     val right: Int
     val bottom: Int
     val left: Int
 
+    val isNotZero: Boolean get() = top != 0 || left != 0 || right != 0 || bottom != 0
+    val leftPlusRight: Int get() = left + right
+    val topPlusBottom: Int get() = top + bottom
+    val horizontal: Int get() = (left + right) / 2
+    val vertical: Int get() = (top + bottom) / 2
+
     companion object {
-        val ZERO: IMarginInt = MarginInt(0)
-        operator fun invoke(top: Int, right: Int, bottom: Int, left: Int): MarginInt = MutableMarginInt(top, right, bottom, left)
-        operator fun invoke(vertical: Int, horizontal: Int): MarginInt = MutableMarginInt(vertical, horizontal)
-        operator fun invoke(margin: Int): MarginInt = MutableMarginInt(margin)
+        val ZERO: IMarginInt = IMarginInt(0)
+        operator fun invoke(top: Int, right: Int, bottom: Int, left: Int): IMarginInt = MMarginInt(top, right, bottom, left)
+        operator fun invoke(vertical: Int, horizontal: Int): IMarginInt = MMarginInt(vertical, horizontal)
+        operator fun invoke(margin: Int): IMarginInt = MMarginInt(margin)
     }
 }
 
-val IMarginInt.isNotZero: Boolean get() = top != 0 || left != 0 || right != 0 || bottom != 0
-
-val MarginInt.leftPlusRight: Int get() = left + right
-val MarginInt.topPlusBottom: Int get() = top + bottom
-
-val MarginInt.horizontal: Int get() = (left + right) / 2
-val MarginInt.vertical: Int get() = (top + bottom) / 2
-
-data class MutableMarginInt(
+@KormaMutableApi
+data class MMarginInt(
     override var top: Int = 0,
     override var right: Int = 0,
     override var bottom: Int = 0,
     override var left: Int = 0
-) : MarginInt {
+) : IMarginInt {
     companion object {
-        val POOL: ConcurrentPool<MutableMarginInt> = ConcurrentPool<MutableMarginInt>({ it.setTo(0) }) { MutableMarginInt() }
+        val POOL: ConcurrentPool<MMarginInt> = ConcurrentPool<MMarginInt>({ it.setTo(0) }) { MMarginInt() }
     }
 
     constructor(vertical: Int, horizontal: Int) : this(vertical, horizontal, vertical, horizontal)
@@ -97,7 +116,7 @@ data class MutableMarginInt(
         this.left = left
         this.bottom = bottom
     }
-    fun copyFrom(other: MarginInt) {
+    fun copyFrom(other: IMarginInt) {
         setTo(other.top, other.right, other.bottom, other.left)
     }
 }

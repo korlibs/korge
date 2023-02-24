@@ -4,6 +4,7 @@ import com.soywiz.kds.DoubleArrayList
 import com.soywiz.kds.mapInt
 import com.soywiz.kds.reverse
 import com.soywiz.kds.toIntMap
+import com.soywiz.klogger.*
 import com.soywiz.kmem.toInt
 import com.soywiz.korio.lang.assert
 import com.soywiz.korio.lang.reserved
@@ -34,6 +35,8 @@ import kotlin.random.Random
  * - https://github.com/opentypejs/opentype.js
  */
 object TtfCIDFont {
+    val logger = Logger("TtfCIDFont")
+
     /**
      * https://partners.adobe.com/public/developer/en/font/5176.CFF.pdf
      *
@@ -166,7 +169,7 @@ object TtfCIDFont {
 
             if (versionMajor > 1) error("Only supported CFF version 1")
 
-            println("CFF.versionMajor/Minor: $versionMajor.$versionMinor : headerSize=$headerSize, offsetSize=$offsetSize")
+            logger.debug { "CFF.versionMajor/Minor: $versionMajor.$versionMinor : headerSize=$headerSize, offsetSize=$offsetSize" }
         }
 
         fun FastByteArrayInputStream.readOffSize(): Int = readU8()

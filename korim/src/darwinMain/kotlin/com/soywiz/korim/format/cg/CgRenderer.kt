@@ -5,10 +5,8 @@ package com.soywiz.korim.format.cg
 import com.soywiz.kmem.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
-import com.soywiz.korim.font.*
 import com.soywiz.korim.vector.*
 import com.soywiz.korim.format.*
-import com.soywiz.korim.internal.*
 import com.soywiz.korim.paint.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
@@ -124,16 +122,22 @@ internal inline fun <T> cgKeepState(ctx: CGContextRef?, callback: () -> T): T {
     }
 }
 
+@OptIn(UnsafeNumber::class)
 class CoreGraphicsRenderer(val bmp: Bitmap32, val antialiasing: Boolean) : com.soywiz.korim.vector.renderer.BufferedRenderer() {
     override val width: Int get() = bmp.width
     override val height: Int get() = bmp.height
 
-    fun Matrix.toCGAffineTransform() = CGAffineTransformMake(a.cg, b.cg, c.cg, d.cg, tx.cg, ty.cg)
+    override fun Paint.isPaintSupported(): Boolean = when {
+        this is GradientPaint && this.isSweep -> false
+        else -> true
+    }
+
+    fun MMatrix.toCGAffineTransform() = CGAffineTransformMake(a.cg, b.cg, c.cg, d.cg, tx.cg, ty.cg)
 
     private fun cgDrawBitmap(bmp: Bitmap32, ctx: CGContextRef?, colorSpace: CPointer<CGColorSpace>?, tiled: Boolean = false) {
         val image = transferBitmap32ToCGImage(bmp, colorSpace)
         try {
-            val rect = CGRectMake(0.cg, 0.cg, bmp.width.cg, bmp.height.cg)
+            val rect = CGRectMakeExt(0, 0, bmp.width, bmp.height)
 
             if (tiled) {
                 CGContextDrawTiledImage(ctx, rect, image)
@@ -281,6 +285,12 @@ class CoreGraphicsRenderer(val bmp: Bitmap32, val antialiasing: Boolean) : com.s
 
                                                         GradientKind.RADIAL -> {
                                                             CGContextDrawRadialGradient(ctx, gradient, start, style.r0.cg, end, style.r1.cg, options)
+                                                        }
+
+                                                        GradientKind.SWEEP -> {
+                                                            // @TODO: Fix me! Can we implement it by creating a bitmap with the size of the vector path?
+                                                            // https://stackoverflow.com/questions/40188058/how-to-draw-a-circle-path-with-color-gradient-stroke
+                                                            CGContextDrawLinearGradient(ctx, gradient, start, end, options)
                                                         }
 
                                                         else -> Unit

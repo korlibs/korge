@@ -6,13 +6,13 @@ import com.soywiz.korge.view.View
 import com.soywiz.korge.view.Views
 import com.soywiz.korge.view.position
 import com.soywiz.korma.geom.Anchor
-import com.soywiz.korma.geom.Point
+import com.soywiz.korma.geom.MPoint
 import com.soywiz.korma.geom.ScaleMode
-import com.soywiz.korma.geom.Size
+import com.soywiz.korma.geom.MSize
 import com.soywiz.korma.interpolation.interpolate
 
-fun <T : View> T.dockedTo(anchor: Anchor, scaleMode: ScaleMode = ScaleMode.NO_SCALE, offset: Point = Point(), hook: (View) -> Unit = {}): T {
-    DockingComponent(this, anchor, scaleMode, Point().copyFrom(offset), hook).attach()
+fun <T : View> T.dockedTo(anchor: Anchor, scaleMode: ScaleMode = ScaleMode.NO_SCALE, offset: MPoint = MPoint(), hook: (View) -> Unit = {}): T {
+    DockingComponent(this, anchor, scaleMode, MPoint().copyFrom(offset), hook).attach()
     return this
 }
 
@@ -20,13 +20,13 @@ class DockingComponent(
     override val view: View,
     var anchor: Anchor,
     var scaleMode: ScaleMode = ScaleMode.NO_SCALE,
-    val offset: Point = Point(),
+    val offset: MPoint = MPoint(),
     val hook: (View) -> Unit
 ) :
     ResizeComponent {
-    val initialViewSize = Size(view.width, view.height)
-    private val actualVirtualSize = Size(0, 0)
-    private val targetSize = Size(0, 0)
+    val initialViewSize = MSize(view.width, view.height)
+    private val actualVirtualSize = MSize(0, 0)
+    private val targetSize = MSize(0, 0)
 
     init {
         view.deferWithViews { views ->

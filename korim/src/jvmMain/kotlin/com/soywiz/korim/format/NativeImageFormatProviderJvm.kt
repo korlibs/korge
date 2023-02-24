@@ -14,7 +14,7 @@ actual val nativeImageFormatProvider: NativeImageFormatProvider = AwtNativeImage
 object AwtNativeImageFormatProvider : NativeImageFormatProvider() {
 	init {
 		// Try to detect junit and run then in headless mode
-		if (Thread.currentThread().stackTrace.contentDeepToString().contains("org.junit")) {
+		if (Thread.currentThread().stackTrace.contentDeepToString().contains("org.junit") && System.getenv("HEADLESS_TESTS") == "true") {
 			System.setProperty("java.awt.headless", "true")
 		}
 	}
@@ -23,10 +23,16 @@ object AwtNativeImageFormatProvider : NativeImageFormatProvider() {
         return AwtNativeImage(awtReadImageInWorker(data, props)).result(props)
     }
 
-    override suspend fun decodeInternal(vfs: Vfs, path: String, props: ImageDecodingProps): NativeImageResult = when (vfs) {
-        is LocalVfs -> AwtNativeImage(awtReadImageInWorker(File(path), props))
-        else -> AwtNativeImage(awtReadImageInWorker(vfs[path].readAll(), props))
-    }.result(props)
+    override suspend fun decodeInternal(vfs: Vfs, path: String, props: ImageDecodingProps): NativeImageResult {
+        return when (vfs) {
+            is LocalVfs -> AwtNativeImage(awtReadImageInWorker(File(path), props))
+            else -> {
+                val bytes = vfs[path].readAll()
+                val bufferedImage = awtReadImageInWorker(bytes, props)
+                AwtNativeImage(bufferedImage)
+            }
+        }.result(props)
+    }
 
     override suspend fun encodeSuspend(image: ImageDataContainer, props: ImageEncodingProps): ByteArray {
         val imageWriter = getImageWritersByMIMEType(props.mimeType).next()

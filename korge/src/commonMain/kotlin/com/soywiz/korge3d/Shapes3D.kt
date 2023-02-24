@@ -1,9 +1,8 @@
 package com.soywiz.korge3d
 
 import com.soywiz.korge3d.internal.vector3DTemps
-import com.soywiz.korma.geom.Matrix3D
-import com.soywiz.korma.geom.Vector3D
-import com.soywiz.korma.geom.scale
+import com.soywiz.korma.geom.MMatrix3D
+import com.soywiz.korma.geom.MVector4
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
@@ -26,7 +25,7 @@ class Shape3D(
     var height: Double = initHeight
     var depth: Double = initDepth
 
-    override fun prepareExtraModelMatrix(mat: Matrix3D) {
+    override fun prepareExtraModelMatrix(mat: MMatrix3D) {
         mat.identity().scale(width, height, depth)
     }
 
@@ -67,39 +66,39 @@ fun <T : BaseViewWithMesh3D> T.material(material: Material3D?): T {
 
 @Korge3DExperimental
 class Cube3D(var width: Double, var height: Double, var depth: Double) : BaseViewWithMesh3D(mesh) {
-    override fun prepareExtraModelMatrix(mat: Matrix3D) {
+    override fun prepareExtraModelMatrix(mat: MMatrix3D) {
         mat.identity().scale(width, height, depth)
     }
 
     companion object {
         val mesh = MeshBuilder3D {
             vector3DTemps {
-                fun face(pos: Vector3D) {
+                fun face(pos: MVector4) {
                     val dims = (0 until 3).filter { pos[it] == 0f }
-                    val normal = Vector3D().setToFunc { if (pos[it] != 0f) 1f else 0f }
-                    val dirs = Array(2) { dim -> Vector3D().setToFunc { if (it == dims[dim]) .5f else 0f } }
+                    val normal = MVector4().setToFunc { if (pos[it] != 0f) 1f else 0f }
+                    val dirs = Array(2) { dim -> MVector4().setToFunc { if (it == dims[dim]) .5f else 0f } }
                     val dx = dirs[0]
                     val dy = dirs[1]
 
-                    val i0 = addVertex(pos - dx - dy, normal, Vector3D(0f, 0f, 0f))
-                    val i1 = addVertex(pos + dx - dy, normal, Vector3D(1f, 0f, 0f))
-                    val i2 = addVertex(pos - dx + dy, normal, Vector3D(0f, 1f, 0f))
+                    val i0 = addVertex(pos - dx - dy, normal, MVector4(0f, 0f, 0f))
+                    val i1 = addVertex(pos + dx - dy, normal, MVector4(1f, 0f, 0f))
+                    val i2 = addVertex(pos - dx + dy, normal, MVector4(0f, 1f, 0f))
 
-                    val i3 = addVertex(pos - dx + dy, normal, Vector3D(0f, 1f, 0f))
-                    val i4 = addVertex(pos + dx - dy, normal, Vector3D(1f, 0f, 0f))
-                    val i5 = addVertex(pos + dx + dy, normal, Vector3D(1f, 1f, 0f))
+                    val i3 = addVertex(pos - dx + dy, normal, MVector4(0f, 1f, 0f))
+                    val i4 = addVertex(pos + dx - dy, normal, MVector4(1f, 0f, 0f))
+                    val i5 = addVertex(pos + dx + dy, normal, MVector4(1f, 1f, 0f))
 
                     addIndices(i0, i1, i2, i3, i4, i5)
                 }
 
-                face(Vector3D(0f, +.5f, 0f))
-                face(Vector3D(0f, -.5f, 0f))
+                face(MVector4(0f, +.5f, 0f))
+                face(MVector4(0f, -.5f, 0f))
 
-                face(Vector3D(+.5f, 0f, 0f))
-                face(Vector3D(-.5f, 0f, 0f))
+                face(MVector4(+.5f, 0f, 0f))
+                face(MVector4(-.5f, 0f, 0f))
 
-                face(Vector3D(0f, 0f, +.5f))
-                face(Vector3D(0f, 0f, -.5f))
+                face(MVector4(0f, 0f, +.5f))
+                face(MVector4(0f, 0f, -.5f))
             }
         }
     }
@@ -119,7 +118,7 @@ inline fun Container3D.sphere(
 
 @Korge3DExperimental
 class Sphere3D(var radius: Double) : BaseViewWithMesh3D(mesh) {
-    override fun prepareExtraModelMatrix(mat: Matrix3D) {
+    override fun prepareExtraModelMatrix(mat: MMatrix3D) {
         mat.identity().scale(radius, radius, radius)
     }
 
@@ -130,8 +129,8 @@ class Sphere3D(var radius: Double) : BaseViewWithMesh3D(mesh) {
             val N = 16
             val M = 16
 
-            val p = Vector3D()
-            val nv = Vector3D()
+            val p = MVector4()
+            val nv = MVector4()
 
             for (m in 0..M) {
                 for (n in 0..N) {
@@ -141,7 +140,7 @@ class Sphere3D(var radius: Double) : BaseViewWithMesh3D(mesh) {
 
                     nv.copyFrom(p)
                     nv.normalize()
-                    addVertex(p, nv, Vector3D(0f, 0f, 0f))
+                    addVertex(p, nv, MVector4(0f, 0f, 0f))
                 }
             }
 

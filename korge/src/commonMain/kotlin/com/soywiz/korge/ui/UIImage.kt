@@ -23,20 +23,40 @@ class UIImage(
     scaleMode: ScaleMode = ScaleMode.NO_SCALE,
     contentAnchor: Anchor = Anchor.TOP_LEFT,
 ) : UIView(width, height) {
-    private val cachedGlobalMatrix = Matrix()
+    private val cachedGlobalMatrix = MMatrix()
     private var validCoords: Boolean = false
 
     @ViewProperty
-    var bgcolor: RGBA = Colors.TRANSPARENT_BLACK
+    var bgcolor: RGBA = Colors.TRANSPARENT
+
     @ViewProperty
     var smoothing: Boolean = true
+
     @ViewProperty
-    var bitmap: BmpSlice = bitmap ; set(value) { if (field !== value) { field = value; validCoords = false } }
+    var bitmap: BmpSlice = bitmap
+        set(value) {
+            if (field !== value) {
+                field = value; validCoords = false
+            }
+        }
+
     @ViewProperty
     @ViewPropertyProvider(ScaleMode.Provider::class)
-    var scaleMode: ScaleMode = scaleMode ; set(value) { if (field !== value) { field = value; validCoords = false } }
+    var scaleMode: ScaleMode = scaleMode
+        set(value) {
+            if (field !== value) {
+                field = value; validCoords = false
+            }
+        }
+
     @ViewProperty
-    var contentAnchor: Anchor = contentAnchor ; set(value) { if (field !== value) { field = value; validCoords = false } }
+    var contentAnchor: Anchor = contentAnchor
+        set(value) {
+            if (field !== value) {
+                field = value; validCoords = false
+            }
+        }
+
     override fun onSizeChanged() {
         validCoords = false
     }
@@ -49,8 +69,8 @@ class UIImage(
             cachedGlobalMatrix.copyFrom(globalMatrix)
 
             // @TODO: Can we generalize this to be placed in KorMA?
-            val bitmapSize = RectangleInt(bitmap.bounds).size.size
-            val finalRect = bitmapSize.applyScaleMode(Rectangle(0.0, 0.0, width, height), scaleMode, contentAnchor)
+            val bitmapSize = MRectangleInt(bitmap.bounds).size.size
+            val finalRect = bitmapSize.applyScaleMode(MRectangle(0.0, 0.0, width, height), scaleMode, contentAnchor)
 
             val realL = finalRect.left.clamp(0.0, width)
             val realT = finalRect.top.clamp(0.0, height)
@@ -66,18 +86,38 @@ class UIImage(
 
             vertices.quad(
                 0,
-                realL.toFloat(), realT.toFloat(), (realR - realL).toFloat(), (realB - realT).toFloat(),
+                realL.toFloat(),
+                realT.toFloat(),
+                (realR - realL).toFloat(),
+                (realB - realT).toFloat(),
                 globalMatrix,
-                ratioL.convertRange(0f, 1f, bitmap.tlX, bitmap.trX), ratioT.convertRange(0f, 1f, bitmap.tlY, bitmap.blY),
-                ratioR.convertRange(0f, 1f, bitmap.tlX, bitmap.trX), ratioT.convertRange(0f, 1f, bitmap.trY, bitmap.brY),
-                ratioL.convertRange(0f, 1f, bitmap.blX, bitmap.brX), ratioB.convertRange(0f, 1f, bitmap.tlY, bitmap.blY),
-                ratioR.convertRange(0f, 1f, bitmap.blX, bitmap.brX), ratioB.convertRange(0f, 1f, bitmap.trY, bitmap.brY),
-                renderColorMul, renderColorAdd
+                ratioL.convertRange(0f, 1f, bitmap.tlX, bitmap.trX),
+                ratioT.convertRange(0f, 1f, bitmap.tlY, bitmap.blY),
+                ratioR.convertRange(0f, 1f, bitmap.tlX, bitmap.trX),
+                ratioT.convertRange(0f, 1f, bitmap.trY, bitmap.brY),
+                ratioL.convertRange(0f, 1f, bitmap.blX, bitmap.brX),
+                ratioB.convertRange(0f, 1f, bitmap.tlY, bitmap.blY),
+                ratioR.convertRange(0f, 1f, bitmap.blX, bitmap.brX),
+                ratioB.convertRange(0f, 1f, bitmap.trY, bitmap.brY),
+                renderColorMul,
             )
         }
         ctx.useBatcher { batch ->
-            if (bgcolor.a != 0) batch.drawQuad(ctx.getTex(Bitmaps.white), 0f, 0f, width.toFloat(), height.toFloat(), globalMatrix, colorMul = bgcolor)
-            batch.drawVertices(vertices, ctx.getTex(bitmap).base, smoothing, renderBlendMode, premultiplied = bitmap.base.premultiplied, wrap = false)
+            if (bgcolor.a != 0) batch.drawQuad(
+                ctx.getTex(Bitmaps.white),
+                0f,
+                0f,
+                width.toFloat(),
+                height.toFloat(),
+                globalMatrix,
+                colorMul = bgcolor
+            )
+            batch.drawVertices(
+                vertices,
+                ctx.getTex(bitmap).base,
+                smoothing,
+                renderBlendMode,
+            )
         }
     }
 }

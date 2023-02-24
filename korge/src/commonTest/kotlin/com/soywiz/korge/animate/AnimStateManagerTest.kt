@@ -4,7 +4,6 @@ import com.soywiz.klock.*
 import com.soywiz.korge.tween.*
 import com.soywiz.korge.view.*
 import com.soywiz.korio.util.*
-import com.soywiz.korma.geom.*
 import kotlin.test.*
 
 class AnimStateManagerTest {
@@ -14,7 +13,7 @@ class AnimStateManagerTest {
         val view = DummyView()
         val state1 = AnimState(view::x[100], time = 0.5.seconds)
         view.animStateManager.set(state1)
-        fun log() { log += "${view.pos.niceStr} : ${view.alpha.niceStr(1)}" }
+        fun log() { log += "${view.ipos.niceStr} : ${view.alpha.niceStr(1)}" }
 
         log()
         view.updateSingleView(0.seconds)

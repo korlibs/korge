@@ -95,6 +95,7 @@ open class KStructure(pointer: KPointer?) : KStructureBase() {
     fun nativeLong(): KMemDelegateNativeLongProperty = layout.nativeLong()
     fun kpointer(): KMemDelegateKPointerProperty = layout.kpointer()
     fun <T> pointer(): KMemDelegatePointerProperty<T> = layout.pointer<T>()
+    fun fixedBytes(size: Int): KMemDelegateFixedBytesProperty = layout.fixedBytes(size)
 
     //private var _pointer: KPointer? = pointer; private set
     //val pointer: KPointer by lazy {
@@ -118,7 +119,7 @@ open class KMemLayoutBuilder {
         offset
     }
 
-    private fun alloc(size: Int) = align(size).offset.also { this.offset += size }
+    private fun alloc(size: Int, align: Int = size) = align(align).offset.also { this.offset += size }
 
     //fun int() = alloc(Int.SIZE_BYTES)
     //fun nativeLong() = alloc(NativeLong.SIZE)
@@ -134,6 +135,7 @@ open class KMemLayoutBuilder {
     fun nativeLong() = KMemDelegateNativeLongProperty(alloc(LONG_SIZE))
     fun kpointer() = KMemDelegateKPointerProperty(alloc(POINTER_SIZE))
     fun <T> pointer() = KMemDelegatePointerProperty<T>(alloc(POINTER_SIZE))
+    fun fixedBytes(size: Int, align: Int = 1): KMemDelegateFixedBytesProperty = KMemDelegateFixedBytesProperty(alloc(size * Byte.SIZE_BYTES, align), size)
 }
 
 
@@ -141,6 +143,18 @@ inline class KMemDelegateByteProperty(val offset: Int) {
     operator fun getValue(obj: KStructure, property: KProperty<*>): Byte = obj.pointerSure.getByte(offset)
     operator fun setValue(obj: KStructure, property: KProperty<*>, i: Byte) { obj.pointerSure.setByte(offset, i) }
 }
+
+class KMemDelegateFixedBytesProperty(val offset: Int, val size: Int) {
+    val bytes = ByteArray(size)
+    operator fun getValue(obj: KStructure, property: KProperty<*>): ByteArray {
+        for (n in 0 until size) bytes[n] = obj.pointerSure.getByte(offset + n)
+        return bytes
+    }
+    operator fun setValue(obj: KStructure, property: KProperty<*>, i: ByteArray) {
+        for (n in 0 until size) obj.pointerSure.setByte(offset + n, i[n])
+    }
+}
+
 
 inline class KMemDelegateBoolProperty(val offset: Int) {
     operator fun getValue(obj: KStructure, property: KProperty<*>): Boolean = obj.pointerSure.getInt(offset) != 0

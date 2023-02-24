@@ -1,11 +1,28 @@
 package com.soywiz.korma.geom.trapezoid
 
 import com.soywiz.kmem.*
+import com.soywiz.korma.annotations.*
+import com.soywiz.korma.geom.*
 
+// @TODO: What about [Line]?
+@KormaValueApi
 data class SegmentInt(
-    var x0: Int, var y0: Int,
-    var x1: Int, var y1: Int
-) {
+    val p0: PointInt,val p1: PointInt
+)
+
+@KormaMutableApi
+interface ISegmentInt {
+    var x0: Int
+    var y0: Int
+    var x1: Int
+    var y1: Int
+}
+
+@KormaMutableApi
+data class MSegmentInt(
+    override var x0: Int, override var y0: Int,
+    override var x1: Int, override var y1: Int
+) : ISegmentInt{
     constructor() : this(0, 0, 0, 0)
 
     fun setTo(x0: Int, y0: Int, x1: Int, y1: Int) {
@@ -27,7 +44,9 @@ data class SegmentInt(
     fun y(x: Int): Int = y0 + (slope * (x - x0)).toIntRound()
     fun containsX(x: Int): Boolean = x in xMin..xMax
     fun containsY(y: Int): Boolean = y in yMin..yMax
-    fun getIntersectY(other: SegmentInt): Int = SegmentInt.getIntersectY(this, other)
+    fun getIntersectY(other: MSegmentInt): Int = MSegmentInt.getIntersectY(this, other)
+
+    override fun toString(): String = "SegmentInt(($x0, $y0), ($x1, $y1))"
 
     companion object {
         inline fun getIntersectXY(Ax: Int, Ay: Int, Bx: Int, By: Int, Cx: Int, Cy: Int, Dx: Int, Dy: Int, out: (x: Int, y: Int) -> Unit): Boolean {
@@ -45,10 +64,10 @@ data class SegmentInt(
             return true
         }
 
-        inline fun getIntersectXY(a: SegmentInt, b: SegmentInt, crossinline out: (x: Int, y: Int) -> Unit): Boolean =
+        inline fun getIntersectXY(a: MSegmentInt, b: MSegmentInt, crossinline out: (x: Int, y: Int) -> Unit): Boolean =
             getIntersectXY(a.x0, a.y0, a.x1, a.y1, b.x0, b.y0, b.x1, b.y1, out)
 
-        fun getIntersectY(a: SegmentInt, b: SegmentInt): Int {
+        fun getIntersectY(a: MSegmentInt, b: MSegmentInt): Int {
             var outY = Int.MIN_VALUE
             getIntersectXY(a, b) { x, y -> outY = y }
             return outY

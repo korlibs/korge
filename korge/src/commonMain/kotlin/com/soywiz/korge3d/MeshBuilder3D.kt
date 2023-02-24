@@ -9,7 +9,7 @@ import com.soywiz.korge3d.internal.toNBuffer
 import com.soywiz.korge3d.internal.vector3DTemps
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
-import com.soywiz.korma.geom.Vector3D
+import com.soywiz.korma.geom.MVector4
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
@@ -55,7 +55,7 @@ class MeshBuilder3D(
         _material = Material3D(emission, ambient, diffuse, specular, shininess, indexOfRefraction)
     }
 
-    fun addVertex(pos: Vector3D, normal: Vector3D = Vector3D(), texcoords: Vector3D = Vector3D()): Int {
+    fun addVertex(pos: MVector4, normal: MVector4 = MVector4(), texcoords: MVector4 = MVector4()): Int {
         return addVertex(pos.x, pos.y, pos.z, normal.x, normal.y, normal.z, texcoords.x, texcoords.y)
     }
 
@@ -86,7 +86,7 @@ class MeshBuilder3D(
 
     fun addIndices(vararg indices: Int) = indices.forEach { addIndex(it) }
 
-    fun faceTriangle(v1: Vector3D, v2: Vector3D, v3: Vector3D) {
+    fun faceTriangle(v1: MVector4, v2: MVector4, v3: MVector4) {
         vector3DTemps {
             val u = v2 - v1
             val v = v3 - v1
@@ -102,7 +102,7 @@ class MeshBuilder3D(
     }
 
     fun faceTriangle(
-        v1: Vector3D, v2: Vector3D, v3: Vector3D,
+        v1: MVector4, v2: MVector4, v3: MVector4,
         nx: Float, ny: Float, nz: Float
     ) {
         val i1 = addVertex(v1.x, v1.y, v1.z, nx, ny, nz)
@@ -111,7 +111,7 @@ class MeshBuilder3D(
         addIndices(i1, i2, i3)
     }
 
-    fun faceRectangle(v1: Vector3D, v2: Vector3D, v3: Vector3D, v4: Vector3D) {
+    fun faceRectangle(v1: MVector4, v2: MVector4, v3: MVector4, v4: MVector4) {
         vector3DTemps {
             val u = v2 - v1
             val v = v3 - v1
@@ -129,8 +129,8 @@ class MeshBuilder3D(
     }
 
     fun faceRectangle(
-        v1: Vector3D, v2: Vector3D, v3: Vector3D, v4: Vector3D,
-        t1: Vector3D, t2: Vector3D, t3: Vector3D, t4: Vector3D
+        v1: MVector4, v2: MVector4, v3: MVector4, v4: MVector4,
+        t1: MVector4, t2: MVector4, t3: MVector4, t4: MVector4
     ) {
         vector3DTemps {
             val u = v2 - v1
@@ -148,7 +148,7 @@ class MeshBuilder3D(
         }
     }
 
-    fun pyramidTriangleBase(v1: Vector3D, v2: Vector3D, v3: Vector3D, v4: Vector3D) {
+    fun pyramidTriangleBase(v1: MVector4, v2: MVector4, v3: MVector4, v4: MVector4) {
         // cannot reuse vertices because the normals need to be different!
         faceTriangle(v1, v2, v3)
         faceTriangle(v1, v2, v4)
@@ -170,16 +170,16 @@ class MeshBuilder3D(
         val hz = depth / 2f
 
         // front face, clockwise
-        val v1 = Vector3D(-hx, +hy, -hz)
-        val v2 = Vector3D(+hx, +hy, -hz)
-        val v3 = Vector3D(+hx, -hy, -hz)
-        val v4 = Vector3D(-hx, -hy, -hz)
+        val v1 = MVector4(-hx, +hy, -hz)
+        val v2 = MVector4(+hx, +hy, -hz)
+        val v3 = MVector4(+hx, -hy, -hz)
+        val v4 = MVector4(-hx, -hy, -hz)
 
         // back face, clockwise
-        val v5 = Vector3D(-hx, +hy, +hz)
-        val v6 = Vector3D(+hx, +hy, +hz)
-        val v7 = Vector3D(+hx, -hy, +hz)
-        val v8 = Vector3D(-hx, -hy, +hz)
+        val v5 = MVector4(-hx, +hy, +hz)
+        val v6 = MVector4(+hx, +hy, +hz)
+        val v7 = MVector4(+hx, -hy, +hz)
+        val v8 = MVector4(-hx, -hy, +hz)
 
         // cannot reuse vertices because the normals need to be different!
         faceRectangle(v1, v2, v3, v4) //front
@@ -198,10 +198,10 @@ class MeshBuilder3D(
         val x = cos(u) * sin(v) * rx
         val y = cos(v) * ry
         val z = sin(u) * sin(v) * rz
-        Vector3D(x, y, z)
+        MVector4(x, y, z)
     }
 
-    fun parametric(longitudeLines: Int = 10, latitudeLines: Int = 10, F: (u: Float, v: Float) -> Vector3D) {
+    fun parametric(longitudeLines: Int = 10, latitudeLines: Int = 10, F: (u: Float, v: Float) -> MVector4) {
         // modified from [https://stackoverflow.com/questions/7687148/drawing-sphere-in-opengl-without-using-glusphere]
         val startU = 0f
         val startV = 0f

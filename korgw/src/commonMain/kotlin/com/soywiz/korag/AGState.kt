@@ -2,19 +2,11 @@ package com.soywiz.korag
 
 import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
-import com.soywiz.klock.*
-import com.soywiz.klogger.*
 import com.soywiz.kmem.*
-import com.soywiz.kmem.unit.*
-import com.soywiz.korag.annotation.*
-import com.soywiz.korag.gl.*
 import com.soywiz.korag.shader.*
-import com.soywiz.korag.shader.gl.*
-import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korma.geom.*
-import kotlin.coroutines.*
 import kotlin.jvm.*
 
 inline class AGReadKind(val ordinal: Int) {
@@ -279,10 +271,11 @@ inline class AGFrontFace(val ordinal: Int) {
 /** 2 Bits required for encoding */
 inline class AGCullFace(val ordinal: Int) {
     companion object {
+        val INVALID = AGCullFace(-1)
         val NONE = AGCullFace(0)
-        val BOTH = AGCullFace(1)
-        val FRONT = AGCullFace(2)
-        val BACK = AGCullFace(3)
+        val FRONT = AGCullFace(1)
+        val BACK = AGCullFace(2)
+        val BOTH = AGCullFace(3)
     }
 
     override fun toString(): String = when (this) {
@@ -325,9 +318,7 @@ inline class AGIndexType(val ordinal: Int) {
         val NONE = AGIndexType(0)
         val UBYTE = AGIndexType(1)
         val USHORT = AGIndexType(2)
-        // https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/drawElements
-        @Deprecated("UINT is not always supported on webgl")
-        val UINT = AGIndexType(3)
+        val UINT = AGIndexType(3) // https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/drawElements
     }
 
     override fun toString(): String = when (this) {
@@ -579,7 +570,7 @@ inline class AGFullState(val data: Int32Buffer = Int32Buffer(8)) {
     var scissor: AGScissor ; get() = AGScissor(data[5], data[6]) ; set(value) { data[5] = value.xy; data[6] = value.wh }
 }
 
-fun Rectangle?.toAGScissor(): AGScissor {
+fun MRectangle?.toAGScissor(): AGScissor {
     if (this == null) return AGScissor.NIL
     return AGScissor(x.toInt(), y.toInt(), width.toInt(), height.toInt())
 }
@@ -650,8 +641,8 @@ inline class AGScissor(val data: Long) {
         return "Scissor(x=${x}, y=${y}, width=${width}, height=${height})"
     }
 
-    fun toRect(out: Rectangle = Rectangle()): Rectangle = out.setTo(x, y, width, height)
-    fun toRectOrNull(out: Rectangle = Rectangle()): Rectangle? {
+    fun toRect(out: MRectangle = MRectangle()): MRectangle = out.setTo(x, y, width, height)
+    fun toRectOrNull(out: MRectangle = MRectangle()): MRectangle? {
         if (this == NIL) return null
         return out.setTo(x, y, width, height)
     }
@@ -688,7 +679,7 @@ inline class AGScissor(val data: Long) {
     }
 }
 
-fun AGScissor.applyMatrixBounds(m: Matrix): AGScissor {
+fun AGScissor.applyMatrixBounds(m: MMatrix): AGScissor {
     val x0 = m.transformX(left, top)
     val x1 = m.transformX(right, top)
     val x2 = m.transformX(left, bottom)

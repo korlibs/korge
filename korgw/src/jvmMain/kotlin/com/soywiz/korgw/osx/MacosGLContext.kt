@@ -22,16 +22,18 @@ class MacosGLContext(
         const val NSOpenGLPFAMultisample = 59
         const val NSOpenGLPFASampleBuffers = 55
         const val NSOpenGLPFASamples = 56
+        const val NSOpenGLPFAAccelerated = 73
         const val NSOpenGLPFADoubleBuffer = 5
         const val NSOpenGLPFAColorSize = 8
         const val NSOpenGLPFAAlphaSize = 11
         const val NSOpenGLPFADepthSize = 12
         const val NSOpenGLPFAStencilSize = 13
         const val NSOpenGLPFAAccumSize = 14
+
     }
 
     val attrs: IntArray by lazy {
-        val antialias = (this.quality != GameWindow.Quality.PERFORMANCE)
+        val antialias = (this.quality == GameWindow.Quality.QUALITY)
         val antialiasArray = if (antialias) intArrayOf(
             NSOpenGLPFAMultisample,
             NSOpenGLPFASampleBuffers, 1,
@@ -39,21 +41,23 @@ class MacosGLContext(
         ) else intArrayOf()
         intArrayOf(
             *antialiasArray,
-            //NSOpenGLPFAOpenGLProfile,
-            //NSOpenGLProfileVersion4_1Core,
-            NSOpenGLPFADoubleBuffer,
+            //NSOpenGLPFAOpenGLProfile, NSOpenGLProfileVersion4_1Core,
+            //NSOpenGLPFADoubleBuffer,
+            NSOpenGLPFAAccelerated,
             NSOpenGLPFAColorSize, 24,
-            NSOpenGLPFAAlphaSize, 8,
-            NSOpenGLPFADepthSize, 24,
+            NSOpenGLPFADepthSize, 16,
             NSOpenGLPFAStencilSize, 8,
-            NSOpenGLPFAAccumSize, 0,
+            //NSOpenGLPFAAlphaSize, 8,
+            //NSOpenGLPFAAccumSize, 0,
             0
         )
     }
 
     val NSThread = NSClass("NSThread")
     val NSObject = NSClass("NSObject")
-    val pixelFormat = NSClass("NSOpenGLPixelFormat").alloc().msgSend("initWithAttributes:", attrs)
+    val pixelFormat = NSClass("NSOpenGLPixelFormat").alloc().msgSend("initWithAttributes:", attrs).also {
+        if (it == 0L) error("Can't initialize NSOpenGLPixelFormat")
+    }
     val openGLContext = NSClass("NSOpenGLContext").alloc().msgSend("initWithFormat:shareContext:", pixelFormat, sharedContext)
 
     init {
@@ -78,8 +82,6 @@ class MacosGLContext(
         openGLContext.msgSend("clearDrawable")
     }
 
-
-
     fun setView(contentView: Long) {
         runOnMainThread {
             println("MacosGLContext.setView: $contentView")
@@ -94,12 +96,13 @@ class MacosGLContext(
 
     var callback: (() -> Unit)? = null
     val isMainThread: Boolean get() = NSThread.msgSend("isMainThread") != 0L
+    val myThreadExecutorCallback = ObjcCallbackVoid { self, _sel, sender ->
+        //println("MyThreadExecutor")
+        callback?.invoke()
+        callback = null
+    }
     val MyThreadExecutor = AllocateClassAndRegister("MyThreadExecutor", "NSObject") {
-        addMethod("main:", ObjcCallbackVoid { self, _sel, sender ->
-            //println("MyThreadExecutor")
-            callback?.invoke()
-            callback = null
-        }, "v@:@")
+        addMethod("main:", myThreadExecutorCallback, "v@:@")
     }
     val myThreadExecutorInstance = MyThreadExecutor.alloc().msgSend("init")
 
@@ -132,7 +135,7 @@ class MacosGLContext(
                 val fw = (frame.width * factor).toInt()
                 val fh = (frame.height * factor).toInt()
                 // factor=2.0, scissorBox: java.awt.Rectangle[x=0,y=0,width=2560,height=1496], viewport: java.awt.Rectangle[x=0,y=0,width=2560,height=1496]
-                val info = BaseOpenglContext.ContextInfo(RectangleInt(), RectangleInt(),)
+                val info = BaseOpenglContext.ContextInfo(MRectangleInt(), MRectangleInt(),)
                 info.scissors?.setTo(fx, fy, fw, fh)
                 info.viewport?.setTo(fx, fy, fw, fh)
                 println("info=$info")
@@ -184,7 +187,7 @@ class MacAWTOpenglContext(val gwconfig: GameWindowConfig, val c: Component, var 
     }
 
     val info = BaseOpenglContext.ContextInfo(
-        RectangleInt(), RectangleInt()
+        MRectangleInt(), MRectangleInt()
     )
 
     override val scaleFactor: Double get() = getDisplayScalingFactor(c)

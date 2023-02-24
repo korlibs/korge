@@ -5,8 +5,10 @@ import com.soywiz.kds.cacheLazyNullable
 import com.soywiz.klock.measureTime
 import com.soywiz.klock.measureTimeWithResult
 import com.soywiz.klock.milliseconds
+import com.soywiz.klogger.*
 import com.soywiz.kmem.Os
 import com.soywiz.kmem.Platform
+import com.soywiz.korim.format.*
 import com.soywiz.korio.async.runBlockingNoJs
 import com.soywiz.korio.concurrent.atomic.KorAtomicRef
 import com.soywiz.korio.file.VfsFile
@@ -45,6 +47,10 @@ fun nativeSystemFontProvider(coroutineContext: CoroutineContext): NativeSystemFo
 suspend fun nativeSystemFontProvider(): NativeSystemFontProvider = nativeSystemFontProvider(coroutineContext)
 
 open class NativeSystemFontProvider {
+    companion object {
+        val logger = Logger("NativeSystemFontProvider")
+    }
+
     open fun getDefaultFontName(): String = listFontNames().maxByOrNull {
         when {
             it.equals("arial unicode ms", ignoreCase = true) -> 2000
@@ -127,10 +133,13 @@ open class FolderBasedNativeSystemFontProvider(
     val folders: List<String> = (linuxFolders + windowsFolders + macosFolders + androidFolders + iosFolders).distinct(),
     val fontCacheFile: VfsFile = standardVfs.userSharedCacheFile("korimFontCache"), // Typically ~/.korimFontCache
 ) : TtfNativeSystemFontProvider() {
+    companion object {
+        val logger = Logger("FolderBasedNativeSystemFontProvider")
+    }
     fun listFontNamesMap(): Map<String, VfsFile> = runBlockingNoJs(context) {
         val out = LinkedHashMap<String, VfsFile>()
         val time = measureTime {
-            println("FolderBasedNativeSystemFontProvider.listFontNamesMap: $folders")
+            logger.info { "FolderBasedNativeSystemFontProvider.listFontNamesMap: $folders" }
             //fontCacheFile.delete()
             val fontCacheVfsFile = fontCacheFile
             val fileNamesToName = LinkedHashMap<String, String>()
@@ -163,7 +172,7 @@ open class FolderBasedNativeSystemFontProvider(
                         }
                     }
                 } catch (e: Throwable) {
-                    e.printStackTrace()
+                    imageLoadingLogger.info { e }
                 }
             }
             val newFontCacheVfsFileText = fileNamesToName.map { "${it.key}=${it.value}" }.joinToString("\n")
@@ -172,12 +181,12 @@ open class FolderBasedNativeSystemFontProvider(
                     fontCacheVfsFile.writeString(newFontCacheVfsFileText)
                 } catch (e: Throwable) {
                     if (e is CancellationException) throw e
-                    e.printStackTrace()
+                    imageLoadingLogger.info { e }
                 }
             }
         }
         if (time >= 100.milliseconds) {
-            println("Load System font names in $time")
+            logger.info {  "Load System font names in $time" }
         }
         //println("fileNamesToName: $out")
         out

@@ -65,6 +65,15 @@ object RootKorlibsPlugin {
         initTests()
         initCrossTests()
         initAllTargets()
+        initPatchTests()
+    }
+
+    fun Project.initPatchTests() {
+        subprojectsThis {
+            if (this.name == "korge") {
+                configureMingwX64TestWithMesa()
+            }
+        }
     }
 
     fun Project.initAllTargets() {
@@ -542,7 +551,7 @@ object RootKorlibsPlugin {
 
             if (doConfigure) {
                 val isSample = project.isSample
-                val hasAndroid = doEnableKotlinAndroid && hasAndroidSdk
+                val hasAndroid = doEnableKotlinAndroid && hasAndroidSdk && project.name != "korge-benchmarks"
                 //val hasAndroid = !isSample && true
                 val mustPublish = !isSample
 
@@ -587,19 +596,12 @@ object RootKorlibsPlugin {
                     android.apply {
                         sourceSets {
                             it.maybeCreate("main").apply {
-                                if (System.getenv("ANDROID_TESTS") == "true") {
-                                    assets.srcDirs(
-                                        "src/commonMain/resources",
-                                        "src/commonTest/resources",
-                                    )
-                                } else {
-                                    assets.srcDirs("src/commonMain/resources",)
-                                }
+                                assets.srcDirs("src/commonMain/resources",)
                             }
-                            it.maybeCreate("test").apply {
-                                assets.srcDirs(
-                                    "src/commonTest/resources",
-                                )
+                            for (name in listOf("test", "testDebug", "testRelease", "androidTest", "androidTestDebug", "androidTestRelease")) {
+                                it.maybeCreate(name).apply {
+                                    assets.srcDirs("src/commonTest/resources",)
+                                }
                             }
                         }
                     }
@@ -662,6 +664,14 @@ object RootKorlibsPlugin {
                             bootstrapClasspath = jvmTest.bootstrapClasspath
                             if (!JvmAddOpens.beforeJava9) jvmArgs(*JvmAddOpens.createAddOpensTypedArray())
                             if (headlessTests) systemProperty("java.awt.headless", "true")
+                        }
+                        val jvmTestInteractive = tasks.createThis<Test>("jvmTestInteractive") {
+                            group = "verification"
+                            environment("INTERACTIVE_SCREENSHOT", "true")
+                            testClassesDirs = jvmTest.testClassesDirs
+                            classpath = jvmTest.classpath
+                            bootstrapClasspath = jvmTest.bootstrapClasspath
+                            if (!JvmAddOpens.beforeJava9) jvmArgs(*JvmAddOpens.createAddOpensTypedArray())
                         }
                         if (!JvmAddOpens.beforeJava9) jvmTest.jvmArgs(*JvmAddOpens.createAddOpensTypedArray())
                         if (headlessTests) jvmTest.systemProperty("java.awt.headless", "true")
@@ -1452,15 +1462,7 @@ object RootKorlibsPlugin {
         rootProject.subprojectsThis {
             //tasks.withType(Test::class.java).allThis {
             afterEvaluate {
-                //tasks.withType(Test::class.java).allThis {
-                tasks.withType(AbstractTestTask::class.java).allThis {
-                    testLogging {
-                        //setEvents(setOf("passed", "skipped", "failed", "standardOut", "standardError"))
-                        it.setEvents(setOf("skipped", "failed", "standardError"))
-                        it.exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
-                    }
-                }
-
+                it.configureTests()
             }
         }
     }
@@ -1516,7 +1518,7 @@ val forcedVersion = System.getenv("FORCED_VERSION")
 val Project.hasAndroidSdk by LazyExt { AndroidSdk.hasAndroidSdk(project) }
 val Project.enabledSandboxResourceProcessor: Boolean by LazyExt { rootProject.findProperty("enabledSandboxResourceProcessor") == "true" }
 
-val Project.currentJavaVersion by LazyExt { com.soywiz.korlibs.currentJavaVersion() }
+val Project.currentJavaVersion by LazyExt { currentJavaVersion() }
 fun Project.hasBuildGradle() = listOf("build.gradle", "build.gradle.kts").any { File(projectDir, it).exists() }
 val Project.isSample: Boolean get() = project.path.startsWith(":samples:") || project.path.startsWith(":korge-sandbox") || project.path.startsWith(":korge-editor") || project.path.startsWith(":korge-starter-kit")
 fun Project.mustAutoconfigureKMM(): Boolean =

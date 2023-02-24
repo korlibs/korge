@@ -173,9 +173,9 @@ internal class UiEditProperties(app: UiApplication, view: View?, val views: View
 
                 UiTwoItemEditableValue(app, vv[0], vv[1])
             }
-            type.isSubtypeOf(RectCorners::class.starProjectedType) -> {
+            type.isSubtypeOf(IRectCorners::class.starProjectedType) -> {
                 @Suppress("UNCHECKED_CAST")
-                prop as KMutableProperty1<Any, RectCorners>
+                prop as KMutableProperty1<Any, IRectCorners>
                 val vv = listOf(
                     ObservableProperty("a", { prop.set(instance, prop.get(instance).duplicate(topLeft = it)) }, { prop.get(instance).topLeft }),
                     ObservableProperty("b", { prop.set(instance, prop.get(instance).duplicate(topRight = it)) }, { prop.get(instance).topRight }),
@@ -185,9 +185,9 @@ internal class UiEditProperties(app: UiApplication, view: View?, val views: View
 
                 UiFourItemEditableValue(app, vv[0], vv[1], vv[2], vv[3])
             }
-            type.isSubtypeOf(Margin::class.starProjectedType) -> {
+            type.isSubtypeOf(IMargin::class.starProjectedType) -> {
                 @Suppress("UNCHECKED_CAST")
-                prop as KMutableProperty1<Any, Margin>
+                prop as KMutableProperty1<Any, IMargin>
                 val vv = listOf(
                     ObservableProperty("a", { prop.set(instance, prop.get(instance).duplicate(top = it)) }, { prop.get(instance).top }),
                     ObservableProperty("b", { prop.set(instance, prop.get(instance).duplicate(right = it)) }, { prop.get(instance).right }),
@@ -377,15 +377,6 @@ internal class UiBooleanEditableValue(
 }
 
 internal fun UiContainer.uiCollapsibleSection(name: String?, block: UiContainer.() -> Unit): UiCollapsibleSection {
-    return UiCollapsibleSection(app, name, block).also { addChild(it) }
-}
-
-@Deprecated(
-    message = "An older name of `uiCollapsibleSection`",
-    replaceWith = ReplaceWith("uiCollapsibleSection(name, block)"),
-    level = DeprecationLevel.WARNING
-)
-internal fun UiContainer.uiCollapsableSection(name: String?, block: UiContainer.() -> Unit): UiCollapsibleSection {
     return UiCollapsibleSection(app, name, block).also { addChild(it) }
 }
 

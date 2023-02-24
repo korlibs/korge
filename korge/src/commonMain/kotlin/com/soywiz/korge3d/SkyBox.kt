@@ -15,9 +15,8 @@ import com.soywiz.korim.format.readBitmap
 import com.soywiz.korio.async.async
 import com.soywiz.korio.file.VfsFile
 import com.soywiz.korio.file.std.resourcesVfs
-import com.soywiz.korma.geom.Matrix3D
-import com.soywiz.korma.geom.Vector3D
-import com.soywiz.korma.geom.translate
+import com.soywiz.korma.geom.MMatrix3D
+import com.soywiz.korma.geom.MVector4
 import kotlinx.coroutines.coroutineScope
 
 class CubeMap(
@@ -56,13 +55,13 @@ suspend fun VfsFile.readCubeMap(ext: String): CubeMap {
 
 @Korge3DExperimental
 fun Stage3D.skyBox(cubemap: CubeMap, centerX: Float = 0f, centerY: Float = 0f, centerZ: Float = 0f): SkyBox {
-    return SkyBox(cubemap, Vector3D(centerX, centerY, centerZ)).addTo(this)
+    return SkyBox(cubemap, MVector4(centerX, centerY, centerZ)).addTo(this)
 }
 
 @Korge3DExperimental
 class SkyBox(
     val cubemap: CubeMap,
-    val center: Vector3D
+    val center: MVector4
 ) : View3D() {
     /*
         inner class Texture3DDrawer {
@@ -156,7 +155,7 @@ class SkyBox(
     private val uniformValues = AGUniformValues()
     private val rs = AGDepthAndFrontFace.DEFAULT.withDepthMask(depthMask = false).withDepthFunc(depthFunc = AGCompareMode.LESS_EQUAL)
 
-    private val viewNoTrans = Matrix3D()
+    private val viewNoTrans = MMatrix3D()
 
     override fun render(ctx: RenderContext3D) {
         //println("----------- SkyBox render ---------------")

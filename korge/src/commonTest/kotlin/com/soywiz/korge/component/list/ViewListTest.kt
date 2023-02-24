@@ -4,7 +4,7 @@ import com.soywiz.korge.tests.ViewsForTesting
 import com.soywiz.korge.view.SolidRect
 import com.soywiz.korge.view.xy
 import com.soywiz.korim.color.Colors
-import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.MRectangle
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -17,6 +17,6 @@ class ViewListTest : ViewsForTesting() {
 		views.stage.addChild(item1)
 		val itemList = ViewList(item0, item1, 3)
 		assertEquals(3, itemList.length)
-		assertEquals(Rectangle(40, 0, 10, 10), itemList[2]?.globalBounds)
+		assertEquals(MRectangle(40, 0, 10, 10), itemList[2]?.globalBounds)
 	}
 }

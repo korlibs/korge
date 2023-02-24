@@ -1,56 +1,52 @@
 package com.soywiz.korma.geom
 
+import com.soywiz.korma.annotations.*
 import com.soywiz.korma.internal.niceStr
 import com.soywiz.korma.interpolation.interpolate
 import com.soywiz.korma.math.almostEquals
 import kotlin.math.sqrt
 
+@KormaValueApi
+data class Vector3(val x: Float, val y: Float, val z: Float)
+
+@KormaMutableApi
 interface IVector3 {
     val x: Float
     val y: Float
     val z: Float
-}
 
-operator fun IVector3.get(index: Int) = when (index) {
-    0 -> x
-    1 -> y
-    2 -> z
-    else -> 0f
-}
-
-interface MVector3 : IVector3 {
-    override var x: Float
-    override var y: Float
-    override var z: Float
-}
-
-operator fun MVector3.set(index: Int, value: Float) {
-    when (index) {
-        0 -> x = value
-        1 -> y = value
-        2 -> z = value
+    operator fun get(index: Int): Float = when (index) {
+        0 -> x
+        1 -> y
+        2 -> z
+        else -> 0f
     }
+
 }
 
-fun vec(x: Float, y: Float, z: Float) = Vector3(x, y, z)
+@KormaMutableApi
+fun mvec(x: Float, y: Float, z: Float): MVector3 = MVector3(x, y, z)
 
-class Vector3 : MVector3 {
+@KormaMutableApi
+class MVector3 : IVector3 {
     val data: FloatArray = FloatArray(3)
 
     override var x: Float get() = data[0]; set(value) { data[0] = value }
     override var y: Float get() = data[1]; set(value) { data[1] = value }
     override var z: Float get() = data[2]; set(value) { data[2] = value }
 
+    val vector: Vector3 get() = Vector3(x, y, z)
+
     val lengthSquared: Float get() = (x * x) + (y * y) + (z * z)
     val length: Float get() = sqrt(lengthSquared)
 
-    operator fun get(index: Int): Float = data[index]
+    override operator fun get(index: Int): Float = data[index]
     operator fun set(index: Int, value: Float) { data[index] = value }
 
     companion object {
-        operator fun invoke(x: Float, y: Float, z: Float): Vector3 = Vector3().setTo(x, y, z)
-        operator fun invoke(x: Double, y: Double, z: Double): Vector3 = Vector3().setTo(x, y, z)
-        operator fun invoke(x: Int, y: Int, z: Int): Vector3 = Vector3().setTo(x, y, z)
+        operator fun invoke(x: Float, y: Float, z: Float): MVector3 = MVector3().setTo(x, y, z)
+        operator fun invoke(x: Double, y: Double, z: Double): MVector3 = MVector3().setTo(x, y, z)
+        operator fun invoke(x: Int, y: Int, z: Int): MVector3 = MVector3().setTo(x, y, z)
 
         fun length(x: Double, y: Double, z: Double): Double = sqrt(lengthSq(x, y, z))
         fun length(x: Float, y: Float, z: Float): Float = sqrt(lengthSq(x, y, z))
@@ -59,57 +55,57 @@ class Vector3 : MVector3 {
         fun lengthSq(x: Float, y: Float, z: Float): Float = x * x + y * y + z * z
     }
 
-    fun setTo(x: Float, y: Float, z: Float): Vector3 {
+    fun setTo(x: Float, y: Float, z: Float): MVector3 {
         this.x = x
         this.y = y
         this.z = z
         return this
     }
-    fun setTo(x: Double, y: Double, z: Double): Vector3 = setTo(x.toFloat(), y.toFloat(), z.toFloat())
-    fun setTo(x: Int, y: Int, z: Int): Vector3 = setTo(x.toFloat(), y.toFloat(), z.toFloat())
+    fun setTo(x: Double, y: Double, z: Double): MVector3 = setTo(x.toFloat(), y.toFloat(), z.toFloat())
+    fun setTo(x: Int, y: Int, z: Int): MVector3 = setTo(x.toFloat(), y.toFloat(), z.toFloat())
 
-    inline fun setToFunc(func: (index: Int) -> Float): Vector3 = setTo(func(0), func(1), func(2))
-    inline fun setToFunc(l: Vector3D, r: Vector3D, func: (l: Float, r: Float) -> Float) = setTo(
+    inline fun setToFunc(func: (index: Int) -> Float): MVector3 = setTo(func(0), func(1), func(2))
+    inline fun setToFunc(l: MVector4, r: MVector4, func: (l: Float, r: Float) -> Float) = setTo(
         func(l.x, r.x),
         func(l.y, r.y),
         func(l.z, r.z),
     )
-    fun setToInterpolated(left: Vector3D, right: Vector3D, t: Double): Vector3 = setToFunc { t.interpolate(left[it], right[it]) }
+    fun setToInterpolated(left: MVector4, right: MVector4, t: Double): MVector3 = setToFunc { t.interpolate(left[it], right[it]) }
 
-    fun copyFrom(other: Vector3) = setTo(other.x, other.y, other.z)
+    fun copyFrom(other: MVector3) = setTo(other.x, other.y, other.z)
 
     fun scale(scale: Float) = this.setTo(this.x * scale, this.y * scale, this.z * scale)
     fun scale(scale: Int) = scale(scale.toFloat())
     fun scale(scale: Double) = scale(scale.toFloat())
 
-    fun transform(mat: Matrix3D) = mat.transform(this, this)
-    fun transformed(mat: Matrix3D, out: Vector3 = Vector3()) = mat.transform(this, out)
+    fun transform(mat: MMatrix3D) = mat.transform(this, this)
+    fun transformed(mat: MMatrix3D, out: MVector3 = MVector3()) = mat.transform(this, out)
 
-    fun normalize(vector: Vector3 = this): Vector3 {
+    fun normalize(vector: MVector3 = this): MVector3 {
         val norm = 1.0 / vector.length
         setTo(vector.x * norm, vector.y * norm, vector.z * norm)
         return this
     }
 
-    fun normalized(out: Vector3 = Vector3()): Vector3 = out.copyFrom(this).normalize()
+    fun normalized(out: MVector3 = MVector3()): MVector3 = out.copyFrom(this).normalize()
 
-    fun dot(v2: Vector3D): Float = this.x*v2.x + this.y*v2.y + this.z*v2.y
+    fun dot(v2: MVector3): Float = (this.x * v2.x) + (this.y * v2.y) + (this.z * v2.y)
 
-    operator fun plus(that: Vector3D) = Vector3D(this.x + that.x, this.y + that.y, this.z + that.z)
-    operator fun minus(that: Vector3D) = Vector3D(this.x - that.x, this.y - that.y, this.z - that.z)
-    operator fun times(scale: Float) = Vector3D(x * scale, y * scale, z * scale)
+    operator fun plus(that: MVector3): MVector3 = MVector3(this.x + that.x, this.y + that.y, this.z + that.z)
+    operator fun minus(that: MVector3): MVector3 = MVector3(this.x - that.x, this.y - that.y, this.z - that.z)
+    operator fun times(scale: Float): MVector3 = MVector3(x * scale, y * scale, z * scale)
 
-    fun sub(l: Vector3, r: Vector3) = setTo(l.x - r.x, l.y - r.y, l.z - r.z)
-    fun add(l: Vector3, r: Vector3) = setTo(l.x + r.x, l.y + r.y, l.z + r.z)
-    fun cross(a: Vector3, b: Vector3) = setTo(
+    fun sub(l: MVector3, r: MVector3): MVector3 = setTo(l.x - r.x, l.y - r.y, l.z - r.z)
+    fun add(l: MVector3, r: MVector3): MVector3 = setTo(l.x + r.x, l.y + r.y, l.z + r.z)
+    fun cross(a: MVector3, b: MVector3): MVector3 = setTo(
         (a.y * b.z - a.z * b.y),
         (a.z * b.x - a.x * b.z),
         (a.x * b.y - a.y * b.x),
     )
 
-    fun clone() = Vector3(x, y, z)
+    fun clone() = MVector3(x, y, z)
 
-    override fun equals(other: Any?): Boolean = (other is Vector3) && almostEquals(this.x, other.x) && almostEquals(this.y, other.y) && almostEquals(this.z, other.z)
+    override fun equals(other: Any?): Boolean = (other is MVector3) && almostEquals(this.x, other.x) && almostEquals(this.y, other.y) && almostEquals(this.z, other.z)
     override fun hashCode(): Int = data.contentHashCode()
 
     override fun toString(): String = "(${x.niceStr}, ${y.niceStr}, ${z.niceStr})"

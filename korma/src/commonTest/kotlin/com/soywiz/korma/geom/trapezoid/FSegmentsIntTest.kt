@@ -48,8 +48,8 @@ class FSegmentsIntTest {
 
         assertEquals(
             """
-                SegmentInt(x0=0, y0=70, x1=0, y1=100)
-                SegmentInt(x0=50, y0=50, x1=100, y1=100)
+                SegmentInt((0, 70), (0, 100))
+                SegmentInt((50, 50), (100, 100))
             """.trimIndent(),
             segments.toSegmentIntList().toFSegmentsInt().toSegmentIntList().joinToString("\n")
         )

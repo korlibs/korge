@@ -1,22 +1,79 @@
 package com.soywiz.kgl
 
+import com.soywiz.kds.lock.*
 import com.soywiz.klogger.*
 import com.soywiz.kmem.*
 import com.soywiz.kmem.Platform
 import com.soywiz.kmem.dyn.*
+import com.soywiz.kmem.dyn.osx.*
+import com.soywiz.korgw.*
 import com.soywiz.korgw.osx.*
 import com.soywiz.korgw.platform.*
+import com.soywiz.korgw.platform.NativeLoad
 import com.soywiz.korgw.win32.*
 import com.soywiz.korgw.x11.*
+import com.soywiz.korio.lang.*
 import com.sun.jna.*
 import com.sun.jna.platform.win32.*
+import java.util.concurrent.atomic.*
+import kotlin.collections.buildList
+
+val GLOBAL_HEADLESS_KML_CONTEXT by lazy { KmlGlContextDefault() }
 
 actual fun KmlGlContextDefault(window: Any?, parent: KmlGlContext?): KmlGlContext = when {
-    Platform.isMac -> MacKmlGlContext(window, parent)
+    Platform.isMac -> MacKmlGlContextRaw(window, parent)
+    //Platform.isMac -> MacKmlGlContextManaged(window, parent)
+
     //Platform.isLinux -> LinuxKmlGlContext(window, parent)
     Platform.isLinux -> EGLKmlGlContext(window, parent)
-    Platform.isWindows -> Win32KmlGlContext(window, parent)
+
+    //Platform.isWindows -> Win32KmlGlContext(window, parent)
+    Platform.isWindows -> Win32KmlGlContextManaged(window, parent)
     else -> error("Unsupported OS ${Platform.os}")
+}
+
+class Win32KmlGlContextManaged(window: Any? = null, parent: KmlGlContext? = null) : KmlGlContext(window, Win32KmlGl, parent) {
+    val win = Win32DummyWindow()
+    val glCtx = Win32OpenglContext(GameWindowConfig.Impl(), win.hWND, win.hDC).init()
+
+    override fun set() = glCtx.makeCurrent()
+    override fun unset() = glCtx.releaseCurrent()
+    override fun swap() = glCtx.swapBuffers()
+    override fun close() {
+        glCtx.dispose()
+        win.dispose()
+    }
+}
+
+class Win32DummyWindow : Disposable {
+    val hWND = Win32.CreateWindowEx(
+        0, dummyName, "Dummy OpenGL Window",
+        0, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
+        null, null, winClass.hInstance, null
+    )
+    val hDC = Win32.GetDC(hWND)
+
+    companion object {
+        val dummyName = "OffScreen_WGL_korgw"
+        val CS_VREDRAW = 1
+        val CS_HREDRAW = 2
+        val CS_OWNDC = 0x0020
+        val CW_USEDEFAULT = 0x80000000L.toInt()
+        val winClass = WinUser.WNDCLASSEX().also {
+            it.style = CS_HREDRAW or CS_VREDRAW or CS_OWNDC
+            it.lpfnWndProc = WinUser.WindowProc { hwnd, uMsg, wParam, lParam -> Win32.DefWindowProc(hwnd, uMsg, wParam, lParam) }
+            it.hInstance = Win32.GetModuleHandle(null)
+            it.lpszClassName = dummyName
+        }.also {
+            Win32.RegisterClassEx(it)
+        }
+        //val hWND = HWND(Native.getWindowPointer(Window(Frame())))
+    }
+
+    override fun dispose() {
+        Win32.ReleaseDC(hWND, hDC)
+        Win32.DestroyWindow(hWND)
+    }
 }
 
 open class Win32KmlGlContext(window: Any? = null, parent: KmlGlContext? = null) : KmlGlContext(window, Win32KmlGl, parent) {
@@ -218,9 +275,10 @@ open class EGLKmlGlContext(window: Any? = null, parent: KmlGlContext? = null) : 
         val majorPtr = Memory(8).also { it.clear() }
         val minorPtr = Memory(8).also { it.clear() }
         val initialize = EGL.eglInitialize(display, majorPtr, minorPtr)
-        if (!initialize) error("Can't initialize EGL")
+        INIT_COUNT.incrementAndGet()
         val major = majorPtr.getInt(0)
         val minor = minorPtr.getInt(0)
+        if (!initialize) error("Can't initialize EGL : errorCode=${EGL.eglGetError()}, display=$display, major=$major, minor=$minor, initCount=${INIT_COUNT.get()}, terminateCount=${TERMINATE_COUNT.get()}")
         //println("display=$display, initialize=$initialize, major=${major}, minor=${minor}")
 
         //val attrib_list = Memory()
@@ -271,9 +329,14 @@ open class EGLKmlGlContext(window: Any? = null, parent: KmlGlContext? = null) : 
     override fun close() {
         EGL.eglDestroyContext(display, eglCtx);
         EGL.eglDestroySurface(display, eglSurface)
+        EGL.eglTerminate(display)
+        TERMINATE_COUNT.incrementAndGet()
     }
 
     companion object {
+        val INIT_COUNT = AtomicInteger(0)
+        val TERMINATE_COUNT = AtomicInteger(0)
+
         const val EGL_PBUFFER_BIT                   = 0x0001
         const val EGL_OPENGL_BIT                    = 0x0008
 
@@ -303,41 +366,40 @@ open class EGLKmlGlContext(window: Any? = null, parent: KmlGlContext? = null) : 
 }
 
 
+private interface CoreGraphics : Library {
+    fun CGMainDisplayID(): Int
+    companion object : CoreGraphics by NativeLoad("/System/Library/Frameworks/CoreGraphics.framework/Versions/A/CoreGraphics")
+}
+
+open class MacKmlGlContextManaged(window: Any? = null, parent: KmlGlContext? = null) : KmlGlContext(window, MacKmlGL(), parent) {
+    val glCtx: MacosGLContext = MacosGLContext(sharedContext = (parent as MacKmlGlContextManaged?)?.glCtx?.openGLContext ?: 0L)
+
+    override fun set() = glCtx.makeCurrent()
+    override fun unset() = glCtx.releaseCurrent()
+    override fun swap() = glCtx.swapBuffers()
+    override fun close() = glCtx.dispose()
+
+    //override fun set() = Unit
+    //override fun unset() = Unit
+    //override fun swap() = Unit
+    //override fun close() = Unit
+}
+
+
 // http://renderingpipeline.com/2012/05/windowless-opengl-on-macos-x/
-open class MacKmlGlContext(window: Any? = null, parent: KmlGlContext? = null) : KmlGlContext(window, MacKmlGL(), parent) {
-    init {
-        MacGL.CGLEnable()
-    }
+open class MacKmlGlContextRaw(window: Any? = null, parent: KmlGlContext? = null) : KmlGlContext(window, MacKmlGL(), parent) {
     var ctx: com.sun.jna.Pointer? = run {
-        val attributes = Memory(intArrayOf(
-            kCGLPFAAccelerated,
-            kCGLPFAOpenGLProfile, kCGLOGLPVersion_GL4_Core,
-            kCGLPFAColorSize, 24,
-            kCGLPFADepthSize, 16,
-            kCGLPFAStencilSize, 8,
-            kCGLPFADoubleBuffer,
-            //kCGLPFASupersample,
-            0,
-        ))
-        val num = Memory(4L)
-        val ctx = Memory(8L) // void**
-        val pix = Memory(8L) // void**
-        checkError(MacGL.CGLChoosePixelFormat(attributes, pix, num))
-        checkError(MacGL.CGLCreateContext(pix.getPointer(0L), (parent as? MacKmlGlContext)?.ctx, ctx))
-        MacGL.CGLDestroyPixelFormat(pix.getPointer(0L))
+        val ctx = Memory(8L).also { it.clear() } // void**
+        checkError("CGLCreateContext", MacGL.CGLCreateContext(pix, (parent as? MacKmlGlContextRaw)?.ctx, ctx))
         ctx.getPointer(0L)
     }
 
-    private fun <T> checkError(value: T): T {
-        return value
-    }
-
     override fun set() {
-        MacGL.CGLSetCurrentContext(ctx)
+        checkError("CGLSetCurrentContext:ctx", MacGL.CGLSetCurrentContext(ctx))
     }
 
     override fun unset() {
-        MacGL.CGLSetCurrentContext(null)
+        checkError("CGLSetCurrentContext:null", MacGL.CGLSetCurrentContext(null))
     }
 
     override fun swap() {
@@ -347,24 +409,90 @@ open class MacKmlGlContext(window: Any? = null, parent: KmlGlContext? = null) : 
     override fun close() {
         if (ctx == null) return
         if (MacGL.CGLGetCurrentContext() == ctx) {
-            MacGL.CGLSetCurrentContext(null)
+            checkError("CGLSetCurrentContext:null", MacGL.CGLSetCurrentContext(null))
         }
-        MacGL.CGLDestroyContext(ctx)
+        checkError("CGLDestroyContext", MacGL.CGLDestroyContext(ctx))
+        //println("CGLDestroyContext")
         ctx = null
     }
 
     companion object {
+
+        val pix: Pointer? by lazy {
+            //initializeMacOnce()
+            //CoreGraphics.CGMainDisplayID()
+            //NSClass("NSOpenGLPixelFormat").alloc().msgSend("initWithAttributes:", intArrayOf(0)) // This might help initializing CoreGraphics?
+
+            //checkError("CGLDestroyPixelFormat", MacGL.CGLDestroyPixelFormat(pix))
+
+            fun formatsProvider(): Sequence<IntArray> = sequence<IntArray> {
+                for (extra in listOf(true, false)) {
+                    for (accelerated in listOf(true, false)) {
+                        yield(buildList {
+                            // Let's not specify profile version, so we are using old shader syntax
+                            //kCGLPFAOpenGLProfile, kCGLOGLPVersion_GL3_Core,
+                            //kCGLPFAOpenGLProfile, kCGLOGLPVersion_GL4_Core,
+                            if (accelerated) add(kCGLPFAAccelerated)
+                            if (extra) {
+                                add(kCGLPFAColorSize); add(24)
+                                add(kCGLPFADepthSize); add(16)
+                                add(kCGLPFAStencilSize); add(8)
+                            }
+                            //kCGLPFADoubleBuffer,
+                            //kCGLPFASupersample,
+                            add(0)
+                        }.toIntArray())
+                    }
+                }
+            }
+
+            val num = Memory(4L).also { it.clear() }
+            val pix = Memory(8L).also { it.clear() } // void**
+            val exceptions = arrayListOf<Throwable>()
+            for (format in formatsProvider()) {
+                val attributes = Memory(format)
+                try {
+                    //println("ctx=${MacGL.CGLGetCurrentContext()}")
+                    checkError("CGLChoosePixelFormat", MacGL.CGLChoosePixelFormat(attributes, pix, num).also {
+                        //println("CGLChoosePixelFormat: num=${num.getInt(0L)}, pix=${pix.getPointer(0L)}")
+                    })
+                    return@lazy pix.getPointer(0L)
+                } catch (e: Throwable) {
+                    exceptions += e
+                    //e.printStackTrace()
+                }
+            }
+            if (exceptions.isNotEmpty()) {
+                for (e in exceptions) {
+                    e.printStackTrace()
+                }
+            }
+            return@lazy null
+        }
+
+        private fun checkError(name: String, value: Int): Int {
+            val error = MacGL.Error[value]
+            if (error != MacGL.Error.kCGLNoError) error("Error in $name, errorCode=$value : $error")
+            return value
+        }
+
         // https://github.com/apitrace/apitrace/blob/master/retrace/glretrace_cgl.cpp
         const val kCGLPFAAccelerated = 73
         const val kCGLPFAOpenGLProfile = 99
-        const val kCGLOGLPVersion_GL4_Core = 16640
+        //const val kCGLOGLPVersion_GL4_Core = 16640
 
-        const val kCGLPFAColorSize              = 8
-        const val kCGLPFAAlphaSize              =11
-        const val kCGLPFADepthSize              =12
-        const val kCGLPFAStencilSize            =13
-        const val kCGLPFAAccumSize              =14
-        const val kCGLPFADoubleBuffer           =5
+        const val kCGLOGLPVersion_Legacy = 0x1000
+        const val kCGLOGLPVersion_3_2_Core = 0x3200
+        const val kCGLOGLPVersion_GL3_Core = 0x3200
+        const val kCGLOGLPVersion_GL4_Core = 0x4100
+
+
+        const val kCGLPFAColorSize    = 8
+        const val kCGLPFAAlphaSize    = 11
+        const val kCGLPFADepthSize    = 12
+        const val kCGLPFAStencilSize  = 13
+        const val kCGLPFAAccumSize    = 14
+        const val kCGLPFADoubleBuffer = 5
 
     }
 }

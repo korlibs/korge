@@ -15,11 +15,11 @@ import com.soywiz.korma.annotations.KormaExperimental
 import com.soywiz.korma.geom.BoundsBuilder
 import com.soywiz.korma.geom.IPoint
 import com.soywiz.korma.geom.IPointInt
-import com.soywiz.korma.geom.Line
+import com.soywiz.korma.geom.MLine
 import com.soywiz.korma.geom.LineIntersection
-import com.soywiz.korma.geom.Point
+import com.soywiz.korma.geom.MPoint
 import com.soywiz.korma.geom.PointArrayList
-import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.MRectangle
 import com.soywiz.korma.geom.fastForEach
 import com.soywiz.korma.geom.shape.emitPoints2
 import com.soywiz.korma.segment.IntSegmentSet
@@ -58,9 +58,9 @@ class PolygonScanline : RastScale() {
     private val boundsBuilder = BoundsBuilder()
 
     class Bucket {
-        val edges = FastArrayList<Edge>()
+        val edges = FastArrayList<MEdge>()
         fun clear() = this.apply { edges.clear() }
-        inline fun fastForEach(block: (edge: Edge) -> Unit) = edges.fastForEach(block)
+        inline fun fastForEach(block: (edge: MEdge) -> Unit) = edges.fastForEach(block)
     }
 
     class Buckets(private val pool: Pool<Bucket>, val ySize: Int) {
@@ -69,7 +69,7 @@ class PolygonScanline : RastScale() {
         fun getIndex(y: Int) = y / ySize
         fun getForIndex(index: Int) = buckets.getOrPut(index) { pool.alloc() }
         fun getForYOrNull(y: Int) = buckets[getIndex(y)]
-        inline fun fastForEachY(y: Int, block: (edge: Edge) -> Unit) {
+        inline fun fastForEachY(y: Int, block: (edge: MEdge) -> Unit) {
             if (size > 0) {
                 getForYOrNull(y)?.fastForEach(block)
             }
@@ -78,7 +78,7 @@ class PolygonScanline : RastScale() {
             buckets.fastForEach { _, value -> pool.free(value.clear()) }
             buckets.clear()
         }
-        fun addThresold(edge: Edge, threshold: Int = Int.MAX_VALUE): Boolean {
+        fun addThresold(edge: MEdge, threshold: Int = Int.MAX_VALUE): Boolean {
             val min = getIndex(edge.minY)
             val max = getIndex(edge.maxY)
             if (max - min < threshold) {
@@ -98,13 +98,13 @@ class PolygonScanline : RastScale() {
         @PublishedApi
         internal val big = Buckets(pool, RAST_BIG_BUCKET_SIZE)
 
-        fun add(edge: Edge) {
+        fun add(edge: MEdge) {
             if (small.addThresold(edge, 4)) return
             if (medium.addThresold(edge, 4)) return
             big.addThresold(edge)
         }
 
-        inline fun fastForEachY(y: Int, block: (edge: Edge) -> Unit) {
+        inline fun fastForEachY(y: Int, block: (edge: MEdge) -> Unit) {
             small.fastForEachY(y) { block(it) }
             medium.fastForEachY(y) { block(it) }
             big.fastForEachY(y) { block(it) }
@@ -117,16 +117,16 @@ class PolygonScanline : RastScale() {
         }
     }
 
-    private val edgesPool = Pool { Edge() }
+    private val edgesPool = Pool { MEdge() }
 
     @PublishedApi
-    internal val edges = FastArrayList<Edge>()
+    internal val edges = FastArrayList<MEdge>()
     @PublishedApi
-    internal val hedges = FastArrayList<Edge>()
-    internal val allEdges = FastArrayList<Edge>()
+    internal val hedges = FastArrayList<MEdge>()
+    internal val allEdges = FastArrayList<MEdge>()
     private val buckets = AllBuckets()
 
-    fun getBounds(out: Rectangle = Rectangle()) = boundsBuilder.getBounds(out)
+    fun getBounds(out: MRectangle = MRectangle()) = boundsBuilder.getBounds(out)
 
     private var closed = true
     fun reset() {
@@ -214,7 +214,7 @@ class PolygonScanline : RastScale() {
     fun add(x: Float, y: Float, move: Boolean) = add(x.toDouble(), y.toDouble(), move)
     fun add(x: Int, y: Int, move: Boolean) = add(x.toDouble(), y.toDouble(), move)
 
-    internal inline fun forEachActiveEdgeAtY(y: Int, block: (Edge) -> Unit): Int {
+    internal inline fun forEachActiveEdgeAtY(y: Int, block: (MEdge) -> Unit): Int {
         var edgesChecked = 0
         buckets.fastForEachY(y) { edge ->
             edgesChecked++
@@ -309,12 +309,12 @@ class PolygonScanline : RastScale() {
         return ss.contains(x)
     }
 
-    fun getAllLines(): List<Line> = allEdges.map { Line(it.ax.d, it.ay.d, it.bx.d, it.by.d) }
+    fun getAllLines(): List<MLine> = allEdges.map { MLine(it.ax.d, it.ay.d, it.bx.d, it.by.d) }
 
     fun getLineIntersection(x0: Int, y0: Int, x1: Int, y1: Int, out: LineIntersection = LineIntersection()): LineIntersection? {
         // @TODO: Optimize not iterating over all the edges, but only the ones between y0 and y1
         allEdges.fastForEachWithIndex { index, edge ->
-            val res = Edge.getIntersectXY(
+            val res = MEdge.getIntersectXY(
                 edge.ax.toDouble(), edge.ay.toDouble(), edge.bx.toDouble(), edge.by.toDouble(),
                 x0.toDouble(), y0.toDouble(), x1.toDouble(), y1.toDouble(),
                 out.intersection
@@ -327,7 +327,7 @@ class PolygonScanline : RastScale() {
                     out.setFrom(
                         edge.ax.d, edge.ay.d, edge.bx.d, edge.by.d,
                         out.intersection.x.toInt().d, out.intersection.y.toInt().d,
-                        Point.distance(x0.d, y0.d, x1.d, y1.d)
+                        MPoint.distance(x0.d, y0.d, x1.d, y1.d)
                     )
                     return out
                 }
@@ -339,7 +339,7 @@ class PolygonScanline : RastScale() {
     fun getLineIntersection(x0: Double, y0: Double, x1: Double, y1: Double, out: LineIntersection = LineIntersection()) = getLineIntersection(x0.s, y0.s, x1.s, y1.s, out)
     fun getLineIntersection(a: IPointInt, b: IPointInt, out: LineIntersection = LineIntersection()) = getLineIntersection(a.x, a.y, b.x, b.y, out)
     fun getLineIntersection(a: IPoint, b: IPoint, out: LineIntersection = LineIntersection()) = getLineIntersection(a.x.s, a.y.s, b.x.s, b.y.s, out)
-    fun getLineIntersection(line: Line, out: LineIntersection = LineIntersection()) = getLineIntersection(line.a, line.b, out)
+    fun getLineIntersection(line: MLine, out: LineIntersection = LineIntersection()) = getLineIntersection(line.a, line.b, out)
 
     private class XWithWind {
         val x = IntArrayList(1024)

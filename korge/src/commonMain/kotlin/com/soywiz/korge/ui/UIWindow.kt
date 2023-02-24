@@ -38,7 +38,7 @@ class UIWindow(title: String, width: Double = 256.0, height: Double = 256.0) : U
     var maxHeight = 4096.0
 
     private val bgMaterial = uiMaterialLayer(width, height) {
-        radius = RectCorners(12.0)
+        radius = IRectCorners(12.0)
         colorMul = if (isFocused) Colors["#394674"] else Colors["#999"]
         shadowColor = Colors.BLACK.withAd(0.9)
         shadowRadius = 20.0
@@ -73,7 +73,7 @@ class UIWindow(title: String, width: Double = 256.0, height: Double = 256.0) : U
     class ScaleHandler(val window: UIWindow, val anchor: Anchor) {
         val isCorner = (anchor.sx == anchor.sy)
 
-        val view = window.solidRect(0.0, 0.0, Colors.TRANSPARENT_BLACK) {
+        val view = window.solidRect(0.0, 0.0, Colors.TRANSPARENT) {
             val sh = this
             anchor(Anchor.CENTER)
             cursor = GameWindow.Cursor.fromAnchorResize(anchor)
@@ -83,28 +83,32 @@ class UIWindow(title: String, width: Double = 256.0, height: Double = 256.0) : U
                 val bounds = obounds.clone()
                 when {
                     anchor.sx < 0.5 -> {
-                        bounds.leftKeepingRight = it.cx
+                        bounds.left = it.cx
                         if (bounds.width !in window.minWidth..window.maxWidth) {
-                            bounds.leftKeepingRight = obounds.leftKeepingRight
+                            bounds.left = obounds.left
                         }
                     }
+
                     anchor.sx > 0.5 -> {
                         bounds.right = it.cx
                         bounds.width = bounds.width.clamp(window.minWidth, window.maxWidth)
                     }
+
                     else -> Unit
                 }
                 when {
                     anchor.sy < 0.5 -> {
-                        bounds.topKeepingBottom = it.cy
+                        bounds.top = it.cy
                         if (bounds.height !in window.minHeight..window.maxHeight) {
-                            bounds.topKeepingBottom = obounds.topKeepingBottom
+                            bounds.top = obounds.top
                         }
                     }
+
                     anchor.sy > 0.5 -> {
                         bounds.bottom = it.cy
                         bounds.height = bounds.height.clamp(window.minHeight, window.maxHeight)
                     }
+
                     else -> Unit
                 }
                 window.setGlobalBounds(bounds)

@@ -23,9 +23,9 @@ class UIText(
     protected var bover by uiObservable(false) { updateState() }
     protected var bpressing by uiObservable(false) { updateState() }
 
-    private val background = solidRect(width, height, Colors.TRANSPARENT_BLACK)
+    private val background = solidRect(width, height, Colors.TRANSPARENT)
     private val textView = text(text, font = DefaultTtfFontAsBitmap)
-    var bgcolor: RGBA = Colors.TRANSPARENT_BLACK
+    var bgcolor: RGBA = Colors.TRANSPARENT
 
     var text: String by textView::text
 
@@ -66,7 +66,7 @@ class UIText(
         bpressing = false
     }
 
-    private val textBounds = Rectangle()
+    private val textBounds = MRectangle()
 
     override fun renderInternal(ctx: RenderContext) {
         background.visible = bgcolor.a != 0

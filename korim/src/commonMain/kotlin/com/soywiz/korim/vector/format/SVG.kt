@@ -3,6 +3,7 @@ package com.soywiz.korim.vector.format
 import com.soywiz.kds.ListReader
 import com.soywiz.kds.mapWhile
 import com.soywiz.klock.TimeSpan
+import com.soywiz.klogger.*
 import com.soywiz.korim.annotation.KorimExperimental
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
@@ -21,8 +22,8 @@ import com.soywiz.korio.util.StrReader
 import com.soywiz.korio.util.isLetterOrDigit
 import com.soywiz.korio.util.isNumeric
 import com.soywiz.korio.util.reader
-import com.soywiz.korma.geom.Matrix
-import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.MMatrix
+import com.soywiz.korma.geom.MRectangle
 import com.soywiz.korma.geom.shape.getPoints2
 import com.soywiz.korma.geom.vector.LineCap
 import com.soywiz.korma.geom.vector.LineJoin
@@ -33,7 +34,6 @@ import com.soywiz.korma.geom.vector.isNotEmpty
 import com.soywiz.korma.geom.vector.roundRect
 import com.soywiz.korma.geom.vector.write
 import kotlin.collections.set
-import kotlin.reflect.KMutableProperty1
 
 class SVG(val root: Xml, val warningProcessor: ((message: String) -> Unit)? = null) : SizedDrawable {
 	//constructor(@Language("xml") str: String) : this(Xml(str))
@@ -48,7 +48,7 @@ class SVG(val root: Xml, val warningProcessor: ((message: String) -> Unit)? = nu
 	val dheight = root.double("height", 128.0)
 	val viewBox = root.getString("viewBox") ?: "0 0 $dwidth $dheight"
 	val viewBoxNumbers = viewBox.split(' ').map { it.trim().toDoubleOrNull() ?: 0.0 }
-	val viewBoxRectangle = Rectangle(
+	val viewBoxRectangle = MRectangle(
 		viewBoxNumbers.getOrElse(0) { 0.0 },
 		viewBoxNumbers.getOrElse(1) { 0.0 },
 		viewBoxNumbers.getOrElse(2) { dwidth },
@@ -110,7 +110,7 @@ class SVG(val root: Xml, val warningProcessor: ((message: String) -> Unit)? = nu
             "userSpaceOnUse" -> GradientUnits.USER_SPACE_ON_USE
             else -> GradientUnits.OBJECT_BOUNDING_BOX
         }
-        val gradientTransform: Matrix = def.getString("gradientTransform")?.let { CSS.parseTransform(it) } ?: Matrix()
+        val gradientTransform: MMatrix = def.getString("gradientTransform")?.let { CSS.parseTransform(it) } ?: MMatrix()
         val spreadMethod = when ((def.getString("spreadMethod") ?: "pad").lowercase()) {
             "pad" -> CycleMethod.NO_CYCLE
             "repeat" -> CycleMethod.REPEAT
@@ -202,7 +202,7 @@ class SVG(val root: Xml, val warningProcessor: ((message: String) -> Unit)? = nu
         }
 
         val attributes: Map<String, String> = parseAttributesAndStyles(xml)
-        var transform: Matrix? = attributes["transform"]?.let { CSS.parseTransform(it) }
+        var transform: MMatrix? = attributes["transform"]?.let { CSS.parseTransform(it) }
         var opacity: Double = attributes["opacity"]?.toDoubleOrNull() ?: 1.0
 
         val children = xml.allNodeChildren.mapNotNull {
@@ -300,13 +300,13 @@ class SVG(val root: Xml, val warningProcessor: ((message: String) -> Unit)? = nu
                         val idName = urlPattern.substr(1).toLowerCase()
                         val def = defs[idName]
                         if (def == null) {
-                            println(defs)
-                            println("Can't find svg definition '$idName'")
+                            logger.info { defs }
+                            logger.info { "Can't find svg definition '$idName'" }
                         }
                         //println("URL: def=$def")
                         def?.paint ?: NonePaint
                     } else {
-                        println("Unsupported $str")
+                        logger.info { "Unsupported $str" }
                         NonePaint
                     }
                 }
@@ -479,6 +479,8 @@ class SVG(val root: Xml, val warningProcessor: ((message: String) -> Unit)? = nu
     }
 
 	companion object {
+        val logger = Logger("SVG")
+
         val ColorDefaultBlack = Colors.WithDefault(Colors.BLACK)
 
         fun parseAttributesAndStyles(node: Xml): Map<String, String> {
@@ -486,9 +488,6 @@ class SVG(val root: Xml, val warningProcessor: ((message: String) -> Unit)? = nu
             node.getString("style")?.let { out.putAll(CSSDeclarations.parseToMap(it)) }
             return out
         }
-
-        @Deprecated("", ReplaceWith("SvgPath.tokenizePath(str)"))
-		fun tokenizePath(str: String): List<PathToken> = SvgPath.tokenizePath(str)
 	}
 
 	interface PathToken {

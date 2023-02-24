@@ -4,6 +4,7 @@ package com.soywiz.korim.bitmap.vector
 
 import com.soywiz.kds.DoubleArrayList
 import com.soywiz.kds.IntArrayList
+import com.soywiz.kmem.*
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.bitmap.NativeImage
 import com.soywiz.korim.bitmap.context2d
@@ -12,9 +13,8 @@ import com.soywiz.korim.format.PNG
 import com.soywiz.korim.format.nativeImageFormatProvider
 import com.soywiz.korim.paint.*
 import com.soywiz.korio.async.suspendTest
-import com.soywiz.korio.util.OS
 import com.soywiz.korma.geom.IPoint
-import com.soywiz.korma.geom.Matrix
+import com.soywiz.korma.geom.MMatrix
 import com.soywiz.korma.geom.vector.VectorBuilder
 import com.soywiz.korma.geom.vector.lineTo
 import com.soywiz.korma.geom.vector.moveTo
@@ -28,7 +28,7 @@ import kotlin.test.assertEquals
 class Bitmap32Context2dTest {
     @Test
     fun testVisualRendered() = suspendTest {
-        if (OS.isNative) return@suspendTest
+        if (Platform.isNative) return@suspendTest
         //if (OS.isMac) return@suspendTest // Ignore on MAC since this fails on travis on K/N?
         //if (OS.isTvos) return@suspendTest // Ignore on MAC since this fails on travis on K/N?
 
@@ -48,7 +48,7 @@ class Bitmap32Context2dTest {
                             //32.0, 8.0, 1.0,
                             stops = DoubleArrayList(0.0, 1.0),
                             colors = IntArrayList(Colors.BLUE.value, Colors.RED.value),
-                            transform = Matrix().scale(2.0, 0.75)
+                            transform = MMatrix().scale(2.0, 0.75)
                         )
                     )
                     if (true) {
@@ -80,7 +80,7 @@ class Bitmap32Context2dTest {
     }
 
     @Test
-    fun renderContext2dWithImage() = suspendTest({ !OS.isJsNodeJs }) { // @TODO: Check why this is not working on Node.JS
+    fun renderContext2dWithImage() = suspendTest({ !Platform.isJsNodeJs }) { // @TODO: Check why this is not working on Node.JS
         val pngBytes = "iVBORw0KGgoAAAANSUhEUgAAACAAAAAgAQMAAABJtOi3AAAAA1BMVEVrVPMZmyLtAAAAC0lEQVR4AWMY5AAAAKAAAVQqnscAAAAASUVORK5CYII=".fromBase64()
         PNG.decode(pngBytes)
 
@@ -88,12 +88,12 @@ class Bitmap32Context2dTest {
 
         val rendered = NativeImage(128, 128).context2d {
             rect(0, 0, 100, 100)
-            fill(BitmapPaint(img, Matrix()))
+            fill(BitmapPaint(img, MMatrix()))
         }
         val bmp = rendered.toBMP32()
 
         // @TODO: This should work on native too!
-        if (!OS.isNative) {
+        if (!Platform.isNative) {
             assertEquals("#6b54f3ff", bmp[0, 0].hexString)
             assertEquals("#6b54f3ff", bmp[31, 31].hexString)
             //assertEquals("#6b54f3ff", bmp[99, 99].hexString) // @TODO: This should work too on Node.JS or should not work on JVM?

@@ -1,6 +1,5 @@
 package com.soywiz.korim.format
 
-import com.soywiz.klogger.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korma.geom.*
@@ -34,7 +33,7 @@ class ImageFormatsNativeTest {
     @Test
     fun svg() = suspendTest {
         val bi = resourcesVfs["logo.svg"].readBitmapInfo(formats)!!
-        assertEquals(Size(60, 60), bi.size)
+        assertEquals(MSize(60, 60), bi.size)
         val bitmap = resourcesVfs["logo.svg"].readBitmap(formats)
         //bitmap.showImageAndWait()
         //val logs = Console.capture {}

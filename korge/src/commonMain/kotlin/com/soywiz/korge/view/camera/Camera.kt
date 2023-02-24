@@ -13,14 +13,7 @@ import com.soywiz.korge.view.addUpdater
 import com.soywiz.korio.async.Signal
 import com.soywiz.korio.async.invoke
 import com.soywiz.korio.async.waitOne
-import com.soywiz.korma.geom.Anchor
-import com.soywiz.korma.geom.Angle
-import com.soywiz.korma.geom.Point
-import com.soywiz.korma.geom.Rectangle
-import com.soywiz.korma.geom.ScaleMode
-import com.soywiz.korma.geom.degrees
-import com.soywiz.korma.geom.interpolate
-import com.soywiz.korma.geom.setTo
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.interpolation.Easing
 import com.soywiz.korma.interpolation.MutableInterpolable
 import com.soywiz.korma.interpolation.interpolate
@@ -45,14 +38,14 @@ class CameraContainer(
     block: @ViewDslMarker CameraContainer.() -> Unit = {}
 ) : FixedSizeContainer(width, height, clip), View.Reference {
     var clampToBounds: Boolean = false
-    val cameraViewportBounds: Rectangle = Rectangle(0, 0, 4096, 4096)
+    val cameraViewportBounds: MRectangle = MRectangle(0, 0, 4096, 4096)
 
     private val contentContainer = Container()
 
     class ContentContainer(val cameraContainer: CameraContainer) : FixedSizeContainer(cameraContainer.width, cameraContainer.height), Reference {
-        override fun getLocalBoundsInternal(out: Rectangle) {
+        override fun getLocalBoundsInternal(out: MRectangle) {
             //out.setTo(0, 0, cameraContainer.width, cameraContainer.height)
-            out.setTo(0, 0, width, height)
+            out.setTo(0.0, 0.0, width, height)
         }
     }
 
@@ -121,8 +114,8 @@ class CameraContainer(
     fun getDefaultCamera(out: Camera = Camera()): Camera = out.setTo(x = width / 2.0, y = height / 2.0, anchorX = 0.5, anchorY = 0.5)
 
     companion object {
-        fun getCameraRect(rect: Rectangle, scaleMode: ScaleMode = ScaleMode.SHOW_ALL, cameraWidth: Double, cameraHeight: Double, cameraAnchorX: Double, cameraAnchorY: Double, out: Camera = Camera()): Camera {
-            val size = Rectangle(0.0, 0.0, cameraWidth, cameraHeight).place(rect.size, Anchor.TOP_LEFT, scale = scaleMode).size
+        fun getCameraRect(rect: MRectangle, scaleMode: ScaleMode = ScaleMode.SHOW_ALL, cameraWidth: Double, cameraHeight: Double, cameraAnchorX: Double, cameraAnchorY: Double, out: Camera = Camera()): Camera {
+            val size = MRectangle(0.0, 0.0, cameraWidth, cameraHeight).place(rect.size, Anchor.TOP_LEFT, scale = scaleMode).size
             val scaleX = size.width / rect.width
             val scaleY = size.height / rect.height
             return out.setTo(
@@ -136,9 +129,9 @@ class CameraContainer(
         }
     }
 
-    fun getCameraRect(rect: Rectangle, scaleMode: ScaleMode = ScaleMode.SHOW_ALL, out: Camera = Camera()): Camera = getCameraRect(rect, scaleMode, width, height, cameraAnchorX, cameraAnchorY, out)
-    fun getCameraToFit(rect: Rectangle, out: Camera = Camera()): Camera = getCameraRect(rect, ScaleMode.SHOW_ALL, out)
-    fun getCameraToCover(rect: Rectangle, out: Camera = Camera()): Camera = getCameraRect(rect, ScaleMode.COVER, out)
+    fun getCameraRect(rect: MRectangle, scaleMode: ScaleMode = ScaleMode.SHOW_ALL, out: Camera = Camera()): Camera = getCameraRect(rect, scaleMode, width, height, cameraAnchorX, cameraAnchorY, out)
+    fun getCameraToFit(rect: MRectangle, out: Camera = Camera()): Camera = getCameraRect(rect, ScaleMode.SHOW_ALL, out)
+    fun getCameraToCover(rect: MRectangle, out: Camera = Camera()): Camera = getCameraRect(rect, ScaleMode.COVER, out)
 
     private var transitionTime = 1.0.seconds
     private var elapsedTime = 0.0.milliseconds
@@ -189,7 +182,7 @@ class CameraContainer(
         onCompletedTransition.waitOne()
     }
 
-    fun getFollowingXY(out: Point = Point()): Point {
+    fun getFollowingXY(out: MPoint = MPoint()): MPoint {
         val followGlobalX = following!!.globalX
         val followGlobalY = following!!.globalY
         val localToContentX = content!!.globalToLocalX(followGlobalX, followGlobalY)
@@ -197,7 +190,7 @@ class CameraContainer(
         return out.setTo(localToContentX, localToContentY)
     }
 
-    private val tempPoint = Point()
+    private val tempPoint = MPoint()
     init {
         block(this)
         contentContainer.addTo(this)
@@ -259,7 +252,7 @@ class CameraContainer(
         contentContainer.scaleY = realScaleY
     }
 
-    fun setZoomAt(anchor: Point, zoom: Double) {
+    fun setZoomAt(anchor: MPoint, zoom: Double) {
         setAnchorPosKeepingPos(anchor.x, anchor.y)
         cameraZoom = zoom
     }
@@ -269,7 +262,7 @@ class CameraContainer(
         cameraZoom = zoom
     }
 
-    fun setAnchorPosKeepingPos(anchor: Point) {
+    fun setAnchorPosKeepingPos(anchor: MPoint) {
         setAnchorPosKeepingPos(anchor.x, anchor.y)
     }
 
@@ -342,7 +335,7 @@ data class Camera(
             posRatio.interpolate(l.x, r.x),
             posRatio.interpolate(l.y, r.y),
             ratio.interpolate(l.zoom, r.zoom),
-            ratio.interpolate(l.angle, r.angle), // @TODO: Fix KorMA angle interpolator
+            ratio.interpolateAngleDenormalized(l.angle, r.angle), // @TODO: Fix KorMA angle interpolator
             ratio.interpolate(l.anchorX, r.anchorX),
             ratio.interpolate(l.anchorY, r.anchorY)
         )

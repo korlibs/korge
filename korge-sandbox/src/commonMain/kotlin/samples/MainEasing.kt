@@ -6,15 +6,8 @@ import com.soywiz.korge.input.onOver
 import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.tween.get
 import com.soywiz.korge.tween.tweenAsync
-import com.soywiz.korge.view.Container
-import com.soywiz.korge.view.SContainer
-import com.soywiz.korge.view.View
-import com.soywiz.korge.view.addTo
-import com.soywiz.korge.view.circle
-import com.soywiz.korge.view.solidRect
-import com.soywiz.korge.view.text
+import com.soywiz.korge.view.*
 import com.soywiz.korge.view.vector.gpuShapeView
-import com.soywiz.korge.view.xy
 import com.soywiz.korim.color.Colors
 import com.soywiz.korma.geom.vector.line
 import com.soywiz.korma.interpolation.Easing
@@ -28,7 +21,7 @@ class MainEasing : Scene() {
         fun renderEasing(easing: Easing): View {
             return Container().apply {
                 val bg = solidRect(64, -64, Colors.BLACK.withAd(0.2))
-                gpuShapeView { shape ->
+                graphics { shape ->
                     stroke(Colors.RED, lineWidth = 4.0) {
                         this.line(0.0, 0.0, 0.0, -64.0)
                         this.line(0.0, 0.0, 64.0, 0.0)

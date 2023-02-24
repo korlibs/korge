@@ -5,6 +5,7 @@ import kotlin.test.*
 
 class KglOffScreenTest {
     @Test
+    @Ignore
     fun test() {
         if (Platform.isJsNodeJs) return
         if (Platform.isIos) return

@@ -1,29 +1,9 @@
 package com.soywiz.korma.geom.vector
 
-import com.soywiz.korma.annotations.KorDslMarker
-import com.soywiz.korma.annotations.RootViewDslMarker
-import com.soywiz.korma.annotations.VectorDslMarker
-import com.soywiz.korma.annotations.ViewDslMarker
-import com.soywiz.korma.geom.Angle
-import com.soywiz.korma.geom.IPoint
-import com.soywiz.korma.geom.IPointArrayList
-import com.soywiz.korma.geom.IRectangle
-import com.soywiz.korma.geom.IRectangleInt
-import com.soywiz.korma.geom.Matrix
-import com.soywiz.korma.geom.PointArrayList
-import com.soywiz.korma.geom.Rectangle
-import com.soywiz.korma.geom.bezier.Arc
-import com.soywiz.korma.geom.bezier.Bezier
-import com.soywiz.korma.geom.bezier.Curves
-import com.soywiz.korma.geom.bezier.toVectorPath
-import com.soywiz.korma.geom.cosine
-import com.soywiz.korma.geom.degrees
-import com.soywiz.korma.geom.minus
-import com.soywiz.korma.geom.plus
-import com.soywiz.korma.geom.sine
-import com.soywiz.korma.geom.times
-import com.soywiz.korma.geom.unaryMinus
-import kotlin.jvm.JvmName
+import com.soywiz.korma.annotations.*
+import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.bezier.*
+import kotlin.jvm.*
 
 @KorDslMarker
 @ViewDslMarker
@@ -181,7 +161,7 @@ internal fun VectorBuilder._regularPolygonStar(points: Int, radiusSmall: Double 
  *  \________\
  *
  * */
-fun VectorBuilder.parallelogram(bounds: Rectangle, angle: Angle = 30.degrees, direction: Boolean = true) {
+fun VectorBuilder.parallelogram(bounds: MRectangle, angle: Angle = 30.degrees, direction: Boolean = true) {
     val dx = angle.sine * bounds.height
     val dx0 = if (direction) 0.0 else dx
     val dx1 = if (direction) dx else 0.0
@@ -285,11 +265,6 @@ fun VectorBuilder.cubic(x0: Int, y0: Int, cx1: Int, cy1: Int, cx2: Int, cy2: Int
 fun VectorBuilder.quad(o: IPoint, c: IPoint, a: IPoint) = quad(o.x, o.y, c.x, c.y, a.x, a.y)
 fun VectorBuilder.cubic(o: IPoint, c1: IPoint, c2: IPoint, a: IPoint) = cubic(o.x, o.y, c1.x, c1.y, c2.x, c2.y, a.x, a.y)
 
-@Deprecated("Use Bezier instead")
-fun VectorBuilder.quad(curve: Bezier) = curve(curve)
-@Deprecated("Use Bezier instead")
-fun VectorBuilder.cubic(curve: Bezier) = curve(curve)
-
 fun VectorBuilder.curve(curve: Bezier) {
     val p = curve.points
     when (curve.order) {
@@ -334,7 +309,7 @@ fun VectorBuilder.rLineToV(ay: Double, relative: Boolean) = if (relative) rLineT
 fun VectorBuilder.rLineToV(ay: Float, relative: Boolean) = if (relative) rLineToV(ay) else lineToV(ay)
 fun VectorBuilder.rLineToV(ay: Int, relative: Boolean) = if (relative) rLineToV(ay) else lineToV(ay)
 
-fun VectorBuilder.transformed(m: Matrix): VectorBuilder {
+fun VectorBuilder.transformed(m: MMatrix): VectorBuilder {
     val im = m.inverted()
     val parent = this
     return object : VectorBuilder {
@@ -360,4 +335,4 @@ fun VectorBuilder.transformed(m: Matrix): VectorBuilder {
     }
 }
 
-fun <T> VectorBuilder.transformed(m: Matrix, block: VectorBuilder.() -> T): T = block(this.transformed(m))
+fun <T> VectorBuilder.transformed(m: MMatrix, block: VectorBuilder.() -> T): T = block(this.transformed(m))

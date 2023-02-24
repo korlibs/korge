@@ -1,7 +1,8 @@
 package com.soywiz.korim.bitmap
 
+import com.soywiz.klogger.*
+import com.soywiz.kmem.*
 import com.soywiz.korim.color.*
-import com.soywiz.korim.format.*
 import com.soywiz.korim.format.ImageOrientation
 import com.soywiz.korio.async.*
 import com.soywiz.korio.util.*
@@ -12,6 +13,8 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class BitmapSliceTest {
+    val logger = Logger("BitmapSliceTest")
+
     @Test
     fun test() {
         val bmp = Bitmap32(64, 64, premultiplied = false)
@@ -56,7 +59,7 @@ class BitmapSliceTest {
 
     @Test
     fun testTransformed() = suspendTest {
-        if (!OS.isJvm) return@suspendTest
+        if (!Platform.isJvm) return@suspendTest
 
         val bmp = Bitmap32(20, 10, value = Colors.YELLOW)
         val slice = bmp.sliceWithSize(1, 1, 8, 18, orientation = ImageOrientation.ROTATE_90)
@@ -243,10 +246,10 @@ class BitmapSliceTest {
 
     @Test
     fun test2() = suspendTest {
-        val bmp1 = RectSlice(SizeInt(100, 100), RectangleInt(25, 25, 50, 50), ImageOrientation.ROTATE_0)
-        println("bmp1=$bmp1, coords=${bmp1.coords}")
+        val bmp1 = RectSlice(MSizeInt(100, 100), MRectangleInt(25, 25, 50, 50), ImageOrientation.ROTATE_0)
+        logger.debug { "bmp1=$bmp1, coords=${bmp1.coords}" }
         val bmp2 = bmp1.copy(orientation = ImageOrientation.ROTATE_90)
-        println("bmp2=$bmp2, coords=${bmp2.coords}")
+        logger.debug { "bmp2=$bmp2, coords=${bmp2.coords}" }
 
         val bmp = Bitmap32(200, 100, premultiplied = true).context2d {
             fill(Colors.RED) { rect(0, 0, 200, 5) }

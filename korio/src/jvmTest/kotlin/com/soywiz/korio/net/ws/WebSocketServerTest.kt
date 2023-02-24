@@ -1,16 +1,14 @@
 package com.soywiz.korio.net.ws
 
-import com.soywiz.klock.seconds
-import com.soywiz.korio.async.Signal
-import com.soywiz.korio.async.suspendTest
-import com.soywiz.korio.async.waitOne
-import com.soywiz.korio.net.http.createHttpServer
-import kotlinx.coroutines.cancel
-import kotlin.test.Ignore
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import com.soywiz.klogger.*
+import com.soywiz.korio.async.*
+import com.soywiz.korio.lang.*
+import com.soywiz.korio.net.http.*
+import kotlin.test.*
 
 class WebSocketServerTest {
+    val logger = Logger(this::class.portableSimpleName)
+
     @Test
     //@Ignore // @TODO: Somehow this runs forever / until timeout?
     fun test() = suspendTest {
@@ -21,16 +19,16 @@ class WebSocketServerTest {
             //println(req.headers)
             req.onBinaryMessage {
                 log += "server:bytes(${it.size})"
-                println("$log")
+                logger.debug { "$log" }
             }
             req.onStringMessage {
                 log += "server:$it"
                 req.send("Received $it")
-                println("$log")
+                logger.debug { "$log" }
             }
             req.onClose {
                 log += "server:$it"
-                println("$log")
+                logger.debug { "$log" }
                 onCloseReceived(Unit)
             }
         }

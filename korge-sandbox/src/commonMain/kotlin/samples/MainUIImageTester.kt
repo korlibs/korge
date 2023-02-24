@@ -12,23 +12,22 @@ import com.soywiz.korge.ui.uiHorizontalStack
 import com.soywiz.korge.ui.uiImage
 import com.soywiz.korge.ui.uiTooltipContainer
 import com.soywiz.korge.ui.uiVerticalStack
-import com.soywiz.korge.view.SContainer
-import com.soywiz.korge.view.anchor
-import com.soywiz.korge.view.size
-import com.soywiz.korge.view.solidRect
-import com.soywiz.korge.view.xy
+import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.asumePremultiplied
 import com.soywiz.korim.bitmap.slice
-import com.soywiz.korim.color.Colors
-import com.soywiz.korim.format.ASE
-import com.soywiz.korim.format.readBitmap
-import com.soywiz.korim.format.readBitmapSlice
+import com.soywiz.korim.color.*
+import com.soywiz.korim.format.*
 import com.soywiz.korio.file.std.resourcesVfs
 import com.soywiz.korma.geom.Anchor
 import com.soywiz.korma.geom.ScaleMode
 
 class MainUIImageTester : Scene() {
     override suspend fun SContainer.sceneMain() {
+        //val imageData = resourcesVfs["vampire.ase"].readBitmapImageData(ASE.toProps())
+        ////val imageData = resourcesVfs["vampire_slices_fixed.ase"].readImageDataContainer(ASE.toProps())
+        //image(imageData.mainBitmap).scale(8.0)
+        //return
+
         solidRect(10, 10, Colors.RED).anchor(Anchor.TOP_LEFT).dockedTo(Anchor.TOP_LEFT)
         solidRect(10, 10, Colors.GREEN).anchor(Anchor.TOP_RIGHT).dockedTo(Anchor.TOP_RIGHT)
         solidRect(10, 10, Colors.BLUE).anchor(Anchor.BOTTOM_RIGHT).dockedTo(Anchor.BOTTOM_RIGHT)
@@ -37,7 +36,7 @@ class MainUIImageTester : Scene() {
         val korimPng = resourcesVfs["korim.png"].readBitmapSlice()
         val bunnysPng = resourcesVfs["bunnys.png"].readBitmapSlice()
         //val vampireAse = resourcesVfs["vampire.ase"].readBitmap(ASE).toBMP32().premultipliedIfRequired().slice()
-        val vampireAse = resourcesVfs["vampire.ase"].readBitmap(ASE).slice()
+        val vampireAse = resourcesVfs["vampire.ase"].readBitmap(ASE.toProps(ImageDecodingProps.DEFAULT_PREMULT)).slice()
 
         //println("vampireAse.premultiplied=${vampireAse.premultiplied}")
 

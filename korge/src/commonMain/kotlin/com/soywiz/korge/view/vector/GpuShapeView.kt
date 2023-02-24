@@ -13,18 +13,15 @@ import com.soywiz.korim.vector.*
 import com.soywiz.korma.geom.Angle
 import com.soywiz.korma.geom.BoundsBuilder
 import com.soywiz.korma.geom.IPoint
-import com.soywiz.korma.geom.Line
-import com.soywiz.korma.geom.Matrix
-import com.soywiz.korma.geom.Point
+import com.soywiz.korma.geom.MLine
+import com.soywiz.korma.geom.MMatrix
+import com.soywiz.korma.geom.MPoint
+import com.soywiz.korma.geom.MRectangle
 import com.soywiz.korma.geom.PointArrayList
 import com.soywiz.korma.geom.PointPool
-import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.geom.bezier.*
 import com.soywiz.korma.geom.degrees
-import com.soywiz.korma.geom.expand
 import com.soywiz.korma.geom.fastForEachGeneric
-import com.soywiz.korma.geom.minus
-import com.soywiz.korma.geom.plus
 import com.soywiz.korma.geom.shape.*
 import com.soywiz.korma.geom.vector.*
 import kotlin.math.absoluteValue
@@ -122,9 +119,9 @@ open class GpuShapeView(
     private var validShapeBounds = false
     private var validShapeBoundsStrokes = false
     private var renderCount = 0
-    private val _shapeBounds: Rectangle = Rectangle()
-    private val _shapeBoundsStrokes: Rectangle = Rectangle()
-    private val shapeBounds: Rectangle
+    private val _shapeBounds: MRectangle = MRectangle()
+    private val _shapeBoundsStrokes: MRectangle = MRectangle()
+    private val shapeBounds: MRectangle
         get() {
             val _bounds = if (boundsIncludeStrokes) _shapeBoundsStrokes else _shapeBounds
             val valid = if (boundsIncludeStrokes) validShapeBoundsStrokes else validShapeBounds
@@ -168,7 +165,7 @@ open class GpuShapeView(
         invalidateShape()
     }
 
-    override fun getLocalBoundsInternal(out: Rectangle) {
+    override fun getLocalBoundsInternal(out: MRectangle) {
         out.setTo(
             shapeBounds.x - anchorDispX,
             shapeBounds.y - anchorDispY,
@@ -194,7 +191,7 @@ open class GpuShapeView(
             }
         }
 
-    private val globalTransform = Matrix.Transform()
+    private val globalTransform = MMatrix.Transform()
     private var globalScale: Double = 1.0
     private var cachedScale: Double = Double.NaN
 
@@ -226,9 +223,7 @@ open class GpuShapeView(
                     renderCommands(ctx, doRequireTexture)
                 }, hasDepth = false, hasStencil = true, msamples = 1) { texture ->
                     ctx.useBatcher {
-                        it.drawQuad(texture, m = ctx.bp.windowToGlobalMatrix,
-                            premultiplied = texture.premultiplied, wrap = false,
-                        )
+                        it.drawQuad(texture, m = ctx.bp.windowToGlobalMatrix)
                     }
                 }
             } else {
@@ -239,7 +234,7 @@ open class GpuShapeView(
         //println("GPU RENDER IN: $time, doRequireTexture=$doRequireTexture")
     }
 
-    private val renderMat = Matrix()
+    private val renderMat = MMatrix()
     private fun renderCommands(ctx: RenderContext, doRequireTexture: Boolean) {
         val mat = if (doRequireTexture) globalMatrix * ctx.bp.globalToWindowMatrix else globalMatrix
         renderMat.copyFrom(mat)
@@ -277,7 +272,7 @@ open class GpuShapeView(
     class SegmentInfo {
         lateinit var s: IPoint // start
         lateinit var e: IPoint // end
-        lateinit var line: Line
+        lateinit var line: MLine
         var angleSE: Angle = 0.degrees
         var angleSE0: Angle = 0.degrees
         var angleSE1: Angle = 0.degrees
@@ -294,11 +289,11 @@ open class GpuShapeView(
         fun p0(index: Int) = if (index == 0) s0 else e0
         fun p1(index: Int) = if (index == 0) s1 else e1
 
-        fun setTo(s: Point, e: Point, lineWidth: Double, scope: PointPool) {
+        fun setTo(s: MPoint, e: MPoint, lineWidth: Double, scope: PointPool) {
             this.s = s
             this.e = e
             scope.apply {
-                line = Line(s, e)
+                line = MLine(s, e)
                 angleSE = Angle.between(s, e)
                 angleSE0 = angleSE - 90.degrees
                 angleSE1 = angleSE + 90.degrees
@@ -359,7 +354,7 @@ open class GpuShapeView(
     //private val strokeCache = HashMap<StrokeRenderCacheKey, StrokeRenderData>()
 
     private fun renderStroke(
-        stateTransform: Matrix,
+        stateTransform: MMatrix,
         strokePath: VectorPath,
         paint: Paint,
         globalAlpha: Double,
@@ -436,7 +431,7 @@ open class GpuShapeView(
         for (n in 0 until points.size + 1) {
             val x = points.getX(n % points.size)
             val y = points.getY(n % points.size)
-            val len = if (isStripAndAntialiased) Point.distance(x, y, xMid, yMid).toFloat() else 0f
+            val len = if (isStripAndAntialiased) MPoint.distance(x, y, xMid, yMid).toFloat() else 0f
             val maxLen = if (isStripAndAntialiased) len else BIG_MAX_LEN
             if (isStrip) {
                 gpuShapeViewCommands.addVertex(xMid.toFloat(), yMid.toFloat(), len = 0f, maxLen = maxLen)
@@ -552,7 +547,7 @@ open class GpuShapeView(
                     val stencilOpFunc = AGStencilOpFunc.DEFAULT.withEnabled(enabled = true).withCompareMode(compareMode = AGCompareMode.ALWAYS).withActionOnBothPass(AGStencilOp.INVERT)
                     val stencilRef = AGStencilReference.DEFAULT.withWriteMask(writeMask = 0b00000001)
                     pathDataList.fastForEach { pathData ->
-                        writeStencil(pathData.vertexStart, pathData.vertexEnd, stencilOpFunc, stencilRef, cullFace = AGCullFace.BOTH)
+                        writeStencil(pathData.vertexStart, pathData.vertexEnd, stencilOpFunc, stencilRef, cullFace = AGCullFace.NONE)
                     }
                 }
                 Winding.NON_ZERO -> {

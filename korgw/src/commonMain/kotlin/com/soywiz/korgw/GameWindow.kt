@@ -1,86 +1,28 @@
 package com.soywiz.korgw
 
 import com.soywiz.kds.*
-import com.soywiz.kds.lock.NonRecursiveLock
-import com.soywiz.klock.PerformanceCounter
-import com.soywiz.klock.TimeSpan
-import com.soywiz.klock.blockingSleep
-import com.soywiz.klock.max
-import com.soywiz.klock.measureTime
-import com.soywiz.klock.microseconds
-import com.soywiz.klock.milliseconds
-import com.soywiz.klock.roundMilliseconds
-import com.soywiz.klock.seconds
-import com.soywiz.klogger.Logger
-import com.soywiz.kmem.setBits
-import com.soywiz.korag.AG
-import com.soywiz.korag.AGWindow
-import com.soywiz.korag.annotation.KoragExperimental
-import com.soywiz.korag.log.AGDummy
-import com.soywiz.korev.DestroyEvent
-import com.soywiz.korev.DisposeEvent
-import com.soywiz.korev.DropFileEvent
-import com.soywiz.korev.EventDispatcher
-import com.soywiz.korev.FullScreenEvent
-import com.soywiz.korev.GamePadConnectionEvent
-import com.soywiz.korev.GamePadUpdateEvent
-import com.soywiz.korev.GamepadMapping
-import com.soywiz.korev.GestureEvent
-import com.soywiz.korev.ISoftKeyboardConfig
-import com.soywiz.korev.InitEvent
-import com.soywiz.korev.Key
-import com.soywiz.korev.KeyEvent
-import com.soywiz.korev.MouseButton
-import com.soywiz.korev.MouseEvent
-import com.soywiz.korev.PauseEvent
-import com.soywiz.korev.RenderEvent
-import com.soywiz.korev.ReshapeEvent
-import com.soywiz.korev.ResumeEvent
-import com.soywiz.korev.StopEvent
-import com.soywiz.korev.TouchBuilder
-import com.soywiz.korev.TouchEvent
-import com.soywiz.korev.addEventListener
-import com.soywiz.korev.dispatch
+import com.soywiz.kds.lock.*
+import com.soywiz.klock.*
+import com.soywiz.klogger.*
+import com.soywiz.kmem.*
+import com.soywiz.korag.*
+import com.soywiz.korag.annotation.*
+import com.soywiz.korag.log.*
+import com.soywiz.korev.*
 import com.soywiz.korgw.GameWindow.Quality.*
-import com.soywiz.korgw.internal.IntTimedCache
-import com.soywiz.korim.bitmap.Bitmap
-import com.soywiz.korim.color.Colors
-import com.soywiz.korim.color.RGBA
-import com.soywiz.korim.vector.Shape
-import com.soywiz.korim.vector.renderWithHotspot
-import com.soywiz.korio.Korio
-import com.soywiz.korio.async.Signal
-import com.soywiz.korio.async.delay
-import com.soywiz.korio.async.invoke
-import com.soywiz.korio.async.launch
-import com.soywiz.korio.async.launchImmediately
-import com.soywiz.korio.file.VfsFile
-import com.soywiz.korio.lang.Closeable
-import com.soywiz.korma.geom.Anchor
-import com.soywiz.korma.geom.Angle
-import com.soywiz.korma.geom.IRectangle
-import com.soywiz.korma.geom.ISize
-import com.soywiz.korma.geom.Point
-import com.soywiz.korma.geom.Rectangle
-import com.soywiz.korma.geom.absoluteValue
-import com.soywiz.korma.geom.degrees
-import com.soywiz.korma.geom.minus
-import com.soywiz.korma.geom.times
-import kotlinx.coroutines.CancellableContinuation
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Delay
-import kotlinx.coroutines.DisposableHandle
-import kotlinx.coroutines.InternalCoroutinesApi
-import kotlinx.coroutines.Runnable
-import kotlinx.coroutines.cancelChildren
-import kotlin.coroutines.Continuation
-import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.coroutineContext
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
-import kotlin.coroutines.startCoroutine
-import kotlin.native.concurrent.ThreadLocal
-import kotlin.properties.Delegates
+import com.soywiz.korgw.internal.*
+import com.soywiz.korim.bitmap.*
+import com.soywiz.korim.color.*
+import com.soywiz.korim.vector.*
+import com.soywiz.korio.*
+import com.soywiz.korio.async.*
+import com.soywiz.korio.file.*
+import com.soywiz.korio.lang.*
+import com.soywiz.korma.geom.*
+import kotlinx.coroutines.*
+import kotlin.coroutines.*
+import kotlin.native.concurrent.*
+import kotlin.properties.*
 
 @ThreadLocal
 var GLOBAL_CHECK_GL = false
@@ -115,6 +57,9 @@ open class GameWindowCoroutineDispatcher : CoroutineDispatcher(), Delay, Closeab
 
     @PublishedApi internal val tasks = Queue<Runnable>()
     @PublishedApi internal val timedTasks = PriorityQueue<TimedTask> { a, b -> a.time.compareTo(b.time) }
+
+    protected val _tasks: Queue<Runnable> get() = tasks
+    protected val _timedTasks: PriorityQueue<TimedTask> get() = timedTasks
     val lock = NonRecursiveLock()
 
     fun hasTasks() = tasks.isNotEmpty()
@@ -174,7 +119,7 @@ open class GameWindowCoroutineDispatcher : CoroutineDispatcher(), Delay, Closeab
             }
         })
         while (!completed) {
-            executePending(128.milliseconds)
+            executePending(256.milliseconds)
             if (completed) break
             blockingSleep(1.milliseconds)
         }
@@ -184,7 +129,7 @@ open class GameWindowCoroutineDispatcher : CoroutineDispatcher(), Delay, Closeab
         return finalResult as T
     }
 
-    fun executePending(availableTime: TimeSpan) {
+    open fun executePending(availableTime: TimeSpan) {
         try {
             val startTime = now()
 
@@ -252,7 +197,7 @@ open class GameWindowCoroutineDispatcher : CoroutineDispatcher(), Delay, Closeab
 
     override fun close() {
         executePending(2.seconds)
-        println("GameWindowCoroutineDispatcher.close")
+        logger.info { "GameWindowCoroutineDispatcher.close" }
         while (timedTasks.isNotEmpty()) {
             timedTasks.removeHead().continuation?.resume(Unit)
         }
@@ -262,11 +207,21 @@ open class GameWindowCoroutineDispatcher : CoroutineDispatcher(), Delay, Closeab
     }
 
     override fun toString(): String = "GameWindowCoroutineDispatcher"
+
+    companion object {
+        val logger = Logger("GameWindow")
+    }
 }
 
 interface GameWindowConfig {
     val quality: GameWindow.Quality
+
+    class Impl(
+        override val quality: GameWindow.Quality = GameWindow.Quality.AUTOMATIC,
+    ) : GameWindowConfig
 }
+
+typealias GameWindowQuality = GameWindow.Quality
 
 open class GameWindow :
     EventDispatcher.Mixin(),
@@ -366,7 +321,7 @@ open class GameWindow :
 
     open val isSoftKeyboardVisible: Boolean get() = false
 
-    open fun setInputRectangle(windowRect: Rectangle) {
+    open fun setInputRectangle(windowRect: MRectangle) {
     }
 
     open fun showSoftKeyboard(force: Boolean = true, config: ISoftKeyboardConfig? = null) {
@@ -386,6 +341,8 @@ open class GameWindow :
 
     override val key: CoroutineContext.Key<*> get() = CoroutineKey
     companion object CoroutineKey : CoroutineContext.Key<GameWindow> {
+        val logger = Logger("GameWindow")
+
         val MenuItemSeparatror = MenuItem(null)
     }
 
@@ -415,8 +372,6 @@ open class GameWindow :
     protected val touchBuilder = TouchBuilder()
     protected val touchEvent get() = touchBuilder.new
     protected val dropFileEvent = DropFileEvent()
-    protected val gamePadUpdateEvent = GamePadUpdateEvent()
-    protected val gamePadConnectionEvent = GamePadConnectionEvent()
 
     @KoragExperimental
     suspend fun <T> runBlockingNoJs(block: suspend () -> T): T {
@@ -521,7 +476,9 @@ open class GameWindow :
     // Alias for close
     fun exit(exitCode: Int = 0): Unit = close(exitCode)
 
-    var exitProcessOnExit: Boolean = true
+    var exitProcessOnClose: Boolean = true
+    @Deprecated("Use exitProcessOnClose instead")
+    var exitProcessOnExit: Boolean by ::exitProcessOnClose
     var exitCode = 0; private set
     var running = true; protected set
     private var closing = false
@@ -531,7 +488,7 @@ open class GameWindow :
         closing = true
         running = false
         this.exitCode = exitCode
-        println("GameWindow.close")
+        logger.info { "GameWindow.close" }
         coroutineDispatcher.close()
         coroutineDispatcher.cancelChildren()
     }
@@ -664,8 +621,9 @@ open class GameWindow :
         try {
             val now = PerformanceCounter.reference
             val consumed = now - startTime
-            val remaining = (counterTimePerFrame - consumed) - 2.milliseconds // Do not push too much so give two extra milliseconds just in case
-            val timeForTasks = coroutineDispatcher.maxAllocatedTimeForTasksPerFrame ?: remaining
+            //val remaining = (counterTimePerFrame - consumed) - 2.milliseconds // Do not push too much so give two extra milliseconds just in case
+            //val timeForTasks = coroutineDispatcher.maxAllocatedTimeForTasksPerFrame ?: (remaining * 10) // We would be skipping up to 10 frames by default
+            val timeForTasks = coroutineDispatcher.maxAllocatedTimeForTasksPerFrame ?: (counterTimePerFrame * 10) // We would be skipping up to 10 frames by default
             val finalTimeForTasks = max(timeForTasks, 4.milliseconds) // Avoid having 0 milliseconds or even negative
             //println("         - frameUpdate: finalTimeForTasks=$finalTimeForTasks, startTime=$startTime, now=$now")
             coroutineDispatcher.executePending(finalTimeForTasks)
@@ -734,50 +692,24 @@ open class GameWindow :
         return cancel1 || cancel2
     }
 
-    //private val gamePadConnectionEvent = GamePadConnectionEvent()
-    fun dispatchGamepadConnectionEvent(type: GamePadConnectionEvent.Type, gamepad: Int) {
-        dispatch(gamePadConnectionEvent.apply {
-            this.type = type
-            this.gamepad = gamepad
-        })
-    }
+    val gamepadEmitter: GamepadInfoEmitter = GamepadInfoEmitter(this)
 
     //private val gamePadUpdateEvent = GamePadUpdateEvent()
     fun dispatchGamepadUpdateStart() {
-        gamePadUpdateEvent.gamepadsLength = 0
+        gamepadEmitter.dispatchGamepadUpdateStart()
     }
 
-    fun dispatchGamepadUpdateAdd(
-        leftStick: Point,
-        rightStick: Point,
-        rawButtonsPressed: Int,
-        mapping: GamepadMapping,
-        name: String?,
-        batteryLevel: Double,
-        name2: String? = null,
-        playerIndex: Int = -1,
-        batteryStatus: com.soywiz.korev.GamepadInfo.BatteryStatus? = null,
-    ) {
-        val index = gamePadUpdateEvent.gamepadsLength++
-        val pad = gamePadUpdateEvent.gamepads[index]
-        pad.mapping = mapping
-        pad.axesLength = 4
-        pad.buttonsLength = 32
-        pad.rawAxes[0] = leftStick.x
-        pad.rawAxes[1] = leftStick.y
-        pad.rawAxes[2] = rightStick.x
-        pad.rawAxes[3] = rightStick.y
-        pad.rawButtonsPressed = rawButtonsPressed
-        pad.name = name ?: "unknown"
-        pad.name2 = name2 ?: "unknown"
-        pad.batteryLevel = batteryLevel
-        pad.batteryStatus = batteryStatus ?: com.soywiz.korev.GamepadInfo.BatteryStatus.UNKNOWN
-        pad.playerIndex = playerIndex.takeIf { it >= 0 } ?: index
+    fun dispatchGamepadUpdateAdd(info: GamepadInfo) {
+        gamepadEmitter.dispatchGamepadUpdateAdd(info)
     }
 
-    fun dispatchGamepadUpdateEnd() {
-        dispatch(gamePadUpdateEvent)
-    }
+    /**
+     * Triggers an update envent and potential CONNECTED/DISCONNECTED events.
+     *
+     * Returns a list of disconnected gamepads.
+     */
+    fun dispatchGamepadUpdateEnd(out: IntArrayList = IntArrayList()): IntArrayList =
+        gamepadEmitter.dispatchGamepadUpdateEnd(out)
 
     fun dispatchKeyEventEx(
         type: KeyEvent.Type, id: Int, character: Char, key: Key, keyCode: Int,

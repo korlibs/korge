@@ -53,7 +53,6 @@ import com.soywiz.kds.genericSort
 import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.kds.swap
 import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.triangle.*
 import kotlin.jvm.JvmName
 import kotlin.math.abs
 
@@ -115,7 +114,7 @@ object Poly2Tri {
      * @param {!SweepContext} tcx - SweepContext object
      * @param {!XY} point   Point
      */
-    fun pointEvent(tcx: SweepContext, point: Point): Node {
+    fun pointEvent(tcx: SweepContext, point: MPoint): Node {
         var node = tcx.locateNode(point)!!
         var new_node = newFrontTriangle(tcx, point, node)
 
@@ -146,7 +145,7 @@ object Poly2Tri {
         edgeEventByPoints(tcx, edge.p, edge.q, node.triangle!!, edge.q)
     }
 
-    fun edgeEventByPoints(tcx: SweepContext, ep: Point, eq: Point, triangle: Triangle, point: Point) {
+    fun edgeEventByPoints(tcx: SweepContext, ep: MPoint, eq: MPoint, triangle: Triangle, point: MPoint) {
         if (isEdgeSideOfTriangle(triangle, ep, eq)) {
             return
         }
@@ -184,7 +183,7 @@ object Poly2Tri {
         }
     }
 
-    fun isEdgeSideOfTriangle(triangle: Triangle, ep: Point, eq: Point): Boolean {
+    fun isEdgeSideOfTriangle(triangle: Triangle, ep: MPoint, eq: MPoint): Boolean {
         var index = triangle.edgeIndex(ep, eq)
         if (index != -1) {
             triangle.markConstrainedEdgeByIndex(index)
@@ -201,7 +200,7 @@ object Poly2Tri {
      * Creates a new front triangle and legalize it
      * @param {!SweepContext} tcx - SweepContext object
      */
-    fun newFrontTriangle(tcx: SweepContext, point: Point, node: Node): Node {
+    fun newFrontTriangle(tcx: SweepContext, point: MPoint, node: Node): Node {
         var triangle = Triangle(point, node.point, node.next!!.point)
 
         triangle.markNeighbor(node.triangle!!)
@@ -384,7 +383,7 @@ object Poly2Tri {
      * @param pd - point opposite a
      * @return {boolean} true if d is inside circle, false if on circle edge
      */
-    fun inCircle(pa: Point, pb: Point, pc: Point, pd: Point): Boolean {
+    fun inCircle(pa: MPoint, pb: MPoint, pc: MPoint, pd: MPoint): Boolean {
         var adx = pa.x - pd.x
         var ady = pa.y - pd.y
         var bdx = pb.x - pd.x
@@ -432,7 +431,7 @@ object Poly2Tri {
      *       n4                    n4
      * </pre>
      */
-    fun rotateTrianglePair(t: Triangle, p: Point, ot: Triangle, op: Point) {
+    fun rotateTrianglePair(t: Triangle, p: MPoint, ot: Triangle, op: MPoint) {
         val n1 = t.neighborCCW(p)
         val n2 = t.neighborCW(p)
         val n3 = ot.neighborCCW(op)
@@ -717,7 +716,7 @@ object Poly2Tri {
         }
     }
 
-    fun flipEdgeEvent(tcx: SweepContext, ep: Point, eq: Point, t: Triangle, p: Point) {
+    fun flipEdgeEvent(tcx: SweepContext, ep: MPoint, eq: MPoint, t: Triangle, p: MPoint) {
         var t = t
         var ot = t.neighborAcross(p) ?: error("FLIP failed due to missing triangle!")
 
@@ -774,7 +773,7 @@ object Poly2Tri {
      * @param op - another point shared by both triangles
      * @return returns the triangle still intersecting the edge
      */
-    fun nextFlipTriangle(tcx: SweepContext, o: Orientation, t: Triangle, ot: Triangle, p: Point, op: Point): Triangle {
+    fun nextFlipTriangle(tcx: SweepContext, o: Orientation, t: Triangle, ot: Triangle, p: MPoint, op: MPoint): Triangle {
         if (o === Orientation.CCW) {
             // ot is not crossing edge after flip
             ot.delaunay_edge[ot.edgeIndex(p, op)] = true
@@ -795,7 +794,7 @@ object Poly2Tri {
      * the point in current triangle that is the opposite point to the next
      * triangle.
      */
-    fun nextFlipPoint(ep: Point, eq: Point, ot: Triangle, op: Point): Point? {
+    fun nextFlipPoint(ep: MPoint, eq: MPoint, ot: Triangle, op: MPoint): MPoint? {
         val o2d = orient2d(eq, op, ep)
         return when {
             o2d === Orientation.CW -> ot.pointCCW(op) // Right
@@ -817,7 +816,7 @@ object Poly2Tri {
      * @param t
      * @param p
      */
-    fun flipScanEdgeEvent(tcx: SweepContext, ep: Point, eq: Point, flip_triangle: Triangle, t: Triangle, p: Point) {
+    fun flipScanEdgeEvent(tcx: SweepContext, ep: MPoint, eq: MPoint, flip_triangle: Triangle, t: Triangle, p: MPoint) {
         val ot = t.neighborAcross(p) ?: error("FLIP failed due to missing triangle")
 
         val op = ot.oppositePoint(t, p)
@@ -848,7 +847,7 @@ object Poly2Tri {
      * @param {!XY} pc  point object with {x,y}
      * @return {Orientation}
      */
-    fun orient2d(pa: Point, pb: Point, pc: Point): Orientation {
+    fun orient2d(pa: MPoint, pb: MPoint, pc: MPoint): Orientation {
         val detleft = (pa.x - pc.x) * (pb.y - pc.y)
         val detright = (pa.y - pc.y) * (pb.x - pc.x)
         val v = detleft - detright
@@ -869,7 +868,7 @@ object Poly2Tri {
      * @param {!XY} pd  point object with {x,y}
      * @return {boolean}
      */
-    fun inScanArea(pa: Point, pb: Point, pc: Point, pd: Point): Boolean {
+    fun inScanArea(pa: MPoint, pb: MPoint, pc: MPoint, pd: MPoint): Boolean {
         val oadb = (pa.x - pb.x) * (pd.y - pb.y) - (pd.x - pb.x) * (pa.y - pb.y)
         if (oadb >= -POLY2TRI_EPSILON) return false
 
@@ -887,7 +886,7 @@ object Poly2Tri {
      * @param {!XY} pc  point object with {x,y}
      * @return {boolean} true if angle is obtuse
      */
-    fun isAngleObtuse(pa: Point, pb: Point, pc: Point): Boolean {
+    fun isAngleObtuse(pa: MPoint, pb: MPoint, pc: MPoint): Boolean {
         val ax = pb.x - pa.x
         val ay = pb.y - pa.y
         val bx = pc.x - pa.x
@@ -912,7 +911,7 @@ object Poly2Tri {
      * @param {!XY} p - Point
      * @param {Triangle=} t triangle (optional)
      */
-    class Node(var point: Point, var triangle: Triangle? = null) {
+    class Node(var point: MPoint, var triangle: Triangle? = null) {
         var next: Node? = null
         var prev: Node? = null
         var value: Double = point.x
@@ -961,7 +960,7 @@ object Poly2Tri {
          * @param {!XY} point - Point
          * @return {Node}
          */
-        fun locatePoint(point: Point): Node? {
+        fun locatePoint(point: MPoint): Node? {
             val px = point.x
             var node: Node? = this.findSearchNode(px)
             val nx = node!!.point.x
@@ -1018,7 +1017,7 @@ object Poly2Tri {
      * @param {string=} message - error message
      * @param {Array.<Point>=} points - invalid points
      */
-    class PointError(message: String, points: Iterable<Point>) : Exception(message + " " + points.toList())
+    class PointError(message: String, points: Iterable<MPoint>) : Exception(message + " " + points.toList())
 
     enum class Orientation(val value: Int) {
         CW(+1), CCW(-1), COLLINEAR(0)
@@ -1037,7 +1036,7 @@ object Poly2Tri {
      * @param {!XY} pb  point object with {x,y}
      * @param {!XY} pc  point object with {x,y}
      */
-    class Triangle(val a: Point, val b: Point, val c: Point) : com.soywiz.korma.geom.triangle.Triangle {
+    class Triangle(val a: MPoint, val b: MPoint, val c: MPoint) : com.soywiz.korma.geom.triangle.Triangle {
         /**
          * Triangle points
          * @private
@@ -1103,7 +1102,7 @@ object Poly2Tri {
          * @public
          * @returns {Point}
          */
-        fun getPoint(index: Int): Point = this.points_[index]
+        fun getPoint(index: Int): MPoint = this.points_[index]
 
         /**
          * Get all 3 vertices of the triangle as an array
@@ -1111,7 +1110,7 @@ object Poly2Tri {
          * @return {Array.<Point>}
          */
 // Method added in the JavaScript version (was not present in the c++ version)
-        fun getPoints(): Array<Point> = this.points_
+        fun getPoints(): Array<MPoint> = this.points_
 
         /**
          * @private
@@ -1129,7 +1128,7 @@ object Poly2Tri {
          *         <code>false</code> otherwise.
          */
         // Here we are comparing point references, not values
-        fun containsPoint(point: Point): Boolean {
+        fun containsPoint(point: MPoint): Boolean {
             var points = this.points_
             return (point === points[0] || point === points[1] || point === points[2])
         }
@@ -1151,7 +1150,7 @@ object Poly2Tri {
          * @param {Point} p2 - point object with {x,y}
          * @return {boolean}
          */
-        fun containsPoints(p1: Point, p2: Point): Boolean = this.containsPoint(p1) && this.containsPoint(p2)
+        fun containsPoints(p1: MPoint, p2: MPoint): Boolean = this.containsPoint(p1) && this.containsPoint(p2)
 
         /**
          * Has this triangle been marked as an interior triangle?
@@ -1176,7 +1175,7 @@ object Poly2Tri {
          * @param {Triangle} t Triangle object.
          * @throws {Error} if can't find objects
          */
-        fun markNeighborPointers(p1: Point, p2: Point, t: Triangle) {
+        fun markNeighborPointers(p1: MPoint, p2: MPoint, t: Triangle) {
             var points = this.points_
             // Here we are comparing point references, not values
             when {
@@ -1228,7 +1227,7 @@ object Poly2Tri {
          * @private
          * @param {Point} p - point object with {x,y}
          */
-        fun pointCW(p: Point?): Point? {
+        fun pointCW(p: MPoint?): MPoint? {
             var points = this.points_
             // Here we are comparing point references, not values
             return when {
@@ -1244,7 +1243,7 @@ object Poly2Tri {
          * @private
          * @param {Point} p - point object with {x,y}
          */
-        fun pointCCW(p: Point): Point? {
+        fun pointCCW(p: MPoint): MPoint? {
             var points = this.points_
             // Here we are comparing point references, not values
             return when {
@@ -1261,7 +1260,7 @@ object Poly2Tri {
          * @param {Point} p - point object with {x,y}
          */
         // Here we are comparing point references, not values
-        fun neighborCW(p: Point): Triangle? = when {
+        fun neighborCW(p: MPoint): Triangle? = when {
             p === this.points_[0] -> this.neighbors_[1]
             p === this.points_[1] -> this.neighbors_[2]
             else -> this.neighbors_[0]
@@ -1273,21 +1272,21 @@ object Poly2Tri {
          * @param {Point} p - point object with {x,y}
          */
         // Here we are comparing point references, not values
-        fun neighborCCW(p: Point): Triangle? = when {
+        fun neighborCCW(p: MPoint): Triangle? = when {
             p === this.points_[0] -> this.neighbors_[2]
             p === this.points_[1] -> this.neighbors_[0]
             else -> this.neighbors_[1]
         }
 
         // Here we are comparing point references, not values
-        fun getConstrainedEdgeCW(p: Point): Boolean = when {
+        fun getConstrainedEdgeCW(p: MPoint): Boolean = when {
             p === this.points_[0] -> this.constrained_edge[1]
             p === this.points_[1] -> this.constrained_edge[2]
             else -> this.constrained_edge[0]
         }
 
         // Here we are comparing point references, not values
-        fun getConstrainedEdgeCCW(p: Point): Boolean = when {
+        fun getConstrainedEdgeCCW(p: MPoint): Boolean = when {
             p === this.points_[0] -> this.constrained_edge[2]
             p === this.points_[1] -> this.constrained_edge[0]
             else -> this.constrained_edge[1]
@@ -1295,49 +1294,49 @@ object Poly2Tri {
 
         // Additional check from Java version (see issue #88)
         // Here we are comparing point references, not values
-        fun getConstrainedEdgeAcross(p: Point): Boolean = when {
+        fun getConstrainedEdgeAcross(p: MPoint): Boolean = when {
             p === this.points_[0] -> this.constrained_edge[0]
             p === this.points_[1] -> this.constrained_edge[1]
             else -> this.constrained_edge[2]
         }
 
         // Here we are comparing point references, not values
-        fun setConstrainedEdgeCW(p: Point, ce: Boolean) = when {
+        fun setConstrainedEdgeCW(p: MPoint, ce: Boolean) = when {
             p === this.points_[0] -> this.constrained_edge[1] = ce
             p === this.points_[1] -> this.constrained_edge[2] = ce
             else -> this.constrained_edge[0] = ce
         }
 
         // Here we are comparing point references, not values
-        fun setConstrainedEdgeCCW(p: Point, ce: Boolean) = when {
+        fun setConstrainedEdgeCCW(p: MPoint, ce: Boolean) = when {
             p === this.points_[0] -> this.constrained_edge[2] = ce
             p === this.points_[1] -> this.constrained_edge[0] = ce
             else -> this.constrained_edge[1] = ce
         }
 
         // Here we are comparing point references, not values
-        fun getDelaunayEdgeCW(p: Point): Boolean = when {
+        fun getDelaunayEdgeCW(p: MPoint): Boolean = when {
             p === this.points_[0] -> this.delaunay_edge[1]
             p === this.points_[1] -> this.delaunay_edge[2]
             else -> this.delaunay_edge[0]
         }
 
         // Here we are comparing point references, not values
-        fun getDelaunayEdgeCCW(p: Point): Boolean = when {
+        fun getDelaunayEdgeCCW(p: MPoint): Boolean = when {
             p === this.points_[0] -> this.delaunay_edge[2]
             p === this.points_[1] -> this.delaunay_edge[0]
             else -> this.delaunay_edge[1]
         }
 
         // Here we are comparing point references, not values
-        fun setDelaunayEdgeCW(p: Point, e: Boolean) = when {
+        fun setDelaunayEdgeCW(p: MPoint, e: Boolean) = when {
             p === this.points_[0] -> this.delaunay_edge[1] = e
             p === this.points_[1] -> this.delaunay_edge[2] = e
             else -> this.delaunay_edge[0] = e
         }
 
         // Here we are comparing point references, not values
-        fun setDelaunayEdgeCCW(p: Point, e: Boolean) = when {
+        fun setDelaunayEdgeCCW(p: MPoint, e: Boolean) = when {
             p === this.points_[0] -> this.delaunay_edge[2] = e
             p === this.points_[1] -> this.delaunay_edge[0] = e
             else -> this.delaunay_edge[1] = e
@@ -1350,7 +1349,7 @@ object Poly2Tri {
          * @returns {Triangle}
          */
         // Here we are comparing point references, not values
-        fun neighborAcross(p: Point): Triangle? = when {
+        fun neighborAcross(p: MPoint): Triangle? = when {
             p === this.points_[0] -> this.neighbors_[0]
             p === this.points_[1] -> this.neighbors_[1]
             else -> this.neighbors_[2]
@@ -1361,7 +1360,7 @@ object Poly2Tri {
          * @param {!Triangle} t Triangle object.
          * @param {Point} p - point object with {x,y}
          */
-        fun oppositePoint(t: Triangle, p: Point): Point? = this.pointCW(t.pointCW(p))
+        fun oppositePoint(t: Triangle, p: MPoint): MPoint? = this.pointCW(t.pointCW(p))
 
         /**
          * Legalize triangle by rotating clockwise around oPoint
@@ -1370,7 +1369,7 @@ object Poly2Tri {
          * @param {Point} npoint - point object with {x,y}
          * @throws {Error} if oPoint can not be found
          */
-        fun legalize(opoint: Point, npoint: Point) {
+        fun legalize(opoint: MPoint, npoint: MPoint) {
             var points = this.points_
             // Here we are comparing point references, not values
             when {
@@ -1403,7 +1402,7 @@ object Poly2Tri {
          * @returns {number} index 0, 1 or 2
          * @throws {Error} if p can not be found
          */
-        fun index(p: Point): Int {
+        fun index(p: MPoint): Int {
             var points = this.points_
             // Here we are comparing point references, not values
             return when {
@@ -1420,7 +1419,7 @@ object Poly2Tri {
          * @param {Point} p2 - point object with {x,y}
          * @return {number} index 0, 1 or 2, or -1 if errror
          */
-        fun edgeIndex(p1: Point, p2: Point): Int {
+        fun edgeIndex(p1: MPoint, p2: MPoint): Int {
             var points = this.points_
             // Here we are comparing point references, not values
             if (p1 === points[0]) {
@@ -1470,7 +1469,7 @@ object Poly2Tri {
          * @param {Point} p - point object with {x,y}
          * @param {Point} q - point object with {x,y}
          */
-        fun markConstrainedEdgeByPoints(p: Point, q: Point) {
+        fun markConstrainedEdgeByPoints(p: MPoint, q: MPoint) {
             val points = this.points_
             // Here we are comparing point references, not values
             when {
@@ -1490,10 +1489,10 @@ object Poly2Tri {
      * @param {Point} p2
      * @throw {PointError} if p1 is same as p2
      */
-    class Edge constructor(p1: Point, p2: Point) {
+    class Edge constructor(p1: MPoint, p2: MPoint) {
 
-        var p: Point = p1
-        var q: Point = p2
+        var p: MPoint = p1
+        var q: MPoint = p2
 
         init {
             if (p1.y > p2.y) {
@@ -1597,14 +1596,14 @@ object Poly2Tri {
 
         val triangles_ = FastArrayList<Triangle>()
         var map_ = FastArrayList<Triangle>()
-        var points_ = FastArrayList<Point>()
+        var points_ = FastArrayList<MPoint>()
         val _p2t_edge_lists = FastArrayList<FastArrayList<Edge>?>()
 
         var edge_list = FastArrayList<Edge>()
 
         // Bounding box of all points. Computed at the start of the triangulation,
         // it is stored in case it is needed by the caller.
-        var pbounds: Rectangle = Rectangle()
+        var pbounds: MRectangle = MRectangle()
         //var pmin_: Point? = null
         //var pmax_: Point? = null
 
@@ -1620,14 +1619,14 @@ object Poly2Tri {
          * @private
          * @type {Point}
          */
-        var head_: Point? = null
+        var head_: MPoint? = null
 
         /**
          * tail point used with advancing front
          * @private
          * @type {Point}
          */
-        var tail_: Point? = null
+        var tail_: MPoint? = null
 
         /**
          * @private
@@ -1666,7 +1665,7 @@ object Poly2Tri {
          * @public
          * @param {Array.<Point>} polyline - array of "Point like" objects with {x,y}
          */
-        fun addHole(polyline: List<Point>) {
+        fun addHole(polyline: List<MPoint>) {
             var len = polyline.size
             val points = this.points_
             val start = points.size
@@ -1695,7 +1694,7 @@ object Poly2Tri {
 
         @JvmName("addHolesListIPointArrayList")
         fun addHoles(polyline: List<IPointArrayList>) {
-            for (p in polyline) addHole(p.map { x, y -> Point(x, y) })
+            for (p in polyline) addHole(p.map { x, y -> MPoint(x, y) })
         }
 
 
@@ -1719,7 +1718,7 @@ object Poly2Tri {
          * @param {Array.<Array.<Point>>} holes - array of array of "Point like" objects with {x,y}
          */
 // Method added in the JavaScript version (was not present in the c++ version)
-        fun addHoles(holes: List<List<Point>>) {
+        fun addHoles(holes: List<List<MPoint>>) {
             holes.fastForEach { addHole(it) }
         }
 
@@ -1736,7 +1735,7 @@ object Poly2Tri {
          * @public
          * @param {Point} point - any "Point like" object with {x,y}
          */
-        fun addPoint(point: Point) {
+        fun addPoint(point: MPoint) {
             this.points_.add(point)
         }
 
@@ -1757,8 +1756,8 @@ object Poly2Tri {
          * @param {Array.<Point>} points - array of "Point like" object with {x,y}
          */
         // Method added in the JavaScript version (was not present in the c++ version)
-        fun addPoints(points: List<Point>) {
-            points.fastForEach { this.points_.add(Point(it.x, it.y)) }
+        fun addPoints(points: List<MPoint>) {
+            points.fastForEach { this.points_.add(MPoint(it.x, it.y)) }
         }
 
 
@@ -1786,7 +1785,7 @@ object Poly2Tri {
          * @returns {{min:Point,max:Point}} object with 'min' and 'max' Point
          */
 // Method added in the JavaScript version (was not present in the c++ version)
-        fun getBoundingBox(): Rectangle {
+        fun getBoundingBox(): MRectangle {
             return pbounds
         }
 
@@ -1844,8 +1843,8 @@ object Poly2Tri {
 
             var dx = kAlpha * (xmax - xmin)
             var dy = kAlpha * (ymax - ymin)
-            this.head_ = Point(xmax + dx, ymin - dy)
-            this.tail_ = Point(xmin - dx, ymin - dy)
+            this.head_ = MPoint(xmax + dx, ymin - dy)
+            this.tail_ = MPoint(xmin - dx, ymin - dy)
 
             // Sort points along y-axis
             genericSort(this, 0, this.points_.size - 1, object : SortOps<SweepContext>() {
@@ -1861,7 +1860,7 @@ object Poly2Tri {
         }
 
         /** @private */
-        fun getPoint(index: Int): Point {
+        fun getPoint(index: Int): MPoint {
             return this.points_[index]
         }
 
@@ -1871,7 +1870,7 @@ object Poly2Tri {
         }
 
         /** @private */
-        fun locateNode(point: Point): Node? {
+        fun locateNode(point: MPoint): Node? {
             return this.front_!!.locateNode(point.x)
         }
 

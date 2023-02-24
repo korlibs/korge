@@ -9,6 +9,7 @@ import com.soywiz.kds.getCyclic
 import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.kds.mapInt
 import com.soywiz.kds.toIntArrayList
+import com.soywiz.klogger.*
 import com.soywiz.kmem.extract
 import com.soywiz.kmem.extract16Signed
 import com.soywiz.kmem.extractSigned
@@ -46,8 +47,8 @@ import com.soywiz.korio.stream.openFastStream
 import com.soywiz.korio.stream.openUse
 import com.soywiz.korio.stream.readBytesUpTo
 import com.soywiz.korio.stream.toSyncStream
-import com.soywiz.korma.geom.Matrix
-import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.MMatrix
+import com.soywiz.korma.geom.MRectangle
 import com.soywiz.korma.geom.vector.IVectorPath
 import com.soywiz.korma.geom.vector.VectorPath
 import com.soywiz.korma.geom.vector.lineTo
@@ -77,6 +78,8 @@ class TtfFont(
     override fun getTableNames(): Set<String> = tablesByName.keys
 
     companion object {
+        val logger = Logger("TTF")
+
         suspend fun readNames(s: AsyncInputOpenable): NamesInfo = s.openUse {
             readNames(it as AsyncStream)
         }
@@ -296,7 +299,7 @@ abstract class BaseTtfFont(
     val substitutionsCodePoints = IntMap<SubstitutionInfo>()
 
     lateinit var fontMetrics1px: FontMetrics; private set
-    protected val nonExistantGlyphMetrics1px = GlyphMetrics(1.0, false, 0, Rectangle(), 0.0)
+    protected val nonExistantGlyphMetrics1px = GlyphMetrics(1.0, false, 0, MRectangle(), 0.0)
     var isOpenType = false
 
     val ttfName: String get() = namesi.ttfName
@@ -916,7 +919,7 @@ abstract class BaseTtfFont(
     fun FastByteArrayInputStream.readOffset16(): Int = readU16BE()
     fun FastByteArrayInputStream.readOffset24(): Int = readU24BE()
     fun FastByteArrayInputStream.readOffset32(): Int = readS32BE()
-    fun FastByteArrayInputStream.readAffine2x3(isVar: Boolean, out: Matrix = Matrix()): Matrix {
+    fun FastByteArrayInputStream.readAffine2x3(isVar: Boolean, out: MMatrix = MMatrix()): MMatrix {
         val xx = readFIXED3()
         val yx = readFIXED3()
         val xy = readFIXED3()
@@ -941,7 +944,7 @@ abstract class BaseTtfFont(
         out.alpha = readF2DOT14().toDouble()
         return out
     }
-    fun FastByteArrayInputStream.readClipBox(doVar: Boolean = false): Rectangle {
+    fun FastByteArrayInputStream.readClipBox(doVar: Boolean = false): MRectangle {
         val format = readU8()
         val xMin: Int = readFWORD()
         val yMin: Int = readFWORD()
@@ -950,7 +953,7 @@ abstract class BaseTtfFont(
         if (format == 2) {
             val varIndexBase = readVarIdxBase()
         }
-        return Rectangle.fromBounds(xMin, yMin, xMax, yMax)
+        return MRectangle.fromBounds(xMin, yMin, xMax, yMax)
     }
     fun FastByteArrayInputStream.readBaseGlyphPaintRecord() {
         val glyphID = s.readU16BE()
@@ -1491,7 +1494,7 @@ abstract class BaseTtfFont(
                                     }
                                 }
                                 else -> {
-                                    println("TTF.GSUB: Unsupported lookupType=$lookupType")
+                                    TtfFont.logger.info { "TTF.GSUB: Unsupported lookupType=$lookupType" }
                                 }
                             }
                         }
@@ -1933,7 +1936,7 @@ abstract class BaseTtfFont(
 
             val size = unitsPerEm.toDouble()
             val scale = getTextScale(size)
-            GlyphMetrics(size, true, -1, Rectangle.fromBounds(
+            GlyphMetrics(size, true, -1, MRectangle.fromBounds(
                 xMin * scale, yMin * scale,
                 xMax * scale, yMax * scale
             ), advanceWidth * scale)
@@ -1952,7 +1955,7 @@ abstract class BaseTtfFont(
         override val paths = refs.map { ref ->
             val gpath = ref.glyph.path.path
             GlyphGraphicsPath(ref.glyph.index, VectorPath(IntArrayList(gpath.commands.size), DoubleArrayList(gpath.data.size))).also { out ->
-                val m = Matrix()
+                val m = MMatrix()
                 m.scale(ref.scaleX, ref.scaleY)
                 m.translate(ref.x, -ref.y)
                 out.path.write(ref.glyph.path.path, m)

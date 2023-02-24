@@ -33,12 +33,12 @@ open class UIBaseCheckBoxSkinMaterial(
             val extraPad = -0.0
             val extraPad2 = extraPad * 2
             ctx2d.materialRoundRect(
-                0.0 + extraPad, 0.0 + extraPad, height - extraPad2, height - extraPad2, radius = RectCorners((height - extraPad2) * 0.5),
+                0.0 + extraPad, 0.0 + extraPad, height - extraPad2, height - extraPad2, radius = IRectCorners((height - extraPad2) * 0.5),
                 color = (kotlin.math.max(item.overRatio, item.focusRatio)).interpolate(Colors.TRANSPARENT, if (item.checkedRatio > 0.5) selectedColor.withAd(0.3) else unselectedColor.withAd(0.3))
             )
             item.highlights.fastForEach {
                 ctx2d.materialRoundRect(
-                    0.0 + extraPad, 0.0 + extraPad, height - extraPad2, height - extraPad2, radius = RectCorners(height * 0.5),
+                    0.0 + extraPad, 0.0 + extraPad, height - extraPad2, height - extraPad2, radius = IRectCorners(height * 0.5),
                     color = Colors.TRANSPARENT,
                     highlightPos = it.pos,
                     highlightRadius = it.radiusRatio,
@@ -53,7 +53,7 @@ open class UIBaseCheckBoxSkinMaterial(
                 val padding = 6.0
                 val padding2 = padding * 2
                 ctx2d.materialRoundRect(
-                    0.0 + padding, 0.0 + padding, height - padding2, height - padding2, radius = RectCorners(4.0),
+                    0.0 + padding, 0.0 + padding, height - padding2, height - padding2, radius = IRectCorners(4.0),
                     //color = if (this@UIBaseCheckBox.checked) MaterialColors.BLUE_600 else Colors.TRANSPARENT_BLACK,
                     color = Colors.TRANSPARENT,
                     borderColor = item.checkedRatio.interpolate(unselectedColor, selectedColor),
@@ -63,7 +63,7 @@ open class UIBaseCheckBoxSkinMaterial(
                     val padding = item.checkedRatio.interpolate(height, 10.0)
                     val padding2 = padding * 2
                     ctx2d.materialRoundRect(
-                        0.0 + padding, 0.0 + padding, height - padding2, height - padding2, radius = RectCorners(1.0),
+                        0.0 + padding, 0.0 + padding, height - padding2, height - padding2, radius = IRectCorners(1.0),
                         color = item.checkedRatio.interpolate(Colors.TRANSPARENT, selectedColor),
                     )
                 }
@@ -72,12 +72,12 @@ open class UIBaseCheckBoxSkinMaterial(
                 val padding = 6.0
                 val padding2 = padding * 2
                 ctx2d.materialRoundRect(
-                    0.0 + padding, 0.0 + padding, height - padding2, height - padding2, radius = RectCorners((height - padding2) * 0.5),
+                    0.0 + padding, 0.0 + padding, height - padding2, height - padding2, radius = IRectCorners((height - padding2) * 0.5),
                     borderSize = 2.0,
                     borderColor = item.checkedRatio.interpolate(unselectedColor, selectedColor),
                     color = Colors.TRANSPARENT,
                     highlightRadius = item.checkedRatio.interpolate(0.0, 0.2),
-                    highlightPos = Point(0.5, 0.5),
+                    highlightPos = MPoint(0.5, 0.5),
                     highlightColor = selectedColor,
                 )
             }

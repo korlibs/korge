@@ -66,20 +66,6 @@ class AES(val keyWords: IntArray) : Cipher {
         )
     }
 
-    @Deprecated("")
-    fun encryptBlock(M: IntArray, offset: Int) {
-        this.doCryptBlock(M, offset, this.keySchedule, SUB_MIX_0, SUB_MIX_1, SUB_MIX_2, SUB_MIX_3, SBOX)
-    }
-
-    @Deprecated("")
-    fun decryptBlock(M: IntArray, offset: Int) {
-        this.doCryptBlock(
-            M, offset,
-            this.invKeySchedule, INV_SUB_MIX_0, INV_SUB_MIX_1, INV_SUB_MIX_2, INV_SUB_MIX_3, INV_SBOX,
-            swap13 = true
-        )
-    }
-
     private fun doCryptBlock(
         M: IntArray, offset: Int, keySchedule: IntArray,
         SUB_MIX_0: IntArray, SUB_MIX_1: IntArray, SUB_MIX_2: IntArray, SUB_MIX_3: IntArray, SBOX: IntArray,
@@ -184,14 +170,6 @@ class AES(val keyWords: IntArray) : Cipher {
                 }
             }
         }
-
-        @Deprecated("IV is set to a specific value")
-        fun encryptAes128Cbc(data: ByteArray, key: ByteArray, iv: ByteArray = ByteArray(16), padding: Padding = CipherPadding.NoPadding): ByteArray =
-            encryptAesCbc(data, key, iv, padding)
-
-        @Deprecated("IV is set to a specific value")
-        fun decryptAes128Cbc(data: ByteArray, key: ByteArray, iv: ByteArray = ByteArray(16), padding: Padding = CipherPadding.NoPadding): ByteArray =
-            decryptAesCbc(data, key, iv, padding)
 
         fun encryptAesEcb(data: ByteArray, key: ByteArray, padding: Padding): ByteArray =
             AES(key)[CipherMode.ECB, padding].encrypt(data)

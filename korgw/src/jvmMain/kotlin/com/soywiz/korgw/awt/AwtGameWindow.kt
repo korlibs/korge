@@ -1,7 +1,6 @@
 package com.soywiz.korgw.awt
 
 import com.soywiz.kmem.*
-import com.soywiz.korag.gl.*
 import com.soywiz.korev.*
 import com.soywiz.korgw.*
 import com.soywiz.korgw.platform.*
@@ -38,7 +37,7 @@ class AwtGameWindow(config: GameWindowCreationConfig) : BaseAwtGameWindow(AGOpen
 
     override fun ensureContext() {
         if (ctx == null) {
-            if (OS.isMac) {
+            if (Platform.isMac) {
                 try {
                     //ctx = ProxiedMacAWTOpenglContext(frame)
                     ctx = glContextFromComponent(frame, this)
@@ -115,7 +114,7 @@ class AwtGameWindow(config: GameWindowCreationConfig) : BaseAwtGameWindow(AGOpen
             //val dim = getDefaultToolkit().screenSize
             //frame.setLocation(dim.width / 2 - frame.size.width / 2, dim.height / 2 - frame.size.height / 2)
 
-            if (OS.isMac) {
+            if (Platform.isMac) {
                 //rootPane.putClientProperty("apple.awt.fullscreenable", true)
 
                 /*
@@ -200,7 +199,7 @@ class AwtGameWindow(config: GameWindowCreationConfig) : BaseAwtGameWindow(AGOpen
     private fun synchronizeDebugFrameCoordinates() {
         val displayMode = frame.getScreenDevice().displayMode
         //println("frame.location=${frame.location}, frame.size=${frame.size}, debugFrame.width=${debugFrame.width}, displayMode=${displayMode.width}x${displayMode.height}")
-        val frameBounds = RectangleInt(frame.location.x, frame.location.y, frame.size.width, frame.size.height)
+        val frameBounds = MRectangleInt(frame.location.x, frame.location.y, frame.size.width, frame.size.height)
         debugFrame.setLocation(frameBounds.right.clamp(0, (displayMode.width - debugFrame.width * 1.0).toInt()), frameBounds.top)
         debugFrame.setSize(debugFrame.width.coerceAtLeast(64), frameBounds.height)
     }
@@ -220,14 +219,14 @@ class AwtGameWindow(config: GameWindowCreationConfig) : BaseAwtGameWindow(AGOpen
 
     override var fullscreen: Boolean
         get() = when {
-            OS.isMac -> frame.rootPane.bounds == frame.bounds
+            Platform.isMac -> frame.rootPane.bounds == frame.bounds
             else -> GraphicsEnvironment.getLocalGraphicsEnvironment().defaultScreenDevice.fullScreenWindow == frame
         }
         set(value) {
             //println("fullscreen: $fullscreen -> $value")
             if (fullscreen != value) {
                 when {
-                    OS.isMac -> {
+                    Platform.isMac -> {
                         //println("TOGGLING!")
                         if (fullscreen != value) {
                             queue {

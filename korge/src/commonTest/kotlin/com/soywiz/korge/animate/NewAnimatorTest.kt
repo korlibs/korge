@@ -4,7 +4,6 @@ import com.soywiz.klock.*
 import com.soywiz.korge.component.*
 import com.soywiz.korge.view.*
 import com.soywiz.korio.util.*
-import com.soywiz.korma.geom.*
 import com.soywiz.korma.interpolation.*
 import kotlin.test.*
 
@@ -18,7 +17,7 @@ class NewAnimatorTest {
             var _animator: Animator? = null
 
             fun logLine() {
-                lines += "${view.pos.niceStr} : ${_animator?.nodes?.size} : ${view.getComponentsOfType(UpdateComponent)?.size} : ${log.joinToString(",")}"
+                lines += "${view.ipos.niceStr} : ${_animator?.nodes?.size} : ${view.getComponentsOfType(UpdateComponent)?.size} : ${log.joinToString(",")}"
             }
 
             logLine()
@@ -74,7 +73,7 @@ class NewAnimatorTest {
         var log = ""
         val lines = arrayListOf<String>()
         fun logLine() {
-            lines += "${view.pos.niceStr}, ${view.alpha.niceStr(1)} : $log"
+            lines += "${view.ipos.niceStr}, ${view.alpha.niceStr(1)} : $log"
         }
         logLine()
         val animator = view.animator(defaultTime = 1.seconds, defaultEasing = Easing.LINEAR) {
@@ -148,7 +147,7 @@ class NewAnimatorTest {
         }
         val lines = arrayListOf<String>()
         fun logLine() {
-            lines += "${view.pos.niceStr}, ${view.alpha.niceStr(1)}"
+            lines += "${view.ipos.niceStr}, ${view.alpha.niceStr(1)}"
         }
         for (n in 0 until 12) {
             view.updateSingleView(0.1.seconds)
@@ -235,7 +234,7 @@ class NewAnimatorTest {
         animator.onComplete.add { log += "complete" }
         val lines = arrayListOf<String>()
         fun logLine() {
-            lines += "view1[${view1.pos.niceStr}, ${view1.alpha.niceStr(1)}], view2[${view2.pos.niceStr}, ${view2.alpha.niceStr(1)}], log=${log.joinToString("")}"
+            lines += "view1[${view1.ipos.niceStr}, ${view1.alpha.niceStr(1)}], view2[${view2.ipos.niceStr}, ${view2.alpha.niceStr(1)}], log=${log.joinToString("")}"
         }
         for (n in 0 until 24) {
             executorView.updateSingleView(0.25.seconds)

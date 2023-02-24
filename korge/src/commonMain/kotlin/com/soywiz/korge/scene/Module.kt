@@ -10,7 +10,7 @@ import com.soywiz.korim.format.ImageFormat
 import com.soywiz.korinject.AsyncInjector
 import com.soywiz.korma.geom.Anchor
 import com.soywiz.korma.geom.ScaleMode
-import com.soywiz.korma.geom.SizeInt
+import com.soywiz.korma.geom.MSizeInt
 import kotlin.reflect.KClass
 
 open class KorgeModule(mainScene: KClass<out Scene>) : Module() {
@@ -27,8 +27,8 @@ open class Module {
 
 	open val quality: GameWindow.Quality = GameWindow.Quality.PERFORMANCE
 
-	open val size: SizeInt get() = SizeInt(DefaultViewport.WIDTH, DefaultViewport.HEIGHT)
-	open val windowSize: SizeInt get() = size
+	open val size: MSizeInt get() = MSizeInt(DefaultViewport.WIDTH, DefaultViewport.HEIGHT)
+	open val windowSize: MSizeInt get() = size
 
 	open val mainScene: KClass<out Scene>? = null
     open val main: (suspend (Stage) -> Unit)? = null

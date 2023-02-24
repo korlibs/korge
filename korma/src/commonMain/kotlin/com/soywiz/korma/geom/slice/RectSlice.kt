@@ -27,7 +27,7 @@ data class RectSlice<T : ISizeInt>(
     /** An orientation describing how the slice is going to be rotated and flipped */
     val orientation: SliceOrientation = SliceOrientation.ROTATE_0,
     /** Extra empty pixels that will be considered for this slice, for tightly packed images */
-    override val padding: IMarginInt = IMarginInt.ZERO,
+    override val padding: com.soywiz.korma.geom.IMarginInt = IMarginInt.ZERO,
     /** Debug [name] describing this slice */
     override val name: String? = null,
 ) : SliceCoordsWithBaseAndRect<T> { //, Resourceable<RectSlice<T>> {
@@ -90,11 +90,11 @@ data class RectSlice<T : ISizeInt>(
     val virtFrame: IRectangleInt?
         get() {
             if (padding.left == 0 && padding.right == 0 && padding.top == 0 && padding.bottom == 0) return null
-            return RectangleInt.fromBounds(padding.left, padding.top, width + padding.leftPlusRight, height + padding.topPlusBottom)
+            return MRectangleInt.fromBounds(padding.left, padding.top, width + padding.leftPlusRight, height + padding.topPlusBottom)
         }
 
     fun virtFrame(x: Int, y: Int, width: Int, height: Int): RectSlice<T> {
-        return copy(padding = MarginInt(y, width - this.width - x, height - this.height - y, x))
+        return copy(padding = IMarginInt(y, width - this.width - x, height - this.height - y, x))
         //val rotated = orientation.isRotatedDeg90CwOrCcw
         //return copy(padding = when {
         //    !rotated -> IMarginInt(y, width - this.width - x, height - this.height - y, x)
@@ -139,9 +139,6 @@ data class RectSlice<T : ISizeInt>(
         }
     }
 }
-
-@Deprecated("", ReplaceWith("splitInRows(width, height)"))
-fun <T : ISizeInt> RectSlice<T>.split(width: Int, height: Int): List<RectSlice<T>> = splitInRows(width, height)
 
 fun <T : ISizeInt> RectSlice<T>.split(width: Int, height: Int, inRows: Boolean): List<RectSlice<T>> {
     val nheight = this.height / height

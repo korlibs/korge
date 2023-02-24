@@ -35,7 +35,7 @@ interface IBezier : Curve {
     fun scaleSimple(d: Double): Bezier = scaleSimple { d }
     fun scaleSimple(d0: Double, d1: Double): Bezier = scaleSimple { if (it < 0.5) d0 else d1 }
     /** Computes the point of the curve at [t] */
-    fun get(t: Double, out: Point = Point()): IPoint = compute(t, out)
+    fun get(t: Double, out: MPoint = MPoint()): IPoint = compute(t, out)
 
     fun getLUT(steps: Int = 100, out: CurveLUT = CurveLUT(this, steps + 1)): CurveLUT
     fun project(point: IPoint, out: Bezier.ProjectedPoint = Bezier.ProjectedPoint()): Bezier.ProjectedPoint
@@ -43,14 +43,14 @@ interface IBezier : Curve {
     fun reduce(): List<SubBezier>
     fun overlaps(curve: Bezier): Boolean
     fun offset(d: Double): List<Bezier>
-    fun offset(t: Double, d: Double, out: Point = Point()): IPoint
+    fun offset(t: Double, d: Double, out: MPoint = MPoint()): IPoint
     fun scaleSimple(d: (Double) -> Double): Bezier
     fun selfIntersections(threshold: Double = 0.5, out: DoubleArrayList = DoubleArrayList()): DoubleArrayList
-    fun intersections(line: Line): DoubleArray
+    fun intersections(line: MLine): DoubleArray
     fun intersections(curve: Bezier, threshold: Double = 0.5): List<Pair<Double, Double>>
-    fun compute(t: Double, out: Point = Point()): IPoint
-    fun derivative(t: Double, normalize: Boolean = false, out: Point = Point()): IPoint
-    fun normal(t: Double, normalize: Boolean = true, out: Point = Point()): IPoint
+    fun compute(t: Double, out: MPoint = MPoint()): IPoint
+    fun derivative(t: Double, normalize: Boolean = false, out: MPoint = MPoint()): IPoint
+    fun normal(t: Double, normalize: Boolean = true, out: MPoint = MPoint()): IPoint
     fun hull(t: Double, out: PointArrayList = PointArrayList()): IPointArrayList
     fun curvature(t: Double, kOnly: Boolean = false): Bezier.Curvature
     fun hullOrNull(t: Double, out: PointArrayList = PointArrayList()): IPointArrayList?
@@ -59,14 +59,14 @@ interface IBezier : Curve {
     fun splitLeft(t: Double): SubBezier
     fun splitRight(t: Double): SubBezier
 
-    fun toLine(out: Line = Line()): Line
+    fun toLine(out: MLine = MLine()): MLine
     fun toLineBezier(out: Bezier = Bezier()): Bezier
     fun toCubic(out: Bezier = Bezier()): Bezier
     fun toQuad(out: Bezier = Bezier()): Bezier
     fun toQuadList(): List<Bezier>
     fun outline(d1: Double, d2: Double = d1, d3: Double = d1, d4: Double = d2): Curves
     fun translate(dx: Double, dy: Double, out: Bezier = Bezier()): Bezier
-    fun transform(m: Matrix, out: Bezier = Bezier()): Bezier
+    fun transform(m: MMatrix, out: Bezier = Bezier()): Bezier
 }
 
 /**
@@ -89,8 +89,6 @@ class Bezier(
     constructor(vararg points: Double) : this(PointArrayList(*points))
     constructor(vararg points: Float) : this(PointArrayList(*points))
     constructor(vararg points: Int) : this(PointArrayList(*points))
-    @Deprecated("Boxing in K/N debug builds")
-    constructor(vararg points: Number) : this(PointArrayList(*points))
 
     fun copyFrom(bezier: IBezier): Bezier {
         this._points.copyFrom(bezier.points)
@@ -162,10 +160,10 @@ class Bezier(
     }
     fun roundDecimalPlaces(places: Int): Bezier = Bezier(points.roundDecimalPlaces(places))
 
-    override fun getBounds(target: Rectangle): Rectangle = target.copyFrom(boundingBox)
-    fun getBounds(target: Rectangle, m: Matrix?): IRectangle = _getBoundingBox(target, m)
+    override fun getBounds(target: MRectangle): MRectangle = target.copyFrom(boundingBox)
+    fun getBounds(target: MRectangle, m: MMatrix?): IRectangle = _getBoundingBox(target, m)
 
-    override fun calc(t: Double, target: Point): Point {
+    override fun calc(t: Double, target: MPoint): MPoint {
         this.compute(t, target)
         return target
     }
@@ -182,7 +180,7 @@ class Bezier(
         if (alignedValid) return _aligned
         alignedValid = true
         _aligned.clear()
-        align(points, Line(points.firstX, points.firstY, points.lastX, points.lastY), _aligned)
+        align(points, MLine(points.firstX, points.firstY, points.lastX, points.lastY), _aligned)
         return _aligned
     }
 
@@ -221,7 +219,7 @@ class Bezier(
         return _extrema
     }
 
-    private var _outerCircle: Circle? = null
+    private var _outerCircle: MCircle? = null
     val outerCircle: ICircle get() {
         if (_outerCircle == null) {
             _outerCircle = boundingBox.outerCircle()
@@ -229,7 +227,7 @@ class Bezier(
         return _outerCircle!!
     }
 
-    private val _boundingBox: Rectangle = Rectangle()
+    private val _boundingBox: MRectangle = MRectangle()
     override val boundingBox: IRectangle get() {
         if (boundingBoxValid) return _boundingBox
         boundingBoxValid = true
@@ -237,7 +235,7 @@ class Bezier(
         return _boundingBox
     }
 
-    private fun _getBoundingBox(out: Rectangle, m: Matrix? = null): IRectangle {
+    private fun _getBoundingBox(out: MRectangle, m: MMatrix? = null): IRectangle {
         var xmin = 0.0
         var ymin = 0.0
         var xmax = 0.0
@@ -272,7 +270,7 @@ class Bezier(
         return out
     }
 
-    private val temp = Point()
+    private val temp = MPoint()
 
     private var _length: Double = Double.NaN
 
@@ -370,7 +368,7 @@ class Bezier(
         //dot = ( bX - aX ) * ( pY - aY ) - ( bY - aY ) * ( pX - aX );
         out.p.setTo(aX + atobX * t, aY + atobY * t)
         out.t = t
-        out.dSq = Point.distanceSquared(out.p.x, out.p.y, pX, pY)
+        out.dSq = MPoint.distanceSquared(out.p.x, out.p.y, pX, pY)
         return out
     }
 
@@ -394,7 +392,7 @@ class Bezier(
         mdistSq += 1
         while (t < t2 + step) {
             val p: IPoint = this.compute(t, out.tempP)
-            val d = Point.distanceSquared(point, p)
+            val d = MPoint.distanceSquared(point, p)
             if (d < mdistSq) {
                 mdistSq = d
                 ft = t
@@ -412,9 +410,9 @@ class Bezier(
         return out
     }
 
-    data class ProjectedPoint(val p: Point = Point(), var t: Double = 0.0, var dSq: Double = 0.0) {
+    data class ProjectedPoint(val p: MPoint = MPoint(), var t: Double = 0.0, var dSq: Double = 0.0) {
         val d: Double get() = sqrt(dSq)
-        internal val tempP: Point = Point()
+        internal val tempP: MPoint = MPoint()
         fun roundDecimalPlaces(places: Int): ProjectedPoint = ProjectedPoint(
             p.mutable.setToRoundDecimalPlaces(places),
             t.roundDecimalPlaces(places),
@@ -544,7 +542,7 @@ class Bezier(
      * A coordinate is returned, representing the point on the curve at
      * [t]=..., offset along its normal by a distance [d]
      */
-    override fun offset(t: Double, d: Double, out: Point): IPoint {
+    override fun offset(t: Double, d: Double, out: MPoint): IPoint {
         // @TODO: Optimize to avoid allocations
         val pos = calc(t)
         val normal = normal(t)
@@ -598,7 +596,7 @@ class Bezier(
                             val t = n - 1
                             val p = np.getPoint(t * order)
                             val d = this.derivative(t.toDouble())
-                            val p2 = Point(p.x + d.x, p.y + d.y)
+                            val p2 = MPoint(p.x + d.x, p.y + d.y)
                             np.add(lli4(p, p2, o, points.getPoint(t + 1)) ?: error("Invalid curve"))
                         }
                         else -> {
@@ -655,7 +653,7 @@ class Bezier(
         return results
     }
 
-    override fun intersections(line: Line): DoubleArray {
+    override fun intersections(line: MLine): DoubleArray {
         val minX = line.minX
         val minY = line.minY
         val maxX = line.maxX
@@ -670,10 +668,10 @@ class Bezier(
         curveintersects(this.reduce(), curve.reduce(), threshold)
 
     /** Computes the point of the curve at [t] */
-    override fun compute(t: Double, out: Point): IPoint = compute(t, this.points, out)
+    override fun compute(t: Double, out: MPoint): IPoint = compute(t, this.points, out)
 
     /** The derivate vector of the curve at [t] (normalized when [normalize] is set to true) */
-    override fun derivative(t: Double, normalize: Boolean, out: Point): IPoint {
+    override fun derivative(t: Double, normalize: Boolean, out: MPoint): IPoint {
         compute(t, dpoints[0], out)
         if ((t == 0.0 || t == 1.0) && out.squaredLength.isAlmostZero()) {
             for (n in 0 until 10) {
@@ -689,18 +687,18 @@ class Bezier(
     }
 
     /** The normal vector of the curve at [t] (normalized when [normalize] is set to true) */
-    override fun normal(t: Double, normalize: Boolean, out: Point): IPoint {
+    override fun normal(t: Double, normalize: Boolean, out: MPoint): IPoint {
         derivative(t, normalize, out)
         return out.setToNormal()
         //return out.setTo(-out.y, out.x)
     }
 
-    override fun normal(t: Double, target: Point): Point {
+    override fun normal(t: Double, target: MPoint): MPoint {
         normal(t, normalize = true, target)
         return target
     }
 
-    override fun tangent(t: Double, target: Point): Point {
+    override fun tangent(t: Double, target: MPoint): MPoint {
         derivative(t, normalize = true, out = target)
         return target
     }
@@ -769,7 +767,7 @@ class Bezier(
         val adk: Double = 0.0,
     )
 
-    override fun toLine(out: Line): Line {
+    override fun toLine(out: MLine): MLine {
         val x0 = points.getX(0)
         val y0 = points.getY(0)
         val x1 = points.getX(order)
@@ -868,16 +866,16 @@ class Bezier(
             val end = this.points.getPoint(this.points.size - 1)
 
             val fline = run {
-                val s = Point(start.x + n.x * d1, start.y + n.y * d1)
-                val e = Point(end.x + n.x * d3, end.y + n.y * d3)
-                val mid = Point((s.x + e.x) / 2.0, (s.y + e.y) / 2.0)
+                val s = MPoint(start.x + n.x * d1, start.y + n.y * d1)
+                val e = MPoint(end.x + n.x * d3, end.y + n.y * d3)
+                val mid = MPoint((s.x + e.x) / 2.0, (s.y + e.y) / 2.0)
                 pointArrayListOf(s, mid, e)
             }
 
             val bline = run {
-                val s = Point(start.x - n.x * d2, start.y - n.y * d2)
-                val e = Point(end.x - n.x * d4, end.y - n.y * d4)
-                val mid = Point((s.x + e.x) / 2.0, (s.y + e.y) / 2.0)
+                val s = MPoint(start.x - n.x * d2, start.y - n.y * d2)
+                val e = MPoint(end.x - n.x * d4, end.y - n.y * d4)
+                val mid = MPoint((s.x + e.x) / 2.0, (s.y + e.y) / 2.0)
                 pointArrayListOf(e, mid, s)
             };
 
@@ -940,7 +938,7 @@ class Bezier(
     override fun translate(dx: Double, dy: Double, out: Bezier): Bezier =
         out.setPoints(points.mapPoints { x, y, o -> o.setTo(x + dx, y + dy) })
 
-    override fun transform(m: Matrix, out: Bezier): Bezier =
+    override fun transform(m: MMatrix, out: Bezier): Bezier =
         out.setPoints(points.mapPoints { x, y, o -> m.transform(x, y, o) })
 
     companion object {
@@ -1054,7 +1052,7 @@ class Bezier(
             return atan2(cross, dot)
         }
 
-        private fun compute(t: Double, points: IPointArrayList, out: Point = Point()): IPoint {
+        private fun compute(t: Double, points: IPointArrayList, out: MPoint = MPoint()): IPoint {
             val p = points
             val order = p.size - 1
             if (t == 0.0) return p.getPoint(0, out)
@@ -1120,7 +1118,7 @@ class Bezier(
 
         private fun align(
             points: IPointArrayList,
-            line: Line,
+            line: MLine,
             out: PointArrayList = PointArrayList()
         ): IPointArrayList {
             val p1 = line.a
@@ -1142,9 +1140,9 @@ class Bezier(
         private fun between(v: Double, min: Double, max: Double): Boolean =
             ((min <= v) && (v <= max)) || v.isAlmostEquals(min) || v.isAlmostEquals(max)
 
-        private val X_AXIS = Line(0, 0, 1, 0)
+        private val X_AXIS = MLine(0, 0, 1, 0)
 
-        private fun roots(points: IPointArrayList, line: Line = X_AXIS): DoubleArray {
+        private fun roots(points: IPointArrayList, line: MLine = X_AXIS): DoubleArray {
             val order = points.size - 1
             val aligned = align(points, line)
 
@@ -1343,7 +1341,7 @@ class Bezier(
             return results.distinct()
         }
 
-        private fun lli8(x1: Double, y1: Double, x2: Double, y2: Double, x3: Double, y3: Double, x4: Double, y4: Double, out: Point = Point()): IPoint? {
+        private fun lli8(x1: Double, y1: Double, x2: Double, y2: Double, x3: Double, y3: Double, x4: Double, y4: Double, out: MPoint = MPoint()): IPoint? {
             val d = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4)
             if (d == 0.0) return null
             val nx = (x1 * y2 - y1 * x2) * (x3 - x4) - (x1 - x2) * (x3 * y4 - y3 * x4)
@@ -1351,7 +1349,7 @@ class Bezier(
             return out.setTo(nx / d, ny / d)
         }
 
-        private fun lli4(p1: IPoint, p2: IPoint, p3: IPoint, p4: IPoint, out: Point = Point()): IPoint? =
+        private fun lli4(p1: IPoint, p2: IPoint, p3: IPoint, p4: IPoint, out: MPoint = MPoint()): IPoint? =
             lli8(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y, p4.x, p4.y, out)
 
         fun cubicFromPoints(S: IPoint, B: IPoint, E: IPoint, t: Double = 0.5, d1: Double? = null): Bezier {
@@ -1367,13 +1365,13 @@ class Bezier(
             val bx2 = d2 * lx
             val by2 = d2 * ly
             // derivation of new hull coordinates
-            val e1 = Point(B.x - bx1, B.y - by1)
-            val e2 = Point(B.x + bx2, B.y + by2)
+            val e1 = MPoint(B.x - bx1, B.y - by1)
+            val e2 = MPoint(B.x + bx2, B.y + by2)
             val A = abc.A
-            val v1 = Point(A.x + (e1.x - A.x) / (1 - t), A.y + (e1.y - A.y) / (1 - t))
-            val v2 = Point(A.x + (e2.x - A.x) / t, A.y + (e2.y - A.y) / t)
-            val nc1 = Point(S.x + (v1.x - S.x) / t, S.y + (v1.y - S.y) / t)
-            val nc2 = Point(
+            val v1 = MPoint(A.x + (e1.x - A.x) / (1 - t), A.y + (e1.y - A.y) / (1 - t))
+            val v2 = MPoint(A.x + (e2.x - A.x) / t, A.y + (e2.y - A.y) / t)
+            val nc1 = MPoint(S.x + (v1.x - S.x) / t, S.y + (v1.y - S.y) / t)
+            val nc2 = MPoint(
                 E.x + (v2.x - E.x) / (1 - t),
                 E.y + (v2.y - E.y) / (1 - t),
             )
@@ -1393,12 +1391,12 @@ class Bezier(
         private fun getABC(order: Int, S: IPoint, B: IPoint, E: IPoint, t: Double = 0.5): ABCResult {
             val u = projectionratio(t, order)
             val um = 1.0 - u
-            val C = Point(
+            val C = MPoint(
                 u * S.x + um * E.x,
                 u * S.y + um * E.y,
             )
             val s = abcratio(t, order)
-            val A = Point(
+            val A = MPoint(
                 B.x + (B.x - C.x) / s,
                 B.y + (B.y - C.y) / s,
             )
@@ -1499,18 +1497,18 @@ class Bezier(
 
         fun cubicCalc(
             p0: IPoint, p1: IPoint, p2: IPoint, p3: IPoint,
-            t: Double, target: Point = Point()
+            t: Double, target: MPoint = MPoint()
         ): IPoint = cubicCalc(p0.x, p0.y, p1.x, p1.y, p2.x, p2.y, p3.x, p3.y, t, target)
 
         fun cubicCalc(
             x0: Double, y0: Double, x1: Double, y1: Double,
             x2: Double, y2: Double, x3: Double, y3: Double,
-            t: Double, target: Point = Point()
-        ): Point = cubicCalc(x0, y0, x1, y1, x2, y2, x3, y3, t) { x, y -> target.setTo(x, y) }
+            t: Double, target: MPoint = MPoint()
+        ): MPoint = cubicCalc(x0, y0, x1, y1, x2, y2, x3, y3, t) { x, y -> target.setTo(x, y) }
 
         fun quadCalc(
             p0: IPoint, p1: IPoint, p2: IPoint,
-            t: Double, target: Point = Point()
+            t: Double, target: MPoint = MPoint()
         ): IPoint = quadCalc(p0.x, p0.y, p1.x, p1.y, p2.x, p2.y, t, target)
 
         fun quadCalc(
@@ -1518,8 +1516,8 @@ class Bezier(
             xc: Double, yc: Double,
             x1: Double, y1: Double,
             t: Double,
-            target: Point = Point()
-        ): Point = quadCalc(x0, y0, xc, yc, x1, y1, t) { x, y -> target.setTo(x, y) }
+            target: MPoint = MPoint()
+        ): MPoint = quadCalc(x0, y0, xc, yc, x1, y1, t) { x, y -> target.setTo(x, y) }
 
         @PublishedApi internal fun quadToCubic1(v0: Double, v1: Double) = v0 + (v1 - v0) * (2.0 / 3.0)
         @PublishedApi internal fun quadToCubic2(v1: Double, v2: Double) = v2 + (v1 - v2) * (2.0 / 3.0)
@@ -1543,4 +1541,4 @@ class Bezier(
     }
 }
 
-fun Line.toBezier(): Bezier = Bezier(x0, y0, x1, y1)
+fun MLine.toBezier(): Bezier = Bezier(x0, y0, x1, y1)

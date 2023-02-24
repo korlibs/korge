@@ -1,5 +1,6 @@
 package com.soywiz.korio.runtime.browser
 
+import com.soywiz.klogger.*
 import com.soywiz.korio.file.SimpleStorage
 import com.soywiz.korio.file.VfsFile
 import com.soywiz.korio.file.std.*
@@ -43,7 +44,7 @@ object JsRuntimeBrowser : JsRuntime() {
     override fun langs(): List<String> = window.navigator.languages.asList()
     override fun openVfs(path: String): VfsFile {
         return UrlVfs(currentDir())[path].withCatalogJail().root.also {
-            println("BROWSER openVfs: currentDir=${currentDir()}, path=$path, urlVfs=$it")
+            logger.info { "BROWSER openVfs: currentDir=${currentDir()}, path=$path, urlVfs=$it" }
         }
     }
 

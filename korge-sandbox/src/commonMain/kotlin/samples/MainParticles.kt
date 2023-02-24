@@ -19,14 +19,7 @@ class MainParticles : Scene() {
             //val particlesView = particleEmitter(emitter).position(0.0, 0.0)
 
             addUpdater {
-                val localMouse = localMouseXY(views)
-                val stageMouse = stage!!.mouseXY.copy()
-                //println("localMouse=$localMouse, stageMouse=$stageMouse")
-                particlesView.emitterPos = localMouseXY(views) * scale
-                //particlesView.setGlobalXY(stage!!.mouseXY)
-                //println(stage!!.mouseXY)
-                //particlesView.x = stage.mouseX
-                //particlesView.y = stage.mouseY
+                particlesView.emitterPos = localMouseXY(views)
             }
 
             //delay(4.seconds)

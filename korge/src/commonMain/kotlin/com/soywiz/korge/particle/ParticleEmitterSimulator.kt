@@ -1,23 +1,13 @@
 package com.soywiz.korge.particle
 
-import com.soywiz.klock.TimeSpan
-import com.soywiz.klock.seconds
-import com.soywiz.korma.geom.Angle
-import com.soywiz.korma.geom.Point
-import com.soywiz.korma.geom.cos
-import com.soywiz.korma.geom.degrees
-import com.soywiz.korma.geom.div
-import com.soywiz.korma.geom.minus
-import com.soywiz.korma.geom.plus
-import com.soywiz.korma.geom.sin
-import com.soywiz.korma.geom.times
-import kotlin.math.absoluteValue
-import kotlin.math.sqrt
-import kotlin.random.Random
+import com.soywiz.klock.*
+import com.soywiz.korma.geom.*
+import kotlin.math.*
+import kotlin.random.*
 
 class ParticleEmitterSimulator(
     private val emitter: ParticleEmitter,
-    var emitterPos: Point = Point(),
+    var emitterPos: MPoint = MPoint(),
     val random: Random = Random
 ) {
     var totalElapsedTime = 0.seconds
@@ -135,8 +125,8 @@ class ParticleEmitterSimulator(
             ParticleEmitter.Type.RADIAL -> {
                 particle.emitRotation += particle.emitRotationDelta * elapsedTime.toDouble()
                 particle.emitRadius += (particle.emitRadiusDelta * elapsedTime).toFloat()
-                particle.x = emitter.sourcePosition.xf - cos(particle.emitRotation).toFloat() * particle.emitRadius
-                particle.y = emitter.sourcePosition.yf - sin(particle.emitRotation).toFloat() * particle.emitRadius
+                particle.x = emitter.sourcePosition.x.toFloat() - cos(particle.emitRotation).toFloat() * particle.emitRadius
+                particle.y = emitter.sourcePosition.y.toFloat() - sin(particle.emitRotation).toFloat() * particle.emitRadius
             }
             ParticleEmitter.Type.GRAVITY -> {
                 val distanceX = particle.x - particle.startX

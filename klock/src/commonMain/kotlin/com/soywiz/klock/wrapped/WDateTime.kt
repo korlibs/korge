@@ -132,19 +132,6 @@ data class WDateTime(val value: DateTime) : Comparable<WDateTime>, Serializable 
         operator fun invoke(unix: Double) = DateTime(unix).wrapped
 
         /** Constructs a new [WDateTime] from a [unix] timestamp. */
-        @Deprecated(
-            "Please use fromUnixMillis instead. To be deleted in 3.1.",
-            ReplaceWith("fromUnixMillis(unix)")
-        )
-        fun fromUnix(unix: Double) = fromUnixMillis(unix)
-        /** Constructs a new [WDateTime] from a [unix] timestamp. */
-        @Deprecated(
-            "Please use fromUnixMillis instead. To be deleted in 3.1.",
-            ReplaceWith("fromUnixMillis(unix)")
-        )
-        fun fromUnix(unix: Long) = fromUnixMillis(unix)
-
-        /** Constructs a new [WDateTime] from a [unix] timestamp. */
         fun fromUnixMillis(unix: Double) = DateTime.fromUnixMillis(unix).wrapped
         /** Constructs a new [WDateTime] from a [unix] timestamp. */
         fun fromUnixMillis(unix: Long) = DateTime.fromUnixMillis(unix).wrapped
@@ -161,20 +148,8 @@ data class WDateTime(val value: DateTime) : Comparable<WDateTime>, Serializable 
         fun nowLocal() = DateTime.nowLocal().wrapped
 
         /** Returns the total milliseconds since unix epoch. The same as [nowUnixLong] but as double. To prevent allocation on targets without Long support. */
-        @Deprecated(
-            "Please use nowUnixMillis instead. To be deleted in 3.1.",
-            ReplaceWith("nowUnixMillis()")
-        )
-        fun nowUnix(): Double = nowUnixMillis()
-        /** Returns the total milliseconds since unix epoch. The same as [nowUnixLong] but as double. To prevent allocation on targets without Long support. */
         fun nowUnixMillis(): Double = DateTime.nowUnixMillis()
 
-        /** Returns the total milliseconds since unix epoch. */
-        @Deprecated(
-            "Please use nowUnixMillisLong instead. To be deleted in 3.1.",
-            ReplaceWith("nowUnixMillisLong()")
-        )
-        fun nowUnixLong(): Long = nowUnixMillisLong()
         /** Returns the total milliseconds since unix epoch. */
         fun nowUnixMillisLong(): Long = DateTime.nowUnixMillisLong()
     }

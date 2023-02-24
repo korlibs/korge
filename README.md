@@ -19,6 +19,29 @@ in addition to ensure the continuity of the project, you will get exclusive cont
 
 ## Info about the project:
 
+KorGE is a modern multiplatform game engine for Kotlin. Features include:
+
+* Visual editor
+  * KorGE offers a powerful editor embedded in IntelliJ IDE
+* Bundle support
+  * Easily add sourcecode and resources via GitHub
+* Debugger
+  * Live-debug your games
+* 100% Kotlin
+  * KorGE is fully written in Kotlin and designed from the ground up to embrace modern and easy coding styles
+* Real native multiplatform
+  * KorGE gradle plugin allows to target each platform natively: JVM for Android, JS for the Web and native code for iOS and Desktop
+* Quick installation
+  * Install the KorGE IntelliJ Plugin or clone the “Hello World!” project and start making your own game in less than a minute
+* Fully productive
+  * Since KorGE targets the JVM, you can develop your game, try it, debug it and test it using IntelliJ IDEA
+* Tons of features
+  * KorGE is just the last layer of a larger stack (Korlibs) for multimedia development
+* Small footprint
+  * KorGE has a very small footprint. It has no external dependencies and only uses the libraries available on each platform
+
+For more information, visit:
+
 * <https://korge.org/>
 * <https://docs.korge.org/>
 * <https://forum.korge.org/>
@@ -73,6 +96,7 @@ now they are available via kproject in these repositories:
 
 ### Animations
 
+* Basic Tweens & animators (Integrated in KorGE)
 * <https://github.com/korlibs/korge-swf>
 
 ### Skeletal Libraries
@@ -80,16 +104,21 @@ now they are available via kproject in these repositories:
 * <https://github.com/korlibs/korge-dragonbones>
 * <https://github.com/korlibs/korge-spine>
 
-### Level Loading
+### TileMaps / Level Loading
 
+* Basic TileSet + TileMap functionality (Integrated in KorGE)
 * <https://github.com/korlibs/korge-ldtk>
+* <https://github.com/korlibs/korge-tiled>
 
 ### Image Formats
 
-* <https://github.com/korlibs/korge-image-formats> (Pure Kotlin JPEG Encoder/Decoder)
+* PNG, QOI, ASE, PSD, Native Decoders (Integrated in KorGE)
+* <https://github.com/korlibs/korge-image-formats/korim-jpeg> (Pure Kotlin JPEG Encoder/Decoder)
+* <https://github.com/korlibs/korge-image-formats/korim-qr> (Pure Kotlin QR Generator)
 
 ### AudioFormats
 
+* MP3, WAV (Integrated in KorGE)
 * <https://github.com/korlibs/korge-audio-formats> (MOD, XM, S3M, MIDI (WIP), OPUS (WIP))
 
 ## Scripting
@@ -100,7 +129,12 @@ now they are available via kproject in these repositories:
 
 * <https://github.com/korlibs/korge-video>
 
+## I18N
+
+* <https://github.com/korlibs/korge-services/tree/main/korge-i18n> (I18N support)
+
 ## Other
 
 * <https://github.com/korlibs/korge-lipsync> (Rhubarb LipSync integration with resource processor)
 * <https://github.com/korlibs/korge-parallax> (Pseudo 3D Parallax Effect)
+

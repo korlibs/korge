@@ -1,8 +1,8 @@
 package com.soywiz.korim.format
 
+import com.soywiz.kmem.*
 import com.soywiz.korio.async.suspendTest
 import com.soywiz.korio.file.std.resourcesVfs
-import com.soywiz.korio.util.OS
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -21,11 +21,11 @@ class EXIFInfoTest {
     }
 
     @Test
-    fun testAvif() = suspendTest({ !OS.isJsBrowser }) { testBase("Exif5-2x.avif") }
+    fun testAvif() = suspendTest({ !Platform.isJsBrowser }) { testBase("Exif5-2x.avif") }
     @Test
-    fun testJpeg() = suspendTest({ !OS.isJsBrowser }) { testBase("Exif5-2x.jpeg") }
+    fun testJpeg() = suspendTest({ !Platform.isJsBrowser }) { testBase("Exif5-2x.jpeg") }
     @Test
-    fun testPNG() = suspendTest({ !OS.isJsBrowser }) { testBase("Exif5-2x.png") }
+    fun testPNG() = suspendTest({ !Platform.isJsBrowser }) { testBase("Exif5-2x.png") }
     //@Test
     //fun testWebp() = suspendTest { testBase("Exif5-2x.webp") }
 }

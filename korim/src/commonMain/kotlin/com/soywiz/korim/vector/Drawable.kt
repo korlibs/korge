@@ -4,15 +4,9 @@ import com.soywiz.kmem.clamp
 import com.soywiz.kmem.toIntCeil
 import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.BitmapWithHotspot
-import com.soywiz.korim.bitmap.NativeImage
 import com.soywiz.korim.bitmap.NativeImageOrBitmap32
 import com.soywiz.korim.bitmap.context2d
-import com.soywiz.korma.geom.ISize
-import com.soywiz.korma.geom.Point
-import com.soywiz.korma.geom.PointInt
-import com.soywiz.korma.geom.Rectangle
-import com.soywiz.korma.geom.ScaleMode
-import com.soywiz.korma.geom.topLeft
+import com.soywiz.korma.geom.*
 
 interface Drawable {
     fun draw(c: Context2d)
@@ -31,7 +25,7 @@ interface SizedDrawable : Drawable {
 }
 
 interface BoundsDrawable : SizedDrawable {
-    val bounds: Rectangle
+    val bounds: MRectangle
     val left: Int get() = bounds.left.toInt()
     val top: Int get() = bounds.top.toInt()
     override val width: Int get() = bounds.width.toInt()

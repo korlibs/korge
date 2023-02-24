@@ -1574,7 +1574,7 @@ open class KmlGlProxyLogToString(parent: KmlGl = KmlGlDummy()) : KmlGlProxy(pare
     val log = arrayListOf<String>()
 
     fun clearLog() { log.clear() }
-    fun getLogAsString(): String = log.joinToString("\n")
+    fun getLogAsString(clear: Boolean = false): String = log.joinToString("\n").also { if (clear) log.clear() }
 
     open fun getString(name: String, params: List<Any?>, result: Any?): String? = buildString {
         append("$name(${serializeParams(name, params)})")

@@ -4,14 +4,14 @@ import com.soywiz.kmem.nearestAlignedTo
 import com.soywiz.korge.render.RenderContext
 import com.soywiz.korge.render.useLineBatcher
 import com.soywiz.korim.color.Colors
-import com.soywiz.korma.geom.Matrix
-import com.soywiz.korma.geom.Point
-import com.soywiz.korma.geom.RectangleInt
+import com.soywiz.korma.geom.MMatrix
+import com.soywiz.korma.geom.MPoint
+import com.soywiz.korma.geom.MRectangleInt
 import com.soywiz.korma.geom.vector.rect
 
 interface Grid {
-    fun snap(point: Point, out: Point = Point()): Point
-    fun draw(ctx: RenderContext, width: Double, height: Double, m: Matrix)
+    fun snap(point: MPoint, out: MPoint = MPoint()): MPoint
+    fun draw(ctx: RenderContext, width: Double, height: Double, m: MMatrix)
 }
 
 open class OrthographicGrid(
@@ -25,14 +25,14 @@ open class OrthographicGrid(
             height = value
         }
 
-    override fun snap(point: Point, out: Point): Point {
+    override fun snap(point: MPoint, out: MPoint): MPoint {
         return out.setTo(
             point.x.nearestAlignedTo(width.toDouble()),
             point.y.nearestAlignedTo(height.toDouble()),
         )
     }
 
-    override fun draw(ctx: RenderContext, width: Double, height: Double, m: Matrix) {
+    override fun draw(ctx: RenderContext, width: Double, height: Double, m: MMatrix) {
         val gridWidth = this.width
         val gridHeight = this.height
         val width = width.toInt()
@@ -41,7 +41,7 @@ open class OrthographicGrid(
         val transform = matrix.toTransform()
         ctx.useLineBatcher { ctxLine ->
             ctxLine.draw(matrix) {
-                val rect = RectangleInt(0, 0, width.toInt(), height.toInt())
+                val rect = MRectangleInt(0, 0, width.toInt(), height.toInt())
                 val dx = transform.scaleX * gridWidth
                 val dy = transform.scaleY * gridHeight
                 //println("dxy: $dx, $dy")

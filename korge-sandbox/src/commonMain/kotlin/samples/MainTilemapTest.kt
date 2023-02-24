@@ -1,5 +1,6 @@
 package samples
 
+import com.soywiz.kds.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.scene.*
 import com.soywiz.korge.view.*
@@ -11,7 +12,7 @@ import com.soywiz.korim.color.*
 import com.soywiz.korim.tiles.*
 import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.Point.Companion.Zero
+import com.soywiz.korma.geom.MPoint.Companion.Zero
 import kotlin.math.*
 import kotlin.random.*
 
@@ -25,9 +26,11 @@ class MainTilemapTest : Scene() {
         val donutMap = makeDonutMap(mapSize, tileSet)
         lateinit var tilemap: TileMap
 
-        val cameraContainer = cameraContainer(stage!!.width, stage!!.height) {
+        //filters(IdentityFilter)
+        solidRect(width, height, Colors["#3e0000"])
+        val cameraContainer = cameraContainer(width, height) {
             tilemap = tileMap(donutMap, tileSet).centerOn(this)
-        }
+        }//.filters(BlurFilter())
         cameraContainer.cameraY = -80.0 * mapSize
         val statusOverlay = text("")
 
@@ -52,9 +55,9 @@ class MainTilemapTest : Scene() {
 
         var wasDown = false
         val downVals = object {
-            var mouse: Point = Point()
+            var mouse: MPoint = MPoint()
             var camAngle: Angle = 0.degrees
-            var camPos: Point = Point()
+            var camPos: MPoint = MPoint()
         }
 
         addUpdater {
@@ -65,7 +68,7 @@ class MainTilemapTest : Scene() {
                     wasDown = true
                     downVals.mouse.copyFrom(input.mouse)
                     downVals.camAngle = cameraContainer.cameraAngle
-                    downVals.camPos = Point(cameraContainer.cameraX, cameraContainer.cameraY)
+                    downVals.camPos = MPoint(cameraContainer.cameraX, cameraContainer.cameraY)
                 } else {
                     val rightMouse = (mouseButtons and 4) != 0
                     if (rightMouse) {
@@ -100,17 +103,17 @@ class MainTilemapTest : Scene() {
     private fun makeDonutMap(
         mapWidth: Int,
         tileSet: TileSet
-    ): Bitmap32 {
+    ): IntArray2 {
         val rand = Random(3)
-        val mapValues2 = Bitmap32(mapWidth, mapWidth)
-        val center = Point(mapWidth / 2, mapWidth / 2)
+        val mapValues2 = IntArray2(mapWidth, mapWidth, 0)
+        val center = MPoint(mapWidth / 2, mapWidth / 2)
         for (x in 0 until mapWidth) for (y in 0 until mapWidth) {
-            val p = Point(x, y)
+            val p = MPoint(x, y)
             val dist = (p - center).length
             val onDisc = dist < mapWidth / 2
             val tooClose = dist < (mapWidth / 2) * 0.7
-            mapValues2.ints[x * mapWidth + y] =
-                if (onDisc && !tooClose) 1 + rand.nextInt(tileSet.texturesMap.size - 1) else 0
+            mapValues2[x, y] =
+                if (onDisc && !tooClose) 1 + rand.nextInt(tileSet.tilesMap.size - 1) else 0
         }
         return mapValues2
     }
@@ -118,12 +121,12 @@ class MainTilemapTest : Scene() {
     private fun makeSimpleTileSet(tileWidth: Int): TileSet {
         val atlas = MutableAtlasUnit()
         val tileBitmaps =
-            listOf(Colors.TRANSPARENT_BLACK, Colors.GREEN, Colors.ORANGE, Colors.GREENYELLOW, Colors.YELLOW).map { c ->
-                atlas.add(Bitmap32(tileWidth, tileWidth).also {
+            listOf(Colors.TRANSPARENT, Colors.GREEN, Colors.ORANGE, Colors.GREENYELLOW, Colors.YELLOW).map { c ->
+                atlas.add(Bitmap32(tileWidth, tileWidth, premultiplied = true).also {
                     it.fill(c)
                     for (i in (tileWidth / 5) until (tileWidth * 4 / 5)) {
-                        it[i, tileWidth / 2] = Colors.TRANSPARENT_BLACK
-                        it[tileWidth / 2, i] = Colors.TRANSPARENT_BLACK
+                        it[i, tileWidth / 2] = Colors.TRANSPARENT
+                        it[tileWidth / 2, i] = Colors.TRANSPARENT
                     }
                 }).slice
             }

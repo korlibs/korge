@@ -21,7 +21,7 @@ fun Project.getCompilationKorgeProcessedResourcesFolder(targetName: String, comp
     return File(project.buildDir, "korgeProcessedResources/${targetName}/${compilationName}")
 }
 
-fun getKorgeProcessResourcesTaskName(target: org.jetbrains.kotlin.gradle.plugin.KotlinTarget, compilation: org.jetbrains.kotlin.gradle.plugin.KotlinCompilation<*>): String =
+fun getKorgeProcessResourcesTaskName(target: KotlinTarget, compilation: KotlinCompilation<*>): String =
     getKorgeProcessResourcesTaskName(target.name, compilation.name)
 
 fun getKorgeProcessResourcesTaskName(targetName: String, compilationName: String): String =
@@ -85,6 +85,7 @@ fun Project.addGenResourcesTasks(): Project {
             } else {
                 compilation.compileKotlinTask.finalizedBy(korgeProcessedResources)
                 tasks.getByName("runJvm").dependsOn(korgeProcessedResources)
+                tasks.findByName("jvmProcessResources")?.dependsOn(korgeProcessedResources)
             }
         }
     }
@@ -99,7 +100,7 @@ data class KorgeProcessedResourcesTaskConfig(
     val iconBytes: ByteArray,
 )
 
-open class KorgeProcessedResourcesTask @Inject constructor(
+class KorgeProcessedResourcesTask @Inject constructor(
     private val config: KorgeProcessedResourcesTaskConfig,
     //private val fs: FileSystemOperations,
 ) : DefaultTask() {

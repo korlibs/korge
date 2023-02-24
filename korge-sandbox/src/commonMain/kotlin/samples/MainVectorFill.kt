@@ -13,7 +13,7 @@ import com.soywiz.korim.paint.toPaint
 import com.soywiz.korim.vector.EmptyShape
 import com.soywiz.korim.vector.ShapeBuilder
 import com.soywiz.korio.file.std.resourcesVfs
-import com.soywiz.korma.geom.Matrix
+import com.soywiz.korma.geom.MMatrix
 import com.soywiz.korma.geom.vector.rect
 
 class MainVectorFill : Scene() {
@@ -32,7 +32,7 @@ class MainVectorFill : Scene() {
                 rect(0, 0, 512, 512)
             }
 
-            fill(bitmap.toPaint(Matrix().pretranslate(0, 100).prescale(100.0 / 512.0))) {
+            fill(bitmap.toPaint(MMatrix().pretranslate(0, 100).prescale(100.0 / 512.0))) {
                 rect(0, 100, 100, 100)
             }
 

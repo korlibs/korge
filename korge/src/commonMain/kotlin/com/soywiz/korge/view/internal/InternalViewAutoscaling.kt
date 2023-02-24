@@ -1,6 +1,6 @@
 package com.soywiz.korge.view.internal
 
-import com.soywiz.korma.geom.Matrix
+import com.soywiz.korma.geom.MMatrix
 import kotlin.math.abs
 import kotlin.math.max
 
@@ -10,9 +10,9 @@ internal class InternalViewAutoscaling {
     var renderedAtScaleX = 1.0; private set
     var renderedAtScaleY = 1.0; private set
     var renderedAtScaleXY = 1.0; private set
-    private val matrixTransform = Matrix.Transform()
+    private val matrixTransform = MMatrix.Transform()
 
-    fun onRender(autoScaling: Boolean, autoScalingPrecise: Boolean, globalMatrix: Matrix): Boolean {
+    fun onRender(autoScaling: Boolean, autoScalingPrecise: Boolean, globalMatrix: MMatrix): Boolean {
         if (autoScaling) {
             matrixTransform.setMatrixNoReturn(globalMatrix)
             //val sx = kotlin.math.abs(matrixTransform.scaleX / this.scaleX)

@@ -14,13 +14,12 @@ import com.soywiz.korim.color.Colors
 import com.soywiz.korim.text.TextAlignment
 import com.soywiz.korim.vector.format.pathSvg
 import com.soywiz.korma.geom.IPoint
-import com.soywiz.korma.geom.Matrix
-import com.soywiz.korma.geom.Point
-import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.MMatrix
+import com.soywiz.korma.geom.MPoint
+import com.soywiz.korma.geom.MRectangle
 import com.soywiz.korma.geom.bezier.StrokePointsMode
 import com.soywiz.korma.geom.bezier.toStrokePointsList
 import com.soywiz.korma.geom.degrees
-import com.soywiz.korma.geom.minus
 import com.soywiz.korma.geom.shape.buildVectorPath
 import com.soywiz.korma.geom.shape.getPoints2List
 import com.soywiz.korma.geom.vector.LineJoin
@@ -50,7 +49,7 @@ class MainGpuVectorRendering3 : Scene() {
             }.xy(pos)
 
             //debugVertexView(pointsList.map { it.vector }, type = AGDrawType.POINTS)
-            text(desc, alignment = TextAlignment.BASELINE_LEFT).xy(pos - Point(0, 8))
+            text(desc, alignment = TextAlignment.BASELINE_LEFT).xy(pos - MPoint(0, 8))
 
             debugVertexView(path.getPoints2List(), color = Colors.YELLOWGREEN, type = AGDrawType.LINE_STRIP).xy(pos).apply {
                 keys {
@@ -74,7 +73,7 @@ class MainGpuVectorRendering3 : Scene() {
             val sx = index * 430 + 15
 
             fun getPos(x: Int, y: Int): IPoint {
-                return Point(sx + x * 120, 50 + y * 130)
+                return MPoint(sx + x * 120, 50 + y * 130)
             }
 
             text("${strokeInfo.join}", color = Colors.YELLOWGREEN).xy(sx, 10)
@@ -107,7 +106,7 @@ class MainGpuVectorRendering3 : Scene() {
             })
 
             debugPath("Rect closed", getPos(0, 1), strokeInfo, buildVectorPath {
-                rect(Rectangle.fromBounds(0, 0, 100, 100))
+                rect(MRectangle.fromBounds(0, 0, 100, 100))
             })
 
             debugPath("Rect not closed", getPos(1, 1), strokeInfo, buildVectorPath {
@@ -153,7 +152,7 @@ class MainGpuVectorRendering3 : Scene() {
             debugPath("Shape", getPos(2, 4), strokeInfo, buildVectorPath {
                 pathSvg(
                     "m262.15-119.2s2.05-8-2.35-3.6c0,0-6.4,5.2-13.2,5.2,0,0-13.2,2-17.2,14,0,0-3.6,24.4,3.6,29.6,0,0,4.4,6.8,10.8,0.8s20.35-33.6,18.35-46z",
-                    Matrix().setTransform(x = -200.0, y = 150.0).scale(1.2)
+                    MMatrix().setTransform(x = -200.0, y = 150.0).scale(1.2)
                 )
             })
         }

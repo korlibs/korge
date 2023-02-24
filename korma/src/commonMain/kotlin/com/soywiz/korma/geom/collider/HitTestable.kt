@@ -1,12 +1,7 @@
 package com.soywiz.korma.geom.collider
 
 import com.soywiz.kds.iterators.fastForEach
-import com.soywiz.korma.geom.Angle
-import com.soywiz.korma.geom.Point
-import com.soywiz.korma.geom.angleTo
-import com.soywiz.korma.geom.degrees
-import com.soywiz.korma.geom.div
-import com.soywiz.korma.geom.plus
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.VectorPath
 
 fun interface HitTestable {
@@ -62,9 +57,9 @@ enum class HitTestDirection {
     val left get() = this == ANY || this == LEFT
 
     companion object {
-        fun fromPoint(point: Point): HitTestDirection {
+        fun fromPoint(point: MPoint): HitTestDirection {
             if (point.x == 0.0 && point.y == 0.0) return ANY
-            return fromAngle(Point.Zero.angleTo(point))
+            return fromAngle(MPoint.Zero.angleTo(point))
         }
         fun fromAngle(angle: Angle): HitTestDirection {
             val quadrant = ((angle + 45.degrees) / 90.degrees).toInt()

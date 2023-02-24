@@ -24,7 +24,7 @@ abstract class Bitmap(
     val bpp: Int,
     premultiplied: Boolean,
     val backingArray: Any?
-) : Sizeable, ISizeInt, Extra by Extra.Mixin() {
+) : ISizeable, ISizeInt, Extra by Extra.Mixin() {
     var bitmapName: String? = null
 
     var premultiplied: Boolean = premultiplied
@@ -44,14 +44,10 @@ abstract class Bitmap(
     /** Version of the content. lock+unlock mutates this version to allow for example to re-upload the bitmap to the GPU when synchronizing bitmaps into textures */
     var contentVersion: Int = 0
 
-    /** Associated texture object to this Bitmap that could be used by other engines */
-    @Deprecated("Do not use")
-    var texture: Any? = null
-
     var dirtyRegion: IRectangleInt? = null
         private set
 
-    private val dirtyRegionObj: RectangleInt = RectangleInt()
+    private val dirtyRegionObj: MRectangleInt = MRectangleInt()
 
     /** Specifies whether mipmaps should be created for this [Bitmap] */
     var mipmaps: Boolean = false
@@ -60,7 +56,7 @@ abstract class Bitmap(
     val area: Int get() = width * height
     fun index(x: Int, y: Int) = y * width + x
     fun inside(x: Int, y: Int) = x in 0 until width && y in 0 until height
-    override val size: Size get() = Size(width, height)
+    override val size: MSize get() = MSize(width, height)
 
     fun clearDirtyRegion() {
         if (dirtyRegion != null) {
@@ -87,11 +83,13 @@ abstract class Bitmap(
 
     inline fun lock(rect: IRectangleInt? = null, doLock: Boolean = true, block: () -> Unit): Int {
         if (doLock) lock()
+        var result: Int
         try {
             block()
         } finally {
-            return if (doLock) unlock(rect) else 0
+            result = if (doLock) unlock(rect) else 0
         }
+        return result
     }
 
     open fun readPixelsUnsafe(x: Int, y: Int, width: Int, height: Int, out: IntArray, offset: Int = 0) {
@@ -116,39 +114,42 @@ abstract class Bitmap(
     open fun setRgbaRaw(x: Int, y: Int, v: RGBA): Unit {
         TODO()
     }
+
     /** UNSAFE: Gets the color [v] in the [x], [y] coordinates in the internal format of this Bitmap (either premultiplied or not) */
-    open fun getRgbaRaw(x: Int, y: Int): RGBA = Colors.TRANSPARENT_BLACK
+    open fun getRgbaRaw(x: Int, y: Int): RGBA = Colors.TRANSPARENT
 
     /** Sets the color [v] in the [x], [y] coordinates in [RGBA] non-premultiplied */
     open fun setRgba(x: Int, y: Int, v: RGBA): Unit {
         if (premultiplied) setRgbaRaw(x, y, v.premultiplied.asNonPremultiplied()) else setRgbaRaw(x, y, v)
     }
+
     /** Sets the color [v] in the [x], [y] coordinates in [RGBAPremultiplied] */
     open fun setRgba(x: Int, y: Int, v: RGBAPremultiplied): Unit {
         if (premultiplied) setRgbaRaw(x, y, v.asNonPremultiplied()) else setRgbaRaw(x, y, v.depremultiplied)
     }
 
     /** Gets the color [v] in the [x], [y] coordinates in [RGBA] non-premultiplied */
-    open fun getRgba(x: Int, y: Int): RGBA = if (premultiplied) getRgbaRaw(x, y).asPremultiplied().depremultiplied else getRgbaRaw(x, y)
+    open fun getRgba(x: Int, y: Int): RGBA =
+        if (premultiplied) getRgbaRaw(x, y).asPremultiplied().depremultiplied else getRgbaRaw(x, y)
+
     /** Gets the color [v] in the [x], [y] coordinates in [RGBAPremultiplied] */
-    open fun getRgbaPremultiplied(x: Int, y: Int): RGBAPremultiplied = if (premultiplied) getRgbaRaw(x, y).asPremultiplied() else getRgbaRaw(x, y).premultiplied
+    open fun getRgbaPremultiplied(x: Int, y: Int): RGBAPremultiplied =
+        if (premultiplied) getRgbaRaw(x, y).asPremultiplied() else getRgbaRaw(x, y).premultiplied
 
     /** UNSAFE: Sets the color [color] in the [x], [y] coordinates in the internal format of this Bitmap */
     open fun setInt(x: Int, y: Int, color: Int): Unit = Unit
+
     /** UNSAFE: Gets the color in the [x], [y] coordinates in the internal format of this Bitmap */
     open fun getInt(x: Int, y: Int): Int = 0
 
-    fun getRgbaClamped(x: Int, y: Int): RGBA = if (inBounds(x, y)) getRgbaRaw(x, y) else Colors.TRANSPARENT_BLACK
+    fun getRgbaClamped(x: Int, y: Int): RGBA = if (inBounds(x, y)) getRgbaRaw(x, y) else Colors.TRANSPARENT
 
     fun getRgbaClampedBorder(x: Int, y: Int): RGBA = getRgbaRaw(x.clamp(0, width - 1), y.clamp(0, height - 1))
-
-    @Deprecated("Use float version")
-    fun getRgbaSampled(x: Double, y: Double): RGBA = getRgbaSampled(x.toFloat(), y.toFloat())
 
     fun getRgbaSampled(x: Float, y: Float): RGBA {
         val x0 = x.toIntFloor()
         val y0 = y.toIntFloor()
-        if (x0 < 0 || y0 < 0 || x0 >= width || y0 > height) return Colors.TRANSPARENT_BLACK
+        if (x0 < 0 || y0 < 0 || x0 >= width || y0 >= height) return Colors.TRANSPARENT
         val x1 = x.toIntCeil()
         val y1 = y.toIntCeil()
         val x1Inside = x1 < width - 1
@@ -162,7 +163,7 @@ abstract class Bitmap(
         return RGBA.mixRgba4(c00, c10, c01, c11, xratio, yratio)
     }
 
-    fun getRgbaSampled(x: Double, y: Double, count: Int, row: RgbaArray) {
+    fun getRgbaSampled(x: Float, y: Float, count: Int, row: RgbaArray) {
         for (n in 0 until count) {
             row[n] = getRgbaSampled(x + n, y)
         }
@@ -219,7 +220,7 @@ abstract class Bitmap(
     open fun flipX(): Bitmap {
         for (x in 0 until width / 2) swapColumns(x, width - x - 1)
         return this
-	}
+    }
 
     fun flippedY(): Bitmap = clone().flipY()
     fun flippedX(): Bitmap = clone().flipX()
@@ -250,13 +251,13 @@ abstract class Bitmap(
     }
 
     open fun swapRows(y0: Int, y1: Int) {
-		for (x in 0 until width) {
-			val c0 = getInt(x, y0)
-			val c1 = getInt(x, y1)
-			setInt(x, y0, c1)
-			setInt(x, y1, c0)
-		}
-	}
+        for (x in 0 until width) {
+            val c0 = getInt(x, y0)
+            val c1 = getInt(x, y1)
+            setInt(x, y0, c1)
+            setInt(x, y1, c0)
+        }
+    }
 
     open fun swapColumns(x0: Int, x1: Int) {
         for (y in 0 until height) {
@@ -267,7 +268,13 @@ abstract class Bitmap(
         }
     }
 
-    inline fun forEach(sx: Int = 0, sy: Int = 0, width: Int = this.width - sx, height: Int = this.height - sy, callback: (n: Int, x: Int, y: Int) -> Unit) {
+    inline fun forEach(
+        sx: Int = 0,
+        sy: Int = 0,
+        width: Int = this.width - sx,
+        height: Int = this.height - sy,
+        callback: (n: Int, x: Int, y: Int) -> Unit
+    ) {
         for (y in sy until sy + height) {
             var n = index(sx, sy + y)
             for (x in sx until sx + width) {
@@ -279,7 +286,8 @@ abstract class Bitmap(
     open fun getContext2d(antialiasing: Boolean = true): Context2d =
         throw UnsupportedOperationException("Not implemented context2d on Bitmap, please use NativeImage or Bitmap32 instead")
 
-    open fun createWithThisFormat(width: Int, height: Int): Bitmap = invalidOp("Unsupported createWithThisFormat ($this)")
+    open fun createWithThisFormat(width: Int, height: Int): Bitmap =
+        invalidOp("Unsupported createWithThisFormat ($this)")
 
     open fun toBMP32(): Bitmap32 = Bitmap32(width, height, premultiplied = premultiplied).also { out ->
         this.readPixelsUnsafe(0, 0, width, height, out.ints, 0)
@@ -317,9 +325,12 @@ fun <T : Bitmap> T.extract(x: Int, y: Int, width: Int, height: Int): T {
     return out
 }
 
-fun Bitmap32Context2d(width: Int, height: Int, antialiased: Boolean = true, block: Context2d.() -> Unit): Bitmap32 {
-    return Bitmap32(width, height, premultiplied = true).context2d(antialiased = antialiased, doLock = false) { block() }
-}
+fun Bitmap32Context2d(width: Int, height: Int, antialiased: Boolean = true, block: Context2d.() -> Unit): Bitmap32 =
+    Bitmap32(width, height, premultiplied = true).context2d(antialiased = antialiased, doLock = false) { block() }
+fun NativeImageContext2d(width: Int, height: Int, antialiased: Boolean = true, block: Context2d.() -> Unit): NativeImage =
+    NativeImage(width, height, premultiplied = true).context2d(antialiased = antialiased, doLock = false) { block() }
+fun NativeImageOrBitmap32Context2d(width: Int, height: Int, antialiased: Boolean = true, native: Boolean = true, block: Context2d.() -> Unit): Bitmap =
+    NativeImageOrBitmap32(width, height, premultiplied = true, native = native).context2d(antialiased = antialiased, doLock = false) { block() }
 
 inline fun <T : Bitmap> T.context2d(antialiased: Boolean = true, doLock: Boolean = true, callback: Context2d.() -> Unit): T {
     lock(doLock = doLock) {

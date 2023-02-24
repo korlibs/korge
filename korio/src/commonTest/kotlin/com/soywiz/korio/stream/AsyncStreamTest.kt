@@ -10,7 +10,7 @@ class AsyncStreamTest {
 	@Test
 	fun name() = suspendTest {
 		val mem = FillSyncStream(0).toAsync()
-		println(mem.readU8())
+        repeat(10) { assertEquals(0, mem.readU8()) }
 	}
 
 	@Test

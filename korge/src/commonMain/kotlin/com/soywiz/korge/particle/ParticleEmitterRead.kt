@@ -11,7 +11,7 @@ import com.soywiz.korim.format.readBitmapSlice
 import com.soywiz.korio.file.VfsFile
 import com.soywiz.korio.lang.FileNotFoundException
 import com.soywiz.korio.serialization.xml.readXml
-import com.soywiz.korma.geom.Point
+import com.soywiz.korma.geom.MPoint
 import com.soywiz.korma.geom.degrees
 import com.soywiz.korma.geom.vector.circle
 
@@ -24,7 +24,7 @@ suspend fun VfsFile.readParticleEmitter(): ParticleEmitter {
     //var blendFuncDestination = AGBlendFactor.ONE
 
     particleXml.allChildrenNoComments.fastForEach { item ->
-        fun point() = Point(item.double("x"), item.double("y"))
+        fun point() = MPoint(item.double("x"), item.double("y"))
         fun scalar() = item.double("value")
         fun blendFactor() = ParticleEmitter.blendFactorMap[scalar().toInt()] ?: AGBlendFactor.ONE
         fun type() = ParticleEmitter.typeMap[scalar().toInt()] ?: ParticleEmitter.Type.GRAVITY

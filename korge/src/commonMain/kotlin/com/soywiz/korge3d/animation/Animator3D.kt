@@ -9,7 +9,7 @@ import com.soywiz.korge3d.Library3D
 import com.soywiz.korge3d.Transform3D
 import com.soywiz.korge3d.View3D
 import com.soywiz.korge3d.get
-import com.soywiz.korma.geom.Matrix3D
+import com.soywiz.korma.geom.MMatrix3D
 import com.soywiz.korma.geom.degrees
 import com.soywiz.korma.interpolation.interpolate
 
@@ -110,7 +110,7 @@ data class Animation3D(val id: String, val target: String, val property: String,
 		var seconds: FloatArray = floatArrayOf(),
 		var interpolations: Array<String> = arrayOf(),
 		var floats: FloatArray? = null,
-		var matrices: Array<Matrix3D>? = null
+		var matrices: Array<MMatrix3D>? = null
 	) {
 		val transforms = matrices?.map { Transform3D().setMatrix(it) }?.toTypedArray()
 		val totalFrames = seconds.size

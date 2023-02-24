@@ -6,11 +6,9 @@ import com.soywiz.kds.cacheLazyNullable
 import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.korge.bitmapfont.getBounds
 import com.soywiz.korge.scene.debugBmpFontSync
-import com.soywiz.korge.ui.DefaultUIFont
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.font.BitmapFont
-import com.soywiz.korim.font.DefaultFontRegistry
 import com.soywiz.korim.font.Font
 import com.soywiz.korim.font.SystemFont
 import com.soywiz.korim.font.toBitmapFont
@@ -57,7 +55,7 @@ object Html {
                 font?.toBitmapFont(32.0)
             } as? BitmapFont? ?: defaultFont
         }
-        override fun getBounds(text: String, format: Format, out: Rectangle) {
+        override fun getBounds(text: String, format: Format, out: MRectangle) {
             val font = format.computedFace
             getBitmapFont(font?.name, font).getBounds(text, format, out)
         }
@@ -103,24 +101,24 @@ object Html {
 	}
 
 	interface MetricsProvider {
-		fun getBounds(text: String, format: Format, out: Rectangle): Unit
+		fun getBounds(text: String, format: Format, out: MRectangle): Unit
 
 		object Identity : MetricsProvider {
-			override fun getBounds(text: String, format: Format, out: Rectangle) {
+			override fun getBounds(text: String, format: Format, out: MRectangle) {
                 out.setTo(0.0, 0.0, text.length.toDouble(), 1.0)
             }
 		}
 	}
 
 	data class PositionContext(
-		val provider: MetricsProvider,
-		val bounds: Rectangle,
-		var x: Double = 0.0,
-		var y: Double = 0.0
+        val provider: MetricsProvider,
+        val bounds: MRectangle,
+        var x: Double = 0.0,
+        var y: Double = 0.0
 	)
 
 	data class Span(val format: Format, var text: String) : Extra by Extra.Mixin() {
-		val bounds = Rectangle()
+		val bounds = MRectangle()
 
 		fun doPositioning(ctx: PositionContext) {
 			ctx.provider.getBounds(text, format, bounds)
@@ -132,7 +130,7 @@ object Html {
 	data class Line(val spans: ArrayList<Span> = arrayListOf()) : Extra by Extra.Mixin() {
 		var format: Format = Format()
 		val firstNonEmptySpan get() = spans.firstOrNull { it.text.isNotEmpty() }
-		val bounds = Rectangle()
+		val bounds = MRectangle()
 
 		fun doPositioning(ctx: PositionContext) {
 			ctx.x = ctx.bounds.x
@@ -162,7 +160,7 @@ object Html {
 
 	data class Paragraph(val lines: ArrayList<Line> = arrayListOf()) : Extra by Extra.Mixin() {
 		val firstNonEmptyLine get() = lines.firstOrNull { it.firstNonEmptySpan != null }
-		val bounds = Rectangle()
+		val bounds = MRectangle()
 
 		fun doPositioning(ctx: PositionContext) {
 			lines.fastForEach { v ->
@@ -178,13 +176,13 @@ object Html {
 		val defaultFormat = Html.Format()
 		var xml = Xml("")
 		val text: String get() = xml.text.trim()
-		val bounds = Rectangle()
+		val bounds = MRectangle()
 		val firstNonEmptyParagraph get() = paragraphs.firstOrNull { it.firstNonEmptyLine != null }
 		val firstNonEmptySpan get() = firstNonEmptyParagraph?.firstNonEmptyLine?.firstNonEmptySpan
 		val firstFormat get() = firstNonEmptySpan?.format ?: Format()
 		val allSpans get() = paragraphs.flatMap { it.lines }.flatMap { it.spans }
 
-		fun doPositioning(gp: MetricsProvider, bounds: Rectangle) {
+		fun doPositioning(gp: MetricsProvider, bounds: MRectangle) {
 			val ctx = PositionContext(gp, bounds)
 			paragraphs.fastForEach { v ->
 				v.doPositioning(ctx)

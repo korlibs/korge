@@ -2,9 +2,8 @@ package com.soywiz.korma.algo
 
 import com.soywiz.kds.BooleanArray2
 import com.soywiz.kds.map2
-import com.soywiz.korma.geom.IPointInt
-import com.soywiz.korma.geom.PointInt
-import com.soywiz.korma.geom.toPoints
+import com.soywiz.korma.annotations.*
+import com.soywiz.korma.geom.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -67,21 +66,24 @@ class AStarTest {
     }
 
 
-    data class Result(val map: BooleanArray2, val start: IPointInt, val end: IPointInt)
+    data class Result(val map: BooleanArray2, @KormaMutableApi val mstart: MPointInt, @KormaMutableApi val mend: MPointInt) {
+        @KormaValueApi val start: PointInt get() = mstart.point
+        @KormaValueApi val end: PointInt get() = mend.point
+    }
 
     fun map(str: String): Result {
-        var start = PointInt(0, 0)
-        var end = PointInt(0, 0)
+        var start = MPointInt(0, 0)
+        var end = MPointInt(0, 0)
         val map = BooleanArray2(str) arr@{ c, x, y ->
             //println("$x, $y, $c")
             if (c == '.') return@arr false
             if (c == '*' || c == '#') return@arr true
             if (c == 'S') {
-                start = PointInt(x, y)
+                start = MPointInt(x, y)
                 return@arr false
             }
             if (c == 'E') {
-                end = PointInt(x, y)
+                end = MPointInt(x, y)
                 return@arr false
             }
             return@arr false
@@ -109,7 +111,7 @@ class AStarTest {
         val pointsMap = points.toPoints().withIndex().map { it.value to it.index }.toMap()
         val res = input2.map.map2 { x, y, c ->
             //pointsMap[PointInt(x, y)]?.let { xdigits[it] } ?: (if (c) '#' else '.') // @TODO: Kotlin-native: Regression Crashes BUG in runtime - https://github.com/JetBrains/kotlin-native/issues/1736
-            (pointsMap[PointInt(x, y)]?.let { "" + xdigits[it] } ?: (if (c) "#" else ".")).first()
+            (pointsMap[MPointInt(x, y)]?.let { "" + xdigits[it] } ?: (if (c) "#" else ".")).first()
         }
         val output = res.asString { it }
         assertEquals(expected.trimIndent(), output)

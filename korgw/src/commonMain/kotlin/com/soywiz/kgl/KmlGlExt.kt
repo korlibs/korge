@@ -2,7 +2,7 @@ package com.soywiz.kgl
 
 import com.soywiz.klogger.Console
 import com.soywiz.kmem.*
-import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.MRectangle
 import com.soywiz.krypto.encoding.hex
 import kotlin.native.concurrent.ThreadLocal
 
@@ -38,7 +38,7 @@ fun KmlGl.getBooleanv(pname: Int): Boolean = tempByte1Buffer { getBooleanv(pname
 fun KmlGl.getFloatv(pname: Int): Float = tempFloat1Buffer { getFloatv(pname, it) }
 fun KmlGl.getIntegerv(pname: Int): Int = tempInt1Buffer { getIntegerv(pname, it) }
 fun KmlGl.getVertexAttribiv(index: Int, pname: Int): Int = tempInt1Buffer { getVertexAttribiv(index, pname, it) }
-fun KmlGl.getRectanglev(pname: Int, out: Rectangle = Rectangle()): Rectangle = tempNBuffer4.let {
+fun KmlGl.getRectanglev(pname: Int, out: MRectangle = MRectangle()): MRectangle = tempNBuffer4.let {
     it.setFloat32(0, 0f)
     it.setFloat32(1, 0f)
     it.setFloat32(2, 0f)

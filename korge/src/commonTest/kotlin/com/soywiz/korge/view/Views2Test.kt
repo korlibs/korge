@@ -1,22 +1,25 @@
 package com.soywiz.korge.view
 
+import com.soywiz.klogger.*
 import com.soywiz.korge.tests.ViewsForTesting
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.color.Colors
 import com.soywiz.korma.geom.Anchor
-import com.soywiz.korma.geom.Point
-import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.MPoint
+import com.soywiz.korma.geom.MRectangle
 import com.soywiz.korma.geom.ScaleMode
-import com.soywiz.korma.geom.SizeInt
+import com.soywiz.korma.geom.MSizeInt
 import kotlin.math.absoluteValue
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class Views2Test : ViewsForTesting(
-    windowSize = SizeInt(1280, 720),
-    virtualSize = SizeInt(640, 480)
+    windowSize = MSizeInt(1280, 720),
+    virtualSize = MSizeInt(640, 480)
 ) {
+    val logger = Logger("Views2Test")
+
     fun str() = "window(${gameWindow.width},${gameWindow.height}),virtual(${views.virtualWidth},${views.virtualHeight}),stage(${stage.x},${stage.y},${stage.width},${stage.height},${stage.scaleX},${stage.scaleY})"
 
     @Test
@@ -47,8 +50,8 @@ class Views2Test : ViewsForTesting(
         val rect = solidRect(RECT_WIDTH, RECT_HEIGHT, Colors.RED) {
             centerOnStage()
         }
-        println(str())
-        assertEquals(Point((virtualSize.width - RECT_WIDTH) / 2, (virtualSize.height - RECT_HEIGHT) / 2), rect.pos)
+        logger.info { str() }
+        assertEquals(MPoint((virtualSize.width - RECT_WIDTH) / 2, (virtualSize.height - RECT_HEIGHT) / 2), rect.ipos)
     }
 
     @Test
@@ -65,11 +68,11 @@ class Views2Test : ViewsForTesting(
             centerOn(rect1)
         }
         assertEquals(
-            Point(
+            MPoint(
                 CONTAINER_X + (CONTAINER_WIDTH - RECT_WIDTH) / 2,
                 CONTAINER_Y + (CONTAINER_HEIGHT - RECT_HEIGHT) / 2
             ),
-            rect2.pos
+            rect2.ipos
         )
     }
 
@@ -98,18 +101,18 @@ class Views2Test : ViewsForTesting(
         assertEquals(6.66666, rect1.scaleY, 0.001)
 
         assertEquals(
-            Point(
+            MPoint(
                 CONTAINER_X + (CONTAINER_WIDTH - RECT_WIDTH) / 2,
                 CONTAINER_Y + (CONTAINER_HEIGHT - RECT_HEIGHT) / 2
             ),
-            rect2.pos
+            rect2.ipos
         )
     }
 
     @Test
     fun testImageLocalBounds() = viewsTest {
-        val image = image(Bitmap32(10, 10, Colors.TRANSPARENT_BLACK)).size(100, 100).xy(50, 50)
-        assertEquals(Rectangle(0, 0, 10, 10).toStringBounds(), image.getLocalBoundsOptimizedAnchored().toStringBounds())
-        assertEquals(Rectangle(50, 50, 100, 100).toStringBounds(), image.getBounds(image.parent!!).toStringBounds())
+        val image = image(Bitmap32(10, 10, Colors.TRANSPARENT)).size(100, 100).xy(50, 50)
+        assertEquals(MRectangle(0, 0, 10, 10).toStringBounds(), image.getLocalBoundsOptimizedAnchored().toStringBounds())
+        assertEquals(MRectangle(50, 50, 100, 100).toStringBounds(), image.getBounds(image.parent!!).toStringBounds())
     }
 }

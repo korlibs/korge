@@ -13,11 +13,11 @@ class TouchEvents(override val view: View) : TouchComponent {
     data class Info(
         var index: Int = -1,
         var id: Int = 0,
-        var local: Point = Point(),
-        var startLocal: Point = Point(),
+        var local: MPoint = MPoint(),
+        var startLocal: MPoint = MPoint(),
         var startTime: DateTime = DateTime.EPOCH,
-        var global: Point = Point(),
-        var startGlobal: Point = Point(),
+        var global: MPoint = MPoint(),
+        var startGlobal: MPoint = MPoint(),
         var time: DateTime = DateTime.EPOCH,
     ) : Extra by Extra.Mixin() {
         val elapsedTime get() = time - startTime
@@ -181,7 +181,7 @@ fun View.singleTouch(removeTouch: Boolean = false, supportStartAnywhere: Boolean
                 handler.end(it)
             }
             handler.endAnywhere(it)
-            if ((Point.distance(it.startGlobal, it.global) <= it.views.input.clickDistance) && (it.elapsedTime <= it.views.input.clickTime)) {
+            if ((MPoint.distance(it.startGlobal, it.global) <= it.views.input.clickDistance) && (it.elapsedTime <= it.views.input.clickTime)) {
                 if (info.startedInside && hitTest) {
                     //println("TOUCH END: TAP!")
                     handler.tap(it)

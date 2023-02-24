@@ -26,7 +26,7 @@ import kotlin.js.*
 import kotlin.math.*
 
 actual val nativeImageFormatProvider: NativeImageFormatProvider = when {
-    OS.isJsNodeJs -> NodeJsNativeImageFormatProvider
+    Platform.isJsNodeJs -> NodeJsNativeImageFormatProvider
     else -> HtmlNativeImageFormatProvider
 }
 
@@ -185,7 +185,7 @@ object BrowserImage {
     private fun toNodeJsBuffer(@Suppress("UNUSED_PARAMETER") ba: ByteArray): dynamic = js("(Buffer.from(ba.buffer))")
 
 	suspend fun decodeToCanvas(bytes: ByteArray, props: ImageDecodingProps = ImageDecodingProps.DEFAULT): HTMLCanvasElementLike {
-        if (OS.isJsNodeJs) error("Canvas not available on NodeJS")
+        if (Platform.isJsNodeJs) error("Canvas not available on NodeJS")
         val blob = Blob(arrayOf(bytes), BlobPropertyBag(type = "image/png"))
         val blobURL = URL.createObjectURL(blob)
         try {
@@ -212,7 +212,7 @@ object BrowserImage {
 		// Doesn't work with Kotlin.JS
 		//val img = document.createElement("img") as HTMLImageElement
 		//println("[1]")
-        if (OS.isJsNodeJs) error("Canvas not available on NodeJS")
+        if (Platform.isJsNodeJs) error("Canvas not available on NodeJS")
 
         val img = document.createElement("img").unsafeCast<HTMLImageElement>()
         img.onload = {
@@ -366,7 +366,7 @@ class CanvasContext2dRenderer(private val canvas: HTMLCanvasElementLike) : Rende
 		}
 	}
 
-    fun CanvasTransform.transform(m: Matrix) {
+    fun CanvasTransform.transform(m: MMatrix) {
         transform(m.a, m.b, m.c, m.d, m.tx, m.ty)
     }
 
@@ -378,7 +378,7 @@ class CanvasContext2dRenderer(private val canvas: HTMLCanvasElementLike) : Rende
 		}
 	}
 
-	override fun drawImage(image: Bitmap, x: Double, y: Double, width: Double, height: Double, transform: Matrix) {
+	override fun drawImage(image: Bitmap, x: Double, y: Double, width: Double, height: Double, transform: MMatrix) {
 		ctx.save()
 		try {
 			transform.run { ctx.setTransform(a, b, c, d, tx, ty) }
@@ -401,7 +401,7 @@ class CanvasContext2dRenderer(private val canvas: HTMLCanvasElementLike) : Rende
         )
     }
 
-	override fun render(state: Context2d.State, fill: Boolean, winding: Winding?) {
+	override fun renderFinal(state: Context2d.State, fill: Boolean, winding: Winding?) {
 		if (state.path.isEmpty()) return
 
 		//println("beginPath")

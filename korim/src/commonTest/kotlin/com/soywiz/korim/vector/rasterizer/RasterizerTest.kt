@@ -1,28 +1,12 @@
 package com.soywiz.korim.vector.rasterizer
 
-import com.soywiz.korim.bitmap.Bitmap32
-import com.soywiz.korim.bitmap.NativeImageOrBitmap32
-import com.soywiz.korim.bitmap.context2d
-import com.soywiz.korim.color.Colors
-import com.soywiz.korim.color.RGBA
-import com.soywiz.korio.async.suspendTest
-import com.soywiz.korio.util.niceStr
-import com.soywiz.korma.geom.Rectangle
-import com.soywiz.korma.geom.cosine
-import com.soywiz.korma.geom.degrees
-import com.soywiz.korma.geom.sine
-import com.soywiz.korma.geom.vector.LineCap
-import com.soywiz.korma.geom.vector.LineJoin
-import com.soywiz.korma.geom.vector.RastScale
-import com.soywiz.korma.geom.vector.arc
-import com.soywiz.korma.geom.vector.circle
-import com.soywiz.korma.geom.vector.lineTo
-import com.soywiz.korma.geom.vector.lineToH
-import com.soywiz.korma.geom.vector.lineToV
-import com.soywiz.korma.geom.vector.moveTo
-import com.soywiz.korma.geom.vector.quadTo
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import com.soywiz.korim.bitmap.*
+import com.soywiz.korim.color.*
+import com.soywiz.korio.async.*
+import com.soywiz.korio.util.*
+import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.vector.*
+import kotlin.test.*
 
 class RasterizerTest {
     @Test
@@ -43,7 +27,7 @@ class RasterizerTest {
         rast.path.close()
         val log = arrayListOf<String>()
         val stats = Rasterizer.Stats()
-        rast.rasterizeFill(Rectangle(0, 0, 10, 10), quality = 8, stats = stats) { a, b, y ->
+        rast.rasterizeFill(MRectangle(0, 0, 10, 10), quality = 8, stats = stats) { a, b, y ->
             log += "rast(${(a.toDouble() / RastScale.RAST_FIXED_SCALE).niceStr}, ${(a.toDouble() / RastScale.RAST_FIXED_SCALE).niceStr}, ${(a.toDouble() / RastScale.RAST_FIXED_SCALE).niceStr})"
             //println(log.last())
         }
@@ -53,7 +37,7 @@ class RasterizerTest {
 
     @Test
     fun test2() = suspendTest {
-        val bmp1 = Bitmap32(100, 100).context2d {
+        val bmp1 = Bitmap32Context2d(100, 100) {
             //debug = true
             fill(
                 createLinearGradient(0, 0, 0, 100) {
@@ -69,7 +53,7 @@ class RasterizerTest {
             }
         }
         val shipSize = 24
-        val bmp2 = Bitmap32(shipSize, shipSize).context2d {
+        val bmp2 = Bitmap32Context2d(shipSize, shipSize) {
             stroke(Colors.RED, lineWidth = shipSize * 0.05, lineCap = LineCap.ROUND) {
                 moveTo(shipSize * 0.5, 0.0)
                 lineTo(shipSize, shipSize)
@@ -78,7 +62,7 @@ class RasterizerTest {
                 close()
             }
         }
-        val bmp3 = Bitmap32(3, (shipSize * 0.3).toInt()).context2d {
+        val bmp3 = Bitmap32Context2d(3, (shipSize * 0.3).toInt()) {
             lineWidth = 1.0
             lineCap = LineCap.ROUND
             stroke(Colors.WHITE) {

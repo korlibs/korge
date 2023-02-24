@@ -18,7 +18,7 @@ import com.soywiz.korim.paint.GradientPaint
 import com.soywiz.korim.paint.NoneFiller
 import com.soywiz.korim.paint.NonePaint
 import com.soywiz.korim.vector.rasterizer.Rasterizer
-import com.soywiz.korma.geom.float
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.shape.emitPoints2
 import com.soywiz.korma.geom.vector.RastScale
 import com.soywiz.korma.geom.vector.StrokeToFill
@@ -52,7 +52,7 @@ class Bitmap32Context2d(val bmp: Bitmap32, val antialiasing: Boolean) : com.soyw
     private val tempPath = VectorPath(winding = Winding.EVEN_ODD)
     private val tempFillStrokeTemp = StrokeToFill()
 
-    override fun render(state: Context2d.State, fill: Boolean, winding: Winding?) {
+    override fun renderFinal(state: Context2d.State, fill: Boolean, winding: Winding?) {
 		//println("RENDER")
 		val style = if (fill) state.fillStyle else state.strokeStyle
 		val filler = when (style) {

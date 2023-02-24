@@ -102,17 +102,32 @@ class Array2Test {
             (it % 2) == 1
         }
 
-        intArray2.each { x, y, v ->
-            println("x: $x, y: $y, v: $v")
-        }
-        floatArray2.each { x, y, v ->
-            println("x: $x, y: $y, v: $v")
-        }
-        doubleArray2.each { x, y, v ->
-            println("x: $x, y: $y, v: $v")
-        }
-        typedArray2.each { x, y, v ->
-            println("x: $x, y: $y, v: $v")
-        }
+        val out = arrayListOf<String>()
+        intArray2.each { x, y, v -> out.add("x: $x, y: $y, v: $v") }
+        floatArray2.each { x, y, v -> out.add("x: $x, y: $y, v: ${v.toInt()}") }
+        doubleArray2.each { x, y, v -> out.add("x: $x, y: $y, v: ${v.toInt()}") }
+        typedArray2.each { x, y, v -> out.add("x: $x, y: $y, v: $v") }
+
+        assertEquals(
+            """
+                x: 0, y: 0, v: 0
+                x: 1, y: 0, v: 1
+                x: 0, y: 1, v: 2
+                x: 1, y: 1, v: 3
+                x: 0, y: 0, v: 0
+                x: 1, y: 0, v: 1
+                x: 0, y: 1, v: 2
+                x: 1, y: 1, v: 3
+                x: 0, y: 0, v: 0
+                x: 1, y: 0, v: 1
+                x: 0, y: 1, v: 2
+                x: 1, y: 1, v: 3
+                x: 0, y: 0, v: false
+                x: 1, y: 0, v: true
+                x: 0, y: 1, v: false
+                x: 1, y: 1, v: true
+            """.trimIndent(),
+            out.joinToString("\n")
+        )
     }
 }

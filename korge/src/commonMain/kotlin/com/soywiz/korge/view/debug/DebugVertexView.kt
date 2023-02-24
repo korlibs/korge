@@ -14,7 +14,7 @@ import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korma.geom.BoundsBuilder
 import com.soywiz.korma.geom.IVectorArrayList
-import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.MRectangle
 import com.soywiz.korma.geom.VectorArrayList
 import com.soywiz.korma.geom.fastForEachGeneric
 import com.soywiz.korma.geom.toMatrix3D
@@ -98,7 +98,7 @@ class DebugVertexView(pointsList: List<IVectorArrayList>, color: RGBA = Colors.W
 
     private val uniforms: AGUniformValues = AGUniformValues()
 
-    override fun getLocalBoundsInternal(out: Rectangle) {
+    override fun getLocalBoundsInternal(out: MRectangle) {
         bb.getBounds(out)
         //println("DebugVertexView.getLocalBoundsInternal:$out")
     }

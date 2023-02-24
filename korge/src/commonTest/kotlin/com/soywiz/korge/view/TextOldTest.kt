@@ -3,9 +3,9 @@ package com.soywiz.korge.view
 import com.soywiz.korge.render.VertexInfo
 import com.soywiz.korge.render.testRenderContext
 import com.soywiz.korge.scene.debugBmpFontSync
-import com.soywiz.korma.geom.Point
-import com.soywiz.korma.geom.Rectangle
-import com.soywiz.korma.geom.Size
+import com.soywiz.korma.geom.MPoint
+import com.soywiz.korma.geom.MRectangle
+import com.soywiz.korma.geom.MSize
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -26,10 +26,10 @@ class TextOldTest {
         assertEquals(
             listOf(
                 listOf(
-                    Point(0, 0),
-                    Point(32, 0),
-                    Point(32, 32),
-                    Point(0, 32)
+                    MPoint(0, 0),
+                    MPoint(32, 0),
+                    MPoint(32, 32),
+                    MPoint(0, 32)
                 )
             ),
             vertices.map { it.map { it.xy } }
@@ -40,13 +40,13 @@ class TextOldTest {
     @Test
     fun testDebugFontSize() {
         assertEquals(8.0, debugBmpFontSync.fontSize)
-        assertEquals(Size(192, 192), debugBmpFontSync.baseBmp.size)
+        assertEquals(MSize(192, 192), debugBmpFontSync.baseBmp.size)
     }
 
     @Test
     fun testBounds() {
         val text = TextOld("1", textSize = 32.0)
-        assertEquals(Rectangle(0, 0, 28, 32), text.getLocalBoundsOptimizedAnchored())
+        assertEquals(MRectangle(0, 0, 28, 32), text.getLocalBoundsOptimizedAnchored())
     }
 
     @Test
@@ -54,7 +54,7 @@ class TextOldTest {
         val text = TextOld("1", textSize = 32.0)
         assertEquals(text, text.hitTest(10, 5))
         assertEquals(null, text.hitTest(30, 5))
-        text.setTextBounds(Rectangle(0, 0, 32, 32))
+        text.setTextBounds(MRectangle(0, 0, 32, 32))
         assertEquals(text, text.hitTest(10, 5))
         assertEquals(text, text.hitTest(30, 5))
         assertEquals(null, text.hitTest(33, 5))

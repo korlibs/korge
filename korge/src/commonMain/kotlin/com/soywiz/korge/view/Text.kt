@@ -176,10 +176,10 @@ open class Text(
         }
     }
 
-    private val _textBounds = Rectangle(0, 0, 2048, 2048)
+    private val _textBounds = MRectangle(0, 0, 2048, 2048)
     var autoSize = true
     private var boundsVersion = -1
-    val textBounds: Rectangle
+    val textBounds: MRectangle
         get() {
             getLocalBounds(_textBounds)
             return _textBounds
@@ -213,7 +213,7 @@ open class Text(
         invalidate()
     }
 
-    override fun getLocalBoundsInternal(out: Rectangle) {
+    override fun getLocalBoundsInternal(out: MRectangle) {
         _renderInternal(null)
         if (filter != null || backdropFilter != null) {
             super.getLocalBoundsInternal(out) // This is required for getting proper bounds when glyphs are transformed
@@ -222,7 +222,7 @@ open class Text(
         }
     }
 
-    private val tempMatrix = Matrix()
+    private val tempMatrix = MMatrix()
 
     override fun renderInternal(ctx: RenderContext) {
         _renderInternal(ctx)
@@ -235,7 +235,7 @@ open class Text(
                 val bmpfont = font as BitmapFont
                 val tex = bmpfont.baseBmp
                 batch.setStateFast(tex, smoothing, renderBlendMode, bmpfont.agProgram, icount = tva.icount, vcount = tva.vcount)
-                batch.drawVertices(tva, tempMatrix, premultiplied = tex.premultiplied, wrap = false)
+                batch.drawVertices(tva, tempMatrix)
             }
         } else {
             super.renderInternal(ctx)
@@ -261,7 +261,7 @@ open class Text(
     private var lastSmoothing: Boolean? = null
     private var lastNativeRendering: Boolean? = null
     private var tva: TexturedVertexArray? = null
-    private val identityMat = Matrix()
+    private val identityMat = MMatrix()
 
     var graphicsRenderer: GraphicsRenderer = GraphicsRenderer.SYSTEM
         set(value) {

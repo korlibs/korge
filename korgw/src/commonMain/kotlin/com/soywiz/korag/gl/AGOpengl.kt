@@ -9,11 +9,11 @@ import com.soywiz.korag.shader.gl.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korio.lang.*
-import com.soywiz.krypto.encoding.hex
+import com.soywiz.krypto.encoding.*
 
-class AGOpengl(val gl: KmlGl) : AG() {
-    class ShaderException(val str: String, val error: String, val errorInt: Int, val gl: KmlGl, val debugName: String?, val type: Int) :
-        RuntimeException("Error Compiling Shader : $debugName type=$type : ${errorInt.hex} : '$error' : source='$str', gl.versionInt=${gl.versionInt}, gl.versionString='${gl.versionString}', gl=$gl")
+class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
+    class ShaderException(val str: String, val error: String, val errorInt: Int, val gl: KmlGl, val debugName: String?, val type: Int, val shaderReturnInt: Int) :
+        RuntimeException("Error Compiling Shader : $debugName type=$type : ${errorInt.hex} : '$error' : source='$str', shaderReturnInt=$shaderReturnInt, gl.versionInt=${gl.versionInt}, gl.versionString='${gl.versionString}', gl=$gl")
 
     override val parentFeatures: AGFeatures get() = gl
 
@@ -28,6 +28,8 @@ class AGOpengl(val gl: KmlGl) : AG() {
         super.contextLost()
         gl.handleContextLost()
         gl.graphicExtensions // Ensure extensions are available outside the GL thread
+        normalPrograms.clear()
+        //externalPrograms.clear()
     }
 
     open fun setSwapInterval(value: Int) {
@@ -38,7 +40,7 @@ class AGOpengl(val gl: KmlGl) : AG() {
 
     override fun readToTexture(frameBuffer: AGFrameBufferBase, frameBufferInfo: AGFrameBufferInfo, texture: AGTexture, x: Int, y: Int, width: Int, height: Int) {
         bindFrameBuffer(frameBuffer, frameBufferInfo)
-        setScissorState(AGScissor.FULL)
+        setScissorState(AGScissor.FULL, frameBuffer, frameBufferInfo)
         //gl.flush()
         //gl.finish()
         selectTextureUnitTemp(TEMP_TEXTURE_UNIT) {
@@ -56,7 +58,7 @@ class AGOpengl(val gl: KmlGl) : AG() {
     override fun clear(frameBuffer: AGFrameBufferBase, frameBufferInfo: AGFrameBufferInfo, color: RGBA, depth: Float, stencil: Int, clearColor: Boolean, clearDepth: Boolean, clearStencil: Boolean, scissor: AGScissor) {
         bindFrameBuffer(frameBuffer, frameBufferInfo)
         //println("CLEAR: $color, $depth")
-        setScissorState(scissor)
+        setScissorState(scissor, frameBuffer, frameBufferInfo)
         //gl.disable(KmlGl.SCISSOR_TEST)
         var mask = 0
         if (clearColor) {
@@ -86,10 +88,11 @@ class AGOpengl(val gl: KmlGl) : AG() {
     //private val normalPrograms = FastIdentityMap<Program, AgProgram>()
     //private val externalPrograms = FastIdentityMap<Program, AgProgram>()
     private val normalPrograms = HashMap<Program, GLBaseProgram>()
-    private val externalPrograms = HashMap<Program, GLBaseProgram>()
+    //private val externalPrograms = HashMap<Program, GLBaseProgram>()
 
     private fun useProgram(program: Program, config: ProgramConfig = ProgramConfig.DEFAULT) {
-        val map = if (config.externalTextureSampler) externalPrograms else normalPrograms
+        //val map = if (config.externalTextureSampler) externalPrograms else normalPrograms
+        val map = normalPrograms
         val nprogram: GLBaseProgram = map.getOrPut(program) {
             GLBaseProgram(glGlobalState, GLShaderCompiler.programCreate(
                 gl,
@@ -130,7 +133,7 @@ class AGOpengl(val gl: KmlGl) : AG() {
         //finalScissor.setTo(0, 0, backWidth, backHeight)
 
         bindFrameBuffer(frameBuffer, frameBufferInfo)
-        setScissorState(scissor)
+        setScissorState(scissor, frameBuffer, frameBufferInfo)
 
         if (currentVertexData?.list != vertexData.list) {
         //if (true) {
@@ -147,7 +150,7 @@ class AGOpengl(val gl: KmlGl) : AG() {
         }
 
         useProgram(program, config = when {
-            uniforms.useExternalSampler() -> ProgramConfig.EXTERNAL_TEXTURE_SAMPLER
+            //uniforms.useExternalSampler() -> ProgramConfig.EXTERNAL_TEXTURE_SAMPLER
             else -> ProgramConfig.DEFAULT
         })
         uniformsSet(uniforms)
@@ -162,6 +165,11 @@ class AGOpengl(val gl: KmlGl) : AG() {
 
         setDepthAndFrontFace(depthAndFrontFace)
         setColorMaskState(colorMask)
+
+        if (currentCullFace != cullFace) {
+            currentCullFace = cullFace
+            cullFace(cullFace)
+        }
 
         if (currentStencilOpFunc != stencilOpFunc || currentStencilRef != stencilRef) {
         //if (true) {
@@ -221,6 +229,7 @@ class AGOpengl(val gl: KmlGl) : AG() {
 
     private var currentVertexData: AGVertexArrayObject? = null
     private var currentBlending: AGBlending = AGBlending.INVALID
+    private var currentCullFace: AGCullFace = AGCullFace.INVALID
     private var currentStencilOpFunc: AGStencilOpFunc = AGStencilOpFunc.INVALID
     private var currentStencilRef: AGStencilReference = AGStencilReference.INVALID
     private var currentColorMask: AGColorMask = AGColorMask.INVALID
@@ -230,9 +239,13 @@ class AGOpengl(val gl: KmlGl) : AG() {
     private var currentScissor: AGScissor = AGScissor.INVALID
 
     override fun startFrame() {
+        context?.set()
+        gl.beforeDoRender(contextVersion)
+
         currentVertexData = null
         currentScissor = AGScissor.INVALID
         currentBlending = AGBlending.INVALID
+        currentCullFace = AGCullFace.INVALID
         currentStencilOpFunc = AGStencilOpFunc.INVALID
         currentStencilRef = AGStencilReference.INVALID
         currentColorMask = AGColorMask.INVALID
@@ -254,6 +267,7 @@ class AGOpengl(val gl: KmlGl) : AG() {
         currentVertexData?.let { vaoUnuse(it) }
         currentVertexData = null
         bindFrameBuffer(mainFrameBuffer.base, mainFrameBuffer.info)
+        context?.unset()
     }
 
     fun listStart() {
@@ -273,10 +287,6 @@ class AGOpengl(val gl: KmlGl) : AG() {
 
     //var doPrintTimer = Stopwatch().also { it.start() }
     //var doPrint = false
-
-    override fun beforeDoRender() {
-        gl.beforeDoRender(contextVersion)
-    }
 
     override fun finish() {
         currentVertexData?.let { vaoUnuse(it) }
@@ -298,7 +308,10 @@ class AGOpengl(val gl: KmlGl) : AG() {
     }
 
     fun cullFace(face: AGCullFace) {
-        gl.cullFace(face.toGl())
+        if (gl.enableDisable(KmlGl.CULL_FACE, face.ordinal > AGCullFace.NONE.ordinal)) {
+            // @TODO: Move frontFace here too!
+            gl.cullFace(face.toGl())
+        }
     }
 
     ///////////////////////////////////////
@@ -342,11 +355,6 @@ class AGOpengl(val gl: KmlGl) : AG() {
             if (onlyUpdate) gl.bindBuffer(target.toGl(), bufferInfo.id)
             gl.bufferData(target.toGl(), mem.sizeInBytes, mem, KmlGl.STATIC_DRAW)
         }
-    }
-
-    fun scissor(x: Int, y: Int, width: Int, height: Int) {
-        gl.scissor(x, y, width, height)
-        //println("SCISSOR: $x, $y, $width, $height")
     }
 
     fun vaoUnuse(vao: AGVertexArrayObject) {
@@ -559,8 +567,17 @@ class AGOpengl(val gl: KmlGl) : AG() {
 
     fun AGTexture?.magFilter(linear: Boolean, trilinear: Boolean = linear): Int = if (linear) KmlGl.LINEAR else KmlGl.NEAREST
 
+    fun region(scissor: AGScissor, frameBuffer: AGFrameBufferBase, frameBufferInfo: AGFrameBufferInfo): AGScissor {
+        return when {
+            scissor == AGScissor.NIL || scissor == AGScissor.FULL -> scissor
+            frameBuffer.isMain -> AGScissor.fromBounds(scissor.left, frameBufferInfo.height - scissor.bottom, scissor.right, frameBufferInfo.height - scissor.top)
+            else -> scissor
+        }
+    }
+
     override fun readToMemory(frameBuffer: AGFrameBufferBase, frameBufferInfo: AGFrameBufferInfo, x: Int, y: Int, width: Int, height: Int, data: Any, kind: AGReadKind) {
         bindFrameBuffer(frameBuffer, frameBufferInfo)
+        val region = region(AGScissor(x, y, width, height), frameBuffer, frameBufferInfo)
 
         val bytesPerPixel = when (data) {
             is IntArray -> 4
@@ -568,18 +585,30 @@ class AGOpengl(val gl: KmlGl) : AG() {
             is ByteArray -> 1
             else -> TODO()
         }
+        val flipY = frameBuffer.isMain
         val area = width * height
-        BufferTemp(area * bytesPerPixel) { buffer ->
-            when (kind) {
-                AGReadKind.COLOR -> gl.readPixels(x, y, width, height, KmlGl.RGBA, KmlGl.UNSIGNED_BYTE, buffer)
-                AGReadKind.DEPTH -> gl.readPixels(x, y, width, height, KmlGl.DEPTH_COMPONENT, KmlGl.FLOAT, buffer)
-                AGReadKind.STENCIL -> gl.readPixels(x, y, width, height, KmlGl.STENCIL_INDEX, KmlGl.UNSIGNED_BYTE, buffer)
-            }
-            when (data) {
-                is IntArray -> buffer.getArrayInt32(0, data, size = area)
-                is FloatArray -> buffer.getArrayFloat32(0, data, size = area)
-                is ByteArray -> buffer.getArrayInt8(0, data, size = area)
-                else -> TODO()
+        val stride = width * bytesPerPixel
+        BufferTemp(height * stride) { buffer ->
+            BufferTemp(stride) { temp ->
+                when (kind) {
+                    AGReadKind.COLOR -> gl.readPixels(region.x, region.y, region.width, region.height, KmlGl.RGBA, KmlGl.UNSIGNED_BYTE, buffer)
+                    AGReadKind.DEPTH -> gl.readPixels(region.x, region.y, region.width, region.height, KmlGl.DEPTH_COMPONENT, KmlGl.FLOAT, buffer)
+                    AGReadKind.STENCIL -> gl.readPixels(region.x, region.y, region.width, region.height, KmlGl.STENCIL_INDEX, KmlGl.UNSIGNED_BYTE, buffer)
+                }
+                when (data) {
+                    is IntArray -> buffer.getArrayInt32(0, data, size = area)
+                    is FloatArray -> buffer.getArrayFloat32(0, data, size = area)
+                    is ByteArray -> buffer.getArrayInt8(0, data, size = area)
+                    else -> TODO()
+                }
+                if (flipY) {
+                    when (data) {
+                        is IntArray -> Bitmap32(width, height, RgbaArray(data))
+                        is FloatArray -> FloatBitmap32(width, height, data)
+                        is ByteArray -> Bitmap8(width, height, data)
+                        else -> TODO()
+                    }.flipY()
+                }
             }
             //println("readColor.HASH:" + bitmap.computeHash())
         }
@@ -604,8 +633,9 @@ class AGOpengl(val gl: KmlGl) : AG() {
         //println("BINDTEXTURE: ${glTex?.id}")
         val texBitmap = tex?.bitmap
         if (glTex != null && texBitmap != null) {
-            if (glTex.cachedContentVersion != texBitmap.contentVersion) {
+            if (glTex.cachedContentVersion != texBitmap.contentVersion || glTex.cachedAGContextVersion != contextVersion) {
                 glTex.cachedContentVersion = texBitmap.contentVersion
+                glTex.cachedAGContextVersion = contextVersion
                 tex._cachedVersion = -1
                 tex._version++
             }
@@ -743,6 +773,7 @@ class AGOpengl(val gl: KmlGl) : AG() {
     fun bindFrameBuffer(frameBuffer: AGFrameBufferBase, info: AGFrameBufferInfo) {
         //println("bindFrameBuffer: $frameBuffer, info=$info")
         if (_currentViewportSize != info.size) {
+            //println("viewport: 0, 0, ${info.width}, ${info.height}")
             gl.viewport(0, 0, info.width, info.height)
         }
         if (frameBuffer.isMain) {
@@ -820,9 +851,7 @@ class AGOpengl(val gl: KmlGl) : AG() {
     fun setDepthAndFrontFace(renderState: AGDepthAndFrontFace) {
         if (currentRenderState != renderState) {
             currentRenderState = renderState
-            gl.enableDisable(KmlGl.CULL_FACE, renderState.frontFace != AGFrontFace.BOTH) {
-                gl.frontFace(renderState.frontFace.toGl())
-            }
+            gl.frontFace(renderState.frontFace.toGl())
 
             gl.depthMask(renderState.depthMask)
             gl.depthRangef(renderState.depthNear, renderState.depthFar)
@@ -840,11 +869,16 @@ class AGOpengl(val gl: KmlGl) : AG() {
         }
     }
 
-    fun setScissorState(scissor: AGScissor) {
+    fun setScissorState(scissor: AGScissor, frameBuffer: AGFrameBufferBase, frameBufferInfo: AGFrameBufferInfo) {
+        //println("scissor=$scissor, frameBuffer=${frameBuffer.isMain}, frameBufferInfo=$frameBufferInfo")
+        val scissor = region(scissor, frameBuffer, frameBufferInfo)
         if (currentScissor != scissor) {
             currentScissor = scissor
             gl.enableDisable(KmlGl.SCISSOR_TEST, scissor != AGScissor.NIL) {
-                scissor(scissor.x, scissor.y, scissor.width, scissor.height)
+                // Depending on the frame-buffer, y might be bottom based or top based
+                // for the main framebuffer (0, 0) is in the left, bottom part of the window
+                // while on texture framebuffers it is top-left
+                gl.scissor(scissor.x, scissor.y, scissor.width, scissor.height)
             }
         }
     }
@@ -857,24 +891,24 @@ class AGOpengl(val gl: KmlGl) : AG() {
         glGlobalState.readStats(out)
     }
 
-    fun AGUniformValues.useExternalSampler(): Boolean {
-        var useExternalSampler = false
-        this.fastForEach { value ->
-            val uniform = value.uniform
-            val uniformType = uniform.type
-            when (uniformType) {
-                VarType.Sampler2D -> {
-                    val tex = value.texture
-                    if (tex != null) {
-                        if (tex.implForcedTexTarget == AGTextureTargetKind.EXTERNAL_TEXTURE) {
-                            useExternalSampler = true
-                        }
-                    }
-                }
-                else -> Unit
-            }
-        }
-        //println("useExternalSampler=$useExternalSampler")
-        return useExternalSampler
-    }
+    //fun AGUniformValues.useExternalSampler(): Boolean {
+    //    var useExternalSampler = false
+    //    this.fastForEach { value ->
+    //        val uniform = value.uniform
+    //        val uniformType = uniform.type
+    //        when (uniformType) {
+    //            VarType.Sampler2D -> {
+    //                val tex = value.texture
+    //                if (tex != null) {
+    //                    if (tex.implForcedTexTarget == AGTextureTargetKind.EXTERNAL_TEXTURE) {
+    //                        useExternalSampler = true
+    //                    }
+    //                }
+    //            }
+    //            else -> Unit
+    //        }
+    //    }
+    //    //println("useExternalSampler=$useExternalSampler")
+    //    return useExternalSampler
+    //}
 }

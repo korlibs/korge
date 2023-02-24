@@ -3,6 +3,8 @@ package com.soywiz.korgw.osx
 import com.soywiz.kgl.KmlGl
 import com.soywiz.kgl.checkedIf
 import com.soywiz.kgl.logIf
+import com.soywiz.kmem.*
+import com.soywiz.kmem.Platform
 import com.soywiz.kmem.dyn.osx.*
 import com.soywiz.korag.gl.AGOpengl
 import com.soywiz.korev.Key
@@ -15,7 +17,6 @@ import com.soywiz.korgw.platform.NativeLoad
 import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.format.PNG
 import com.soywiz.korio.async.launchImmediately
-import com.soywiz.korio.util.OS
 import com.soywiz.korio.util.Once
 import com.sun.jna.*
 import java.nio.ByteBuffer
@@ -27,27 +28,59 @@ open class MacKmlGL : NativeKgl(DirectGL)
 
 
 interface MacGL : INativeGL, Library {
-    fun CGLSetParameter(vararg args: Any?)
-    fun CGLEnable(vararg args: Any?)
-    fun CGLChoosePixelFormat(attributes: Pointer, pix: Pointer, num: Pointer)
-    fun CGLCreateContext(pix: Pointer?, sharedCtx: Pointer?, ctx: Pointer?)
-    fun CGLDestroyPixelFormat(ctx: Pointer?)
-    fun CGLSetCurrentContext(ctx: Pointer?)
-    fun CGLGetCurrentContext(): Pointer?
-    fun CGLDestroyContext(ctx: Pointer?)
+    companion object : MacGL by NativeLoad(nativeOpenGLLibraryPath) {
+    }
 
-    companion object : MacGL by NativeLoad(nativeOpenGLLibraryPath)
+    //fun CGLSetParameter(vararg args: Any?): Int
+    fun CGLEnable(ctx: Pointer?, enable: Int): Int
+    fun CGLDisable(ctx: Pointer?, enable: Int): Int
+    fun CGLChoosePixelFormat(attributes: Pointer, pix: Pointer, num: Pointer): Int
+    fun CGLCreateContext(pix: Pointer?, sharedCtx: Pointer?, ctx: Pointer?): Int
+    fun CGLDestroyPixelFormat(ctx: Pointer?): Int
+    fun CGLSetCurrentContext(ctx: Pointer?): Int
+    fun CGLGetCurrentContext(): Pointer?
+    fun CGLDestroyContext(ctx: Pointer?): Int
+    fun CGLGetPixelFormat(ctx: Pointer?): Pointer?
+
+    enum class Error(val id: Int) {
+        kCGLNoError            (0),        /* no error */
+        kCGLBadAttribute       (10000),	/* invalid pixel format attribute  */
+        kCGLBadProperty        (10001),	/* invalid renderer property       */
+        kCGLBadPixelFormat     (10002),	/* invalid pixel format            */
+        kCGLBadRendererInfo    (10003),	/* invalid renderer info           */
+        kCGLBadContext         (10004),	/* invalid context                 */
+        kCGLBadDrawable        (10005),	/* invalid drawable                */
+        kCGLBadDisplay         (10006),	/* invalid graphics device         */
+        kCGLBadState           (10007),	/* invalid context state           */
+        kCGLBadValue           (10008),	/* invalid numerical value         */
+        kCGLBadMatch           (10009),	/* invalid share context           */
+        kCGLBadEnumeration     (10010),	/* invalid enumerant               */
+        kCGLBadOffScreen       (10011),	/* invalid offscreen drawable      */
+        kCGLBadFullScreen      (10012),	/* invalid fullscreen drawable     */
+        kCGLBadWindow          (10013),	/* invalid window                  */
+        kCGLBadAddress         (10014),	/* invalid pointer                 */
+        kCGLBadCodeModule      (10015),	/* invalid code module             */
+        kCGLBadAlloc           (10016),	/* invalid memory allocation       */
+        kCGLBadConnection      (10017), /* invalid CoreGraphics connection */
+        kUnknownError      (-1);
+
+        companion object {
+            val VALUES = values().associateBy { it.id }
+
+            operator fun get(id: Int): Error = VALUES[id] ?: kUnknownError
+        }
+    }
 }
 
 private fun ByteArray.toNSData(): Long = NSClass("NSData").alloc().msgSend("initWithBytes:length:", ByteBuffer.wrap(this), this.size)
 
 val NSThreadClass = NSClass("NSThread")
 
-internal val isOSXMainThread get() = OS.isMac && (NSThreadClass.msgSend("isMainThread") != 0L)
+internal val isOSXMainThread get() = Platform.isMac && (NSThreadClass.msgSend("isMainThread") != 0L)
 
 private val _initializeMacOnce = Once()
 fun initializeMacOnce() = _initializeMacOnce {
-    if (OS.isMac) {
+    if (Platform.isMac) {
         // https://indiestack.com/2016/12/touch-bar-crash-protection/
         //[[NSUserDefaults standardUserDefaults] registerDefaults:[NSDictionary dictionaryWithObject:[NSNumber numberWithBool:NO] forKey:@"NSFunctionBarAPIEnabled"]];
         NSClass("NSUserDefaults").msgSend("standardUserDefaults").msgSend(

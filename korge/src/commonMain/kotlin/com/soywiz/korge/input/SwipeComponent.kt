@@ -2,7 +2,7 @@ package com.soywiz.korge.input
 
 import com.soywiz.korge.view.View
 import com.soywiz.korge.view.Views
-import com.soywiz.korma.geom.Point
+import com.soywiz.korma.geom.MPoint
 import kotlin.math.abs
 
 data class SwipeInfo(
@@ -47,7 +47,7 @@ fun <T : View> T.onSwipe(
     var movedBottom = false
 
     val view = this
-    val mousePos = Point()
+    val mousePos = MPoint()
     val swipeInfo = SwipeInfo(0.0, 0.0, SwipeDirection.TOP)
 
     fun views() = view.stage!!.views

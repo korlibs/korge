@@ -1,5 +1,6 @@
 package com.soywiz.korio.runtime
 
+import com.soywiz.klogger.*
 import com.soywiz.korio.*
 import com.soywiz.korio.file.VfsFile
 import com.soywiz.korio.file.std.MemoryVfs
@@ -12,6 +13,10 @@ import com.soywiz.korio.net.http.HttpClient
 import com.soywiz.korio.net.http.HttpServer
 
 abstract class JsRuntime {
+    companion object {
+        val logger = Logger("JsRuntime")
+    }
+
     open val rawOsName: String = "unknown"
 
     open val rawPlatformName: String = when {

@@ -1,6 +1,7 @@
 package com.soywiz.korim.font
 
 import com.soywiz.kds.doubleArrayListOf
+import com.soywiz.klogger.*
 import com.soywiz.korio.async.suspendTest
 import com.soywiz.korio.file.std.resourcesVfs
 import com.soywiz.korio.stream.openFastStream
@@ -21,6 +22,8 @@ import kotlin.test.assertNotNull
  * - https://github.com/opentypejs/opentype.js
  */
 class TtfCIDFontTest {
+    val logger = Logger("TtfCIDFontTest")
+
     @Test
     fun testRealEncoding() {
         // -2.25 :: 1e e2 a2 5f

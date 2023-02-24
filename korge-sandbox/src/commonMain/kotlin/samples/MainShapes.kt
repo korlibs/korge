@@ -1,28 +1,15 @@
 package samples
 
-import com.soywiz.klock.milliseconds
-import com.soywiz.klock.timesPerSecond
-import com.soywiz.korge.input.onOut
-import com.soywiz.korge.input.onOver
+import com.soywiz.klock.*
+import com.soywiz.korge.input.*
 import com.soywiz.korge.scene.Scene
+import com.soywiz.korge.view.*
 import com.soywiz.korge.view.Circle
-import com.soywiz.korge.view.Container
-import com.soywiz.korge.view.SContainer
-import com.soywiz.korge.view.View
-import com.soywiz.korge.view.addFixedUpdater
-import com.soywiz.korge.view.anchor
-import com.soywiz.korge.view.graphics
-import com.soywiz.korge.view.position
-import com.soywiz.korge.view.roundRect
-import com.soywiz.korge.view.scale
-import com.soywiz.korge.view.solidRect
-import com.soywiz.korim.color.Colors
+import com.soywiz.korim.color.*
+import com.soywiz.korio.async.*
 import com.soywiz.korio.async.delay
-import com.soywiz.korio.async.launch
-import com.soywiz.korma.geom.degrees
-import com.soywiz.korma.geom.plus
-import com.soywiz.korma.geom.vector.circle
-import com.soywiz.korma.geom.vector.rect
+import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.vector.*
 
 class MainShapes : Scene() {
     override suspend fun SContainer.sceneMain() {

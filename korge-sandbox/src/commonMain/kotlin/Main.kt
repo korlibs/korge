@@ -1,16 +1,23 @@
-
 import com.soywiz.korge.*
+import com.soywiz.korge.particle.*
 import com.soywiz.korge.scene.*
+import com.soywiz.korge.time.*
 import com.soywiz.korge.ui.*
 import com.soywiz.korge.view.*
+import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
+import com.soywiz.korim.paint.*
 import com.soywiz.korio.async.*
+import com.soywiz.korio.file.std.*
 import com.soywiz.korio.lang.*
+import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.vector.*
 import samples.*
 import samples.asteroids.*
 import samples.connect4.*
 import samples.minesweeper.*
 import samples.pong.*
+import kotlin.random.*
 
 val DEFAULT_KORGE_BG_COLOR = Colors.DARKCYAN.mix(Colors.BLACK, 0.8)
 
@@ -21,43 +28,29 @@ suspend fun main() = Korge(
     //scaleMode = ScaleMode.EXACT,
     //debug = true,
     debug = false,
+    //debugAg = true,
     multithreaded = true,
     forceRenderEveryFrame = false // Newly added optimization!
     //forceRenderEveryFrame = true
     //debugAg = true,
 ) {
+    //graphics(renderer = GraphicsRenderer.CPU) {
+
+    //graphics(renderer = GraphicsRenderer.SYSTEM) {
+    //    fill(createSweepGradient(100, 100).add(Colors.RED, Colors.GREEN, Colors.BLUE)) {
+    //    //fill(createPattern(bmp, transform = MMatrix().translate(100, 100))) {
+    //        //this.rect(100, 100, 200, 200)
+    //        this.rect(50, 50, 200, 200)
+    //    }
+    //}
+    //return@Korge
     //sceneContainer(views).changeTo({ MainGifAnimation() }); return@Korge
     //sceneContainer(views).changeTo({ MainStressButtons() }); return@Korge
     //sceneContainer(views).changeTo({ MainTransitionFilter() }); return@Korge
 
     demoSelector(
-        //Demo(::MainGraphicsText),
-        //Demo(::MainTextBounds),
-        //Demo(::MainEditor),
-        //Demo(::MainStage3d),
-        //Demo(::MainInput),
-        //Demo(::MainAnimations),
-        //Demo(::MainCache),
-        //Demo(::MainEditor),
-        //Demo(::MainUI),
-        //Demo(::MainBezier),
-        //Demo(::MainBunnymark),
-        //Demo(::MainStressButtons),
-        //Demo(::MainGifAnimation),
-        //Demo(::MainTransitionFilter),
-        //Demo(::MainFilters),
         //Demo(::MainGpuVectorRendering),
-        //Demo(::MainRotatedAtlas),
-        Demo(::MainImageOrientationTest),
-        //Demo(::MainGpuVectorRendering),
-        //Demo(::MainTextMetrics),
-        //Demo(::MainBunnymark),
-        //Demo(::MainBlur),
-        //Demo(::MainSDF),
-        //Demo(::MainMSDF),
-        //Demo(::MainGestures),
-        //Demo(::MainSvgAnimation),
-        //Demo(::MainVectorNinePatch),
+        Demo(::MainInput),
         listOf(
             Demo(::MainStressButtons),
             Demo(::MainVectorNinePatch),
@@ -70,7 +63,6 @@ suspend fun main() = Korge(
             Demo(::MainVector),
             Demo(::MainText),
             Demo(::MainAtlas),
-            Demo(::MainBunnysSlow),
             Demo(::MainOnScreenController),
             Demo(::MainScenes),
             Demo(::MainKTree),
@@ -180,7 +172,7 @@ suspend fun Stage.demoSelector(default: Demo, all: List<Demo>) {
     comboBox = uiComboBox<Demo>(width = 200.0, items = (listOf(default) + all).distinctBy { it.name }.sortedBy { it.name }) {
         this.viewportHeight = 600
         this.onSelectionUpdate.add {
-            println(it)
+            //println(it)
             launchImmediately { setDemo(it.selectedItem!!) }
         }
     }.alignLeftToLeftOf(stage, padding = 8.0).alignTopToTopOf(stage, padding = 8.0)

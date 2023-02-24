@@ -8,7 +8,6 @@ import com.soywiz.korge.input.*
 import com.soywiz.korge.view.property.*
 import com.soywiz.korgw.*
 import com.soywiz.korinject.*
-import com.soywiz.korio.annotations.*
 import com.soywiz.korio.resources.*
 import com.soywiz.korma.annotations.*
 import com.soywiz.korma.geom.*
@@ -18,7 +17,7 @@ import kotlinx.coroutines.*
  * Singleton root [View] and [Container] that contains a reference to the [Views] singleton and doesn't have any parent.
  */
 @RootViewDslMarker
-class Stage(override val views: Views) : FixedSizeContainer()
+open class Stage internal constructor(override val views: Views) : FixedSizeContainer()
     , View.Reference
     , CoroutineScope by views
     , EventDispatcher by EventDispatcher.Mixin()
@@ -50,7 +49,7 @@ class Stage(override val views: Views) : FixedSizeContainer()
         gameWindow.runBlockingNoJs(this.coroutineContext, block)
 
     /** Mouse coordinates relative to the [Stage] singleton */
-    val mouseXY: Point = Point(0.0, 0.0)
+    val mouseXY: MPoint = MPoint(0.0, 0.0)
         get() {
             field.setTo(mouseX, mouseY)
             return field
@@ -81,7 +80,7 @@ class Stage(override val views: Views) : FixedSizeContainer()
     @Suppress("unused")
     @ViewProperty(min = 0.0, max = 2000.0, groupName = "Stage")
     private var virtualSize: IPoint
-        get() = Point(views.virtualWidthDouble, views.virtualHeightDouble)
+        get() = MPoint(views.virtualWidthDouble, views.virtualHeightDouble)
         set(value) {
             views.virtualWidthDouble = value.x
             views.virtualHeightDouble = value.y

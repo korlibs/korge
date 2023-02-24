@@ -54,7 +54,7 @@ open class UIBaseCheckBox<T : UIBaseCheckBox<T>>(
         }
 
     var skin: UIBaseCheckBoxSkin = UIBaseCheckBoxSkinMaterial
-    private val background = solidRect(width, height, Colors.TRANSPARENT_BLACK)
+    private val background = solidRect(width, height, Colors.TRANSPARENT)
     val canvas = renderableView {
         skin.render(ctx2d, this@UIBaseCheckBox.width, this@UIBaseCheckBox.height, this@UIBaseCheckBox, skinKind)
     }
@@ -68,7 +68,7 @@ open class UIBaseCheckBox<T : UIBaseCheckBox<T>>(
     }
     private var pressing by uiObservable(false) { updateState() }
 
-    private val textBounds = Rectangle()
+    private val textBounds = MRectangle()
 
     override fun renderInternal(ctx: RenderContext) {
         updateState()
@@ -112,7 +112,7 @@ open class UIBaseCheckBox<T : UIBaseCheckBox<T>>(
             onOut { this@UIBaseCheckBox.over = false }
             onDown {
                 this@UIBaseCheckBox.pressing = true
-                highlights.addHighlight(Point(0.5, 0.5))
+                highlights.addHighlight(MPoint(0.5, 0.5))
             }
             onUpAnywhere {
                 this@UIBaseCheckBox.pressing = false

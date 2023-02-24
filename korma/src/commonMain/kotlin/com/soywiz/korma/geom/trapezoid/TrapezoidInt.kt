@@ -2,6 +2,7 @@ package com.soywiz.korma.geom.trapezoid
 
 import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
+import com.soywiz.korma.annotations.*
 import com.soywiz.korma.geom.*
 import kotlin.math.*
 
@@ -14,6 +15,7 @@ import kotlin.math.*
  * +--------------+
  * (x1a, y1)     (x1b, y1)
  */
+@KormaValueApi
 data class TrapezoidInt(
     val x0a: Int, val x0b: Int, val y0: Int,
     val x1a: Int, val x1b: Int, val y1: Int,

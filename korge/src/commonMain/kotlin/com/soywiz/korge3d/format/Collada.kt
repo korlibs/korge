@@ -1,40 +1,19 @@
 package com.soywiz.korge3d.format
 
 import com.soywiz.kds.*
-import com.soywiz.kds.iterators.fastForEach
-import com.soywiz.kds.iterators.fastForEachWithIndex
+import com.soywiz.kds.iterators.*
 import com.soywiz.korag.*
-import com.soywiz.korag.shader.VertexLayout
-import com.soywiz.korge3d.BufferWithVertexLayout
-import com.soywiz.korge3d.Korge3DExperimental
-import com.soywiz.korge3d.Library3D
-import com.soywiz.korge3d.Mesh3D
-import com.soywiz.korge3d.Shaders3D
-import com.soywiz.korge3d.animation.Animation3D
-import com.soywiz.korge3d.internal.toNBuffer
-import com.soywiz.korim.color.RGBA
-import com.soywiz.korio.file.VfsFile
-import com.soywiz.korio.serialization.xml.Xml
-import com.soywiz.korio.serialization.xml.allChildren
-import com.soywiz.korio.serialization.xml.allNodeChildren
-import com.soywiz.korio.serialization.xml.firstText
-import com.soywiz.korio.serialization.xml.get
-import com.soywiz.korio.serialization.xml.readXml
-import com.soywiz.korio.serialization.xml.text
-import com.soywiz.korio.util.StrReader
-import com.soywiz.korio.util.buildList
-import com.soywiz.korio.util.reader
-import com.soywiz.korma.geom.EulerRotation
-import com.soywiz.korma.geom.Matrix3D
-import com.soywiz.korma.geom.Quaternion
-import com.soywiz.korma.geom.Vector3D
-import com.soywiz.korma.geom.degrees
-import com.soywiz.korma.geom.plus
-import com.soywiz.korma.geom.setTRS
-import com.soywiz.korma.geom.times
-import com.soywiz.korma.math.nextMultipleOf
-import kotlin.math.abs
-import kotlin.math.max
+import com.soywiz.korag.shader.*
+import com.soywiz.korge3d.*
+import com.soywiz.korge3d.animation.*
+import com.soywiz.korge3d.internal.*
+import com.soywiz.korim.color.*
+import com.soywiz.korio.file.*
+import com.soywiz.korio.serialization.xml.*
+import com.soywiz.korio.util.*
+import com.soywiz.korma.geom.*
+import com.soywiz.korma.math.*
+import kotlin.math.*
 
 @Korge3DExperimental
 suspend fun VfsFile.readColladaLibrary(loadTextures: Boolean = true): Library3D {
@@ -48,7 +27,7 @@ class ColladaParser {
         val name: String
     }
 
-    data class MatrixSourceParam(override val name: String, val matrices: Array<Matrix3D>) : SourceParam
+    data class MatrixSourceParam(override val name: String, val matrices: Array<MMatrix3D>) : SourceParam
     data class FloatSourceParam(override val name: String, val floats: FloatArrayList) : SourceParam
     data class NamesSourceParam(override val name: String, val names: ArrayList<String>) : SourceParam
     data class Source(val id: String, val params: FastStringMap<SourceParam>)
@@ -65,7 +44,7 @@ class ColladaParser {
         val controllerName: String,
         val inputs: FastStringMap<Input>,
         val vcounts: IntArrayList,
-        val bindShapeMatrix: Matrix3D,
+        val bindShapeMatrix: MMatrix3D,
         val jointInputs: FastStringMap<Input>,
         val skinSource: String
     ) {
@@ -339,7 +318,7 @@ class ColladaParser {
             if (skin != null) {
                 val skinSource = skin.str("source")
                 val bindShapeMatrix = skin["bind_shape_matrix"].firstOrNull()?.text?.reader()?.readMatrix3D()
-                    ?: Matrix3D()
+                    ?: MMatrix3D()
                 for (source in parseSources(skin, this@ColladaParser.sourceArrayParams)) {
                     sources[source.id] = source
                 }
@@ -566,7 +545,7 @@ class ColladaParser {
         }
     }
 
-    fun FastStringMap<Source?>.getMatrices(a: String, b: String): Array<Matrix3D>? =
+    fun FastStringMap<Source?>.getMatrices(a: String, b: String): Array<MMatrix3D>? =
         (this[a]?.params?.get(b) as? MatrixSourceParam?)?.matrices
 
     fun FastStringMap<Source?>.getStrings(a: String, b: String): Array<String>? =
@@ -585,7 +564,7 @@ class ColladaParser {
                 when (technique.nameLC) {
                     "point" -> {
                         val color = technique["color"].firstOrNull()?.text?.reader()?.readVector3D()
-                            ?: Vector3D(1, 1, 1)
+                            ?: MVector4(1, 1, 1)
                         val constant_attenuation =
                             technique["constant_attenuation"].firstOrNull()?.text?.toDoubleOrNull()
                                 ?: 1.0
@@ -603,7 +582,7 @@ class ColladaParser {
                     }
                     "ambient" -> {
                         val color = technique["color"].firstOrNull()?.text?.reader()?.readVector3D()
-                            ?: Vector3D(1, 1, 1)
+                            ?: MVector4(1, 1, 1)
                         lightDef = Library3D.AmbientLightDef(RGBA.float(color.x, color.y, color.z, 1f))
                     }
                     else -> {
@@ -732,11 +711,11 @@ class ColladaParser {
         instancesById: FastStringMap<Library3D.Instance3D>
     ): Library3D.Instance3D {
         val instance = Library3D.Instance3D(this)
-        var location: Vector3D? = null
-        var scale: Vector3D? = null
-        var rotationX: Vector3D? = null
-        var rotationY: Vector3D? = null
-        var rotationZ: Vector3D? = null
+        var location: MVector4? = null
+        var scale: MVector4? = null
+        var rotationX: MVector4? = null
+        var rotationY: MVector4? = null
+        var rotationZ: MVector4? = null
 
         instance.id = node.str("id")
         instance.sid = node.getString("sid")
@@ -812,16 +791,16 @@ class ColladaParser {
             }
         }
         if (location != null || scale != null || rotationX != null || rotationY != null || rotationZ != null) {
-            val trns = location ?: Vector3D(0, 0, 0, 1)
-            val scl = scale ?: Vector3D(1, 1, 1)
-            val rotX = rotationX ?: Vector3D(1, 0, 0, 0)
-            val rotY = rotationY ?: Vector3D(0, 1, 0, 0)
-            val rotZ = rotationZ ?: Vector3D(0, 0, 1, 0)
+            val trns = location ?: MVector4(0, 0, 0, 1)
+            val scl = scale ?: MVector4(1, 1, 1)
+            val rotX = rotationX ?: MVector4(1, 0, 0, 0)
+            val rotY = rotationY ?: MVector4(0, 1, 0, 0)
+            val rotZ = rotationZ ?: MVector4(0, 0, 1, 0)
             rotationVectorToEulerRotation(rotX)
 
             instance.transform.setTRS(
                 trns,
-                Quaternion().setTo(
+                MQuaternion().setTo(
                     combine(
                         rotationVectorToEulerRotation(rotX),
                         rotationVectorToEulerRotation(rotY),
@@ -835,15 +814,15 @@ class ColladaParser {
     }
 
     private fun combine(
-        a: EulerRotation,
-        b: EulerRotation,
-        c: EulerRotation,
-        out: EulerRotation = EulerRotation()
-    ): EulerRotation {
+        a: MEulerRotation,
+        b: MEulerRotation,
+        c: MEulerRotation,
+        out: MEulerRotation = MEulerRotation()
+    ): MEulerRotation {
         return out.setTo(a.x + b.x + c.x, a.y + b.y + c.y, a.z + b.z + c.z)
     }
 
-    private fun rotationVectorToEulerRotation(vec: Vector3D, out: EulerRotation = EulerRotation()): EulerRotation {
+    private fun rotationVectorToEulerRotation(vec: MVector4, out: MEulerRotation = MEulerRotation()): MEulerRotation {
         val degrees = vec.w.degrees
         return out.setTo(degrees * vec.x, degrees * vec.y, degrees * vec.z)
     }
@@ -896,7 +875,7 @@ class ColladaParser {
                                         }
                                         "float4x4" -> {
                                             val floats = (data as FloatSourceParam).floats.data
-                                            val out = Array(count) { Matrix3D() }
+                                            val out = Array(count) { MMatrix3D() }
                                             for (n in 0 until count) {
                                                 out[n].setFromColladaData(floats, (n * stride) + totalOffset)
                                                 //mat.transpose()
@@ -936,21 +915,21 @@ class ColladaParser {
 
 //fun com.soywiz.korma.geom.Matrix3D.setFromColladaData(f: FloatArray, o: Int) = setColumns(
 //private fun Matrix3D.setFromColladaData(f: FloatArray, o: Int) = setColumns4x4(f, o)
-private fun Matrix3D.setFromColladaData(f: FloatArray, o: Int) = setRows4x4(f, o)
+private fun MMatrix3D.setFromColladaData(f: FloatArray, o: Int) = setRows4x4(f, o)
 
-private fun StrReader.readVector3D(): Vector3D {
+private fun StrReader.readVector3D(): MVector4 {
     val f = readFloats(FloatArrayList())
     return when {
-        f.size == 4 -> Vector3D(f[0], f[1], f[2], f[3])
-        else -> Vector3D(f[0], f[1], f[2])
+        f.size == 4 -> MVector4(f[0], f[1], f[2], f[3])
+        else -> MVector4(f[0], f[1], f[2])
     }
 }
 
-private fun StrReader.readMatrix3D(): Matrix3D {
+private fun StrReader.readMatrix3D(): MMatrix3D {
     val f = readFloats(FloatArrayList())
     if (f.size == 16) {
         //return com.soywiz.korma.geom.Matrix3D().setRows(
-        return Matrix3D().setFromColladaData(f.data, 0)
+        return MMatrix3D().setFromColladaData(f.data, 0)
     } else {
         error("Invalid matrix size ${f.size} : str='$str'")
     }

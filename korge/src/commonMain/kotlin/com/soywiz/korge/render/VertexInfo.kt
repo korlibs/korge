@@ -4,7 +4,7 @@ import com.soywiz.kmem.*
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korio.util.niceStr
-import com.soywiz.korma.geom.Point
+import com.soywiz.korma.geom.MPoint
 
 data class VertexInfo(
     var x: Float = 0f,
@@ -12,12 +12,11 @@ data class VertexInfo(
     var u: Float = 0f,
     var v: Float = 0f,
     var colorMul: RGBA = Colors.WHITE,
-    var colorAdd: Int = 0
 ) {
     var texWidth: Int = -1
     var texHeight: Int = -1
-    val xy get() = Point(x, y)
-    val uv get() = Point(u, v)
+    val xy get() = MPoint(x, y)
+    val uv get() = MPoint(u, v)
     fun read(buffer: Buffer, n: Int) {
         val index = n * 6
         this.x = buffer.getFloat32(index + 0)
@@ -25,7 +24,6 @@ data class VertexInfo(
         this.u = buffer.getFloat32(index + 2)
         this.v = buffer.getFloat32(index + 3)
         this.colorMul = RGBA(buffer.getInt32(index + 4))
-        this.colorAdd = buffer.getInt32(index + 5)
     }
 
     fun toStringXY() = "[${x.niceStr},${y.niceStr}]"

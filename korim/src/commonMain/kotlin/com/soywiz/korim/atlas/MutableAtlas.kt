@@ -3,7 +3,6 @@ package com.soywiz.korim.atlas
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.binpack.BinPacker
-import com.soywiz.korma.geom.slice.*
 import kotlin.collections.LinkedHashMap
 import kotlin.collections.arrayListOf
 import kotlin.collections.map
@@ -90,7 +89,7 @@ class MutableAtlas<T>(
                 val bigEmptySlice = biggestEmptyEntry!!.slice
                 if (bigEmptySlice.width >= bmp.width && bigEmptySlice.height >= bmp.height) {
                     entry = Entry(
-                        bigEmptySlice.slice(RectangleInt(0, 0, bmp.width, bmp.height)),
+                        bigEmptySlice.slice(MRectangleInt(0, 0, bmp.width, bmp.height)),
                         data
                     )
                 }

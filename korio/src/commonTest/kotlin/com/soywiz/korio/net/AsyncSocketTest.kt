@@ -1,10 +1,10 @@
 package com.soywiz.korio.net
 
+import com.soywiz.kmem.*
 import com.soywiz.korio.async.launchImmediately
 import com.soywiz.korio.async.suspendTestNoBrowser
 import com.soywiz.korio.stream.readBytesExact
 import com.soywiz.korio.stream.writeBytes
-import com.soywiz.korio.util.OS
 import kotlinx.coroutines.CompletableDeferred
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -12,10 +12,10 @@ import kotlin.test.assertEquals
 class AsyncSocketTest {
 	@Test
 	fun testClientAndServer() = suspendTestNoBrowser {
-		if (OS.isJsBrowser) return@suspendTestNoBrowser
-		if (OS.isJs) return@suspendTestNoBrowser
-		if (OS.isWindows && OS.isNative) return@suspendTestNoBrowser
-        if (OS.isAndroid) return@suspendTestNoBrowser
+		if (Platform.isJsBrowser) return@suspendTestNoBrowser
+		if (Platform.isJs) return@suspendTestNoBrowser
+		if (Platform.isWindows && Platform.isNative) return@suspendTestNoBrowser
+        if (Platform.isAndroid) return@suspendTestNoBrowser
 
 		var port = 0
 		val connected = CompletableDeferred<Unit>()

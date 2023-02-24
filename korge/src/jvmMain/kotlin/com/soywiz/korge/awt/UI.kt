@@ -48,7 +48,7 @@ internal open class UiComponent(val app: UiApplication, val component: NativeUiF
             root?.relayout()
         }
     var enabled by component::enabled
-    open var bounds: RectangleInt
+    open var bounds: MRectangleInt
         get() = component.bounds
         set(value) {
             component.bounds = value
@@ -84,7 +84,7 @@ internal open class UiContainer(app: UiApplication, val container: NativeUiFacto
 
     var layout: UiLayout? = VerticalUiLayout
 
-    open fun computePreferredSize(available: SizeInt): SizeInt {
+    open fun computePreferredSize(available: MSizeInt): MSizeInt {
         return layout?.computePreferredSize(this, available) ?: available
     }
 
@@ -98,7 +98,7 @@ internal open class UiContainer(app: UiApplication, val container: NativeUiFacto
         forEachChild { it.updateUI() }
     }
 
-    override var bounds: RectangleInt
+    override var bounds: MRectangleInt
         get() = super.bounds
         set(value) {
             super.bounds = value
@@ -212,21 +212,21 @@ internal open class UiTextField(app: UiApplication, val textField: NativeUiFacto
 }
 
 internal interface UiLayout {
-    fun computePreferredSize(container: UiContainer, available: SizeInt): SizeInt
+    fun computePreferredSize(container: UiContainer, available: MSizeInt): MSizeInt
     fun relayout(container: UiContainer)
 }
 
 internal var UiContainer.layoutChildrenPadding by Extra.Property { 0 }
 
 internal object UiFillLayout : UiLayout {
-    override fun computePreferredSize(container: UiContainer, available: SizeInt): SizeInt = available.clone()
+    override fun computePreferredSize(container: UiContainer, available: MSizeInt): MSizeInt = available.clone()
 
     override fun relayout(container: UiContainer) {
         val bounds = container.bounds
         //container.bounds = bounds
         val padding = container.layoutChildrenPadding
         container.forEachChild { child ->
-            child.bounds = RectangleInt.fromBounds(padding, padding, bounds.width - padding, bounds.height - padding)
+            child.bounds = MRectangleInt.fromBounds(padding, padding, bounds.width - padding, bounds.height - padding)
         }
     }
 }
@@ -239,7 +239,7 @@ internal fun Length.Context.computeChildSize(child: UiComponent, direction: Layo
     val preferredSize = child.preferredSize
     return when {
         preferredSize != null -> Length.calc(ctx, 32.pt, preferredSize.getDirection(direction), child.minimumSize.getDirection(direction), child.maximumSize.getDirection(direction))
-        child is UiContainer -> child.computePreferredSize(SizeInt(32, 32)).getDirection(direction)
+        child is UiContainer -> child.computePreferredSize(MSizeInt(32, 32)).getDirection(direction)
         else -> when (direction) {
             LayoutDirection.HORIZONTAL -> 128
             LayoutDirection.VERTICAL -> 32
@@ -247,12 +247,12 @@ internal fun Length.Context.computeChildSize(child: UiComponent, direction: Layo
     }
 }
 
-internal class LayoutContext(val available: SizeInt) {
+internal class LayoutContext(val available: MSizeInt) {
     val widthContext = Length.Context().also { it.size = available.width }
     val heightContext = Length.Context().also { it.size = available.height }
 
-    fun computeChildSize(child: UiComponent): SizeInt {
-        return SizeInt(
+    fun computeChildSize(child: UiComponent): MSizeInt {
+        return MSizeInt(
             widthContext.computeChildSize(child, LayoutDirection.HORIZONTAL),
             heightContext.computeChildSize(child, LayoutDirection.VERTICAL),
         )
@@ -263,7 +263,7 @@ internal open class LineUiLayout(
     open var direction: LayoutDirection = LayoutDirection.VERTICAL
 ) : UiLayout, LengthExtensions {
     val revDirection = direction.reversed
-    override fun computePreferredSize(container: UiContainer, available: SizeInt): SizeInt {
+    override fun computePreferredSize(container: UiContainer, available: MSizeInt): MSizeInt {
         var sum = 0
         var max = 0
         val ctx = LayoutContext(available)
@@ -279,7 +279,7 @@ internal open class LineUiLayout(
         }
         //println("${container.preferredSize} - ${container.minimumSize} - ${container.maximumSize}")
 
-        return SizeInt(if (direction.horizontal) sum else max, if (direction.vertical) sum else max)
+        return MSizeInt(if (direction.horizontal) sum else max, if (direction.vertical) sum else max)
     }
 
     override fun relayout(container: UiContainer) {
@@ -299,8 +299,8 @@ internal open class LineUiLayout(
             val size = ctx.computeChildSize(child)
             val value = size.getDirection(direction)
             val childBounds = when (direction) {
-                LayoutDirection.VERTICAL -> RectangleInt(0, cur, bounds.width, value)
-                LayoutDirection.HORIZONTAL -> RectangleInt(cur, 0, value, bounds.height)
+                LayoutDirection.VERTICAL -> MRectangleInt(0, cur, bounds.width, value)
+                LayoutDirection.HORIZONTAL -> MRectangleInt(cur, 0, value, bounds.height)
             }
             //println("$child: $childBounds")
             child.bounds = childBounds
@@ -314,7 +314,7 @@ internal open class LineUiLayout(
 }
 
 fun SizeLength.getDirection(direction: LayoutDirection) = if (direction == LayoutDirection.VERTICAL) height else width
-fun SizeInt.getDirection(direction: LayoutDirection) = if (direction == LayoutDirection.VERTICAL) height else width
+fun MSizeInt.getDirection(direction: LayoutDirection) = if (direction == LayoutDirection.VERTICAL) height else width
 enum class LayoutDirection {
     VERTICAL, HORIZONTAL;
 

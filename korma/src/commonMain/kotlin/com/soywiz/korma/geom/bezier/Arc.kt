@@ -1,29 +1,9 @@
 package com.soywiz.korma.geom.bezier
 
-import com.soywiz.korma.geom.Angle
-import com.soywiz.korma.geom.IPoint
-import com.soywiz.korma.geom.Point
-import com.soywiz.korma.geom.abs
-import com.soywiz.korma.geom.absoluteValue
-import com.soywiz.korma.geom.cosine
-import com.soywiz.korma.geom.degrees
-import com.soywiz.korma.geom.div
-import com.soywiz.korma.geom.min
-import com.soywiz.korma.geom.minus
-import com.soywiz.korma.geom.mutable
-import com.soywiz.korma.geom.normalized
-import com.soywiz.korma.geom.plus
-import com.soywiz.korma.geom.shape.buildVectorPath
-import com.soywiz.korma.geom.sine
-import com.soywiz.korma.geom.tangent
-import com.soywiz.korma.geom.times
-import com.soywiz.korma.geom.unit
-import com.soywiz.korma.geom.vector.VectorBuilder
-import com.soywiz.korma.geom.vector.arc
-import com.soywiz.korma.geom.vector.isEmpty
-import com.soywiz.korma.geom.vector.toCurves
-import kotlin.math.PI
-import kotlin.math.sin
+import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.shape.*
+import com.soywiz.korma.geom.vector.*
+import kotlin.math.*
 
 object Arc {
     // http://hansmuller-flex.blogspot.com/2011/04/approximating-circular-arc-with-cubic.html
@@ -39,7 +19,7 @@ object Arc {
         val c = IPoint(cx, cy)
         val AB = b - a
         val AC = c - a
-        val angle = Point.angleArc(AB, AC).radians * 0.5
+        val angle = MPoint.angleArc(AB, AC).radians * 0.5
         val x = r * sin((PI / 2.0) - angle) / sin(angle)
         val A = a + AB.unit * x
         val B = a + AC.unit * x
@@ -125,11 +105,11 @@ object Arc {
     private fun triangleFindSideFromSideAndHypot(side: Double, hypot: Double): Double =
         kotlin.math.sqrt(hypot * hypot - side * side)
 
-    fun findArcCenter(p1: IPoint, p2: IPoint, radius: Double, out: Point = Point()): IPoint {
+    fun findArcCenter(p1: IPoint, p2: IPoint, radius: Double, out: MPoint = MPoint()): IPoint {
         val tangent = p2 - p1
         val normal = tangent.mutable.setToNormal().normalized
         val mid = (p1 + p2) / 2.0
-        val lineLen = triangleFindSideFromSideAndHypot(Point.distance(p1, mid), radius)
+        val lineLen = triangleFindSideFromSideAndHypot(MPoint.distance(p1, mid), radius)
         return out.copyFrom(mid + normal * lineLen)
     }
 

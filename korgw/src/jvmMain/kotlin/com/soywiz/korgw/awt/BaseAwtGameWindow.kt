@@ -103,7 +103,7 @@ abstract class BaseAwtGameWindow(
     val CustomCursor.jvmCursor: java.awt.Cursor by extraPropertyThis {
         val toolkit = Toolkit.getDefaultToolkit()
         val size = toolkit.getBestCursorSize(bounds.width.toIntCeil(), bounds.height.toIntCeil())
-        val result = this.createBitmap(Size(size.width, size.height))
+        val result = this.createBitmap(MSize(size.width, size.height))
         //println("BITMAP SIZE=${result.bitmap.size}, hotspot=${result.hotspot}")
         val hotspotX = result.hotspot.x.toInt().coerceIn(0, result.bitmap.width - 1)
         val hotspotY = result.hotspot.y.toInt().coerceIn(0, result.bitmap.height - 1)
@@ -200,7 +200,7 @@ abstract class BaseAwtGameWindow(
 
     fun paintInContext(g: Graphics, info: BaseOpenglContext.ContextInfo) {
         // We only have to keep the state on mac, in linux and windows, the context/state is not shared
-        if (OS.isMac) {
+        if (Platform.isMac) {
             state.keep {
                 paintInContextInternal(g, info)
             }
@@ -305,18 +305,10 @@ abstract class BaseAwtGameWindow(
 
     override fun updateGamepads() {
         when {
-            OS.isWindows -> {
-                xinputEventAdapter.updateGamepadsWin32(this)
-            }
-            OS.isLinux -> {
-                linuxJoyEventAdapter.updateGamepads(this)
-            }
-            OS.isMac -> {
-                macosGamepadEventAdapter.updateGamepads(this)
-            }
-            else -> {
-                //println("undetected OS: ${OS.rawName}")
-            }
+            Platform.isWindows -> xinputEventAdapter.updateGamepadsWin32(this.gamepadEmitter)
+            Platform.isLinux -> linuxJoyEventAdapter.updateGamepads(this.gamepadEmitter)
+            Platform.isMac -> macosGamepadEventAdapter.updateGamepads(this)
+            else -> Unit //println("undetected OS: ${OS.rawName}")
         }
     }
 
@@ -500,7 +492,7 @@ abstract class BaseAwtGameWindow(
                 //TODO: check this on linux and macos
                 //val scrollDelta = e.scrollAmount * e.preciseWheelRotation // * e.unitsToScroll
                 val osfactor = when {
-                    OS.isMac -> 0.25
+                    Platform.isMac -> 0.25
                     else -> 1.0
                 }
                 val scrollDelta = e.preciseWheelRotation * osfactor
@@ -565,7 +557,7 @@ abstract class BaseAwtGameWindow(
             // keys.up(Key.ENTER) { if (it.alt) gameWindow.toggleFullScreen() }
 
             // @TODO: HACK so the windows grabs focus on Windows 10 when launching on gradle daemon
-            val useRobotHack = OS.isWindows
+            val useRobotHack = Platform.isWindows
 
             if (useRobotHack) {
                 (component as? Frame?)?.apply {
@@ -623,7 +615,7 @@ abstract class BaseAwtGameWindow(
         //val toolkit = Toolkit.getDefaultToolkit()
         //val events = toolkit.systemEventQueue
 
-        if (OS.isMac) {
+        if (Platform.isMac) {
             try {
                 val displayID = CoreGraphics.CGMainDisplayID()
                 val res = CoreVideo.CVDisplayLinkCreateWithCGDisplay(displayID, displayLinkData)
@@ -648,14 +640,14 @@ abstract class BaseAwtGameWindow(
         val displayLock = this.displayLinkLock
 
         if (displayLock != null) {
-            println("Using DisplayLink")
+            logger.info { "Using DisplayLink" }
         } else {
-            println("NOT Using DisplayLink")
+            logger.info { "NOT Using DisplayLink" }
         }
 
-        println("running: ${Thread.currentThread()}, fvsync=$fvsync")
+        logger.info { "running: ${Thread.currentThread()}, fvsync=$fvsync" }
 
-        if (OS.isMac) {
+        if (Platform.isMac) {
             try {
                 registerGestureListener()
             } catch (e: Throwable) {
@@ -700,10 +692,10 @@ abstract class BaseAwtGameWindow(
                 //println((end - start).timeSpan)
             }
         }
-        println("completed.running=$running")
+        logger.info { "completed.running=$running" }
         //timer.stop()
 
-        if (OS.isMac && displayLink != Pointer.NULL) {
+        if (Platform.isMac && displayLink != Pointer.NULL) {
             CoreVideo.CVDisplayLinkStop(displayLink)
         }
 
@@ -718,7 +710,7 @@ abstract class BaseAwtGameWindow(
     }
 
     private fun registerGestureListener() {
-        println("MacOS registering gesture listener...")
+        logger.info { "MacOS registering gesture listener..." }
 
         val gestureListener = java.lang.reflect.Proxy.newProxyInstance(
             ClassLoader.getSystemClassLoader(),
@@ -783,7 +775,7 @@ abstract class BaseAwtGameWindow(
         }
 
         val clazz = Dyn.global["com.apple.eawt.event.GestureUtilities"]
-        println(" -- GestureUtilities=$clazz")
+        logger.info { " -- GestureUtilities=$clazz" }
         clazz.dynamicInvoke("addGestureListenerTo", contentComponent, gestureListener)
 
         //val value = (contentComponent as JComponent).getClientProperty("com.apple.eawt.event.internalGestureHandler");

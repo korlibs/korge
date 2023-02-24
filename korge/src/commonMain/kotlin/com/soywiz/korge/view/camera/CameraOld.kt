@@ -1,31 +1,14 @@
 package com.soywiz.korge.view.camera
 
-import com.soywiz.kds.Observable
-import com.soywiz.klock.TimeSpan
-import com.soywiz.korge.annotations.KorgeExperimental
-import com.soywiz.korge.tween.tween
-import com.soywiz.korge.view.Anchorable
-import com.soywiz.korge.view.Container
-import com.soywiz.korge.view.FixedSizeContainer
-import com.soywiz.korge.view.View
-import com.soywiz.korge.view.ViewDslMarker
-import com.soywiz.korge.view.addTo
-import com.soywiz.korge.view.addUpdater
-import com.soywiz.korge.view.hasAncestor
-import com.soywiz.korio.lang.Cancellable
-import com.soywiz.korio.lang.cancel
-import com.soywiz.korma.geom.Angle
-import com.soywiz.korma.geom.Rectangle
-import com.soywiz.korma.geom.degrees
-import com.soywiz.korma.geom.interpolate
-import com.soywiz.korma.geom.plus
-import com.soywiz.korma.geom.setTo
-import com.soywiz.korma.interpolation.Easing
-import com.soywiz.korma.interpolation.Interpolable
-import com.soywiz.korma.interpolation.MutableInterpolable
-import com.soywiz.korma.interpolation.interpolate
-import kotlin.math.abs
-import kotlin.math.sign
+import com.soywiz.kds.*
+import com.soywiz.klock.*
+import com.soywiz.korge.annotations.*
+import com.soywiz.korge.tween.*
+import com.soywiz.korge.view.*
+import com.soywiz.korio.lang.*
+import com.soywiz.korma.geom.*
+import com.soywiz.korma.interpolation.*
+import kotlin.math.*
 
 @KorgeExperimental
 inline fun Container.cameraContainerOld(
@@ -47,8 +30,8 @@ class CameraContainerOld(
     private val contentContainer = Container()
 
     val content: Container = object : Container(), Reference {
-        override fun getLocalBoundsInternal(out: Rectangle) {
-            out.setTo(0, 0, this@CameraContainerOld.width, this@CameraContainerOld.height)
+        override fun getLocalBoundsInternal(out: MRectangle) {
+            out.setTo(0.0, 0.0, this@CameraContainerOld.width, this@CameraContainerOld.height)
         }
     }
 
@@ -224,7 +207,7 @@ class CameraOld(
                 ratio.interpolate(initialWidth, width),
                 ratio.interpolate(initialHeight, height),
                 ratio.interpolate(initialZoom, zoom),
-                ratio.interpolate(initialAngle, angle),
+                ratio.interpolateAngleDenormalized(initialAngle, angle),
                 ratio.interpolate(initialAnchorX, anchorX),
                 ratio.interpolate(initialAnchorY, anchorY)
             )
@@ -277,7 +260,7 @@ class CameraOld(
         width = ratio.interpolate(l.width, r.width),
         height = ratio.interpolate(l.height, r.height),
         zoom = ratio.interpolate(l.zoom, r.zoom),
-        angle = ratio.interpolate(l.angle, r.angle),
+        angle = ratio.interpolateAngleDenormalized(l.angle, r.angle),
         anchorX = ratio.interpolate(l.anchorX, r.anchorX),
         anchorY = ratio.interpolate(l.anchorY, r.anchorY)
     )

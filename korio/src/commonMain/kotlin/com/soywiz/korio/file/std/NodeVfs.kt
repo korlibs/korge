@@ -12,77 +12,8 @@ import kotlinx.coroutines.flow.*
 open class NodeVfs(val caseSensitive: Boolean = true) : Vfs() {
 	val events = Signal<FileEvent>()
 
-	open inner class Node(
-		val name: String,
-		val isDirectory: Boolean = false,
-		parent: Node? = null
-	) : Iterable<Node> {
-		val nameLC = name.toLowerCase()
-		override fun iterator(): Iterator<Node> = children.values.iterator()
-
-		var parent: Node? = null
-			set(value) {
-				if (field != null) {
-					field!!.children.remove(this.name)
-					field!!.childrenLC.remove(this.nameLC)
-				}
-				field = value
-				field?.children?.set(name, this)
-				field?.childrenLC?.set(nameLC, this)
-			}
-
-		init {
-			this.parent = parent
-		}
-
-		var data: Any? = null
-		val children = linkedMapOf<String, Node>()
-		val childrenLC = linkedMapOf<String, Node>()
-		val root: Node get() = parent?.root ?: this
-		var stream: AsyncStream? = null
-
-		fun child(name: String): Node? = when (name) {
-			"", "." -> this
-			".." -> parent
-			else -> if (caseSensitive) {
-				children[name]
-			} else {
-				childrenLC[name.toLowerCase()]
-			}
-		}
-
-		fun createChild(name: String, isDirectory: Boolean = false): Node =
-			Node(name, isDirectory = isDirectory, parent = this)
-
-		operator fun get(path: String): Node = access(path, createFolders = false)
-		fun getOrNull(path: String): Node? = try {
-			access(path, createFolders = false)
-		} catch (e: FileNotFoundException) {
-			null
-		}
-
-        fun accessOrNull(path: String): Node? = getOrNull(path)
-		fun access(path: String, createFolders: Boolean = false): Node {
-			var node = if (path.startsWith('/')) root else this
-			path.pathInfo.parts().fastForEach { part ->
-				var child = node.child(part)
-				if (child == null && createFolders) child = node.createChild(part, isDirectory = true)
-				node = child ?: throw FileNotFoundException("Can't find '$part' in $path")
-			}
-			return node
-		}
-
-		fun mkdir(name: String): Boolean {
-			if (child(name) != null) {
-				return false
-			} else {
-				createChild(name, isDirectory = true)
-				return true
-			}
-		}
-	}
-
-	val rootNode = Node("", isDirectory = true)
+	val nodeTree = MemoryNodeTree(caseSensitive)
+    val rootNode get() = nodeTree.rootNode
 
 	private fun createStream(s: SyncStreamBase, vfsFile: VfsFile) = object : AsyncStreamBase() {
 		override suspend fun read(position: Long, buffer: ByteArray, offset: Int, len: Int): Int {

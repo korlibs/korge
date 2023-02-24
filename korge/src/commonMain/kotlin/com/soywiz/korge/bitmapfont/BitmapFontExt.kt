@@ -1,19 +1,14 @@
 package com.soywiz.korge.bitmapfont
 
-import com.soywiz.korge.html.Html
-import com.soywiz.korge.render.RenderContext
-import com.soywiz.korge.view.BlendMode
-import com.soywiz.korim.color.ColorAdd
-import com.soywiz.korim.color.Colors
-import com.soywiz.korim.color.RGBA
-import com.soywiz.korim.font.BitmapFont
-import com.soywiz.korim.font.Font
-import com.soywiz.korim.font.GlyphMetrics
-import com.soywiz.korma.geom.Matrix
-import com.soywiz.korma.geom.Rectangle
-import kotlin.math.max
+import com.soywiz.korge.html.*
+import com.soywiz.korge.render.*
+import com.soywiz.korge.view.*
+import com.soywiz.korim.color.*
+import com.soywiz.korim.font.*
+import com.soywiz.korma.geom.*
+import kotlin.math.*
 
-fun Font.getBounds(text: String, format: Html.Format, out: Rectangle = Rectangle()): Rectangle {
+fun Font.getBounds(text: String, format: Html.Format, out: MRectangle = MRectangle()): MRectangle {
 	//val font = getBitmapFont(format.computedFace, format.computedSize)
 	val font = this
     val textSize = format.computedSize.toDouble()
@@ -46,16 +41,15 @@ fun Font.getBounds(text: String, format: Html.Format, out: Rectangle = Rectangle
 }
 
 fun BitmapFont.drawText(
-	ctx: RenderContext,
-	textSize: Double,
-	str: String,
-	x: Int,
-	y: Int,
-	m: Matrix = Matrix(),
-	colMul: RGBA = Colors.WHITE,
-	colAdd: ColorAdd = ColorAdd.NEUTRAL,
-	blendMode: BlendMode = BlendMode.INHERIT,
-	filtering: Boolean = true
+    ctx: RenderContext,
+    textSize: Double,
+    str: String,
+    x: Int,
+    y: Int,
+    m: MMatrix = MMatrix(),
+    colMul: RGBA = Colors.WHITE,
+    blendMode: BlendMode = BlendMode.INHERIT,
+    filtering: Boolean = true
 ) {
 	val m2 = m.clone()
 	val scale = textSize / fontSize.toDouble()
@@ -82,11 +76,8 @@ fun BitmapFont.drawText(
                 tex.height.toFloat(),
                 m = m2,
                 colorMul = colMul,
-                colorAdd = colAdd,
                 blendMode = blendMode,
                 filtering = filtering,
-                premultiplied = tex.base.premultiplied,
-                wrap = false,
             )
             val kerningOffset = kernings[BitmapFont.Kerning.buildKey(c1, c2)]?.amount ?: 0
             dx += glyph.xadvance + kerningOffset
@@ -95,16 +86,15 @@ fun BitmapFont.drawText(
 }
 
 fun RenderContext.drawText(
-	font: BitmapFont,
-	textSize: Double,
-	str: String,
-	x: Int,
-	y: Int,
-	m: Matrix = Matrix(),
-	colMul: RGBA = Colors.WHITE,
-	colAdd: ColorAdd = ColorAdd.NEUTRAL,
-	blendMode: BlendMode = BlendMode.INHERIT,
-	filtering: Boolean = true
+    font: BitmapFont,
+    textSize: Double,
+    str: String,
+    x: Int,
+    y: Int,
+    m: MMatrix = MMatrix(),
+    colMul: RGBA = Colors.WHITE,
+    blendMode: BlendMode = BlendMode.INHERIT,
+    filtering: Boolean = true
 ) {
-	font.drawText(this, textSize, str, x, y, m, colMul, colAdd, blendMode, filtering)
+	font.drawText(this, textSize, str, x, y, m, colMul, blendMode, filtering)
 }

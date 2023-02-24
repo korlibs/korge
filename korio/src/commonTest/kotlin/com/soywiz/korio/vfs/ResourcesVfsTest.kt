@@ -1,10 +1,10 @@
 package com.soywiz.korio.vfs
 
+import com.soywiz.kmem.*
 import com.soywiz.korio.async.suspendTest
 import com.soywiz.korio.file.baseName
 import com.soywiz.korio.file.extensionLC
 import com.soywiz.korio.file.std.resourcesVfs
-import com.soywiz.korio.util.OS
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.toList
 import kotlin.test.Test
@@ -12,14 +12,13 @@ import kotlin.test.assertEquals
 
 class ResourcesVfsTest {
     @Test
-    fun name() = suspendTest({ OS.isJvm }) {
-        println("[A]")
+    fun name() = suspendTest({ Platform.isJvm }) {
+        //println("[A]")
         val listing = resourcesVfs["tresfolder"].list()
-        println("[B]")
+        //println("[B]")
+        //println("listing=$listing")
 
-        for (v in resourcesVfs["tresfolder"].list().filter { it.extensionLC == "txt" }.toList()) {
-            println(v)
-        }
+        //for (v in resourcesVfs["tresfolder"].list().filter { it.extensionLC == "txt" }.toList()) println(v)
 
         assertEquals(
             "[a.txt, b.txt]",

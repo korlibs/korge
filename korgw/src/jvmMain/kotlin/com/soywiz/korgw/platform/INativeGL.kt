@@ -10,6 +10,7 @@ import com.soywiz.korio.lang.*
 import com.soywiz.korio.time.*
 import com.soywiz.korio.util.*
 import com.sun.jna.*
+import java.io.*
 import java.nio.ByteBuffer
 import java.nio.FloatBuffer
 import java.nio.IntBuffer
@@ -220,19 +221,18 @@ object DirectGL : INativeGL {
                         mutableMapOf<String, Any?>().apply {
                             if (Platform.isWindows) {
                                 this[Library.OPTION_SYMBOL_PROVIDER] = SymbolProvider { handle, name, parent ->
-                                    val ptr = Win32OpenglLoader.loadFunctionCached(name)
+                                    val ptr: Pointer? = Win32OpenglLoader.loadFunctionCachedOrNull(name)
                                     //println("LOADING $name: ${ptr.address}, $parent")
                                     //error(name)
-                                    if (ptr.address == 0L) {
-                                        try {
+                                    when {
+                                        ptr == null || ptr.address == 0L -> try {
                                             parent.getSymbolAddress(handle, name, null)
                                         } catch (e: UnsatisfiedLinkError) {
                                             0L
                                         }
-                                    } else {
-                                        ptr.address
+                                        else -> ptr.address
                                     }.also {
-                                        println(" -> $it")
+                                        if (it == 0L) println("$nativeOpenGLLibraryPath: $name -> $it")
                                     }
                                 }
                             }
@@ -241,7 +241,7 @@ object DirectGL : INativeGL {
                 )
             }
         } catch (e: Throwable) {
-            com.soywiz.klogger.Console.error("Failed to initialize OpenAL: arch=$arch, OS.rawName=${OS.rawName}, nativeOpenGLLibraryPath=$nativeOpenGLLibraryPath, message=${e.message}")
+            com.soywiz.klogger.Console.error("Failed to initialize OpenAL: arch=$arch, OS.rawName=${Platform.rawOsName}, nativeOpenGLLibraryPath=$nativeOpenGLLibraryPath, message=${e.message}")
             e.printStackTrace()
         } finally {
             //println("/Native.register")
@@ -257,9 +257,13 @@ val nativeOpenGLLibraryPath: String by lazy {
         return@lazy path
     }
     when {
-        OS.isMac -> "OpenGL"
-        OS.isLinux -> "libGL"
-        OS.isWindows -> "opengl32"
+        Platform.isMac -> "OpenGL"
+        Platform.isLinux -> "libGL"
+        Platform.isWindows -> {
+            File(".", "opengl32.dll").takeIf { it.exists() }?.absolutePath
+                ?: "opengl32"
+            //File("C:\\Users\\soywiz\\projects\\korge\\korge\\opengl32_2.dll").absolutePath
+        }
         else -> {
             println("  - Unknown/Unsupported OS")
             "libGL"

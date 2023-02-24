@@ -40,7 +40,7 @@ class NinePatchEx(
         }
 	var smoothing = true
 
-	private val bounds = RectangleInt()
+	private val bounds = MRectangleInt()
 
 	override fun renderInternal(ctx: RenderContext) {
 		if (!visible) return
@@ -66,7 +66,7 @@ class NinePatchEx(
                         tvaCached.applyMatrix(m)
                     }
                     ctx.useBatcher { batch ->
-                        batch.drawVertices(tvaCached, ctx.getTex(ninePatch.content.bmp), smoothing, blendMode, premultiplied = ninePatch.content.bmp.premultiplied, wrap = false)
+                        batch.drawVertices(tvaCached, ctx.getTex(ninePatch.content.bmp), smoothing, blendMode)
                     }
                 }
             }
@@ -76,11 +76,11 @@ class NinePatchEx(
     internal var renderedVersion = 0
     private var tva: TexturedVertexArray? = null
     private var tvaCached: TexturedVertexArray? = null
-    private var cachedMatrix: Matrix = Matrix()
+    private var cachedMatrix: MMatrix = MMatrix()
     private var cachedRenderColorMul = Colors.WHITE
 
     private var cachedNinePatch: NinePatchBmpSlice? = null
-    private val cachedBounds = RectangleInt()
+    private val cachedBounds = MRectangleInt()
 
     private fun recomputeVerticesIfRequired() {
         val viewBounds = this.bounds
@@ -98,13 +98,13 @@ class NinePatchEx(
         val indices = TexturedVertexArray.quadIndices(numQuads)
         val tva = TexturedVertexArray(numQuads * 4, indices)
         var index = 0
-        val matrix = Matrix()
+        val matrix = MMatrix()
         ninePatch.info.computeScale(viewBounds) { segment, x, y, width, height ->
             val bmpSlice = ninePatch.getSegmentBmpSlice(segment)
             tva.quad(index++ * 4,
                 x.toFloat(), y.toFloat(),
                 width.toFloat(), height.toFloat(),
-                matrix, bmpSlice, renderColorMul, renderColorAdd
+                matrix, bmpSlice, renderColorMul
             )
         }
         this.tva = tva
@@ -113,7 +113,7 @@ class NinePatchEx(
         renderedVersion++
     }
 
-	override fun getLocalBoundsInternal(out: Rectangle) {
+	override fun getLocalBoundsInternal(out: MRectangle) {
 		out.setTo(0.0, 0.0, width, height)
 	}
 
@@ -124,7 +124,7 @@ class NinePatchEx(
             currentVfs["$sourceFile"].readNinePatch()
         } catch (e: Throwable) {
             if (e is CancellationException) throw e
-            NinePatchBitmap32(Bitmap32(62, 62))
+            NinePatchBitmap32(Bitmap32(62, 62, premultiplied = true))
         }
     }
 

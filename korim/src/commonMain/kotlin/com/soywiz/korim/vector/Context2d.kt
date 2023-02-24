@@ -1,6 +1,7 @@
 package com.soywiz.korim.vector
 
 import com.soywiz.kds.*
+import com.soywiz.kmem.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.font.*
@@ -25,7 +26,7 @@ open class Context2d constructor(
     protected open val rendererWidth get() = renderer.width
     protected open val rendererHeight get() = renderer.height
     protected open fun rendererRender(state: State, fill: Boolean, winding: Winding? = null) = renderer.render(state, fill, winding)
-    protected open fun rendererDrawImage(image: Bitmap, x: Double, y: Double, width: Double = image.width.toDouble(), height: Double = image.height.toDouble(), transform: Matrix = Matrix()) = renderer.drawImage(image, x, y, width, height, transform)
+    protected open fun rendererDrawImage(image: Bitmap, x: Double, y: Double, width: Double = image.width.toDouble(), height: Double = image.height.toDouble(), transform: MMatrix = MMatrix()) = renderer.drawImage(image, x, y, width, height, transform)
     protected open fun rendererDispose() = renderer.dispose()
     protected open fun rendererBufferingStart() = renderer.bufferingStart()
     protected open fun rendererBufferingEnd() = renderer.bufferingEnd()
@@ -49,7 +50,7 @@ open class Context2d constructor(
 		override val width: Int get() = (parent.width / scaleX).toInt()
 		override val height: Int get() = (parent.height / scaleY).toInt()
 
-		private inline fun <T> adjustMatrix(transform: Matrix, callback: () -> T): T = transform.keepMatrix {
+		private inline fun <T> adjustMatrix(transform: MMatrix, callback: () -> T): T = transform.keepMatrix {
             transform.scale(scaleX, scaleY)
             callback()
         }
@@ -57,11 +58,11 @@ open class Context2d constructor(
 		private inline fun <T> adjustState(state: State, callback: () -> T): T =
 			adjustMatrix(state.transform) { callback() }
 
-		override fun render(state: State, fill: Boolean, winding: Winding?): Unit = adjustState(state) { parent.render(state, fill, winding) }
+		override fun renderFinal(state: State, fill: Boolean, winding: Winding?): Unit = adjustState(state) { parent.render(state, fill, winding) }
 		//override fun renderText(state: State, font: Font, fontSize: Double, text: String, x: Double, y: Double, fill: Boolean): Unit =
 		//	adjustState(state) { parent.renderText(state, font, fontSize, text, x, y, fill) }
 
-		override fun drawImage(image: Bitmap, x: Double, y: Double, width: Double, height: Double, transform: Matrix) {
+		override fun drawImage(image: Bitmap, x: Double, y: Double, width: Double, height: Double, transform: MMatrix) {
 			adjustMatrix(transform) { parent.drawImage(image, x, y, width, height, transform) }
 		}
 	}
@@ -81,7 +82,7 @@ open class Context2d constructor(
     }
 
 	data class State constructor(
-        var transform: Matrix = Matrix(),
+        var transform: MMatrix = MMatrix(),
         var clip: VectorPath? = null,
         var path: VectorPath = VectorPath(),
         var lineScaleMode: LineScaleMode = LineScaleMode.NORMAL,
@@ -271,10 +272,10 @@ open class Context2d constructor(
 	fun rotateDeg(degs: Double) { state.transform.prerotate(degs.degrees) }
 
 	fun translate(tx: Double, ty: Double) { state.transform.pretranslate(tx, ty) }
-	fun transform(m: Matrix) { state.transform.premultiply(m) }
+	fun transform(m: MMatrix) { state.transform.premultiply(m) }
 	fun transform(a: Double, b: Double, c: Double, d: Double, tx: Double, ty: Double) { state.transform.premultiply(a, b, c, d, tx, ty) }
 
-	fun setTransform(m: Matrix) { state.transform.copyFrom(m) }
+	fun setTransform(m: MMatrix) { state.transform.copyFrom(m) }
 	fun setTransform(a: Double, b: Double, c: Double, d: Double, tx: Double, ty: Double) { state.transform.setTo(a, b, c, d, tx, ty) }
 
 	fun shear(sx: Double, sy: Double) = transform(1.0, sy, sx, 1.0, 0.0, 0.0)
@@ -354,7 +355,7 @@ open class Context2d constructor(
 
 	fun beginPath() { state.path = VectorPath() }
 
-	fun getBounds(out: Rectangle = Rectangle()) = state.path.getBounds(out)
+	fun getBounds(out: MRectangle = MRectangle()) = state.path.getBounds(out)
 
 	fun stroke() { if (state.strokeStyle != NonePaint) rendererRender(state, fill = false) }
     fun fill(winding: Winding? = null) { if (state.fillStyle != NonePaint) rendererRender(state, fill = true, winding = winding) }
@@ -501,7 +502,7 @@ open class Context2d constructor(
                     else -> newBi
                 }
                 keepTransform {
-                    setTransform(Matrix())
+                    setTransform(MMatrix())
                     this.rendererDrawImage(renderBi, 0.0, 0.0)
                 }
 				//} finally {
@@ -511,18 +512,16 @@ open class Context2d constructor(
 		}
 	}
 
-    inline fun createLinearGradient(x0: Number, y0: Number, x1: Number, y1: Number, cycle: CycleMethod = CycleMethod.NO_CYCLE, transform: Matrix = Matrix(), block: GradientPaint.() -> Unit = {}) = LinearGradientPaint(x0, y0, x1, y1, cycle, transform, block)
-    inline fun createRadialGradient(x0: Number, y0: Number, r0: Number, x1: Number, y1: Number, r1: Number, cycle: CycleMethod = CycleMethod.NO_CYCLE, transform: Matrix = Matrix(), block: GradientPaint.() -> Unit = {}) = RadialGradientPaint(x0, y0, r0, x1, y1, r1, cycle, transform, block)
-    @Deprecated("Only available on Android or Bitmap32")
-    inline fun createSweepGradient(x0: Number, y0: Number, transform: Matrix = Matrix(), block: GradientPaint.() -> Unit = {}) = SweepGradientPaint(x0, y0, transform, block)
-    inline fun createConicGradient(startAngle: Angle, x0: Number, y0: Number, transform: Matrix = Matrix(), block: GradientPaint.() -> Unit = {}) = ConicGradientPaint(startAngle, x0, y0, transform, block)
+    inline fun createLinearGradient(x0: Number, y0: Number, x1: Number, y1: Number, cycle: CycleMethod = CycleMethod.NO_CYCLE, transform: MMatrix = MMatrix(), block: GradientPaint.() -> Unit = {}) = LinearGradientPaint(x0, y0, x1, y1, cycle, transform, block)
+    inline fun createRadialGradient(x0: Number, y0: Number, r0: Number, x1: Number, y1: Number, r1: Number, cycle: CycleMethod = CycleMethod.NO_CYCLE, transform: MMatrix = MMatrix(), block: GradientPaint.() -> Unit = {}) = RadialGradientPaint(x0, y0, r0, x1, y1, r1, cycle, transform, block)
+    inline fun createSweepGradient(x0: Number, y0: Number, startAngle: Angle = Angle.ZERO, transform: MMatrix = MMatrix(), block: GradientPaint.() -> Unit = {}) = SweepGradientPaint(x0, y0, startAngle, transform, block)
 
     fun createColor(color: RGBA): RGBA = color
 	fun createPattern(
 		bitmap: Bitmap,
 		repeat: Boolean = false,
 		smooth: Boolean = true,
-		transform: Matrix = Matrix()
+		transform: MMatrix = MMatrix()
 	) = createPattern(
         bitmap, CycleMethod.fromRepeat(repeat), CycleMethod.fromRepeat(repeat), smooth, transform
     )
@@ -532,7 +531,7 @@ open class Context2d constructor(
         cycleX: CycleMethod = CycleMethod.NO_CYCLE,
         cycleY: CycleMethod = cycleX,
         smooth: Boolean = true,
-        transform: Matrix = Matrix()
+        transform: MMatrix = MMatrix()
     ) = BitmapPaint(bitmap, transform, cycleX, cycleY, smooth)
 
     fun getTextBounds(
@@ -681,7 +680,7 @@ private fun VectorBuilder.write(path: VectorPath) {
     )
 }
 
-private fun VectorBuilder.write(path: VectorPath, m: Matrix) {
+private fun VectorBuilder.write(path: VectorPath, m: MMatrix) {
     path.visitCmds(
         moveTo = { x, y -> moveTo(m.transformX(x, y), m.transformY(x, y)) },
         lineTo = { x, y -> lineTo(m.transformX(x, y), m.transformY(x, y)) },
@@ -689,4 +688,16 @@ private fun VectorBuilder.write(path: VectorPath, m: Matrix) {
         cubicTo = { x0, y0, x1, y1, x2, y2 -> cubicTo(m.transformX(x0, y0), m.transformY(x0, y0), m.transformX(x1, y1), m.transformY(x1, y1), m.transformX(x2, y2), m.transformY(x2, y2)) },
         close = { close() }
     )
+}
+
+fun Paint.toBitmapPaint(state: Context2d.State): BitmapPaint {
+    val filler: BaseFiller = this.toFiller(state)
+    val bb = BoundsBuilder()
+    state.path.getBounds(bb = bb)
+    state.clip?.getBounds(bb = bb)
+    val bounds = bb.getBounds().applyTransform(state.transform)
+    // @TODO: Make it work for negative x, y, and for other transforms
+    println("bounds=$bounds")
+    val bmp = Bitmap32(bounds.width.toIntCeil(), bounds.height.toIntCeil(), premultiplied = true).also { filler.fill(it) }
+    return BitmapPaint(bmp, MMatrix().translate(-bounds.left, -bounds.top))
 }

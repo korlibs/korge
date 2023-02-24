@@ -19,7 +19,7 @@ inline fun Container.tileMap(
     repeatX: TileMapRepeat = TileMapRepeat.NONE,
     repeatY: TileMapRepeat = repeatX,
     smoothing: Boolean = true,
-    tileSize: Size = Size(tileset.width.toDouble(), tileset.height.toDouble()),
+    tileSize: MSize = MSize(tileset.width.toDouble(), tileset.height.toDouble()),
     callback: @ViewDslMarker TileMap.() -> Unit = {},
 ) = TileMap(map, tileset, smoothing, tileSize).repeat(repeatX, repeatY).addTo(this, callback)
 
@@ -29,20 +29,9 @@ inline fun Container.tileMap(
     repeatX: TileMapRepeat = TileMapRepeat.NONE,
     repeatY: TileMapRepeat = repeatX,
     smoothing: Boolean = true,
-    tileSize: Size = Size(tileset.width.toDouble(), tileset.height.toDouble()),
+    tileSize: MSize = MSize(tileset.width.toDouble(), tileset.height.toDouble()),
     callback: @ViewDslMarker TileMap.() -> Unit = {},
 ) = TileMap(map, tileset, smoothing, tileSize).repeat(repeatX, repeatY).addTo(this, callback)
-
-@Deprecated("Use IStackedIntArray2 or IntArray2 as the map data")
-inline fun Container.tileMap(
-    map: Bitmap32,
-    tileset: TileSet,
-    repeatX: TileMapRepeat = TileMapRepeat.NONE,
-    repeatY: TileMapRepeat = repeatX,
-    smoothing: Boolean = true,
-    tileSize: Size = Size(tileset.width.toDouble(), tileset.height.toDouble()),
-    callback: @ViewDslMarker TileMap.() -> Unit = {},
-) = TileMap(map.toIntArray2(), tileset, smoothing, tileSize).repeat(repeatX, repeatY).addTo(this, callback)
 
 @PublishedApi
 internal fun Bitmap32.toIntArray2() = IntArray2(width, height, ints)
@@ -82,7 +71,7 @@ class TileMap(
     var stackedIntMap: IStackedIntArray2 = StackedIntArray2(1, 1, 0),
     tileset: TileSet = TileSet.EMPTY,
     var smoothing: Boolean = true,
-    var tileSize: Size = Size(tileset.width.toDouble(), tileset.height.toDouble()),
+    var tileSize: MSize = MSize(tileset.width.toDouble(), tileset.height.toDouble()),
 //) : BaseTileMap(intMap, smoothing, staggerAxis, staggerIndex, tileSize) {
 ) : View() {
     @Deprecated("Use stackedIntMap instead", level = DeprecationLevel.HIDDEN)
@@ -115,11 +104,11 @@ class TileMap(
     var repeatX = TileMapRepeat.NONE
     var repeatY = TileMapRepeat.NONE
 
-    private val t0 = Point(0, 0)
-    private val tt0 = Point(0, 0)
-    private val tt1 = Point(0, 0)
-    private val tt2 = Point(0, 0)
-    private val tt3 = Point(0, 0)
+    private val t0 = MPoint(0, 0)
+    private val tt0 = MPoint(0, 0)
+    private val tt1 = MPoint(0, 0)
+    private val tt2 = MPoint(0, 0)
+    private val tt3 = MPoint(0, 0)
 
     protected var contentVersion = 0
     private var cachedContentVersion = 0
@@ -181,8 +170,8 @@ class TileMap(
     }
 
     private val infosPool = Pool(reset = { it.reset() }) { Info(Bitmaps.transparent.bmpBase, ShrinkableTexturedVertexArray(TexturedVertexArray.EMPTY)) }
-    private var lastVirtualRect = Rectangle(-1, -1, -1, -1)
-    private var currentVirtualRect = Rectangle(-1, -1, -1, -1)
+    private var lastVirtualRect = MRectangle(-1, -1, -1, -1)
+    private var currentVirtualRect = MRectangle(-1, -1, -1, -1)
 
     private val indices = IntArray(4)
     private val tempX = FloatArray(4)
@@ -190,7 +179,16 @@ class TileMap(
 
     // @TODO: Use instanced rendering to support much more tiles at once
     private fun computeVertexIfRequired(ctx: RenderContext) {
+        currentVirtualRect.setBounds(ctx.virtualLeft, ctx.virtualTop, ctx.virtualRight, ctx.virtualBottom)
+        if (currentVirtualRect != lastVirtualRect) {
+            dirtyVertices = true
+            lastVirtualRect.copyFrom(currentVirtualRect)
+        }
+
         if (!dirtyVertices && cachedContentVersion == contentVersion) return
+
+        //println("currentVirtualRect=$currentVirtualRect")
+
         cachedContentVersion = contentVersion
         dirtyVertices = false
         val m = globalMatrix
@@ -211,7 +209,6 @@ class TileMap(
         }
 
         val colMul = renderColorMul
-        val colAdd = renderColorAdd
 
         // @TODO: Bounds in clipped view
         val pp0 = globalToLocal(t0.setTo(currentVirtualRect.left, currentVirtualRect.top), tt0)
@@ -220,20 +217,20 @@ class TileMap(
         val pp3 = globalToLocal(t0.setTo(currentVirtualRect.left, currentVirtualRect.bottom), tt3)
         val mapTileWidth = tileSize.width
         val mapTileHeight = tileSize.height
-        val mx0 = ((pp0.x / mapTileWidth) + 1).toInt()
-        val mx1 = ((pp1.x / mapTileWidth) + 1).toInt()
-        val mx2 = ((pp2.x / mapTileWidth) + 1).toInt()
-        val mx3 = ((pp3.x / mapTileWidth) + 1).toInt()
-        val my0 = ((pp0.y / mapTileHeight) + 1).toInt()
-        val my1 = ((pp1.y / mapTileHeight) + 1).toInt()
-        val my2 = ((pp2.y / mapTileHeight) + 1).toInt()
-        val my3 = ((pp3.y / mapTileHeight) + 1).toInt()
+        val mx0 = ((pp0.x / mapTileWidth)).toIntCeil()
+        val mx1 = ((pp1.x / mapTileWidth)).toIntCeil()
+        val mx2 = ((pp2.x / mapTileWidth)).toIntCeil()
+        val mx3 = ((pp3.x / mapTileWidth)).toIntCeil()
+        val my0 = ((pp0.y / mapTileHeight)).toIntCeil()
+        val my1 = ((pp1.y / mapTileHeight)).toIntCeil()
+        val my2 = ((pp2.y / mapTileHeight)).toIntCeil()
+        val my3 = ((pp3.y / mapTileHeight)).toIntCeil()
 
         //println("currentVirtualRect=$currentVirtualRect, mx=[$mx0, $mx1, $mx2, $mx3], my=[$my0, $my1, $my2, $my3], pp0=$pp0, pp1=$pp1, pp2=$pp2, pp3=$pp3")
 
-        val ymin = min(my0, my1, my2, my3) - 1
+        val ymin = min(my0, my1, my2, my3)
         val ymax = max(my0, my1, my2, my3)
-        val xmin = min(mx0, mx1, mx2, mx3) - 1
+        val xmin = min(mx0, mx1, mx2, mx3)
         val xmax = max(mx0, mx1, mx2, mx3)
 
         //println("$xmin,$xmax")
@@ -242,23 +239,12 @@ class TileMap(
         val doRepeatY = repeatY != TileMapRepeat.NONE
         val doRepeatAny = doRepeatX || doRepeatY // Since if it is rotated, we might have problems. For no rotation we could repeat separately
 
-        val ymin2: Int
-        val ymax2: Int
-        val xmin2: Int
-        val xmax2: Int
+        val ymin2 = (if (doRepeatAny) ymin else ymin.clamp(stackedIntMap.startY, stackedIntMap.endY)) - 1
+        val ymax2 = (if (doRepeatAny) ymax else ymax.clamp(stackedIntMap.startY, stackedIntMap.endY)) + 1
+        val xmin2 = (if (doRepeatAny) xmin else xmin.clamp(stackedIntMap.startX, stackedIntMap.endX)) - 1
+        val xmax2 = (if (doRepeatAny) xmax else xmax.clamp(stackedIntMap.startX, stackedIntMap.endX)) + 1
 
-        //if (false) {
-        if (true) {
-            ymin2 = if (doRepeatAny) ymin else ymin.clamp(stackedIntMap.startY, stackedIntMap.endY)
-            ymax2 = if (doRepeatAny) ymax else ymax.clamp(stackedIntMap.startY, stackedIntMap.endY)
-            xmin2 = if (doRepeatAny) xmin else xmin.clamp(stackedIntMap.startX, stackedIntMap.endX)
-            xmax2 = if (doRepeatAny) xmax else xmax.clamp(stackedIntMap.startX, stackedIntMap.endX)
-        } else {
-            ymin2 = 0
-            ymax2 = stackedIntMap.height
-            xmin2 = 0
-            xmax2 = stackedIntMap.width
-        }
+        //println("xyminmax2=${xmin2},${ymin2} - ${xmax2},${ymax2}")
 
         val yheight = ymax2 - ymin2
         val xwidth = xmax2 - xmin2
@@ -301,6 +287,9 @@ class TileMap(
                 if (rx < stackedIntMap.startX || rx >= stackedIntMap.endX) continue
                 if (ry < stackedIntMap.startY || ry >= stackedIntMap.endY) continue
                 for (level in 0 until stackedIntMap.getStackLevel(rx, ry)) {
+
+                    //println("x=$x, y=$y, rx=$rx, ry=$ry, level=$level")
+
                     val cell = TileInfo(stackedIntMap[rx, ry, level])
                     if (cell.isInvalid) continue
 
@@ -366,10 +355,10 @@ class TileMap(
 
                         computeIndices(flipX = flipX, flipY = flipY, rotate = rotate, indices = indices)
 
-                        info.vertices.quadV(p0X, p0Y, tempX[indices[0]], tempY[indices[0]], colMul, colAdd)
-                        info.vertices.quadV(p1X, p1Y, tempX[indices[1]], tempY[indices[1]], colMul, colAdd)
-                        info.vertices.quadV(p2X, p2Y, tempX[indices[2]], tempY[indices[2]], colMul, colAdd)
-                        info.vertices.quadV(p3X, p3Y, tempX[indices[3]], tempY[indices[3]], colMul, colAdd)
+                        info.vertices.quadV(p0X, p0Y, tempX[indices[0]], tempY[indices[0]], colMul)
+                        info.vertices.quadV(p1X, p1Y, tempX[indices[1]], tempY[indices[1]], colMul)
+                        info.vertices.quadV(p2X, p2Y, tempX[indices[2]], tempY[indices[2]], colMul)
+                        info.vertices.quadV(p3X, p3Y, tempX[indices[3]], tempY[indices[3]], colMul)
                     }
 
                     info.vertices.icount += 6
@@ -407,11 +396,6 @@ class TileMap(
 
     override fun renderInternal(ctx: RenderContext) {
         if (!visible) return
-        currentVirtualRect.setBounds(ctx.virtualLeft, ctx.virtualTop, ctx.virtualRight, ctx.virtualBottom)
-        if (currentVirtualRect != lastVirtualRect) {
-            dirtyVertices = true
-            lastVirtualRect.copyFrom(currentVirtualRect)
-        }
         computeVertexIfRequired(ctx)
 
         //println("---")
@@ -424,7 +408,6 @@ class TileMap(
                         vertices.vertices,
                         ctx.getTex(info.tex),
                         smoothing, renderBlendMode, vertices.vcount, vertices.icount,
-                        premultiplied = info.tex.premultiplied, wrap = false,
                     )
                 }
             }
@@ -449,7 +432,7 @@ class TileMap(
         tilesetTextures = Array(tileset.textures.size) { tileset.textures[it] }
         animationIndex = IntArray(tileset.textures.size) { 0 }
         animationElapsed = DoubleArray(tileset.textures.size) { 0.0 }
-        tileSize = Size(tileset.width.toDouble(), tileset.height.toDouble())
+        tileSize = MSize(tileset.width.toDouble(), tileset.height.toDouble())
         tileWidth = tileset.width.toDouble()
         tileHeight = tileset.height.toDouble()
     }
@@ -458,14 +441,14 @@ class TileMap(
         map: IntArray2,
         tileset: TileSet,
         smoothing: Boolean = true,
-        tileSize: Size = Size(tileset.width.toDouble(), tileset.height.toDouble()),
+        tileSize: MSize = MSize(tileset.width.toDouble(), tileset.height.toDouble()),
     ) : this(map.toStacked(), tileset, smoothing, tileSize)
 
     constructor(
         map: Bitmap32,
         tileset: TileSet,
         smoothing: Boolean = true,
-        tileSize: Size = Size(tileset.width.toDouble(), tileset.height.toDouble()),
+        tileSize: MSize = MSize(tileset.width.toDouble(), tileset.height.toDouble()),
     ) : this(map.toIntArray2().toStacked(), tileset, smoothing, tileSize)
 
     fun pixelHitTest(x: Int, y: Int, direction: HitTestDirection): Boolean {
@@ -481,7 +464,7 @@ class TileMap(
         //println(tileset.collisions.toList())
         if (!stackedIntMap.inside(tileX, tileY)) return true
         val tile = stackedIntMap.getLast(tileX, tileY)
-        val collision = tileset.collisions[tile] ?: return false
+        val collision = tileset.tilesMap[tile]?.collision ?: return false
         return collision.hitTestAny(x.toDouble(), y.toDouble(), direction)
     }
 
@@ -506,8 +489,8 @@ class TileMap(
         }
     }
 
-    override fun getLocalBoundsInternal(out: Rectangle) {
-        out.setTo(0, 0, tileWidth * stackedIntMap.width, tileHeight * stackedIntMap.height)
+    override fun getLocalBoundsInternal(out: MRectangle) {
+        out.setTo(0.0, 0.0, tileWidth * stackedIntMap.width, tileHeight * stackedIntMap.height)
     }
 
     fun repeat(repeatX: TileMapRepeat, repeatY: TileMapRepeat = repeatX): TileMap {

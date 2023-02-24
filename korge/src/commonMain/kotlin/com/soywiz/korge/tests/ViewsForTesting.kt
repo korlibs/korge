@@ -25,8 +25,8 @@ import kotlin.jvm.*
 
 open class ViewsForTesting(
     val frameTime: TimeSpan = 10.milliseconds,
-    val windowSize: SizeInt = SizeInt(DefaultViewport.WIDTH, DefaultViewport.HEIGHT),
-    val virtualSize: SizeInt = SizeInt(windowSize.size.clone()),
+    val windowSize: MSizeInt = MSizeInt(DefaultViewport.WIDTH, DefaultViewport.HEIGHT),
+    val virtualSize: MSizeInt = MSizeInt(windowSize.size.clone()),
     val defaultDevicePixelRatio: Double = 1.0,
     val log: Boolean = false,
 ) {
@@ -39,7 +39,7 @@ open class ViewsForTesting(
         override fun now(): DateTime = time
     }
 	val dispatcher = FastGameWindowCoroutineDispatcher()
-    inner class TestGameWindow(initialSize: SizeInt, val dispatcher: FastGameWindowCoroutineDispatcher) : GameWindowLog() {
+    inner class TestGameWindow(initialSize: MSizeInt, val dispatcher: FastGameWindowCoroutineDispatcher) : GameWindowLog() {
         override val devicePixelRatio: Double get() = this@ViewsForTesting.devicePixelRatio
         override var width: Int = initialSize.width
         override var height: Int = initialSize.height
@@ -50,7 +50,11 @@ open class ViewsForTesting(
     }
 
 	val gameWindow = TestGameWindow(windowSize, dispatcher)
-    val ag: AG by lazy { createAg() }
+    val ag: AG by lazy {
+        createAg().also {
+            it.mainFrameBuffer.setSize(0, 0, windowSize.width, windowSize.height)
+        }
+    }
 
     open fun createAg(): AG {
         return object : AGLog(windowSize.width, windowSize.height) {
@@ -268,7 +272,7 @@ open class ViewsForTesting(
 		val bounds = this.getGlobalBounds()
 		if (bounds.area <= 0.0) return false
 		val module = injector.get<Module>()
-		val visibleBounds = Rectangle(0, 0, module.windowSize.width, module.windowSize.height)
+		val visibleBounds = MRectangle(0, 0, module.windowSize.width, module.windowSize.height)
 		if (!bounds.intersects(visibleBounds)) return false
 		return true
 	}
@@ -276,7 +280,7 @@ open class ViewsForTesting(
     fun viewsTest(
         timeout: TimeSpan? = DEFAULT_SUSPEND_TEST_TIMEOUT,
         frameTime: TimeSpan = this.frameTime,
-        cond: () -> Boolean = { OS.isJvm && !OS.isAndroid },
+        cond: () -> Boolean = { Platform.isJvm && !Platform.isAndroid },
         //devicePixelRatio: Double = defaultDevicePixelRatio,
         forceRenderEveryFrame: Boolean = true,
         block: suspend Stage.() -> Unit

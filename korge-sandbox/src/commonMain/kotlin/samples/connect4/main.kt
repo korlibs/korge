@@ -14,29 +14,25 @@ import com.soywiz.korge.view.container
 import com.soywiz.korge.view.image
 import com.soywiz.korge.view.position
 import com.soywiz.korge.view.solidRect
-import com.soywiz.korge.view.tween.*
-import com.soywiz.korim.bitmap.Bitmap32
-import com.soywiz.korim.bitmap.context2d
+import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.ColorAdd
 import com.soywiz.korim.color.Colors
 import com.soywiz.korio.async.AsyncThread
 import com.soywiz.korio.async.launchImmediately
-import com.soywiz.korma.geom.Anchor
-import com.soywiz.korma.geom.Point
-import com.soywiz.korma.geom.ScaleMode
+import com.soywiz.korma.geom.MPoint
 import com.soywiz.korma.geom.vector.circle
 import com.soywiz.korma.geom.vector.rect
 
 class MainConnect4 : ScaledScene(448, 384) {
     override suspend fun SContainer.sceneMain() {
         //sceneContainer.setSize(300.0, 300.0)
-        val redChip = Bitmap32(64, 64).context2d {
+        val redChip = Bitmap32Context2d(64, 64) {
             fill(Colors.RED) { circle(32.0, 32.0, 26.0) }
         }
-        val yellowChip = Bitmap32(64, 64).context2d {
+        val yellowChip = Bitmap32Context2d(64, 64) {
             fill(Colors.YELLOW) { circle(32.0, 32.0, 26.0) }
         }
-        val emptyChip = Bitmap32(64, 64).context2d {
+        val emptyChip = Bitmap32Context2d(64, 64) {
         }
 
         val chipImages = mapOf(
@@ -47,15 +43,12 @@ class MainConnect4 : ScaledScene(448, 384) {
 
         val nrows = Board.EMPTY.numRows
         val ncols = Board.EMPTY.numCols
-        val skeleton = Bitmap32(64 * ncols, 64 * nrows).apply {
-            val bitmap = this
-            context2d {
-                fill(Colors.BLUE) {
-                    rect(0.0, 0.0, bitmap.width.toDouble(), bitmap.height.toDouble())
-                    for (row in 0 until nrows) {
-                        for (col in 0 until ncols) {
-                            circle(32.0 + col * 64, 32.0 + row * 64, 24.0)
-                        }
+        val skeleton = Bitmap32Context2d(64 * ncols, 64 * nrows) {
+            fill(Colors.BLUE) {
+                rect(0.0, 0.0, width.toDouble(), height.toDouble())
+                for (row in 0 until nrows) {
+                    for (col in 0 until ncols) {
+                        circle(32.0 + col * 64, 32.0 + row * 64, 24.0)
                     }
                 }
             }
@@ -66,8 +59,8 @@ class MainConnect4 : ScaledScene(448, 384) {
         }
         image(skeleton)
 
-        fun getPosition(column: Int, row: Int): Point {
-            return Point(column * 64.0 + 32.0, row * 64.0 + 32.0)
+        fun getPosition(column: Int, row: Int): MPoint {
+            return MPoint(column * 64.0 + 32.0, row * 64.0 + 32.0)
         }
 
         fun createChip(column: Int, row: Int, chip: Chip): Image {
@@ -102,7 +95,8 @@ class MainConnect4 : ScaledScene(448, 384) {
                                         is Action.Finish -> {
                                             for (pos in action.win.positions) {
                                                 val view = views[pos.column, pos.row]
-                                                tweenLazy({ view::colorAdd[ColorAdd(255, 255, 255, 0)] })
+                                                //tweenLazy({ view::colorAdd[ColorAdd(255, 255, 255, 0)] })
+                                                tweenLazy({ view::alpha[1.0] })
                                             }
                                         }
                                     }

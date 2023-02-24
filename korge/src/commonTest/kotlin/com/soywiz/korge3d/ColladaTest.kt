@@ -4,6 +4,7 @@ import com.soywiz.kds.FastStringMap
 import com.soywiz.kds.get
 import com.soywiz.kds.keys
 import com.soywiz.kds.size
+import com.soywiz.klogger.*
 import com.soywiz.korge3d.format.ColladaParser
 import com.soywiz.korge3d.format.readColladaLibrary
 import com.soywiz.korio.async.suspendTestNoJs
@@ -16,6 +17,8 @@ import kotlin.test.assertNotNull
 
 @Korge3DExperimental
 class ColladaTest {
+    val logger = Logger("ColladaTest")
+
 	@Test
 	fun testParseSourcesFloat() = suspendTestNoJs {
 		val sources = ColladaParser().parseSources(
@@ -122,7 +125,7 @@ class ColladaTest {
 				</controller>
 			  </library_controllers>
 		</xml>""".trimIndent().toXml())
-		println(skins)
+		logger.info { skins }
 	}
 
 	@Test

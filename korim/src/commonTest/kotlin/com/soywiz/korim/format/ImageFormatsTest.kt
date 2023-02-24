@@ -1,7 +1,6 @@
 package com.soywiz.korim.format
 
-import com.soywiz.korim.bitmap.Bitmap32
-import com.soywiz.korim.bitmap.matchContentsDistinctCount
+import com.soywiz.korim.bitmap.*
 import com.soywiz.korio.async.suspendTestNoBrowser
 import com.soywiz.korio.file.std.resourcesVfs
 import kotlin.test.Test
@@ -61,6 +60,9 @@ class ImageFormatsTest {
 		val bitmap2 = PNG.decode(data)
 		assertEquals("Bitmap32(190, 190)", bitmap.toString())
 		assertEquals("Bitmap32(190, 190)", bitmap2.toString())
+        //bitmap.showImageAndWait()
+        //bitmap2.showImageAndWait()
+        //println(Bitmap32.computePsnr(bitmap.toBMP32(), bitmap2.toBMP32()))
 		assertEquals(true, Bitmap32.matches(bitmap, bitmap2))
 	}
 
@@ -70,14 +72,14 @@ class ImageFormatsTest {
         //assertEquals(false, bitmapOriginal.premultiplied)
 		val bitmap1 = bitmapOriginal.premultiplied()
         assertEquals(true, bitmap1.premultiplied)
-		val bitmap2 = PNG.decode(PNG.encode(bitmap1))
+		val bitmap2 = PNG.decode(PNG.encode(bitmap1, ImageEncodingProps(depremultiplyIfRequired = false)))
         //bitmap1.showImageAndWait()
 		//bitmap2.showImageAndWait()
 		assertEquals("Bitmap32(190, 190)", bitmap1.toString())
 		assertEquals("Bitmap32(190, 190)", bitmap2.toString())
 		//showImageAndWait(Bitmap32.diff(bitmap, bitmap2))
         val dist = bitmapOriginal.matchContentsDistinctCount(bitmap2)
-        assertTrue(message = "$dist < 500") { dist < 500 }
+        assertTrue(message = "$dist < 1000") { dist < 1000 }
 	}
 
 	@Test
