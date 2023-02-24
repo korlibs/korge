@@ -1,6 +1,5 @@
 plugins {
     kotlin("multiplatform")
-    id("io.kotest.multiplatform") version "5.5.4"
 }
 
 
@@ -17,9 +16,9 @@ kotlin {
                 implementation(project(":graphics:foundation"))
             }
         }
-        val darwinTest by getting {
+        val iosMacosTest by getting {
             dependencies {
-                implementation("io.kotest:kotest-framework-engine:5.5.4")
+                implementation(project(":ktruth"))
             }
         }
     }

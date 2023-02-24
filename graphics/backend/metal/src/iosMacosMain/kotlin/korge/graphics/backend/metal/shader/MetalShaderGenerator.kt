@@ -105,7 +105,7 @@ class MetalShaderGenerator(
     }
 
     private fun Indenter.generateFragmentMainFunction() {
-        "fragment float4 $fragmentMainFunctionName( v2f in [[stage_in]] )" {
+        "fragment float4 $fragmentMainFunctionName(v2f in [[stage_in]])" {
             line("float4 out;")
             val generator = MetalShaderBodyGenerator(ShaderType.FRAGMENT)
             generator.visit(fragmentShader.stm)

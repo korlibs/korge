@@ -178,7 +178,7 @@ class Renderer02(device: MTLDeviceProtocol) : Renderer(device) {
         val buffer = device.newBufferWithLength(contentSize.toULong(), MTLResourceStorageModeManaged)
             ?: error("fail to create vertexPositionsBuffer")
         memmove(buffer.contents(), contents.reinterpret<CPointed>(), contentSize.toULong())
-        buffer.didModifyRange(NSMakeRange(0, buffer.length))
+        //buffer.didModifyRange(NSMakeRange(0, buffer.length))
 
         return buffer
     }
@@ -189,7 +189,7 @@ class Renderer02(device: MTLDeviceProtocol) : Renderer(device) {
         val buffer = device.newBufferWithLength(contentSize.toULong(), MTLResourceStorageModeManaged)
             ?: error("fail to create vertexPositionsBuffer")
         memmove(buffer.contents(), contents.reinterpret<CPointed>(), contentSize.toULong())
-        buffer.didModifyRange(NSMakeRange(0, buffer.length))
+        //buffer.didModifyRange(NSMakeRange(0, buffer.length))
 
         return buffer
     }

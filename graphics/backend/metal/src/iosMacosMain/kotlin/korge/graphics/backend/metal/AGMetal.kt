@@ -1,24 +1,19 @@
 package korge.graphics.backend.metal
 
-import com.soywiz.kgl.*
 import com.soywiz.kmem.*
 import com.soywiz.korag.*
 import com.soywiz.korag.shader.*
-import com.soywiz.korio.lang.*
 import korge.graphics.backend.metal.shader.*
 import kotlinx.cinterop.*
-import platform.Foundation.*
 import platform.Metal.*
 import platform.MetalKit.*
-import platform.QuartzCore.*
-import platform.posix.*
 
 class AGMetal(private val view: MTKView) : AG() {
 
     private val device = MTLCreateSystemDefaultDevice() ?: error("fail to create metal device")
     private val commandQueue = device.newCommandQueue() ?: error("fail to create metal command queue")
     private val programs = HashMap<Program, MetalProgram>()
-    private val buffers = HashMap<Buffer, MTLBufferProtocol>()
+    private val buffers = HashMap<Buffer, MTLBuffer>()
 
     override fun draw(
         frameBuffer: AGFrameBufferBase,
@@ -63,17 +58,17 @@ class AGMetal(private val view: MTKView) : AG() {
 
                 var currentBuffer = 0uL
                 vertexData.list.fastForEach{ buffer ->
-                    setVertexBuffer(buffer.buffer.toMetal, 0, currentBuffer)
+                    setVertexBuffer(buffer.buffer.toMetal.buffer, 0, currentBuffer)
                     currentBuffer += 1uL
                 }
 
                 uniforms.values.fastForEach { buffer ->
-                    setVertexBuffer(buffer.data.toMetal, 0, currentBuffer)
+                    setVertexBuffer(buffer.data.toMetal.buffer, 0, currentBuffer)
                     currentBuffer += 1uL
                 }
 
                 if (indices != null) {
-                    drawIndexedPrimitives(drawType.toMetal(), vertexCount.toULong(), indexType.toMetal(), indices.toMetal, 0)
+                    drawIndexedPrimitives(drawType.toMetal(), vertexCount.toULong(), indexType.toMetal(), indices.toMetal.buffer, 0)
                 } else {
                     TODO("Not yet supported, rendering without vertex indexes")
                 }
@@ -89,22 +84,15 @@ class AGMetal(private val view: MTKView) : AG() {
     }
 
 
-    private val Buffer.toMetal: MTLBufferProtocol
+    private val Buffer.toMetal: MTLBuffer
         get() = buffers
             .getOrPut(this) {
                 val size = sizeInBytes.toULong()
-                val buffer = device.newBufferWithLength(size, MTLResourceStorageModeManaged)
-                    ?: error("fail to create metal buffer")
-
-                data.usePinned {
-                    memmove(buffer.contents(), it.startAddressOf, size)
-                    buffer.didModifyRange(NSMakeRange(0, buffer.length))
-                }
-
-                buffer
+                device.newBuffer(size)
+                    .also { it.insert(data) }
             }
 
-    private val AGBuffer.toMetal: MTLBufferProtocol
+    private val AGBuffer.toMetal: MTLBuffer
         get() = (mem ?: error("cannot create buffer from null memory")).toMetal
 
     private fun getProgram(program: Program) = programs
@@ -112,6 +100,5 @@ class AGMetal(private val view: MTKView) : AG() {
             MetalShaderCompiler.compile(device, program)
         }
 }
-
 
 
