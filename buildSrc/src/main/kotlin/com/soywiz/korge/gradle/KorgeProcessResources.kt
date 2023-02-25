@@ -17,18 +17,26 @@ fun Project.getCompilationKorgeProcessedResourcesFolder(compilation: KotlinCompi
     return getCompilationKorgeProcessedResourcesFolder(compilation.target.name, compilation.name)
 }
 
-fun Project.getCompilationKorgeProcessedResourcesFolder(targetName: String, compilationName: String): File {
+fun Project.getCompilationKorgeProcessedResourcesFolder(
+    targetName: String,
+    compilationName: String
+): File {
     return File(project.buildDir, "korgeProcessedResources/${targetName}/${compilationName}")
 }
 
-fun getKorgeProcessResourcesTaskName(target: KotlinTarget, compilation: KotlinCompilation<*>): String =
+fun getKorgeProcessResourcesTaskName(
+    target: KotlinTarget,
+    compilation: KotlinCompilation<*>
+): String =
     getKorgeProcessResourcesTaskName(target.name, compilation.name)
 
 fun getKorgeProcessResourcesTaskName(targetName: String, compilationName: String): String =
     "korgeProcessedResources${targetName.capitalize()}${compilationName.capitalize()}"
 
 fun Project.addGenResourcesTasks(): Project {
-    tasks.withType(Copy::class.java).configureEach {
+    val copyTasks = tasks.withType(Copy::class.java)
+    copyTasks.configureEach {
+        println("copy kiet here: $it")
         //it.duplicatesStrategy = org.gradle.api.file.DuplicatesStrategy.WARN
         it.duplicatesStrategy = org.gradle.api.file.DuplicatesStrategy.EXCLUDE
         //println("Task $this")
@@ -51,18 +59,27 @@ fun Project.addGenResourcesTasks(): Project {
         doLast {
             //URLClassLoader(prepareResourceProcessingClasses.outputs.files.toList().map { it.toURL() }.toTypedArray(), ClassLoader.getSystemClassLoader()).use { classLoader ->
 
-            executeInPlugin(runJvm.korgeClassPath, "com.soywiz.korge.resources.ResourceProcessorRunner", "printPlugins") { listOf(it) }
+            executeInPlugin(
+                runJvm.korgeClassPath,
+                "com.soywiz.korge.resources.ResourceProcessorRunner",
+                "printPlugins"
+            ) { listOf(it) }
         }
     }
 
     for (target in kotlin.targets) {
+        println("Processing target: $target")
+        var previousCompilationKorgeProcessedResources: KorgeProcessedResourcesTask? = null
         for (compilation in target.compilations) {
+            println("Processing compilation: $compilation")
             val isJvm = compilation.compileKotlinTask.name == "compileKotlinJvm"
             val processedResourcesFolder = getCompilationKorgeProcessedResourcesFolder(compilation)
             compilation.defaultSourceSet.resources.srcDir(processedResourcesFolder)
 
             //val compilation = project.kotlin.targets.getByName(config.targetName).compilations.getByName(config.compilationName)
-            val folders: List<String> = compilation.allKotlinSourceSets.flatMap { it.resources.srcDirs }.filter { it != processedResourcesFolder }.map { it.toString() }
+            val folders: List<String> =
+                compilation.allKotlinSourceSets.flatMap { it.resources.srcDirs }
+                    .filter { it != processedResourcesFolder }.map { it.toString() }
 
             val korgeProcessedResources = tasks.createThis<KorgeProcessedResourcesTask>(
                 getKorgeProcessResourcesTaskName(target, compilation),
@@ -71,6 +88,14 @@ fun Project.addGenResourcesTasks(): Project {
                     project.korge.getIconBytes(),
                 )
             ) {
+                println(
+                    "kiet is here 3: `$target`, `$compilation`, setting up task: ${
+                        getKorgeProcessResourcesTaskName(
+                            target,
+                            compilation
+                        )
+                    }"
+                )
                 val task = this
                 task.group = GROUP_KORGE_RESOURCES
                 if (korge.searchResourceProcessorsInMainSourceSet) {
@@ -80,13 +105,22 @@ fun Project.addGenResourcesTasks(): Project {
                 task.folders = folders.map { File(it) }
                 task.processedResourcesFolder = processedResourcesFolder
             }
+
+            println("kiet is here 3b: finished setting up `${korgeProcessedResources.name}`")
+            println("kiet is here 3c: setting up dependsOn")
+            copyTasks.forEach {
+                it?.dependsOn(korgeProcessedResources)
+            }
+            previousCompilationKorgeProcessedResources?.dependsOn(korgeProcessedResources)
+
             if (!isJvm) {
                 compilation.compileKotlinTask.dependsOn(korgeProcessedResources)
             } else {
                 compilation.compileKotlinTask.finalizedBy(korgeProcessedResources)
                 tasks.getByName("runJvm").dependsOn(korgeProcessedResources)
-                tasks.findByName("jvmProcessResources")?.dependsOn(korgeProcessedResources)
             }
+
+            previousCompilationKorgeProcessedResources = korgeProcessedResources
         }
     }
     return this
@@ -100,13 +134,16 @@ data class KorgeProcessedResourcesTaskConfig(
     val iconBytes: ByteArray,
 )
 
-class KorgeProcessedResourcesTask @Inject constructor(
+open class KorgeProcessedResourcesTask @Inject constructor(
     private val config: KorgeProcessedResourcesTaskConfig,
     //private val fs: FileSystemOperations,
 ) : DefaultTask() {
-    @get:OutputDirectory lateinit var processedResourcesFolder: File
+    @get:OutputDirectory
+    lateinit var processedResourcesFolder: File
     // https://docs.gradle.org/7.4/userguide/configuration_cache.html#config_cache:requirements:use_project_during_execution
-    @get:InputFiles @get:Classpath lateinit var folders: List<File>
+    @get:InputFiles
+    @get:Classpath
+    lateinit var folders: List<File>
 
     @TaskAction
     fun run() {
@@ -120,8 +157,18 @@ class KorgeProcessedResourcesTask @Inject constructor(
             //processedResourcesFolder["@appicon-64.png"].writeBytes(korge.getIconBytes(64))
         }
 
-        executeInPlugin(config.korgeClassPath, "com.soywiz.korge.resources.ResourceProcessorRunner", "run") { classLoader ->
-            listOf(classLoader, folders.map { it.toString() }, processedResourcesFolder.toString(), config.compilationName)
+        println("Running KorgeProcessedResourcesTask")
+        executeInPlugin(
+            config.korgeClassPath,
+            "com.soywiz.korge.resources.ResourceProcessorRunner",
+            "run"
+        ) { classLoader ->
+            listOf(
+                classLoader,
+                folders.map { it.toString() },
+                processedResourcesFolder.toString(),
+                config.compilationName
+            )
         }
     }
 }
