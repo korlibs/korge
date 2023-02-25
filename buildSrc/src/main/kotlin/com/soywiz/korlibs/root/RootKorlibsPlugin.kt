@@ -163,7 +163,6 @@ object RootKorlibsPlugin {
 
     fun Project.initDuplicatesStrategy() {
         allprojectsThis {
-            println("ya boi kiet here: ${this}")
             tasks.withType(Copy::class.java).allThis {
                 //this.duplicatesStrategy = org.gradle.api.file.DuplicatesStrategy.WARN
                 this.duplicatesStrategy = org.gradle.api.file.DuplicatesStrategy.EXCLUDE

@@ -36,7 +36,6 @@ fun getKorgeProcessResourcesTaskName(targetName: String, compilationName: String
 fun Project.addGenResourcesTasks(): Project {
     val copyTasks = tasks.withType(Copy::class.java)
     copyTasks.configureEach {
-        println("copy kiet here: $it")
         //it.duplicatesStrategy = org.gradle.api.file.DuplicatesStrategy.WARN
         it.duplicatesStrategy = org.gradle.api.file.DuplicatesStrategy.EXCLUDE
         //println("Task $this")
@@ -68,10 +67,8 @@ fun Project.addGenResourcesTasks(): Project {
     }
 
     for (target in kotlin.targets) {
-        println("Processing target: $target")
         var previousCompilationKorgeProcessedResources: KorgeProcessedResourcesTask? = null
         for (compilation in target.compilations) {
-            println("Processing compilation: $compilation")
             val isJvm = compilation.compileKotlinTask.name == "compileKotlinJvm"
             val processedResourcesFolder = getCompilationKorgeProcessedResourcesFolder(compilation)
             compilation.defaultSourceSet.resources.srcDir(processedResourcesFolder)
@@ -88,14 +85,6 @@ fun Project.addGenResourcesTasks(): Project {
                     project.korge.getIconBytes(),
                 )
             ) {
-                println(
-                    "kiet is here 3: `$target`, `$compilation`, setting up task: ${
-                        getKorgeProcessResourcesTaskName(
-                            target,
-                            compilation
-                        )
-                    }"
-                )
                 val task = this
                 task.group = GROUP_KORGE_RESOURCES
                 if (korge.searchResourceProcessorsInMainSourceSet) {
@@ -106,8 +95,6 @@ fun Project.addGenResourcesTasks(): Project {
                 task.processedResourcesFolder = processedResourcesFolder
             }
 
-            println("kiet is here 3b: finished setting up `${korgeProcessedResources.name}`")
-            println("kiet is here 3c: setting up dependsOn")
             copyTasks.forEach {
                 it?.dependsOn(korgeProcessedResources)
             }
@@ -157,7 +144,6 @@ open class KorgeProcessedResourcesTask @Inject constructor(
             //processedResourcesFolder["@appicon-64.png"].writeBytes(korge.getIconBytes(64))
         }
 
-        println("Running KorgeProcessedResourcesTask")
         executeInPlugin(
             config.korgeClassPath,
             "com.soywiz.korge.resources.ResourceProcessorRunner",
