@@ -162,7 +162,7 @@ data class PointInt(val x: Int, val y: Int) {
 @KormaMutableApi
 interface IPoint {
     companion object {
-        val ZERO: IPoint = MPoint(0, 0)
+        val ZERO: IPoint get() = MPoint.Zero
 
         operator fun invoke(): IPoint = MPoint(0.0, 0.0)
         operator fun invoke(v: IPoint): IPoint = MPoint(v.x, v.y)
