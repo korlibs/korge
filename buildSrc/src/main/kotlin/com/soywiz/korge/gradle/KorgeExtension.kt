@@ -287,7 +287,23 @@ class KorgeExtension(val project: Project) {
 	var supressWarnings: Boolean = false
 
     val versionSubstitutions = LinkedHashMap<String, String>().also {
-        it["com.soywiz.korlibs.korge2:korge"] = BuildVersions.KORGE
+        it["com.soywiz.korlibs.kbignum:kbignum"] = BuildVersions.KORLIBS
+        it["com.soywiz.korlibs.kds:kds"] = BuildVersions.KORLIBS
+        it["com.soywiz.korlibs.klock:klock"] = BuildVersions.KORLIBS
+        it["com.soywiz.korlibs.klogger:klogger"] = BuildVersions.KORLIBS
+        it["com.soywiz.korlibs.kmem:kmem"] = BuildVersions.KORLIBS
+        it["com.soywiz.korlibs.korau:korau"] = BuildVersions.KORLIBS
+        it["com.soywiz.korlibs.korge2:korge"] = BuildVersions.KORLIBS
+        it["com.soywiz.korlibs.korge.plugins:korge-gradle-plugin"] = BuildVersions.KORLIBS
+        it["com.soywiz.korlibs.korge.reloadagent:korge-reload-agent"] = BuildVersions.KORLIBS
+        it["com.soywiz.korlibs.korgw:korgw"] = BuildVersions.KORLIBS
+        it["com.soywiz.korlibs.korim:korim"] = BuildVersions.KORLIBS
+        it["com.soywiz.korlibs.korinject:korinject"] = BuildVersions.KORLIBS
+        it["com.soywiz.korlibs.korio:korio"] = BuildVersions.KORLIBS
+        it["com.soywiz.korlibs.korma:korma"] = BuildVersions.KORLIBS
+        it["com.soywiz.korlibs.korte:korte"] = BuildVersions.KORLIBS
+        it["com.soywiz.korlibs.krypto:krypto"] = BuildVersions.KORLIBS
+        it["com.soywiz.korlibs.ktruth:ktruth"] = BuildVersions.KORLIBS
     }
 
     fun versionSubstitution(groupName: String, version: String) {
