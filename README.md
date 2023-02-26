@@ -133,6 +133,10 @@ now they are available via kproject in these repositories:
 
 * <https://github.com/korlibs/korge-services/tree/main/korge-i18n> (I18N support)
 
+## Algorithms
+
+* <https://github.com/korlibs/korge-services/tree/main/korma-astar> (AStar (A*) for finding paths in 2D grids)
+
 ## Other
 
 * <https://github.com/korlibs/korge-lipsync> (Rhubarb LipSync integration with resource processor)
