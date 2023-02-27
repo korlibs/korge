@@ -35,8 +35,8 @@ class AgBitmapTextureManager(
     var maxCachedMemory = 0L
 
     /** Bitmaps to keep for some time even if not referenced in [framesBetweenGC] as long as the [maxCachedMemory] allows it */
-    private val cachedBitmaps = AgFastSet<Bitmap>()
-	private val referencedBitmapsSinceGC = AgFastSet<Bitmap>()
+    private val cachedBitmaps = FastSmallSet<Bitmap>()
+	private val referencedBitmapsSinceGC = FastSmallSet<Bitmap>()
 	private var referencedBitmaps = FastArrayList<Bitmap>()
 
     /** Number of frames between each Texture Garbage Collection step */

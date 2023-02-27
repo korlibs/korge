@@ -1,11 +1,11 @@
-package com.soywiz.korge.render
+package com.soywiz.kds
 
 import kotlin.test.*
 
-class AgFastSetTest {
+class FastSmallSetTest {
     @Test
     fun test() {
-        val set = AgFastSet<String>()
+        val set = FastSmallSet<String>()
         set.add("a")
         assertEquals(true, "a" in set)
         set.add("b")

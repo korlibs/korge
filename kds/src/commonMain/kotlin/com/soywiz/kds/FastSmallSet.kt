@@ -1,12 +1,11 @@
-package com.soywiz.korge.render
+package com.soywiz.kds
 
-import com.soywiz.kds.FastArrayList
+class FastSmallSet<T> : AbstractMutableSet<T>() {
+    @PublishedApi internal val _items = FastArrayList<T>()
+    val items: List<T> get() = _items
 
-// @TODO: Use HashSet if items.size increases
-internal class AgFastSet<T> : AbstractMutableSet<T>() {
-    val items = FastArrayList<T>()
-    override val size: Int get() = items.size
-    override fun iterator(): MutableIterator<T> = items.iterator()
+    override val size: Int get() = _items.size
+    override fun iterator(): MutableIterator<T> = _items.iterator()
 
     private var fast0: T? = null
     private var fast1: T? = null
@@ -14,7 +13,7 @@ internal class AgFastSet<T> : AbstractMutableSet<T>() {
 
     override fun add(element: T): Boolean {
         if (element in this) return false
-        items.add(element)
+        _items.add(element)
         return true
     }
 
@@ -22,12 +21,12 @@ internal class AgFastSet<T> : AbstractMutableSet<T>() {
         fast0 = null
         fast1 = null
         fast2 = null
-        return items.remove(element)
+        return _items.remove(element)
     }
 
     override operator fun contains(element: T): Boolean {
         if (element === fast0 || element === fast1 || element === fast0) return true
-        val result = element in items
+        val result = element in _items
         if (result) {
             fast1 = fast0
             fast2 = fast1
@@ -37,13 +36,13 @@ internal class AgFastSet<T> : AbstractMutableSet<T>() {
     }
 
     override fun clear() {
-        items.clear()
+        _items.clear()
         fast0 = null
         fast1 = null
         fast2 = null
     }
 
     inline fun fastForEach(block: (T) -> Unit) {
-        items.fastForEach(block)
+        _items.fastForEach(block)
     }
 }

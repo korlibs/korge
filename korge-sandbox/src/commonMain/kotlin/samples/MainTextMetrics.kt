@@ -21,7 +21,7 @@ class MainTextMetrics : Scene() {
         val DEFAULT_BG = Colors["#2b2b2b"]
 
         val font0 = resourcesVfs["clear_sans.fnt"].readFont()
-        val font1 = debugBmpFont()
+        val font1 = views.debugBmpFont
         val font2 = DefaultTtfFont
         val font2b = DefaultTtfFontAsBitmap
         val font3 = BitmapFont(DefaultTtfFont, 64.0)

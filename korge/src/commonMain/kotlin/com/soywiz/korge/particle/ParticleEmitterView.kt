@@ -104,7 +104,7 @@ class ParticleEmitterView(
     }
 
     fun step(dt: TimeSpan) {
-        //            if (!this.localCoords) {
+//            if (!this.localCoords) {
 //                simulator.emitterPos.setTo(x, y)
 //            }
         if (dt > 0.milliseconds) {

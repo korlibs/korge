@@ -30,19 +30,19 @@ import kotlin.math.absoluteValue
 inline fun Container.gpuGraphics(
     build: ShapeBuilder.() -> Unit,
     antialiased: Boolean = true,
-    callback: @ViewDslMarker GpuGraphics.() -> Unit = {}
+    callback: @ViewDslMarker GpuShapeView.() -> Unit = {}
 ): GpuShapeView = gpuShapeView(build, antialiased, callback)
 
 inline fun Container.gpuGraphics(
     shape: Shape,
     antialiased: Boolean = true,
-    callback: @ViewDslMarker GpuGraphics.() -> Unit = {}
+    callback: @ViewDslMarker GpuShapeView.() -> Unit = {}
 ): GpuShapeView = gpuShapeView(shape, antialiased, callback)
 
 //@KorgeExperimental
 inline fun Container.gpuGraphics(
     antialiased: Boolean = true,
-    callback: @ViewDslMarker ShapeBuilder.(GpuGraphics) -> Unit = {}
+    callback: @ViewDslMarker ShapeBuilder.(GpuShapeView) -> Unit = {}
 ): GpuShapeView = gpuShapeView(antialiased, callback)
 
 //@KorgeExperimental
@@ -65,10 +65,6 @@ inline fun Container.gpuShapeView(
 ): GpuShapeView = GpuShapeView(EmptyShape, antialiased)
     .also { it.updateShape { callback(this, it) } }
     .addTo(this)
-
-@Deprecated("")
-//typealias GpuShapeView = GpuGraphics
-typealias GpuGraphics = GpuShapeView
 
 //@KorgeExperimental
 @OptIn(KorgeInternal::class)

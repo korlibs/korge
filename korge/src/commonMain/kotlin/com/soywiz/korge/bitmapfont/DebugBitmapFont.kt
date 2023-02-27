@@ -1,4 +1,4 @@
-package com.soywiz.korge.scene
+package com.soywiz.korge.bitmapfont
 
 import com.soywiz.kds.IntMap
 import com.soywiz.kds.toIntMap

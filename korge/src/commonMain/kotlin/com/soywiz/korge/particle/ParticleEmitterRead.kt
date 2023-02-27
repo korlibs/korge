@@ -32,7 +32,7 @@ suspend fun VfsFile.readParticleEmitter(): ParticleEmitter {
         fun angle() = item.double("value").degrees
         fun color(): RGBAf = RGBAf(item.double("red"), item.double("green"), item.double("blue"), item.double("alpha"))
 
-        when (item.name.toLowerCase()) {
+        when (item.name.lowercase()) {
             "texture" -> emitter.textureName = item.str("name")
             "sourceposition" -> emitter.sourcePosition = point()
             "sourcepositionvariance" -> emitter.sourcePositionVariance = point()
