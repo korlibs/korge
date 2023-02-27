@@ -101,8 +101,8 @@ class Views constructor(
     var currentVfs: VfsFile = resourcesVfs
     var imageFormats = RegisteredImageFormats
 	val renderContext = RenderContext(ag, this, gameWindow, stats, coroutineContext, batchMaxQuads)
-	@KorgeDeprecated val agBitmapTextureManager get() = renderContext.agBitmapTextureManager
-    @KorgeDeprecated val agBufferManager get() = renderContext.agBufferManager
+	@Deprecated("") val agBitmapTextureManager get() = renderContext.agBitmapTextureManager
+    @Deprecated("") val agBufferManager get() = renderContext.agBufferManager
 	var clearEachFrame = true
 	var clearColor: RGBA = Colors.BLACK
 	val propsTriggers = hashMapOf<String, (View, String, String) -> Unit>()
