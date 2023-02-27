@@ -295,7 +295,7 @@ internal class ViewsDebuggerComponent constructor(
         list.add(ViewFactory("Container") { Container() })
         //list.add(ViewFactory("TreeViewRef") { TreeViewRef() })
         list.add(ViewFactory("ParticleEmitter") { ParticleEmitterView(ParticleEmitter()) })
-        list.add(ViewFactory("9-Patch") { NinePatchEx(NinePatchBmpSlice(Bitmap32(62, 62, premultiplied = true))) })
+        list.add(ViewFactory("9-Patch") { NinePatch(NinePatchBmpSlice(Bitmap32(62, 62, premultiplied = true))) })
         //for (registration in views.ktreeSerializer.registrationsExt) {
         //    list.add(ViewFactory(registration.name) { registration.factory() })
         //}

@@ -29,7 +29,7 @@ open class UIProgressBar(
 		get() = (current / maximum).clamp01()
 
 	private val background = solidRect(width, height, buttonBackColor)
-	protected open val progressView: NinePatchEx =
+	protected open val progressView: NinePatch =
 		ninePatch(buttonNormal, width * (current / maximum).clamp01(), height)
 
     override fun renderInternal(ctx: RenderContext) {
