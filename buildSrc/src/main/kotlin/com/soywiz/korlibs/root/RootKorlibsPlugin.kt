@@ -439,9 +439,10 @@ object RootKorlibsPlugin {
     }
 
     fun Project.initPublishing() {
-
         rootProject.afterEvaluate {
             rootProject.nonSamples {
+                if (this.project.isKorgeBenchmarks) return@nonSamples
+
                 plugins.apply("maven-publish")
 
                 val doConfigure = mustAutoconfigureKMM()
@@ -1528,6 +1529,8 @@ fun Project.mustAutoconfigureKMM(): Boolean =
 
 fun getKorgeProcessResourcesTaskName(target: org.jetbrains.kotlin.gradle.plugin.KotlinTarget, compilation: org.jetbrains.kotlin.gradle.plugin.KotlinCompilation<*>): String =
     "korgeProcessedResources${target.name.capitalize()}${compilation.name.capitalize()}"
+
+val Project.isKorgeBenchmarks: Boolean get() = path == ":korge-benchmarks"
 
 fun Project.nonSamples(block: Project.() -> Unit) {
     subprojectsThis {
