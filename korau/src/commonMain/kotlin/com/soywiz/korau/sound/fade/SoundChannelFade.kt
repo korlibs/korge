@@ -1,18 +1,12 @@
-package com.soywiz.korge.sound
+package com.soywiz.korau.sound.fade
 
-import com.soywiz.kds.extraProperty
-import com.soywiz.klock.DateTime
-import com.soywiz.klock.TimeSpan
-import com.soywiz.klock.milliseconds
-import com.soywiz.klock.seconds
-import com.soywiz.kmem.clamp01
-import com.soywiz.korau.sound.SoundChannel
-import com.soywiz.korau.sound.paused
-import com.soywiz.korio.async.AsyncThread
-import com.soywiz.korio.async.delay
-import com.soywiz.korma.interpolation.Easing
-import com.soywiz.korma.interpolation.interpolate
-import kotlin.native.concurrent.ThreadLocal
+import com.soywiz.kds.*
+import com.soywiz.klock.*
+import com.soywiz.kmem.*
+import com.soywiz.korau.sound.*
+import com.soywiz.korio.async.*
+import com.soywiz.korma.interpolation.*
+import kotlin.native.concurrent.*
 
 val DEFAULT_FADE_TIME get() = 0.5.seconds
 val DEFAULT_FADE_EASING get() = Easing.LINEAR
