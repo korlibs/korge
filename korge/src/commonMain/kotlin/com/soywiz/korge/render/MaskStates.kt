@@ -3,9 +3,8 @@ package com.soywiz.korge.render
 import com.soywiz.korag.*
 
 object MaskStates {
-    class RenderState(val stencilOpFunc: AGStencilOpFunc, val stencilRef: AGStencilReference, val colorMask: AGColorMask) {
-        val stencilFull get() = AGStencilFullState(stencilOpFunc, stencilRef)
-
+    // @TODO: Potential value class
+    data class RenderState(val stencilOpFunc: AGStencilOpFunc, val stencilRef: AGStencilReference, val colorMask: AGColorMask) {
         @Suppress("DEPRECATION")
         fun set(ctx: RenderContext, referenceValue: Int) {
             ctx.flush()
