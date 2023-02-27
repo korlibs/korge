@@ -172,18 +172,6 @@ class Views constructor(
     @KorgeInternal
     val windowMouseXY: MPoint get() = bp.globalToWindowCoords(input.mouse)
 
-    /** Mouse coordinates relative to the native window. Can't be used directly. Use [globalMouseX] instead */
-    @KorgeInternal
-    @Deprecated("Use windowMouseX instead")
-	val nativeMouseX: Double get() = windowMouseX
-    /** Mouse coordinates relative to the native window. Can't be used directly. Use [globalMouseY] instead */
-    @KorgeInternal
-    @Deprecated("Use windowMouseY instead")
-	val nativeMouseY: Double get() = windowMouseY
-    @KorgeInternal
-    @Deprecated("Use windowMouseXY instead")
-    val nativeMouseXY: MPoint get() = windowMouseXY
-
     /** Mouse coordinates relative to the [Stage] singleton */
     val globalMouseXY get() = stage.mouseXY
     /** Mouse X coordinate relative to the [Stage] singleton */
