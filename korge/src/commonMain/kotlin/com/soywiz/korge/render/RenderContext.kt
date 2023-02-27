@@ -255,11 +255,11 @@ class RenderContext constructor(
     val isRenderingToWindow: Boolean get() = currentFrameBufferOrMain === mainFrameBuffer
     val isRenderingToTexture: Boolean get() = !isRenderingToWindow
 
-    // On MacOS components, this will be the size of the component
+    // On macOS components, this will be the size of the component
     open val backWidth: Int get() = mainFrameBuffer.width
     open val backHeight: Int get() = mainFrameBuffer.height
 
-    // On MacOS components, this will be the full size of the window
+    // On macOS components, this will be the full size of the window
     val realBackWidth get() = mainFrameBuffer.fullWidth
     val realBackHeight get() = mainFrameBuffer.fullHeight
 
