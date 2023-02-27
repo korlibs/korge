@@ -216,7 +216,7 @@ open class KTreeSerializer(val views: Views) : KTreeSerializerHolder, Extra by E
             "vectorimage" -> view = VectorImage.createDefault()
             "treeviewref" -> view = TreeViewRef()
             "particle" -> view = ParticleEmitterView(ParticleEmitter())
-            "ninepatch" -> view = NinePatchEx(NinePatchBitmap32(Bitmap32(62, 62)))
+            "ninepatch" -> view = NinePatchEx(NinePatchBitmap32(Bitmap32(62, 62, premultiplied = true)))
             "ktree" -> view = KTreeRoot(100.0, 100.0)
             else -> {
                 val registration = registrationsByNameLC[xml.nameLC]

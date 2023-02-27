@@ -220,13 +220,13 @@ class MainGpuVectorRendering : Scene() {
             println("GPU SHAPE: $it")
         }
         measureTime({
-            image(NativeImage(512, 512).context2d { buildGraphics("NATIVE") }).xy(550, 0)
+            image(NativeImageContext2d(512, 512) { buildGraphics("NATIVE") }).xy(550, 0)
         }) {
             println("CONTEXT2D NATIVE: $it")
         }
 
         measureTime({
-            image(Bitmap32(512, 512).context2d { buildGraphics("KOTLIN") }).xy(550, 370)
+            image(Bitmap32Context2d(512, 512) { buildGraphics("KOTLIN") }).xy(550, 370)
         }) {
             println("CONTEXT2D BITMAP: $it")
         }

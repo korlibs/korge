@@ -223,20 +223,23 @@ class GamepadInfo(
         GameStick.LEFT -> get(GameButton.LY)
         GameStick.RIGHT -> get(GameButton.RY)
     }
-    override fun toString(): String = buildString {
+    fun toStringEx(includeButtons: Boolean = true): String = buildString {
         append("Gamepad[$index][$fullName]")
-        append("[")
-        var count = 0
-        for (button in GameButton.values()) {
-            val value = this@GamepadInfo[button]
-            if (value != 0.0) {
-                if (count > 0) append(",")
-                append("$button=${value.niceStr}")
-                count++
+        if (includeButtons) {
+            append("[")
+            var count = 0
+            for (button in GameButton.values()) {
+                val value = this@GamepadInfo[button]
+                if (value != 0.0) {
+                    if (count > 0) append(",")
+                    append("$button=${value.niceStr}")
+                    count++
+                }
             }
+            append("]")
         }
-        append("]")
     }
+    override fun toString(): String = toStringEx(includeButtons = false)
 }
 
 data class GamePadConnectionEvent(
@@ -272,5 +275,5 @@ data class GamePadUpdateEvent @JvmOverloads constructor(
         }
     }
 
-    override fun toString(): String = "GamePadUpdateEvent(${gamepads.filter { it.connected }})"
+    override fun toString(): String = "GamePadUpdateEvent(${gamepads.filter { it.connected }.map { it.toStringEx() }})"
 }

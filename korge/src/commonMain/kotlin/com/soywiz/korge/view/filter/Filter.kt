@@ -29,7 +29,7 @@ interface Filter {
     companion object {
         //val u_Time = Uniform("time", VarType.Float1)
         val u_TextureSize = Uniform("effectTextureSize", VarType.Float2)
-        val DEFAULT_FRAGMENT = BatchBuilder2D.getTextureLookupProgram(add = BatchBuilder2D.AddType.NO_ADD).fragment
+        val DEFAULT_FRAGMENT = BatchBuilder2D.PROGRAM.fragment
 
         val Program.Builder.fragmentCoords01 get() = DefaultShaders.v_Tex["xy"]
         val Program.Builder.fragmentCoords get() = fragmentCoords01 * u_TextureSize
@@ -69,7 +69,6 @@ interface Filter {
         texture: Texture,
         texWidth: Int,
         texHeight: Int,
-        renderColorAdd: ColorAdd,
         renderColorMul: RGBA,
         blendMode: BlendMode,
         filterScale: Double,
@@ -107,7 +106,16 @@ fun Filter.renderToTextureWithBorder(
             matrix.identity()
             matrix.translate(borderLeft, borderTop)
             ctx.batch.setViewMatrixTemp(ctx.identityMatrix) {
-                filter.render(ctx, matrix, texture, newTexWidth, newTexHeight, ColorAdd.NEUTRAL, Colors.WHITE, BlendMode.NORMAL, filterScale)
+                filter.render(
+                    ctx,
+                    matrix,
+                    texture,
+                    newTexWidth,
+                    newTexHeight,
+                    Colors.WHITE,
+                    BlendMode.NORMAL,
+                    filterScale
+                )
             }
         }
     }) { newtex ->
@@ -141,7 +149,16 @@ class RenderToTextureResult() : Disposable {
             tempMat.translate(borderLeft, borderTop)
             ctx.batch.setViewMatrixTemp(ctx.identityMatrix) {
                 texture?.let {
-                    filter?.render(ctx, tempMat, it, newTexWidth, newTexHeight, ColorAdd.NEUTRAL, Colors.WHITE, BlendMode.NORMAL, filterScale)
+                    filter?.render(
+                        ctx,
+                        tempMat,
+                        it,
+                        newTexWidth,
+                        newTexHeight,
+                        Colors.WHITE,
+                        BlendMode.NORMAL,
+                        filterScale
+                    )
                 }
             }
         }

@@ -114,6 +114,7 @@ object AndroidNativeImageFormatProvider : NativeImageFormatProvider() {
                                     }
                                 }
                                 it.inSampleSize = props.getSampleSize(originalSize.width, originalSize.height)
+                                it.inMutable = true
                             }
                         )
                         if (bmp != null) {
@@ -346,7 +347,7 @@ class AndroidContext2dRenderer(val bmp: android.graphics.Bitmap, val antialiasin
     private val androidClipPath = Path()
     private val androidPath = Path()
 
-    override fun render(state: Context2d.State, fill: Boolean, winding: Winding?) {
+    override fun renderFinal(state: Context2d.State, fill: Boolean, winding: Winding?) {
         setState(state, fill)
 
         keep {

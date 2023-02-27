@@ -588,19 +588,12 @@ object RootKorlibsPlugin {
                     android.apply {
                         sourceSets {
                             it.maybeCreate("main").apply {
-                                if (System.getenv("ANDROID_TESTS") == "true") {
-                                    assets.srcDirs(
-                                        "src/commonMain/resources",
-                                        "src/commonTest/resources",
-                                    )
-                                } else {
-                                    assets.srcDirs("src/commonMain/resources",)
-                                }
+                                assets.srcDirs("src/commonMain/resources",)
                             }
-                            it.maybeCreate("test").apply {
-                                assets.srcDirs(
-                                    "src/commonTest/resources",
-                                )
+                            for (name in listOf("test", "testDebug", "testRelease", "androidTest", "androidTestDebug", "androidTestRelease")) {
+                                it.maybeCreate(name).apply {
+                                    assets.srcDirs("src/commonTest/resources",)
+                                }
                             }
                         }
                     }
@@ -1517,7 +1510,7 @@ val forcedVersion = System.getenv("FORCED_VERSION")
 val Project.hasAndroidSdk by LazyExt { AndroidSdk.hasAndroidSdk(project) }
 val Project.enabledSandboxResourceProcessor: Boolean by LazyExt { rootProject.findProperty("enabledSandboxResourceProcessor") == "true" }
 
-val Project.currentJavaVersion by LazyExt { com.soywiz.korlibs.currentJavaVersion() }
+val Project.currentJavaVersion by LazyExt { currentJavaVersion() }
 fun Project.hasBuildGradle() = listOf("build.gradle", "build.gradle.kts").any { File(projectDir, it).exists() }
 val Project.isSample: Boolean get() = project.path.startsWith(":samples:") || project.path.startsWith(":korge-sandbox") || project.path.startsWith(":korge-editor") || project.path.startsWith(":korge-starter-kit")
 fun Project.mustAutoconfigureKMM(): Boolean =

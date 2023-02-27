@@ -4,10 +4,14 @@ import com.soywiz.korge.scene.*
 import com.soywiz.korge.time.*
 import com.soywiz.korge.ui.*
 import com.soywiz.korge.view.*
+import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
+import com.soywiz.korim.paint.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korio.lang.*
+import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.vector.*
 import samples.*
 import samples.asteroids.*
 import samples.connect4.*
@@ -30,6 +34,16 @@ suspend fun main() = Korge(
     //forceRenderEveryFrame = true
     //debugAg = true,
 ) {
+    //graphics(renderer = GraphicsRenderer.CPU) {
+
+    //graphics(renderer = GraphicsRenderer.SYSTEM) {
+    //    fill(createSweepGradient(100, 100).add(Colors.RED, Colors.GREEN, Colors.BLUE)) {
+    //    //fill(createPattern(bmp, transform = MMatrix().translate(100, 100))) {
+    //        //this.rect(100, 100, 200, 200)
+    //        this.rect(50, 50, 200, 200)
+    //    }
+    //}
+    //return@Korge
     //sceneContainer(views).changeTo({ MainGifAnimation() }); return@Korge
     //sceneContainer(views).changeTo({ MainStressButtons() }); return@Korge
     //sceneContainer(views).changeTo({ MainTransitionFilter() }); return@Korge
@@ -49,7 +63,6 @@ suspend fun main() = Korge(
             Demo(::MainVector),
             Demo(::MainText),
             Demo(::MainAtlas),
-            Demo(::MainBunnysSlow),
             Demo(::MainOnScreenController),
             Demo(::MainScenes),
             Demo(::MainKTree),

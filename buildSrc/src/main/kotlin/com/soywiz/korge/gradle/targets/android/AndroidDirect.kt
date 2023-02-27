@@ -75,6 +75,11 @@ fun Project.configureAndroidDirect() {
                 assets.srcDirs(*resourcesSrcDirs.map { it.absoluteFile }.toTypedArray())
                 java.srcDirs(*kotlinSrcDirs.map { it.absoluteFile }.toTypedArray())
             }
+            for (name in listOf("test", "testDebug", "testRelease", "androidTest", "androidTestDebug", "androidTestRelease")) {
+                maybeCreate(name).apply {
+                    assets.srcDirs("src/commonTest/resources",)
+                }
+            }
         }
     }
     project.dependencies.apply {

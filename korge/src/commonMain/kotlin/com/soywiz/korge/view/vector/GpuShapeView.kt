@@ -223,9 +223,7 @@ open class GpuShapeView(
                     renderCommands(ctx, doRequireTexture)
                 }, hasDepth = false, hasStencil = true, msamples = 1) { texture ->
                     ctx.useBatcher {
-                        it.drawQuad(texture, m = ctx.bp.windowToGlobalMatrix,
-                            premultiplied = texture.premultiplied, wrap = false,
-                        )
+                        it.drawQuad(texture, m = ctx.bp.windowToGlobalMatrix)
                     }
                 }
             } else {

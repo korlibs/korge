@@ -50,7 +50,8 @@ fun View.unsafeRenderToBitmapSync(
 
     return Bitmap32(
         (region?.width ?: bounds.width).toInt(),
-        (region?.height ?: bounds.height).toInt()
+        (region?.height ?: bounds.height).toInt(),
+        premultiplied = true
     ).also { bmp ->
         //val ctx = RenderContext(views.ag, coroutineContext = views.coroutineContext)
         //views.ag.renderToBitmap(bmp) {

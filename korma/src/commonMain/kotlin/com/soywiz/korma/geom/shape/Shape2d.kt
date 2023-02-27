@@ -20,9 +20,8 @@ private fun MMatrix?.ty(x: Double, y: Double) = this?.transformY(x, y) ?: y
 private fun MMatrix?.dtx(x: Double, y: Double) = this?.deltaTransformX(x, y) ?: x
 private fun MMatrix?.dty(x: Double, y: Double) = this?.deltaTransformY(x, y) ?: y
 
-private fun optimizedIntersect(l: Shape2d.Circle, r: Shape2d.Circle): Boolean {
-    return MPoint.distance(l.x, l.y, r.x, r.y) < (l.radius + r.radius)
-}
+private fun optimizedIntersect(l: Shape2d.Circle, r: Shape2d.Circle): Boolean =
+    MPoint.distance(l.x, l.y, r.x, r.y) < (l.radius + r.radius)
 
 private fun optimizedIntersect(l: Shape2d.Circle, ml: MMatrix?, r: Shape2d.Circle, mr: MMatrix?): Boolean {
     if (ml == null && mr == null) return optimizedIntersect(l, r)

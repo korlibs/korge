@@ -160,7 +160,7 @@ class CSS(val allRules: List<IRuleSet>, unit: Unit = Unit) {
                     }
                     '/' -> {
                         // Comment
-                        if (ss.peek() == '*') {
+                        if (ss.peekChar() == '*') {
                             flush()
                             ss.skip()
                             ss.readUntil { ss.matchLit("*/") != null }

@@ -16,7 +16,7 @@ class MainExifTest : Scene() {
         val info = file.readBitmapInfo()
         image(file.readBitmapSliceWithOrientation())
             .scale(0.2)
-            .filters(OldBlurFilter())
+            .filters(BlurFilter())
         //println(info)
     }
 }

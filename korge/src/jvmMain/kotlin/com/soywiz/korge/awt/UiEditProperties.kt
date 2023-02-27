@@ -380,15 +380,6 @@ internal fun UiContainer.uiCollapsibleSection(name: String?, block: UiContainer.
     return UiCollapsibleSection(app, name, block).also { addChild(it) }
 }
 
-@Deprecated(
-    message = "An older name of `uiCollapsibleSection`",
-    replaceWith = ReplaceWith("uiCollapsibleSection(name, block)"),
-    level = DeprecationLevel.WARNING
-)
-internal fun UiContainer.uiCollapsableSection(name: String?, block: UiContainer.() -> Unit): UiCollapsibleSection {
-    return UiCollapsibleSection(app, name, block).also { addChild(it) }
-}
-
 internal class UiCollapsibleSection(app: UiApplication, val name: String?, val componentChildren: List<UiComponent>) : UiContainer(app) {
     companion object {
         operator fun invoke(app: UiApplication, name: String?, block: UiContainer.() -> Unit): UiCollapsibleSection =

@@ -113,7 +113,8 @@ now they are available via kproject in these repositories:
 ### Image Formats
 
 * PNG, QOI, ASE, PSD, Native Decoders (Integrated in KorGE)
-* <https://github.com/korlibs/korge-image-formats> (Pure Kotlin JPEG Encoder/Decoder)
+* <https://github.com/korlibs/korge-image-formats/korim-jpeg> (Pure Kotlin JPEG Encoder/Decoder)
+* <https://github.com/korlibs/korge-image-formats/korim-qr> (Pure Kotlin QR Generator)
 
 ### AudioFormats
 
@@ -131,6 +132,10 @@ now they are available via kproject in these repositories:
 ## I18N
 
 * <https://github.com/korlibs/korge-services/tree/main/korge-i18n> (I18N support)
+
+## Algorithms
+
+* <https://github.com/korlibs/korge-services/tree/main/korma-astar> (AStar (A*) for finding paths in 2D grids)
 
 ## Other
 

@@ -18,14 +18,14 @@ class HeightMapConstant(val height: Float) : HeightMap {
 class HeightMapBitmap(val bitmap:Bitmap) : HeightMap{
     override fun get(x: Float, z: Float): Float {
         val x1 = when {
-            x < 0 -> 0.0
-            x > bitmap.width -> bitmap.width.toDouble()
-            else -> x.toDouble()
+            x < 0 -> 0f
+            x > bitmap.width -> bitmap.width.toFloat()
+            else -> x
         }
         val z1 = when {
-            z < 0 -> 0.0
-            z > bitmap.height -> bitmap.height.toDouble()
-            else -> z.toDouble()
+            z < 0 -> 0f
+            z > bitmap.height -> bitmap.height.toFloat()
+            else -> z
         }
         return bitmap.getRgbaSampled(x1, z1).rgb.toFloat()
     }

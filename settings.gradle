@@ -30,6 +30,6 @@ include(":korge-gradle-plugin")
 include(":korge-reload-agent")
 include(":korge-sandbox")
 
-if (!inCI) {
+if (!inCI || System.getenv("ENABLE_BENCHMARKS") == "true") {
     include(":korge-benchmarks")
 }

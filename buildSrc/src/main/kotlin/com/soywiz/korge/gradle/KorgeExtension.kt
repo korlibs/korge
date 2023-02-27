@@ -163,9 +163,12 @@ class KorgeExtension(val project: Project) {
      * Configures Android indirect. Alias for [targetAndroidIndirect]
      */
     fun targetAndroid() {
-        targetAndroidIndirect()
+        target("android") {
+            project.configureAndroidDirect()
+        }
     }
 
+    /*
     /**
      * Configures android in this project tightly integrated, and creates src/main default stuff
      *
@@ -189,6 +192,7 @@ class KorgeExtension(val project: Project) {
             project.configureAndroidIndirect()
         }
     }
+    */
 
     /**
      * Configures Kotlin/Native iOS target (only on macOS)
@@ -206,22 +210,21 @@ class KorgeExtension(val project: Project) {
      *
      * gradle.properties:
      * - korge.enable.desktop=true
-     * - korge.enable.android.indirect=true
-     * - korge.enable.android.direct=true
+     * - korge.enable.android=true
      * - korge.enable.ios=true
      * - korge.enable.js=true
      *
      * Environment Variables:
      * - KORGE_ENABLE_DESKTOP
-     * - KORGE_ENABLE_ANDROID_INDIRECT
-     * - KORGE_ENABLE_ANDROID_DIRECT
+     * - KORGE_ENABLE_ANDROID
      * - KORGE_ENABLE_ANDROID_IOS
      * - KORGE_ENABLE_ANDROID_JS
      */
     fun targetDefault() {
         if (newDesktopEnabled) targetDesktop()
-        if (newAndroidIndirectEnabled) targetAndroidIndirect()
-        if (newAndroidDirectEnabled) targetAndroidDirect()
+        if (newAndroidEnabled) targetAndroid()
+        //if (newAndroidIndirectEnabled) targetAndroidIndirect()
+        //if (newAndroidDirectEnabled) targetAndroidDirect()
         if (newIosEnabled) targetIos()
         if (newJsEnabled) targetJs()
     }
@@ -284,7 +287,23 @@ class KorgeExtension(val project: Project) {
 	var supressWarnings: Boolean = false
 
     val versionSubstitutions = LinkedHashMap<String, String>().also {
-        it["com.soywiz.korlibs.korge2:korge"] = BuildVersions.KORGE
+        it["com.soywiz.korlibs.kbignum:kbignum"] = BuildVersions.KORLIBS
+        it["com.soywiz.korlibs.kds:kds"] = BuildVersions.KORLIBS
+        it["com.soywiz.korlibs.klock:klock"] = BuildVersions.KORLIBS
+        it["com.soywiz.korlibs.klogger:klogger"] = BuildVersions.KORLIBS
+        it["com.soywiz.korlibs.kmem:kmem"] = BuildVersions.KORLIBS
+        it["com.soywiz.korlibs.korau:korau"] = BuildVersions.KORLIBS
+        it["com.soywiz.korlibs.korge2:korge"] = BuildVersions.KORLIBS
+        it["com.soywiz.korlibs.korge.plugins:korge-gradle-plugin"] = BuildVersions.KORLIBS
+        it["com.soywiz.korlibs.korge.reloadagent:korge-reload-agent"] = BuildVersions.KORLIBS
+        it["com.soywiz.korlibs.korgw:korgw"] = BuildVersions.KORLIBS
+        it["com.soywiz.korlibs.korim:korim"] = BuildVersions.KORLIBS
+        it["com.soywiz.korlibs.korinject:korinject"] = BuildVersions.KORLIBS
+        it["com.soywiz.korlibs.korio:korio"] = BuildVersions.KORLIBS
+        it["com.soywiz.korlibs.korma:korma"] = BuildVersions.KORLIBS
+        it["com.soywiz.korlibs.korte:korte"] = BuildVersions.KORLIBS
+        it["com.soywiz.korlibs.krypto:krypto"] = BuildVersions.KORLIBS
+        it["com.soywiz.korlibs.ktruth:ktruth"] = BuildVersions.KORLIBS
     }
 
     fun versionSubstitution(groupName: String, version: String) {
@@ -306,8 +325,9 @@ class KorgeExtension(val project: Project) {
 	val nativeEnabled = (project.findProperty("disable.kotlin.native") != "true") && (System.getenv("DISABLE_KOTLIN_NATIVE") != "true")
 
     val newDesktopEnabled get() = project.findProperty("korge.enable.desktop") == "true" || System.getenv("KORGE_ENABLE_DESKTOP") == "true"
-    val newAndroidIndirectEnabled get() = project.findProperty("korge.enable.android.indirect") == "true" || System.getenv("KORGE_ENABLE_ANDROID_INDIRECT") == "true"
-    val newAndroidDirectEnabled get() = project.findProperty("korge.enable.android.direct") == "true" || System.getenv("KORGE_ENABLE_ANDROID_DIRECT") == "true"
+    val newAndroidEnabled get() = project.findProperty("korge.enable.android") == "true" || System.getenv("KORGE_ENABLE_ANDROID") == "true"
+    //val newAndroidIndirectEnabled get() = project.findProperty("korge.enable.android.indirect") == "true" || System.getenv("KORGE_ENABLE_ANDROID_INDIRECT") == "true"
+    //val newAndroidDirectEnabled get() = project.findProperty("korge.enable.android.direct") == "true" || System.getenv("KORGE_ENABLE_ANDROID_DIRECT") == "true"
     val newIosEnabled get() = project.findProperty("korge.enable.ios") == "true" || System.getenv("KORGE_ENABLE_IOS") == "true"
     val newJsEnabled get() = project.findProperty("korge.enable.js") == "true" || System.getenv("KORGE_ENABLE_JS") == "true"
 

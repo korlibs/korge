@@ -18,7 +18,7 @@ class TestE2eJava {
         if (Platform.isWindows) return
         if (GraphicsEnvironment.isHeadless()) return
 
-        val bmp = Bitmap32(64, 64)
+        val bmp = Bitmap32(64, 64, premultiplied = true)
         var step = 0
         var exception: Throwable? = null
         runBlocking {

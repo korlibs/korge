@@ -37,7 +37,7 @@ class RasterizerTest {
 
     @Test
     fun test2() = suspendTest {
-        val bmp1 = Bitmap32(100, 100).context2d {
+        val bmp1 = Bitmap32Context2d(100, 100) {
             //debug = true
             fill(
                 createLinearGradient(0, 0, 0, 100) {
@@ -53,7 +53,7 @@ class RasterizerTest {
             }
         }
         val shipSize = 24
-        val bmp2 = Bitmap32(shipSize, shipSize).context2d {
+        val bmp2 = Bitmap32Context2d(shipSize, shipSize) {
             stroke(Colors.RED, lineWidth = shipSize * 0.05, lineCap = LineCap.ROUND) {
                 moveTo(shipSize * 0.5, 0.0)
                 lineTo(shipSize, shipSize)
@@ -62,7 +62,7 @@ class RasterizerTest {
                 close()
             }
         }
-        val bmp3 = Bitmap32(3, (shipSize * 0.3).toInt()).context2d {
+        val bmp3 = Bitmap32Context2d(3, (shipSize * 0.3).toInt()) {
             lineWidth = 1.0
             lineCap = LineCap.ROUND
             stroke(Colors.WHITE) {

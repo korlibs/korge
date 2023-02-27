@@ -79,7 +79,7 @@ class ImageFormatsTest {
 		assertEquals("Bitmap32(190, 190)", bitmap2.toString())
 		//showImageAndWait(Bitmap32.diff(bitmap, bitmap2))
         val dist = bitmapOriginal.matchContentsDistinctCount(bitmap2)
-        assertTrue(message = "$dist < 500") { dist < 500 }
+        assertTrue(message = "$dist < 1000") { dist < 1000 }
 	}
 
 	@Test

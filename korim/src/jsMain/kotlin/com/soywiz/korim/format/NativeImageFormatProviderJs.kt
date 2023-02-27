@@ -401,7 +401,7 @@ class CanvasContext2dRenderer(private val canvas: HTMLCanvasElementLike) : Rende
         )
     }
 
-	override fun render(state: Context2d.State, fill: Boolean, winding: Winding?) {
+	override fun renderFinal(state: Context2d.State, fill: Boolean, winding: Winding?) {
 		if (state.path.isEmpty()) return
 
 		//println("beginPath")

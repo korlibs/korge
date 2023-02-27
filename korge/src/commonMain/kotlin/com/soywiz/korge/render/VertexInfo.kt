@@ -12,7 +12,6 @@ data class VertexInfo(
     var u: Float = 0f,
     var v: Float = 0f,
     var colorMul: RGBA = Colors.WHITE,
-    var colorAdd: Int = 0
 ) {
     var texWidth: Int = -1
     var texHeight: Int = -1
@@ -25,7 +24,6 @@ data class VertexInfo(
         this.u = buffer.getFloat32(index + 2)
         this.v = buffer.getFloat32(index + 3)
         this.colorMul = RGBA(buffer.getInt32(index + 4))
-        this.colorAdd = buffer.getInt32(index + 5)
     }
 
     fun toStringXY() = "[${x.niceStr},${y.niceStr}]"

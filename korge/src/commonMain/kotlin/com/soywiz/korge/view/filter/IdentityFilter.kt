@@ -2,7 +2,6 @@ package com.soywiz.korge.view.filter
 
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.BlendMode
-import com.soywiz.korim.color.ColorAdd
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korma.geom.MMatrix
 
@@ -20,7 +19,6 @@ open class IdentityFilter(val smoothing: Boolean) : Filter {
         texture: Texture,
         texWidth: Int,
         texHeight: Int,
-        renderColorAdd: ColorAdd,
         renderColorMul: RGBA,
         blendMode: BlendMode,
         filterScale: Double,
@@ -30,11 +28,9 @@ open class IdentityFilter(val smoothing: Boolean) : Filter {
                 texture,
                 m = matrix,
                 filtering = smoothing,
-                colorAdd = renderColorAdd,
                 colorMul = renderColorMul,
                 blendMode = blendMode,
-                program = BatchBuilder2D.getTextureLookupProgram(BatchBuilder2D.AddType.NO_ADD),
-                premultiplied = texture.premultiplied, wrap = false,
+                program = BatchBuilder2D.PROGRAM,
             )
         }
     }

@@ -1,7 +1,7 @@
 package com.soywiz.korma.geom
 
 import com.soywiz.korma.geom.shape.Shape2d
-import com.soywiz.korma.geom.shape.ops.plus
+import com.soywiz.korma.geom.shape.ops.*
 import com.soywiz.korma.geom.shape.toShape
 import com.soywiz.korma.geom.shape.toShape2d
 import com.soywiz.korma.geom.shape.totalVertices
@@ -46,7 +46,7 @@ class IntegrationShapeTest {
         )
         assertEquals(
             "[(10, 10), (100, 50), (120, 52)]",
-            (MRectangle(0, 0, 100, 100).toShape() + MRectangle(100, 50, 50, 50).toShape()).pathFind(
+            (MRectangle(0, 0, 100, 100).toShape() union MRectangle(100, 50, 50, 50).toShape()).pathFind(
                 IPoint(10, 10),
                 IPoint(120, 52)
             ).toString()

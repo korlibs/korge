@@ -7,12 +7,12 @@ import com.soywiz.korev.*
 import com.soywiz.korge.component.*
 import com.soywiz.korge.scene.ScaledScene
 import com.soywiz.korge.time.*
-import com.soywiz.korge.util.CancellableGroup
 import com.soywiz.korge.view.*
 import com.soywiz.korim.format.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korio.lang.Closeable
+import com.soywiz.korio.lang.CancellableGroup
 import kotlinx.coroutines.*
 import kotlin.reflect.*
 
