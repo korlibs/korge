@@ -1,34 +1,33 @@
-package com.soywiz.korge3d
+package com.soywiz.korma.geom
 
-import com.soywiz.korma.geom.*
 import kotlin.math.*
 import kotlin.test.*
 
-class Matrix3DTest {
+class Matrix3D2Test {
     val transMat = MMatrix3D.fromRows(
-            1f, 0f, 0f, 1f,
-            0f, 1f, 0f, 2f,
-            0f, 0f, 1f, 3f,
-            0f, 0f, 0f, 1f
+        1f, 0f, 0f, 1f,
+        0f, 1f, 0f, 2f,
+        0f, 0f, 1f, 3f,
+        0f, 0f, 0f, 1f
     )
 
     @Test
     fun testSetTRS() {
         assertEquals(
-                MMatrix3D(),
-                MMatrix3D().setTRS(
-                        Position3D(0, 0, 0),
-                        MQuaternion(),
-                        Scale3D(1, 1, 1)
-                )
+            MMatrix3D(),
+            MMatrix3D().setTRS(
+                Position3D(0, 0, 0),
+                MQuaternion(),
+                Scale3D(1, 1, 1)
+            )
         )
         assertEquals(
-                transMat,
-                MMatrix3D().setTRS(
-                        Position3D(1, 2, 3),
-                        MQuaternion(),
-                        Scale3D(1, 1, 1)
-                )
+            transMat,
+            MMatrix3D().setTRS(
+                Position3D(1, 2, 3),
+                MQuaternion(),
+                Scale3D(1, 1, 1)
+            )
         )
     }
 
@@ -77,25 +76,25 @@ class Matrix3DTest {
         val mat = MMatrix3D().setTRS(Position3D(1, 2, 3), MQuaternion().setEuler(15.degrees, 30.degrees, 60.degrees), Scale3D(1, 2, 3))
         val inv = MMatrix3D().invert(mat)
         assertEquals(
-                MMatrix3D().round(2).toString(),
-                (mat * inv).round(2).toString()
+            MMatrix3D().round(2).toString(),
+            (mat * inv).round(2).toString()
         )
     }
 
     fun assertEquals(a: MEulerRotation, b: MEulerRotation, delta: Double = 0.01) {
         assertTrue("$a\n$b\na!=b // delta=$delta") {
             abs(a.x.degrees - b.x.degrees) <= delta &&
-                    abs(a.y.degrees - b.y.degrees) <= delta &&
-                    abs(a.z.degrees - b.z.degrees) <= delta
+                abs(a.y.degrees - b.y.degrees) <= delta &&
+                abs(a.z.degrees - b.z.degrees) <= delta
         }
     }
 
     fun assertEquals(a: MQuaternion, b: MQuaternion, delta: Double = 0.01) {
         assertTrue("$a\n$b\na!=b // delta=$delta") {
             abs(a.x - b.x) <= delta &&
-                    abs(a.y - b.y) <= delta &&
-                    abs(a.z - b.z) <= delta &&
-                    abs(a.w - b.w) <= delta
+                abs(a.y - b.y) <= delta &&
+                abs(a.z - b.z) <= delta &&
+                abs(a.w - b.w) <= delta
         }
     }
 

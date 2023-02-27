@@ -28,7 +28,7 @@ class MainVector : ScaledScene(1280, 720) {
             }
             val image = resourcesVfs["korge.png"].readBitmap()
             val bmpResult = measureTimeWithResult {
-                NativeImageOrBitmap32(1280, 720, premultiplied = false, native = native).context2d {
+                NativeImageOrBitmap32(1280, 720, premultiplied = true, native = native).context2d {
                     listOf(LineCap.ROUND, LineCap.SQUARE, LineCap.BUTT).forEachIndexed { index, lineCap ->
                         keep {
                             translate(128 + 256 * index, 128)
