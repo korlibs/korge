@@ -2,7 +2,6 @@ package com.soywiz.korge.ui
 
 import com.soywiz.kds.*
 import com.soywiz.kds.iterators.fastForEach
-import com.soywiz.korge.scene.debugBmpFontSync
 import com.soywiz.korge.view.RenderableView
 import com.soywiz.korge.view.ViewRenderer
 import com.soywiz.korim.bitmap.*
@@ -165,7 +164,6 @@ fun UISkin(
 
 
 val DefaultUIFont get() = DefaultUIVectorFont
-val DefaultUIBitmapFont get() = debugBmpFontSync
 val DefaultUIVectorFont get() = DefaultTtfFontAsBitmap
 
 @ThreadLocal
