@@ -39,10 +39,6 @@ open class Container(
      * A collection with all the children [View]s.
      */
     val children: ContainerCollection = ContainerCollection(this, __children)
-    @Deprecated("", ReplaceWith("children"))
-    val childrenCollection: ContainerCollection get() = children
-    @Deprecated("", ReplaceWith("children"))
-    val collection: ContainerCollection get() = children
 
     @PublishedApi
     override val _children: List<View>? get() = __children

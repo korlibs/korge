@@ -10,10 +10,6 @@ class BlurFilter(
     @ViewProperty
     var optimize: Boolean = true
 ) : ComposedFilter() {
-    companion object {
-        @Deprecated("", ReplaceWith("BlurFilter(radius = initialRadius)"))
-        operator fun invoke(initialRadius: Double, dummy: Unit = Unit): BlurFilter = BlurFilter(radius = initialRadius)
-    }
     private val horizontal = DirectionalBlurFilter(angle = 0.degrees, radius, expandBorder).also { filters.add(it) }
     private val vertical = DirectionalBlurFilter(angle = 90.degrees, radius, expandBorder).also { filters.add(it) }
     @ViewProperty
