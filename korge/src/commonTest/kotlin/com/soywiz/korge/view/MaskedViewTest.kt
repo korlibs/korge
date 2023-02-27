@@ -12,7 +12,8 @@ class MaskedViewTest : ViewsForTesting() {
     @Test
     fun testMaskBatches() {
         val vertices = arrayListOf<List<VertexInfo>>()
-        val stencils = arrayListOf<AGStencilFullState>()
+        val stencilsOpFunc = arrayListOf<AGStencilOpFunc>()
+        val stencilsRef = arrayListOf<AGStencilReference>()
 
         val masked = MaskedView()
         masked.mask = SolidRect(32.0, 32.0)
@@ -23,7 +24,8 @@ class MaskedViewTest : ViewsForTesting() {
             override fun execute(command: AGCommand) {
                 when (command) {
                     is AGBatch -> {
-                        stencils += command.stencilFull
+                        stencilsOpFunc += command.stencilOpFunc
+                        stencilsRef += command.stencilRef
                     }
                     else -> Unit
                 }
@@ -36,8 +38,12 @@ class MaskedViewTest : ViewsForTesting() {
 
         assertEquals(2, vertices.size)
         assertEquals(listOf(
-            MaskStates.STATE_SHAPE.stencilFull.withReferenceValue(referenceValue = 1),
-            MaskStates.STATE_CONTENT.stencilFull.withReferenceValue(referenceValue = 1)
-        ), stencils)
+            MaskStates.STATE_SHAPE.stencilOpFunc,
+            MaskStates.STATE_CONTENT.stencilOpFunc
+        ), stencilsOpFunc)
+        assertEquals(listOf(
+            MaskStates.STATE_SHAPE.stencilRef.withReferenceValue(referenceValue = 1),
+            MaskStates.STATE_CONTENT.stencilRef.withReferenceValue(referenceValue = 1)
+        ), stencilsRef)
     }
 }

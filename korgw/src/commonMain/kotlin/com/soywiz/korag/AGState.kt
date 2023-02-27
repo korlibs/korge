@@ -473,17 +473,6 @@ inline class AGDepthAndFrontFace(val data: Int) {
     fun withFrontFace(frontFace: AGFrontFace): AGDepthAndFrontFace = AGDepthAndFrontFace(data.insert2(frontFace.ordinal, 30))
 }
 
-// @TODO: This AGStencilFullState can't hold both AGStencilReference for back and front
-inline class AGStencilFullState private constructor(private val data: Long) {
-    constructor(opFunc: AGStencilOpFunc = AGStencilOpFunc.DEFAULT, ref: AGStencilReference = AGStencilReference.DEFAULT) : this(Long.fromLowHigh(opFunc.data, ref.front))
-    val opFunc: AGStencilOpFunc get() = AGStencilOpFunc(data.low)
-    val ref: AGStencilReference get() = AGStencilReference(data.high, data.high)
-
-    fun withOpFunc(opFunc: AGStencilOpFunc): AGStencilFullState = AGStencilFullState(opFunc, ref)
-    fun withRef(ref: AGStencilReference): AGStencilFullState = AGStencilFullState(opFunc, ref)
-    fun withReferenceValue(referenceValue: Int): AGStencilFullState = withRef(ref.withReferenceValue(referenceValue))
-}
-
 inline class AGStencilReference(val data: Long) {
     constructor(front: Int, back: Int) : this(Long.fromLowHigh(front, back))
 
@@ -837,13 +826,6 @@ data class AGBatch(
     var vertexCount: Int = 0,
     var instances: Int = 1
 ) : AGCommand {
-    var stencilFull: AGStencilFullState
-        get() = AGStencilFullState(stencilOpFunc, stencilRef)
-        set(value) {
-            stencilOpFunc = value.opFunc
-            stencilRef = value.ref
-        }
-
     override fun execute(ag: AG) {
         ag.draw(frameBuffer, frameBufferInfo, vertexData, program, drawType, vertexCount, indices, indexType, drawOffset, blending, uniforms, stencilRef, stencilOpFunc, colorMask, depthAndFrontFace, scissor, cullFace, instances)
     }

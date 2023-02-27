@@ -179,19 +179,27 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
                 gl.enable(KmlGl.STENCIL_TEST)
                 //stencilOpFunc.triangleFace.ordinal
 
-                gl.stencilFuncSeparate(KmlGl.FRONT_AND_BACK, stencilOpFunc.compareModeFront.toGl(), stencilRef.referenceValueFront, stencilRef.readMaskFront)
-                gl.stencilOpSeparate(KmlGl.FRONT_AND_BACK, stencilOpFunc.actionOnDepthFailFront.toGl(), stencilOpFunc.actionOnDepthPassStencilFailFront.toGl(), stencilOpFunc.actionOnBothPassFront.toGl())
-                gl.stencilMaskSeparate(KmlGl.FRONT_AND_BACK, stencilRef.writeMaskFront)
+                if (stencilOpFunc.compareModeFront == stencilOpFunc.compareModeBack && stencilRef.referenceValueFront == stencilRef.referenceValueBack && stencilRef.readMaskFront == stencilRef.readMaskBack) {
+                    gl.stencilFunc(stencilOpFunc.compareModeFront.toGl(), stencilRef.referenceValueFront, stencilRef.readMaskFront)
+                } else {
+                    gl.stencilFuncSeparate(KmlGl.FRONT, stencilOpFunc.compareModeFront.toGl(), stencilRef.referenceValueFront, stencilRef.readMaskFront)
+                    gl.stencilFuncSeparate(KmlGl.BACK, stencilOpFunc.compareModeBack.toGl(), stencilRef.referenceValueBack, stencilRef.readMaskBack)
+                }
 
-                /*
-                gl.stencilFuncSeparate(KmlGl.FRONT, stencilOpFunc.compareModeFront.toGl(), stencilRef.referenceValueFront, stencilRef.readMaskFront)
-                gl.stencilFuncSeparate(KmlGl.BACK, stencilOpFunc.compareModeBack.toGl(), stencilRef.referenceValueBack, stencilRef.readMaskBack)
-                gl.stencilOpSeparate(KmlGl.FRONT, stencilOpFunc.actionOnDepthFailFront.toGl(), stencilOpFunc.actionOnDepthPassStencilFailFront.toGl(), stencilOpFunc.actionOnBothPassFront.toGl())
-                gl.stencilOpSeparate(KmlGl.BACK, stencilOpFunc.actionOnDepthFailBack.toGl(), stencilOpFunc.actionOnDepthPassStencilFailBack.toGl(), stencilOpFunc.actionOnBothPassBack.toGl())
-                gl.stencilMaskSeparate(KmlGl.FRONT, stencilRef.writeMaskFront)
-                gl.stencilMaskSeparate(KmlGl.FRONT, stencilRef.writeMaskBack)
+                if (stencilOpFunc.actionOnDepthFailFront == stencilOpFunc.actionOnDepthFailBack && stencilOpFunc.actionOnDepthPassStencilFailFront == stencilOpFunc.actionOnDepthPassStencilFailBack && stencilOpFunc.actionOnBothPassFront == stencilOpFunc.actionOnBothPassBack) {
+                    gl.stencilOp(stencilOpFunc.actionOnDepthFailFront.toGl(), stencilOpFunc.actionOnDepthPassStencilFailFront.toGl(), stencilOpFunc.actionOnBothPassFront.toGl())
+                } else {
+                    gl.stencilOpSeparate(KmlGl.FRONT, stencilOpFunc.actionOnDepthFailFront.toGl(), stencilOpFunc.actionOnDepthPassStencilFailFront.toGl(), stencilOpFunc.actionOnBothPassFront.toGl())
+                    gl.stencilOpSeparate(KmlGl.BACK, stencilOpFunc.actionOnDepthFailBack.toGl(), stencilOpFunc.actionOnDepthPassStencilFailBack.toGl(), stencilOpFunc.actionOnBothPassBack.toGl())
+                }
 
-                 */
+                if (stencilRef.writeMaskFront == stencilRef.writeMaskBack) {
+                    gl.stencilMask(stencilRef.writeMaskFront)
+                } else {
+                    gl.stencilMaskSeparate(KmlGl.FRONT, stencilRef.writeMaskFront)
+                    gl.stencilMaskSeparate(KmlGl.BACK, stencilRef.writeMaskBack)
+                }
+
                 //println("ENABLE STENCIL: writeMask=${stencilRef.writeMask}, func=[${stencilOpFunc.compareMode}, ${stencilRef.referenceValue}, ${stencilRef.readMask}], op=[${stencilOpFunc.actionOnDepthFail}, ${stencilOpFunc.actionOnDepthPassStencilFail}, ${stencilOpFunc.actionOnBothPass}]")
             } else {
                 gl.disable(KmlGl.STENCIL_TEST)
