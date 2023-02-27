@@ -97,6 +97,14 @@ class AGUniformValues(val capacity: Int = 8 * 1024) {
     operator fun set(uniform: Uniform, value: Array<MMatrix3D>) { this[uniform].set(value) }
     operator fun set(uniform: Uniform, value: Array<FloatArray>) { this[uniform].set(value) }
 
+    fun set(uniform: Uniform, v0: Float, v1: Float) { this[uniform].set(v0, v1) }
+    fun set(uniform: Uniform, v0: Float, v1: Float, v2: Float) { this[uniform].set(v0, v1, v2) }
+    fun set(uniform: Uniform, v0: Float, v1: Float, v2: Float, v3: Float) { this[uniform].set(v0, v1, v2, v3) }
+
+    fun set(uniform: Uniform, v0: Double, v1: Double) { this[uniform].set(v0, v1) }
+    fun set(uniform: Uniform, v0: Double, v1: Double, v2: Double) { this[uniform].set(v0, v1, v2) }
+    fun set(uniform: Uniform, v0: Double, v1: Double, v2: Double, v3: Double) { this[uniform].set(v0, v1, v2, v3) }
+
     companion object {
         @PublishedApi internal val EMPTY = AGUniformValues()
 

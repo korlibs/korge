@@ -97,15 +97,12 @@ fun RenderContext2D.materialRoundRect(
     //colorMul: RGBA = Colors.WHITE,
 ) {
     _tempProgramUniforms.clear()
-    _tempProgramUniforms[MaterialRender.u_Radius] = floatArrayOf(
-        radius.bottomRight.toFloat(), radius.topRight.toFloat(),
-        radius.bottomLeft.toFloat(), radius.topLeft.toFloat(),
-    )
-    _tempProgramUniforms[MaterialRender.u_Size] = MPoint(width, height)
+    _tempProgramUniforms.set(MaterialRender.u_Radius, radius.bottomRight, radius.topRight, radius.bottomLeft, radius.topLeft,)
+    _tempProgramUniforms.set(MaterialRender.u_Size, width, height)
 
     _tempProgramUniforms[MaterialRender.u_BackgroundColor] = color.premultipliedFast
 
-    _tempProgramUniforms[MaterialRender.u_HighlightPos] = MPoint(highlightPos.x * width, highlightPos.y * height)
+    _tempProgramUniforms.set(MaterialRender.u_HighlightPos, highlightPos.x * width, highlightPos.y * height)
     _tempProgramUniforms[MaterialRender.u_HighlightRadius] = highlightRadius * kotlin.math.max(width, height) * 1.25
     _tempProgramUniforms[MaterialRender.u_HighlightColor] = highlightColor.premultipliedFast
 
@@ -113,7 +110,7 @@ fun RenderContext2D.materialRoundRect(
     _tempProgramUniforms[MaterialRender.u_BorderColor] = borderColor.premultipliedFast
 
     _tempProgramUniforms[MaterialRender.u_ShadowColor] = shadowColor.premultipliedFast
-    _tempProgramUniforms[MaterialRender.u_ShadowOffset] = MPoint(shadowOffset.x, shadowOffset.y)
+    _tempProgramUniforms[MaterialRender.u_ShadowOffset] = shadowOffset
     _tempProgramUniforms[MaterialRender.u_ShadowRadius] = shadowRadius
 
     quadPaddedCustomProgram(x, y, width, height, MaterialRender.PROGRAM, _tempProgramUniforms, IMargin(shadowRadius + shadowOffset.length))
