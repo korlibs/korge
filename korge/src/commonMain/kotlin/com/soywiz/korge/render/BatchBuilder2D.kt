@@ -767,10 +767,6 @@ class BatchBuilder2D constructor(
         //uniforms[u_OutputPre] = ctx.isRenderingToTexture
     }
 
-    fun getIsPremultiplied(texture: AGTexture?): Boolean = texture?.premultiplied == true
-    fun getDefaultProgram(): Program = PROGRAM
-    fun getDefaultProgramForTexture(): Program = getDefaultProgram()
-
     private val batches = fastArrayListOf<AGBatch>()
 
     private var lastIndexPos = 0

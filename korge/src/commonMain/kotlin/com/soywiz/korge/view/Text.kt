@@ -57,8 +57,6 @@ open class Text(
     }
 
     var smoothing: Boolean = true
-    @Deprecated("")
-    var filtering: Boolean by ::smoothing
 
     private var cachedVersion = -1
     private var cachedVersionRenderer = -1

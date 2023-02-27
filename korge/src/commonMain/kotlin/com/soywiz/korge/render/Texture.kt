@@ -15,8 +15,6 @@ class TextureBase(
     override var height: Int
 ) : Closeable, ISizeInt {
     var version = -1
-    @Deprecated("")
-    val premultiplied get() = base?.premultiplied == true
     override fun close() {
         base?.close()
         base = null
@@ -27,9 +25,6 @@ class TextureBase(
 
     override fun toString(): String = "TextureBase($base)"
 }
-
-@Deprecated("", ReplaceWith("base.premultiplied"))
-val TextureCoords.premultiplied: Boolean get() = base.premultiplied
 
 typealias TextureCoords = SliceCoordsWithBase<TextureBase>
 typealias Texture = RectSlice<TextureBase>
