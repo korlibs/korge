@@ -89,20 +89,6 @@ data class GradientPaint(
     val isRadial: Boolean get() = kind == GradientKind.RADIAL
     val isSweep: Boolean get() = kind == GradientKind.SWEEP
 
-    @Deprecated("")
-    fun x0(m: MMatrix) = m.transformX(x0, y0)
-    @Deprecated("")
-    fun y0(m: MMatrix) = m.transformY(x0, y0)
-    @Deprecated("")
-    fun r0(m: MMatrix) = m.transformX(r0, r0)
-
-    @Deprecated("")
-    fun x1(m: MMatrix) = m.transformX(x1, y1)
-    @Deprecated("")
-    fun y1(m: MMatrix) = m.transformY(x1, y1)
-    @Deprecated("")
-    fun r1(m: MMatrix) = m.transformX(r1, r1)
-
     val numberOfStops get() = stops.size
 
     companion object {

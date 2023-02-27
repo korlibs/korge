@@ -55,7 +55,7 @@ abstract class BaseGraphics(
     @OptIn(KorgeExperimental::class)
     override fun renderInternal(ctx: RenderContext) {
         bitmapsToRemove.fastForEach {
-            if (it != Bitmaps.transparent.bmpBase) {
+            if (it != Bitmaps.transparent.bmp) {
                 ctx.agBitmapTextureManager.removeBitmap(it, "BaseGraphics")
             }
         }

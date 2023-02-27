@@ -68,7 +68,7 @@ class ReferenceGraphicsTest {
                 }
             }
         }
-        val fview = FSprites.FView(sprites, Array(N) { bmp.bmpBase })
+        val fview = FSprites.FView(sprites, Array(N) { bmp.bmp })
         addChild(fview)
 
         assertScreenshot(this, "N$N", includeBackground = true)

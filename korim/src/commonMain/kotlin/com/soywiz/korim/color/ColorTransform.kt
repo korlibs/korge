@@ -18,9 +18,6 @@ data class ColorTransform(
     private var _aA: Int
 ) : MutableInterpolable<ColorTransform>, Interpolable<ColorTransform> {
     companion object {
-        @Deprecated("This being mutable is dangeour", level = DeprecationLevel.ERROR)
-        inline val identity: ColorTransform get() = TODO()
-
         inline fun Multiply(r: Double, g: Double, b: Double, a: Double) = ColorTransform(r, g, b, a, 0, 0, 0, 0)
         inline fun Add(r: Int, g: Int, b: Int, a: Int) = ColorTransform(1, 1, 1, 1, r, g, b, a)
     }

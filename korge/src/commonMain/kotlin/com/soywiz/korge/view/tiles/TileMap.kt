@@ -169,7 +169,7 @@ class TileMap(
         //private const val BL = 3
     }
 
-    private val infosPool = Pool(reset = { it.reset() }) { Info(Bitmaps.transparent.bmpBase, ShrinkableTexturedVertexArray(TexturedVertexArray.EMPTY)) }
+    private val infosPool = Pool(reset = { it.reset() }) { Info(Bitmaps.transparent.bmp, ShrinkableTexturedVertexArray(TexturedVertexArray.EMPTY)) }
     private var lastVirtualRect = MRectangle(-1, -1, -1, -1)
     private var currentVirtualRect = MRectangle(-1, -1, -1, -1)
 

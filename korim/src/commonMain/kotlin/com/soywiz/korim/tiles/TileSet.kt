@@ -28,8 +28,8 @@ class TileSet(
 ) {
     override fun toString(): String = "TileSet(size=${width}x$height, tiles=${tilesMap.keys.toList()})"
 
-    val base: Bitmap by lazy { if (tilesMap.size == 0) Bitmaps.transparent.bmpBase else tilesMap.firstValue().slice.bmpBase }
-    val hasMultipleBaseBitmaps by lazy { tilesMap.values.any { it !== null && it.slice.bmpBase !== base } }
+    val base: Bitmap by lazy { if (tilesMap.size == 0) Bitmaps.transparent.bmp else tilesMap.firstValue().slice.bmp }
+    val hasMultipleBaseBitmaps by lazy { tilesMap.values.any { it !== null && it.slice.bmp !== base } }
     val infos by lazy { Array<TileSetTileInfo?>(tilesMap.keys.maxOrNull()?.plus(1) ?: 0) { tilesMap[it] } }
     val textures by lazy { Array<BitmapCoords?>(tilesMap.keys.maxOrNull()?.plus(1) ?: 0) { tilesMap[it]?.slice } }
 	//init { if (hasMultipleBaseBitmaps) throw RuntimeException("All tiles in the set must have the same base texture") }
