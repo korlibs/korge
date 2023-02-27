@@ -15,7 +15,7 @@ import com.soywiz.korma.geom.*
 class MainEditor : Scene() {
     override suspend fun SContainer.sceneMain() {
         for (n in 0 until 10) {
-            text("HELLO АБВГДЕЖ HELLO АБВГДЕЖ HELLO АБВГДЕЖ HELLO АБВГДЕЖ", font = DefaultTtfFontAsBitmap, renderer = DefaultStringTextRenderer).xy(100, 100 + n * 2)
+            text2("HELLO АБВГДЕЖ HELLO АБВГДЕЖ HELLO АБВГДЕЖ HELLO АБВГДЕЖ", font = DefaultTtfFontAsBitmap, renderer = DefaultStringTextRenderer).xy(100, 100 + n * 2)
         }
 
         //return@Korge

@@ -75,7 +75,7 @@ class Bunny(tex: BmpSlice) : FastSprite(tex) {
             it.blendMode = BlendMode.NONE
         })
 
-        val bunnyCountText = text("", font = DefaultTtfFontAsBitmap, textSize = 16.0, alignment = TextAlignment.TOP_LEFT).position(16.0, 16.0)
+        val bunnyCountText = text2("", font = DefaultTtfFontAsBitmap, textSize = 16.0, alignment = TextAlignment.TOP_LEFT).position(16.0, 16.0)
 
         val random = Random(0)
 

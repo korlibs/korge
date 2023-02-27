@@ -6,7 +6,7 @@ import com.soywiz.korim.font.*
 import com.soywiz.korim.paint.*
 import com.soywiz.korio.resources.*
 
-val ResourcesContainer.minesweeperFont by resourceGlobal {
+val ResourcesContainer.minesweeperFont: BitmapFont by lazy {
     DefaultTtfFont.toBitmapFont(
         fontSize = 32.0,
         paint = LinearGradientPaint(0.0, 0.0, 0.0, 32.0)

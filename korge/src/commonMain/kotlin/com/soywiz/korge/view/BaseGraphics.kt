@@ -1,14 +1,12 @@
 package com.soywiz.korge.view
 
-import com.soywiz.kds.iterators.fastForEach
-import com.soywiz.kmem.toIntCeil
-import com.soywiz.korge.annotations.KorgeExperimental
-import com.soywiz.korge.render.RenderContext
-import com.soywiz.korge.view.internal.InternalViewAutoscaling
+import com.soywiz.kds.iterators.*
+import com.soywiz.kmem.*
+import com.soywiz.korge.annotations.*
+import com.soywiz.korge.render.*
 import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.vector.Context2d
-import com.soywiz.korma.geom.BoundsBuilder
-import com.soywiz.korma.geom.MRectangle
+import com.soywiz.korim.vector.*
+import com.soywiz.korma.geom.*
 
 abstract class BaseGraphics(
     var autoScaling: Boolean = false,
@@ -192,4 +190,53 @@ abstract class BaseGraphics(
     fun getLocalBoundsInternalNoAnchor(out: MRectangle, includeStrokes: Boolean) {
         out.copyFrom(boundsUnsafe(includeStrokes))
     }
+
+    internal class InternalViewAutoscaling {
+        var renderedAtScaleXInv = 1.0; private set
+        var renderedAtScaleYInv = 1.0; private set
+        var renderedAtScaleX = 1.0; private set
+        var renderedAtScaleY = 1.0; private set
+        var renderedAtScaleXY = 1.0; private set
+        private val matrixTransform = MMatrix.Transform()
+
+        fun onRender(autoScaling: Boolean, autoScalingPrecise: Boolean, globalMatrix: MMatrix): Boolean {
+            if (autoScaling) {
+                matrixTransform.setMatrixNoReturn(globalMatrix)
+                //val sx = kotlin.math.abs(matrixTransform.scaleX / this.scaleX)
+                //val sy = kotlin.math.abs(matrixTransform.scaleY / this.scaleY)
+
+                val sx = kotlin.math.abs(matrixTransform.scaleX)
+                val sy = kotlin.math.abs(matrixTransform.scaleY)
+                val sxy = kotlin.math.max(sx, sy)
+
+                val diffX = kotlin.math.abs((sx / renderedAtScaleX) - 1.0)
+                val diffY = kotlin.math.abs((sy / renderedAtScaleY) - 1.0)
+
+                val shouldUpdate = when (autoScalingPrecise) {
+                    true -> (diffX > 0.0 || diffY > 0.0)
+                    false -> diffX >= 0.1 || diffY >= 0.1
+                }
+
+                if (shouldUpdate) {
+                    //println("diffX=$diffX, diffY=$diffY")
+
+                    renderedAtScaleX = sx
+                    renderedAtScaleY = sy
+                    renderedAtScaleXY = sxy
+                    renderedAtScaleXInv = 1.0 / sx
+                    renderedAtScaleYInv = 1.0 / sy
+                    //println("renderedAtScale: $renderedAtScaleX, $renderedAtScaleY")
+                    return true
+                }
+            } else {
+                renderedAtScaleX = 1.0
+                renderedAtScaleY = 1.0
+                renderedAtScaleXY = 1.0
+                renderedAtScaleXInv = 1.0
+                renderedAtScaleYInv = 1.0
+            }
+            return false
+        }
+    }
+
 }

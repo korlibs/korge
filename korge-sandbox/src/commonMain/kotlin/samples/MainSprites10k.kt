@@ -1,12 +1,10 @@
 package samples
 
 import com.soywiz.klock.milliseconds
-import com.soywiz.korge.Korge
-import com.soywiz.korge.render.BatchBuilder2D
 import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.view.SContainer
 import com.soywiz.korge.view.Sprite
-import com.soywiz.korge.view.SpriteAnimation
+import com.soywiz.korge.view.animation.SpriteAnimation
 import com.soywiz.korge.view.addUpdater
 import com.soywiz.korge.view.scale
 import com.soywiz.korge.view.sprite

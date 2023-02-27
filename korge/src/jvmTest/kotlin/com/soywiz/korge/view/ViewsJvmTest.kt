@@ -34,13 +34,13 @@ class ViewsJvmTest : ViewsForTesting(log = true) {
 	@Test
 	fun textGetBounds1() = viewsTest {
 		val font = views.debugBmpFont
-		assertEquals(MRectangle(0, 0, 77, 8), TextOld("Hello World", font = font, textSize = 8.0).globalBounds)
+		assertEquals(MRectangle(0, 0, 77, 8), Text2("Hello World", font = font, textSize = 8.0).globalBounds)
 	}
 
     @Test
     fun textGetBounds2() = viewsTest {
         val font = views.debugBmpFont
-        assertEquals(MRectangle(0, 0, 154, 16), TextOld("Hello World", font = font, textSize = 16.0).globalBounds)
+        assertEquals(MRectangle(0, 0, 154, 16), Text2("Hello World", font = font, textSize = 16.0).globalBounds)
     }
 
     @Test

@@ -14,8 +14,10 @@ import com.soywiz.korge.view.debug.*
 import com.soywiz.korgw.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.font.*
+import com.soywiz.korim.text.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.lang.*
+import com.soywiz.korio.resources.*
 import com.soywiz.korio.util.length
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.bezier.*
@@ -24,19 +26,20 @@ import kotlin.text.isLetterOrDigit
 
 @KorgeExperimental
 class TextEditController(
-    val textView: Text,
-    val caretContainer: Container = textView,
-    val eventHandler: View = textView,
+    val textView: IText,
+    val caretContainer: Container = textView.asView,
+    val eventHandler: View = textView.asView,
     val bg: RenderableView? = null,
 ) : Closeable, UIFocusable, ISoftKeyboardConfig by SoftKeyboardConfig() {
+    val textViewView: Container = textView.asView
     init {
-        textView.focusable = this
+        textViewView.focusable = this
     }
 
-    val stage: Stage? get() = textView.stage
+    val stage: Stage? get() = textViewView.stage
     var initialText: String = textView.text
     private val closeables = CancellableGroup()
-    override val UIFocusManager.Scope.focusView: View get() = this@TextEditController.textView
+    override val UIFocusManager.Scope.focusView: View get() = this@TextEditController.textViewView
     val onEscPressed = Signal<TextEditController>()
     val onReturnPressed = Signal<TextEditController>()
     val onTextUpdated = Signal<TextEditController>()
@@ -67,7 +70,7 @@ class TextEditController(
         }
 
     init {
-        closeables += textView.onNewAttachDetach(onAttach = {
+        closeables += textViewView.onNewAttachDetach(onAttach = {
             this.stage.uiFocusManager
         })
         onSizeChanged(this)
@@ -191,7 +194,7 @@ class TextEditController(
             select(value)
         }
 
-    private val gameWindow get() = textView.stage!!.views.gameWindow
+    private val gameWindow get() = textViewView.stage!!.views.gameWindow
 
     fun getCaretAtIndex(index: Int): Bezier {
         val glyphPositions = textView.getGlyphMetrics().glyphs
@@ -273,7 +276,7 @@ class TextEditController(
         caret.scaledWidth = endX - startX + (if (range.isEmpty()) 2.0 else 0.0)
         */
         caret.visible = focused
-        textView.invalidateRender()
+        textViewView.invalidateRender()
     }
 
     fun moveToIndex(selection: Boolean, index: Int) {
@@ -512,11 +515,20 @@ class TextEditController(
     fun KeyEvent.isNativeCtrl(): Boolean = this.metaOrCtrl
 
     override fun close() {
-        this.textView.cursor = null
+        this.textViewView.cursor = null
         closeables.cancel()
-        textView.focusable = null
+        textViewView.focusable = null
     }
 }
 
-fun Text.editText(caretContainer: Container = this): TextEditController =
+interface IText {
+    val asView: Container
+    var text: String
+    var textSize: Double
+    var font: Resourceable<out Font>
+    var color: RGBA
+    fun getGlyphMetrics(): TextMetricsResult
+}
+
+fun IText.editText(caretContainer: Container = this.asView): TextEditController =
     TextEditController(this, caretContainer)

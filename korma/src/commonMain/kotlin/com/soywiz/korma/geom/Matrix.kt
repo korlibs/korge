@@ -294,7 +294,6 @@ interface IMatrix {
     val tx: Double
     val ty: Double
 
-
     // Transform points
     fun transform(p: IPoint, out: MPoint = MPoint()): MPoint = transform(p.x, p.y, out)
     fun transform(px: Double, py: Double, out: MPoint = MPoint()): MPoint = out.setTo(transformX(px, py), transformY(px, py))
@@ -320,6 +319,8 @@ interface IMatrix {
     fun transformYf(px: Double, py: Double): Float = transformY(px, py).toFloat()
     fun transformYf(px: Float, py: Float): Float = transformY(px.toDouble(), py.toDouble()).toFloat()
     fun transformYf(px: Int, py: Int): Float = transformY(px.toDouble(), py.toDouble()).toFloat()
+
+    fun clone(): MMatrix = MMatrix(a, b, c, d, tx, ty)
 }
 
 @KormaMutableApi
@@ -594,7 +595,7 @@ data class MMatrix(
     fun setTransform(x: Float = 0f, y: Float = 0f, scaleX: Float = 1f, scaleY: Float = 1f, rotation: Angle = Angle.ZERO, skewX: Angle = Angle.ZERO, skewY: Angle = Angle.ZERO): MMatrix =
         setTransform(x.toDouble(), y.toDouble(), scaleX.toDouble(), scaleY.toDouble(), rotation, skewX, skewY)
 
-    fun clone(): MMatrix = MMatrix(a, b, c, d, tx, ty)
+    override fun clone(): MMatrix = MMatrix(a, b, c, d, tx, ty)
 
     operator fun times(that: IMatrix): MMatrix = MMatrix().multiply(this, that)
     operator fun times(scale: Double): MMatrix = MMatrix().copyFrom(this).scale(scale)

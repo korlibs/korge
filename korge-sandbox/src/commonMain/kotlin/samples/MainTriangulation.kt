@@ -1,24 +1,16 @@
 package samples
 
-import com.soywiz.korge.input.mouse
-import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.view.GraphicsRenderer
-import com.soywiz.korge.view.SContainer
-import com.soywiz.korge.view.graphics
-import com.soywiz.korge.view.position
-import com.soywiz.korge.view.textOld
-import com.soywiz.korim.color.Colors
-import com.soywiz.korma.geom.MPoint
-import com.soywiz.korma.geom.vector.StrokeInfo
-import com.soywiz.korma.geom.vector.circle
-import com.soywiz.korma.geom.vector.line
-import com.soywiz.korma.geom.vector.lineTo
-import com.soywiz.korma.geom.vector.moveTo
-import com.soywiz.korma.triangle.triangulate.triangulate
+import com.soywiz.korge.input.*
+import com.soywiz.korge.scene.*
+import com.soywiz.korge.view.*
+import com.soywiz.korim.color.*
+import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.vector.*
+import com.soywiz.korma.triangle.triangulate.*
 
 class MainTriangulation : Scene() {
     override suspend fun SContainer.sceneMain() {
-        textOld("Add Points by clicking with the mouse", 14.0).position(5.0, 5.0)
+        text("Add Points by clicking with the mouse", 14.0).position(5.0, 5.0)
         val g = graphics(renderer = GraphicsRenderer.SYSTEM)
         //val g = graphics(renderer = GraphicsRenderer.GPU)
         //val g = cpuGraphics()

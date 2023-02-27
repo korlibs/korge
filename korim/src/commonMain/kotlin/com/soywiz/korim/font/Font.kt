@@ -49,8 +49,10 @@ data class TextToBitmapResult(
 ) : BaseTextMetricsResult
 
 data class TextMetricsResult(
-    override var fmetrics: FontMetrics = FontMetrics(),
-    override var metrics: TextMetrics = TextMetrics(),
+    @Deprecated("")
+    override var fmetrics: FontMetrics = FontMetrics(), // @TODO: This might be invalid
+    @Deprecated("")
+    override var metrics: TextMetrics = TextMetrics(), // @TODO: This might be invalid
     override var glyphs: List<PlacedGlyphMetrics> = emptyList(),
     override var glyphsPerLine: List<List<PlacedGlyphMetrics>> = emptyList(),
 ) : BaseTextMetricsResult
@@ -70,7 +72,7 @@ class MultiplePlacedGlyphMetrics {
     operator fun plusAssign(glyph: PlacedGlyphMetrics) = add(glyph)
 }
 
-data class PlacedGlyphMetrics constructor(
+data class PlacedGlyphMetrics(
     val codePoint: Int,
     val x: Double,
     val y: Double,

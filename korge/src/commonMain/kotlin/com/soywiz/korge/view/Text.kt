@@ -1,495 +1,253 @@
 package com.soywiz.korge.view
 
+import com.soywiz.kmem.*
 import com.soywiz.korag.shader.*
-import com.soywiz.korge.html.*
+import com.soywiz.korge.bitmapfont.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.text.*
-import com.soywiz.korge.view.filter.*
+import com.soywiz.korge.ui.*
 import com.soywiz.korge.view.property.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.font.*
 import com.soywiz.korim.paint.*
 import com.soywiz.korim.text.*
-import com.soywiz.korio.async.*
-import com.soywiz.korio.file.*
 import com.soywiz.korio.resources.*
 import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.vector.*
 
-/*
-// Example:
-val font = BitmapFont(DefaultTtfFont, 64.0)
-
-var offset = 0.degrees
-addUpdater { offset += 10.degrees }
-text2("Hello World!", color = Colors.RED, font = font, renderer = CreateStringTextRenderer { text, n, c, c1, g, advance ->
-    transform.identity()
-    val sin = sin(offset + (n * 360 / text.length).degrees)
-    transform.rotate(15.degrees)
-    transform.translate(0.0, sin * 16)
-    transform.scale(1.0, 1.0 + sin * 0.1)
-    put(c)
-    advance(advance)
-}).position(100, 100)
-*/
 inline fun Container.text(
-    text: String, textSize: Double = Text.DEFAULT_TEXT_SIZE,
-    color: RGBA = Colors.WHITE, font: Resourceable<out Font> = DefaultTtfFontAsBitmap,
-    alignment: TextAlignment = TextAlignment.TOP_LEFT,
-    renderer: TextRenderer<String> = DefaultStringTextRenderer,
-    autoScaling: Boolean = Text.DEFAULT_AUTO_SCALING,
-    fill: Paint? = null, stroke: Stroke? = null,
+    text: String,
+    textSize: Double = 16.0,
+    font: Font = DefaultTtfFontAsBitmap,
+    align: TextAlignment = TextAlignment.TOP_LEFT,
+    width: Double = 100.0,
+    height: Double = 100.0,
+    color: RGBA? = null,
+    autoSize: Boolean = true,
     block: @ViewDslMarker Text.() -> Unit = {}
 ): Text
-    = Text(text, textSize, color, font, alignment, renderer, autoScaling, fill, stroke).addTo(this, block)
+    = Text(text, textSize, font, align, width, height, color, autoSize).addTo(this, block)
+
+inline fun Container.textBlock(
+    text: RichTextData = RichTextData("", textSize = 16.0, font = DefaultTtfFontAsBitmap),
+    align: TextAlignment = TextAlignment.TOP_LEFT,
+    width: Double = 100.0,
+    height: Double = 100.0,
+    autoSize: Boolean = false,
+    block: @ViewDslMarker TextBlock.() -> Unit = {}
+): TextBlock
+    = TextBlock(text, align, width, height, autoSize).addTo(this, block)
+
+val RichTextData.Style.Companion.DEFAULT_AS_BITMAP by lazy { RichTextData.Style.DEFAULT.copy(font = DefaultTtfFontAsBitmap) }
 
 open class Text(
-    text: String, textSize: Double = DEFAULT_TEXT_SIZE,
-    color: RGBA = Colors.WHITE, font: Resourceable<out Font> = DefaultTtfFontAsBitmap,
-    alignment: TextAlignment = TextAlignment.TOP_LEFT,
-    renderer: TextRenderer<String> = DefaultStringTextRenderer,
-    autoScaling: Boolean = DEFAULT_AUTO_SCALING,
-    fill: Paint? = null, stroke: Stroke? = null,
-) : Container(), IText, ViewLeaf {
-    companion object {
-        val DEFAULT_TEXT_SIZE = 16.0
-        val DEFAULT_AUTO_SCALING = true
-    }
+    text: RichTextData = RichTextData("", RichTextData.Style.DEFAULT_AS_BITMAP),
+    align: TextAlignment = TextAlignment.TOP_LEFT,
+    width: Double = 100.0,
+    height: Double = 100.0,
+    autoSize: Boolean = true,
+) : BaseText(text, align, width, height, autoSize), IText {
+    override val asView: Container get() = this
 
-    var smoothing: Boolean = true
+    constructor(
+        text: String,
+        textSize: Double = 16.0,
+        font: Font = DefaultTtfFontAsBitmap,
+        align: TextAlignment = TextAlignment.TOP_LEFT,
+        width: Double = 100.0,
+        height: Double = 100.0,
+        color: RGBA? = null,
+        autoSize: Boolean = false,
+    ) : this(RichTextData(text, font, textSize, color = color), align, width, height, autoSize)
 
-    private var cachedVersion = -1
-    private var cachedVersionRenderer = -1
-    private var version = 0
+    override var text: String
+        get() = richText.text
+        set(value) { richText = richText.withText(value) }
 
-    var lineCount: Int = 0; private set
+    override var textSize: Double
+        get() = richText.defaultStyle.textSize
+        set(value) { richText = richText.withStyle(richText.defaultStyle.copy(textSize = value)) }
 
-    @ViewProperty
-    override var text: String = text; set(value) { if (field != value) {
-        field = value;
-        updateLineCount()
-        version++
-        invalidate()
-        invalidateRender()
-    } }
-    private fun updateLineCount() {
-        lineCount = text.count { it == '\n' } + 1
-    }
-    init {
-        updateLineCount()
-    }
-    var fillStyle: Paint? = fill ?: color; set(value) { if (field != value) { field = value; version++ } }
-    var stroke: Stroke? = stroke; set(value) { if (field != value) { field = value; version++ } }
+    var textColor: RGBA?
+        get() = richText.defaultStyle.color
+        set(value) { richText = richText.withStyle(richText.defaultStyle.copy(color = value)) }
 
-    var color: RGBA
-        get() = (fillStyle as? RGBA?) ?: Colors.WHITE
-        set(value) { fillStyle = value }
+    var textFont: Font
+        get() = richText.defaultStyle.font
+        set(value) { richText = richText.withStyle(richText.defaultStyle.copy(font = value)) }
 
-    var font: Resourceable<out Font> = font; set(value) {
-        if (field != value) {
-            field = value
-            version++
-            invalidate()
-        }
-        //printStackTrace("setfont=$field")
-    }
-
-    @ViewProperty(min = 1.0, max = 300.0)
-    var textSize: Double = textSize; set(value) {
-        if (field != value) {
-            field = value
-            version++
-            invalidate()
-        }
-    }
-    var fontSize: Double by ::textSize
-
-    var renderer: TextRenderer<String> = renderer; set(value) {
-        if (field != value) {
-            field = value
-            version++
-            invalidate()
-        }
-    }
-
-    //private var cachedRendererVersionInvalidated: Int = -1
-    //init {
-    //    addUpdater {
-    //        val version = renderer.version
-    //        if (version != cachedRendererVersionInvalidated) {
-    //            cachedRendererVersionInvalidated = version
-    //            //println("renderer.version: $version != $cachedVersionRenderer")
-    //            invalidate()
-    //        }
-    //    }
-    //}
-
-    var alignment: TextAlignment = alignment
+    override var color: RGBA by ::colorMul
+    override var font: Resourceable<out Font>
+        get() = textFont
         set(value) {
-            if (field == value) return
-            field = value
-            //println("Text.alignment=$field")
-            version++
-            invalidate()
-        }
-    @ViewProperty
-    @ViewPropertyProvider(provider = HorizontalAlign.Provider::class)
-    var horizontalAlign: HorizontalAlign
-        get() = alignment.horizontal
-        set(value) { alignment = alignment.withHorizontal(value) }
-
-    @ViewProperty
-    @ViewPropertyProvider(provider = VerticalAlign.Provider::class)
-    var verticalAlign: VerticalAlign
-        get() = alignment.vertical
-        set(value) { alignment = alignment.withVertical(value) }
-
-    //private lateinit var textToBitmapResult: TextToBitmapResult
-    private val container = container()
-    private val bitmapFontActions = Text2TextRendererActions()
-    private var fontLoaded: Boolean = false
-    var autoScaling: Boolean = autoScaling
-        set(value) {
-            field = value
-            invalidate()
-        }
-    var preciseAutoscaling: Boolean = false
-        set(value) {
-            field = value
-            if (value) autoScaling = true
-            invalidate()
-        }
-    var fontSource: String? = null
-        set(value) {
-            field = value
-            fontLoaded = false
-            invalidate()
+            textFont = value as Font
         }
 
-    // @TODO: Use, font: Resourceable<out Font>
-    suspend fun forceLoadFontSource(currentVfs: VfsFile, sourceFile: String?) {
-        fontSource = sourceFile
-        fontLoaded = true
-        if (sourceFile != null) {
-            font = currentVfs["$sourceFile"].readFont()
-        }
-    }
-
-    private val _textBounds = MRectangle(0, 0, 2048, 2048)
-    var autoSize = true
-    private var boundsVersion = -1
-    val textBounds: MRectangle
-        get() {
-            getLocalBounds(_textBounds)
-            return _textBounds
-        }
-
-    fun setFormat(face: Resourceable<out Font>? = this.font, size: Int = this.textSize.toInt(), color: RGBA = this.color, align: TextAlignment = this.alignment) {
-        this.font = face ?: DefaultTtfFontAsBitmap
-        this.textSize = size.toDouble()
-        this.color = color
-        this.alignment = align
-    }
-
-    fun setFormat(format: Html.Format) {
-        setFormat(format.computedFace, format.computedSize, format.computedColor, format.computedAlign)
-    }
-
-    fun setTextBounds(rect: IRectangle) {
-        if (this._textBounds == rect && !autoSize) return
-        this._textBounds.copyFrom(rect)
-        autoSize = false
-        boundsVersion++
-        version++
-        invalidate()
-    }
-
-    fun unsetTextBounds() {
-        if (autoSize) return
-        autoSize = true
-        boundsVersion++
-        version++
-        invalidate()
-    }
-
-    override fun getLocalBoundsInternal(out: MRectangle) {
-        _renderInternal(null)
-        if (filter != null || backdropFilter != null) {
-            super.getLocalBoundsInternal(out) // This is required for getting proper bounds when glyphs are transformed
-        } else {
-            out.copyFrom(_textBounds)
-        }
-    }
-
-    private val tempMatrix = MMatrix()
-
-    override fun renderInternal(ctx: RenderContext) {
-        _renderInternal(ctx)
-        //val tva: TexturedVertexArray? = null
-        val tva = tva
-        if (tva != null) {
-            tempMatrix.copyFrom(globalMatrix)
-            tempMatrix.pretranslate(container.x, container.y)
-            ctx.useBatcher { batch ->
-                val bmpfont = font as BitmapFont
-                val tex = bmpfont.baseBmp
-                batch.setStateFast(tex, smoothing, renderBlendMode, bmpfont.agProgram, icount = tva.icount, vcount = tva.vcount)
-                batch.drawVertices(tva, tempMatrix)
-            }
-        } else {
-            super.renderInternal(ctx)
-        }
-    }
-
-    var cachedVersionGlyphMetrics = -1
-    private var _textMetricsResult: TextMetricsResult? = null
-
-    fun getGlyphMetrics(): TextMetricsResult {
-        _renderInternal(null)
-        if (cachedVersionGlyphMetrics != version) {
-            cachedVersionGlyphMetrics = version
-            _textMetricsResult = font.getOrNull()?.getTextBoundsWithGlyphs(fontSize, text, renderer, alignment)
-        }
-        return _textMetricsResult ?: error("Must ensure font is resolved before calling getGlyphMetrics")
-    }
-
-    private val tempBmpEntry = Text2TextRendererActions.Entry()
-    private val fontMetrics = FontMetrics()
-    private val textMetrics = TextMetrics()
-    private var lastAutoScaling: Boolean? = null
-    private var lastSmoothing: Boolean? = null
-    private var lastNativeRendering: Boolean? = null
-    private var tva: TexturedVertexArray? = null
-    private val identityMat = MMatrix()
-
+    @Deprecated("")
     var graphicsRenderer: GraphicsRenderer = GraphicsRenderer.SYSTEM
-        set(value) {
-            field = value
-            _staticGraphics?.renderer = value
-        }
 
-    fun _renderInternal(ctx: RenderContext?) {
-        if (ctx != null) {
-            val fontSource = fontSource
-            if (!fontLoaded && fontSource != null) {
-                fontLoaded = true
-                launchImmediately(ctx.coroutineContext) {
-                    forceLoadFontSource(ctx.views!!.currentVfs, fontSource)
-                }
-            }
-        }
-        //container.colorMul = color
-        val font: Font? = this.font.getOrNull()
+    var verticalAlign: VerticalAlign
+        get() = textAlignment.vertical
+        set(value) { textAlignment = textAlignment.withVertical(value) }
 
-        //println("font=$font")
+    var horizontalAlign: HorizontalAlign
+        get() = textAlignment.horizontal
+        set(value) { textAlignment = textAlignment.withHorizontal(value) }
 
-        if (autoSize && font is Font && boundsVersion != version) {
-            boundsVersion = version
-            val metrics = font.getTextBounds(textSize, text, out = textMetrics, renderer = renderer, align = alignment)
-            _textBounds.setTo(
-                metrics.left,
-                alignment.vertical.getOffsetY(metrics.height, -metrics.ascent),
-                metrics.width,
-                font.getFontMetrics(textSize, metrics = fontMetrics).lineHeight * lineCount
-            )
-            //println("autoSize: _textBounds=$_textBounds, ${alignment.horizontal}, ${alignment.horizontal.getOffsetX(metrics.width)} + ${metrics.left}")
-        }
-
-        when (font) {
-            null -> Unit
-            is BitmapFont -> {
-                val rversion = renderer.version
-                if (lastSmoothing != smoothing || cachedVersion != version || cachedVersionRenderer != rversion) {
-                    lastSmoothing = smoothing
-                    cachedVersionRenderer = rversion
-                    cachedVersion = version
-
-                    if (_staticGraphics != null) {
-                        _staticGraphics = null
-                        container.removeChildren()
-                    }
-                    bitmapFontActions.mreset()
-                    bitmapFontActions.align = TextAlignment.BASELINE_LEFT
-                    renderer.invoke(bitmapFontActions, text, textSize, font)
-                    while (container.numChildren < bitmapFontActions.size) {
-                        container.image(Bitmaps.transparent)
-                    }
-                    while (container.numChildren > bitmapFontActions.size) {
-                        container[container.numChildren - 1].removeFromParent()
-                    }
-                    //println(font.glyphs['H'.toInt()])
-                    //println(font.glyphs['a'.toInt()])
-                    //println(font.glyphs['g'.toInt()])
-
-                    val bounds = bitmapFontActions.getBounds()
-                    val firstBounds = bitmapFontActions.getGlyphBounds(0)
-                    val lineInfos = bitmapFontActions.getLineInfos()
-                    val firstLineInfos = lineInfos.firstOrNull() ?: Text2TextRendererActions.LineInfo()
-                    val totalHeight = lineInfos.sumOf { it.maxLineHeight }
-                    val textWidth = bounds.width
-                    val textHeight = bounds.height
-
-                    //println("lineInfos=$lineInfos")
-                    //println("Text.BitmapFont: bounds=$bounds, firstBounds=$firstBounds, textWidth=$textWidth, textHeight=$textHeight, verticalAlign=$verticalAlign")
-
-                    //val dx = (-_textBounds.width - textWidth) * horizontalAlign.ratio
-                    val dx = _textBounds.x
-                    val dy = when (verticalAlign) {
-                        VerticalAlign.BASELINE -> 0.0
-                        VerticalAlign.TOP -> firstLineInfos.maxTop
-                        else -> firstLineInfos.maxTop - (totalHeight) * verticalAlign.ratioFake
-                    }
-
-                    val program = font.agProgram
-                    //val program = null
-                    for (n in 0 until bitmapFontActions.size) {
-                        val entry = bitmapFontActions.read(n, tempBmpEntry)
-                        val it = (container[n] as Image)
-                        it.program = program
-                        it.colorMul = color // @TODO: When doing black, all colors are lost even if the glyph is a colorized image
-                        it.anchor(0, 0)
-                        it.smoothing = smoothing
-                        it.bitmap = entry.tex
-                        it.x = entry.x + dx
-                        it.y = entry.y + dy
-                        it.scaleX = entry.sx
-                        it.scaleY = entry.sy
-                        it.rotation = entry.rot
-                    }
-
-                    //setContainerPosition(0.0, 0.0, font.base)
-                }
-            }
-            else -> {
-                if (lastSmoothing != smoothing || lastNativeRendering != useNativeRendering) {
-                    version++
-                    //println("UPDATED VERSION[$this] lastAutoScaling=$lastAutoScaling, autoScaling=$autoScaling, onRenderResult=$onRenderResult, lastAutoScalingResult=$lastAutoScalingResult")
-                    lastNativeRendering = useNativeRendering
-                    lastAutoScaling = autoScaling
-                    lastSmoothing = smoothing
-                }
-
-                if (cachedVersion != version) {
-                    //println("UPDATED VERSION: $cachedVersion!=$version")
-                    cachedVersion = version
-                    val realTextSize = textSize
-
-                    if (_staticGraphics == null) {
-                        container.removeChildren()
-                        //_staticGraphics = container.gpuGraphics {  }
-                        _staticGraphics = container.graphics(renderer = graphicsRenderer) { }
-                        _staticGraphics?.autoScaling = true
-                    }
-
-                    //println("alignment=$alignment")
-                    val metrics = _staticGraphics!!.updateShape {
-                        //if (fill != null) {
-                        //    fillStroke(fill, stroke) {
-                        //        this.text(
-                        //            text = this@Text.text,
-                        //            x = 0.0, y = 0.0,
-                        //            textSize = realTextSize,
-                        //            font = font as VectorFont,
-                        //            renderer = this@Text.renderer,
-                        //            align = this@Text.alignment,
-                        //        )
-                        //    }
-                        //}
-                        drawText(
-                            text = this@Text.text,
-                            x = 0.0, y = 0.0,
-                            size = realTextSize,
-                            font = font,
-                            paint = this@Text.color,
-                            renderer = this@Text.renderer,
-                            //align = TextAlignment.TOP_LEFT,
-                            align = this@Text.alignment,
-                            outMetrics = TextMetricsResult(),
-                            //outMetrics = this@Text._textMetricsResult ?: TextMetricsResult(),
-                            fillStyle = this@Text.fillStyle,
-                            stroke = this@Text.stroke,
-                        )
-                    }
-                    // Optimize since we already have the metrics to avoid recomputing them later
-                    cachedVersionGlyphMetrics = version
-                    _textMetricsResult = metrics
-
-                    //val met = metrics!!.metrics
-                    //val x = -horizontalAlign.getOffsetX(met.width)// + met.left
-                    //val y = verticalAlign.getOffsetY(met.lineHeight, -(met.ascent))
-                    //setContainerPosition(x * 1.0, y * 1.0, font.getFontMetrics(fontSize, fontMetrics).baseline)
-                    //println("alignment=$alignment, horizontalAlign=$horizontalAlign, verticalAlign=$verticalAlign")
-                    //setContainerPosition(x, y, font.getFontMetrics(fontSize, fontMetrics).baseline)
-                    setContainerPosition(0.0, 0.0, font.getFontMetrics(fontSize, fontMetrics).baseline)
-
-                }
-                //_staticImage?.smoothing = smoothing
-                _staticGraphics?.smoothing = smoothing
-            }
-        }
-    }
-
+    var autoScaling: Boolean = true
+    var smoothing: Boolean = true
     var useNativeRendering: Boolean = true
 
-    private fun setContainerPosition(x: Double, y: Double, baseline: Double) {
-        if (autoSize) {
-            setRealContainerPosition(x, y)
-        } else {
-            //staticImage?.position(x + alignment.horizontal.getOffsetX(textBounds.width), y + alignment.vertical.getOffsetY(textBounds.height, font.getFontMetrics(fontSize).baseline))
+    fun setFormat(face: Font = this.textFont, size: Int = this.textSize.toInt(), color: RGBA? = this.textColor, align: TextAlignment = this.textAlignment) {
+        richText = richText.withStyle(richText.defaultStyle.copy(
+            font = face,
+            textSize = size.toDouble(),
+            color = color,
+        ))
+        this.textAlignment = align
+    }
 
-            // @TODO: Fix this!
-            setRealContainerPosition(x + alignment.horizontal.getOffsetX(_textBounds.width), y - alignment.vertical.getOffsetY(_textBounds.height, baseline))
+    fun setTextBounds(bounds: IRectangle) {
+        setSize(bounds.width, bounds.height)
+    }
+
+    override fun getGlyphMetrics(): TextMetricsResult = getCachedPlacements().toTextMetricsResult()
+}
+
+open class TextBlock(
+    text: RichTextData = RichTextData("", RichTextData.Style.DEFAULT_AS_BITMAP),
+    align: TextAlignment = TextAlignment.TOP_LEFT,
+    width: Double = 100.0,
+    height: Double = 100.0,
+    autoSize: Boolean = false,
+) : BaseText(text, align, width, height, autoSize)
+
+open class BaseText(
+    text: RichTextData = RichTextData("", RichTextData.Style.DEFAULT_AS_BITMAP),
+    align: TextAlignment = TextAlignment.TOP_LEFT,
+    width: Double = 100.0,
+    height: Double = 100.0,
+    autoSize: Boolean = false,
+) : UIView(width, height), ViewLeaf {
+    private var dirty = true
+
+    @ViewProperty
+    var richText: RichTextData = text; set(value) { field = value; invalidateText() }
+
+    @ViewProperty
+    @ViewPropertyProvider(TextAlignment.Provider::class)
+    var align: TextAlignment = align; set(value) { field = value; invalidProps() }
+
+    @Deprecated("")
+    var alignment: TextAlignment by ::align
+
+    @ViewProperty
+    var includePartialLines: Boolean = false; set(value) { field = value; invalidProps() }
+    @ViewProperty
+    var includeFirstLineAlways: Boolean = true; set(value) { field = value; invalidProps() }
+    @ViewProperty
+    var fill: Paint? = colorMul; set(value) { field = value; invalidProps() }
+    @ViewProperty
+    var stroke: Stroke? = null; set(value) { field = value; invalidProps() }
+    @ViewProperty
+    var wordWrap: Boolean = true; set(value) { field = value; invalidProps() }
+    @ViewProperty
+    var ellipsis: String? = "..."; set(value) { field = value; invalidProps() }
+    @ViewProperty
+    var padding: IMargin = IMargin.EMPTY; set(value) { field = value; invalidProps() }
+    @ViewProperty
+    var autoSize: Boolean = autoSize; set(value) { field = value; invalidateText() }
+    //@ViewProperty(min = 0.0, max = 10.0, clampMin = true)
+    //var textRange: IntRange = ALL_TEXT_RANGE; set(value) { field = value; invalidateText() }
+    @ViewProperty(min = 0.0, max = 10.0, clampMin = true)
+    var textRangeStart: Int = 0; set(value) { field = value; invalidateText() }
+    @ViewProperty(min = 0.0, max = 10.0, clampMin = true)
+    var textRangeEnd: Int = Int.MAX_VALUE; set(value) { field = value; invalidateText() }
+    var plainText: String
+        get() = richText.text
+        set(value) {
+            richText = RichTextData(value, style = richText.defaultStyle)
+        }
+    private var image: Image? = null
+    private var allBitmap: Boolean? = null
+        get() {
+            if (field == null) field = richText.allFonts.all { it is BitmapFont }
+            return field!!
+        }
+
+    private fun invalidateText() {
+        invalidProps()
+        if (autoSize) {
+            setSize(richText.width, richText.height)
+        }
+        allBitmap = null
+    }
+    
+    private fun invalidProps() {
+        dirty = true
+        invalidateRender()
+    }
+
+    override fun onSizeChanged() {
+        invalidProps()
+    }
+
+    init {
+        invalidateText()
+    }
+
+    private fun ensureTexture() {
+        if (!dirty) return
+        dirty = false
+        val bmp = NativeImage(width.toIntCeil(), height.toIntCeil())
+        //println("ensureTexture: bmp=$bmp")
+        if (image == null) {
+            image = image(Bitmaps.transparent)
+        }
+        image?.bitmap = bmp.slice()
+        image?.program = (richText.defaultStyle.font as? BitmapFont?)?.agProgram
+        bmp.context2d {
+            drawRichText(
+                richText,
+                bounds = MRectangle.fromBounds(padding.left, padding.top, width - padding.right, height - padding.bottom),
+                includePartialLines = includePartialLines, wordWrap = wordWrap, ellipsis = ellipsis, align = align,
+                fill = fill, stroke = stroke, includeFirstLineAlways = true,
+                textRangeStart = textRangeStart, textRangeEnd = textRangeEnd
+            )
         }
     }
 
-    private fun setRealContainerPosition(x: Double, y: Double) {
-        container.position(x, y)
+    private var placements: RichTextDataPlacements? = null
+
+    protected fun getCachedPlacements(): RichTextDataPlacements {
+        if (dirty || placements == null) {
+            dirty = false
+            placements = richText.place(MRectangle(padding.left, padding.top, width - padding.right, height - padding.bottom), wordWrap, includePartialLines, ellipsis, fill, stroke, align, includeFirstLineAlways = includeFirstLineAlways)
+        }
+        return placements!!
     }
 
-    internal var _staticGraphics: Graphics? = null
-
-    @Suppress("unused")
-    @ViewProperty
-    @ViewPropertyFileRef(["ttf", "fnt", "otf"])
-    private var fontSourceFile: String? by this::fontSource
-}
-
-fun <T : Text> T.autoSize(value: Boolean): T {
-    this.autoSize = value
-    return this
-}
-
-fun <T : Text> T.textSpacing(spacing: Double): T {
-    renderer = renderer.withSpacing(spacing)
-    return this
-}
-
-fun <T : Text> T.aroundPath(path: VectorPath?): T {
-    aroundPath = path
-    return this
-}
-
-var <T : Text> T.aroundPath: VectorPath?
-    get() {
-        val currentRenderer = renderer
-        return if (currentRenderer is CurveTextRenderer<*>) currentRenderer.path else null
-    }
-    set(value) {
-        val currentRenderer = renderer
-        if (value == null) {
-            if (currentRenderer is CurveTextRenderer<*>) {
-                renderer = (currentRenderer as CurveTextRenderer<String>).original
+    override fun renderInternal(ctx: RenderContext) {
+        if (allBitmap == true) {
+            val placements = getCachedPlacements()
+            image?.removeFromParent()
+            image = null
+            //if (textRange != ALL_TEXT_RANGE) println("textRange=$textRange")
+            renderCtx2d(ctx) {
+                it.drawText(placements, textRangeStart = textRangeStart, textRangeEnd = textRangeEnd)
             }
         } else {
-            renderer = currentRenderer.aroundPath(value)
+            ensureTexture()
         }
+        super.renderInternal(ctx)
     }
 
+    companion object {
+        val ALL_TEXT_RANGE = 0 until Int.MAX_VALUE
+    }
+}
 
-val BitmapFont.agProgram: Program? get() = when (distanceField) {
-    "msdf" -> MsdfRender.PROGRAM_MSDF
-    "psdf" -> MsdfRender.PROGRAM_SDF_A
-    "sdf" -> MsdfRender.PROGRAM_SDF_A
-    else -> null
+fun <T : BaseText> T.autoSize(size: Boolean): T {
+    this.autoSize = size
+    return this
 }

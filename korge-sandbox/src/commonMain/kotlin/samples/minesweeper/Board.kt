@@ -49,7 +49,7 @@ class Board(
         timeText = text("00:00", font = views.minesweeperFont, textSize = FONT_HEIGHT).apply {
 			centerXBetween(0.0, this@Board.width)
 			y = -FONT_HEIGHT - 16
-			alignment = TextAlignment.CENTER
+			align = TextAlignment.CENTER
 		}
 
 		//The board is centered on the screen

@@ -1,4 +1,4 @@
-package com.soywiz.korge.view
+package com.soywiz.korge.view.animation
 
 import com.soywiz.kds.FastArrayList
 import com.soywiz.kds.toFastList

@@ -2,6 +2,7 @@ package com.soywiz.korge.view
 
 import com.soywiz.klock.*
 import com.soywiz.kmem.umod
+import com.soywiz.korge.view.animation.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korio.async.Signal
 import com.soywiz.korma.geom.vector.VectorPath

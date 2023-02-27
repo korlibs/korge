@@ -121,7 +121,7 @@ class MainMSDF : Scene() {
                 if (n == 0) {
                     text("HELLO WORLD áéúóúñ cooool", textSize = 32.0, font = font1).also {
                         it.setTextBounds(MRectangle(0, 0, 300, 100))
-                        it.alignment = TextAlignment.MIDDLE_CENTER
+                        it.align = TextAlignment.MIDDLE_CENTER
                     }
                 } else {
                     //textBlock(RichTextData("HELLO WORLD aeioun coooool", font = font2, textSize = 32.0)).also {
@@ -133,7 +133,7 @@ class MainMSDF : Scene() {
                     keys {
                         var toggle = true
                         down(Key.RETURN) {
-                            tb.text = if (toggle) {
+                            tb.richText = if (toggle) {
                                 RichTextData("HELLO WORLD", font = font1, textSize = 32.0)
                             } else {
                                 RichTextData("HELLO WORLD", font = font2, textSize = 32.0)

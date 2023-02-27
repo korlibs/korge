@@ -63,7 +63,13 @@ class MainTextMetrics : Scene() {
         container {
             xy(300, 500)
             val leftPadding = 50
-            text1 = text(textStrs["simple"]!!, 175.0, Colors.WHITE, font2, alignment = TextAlignment.BASELINE_LEFT, autoScaling = true).xy(leftPadding, 0)
+            //text1 = text(textStrs["simple"]!!, 175.0, Colors.WHITE, font2, alignment = TextAlignment.BASELINE_LEFT, autoScaling = true).xy(leftPadding, 0)
+            text1 = text(textStrs["simple"]!!, 175.0).xy(leftPadding, 0)
+            text1.textColor = Colors.WHITE
+            text1.font = font2
+            text1.align = TextAlignment.BASELINE_LEFT
+            text1.autoScaling = true
+            //text1.Colors.WHITE, font2, alignment = TextAlignment.BASELINE_LEFT, autoScaling = true
             val gbounds = cpuGraphics {}.xy(leftPadding, 0)
 
             val baseLineLine = solidRect(960 + 1200, 1, Colors.ORANGE)
@@ -84,7 +90,7 @@ class MainTextMetrics : Scene() {
                             line(0, -5, 0, +5)
                         }
                     }
-                    val metrics = text1.font.getOrNull()!!.getFontMetrics(text1.fontSize)
+                    val metrics = text1.font.getOrNull()!!.getFontMetrics(text1.textSize)
                     baseLineLine.xy(0.0, -metrics.baseline)
                     baseAscent.xy(0.0, -metrics.ascent)
                     baseDescent.xy(0.0, -metrics.descent)

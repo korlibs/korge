@@ -4,12 +4,9 @@ import com.soywiz.korag.*
 import com.soywiz.korev.Key
 import com.soywiz.korge.input.keys
 import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.view.Container
-import com.soywiz.korge.view.SContainer
+import com.soywiz.korge.view.*
 import com.soywiz.korge.view.debug.debugVertexView
-import com.soywiz.korge.view.text
 import com.soywiz.korge.view.vector.gpuShapeView
-import com.soywiz.korge.view.xy
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.text.TextAlignment
 import com.soywiz.korim.vector.format.pathSvg
@@ -49,7 +46,7 @@ class MainGpuVectorRendering3 : Scene() {
             }.xy(pos)
 
             //debugVertexView(pointsList.map { it.vector }, type = AGDrawType.POINTS)
-            text(desc, alignment = TextAlignment.BASELINE_LEFT).xy(pos - MPoint(0, 8))
+            text2(desc, alignment = TextAlignment.BASELINE_LEFT).xy(pos - MPoint(0, 8))
 
             debugVertexView(path.getPoints2List(), color = Colors.YELLOWGREEN, type = AGDrawType.LINE_STRIP).xy(pos).apply {
                 keys {

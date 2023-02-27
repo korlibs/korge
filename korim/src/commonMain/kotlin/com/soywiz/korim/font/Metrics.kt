@@ -128,7 +128,7 @@ data class GlyphMetrics(
     }
 }
 
-data class TextMetrics constructor(
+data class TextMetrics(
     val bounds: MRectangle = MRectangle(),
     var lineBounds: List<MRectangle> = emptyList(),
     val fontMetrics: FontMetrics = FontMetrics(),

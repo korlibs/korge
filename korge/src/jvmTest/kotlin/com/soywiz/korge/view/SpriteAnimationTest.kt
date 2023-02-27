@@ -1,6 +1,7 @@
 package com.soywiz.korge.view
 
 import com.soywiz.klock.*
+import com.soywiz.korge.view.animation.*
 import com.soywiz.korim.atlas.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.std.*

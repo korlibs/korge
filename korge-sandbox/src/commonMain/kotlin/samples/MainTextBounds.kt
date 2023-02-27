@@ -6,14 +6,7 @@ import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.ui.uiButton
 import com.soywiz.korge.ui.uiHorizontalStack
 import com.soywiz.korge.ui.uiVerticalStack
-import com.soywiz.korge.view.Container
-import com.soywiz.korge.view.SContainer
-import com.soywiz.korge.view.centered
-import com.soywiz.korge.view.circle
-import com.soywiz.korge.view.container
-import com.soywiz.korge.view.graphics
-import com.soywiz.korge.view.text
-import com.soywiz.korge.view.xy
+import com.soywiz.korge.view.*
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.font.DefaultTtfFont
 import com.soywiz.korim.font.VectorFont
@@ -62,7 +55,7 @@ class MainTextBounds : Scene() {
         //val align = TextAlignment.BASELINE_LEFT
         container {
             xy(600, 350)
-            text(
+            text2(
                 text, fontSize, font = vfont, alignment = align, renderer = renderer,
                 fill = Colors.YELLOW,
                 stroke = Stroke(Colors.RED, thickness = 3.0, dash = doubleArrayListOf(50.0, 50.0))

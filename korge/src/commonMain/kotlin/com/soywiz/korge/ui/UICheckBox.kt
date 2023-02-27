@@ -85,7 +85,7 @@ open class UIBaseCheckBox<T : UIBaseCheckBox<T>>(
         val width = this.width
         val height = this.height
 
-        textView.text = RichTextData(textView.text.text, RichTextData.Style(
+        textView.richText = RichTextData(textView.richText.text, RichTextData.Style(
             font = textFont,
             textSize = textSize,
             color = textColor,

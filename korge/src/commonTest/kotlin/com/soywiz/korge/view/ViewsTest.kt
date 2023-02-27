@@ -90,13 +90,15 @@ class ViewsTest : ViewsForTesting() {
         views.stage += s1
         s1 += s2
         s1 += s3
-        assertNotNull(s1["s2"].firstOrNull)
-        assertNotNull(s1["s3"].firstOrNull)
+        assertNotNull(s1["s2"])
+        assertNotNull(s1["s3"])
 
         s1 -= s3
-        assertNotNull(s1["s2"].firstOrNull)
-        assertNull(s1["s3"].firstOrNull)
+        assertNotNull(s1["s2"])
+        assertNull(s1["s3"])
     }
+
+    private operator fun View.get(name: String): View? = firstDescendantWith { it.name == name }
 
     @Test
     fun sortChildren() = viewsTest {

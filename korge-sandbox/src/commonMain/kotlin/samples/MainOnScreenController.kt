@@ -15,15 +15,15 @@ import kotlin.math.*
 class MainOnScreenController : Scene() {
 //class MainOnScreenController : ScaledScene(1280, 720) {
     override suspend fun SContainer.sceneMain() {
-        val text1 = text("-").position(5, 5).apply { smoothing = false }
+        val text1 = text2("-").position(5, 5).apply { smoothing = false }
         val buttonTexts = (0 until 2).map {
-            text("-").position(5, 20 * (it + 1) + 5).apply { smoothing = false }
+            text2("-").position(5, 20 * (it + 1) + 5).apply { smoothing = false }
         }
 
         addTouchGamepad(
             sceneWidth.toDouble(), sceneHeight.toDouble(),
-            onStick = { x, y -> text1.setText("Stick: (${x.toStringDecimal(2)}, ${y.toStringDecimal(2)})") },
-            onButton = { button, pressed -> buttonTexts[button].setText("Button: $button, $pressed") }
+            onStick = { x, y -> text1.text = "Stick: (${x.toStringDecimal(2)}, ${y.toStringDecimal(2)})" },
+            onButton = { button, pressed -> buttonTexts[button].text = "Button: $button, $pressed" }
         )
     }
 

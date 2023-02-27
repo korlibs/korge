@@ -166,11 +166,11 @@ open class UIButton(
     val animatorEffects = animator(parallel = true, defaultEasing = Easing.LINEAR)
 
     @ViewProperty()
-    var richText: RichTextData by textView::text
+    var richText: RichTextData by textView::richText
 
     @ViewProperty()
     var text: String
-        get() = textView.text.text
+        get() = textView.richText.text
         set(value) {
             richText = richText.withText(value)
         }

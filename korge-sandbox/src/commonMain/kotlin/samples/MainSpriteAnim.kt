@@ -7,7 +7,7 @@ import com.soywiz.korge.input.InputKeys
 import com.soywiz.korge.scene.ScaledScene
 import com.soywiz.korge.view.SContainer
 import com.soywiz.korge.view.Sprite
-import com.soywiz.korge.view.SpriteAnimation
+import com.soywiz.korge.view.animation.SpriteAnimation
 import com.soywiz.korge.view.addUpdater
 import com.soywiz.korge.view.alignRightToRightOf
 import com.soywiz.korge.view.position

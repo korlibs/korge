@@ -514,3 +514,43 @@ suspend fun BitmapFont.writeToFile(out: VfsFile, writeBitmap: Boolean = true) {
         }
     })
 }
+
+inline fun BitmapFont.Companion.iterateTextGlyphs(
+    text: String,
+    font: BitmapFont,
+    textSize: Double = 16.0,
+    x: Double = 0.0,
+    y: Double = 0.0,
+    color: RGBA = com.soywiz.korim.color.Colors.WHITE,
+    baseline: Boolean = false,
+    textRangeStart: Int = 0,
+    textRangeEnd: Int = kotlin.Int.MAX_VALUE,
+    doGlyph: (
+        glyph: BitmapFont.Glyph,
+        x: Double, y: Double, width: Double, height: Double,
+        color: RGBA, font: BitmapFont,
+    ) -> Unit,
+) {
+    val scale = font.getTextScale(textSize)
+    var sx = x
+    val sy = y + if (baseline) -font.base * scale else 0.0
+    //println("multiplyColor=$multiplyColor")
+    var n = 0
+    for (char in text) {
+        val glyph = font.getGlyph(char)
+        if (n in textRangeStart until textRangeEnd) {
+            doGlyph(
+                glyph,
+                sx + glyph.xoffset * scale,
+                sy + glyph.yoffset * scale,
+                glyph.texWidth.toDouble() * scale,
+                glyph.texHeight.toDouble() * scale,
+                (color),
+                //multiplyColor,
+                font,
+            )
+        }
+        sx += glyph.xadvance * scale
+        n++
+    }
+}

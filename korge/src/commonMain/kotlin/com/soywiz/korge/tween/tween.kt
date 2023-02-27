@@ -14,9 +14,7 @@ import com.soywiz.korge.baseview.BaseView
 import com.soywiz.korge.component.UpdateComponent
 import com.soywiz.korge.component.attach
 import com.soywiz.korge.component.detach
-import com.soywiz.korge.view.QView
 import com.soywiz.korio.async.asyncImmediately
-import com.soywiz.korio.async.delay
 import com.soywiz.korio.async.withTimeout
 import com.soywiz.korma.interpolation.Easing
 import kotlinx.coroutines.CancellableContinuation
@@ -156,23 +154,6 @@ fun BaseView?.tweenNoWait(
 ): TweenComponent? {
     if (this == null) return null
     return TweenComponent(this, vs.toList(), time, easing, callback, null, waitTime).also { it.attach() }
-}
-
-suspend fun QView.tween(
-    vararg vs: V2<*>,
-    time: TimeSpan = DEFAULT_TIME,
-    easing: Easing = DEFAULT_EASING,
-    waitTime: TimeSpan = TimeSpan.NIL,
-    callback: (Double) -> Unit = { }
-) {
-    if (isEmpty()) {
-        // @TODO: Do this?
-        delay(time)
-    } else {
-        fastForEach {
-            it.tween(*vs, time = time, easing = easing, waitTime = waitTime, callback = callback)
-        }
-    }
 }
 
 @PublishedApi

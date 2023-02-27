@@ -9,7 +9,7 @@ import com.soywiz.korge.view.*
 class MainInput : ScaledScene(1920, 1080) {
     override suspend fun SContainer.sceneMain() {
         var line = 0
-        fun textLine(text: String) = textOld(text).position(2, line++ * 20 + 5).apply { filtering = false }
+        fun textLine(text: String) = text(text, textSize = 20.0).position(2, line++ * 20 + 5).apply { smoothing = false }
         fun nowTime() = DateTime.now().local.format(DateFormat("HH:mm:ss.SSS"))
 
         textLine("Events :")

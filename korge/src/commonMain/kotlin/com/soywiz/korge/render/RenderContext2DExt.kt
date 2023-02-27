@@ -3,7 +3,9 @@ package com.soywiz.korge.render
 import com.soywiz.kds.iterators.*
 import com.soywiz.korag.shader.*
 import com.soywiz.korge.annotations.*
+import com.soywiz.korge.bitmapfont.*
 import com.soywiz.korge.view.*
+import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.font.*
 import com.soywiz.korim.paint.*
@@ -167,25 +169,8 @@ fun RenderContext2D.drawText(
     textRangeEnd: Int = Int.MAX_VALUE,
     //stroke: Stroke?,
 ) {
-    val scale = font.getTextScale(textSize)
-    var sx = x
-    val sy = y + if (baseline) -font.base * scale else 0.0
-    //println("multiplyColor=$multiplyColor")
-    var n = 0
-    for (char in text) {
-        val glyph = font.getGlyph(char)
-        if (n in textRangeStart until textRangeEnd) {
-            rect(
-                sx + glyph.xoffset * scale,
-                sy + glyph.yoffset * scale,
-                glyph.texWidth.toDouble() * scale,
-                glyph.texHeight.toDouble() * scale,
-                (color * multiplyColor),
-                //multiplyColor,
-                true, glyph.texture, font.agProgram,
-            )
-        }
-        sx += glyph.xadvance * scale
-        n++
+    BitmapFont.iterateTextGlyphs(text, font, textSize, x, y, color * multiplyColor, baseline, textRangeStart, textRangeEnd) {
+        g, xx, yy, w, h, col, bfnt ->
+        rect(xx, yy, w, h, col, true, g.texture, bfnt.agProgram)
     }
 }

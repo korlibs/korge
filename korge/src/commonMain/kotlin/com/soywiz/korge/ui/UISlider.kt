@@ -44,7 +44,7 @@ class UISlider(
 
     val bg = solidRect(width, height, RGBA(32, 32, 32))
     val button = solidRect(height, height, Colors.DARKGREY)
-    val text = text("", alignment = TextAlignment.TOP_LEFT, color = Colors.BLACK)
+    val text = text("", align = TextAlignment.TOP_LEFT, color = Colors.BLACK, autoSize = true)
 
     val onChange: Signal<Double> = Signal()
 

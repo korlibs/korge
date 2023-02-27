@@ -1,5 +1,6 @@
 package com.soywiz.korge.view
 
+import com.soywiz.korge.view.animation.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.Colors
 import com.soywiz.korio.async.suspendTest

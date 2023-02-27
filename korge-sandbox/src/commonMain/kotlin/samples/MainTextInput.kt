@@ -5,13 +5,9 @@ import com.soywiz.korev.SoftKeyboardType
 import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.text.editText
 import com.soywiz.korge.ui.uiTextInput
-import com.soywiz.korge.view.SContainer
-import com.soywiz.korge.view.aroundPath
+import com.soywiz.korge.view.*
 import com.soywiz.korge.view.filter.DropshadowFilter
 import com.soywiz.korge.view.filter.filters
-import com.soywiz.korge.view.text
-import com.soywiz.korge.view.textSpacing
-import com.soywiz.korge.view.xy
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.font.DefaultTtfFont
 import com.soywiz.korim.font.readTtfFont
@@ -56,14 +52,14 @@ class MainTextInput : Scene() {
 
         val textPath = buildVectorPath { circle(0, 0, 100) }
 
-        text(
+        text2(
             "HELLO WORLD",
             textSize = 64.0,
             font = font,
             color = Colors.RED,
         ).xy(600, 200).textSpacing(9.0).aroundPath(textPath).filters(DropshadowFilter()).also { it.editText() }
 
-        text(
+        text2(
             "HELLO WORLD",
             textSize = 64.0,
             font = font,
