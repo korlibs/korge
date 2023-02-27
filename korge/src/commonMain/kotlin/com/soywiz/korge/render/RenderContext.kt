@@ -203,8 +203,6 @@ class RenderContext constructor(
 
     val debugOverlayScale: Double get() = kotlin.math.round(computedPixelRatio * debugExtraFontScale).coerceAtLeast(1.0)
 
-    var stencilIndex: Int = 0
-
     /** Allows to draw quads, sprites and nine patches using a precomputed global matrix or raw vertices */
     @Deprecated("Use useBatcher instead")
     @KorgeInternal

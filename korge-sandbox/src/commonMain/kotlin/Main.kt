@@ -72,7 +72,6 @@ suspend fun main() = Korge(
             Demo(::MainCoroutine),
             Demo(::MainPong),
             Demo(::MainUI),
-            Demo(::MainOldMask),
             Demo(::MainNinePatch),
             Demo(::MainTweens),
             Demo(::MainTriangulation),
