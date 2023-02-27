@@ -2,11 +2,7 @@ package samples
 
 import com.soywiz.korge.input.mouse
 import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.view.GraphicsRenderer
-import com.soywiz.korge.view.SContainer
-import com.soywiz.korge.view.graphics
-import com.soywiz.korge.view.position
-import com.soywiz.korge.view.textOld
+import com.soywiz.korge.view.*
 import com.soywiz.korim.color.Colors
 import com.soywiz.korma.geom.MPoint
 import com.soywiz.korma.geom.vector.StrokeInfo
@@ -18,7 +14,7 @@ import com.soywiz.korma.triangle.triangulate.triangulate
 
 class MainTriangulation : Scene() {
     override suspend fun SContainer.sceneMain() {
-        textOld("Add Points by clicking with the mouse", 14.0).position(5.0, 5.0)
+        text("Add Points by clicking with the mouse", 14.0).position(5.0, 5.0)
         val g = graphics(renderer = GraphicsRenderer.SYSTEM)
         //val g = graphics(renderer = GraphicsRenderer.GPU)
         //val g = cpuGraphics()

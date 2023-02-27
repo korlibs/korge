@@ -12,7 +12,7 @@ class MenuScene() : Scene() {
 		//views.clearColor = Colors.BLACK
 
 		// Add a text to show the name of the game
-		var gameNameText = textOld("Super Pong Bros II") {
+		var gameNameText = text("Super Pong Bros II") {
 			position(sceneWidth / 2 - 128, sceneHeight / 2 - 128)
 		}
 

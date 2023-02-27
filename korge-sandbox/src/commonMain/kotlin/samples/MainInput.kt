@@ -6,10 +6,11 @@ import com.soywiz.korge.input.*
 import com.soywiz.korge.scene.*
 import com.soywiz.korge.view.*
 
-class MainInput : ScaledScene(1920, 1080) {
+class MainInput : Scene() {
     override suspend fun SContainer.sceneMain() {
         var line = 0
-        fun textLine(text: String) = textOld(text).position(2, line++ * 20 + 5).apply { filtering = false }
+        val font = debugBmpFont()
+        fun textLine(text: String) = text(text, font = font, textSize = 8.0).position(2, line++ * 12 + 5).apply { smoothing = false }
         fun nowTime() = DateTime.now().local.format(DateFormat("HH:mm:ss.SSS"))
 
         textLine("Events :")

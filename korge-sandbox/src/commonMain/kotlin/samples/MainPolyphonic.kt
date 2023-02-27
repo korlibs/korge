@@ -9,6 +9,7 @@ import com.soywiz.korge.ui.uiVerticalStack
 import com.soywiz.korge.view.SContainer
 import com.soywiz.korge.view.text
 import com.soywiz.korio.async.launchImmediately
+import kotlin.math.*
 
 class MainPolyphonic : Scene() {
     // https://github.com/pspdev/pspsdk/blob/master/src/samples/audio/polyphonic/main.c
@@ -418,9 +419,10 @@ class MainPolyphonic : Scene() {
 
         fun createPitches(base: Float, target: FloatArray) {
             var base = base
+            val CONST = 2.0.pow(1.0 / 12.0).toFloat() // 2^(1/12)
             for (i in 0 until 12) {
                 target[i] = base
-                base *= 1.0594630943592952645618252949463f  // 2^(1/12)
+                base *= CONST
             }
         }
     }
