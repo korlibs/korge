@@ -44,19 +44,16 @@ interface Filter {
 
     val allFilters: List<Filter> get() = listOf(this)
 
+    val recommendedFilterScale: Double get() = 1.0
+
     /**
      * The number of pixels the passed texture should be bigger at each direction: left, right, top, left.
      *
      * A 0 value means that the texture should be passed with its original size.
      * A 1 value means that the texture should be passed width 2 more pixels of width and height (1 left, 1 right), (1 top, 1 bottom)
      */
-    @Deprecated("")
-    val border: Int get() = 0
-
-    val recommendedFilterScale: Double get() = 1.0
-
     fun computeBorder(out: MMarginInt, texWidth: Int, texHeight: Int) {
-        out.setTo(border)
+        out.setTo(0)
     }
 
     /**
