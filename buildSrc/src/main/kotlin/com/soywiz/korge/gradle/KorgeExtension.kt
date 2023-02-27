@@ -168,32 +168,6 @@ class KorgeExtension(val project: Project) {
         }
     }
 
-    /*
-    /**
-     * Configures android in this project tightly integrated, and creates src/main default stuff
-     *
-     * Android SDK IS required even if android tasks are not executed.
-     */
-    fun targetAndroidDirect() {
-        target("android") {
-            project.configureAndroidDirect()
-        }
-    }
-
-    /**
-     * Configures android as a separate project in: build/platforms/android
-     *
-     * Android SDK not required if tasks are not executed.
-     * The project can be opened on Android Studio.
-     */
-    @Deprecated("Use targetAndroidDirect instead")
-    fun targetAndroidIndirect() {
-        target("android") {
-            project.configureAndroidIndirect()
-        }
-    }
-    */
-
     /**
      * Configures Kotlin/Native iOS target (only on macOS)
      */

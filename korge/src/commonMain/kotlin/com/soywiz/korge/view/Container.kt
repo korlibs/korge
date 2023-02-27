@@ -86,10 +86,6 @@ open class Container(
     @Suppress("FoldInitializerAndIfToElvis")
     val numChildren: Int get() = __children.size
 
-    /** Returns the number of children this container has */
-    @Deprecated("", ReplaceWith("numChildren"))
-    val size: Int get() = numChildren
-
     /**
      * Recursively retrieves the top ancestor in the container hierarchy.
      *
