@@ -68,7 +68,6 @@ class Stats {
 	val counters = RCollection<Counter>()
 	val values = RCollection<Value>()
 
-
 	fun counter(name: String): Counter = counters.getOrPut(name) { Counter(name) }
 	fun value(name: String): Value = values.getOrPut(name) { Value(name) }
 	fun dump() {
