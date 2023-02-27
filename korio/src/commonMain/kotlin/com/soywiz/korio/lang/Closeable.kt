@@ -92,3 +92,44 @@ fun CloseableCancellable(callback: (Throwable?) -> Unit): CloseableCancellable =
     override fun close() = callback(null)
     override fun cancel(e: Throwable) = callback(e)
 }
+
+class CancellableGroup : CloseableCancellable {
+    private val cancellables = arrayListOf<Cancellable>()
+
+    operator fun plusAssign(c: CloseableCancellable) {
+        cancellables += c
+    }
+
+    operator fun plusAssign(c: Cancellable) {
+        cancellables += c
+    }
+
+    operator fun plusAssign(c: Closeable) {
+        cancellables += c.cancellable()
+    }
+
+    fun addCancellable(c: Cancellable) {
+        cancellables += c
+    }
+
+    fun addCloseable(c: Closeable) {
+        cancellables += c.cancellable()
+    }
+
+    override fun close() {
+        cancel(kotlin.coroutines.cancellation.CancellationException())
+    }
+
+    override fun cancel(e: Throwable) {
+        cancellables.cancel(e)
+    }
+}
+
+suspend fun <T> AutoClose(callback: suspend (CancellableGroup) -> T): T {
+    val group = CancellableGroup()
+    try {
+        return callback(group)
+    } finally {
+        group.cancel()
+    }
+}

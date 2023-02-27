@@ -5,11 +5,11 @@ import com.soywiz.kds.getExtra
 import com.soywiz.kds.setExtra
 import com.soywiz.klock.TimeSpan
 import com.soywiz.korge.baseview.BaseView
-import com.soywiz.korge.util.CancellableGroup
 import com.soywiz.korge.view.View
 import com.soywiz.korge.view.Views
 import com.soywiz.korge.view.getAllDescendantViews
 import com.soywiz.korio.lang.Closeable
+import com.soywiz.korio.lang.CancellableGroup
 
 /**
  * **Important**: To use this component you have to call the [Views.registerStageComponent] extension method at the start of the APP.

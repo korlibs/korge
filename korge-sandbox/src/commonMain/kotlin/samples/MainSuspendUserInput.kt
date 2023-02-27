@@ -6,11 +6,10 @@ import com.soywiz.korge.ui.uiButton
 import com.soywiz.korge.ui.uiHorizontalStack
 import com.soywiz.korge.ui.uiText
 import com.soywiz.korge.ui.uiVerticalStack
-import com.soywiz.korge.util.CancellableGroup
 import com.soywiz.korge.view.Container
 import com.soywiz.korge.view.SContainer
 import com.soywiz.korio.async.launchImmediately
-import com.soywiz.korio.lang.cancel
+import com.soywiz.korio.lang.*
 import kotlinx.coroutines.CompletableDeferred
 
 class MainSuspendUserInput : Scene() {
