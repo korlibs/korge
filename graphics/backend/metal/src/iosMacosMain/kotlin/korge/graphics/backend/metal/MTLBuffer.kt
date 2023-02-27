@@ -11,13 +11,9 @@ import platform.posix.*
  *
  * MTLBufferProtocol is used to store buffer send to GPU when using shaders
  */
-expect class MTLBuffer internal constructor(buffer: MTLBufferProtocol) {
+value class MTLBuffer internal constructor(val buffer: MTLBufferProtocol)
 
-    val buffer: MTLBufferProtocol
-
-    fun didModifyFullRange()
-
-}
+expect fun MTLBuffer.didModifyFullRange()
 
 inline fun MTLBuffer.insert(data: ByteArray) {
     data.usePinned {
