@@ -4,17 +4,12 @@ import com.soywiz.kds.*
 import com.soywiz.korev.Event
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.particle.*
-import com.soywiz.korge.scene.*
 import com.soywiz.korge.view.*
 import com.soywiz.korge.view.Container
 import com.soywiz.korge.view.Image
-import com.soywiz.korge.view.ktree.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korio.async.*
-import com.soywiz.korio.file.*
-import com.soywiz.korma.geom.*
-import kotlinx.coroutines.*
 import java.awt.*
 import java.awt.event.*
 import java.util.*
@@ -298,12 +293,12 @@ internal class ViewsDebuggerComponent constructor(
         list.add(ViewFactory("SolidRect") { SolidRect(100, 100, Colors.WHITE) })
         list.add(ViewFactory("Ellipse") { Ellipse(50.0, 50.0, Colors.WHITE).center() })
         list.add(ViewFactory("Container") { Container() })
-        list.add(ViewFactory("TreeViewRef") { TreeViewRef() })
+        //list.add(ViewFactory("TreeViewRef") { TreeViewRef() })
         list.add(ViewFactory("ParticleEmitter") { ParticleEmitterView(ParticleEmitter()) })
         list.add(ViewFactory("9-Patch") { NinePatchEx(NinePatchBmpSlice(Bitmap32(62, 62, premultiplied = true))) })
-        for (registration in views.ktreeSerializer.registrationsExt) {
-            list.add(ViewFactory(registration.name) { registration.factory() })
-        }
+        //for (registration in views.ktreeSerializer.registrationsExt) {
+        //    list.add(ViewFactory(registration.name) { registration.factory() })
+        //}
     }
 
     private fun createPopupMenu(): JPopupMenu = JPopupMenu()
