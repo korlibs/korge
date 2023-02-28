@@ -143,7 +143,7 @@ data class Matrix(
             l.tx * r.b + l.ty * r.d + r.ty
         )
 
-        fun translating(delta: Point): Matrix = Matrix().copy(tx = delta.x, ty = delta.y)
+        fun translating(delta: Point): Matrix = Matrix().copy(tx = delta.xD, ty = delta.yD)
         fun rotating(angle: Angle): Matrix = Matrix().rotated(angle)
         fun skewing(skewX: Angle, skewY: Angle): Matrix = Matrix().skewed(skewX, skewY)
 
@@ -296,6 +296,7 @@ interface IMatrix {
 
 
     // Transform points
+    fun transform(p: Point): Point = Point(transformX(p.x, p.y), transformY(p.x, p.y))
     fun transform(p: IPoint, out: MPoint = MPoint()): MPoint = transform(p.x, p.y, out)
     fun transform(px: Double, py: Double, out: MPoint = MPoint()): MPoint = out.setTo(transformX(px, py), transformY(px, py))
     fun transform(px: Float, py: Float, out: MPoint = MPoint()): MPoint = out.setTo(transformX(px, py), transformY(px, py))

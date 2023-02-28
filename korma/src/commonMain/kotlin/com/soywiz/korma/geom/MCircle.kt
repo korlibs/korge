@@ -15,7 +15,7 @@ interface ICircle {
     val centerY: Double get() = center.y
 
     fun distanceToCenterSquared(p: IPoint): Double = MPoint.distanceSquared(p, center)
-    fun distanceToCenterSquared(p: Point): Double = Point.distanceSquared(p, center.point)
+    fun distanceToCenterSquared(p: Point): Float = Point.distanceSquared(p, center.point)
     // @TODO: Check if inside the circle
     fun distanceClosestSquared(p: Point): Double = distanceToCenterSquared(p) - radiusSquared
     fun distanceClosestSquared(p: IPoint): Double = distanceToCenterSquared(p) - radiusSquared

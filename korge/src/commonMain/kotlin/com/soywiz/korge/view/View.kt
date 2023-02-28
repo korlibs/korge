@@ -296,7 +296,7 @@ abstract class View internal constructor(
     @ViewProperty(min = -1000.0, max = +1000.0, name = "position")
     var pos: Point
         get() = Point(x, y)
-        set(value) = setXY(value.x, value.y)
+        set(value) = setXY(value.xD, value.yD)
 
     var posOpt: MPoint
         get() {

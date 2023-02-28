@@ -1,5 +1,6 @@
 package com.soywiz.korma.geom
 
+import com.soywiz.kds.pack.*
 import com.soywiz.korma.annotations.*
 import com.soywiz.korma.internal.niceStr
 import com.soywiz.korma.interpolation.Interpolable
@@ -14,11 +15,21 @@ interface Sizeable {
 }
 
 //@KormaExperimental
-@KormaValueApi
-data class Size(val width: Double, val height: Double) {
-    constructor() : this(0.0, 0.0)
-    constructor(width: Float, height: Float) : this(width.toDouble(), height.toDouble())
-    constructor(width: Int, height: Int) : this(width.toDouble(), height.toDouble())
+//@KormaValueApi
+inline class Size internal constructor(internal val raw: FloatPack) {
+    val width: Float get() = raw.x
+    val height: Float get() = raw.y
+
+    val widthF: Float get() = width
+    val heightF: Float get() = height
+    val widthD: Double get() = width.toDouble()
+    val heightD: Double get() = height.toDouble()
+
+    //(val width: Double, val height: Double) {
+    constructor() : this(0f, 0f)
+    constructor(width: Float, height: Float) : this(FloatPack(width, height))
+    constructor(width: Double, height: Double) : this(FloatPack(width.toFloat(), height.toFloat()))
+    constructor(width: Int, height: Int) : this(width.toFloat(), height.toFloat())
 
     override fun toString(): String = "Size(width=${width.niceStr}, height=${height.niceStr})"
 }
@@ -100,15 +111,17 @@ interface ISizeInt {
     }
 }
 
+fun ISizeInt.clone(): MSizeInt = MSizeInt(width, height)
+
 @KormaMutableApi
 inline class MSizeInt(val size: MSize) : ISizeInt {
     companion object {
         operator fun invoke(): MSizeInt = MSizeInt(MSize(0, 0))
-        operator fun invoke(x: Int, y: Int): MSizeInt = MSizeInt(MSize(x, y))
+        operator fun invoke(width: Int, height: Int): MSizeInt = MSizeInt(MSize(width, height))
         operator fun invoke(that: ISizeInt): MSizeInt = MSizeInt(MSize(that.width, that.height))
     }
 
-    fun clone() = MSizeInt(size.clone())
+    fun clone(): MSizeInt = MSizeInt(size.clone())
 
     fun setTo(width: Int, height: Int) : MSizeInt {
         this.width = width

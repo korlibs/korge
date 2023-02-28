@@ -3,6 +3,7 @@
 package com.soywiz.korma.geom
 
 import com.soywiz.kds.*
+import com.soywiz.kds.pack.*
 import com.soywiz.korma.internal.niceStr
 import com.soywiz.korma.interpolation.Interpolable
 import com.soywiz.korma.interpolation.MutableInterpolable
@@ -22,14 +23,28 @@ typealias MVector2D = MPoint
 // VALUE CLASSES
 //////////////////////////////
 
-@KormaValueApi inline fun Point(x: Int, y: Int): Point = Point(x.toDouble(), y.toDouble())
-@KormaValueApi inline fun Point(x: Float, y: Float): Point = Point(x.toDouble(), y.toDouble())
+fun Point(p: Point): Point = Point(p.raw)
 
 //data class Point(val x: Double, val y: Double) {
 // @JvmInline value
-@KormaValueApi
-data class Point(val x: Double, val y: Double) {
-    constructor() : this(0.0, 0.0)
+//@KormaValueApi
+//data class Point(val x: Double, val y: Double) {
+inline class Point internal constructor(internal val raw: FloatPack) {
+    val x: Float get() = raw.x
+    val y: Float get() = raw.y
+
+    val xF: Float get() = x
+    val yF: Float get() = y
+
+    val xD: Double get() = x.toDouble()
+    val yD: Double get() = y.toDouble()
+
+    constructor(x: Float, y: Float) : this(FloatPack(x, y))
+    constructor(x: Double, y: Double) : this(FloatPack(x.toFloat(), y.toFloat()))
+    constructor(x: Int, y: Int) : this(FloatPack(x.toFloat(), y.toFloat()))
+    constructor(p: IPoint) : this(p.x.toFloat(), p.y.toFloat())
+    //constructor(p: Point) : this(p.raw)
+    constructor() : this(0f, 0f)
     //constructor(x: Int, y: Int) : this(x.toDouble(), y.toDouble())
     //constructor(x: Float, y: Float) : this(x.toDouble(), y.toDouble())
 
@@ -42,34 +57,39 @@ data class Point(val x: Double, val y: Double) {
     inline operator fun times(that: Point): Point = Point(x * that.x, y * that.y)
     inline operator fun div(that: Point): Point = Point(x / that.x, y / that.y)
 
-    inline operator fun times(scale: Double): Point = Point(x * scale, y * scale)
-    inline operator fun times(scale: Float): Point = this * scale.toDouble()
+    inline operator fun times(scale: Float): Point = Point(x * scale, y * scale)
+    inline operator fun times(scale: Double): Point = this * scale.toFloat()
     inline operator fun times(scale: Int): Point = this * scale.toDouble()
 
-    inline operator fun div(scale: Double): Point = Point(x / scale, y / scale)
-    inline operator fun div(scale: Float): Point = this / scale.toDouble()
+    inline operator fun div(scale: Float): Point = Point(x / scale, y / scale)
+    inline operator fun div(scale: Double): Point = this / scale.toFloat()
     inline operator fun div(scale: Int): Point = this / scale.toDouble()
 
-    fun distanceTo(x: Double, y: Double): Double = hypot(x - this.x, y - this.y)
-    fun distanceTo(x: Float, y: Float): Double = this.distanceTo(x.toDouble(), y.toDouble())
-    fun distanceTo(x: Int, y: Int): Double = this.distanceTo(x.toDouble(), y.toDouble())
-    fun distanceTo(that: Point): Double = distanceTo(that.x, that.y)
+    fun distanceTo(x: Float, y: Float): Float = hypot(x - this.x, y - this.y)
+    fun distanceTo(x: Double, y: Double): Float = this.distanceTo(x.toFloat(), y.toFloat())
+    fun distanceTo(x: Int, y: Int): Float = this.distanceTo(x.toDouble(), y.toDouble())
+    fun distanceTo(that: Point): Float = distanceTo(that.x, that.y)
 
-    infix fun dot(that: Point): Double = this.x * that.x + this.y * that.y
+    infix fun dot(that: Point): Float = this.x * that.x + this.y * that.y
 
     fun angleTo(other: Point): Angle = Angle.between(this.x, this.y, other.x, other.y)
-    val angle: Angle get() = Angle.between(0.0, 0.0, this.x, this.y)
+    val angle: Angle get() = Angle.between(0f, 0f, this.x, this.y)
+
+    inline fun transformed(m: IMatrix): Point = m.transform(this)
+    fun transformX(m: IMatrix): Float = m.transform(this).x
+    fun transformY(m: IMatrix): Float = m.transform(this).y
 
     inline fun transformed(m: Matrix): Point = m.transform(this)
-    fun transformX(m: Matrix): Double = m.transform(this).x
-    fun transformY(m: Matrix): Double = m.transform(this).y
+    fun transformX(m: Matrix): Float = m.transform(this).x
+    fun transformY(m: Matrix): Float = m.transform(this).y
+
     operator fun get(component: Int) = when (component) {
         0 -> x; 1 -> y
         else -> throw IndexOutOfBoundsException("Point doesn't have $component component")
     }
-    val length: Double get() = hypot(x, y)
-    val magnitude: Double get() = hypot(x, y)
-    val normalized: Point get() = this * (1.0 / magnitude)
+    val length: Float get() = hypot(x, y)
+    val magnitude: Float get() = hypot(x, y)
+    val normalized: Point get() = this * (1f / magnitude)
 
     val int: PointInt get() = PointInt(x.toInt(), y.toInt())
     val intRound: PointInt get() = PointInt(x.roundToInt(), y.roundToInt())
@@ -81,14 +101,22 @@ data class Point(val x: Double, val y: Double) {
 
     //fun copy(x: Double = this.x, y: Double = this.y): Point = Point(x, y)
 
-    fun isAlmostEquals(other: Point, epsilon: Double = 0.000001): Boolean =
+    fun isAlmostEquals(other: Point, epsilon: Float = 0.000001f): Boolean =
         this.x.isAlmostEquals(other.x, epsilon) && this.y.isAlmostEquals(other.y, epsilon)
 
+    override fun toString(): String = "(${x.niceStr}, ${y.niceStr})"
+
+    fun isNaN(): Boolean = this.x.isNaN() && this.y.isNaN()
+
     companion object {
+        val ZERO = Point(0f, 0f)
+        val NaN = Point(Float.NaN, Float.NaN)
+
         //inline operator fun invoke(x: Int, y: Int): Point = Point(x.toDouble(), y.toDouble())
         //inline operator fun invoke(x: Float, y: Float): Point = Point(x.toDouble(), y.toDouble())
 
         /** Constructs a point from polar coordinates determined by an [angle] and a [length]. Angle 0 is pointing to the right, and the direction is counter-clock-wise */
+        inline fun fromPolar(x: Float, y: Float, angle: Angle, length: Double = 1.0): Point = Point(x + angle.cosine * length, y + angle.sine * length)
         inline fun fromPolar(x: Double, y: Double, angle: Angle, length: Double = 1.0): Point = Point(x + angle.cosine * length, y + angle.sine * length)
         inline fun fromPolar(base: Point, angle: Angle, length: Double = 1.0): Point = fromPolar(base.x, base.y, angle, length)
         inline fun fromPolar(angle: Angle, length: Double = 1.0): Point = fromPolar(0.0, 0.0, angle, length)
@@ -103,25 +131,30 @@ data class Point(val x: Double, val y: Double) {
 
         fun distance(a: Double, b: Double): Double = kotlin.math.abs(a - b)
         fun distance(x1: Double, y1: Double, x2: Double, y2: Double): Double = kotlin.math.hypot(x1 - x2, y1 - y2)
-        fun distance(x1: Float, y1: Float, x2: Float, y2: Float): Double = distance(x1.toDouble(), y1.toDouble(), x2.toDouble(), y2.toDouble())
-        fun distance(x1: Int, y1: Int, x2: Int, y2: Int): Double = distance(x1.toDouble(), y1.toDouble(), x2.toDouble(), y2.toDouble())
-        fun distance(a: Point, b: Point): Double = distance(a.x, a.y, b.x, b.y)
-        fun distance(a: PointInt, b: PointInt): Double = distance(a.x, a.y, b.x, b.y)
-        fun distanceSquared(a: Point, b: Point): Double = distanceSquared(a.x, a.y, b.x, b.y)
+        fun distance(x1: Float, y1: Float, x2: Float, y2: Float): Float = kotlin.math.hypot(x1 - x2, y1 - y2)
+        fun distance(x1: Int, y1: Int, x2: Int, y2: Int): Float = distance(x1.toFloat(), y1.toFloat(), x2.toFloat(), y2.toFloat())
+        fun distance(a: Point, b: Point): Float = distance(a.x, a.y, b.x, b.y)
+        fun distance(a: PointInt, b: PointInt): Float = distance(a.x, a.y, b.x, b.y)
+
+        fun distanceSquared(a: Point, b: Point): Float = distanceSquared(a.x, a.y, b.x, b.y)
         fun distanceSquared(a: PointInt, b: PointInt): Int = distanceSquared(a.x, a.y, b.x, b.y)
         fun distanceSquared(x1: Double, y1: Double, x2: Double, y2: Double): Double = square(x1 - x2) + square(y1 - y2)
+        fun distanceSquared(x1: Float, y1: Float, x2: Float, y2: Float): Float = square(x1 - x2) + square(y1 - y2)
         fun distanceSquared(x1: Int, y1: Int, x2: Int, y2: Int): Int = square(x1 - x2) + square(y1 - y2)
 
         inline fun direction(a: Point, b: Point): Point = b - a
 
         fun compare(l: Point, r: Point): Int = compare(l.x, l.y, r.x, r.y)
+        fun compare(lx: Float, ly: Float, rx: Float, ry: Float): Int = ly.compareTo(ry).let { ret -> if (ret == 0) lx.compareTo(rx) else ret }
         fun compare(lx: Double, ly: Double, rx: Double, ry: Double): Int = ly.compareTo(ry).let { ret -> if (ret == 0) lx.compareTo(rx) else ret }
 
         private fun square(x: Double): Double = x * x
+        private fun square(x: Float): Float = x * x
         private fun square(x: Int): Int = x * x
 
         fun dot(aX: Double, aY: Double, bX: Double, bY: Double): Double = (aX * bX) + (aY * bY)
-        fun dot(a: Point, b: Point): Double = dot(a.x, a.y, b.x, b.y)
+        fun dot(aX: Float, aY: Float, bX: Float, bY: Float): Float = (aX * bX) + (aY * bY)
+        fun dot(a: Point, b: Point): Float = dot(a.x, a.y, b.x, b.y)
 
         fun isCollinear(xa: Double, ya: Double, x: Double, y: Double, xb: Double, yb: Double): Boolean =
             (((x - xa) / (y - ya)) - ((xa - xb) / (ya - yb))).absoluteValue.isAlmostZero()
@@ -134,13 +167,13 @@ data class Point(val x: Double, val y: Double) {
 
         // https://algorithmtutor.com/Computational-Geometry/Determining-if-two-consecutive-segments-turn-left-or-right/
         /** < 0 left, > 0 right, 0 collinear */
-        fun orientation(p1: Point, p2: Point, p3: Point): Double =
-            orientation(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y)
-        fun orientation(ax: Double, ay: Double, bx: Double, by: Double, cx: Double, cy: Double): Double =
-            crossProduct(cx - ax, cy - ay, bx - ax, by - ay)
+        fun orientation(p1: Point, p2: Point, p3: Point): Float = orientation(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y)
+        fun orientation(ax: Float, ay: Float, bx: Float, by: Float, cx: Float, cy: Float): Float = crossProduct(cx - ax, cy - ay, bx - ax, by - ay)
+        fun orientation(ax: Double, ay: Double, bx: Double, by: Double, cx: Double, cy: Double): Double = crossProduct(cx - ax, cy - ay, bx - ax, by - ay)
 
+        fun crossProduct(ax: Float, ay: Float, bx: Float, by: Float): Float = (ax * by) - (bx * ay)
         fun crossProduct(ax: Double, ay: Double, bx: Double, by: Double): Double = (ax * by) - (bx * ay)
-        fun crossProduct(p1: Point, p2: Point): Double = crossProduct(p1.x, p1.y, p2.x, p2.y)
+        fun crossProduct(p1: Point, p2: Point): Float = crossProduct(p1.x, p1.y, p2.x, p2.y)
     }
 }
 
@@ -294,9 +327,10 @@ data class MPoint(
 
     /** Updates a point from polar coordinates determined by an [angle] and a [length]. Angle 0 is pointing to the right, and the direction is counter-clock-wise */
     fun setToPolar(angle: Angle, length: Double = 1.0): MPoint = setToPolar(0.0, 0.0, angle, length)
-    fun setToPolar(base: Point, angle: Angle, length: Double = 1.0): MPoint = setToPolar(base.x, base.y, angle, length)
+    fun setToPolar(base: Point, angle: Angle, length: Float = 1f): MPoint = setToPolar(base.x, base.y, angle, length)
     fun setToPolar(base: IPoint, angle: Angle, length: Double = 1.0): MPoint = setToPolar(base.x, base.y, angle, length)
     fun setToPolar(x: Double, y: Double, angle: Angle, length: Double = 1.0): MPoint = setTo(x + angle.cosine * length, y + angle.sine * length)
+    fun setToPolar(x: Float, y: Float, angle: Angle, length: Float = 1f): MPoint = setTo(x + angle.cosine * length, y + angle.sine * length)
 
     /** Rotates the vector/point -90 degrees (not normalizing it) */
     fun setToNormal(): MPoint = setTo(-this.y, this.x)
