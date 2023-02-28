@@ -104,7 +104,7 @@ data class Line(val a: Point, val b: Point) {
 }
 
 @KormaMutableApi
-interface ILine {
+sealed interface ILine {
     val a: IPoint
     val b: IPoint
 }

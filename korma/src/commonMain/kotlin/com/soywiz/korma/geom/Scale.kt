@@ -6,7 +6,7 @@ import com.soywiz.korma.annotations.*
 data class Scale(val scaleX: Double, val scaleY: Double)
 
 @KormaMutableApi
-interface IScale {
+sealed interface IScale {
     val scaleX: Double
     val scaleY: Double
 }

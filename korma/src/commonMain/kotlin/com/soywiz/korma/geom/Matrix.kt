@@ -5,6 +5,7 @@ package com.soywiz.korma.geom
 import com.soywiz.kds.*
 import com.soywiz.korma.annotations.*
 import com.soywiz.korma.interpolation.*
+import com.soywiz.korma.math.*
 import kotlin.math.*
 
 @KormaValueApi
@@ -133,6 +134,14 @@ data class Matrix(
     companion object {
         val IDENTITY = Matrix()
         val NaN = Matrix(Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN)
+
+        fun isAlmostEquals(a: Matrix, b: Matrix, epsilon: Double = 0.000001): Boolean =
+            a.tx.isAlmostEquals(b.tx, epsilon)
+                && a.ty.isAlmostEquals(b.ty, epsilon)
+                && a.a.isAlmostEquals(b.a, epsilon)
+                && a.b.isAlmostEquals(b.b, epsilon)
+                && a.c.isAlmostEquals(b.c, epsilon)
+                && a.d.isAlmostEquals(b.d, epsilon)
 
         fun multiply(l: Matrix, r: Matrix): Matrix = Matrix(
             l.a * r.a + l.b * r.c,
@@ -286,7 +295,7 @@ enum class MatrixType(val id: Int, val hasRotation: Boolean, val hasScale: Boole
 }
 
 @KormaMutableApi
-interface IMatrix {
+sealed interface IMatrix {
     val a: Double
     val b: Double
     val c: Double
@@ -345,7 +354,18 @@ data class MMatrix(
 
         fun transformXf(a: Float, b: Float, c: Float, d: Float, tx: Float, ty: Float, px: Float, py: Float): Float = a * px + c * py + tx
         fun transformYf(a: Float, b: Float, c: Float, d: Float, tx: Float, ty: Float, px: Float, py: Float): Float = d * py + b * px + ty
+
+
+        fun isAlmostEquals(a: IMatrix, b: IMatrix, epsilon: Double = 0.000001): Boolean =
+            a.tx.isAlmostEquals(b.tx, epsilon)
+                && a.ty.isAlmostEquals(b.ty, epsilon)
+                && a.a.isAlmostEquals(b.a, epsilon)
+                && a.b.isAlmostEquals(b.b, epsilon)
+                && a.c.isAlmostEquals(b.c, epsilon)
+                && a.d.isAlmostEquals(b.d, epsilon)
     }
+
+    fun isAlmostEquals(other: IMatrix, epsilon: Double = 0.000001): Boolean = isAlmostEquals(this, other, epsilon)
 
     var af: Float
         get() = a.toFloat()
@@ -674,11 +694,11 @@ data class MMatrix(
     }
 
     data class Transform(
-        override var x: Double = 0.0, override var y: Double = 0.0,
+        var x: Double = 0.0, var y: Double = 0.0,
         var scaleX: Double = 1.0, var scaleY: Double = 1.0,
         var skewX: Angle = 0.radians, var skewY: Angle = 0.radians,
         var rotation: Angle = 0.radians
-    ) : MutableInterpolable<Transform>, Interpolable<Transform>, IMPoint {
+    ) : MutableInterpolable<Transform>, Interpolable<Transform> {
 
         var scaleAvg: Double
             get() = (scaleX + scaleY) * 0.5
@@ -784,6 +804,20 @@ data class MMatrix(
         )
 
         fun clone() = Transform().copyFrom(this)
+
+        fun isAlmostEquals(other: Transform, epsilon: Double = 0.000001): Boolean = isAlmostEquals(this, other, epsilon)
+
+        companion object {
+            fun isAlmostEquals(a: Transform, b: Transform, epsilon: Double = 0.000001): Boolean =
+                a.x.isAlmostEquals(b.x, epsilon)
+                    && a.y.isAlmostEquals(b.y, epsilon)
+                    && a.scaleX.isAlmostEquals(b.scaleX, epsilon)
+                    && a.scaleY.isAlmostEquals(b.scaleY, epsilon)
+                    && a.skewX.isAlmostEquals(b.skewX, epsilon)
+                    && a.skewY.isAlmostEquals(b.skewY, epsilon)
+                    && a.rotation.isAlmostEquals(b.rotation, epsilon)
+
+        }
     }
 
     class Computed(val matrix: MMatrix, val transform: Transform) {

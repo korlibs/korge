@@ -50,19 +50,19 @@ open class ComposedFilter private constructor(
         return out
     }
 
-    override fun computeBorder(out: MMarginInt, texWidth: Int, texHeight: Int) {
+    override fun computeBorder(texWidth: Int, texHeight: Int): MarginInt {
         var sumLeft = 0
         var sumTop = 0
         var sumRight = 0
         var sumBottom = 0
         filters.fastForEach {
-            it.computeBorder(out, texWidth, texHeight)
+            val out = it.computeBorder(texWidth, texHeight)
             sumLeft += out.left
             sumRight += out.right
             sumTop += out.top
             sumBottom += out.bottom
         }
-        out.setTo(sumTop, sumRight, sumBottom, sumLeft)
+        return MarginInt(sumTop, sumRight, sumBottom, sumLeft)
         //println(out)
     }
 

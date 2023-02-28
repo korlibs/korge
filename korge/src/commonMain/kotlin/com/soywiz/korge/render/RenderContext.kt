@@ -231,8 +231,6 @@ class RenderContext constructor(
     /** Pool of [MRectangle] objects that could be used temporarily by renders */
     val rectPool = Pool(reset = { it.setTo(0, 0, 0, 0) }, preallocate = 8) { MRectangle() }
 
-    val tempMargin: MMarginInt = MMarginInt()
-
     val identityMatrix = MMatrix()
 
     /**

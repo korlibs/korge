@@ -16,7 +16,7 @@ import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 import kotlin.math.*
 
-interface IBezier : Curve {
+sealed interface IBezier : Curve {
     val points: IPointArrayList
     val dims: Int
     val dpoints: List<IPointArrayList>

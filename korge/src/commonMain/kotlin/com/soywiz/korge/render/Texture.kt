@@ -11,9 +11,12 @@ import com.soywiz.korma.geom.slice.*
  */
 class TextureBase(
     var base: AGTexture?,
-    override var width: Int,
-    override var height: Int
-) : Closeable, ISizeInt {
+    override var size: SizeInt,
+) : Closeable, SizeableInt {
+    constructor(base: AGTexture?, width: Int, height: Int) : this(base, SizeInt(width, height))
+    var width: Int get() = size.width; set(width) { size = SizeInt(width, height) }
+    var height: Int get() = size.height; set(height) { size = SizeInt(width, height) }
+
     var version = -1
     override fun close() {
         base?.close()
@@ -47,10 +50,10 @@ fun Texture.close() {
  * Creates a [Texture] from a texture [agBase] and its wanted size [width], [height].
  */
 fun Texture(agBase: AGTexture, width: Int, height: Int): Texture =
-    Texture(TextureBase(agBase, width, height), IRectangleInt(0, 0, width, height))
+    Texture(TextureBase(agBase, SizeInt(width, height)), RectangleInt(0, 0, width, height))
 
 fun Texture(base: TextureBase, left: Int = 0, top: Int = 0, right: Int = base.width, bottom: Int = base.height): Texture =
-    Texture(base, MRectangleInt.fromBounds(left, top, right, bottom))
+    Texture(base, RectangleInt.fromBounds(left, top, right, bottom))
 
 /**
  * Creates a [Texture] from a frame buffer [frameBuffer] with the right size of the frameBuffer.

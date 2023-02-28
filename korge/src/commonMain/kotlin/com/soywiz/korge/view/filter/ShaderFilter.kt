@@ -86,8 +86,8 @@ abstract class ShaderFilter : Filter {
         it[u_StdTexDerivates] = textureStdTexDerivates
     }
 
-    override fun computeBorder(out: MMarginInt, texWidth: Int, texHeight: Int) {
-        out.setTo(0)
+    override fun computeBorder(texWidth: Int, texHeight: Int): MarginInt {
+        return MarginInt.ZERO
     }
 
     ///** The [VertexShader] used this this [Filter] */
@@ -146,7 +146,7 @@ abstract class ShaderFilter : Filter {
             filterScale
         )
 
-        val _margin = getBorder(texWidth, texHeight, ctx.tempMargin)
+        val _margin = getBorder(texWidth, texHeight)
         val marginLeft = (_margin.left * filterScale).toIntCeil()
         val marginRight = (_margin.right * filterScale).toIntCeil()
         val marginTop = (_margin.top * filterScale).toIntCeil()

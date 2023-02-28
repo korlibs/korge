@@ -6,10 +6,7 @@ import com.soywiz.korge.render.RenderContext
 import com.soywiz.korim.color.Colors
 import com.soywiz.korio.async.suspendTest
 import com.soywiz.korio.util.niceStr
-import com.soywiz.korma.geom.Anchor
-import com.soywiz.korma.geom.MPoint
-import com.soywiz.korma.geom.MRectangle
-import com.soywiz.korma.geom.MSize
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.bezier.Bezier
 import com.soywiz.korma.geom.vector.*
 import kotlin.test.Test
@@ -26,7 +23,7 @@ class GraphicsTest {
             }
         }
         val bmp = g.bitmap.base.toBMP32()
-        assertEquals(MSize(101, 101), bmp.size)
+        assertEquals(SizeInt(101, 101), bmp.size)
         //assertEquals("#ff0000ff", bmp[0, 0].hexString)
         //assertEquals("#ff0000ff", bmp[99, 99].hexString)
         assertEquals("#ff0000ff", bmp[1, 1].hexString)

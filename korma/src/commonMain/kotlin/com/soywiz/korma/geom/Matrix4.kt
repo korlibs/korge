@@ -79,7 +79,7 @@ enum class MajorOrder { ROW, COLUMN }
 typealias MMatrix4 = MMatrix3D
 
 @KormaMutableApi
-interface IMatrix3D {
+sealed interface IMatrix3D {
     val v00: Float
     val v01: Float
     val v02: Float
@@ -125,10 +125,9 @@ interface IMatrix3D {
     fun copyToFloat2x2(out: FloatArray, order: MajorOrder, offset: Int) = copyToFloatWxH(out, 2, 2, order, offset)
     fun copyToFloat3x3(out: FloatArray, order: MajorOrder, offset: Int) = copyToFloatWxH(out, 3, 3, order, offset)
     fun copyToFloat4x4(out: FloatArray, order: MajorOrder, offset: Int) = copyToFloatWxH(out, 4, 4, order, offset)
-
 }
 
-interface IMMatrix3D : IMatrix3D {
+sealed interface IMMatrix3D : IMatrix3D {
     override var v00: Float
     override var v01: Float
     override var v02: Float

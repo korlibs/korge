@@ -152,7 +152,30 @@ data class RectangleInt(
     constructor() : this(PointInt(), SizeInt())
     constructor(x: Int, y: Int, width: Int, height: Int) : this(PointInt(x, y), SizeInt(width, height))
 
+    fun sliceWithBounds(left: Int, top: Int, right: Int, bottom: Int, clamped: Boolean = true): RectangleInt {
+        val left = if (!clamped) left else left.coerceIn(0, this.width)
+        val right = if (!clamped) right else right.coerceIn(0, this.width)
+        val top = if (!clamped) top else top.coerceIn(0, this.height)
+        val bottom = if (!clamped) bottom else bottom.coerceIn(0, this.height)
+        return fromBounds(this.x + left, this.y + top, this.x + right, this.y + bottom)
+    }
+
+    fun sliceWithSize(x: Int, y: Int, width: Int, height: Int, clamped: Boolean = true): RectangleInt =
+        sliceWithBounds(x, y, x + width, y + height, clamped)
+
+    fun expanded(border: MarginInt): RectangleInt =
+        fromBounds(left - border.left, top - border.top, right + border.right, bottom + border.bottom)
+
+    override fun toString(): String = "Rectangle(x=${x}, y=${y}, width=${width}, height=${height})"
+
     companion object {
+        fun union(a: RectangleInt, b: RectangleInt): RectangleInt = fromBounds(
+            min(a.left, b.left),
+            min(a.top, b.top),
+            max(a.right, b.right),
+            max(a.bottom, b.bottom)
+        )
+
         fun fromBounds(topLeft: PointInt, bottomRight: PointInt): RectangleInt = RectangleInt(topLeft, (bottomRight - topLeft).toSize())
         fun fromBounds(left: Int, top: Int, right: Int, bottom: Int): RectangleInt = fromBounds(PointInt(left, top), PointInt(right, bottom))
     }
@@ -162,6 +185,8 @@ fun Rectangle.toInt(): RectangleInt = RectangleInt(x.toInt(), y.toInt(), width.t
 fun Rectangle.toIntRound(): RectangleInt = RectangleInt(x.toIntRound(), y.toIntRound(), width.toIntRound(), height.toIntRound())
 fun Rectangle.toIntCeil(): RectangleInt = RectangleInt(x.toIntCeil(), y.toIntCeil(), width.toIntCeil(), height.toIntCeil())
 fun Rectangle.toIntFloor(): RectangleInt = RectangleInt(x.toIntFloor(), y.toIntFloor(), width.toIntFloor(), height.toIntFloor())
+
+fun RectangleInt.toFloat(): Rectangle = Rectangle(x.toFloat(), y.toFloat(), width.toFloat(), height.toFloat())
 
 @KormaMutableApi
 interface IRectangle {
@@ -507,12 +532,15 @@ data class MRectangle(
 
     fun expand(margin: IMarginInt): MRectangle =
         expand(margin.left, margin.top, margin.right, margin.bottom)
+
+    fun expand(margin: MarginInt): MRectangle =
+        expand(margin.left, margin.top, margin.right, margin.bottom)
 }
 
 //////////// INT
 
 @KormaMutableApi
-interface IRectangleInt {
+sealed interface IRectangleInt {
     companion object {
         operator fun invoke(x: Int, y: Int, width: Int, height: Int): IRectangleInt = MRectangleInt(x, y, width, height)
         operator fun invoke(x: Float, y: Float, width: Float, height: Float): IRectangleInt = MRectangleInt(x.toInt(), y.toInt(), width.toInt(), height.toInt())
@@ -527,6 +555,7 @@ interface IRectangleInt {
     fun clone(): MRectangleInt = MRectangleInt(x, y, width, height)
 
     fun expanded(border: IMarginInt): IRectangleInt = clone().expand(border)
+    fun expanded(border: MarginInt): IRectangleInt = clone().expand(border)
 
     val left: Int get() = x
     val top: Int get() = y
@@ -621,6 +650,8 @@ inline class MRectangleInt(val rect: MRectangle) : IRectangleInt {
     /** Inline expand the rectangle */
     fun expand(border: IMarginInt): MRectangleInt =
         this.setBoundsTo(left - border.left, top - border.top, right + border.right, bottom + border.bottom)
+    fun expand(border: MarginInt): MRectangleInt =
+        this.setBoundsTo(left - border.left, top - border.top, right + border.right, bottom + border.bottom)
 
     companion object {
         operator fun invoke(): MRectangleInt = MRectangleInt(MRectangle())
@@ -634,8 +665,23 @@ inline class MRectangleInt(val rect: MRectangle) : IRectangleInt {
     override fun toString(): String = "Rectangle(x=$x, y=$y, width=$width, height=$height)"
     fun toStringBounds(): String = "Rectangle([$left,$top]-[$right,$bottom])"
     fun copyFrom(rect: IRectangleInt): MRectangleInt = setTo(rect.x, rect.y, rect.width, rect.height)
+    fun copyFrom(rect: RectangleInt): MRectangleInt = setTo(rect.x, rect.y, rect.width, rect.height)
 
     fun setToUnion(a: IRectangleInt, b: IRectangleInt): MRectangleInt = setToBounds(
+        min(a.left, b.left),
+        min(a.top, b.top),
+        max(a.right, b.right),
+        max(a.bottom, b.bottom)
+    )
+
+    fun setToUnion(a: IRectangleInt, b: RectangleInt): MRectangleInt = setToBounds(
+        min(a.left, b.left),
+        min(a.top, b.top),
+        max(a.right, b.right),
+        max(a.bottom, b.bottom)
+    )
+
+    fun setToUnion(a: RectangleInt, b: RectangleInt): MRectangleInt = setToBounds(
         min(a.left, b.left),
         min(a.top, b.top),
         max(a.right, b.right),

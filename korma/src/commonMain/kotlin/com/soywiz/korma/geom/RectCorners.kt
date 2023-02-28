@@ -11,7 +11,7 @@ data class RectCorners(
 )
 
 @KormaMutableApi
-interface IRectCorners {
+sealed interface IRectCorners {
     val topLeft: Double
     val topRight: Double
     val bottomRight: Double

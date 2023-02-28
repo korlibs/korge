@@ -6,7 +6,7 @@ import com.soywiz.korma.internal.*
 import com.soywiz.korma.math.*
 import kotlin.math.*
 
-interface IVectorArrayList : Extra {
+sealed interface IVectorArrayList : Extra {
     val closed: Boolean
     val size: Int
     val dimensions: Int
@@ -153,7 +153,7 @@ fun vectorArrayListOf(vararg data: Float, dimensions: Int): VectorArrayList =
 fun vectorArrayListOf(vararg data: Int, dimensions: Int): VectorArrayList =
     vectorArrayListOf(*data.mapDouble { it.toDouble() }, dimensions = dimensions)
 
-interface IGenericVector {
+sealed interface IGenericVector {
     val dimensions: Int
     operator fun get(dim: Int): Double
     operator fun set(dim: Int, value: Double)

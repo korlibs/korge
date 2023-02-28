@@ -10,7 +10,7 @@ import kotlin.math.sqrt
 data class Vector3(val x: Float, val y: Float, val z: Float)
 
 @KormaMutableApi
-interface IVector3 {
+sealed interface IVector3 {
     val x: Float
     val y: Float
     val z: Float

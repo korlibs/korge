@@ -207,6 +207,7 @@ fun Triangle.edgeIndex(p1: IPoint, p2: IPoint): Int {
             if (p2 == this.point(0)) return 1
             if (p2 == this.point(1)) return 0
         }
+        else -> Unit
     }
     return -1
 }

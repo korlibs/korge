@@ -122,6 +122,6 @@ class MatrixTest {
         t.scaleAvg = 1.3
         t.toMatrix(m)
         t2.setMatrix(m)
-        assertEquals(t2, t)
+        assertTrue { t.isAlmostEquals(t2) }
     }
 }

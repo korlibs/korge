@@ -1,7 +1,6 @@
 package com.soywiz.korim.bitmap
 
 import com.soywiz.kds.*
-import com.soywiz.kds.atomic.kdsIsFrozen
 import com.soywiz.kmem.clamp
 import com.soywiz.kmem.fract
 import com.soywiz.kmem.toIntCeil
@@ -19,12 +18,14 @@ import com.soywiz.korma.geom.*
 import kotlin.math.min
 
 abstract class Bitmap(
-    override val width: Int,
-    override val height: Int,
+    val width: Int,
+    val height: Int,
     val bpp: Int,
     premultiplied: Boolean,
     val backingArray: Any?
-) : ISizeable, ISizeInt, Extra by Extra.Mixin() {
+) : SizeableInt, Extra by Extra.Mixin() {
+    val rect: RectangleInt = RectangleInt(0, 0, width, height)
+    override val size: SizeInt get() = SizeInt(width, height)
     var bitmapName: String? = null
 
     var premultiplied: Boolean = premultiplied
@@ -44,10 +45,8 @@ abstract class Bitmap(
     /** Version of the content. lock+unlock mutates this version to allow for example to re-upload the bitmap to the GPU when synchronizing bitmaps into textures */
     var contentVersion: Int = 0
 
-    var dirtyRegion: IRectangleInt? = null
+    var dirtyRegion: RectangleInt? = null
         private set
-
-    private val dirtyRegionObj: MRectangleInt = MRectangleInt()
 
     /** Specifies whether mipmaps should be created for this [Bitmap] */
     var mipmaps: Boolean = false
@@ -56,34 +55,25 @@ abstract class Bitmap(
     val area: Int get() = width * height
     fun index(x: Int, y: Int) = y * width + x
     fun inside(x: Int, y: Int) = x in 0 until width && y in 0 until height
-    override val size: MSize get() = MSize(width, height)
 
     fun clearDirtyRegion() {
         if (dirtyRegion != null) {
-            if (!kdsIsFrozen(this)) {
-                dirtyRegion = null
-            }
+            dirtyRegion = null
         }
     }
 
     open fun lock() = Unit
-    open fun unlock(rect: IRectangleInt? = null): Int {
-        if (rect != null) {
-            if (dirtyRegion == null) {
-                dirtyRegionObj.copyFrom(rect)
-            } else {
-                dirtyRegionObj.setToUnion(dirtyRegionObj, rect)
-            }
-        } else {
-            dirtyRegionObj.setTo(0, 0, width, height)
+    open fun unlock(rect: RectangleInt = this.rect): Int {
+        when (dirtyRegion) {
+            null -> dirtyRegion = rect
+            else -> dirtyRegion = RectangleInt.union(dirtyRegion!!, rect)
         }
-        dirtyRegion = dirtyRegionObj
         return ++contentVersion
     }
 
-    inline fun lock(rect: IRectangleInt? = null, doLock: Boolean = true, block: () -> Unit): Int {
+    inline fun lock(rect: RectangleInt = this.rect, doLock: Boolean = true, block: () -> Unit): Int {
         if (doLock) lock()
-        var result: Int
+        val result: Int
         try {
             block()
         } finally {

@@ -6,7 +6,7 @@ import com.soywiz.korma.annotations.*
 data class Sphere3D(val origin: Vector3, val radius: Float)
 
 @KormaMutableApi
-interface ISphere3D {
+sealed interface ISphere3D {
     val origin: IVector3
     val radius: Float
 }

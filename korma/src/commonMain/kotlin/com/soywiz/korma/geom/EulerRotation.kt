@@ -10,7 +10,7 @@ data class EulerRotation(
 )
 
 @KormaMutableApi
-interface IEulerRotation {
+sealed interface IEulerRotation {
     val x: Angle
     val y: Angle
     val z: Angle

@@ -25,6 +25,14 @@ class ScaleMode(
         transformW(item.width.toDouble(), item.height.toDouble(), container.width.toDouble(), container.height.toDouble()).toInt(),
         transformH(item.width.toDouble(), item.height.toDouble(), container.width.toDouble(), container.height.toDouble()).toInt()
     )
+    operator fun invoke(item: Size, container: Size): Size = Size(
+        transformW(item.width.toDouble(), item.height.toDouble(), container.width.toDouble(), container.height.toDouble()),
+        transformH(item.width.toDouble(), item.height.toDouble(), container.width.toDouble(), container.height.toDouble())
+    )
+    operator fun invoke(item: SizeInt, container: SizeInt): SizeInt = SizeInt(
+        transformW(item.width.toDouble(), item.height.toDouble(), container.width.toDouble(), container.height.toDouble()).toInt(),
+        transformH(item.width.toDouble(), item.height.toDouble(), container.width.toDouble(), container.height.toDouble()).toInt()
+    )
 
     object Provider {
         @Suppress("unused") val LIST = listOf(COVER, SHOW_ALL, EXACT, NO_SCALE)
@@ -62,22 +70,39 @@ class ScaleMode(
 fun MRectangle.applyScaleMode(
     container: MRectangle, mode: ScaleMode, anchor: Anchor, out: MRectangle = MRectangle()
 ): MRectangle = this.size.applyScaleMode(container, mode, anchor, out)
-
 fun MSize.applyScaleMode(container: MRectangle, mode: ScaleMode, anchor: Anchor, out: MRectangle = MRectangle(), tempSize: MSize = MSize()): MRectangle {
     val outSize = this.applyScaleMode(container.size, mode, tempSize)
     out.setToAnchoredRectangle(MRectangle(0.0, 0.0, outSize.width, outSize.height), anchor, container)
     return out
 }
 
-fun MSizeInt.applyScaleMode(container: MRectangleInt, mode: ScaleMode, anchor: Anchor, out: MRectangleInt = MRectangleInt(), tempSize: MSizeInt = MSizeInt()): MRectangleInt =
-    this.asDouble().applyScaleMode(container.float, mode, anchor, out.float, tempSize.asDouble()).int
-
-fun MSizeInt.applyScaleMode(container: MSizeInt, mode: ScaleMode, out: MSizeInt = MSizeInt(0, 0)): MSizeInt =
-    mode(this, container, out)
 fun MSize.applyScaleMode(container: MSize, mode: ScaleMode, out: MSize = MSize(0, 0)): MSize =
     mode(this, container, out)
-
-fun MSizeInt.fitTo(container: MSizeInt, out: MSizeInt = MSizeInt(0, 0)): MSizeInt =
-    applyScaleMode(container, ScaleMode.SHOW_ALL, out)
 fun MSize.fitTo(container: MSize, out: MSize = MSize(0, 0)): MSize =
     applyScaleMode(container, ScaleMode.SHOW_ALL, out)
+
+
+fun MSizeInt.applyScaleMode(container: MRectangleInt, mode: ScaleMode, anchor: Anchor, out: MRectangleInt = MRectangleInt(), tempSize: MSizeInt = MSizeInt()): MRectangleInt =
+    this.asDouble().applyScaleMode(container.float, mode, anchor, out.float, tempSize.asDouble()).int
+fun MSizeInt.applyScaleMode(container: MSizeInt, mode: ScaleMode, out: MSizeInt = MSizeInt(0, 0)): MSizeInt =
+    mode(this, container, out)
+fun MSizeInt.fitTo(container: MSizeInt, out: MSizeInt = MSizeInt(0, 0)): MSizeInt =
+    applyScaleMode(container, ScaleMode.SHOW_ALL, out)
+
+
+fun SizeInt.applyScaleMode(container: RectangleInt, mode: ScaleMode, anchor: Anchor): RectangleInt =
+    this.toFloat().applyScaleMode(container.toFloat(), mode, anchor).toInt()
+fun SizeInt.applyScaleMode(container: SizeInt, mode: ScaleMode): SizeInt = mode(this, container)
+fun SizeInt.fitTo(container: SizeInt): SizeInt = applyScaleMode(container, ScaleMode.SHOW_ALL)
+
+fun Size.applyScaleMode(container: Rectangle, mode: ScaleMode, anchor: Anchor): Rectangle {
+    val outSize = this.applyScaleMode(container.size, mode)
+    return Rectangle(
+        (container.x + anchor.sx * (container.width - outSize.width)).toFloat(),
+        (container.y + anchor.sy * (container.height - outSize.height)).toFloat(),
+        outSize.width,
+        outSize.height
+    )
+}
+fun Size.applyScaleMode(container: Size, mode: ScaleMode): Size = mode(this, container)
+fun Size.fitTo(container: Size): Size = applyScaleMode(container, ScaleMode.SHOW_ALL)

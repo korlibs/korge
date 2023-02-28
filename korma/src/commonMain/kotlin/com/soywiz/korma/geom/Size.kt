@@ -42,13 +42,23 @@ inline class SizeInt internal constructor(internal val raw: Int2Pack) {
     constructor(width: Int, height: Int) : this(Int2Pack(width, height))
 }
 
+interface SizeableInt {
+    val size: SizeInt
+    companion object {
+        operator fun invoke(size: SizeInt): SizeableInt = object : SizeableInt {
+            override val size: SizeInt get() = size
+        }
+        operator fun invoke(width: Int, height: Int): SizeableInt = invoke(SizeInt(width, height))
+    }
+}
+
 @KormaMutableApi
 interface ISizeable {
     val size: ISize
 }
 
 @KormaMutableApi
-interface ISize {
+sealed interface ISize {
     val width: Double
     val height: Double
 
@@ -110,7 +120,7 @@ inline class MSize(val p: MPoint) : MutableInterpolable<MSize>, Interpolable<MSi
 }
 
 @KormaMutableApi
-interface ISizeInt {
+sealed interface ISizeInt {
     val width: Int
     val height: Int
 
@@ -180,3 +190,6 @@ fun IPoint.asSize(): ISize = MSize(MPoint(this))
 
 fun Point.toSize(): Size = Size(x, y)
 fun PointInt.toSize(): SizeInt = SizeInt(x, y)
+
+fun Size.toInt(): SizeInt = SizeInt(width.toInt(), height.toInt())
+fun SizeInt.toFloat(): Size = Size(width.toFloat(), height.toFloat())

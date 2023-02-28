@@ -74,7 +74,7 @@ class ViewsJvmTest : ViewsForTesting(log = true) {
                 drawBorder = true
             )
             //textResult.bmp.showImageAndWait()
-            assertEquals(MSize(453, 121), textResult.bmp.size)
+            assertEquals(SizeInt(453, 121), textResult.bmp.size)
             //assertEquals(Size(450, 240), textResult.bmp.size)
         }
     }
@@ -84,6 +84,6 @@ class ViewsJvmTest : ViewsForTesting(log = true) {
         val bitmap = runBlockingNoJs {
             resourcesVfs["texture.png"].readBitmap()
         }
-        assertEquals(MSize(64, 64), bitmap.size)
+        assertEquals(SizeInt(64, 64), bitmap.size)
     }
 }

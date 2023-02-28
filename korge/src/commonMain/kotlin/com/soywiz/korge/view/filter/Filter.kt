@@ -52,9 +52,7 @@ interface Filter {
      * A 0 value means that the texture should be passed with its original size.
      * A 1 value means that the texture should be passed width 2 more pixels of width and height (1 left, 1 right), (1 top, 1 bottom)
      */
-    fun computeBorder(out: MMarginInt, texWidth: Int, texHeight: Int) {
-        out.setTo(0)
-    }
+    fun computeBorder(texWidth: Int, texHeight: Int): MarginInt = MarginInt.ZERO
 
     /**
      * The method in charge of rendering the texture transformed using [ctx] [RenderContext] and [matrix].
@@ -72,9 +70,8 @@ interface Filter {
     )
 }
 
-fun Filter.getBorder(texWidth: Int, texHeight: Int, out: MMarginInt = MMarginInt()): IMarginInt {
-    computeBorder(out, texWidth, texHeight)
-    return out
+fun Filter.getBorder(texWidth: Int, texHeight: Int): MarginInt {
+    return computeBorder(texWidth, texHeight)
 }
 
 @Deprecated("")
@@ -88,7 +85,7 @@ fun Filter.renderToTextureWithBorder(
     block: (texture: Texture, matrix: MMatrix) -> Unit,
 ) {
     val filter = this
-    val margin = filter.getBorder(texWidth, texHeight, ctx.tempMargin)
+    val margin = filter.getBorder(texWidth, texHeight)
 
     val borderLeft = (margin.left * filterScale).toIntCeil()
     val borderTop = (margin.top * filterScale).toIntCeil()
@@ -184,7 +181,7 @@ fun Filter.renderToTextureWithBorderUnsafe(
     result: RenderToTextureResult = RenderToTextureResult()
 ): RenderToTextureResult {
     val filter = this
-    val margin = filter.getBorder(texWidth, texHeight, ctx.tempMargin)
+    val margin = filter.getBorder(texWidth, texHeight)
 
     val borderLeft = (margin.left * filterScale).toIntCeil()
     val borderTop = (margin.top * filterScale).toIntCeil()
@@ -210,7 +207,7 @@ fun Filter.renderToTextureWithBorderUnsafe(
 }
 
 fun Filter.expandBorderRectangle(out: MRectangle) {
-    MMarginInt.POOL { temp -> out.expand(getBorder(out.width.toIntCeil(), out.height.toIntCeil(), temp)) }
+    out.expand(getBorder(out.width.toIntCeil(), out.height.toIntCeil()))
 }
 
 @ThreadLocal

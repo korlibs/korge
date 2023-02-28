@@ -21,7 +21,7 @@ class GameWindowTest {
             }
         })
         val bitmap = cursor.createBitmap()
-        assertEquals(MSize(64, 32), bitmap.bitmap.size)
+        assertEquals(SizeInt(64, 32), bitmap.bitmap.size)
         assertEquals(PointInt(32, 31), bitmap.hotspot)
         assertEquals(MPointInt(32, 31), bitmap.mhotspot)
         //bitmap.bitmap.showImageAndWait()

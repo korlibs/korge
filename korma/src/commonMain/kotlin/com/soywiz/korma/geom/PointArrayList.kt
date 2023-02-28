@@ -10,7 +10,7 @@ import com.soywiz.kds.mapDouble
 import com.soywiz.korma.math.roundDecimalPlaces
 import kotlin.math.round
 
-interface IPointArrayList : IVectorArrayList, Extra {
+sealed interface IPointArrayList : IVectorArrayList, Extra {
     override val dimensions: Int get() = 2
     override fun get(index: Int, dim: Int): Double = if (dim == 0) getX(index) else getY(index)
     fun getX(index: Int): Double
@@ -266,7 +266,7 @@ fun pointArrayListOf(vararg values: IPoint): PointArrayList = PointArrayList(*va
 
 //////////////////////////////////////
 
-interface IPointIntArrayList {
+sealed interface IPointIntArrayList {
     val closed: Boolean
     val size: Int
     fun getX(index: Int): Int

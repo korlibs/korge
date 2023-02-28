@@ -78,7 +78,7 @@ class WaveFilter(
 
     override val programProvider: ProgramProvider get() = WaveFilter
 
-    override fun computeBorder(out: MMarginInt, texWidth: Int, texHeight: Int) {
-        out.setTo(amplitudeY.absoluteValue, amplitudeX.absoluteValue)
+    override fun computeBorder(texWidth: Int, texHeight: Int): MarginInt {
+        return MarginInt(amplitudeY.absoluteValue, amplitudeX.absoluteValue)
     }
 }

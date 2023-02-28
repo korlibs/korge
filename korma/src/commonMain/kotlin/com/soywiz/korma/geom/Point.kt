@@ -200,7 +200,8 @@ inline class PointInt internal constructor(internal val raw: Int2Pack) {
 //////////////////////////////
 
 @KormaMutableApi
-interface IPoint {
+@Deprecated("Use Point instead")
+sealed interface IPoint {
     companion object {
         val ZERO: IPoint get() = MPoint.Zero
 
@@ -266,7 +267,8 @@ interface IPoint {
 fun IPoint.copy(x: Double = this.x, y: Double = this.y): IPoint = IPoint(x, y)
 
 @KormaMutableApi
-interface IMPoint : IPoint {
+@Deprecated("Use Point instead")
+sealed interface IMPoint : IPoint {
     override var x: Double
     override var y: Double
 }
@@ -276,6 +278,7 @@ interface IMPoint : IPoint {
 //////////////////////////////
 
 @KormaMutableApi
+@Deprecated("Use Point instead")
 data class MPoint(
     override var x: Double,
     override var y: Double
@@ -525,7 +528,7 @@ data class MPoint(
 }
 
 @KormaMutableApi
-interface IPointInt {
+sealed interface IPointInt {
     val x: Int
     val y: Int
 

@@ -144,7 +144,7 @@ class RectangleTest {
         assertEquals(
             MRectangle.fromBounds(-10, -15, 120, 125),
             MRectangle.fromBounds(0, 0, 100, 100)
-                .expand(IMarginInt(left = 10, top = 15, right = 20, bottom = 25))
+                .expand(MarginInt(left = 10, top = 15, right = 20, bottom = 25))
         )
     }
 

@@ -11,7 +11,7 @@ data class TriangleInt(
 )
 
 @KormaMutableApi
-interface ITriangleInt {
+sealed interface ITriangleInt {
     val x0: Int
     val y0: Int
     val x1: Int
