@@ -24,7 +24,7 @@ class Short4PackTest {
     }
 
     @Test
-    //@Ignore
+    @Ignore
     fun performanceTest() {
         var sum = 0f
         for (n in 0 until 100000000) {
