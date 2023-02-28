@@ -37,6 +37,6 @@ open class UIProgressBar(
 }
 
 var ViewStyles.uiProgressBarRender: RenderContext2D.(progressBar: UIProgressBar) -> Unit by ViewStyle { progressBar ->
-    materialRoundRect(0.0, 0.0, width, height, radius = MRectCorners(3.0), color = progressBar.styles.uiBackgroundColor)
-    materialRoundRect(0.0, 0.0, width * progressBar.ratio, height, radius = MRectCorners(3.0), color = progressBar.styles.uiSelectedColor)
+    materialRoundRect(0.0, 0.0, width, height, radius = RectCorners(3.0), color = progressBar.styles.uiBackgroundColor)
+    materialRoundRect(0.0, 0.0, width * progressBar.ratio, height, radius = RectCorners(3.0), color = progressBar.styles.uiSelectedColor)
 }

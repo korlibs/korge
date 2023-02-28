@@ -85,7 +85,7 @@ fun RenderContext2D.materialRoundRect(
     width: Double,
     height: Double,
     color: RGBA = Colors.RED,
-    radius: IRectCorners = IRectCorners.EMPTY,
+    radius: RectCorners = RectCorners.EMPTY,
     shadowOffset: Point = Point.ZERO,
     shadowColor: RGBA = Colors.BLACK,
     shadowRadius: Double = 0.0,

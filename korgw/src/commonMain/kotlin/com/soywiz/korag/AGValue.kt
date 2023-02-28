@@ -216,7 +216,7 @@ open class AGValue(
     fun set(value: Vector4) = set(value.x, value.y, value.z, value.w)
     fun set(value: Point) = set(value.x, value.y)
     fun set(value: Margin) = set(value.top.toFloat(), value.right.toFloat(), value.bottom.toFloat(), value.left.toFloat())
-    fun set(value: RectCorners) = set(value.topLeft.toFloat(), value.topRight.toFloat(), value.bottomRight.toFloat(), value.bottomLeft.toFloat())
+    fun set(value: RectCorners) = set(value.topLeft, value.topRight, value.bottomRight, value.bottomLeft)
     //fun set(value: Matrix4) = tempMatrixLock { set(tempMatrix.also { it[0] = value }) }
 
     fun set(value: RGBA) = set(value.rf, value.gf, value.bf, value.af)

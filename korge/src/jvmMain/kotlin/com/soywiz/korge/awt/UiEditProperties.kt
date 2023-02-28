@@ -173,14 +173,14 @@ internal class UiEditProperties(app: UiApplication, view: View?, val views: View
 
                 UiTwoItemEditableValue(app, vv[0], vv[1])
             }
-            type.isSubtypeOf(IRectCorners::class.starProjectedType) -> {
+            type.isSubtypeOf(RectCorners::class.starProjectedType) -> {
                 @Suppress("UNCHECKED_CAST")
-                prop as KMutableProperty1<Any, IRectCorners>
+                prop as KMutableProperty1<Any, RectCorners>
                 val vv = listOf(
-                    ObservableProperty("a", { prop.set(instance, prop.get(instance).duplicate(topLeft = it)) }, { prop.get(instance).topLeft }),
-                    ObservableProperty("b", { prop.set(instance, prop.get(instance).duplicate(topRight = it)) }, { prop.get(instance).topRight }),
-                    ObservableProperty("c", { prop.set(instance, prop.get(instance).duplicate(bottomRight = it)) }, { prop.get(instance).bottomRight }),
-                    ObservableProperty("d", { prop.set(instance, prop.get(instance).duplicate(bottomLeft = it)) }, { prop.get(instance).bottomLeft }),
+                    ObservableProperty("a", { prop.set(instance, prop.get(instance).copy(topLeft = it.toFloat())) }, { prop.get(instance).topLeft.toDouble() }),
+                    ObservableProperty("b", { prop.set(instance, prop.get(instance).copy(topRight = it.toFloat())) }, { prop.get(instance).topRight.toDouble() }),
+                    ObservableProperty("c", { prop.set(instance, prop.get(instance).copy(bottomRight = it.toFloat())) }, { prop.get(instance).bottomRight.toDouble() }),
+                    ObservableProperty("d", { prop.set(instance, prop.get(instance).copy(bottomLeft = it.toFloat())) }, { prop.get(instance).bottomLeft.toDouble() }),
                 ).map { UiNumberEditableValue(app, it, viewProp.min, viewProp.max, viewProp.clampMin, viewProp.clampMax, viewProp.decimalPlaces) }
 
                 UiFourItemEditableValue(app, vv[0], vv[1], vv[2], vv[3])
