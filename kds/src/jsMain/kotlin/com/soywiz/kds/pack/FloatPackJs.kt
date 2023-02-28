@@ -34,15 +34,14 @@ internal actual inline fun unpackFloat2Y(v: Long): Float = Float.fromBits((v shr
 
 //low_1
 
-data class FloatPack(val x: Float, val y: Float)
-
 //internal actual inline fun packFloat2(x: Float, y: Float): Long { val out = (-999L).asDynamic(); out.low_1 = x; out.high_1 = y; return out }
 //internal actual inline fun unpackFloat2X(v: Long): Float = v.asDynamic().low_1
 //internal actual inline fun unpackFloat2Y(v: Long): Float = v.asDynamic().high_1
 
-internal actual inline fun packFloat2(x: Float, y: Float): Long = FloatPack(x, y).asDynamic()
-internal actual inline fun unpackFloat2X(v: Long): Float = v.unsafeCast<FloatPack>().x
-internal actual inline fun unpackFloat2Y(v: Long): Float = v.unsafeCast<FloatPack>().y
+internal data class JsFloat2Pack(val x: Float, val y: Float)
+internal actual inline fun packFloat2(x: Float, y: Float): Long = JsFloat2Pack(x, y).asDynamic()
+internal actual inline fun unpackFloat2X(v: Long): Float = v.unsafeCast<JsFloat2Pack>().x
+internal actual inline fun unpackFloat2Y(v: Long): Float = v.unsafeCast<JsFloat2Pack>().y
 
 //internal actual inline fun packFloat2(x: Float, y: Float): Long {
 //    val out = FloatArray(2).asDynamic()

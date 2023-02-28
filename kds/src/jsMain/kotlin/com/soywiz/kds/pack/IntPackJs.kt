@@ -8,7 +8,7 @@ package com.soywiz.kds.pack
 //internal actual inline fun unpackInt2X(v: Long): Int = v.asDynamic().low_1
 //internal actual inline fun unpackInt2Y(v: Long): Int = v.asDynamic().high_1
 
-data class IntPack(val x: Int, val y: Int)
-internal actual inline fun packInt2(x: Int, y: Int): Long = IntPack(x, y).asDynamic()
-internal actual inline fun unpackInt2X(v: Long): Int = v.unsafeCast<IntPack>().x
-internal actual inline fun unpackInt2Y(v: Long): Int = v.unsafeCast<IntPack>().y
+internal data class JsInt2Pack(val x: Int, val y: Int)
+internal actual inline fun packInt2(x: Int, y: Int): Long = JsInt2Pack(x, y).asDynamic()
+internal actual inline fun unpackInt2X(v: Long): Int = v.unsafeCast<JsInt2Pack>().x
+internal actual inline fun unpackInt2Y(v: Long): Int = v.unsafeCast<JsInt2Pack>().y
