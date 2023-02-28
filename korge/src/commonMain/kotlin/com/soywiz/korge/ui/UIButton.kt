@@ -14,51 +14,26 @@ import com.soywiz.korim.font.*
 import com.soywiz.korim.text.*
 import com.soywiz.korio.async.*
 import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.slice.*
 import com.soywiz.korma.interpolation.*
 import com.soywiz.korma.length.*
 import com.soywiz.korma.length.LengthExtensions.Companion.pt
 import kotlin.math.*
 
 inline fun Container.uiButton(
-    label: String,
-    icon: BmpSlice? = null,
+    label: String = "",
     width: Double = UI_DEFAULT_WIDTH,
     height: Double = UI_DEFAULT_HEIGHT,
+    icon: BmpSlice? = null,
     block: @ViewDslMarker UIButton.() -> Unit = {}
 ): UIButton = UIButton(width, height, label, icon).addTo(this).apply(block)
 
-@Deprecated("Use uiButton instead")
 inline fun Container.uiButton(
-    width: Double = UI_DEFAULT_WIDTH,
-    height: Double = UI_DEFAULT_HEIGHT,
-    text: String = "",
+    label: String = "",
+    size: Size = UI_DEFAULT_SIZE,
     icon: BmpSlice? = null,
     block: @ViewDslMarker UIButton.() -> Unit = {}
-): UIButton = UIButton(width, height, text, icon).addTo(this).apply(block)
-
-@Deprecated("Use uiButton instead")
-inline fun Container.iconButton(
-    width: Double = UI_DEFAULT_WIDTH,
-    height: Double = UI_DEFAULT_HEIGHT,
-    icon: BmpSlice? = null,
-    block: @ViewDslMarker UIButton.() -> Unit = {}
-): UIButton = UIButton(width, height, icon = icon).addTo(this).apply(block)
-
-@Deprecated("Use uiButton instead")
-inline fun Container.uiTextButton(
-    width: Double = UI_DEFAULT_WIDTH,
-    height: Double = UI_DEFAULT_HEIGHT,
-    text: String = "Button",
-    textFont: Font? = null,
-    textSize: Double? = null,
-    block: @ViewDslMarker UIButton.() -> Unit = {}
-): UIButton = UIButton(width, height, text).apply {
-    if (textFont != null) this.textFont = textFont
-    if (textSize != null) this.textSize = textSize
-}.addTo(this).apply(block)
-
-typealias UITextButton = UIButton
-typealias IconButton = UIButton
+): UIButton = UIButton(size.widthD, size.heightD, label, icon).addTo(this).apply(block)
 
 open class UIToggleableButton(
     width: Double = 128.0,
@@ -81,9 +56,6 @@ open class UIButton(
         const val DEFAULT_WIDTH = UI_DEFAULT_WIDTH
         const val DEFAULT_HEIGHT = UI_DEFAULT_HEIGHT
     }
-
-    @Deprecated("Use uiSkin instead")
-    var skin: UISkin? get() = uiSkin ; set(value) { uiSkin = value }
 
 	var forcePressed = false
     var radius: Length = 6.pt
@@ -201,7 +173,7 @@ open class UIButton(
         invalidateRender()
     }
 
-    var icon = icon
+    var icon: BmpSlice? = icon
         set(value) {
             field = value
             setInitialState()
@@ -303,7 +275,7 @@ open class UIButton(
             //        button::highlightAlpha[1.0],
             //        button::highlightPos[Point(px / button.width, py / button.height), Point(px / button.width, py / button.height)],
             //    ))
-            background.addHighlight(MPoint(px, py))
+            background.addHighlight(Point(px, py))
                 /*
             button.highlightPos.setTo(px / button.width, py / button.height)
             button.animatorEffects.tween(

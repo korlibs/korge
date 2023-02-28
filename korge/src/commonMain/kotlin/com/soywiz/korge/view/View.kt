@@ -1895,6 +1895,7 @@ fun View?.descendantsWithPropDouble(prop: String, value: Double? = null): List<P
 inline fun <reified T : View> View.getDescendantsOfType() = this.descendantsWith { it is T }
 
 /** Sets the position [point] of the view and returns this (chaineable). */
+inline fun <T : View> T.position(point: Point): T = position(point.x, point.y)
 inline fun <T : View> T.position(point: IPoint): T = position(point.x, point.y)
 inline fun <T : View> T.visible(visible: Boolean): T = this.also { it.visible = visible }
 inline fun <T : View> T.name(name: String?): T = this.also { it.name = name }

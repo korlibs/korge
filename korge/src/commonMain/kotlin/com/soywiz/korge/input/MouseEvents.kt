@@ -566,7 +566,10 @@ inline fun View.newMouse(callback: MouseEvents.() -> Unit): MouseEvents {
     }
 }
 
-inline fun <T> View.mouse(callback: MouseEvents.() -> T): T = mouse.run(callback)
+inline fun <T : View> T.mouse(callback: MouseEvents.() -> Unit): T {
+    mouse.run(callback)
+    return this
+}
 
 @PublishedApi
 internal inline fun <T : View?> T?.doMouseEvent(

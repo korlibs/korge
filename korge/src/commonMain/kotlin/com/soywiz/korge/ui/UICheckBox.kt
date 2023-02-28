@@ -7,6 +7,7 @@ import com.soywiz.korev.*
 import com.soywiz.korge.animate.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.render.*
+import com.soywiz.korge.style.*
 import com.soywiz.korge.tween.*
 import com.soywiz.korge.view.*
 import com.soywiz.korge.view.property.*
@@ -86,22 +87,15 @@ open class UIBaseCheckBox<T : UIBaseCheckBox<T>>(
         val height = this.height
 
         textView.text = RichTextData(textView.text.text, RichTextData.Style(
-            font = textFont,
-            textSize = textSize,
-            color = textColor,
+            font = styles.textFont,
+            textSize = styles.textSize,
+            color = styles.textColor,
         ))
         textView.align = TextAlignment.MIDDLE_LEFT
         textView.position(height + 4.0, 0.0)
         textView.setSize(width - height - 8.0, height)
 
         background.size(width, height)
-    }
-
-    open fun getNinePatch(over: Boolean): NinePatchBmpSlice {
-        return when {
-            over -> buttonOver
-            else -> buttonNormal
-        }
     }
 
     val highlights = MaterialLayerHighlights(this)
@@ -112,7 +106,7 @@ open class UIBaseCheckBox<T : UIBaseCheckBox<T>>(
             onOut { this@UIBaseCheckBox.over = false }
             onDown {
                 this@UIBaseCheckBox.pressing = true
-                highlights.addHighlight(MPoint(0.5, 0.5))
+                highlights.addHighlight(Point(0.5, 0.5))
             }
             onUpAnywhere {
                 this@UIBaseCheckBox.pressing = false

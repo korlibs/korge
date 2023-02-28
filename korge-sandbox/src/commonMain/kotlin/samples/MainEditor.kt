@@ -4,6 +4,7 @@ import com.soywiz.klock.*
 import com.soywiz.korge.animate.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.scene.Scene
+import com.soywiz.korge.style.*
 import com.soywiz.korge.tween.*
 import com.soywiz.korge.ui.*
 import com.soywiz.korge.view.*
@@ -28,7 +29,7 @@ class MainEditor : Scene() {
         //return@Korge
 
         //val font = DefaultTtfFont
-        uiSkin = UISkin {
+        styles {
             this.textFont = DefaultTtfFontAsBitmap
         }
         //solidRect(100, 100, Colors.RED).xy(0, 0)
@@ -102,7 +103,7 @@ class MainEditor : Scene() {
             it.container.mobileBehaviour = false
             it.container.overflowRate = 0.0
             uiVerticalStack(300.0, padding = 4.0) {
-                uiText("Properties") { textColor = Colors.RED }
+                uiText("Properties").styles { textColor = Colors.RED }
                 uiPropertyNumberRow("Alpha", *UIEditableNumberPropsList(solidRect::alpha))
                 uiPropertyNumberRow("Position", *UIEditableNumberPropsList(solidRect::x, solidRect::y, min = -1024.0, max = +1024.0, clamped = false))
                 uiPropertyNumberRow("Size", *UIEditableNumberPropsList(solidRect::width, solidRect::height, min = -1024.0, max = +1024.0, clamped = false))

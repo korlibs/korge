@@ -1,7 +1,10 @@
 package samples
 
+import com.soywiz.klock.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.scene.*
+import com.soywiz.korge.style.*
+import com.soywiz.korge.tween.*
 import com.soywiz.korge.ui.*
 import com.soywiz.korge.view.*
 import com.soywiz.korge.view.property.*
@@ -10,6 +13,8 @@ import com.soywiz.korim.color.*
 import com.soywiz.korim.font.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.std.*
+import com.soywiz.korma.geom.*
+import com.soywiz.korma.interpolation.*
 
 class MainUI : Scene() {
     @ViewProperty
@@ -25,9 +30,9 @@ class MainUI : Scene() {
     override suspend fun SContainer.sceneMain() {
         println("[1]")
 
-        uiSkin = UISkin {
+        styles {
             val colorTransform = ColorTransform(0.7, 0.9, 1.0)
-            this.uiSkinBitmap = this.uiSkinBitmap.withColorTransform(colorTransform)
+            //this.uiSkinBitmap = this.uiSkinBitmap.withColorTransform(colorTransform)
             this.buttonBackColor = this.buttonBackColor.transform(colorTransform)
             this.textFont = resourcesVfs["uifont.fnt"].readBitmapFont()
         }
@@ -36,14 +41,14 @@ class MainUI : Scene() {
             position(128, 128)
             width = 256.0
 
-            uiButton(256.0, 32.0) {
+            uiButton(size = Size(256, 32)) {
                 text = "Disabled Button"
                 onClick {
                     println("CLICKED!")
                 }
                 disable()
             }
-            uiButton(256.0, 32.0) {
+            uiButton(size = Size(256.0, 32.0)) {
                 text = "Close Window"
                 onClick {
                     if (gameWindow.confirm("Are you sure to close the window?")) {
@@ -89,7 +94,7 @@ class MainUI : Scene() {
             //for (n in 0 until 20) {
             for (y in 0 until 30) {
                 for (x in 0 until 15) {
-                    uiButton(text = "HELLO $x,$y").position(x * 108, y * 40)
+                    uiButton("HELLO $x,$y").position(x * 108, y * 40)
                 }
             }
         }
@@ -98,10 +103,13 @@ class MainUI : Scene() {
             position(64, 32)
             current = 0.5
         }
+        val job = launchImmediately {
+            while (true) {
+                tween(progress::ratio[1.0], time = 1.seconds, easing = Easing.EASE_IN_OUT)
+                tween(progress::ratio[1.0, 0.0], time = 1.seconds, easing = Easing.EASE_IN_OUT)
+            }
+        }
+        uiButton("Stop Progress").position(Point(64 + progress.width, 32.0)).mouse { onClick { job.cancel() } }
 
-        //while (true) {
-        //    tween(progress::ratio[1.0], time = 1.seconds, easing = Easing.EASE_IN_OUT)
-        //    tween(progress::ratio[1.0, 0.0], time = 1.seconds, easing = Easing.EASE_IN_OUT)
-        //}
     }
 }

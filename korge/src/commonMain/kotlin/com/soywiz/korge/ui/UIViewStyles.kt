@@ -1,9 +1,15 @@
 package com.soywiz.korge.ui
 
 import com.soywiz.korge.render.*
+import com.soywiz.korge.style.*
 import com.soywiz.korim.color.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.interpolation.*
+
+val ViewStyles.uiBackgroundColor: RGBA by ViewStyle(MaterialColors.BLUE_50)
+val ViewStyles.uiSelectedColor: RGBA by ViewStyle(MaterialColors.BLUE_600)
+val ViewStyles.uiUnselectedColor: RGBA by ViewStyle(MaterialColors.GRAY_700)
+fun ViewStyles.uiSelectedColor(enabled: Boolean): RGBA = if (enabled) uiSelectedColor else uiUnselectedColor
 
 interface UIBaseCheckBoxSkin {
     enum class Kind { CHECKBOX, RADIO, SWITCH }
@@ -77,7 +83,7 @@ open class UIBaseCheckBoxSkinMaterial(
                     borderColor = item.checkedRatio.interpolate(unselectedColor, selectedColor),
                     color = Colors.TRANSPARENT,
                     highlightRadius = item.checkedRatio.interpolate(0.0, 0.2),
-                    highlightPos = MPoint(0.5, 0.5),
+                    highlightPos = Point(0.5, 0.5),
                     highlightColor = selectedColor,
                 )
             }

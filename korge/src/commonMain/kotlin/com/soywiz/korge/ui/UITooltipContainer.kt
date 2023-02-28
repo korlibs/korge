@@ -4,6 +4,7 @@ import com.soywiz.klock.*
 import com.soywiz.korge.animate.*
 import com.soywiz.korge.annotations.*
 import com.soywiz.korge.input.*
+import com.soywiz.korge.style.*
 import com.soywiz.korge.time.*
 import com.soywiz.korge.tween.*
 import com.soywiz.korge.view.*
@@ -13,22 +14,19 @@ import com.soywiz.korio.lang.*
 
 @KorgeExperimental
 inline fun Container.uiTooltipContainer(
-    font: Font = DefaultUIFont,
     block: @ViewDslMarker Container.(UITooltipContainer) -> Unit = {}
-): UITooltipContainer = UITooltipContainer(font)
+): UITooltipContainer = UITooltipContainer()
     .addTo(this).also { block(it.content, it) }
 
-class UITooltipContainer(font: Font = DefaultUIFont) : Container() {
+class UITooltipContainer() : Container() {
     val content = container()
     val tooltip = uiText("tooltip") {
-        textFont = font
-        textColor = Colors.WHITE
         bgcolor = Colors["#303030"]
         visible = false
     }
 
-    var tooltipFont: Font ; get() = tooltip.textFont ; set(value) { tooltip.textFont = value }
-    var tooltipColor: RGBA ; get() = tooltip.textColor ; set(value) { tooltip.textColor = value }
+    var tooltipFont: Font ; get() = tooltip.styles.textFont ; set(value) { tooltip.styles.textFont = value }
+    var tooltipColor: RGBA ; get() = tooltip.styles.textColor ; set(value) { tooltip.styles.textColor = value }
     var tooltipBackgroundColor: RGBA ; get() = tooltip.bgcolor ; set(value) { tooltip.bgcolor = value }
     var showTime: TimeSpan = 0.4.seconds
     var appearAnimationTime: TimeSpan = 0.2.seconds

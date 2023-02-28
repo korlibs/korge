@@ -6,19 +6,23 @@ import com.soywiz.korge.input.onClick
 import com.soywiz.korge.input.onDown
 import com.soywiz.korge.input.onMouseDrag
 import com.soywiz.korge.render.RenderContext
-import com.soywiz.korge.ui.UIScrollBar.Direction
+import com.soywiz.korge.style.*
+import com.soywiz.korge.ui.UIOldScrollBar.Direction
 import com.soywiz.korge.view.Container
 import com.soywiz.korge.view.ViewDslMarker
 import com.soywiz.korge.view.addTo
 import com.soywiz.korge.view.position
 import com.soywiz.korge.view.size
 import com.soywiz.korge.view.solidRect
+import com.soywiz.korim.bitmap.*
+import com.soywiz.korim.color.*
 import com.soywiz.korio.async.Signal
-import com.soywiz.korma.geom.MPoint
+import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.slice.*
 import kotlin.math.sign
 
 @Deprecated("Use UINewScrollable")
-inline fun Container.uiScrollBar(
+inline fun Container.uiOldScrollBar(
     width: Double,
     height: Double,
     current: Double = 0.0,
@@ -27,11 +31,11 @@ inline fun Container.uiScrollBar(
     buttonSize: Double = 32.0,
     stepSize: Double = pageSize / 10.0,
     direction: Direction = Direction.auto(width, height),
-    block: @ViewDslMarker UIScrollBar.() -> Unit = {}
-): UIScrollBar = UIScrollBar(width, height, current, pageSize, totalSize, buttonSize, stepSize, direction).addTo(this).apply(block)
+    block: @ViewDslMarker UIOldScrollBar.() -> Unit = {}
+): UIOldScrollBar = UIOldScrollBar(width, height, current, pageSize, totalSize, buttonSize, stepSize, direction).addTo(this).apply(block)
 
 @Deprecated("Use UINewScrollable")
-open class UIScrollBar(
+open class UIOldScrollBar(
     width: Double,
     height: Double,
     current: Double,
@@ -73,7 +77,7 @@ open class UIScrollBar(
     val trackWidth get() = if (isHorizontal) width - buttonWidth * 2 else width
     val trackHeight get() = if (isHorizontal) height else height - buttonHeight * 2
 
-    val onChange = Signal<UIScrollBar>()
+    val onChange = Signal<UIOldScrollBar>()
 
     override var ratio: Double
         get() = (current / (totalSize - pageSize)).clamp01()
@@ -81,17 +85,17 @@ open class UIScrollBar(
             current = value.clamp01() * (totalSize - pageSize)
         }
 
-    protected val background = solidRect(100, 100, buttonBackColor)
-    protected val upButton = uiButton(16.0, 16.0)
-    protected val downButton = uiButton(16.0, 16.0)
-    protected val thumb = uiButton(16.0, 16.0)
+    protected val background = solidRect(100, 100, styles.buttonBackColor)
+    protected val upButton = uiButton(size = Size(16, 16))
+    protected val downButton = uiButton(size = Size(16, 16))
+    protected val thumb = uiButton(size = Size(16, 16))
 
     protected val views get() = stage?.views
 
     override fun renderInternal(ctx: RenderContext) {
-        background.color = buttonBackColor
-        upButton.icon = if (direction == Direction.Horizontal) this.iconLeft else this.iconUp
-        downButton.icon = if (direction == Direction.Horizontal) this.iconRight else this.iconDown
+        background.color = styles.buttonBackColor
+        upButton.icon = if (direction == Direction.Horizontal) styles.iconLeft else styles.iconUp
+        downButton.icon = if (direction == Direction.Horizontal) styles.iconRight else styles.iconDown
         super.renderInternal(ctx)
     }
 
@@ -156,3 +160,8 @@ open class UIScrollBar(
         onChange(this)
     }
 }
+
+var ViewStyles.iconLeft: RectSlice<Bitmap32> by ViewStyle(Bitmap32(16, 16, Colors.WHITE.premultipliedFast).slice())
+var ViewStyles.iconRight: RectSlice<Bitmap32> by ViewStyle(Bitmap32(16, 16, Colors.WHITE.premultipliedFast).slice())
+var ViewStyles.iconUp: RectSlice<Bitmap32> by ViewStyle(Bitmap32(16, 16, Colors.WHITE.premultipliedFast).slice())
+var ViewStyles.iconDown: RectSlice<Bitmap32> by ViewStyle(Bitmap32(16, 16, Colors.WHITE.premultipliedFast).slice())

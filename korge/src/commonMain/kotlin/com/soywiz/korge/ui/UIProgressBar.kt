@@ -2,8 +2,10 @@ package com.soywiz.korge.ui
 
 import com.soywiz.kmem.*
 import com.soywiz.korge.render.*
+import com.soywiz.korge.style.*
 import com.soywiz.korge.view.*
 import com.soywiz.korge.view.property.*
+import com.soywiz.korma.geom.*
 
 inline fun Container.uiProgressBar(
     width: Double = 256.0,
@@ -28,15 +30,13 @@ open class UIProgressBar(
 		set(value) { current = value * maximum }
 		get() = (current / maximum).clamp01()
 
-	private val background = solidRect(width, height, buttonBackColor)
-	protected open val progressView: NinePatch =
-		ninePatch(buttonNormal, width * (current / maximum).clamp01(), height)
-
     override fun renderInternal(ctx: RenderContext) {
-        background.size(width, height)
-        progressView.size(width * ratio, height)
-        progressView.ninePatch = buttonNormal
-        background.color = buttonBackColor
+        styles.uiProgressBarRender.render(ctx)
         super.renderInternal(ctx)
     }
+}
+
+var ViewStyles.uiProgressBarRender: RenderContext2D.(progressBar: UIProgressBar) -> Unit by ViewStyle { progressBar ->
+    materialRoundRect(0.0, 0.0, width, height, radius = MRectCorners(3.0), color = progressBar.styles.uiBackgroundColor)
+    materialRoundRect(0.0, 0.0, width * progressBar.ratio, height, radius = MRectCorners(3.0), color = progressBar.styles.uiSelectedColor)
 }

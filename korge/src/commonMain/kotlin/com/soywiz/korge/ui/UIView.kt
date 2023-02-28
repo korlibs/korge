@@ -11,57 +11,11 @@ import com.soywiz.korim.bitmap.*
 import com.soywiz.korma.geom.*
 import kotlin.math.*
 
-private val View._defaultUiSkin: UISkin get() = extraCache("_defaultUiSkin") { UISkin("defaultUiSkin") {  } }
-
-var View.uiSkin: UISkin?
-    get() = getExtra("uiSkin") as? UISkin?
-    set(value) {
-        setExtra("uiSkin", value)
-        invalidateRender()
-    }
-
-var View.uiSkinSure: UISkin
-    get() {
-        if (!hasExtra("uiSkin")) setExtra("uiSkin", UISkin())
-        return uiSkin!!
-    }
-    set(value) { uiSkin = value }
-
-val View.realUiSkin: UISkin get() = uiSkin ?: parent?.realUiSkin ?: root._defaultUiSkin
-
-open class UIFocusableView(
-    width: Double = 90.0,
-    height: Double = 32.0,
-    cache: Boolean = false
-) : UIView(width, height, cache), UIFocusable {
-    override val UIFocusManager.Scope.focusView: View get() = this@UIFocusableView
-    override var tabIndex: Int = 0
-    override var isFocusable: Boolean = true
-    override fun focusChanged(value: Boolean) {
-    }
-
-    //init {
-    //    keys {
-    //        down(Key.UP, Key.DOWN) {
-    //            if (focused) views.stage.uiFocusManager.changeFocusIndex(if (it.key == Key.UP) -1 else +1)
-    //        }
-    //    }
-    //}
-}
-
 open class UIView(
 	width: Double = 90.0,
 	height: Double = 32.0,
     cache: Boolean = false
-) : FixedSizeCachedContainer(width, height, cache = cache), UISkinable {
-    @Deprecated("Do not use the old skinning")
-    override fun <T> setSkinProperty(property: String, value: T) {
-        uiSkinSure.setSkinProperty(property, value)
-        invalidateRender()
-    }
-    @Deprecated("Do not use the old skinning")
-    override fun <T> getSkinPropertyOrNull(property: String): T? = (uiSkin?.getSkinPropertyOrNull(property) as? T?) ?: realUiSkin.getSkinPropertyOrNull(property)
-
+) : FixedSizeCachedContainer(width, height, cache = cache) {
     private var _width: Double = width
     private var _height: Double = height
 	override var width: Double
@@ -78,6 +32,12 @@ open class UIView(
     //var maxWidth: Double = 100.0
     //var maxHeight: Double = 100.0
 
+    fun <T : View> (RenderContext2D.(T) -> Unit).render(ctx: RenderContext, view: T = this@UIView as T) {
+        this@UIView.renderCtx2d(ctx) {
+            this@render(it, view)
+        }
+    }
+
     override fun setSize(width: Double, height: Double) {
         if (width == this._width && height == this._height) return
         _width = width
@@ -89,7 +49,7 @@ open class UIView(
         out.setTo(0.0, 0.0, width, height)
     }
 
-    open var enabled
+    open var enabled: Boolean
 		get() = mouseEnabled
 		set(value) {
 			mouseEnabled = value
@@ -147,6 +107,26 @@ open class UIView(
             iconView.scale(iconScale, iconScale)
         }
     }
+}
+
+open class UIFocusableView(
+    width: Double = 90.0,
+    height: Double = 32.0,
+    cache: Boolean = false
+) : UIView(width, height, cache), UIFocusable {
+    override val UIFocusManager.Scope.focusView: View get() = this@UIFocusableView
+    override var tabIndex: Int = 0
+    override var isFocusable: Boolean = true
+    override fun focusChanged(value: Boolean) {
+    }
+
+    //init {
+    //    keys {
+    //        down(Key.UP, Key.DOWN) {
+    //            if (focused) views.stage.uiFocusManager.changeFocusIndex(if (it.key == Key.UP) -1 else +1)
+    //        }
+    //    }
+    //}
 }
 
 internal class DummyUpdateComponentWithViews(override val view: BaseView) : UpdateComponentWithViews {

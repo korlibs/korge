@@ -76,16 +76,16 @@ class MainGestures : ScaledScene(512, 512) {
             println(views.input.activeTouches)
         }
 
-        uiButton(text = "1") {
+        uiButton(label = "1") {
             position(10, 380)
             onPress { println("TAPPED ON 1") }
         }
-        uiButton(text = "2") {
+        uiButton(label = "2") {
             position(150, 380)
             onPress { println("TAPPED ON 2") }
         }
 
-        uiButton(text = "3") {
+        uiButton(label = "3") {
             position(300, 380)
             onPress { println("TAPPED ON 3") }
         }
