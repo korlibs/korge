@@ -86,6 +86,8 @@ data class RectSlice<T : ISizeInt>(
         sliceWithBounds(x, y, x + width, y + height, name = name, clamped = clamped, orientation = orientation)
     fun slice(rect: IRectangleInt, name: String? = null, clamped: Boolean = true, orientation: SliceOrientation = this.orientation): RectSlice<T> =
         sliceWithBounds(rect.left, rect.top, rect.right, rect.bottom, name = name, clamped = clamped, orientation = orientation)
+    fun slice(rect: RectangleInt, name: String? = null, clamped: Boolean = true, orientation: SliceOrientation = this.orientation): RectSlice<T> =
+        sliceWithBounds(rect.left, rect.top, rect.right, rect.bottom, name = name, clamped = clamped, orientation = orientation)
 
     val virtFrame: IRectangleInt?
         get() {
@@ -103,6 +105,10 @@ data class RectSlice<T : ISizeInt>(
     }
 
     fun virtFrame(frame: IRectangleInt?): RectSlice<T> = when (frame) {
+        null -> copy(padding = IMarginInt.ZERO)
+        else -> virtFrame(frame.x, frame.y, frame.width, frame.height)
+    }
+    fun virtFrame(frame: RectangleInt?): RectSlice<T> = when (frame) {
         null -> copy(padding = IMarginInt.ZERO)
         else -> virtFrame(frame.x, frame.y, frame.width, frame.height)
     }

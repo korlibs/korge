@@ -1,6 +1,6 @@
 package com.soywiz.kds.pack
 
-inline class IntPack private constructor(val data: Long) {
+inline class Int2Pack private constructor(val data: Long) {
     constructor(x: Int, y: Int) : this(packInt2(x, y))
 
     val x: Int get() = unpackInt2X(data)

@@ -1,6 +1,6 @@
 package com.soywiz.kds.pack
 
-inline class FloatPack private constructor(val data: Long) {
+inline class Float2Pack private constructor(val data: Long) {
     constructor(x: Float, y: Float) : this(packFloat2(x, y))
 
     val x: Float get() = unpackFloat2X(data)

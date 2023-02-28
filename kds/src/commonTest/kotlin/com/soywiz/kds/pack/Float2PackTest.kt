@@ -2,13 +2,14 @@ package com.soywiz.kds.pack
 
 import kotlin.test.*
 
-class FloatPackTest {
+class Float2PackTest {
     @Test
     fun test() {
-        val pack1 = FloatPack(100f, 200f)
-        val pack2 = FloatPack(-33f, -77f)
+        val pack1 = Float2Pack(100f, 200f)
+        val pack2 = Float2Pack(-33f, -77f)
         assertEquals(300f, pack1.x + pack1.y)
         assertEquals(-110f, pack2.x + pack2.y)
+        assertEquals(listOf(100f, 200f), listOf(pack1.x, pack1.y))
         assertEquals("-999", (-999L).toString()) // Ensure we have not modified the -999 constant
     }
 

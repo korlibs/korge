@@ -1,6 +1,7 @@
 package com.soywiz.korma.geom
 
 import com.soywiz.kds.*
+import com.soywiz.kds.pack.*
 import com.soywiz.korma.annotations.*
 
 // @TODO: value class
@@ -14,12 +15,14 @@ data class Margin(
 
 // @TODO: value class
 @KormaValueApi
-data class MarginInt(
-    val top: Int,
-    val right: Int,
-    val bottom: Int,
-    val left: Int,
-)
+data class MarginInt internal constructor(val raw: Short4Pack) {
+    val top: Short get() = raw.x
+    val right: Short get() = raw.y
+    val bottom: Short get() = raw.z
+    val left: Short get() = raw.w
+
+    constructor(top: Short, right: Short, bottom: Short, left: Short) : this(Short4Pack(top, right, bottom, left))
+}
 
 @KormaMutableApi
 interface IMargin {

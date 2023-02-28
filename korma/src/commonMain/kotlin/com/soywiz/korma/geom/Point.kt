@@ -29,7 +29,7 @@ fun Point(p: Point): Point = Point(p.raw)
 // @JvmInline value
 //@KormaValueApi
 //data class Point(val x: Double, val y: Double) {
-inline class Point internal constructor(internal val raw: FloatPack) {
+inline class Point internal constructor(internal val raw: Float2Pack) {
     val x: Float get() = raw.x
     val y: Float get() = raw.y
 
@@ -39,9 +39,9 @@ inline class Point internal constructor(internal val raw: FloatPack) {
     val xD: Double get() = x.toDouble()
     val yD: Double get() = y.toDouble()
 
-    constructor(x: Float, y: Float) : this(FloatPack(x, y))
-    constructor(x: Double, y: Double) : this(FloatPack(x.toFloat(), y.toFloat()))
-    constructor(x: Int, y: Int) : this(FloatPack(x.toFloat(), y.toFloat()))
+    constructor(x: Float, y: Float) : this(Float2Pack(x, y))
+    constructor(x: Double, y: Double) : this(Float2Pack(x.toFloat(), y.toFloat()))
+    constructor(x: Int, y: Int) : this(Float2Pack(x.toFloat(), y.toFloat()))
     constructor(p: IPoint) : this(p.x.toFloat(), p.y.toFloat())
     //constructor(p: Point) : this(p.raw)
     constructor() : this(0f, 0f)
@@ -177,8 +177,14 @@ inline class Point internal constructor(internal val raw: FloatPack) {
     }
 }
 
-@KormaValueApi
-data class PointInt(val x: Int, val y: Int) {
+//@KormaValueApi
+inline class PointInt internal constructor(internal val raw: Int2Pack) {
+    val x: Int get() = raw.x
+    val y: Int get() = raw.y
+
+    constructor() : this(Int2Pack(0, 0))
+    constructor(x: Int, y: Int) : this(Int2Pack(x, y))
+
     val mutable: IPointInt get() = MPointInt(x, y)
 
     operator fun plus(that: PointInt): PointInt = PointInt(this.x + that.x, this.y + that.y)
@@ -187,6 +193,7 @@ data class PointInt(val x: Int, val y: Int) {
     operator fun div(that: PointInt): PointInt = PointInt(this.x / that.x, this.y / that.y)
     operator fun rem(that: PointInt): PointInt = PointInt(this.x % that.x, this.y % that.y)
 }
+
 
 //////////////////////////////
 // IMMUTABLE INTERFACES

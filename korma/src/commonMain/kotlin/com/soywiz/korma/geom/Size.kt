@@ -16,7 +16,7 @@ interface Sizeable {
 
 //@KormaExperimental
 //@KormaValueApi
-inline class Size internal constructor(internal val raw: FloatPack) {
+inline class Size internal constructor(internal val raw: Float2Pack) {
     val width: Float get() = raw.x
     val height: Float get() = raw.y
 
@@ -27,11 +27,19 @@ inline class Size internal constructor(internal val raw: FloatPack) {
 
     //(val width: Double, val height: Double) {
     constructor() : this(0f, 0f)
-    constructor(width: Float, height: Float) : this(FloatPack(width, height))
-    constructor(width: Double, height: Double) : this(FloatPack(width.toFloat(), height.toFloat()))
+    constructor(width: Float, height: Float) : this(Float2Pack(width, height))
+    constructor(width: Double, height: Double) : this(Float2Pack(width.toFloat(), height.toFloat()))
     constructor(width: Int, height: Int) : this(width.toFloat(), height.toFloat())
 
     override fun toString(): String = "Size(width=${width.niceStr}, height=${height.niceStr})"
+}
+
+inline class SizeInt internal constructor(internal val raw: Int2Pack) {
+    val width: Int get() = raw.x
+    val height: Int get() = raw.y
+
+    constructor() : this(0, 0)
+    constructor(width: Int, height: Int) : this(Int2Pack(width, height))
 }
 
 @KormaMutableApi
@@ -171,3 +179,4 @@ fun MPoint.asSize(): MSize = MSize(this)
 fun IPoint.asSize(): ISize = MSize(MPoint(this))
 
 fun Point.toSize(): Size = Size(x, y)
+fun PointInt.toSize(): SizeInt = SizeInt(x, y)
