@@ -16,7 +16,7 @@ inline fun <T : View> T.styles(block: ViewStyles.() -> Unit): T {
 }
 
 class ViewStyles(val view: View) {
-    @PublishedApi internal var data: LinkedHashMap<KProperty<*>, Any>? = null
+    @PublishedApi internal var data: LinkedHashMap<KProperty<*>, Any?>? = null
 
     fun <T> getProp(prop: KProperty<T>, default: T): T =
         (data?.get(prop) as? T?) ?: (view.parent as? UIView)?.styles?.getProp(prop, default) ?: default
@@ -33,8 +33,8 @@ inline class ViewStyle<T>(val default: T) {
         return styles.getProp(property, default) as T
     }
 
-    inline operator fun setValue(styles: ViewStyles, property: KProperty<*>, t: T) {
+    inline operator fun setValue(styles: ViewStyles, property: KProperty<*>, value: T) {
         if (styles.data == null) styles.data = linkedHashMapOf()
-        styles.data!![property] = property
+        styles.data!![property] = value as? Any?
     }
 }

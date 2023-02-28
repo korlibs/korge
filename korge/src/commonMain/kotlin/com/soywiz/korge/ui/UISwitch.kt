@@ -15,5 +15,6 @@ open class UISwitch(
     height: Double = UI_DEFAULT_HEIGHT,
     checked: Boolean = false,
     text: String = "Switch",
-) : UIBaseCheckBox<UISwitch>(width, height, checked, text, UIBaseCheckBoxSkin.Kind.SWITCH) {
+) : UIBaseCheckBox<UISwitch>(width, height, checked, text, UISwitch) {
+    companion object : Kind()
 }

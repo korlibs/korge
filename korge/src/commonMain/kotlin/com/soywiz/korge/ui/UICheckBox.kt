@@ -30,7 +30,8 @@ open class UICheckBox(
     height: Double = UI_DEFAULT_HEIGHT,
     checked: Boolean = false,
     text: String = "CheckBox",
-) : UIBaseCheckBox<UICheckBox>(width, height, checked, text, UIBaseCheckBoxSkin.Kind.CHECKBOX) {
+) : UIBaseCheckBox<UICheckBox>(width, height, checked, text, UICheckBox) {
+    companion object : Kind()
 }
 
 open class UIBaseCheckBox<T : UIBaseCheckBox<T>>(
@@ -39,8 +40,10 @@ open class UIBaseCheckBox<T : UIBaseCheckBox<T>>(
     checked: Boolean = false,
     @ViewProperty
     var text: String = "CheckBox",
-    var skinKind: UIBaseCheckBoxSkin.Kind,
+    var kind: Kind,
 ) : UIFocusableView(width, height), ViewLeaf {
+    open class Kind
+
     val thisAsT: T get() = this.fastCastTo<T>()
     val onChange: Signal<T> = Signal<T>()
 
@@ -54,10 +57,10 @@ open class UIBaseCheckBox<T : UIBaseCheckBox<T>>(
             simpleAnimator.tween(this::checkedRatio[if (value) 1.0 else 0.0], time = 0.1.seconds)
         }
 
-    var skin: UIBaseCheckBoxSkin = UIBaseCheckBoxSkinMaterial
     private val background = solidRect(width, height, Colors.TRANSPARENT)
     val canvas = renderableView {
-        skin.render(ctx2d, this@UIBaseCheckBox.width, this@UIBaseCheckBox.height, this@UIBaseCheckBox, skinKind)
+        styles.uiCheckboxButtonRenderer.render(ctx)
+        //skin.render(ctx2d, this@UIBaseCheckBox.width, this@UIBaseCheckBox.height, this@UIBaseCheckBox, kind)
     }
     private val textView = textBlock(RichTextData(text))
     var checkedRatio: Double = 0.0; private set
