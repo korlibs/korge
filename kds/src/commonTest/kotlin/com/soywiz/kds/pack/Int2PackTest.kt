@@ -24,16 +24,15 @@ class Int2PackTest {
     }
 
     @Test
+    //@Ignore
     fun performanceTest() {
-        /*
         var sum = 0f
         for (n in 0 until 100000000) {
-            val pack1 = IntPack(100 * n, 200)
-            val pack2 = IntPack(-33, -77 * n)
+            val pack1 = Int2Pack(100 * n, 200)
+            val pack2 = Int2Pack(-33, -77 * n)
             sum += pack1.x + pack1.y
             sum += pack2.x + pack2.y
         }
         println(sum)
-        */
     }
 }

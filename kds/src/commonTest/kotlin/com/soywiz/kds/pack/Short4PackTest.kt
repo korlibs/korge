@@ -24,16 +24,15 @@ class Short4PackTest {
     }
 
     @Test
+    //@Ignore
     fun performanceTest() {
-        /*
         var sum = 0f
         for (n in 0 until 100000000) {
-            val pack1 = ShortPack(100 * n, 200, 300, 50)
-            val pack2 = ShortPack(-33, -77 * n, -1777, -11)
-            sum += pack1.x + pack1.y
-            sum += pack2.x + pack2.y
+            val pack1 = Short4Pack((100 * n).toShort(), 200, 300, 50)
+            val pack2 = Short4Pack(-33, (-77 * n).toShort(), -1777, -11)
+            sum += pack1.x + pack1.y + pack1.z + pack1.w
+            sum += pack2.x + pack2.y + pack2.z + pack2.w
         }
         println(sum)
-        */
     }
 }
