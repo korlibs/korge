@@ -150,7 +150,7 @@ class RasterizerTest {
                     stroke(RGBA.interpolate(colorA, colorB, n.toDouble() / 360)) {
                         beginPath()
                         moveTo(0, 0)
-                        lineTo(n.degrees.cosine * radius, n.degrees.sine * radius)
+                        lineTo(n.degrees.cosineD * radius, n.degrees.sineD * radius)
                     }
                 }
             }

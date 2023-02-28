@@ -35,9 +35,9 @@ class StrokeToFill {
     private val currEdgeLeft = MEdge()
     private val currEdgeRight = MEdge()
 
-    internal fun MEdge.setEdgeDisplaced(edge: MEdge, width: Int, angle: Angle) = this.apply {
-        val ldx = (width * angle.cosine)
-        val ldy = (width * angle.sine)
+    internal fun MEdge.setEdgeDisplaced(edge: MEdge, width: Int, angle: Angle): MEdge = this.apply {
+        val ldx = (width * angle.cosineD)
+        val ldy = (width * angle.sineD)
         this.setTo((edge.ax + ldx).toInt(), (edge.ay + ldy).toInt(), (edge.bx + ldx).toInt(), (edge.by + ldy).toInt(), edge.wind)
     }
 
@@ -100,8 +100,8 @@ class StrokeToFill {
                 r.add(rx, ry)
             }
             LineCap.ROUND, LineCap.SQUARE -> {
-                val ax = (angle.cosine * weight / 2).toInt()
-                val ay = (angle.sine * weight / 2).toInt()
+                val ax = (angle.cosineD * weight / 2).toInt()
+                val ay = (angle.sineD * weight / 2).toInt()
                 val lx2 = lx + ax
                 val ly2 = ly + ay
                 val rx2 = rx + ax

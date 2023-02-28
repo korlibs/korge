@@ -10,25 +10,26 @@ import kotlin.math.*
 
 @KormaValueApi
 data class Matrix(
-    val a: Double,
-    val b: Double,
-    val c: Double,
-    val d: Double,
-    val tx: Double,
-    val ty: Double
+    val a: Float,
+    val b: Float,
+    val c: Float,
+    val d: Float,
+    val tx: Float,
+    val ty: Float,
 ) {
-    constructor() : this(1.0, 0.0, 0.0, 1.0, 0.0, 0.0)
-    constructor(a: Float, b: Float, c: Float, d: Float, tx: Float, ty: Float) :
-        this(a.toDouble(), b.toDouble(), c.toDouble(), d.toDouble(), tx.toDouble(), ty.toDouble())
+    constructor() : this(1f, 0f, 0f, 1f, 0f, 0f)
+    constructor(a: Double, b: Double, c: Double, d: Double, tx: Double, ty: Double) :
+        this(a.toFloat(), b.toFloat(), c.toFloat(), d.toFloat(), tx.toFloat(), ty.toFloat())
 
     operator fun times(other: Matrix): Matrix = Matrix.multiply(this, other)
-    operator fun times(scale: Double): Matrix = Matrix(a * scale, b * scale, c * scale, d * scale, tx * scale, ty * scale)
+    operator fun times(scale: Float): Matrix = Matrix(a * scale, b * scale, c * scale, d * scale, tx * scale, ty * scale)
+    operator fun times(scale: Double): Matrix = times(scale.toFloat())
 
     val isIdentity: Boolean get() = type == MatrixType.IDENTITY
     val type: MatrixType get() {
-        val hasRotation = b != 0.0 || c != 0.0
-        val hasScale = a != 1.0 || d != 1.0
-        val hasTranslation = tx != 0.0 || ty != 0.0
+        val hasRotation = b != 0f || c != 0f
+        val hasScale = a != 1f || d != 1f
+        val hasTranslation = tx != 0f || ty != 0f
 
         return when {
             hasRotation -> MatrixType.COMPLEX
@@ -64,10 +65,10 @@ data class Matrix(
     }
 
     fun skewed(skewX: Angle, skewY: Angle): Matrix {
-        val sinX = sin(skewX)
-        val cosX = cos(skewX)
-        val sinY = sin(skewY)
-        val cosY = cos(skewY)
+        val sinX = sinf(skewX)
+        val cosX = cosf(skewX)
+        val sinY = sinf(skewY)
+        val cosY = cosf(skewY)
 
         return Matrix(
             a * cosY - b * sinX,
@@ -98,9 +99,9 @@ data class Matrix(
         val norm = m.a * m.d - m.b * m.c
 
         return when (norm) {
-            0.0 -> Matrix(0.0, 0.0, 0.0, 0.0, -m.tx, -m.ty)
+            0f -> Matrix(0f, 0f, 0f, 0f, -m.tx, -m.ty)
             else -> {
-                val inorm = 1.0 / norm
+                val inorm = 1f / norm
                 val d = m.a * inorm
                 val a = m.d * inorm
                 val b = m.b * -inorm
@@ -114,15 +115,6 @@ data class Matrix(
     fun decompose(): MatrixTransform = MatrixTransform.fromMatrix(this)
 
     fun toArray(value: FloatArray, offset: Int = 0) {
-        value[offset + 0] = a.toFloat()
-        value[offset + 1] = b.toFloat()
-        value[offset + 2] = c.toFloat()
-        value[offset + 3] = d.toFloat()
-        value[offset + 4] = tx.toFloat()
-        value[offset + 5] = ty.toFloat()
-    }
-
-    fun toArray(value: DoubleArray, offset: Int = 0) {
         value[offset + 0] = a
         value[offset + 1] = b
         value[offset + 2] = c
@@ -131,11 +123,20 @@ data class Matrix(
         value[offset + 5] = ty
     }
 
+    fun toArray(value: DoubleArray, offset: Int = 0) {
+        value[offset + 0] = a.toDouble()
+        value[offset + 1] = b.toDouble()
+        value[offset + 2] = c.toDouble()
+        value[offset + 3] = d.toDouble()
+        value[offset + 4] = tx.toDouble()
+        value[offset + 5] = ty.toDouble()
+    }
+
     companion object {
         val IDENTITY = Matrix()
         val NaN = Matrix(Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN)
 
-        fun isAlmostEquals(a: Matrix, b: Matrix, epsilon: Double = 0.000001): Boolean =
+        fun isAlmostEquals(a: Matrix, b: Matrix, epsilon: Float = 0.000001f): Boolean =
             a.tx.isAlmostEquals(b.tx, epsilon)
                 && a.ty.isAlmostEquals(b.ty, epsilon)
                 && a.a.isAlmostEquals(b.a, epsilon)
@@ -152,7 +153,7 @@ data class Matrix(
             l.tx * r.b + l.ty * r.d + r.ty
         )
 
-        fun translating(delta: Point): Matrix = Matrix().copy(tx = delta.xD, ty = delta.yD)
+        fun translating(delta: Point): Matrix = Matrix().copy(tx = delta.x, ty = delta.y)
         fun rotating(angle: Angle): Matrix = Matrix().rotated(angle)
         fun skewing(skewX: Angle, skewY: Angle): Matrix = Matrix().skewed(skewX, skewY)
 
@@ -168,18 +169,18 @@ data class Matrix(
 
         fun fromTransform(
             transform: MatrixTransform,
-            pivotX: Double = 0.0,
-            pivotY: Double = 0.0,
+            pivotX: Float = 0f,
+            pivotY: Float = 0f,
         ): Matrix {
             // +0.0 drops the negative -0.0
-            val a = cos(transform.rotation + transform.skewY) * transform.scaleX + 0.0
-            val b = sin(transform.rotation + transform.skewY) * transform.scaleX + 0.0
-            val c = -sin(transform.rotation - transform.skewX) * transform.scaleY + 0.0
-            val d = cos(transform.rotation - transform.skewX) * transform.scaleY + 0.0
-            val tx: Double
-            val ty: Double
+            val a = cosf(transform.rotation + transform.skewY) * transform.scaleX + 0f
+            val b = sinf(transform.rotation + transform.skewY) * transform.scaleX + 0f
+            val c = -sinf(transform.rotation - transform.skewX) * transform.scaleY + 0f
+            val d = cosf(transform.rotation - transform.skewX) * transform.scaleY + 0f
+            val tx: Float
+            val ty: Float
 
-            if (pivotX == 0.0 && pivotY == 0.0) {
+            if (pivotX == 0f && pivotY == 0f) {
                 tx = transform.x
                 ty = transform.y
             } else {
@@ -193,23 +194,23 @@ data class Matrix(
 
 @KormaValueApi
 data class MatrixTransform(
-    val x: Double, val y: Double,
-    val scaleX: Double, val scaleY: Double,
+    val x: Float, val y: Float,
+    val scaleX: Float, val scaleY: Float,
     val skewX: Angle, val skewY: Angle,
     val rotation: Angle
 ) {
     constructor() : this(0.0, 0.0, 1.0, 1.0, Angle.ZERO, Angle.ZERO, Angle.ZERO)
     constructor(
-        x: Float, y: Float,
-        scaleX: Float, scaleY: Float,
+        x: Double, y: Double,
+        scaleX: Double, scaleY: Double,
         skewX: Angle, skewY: Angle,
         rotation: Angle
-    ) : this(x.toDouble(), y.toDouble(), scaleX.toDouble(), scaleY.toDouble(), skewX, skewY, rotation)
+    ) : this(x.toFloat(), y.toFloat(), scaleX.toFloat(), scaleY.toFloat(), skewX, skewY, rotation)
 
     companion object {
-        val IDENTITY = MatrixTransform(0.0, 0.0, 1.0, 1.0, Angle.ZERO, Angle.ZERO, Angle.ZERO)
+        val IDENTITY = MatrixTransform(0f, 0f, 1f, 1f, Angle.ZERO, Angle.ZERO, Angle.ZERO)
 
-        fun fromMatrix(matrix: Matrix, pivotX: Double = 0.0, pivotY: Double = 0.0): MatrixTransform {
+        fun fromMatrix(matrix: Matrix, pivotX: Float = 0f, pivotY: Float = 0f): MatrixTransform {
             val a = matrix.a
             val b = matrix.b
             val c = matrix.c
@@ -223,8 +224,8 @@ data class MatrixTransform(
             val trotation: Angle
             val tskewX: Angle
             val tskewY: Angle
-            val tx: Double
-            val ty: Double
+            val tx: Float
+            val ty: Float
 
             if (delta < 0.00001 || abs((PI * 2) - delta) < 0.00001) {
                 trotation = skewY.radians
@@ -239,7 +240,7 @@ data class MatrixTransform(
             val tscaleX = hypot(a, b)
             val tscaleY = hypot(c, d)
 
-            if (pivotX == 0.0 && pivotY == 0.0) {
+            if (pivotX == 0f && pivotY == 0f) {
                 tx = matrix.tx
                 ty = matrix.ty
             } else {
@@ -261,9 +262,9 @@ data class MatrixTransform(
     }
 
 
-    val scaleAvg: Double get() = (scaleX + scaleY) * 0.5
+    val scaleAvg: Float get() = (scaleX + scaleY) * 0.5f
 
-    fun toMatrix(pivotX: Double = 0.0, pivotY: Double = 0.0): Matrix = Matrix.fromTransform(this, pivotX, pivotY)
+    fun toMatrix(pivotX: Float = 0f, pivotY: Float = 0f): Matrix = Matrix.fromTransform(this, pivotX, pivotY)
 
     operator fun plus(that: MatrixTransform): MatrixTransform = MatrixTransform(
         x + that.x, y + that.y,
@@ -455,10 +456,10 @@ data class MMatrix(
     }
 
     fun skew(skewX: Angle, skewY: Angle): MMatrix {
-        val sinX = sin(skewX)
-        val cosX = cos(skewX)
-        val sinY = sin(skewY)
-        val cosY = cos(skewY)
+        val sinX = sind(skewX)
+        val cosX = cosd(skewX)
+        val sinY = sind(skewY)
+        val cosY = cosd(skewY)
 
         return this.setTo(
             a * cosY - b * sinX,
@@ -598,10 +599,10 @@ data class MMatrix(
         pivotY: Double = 0.0,
     ): MMatrix {
         // +0.0 drops the negative -0.0
-        this.a = cos(rotation + skewY) * scaleX + 0.0
-        this.b = sin(rotation + skewY) * scaleX + 0.0
-        this.c = -sin(rotation - skewX) * scaleY + 0.0
-        this.d = cos(rotation - skewX) * scaleY + 0.0
+        this.a = cosd(rotation + skewY) * scaleX + 0.0
+        this.b = sind(rotation + skewY) * scaleX + 0.0
+        this.c = -sind(rotation - skewX) * scaleY + 0.0
+        this.d = cosd(rotation - skewX) * scaleY + 0.0
 
         if (pivotX == 0.0 && pivotY == 0.0) {
             this.tx = x
@@ -866,8 +867,8 @@ fun Matrix.transformRectangle(rectangle: Rectangle, delta: Boolean = false): Rec
     val b = this.b
     val c = this.c
     val d = this.d
-    val tx = if (delta) 0.0 else this.tx
-    val ty = if (delta) 0.0 else this.ty
+    val tx = if (delta) 0f else this.tx
+    val ty = if (delta) 0f else this.ty
 
     val x = rectangle.x
     val y = rectangle.y
@@ -883,7 +884,7 @@ fun Matrix.transformRectangle(rectangle: Rectangle, delta: Boolean = false): Rec
     var x3 = a * x + c * yMax + tx
     var y3 = b * x + d * yMax + ty
 
-    var tmp = 0.0
+    var tmp = 0f
 
     if (x0 > x1) {
         tmp = x0

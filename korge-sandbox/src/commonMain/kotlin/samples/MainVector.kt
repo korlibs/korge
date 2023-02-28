@@ -43,7 +43,7 @@ class MainVector : ScaledScene(1280, 720) {
                                     StrokeInfo(thickness = 1.0 + ratio * 6, startCap = lineCap, endCap = lineCap)
                                 ) {
                                     moveTo(0, 0)
-                                    lineTo(angle.cosine * radius, angle.sine * radius)
+                                    lineTo(angle.cosineD * radius, angle.sineD * radius)
                                 }
                                 //}
                             }

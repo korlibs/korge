@@ -67,8 +67,8 @@ class DirectionalBlurFilter(
         if (!expandBorder) return MarginInt.ZERO
         val radius = this.rradius
         return MarginInt(
-            (angle.sine.absoluteValue * radius).toIntCeil(),//.coerceAtMost(texWidth),
-            (angle.cosine.absoluteValue * radius).toIntCeil(),//.coerceAtMost(texHeight),
+            (angle.sineD.absoluteValue * radius).toIntCeil(),//.coerceAtMost(texWidth),
+            (angle.cosineD.absoluteValue * radius).toIntCeil(),//.coerceAtMost(texHeight),
         )
     }
 
@@ -96,7 +96,7 @@ class DirectionalBlurFilter(
         uniforms[u_radius] = radius
         uniforms[u_constant1] = constant1 * (1.0 / scaleSum)
         uniforms[u_constant2] = constant2
-        uniforms[u_direction].set(angle.cosine, angle.sine)
+        uniforms[u_direction].set(angle.cosineD, angle.sineD)
     }
 
     override val programProvider: ProgramProvider get() = DirectionalBlurFilter

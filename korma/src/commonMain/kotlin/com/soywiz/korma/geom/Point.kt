@@ -116,8 +116,8 @@ inline class Point internal constructor(internal val raw: Float2Pack) {
         //inline operator fun invoke(x: Float, y: Float): Point = Point(x.toDouble(), y.toDouble())
 
         /** Constructs a point from polar coordinates determined by an [angle] and a [length]. Angle 0 is pointing to the right, and the direction is counter-clock-wise */
-        inline fun fromPolar(x: Float, y: Float, angle: Angle, length: Double = 1.0): Point = Point(x + angle.cosine * length, y + angle.sine * length)
-        inline fun fromPolar(x: Double, y: Double, angle: Angle, length: Double = 1.0): Point = Point(x + angle.cosine * length, y + angle.sine * length)
+        inline fun fromPolar(x: Float, y: Float, angle: Angle, length: Double = 1.0): Point = Point(x + angle.cosineF * length, y + angle.sineF * length)
+        inline fun fromPolar(x: Double, y: Double, angle: Angle, length: Double = 1.0): Point = Point(x + angle.cosineD * length, y + angle.sineD * length)
         inline fun fromPolar(base: Point, angle: Angle, length: Double = 1.0): Point = fromPolar(base.x, base.y, angle, length)
         inline fun fromPolar(angle: Angle, length: Double = 1.0): Point = fromPolar(0.0, 0.0, angle, length)
 
@@ -339,8 +339,8 @@ data class MPoint(
     fun setToPolar(angle: Angle, length: Double = 1.0): MPoint = setToPolar(0.0, 0.0, angle, length)
     fun setToPolar(base: Point, angle: Angle, length: Float = 1f): MPoint = setToPolar(base.x, base.y, angle, length)
     fun setToPolar(base: IPoint, angle: Angle, length: Double = 1.0): MPoint = setToPolar(base.x, base.y, angle, length)
-    fun setToPolar(x: Double, y: Double, angle: Angle, length: Double = 1.0): MPoint = setTo(x + angle.cosine * length, y + angle.sine * length)
-    fun setToPolar(x: Float, y: Float, angle: Angle, length: Float = 1f): MPoint = setTo(x + angle.cosine * length, y + angle.sine * length)
+    fun setToPolar(x: Double, y: Double, angle: Angle, length: Double = 1.0): MPoint = setTo(x + angle.cosineD * length, y + angle.sineD * length)
+    fun setToPolar(x: Float, y: Float, angle: Angle, length: Float = 1f): MPoint = setTo(x + angle.cosineF * length, y + angle.sineF * length)
 
     /** Rotates the vector/point -90 degrees (not normalizing it) */
     fun setToNormal(): MPoint = setTo(-this.y, this.x)
@@ -460,7 +460,7 @@ data class MPoint(
         fun compare(l: IPoint, r: IPoint): Int = MPoint.compare(l.x, l.y, r.x, r.y)
 
         /** Constructs a point from polar coordinates determined by an [angle] and a [length]. Angle 0 is pointing to the right, and the direction is counter-clock-wise */
-        fun fromPolar(x: Double, y: Double, angle: Angle, length: Double = 1.0, out: MPoint = MPoint()): MPoint = out.setTo(x + angle.cosine * length, y + angle.sine * length)
+        fun fromPolar(x: Double, y: Double, angle: Angle, length: Double = 1.0, out: MPoint = MPoint()): MPoint = out.setTo(x + angle.cosineD * length, y + angle.sineD * length)
         fun fromPolar(angle: Angle, length: Double = 1.0, out: MPoint = MPoint()): MPoint = fromPolar(0.0, 0.0, angle, length, out)
         fun fromPolar(base: IPoint, angle: Angle, length: Double = 1.0, out: MPoint = MPoint()): MPoint = fromPolar(base.x, base.y, angle, length, out)
 

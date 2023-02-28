@@ -80,7 +80,7 @@ class MainBVH : Scene() {
             val mousePos = localMouseXY(views)
             val angle = MPoint.angleFull(center, mousePos)
             //println("center=$center, mousePos=$mousePos, angle = $angle")
-            dir.setTo(angle.cosine, angle.sine)
+            dir.setTo(angle.cosineD, angle.sineD)
             rayLine.setPoints(center, center + (dir * 1000))
 
             updateRay()

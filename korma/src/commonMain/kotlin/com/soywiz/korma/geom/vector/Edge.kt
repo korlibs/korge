@@ -128,11 +128,11 @@ class MEdge {
     //fun intersectX(y: Double): Double = if (isCoplanarY) ax else ((y - h) * this.dx) / this.dy
 
     // Stroke extensions
-    val angle get() = Angle.between(ax, ay, bx, by)
-    val cos get() = angle.cosine
-    val absCos get() = cos.absoluteValue
-    val sin get() = angle.sine
-    val absSin get() = sin.absoluteValue
+    val angle: Angle get() = Angle.between(ax, ay, bx, by)
+    val cos: Double get() = angle.cosineD
+    val absCos: Double get() = cos.absoluteValue
+    val sin: Double get() = angle.sineD
+    val absSin: Double get() = sin.absoluteValue
 
     override fun toString(): String = "Edge([$ax,$ay]-[$bx,$by])"
     fun toString(scale: Double): String = "Edge([${(ax * scale).toInt()},${(ay * scale).toInt()}]-[${(bx * scale).toInt()},${(by * scale).toInt()}])"

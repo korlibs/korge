@@ -48,9 +48,13 @@ class AngleTest {
 
     @Test
     fun sinCos() {
-        assertEquals(0.0, cos(90.degrees))
-        assertEquals(1.0, sin(90.degrees))
-        assertEquals(1.0, tan(45.degrees))
+        //assertEquals(0.0f, cos(90.degrees))
+        //assertEquals(1.0f, sin(90.degrees))
+        //assertEquals(1.0f, tan(45.degrees))
+
+        assertEquals(0.0, cosd(90.degrees))
+        assertEquals(1.0, sind(90.degrees))
+        assertEquals(1.0, tand(45.degrees))
     }
 
     @Test
@@ -105,9 +109,11 @@ class AngleTest {
 
     @Test
     fun testProperties() {
-        assertEquals(0.0, 0.degrees.sine)
-        assertEquals(1.0, 0.degrees.cosine)
-        assertTrue(0.degrees.tangent.isAlmostZero())
+        //assertEquals(0.0f, 0.degrees.sineF)
+        //assertEquals(1.0f, 0.degrees.cosineF)
+        assertEquals(0.0, 0.degrees.sineD)
+        assertEquals(1.0, 0.degrees.cosineD)
+        assertTrue(0.degrees.tangentD.isAlmostZero())
     }
 
     @Test

@@ -31,7 +31,7 @@ class MainText : ScaledScene(512, 160) {
         val text = text("Hello World!", font = font, textSize = 64.0, alignment = TextAlignment.BASELINE_LEFT, renderer = CreateStringTextRenderer({ version++ }) { reader: WStringReader, c: Int, g: GlyphMetrics, advance: Double ->
             transform.identity()
 
-            val sin = sin(offset + (reader.position * 360 / reader.length).degrees)
+            val sin = sind(offset + (reader.position * 360 / reader.length).degrees)
             transform.rotate(15.degrees)
             transform.translate(0.0, sin * 16)
             transform.scale(1.0, 1.0 + sin * 0.1)

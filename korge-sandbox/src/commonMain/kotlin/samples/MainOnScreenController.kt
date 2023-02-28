@@ -103,9 +103,9 @@ class MainOnScreenController : Scene() {
                                 val maxLength = radius * 0.3
                                 val lengthClamped = length.clamp(0.0, maxLength)
                                 val angle = Angle.between(start.x, start.y, px, py)
-                                ball.position(cos(angle) * lengthClamped, sin(angle) * lengthClamped)
+                                ball.position(cosd(angle) * lengthClamped, sind(angle) * lengthClamped)
                                 val lengthNormalized = lengthClamped / maxLength
-                                onStick(cos(angle) * lengthNormalized, sin(angle) * lengthNormalized)
+                                onStick(cosd(angle) * lengthNormalized, sind(angle) * lengthNormalized)
                             }
                         }
                         MouseEvent.Type.UP -> {

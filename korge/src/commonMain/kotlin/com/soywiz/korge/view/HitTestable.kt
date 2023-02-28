@@ -24,7 +24,7 @@ fun View.moveWithHitTestable(collision: HitTestable, dx: Double, dy: Double, hit
     MOVE_ANGLES.fastForEach { dangle ->
         MOVE_SCALES.fastForEach { dscale ->
             val rangle = angle + dangle * dscale
-            val lengthScale = dangle.cosine
+            val lengthScale = dangle.cosineD
             val dpoint = MPoint.fromPolar(rangle, length * lengthScale)
             char.x = oldX + dpoint.x
             char.y = oldY + dpoint.y
@@ -54,7 +54,7 @@ fun View.moveWithCollisions(collision: List<View>, dx: Double, dy: Double, kind:
     MOVE_ANGLES.fastForEach { dangle ->
         MOVE_SCALES.fastForEach { dscale ->
             val rangle = angle + dangle * dscale
-            val lengthScale = dangle.cosine
+            val lengthScale = dangle.cosineD
             val dpoint = MPoint.fromPolar(rangle, length * lengthScale)
             char.x = oldX + dpoint.x
             char.y = oldY + dpoint.y

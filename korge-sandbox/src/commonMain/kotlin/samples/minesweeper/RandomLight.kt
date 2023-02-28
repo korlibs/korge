@@ -38,9 +38,9 @@ class RandomLight(
 
 		while (true) {
 			rotation += inca.degrees
-			x = w2 - cos(rotation) * w2 * excx + sx
-			y = h2 - sin(rotation) * h2 * excy + sy
-			scale = 1 + (cos(rotation) / 6) * incs
+			x = w2 - cosd(rotation) * w2 * excx + sx
+			y = h2 - sind(rotation) * h2 * excy + sy
+			scale = 1 + (cosd(rotation) / 6) * incs
 
             //println("FRAME! $x -> $x2")
 

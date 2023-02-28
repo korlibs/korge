@@ -132,12 +132,12 @@ fun VectorBuilder.regularPolygonHole(points: Int, radius: Double, rotated: Angle
 
 internal fun VectorBuilder._regularPolygonStar(points: Int, radiusSmall: Double = 20.0, radiusBig: Double = 50.0, rotated: Angle = 0.degrees, hole: Boolean = false, x: Double = 0.0, y: Double = 0.0) {
     for (n in 0 until points) {
-        val baseAngle = (360.degrees * (n.toDouble() / points))
+        val baseAngle = (Angle.FULL * (n.toDouble() / points))
         val realAngle = if (hole) -baseAngle else baseAngle
-        val angle = realAngle - 90.degrees + rotated
+        val angle = realAngle - Angle.QUARTER + rotated
         val radius = if (n % 2 == 0) radiusSmall else radiusBig
-        val px = angle.cosine * radius
-        val py = angle.sine * radius
+        val px = angle.cosineD * radius
+        val py = angle.sineD * radius
         if (n == 0) moveTo(x + px, y + py) else lineTo(x + px, y + py)
     }
     close()
@@ -162,7 +162,7 @@ internal fun VectorBuilder._regularPolygonStar(points: Int, radiusSmall: Double 
  *
  * */
 fun VectorBuilder.parallelogram(bounds: MRectangle, angle: Angle = 30.degrees, direction: Boolean = true) {
-    val dx = angle.sine * bounds.height
+    val dx = angle.sineD * bounds.height
     val dx0 = if (direction) 0.0 else dx
     val dx1 = if (direction) dx else 0.0
     moveTo(bounds.left - dx0, bounds.top)

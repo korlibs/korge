@@ -71,26 +71,26 @@ object Arc {
             val a2 = a1 + min(remainingAngle, Angle.QUARTER) * sgn
 
             val a = (a2 - a1) / 2.0
-            val x4 = r * a.cosine
-            val y4 = r * a.sine
+            val x4 = r * a.cosineD
+            val y4 = r * a.sineD
             val x1 = x4
             val y1 = -y4
-            val f = K * a.tangent
+            val f = K * a.tangentD
             val x2 = x1 + f * y4
             val y2 = y1 + f * x4
             val x3 = x2
             val y3 = -y2
             val ar = a + a1
-            val cos_ar = ar.cosine
-            val sin_ar = ar.sine
+            val cos_ar = ar.cosineD
+            val sin_ar = ar.sineD
 
             if (index == 0) {
-                out.moveTo(x + r * a1.cosine, y + r * a1.sine)
+                out.moveTo(x + r * a1.cosineD, y + r * a1.sineD)
             }
             out.cubicTo(
                 x + x2 * cos_ar - y2 * sin_ar, y + x2 * sin_ar + y2 * cos_ar,
                 x + x3 * cos_ar - y3 * sin_ar, y + x3 * sin_ar + y3 * cos_ar,
-                x + r * a2.cosine, y + r * a2.sine
+                x + r * a2.cosineD, y + r * a2.sineD
             )
             //println(" - ARC: $a1-$a2")
             index++

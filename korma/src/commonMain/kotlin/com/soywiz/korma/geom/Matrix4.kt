@@ -561,8 +561,8 @@ class MMatrix3D : IMMatrix3D {
     fun setToShear(x: Int, y: Int, z: Int) = setToShear(x.toFloat(), y.toFloat(), z.toFloat())
 
     fun setToRotationX(angle: Angle): MMatrix3D {
-        val c = cos(angle).toFloat()
-        val s = sin(angle).toFloat()
+        val c = cosd(angle).toFloat()
+        val s = sind(angle).toFloat()
         return this.setRows(
             1f, 0f, 0f, 0f,
             0f, c, - s, 0f,
@@ -572,8 +572,8 @@ class MMatrix3D : IMMatrix3D {
     }
 
     fun setToRotationY(angle: Angle): MMatrix3D {
-        val c = cos(angle).toFloat()
-        val s = sin(angle).toFloat()
+        val c = cosd(angle).toFloat()
+        val s = sind(angle).toFloat()
         return this.setRows(
             c, 0f, s, 0f,
             0f, 1f, 0f, 0f,
@@ -583,8 +583,8 @@ class MMatrix3D : IMMatrix3D {
     }
 
     fun setToRotationZ(angle: Angle): MMatrix3D {
-        val c = cos(angle).toFloat()
-        val s = sin(angle).toFloat()
+        val c = cosd(angle).toFloat()
+        val s = sind(angle).toFloat()
         return this.setRows(
             c, - s, 0f, 0f,
             s, c, 0f, 0f,
@@ -600,8 +600,8 @@ class MMatrix3D : IMMatrix3D {
         val nx = x * norm
         val ny = y * norm
         val nz = z * norm
-        val c = cos(angle)
-        val s = sin(angle)
+        val c = cosd(angle)
+        val s = sind(angle)
         val t = 1 - c
         val tx = t * nx
         val ty = t * ny

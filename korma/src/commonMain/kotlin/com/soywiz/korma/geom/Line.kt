@@ -139,7 +139,7 @@ data class MLine(override val a: MPoint, override val b: MPoint) : ILine {
     }
 
     fun setToPolar(x: Double, y: Double, angle: Angle, length: Double = 1.0): MLine {
-        setTo(x, y, x + angle.cosine * length, y + angle.sine * length)
+        setTo(x, y, x + angle.cosineD * length, y + angle.sineD * length)
         return this
     }
 

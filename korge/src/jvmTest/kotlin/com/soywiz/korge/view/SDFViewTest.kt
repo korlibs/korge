@@ -32,7 +32,7 @@ class SDFViewTest {
             this.programUniforms[u_Center] = center
             this.programUniforms[u_Radius] = radius
             this.programUniforms[u_Feather] = feather
-            this.programUniforms[u_Time] = sin(time.radians).absoluteValue
+            this.programUniforms[u_Time] = sind(time.radians).absoluteValue
 
             super.renderInternal(ctx)
         }
