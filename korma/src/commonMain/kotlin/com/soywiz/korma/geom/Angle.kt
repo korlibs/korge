@@ -79,7 +79,7 @@ inline class Angle private constructor(
     operator fun rem(angle: Angle): Angle = fromRatio(this.ratioF % angle.ratioF)
     infix fun umod(angle: Angle): Angle = fromRatio(this.ratioF umod angle.ratioF)
 
-    operator fun div(other: Angle): Double = this.ratio / other.ratio // Ratio
+    operator fun div(other: Angle): Float = this.ratioF / other.ratioF // Ratio
     operator fun plus(other: Angle): Angle = fromRatio(this.ratioF + other.ratioF)
     operator fun minus(other: Angle): Angle = fromRatio(this.ratioF - other.ratioF)
     operator fun unaryMinus(): Angle = fromRatio(-ratioF)
@@ -102,9 +102,13 @@ inline class Angle private constructor(
         }
     }
 
-    fun isAlmostEquals(other: Angle, diff: Double = 0.001): Boolean = this.ratio.isAlmostEquals(other.ratio, diff)
-    fun isAlmostZero(diff: Double = 0.001): Boolean = isAlmostEquals(ZERO, diff)
-    val normalized: Angle get() = fromRatio(ratio umod 1.0)
+    fun isAlmostEquals(other: Angle, epsilon: Float = 0.001f): Boolean = this.ratioF.isAlmostEquals(other.ratioF, epsilon)
+    fun isAlmostZero(epsilon: Float = 0.001f): Boolean = isAlmostEquals(ZERO, epsilon)
+
+    fun isAlmostEquals(other: Angle, epsilon: Double): Boolean = isAlmostEquals(other, epsilon.toFloat())
+    fun isAlmostZero(epsilon: Double): Boolean = isAlmostZero(epsilon.toFloat())
+
+    val normalized: Angle get() = fromRatio(ratioF umod 1f)
 
     override operator fun compareTo(other: Angle): Int = this.ratio.compareTo(other.ratio)
 
@@ -211,8 +215,8 @@ private fun _interpolateAngleAny(ratio: Double, l: Angle, r: Angle, minimizeAngl
     val ln = l.normalized
     val rn = r.normalized
     return when {
-        (rn - ln).absoluteValue <= 180.degrees -> Angle.fromRadians(ratio.interpolate(ln.radians, rn.radians))
-        ln < rn -> Angle.fromRadians(ratio.interpolate((ln + 360.degrees).radians, rn.radians)).normalized
-        else -> Angle.fromRadians(ratio.interpolate(ln.radians, (rn + 360.degrees).radians)).normalized
+        (rn - ln).absoluteValue <= Angle.HALF -> Angle.fromRadians(ratio.interpolate(ln.radiansF, rn.radiansF))
+        ln < rn -> Angle.fromRadians(ratio.interpolate((ln + Angle.FULL).radiansF, rn.radiansF)).normalized
+        else -> Angle.fromRadians(ratio.interpolate(ln.radiansF, (rn + Angle.FULL).radiansF)).normalized
     }
 }

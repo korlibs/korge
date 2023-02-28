@@ -29,7 +29,7 @@ class AngleTest {
         assertEquals((-350).degrees, 0.degrees - 350.degrees)
         assertEquals(180.degrees, 90.degrees * 2)
         assertEquals(45.degrees, 90.degrees / 2)
-        assertEquals(2.0, 90.degrees / 45.degrees)
+        assertEquals(2f, 90.degrees / 45.degrees)
 
         assertEquals(0.degrees, (360 * 2.0).degrees.normalized)
         assertEquals(0.0, (360 * 2.0).degrees.normalized.degrees)
