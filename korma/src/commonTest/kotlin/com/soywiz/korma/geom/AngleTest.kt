@@ -143,7 +143,7 @@ class AngleTest {
         assertEquals(a.degrees, b.degrees)
     }
 
-    private fun assertEquals(l: Double, r: Double, epsilon: Double = 0.00001) {
+    private fun assertEquals(l: Double, r: Double, epsilon: Double = 0.0001) {
         assertTrue(abs(l - r) < epsilon, message = "$l != $r :: delta=$epsilon")
     }
 
