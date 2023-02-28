@@ -149,8 +149,8 @@ inline class Angle private constructor(
         inline fun between(p0: IPoint, p1: IPoint): Angle = between(p0.x, p0.y, p1.x, p1.y)
         inline fun between(p0: Point, p1: Point): Angle = between(p0.x, p0.y, p1.x, p1.y)
 
-        inline fun between(ox: Double, oy: Double, x1: Double, y1: Double, x2: Double, y2: Double): Angle =
-            between(x1 - ox, y1 - oy, x2 - ox, y2 - oy)
+        inline fun between(ox: Double, oy: Double, x1: Double, y1: Double, x2: Double, y2: Double): Angle = between(x1 - ox, y1 - oy, x2 - ox, y2 - oy)
+        inline fun between(ox: Float, oy: Float, x1: Float, y1: Float, x2: Float, y2: Float): Angle = between(x1 - ox, y1 - oy, x2 - ox, y2 - oy)
 
         inline fun between(o: IPoint, v1: IPoint, v2: IPoint): Angle = between(o.x, o.y, v1.x, v1.y, v2.x, v2.y)
         inline fun between(o: Point, v1: Point, v2: Point): Angle = between(o.x, o.y, v1.x, v1.y, v2.x, v2.y)
