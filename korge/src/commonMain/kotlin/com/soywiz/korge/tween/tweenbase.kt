@@ -13,9 +13,7 @@ import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.bezier.getEquidistantPoints
 import com.soywiz.korma.geom.vector.VectorPath
 import com.soywiz.korma.geom.vector.getCurves
-import com.soywiz.korma.interpolation.Easing
-import com.soywiz.korma.interpolation.Interpolable
-import com.soywiz.korma.interpolation.interpolate
+import com.soywiz.korma.interpolation.*
 import com.soywiz.korma.math.isAlmostEquals
 import kotlin.jvm.JvmName
 import kotlin.native.concurrent.*
@@ -152,10 +150,11 @@ internal fun _interpolateTimeSpan(ratio: Double, l: TimeSpan, r: TimeSpan): Time
 //inline operator fun KMutableProperty0<Float>.get(initial: Number, end: Number) =
 //	V2(this, initial.toFloat(), end.toFloat(), ::_interpolateFloat)
 
-inline operator fun KMutableProperty0<IPoint>.get(path: VectorPath, includeLastPoint: Boolean = path.isLastCommandClose, reversed: Boolean = false): V2<IPoint> = this[path.getCurves().getEquidistantPoints().also {
+@JvmName("getPoint")
+inline operator fun KMutableProperty0<Point>.get(path: VectorPath, includeLastPoint: Boolean = path.isLastCommandClose, reversed: Boolean = false): V2<Point> = this[path.getCurves().getEquidistantPoints().also {
     //println("points.lastX=${points.lastX}, points.firstX=${points.firstX}")
     //println("points.lastY=${points.lastY}, points.firstY=${points.firstY}")
-    if (!includeLastPoint && it.lastX.isAlmostEquals(it.firstX) && it.lastY.isAlmostEquals(it.firstY)) {
+    if (!includeLastPoint && it.last.isAlmostEquals(it.first)) {
         (it as PointArrayList).removeAt(it.size - 1)
         //println("REMOVED LAST POINT!")
     }
@@ -164,6 +163,20 @@ inline operator fun KMutableProperty0<IPoint>.get(path: VectorPath, includeLastP
     }
 }]
 
+@JvmName("getIPoint")
+inline operator fun KMutableProperty0<IPoint>.get(path: VectorPath, includeLastPoint: Boolean = path.isLastCommandClose, reversed: Boolean = false): V2<IPoint> = this[path.getCurves().getEquidistantPoints().also {
+    //println("points.lastX=${points.lastX}, points.firstX=${points.firstX}")
+    //println("points.lastY=${points.lastY}, points.firstY=${points.firstY}")
+    if (!includeLastPoint && it.last.isAlmostEquals(it.first)) {
+        (it as PointArrayList).removeAt(it.size - 1)
+        //println("REMOVED LAST POINT!")
+    }
+    if (reversed) {
+        (it as PointArrayList).reverse()
+    }
+}]
+
+@JvmName("getIPoint")
 inline operator fun KMutableProperty0<IPoint>.get(range: IPointArrayList): V2<IPoint> {
     val temp = MPoint()
     return V2(
@@ -173,6 +186,23 @@ inline operator fun KMutableProperty0<IPoint>.get(range: IPointArrayList): V2<IP
             val index1 = (index + 1).coerceAtMost(range.size)
             val sratio = fract(ratioIndex)
             temp.setTo(
+                sratio.interpolate(range.getX(index), range.getX(index1)),
+                sratio.interpolate(range.getY(index), range.getY(index1))
+            )
+        }, includeStart = false
+    )
+}
+
+@JvmName("getPoint")
+inline operator fun KMutableProperty0<Point>.get(range: IPointArrayList): V2<Point> {
+    val p = Point()
+    return V2(
+        this, p, p, { ratio, _, _ ->
+            val ratioIndex = ratio * (range.size - 1)
+            val index = ratioIndex.toIntFloor()
+            val index1 = (index + 1).coerceAtMost(range.size)
+            val sratio = fract(ratioIndex).toRatio()
+            Point(
                 sratio.interpolate(range.getX(index), range.getX(index1)),
                 sratio.interpolate(range.getY(index), range.getY(index1))
             )

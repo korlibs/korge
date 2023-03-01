@@ -279,8 +279,8 @@ class MainStrokesExperiment : Scene() {
         val circle = circle(16.0, Colors.PURPLE).centered
         launchImmediately {
             while (true) {
-                circle.tween(circle::ipos.get(path, includeLastPoint = true, reversed = false), time = 5.seconds, easing = Easing.LINEAR)
-                circle.tween(circle::ipos.get(path, includeLastPoint = true, reversed = true), time = 5.seconds, easing = Easing.LINEAR)
+                circle.tween(circle::pos.get(path, includeLastPoint = true, reversed = false), time = 5.seconds, easing = Easing.LINEAR)
+                circle.tween(circle::pos.get(path, includeLastPoint = true, reversed = true), time = 5.seconds, easing = Easing.LINEAR)
             }
         }
 

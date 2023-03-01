@@ -37,6 +37,8 @@ fun IPointArrayList.getComponentList(component: Int, out: DoubleArray = DoubleAr
     return out
 }
 
+val IPointArrayList.first: Point get() = get(0)
+val IPointArrayList.last: Point get() = get(size - 1)
 val IPointArrayList.firstX: Double get() = getX(0)
 val IPointArrayList.firstY: Double get() = getY(0)
 val IPointArrayList.lastX: Double get() = getX(size - 1)

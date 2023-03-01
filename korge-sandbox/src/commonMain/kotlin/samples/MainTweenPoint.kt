@@ -42,7 +42,7 @@ class MainTweenPoint : Scene() {
             image(tex).scale(0.2)
             launch {
                 while (true) {
-                    tween(circle::ipos[path, false], time = 1.0.seconds, easing = Easing.LINEAR)
+                    tween(circle::pos[path, false], time = 1.0.seconds, easing = Easing.LINEAR)
                     //circle.xy(0.0, 0.0)
                 }
             }

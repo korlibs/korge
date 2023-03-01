@@ -286,13 +286,6 @@ abstract class View internal constructor(
         return out
     }
 
-    /** Position of the view. **@NOTE**: If [ipos] coordinates are manually changed, you should call [View.invalidateMatrix] later to keep the matrix in sync */
-    //uiEditableValue(Pair(view::x, view::y), min = -1000.0, max = +1000.0, clamp = false, name = "position")
-    @ViewProperty(min = -1000.0, max = +1000.0, name = "position")
-    var ipos: IPoint
-        get() = MPoint(x, y)
-        set(value) = setXY(value.x, value.y)
-
     @ViewProperty(min = -1000.0, max = +1000.0, name = "position")
     var pos: Point
         get() = Point(x, y)

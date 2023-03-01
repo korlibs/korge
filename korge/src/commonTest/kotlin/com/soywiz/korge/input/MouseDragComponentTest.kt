@@ -4,9 +4,7 @@ import com.soywiz.korev.MouseButton
 import com.soywiz.korge.tests.ViewsForTesting
 import com.soywiz.korge.view.solidRect
 import com.soywiz.korim.color.Colors
-import com.soywiz.korma.geom.MMatrix
-import com.soywiz.korma.geom.MPoint
-import com.soywiz.korma.geom.MSizeInt
+import com.soywiz.korma.geom.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -37,6 +35,6 @@ class MouseDragComponentTest : ViewsForTesting(
         assertEquals(MPoint(30, 20), views.globalMouseXY)
         assertEquals(MPoint(60, 40), views.windowMouseXY)
         mouseUp(MouseButton.LEFT)
-        assertEquals(MPoint(deltaX, deltaY), rect.ipos)
+        assertEquals(Point(deltaX, deltaY), rect.pos)
     }
 }

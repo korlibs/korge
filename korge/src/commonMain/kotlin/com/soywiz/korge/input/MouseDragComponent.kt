@@ -237,10 +237,10 @@ private fun <T : View> T.draggableInternal(
     val info = DraggableInfo(view)
     val onMouseDragCloseable = selector.onMouseDragCloseable(info = info) {
         if (info.start) {
-            info.viewStartXY.copyFrom(view.ipos)
+            info.viewStartXY.copyFrom(view.pos)
         }
         //println("localDXY=${info.localDX(view)},${info.localDY(view)}")
-        info.viewPrevXY.copyFrom(view.ipos)
+        info.viewPrevXY.copyFrom(view.pos)
         info.viewNextXY.setTo(
             info.viewStartX + info.localDX(view),
             info.viewStartY + info.localDY(view)

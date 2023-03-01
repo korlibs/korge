@@ -99,10 +99,12 @@ inline class Point internal constructor(internal val raw: Float2Pack) {
 
     //fun copy(x: Double = this.x, y: Double = this.y): Point = Point(x, y)
 
-    fun isAlmostEquals(other: Point, epsilon: Float = 0.000001f): Boolean =
+    fun isAlmostEquals(other: Point, epsilon: Float = 0.00001f): Boolean =
         this.x.isAlmostEquals(other.x, epsilon) && this.y.isAlmostEquals(other.y, epsilon)
 
-    override fun toString(): String = "(${x.niceStr}, ${y.niceStr})"
+    val niceStr: String get() = "(${x.niceStr}, ${y.niceStr})"
+    fun niceStr(decimalPlaces: Int): String = "(${x.niceStr(decimalPlaces)}, ${y.niceStr(decimalPlaces)})"
+    override fun toString(): String = niceStr
 
     fun isNaN(): Boolean = this.x.isNaN() && this.y.isNaN()
 
@@ -353,6 +355,7 @@ data class MPoint(
     fun add(x: Double, y: Double) = this.setTo(this.x + x, this.y + y)
     fun sub(x: Double, y: Double) = this.setTo(this.x - x, this.y - y)
 
+    fun copyFrom(that: Point) = setTo(that.x, that.y)
     fun copyFrom(that: IPoint) = setTo(that.x, that.y)
 
     fun setToTransform(mat: MMatrix, p: IPoint): MPoint = setToTransform(mat, p.x, p.y)
