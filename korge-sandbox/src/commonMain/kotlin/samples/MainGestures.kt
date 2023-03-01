@@ -68,7 +68,7 @@ class MainGestures : ScaledScene(512, 512) {
 
         image.mouse {
             click {
-                image.alpha = if (image.alpha > 0.5) 0.5 else 1.0
+                image.alpha = if (image.alpha > 0.5f) 0.5f else 1.0f
             }
         }
 

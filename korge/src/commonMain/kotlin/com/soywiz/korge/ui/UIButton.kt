@@ -166,9 +166,9 @@ open class UIButton(
 
         fitIconInRect(iconView, icon ?: Bitmaps.transparent, width, height, Anchor.MIDDLE_CENTER)
         iconView.alpha = when {
-            !enabled -> 0.5
-            bover -> 1.0
-            else -> 1.0
+            !enabled -> 0.5f
+            bover -> 1.0f
+            else -> 1.0f
         }
         invalidateRender()
     }

@@ -119,8 +119,8 @@ val AlphaTransition = Transition("AlphaTransition") { ctx, prev, next, ratio ->
 	val prevAlpha = prev.alpha
 	val nextAlpha = next.alpha
 	try {
-		prev.alpha = 1.0 - ratio
-		next.alpha = ratio
+		prev.alpha = 1f - ratio.toFloat()
+		next.alpha = ratio.toFloat()
 		prev.render(ctx)
 		next.render(ctx)
 	} finally {

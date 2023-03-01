@@ -230,23 +230,23 @@ open class UIComboBox<T>(
             itemsView.visible = true
             itemsViewBackground.visible = true
             if (immediate) {
-                itemsView.alpha = 1.0
+                itemsView.alpha = 1.0f
                 itemsView.scaleY = 1.0
-                itemsViewBackground.alpha = 1.0
+                itemsViewBackground.alpha = 1.0f
                 itemsViewBackground.scaleY = 1.0
                 expandButtonIcon.scaleY = -1.0
                 selectedButton.background.borderColor = MaterialColors.BLUE_300
                 selectedButton.background.borderSize = 2.0
             } else {
-                itemsView.alpha = 0.0
+                itemsView.alpha = 0.0f
                 itemsView.scaleY = 0.0
-                itemsViewBackground.alpha = 0.0
+                itemsViewBackground.alpha = 0.0f
                 itemsViewBackground.scaleY = 0.0
                 simpleAnimator.cancel().sequence {
                     tween(
-                        itemsView::alpha[0.0, 1.0],
+                        itemsView::alpha[0.0f, 1.0f],
                         itemsView::scaleY[0.0, 1.0],
-                        itemsViewBackground::alpha[0.0, 1.0],
+                        itemsViewBackground::alpha[0.0f, 1.0f],
                         itemsViewBackground::scaleY[0.0, 1.0],
                         expandButtonIcon::scaleY[-1.0],
                         selectedButton.background::borderColor[MaterialColors.BLUE_300],
@@ -294,9 +294,9 @@ open class UIComboBox<T>(
         //itemsView.removeFromParent()
         if (isOpened) {
             if (immediate) {
-                itemsView.alpha = 0.0
+                itemsView.alpha = 0.0f
                 itemsView.scaleY = 0.0
-                itemsViewBackground.alpha = 0.0
+                itemsViewBackground.alpha = 0.0f
                 itemsViewBackground.scaleY = 0.0
                 expandButtonIcon.scaleY = +1.0
                 selectedButton.background.borderColor = MaterialColors.GRAY_400
@@ -306,9 +306,9 @@ open class UIComboBox<T>(
             } else {
                 simpleAnimator.cancel().sequence {
                     tween(
-                        itemsView::alpha[0.0],
+                        itemsView::alpha[0.0f],
                         itemsView::scaleY[0.0],
-                        itemsViewBackground::alpha[0.0],
+                        itemsViewBackground::alpha[0.0f],
                         itemsViewBackground::scaleY[0.0],
                         expandButtonIcon::scaleY[+1.0],
                         selectedButton.background::borderColor[MaterialColors.GRAY_400],

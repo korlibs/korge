@@ -17,7 +17,7 @@ class ViewUpdatedTest {
         assertUpdatedOnce(view::y, 12.0)
         assertUpdatedOnce(view::scaleX, 2.0)
         assertUpdatedOnce(view::scaleY, 4.0)
-        assertUpdatedOnce(view::alpha, 0.5)
+        assertUpdatedOnce(view::alpha, 0.5f)
         assertUpdatedOnce(view::colorMul, Colors.BLUE)
         assertUpdatedOnce(view::rotation, 45.degrees)
         assertUpdatedOnce(view::skewX, 90.degrees)

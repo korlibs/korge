@@ -484,11 +484,11 @@ abstract class View internal constructor(
      * Equivalent to [ColorTransform.mA] + [View.invalidate]
      */
     @ViewProperty(min = 0.0, max = 1.0, clampMin = true, clampMax = true)
-    var alpha: Double
-        get() = _colorTransform.mA;
+    var alpha: Float
+        get() = _colorTransform.a
         set(v) {
-            if (v != _colorTransform.mA) {
-                _colorTransform.mA = v
+            if (_colorTransform.a != v) {
+                _colorTransform.a = v
                 invalidateColorTransform()
             }
         }
@@ -660,24 +660,8 @@ abstract class View internal constructor(
             return _globalMatrixInv
         }
 
-    private val _colorTransform = ColorTransform()
-
-    /**
-     * The [ColorTransform] of this view.
-     * If you plan to change its components manually, you should call the [View.invalidate] method.
-     * You can also use: [alpha], [colorMul] that won't require the [invalidate].
-     */
-    var colorTransform: ColorTransform
-        get() = _colorTransform
-        set(v) {
-            if (v != _colorTransform) {
-                //println("colorTransform=$_colorTransform")
-                _colorTransform.copyFrom(v)
-                invalidate()
-            }
-        }
-
-    private val _renderColorTransform: ColorTransform = ColorTransform(1.0, 1.0, 1.0, 1.0, 0, 0, 0, 0)
+    private val _colorTransform: ColorTransformMul = ColorTransformMul()
+    private val _renderColorTransform: ColorTransformMul = ColorTransformMul()
     private var _renderColorTransformVersion = -1
 
     private fun updateRenderColorTransform() {
@@ -702,7 +686,7 @@ abstract class View internal constructor(
     /**
      * The concatenated version of [colorTransform] having into account all the color transformations of the ancestors
      */
-    val renderColorTransform: ColorTransform get() {
+    protected val renderColorTransform: ColorTransformMul get() {
         updateRenderColorTransformIfRequired()
         return _renderColorTransform
     }
@@ -741,7 +725,7 @@ abstract class View internal constructor(
     /** The concatenated/global version of the local [alpha] */
     val renderAlpha: Double get() {
         updateRenderColorTransformIfRequired()
-        return renderColorTransform.mA
+        return renderColorTransform.a.toDouble()
     }
 
     /** Computes the local X and Y coordinates of the mouse using the coords from the [Views] object */
@@ -917,7 +901,7 @@ abstract class View internal constructor(
         if (name != null) out += ":name=($name)"
         if (blendMode != BlendMode.INHERIT) out += ":blendMode=($blendMode)"
         if (!visible) out += ":visible=$visible"
-        if (alpha != 1.0) out += ":alpha=$alpha"
+        if (alpha != 1f) out += ":alpha=${alpha.niceStr(2)}"
         if (this.colorMul.rgb != Colors.WHITE.rgb) out += ":colorMul=${this.colorMul.hexString}"
         return out
     }
@@ -2075,12 +2059,12 @@ fun <T : View> T.scale(sx: Float, sy: Float = sx): T = scale(sx.toDouble(), sy.t
 fun <T : View> T.scale(sx: Int, sy: Int = sx): T = scale(sx.toDouble(), sy.toDouble())
 
 /** Chainable method returning this that sets [View.alpha] */
-fun <T : View> T.alpha(alpha: Double): T {
+fun <T : View> T.alpha(alpha: Float): T {
     this.alpha = alpha
     return this
 }
-fun <T : View> T.alpha(alpha: Float): T = alpha(alpha.toDouble())
-fun <T : View> T.alpha(alpha: Int): T = alpha(alpha.toDouble())
+fun <T : View> T.alpha(alpha: Double): T = alpha(alpha.toFloat())
+fun <T : View> T.alpha(alpha: Int): T = alpha(alpha.toFloat())
 
 fun <T : View> T.zIndex(index: Float): T = zIndex(index.toDouble())
 fun <T : View> T.zIndex(index: Int): T = zIndex(index.toDouble())

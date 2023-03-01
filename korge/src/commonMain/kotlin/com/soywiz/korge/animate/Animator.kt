@@ -419,9 +419,9 @@ fun Animator.moveInPath(view: View, points: IPointArrayList, time: TimeSpan = th
 fun Animator.moveInPathWithSpeed(view: View, path: VectorPath, includeLastPoint: Boolean = true, speed: () -> Number = { this.defaultSpeed }, easing: Easing = this.defaultEasing) = __tween({ view::pos.get(path, includeLastPoint = includeLastPoint) }, lazyTime = { (path.length / speed().toDouble()).seconds }, easing = easing, name = "moveInPathWithSpeed")
 fun Animator.moveInPathWithSpeed(view: View, points: IPointArrayList, speed: () -> Number = { this.defaultSpeed }, easing: Easing = this.defaultEasing) = __tween({ view::pos[points] }, lazyTime = { (points.length / speed().toDouble()).seconds }, easing = easing, name = "moveInPathWithSpeed")
 
-fun Animator.alpha(view: View, alpha: Double, time: TimeSpan = this.defaultTime, easing: Easing = this.defaultEasing) = __tween(view::alpha[alpha], time = time, easing = easing, name = "alpha")
-fun Animator.alpha(view: View, alpha: Float, time: TimeSpan = this.defaultTime, easing: Easing = this.defaultEasing) = alpha(view, alpha.toDouble(), time, easing)
-fun Animator.alpha(view: View, alpha: Int, time: TimeSpan = this.defaultTime, easing: Easing = this.defaultEasing) = alpha(view, alpha.toDouble(), time, easing)
+fun Animator.alpha(view: View, alpha: Float, time: TimeSpan = this.defaultTime, easing: Easing = this.defaultEasing) = __tween(view::alpha[alpha], time = time, easing = easing, name = "alpha")
+fun Animator.alpha(view: View, alpha: Double, time: TimeSpan = this.defaultTime, easing: Easing = this.defaultEasing) = alpha(view, alpha.toFloat(), time, easing)
+fun Animator.alpha(view: View, alpha: Int, time: TimeSpan = this.defaultTime, easing: Easing = this.defaultEasing) = alpha(view, alpha.toFloat(), time, easing)
 
 fun Animator.rotateTo(view: View, angle: Angle, time: TimeSpan = this.defaultTime, easing: Easing = this.defaultEasing) = __tween(view::rotation[angle], time = time, easing = easing, name = "rotateTo")
 fun Animator.rotateTo(view: View, rotation: () -> Angle, time: TimeSpan = this.defaultTime, lazyTime: (() -> TimeSpan)? = null, easing: Easing = this.defaultEasing) = __tween({ view::rotation[rotation()] }, time = time, lazyTime = lazyTime, easing = easing, name = "rotateTo")

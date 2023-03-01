@@ -211,9 +211,14 @@ inline operator fun KMutableProperty0<Point>.get(range: IPointArrayList): V2<Poi
 }
 
 @JvmName("getFloat")
-inline operator fun KMutableProperty0<Float>.get(end: Float) = V2(this, this.get(), end, ::_interpolateFloat, includeStart = false)
+inline operator fun KMutableProperty0<Float>.get(end: Float): V2<Float> = V2(this, this.get(), end, ::_interpolateFloat, includeStart = false)
 @JvmName("getFloat")
 inline operator fun KMutableProperty0<Float>.get(initial: Float, end: Float) = V2(this, initial, end, ::_interpolateFloat, true)
+
+@JvmName("getFloatDouble") inline operator fun KMutableProperty0<Float>.get(end: Double): V2<Float> = get(end.toFloat())
+@JvmName("getFloatDouble") inline operator fun KMutableProperty0<Float>.get(initial: Double, end: Double) = get(initial.toFloat(), end.toFloat())
+@JvmName("getFloatInt") inline operator fun KMutableProperty0<Float>.get(end: Int): V2<Float> = get(end.toFloat())
+@JvmName("getFloatInt") inline operator fun KMutableProperty0<Float>.get(initial: Int, end: Int) = get(initial.toFloat(), end.toFloat())
 
 inline operator fun KMutableProperty0<Double>.get(end: Double) = V2(this, this.get(), end, ::_interpolate, includeStart = false)
 inline operator fun KMutableProperty0<Double>.get(initial: Double, end: Double) = V2(this, initial, end, ::_interpolate, true)

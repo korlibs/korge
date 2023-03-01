@@ -45,10 +45,10 @@ class UITooltipContainer() : Container() {
     fun appear() {
         disappear()
         visibleTimer = this.timers.timeout(showTime) {
-            tooltip.alpha = 0.0
+            tooltip.alpha = 0.0f
             tooltip.visible = true
             visibleTimer = null
-            tooltip.simpleAnimator.tween(tooltip::alpha[0.0, 1.0], time = appearAnimationTime)
+            tooltip.simpleAnimator.tween(tooltip::alpha[0.0f, 1.0f], time = appearAnimationTime)
         }
     }
 

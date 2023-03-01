@@ -33,8 +33,8 @@ class QView(val views: List<View>) : List<View> by views, BView {
         get() = firstOrNull?.visible ?: false
         set(value) = fastForEach { it.visible = value }
 
-    var alpha: Double
-        get() = firstOrNull?.alpha ?: 1.0
+    var alpha: Float
+        get() = firstOrNull?.alpha ?: 1.0f
         set(value) = fastForEach { it.alpha = value }
 
     var scale: Double
@@ -75,7 +75,7 @@ class QView(val views: List<View>) : List<View> by views, BView {
 }
 
 fun QView.visible(value: Boolean) { visible = value }
-fun QView.alpha(value: Double) { alpha = value }
+fun QView.alpha(value: Float) { alpha = value }
 fun QView.onClick(handler: @EventsDslMarker suspend (MouseEvents) -> Unit) = fastForEach { it.onClick(handler) }
 inline fun <reified T : View> QView.castTo(): T? = firstOrNull as? T?
 

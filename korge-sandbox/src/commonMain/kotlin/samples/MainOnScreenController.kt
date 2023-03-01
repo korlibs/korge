@@ -56,13 +56,13 @@ class MainOnScreenController : Scene() {
                 var pressing = false
                 onDown {
                     pressing = true
-                    alpha = 0.3
+                    alpha = 0.3f
                     onButton(button, true)
                 }
                 onUpAnywhere {
                     if (pressing) {
                         pressing = false
-                        alpha = 0.2
+                        alpha = 0.2f
                         onButton(button, false)
                     }
                 }
@@ -92,7 +92,7 @@ class MainOnScreenController : Scene() {
                             if (px >= width / 2) return
                             start.x = px
                             start.y = py
-                            ball.alpha = 0.3
+                            ball.alpha = 0.3f
                             dragging = true
                         }
                         MouseEvent.Type.MOVE, MouseEvent.Type.DRAG -> {
@@ -110,7 +110,7 @@ class MainOnScreenController : Scene() {
                         }
                         MouseEvent.Type.UP -> {
                             ball.position(0, 0)
-                            ball.alpha = 0.2
+                            ball.alpha = 0.2f
                             dragging = false
                             onStick(0.0, 0.0)
                         }

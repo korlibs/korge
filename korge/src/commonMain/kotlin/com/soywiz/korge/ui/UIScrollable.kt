@@ -152,7 +152,7 @@ open class UIScrollable(width: Double, height: Double, cache: Boolean = true) : 
     @ViewProperty
     var autohideScrollBar = false
     @ViewProperty
-    var scrollBarAlpha = 0.75
+    var scrollBarAlpha = 0.75f
     @ViewProperty
     var backgroundColor: RGBA = Colors["#161a1d"]
     @ViewProperty
@@ -227,7 +227,7 @@ open class UIScrollable(width: Double, height: Double, cache: Boolean = true) : 
         var dragging = false
 
         for (info in infos) {
-            info.view.decorateOutOverAlpha { if (it) 1.0 else scrollBarAlpha }
+            info.view.decorateOutOverAlpha { if (it) 1.0f else scrollBarAlpha }
         }
 
         for (info in infos) {
@@ -308,7 +308,7 @@ open class UIScrollable(width: Double, height: Double, cache: Boolean = true) : 
 
                     if (!dragging && autohideScrollBar) {
                         if (timeScrollBar >= 1.seconds) {
-                            info.view.alpha *= 0.9
+                            info.view.alpha *= 0.9f
                         } else {
                             timeScrollBar += it
                         }

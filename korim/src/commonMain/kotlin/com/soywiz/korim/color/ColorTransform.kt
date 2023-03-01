@@ -5,6 +5,64 @@ import com.soywiz.korio.util.niceStr
 import com.soywiz.korma.interpolation.*
 import com.soywiz.krypto.encoding.shex
 
+data class ColorTransformMul(
+    private var _r: Float = 1f,
+    private var _g: Float = 1f,
+    private var _b: Float = 1f,
+    private var _a: Float = 1f,
+) {
+    private var dirtyColorMul = true
+
+    var r: Float get() = _r
+        set(value) {
+            _r = value
+            dirtyColorMul = true
+        }
+    var g: Float get() = _g
+        set(value) {
+            _g = value
+            dirtyColorMul = true
+        }
+    var b: Float
+        get() = _b
+        set(value) {
+            _b = value
+            dirtyColorMul = true
+        }
+    var a: Float
+        get() = _a
+        set(value) {
+            _a = value
+            dirtyColorMul = true
+        }
+
+    private var _colorMul: RGBA = Colors.WHITE
+
+    var colorMul: RGBA
+        set(v) {
+            setTo(v.rf, v.gf, v.bf, v.af)
+            _colorMul = v
+            dirtyColorMul = false
+        }
+        get() {
+            if (dirtyColorMul) {
+                dirtyColorMul = false
+                _colorMul = RGBA.float(_r, _g, _b, _a)
+            }
+            return _colorMul
+        }
+
+    fun setTo(r: Float, g: Float, b: Float, a: Float) {
+        this._r = r
+        this._g = g
+        this._b = b
+        this._a = a
+        dirtyColorMul = true
+    }
+    fun copyFrom(other: ColorTransformMul) = setTo(other._r, other._g, other._b, other._a)
+    fun setToConcat(a: ColorTransformMul, b: ColorTransformMul) = setTo(a.r * b.r, a.g * b.g, a.b * b.b, a.a * b.a)
+}
+
 data class ColorTransform(
     private var _mR: Double,
     private var _mG: Double,

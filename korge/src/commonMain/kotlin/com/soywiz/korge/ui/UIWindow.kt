@@ -233,7 +233,7 @@ class UIWindow(title: String, width: Double = 256.0, height: Double = 256.0) : U
     }
 
     suspend fun closeAnimated() {
-        tween(this::height[0.0], this::alpha[0.0], time = 300.milliseconds)
+        tween(this::height[0.0], this::alpha[0.0f], time = 300.milliseconds)
         removeFromParent()
     }
 }
