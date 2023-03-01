@@ -3,15 +3,18 @@ package com.soywiz.korma.interpolation
 import com.soywiz.kmem.*
 import com.soywiz.korma.math.*
 
-//inline class Ratio(val value: Float) : Comparable<Ratio> {
 inline class Ratio(val valueD: Double) : Comparable<Ratio> {
-    //constructor(ratio: Double) : this(ratio.toFloat())
     constructor(ratio: Float) : this(ratio.toDouble())
+    val value: Double get() = valueD
+    val valueF: Float get() = value.toFloat()
+//inline class Ratio(val valueF: Float) : Comparable<Ratio> {
+//    constructor(ratio: Double) : this(ratio.toFloat())
+//    val value: Float get() = valueF
+//    val valueD: Double get() = valueF.toDouble()
+
     constructor(value: Float, maximum: Float) : this(value / maximum)
     constructor(value: Double, maximum: Double) : this(value / maximum)
 
-    val value: Double get() = valueD
-    val valueF: Float get() = value.toFloat()
 
     val clamped: Ratio get() = Ratio(value.clamp01())
 
