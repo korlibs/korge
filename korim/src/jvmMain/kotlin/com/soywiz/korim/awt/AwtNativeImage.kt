@@ -218,22 +218,22 @@ class AwtContext2dRender(val awtImage: BufferedImage, val antialiasing: Boolean 
 		}
 
 		this.visitCmds(
-            moveTo = { x, y ->
+            moveTo = {
                 //flush()
-                polyline.moveTo(x, y)
+                polyline.moveTo(it.xD, it.yD)
                 //kotlin.io.println("moveTo: $x, $y")
             },
-            lineTo = { x, y ->
-                polyline.lineTo(x, y)
+            lineTo = {
+                polyline.lineTo(it.xD, it.yD)
                 //kotlin.io.println("lineTo: $x, $y")
                 parts++
             },
-            quadTo = { cx, cy, ax, ay ->
-                polyline.quadTo(cx, cy, ax, ay)
+            quadTo = { c, a ->
+                polyline.quadTo(c.xD, c.yD, a.xD, a.yD)
                 parts++
             },
-            cubicTo = { cx1, cy1, cx2, cy2, ax, ay ->
-                polyline.curveTo(cx1, cy1, cx2, cy2, ax, ay)
+            cubicTo = { c1, c2, a ->
+                polyline.curveTo(c1.xD, c1.yD, c2.xD, c2.yD, a.xD, a.yD)
                 parts++
             },
             close = {

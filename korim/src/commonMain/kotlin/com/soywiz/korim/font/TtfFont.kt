@@ -1,14 +1,7 @@
 package com.soywiz.korim.font
 
-import com.soywiz.kds.DoubleArrayList
-import com.soywiz.kds.Extra
-import com.soywiz.kds.IntArrayList
-import com.soywiz.kds.IntIntMap
-import com.soywiz.kds.IntMap
-import com.soywiz.kds.getCyclic
+import com.soywiz.kds.*
 import com.soywiz.kds.iterators.fastForEach
-import com.soywiz.kds.mapInt
-import com.soywiz.kds.toIntArrayList
 import com.soywiz.klogger.*
 import com.soywiz.kmem.extract
 import com.soywiz.kmem.extract16Signed
@@ -1954,7 +1947,7 @@ abstract class BaseTtfFont(
 
         override val paths = refs.map { ref ->
             val gpath = ref.glyph.path.path
-            GlyphGraphicsPath(ref.glyph.index, VectorPath(IntArrayList(gpath.commands.size), DoubleArrayList(gpath.data.size))).also { out ->
+            GlyphGraphicsPath(ref.glyph.index, VectorPath(IntArrayList(gpath.commands.size), FloatArrayList(gpath.data.size))).also { out ->
                 val m = MMatrix()
                 m.scale(ref.scaleX, ref.scaleY)
                 m.translate(ref.x, -ref.y)
@@ -1972,7 +1965,7 @@ abstract class BaseTtfFont(
                 dataSize += gpath.path.data.size
             }
 
-            GlyphGraphicsPath(index, VectorPath(IntArrayList(commandsSize), DoubleArrayList(dataSize))).also { out ->
+            GlyphGraphicsPath(index, VectorPath(IntArrayList(commandsSize), FloatArrayList(dataSize))).also { out ->
                 paths.fastForEach { out.path.write(it.path) }
             }
         }
@@ -2018,7 +2011,7 @@ abstract class BaseTtfFont(
                 dataSize += 2 + (csize * 8) // Bigger than required
             }
 
-            GlyphGraphicsPath(index, VectorPath(IntArrayList(commandSize), DoubleArrayList(dataSize))).also { p ->
+            GlyphGraphicsPath(index, VectorPath(IntArrayList(commandSize), FloatArrayList(dataSize))).also { p ->
                 //println("flags.size: ${flags.size}, contoursIndices.size=${contoursIndices.size}, xPos.size=${xPos.size}, yPos.size=${yPos.size}")
                 //assert(flags.size == contoursIndices.size)
                 //assert(xPos.size == contoursIndices.size)

@@ -14,7 +14,7 @@ import com.soywiz.korma.geom.shape.*
 import com.soywiz.korma.geom.vector.*
 import kotlin.math.*
 
-open class Context2d constructor(
+open class Context2d(
     val renderer: Renderer,
     val defaultFontRegistry: FontRegistry? = null,
     val defaultFont: Font? = null
@@ -280,52 +280,38 @@ open class Context2d constructor(
 
 	fun shear(sx: Double, sy: Double) = transform(1.0, sy, sx, 1.0, 0.0, 0.0)
 
-    var moveX: Double = 0.0
-    var moveY: Double = 0.0
-    override var lastX: Double = 0.0
-    override var lastY: Double = 0.0
+    var movePos: Point = Point()
+    override var lastPos: Point = Point()
     override val totalPoints: Int  get() = state.path.totalPoints
 
     override fun close() {
         state.path.close()
-        lastX = moveX
-        lastY = moveY
+        lastPos = movePos
     }
 
+    private fun trans(p: Point): Point = state.transform.transform(p)
     private fun transX(x: Double, y: Double) = state.transform.transformX(x, y)
     private fun transY(x: Double, y: Double) = state.transform.transformY(x, y)
 
     //private fun transX(x: Double, y: Double) = x
     //private fun transY(x: Double, y: Double) = y
 
-    override fun moveTo(x: Double, y: Double) {
-        state.path.moveTo(transX(x, y), transY(x, y))
-        lastX = x
-        lastY = y
-        moveX = x
-        moveY = y
+    override fun moveTo(p: Point) {
+        state.path.moveTo(trans(p))
+        lastPos = p
+        movePos = p
     }
-    override fun lineTo(x: Double, y: Double) {
-        state.path.lineTo(transX(x, y), transY(x, y))
-        lastX = x
-        lastY = y
+    override fun lineTo(p: Point) {
+        state.path.lineTo(trans(p))
+        lastPos = p
     }
-    override fun quadTo(cx: Double, cy: Double, ax: Double, ay: Double) {
-        state.path.quadTo(
-            transX(cx, cy), transY(cx, cy),
-            transX(ax, ay), transY(ax, ay)
-        )
-        lastX = ax
-        lastY = ay
+    override fun quadTo(c: Point, a: Point) {
+        state.path.quadTo(trans(c), trans(a))
+        lastPos = a
     }
-    override fun cubicTo(cx1: Double, cy1: Double, cx2: Double, cy2: Double, ax: Double, ay: Double) {
-        state.path.cubicTo(
-            transX(cx1, cy1), transY(cx1, cy1),
-            transX(cx2, cy2), transY(cx2, cy2),
-            transX(ax, ay), transY(ax, ay)
-        )
-        lastX = ax
-        lastY = ay
+    override fun cubicTo(c1: Point, c2: Point, a: Point) {
+        state.path.cubicTo(trans(c1), trans(c2), trans(a))
+        lastPos = a
     }
 
 	inline fun strokeRect(x: Number, y: Number, width: Number, height: Number) =
@@ -672,20 +658,20 @@ fun Drawable.renderToImage(width: Int, height: Int, native: Boolean): Bitmap {
 
 private fun VectorBuilder.write(path: VectorPath) {
     path.visitCmds(
-        moveTo = { x, y -> moveTo(x, y) },
-        lineTo = { x, y -> lineTo(x, y) },
-        quadTo = { x0, y0, x1, y1 -> quadTo(x0, y0, x1, y1) },
-        cubicTo = { x0, y0, x1, y1, x2, y2 -> cubicTo(x0, y0, x1, y1, x2, y2) },
+        moveTo = { moveTo(it) },
+        lineTo = { lineTo(it) },
+        quadTo = { c, a -> quadTo(c, a) },
+        cubicTo = { c1, c2, a -> cubicTo(c1, c2, a) },
         close = { close() }
     )
 }
 
 private fun VectorBuilder.write(path: VectorPath, m: MMatrix) {
     path.visitCmds(
-        moveTo = { x, y -> moveTo(m.transformX(x, y), m.transformY(x, y)) },
-        lineTo = { x, y -> lineTo(m.transformX(x, y), m.transformY(x, y)) },
-        quadTo = { x0, y0, x1, y1 -> quadTo(m.transformX(x0, y0), m.transformY(x0, y0), m.transformX(x1, y1), m.transformY(x1, y1)) },
-        cubicTo = { x0, y0, x1, y1, x2, y2 -> cubicTo(m.transformX(x0, y0), m.transformY(x0, y0), m.transformX(x1, y1), m.transformY(x1, y1), m.transformX(x2, y2), m.transformY(x2, y2)) },
+        moveTo = { moveTo(m.transform(it)) },
+        lineTo = { lineTo(m.transform(it)) },
+        quadTo = { c, a -> quadTo(m.transform(c), m.transform(a)) },
+        cubicTo = { c1, c2, a -> cubicTo(m.transform(c1), m.transform(c2), m.transform(a)) },
         close = { close() }
     )
 }

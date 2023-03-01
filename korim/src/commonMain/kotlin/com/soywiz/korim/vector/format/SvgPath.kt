@@ -5,7 +5,7 @@ import com.soywiz.korio.util.StrReader
 import com.soywiz.korio.util.isDigit
 import com.soywiz.korio.util.isWhitespaceFast
 import com.soywiz.korio.util.toStringDecimal
-import com.soywiz.korma.geom.MMatrix
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.VectorBuilder
 import com.soywiz.korma.geom.vector.VectorPath
 import com.soywiz.korma.geom.vector.rLineTo
@@ -42,8 +42,8 @@ object SvgPath {
             return 0.0
         }
         fun n(): Double = readNumber()
-        fun nX(relative: Boolean): Double = if (relative) out.lastX + readNumber() else readNumber()
-        fun nY(relative: Boolean): Double = if (relative) out.lastY + readNumber() else readNumber()
+        fun nX(relative: Boolean): Double = if (relative) out.lastPos.xD + readNumber() else readNumber()
+        fun nY(relative: Boolean): Double = if (relative) out.lastPos.yD + readNumber() else readNumber()
 
         fun readNextTokenCmd(): Char? {
             while (tl.hasMore) {
@@ -114,8 +114,8 @@ object SvgPath {
                         val x = nX(relative)
                         val y = nY(relative)
 
-                        val x1 = if (lastCurve) out.lastX * 2 - lastCX else out.lastX
-                        val y1 = if (lastCurve) out.lastY * 2 - lastCY else out.lastY
+                        val x1 = if (lastCurve) out.lastPos.xD * 2 - lastCX else out.lastPos.xD
+                        val y1 = if (lastCurve) out.lastPos.yD * 2 - lastCY else out.lastPos.yD
 
                         lastCX = x2
                         lastCY = y2
@@ -129,8 +129,8 @@ object SvgPath {
                     while (isNextNumber()) {
                         val x2 = nX(relative)
                         val y2 = nY(relative)
-                        val cx = if (lastCurve) out.lastX * 2 - lastCX else out.lastX
-                        val cy = if (lastCurve) out.lastY * 2 - lastCY else out.lastY
+                        val cx = if (lastCurve) out.lastPos.xD * 2 - lastCX else out.lastPos.xD
+                        val cy = if (lastCurve) out.lastPos.yD * 2 - lastCY else out.lastPos.yD
                         //println("[$cmd]: $lastX, $lastY, $cx, $cy, $x2, $y2 :: $lastX - $lastCX :: $cx :: $lastCurve :: $lastCmd")
                         lastCX = cx
                         lastCY = cy
@@ -150,8 +150,8 @@ object SvgPath {
                     val rotx = readNumber() / 180.0 * PI        // x rotation angle
                     val fa = if ((readNumber().absoluteValue) > EPSILON) 1 else 0	// Large arc
                     val fs = if ((readNumber().absoluteValue) > EPSILON) 1 else 0	// Sweep direction
-                    val x1 = out.lastX							// start point
-                    val y1 = out.lastY                          // end point
+                    val x1 = out.lastPos.xD							// start point
+                    val y1 = out.lastPos.yD                          // end point
                     val x2 = nX(relative)
                     val y2 = nY(relative)
 
@@ -247,8 +247,7 @@ object SvgPath {
                             ptany = tany
                         }
 
-                        out.lastX = x2
-                        out.lastY = y2
+                        out.lastPos = Point(x2, y2)
                         //*cpx = x2;
                         //*cpy = y2;
                     }
@@ -334,12 +333,14 @@ object SvgPath {
 
         fun Double.fixX() = this.toStringDecimal(decimalPlaces, skipTrailingZeros = true)
         fun Double.fixY() = this.toStringDecimal(decimalPlaces, skipTrailingZeros = true)
+        fun Float.fixX() = this.toStringDecimal(decimalPlaces, skipTrailingZeros = true)
+        fun Float.fixY() = this.toStringDecimal(decimalPlaces, skipTrailingZeros = true)
 
         path.visitCmds(
-            moveTo = { x, y -> parts += "M${x.fixX()} ${y.fixY()}" },
-            lineTo = { x, y -> parts += "L${x.fixX()} ${y.fixY()}" },
-            quadTo = { x1, y1, x2, y2 -> parts += "Q${x1.fixX()} ${y1.fixY()}, ${x2.fixX()} ${y2.fixY()}" },
-            cubicTo = { x1, y1, x2, y2, x3, y3 -> parts += "C${x1.fixX()} ${y1.fixY()}, ${x2.fixX()} ${y2.fixY()}, ${x3.fixX()} ${y3.fixY()}" },
+            moveTo = { (x, y) -> parts += "M${x.fixX()} ${y.fixY()}" },
+            lineTo = { (x, y) -> parts += "L${x.fixX()} ${y.fixY()}" },
+            quadTo = { (x1, y1), (x2, y2) -> parts += "Q${x1.fixX()} ${y1.fixY()}, ${x2.fixX()} ${y2.fixY()}" },
+            cubicTo = { (x1, y1), (x2, y2), (x3, y3) -> parts += "C${x1.fixX()} ${y1.fixY()}, ${x2.fixX()} ${y2.fixY()}, ${x3.fixX()} ${y3.fixY()}" },
             close = { parts += "Z" }
         )
         return parts.joinToString("")

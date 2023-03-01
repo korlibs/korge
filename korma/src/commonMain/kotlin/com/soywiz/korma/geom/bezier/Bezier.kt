@@ -1477,22 +1477,26 @@ class Bezier(
             )
         }
 
+        @Deprecated("")
         fun cubicCalc(
             p0: IPoint, p1: IPoint, p2: IPoint, p3: IPoint,
             t: Double, target: MPoint = MPoint()
         ): IPoint = cubicCalc(p0.x, p0.y, p1.x, p1.y, p2.x, p2.y, p3.x, p3.y, t, target)
 
+        @Deprecated("")
         fun cubicCalc(
             x0: Double, y0: Double, x1: Double, y1: Double,
             x2: Double, y2: Double, x3: Double, y3: Double,
             t: Double, target: MPoint = MPoint()
         ): MPoint = cubicCalc(x0, y0, x1, y1, x2, y2, x3, y3, t) { x, y -> target.setTo(x, y) }
 
+        @Deprecated("")
         fun quadCalc(
             p0: IPoint, p1: IPoint, p2: IPoint,
             t: Double, target: MPoint = MPoint()
         ): IPoint = quadCalc(p0.x, p0.y, p1.x, p1.y, p2.x, p2.y, t, target)
 
+        @Deprecated("")
         fun quadCalc(
             x0: Double, y0: Double,
             xc: Double, yc: Double,
@@ -1500,6 +1504,26 @@ class Bezier(
             t: Double,
             target: MPoint = MPoint()
         ): MPoint = quadCalc(x0, y0, xc, yc, x1, y1, t) { x, y -> target.setTo(x, y) }
+
+        fun cubicCalc(
+            p0: Point, p1: Point, p2: Point, p3: Point,
+            t: Double
+        ): Point {
+            var out: Point
+            cubicCalc(p0.xD, p0.yD, p1.xD, p1.yD, p2.xD, p2.yD, p3.xD, p3.yD, t) { x, y -> out = Point(x, y) }
+            return out
+        }
+
+        fun quadCalc(
+            p: Point,
+            c: Point,
+            a: Point,
+            t: Double,
+        ): Point {
+            var out: Point
+            quadCalc(p.xD, p.yD, c.xD, c.yD, a.xD, a.yD, t) { x, y -> out = Point(x, y) }
+            return out
+        }
 
         @PublishedApi internal fun quadToCubic1(v0: Double, v1: Double) = v0 + (v1 - v0) * (2.0 / 3.0)
         @PublishedApi internal fun quadToCubic2(v1: Double, v2: Double) = v2 + (v1 - v2) * (2.0 / 3.0)

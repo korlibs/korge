@@ -226,8 +226,8 @@ class VectorPathTest {
             quadTo(100, 200, 200, 200)
             close()
         }.visitEdgesSimple(
-            { x0, y0, x1, y1 -> log.add("line(${x0.toInt()}, ${y0.toInt()}, ${x1.toInt()}, ${y1.toInt()})") },
-            { x0, y0, x1, y1, x2, y2, x3, y3 -> log.add("cubic(${x0.toInt()}, ${y0.toInt()}, ${x1.toInt()}, ${y1.toInt()}, ${x2.toInt()}, ${y2.toInt()}, ${x3.toInt()}, ${y3.toInt()})") },
+            { p0, p1 -> log.add("line(${p0.x.toInt()}, ${p0.y.toInt()}, ${p1.x.toInt()}, ${p1.y.toInt()})") },
+            { p0, p1, p2, p3 -> log.add("cubic(${p0.x.toInt()}, ${p0.y.toInt()}, ${p1.x.toInt()}, ${p1.y.toInt()}, ${p2.x.toInt()}, ${p2.y.toInt()}, ${p3.x.toInt()}, ${p3.y.toInt()})") },
             { log.add("close") },
         )
         assertEquals(

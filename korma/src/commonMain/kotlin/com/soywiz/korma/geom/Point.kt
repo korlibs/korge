@@ -77,7 +77,7 @@ inline class Point internal constructor(internal val raw: Float2Pack) {
     fun distanceTo(x: Int, y: Int): Float = this.distanceTo(x.toDouble(), y.toDouble())
     fun distanceTo(that: Point): Float = distanceTo(that.x, that.y)
 
-    infix fun dot(that: Point): Float = this.x * that.x + this.y * that.y
+    infix fun dot(that: Point): Float = ((this.x * that.x) + (this.y * that.y))
 
     fun angleTo(other: Point): Angle = Angle.between(this.x, this.y, other.x, other.y)
     val angle: Angle get() = Angle.between(0f, 0f, this.x, this.y)
@@ -102,6 +102,7 @@ inline class Point internal constructor(internal val raw: Float2Pack) {
     }
     val magnitude: Float get() = hypot(x, y)
     val normalized: Point get() = this * (1f / magnitude)
+    val unit: Point get() = this / length
 
     /** Rotates the vector/point -90 degrees (not normalizing it) */
     fun toNormal(): Point = Point(-this.y, this.x)
@@ -147,8 +148,8 @@ inline class Point internal constructor(internal val raw: Float2Pack) {
 
         fun angle(ax: Double, ay: Double, bx: Double, by: Double): Angle = Angle.between(ax, ay, bx, by)
         fun angle(x1: Double, y1: Double, x2: Double, y2: Double, x3: Double, y3: Double): Angle = Angle.between(x1 - x2, y1 - y2, x1 - x3, y1 - y3)
-        //acos(((ax * bx) + (ay * by)) / (hypot(ax, ay) * hypot(bx, by)))
-        fun angleArc(a: Point, b: Point): Angle = Angle.fromRadians(acos(a dot b) / (a.length * b.length))
+
+        fun angleArc(a: Point, b: Point): Angle = Angle.fromRadians(acos((a dot b) / (a.length * b.length)))
         fun angleFull(a: Point, b: Point): Angle = Angle.between(a, b)
 
         fun distance(a: Double, b: Double): Double = kotlin.math.abs(a - b)
@@ -177,6 +178,9 @@ inline class Point internal constructor(internal val raw: Float2Pack) {
         fun dot(aX: Double, aY: Double, bX: Double, bY: Double): Double = (aX * bX) + (aY * bY)
         fun dot(aX: Float, aY: Float, bX: Float, bY: Float): Float = (aX * bX) + (aY * bY)
         fun dot(a: Point, b: Point): Float = dot(a.x, a.y, b.x, b.y)
+
+        fun isCollinear(xa: Float, ya: Float, x: Float, y: Float, xb: Float, yb: Float): Boolean =
+            (((x - xa) / (y - ya)) - ((xa - xb) / (ya - yb))).absoluteValue.isAlmostZero()
 
         fun isCollinear(xa: Double, ya: Double, x: Double, y: Double, xb: Double, yb: Double): Boolean =
             (((x - xa) / (y - ya)) - ((xa - xb) / (ya - yb))).absoluteValue.isAlmostZero()
@@ -488,6 +492,7 @@ data class MPoint(
         /** Constructs a point from polar coordinates determined by an [angle] and a [length]. Angle 0 is pointing to the right, and the direction is counter-clock-wise */
         inline operator fun invoke(angle: Angle, length: Double = 1.0): MPoint = fromPolar(angle, length)
 
+        fun angleArc(a: Point, b: Point): Angle = Angle.fromRadians(acos((a.dot(b)) / (a.length * b.length)))
         fun angleArc(a: IPoint, b: IPoint): Angle = Angle.fromRadians(acos((a.dot(b)) / (a.length * b.length)))
         fun angleFull(a: IPoint, b: IPoint): Angle = Angle.between(a, b)
 

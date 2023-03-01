@@ -240,10 +240,10 @@ class AndroidContext2dRenderer(val bmp: android.graphics.Bitmap, val antialiasin
         }
         //kotlin.io.println("Path:")
         this.visitCmds(
-            moveTo = { x, y -> out.moveTo(x.toFloat(), y.toFloat()) },
-            lineTo = { x, y -> out.lineTo(x.toFloat(), y.toFloat()) },
-            quadTo = { cx, cy, ax, ay -> out.quadTo(cx.toFloat(), cy.toFloat(), ax.toFloat(), ay.toFloat()) },
-            cubicTo = { cx1, cy1, cx2, cy2, ax, ay ->
+            moveTo = { (x, y) -> out.moveTo(x.toFloat(), y.toFloat()) },
+            lineTo = { (x, y) -> out.lineTo(x.toFloat(), y.toFloat()) },
+            quadTo = { (cx, cy), (ax, ay) -> out.quadTo(cx.toFloat(), cy.toFloat(), ax.toFloat(), ay.toFloat()) },
+            cubicTo = { (cx1, cy1), (cx2, cy2), (ax, ay) ->
                 out.cubicTo(
                     cx1.toFloat(),
                     cy1.toFloat(),

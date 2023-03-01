@@ -1365,8 +1365,7 @@ abstract class View internal constructor(
 
     fun getLocalBoundsOptimizedAnchored(includeFilters: Boolean = false): MRectangle = getLocalBounds(_localBounds, doAnchoring = true, includeFilters = includeFilters)
 
-    @Deprecated("Allocates")
-    fun getLocalBounds(doAnchoring: Boolean = true, includeFilters: Boolean = false): MRectangle = getLocalBounds(MRectangle(), doAnchoring, includeFilters)
+    fun getLocalBounds(doAnchoring: Boolean = true, includeFilters: Boolean = false, out: MRectangle = MRectangle()): MRectangle = getLocalBounds(out, doAnchoring, includeFilters)
 
     /**
      * Get local bounds of the view. Allows to specify [out] [MRectangle] if you want to reuse an object.

@@ -10,16 +10,12 @@ object Arc {
     //val K = (4.0 / 3.0) * (sqrt(2.0) - 1.0)
     const val K = 0.5522847498307933
 
-    fun arcToPath(out: VectorBuilder, ax: Double, ay: Double, cx: Double, cy: Double, r: Double) {
-        if (out.isEmpty()) out.moveTo(ax, ay)
-        val bx = out.lastX
-        val by = out.lastY
-        val b = IPoint(bx, by)
-        val a = IPoint(ax, ay)
-        val c = IPoint(cx, cy)
+    fun arcToPath(out: VectorBuilder, a: Point, c: Point, r: Double) {
+        if (out.isEmpty()) out.moveTo(a)
+        val b = out.lastPos
         val AB = b - a
         val AC = c - a
-        val angle = MPoint.angleArc(AB, AC).radians * 0.5
+        val angle = Point.angleArc(AB, AC).radians * 0.5
         val x = r * sin((PI / 2.0) - angle) / sin(angle)
         val A = a + AB.unit * x
         val B = a + AC.unit * x

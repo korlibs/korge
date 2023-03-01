@@ -197,11 +197,14 @@ class PolygonScanline : RastScale() {
         lastY = y
         lastMoveTo = false
     }
+    fun moveTo(p: Point) = moveTo(p.xD, p.yD)
+    fun lineTo(p: Point) = lineTo(p.xD, p.yD)
 
     fun add(path: VectorPath) {
-        path.emitPoints2(flush = { if (it) close() }, emit = { x, y, move -> add(x, y, move) })
+        path.emitPoints2(flush = { if (it) close() }, emit = { p, move -> add(p, move) })
     }
 
+    fun add(p: Point, move: Boolean) = if (move) moveTo(p) else lineTo(p)
     fun add(x: Double, y: Double, move: Boolean) = if (move) moveTo(x, y) else lineTo(x, y)
     fun add(x: Float, y: Float, move: Boolean) = add(x.toDouble(), y.toDouble(), move)
     fun add(x: Int, y: Int, move: Boolean) = add(x.toDouble(), y.toDouble(), move)

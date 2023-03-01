@@ -11,7 +11,7 @@ import kotlin.test.assertEquals
 class TweenInterpolators {
     @Test
     fun test() {
-        val path = buildVectorPath { line(0, 0, 100, 100) }
+        val path = buildVectorPath { line(Point(0, 0), Point(100, 100)) }
         val view = DummyView().xy(30, 30)
         val v2 = view::pos[path]
         assertEquals(Point(30, 30), view.pos)

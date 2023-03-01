@@ -60,9 +60,9 @@ class MainTriangulation : Scene() {
                     }
                     stroke(Colors.GREEN, StrokeInfo(thickness = 1.0)) {
                         for (triangle in points.triangulate()) {
-                            val p0 = MPoint(triangle.p0)
-                            val p1 = MPoint(triangle.p1)
-                            val p2 = MPoint(triangle.p2)
+                            val p0 = Point(triangle.p0)
+                            val p1 = Point(triangle.p1)
+                            val p2 = Point(triangle.p2)
                             line(p0, p1)
                             line(p1, p2)
                             line(p2, p0)
@@ -71,8 +71,8 @@ class MainTriangulation : Scene() {
                 }
 
                 for (n in 0 until edges.size - 1) {
-                    val e0 = MPoint(edges[n])
-                    val e1 = MPoint(edges[n + 1])
+                    val e0 = Point(edges[n])
+                    val e1 = Point(edges[n + 1])
                     val last = n == edges.size - 2
                     stroke(if (last) Colors.RED else Colors.BLUE, StrokeInfo(thickness = 2.0)) {
                         line(e0, e1)

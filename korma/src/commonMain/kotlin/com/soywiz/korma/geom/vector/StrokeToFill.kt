@@ -225,9 +225,9 @@ class StrokeToFill {
             joint = {
                 doJointList[doJointList.size - 1] = 1
             }
-        ) { x, y, move ->
+        ) { p, move ->
             if (move) computeStroke(iscale, false)
-            strokePoints.add((x * scale).toInt(), (y * scale).toInt())
+            strokePoints.add((p.xD * scale).toInt(), (p.yD * scale).toInt())
             doJointList.add(0)
         }
         computeStroke(iscale, false)

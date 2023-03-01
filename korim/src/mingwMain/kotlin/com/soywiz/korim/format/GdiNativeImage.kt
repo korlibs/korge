@@ -65,7 +65,7 @@ class GdiRenderer(val bitmap: Bitmap32, val antialiasing: Boolean) : BufferedRen
 
     fun RGBA.toArgb(): UInt = this.value.toUInt()
 
-    fun Double.ensureY(bitmap: Bitmap): Double {
+    fun Float.ensureY(bitmap: Bitmap): Float {
         if (FLIP_POINTS) {
             return bitmap.height - this
         } else {
@@ -79,16 +79,16 @@ class GdiRenderer(val bitmap: Bitmap32, val antialiasing: Boolean) : BufferedRen
         val path = ppath[0]
         GdipStartPathFigure(path).checkp("GdipStartPathFigure")
         vpath.visitEdgesSimple(
-            { x0, y0, x1, y1 ->
+            { (x0, y0), (x1, y1) ->
                 GdipAddPathLine(path, x0.toFloat(), y0.ensureY(bitmap).toFloat(), x1.toFloat(), y1.ensureY(bitmap).toFloat()).checkp("GdipAddPathLine")
             },
-            { x0, y0, x1, y1, x2, y2, x3, y3 ->
+            { (x0, y0), (x1, y1), (x2, y2), (x3, y3) ->
                 GdipAddPathBezier(
                     path,
-                    x0.toFloat(), y0.ensureY(bitmap).toFloat(),
-                    x1.toFloat(), y1.ensureY(bitmap).toFloat(),
-                    x2.toFloat(), y2.ensureY(bitmap).toFloat(),
-                    x3.toFloat(), y3.ensureY(bitmap).toFloat()
+                    x0, y0.ensureY(bitmap),
+                    x1, y1.ensureY(bitmap),
+                    x2, y2.ensureY(bitmap),
+                    x3, y3.ensureY(bitmap)
                 ).checkp("GdipAddPathBezier")
             },
             {
@@ -219,11 +219,11 @@ class GdiRenderer(val bitmap: Bitmap32, val antialiasing: Boolean) : BufferedRen
 
                                                 val point1 = points[0].also {
                                                     it.X = style.x0.toFloat()
-                                                    it.Y = style.y0.ensureY(bitmap).toFloat()
+                                                    it.Y = style.y0.toFloat().ensureY(bitmap)
                                                 }
                                                 val point2 = points[1].also {
                                                     it.X = style.x1.toFloat()
-                                                    it.Y = style.y1.ensureY(bitmap).toFloat()
+                                                    it.Y = style.y1.toFloat().ensureY(bitmap)
                                                 }
                                                 GdipCreateLineBrush(
                                                     points[0].ptr,

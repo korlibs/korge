@@ -1,13 +1,10 @@
 package com.soywiz.korma.geom.shape
 
-import com.soywiz.korma.geom.MPoint
-import com.soywiz.korma.geom.PointArrayList
-import com.soywiz.korma.geom.map
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.shape.ops.extend
 import com.soywiz.korma.geom.shape.ops.intersection
 import com.soywiz.korma.geom.shape.ops.union
 import com.soywiz.korma.geom.shape.ops.xor
-import com.soywiz.korma.geom.toPoints
 import com.soywiz.korma.geom.vector.VectorPath
 import com.soywiz.korma.geom.vector.circle
 import com.soywiz.korma.geom.vector.lineTo
@@ -155,8 +152,8 @@ class Shape2dTest {
         fun approx(start: Boolean, end: Boolean) = arrayListOf<String>().also { out ->
             approximateCurve(
                 10,
-                { ratio, get -> get(ratio * 100, -ratio * 100) },
-                { x, y -> out.add("(${x.toInt()},${y.toInt()})") },
+                { ratio, get -> get(Point(ratio * 100, -ratio * 100)) },
+                { (x, y) -> out.add("(${x.toInt()},${y.toInt()})") },
                 start, end
             )
         }.joinToString(" ")

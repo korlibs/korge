@@ -391,8 +391,8 @@ object TtfCIDFont {
         fun VectorBuilder.cfrCubicTo(cx1: Double, cy1: Double, cx2: Double, cy2: Double, ax: Double, ay: Double) {
             //rCubicTo(ax, ay, cx1, cy1, cx2, cy2)
 
-            val fcx1 = lastX + cx1
-            val fcy1 = lastY + cy1
+            val fcx1 = lastPos.xD + cx1
+            val fcy1 = lastPos.yD + cy1
 
             val fcx2 = fcx1 + cx2
             val fcy2 = fcy1 + cy2

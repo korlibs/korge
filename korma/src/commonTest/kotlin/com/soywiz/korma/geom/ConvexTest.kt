@@ -8,8 +8,7 @@ import com.soywiz.korma.geom.vector.rect
 import com.soywiz.korma.geom.vector.regularPolygon
 import com.soywiz.korma.geom.vector.roundRect
 import com.soywiz.korma.geom.vector.star
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import kotlin.test.*
 
 class ConvexTest {
     @Test

@@ -88,7 +88,7 @@ object Convex {
             angle_sum += Angle.fromRadians(angle)
             // Check that the total number of full turns is plus-or-minus 1
         }
-        return 1.0.isAlmostEquals(angle_sum.ratio.absoluteValue)
+        return 1f.isAlmostEquals(angle_sum.ratio.toFloat().absoluteValue)
     }
 
     /*
