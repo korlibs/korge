@@ -5,14 +5,11 @@ import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.util.NinePatchSlices
 import com.soywiz.korim.util.NinePatchSlices2D
-import com.soywiz.korma.geom.IPoint
-import com.soywiz.korma.geom.ISize
-import com.soywiz.korma.geom.MPoint
-import com.soywiz.korma.geom.asSize
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.VectorPath
 
 class NinePatchShape(val shape: Shape, val slices: NinePatchSlices2D) {
-    val size: ISize = shape.bounds.bottomRight.asSize()
+    val size: ISize = shape.bounds.bottomRight.toSize().mutable
 
     fun getScaledPointAt(point: IPoint, newSize: ISize, out: MPoint = MPoint()): IPoint =
         slices.getScaledPointAt(point, size, newSize, out)
@@ -21,7 +18,7 @@ class NinePatchShape(val shape: Shape, val slices: NinePatchSlices2D) {
         return shape.scaleNinePatch(newSize, slices)
     }
 
-    private fun Shape.scaleNinePatch(newSize: ISize, slices: NinePatchSlices2D, oldSize: ISize? = this.bounds.bottomRight.asSize()): Shape {
+    private fun Shape.scaleNinePatch(newSize: ISize, slices: NinePatchSlices2D, oldSize: ISize? = this.bounds.bottomRight.toSize().mutable): Shape {
         return when (this) {
             EmptyShape -> EmptyShape
             is CompoundShape -> CompoundShape(this.components.map { it.scaleNinePatch(newSize, slices, oldSize) })

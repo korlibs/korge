@@ -912,14 +912,14 @@ abstract class View internal constructor(
             }
             lines.drawVector(Colors.YELLOW) {
                 val anchorSize = 6.0 * ctx.views!!.windowToGlobalScaleAvg
-                circle(localToGlobal(local.topLeft), anchorSize)
-                circle(localToGlobal(local.topRight), anchorSize)
-                circle(localToGlobal(local.bottomRight), anchorSize)
-                circle(localToGlobal(local.bottomLeft), anchorSize)
-                circle(localToGlobal(local.topLeft.interpolateWith(Ratio.HALF, local.topRight)), anchorSize)
-                circle(localToGlobal(local.topRight.interpolateWith(Ratio.HALF, local.bottomRight)), anchorSize)
-                circle(localToGlobal(local.bottomRight.interpolateWith(Ratio.HALF, local.bottomLeft)), anchorSize)
-                circle(localToGlobal(local.bottomLeft.interpolateWith(Ratio.HALF, local.topLeft)), anchorSize)
+                circle(localToGlobal(local.topLeft.mutable), anchorSize)
+                circle(localToGlobal(local.topRight.mutable), anchorSize)
+                circle(localToGlobal(local.bottomRight.mutable), anchorSize)
+                circle(localToGlobal(local.bottomLeft.mutable), anchorSize)
+                circle(localToGlobal(local.topLeft.mutable.interpolateWith(Ratio.HALF, local.topRight.mutable)), anchorSize)
+                circle(localToGlobal(local.topRight.mutable.interpolateWith(Ratio.HALF, local.bottomRight.mutable)), anchorSize)
+                circle(localToGlobal(local.bottomRight.mutable.interpolateWith(Ratio.HALF, local.bottomLeft.mutable)), anchorSize)
+                circle(localToGlobal(local.bottomLeft.mutable.interpolateWith(Ratio.HALF, local.topLeft.mutable)), anchorSize)
             }
             lines.drawVector(Colors.BLUE) {
                 val centerX = globalX

@@ -32,6 +32,8 @@ inline class Size internal constructor(internal val raw: Float2Pack) {
     override fun toString(): String = "Size(width=${width.niceStr}, height=${height.niceStr})"
 }
 
+val Size.mutable: MSize get() = MSize(width, height)
+
 inline class SizeInt internal constructor(internal val raw: Int2Pack) {
     val width: Int get() = raw.x
     val height: Int get() = raw.y
@@ -56,6 +58,7 @@ interface ISizeable {
 }
 
 @KormaMutableApi
+@Deprecated("Use Size instead")
 sealed interface ISize {
     val width: Double
     val height: Double
@@ -73,6 +76,7 @@ sealed interface ISize {
 }
 
 @KormaMutableApi
+@Deprecated("Use Size instead")
 inline class MSize(val p: MPoint) : MutableInterpolable<MSize>, Interpolable<MSize>, ISize, ISizeable {
     companion object {
         operator fun invoke(): MSize = MSize(MPoint(0, 0))

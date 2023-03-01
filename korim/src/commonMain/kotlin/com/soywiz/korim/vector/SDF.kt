@@ -129,7 +129,7 @@ class ProjectCurvesLookup(val beziers: List<Bezier>) {
 
         // Find bezier with closest, farthest point against [point]
         beziers.fastForEach {
-            val dist = it.outerCircle.distanceFarthestSquared(point)
+            val dist = it.outerCircle.distanceFarthestSquared(point.point)
             if (dist < minDistSq) {
                 minDistSq = dist
                 //closest = it
@@ -141,7 +141,7 @@ class ProjectCurvesLookup(val beziers: List<Bezier>) {
         //val keep = beziers.filter { it.outerCircle.distanceClosestSquared(point) <= minDistSq }
         //println("keep=${keep.size}, total=${beziers.size}")
         beziers.fastForEach {
-            if (it.outerCircle.distanceClosestSquared(point) > minDistSq) return@fastForEach
+            if (it.outerCircle.distanceClosestSquared(point.point) > minDistSq) return@fastForEach
             it.project(point, tempProjected)
             if (tempProjected.dSq < bminDistSq) {
                 bminDistSq = tempProjected.dSq

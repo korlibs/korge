@@ -576,8 +576,11 @@ val MPoint.int get() = MPointInt(this.x.toInt(), this.y.toInt())
 val IPoint.int get() = MPointInt(this.x.toInt(), this.y.toInt())
 val IPointInt.double get() = IPoint(x.toDouble(), y.toDouble())
 
+@Deprecated("")
 fun Point.toMPoint(out: MPoint = MPoint()): MPoint = out.setTo(x, y)
+@Deprecated("")
 fun Point.mutable(out: MPoint = MPoint()): MPoint = out.setTo(x, y)
+@Deprecated("")
 val Point.mutable: MPoint get() = mutable()
 
 private inline fun getPolylineLength(size: Int, crossinline get: (n: Int, (x: Double, y: Double) -> Unit) -> Unit): Double {

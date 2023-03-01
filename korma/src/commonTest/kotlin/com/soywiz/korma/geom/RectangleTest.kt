@@ -41,16 +41,16 @@ class RectangleTest {
     @Test
     fun corners() {
         val rectangle = MRectangle(1, 20, 300, 4000)
-        assertEquals(IPoint(1, 20), rectangle.topLeft)
-        assertEquals(IPoint(301, 20), rectangle.topRight)
-        assertEquals(IPoint(1, 4020), rectangle.bottomLeft)
-        assertEquals(IPoint(301, 4020), rectangle.bottomRight)
+        assertEquals(IPoint(1, 20), rectangle.topLeft.mutable)
+        assertEquals(IPoint(301, 20), rectangle.topRight.mutable)
+        assertEquals(IPoint(1, 4020), rectangle.bottomLeft.mutable)
+        assertEquals(IPoint(301, 4020), rectangle.bottomRight.mutable)
 
         val iRectangle = IRectangle(1000, 200, 30, 4)
-        assertEquals(IPoint(1000, 200), iRectangle.topLeft)
-        assertEquals(IPoint(1030, 200), iRectangle.topRight)
-        assertEquals(IPoint(1000, 204), iRectangle.bottomLeft)
-        assertEquals(IPoint(1030, 204), iRectangle.bottomRight)
+        assertEquals(IPoint(1000, 200), iRectangle.topLeft.mutable)
+        assertEquals(IPoint(1030, 200), iRectangle.topRight.mutable)
+        assertEquals(IPoint(1000, 204), iRectangle.bottomLeft.mutable)
+        assertEquals(IPoint(1030, 204), iRectangle.bottomRight.mutable)
     }
 
     @Test

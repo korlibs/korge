@@ -60,7 +60,7 @@ abstract class Shape2d {
         return out.setBounds(minx, miny, maxx, maxy)
     }
 
-    open val center: IPoint get() = getBounds().center
+    open val center: Point get() = getBounds().center
 
     companion object {
         fun intersects(l: Shape2d, ml: MMatrix?, r: Shape2d, mr: MMatrix?, tempMatrix: MMatrix? = MMatrix()): Boolean {
@@ -192,7 +192,7 @@ abstract class Shape2d {
         }
     }
     data class Circle(val x: Double, val y: Double, override val radius: Double, val totalPoints: Int = 32) : BaseEllipse(x, y, radius, radius, Angle.ZERO, totalPoints), ICircle {
-        override val center: IPoint = IPoint(x, y)
+        override val center: Point = Point(x, y)
         companion object {
             operator fun invoke(x: Float, y: Float, radius: Float, totalPoints: Int = 32) = Circle(x.toDouble(), y.toDouble(), radius.toDouble(), totalPoints)
             operator fun invoke(x: Int, y: Int, radius: Int, totalPoints: Int = 32) = Circle(x.toDouble(), y.toDouble(), radius.toDouble(), totalPoints)
@@ -215,7 +215,7 @@ abstract class Shape2d {
         override val paths = listOf(PointArrayList(4) { add(x, y).add(x + width, y).add(x + width, y + height).add(x, y + height) })
         override val closed: Boolean = true
         override val area: Double get() = width * height
-        override val center: IPoint get() = super<IRectangle>.center
+        override val center: Point get() = super<IRectangle>.center
 
         override fun containsPoint(x: Double, y: Double) = (x in this.left..this.right) && (y in this.top..this.bottom)
         override fun toString(): String =
