@@ -108,10 +108,13 @@ open class PointArrayList(capacity: Int = 7) : IPointArrayList, Extra by Extra.M
     }
 
     companion object {
-        operator fun invoke(vararg values: Double): PointArrayList = fromGen(values.size) { values[it] }
-        operator fun invoke(vararg values: Float): PointArrayList = fromGen(values.size) { values[it].toDouble() }
-        operator fun invoke(vararg values: Int): PointArrayList = fromGen(values.size) { values[it].toDouble() }
-        inline fun fromGen(count: Int, gen: (Int) -> Double): PointArrayList {
+        @Deprecated("")
+        operator fun invoke(vararg values: Double): PointArrayList = fromGen(values.size) { values[it].toFloat() }
+        @Deprecated("")
+        operator fun invoke(vararg values: Float): PointArrayList = fromGen(values.size) { values[it] }
+        @Deprecated("")
+        operator fun invoke(vararg values: Int): PointArrayList = fromGen(values.size) { values[it].toFloat() }
+        inline fun fromGen(count: Int, gen: (Int) -> Float): PointArrayList {
             val size = count / 2
             val out = PointArrayList(size)
             for (n in 0 until size) out.add(gen(n * 2 + 0), gen(n * 2 + 1))
@@ -119,20 +122,31 @@ open class PointArrayList(capacity: Int = 7) : IPointArrayList, Extra by Extra.M
         }
 
         operator fun invoke(capacity: Int = 7, callback: PointArrayList.() -> Unit): PointArrayList = PointArrayList(capacity).apply(callback)
+        @Deprecated("")
         operator fun invoke(points: List<IPoint>): PointArrayList = PointArrayList(points.size) {
             for (n in points.indices) add(points[n].x, points[n].y)
         }
+        @Deprecated("")
         operator fun invoke(vararg points: IPoint): PointArrayList = PointArrayList(points.size) {
             for (n in points.indices) add(points[n].x, points[n].y)
         }
+        operator fun invoke(capacity: Int = 7): PointArrayList = PointArrayList(capacity)
+        operator fun invoke(p0: Point): PointArrayList = PointArrayList(1).add(p0)
+        operator fun invoke(p0: Point, p1: Point): PointArrayList = PointArrayList(2).add(p0).add(p1)
+        operator fun invoke(p0: Point, p1: Point, p2: Point): PointArrayList = PointArrayList(3).add(p0).add(p1).add(p2)
+        operator fun invoke(p0: Point, p1: Point, p2: Point, p3: Point): PointArrayList = PointArrayList(4).add(p0).add(p1).add(p2).add(p3)
+        inline operator fun <T : Point> invoke(vararg points: T): PointArrayList =
+            PointArrayList(points.size).also { list -> points.fastForEach { list.add(it) } }
     }
 
     /**
      * Adds points with [values] in the format of interleaved (x, y) values.
      */
-    fun addRaw(vararg values: Double) {
+    fun addRaw(vararg values: Double) = addRaw(*values.mapFloat { it.toFloat() })
+
+    fun addRaw(vararg values: Float) {
         check(values.size % 2 == 0) { "values not multiple of 2 (x, y) but '${values.size}'" }
-        data.add(values.mapFloat { it.toFloat() })
+        data.add(values)
     }
 
     fun add(x: Float, y: Float): PointArrayList {
@@ -170,8 +184,12 @@ open class PointArrayList(capacity: Int = 7) : IPointArrayList, Extra by Extra.M
 
     private fun index(index: Int, offset: Int): Int = index * 2 + offset
 
-    override fun getX(index: Int) = data.getAt(index(index, 0))
-    override fun getY(index: Int) = data.getAt(index(index, 1))
+    override fun getX(index: Int): Float = data.getAt(index(index, 0))
+    override fun getY(index: Int): Float = data.getAt(index(index, 1))
+    override fun get(index: Int): Point {
+        val i = index(index, 0)
+        return Point(data.getAt(i), data.getAt(i + 1))
+    }
 
     fun insertAt(index: Int, p: PointArrayList): PointArrayList {
         data.insertAt(index(index, 0), p.data.data, 0, p.data.size)

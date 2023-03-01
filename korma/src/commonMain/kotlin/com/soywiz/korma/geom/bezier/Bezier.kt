@@ -84,7 +84,7 @@ class Bezier(
         if (points.size > 4) error("Only supports quad and cubic beziers")
     }
 
-    constructor() : this(PointArrayList(0.0, 0.0, 0.0, 0.0))
+    constructor() : this(PointArrayList(Point(0f, 0f), Point(0f, 0f)))
     @Deprecated("")
     constructor(vararg points: IPoint) : this(PointArrayList(*points))
     @Deprecated("")
@@ -94,9 +94,9 @@ class Bezier(
     @Deprecated("")
     constructor(vararg points: Int) : this(PointArrayList(*points))
 
-    constructor(p0: Point, p1: Point) : this(PointArrayList().add(p0).add(p1))
-    constructor(p0: Point, p1: Point, p2: Point) : this(PointArrayList().add(p0).add(p1).add(p2))
-    constructor(p0: Point, p1: Point, p2: Point, p3: Point) : this(PointArrayList().add(p0).add(p1).add(p2).add(p3))
+    constructor(p0: Point, p1: Point) : this(PointArrayList(p0, p1))
+    constructor(p0: Point, p1: Point, p2: Point) : this(PointArrayList(p0, p1, p2))
+    constructor(p0: Point, p1: Point, p2: Point, p3: Point) : this(PointArrayList(p0, p1, p2, p3))
 
     fun copyFrom(bezier: IBezier): Bezier {
         this._points.copyFrom(bezier.points)
