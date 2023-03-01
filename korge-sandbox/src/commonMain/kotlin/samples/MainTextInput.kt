@@ -71,7 +71,7 @@ class MainTextInput : Scene() {
             color = Colors.RED,
         ).xy(600, 500)
             .textSpacing(9.0)
-            .aroundPath(buildVectorPath { moveTo(Point(0.0, 0.0)); quadTo(250.0, -100.0, 500.0, 0.0) })
+            .aroundPath(buildVectorPath { moveTo(Point(0.0, 0.0)); quadTo(Point(250.0, -100.0), Point(500.0, 0.0)) })
             .filters(DropshadowFilter())
             .also { it.editText() }
 

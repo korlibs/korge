@@ -35,7 +35,7 @@ class MainTweenPoint : Scene() {
                 //circle(200, 200, 100)
                 moveTo(Point(200.0, 200.0))
                 lineTo(Point(400.0, 100.0))
-                quadTo(400.0, 400.0, 200.0, 200.0)
+                quadTo(Point(400.0, 400.0), Point(200.0, 200.0))
             }
             val curves = path.getCurves()
             cpuGraphics(path.toStrokeShape(Colors.RED, thickness = 2.0))
