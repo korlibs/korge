@@ -1,19 +1,13 @@
 package com.soywiz.korma.geom.bezier
 
-import com.soywiz.kds.DoubleArrayList
-import com.soywiz.kds.iterators.fastForEach
-import com.soywiz.kds.mapDouble
-import com.soywiz.kds.sort
+import com.soywiz.kds.*
+import com.soywiz.kds.iterators.*
 import com.soywiz.kmem.*
 import com.soywiz.korma.geom.*
-import com.soywiz.korma.interpolation.interpolate
-import com.soywiz.korma.math.isAlmostEquals
+import com.soywiz.korma.interpolation.*
+import com.soywiz.korma.math.*
 import com.soywiz.korma.math.isAlmostZero
-import com.soywiz.korma.math.normalizeZero
-import com.soywiz.korma.math.roundDecimalPlaces
-import kotlin.contracts.ExperimentalContracts
-import kotlin.contracts.InvocationKind
-import kotlin.contracts.contract
+import kotlin.contracts.*
 import kotlin.math.*
 
 sealed interface IBezier : Curve {
@@ -719,8 +713,8 @@ class Bezier(
         while (p.size > 1) {
             val next = PointArrayList()
             for (i in 0 until p.size - 1) {
-                val px = t.interpolate(p.getX(i), p.getX(i + 1))
-                val py = t.interpolate(p.getY(i), p.getY(i + 1))
+                val px = t.toRatio().interpolate(p.getX(i), p.getX(i + 1))
+                val py = t.toRatio().interpolate(p.getY(i), p.getY(i + 1))
                 out.add(px, py)
                 next.add(px, py)
             }

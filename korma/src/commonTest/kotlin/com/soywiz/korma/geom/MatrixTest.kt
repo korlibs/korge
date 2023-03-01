@@ -1,6 +1,6 @@
 package com.soywiz.korma.geom
 
-import com.soywiz.korma.interpolation.interpolate
+import com.soywiz.korma.interpolation.*
 import kotlin.test.*
 
 class MatrixTest {
@@ -102,7 +102,7 @@ class MatrixTest {
         val t2 = MMatrix.Transform(20.0, 40.0, scaleX = 4.0, scaleY = 5.0, skewX = 0.0.degrees, skewY = 0.0.degrees, rotation = 180.degrees)
         assertEquals(
             MMatrix.Transform(x = 15.0, y = 30.0, scaleX = 3.0, scaleY = 4.0, skewX = 0.0.degrees, skewY = 0.0.degrees, rotation = 135.degrees),
-            0.5.interpolate(t1, t2)
+            Ratio.HALF.interpolate(t1, t2)
         )
 
         val identity = MMatrix.Transform()

@@ -85,7 +85,7 @@ class AnimatorStateManager(val view: View) {
             val endTime = it.endTime(currentState.time).seconds
             val ratio = currentTime.seconds.convertRange(startTime, endTime, 0.0, 1.0)
             if (isStart) it.init()
-            it.set(currentState.easing(ratio.clamp01()))
+            it.set(currentState.easing(ratio.clamp01()).toRatio())
             if (ratio >= 1.0) {
                 completedCount++
             }

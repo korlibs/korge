@@ -174,13 +174,13 @@ open class UIScrollable(width: Double, height: Double, cache: Boolean = true) : 
     }
 
     fun ensurePointIsVisible(x: Double, y: Double, anchor: Anchor = Anchor.CENTER) {
-        horizontal.ensurePositionIsVisible(x, anchor.sxD)
-        vertical.ensurePositionIsVisible(y, anchor.syD)
+        horizontal.ensurePositionIsVisible(x, anchor.doubleX)
+        vertical.ensurePositionIsVisible(y, anchor.doubleY)
     }
 
     fun ensureRectIsVisible(rect: IRectangle, anchor: Anchor = Anchor.CENTER) {
-        horizontal.ensureRangeIsVisible(rect.left, rect.right, anchor.sxD)
-        vertical.ensureRangeIsVisible(rect.top, rect.bottom, anchor.syD)
+        horizontal.ensureRangeIsVisible(rect.left, rect.right, anchor.doubleX)
+        vertical.ensureRangeIsVisible(rect.top, rect.bottom, anchor.doubleY)
     }
 
     fun ensureViewIsVisible(view: View, anchor: Anchor = Anchor.CENTER) {
@@ -302,7 +302,8 @@ open class UIScrollable(width: Double, height: Double, cache: Boolean = true) : 
                         if ((destScrollPos - info.position).absoluteValue < 0.1) {
                             info.position = destScrollPos
                         } else {
-                            info.position = (0.5 * (it.seconds * 10.0)).interpolate(info.position, destScrollPos)
+                            info.position =
+                                (0.5 * (it.seconds * 10.0)).toRatio().interpolate(info.position, destScrollPos)
                         }
                     }
 

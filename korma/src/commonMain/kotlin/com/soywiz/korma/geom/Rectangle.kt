@@ -401,8 +401,8 @@ data class MRectangle(
     ): MRectangle {
         val ow = scale.transformW(width, height, this.width, this.height)
         val oh = scale.transformH(width, height, this.width, this.height)
-        val x = (this.width - ow) * anchor.sxD
-        val y = (this.height - oh) * anchor.syD
+        val x = (this.width - ow) * anchor.doubleX
+        val y = (this.height - oh) * anchor.doubleY
         return out.setTo(x, y, ow, oh)
     }
 
@@ -421,8 +421,8 @@ data class MRectangle(
         setToAnchoredRectangle(item.size, anchor, container)
 
     fun setToAnchoredRectangle(item: ISize, anchor: Anchor, container: IRectangle): MRectangle = setTo(
-        container.x + anchor.sxD * (container.width - item.width),
-        container.y + anchor.syD * (container.height - item.height),
+        container.x + anchor.doubleX * (container.width - item.width),
+        container.y + anchor.doubleY * (container.height - item.height),
         item.width,
         item.height
     )
@@ -471,7 +471,7 @@ data class MRectangle(
     fun getMiddlePoint(out: MPoint = MPoint()): MPoint = getAnchoredPosition(Anchor.CENTER, out)
 
     fun getAnchoredPosition(anchor: Anchor, out: MPoint = MPoint()): MPoint =
-        getAnchoredPosition(anchor.sxD, anchor.syD, out)
+        getAnchoredPosition(anchor.doubleX, anchor.doubleY, out)
 
     fun getAnchoredPosition(anchorX: Double, anchorY: Double, out: MPoint = MPoint()): MPoint =
         out.setTo(left + width * anchorX, top + height * anchorY)
@@ -598,14 +598,14 @@ inline class MRectangleInt(val rect: MRectangle) : IRectangleInt {
         anchor: Anchor,
         out: MRectangleInt = MRectangleInt()
     ): MRectangleInt = out.setTo(
-        ((container.width - this.width) * anchor.sxD).toInt(),
-        ((container.height - this.height) * anchor.syD).toInt(),
+        ((container.width - this.width) * anchor.doubleX).toInt(),
+        ((container.height - this.height) * anchor.doubleY).toInt(),
         width,
         height
     )
 
     fun getAnchorPosition(anchor: Anchor, out: MPointInt = MPointInt()): MPointInt =
-        out.setTo((x + width * anchor.sxD).toInt(), (y + height * anchor.syD).toInt())
+        out.setTo((x + width * anchor.doubleX).toInt(), (y + height * anchor.doubleY).toInt())
 
     val center: IPoint get() = anchor(0.5, 0.5).double
     inline fun anchor(ax: Number, ay: Number): MPointInt = anchor(ax.toDouble(), ay.toDouble())

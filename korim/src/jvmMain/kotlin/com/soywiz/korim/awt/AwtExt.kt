@@ -94,8 +94,8 @@ private fun java.awt.Rectangle.toKorma(): MRectangle = MRectangle(this.x, this.y
 // @TODO: Move to KorMA
 private fun MRectangle.place(item: MSize, anchor: Anchor, scale: ScaleMode, out: MRectangle = MRectangle()): MRectangle {
     val outSize = scale(item, this.size)
-    val x = (this.width - outSize.width) * anchor.sxD
-    val y = (this.height - outSize.height) * anchor.syD
+    val x = (this.width - outSize.width) * anchor.doubleX
+    val y = (this.height - outSize.height) * anchor.doubleY
     return out.setTo(x, y, outSize.width, outSize.height)
 }
 

@@ -196,8 +196,8 @@ class CameraContainer(
             when {
                 following != null -> {
                     val point = getFollowingXY(tempPoint)
-                    cameraX = 0.1.interpolate(currentCamera.x, point.x)
-                    cameraY = 0.1.interpolate(currentCamera.y, point.y)
+                    cameraX = 0.1.toRatio().interpolate(currentCamera.x, point.x)
+                    cameraY = 0.1.toRatio().interpolate(currentCamera.y, point.y)
                     sourceCamera.x = cameraX
                     sourceCamera.y = cameraY
                     //cameraX = 0.0
@@ -324,8 +324,8 @@ data class Camera(
         val posRatio = posEasing(l.zoom, r.zoom, l.x, r.x, ratio.valueD)
 
         return setTo(
-            posRatio.interpolate(l.x, r.x),
-            posRatio.interpolate(l.y, r.y),
+            posRatio.toRatio().interpolate(l.x, r.x),
+            posRatio.toRatio().interpolate(l.y, r.y),
             ratio.interpolate(l.zoom, r.zoom),
             ratio.interpolateAngleDenormalized(l.angle, r.angle), // @TODO: Fix KorMA angle interpolator
             ratio.interpolate(l.anchorX, r.anchorX),

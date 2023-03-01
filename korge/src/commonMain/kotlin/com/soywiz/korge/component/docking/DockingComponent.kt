@@ -1,15 +1,9 @@
 package com.soywiz.korge.component.docking
 
-import com.soywiz.korge.component.ResizeComponent
-import com.soywiz.korge.component.attach
-import com.soywiz.korge.view.View
-import com.soywiz.korge.view.Views
-import com.soywiz.korge.view.position
-import com.soywiz.korma.geom.Anchor
-import com.soywiz.korma.geom.MPoint
-import com.soywiz.korma.geom.ScaleMode
-import com.soywiz.korma.geom.MSize
-import com.soywiz.korma.interpolation.interpolate
+import com.soywiz.korge.component.*
+import com.soywiz.korge.view.*
+import com.soywiz.korma.geom.*
+import com.soywiz.korma.interpolation.*
 
 fun <T : View> T.dockedTo(anchor: Anchor, scaleMode: ScaleMode = ScaleMode.NO_SCALE, offset: MPoint = MPoint(), hook: (View) -> Unit = {}): T {
     DockingComponent(this, anchor, scaleMode, MPoint().copyFrom(offset), hook).attach()
@@ -37,8 +31,8 @@ class DockingComponent(
     override fun resized(views: Views, width: Int, height: Int) {
         //println(views.actualVirtualWidth)
         view.position(
-            anchor.sxD.interpolate(views.virtualLeft, views.virtualRight) + offset.x,
-            anchor.syD.interpolate(views.virtualTop, views.virtualBottom) + offset.y,
+            anchor.ratioX.interpolate(views.virtualLeft, views.virtualRight) + offset.x,
+            anchor.ratioY.interpolate(views.virtualTop, views.virtualBottom) + offset.y,
             //views.actualVirtualBounds.getAnchoredPosition(anchor) + offset
         )
         // @TODO: This is not working? why?

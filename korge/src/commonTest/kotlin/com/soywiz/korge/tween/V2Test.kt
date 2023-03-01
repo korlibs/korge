@@ -1,7 +1,7 @@
 package com.soywiz.korge.tween
 
 import com.soywiz.korio.util.toStringDecimal
-import com.soywiz.korma.interpolation.Easing
+import com.soywiz.korma.interpolation.*
 import com.soywiz.korma.math.*
 import kotlin.test.*
 
@@ -24,6 +24,8 @@ class V2Test {
         v2.set(0.5); assertEquals(25.0, instance.v)
         v2.set(1.0); assertEquals(20.0, instance.v)
     }
+
+    fun V2<*>.set(ratio: Double): Unit = set(ratio.toRatio())
 
     @Test
     fun testReusingIncrementalV2() {

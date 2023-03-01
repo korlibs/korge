@@ -334,14 +334,14 @@ open class Animator @PublishedApi internal constructor(
                 //println("dt=$dt, currentTime=$currentTime, totalTime=$totalTime, ratio=$ratio, it.startTime=${it.startTime}, it.endTime(totalTime)=${it.endTime(totalTime)}")
 
                 if (ratio >= 0.0) {
-                    it.set(easing.invoke(ratio.clamp01()))
+                    it.set(easing.invoke(ratio.clamp01()).toRatio())
                 }
             }
             return currentTime - totalTime
         }
 
         override fun complete() {
-            computedVs.fastForEach { it.set(1.0) }
+            computedVs.fastForEach { it.set(Ratio.ONE) }
         }
     }
 

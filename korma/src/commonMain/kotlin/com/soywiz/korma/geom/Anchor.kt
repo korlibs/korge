@@ -1,7 +1,6 @@
 package com.soywiz.korma.geom
 
 import com.soywiz.kds.pack.*
-import com.soywiz.korma.annotations.*
 import com.soywiz.korma.interpolation.*
 
 //@KormaValueApi
@@ -10,11 +9,14 @@ inline class Anchor internal constructor(internal val raw: Float2Pack) : Interpo
     val sx: Float get() = raw.x
     val sy: Float get() = raw.y
 
-    val sxF: Float get() = raw.x
-    val syF: Float get() = raw.y
+    val floatX: Float get() = raw.x
+    val floatY: Float get() = raw.y
 
-    val sxD: Double get() = sx.toDouble()
-    val syD: Double get() = sy.toDouble()
+    val doubleX: Double get() = sx.toDouble()
+    val doubleY: Double get() = sy.toDouble()
+
+    val ratioX: Ratio get() = sx.toRatio()
+    val ratioY: Ratio get() = sy.toRatio()
 
     constructor(sx: Float, sy: Float) : this(Float2Pack(sx, sy))
     constructor(sx: Double, sy: Double) : this(sx.toFloat(), sy.toFloat())

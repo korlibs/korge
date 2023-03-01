@@ -18,7 +18,7 @@ import com.soywiz.korge.view.QView
 import com.soywiz.korio.async.asyncImmediately
 import com.soywiz.korio.async.delay
 import com.soywiz.korio.async.withTimeout
-import com.soywiz.korma.interpolation.Easing
+import com.soywiz.korma.interpolation.*
 import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.TimeoutCancellationException
@@ -106,7 +106,7 @@ class TweenComponent(
 			val ratioInTween = if (durationInTween <= 0.0.milliseconds || elapsedInTween >= durationInTween) 1.0 else elapsedInTween / durationInTween
             val easedRatioInTween = easing(ratioInTween)
             //println("easedRatioInTween: $easedRatioInTween, ratioInTween: $ratioInTween, durationInTween: $durationInTween, elapsedInTween: $elapsedInTween, elapsed: $elapsed")
-			v.set(easedRatioInTween)
+			v.set(easedRatioInTween.toRatio())
 		}
 	}
 

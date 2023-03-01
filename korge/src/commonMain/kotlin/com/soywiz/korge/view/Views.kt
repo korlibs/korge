@@ -6,7 +6,6 @@ import com.soywiz.klock.*
 import com.soywiz.kmem.*
 import com.soywiz.korag.*
 import com.soywiz.korag.log.*
-import com.soywiz.korag.shader.*
 import com.soywiz.korev.*
 import com.soywiz.korge.*
 import com.soywiz.korge.annotations.*
@@ -16,7 +15,6 @@ import com.soywiz.korge.component.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.render.*
-import com.soywiz.korge.scene.*
 import com.soywiz.korge.stat.*
 import com.soywiz.korgw.*
 import com.soywiz.korim.color.*
@@ -30,7 +28,6 @@ import com.soywiz.korio.file.std.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.resources.*
 import com.soywiz.korio.stream.*
-import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 import kotlinx.coroutines.*
 import kotlin.collections.set
@@ -669,8 +666,8 @@ fun BoundsProvider.setBoundsInfo(
     globalToWindowMatrix.identity()
     globalToWindowMatrix.prescale(ratioX, ratioY)
     globalToWindowMatrix.pretranslate(
-        ((actualVirtualWidth - virtualWidth) * anchor.sxD).toIntRound().toDouble(),
-        ((actualVirtualHeight - virtualHeight) * anchor.syD).toIntRound().toDouble(),
+        ((actualVirtualWidth - virtualWidth) * anchor.doubleX).toIntRound().toDouble(),
+        ((actualVirtualHeight - virtualHeight) * anchor.doubleY).toIntRound().toDouble(),
     )
     windowToGlobalMatrix.invert(globalToWindowMatrix)
     globalToWindowMatrix.decompose(globalToWindowTransform)

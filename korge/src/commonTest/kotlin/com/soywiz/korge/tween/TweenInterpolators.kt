@@ -3,6 +3,7 @@ package com.soywiz.korge.tween
 import com.soywiz.korge.view.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.shape.*
+import com.soywiz.korma.interpolation.*
 import kotlin.test.*
 
 class TweenInterpolators {
@@ -20,4 +21,6 @@ class TweenInterpolators {
         v2.set(1.0)
         assertEquals(Point(100, 100), view.pos.round())
     }
+
+    fun V2<*>.set(ratio: Double): Unit = set(ratio.toRatio())
 }

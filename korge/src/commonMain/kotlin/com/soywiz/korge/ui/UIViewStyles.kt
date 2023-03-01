@@ -45,7 +45,7 @@ var ViewStyles.uiCheckboxButtonRenderer: UIRenderer<UIBaseCheckBox<*>> by ViewSt
                 borderSize = 2.0,
             )
             run {
-                val padding = it.checkedRatio.interpolate(height, 10.0)
+                val padding = it.checkedRatio.toRatio().interpolate(height, 10.0)
                 val padding2 = padding * 2
                 materialRoundRect(
                     0.0 + padding, 0.0 + padding, height - padding2, height - padding2, radius = RectCorners(1.0),
@@ -57,11 +57,15 @@ var ViewStyles.uiCheckboxButtonRenderer: UIRenderer<UIBaseCheckBox<*>> by ViewSt
             val padding = 6.0
             val padding2 = padding * 2
             materialRoundRect(
-                0.0 + padding, 0.0 + padding, height - padding2, height - padding2, radius = RectCorners((height - padding2) * 0.5),
+                0.0 + padding,
+                0.0 + padding,
+                height - padding2,
+                height - padding2,
+                radius = RectCorners((height - padding2) * 0.5),
                 borderSize = 2.0,
                 borderColor = it.checkedRatio.interpolate(styles.uiUnselectedColor, styles.uiSelectedColor),
                 color = Colors.TRANSPARENT,
-                highlightRadius = it.checkedRatio.interpolate(0.0, 0.2),
+                highlightRadius = it.checkedRatio.toRatio().interpolate(0.0, 0.2),
                 highlightPos = Point(0.5, 0.5),
                 highlightColor = styles.uiSelectedColor,
             )

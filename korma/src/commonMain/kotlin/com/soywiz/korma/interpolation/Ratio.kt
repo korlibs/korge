@@ -16,6 +16,7 @@ inline class Ratio(val valueF: Float) : Comparable<Ratio> {
     fun toFloat(): Float = valueF
     fun toDouble(): Double = valueD
 
+    constructor(value: Int, maximum: Int) : this(value.toFloat() / maximum.toFloat())
     constructor(value: Float, maximum: Float) : this(value / maximum)
     constructor(value: Double, maximum: Double) : this(value / maximum)
 

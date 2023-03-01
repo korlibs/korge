@@ -251,13 +251,13 @@ data class MatrixTransform(
         }
 
         fun interpolated(l: MatrixTransform, r: MatrixTransform, ratio: Double): MatrixTransform = MatrixTransform(
-            ratio.interpolate(l.x, r.x),
-            ratio.interpolate(l.y, r.y),
-            ratio.interpolate(l.scaleX, r.scaleX),
-            ratio.interpolate(l.scaleY, r.scaleY),
-            ratio.interpolateAngleDenormalized(l.rotation, r.rotation),
-            ratio.interpolateAngleDenormalized(l.skewX, r.skewX),
-            ratio.interpolateAngleDenormalized(l.skewY, r.skewY)
+            ratio.toRatio().interpolate(l.x, r.x),
+            ratio.toRatio().interpolate(l.y, r.y),
+            ratio.toRatio().interpolate(l.scaleX, r.scaleX),
+            ratio.toRatio().interpolate(l.scaleY, r.scaleY),
+            ratio.toRatio().interpolateAngleDenormalized(l.rotation, r.rotation),
+            ratio.toRatio().interpolateAngleDenormalized(l.skewX, r.skewX),
+            ratio.toRatio().interpolateAngleDenormalized(l.skewY, r.skewY)
         )
     }
 

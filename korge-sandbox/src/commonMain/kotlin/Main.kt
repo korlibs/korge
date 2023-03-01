@@ -12,6 +12,7 @@ import com.soywiz.korio.file.std.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
+import com.soywiz.korma.interpolation.*
 import samples.*
 import samples.asteroids.*
 import samples.connect4.*
@@ -19,7 +20,7 @@ import samples.minesweeper.*
 import samples.pong.*
 import kotlin.random.*
 
-val DEFAULT_KORGE_BG_COLOR = Colors.DARKCYAN.mix(Colors.BLACK, 0.8)
+val DEFAULT_KORGE_BG_COLOR = Colors.DARKCYAN.mix(Colors.BLACK, 0.8.toRatio())
 
 suspend fun main() = Korge(
     bgcolor = DEFAULT_KORGE_BG_COLOR,

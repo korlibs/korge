@@ -1423,12 +1423,12 @@ abstract class View internal constructor(
         this@apply.copyPropsFrom(this@View)
     }
 
-    fun globalLocalBoundsPointRatio(anchor: Anchor, out: MPoint = MPoint()): MPoint = globalLocalBoundsPointRatio(anchor.sxD, anchor.syD, out)
+    fun globalLocalBoundsPointRatio(anchor: Anchor, out: MPoint = MPoint()): MPoint = globalLocalBoundsPointRatio(anchor.doubleX, anchor.doubleY, out)
 
     fun globalLocalBoundsPointRatio(ratioX: Double, ratioY: Double, out: MPoint = MPoint()): MPoint {
         val bounds = getLocalBoundsOptimizedAnchored()
-        val x = ratioX.interpolate(bounds.left, bounds.right)
-        val y = ratioY.interpolate(bounds.top, bounds.bottom)
+        val x = ratioX.toRatio().interpolate(bounds.left, bounds.right)
+        val y = ratioY.toRatio().interpolate(bounds.top, bounds.bottom)
         return out.setTo(localToGlobal(Point(x, y)))
     }
 

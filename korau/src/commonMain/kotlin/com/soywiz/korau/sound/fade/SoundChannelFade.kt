@@ -34,7 +34,7 @@ suspend fun SoundChannel.fadeTo(volume: Double, time: TimeSpan = DEFAULT_FADE_TI
             val now = DateTime.now()
             val elapsed = now - start
             val ratio = (elapsed / time).clamp01()
-            this.volume = easing(ratio).interpolate(startVolume, endVolume)
+            this.volume = easing(ratio).toRatio().interpolate(startVolume, endVolume)
             if (ratio >= 1.0) break
             delay(1.milliseconds)
         }

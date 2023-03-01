@@ -71,7 +71,7 @@ class UIWindow(title: String, width: Double = 256.0, height: Double = 256.0) : U
         }
 
     class ScaleHandler(val window: UIWindow, val anchor: Anchor) {
-        val isCorner = (anchor.sxD == anchor.syD)
+        val isCorner = (anchor.doubleX == anchor.doubleY)
 
         val view = window.solidRect(0.0, 0.0, Colors.TRANSPARENT) {
             val sh = this
@@ -82,14 +82,14 @@ class UIWindow(title: String, width: Double = 256.0, height: Double = 256.0) : U
                 val obounds = window.getGlobalBounds().clone()
                 val bounds = obounds.clone()
                 when {
-                    anchor.sxD < 0.5 -> {
+                    anchor.doubleX < 0.5 -> {
                         bounds.left = it.cx
                         if (bounds.width !in window.minWidth..window.maxWidth) {
                             bounds.left = obounds.left
                         }
                     }
 
-                    anchor.sxD > 0.5 -> {
+                    anchor.doubleX > 0.5 -> {
                         bounds.right = it.cx
                         bounds.width = bounds.width.clamp(window.minWidth, window.maxWidth)
                     }
@@ -115,12 +115,12 @@ class UIWindow(title: String, width: Double = 256.0, height: Double = 256.0) : U
             }
         }
 
-        private fun getExpectedX(): Double = window.width * anchor.sxD + when (anchor.sxD) {
+        private fun getExpectedX(): Double = window.width * anchor.doubleX + when (anchor.doubleX) {
             0.0 -> -2.0
             1.0 -> +2.0
             else -> 0.0
         }
-        private fun getExpectedY(): Double = window.height * anchor.syD + when (anchor.syD) {
+        private fun getExpectedY(): Double = window.height * anchor.doubleY + when (anchor.doubleY) {
             0.0 -> -2.0
             1.0 -> +2.0
             else -> 0.0
@@ -131,11 +131,11 @@ class UIWindow(title: String, width: Double = 256.0, height: Double = 256.0) : U
                 .position(getExpectedX(), getExpectedY())
                 .size(
                     when {
-                        anchor.sxD == 0.5 -> width
+                        anchor.doubleX == 0.5 -> width
                         //corner -> 14.0
                         else -> 10.0
                     }, when {
-                        anchor.syD == 0.5 -> height
+                        anchor.doubleY == 0.5 -> height
                         //corner -> 14.0
                         else -> 10.0
                     }

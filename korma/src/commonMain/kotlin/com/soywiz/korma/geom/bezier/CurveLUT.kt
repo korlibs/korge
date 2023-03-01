@@ -77,8 +77,8 @@ data class CurveLUT(val curve: Curve, val points: PointArrayList, val ts: Double
             val ratio1 = ts[index + 1]
             val length1 = estimatedLengths[index + 1]
             val point1 = points[index + 1]
-            this.ratio = ratio.interpolate(ratio0, ratio1)
-            this.length = ratio.interpolate(length0, length1)
+            this.ratio = ratio.toRatio().interpolate(ratio0, ratio1)
+            this.length = ratio.toRatio().interpolate(length0, length1)
             this.point = ratio.toRatio().interpolate(point0, point1)
         }
 

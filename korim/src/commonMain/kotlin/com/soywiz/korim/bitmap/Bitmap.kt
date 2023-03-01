@@ -15,6 +15,7 @@ import com.soywiz.korim.format.*
 import com.soywiz.korim.vector.Context2d
 import com.soywiz.korio.lang.invalidOp
 import com.soywiz.korma.geom.*
+import com.soywiz.korma.interpolation.*
 import kotlin.math.min
 
 abstract class Bitmap(
@@ -150,7 +151,7 @@ abstract class Bitmap(
         val c10 = if (x1Inside) getRgbaRaw(x1, y0) else c00
         val c01 = if (y1Inside) getRgbaRaw(x0, y1) else c00
         val c11 = if (x1Inside && y1Inside) getRgbaRaw(x1, y1) else c01
-        return RGBA.mixRgba4(c00, c10, c01, c11, xratio, yratio)
+        return RGBA.mixRgba4(c00, c10, c01, c11, xratio.toRatio(), yratio.toRatio())
     }
 
     fun getRgbaSampled(x: Float, y: Float, count: Int, row: RgbaArray) {

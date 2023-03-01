@@ -180,20 +180,16 @@ inline class RGBA(val value: Int) : Comparable<RGBA>, Interpolable<RGBA>, Paint 
                     ((((c1 and 0x00FF00) * ifactor256) + ((c2 and 0x00FF00) * factor256)) and 0x00FF0000))) ushr 8
 
         }
-		fun mixRgb(c1: RGBA, c2: RGBA, factor: Double): RGBA = mixRgbFactor256(c1, c2, (factor * 256).toInt())
-        fun mixRgba(c1: RGBA, c2: RGBA, factor: Double): RGBA = RGBA(mixRgb(c1, c2, factor).rgb, blendComponent(c1.a, c2.a, factor))
+		fun mixRgb(c1: RGBA, c2: RGBA, factor: Ratio): RGBA = mixRgbFactor256(c1, c2, (factor.toFloat() * 256).toInt())
+        fun mixRgba(c1: RGBA, c2: RGBA, factor: Ratio): RGBA = RGBA(mixRgb(c1, c2, factor).rgb, blendComponent(c1.a, c2.a, factor))
 
-        fun mixRgb(c1: RGBA, c2: RGBA, factor: Float): RGBA = mixRgbFactor256(c1, c2, (factor * 256).toInt())
-        fun mixRgba(c1: RGBA, c2: RGBA, factor: Float): RGBA = RGBA(mixRgb(c1, c2, factor).rgb, blendComponent(c1.a, c2.a, factor))
-
-        fun mixRgba4(c00: RGBA, c10: RGBA, c01: RGBA, c11: RGBA, factorX: Float, factorY: Float): RGBA {
+        fun mixRgba4(c00: RGBA, c10: RGBA, c01: RGBA, c11: RGBA, factorX: Ratio, factorY: Ratio): RGBA {
             val c1 = mixRgba(c00, c10, factorX)
             val c2 = mixRgba(c01, c11, factorX)
             return mixRgba(c1, c2, factorY)
         }
 
-        private fun blendComponent(c1: Int, c2: Int, factor: Double): Int = (c1 * (1.0 - factor) + c2 * factor).toInt() and 0xFF
-        private fun blendComponent(c1: Int, c2: Int, factor: Float): Int = (c1 * (1.0 - factor) + c2 * factor).toInt() and 0xFF
+        private fun blendComponent(c1: Int, c2: Int, factor: Ratio): Int = (c1 * (1f - factor.toFloat()) + c2 * factor.toFloat()).toInt() and 0xFF
 
         fun mix(dst: RGBA, src: RGBA): RGBA {
             val srcA = src.a
@@ -448,7 +444,7 @@ inline class RgbaArray(val ints: IntArray) : List<RGBA> {
     override fun toString(): String = "RgbaArray($size)"
 }
 
-fun RGBA.mix(other: RGBA, ratio: Double) = RGBA.mixRgba(this, other, ratio)
+fun RGBA.mix(other: RGBA, ratio: Ratio) = RGBA.mixRgba(this, other, ratio)
 fun RGBAPremultiplied.mix(other: RGBAPremultiplied, ratio: Double) = RGBAPremultiplied.mixRgba(this, other, ratio)
 
 fun List<RGBA>.toRgbaArray(): RgbaArray = RgbaArray(IntArray(this.size) { this@toRgbaArray[it].value })

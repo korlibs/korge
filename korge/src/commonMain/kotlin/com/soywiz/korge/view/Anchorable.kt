@@ -41,7 +41,7 @@ fun <T : Anchorable> T.anchor(ax: Double, ay: Double): T {
 fun <T : Anchorable> T.anchor(ax: Float, ay: Float): T = anchor(ax.toDouble(), ay.toDouble())
 fun <T : Anchorable> T.anchor(ax: Int, ay: Int): T = anchor(ax.toDouble(), ay.toDouble())
 
-fun <T : Anchorable> T.anchor(anchor: Anchor): T = anchor(anchor.sxD, anchor.syD)
+fun <T : Anchorable> T.anchor(anchor: Anchor): T = anchor(anchor.doubleX, anchor.doubleY)
 
 fun <T : Anchorable> T.center(): T = anchor(0.5, 0.5)
 val <T : Anchorable> T.centered: T get() = anchor(0.5, 0.5)
