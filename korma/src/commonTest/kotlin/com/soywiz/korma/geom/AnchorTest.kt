@@ -26,7 +26,7 @@ class AnchorTest {
 
         assertEquals(Anchor.MIDDLE_CENTER, Anchor(0.5, 0.5))
         assertEquals(Anchor(0.6, 0.6), Anchor(0.6, 0.6))
-        assertEquals(0.6, Anchor(0.6, 0.7).sx)
-        assertEquals(0.7, Anchor(0.6, 0.7).sy)
+        assertEquals(0.6f, Anchor(0.6f, 0.7f).sx)
+        assertEquals(0.7f, Anchor(0.6f, 0.7f).sy)
     }
 }

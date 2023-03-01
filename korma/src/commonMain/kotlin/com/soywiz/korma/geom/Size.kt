@@ -156,8 +156,8 @@ inline class MSizeInt(val size: MSize) : ISizeInt {
 
     fun anchoredIn(container: MRectangleInt, anchor: Anchor, out: MRectangleInt = MRectangleInt()): MRectangleInt {
         return out.setTo(
-            ((container.width - this.width) * anchor.sx).toInt(),
-            ((container.height - this.height) * anchor.sy).toInt(),
+            ((container.width - this.width) * anchor.sxD).toInt(),
+            ((container.height - this.height) * anchor.syD).toInt(),
             width,
             height
         )
@@ -169,7 +169,7 @@ inline class MSizeInt(val size: MSize) : ISizeInt {
     operator fun times(v: Float) = this * v.toDouble()
 
     fun getAnchorPosition(anchor: Anchor, out: MPointInt = MPointInt(0, 0)): MPointInt =
-        out.setTo((width * anchor.sx).toInt(), (height * anchor.sy).toInt())
+        out.setTo((width * anchor.sxD).toInt(), (height * anchor.syD).toInt())
 
     override var width: Int
         set(value) { size.width = value.toDouble() }

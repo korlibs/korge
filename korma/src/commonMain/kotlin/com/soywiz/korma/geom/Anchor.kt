@@ -1,15 +1,26 @@
 package com.soywiz.korma.geom
 
+import com.soywiz.kds.pack.*
 import com.soywiz.korma.annotations.*
-import com.soywiz.korma.interpolation.Interpolable
-import com.soywiz.korma.interpolation.interpolate
+import com.soywiz.korma.interpolation.*
 
 //@KormaValueApi
-data class Anchor(val sx: Double, val sy: Double) : Interpolable<Anchor> {
-    companion object {
-        operator fun invoke(sx: Int, sy: Int): Anchor = Anchor(sx.toDouble(), sy.toDouble())
-        operator fun invoke(sx: Float, sy: Float): Anchor = Anchor(sx.toDouble(), sy.toDouble())
+//data class Anchor(val sx: Double, val sy: Double) : Interpolable<Anchor> {
+inline class Anchor internal constructor(internal val raw: Float2Pack) : Interpolable<Anchor> {
+    val sx: Float get() = raw.x
+    val sy: Float get() = raw.y
 
+    val sxF: Float get() = raw.x
+    val syF: Float get() = raw.y
+
+    val sxD: Double get() = sx.toDouble()
+    val syD: Double get() = sy.toDouble()
+
+    constructor(sx: Float, sy: Float) : this(Float2Pack(sx, sy))
+    constructor(sx: Double, sy: Double) : this(sx.toFloat(), sy.toFloat())
+    constructor(sx: Int, sy: Int) : this(sx.toFloat(), sy.toFloat())
+
+    companion object {
         val TOP_LEFT: Anchor = Anchor(0.0, 0.0)
         val TOP_CENTER: Anchor = Anchor(0.5, 0.0)
         val TOP_RIGHT: Anchor = Anchor(1.0, 0.0)

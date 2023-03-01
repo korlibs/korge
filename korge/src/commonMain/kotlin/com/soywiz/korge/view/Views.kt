@@ -678,8 +678,8 @@ fun BoundsProvider.setBoundsInfo(
     globalToWindowMatrix.identity()
     globalToWindowMatrix.prescale(ratioX, ratioY)
     globalToWindowMatrix.pretranslate(
-        ((actualVirtualWidth - virtualWidth) * anchor.sx).toIntRound().toDouble(),
-        ((actualVirtualHeight - virtualHeight) * anchor.sy).toIntRound().toDouble(),
+        ((actualVirtualWidth - virtualWidth) * anchor.sxD).toIntRound().toDouble(),
+        ((actualVirtualHeight - virtualHeight) * anchor.syD).toIntRound().toDouble(),
     )
     windowToGlobalMatrix.invert(globalToWindowMatrix)
     globalToWindowMatrix.decompose(globalToWindowTransform)

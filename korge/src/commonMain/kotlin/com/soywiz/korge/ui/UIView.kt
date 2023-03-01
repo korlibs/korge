@@ -103,7 +103,7 @@ open class UIView(
 
             iconView.bitmap = bmp
             iconView.anchor(anchor)
-            iconView.position(width * anchor.sx, height * anchor.sy)
+            iconView.position(width * anchor.sxD, height * anchor.syD)
             iconView.scale(iconScale, iconScale)
         }
     }

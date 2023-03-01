@@ -37,8 +37,8 @@ class DockingComponent(
     override fun resized(views: Views, width: Int, height: Int) {
         //println(views.actualVirtualWidth)
         view.position(
-            anchor.sx.interpolate(views.virtualLeft, views.virtualRight) + offset.x,
-            anchor.sy.interpolate(views.virtualTop, views.virtualBottom) + offset.y,
+            anchor.sxD.interpolate(views.virtualLeft, views.virtualRight) + offset.x,
+            anchor.syD.interpolate(views.virtualTop, views.virtualBottom) + offset.y,
             //views.actualVirtualBounds.getAnchoredPosition(anchor) + offset
         )
         // @TODO: This is not working? why?

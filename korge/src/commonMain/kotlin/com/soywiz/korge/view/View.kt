@@ -1542,7 +1542,7 @@ abstract class View internal constructor(
         this@apply.copyPropsFrom(this@View)
     }
 
-    fun globalLocalBoundsPointRatio(anchor: Anchor, out: MPoint = MPoint()): MPoint = globalLocalBoundsPointRatio(anchor.sx, anchor.sy, out)
+    fun globalLocalBoundsPointRatio(anchor: Anchor, out: MPoint = MPoint()): MPoint = globalLocalBoundsPointRatio(anchor.sxD, anchor.syD, out)
 
     fun globalLocalBoundsPointRatio(ratioX: Double, ratioY: Double, out: MPoint = MPoint()): MPoint {
         val bounds = getLocalBoundsOptimizedAnchored()

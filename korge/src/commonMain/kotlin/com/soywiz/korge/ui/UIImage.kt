@@ -52,7 +52,7 @@ class UIImage(
     @ViewProperty
     var contentAnchor: Anchor = contentAnchor
         set(value) {
-            if (field !== value) {
+            if (field != value) {
                 field = value; validCoords = false
             }
         }
