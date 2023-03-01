@@ -2,7 +2,6 @@ package com.soywiz.korma.geom.bezier
 
 import com.soywiz.kds.DoubleArrayList
 import com.soywiz.kds.binarySearch
-import com.soywiz.kds.forEachRatio01
 import com.soywiz.kmem.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.internal.*
@@ -122,8 +121,8 @@ data class CurveLUT(val curve: Curve, val points: PointArrayList, val ts: Double
         val steps = this.steps
         val length = estimatedLength
         val result = Estimation()
-        forEachRatio01(steps) { ratio ->
-            val len = length * ratio
+        Ratio.forEachRatio(steps) { ratio ->
+            val len = ratio.convertToRange(0.0, length)
             val est = estimateAtLength(len, result)
             add(est.ratio, est.point)
         }

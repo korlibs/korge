@@ -1,10 +1,10 @@
 package samples
 
 import com.soywiz.kds.doubleArrayListOf
-import com.soywiz.kds.forEachRatio01
 import com.soywiz.kds.getCyclic
 import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.klock.seconds
+import com.soywiz.kmem.*
 import com.soywiz.korag.*
 import com.soywiz.korev.Key
 import com.soywiz.korge.input.keys
@@ -51,7 +51,7 @@ import com.soywiz.korma.geom.vector.path
 import com.soywiz.korma.geom.vector.quadTo
 import com.soywiz.korma.geom.vector.star
 import com.soywiz.korma.geom.vector.toCurves
-import com.soywiz.korma.interpolation.Easing
+import com.soywiz.korma.interpolation.*
 
 class MainStrokesExperiment3 : Scene() {
     override suspend fun SContainer.sceneMain() {
@@ -287,15 +287,9 @@ class MainStrokesExperiment : Scene() {
         if (true) {
             //if (false) {
             cpuGraphics {
-                //stroke(Colors.RED, StrokeInfo(thickness = 3.0)) {
-                //    forEachRatio01(200) { ratio ->
-                //        val p = curves.calc(ratio)
-                //        if (ratio == 0.0) moveTo(p) else lineTo(p)
-                //    }
-                //}
                 stroke(Colors.GREEN, StrokeInfo(thickness = 2.0)) {
-                    forEachRatio01(200) { ratio ->
-                        val t = curves.ratioFromLength(ratio * curves.length)
+                    Ratio.forEachRatio(200) { ratio ->
+                        val t = curves.ratioFromLength(ratio.convertToRange(0.0, curves.length))
                         //println("t=$t")
                         val p = curves.calc(t)
                         val n = curves.normal(t)

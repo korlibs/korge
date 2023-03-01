@@ -13,9 +13,11 @@ inline class Ratio(val valueF: Float) : Comparable<Ratio> {
     //val value: Double get() = valueD
     val valueD: Double get() = valueF.toDouble()
 
+    fun toFloat(): Float = valueF
+    fun toDouble(): Double = valueD
+
     constructor(value: Float, maximum: Float) : this(value / maximum)
     constructor(value: Double, maximum: Double) : this(value / maximum)
-
 
     val clamped: Ratio get() = Ratio(value.clamp01())
 

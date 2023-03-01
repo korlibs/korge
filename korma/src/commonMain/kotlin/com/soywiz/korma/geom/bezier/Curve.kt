@@ -1,10 +1,10 @@
 package com.soywiz.korma.geom.bezier
 
-import com.soywiz.kds.forEachRatio01
 import com.soywiz.korma.geom.IPointArrayList
 import com.soywiz.korma.geom.MPoint
 import com.soywiz.korma.geom.PointArrayList
 import com.soywiz.korma.geom.MRectangle
+import com.soywiz.korma.interpolation.*
 
 fun Curve.calcOffset(t: Double, offset: Double, out: MPoint = MPoint()): MPoint {
     calc(t, out)
@@ -39,8 +39,8 @@ interface Curve {
 internal fun Curve._getPoints(count: Int = this.recommendedDivisions(), equidistant: Boolean = false, out: PointArrayList = PointArrayList()): IPointArrayList {
     val temp = MPoint()
     val curveLength = length
-    forEachRatio01(count) { ratio ->
-        val t = if (equidistant) ratioFromLength(ratio * curveLength) else ratio
+    Ratio.forEachRatio(count) { ratio ->
+        val t = if (equidistant) ratioFromLength(ratio.toDouble() * curveLength) else ratio.toDouble()
         val point = calc(t, temp)
         //println("${this::class.simpleName}: ratio: $ratio, point=$point")
         out.add(point)
