@@ -1,16 +1,15 @@
 package com.soywiz.korma.triangle.triangulate
 
-import com.soywiz.korma.geom.IPoint
-import com.soywiz.korma.geom.IPointArrayList
-import com.soywiz.korma.geom.PointArrayList
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.shape.*
-import com.soywiz.korma.geom.toPoints
 import com.soywiz.korma.geom.triangle.Triangle
 import com.soywiz.korma.geom.vector.VectorPath
 import com.soywiz.korma.triangle.poly2tri.Poly2Tri
 import kotlin.jvm.JvmName
 
+@Deprecated("")
 fun List<IPoint>.triangulate(): List<Triangle> = listOf(PointArrayList(this)).triangulate()
+fun IPointArrayList.triangulate(): List<Triangle> = listOf(this).triangulate()
 
 @JvmName("triangulateListPointArrayList")
 fun List<IPointArrayList>.triangulate(): List<Triangle> {

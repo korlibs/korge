@@ -880,8 +880,8 @@ abstract class View internal constructor(
             }
             lines.drawVector(Colors.BLUE) {
                 val center = globalPos
-                line(center.x, center.y - 5, center.x, center.y + 5)
-                line(center.x - 5, center.y, center.x + 5, center.y)
+                line(Point(center.x, center.y - 5), Point(center.x, center.y + 5))
+                line(Point(center.x - 5, center.y), Point(center.x + 5, center.y))
             }
         }
 

@@ -145,10 +145,10 @@ class GraphicsTest {
 
     @Test
     fun testGraphicsBoundsWithOnlyStrokes() {
-        val p0 = MPoint(109, 135)
-        val p1 = MPoint(25, 190)
-        val p2 = MPoint(210, 250)
-        val p3 = MPoint(234, 49)
+        val p0 = Point(109, 135)
+        val p1 = Point(25, 190)
+        val p2 = Point(210, 250)
+        val p3 = Point(234, 49)
         val g = CpuGraphics()
         assertEquals(MRectangle(), g.getLocalBounds())
         g.updateShape {
@@ -216,7 +216,7 @@ class GraphicsTest {
             it.renderer = GraphicsRenderer.SYSTEM
             it.antialiased = true
             this.stroke(Colors.YELLOW, info = StrokeInfo(50.0)) {
-                line(100.0, 100.0, 200.0, 200.0)
+                line(Point(100, 100), Point(200, 200))
             }
             this.circle(100.0, 100.0, 5.0)
             fill(Colors.BLUE)

@@ -1,19 +1,9 @@
 package com.soywiz.korma.geom.bezier
 
-import com.soywiz.korma.geom.VectorArrayList
-import com.soywiz.korma.geom.shape.buildVectorPath
-import com.soywiz.korma.geom.vector.LineJoin
-import com.soywiz.korma.geom.vector.StrokeInfo
-import com.soywiz.korma.geom.vector.VectorBuilder
-import com.soywiz.korma.geom.vector.arcTo
-import com.soywiz.korma.geom.vector.getCurves
-import com.soywiz.korma.geom.vector.line
-import com.soywiz.korma.geom.vector.lineTo
-import com.soywiz.korma.geom.vector.moveTo
-import com.soywiz.korma.geom.vector.rect
-import com.soywiz.korma.geom.vector.star
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.shape.*
+import com.soywiz.korma.geom.vector.*
+import kotlin.test.*
 
 class CurvesToStrokeTest {
     @Test

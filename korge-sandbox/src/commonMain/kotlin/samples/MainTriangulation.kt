@@ -1,16 +1,12 @@
 package samples
 
-import com.soywiz.korge.input.mouse
-import com.soywiz.korge.scene.Scene
+import com.soywiz.korge.input.*
+import com.soywiz.korge.scene.*
 import com.soywiz.korge.view.*
-import com.soywiz.korim.color.Colors
+import com.soywiz.korim.color.*
 import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.vector.StrokeInfo
-import com.soywiz.korma.geom.vector.circle
-import com.soywiz.korma.geom.vector.line
-import com.soywiz.korma.geom.vector.lineTo
-import com.soywiz.korma.geom.vector.moveTo
-import com.soywiz.korma.triangle.triangulate.triangulate
+import com.soywiz.korma.geom.vector.*
+import com.soywiz.korma.triangle.triangulate.*
 
 class MainTriangulation : Scene() {
     override suspend fun SContainer.sceneMain() {
@@ -20,9 +16,9 @@ class MainTriangulation : Scene() {
         //val g = cpuGraphics()
         g.position(100, 100)
 
-        val points = arrayListOf<MPoint>()
+        val points = PointArrayList()
 
-        var additionalPoint: MPoint? = null
+        var additionalPoint: Point? = null
 
         fun repaint(finished: Boolean) {
             g.updateShape {
@@ -34,11 +30,11 @@ class MainTriangulation : Scene() {
                 }
                  */
 
-                val edges = points + listOfNotNull(additionalPoint)
+                val edges = points + listOfNotNull(additionalPoint).toPointArrayList()
 
-                for (point in edges) {
+                edges.fastForEachPoint { point ->
                     fill(Colors.RED) {
-                        circle(point.x, point.y, 3.0)
+                        circle(point, 3.0)
                     }
                 }
 
@@ -49,9 +45,9 @@ class MainTriangulation : Scene() {
                 if (points.size >= 3) {
                     for (triangle in points.triangulate()) {
                         fill(Colors.GREEN.withAd(0.2)) {
-                            val p0 = MPoint(triangle.p0)
-                            val p1 = MPoint(triangle.p1)
-                            val p2 = MPoint(triangle.p2)
+                            val p0 = Point(triangle.p0)
+                            val p1 = Point(triangle.p1)
+                            val p2 = Point(triangle.p2)
                             moveTo(p0)
                             lineTo(p1)
                             lineTo(p2)
@@ -99,7 +95,7 @@ class MainTriangulation : Scene() {
             }
 
             onMove {
-                additionalPoint = g.localMousePos(views).mutable
+                additionalPoint = g.localMousePos(views)
                 repaint(finished = false)
             }
         }

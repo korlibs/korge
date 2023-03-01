@@ -1,17 +1,14 @@
 package samples
 
-import com.soywiz.korge.input.onClick
-import com.soywiz.korge.input.onOut
-import com.soywiz.korge.input.onOver
-import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.tween.get
-import com.soywiz.korge.tween.tweenAsync
+import com.soywiz.korge.input.*
+import com.soywiz.korge.scene.*
+import com.soywiz.korge.tween.*
 import com.soywiz.korge.view.*
-import com.soywiz.korge.view.vector.gpuShapeView
-import com.soywiz.korim.color.Colors
-import com.soywiz.korma.geom.vector.line
-import com.soywiz.korma.interpolation.Easing
-import kotlinx.coroutines.Job
+import com.soywiz.korim.color.*
+import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.vector.*
+import com.soywiz.korma.interpolation.*
+import kotlinx.coroutines.*
 
 class MainEasing : Scene() {
     override suspend fun SContainer.sceneMain() {
@@ -23,8 +20,8 @@ class MainEasing : Scene() {
                 val bg = solidRect(64, -64, Colors.BLACK.withAd(0.2))
                 graphics { shape ->
                     stroke(Colors.RED, lineWidth = 4.0) {
-                        this.line(0.0, 0.0, 0.0, -64.0)
-                        this.line(0.0, 0.0, 64.0, 0.0)
+                        this.line(Point(0, 0), Point(0, -64))
+                        this.line(Point(0, 0), Point(64, 0))
                     }
                     stroke(Colors.WHITE, lineWidth = 2.0) {
                         var first = true

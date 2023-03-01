@@ -1,20 +1,10 @@
 package com.soywiz.korma.geom.shape
 
 import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.shape.ops.extend
-import com.soywiz.korma.geom.shape.ops.intersection
-import com.soywiz.korma.geom.shape.ops.union
-import com.soywiz.korma.geom.shape.ops.xor
-import com.soywiz.korma.geom.vector.VectorPath
-import com.soywiz.korma.geom.vector.circle
-import com.soywiz.korma.geom.vector.lineTo
-import com.soywiz.korma.geom.vector.moveTo
-import com.soywiz.korma.geom.vector.rect
-import com.soywiz.korma.internal.niceStr
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
-import kotlin.test.assertNull
+import com.soywiz.korma.geom.shape.ops.*
+import com.soywiz.korma.geom.vector.*
+import com.soywiz.korma.internal.*
+import kotlin.test.*
 
 class Shape2dTest {
     @Test
@@ -45,39 +35,39 @@ class Shape2dTest {
 
     @Test
     fun test_ToRectangleOrNull() {
-        val a = MPoint(1.0, 1.0)
-        val b = MPoint(1.0, 2.0)
-        val c = MPoint(2.0, 2.0)
-        val d = MPoint(2.0, 1.0)
+        val a = Point(1, 1)
+        val b = Point(1, 2)
+        val c = Point(2, 2)
+        val d = Point(2, 1)
 
-        assertNotNull(PointArrayList(a, b, c, d).toRectangleOrNull())
-        assertNotNull(PointArrayList(d, a, b, c).toRectangleOrNull())
-        assertNotNull(PointArrayList(c, d, a, b).toRectangleOrNull())
-        assertNotNull(PointArrayList(b, c, d, a).toRectangleOrNull())
-        assertNotNull(PointArrayList(b, a, c, d).toRectangleOrNull())
-        assertNotNull(PointArrayList(a, c, b, d).toRectangleOrNull())
-        assertNotNull(PointArrayList(a, b, d, c).toRectangleOrNull())
+        assertNotNull(pointArrayListOf(a, b, c, d).toRectangleOrNull())
+        assertNotNull(pointArrayListOf(d, a, b, c).toRectangleOrNull())
+        assertNotNull(pointArrayListOf(c, d, a, b).toRectangleOrNull())
+        assertNotNull(pointArrayListOf(b, c, d, a).toRectangleOrNull())
+        assertNotNull(pointArrayListOf(b, a, c, d).toRectangleOrNull())
+        assertNotNull(pointArrayListOf(a, c, b, d).toRectangleOrNull())
+        assertNotNull(pointArrayListOf(a, b, d, c).toRectangleOrNull())
 
-        assertNull(PointArrayList(a).toRectangleOrNull())
-        assertNull(PointArrayList(a, b).toRectangleOrNull())
-        assertNull(PointArrayList(a, b, c).toRectangleOrNull())
-        assertNull(PointArrayList(a, b, c, d, a).toRectangleOrNull())
+        assertNull(pointArrayListOf(a).toRectangleOrNull())
+        assertNull(pointArrayListOf(a, b).toRectangleOrNull())
+        assertNull(pointArrayListOf(a, b, c).toRectangleOrNull())
+        assertNull(pointArrayListOf(a, b, c, d, a).toRectangleOrNull())
 
-        assertNull(PointArrayList(a, a, b, c).toRectangleOrNull())
-        assertNull(PointArrayList(a, b, a, c).toRectangleOrNull())
-        assertNull(PointArrayList(a, b, c, a).toRectangleOrNull())
-        assertNull(PointArrayList(a, b, b, c).toRectangleOrNull())
-        assertNull(PointArrayList(a, a, a, a).toRectangleOrNull())
+        assertNull(pointArrayListOf(a, a, b, c).toRectangleOrNull())
+        assertNull(pointArrayListOf(a, b, a, c).toRectangleOrNull())
+        assertNull(pointArrayListOf(a, b, c, a).toRectangleOrNull())
+        assertNull(pointArrayListOf(a, b, b, c).toRectangleOrNull())
+        assertNull(pointArrayListOf(a, a, a, a).toRectangleOrNull())
 
 
-        assertNull(PointArrayList(MPoint(0.0, 1.0), MPoint(1.0, 2.0), MPoint(2.0, 2.0), MPoint(2.0, 1.0)).toRectangleOrNull())
-        assertNull(PointArrayList(MPoint(1.0, 1.0), MPoint(0.0, 2.0), MPoint(2.0, 2.0), MPoint(2.0, 1.0)).toRectangleOrNull())
-        assertNull(PointArrayList(MPoint(1.0, 1.0), MPoint(1.0, 2.0), MPoint(0.0, 2.0), MPoint(2.0, 1.0)).toRectangleOrNull())
-        assertNull(PointArrayList(MPoint(1.0, 1.0), MPoint(1.0, 2.0), MPoint(2.0, 2.0), MPoint(0.0, 1.0)).toRectangleOrNull())
-        assertNull(PointArrayList(MPoint(1.0, 0.0), MPoint(1.0, 2.0), MPoint(2.0, 2.0), MPoint(2.0, 1.0)).toRectangleOrNull())
-        assertNull(PointArrayList(MPoint(1.0, 1.0), MPoint(1.0, 0.0), MPoint(2.0, 2.0), MPoint(2.0, 1.0)).toRectangleOrNull())
-        assertNull(PointArrayList(MPoint(1.0, 1.0), MPoint(1.0, 2.0), MPoint(2.0, 0.0), MPoint(2.0, 1.0)).toRectangleOrNull())
-        assertNull(PointArrayList(MPoint(1.0, 1.0), MPoint(1.0, 2.0), MPoint(2.0, 2.0), MPoint(2.0, 0.0)).toRectangleOrNull())
+        assertNull(pointArrayListOf(Point(0, 1), Point(1, 2), Point(2, 2), Point(2, 1)).toRectangleOrNull())
+        assertNull(pointArrayListOf(Point(1, 1), Point(0, 2), Point(2, 2), Point(2, 1)).toRectangleOrNull())
+        assertNull(pointArrayListOf(Point(1, 1), Point(1, 2), Point(0, 2), Point(2, 1)).toRectangleOrNull())
+        assertNull(pointArrayListOf(Point(1, 1), Point(1, 2), Point(2, 2), Point(0, 1)).toRectangleOrNull())
+        assertNull(pointArrayListOf(Point(1, 0), Point(1, 2), Point(2, 2), Point(2, 1)).toRectangleOrNull())
+        assertNull(pointArrayListOf(Point(1, 1), Point(1, 0), Point(2, 2), Point(2, 1)).toRectangleOrNull())
+        assertNull(pointArrayListOf(Point(1, 1), Point(1, 2), Point(2, 0), Point(2, 1)).toRectangleOrNull())
+        assertNull(pointArrayListOf(Point(1, 1), Point(1, 2), Point(2, 2), Point(2, 0)).toRectangleOrNull())
     }
 
     @Test

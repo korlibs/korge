@@ -32,6 +32,20 @@ interface VectorBuilder {
     fun cubicTo(c1: Point, c2: Point, a: Point)
     fun close()
 
+    fun line(p0: Point, p1: Point) { moveTo(p0); lineTo(p1) }
+    fun quad(o: Point, c: Point, a: Point) { moveTo(o); quadTo(c, a) }
+    fun cubic(o: Point, c1: Point, c2: Point, a: Point) { moveTo(o); cubicTo(c1, c2, a) }
+    fun curve(curve: Bezier) {
+        val p = curve.points
+        when (curve.order) {
+            3 -> cubic(p[0], p[1], p[2], p[3])
+            2 -> quad(p[0], p[1], p[2])
+            1 -> line(p[0], p[1])
+            else -> TODO("Unsupported curve of order ${curve.order}")
+        }
+    }
+    fun arcTo(a: Point, c: Point, r: Double) = Arc.arcToPath(this, a, c, r)
+
     @Deprecated("")
     fun moveTo(x: Double, y: Double) = moveTo(Point(x, y))
     @Deprecated("")
@@ -40,17 +54,11 @@ interface VectorBuilder {
     fun quadTo(cx: Double, cy: Double, ax: Double, ay: Double) = quadTo(Point(cx, cy), Point(ax, ay))
     @Deprecated("")
     fun cubicTo(cx1: Double, cy1: Double, cx2: Double, cy2: Double, ax: Double, ay: Double) = cubicTo(Point(cx1, cy1), Point(cx2, cy2), Point(ax, ay))
+
+    fun isEmpty(): Boolean = totalPoints == 0
+    fun isNotEmpty(): Boolean = totalPoints != 0
 }
 
-fun VectorBuilder.isEmpty() = totalPoints == 0
-fun VectorBuilder.isNotEmpty() = totalPoints != 0
-
-//fun arcTo(b: Point2d, a: Point2d, c: Point2d, r: Double) {
-fun VectorBuilder.arcTo(ax: Double, ay: Double, cx: Double, cy: Double, r: Double) {
-    Arc.arcToPath(this, Point(ax, ay), Point(cx, cy), r)
-}
-fun VectorBuilder.arcTo(ax: Float, ay: Float, cx: Float, cy: Float, r: Float) = arcTo(ax.toDouble(), ay.toDouble(), cx.toDouble(), cy.toDouble(), r.toDouble())
-fun VectorBuilder.arcTo(ax: Int, ay: Int, cx: Int, cy: Int, r: Int) = arcTo(ax.toDouble(), ay.toDouble(), cx.toDouble(), cy.toDouble(), r.toDouble())
 
 fun VectorBuilder.rect(rect: IRectangleInt) = rect(rect.x, rect.y, rect.width, rect.height)
 fun VectorBuilder.rect(rect: IRectangle) = rect(rect.x, rect.y, rect.width, rect.height)
@@ -78,10 +86,10 @@ fun VectorBuilder.roundRect(x: Double, y: Double, w: Double, h: Double, rx: Doub
     } else {
         val r = if (w < 2 * rx) w / 2f else if (h < 2 * rx) h / 2f else rx
         this.moveTo(x + r, y)
-        this.arcTo(x + w, y, x + w, y + h, r)
-        this.arcTo(x + w, y + h, x, y + h, r)
-        this.arcTo(x, y + h, x, y, r)
-        this.arcTo(x, y, x + w, y, r)
+        this.arcTo(Point(x + w, y), Point(x + w, y + h), r)
+        this.arcTo(Point(x + w, y + h), Point(x, y + h), r)
+        this.arcTo(Point(x, y + h), Point(x, y), r)
+        this.arcTo(Point(x, y), Point(x + w, y), r)
         this.close()
     }
 }
@@ -180,16 +188,6 @@ fun VectorBuilder.parallelogram(bounds: MRectangle, angle: Angle = 30.degrees, d
     lineTo(bounds.left - dx1, bounds.bottom)
 }
 
-fun VectorBuilder.moveTo(p: Point) = moveTo(p.x, p.y)
-fun VectorBuilder.lineTo(p: Point) = lineTo(p.x, p.y)
-fun VectorBuilder.quadTo(c: Point, a: Point) = quadTo(c.x, c.y, a.x, a.y)
-fun VectorBuilder.cubicTo(c1: Point, c2: Point, a: Point) = cubicTo(c1.x, c1.y, c2.x, c2.y, a.x, a.y)
-
-fun VectorBuilder.moveTo(p: IPoint) = moveTo(p.x, p.y)
-fun VectorBuilder.lineTo(p: IPoint) = lineTo(p.x, p.y)
-fun VectorBuilder.quadTo(c: IPoint, a: IPoint) = quadTo(Point(c.x, c.y), Point(a.x, a.y))
-fun VectorBuilder.cubicTo(c1: IPoint, c2: IPoint, a: IPoint) = cubicTo(c1.x, c1.y, c2.x, c2.y, a.x, a.y)
-
 fun VectorBuilder.polygon(path: IPointArrayList, close: Boolean = true) {
     moveTo(path.getX(0), path.getY(0))
     for (i in 1 until path.size) {
@@ -263,30 +261,15 @@ fun VectorBuilder.quadTo(controlX: Int, controlY: Int, anchorX: Int, anchorY: In
 fun VectorBuilder.cubicTo(cx1: Float, cy1: Float, cx2: Float, cy2: Float, ax: Float, ay: Float) = cubicTo(cx1.toDouble(), cy1.toDouble(), cx2.toDouble(), cy2.toDouble(), ax.toDouble(), ay.toDouble())
 fun VectorBuilder.cubicTo(cx1: Int, cy1: Int, cx2: Int, cy2: Int, ax: Int, ay: Int) = cubicTo(cx1.toDouble(), cy1.toDouble(), cx2.toDouble(), cy2.toDouble(), ax.toDouble(), ay.toDouble())
 
-fun VectorBuilder.line(p0: Point, p1: Point) {
-    moveTo(p0)
-    lineTo(p1)
-}
-fun VectorBuilder.line(p0: IPoint, p1: IPoint) = line(p0.point, p1.point)
-@Deprecated("") inline fun VectorBuilder.line(x0: Number, y0: Number, x1: Number, y1: Number) = line(Point(x0.toDouble(), y0.toDouble()), Point(x1.toDouble(), y1.toDouble()))
-
-fun VectorBuilder.quad(x0: Double, y0: Double, controlX: Double, controlY: Double, anchorX: Double, anchorY: Double) = moveTo(x0, y0).also { quadTo(controlX, controlY, anchorX, anchorY) }
-fun VectorBuilder.quad(x0: Float, y0: Float, controlX: Float, controlY: Float, anchorX: Float, anchorY: Float) = quad(x0.toDouble(), y0.toDouble(), controlX.toDouble(), controlY.toDouble(), anchorX.toDouble(), anchorY.toDouble())
-fun VectorBuilder.quad(x0: Int, y0: Int, controlX: Int, controlY: Int, anchorX: Int, anchorY: Int) = quad(x0.toDouble(), y0.toDouble(), controlX.toDouble(), controlY.toDouble(), anchorX.toDouble(), anchorY.toDouble())
-
-fun VectorBuilder.cubic(x0: Double, y0: Double, cx1: Double, cy1: Double, cx2: Double, cy2: Double, ax: Double, ay: Double) = moveTo(x0, y0).also { cubicTo(cx1, cy1, cx2, cy2, ax, ay) }
-fun VectorBuilder.cubic(x0: Float, y0: Float, cx1: Float, cy1: Float, cx2: Float, cy2: Float, ax: Float, ay: Float) = cubic(x0.toDouble(), y0.toDouble(), cx1.toDouble(), cy1.toDouble(), cx2.toDouble(), cy2.toDouble(), ax.toDouble(), ay.toDouble())
-fun VectorBuilder.cubic(x0: Int, y0: Int, cx1: Int, cy1: Int, cx2: Int, cy2: Int, ax: Int, ay: Int) = cubic(x0.toDouble(), y0.toDouble(), cx1.toDouble(), cy1.toDouble(), cx2.toDouble(), cy2.toDouble(), ax.toDouble(), ay.toDouble())
-
-fun VectorBuilder.quad(o: IPoint, c: IPoint, a: IPoint) = quad(o.x, o.y, c.x, c.y, a.x, a.y)
-fun VectorBuilder.cubic(o: IPoint, c1: IPoint, c2: IPoint, a: IPoint) = cubic(o.x, o.y, c1.x, c1.y, c2.x, c2.y, a.x, a.y)
-
+fun VectorBuilder.line(p0: Point, p1: Point) { moveTo(p0); lineTo(p1) }
+fun VectorBuilder.quad(o: Point, c: Point, a: Point) { moveTo(o); quadTo(c, a) }
+fun VectorBuilder.cubic(o: Point, c1: Point, c2: Point, a: Point) { moveTo(o); cubicTo(c1, c2, a) }
 fun VectorBuilder.curve(curve: Bezier) {
     val p = curve.points
     when (curve.order) {
-        3 -> cubic(p.getX(0), p.getY(0), p.getX(1), p.getY(1), p.getX(2), p.getY(2), p.getX(3), p.getY(3))
-        2 -> quad(p.getX(0), p.getY(0), p.getX(1), p.getY(1), p.getX(2), p.getY(2))
-        1 -> line(Point(p.getX(0), p.getY(0)), Point(p.getX(1), p.getY(1)))
+        3 -> cubic(p[0], p[1], p[2], p[3])
+        2 -> quad(p[0], p[1], p[2])
+        1 -> line(p[0], p[1])
         else -> TODO("Unsupported curve of order ${curve.order}")
     }
 }

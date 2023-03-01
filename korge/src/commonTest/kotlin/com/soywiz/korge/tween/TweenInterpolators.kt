@@ -1,12 +1,9 @@
 package com.soywiz.korge.tween
 
-import com.soywiz.korge.view.DummyView
-import com.soywiz.korge.view.xy
+import com.soywiz.korge.view.*
 import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.shape.buildVectorPath
-import com.soywiz.korma.geom.vector.line
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import com.soywiz.korma.geom.shape.*
+import kotlin.test.*
 
 class TweenInterpolators {
     @Test

@@ -114,6 +114,11 @@ operator fun <V : Interpolable<V>> KMutableProperty0<V>.get(end: V) = V2(this, t
 @JvmName("getMutableProperty")
 operator fun <V : Interpolable<V>> KMutableProperty0<V>.get(initial: V, end: V) = V2(this, initial, end, ::_interpolateInterpolable, includeStart = true)
 
+@JvmName("getMutablePropertyPoint")
+operator fun KMutableProperty0<Point>.get(end: Point) = V2(this, this.get(), end, ::_interpolatePoint, includeStart = false)
+@JvmName("getMutablePropertyPoint")
+operator fun KMutableProperty0<Point>.get(initial: Point, end: Point) = V2(this, initial, end, ::_interpolatePoint, includeStart = true)
+
 @PublishedApi
 internal fun _interpolate(ratio: Double, l: Double, r: Double): Double = ratio.interpolate(l, r)
 
@@ -122,6 +127,8 @@ internal fun _interpolateInt(ratio: Double, l: Int, r: Int): Int = ratio.interpo
 
 @PublishedApi
 internal fun <V : Interpolable<V>> _interpolateInterpolable(ratio: Double, l: V, r: V): V = ratio.interpolate(l, r)
+@PublishedApi
+internal fun _interpolatePoint(ratio: Double, l: Point, r: Point): Point = ratio.interpolate(l, r)
 
 @PublishedApi
 internal fun _interpolateFloat(ratio: Double, l: Float, r: Float): Float = ratio.interpolate(l, r)

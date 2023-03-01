@@ -22,16 +22,16 @@ import com.soywiz.korim.color.ColorTransform
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.paint.Paint
 import com.soywiz.korim.vector.ShapeBuilder
-import com.soywiz.korma.geom.MPoint
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.bezier.Bezier
 import com.soywiz.korma.geom.vector.*
 
 class MainBezierSample : Scene() {
     override suspend fun SContainer.sceneMain() {
-        val p0 = MPoint(109, 135)
-        val p1 = MPoint(25, 190)
-        val p2 = MPoint(210, 250)
-        val p3 = MPoint(234, 49)
+        val p0 = Point(109, 135)
+        val p1 = Point(25, 190)
+        val p2 = Point(210, 250)
+        val p3 = Point(234, 49)
 
         val graphics = cpuGraphics(autoScaling = true)
         val graphics2 = gpuShapeView().xy(0, 300)
@@ -75,7 +75,8 @@ class MainBezierSample : Scene() {
         createPointController(p3, Colors.YELLOW) { updateGraphics() }
     }
 
-    fun Container.createPointController(point: MPoint, color: Paint, onMove: () -> Unit) {
+    fun Container.createPointController(point: Point, color: Paint, onMove: () -> Unit) {
+        var point = point
         lateinit var circle: View
         lateinit var text: Text
         val anchorView = container {
@@ -92,8 +93,7 @@ class MainBezierSample : Scene() {
         }
         updateText()
         anchorView.draggable(circle) {
-            point.x = anchorView.x
-            point.y = anchorView.y
+            point = anchorView.pos
             updateText()
             onMove()
         }

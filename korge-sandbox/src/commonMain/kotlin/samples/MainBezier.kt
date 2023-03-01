@@ -1,34 +1,30 @@
 package samples
 
-import com.soywiz.klock.seconds
-import com.soywiz.korge.scene.Scene
+import com.soywiz.klock.*
+import com.soywiz.korge.scene.*
+import com.soywiz.korge.tween.*
 import com.soywiz.korge.tween.get
-import com.soywiz.korge.tween.tween
 import com.soywiz.korge.view.*
-import com.soywiz.korim.color.Colors
-import com.soywiz.korim.vector.EmptyShape
-import com.soywiz.korio.async.launch
-import com.soywiz.korma.geom.MPoint
-import com.soywiz.korma.geom.bezier.Bezier
-import com.soywiz.korma.geom.vector.circle
-import com.soywiz.korma.geom.vector.curve
-import com.soywiz.korma.geom.vector.lineTo
-import com.soywiz.korma.geom.vector.moveTo
-import com.soywiz.korma.geom.vector.rect
+import com.soywiz.korim.color.*
+import com.soywiz.korim.vector.*
+import com.soywiz.korio.async.*
+import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.bezier.*
+import com.soywiz.korma.geom.vector.*
 import com.soywiz.korma.random.get
-import kotlin.random.Random
+import kotlin.random.*
 
 class MainBezier : Scene() {
     override suspend fun SContainer.sceneMain() {
         //val shape = gpuShapeView(EmptyShape)
         val shape = graphics(EmptyShape, renderer = GraphicsRenderer.SYSTEM)
         //val shape = graphics(EmptyShape, renderer = GraphicsRenderer.GPU)
-        fun getRandomPoint() = MPoint(Random[100..500], Random[100..500])
+        fun getRandomPoint() = Point(Random[100..500], Random[100..500])
         class Bez {
-            var p1 = getRandomPoint()
-            var p2 = getRandomPoint()
-            var p3 = getRandomPoint()
-            var p4 = getRandomPoint()
+            var p1: Point = getRandomPoint()
+            var p2: Point = getRandomPoint()
+            var p3: Point = getRandomPoint()
+            var p4: Point = getRandomPoint()
         }
         val bez = Bez()
 

@@ -81,8 +81,8 @@ class MainTextMetrics : Scene() {
                             rect(text1.getLocalBounds())
                         }
                         stroke(Colors.YELLOWGREEN, StrokeInfo(2.0)) {
-                            line(-5, 0, +5, 0)
-                            line(0, -5, 0, +5)
+                            line(Point(-5, 0), Point(+5, 0))
+                            line(Point(0, -5), Point(0, +5))
                         }
                     }
                     val metrics = text1.font.getOrNull()!!.getFontMetrics(text1.fontSize)

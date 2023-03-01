@@ -1,7 +1,7 @@
 package com.soywiz.korge.view
 
 import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.vector.line
+import com.soywiz.korma.geom.vector.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

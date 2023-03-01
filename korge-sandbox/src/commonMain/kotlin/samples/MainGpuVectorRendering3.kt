@@ -1,36 +1,19 @@
 package samples
 
 import com.soywiz.korag.*
-import com.soywiz.korev.Key
-import com.soywiz.korge.input.keys
-import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.view.Container
-import com.soywiz.korge.view.SContainer
-import com.soywiz.korge.view.debug.debugVertexView
-import com.soywiz.korge.view.text
-import com.soywiz.korge.view.vector.gpuShapeView
-import com.soywiz.korge.view.xy
-import com.soywiz.korim.color.Colors
-import com.soywiz.korim.text.TextAlignment
-import com.soywiz.korim.vector.format.pathSvg
-import com.soywiz.korma.geom.IPoint
-import com.soywiz.korma.geom.MMatrix
-import com.soywiz.korma.geom.MPoint
-import com.soywiz.korma.geom.MRectangle
-import com.soywiz.korma.geom.bezier.StrokePointsMode
-import com.soywiz.korma.geom.bezier.toStrokePointsList
-import com.soywiz.korma.geom.degrees
-import com.soywiz.korma.geom.shape.buildVectorPath
-import com.soywiz.korma.geom.shape.getPoints2List
-import com.soywiz.korma.geom.vector.LineJoin
-import com.soywiz.korma.geom.vector.StrokeInfo
-import com.soywiz.korma.geom.vector.VectorPath
-import com.soywiz.korma.geom.vector.arc
-import com.soywiz.korma.geom.vector.circle
-import com.soywiz.korma.geom.vector.lineTo
-import com.soywiz.korma.geom.vector.moveTo
-import com.soywiz.korma.geom.vector.rect
-import com.soywiz.korma.geom.vector.toCurves
+import com.soywiz.korev.*
+import com.soywiz.korge.input.*
+import com.soywiz.korge.scene.*
+import com.soywiz.korge.view.*
+import com.soywiz.korge.view.debug.*
+import com.soywiz.korge.view.vector.*
+import com.soywiz.korim.color.*
+import com.soywiz.korim.text.*
+import com.soywiz.korim.vector.format.*
+import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.bezier.*
+import com.soywiz.korma.geom.shape.*
+import com.soywiz.korma.geom.vector.*
 
 class MainGpuVectorRendering3 : Scene() {
     override suspend fun SContainer.sceneMain() {

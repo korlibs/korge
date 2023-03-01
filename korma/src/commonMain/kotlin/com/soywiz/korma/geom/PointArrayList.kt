@@ -49,12 +49,20 @@ fun IPointArrayList.orientation(): Orientation {
     return Orientation.orient2dFixed(getX(0).toDouble(), getY(0).toDouble(), getX(1).toDouble(), getY(1).toDouble(), getX(2).toDouble(), getY(2).toDouble())
 }
 
+inline fun IPointArrayList.fastForEachPoint(block: (Point) -> Unit) {
+    for (n in 0 until size) {
+        block(get(n))
+    }
+}
+
+@Deprecated("")
 inline fun IPointArrayList.fastForEach(block: (x: Double, y: Double) -> Unit) {
     for (n in 0 until size) {
         block(getX(n).toDouble(), getY(n).toDouble())
     }
 }
 
+@Deprecated("")
 inline fun IPointArrayList.fastForEachReverse(block: (x: Double, y: Double) -> Unit) {
     for (n in 0 until size) {
         val index = size - n - 1
@@ -62,6 +70,7 @@ inline fun IPointArrayList.fastForEachReverse(block: (x: Double, y: Double) -> U
     }
 }
 
+@Deprecated("")
 inline fun IPointArrayList.fastForEachWithIndex(block: (index: Int, x: Double, y: Double) -> Unit) {
     for (n in 0 until size) {
         block(n, getX(n).toDouble(), getY(n).toDouble())
@@ -72,7 +81,7 @@ inline fun IPointArrayList.fastForEachWithIndex(block: (index: Int, x: Double, y
 fun IPointArrayList.getPoint(index: Int, out: MPoint = MPoint()): MPoint = out.setTo(getX(index), getY(index))
 @Deprecated("")
 fun IPointArrayList.getIPoint(index: Int): IPoint = IPoint(getX(index), getY(index))
-
+@Deprecated("")
 fun IPointArrayList.toList(): List<MPoint> = (0 until size).map { getPoint(it) }
 
 @Deprecated("")
@@ -99,6 +108,13 @@ fun IPointArrayList.clone(out: PointArrayList = PointArrayList(this.size)): Poin
     fastForEach { x, y -> out.add(x, y) }
     return out
 }
+
+operator fun IPointArrayList.plus(other: IPointArrayList): PointArrayList = PointArrayList(size + other.size).also {
+    it.add(this)
+    it.add(other)
+}
+
+fun List<Point>.toPointArrayList(): PointArrayList = PointArrayList(size).also { for (p in this) it.add(p) }
 
 open class PointArrayList(capacity: Int = 7) : IPointArrayList, Extra by Extra.Mixin() {
     override var closed: Boolean = false
@@ -216,6 +232,12 @@ open class PointArrayList(capacity: Int = 7) : IPointArrayList, Extra by Extra.M
     fun removeAt(index: Int, count: Int = 1): PointArrayList {
         data.removeAt(index(index, 0), count * 2)
         return this
+    }
+    fun removeFirst() {
+        removeAt(0)
+    }
+    fun removeLast() {
+        removeAt(size - 1)
     }
 
     fun setX(index: Int, x: Float) { data[index(index, 0)] = x }
