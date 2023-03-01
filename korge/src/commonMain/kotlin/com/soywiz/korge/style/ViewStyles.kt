@@ -30,7 +30,11 @@ var ViewStyles.textAlignment: TextAlignment by ViewStyle(TextAlignment.TOP_LEFT)
 
 inline class ViewStyle<T>(val default: T) {
     inline operator fun getValue(styles: ViewStyles, property: KProperty<*>): T {
-        return styles.getProp(property, default) as T
+        return try {
+            styles.getProp(property, default) as T
+        } catch (e: ClassCastException) {
+            throw RuntimeException("Property $property included a wrong type", e)
+        }
     }
 
     inline operator fun setValue(styles: ViewStyles, property: KProperty<*>, value: T) {

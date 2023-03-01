@@ -50,7 +50,7 @@ suspend fun main() = Korge(
 
     demoSelector(
         //Demo(::MainGpuVectorRendering),
-        Demo(::MainInput),
+        Demo(::MainColorTransformFilter),
         listOf(
             Demo(::MainStressButtons),
             Demo(::MainVectorNinePatch),
