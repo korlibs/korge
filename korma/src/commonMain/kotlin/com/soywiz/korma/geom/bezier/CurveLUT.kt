@@ -3,6 +3,7 @@ package com.soywiz.korma.geom.bezier
 import com.soywiz.kds.DoubleArrayList
 import com.soywiz.kds.binarySearch
 import com.soywiz.kds.forEachRatio01
+import com.soywiz.kmem.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.internal.*
 import com.soywiz.korma.interpolation.interpolate

@@ -2,6 +2,7 @@ package com.soywiz.korma.geom.bezier
 
 import com.soywiz.kds.Extra
 import com.soywiz.kds.iterators.fastForEach
+import com.soywiz.kmem.*
 import com.soywiz.korma.annotations.*
 import com.soywiz.korma.geom.BoundsBuilder
 import com.soywiz.korma.geom.IPointArrayList
@@ -14,7 +15,6 @@ import com.soywiz.korma.geom.firstY
 import com.soywiz.korma.geom.lastX
 import com.soywiz.korma.geom.lastY
 import com.soywiz.korma.geom.vector.VectorPath
-import com.soywiz.korma.math.convertRange
 import com.soywiz.korma.math.isAlmostEquals
 import kotlin.jvm.JvmName
 

@@ -4,9 +4,9 @@ import com.soywiz.kds.DoubleArrayList
 import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.kds.mapDouble
 import com.soywiz.kds.sort
+import com.soywiz.kmem.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.interpolation.interpolate
-import com.soywiz.korma.math.convertRange
 import com.soywiz.korma.math.isAlmostEquals
 import com.soywiz.korma.math.isAlmostZero
 import com.soywiz.korma.math.normalizeZero

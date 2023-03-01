@@ -1,12 +1,12 @@
 package com.soywiz.korma.geom.bezier
 
+import com.soywiz.kmem.*
 import com.soywiz.korma.geom.IPointArrayList
 import com.soywiz.korma.geom.IRectangle
 import com.soywiz.korma.geom.MPoint
 import com.soywiz.korma.geom.PointArrayList
 import com.soywiz.korma.geom.roundDecimalPlaces
 import com.soywiz.korma.internal.niceStr
-import com.soywiz.korma.math.convertRange
 import com.soywiz.korma.math.roundDecimalPlaces
 
 data class CurveSplit(

@@ -9,8 +9,6 @@ import com.soywiz.korge.tween.*
 import com.soywiz.korge.view.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korma.interpolation.*
-import com.soywiz.korma.math.*
-import com.soywiz.korma.math.convertRange
 import kotlin.reflect.*
 
 @KorgeExperimental

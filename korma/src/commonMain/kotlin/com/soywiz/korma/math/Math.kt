@@ -33,8 +33,6 @@ fun Double.smoothstep(edge0: Double, edge1: Double): Double {
     return v * v * (3 - 2 * v)
 }
 
-fun Double.convertRange(minSrc: Double, maxSrc: Double, minDst: Double, maxDst: Double): Double = (((this - minSrc) / (maxSrc - minSrc)) * (maxDst - minDst)) + minDst
-
 fun log(v: Int, base: Int): Int = log(v.toDouble(), base.toDouble()).toInt()
 fun ln(v: Int): Int = ln(v.toDouble()).toInt()
 fun log2(v: Int): Int = log(v.toDouble(), 2.0).toInt()

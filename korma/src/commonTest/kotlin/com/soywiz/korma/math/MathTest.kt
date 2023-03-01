@@ -1,7 +1,7 @@
 package com.soywiz.korma.math
 
 import com.soywiz.kds.rotated
-import com.soywiz.kmem.clamp
+import com.soywiz.kmem.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
