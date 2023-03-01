@@ -291,15 +291,6 @@ abstract class View internal constructor(
         get() = Point(x, y)
         set(value) = setXY(value.xD, value.yD)
 
-    var posOpt: MPoint
-        get() {
-            _pos.setTo(x, y)
-            return _pos
-        }
-        set(value) {
-            setXY(value.x, value.y)
-        }
-
     /** Local X position of this view */
     var x: Double
         get() {
