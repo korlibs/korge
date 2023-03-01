@@ -12,8 +12,7 @@ import com.soywiz.korim.vector.toShape
 import com.soywiz.korio.file.std.resourcesVfs
 
 class MainVectorNinePatch : Scene() {
-    val mouseX get() = sceneView.localMouseX(views)
-    val mouseY get() = sceneView.localMouseY(views)
+    val mousePos get() = sceneView.localMousePos(views)
 
     override suspend fun SContainer.sceneMain() {
         val view = ninePatchShapeView(
@@ -40,7 +39,7 @@ class MainVectorNinePatch : Scene() {
         //))
 
         addUpdater {
-            view.setSize(mouseX, mouseY)
+            view.setSize(mousePos.xD, mousePos.yD)
         }
     }
 }

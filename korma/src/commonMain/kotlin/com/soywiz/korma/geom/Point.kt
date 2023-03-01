@@ -243,6 +243,7 @@ sealed interface IPoint {
 
     infix fun dot(that: IPoint): Double = this.x * that.x + this.y * that.y
     fun angleTo(other: IPoint): Angle = Angle.between(this.x, this.y, other.x, other.y)
+    fun angleTo(other: Point): Angle = Angle.between(this.x, this.y, other.xD, other.yD)
     val angle: Angle get() = Angle.between(0.0, 0.0, this.x, this.y)
     fun transformed(mat: MMatrix, out: MPoint = MPoint()): MPoint = out.setToTransform(mat, this)
     fun transformX(m: MMatrix?): Double = m?.transformX(this) ?: x
@@ -620,3 +621,5 @@ fun Iterable<IPoint>.bounds(out: MRectangle = MRectangle(), bb: BoundsBuilder = 
 fun min(a: IPoint, b: IPoint, out: MPoint = MPoint()): MPoint = out.setTo(kotlin.math.min(a.x, b.x), kotlin.math.min(a.y, b.y))
 fun max(a: IPoint, b: IPoint, out: MPoint = MPoint()): MPoint = out.setTo(kotlin.math.max(a.x, b.x), kotlin.math.max(a.y, b.y))
 fun IPoint.clamp(min: Double, max: Double, out: MPoint = MPoint()): MPoint = out.setTo(x.clamp(min, max), y.clamp(min, max))
+
+fun Point.toInt(): PointInt = PointInt(x.toInt(), y.toInt())

@@ -81,7 +81,7 @@ open class ViewsForTesting(
 	val views get() = viewsLog.views
     val stage get() = views.stage
 	val stats get() = views.stats
-	val mouse: IPoint get() = input.mouse
+	val mouse: IPoint get() = input.mousePos.mutable
 
     fun resizeGameWindow(width: Int, height: Int, scaleMode: ScaleMode = views.scaleMode, scaleAnchor: Anchor = views.scaleAnchor) {
         ag.mainFrameBuffer.setSize(0, 0, width, height)
@@ -150,8 +150,8 @@ open class ViewsForTesting(
             MouseEvent(
                 type = type,
                 id = 0,
-                x = views.windowMouseX.toInt(),
-                y = views.windowMouseY.toInt(),
+                x = views.windowMousePos.x.toInt(),
+                y = views.windowMousePos.y.toInt(),
                 button = button,
                 buttons = mouseButtons
             )

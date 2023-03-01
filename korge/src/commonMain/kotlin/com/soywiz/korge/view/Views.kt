@@ -163,21 +163,12 @@ class Views constructor(
         gameWindow.close()
     }
 
-    /** Mouse coordinates relative to the native window. Can't be used directly. Use [globalMouseX] instead */
+    /** Mouse coordinates relative to the native window. Can't be used directly. Use [globalMousePos] instead */
     @KorgeInternal
-    val windowMouseX: Double get() = bp.globalToWindowCoordsX(input.mouse)
-    /** Mouse coordinates relative to the native window. Can't be used directly. Use [globalMouseY] instead */
-    @KorgeInternal
-    val windowMouseY: Double get() = bp.globalToWindowCoordsY(input.mouse)
-    @KorgeInternal
-    val windowMouseXY: MPoint get() = bp.globalToWindowCoords(input.mouse)
+    val windowMousePos: Point get() = bp.globalToWindowCoords(input.mousePos.mutable).point
 
     /** Mouse coordinates relative to the [Stage] singleton */
-    val globalMouseXY get() = stage.mouseXY
-    /** Mouse X coordinate relative to the [Stage] singleton */
-    val globalMouseX get() = stage.mouseX
-    /** Mouse Y coordinate relative to the [Stage] singleton */
-    val globalMouseY get() = stage.mouseY
+    val globalMousePos get() = stage.mousePos
 
 	var scaleMode: ScaleMode = ScaleMode.SHOW_ALL
 	var scaleAnchor = Anchor.MIDDLE_CENTER

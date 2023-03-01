@@ -35,7 +35,7 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
             if (!views.input.mouseHitSearch) {
                 views.input.mouseHitSearch = true
                 views.input.mouseHitResult =
-                    views.stage.mouseHitTest(views.globalMouseX, views.globalMouseY)
+                    views.stage.mouseHitTest(views.globalMousePos.x, views.globalMousePos.y)
 
                 var view: View? = views.input.mouseHitResult
                 while (view != null) {
@@ -90,7 +90,7 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
                             renderContext.drawText(
                                 debugBmpFont,
                                 lineHeight,
-                                "$mouseHit : ${views.globalMouseX},${views.globalMouseY}",
+                                "$mouseHit : ${views.globalMousePos.x},${views.globalMousePos.y}",
                                 x = 0,
                                 y = yy.toInt(),
                                 filtering = false,
@@ -386,7 +386,7 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
         when (event.type) {
             MouseEvent.Type.UP -> {
                 lastEventUp.copyFrom(event)
-                upPosGlobal = views.input.mouse.point
+                upPosGlobal = views.input.mousePos
                 upPosTime = PerformanceCounter.reference
                 val elapsedTime = upPosTime - downPosTime
                 if (
@@ -412,7 +412,7 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
 
                 //this.lastEventDown = event
                 downPosTime = PerformanceCounter.reference
-                downPosGlobal = views.input.mouse.point
+                downPosGlobal = views.input.mousePos
                 if (downImmediate.hasListeners) {
                     if (isOver) {
                         downImmediate(this@MouseEvents)
@@ -471,7 +471,7 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
         val overChanged = (lastOver != over)
         val insideChanged = (lastInside != inside)
         val pressingChanged = pressing != lastPressing
-        currentPosGlobal = views.input.mouse.point
+        currentPosGlobal = views.input.mousePos
 
         //println("$hitTest, ${input.mouse}, $over, $pressing, $overChanged, $pressingChanged")
 

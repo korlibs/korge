@@ -7,6 +7,7 @@ import com.soywiz.kmem.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.util.*
+import com.soywiz.korma.geom.*
 import kotlin.jvm.*
 
 interface TEvent<T : TEvent<T>> {
@@ -147,6 +148,7 @@ data class Touch(
     var kind: Kind = Kind.FINGER,
     var button: MouseButton = MouseButton.LEFT,
 ) : Extra by Extra.Mixin() {
+    val p: Point get() = Point(x, y)
     enum class Status { ADD, KEEP, REMOVE }
     enum class Kind { FINGER, MOUSE, STYLUS, ERASER, UNKNOWN }
 

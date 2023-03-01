@@ -453,11 +453,11 @@ abstract class View internal constructor(
         }
 
     @ViewProperty(min = -1000.0, max = +1000.0, name = "size")
-    private var scaledWH: Pair<Double, Double>
-        get() = scaledWidth to scaledHeight
+    var scaledWH: Size
+        get() = Size(scaledWidth, scaledHeight)
         set(value) {
-            scaledWidth = value.first
-            scaledHeight = value.second
+            scaledWidth = value.widthD
+            scaledHeight = value.heightD
         }
 
     /**
@@ -744,15 +744,8 @@ abstract class View internal constructor(
         return renderColorTransform.mA
     }
 
-    /** Computes the local X coordinate of the mouse using the coords from the [Views] object */
-    fun localMouseX(views: Views): Double = this.globalMatrixInv.transformX(views.input.mouse)
-
-    /** Computes the local Y coordinate of the mouse using the coords from the [Views] object */
-    fun localMouseY(views: Views): Double = this.globalMatrixInv.transformY(views.input.mouse)
-
-    /** Computes the local X and Y coordinate of the mouse using the coords from the [Views] object. You can use the [target] parameter to specify a target [MPoint] to avoid allocation. */
-    fun localMouseXY(views: Views, target: MPoint = MPoint()): MPoint =
-        target.setTo(localMouseX(views), localMouseY(views))
+    /** Computes the local X and Y coordinates of the mouse using the coords from the [Views] object */
+    fun localMousePos(views: Views): Point = globalToLocal(views.input.mousePos)
 
     /**
      * Invalidates the [localMatrix] [MMatrix], so it gets updated from the decomposed properties: [x], [y], [scaleX], [scaleY], [rotation], [skewX] and [skewY].

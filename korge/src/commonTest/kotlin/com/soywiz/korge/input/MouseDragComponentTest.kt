@@ -28,12 +28,12 @@ class MouseDragComponentTest : ViewsForTesting(
         val deltaX = 20
         val deltaY = 10
         mouseMoveTo(10, 10)
-        assertEquals(MPoint(10, 10), views.globalMouseXY)
-        assertEquals(MPoint(20, 20), views.windowMouseXY)
+        assertEquals(Point(10, 10), views.globalMousePos)
+        assertEquals(Point(20, 20), views.windowMousePos)
         mouseDown(MouseButton.LEFT)
         mouseMoveTo(10 + deltaX, 10 + deltaY)
-        assertEquals(MPoint(30, 20), views.globalMouseXY)
-        assertEquals(MPoint(60, 40), views.windowMouseXY)
+        assertEquals(Point(30, 20), views.globalMousePos)
+        assertEquals(Point(60, 40), views.windowMousePos)
         mouseUp(MouseButton.LEFT)
         assertEquals(Point(deltaX, deltaY), rect.pos)
     }

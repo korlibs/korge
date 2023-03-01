@@ -111,15 +111,15 @@ open class UIOldScrollBar(
             reshape()
         }
         background.onClick {
-            val pos = if (isHorizontal) thumb.localMouseX(views!!) else thumb.localMouseY(views!!)
+            val p = thumb.localMousePos(views!!)
+            val pos = if (isHorizontal) p.xD else p.yD
             changeCurrent(pos.sign * 0.8 * this.pageSize)
         }
 
-        val tempP = MPoint()
         var initRatio = 0.0
         var startRatio = 0.0
         thumb.onMouseDrag {
-            val lmouse = background.localMouseXY(views, tempP)
+            val lmouse = background.localMousePos(views)
             val curPosition = if (isHorizontal) lmouse.x else lmouse.y
             val size = if (isHorizontal) background.width - thumb.width else background.height - thumb.height
             val curRatio = curPosition / size

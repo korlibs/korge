@@ -138,11 +138,11 @@ class MainStrokesExperiment2 : Scene() {
         launchImmediately {
             while (true) {
                 if (alternate) {
-                    startX = this@MainStrokesExperiment2.stage.mouseX
-                    startY = this@MainStrokesExperiment2.stage.mouseY
+                    startX = this@MainStrokesExperiment2.stage.mousePos.xD
+                    startY = this@MainStrokesExperiment2.stage.mousePos.yD
                 } else {
-                    endX = this@MainStrokesExperiment2.stage.mouseX
-                    endY = this@MainStrokesExperiment2.stage.mouseY
+                    endX = this@MainStrokesExperiment2.stage.mousePos.xD
+                    endY = this@MainStrokesExperiment2.stage.mousePos.yD
                 }
 
                 val path = buildVectorPath {

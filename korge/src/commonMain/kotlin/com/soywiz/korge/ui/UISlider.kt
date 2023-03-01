@@ -121,7 +121,7 @@ class UISlider(
 
     init {
         this.onMouseDrag {
-            this@UISlider.value = (localMouseX(views) - button.width / 2).convertRange(0.0, maxXPos, this@UISlider.min, this@UISlider.max)
+            this@UISlider.value = (localMousePos(views).x - button.width / 2).convertRange(0.0, maxXPos, this@UISlider.min, this@UISlider.max)
         }
     }
 }

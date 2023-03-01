@@ -4,7 +4,7 @@ import com.soywiz.korge.input.mouse
 import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.view.*
 import com.soywiz.korim.color.Colors
-import com.soywiz.korma.geom.MPoint
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.StrokeInfo
 import com.soywiz.korma.geom.vector.circle
 import com.soywiz.korma.geom.vector.line
@@ -85,7 +85,7 @@ class MainTriangulation : Scene() {
             onClick {
                 //additionalPoint = null
                 try {
-                    points.add(g.localMouseXY(views))
+                    points.add(g.localMousePos(views).mutable)
                     if (points.size >= 3) {
                         points.triangulate()
                     }
@@ -99,7 +99,7 @@ class MainTriangulation : Scene() {
             }
 
             onMove {
-                additionalPoint = g.localMouseXY(views)
+                additionalPoint = g.localMousePos(views).mutable
                 repaint(finished = false)
             }
         }

@@ -77,8 +77,8 @@ class MainBVH : Scene() {
 
         addUpdater {
             //println("moved")
-            val mousePos = localMouseXY(views)
-            val angle = MPoint.angleFull(center, mousePos)
+            val mousePos = localMousePos(views)
+            val angle = Point.angleFull(center.point, mousePos)
             //println("center=$center, mousePos=$mousePos, angle = $angle")
             dir.setTo(angle.cosineD, angle.sineD)
             rayLine.setPoints(center, center + (dir * 1000))
@@ -88,13 +88,13 @@ class MainBVH : Scene() {
 
         mouse {
             onDown {
-                selectedRectangle = MRectangle(stage!!.mouseXY - MPoint(50, 50), MSize(100, 100))
+                selectedRectangle = MRectangle(stage!!.mousePos.mutable - MPoint(50, 50), MSize(100, 100))
                 selectedRect.vectorPath = buildVectorPath(VectorPath()) {
                     rect(selectedRectangle)
                 }
             }
             onMouseDrag {
-                selectedRectangle = MRectangle(stage.mouseXY - MPoint(50, 50), MSize(100, 100))
+                selectedRectangle = MRectangle(stage.mousePos.mutable - MPoint(50, 50), MSize(100, 100))
                 selectedRect.vectorPath = buildVectorPath(VectorPath()) {
                     rect(selectedRectangle)
                 }
