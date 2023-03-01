@@ -20,8 +20,8 @@ class MainNinePatch : Scene() {
         }
         np.mouse {
             moveAnywhere {
-                np.width = it.currentPosLocal.x.clamp(16.0, width)
-                np.height = it.currentPosLocal.y.clamp(16.0, height)
+                np.width = it.currentPosLocal.xD.clamp(16.0, width)
+                np.height = it.currentPosLocal.yD.clamp(16.0, height)
             }
         }
     }

@@ -252,7 +252,7 @@ open class UIButton(
     }
 
     fun simulateClick(views: Views) {
-        touch.simulateTapAt(views, localToGlobal(MPoint(width * 0.5, height * 0.5)))
+        touch.simulateTapAt(views, localToGlobal(Point(width * 0.5, height * 0.5)).mutable)
     }
 
     open fun updatedUIButton(down: Boolean? = null, over: Boolean? = null, px: Double = 0.0, py: Double = 0.0, immediate: Boolean = false) {

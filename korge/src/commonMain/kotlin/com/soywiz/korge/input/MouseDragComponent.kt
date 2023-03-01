@@ -7,7 +7,7 @@ import com.soywiz.korge.view.View
 import com.soywiz.korge.view.Views
 import com.soywiz.korge.view.xy
 import com.soywiz.korio.lang.Closeable
-import com.soywiz.korma.geom.MPoint
+import com.soywiz.korma.geom.*
 
 open class MouseDragInfo(
     val view: View,
@@ -27,11 +27,13 @@ open class MouseDragInfo(
     lateinit var mouseEvents: MouseEvents
     val elapsed: TimeSpan get() = time - startTime
 
-    val localDX get() = localDX(view)
-    val localDY get() = localDY(view)
+    val localDXY get() = localDXY(view)
+    @Deprecated("") val localDX get() = localDX(view)
+    @Deprecated("") val localDY get() = localDY(view)
 
-    fun localDX(view: View) = view.parent?.globalToLocalDX(0.0, 0.0, dx, dy) ?: dx
-    fun localDY(view: View) = view.parent?.globalToLocalDY(0.0, 0.0, dx, dy) ?: dy
+    fun localDXY(view: View) = view.parent?.globalToLocalDelta(Point(0.0, 0.0), Point(dx, dy)) ?: Point(dx, dy)
+    @Deprecated("") fun localDX(view: View) = localDXY(view).x
+    @Deprecated("") fun localDY(view: View) = localDXY(view).y
 
     private var lastDx: Double = Double.NaN
     private var lastDy: Double = Double.NaN

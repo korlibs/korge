@@ -390,23 +390,24 @@ abstract class View internal constructor(
 
     /** The global x position of this view */
     var globalX: Double
-        get() = parent?.localToGlobalX(x, y) ?: x
+        get() {
+            return parent?.localToGlobal(Point(x, y))?.xD ?: x
+        }
         set(value) { setGlobalXY(value, globalY) }
 
     /** The global y position of this view */
     var globalY: Double
-        get() = parent?.localToGlobalY(x, y) ?: y
+        get() = parent?.localToGlobal(Point(x, y))?.yD ?: y
         set(value) {
             setGlobalXY(globalX, value)
         }
 
+    fun setGlobalXY(pos: Point) = setGlobalXY(pos.xD, pos.yD)
     fun setGlobalXY(pos: MPoint) = setGlobalXY(pos.x, pos.y)
 
     fun setGlobalXY(x: Double, y: Double) {
-        setXY(
-            parent?.globalToLocalX(x, y) ?: x,
-            parent?.globalToLocalY(x, y) ?: y,
-        )
+        val p = parent?.globalToLocal(Point(x, y)) ?: Point(x, y)
+        setXY(p.xD, p.yD)
     }
 
     fun globalXY(out: MPoint = MPoint()): MPoint = out.setTo(globalX, globalY)
@@ -904,22 +905,22 @@ abstract class View internal constructor(
                 }
             }
             lines.drawVector(Colors.RED) {
-                moveTo(localToGlobal(MPoint(local.left, local.top)))
-                lineTo(localToGlobal(MPoint(local.right, local.top)))
-                lineTo(localToGlobal(MPoint(local.right, local.bottom)))
-                lineTo(localToGlobal(MPoint(local.left, local.bottom)))
+                moveTo(localToGlobal(Point(local.left, local.top)))
+                lineTo(localToGlobal(Point(local.right, local.top)))
+                lineTo(localToGlobal(Point(local.right, local.bottom)))
+                lineTo(localToGlobal(Point(local.left, local.bottom)))
                 close()
             }
             lines.drawVector(Colors.YELLOW) {
                 val anchorSize = 6.0 * ctx.views!!.windowToGlobalScaleAvg
-                circle(localToGlobal(local.topLeft.mutable), anchorSize)
-                circle(localToGlobal(local.topRight.mutable), anchorSize)
-                circle(localToGlobal(local.bottomRight.mutable), anchorSize)
-                circle(localToGlobal(local.bottomLeft.mutable), anchorSize)
-                circle(localToGlobal(local.topLeft.mutable.interpolateWith(Ratio.HALF, local.topRight.mutable)), anchorSize)
-                circle(localToGlobal(local.topRight.mutable.interpolateWith(Ratio.HALF, local.bottomRight.mutable)), anchorSize)
-                circle(localToGlobal(local.bottomRight.mutable.interpolateWith(Ratio.HALF, local.bottomLeft.mutable)), anchorSize)
-                circle(localToGlobal(local.bottomLeft.mutable.interpolateWith(Ratio.HALF, local.topLeft.mutable)), anchorSize)
+                circle(localToGlobal(local.topLeft), anchorSize)
+                circle(localToGlobal(local.topRight), anchorSize)
+                circle(localToGlobal(local.bottomRight), anchorSize)
+                circle(localToGlobal(local.bottomLeft), anchorSize)
+                circle(localToGlobal(local.topLeft.interpolateWith(Ratio.HALF, local.topRight)), anchorSize)
+                circle(localToGlobal(local.topRight.interpolateWith(Ratio.HALF, local.bottomRight)), anchorSize)
+                circle(localToGlobal(local.bottomRight.interpolateWith(Ratio.HALF, local.bottomLeft)), anchorSize)
+                circle(localToGlobal(local.bottomLeft.interpolateWith(Ratio.HALF, local.topLeft)), anchorSize)
             }
             lines.drawVector(Colors.BLUE) {
                 val centerX = globalX
@@ -954,85 +955,20 @@ abstract class View internal constructor(
 
     // Version with root-most object as reference
     /** Converts the global point [p] (using root/stage as reference) into the local coordinate system. Allows to define [out] to avoid allocation. */
-    fun globalToLocal(p: IPoint, out: MPoint = MPoint()): MPoint = globalToLocalXY(p.x, p.y, out)
+    fun globalToLocal(p: Point): Point = this.globalMatrixInv.transform(p)
 
-    /** Converts the global point [x] [y] (using root/stage as reference) into the local coordinate system. Allows to define [out] to avoid allocation. */
-    fun globalToLocalXY(x: Double, y: Double, out: MPoint = MPoint()): MPoint = this.globalMatrixInv.transform(x, y, out)
-
-    /** Converts the global point [x], [y] (using root/stage as reference) into the X in the local coordinate system. */
-    fun globalToLocalX(x: Double, y: Double): Double = this.globalMatrixInv.transformX(x, y)
-
-    /** Converts the global point [x], [y] (using root/stage as reference) into the Y in the local coordinate system. */
-    fun globalToLocalY(x: Double, y: Double): Double = this.globalMatrixInv.transformY(x, y)
-
-    fun globalToLocalDX(x0: Double, y0: Double, x1: Double, y1: Double): Double = globalToLocalX(x1, y1) - globalToLocalX(x0, y0)
-    fun globalToLocalDY(x0: Double, y0: Double, x1: Double, y1: Double): Double = globalToLocalY(x1, y1) - globalToLocalY(x0, y0)
-    fun globalToLocalDXY(x0: Double, y0: Double, x1: Double, y1: Double, out: MPoint = MPoint()): MPoint = out.setTo(
-        globalToLocalDX(x0, y0, x1, y1),
-        globalToLocalDY(x0, y0, x1, y1),
-    )
-    fun globalToLocalDXY(p0: IPoint, p1: IPoint, out: MPoint = MPoint()): MPoint = globalToLocalDXY(p0.x, p0.y, p1.x, p1.y, out)
+    fun globalToLocalDelta(p0: Point, p1: Point): Point = globalToLocal(p1) - globalToLocal(p0)
 
     /** Converts the local point [p] into a global point (using root/stage as reference). Allows to define [out] to avoid allocation. */
-    fun localToGlobal(p: IPoint, out: MPoint = MPoint()): MPoint = localToGlobalXY(p.x, p.y, out)
-
-    /** Converts the local point [x], [y] into a global point (using root/stage as reference). Allows to define [out] to avoid allocation. */
-    fun localToGlobalXY(x: Double, y: Double, out: MPoint = MPoint()): MPoint = this.globalMatrix.transform(x, y, out)
-
-    /** Converts the local point [x], [y] into a global X coordinate (using root/stage as reference). */
-    fun localToGlobalX(x: Double, y: Double): Double = this.globalMatrix.transformX(x, y)
-
-    /** Converts the local point [x], [y] into a global Y coordinate (using root/stage as reference). */
-    fun localToGlobalY(x: Double, y: Double): Double = this.globalMatrix.transformY(x, y)
-
+    fun localToGlobal(p: Point): Point = this.globalMatrix.transform(p)
 
     // Version with View.Reference as reference
     /** Converts a point [p] in the nearest ancestor marked as [View.Reference] into the local coordinate system. Allows to define [out] to avoid allocation. */
-    fun renderToLocal(p: IPoint, out: MPoint = MPoint()): MPoint = renderToLocalXY(p.x, p.y, out)
-
-    /** Converts a point [x], [y] in the nearest ancestor marked as [View.Reference] into the local coordinate system. Allows to define [out] to avoid allocation. */
-    fun renderToLocalXY(x: Double, y: Double, out: MPoint = MPoint()): MPoint = this.globalMatrixInv.transform(x, y, out)
-
-    /** Converts a point [x], [y] in the nearest ancestor marked as [View.Reference] into the local X coordinate. */
-    fun renderToLocalX(x: Double, y: Double): Double = this.globalMatrixInv.transformX(x, y)
-
-    /** Converts a point [x], [y] in the nearest ancestor marked as [View.Reference] into the local Y coordinate. */
-    fun renderToLocalY(x: Double, y: Double): Double = this.globalMatrixInv.transformY(x, y)
-
-
-    /** Converts the local point [p] into a point in the nearest ancestor masked as [View.Reference]. Allows to define [out] to avoid allocation. */
-    @Deprecated("")
-    fun localToRender(p: IPoint, out: MPoint = MPoint()): MPoint = localToRenderXY(p.x, p.y, out)
-
-    /** Converts the local point [x],[y] into a point in the nearest ancestor masked as [View.Reference]. Allows to define [out] to avoid allocation. */
-    @Deprecated("")
-    fun localToRenderXY(x: Double, y: Double, out: MPoint = MPoint()): MPoint = this.globalMatrix.transform(x, y, out)
-
-    /** Converts the local point [x],[y] into a X coordinate in the nearest ancestor masked as [View.Reference]. */
-    @Deprecated("")
-    fun localToRenderX(x: Double, y: Double): Double = this.globalMatrix.transformX(x, y)
-
-    /** Converts the local point [x],[y] into a Y coordinate in the nearest ancestor masked as [View.Reference]. */
-    @Deprecated("")
-    fun localToRenderY(x: Double, y: Double): Double = this.globalMatrix.transformY(x, y)
-
-
+    @Deprecated("Use globalToLocal") fun renderToLocal(p: Point): Point = this.globalMatrixInv.transform(p)
 
     /** Converts the local point [p] into a point in window coordinates. */
-    fun localToWindow(views: Views, p: IPoint, out: MPoint = MPoint()): MPoint = localToWindowXY(views, p.x, p.y, out)
-
-    /** Converts the local point [x], [y] into a point in window coordinates. */
-    fun localToWindowXY(views: Views, x: Double, y: Double, out: MPoint = MPoint()): MPoint {
-        this.globalMatrix.transform(x, y, out)
-        views.globalToWindowMatrix.transform(out, out)
-        return out
-    }
-
-    /** Converts the local point [x], [y] into a X coordinate in window coordinates. */
-    fun localToWindowX(views: Views, x: Double, y: Double): Double = MPoint.POOL { localToWindowXY(views, x, y, it).x }
-
-    /** Converts the local point [x], [y] into a Y coordinate in window coordinates. */
-    fun localToWindowY(views: Views, x: Double, y: Double): Double = MPoint.POOL { localToWindowXY(views, x, y, it).y }
+    fun localToWindow(views: Views, p: Point): Point =
+        views.globalToWindowMatrix.transform(this.globalMatrix.transform(p))
 
     var hitTestEnabled = true
 
@@ -1059,7 +995,10 @@ abstract class View internal constructor(
     fun hitTest(x: Float, y: Float, direction: HitTestDirection = HitTestDirection.ANY): View? = hitTest(x.toDouble(), y.toDouble(), direction)
     fun hitTest(x: Int, y: Int, direction: HitTestDirection = HitTestDirection.ANY): View? = hitTest(x.toDouble(), y.toDouble(), direction)
 
-    fun hitTestLocal(x: Double, y: Double, direction: HitTestDirection = HitTestDirection.ANY): View? = hitTest(localToGlobalX(x, y), localToGlobalY(x, y), direction)
+    fun hitTestLocal(x: Double, y: Double, direction: HitTestDirection = HitTestDirection.ANY): View? {
+        val p = localToGlobal(Point(x, y))
+        return hitTest(p.xD, p.yD, direction)
+    }
     fun hitTestLocal(x: Float, y: Float, direction: HitTestDirection = HitTestDirection.ANY): View? = hitTestLocal(x.toDouble(), y.toDouble(), direction)
     fun hitTestLocal(x: Int, y: Int, direction: HitTestDirection = HitTestDirection.ANY): View? = hitTestLocal(x.toDouble(), y.toDouble(), direction)
 
@@ -1169,7 +1108,7 @@ abstract class View internal constructor(
     var hitTestUsingShapes: Boolean? = null
 
     /** [x] and [y] coordinates are global */
-    open protected fun hitTestInternal(x: Double, y: Double, direction: HitTestDirection = HitTestDirection.ANY): View? {
+    protected open fun hitTestInternal(x: Double, y: Double, direction: HitTestDirection = HitTestDirection.ANY): View? {
         if (!hitTestEnabled) return null
 
         //println("x,y: $x,$y")
@@ -1177,8 +1116,9 @@ abstract class View internal constructor(
         //if (!getGlobalBounds(_localBounds).contains(x, y)) return null
 
         // Adjusted coordinates to compensate anchoring
-        val llx = globalToLocalX(x, y)
-        val lly = globalToLocalY(x, y)
+        val ll = globalToLocal(Point(x, y))
+        val llx = ll.xD
+        val lly = ll.yD
 
         val bounds = getLocalBoundsOptimizedAnchored()
         if (!bounds.contains(llx, lly)) {
@@ -1267,7 +1207,10 @@ abstract class View internal constructor(
         sTop: Double,
         sRight: Double,
         sBottom: Double
-    ): Boolean = checkLocalBounds(globalToLocalX(x, y), globalToLocalY(x, y), sLeft, sTop, sRight, sBottom)
+    ): Boolean {
+        val p = globalToLocal(Point(x, y))
+        return checkLocalBounds(p.xD, p.yD, sLeft, sTop, sRight, sBottom)
+    }
 
     //protected fun checkGlobalBounds(
     //    x: Double,
@@ -1532,7 +1475,7 @@ abstract class View internal constructor(
         val bounds = getLocalBoundsOptimizedAnchored()
         val x = ratioX.interpolate(bounds.left, bounds.right)
         val y = ratioY.interpolate(bounds.top, bounds.bottom)
-        return out.setTo(localToGlobalX(x, y), localToGlobalY(x, y))
+        return out.setTo(localToGlobal(Point(x, y)))
     }
 
     fun getGlobalMatrixWithAnchor(out: MMatrix = MMatrix()): MMatrix {

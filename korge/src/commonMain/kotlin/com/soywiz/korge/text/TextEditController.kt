@@ -464,13 +464,13 @@ class TextEditController(
                 bg?.isOver = false
             }
             downImmediate {
-                cursorIndex = getIndexAtPos(it.currentPosLocal)
+                cursorIndex = getIndexAtPos(it.currentPosLocal.mutable)
                 dragging = false
                 focused = true
             }
             down {
                 //println("UiTextInput.down")
-                cursorIndex = getIndexAtPos(it.currentPosLocal)
+                cursorIndex = getIndexAtPos(it.currentPosLocal.mutable)
                 dragging = false
             }
             downOutside {
@@ -485,7 +485,7 @@ class TextEditController(
                 //println("UiTextInput.moveAnywhere: focused=$focused, pressing=${it.pressing}")
                 if (focused && it.pressing) {
                     dragging = true
-                    selectionEnd = getIndexAtPos(it.currentPosLocal)
+                    selectionEnd = getIndexAtPos(it.currentPosLocal.mutable)
                     it.stopPropagation()
                 }
             }
@@ -499,7 +499,7 @@ class TextEditController(
             }
             doubleClick {
                 //println("UiTextInput.doubleClick")
-                val index = getIndexAtPos(it.currentPosLocal)
+                val index = getIndexAtPos(it.currentPosLocal.mutable)
                 select(leftIndex(index, true), rightIndex(index, true))
             }
         }

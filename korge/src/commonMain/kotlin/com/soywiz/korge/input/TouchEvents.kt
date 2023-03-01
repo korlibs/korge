@@ -24,15 +24,15 @@ class TouchEvents(override val view: View) : TouchComponent {
 
         lateinit var views: Views
 
-        val localX: Double get() = local.x
-        val localY: Double get() = local.y
-        val startLocalX: Double get() = startLocal.x
-        val startLocalY: Double get() = startLocal.y
+        @Deprecated("") val localX: Double get() = local.x
+        @Deprecated("") val localY: Double get() = local.y
+        @Deprecated("") val startLocalX: Double get() = startLocal.x
+        @Deprecated("") val startLocalY: Double get() = startLocal.y
 
-        val globalX: Double get() = global.x
-        val globalY: Double get() = global.y
-        val startGlobalX: Double get() = startGlobal.x
-        val startGlobalY: Double get() = startGlobal.y
+        @Deprecated("") val globalX: Double get() = global.x
+        @Deprecated("") val globalY: Double get() = global.y
+        @Deprecated("") val startGlobalX: Double get() = startGlobal.x
+        @Deprecated("") val startGlobalY: Double get() = startGlobal.y
 
         override fun toString(): String = "Touch[$id](${localX.toInt()}, ${localY.toInt()})"
     }
@@ -48,7 +48,7 @@ class TouchEvents(override val view: View) : TouchComponent {
     fun Info.copyFrom(touch: Touch) = this.apply {
         this.id = touch.id
         this.global.setTo(touch.x, touch.y)
-        view.globalToLocalXY(touch.x, touch.y, this.local)
+        this.local.copyFrom(view.globalToLocal(Point(touch.x, touch.y)))
     }
 
     fun Info.start() = this.apply {

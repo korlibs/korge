@@ -108,6 +108,8 @@ inline class Point internal constructor(internal val raw: Float2Pack) {
 
     fun isNaN(): Boolean = this.x.isNaN() && this.y.isNaN()
 
+    @Deprecated("", ReplaceWith("ratio.interpolate(this, other)", "com.soywiz.korma.interpolation.interpolate")) fun interpolateWith(ratio: Ratio, other: Point): Point = ratio.interpolate(this, other)
+
     companion object {
         val ZERO = Point(0f, 0f)
         val NaN = Point(Float.NaN, Float.NaN)
@@ -335,7 +337,9 @@ data class MPoint(
         return this
     }
 
-    /** Updates a point from polar coordinates determined by an [angle] and a [length]. Angle 0 is pointing to the right, and the direction is counter-clock-wise */
+    fun setTo(p: Point): MPoint = setTo(p.x, p.y)
+
+        /** Updates a point from polar coordinates determined by an [angle] and a [length]. Angle 0 is pointing to the right, and the direction is counter-clock-wise */
     fun setToPolar(angle: Angle, length: Double = 1.0): MPoint = setToPolar(0.0, 0.0, angle, length)
     fun setToPolar(base: Point, angle: Angle, length: Float = 1f): MPoint = setToPolar(base.x, base.y, angle, length)
     fun setToPolar(base: IPoint, angle: Angle, length: Double = 1.0): MPoint = setToPolar(base.x, base.y, angle, length)
@@ -433,14 +437,22 @@ data class MPoint(
         out.setToPolar(Angle.between(0.0, 0.0, this.x, this.y) + rotation, this.length)
 
 
+    @Deprecated("")
     companion object {
+        @Deprecated("")
         val POOL: ConcurrentPool<MPoint> = ConcurrentPool<MPoint>({ it.setTo(0.0, 0.0) }) { MPoint() }
 
+        @Deprecated("")
         val Zero: IPoint = IPoint(0.0, 0.0)
+        @Deprecated("")
         val One: IPoint = IPoint(1.0, 1.0)
+        @Deprecated("")
         val Up: IPoint = IPoint(0.0, -1.0)
+        @Deprecated("")
         val Down: IPoint = IPoint(0.0, +1.0)
+        @Deprecated("")
         val Left: IPoint = IPoint(-1.0, 0.0)
+        @Deprecated("")
         val Right: IPoint = IPoint(+1.0, 0.0)
 
         //inline operator fun invoke(): Point = Point(0.0, 0.0) // @TODO: // e: java.lang.NullPointerException at org.jetbrains.kotlin.com.google.gwt.dev.js.JsAstMapper.mapFunction(JsAstMapper.java:562) (val pt = Array(1) { Point() })

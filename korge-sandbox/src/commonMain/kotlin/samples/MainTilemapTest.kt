@@ -79,9 +79,9 @@ class MainTilemapTest : Scene() {
                         cameraContainer.cameraAngle = newAngle //downVals.camAngle - dy.degrees
                     } else { // leftMouse
                         val newCamPos =
-                            cameraContainer.content.globalToLocal(downVals.mouse) - cameraContainer.content.globalToLocal(input.mouse) + downVals.camPos
-                        cameraContainer.cameraX = newCamPos.x
-                        cameraContainer.cameraY = newCamPos.y
+                            cameraContainer.content.globalToLocal(downVals.mouse.point) - cameraContainer.content.globalToLocal(input.mouse.point) + downVals.camPos.point
+                        cameraContainer.cameraX = newCamPos.xD
+                        cameraContainer.cameraY = newCamPos.yD
                     }
                 }
             }
