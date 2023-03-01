@@ -16,6 +16,16 @@ class FixedTest {
         assertEquals("21474836.47".fixed, 1123456f.fixed * 77.33f.fixed)
     }
 
+    private fun Fixed.intDec(): String = "${valueInt}:${valueDec}"
+
+    @Test
+    fun testIntRem() {
+        assertEquals("21474836:47", "21474836.47".fixed.intDec())
+        assertEquals("-1:0", "-1.00".fixed.intDec())
+        assertEquals("-1:6", "-1.06".fixed.intDec())
+        assertEquals("-1:37", "-1.37".fixed.intDec())
+    }
+
     @Test
     fun testDenormals() {
         if (!Fixed.HANDLE_DENORMALS) return
