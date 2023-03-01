@@ -160,31 +160,31 @@ open class Context2d(
     var state = State(fontRegistry = defaultFontRegistry, font = defaultFont)
     private val stack = Stack<State>()
 
-    // @TODO: Can we use `by state::lineScaleMode` already?
-    var lineScaleMode: LineScaleMode by state::lineScaleMode
-    var lineWidth: Double by state::lineWidth
-    var lineCap: LineCap by state::lineCap
-    var miterLimit: Double by state::miterLimit
-    var startLineCap: LineCap by state::startLineCap
-    var endLineCap: LineCap by state::endLineCap
-    var lineJoin: LineJoin by state::lineJoin
-    var strokeStyle: Paint by state::strokeStyle
-    var fillStyle: Paint by state::fillStyle
-    var fontRegistry: FontRegistry? by state::fontRegistry
-    var font: Font? by state::font
-    var fontName: String?
-        get() = font?.name
+    var lineScaleMode: LineScaleMode ; get() = state.lineScaleMode ; set(value) { state.lineScaleMode = value }
+    var lineWidth: Double ; get() = state.lineWidth ; set(value) { state.lineWidth = value }
+    var lineCap: LineCap ; get() = state.lineCap ; set(value) { state.lineCap = value }
+    var miterLimit: Double ; get() = state.miterLimit ; set(value) { state.miterLimit = value }
+    var startLineCap: LineCap ; get() = state.startLineCap ; set(value) { state.startLineCap = value }
+    var endLineCap: LineCap ; get() = state.endLineCap ; set(value) { state.endLineCap = value }
+    var lineJoin: LineJoin ; get() = state.lineJoin ; set(value) { state.lineJoin = value }
+    var strokeStyle: Paint; get() = state.strokeStyle ; set(value) { state.strokeStyle = value }
+    var fillStyle: Paint; get() = state.fillStyle ; set(value) { state.fillStyle = value }
+    var fontRegistry: FontRegistry? ; get() = state.fontRegistry ; set(value) { state.fontRegistry = value }
+    var font: Font? ; get() = state.font ; set(value) { state.font = value }
+    var fontName: String? ; get() = font?.name ; set(value) { font = fontRegistry?.get(value) }
+    var fontSize: Double ; get() = state.fontSize ; set(value) { state.fontSize = value }
+    var verticalAlign: VerticalAlign; get() = state.verticalAlign ; set(value) { state.verticalAlign = value }
+    var horizontalAlign: HorizontalAlign; get() = state.horizontalAlign ; set(value) { state.horizontalAlign = value }
+    var alignment: TextAlignment
+        get() = TextAlignment.fromAlign(horizontalAlign, verticalAlign)
         set(value) {
-            font = fontRegistry?.get(value)
+            horizontalAlign = value.horizontal
+            verticalAlign = value.vertical
         }
-    var fontSize: Double by state::fontSize
-    var verticalAlign: VerticalAlign by state::verticalAlign
-    var horizontalAlign: HorizontalAlign by state::horizontalAlign
-    var alignment: TextAlignment by state::alignment
-    var globalAlpha: Double by state::globalAlpha
-    var globalCompositeOperation: CompositeOperation by state::globalCompositeOperation
-    var lineDash: IDoubleArrayList? by state::lineDash
-    var lineDashOffset: Double by state::lineDashOffset
+    var globalAlpha: Double ; get() = state.globalAlpha ; set(value) { state.globalAlpha = value }
+    var globalCompositeOperation: CompositeOperation ; get() = state.globalCompositeOperation ; set(value) { state.globalCompositeOperation = value }
+    var lineDash: IDoubleArrayList?; get() = state.lineDash ; set(value) { state.lineDash = value }
+    var lineDashOffset: Double; get() = state.lineDashOffset ; set(value) { state.lineDashOffset = value }
 
     inline fun lineDash(lineDash: IDoubleArrayList?, lineDashOffset: Double = 0.0, callback: () -> Unit) {
         val oldLineDash = this.lineDash

@@ -14,9 +14,7 @@ class NinePatchShape(val shape: Shape, val slices: NinePatchSlices2D) {
     fun getScaledPointAt(point: IPoint, newSize: ISize, out: MPoint = MPoint()): IPoint =
         slices.getScaledPointAt(point, size, newSize, out)
 
-    fun transform(newSize: ISize): Shape {
-        return shape.scaleNinePatch(newSize, slices)
-    }
+    fun transform(newSize: ISize): Shape = shape.scaleNinePatch(newSize, slices)
 
     private fun Shape.scaleNinePatch(newSize: ISize, slices: NinePatchSlices2D, oldSize: ISize? = this.bounds.bottomRight.toSize().mutable): Shape {
         return when (this) {
