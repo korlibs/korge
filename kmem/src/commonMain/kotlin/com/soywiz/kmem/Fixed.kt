@@ -87,7 +87,7 @@ inline class Fixed private constructor(val raw: Int) : Comparable<Fixed> {
         return when {
             str.length <= SCALE_DIGITS -> "0.$str"
             else -> str.substring(0, str.length - SCALE_DIGITS) + "." + str.substring(str.length - SCALE_DIGITS)
-        }.trimEnd('0').trimEnd('.')
+        }
     }
 }
 
