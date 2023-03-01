@@ -2,9 +2,7 @@ package com.soywiz.korim.color
 
 import com.soywiz.kmem.clamp
 import com.soywiz.korio.util.niceStr
-import com.soywiz.korma.interpolation.Interpolable
-import com.soywiz.korma.interpolation.MutableInterpolable
-import com.soywiz.korma.interpolation.interpolate
+import com.soywiz.korma.interpolation.*
 import com.soywiz.krypto.encoding.shex
 
 data class ColorTransform(
@@ -22,7 +20,7 @@ data class ColorTransform(
         inline fun Add(r: Int, g: Int, b: Int, a: Int) = ColorTransform(1, 1, 1, 1, r, g, b, a)
     }
 
-    override fun setToInterpolated(ratio: Double, l: ColorTransform, r: ColorTransform): ColorTransform = setTo(
+    override fun setToInterpolated(ratio: Ratio, l: ColorTransform, r: ColorTransform): ColorTransform = setTo(
         ratio.interpolate(l.mR, r.mR),
         ratio.interpolate(l.mG, r.mG),
         ratio.interpolate(l.mB, r.mB),
@@ -33,7 +31,7 @@ data class ColorTransform(
         ratio.interpolate(l.aA, r.aA)
     )
 
-    override fun interpolateWith(ratio: Double, other: ColorTransform): ColorTransform =
+    override fun interpolateWith(ratio: Ratio, other: ColorTransform): ColorTransform =
         ColorTransform().setToInterpolated(ratio, this, other)
 
     private var dirtyColorMul = true

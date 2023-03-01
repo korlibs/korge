@@ -4,9 +4,7 @@ import com.soywiz.kds.*
 import com.soywiz.kmem.*
 import com.soywiz.korma.annotations.*
 import com.soywiz.korma.internal.niceStr
-import com.soywiz.korma.interpolation.Interpolable
-import com.soywiz.korma.interpolation.MutableInterpolable
-import com.soywiz.korma.interpolation.interpolate
+import com.soywiz.korma.interpolation.*
 import com.soywiz.korma.math.*
 import kotlin.math.max
 import kotlin.math.min
@@ -462,10 +460,10 @@ data class MRectangle(
         && width.isAlmostEquals(other.width)
         && height.isAlmostEquals(other.height)
 
-    override fun interpolateWith(ratio: Double, other: IRectangle): MRectangle =
+    override fun interpolateWith(ratio: Ratio, other: IRectangle): MRectangle =
         MRectangle().setToInterpolated(ratio, this, other)
 
-    override fun setToInterpolated(ratio: Double, l: IRectangle, r: IRectangle): MRectangle =
+    override fun setToInterpolated(ratio: Ratio, l: IRectangle, r: IRectangle): MRectangle =
         this.setTo(
             ratio.interpolate(l.x, r.x),
             ratio.interpolate(l.y, r.y),

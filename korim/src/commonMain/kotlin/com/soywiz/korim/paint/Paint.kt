@@ -7,6 +7,7 @@ import com.soywiz.korim.color.*
 import com.soywiz.korim.vector.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
+import com.soywiz.korma.interpolation.*
 import kotlin.math.*
 
 interface Paint {
@@ -131,7 +132,7 @@ data class GradientPaint(
                         val color0 = RGBA(colors.getAt(n + 0))
                         val color1 = RGBA(colors.getAt(n + 1))
                         for (s in stop0 until stop1) {
-                            val ratio = (s - stop0).toDouble() / (stop1 - stop0).toDouble()
+                            val ratio = Ratio((s - stop0).toDouble(), (stop1 - stop0).toDouble())
                             out[s] = RGBA.interpolate(color0, color1, ratio).colorInt(premultiplied)
                         }
                     }

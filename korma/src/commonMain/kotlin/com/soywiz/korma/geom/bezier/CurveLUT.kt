@@ -6,7 +6,7 @@ import com.soywiz.kds.forEachRatio01
 import com.soywiz.kmem.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.internal.*
-import com.soywiz.korma.interpolation.interpolate
+import com.soywiz.korma.interpolation.*
 import com.soywiz.korma.math.*
 
 data class CurveLUT(val curve: Curve, val points: PointArrayList, val ts: DoubleArrayList, private val _estimatedLengths: DoubleArrayList) {
@@ -83,7 +83,7 @@ data class CurveLUT(val curve: Curve, val points: PointArrayList, val ts: Double
             val pointY1 = points.getY(index + 1)
             this.ratio = ratio.interpolate(ratio0, ratio1)
             this.length = ratio.interpolate(length0, length1)
-            this.point.setToInterpolated(ratio, pointX0, pointY0, pointX1, pointY1)
+            this.point.setToInterpolated(ratio.toRatio(), pointX0, pointY0, pointX1, pointY1)
         }
 
         return this

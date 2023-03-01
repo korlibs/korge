@@ -10,8 +10,7 @@ import com.soywiz.korim.internal.packIntUnchecked
 import com.soywiz.korim.internal.sumPacked4MulR
 import com.soywiz.korim.paint.Paint
 import com.soywiz.korio.util.niceStr
-import com.soywiz.korma.interpolation.Interpolable
-import com.soywiz.korma.interpolation.interpolate
+import com.soywiz.korma.interpolation.*
 import com.soywiz.krypto.encoding.appendHexByte
 import kotlin.jvm.JvmName
 import kotlin.math.pow
@@ -109,7 +108,7 @@ inline class RGBA(val value: Int) : Comparable<RGBA>, Interpolable<RGBA>, Paint 
 	operator fun minus(other: RGBA): RGBA = RGBA(this.r - other.r, this.g - other.g, this.b - other.b, this.a - other.a)
 
     override operator fun compareTo(other: RGBA): Int = this.value.compareTo(other.value)
-    override fun interpolateWith(ratio: Double, other: RGBA): RGBA = RGBA.interpolate(this, other, ratio)
+    override fun interpolateWith(ratio: Ratio, other: RGBA): RGBA = RGBA.interpolate(this, other, ratio)
 
     fun premultipliedValue(premultiplied: Boolean): Int = if (premultiplied) this.premultiplied.value else this.value
 
@@ -214,7 +213,7 @@ inline class RGBA(val value: Int) : Comparable<RGBA>, Interpolable<RGBA>, Paint 
             ((c1.a * c2.a) / 0xFF)
         )
 
-        fun interpolate(src: RGBA, dst: RGBA, ratio: Double): RGBA = RGBA(
+        fun interpolate(src: RGBA, dst: RGBA, ratio: Ratio): RGBA = RGBA(
             ratio.interpolate(src.r, dst.r),
             ratio.interpolate(src.g, dst.g),
             ratio.interpolate(src.b, dst.b),
@@ -223,7 +222,8 @@ inline class RGBA(val value: Int) : Comparable<RGBA>, Interpolable<RGBA>, Paint 
     }
 }
 
-fun Double.interpolate(a: RGBA, b: RGBA): RGBA = RGBA.interpolate(a, b, this)
+fun Double.interpolate(a: RGBA, b: RGBA): RGBA = this.toRatio().interpolate(a, b)
+fun Ratio.interpolate(a: RGBA, b: RGBA): RGBA = RGBA.interpolate(a, b, this)
 
 inline class RGBAPremultiplied(val value: Int) {
     constructor(rgb: Int, a: Int) : this((rgb and 0xFFFFFF) or (a shl 24))

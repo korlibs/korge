@@ -40,7 +40,7 @@ inline class Anchor internal constructor(internal val raw: Float2Pack) : Interpo
         val CENTER: Anchor get() = MIDDLE_CENTER
     }
 
-    override fun interpolateWith(ratio: Double, other: Anchor): Anchor = Anchor(
+    override fun interpolateWith(ratio: Ratio, other: Anchor): Anchor = Anchor(
         ratio.interpolate(this.sx, other.sx),
         ratio.interpolate(this.sy, other.sy)
     )

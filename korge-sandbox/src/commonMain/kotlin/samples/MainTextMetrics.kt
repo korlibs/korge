@@ -14,6 +14,7 @@ import com.soywiz.korio.async.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
+import com.soywiz.korma.interpolation.*
 import kotlin.reflect.*
 
 class MainTextMetrics : Scene() {
@@ -134,7 +135,7 @@ class MainTextMetrics : Scene() {
                 onDragAndDropFileEvent {
                     when (it.type) {
                         DropFileEvent.Type.START -> {
-                            views.clearColor = DEFAULT_BG.interpolateWith(0.2, Colors.RED)
+                            views.clearColor = DEFAULT_BG.interpolateWith(0.2.toRatio(), Colors.RED)
                         }
                         DropFileEvent.Type.END -> {
                             views.clearColor = DEFAULT_BG

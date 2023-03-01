@@ -204,13 +204,18 @@ val Int.radians: Angle get() = Angle.fromRadians(this)
 val Float.degrees: Angle get() = Angle.fromDegrees(this)
 val Float.radians: Angle get() = Angle.fromRadians(this)
 
-fun Double.interpolateAngle(l: Angle, r: Angle): Angle = interpolateAngle(l, r, minimizeAngle = true)
-fun Double.interpolateAngleNormalized(l: Angle, r: Angle): Angle = interpolateAngle(l, r, minimizeAngle = true)
-fun Double.interpolateAngleDenormalized(l: Angle, r: Angle): Angle = interpolateAngle(l, r, minimizeAngle = false)
+@Deprecated("") fun Double.interpolateAngle(l: Angle, r: Angle, minimizeAngle: Boolean): Angle = this.toRatio().interpolateAngle(l, r, minimizeAngle)
+@Deprecated("") fun Double.interpolateAngle(l: Angle, r: Angle): Angle = this.toRatio().interpolateAngle(l, r)
+@Deprecated("") fun Double.interpolateAngleNormalized(l: Angle, r: Angle): Angle = this.toRatio().interpolateAngleNormalized(l, r)
+@Deprecated("") fun Double.interpolateAngleDenormalized(l: Angle, r: Angle): Angle = this.toRatio().interpolateAngleDenormalized(l, r)
 
-fun Double.interpolateAngle(l: Angle, r: Angle, minimizeAngle: Boolean): Angle = _interpolateAngleAny(this, l, r, minimizeAngle)
+fun Ratio.interpolateAngle(l: Angle, r: Angle, minimizeAngle: Boolean): Angle = _interpolateAngleAny(this, l, r, minimizeAngle)
+fun Ratio.interpolateAngle(l: Angle, r: Angle): Angle = interpolateAngle(l, r, minimizeAngle = true)
+fun Ratio.interpolateAngleNormalized(l: Angle, r: Angle): Angle = interpolateAngle(l, r, minimizeAngle = true)
+fun Ratio.interpolateAngleDenormalized(l: Angle, r: Angle): Angle = interpolateAngle(l, r, minimizeAngle = false)
 
-private fun _interpolateAngleAny(ratio: Double, l: Angle, r: Angle, minimizeAngle: Boolean = true): Angle {
+
+private fun _interpolateAngleAny(ratio: Ratio, l: Angle, r: Angle, minimizeAngle: Boolean = true): Angle {
     if (!minimizeAngle) return Angle.fromRatio(ratio.interpolate(l.ratio, r.ratio))
     val ln = l.normalized
     val rn = r.normalized

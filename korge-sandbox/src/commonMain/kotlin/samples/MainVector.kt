@@ -13,6 +13,7 @@ import com.soywiz.korio.async.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
+import com.soywiz.korma.interpolation.*
 
 class MainVector : ScaledScene(1280, 720) {
     companion object {
@@ -39,7 +40,7 @@ class MainVector : ScaledScene(1280, 720) {
                                 val radius = 96 - ratio * 16
                                 //clip({ circle(0.0, 0.0, 64.0) }) {
                                 stroke(
-                                    RGBA.interpolate(Colors.GREEN, Colors.BLUE, ratio),
+                                    RGBA.interpolate(Colors.GREEN, Colors.BLUE, ratio.toRatio()),
                                     StrokeInfo(thickness = 1.0 + ratio * 6, startCap = lineCap, endCap = lineCap)
                                 ) {
                                     moveTo(0, 0)

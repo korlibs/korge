@@ -14,9 +14,7 @@ import com.soywiz.korio.async.Signal
 import com.soywiz.korio.async.invoke
 import com.soywiz.korio.async.waitOne
 import com.soywiz.korma.geom.*
-import com.soywiz.korma.interpolation.Easing
-import com.soywiz.korma.interpolation.MutableInterpolable
-import com.soywiz.korma.interpolation.interpolate
+import com.soywiz.korma.interpolation.*
 import kotlin.math.min
 import kotlin.math.pow
 import kotlin.math.sqrt
@@ -211,7 +209,7 @@ class CameraContainer(
                 elapsedTime < transitionTime -> {
                     elapsedTime += it
                     val ratio = (elapsedTime / transitionTime).coerceIn(0.0, 1.0)
-                    currentCamera.setToInterpolated(easing(ratio), sourceCamera, targetCamera)
+                    currentCamera.setToInterpolated(easing(ratio).toRatio(), sourceCamera, targetCamera)
                     /*
                     val ratioCamera = easing(ratio)
                     val ratioZoom = easing(ratio)
@@ -322,9 +320,9 @@ data class Camera(
         }
     }
 
-    override fun setToInterpolated(ratio: Double, l: Camera, r: Camera): Camera {
+    override fun setToInterpolated(ratio: Ratio, l: Camera, r: Camera): Camera {
         // Adjust based on the zoom changes
-        val posRatio = posEasing(l.zoom, r.zoom, l.x, r.x, ratio)
+        val posRatio = posEasing(l.zoom, r.zoom, l.x, r.x, ratio.valueD)
 
         return setTo(
             posRatio.interpolate(l.x, r.x),

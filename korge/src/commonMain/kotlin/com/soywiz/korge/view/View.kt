@@ -583,7 +583,7 @@ abstract class View internal constructor(
 
     /** Like [setMatrix] but directly sets an interpolated version of the [l] and [r] matrices with the [ratio] */
     fun setMatrixInterpolated(ratio: Double, l: MMatrix, r: MMatrix) {
-        this._localMatrix.setToInterpolated(ratio, l, r)
+        this._localMatrix.setToInterpolated(ratio.toRatio(), l, r)
         this.validLocalProps = false
         invalidate()
     }
@@ -932,10 +932,10 @@ abstract class View internal constructor(
                 circle(localToGlobal(local.topRight), anchorSize)
                 circle(localToGlobal(local.bottomRight), anchorSize)
                 circle(localToGlobal(local.bottomLeft), anchorSize)
-                circle(localToGlobal(local.topLeft.interpolateWith(0.5, local.topRight)), anchorSize)
-                circle(localToGlobal(local.topRight.interpolateWith(0.5, local.bottomRight)), anchorSize)
-                circle(localToGlobal(local.bottomRight.interpolateWith(0.5, local.bottomLeft)), anchorSize)
-                circle(localToGlobal(local.bottomLeft.interpolateWith(0.5, local.topLeft)), anchorSize)
+                circle(localToGlobal(local.topLeft.interpolateWith(Ratio.HALF, local.topRight)), anchorSize)
+                circle(localToGlobal(local.topRight.interpolateWith(Ratio.HALF, local.bottomRight)), anchorSize)
+                circle(localToGlobal(local.bottomRight.interpolateWith(Ratio.HALF, local.bottomLeft)), anchorSize)
+                circle(localToGlobal(local.bottomLeft.interpolateWith(Ratio.HALF, local.topLeft)), anchorSize)
             }
             lines.drawVector(Colors.BLUE) {
                 val centerX = globalX

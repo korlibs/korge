@@ -3,21 +3,23 @@ package com.soywiz.korma.interpolation
 import com.soywiz.kmem.*
 import com.soywiz.korma.math.*
 
-inline class Ratio(val value: Float) : Comparable<Ratio> {
-    constructor(ratio: Double) : this(ratio.toFloat())
+//inline class Ratio(val value: Float) : Comparable<Ratio> {
+inline class Ratio(val valueD: Double) : Comparable<Ratio> {
+    //constructor(ratio: Double) : this(ratio.toFloat())
+    constructor(ratio: Float) : this(ratio.toDouble())
     constructor(value: Float, maximum: Float) : this(value / maximum)
     constructor(value: Double, maximum: Double) : this(value / maximum)
 
-    val valueF: Float get() = value
-    val valueD: Double get() = value.toDouble()
+    val value: Double get() = valueD
+    val valueF: Float get() = value.toFloat()
 
     val clamped: Ratio get() = Ratio(value.clamp01())
 
     fun roundDecimalPlaces(places: Int): Ratio = Ratio(value.roundDecimalPlaces(places))
 
-    fun convertToRange(min: Float, max: Float): Float = value.convertRange(0f, 1f, min, max)
+    fun convertToRange(min: Float, max: Float): Float = valueF.convertRange(0f, 1f, min, max)
     fun convertToRange(min: Double, max: Double): Double = valueD.convertRange(0.0, 1.0, min, max)
-    fun convertToRange(min: Ratio, max: Ratio): Ratio = Ratio(value.convertRange(0f, 1f, min.value, max.value))
+    fun convertToRange(min: Ratio, max: Ratio): Ratio = Ratio(valueD.convertRange(0.0, 1.0, min.valueD, max.valueD))
 
     override fun compareTo(other: Ratio): Int = value.compareTo(other.value)
 
@@ -40,8 +42,13 @@ inline class Ratio(val value: Float) : Comparable<Ratio> {
     }
 }
 
+@Deprecated("", ReplaceWith("this")) fun Ratio.toRatio(): Ratio = this
+
 fun Float.toRatio(): Ratio = Ratio(this)
-fun Double.toRatio(): Ratio = Ratio(this.toFloat())
+fun Double.toRatio(): Ratio = Ratio(this)
+
+fun Float.toRatio(max: Float): Ratio = Ratio(this, max)
+fun Double.toRatio(max: Double): Ratio = Ratio(this, max)
 
 fun min(a: Ratio, b: Ratio): Ratio = Ratio(kotlin.math.min(a.value, b.value))
 fun max(a: Ratio, b: Ratio): Ratio = Ratio(kotlin.math.max(a.value, b.value))

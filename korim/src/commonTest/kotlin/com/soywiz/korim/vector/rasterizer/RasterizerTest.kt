@@ -6,6 +6,7 @@ import com.soywiz.korio.async.*
 import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
+import com.soywiz.korma.interpolation.*
 import kotlin.test.*
 
 class RasterizerTest {
@@ -147,7 +148,7 @@ class RasterizerTest {
                 val colorA = Colors.RED
                 val colorB = Colors.BLUE
                 for (n in 0 until 360 step 30) {
-                    stroke(RGBA.interpolate(colorA, colorB, n.toDouble() / 360)) {
+                    stroke(RGBA.interpolate(colorA, colorB, Ratio(n.toDouble(), 360.0))) {
                         beginPath()
                         moveTo(0, 0)
                         lineTo(n.degrees.cosineD * radius, n.degrees.sineD * radius)

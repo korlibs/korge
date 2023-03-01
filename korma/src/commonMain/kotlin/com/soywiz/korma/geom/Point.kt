@@ -5,11 +5,9 @@ package com.soywiz.korma.geom
 import com.soywiz.kds.*
 import com.soywiz.kds.pack.*
 import com.soywiz.korma.internal.niceStr
-import com.soywiz.korma.interpolation.Interpolable
-import com.soywiz.korma.interpolation.MutableInterpolable
-import com.soywiz.korma.interpolation.interpolate
 import com.soywiz.kmem.clamp
 import com.soywiz.korma.annotations.*
+import com.soywiz.korma.interpolation.*
 import com.soywiz.korma.math.isAlmostEquals
 import com.soywiz.korma.math.isAlmostZero
 import com.soywiz.korma.math.roundDecimalPlaces
@@ -417,13 +415,13 @@ data class MPoint(
         }
     }
 
-    override fun interpolateWith(ratio: Double, other: MPoint): MPoint =
+    override fun interpolateWith(ratio: Ratio, other: MPoint): MPoint =
         MPoint().setToInterpolated(ratio, this, other)
 
-    override fun setToInterpolated(ratio: Double, l: MPoint, r: MPoint): MPoint = setToInterpolated(ratio, l.x, l.y, r.x, r.y)
-    fun setToInterpolated(ratio: Double, l: IPoint, r: IPoint): MPoint = setToInterpolated(ratio, l.x, l.y, r.x, r.y)
+    override fun setToInterpolated(ratio: Ratio, l: MPoint, r: MPoint): MPoint = setToInterpolated(ratio, l.x, l.y, r.x, r.y)
+    fun setToInterpolated(ratio: Ratio, l: IPoint, r: IPoint): MPoint = setToInterpolated(ratio, l.x, l.y, r.x, r.y)
 
-    fun setToInterpolated(ratio: Double, lx: Double, ly: Double, rx: Double, ry: Double): MPoint =
+    fun setToInterpolated(ratio: Ratio, lx: Double, ly: Double, rx: Double, ry: Double): MPoint =
         this.setTo(ratio.interpolate(lx, rx), ratio.interpolate(ly, ry))
 
     override fun toString(): String = "(${this.x.niceStr}, ${this.y.niceStr})"
@@ -562,7 +560,7 @@ inline class MPointInt(val p: MPoint) : IPointInt, Comparable<IPointInt>, Mutabl
     }
     fun setTo(that: IPointInt) = this.setTo(that.x, that.y)
 
-    override fun setToInterpolated(ratio: Double, l: MPointInt, r: MPointInt): MPointInt =
+    override fun setToInterpolated(ratio: Ratio, l: MPointInt, r: MPointInt): MPointInt =
         setTo(ratio.interpolate(l.x, r.x), ratio.interpolate(l.y, r.y))
 
     override fun toString(): String = "($x, $y)"
