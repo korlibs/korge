@@ -17,6 +17,7 @@ import com.soywiz.korim.font.DefaultTtfFont
 import com.soywiz.korim.font.readTtfFont
 import com.soywiz.korim.font.withFallback
 import com.soywiz.korio.file.std.resourcesVfs
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.shape.buildVectorPath
 import com.soywiz.korma.geom.vector.circle
 
@@ -54,7 +55,7 @@ class MainTextInput : Scene() {
             this.softKeyboardType = SoftKeyboardType.EMAIL_ADDRESS
         }.xy(200, 300)
 
-        val textPath = buildVectorPath { circle(0, 0, 100) }
+        val textPath = buildVectorPath { circle(Point(0, 0), 100f) }
 
         text(
             "HELLO WORLD",
@@ -70,7 +71,7 @@ class MainTextInput : Scene() {
             color = Colors.RED,
         ).xy(600, 500)
             .textSpacing(9.0)
-            .aroundPath(buildVectorPath { moveTo(0.0, 0.0); quadTo(250.0, -100.0, 500.0, 0.0) })
+            .aroundPath(buildVectorPath { moveTo(Point(0.0, 0.0)); quadTo(250.0, -100.0, 500.0, 0.0) })
             .filters(DropshadowFilter())
             .also { it.editText() }
 

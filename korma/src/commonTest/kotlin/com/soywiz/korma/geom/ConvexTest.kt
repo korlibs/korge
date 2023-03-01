@@ -17,7 +17,7 @@ class ConvexTest {
     }
     @Test
     fun testCircle() {
-        assertEquals(true, isConvexPath { circle(0, 0, 100) })
+        assertEquals(true, isConvexPath { circle(Point(0, 0), 100f) })
     }
     @Test
     fun testRoundRect() {

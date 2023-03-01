@@ -62,30 +62,30 @@ class MainGpuVectorRendering3 : Scene() {
             text("${strokeInfo.join}", color = Colors.YELLOWGREEN).xy(sx, 10)
             debugPath("Lines CW", getPos(0, 0), strokeInfo, buildVectorPath {
                 //rect(10, 10, 100, 100)
-                moveTo(0, 0)
-                lineTo(100, 0)
-                lineTo(100, 100)
+                moveTo(Point(0, 0))
+                lineTo(Point(100, 0))
+                lineTo(Point(100, 100))
             })
 
             debugPath("Lines CCW", getPos(1, 0), strokeInfo, buildVectorPath {
                 //rect(10, 10, 100, 100)
-                moveTo(0, 0)
-                lineTo(0, 100)
-                lineTo(100, 100)
+                moveTo(Point(0, 0))
+                lineTo(Point(0, 100))
+                lineTo(Point(100, 100))
             })
 
             debugPath("Lines2 CCW", getPos(2, 0), strokeInfo, buildVectorPath {
                 //rect(10, 10, 100, 100)
-                moveTo(0, 0)
-                lineTo(0, 100)
-                lineTo(100, 100)
-                lineTo(100, 0)
+                moveTo(Point(0, 0))
+                lineTo(Point(0, 100))
+                lineTo(Point(100, 100))
+                lineTo(Point(100, 0))
             })
             debugPath("Lines2 CW", getPos(2, 1), strokeInfo, buildVectorPath {
-                moveTo(0, 0)
-                lineTo(100, 0)
-                lineTo(100, 100)
-                lineTo(0, 100)
+                moveTo(Point(0, 0))
+                lineTo(Point(100, 0))
+                lineTo(Point(100, 100))
+                lineTo(Point(0, 100))
             })
 
             debugPath("Rect closed", getPos(0, 1), strokeInfo, buildVectorPath {
@@ -93,43 +93,43 @@ class MainGpuVectorRendering3 : Scene() {
             })
 
             debugPath("Rect not closed", getPos(1, 1), strokeInfo, buildVectorPath {
-                moveTo(0, 0)
-                lineTo(100, 0)
-                lineTo(100, 100)
-                lineTo(0, 100)
-                lineTo(0, 0)
+                moveTo(Point(0, 0))
+                lineTo(Point(100, 0))
+                lineTo(Point(100, 100))
+                lineTo(Point(0, 100))
+                lineTo(Point(0, 0))
             })
 
             debugPath("Pointed CW", getPos(0, 2), strokeInfo, buildVectorPath {
-                moveTo(0, 0)
-                lineTo(100, 0)
-                lineTo(0, 100)
+                moveTo(Point(0, 0))
+                lineTo(Point(100, 0))
+                lineTo(Point(0, 100))
             })
 
             debugPath("Pointed CW", getPos(1, 2), strokeInfo, buildVectorPath {
-                moveTo(0, 0)
-                lineTo(100, 0)
-                lineTo(0, 30)
+                moveTo(Point(0, 0))
+                lineTo(Point(100, 0))
+                lineTo(Point(0, 30))
             })
 
             debugPath("Pointed CCW", getPos(0, 3), strokeInfo, buildVectorPath {
-                moveTo(100, 0)
-                lineTo(0, 0)
-                lineTo(100, 100)
+                moveTo(Point(100, 0))
+                lineTo(Point(0, 0))
+                lineTo(Point(100, 100))
             })
 
             debugPath("Pointed CCW", getPos(1, 3), strokeInfo, buildVectorPath {
-                moveTo(100, 0)
-                lineTo(0, 0)
-                lineTo(100, 30)
+                moveTo(Point(100, 0))
+                lineTo(Point(0, 0))
+                lineTo(Point(100, 30))
             })
 
             debugPath("Circle", getPos(0, 4), strokeInfo, buildVectorPath {
-                circle(50.0, 50.0, 50.0)
+                circle(Point(50.0, 50.0), 50.0f)
             })
 
             debugPath("Arc", getPos(1, 4), strokeInfo, buildVectorPath {
-                arc(50.0, 50.0, 50.0, (-64).degrees, (+180).degrees)
+                arc(Point(50.0, 50.0), 50f, (-64).degrees, (+180).degrees)
             })
 
             debugPath("Shape", getPos(2, 4), strokeInfo, buildVectorPath {

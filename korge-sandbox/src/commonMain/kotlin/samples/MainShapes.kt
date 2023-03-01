@@ -23,10 +23,10 @@ class MainShapes : Scene() {
                 rect(-1.0, -1.0, 3.0, 2.0)
             }
             fill(Colors.AQUAMARINE) {
-                circle(0.0, 0.0, 1.0)
+                circle(Point(0, 0), 1f)
             }
             fill(Colors.AQUAMARINE) {
-                circle(1.0, 0.0, 1.0)
+                circle(Point(1, 0), 1f)
             }
         }
             .position(100, 100)

@@ -71,10 +71,10 @@ class KorgeMultithreadedTest {
                 }
                 ColorMatrixFilter.getProgram()
                 this.views.render()
-                val path = buildVectorPath { circle(0, 0, 100) }
+                val path = buildVectorPath { circle(Point(0, 0), 100f) }
                 path.getCurvesList()
-                path.moveTo(200, 200)
-                path.lineTo(300, 300)
+                path.moveTo(Point(200, 200))
+                path.lineTo(Point(300, 300))
                 path.getCurvesList()
                 val curves = path.getCurves()
 

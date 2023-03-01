@@ -184,15 +184,15 @@ class StrokeToFill {
             val x = fillPointsLeft.getX(n)
             val y = fillPointsLeft.getY(n)
             if (n == 0) {
-                outFill.moveTo(x * scale, y * scale)
+                outFill.moveTo(Point(x * scale, y * scale))
             } else {
-                outFill.lineTo(x * scale, y * scale)
+                outFill.lineTo(Point(x * scale, y * scale))
             }
         }
         // Draw the rest of the points
         for (n in 0 until fillPointsRight.size) {
             val m = fillPointsRight.size - n - 1
-            outFill.lineTo(fillPointsRight.getX(m) * scale, fillPointsRight.getY(m) * scale)
+            outFill.lineTo(Point(fillPointsRight.getX(m) * scale, fillPointsRight.getY(m) * scale))
         }
         outFill.close()
         outFill.winding = Winding.NON_ZERO

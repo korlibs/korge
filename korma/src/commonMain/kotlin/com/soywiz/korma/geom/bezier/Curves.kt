@@ -165,7 +165,7 @@ fun List<Curve>.toVectorPath(out: VectorPath = VectorPath()): VectorPath {
     fun bezier(bezier: Bezier) {
         val points = bezier.points
         if (first) {
-            out.moveTo(points.firstX, points.firstY)
+            out.moveTo(Point(points.firstX, points.firstY))
             first = false
         }
         when (bezier.order) {

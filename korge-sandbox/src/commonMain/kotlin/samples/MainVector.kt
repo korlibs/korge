@@ -43,8 +43,8 @@ class MainVector : ScaledScene(1280, 720) {
                                     RGBA.interpolate(Colors.GREEN, Colors.BLUE, ratio.toRatio()),
                                     StrokeInfo(thickness = 1.0 + ratio * 6, startCap = lineCap, endCap = lineCap)
                                 ) {
-                                    moveTo(0, 0)
-                                    lineTo(angle.cosineD * radius, angle.sineD * radius)
+                                    moveTo(Point(0, 0))
+                                    lineTo(Point(angle.cosineD * radius, angle.sineD * radius))
                                 }
                                 //}
                             }

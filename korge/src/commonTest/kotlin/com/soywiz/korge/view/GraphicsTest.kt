@@ -105,10 +105,10 @@ class GraphicsTest {
     fun testMultiShapeHitTesting() {
         val graphics = CpuGraphics().updateShape {
             fill(Colors.RED) {
-                circle(0.0, 0.0, 32.0)
+                circle(Point(0, 0), 32f)
             }
             fill(Colors.BLUE) {
-                circle(0.0, 0.0, 16.0)
+                circle(Point(0, 0), 16f)
             }
         }
         //println(graphics.hitShape2d)
@@ -218,7 +218,7 @@ class GraphicsTest {
             this.stroke(Colors.YELLOW, info = StrokeInfo(50.0)) {
                 line(Point(100, 100), Point(200, 200))
             }
-            this.circle(100.0, 100.0, 5.0)
+            this.circle(Point(100, 100), 5f)
             fill(Colors.BLUE)
         }
 

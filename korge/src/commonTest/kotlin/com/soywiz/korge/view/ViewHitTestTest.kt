@@ -12,7 +12,7 @@ class ViewHitTestTest : ViewsForTesting() {
     fun testShape() = viewsTest{
         val circleB = solidRect(128.0, 128.0, Colors.RED).anchor(Anchor.MIDDLE_CENTER)
             .position(256, 256)
-            .hitShape { circle(64.0, 64.0, 64.0) }
+            .hitShape { circle(Point(64, 64), 64f) }
 
         assertEquals(true, circleB.hitTestAny(256.0, 256.0))
         assertEquals(true, circleB.hitTestAny(200.0, 256.0))
@@ -77,9 +77,9 @@ class Polygon(
                     val y = polygon.radius * angle.sineD
                     //println("$x, $y")
                     if (n == 0) {
-                        moveTo(x, y)
+                        moveTo(Point(x, y))
                     } else {
-                        lineTo(x, y)
+                        lineTo(Point(x, y))
                     }
                 }
                 close()

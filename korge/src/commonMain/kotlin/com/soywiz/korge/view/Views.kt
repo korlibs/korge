@@ -615,10 +615,12 @@ interface BoundsProvider {
     fun globalToWindowBounds(bounds: MRectangle, out: MRectangle = MRectangle()): MRectangle =
         out.copyFrom(bounds).applyTransform(globalToWindowMatrix)
 
-    val windowToGlobalScaleX: Double get() = windowToGlobalTransform.scaleX
-    val windowToGlobalScaleY: Double get() = windowToGlobalTransform.scaleY
-    val windowToGlobalScaleAvg: Double get() = windowToGlobalTransform.scaleAvg
+    val windowToGlobalScale: Scale get() = windowToGlobalTransform.scale
+    val windowToGlobalScaleX: Double get() = windowToGlobalTransform.scale.scaleXD
+    val windowToGlobalScaleY: Double get() = windowToGlobalTransform.scale.scaleYD
+    val windowToGlobalScaleAvg: Double get() = windowToGlobalTransform.scale.scaleAvgD
 
+    val globalToWindowScale: Scale get() = globalToWindowTransform.scale
     val globalToWindowScaleX: Double get() = globalToWindowTransform.scaleX
     val globalToWindowScaleY: Double get() = globalToWindowTransform.scaleY
     val globalToWindowScaleAvg: Double get() = globalToWindowTransform.scaleAvg

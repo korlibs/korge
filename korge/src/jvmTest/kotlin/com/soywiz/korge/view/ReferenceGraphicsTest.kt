@@ -87,7 +87,7 @@ class ReferenceGraphicsTest {
                     rectHole(40, 40, 80, 80)
                 }
                 fill(Colors.YELLOW) {
-                    this.circle(100, 100, 40)
+                    this.circle(Point(100, 100), 40f)
                     //rect(-100, -100, 500, 500)
                     //rectHole(40, 40, 320, 320)
                 }
@@ -119,7 +119,7 @@ class ReferenceGraphicsTest {
                             //.addColorStop(0.0, Colors.BLACK).addColorStop(1.0, Colors.WHITE)
                             .addColorStop(0.0, Colors.RED).addColorStop(0.5, Colors.GREEN).addColorStop(1.0, Colors.BLUE)
                     clip({
-                        circle(150, 50, 50)
+                        circle(Point(150, 50), 50f)
                     }, {
                         fillRect(100.0, 0.0, 100.0, 100.0)
                     })

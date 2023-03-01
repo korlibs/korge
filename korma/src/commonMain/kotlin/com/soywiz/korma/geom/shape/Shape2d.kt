@@ -160,7 +160,7 @@ abstract class Shape2d {
         val isCircle get() = ellipseRadiusX == ellipseRadiusY
         val vectorPath by lazy {
             buildVectorPath(VectorPath()) {
-                ellipse(0.0, 0.0, ellipseRadiusX, ellipseRadiusY)
+                ellipse(Point(0.0, 0.0), Size(ellipseRadiusX, ellipseRadiusY))
             }.applyTransform(MMatrix().pretranslate(ellipseX, ellipseY).prerotate(ellipseAngle))
         }
 

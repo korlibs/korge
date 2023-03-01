@@ -19,7 +19,7 @@ import com.soywiz.korim.color.ColorAdd
 import com.soywiz.korim.color.Colors
 import com.soywiz.korio.async.AsyncThread
 import com.soywiz.korio.async.launchImmediately
-import com.soywiz.korma.geom.MPoint
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.circle
 import com.soywiz.korma.geom.vector.rect
 
@@ -27,10 +27,10 @@ class MainConnect4 : ScaledScene(448, 384) {
     override suspend fun SContainer.sceneMain() {
         //sceneContainer.setSize(300.0, 300.0)
         val redChip = Bitmap32Context2d(64, 64) {
-            fill(Colors.RED) { circle(32.0, 32.0, 26.0) }
+            fill(Colors.RED) { circle(Point(32, 32), 26f) }
         }
         val yellowChip = Bitmap32Context2d(64, 64) {
-            fill(Colors.YELLOW) { circle(32.0, 32.0, 26.0) }
+            fill(Colors.YELLOW) { circle(Point(32, 32), 26f) }
         }
         val emptyChip = Bitmap32Context2d(64, 64) {
         }
@@ -48,7 +48,7 @@ class MainConnect4 : ScaledScene(448, 384) {
                 rect(0.0, 0.0, width.toDouble(), height.toDouble())
                 for (row in 0 until nrows) {
                     for (col in 0 until ncols) {
-                        circle(32.0 + col * 64, 32.0 + row * 64, 24.0)
+                        circle(Point(32.0 + col * 64, 32.0 + row * 64), 24f)
                     }
                 }
             }

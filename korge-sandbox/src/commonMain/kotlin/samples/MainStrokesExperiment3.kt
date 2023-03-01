@@ -25,7 +25,7 @@ import com.soywiz.korma.interpolation.*
 class MainStrokesExperiment3 : Scene() {
     override suspend fun SContainer.sceneMain() {
         cpuGraphics {
-            val path = buildVectorPath { circle(200, 200, 100) }
+            val path = buildVectorPath { circle(Point(200, 200), 100f) }
             val points = path.toCurves().toNonCurveSimplePointList()
             val path2 = points?.toPolygon()
 
@@ -40,7 +40,7 @@ class MainStrokesExperiment3 : Scene() {
             fill(Colors.PURPLE) {
                 var n = 0
                 points?.fastForEach { x, y ->
-                    circle(x, y, 5.0)
+                    circle(Point(x, y), 5f)
                 }
             }
             fill(Colors.WHITE) {
@@ -115,11 +115,11 @@ class MainStrokesExperiment2 : Scene() {
                 }
 
                 val path = buildVectorPath {
-                    moveTo(startX, startY)
-                    quadTo(100, 600, 300, 400)
+                    moveTo(Point(startX, startY))
+                    quadTo(Point(100, 600), Point(300, 400))
                     when {
-                        quad -> quadTo(endX - 50, endY - 50, endX, endY)
-                        else -> lineTo(endX, endY)
+                        quad -> quadTo(Point(endX - 50, endY - 50), Point(endX, endY))
+                        else -> lineTo(Point(endX, endY))
                     }
                     if (closed) this.close()
                 }
@@ -159,20 +159,19 @@ class MainStrokesExperiment2 : Scene() {
                         pointsInfo.debugPoints.fastForEachWithIndex { index, x, y ->
                             val color = debugPointColors.getCyclic(index)
                             fill(color.withAd(0.5)) {
-                                this.circle(x, y, 3.0)
+                                this.circle(Point(x, y), 3f)
                             }
                         }
                     }
 
                     PointArrayList().also {
                         for (c in curves.beziers) {
-                            val bc = c as Bezier
-                            it.add(bc.points.firstPoint())
-                            it.add(bc.points.lastPoint())
+                            it.add(c.points.first)
+                            it.add(c.points.last)
                         }
                     }.fastForEach { x, y ->
                         fill(Colors.RED.withAd(0.5)) {
-                            this.circle(x, y, 2.0)
+                            this.circle(Point(x, y), 2f)
                         }
                     }
 

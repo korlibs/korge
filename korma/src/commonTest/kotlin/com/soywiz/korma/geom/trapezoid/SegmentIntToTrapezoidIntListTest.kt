@@ -127,7 +127,7 @@ class SegmentIntToTrapezoidIntListTest {
                 ....####....
             """.trimIndent(),
             trapezoidsDrawing(12, 12, drawScale = 10) {
-                circle(60, 60, 60)
+                circle(Point(60, 60), 60f)
             }
         )
     }
@@ -150,9 +150,9 @@ class SegmentIntToTrapezoidIntListTest {
                 ....####....
             """.trimIndent(),
             trapezoidsDrawing(12, 12, drawScale = 10, winding = Winding.EVEN_ODD) {
-                circle(60, 60, 60)
+                circle(Point(60, 60), 60f)
                 //circleHole(60, 60, 40)
-                circle(60, 60, 40)
+                circle(Point(60, 60), 40f)
             }
         )
     }
@@ -175,8 +175,8 @@ class SegmentIntToTrapezoidIntListTest {
                 ....####....
             """.trimIndent(),
             trapezoidsDrawing(12, 12, drawScale = 10, winding = Winding.NON_ZERO) {
-                circle(60, 60, 60)
-                circleHole(60, 60, 40)
+                circle(Point(60, 60), 60f)
+                circleHole(Point(60, 60), 40f)
             }
         )
     }

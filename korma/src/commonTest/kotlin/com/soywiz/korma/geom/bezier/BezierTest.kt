@@ -23,9 +23,9 @@ class BezierTest {
     @Test
     fun testCurves() {
         val path = buildVectorPath {
-            moveTo(200.0, 200.0)
-            lineTo(400.0, 100.0)
-            quadTo(400.0, 400.0, 200.0, 200.0)
+            moveTo(Point(200.0, 200.0))
+            lineTo(Point(400.0, 100.0))
+            quadTo(Point(400.0, 400.0), Point(200.0, 200.0))
         }
         val curves = path.getCurves()
         assertEquals(590.0, curves.length, 0.4)

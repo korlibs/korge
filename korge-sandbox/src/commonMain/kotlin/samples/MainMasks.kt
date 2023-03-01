@@ -22,6 +22,7 @@ import com.soywiz.korge.view.xy
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.paint.LinearGradientPaint
 import com.soywiz.korio.async.launchImmediately
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.shape.buildVectorPath
 import com.soywiz.korma.geom.vector.VectorPath
 import com.soywiz.korma.geom.vector.circle
@@ -66,7 +67,7 @@ class MainMasks : Scene() {
             val width = this.width
             val height = this.height
             val path = buildVectorPath(VectorPath()) {
-                circle(width * 0.5, height * 0.5, 300.0)
+                circle(Point(width * 0.5, height * 0.5), 300f)
             }
             animate(looped = true) {
                 tween(circle3::pos[path], time = 2.seconds, easing = Easing.LINEAR)

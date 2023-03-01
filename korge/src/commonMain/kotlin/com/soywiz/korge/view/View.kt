@@ -868,7 +868,7 @@ abstract class View internal constructor(
                 close()
             }
             lines.drawVector(Colors.YELLOW) {
-                val anchorSize = 6.0 * ctx.views!!.windowToGlobalScaleAvg
+                val anchorSize = 6f * ctx.views!!.windowToGlobalScaleAvg.toFloat()
                 circle(localToGlobal(local.topLeft), anchorSize)
                 circle(localToGlobal(local.topRight), anchorSize)
                 circle(localToGlobal(local.bottomRight), anchorSize)

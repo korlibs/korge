@@ -1,7 +1,6 @@
 package com.soywiz.korma.geom.vector
 
-import com.soywiz.korma.geom.MMatrix
-import com.soywiz.korma.geom.MRectangle
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.bezier.Bezier
 import com.soywiz.korma.geom.shape.buildVectorPath
 import kotlin.test.Test
@@ -11,10 +10,10 @@ class VectorPathTest {
     @Test
     fun testSimpleSquare() {
         val g = buildVectorPath {
-            moveTo(0, 0)
-            lineTo(100, 0)
-            lineTo(100, 100)
-            lineTo(0, 100)
+            moveTo(Point(0, 0))
+            lineTo(Point(100, 0))
+            lineTo(Point(100, 100))
+            lineTo(Point(0, 100))
             close()
         }
 
@@ -26,7 +25,7 @@ class VectorPathTest {
     @Test
     fun testCircle() {
         val g = VectorPath()
-        g.circle(0, 0, 100)
+        g.circle(Point(0, 0), 100f)
         assertEquals("Stats(moveTo=1, lineTo=0, quadTo=0, cubicTo=4, close=1)", g.readStats().toString())
         //println(g.numberOfIntersections(0, 0))
         assertEquals(true, g.containsPoint(0, -1))
@@ -41,16 +40,16 @@ class VectorPathTest {
     @Test
     fun testSquareWithHole() {
         val g = VectorPath()
-        g.moveTo(0, 0)
-        g.lineTo(100, 0)
-        g.lineTo(100, 100)
-        g.lineTo(0, 100)
+        g.moveTo(Point(0, 0))
+        g.lineTo(Point(100, 0))
+        g.lineTo(Point(100, 100))
+        g.lineTo(Point(0, 100))
         g.close()
 
-        g.moveTo(75, 25)
-        g.lineTo(25, 25)
-        g.lineTo(25, 75)
-        g.lineTo(75, 75)
+        g.moveTo(Point(75, 25))
+        g.lineTo(Point(25, 25))
+        g.lineTo(Point(25, 75))
+        g.lineTo(Point(75, 75))
         g.close()
 
         assertEquals(false, g.containsPoint(50, 50))
@@ -65,11 +64,11 @@ class VectorPathTest {
         val vp = VectorPath().apply {
             // /\
             // \/
-            moveTo(0, -50)
-            lineTo(-50, 0)
-            lineTo(0, +50)
-            lineTo(+50, 0)
-            lineTo(0, -50)
+            moveTo(Point(0, -50))
+            lineTo(Point(-50, 0))
+            lineTo(Point(0, +50))
+            lineTo(Point(+50, 0))
+            lineTo(Point(0, -50))
             close()
         }
         assertEquals(true, vp.containsPoint(0, 0))
@@ -119,10 +118,10 @@ class VectorPathTest {
     @Test
     fun testContainsPoint2() {
         buildVectorPath(winding = Winding.NON_ZERO, block = fun VectorPath.() {
-            moveTo(1, 1)
-            lineTo(2, 1)
-            lineTo(2, 2)
-            lineTo(1, 2)
+            moveTo(Point(1, 1))
+            lineTo(Point(2, 1))
+            lineTo(Point(2, 2))
+            lineTo(Point(1, 2))
             close()
         }).also {
             assertEquals(false, it.containsPoint(0.99, 0.99))
@@ -137,12 +136,12 @@ class VectorPathTest {
         }
 
         buildVectorPath(winding = Winding.EVEN_ODD, block = fun VectorPath.() {
-            moveTo(-1, -1)
-            lineTo(+1, -1)
-            lineTo(+1, 0)
-            lineTo(+1, +1)
-            lineTo(-1, +1)
-            lineTo(-1, 0)
+            moveTo(Point(-1, -1))
+            lineTo(Point(+1, -1))
+            lineTo(Point(+1, 0))
+            lineTo(Point(+1, +1))
+            lineTo(Point(-1, +1))
+            lineTo(Point(-1, 0))
             close()
         }).also {
             assertEquals(true, it.containsPoint(0, 0))
@@ -222,8 +221,8 @@ class VectorPathTest {
     fun testVisitEdgesSimplified() {
         val log = arrayListOf<String>()
         buildVectorPath(VectorPath()) {
-            moveTo(100, 100)
-            quadTo(100, 200, 200, 200)
+            moveTo(Point(100, 100))
+            quadTo(Point(100, 200), Point(200, 200))
             close()
         }.visitEdgesSimple(
             { p0, p1 -> log.add("line(${p0.x.toInt()}, ${p0.y.toInt()}, ${p1.x.toInt()}, ${p1.y.toInt()})") },
@@ -245,13 +244,13 @@ class VectorPathTest {
         assertEquals(
             listOf(
                 listOf(
-                    Bezier(100.0, 0.0, 100.0, -55.23, 55.23, -100.0, 0.0, -100.0),
-                    Bezier(0.0, -100.0, -55.23, -100.0, -100.0, -55.23, -100.0, 0.0),
-                    Bezier(-100.0, 0.0, -100.0, 55.23, -55.23, 100.0, 0.0, 100.0),
-                    Bezier(0.0, 100.0, 55.23, 100.0, 100.0, 55.23, 100.0, 0.0),
+                    Bezier(Point(100.0, 0.0), Point(100.0, -55.23), Point(55.23, -100.0), Point(0.0, -100.0)),
+                    Bezier(Point(0.0, -100.0), Point(-55.23, -100.0), Point(-100.0, -55.23), Point(-100.0, 0.0)),
+                    Bezier(Point(-100.0, 0.0), Point(-100.0, 55.23), Point(-55.23, 100.0), Point(0.0, 100.0)),
+                    Bezier(Point(0.0, 100.0), Point(55.23, 100.0), Point(100.0, 55.23), Point(100.0, 0.0)),
                 )
             ),
-            buildVectorPath { circle(0, 0, 100) }.toCurvesList().map { it.beziers.map { it.roundDecimalPlaces(2) } }
+            buildVectorPath { circle(Point(0, 0), 100f) }.toCurvesList().map { it.beziers.map { it.roundDecimalPlaces(2) } }
         )
     }
 }

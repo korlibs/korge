@@ -34,9 +34,9 @@ class MainEasing : Scene() {
                             //println("x=$x, y=$y, ratio=$ratio")
                             if (first) {
                                 first = false
-                                moveTo(x, -y)
+                                moveTo(Point(x, -y))
                             } else {
-                                lineTo(x, -y)
+                                lineTo(Point(x, -y))
                             }
                         }
                     }

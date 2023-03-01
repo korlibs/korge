@@ -3,7 +3,7 @@ package com.soywiz.korma.geom
 import com.soywiz.kds.pack.*
 import com.soywiz.korma.annotations.*
 
-@KormaValueApi
+//@KormaValueApi
 inline class Scale internal constructor(internal val raw: Float2Pack) {
     val scaleX: Float get() = raw.x
     val scaleY: Float get() = raw.y

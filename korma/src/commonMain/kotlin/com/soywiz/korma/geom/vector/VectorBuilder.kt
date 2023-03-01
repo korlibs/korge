@@ -29,12 +29,22 @@ interface VectorBuilder {
         //val cy2 = y2 + (tt * (cy - y2))
         //return cubicTo(cx1, cy1, cx2, cy2, x2, y2)
     }
+
     fun cubicTo(c1: Point, c2: Point, a: Point)
     fun close()
 
-    fun line(p0: Point, p1: Point) { moveTo(p0); lineTo(p1) }
-    fun quad(o: Point, c: Point, a: Point) { moveTo(o); quadTo(c, a) }
-    fun cubic(o: Point, c1: Point, c2: Point, a: Point) { moveTo(o); cubicTo(c1, c2, a) }
+    fun line(p0: Point, p1: Point) {
+        moveTo(p0); lineTo(p1)
+    }
+
+    fun quad(o: Point, c: Point, a: Point) {
+        moveTo(o); quadTo(c, a)
+    }
+
+    fun cubic(o: Point, c1: Point, c2: Point, a: Point) {
+        moveTo(o); cubicTo(c1, c2, a)
+    }
+
     fun curve(curve: Bezier) {
         val p = curve.points
         when (curve.order) {
@@ -44,17 +54,8 @@ interface VectorBuilder {
             else -> TODO("Unsupported curve of order ${curve.order}")
         }
     }
+
     fun arcTo(a: Point, c: Point, r: Double) = Arc.arcToPath(this, a, c, r)
-
-    @Deprecated("")
-    fun moveTo(x: Double, y: Double) = moveTo(Point(x, y))
-    @Deprecated("")
-    fun lineTo(x: Double, y: Double) = lineTo(Point(x, y))
-    @Deprecated("")
-    fun quadTo(cx: Double, cy: Double, ax: Double, ay: Double) = quadTo(Point(cx, cy), Point(ax, ay))
-    @Deprecated("")
-    fun cubicTo(cx1: Double, cy1: Double, cx2: Double, cy2: Double, ax: Double, ay: Double) = cubicTo(Point(cx1, cy1), Point(cx2, cy2), Point(ax, ay))
-
     fun isEmpty(): Boolean = totalPoints == 0
     fun isNotEmpty(): Boolean = totalPoints != 0
 }
@@ -69,14 +70,18 @@ fun VectorBuilder.rect(x: Double, y: Double, width: Double, height: Double) {
     lineTo(Point(x, y + height))
     close()
 }
-fun VectorBuilder.rect(x: Float, y: Float, width: Float, height: Float) = rect(x.toDouble(), y.toDouble(), width.toDouble(), height.toDouble())
-fun VectorBuilder.rect(x: Int, y: Int, width: Int, height: Int) = rect(x.toDouble(), y.toDouble(), width.toDouble(), height.toDouble())
+
+fun VectorBuilder.rect(x: Float, y: Float, width: Float, height: Float) =
+    rect(x.toDouble(), y.toDouble(), width.toDouble(), height.toDouble())
+
+fun VectorBuilder.rect(x: Int, y: Int, width: Int, height: Int) =
+    rect(x.toDouble(), y.toDouble(), width.toDouble(), height.toDouble())
 
 fun VectorBuilder.rectHole(x: Double, y: Double, width: Double, height: Double) {
-    moveTo(x, y)
-    lineTo(x, y + height)
-    lineTo(x + width, y + height)
-    lineTo(x + width, y)
+    moveTo(Point(x, y))
+    lineTo(Point(x, y + height))
+    lineTo(Point(x + width, y + height))
+    lineTo(Point(x + width, y))
     close()
 }
 
@@ -85,7 +90,7 @@ fun VectorBuilder.roundRect(x: Double, y: Double, w: Double, h: Double, rx: Doub
         rect(x, y, w, h)
     } else {
         val r = if (w < 2 * rx) w / 2f else if (h < 2 * rx) h / 2f else rx
-        this.moveTo(x + r, y)
+        this.moveTo(Point(x + r, y))
         this.arcTo(Point(x + w, y), Point(x + w, y + h), r)
         this.arcTo(Point(x + w, y + h), Point(x, y + h), r)
         this.arcTo(Point(x, y + h), Point(x, y), r)
@@ -93,11 +98,19 @@ fun VectorBuilder.roundRect(x: Double, y: Double, w: Double, h: Double, rx: Doub
         this.close()
     }
 }
-fun VectorBuilder.roundRect(x: Float, y: Float, w: Float, h: Float, rx: Float, ry: Float = rx) = roundRect(x.toDouble(), y.toDouble(), w.toDouble(), h.toDouble(), rx.toDouble(), ry.toDouble())
-fun VectorBuilder.roundRect(x: Int, y: Int, w: Int, h: Int, rx: Int, ry: Int = rx) = roundRect(x.toDouble(), y.toDouble(), w.toDouble(), h.toDouble(), rx.toDouble(), ry.toDouble())
 
-fun VectorBuilder.rectHole(x: Float, y: Float, width: Float, height: Float) = rectHole(x.toDouble(), y.toDouble(), width.toDouble(), height.toDouble())
-fun VectorBuilder.rectHole(x: Int, y: Int, width: Int, height: Int) = rectHole(x.toDouble(), y.toDouble(), width.toDouble(), height.toDouble())
+fun VectorBuilder.roundRect(x: Float, y: Float, w: Float, h: Float, rx: Float, ry: Float = rx) =
+    roundRect(x.toDouble(), y.toDouble(), w.toDouble(), h.toDouble(), rx.toDouble(), ry.toDouble())
+
+fun VectorBuilder.roundRect(x: Int, y: Int, w: Int, h: Int, rx: Int, ry: Int = rx) =
+    roundRect(x.toDouble(), y.toDouble(), w.toDouble(), h.toDouble(), rx.toDouble(), ry.toDouble())
+
+fun VectorBuilder.rectHole(x: Float, y: Float, width: Float, height: Float) =
+    rectHole(x.toDouble(), y.toDouble(), width.toDouble(), height.toDouble())
+
+fun VectorBuilder.rectHole(x: Int, y: Int, width: Int, height: Int) =
+    rectHole(x.toDouble(), y.toDouble(), width.toDouble(), height.toDouble())
+
 fun VectorBuilder.rectHole(rect: IRectangle) = rectHole(rect.x, rect.y, rect.width, rect.height)
 
 fun VectorBuilder.curves(curves: List<Curves>) = write(curves.toVectorPath())
@@ -107,47 +120,63 @@ fun VectorBuilder.curves(curves: Curves) = write(curves.toVectorPath())
 fun VectorBuilder.write(curves: List<Curves>) = write(curves.toVectorPath())
 fun VectorBuilder.write(curves: Curves) = write(curves.toVectorPath())
 
-fun VectorBuilder.arc(x: Double, y: Double, r: Double, start: Angle, end: Angle, counterclockwise: Boolean = false) {
-    Arc.arcPath(this, x, y, r, start, end, counterclockwise)
-}
-fun VectorBuilder.arc(x: Float, y: Float, r: Float, start: Angle, end: Angle) = arc(x.toDouble(), y.toDouble(), r.toDouble(), start, end)
-fun VectorBuilder.arc(x: Int, y: Int, r: Int, start: Angle, end: Angle) = arc(x.toDouble(), y.toDouble(), r.toDouble(), start, end)
+fun VectorBuilder.arc(center: Point, r: Float, start: Angle, end: Angle, counterclockwise: Boolean = false) =
+    Arc.arcPath(this, center, r, start, end, counterclockwise)
 
-fun VectorBuilder.circle(point: Point, radius: Double) = circle(point.xD, point.yD, radius)
-fun VectorBuilder.circle(point: IPoint, radius: Double) = circle(point.x, point.y, radius)
-fun VectorBuilder.circle(x: Float, y: Float, radius: Float) = circle(x.toDouble(), y.toDouble(), radius.toDouble())
-fun VectorBuilder.circle(x: Int, y: Int, radius: Int) = circle(x.toDouble(), y.toDouble(), radius.toDouble())
-fun VectorBuilder.circle(x: Double, y: Double, radius: Double) = arc(x, y, radius, Angle.ZERO, Angle.FULL)
+fun VectorBuilder.circle(center: Point, radius: Float) = arc(center, radius, Angle.ZERO, Angle.FULL)
+fun VectorBuilder.circleHole(center: Point, radius: Float) =
+    arc(center, radius, Angle.ZERO, Angle.FULL, counterclockwise = true)
 
-fun VectorBuilder.circleHole(point: IPoint, radius: Double) = circleHole(point.x, point.y, radius)
-fun VectorBuilder.circleHole(x: Float, y: Float, radius: Float) = circleHole(x.toDouble(), y.toDouble(), radius.toDouble())
-fun VectorBuilder.circleHole(x: Int, y: Int, radius: Int) = circleHole(x.toDouble(), y.toDouble(), radius.toDouble())
-fun VectorBuilder.circleHole(x: Double, y: Double, radius: Double) = arc(x, y, radius, Angle.ZERO, Angle.FULL, counterclockwise = true)
+fun VectorBuilder.ellipse(center: Point, radius: Size) = Arc.ellipsePath(this, center, radius)
 
-fun VectorBuilder.ellipse(x: Double, y: Double, rw: Double, rh: Double) {
-    Arc.ellipsePath(this, x, y, rw, rh)
-}
-fun VectorBuilder.ellipse(x: Float, y: Float, rw: Float, rh: Float) = ellipse(x.toDouble(), y.toDouble(), rw.toDouble(), rh.toDouble())
-fun VectorBuilder.ellipse(x: Int, y: Int, rw: Int, rh: Int) = ellipse(x.toDouble(), y.toDouble(), rw.toDouble(), rh.toDouble())
-
-
-fun VectorBuilder.star(points: Int, radiusSmall: Double, radiusBig: Double, rotated: Angle = 0.degrees, x: Double = 0.0, y: Double = 0.0) {
+fun VectorBuilder.star(
+    points: Int,
+    radiusSmall: Double,
+    radiusBig: Double,
+    rotated: Angle = 0.degrees,
+    x: Double = 0.0,
+    y: Double = 0.0
+) {
     _regularPolygonStar(points * 2, radiusSmall, radiusBig, rotated, false, x, y)
 }
 
-fun VectorBuilder.regularPolygon(points: Int, radius: Double, rotated: Angle = 0.degrees, x: Double = 0.0, y: Double = 0.0) {
+fun VectorBuilder.regularPolygon(
+    points: Int,
+    radius: Double,
+    rotated: Angle = 0.degrees,
+    x: Double = 0.0,
+    y: Double = 0.0
+) =
     _regularPolygonStar(points, radius, radius, rotated, false, x, y)
-}
 
-fun VectorBuilder.starHole(points: Int, radiusSmall: Double, radiusBig: Double, rotated: Angle = 0.degrees, x: Double = 0.0, y: Double = 0.0) {
+fun VectorBuilder.starHole(
+    points: Int,
+    radiusSmall: Double,
+    radiusBig: Double,
+    rotated: Angle = 0.degrees,
+    x: Double = 0.0,
+    y: Double = 0.0
+) =
     _regularPolygonStar(points * 2, radiusSmall, radiusBig, rotated, true, x, y)
-}
 
-fun VectorBuilder.regularPolygonHole(points: Int, radius: Double, rotated: Angle = 0.degrees, x: Double = 0.0, y: Double = 0.0) {
+fun VectorBuilder.regularPolygonHole(
+    points: Int,
+    radius: Double,
+    rotated: Angle = 0.degrees,
+    x: Double = 0.0,
+    y: Double = 0.0
+) =
     _regularPolygonStar(points, radius, radius, rotated, true, x, y)
-}
 
-internal fun VectorBuilder._regularPolygonStar(points: Int, radiusSmall: Double = 20.0, radiusBig: Double = 50.0, rotated: Angle = 0.degrees, hole: Boolean = false, x: Double = 0.0, y: Double = 0.0) {
+internal fun VectorBuilder._regularPolygonStar(
+    points: Int,
+    radiusSmall: Double = 20.0,
+    radiusBig: Double = 50.0,
+    rotated: Angle = 0.degrees,
+    hole: Boolean = false,
+    x: Double = 0.0,
+    y: Double = 0.0
+) {
     for (n in 0 until points) {
         val baseAngle = (Angle.FULL * (n.toDouble() / points))
         val realAngle = if (hole) -baseAngle else baseAngle
@@ -155,7 +184,7 @@ internal fun VectorBuilder._regularPolygonStar(points: Int, radiusSmall: Double 
         val radius = if (n % 2 == 0) radiusSmall else radiusBig
         val px = angle.cosineD * radius
         val py = angle.sineD * radius
-        if (n == 0) moveTo(x + px, y + py) else lineTo(x + px, y + py)
+        if (n == 0) moveTo(Point(x + px, y + py)) else lineTo(Point(x + px, y + py))
     }
     close()
 }
@@ -182,84 +211,32 @@ fun VectorBuilder.parallelogram(bounds: MRectangle, angle: Angle = 30.degrees, d
     val dx = angle.sineD * bounds.height
     val dx0 = if (direction) 0.0 else dx
     val dx1 = if (direction) dx else 0.0
-    moveTo(bounds.left - dx0, bounds.top)
-    lineTo(bounds.right + dx1, bounds.top)
-    lineTo(bounds.right + dx0, bounds.bottom)
-    lineTo(bounds.left - dx1, bounds.bottom)
+    moveTo(Point(bounds.left - dx0, bounds.top))
+    lineTo(Point(bounds.right + dx1, bounds.top))
+    lineTo(Point(bounds.right + dx0, bounds.bottom))
+    lineTo(Point(bounds.left - dx1, bounds.bottom))
 }
 
 fun VectorBuilder.polygon(path: IPointArrayList, close: Boolean = true) {
-    moveTo(path.getX(0), path.getY(0))
-    for (i in 1 until path.size) {
-        lineTo(path.getX(i), path.getY(i))
-    }
+    moveTo(path[0])
+    for (i in 1 until path.size) lineTo(path[i])
     if (close) close()
 }
-fun VectorBuilder.polygon(path: Array<IPoint>, close: Boolean = true) = polygon(PointArrayList(*path), close)
-fun VectorBuilder.polygon(path: List<IPoint>, close: Boolean = true) = polygon(PointArrayList(path), close)
 
-fun VectorBuilder.moveToH(x: Double) = moveTo(x, lastPos.yD)
-fun VectorBuilder.moveToH(x: Float) = moveToH(x.toDouble())
-fun VectorBuilder.moveToH(x: Int) = moveToH(x.toDouble())
-
-fun VectorBuilder.rMoveToH(x: Double) = rMoveTo(x, 0.0)
-fun VectorBuilder.rMoveToH(x: Float) = rMoveToH(x.toDouble())
-fun VectorBuilder.rMoveToH(x: Int) = rMoveToH(x.toDouble())
-
-fun VectorBuilder.moveToV(y: Double) = moveTo(lastPos.xD, y)
-fun VectorBuilder.moveToV(y: Float) = moveToV(y.toDouble())
-fun VectorBuilder.moveToV(y: Int) = moveToV(y.toDouble())
-
-fun VectorBuilder.rMoveToV(y: Double) = rMoveTo(0.0, y)
-fun VectorBuilder.rMoveToV(y: Float) = rMoveToV(y.toDouble())
-fun VectorBuilder.rMoveToV(y: Int) = rMoveToV(y.toDouble())
-
-fun VectorBuilder.lineToH(x: Double) = lineTo(x, lastPos.yD)
-fun VectorBuilder.lineToH(x: Float) = lineToH(x.toDouble())
-fun VectorBuilder.lineToH(x: Int) = lineToH(x.toDouble())
-
-fun VectorBuilder.rLineToH(x: Double) = rLineTo(x, 0.0)
-fun VectorBuilder.rLineToH(x: Float) = rLineToH(x.toDouble())
-fun VectorBuilder.rLineToH(x: Int) = rLineToH(x.toDouble())
-
-fun VectorBuilder.lineToV(y: Double) = lineTo(lastPos.xD, y)
-fun VectorBuilder.lineToV(y: Float) = lineToV(y.toDouble())
-fun VectorBuilder.lineToV(y: Int) = lineToV(y.toDouble())
-
-fun VectorBuilder.rLineToV(y: Double) = rLineTo(0.0, y)
-fun VectorBuilder.rLineToV(y: Float) = rLineToV(y.toDouble())
-fun VectorBuilder.rLineToV(y: Int) = rLineToV(y.toDouble())
-
-fun VectorBuilder.rMoveToHV(value: Double, horizontal: Boolean) = if (horizontal) rMoveToH(value) else rMoveToV(value)
-fun VectorBuilder.rLineToHV(value: Double, horizontal: Boolean) = if (horizontal) rLineToH(value) else rLineToV(value)
-
-fun VectorBuilder.rMoveTo(x: Double, y: Double) = moveTo(this.lastPos.xD + x, this.lastPos.yD + y)
-fun VectorBuilder.rMoveTo(x: Float, y: Float) = rMoveTo(x.toDouble(), y.toDouble())
-fun VectorBuilder.rMoveTo(x: Int, y: Int) = rMoveTo(x.toDouble(), y.toDouble())
-
-fun VectorBuilder.rLineTo(x: Double, y: Double) = lineTo(this.lastPos.xD + x, this.lastPos.yD + y)
-fun VectorBuilder.rLineTo(x: Float, y: Float) = rLineTo(x.toDouble(), y.toDouble())
-fun VectorBuilder.rLineTo(x: Int, y: Int) = rLineTo(x.toDouble(), y.toDouble())
-
-fun VectorBuilder.rQuadTo(cx: Double, cy: Double, ax: Double, ay: Double) = quadTo(this.lastPos.xD + cx, this.lastPos.yD + cy, this.lastPos.xD + ax, this.lastPos.yD + ay)
-fun VectorBuilder.rQuadTo(cx: Float, cy: Float, ax: Float, ay: Float) = rQuadTo(cx.toDouble(), cy.toDouble(), ax.toDouble(), ay.toDouble())
-fun VectorBuilder.rQuadTo(cx: Int, cy: Int, ax: Int, ay: Int) = rQuadTo(cx.toDouble(), cy.toDouble(), ax.toDouble(), ay.toDouble())
-
-fun VectorBuilder.rCubicTo(cx1: Double, cy1: Double, cx2: Double, cy2: Double, ax: Double, ay: Double) = cubicTo(this.lastPos.xD + cx1, this.lastPos.yD + cy1, this.lastPos.xD + cx2, this.lastPos.yD + cy2, this.lastPos.xD + ax, this.lastPos.yD + ay)
-fun VectorBuilder.rCubicTo(cx1: Float, cy1: Float, cx2: Float, cy2: Float, ax: Float, ay: Float) = rCubicTo(cx1.toDouble(), cy1.toDouble(), cx2.toDouble(), cy2.toDouble(), ax.toDouble(), ay.toDouble())
-fun VectorBuilder.rCubicTo(cx1: Int, cy1: Int, cx2: Int, cy2: Int, ax: Int, ay: Int) = rCubicTo(cx1.toDouble(), cy1.toDouble(), cx2.toDouble(), cy2.toDouble(), ax.toDouble(), ay.toDouble())
-
-fun VectorBuilder.moveTo(x: Float, y: Float) = moveTo(x.toDouble(), y.toDouble())
-fun VectorBuilder.moveTo(x: Int, y: Int) = moveTo(x.toDouble(), y.toDouble())
-
-fun VectorBuilder.lineTo(x: Float, y: Float) = lineTo(x.toDouble(), y.toDouble())
-fun VectorBuilder.lineTo(x: Int, y: Int) = lineTo(x.toDouble(), y.toDouble())
-
-fun VectorBuilder.quadTo(controlX: Float, controlY: Float, anchorX: Float, anchorY: Float) = quadTo(controlX.toDouble(), controlY.toDouble(), anchorX.toDouble(), anchorY.toDouble())
-fun VectorBuilder.quadTo(controlX: Int, controlY: Int, anchorX: Int, anchorY: Int) = quadTo(controlX.toDouble(), controlY.toDouble(), anchorX.toDouble(), anchorY.toDouble())
-
-fun VectorBuilder.cubicTo(cx1: Float, cy1: Float, cx2: Float, cy2: Float, ax: Float, ay: Float) = cubicTo(cx1.toDouble(), cy1.toDouble(), cx2.toDouble(), cy2.toDouble(), ax.toDouble(), ay.toDouble())
-fun VectorBuilder.cubicTo(cx1: Int, cy1: Int, cx2: Int, cy2: Int, ax: Int, ay: Int) = cubicTo(cx1.toDouble(), cy1.toDouble(), cx2.toDouble(), cy2.toDouble(), ax.toDouble(), ay.toDouble())
+fun VectorBuilder.moveToH(x: Float) = moveTo(Point(x, lastPos.yF))
+fun VectorBuilder.moveToV(y: Float) = moveTo(Point(lastPos.xF, y))
+fun VectorBuilder.lineToH(x: Float) = lineTo(Point(x, lastPos.yF))
+fun VectorBuilder.lineToV(y: Float) = lineTo(Point(lastPos.xF, y))
+fun VectorBuilder.rMoveToH(x: Float) = rMoveTo(Point(x, 0f))
+fun VectorBuilder.rMoveToV(y: Float) = rMoveTo(Point(0f, y))
+fun VectorBuilder.rLineToH(x: Float) = rLineTo(Point(x, 0f))
+fun VectorBuilder.rLineToV(y: Float) = rLineTo(Point(0f, y))
+fun VectorBuilder.rMoveToHV(value: Float, horizontal: Boolean) = if (horizontal) rMoveToH(value) else rMoveToV(value)
+fun VectorBuilder.rLineToHV(value: Float, horizontal: Boolean) = if (horizontal) rLineToH(value) else rLineToV(value)
+fun VectorBuilder.rMoveTo(delta: Point) = moveTo(this.lastPos + delta)
+fun VectorBuilder.rLineTo(delta: Point) = lineTo(this.lastPos + delta)
+fun VectorBuilder.rQuadTo(c: Point, a: Point) = quadTo(this.lastPos + c, this.lastPos + a)
+fun VectorBuilder.rCubicTo(c1: Point, c2: Point, a: Point) = cubicTo(this.lastPos + c1, this.lastPos + c2, this.lastPos + a)
 
 fun VectorBuilder.line(p0: Point, p1: Point) { moveTo(p0); lineTo(p1) }
 fun VectorBuilder.quad(o: Point, c: Point, a: Point) { moveTo(o); quadTo(c, a) }
@@ -276,37 +253,16 @@ fun VectorBuilder.curve(curve: Bezier) {
 
 // Variants supporting relative and absolute modes
 
-fun VectorBuilder.rCubicTo(cx1: Double, cy1: Double, cx2: Double, cy2: Double, ax: Double, ay: Double, relative: Boolean) = if (relative) rCubicTo(cx1, cy1, cx2, cy2, ax, ay) else cubicTo(cx1, cy1, cx2, cy2, ax, ay)
-fun VectorBuilder.rCubicTo(cx1: Float, cy1: Float, cx2: Float, cy2: Float, ax: Float, ay: Float, relative: Boolean) = if (relative) rCubicTo(cx1, cy1, cx2, cy2, ax, ay) else cubicTo(cx1, cy1, cx2, cy2, ax, ay)
-fun VectorBuilder.rCubicTo(cx1: Int, cy1: Int, cx2: Int, cy2: Int, ax: Int, ay: Int, relative: Boolean) = if (relative) rCubicTo(cx1, cy1, cx2, cy2, ax, ay) else cubicTo(cx1, cy1, cx2, cy2, ax, ay)
+fun VectorBuilder.rCubicTo(c1: Point, c2: Point, a: Point, relative: Boolean) =
+    if (relative) rCubicTo(c1, c2, a) else cubicTo(c1, c2, a)
 
-fun VectorBuilder.rQuadTo(cx: Double, cy: Double, ax: Double, ay: Double, relative: Boolean) = if (relative) rQuadTo(cx, cy, ax, ay) else quadTo(cx, cy, ax, ay)
-fun VectorBuilder.rQuadTo(cx: Float, cy: Float, ax: Float, ay: Float, relative: Boolean) = if (relative) rQuadTo(cx, cy, ax, ay) else quadTo(cx, cy, ax, ay)
-fun VectorBuilder.rQuadTo(cx: Int, cy: Int, ax: Int, ay: Int, relative: Boolean) = if (relative) rQuadTo(cx, cy, ax, ay) else quadTo(cx, cy, ax, ay)
-
-fun VectorBuilder.rLineTo(ax: Double, ay: Double, relative: Boolean) = if (relative) rLineTo(ax, ay) else lineTo(ax, ay)
-fun VectorBuilder.rLineTo(ax: Float, ay: Float, relative: Boolean) = if (relative) rLineTo(ax, ay) else lineTo(ax, ay)
-fun VectorBuilder.rLineTo(ax: Int, ay: Int, relative: Boolean) = if (relative) rLineTo(ax, ay) else lineTo(ax, ay)
-
-fun VectorBuilder.rMoveTo(ax: Double, ay: Double, relative: Boolean) = if (relative) rMoveTo(ax, ay) else moveTo(ax, ay)
-fun VectorBuilder.rMoveTo(ax: Float, ay: Float, relative: Boolean) = if (relative) rMoveTo(ax, ay) else moveTo(ax, ay)
-fun VectorBuilder.rMoveTo(ax: Int, ay: Int, relative: Boolean) = if (relative) rMoveTo(ax, ay) else moveTo(ax, ay)
-
-fun VectorBuilder.rMoveToH(ax: Double, relative: Boolean) = if (relative) rMoveToH(ax) else moveToH(ax)
-fun VectorBuilder.rMoveToH(ax: Float, relative: Boolean) = if (relative) rMoveToH(ax) else moveToH(ax)
-fun VectorBuilder.rMoveToH(ax: Int, relative: Boolean) = if (relative) rMoveToH(ax) else moveToH(ax)
-
-fun VectorBuilder.rMoveToV(ay: Double, relative: Boolean) = if (relative) rMoveToV(ay) else moveToV(ay)
-fun VectorBuilder.rMoveToV(ay: Float, relative: Boolean) = if (relative) rMoveToV(ay) else moveToV(ay)
-fun VectorBuilder.rMoveToV(ay: Int, relative: Boolean) = if (relative) rMoveToV(ay) else moveToV(ay)
-
-fun VectorBuilder.rLineToH(ax: Double, relative: Boolean) = if (relative) rLineToH(ax) else lineToH(ax)
-fun VectorBuilder.rLineToH(ax: Float, relative: Boolean) = if (relative) rLineToH(ax) else lineToH(ax)
-fun VectorBuilder.rLineToH(ax: Int, relative: Boolean) = if (relative) rLineToH(ax) else lineToH(ax)
-
-fun VectorBuilder.rLineToV(ay: Double, relative: Boolean) = if (relative) rLineToV(ay) else lineToV(ay)
-fun VectorBuilder.rLineToV(ay: Float, relative: Boolean) = if (relative) rLineToV(ay) else lineToV(ay)
-fun VectorBuilder.rLineToV(ay: Int, relative: Boolean) = if (relative) rLineToV(ay) else lineToV(ay)
+fun VectorBuilder.rQuadTo(c: Point, a: Point, relative: Boolean) = if (relative) rQuadTo(c, a) else quadTo(c, a)
+fun VectorBuilder.rLineTo(a: Point, relative: Boolean) = if (relative) rLineTo(a) else lineTo(a)
+fun VectorBuilder.rMoveTo(a: Point, relative: Boolean) = if (relative) rMoveTo(a) else moveTo(a)
+fun VectorBuilder.rMoveToH(x: Float, relative: Boolean) = if (relative) rMoveToH(x) else moveToH(x)
+fun VectorBuilder.rMoveToV(y: Float, relative: Boolean) = if (relative) rMoveToV(y) else moveToV(y)
+fun VectorBuilder.rLineToH(x: Float, relative: Boolean) = if (relative) rLineToH(x) else lineToH(x)
+fun VectorBuilder.rLineToV(y: Float, relative: Boolean) = if (relative) rLineToV(y) else lineToV(y)
 
 fun VectorBuilder.transformed(m: MMatrix): VectorBuilder {
     val im = m.inverted()

@@ -25,9 +25,9 @@ class Shape2dTest {
         assertEquals(
             "Polygon(points=[(0, 0), (100, 0), (100, 100)])",
             VectorPath {
-                moveTo(0, 0)
-                lineTo(100, 0)
-                lineTo(100, 100)
+                moveTo(Point(0, 0))
+                lineTo(Point(100, 0))
+                lineTo(Point(100, 100))
                 close()
             }.toShape2d(closed = true).toString()
         )
@@ -105,23 +105,23 @@ class Shape2dTest {
     @Test
     fun testToPaths() {
         val points = buildVectorPath {
-                moveTo(100, 100)
-                lineTo(400, 400)
-                lineTo(200, 500)
-                lineTo(500, 500)
-                lineTo(200, 700)
+                moveTo(Point(100, 100))
+                lineTo(Point(400, 400))
+                lineTo(Point(200, 500))
+                lineTo(Point(500, 500))
+                lineTo(Point(200, 700))
                 close()
 
-                moveTo(800, 600)
-                lineTo(900, 600)
-                lineTo(900, 400)
+                moveTo(Point(800, 600))
+                lineTo(Point(900, 600))
+                lineTo(Point(900, 400))
                 close()
 
-                moveTo(800, 100)
-                lineTo(800, 110)
+                moveTo(Point(800, 100))
+                lineTo(Point(800, 110))
 
-                moveTo(750, 100)
-                lineTo(750, 110)
+                moveTo(Point(750, 100))
+                lineTo(Point(750, 110))
             }.toPathPointList()
 
         assertEquals("""
@@ -167,7 +167,7 @@ class Shape2dTest {
 
     @Test
     fun testApproximateCurve2() {
-        val path = buildVectorPath { circle(0, 0, 10) }
+        val path = buildVectorPath { circle(Point(0, 0), 10f) }
         val pointsStr = path.getPoints2().map { x, y -> "(${(x * 100).toInt()},${(y * 100).toInt()})" }.joinToString(" ")
         assertEquals(
             "(1000,0) (996,-82) (986,-162) (970,-240) (949,-316) (921,-389) (888,-459) (850,-526) (807,-590) (759,-650) (707,-707) (650,-759) (590,-807) (526,-850) (459,-888) (389,-921) (316,-949) (240,-970) (162,-986) (82,-996) (0,-1000) (-82,-996) (-162,-986) (-240,-970) (-316,-949) (-389,-921) (-459,-888) (-526,-850) (-590,-807) (-650,-759) (-707,-707) (-759,-650) (-807,-590) (-850,-526) (-888,-459) (-921,-389) (-949,-316) (-970,-240) (-986,-162) (-996,-82) (-1000,0) (-996,82) (-986,162) (-970,240) (-949,316) (-921,389) (-888,459) (-850,526) (-807,590) (-759,650) (-707,707) (-650,759) (-590,807) (-526,850) (-459,888) (-389,921) (-316,949) (-240,970) (-162,986) (-82,996) (0,1000) (82,996) (162,986) (240,970) (316,949) (389,921) (459,888) (526,850) (590,807) (650,759) (707,707) (759,650) (807,590) (850,526) (888,459) (921,389) (949,316) (970,240) (986,162) (996,82) (1000,0) (1000,0)",
