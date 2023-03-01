@@ -25,14 +25,15 @@ import com.soywiz.korim.vector.ShapeBuilder
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.bezier.Bezier
 import com.soywiz.korma.geom.vector.*
+import kotlin.reflect.*
 
 class MainBezierSample : Scene() {
-    override suspend fun SContainer.sceneMain() {
-        val p0 = Point(109, 135)
-        val p1 = Point(25, 190)
-        val p2 = Point(210, 250)
-        val p3 = Point(234, 49)
+    var p0 = Point(109, 135)
+    var p1 = Point(25, 190)
+    var p2 = Point(210, 250)
+    var p3 = Point(234, 49)
 
+    override suspend fun SContainer.sceneMain() {
         val graphics = cpuGraphics(autoScaling = true)
         val graphics2 = gpuShapeView().xy(0, 300)
 
@@ -69,20 +70,19 @@ class MainBezierSample : Scene() {
         }
 
         updateGraphics()
-        createPointController(p0, Colors.RED) { updateGraphics() }
-        createPointController(p1, Colors.GREEN) { updateGraphics() }
-        createPointController(p2, Colors.BLUE) { updateGraphics() }
-        createPointController(p3, Colors.YELLOW) { updateGraphics() }
+        createPointController(this@MainBezierSample::p0, Colors.RED) { updateGraphics() }
+        createPointController(this@MainBezierSample::p1, Colors.GREEN) { updateGraphics() }
+        createPointController(this@MainBezierSample::p2, Colors.BLUE) { updateGraphics() }
+        createPointController(this@MainBezierSample::p3, Colors.YELLOW) { updateGraphics() }
     }
 
-    fun Container.createPointController(point: Point, color: Paint, onMove: () -> Unit) {
-        var point = point
+    fun Container.createPointController(pointRef: KMutableProperty0<Point>, color: Paint, onMove: () -> Unit) {
         lateinit var circle: View
         lateinit var text: Text
         val anchorView = container {
             circle = circle(6.0, fill = color, stroke = Colors.DARKGRAY, strokeThickness = 2.0).centered
             text = text("", 10.0).position(10.0, 6.0)
-        }.position(point)
+        }.position(pointRef.get())
 
         fun updateText() {
             text.text = "(${anchorView.x.toInt()}, ${anchorView.y.toInt()})"
@@ -93,7 +93,7 @@ class MainBezierSample : Scene() {
         }
         updateText()
         anchorView.draggable(circle) {
-            point = anchorView.pos
+            pointRef.set(anchorView.pos)
             updateText()
             onMove()
         }
