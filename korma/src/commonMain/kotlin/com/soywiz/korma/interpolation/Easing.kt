@@ -101,8 +101,8 @@ class EasingCubic(val x1: Double, val y1: Double, val x2: Double, val y2: Double
         for (n in 0 until 50) {
             steps++
             val res = cubic.calc(pivot)
-            lastX = res.x
-            lastY = res.y
+            lastX = res.xD
+            lastY = res.yD
             if ((lastX - it).absoluteValue < 0.001) break
             if (it < lastX) {
                 pivotRight = pivot

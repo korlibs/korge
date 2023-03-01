@@ -2,11 +2,10 @@ package com.soywiz.korma.geom
 
 import com.soywiz.korma.geom.bezier.*
 import com.soywiz.korma.math.*
-import kotlin.math.absoluteValue
-import kotlin.test.assertSame
-import kotlin.test.assertTrue
 
-fun <T : Any> assertEqualsFloat(
+fun <
+    //@OnlyInputTypes
+T> assertEqualsFloat(
     expected: T?,
     actual: T?,
     absoluteTolerance: Double = 0.001,

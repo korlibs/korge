@@ -147,7 +147,9 @@ inline class Angle private constructor(
         inline fun sin01(ratio: Double) = kotlin.math.sin(PI2 * ratio)
         inline fun tan01(ratio: Double) = kotlin.math.tan(PI2 * ratio)
 
+        inline fun atan2(x: Float, y: Float): Angle = fromRadians(kotlin.math.atan2(x, y))
         inline fun atan2(x: Double, y: Double): Angle = fromRadians(kotlin.math.atan2(x, y))
+        inline fun atan2(p: Point): Angle = atan2(p.xD, p.yD)
         inline fun atan2(p: IPoint): Angle = atan2(p.x, p.y)
 
         inline fun ratioToDegrees(ratio: Double): Double = ratio * 360.0

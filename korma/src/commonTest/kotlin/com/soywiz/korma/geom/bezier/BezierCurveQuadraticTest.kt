@@ -13,28 +13,28 @@ class BezierCurveQuadraticTest {
 
     @Test
     fun testHasTheCorrectApproximateLength() {
-        assertEquals(1.4789428575453212, b.length)
+        assertEquals(1.4789428575453212, b.length, 0.001)
     }
 
     @Test
     fun testHasTheExpectedDerivatePoints() {
         assertEquals(
             listOf(
-                PointArrayList(1, 2, 1, -2),
-                PointArrayList(0, -4),
+                pointArrayListOf(Point(1, 2), Point(1, -2)),
+                pointArrayListOf(Point(0, -4)),
             ),
             b.dpoints
         )
-        assertEquals(MPoint(1, 2), b.derivative(0.0))
-        assertEquals(MPoint(1, 0), b.derivative(0.5))
-        assertEquals(MPoint(1, -2), b.derivative(1.0))
+        assertEquals(Point(1, 2), b.derivative(0.0))
+        assertEquals(Point(1, 0), b.derivative(0.5))
+        assertEquals(Point(1, -2), b.derivative(1.0))
     }
 
     @Test
     fun testHasTheExpectedNormals() {
-        assertEquals(MPoint(-0.8944271909999159, 0.4472135954999579), b.normal(0.0))
-        assertEquals(MPoint(-0.0, 1.0), b.normal(0.5))
-        assertEquals(MPoint(0.8944271909999159, 0.4472135954999579), b.normal(1.0))
+        assertEquals(Point(-0.8944271909999159, 0.4472135954999579), b.normal(0.0))
+        assertEquals(Point(-0.0, 1.0), b.normal(0.5))
+        assertEquals(Point(0.8944271909999159, 0.4472135954999579), b.normal(1.0))
     }
 
     @Test
@@ -53,8 +53,8 @@ class BezierCurveQuadraticTest {
 
     @Test
     fun testFromPointSet() {
-        val M = MPoint(75, 25)
-        val pts = listOf(MPoint(0, 0), M, MPoint(100, 100))
+        val M = Point(75, 25)
+        val pts = listOf(Point(0, 0), M, Point(100, 100))
 
         run {
             val b = Bezier.quadraticFromPoints(pts[0], pts[1], pts[2])

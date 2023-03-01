@@ -2,6 +2,8 @@ package com.soywiz.korma.geom
 
 import com.soywiz.kds.*
 import com.soywiz.kds.iterators.fastForEach
+import com.soywiz.kds.pack.*
+import com.soywiz.korma.annotations.*
 import com.soywiz.korma.math.roundDecimalPlaces
 import kotlin.math.round
 
@@ -35,12 +37,12 @@ fun IPointArrayList.getComponentList(component: Int, out: DoubleArray = DoubleAr
 
 val IPointArrayList.first: Point get() = get(0)
 val IPointArrayList.last: Point get() = get(size - 1)
-val IPointArrayList.firstX: Double get() = getX(0).toDouble()
-val IPointArrayList.firstY: Double get() = getY(0).toDouble()
-val IPointArrayList.lastX: Double get() = getX(size - 1).toDouble()
-val IPointArrayList.lastY: Double get() = getY(size - 1).toDouble()
-fun IPointArrayList.firstPoint(out: MPoint = MPoint()): MPoint = out.setTo(first)
-fun IPointArrayList.lastPoint(out: MPoint = MPoint()): MPoint = out.setTo(last)
+@Deprecated("") val IPointArrayList.firstX: Double get() = getX(0).toDouble()
+@Deprecated("") val IPointArrayList.firstY: Double get() = getY(0).toDouble()
+@Deprecated("") val IPointArrayList.lastX: Double get() = getX(size - 1).toDouble()
+@Deprecated("") val IPointArrayList.lastY: Double get() = getY(size - 1).toDouble()
+@Deprecated("") fun IPointArrayList.firstPoint(out: MPoint = MPoint()): MPoint = out.setTo(first)
+@Deprecated("") fun IPointArrayList.lastPoint(out: MPoint = MPoint()): MPoint = out.setTo(last)
 
 fun IPointArrayList.orientation(): Orientation {
     if (size < 3) return Orientation.COLLINEAR
@@ -66,12 +68,16 @@ inline fun IPointArrayList.fastForEachWithIndex(block: (index: Int, x: Double, y
     }
 }
 
+@Deprecated("")
 fun IPointArrayList.getPoint(index: Int, out: MPoint = MPoint()): MPoint = out.setTo(getX(index), getY(index))
+@Deprecated("")
 fun IPointArrayList.getIPoint(index: Int): IPoint = IPoint(getX(index), getY(index))
 
 fun IPointArrayList.toList(): List<MPoint> = (0 until size).map { getPoint(it) }
 
+@Deprecated("")
 fun IPointArrayList.toPoints(): List<MPoint> = (0 until size).map { getPoint(it) }
+@Deprecated("")
 fun IPointArrayList.toIPoints(): List<IPoint> = (0 until size).map { getIPoint(it) }
 
 fun <T> IPointArrayList.map(gen: (x: Double, y: Double) -> T): List<T> = (0 until size).map { gen(getX(it).toDouble(), getY(it).toDouble()) }
@@ -131,12 +137,16 @@ open class PointArrayList(capacity: Int = 7) : IPointArrayList, Extra by Extra.M
             for (n in points.indices) add(points[n].x, points[n].y)
         }
         operator fun invoke(capacity: Int = 7): PointArrayList = PointArrayList(capacity)
+        @Deprecated("Use pointArrayListOf")
         operator fun invoke(p0: Point): PointArrayList = PointArrayList(1).add(p0)
+        @Deprecated("Use pointArrayListOf")
         operator fun invoke(p0: Point, p1: Point): PointArrayList = PointArrayList(2).add(p0).add(p1)
+        @Deprecated("Use pointArrayListOf")
         operator fun invoke(p0: Point, p1: Point, p2: Point): PointArrayList = PointArrayList(3).add(p0).add(p1).add(p2)
+        @Deprecated("Use pointArrayListOf")
         operator fun invoke(p0: Point, p1: Point, p2: Point, p3: Point): PointArrayList = PointArrayList(4).add(p0).add(p1).add(p2).add(p3)
-        inline operator fun <T : Point> invoke(vararg points: T): PointArrayList =
-            PointArrayList(points.size).also { list -> points.fastForEach { list.add(it) } }
+        @Deprecated("Use pointArrayListOf")
+        inline operator fun <T : Point> invoke(vararg points: T): PointArrayList = pointArrayListOf(*points)
     }
 
     /**
@@ -281,6 +291,15 @@ fun pointArrayListOf(vararg values: Double): PointArrayList =
     PointArrayList(values.size / 2).also { it.addRaw(*values) }
 fun pointArrayListOf(vararg values: IPoint): PointArrayList = PointArrayList(*values)
 
+fun pointArrayListOf(p0: Point): PointArrayList = PointArrayList(1).add(p0)
+fun pointArrayListOf(p0: Point, p1: Point): PointArrayList = PointArrayList(2).add(p0).add(p1)
+fun pointArrayListOf(p0: Point, p1: Point, p2: Point): PointArrayList = PointArrayList(3).add(p0).add(p1).add(p2)
+fun pointArrayListOf(p0: Point, p1: Point, p2: Point, p3: Point): PointArrayList = PointArrayList(4).add(p0).add(p1).add(p2).add(p3)
+@KormaExperimental("allocates and boxes all Point")
+inline fun <T : Point> pointArrayListOf(vararg points: T): PointArrayList =
+    PointArrayList(points.size).also { list -> for (element in points) list.add(element) }
+    //PointArrayList(points.size).also { list -> points.fastForEach { list.add(Point.fromRaw(Float2Pack.fromRaw(it as Long))) } }
+
 //////////////////////////////////////
 
 sealed interface IPointIntArrayList {
@@ -339,6 +358,7 @@ open class PointIntArrayList(capacity: Int = 7) : IPointIntArrayList, Extra by E
         xList += x
         yList += y
     }
+    fun add(p: PointInt) = add(p.x, p.y)
     fun add(p: IPointInt) = add(p.x, p.y)
     fun add(p: IPointIntArrayList) = this.apply { p.fastForEach { x, y -> add(x, y) } }
     fun addReverse(p: IPointIntArrayList) = this.apply { p.fastForEachReverse { x, y -> add(x, y) } }

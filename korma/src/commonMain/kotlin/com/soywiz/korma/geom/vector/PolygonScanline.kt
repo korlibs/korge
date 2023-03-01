@@ -12,15 +12,7 @@ import com.soywiz.kds.get
 import com.soywiz.kds.getOrPut
 import com.soywiz.kds.size
 import com.soywiz.korma.annotations.KormaExperimental
-import com.soywiz.korma.geom.BoundsBuilder
-import com.soywiz.korma.geom.IPoint
-import com.soywiz.korma.geom.IPointInt
-import com.soywiz.korma.geom.MLine
-import com.soywiz.korma.geom.LineIntersection
-import com.soywiz.korma.geom.MPoint
-import com.soywiz.korma.geom.PointArrayList
-import com.soywiz.korma.geom.MRectangle
-import com.soywiz.korma.geom.fastForEach
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.shape.emitPoints2
 import com.soywiz.korma.segment.IntSegmentSet
 
@@ -317,11 +309,11 @@ class PolygonScanline : RastScale() {
             val res = MEdge.getIntersectXY(
                 edge.ax.toDouble(), edge.ay.toDouble(), edge.bx.toDouble(), edge.by.toDouble(),
                 x0.toDouble(), y0.toDouble(), x1.toDouble(), y1.toDouble(),
-                out.intersection
             )
-            val iX = out.intersection.x
-            val iY = out.intersection.y
             if (res != null) {
+                out.intersection = res
+                val iX = out.intersection.x
+                val iY = out.intersection.y
                 if (iY.toInt() in y0..y1 || iY.toInt() in y1..y0) {
                     println("index=$index, edge=$edge")
                     out.setFrom(
@@ -339,6 +331,7 @@ class PolygonScanline : RastScale() {
     fun getLineIntersection(x0: Double, y0: Double, x1: Double, y1: Double, out: LineIntersection = LineIntersection()) = getLineIntersection(x0.s, y0.s, x1.s, y1.s, out)
     fun getLineIntersection(a: IPointInt, b: IPointInt, out: LineIntersection = LineIntersection()) = getLineIntersection(a.x, a.y, b.x, b.y, out)
     fun getLineIntersection(a: IPoint, b: IPoint, out: LineIntersection = LineIntersection()) = getLineIntersection(a.x.s, a.y.s, b.x.s, b.y.s, out)
+    fun getLineIntersection(a: Point, b: Point, out: LineIntersection = LineIntersection()) = getLineIntersection(a.xD.s, a.yD.s, b.xD.s, b.yD.s, out)
     fun getLineIntersection(line: MLine, out: LineIntersection = LineIntersection()) = getLineIntersection(line.a, line.b, out)
 
     private class XWithWind {

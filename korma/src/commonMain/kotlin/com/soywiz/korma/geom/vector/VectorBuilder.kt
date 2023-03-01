@@ -255,6 +255,7 @@ fun VectorBuilder.quadTo(controlX: Int, controlY: Int, anchorX: Int, anchorY: In
 fun VectorBuilder.cubicTo(cx1: Float, cy1: Float, cx2: Float, cy2: Float, ax: Float, ay: Float) = cubicTo(cx1.toDouble(), cy1.toDouble(), cx2.toDouble(), cy2.toDouble(), ax.toDouble(), ay.toDouble())
 fun VectorBuilder.cubicTo(cx1: Int, cy1: Int, cx2: Int, cy2: Int, ax: Int, ay: Int) = cubicTo(cx1.toDouble(), cy1.toDouble(), cx2.toDouble(), cy2.toDouble(), ax.toDouble(), ay.toDouble())
 
+fun VectorBuilder.line(p0: Point, p1: Point) = line(p0.x, p0.y, p1.x, p1.y)
 fun VectorBuilder.line(p0: IPoint, p1: IPoint) = line(p0.x, p0.y, p1.x, p1.y)
 fun VectorBuilder.line(x0: Double, y0: Double, x1: Double, y1: Double) = moveTo(x0, y0).also { lineTo(x1, y1) }
 fun VectorBuilder.line(x0: Float, y0: Float, x1: Float, y1: Float) = line(x0.toDouble(), y0.toDouble(), x1.toDouble(), y1.toDouble())

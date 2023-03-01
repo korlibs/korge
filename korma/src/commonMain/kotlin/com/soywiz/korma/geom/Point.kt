@@ -21,7 +21,7 @@ typealias MVector2D = MPoint
 // VALUE CLASSES
 //////////////////////////////
 
-fun Point(p: Point): Point = Point(p.raw)
+@Deprecated("", ReplaceWith("p", "com.soywiz.korma.geom.Point")) fun Point(p: Point): Point = p
 
 //data class Point(val x: Double, val y: Double) {
 // @JvmInline value
@@ -40,15 +40,24 @@ inline class Point internal constructor(internal val raw: Float2Pack) {
     constructor(x: Float, y: Float) : this(Float2Pack(x, y))
     constructor(x: Double, y: Double) : this(Float2Pack(x.toFloat(), y.toFloat()))
     constructor(x: Int, y: Int) : this(Float2Pack(x.toFloat(), y.toFloat()))
+
+    constructor(x: Double, y: Int) : this(Float2Pack(x.toFloat(), y.toFloat()))
+    constructor(x: Int, y: Double) : this(Float2Pack(x.toFloat(), y.toFloat()))
+
+    constructor(x: Float, y: Int) : this(Float2Pack(x.toFloat(), y.toFloat()))
+    constructor(x: Int, y: Float) : this(Float2Pack(x.toFloat(), y.toFloat()))
+
     constructor(p: IPoint) : this(p.x.toFloat(), p.y.toFloat())
     //constructor(p: Point) : this(p.raw)
     constructor() : this(0f, 0f)
     //constructor(x: Int, y: Int) : this(x.toDouble(), y.toDouble())
     //constructor(x: Float, y: Float) : this(x.toDouble(), y.toDouble())
 
-    //operator fun component1(): Double = x
-    //operator fun component2(): Double = y
+    operator fun component1(): Float = x
+    operator fun component2(): Float = y
 
+    inline operator fun unaryMinus(): Point = Point(-x, -y)
+    inline operator fun unaryPlus(): Point = this
 
     inline operator fun plus(that: Point): Point = Point(x + that.x, y + that.y)
     inline operator fun minus(that: Point): Point = Point(x - that.x, y - that.y)
@@ -73,21 +82,30 @@ inline class Point internal constructor(internal val raw: Float2Pack) {
     fun angleTo(other: Point): Angle = Angle.between(this.x, this.y, other.x, other.y)
     val angle: Angle get() = Angle.between(0f, 0f, this.x, this.y)
 
-    inline fun transformed(m: IMatrix): Point = m.transform(this)
-    fun transformX(m: IMatrix): Float = m.transform(this).x
-    fun transformY(m: IMatrix): Float = m.transform(this).y
+    inline fun transformed(m: IMatrix?): Point = m?.transform(this) ?: this
+    fun transformX(m: IMatrix?): Float = m?.transform(this)?.x ?: x
+    fun transformY(m: IMatrix?): Float = m?.transform(this)?.y ?: y
 
-    inline fun transformed(m: Matrix): Point = m.transform(this)
-    fun transformX(m: Matrix): Float = m.transform(this).x
-    fun transformY(m: Matrix): Float = m.transform(this).y
+    inline fun transformed(m: Matrix?): Point = m?.transform(this) ?: this
+    fun transformX(m: Matrix?): Float = m?.transform(this)?.x ?: x
+    fun transformY(m: Matrix?): Float = m?.transform(this)?.y ?: y
 
     operator fun get(component: Int) = when (component) {
         0 -> x; 1 -> y
         else -> throw IndexOutOfBoundsException("Point doesn't have $component component")
     }
     val length: Float get() = hypot(x, y)
+    val squaredLength: Float get() {
+        val x = x
+        val y = y
+        return x*x + y*y
+    }
     val magnitude: Float get() = hypot(x, y)
     val normalized: Point get() = this * (1f / magnitude)
+
+    /** Rotates the vector/point -90 degrees (not normalizing it) */
+    fun toNormal(): Point = Point(-this.y, this.x)
+
 
     val int: PointInt get() = PointInt(x.toInt(), y.toInt())
     val intRound: PointInt get() = PointInt(x.roundToInt(), y.roundToInt())
@@ -116,6 +134,8 @@ inline class Point internal constructor(internal val raw: Float2Pack) {
 
         //inline operator fun invoke(x: Int, y: Int): Point = Point(x.toDouble(), y.toDouble())
         //inline operator fun invoke(x: Float, y: Float): Point = Point(x.toDouble(), y.toDouble())
+
+        //fun fromRaw(raw: Float2Pack) = Point(raw)
 
         /** Constructs a point from polar coordinates determined by an [angle] and a [length]. Angle 0 is pointing to the right, and the direction is counter-clock-wise */
         inline fun fromPolar(x: Float, y: Float, angle: Angle, length: Double = 1.0): Point = Point(x + angle.cosineF * length, y + angle.sineF * length)
@@ -624,3 +644,4 @@ fun max(a: IPoint, b: IPoint, out: MPoint = MPoint()): MPoint = out.setTo(kotlin
 fun IPoint.clamp(min: Double, max: Double, out: MPoint = MPoint()): MPoint = out.setTo(x.clamp(min, max), y.clamp(min, max))
 
 fun Point.toInt(): PointInt = PointInt(x.toInt(), y.toInt())
+fun PointInt.toFloat(): Point = Point(x, y)

@@ -16,34 +16,19 @@ class MEdge {
         operator fun invoke(ax: Int, ay: Int, bx: Int, by: Int, wind: Int = 0) = MEdge().setTo(ax, ay, bx, by, wind)
         operator fun invoke(a: MPointInt, b: MPointInt, wind: Int = 0) = this(a.x, a.y, b.x, b.y, wind)
 
-        fun getIntersectY(a: MEdge, b: MEdge): Int {
-            getIntersectXY(a, b) { x, y -> return y.toInt() }
-            return Int.MIN_VALUE
-        }
-
-        fun getIntersectX(a: MEdge, b: MEdge): Int {
-            getIntersectXY(a, b) { x, y -> return x.toInt() }
-            return Int.MIN_VALUE
-        }
+        fun getIntersectY(a: MEdge, b: MEdge): Int = getIntersectXYInt(a, b)?.y ?: Int.MIN_VALUE
+        fun getIntersectX(a: MEdge, b: MEdge): Int = getIntersectXYInt(a, b)?.x ?: Int.MIN_VALUE
 
         fun areParallel(a: MEdge, b: MEdge) = ((a.by - a.ay) * (b.ax - b.bx)) - ((b.by - b.ay) * (a.ax - a.bx)) == 0
-
-        fun getIntersectXY(a: MEdge, b: MEdge, out: MPoint = MPoint()): MPoint? {
-            getIntersectXY(a, b) { x, y -> return out.setTo(x, y) }
-            return null
-        }
-
-        fun getIntersectXYInt(a: MEdge, b: MEdge, out: MPointInt = MPointInt()): MPointInt? {
-            getIntersectXY(a, b) { x, y -> return out.setTo(x.toInt(), y.toInt()) }
-            return null
-        }
+        fun getIntersectXY(a: MEdge, b: MEdge): Point? = _getIntersectXY(a, b)?.let { Point(it.x, it.y) }
+        fun getIntersectXYInt(a: MEdge, b: MEdge): PointInt? = _getIntersectXY(a, b)
 
         fun angleBetween(a: MEdge, b: MEdge): Angle {
             return b.angle - a.angle
         }
 
         // https://www.geeksforgeeks.org/program-for-point-of-intersection-of-two-lines/
-        inline fun getIntersectXY(a: MEdge, b: MEdge, out: (x: Double, y: Double) -> Unit): Boolean {
+        inline fun _getIntersectXY(a: MEdge, b: MEdge): PointInt? {
             val Ax: Double = a.ax.toDouble()
             val Ay: Double = a.ay.toDouble()
             val Bx: Double = a.bx.toDouble()
@@ -52,15 +37,11 @@ class MEdge {
             val Cy: Double = b.ay.toDouble()
             val Dx: Double = b.bx.toDouble()
             val Dy: Double = b.by.toDouble()
-            return getIntersectXY(Ax, Ay, Bx, By, Cx, Cy, Dx, Dy) { x, y -> out(floorCeil(x), floorCeil(y)) }
+            return getIntersectXY(Ax, Ay, Bx, By, Cx, Cy, Dx, Dy)?.let { PointInt(floorCeil(it.xD).toInt(), floorCeil(it.yD).toInt()) }
         }
 
-        inline fun getIntersectXY(Ax: Double, Ay: Double, Bx: Double, By: Double, Cx: Double, Cy: Double, Dx: Double, Dy: Double, out: (x: Double, y: Double) -> Unit): Boolean {
-            return MLine.getIntersectXY(Ax, Ay, Bx, By, Cx, Cy, Dx, Dy, out)
-        }
-
-        fun getIntersectXY(Ax: Double, Ay: Double, Bx: Double, By: Double, Cx: Double, Cy: Double, Dx: Double, Dy: Double, out: MPoint = MPoint()): MPoint? {
-            return MLine.getIntersectXY(Ax, Ay, Bx, By, Cx, Cy, Dx, Dy, out)
+        fun getIntersectXY(Ax: Double, Ay: Double, Bx: Double, By: Double, Cx: Double, Cy: Double, Dx: Double, Dy: Double): Point? {
+            return MLine.getIntersectXY(Ax, Ay, Bx, By, Cx, Cy, Dx, Dy)
         }
     }
 

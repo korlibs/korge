@@ -5,7 +5,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class BezierCurveCubicTest {
-    val b = Bezier(0, 0, 0, 1, 1, 1, 1, 0)
+    val b = Bezier(Point(0, 0), Point(0, 1), Point(1, 1), Point(1, 0))
 
     @Test
     fun testSerializesCorrectly() {
@@ -21,23 +21,23 @@ class BezierCurveCubicTest {
     fun testHasTheExpectedDerivativePoints() {
         assertEquals(
             listOf(
-                PointArrayList(0, 3, 3, 0, 0, -3),
-                PointArrayList(6, -6, -6, -6),
-                PointArrayList(-12, 0)
+                pointArrayListOf(Point(0, 3), Point(3, 0), Point(0, -3)),
+                pointArrayListOf(Point(6, -6), Point(-6, -6)),
+                pointArrayListOf(Point(-12, 0))
             ),
             b.dpoints
         )
 
-        assertEquals(MPoint(0, 3), b.derivative(0.0))
-        assertEquals(MPoint(1.5, 0.0), b.derivative(0.5))
-        assertEquals(MPoint(0, -3), b.derivative(1.0))
+        assertEquals(Point(0, 3), b.derivative(0.0))
+        assertEquals(Point(1.5, 0.0), b.derivative(0.5))
+        assertEquals(Point(0, -3), b.derivative(1.0))
     }
 
     @Test
     fun testHasTheExpectedNormals() {
-        assertEquals(MPoint(-1, 0), b.normal(0.0))
-        assertEquals(MPoint(-0.0, 1.0), b.normal(0.5))
-        assertEquals(MPoint(1.0, 0.0), b.normal(1.0))
+        assertEquals(Point(-1, 0), b.normal(0.0))
+        assertEquals(Point(-0.0, 1.0), b.normal(0.5))
+        assertEquals(Point(1.0, 0.0), b.normal(1.0))
     }
 
     @Test
@@ -61,8 +61,8 @@ class BezierCurveCubicTest {
 
     @Test
     fun testFromPointSet() {
-        val M = MPoint(200 / 3.0, 100 / 3.0)
-        val pts = listOf(MPoint(0, 0), M, MPoint(100, 100))
+        val M = Point(200 / 3.0, 100 / 3.0)
+        val pts = listOf(Point(0, 0), M, Point(100, 100))
         run {
             val b: Bezier = Bezier.cubicFromPoints(pts[0], pts[1], pts[2])
             assertEqualsFloat(
@@ -70,15 +70,15 @@ class BezierCurveCubicTest {
                 b.roundDecimalPlaces(2)
             )
             val midpoint = b.get(0.5)
-            assertEquals(midpoint.x, M.x, 0.00001)
-            assertEquals(midpoint.y, M.y, 0.00001)
+            assertEquals(midpoint.xD, M.xD, 0.001)
+            assertEquals(midpoint.yD, M.yD, 0.001)
         }
         run {
             val t = 0.25
             val b = Bezier.cubicFromPoints(pts[0], pts[1], pts[2], t)
-            val quarterpoint = b.get(t)
-            assertEquals(quarterpoint.x, M.x, 0.00001)
-            assertEquals(quarterpoint.y, M.y, 0.00001)
+            val quarterpoint = b[t]
+            assertEquals(quarterpoint.xD, M.xD, 0.001)
+            assertEquals(quarterpoint.yD, M.yD, 0.001)
         }
     }
 }

@@ -215,7 +215,7 @@ class TextEditController(
     }
     */
 
-    fun getIndexAtPos(pos: MPoint): Int {
+    fun getIndexAtPos(pos: Point): Int {
         val glyphPositions = textView.getGlyphMetrics().glyphs
 
         var index = 0
@@ -250,8 +250,8 @@ class TextEditController(
             val caret = getCaretAtIndex(range.first)
             val sign = if (last) -1.0 else +1.0
             val normal = caret.normal(0.0) * (2.0 * sign)
-            val p0 = caret.points.firstPoint()
-            val p1 = caret.points.lastPoint()
+            val p0 = caret.points.first
+            val p1 = caret.points.last
             array.add(p0)
             array.add(p1)
             array.add(p0 + normal)
@@ -259,10 +259,8 @@ class TextEditController(
         } else {
             for (n in range.first..range.last + 1) {
                 val caret = getCaretAtIndex(n)
-                val p0 = caret.points.firstPoint()
-                val p1 = caret.points.lastPoint()
-                array.add(p0)
-                array.add(p1)
+                array.add(caret.points.first)
+                array.add(caret.points.last)
                 //println("caret[$n]=$caret")
             }
         }
@@ -464,13 +462,13 @@ class TextEditController(
                 bg?.isOver = false
             }
             downImmediate {
-                cursorIndex = getIndexAtPos(it.currentPosLocal.mutable)
+                cursorIndex = getIndexAtPos(it.currentPosLocal)
                 dragging = false
                 focused = true
             }
             down {
                 //println("UiTextInput.down")
-                cursorIndex = getIndexAtPos(it.currentPosLocal.mutable)
+                cursorIndex = getIndexAtPos(it.currentPosLocal)
                 dragging = false
             }
             downOutside {
@@ -485,7 +483,7 @@ class TextEditController(
                 //println("UiTextInput.moveAnywhere: focused=$focused, pressing=${it.pressing}")
                 if (focused && it.pressing) {
                     dragging = true
-                    selectionEnd = getIndexAtPos(it.currentPosLocal.mutable)
+                    selectionEnd = getIndexAtPos(it.currentPosLocal)
                     it.stopPropagation()
                 }
             }
@@ -499,7 +497,7 @@ class TextEditController(
             }
             doubleClick {
                 //println("UiTextInput.doubleClick")
-                val index = getIndexAtPos(it.currentPosLocal.mutable)
+                val index = getIndexAtPos(it.currentPosLocal)
                 select(leftIndex(index, true), rightIndex(index, true))
             }
         }

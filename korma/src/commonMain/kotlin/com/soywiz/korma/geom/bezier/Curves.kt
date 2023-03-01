@@ -4,16 +4,7 @@ import com.soywiz.kds.Extra
 import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.kmem.*
 import com.soywiz.korma.annotations.*
-import com.soywiz.korma.geom.BoundsBuilder
-import com.soywiz.korma.geom.IPointArrayList
-import com.soywiz.korma.geom.MPoint
-import com.soywiz.korma.geom.PointArrayList
-import com.soywiz.korma.geom.MRectangle
-import com.soywiz.korma.geom.fastForEach
-import com.soywiz.korma.geom.firstX
-import com.soywiz.korma.geom.firstY
-import com.soywiz.korma.geom.lastX
-import com.soywiz.korma.geom.lastY
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
 import com.soywiz.korma.math.isAlmostEquals
 import kotlin.jvm.JvmName
@@ -103,14 +94,14 @@ data class Curves(val beziers: List<Bezier>, val closed: Boolean) : Curve, Extra
         return block(info, ratioInCurve)
     }
 
-    override fun calc(t: Double, target: MPoint): MPoint =
-        findTInCurve(t) { info, ratioInCurve -> info.curve.calc(ratioInCurve, target) }
+    override fun calc(t: Double): Point =
+        findTInCurve(t) { info, ratioInCurve -> info.curve.calc(ratioInCurve) }
 
-    override fun normal(t: Double, target: MPoint): MPoint =
-        findTInCurve(t) { info, ratioInCurve -> info.curve.normal(ratioInCurve, target) }
+    override fun normal(t: Double): Point =
+        findTInCurve(t) { info, ratioInCurve -> info.curve.normal(ratioInCurve) }
 
-    override fun tangent(t: Double, target: MPoint): MPoint =
-        findTInCurve(t) { info, ratioInCurve -> info.curve.tangent(ratioInCurve, target) }
+    override fun tangent(t: Double): Point =
+        findTInCurve(t) { info, ratioInCurve -> info.curve.tangent(ratioInCurve) }
 
     override fun ratioFromLength(length: Double): Double {
         if (length <= 0.0) return 0.0

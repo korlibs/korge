@@ -1,8 +1,6 @@
 package com.soywiz.korma.geom.bezier
 
-import com.soywiz.korma.geom.MPoint
-import com.soywiz.korma.geom.MRectangle
-import com.soywiz.korma.geom.map
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.shape.buildVectorPath
 import com.soywiz.korma.geom.vector.getCurves
 import com.soywiz.korma.geom.vector.getCurvesList
@@ -74,7 +72,7 @@ class BezierTest {
 
     @Test
     fun testTangent() {
-        val bezier = Bezier(MPoint(74.58, 36.96), MPoint(74.58, 36.96), MPoint(77.04, 27.36), MPoint(71.76, 32.64))
-        assertEquals(MPoint(0.2482, -0.9687), bezier.tangent(0.0).setToRoundDecimalPlaces(4))
+        val bezier = Bezier(Point(74.58, 36.96), Point(74.58, 36.96), Point(77.04, 27.36), Point(71.76, 32.64))
+        assertEquals(Point(0.2482, -0.9687), bezier.tangent(0.0).roundDecimalPlaces(4))
     }
 }

@@ -49,20 +49,16 @@ class StrokeToFill {
     internal fun PointIntArrayList.add(e: MPoint?) { if (e != null) add(e.x.toInt(), e.y.toInt()) }
     internal fun PointIntArrayList.add(x: Double, y: Double) { add(x.toInt(), y.toInt()) }
 
-    private val tempP1 = MPoint()
-    private val tempP2 = MPoint()
-    private val tempP3 = MPoint()
-
     internal fun doJoin(out: PointIntArrayList, mainPrev: MEdge, mainCurr: MEdge, prev: MEdge, curr: MEdge, join: LineJoin, miterLimit: Double, scale: Double, forcedMiter: Boolean) {
         val rjoin = if (forcedMiter) LineJoin.MITER else join
         when (rjoin) {
             LineJoin.MITER -> {
-                val intersection2 = tempP1.setTo(mainPrev.bx, mainPrev.by)
-                val intersection = MEdge.getIntersectXY(prev, curr, tempP3)
+                val intersection2 = Point(mainPrev.bx, mainPrev.by)
+                val intersection = MEdge.getIntersectXY(prev, curr)
                 if (intersection != null) {
-                    val dist = MPoint.distance(intersection, intersection2)
+                    val dist = Point.distance(intersection, intersection2)
                     if (forcedMiter || dist <= miterLimit) {
-                        out.add(intersection)
+                        out.add(intersection.toInt())
                     } else {
                         out.addEdgePointB(prev)
                         out.addEdgePointA(curr)
@@ -74,11 +70,11 @@ class StrokeToFill {
                 out.addEdgePointA(curr)
             }
             LineJoin.ROUND -> {
-                val i = MEdge.getIntersectXY(prev, curr, tempP3)
+                val i = MEdge.getIntersectXY(prev, curr)
                 if (i != null) {
-                    val count = (MPoint.distance(prev.bx, prev.by, curr.ax, curr.ay) * scale).toInt().clamp(4, 64)
+                    val count = (Point.distance(prev.bx, prev.by, curr.ax, curr.ay) * scale).toInt().clamp(4, 64)
                     for (n in 0..count) {
-                        out.add(Bezier.quadCalc(prev.bx.toDouble(), prev.by.toDouble(), i.x, i.y, curr.ax.toDouble(), curr.ay.toDouble(), n.toDouble() / count, tempP2))
+                        out.add(Bezier.quadCalc(prev.bx.toDouble(), prev.by.toDouble(), i.xD, i.yD, curr.ax.toDouble(), curr.ay.toDouble(), n.toDouble() / count))
                     }
                 } else {
                     out.addEdgePointB(prev)
@@ -117,13 +113,13 @@ class StrokeToFill {
                         val ratio = m.toDouble() / count
                         r.add(
                             Bezier.cubicCalc(
-                            lx.toDouble(), ly.toDouble(),
-                            lx2.toDouble(), ly2.toDouble(),
-                            rx2.toDouble(), ry2.toDouble(),
-                            rx.toDouble(), ry.toDouble(),
-                            ratio,
-                            tempP2
-                        ))
+                                lx.toDouble(), ly.toDouble(),
+                                lx2.toDouble(), ly2.toDouble(),
+                                rx2.toDouble(), ry2.toDouble(),
+                                rx.toDouble(), ry.toDouble(),
+                                ratio
+                            )
+                        )
                     }
                 }
             }

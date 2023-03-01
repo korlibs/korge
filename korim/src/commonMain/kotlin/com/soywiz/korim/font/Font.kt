@@ -105,14 +105,14 @@ data class PlacedGlyphMetrics constructor(
         if (boundsPath.containsPoint(x, y)) return 0.0
 
         val middle = when (startEnd) {
-            true -> caretStart.get(0.5)
-            false -> caretEnd.get(0.5)
-            null -> MPoint.middle(caretStart.get(0.5), caretEnd.get(0.5))
+            true -> caretStart[0.5]
+            false -> caretEnd[0.5]
+            null -> Point.middle(caretStart[0.5], caretEnd[0.5])
         }
-        return MPoint.distance(middle.x, middle.y, x, y)
+        return Point.distance(middle.xD, middle.yD, x, y)
     }
 
-    fun distToPath(p: IPoint, startEnd: Boolean? = null): Double = distToPath(p.x, p.y, startEnd)
+    fun distToPath(p: Point, startEnd: Boolean? = null): Double = distToPath(p.xD, p.yD, startEnd)
 }
 
 interface BaseTextMetricsResult {

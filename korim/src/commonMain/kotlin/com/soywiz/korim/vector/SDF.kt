@@ -15,11 +15,11 @@ fun VectorPath.sdf(width: Int, height: Int): FloatArray2 = sdf(FloatArray2(width
 fun VectorPath.sdf(data: FloatArray2): FloatArray2 {
     val path = this
     val curvesList = path.toCurvesList()
-    val p = MPoint()
+    var p = Point()
     val pp = Bezier.ProjectedPoint()
     for (y in 0 until data.height) {
         for (x in 0 until data.width) {
-            p.setTo(x + 0.5, y + 0.5)
+            p = Point(x + 0.5, y + 0.5)
             val inside = path.containsPoint(p)
             var min = Double.POSITIVE_INFINITY
             curvesList.fastForEach { curves ->
@@ -61,14 +61,14 @@ fun VectorPath.msdfBmp(width: Int, height: Int): Bitmap32 {
 fun VectorPath.msdf(data: FloatBitmap32): FloatBitmap32 {
     val path = this
     val curvesList = path.toCurvesList()
-    val p = MPoint()
+    var p = Point()
 
     val colorizedCurves = curvesList.map { it.beziers.colorize(it.closed) }
     val allColorizedCurves = ColorizedBeziers(colorizedCurves.flatMap { it.beziers })
 
     for (y in 0 until data.height) {
         for (x in 0 until data.width) {
-            p.setTo(x + 0.5, y + 0.5)
+            p = Point(x + 0.5, y + 0.5)
             val inside = path.containsPoint(p)
             val allDist = allColorizedCurves.allProjected.closestDistance(p)
             val redDist = allColorizedCurves.redProjected.closestDistance(p)
@@ -116,20 +116,17 @@ class ProjectCurvesLookup(val beziers: List<Bezier>) {
     private val tempProjected = Bezier.ProjectedPoint()
     private val tempPoint = MPoint()
 
-    fun closestDistance(point: IPoint): Double {
-        closest(point, tempPoint)
-        return MPoint.distance(point, tempPoint)
-    }
+    fun closestDistance(point: Point): Double = Point.distance(point, closest(point)).toDouble()
 
-    fun closest(point: IPoint, out: MPoint = MPoint()): IPoint {
-        if (beziers.isEmpty()) return out.setTo(0, 0)
+    fun closest(point: Point): Point {
+        if (beziers.isEmpty()) return Point(0, 0)
 
         var minDistSq: Double = Double.POSITIVE_INFINITY
         //var closest: BezierWithInfo = beziers.first()
 
         // Find bezier with closest, farthest point against [point]
         beziers.fastForEach {
-            val dist = it.outerCircle.distanceFarthestSquared(point.point)
+            val dist = it.outerCircle.distanceFarthestSquared(point)
             if (dist < minDistSq) {
                 minDistSq = dist
                 //closest = it
@@ -138,14 +135,15 @@ class ProjectCurvesLookup(val beziers: List<Bezier>) {
 
         // Cull Beziers whose nearest point is farther than the found farthest nearest point
         var bminDistSq = Double.POSITIVE_INFINITY
+        var out = Point()
         //val keep = beziers.filter { it.outerCircle.distanceClosestSquared(point) <= minDistSq }
         //println("keep=${keep.size}, total=${beziers.size}")
         beziers.fastForEach {
-            if (it.outerCircle.distanceClosestSquared(point.point) > minDistSq) return@fastForEach
+            if (it.outerCircle.distanceClosestSquared(point) > minDistSq) return@fastForEach
             it.project(point, tempProjected)
             if (tempProjected.dSq < bminDistSq) {
                 bminDistSq = tempProjected.dSq
-                out.copyFrom(tempProjected.p)
+                out = tempProjected.p
             }
         }
 

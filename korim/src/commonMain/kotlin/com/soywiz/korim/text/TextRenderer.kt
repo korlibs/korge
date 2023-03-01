@@ -338,8 +338,8 @@ fun ITextRendererActions.aroundPath(curve: Curve): ITextRendererActions {
                     val pos = curve.calc(ratio)
                     val normal = curve.normal(ratio)
                     val rpos = pos + normal * oldY
-                    this.x = rpos.x
-                    this.y = rpos.y
+                    this.x = rpos.xD
+                    this.y = rpos.yD
                     this.transform.rotate(normal.angle - 90.degrees)
 
                     //println("PUT: oldX=$oldX, oldY=$oldY, x=$x, y=$y, codePoint=$codePoint")
