@@ -5,7 +5,7 @@ import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.text.HorizontalAlign
 import com.soywiz.korim.text.VerticalAlign
 import com.soywiz.korim.vector.Context2d
-import com.soywiz.korma.geom.MRectangle
+import com.soywiz.korma.geom.*
 import kotlin.math.ceil
 import kotlin.math.floor
 import kotlin.math.log10
@@ -43,8 +43,8 @@ open class ChartBars(val list: List<DataPoint>) : Chart() {
     ) {
         lineWidth = width.toDouble()
         beginPath()
-        moveTo(x0, y0)
-        lineTo(x1, y1)
+        moveTo(Point(x0, y0))
+        lineTo(Point(x1, y1))
         stroke(createColor(color))
     }
 

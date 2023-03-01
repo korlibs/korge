@@ -19,32 +19,35 @@ object Arc {
         val x = r * sin((PI / 2.0) - angle) / sin(angle)
         val A = a + AB.unit * x
         val B = a + AC.unit * x
-        out.lineTo(A.x, A.y)
-        out.quadTo(a.x, a.y, B.x, B.y)
+        out.lineTo(A)
+        out.quadTo(a, B)
     }
 
-    fun ellipsePath(out: VectorBuilder, x: Double, y: Double, rw: Double, rh: Double) {
-        val k = K
+    fun ellipsePath(out: VectorBuilder, p: Point, rsize: Size) {
+        val (x, y) = p
+        val (rw, rh) = rsize
+        val k = K.toFloat()
         val ox = (rw / 2) * k
         val oy = (rh / 2) * k
         val xe = x + rw
         val ye = y + rh
         val xm = x + rw / 2
         val ym = y + rh / 2
-        out.moveTo(x, ym)
-        out.cubicTo(x, ym - oy, xm - ox, y, xm, y)
-        out.cubicTo(xm + ox, y, xe, ym - oy, xe, ym)
-        out.cubicTo(xe, ym + oy, xm + ox, ye, xm, ye)
-        out.cubicTo(xm - ox, ye, x, ym + oy, x, ym)
+        out.moveTo(Point(x, ym))
+        out.cubicTo(Point(x, ym - oy), Point(xm - ox, y), Point(xm, y))
+        out.cubicTo(Point(xm + ox, y), Point(xe, ym - oy), Point(xe, ym))
+        out.cubicTo(Point(xe, ym + oy), Point(xm + ox, ye), Point(xm, ye))
+        out.cubicTo(Point(xm - ox, ye), Point(x, ym + oy), Point(x, ym))
         out.close()
     }
 
-    fun arcPath(out: VectorBuilder, p1: IPoint, p2: IPoint, radius: Double, counterclockwise: Boolean = false) {
+    fun arcPath(out: VectorBuilder, p1: Point, p2: Point, radius: Float, counterclockwise: Boolean = false) {
         val circleCenter = findArcCenter(p1, p2, radius)
-        arcPath(out, circleCenter.x, circleCenter.y, radius, Angle.between(circleCenter, p1), Angle.between(circleCenter, p2), counterclockwise)
+        arcPath(out, circleCenter, radius, Angle.between(circleCenter, p1), Angle.between(circleCenter, p2), counterclockwise)
     }
 
-    fun arcPath(out: VectorBuilder, x: Double, y: Double, r: Double, start: Angle, end: Angle, counterclockwise: Boolean = false) {
+    fun arcPath(out: VectorBuilder, center: Point, r: Float, start: Angle, end: Angle, counterclockwise: Boolean = false) {
+        val (x, y) = center
         // http://hansmuller-flex.blogspot.com.es/2011/04/approximating-circular-arc-with-cubic.html
         val startAngle = start.normalized
         val endAngle1 = end.normalized
@@ -81,12 +84,12 @@ object Arc {
             val sin_ar = ar.sineD
 
             if (index == 0) {
-                out.moveTo(x + r * a1.cosineD, y + r * a1.sineD)
+                out.moveTo(Point(x + r * a1.cosineD, y + r * a1.sineD))
             }
             out.cubicTo(
-                x + x2 * cos_ar - y2 * sin_ar, y + x2 * sin_ar + y2 * cos_ar,
-                x + x3 * cos_ar - y3 * sin_ar, y + x3 * sin_ar + y3 * cos_ar,
-                x + r * a2.cosineD, y + r * a2.sineD
+                Point(x + x2 * cos_ar - y2 * sin_ar, y + x2 * sin_ar + y2 * cos_ar),
+                Point(x + x3 * cos_ar - y3 * sin_ar, y + x3 * sin_ar + y3 * cos_ar),
+                Point(x + r * a2.cosineD, y + r * a2.sineD),
             )
             //println(" - ARC: $a1-$a2")
             index++
@@ -98,27 +101,27 @@ object Arc {
 
     // c = √(a² + b²)
     // b = √(c² - a²)
-    private fun triangleFindSideFromSideAndHypot(side: Double, hypot: Double): Double =
+    private fun triangleFindSideFromSideAndHypot(side: Float, hypot: Float): Float =
         kotlin.math.sqrt(hypot * hypot - side * side)
 
-    fun findArcCenter(p1: IPoint, p2: IPoint, radius: Double, out: MPoint = MPoint()): IPoint {
+    fun findArcCenter(p1: Point, p2: Point, radius: Float): Point {
         val tangent = p2 - p1
-        val normal = tangent.mutable.setToNormal().normalized
+        val normal = tangent.toNormal().normalized
         val mid = (p1 + p2) / 2.0
-        val lineLen = triangleFindSideFromSideAndHypot(MPoint.distance(p1, mid), radius)
-        return out.copyFrom(mid + normal * lineLen)
+        val lineLen = triangleFindSideFromSideAndHypot(Point.distance(p1, mid), radius)
+        return mid + normal * lineLen
     }
 
-    fun createArc(p1: IPoint, p2: IPoint, radius: Double, counterclockwise: Boolean = false): Curves =
+    fun createArc(p1: Point, p2: Point, radius: Float, counterclockwise: Boolean = false): Curves =
         buildVectorPath { arcPath(this, p1, p2, radius, counterclockwise) }.toCurves()
 
-    fun createEllipse(x: Double, y: Double, rw: Double, rh: Double): Curves =
-        buildVectorPath { ellipsePath(this, x, y, rw, rh) }.toCurves()
+    fun createEllipse(p: Point, radius: Size): Curves =
+        buildVectorPath { ellipsePath(this, p, radius) }.toCurves()
 
-    fun createCircle(x: Double, y: Double, radius: Double): Curves =
-        buildVectorPath { arc(x, y, radius, Angle.ZERO, Angle.FULL) }.toCurves()
+    fun createCircle(p: Point, radius: Float): Curves =
+        buildVectorPath { arc(p, radius, Angle.ZERO, Angle.FULL) }.toCurves()
 
-    fun createArc(x: Double, y: Double, r: Double, start: Angle, end: Angle, counterclockwise: Boolean = false): Curves =
-        buildVectorPath { arcPath(this, x, y, r, start, end, counterclockwise) }.toCurves()
+    fun createArc(p: Point, r: Float, start: Angle, end: Angle, counterclockwise: Boolean = false): Curves =
+        buildVectorPath { arcPath(this, p, r, start, end, counterclockwise) }.toCurves()
 
 }

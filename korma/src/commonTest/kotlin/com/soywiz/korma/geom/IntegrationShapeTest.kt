@@ -19,7 +19,7 @@ class IntegrationShapeTest {
     @Test
     fun vectorPathToShape2d() {
         val exactArea = Shape2d.Circle(0, 0, 100).area
-        val vp = VectorPath().apply { circle(0, 0, 100) }
+        val vp = VectorPath().apply { circle(Point(0, 0), 100f) }
         val shape = vp.toShape2d()
         assertEquals(true, shape.closed)
         assertTrue(abs(exactArea - shape.area) / exactArea < 0.01)

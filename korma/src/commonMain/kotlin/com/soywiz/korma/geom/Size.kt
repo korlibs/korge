@@ -29,6 +29,9 @@ inline class Size internal constructor(internal val raw: Float2Pack) {
     constructor(width: Double, height: Double) : this(Float2Pack(width.toFloat(), height.toFloat()))
     constructor(width: Int, height: Int) : this(width.toFloat(), height.toFloat())
 
+    operator fun component1(): Float = width
+    operator fun component2(): Float = height
+
     override fun toString(): String = "Size(width=${width.niceStr}, height=${height.niceStr})"
 }
 

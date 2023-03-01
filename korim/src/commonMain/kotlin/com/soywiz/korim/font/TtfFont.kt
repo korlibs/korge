@@ -1990,9 +1990,9 @@ abstract class BaseTtfFont(
                     var next: Contour = contour(cstart, tempContours[1])
 
                     when {
-                        curr.onCurve -> p.moveTo(curr.x, -curr.y)
-                        next.onCurve -> p.moveTo(next.x, -next.y)
-                        else -> p.moveTo((curr.x + next.x) * 0.5.toInt(), -((curr.y + next.y) * 0.5).toInt())
+                        curr.onCurve -> p.moveTo(Point(curr.x, -curr.y))
+                        next.onCurve -> p.moveTo(Point(next.x, -next.y))
+                        else -> p.moveTo(Point((curr.x + next.x) * 0.5.toInt(), -((curr.y + next.y) * 0.5).toInt()))
                     }
 
                     for (cpos in 0 until csize) {
@@ -2001,7 +2001,7 @@ abstract class BaseTtfFont(
                         next = contour(cstart + ((cpos + 1) % csize), tempContours[(cpos + 2) % 3])
 
                         if (curr.onCurve) {
-                            p.lineTo(curr.x, -curr.y)
+                            p.lineTo(Point(curr.x, -curr.y))
                         } else {
                             var prev2X = prev.x
                             var prev2Y = prev.y
@@ -2011,7 +2011,7 @@ abstract class BaseTtfFont(
                             if (!prev.onCurve) {
                                 prev2X = ((curr.x + prev.x) * 0.5).toInt()
                                 prev2Y = ((curr.y + prev.y) * 0.5).toInt()
-                                p.lineTo(prev2X, -prev2Y)
+                                p.lineTo(Point(prev2X, -prev2Y))
                             }
 
                             if (!next.onCurve) {
@@ -2019,8 +2019,8 @@ abstract class BaseTtfFont(
                                 next2Y = ((curr.y + next.y) * 0.5).toInt()
                             }
 
-                            p.lineTo(prev2X, -prev2Y)
-                            p.quadTo(curr.x, -curr.y, next2X, -next2Y)
+                            p.lineTo(Point(prev2X, -prev2Y))
+                            p.quadTo(Point(curr.x, -curr.y), Point(next2X, -next2Y))
                         }
                     }
 

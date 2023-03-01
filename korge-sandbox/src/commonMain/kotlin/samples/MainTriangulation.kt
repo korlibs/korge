@@ -34,7 +34,7 @@ class MainTriangulation : Scene() {
 
                 edges.fastForEachPoint { point ->
                     fill(Colors.RED) {
-                        circle(point, 3.0)
+                        circle(point, 3f)
                     }
                 }
 

@@ -47,17 +47,17 @@ class MainBezier : Scene() {
                 stroke(Colors.PURPLE, lineWidth = 2.0) {
                     for (n in 0..50) {
                         val p = curve.calc(n.toDouble() / 50.0)
-                        this.circle(p, 1.0)
+                        this.circle(p, 1f)
                     }
                 }
 
                 //stroke(Colors.YELLOW, lineWidth = 2.0) {
                 fill(Colors.YELLOW) {
-                    this.circle(bez.p1, 8.0)
-                    this.circle(bez.p2, 4.0)
-                    this.circle(bez.p1, 4.0)
-                    this.circle(bez.p3, 4.0)
-                    this.circle(bez.p4, 4.0)
+                    this.circle(bez.p1, 8f)
+                    this.circle(bez.p2, 4f)
+                    this.circle(bez.p1, 4f)
+                    this.circle(bez.p3, 4f)
+                    this.circle(bez.p4, 4f)
                 }
 
                 //fill(Colors.YELLOW) { this.circle(bez.p1, 8.0) }

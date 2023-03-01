@@ -330,7 +330,7 @@ class SVG(val root: Xml, val warningProcessor: ((message: String) -> Unit)? = nu
         var radius = xml.double("r")
 
         override fun drawInternal(c: Context2d) {
-            c.circle(cx, cy, radius)
+            c.circle(Point(cx, cy), radius.toFloat())
         }
     }
 
@@ -341,7 +341,7 @@ class SVG(val root: Xml, val warningProcessor: ((message: String) -> Unit)? = nu
         var ry = xml.double("ry")
 
         override fun drawInternal(c: Context2d) {
-            c.ellipse(cx - rx, cy - ry, rx * 2, ry * 2)
+            c.ellipse(Point(cx - rx, cy - ry), Size(rx * 2, ry * 2))
         }
     }
 
@@ -355,11 +355,11 @@ class SVG(val root: Xml, val warningProcessor: ((message: String) -> Unit)? = nu
         }).toList())
         val path = VectorPath().also { path ->
             var edges = 0
-            path.moveTo(pps.read(), pps.read())
+            path.moveTo(Point(pps.read(), pps.read()))
             while (pps.hasMore) {
                 val x = pps.read()
                 val y = pps.read()
-                path.lineTo(x, y)
+                path.lineTo(Point(x, y))
                 edges++
             }
             if (xml.nameLC == "polygon") path.close()
@@ -380,8 +380,8 @@ class SVG(val root: Xml, val warningProcessor: ((message: String) -> Unit)? = nu
 
         override fun drawInternal(c: Context2d) {
             c.beginPath()
-            c.moveTo(x1, y1)
-            c.lineTo(x2, y2)
+            c.moveTo(Point(x1, y1))
+            c.lineTo(Point(x2, y2))
         }
     }
 

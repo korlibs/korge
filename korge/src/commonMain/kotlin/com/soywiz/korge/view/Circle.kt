@@ -4,6 +4,7 @@ import com.soywiz.korge.ui.uiObservable
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.paint.Paint
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.shape.Shape2d
 import com.soywiz.korma.geom.vector.VectorPath
 import com.soywiz.korma.geom.vector.circle
@@ -51,7 +52,7 @@ open class Circle(
         //println("radius=$radius, halfStroke=$halfStroke")
         updatePath {
             clear()
-            circle(radius, radius, radius)
+            circle(Point(radius, radius), radius.toFloat())
             assumeConvex = true // Optimization to avoid computing convexity
             //circle(radius + halfStroke, radius + halfStroke, radius)
             //println(toSvgString())

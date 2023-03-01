@@ -24,7 +24,7 @@ class Bitmap32Context2dTest {
         val bitmaps = listOf(Bitmap32(128, 128, premultiplied = false), NativeImage(128, 128))
         for (bmp in bitmaps) {
             bmp.context2d {
-            //bmp.getContext2d().apply {
+                //bmp.getContext2d().apply {
                 //fill(ColorPaint(Colors.BLUE))
                 keep {
                     scale(2.0, 1.0)
@@ -43,9 +43,9 @@ class Bitmap32Context2dTest {
                     if (true) {
                         keep {
                             beginPath()
-                            moveTo(8, 8)
-                            quadTo(40, 0, 64, 32)
-                            lineTo(8, 64)
+                            moveTo(Point(8, 8))
+                            quadTo(Point(40, 0), Point(64, 32))
+                            lineTo(Point(8, 64))
                             close()
 
                             //fillRect(8, 8, 32, 64)
@@ -69,26 +69,28 @@ class Bitmap32Context2dTest {
     }
 
     @Test
-    fun renderContext2dWithImage() = suspendTest({ !Platform.isJsNodeJs }) { // @TODO: Check why this is not working on Node.JS
-        val pngBytes = "iVBORw0KGgoAAAANSUhEUgAAACAAAAAgAQMAAABJtOi3AAAAA1BMVEVrVPMZmyLtAAAAC0lEQVR4AWMY5AAAAKAAAVQqnscAAAAASUVORK5CYII=".fromBase64()
-        PNG.decode(pngBytes)
+    fun renderContext2dWithImage() =
+        suspendTest({ !Platform.isJsNodeJs }) { // @TODO: Check why this is not working on Node.JS
+            val pngBytes =
+                "iVBORw0KGgoAAAANSUhEUgAAACAAAAAgAQMAAABJtOi3AAAAA1BMVEVrVPMZmyLtAAAAC0lEQVR4AWMY5AAAAKAAAVQqnscAAAAASUVORK5CYII=".fromBase64()
+            PNG.decode(pngBytes)
 
-        val img = nativeImageFormatProvider.decode(pngBytes)
+            val img = nativeImageFormatProvider.decode(pngBytes)
 
-        val rendered = NativeImage(128, 128).context2d {
-            rect(0, 0, 100, 100)
-            fill(BitmapPaint(img, MMatrix()))
+            val rendered = NativeImage(128, 128).context2d {
+                rect(0, 0, 100, 100)
+                fill(BitmapPaint(img, MMatrix()))
+            }
+            val bmp = rendered.toBMP32()
+
+            // @TODO: This should work on native too!
+            if (!Platform.isNative) {
+                assertEquals("#6b54f3ff", bmp[0, 0].hexString)
+                assertEquals("#6b54f3ff", bmp[31, 31].hexString)
+                //assertEquals("#6b54f3ff", bmp[99, 99].hexString) // @TODO: This should work too on Node.JS or should not work on JVM?
+                assertEquals("#00000000", bmp[101, 101].hexString)
+            }
         }
-        val bmp = rendered.toBMP32()
-
-        // @TODO: This should work on native too!
-        if (!Platform.isNative) {
-            assertEquals("#6b54f3ff", bmp[0, 0].hexString)
-            assertEquals("#6b54f3ff", bmp[31, 31].hexString)
-            //assertEquals("#6b54f3ff", bmp[99, 99].hexString) // @TODO: This should work too on Node.JS or should not work on JVM?
-            assertEquals("#00000000", bmp[101, 101].hexString)
-        }
-    }
 
     @Test
     fun testBug1() = suspendTest(timeout = null) {
@@ -124,22 +126,29 @@ class Bitmap32Context2dTest {
 }
 
 
-
 fun VectorBuilder.triangleLeftUp(size: Double, x: Double, y: Double) = this.triangle(x, y, x, y + size, x + size, y)
 fun VectorBuilder.triangleLeftDown(size: Double, x: Double, y: Double) = this.triangle(x, y, x, y - size, x + size, y)
-fun VectorBuilder.triangleRightUp(size: Double, x: Double, y: Double) = this.triangle(x, y, x + size, y + size, x + size, y)
-fun VectorBuilder.triangleRightDown(size: Double, x: Double, y: Double) = this.triangle(x, y, x + size, y - size, x + size, y)
-fun VectorBuilder.triangleDownLeft(size: Double, x: Double, y: Double) = this.triangle(x, y, x, y + size, x - size, y + size)
-fun VectorBuilder.triangleDownRight(size: Double, x: Double, y: Double) = this.triangle(x, y, x, y + size, x + size, y + size)
+fun VectorBuilder.triangleRightUp(size: Double, x: Double, y: Double) =
+    this.triangle(x, y, x + size, y + size, x + size, y)
+
+fun VectorBuilder.triangleRightDown(size: Double, x: Double, y: Double) =
+    this.triangle(x, y, x + size, y - size, x + size, y)
+
+fun VectorBuilder.triangleDownLeft(size: Double, x: Double, y: Double) =
+    this.triangle(x, y, x, y + size, x - size, y + size)
+
+fun VectorBuilder.triangleDownRight(size: Double, x: Double, y: Double) =
+    this.triangle(x, y, x, y + size, x + size, y + size)
+
 fun VectorBuilder.triangleUpLeft(size: Double, x: Double, y: Double) = this.triangle(x, y, x, y + size, x - size, y)
 fun VectorBuilder.triangleUpRight(size: Double, x: Double, y: Double) = this.triangle(x, y, x, y + size, x + size, y)
 
 fun VectorBuilder.triangle(x1: Double, y1: Double, x2: Double, y2: Double, x3: Double, y3: Double) {
     //this.rect()
-    this.moveTo(x1, y1)
-    this.lineTo(x2, y2)
-    this.lineTo(x3, y3)
-    this.lineTo(x1, y1)
+    this.moveTo(Point(x1, y1))
+    this.lineTo(Point(x2, y2))
+    this.lineTo(Point(x3, y3))
+    this.lineTo(Point(x1, y1))
     //this.close() // @TODO: Is this a Bug? But still we have to handle strange cases like this one to be consistent with other rasterizers.
     //println("TRIANGLE: ($x1,$y1)-($x2,$y2)-($x3,$y3)")
 }

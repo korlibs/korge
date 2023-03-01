@@ -55,9 +55,9 @@ class ShapeTest {
     @Test
     fun testEmptyBounds() {
         fun createStrokeShape(block: VectorBuilder.() -> Unit): PolylineShape = PolylineShape(buildVectorPath { block() }, null, Colors.RED, MMatrix(), StrokeInfo())
-        val shape1 = createStrokeShape { moveTo(100, 100) }
-        val shape2 = createStrokeShape { moveTo(100, 100); lineTo(200, 100) }
-        val shape3 = createStrokeShape { moveTo(100, 100); lineTo(200, 200) }
+        val shape1 = createStrokeShape { moveTo(Point(100, 100)) }
+        val shape2 = createStrokeShape { moveTo(Point(100, 100)); lineTo(Point(200, 100)) }
+        val shape3 = createStrokeShape { moveTo(Point(100, 100)); lineTo(Point(200, 200)) }
         assertEquals(shape1.bounds, shape1.getBounds(includeStrokes = true))
         assertEquals(shape2.bounds, shape2.getBounds(includeStrokes = true))
         assertEquals(shape3.bounds, shape3.getBounds(includeStrokes = true))

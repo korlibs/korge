@@ -45,9 +45,9 @@ class CurvesToStrokeTest {
                 )
             """.trimIndent(),
             pathPoints(LineJoin.BEVEL) {
-                moveTo(0, 0)
-                lineTo(100, 0)
-                lineTo(100, 100)
+                moveTo(Point(0, 0))
+                lineTo(Point(100, 0))
+                lineTo(Point(100, 100))
             }.toString()
         )
     }
@@ -63,9 +63,9 @@ class CurvesToStrokeTest {
     @Test
     fun testSplit() {
         val curves = buildVectorPath {
-            moveTo(0, 0)
-            lineTo(100, 0)
-            lineTo(200, 0)
+            moveTo(Point(0, 0))
+            lineTo(Point(100, 0))
+            lineTo(Point(200, 0))
         }.getCurves()
         assertEquals(Curves(Bezier(100,0, 150,0)), curves.split(0.5, 0.75))
         assertEquals(Curves(Bezier(50,0, 100,0)), curves.split(0.25, 0.5))
@@ -74,7 +74,7 @@ class CurvesToStrokeTest {
 
     @Test
     fun testCircleJoins() {
-        val curves = Arc.createCircle(0.0, 0.0, 100.0)
+        val curves = Arc.createCircle(Point(0, 0), 100f)
         val builder = StrokePointsBuilder(10.0, mode = StrokePointsMode.SCALABLE_POS_NORMAL_WIDTH)
         builder.addJoin(curves.beziers[0], curves.beziers[1], LineJoin.MITER, 5.0)
         assertEquals(

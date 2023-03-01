@@ -61,9 +61,9 @@ class VectorTracer(
                         val x = points.getX(n)
                         val y = points.getY(n)
                         if (n == 0) {
-                            moveTo(x, y)
+                            moveTo(Point(x, y))
                         } else {
-                            lineTo(x, y)
+                            lineTo(Point(x, y))
                             if (optimize) {
                                 optimizeLastCommand()
                             }

@@ -1,5 +1,6 @@
 package com.soywiz.korim.vector
 
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.shape.*
 import com.soywiz.korma.geom.vector.*
 import kotlin.test.Test
@@ -10,8 +11,8 @@ class VectorPathCrossModuleTest {
     fun testVisitEdgesSimplified() {
         val log = arrayListOf<String>()
         buildVectorPath(VectorPath()) {
-            moveTo(100, 100)
-            quadTo(100, 200, 200, 200)
+            moveTo(Point(100, 100))
+            quadTo(Point(100, 200), Point(200, 200))
             close()
         }.visitEdgesSimple(
             { (x0, y0), (x1, y1) -> log.add("line(${x0.toInt()}, ${y0.toInt()}, ${x1.toInt()}, ${y1.toInt()})") },

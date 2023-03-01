@@ -43,11 +43,11 @@ class MainOnScreenController : Scene() {
             container {
                 position(radius * 1.1, height - radius * 1.1)
                 graphics { g ->
-                    fill(Colors.BLACK) { circle(0.0, 0.0, radius) }
+                    fill(Colors.BLACK) { circle(Point(0, 0), radius.toFloat()) }
                     g.alpha(0.2)
                 }
                 ball = graphics { g ->
-                    fill(Colors.WHITE) { circle(0.0, 0.0, radius * 0.7) }
+                    fill(Colors.WHITE) { circle(Point(0, 0), (radius * 0.7).toFloat()) }
                     g.alpha(0.2)
                 }
             }
@@ -71,7 +71,7 @@ class MainOnScreenController : Scene() {
             for (n in 0 until 2) {
                 graphics { g ->
                     g.position(width - radius * 1.1 - (diameter * n), height - radius * 1.1)
-                    fill(Colors.WHITE) { circle(0.0, 0.0, radius * 0.7) }
+                    fill(Colors.WHITE) { circle(Point(0, 0), (radius * 0.7).toFloat()) }
                     g.alpha(0.2)
                     g.decorateButton(n)
                 }

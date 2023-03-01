@@ -700,6 +700,7 @@ data class MMatrix(
         var skewX: Angle = 0.radians, var skewY: Angle = 0.radians,
         var rotation: Angle = 0.radians
     ) : MutableInterpolable<Transform>, Interpolable<Transform> {
+        val scale: Scale get() = Scale(scaleX, scaleY)
 
         var scaleAvg: Double
             get() = (scaleX + scaleY) * 0.5

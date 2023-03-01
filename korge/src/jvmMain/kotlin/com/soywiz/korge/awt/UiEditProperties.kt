@@ -396,9 +396,9 @@ internal class UiCollapsibleSection(app: UiApplication, val name: String?, val c
                     }
                     scale(ICON_SIZE.toDouble())
                     rotate(angle)
-                    moveTo(-0.5, 0.0)
-                    lineTo(+0.5, 0.0)
-                    lineTo(0.0, 0.5)
+                    moveTo(Point(-0.5, 0.0))
+                    lineTo(Point(+0.5, 0.0))
+                    lineTo(Point(0.0, 0.5))
                     close()
                 }
             }

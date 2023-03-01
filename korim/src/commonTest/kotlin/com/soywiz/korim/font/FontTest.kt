@@ -83,13 +83,13 @@ class FontTest {
 
         val img1 = Bitmap32(128, 128, premultiplied = false).context2d {
             //rect(0, 0, 50, 50)
-            circle(25, 50, 30)
+            circle(Point(25, 50), 30f)
             clip()
             beginPath()
 
-            moveTo(0, 100)
-            lineTo(30, 10)
-            lineTo(60, 100)
+            moveTo(Point(0, 100))
+            lineTo(Point(30, 10))
+            lineTo(Point(60, 100))
             close()
             fill()
         }
