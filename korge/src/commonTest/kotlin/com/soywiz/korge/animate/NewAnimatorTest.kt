@@ -73,7 +73,7 @@ class NewAnimatorTest {
         var log = ""
         val lines = arrayListOf<String>()
         fun logLine() {
-            lines += "${view.ipos.niceStr}, ${view.alpha.niceStr(1)} : $log"
+            lines += "${view.ipos.niceStr(1)}, ${view.alpha.niceStr(1)} : $log"
         }
         logLine()
         val animator = view.animator(defaultTime = 1.seconds, defaultEasing = Easing.LINEAR) {
@@ -147,7 +147,7 @@ class NewAnimatorTest {
         }
         val lines = arrayListOf<String>()
         fun logLine() {
-            lines += "${view.ipos.niceStr}, ${view.alpha.niceStr(1)}"
+            lines += "${view.ipos.niceStr(1)}, ${view.alpha.niceStr(1)}"
         }
         for (n in 0 until 12) {
             view.updateSingleView(0.1.seconds)

@@ -56,12 +56,10 @@ fun interface Easing {
         val EASE_OUT_ELASTIC: Easing get() = Easings.EASE_OUT_ELASTIC
         val EASE_OUT_BOUNCE: Easing get() = Easings.EASE_OUT_BOUNCE
         val LINEAR: Easing get() = Easings.LINEAR
-
         val EASE: Easing get() = Easings.EASE
         val EASE_IN: Easing get() = Easings.EASE_IN
         val EASE_OUT: Easing get() = Easings.EASE_OUT
         val EASE_IN_OUT: Easing get() = Easings.EASE_IN_OUT
-
         val EASE_IN_OLD: Easing get() = Easings.EASE_IN_OLD
         val EASE_OUT_OLD: Easing get() = Easings.EASE_OUT_OLD
         val EASE_IN_OUT_OLD: Easing get() = Easings.EASE_IN_OUT_OLD
