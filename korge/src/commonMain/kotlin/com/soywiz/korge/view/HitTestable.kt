@@ -28,8 +28,9 @@ fun View.moveWithHitTestable(collision: HitTestable, dx: Double, dy: Double, hit
             val dpoint = MPoint.fromPolar(rangle, length * lengthScale)
             char.x = oldX + dpoint.x
             char.y = oldY + dpoint.y
+            val global = char.globalPos
             if (!collision.hitTestAny(
-                char.globalX, char.globalY,
+                global.xD, global.yD,
                 hitTestDirection ?: HitTestDirection.fromAngle(angle))
             ) {
                 return // Accept movement

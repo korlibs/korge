@@ -262,10 +262,10 @@ open class UIComboBox<T>(
         //itemsView.size(width, viewportHeight.toDouble()).position(0.0, height)
         itemsView
             .size(width, viewportHeight.toDouble())
-            .setGlobalXY(localToGlobal(Point(0.0, height + 8.0)))
+            .globalPos(localToGlobal(Point(0.0, height + 8.0)))
         itemsViewBackground
             .size(width, itemsView.height + 16)
-            .setGlobalXY(localToGlobal(Point(0.0, height)))
+            .globalPos(localToGlobal(Point(0.0, height)))
         verticalList
             .size(width, verticalList.height)
 

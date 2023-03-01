@@ -81,7 +81,7 @@ open class UIVerticalList(provider: Provider, width: Double = 200.0) : UIView(wi
         //if (stage == null) return
         val area = getVisibleGlobalArea(tempRect)
         //val area = getVisibleWindowArea(tempRect)
-        val point = globalXY(tempPoint)
+        val point = globalPos.mutable
         val numItems = provider.numItems
         if (dirty || area != lastArea || point != lastPoint) {
             dirty = false

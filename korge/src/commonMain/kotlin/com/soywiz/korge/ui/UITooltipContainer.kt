@@ -11,6 +11,7 @@ import com.soywiz.korge.view.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.font.*
 import com.soywiz.korio.lang.*
+import com.soywiz.korma.geom.*
 
 @KorgeExperimental
 inline fun Container.uiTooltipContainer(
@@ -53,7 +54,7 @@ class UITooltipContainer() : Container() {
 
     fun setPosition(view: View) {
         val bounds = view.globalBounds
-        tooltip.setGlobalXY(bounds.left + tooltipOffsetX, bounds.bottom + tooltipOffsetY)
+        tooltip.globalPos(Point(bounds.left + tooltipOffsetX, bounds.bottom + tooltipOffsetY))
     }
 
     fun setText(text: String) {

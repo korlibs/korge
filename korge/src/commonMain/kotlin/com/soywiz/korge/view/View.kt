@@ -351,11 +351,11 @@ abstract class View internal constructor(
         get() = this::class.simpleName ?: "Unknown"
 
     @ViewProperty(min = 0.0, max = 1.0)
-    private var scaleXY: Pair<Double, Double>
-        get() = scaleX to scaleY
+    var scaleXY: Scale
+        get() = Scale(scaleX, scaleY)
         set(value) {
-            scaleX = value.first
-            scaleY = value.second
+            scaleX = value.scaleXD
+            scaleY = value.scaleYD
         }
 
     /** Allows to change [scaleX] and [scaleY] at once. Returns the mean value of x and y scales. */
@@ -388,30 +388,9 @@ abstract class View internal constructor(
             skewY = v.second
         }
 
-    /** The global x position of this view */
-    var globalX: Double
-        get() {
-            return parent?.localToGlobal(Point(x, y))?.xD ?: x
-        }
-        set(value) { setGlobalXY(value, globalY) }
-
-    /** The global y position of this view */
-    var globalY: Double
-        get() = parent?.localToGlobal(Point(x, y))?.yD ?: y
-        set(value) {
-            setGlobalXY(globalX, value)
-        }
-
-    fun setGlobalXY(pos: Point) = setGlobalXY(pos.xD, pos.yD)
-    fun setGlobalXY(pos: MPoint) = setGlobalXY(pos.x, pos.y)
-
-    fun setGlobalXY(x: Double, y: Double) {
-        val p = parent?.globalToLocal(Point(x, y)) ?: Point(x, y)
-        setXY(p.xD, p.yD)
-    }
-
-    fun globalXY(out: MPoint = MPoint()): MPoint = out.setTo(globalX, globalY)
-    fun localXY(out: MPoint = MPoint()): MPoint = out.setTo(x, y)
+    var globalPos: Point
+        get() = parent?.localToGlobal(Point(x, y)) ?: Point(x, y)
+        set(value) { pos = parent?.globalToLocal(value) ?: value }
 
     /**
      * Changes the [width] and [height] to match the parameters.
@@ -917,16 +896,15 @@ abstract class View internal constructor(
                 circle(localToGlobal(local.topRight), anchorSize)
                 circle(localToGlobal(local.bottomRight), anchorSize)
                 circle(localToGlobal(local.bottomLeft), anchorSize)
-                circle(localToGlobal(local.topLeft.interpolateWith(Ratio.HALF, local.topRight)), anchorSize)
-                circle(localToGlobal(local.topRight.interpolateWith(Ratio.HALF, local.bottomRight)), anchorSize)
-                circle(localToGlobal(local.bottomRight.interpolateWith(Ratio.HALF, local.bottomLeft)), anchorSize)
-                circle(localToGlobal(local.bottomLeft.interpolateWith(Ratio.HALF, local.topLeft)), anchorSize)
+                circle(localToGlobal(Ratio.HALF.interpolate(local.topLeft, local.topRight)), anchorSize)
+                circle(localToGlobal(Ratio.HALF.interpolate(local.topRight, local.bottomRight)), anchorSize)
+                circle(localToGlobal(Ratio.HALF.interpolate(local.bottomRight, local.bottomLeft)), anchorSize)
+                circle(localToGlobal(Ratio.HALF.interpolate(local.bottomLeft, local.topLeft)), anchorSize)
             }
             lines.drawVector(Colors.BLUE) {
-                val centerX = globalX
-                val centerY = globalY
-                line(centerX, centerY - 5, centerX, centerY + 5)
-                line(centerX - 5, centerY, centerX + 5, centerY)
+                val center = globalPos
+                line(center.x, center.y - 5, center.x, center.y + 5)
+                line(center.x - 5, center.y, center.x + 5, center.y)
             }
         }
 
@@ -1349,7 +1327,7 @@ abstract class View internal constructor(
     @KorgeUntested
     fun setGlobalBounds(bounds: IRectangle) {
         val transform = parent!!.globalMatrix.toTransform()
-        setGlobalXY(bounds.left, bounds.top)
+        globalPos = bounds.topLeft
         setSizeScaled(
             bounds.width * transform.scaleX,
             bounds.height * transform.scaleY,
@@ -1840,6 +1818,11 @@ fun <T : View> T.size(width: Double, height: Double): T {
 }
 fun <T : View> T.size(width: Float, height: Float): T = size(width.toDouble(), height.toDouble())
 fun <T : View> T.size(width: Int, height: Int): T = size(width.toDouble(), height.toDouble())
+
+fun <T : View> T.globalPos(p: Point): T {
+    this.globalPos = p
+    return this
+}
 
 /** Returns a list of all the non-null [View.name] values of this and the descendants */
 val View?.allDescendantNames

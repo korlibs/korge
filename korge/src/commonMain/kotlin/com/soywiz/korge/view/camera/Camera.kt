@@ -181,8 +181,8 @@ class CameraContainer(
     }
 
     fun getFollowingXY(out: MPoint = MPoint()): MPoint {
-        val followGlobalX = following!!.globalX
-        val followGlobalY = following!!.globalY
+        val followGlobalX = following!!.globalPos.xD
+        val followGlobalY = following!!.globalPos.yD
         val localToContentPos = content!!.globalToLocal(Point(followGlobalX, followGlobalY))
         return out.setTo(localToContentPos)
     }

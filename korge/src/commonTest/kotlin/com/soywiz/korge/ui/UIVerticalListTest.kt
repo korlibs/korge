@@ -30,7 +30,7 @@ class UIVerticalListTest {
             override fun getItemView(index: Int, vlist: UIVerticalList): View = SolidRect(vlist.width, fixedHeight)
         })
         views.update(0.milliseconds)
-        assertEquals(listOf(100.0, 132.0, 164.0, 196.0, 228.0), verticalList.children.map { it.globalY })
+        assertEquals(listOf(100.0, 132.0, 164.0, 196.0, 228.0), verticalList.children.map { it.globalPos.yD })
         assertEquals(5, verticalList.numChildren)
     }
 }

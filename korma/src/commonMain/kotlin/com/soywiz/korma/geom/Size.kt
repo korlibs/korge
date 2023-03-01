@@ -190,8 +190,8 @@ fun MSizeInt.asDouble(): MSize = this.size
 fun MPoint.asSize(): MSize = MSize(this)
 fun IPoint.asSize(): ISize = MSize(MPoint(this))
 
-fun Point.toSize(): Size = Size(x, y)
-fun PointInt.toSize(): SizeInt = SizeInt(x, y)
+fun Point.toSize(): Size = Size(raw)
+fun PointInt.toSize(): SizeInt = SizeInt(raw)
 
 fun Size.toInt(): SizeInt = SizeInt(width.toInt(), height.toInt())
 fun SizeInt.toFloat(): Size = Size(width.toFloat(), height.toFloat())

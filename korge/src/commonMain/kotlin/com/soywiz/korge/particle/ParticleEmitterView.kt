@@ -12,9 +12,7 @@ import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.format.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.*
-import com.soywiz.korma.geom.IPoint
-import com.soywiz.korma.geom.MPoint
-import com.soywiz.korma.geom.MRectangle
+import com.soywiz.korma.geom.*
 import kotlinx.coroutines.*
 import kotlin.random.*
 
@@ -85,7 +83,7 @@ class ParticleEmitterView(
     @ViewProperty
     var localCoords: Boolean = localCoords
 
-    private val lastPosition = MPoint(globalX, globalY)
+    private val lastPosition = globalPos.mutable
 
     //override fun setXY(x: Double, y: Double) {
     //    if (localCoords) {
@@ -108,8 +106,9 @@ class ParticleEmitterView(
 //                simulator.emitterPos.setTo(x, y)
 //            }
         if (dt > 0.milliseconds) {
-            val gx = globalX / stage!!.scaleX
-            val gy = globalY / stage!!.scaleY
+            val g = globalPos / stage!!.scaleXY.toPoint()
+            val gx = g.x
+            val gy = g.y
 
             val dx = if (this.localCoords) 0.0 else lastPosition.x - gx
             val dy = if (this.localCoords) 0.0 else lastPosition.y - gy

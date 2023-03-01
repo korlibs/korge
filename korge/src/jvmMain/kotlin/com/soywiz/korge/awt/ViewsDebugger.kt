@@ -10,6 +10,7 @@ import com.soywiz.korge.view.Image
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korio.async.*
+import com.soywiz.korma.geom.Point
 import java.awt.*
 import java.awt.event.*
 import java.util.*
@@ -192,8 +193,7 @@ internal class ViewsDebuggerComponent constructor(
                                 it.isEnabled = isContainer
                                 it.addActionListener {
                                     actions.attachNewView(factory.build().also {
-                                        it.globalX = views.virtualWidth * 0.5
-                                        it.globalY = views.virtualHeight * 0.5
+                                        it.globalPos = Point(views.virtualWidth * 0.5, views.virtualHeight * 0.5)
                                     })
                                 }
                             })
