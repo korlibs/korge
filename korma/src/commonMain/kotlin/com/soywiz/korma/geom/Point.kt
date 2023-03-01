@@ -4,8 +4,8 @@ package com.soywiz.korma.geom
 
 import com.soywiz.kds.*
 import com.soywiz.kds.pack.*
+import com.soywiz.kmem.*
 import com.soywiz.korma.internal.niceStr
-import com.soywiz.kmem.clamp
 import com.soywiz.korma.annotations.*
 import com.soywiz.korma.interpolation.*
 import com.soywiz.korma.math.isAlmostEquals
@@ -62,7 +62,10 @@ inline class Point internal constructor(internal val raw: Float2Pack) {
     inline operator fun plus(that: Point): Point = Point(x + that.x, y + that.y)
     inline operator fun minus(that: Point): Point = Point(x - that.x, y - that.y)
     inline operator fun times(that: Point): Point = Point(x * that.x, y * that.y)
+    inline operator fun times(that: Size): Point = Point(x * that.width, y * that.height)
+    inline operator fun times(that: Scale): Point = Point(x * that.scaleX, y * that.scaleY)
     inline operator fun div(that: Point): Point = Point(x / that.x, y / that.y)
+    inline operator fun div(that: Size): Point = Point(x / that.width, y / that.height)
 
     inline operator fun times(scale: Float): Point = Point(x * scale, y * scale)
     inline operator fun times(scale: Double): Point = this * scale.toFloat()
@@ -649,4 +652,7 @@ fun max(a: IPoint, b: IPoint, out: MPoint = MPoint()): MPoint = out.setTo(kotlin
 fun IPoint.clamp(min: Double, max: Double, out: MPoint = MPoint()): MPoint = out.setTo(x.clamp(min, max), y.clamp(min, max))
 
 fun Point.toInt(): PointInt = PointInt(x.toInt(), y.toInt())
+fun Point.toIntCeil(): PointInt = PointInt(x.toIntCeil(), y.toIntCeil())
+fun Point.toIntRound(): PointInt = PointInt(x.toIntRound(), y.toIntRound())
+fun Point.toIntFloor(): PointInt = PointInt(x.toIntFloor(), y.toIntFloor())
 fun PointInt.toFloat(): Point = Point(x, y)

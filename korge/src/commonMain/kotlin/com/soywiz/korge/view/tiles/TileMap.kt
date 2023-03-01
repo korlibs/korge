@@ -19,7 +19,7 @@ inline fun Container.tileMap(
     repeatX: TileMapRepeat = TileMapRepeat.NONE,
     repeatY: TileMapRepeat = repeatX,
     smoothing: Boolean = true,
-    tileSize: MSize = MSize(tileset.width.toDouble(), tileset.height.toDouble()),
+    tileSize: SizeInt = tileset.tileSize,
     callback: @ViewDslMarker TileMap.() -> Unit = {},
 ) = TileMap(map, tileset, smoothing, tileSize).repeat(repeatX, repeatY).addTo(this, callback)
 
@@ -29,7 +29,7 @@ inline fun Container.tileMap(
     repeatX: TileMapRepeat = TileMapRepeat.NONE,
     repeatY: TileMapRepeat = repeatX,
     smoothing: Boolean = true,
-    tileSize: MSize = MSize(tileset.width.toDouble(), tileset.height.toDouble()),
+    tileSize: SizeInt = tileset.tileSize,
     callback: @ViewDslMarker TileMap.() -> Unit = {},
 ) = TileMap(map, tileset, smoothing, tileSize).repeat(repeatX, repeatY).addTo(this, callback)
 
@@ -71,7 +71,7 @@ class TileMap(
     var stackedIntMap: IStackedIntArray2 = StackedIntArray2(1, 1, 0),
     tileset: TileSet = TileSet.EMPTY,
     var smoothing: Boolean = true,
-    var tileSize: MSize = MSize(tileset.width.toDouble(), tileset.height.toDouble()),
+    var tileSize: SizeInt = tileset.tileSize,
 //) : BaseTileMap(intMap, smoothing, staggerAxis, staggerIndex, tileSize) {
 ) : View() {
     @Deprecated("Use stackedIntMap instead", level = DeprecationLevel.HIDDEN)
@@ -98,8 +98,8 @@ class TileMap(
         }
     }
 
-    var tileWidth: Double = 0.0
-    var tileHeight: Double = 0.0
+    private var tileWidth: Float = 0f
+    private var tileHeight: Float = 0f
 
     var repeatX = TileMapRepeat.NONE
     var repeatY = TileMapRepeat.NONE
@@ -130,7 +130,15 @@ class TileMap(
     private val infos = arrayListOf<Info>()
 
     companion object {
-        fun computeIndices(flipX: Boolean, flipY: Boolean, rotate: Boolean, indices: IntArray = IntArray(4)): IntArray {
+        private fun transformIndex(flipX: Boolean, flipY: Boolean, rotate: Boolean): Int {
+            return 0.insert(flipX, 0).insert(flipY, 1).insert(rotate, 2)
+        }
+
+        val INDICES = Array(8) {
+            computeIndices(it.extract(0), it.extract(1), it.extract(2))
+        }
+
+        private fun computeIndices(flipX: Boolean, flipY: Boolean, rotate: Boolean, indices: IntArray = IntArray(4)): IntArray {
             // @TODO: const val optimization issue in Kotlin/Native: https://youtrack.jetbrains.com/issue/KT-46425
             indices[0] = 0 // 0/*TL*/
             indices[1] = 1 // 1/*TR*/
@@ -167,7 +175,6 @@ class TileMap(
     private var lastVirtualRect = MRectangle(-1, -1, -1, -1)
     private var currentVirtualRect = MRectangle(-1, -1, -1, -1)
 
-    private val indices = IntArray(4)
     private val tempX = FloatArray(4)
     private val tempY = FloatArray(4)
 
@@ -189,17 +196,17 @@ class TileMap(
 
         val renderTilesCounter = ctx.stats.counter("renderedTiles")
 
-        val posX = m.transformX(0.0, 0.0)
-        val posY = m.transformY(0.0, 0.0)
-        val dUX = m.transformX(tileWidth, 0.0) - posX
-        val dUY = m.transformY(tileWidth, 0.0) - posY
-        val dVX = m.transformX(0.0, tileHeight) - posX
-        val dVY = m.transformY(0.0, tileHeight) - posY
+        val posX = m.transformX(0f, 0f)
+        val posY = m.transformY(0f, 0f)
+        val dUX = m.transformX(tileWidth, 0f) - posX
+        val dUY = m.transformY(tileWidth, 0f) - posY
+        val dVX = m.transformX(0f, tileHeight) - posX
+        val dVY = m.transformY(0f, tileHeight) - posY
         val nextTileX = (tileSize.width).let { width ->
-            min(m.transformX(width, 0.0) - posX, m.transformY(0.0, width) - posY)
+            min(m.transformX(width, 0) - posX, m.transformY(0, width) - posY)
         }
         val nextTileY = (tileSize.height).let { height ->
-            min(m.transformX(height, 0.0) - posX, m.transformY(0.0, height) - posY)
+            min(m.transformX(height, 0) - posX, m.transformY(0, height) - posY)
         }
 
         val colMul = renderColorMul
@@ -266,8 +273,8 @@ class TileMap(
 
         val quadIndexData = TexturedVertexArray.quadIndices(allocTilesClamped)
 
-        val invTileWidth = 1.0 / tileWidth
-        val invTileHeight = 1.0 / tileHeight
+        val invTileWidth  = 1f / tileWidth
+        val invTileHeight = 1f / tileHeight
 
         //println("TILE RANGE: ($xmin,$ymin)-($xmax,$ymax)  :: ($xmin2,$ymin2)-($xmax2,$ymax2) :: (${stackedIntMap.startX},${stackedIntMap.startY})-(${stackedIntMap.endX},${stackedIntMap.endY})")
 
@@ -347,7 +354,8 @@ class TileMap(
                         tempY[2] = tex.brY
                         tempY[3] = tex.blY
 
-                        computeIndices(flipX = flipX, flipY = flipY, rotate = rotate, indices = indices)
+                        val indices = INDICES[transformIndex(flipX, flipY, rotate)]
+                        //computeIndices(flipX = flipX, flipY = flipY, rotate = rotate, indices = indices)
 
                         info.vertices.quadV(p0X, p0Y, tempX[indices[0]], tempY[indices[0]], colMul)
                         info.vertices.quadV(p1X, p1Y, tempX[indices[1]], tempY[indices[1]], colMul)
@@ -426,23 +434,23 @@ class TileMap(
         tilesetTextures = Array(tileset.textures.size) { tileset.textures[it] }
         animationIndex = IntArray(tileset.textures.size) { 0 }
         animationElapsed = DoubleArray(tileset.textures.size) { 0.0 }
-        tileSize = MSize(tileset.width.toDouble(), tileset.height.toDouble())
-        tileWidth = tileset.width.toDouble()
-        tileHeight = tileset.height.toDouble()
+        tileSize = tileset.tileSize
+        tileWidth = tileset.width.toFloat()
+        tileHeight = tileset.height.toFloat()
     }
 
     constructor(
         map: IntArray2,
         tileset: TileSet,
         smoothing: Boolean = true,
-        tileSize: MSize = MSize(tileset.width.toDouble(), tileset.height.toDouble()),
+        tileSize: SizeInt = tileset.tileSize,
     ) : this(map.toStacked(), tileset, smoothing, tileSize)
 
     constructor(
         map: Bitmap32,
         tileset: TileSet,
         smoothing: Boolean = true,
-        tileSize: MSize = MSize(tileset.width.toDouble(), tileset.height.toDouble()),
+        tileSize: SizeInt = tileset.tileSize,
     ) : this(map.toIntArray2().toStacked(), tileset, smoothing, tileSize)
 
     fun pixelHitTest(x: Int, y: Int, direction: HitTestDirection): Boolean {
@@ -484,7 +492,7 @@ class TileMap(
     }
 
     override fun getLocalBoundsInternal(out: MRectangle) {
-        out.setTo(0.0, 0.0, tileWidth * stackedIntMap.width, tileHeight * stackedIntMap.height)
+        out.setTo(0f, 0f, tileWidth * stackedIntMap.width, tileHeight * stackedIntMap.height)
     }
 
     fun repeat(repeatX: TileMapRepeat, repeatY: TileMapRepeat = repeatX): TileMap {

@@ -198,3 +198,4 @@ fun PointInt.toSize(): SizeInt = SizeInt(raw)
 
 fun Size.toInt(): SizeInt = SizeInt(width.toInt(), height.toInt())
 fun SizeInt.toFloat(): Size = Size(width.toFloat(), height.toFloat())
+fun Size.toPoint(): Point = Point(width, height)

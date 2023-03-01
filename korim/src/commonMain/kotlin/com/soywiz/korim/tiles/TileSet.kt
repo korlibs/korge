@@ -6,6 +6,7 @@ import com.soywiz.klock.TimeSpan
 import com.soywiz.kmem.nextPowerOfTwo
 import com.soywiz.kmem.toIntCeil
 import com.soywiz.korim.bitmap.*
+import com.soywiz.korma.geom.*
 import kotlin.math.sqrt
 
 data class TileSetAnimationFrame(
@@ -26,6 +27,8 @@ class TileSet(
     val width: Int = if (tilesMap.size == 0) 0 else tilesMap.firstValue().slice.width,
     val height: Int = if (tilesMap.size == 0) 0 else tilesMap.firstValue().slice.height,
 ) {
+    val tileSize: SizeInt get() = SizeInt(width, height)
+
     override fun toString(): String = "TileSet(size=${width}x$height, tiles=${tilesMap.keys.toList()})"
 
     val base: Bitmap by lazy { if (tilesMap.size == 0) Bitmaps.transparent.bmp else tilesMap.firstValue().slice.bmp }
