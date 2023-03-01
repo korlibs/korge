@@ -51,7 +51,7 @@ data class CurveLUT(val curve: Curve, val points: PointArrayList, val ts: Double
         var mdistSq: Double = Double.POSITIVE_INFINITY
         var mpos: Int = 0
         for (n in 0 until size) {
-            val d = MPoint.distanceSquared(this.points.getX(n), this.points.getY(n), point.x, point.y)
+            val d = Point.distanceSquared(this.points[n], point.point).toDouble()
             if (d < mdistSq) {
                 mdistSq = d
                 mpos = n
@@ -69,8 +69,8 @@ data class CurveLUT(val curve: Curve, val points: PointArrayList, val ts: Double
         val ratio0 = ts[index]
         //println("estimatedLengths=$estimatedLengths")
         val length0 = estimatedLengths[index]
-        val pointX0 = points.getX(index)
-        val pointY0 = points.getY(index)
+        val pointX0 = points.getX(index).toDouble()
+        val pointY0 = points.getY(index).toDouble()
         if (ratio == 0.0) {
             this.ratio = ratio0
             this.length = length0
@@ -78,8 +78,8 @@ data class CurveLUT(val curve: Curve, val points: PointArrayList, val ts: Double
         } else {
             val ratio1 = ts[index + 1]
             val length1 = estimatedLengths[index + 1]
-            val pointX1 = points.getX(index + 1)
-            val pointY1 = points.getY(index + 1)
+            val pointX1 = points.getX(index + 1).toDouble()
+            val pointY1 = points.getY(index + 1).toDouble()
             this.ratio = ratio.interpolate(ratio0, ratio1)
             this.length = ratio.interpolate(length0, length1)
             this.point.setToInterpolated(ratio.toRatio(), pointX0, pointY0, pointX1, pointY1)

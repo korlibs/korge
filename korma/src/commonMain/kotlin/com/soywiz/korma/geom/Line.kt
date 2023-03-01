@@ -128,9 +128,8 @@ data class MLine(override val a: MPoint, override val b: MPoint) : ILine {
         return this
     }
 
-    fun setTo(a: IPoint, b: IPoint): MLine {
-        return setTo(a.x, a.y, b.x, b.y)
-    }
+    fun setTo(a: Point, b: Point): MLine = setTo(a.xD, a.yD, b.xD, b.yD)
+    fun setTo(a: IPoint, b: IPoint): MLine = setTo(a.x, a.y, b.x, b.y)
 
     fun setTo(x0: Double, y0: Double, x1: Double, y1: Double): MLine {
         a.setTo(x0, y0)
@@ -182,6 +181,7 @@ data class MLine(override val a: MPoint, override val b: MPoint) : ILine {
     }
 
     constructor() : this(MPoint(), MPoint())
+    constructor(p0: Point, p1: Point) : this(p0.mutable, p1.mutable)
     constructor(x0: Double, y0: Double, x1: Double, y1: Double) : this(MPoint(x0, y0), MPoint(x1, y1))
     constructor(x0: Float, y0: Float, x1: Float, y1: Float) : this(MPoint(x0, y0), MPoint(x1, y1))
     constructor(x0: Int, y0: Int, x1: Int, y1: Int) : this(MPoint(x0, y0), MPoint(x1, y1))

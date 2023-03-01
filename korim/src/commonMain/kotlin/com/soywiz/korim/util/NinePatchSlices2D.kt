@@ -1,12 +1,7 @@
 package com.soywiz.korim.util
 
-import com.soywiz.korma.geom.IPoint
-import com.soywiz.korma.geom.ISize
-import com.soywiz.korma.geom.MPoint
-import com.soywiz.korma.geom.PointArrayList
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.firstX
-import com.soywiz.korma.geom.firstY
-import com.soywiz.korma.geom.pointArrayListOf
 import kotlin.math.absoluteValue
 import kotlin.math.sign
 
@@ -21,8 +16,8 @@ data class NinePatchSlices2D(val x: NinePatchSlices, val y: NinePatchSlices) {
             newSize.width < oldSize.width || newSize.height < oldSize.height -> minOf(widthRatio.absoluteValue, heightRatio.absoluteValue)
             else -> 1.0
         }
-        x.transform1DInplace(oldSize.width, newSize.width, positions.size, get = { positions.getX(it) }, set = { index, value -> positions.setX(index, value) }, iscale = iscale * newSize.width.sign)
-        y.transform1DInplace(oldSize.height, newSize.height, positions.size, get = { positions.getY(it) }, set = { index, value -> positions.setY(index, value) }, iscale = iscale * newSize.height.sign)
+        x.transform1DInplace(oldSize.width, newSize.width, positions.size, get = { positions.getX(it).toDouble() }, set = { index, value -> positions.setX(index, value) }, iscale = iscale * newSize.width.sign)
+        y.transform1DInplace(oldSize.height, newSize.height, positions.size, get = { positions.getY(it).toDouble() }, set = { index, value -> positions.setY(index, value) }, iscale = iscale * newSize.height.sign)
     }
 
     fun transform2D(
@@ -41,7 +36,7 @@ data class NinePatchSlices2D(val x: NinePatchSlices, val y: NinePatchSlices) {
     fun getScaledPointAt(point: IPoint, oldSize: ISize, newSize: ISize, out: MPoint = MPoint()): IPoint {
         val p = pointArrayListOf(point)
         transform2DInplace(p, oldSize, newSize)
-        out.setTo(p.firstX, p.firstY)
+        out.setTo(p.first)
         return out
     }
 }

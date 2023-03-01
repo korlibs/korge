@@ -289,6 +289,7 @@ data class MPoint(
     //override var yf: Float
 ) : MutableInterpolable<MPoint>, Interpolable<MPoint>, Comparable<IPoint>, IPoint, IMPoint {
     //constructor(x: Double, y: Double) : this(x.toFloat(), y.toFloat())
+    constructor(p: Point) : this(p.xD, p.yD)
     constructor(x: Float, y: Float) : this(x.toDouble(), y.toDouble())
     constructor(x: Int, y: Int) : this(x.toDouble(), y.toDouble())
 
@@ -612,7 +613,7 @@ private inline fun getPolylineLength(size: Int, crossinline get: (n: Int, (x: Do
     return out
 }
 
-fun IPointArrayList.getPolylineLength(): Double = getPolylineLength(size) { n, func -> func(getX(n), getY(n)) }
+fun IPointArrayList.getPolylineLength(): Double = getPolylineLength(size) { n, func -> func(getX(n).toDouble(), getY(n).toDouble()) }
 fun List<IPoint>.getPolylineLength(): Double = getPolylineLength(size) { n, func -> func(this[n].x, this[n].y) }
 
 fun List<MPoint>.bounds(out: MRectangle = MRectangle(), bb: BoundsBuilder = BoundsBuilder()): MRectangle = bb.add(this).getBounds(out)

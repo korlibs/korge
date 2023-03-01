@@ -43,10 +43,10 @@ object Convex {
             n--
         }
         // Get starting information
-        var old_x = vertices.getX(n - 2)
-        var old_y = vertices.getY(n - 2)
-        var new_x = vertices.getX(n - 1)
-        var new_y = vertices.getY(n - 1)
+        var old_x = vertices.getX(n - 2).toDouble()
+        var old_y = vertices.getY(n - 2).toDouble()
+        var new_x = vertices.getX(n - 1).toDouble()
+        var new_y = vertices.getY(n - 1).toDouble()
         var new_direction: Double = kotlin.math.atan2(new_y - old_y, new_x - old_x)
         var old_direction: Double
         var angle_sum = Angle.ZERO
@@ -58,8 +58,8 @@ object Convex {
             old_y = new_y
             old_direction = new_direction
             val p = base++
-            new_x = vertices.getX(p)
-            new_y = vertices.getY(p)
+            new_x = vertices.getX(p).toDouble()
+            new_y = vertices.getY(p).toDouble()
             new_direction = kotlin.math.atan2(new_y - old_y, new_x - old_x)
             if (old_x == new_x && old_y == new_y) { // repeated consecutive points
                 return false

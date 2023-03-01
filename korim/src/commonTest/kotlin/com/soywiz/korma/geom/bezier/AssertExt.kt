@@ -1,5 +1,6 @@
-package com.soywiz.korma.geom
+package com.soywiz.korma.geom.bezier
 
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.bezier.*
 import com.soywiz.korma.math.*
 import kotlin.math.absoluteValue
@@ -9,7 +10,7 @@ import kotlin.test.assertTrue
 fun <T : Any> assertEqualsFloat(
     expected: T?,
     actual: T?,
-    absoluteTolerance: Double = 0.001,
+    absoluteTolerance: Double = 0.00001,
     message: String = ""
 ) {
     if (expected is List<*> && actual is List<*> && expected.size != actual.size) {

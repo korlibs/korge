@@ -1,10 +1,7 @@
 package com.soywiz.korma.geom.bezier
 
 import com.soywiz.kds.*
-import com.soywiz.korma.geom.MLine
-import com.soywiz.korma.geom.MPoint
-import com.soywiz.korma.geom.MRectangle
-import com.soywiz.korma.geom.pointArrayListOf
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.math.*
 import kotlin.test.*
 import kotlin.test.assertEquals
@@ -21,57 +18,71 @@ class BezierCurveTest {
 
     @Test
     fun testBezier() {
+        //assertEquals("a", "b")
         //val curve = Bezier(PointArrayList(Point(0, 0), Point(100, 100), Point(150, 150), Point(250, 300)))
         val curve = Bezier(MPoint(0, 0), MPoint(-50, -200), MPoint(150, 150), MPoint(110, 120))
         //val curve = Bezier(PointArrayList(Point(0, 0), Point(100, 100), Point(250, 300)))
-        assertEquals("[(0, 0), (-50, -200), (150, 150), (110, 120)]", curve.points.toString())
-        assertEquals("[[(-150, -600), (600, 1050), (-120, -90)], [(1500, 3300), (-1440, -2280)], [(-2940, -5580)]]", curve.dpoints.toString())
-        assertEquals(MPoint(-150, -600), curve.derivative(0.0))
-        assertEquals(MPoint(232.5, 352.5), curve.derivative(0.5))
-        assertEquals(MPoint(-120, -90), curve.derivative(1.0))
+        assertEqualsFloat("[(0, 0), (-50, -200), (150, 150), (110, 120)]", curve.points.toString())
+        assertEqualsFloat("[[(-150, -600), (600, 1050), (-120, -90)], [(1500, 3300), (-1440, -2280)], [(-2940, -5580)]]", curve.dpoints.toString())
+        assertEqualsFloat(MPoint(-150, -600), curve.derivative(0.0))
+        assertEqualsFloat(MPoint(232.5, 352.5), curve.derivative(0.5))
+        assertEqualsFloat(MPoint(-120, -90), curve.derivative(1.0))
 
-        assertEquals(MPoint(0.97, -0.24), curve.normal(0.0).mutable.setToRoundDecimalPlaces(2))
-        assertEquals(MPoint(-0.83, 0.55), curve.normal(0.5).mutable.setToRoundDecimalPlaces(2))
-        assertEquals(MPoint(0.6, -0.8), curve.normal(1.0))
+        assertEqualsFloat(MPoint(0.97, -0.24), curve.normal(0.0).mutable.setToRoundDecimalPlaces(2))
+        assertEqualsFloat(MPoint(-0.83, 0.55), curve.normal(0.5).mutable.setToRoundDecimalPlaces(2))
+        assertEqualsFloat(MPoint(0.6, -0.8), curve.normal(1.0))
 
-        assertEquals(MPoint(0, 0), curve.compute(0.0))
-        assertEquals(MPoint(51.25, -3.75), curve.compute(0.5))
-        assertEquals(MPoint(110, 120), curve.compute(1.0))
+        assertEqualsFloat(MPoint(0, 0), curve.compute(0.0))
+        assertEqualsFloat(MPoint(51.25, -3.75), curve.compute(0.5))
+        assertEqualsFloat(MPoint(110, 120), curve.compute(1.0))
 
-        assertEquals(292.8273626504729, curve.length, 0.00001)
-        assertEquals(
+        assertEqualsFloat(292.8273626504729, curve.length, 0.00001)
+        assertEqualsFloat(
             listOf(listOf(0.11, 0.51, 0.91), listOf(0.22, 0.59, 0.96)),
             listOf(
                 curve.extrema.xt.map { it.roundDecimalPlaces(2) },
                 curve.extrema.yt.map { it.roundDecimalPlaces(2) }
             )
         )
-        assertEquals(doubleArrayListOf(), curve.selfIntersections())
+        assertEqualsFloat(doubleArrayListOf(), curve.selfIntersections())
 
-        assertEquals(101, curve.getLUT().size)
-        assertEquals(
+        assertEqualsFloat(101, curve.getLUT().size)
+        assertEqualsFloat(
             MRectangle(x=-8.08, y=-62.06, width=123.41, height=183.90),
             curve.boundingBox.mutable.roundDecimalPlaces(2)
         )
-        assertEquals(
+        assertEqualsFloat(
             pointArrayListOf(MPoint(0, 0), MPoint(-50, -200), MPoint(150, 150), MPoint(110, 120), MPoint(-25, -100), MPoint(50, -25), MPoint(130, 135), MPoint(12.5, -62.5), MPoint(90, 55), MPoint(51.25, -3.75)),
             curve.hull(0.5)
         )
-        assertEquals(
+        assertEqualsFloat(
             Bezier.ProjectedPoint(p=MPoint(-6.66, -31.89), t=0.06, dSq=181.61),
             curve.project(MPoint(-20, -30)).roundDecimalPlaces(2)
         )
-        assertEquals(
+        assertEqualsFloat(
             "CurveSplit(base=Bezier([(0, 0), (-50, -200), (150, 150), (110, 120)]), left=SubBezier[0..0.5](Bezier([(0, 0), (-25, -100), (12.5, -62.5), (51.25, -3.75)])), right=SubBezier[0.5..1](Bezier([(51.25, -3.75), (90, 55), (130, 135), (110, 120)])), t=0.5, hull=[(0, 0), (-50, -200), (150, 150), (110, 120), (-25, -100), (50, -25), (130, 135), (12.5, -62.5), (90, 55), (51.25, -3.75)])",
             curve.split(0.5).roundDecimalPlaces(2).toString()
         )
-        assertEquals(
-            "SubBezier[0.25..0.75](Bezier([(1.72, -61.41), (23.91, -52.97), (77.97, 34.84), (102.66, 85.78)]))",
-            curve.split(0.25, 0.75).roundDecimalPlaces(2).toString()
+
+        assertEqualsFloat(
+            Bezier(Point(1.72, -61.41), Point(23.91, -52.97), Point(77.97, 34.84), Point(102.66, 85.78)),
+            curve.split(0.25, 0.75).curve,
+            absoluteTolerance = 0.1
         )
-        assertEquals(
-            "[Bezier([(0, 0), (-5.62, -22.48), (-8.08, -38), (-8.08, -47.91)]), Bezier([(-8.08, -47.91), (-8.08, -55.51), (-6.63, -59.8), (-4.04, -61.37)]), Bezier([(-4.04, -61.37), (-3.27, -61.84), (-2.4, -62.06), (-1.43, -62.06)]), Bezier([(-1.43, -62.06), (9.29, -62.06), (31.46, -34.18), (53.62, -0.13)]), Bezier([(53.62, -0.13), (59.92, 9.55), (66.22, 19.72), (72.25, 29.89)]), Bezier([(72.25, 29.89), (95.78, 69.55), (115.33, 109.22), (115.33, 119.36)]), Bezier([(115.33, 119.36), (115.33, 120.54), (115.06, 121.32), (114.51, 121.65)]), Bezier([(114.51, 121.65), (114.31, 121.77), (114.06, 121.84), (113.78, 121.84)]), Bezier([(113.78, 121.84), (112.91, 121.84), (111.66, 121.25), (110, 120)])]",
-            curve.reduce().map { it.curve.roundDecimalPlaces(2) }.toString()
+        assertEqualsFloat(
+            listOf(
+                Bezier(Point(0, 0), Point(-5.6, -22.5), Point(-8.0, -38.0), Point(-8.0, -48.0)),
+                Bezier(Point(-8.0, -47.9), Point(-8.0, -55.5), Point(-6.6, -59.8), Point(-4.0, -61.4)),
+                Bezier(Point(-4.0, -61.3), Point(-3.3, -61.8), Point(-2.4, -62.0), Point(-1.4, -62.0)),
+                Bezier(Point(-1.4, -62.0), Point(9.3, -62.0), Point(31.5, -34.2), Point(53.6, -0.13)),
+                Bezier(Point(53.6, -0.1), Point(59.9, 9.5), Point(66.2, 19.7), Point(72.25, 29.9)),
+                Bezier(Point(72.25, 29.9), Point(95.8, 69.5), Point(115.3, 109.2), Point(115.3, 119.3)),
+                Bezier(Point(115.3, 119.3), Point(115.3, 120.5), Point(115.0, 121.3), Point(114.51, 121.6)),
+                Bezier(Point(114.5, 121.6), Point(114.3, 121.7), Point(114.0, 121.8), Point(113.78, 121.84)),
+                Bezier(Point(113.8, 121.8), Point(112.9, 121.8), Point(111.6, 121.25), Point(110, 120)),
+            ),
+            curve.reduce().map { it.curve },
+            absoluteTolerance = 0.1
         )
     }
 
@@ -109,9 +120,10 @@ class BezierCurveTest {
     fun testInflections() {
         val curve = Bezier(100, 25, 10, 90, 110, 100, 150, 195)
 
-        assertEquals(
+        assertEqualsFloat(
             listOf(0.6300168840449997),
-            curve.inflections().toList()
+            curve.inflections().toList(),
+            absoluteTolerance = 0.001
         )
     }
 
@@ -184,14 +196,15 @@ class BezierCurveTest {
     @Test
     fun testReduce() {
         val curves = Bezier(0,0, 0,-50, 50,-50, 50,0).toSimpleList()
-        assertEquals(
-            """
-                Bezier([(0, 0), (0, -18.25), (6.66, -29.84), (15.12, -34.77)])
-                Bezier([(15.12, -34.77), (18.25, -36.59), (21.63, -37.5), (25, -37.5)])
-                Bezier([(25, -37.5), (32.12, -37.5), (39.25, -33.44), (44.06, -25.32)])
-                Bezier([(44.06, -25.32), (47.69, -19.19), (50, -10.75), (50, 0)])
-            """.trimIndent(),
-            curves.map { it.curve.roundDecimalPlaces(2) }.joinToString("\n")
+
+        assertEqualsFloat(
+            listOf(
+                listOf(Point(0, 0), Point(0.0, -18.25), Point(6.66125, -29.838749), Point(15.1210375, -34.76625)),
+                listOf(Point(15.1210375, -34.76625), Point(18.25, -36.58875), Point(21.625, -37.5), Point(25.0, -37.5)),
+                listOf(Point(25.0, -37.5), Point(32.125, -37.5), Point(39.25, -33.43875), Point(44.06009, -25.316252)),
+                listOf(Point(44.06009, -25.316252), Point(47.68875, -19.188751), Point(50.0, -10.75), Point(50, 0)),
+            ),
+            curves.map { it.curve.points.toList().map { it.point } }
         )
     }
 

@@ -14,7 +14,7 @@ import com.soywiz.korma.geom.firstX
 import com.soywiz.korma.geom.firstY
 import com.soywiz.korma.geom.lastX
 import com.soywiz.korma.geom.lastY
-import com.soywiz.korma.geom.vector.VectorPath
+import com.soywiz.korma.geom.vector.*
 import com.soywiz.korma.math.isAlmostEquals
 import kotlin.jvm.JvmName
 
@@ -178,9 +178,9 @@ fun List<Curve>.toVectorPath(out: VectorPath = VectorPath()): VectorPath {
             first = false
         }
         when (bezier.order) {
-            1 -> out.lineTo(points.getX(1), points.getY(1))
-            2 -> out.quadTo(points.getX(1), points.getY(1), points.getX(2), points.getY(2))
-            3 -> out.cubicTo(points.getX(1), points.getY(1), points.getX(2), points.getY(2), points.getX(3), points.getY(3))
+            1 -> out.lineTo(points[1])
+            2 -> out.quadTo(points[1], points[2])
+            3 -> out.cubicTo(points[1], points[2], points[3])
             else -> TODO()
         }
     }

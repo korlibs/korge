@@ -1,8 +1,6 @@
 package com.soywiz.korma.geom.bezier
 
-import com.soywiz.korma.geom.MPoint
-import com.soywiz.korma.geom.PointArrayList
-import com.soywiz.korma.geom.MRectangle
+import com.soywiz.korma.geom.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -60,15 +58,15 @@ class BezierCurveQuadraticTest {
 
         run {
             val b = Bezier.quadraticFromPoints(pts[0], pts[1], pts[2])
-            assertEquals(Bezier(0, 0, 100, 0, 100, 100), b)
-            assertEquals(M, b.get(0.5))
+            assertEqualsFloat(Bezier(0, 0, 100, 0, 100, 100), b)
+            assertEqualsFloat(M, b.get(0.5))
         }
 
         run {
-            val t = 0.25;
+            val t = 0.25
             val b = Bezier.quadraticFromPoints(pts[0], pts[1], pts[2], t)
-            assertEquals(Bezier(0.0, 0.0, 183.33, 50.0, 100.0, 100.0), b.roundDecimalPlaces(2))
-            assertEquals(M, b.get(t))
+            assertEqualsFloat(Bezier(0.0, 0.0, 183.33, 50.0, 100.0, 100.0), b.roundDecimalPlaces(2))
+            assertEqualsFloat(M, b.get(t))
         }
     }
 

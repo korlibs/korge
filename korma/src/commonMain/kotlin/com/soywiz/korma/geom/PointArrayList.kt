@@ -1,20 +1,16 @@
 package com.soywiz.korma.geom
 
-import com.soywiz.kds.DoubleArrayList
-import com.soywiz.kds.Extra
-import com.soywiz.kds.IntArrayList
-import com.soywiz.kds.SortOps
-import com.soywiz.kds.genericSort
+import com.soywiz.kds.*
 import com.soywiz.kds.iterators.fastForEach
-import com.soywiz.kds.mapDouble
 import com.soywiz.korma.math.roundDecimalPlaces
 import kotlin.math.round
 
 sealed interface IPointArrayList : IVectorArrayList, Extra {
     override val dimensions: Int get() = 2
-    override fun get(index: Int, dim: Int): Double = if (dim == 0) getX(index) else getY(index)
-    fun getX(index: Int): Double
-    fun getY(index: Int): Double
+    override fun get(index: Int, dim: Int): Double = if (dim == 0) getX(index).toDouble() else getY(index).toDouble()
+    fun getX(index: Int): Float
+    fun getY(index: Int): Float
+    operator fun get(index: Int): Point = Point(getX(index), getY(index))
     fun get(index: Int, out: MPoint): IPoint = out.setTo(getX(index), getY(index))
 }
 
@@ -39,34 +35,34 @@ fun IPointArrayList.getComponentList(component: Int, out: DoubleArray = DoubleAr
 
 val IPointArrayList.first: Point get() = get(0)
 val IPointArrayList.last: Point get() = get(size - 1)
-val IPointArrayList.firstX: Double get() = getX(0)
-val IPointArrayList.firstY: Double get() = getY(0)
-val IPointArrayList.lastX: Double get() = getX(size - 1)
-val IPointArrayList.lastY: Double get() = getY(size - 1)
-fun IPointArrayList.firstPoint(out: MPoint = MPoint()): MPoint = out.setTo(firstX, firstY)
-fun IPointArrayList.lastPoint(out: MPoint = MPoint()): MPoint = out.setTo(lastX, lastY)
+val IPointArrayList.firstX: Double get() = getX(0).toDouble()
+val IPointArrayList.firstY: Double get() = getY(0).toDouble()
+val IPointArrayList.lastX: Double get() = getX(size - 1).toDouble()
+val IPointArrayList.lastY: Double get() = getY(size - 1).toDouble()
+fun IPointArrayList.firstPoint(out: MPoint = MPoint()): MPoint = out.setTo(first)
+fun IPointArrayList.lastPoint(out: MPoint = MPoint()): MPoint = out.setTo(last)
 
 fun IPointArrayList.orientation(): Orientation {
     if (size < 3) return Orientation.COLLINEAR
-    return Orientation.orient2dFixed(getX(0), getY(0), getX(1), getY(1), getX(2), getY(2))
+    return Orientation.orient2dFixed(getX(0).toDouble(), getY(0).toDouble(), getX(1).toDouble(), getY(1).toDouble(), getX(2).toDouble(), getY(2).toDouble())
 }
 
 inline fun IPointArrayList.fastForEach(block: (x: Double, y: Double) -> Unit) {
     for (n in 0 until size) {
-        block(getX(n), getY(n))
+        block(getX(n).toDouble(), getY(n).toDouble())
     }
 }
 
 inline fun IPointArrayList.fastForEachReverse(block: (x: Double, y: Double) -> Unit) {
     for (n in 0 until size) {
         val index = size - n - 1
-        block(getX(index), getY(index))
+        block(getX(index).toDouble(), getY(index).toDouble())
     }
 }
 
 inline fun IPointArrayList.fastForEachWithIndex(block: (index: Int, x: Double, y: Double) -> Unit) {
     for (n in 0 until size) {
-        block(n, getX(n), getY(n))
+        block(n, getX(n).toDouble(), getY(n).toDouble())
     }
 }
 
@@ -78,7 +74,7 @@ fun IPointArrayList.toList(): List<MPoint> = (0 until size).map { getPoint(it) }
 fun IPointArrayList.toPoints(): List<MPoint> = (0 until size).map { getPoint(it) }
 fun IPointArrayList.toIPoints(): List<IPoint> = (0 until size).map { getIPoint(it) }
 
-fun <T> IPointArrayList.map(gen: (x: Double, y: Double) -> T): List<T> = (0 until size).map { gen(getX(it), getY(it)) }
+fun <T> IPointArrayList.map(gen: (x: Double, y: Double) -> T): List<T> = (0 until size).map { gen(getX(it).toDouble(), getY(it).toDouble()) }
 
 fun IPointArrayList.mapPoints(temp: MPoint = MPoint(), gen: (x: Double, y: Double, out: MPoint) -> IPoint): IPointArrayList {
     val out = PointArrayList(this.size)
@@ -89,7 +85,7 @@ fun IPointArrayList.mapPoints(temp: MPoint = MPoint(), gen: (x: Double, y: Doubl
 fun IPointArrayList.contains(x: Float, y: Float): Boolean = contains(x.toDouble(), y.toDouble())
 fun IPointArrayList.contains(x: Int, y: Int): Boolean = contains(x.toDouble(), y.toDouble())
 fun IPointArrayList.contains(x: Double, y: Double): Boolean {
-    for (n in 0 until size) if (getX(n) == x && getY(n) == y) return true
+    for (n in 0 until size) if (getX(n).toDouble() == x && getY(n).toDouble() == y) return true
     return false
 }
 
@@ -100,7 +96,7 @@ fun IPointArrayList.clone(out: PointArrayList = PointArrayList(this.size)): Poin
 
 open class PointArrayList(capacity: Int = 7) : IPointArrayList, Extra by Extra.Mixin() {
     override var closed: Boolean = false
-    private val data = DoubleArrayList(capacity * 2)
+    private val data = FloatArrayList(capacity * 2)
     override val size get() = data.size / 2
 
     fun isEmpty() = size == 0
@@ -136,14 +132,14 @@ open class PointArrayList(capacity: Int = 7) : IPointArrayList, Extra by Extra.M
      */
     fun addRaw(vararg values: Double) {
         check(values.size % 2 == 0) { "values not multiple of 2 (x, y) but '${values.size}'" }
-        data.add(values)
+        data.add(values.mapFloat { it.toFloat() })
     }
 
-    fun add(x: Double, y: Double): PointArrayList {
+    fun add(x: Float, y: Float): PointArrayList {
         data.add(x, y)
         return this
     }
-    fun add(x: Float, y: Float) = add(x.toDouble(), y.toDouble())
+    fun add(x: Double, y: Double) = add(x.toFloat(), y.toFloat())
     fun add(x: Int, y: Int) = add(x.toDouble(), y.toDouble())
 
     fun add(p: Point) = add(p.x, p.y)
@@ -183,7 +179,7 @@ open class PointArrayList(capacity: Int = 7) : IPointArrayList, Extra by Extra.M
     }
 
     fun insertAt(index: Int, x: Double, y: Double): PointArrayList {
-        data.insertAt(index(index, 0), x, y)
+        data.insertAt(index(index, 0), x.toFloat(), y.toFloat())
         return this
     }
 
@@ -194,21 +190,22 @@ open class PointArrayList(capacity: Int = 7) : IPointArrayList, Extra by Extra.M
         return this
     }
 
-    fun setX(index: Int, x: Double) { data[index(index, 0)] = x }
-    fun setX(index: Int, x: Int) = setX(index, x.toDouble())
-    fun setX(index: Int, x: Float) = setX(index, x.toDouble())
+    fun setX(index: Int, x: Float) { data[index(index, 0)] = x }
+    fun setX(index: Int, x: Int) = setX(index, x.toFloat())
+    fun setX(index: Int, x: Double) = setX(index, x.toFloat())
 
-    fun setY(index: Int, y: Double) { data[index(index, 1)] = y }
-    fun setY(index: Int, y: Int) = setY(index, y.toDouble())
-    fun setY(index: Int, y: Float) = setY(index, y.toDouble())
+    fun setY(index: Int, y: Float) { data[index(index, 1)] = y }
+    fun setY(index: Int, y: Int) = setY(index, y.toFloat())
+    fun setY(index: Int, y: Double) = setY(index, y.toFloat())
 
-    fun setXY(index: Int, x: Double, y: Double) {
+    fun setXY(index: Int, x: Float, y: Float) {
         data[index(index, 0)] = x
         data[index(index, 1)] = y
     }
-    fun setXY(index: Int, x: Int, y: Int) = setXY(index, x.toDouble(), y.toDouble())
-    fun setXY(index: Int, x: Float, y: Float) = setXY(index, x.toDouble(), y.toDouble())
+    fun setXY(index: Int, x: Int, y: Int) = setXY(index, x.toFloat(), y.toFloat())
+    fun setXY(index: Int, x: Double, y: Double) = setXY(index, x.toFloat(), y.toFloat())
     fun setXY(index: Int, p: IPoint) = setXY(index, p.x, p.y)
+    operator fun set(index: Int, p: Point) = setXY(index, p.x, p.y)
 
     fun transform(matrix: MMatrix) {
         for (n in 0 until size) {
@@ -255,7 +252,7 @@ open class PointArrayList(capacity: Int = 7) : IPointArrayList, Extra by Extra.M
     }
 
     object PointSortOpts : SortOps<PointArrayList>() {
-        override fun compare(p: PointArrayList, l: Int, r: Int): Int = MPoint.compare(p.getX(l), p.getY(l), p.getX(r), p.getY(r))
+        override fun compare(p: PointArrayList, l: Int, r: Int): Int = Point.compare(p[l], p[r])
         override fun swap(subject: PointArrayList, indexL: Int, indexR: Int) = subject.swap(indexL, indexR)
     }
 }

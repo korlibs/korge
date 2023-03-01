@@ -10,18 +10,8 @@ import com.soywiz.korge.view.BlendMode
 import com.soywiz.korge.view.property.*
 import com.soywiz.korim.paint.*
 import com.soywiz.korim.vector.*
-import com.soywiz.korma.geom.Angle
-import com.soywiz.korma.geom.BoundsBuilder
-import com.soywiz.korma.geom.IPoint
-import com.soywiz.korma.geom.MLine
-import com.soywiz.korma.geom.MMatrix
-import com.soywiz.korma.geom.MPoint
-import com.soywiz.korma.geom.MRectangle
-import com.soywiz.korma.geom.PointArrayList
-import com.soywiz.korma.geom.PointPool
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.bezier.*
-import com.soywiz.korma.geom.degrees
-import com.soywiz.korma.geom.fastForEachGeneric
 import com.soywiz.korma.geom.shape.*
 import com.soywiz.korma.geom.vector.*
 import kotlin.math.absoluteValue
@@ -425,9 +415,9 @@ open class GpuShapeView(
             gpuShapeViewCommands.addVertex(xMid.toFloat(), yMid.toFloat(), len = 0f, maxLen = BIG_MAX_LEN)
         }
         for (n in 0 until points.size + 1) {
-            val x = points.getX(n % points.size)
-            val y = points.getY(n % points.size)
-            val len = if (isStripAndAntialiased) MPoint.distance(x, y, xMid, yMid).toFloat() else 0f
+            val x = points.getX(n % points.size).toDouble()
+            val y = points.getY(n % points.size).toDouble()
+            val len = if (isStripAndAntialiased) Point.distance(x, y, xMid, yMid).toFloat() else 0f
             val maxLen = if (isStripAndAntialiased) len else BIG_MAX_LEN
             if (isStrip) {
                 gpuShapeViewCommands.addVertex(xMid.toFloat(), yMid.toFloat(), len = 0f, maxLen = maxLen)
