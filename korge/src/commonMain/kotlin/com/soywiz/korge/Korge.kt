@@ -357,7 +357,7 @@ object Korge {
             input.setMouseGlobalXY(x, y, down = false)
             input.setMouseGlobalXY(x, y, down = true)
             views.mouseUpdated()
-            downPos.copyFrom(input.mouse)
+            downPos.copyFrom(input.mousePos)
             downTime = DateTime.now()
             input.mouseInside = true
         }
@@ -367,7 +367,7 @@ object Korge {
             input.toggleButton(button, false)
             input.setMouseGlobalXY(x, y, down = false)
             views.mouseUpdated()
-            upPos.copyFrom(views.input.mouse)
+            upPos.copyFrom(views.input.mousePos)
         }
 
         fun mouseMove(type: String, x: Double, y: Double, inside: Boolean) {

@@ -6,7 +6,6 @@ import com.soywiz.klock.*
 import com.soywiz.kmem.*
 import com.soywiz.korag.*
 import com.soywiz.korag.log.*
-import com.soywiz.korag.shader.*
 import com.soywiz.korev.*
 import com.soywiz.korge.*
 import com.soywiz.korge.annotations.*
@@ -16,7 +15,6 @@ import com.soywiz.korge.component.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.render.*
-import com.soywiz.korge.scene.*
 import com.soywiz.korge.stat.*
 import com.soywiz.korgw.*
 import com.soywiz.korim.color.*
@@ -30,7 +28,6 @@ import com.soywiz.korio.file.std.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.resources.*
 import com.soywiz.korio.stream.*
-import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 import kotlinx.coroutines.*
 import kotlin.collections.set
@@ -165,12 +162,12 @@ class Views constructor(
 
     /** Mouse coordinates relative to the native window. Can't be used directly. Use [globalMouseX] instead */
     @KorgeInternal
-    val windowMouseX: Double get() = bp.globalToWindowCoordsX(input.mouse)
+    val windowMouseX: Double get() = bp.globalToWindowCoordsX(input.mousePos)
     /** Mouse coordinates relative to the native window. Can't be used directly. Use [globalMouseY] instead */
     @KorgeInternal
-    val windowMouseY: Double get() = bp.globalToWindowCoordsY(input.mouse)
+    val windowMouseY: Double get() = bp.globalToWindowCoordsY(input.mousePos)
     @KorgeInternal
-    val windowMouseXY: MPoint get() = bp.globalToWindowCoords(input.mouse)
+    val windowMouseXY: MPoint get() = bp.globalToWindowCoords(input.mousePos)
 
     /** Mouse coordinates relative to the [Stage] singleton */
     val globalMouseXY get() = stage.mouseXY

@@ -7,14 +7,7 @@ import com.soywiz.kds.extraProperty
 import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.kmem.*
 import com.soywiz.korma.annotations.KormaExperimental
-import com.soywiz.korma.geom.BoundsBuilder
-import com.soywiz.korma.geom.IPoint
-import com.soywiz.korma.geom.MLine
-import com.soywiz.korma.geom.LineIntersection
-import com.soywiz.korma.geom.MMatrix
-import com.soywiz.korma.geom.MPoint
-import com.soywiz.korma.geom.PointArrayList
-import com.soywiz.korma.geom.MRectangle
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.bezier.Bezier
 import com.soywiz.korma.geom.bezier.Curves
 import com.soywiz.korma.geom.bezier.toCurves
@@ -274,7 +267,8 @@ class VectorPath(
     // I run a semi-infinite ray horizontally (increasing x, fixed y) out from the test point, and count how many edges it crosses.
     // At each crossing, the ray switches between inside and outside. This is called the Jordan curve theorem.
     fun containsPoint(x: Double, y: Double): Boolean = trapezoids.containsPoint(x, y, this.winding)
-    fun containsPoint(p: MPoint): Boolean = containsPoint(p.x, p.y, this.winding)
+    fun containsPoint(p: Point): Boolean = containsPoint(p.x, p.y, this.winding)
+    fun containsPoint(p: IPoint): Boolean = containsPoint(p.x, p.y, this.winding)
     fun containsPoint(x: Int, y: Int): Boolean = containsPoint(x.toDouble(), y.toDouble())
     fun containsPoint(x: Float, y: Float): Boolean = containsPoint(x.toDouble(), y.toDouble())
 

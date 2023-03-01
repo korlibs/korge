@@ -46,9 +46,8 @@ inline class Point internal constructor(internal val raw: Float2Pack) {
     //constructor(x: Int, y: Int) : this(x.toDouble(), y.toDouble())
     //constructor(x: Float, y: Float) : this(x.toDouble(), y.toDouble())
 
-    //operator fun component1(): Double = x
-    //operator fun component2(): Double = y
-
+    operator fun component1(): Float = x
+    operator fun component2(): Float = y
 
     inline operator fun plus(that: Point): Point = Point(x + that.x, y + that.y)
     inline operator fun minus(that: Point): Point = Point(x - that.x, y - that.y)

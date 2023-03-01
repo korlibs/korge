@@ -104,12 +104,6 @@ class TileMap(
     var repeatX = TileMapRepeat.NONE
     var repeatY = TileMapRepeat.NONE
 
-    private val t0 = MPoint(0, 0)
-    private val tt0 = MPoint(0, 0)
-    private val tt1 = MPoint(0, 0)
-    private val tt2 = MPoint(0, 0)
-    private val tt3 = MPoint(0, 0)
-
     protected var contentVersion = 0
     private var cachedContentVersion = 0
 
@@ -211,10 +205,10 @@ class TileMap(
         val colMul = renderColorMul
 
         // @TODO: Bounds in clipped view
-        val pp0 = globalToLocal(t0.setTo(currentVirtualRect.left, currentVirtualRect.top), tt0)
-        val pp1 = globalToLocal(t0.setTo(currentVirtualRect.right, currentVirtualRect.bottom), tt1)
-        val pp2 = globalToLocal(t0.setTo(currentVirtualRect.right, currentVirtualRect.top), tt2)
-        val pp3 = globalToLocal(t0.setTo(currentVirtualRect.left, currentVirtualRect.bottom), tt3)
+        val pp0 = globalToLocal(Point(currentVirtualRect.left, currentVirtualRect.top))
+        val pp1 = globalToLocal(Point(currentVirtualRect.right, currentVirtualRect.bottom))
+        val pp2 = globalToLocal(Point(currentVirtualRect.right, currentVirtualRect.top))
+        val pp3 = globalToLocal(Point(currentVirtualRect.left, currentVirtualRect.bottom))
         val mapTileWidth = tileSize.width
         val mapTileHeight = tileSize.height
         val mx0 = ((pp0.x / mapTileWidth)).toIntCeil()

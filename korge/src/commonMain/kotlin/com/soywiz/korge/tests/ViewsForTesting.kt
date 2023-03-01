@@ -17,7 +17,6 @@ import com.soywiz.korgw.*
 import com.soywiz.korinject.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.lang.*
-import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
@@ -81,7 +80,7 @@ open class ViewsForTesting(
 	val views get() = viewsLog.views
     val stage get() = views.stage
 	val stats get() = views.stats
-	val mouse: IPoint get() = input.mouse
+	val mouse: IPoint get() = input.mousePos
 
     fun resizeGameWindow(width: Int, height: Int, scaleMode: ScaleMode = views.scaleMode, scaleAnchor: Anchor = views.scaleAnchor) {
         ag.mainFrameBuffer.setSize(0, 0, width, height)

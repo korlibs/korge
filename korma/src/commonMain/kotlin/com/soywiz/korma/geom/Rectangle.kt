@@ -209,19 +209,19 @@ interface IRectangle {
     val isNotEmpty: Boolean get() = width != 0.0 || height != 0.0
     val mutable: MRectangle get() = MRectangle(x, y, width, height)
 
-    val left get() = x
-    val top get() = y
-    val right get() = x + width
-    val bottom get() = y + height
+    val left: Double get() = x
+    val top: Double get() = y
+    val right: Double get() = x + width
+    val bottom: Double get() = y + height
 
-    val topLeft get() = MPoint(left, top)
-    val topRight get() = MPoint(right, top)
-    val bottomLeft get() = MPoint(left, bottom)
-    val bottomRight get() = MPoint(right, bottom)
+    val topLeft: Point get() = Point(left, top)
+    val topRight: Point get() = Point(right, top)
+    val bottomLeft: Point get() = Point(left, bottom)
+    val bottomRight: Point get() = Point(right, bottom)
 
     val centerX: Double get() = (right + left) * 0.5
     val centerY: Double get() = (bottom + top) * 0.5
-    val center: IPoint get() = MPoint(centerX, centerY)
+    val center: Point get() = Point(centerX, centerY)
 
     /**
      * Circle that touches or contains all the corners ([topLeft], [topRight], [bottomLeft], [bottomRight]) of the rectangle.
@@ -229,7 +229,7 @@ interface IRectangle {
     fun outerCircle(): MCircle {
         val centerX = centerX
         val centerY = centerY
-        return MCircle(center, MPoint.distance(centerX, centerY, right, top))
+        return MCircle(center, Point.distance(centerX, centerY, right, top))
     }
 
 
@@ -472,6 +472,8 @@ data class MRectangle(
         )
 
     fun getMiddlePoint(out: MPoint = MPoint()): MPoint = getAnchoredPosition(Anchor.CENTER, out)
+
+    fun getAnchoredPoint(anchor: Anchor): Point = Point(left + width * anchor.sxD, top + height * anchor.syD)
 
     fun getAnchoredPosition(anchor: Anchor, out: MPoint = MPoint()): MPoint =
         getAnchoredPosition(anchor.sxD, anchor.syD, out)

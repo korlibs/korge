@@ -398,7 +398,7 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
         when (event.type) {
             MouseEvent.Type.UP -> {
                 lastEventUp.copyFrom(event)
-                upPosGlobal.copyFrom(views.input.mouse)
+                upPosGlobal.copyFrom(views.input.mousePos)
                 upPosTime = PerformanceCounter.reference
                 val elapsedTime = upPosTime - downPosTime
                 if (
@@ -424,7 +424,7 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
 
                 //this.lastEventDown = event
                 downPosTime = PerformanceCounter.reference
-                downPosGlobal.copyFrom(views.input.mouse)
+                downPosGlobal.copyFrom(views.input.mousePos)
                 if (downImmediate.hasListeners) {
                     if (isOver) {
                         downImmediate(this@MouseEvents)
@@ -483,7 +483,7 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
         val overChanged = (lastOver != over)
         val insideChanged = (lastInside != inside)
         val pressingChanged = pressing != lastPressing
-        currentPosGlobal.copyFrom(views.input.mouse)
+        currentPosGlobal.copyFrom(views.input.mousePos)
 
         //println("$hitTest, ${input.mouse}, $over, $pressing, $overChanged, $pressingChanged")
 

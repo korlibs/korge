@@ -97,11 +97,13 @@ fun VectorBuilder.arc(x: Double, y: Double, r: Double, start: Angle, end: Angle,
 fun VectorBuilder.arc(x: Float, y: Float, r: Float, start: Angle, end: Angle) = arc(x.toDouble(), y.toDouble(), r.toDouble(), start, end)
 fun VectorBuilder.arc(x: Int, y: Int, r: Int, start: Angle, end: Angle) = arc(x.toDouble(), y.toDouble(), r.toDouble(), start, end)
 
+fun VectorBuilder.circle(point: Point, radius: Double) = circle(point.xD, point.yD, radius)
 fun VectorBuilder.circle(point: IPoint, radius: Double) = circle(point.x, point.y, radius)
 fun VectorBuilder.circle(x: Float, y: Float, radius: Float) = circle(x.toDouble(), y.toDouble(), radius.toDouble())
 fun VectorBuilder.circle(x: Int, y: Int, radius: Int) = circle(x.toDouble(), y.toDouble(), radius.toDouble())
 fun VectorBuilder.circle(x: Double, y: Double, radius: Double) = arc(x, y, radius, Angle.ZERO, Angle.FULL)
 
+fun VectorBuilder.circleHole(point: Point, radius: Double) = circleHole(point.xD, point.yD, radius)
 fun VectorBuilder.circleHole(point: IPoint, radius: Double) = circleHole(point.x, point.y, radius)
 fun VectorBuilder.circleHole(x: Float, y: Float, radius: Float) = circleHole(x.toDouble(), y.toDouble(), radius.toDouble())
 fun VectorBuilder.circleHole(x: Int, y: Int, radius: Int) = circleHole(x.toDouble(), y.toDouble(), radius.toDouble())
@@ -170,6 +172,11 @@ fun VectorBuilder.parallelogram(bounds: MRectangle, angle: Angle = 30.degrees, d
     lineTo(bounds.right + dx0, bounds.bottom)
     lineTo(bounds.left - dx1, bounds.bottom)
 }
+
+fun VectorBuilder.moveTo(p: Point) = moveTo(p.x, p.y)
+fun VectorBuilder.lineTo(p: Point) = lineTo(p.x, p.y)
+fun VectorBuilder.quadTo(c: Point, a: Point) = quadTo(c.x, c.y, a.x, a.y)
+fun VectorBuilder.cubicTo(c1: Point, c2: Point, a: Point) = cubicTo(c1.x, c1.y, c2.x, c2.y, a.x, a.y)
 
 fun VectorBuilder.moveTo(p: IPoint) = moveTo(p.x, p.y)
 fun VectorBuilder.lineTo(p: IPoint) = lineTo(p.x, p.y)

@@ -388,29 +388,12 @@ abstract class View internal constructor(
             skewY = v.second
         }
 
-    /** The global x position of this view */
-    var globalX: Double
-        get() = parent?.localToGlobalX(x, y) ?: x
-        set(value) { setGlobalXY(value, globalY) }
-
-    /** The global y position of this view */
-    var globalY: Double
-        get() = parent?.localToGlobalY(x, y) ?: y
+    /** The global position of this view */
+    var globalPos: Point
+        get() = parent?.localToGlobal(pos) ?: pos
         set(value) {
-            setGlobalXY(globalX, value)
+            pos = parent?.globalToLocal(value) ?: value
         }
-
-    fun setGlobalXY(pos: MPoint) = setGlobalXY(pos.x, pos.y)
-
-    fun setGlobalXY(x: Double, y: Double) {
-        setXY(
-            parent?.globalToLocalX(x, y) ?: x,
-            parent?.globalToLocalY(x, y) ?: y,
-        )
-    }
-
-    fun globalXY(out: MPoint = MPoint()): MPoint = out.setTo(globalX, globalY)
-    fun localXY(out: MPoint = MPoint()): MPoint = out.setTo(x, y)
 
     /**
      * Changes the [width] and [height] to match the parameters.
@@ -764,15 +747,8 @@ abstract class View internal constructor(
         return renderColorTransform.mA
     }
 
-    /** Computes the local X coordinate of the mouse using the coords from the [Views] object */
-    fun localMouseX(views: Views): Double = this.globalMatrixInv.transformX(views.input.mouse)
-
-    /** Computes the local Y coordinate of the mouse using the coords from the [Views] object */
-    fun localMouseY(views: Views): Double = this.globalMatrixInv.transformY(views.input.mouse)
-
-    /** Computes the local X and Y coordinate of the mouse using the coords from the [Views] object. You can use the [target] parameter to specify a target [MPoint] to avoid allocation. */
-    fun localMouseXY(views: Views, target: MPoint = MPoint()): MPoint =
-        target.setTo(localMouseX(views), localMouseY(views))
+    /** Computes the local coordinate of the mouse using the coords from the [Views] object */
+    fun localMouse(views: Views): Point = this.globalMatrixInv.transform(views.input.mousePos)
 
     /**
      * Invalidates the [localMatrix] [MMatrix], so it gets updated from the decomposed properties: [x], [y], [scaleX], [scaleY], [rotation], [skewX] and [skewY].
@@ -904,10 +880,10 @@ abstract class View internal constructor(
                 }
             }
             lines.drawVector(Colors.RED) {
-                moveTo(localToGlobal(MPoint(local.left, local.top)))
-                lineTo(localToGlobal(MPoint(local.right, local.top)))
-                lineTo(localToGlobal(MPoint(local.right, local.bottom)))
-                lineTo(localToGlobal(MPoint(local.left, local.bottom)))
+                moveTo(localToGlobal(Point(local.left, local.top)))
+                lineTo(localToGlobal(Point(local.right, local.top)))
+                lineTo(localToGlobal(Point(local.right, local.bottom)))
+                lineTo(localToGlobal(Point(local.left, local.bottom)))
                 close()
             }
             lines.drawVector(Colors.YELLOW) {
@@ -916,16 +892,15 @@ abstract class View internal constructor(
                 circle(localToGlobal(local.topRight), anchorSize)
                 circle(localToGlobal(local.bottomRight), anchorSize)
                 circle(localToGlobal(local.bottomLeft), anchorSize)
-                circle(localToGlobal(local.topLeft.interpolateWith(Ratio.HALF, local.topRight)), anchorSize)
-                circle(localToGlobal(local.topRight.interpolateWith(Ratio.HALF, local.bottomRight)), anchorSize)
-                circle(localToGlobal(local.bottomRight.interpolateWith(Ratio.HALF, local.bottomLeft)), anchorSize)
-                circle(localToGlobal(local.bottomLeft.interpolateWith(Ratio.HALF, local.topLeft)), anchorSize)
+                circle(localToGlobal(Ratio.HALF.interpolate(local.topLeft, local.topRight)), anchorSize)
+                circle(localToGlobal(Ratio.HALF.interpolate(local.topRight, local.bottomRight)), anchorSize)
+                circle(localToGlobal(Ratio.HALF.interpolate(local.bottomRight, local.bottomLeft)), anchorSize)
+                circle(localToGlobal(Ratio.HALF.interpolate(local.bottomLeft, local.topLeft)), anchorSize)
             }
             lines.drawVector(Colors.BLUE) {
-                val centerX = globalX
-                val centerY = globalY
-                line(centerX, centerY - 5, centerX, centerY + 5)
-                line(centerX - 5, centerY, centerX + 5, centerY)
+                val center = globalPos
+                line(center.x, center.y - 5, center.x, center.y + 5)
+                line(center.x - 5, center.y, center.x + 5, center.y)
             }
         }
 
@@ -954,117 +929,47 @@ abstract class View internal constructor(
 
     // Version with root-most object as reference
     /** Converts the global point [p] (using root/stage as reference) into the local coordinate system. Allows to define [out] to avoid allocation. */
-    fun globalToLocal(p: IPoint, out: MPoint = MPoint()): MPoint = globalToLocalXY(p.x, p.y, out)
-
-    /** Converts the global point [x] [y] (using root/stage as reference) into the local coordinate system. Allows to define [out] to avoid allocation. */
-    fun globalToLocalXY(x: Double, y: Double, out: MPoint = MPoint()): MPoint = this.globalMatrixInv.transform(x, y, out)
-
-    /** Converts the global point [x], [y] (using root/stage as reference) into the X in the local coordinate system. */
-    fun globalToLocalX(x: Double, y: Double): Double = this.globalMatrixInv.transformX(x, y)
-
-    /** Converts the global point [x], [y] (using root/stage as reference) into the Y in the local coordinate system. */
-    fun globalToLocalY(x: Double, y: Double): Double = this.globalMatrixInv.transformY(x, y)
-
-    fun globalToLocalDX(x0: Double, y0: Double, x1: Double, y1: Double): Double = globalToLocalX(x1, y1) - globalToLocalX(x0, y0)
-    fun globalToLocalDY(x0: Double, y0: Double, x1: Double, y1: Double): Double = globalToLocalY(x1, y1) - globalToLocalY(x0, y0)
-    fun globalToLocalDXY(x0: Double, y0: Double, x1: Double, y1: Double, out: MPoint = MPoint()): MPoint = out.setTo(
-        globalToLocalDX(x0, y0, x1, y1),
-        globalToLocalDY(x0, y0, x1, y1),
-    )
-    fun globalToLocalDXY(p0: IPoint, p1: IPoint, out: MPoint = MPoint()): MPoint = globalToLocalDXY(p0.x, p0.y, p1.x, p1.y, out)
+    fun globalToLocal(p: Point): Point = this.globalMatrixInv.transform(p)
+    fun globalToLocalDelta(p0: Point, p1: Point): Point = globalToLocal(p1) - globalToLocal(p0)
 
     /** Converts the local point [p] into a global point (using root/stage as reference). Allows to define [out] to avoid allocation. */
-    fun localToGlobal(p: IPoint, out: MPoint = MPoint()): MPoint = localToGlobalXY(p.x, p.y, out)
-
-    /** Converts the local point [x], [y] into a global point (using root/stage as reference). Allows to define [out] to avoid allocation. */
-    fun localToGlobalXY(x: Double, y: Double, out: MPoint = MPoint()): MPoint = this.globalMatrix.transform(x, y, out)
-
-    /** Converts the local point [x], [y] into a global X coordinate (using root/stage as reference). */
-    fun localToGlobalX(x: Double, y: Double): Double = this.globalMatrix.transformX(x, y)
-
-    /** Converts the local point [x], [y] into a global Y coordinate (using root/stage as reference). */
-    fun localToGlobalY(x: Double, y: Double): Double = this.globalMatrix.transformY(x, y)
-
+    fun localToGlobal(p: Point): Point = this.globalMatrix.transform(p)
 
     // Version with View.Reference as reference
-    /** Converts a point [p] in the nearest ancestor marked as [View.Reference] into the local coordinate system. Allows to define [out] to avoid allocation. */
-    fun renderToLocal(p: IPoint, out: MPoint = MPoint()): MPoint = renderToLocalXY(p.x, p.y, out)
-
-    /** Converts a point [x], [y] in the nearest ancestor marked as [View.Reference] into the local coordinate system. Allows to define [out] to avoid allocation. */
-    fun renderToLocalXY(x: Double, y: Double, out: MPoint = MPoint()): MPoint = this.globalMatrixInv.transform(x, y, out)
-
-    /** Converts a point [x], [y] in the nearest ancestor marked as [View.Reference] into the local X coordinate. */
-    fun renderToLocalX(x: Double, y: Double): Double = this.globalMatrixInv.transformX(x, y)
-
-    /** Converts a point [x], [y] in the nearest ancestor marked as [View.Reference] into the local Y coordinate. */
-    fun renderToLocalY(x: Double, y: Double): Double = this.globalMatrixInv.transformY(x, y)
-
-
-    /** Converts the local point [p] into a point in the nearest ancestor masked as [View.Reference]. Allows to define [out] to avoid allocation. */
-    @Deprecated("")
-    fun localToRender(p: IPoint, out: MPoint = MPoint()): MPoint = localToRenderXY(p.x, p.y, out)
-
-    /** Converts the local point [x],[y] into a point in the nearest ancestor masked as [View.Reference]. Allows to define [out] to avoid allocation. */
-    @Deprecated("")
-    fun localToRenderXY(x: Double, y: Double, out: MPoint = MPoint()): MPoint = this.globalMatrix.transform(x, y, out)
-
-    /** Converts the local point [x],[y] into a X coordinate in the nearest ancestor masked as [View.Reference]. */
-    @Deprecated("")
-    fun localToRenderX(x: Double, y: Double): Double = this.globalMatrix.transformX(x, y)
-
-    /** Converts the local point [x],[y] into a Y coordinate in the nearest ancestor masked as [View.Reference]. */
-    @Deprecated("")
-    fun localToRenderY(x: Double, y: Double): Double = this.globalMatrix.transformY(x, y)
-
-
+    ///** Converts a point [p] in the nearest ancestor marked as [View.Reference] into the local coordinate system. Allows to define [out] to avoid allocation. */
+    //fun renderToLocal(p: Point): Point = this.globalMatrixInv.transform(p)
 
     /** Converts the local point [p] into a point in window coordinates. */
-    fun localToWindow(views: Views, p: IPoint, out: MPoint = MPoint()): MPoint = localToWindowXY(views, p.x, p.y, out)
-
-    /** Converts the local point [x], [y] into a point in window coordinates. */
-    fun localToWindowXY(views: Views, x: Double, y: Double, out: MPoint = MPoint()): MPoint {
-        this.globalMatrix.transform(x, y, out)
-        views.globalToWindowMatrix.transform(out, out)
-        return out
-    }
-
-    /** Converts the local point [x], [y] into a X coordinate in window coordinates. */
-    fun localToWindowX(views: Views, x: Double, y: Double): Double = MPoint.POOL { localToWindowXY(views, x, y, it).x }
-
-    /** Converts the local point [x], [y] into a Y coordinate in window coordinates. */
-    fun localToWindowY(views: Views, x: Double, y: Double): Double = MPoint.POOL { localToWindowXY(views, x, y, it).y }
+    fun localToWindow(views: Views, p: Point): Point =
+        views.globalToWindowMatrix.transform(this.globalMatrix.transform(p))
 
     var hitTestEnabled = true
 
     /**
-     * Determines the view at the global point defined by [x] and [y] if any, or null
+     * Determines the view at the global point [p] if any, or null
      *
      * When a container, recursively finds the [View] displayed the given global [x], [y] coordinates.
      *
      * @returns The (visible) [View] displayed at the given coordinates or `null` if none is found.
      */
-    open fun hitTest(x: Double, y: Double, direction: HitTestDirection = HitTestDirection.ANY): View? {
+    open fun hitTest(p: Point, direction: HitTestDirection = HitTestDirection.ANY): View? {
         if (!hitTestEnabled) return null
         if (!visible) return null
 
         _children?.fastForEachReverse { child ->
-            child.hitTest(x, y, direction)?.let {
+            child.hitTest(p, direction)?.let {
                 return it
             }
         }
-        val res = hitTestInternal(x, y)
+        val res = hitTestInternal(p)
         if (res != null) return res
         return if (this is Stage) this else null
     }
-    fun hitTest(x: Float, y: Float, direction: HitTestDirection = HitTestDirection.ANY): View? = hitTest(x.toDouble(), y.toDouble(), direction)
-    fun hitTest(x: Int, y: Int, direction: HitTestDirection = HitTestDirection.ANY): View? = hitTest(x.toDouble(), y.toDouble(), direction)
 
-    fun hitTestLocal(x: Double, y: Double, direction: HitTestDirection = HitTestDirection.ANY): View? = hitTest(localToGlobalX(x, y), localToGlobalY(x, y), direction)
-    fun hitTestLocal(x: Float, y: Float, direction: HitTestDirection = HitTestDirection.ANY): View? = hitTestLocal(x.toDouble(), y.toDouble(), direction)
-    fun hitTestLocal(x: Int, y: Int, direction: HitTestDirection = HitTestDirection.ANY): View? = hitTestLocal(x.toDouble(), y.toDouble(), direction)
+    fun hitTestLocal(p: Point, direction: HitTestDirection = HitTestDirection.ANY): View? = hitTest(localToGlobal(p), direction)
 
-    override fun hitTestAny(x: Double, y: Double, direction: HitTestDirection): Boolean =
-        hitTest(x, y, direction) != null
+    override fun hitTestAny(p: Point, direction: HitTestDirection): Boolean =
+        hitTest(p, direction) != null
 
     fun hitTestView(views: List<View>, direction: HitTestDirection = HitTestDirection.ANY): View? {
         views.fastForEach { view -> hitTestView(view, direction)?.let { return it } }
@@ -1117,18 +1022,18 @@ abstract class View internal constructor(
 
     // @TODO: we should compute view bounds on demand
     /** [x] and [y] are in global coordinates */
-    fun mouseHitTest(x: Double, y: Double): View? {
+    fun mouseHitTest(p: Point): View? {
         if (!hitTestEnabled) return null
         if (!visible) return null
         if (mouseChildren) {
             _children?.fastForEachReverse { child ->
-                child.mouseHitTest(x, y)?.let {
+                child.mouseHitTest(p)?.let {
                     return it
                 }
             }
         }
         if (!mouseEnabled) return null
-        hitTestInternal(x, y)?.let { view ->
+        hitTestInternal(p)?.let { view ->
 
             // @TODO: This should not be required if we compute bounds
             MRectangle.POOL { tempRect ->
@@ -1161,15 +1066,12 @@ abstract class View internal constructor(
         return if (count == 0) null else out
     }
 
-    fun mouseHitTest(x: Float, y: Float): View? = hitTest(x.toDouble(), y.toDouble())
-    fun mouseHitTest(x: Int, y: Int): View? = hitTest(x.toDouble(), y.toDouble())
-
-    fun hitTestAny(x: Double, y: Double): Boolean = hitTest(x, y) != null
+    fun hitTestAny(p: Point): Boolean = hitTest(p) != null
 
     var hitTestUsingShapes: Boolean? = null
 
     /** [x] and [y] coordinates are global */
-    open protected fun hitTestInternal(x: Double, y: Double, direction: HitTestDirection = HitTestDirection.ANY): View? {
+    open protected fun hitTestInternal(p: Point, direction: HitTestDirection = HitTestDirection.ANY): View? {
         if (!hitTestEnabled) return null
 
         //println("x,y: $x,$y")
@@ -1177,8 +1079,9 @@ abstract class View internal constructor(
         //if (!getGlobalBounds(_localBounds).contains(x, y)) return null
 
         // Adjusted coordinates to compensate anchoring
-        val llx = globalToLocalX(x, y)
-        val lly = globalToLocalY(x, y)
+        val ll = globalToLocal(p)
+        val llx = ll.x
+        val lly = ll.y
 
         val bounds = getLocalBoundsOptimizedAnchored()
         if (!bounds.contains(llx, lly)) {
@@ -1261,13 +1164,12 @@ abstract class View internal constructor(
 
     /** [x] and [y] are global, while [sLeft], [sTop], [sRight], [sBottom] are local */
     protected fun checkGlobalBounds(
-        x: Double,
-        y: Double,
+        p: Point,
         sLeft: Double,
         sTop: Double,
         sRight: Double,
         sBottom: Double
-    ): Boolean = checkLocalBounds(globalToLocalX(x, y), globalToLocalY(x, y), sLeft, sTop, sRight, sBottom)
+    ): Boolean = checkLocalBounds(globalToLocal(p), sLeft, sTop, sRight, sBottom)
 
     //protected fun checkGlobalBounds(
     //    x: Double,
@@ -1276,13 +1178,12 @@ abstract class View internal constructor(
     //): Boolean = grect.contains(x, y)
 
     protected fun checkLocalBounds(
-        lx: Double,
-        ly: Double,
+        p: Point,
         sLeft: Double,
         sTop: Double,
         sRight: Double,
         sBottom: Double
-    ): Boolean = lx >= sLeft && ly >= sTop && lx < sRight && ly < sBottom
+    ): Boolean = p.x >= sLeft && p.y >= sTop && p.x < sRight && p.y < sBottom
 
     //protected fun checkLocalBounds(
     //    lx: Double,
@@ -1406,7 +1307,7 @@ abstract class View internal constructor(
     @KorgeUntested
     fun setGlobalBounds(bounds: IRectangle) {
         val transform = parent!!.globalMatrix.toTransform()
-        setGlobalXY(bounds.left, bounds.top)
+        globalPos = Point(bounds.left, bounds.top)
         setSizeScaled(
             bounds.width * transform.scaleX,
             bounds.height * transform.scaleY,
@@ -1526,14 +1427,8 @@ abstract class View internal constructor(
         this@apply.copyPropsFrom(this@View)
     }
 
-    fun globalLocalBoundsPointRatio(anchor: Anchor, out: MPoint = MPoint()): MPoint = globalLocalBoundsPointRatio(anchor.sxD, anchor.syD, out)
-
-    fun globalLocalBoundsPointRatio(ratioX: Double, ratioY: Double, out: MPoint = MPoint()): MPoint {
-        val bounds = getLocalBoundsOptimizedAnchored()
-        val x = ratioX.interpolate(bounds.left, bounds.right)
-        val y = ratioY.interpolate(bounds.top, bounds.bottom)
-        return out.setTo(localToGlobalX(x, y), localToGlobalY(x, y))
-    }
+    fun globalLocalBoundsPointRatio(anchor: Anchor): Point =
+        localToGlobal(getLocalBoundsOptimizedAnchored().getAnchoredPoint(anchor))
 
     fun getGlobalMatrixWithAnchor(out: MMatrix = MMatrix()): MMatrix {
         val view = this
@@ -1636,30 +1531,13 @@ interface ViewRenderPhase {
     fun beforeRender(view: View, ctx: RenderContext) = Unit
     fun afterRender(view: View, ctx: RenderContext) = Unit
 }
-
-/**
- * Determines if the given coords [x] and [y] hit this view or any of its descendants.
- * Returns the view that was hit or null
- */
-fun View.hitTest(x: Int, y: Int): View? = hitTest(x.toDouble(), y.toDouble())
-
-/**
- * Determines if the given coords [pos] hit this view or any of its descendants.
- * Returns the view that was hit or null
- */
-fun View.hitTest(pos: IPoint): View? = hitTest(pos.x, pos.y)
-//fun View.hitTest(pos: Point): View? = hitTest(pos.x, pos.y)
-
 /**
  * Checks if this view has the specified [ancestor].
  */
-fun View.hasAncestor(ancestor: View): Boolean {
-    return if (this == ancestor) true else this.parent?.hasAncestor(ancestor) ?: false
-}
+fun View.hasAncestor(ancestor: View): Boolean =
+    if (this == ancestor) true else this.parent?.hasAncestor(ancestor) ?: false
 
-fun View?.commonAncestor(ancestor: View?): View? {
-    return View.commonAncestor(this, ancestor)
-}
+fun View?.commonAncestor(ancestor: View?): View? = View.commonAncestor(this, ancestor)
 
 /**
  * Replaces this view in its parent with [view].
