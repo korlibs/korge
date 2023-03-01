@@ -319,20 +319,16 @@ class VectorPath(
         tempMatrix.invert(rightMatrix)
         tempMatrix.premultiply(leftMatrix)
 
-        leftScanline.forEachPoint { x, y ->
-            val tx = tempMatrix.transformX(x, y)
-            val ty = tempMatrix.transformY(x, y)
+        leftScanline.forEachPoint {
             //println("LEFT: $tx, $ty")
-            if (rightScanline.containsPoint(tx, ty)) return true
+            if (rightScanline.containsPoint(tempMatrix.transform(it))) return true
         }
 
         tempMatrix.invert(leftMatrix)
         tempMatrix.premultiply(rightMatrix)
 
-        rightScanline.forEachPoint { x, y ->
-            val tx = tempMatrix.transformX(x, y)
-            val ty = tempMatrix.transformY(x, y)
-            if (leftScanline.containsPoint(tx, ty)) return true
+        rightScanline.forEachPoint {
+            if (leftScanline.containsPoint(tempMatrix.transform(it))) return true
         }
         return false
     }

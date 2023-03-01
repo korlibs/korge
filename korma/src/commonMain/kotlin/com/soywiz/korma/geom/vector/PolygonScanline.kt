@@ -12,15 +12,7 @@ import com.soywiz.kds.get
 import com.soywiz.kds.getOrPut
 import com.soywiz.kds.size
 import com.soywiz.korma.annotations.KormaExperimental
-import com.soywiz.korma.geom.BoundsBuilder
-import com.soywiz.korma.geom.IPoint
-import com.soywiz.korma.geom.IPointInt
-import com.soywiz.korma.geom.MLine
-import com.soywiz.korma.geom.LineIntersection
-import com.soywiz.korma.geom.MPoint
-import com.soywiz.korma.geom.PointArrayList
-import com.soywiz.korma.geom.MRectangle
-import com.soywiz.korma.geom.fastForEach
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.shape.emitPoints2
 import com.soywiz.korma.segment.IntSegmentSet
 
@@ -153,9 +145,9 @@ class PolygonScanline : RastScale() {
         points.add(x, y)
     }
 
-    inline fun forEachPoint(callback: (x: Double, y: Double) -> Unit) {
-        points.fastForEach { x, y ->
-            callback(x, y)
+    inline fun forEachPoint(callback: (Point) -> Unit) {
+        points.fastForEach {
+            callback(it)
         }
     }
 
@@ -298,6 +290,8 @@ class PolygonScanline : RastScale() {
     }
 
     private val ss = IntSegmentSet()
+
+    fun containsPoint(p: Point, winding: Winding = this.winding): Boolean = containsPoint(p.xD, p.yD, winding)
 
     fun containsPoint(x: Double, y: Double, winding: Winding = this.winding): Boolean {
         return containsPointInt(x.s, y.s, winding)

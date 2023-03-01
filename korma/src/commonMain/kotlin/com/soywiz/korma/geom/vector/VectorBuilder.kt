@@ -97,6 +97,7 @@ fun VectorBuilder.arc(x: Double, y: Double, r: Double, start: Angle, end: Angle,
 fun VectorBuilder.arc(x: Float, y: Float, r: Float, start: Angle, end: Angle) = arc(x.toDouble(), y.toDouble(), r.toDouble(), start, end)
 fun VectorBuilder.arc(x: Int, y: Int, r: Int, start: Angle, end: Angle) = arc(x.toDouble(), y.toDouble(), r.toDouble(), start, end)
 
+fun VectorBuilder.circle(point: Point, radius: Double) = circle(point.xD, point.yD, radius)
 fun VectorBuilder.circle(point: IPoint, radius: Double) = circle(point.x, point.y, radius)
 fun VectorBuilder.circle(x: Float, y: Float, radius: Float) = circle(x.toDouble(), y.toDouble(), radius.toDouble())
 fun VectorBuilder.circle(x: Int, y: Int, radius: Int) = circle(x.toDouble(), y.toDouble(), radius.toDouble())
@@ -176,15 +177,18 @@ fun VectorBuilder.lineTo(p: IPoint) = lineTo(p.x, p.y)
 fun VectorBuilder.quadTo(c: IPoint, a: IPoint) = quadTo(c.x, c.y, a.x, a.y)
 fun VectorBuilder.cubicTo(c1: IPoint, c2: IPoint, a: IPoint) = cubicTo(c1.x, c1.y, c2.x, c2.y, a.x, a.y)
 
+fun VectorBuilder.moveTo(p: Point) = moveTo(p.x, p.y)
+fun VectorBuilder.lineTo(p: Point) = lineTo(p.x, p.y)
+fun VectorBuilder.quadTo(c: Point, a: Point) = quadTo(c.x, c.y, a.x, a.y)
+fun VectorBuilder.cubicTo(c1: Point, c2: Point, a: Point) = cubicTo(c1.x, c1.y, c2.x, c2.y, a.x, a.y)
+
 fun VectorBuilder.polygon(path: IPointArrayList, close: Boolean = true) {
-    moveTo(path.getX(0), path.getY(0))
-    for (i in 1 until path.size) {
-        lineTo(path.getX(i), path.getY(i))
-    }
+    moveTo(path.get(0))
+    for (i in 1 until path.size) lineTo(path.get(i))
     if (close) close()
 }
-fun VectorBuilder.polygon(path: Array<IPoint>, close: Boolean = true) = polygon(PointArrayList(*path), close)
-fun VectorBuilder.polygon(path: List<IPoint>, close: Boolean = true) = polygon(PointArrayList(path), close)
+fun VectorBuilder.polygon(path: Array<Point>, close: Boolean = true) = polygon(PointArrayList(*path), close)
+fun VectorBuilder.polygon(path: List<Point>, close: Boolean = true) = polygon(PointArrayList(path), close)
 
 fun VectorBuilder.moveToH(x: Double) = moveTo(x, lastY)
 fun VectorBuilder.moveToH(x: Float) = moveToH(x.toDouble())
@@ -249,6 +253,7 @@ fun VectorBuilder.quadTo(controlX: Int, controlY: Int, anchorX: Int, anchorY: In
 fun VectorBuilder.cubicTo(cx1: Float, cy1: Float, cx2: Float, cy2: Float, ax: Float, ay: Float) = cubicTo(cx1.toDouble(), cy1.toDouble(), cx2.toDouble(), cy2.toDouble(), ax.toDouble(), ay.toDouble())
 fun VectorBuilder.cubicTo(cx1: Int, cy1: Int, cx2: Int, cy2: Int, ax: Int, ay: Int) = cubicTo(cx1.toDouble(), cy1.toDouble(), cx2.toDouble(), cy2.toDouble(), ax.toDouble(), ay.toDouble())
 
+fun VectorBuilder.line(p0: Point, p1: Point) = line(p0.x, p0.y, p1.x, p1.y)
 fun VectorBuilder.line(p0: IPoint, p1: IPoint) = line(p0.x, p0.y, p1.x, p1.y)
 fun VectorBuilder.line(x0: Double, y0: Double, x1: Double, y1: Double) = moveTo(x0, y0).also { lineTo(x1, y1) }
 fun VectorBuilder.line(x0: Float, y0: Float, x1: Float, y1: Float) = line(x0.toDouble(), y0.toDouble(), x1.toDouble(), y1.toDouble())

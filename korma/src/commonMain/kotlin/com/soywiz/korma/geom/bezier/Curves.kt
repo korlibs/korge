@@ -3,18 +3,9 @@ package com.soywiz.korma.geom.bezier
 import com.soywiz.kds.Extra
 import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.korma.annotations.*
-import com.soywiz.korma.geom.BoundsBuilder
-import com.soywiz.korma.geom.IPointArrayList
-import com.soywiz.korma.geom.MPoint
-import com.soywiz.korma.geom.PointArrayList
-import com.soywiz.korma.geom.MRectangle
-import com.soywiz.korma.geom.fastForEach
-import com.soywiz.korma.geom.firstX
-import com.soywiz.korma.geom.firstY
-import com.soywiz.korma.geom.lastX
-import com.soywiz.korma.geom.lastY
-import com.soywiz.korma.geom.vector.VectorPath
-import com.soywiz.korma.math.convertRange
+import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.vector.*
+import com.soywiz.korma.interpolation.*
 import com.soywiz.korma.math.isAlmostEquals
 import kotlin.jvm.JvmName
 
@@ -70,8 +61,8 @@ data class Curves(val beziers: List<Bezier>, val closed: Boolean) : Curve, Extra
     override val length: Double by lazy { infos.sumOf { it.length } }
     private val bb = BoundsBuilder()
 
-    val CurveInfo.startRatio: Double get() = this.startLength / this@Curves.length
-    val CurveInfo.endRatio: Double get() = this.endLength / this@Curves.length
+    val CurveInfo.startRatio: Ratio get() = Ratio(this.startLength, this@Curves.length)
+    val CurveInfo.endRatio: Ratio get() = Ratio(this.endLength, this@Curves.length)
 
     override fun getBounds(target: MRectangle): MRectangle {
         bb.reset()
@@ -80,8 +71,8 @@ data class Curves(val beziers: List<Bezier>, val closed: Boolean) : Curve, Extra
     }
 
     @PublishedApi
-    internal fun findInfo(t: Double): CurveInfo {
-        val pos = t * length
+    internal fun findInfo(t: Ratio): CurveInfo {
+        val pos = t.valueD * length
         val index = infos.binarySearch {
             when {
                 it.contains(pos) -> 0
@@ -89,32 +80,30 @@ data class Curves(val beziers: List<Bezier>, val closed: Boolean) : Curve, Extra
                 else -> +1
             }
         }
-        if (t < 0.0) return infos.first()
-        if (t > 1.0) return infos.last()
+        if (t < Ratio.ZERO) return infos.first()
+        if (t > Ratio.ONE) return infos.last()
         return infos.getOrNull(index) ?: error("OUTSIDE")
     }
 
     @PublishedApi
-    internal inline fun <T> findTInCurve(t: Double, block: (info: CurveInfo, ratioInCurve: Double) -> T): T {
-        val pos = t * length
+    internal inline fun <T> findTInCurve(t: Ratio, block: (info: CurveInfo, ratioInCurve: Ratio) -> T): T {
+        val pos = t.valueD * length
         val info = findInfo(t)
-        val posInCurve = pos - info.startLength
-        val ratioInCurve = posInCurve / info.length
-        return block(info, ratioInCurve)
+        return block(info, Ratio(pos - info.startLength, info.length))
     }
 
-    override fun calc(t: Double, target: MPoint): MPoint =
-        findTInCurve(t) { info, ratioInCurve -> info.curve.calc(ratioInCurve, target) }
+    override fun calc(t: Ratio): Point =
+        findTInCurve(t) { info, ratioInCurve -> info.curve.calc(ratioInCurve) }
 
-    override fun normal(t: Double, target: MPoint): MPoint =
-        findTInCurve(t) { info, ratioInCurve -> info.curve.normal(ratioInCurve, target) }
+    override fun normal(t: Ratio): Point =
+        findTInCurve(t) { info, ratioInCurve -> info.curve.normal(ratioInCurve) }
 
-    override fun tangent(t: Double, target: MPoint): MPoint =
-        findTInCurve(t) { info, ratioInCurve -> info.curve.tangent(ratioInCurve, target) }
+    override fun tangent(t: Ratio): Point =
+        findTInCurve(t) { info, ratioInCurve -> info.curve.tangent(ratioInCurve) }
 
-    override fun ratioFromLength(length: Double): Double {
-        if (length <= 0.0) return 0.0
-        if (length >= this.length) return 1.0
+    override fun ratioFromLength(length: Double): Ratio {
+        if (length <= 0.0) return Ratio.ZERO
+        if (length >= this.length) return Ratio.ONE
 
         val curveIndex = infos.binarySearch {
             when {
@@ -127,22 +116,22 @@ data class Curves(val beziers: List<Bezier>, val closed: Boolean) : Curve, Extra
         if (curveIndex < 0) {
             //infos.fastForEach { println("it=$it") }
             //println("length=${this.length}, requestedLength = $length, curveIndex=$curveIndex")
-            return Double.NaN
+            return Ratio.NaN
         } // length not in curve!
         val info = infos[index]
         val lengthInCurve = length - info.startLength
         val ratioInCurve = info.curve.ratioFromLength(lengthInCurve)
-        return ratioInCurve.convertRange(0.0, 1.0, info.startRatio, info.endRatio)
+        return ratioInCurve.convertToRange(info.startRatio, info.endRatio)
     }
 
     fun splitLeftByLength(len: Double): Curves = splitLeft(ratioFromLength(len))
     fun splitRightByLength(len: Double): Curves = splitRight(ratioFromLength(len))
     fun splitByLength(len0: Double, len1: Double): Curves = split(ratioFromLength(len0), ratioFromLength(len1))
 
-    fun splitLeft(t: Double): Curves = split(0.0, t)
-    fun splitRight(t: Double): Curves = split(t, 1.0)
+    fun splitLeft(t: Ratio): Curves = split(Ratio.ZERO, t)
+    fun splitRight(t: Ratio): Curves = split(t, Ratio.ONE)
 
-    fun split(t0: Double, t1: Double): Curves {
+    fun split(t0: Ratio, t1: Ratio): Curves {
         if (t0 > t1) return split(t1, t0)
         check(t0 <= t1)
 
@@ -154,9 +143,9 @@ data class Curves(val beziers: List<Bezier>, val closed: Boolean) : Curve, Extra
                     listOf((info0.curve as Bezier).split(ratioInCurve0, ratioInCurve1).curve)
                 } else {
                     buildList {
-                        if (ratioInCurve0 != 1.0) add((info0.curve as Bezier).splitRight(ratioInCurve0).curve)
+                        if (ratioInCurve0 != Ratio.ONE) add((info0.curve as Bezier).splitRight(ratioInCurve0).curve)
                         for (index in info0.index + 1 until info1.index) add(infos[index].curve)
-                        if (ratioInCurve1 != 0.0) add((info1.curve as Bezier).splitLeft(ratioInCurve1).curve)
+                        if (ratioInCurve1 != Ratio.ZERO) add((info1.curve as Bezier).splitLeft(ratioInCurve1).curve)
                     }
                 }
             }
@@ -174,13 +163,13 @@ fun List<Curve>.toVectorPath(out: VectorPath = VectorPath()): VectorPath {
     fun bezier(bezier: Bezier) {
         val points = bezier.points
         if (first) {
-            out.moveTo(points.firstX, points.firstY)
+            out.moveTo(points.first)
             first = false
         }
         when (bezier.order) {
-            1 -> out.lineTo(points.getX(1), points.getY(1))
-            2 -> out.quadTo(points.getX(1), points.getY(1), points.getX(2), points.getY(2))
-            3 -> out.cubicTo(points.getX(1), points.getY(1), points.getX(2), points.getY(2), points.getX(3), points.getY(3))
+            1 -> out.lineTo(points.get(1))
+            2 -> out.quadTo(points.get(1), points.get(2))
+            3 -> out.cubicTo(points.get(1), points.get(2), points.get(3))
             else -> TODO()
         }
     }
@@ -204,19 +193,17 @@ fun List<Curve>.toVectorPath(out: VectorPath = VectorPath()): VectorPath {
 fun Curves.toNonCurveSimplePointList(out: PointArrayList = PointArrayList()): IPointArrayList? {
     val curves = this
     val beziers = curves.beziers//.flatMap { it.toSimpleList() }.map { it.curve }
-    val epsilon = 0.00001
+    val epsilon = 0.0001f
     beziers.fastForEach { bezier ->
         if (bezier.inflections().isNotEmpty()) return null
         val points = bezier.points
-        points.fastForEach { x, y ->
-            if (out.isEmpty() || (!out.lastX.isAlmostEquals(x, epsilon) || !out.lastY.isAlmostEquals(y, epsilon))) {
-                out.add(x, y)
-            }
+        points.fastForEach { p ->
+            if (out.isEmpty() || !out.last.isAlmostEquals(p, epsilon)) out.add(p)
         }
         //println("bezier=$bezier")
         //out.add(points, 0, points.size - 1)
     }
-    if (out.lastX.isAlmostEquals(out.firstX, epsilon) && out.lastX.isAlmostEquals(out.firstX, epsilon)) {
+    if (out.last.isAlmostEquals(out.first, epsilon)) {
         out.removeAt(out.size - 1)
     }
     return out

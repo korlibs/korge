@@ -244,10 +244,10 @@ data class MLine(override val a: MPoint, override val b: MPoint) : ILine {
     //        (q.y <= max(p.y, r.y)) && (q.y >= min(p.y, r.y)))
 
     companion object {
-        fun fromPointAndDirection(point: IPoint, direction: IPoint, scale: Double = 1.0, out: MLine = MLine()): MLine {
+        fun fromPointAndDirection(point: Point, direction: Point, scale: Double = 1.0, out: MLine = MLine()): MLine {
             return out.setTo(point.x, point.y, point.x + direction.x * scale, point.y + direction.y * scale)
         }
-        fun fromPointAngle(point: IPoint, angle: Angle, length: Double = 1.0, out: MLine = MLine()): MLine =
+        fun fromPointAngle(point: Point, angle: Angle, length: Double = 1.0, out: MLine = MLine()): MLine =
             out.setToPolar(point.x, point.y, angle, length)
 
         fun length(Ax: Double, Ay: Double, Bx: Double, By: Double): Double = kotlin.math.hypot(Bx - Ax, By - Ay)
@@ -350,4 +350,4 @@ fun MLine.Companion.segmentIntersectionPoint(
 // @TODO: Should we create a common interface make projectedPoint part of it? (for ecample to project other kind of shapes)
 // https://math.stackexchange.com/questions/62633/orthogonal-projection-of-a-point-onto-a-line
 // http://www.sunshine2k.de/coding/java/PointOnLine/PointOnLine.html
-fun ILine.projectedPoint(point: IPoint, out: MPoint = MPoint()): MPoint = MLine.projectedPoint(a, b, point, out)
+fun ILine.projectedPoint(point: Point): Point = MLine.projectedPoint(a, b, point, out)

@@ -1694,7 +1694,7 @@ object Poly2Tri {
 
         @JvmName("addHolesListIPointArrayList")
         fun addHoles(polyline: List<IPointArrayList>) {
-            for (p in polyline) addHole(p.map { x, y -> MPoint(x, y) })
+            for (p in polyline) addHole(p.map { MPoint(it.x, it.y) })
         }
 
 

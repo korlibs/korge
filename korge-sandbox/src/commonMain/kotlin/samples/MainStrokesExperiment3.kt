@@ -1,7 +1,6 @@
 package samples
 
 import com.soywiz.kds.doubleArrayListOf
-import com.soywiz.kds.forEachRatio01
 import com.soywiz.kds.getCyclic
 import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.klock.seconds
@@ -27,31 +26,18 @@ import com.soywiz.korim.font.DefaultTtfFont
 import com.soywiz.korim.text.DefaultStringTextRenderer
 import com.soywiz.korim.text.aroundPath
 import com.soywiz.korim.text.text
-import com.soywiz.korma.geom.vector.StrokeInfo
 import com.soywiz.korio.async.launchImmediately
-import com.soywiz.korma.geom.IPointArrayList
-import com.soywiz.korma.geom.PointArrayList
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.bezier.Bezier
 import com.soywiz.korma.geom.bezier.Curves
 import com.soywiz.korma.geom.bezier.StrokePointsMode
 import com.soywiz.korma.geom.bezier.toDashes
 import com.soywiz.korma.geom.bezier.toNonCurveSimplePointList
 import com.soywiz.korma.geom.bezier.toStrokePointsList
-import com.soywiz.korma.geom.fastForEach
-import com.soywiz.korma.geom.fastForEachWithIndex
-import com.soywiz.korma.geom.firstPoint
-import com.soywiz.korma.geom.lastPoint
 import com.soywiz.korma.geom.shape.buildVectorPath
 import com.soywiz.korma.geom.shape.toPolygon
-import com.soywiz.korma.geom.vector.VectorPath
-import com.soywiz.korma.geom.vector.circle
-import com.soywiz.korma.geom.vector.getCurves
-import com.soywiz.korma.geom.vector.line
-import com.soywiz.korma.geom.vector.path
-import com.soywiz.korma.geom.vector.quadTo
-import com.soywiz.korma.geom.vector.star
-import com.soywiz.korma.geom.vector.toCurves
-import com.soywiz.korma.interpolation.Easing
+import com.soywiz.korma.geom.vector.*
+import com.soywiz.korma.interpolation.*
 
 class MainStrokesExperiment3 : Scene() {
     override suspend fun SContainer.sceneMain() {
@@ -70,14 +56,14 @@ class MainStrokesExperiment3 : Scene() {
 
             fill(Colors.PURPLE) {
                 var n = 0
-                points?.fastForEach { x, y ->
-                    circle(x, y, 5.0)
+                points?.fastForEach {
+                    circle(it, 5.0)
                 }
             }
             fill(Colors.WHITE) {
                 var n = 0
-                points?.fastForEach { x, y ->
-                    text("${n++}", DefaultTtfFont, x = x + 2.0, y = y - 5.0)
+                points?.fastForEach {
+                    text("${n++}", DefaultTtfFont, x = it.x + 2.0, y = it.y - 5.0)
                 }
             }
         }
@@ -129,28 +115,24 @@ class MainStrokesExperiment2 : Scene() {
             down(Key.RIGHT) { strokeWidth *= 1.1 }
         }
 
-        var startX = 100.0
-        var startY = 300.0
+        var startPos = Point(100.0, 300.0)
 
-        var endX = 200.0
-        var endY = 300.0
+        var endPos = Point(200.0, 300.0)
 
         launchImmediately {
             while (true) {
                 if (alternate) {
-                    startX = this@MainStrokesExperiment2.stage.mouseX
-                    startY = this@MainStrokesExperiment2.stage.mouseY
+                    startPos = this@MainStrokesExperiment2.stage.mousePos
                 } else {
-                    endX = this@MainStrokesExperiment2.stage.mouseX
-                    endY = this@MainStrokesExperiment2.stage.mouseY
+                    endPos = this@MainStrokesExperiment2.stage.mousePos
                 }
 
                 val path = buildVectorPath {
-                    moveTo(startX, startY)
+                    moveTo(startPos)
                     quadTo(100, 600, 300, 400)
                     when {
-                        quad -> quadTo(endX - 50, endY - 50, endX, endY)
-                        else -> lineTo(endX, endY)
+                        quad -> quadTo(endPos - Point(50, 50), endPos)
+                        else -> lineTo(endPos)
                     }
                     if (closed) this.close()
                 }
@@ -187,10 +169,10 @@ class MainStrokesExperiment2 : Scene() {
                         }
 
                         val debugPointColors = listOf(Colors.RED, Colors.PURPLE, Colors.MAGENTA)
-                        pointsInfo.debugPoints.fastForEachWithIndex { index, x, y ->
+                        pointsInfo.debugPoints.fastForEachWithIndex { index, p ->
                             val color = debugPointColors.getCyclic(index)
                             fill(color.withAd(0.5)) {
-                                this.circle(x, y, 3.0)
+                                this.circle(p, 3.0)
                             }
                         }
                     }
@@ -201,9 +183,9 @@ class MainStrokesExperiment2 : Scene() {
                             it.add(bc.points.firstPoint())
                             it.add(bc.points.lastPoint())
                         }
-                    }.fastForEach { x, y ->
+                    }.fastForEach {
                         fill(Colors.RED.withAd(0.5)) {
-                            this.circle(x, y, 2.0)
+                            this.circle(it, 2.0)
                         }
                     }
 
@@ -279,8 +261,8 @@ class MainStrokesExperiment : Scene() {
         val circle = circle(16.0, Colors.PURPLE).centered
         launchImmediately {
             while (true) {
-                circle.tween(circle::ipos.get(path, includeLastPoint = true, reversed = false), time = 5.seconds, easing = Easing.LINEAR)
-                circle.tween(circle::ipos.get(path, includeLastPoint = true, reversed = true), time = 5.seconds, easing = Easing.LINEAR)
+                circle.tween(circle::pos.get(path, includeLastPoint = true, reversed = false), time = 5.seconds, easing = Easing.LINEAR)
+                circle.tween(circle::pos.get(path, includeLastPoint = true, reversed = true), time = 5.seconds, easing = Easing.LINEAR)
             }
         }
 
@@ -294,8 +276,8 @@ class MainStrokesExperiment : Scene() {
                 //    }
                 //}
                 stroke(Colors.GREEN, StrokeInfo(thickness = 2.0)) {
-                    forEachRatio01(200) { ratio ->
-                        val t = curves.ratioFromLength(ratio * curves.length)
+                    Ratio.forEachRatio(200) { ratio ->
+                        val t = curves.ratioFromLength(ratio.valueD * curves.length)
                         //println("t=$t")
                         val p = curves.calc(t)
                         val n = curves.normal(t)

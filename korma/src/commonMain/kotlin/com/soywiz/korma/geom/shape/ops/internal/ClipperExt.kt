@@ -1,10 +1,7 @@
 package com.soywiz.korma.geom.shape.ops.internal
 
-import com.soywiz.korma.geom.IPoint
-import com.soywiz.korma.geom.IPointArrayList
-import com.soywiz.korma.geom.PointArrayList
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.shape.*
-import com.soywiz.korma.geom.toPoints
 import com.soywiz.korma.geom.vector.LineCap
 import com.soywiz.korma.geom.vector.LineJoin
 import com.soywiz.korma.geom.vector.VectorPath
@@ -45,7 +42,7 @@ fun Paths.toShape2d(): Shape2d {
     }
 }
 
-fun IPointArrayList.toClipperPath() = Path(toPoints())
+fun IPointArrayList.toClipperPath() = Path(toIPoints())
 fun List<IPointArrayList>.toClipperPaths() = Paths(this.map { it.toClipperPath() })
 fun VectorPath.toClipperPaths() = this.toPathPointList().toClipperPaths()
 

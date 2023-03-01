@@ -1,9 +1,7 @@
 package com.soywiz.korma.random
 
 import com.soywiz.korma.geom.*
-import com.soywiz.korma.interpolation.Interpolable
-import com.soywiz.korma.interpolation.MutableInterpolable
-import com.soywiz.korma.interpolation.interpolate
+import com.soywiz.korma.interpolation.*
 import kotlin.math.pow
 import kotlin.random.Random
 
@@ -29,10 +27,10 @@ operator fun Random.get(min: Int, max: Int): Int = min + nextInt(max - min)
 operator fun Random.get(range: IntRange): Int = range.start + this.nextInt(range.endInclusive - range.start + 1)
 operator fun Random.get(range: LongRange): Long = range.start + this.nextLong() % (range.endInclusive - range.start + 1)
 operator fun <T : Interpolable<T>> Random.get(l: T, r: T): T = (this.nextDoubleInclusive()).interpolate(l, r)
-operator fun Random.get(l: Angle, r: Angle): Angle = this.nextDoubleInclusive().interpolateAngleDenormalized(l, r)
+operator fun Random.get(l: Angle, r: Angle): Angle = this.nextDoubleInclusive().toRatio().interpolateAngleDenormalized(l, r)
 operator fun <T> Random.get(list: List<T>): T = list[this[list.indices]]
 operator fun Random.get(rectangle: MRectangle): IPoint = IPoint(this[rectangle.left, rectangle.right], this[rectangle.top, rectangle.bottom])
-fun <T : MutableInterpolable<T>> T.setToRandom(min: T, max: T, random: Random = Random) { this.setToInterpolated(random.nextDouble(), min, max) }
+fun <T : MutableInterpolable<T>> T.setToRandom(min: T, max: T, random: Random = Random) { this.setToInterpolated(random.nextDouble().toRatio(), min, max) }
 
 fun <T> Random.weighted(weights: Map<T, Double>): T = shuffledWeighted(weights).first()
 fun <T> Random.weighted(weights: RandomWeights<T>): T = shuffledWeighted(weights).first()

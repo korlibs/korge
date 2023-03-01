@@ -250,7 +250,7 @@ data class MatrixTransform(
             return MatrixTransform(tx, ty, tscaleX, tscaleY, tskewX, tskewY, trotation)
         }
 
-        fun interpolated(l: MatrixTransform, r: MatrixTransform, ratio: Double): MatrixTransform = MatrixTransform(
+        fun interpolated(l: MatrixTransform, r: MatrixTransform, ratio: Ratio): MatrixTransform = MatrixTransform(
             ratio.interpolate(l.x, r.x),
             ratio.interpolate(l.y, r.y),
             ratio.interpolate(l.scaleX, r.scaleX),
@@ -701,6 +701,13 @@ data class MMatrix(
         var rotation: Angle = 0.radians
     ) : MutableInterpolable<Transform>, Interpolable<Transform> {
 
+        var scale: Scale
+            get() = Scale(scaleX, scaleY)
+            set(value) {
+                scaleX = value.scaleX.toDouble()
+                scaleY = value.scaleY.toDouble()
+            }
+
         var scaleAvg: Double
             get() = (scaleX + scaleY) * 0.5
             set(value) {
@@ -708,9 +715,9 @@ data class MMatrix(
                 scaleY = value
             }
 
-        override fun interpolateWith(ratio: Double, other: Transform): Transform = Transform().setToInterpolated(ratio, this, other)
+        override fun interpolateWith(ratio: Ratio, other: Transform): Transform = Transform().setToInterpolated(ratio, this, other)
 
-        override fun setToInterpolated(ratio: Double, l: Transform, r: Transform): Transform = this.setTo(
+        override fun setToInterpolated(ratio: Ratio, l: Transform, r: Transform): Transform = this.setTo(
             ratio.interpolate(l.x, r.x),
             ratio.interpolate(l.y, r.y),
             ratio.interpolate(l.scaleX, r.scaleX),
@@ -827,7 +834,7 @@ data class MMatrix(
         constructor(transform: Transform) : this(transform.toMatrix(), transform)
     }
 
-    override fun setToInterpolated(ratio: Double, l: MMatrix, r: MMatrix) = this.setTo(
+    override fun setToInterpolated(ratio: Ratio, l: MMatrix, r: MMatrix) = this.setTo(
         a = ratio.interpolate(l.a, r.a),
         b = ratio.interpolate(l.b, r.b),
         c = ratio.interpolate(l.c, r.c),
@@ -836,7 +843,7 @@ data class MMatrix(
         ty = ratio.interpolate(l.ty, r.ty)
     )
 
-    override fun interpolateWith(ratio: Double, other: MMatrix): MMatrix =
+    override fun interpolateWith(ratio: Ratio, other: MMatrix): MMatrix =
         MMatrix().setToInterpolated(ratio, this, other)
 
     inline fun <T> keepMatrix(callback: (MMatrix) -> T): T {

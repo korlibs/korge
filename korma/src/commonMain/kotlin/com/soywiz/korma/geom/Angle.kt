@@ -147,7 +147,9 @@ inline class Angle private constructor(
         inline fun sin01(ratio: Double) = kotlin.math.sin(PI2 * ratio)
         inline fun tan01(ratio: Double) = kotlin.math.tan(PI2 * ratio)
 
+        inline fun atan2(x: Float, y: Float): Angle = fromRadians(kotlin.math.atan2(x, y))
         inline fun atan2(x: Double, y: Double): Angle = fromRadians(kotlin.math.atan2(x, y))
+        inline fun atan2(p: Point): Angle = atan2(p.x, p.y)
         inline fun atan2(p: IPoint): Angle = atan2(p.x, p.y)
 
         inline fun ratioToDegrees(ratio: Double): Double = ratio * 360.0
@@ -204,13 +206,12 @@ val Int.radians: Angle get() = Angle.fromRadians(this)
 val Float.degrees: Angle get() = Angle.fromDegrees(this)
 val Float.radians: Angle get() = Angle.fromRadians(this)
 
-fun Double.interpolateAngle(l: Angle, r: Angle): Angle = interpolateAngle(l, r, minimizeAngle = true)
-fun Double.interpolateAngleNormalized(l: Angle, r: Angle): Angle = interpolateAngle(l, r, minimizeAngle = true)
-fun Double.interpolateAngleDenormalized(l: Angle, r: Angle): Angle = interpolateAngle(l, r, minimizeAngle = false)
+fun Ratio.interpolateAngle(l: Angle, r: Angle): Angle = interpolateAngle(l, r, minimizeAngle = true)
+fun Ratio.interpolateAngleNormalized(l: Angle, r: Angle): Angle = interpolateAngle(l, r, minimizeAngle = true)
+fun Ratio.interpolateAngleDenormalized(l: Angle, r: Angle): Angle = interpolateAngle(l, r, minimizeAngle = false)
+fun Ratio.interpolateAngle(l: Angle, r: Angle, minimizeAngle: Boolean): Angle = _interpolateAngleAny(this, l, r, minimizeAngle)
 
-fun Double.interpolateAngle(l: Angle, r: Angle, minimizeAngle: Boolean): Angle = _interpolateAngleAny(this, l, r, minimizeAngle)
-
-private fun _interpolateAngleAny(ratio: Double, l: Angle, r: Angle, minimizeAngle: Boolean = true): Angle {
+private fun _interpolateAngleAny(ratio: Ratio, l: Angle, r: Angle, minimizeAngle: Boolean = true): Angle {
     if (!minimizeAngle) return Angle.fromRatio(ratio.interpolate(l.ratio, r.ratio))
     val ln = l.normalized
     val rn = r.normalized

@@ -4,11 +4,7 @@ import com.soywiz.klogger.*
 import com.soywiz.korge.tests.ViewsForTesting
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.color.Colors
-import com.soywiz.korma.geom.Anchor
-import com.soywiz.korma.geom.MPoint
-import com.soywiz.korma.geom.MRectangle
-import com.soywiz.korma.geom.ScaleMode
-import com.soywiz.korma.geom.MSizeInt
+import com.soywiz.korma.geom.*
 import kotlin.math.absoluteValue
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -51,7 +47,7 @@ class Views2Test : ViewsForTesting(
             centerOnStage()
         }
         logger.info { str() }
-        assertEquals(MPoint((virtualSize.width - RECT_WIDTH) / 2, (virtualSize.height - RECT_HEIGHT) / 2), rect.ipos)
+        assertEquals(Point((virtualSize.width - RECT_WIDTH) / 2, (virtualSize.height - RECT_HEIGHT) / 2), rect.pos)
     }
 
     @Test

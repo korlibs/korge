@@ -3,27 +3,23 @@ package com.soywiz.korma.geom
 enum class Orientation(val value: Int) {
     CLOCK_WISE(+1), COUNTER_CLOCK_WISE(-1), COLLINEAR(0);
 
+    operator fun unaryMinus(): Orientation = when (this) {
+        CLOCK_WISE -> COUNTER_CLOCK_WISE
+        COUNTER_CLOCK_WISE -> CLOCK_WISE
+        COLLINEAR -> COLLINEAR
+    }
+
     companion object {
         private const val EPSILON: Double = 1e-12
 
-        fun orient2d(pa: IPoint, pb: IPoint, pc: IPoint): Orientation = orient2d(pa.x, pa.y, pb.x, pb.y, pc.x, pc.y)
+        fun orient2d(pa: IPoint, pb: IPoint, pc: IPoint): Orientation = orient2d(pa.point, pb.point, pc.point)
 
-        fun orient2d(paX: Double, paY: Double, pbX: Double, pbY: Double, pcX: Double, pcY: Double): Orientation {
-            val detleft: Double = (paX - pcX) * (pbY - pcY)
-            val detright: Double = (paY - pcY) * (pbX - pcX)
-            val v: Double = detleft - detright
+        fun orient2d(pa: Point, pb: Point, pc: Point): Orientation = -orient2dFixed(pa, pb, pc)
 
-            return when {
-                (v > -EPSILON) && (v < EPSILON) -> COLLINEAR
-                v > 0 -> COUNTER_CLOCK_WISE
-                else -> CLOCK_WISE
-            }
-        }
-
-        fun orient2dFixed(paX: Double, paY: Double, pbX: Double, pbY: Double, pcX: Double, pcY: Double): Orientation {
-            val detleft: Double = (paX - pcX) * (pbY - pcY)
-            val detright: Double = (paY - pcY) * (pbX - pcX)
-            val v: Double = detleft - detright
+        fun orient2dFixed(pa: Point, pb: Point, pc: Point): Orientation {
+            val detleft: Float = (pa.x - pc.x) * (pb.y - pc.y)
+            val detright: Float = (pa.y - pc.y) * (pb.x - pc.x)
+            val v: Float = detleft - detright
 
             return when {
                 (v > -EPSILON) && (v < EPSILON) -> COLLINEAR

@@ -49,15 +49,7 @@ open class Stage internal constructor(override val views: Views) : FixedSizeCont
         gameWindow.runBlockingNoJs(this.coroutineContext, block)
 
     /** Mouse coordinates relative to the [Stage] singleton */
-    val mouseXY: MPoint = MPoint(0.0, 0.0)
-        get() {
-            field.setTo(mouseX, mouseY)
-            return field
-        }
-    /** Mouse X coordinate relative to the [Stage] singleton */
-    val mouseX get() = localMouseX(views)
-    /** Mouse Y coordinate relative to the [Stage] singleton */
-    val mouseY get() = localMouseY(views)
+    val mousePos: Point = localMouse(views)
 
     //override fun getLocalBoundsInternal(out: Rectangle) {
     //    out.setTo(0.0, 0.0, views.virtualWidth, views.virtualHeight)
@@ -79,11 +71,11 @@ open class Stage internal constructor(override val views: Views) : FixedSizeCont
 
     @Suppress("unused")
     @ViewProperty(min = 0.0, max = 2000.0, groupName = "Stage")
-    private var virtualSize: IPoint
-        get() = MPoint(views.virtualWidthDouble, views.virtualHeightDouble)
+    private var virtualSize: Size
+        get() = Size(views.virtualWidthDouble, views.virtualHeightDouble)
         set(value) {
-            views.virtualWidthDouble = value.x
-            views.virtualHeightDouble = value.y
+            views.virtualWidthDouble = value.widthD
+            views.virtualHeightDouble = value.heightD
             views.gameWindow.queue {
                 views.resized()
             }

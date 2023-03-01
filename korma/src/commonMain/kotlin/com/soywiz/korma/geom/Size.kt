@@ -3,9 +3,7 @@ package com.soywiz.korma.geom
 import com.soywiz.kds.pack.*
 import com.soywiz.korma.annotations.*
 import com.soywiz.korma.internal.niceStr
-import com.soywiz.korma.interpolation.Interpolable
-import com.soywiz.korma.interpolation.MutableInterpolable
-import com.soywiz.korma.interpolation.interpolate
+import com.soywiz.korma.interpolation.*
 import kotlin.math.max
 import kotlin.math.min
 
@@ -109,9 +107,9 @@ inline class MSize(val p: MPoint) : MutableInterpolable<MSize>, Interpolable<MSi
 
     fun clone() = MSize(width, height)
 
-    override fun interpolateWith(ratio: Double, other: MSize): MSize = MSize(0, 0).setToInterpolated(ratio, this, other)
+    override fun interpolateWith(ratio: Ratio, other: MSize): MSize = MSize(0, 0).setToInterpolated(ratio, this, other)
 
-    override fun setToInterpolated(ratio: Double, l: MSize, r: MSize): MSize = this.setTo(
+    override fun setToInterpolated(ratio: Ratio, l: MSize, r: MSize): MSize = this.setTo(
         ratio.interpolate(l.width, r.width),
         ratio.interpolate(l.height, r.height)
     )

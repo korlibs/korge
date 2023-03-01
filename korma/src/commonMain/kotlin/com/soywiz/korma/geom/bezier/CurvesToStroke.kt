@@ -27,18 +27,18 @@ interface StrokePoints {
     val debugSegments: List<MLine>
     val mode: StrokePointsMode
 
-    fun scale(scale: Double) {
+    fun scale(scale: Float) {
         if (mode == StrokePointsMode.SCALABLE_POS_NORMAL_WIDTH) {
             vector.fastForEachGeneric {
-                this.set(it, 4, this.get(it, 4) * scale)
-                this.set(it, 5, this.get(it, 5) * scale)
+                this.set(it, 4, this[it, 4] * scale)
+                this.set(it, 5, this[it, 5] * scale)
             }
         }
     }
 }
 
 class StrokePointsBuilder(
-    val width: Double,
+    val width: Float,
     override val mode: StrokePointsMode = StrokePointsMode.NON_SCALABLE_POS,
     val generateDebug: Boolean = false
 ) : StrokePoints {
@@ -54,7 +54,7 @@ class StrokePointsBuilder(
 
     override fun toString(): String = "StrokePointsBuilder($width, $vector)"
 
-    fun addPoint(pos: IPoint, normal: IPoint, width: Double, maxWidth: Double = width) {
+    fun addPoint(pos: Point, normal: Point, width: Float, maxWidth: Float = width) {
         //if (!pos.x.isFinite() || !normal.x.isFinite()) TODO("NaN detected pos=$pos, normal=$normal, width=$width, maxWidth=$maxWidth")
         when (mode) {
             StrokePointsMode.SCALABLE_POS_NORMAL_WIDTH -> vector.add(pos.x, pos.y, normal.x, normal.y, width, maxWidth.absoluteValue)
@@ -62,24 +62,24 @@ class StrokePointsBuilder(
         }
     }
 
-    fun addPointRelative(center: IPoint, pos: IPoint, sign: Double = 1.0) {
+    fun addPointRelative(center: Point, pos: Point, sign: Float = 1f) {
         val dist = pos - center
-        val normal = if (sign < 0.0) dist.mutable.neg() else dist
+        val normal = if (sign < 0.0) -dist else dist
         //if (!center.x.isFinite() || !normal.x.isFinite()) TODO("Non finite value detected detected: center=$center, pos=$pos, sign=$sign, dist=$dist, normal=$normal")
         addPoint(center, normal.normalized, dist.length * sign)
     }
 
-    fun addTwoPoints(pos: IPoint, normal: IPoint, width: Double) {
+    fun addTwoPoints(pos: Point, normal: Point, width: Float) {
         addPoint(pos, normal, width)
         addPoint(pos, normal, -width)
     }
 
     fun addJoin(curr: Curve, next: Curve, kind: LineJoin, miterLimitRatio: Double) {
-        val commonPoint = curr.calc(1.0)
-        val currTangent = curr.tangent(1.0)
-        val currNormal = curr.normal(1.0)
-        val nextTangent = next.tangent(0.0)
-        val nextNormal = next.normal(0.0)
+        val commonPoint = curr.calc(Ratio.ONE)
+        val currTangent = curr.tangent(Ratio.ONE)
+        val currNormal = curr.normal(Ratio.ONE)
+        val nextTangent = next.tangent(Ratio.ZERO)
+        val nextNormal = next.normal(Ratio.ZERO)
 
         val currLine0 = MLine.fromPointAndDirection(commonPoint + currNormal * width, currTangent)
         val currLine1 = MLine.fromPointAndDirection(commonPoint + currNormal * -width, currTangent)
@@ -89,8 +89,8 @@ class StrokePointsBuilder(
 
         //if (!nextLine1.dx.isFinite()) println((next as Bezier).roundDecimalPlaces(2))
 
-        val intersection0 = MLine.lineIntersectionPoint(currLine0, nextLine0)
-        val intersection1 = MLine.lineIntersectionPoint(currLine1, nextLine1)
+        val intersection0: MPoint? = MLine.lineIntersectionPoint(currLine0, nextLine0)
+        val intersection1: MPoint? = MLine.lineIntersectionPoint(currLine1, nextLine1)
         if (intersection0 == null || intersection1 == null) { // || !intersection0.x.isFinite() || !intersection1.x.isFinite()) {
             //println("currTangent=$currTangent, nextTangent=$nextTangent")
             //val signChanged = currTangent.x.sign != nextTangent.x.sign || currTangent.y.sign != nextTangent.y.sign
@@ -99,8 +99,8 @@ class StrokePointsBuilder(
             return
         }
 
-        val direction = MPoint.crossProduct(currTangent, nextTangent)
-        val miterLength = MPoint.distance(intersection0, intersection1)
+        val direction = Point.crossProduct(currTangent, nextTangent)
+        val miterLength = Point.distance(intersection0.point, intersection1.point)
         val miterLimit = miterLimitRatio * width
 
 
@@ -134,17 +134,17 @@ class StrokePointsBuilder(
             }
 
             val p4Line = if (direction < 0.0) nextLine1 else nextLine0
-            val p4 = p4Line.projectedPoint(commonPoint)
+            val p4: Point = p4Line.projectedPoint(commonPoint)
             //val p5 = Line.fromPointAndDirection(commonPoint, currTangent).getLineIntersectionPoint(p4Line)
             if (p3 == null) {
-                p3 = p4
+                p3 = p4.mutable
             }
 
             val angleB = (angle + 180.degrees).absoluteValue
             val angle2 = (angle umod 180.degrees).absoluteValue
             val angle3 = if (angle2 >= 90.degrees) 180.degrees - angle2 else angle2
-            val ratio = (angle3.ratio.absoluteValue * 4).clamp(0.0, 1.0)
-            val p5 = ratio.interpolate(p4, p3!!.mutable)
+            val ratio = (angle3.ratio.absoluteValue * 4).toRatio().clamped
+            val p5 = ratio.interpolate(p4, p3.point)
 
             //val p5 = p3
 
@@ -171,14 +171,14 @@ class StrokePointsBuilder(
 
             if (direction < 0.0) {
                 addPointRelative(commonPoint, p1)
-                addPointRelative(commonPoint, p6, -1.0)
+                addPointRelative(commonPoint, p6, -1f)
                 addPointRelative(commonPoint, p2)
-                addPointRelative(commonPoint, p6, -1.0)
+                addPointRelative(commonPoint, p6, -1f)
             } else {
                 addPointRelative(commonPoint, p6)
-                addPointRelative(commonPoint, p2, -1.0)
+                addPointRelative(commonPoint, p2, -1f)
                 addPointRelative(commonPoint, p6)
-                addPointRelative(commonPoint, p1, -1.0)
+                addPointRelative(commonPoint, p1, -1f)
             }
             //addPoint(p1, Point(0, 0), 0.0)
             //addCurvePointsCap(p2, p1, 0.5)
@@ -187,17 +187,17 @@ class StrokePointsBuilder(
         }
 
         //if (false) {
-        val d0 = intersection0 - commonPoint
-        val d1 = commonPoint - intersection1
+        val d0 = intersection0.point - commonPoint
+        val d1 = commonPoint - intersection1.point
 
         addPoint(commonPoint, d0.normalized, d0.length, d0.length.absoluteValue)
         addPoint(commonPoint, d1.normalized, -d1.length, d1.length.absoluteValue)
     }
 
-    fun addCap(curr: Curve, ratio: Double, kind: LineCap) {
+    fun addCap(curr: Curve, ratio: Ratio, kind: LineCap) {
         when (kind) {
             LineCap.SQUARE, LineCap.ROUND -> {
-                val derivate = curr.normal(ratio).setToNormal().also { if (ratio == 1.0) it.neg() }
+                val derivate = curr.normal(ratio).normalized.let { if (ratio == Ratio.ONE) -it else it }
                 when (kind) {
                     LineCap.SQUARE -> {
                         //val w = if (ratio == 1.0) -width else width
@@ -208,8 +208,8 @@ class StrokePointsBuilder(
                         val normal = curr.normal(ratio)
                         val p0 = mid + normal * width
                         val p3 = mid + normal * -width
-                        val a = if (ratio == 0.0) p0 else p3
-                        val b = if (ratio == 0.0) p3 else p0
+                        val a = if (ratio == Ratio.ZERO) p0 else p3
+                        val b = if (ratio == Ratio.ZERO) p3 else p0
                         addCurvePointsCap(a, b, ratio, mid)
                     }
                     else -> error("Can't happen")
@@ -221,25 +221,25 @@ class StrokePointsBuilder(
         }
     }
 
-    fun addCurvePointsCap(p0: IPoint, p3: IPoint, ratio: Double, mid: IPoint = MPoint.middle(p0, p3), nsteps: Int = NSTEPS) {
+    fun addCurvePointsCap(p0: Point, p3: Point, ratio: Ratio, mid: Point = Point.middle(p0, p3), nsteps: Int = NSTEPS) {
         val angleStart = Angle.between(mid, p0)
         val angleEnd = Angle.between(mid, p3)
 
-        if (ratio == 1.0) addTwoPoints(mid, MPoint.fromPolar(angleEnd), width)
-        val addAngle = if (MPoint.crossProduct(p0, p3) <= 0.0) Angle.ZERO else Angle.HALF
-        forEachRatio01(nsteps, include0 = true, include1 = true) {
+        if (ratio == Ratio.ONE) addTwoPoints(mid, Point.fromPolar(angleEnd), width)
+        val addAngle = if (Point.crossProduct(p0, p3) <= 0.0) Angle.ZERO else Angle.HALF
+        Ratio.forEachRatio(nsteps, include0 = true, include1 = true) {
             val angle = it.interpolateAngleDenormalized(angleStart, angleEnd)
-            val dir = MPoint.fromPolar(angle + addAngle)
-            addPoint(mid, dir, 0.0, width)
+            val dir = Point.fromPolar(angle + addAngle)
+            addPoint(mid, dir, 0f, width)
             addPoint(mid, dir, width, width)
         }
-        if (ratio == 0.0) addTwoPoints(mid, MPoint.fromPolar(angleStart), width)
+        if (ratio == Ratio.ZERO) addTwoPoints(mid, Point.fromPolar(angleStart), width)
     }
 
     // @TODO: instead of nsteps we should have some kind of threshold regarding to how much information do we lose at 1:1 scale
     fun addCurvePoints(curr: Curve, nsteps: Int = (curr.length / 10.0).clamp(10.0, 100.0).toInt()) {
         // @TODO: Here we could generate curve information to render in the shader with a plain simple quadratic bezier to reduce the number of points and make the curve as accurate as possible
-        forEachRatio01(nsteps, include0 = false, include1 = false) {
+        Ratio.forEachRatio(nsteps, include0 = false, include1 = false) {
             addTwoPoints(curr.calc(it), curr.normal(it), width)
         }
     }
@@ -263,7 +263,7 @@ class StrokePointsBuilder(
                 if (closed) {
                     addJoin(curves.getCyclic(n - 1), curr, join, miterLimit)
                 } else {
-                    addCap(curr, 0.0, startCap)
+                    addCap(curr, Ratio.ZERO, startCap)
                 }
             }
 
@@ -282,7 +282,7 @@ class StrokePointsBuilder(
                 if (closed) {
                     addJoin(curr, next, join, miterLimit)
                 } else {
-                    addCap(curr, 1.0, endCap)
+                    addCap(curr, Ratio.ONE, endCap)
                 }
             }
         }
@@ -309,7 +309,7 @@ fun List<Curves>.toStrokePointsList(
     generateDebug: Boolean = false,
     forceClosed: Boolean? = null,
 ): List<StrokePoints> = toStrokePointsList(
-    width = info.thickness,
+    width = info.thickness.toFloat(),
     join = info.join,
     startCap = info.startCap,
     endCap = info.endCap,
@@ -323,7 +323,7 @@ fun List<Curves>.toStrokePointsList(
 
 /** Useful for drawing */
 fun Curves.toStrokePointsList(
-    width: Double,
+    width: Float,
     join: LineJoin = LineJoin.MITER,
     startCap: LineCap = LineCap.BUTT,
     endCap: LineCap = LineCap.BUTT,
@@ -336,7 +336,7 @@ fun Curves.toStrokePointsList(
     listOf(this).toStrokePointsList(width, join, startCap, endCap, miterLimit, mode, lineDash, lineDashOffset, generateDebug)
 
 fun List<Curves>.toStrokePointsList(
-    width: Double,
+    width: Float,
     join: LineJoin = LineJoin.MITER,
     startCap: LineCap = LineCap.BUTT,
     endCap: LineCap = LineCap.BUTT,
@@ -351,7 +351,7 @@ fun List<Curves>.toStrokePointsList(
         lineDash != null -> this.flatMap { it.toDashes(lineDash.toDoubleArray(), lineDashOffset) }
         else -> this
     }
-    return curvesList.map { curves -> StrokePointsBuilder(width / 2.0, mode, generateDebug).also {
+    return curvesList.map { curves -> StrokePointsBuilder(width / 2f, mode, generateDebug).also {
         it.addAllCurvesPoints(curves, join, startCap, endCap, miterLimit, forceClosed)
     } }
 }

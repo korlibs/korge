@@ -164,6 +164,18 @@ inline operator fun KMutableProperty0<IPoint>.get(path: VectorPath, includeLastP
     }
 }]
 
+inline operator fun KMutableProperty0<Point>.get(path: VectorPath, includeLastPoint: Boolean = path.isLastCommandClose, reversed: Boolean = false): V2<Point> = this[path.getCurves().getEquidistantPoints().also {
+    //println("points.lastX=${points.lastX}, points.firstX=${points.firstX}")
+    //println("points.lastY=${points.lastY}, points.firstY=${points.firstY}")
+    if (!includeLastPoint && it.lastX.isAlmostEquals(it.firstX) && it.lastY.isAlmostEquals(it.firstY)) {
+        (it as PointArrayList).removeAt(it.size - 1)
+        //println("REMOVED LAST POINT!")
+    }
+    if (reversed) {
+        (it as PointArrayList).reverse()
+    }
+}]
+
 inline operator fun KMutableProperty0<IPoint>.get(range: IPointArrayList): V2<IPoint> {
     val temp = MPoint()
     return V2(
@@ -176,6 +188,16 @@ inline operator fun KMutableProperty0<IPoint>.get(range: IPointArrayList): V2<IP
                 sratio.interpolate(range.getX(index), range.getX(index1)),
                 sratio.interpolate(range.getY(index), range.getY(index1))
             )
+        }, includeStart = false
+    )
+}
+inline operator fun KMutableProperty0<Point>.get(range: IPointArrayList): V2<Point> {
+    return V2(
+        this, Point(), Point(), { ratio, _, _ ->
+            val ratioIndex = ratio * (range.size - 1)
+            val index = ratioIndex.toIntFloor()
+            val index1 = (index + 1).coerceAtMost(range.size)
+            fract(ratioIndex).interpolate(range.get(index), range.get(index1))
         }, includeStart = false
     )
 }

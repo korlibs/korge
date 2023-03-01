@@ -43,6 +43,7 @@ abstract class Shape2d {
     abstract val paths: List<IPointArrayList>
     abstract val closed: Boolean
     abstract fun containsPoint(x: Double, y: Double): Boolean
+    fun containsPoint(p: Point): Boolean = containsPoint(p.xD, p.yD)
     fun containsPoint(x: Double, y: Double, mat: MMatrix) = containsPoint(mat.transformX(x, y), mat.transformY(x, y))
     open fun getBounds(out: MRectangle = MRectangle()): MRectangle {
         var minx = Double.POSITIVE_INFINITY
@@ -50,17 +51,17 @@ abstract class Shape2d {
         var maxx = Double.NEGATIVE_INFINITY
         var maxy = Double.NEGATIVE_INFINITY
         paths.fastForEach { path ->
-            path.fastForEach { x, y ->
-                minx = min(minx, x)
-                miny = min(miny, y)
-                maxx = max(maxx, x)
-                maxy = max(maxy, y)
+            path.fastForEach {
+                minx = min(minx, it.xD)
+                miny = min(miny, it.yD)
+                maxx = max(maxx, it.xD)
+                maxy = max(maxy, it.yD)
             }
         }
         return out.setBounds(minx, miny, maxx, maxy)
     }
 
-    open val center: IPoint get() = getBounds().center
+    open val center: Point get() = getBounds().center
 
     companion object {
         fun intersects(l: Shape2d, ml: MMatrix?, r: Shape2d, mr: MMatrix?, tempMatrix: MMatrix? = MMatrix()): Boolean {
@@ -85,16 +86,14 @@ abstract class Shape2d {
                 if (ml != null) tempMatrix.premultiply(ml)
 
                 l.paths.fastForEach {
-                    it.fastForEach { x, y ->
-                        val tx = tempMatrix.transformX(x, y)
-                        val ty = tempMatrix.transformY(x, y)
-                        if (r.containsPoint(tx, ty)) return true
+                    it.fastForEach {
+                        if (r.containsPoint(tempMatrix.transform(it))) return true
                     }
                 }
             } else {
                 l.paths.fastForEach {
-                    it.fastForEach { x, y ->
-                        if (r.containsPoint(x, y)) return true
+                    it.fastForEach {
+                        if (r.containsPoint(it)) return true
                     }
                 }
             }
@@ -192,7 +191,7 @@ abstract class Shape2d {
         }
     }
     data class Circle(val x: Double, val y: Double, override val radius: Double, val totalPoints: Int = 32) : BaseEllipse(x, y, radius, radius, Angle.ZERO, totalPoints), ICircle {
-        override val center: IPoint = IPoint(x, y)
+        override val center: Point = Point(x, y)
         companion object {
             operator fun invoke(x: Float, y: Float, radius: Float, totalPoints: Int = 32) = Circle(x.toDouble(), y.toDouble(), radius.toDouble(), totalPoints)
             operator fun invoke(x: Int, y: Int, radius: Int, totalPoints: Int = 32) = Circle(x.toDouble(), y.toDouble(), radius.toDouble(), totalPoints)
@@ -215,7 +214,7 @@ abstract class Shape2d {
         override val paths = listOf(PointArrayList(4) { add(x, y).add(x + width, y).add(x + width, y + height).add(x, y + height) })
         override val closed: Boolean = true
         override val area: Double get() = width * height
-        override val center: IPoint get() = super<IRectangle>.center
+        override val center: Point get() = super<IRectangle>.center
 
         override fun containsPoint(x: Double, y: Double) = (x in this.left..this.right) && (y in this.top..this.bottom)
         override fun toString(): String =

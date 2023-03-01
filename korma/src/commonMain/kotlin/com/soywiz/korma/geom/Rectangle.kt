@@ -4,9 +4,7 @@ import com.soywiz.kds.*
 import com.soywiz.kmem.*
 import com.soywiz.korma.annotations.*
 import com.soywiz.korma.internal.niceStr
-import com.soywiz.korma.interpolation.Interpolable
-import com.soywiz.korma.interpolation.MutableInterpolable
-import com.soywiz.korma.interpolation.interpolate
+import com.soywiz.korma.interpolation.*
 import com.soywiz.korma.math.*
 import kotlin.math.max
 import kotlin.math.min
@@ -216,14 +214,14 @@ interface IRectangle {
     val right get() = x + width
     val bottom get() = y + height
 
-    val topLeft get() = MPoint(left, top)
-    val topRight get() = MPoint(right, top)
-    val bottomLeft get() = MPoint(left, bottom)
-    val bottomRight get() = MPoint(right, bottom)
+    val topLeft: Point get() = Point(left, top)
+    val topRight: Point get() = Point(right, top)
+    val bottomLeft: Point get() = Point(left, bottom)
+    val bottomRight: Point get() = Point(right, bottom)
 
     val centerX: Double get() = (right + left) * 0.5
     val centerY: Double get() = (bottom + top) * 0.5
-    val center: IPoint get() = MPoint(centerX, centerY)
+    val center: Point get() = Point(centerX, centerY)
 
     /**
      * Circle that touches or contains all the corners ([topLeft], [topRight], [bottomLeft], [bottomRight]) of the rectangle.
@@ -231,7 +229,7 @@ interface IRectangle {
     fun outerCircle(): MCircle {
         val centerX = centerX
         val centerY = centerY
-        return MCircle(center, MPoint.distance(centerX, centerY, right, top))
+        return MCircle(center, Point.distance(centerX, centerY, right, top))
     }
 
 
@@ -462,10 +460,10 @@ data class MRectangle(
         && width.isAlmostEquals(other.width)
         && height.isAlmostEquals(other.height)
 
-    override fun interpolateWith(ratio: Double, other: IRectangle): MRectangle =
+    override fun interpolateWith(ratio: Ratio, other: IRectangle): MRectangle =
         MRectangle().setToInterpolated(ratio, this, other)
 
-    override fun setToInterpolated(ratio: Double, l: IRectangle, r: IRectangle): MRectangle =
+    override fun setToInterpolated(ratio: Ratio, l: IRectangle, r: IRectangle): MRectangle =
         this.setTo(
             ratio.interpolate(l.x, r.x),
             ratio.interpolate(l.y, r.y),
@@ -473,13 +471,13 @@ data class MRectangle(
             ratio.interpolate(l.height, r.height)
         )
 
-    fun getMiddlePoint(out: MPoint = MPoint()): MPoint = getAnchoredPosition(Anchor.CENTER, out)
+    fun getMiddlePoint(): Point = getAnchoredPosition(Anchor.CENTER)
 
-    fun getAnchoredPosition(anchor: Anchor, out: MPoint = MPoint()): MPoint =
-        getAnchoredPosition(anchor.sx, anchor.sy, out)
+    fun getAnchoredPosition(anchor: Anchor): Point =
+        getAnchoredPosition(anchor.sxD, anchor.syD)
 
-    fun getAnchoredPosition(anchorX: Double, anchorY: Double, out: MPoint = MPoint()): MPoint =
-        out.setTo(left + width * anchorX, top + height * anchorY)
+    fun getAnchoredPosition(anchorX: Double, anchorY: Double): Point =
+        Point(left + width * anchorX, top + height * anchorY)
 
     fun toInt(): MRectangleInt = MRectangleInt(x.toInt(), y.toInt(), width.toInt(), height.toInt())
     fun floor(): MRectangle = setTo(

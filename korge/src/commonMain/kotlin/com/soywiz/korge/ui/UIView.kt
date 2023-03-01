@@ -38,7 +38,9 @@ open class UIView(
         }
     }
 
-    override fun setSize(width: Double, height: Double) {
+    override fun setSize(size: Size) {
+        val width = size.widthD
+        val height = size.heightD
         if (width == this._width && height == this._height) return
         _width = width
         _height = height

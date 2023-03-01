@@ -5,11 +5,9 @@ package com.soywiz.korma.geom
 import com.soywiz.kds.*
 import com.soywiz.kds.pack.*
 import com.soywiz.korma.internal.niceStr
-import com.soywiz.korma.interpolation.Interpolable
-import com.soywiz.korma.interpolation.MutableInterpolable
-import com.soywiz.korma.interpolation.interpolate
 import com.soywiz.kmem.clamp
 import com.soywiz.korma.annotations.*
+import com.soywiz.korma.interpolation.*
 import com.soywiz.korma.math.isAlmostEquals
 import com.soywiz.korma.math.isAlmostZero
 import com.soywiz.korma.math.roundDecimalPlaces
@@ -23,7 +21,8 @@ typealias MVector2D = MPoint
 // VALUE CLASSES
 //////////////////////////////
 
-fun Point(p: Point): Point = Point(p.raw)
+@Deprecated("", ReplaceWith("p", "com.soywiz.korma.geom.Point"))
+fun Point(p: Point): Point = p
 
 //data class Point(val x: Double, val y: Double) {
 // @JvmInline value
@@ -51,6 +50,11 @@ inline class Point internal constructor(internal val raw: Float2Pack) {
     //operator fun component1(): Double = x
     //operator fun component2(): Double = y
 
+    operator fun component1(): Float = x
+    operator fun component2(): Float = y
+
+    inline operator fun unaryMinus(): Point = Point(-x, -y)
+    inline operator fun unaryPlus(): Point = this
 
     inline operator fun plus(that: Point): Point = Point(x + that.x, y + that.y)
     inline operator fun minus(that: Point): Point = Point(x - that.x, y - that.y)
@@ -101,16 +105,22 @@ inline class Point internal constructor(internal val raw: Float2Pack) {
 
     //fun copy(x: Double = this.x, y: Double = this.y): Point = Point(x, y)
 
-    fun isAlmostEquals(other: Point, epsilon: Float = 0.000001f): Boolean =
+    fun isAlmostEquals(other: Point, epsilon: Float = 0.0001f): Boolean =
         this.x.isAlmostEquals(other.x, epsilon) && this.y.isAlmostEquals(other.y, epsilon)
 
+    val niceStr: String get() = toString()
     override fun toString(): String = "(${x.niceStr}, ${y.niceStr})"
 
     fun isNaN(): Boolean = this.x.isNaN() && this.y.isNaN()
 
+    fun interpolateWith(ratio: Ratio, other: Point): Point = interpolate(this, other, ratio)
+    infix fun compareTo(other: Point): Int = compare(this, other)
+
     companion object {
         val ZERO = Point(0f, 0f)
         val NaN = Point(Float.NaN, Float.NaN)
+
+        fun interpolate(l: Point, r: Point, ratio: Ratio): Point = Point(ratio.interpolate(l.x, r.x), ratio.interpolate(l.y, r.y))
 
         //inline operator fun invoke(x: Int, y: Int): Point = Point(x.toDouble(), y.toDouble())
         //inline operator fun invoke(x: Float, y: Float): Point = Point(x.toDouble(), y.toDouble())
@@ -129,9 +139,9 @@ inline class Point internal constructor(internal val raw: Float2Pack) {
         fun angleArc(a: Point, b: Point): Angle = Angle.fromRadians(acos(a dot b) / (a.length * b.length))
         fun angleFull(a: Point, b: Point): Angle = Angle.between(a, b)
 
-        fun distance(a: Double, b: Double): Double = kotlin.math.abs(a - b)
-        fun distance(x1: Double, y1: Double, x2: Double, y2: Double): Double = kotlin.math.hypot(x1 - x2, y1 - y2)
-        fun distance(x1: Float, y1: Float, x2: Float, y2: Float): Float = kotlin.math.hypot(x1 - x2, y1 - y2)
+        fun distance(a: Double, b: Double): Double = abs(a - b)
+        fun distance(x1: Double, y1: Double, x2: Double, y2: Double): Double = hypot(x1 - x2, y1 - y2)
+        fun distance(x1: Float, y1: Float, x2: Float, y2: Float): Float = hypot(x1 - x2, y1 - y2)
         fun distance(x1: Int, y1: Int, x2: Int, y2: Int): Float = distance(x1.toFloat(), y1.toFloat(), x2.toFloat(), y2.toFloat())
         fun distance(a: Point, b: Point): Float = distance(a.x, a.y, b.x, b.y)
         fun distance(a: PointInt, b: PointInt): Float = distance(a.x, a.y, b.x, b.y)
@@ -355,6 +365,7 @@ data class MPoint(
     fun add(x: Double, y: Double) = this.setTo(this.x + x, this.y + y)
     fun sub(x: Double, y: Double) = this.setTo(this.x - x, this.y - y)
 
+    fun copyFrom(that: Point) = setTo(that.x, that.y)
     fun copyFrom(that: IPoint) = setTo(that.x, that.y)
 
     fun setToTransform(mat: MMatrix, p: IPoint): MPoint = setToTransform(mat, p.x, p.y)
@@ -417,13 +428,13 @@ data class MPoint(
         }
     }
 
-    override fun interpolateWith(ratio: Double, other: MPoint): MPoint =
+    override fun interpolateWith(ratio: Ratio, other: MPoint): MPoint =
         MPoint().setToInterpolated(ratio, this, other)
 
-    override fun setToInterpolated(ratio: Double, l: MPoint, r: MPoint): MPoint = setToInterpolated(ratio, l.x, l.y, r.x, r.y)
-    fun setToInterpolated(ratio: Double, l: IPoint, r: IPoint): MPoint = setToInterpolated(ratio, l.x, l.y, r.x, r.y)
+    override fun setToInterpolated(ratio: Ratio, l: MPoint, r: MPoint): MPoint = setToInterpolated(ratio, l.x, l.y, r.x, r.y)
+    fun setToInterpolated(ratio: Ratio, l: IPoint, r: IPoint): MPoint = setToInterpolated(ratio, l.x, l.y, r.x, r.y)
 
-    fun setToInterpolated(ratio: Double, lx: Double, ly: Double, rx: Double, ry: Double): MPoint =
+    fun setToInterpolated(ratio: Ratio, lx: Double, ly: Double, rx: Double, ry: Double): MPoint =
         this.setTo(ratio.interpolate(lx, rx), ratio.interpolate(ly, ry))
 
     override fun toString(): String = "(${this.x.niceStr}, ${this.y.niceStr})"
@@ -479,19 +490,22 @@ data class MPoint(
 
         fun angle(x1: Double, y1: Double, x2: Double, y2: Double, x3: Double, y3: Double): Angle = Angle.between(x1 - x2, y1 - y2, x1 - x3, y1 - y3)
 
-        private fun square(x: Double) = x * x
-        private fun square(x: Int) = x * x
+        private fun square(x: Float): Float = x * x
+        private fun square(x: Double): Double = x * x
+        private fun square(x: Int): Int = x * x
 
+        fun distanceSquared(x1: Float, y1: Float, x2: Float, y2: Float): Float = square(x1 - x2) + square(y1 - y2)
         fun distanceSquared(x1: Double, y1: Double, x2: Double, y2: Double): Double = square(x1 - x2) + square(y1 - y2)
         fun distanceSquared(x1: Int, y1: Int, x2: Int, y2: Int): Int = square(x1 - x2) + square(y1 - y2)
 
         fun distance(a: IPoint, b: IPoint): Double = distance(a.x, a.y, b.x, b.y)
         fun distance(a: IPointInt, b: IPointInt): Double = distance(a.x, a.y, b.x, b.y)
-        fun distance(a: Double, b: Double): Double = kotlin.math.abs(a - b)
-        fun distance(x1: Double, y1: Double, x2: Double, y2: Double): Double = kotlin.math.hypot(x1 - x2, y1 - y2)
+        fun distance(a: Double, b: Double): Double = abs(a - b)
+        fun distance(x1: Double, y1: Double, x2: Double, y2: Double): Double = hypot(x1 - x2, y1 - y2)
         fun distance(x1: Float, y1: Float, x2: Float, y2: Float): Double = distance(x1.toDouble(), y1.toDouble(), x2.toDouble(), y2.toDouble())
         fun distance(x1: Int, y1: Int, x2: Int, y2: Int): Double = distance(x1.toDouble(), y1.toDouble(), x2.toDouble(), y2.toDouble())
 
+        fun distanceSquared(a: Point, b: Point): Float = distanceSquared(a.x, a.y, b.x, b.y)
         fun distanceSquared(a: IPoint, b: IPoint): Double = distanceSquared(a.x, a.y, b.x, b.y)
         fun distanceSquared(a: IPointInt, b: IPointInt): Int = distanceSquared(a.x, a.y, b.x, b.y)
 
@@ -562,7 +576,7 @@ inline class MPointInt(val p: MPoint) : IPointInt, Comparable<IPointInt>, Mutabl
     }
     fun setTo(that: IPointInt) = this.setTo(that.x, that.y)
 
-    override fun setToInterpolated(ratio: Double, l: MPointInt, r: MPointInt): MPointInt =
+    override fun setToInterpolated(ratio: Ratio, l: MPointInt, r: MPointInt): MPointInt =
         setTo(ratio.interpolate(l.x, r.x), ratio.interpolate(l.y, r.y))
 
     override fun toString(): String = "($x, $y)"
@@ -579,24 +593,20 @@ fun Point.toMPoint(out: MPoint = MPoint()): MPoint = out.setTo(x, y)
 fun Point.mutable(out: MPoint = MPoint()): MPoint = out.setTo(x, y)
 val Point.mutable: MPoint get() = mutable()
 
-private inline fun getPolylineLength(size: Int, crossinline get: (n: Int, (x: Double, y: Double) -> Unit) -> Unit): Double {
+private inline fun getPolylineLength(size: Int, crossinline get: (n: Int, (p: Point) -> Unit) -> Unit): Double {
     var out = 0.0
-    var prevX = 0.0
-    var prevY = 0.0
+    var prev = Point(0, 0)
     for (n in 0 until size) {
-        get(n) { x, y ->
-            if (n > 0) {
-                out += MPoint.distance(prevX, prevY, x, y)
-            }
-            prevX = x
-            prevY = y
+        get(n) { curr ->
+            if (n > 0) out += Point.distance(prev, curr)
+            prev = curr
         }
     }
     return out
 }
 
-fun IPointArrayList.getPolylineLength(): Double = getPolylineLength(size) { n, func -> func(getX(n), getY(n)) }
-fun List<IPoint>.getPolylineLength(): Double = getPolylineLength(size) { n, func -> func(this[n].x, this[n].y) }
+fun IPointArrayList.getPolylineLength(): Double = getPolylineLength(size) { n, func -> func(get(n)) }
+fun List<Point>.getPolylineLength(): Double = getPolylineLength(size) { n, func -> func(this[n]) }
 
 fun List<MPoint>.bounds(out: MRectangle = MRectangle(), bb: BoundsBuilder = BoundsBuilder()): MRectangle = bb.add(this).getBounds(out)
 fun Iterable<IPoint>.bounds(out: MRectangle = MRectangle(), bb: BoundsBuilder = BoundsBuilder()): MRectangle = bb.add(this).getBounds(out)
@@ -604,3 +614,9 @@ fun Iterable<IPoint>.bounds(out: MRectangle = MRectangle(), bb: BoundsBuilder = 
 fun min(a: IPoint, b: IPoint, out: MPoint = MPoint()): MPoint = out.setTo(kotlin.math.min(a.x, b.x), kotlin.math.min(a.y, b.y))
 fun max(a: IPoint, b: IPoint, out: MPoint = MPoint()): MPoint = out.setTo(kotlin.math.max(a.x, b.x), kotlin.math.max(a.y, b.y))
 fun IPoint.clamp(min: Double, max: Double, out: MPoint = MPoint()): MPoint = out.setTo(x.clamp(min, max), y.clamp(min, max))
+
+
+fun min(a: Point, b: Point): Point = Point(kotlin.math.min(a.x, b.x), kotlin.math.min(a.y, b.y))
+fun max(a: Point, b: Point): Point = Point(kotlin.math.max(a.x, b.x), kotlin.math.max(a.y, b.y))
+fun Point.clamp(min: Double, max: Double): Point = clamp(min.toFloat(), max.toFloat())
+fun Point.clamp(min: Float, max: Float): Point = Point(x.clamp(min, max), y.clamp(min, max))

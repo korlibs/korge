@@ -2,10 +2,9 @@ package com.soywiz.korma.geom.bezier
 
 import com.soywiz.kds.DoubleArrayList
 import com.soywiz.kds.binarySearch
-import com.soywiz.kds.forEachRatio01
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.internal.*
-import com.soywiz.korma.interpolation.interpolate
+import com.soywiz.korma.interpolation.*
 import com.soywiz.korma.math.*
 
 data class CurveLUT(val curve: Curve, val points: PointArrayList, val ts: DoubleArrayList, private val _estimatedLengths: DoubleArrayList) {
@@ -38,20 +37,20 @@ data class CurveLUT(val curve: Curve, val points: PointArrayList, val ts: Double
         _estimatedLengths.clear()
     }
 
-    fun add(t: Double, p: IPoint) {
+    fun add(t: Ratio, p: Point) {
         points.add(p)
-        ts.add(t)
+        ts.add(t.valueD)
     }
 
-    class ClosestResult(val mdistSq: Double, val mpos: Int) {
-        val mdist: Double get() = kotlin.math.sqrt(mdistSq)
+    class ClosestResult(val mdistSq: Float, val mpos: Int) {
+        val mdist: Float get() = kotlin.math.sqrt(mdistSq)
     }
 
-    fun closest(point: IPoint): ClosestResult {
-        var mdistSq: Double = Double.POSITIVE_INFINITY
+    fun closest(point: Point): ClosestResult {
+        var mdistSq: Float = Float.POSITIVE_INFINITY
         var mpos: Int = 0
         for (n in 0 until size) {
-            val d = MPoint.distanceSquared(this.points.getX(n), this.points.getY(n), point.x, point.y)
+            val d = Point.distanceSquared(this.points.get(n), point)
             if (d < mdistSq) {
                 mdistSq = d
                 mpos = n
@@ -60,29 +59,27 @@ data class CurveLUT(val curve: Curve, val points: PointArrayList, val ts: Double
         return ClosestResult(mdistSq = mdistSq, mpos = mpos)
     }
 
-    data class Estimation(var point: MPoint = MPoint(), var ratio: Double = 0.0, var length: Double = 0.0) {
-        fun roundDecimalDigits(places: Int): Estimation = Estimation(point.copy().setToRoundDecimalPlaces(places), ratio.roundDecimalPlaces(places), length.roundDecimalPlaces(places))
+    data class Estimation(var point: Point = Point(), var ratio: Ratio = Ratio.ZERO, var length: Double = 0.0) {
+        fun roundDecimalDigits(places: Int): Estimation = Estimation(point.roundDecimalPlaces(places), ratio.roundDecimalPlaces(places), length.roundDecimalPlaces(places))
         override fun toString(): String = "Estimation(point=${point.niceStr}, ratio=${ratio.niceStr}, length=${length.niceStr})"
     }
 
-    fun Estimation.setAtIndexRatio(index: Int, ratio: Double): Estimation {
+    fun Estimation.setAtIndexRatio(index: Int, ratio: Ratio): Estimation {
         val ratio0 = ts[index]
         //println("estimatedLengths=$estimatedLengths")
         val length0 = estimatedLengths[index]
-        val pointX0 = points.getX(index)
-        val pointY0 = points.getY(index)
-        if (ratio == 0.0) {
+        val point0 = points.get(index)
+        if (ratio == Ratio.ZERO) {
             this.ratio = ratio0
             this.length = length0
-            this.point.setTo(pointX0, pointY0)
+            this.point.setTo(point0)
         } else {
             val ratio1 = ts[index + 1]
             val length1 = estimatedLengths[index + 1]
-            val pointX1 = points.getX(index + 1)
-            val pointY1 = points.getY(index + 1)
+            val point1 = points.get(index + 1)
             this.ratio = ratio.interpolate(ratio0, ratio1)
             this.length = ratio.interpolate(length0, length1)
-            this.point.setToInterpolated(ratio, pointX0, pointY0, pointX1, pointY1)
+            this.point.setToInterpolated(ratio, point0, point1)
         }
 
         return this
@@ -121,8 +118,8 @@ data class CurveLUT(val curve: Curve, val points: PointArrayList, val ts: Double
         val steps = this.steps
         val length = estimatedLength
         val result = Estimation()
-        forEachRatio01(steps) { ratio ->
-            val len = length * ratio
+        Ratio.forEachRatio(steps) { ratio ->
+            val len = length * ratio.valueD
             val est = estimateAtLength(len, result)
             add(est.ratio, est.point)
         }

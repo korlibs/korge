@@ -7,7 +7,7 @@ import com.soywiz.korge.view.View
 import com.soywiz.korge.view.Views
 import com.soywiz.korge.view.xy
 import com.soywiz.korio.lang.Closeable
-import com.soywiz.korma.geom.MPoint
+import com.soywiz.korma.geom.*
 
 open class MouseDragInfo(
     val view: View,
@@ -27,11 +27,13 @@ open class MouseDragInfo(
     lateinit var mouseEvents: MouseEvents
     val elapsed: TimeSpan get() = time - startTime
 
-    val localDX get() = localDX(view)
-    val localDY get() = localDY(view)
+    val localDXY: Point get() = localDXY(view)
+    val localDX: Double get() = localDX(view)
+    val localDY: Double get() = localDY(view)
 
-    fun localDX(view: View) = view.parent?.globalToLocalDX(0.0, 0.0, dx, dy) ?: dx
-    fun localDY(view: View) = view.parent?.globalToLocalDY(0.0, 0.0, dx, dy) ?: dy
+    fun localDXY(view: View): Point = Point(localDX(view), localDY(view))
+    fun localDX(view: View): Double = view.parent?.globalToLocalDX(0.0, 0.0, dx, dy) ?: dx
+    fun localDY(view: View): Double = view.parent?.globalToLocalDY(0.0, 0.0, dx, dy) ?: dy
 
     private var lastDx: Double = Double.NaN
     private var lastDy: Double = Double.NaN
@@ -167,57 +169,10 @@ fun <T : View> T.onMouseDrag(
 ): T = onMouseDragInternal(timeProvider, info, callback).first
 
 open class DraggableInfo(view: View) : MouseDragInfo(view) {
-    val viewStartXY = MPoint()
-
-    var viewStartX: Double
-        get() = viewStartXY.x;
-        set(value) {
-            viewStartXY.x = value
-        }
-    var viewStartY: Double
-        get() = viewStartXY.y;
-        set(value) {
-            viewStartXY.y = value
-        }
-
-    val viewPrevXY = MPoint()
-
-    var viewPrevX: Double
-        get() = viewPrevXY.x;
-        set(value) {
-            viewPrevXY.x = value
-        }
-    var viewPrevY: Double
-        get() = viewPrevXY.y;
-        set(value) {
-            viewPrevXY.y = value
-        }
-
-    val viewNextXY = MPoint()
-
-    var viewNextX: Double
-        get() = viewNextXY.x;
-        set(value) {
-            viewNextXY.x = value
-        }
-    var viewNextY: Double
-        get() = viewNextXY.y;
-        set(value) {
-            viewNextXY.y = value
-        }
-
-    val viewDeltaXY = MPoint()
-
-    var viewDeltaX: Double
-        get() = viewDeltaXY.x;
-        set(value) {
-            viewDeltaXY.x = value
-        }
-    var viewDeltaY: Double
-        get() = viewDeltaXY.y;
-        set(value) {
-            viewDeltaXY.y = value
-        }
+    var viewStart = Point()
+    var viewPrev = Point()
+    var viewNext = Point()
+    var viewDelta = Point()
 }
 
 data class DraggableCloseable(
@@ -237,18 +192,13 @@ private fun <T : View> T.draggableInternal(
     val info = DraggableInfo(view)
     val onMouseDragCloseable = selector.onMouseDragCloseable(info = info) {
         if (info.start) {
-            info.viewStartXY.copyFrom(view.ipos)
+            info.viewStart = view.pos
         }
         //println("localDXY=${info.localDX(view)},${info.localDY(view)}")
-        info.viewPrevXY.copyFrom(view.ipos)
-        info.viewNextXY.setTo(
-            info.viewStartX + info.localDX(view),
-            info.viewStartY + info.localDY(view)
-        )
-        info.viewDeltaXY.setTo(info.viewNextX - info.viewPrevX, info.viewNextY - info.viewPrevY)
-        if (autoMove) {
-            view.xy(info.viewNextXY)
-        }
+        info.viewPrev = view.pos
+        info.viewNext = info.viewStart + info.localDXY(view)
+        info.viewDelta = info.viewNext - info.viewPrev
+        if (autoMove) view.xy(info.viewNext)
         onDrag?.invoke(info)
         //println("DRAG: $dx, $dy, $start, $end")
     }

@@ -224,7 +224,7 @@ class GraphicsTest {
 
         val posCircle = container.circle(25.0, fill = Colors.ORANGE) {
             anchor(Anchor.CENTER)
-            position(graphics.ipos)
+            position(graphics.pos)
         }
 
         val posCircle2 = container.circle(5.0, fill = Colors.RED) {

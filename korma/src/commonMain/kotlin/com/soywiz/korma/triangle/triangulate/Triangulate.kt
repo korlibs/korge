@@ -1,8 +1,6 @@
 package com.soywiz.korma.triangle.triangulate
 
-import com.soywiz.korma.geom.IPoint
-import com.soywiz.korma.geom.IPointArrayList
-import com.soywiz.korma.geom.PointArrayList
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.shape.*
 import com.soywiz.korma.geom.toPoints
 import com.soywiz.korma.geom.triangle.Triangle
@@ -20,7 +18,7 @@ fun List<IPointArrayList>.triangulate(): List<Triangle> {
     return sc.getTriangles().toList()
 }
 
-fun Shape2d.triangulate(): List<List<Triangle>> = this.paths.map { it.toPoints().triangulate() }
+fun Shape2d.triangulate(): List<List<Triangle>> = this.paths.map { it.toIPoints().triangulate() }
 fun Shape2d.triangulateFlat(): List<Triangle> = triangulate().flatMap { it }
 
 //fun VectorPath.triangulate(): List<List<Triangle>> = this.toPathList().triangulate()
