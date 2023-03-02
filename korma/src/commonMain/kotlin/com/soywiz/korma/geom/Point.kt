@@ -56,6 +56,9 @@ inline class Point internal constructor(internal val raw: Float2Pack) {
     operator fun component1(): Float = x
     operator fun component2(): Float = y
 
+    fun copy(x: Float = this.x, y: Float = this.y): Point = Point(x, y)
+    fun copy(x: Double = this.xD, y: Double = this.yD): Point = Point(x, y)
+
     inline operator fun unaryMinus(): Point = Point(-x, -y)
     inline operator fun unaryPlus(): Point = this
 
