@@ -9,20 +9,21 @@ import platform.Metal.*
 object MetalShaderCompiler {
 
     fun compile(device: MTLDeviceProtocol, program: Program): MetalProgram {
-        return program.toMetalShaders(device)
-            .toCompiledProgram(device)
+        return program.toMetalShaders().let { (shaderAsString, inputBuffers) ->
+
+            shaderAsString
+                .toFunctionsLibrary(device)
+                .let { it.toFunction(vertexMainFunctionName) to it.toFunction(fragmentMainFunctionName) }
+                .toCompiledProgram(device)
+                .toMetalProgram(inputBuffers)
+        }
     }
 }
 
-private fun Program.toMetalShaders(device: MTLDeviceProtocol) = (vertex to fragment)
-    .toFunctionsLibrary(device)
-    .let { it.toFunction(vertexMainFunctionName) to it.toFunction(fragmentMainFunctionName) }
+private fun Program.toMetalShaders() = (vertex to fragment)
+    .toNewMetalShaderStringResult()
 
-private fun Pair<VertexShader, FragmentShader>.toFunctionsLibrary(device: MTLDeviceProtocol) = toNewMetalShaderStringResult()
-    .also(::println)
-    .toFunctionsLibrary(device)
-
-private fun MetalShaderGenerator.Result.toFunctionsLibrary(device: MTLDeviceProtocol): MTLLibraryProtocol {
+private fun String.toFunctionsLibrary(device: MTLDeviceProtocol): MTLLibraryProtocol = let { result ->
     memScoped {
         val errorPtr = alloc<ObjCObjectVar<NSError?>>()
         return device.newLibraryWithSource(result, null, errorPtr.ptr).let {
@@ -37,7 +38,6 @@ private fun MTLLibraryProtocol.toFunction(name: String) = newFunctionWithName(na
 
 private fun Pair<MTLFunctionProtocol, MTLFunctionProtocol>.toCompiledProgram(device: MTLDeviceProtocol) =
     let { (vertex, fragment) -> createPipelineState(device, vertex, fragment) }
-        .toMetalProgram()
 
 private fun createPipelineState(
     device: MTLDeviceProtocol,
@@ -60,4 +60,7 @@ private fun createPipelineState(
     }
 }
 
-private fun MTLRenderPipelineStateProtocol.toMetalProgram() = MetalProgram(this, listOf())
+private fun MTLRenderPipelineStateProtocol.toMetalProgram(inputBuffers: List<VariableWithOffset>) = MetalProgram(
+    this,
+    inputBuffers
+)

@@ -1,6 +1,11 @@
 package korge.graphics.backend.metal.shader
 
 import com.soywiz.korag.*
+import com.soywiz.korag.DefaultShaders.a_Col
+import com.soywiz.korag.DefaultShaders.a_Pos
+import com.soywiz.korag.DefaultShaders.a_Tex
+import com.soywiz.korag.DefaultShaders.u_ProjMat
+import com.soywiz.korag.DefaultShaders.u_ViewMat
 import com.soywiz.korag.shader.*
 import com.soywiz.korag.shader.gl.*
 import com.soywiz.korio.util.*
@@ -27,8 +32,15 @@ val v_Wrap: Varying = Varying("v_Wrap", VarType.Float1, precision = Precision.LO
  */
 class MetalShaderGeneratorTest {
 
-    val vertexShader = DefaultShaders.VERTEX_DEFAULT
-    val fragmentShader = DefaultShaders.FRAGMENT_SOLID_COLOR
+    private val vertexShader = VertexShader {
+        SET(v_Tex, a_Tex)
+        SET(v_Col, a_Col)
+        SET(out, u_ProjMat * u_ViewMat * vec4(a_Pos, 0f.lit, 1f.lit))
+    }
+
+    private val fragmentShader = FragmentShader {
+        SET(out, v_Col)
+    }
 
     @Test
     fun `check that vertex metal shader is correctly generated`() {
@@ -65,28 +77,51 @@ class MetalShaderGeneratorTest {
                 +"out = in.v_Col;"
                 +"return out;"
             }
-        }
+        } andInputBufferShouldBe listOf(
+            a_Tex,
+            a_Col,
+            a_Pos,
+            u_ProjMat,
+            u_ViewMat
+
+        )
+
     }
 }
 
-infix fun Pair<VertexShader, FragmentShader>.shouldProduceShader(block: Indenter.() -> Unit) {
-    val metalShaderAsString = toNewMetalShaderStringResult().result
+infix fun List<VariableWithOffset>.andInputBufferShouldBe(expected: List<VariableWithOffset>)  {
+    this shouldBe expected
+}
+
+infix fun Pair<VertexShader, FragmentShader>.shouldProduceShader(block: Indenter.() -> Unit): List<VariableWithOffset> {
+    val metalShader = toNewMetalShaderStringResult()
+    val metalShaderAsString = metalShader.result
     val expectedShaderAsString = Indenter {
         block()
     }.toString()
 
     metalShaderAsString shouldBe expectedShaderAsString
+    return metalShader.inputBuffers
 }
 
 infix fun String.shouldBe(expected: String) {
 
-    //assertThat(length).isEqualTo(expected.length)
     val expectedLines = expected.lines()
     val lines = lines()
-    assertThat(lines.size).isEqualTo(expectedLines.size)
 
     lines.forEachIndexed { index, line ->
         val expectedLine = expectedLines[index]
         assertThat(line).isEqualTo(expectedLine)
+    }
+
+    assertThat(lines.size).isEqualTo(expectedLines.size)
+}
+
+infix fun List<Any>.shouldBe(expected: List<Any>) {
+    assertThat(size).isEqualTo(expected.size)
+
+    forEachIndexed { index, entry ->
+        val expectedEntry = expected[index]
+        assertThat(entry).isEqualTo(expectedEntry)
     }
 }

@@ -14,6 +14,7 @@ class AGMetal(private val view: MTKView) : AG() {
     private val commandQueue = device.newCommandQueue() ?: error("fail to create metal command queue")
     private val programs = HashMap<Program, MetalProgram>()
     private val buffersv1 = HashMap<Buffer, MTLBuffer>()
+    private val buffers = HashMap<MetalProgram, List<MTLBuffer>>()
 
     override fun draw(
         frameBuffer: AGFrameBufferBase,

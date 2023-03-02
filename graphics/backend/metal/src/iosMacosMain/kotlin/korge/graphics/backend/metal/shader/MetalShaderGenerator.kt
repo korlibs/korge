@@ -1,9 +1,9 @@
 package korge.graphics.backend.metal.shader
 
-import com.soywiz.korag.*
+import com.soywiz.korag.DefaultShaders
 import com.soywiz.korag.shader.*
-import com.soywiz.korag.shader.gl.*
-import com.soywiz.korio.util.*
+import com.soywiz.korag.shader.gl.GlobalsProgramVisitor
+import com.soywiz.korio.util.Indenter
 
 internal const val vertexMainFunctionName = "vertexMain"
 internal const val fragmentMainFunctionName = "fragmentMain"
@@ -15,16 +15,15 @@ class MetalShaderGenerator(
 
     data class Result(
         val result: String,
-        val attributes: List<Attribute>,
-        val uniforms: List<Uniform>,
-        val varyings: List<Varying>
+        val inputBuffers: List<VariableWithOffset>
     )
 
-    fun generateResult(): Result = generateResult( vertexShader.functions + fragmentShader.functions)
+    fun generateResult(): Result = generateResult(vertexShader.functions + fragmentShader.functions)
 
     private fun generateResult(customFunctions: List<FuncDecl>): Result {
         val vertexInstructions = vertexShader.stm
         val types = GlobalsProgramVisitor()
+        val inputBuffers = mutableListOf<VariableWithOffset>()
 
         FuncDecl("main", VarType.TVOID, listOf(), vertexInstructions)
             .also(types::visit)
@@ -33,7 +32,7 @@ class MetalShaderGenerator(
 
             addHeaders()
 
-            declareOutputStructure(types.varyings)
+            declareVertexOutputStructure(types.varyings)
 
             customFunctions.filter { it.ref.name in types.funcRefs }
                 .reversed()
@@ -41,16 +40,17 @@ class MetalShaderGenerator(
                 .let { generationFunctions(it) }
 
             generateVertexMainFunction(types.attributes, types.uniforms)
+                .also(inputBuffers::addAll)
+
             generateFragmentMainFunction()
+                .also(inputBuffers::addAll)
 
 
         }.toString()
 
         return Result(
             result,
-            attributes = types.attributes.toList(),
-            uniforms = types.uniforms.toList(),
-            varyings = types.varyings.toList()
+            inputBuffers.toList()
         )
     }
 
@@ -65,7 +65,7 @@ class MetalShaderGenerator(
         }
     }
 
-    private fun Indenter.declareOutputStructure(attributes: LinkedHashSet<Varying>) {
+    private fun Indenter.declareVertexOutputStructure(attributes: LinkedHashSet<Varying>) {
         if (attributes.isEmpty()) return
         val generator = MetalShaderBodyGenerator(ShaderType.VERTEX)
 
@@ -80,22 +80,20 @@ class MetalShaderGenerator(
     private fun Indenter.generateVertexMainFunction(
         attributes: LinkedHashSet<Attribute>,
         uniforms: LinkedHashSet<Uniform>
-    ) {
+    ): List<VariableWithOffset> {
         val generator = MetalShaderBodyGenerator(ShaderType.VERTEX)
-        val parameters = mutableListOf("uint vertexId [[vertex_id]]")
+        val inputBuffers = attributes.toList() + uniforms
 
-        attributes.forEachIndexed { index, attribute ->
-            parameters.add(
-                "device const ${generator.typeToString(attribute.type)}* ${attribute.name} [[buffer($index)]]"
-            )
-        }
 
-        uniforms.forEachIndexed { index, uniform ->
-            val uniformIndex = index + attributes.size
-            parameters.add(
-                "constant ${generator.typeToString(uniform.type)}& ${uniform.name} [[buffer($uniformIndex)]]"
-            )
-        }
+        val parameters = listOf(("uint vertexId [[vertex_id]]")) +
+            inputBuffers.mapIndexed { index, variableWithOffset ->
+                val parameterModifier = when (variableWithOffset) {
+                    is Attribute -> "device const" to "*"
+                    else -> "constant" to "&"
+                }
+
+                "${parameterModifier.first} ${generator.typeToString(variableWithOffset.type)}${parameterModifier.second} ${variableWithOffset.name} [[buffer($index)]]"
+            }
 
         "vertex v2f $vertexMainFunctionName(${parameters.joinToString(",")})" {
             line("v2f out;")
@@ -103,9 +101,13 @@ class MetalShaderGenerator(
             line(generator.programIndenter)
             line("return out;")
         }
+
+        return inputBuffers
     }
 
-    private fun Indenter.generateFragmentMainFunction() {
+    private fun Indenter.generateFragmentMainFunction(): MutableList<VariableWithOffset> {
+        val inputBuffers = mutableListOf<VariableWithOffset>()
+
         "fragment float4 $fragmentMainFunctionName(v2f in [[stage_in]])" {
             line("float4 out;")
             val generator = MetalShaderBodyGenerator(ShaderType.FRAGMENT)
@@ -113,6 +115,8 @@ class MetalShaderGenerator(
             line(generator.programIndenter)
             line("return out;")
         }
+
+        return inputBuffers
     }
 
     private fun Indenter.generationFunctions(functions: List<FuncDecl>) {
