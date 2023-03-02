@@ -1,4 +1,4 @@
-package com.soywiz.korge.component
+package com.soywiz.korge.input
 
 import com.soywiz.korev.*
 import com.soywiz.korge.view.*
