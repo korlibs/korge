@@ -60,4 +60,4 @@ private fun createPipelineState(
     }
 }
 
-private fun MTLRenderPipelineStateProtocol.toMetalProgram() = MetalProgram(this)
+private fun MTLRenderPipelineStateProtocol.toMetalProgram() = MetalProgram(this, listOf())

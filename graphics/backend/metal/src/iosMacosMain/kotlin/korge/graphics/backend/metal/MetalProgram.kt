@@ -1,7 +1,9 @@
 package korge.graphics.backend.metal
 
+import com.soywiz.korag.shader.*
 import platform.Metal.*
 
-value class MetalProgram(
-    val renderPipelineState: MTLRenderPipelineStateProtocol
+data class MetalProgram(
+    val renderPipelineState: MTLRenderPipelineStateProtocol,
+    val inputBuffers: List<VariableWithOffset>
 )

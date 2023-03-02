@@ -22,6 +22,10 @@ inline fun MTLBuffer.insert(data: ByteArray) {
     }
 }
 
+/**
+ * TODO: may not working on ios "In iOS and tvOS, the managed storage mode is not available."
+ * https://developer.apple.com/documentation/metal/mtlstoragemode/managed
+ */
 fun MTLDeviceProtocol.newBuffer(size: ULong) = (newBufferWithLength(size, MTLResourceStorageModeManaged)
     ?: error("fail to create metal buffer"))
     .let { MTLBuffer(it) }

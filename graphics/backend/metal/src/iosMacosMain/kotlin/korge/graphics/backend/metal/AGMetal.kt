@@ -13,7 +13,7 @@ class AGMetal(private val view: MTKView) : AG() {
     private val device = MTLCreateSystemDefaultDevice() ?: error("fail to create metal device")
     private val commandQueue = device.newCommandQueue() ?: error("fail to create metal command queue")
     private val programs = HashMap<Program, MetalProgram>()
-    private val buffers = HashMap<Buffer, MTLBuffer>()
+    private val buffersv1 = HashMap<Buffer, MTLBuffer>()
 
     override fun draw(
         frameBuffer: AGFrameBufferBase,
@@ -85,7 +85,7 @@ class AGMetal(private val view: MTKView) : AG() {
 
 
     private val Buffer.toMetal: MTLBuffer
-        get() = buffers
+        get() = buffersv1
             .getOrPut(this) {
                 val size = sizeInBytes.toULong()
                 device.newBuffer(size)

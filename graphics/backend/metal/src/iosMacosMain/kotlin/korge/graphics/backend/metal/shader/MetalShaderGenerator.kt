@@ -20,9 +20,10 @@ class MetalShaderGenerator(
         val varyings: List<Varying>
     )
 
-    fun generateResult(): Result = generateResult(vertexShader.stm, fragmentShader.stm, vertexShader.functions + fragmentShader.functions)
+    fun generateResult(): Result = generateResult( vertexShader.functions + fragmentShader.functions)
 
-    private fun generateResult(vertexInstructions: Program.Stm, fragmentInstructions: Program.Stm, customFunctions: List<FuncDecl>): Result {
+    private fun generateResult(customFunctions: List<FuncDecl>): Result {
+        val vertexInstructions = vertexShader.stm
         val types = GlobalsProgramVisitor()
 
         FuncDecl("main", VarType.TVOID, listOf(), vertexInstructions)
