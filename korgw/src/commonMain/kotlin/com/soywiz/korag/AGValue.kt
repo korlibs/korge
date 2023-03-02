@@ -98,6 +98,10 @@ class AGUniformValues(val capacity: Int = 8 * 1024) {
     operator fun set(uniform: Uniform, value: Array<MMatrix3D>) { this[uniform].set(value) }
     operator fun set(uniform: Uniform, value: Array<FloatArray>) { this[uniform].set(value) }
 
+    operator fun set(uniform: Uniform, value: Vector4) { this[uniform].set(value) }
+    operator fun set(uniform: Uniform, value: Margin) { this[uniform].set(value) }
+    operator fun set(uniform: Uniform, value: RectCorners) { this[uniform].set(value) }
+
     fun set(uniform: Uniform, v0: Float, v1: Float) { this[uniform].set(v0, v1) }
     fun set(uniform: Uniform, v0: Float, v1: Float, v2: Float) { this[uniform].set(v0, v1, v2) }
     fun set(uniform: Uniform, v0: Float, v1: Float, v2: Float, v3: Float) { this[uniform].set(v0, v1, v2, v3) }
@@ -216,7 +220,8 @@ open class AGValue(
     fun set(value: Vector4) = set(value.x, value.y, value.z, value.w)
     fun set(value: Point) = set(value.x, value.y)
     fun set(value: Margin) = set(value.top.toFloat(), value.right.toFloat(), value.bottom.toFloat(), value.left.toFloat())
-    fun set(value: RectCorners) = set(value.topLeft, value.topRight, value.bottomRight, value.bottomLeft)
+    fun set(value: RectCorners) = set(value.bottomRight, value.topRight, value.bottomLeft, value.topLeft)
+
     //fun set(value: Matrix4) = tempMatrixLock { set(tempMatrix.also { it[0] = value }) }
 
     fun set(value: RGBA) = set(value.rf, value.gf, value.bf, value.af)

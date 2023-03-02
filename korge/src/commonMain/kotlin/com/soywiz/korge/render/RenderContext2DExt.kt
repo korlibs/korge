@@ -97,7 +97,7 @@ fun RenderContext2D.materialRoundRect(
     //colorMul: RGBA = Colors.WHITE,
 ) {
     _tempProgramUniforms.clear()
-    _tempProgramUniforms.set(MaterialRender.u_Radius, radius.bottomRight, radius.topRight, radius.bottomLeft, radius.topLeft,)
+    _tempProgramUniforms.set(MaterialRender.u_Radius, radius.bottomRight, radius.topRight, radius.bottomLeft, radius.topLeft)
     _tempProgramUniforms.set(MaterialRender.u_Size, width, height)
 
     _tempProgramUniforms[MaterialRender.u_BackgroundColor] = color.premultipliedFast

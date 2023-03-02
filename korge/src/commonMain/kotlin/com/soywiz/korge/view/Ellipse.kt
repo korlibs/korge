@@ -13,13 +13,13 @@ import com.soywiz.korma.geom.vector.*
  * The [callback] allows to configure the [Circle] instance.
  */
 inline fun Container.ellipse(
-        radiusX: Double = 16.0,
-        radiusY: Double = 16.0,
-        fill: Paint = Colors.WHITE,
-        stroke: Paint = Colors.WHITE,
-        strokeThickness: Double = 0.0,
-        autoScaling: Boolean = true,
-        callback: @ViewDslMarker Ellipse.() -> Unit = {}
+    radiusX: Double = 16.0,
+    radiusY: Double = 16.0,
+    fill: Paint = Colors.WHITE,
+    stroke: Paint = Colors.WHITE,
+    strokeThickness: Double = 0.0,
+    autoScaling: Boolean = true,
+    callback: @ViewDslMarker Ellipse.() -> Unit = {}
 ): Ellipse = Ellipse(radiusX, radiusY, fill, stroke, strokeThickness, autoScaling).addTo(this, callback)
 
 /**

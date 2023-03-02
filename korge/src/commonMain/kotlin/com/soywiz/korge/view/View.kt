@@ -399,6 +399,7 @@ abstract class View internal constructor(
         this.width = width
         this.height = height
     }
+    fun setSize(size: Size) = setSize(size.widthD, size.heightD)
 
     open fun setSizeScaled(width: Double, height: Double) {
         this.setSize(
@@ -960,9 +961,8 @@ abstract class View internal constructor(
         return if (this is Stage) this else null
     }
 
-    fun hitTestLocal(p: Point, direction: HitTestDirection = HitTestDirection.ANY): View? {
-        return hitTest(localToGlobal(p), direction)
-    }
+    fun hitTestLocal(p: Point, direction: HitTestDirection = HitTestDirection.ANY): View? =
+        hitTest(localToGlobal(p), direction)
 
     override fun hitTestAny(p: Point, direction: HitTestDirection): Boolean =
         hitTest(p, direction) != null
@@ -2042,6 +2042,12 @@ fun <T : View> T.scale(sx: Double, sy: Double = sx): T {
 }
 fun <T : View> T.scale(sx: Float, sy: Float = sx): T = scale(sx.toDouble(), sy.toDouble())
 fun <T : View> T.scale(sx: Int, sy: Int = sx): T = scale(sx.toDouble(), sy.toDouble())
+
+/** Chainable method returning this that sets [View.colorMul] */
+fun <T : View> T.colorMul(color: RGBA): T {
+    this.colorMul = color
+    return this
+}
 
 /** Chainable method returning this that sets [View.alphaF] */
 fun <T : View> T.alpha(alpha: Float): T {
