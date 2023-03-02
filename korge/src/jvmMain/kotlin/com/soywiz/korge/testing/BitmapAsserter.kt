@@ -105,7 +105,7 @@ suspend fun OffscreenStage.assertScreenshot(
     val updateTestRef = Environment["UPDATE_TEST_REF"] == "true"
     val interactive = Environment["INTERACTIVE_SCREENSHOT"] == "true"
     val context = injector.getSyncOrNull<OffscreenContext>() ?: OffscreenContext()
-    val outFile = File("testGoldens/${context.testClassName}/${context.testMethodName}_$name.png")
+    val outFile = File("src/jvmTest/screenshots/${context.testClassName.replace(".", "/")}/${context.testMethodName}_$name.png")
     val actualBitmap = views.ag.startEndFrame {
         //val currentFrameBuffer = views.renderContext.currentFrameBuffer
         //Bitmap32(currentFrameBuffer.width, currentFrameBuffer.height).also { ag.readColor(currentFrameBuffer, it) }
