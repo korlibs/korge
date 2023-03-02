@@ -2,8 +2,7 @@ package com.soywiz.korge.view
 
 import com.soywiz.korge.tests.ViewsForTesting
 import com.soywiz.korim.bitmap.Bitmap32
-import com.soywiz.korma.geom.MPoint
-import com.soywiz.korma.geom.MSizeInt
+import com.soywiz.korma.geom.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -34,16 +33,16 @@ class ViewTest {
                 rect = solidRect(100, 100).position(30, 30)
             }
         }
-        assertEquals("(30, 30), (90, 90)", "${rect.ipos}, ${rect.getPositionRelativeTo(container)}")
+        assertEquals("(30, 30), (90, 90)", "${rect.pos}, ${rect.getPositionRelativeTo(container)}")
         rect.setPositionRelativeTo(container, MPoint(240, 240))
-        assertEquals("(80, 80), (240, 240)", "${rect.ipos}, ${rect.getPositionRelativeTo(container)}")
+        assertEquals("(80, 80), (240, 240)", "${rect.pos}, ${rect.getPositionRelativeTo(container)}")
     }
 
     @Test
     fun testConcatMatrix() {
         val viewsForTesting = ViewsForTesting(
-            windowSize = MSizeInt(200, 200),
-            virtualSize = MSizeInt(100, 100),
+            windowSize = SizeInt(200, 200),
+            virtualSize = SizeInt(100, 100),
         )
         lateinit var root: Container
         lateinit var middle: Container
@@ -52,7 +51,7 @@ class ViewTest {
             scale(4, 2).position(20, 10)
             middle = container {
                 scale(7, 3).position(50, 30)
-                leaf = image(Bitmap32(32, 32)) {
+                leaf = image(Bitmap32(32, 32, premultiplied = false)) {
                     //anchor(Anchor.MIDDLE_CENTER)
                     scale(2, 5).position(70, 90)
                 }

@@ -473,17 +473,6 @@ inline class AGDepthAndFrontFace(val data: Int) {
     fun withFrontFace(frontFace: AGFrontFace): AGDepthAndFrontFace = AGDepthAndFrontFace(data.insert2(frontFace.ordinal, 30))
 }
 
-// @TODO: This AGStencilFullState can't hold both AGStencilReference for back and front
-inline class AGStencilFullState private constructor(private val data: Long) {
-    constructor(opFunc: AGStencilOpFunc = AGStencilOpFunc.DEFAULT, ref: AGStencilReference = AGStencilReference.DEFAULT) : this(Long.fromLowHigh(opFunc.data, ref.front))
-    val opFunc: AGStencilOpFunc get() = AGStencilOpFunc(data.low)
-    val ref: AGStencilReference get() = AGStencilReference(data.high, data.high)
-
-    fun withOpFunc(opFunc: AGStencilOpFunc): AGStencilFullState = AGStencilFullState(opFunc, ref)
-    fun withRef(ref: AGStencilReference): AGStencilFullState = AGStencilFullState(opFunc, ref)
-    fun withReferenceValue(referenceValue: Int): AGStencilFullState = withRef(ref.withReferenceValue(referenceValue))
-}
-
 inline class AGStencilReference(val data: Long) {
     constructor(front: Int, back: Int) : this(Long.fromLowHigh(front, back))
 
@@ -494,10 +483,6 @@ inline class AGStencilReference(val data: Long) {
 
     val front: Int get() = data.low
     val back: Int get() = data.high
-
-    @Deprecated("", ReplaceWith("referenceValueFront")) val referenceValue: Int get() = referenceValueFront
-    @Deprecated("", ReplaceWith("readMaskFront")) val readMask: Int get() = readMaskFront
-    @Deprecated("", ReplaceWith("writeMaskFront")) val writeMask: Int get() = writeMaskFront
 
     val referenceValueFront: Int get() = front.extract8(0)
     val readMaskFront: Int get() = front.extract8(8)
@@ -511,7 +496,7 @@ inline class AGStencilReference(val data: Long) {
     fun withReadMask(readMask: Int, readMaskBack: Int = readMask): AGStencilReference = AGStencilReference(front.insert8(readMask, 8), back.insert8(readMaskBack, 8))
     fun withWriteMask(writeMask: Int, writeMaskBack: Int = writeMask): AGStencilReference = AGStencilReference(front.insert8(writeMask, 16), back.insert8(writeMaskBack, 16))
 
-    override fun toString(): String = "AGStencilReference(referenceValue=$referenceValue, readMask=$readMask, writeMask=$writeMask)"
+    override fun toString(): String = "AGStencilReference(front=[referenceValue=$referenceValueFront, readMask=$readMaskFront, writeMask=$writeMaskFront], back=[referenceValue=$referenceValueBack, readMask=$readMaskBack, writeMask=$writeMaskBack])"
 }
 
 // @TODO: We should have compare mode, actions, mask, reference, etc. for both FRONT and BACK separately
@@ -526,11 +511,6 @@ inline class AGStencilOpFunc(val data: Int) {
 
     val enabled: Boolean get() = data.extractBool(31)
 
-    @Deprecated("", ReplaceWith("compareModeFront")) val compareMode: AGCompareMode get() = compareModeFront
-    @Deprecated("", ReplaceWith("actionOnBothPassFront")) val actionOnBothPass: AGStencilOp get() = actionOnBothPassFront
-    @Deprecated("", ReplaceWith("actionOnDepthFailFront")) val actionOnDepthFail: AGStencilOp get() = actionOnDepthFailFront
-    @Deprecated("", ReplaceWith("actionOnDepthPassStencilFailFront")) val actionOnDepthPassStencilFail: AGStencilOp get() = actionOnDepthPassStencilFailFront
-
     val compareModeFront: AGCompareMode get() = AGCompareMode(data.extract3(0))
     val actionOnBothPassFront: AGStencilOp get() = AGStencilOp(data.extract3(3))
     val actionOnDepthFailFront: AGStencilOp get() = AGStencilOp(data.extract3(6))
@@ -540,8 +520,6 @@ inline class AGStencilOpFunc(val data: Int) {
     val actionOnBothPassBack: AGStencilOp get() = AGStencilOp(data.extract3(15))
     val actionOnDepthFailBack: AGStencilOp get() = AGStencilOp(data.extract3(18))
     val actionOnDepthPassStencilFailBack: AGStencilOp get() = AGStencilOp(data.extract3(21))
-
-    override fun toString(): String = "AGStencilOpFunc(enabled=$enabled, compareMode=$compareMode, actions=[$actionOnBothPass, $actionOnDepthFail, $actionOnDepthPassStencilFail])"
 
     fun withEnabled(enabled: Boolean): AGStencilOpFunc = AGStencilOpFunc(data.insert(enabled, 31))
     fun withCompareMode(compareMode: AGCompareMode, compareModeBack: AGCompareMode = compareMode): AGStencilOpFunc = AGStencilOpFunc(data.insert3(compareMode.ordinal, 0).insert3(compareModeBack.ordinal, 12))
@@ -558,6 +536,8 @@ inline class AGStencilOpFunc(val data: Int) {
         actionOnDepthFailBack: AGStencilOp = actionOnDepthFail,
         actionOnDepthPassStencilFailBack: AGStencilOp = actionOnDepthPassStencilFail,
     ): AGStencilOpFunc = withActionOnBothPass(actionOnBothPass, actionOnBothPassBack).withActionOnDepthFail(actionOnDepthFail, actionOnDepthFailBack).withActionOnDepthPassStencilFail(actionOnDepthPassStencilFail, actionOnDepthPassStencilFailBack)
+
+    override fun toString(): String = "AGStencilOpFunc(enabled=$enabled, front=[compareMode=$compareModeFront, actions=[$actionOnBothPassFront, $actionOnDepthFailFront, $actionOnDepthPassStencilFailFront]], back=[compareMode=$compareModeBack, actions=[$actionOnBothPassBack, $actionOnDepthFailBack, $actionOnDepthPassStencilFailBack]])"
 }
 
 //open val supportInstancedDrawing: Boolean get() = false
@@ -837,13 +817,6 @@ data class AGBatch(
     var vertexCount: Int = 0,
     var instances: Int = 1
 ) : AGCommand {
-    var stencilFull: AGStencilFullState
-        get() = AGStencilFullState(stencilOpFunc, stencilRef)
-        set(value) {
-            stencilOpFunc = value.opFunc
-            stencilRef = value.ref
-        }
-
     override fun execute(ag: AG) {
         ag.draw(frameBuffer, frameBufferInfo, vertexData, program, drawType, vertexCount, indices, indexType, drawOffset, blending, uniforms, stencilRef, stencilOpFunc, colorMask, depthAndFrontFace, scissor, cullFace, instances)
     }

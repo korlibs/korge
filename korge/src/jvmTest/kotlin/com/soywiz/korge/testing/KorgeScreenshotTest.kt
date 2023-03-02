@@ -8,7 +8,7 @@ import org.junit.*
 class KorgeScreenshotTest {
     @Test
     fun test1() = korgeScreenshotTest(
-        width = 512, height = 512,
+        SizeInt(512, 512),
         bgcolor = Colors.RED
     ) {
         val maxDegrees = (+16).degrees

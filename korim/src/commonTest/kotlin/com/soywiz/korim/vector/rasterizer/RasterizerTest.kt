@@ -6,6 +6,7 @@ import com.soywiz.korio.async.*
 import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
+import com.soywiz.korma.interpolation.*
 import kotlin.test.*
 
 class RasterizerTest {
@@ -37,7 +38,7 @@ class RasterizerTest {
 
     @Test
     fun test2() = suspendTest {
-        val bmp1 = Bitmap32(100, 100).context2d {
+        val bmp1 = Bitmap32Context2d(100, 100) {
             //debug = true
             fill(
                 createLinearGradient(0, 0, 0, 100) {
@@ -45,29 +46,29 @@ class RasterizerTest {
                     add(1.0, Colors.GREEN)
                 }
             ) {
-                moveTo(0, 25)
-                lineTo(100, 0)
-                lineToV(100)
-                lineToH(-100)
+                moveTo(Point(0, 25))
+                lineTo(Point(100, 0))
+                lineToV(100f)
+                lineToH(-100f)
                 close()
             }
         }
         val shipSize = 24
-        val bmp2 = Bitmap32(shipSize, shipSize).context2d {
+        val bmp2 = Bitmap32Context2d(shipSize, shipSize) {
             stroke(Colors.RED, lineWidth = shipSize * 0.05, lineCap = LineCap.ROUND) {
-                moveTo(shipSize * 0.5, 0.0)
-                lineTo(shipSize, shipSize)
-                lineTo(shipSize * 0.5, shipSize * 0.8)
-                lineTo(0, shipSize)
+                moveTo(Point(shipSize * 0.5, 0.0))
+                lineTo(Point(shipSize, shipSize))
+                lineTo(Point(shipSize * 0.5, shipSize * 0.8))
+                lineTo(Point(0, shipSize))
                 close()
             }
         }
-        val bmp3 = Bitmap32(3, (shipSize * 0.3).toInt()).context2d {
+        val bmp3 = Bitmap32Context2d(3, (shipSize * 0.3).toInt()) {
             lineWidth = 1.0
             lineCap = LineCap.ROUND
             stroke(Colors.WHITE) {
-                moveTo(width / 2, 0)
-                lineToV(height)
+                moveTo(Point(width / 2, 0))
+                lineToV(height.toFloat())
             }
         }
         //bmp1.showImageAndWait()
@@ -85,34 +86,34 @@ class RasterizerTest {
                 this.lineJoin = lineJoin
                 keep {
                     beginPath()
-                    moveTo(-5, 5 + i * 40)
-                    lineTo(35, 45 + i * 40)
-                    lineTo(75, 5 + i * 40)
-                    lineTo(115, 45 + i * 40)
-                    lineTo(155, 5 + i * 40)
+                    moveTo(Point(-5, 5 + i * 40))
+                    lineTo(Point(35, 45 + i * 40))
+                    lineTo(Point(75, 5 + i * 40))
+                    lineTo(Point(115, 45 + i * 40))
+                    lineTo(Point(155, 5 + i * 40))
                     stroke()
                 }
 
                 keep {
                     translate(0, 350)
                     beginPath()
-                    moveTo(-5, 5 + i * 40)
-                    quadTo(35, 45 + i * 40, 75, 5 + i * 40)
-                    quadTo(115, 45 + i * 40, 155, 5 + i * 40)
+                    moveTo(Point(-5, 5 + i * 40))
+                    quadTo(Point(35, 45 + i * 40), Point(75, 5 + i * 40))
+                    quadTo(Point(115, 45 + i * 40), Point(155, 5 + i * 40))
                     stroke()
                 }
             }
             beginPath()
             //lineJoin = LineJoin.MITER
             lineJoin = LineJoin.BEVEL
-            circle(250, 200, 30)
+            circle(Point(250, 200), 30f)
             stroke()
 
             beginPath()
-            moveTo(150, 200)
-            lineTo(200, 250)
-            lineTo(150, 300)
-            lineTo(100, 250)
+            moveTo(Point(150, 200))
+            lineTo(Point(200, 250))
+            lineTo(Point(150, 300))
+            lineTo(Point(100, 250))
             //lineTo(150, 200)
             close()
             stroke()
@@ -122,8 +123,8 @@ class RasterizerTest {
                     translate(250, 25)
                     beginPath()
                     lineCap = n
-                    moveTo(n.ordinal * 20, 0)
-                    lineTo(n.ordinal * 20, 50)
+                    moveTo(Point(n.ordinal * 20, 0))
+                    lineTo(Point(n.ordinal * 20, 50))
                     stroke()
                 }
             }
@@ -133,8 +134,8 @@ class RasterizerTest {
                     translate(25, 250)
                     beginPath()
                     lineCap = n
-                    moveTo(n.ordinal * 20, 0)
-                    lineTo(n.ordinal * 20, -50)
+                    moveTo(Point(n.ordinal * 20, 0))
+                    lineTo(Point(n.ordinal * 20, -50))
                     stroke()
                 }
             }
@@ -147,10 +148,10 @@ class RasterizerTest {
                 val colorA = Colors.RED
                 val colorB = Colors.BLUE
                 for (n in 0 until 360 step 30) {
-                    stroke(RGBA.interpolate(colorA, colorB, n.toDouble() / 360)) {
+                    stroke(RGBA.interpolate(colorA, colorB, Ratio(n.toDouble(), 360.0))) {
                         beginPath()
-                        moveTo(0, 0)
-                        lineTo(n.degrees.cosine * radius, n.degrees.sine * radius)
+                        moveTo(Point(0, 0))
+                        lineTo(Point(n.degrees.cosineD * radius, n.degrees.sineD * radius))
                     }
                 }
             }
@@ -164,7 +165,7 @@ class RasterizerTest {
                         strokeStyle = com.soywiz.korim.paint.ColorPaint(RGBA(0, (255 - 42.5 * i).toInt(), (255 - 42.5 * j).toInt(), 255))
                         beginPath();
                         //arc(12.5 + j * 25, 12.5 + i * 25, 10.0, 0.0, PI * 2, true)
-                        arc(12.5 + j * 25, 12.5 + i * 25, 10.0, 0.degrees, 360.degrees)
+                        arc(Point(12.5 + j * 25, 12.5 + i * 25), 10f, 0.degrees, 360.degrees)
                         stroke();
                     }
                 }
@@ -179,8 +180,8 @@ class RasterizerTest {
             beginPath()
             lineCap = LineCap.SQUARE
             lineWidth = 30.0
-            moveTo(200, 200)
-            lineTo(300, 100)
+            moveTo(Point(200, 200))
+            lineTo(Point(300, 100))
             stroke()
         }
         //bmp.showImageAndWait()

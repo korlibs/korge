@@ -10,6 +10,7 @@ import com.soywiz.korge.tests.*
 import com.soywiz.korge.view.filter.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
+import com.soywiz.korma.geom.*
 import org.junit.*
 
 class ViewsOpenglJvmTest : ViewsForTesting(log = true) {
@@ -24,7 +25,7 @@ class ViewsOpenglJvmTest : ViewsForTesting(log = true) {
 
     // This checks that the texture is generated with the default size (dirty=true fix)
     @Test
-    fun testIdentityFilterFor128x128() = korgeScreenshotTest(200, 200) {
+    fun testIdentityFilterFor128x128() = korgeScreenshotTest(SizeInt(200, 200)) {
         views.stage += Image(Bitmap32(102, 102, Colors.RED.premultiplied)).also {
             it.filter = IdentityFilter
         }
@@ -32,7 +33,7 @@ class ViewsOpenglJvmTest : ViewsForTesting(log = true) {
     }
 
     @Test
-    fun testRenderToTextureWithStencil() = korgeScreenshotTest(512, 512) {
+    fun testRenderToTextureWithStencil() = korgeScreenshotTest(SizeInt(512, 512)) {
         this += object : View() {
             override fun renderInternal(ctx: RenderContext) {
                 ctx.renderToTexture(100, 100, render = {

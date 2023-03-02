@@ -15,50 +15,22 @@ import com.soywiz.korim.text.*
 import com.soywiz.korio.async.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.interpolation.*
-import com.soywiz.korma.length.*
-import com.soywiz.korma.length.LengthExtensions.Companion.pt
 import kotlin.math.*
 
 inline fun Container.uiButton(
-    label: String,
-    icon: BmpSlice? = null,
+    label: String = "",
     width: Double = UI_DEFAULT_WIDTH,
     height: Double = UI_DEFAULT_HEIGHT,
+    icon: BmpSlice? = null,
     block: @ViewDslMarker UIButton.() -> Unit = {}
 ): UIButton = UIButton(width, height, label, icon).addTo(this).apply(block)
 
-@Deprecated("Use uiButton instead")
 inline fun Container.uiButton(
-    width: Double = UI_DEFAULT_WIDTH,
-    height: Double = UI_DEFAULT_HEIGHT,
-    text: String = "",
+    label: String = "",
+    size: Size = UI_DEFAULT_SIZE,
     icon: BmpSlice? = null,
     block: @ViewDslMarker UIButton.() -> Unit = {}
-): UIButton = UIButton(width, height, text, icon).addTo(this).apply(block)
-
-@Deprecated("Use uiButton instead")
-inline fun Container.iconButton(
-    width: Double = UI_DEFAULT_WIDTH,
-    height: Double = UI_DEFAULT_HEIGHT,
-    icon: BmpSlice? = null,
-    block: @ViewDslMarker UIButton.() -> Unit = {}
-): UIButton = UIButton(width, height, icon = icon).addTo(this).apply(block)
-
-@Deprecated("Use uiButton instead")
-inline fun Container.uiTextButton(
-    width: Double = UI_DEFAULT_WIDTH,
-    height: Double = UI_DEFAULT_HEIGHT,
-    text: String = "Button",
-    textFont: Font? = null,
-    textSize: Double? = null,
-    block: @ViewDslMarker UIButton.() -> Unit = {}
-): UIButton = UIButton(width, height, text).apply {
-    if (textFont != null) this.textFont = textFont
-    if (textSize != null) this.textSize = textSize
-}.addTo(this).apply(block)
-
-typealias UITextButton = UIButton
-typealias IconButton = UIButton
+): UIButton = UIButton(size.widthD, size.heightD, label, icon).addTo(this).apply(block)
 
 open class UIToggleableButton(
     width: Double = 128.0,
@@ -82,20 +54,29 @@ open class UIButton(
         const val DEFAULT_HEIGHT = UI_DEFAULT_HEIGHT
     }
 
-    @Deprecated("Use uiSkin instead")
-    var skin: UISkin? get() = uiSkin ; set(value) { uiSkin = value }
-
 	var forcePressed = false
-    var radius: Length = 6.pt
+
+    private var _radiusRatio: Ratio = Ratio.NaN
+    private var _radius: Float = 6f
+
+    private val halfSide: Int get() = min(width, height).toInt() / 2
+
+    var radiusRatio: Ratio
+        get() = if (!_radiusRatio.isNaN()) _radiusRatio else Ratio(_radius, halfSide.toFloat())
         set(value) {
-            field = value
+            _radiusRatio = value
+            _radius = Float.NaN
+            setInitialState()
+        }
+
+    var radius: Float
+        get() = if (!_radius.isNaN()) _radius else _radiusRatio.value * halfSide
+        set(value) {
+            _radius = value
+            _radiusRatio = Ratio.NaN
             setInitialState()
         }
     //var radius = 100.percent
-
-    fun radiusPoints(): Double {
-        return radius.calc(Length.Context().setSize(min(width, height).toInt() / 2)).toDouble()
-    }
 
     //val radiusRatioHalf get() = radiusRatio * 0.5
     @ViewProperty
@@ -139,7 +120,7 @@ open class UIButton(
     //var newSkin: NewUIButtonSkin = DefaultUISkin
 
     val background = uiMaterialLayer(width, height) {
-        radius = IRectCorners(5.0)
+        radius = RectCorners(5f)
     }
     //internal val background = FastMaterialBackground(width, height).addTo(this)
     //    .also { it.colorMul = bgColorOut }
@@ -186,22 +167,22 @@ open class UIButton(
         val height = height
         background.setSize(width, height)
         //background.setSize(width, height)
-        background.radius = IRectCorners(this.radiusPoints())
+        background.radius = RectCorners(this.radius)
         background.shadowRadius = if (elevation) 10.0 else 0.0
         //textView.setSize(width, height)
 
         textView.setSize(width, height)
 
         fitIconInRect(iconView, icon ?: Bitmaps.transparent, width, height, Anchor.MIDDLE_CENTER)
-        iconView.alpha = when {
-            !enabled -> 0.5
-            bover -> 1.0
-            else -> 1.0
+        iconView.alphaF = when {
+            !enabled -> 0.5f
+            bover -> 1.0f
+            else -> 1.0f
         }
         invalidateRender()
     }
 
-    var icon = icon
+    var icon: BmpSlice? = icon
         set(value) {
             field = value
             setInitialState()
@@ -280,7 +261,7 @@ open class UIButton(
     }
 
     fun simulateClick(views: Views) {
-        touch.simulateTapAt(views, localToGlobal(MPoint(width * 0.5, height * 0.5)))
+        touch.simulateTapAt(views, localToGlobal(Point(width * 0.5, height * 0.5)).mutable)
     }
 
     open fun updatedUIButton(down: Boolean? = null, over: Boolean? = null, px: Double = 0.0, py: Double = 0.0, immediate: Boolean = false) {
@@ -303,7 +284,7 @@ open class UIButton(
             //        button::highlightAlpha[1.0],
             //        button::highlightPos[Point(px / button.width, py / button.height), Point(px / button.width, py / button.height)],
             //    ))
-            background.addHighlight(MPoint(px, py))
+            background.addHighlight(Point(px, py))
                 /*
             button.highlightPos.setTo(px / button.width, py / button.height)
             button.animatorEffects.tween(

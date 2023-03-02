@@ -16,8 +16,7 @@ import com.soywiz.korev.MouseButton
 import com.soywiz.korev.Touch
 import com.soywiz.korev.TouchEvent
 import com.soywiz.korge.internal.KorgeInternal
-import com.soywiz.korma.geom.IPoint
-import com.soywiz.korma.geom.MPoint
+import com.soywiz.korma.geom.*
 
 //@Singleton
 @OptIn(KorgeInternal::class)
@@ -57,16 +56,15 @@ class Input : Extra by Extra.Mixin() {
     var clickDistance = 20.0 // @TODO: We should take into account pointSize/DPI
 
     // Mouse coordinates relative to the Stage
-    private val _mouse: MPoint = MPoint(-1000.0, -1000.0)
-    private val _mouseDown: MPoint = MPoint(-1000.0, -1000.0)
-    val mouse: IPoint get() = _mouse
-    val mouseDown: IPoint get() = _mouseDown
+    private var _mouse: Point = Point(-1000.0, -1000.0)
+    private var _mouseDown: Point = Point(-1000.0, -1000.0)
+    val mousePos: Point get() = _mouse
+    val mouseDownPos: Point get() = _mouseDown
 
-    @KorgeInternal fun setMouseGlobalXY(x: Double, y: Double, down: Boolean = false) {
-        val point = if (down) _mouseDown else _mouse
+    @KorgeInternal fun setMouseGlobalPos(p: Point, down: Boolean = false) {
+        if (down) _mouseDown = p else _mouse = p
         //println("setMouseGlobalXY: x=$x, y=$y, down=$down")
         //if (x == 5.0) println("-----")
-        point.setTo(x, y)
     }
 
     /** BitField with pressed mouse buttons */

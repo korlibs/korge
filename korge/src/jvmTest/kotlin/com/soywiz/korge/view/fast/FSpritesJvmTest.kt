@@ -8,9 +8,9 @@ import kotlin.test.*
 
 class FSpritesJvmTest : ViewsForTesting(log = true) {
     @Test
-    fun test() = korgeScreenshotTest(512, 512) {
+    fun test() = korgeScreenshotTest(SizeInt(512, 512)) {
         val sprites = FSprites(64)
-        val view = sprites.createView(Bitmaps.white.bmpBase)
+        val view = sprites.createView(Bitmaps.white.bmp)
         addChild(view)
         sprites.apply {
             for (n in 0 until 10) {

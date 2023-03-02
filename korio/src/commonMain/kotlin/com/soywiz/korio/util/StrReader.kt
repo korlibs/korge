@@ -62,9 +62,6 @@ abstract class BaseStrReader {
         return this
     }
 
-    @Deprecated("", ReplaceWith("peekChar()"))
-    fun peek(): Char = peekChar()
-
     fun tryRead(str: String): Boolean = tryLit(str, consume = true) != null
 
     fun matchIdentifier(): String? = matchWhile { it.isLetterDigitOrUnderscore() || it == '-' || it == '~' || it == ':' }.takeIf { it.isNotEmpty() }
@@ -260,13 +257,6 @@ class StrReader(val str: String, val file: String = "file", override var pos: In
 
     fun readRemaining(): String = read(available)
 
-    @Deprecated("This overload is slow")
-    fun expect(expected: Char): String {
-        skipExpect(expected)
-        this.unread()
-        return this.read(1)
-    }
-
     override fun skip(count: Int): StrReader {
         this.pos += count
         return this
@@ -431,7 +421,7 @@ class StrReader(val str: String, val file: String = "file", override var pos: In
         var integral = 0
         var mult = 1
         loop@ while (!eof) {
-            when (val c = peek()) {
+            when (val c = peekChar()) {
                 '-' -> {
                     skip(1)
                     mult *= -1

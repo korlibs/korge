@@ -10,8 +10,7 @@ import com.soywiz.korim.internal.packIntUnchecked
 import com.soywiz.korim.internal.sumPacked4MulR
 import com.soywiz.korim.paint.Paint
 import com.soywiz.korio.util.niceStr
-import com.soywiz.korma.interpolation.Interpolable
-import com.soywiz.korma.interpolation.interpolate
+import com.soywiz.korma.interpolation.*
 import com.soywiz.krypto.encoding.appendHexByte
 import kotlin.jvm.JvmName
 import kotlin.math.pow
@@ -109,7 +108,7 @@ inline class RGBA(val value: Int) : Comparable<RGBA>, Interpolable<RGBA>, Paint 
 	operator fun minus(other: RGBA): RGBA = RGBA(this.r - other.r, this.g - other.g, this.b - other.b, this.a - other.a)
 
     override operator fun compareTo(other: RGBA): Int = this.value.compareTo(other.value)
-    override fun interpolateWith(ratio: Double, other: RGBA): RGBA = RGBA.interpolate(this, other, ratio)
+    override fun interpolateWith(ratio: Ratio, other: RGBA): RGBA = RGBA.interpolate(this, other, ratio)
 
     fun premultipliedValue(premultiplied: Boolean): Int = if (premultiplied) this.premultiplied.value else this.value
 
@@ -124,7 +123,15 @@ inline class RGBA(val value: Int) : Comparable<RGBA>, Interpolable<RGBA>, Paint 
         return RGBAPremultiplied((value and 0x00FFFFFF.inv()) or RB or G)
     }
 
-    val premultipliedSlow: RGBAPremultiplied get() {
+    val premultipliedAccurate: RGBAPremultiplied get() {
+        val A = af
+        val R = (r * A).toInt()
+        val G = (g * A).toInt()
+        val B = (b * A).toInt()
+        return RGBAPremultiplied(R, G, B, a)
+    }
+
+    val premultipliedAccurateAlt: RGBAPremultiplied get() {
         val A = a
         val R = (r * A) / 255
         val G = (g * A) / 255
@@ -148,8 +155,6 @@ inline class RGBA(val value: Int) : Comparable<RGBA>, Interpolable<RGBA>, Paint 
         fun float(array: FloatArray, index: Int = 0): RGBA = float(array[index + 0], array[index + 1], array[index + 2], array[index + 3])
         fun float(r: Float, g: Float, b: Float, a: Float): RGBA = unclamped(f2i(r), f2i(g), f2i(b), f2i(a))
         fun float(r: Double, g: Double, b: Double, a: Double): RGBA = unclamped(d2i(r), d2i(g), d2i(b), d2i(a))
-        @Deprecated("")
-        inline fun float(r: Number, g: Number, b: Number, a: Number = 1f): RGBA = float(r.toFloat(), g.toFloat(), b.toFloat(), a.toFloat())
         fun unclamped(r: Int, g: Int, b: Int, a: Int): RGBA = RGBA(packIntUnchecked(r, g, b, a))
 		operator fun invoke(r: Int, g: Int, b: Int, a: Int): RGBA = RGBA(packIntClamped(r, g, b, a))
         operator fun invoke(r: Int, g: Int, b: Int): RGBA = RGBA(packIntClamped(r, g, b, 0xFF))
@@ -175,20 +180,16 @@ inline class RGBA(val value: Int) : Comparable<RGBA>, Interpolable<RGBA>, Paint 
                     ((((c1 and 0x00FF00) * ifactor256) + ((c2 and 0x00FF00) * factor256)) and 0x00FF0000))) ushr 8
 
         }
-		fun mixRgb(c1: RGBA, c2: RGBA, factor: Double): RGBA = mixRgbFactor256(c1, c2, (factor * 256).toInt())
-        fun mixRgba(c1: RGBA, c2: RGBA, factor: Double): RGBA = RGBA(mixRgb(c1, c2, factor).rgb, blendComponent(c1.a, c2.a, factor))
+		fun mixRgb(c1: RGBA, c2: RGBA, factor: Ratio): RGBA = mixRgbFactor256(c1, c2, (factor.toFloat() * 256).toInt())
+        fun mixRgba(c1: RGBA, c2: RGBA, factor: Ratio): RGBA = RGBA(mixRgb(c1, c2, factor).rgb, blendComponent(c1.a, c2.a, factor))
 
-        fun mixRgb(c1: RGBA, c2: RGBA, factor: Float): RGBA = mixRgbFactor256(c1, c2, (factor * 256).toInt())
-        fun mixRgba(c1: RGBA, c2: RGBA, factor: Float): RGBA = RGBA(mixRgb(c1, c2, factor).rgb, blendComponent(c1.a, c2.a, factor))
-
-        fun mixRgba4(c00: RGBA, c10: RGBA, c01: RGBA, c11: RGBA, factorX: Float, factorY: Float): RGBA {
+        fun mixRgba4(c00: RGBA, c10: RGBA, c01: RGBA, c11: RGBA, factorX: Ratio, factorY: Ratio): RGBA {
             val c1 = mixRgba(c00, c10, factorX)
             val c2 = mixRgba(c01, c11, factorX)
             return mixRgba(c1, c2, factorY)
         }
 
-        private fun blendComponent(c1: Int, c2: Int, factor: Double): Int = (c1 * (1.0 - factor) + c2 * factor).toInt() and 0xFF
-        private fun blendComponent(c1: Int, c2: Int, factor: Float): Int = (c1 * (1.0 - factor) + c2 * factor).toInt() and 0xFF
+        private fun blendComponent(c1: Int, c2: Int, factor: Ratio): Int = (c1 * (1f - factor.toFloat()) + c2 * factor.toFloat()).toInt() and 0xFF
 
         fun mix(dst: RGBA, src: RGBA): RGBA {
             val srcA = src.a
@@ -208,7 +209,7 @@ inline class RGBA(val value: Int) : Comparable<RGBA>, Interpolable<RGBA>, Paint 
             ((c1.a * c2.a) / 0xFF)
         )
 
-        fun interpolate(src: RGBA, dst: RGBA, ratio: Double): RGBA = RGBA(
+        fun interpolate(src: RGBA, dst: RGBA, ratio: Ratio): RGBA = RGBA(
             ratio.interpolate(src.r, dst.r),
             ratio.interpolate(src.g, dst.g),
             ratio.interpolate(src.b, dst.b),
@@ -217,7 +218,8 @@ inline class RGBA(val value: Int) : Comparable<RGBA>, Interpolable<RGBA>, Paint 
     }
 }
 
-fun Double.interpolate(a: RGBA, b: RGBA): RGBA = RGBA.interpolate(a, b, this)
+fun Double.interpolate(a: RGBA, b: RGBA): RGBA = this.toRatio().interpolate(a, b)
+fun Ratio.interpolate(a: RGBA, b: RGBA): RGBA = RGBA.interpolate(a, b, this)
 
 inline class RGBAPremultiplied(val value: Int) {
     constructor(rgb: Int, a: Int) : this((rgb and 0xFFFFFF) or (a shl 24))
@@ -239,44 +241,8 @@ inline class RGBAPremultiplied(val value: Int) {
     val bd: Double get() = b.toDouble() / 255.0
     val ad: Double get() = a.toDouble() / 255.0
 
-    // @TODO: Use SIMD
-    val depremultiplied: RGBA get() {
-        //return depremultipliedAccurate
-        //val A = (value ushr 24) + 1
-        //val R = (((value and 0x0000FF) shl 8) / A) and 0x0000F0
-        //val G = (((value and 0x00FF00) shl 8) / A) and 0x00FF00
-        //val B = (((value and 0xFF0000) shl 8) / A) and 0xFF0000
-        //return RGBA((value and 0x00FFFFFF.inv()) or B or G or R)
-
-        //val A = a
-        //val A1 = A + 1
-        //val R = ((r shl 8) / A1) and 0xFF
-        //val G = ((g shl 8) / A1) and 0xFF
-        //val B = ((b shl 8) / A1) and 0xFF
-        //return RGBA(R, G, B, A)
-
-        //val A = a
-        //val R = ((r * 255) / a) and 0xFF
-        //val G = ((g * 255) / a) and 0xFF
-        //val B = ((b * 255) / a) and 0xFF
-        //return RGBA(R, G, B, A)
-
-        val A = a
-        if (A == 0x00) return RGBA(0)
-        if (A == 0xFF) return RGBA(this.value)
-        //val Af = A.toFloat() / 255f
-        val iAf = (255f / A.toFloat())
-        val Rp = r
-        val Gp = g
-        val Bp = b
-        //val R = (Rp * iAf).toInt()
-        //val G = (Gp * iAf).toInt()
-        //val B = (Bp * iAf).toInt()
-        val R = (Rp * iAf).roundToInt()
-        val G = (Gp * iAf).roundToInt()
-        val B = (Bp * iAf).roundToInt()
-        return RGBA.invoke(R, G, B, A)
-    }
+    inline val depremultiplied: RGBA get() = depremultipliedAccurate
+    //inline val depremultiplied: RGBA get() = depremultipliedFast
 
     val depremultipliedFast: RGBA get() {
         val A = a
@@ -288,14 +254,29 @@ inline class RGBAPremultiplied(val value: Int) {
     }
 
     val depremultipliedAccurate: RGBA get() {
-        val alpha = ad
+        val alpha = a
         return when (alpha) {
-            0.0 -> Colors.TRANSPARENT
+            0 -> Colors.TRANSPARENT
             else -> {
-                val ialpha = 1.0 / alpha
-                RGBA((r * ialpha).toInt(), (g * ialpha).toInt(), (b * ialpha).toInt(), a)
+                val ialpha = 255f / alpha
+                RGBA((r * ialpha).toInt(), (g * ialpha).toInt(), (b * ialpha).toInt(), alpha)
             }
         }
+    }
+
+    val depremultipliedAccurateAlt: RGBA get() {
+        val A = a
+        if (A == 0x00) return RGBA(0)
+        if (A == 0xFF) return RGBA(this.value)
+        //val Af = A.toFloat() / 255f
+        val iAf = (255f / A.toFloat())
+        val Rp = r
+        val Gp = g
+        val Bp = b
+        val R = (Rp * iAf).roundToInt()
+        val G = (Gp * iAf).roundToInt()
+        val B = (Bp * iAf).roundToInt()
+        return RGBA.invoke(R, G, B, A)
     }
 
     val hexString: String get() = this.asNonPremultiplied().hexString
@@ -463,7 +444,7 @@ inline class RgbaArray(val ints: IntArray) : List<RGBA> {
     override fun toString(): String = "RgbaArray($size)"
 }
 
-fun RGBA.mix(other: RGBA, ratio: Double) = RGBA.mixRgba(this, other, ratio)
+fun RGBA.mix(other: RGBA, ratio: Ratio) = RGBA.mixRgba(this, other, ratio)
 fun RGBAPremultiplied.mix(other: RGBAPremultiplied, ratio: Double) = RGBAPremultiplied.mixRgba(this, other, ratio)
 
 fun List<RGBA>.toRgbaArray(): RgbaArray = RgbaArray(IntArray(this.size) { this@toRgbaArray[it].value })

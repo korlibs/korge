@@ -16,7 +16,7 @@ class ViewsJvmTest : ViewsForTesting(log = true) {
 	val tex = Bitmap32(10, 10, Colors.GREEN.premultiplied)
 
 	@Test
-	fun name() = korgeScreenshotTest(20, 20) {
+	fun name() = korgeScreenshotTest(SizeInt(20, 20)) {
 		this += Container().apply {
 			this += Image(tex)
 		}
@@ -31,20 +31,8 @@ class ViewsJvmTest : ViewsForTesting(log = true) {
         assertScreenshot()
 	}
 
-	@Test
-	fun textGetBounds1() = viewsTest {
-		val font = views.debugBmpFont
-		assertEquals(MRectangle(0, 0, 77, 8), TextOld("Hello World", font = font, textSize = 8.0).globalBounds)
-	}
-
     @Test
-    fun textGetBounds2() = viewsTest {
-        val font = views.debugBmpFont
-        assertEquals(MRectangle(0, 0, 154, 16), TextOld("Hello World", font = font, textSize = 16.0).globalBounds)
-    }
-
-    @Test
-    fun testFilter() = korgeScreenshotTest(20, 20) {
+    fun testFilter() = korgeScreenshotTest(SizeInt(20, 20)) {
         this += Container().apply {
             this += Image(tex).also {
                 it.addFilter(ColorMatrixFilter(ColorMatrixFilter.GRAYSCALE_MATRIX))
@@ -86,7 +74,7 @@ class ViewsJvmTest : ViewsForTesting(log = true) {
                 drawBorder = true
             )
             //textResult.bmp.showImageAndWait()
-            assertEquals(MSize(453, 121), textResult.bmp.size)
+            assertEquals(SizeInt(453, 121), textResult.bmp.size)
             //assertEquals(Size(450, 240), textResult.bmp.size)
         }
     }
@@ -96,6 +84,6 @@ class ViewsJvmTest : ViewsForTesting(log = true) {
         val bitmap = runBlockingNoJs {
             resourcesVfs["texture.png"].readBitmap()
         }
-        assertEquals(MSize(64, 64), bitmap.size)
+        assertEquals(SizeInt(64, 64), bitmap.size)
     }
 }

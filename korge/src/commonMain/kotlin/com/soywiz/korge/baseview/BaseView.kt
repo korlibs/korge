@@ -61,10 +61,6 @@ open class BaseView {
         baseParent?.deltaComponent(clazz, delta)
     }
 
-    @Deprecated("Use getComponentsOfType instead")
-    inline fun <reified T : UpdateComponent> getUpdateComponents(): List<T> =
-        getComponentsOfType(UpdateComponent)?.filterIsInstance<T>() ?: emptyList()
-
     fun <T : Component> getComponentsOfType(type: ComponentType<T>): FastArrayList<T>? {
         return __components?.getValue(type) as FastArrayList<T>?
     }

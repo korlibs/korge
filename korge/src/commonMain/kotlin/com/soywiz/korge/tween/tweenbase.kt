@@ -13,9 +13,7 @@ import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.bezier.getEquidistantPoints
 import com.soywiz.korma.geom.vector.VectorPath
 import com.soywiz.korma.geom.vector.getCurves
-import com.soywiz.korma.interpolation.Easing
-import com.soywiz.korma.interpolation.Interpolable
-import com.soywiz.korma.interpolation.interpolate
+import com.soywiz.korma.interpolation.*
 import com.soywiz.korma.math.isAlmostEquals
 import kotlin.jvm.JvmName
 import kotlin.native.concurrent.*
@@ -26,7 +24,7 @@ data class V2<V>(
     val key: KMutableProperty0<V>,
     var initial: V,
     val end: V,
-    val interpolator: (Double, V, V) -> V,
+    val interpolator: (Ratio, V, V) -> V,
     val includeStart: Boolean,
     val startTime: TimeSpan = 0.nanoseconds,
     val duration: TimeSpan = TimeSpan.NIL,
@@ -51,7 +49,7 @@ data class V2<V>(
     //        includeStart = true
     //    }
     //}
-    fun set(ratio: Double): Unit {
+    fun set(ratio: Ratio): Unit {
         //ensureInit()
         key.set(interpolator(ratio, initial, end))
     }
@@ -71,8 +69,8 @@ private object V2CallbackSupport {
 
 private class V2CallbackTSupport<T>(var dummy: T)
 
-fun V2Callback(init: () -> Unit = {}, callback: (Double) -> Unit): V2<Unit> = V2(V2CallbackSupport::dummy, Unit, Unit, { ratio, _, _ -> callback(ratio) }, true, initialization = init)
-fun <T> V2CallbackT(initial: T, init: () -> Unit = {}, callback: (Double) -> T): V2<T> {
+fun V2Callback(init: () -> Unit = {}, callback: (Ratio) -> Unit): V2<Unit> = V2(V2CallbackSupport::dummy, Unit, Unit, { ratio, _, _ -> callback(ratio) }, true, initialization = init)
+fun <T> V2CallbackT(initial: T, init: () -> Unit = {}, callback: (Ratio) -> T): V2<T> {
     return V2(V2CallbackTSupport<T>(initial)::dummy, initial, initial, { ratio, _, _ -> callback(ratio) }, true, initialization = init)
 }
 
@@ -116,46 +114,34 @@ operator fun <V : Interpolable<V>> KMutableProperty0<V>.get(end: V) = V2(this, t
 @JvmName("getMutableProperty")
 operator fun <V : Interpolable<V>> KMutableProperty0<V>.get(initial: V, end: V) = V2(this, initial, end, ::_interpolateInterpolable, includeStart = true)
 
-@PublishedApi
-internal fun _interpolate(ratio: Double, l: Double, r: Double): Double = ratio.interpolate(l, r)
+@JvmName("getMutablePropertyPoint") operator fun KMutableProperty0<Point>.get(end: Point) = V2(this, this.get(), end, ::_interpolatePoint, includeStart = false)
+@JvmName("getMutablePropertyPoint") operator fun KMutableProperty0<Point>.get(initial: Point, end: Point) = V2(this, initial, end, ::_interpolatePoint, includeStart = true)
 
-@PublishedApi
-internal fun _interpolateInt(ratio: Double, l: Int, r: Int): Int = ratio.interpolate(l, r)
-
-@PublishedApi
-internal fun <V : Interpolable<V>> _interpolateInterpolable(ratio: Double, l: V, r: V): V = ratio.interpolate(l, r)
-
-@PublishedApi
-internal fun _interpolateFloat(ratio: Double, l: Float, r: Float): Float = ratio.interpolate(l, r)
-
-@PublishedApi
-internal fun _interpolateColor(ratio: Double, l: RGBA, r: RGBA): RGBA = RGBA.mixRgba(l, r, ratio)
-
-@PublishedApi
-internal fun _interpolateColorAdd(ratio: Double, l: ColorAdd, r: ColorAdd): ColorAdd = ColorAdd(
+@PublishedApi internal fun _interpolate(ratio: Ratio, l: Double, r: Double): Double = ratio.interpolate(l, r)
+@PublishedApi internal fun _interpolateInt(ratio: Ratio, l: Int, r: Int): Int = ratio.interpolate(l, r)
+@PublishedApi internal fun <V : Interpolable<V>> _interpolateInterpolable(ratio: Ratio, l: V, r: V): V = ratio.interpolate(l, r)
+@PublishedApi internal fun _interpolatePoint(ratio: Ratio, l: Point, r: Point): Point = ratio.interpolate(l, r)
+@PublishedApi internal fun _interpolateFloat(ratio: Ratio, l: Float, r: Float): Float = ratio.interpolate(l, r)
+@PublishedApi internal fun _interpolateColor(ratio: Ratio, l: RGBA, r: RGBA): RGBA = RGBA.mixRgba(l, r, ratio)
+@PublishedApi internal fun _interpolateAngle(ratio: Ratio, l: Angle, r: Angle): Angle = ratio.interpolateAngleNormalized(l, r)
+@PublishedApi internal fun _interpolateAngleDenormalized(ratio: Ratio, l: Angle, r: Angle): Angle = ratio.interpolateAngleDenormalized(l, r)
+@PublishedApi internal fun _interpolateTimeSpan(ratio: Ratio, l: TimeSpan, r: TimeSpan): TimeSpan = _interpolate(ratio, l.milliseconds, r.milliseconds).milliseconds
+@PublishedApi internal fun _interpolateColorAdd(ratio: Ratio, l: ColorAdd, r: ColorAdd): ColorAdd = ColorAdd(
     ratio.interpolate(l.r, r.r),
     ratio.interpolate(l.g, r.g),
     ratio.interpolate(l.b, r.b),
     ratio.interpolate(l.a, r.a)
 )
 
-@PublishedApi
-internal fun _interpolateAngle(ratio: Double, l: Angle, r: Angle): Angle = ratio.interpolateAngleNormalized(l, r)
-
-@PublishedApi
-internal fun _interpolateAngleDenormalized(ratio: Double, l: Angle, r: Angle): Angle = ratio.interpolateAngleDenormalized(l, r)
-
-@PublishedApi
-internal fun _interpolateTimeSpan(ratio: Double, l: TimeSpan, r: TimeSpan): TimeSpan = _interpolate(ratio, l.milliseconds, r.milliseconds).milliseconds
-
 //inline operator fun KMutableProperty0<Float>.get(end: Number) = V2(this, this.get(), end.toFloat(), ::_interpolateFloat)
 //inline operator fun KMutableProperty0<Float>.get(initial: Number, end: Number) =
 //	V2(this, initial.toFloat(), end.toFloat(), ::_interpolateFloat)
 
-inline operator fun KMutableProperty0<IPoint>.get(path: VectorPath, includeLastPoint: Boolean = path.isLastCommandClose, reversed: Boolean = false): V2<IPoint> = this[path.getCurves().getEquidistantPoints().also {
+@JvmName("getPoint")
+inline operator fun KMutableProperty0<Point>.get(path: VectorPath, includeLastPoint: Boolean = path.isLastCommandClose, reversed: Boolean = false): V2<Point> = this[path.getCurves().getEquidistantPoints().also {
     //println("points.lastX=${points.lastX}, points.firstX=${points.firstX}")
     //println("points.lastY=${points.lastY}, points.firstY=${points.firstY}")
-    if (!includeLastPoint && it.lastX.isAlmostEquals(it.firstX) && it.lastY.isAlmostEquals(it.firstY)) {
+    if (!includeLastPoint && it.last.isAlmostEquals(it.first)) {
         (it as PointArrayList).removeAt(it.size - 1)
         //println("REMOVED LAST POINT!")
     }
@@ -164,15 +150,48 @@ inline operator fun KMutableProperty0<IPoint>.get(path: VectorPath, includeLastP
     }
 }]
 
+@JvmName("getIPoint")
+@Deprecated("")
+inline operator fun KMutableProperty0<IPoint>.get(path: VectorPath, includeLastPoint: Boolean = path.isLastCommandClose, reversed: Boolean = false): V2<IPoint> = this[path.getCurves().getEquidistantPoints().also {
+    //println("points.lastX=${points.lastX}, points.firstX=${points.firstX}")
+    //println("points.lastY=${points.lastY}, points.firstY=${points.firstY}")
+    if (!includeLastPoint && it.last.isAlmostEquals(it.first)) {
+        (it as PointArrayList).removeAt(it.size - 1)
+        //println("REMOVED LAST POINT!")
+    }
+    if (reversed) {
+        (it as PointArrayList).reverse()
+    }
+}]
+
+@JvmName("getIPoint")
+@Deprecated("")
 inline operator fun KMutableProperty0<IPoint>.get(range: IPointArrayList): V2<IPoint> {
     val temp = MPoint()
     return V2(
         this, temp, temp, { ratio, _, _ ->
-            val ratioIndex = ratio * (range.size - 1)
+            val ratioIndex = ratio.toFloat() * (range.size - 1)
             val index = ratioIndex.toIntFloor()
             val index1 = (index + 1).coerceAtMost(range.size)
             val sratio = fract(ratioIndex)
             temp.setTo(
+                sratio.toRatio().interpolate(range.getX(index), range.getX(index1)),
+                sratio.toRatio().interpolate(range.getY(index), range.getY(index1))
+            )
+        }, includeStart = false
+    )
+}
+
+@JvmName("getPoint")
+inline operator fun KMutableProperty0<Point>.get(range: IPointArrayList): V2<Point> {
+    val p = Point()
+    return V2(
+        this, p, p, { ratio, _, _ ->
+            val ratioIndex = ratio.toFloat() * (range.size - 1)
+            val index = ratioIndex.toIntFloor()
+            val index1 = (index + 1).coerceAtMost(range.size)
+            val sratio = fract(ratioIndex).toRatio()
+            Point(
                 sratio.interpolate(range.getX(index), range.getX(index1)),
                 sratio.interpolate(range.getY(index), range.getY(index1))
             )
@@ -181,9 +200,14 @@ inline operator fun KMutableProperty0<IPoint>.get(range: IPointArrayList): V2<IP
 }
 
 @JvmName("getFloat")
-inline operator fun KMutableProperty0<Float>.get(end: Float) = V2(this, this.get(), end, ::_interpolateFloat, includeStart = false)
+inline operator fun KMutableProperty0<Float>.get(end: Float): V2<Float> = V2(this, this.get(), end, ::_interpolateFloat, includeStart = false)
 @JvmName("getFloat")
 inline operator fun KMutableProperty0<Float>.get(initial: Float, end: Float) = V2(this, initial, end, ::_interpolateFloat, true)
+
+@JvmName("getFloatDouble") inline operator fun KMutableProperty0<Float>.get(end: Double): V2<Float> = get(end.toFloat())
+@JvmName("getFloatDouble") inline operator fun KMutableProperty0<Float>.get(initial: Double, end: Double) = get(initial.toFloat(), end.toFloat())
+@JvmName("getFloatInt") inline operator fun KMutableProperty0<Float>.get(end: Int): V2<Float> = get(end.toFloat())
+@JvmName("getFloatInt") inline operator fun KMutableProperty0<Float>.get(initial: Int, end: Int) = get(initial.toFloat(), end.toFloat())
 
 inline operator fun KMutableProperty0<Double>.get(end: Double) = V2(this, this.get(), end, ::_interpolate, includeStart = false)
 inline operator fun KMutableProperty0<Double>.get(initial: Double, end: Double) = V2(this, initial, end, ::_interpolate, true)
@@ -214,8 +238,8 @@ fun V2<Angle>.denormalized(): V2<Angle> = this.copy(interpolator = ::_interpolat
 inline operator fun KMutableProperty0<TimeSpan>.get(end: TimeSpan) = V2(this, this.get(), end, ::_interpolateTimeSpan, includeStart = false)
 inline operator fun KMutableProperty0<TimeSpan>.get(initial: TimeSpan, end: TimeSpan) = V2(this, initial, end, ::_interpolateTimeSpan, includeStart = true)
 
-fun <V> V2<V>.clamped(): V2<V> = copy(interpolator = { ratio, l, r -> this.interpolator(ratio.clamp01(), l, r) })
-fun <V> V2<V>.easing(easing: Easing): V2<V> = this.copy(interpolator = { ratio, a, b -> this.interpolator(easing(ratio), a, b) })
+fun <V> V2<V>.clamped(): V2<V> = copy(interpolator = { ratio, l, r -> this.interpolator(ratio.clamped, l, r) })
+fun <V> V2<V>.easing(easing: Easing): V2<V> = this.copy(interpolator = { ratio, a, b -> this.interpolator(easing(ratio.toDouble()).toRatio(), a, b) })
 
 inline fun <V> V2<V>.delay(startTime: TimeSpan) = this.copy(startTime = startTime)
 inline fun <V> V2<V>.duration(duration: TimeSpan) = this.copy(duration = duration)

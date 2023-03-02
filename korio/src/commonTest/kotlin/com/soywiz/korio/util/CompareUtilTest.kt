@@ -6,12 +6,12 @@ import kotlin.test.assertEquals
 class CompareUtilTest {
 	@Test
 	fun test() {
-		class Point(val x: Int, val y: Int)
-		val ap = Comparator<Point> { l, r -> l.x.compareTo(r.x).compareToChain { l.y.compareTo(r.y) } }
-		assertEquals(0, ap.compare(Point(0, 0), Point(0, 0)))
-		assertEquals(-1, ap.compare(Point(-1, 0), Point(0, 0)))
-		assertEquals(+1, ap.compare(Point(+1, 0), Point(0, 0)))
-		assertEquals(-1, ap.compare(Point(0, -1), Point(0, 0)))
-		assertEquals(+1, ap.compare(Point(0, +1), Point(0, 0)))
+		class Comp(val x: Int, val y: Int)
+		val ap = Comparator<Comp> { l, r -> l.x.compareTo(r.x).compareToChain { l.y.compareTo(r.y) } }
+		assertEquals(0, ap.compare(Comp(0, 0), Comp(0, 0)))
+		assertEquals(-1, ap.compare(Comp(-1, 0), Comp(0, 0)))
+		assertEquals(+1, ap.compare(Comp(+1, 0), Comp(0, 0)))
+		assertEquals(-1, ap.compare(Comp(0, -1), Comp(0, 0)))
+		assertEquals(+1, ap.compare(Comp(0, +1), Comp(0, 0)))
 	}
 }

@@ -4,6 +4,7 @@ import com.soywiz.korge.particle.*
 import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.view.*
 import com.soywiz.korio.file.std.*
+import com.soywiz.korma.geom.*
 
 class MainParticles : Scene() {
     override suspend fun SContainer.sceneMain() {
@@ -19,7 +20,7 @@ class MainParticles : Scene() {
             //val particlesView = particleEmitter(emitter).position(0.0, 0.0)
 
             addUpdater {
-                particlesView.emitterPos = localMouseXY(views)
+                particlesView.emitterPos = localMousePos(views).mutable
             }
 
             //delay(4.seconds)

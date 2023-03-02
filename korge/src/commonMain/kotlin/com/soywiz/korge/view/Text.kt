@@ -1,7 +1,6 @@
 package com.soywiz.korge.view
 
 import com.soywiz.korag.shader.*
-import com.soywiz.korge.html.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.text.*
 import com.soywiz.korge.view.filter.*
@@ -192,10 +191,6 @@ open class Text(
         this.alignment = align
     }
 
-    fun setFormat(format: Html.Format) {
-        setFormat(format.computedFace, format.computedSize, format.computedColor, format.computedAlign)
-    }
-
     fun setTextBounds(rect: IRectangle) {
         if (this._textBounds == rect && !autoSize) return
         this._textBounds.copyFrom(rect)
@@ -235,7 +230,7 @@ open class Text(
                 val bmpfont = font as BitmapFont
                 val tex = bmpfont.baseBmp
                 batch.setStateFast(tex, smoothing, renderBlendMode, bmpfont.agProgram, icount = tva.icount, vcount = tva.vcount)
-                batch.drawVertices(tva, tempMatrix, premultiplied = tex.premultiplied, wrap = false)
+                batch.drawVertices(tva, tempMatrix)
             }
         } else {
             super.renderInternal(ctx)

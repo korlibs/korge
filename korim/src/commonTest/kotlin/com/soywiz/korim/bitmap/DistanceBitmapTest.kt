@@ -4,6 +4,7 @@ import com.soywiz.klogger.*
 import com.soywiz.korim.vector.*
 import com.soywiz.korio.async.suspendTest
 import com.soywiz.korio.util.*
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.shape.*
 import com.soywiz.korma.geom.vector.*
 import kotlin.test.Test
@@ -81,7 +82,7 @@ class DistanceBitmapTest {
     @Test
     fun testVectorSDF() {
         val path = buildVectorPath {
-            this.circle(5, 5, 5)
+            this.circle(Point(5, 5), 5f)
         }
         val sdf = path.sdf(10, 10)
         val msdf = path.msdf(10, 10)

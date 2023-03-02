@@ -36,21 +36,16 @@ abstract class WebSocketClient protected constructor(val url: String, val protoc
     fun close(info: WsCloseInfo) = close(info.code, info.reason)
 	open suspend fun send(message: String): Unit = Unit
 	open suspend fun send(message: ByteArray): Unit = Unit
+
+    fun messageChannel(limit: Int = Channel.UNLIMITED): Channel<Any> =
+        Channel<Any>(limit).also { messages -> onAnyMessage.add { messages.trySend(it) } }
+
+    fun messageChannelString(limit: Int = Channel.UNLIMITED): Channel<Any> =
+        Channel<Any>(limit).also { messages -> onStringMessage.add { messages.trySend(it) } }
+
+    fun messageChannelBinary(limit: Int = Channel.UNLIMITED): Channel<Any> =
+        Channel<Any>(limit).also { messages -> onBinaryMessage.add { messages.trySend(it) } }
 }
-
-fun WebSocketClient.messageChannel(limit: Int = Channel.UNLIMITED): Channel<Any> =
-    Channel<Any>(limit).also { messages -> onAnyMessage.add { messages.trySend(it) } }
-
-fun WebSocketClient.messageChannelString(limit: Int = Channel.UNLIMITED): Channel<Any> =
-    Channel<Any>(limit).also { messages -> onStringMessage.add { messages.trySend(it) } }
-
-fun WebSocketClient.messageChannelBinary(limit: Int = Channel.UNLIMITED): Channel<Any> =
-    Channel<Any>(limit).also { messages -> onBinaryMessage.add { messages.trySend(it) } }
-
-@Deprecated("This requires the message to be sent after this function call. Use messageChannel* instead")
-suspend fun WebSocketClient.readString() = onStringMessage.waitOneBase()
-@Deprecated("This requires the message to be sent after this function call. Use messageChannel* instead")
-suspend fun WebSocketClient.readBinary() = onBinaryMessage.waitOneBase()
 
 expect suspend fun WebSocketClient(
     url: String,

@@ -1,22 +1,12 @@
 package com.soywiz.korim.vector
 
-import com.soywiz.korim.bitmap.Bitmap
-import com.soywiz.korim.font.Font
-import com.soywiz.korim.paint.BitmapPaint
-import com.soywiz.korim.paint.Paint
-import com.soywiz.korim.vector.renderer.DummyRenderer
-import com.soywiz.korma.geom.MMatrix
-import com.soywiz.korma.geom.vector.LineCap
-import com.soywiz.korma.geom.vector.LineJoin
-import com.soywiz.korma.geom.vector.LineScaleMode
-import com.soywiz.korma.geom.vector.StrokeInfo
-import com.soywiz.korma.geom.vector.VectorPath
-import com.soywiz.korma.geom.vector.Winding
-import com.soywiz.korma.geom.vector.isEmpty
-import com.soywiz.korma.geom.vector.rect
-import com.soywiz.korma.geom.vector.write
-import kotlin.contracts.ExperimentalContracts
-import kotlin.contracts.contract
+import com.soywiz.korim.bitmap.*
+import com.soywiz.korim.font.*
+import com.soywiz.korim.paint.*
+import com.soywiz.korim.vector.renderer.*
+import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.vector.*
+import kotlin.contracts.*
 
 fun VectorPath.toFillShape(paint: Paint): Shape = buildShape { fill(paint) { write(this@toFillShape) } }
 fun VectorPath.toStrokeShape(paint: Paint, info: StrokeInfo = StrokeInfo()): Shape = buildShape { stroke(paint, info) { write(this@toStrokeShape) } }

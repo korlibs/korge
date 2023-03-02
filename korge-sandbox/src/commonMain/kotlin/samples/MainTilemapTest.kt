@@ -66,22 +66,22 @@ class MainTilemapTest : Scene() {
             if (isDown) {
                 if (!wasDown) {
                     wasDown = true
-                    downVals.mouse.copyFrom(input.mouse)
+                    downVals.mouse.copyFrom(input.mousePos)
                     downVals.camAngle = cameraContainer.cameraAngle
                     downVals.camPos = MPoint(cameraContainer.cameraX, cameraContainer.cameraY)
                 } else {
                     val rightMouse = (mouseButtons and 4) != 0
                     if (rightMouse) {
                         val downAngle = Zero.angleTo(downVals.mouse)
-                        val mouseAngle = Zero.angleTo(input.mouse)
+                        val mouseAngle = Zero.angleTo(input.mousePos)
                         val newAngle = downVals.camAngle - (downAngle - mouseAngle)
-                        val dy = downVals.mouse.y - input.mouse.y
+                        val dy = downVals.mouse.y - input.mousePos.y
                         cameraContainer.cameraAngle = newAngle //downVals.camAngle - dy.degrees
                     } else { // leftMouse
                         val newCamPos =
-                            cameraContainer.content.globalToLocal(downVals.mouse) - cameraContainer.content.globalToLocal(input.mouse) + downVals.camPos
-                        cameraContainer.cameraX = newCamPos.x
-                        cameraContainer.cameraY = newCamPos.y
+                            cameraContainer.content.globalToLocal(downVals.mouse.point) - cameraContainer.content.globalToLocal(input.mousePos) + downVals.camPos.point
+                        cameraContainer.cameraX = newCamPos.xD
+                        cameraContainer.cameraY = newCamPos.yD
                     }
                 }
             }
@@ -122,7 +122,7 @@ class MainTilemapTest : Scene() {
         val atlas = MutableAtlasUnit()
         val tileBitmaps =
             listOf(Colors.TRANSPARENT, Colors.GREEN, Colors.ORANGE, Colors.GREENYELLOW, Colors.YELLOW).map { c ->
-                atlas.add(Bitmap32(tileWidth, tileWidth).also {
+                atlas.add(Bitmap32(tileWidth, tileWidth, premultiplied = true).also {
                     it.fill(c)
                     for (i in (tileWidth / 5) until (tileWidth * 4 / 5)) {
                         it[i, tileWidth / 2] = Colors.TRANSPARENT

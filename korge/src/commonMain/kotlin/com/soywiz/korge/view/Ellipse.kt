@@ -4,6 +4,7 @@ import com.soywiz.korge.ui.*
 import com.soywiz.korge.view.property.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.paint.*
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
 
 /**
@@ -70,7 +71,7 @@ open class Ellipse(
     private fun updateGraphics() {
         updatePath {
             clear()
-            ellipse(0.0, 0.0, this@Ellipse.width, this@Ellipse.height)
+            ellipse(Point(0, 0), Size(this@Ellipse.width, this@Ellipse.height))
         }
     }
 }

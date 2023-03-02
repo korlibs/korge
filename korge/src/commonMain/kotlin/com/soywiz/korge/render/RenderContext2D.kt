@@ -47,6 +47,10 @@ class RenderContext2D(
 
     val ctx: RenderContext get() = batch.ctx
 
+    var size: Size = Size(0.0, 0.0)
+    val width: Double get() = size.widthD
+    val height: Double get() = size.heightD
+
     inline fun getTexture(slice: BmpSlice): TextureCoords = agBitmapTextureManager.getTexture(slice)
 
     @KorgeInternal
@@ -107,13 +111,24 @@ class RenderContext2D(
         }
     }
 
+    inline fun <T> keepSize(crossinline callback: () -> T): T {
+        val size = this.size
+        try {
+            return callback()
+        } finally {
+            this.size = size
+        }
+    }
+
     /** Executes [callback] restoring the transform matrix, the [blendMode] and the [multiplyColor] at the end */
 	inline fun <T> keep(crossinline callback: () -> T): T {
 		return keepMatrix {
 			keepBlendMode {
 				keepColor {
                     keepFiltering {
-                        callback()
+                        keepSize {
+                            callback()
+                        }
                     }
 				}
 			}
@@ -157,8 +172,6 @@ class RenderContext2D(
             m = m,
             colorMul = color,
             blendMode = blendMode,
-            premultiplied = bmp.premultiplied,
-            wrap = false,
             program = program,
         )
     }
@@ -204,12 +217,12 @@ class RenderContext2D(
 
     fun texturedVertexArrayNoTransform(texturedVertexArray: TexturedVertexArray, filtering: Boolean = this.filtering, matrix: MMatrix? = null) {
         batch.setStateFast(Bitmaps.white, filtering, blendMode, null, icount = texturedVertexArray.icount, vcount = texturedVertexArray.vcount)
-        batch.drawVertices(texturedVertexArray, matrix, premultiplied = Bitmaps.white.premultiplied, wrap = false)
+        batch.drawVertices(texturedVertexArray, matrix)
     }
 
     fun texturedVertexArray(texturedVertexArray: TexturedVertexArray, filtering: Boolean = this.filtering) {
         batch.setStateFast(Bitmaps.white, filtering, blendMode, null, icount = texturedVertexArray.icount, vcount = texturedVertexArray.vcount)
-        batch.drawVertices(texturedVertexArray, m, premultiplied = Bitmaps.white.premultiplied, wrap = false)
+        batch.drawVertices(texturedVertexArray, m)
     }
 
     fun quadPaddedCustomProgram(
@@ -252,10 +265,9 @@ class RenderContext2D(
                     l, b,
                     r, b,
                     multiplyColor,
-                    ColorAdd.NEUTRAL
                 )
                 batch.setStateFast(Bitmaps.white, filtering, blendMode, program, icount = 6, vcount = 4)
-                batch.drawVertices(vertices, null, premultiplied = true, wrap = true)
+                batch.drawVertices(vertices, null)
             }
         }
     }
@@ -274,8 +286,6 @@ class RenderContext2D(
 			m = m,
 			colorMul = multiplyColor,
 			blendMode = blendMode,
-            premultiplied = texture.premultiplied,
-            wrap = false,
 		)
 	}
 
@@ -312,6 +322,7 @@ class RenderContext2D(
 inline fun View.renderCtx2d(ctx: RenderContext, crossinline block: (RenderContext2D) -> Unit) {
     ctx.useCtx2d { context ->
         context.keep {
+            context.size = Size(this@renderCtx2d.width, this@renderCtx2d.height)
             context.blendMode = renderBlendMode
             context.multiplyColor = renderColorMul
             context.setMatrix(globalMatrix)

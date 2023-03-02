@@ -4,7 +4,7 @@ import com.soywiz.korge.view.Stage
 import com.soywiz.korgw.awt.GLCanvas
 import com.soywiz.korgw.awt.GLCanvasGameWindow
 import com.soywiz.korio.async.launchImmediately
-import com.soywiz.korma.geom.MSizeInt
+import com.soywiz.korma.geom.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -95,7 +95,7 @@ class GLCanvasKorge internal constructor(
             virtualWidth: Int? = null,
             virtualHeight: Int? = null
         ): GLCanvasKorge {
-            return GLCanvasKorge(true, canvas, Korge.Config(virtualSize = virtualWidth?.let { MSizeInt(virtualWidth, virtualHeight ?: virtualWidth) })).apply { init() }
+            return GLCanvasKorge(true, canvas, Korge.Config(virtualSize = virtualWidth?.let { SizeInt(virtualWidth, virtualHeight ?: virtualWidth) })).apply { init() }
         }
     }
 }

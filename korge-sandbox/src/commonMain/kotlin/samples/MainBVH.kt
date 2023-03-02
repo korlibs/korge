@@ -64,9 +64,9 @@ class MainBVH : Scene() {
             val time = measureTime {
                 val rayObjects = bvh.intersect(ray)
                 val rectangleObjects = bvh.search(selectedRectangle)
-                for (result in allObjects) result.value?.alpha = 0.2
-                for (result in rectangleObjects) result.value?.alpha = 0.8
-                for (result in rayObjects) result.obj.value?.alpha = 1.0
+                for (result in allObjects) result.value?.alphaF = 0.2f
+                for (result in rectangleObjects) result.value?.alphaF = 0.8f
+                for (result in rayObjects) result.obj.value?.alphaF = 1.0f
                 allObjectsSize = allObjects.size
                 rayObjectsSize = rayObjects.size
                 rectangleObjectsSize = rectangleObjects.size
@@ -77,10 +77,10 @@ class MainBVH : Scene() {
 
         addUpdater {
             //println("moved")
-            val mousePos = localMouseXY(views)
-            val angle = MPoint.angleFull(center, mousePos)
+            val mousePos = localMousePos(views)
+            val angle = Point.angleFull(center.point, mousePos)
             //println("center=$center, mousePos=$mousePos, angle = $angle")
-            dir.setTo(angle.cosine, angle.sine)
+            dir.setTo(angle.cosineD, angle.sineD)
             rayLine.setPoints(center, center + (dir * 1000))
 
             updateRay()
@@ -88,13 +88,13 @@ class MainBVH : Scene() {
 
         mouse {
             onDown {
-                selectedRectangle = MRectangle(stage!!.mouseXY - MPoint(50, 50), MSize(100, 100))
+                selectedRectangle = MRectangle(stage!!.mousePos.mutable - MPoint(50, 50), MSize(100, 100))
                 selectedRect.vectorPath = buildVectorPath(VectorPath()) {
                     rect(selectedRectangle)
                 }
             }
             onMouseDrag {
-                selectedRectangle = MRectangle(stage.mouseXY - MPoint(50, 50), MSize(100, 100))
+                selectedRectangle = MRectangle(stage.mousePos.mutable - MPoint(50, 50), MSize(100, 100))
                 selectedRect.vectorPath = buildVectorPath(VectorPath()) {
                     rect(selectedRectangle)
                 }

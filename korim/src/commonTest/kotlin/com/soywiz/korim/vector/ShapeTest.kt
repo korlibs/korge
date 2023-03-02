@@ -1,26 +1,19 @@
 package com.soywiz.korim.vector
 
-import com.soywiz.korim.color.Colors
-import com.soywiz.korma.geom.MMatrix
-import com.soywiz.korma.geom.MRectangle
-import com.soywiz.korma.geom.shape.buildVectorPath
-import com.soywiz.korma.geom.vector.StrokeInfo
-import com.soywiz.korma.geom.vector.VectorBuilder
-import com.soywiz.korma.geom.vector.VectorPath
-import com.soywiz.korma.geom.vector.lineTo
-import com.soywiz.korma.geom.vector.moveTo
-import com.soywiz.korma.geom.vector.rect
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import com.soywiz.korim.color.*
+import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.shape.*
+import com.soywiz.korma.geom.vector.*
+import kotlin.test.*
 
 class ShapeTest {
     @Test
     fun name() {
         val shape = FillShape(
             path = VectorPath().apply {
-                moveTo(0, 0)
-                lineTo(100, 100)
-                lineTo(0, 100)
+                moveTo(Point(0, 0))
+                lineTo(Point(100, 100))
+                lineTo(Point(0, 100))
                 close()
             },
             clip = null,
@@ -62,9 +55,9 @@ class ShapeTest {
     @Test
     fun testEmptyBounds() {
         fun createStrokeShape(block: VectorBuilder.() -> Unit): PolylineShape = PolylineShape(buildVectorPath { block() }, null, Colors.RED, MMatrix(), StrokeInfo())
-        val shape1 = createStrokeShape { moveTo(100, 100) }
-        val shape2 = createStrokeShape { moveTo(100, 100); lineTo(200, 100) }
-        val shape3 = createStrokeShape { moveTo(100, 100); lineTo(200, 200) }
+        val shape1 = createStrokeShape { moveTo(Point(100, 100)) }
+        val shape2 = createStrokeShape { moveTo(Point(100, 100)); lineTo(Point(200, 100)) }
+        val shape3 = createStrokeShape { moveTo(Point(100, 100)); lineTo(Point(200, 200)) }
         assertEquals(shape1.bounds, shape1.getBounds(includeStrokes = true))
         assertEquals(shape2.bounds, shape2.getBounds(includeStrokes = true))
         assertEquals(shape3.bounds, shape3.getBounds(includeStrokes = true))

@@ -82,7 +82,7 @@ object TGA : ImageFormat("tga") {
 		}
 		val out = Bitmap32(info.width, info.height, premultiplied = false).writeDecoded(format, s.readBytes(info.area * info.bytes))
 		if (info.flipY) out.flipY()
-		return ImageData(listOf(ImageFrame(out)))
+		return ImageData(out)
 	}
 
 	override fun writeImage(image: ImageData, s: SyncStream, props: ImageEncodingProps) {

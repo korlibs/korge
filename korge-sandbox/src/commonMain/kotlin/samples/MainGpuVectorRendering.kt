@@ -126,7 +126,7 @@ class MainGpuVectorRendering : Scene() {
                         rectHole(40, 40, 80, 80)
                     }
                     fill(Colors.YELLOW) {
-                        this.circle(100, 100, 40)
+                        this.circle(Point(100, 100), 40f)
                         //rect(-100, -100, 500, 500)
                         //rectHole(40, 40, 320, 320)
                     }
@@ -162,7 +162,7 @@ class MainGpuVectorRendering : Scene() {
                             //.addColorStop(0.0, Colors.BLACK).addColorStop(1.0, Colors.WHITE)
                             .addColorStop(0.0, Colors.RED).addColorStop(0.5, Colors.GREEN).addColorStop(1.0, Colors.BLUE)
                     clip({
-                        circle(150, 50, 50)
+                        circle(Point(150, 50), 50f)
                     }, {
                         fillRect(100.0, 0.0, 100.0, 100.0)
                     })
@@ -220,13 +220,13 @@ class MainGpuVectorRendering : Scene() {
             println("GPU SHAPE: $it")
         }
         measureTime({
-            image(NativeImage(512, 512).context2d { buildGraphics("NATIVE") }).xy(550, 0)
+            image(NativeImageContext2d(512, 512) { buildGraphics("NATIVE") }).xy(550, 0)
         }) {
             println("CONTEXT2D NATIVE: $it")
         }
 
         measureTime({
-            image(Bitmap32(512, 512).context2d { buildGraphics("KOTLIN") }).xy(550, 370)
+            image(Bitmap32Context2d(512, 512) { buildGraphics("KOTLIN") }).xy(550, 370)
         }) {
             println("CONTEXT2D BITMAP: $it")
         }

@@ -50,19 +50,19 @@ open class ComposedFilter private constructor(
         return out
     }
 
-    override fun computeBorder(out: MMarginInt, texWidth: Int, texHeight: Int) {
+    override fun computeBorder(texWidth: Int, texHeight: Int): MarginInt {
         var sumLeft = 0
         var sumTop = 0
         var sumRight = 0
         var sumBottom = 0
         filters.fastForEach {
-            it.computeBorder(out, texWidth, texHeight)
+            val out = it.computeBorder(texWidth, texHeight)
             sumLeft += out.left
             sumRight += out.right
             sumTop += out.top
             sumBottom += out.bottom
         }
-        out.setTo(sumTop, sumRight, sumBottom, sumLeft)
+        return MarginInt(sumTop, sumRight, sumBottom, sumLeft)
         //println(out)
     }
 
@@ -74,7 +74,6 @@ open class ComposedFilter private constructor(
         texture: Texture,
         texWidth: Int,
         texHeight: Int,
-        renderColorAdd: ColorAdd,
         renderColorMul: RGBA,
         blendMode: BlendMode,
         filterScale: Double,
@@ -103,7 +102,7 @@ open class ComposedFilter private constructor(
                 texHeight = result.newTexHeight
             }
         }
-        IdentityFilter.render(ctx, mat, tex, texWidth, texHeight, renderColorAdd, renderColorMul, blendMode, filterScale)
+        IdentityFilter.render(ctx, mat, tex, texWidth, texHeight, renderColorMul, blendMode, filterScale)
         resultPool.freeNotNull(last)
 	}
 
@@ -114,13 +113,12 @@ open class ComposedFilter private constructor(
         texture: Texture,
         texWidth: Int,
         texHeight: Int,
-        renderColorAdd: ColorAdd,
         renderColorMul: RGBA,
         blendMode: BlendMode,
         filterScale: Double,
     ) {
-        if (isIdentity) return IdentityFilter.render(ctx, matrix, texture, texWidth, texHeight, renderColorAdd, renderColorMul, blendMode, filterScale)
-        renderIndex(ctx, matrix, texture, texWidth, texHeight, renderColorAdd, renderColorMul, blendMode, filterScale, filters.size - 1)
+        if (isIdentity) return IdentityFilter.render(ctx, matrix, texture, texWidth, texHeight, renderColorMul, blendMode, filterScale)
+        renderIndex(ctx, matrix, texture, texWidth, texHeight, renderColorMul, blendMode, filterScale, filters.size - 1)
     }
 
     fun renderIndex(
@@ -129,7 +127,6 @@ open class ComposedFilter private constructor(
         texture: Texture,
         texWidth: Int,
         texHeight: Int,
-        renderColorAdd: ColorAdd,
         renderColorMul: RGBA,
         blendMode: BlendMode,
         filterScale: Double,
@@ -137,13 +134,13 @@ open class ComposedFilter private constructor(
     ) {
         stepBefore()
         if (level < 0 || filters.isEmpty()) {
-            return IdentityFilter.render(ctx, matrix, texture, texWidth, texHeight, renderColorAdd, renderColorMul, blendMode, filterScale)
+            return IdentityFilter.render(ctx, matrix, texture, texWidth, texHeight, renderColorMul, blendMode, filterScale)
         }
         //println("ComposedFilter.renderIndex: $level")
         val filter = filters[filters.size - level - 1]
 
         filter.renderToTextureWithBorder(ctx, matrix, texture, texWidth, texHeight, filterScale) { newtex, newmatrix ->
-            renderIndex(ctx, newmatrix, newtex, newtex.width, newtex.height, renderColorAdd, renderColorMul, blendMode, filterScale, level - 1)
+            renderIndex(ctx, newmatrix, newtex, newtex.width, newtex.height, renderColorMul, blendMode, filterScale, level - 1)
         }
     }
     */

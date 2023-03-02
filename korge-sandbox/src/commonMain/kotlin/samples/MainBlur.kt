@@ -2,6 +2,7 @@ package samples
 
 import com.soywiz.kds.fastArrayListOf
 import com.soywiz.korge.scene.Scene
+import com.soywiz.korge.style.*
 import com.soywiz.korge.ui.*
 import com.soywiz.korge.view.*
 import com.soywiz.korge.view.filter.*
@@ -88,19 +89,19 @@ class MainBlur : Scene() {
         uiVerticalStack(padding = 2.0, width = 370.0) {
             xy(50, 400)
             uiHorizontalFill {
-                uiText("Blur radius").apply { textColor = Colors.BLACK }
+                uiText("Blur radius").styles { textColor = Colors.BLACK }
                 uiSlider(value = initialBlur, max = 32, step = 0.1).changed { blur1.radius = it.toDouble()  }
             }
             uiHorizontalFill {
-                uiText("Drop radius").apply { textColor = Colors.BLACK }
+                uiText("Drop radius").styles { textColor = Colors.BLACK }
                 uiSlider(value = dropshadowFilter.blurRadius.toInt(), max = 32).changed { dropshadowFilter.blurRadius = it.toDouble() }
             }
             uiHorizontalFill {
-                uiText("Drop X").apply { textColor = Colors.BLACK }
+                uiText("Drop X").styles { textColor = Colors.BLACK }
                 uiSlider(value = dropshadowFilter.dropX.toInt(), min = -32, max = +32).changed { dropshadowFilter.dropX = it.toDouble() }
             }
             uiHorizontalFill {
-                uiText("Drop Y").apply { textColor = Colors.BLACK }
+                uiText("Drop Y").styles { textColor = Colors.BLACK }
                 uiSlider(value = dropshadowFilter.dropY.toInt(), min = -32, max = +32).changed { dropshadowFilter.dropY = it.toDouble() }
             }
             uiHorizontalFill {
@@ -110,11 +111,11 @@ class MainBlur : Scene() {
                 uiButton("blue").clicked { dropshadowFilter.shadowColor = Colors.BLUE.withAd(dropshadowFilter.shadowColor.ad) }
             }
             uiHorizontalFill {
-                uiText("Drop Alpha").apply { textColor = Colors.BLACK }
+                uiText("Drop Alpha").styles { textColor = Colors.BLACK }
                 uiSlider(value = dropshadowFilter.shadowColor.a, min = 0, max = 255).changed { dropshadowFilter.shadowColor = dropshadowFilter.shadowColor.withA(it.toInt()) }
             }
             uiHorizontalFill {
-                uiText("Rotation").apply { textColor = Colors.BLACK }
+                uiText("Rotation").styles { textColor = Colors.BLACK }
                 uiSlider(value = rotatedBitmap.rotation.degrees.toInt(), min = 0, max = 360).changed { rotatedBitmap.rotation = it.degrees }
             }
             uiHorizontalFill {
@@ -126,7 +127,7 @@ class MainBlur : Scene() {
                 uiButton("vertical").clicked { transitionFilter.transition = TransitionFilter.Transition.VERTICAL }
             }
             uiHorizontalFill {
-                uiText("Blend").apply { textColor = Colors.BLACK }
+                uiText("Blend").styles { textColor = Colors.BLACK }
                 uiSlider(value = transitionFilter.ratio, min = 0.0, max = 1.0, step = 0.0, decimalPlaces = 2).changed {
                     colorMatrixFilter.blendRatio = it
                     pageFilter.hamplitude0 = it
@@ -137,13 +138,13 @@ class MainBlur : Scene() {
                 }
             }
             uiHorizontalFill {
-                uiText("Spread").apply { textColor = Colors.BLACK }
+                uiText("Spread").styles { textColor = Colors.BLACK }
                 uiSlider(value = transitionFilter.spread, min = 0.0, max = 1.0, step = 0.0, decimalPlaces = 2).changed {
                     transitionFilter.spread = it
                 }
             }
             uiHorizontalFill {
-                uiText("Filter Scale").apply { textColor = Colors.BLACK }
+                uiText("Filter Scale").styles { textColor = Colors.BLACK }
                 uiSlider(value = filterScale, min = 0.2, max = 2.0, step = 0.1).changed {
                     filterScale = it
                 }

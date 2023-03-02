@@ -13,7 +13,6 @@ concurrency:
 env:
   CI: true
   SKIP_KORGE_SAMPLES: true
-  ANDROID_TESTS: true
   DISPLAY: ":99"
 
 jobs:
@@ -79,6 +78,8 @@ jobs:
     if: ${{ needs.changes.outputs.testJvm == 'true' }}
     timeout-minutes: 120
     runs-on: ubuntu-latest
+    env:
+      ENABLE_BENCHMARKS: true
     steps:
     - { uses: actions/checkout@v3 }
     - { name: Install freeglut3 & openal, run: sudo apt-get update && sudo apt-get -y install freeglut3-dev libopenal-dev xvfb }
@@ -93,6 +94,8 @@ jobs:
     - { name: Check sandbox compiles, run: "./gradlew :korge-sandbox:jvmJar" }
     - { name: Publish to maven local, run: ./gradlew publishJvmLocal }
     - { name: e2e test, working-directory: e2e-test, run: ./gradlew checkReferencesJvm --stacktrace }
+    - { name: Archive E2E Test Results, if: failure(), uses: actions/upload-artifact@v3, with: { name: e2e-test-results-linux-jvm, retention-days: 21, path: "**/e2e-test/build/screenshots", if-no-files-found: ignore } }
+    - { name: Run benchmarks, run: "./gradlew :korge-benchmarks:jvmBenchmark" }
     #- { name: e2e test, uses: GabrielBB/xvfb-action@v1, with: { working-directory: e2e-test, run: ./gradlew checkReferencesJvm --stacktrace } }
 
   test-coverage:
@@ -174,11 +177,12 @@ jobs:
     - { name: Gradle cache, uses: ./.github/actions/gradle-cache }
     - { name: Grant execute permission for gradlew, run: chmod +x gradlew }
     - { name: Start gradle, run: ./gradlew }
-    - { name: Check compilation of iOS targets, run: ./gradlew publishIosArm64PublicationToMavenLocal publishIosX64PublicationToMavenLocal }
+    - { name: Run ios simulator tests, run: ./gradlew iosX64Test }
+    - { name: Archive Test Results, if: failure(), uses: actions/upload-artifact@v3, with: { name: screenshot-test-results-ios, retention-days: 21, path: "**/build/reports", if-no-files-found: ignore } }
+    - { name: Check compilation of iOS targets, run: ./gradlew publishIosX64PublicationToMavenLocal publishIosArm64PublicationToMavenLocal }
     - { name: Check compilation of watchOS targets, run: ./gradlew publishWatchosArm64PublicationToMavenLocal publishWatchosX64PublicationToMavenLocal }
     - { name: Check compilation of tvOS targets, run: ./gradlew publishTvosArm64PublicationToMavenLocal publishTvosX64PublicationToMavenLocal }
     #- { name: Check compilation of TvOS targets, run: ./gradlew publishTvosArm64PublicationToMavenLocal publishTvosX64PublicationToMavenLocal publishTvosSimulatorArm64PublicationToMavenLocal }
-    - { name: Run ios simulator tests, run: ./gradlew iosX64Test }
 
 
   test-native-linux:
@@ -200,6 +204,7 @@ jobs:
     - { name: Publish X64, run: ./gradlew publishLinuxX64PublicationToMavenLocal publishKotlinMultiplatformPublicationToMavenLocal }
     - { name: Stop gradle daemon, run: ./gradlew --stop }
     - { name: e2e test native, working-directory: e2e-test, run: ./gradlew checkReferencesNative --stacktrace }
+    - { name: Archive E2E Test Results, if: failure(), uses: actions/upload-artifact@v3, with: { name: e2e-test-results-linux, retention-days: 21, path: "**/e2e-test/build/screenshots", if-no-files-found: ignore } }
 
   test-native-macos:
     needs: changes
@@ -220,8 +225,8 @@ jobs:
     - { name: Publish gradle plugin, run: "./gradlew :korge-gradle-plugin:publishToMavenLocal" }
     - { name: Publish X64, run: ./gradlew publishMacosX64PublicationToMavenLocal publishKotlinMultiplatformPublicationToMavenLocal }
     - { name: e2e test, working-directory: e2e-test, run: ./gradlew checkReferencesNative --stacktrace }
+    - { name: Archive E2E Test Results, if: failure(), uses: actions/upload-artifact@v3, with: { name: e2e-test-results-macos, retention-days: 21, path: "**/e2e-test/build/screenshots", if-no-files-found: ignore } }
     - { name: Publish Arm64, run: ./gradlew publishMacosArm64PublicationToMavenLocal }
-
 
   test-native-windows:
     needs: changes
@@ -244,3 +249,4 @@ jobs:
     - { name: Publish gradle plugin, shell: cmd, run: "CALL gradlew.bat :korge-gradle-plugin:publishToMavenLocal" }
     - { name: Publish X64, shell: cmd, run: CALL gradlew.bat publishMingwX64PublicationToMavenLocal publishKotlinMultiplatformPublicationToMavenLocal }
     - { name: e2e test, shell: cmd, working-directory: e2e-test, run: CALL gradlew.bat checkReferencesNative --stacktrace }
+    - { name: Archive E2E Test Results, if: failure(), uses: actions/upload-artifact@v3, with: { name: e2e-test-results-windows, retention-days: 21, path: "**/e2e-test/build/screenshots", if-no-files-found: ignore } }

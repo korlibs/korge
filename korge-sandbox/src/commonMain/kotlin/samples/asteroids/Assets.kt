@@ -1,10 +1,9 @@
 package samples.asteroids
 
 import com.soywiz.kds.Extra
-import com.soywiz.korim.bitmap.Bitmap32
-import com.soywiz.korim.bitmap.NativeImage
-import com.soywiz.korim.bitmap.context2d
+import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.Colors
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.LineCap
 import com.soywiz.korma.geom.vector.lineToV
 
@@ -21,36 +20,36 @@ class Assets(val shipSize: Int = 24) {
 		lineWidth = 0.05
 		lineCap = LineCap.ROUND
 		stroke(Colors.WHITE) {
-			scale(shipSize)
-			moveTo(0.5, 0.0)
-			lineTo(1.0, 1.0)
-			lineTo(0.5, 0.8)
-			lineTo(0.0, 1.0)
-			close()
-		}
+            scale(shipSize)
+            moveTo(Point(0.5, 0.0))
+            lineTo(Point(1.0, 1.0))
+            lineTo(Point(0.5, 0.8))
+            lineTo(Point(0.0, 1.0))
+            close()
+        }
 	}
 
     val bulletBitmap = NativeImage(3, (shipSize * 0.3).toInt()).context2d {
 		lineWidth = 1.0
 		lineCap = LineCap.ROUND
 		stroke(Colors.WHITE) {
-			moveTo(width / 2.0, 0.0)
-			lineToV(height.toDouble())
+			moveTo(Point(width / 2.0, 0.0))
+			lineToV(height.toFloat())
 		}
 	}
 
-    val asteroidBitmap = Bitmap32(asteroidSize, asteroidSize).context2d { // Let's use software vector rendering here for testing purposes
+    val asteroidBitmap = Bitmap32Context2d(asteroidSize, asteroidSize) { // Let's use software vector rendering here for testing purposes
 		lineWidth = 0.05
 		lineCap = LineCap.ROUND
 		stroke(Colors.WHITE) {
-			scale(asteroidSize)
-			moveTo(0.0, 0.5)
-			lineTo(0.2, 0.0)
-			lineTo(0.7, 0.0)
-			lineTo(1.0, 0.5)
-			lineTo(0.7, 1.0)
-			lineTo(0.3, 1.0)
-			close()
-		}
+            scale(asteroidSize)
+            moveTo(Point(0.0, 0.5))
+            lineTo(Point(0.2, 0.0))
+            lineTo(Point(0.7, 0.0))
+            lineTo(Point(1.0, 0.5))
+            lineTo(Point(0.7, 1.0))
+            lineTo(Point(0.3, 1.0))
+            close()
+        }
 	}
 }

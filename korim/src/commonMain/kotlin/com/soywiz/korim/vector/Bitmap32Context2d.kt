@@ -52,7 +52,7 @@ class Bitmap32Context2d(val bmp: Bitmap32, val antialiasing: Boolean) : com.soyw
     private val tempPath = VectorPath(winding = Winding.EVEN_ODD)
     private val tempFillStrokeTemp = StrokeToFill()
 
-    override fun render(state: Context2d.State, fill: Boolean, winding: Winding?) {
+    override fun renderFinal(state: Context2d.State, fill: Boolean, winding: Winding?) {
 		//println("RENDER")
 		val style = if (fill) state.fillStyle else state.strokeStyle
 		val filler = when (style) {
@@ -106,7 +106,7 @@ class Bitmap32Context2d(val bmp: Bitmap32, val antialiasing: Boolean) : com.soyw
             rasterizer.clip.winding = state.clip!!.winding
             state.clip!!.emitPoints2(flush = {
                 if (it) rasterizer.clip.close()
-            }, emit = { x, y, move ->
+            }, emit = { (x, y), move ->
                 rasterizer.clip.add(x, y, move)
             })
         }
@@ -119,7 +119,7 @@ class Bitmap32Context2d(val bmp: Bitmap32, val antialiasing: Boolean) : com.soyw
                 //println("CLOSE")
                 rasterizer.path.close()
             }
-        }, emit = { x, y, move ->
+        }, emit = { (x, y), move ->
             // When rendering strokes we might want to do each stroke at a time to prevent artifacts.
             // But on fills this would produce issues when for rendering 'o' that are two circles one inside another.
             if (doingStroke) {

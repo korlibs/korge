@@ -149,8 +149,8 @@ class Game(val scene: MainAsteroids) {
 fun View.distanceTo(other: View) = MPoint.distance(x, y, other.x, other.y)
 
 fun View.advance(amount: Double, rot: Angle = (-90).degrees) = this.apply {
-    x += (this.rotation + rot).cosine * amount
-    y += (this.rotation + rot).sine * amount
+    x += (this.rotation + rot).cosineD * amount
+    y += (this.rotation + rot).sineD * amount
 }
 
 // A dummy throwable to cancel updatables

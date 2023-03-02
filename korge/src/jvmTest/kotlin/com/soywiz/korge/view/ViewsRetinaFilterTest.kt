@@ -5,12 +5,13 @@ import com.soywiz.korge.tests.*
 import com.soywiz.korge.view.filter.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
+import com.soywiz.korma.geom.*
 import kotlin.test.*
 
 class ViewsRetinaFilterTest {
     @Test
     fun test() = korgeScreenshotTest(
-        100, 100,
+        windowSize = SizeInt(100, 100),
         devicePixelRatio = 2.0,
     ) {
         val container = container {

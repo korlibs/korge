@@ -1,13 +1,10 @@
 package com.soywiz.korim.vector.renderer
 
-import com.soywiz.korim.bitmap.Bitmap
-import com.soywiz.korim.paint.BitmapPaint
-import com.soywiz.korim.vector.Context2d
+import com.soywiz.korim.bitmap.*
+import com.soywiz.korim.paint.*
+import com.soywiz.korim.vector.*
 import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.vector.VectorPath
-import com.soywiz.korma.geom.vector.Winding
-import com.soywiz.korma.geom.vector.rect
-import com.soywiz.korma.geom.vector.transformed
+import com.soywiz.korma.geom.vector.*
 
 abstract class Renderer {
     var debug: Boolean = false
@@ -33,7 +30,21 @@ abstract class Renderer {
             flush()
         }
     }
-    open fun render(state: Context2d.State, fill: Boolean, winding: Winding? = null): Unit = Unit
+    open fun render(state: Context2d.State, fill: Boolean, winding: Winding? = null) {
+        var rstate = state
+        if (fill && !state.fillStyle.isPaintSupported()) {
+            rstate = state.clone()
+            rstate.fillStyle = rstate.fillStyle.toBitmapPaint(state)
+        }
+        renderFinal(rstate, fill, winding)
+    }
+
+    protected open fun renderFinal(state: Context2d.State, fill: Boolean, winding: Winding? = null): Unit = Unit
+
+    open fun Paint.isPaintSupported(): Boolean = when {
+        //this is GradientPaint -> false // For debugging gradients in other targets ie. CG and GDI+
+        else -> true
+    }
 
     open fun drawImage(
         image: Bitmap,
@@ -61,7 +72,9 @@ abstract class Renderer {
                         .scale(width / image.width.toDouble(), height / image.height.toDouble())
                         .translate(x, y)
                 )
-            ), fill = true)
+            ),
+            fill = true
+        )
     }
 
     inline fun drawImage(
@@ -87,7 +100,7 @@ abstract class BufferedRenderer : Renderer() {
     }
     private val commands = arrayListOf<RenderCommand>()
 
-    final override fun render(state: Context2d.State, fill: Boolean, winding: Winding?) {
+    final override fun renderFinal(state: Context2d.State, fill: Boolean, winding: Winding?) {
         commands += RenderCommand(state.clone(), fill, winding)
         if (!isBuffering()) flush()
     }

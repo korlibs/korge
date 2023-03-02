@@ -6,10 +6,7 @@ import com.soywiz.korge.render.RenderContext
 import com.soywiz.korim.color.Colors
 import com.soywiz.korio.async.suspendTest
 import com.soywiz.korio.util.niceStr
-import com.soywiz.korma.geom.Anchor
-import com.soywiz.korma.geom.MPoint
-import com.soywiz.korma.geom.MRectangle
-import com.soywiz.korma.geom.MSize
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.bezier.Bezier
 import com.soywiz.korma.geom.vector.*
 import kotlin.test.Test
@@ -26,7 +23,7 @@ class GraphicsTest {
             }
         }
         val bmp = g.bitmap.base.toBMP32()
-        assertEquals(MSize(101, 101), bmp.size)
+        assertEquals(SizeInt(101, 101), bmp.size)
         //assertEquals("#ff0000ff", bmp[0, 0].hexString)
         //assertEquals("#ff0000ff", bmp[99, 99].hexString)
         assertEquals("#ff0000ff", bmp[1, 1].hexString)
@@ -108,17 +105,17 @@ class GraphicsTest {
     fun testMultiShapeHitTesting() {
         val graphics = CpuGraphics().updateShape {
             fill(Colors.RED) {
-                circle(0.0, 0.0, 32.0)
+                circle(Point(0, 0), 32f)
             }
             fill(Colors.BLUE) {
-                circle(0.0, 0.0, 16.0)
+                circle(Point(0, 0), 16f)
             }
         }
         //println(graphics.hitShape2d)
         assertNotNull(graphics.hitShape2d, "hitShape2d should be defined")
-        assertEquals(graphics, graphics.hitTestLocal(0, 0))
-        assertEquals(graphics, graphics.hitTestLocal(20, 0))
-        assertEquals(null, graphics.hitTestLocal(33, 0))
+        assertEquals(graphics, graphics.hitTestLocal(Point(0, 0)))
+        assertEquals(graphics, graphics.hitTestLocal(Point(20, 0)))
+        assertEquals(null, graphics.hitTestLocal(Point(33, 0)))
     }
 
     @Test
@@ -148,10 +145,10 @@ class GraphicsTest {
 
     @Test
     fun testGraphicsBoundsWithOnlyStrokes() {
-        val p0 = MPoint(109, 135)
-        val p1 = MPoint(25, 190)
-        val p2 = MPoint(210, 250)
-        val p3 = MPoint(234, 49)
+        val p0 = Point(109, 135)
+        val p1 = Point(25, 190)
+        val p2 = Point(210, 250)
+        val p3 = Point(234, 49)
         val g = CpuGraphics()
         assertEquals(MRectangle(), g.getLocalBounds())
         g.updateShape {
@@ -219,15 +216,15 @@ class GraphicsTest {
             it.renderer = GraphicsRenderer.SYSTEM
             it.antialiased = true
             this.stroke(Colors.YELLOW, info = StrokeInfo(50.0)) {
-                line(100.0, 100.0, 200.0, 200.0)
+                line(Point(100, 100), Point(200, 200))
             }
-            this.circle(100.0, 100.0, 5.0)
+            this.circle(Point(100, 100), 5f)
             fill(Colors.BLUE)
         }
 
         val posCircle = container.circle(25.0, fill = Colors.ORANGE) {
             anchor(Anchor.CENTER)
-            position(graphics.ipos)
+            position(graphics.pos)
         }
 
         val posCircle2 = container.circle(5.0, fill = Colors.RED) {

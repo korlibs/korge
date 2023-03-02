@@ -29,7 +29,7 @@ interface Filter {
     companion object {
         //val u_Time = Uniform("time", VarType.Float1)
         val u_TextureSize = Uniform("effectTextureSize", VarType.Float2)
-        val DEFAULT_FRAGMENT = BatchBuilder2D.getTextureLookupProgram(add = BatchBuilder2D.AddType.NO_ADD).fragment
+        val DEFAULT_FRAGMENT = BatchBuilder2D.PROGRAM.fragment
 
         val Program.Builder.fragmentCoords01 get() = DefaultShaders.v_Tex["xy"]
         val Program.Builder.fragmentCoords get() = fragmentCoords01 * u_TextureSize
@@ -44,20 +44,15 @@ interface Filter {
 
     val allFilters: List<Filter> get() = listOf(this)
 
+    val recommendedFilterScale: Double get() = 1.0
+
     /**
      * The number of pixels the passed texture should be bigger at each direction: left, right, top, left.
      *
      * A 0 value means that the texture should be passed with its original size.
      * A 1 value means that the texture should be passed width 2 more pixels of width and height (1 left, 1 right), (1 top, 1 bottom)
      */
-    @Deprecated("")
-    val border: Int get() = 0
-
-    val recommendedFilterScale: Double get() = 1.0
-
-    fun computeBorder(out: MMarginInt, texWidth: Int, texHeight: Int) {
-        out.setTo(border)
-    }
+    fun computeBorder(texWidth: Int, texHeight: Int): MarginInt = MarginInt.ZERO
 
     /**
      * The method in charge of rendering the texture transformed using [ctx] [RenderContext] and [matrix].
@@ -69,16 +64,14 @@ interface Filter {
         texture: Texture,
         texWidth: Int,
         texHeight: Int,
-        renderColorAdd: ColorAdd,
         renderColorMul: RGBA,
         blendMode: BlendMode,
         filterScale: Double,
     )
 }
 
-fun Filter.getBorder(texWidth: Int, texHeight: Int, out: MMarginInt = MMarginInt()): IMarginInt {
-    computeBorder(out, texWidth, texHeight)
-    return out
+fun Filter.getBorder(texWidth: Int, texHeight: Int): MarginInt {
+    return computeBorder(texWidth, texHeight)
 }
 
 @Deprecated("")
@@ -92,7 +85,7 @@ fun Filter.renderToTextureWithBorder(
     block: (texture: Texture, matrix: MMatrix) -> Unit,
 ) {
     val filter = this
-    val margin = filter.getBorder(texWidth, texHeight, ctx.tempMargin)
+    val margin = filter.getBorder(texWidth, texHeight)
 
     val borderLeft = (margin.left * filterScale).toIntCeil()
     val borderTop = (margin.top * filterScale).toIntCeil()
@@ -107,7 +100,16 @@ fun Filter.renderToTextureWithBorder(
             matrix.identity()
             matrix.translate(borderLeft, borderTop)
             ctx.batch.setViewMatrixTemp(ctx.identityMatrix) {
-                filter.render(ctx, matrix, texture, newTexWidth, newTexHeight, ColorAdd.NEUTRAL, Colors.WHITE, BlendMode.NORMAL, filterScale)
+                filter.render(
+                    ctx,
+                    matrix,
+                    texture,
+                    newTexWidth,
+                    newTexHeight,
+                    Colors.WHITE,
+                    BlendMode.NORMAL,
+                    filterScale
+                )
             }
         }
     }) { newtex ->
@@ -141,7 +143,16 @@ class RenderToTextureResult() : Disposable {
             tempMat.translate(borderLeft, borderTop)
             ctx.batch.setViewMatrixTemp(ctx.identityMatrix) {
                 texture?.let {
-                    filter?.render(ctx, tempMat, it, newTexWidth, newTexHeight, ColorAdd.NEUTRAL, Colors.WHITE, BlendMode.NORMAL, filterScale)
+                    filter?.render(
+                        ctx,
+                        tempMat,
+                        it,
+                        newTexWidth,
+                        newTexHeight,
+                        Colors.WHITE,
+                        BlendMode.NORMAL,
+                        filterScale
+                    )
                 }
             }
         }
@@ -170,7 +181,7 @@ fun Filter.renderToTextureWithBorderUnsafe(
     result: RenderToTextureResult = RenderToTextureResult()
 ): RenderToTextureResult {
     val filter = this
-    val margin = filter.getBorder(texWidth, texHeight, ctx.tempMargin)
+    val margin = filter.getBorder(texWidth, texHeight)
 
     val borderLeft = (margin.left * filterScale).toIntCeil()
     val borderTop = (margin.top * filterScale).toIntCeil()
@@ -196,7 +207,7 @@ fun Filter.renderToTextureWithBorderUnsafe(
 }
 
 fun Filter.expandBorderRectangle(out: MRectangle) {
-    MMarginInt.POOL { temp -> out.expand(getBorder(out.width.toIntCeil(), out.height.toIntCeil(), temp)) }
+    out.expand(getBorder(out.width.toIntCeil(), out.height.toIntCeil()))
 }
 
 @ThreadLocal

@@ -203,8 +203,6 @@ class RenderContext constructor(
 
     val debugOverlayScale: Double get() = kotlin.math.round(computedPixelRatio * debugExtraFontScale).coerceAtLeast(1.0)
 
-    var stencilIndex: Int = 0
-
     /** Allows to draw quads, sprites and nine patches using a precomputed global matrix or raw vertices */
     @Deprecated("Use useBatcher instead")
     @KorgeInternal
@@ -233,8 +231,6 @@ class RenderContext constructor(
     /** Pool of [MRectangle] objects that could be used temporarily by renders */
     val rectPool = Pool(reset = { it.setTo(0, 0, 0, 0) }, preallocate = 8) { MRectangle() }
 
-    val tempMargin: MMarginInt = MMarginInt()
-
     val identityMatrix = MMatrix()
 
     /**
@@ -257,11 +253,11 @@ class RenderContext constructor(
     val isRenderingToWindow: Boolean get() = currentFrameBufferOrMain === mainFrameBuffer
     val isRenderingToTexture: Boolean get() = !isRenderingToWindow
 
-    // On MacOS components, this will be the size of the component
+    // On macOS components, this will be the size of the component
     open val backWidth: Int get() = mainFrameBuffer.width
     open val backHeight: Int get() = mainFrameBuffer.height
 
-    // On MacOS components, this will be the full size of the window
+    // On macOS components, this will be the full size of the window
     val realBackWidth get() = mainFrameBuffer.fullWidth
     val realBackHeight get() = mainFrameBuffer.fullHeight
 

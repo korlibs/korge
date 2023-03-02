@@ -3,12 +3,13 @@ package com.soywiz.korge.view
 import com.soywiz.korge.testing.*
 import com.soywiz.korge.view.vector.*
 import com.soywiz.korim.color.*
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
 import kotlin.test.*
 
 class GpuShapeViewTest {
     @Test
-    fun test() = korgeScreenshotTest(450, 200) {
+    fun test() = korgeScreenshotTest(SizeInt(450, 200)) {
         gpuShapeView {
             it.antialiased = true
             val paint1 = createLinearGradient(0, 0, 200, 200).add(0.0, Colors.BLUE.withAd(0.9)).add(1.0, Colors.WHITE.withAd(0.7))

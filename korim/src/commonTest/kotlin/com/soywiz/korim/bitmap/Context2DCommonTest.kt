@@ -3,7 +3,10 @@ package com.soywiz.korim.bitmap
 import com.soywiz.kmem.*
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RgbaArray
+import com.soywiz.korim.format.*
+import com.soywiz.korim.paint.*
 import com.soywiz.korio.async.suspendTest
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.rect
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -35,4 +38,21 @@ class Context2DCommonTest {
                 Colors.TRANSPARENT, Colors.TRANSPARENT, Colors.TRANSPARENT
             ), RgbaArray(image.ints).toList())
     }
+
+    //@Test
+    //fun testSweepGradient() = suspendTest {
+    //    try {
+    //        val bmp = Bitmap32Context2d(300, 300) {
+    //            fill(createSweepGradient(100, 100).add(Colors.RED, Colors.GREEN, Colors.BLUE)) {
+    //                //fill(createPattern(bmp, transform = MMatrix().translate(100, 100))) {
+    //                //this.rect(100, 100, 200, 200)
+    //                this.rect(0, 0, 200, 200)
+    //            }
+    //        }
+    //        //bmp.showImageAndWait()
+    //    } catch (e: Throwable) {
+    //        e.printStackTrace()
+    //        throw e
+    //    }
+    //}
 }

@@ -59,7 +59,7 @@ class CSV(val lines: List<List<String>>, val names: List<String>? = null) : Coll
                             val c2 = line.readChar()
                             when (c2) {
                                 '"' -> {
-                                    if (line.peek() == '"') {
+                                    if (line.peekChar() == '"') {
                                         line.readChar()
                                         str.append('"')
                                     } else {

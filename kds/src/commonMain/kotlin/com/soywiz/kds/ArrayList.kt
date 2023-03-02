@@ -525,12 +525,26 @@ class FloatArrayList(capacity: Int = 7) : Collection<Float> {
         return -1
     }
 
-    fun insertAt(index: Int, value: Float) = this.apply {
-        ensure(1)
-        if (isNotEmpty()) arraycopy(data, index, data, index + 1, length - index)
+    private fun createHoleAt(index: Int, count: Int) {
+        ensure(count)
+        if (isNotEmpty()) arraycopy(data, index, data, index + count, length - index)
+    }
+
+    fun insertAt(index: Int, value: Float): FloatArrayList {
+        createHoleAt(index, 1)
         data[index] = value
         length++
+        return this
     }
+
+    fun insertAt(index: Int, v0: Float, v1: Float): FloatArrayList {
+        createHoleAt(index, 2)
+        data[index + 0] = v0
+        data[index + 1] = v1
+        length += 2
+        return this
+    }
+
 
     fun insertAt(index: Int, value: FloatArray, start: Int = 0, end: Int = value.size) = this.apply {
         val count = end - start

@@ -69,6 +69,13 @@ fun UIEditableNumberPropsList(vararg mut: KMutableProperty0<Double>, min: Double
 }
 
 @KorgeExperimental
+fun UIEditableNumberPropsList(vararg mut: KMutableProperty0<Float>, min: Float = 0.0f, max: Float = 1.0f, decimals: Int = 2, clamped: Boolean = true): Array<UIEditableNumberProps> {
+    return mut.map { mut ->
+        UIEditableNumberProps(mut.toUI().toDouble(), min.toDouble(), max.toDouble(), decimals, clamped)
+    }.toTypedArray()
+}
+
+@KorgeExperimental
 fun UIEditableIntPropsList(vararg mut: KMutableProperty0<Int>, min: Int = 0, max: Int = 1000): Array<UIEditableNumberProps> {
     return mut.map { mut ->
         UIEditableNumberProps(UIProperty(set = { mut.set(it.toInt()) }, get = { mut.get().toDouble() }), min.toDouble(), max.toDouble(), 0, true)

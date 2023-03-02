@@ -4,6 +4,7 @@ import com.soywiz.korge.view.fixedSizeContainer
 import com.soywiz.korge.view.solidRect
 import com.soywiz.korge.view.xy
 import com.soywiz.korim.color.Colors
+import com.soywiz.korma.geom.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -19,11 +20,11 @@ class ViewsFixedSizeContainerHitTestTest : ViewsForTesting() {
 
         val log = arrayListOf<Any?>()
 
-        log += stage.mouseHitTest(100.0, 200.0)
-        log += stage.mouseHitTest(100.0, 100.0)
-        log += stage.mouseHitTest(2000.0, 2000.0)
+        log += stage.mouseHitTest(Point(100, 200))
+        log += stage.mouseHitTest(Point(100, 100))
+        log += stage.mouseHitTest(Point(2000, 2000))
         clip.clip = false
-        log += stage.mouseHitTest(100.0, 200.0)
+        log += stage.mouseHitTest(Point(100, 200))
         assertEquals(
             listOf<Any?>(null, rect, null, rect),
             log

@@ -2,10 +2,66 @@ package com.soywiz.korim.color
 
 import com.soywiz.kmem.clamp
 import com.soywiz.korio.util.niceStr
-import com.soywiz.korma.interpolation.Interpolable
-import com.soywiz.korma.interpolation.MutableInterpolable
-import com.soywiz.korma.interpolation.interpolate
+import com.soywiz.korma.interpolation.*
 import com.soywiz.krypto.encoding.shex
+
+data class ColorTransformMul(
+    private var _r: Float = 1f,
+    private var _g: Float = 1f,
+    private var _b: Float = 1f,
+    private var _a: Float = 1f,
+) {
+    private var dirtyColorMul = true
+
+    var r: Float get() = _r
+        set(value) {
+            _r = value
+            dirtyColorMul = true
+        }
+    var g: Float get() = _g
+        set(value) {
+            _g = value
+            dirtyColorMul = true
+        }
+    var b: Float
+        get() = _b
+        set(value) {
+            _b = value
+            dirtyColorMul = true
+        }
+    var a: Float
+        get() = _a
+        set(value) {
+            _a = value
+            dirtyColorMul = true
+        }
+
+    private var _colorMul: RGBA = Colors.WHITE
+
+    var colorMul: RGBA
+        set(v) {
+            setTo(v.rf, v.gf, v.bf, v.af)
+            _colorMul = v
+            dirtyColorMul = false
+        }
+        get() {
+            if (dirtyColorMul) {
+                dirtyColorMul = false
+                _colorMul = RGBA.float(_r, _g, _b, _a)
+            }
+            return _colorMul
+        }
+
+    fun setTo(r: Float, g: Float, b: Float, a: Float) {
+        this._r = r
+        this._g = g
+        this._b = b
+        this._a = a
+        dirtyColorMul = true
+    }
+    fun copyFrom(other: ColorTransformMul) = setTo(other._r, other._g, other._b, other._a)
+    fun setToConcat(a: ColorTransformMul, b: ColorTransformMul) = setTo(a.r * b.r, a.g * b.g, a.b * b.b, a.a * b.a)
+}
 
 data class ColorTransform(
     private var _mR: Double,
@@ -18,14 +74,11 @@ data class ColorTransform(
     private var _aA: Int
 ) : MutableInterpolable<ColorTransform>, Interpolable<ColorTransform> {
     companion object {
-        @Deprecated("This being mutable is dangeour", level = DeprecationLevel.ERROR)
-        inline val identity: ColorTransform get() = TODO()
-
         inline fun Multiply(r: Double, g: Double, b: Double, a: Double) = ColorTransform(r, g, b, a, 0, 0, 0, 0)
         inline fun Add(r: Int, g: Int, b: Int, a: Int) = ColorTransform(1, 1, 1, 1, r, g, b, a)
     }
 
-    override fun setToInterpolated(ratio: Double, l: ColorTransform, r: ColorTransform): ColorTransform = setTo(
+    override fun setToInterpolated(ratio: Ratio, l: ColorTransform, r: ColorTransform): ColorTransform = setTo(
         ratio.interpolate(l.mR, r.mR),
         ratio.interpolate(l.mG, r.mG),
         ratio.interpolate(l.mB, r.mB),
@@ -36,7 +89,7 @@ data class ColorTransform(
         ratio.interpolate(l.aA, r.aA)
     )
 
-    override fun interpolateWith(ratio: Double, other: ColorTransform): ColorTransform =
+    override fun interpolateWith(ratio: Ratio, other: ColorTransform): ColorTransform =
         ColorTransform().setToInterpolated(ratio, this, other)
 
     private var dirtyColorMul = true

@@ -1,53 +1,22 @@
 package com.soywiz.korim.awt
 
-import com.soywiz.kds.mapFloat
-import com.soywiz.kmem.clearSafe
-import com.soywiz.kmem.flipSafe
-import com.soywiz.kmem.positionSafe
-import com.soywiz.korim.bitmap.Bitmap
-import com.soywiz.korim.bitmap.NativeImage
-import com.soywiz.korim.bitmap.ensureNative
-import com.soywiz.korim.color.BGRA
-import com.soywiz.korim.color.Colors
-import com.soywiz.korim.color.RGBA
-import com.soywiz.korim.paint.BitmapPaint
-import com.soywiz.korim.paint.ColorPaint
-import com.soywiz.korim.paint.GradientFiller
-import com.soywiz.korim.paint.GradientInterpolationMethod
-import com.soywiz.korim.paint.GradientKind
+import com.soywiz.kds.*
+import com.soywiz.kmem.*
+import com.soywiz.korim.bitmap.*
+import com.soywiz.korim.color.*
+import com.soywiz.korim.paint.*
 import com.soywiz.korim.paint.GradientPaint
 import com.soywiz.korim.paint.Paint
-import com.soywiz.korim.paint.TransformedPaint
-import com.soywiz.korim.vector.Context2d
-import com.soywiz.korim.vector.CycleMethod
-import com.soywiz.korma.geom.MMatrix
-import com.soywiz.korma.geom.vector.LineCap
-import com.soywiz.korma.geom.vector.LineJoin
-import com.soywiz.korma.geom.vector.VectorPath
-import com.soywiz.korma.geom.vector.Winding
-import com.soywiz.korma.geom.vector.isEmpty
-import java.awt.AlphaComposite
-import java.awt.BasicStroke
-import java.awt.Color
-import java.awt.Graphics2D
-import java.awt.Image
-import java.awt.MultipleGradientPaint
-import java.awt.PaintContext
+import com.soywiz.korim.vector.*
+import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.vector.*
+import java.awt.*
 import java.awt.Rectangle
-import java.awt.RenderingHints
 import java.awt.RenderingHints.*
-import java.awt.Transparency
-import java.awt.geom.AffineTransform
-import java.awt.geom.Point2D
-import java.awt.geom.Rectangle2D
-import java.awt.image.BufferedImage
-import java.awt.image.ColorConvertOp
-import java.awt.image.ColorModel
-import java.awt.image.DataBufferInt
-import java.awt.image.Raster
-import java.awt.image.WritableRaster
+import java.awt.geom.*
+import java.awt.image.*
+import java.nio.*
 import java.nio.Buffer
-import java.nio.ByteBuffer
 
 
 const val AWT_INTERNAL_IMAGE_TYPE_PRE = BufferedImage.TYPE_INT_ARGB_PRE
@@ -225,22 +194,22 @@ class AwtContext2dRender(val awtImage: BufferedImage, val antialiasing: Boolean 
 		}
 
 		this.visitCmds(
-            moveTo = { x, y ->
+            moveTo = {
                 //flush()
-                polyline.moveTo(x, y)
+                polyline.moveTo(it.xD, it.yD)
                 //kotlin.io.println("moveTo: $x, $y")
             },
-            lineTo = { x, y ->
-                polyline.lineTo(x, y)
+            lineTo = {
+                polyline.lineTo(it.xD, it.yD)
                 //kotlin.io.println("lineTo: $x, $y")
                 parts++
             },
-            quadTo = { cx, cy, ax, ay ->
-                polyline.quadTo(cx, cy, ax, ay)
+            quadTo = { c, a ->
+                polyline.quadTo(c.xD, c.yD, a.xD, a.yD)
                 parts++
             },
-            cubicTo = { cx1, cy1, cx2, cy2, ax, ay ->
-                polyline.curveTo(cx1, cy1, cx2, cy2, ax, ay)
+            cubicTo = { c1, c2, a ->
+                polyline.curveTo(c1.xD, c1.yD, c2.xD, c2.yD, a.xD, a.yD)
                 parts++
             },
             close = {
@@ -359,7 +328,7 @@ class AwtContext2dRender(val awtImage: BufferedImage, val antialiasing: Boolean 
                             val valid = (pairs.size >= 2)
                             if (valid) {
                                 if (USE_ACCURATE_RADIAL_PAINT) {
-                                    AwtKorimGradientPaint(
+                                    AwtKorimGenericPaint(
                                         this,
                                         transform
                                     )
@@ -380,29 +349,36 @@ class AwtContext2dRender(val awtImage: BufferedImage, val antialiasing: Boolean 
                             }
                         }
                         else -> {
-                            AwtKorimGradientPaint(this, transform)
+                            AwtKorimGenericPaint(this, transform)
                         }
                     }
 
                 }
                 is BitmapPaint -> {
-                    object : java.awt.TexturePaint(
-                        this.bitmap.toAwt(),
-                        Rectangle2D.Double(0.0, 0.0, this.bitmap.width.toDouble(), this.bitmap.height.toDouble())
-                    ) {
-                        override fun createContext(
-                            cm: ColorModel?,
-                            deviceBounds: Rectangle?,
-                            userBounds: Rectangle2D?,
-                            xform: AffineTransform?,
-                            hints: RenderingHints?
-                        ): PaintContext {
-                            val out = AffineTransform()
-                            if (xform != null) {
-                                out.concatenate(xform)
+                    when {
+                        this.cycleX == CycleMethod.REPEAT && this.cycleY == CycleMethod.REPEAT -> {
+                            object : java.awt.TexturePaint(
+                                this.bitmap.toAwt(),
+                                Rectangle2D.Double(0.0, 0.0, this.bitmap.width.toDouble(), this.bitmap.height.toDouble())
+                            ) {
+                                override fun createContext(
+                                    cm: ColorModel?,
+                                    deviceBounds: Rectangle?,
+                                    userBounds: Rectangle2D?,
+                                    xform: AffineTransform?,
+                                    hints: RenderingHints?
+                                ): PaintContext {
+                                    val out = AffineTransform()
+                                    if (xform != null) {
+                                        out.concatenate(xform)
+                                    }
+                                    out.concatenate(t1)
+                                    return super.createContext(cm, deviceBounds, userBounds, out, this@AwtContext2dRender.hints)
+                                }
                             }
-                            out.concatenate(t1)
-                            return super.createContext(cm, deviceBounds, userBounds, out, this@AwtContext2dRender.hints)
+                        }
+                        else -> {
+                            AwtKorimGenericPaint(this, transform)
                         }
                     }
                 }
@@ -464,7 +440,7 @@ class AwtContext2dRender(val awtImage: BufferedImage, val antialiasing: Boolean 
         )
 	}
 
-	override fun render(state: Context2d.State, fill: Boolean, winding: Winding?) {
+	override fun renderFinal(state: Context2d.State, fill: Boolean, winding: Winding?) {
 		if (state.path.isEmpty()) return
 
         //println("AwtNativeImage.render: winding=$winding, state.path.winding=${state.path.winding}: ${state.path}")
@@ -483,11 +459,11 @@ class AwtContext2dRender(val awtImage: BufferedImage, val antialiasing: Boolean 
 	}
 
 
-    class AwtKorimGradientPaint(
-        val paint: GradientPaint,
+    class AwtKorimGenericPaint(
+        val paint: Paint,
         val stateTransform: AffineTransform
     ) : java.awt.Paint {
-        val filler = GradientFiller().set(paint, Context2d.State(transform = stateTransform.toMatrix()))
+        val filler = paint.toFiller(Context2d.State(transform = stateTransform.toMatrix()))
 
         override fun getTransparency(): Int = Transparency.TRANSLUCENT
 
@@ -523,7 +499,7 @@ class AwtContext2dRender(val awtImage: BufferedImage, val antialiasing: Boolean 
                     var n = 0
                     for (py in 0 until h) {
                         for (px in 0 until w) {
-                            val col = filler.getColor((x + px).toDouble(), (y + py).toDouble())
+                            val col = filler.getColor((x + px), (y + py))
                             //val col = Colors.RED
                             out[n++] = col.r
                             out[n++] = col.g

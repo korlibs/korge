@@ -7,6 +7,7 @@ import com.soywiz.korim.color.*
 import com.soywiz.korim.vector.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
+import com.soywiz.korma.interpolation.*
 import kotlin.math.*
 
 interface Paint {
@@ -58,13 +59,7 @@ interface TransformedPaint : Paint {
 }
 
 enum class GradientKind {
-    LINEAR, RADIAL,
-    @Deprecated("Not available in some targets")
-    SWEEP;
-    companion object {
-        @Deprecated("Not available in some targets")
-        val CONIC: GradientKind get() = SWEEP
-    }
+    LINEAR, RADIAL, SWEEP;
 }
 
 enum class GradientUnits {
@@ -94,20 +89,6 @@ data class GradientPaint(
     val isLinear: Boolean get() = kind == GradientKind.LINEAR
     val isRadial: Boolean get() = kind == GradientKind.RADIAL
     val isSweep: Boolean get() = kind == GradientKind.SWEEP
-
-    @Deprecated("")
-    fun x0(m: MMatrix) = m.transformX(x0, y0)
-    @Deprecated("")
-    fun y0(m: MMatrix) = m.transformY(x0, y0)
-    @Deprecated("")
-    fun r0(m: MMatrix) = m.transformX(r0, r0)
-
-    @Deprecated("")
-    fun x1(m: MMatrix) = m.transformX(x1, y1)
-    @Deprecated("")
-    fun y1(m: MMatrix) = m.transformY(x1, y1)
-    @Deprecated("")
-    fun r1(m: MMatrix) = m.transformX(r1, r1)
 
     val numberOfStops get() = stops.size
 
@@ -151,7 +132,7 @@ data class GradientPaint(
                         val color0 = RGBA(colors.getAt(n + 0))
                         val color1 = RGBA(colors.getAt(n + 1))
                         for (s in stop0 until stop1) {
-                            val ratio = (s - stop0).toDouble() / (stop1 - stop0).toDouble()
+                            val ratio = Ratio((s - stop0).toDouble(), (stop1 - stop0).toDouble())
                             out[s] = RGBA.interpolate(color0, color1, ratio).colorInt(premultiplied)
                         }
                     }
@@ -200,23 +181,23 @@ data class GradientPaint(
     private val x0_x1 = x0 - x1
     private val radial_scale = 1.0 / ((r0 - r1).pow2 - (x0 - x1).pow2 - (y0 - y1).pow2)
 
-    fun getRatioAt(px: Double, py: Double): Double {
+    fun getRatioAt(px: Float, py: Float): Float {
         //val x = px
         //val y = py
         return cycle.apply(when (kind) {
             GradientKind.SWEEP -> {
                 val x = transformInv.transformX(px, py)
                 val y = transformInv.transformY(px, py)
-                MPoint.angle(x0, y0, x, y) / 360.degrees
+                (MPoint.angle(x0, y0, x, y) / 360.degrees).toFloat()
             }
             GradientKind.RADIAL -> {
                 val x = transformInv.transformX(px, py)
                 val y = transformInv.transformY(px, py)
-                1.0 - (-r1 * r0_r1 + x0_x1 * (x1 - x) + y0_y1 * (y1 - y) - sqrt(r1pow2 * ((x0 - x).pow2 + (y0 - y).pow2) - r0r1_2 * ((x0 - x) * (x1 - x) + (y0 - y) * (y1 - y)) + r0pow2 * ((x1 - x).pow2 + (y1 - y).pow2) - (x1 * y0 - x * y0 - x0 * y1 + x * y1 + x0 * y - x1 * y).pow2)) * radial_scale
+                (1.0 - (-r1 * r0_r1 + x0_x1 * (x1 - x) + y0_y1 * (y1 - y) - sqrt(r1pow2 * ((x0 - x).pow2 + (y0 - y).pow2) - r0r1_2 * ((x0 - x) * (x1 - x) + (y0 - y) * (y1 - y)) + r0pow2 * ((x1 - x).pow2 + (y1 - y).pow2) - (x1 * y0 - x * y0 - x0 * y1 + x * y1 + x0 * y - x1 * y).pow2)) * radial_scale).toFloat()
             }
             else -> {
                 //println("gradientMatrix.transformX($x, $y): ${gradientMatrix.transformX(x, y)}")
-                gradientMatrix.transformX(px, py)
+                gradientMatrix.transformX(px, py).toFloat()
             }
         })
     }
@@ -224,11 +205,11 @@ data class GradientPaint(
     val Float.pow2: Float get() = this * this
     val Double.pow2: Double get() = this * this
 
-    fun getRatioAt(x: Double, y: Double, m: MMatrix): Double {
+    fun getRatioAt(x: Float, y: Float, m: MMatrix): Float {
         //val tx = gradientMatrix.transformX(x, y)
         //val ty = gradientMatrix.transformY(x, y)
         //return m.transformX(tx, ty)
-        return getRatioAt(m.transformX(x, y), m.transformY(x, y))
+        return getRatioAt(m.transformX(x, y).toFloat(), m.transformY(x, y).toFloat())
         //return getRatioAt(x, y)
     }
 
@@ -254,9 +235,7 @@ data class GradientPaint(
 
 inline fun LinearGradientPaint(x0: Number, y0: Number, x1: Number, y1: Number, cycle: CycleMethod = CycleMethod.NO_CYCLE, transform: MMatrix = MMatrix(), block: GradientPaint.() -> Unit = {}) = GradientPaint(GradientKind.LINEAR, x0.toDouble(), y0.toDouble(), 0.0, x1.toDouble(), y1.toDouble(), 0.0, cycle = cycle, transform = transform).also(block)
 inline fun RadialGradientPaint(x0: Number, y0: Number, r0: Number, x1: Number, y1: Number, r1: Number, cycle: CycleMethod = CycleMethod.NO_CYCLE, transform: MMatrix = MMatrix(), block: GradientPaint.() -> Unit = {}) = GradientPaint(GradientKind.RADIAL, x0.toDouble(), y0.toDouble(), r0.toDouble(), x1.toDouble(), y1.toDouble(), r1.toDouble(), cycle = cycle, transform = transform).also(block)
-@Deprecated("Only available on Android or Bitmap32")
-inline fun SweepGradientPaint(x0: Number, y0: Number, transform: MMatrix = MMatrix(), block: GradientPaint.() -> Unit = {}) = GradientPaint(GradientKind.SWEEP, x0.toDouble(), y0.toDouble(), 0.0, 0.0, 0.0, 0.0, transform = transform).also(block)
-inline fun ConicGradientPaint(startAngle: Angle, x0: Number, y0: Number, transform: MMatrix = MMatrix(), block: GradientPaint.() -> Unit = {}) = GradientPaint(GradientKind.CONIC, x0.toDouble(), y0.toDouble(), 0.0, 0.0, 0.0, 0.0, startAngle = startAngle, transform = transform).also(block)
+inline fun SweepGradientPaint(x0: Number, y0: Number, startAngle: Angle = Angle.ZERO, transform: MMatrix = MMatrix(), block: GradientPaint.() -> Unit = {}) = GradientPaint(GradientKind.SWEEP, x0.toDouble(), y0.toDouble(), 0.0, 0.0, 0.0, 0.0, startAngle = startAngle, transform = transform).also(block)
 
 /** Adds color stops to the gradient in the [pairs] list being the left of the pair the ratio between 0.0 and 1.0, and the right of the pair the [Color] */
 fun GradientPaint.add(vararg pairs: Pair<Double, RGBA>): GradientPaint {

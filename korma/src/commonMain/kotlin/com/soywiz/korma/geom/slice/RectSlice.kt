@@ -19,23 +19,23 @@ import com.soywiz.korma.geom.*
  * Typically, this slice represents a slice inside a Bitmap or a Texture atlas, that might have been stored rotated, flipped, etc.
  * and sometimes it might have been cropped.
  */
-data class RectSlice<T : ISizeInt>(
+data class RectSlice<T : SizeableInt>(
     /** Data containing [width] & [height] */
     override val base: T,
     /** [rect] of the slice, without the [orientation] applied */
-    override val rect: IRectangleInt,
+    override val rect: RectangleInt,
     /** An orientation describing how the slice is going to be rotated and flipped */
     val orientation: SliceOrientation = SliceOrientation.ROTATE_0,
     /** Extra empty pixels that will be considered for this slice, for tightly packed images */
-    override val padding: com.soywiz.korma.geom.IMarginInt = IMarginInt.ZERO,
+    override val padding: MarginInt = MarginInt.ZERO,
     /** Debug [name] describing this slice */
     override val name: String? = null,
 ) : SliceCoordsWithBaseAndRect<T> { //, Resourceable<RectSlice<T>> {
     val invOrientation: SliceOrientation get() = orientation.inverted()
     val trimmed: Boolean get() = padding.top != 0 || padding.bottom != 0 || padding.left != 0 || padding.right != 0
 
-    val baseWidth: Int = base.width
-    val baseHeight: Int = base.height
+    val baseWidth: Int = base.size.width
+    val baseHeight: Int = base.size.height
 
     /** [width] of the slice without applying the [orientation] */
     val unorientedWidth: Int get() = rect.width
@@ -86,6 +86,8 @@ data class RectSlice<T : ISizeInt>(
         sliceWithBounds(x, y, x + width, y + height, name = name, clamped = clamped, orientation = orientation)
     fun slice(rect: IRectangleInt, name: String? = null, clamped: Boolean = true, orientation: SliceOrientation = this.orientation): RectSlice<T> =
         sliceWithBounds(rect.left, rect.top, rect.right, rect.bottom, name = name, clamped = clamped, orientation = orientation)
+    fun slice(rect: RectangleInt, name: String? = null, clamped: Boolean = true, orientation: SliceOrientation = this.orientation): RectSlice<T> =
+        sliceWithBounds(rect.left, rect.top, rect.right, rect.bottom, name = name, clamped = clamped, orientation = orientation)
 
     val virtFrame: IRectangleInt?
         get() {
@@ -94,7 +96,7 @@ data class RectSlice<T : ISizeInt>(
         }
 
     fun virtFrame(x: Int, y: Int, width: Int, height: Int): RectSlice<T> {
-        return copy(padding = IMarginInt(y, width - this.width - x, height - this.height - y, x))
+        return copy(padding = MarginInt(y, width - this.width - x, height - this.height - y, x))
         //val rotated = orientation.isRotatedDeg90CwOrCcw
         //return copy(padding = when {
         //    !rotated -> IMarginInt(y, width - this.width - x, height - this.height - y, x)
@@ -103,7 +105,11 @@ data class RectSlice<T : ISizeInt>(
     }
 
     fun virtFrame(frame: IRectangleInt?): RectSlice<T> = when (frame) {
-        null -> copy(padding = IMarginInt.ZERO)
+        null -> copy(padding = MarginInt.ZERO)
+        else -> virtFrame(frame.x, frame.y, frame.width, frame.height)
+    }
+    fun virtFrame(frame: RectangleInt?): RectSlice<T> = when (frame) {
+        null -> copy(padding = MarginInt.ZERO)
         else -> virtFrame(frame.x, frame.y, frame.width, frame.height)
     }
 
@@ -140,7 +146,7 @@ data class RectSlice<T : ISizeInt>(
     }
 }
 
-fun <T : ISizeInt> RectSlice<T>.split(width: Int, height: Int, inRows: Boolean): List<RectSlice<T>> {
+fun <T : SizeableInt> RectSlice<T>.split(width: Int, height: Int, inRows: Boolean): List<RectSlice<T>> {
     val nheight = this.height / height
     val nwidth = this.width / width
     return arrayListOf<RectSlice<T>>().also {
@@ -152,5 +158,5 @@ fun <T : ISizeInt> RectSlice<T>.split(width: Int, height: Int, inRows: Boolean):
     }
 }
 
-fun <T : ISizeInt> RectSlice<T>.splitInRows(width: Int, height: Int): List<RectSlice<T>> = split(width, height, inRows = true)
-fun <T : ISizeInt> RectSlice<T>.splitInCols(width: Int, height: Int): List<RectSlice<T>> = split(width, height, inRows = false)
+fun <T : SizeableInt> RectSlice<T>.splitInRows(width: Int, height: Int): List<RectSlice<T>> = split(width, height, inRows = true)
+fun <T : SizeableInt> RectSlice<T>.splitInCols(width: Int, height: Int): List<RectSlice<T>> = split(width, height, inRows = false)

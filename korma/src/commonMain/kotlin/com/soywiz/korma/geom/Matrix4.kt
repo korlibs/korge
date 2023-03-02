@@ -79,7 +79,7 @@ enum class MajorOrder { ROW, COLUMN }
 typealias MMatrix4 = MMatrix3D
 
 @KormaMutableApi
-interface IMatrix3D {
+sealed interface IMatrix3D {
     val v00: Float
     val v01: Float
     val v02: Float
@@ -125,10 +125,9 @@ interface IMatrix3D {
     fun copyToFloat2x2(out: FloatArray, order: MajorOrder, offset: Int) = copyToFloatWxH(out, 2, 2, order, offset)
     fun copyToFloat3x3(out: FloatArray, order: MajorOrder, offset: Int) = copyToFloatWxH(out, 3, 3, order, offset)
     fun copyToFloat4x4(out: FloatArray, order: MajorOrder, offset: Int) = copyToFloatWxH(out, 4, 4, order, offset)
-
 }
 
-interface IMMatrix3D : IMatrix3D {
+sealed interface IMMatrix3D : IMatrix3D {
     override var v00: Float
     override var v01: Float
     override var v02: Float
@@ -562,8 +561,8 @@ class MMatrix3D : IMMatrix3D {
     fun setToShear(x: Int, y: Int, z: Int) = setToShear(x.toFloat(), y.toFloat(), z.toFloat())
 
     fun setToRotationX(angle: Angle): MMatrix3D {
-        val c = cos(angle).toFloat()
-        val s = sin(angle).toFloat()
+        val c = cosd(angle).toFloat()
+        val s = sind(angle).toFloat()
         return this.setRows(
             1f, 0f, 0f, 0f,
             0f, c, - s, 0f,
@@ -573,8 +572,8 @@ class MMatrix3D : IMMatrix3D {
     }
 
     fun setToRotationY(angle: Angle): MMatrix3D {
-        val c = cos(angle).toFloat()
-        val s = sin(angle).toFloat()
+        val c = cosd(angle).toFloat()
+        val s = sind(angle).toFloat()
         return this.setRows(
             c, 0f, s, 0f,
             0f, 1f, 0f, 0f,
@@ -584,8 +583,8 @@ class MMatrix3D : IMMatrix3D {
     }
 
     fun setToRotationZ(angle: Angle): MMatrix3D {
-        val c = cos(angle).toFloat()
-        val s = sin(angle).toFloat()
+        val c = cosd(angle).toFloat()
+        val s = sind(angle).toFloat()
         return this.setRows(
             c, - s, 0f, 0f,
             s, c, 0f, 0f,
@@ -601,8 +600,8 @@ class MMatrix3D : IMMatrix3D {
         val nx = x * norm
         val ny = y * norm
         val nz = z * norm
-        val c = cos(angle)
-        val s = sin(angle)
+        val c = cosd(angle)
+        val s = sind(angle)
         val t = 1 - c
         val tx = t * nx
         val ty = t * ny
@@ -1146,10 +1145,10 @@ class MMatrix3D : IMMatrix3D {
     )
 
     fun setToInterpolated(a: MMatrix3D, b: MMatrix3D, ratio: Double) = setColumns(
-        ratio.interpolate(a.v00, b.v00), ratio.interpolate(a.v10, b.v10), ratio.interpolate(a.v20, b.v20), ratio.interpolate(a.v30, b.v30),
-        ratio.interpolate(a.v01, b.v01), ratio.interpolate(a.v11, b.v11), ratio.interpolate(a.v21, b.v21), ratio.interpolate(a.v31, b.v31),
-        ratio.interpolate(a.v02, b.v02), ratio.interpolate(a.v12, b.v12), ratio.interpolate(a.v22, b.v22), ratio.interpolate(a.v32, b.v32),
-        ratio.interpolate(a.v03, b.v03), ratio.interpolate(a.v13, b.v13), ratio.interpolate(a.v23, b.v23), ratio.interpolate(a.v33, b.v33)
+        ratio.toRatio().interpolate(a.v00, b.v00), ratio.toRatio().interpolate(a.v10, b.v10), ratio.toRatio().interpolate(a.v20, b.v20), ratio.toRatio().interpolate(a.v30, b.v30),
+        ratio.toRatio().interpolate(a.v01, b.v01), ratio.toRatio().interpolate(a.v11, b.v11), ratio.toRatio().interpolate(a.v21, b.v21), ratio.toRatio().interpolate(a.v31, b.v31),
+        ratio.toRatio().interpolate(a.v02, b.v02), ratio.toRatio().interpolate(a.v12, b.v12), ratio.toRatio().interpolate(a.v22, b.v22), ratio.toRatio().interpolate(a.v32, b.v32),
+        ratio.toRatio().interpolate(a.v03, b.v03), ratio.toRatio().interpolate(a.v13, b.v13), ratio.toRatio().interpolate(a.v23, b.v23), ratio.toRatio().interpolate(a.v33, b.v33)
     )
 
     fun copyFrom(that: MMatrix): MMatrix3D = that.toMatrix3D(this)

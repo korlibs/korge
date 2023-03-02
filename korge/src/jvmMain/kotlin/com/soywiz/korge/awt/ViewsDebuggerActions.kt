@@ -1,7 +1,6 @@
 package com.soywiz.korge.awt
 
 import com.soywiz.korge.view.*
-import com.soywiz.korge.view.ktree.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.serialization.xml.*
 
@@ -63,7 +62,7 @@ internal open class ViewsDebuggerActions(val views: Views) {
     fun cut() {
         val view = selectedView
         if (view != null) {
-            pasteboard = view.viewTreeToKTree(views, currentVfs)
+            //pasteboard = view.viewTreeToKTree(views, currentVfs)
             selectView(view.parent)
             view.removeFromParent()
             save("Cut", view)
@@ -73,7 +72,8 @@ internal open class ViewsDebuggerActions(val views: Views) {
     fun copyToXml(): Xml? {
         val view = selectedView
         if (view != null) {
-            return view.viewTreeToKTree(views, currentVfs)
+            //return view.viewTreeToKTree(views, currentVfs)
+            TODO()
         } else {
             return null
         }
@@ -94,9 +94,10 @@ internal open class ViewsDebuggerActions(val views: Views) {
             ?: stage
 
         if (xml != null) {
-            val newView = xml.ktreeToViewTree(views, currentVfs)
-            container.addChild(newView)
-            selectView(newView)
+            TODO()
+            //val newView = xml.ktreeToViewTree(views, currentVfs)
+            //container.addChild(newView)
+            //selectView(newView)
         }
         if (save) {
             save("Paste", view)

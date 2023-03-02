@@ -74,6 +74,7 @@ class BoundsBuilder {
     fun add(x: Int, y: Int, transform: MMatrix?): BoundsBuilder = add(x.toDouble(), y.toDouble(), transform)
     fun add(x: Float, y: Float, transform: MMatrix?): BoundsBuilder = add(x.toDouble(), y.toDouble(), transform)
 
+    fun add(point: Point): BoundsBuilder = add(point.x, point.y)
     fun add(point: IPoint): BoundsBuilder = add(point.x, point.y)
     fun add(point: IPoint, transform: MMatrix): BoundsBuilder = add(point.x, point.y, transform)
 

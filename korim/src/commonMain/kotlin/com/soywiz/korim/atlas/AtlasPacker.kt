@@ -3,8 +3,7 @@ package com.soywiz.korim.atlas
 import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.kmem.nextPowerOfTwo
 import com.soywiz.korim.bitmap.*
-import com.soywiz.korma.geom.MRectangle
-import com.soywiz.korma.geom.MSize
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.binpack.BinPacker
 import kotlin.jvm.JvmName
 
@@ -76,14 +75,14 @@ object AtlasPacker {
                 frames = packedItems.map {
                     val bmp = it.slice
                     val r = it.rectWithBorder
-                    val rect = MRectangle(r.x.toInt() + 2, r.y.toInt() + 2, bmp.width, bmp.height).toInt()
+                    val rect = Rectangle(r.x.toInt() + 2, r.y.toInt() + 2, bmp.width, bmp.height).toInt()
                     val filename = it.originalSlice.name
                     AtlasInfo.Region(
                         name = filename ?: "unknown",
-                        frame = AtlasInfo.Rect(rect.x, rect.y, rect.width, rect.height),
+                        frame = rect,
                         rotated = false,
-                        sourceSize = AtlasInfo.Size(rect.width, rect.height),
-                        spriteSourceSize = AtlasInfo.Rect(0, 0, rect.width, rect.height),
+                        sourceSize = rect.size,
+                        spriteSourceSize = RectangleInt(0, 0, rect.width, rect.height),
                         trimmed = false
                     )
                 },
@@ -92,7 +91,7 @@ object AtlasPacker {
                     format = "RGBA8888",
                     image = fileName,
                     scale = 1.0,
-                    size = AtlasInfo.Size(out.width, out.height),
+                    size = SizeInt(out.width, out.height),
                     version = AtlasInfo.Meta.VERSION
                 )
             )

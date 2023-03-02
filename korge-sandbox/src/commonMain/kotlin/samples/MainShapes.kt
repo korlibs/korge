@@ -23,10 +23,10 @@ class MainShapes : Scene() {
                 rect(-1.0, -1.0, 3.0, 2.0)
             }
             fill(Colors.AQUAMARINE) {
-                circle(0.0, 0.0, 1.0)
+                circle(Point(0, 0), 1f)
             }
             fill(Colors.AQUAMARINE) {
-                circle(1.0, 0.0, 1.0)
+                circle(Point(1, 0), 1f)
             }
         }
             .position(100, 100)
@@ -70,9 +70,9 @@ class MainShapes : Scene() {
     }
 
     fun <T : View> T.interactive(): T = apply {
-        alpha = 0.5
-        onOver { alpha = 1.0 }
-        onOut { alpha = 0.5 }
+        alphaF = 0.5f
+        onOver { alphaF = 1.0f }
+        onOut { alphaF = 0.5f }
     }
 
 }

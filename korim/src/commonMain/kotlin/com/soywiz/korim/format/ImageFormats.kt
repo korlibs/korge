@@ -1,31 +1,19 @@
 package com.soywiz.korim.format
 
-import com.soywiz.kds.atomic.kdsFreeze
-import com.soywiz.korim.bitmap.Bitmap
-import com.soywiz.korim.bitmap.BmpSlice
-import com.soywiz.korim.bitmap.extract
-import com.soywiz.korio.concurrent.atomic.KorAtomicRef
-import com.soywiz.korio.concurrent.atomic.getValue
-import com.soywiz.korio.concurrent.atomic.setValue
-import com.soywiz.korio.file.PathInfo
-import com.soywiz.korio.file.VfsFile
-import com.soywiz.korio.file.baseName
-import com.soywiz.korio.file.extensionLC
+import com.soywiz.korim.bitmap.*
+import com.soywiz.korio.concurrent.atomic.*
+import com.soywiz.korio.file.*
+import com.soywiz.korio.lang.*
 import com.soywiz.korio.lang.ASCII
-import com.soywiz.korio.lang.toString
-import com.soywiz.korio.stream.AsyncStream
-import com.soywiz.korio.stream.SyncStream
-import com.soywiz.korio.stream.readBytes
-import com.soywiz.korio.stream.readString
-import com.soywiz.korio.stream.sliceStart
-import com.soywiz.krypto.encoding.hex
-import kotlinx.coroutines.CancellationException
+import com.soywiz.korio.stream.*
+import com.soywiz.krypto.encoding.*
+import kotlinx.coroutines.*
 
 open class ImageFormats(formats: Iterable<ImageFormat>) : ImageFormat("") {
     constructor(vararg formats: ImageFormat) : this(formats.toList())
 
     @PublishedApi
-    internal var _formats: Set<ImageFormat> by kdsFreeze(KorAtomicRef(kdsFreeze(formats.listFormats())))
+    internal var _formats: Set<ImageFormat> by KorAtomicRef(formats.listFormats())
 	val formats: Set<ImageFormat> get() = _formats
 
     override suspend fun decodeHeaderSuspend(s: AsyncStream, props: ImageDecodingProps): ImageInfo? {

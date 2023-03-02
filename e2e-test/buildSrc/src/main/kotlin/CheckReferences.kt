@@ -96,9 +96,9 @@ object CheckReferences {
         }
 
         suspend fun compareResults(): List<ComparisonResult>{
-            val bitmap1 = generatedFile?.toVfs()?.readBitmap()?.toBMP32() ?: error("No generated file to compare")
+            val bitmap1 = generatedFile?.toVfs()?.readBitmap()?.toBMP32()?.premultipliedIfRequired() ?: error("No generated file to compare")
             return referenceFiles
-                .map { it.toVfs().readBitmap().toBMP32() }
+                .map { it.toVfs().readBitmap().toBMP32().premultipliedIfRequired() }
                 .map { bitmap2 ->
                     val similarPixelPerfect = Bitmap32.matches(bitmap1, bitmap2, threshold = 32)
                     val equals = bitmap1.contentEquals(bitmap2)

@@ -77,7 +77,7 @@ object ResourceProcessorRunner {
                         file.isDirectory -> processors.folderProcessors
                         else -> listOfNotNull(processors.fileProcessorsByExt[ext])
                     }
-					logger.info("   - $file : ext=$ext, isDirectory=${file.isDirectory}, processors=${processorsForEntry.size}")
+                    logger.info("   - $file : ext=$ext, isDirectory=${file.isDirectory}, processors=${processorsForEntry.size}")
 					if (processorsForEntry.isNotEmpty()) {
 						val relativeFile = file.absoluteFile.relativeTo(folder)
 						//println("       - $processor - $outputRelativeFolder - $outputFile")

@@ -183,7 +183,7 @@ object Yaml {
                 val c = read()
                 when (c) {
                     ':', '-', '[', ']', ',' -> {
-                        flush(); out += Token.SYMBOL("$c", peek())
+                        flush(); out += Token.SYMBOL("$c", peekChar())
                     }
                     '#' -> {
                         flush(); readUntilLineEnd(); skip(); continue@linestart

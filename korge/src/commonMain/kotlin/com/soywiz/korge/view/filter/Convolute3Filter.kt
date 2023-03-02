@@ -103,8 +103,8 @@ class Convolute3Filter(
 
     override val programProvider: ProgramProvider get() = Convolute3Filter
 
-    override fun computeBorder(out: MMarginInt, texWidth: Int, texHeight: Int) {
-        out.setTo(dist.toIntCeil())
+    override fun computeBorder(texWidth: Int, texHeight: Int): MarginInt {
+        return MarginInt(dist.toIntCeil())
     }
 
     override fun updateUniforms(ctx: RenderContext, filterScale: Double) {

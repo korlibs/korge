@@ -4,14 +4,11 @@ import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.vector.format.SVG
 import com.soywiz.korio.async.*
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
 import kotlin.test.*
 
 class Context2dTest {
-	init {
-		System.setProperty("java.awt.headless", "true");
-	}
-
 	@Test
 	fun testPropertiesAndKeep() {
 		val ctx = Context2d(com.soywiz.korim.vector.renderer.DummyRenderer)
@@ -45,10 +42,10 @@ class Context2dTest {
 					clip()
 
 					beginPath()
-					moveTo(20, 20);               // Create a starting point
-					lineTo(100, 20);              // Create a horizontal line
+					moveTo(Point(20, 20))               // Create a starting point
+					lineTo(Point(100, 20))              // Create a horizontal line
 					//ctx.arcTo(150, 20, 150, 70, 50);  // Create an arc
-					lineTo(150, 120);             // Continue with vertical line
+					lineTo(Point(150, 120))             // Continue with vertical line
 					fill();                     // Draw it
 				}
 
@@ -59,8 +56,8 @@ class Context2dTest {
 				fillStyle = Colors.GREEN
 				lineWidth = 10.0
 				lineCap = LineCap.ROUND
-				moveTo(100.0, 100.0)
-				lineTo(120, 120)
+				moveTo(Point(100, 100))
+				lineTo(Point(120, 120))
 				rect(20.0, 20.0, 100.0, 100.0)
 				stroke()
 			}

@@ -7,7 +7,6 @@ import com.soywiz.korge.render.Texture
 import com.soywiz.korge.view.BlendMode
 import com.soywiz.korge.view.View
 import com.soywiz.korge.view.ViewRenderPhase
-import com.soywiz.korim.color.ColorAdd
 import com.soywiz.korim.color.Colors
 
 // @TODO: WIP. We should only read/render/clip the masked AABB area
@@ -57,10 +56,10 @@ class ViewRenderPhaseBackdropFilter(var filter: Filter) : ViewRenderPhase {
                     }
                 }) { mask ->
                     batcher.keepUniform(
-                        DefaultShaders.u_Tex2,
+                        DefaultShaders.u_TexEx,
                         flush = true
                     ) {
-                        it.set(DefaultShaders.u_Tex2, mask.base.base)
+                        it.set(DefaultShaders.u_TexEx, mask.base.base)
                         //batcher.drawQuad(bgrtex, x = 0f, y = 0f, program = MERGE_ALPHA)
                         batcher.drawQuad(
                             bgrtex!!, x = 0f, y = 0f, m = view.parent!!.globalMatrix, program = MERGE_ALPHA,
@@ -70,8 +69,10 @@ class ViewRenderPhaseBackdropFilter(var filter: Filter) : ViewRenderPhase {
                 }
             }
         }) {
-            filter.render(ctx, view.parent!!.globalMatrix, it, it.width, it.height, ColorAdd.NEUTRAL, Colors.WHITE,
-                BlendMode.NORMAL, filter.recommendedFilterScale)
+            filter.render(
+                ctx, view.parent!!.globalMatrix, it, it.width, it.height, Colors.WHITE, BlendMode.NORMAL,
+                filter.recommendedFilterScale
+            )
         }
     }
 
@@ -79,7 +80,7 @@ class ViewRenderPhaseBackdropFilter(var filter: Filter) : ViewRenderPhase {
         val MERGE_ALPHA = Program(DefaultShaders.VERTEX_DEFAULT, FragmentShaderDefault {
             val coords = v_Tex["xy"]
             SET(t_Temp0, texture2D(u_Tex, coords))
-            SET(t_Temp1, texture2D(u_Tex2, coords))
+            SET(t_Temp1, texture2D(u_TexEx, coords))
             SET(out, vec4(t_Temp0["rgb"], t_Temp0["a"] * t_Temp1["a"]))
         })
     }

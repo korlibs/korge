@@ -7,10 +7,7 @@ import com.soywiz.korim.annotation.KorimInternal
 import com.soywiz.korim.color.*
 import com.soywiz.korim.vector.Bitmap32Context2d
 import com.soywiz.korim.vector.Context2d
-import com.soywiz.korma.geom.IRectangleInt
-import com.soywiz.korma.geom.MMatrix3D
-import com.soywiz.korma.geom.MRectangleInt
-import com.soywiz.korma.geom.MVector4
+import com.soywiz.korma.geom.*
 import kotlin.js.JsName
 import kotlin.jvm.JvmName
 import kotlin.jvm.JvmOverloads
@@ -24,25 +21,10 @@ class Bitmap32(
     width: Int,
     height: Int,
     val ints: IntArray = IntArray(width * height),
-    premultiplied: Boolean
+    //premultiplied: Boolean
+    premultiplied: Boolean = true
+    //premultiplied: Boolean = false
 ) : Bitmap(width, height, 32, premultiplied, ints), Iterable<RGBA> {
-    @Deprecated("This is unsafe and might throw if you are accessing the wrong premultiplied version", level = DeprecationLevel.HIDDEN)
-    val data = RgbaArray(ints)
-        get() {
-            if (premultiplied) {
-                error("Trying to access data in a premultiplied bitmap")
-            }
-            return field
-        }
-    @Deprecated("This is unsafe and might throw if you are accessing the wrong premultiplied version", level = DeprecationLevel.HIDDEN)
-    val dataPremult: RgbaPremultipliedArray = RgbaPremultipliedArray(ints)
-        get() {
-            if (!premultiplied) {
-                error("Trying to access dataPremult in a non-premultiplied bitmap")
-            }
-            return field
-        }
-
 	init {
 		if (ints.size < width * height) throw RuntimeException("Bitmap data is too short: width=$width, height=$height, data=ByteArray(${ints.size}), area=${width * height}")
 	}
@@ -50,8 +32,6 @@ class Bitmap32(
 	private val temp = IntArray(max(width, height))
     val bounds: IRectangleInt = MRectangleInt(0, 0, width, height)
 
-    @Deprecated("Specify premultiplied instead")
-    constructor(width: Int, height: Int) : this(width, height, premultiplied = false)
 	constructor(width: Int, height: Int, value: RGBA) : this(width, height, premultiplied = false) { ints.fill(value.value) }
     constructor(width: Int, height: Int, value: RgbaArray) : this(width, height, value.ints, premultiplied = false)
 	constructor(width: Int, height: Int, generator: (x: Int, y: Int) -> RGBA) : this(width, height, premultiplied = false) { setEach(callback = generator) }
@@ -181,10 +161,10 @@ class Bitmap32(
 	fun draw(src: BmpSlice32, dx: Int = 0, dy: Int = 0) = _draw(src, dx, dy, mix = true)
 
 	fun drawUnoptimized(src: BmpSlice, dx: Int = 0, dy: Int = 0, mix: Boolean = true) {
-		if (src.bmpBase is Bitmap32) {
+		if (src.bmp is Bitmap32) {
 			_draw(src as BmpSlice32, dx, dy, mix = mix)
 		} else {
-			drawUnoptimized(src.bmpBase, dx, dy, src.left, src.top, src.right, src.bottom, mix = mix)
+			drawUnoptimized(src.bmp, dx, dy, src.left, src.top, src.right, src.bottom, mix = mix)
 		}
 	}
 
@@ -382,10 +362,10 @@ class Bitmap32(
      */
     @JvmOverloads
     fun scaled(width: Int, height: Int, smooth: Boolean = true): Bitmap32 {
-        val sx = width.toDouble() / this.width.toDouble()
-        val sy = height.toDouble() / this.height.toDouble()
-        val isx = 1.0 / sx
-        val isy = 1.0 / sy
+        val sx = width.toFloat() / this.width.toFloat()
+        val sy = height.toFloat() / this.height.toFloat()
+        val isx = 1f / sx
+        val isy = 1f / sy
         val out = Bitmap32(width, height, this.premultiplied)
         if (smooth) {
             out.setEach { x, y -> this@Bitmap32[(x * isx).toInt(), (y * isy).toInt()] }
@@ -642,11 +622,16 @@ fun Bitmap32.posterizeInplace(nbits: Int = 4): Bitmap32 {
     return this
 }
 
-fun Bitmap32.expandBorder(area: IRectangleInt, border: Int) {
+fun Bitmap32.expandBorder(area: IRectangleInt, border: Int) = expandBorder(area.top, area.left, area.bottom, area.right, border)
+fun Bitmap32.expandBorder(area: RectangleInt, border: Int) = expandBorder(area.top, area.left, area.bottom, area.right, border)
+
+fun Bitmap32.expandBorder(areaTop: Int, areaLeft: Int, areaBottom: Int, areaRight: Int, border: Int) {
     val data = this.ints
-    var x0Index = index(area.left, area.top)
-    var x1Index = index(area.right - 1, area.top)
-    for (n in 0 until area.height) {
+    var x0Index = index(areaLeft, areaTop)
+    var x1Index = index(areaRight - 1, areaTop)
+    val areaWidth = areaRight - areaLeft
+    val areaHeight = areaBottom - areaTop
+    for (n in 0 until areaHeight) {
         val x0Color = data[x0Index]
         val x1Color = data[x1Index]
         for (m in 0 until border) {
@@ -657,9 +642,9 @@ fun Bitmap32.expandBorder(area: IRectangleInt, border: Int) {
         x1Index += width
     }
     for (m in 0 until border) {
-        val x = area.left - border
-        val npixels = area.width + border * 2
-        arraycopy(data, index(x, area.top), data, index(x, area.top - m - 1), npixels)
-        arraycopy(data, index(x, area.bottom - 1), data, index(x, area.bottom + m), npixels)
+        val x = areaLeft - border
+        val npixels = areaWidth + border * 2
+        arraycopy(data, index(x, areaTop), data, index(x, areaTop - m - 1), npixels)
+        arraycopy(data, index(x, areaBottom - 1), data, index(x, areaBottom + m), npixels)
     }
 }

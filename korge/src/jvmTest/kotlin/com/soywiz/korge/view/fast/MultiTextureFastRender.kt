@@ -6,6 +6,7 @@ import com.soywiz.korge.tests.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
+import com.soywiz.korma.geom.*
 import org.junit.*
 import org.junit.Test
 import kotlin.test.*
@@ -13,7 +14,7 @@ import kotlin.test.*
 class MultiTextureFastRender : ViewsForTesting(log = true) {
     @Test
     @Suppress("UNUSED_CHANGED_VALUE")
-    fun test() = korgeScreenshotTest(180, 180) {
+    fun test() = korgeScreenshotTest(SizeInt(180, 180)) {
         val tex0 = Bitmap32(16, 16) { x, y -> Colors.RED }.premultipliedIfRequired()
         val tex1 = Bitmap32(16, 16) { x, y -> Colors.GREEN }.premultipliedIfRequired()
         val tex2 = Bitmap32(16, 16) { x, y -> Colors.BLUE }.premultipliedIfRequired()

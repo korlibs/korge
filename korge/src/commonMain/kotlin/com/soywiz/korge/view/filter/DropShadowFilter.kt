@@ -1,6 +1,8 @@
 package com.soywiz.korge.view.filter
 
 import com.soywiz.kmem.*
+import com.soywiz.korag.*
+import com.soywiz.korag.shader.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
 import com.soywiz.korge.view.property.*
@@ -21,10 +23,15 @@ open class DropshadowFilter(
 ) : Filter {
     private val blur = BlurFilter(16.0)
 
-    override fun computeBorder(out: MMarginInt, texWidth: Int, texHeight: Int) {
-        blur.computeBorder(out, texWidth, texHeight)
-        if (dropX >= 0.0) out.right += dropX.toIntCeil() else out.left -= dropX.toIntCeil()
-        if (dropY >= 0.0) out.bottom += dropY.toIntCeil() else out.top -= dropY.toIntCeil()
+    override fun computeBorder(texWidth: Int, texHeight: Int): MarginInt {
+        val out = blur.computeBorder(texWidth, texHeight)
+        var top = out.top
+        var right = out.right
+        var bottom = out.bottom
+        var left = out.left
+        if (dropX >= 0.0) right += dropX.toIntCeil() else left -= dropX.toIntCeil()
+        if (dropY >= 0.0) bottom += dropY.toIntCeil() else top -= dropY.toIntCeil()
+        return MarginInt(top, right, bottom, left)
     }
 
     override fun render(
@@ -33,7 +40,6 @@ open class DropshadowFilter(
         texture: Texture,
         texWidth: Int,
         texHeight: Int,
-        renderColorAdd: ColorAdd,
         renderColorMul: RGBA,
         blendMode: BlendMode,
         filterScale: Double,
@@ -49,11 +55,9 @@ open class DropshadowFilter(
                     x = (dropX * filterScale).toFloat(),
                     y = (dropY * filterScale).toFloat(),
                     filtering = smoothing,
-                    colorAdd = ColorAdd(+255, +255, +255, 0),
                     colorMul = shadowColor,
                     blendMode = blendMode,
-                    program = BatchBuilder2D.getTextureLookupProgram(add = BatchBuilder2D.AddType.PRE_ADD),
-                    premultiplied = newtex.premultiplied, wrap = false,
+                    program = NON_TRANSPARENT_IS_WHITE,
                 )
             }
         }
@@ -63,12 +67,19 @@ open class DropshadowFilter(
                 texture,
                 m = matrix,
                 filtering = smoothing,
-                colorAdd = renderColorAdd,
                 colorMul = renderColorMul,
                 blendMode = blendMode,
-                program = BatchBuilder2D.getTextureLookupProgram(add = BatchBuilder2D.AddType.NO_ADD),
-                premultiplied = texture.premultiplied, wrap = false,
+                program = BatchBuilder2D.PROGRAM,
             )
+        }
+    }
+
+    companion object {
+        val NON_TRANSPARENT_IS_WHITE = BatchBuilder2D.PROGRAM.replacingFragment("nontransparentiswhite") {
+            BatchBuilder2D.createTextureLookup(this)
+            SET(out, out + vec4(1f, 1f, 1f, 0f))
+            SET(out, out * BatchBuilder2D.v_ColMul)
+            IF(out["a"] le 0f.lit) { DISCARD() }
         }
     }
 }

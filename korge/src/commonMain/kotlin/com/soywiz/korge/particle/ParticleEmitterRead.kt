@@ -11,8 +11,7 @@ import com.soywiz.korim.format.readBitmapSlice
 import com.soywiz.korio.file.VfsFile
 import com.soywiz.korio.lang.FileNotFoundException
 import com.soywiz.korio.serialization.xml.readXml
-import com.soywiz.korma.geom.MPoint
-import com.soywiz.korma.geom.degrees
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.circle
 
 suspend fun VfsFile.readParticleEmitter(): ParticleEmitter {
@@ -32,7 +31,7 @@ suspend fun VfsFile.readParticleEmitter(): ParticleEmitter {
         fun angle() = item.double("value").degrees
         fun color(): RGBAf = RGBAf(item.double("red"), item.double("green"), item.double("blue"), item.double("alpha"))
 
-        when (item.name.toLowerCase()) {
+        when (item.name.lowercase()) {
             "texture" -> emitter.textureName = item.str("name")
             "sourceposition" -> emitter.sourcePosition = point()
             "sourcepositionvariance" -> emitter.sourcePositionVariance = point()
@@ -80,7 +79,7 @@ suspend fun VfsFile.readParticleEmitter(): ParticleEmitter {
             fill(createRadialGradient(32.0, 32.0, 0.0, 32.0, 32.0, 32.0)
                 .addColorStop(0.0, Colors.WHITE)
                 .addColorStop(0.4, Colors.WHITE)
-                .addColorStop(1.0, Colors.TRANSPARENT_WHITE)) { circle(32.0, 32.0, 30.0) }
+                .addColorStop(1.0, Colors.TRANSPARENT_WHITE)) { circle(Point(32, 32), 30f) }
         }.slice()
     }
     // After we load the texture, we set textureName to null, so it is not loaded again

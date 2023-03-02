@@ -12,7 +12,7 @@ import com.soywiz.korim.color.Colors
 import com.soywiz.korim.format.*
 import com.soywiz.korio.async.suspendTest
 import com.soywiz.korio.file.std.resourcesVfs
-import com.soywiz.korma.geom.degrees
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.interpolation.Easing
 import kotlin.test.Ignore
 import kotlin.test.Test
@@ -20,7 +20,7 @@ import kotlin.test.Test
 class KorgeHeadlessTest {
     @Test
     fun test() = suspendTest {
-        KorgeHeadless(width = 512, height = 512, bgcolor = Colors["#2b2b2b"]) {
+        KorgeHeadless(windowSize = SizeInt(512, 512), bgcolor = Colors["#2b2b2b"]) {
             val minDegrees = (-16).degrees
             val maxDegrees = (+16).degrees
 
@@ -42,7 +42,7 @@ class KorgeHeadlessTest {
 
     @Test
     fun testDraw() = suspendTest {
-        val gameWindow = KorgeHeadless(width = 512, height = 512, bgcolor = Colors["#2b2b2b"], draw = true) {
+        val gameWindow = KorgeHeadless(windowSize = SizeInt(512, 512), bgcolor = Colors["#2b2b2b"], draw = true) {
             val bmp = resourcesVfs["korge.png"].readBitmap()
             repeat(1) { n ->
             //repeat(10) { n ->

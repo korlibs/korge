@@ -200,9 +200,9 @@ class Text2TextRendererActions : TextRendererActions() {
             val line = this[it, 0].toInt()
             while (out.size <= line) out.add(LineInfo())
             val lineInfo = out[line]
-            val top = this[it, 1]
-            val bottom = this[it, 2]
-            val lineHeight = this[it, 3]
+            val top = this[it, 1].toDouble()
+            val bottom = this[it, 2].toDouble()
+            val lineHeight = this[it, 3].toDouble()
             lineInfo.maxTop = max(lineInfo.maxTop, top)
             lineInfo.minBottom = min(lineInfo.minBottom, bottom)
             lineInfo.maxLineHeight = max(lineInfo.maxLineHeight, lineHeight)
@@ -338,8 +338,8 @@ fun ITextRendererActions.aroundPath(curve: Curve): ITextRendererActions {
                     val pos = curve.calc(ratio)
                     val normal = curve.normal(ratio)
                     val rpos = pos + normal * oldY
-                    this.x = rpos.x
-                    this.y = rpos.y
+                    this.x = rpos.xD
+                    this.y = rpos.yD
                     this.transform.rotate(normal.angle - 90.degrees)
 
                     //println("PUT: oldX=$oldX, oldY=$oldY, x=$x, y=$y, codePoint=$codePoint")

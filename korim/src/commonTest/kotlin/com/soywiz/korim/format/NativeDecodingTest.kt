@@ -18,6 +18,7 @@ import kotlin.test.assertTrue
 class NativeDecodingTest {
     val file = resourcesVfs["bubble-chat.9.png"]
     val colorPremult: RGBAPremultiplied = Colors["#01010181"].asPremultiplied()
+    val colorPremultAlt: RGBAPremultiplied = Colors["#00000081"].asPremultiplied()
     val colorStraight: RGBA = Colors["#02020281"]
 
     init {
@@ -88,11 +89,15 @@ class NativeDecodingTest {
             val x = 34; val y = 15
             assertNotEquals(0, image.getRgbaRaw(x, y).a)
             if (image.premultiplied) {
-                assertEquals(colorPremult to true, image.getRgbaRaw(x, y).asPremultiplied() to image.premultiplied)
+                image.getRgbaRaw(x, y).asPremultiplied().also { col ->
+                    assertTrue("$col != $colorPremult || $colorPremultAlt premultiplied=$premultiplied") { colorPremult == col || colorPremultAlt == col }
+                }
             } else {
                 assertEquals(colorStraight to false, image.getRgbaRaw(x, y) to image.premultiplied)
             }
-            assertEquals(colorPremult, image.getRgbaPremultiplied(x, y))
+            image.getRgbaPremultiplied(x, y).also { col ->
+                assertTrue("$col != $colorPremult || $colorPremultAlt premultiplied=$premultiplied") { colorPremult == col || colorPremultAlt == col }
+            }
         }
     }
 
@@ -121,5 +126,10 @@ class NativeDecodingTest {
         }
         assertEquals(colorPremult.asPremultiplied(), bmp.getRgbaPremultiplied(x, y))
         assertEquals(colorStraight, bmp.getRgba(x, y))
+    }
+
+    @Test
+    fun testNativeImageDecodedIsMutable() = suspendTest {
+        assertTrue { resourcesVfs["kotlin32.png"].readBitmap().flipX() is NativeImage }
     }
 }

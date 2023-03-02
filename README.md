@@ -113,7 +113,8 @@ now they are available via kproject in these repositories:
 ### Image Formats
 
 * PNG, QOI, ASE, PSD, Native Decoders (Integrated in KorGE)
-* <https://github.com/korlibs/korge-image-formats> (Pure Kotlin JPEG Encoder/Decoder)
+* <https://github.com/korlibs/korge-image-formats/korim-jpeg> (Pure Kotlin JPEG Encoder/Decoder)
+* <https://github.com/korlibs/korge-image-formats/korim-qr> (Pure Kotlin QR Generator)
 
 ### AudioFormats
 
@@ -132,8 +133,21 @@ now they are available via kproject in these repositories:
 
 * <https://github.com/korlibs/korge-services/tree/main/korge-i18n> (I18N support)
 
+## Algorithms
+
+* <https://github.com/korlibs/korge-services/tree/main/korma-astar> (AStar (A*) for finding paths in 2D grids)
+
+## 3D
+
+* <https://github.com/korlibs/korge-k3d/> (3D support on top of KorGE)
+
 ## Other
 
 * <https://github.com/korlibs/korge-lipsync> (Rhubarb LipSync integration with resource processor)
 * <https://github.com/korlibs/korge-parallax> (Pseudo 3D Parallax Effect)
-
+* <https://github.com/korlibs/korge-ext/tree/main/korge-ktree> (Old KTree serialization)
+* <https://github.com/korlibs/korge-ext/tree/main/korge-masked-view> (Old Masked View (now we can use `view.mask`))
+* <https://github.com/korlibs/korge-ext/tree/main/korge-text2> (Old Text engine)
+* <https://github.com/korlibs/korge-ext/tree/main/korge-bus> (Bus / SyncBus)
+* <https://github.com/korlibs/korge-ext/tree/main/korge-frameblock> (`frameBlock(60.fps) { while (true) frame() }` utility function)
+* <https://github.com/korlibs/korge-ext/tree/main/korge-length> (Support physical-based units: cm, inches, percentages, etc.)
