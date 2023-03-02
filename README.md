@@ -149,3 +149,4 @@ now they are available via kproject in these repositories:
 * <https://github.com/korlibs/korge-ext/tree/main/korge-masked-view> (Old Masked View (now we can use `view.mask`))
 * <https://github.com/korlibs/korge-ext/tree/main/korge-text2> (Old Text engine)
 * <https://github.com/korlibs/korge-ext/tree/main/korge-bus> (Bus / SyncBus)
+* <https://github.com/korlibs/korge-ext/tree/main/korge-frameblock> (`frameBlock(60.fps) { while (true) frame() }` utility function)

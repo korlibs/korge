@@ -2,7 +2,6 @@ package samples
 
 import com.soywiz.klock.timesPerSecond
 import com.soywiz.korge.scene.ScaledScene
-import com.soywiz.korge.time.frameBlock
 import com.soywiz.korge.view.SContainer
 import com.soywiz.korge.view.position
 import com.soywiz.korge.view.solidRect
@@ -11,6 +10,7 @@ import com.soywiz.korio.async.launchImmediately
 import com.soywiz.korma.geom.MPoint
 import com.soywiz.korma.interpolation.*
 import com.soywiz.korma.random.get
+import util.*
 import kotlin.random.Random
 
 class MainCoroutine : ScaledScene(512, 512) {
