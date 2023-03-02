@@ -168,6 +168,9 @@ class KorgeExtension(val project: Project) {
         }
     }
 
+    @Deprecated("", ReplaceWith("targetAndroid()")) fun targetAndroidIndirect() = targetAndroid()
+    @Deprecated("", ReplaceWith("targetAndroid()")) fun targetAndroidDirect() = targetAndroid()
+
     /**
      * Configures Kotlin/Native iOS target (only on macOS)
      */
