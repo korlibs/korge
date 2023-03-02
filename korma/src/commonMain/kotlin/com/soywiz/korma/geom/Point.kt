@@ -75,6 +75,10 @@ inline class Point internal constructor(internal val raw: Float2Pack) {
     inline operator fun div(scale: Double): Point = this / scale.toFloat()
     inline operator fun div(scale: Int): Point = this / scale.toDouble()
 
+    fun avgComponent(): Float = x * 0.5f + y * 0.5f
+    fun minComponent(): Float = min(x, y)
+    fun maxComponent(): Float = max(x, y)
+
     fun distanceTo(x: Float, y: Float): Float = hypot(x - this.x, y - this.y)
     fun distanceTo(x: Double, y: Double): Float = this.distanceTo(x.toFloat(), y.toFloat())
     fun distanceTo(x: Int, y: Int): Float = this.distanceTo(x.toDouble(), y.toDouble())

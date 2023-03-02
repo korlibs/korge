@@ -400,11 +400,10 @@ data class MRectangle(
         scale: ScaleMode,
         out: MRectangle = MRectangle()
     ): MRectangle {
-        val ow = scale.transformW(width, height, this.width, this.height)
-        val oh = scale.transformH(width, height, this.width, this.height)
+        val (ow, oh) = scale.transform(Size(width, height), Size(this.width, this.height))
         val x = (this.width - ow) * anchor.doubleX
         val y = (this.height - oh) * anchor.doubleY
-        return out.setTo(x, y, ow, oh)
+        return out.setTo(x, y, ow.toDouble(), oh.toDouble())
     }
 
     fun inflate(

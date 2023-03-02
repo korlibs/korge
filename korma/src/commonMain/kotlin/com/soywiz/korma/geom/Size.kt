@@ -32,6 +32,23 @@ inline class Size internal constructor(internal val raw: Float2Pack) {
     operator fun component1(): Float = width
     operator fun component2(): Float = height
 
+    fun avgComponent(): Float = width * 0.5f + height * 0.5f
+    fun minComponent(): Float = min(width, height)
+    fun maxComponent(): Float = max(width, height)
+
+    operator fun unaryMinus(): Size = Size(-width, -height)
+    operator fun unaryPlus(): Size = this
+
+    operator fun minus(other: Size): Size = Size(width - other.width, height - other.height)
+    operator fun plus(other: Size): Size = Size(width + other.width, height + other.height)
+    operator fun times(s: Float): Size = Size(width * s, height * s)
+    operator fun times(s: Double): Size = times(s.toFloat())
+    operator fun times(s: Int): Size = times(s.toFloat())
+    operator fun div(other: Size): Size = Size(width / other.width, height / other.height)
+    operator fun div(s: Float): Size = Size(width / s, height / s)
+    operator fun div(s: Double): Size = div(s.toFloat())
+    operator fun div(s: Int): Size = div(s.toFloat())
+
     override fun toString(): String = "Size(width=${width.niceStr}, height=${height.niceStr})"
 }
 
@@ -43,6 +60,9 @@ inline class SizeInt internal constructor(internal val raw: Int2Pack) {
 
     constructor() : this(0, 0)
     constructor(width: Int, height: Int) : this(Int2Pack(width, height))
+
+    operator fun component1(): Int = width
+    operator fun component2(): Int = height
 }
 
 interface SizeableInt {
@@ -78,6 +98,8 @@ sealed interface ISize {
     }
 }
 
+val ISize.immutable: Size get() = Size(width, height)
+
 @KormaMutableApi
 @Deprecated("Use Size instead")
 inline class MSize(val p: MPoint) : MutableInterpolable<MSize>, Interpolable<MSize>, ISize, ISizeable {
@@ -107,6 +129,7 @@ inline class MSize(val p: MPoint) : MutableInterpolable<MSize>, Interpolable<MSi
     fun setTo(width: Int, height: Int) = setTo(width.toDouble(), height.toDouble())
     fun setTo(width: Float, height: Float) = setTo(width.toDouble(), height.toDouble())
     fun setTo(that: ISize) = setTo(that.width, that.height)
+    fun setTo(that: Size) = setTo(that.width, that.height)
 
     fun setToScaled(sx: Double, sy: Double) = setTo((this.width * sx), (this.height * sy))
     fun setToScaled(sx: Float, sy: Float) = setToScaled(sx.toDouble(), sy.toDouble())
