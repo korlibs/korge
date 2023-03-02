@@ -37,10 +37,7 @@ class ViewRenderPhaseMask(var mask: View) : ViewRenderPhase {
         // @TODO: Review edge alpha issues
         val MERGE_ALPHA_PROGRAM = Program(DefaultShaders.VERTEX_DEFAULT, FragmentShaderDefault {
             val coords = v_Tex["xy"]
-            SET(t_Temp0, texture2D(u_Tex, coords))
-            SET(t_Temp1["a"], texture2D(u_Tex2, coords)["a"])
-            SET(t_Temp1["x"], t_Temp0["a"] * t_Temp1["a"])
-            SET(out, vec4(t_Temp0["rgb"] * t_Temp1["a"], t_Temp1["x"]))
+            SET(out, texture2D(u_Tex, coords) * texture2D(u_TexEx, coords).a)
         })
     }
 
@@ -69,8 +66,8 @@ class ViewRenderPhaseMask(var mask: View) : ViewRenderPhase {
                 }
                 //batcher.drawQuad(Texture(maskFB), 100f, 200f, m = view.parent!!.globalMatrix)
                 //batcher.drawQuad(Texture(viewFB), 300f, 200f, m = view.parent!!.globalMatrix)
-                batcher.keepUniform(DefaultShaders.u_Tex2, flush = true) {
-                    it.set(DefaultShaders.u_Tex2, maskFB.tex)
+                batcher.keepUniform(DefaultShaders.u_TexEx, flush = true) {
+                    it.set(DefaultShaders.u_TexEx, maskFB.tex)
                     batcher.drawQuad(
                         Texture(viewFB), m = mask.globalMatrix, program = MERGE_ALPHA_PROGRAM,
                     )
