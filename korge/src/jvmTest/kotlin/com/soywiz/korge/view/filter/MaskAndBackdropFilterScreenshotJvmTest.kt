@@ -14,8 +14,8 @@ class MaskAndBackdropFilterScreenshotJvmTest {
         solidRect(width, height, Colors.GREEN)
 
         //val fill1 = LinearGradientPaint(0, 0, 100, 100).add(0.0, Colors.RED).add(1.0, Colors.BLUE)
-        var maskView = circle(50.0, renderer = GraphicsRenderer.GPU).xy(25, 25).visible(false)
-        val circle1 = circle(50.0, renderer = GraphicsRenderer.GPU, fill = Colors.RED)
+        val maskView = fastEllipse(Size(100, 100)).xy(25, 25).visible(false)
+        val circle1 = fastEllipse(Size(100, 100), color = Colors.RED)
             //val circle1 = solidRect(200, 200, Colors.PURPLE)
             //.filters(DropshadowFilter())
             //.filters(BlurFilter())
@@ -24,8 +24,7 @@ class MaskAndBackdropFilterScreenshotJvmTest {
             //.filters(ColorMatrixFilter(ColorMatrixFilter.GRAYSCALE_MATRIX))
         //.mask(solidRect(100, 100, Colors.WHITE).xy(50, 50).visible(false))
 
-        roundRect(40, 40, 16, 16).xy(15, 15)
-            .also { it.renderer = GraphicsRenderer.GPU }
+        fastRoundRect(Size(40, 40), RectCorners(.5f)).xy(15, 15)
             .backdropFilters(ColorMatrixFilter(ColorMatrixFilter.GRAYSCALE_MATRIX))
             //.backdropFilters(BlurFilter())
 
