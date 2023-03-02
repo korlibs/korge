@@ -36,22 +36,22 @@ class MainShapes : Scene() {
 
 
     fun Container.setupCircle() {
-        val circle = Circle(radius = 32.0)
+        val circle = fastEllipse(Size(64, 64))
         addChild(circle)
         circle.position(512, 256)
         var growing = true
         launch {
             while (true) {
                 when {
-                    circle.radius > 128.0 -> {
+                    circle.radiusAvg > 128.0 -> {
                         growing = false
-                        circle.radius--
+                        circle.radiusAvg--
                     }
-                    circle.radius < 32.0 -> {
+                    circle.radiusAvg < 32.0 -> {
                         growing = true
-                        circle.radius++
+                        circle.radiusAvg++
                     }
-                    else -> if (growing) circle.radius++ else circle.radius--
+                    else -> if (growing) circle.radiusAvg++ else circle.radiusAvg--
                 }
                 delay(16.milliseconds)
             }

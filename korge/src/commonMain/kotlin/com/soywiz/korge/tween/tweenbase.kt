@@ -117,10 +117,18 @@ operator fun <V : Interpolable<V>> KMutableProperty0<V>.get(initial: V, end: V) 
 @JvmName("getMutablePropertyPoint") operator fun KMutableProperty0<Point>.get(end: Point) = V2(this, this.get(), end, ::_interpolatePoint, includeStart = false)
 @JvmName("getMutablePropertyPoint") operator fun KMutableProperty0<Point>.get(initial: Point, end: Point) = V2(this, initial, end, ::_interpolatePoint, includeStart = true)
 
+@JvmName("getMutablePropertySize") operator fun KMutableProperty0<Size>.get(end: Size) = V2(this, this.get(), end, ::_interpolateSize, includeStart = false)
+@JvmName("getMutablePropertySize") operator fun KMutableProperty0<Size>.get(initial: Size, end: Size) = V2(this, initial, end, ::_interpolateSize, includeStart = true)
+
+@JvmName("getMutablePropertyScale") operator fun KMutableProperty0<Scale>.get(end: Scale) = V2(this, this.get(), end, ::_interpolateScale, includeStart = false)
+@JvmName("getMutablePropertyScale") operator fun KMutableProperty0<Scale>.get(initial: Scale, end: Scale) = V2(this, initial, end, ::_interpolateScale, includeStart = true)
+
 @PublishedApi internal fun _interpolate(ratio: Ratio, l: Double, r: Double): Double = ratio.interpolate(l, r)
 @PublishedApi internal fun _interpolateInt(ratio: Ratio, l: Int, r: Int): Int = ratio.interpolate(l, r)
 @PublishedApi internal fun <V : Interpolable<V>> _interpolateInterpolable(ratio: Ratio, l: V, r: V): V = ratio.interpolate(l, r)
 @PublishedApi internal fun _interpolatePoint(ratio: Ratio, l: Point, r: Point): Point = ratio.interpolate(l, r)
+@PublishedApi internal fun _interpolateSize(ratio: Ratio, l: Size, r: Size): Size = ratio.interpolate(l, r)
+@PublishedApi internal fun _interpolateScale(ratio: Ratio, l: Scale, r: Scale): Scale = ratio.interpolate(l, r)
 @PublishedApi internal fun _interpolateFloat(ratio: Ratio, l: Float, r: Float): Float = ratio.interpolate(l, r)
 @PublishedApi internal fun _interpolateColor(ratio: Ratio, l: RGBA, r: RGBA): RGBA = RGBA.mixRgba(l, r, ratio)
 @PublishedApi internal fun _interpolateAngle(ratio: Ratio, l: Angle, r: Angle): Angle = ratio.interpolateAngleNormalized(l, r)
