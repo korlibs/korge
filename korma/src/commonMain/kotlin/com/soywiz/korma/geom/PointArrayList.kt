@@ -9,7 +9,7 @@ import kotlin.math.round
 
 sealed interface IPointArrayList : IVectorArrayList, Extra {
     override val dimensions: Int get() = 2
-    override fun get(index: Int, dim: Int): Double = if (dim == 0) getX(index).toDouble() else getY(index).toDouble()
+    override fun get(index: Int, dim: Int): Float = if (dim == 0) getX(index) else getY(index)
     fun getX(index: Int): Float
     fun getY(index: Int): Float
     operator fun get(index: Int): Point = Point(getX(index), getY(index))
@@ -30,19 +30,13 @@ fun IPointArrayList.roundDecimalPlaces(places: Int, out: PointArrayList = PointA
 
 //fun IPointArrayList.getComponent(index: Int, component: Int): Double = if (component == 0) getX(index) else getY(index)
 
-fun IPointArrayList.getComponentList(component: Int, out: DoubleArray = DoubleArray(size)): DoubleArray {
+fun IPointArrayList.getComponentList(component: Int, out: FloatArray = FloatArray(size)): FloatArray {
     for (n in 0 until size) out[n] = get(n, component)
     return out
 }
 
 val IPointArrayList.first: Point get() = get(0)
 val IPointArrayList.last: Point get() = get(size - 1)
-@Deprecated("") val IPointArrayList.firstX: Double get() = getX(0).toDouble()
-@Deprecated("") val IPointArrayList.firstY: Double get() = getY(0).toDouble()
-@Deprecated("") val IPointArrayList.lastX: Double get() = getX(size - 1).toDouble()
-@Deprecated("") val IPointArrayList.lastY: Double get() = getY(size - 1).toDouble()
-@Deprecated("") fun IPointArrayList.firstPoint(out: MPoint = MPoint()): MPoint = out.setTo(first)
-@Deprecated("") fun IPointArrayList.lastPoint(out: MPoint = MPoint()): MPoint = out.setTo(last)
 
 fun IPointArrayList.orientation(): Orientation {
     if (size < 3) return Orientation.COLLINEAR

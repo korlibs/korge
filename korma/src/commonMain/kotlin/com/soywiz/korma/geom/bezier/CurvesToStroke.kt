@@ -27,11 +27,11 @@ interface StrokePoints {
     val debugSegments: List<MLine>
     val mode: StrokePointsMode
 
-    fun scale(scale: Double) {
+    fun scale(scale: Float) {
         if (mode == StrokePointsMode.SCALABLE_POS_NORMAL_WIDTH) {
             vector.fastForEachGeneric {
-                this.set(it, 4, this.get(it, 4) * scale)
-                this.set(it, 5, this.get(it, 5) * scale)
+                this[it, 4] *= scale
+                this[it, 5] *= scale
             }
         }
     }

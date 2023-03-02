@@ -179,8 +179,8 @@ class MainStrokesExperiment2 : Scene() {
                 dbv2.pointsList = listOf(PointArrayList().also {
                     for (c in curves.beziers) {
                         val bc = c as Bezier
-                        it.add(bc.points.firstPoint())
-                        it.add(bc.points.lastPoint())
+                        it.add(bc.points.first)
+                        it.add(bc.points.last)
                     }
                 })
                 //delay(0.3.seconds)

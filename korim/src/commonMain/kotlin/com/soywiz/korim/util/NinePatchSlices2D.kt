@@ -1,7 +1,6 @@
 package com.soywiz.korim.util
 
 import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.firstX
 import kotlin.math.absoluteValue
 import kotlin.math.sign
 

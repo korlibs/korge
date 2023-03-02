@@ -27,8 +27,9 @@ data class Curves(val beziers: List<Bezier>, val closed: Boolean) : Curve, Extra
         for (n in 1 until beziers.size) {
             val curr = beziers[n - 1]
             val next = beziers[n]
-            if (!curr.points.lastX.isAlmostEquals(next.points.firstX)) return@lazy false
-            if (!curr.points.lastY.isAlmostEquals(next.points.firstY)) return@lazy false
+            if (!curr.points.last.isAlmostEquals(next.points.first)) return@lazy false
+            //if (!curr.points.lastX.isAlmostEquals(next.points.firstX)) return@lazy false
+            //if (!curr.points.lastY.isAlmostEquals(next.points.firstY)) return@lazy false
         }
         return@lazy true
     }
@@ -165,7 +166,7 @@ fun List<Curve>.toVectorPath(out: VectorPath = VectorPath()): VectorPath {
     fun bezier(bezier: Bezier) {
         val points = bezier.points
         if (first) {
-            out.moveTo(Point(points.firstX, points.firstY))
+            out.moveTo(points.first)
             first = false
         }
         when (bezier.order) {
@@ -195,19 +196,19 @@ fun List<Curve>.toVectorPath(out: VectorPath = VectorPath()): VectorPath {
 fun Curves.toNonCurveSimplePointList(out: PointArrayList = PointArrayList()): IPointArrayList? {
     val curves = this
     val beziers = curves.beziers//.flatMap { it.toSimpleList() }.map { it.curve }
-    val epsilon = 0.00001
+    val epsilon = 0.0001f
     beziers.fastForEach { bezier ->
         if (bezier.inflections().isNotEmpty()) return null
         val points = bezier.points
-        points.fastForEach { x, y ->
-            if (out.isEmpty() || (!out.lastX.isAlmostEquals(x, epsilon) || !out.lastY.isAlmostEquals(y, epsilon))) {
-                out.add(x, y)
+        points.fastForEachPoint { p ->
+            if (out.isEmpty() || !out.last.isAlmostEquals(p, epsilon)) {
+                out.add(p)
             }
         }
         //println("bezier=$bezier")
         //out.add(points, 0, points.size - 1)
     }
-    if (out.lastX.isAlmostEquals(out.firstX, epsilon) && out.lastX.isAlmostEquals(out.firstX, epsilon)) {
+    if (out.last.isAlmostEquals(out.first, epsilon)) {
         out.removeAt(out.size - 1)
     }
     return out

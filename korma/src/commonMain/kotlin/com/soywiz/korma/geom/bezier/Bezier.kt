@@ -214,8 +214,8 @@ class Bezier(
         extremaValid = true
         val out = (0 until dims).map { dim ->
             //println("extrema dim=$dim, p=${p.toList()}, droots=${droots(p).toList()}")
-            var out = droots(dpoints[0].getComponentList(dim))
-            if (order == 3) out = combineSmallDistinctSorted(out, droots(dpoints[1].getComponentList(dim)))
+            var out = droots(dpoints[0].getComponentList(dim).mapDouble { it.toDouble() })
+            if (order == 3) out = combineSmallDistinctSorted(out, droots(dpoints[1].getComponentList(dim).mapDouble { it.toDouble() }))
             out
         }
         _extrema = Extrema(out[0], out[1])
