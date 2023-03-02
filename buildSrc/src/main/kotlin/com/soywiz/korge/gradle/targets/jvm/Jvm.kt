@@ -129,7 +129,7 @@ open class KorgeJavaExecWithAutoreload : KorgeJavaExec() {
         val args = compileKotlinJvm.outputs.files.toList().joinToString(":::") { it.absolutePath }
         val gradlewCommand = if (isWindows) "gradlew.bat" else "gradlew"
         val rootProject = project.rootProject
-        val continuousCommand = "-classpath ${rootProject.rootDir}/gradle/wrapper/gradle-wrapper.jar org.gradle.wrapper.GradleWrapperMain --no-daemon --warn --project-dir=${rootProject.rootDir} --configuration-cache -t ${project.path}:compileKotlinJvmAndNotify"
+        val continuousCommand = "-classpath ${rootProject.rootDir}/gradle/wrapper/gradle-wrapper.jar org.gradle.wrapper.GradleWrapperMain --no-daemon --warn --project-dir=${rootProject.rootDir} --configuration-cache -t ${project.path.trimEnd(':')}:compileKotlinJvmAndNotify"
 
         val outputJars = project.configurations.getByName(KORGE_RELOAD_AGENT_CONFIGURATION_NAME).resolve()
         println("runJvmAutoreload:outputJars=$outputJars")
