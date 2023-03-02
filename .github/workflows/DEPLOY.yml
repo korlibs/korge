@@ -149,7 +149,7 @@ jobs:
 
   publish-finalize:
     runs-on: ubuntu-latest
-    needs: [publish-windows, publish-mac, publish-linux, publish-ios, publish-jvm-multiplatform, publish-js-android]
+    needs: [publish-windows, publish-mac, publish-linux, publish-ios, publish-jvm-multiplatform, publish-js-android, publish-tvos, publish-watchos]
     env:
       stagedRepositoryId: ${{needs.create-staging-repo.outputs.stagedRepositoryId}}
     steps:
