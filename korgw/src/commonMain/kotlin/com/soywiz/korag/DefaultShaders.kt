@@ -57,6 +57,11 @@ object DefaultShaders {
 		SET(out, u_ProjMat * u_ViewMat * vec4(a_Pos, 0f.lit, 1f.lit))
 	}
 
+    val MERGE_ALPHA_PROGRAM = Program(VERTEX_DEFAULT, FragmentShaderDefault {
+        val coords = v_Tex["xy"]
+        SET(out, texture2D(u_Tex, coords) * texture2D(u_TexEx, coords).a)
+    })
+
 	val FRAGMENT_DEBUG: FragmentShader = FragmentShader {
         SET(out, vec4(1f.lit, 1f.lit, 0f.lit, 1f.lit))
 	}
