@@ -62,7 +62,7 @@ class ViewRenderPhaseBackdropFilter(var filter: Filter) : ViewRenderPhase {
                         it.set(DefaultShaders.u_TexEx, mask.base.base)
                         //batcher.drawQuad(bgrtex, x = 0f, y = 0f, program = MERGE_ALPHA)
                         batcher.drawQuad(
-                            bgrtex!!, x = 0f, y = 0f, m = view.parent!!.globalMatrix, program = MERGE_ALPHA,
+                            bgrtex!!, x = 0f, y = 0f, m = view.parent!!.globalMatrix, program = DefaultShaders.MERGE_ALPHA_PROGRAM,
                         )
                         //batcher.drawQuad(mask, x = 0f, y = 0f, m = view.globalMatrix, program = MERGE_ALPHA)
                     }
@@ -74,14 +74,5 @@ class ViewRenderPhaseBackdropFilter(var filter: Filter) : ViewRenderPhase {
                 filter.recommendedFilterScale
             )
         }
-    }
-
-    companion object {
-        val MERGE_ALPHA = Program(DefaultShaders.VERTEX_DEFAULT, FragmentShaderDefault {
-            val coords = v_Tex["xy"]
-            SET(t_Temp0, texture2D(u_Tex, coords))
-            SET(t_Temp1, texture2D(u_TexEx, coords))
-            SET(out, vec4(t_Temp0["rgb"], t_Temp0["a"] * t_Temp1["a"]))
-        })
     }
 }

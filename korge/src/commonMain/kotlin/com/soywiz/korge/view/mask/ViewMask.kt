@@ -33,12 +33,6 @@ var View.mask: View?
 class ViewRenderPhaseMask(var mask: View) : ViewRenderPhase {
     companion object {
         const val PRIORITY = -100
-
-        // @TODO: Review edge alpha issues
-        val MERGE_ALPHA_PROGRAM = Program(DefaultShaders.VERTEX_DEFAULT, FragmentShaderDefault {
-            val coords = v_Tex["xy"]
-            SET(out, texture2D(u_Tex, coords) * texture2D(u_TexEx, coords).a)
-        })
     }
 
     override val priority: Int get() = PRIORITY
@@ -69,7 +63,7 @@ class ViewRenderPhaseMask(var mask: View) : ViewRenderPhase {
                 batcher.keepUniform(DefaultShaders.u_TexEx, flush = true) {
                     it.set(DefaultShaders.u_TexEx, maskFB.tex)
                     batcher.drawQuad(
-                        Texture(viewFB), m = mask.globalMatrix, program = MERGE_ALPHA_PROGRAM,
+                        Texture(viewFB), m = mask.globalMatrix, program = DefaultShaders.MERGE_ALPHA_PROGRAM,
                     )
                 }
             }
