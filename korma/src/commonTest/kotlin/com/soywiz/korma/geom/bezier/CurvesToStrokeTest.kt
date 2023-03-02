@@ -25,7 +25,7 @@ class CurvesToStrokeTest {
             """.trimIndent(),
             pathPoints(LineJoin.MITER) {
                 rect(0, 0, 100, 100)
-            }.toString()
+            }.toString(roundDecimalPlaces = 2)
         )
     }
 
@@ -48,7 +48,7 @@ class CurvesToStrokeTest {
                 moveTo(Point(0, 0))
                 lineTo(Point(100, 0))
                 lineTo(Point(100, 100))
-            }.toString()
+            }.toString(roundDecimalPlaces = 2)
         )
     }
 
@@ -67,9 +67,9 @@ class CurvesToStrokeTest {
             lineTo(Point(100, 0))
             lineTo(Point(200, 0))
         }.getCurves()
-        assertEquals(Curves(Bezier(100,0, 150,0)), curves.split(0.5, 0.75))
-        assertEquals(Curves(Bezier(50,0, 100,0)), curves.split(0.25, 0.5))
-        assertEquals(Curves(Bezier(50,0, 100,0), Bezier(100,0, 150,0)), curves.split(0.25, 0.75))
+        assertEquals(Curves(Bezier(Point(100,0), Point(150,0))), curves.split(0.5, 0.75))
+        assertEquals(Curves(Bezier(Point(50,0), Point(100,0))), curves.split(0.25, 0.5))
+        assertEquals(Curves(Bezier(Point(50,0), Point(100,0)), Bezier(Point(100,0), Point(150,0))), curves.split(0.25, 0.75))
     }
 
     @Test
@@ -84,7 +84,7 @@ class CurvesToStrokeTest {
                    [0, -100, 0, -1, -10, 10]
                 )
             """.trimIndent(),
-            builder.vector.roundDecimalPlaces(2).toString()
+            builder.vector.toString(roundDecimalPlaces = 2)
         )
     }
 
@@ -92,5 +92,4 @@ class CurvesToStrokeTest {
         buildVectorPath { block() }
             .toStrokePointsList(StrokeInfo(thickness = 10.0, join = join), mode = StrokePointsMode.SCALABLE_POS_NORMAL_WIDTH)
             .first().vector.clone()
-            .roundDecimalPlaces(2)
 }

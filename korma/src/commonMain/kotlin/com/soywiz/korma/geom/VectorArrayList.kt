@@ -118,8 +118,11 @@ class VectorArrayList(
         for (n in 0 until dimensions) data.add(vector[n])
     }
 
-    fun vectorToStringBuilder(index: Int, out: StringBuilder) {
-        out.appendGenericArray(dimensions) { appendNice(this@VectorArrayList.get(index, it)) }
+    fun vectorToStringBuilder(index: Int, out: StringBuilder, roundDecimalPlaces: Int? = null) {
+        out.appendGenericArray(dimensions) {
+            val v = this@VectorArrayList[index, it].toDouble()
+            appendNice(if (roundDecimalPlaces != null) v.roundDecimalPlaces(roundDecimalPlaces) else v)
+        }
     }
 
     fun vectorToString(index: Int): String = buildString { vectorToStringBuilder(index, this) }
@@ -127,12 +130,14 @@ class VectorArrayList(
     override fun equals(other: Any?): Boolean = other is VectorArrayList && this.dimensions == other.dimensions && this.data == other.data
     override fun hashCode(): Int = data.hashCode()
 
-    override fun toString(): String = buildString {
+    override fun toString(): String = toString(roundDecimalPlaces = null)
+
+    fun toString(roundDecimalPlaces: Int? = null): String = buildString {
         append("VectorArrayList[${this@VectorArrayList.size}](\n")
         for (n in 0 until this@VectorArrayList.size) {
             if (n != 0) append(", \n")
             append("   ")
-            this@VectorArrayList.vectorToStringBuilder(n, this)
+            this@VectorArrayList.vectorToStringBuilder(n, this, roundDecimalPlaces)
         }
         append("\n)")
     }
