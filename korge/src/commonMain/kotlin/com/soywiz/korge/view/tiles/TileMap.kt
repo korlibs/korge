@@ -134,7 +134,7 @@ class TileMap(
             return 0.insert(flipX, 0).insert(flipY, 1).insert(rotate, 2)
         }
 
-        val INDICES = Array(8) {
+        private val INDICES = Array(8) {
             computeIndices(it.extract(0), it.extract(1), it.extract(2))
         }
 

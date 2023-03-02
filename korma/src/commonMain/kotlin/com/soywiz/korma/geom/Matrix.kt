@@ -304,7 +304,6 @@ sealed interface IMatrix {
     val tx: Double
     val ty: Double
 
-
     // Transform points
     fun transform(p: Point): Point = Point(transformX(p.x, p.y), transformY(p.x, p.y))
     fun transform(p: IPoint, out: MPoint = MPoint()): MPoint = transform(p.x, p.y, out)
