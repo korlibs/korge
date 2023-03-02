@@ -16,9 +16,7 @@ import com.soywiz.korio.async.*
 import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.shape.*
-import com.soywiz.korma.geom.vector.*
 import com.soywiz.korma.interpolation.*
-import com.soywiz.korma.length.LengthExtensions.Companion.pt
 import kotlin.native.concurrent.*
 
 typealias UIDropDown<T> = UIComboBox<T>
@@ -129,7 +127,7 @@ open class UIComboBox<T>(
             val it = UIButton(richText = richText, width = width, height = itemHeight).apply {
                 this.textAlignment = TextAlignment.MIDDLE_LEFT
                 this.textView.padding = IMargin(0.0, 8.0)
-                this.radius = 0.pt
+                this.radius = 0f
                 this.bgColorOut = MaterialColors.GRAY_50
                 this.bgColorOver = MaterialColors.GRAY_400
                 this.bgColorSelected = MaterialColors.LIGHT_BLUE_A100

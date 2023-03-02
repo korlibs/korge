@@ -14,10 +14,7 @@ import com.soywiz.korim.font.*
 import com.soywiz.korim.text.*
 import com.soywiz.korio.async.*
 import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.slice.*
 import com.soywiz.korma.interpolation.*
-import com.soywiz.korma.length.*
-import com.soywiz.korma.length.LengthExtensions.Companion.pt
 import kotlin.math.*
 
 inline fun Container.uiButton(
@@ -58,16 +55,28 @@ open class UIButton(
     }
 
 	var forcePressed = false
-    var radius: Length = 6.pt
+
+    private var _radiusRatio: Ratio = Ratio.NaN
+    private var _radius: Float = 6f
+
+    private val halfSide: Int get() = min(width, height).toInt() / 2
+
+    var radiusRatio: Ratio
+        get() = if (!_radiusRatio.isNaN()) _radiusRatio else Ratio(_radius, halfSide.toFloat())
         set(value) {
-            field = value
+            _radiusRatio = value
+            _radius = Float.NaN
+            setInitialState()
+        }
+
+    var radius: Float
+        get() = if (!_radius.isNaN()) _radius else _radiusRatio.value * halfSide
+        set(value) {
+            _radius = value
+            _radiusRatio = Ratio.NaN
             setInitialState()
         }
     //var radius = 100.percent
-
-    fun radiusPoints(): Double {
-        return radius.calc(Length.Context().setSize(min(width, height).toInt() / 2)).toDouble()
-    }
 
     //val radiusRatioHalf get() = radiusRatio * 0.5
     @ViewProperty
@@ -158,7 +167,7 @@ open class UIButton(
         val height = height
         background.setSize(width, height)
         //background.setSize(width, height)
-        background.radius = RectCorners(this.radiusPoints())
+        background.radius = RectCorners(this.radius)
         background.shadowRadius = if (elevation) 10.0 else 0.0
         //textView.setSize(width, height)
 

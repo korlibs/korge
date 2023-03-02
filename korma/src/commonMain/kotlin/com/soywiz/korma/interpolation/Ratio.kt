@@ -30,6 +30,8 @@ inline class Ratio(val valueF: Float) : Comparable<Ratio> {
 
     override fun compareTo(other: Ratio): Int = value.compareTo(other.value)
 
+    fun isNaN(): Boolean = value.isNaN()
+
     companion object {
         val ZERO = Ratio(0f)
         val HALF = Ratio(.5f)

@@ -6,7 +6,6 @@ import com.soywiz.korim.color.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korma.geom.*
-import com.soywiz.korma.length.*
 
 //fun NativeUiFactory.createApp() = UiApplication(this)
 
@@ -313,9 +312,9 @@ internal open class LineUiLayout(
     }
 }
 
-fun SizeLength.getDirection(direction: LayoutDirection) = if (direction == LayoutDirection.VERTICAL) height else width
-fun MSizeInt.getDirection(direction: LayoutDirection) = if (direction == LayoutDirection.VERTICAL) height else width
-enum class LayoutDirection {
+internal fun SizeLength.getDirection(direction: LayoutDirection) = if (direction == LayoutDirection.VERTICAL) height else width
+internal fun MSizeInt.getDirection(direction: LayoutDirection) = if (direction == LayoutDirection.VERTICAL) height else width
+internal enum class LayoutDirection {
     VERTICAL, HORIZONTAL;
 
     val reversed get() = if (vertical) HORIZONTAL else VERTICAL

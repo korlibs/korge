@@ -35,6 +35,6 @@ inline class ViewStyle<T>(val default: T) {
 
     inline operator fun setValue(styles: ViewStyles, property: KProperty<*>, value: T) {
         if (styles.data == null) styles.data = linkedHashMapOf()
-        styles.data!![property] = value as? Any?
+        styles.data!![property] = value
     }
 }

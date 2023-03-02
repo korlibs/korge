@@ -1,4 +1,4 @@
-package com.soywiz.korma.length
+package com.soywiz.korge.awt
 
 import com.soywiz.kmem.*
 import kotlin.math.*
@@ -7,7 +7,7 @@ import kotlin.math.*
 
 // http://www.w3schools.com/cssref/css_units.asp
 
-sealed class Length {
+internal sealed class Length {
     abstract class Fixed() : Length()
     abstract class Variable() : Length()
 
@@ -156,15 +156,15 @@ sealed class Length {
 
 //fun Length?.calc(size: Int, default: Int): Int = this?.calc(size) ?: default
 
-fun Length?.calcMin(ctx: Length.LengthContext, default: Int = 0): Int = this?.calc(ctx) ?: default
-fun Length?.calcMax(ctx: Length.LengthContext, default: Int = ctx.size): Int = this?.calc(ctx) ?: default
+internal fun Length?.calcMin(ctx: Length.LengthContext, default: Int = 0): Int = this?.calc(ctx) ?: default
+internal fun Length?.calcMax(ctx: Length.LengthContext, default: Int = ctx.size): Int = this?.calc(ctx) ?: default
 
 //operator fun Length?.plus(that: Length?): Length? = Length.Binop(this, that, "+") { a, b -> a + b }
 //operator fun Length?.minus(that: Length?): Length? = Length.Binop(this, that, "-") { a, b -> a - b }
-operator fun Length?.times(that: Double): Length? = Length.Scale(this, that)
-operator fun Length?.div(that: Double): Length? = Length.Scale(this, 1.0 / that)
+internal operator fun Length?.times(that: Double): Length? = Length.Scale(this, that)
+internal operator fun Length?.div(that: Double): Length? = Length.Scale(this, 1.0 / that)
 
-interface LengthExtensions {
+internal interface LengthExtensions {
     companion object : LengthExtensions
 
     fun max(a: Length, b: Length): Length = Length.Max(a, b)
@@ -196,7 +196,7 @@ interface LengthExtensions {
     val Double.ratio: Length get() = Length.Ratio(this)
 }
 
-data class PaddingLength(var top: Length? = Length.ZERO, var right: Length? = Length.ZERO, var bottom: Length? = Length.ZERO, var left: Length? = Length.ZERO) {
+internal data class PaddingLength(var top: Length? = Length.ZERO, var right: Length? = Length.ZERO, var bottom: Length? = Length.ZERO, var left: Length? = Length.ZERO) {
     constructor(vertical: Length?, horizontal: Length?) : this(vertical, horizontal, vertical, horizontal)
     constructor(pad: Length?) : this(pad, pad, pad, pad)
 
@@ -212,9 +212,9 @@ data class PaddingLength(var top: Length? = Length.ZERO, var right: Length? = Le
     fun setTo(pad: PaddingLength) = setTo(pad.top, pad.right, pad.bottom, pad.left)
 }
 
-data class PositionLength(var x: Length?, var y: Length?)
+internal data class PositionLength(var x: Length?, var y: Length?)
 
-data class SizeLength(var width: Length?, var height: Length?) {
+internal data class SizeLength(var width: Length?, var height: Length?) {
     constructor(side: Length?) : this(side, side)
 
     fun copyFrom(other: SizeLength) = setTo(other.width, other.height)

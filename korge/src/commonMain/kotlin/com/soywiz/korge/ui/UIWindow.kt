@@ -12,7 +12,7 @@ import com.soywiz.korgw.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.text.*
 import com.soywiz.korma.geom.*
-import com.soywiz.korma.length.LengthExtensions.Companion.percent
+import com.soywiz.korma.interpolation.*
 
 @KorgeExperimental
 inline fun Container.uiWindow(
@@ -54,7 +54,7 @@ class UIWindow(title: String, width: Double = 256.0, height: Double = 256.0) : U
     private val titleContainer = fixedSizeContainer(width, titleHeight)
     private val titleView = titleContainer.textBlock(RichTextData(title), align = TextAlignment.MIDDLE_LEFT).xy(12, 0).size(width, titleHeight)
     private val closeButton = titleContainer.uiButton("X", width = titleHeight - buttonSeparation * 2, height = titleHeight - buttonSeparation * 2) {
-        radius = 100.percent
+        radiusRatio = Ratio.ONE
         elevation = false
         bgColorOut = MaterialColors.RED_600
         bgColorOver = MaterialColors.RED_800
