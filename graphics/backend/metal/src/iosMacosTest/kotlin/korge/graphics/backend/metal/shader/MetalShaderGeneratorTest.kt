@@ -32,6 +32,8 @@ val v_Wrap: Varying = Varying("v_Wrap", VarType.Float1, precision = Precision.LO
  */
 class MetalShaderGeneratorTest {
 
+    val u_ColorModifier = Uniform("u_ColorModifier", VarType.Float4)
+
     private val vertexShader = VertexShader {
         SET(v_Tex, a_Tex)
         SET(v_Col, a_Col)
@@ -39,7 +41,7 @@ class MetalShaderGeneratorTest {
     }
 
     private val fragmentShader = FragmentShader {
-        SET(out, v_Col)
+        SET(out, v_Col * u_ColorModifier)
     }
 
     @Test
@@ -72,9 +74,15 @@ class MetalShaderGeneratorTest {
                 +"return out;"
             }
 
-            "fragment float4 fragmentMain(v2f in [[stage_in]])" {
+
+            val fragmentArgs = listOf(
+                "v2f in [[stage_in]]",
+                "constant float4& u_ColorModifier [[buffer(5)]]"
+            ).joinToString(",")
+
+            "fragment float4 fragmentMain($fragmentArgs)" {
                 +"float4 out;"
-                +"out = in.v_Col;"
+                +"out = (in.v_Col * u_ColorModifier);"
                 +"return out;"
             }
         } andInputBufferShouldBe listOf(
@@ -82,8 +90,8 @@ class MetalShaderGeneratorTest {
             a_Col,
             a_Pos,
             u_ProjMat,
-            u_ViewMat
-
+            u_ViewMat,
+            u_ColorModifier
         )
 
     }

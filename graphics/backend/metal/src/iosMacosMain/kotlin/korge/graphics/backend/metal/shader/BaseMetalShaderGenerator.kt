@@ -8,11 +8,10 @@ internal interface BaseMetalShaderGenerator {
 
     private fun errorType(type: VarType): Nothing = invalidOp("Don't know how to serialize type $type")
 
-    fun precToString(prec: Precision) = when (prec) {
+    fun precitionToString(precision: Precision) = when (precision) {
             Precision.DEFAULT -> ""
-            Precision.LOW -> "lowp "
-            Precision.MEDIUM -> "mediump "
-            Precision.HIGH -> "highp "
+            Precision.LOW -> "half "
+            Precision.MEDIUM, Precision.HIGH -> "float "
     }
 
     fun typeToString(type: VarType) = when (type) {

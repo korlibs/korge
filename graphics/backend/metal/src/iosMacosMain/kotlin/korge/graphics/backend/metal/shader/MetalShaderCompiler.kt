@@ -1,26 +1,40 @@
 package korge.graphics.backend.metal.shader
 
-import com.soywiz.korag.shader.*
+import com.soywiz.korag.shader.Program
+import com.soywiz.korag.shader.VariableWithOffset
 import korge.graphics.backend.metal.MetalProgram
 import kotlinx.cinterop.*
 import platform.Foundation.NSError
 import platform.Metal.*
 
+/**
+ * construct a metal program with following step :
+ * - Convert vertex and fragment to get a String and the list of expected buffers
+ * - Create a function library from the Shader String
+ * - Extract vertex and fragment functions from this library
+ * - create a MTLRenderPipelineStateProtocol https://developer.apple.com/documentation/metal/mtlrenderpipelinestate
+ * - use a value class to store the compiled program and the list of input buffers
+ */
 object MetalShaderCompiler {
 
     fun compile(device: MTLDeviceProtocol, program: Program): MetalProgram {
-        return program.toMetalShaders().let { (shaderAsString, inputBuffers) ->
-
-            shaderAsString
-                .toFunctionsLibrary(device)
-                .let { it.toFunction(vertexMainFunctionName) to it.toFunction(fragmentMainFunctionName) }
-                .toCompiledProgram(device)
-                .toMetalProgram(inputBuffers)
-        }
+        return program.toMetalShader()
+            .toInternalMetalProgram(device)
     }
 }
 
-private fun Program.toMetalShaders() = (vertex to fragment)
+
+private fun MetalShaderGenerator.Result.toInternalMetalProgram(device: MTLDeviceProtocol) =
+    let { (shaderAsString, inputBuffers) ->
+        shaderAsString
+            .toFunctionsLibrary(device)
+            .let { it.toFunction(vertexMainFunctionName) to it.toFunction(fragmentMainFunctionName) }
+            .toCompiledProgram(device)
+            .toInternalMetalProgram(inputBuffers)
+
+    }
+
+private fun Program.toMetalShader() = (vertex to fragment)
     .toNewMetalShaderStringResult()
 
 private fun String.toFunctionsLibrary(device: MTLDeviceProtocol): MTLLibraryProtocol = let { result ->
@@ -60,7 +74,8 @@ private fun createPipelineState(
     }
 }
 
-private fun MTLRenderPipelineStateProtocol.toMetalProgram(inputBuffers: List<VariableWithOffset>) = MetalProgram(
-    this,
-    inputBuffers
-)
+private fun MTLRenderPipelineStateProtocol.toInternalMetalProgram(inputBuffers: List<VariableWithOffset>) =
+    MetalProgram(
+        this,
+        inputBuffers
+    )

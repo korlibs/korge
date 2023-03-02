@@ -13,6 +13,8 @@ class MetalShaderGenerator(
     private val fragmentShader: FragmentShader
 ) : BaseMetalShaderGenerator {
 
+    private val inputBuffers = mutableListOf<VariableWithOffset>()
+
     data class Result(
         val result: String,
         val inputBuffers: List<VariableWithOffset>
@@ -23,7 +25,6 @@ class MetalShaderGenerator(
     private fun generateResult(customFunctions: List<FuncDecl>): Result {
         val vertexInstructions = vertexShader.stm
         val types = GlobalsProgramVisitor()
-        val inputBuffers = mutableListOf<VariableWithOffset>()
 
         FuncDecl("main", VarType.TVOID, listOf(), vertexInstructions)
             .also(types::visit)
@@ -54,17 +55,6 @@ class MetalShaderGenerator(
         )
     }
 
-    private fun Indenter.declareInputStructure(attributes: LinkedHashSet<Attribute>) {
-        if (attributes.isEmpty()) return
-        val generator = MetalShaderBodyGenerator(ShaderType.VERTEX)
-
-        "struct VertexInput" {
-            attributes.forEach {
-                +"${generator.typeToString(it.type)} ${it.name};"
-            }
-        }
-    }
-
     private fun Indenter.declareVertexOutputStructure(attributes: LinkedHashSet<Varying>) {
         if (attributes.isEmpty()) return
         val generator = MetalShaderBodyGenerator(ShaderType.VERTEX)
@@ -83,7 +73,6 @@ class MetalShaderGenerator(
     ): List<VariableWithOffset> {
         val generator = MetalShaderBodyGenerator(ShaderType.VERTEX)
         val inputBuffers = attributes.toList() + uniforms
-
 
         val parameters = listOf(("uint vertexId [[vertex_id]]")) +
             inputBuffers.mapIndexed { index, variableWithOffset ->
@@ -105,18 +94,37 @@ class MetalShaderGenerator(
         return inputBuffers
     }
 
-    private fun Indenter.generateFragmentMainFunction(): MutableList<VariableWithOffset> {
-        val inputBuffers = mutableListOf<VariableWithOffset>()
+    private fun Indenter.generateFragmentMainFunction(): List<VariableWithOffset> {
 
-        "fragment float4 $fragmentMainFunctionName(v2f in [[stage_in]])" {
+        val generator = MetalShaderBodyGenerator(ShaderType.FRAGMENT)
+        val fragmentInstructions = fragmentShader.stm
+        val types = GlobalsProgramVisitor()
+        FuncDecl("main", VarType.TVOID, listOf(), fragmentInstructions)
+            .also(types::visit)
+
+        val fragmentUniformInput = types.uniforms.toList()
+        val initialBufferIndex = inputBuffers.size
+
+        val parameters = listOf(("v2f in [[stage_in]]")) +
+            fragmentUniformInput.mapIndexed { indexOfUniform, uniform ->
+                val parameterModifier = when (uniform) {
+                    is Attribute -> "device const" to "*"
+                    else -> "constant" to "&"
+                }
+
+                val index = indexOfUniform + initialBufferIndex
+                "${parameterModifier.first} ${generator.typeToString(uniform.type)}${parameterModifier.second} ${uniform.name} [[buffer($index)]]"
+            }
+
+
+        "fragment float4 $fragmentMainFunctionName(${parameters.joinToString(",")})" {
             line("float4 out;")
-            val generator = MetalShaderBodyGenerator(ShaderType.FRAGMENT)
             generator.visit(fragmentShader.stm)
             line(generator.programIndenter)
             line("return out;")
         }
 
-        return inputBuffers
+        return fragmentUniformInput
     }
 
     private fun Indenter.generationFunctions(functions: List<FuncDecl>) {
@@ -128,7 +136,7 @@ class MetalShaderGenerator(
 
             line("${typeToString(function.rettype)} ${function.name}(${argsStrings.joinToString(", ")})") {
                 for (temp in generator.temps) {
-                    line(precToString(temp.precision) + typeToString(temp.type) + " " + temp.name + ";")
+                    line(precitionToString(temp.precision) + typeToString(temp.type) + " " + temp.name + ";")
                 }
                 line(generator.programIndenter)
             }
