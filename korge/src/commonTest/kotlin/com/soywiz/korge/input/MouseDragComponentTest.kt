@@ -9,8 +9,8 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class MouseDragComponentTest : ViewsForTesting(
-    virtualSize = MSizeInt(100, 100),
-    windowSize = MSizeInt(200, 200),
+    virtualSize = SizeInt(100, 100),
+    windowSize = SizeInt(200, 200),
 ) {
     @Test
     fun testStageScale() = viewsTest {

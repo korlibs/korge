@@ -4,11 +4,12 @@ import com.soywiz.korge.scene.*
 import com.soywiz.korge.testing.*
 import com.soywiz.korge.view.filter.*
 import com.soywiz.korim.color.*
+import com.soywiz.korma.geom.*
 import kotlin.test.*
 
 class TransitionViewTest {
     @Test
-    fun test() = korgeScreenshotTest(50, 50) {
+    fun test() = korgeScreenshotTest(SizeInt(50, 50)) {
         val tv = TransitionView()
         tv.startNewTransition(DummyView())
         tv.startNewTransition(Container().apply {

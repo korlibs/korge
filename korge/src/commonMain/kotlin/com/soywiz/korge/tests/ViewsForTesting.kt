@@ -17,7 +17,6 @@ import com.soywiz.korgw.*
 import com.soywiz.korinject.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.lang.*
-import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
@@ -25,8 +24,8 @@ import kotlin.jvm.*
 
 open class ViewsForTesting(
     val frameTime: TimeSpan = 10.milliseconds,
-    val windowSize: MSizeInt = MSizeInt(DefaultViewport.WIDTH, DefaultViewport.HEIGHT),
-    val virtualSize: MSizeInt = MSizeInt(windowSize.size.clone()),
+    val windowSize: SizeInt = DefaultViewport.SIZE,
+    val virtualSize: SizeInt = windowSize,
     val defaultDevicePixelRatio: Double = 1.0,
     val log: Boolean = false,
 ) {
@@ -39,7 +38,7 @@ open class ViewsForTesting(
         override fun now(): DateTime = time
     }
 	val dispatcher = FastGameWindowCoroutineDispatcher()
-    inner class TestGameWindow(initialSize: MSizeInt, val dispatcher: FastGameWindowCoroutineDispatcher) : GameWindowLog() {
+    inner class TestGameWindow(initialSize: SizeInt, val dispatcher: FastGameWindowCoroutineDispatcher) : GameWindowLog() {
         override val devicePixelRatio: Double get() = this@ViewsForTesting.devicePixelRatio
         override var width: Int = initialSize.width
         override var height: Int = initialSize.height
@@ -292,7 +291,7 @@ open class ViewsForTesting(
 
 		injector.mapInstance<Module>(object : Module() {
 			override val title = "KorgeViewsForTesting"
-			override val size = this@ViewsForTesting.windowSize
+			override val virtualSize = this@ViewsForTesting.virtualSize
 			override val windowSize = this@ViewsForTesting.windowSize
 		})
 

@@ -6,18 +6,19 @@ import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.format.*
 import com.soywiz.korio.file.std.*
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
 import org.junit.*
 
 class ReferenceOpenglTest {
     @Test
-    fun testOpengl() = korgeScreenshotTest(100, 100) {
+    fun testOpengl() = korgeScreenshotTest(SizeInt(100, 100)) {
         image(resourcesVfs["texture.png"].readBitmap().mipmaps())
         assertScreenshot(posterize = 6)
     }
 
     @Test
-    fun testOpenglShapeView() = korgeScreenshotTest(500, 500) {
+    fun testOpenglShapeView() = korgeScreenshotTest(SizeInt(500, 500)) {
         container {
             xy(300, 300)
             val shape = gpuShapeView({

@@ -16,7 +16,7 @@ class ViewsJvmTest : ViewsForTesting(log = true) {
 	val tex = Bitmap32(10, 10, Colors.GREEN.premultiplied)
 
 	@Test
-	fun name() = korgeScreenshotTest(20, 20) {
+	fun name() = korgeScreenshotTest(SizeInt(20, 20)) {
 		this += Container().apply {
 			this += Image(tex)
 		}
@@ -32,7 +32,7 @@ class ViewsJvmTest : ViewsForTesting(log = true) {
 	}
 
     @Test
-    fun testFilter() = korgeScreenshotTest(20, 20) {
+    fun testFilter() = korgeScreenshotTest(SizeInt(20, 20)) {
         this += Container().apply {
             this += Image(tex).also {
                 it.addFilter(ColorMatrixFilter(ColorMatrixFilter.GRAYSCALE_MATRIX))

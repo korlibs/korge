@@ -23,6 +23,7 @@ import kotlin.random.*
 val DEFAULT_KORGE_BG_COLOR = Colors.DARKCYAN.mix(Colors.BLACK, 0.8.toRatio())
 
 suspend fun main() = Korge(
+    windowSize = Korge.DEFAULT_WINDOW_SIZE,
     bgcolor = DEFAULT_KORGE_BG_COLOR,
     //bgcolor = Colors.WHITE,
     clipBorders = false,

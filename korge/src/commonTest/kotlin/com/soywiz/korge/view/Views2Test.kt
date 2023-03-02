@@ -11,8 +11,8 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class Views2Test : ViewsForTesting(
-    windowSize = MSizeInt(1280, 720),
-    virtualSize = MSizeInt(640, 480)
+    windowSize = SizeInt(1280, 720),
+    virtualSize = SizeInt(640, 480)
 ) {
     val logger = Logger("Views2Test")
 

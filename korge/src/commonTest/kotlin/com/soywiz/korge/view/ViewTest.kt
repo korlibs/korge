@@ -41,8 +41,8 @@ class ViewTest {
     @Test
     fun testConcatMatrix() {
         val viewsForTesting = ViewsForTesting(
-            windowSize = MSizeInt(200, 200),
-            virtualSize = MSizeInt(100, 100),
+            windowSize = SizeInt(200, 200),
+            virtualSize = SizeInt(100, 100),
         )
         lateinit var root: Container
         lateinit var middle: Container

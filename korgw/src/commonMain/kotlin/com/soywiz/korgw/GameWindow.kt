@@ -927,14 +927,13 @@ fun GameWindow.mainLoop(entry: suspend GameWindow.() -> Unit) = Korio { loop(ent
 fun GameWindow.toggleFullScreen()  { fullscreen = !fullscreen }
 
 fun GameWindow.configure(
-    width: Int,
-    height: Int,
+    size: SizeInt,
     title: String? = "GameWindow",
     icon: Bitmap? = null,
     fullscreen: Boolean? = null,
     bgcolor: RGBA = Colors.BLACK,
 ) {
-    this.setSize(width, height)
+    this.setSize(size.width, size.height)
     if (title != null) this.title = title
     this.icon = icon
     if (fullscreen != null) this.fullscreen = fullscreen
