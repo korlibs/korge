@@ -222,6 +222,10 @@ inline class PointInt internal constructor(internal val raw: Int2Pack) {
     constructor(x: Int, y: Int) : this(Int2Pack(x, y))
 
     val mutable: IPointInt get() = MPointInt(x, y)
+    operator fun component1(): Int = x
+    operator fun component2(): Int = y
+
+    fun copy(x: Int = this.x, y: Int = this.y): PointInt = PointInt(x, y)
 
     operator fun plus(that: PointInt): PointInt = PointInt(this.x + that.x, this.y + that.y)
     operator fun minus(that: PointInt): PointInt = PointInt(this.x - that.x, this.y - that.y)
