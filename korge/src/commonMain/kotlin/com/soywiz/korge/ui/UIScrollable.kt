@@ -159,8 +159,8 @@ open class UIScrollable(width: Double, height: Double, cache: Boolean = true) : 
     var mobileBehaviour = true
 
     private fun showScrollBar() {
-        horizontal.view.alpha = scrollBarAlpha
-        vertical.view.alpha = scrollBarAlpha
+        horizontal.view.alphaF = scrollBarAlpha
+        vertical.view.alphaF = scrollBarAlpha
         timeScrollBar = 0.seconds
     }
 
@@ -309,7 +309,7 @@ open class UIScrollable(width: Double, height: Double, cache: Boolean = true) : 
 
                     if (!dragging && autohideScrollBar) {
                         if (timeScrollBar >= 1.seconds) {
-                            info.view.alpha *= 0.9f
+                            info.view.alphaF *= 0.9f
                         } else {
                             timeScrollBar += it
                         }

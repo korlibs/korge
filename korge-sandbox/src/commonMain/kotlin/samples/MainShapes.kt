@@ -70,9 +70,9 @@ class MainShapes : Scene() {
     }
 
     fun <T : View> T.interactive(): T = apply {
-        alpha = 0.5f
-        onOver { alpha = 1.0f }
-        onOut { alpha = 0.5f }
+        alphaF = 0.5f
+        onOver { alphaF = 1.0f }
+        onOut { alphaF = 0.5f }
     }
 
 }

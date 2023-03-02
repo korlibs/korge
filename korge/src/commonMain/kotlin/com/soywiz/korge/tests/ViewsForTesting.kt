@@ -268,7 +268,7 @@ open class ViewsForTesting(
 
 	suspend fun View.isVisibleToUser(): Boolean {
 		if (!this.visible) return false
-		if (this.alpha <= 0.0) return false
+		if (this.alphaF <= 0.0) return false
 		val bounds = this.getGlobalBounds()
 		if (bounds.area <= 0.0) return false
 		val module = injector.get<Module>()

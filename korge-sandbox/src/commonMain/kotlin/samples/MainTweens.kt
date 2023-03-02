@@ -31,8 +31,8 @@ class MainTweens : ScaledScene(512, 512) {
             )
 
             tween(
-                rect1::alpha[0f],
-                rect2::alpha[0f],
+                rect1::alphaF[0f],
+                rect2::alphaF[0f],
                 time = 1.seconds
             )
 
@@ -40,8 +40,8 @@ class MainTweens : ScaledScene(512, 512) {
             rect2.position(0, 0)
 
             tween(
-                rect1::alpha[1],
-                rect2::alpha[1],
+                rect1::alphaF[1],
+                rect2::alphaF[1],
                 time = 0.5.seconds
             )
 

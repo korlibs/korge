@@ -64,9 +64,9 @@ class MainBVH : Scene() {
             val time = measureTime {
                 val rayObjects = bvh.intersect(ray)
                 val rectangleObjects = bvh.search(selectedRectangle)
-                for (result in allObjects) result.value?.alpha = 0.2f
-                for (result in rectangleObjects) result.value?.alpha = 0.8f
-                for (result in rayObjects) result.obj.value?.alpha = 1.0f
+                for (result in allObjects) result.value?.alphaF = 0.2f
+                for (result in rectangleObjects) result.value?.alphaF = 0.8f
+                for (result in rayObjects) result.obj.value?.alphaF = 1.0f
                 allObjectsSize = allObjects.size
                 rayObjectsSize = rayObjects.size
                 rectangleObjectsSize = rectangleObjects.size

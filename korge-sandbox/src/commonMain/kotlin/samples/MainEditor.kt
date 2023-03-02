@@ -104,7 +104,7 @@ class MainEditor : Scene() {
             it.container.overflowRate = 0.0
             uiVerticalStack(300.0, padding = 4.0) {
                 uiText("Properties").styles { textColor = Colors.RED }
-                uiPropertyNumberRow("Alpha", *UIEditableNumberPropsList(solidRect::alpha))
+                uiPropertyNumberRow("Alpha", *UIEditableNumberPropsList(solidRect::alphaF))
                 uiPropertyNumberRow("Position", *UIEditableNumberPropsList(solidRect::x, solidRect::y, min = -1024.0, max = +1024.0, clamped = false))
                 uiPropertyNumberRow("Size", *UIEditableNumberPropsList(solidRect::width, solidRect::height, min = -1024.0, max = +1024.0, clamped = false))
                 uiPropertyNumberRow("Scale", *UIEditableNumberPropsList(solidRect::scaleX, solidRect::scaleY, min = -1.0, max = +1.0, clamped = false))

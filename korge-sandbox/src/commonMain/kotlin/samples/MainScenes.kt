@@ -36,18 +36,18 @@ class MainScenes : Scene() {
 
             solidRect(100, 100, Colors.RED) {
                 position(200, 200)
-                alpha = 0.7f
-                onOver { alpha = 1.0f }
-                onOut { alpha = 0.7f }
+                alphaF = 0.7f
+                onOver { alphaF = 1.0f }
+                onOut { alphaF = 0.7f }
                 onClick {
                     sceneContainer.changeTo<MyScene2>()
                 }
             }
             solidRect(100, 100, Colors.BLUE) {
                 position(250, 250)
-                alpha = 0.7f
-                onOver { alpha = 1.0f }
-                onOut { alpha = 0.7f }
+                alphaF = 0.7f
+                onOver { alphaF = 1.0f }
+                onOut { alphaF = 0.7f }
                 onClick {
                     sceneContainer.changeTo<MyScene2>()
                 }

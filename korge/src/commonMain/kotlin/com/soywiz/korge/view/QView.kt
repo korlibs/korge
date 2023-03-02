@@ -34,8 +34,8 @@ class QView(val views: List<View>) : List<View> by views, BView {
         set(value) = fastForEach { it.visible = value }
 
     var alpha: Float
-        get() = firstOrNull?.alpha ?: 1.0f
-        set(value) = fastForEach { it.alpha = value }
+        get() = firstOrNull?.alphaF ?: 1.0f
+        set(value) = fastForEach { it.alphaF = value }
 
     var scale: Double
         get() = firstOrNull?.scale ?: 1.0

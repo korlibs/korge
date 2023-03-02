@@ -40,7 +40,7 @@ import kotlin.math.*
  * ## Properties
  *
  * Basic transform properties of the [View] are [x], [y], [scaleX], [scaleY], [rotation], [skewX] and [skewY].
- * Regarding to how the views are drawn there are: [alpha], [colorMul] ([tint]).
+ * Regarding to how the views are drawn there are: [alphaF], [colorMul] ([tint]).
  *
  * [View] implements the [Extra] interface, thus allows to add arbitrary typed properties.
  * [View] implements the [EventDispatcher] interface, and allows to handle and dispatch events.
@@ -466,7 +466,7 @@ abstract class View internal constructor(
      * That means:
      * * [Colors.WHITE] would display the view without modifications
      * * [Colors.BLACK] would display a black shape
-     * * [Colors.TRANSPARENT] would be equivalent to setting [alpha]=0
+     * * [Colors.TRANSPARENT] would be equivalent to setting [alphaF]=0
      * * [Colors.RED] would only show the red component of the view
      */
     @ViewProperty
@@ -484,7 +484,19 @@ abstract class View internal constructor(
      * Equivalent to [ColorTransform.mA] + [View.invalidate]
      */
     @ViewProperty(min = 0.0, max = 1.0, clampMin = true, clampMax = true)
-    var alpha: Float
+    var alpha: Double
+        get() = alphaD
+        set(value) {
+            alphaD = value
+        }
+
+    var alphaD: Double
+        get() = alphaF.toDouble()
+        set(value) {
+            alphaF = value.toFloat()
+        }
+
+    var alphaF: Float
         get() = _colorTransform.a
         set(v) {
             if (_colorTransform.a != v) {
@@ -722,7 +734,7 @@ abstract class View internal constructor(
         return _renderColorTransform.colorMul
     }
 
-    /** The concatenated/global version of the local [alpha] */
+    /** The concatenated/global version of the local [alphaF] */
     val renderAlpha: Double get() {
         updateRenderColorTransformIfRequired()
         return renderColorTransform.a.toDouble()
@@ -901,7 +913,7 @@ abstract class View internal constructor(
         if (name != null) out += ":name=($name)"
         if (blendMode != BlendMode.INHERIT) out += ":blendMode=($blendMode)"
         if (!visible) out += ":visible=$visible"
-        if (alpha != 1f) out += ":alpha=${alpha.niceStr(2)}"
+        if (alphaF != 1f) out += ":alpha=${alphaF.niceStr(2)}"
         if (this.colorMul.rgb != Colors.WHITE.rgb) out += ":colorMul=${this.colorMul.hexString}"
         return out
     }
@@ -2057,9 +2069,9 @@ fun <T : View> T.scale(sx: Double, sy: Double = sx): T {
 fun <T : View> T.scale(sx: Float, sy: Float = sx): T = scale(sx.toDouble(), sy.toDouble())
 fun <T : View> T.scale(sx: Int, sy: Int = sx): T = scale(sx.toDouble(), sy.toDouble())
 
-/** Chainable method returning this that sets [View.alpha] */
+/** Chainable method returning this that sets [View.alphaF] */
 fun <T : View> T.alpha(alpha: Float): T {
-    this.alpha = alpha
+    this.alphaF = alpha
     return this
 }
 fun <T : View> T.alpha(alpha: Double): T = alpha(alpha.toFloat())

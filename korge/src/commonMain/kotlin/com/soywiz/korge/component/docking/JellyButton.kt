@@ -28,7 +28,7 @@ class JellyButton(val view: View?, val coroutineContext: CoroutineContext, var t
 
 	init {
 		if (hitTest != content) {
-			hitTest?.alpha = 0.0f
+			hitTest?.alphaF = 0.0f
 		}
 		//println("----------------")
 		//println(hitTest?.globalBounds)
