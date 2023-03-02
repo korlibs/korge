@@ -21,7 +21,7 @@ class ScaleMode(
     operator fun invoke(item: ISize, container: ISize, target: MSize = MSize()): MSize =
         transform(item.width, item.height, container.width, container.height, target)
 
-    operator fun invoke(item: ISizeInt, container: ISizeInt, target: MSizeInt = MSizeInt()): MSizeInt = target.setTo(
+    operator fun invoke(item: MSizeInt, container: MSizeInt, target: MSizeInt = MSizeInt()): MSizeInt = target.setTo(
         transformW(item.width.toDouble(), item.height.toDouble(), container.width.toDouble(), container.height.toDouble()).toInt(),
         transformH(item.width.toDouble(), item.height.toDouble(), container.width.toDouble(), container.height.toDouble()).toInt()
     )

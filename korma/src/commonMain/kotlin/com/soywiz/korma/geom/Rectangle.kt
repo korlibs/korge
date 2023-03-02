@@ -575,8 +575,11 @@ sealed interface IRectangleInt {
     fun sliceWithSize(x: Int, y: Int, width: Int, height: Int, clamped: Boolean = true): IRectangleInt =
         sliceWithBounds(x, y, x + width, y + height, clamped)
 
-    operator fun contains(v: ISizeInt): Boolean = (v.width <= width) && (v.height <= height)
+    operator fun contains(v: SizeInt): Boolean = (v.width <= width) && (v.height <= height)
+    operator fun contains(v: MSizeInt): Boolean = contains(v.immutable)
+    operator fun contains(that: Point) = contains(that.x, that.y)
     operator fun contains(that: IPoint) = contains(that.x, that.y)
+    operator fun contains(that: PointInt) = contains(that.x, that.y)
     operator fun contains(that: IPointInt) = contains(that.x, that.y)
     fun contains(x: Double, y: Double) = (x >= left && x < right) && (y >= top && y < bottom)
     fun contains(x: Float, y: Float) = contains(x.toDouble(), y.toDouble())
