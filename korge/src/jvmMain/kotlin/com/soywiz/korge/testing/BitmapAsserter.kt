@@ -150,10 +150,10 @@ suspend fun OffscreenStage.assertScreenshot(
                         "Run ./gradlew jvmTestFix to update goldens\n" +
                         "Or set INTERACTIVE_SCREENSHOT=true\n" +
                         "\n" +
-                        "Generated: ${actualFile.absoluteFile}\n" +
-                        "Diff: ${diffFile.absoluteFile}\n" +
-                        "Expected Directory: ${outFile.parentFile.absoluteFile}\n" +
-                        "Expected File: ${outFile.absoluteFile}"
+                        "Generated: file://${actualFile.absoluteFile}\n" +
+                        "Diff: file://${diffFile.absoluteFile}\n" +
+                        "Expected Directory: file://${outFile.parentFile.absoluteFile}\n" +
+                        "Expected File: file://${outFile.absoluteFile}"
                 }
             }
         }
