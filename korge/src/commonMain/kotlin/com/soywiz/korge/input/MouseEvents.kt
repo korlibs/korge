@@ -35,7 +35,7 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
             if (!views.input.mouseHitSearch) {
                 views.input.mouseHitSearch = true
                 views.input.mouseHitResult =
-                    views.stage.mouseHitTest(views.globalMousePos.x, views.globalMousePos.y)
+                    views.stage.mouseHitTest(views.globalMousePos)
 
                 var view: View? = views.input.mouseHitResult
                 while (view != null) {

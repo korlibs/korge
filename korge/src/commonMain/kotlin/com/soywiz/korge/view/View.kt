@@ -946,31 +946,26 @@ abstract class View internal constructor(
      *
      * @returns The (visible) [View] displayed at the given coordinates or `null` if none is found.
      */
-    open fun hitTest(x: Double, y: Double, direction: HitTestDirection = HitTestDirection.ANY): View? {
+    open fun hitTest(globalPos: Point, direction: HitTestDirection = HitTestDirection.ANY): View? {
         if (!hitTestEnabled) return null
         if (!visible) return null
 
         _children?.fastForEachReverse { child ->
-            child.hitTest(x, y, direction)?.let {
+            child.hitTest(globalPos, direction)?.let {
                 return it
             }
         }
-        val res = hitTestInternal(x, y)
+        val res = hitTestInternal(globalPos)
         if (res != null) return res
         return if (this is Stage) this else null
     }
-    fun hitTest(x: Float, y: Float, direction: HitTestDirection = HitTestDirection.ANY): View? = hitTest(x.toDouble(), y.toDouble(), direction)
-    fun hitTest(x: Int, y: Int, direction: HitTestDirection = HitTestDirection.ANY): View? = hitTest(x.toDouble(), y.toDouble(), direction)
 
-    fun hitTestLocal(x: Double, y: Double, direction: HitTestDirection = HitTestDirection.ANY): View? {
-        val p = localToGlobal(Point(x, y))
-        return hitTest(p.xD, p.yD, direction)
+    fun hitTestLocal(p: Point, direction: HitTestDirection = HitTestDirection.ANY): View? {
+        return hitTest(localToGlobal(p), direction)
     }
-    fun hitTestLocal(x: Float, y: Float, direction: HitTestDirection = HitTestDirection.ANY): View? = hitTestLocal(x.toDouble(), y.toDouble(), direction)
-    fun hitTestLocal(x: Int, y: Int, direction: HitTestDirection = HitTestDirection.ANY): View? = hitTestLocal(x.toDouble(), y.toDouble(), direction)
 
-    override fun hitTestAny(x: Double, y: Double, direction: HitTestDirection): Boolean =
-        hitTest(x, y, direction) != null
+    override fun hitTestAny(p: Point, direction: HitTestDirection): Boolean =
+        hitTest(p, direction) != null
 
     fun hitTestView(views: List<View>, direction: HitTestDirection = HitTestDirection.ANY): View? {
         views.fastForEach { view -> hitTestView(view, direction)?.let { return it } }
@@ -1023,23 +1018,24 @@ abstract class View internal constructor(
 
     // @TODO: we should compute view bounds on demand
     /** [x] and [y] are in global coordinates */
-    fun mouseHitTest(x: Double, y: Double): View? {
+    fun mouseHitTest(p: Point): View? {
+        //return hitTest(p)
         if (!hitTestEnabled) return null
         if (!visible) return null
         if (mouseChildren) {
             _children?.fastForEachReverse { child ->
-                child.mouseHitTest(x, y)?.let {
+                child.mouseHitTest(p)?.let {
                     return it
                 }
             }
         }
         if (!mouseEnabled) return null
-        hitTestInternal(x, y)?.let { view ->
+        hitTestInternal(p)?.let { view ->
 
             // @TODO: This should not be required if we compute bounds
             MRectangle.POOL { tempRect ->
                 val area = getClippingAreaInternal(tempRect)
-                if (area != null && !area.contains(x, y)) return null
+                if (area != null && !area.contains(p)) return null
                 return view
             }
         }
@@ -1067,15 +1063,12 @@ abstract class View internal constructor(
         return if (count == 0) null else out
     }
 
-    fun mouseHitTest(x: Float, y: Float): View? = hitTest(x.toDouble(), y.toDouble())
-    fun mouseHitTest(x: Int, y: Int): View? = hitTest(x.toDouble(), y.toDouble())
-
-    fun hitTestAny(x: Double, y: Double): Boolean = hitTest(x, y) != null
+    fun hitTestAny(p: Point): Boolean = hitTest(p) != null
 
     var hitTestUsingShapes: Boolean? = null
 
     /** [x] and [y] coordinates are global */
-    protected open fun hitTestInternal(x: Double, y: Double, direction: HitTestDirection = HitTestDirection.ANY): View? {
+    protected open fun hitTestInternal(p: Point, direction: HitTestDirection = HitTestDirection.ANY): View? {
         if (!hitTestEnabled) return null
 
         //println("x,y: $x,$y")
@@ -1083,20 +1076,15 @@ abstract class View internal constructor(
         //if (!getGlobalBounds(_localBounds).contains(x, y)) return null
 
         // Adjusted coordinates to compensate anchoring
-        val ll = globalToLocal(Point(x, y))
-        val llx = ll.xD
-        val lly = ll.yD
+        val ll = globalToLocal(p)
 
         val bounds = getLocalBoundsOptimizedAnchored()
-        if (!bounds.contains(llx, lly)) {
+        if (!bounds.contains(ll)) {
             //println("bounds = null : $bounds")
             return null
         }
-        val anchorDispX = this.anchorDispX
-        val anchorDispY = this.anchorDispY
 
-        val lx = llx + anchorDispX
-        val ly = lly + anchorDispY
+        val l = ll + Point(this.anchorDispX, this.anchorDispY)
 
         if (hitTestUsingShapes == false) return this
 
@@ -1134,8 +1122,8 @@ abstract class View internal constructor(
         val hitShape = this.hitShape
         val hitShapes = this.hitShapes
         if (hitTestUsingShapes == null && (hitShape != null || hitShapes != null)) {
-            hitShapes?.fastForEach { if (it.containsPoint(lx, ly)) return this }
-            if (hitShape != null && hitShape.containsPoint(lx, ly)) return this
+            hitShapes?.fastForEach { if (it.containsPoint(l)) return this }
+            if (hitShape != null && hitShape.containsPoint(l)) return this
             return null
         } else {
             return this
@@ -1547,28 +1535,12 @@ interface ViewRenderPhase {
 }
 
 /**
- * Determines if the given coords [x] and [y] hit this view or any of its descendants.
- * Returns the view that was hit or null
- */
-fun View.hitTest(x: Int, y: Int): View? = hitTest(x.toDouble(), y.toDouble())
-
-/**
- * Determines if the given coords [pos] hit this view or any of its descendants.
- * Returns the view that was hit or null
- */
-fun View.hitTest(pos: IPoint): View? = hitTest(pos.x, pos.y)
-//fun View.hitTest(pos: Point): View? = hitTest(pos.x, pos.y)
-
-/**
  * Checks if this view has the specified [ancestor].
  */
-fun View.hasAncestor(ancestor: View): Boolean {
-    return if (this == ancestor) true else this.parent?.hasAncestor(ancestor) ?: false
-}
+fun View.hasAncestor(ancestor: View): Boolean =
+    if (this == ancestor) true else this.parent?.hasAncestor(ancestor) ?: false
 
-fun View?.commonAncestor(ancestor: View?): View? {
-    return View.commonAncestor(this, ancestor)
-}
+fun View?.commonAncestor(ancestor: View?): View? = View.commonAncestor(this, ancestor)
 
 /**
  * Replaces this view in its parent with [view].
@@ -1788,8 +1760,6 @@ fun View?.descendantsWithPropDouble(prop: String, value: Double? = null): List<P
 inline fun <reified T : View> View.getDescendantsOfType() = this.descendantsWith { it is T }
 
 /** Sets the position [point] of the view and returns this (chaineable). */
-inline fun <T : View> T.position(point: Point): T = position(point.x, point.y)
-inline fun <T : View> T.position(point: IPoint): T = position(point.x, point.y)
 inline fun <T : View> T.visible(visible: Boolean): T = this.also { it.visible = visible }
 inline fun <T : View> T.name(name: String?): T = this.also { it.name = name }
 
@@ -1800,12 +1770,13 @@ inline fun <T : View> T.hitShape(crossinline block: @ViewDslMarker VectorBuilder
     return this
 }
 
-fun <T : View> T.size(width: Double, height: Double): T {
-    this.setSize(width, height)
+fun <T : View> T.size(size: Size): T {
+    this.setSize(size.widthD, size.heightD)
     return this
 }
-fun <T : View> T.size(width: Float, height: Float): T = size(width.toDouble(), height.toDouble())
-fun <T : View> T.size(width: Int, height: Int): T = size(width.toDouble(), height.toDouble())
+fun <T : View> T.size(width: Double, height: Double): T = size(Size(width, height))
+fun <T : View> T.size(width: Float, height: Float): T = size(Size(width, height))
+fun <T : View> T.size(width: Int, height: Int): T = size(Size(width, height))
 
 fun <T : View> T.globalPos(p: Point): T {
     this.globalPos = p
@@ -1853,21 +1824,24 @@ inline fun <reified T> View?.descendantsOfType(): List<T> = descendantsWith { it
 fun View?.allDescendants(out: ArrayList<View> = arrayListOf()): List<View> = descendantsWith { true }
 
 /** Chainable method returning this that sets [View.x] and [View.y] */
-fun <T : View> T.xy(x: Double, y: Double): T {
-    this.x = x
-    this.y = y
+fun <T : View> T.xy(p: Point): T {
+    this.x = p.xD
+    this.y = p.yD
     return this
 }
-fun <T : View> T.xy(x: Float, y: Float): T = xy(x.toDouble(), y.toDouble())
-fun <T : View> T.xy(x: Int, y: Int): T = xy(x.toDouble(), y.toDouble())
-fun <T : View> T.xy(p: IPoint): T = xy(p.x, p.y)
+fun <T : View> T.xy(x: Double, y: Double): T = xy(Point(x, y))
+fun <T : View> T.xy(x: Float, y: Float): T = xy(Point(x, y))
+fun <T : View> T.xy(x: Int, y: Int): T = xy(Point(x, y))
+fun <T : View> T.xy(p: IPoint): T = xy(p.point)
 
 /** Chainable method returning this that sets [View.x] and [View.y] */
-fun <T : View> T.position(x: Double, y: Double): T = xy(x, y)
-fun <T : View> T.position(x: Float, y: Float): T = xy(x.toDouble(), y.toDouble())
-fun <T : View> T.position(x: Int, y: Int): T = xy(x.toDouble(), y.toDouble())
+fun <T : View> T.position(x: Double, y: Double): T = xy(Point(x, y))
+fun <T : View> T.position(x: Float, y: Float): T = xy(Point(x, y))
+fun <T : View> T.position(x: Int, y: Int): T = xy(Point(x, y))
+fun <T : View> T.position(p: Point): T = xy(p)
+fun <T : View> T.position(p: IPoint): T = xy(p.point)
 
-fun <T : View> T.bounds(left: Double, top: Double, right: Double, bottom: Double): T = xy(left, top).size(right - left, bottom - top)
+fun <T : View> T.bounds(left: Double, top: Double, right: Double, bottom: Double): T = xy(left, top).size(Size(right - left, bottom - top))
 fun <T : View> T.bounds(rect: MRectangle): T = bounds(rect.left, rect.top, rect.right, rect.bottom)
 
 fun <T : View> T.positionX(x: Double): T {

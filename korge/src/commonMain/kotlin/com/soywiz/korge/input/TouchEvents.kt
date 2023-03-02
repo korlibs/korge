@@ -149,7 +149,7 @@ fun View.singleTouch(removeTouch: Boolean = false, supportStartAnywhere: Boolean
             val info = getById(it.id)
             //println("TOUCH START: info=$info")
             val handler = info.handler
-            info.startedInside = this@singleTouch.hitTest(it.global) != null
+            info.startedInside = this@singleTouch.hitTest(it.global.point) != null
             if (handler.start.hasListeners && info.startedInside) {
                 handler.start(it)
             }
@@ -163,7 +163,7 @@ fun View.singleTouch(removeTouch: Boolean = false, supportStartAnywhere: Boolean
             if (!supportStartAnywhere && !info.startedInside) return@move
 
             val handler = info.handler
-            if (handler.move.hasListeners && this@singleTouch.hitTest(it.global) != null) {
+            if (handler.move.hasListeners && this@singleTouch.hitTest(it.global.point) != null) {
                 handler.move(it)
             }
             handler.moveAnywhere(it)
@@ -174,7 +174,7 @@ fun View.singleTouch(removeTouch: Boolean = false, supportStartAnywhere: Boolean
 
             val handler = info.handler
 
-            val hitTest = if (handler.end.hasListeners || handler.tap.hasListeners) this@singleTouch.hitTest(it.global) != null else false
+            val hitTest = if (handler.end.hasListeners || handler.tap.hasListeners) this@singleTouch.hitTest(it.global.point) != null else false
             //println("TOUCH END: info=$info, hitTest=$hitTest")
 
             if (hitTest) {

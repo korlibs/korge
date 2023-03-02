@@ -42,8 +42,8 @@ abstract class Shape2d {
     abstract val type: Int
     abstract val paths: List<IPointArrayList>
     abstract val closed: Boolean
-    abstract fun containsPoint(x: Double, y: Double): Boolean
-    fun containsPoint(x: Double, y: Double, mat: MMatrix) = containsPoint(mat.transformX(x, y), mat.transformY(x, y))
+    abstract fun containsPoint(p: Point): Boolean
+    fun containsPoint(p: Point, mat: MMatrix) = containsPoint(mat.transform(p))
     open fun getBounds(out: MRectangle = MRectangle()): MRectangle {
         var minx = Double.POSITIVE_INFINITY
         var miny = Double.POSITIVE_INFINITY
@@ -85,16 +85,14 @@ abstract class Shape2d {
                 if (ml != null) tempMatrix.premultiply(ml)
 
                 l.paths.fastForEach {
-                    it.fastForEach { x, y ->
-                        val tx = tempMatrix.transformX(x, y)
-                        val ty = tempMatrix.transformY(x, y)
-                        if (r.containsPoint(tx, ty)) return true
+                    it.fastForEachPoint { p ->
+                        if (r.containsPoint(tempMatrix.transform(p))) return true
                     }
                 }
             } else {
                 l.paths.fastForEach {
-                    it.fastForEach { x, y ->
-                        if (r.containsPoint(x, y)) return true
+                    it.fastForEachPoint { p ->
+                        if (r.containsPoint(p)) return true
                     }
                 }
             }
@@ -131,7 +129,7 @@ abstract class Shape2d {
         override val paths = listOf(PointArrayList(0))
         override val closed = false
         override val area = 0.0
-        override fun containsPoint(x: Double, y: Double) = false
+        override fun containsPoint(p: Point) = false
     }
 
     data class Line(val x0: Double, val y0: Double, val x1: Double, val y1: Double) : Shape2d(), WithArea {
@@ -145,7 +143,7 @@ abstract class Shape2d {
         override val paths = listOf(PointArrayList(2).apply { add(x0, y0).add(x1, y1) })
         override val closed = false
         override val area get() = 0.0
-        override fun containsPoint(x: Double, y: Double) = false
+        override fun containsPoint(p: Point) = false
     }
 
     // @TODO: Ellipse
@@ -176,11 +174,11 @@ abstract class Shape2d {
             else -> listOf(vectorPath.getPoints2())
         }
         override val closed: Boolean get() = true
-        override fun containsPoint(x: Double, y: Double): Boolean {
+        override fun containsPoint(p: Point): Boolean {
             if (isCircle) {
-                return hypot(this.ellipseX - x, this.ellipseY - y) < ellipseRadiusX
+                return hypot(this.ellipseX - p.xD, this.ellipseY - p.yD) < ellipseRadiusX
             }
-            return vectorPath.containsPoint(x, y)
+            return vectorPath.containsPoint(p)
         }
         override val area: Double get() = PI.toDouble() * ellipseRadiusX * ellipseRadiusY
     }
@@ -217,7 +215,7 @@ abstract class Shape2d {
         override val area: Double get() = width * height
         override val center: Point get() = super<IRectangle>.center
 
-        override fun containsPoint(x: Double, y: Double) = (x in this.left..this.right) && (y in this.top..this.bottom)
+        override fun containsPoint(p: Point) = (p.xD in this.left..this.right) && (p.yD in this.top..this.bottom)
         override fun toString(): String =
             "Rectangle(x=${x.niceStr}, y=${y.niceStr}, width=${width.niceStr}, height=${height.niceStr})"
     }
@@ -228,7 +226,7 @@ abstract class Shape2d {
         }
         override val type: Int = TYPE
         override val paths = listOf(vectorPath.getPoints2())
-        override fun containsPoint(x: Double, y: Double): Boolean = if (closed) vectorPath.containsPoint(x, y) else false
+        override fun containsPoint(p: Point): Boolean = if (closed) vectorPath.containsPoint(p) else false
     }
 
     data class Polygon(val points: IPointArrayList) : Shape2d() {
@@ -243,7 +241,7 @@ abstract class Shape2d {
                 polygon(points)
             }
         }
-        override fun containsPoint(x: Double, y: Double): Boolean = vectorPath.containsPoint(x, y)
+        override fun containsPoint(p: Point): Boolean = vectorPath.containsPoint(p)
     }
 
     data class Polyline(val points: IPointArrayList) : Shape2d(), WithArea {
@@ -254,7 +252,7 @@ abstract class Shape2d {
         override val paths = listOf(points)
         override val closed: Boolean = false
         override val area: Double get() = 0.0
-        override fun containsPoint(x: Double, y: Double) = false
+        override fun containsPoint(p: Point) = false
     }
 
     data class Complex(val items: List<Shape2d>) : Shape2d() {
@@ -264,8 +262,8 @@ abstract class Shape2d {
         override val type: Int = TYPE
         override val paths by lazy { items.flatMap { it.paths } }
         override val closed: Boolean = false
-        override fun containsPoint(x: Double, y: Double): Boolean {
-            items.fastForEach { if (it.containsPoint(x, y)) return true }
+        override fun containsPoint(p: Point): Boolean {
+            items.fastForEach { if (it.containsPoint(p)) return true }
             return false
         }
     }

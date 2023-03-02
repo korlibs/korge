@@ -14,10 +14,10 @@ class ViewHitTestTest : ViewsForTesting() {
             .position(256, 256)
             .hitShape { circle(Point(64, 64), 64f) }
 
-        assertEquals(true, circleB.hitTestAny(256.0, 256.0))
-        assertEquals(true, circleB.hitTestAny(200.0, 256.0))
-        assertEquals(true, circleB.hitTestAny(300.0, 213.0))
-        assertEquals(false, circleB.hitTestAny(306.0, 205.0))
+        assertEquals(true, circleB.hitTestAny(Point(256, 256)))
+        assertEquals(true, circleB.hitTestAny(Point(200, 256)))
+        assertEquals(true, circleB.hitTestAny(Point(300, 213)))
+        assertEquals(false, circleB.hitTestAny(Point(306, 205)))
     }
 
     @Test
@@ -25,11 +25,11 @@ class ViewHitTestTest : ViewsForTesting() {
         val circleB = solidRect(128.0, 128.0, Colors.RED).anchor(Anchor.MIDDLE_CENTER)
             .position(256, 256)
 
-        assertEquals(true, circleB.hitTestAny(256.0, 256.0))
-        assertEquals(true, circleB.hitTestAny(200.0, 256.0))
-        assertEquals(true, circleB.hitTestAny(300.0, 213.0))
-        assertEquals(true, circleB.hitTestAny(306.0, 205.0))
-        assertEquals(false, circleB.hitTestAny(322.0, 205.0))
+        assertEquals(true, circleB.hitTestAny(Point(256, 256)))
+        assertEquals(true, circleB.hitTestAny(Point(200, 256)))
+        assertEquals(true, circleB.hitTestAny(Point(300, 213)))
+        assertEquals(true, circleB.hitTestAny(Point(306, 205)))
+        assertEquals(false, circleB.hitTestAny(Point(322, 205)))
     }
 }
 

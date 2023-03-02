@@ -113,9 +113,9 @@ class GraphicsTest {
         }
         //println(graphics.hitShape2d)
         assertNotNull(graphics.hitShape2d, "hitShape2d should be defined")
-        assertEquals(graphics, graphics.hitTestLocal(0, 0))
-        assertEquals(graphics, graphics.hitTestLocal(20, 0))
-        assertEquals(null, graphics.hitTestLocal(33, 0))
+        assertEquals(graphics, graphics.hitTestLocal(Point(0, 0)))
+        assertEquals(graphics, graphics.hitTestLocal(Point(20, 0)))
+        assertEquals(null, graphics.hitTestLocal(Point(33, 0)))
     }
 
     @Test

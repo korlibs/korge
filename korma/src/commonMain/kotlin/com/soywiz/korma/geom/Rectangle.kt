@@ -196,6 +196,7 @@ interface IRectangle {
     val position: IPoint get() = MPoint(x, y)
     val size: ISize get() = MSize(width, height)
 
+    operator fun contains(that: Point) = contains(that.x, that.y)
     operator fun contains(that: IPoint) = contains(that.x, that.y)
     operator fun contains(that: IPointInt) = contains(that.x, that.y)
     fun contains(x: Double, y: Double) = (x >= left && x < right) && (y >= top && y < bottom)

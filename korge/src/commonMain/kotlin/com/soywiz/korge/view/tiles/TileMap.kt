@@ -467,7 +467,7 @@ class TileMap(
         if (!stackedIntMap.inside(tileX, tileY)) return true
         val tile = stackedIntMap.getLast(tileX, tileY)
         val collision = tileset.tilesMap[tile]?.collision ?: return false
-        return collision.hitTestAny(x.toDouble(), y.toDouble(), direction)
+        return collision.hitTestAny(Point(x, y), direction)
     }
 
     init {
