@@ -126,10 +126,23 @@ open class KorgeJavaExecWithAutoreload : KorgeJavaExec() {
 
     override fun exec() {
         val compileKotlinJvm = project.tasks.findByName("compileKotlinJvm") as org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-        val args = compileKotlinJvm.outputs.files.toList().joinToString(":::") { it.absolutePath }
-        val gradlewCommand = if (isWindows) "gradlew.bat" else "gradlew"
+        val ARGS_SEPARATOR = "<:/:>"
+        val CMD_SEPARATOR = "<@/@>"
+        val rootFolders = compileKotlinJvm.outputs.files.map { it.absolutePath }
+        //val gradlewCommand = if (isWindows) "gradlew.bat" else "gradlew"
         val rootProject = project.rootProject
-        val continuousCommand = "-classpath ${rootProject.rootDir}/gradle/wrapper/gradle-wrapper.jar org.gradle.wrapper.GradleWrapperMain --no-daemon --warn --project-dir=${rootProject.rootDir} --configuration-cache -t ${project.path.trimEnd(':')}:compileKotlinJvmAndNotify"
+        val continuousCommand = listOf(
+            "-classpath",
+            "${rootProject.rootDir}/gradle/wrapper/gradle-wrapper.jar",
+            "org.gradle.wrapper.GradleWrapperMain",
+            "--no-daemon",
+            "--watch-fs",
+            "--warn",
+            "--project-dir=${rootProject.rootDir}",
+            "--configuration-cache",
+            "-t",
+            "${project.path.trimEnd(':')}:compileKotlinJvmAndNotify"
+        )
 
         val outputJars = project.configurations.getByName(KORGE_RELOAD_AGENT_CONFIGURATION_NAME).resolve()
         println("runJvmAutoreload:outputJars=$outputJars")
@@ -139,7 +152,14 @@ open class KorgeJavaExecWithAutoreload : KorgeJavaExec() {
         //val agentJarTask: org.gradle.api.tasks.bundling.Jar = project(":korge-reload-agent").tasks.findByName("jar") as org.gradle.api.tasks.bundling.Jar
         //val outputJar = agentJarTask.outputs.files.files.first()
         //println("agentJarTask=$outputJar")
-        jvmArgs("-javaagent:$outputJar=$httpPort:::$continuousCommand:::$enableRedefinition:::$args")
+
+        val args: List<String> = listOf(
+            "$httpPort",
+            continuousCommand.joinToString(CMD_SEPARATOR),
+            "$enableRedefinition",
+            rootFolders.joinToString(CMD_SEPARATOR)
+        )
+        jvmArgs("-javaagent:$outputJar=${args.joinToString(ARGS_SEPARATOR)}")
         environment("KORGE_AUTORELOAD", "true")
 
         super.exec()

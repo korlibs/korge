@@ -24,11 +24,15 @@ object KorgeReloadAgent {
 
     fun reloadCommon(type: String, agentArgs: String?, inst: Instrumentation) {
         val agentArgs = agentArgs ?: ""
-        val args = agentArgs.split(":::")
-        val httpPort = args[0].toIntOrNull() ?: 22011
-        val continuousCommand = args[1]
-        val enableRedefinition = args[2].toBoolean()
-        val rootFolders = args.drop(3)
+        val ARGS_SEPARATOR = "<:/:>"
+        val CMD_SEPARATOR = "<@/@>"
+        println("[KorgeReloadAgent] agentArgs=$agentArgs")
+
+        val (portStr, continuousCommandStr, enableRedefinitionStr, argsStr) = agentArgs.split(ARGS_SEPARATOR)
+        val httpPort = portStr.toIntOrNull() ?: 22011
+        val continuousCommand = continuousCommandStr.split(CMD_SEPARATOR)
+        val enableRedefinition = enableRedefinitionStr.toBoolean()
+        val rootFolders = argsStr.split(CMD_SEPARATOR)
 
         println("[KorgeReloadAgent] In $type method")
         println("[KorgeReloadAgent] - httpPort=$httpPort")
@@ -81,7 +85,7 @@ object KorgeReloadAgent {
                     val p = ProcessBuilder()
                         .redirectError(ProcessBuilder.Redirect.INHERIT)
                         //.inheritIO()
-                        .command(listOf(jvmLocation, *continuousCommand.split(" ").toTypedArray()))
+                        .command(listOf(jvmLocation, *continuousCommand.toTypedArray()))
                         .start()
 
                     //val p = Runtime.getRuntime().exec("$jvmLocation $continuousCommand")
