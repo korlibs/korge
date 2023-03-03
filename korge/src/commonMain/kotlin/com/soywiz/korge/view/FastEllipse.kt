@@ -15,4 +15,7 @@ open class FastEllipse(width: Double = 100.0, height: Double = 100.0) : FastRoun
     var radius: Size
         get() = Size(width, height) / 2f
         set(value) { setSize(value * 2f) }
+    var radiusAvg: Float
+        get() = radius.avgComponent()
+        set(value) { radius = Size(value, value) }
 }
