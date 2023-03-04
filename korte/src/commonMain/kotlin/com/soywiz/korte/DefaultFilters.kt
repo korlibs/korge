@@ -22,6 +22,7 @@ object DefaultFilters {
     val Length = Filter("length") { subject.dynamicLength() }
     val Quote = Filter("quote") { subject.toDynamicString().quote() }
     val Raw = Filter("raw") { RawString(subject.toDynamicString()) }
+    val Replace = Filter("replace") { subject.toDynamicString().replace(args[0].toDynamicString(), args[1].toDynamicString()) }
     val Reverse =
         Filter("reverse") { (subject as? String)?.reversed() ?: subject.toDynamicList().reversed() }
 
@@ -150,7 +151,7 @@ object DefaultFilters {
 
     val ALL = listOf(
         // String
-        Capitalize, Lower, Upper, Downcase, Upcase, Quote, Raw, Trim,
+        Capitalize, Lower, Upper, Downcase, Upcase, Quote, Raw, Replace, Trim,
         // Array
         Join, Split, Concat, WhereExp, Where, First, Last, Map, Size, Uniq, Length, Chunked, Sort, Merge,
         // Array/String
