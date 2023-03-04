@@ -258,6 +258,7 @@ class TemplateTest : BaseTest() {
         assertEquals("Carlos", Template("{{ name|capitalize }}")("name" to "caRLos"))
         assertEquals("Carlos", Template("{{ (name)|capitalize }}")("name" to "caRLos"))
         assertEquals("Carlos", Template("{{ 'caRLos'|capitalize }}")(null))
+        assertEquals("hello KorTE", Template("{{'hello world' | replace('world', 'KorTE')}}")(null))
     }
 
     @Test
