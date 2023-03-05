@@ -221,8 +221,8 @@ open class KorgeJavaExec : JavaExec() {
                 //}
                 //project.kotlin.jvm()
                 val jvmProcessedResourcesTaskName = getKorgeProcessResourcesTaskName("jvm", "main")
-                //add(project.files().from(project.getCompilationKorgeProcessedResourcesFolder(mainJvmCompilation)))
-                add(project.files().from((project.tasks.findByName(jvmProcessedResourcesTaskName) as KorgeProcessedResourcesTask).processedResourcesFolder))
+                add(project.files().from(project.getCompilationKorgeProcessedResourcesFolder(mainJvmCompilation)))
+                //add(project.files().from((project.tasks.findByName(jvmProcessedResourcesTaskName) as KorgeProcessedResourcesTask).processedResourcesFolder))
             }
                 .reduceRight { l, r -> l + r }
         }

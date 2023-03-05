@@ -67,10 +67,10 @@ fun Project.addGenResourcesTasks(): Project {
     }
 
     for (target in kotlin.targets) {
-        val isJvm = target.isJvm
+        //val isJvm = target.isJvm
         var previousCompilationKorgeProcessedResources: KorgeProcessedResourcesTask? = null
         for (compilation in target.compilations) {
-            //val isJvm = compilation.compileKotlinTask.name == "compileKotlinJvm"
+            val isJvm = compilation.compileKotlinTask.name == "compileKotlinJvm"
             val processedResourcesFolder = getCompilationKorgeProcessedResourcesFolder(compilation)
             compilation.defaultSourceSet.resources.srcDir(processedResourcesFolder)
 
