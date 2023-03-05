@@ -146,8 +146,8 @@ class PolygonScanline : RastScale() {
     }
 
     inline fun forEachPoint(callback: (x: Double, y: Double) -> Unit) {
-        points.fastForEach { x, y ->
-            callback(x, y)
+        points.fastForEach { (x, y) ->
+            callback(x.toDouble(), y.toDouble())
         }
     }
 

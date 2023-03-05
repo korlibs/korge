@@ -32,7 +32,7 @@ class MainTriangulation : Scene() {
 
                 val edges = points + listOfNotNull(additionalPoint).toPointArrayList()
 
-                edges.fastForEachPoint { point ->
+                edges.fastForEach { point ->
                     fill(Colors.RED) {
                         circle(point, 3f)
                     }

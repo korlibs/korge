@@ -50,11 +50,11 @@ abstract class Shape2d {
         var maxx = Double.NEGATIVE_INFINITY
         var maxy = Double.NEGATIVE_INFINITY
         paths.fastForEach { path ->
-            path.fastForEach { x, y ->
-                minx = min(minx, x)
-                miny = min(miny, y)
-                maxx = max(maxx, x)
-                maxy = max(maxy, y)
+            path.fastForEach { (x, y) ->
+                minx = min(minx, x.toDouble())
+                miny = min(miny, y.toDouble())
+                maxx = max(maxx, x.toDouble())
+                maxy = max(maxy, y.toDouble())
             }
         }
         return out.setBounds(minx, miny, maxx, maxy)
@@ -85,13 +85,13 @@ abstract class Shape2d {
                 if (ml != null) tempMatrix.premultiply(ml)
 
                 l.paths.fastForEach {
-                    it.fastForEachPoint { p ->
+                    it.fastForEach { p ->
                         if (r.containsPoint(tempMatrix.transform(p))) return true
                     }
                 }
             } else {
                 l.paths.fastForEach {
-                    it.fastForEachPoint { p ->
+                    it.fastForEach { p ->
                         if (r.containsPoint(p)) return true
                     }
                 }

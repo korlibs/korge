@@ -39,13 +39,13 @@ class MainStrokesExperiment3 : Scene() {
 
             fill(Colors.PURPLE) {
                 var n = 0
-                points?.fastForEach { x, y ->
+                points?.fastForEach { (x, y) ->
                     circle(Point(x, y), 5f)
                 }
             }
             fill(Colors.WHITE) {
                 var n = 0
-                points?.fastForEach { x, y ->
+                points?.fastForEach { (x, y) ->
                     text("${n++}", DefaultTtfFont, x = x + 2.0, y = y - 5.0)
                 }
             }
@@ -156,7 +156,7 @@ class MainStrokesExperiment2 : Scene() {
                         }
 
                         val debugPointColors = listOf(Colors.RED, Colors.PURPLE, Colors.MAGENTA)
-                        pointsInfo.debugPoints.fastForEachWithIndex { index, x, y ->
+                        pointsInfo.debugPoints.fastForEachIndexed { index, (x, y) ->
                             val color = debugPointColors.getCyclic(index)
                             fill(color.withAd(0.5)) {
                                 this.circle(Point(x, y), 3f)
@@ -169,7 +169,7 @@ class MainStrokesExperiment2 : Scene() {
                             it.add(c.points.first)
                             it.add(c.points.last)
                         }
-                    }.fastForEach { x, y ->
+                    }.fastForEach { (x, y) ->
                         fill(Colors.RED.withAd(0.5)) {
                             this.circle(Point(x, y), 2f)
                         }

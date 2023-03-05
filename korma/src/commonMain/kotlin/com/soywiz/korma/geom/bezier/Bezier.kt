@@ -1102,7 +1102,7 @@ class Bezier(
             val tx = p1.x
             val ty = p1.y
             val a = -atan2(p2.y - ty, p2.x - tx)
-            points.fastForEach { x, y ->
+            points.fastForEach { (x, y) ->
                 out.add(
                     (x - tx) * cos(a) - (y - ty) * sin(a),
                     (x - tx) * sin(a) + (y - ty) * cos(a),

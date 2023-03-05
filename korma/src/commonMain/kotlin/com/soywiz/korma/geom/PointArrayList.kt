@@ -23,7 +23,7 @@ sealed interface PointList : IVectorArrayList, Extra {
     fun get(index: Int, out: MPoint): IPoint = out.setTo(getX(index), getY(index))
 
     fun roundDecimalPlaces(places: Int, out: PointArrayList = PointArrayList()): PointList {
-        fastForEach { x, y -> out.add(x.roundDecimalPlaces(places), y.roundDecimalPlaces(places)) }
+        fastForEach { (x, y) -> out.add(x.roundDecimalPlaces(places), y.roundDecimalPlaces(places)) }
         return out
     }
 
@@ -66,7 +66,7 @@ sealed interface PointList : IVectorArrayList, Extra {
     }
 
     fun clone(out: PointArrayList = PointArrayList(this.size)): PointArrayList {
-        fastForEach { x, y -> out.add(x, y) }
+        fastForEach { (x, y) -> out.add(x, y) }
         return out
     }
 
@@ -78,49 +78,22 @@ sealed interface PointList : IVectorArrayList, Extra {
 }
 
 fun PointArrayList.setToRoundDecimalPlaces(places: Int): PointArrayList {
-    fastForEachWithIndex { index, x, y -> this.setXY(index, x.roundDecimalPlaces(places), y.roundDecimalPlaces(places)) }
+    fastForEachIndexed { index, p -> this[index] = p.roundDecimalPlaces(places) }
     return this
 }
 
-
-
-inline fun PointList.fastForEachPoint(block: (Point) -> Unit) {
-    for (n in 0 until size) {
-        block(get(n))
-    }
-}
-
-@Deprecated("")
-inline fun PointList.fastForEach(block: (x: Double, y: Double) -> Unit) {
-    for (n in 0 until size) {
-        block(getX(n).toDouble(), getY(n).toDouble())
-    }
-}
-
-@Deprecated("")
-inline fun PointList.fastForEachReverse(block: (x: Double, y: Double) -> Unit) {
-    for (n in 0 until size) {
-        val index = size - n - 1
-        block(getX(index).toDouble(), getY(index).toDouble())
-    }
-}
-
-@Deprecated("")
-inline fun PointList.fastForEachWithIndex(block: (index: Int, x: Double, y: Double) -> Unit) {
-    for (n in 0 until size) {
-        block(n, getX(n).toDouble(), getY(n).toDouble())
-    }
-}
-
+inline fun PointList.fastForEachIndexed(block: (index: Int, p: Point) -> Unit) { for (n in 0 until size) block(n, get(n)) }
+inline fun PointList.fastForEachReverseIndexed(block: (index: Int, p: Point) -> Unit) { for (n in 0 until size) { val index = size - n - 1; block(index, get(index)) } }
+inline fun PointList.fastForEach(block: (Point) -> Unit) { for (n in 0 until size) block(get(n)) }
+inline fun PointList.fastForEachReverse(block: (Point) -> Unit) { for (n in 0 until size) block(get(size - n - 1)) }
 
 fun <T> PointList.map(gen: (x: Double, y: Double) -> T): List<T> = (0 until size).map { gen(getX(it).toDouble(), getY(it).toDouble()) }
 
 fun PointList.mapPoints(temp: MPoint = MPoint(), gen: (x: Double, y: Double, out: MPoint) -> IPoint): PointList {
     val out = PointArrayList(this.size)
-    fastForEach { x, y -> out.add(gen(x, y, temp)) }
+    fastForEach { (x, y) -> out.add(gen(x.toDouble(), y.toDouble(), temp)) }
     return out
 }
-
 
 fun List<Point>.toPointArrayList(): PointArrayList = PointArrayList(size).also { for (p in this) it.add(p) }
 
@@ -193,8 +166,8 @@ open class PointArrayList(capacity: Int = 7) : PointList, Extra by Extra.Mixin()
     fun add(p: Point) = add(p.x, p.y)
     fun add(p: MPoint) = add(p.x, p.y)
     fun add(p: IPoint) = add(p.x, p.y)
-    fun add(p: PointList) = this.apply { p.fastForEach { x, y -> add(x, y) } }
-    fun addReverse(p: PointList) = this.apply { p.fastForEachReverse { x, y -> add(x, y) } }
+    fun add(p: PointList) = this.apply { p.fastForEach { (x, y) -> add(x, y) } }
+    fun addReverse(p: PointList) = this.apply { p.fastForEachReverse { (x, y) -> add(x, y) } }
     fun add(p: PointList, index: Int) {
         add(p.getX(index), p.getY(index))
     }
@@ -212,7 +185,7 @@ open class PointArrayList(capacity: Int = 7) : PointList, Extra by Extra.Mixin()
 
     override fun toList(): List<MPoint> {
         val out = arrayListOf<MPoint>()
-        fastForEach { x, y -> out.add(MPoint(x, y)) }
+        fastForEach { (x, y) -> out.add(MPoint(x, y)) }
         return out
     }
 

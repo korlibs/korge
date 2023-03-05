@@ -199,7 +199,7 @@ fun Curves.toNonCurveSimplePointList(out: PointArrayList = PointArrayList()): Po
     beziers.fastForEach { bezier ->
         if (bezier.inflections().isNotEmpty()) return null
         val points = bezier.points
-        points.fastForEachPoint { p ->
+        points.fastForEach { p ->
             if (out.isEmpty() || !out.last.isAlmostEquals(p, epsilon)) {
                 out.add(p)
             }

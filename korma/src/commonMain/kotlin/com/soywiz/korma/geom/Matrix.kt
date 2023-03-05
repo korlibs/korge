@@ -306,29 +306,49 @@ sealed interface IMatrix {
 
     // Transform points
     fun transform(p: Point): Point = Point(transformX(p.x, p.y), transformY(p.x, p.y))
+    @Deprecated("")
     fun transform(p: IPoint, out: MPoint = MPoint()): MPoint = transform(p.x, p.y, out)
+    @Deprecated("")
     fun transform(px: Double, py: Double, out: MPoint = MPoint()): MPoint = out.setTo(transformX(px, py), transformY(px, py))
+    @Deprecated("")
     fun transform(px: Float, py: Float, out: MPoint = MPoint()): MPoint = out.setTo(transformX(px, py), transformY(px, py))
+    @Deprecated("")
     fun transform(px: Int, py: Int, out: MPoint = MPoint()): MPoint = out.setTo(transformX(px, py), transformY(px, py))
 
+    @Deprecated("")
     fun transformX(p: IPoint): Double = transformX(p.x, p.y)
+    @Deprecated("")
     fun transformX(px: Double, py: Double): Double = this.a * px + this.c * py + this.tx
+    @Deprecated("")
     fun transformX(px: Float, py: Float): Double = this.a * px + this.c * py + this.tx
+    @Deprecated("")
     fun transformX(px: Int, py: Int): Double = this.a * px + this.c * py + this.tx
 
+    @Deprecated("")
     fun transformY(p: IPoint): Double = transformY(p.x, p.y)
+    @Deprecated("")
     fun transformY(px: Double, py: Double): Double = this.d * py + this.b * px + this.ty
+    @Deprecated("")
     fun transformY(px: Float, py: Float): Double = this.d * py + this.b * px + this.ty
+    @Deprecated("")
     fun transformY(px: Int, py: Int): Double = this.d * py + this.b * px + this.ty
 
+    @Deprecated("")
     fun transformXf(p: IPoint): Float = transformX(p.x, p.y).toFloat()
+    @Deprecated("")
     fun transformXf(px: Double, py: Double): Float = transformX(px, py).toFloat()
+    @Deprecated("")
     fun transformXf(px: Float, py: Float): Float = transformX(px.toDouble(), py.toDouble()).toFloat()
+    @Deprecated("")
     fun transformXf(px: Int, py: Int): Float = transformX(px.toDouble(), py.toDouble()).toFloat()
 
+    @Deprecated("")
     fun transformYf(p: IPoint): Float = transformY(p.x, p.y).toFloat()
+    @Deprecated("")
     fun transformYf(px: Double, py: Double): Float = transformY(px, py).toFloat()
+    @Deprecated("")
     fun transformYf(px: Float, py: Float): Float = transformY(px.toDouble(), py.toDouble()).toFloat()
+    @Deprecated("")
     fun transformYf(px: Int, py: Int): Float = transformY(px.toDouble(), py.toDouble()).toFloat()
 }
 
