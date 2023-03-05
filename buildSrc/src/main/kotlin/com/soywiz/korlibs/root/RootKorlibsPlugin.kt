@@ -1267,6 +1267,7 @@ object RootKorlibsPlugin {
                 for (target in project.gkotlin.targets) {
                     //val isJvm = target.isJvm
                     for (compilation in target.compilations) {
+                        /*
                         val processedResourcesFolder = File(project.buildDir, "korgeProcessedResources/${target.name}/${compilation.name}")
                         compilation.defaultSourceSet.resources.srcDir(processedResourcesFolder)
                         val korgeProcessedResources = createThis<Task>(getKorgeProcessResourcesTaskName(target, compilation)) {
@@ -1316,7 +1317,7 @@ object RootKorlibsPlugin {
                             getByName("runJvm").dependsOn(korgeProcessedResources)
 
                         }
-                        /*
+                        */
                         val isJvm = compilation.compileKotlinTask.name == "compileKotlinJvm"
                         val processedResourcesFolder = File(project.buildDir, "korgeProcessedResources/${target.name}/${compilation.name}")
                         compilation.defaultSourceSet.resources.srcDir(processedResourcesFolder)
@@ -1325,7 +1326,7 @@ object RootKorlibsPlugin {
                             compilation.allKotlinSourceSets.flatMap { it.resources.srcDirs }
                                 .filter { it != processedResourcesFolder }.map { it.toString() }
 
-                        println("runJvm.korgeClassPath=${runJvm.korgeClassPath.toList()}")
+                        //println("runJvm.korgeClassPath=${runJvm.korgeClassPath.toList()}")
                         val korgeProcessedResources = createThis<KorgeProcessedResourcesTask>(
                             getKorgeProcessResourcesTaskName(target, compilation),
                             KorgeProcessedResourcesTaskConfig(
@@ -1359,7 +1360,6 @@ object RootKorlibsPlugin {
                         }
                         //println(compilation.output.allOutputs.toList())
                         //println("$target - $compilation")
-                        */
                     }
                 }
             }
