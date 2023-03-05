@@ -48,7 +48,7 @@ class MainUIImageTester : Scene() {
                 val group = UIButtonToggleableGroup()
                 for (y in 0 until 3) {
                     for (x in 0 until 3) {
-                        uiButton(text = "X") {
+                        uiButton("X") {
                             val anchor = Anchor(x * 0.5, y * 0.5)
                             tooltip(tooltips, anchor.toNamedString())
                             this.group(group, pressed = x == 1 && y == 1)
@@ -61,22 +61,22 @@ class MainUIImageTester : Scene() {
                 xy(200.0, 0.0)
                 uiHorizontalStack {
                     val group = UIButtonToggleableGroup()
-                    uiButton(text = "COVER").group(group, pressed = true).onClick { image.scaleMode = ScaleMode.COVER }
-                    uiButton(text = "FIT").group(group).onClick { image.scaleMode = ScaleMode.FIT }
-                    uiButton(text = "EXACT").group(group).onClick { image.scaleMode = ScaleMode.EXACT }
-                    uiButton(text = "NO_SCALE").group(group).onClick { image.scaleMode = ScaleMode.NO_SCALE }
+                    uiButton(label = "COVER").group(group, pressed = true).onClick { image.scaleMode = ScaleMode.COVER }
+                    uiButton(label = "FIT").group(group).onClick { image.scaleMode = ScaleMode.FIT }
+                    uiButton(label = "EXACT").group(group).onClick { image.scaleMode = ScaleMode.EXACT }
+                    uiButton(label = "NO_SCALE").group(group).onClick { image.scaleMode = ScaleMode.NO_SCALE }
                 }
                 uiHorizontalStack {
                     val group = UIButtonToggleableGroup()
-                    uiButton(text = "SQUARE").group(group).onClick { image.size(300, 300) }
-                    uiButton(text = "HRECT").group(group, pressed = true).onClick { image.size(300, 170) }
-                    uiButton(text = "VRECT").group(group).onClick { image.size(170, 300) }
+                    uiButton(label = "SQUARE").group(group).onClick { image.size(300, 300) }
+                    uiButton(label = "HRECT").group(group, pressed = true).onClick { image.size(300, 170) }
+                    uiButton(label = "VRECT").group(group).onClick { image.size(170, 300) }
                 }
                 uiHorizontalStack {
                     val group = UIButtonToggleableGroup()
-                    uiButton(text = "korim.png").group(group, pressed = true).onClick { image.bitmap = korimPng }
-                    uiButton(text = "bunnys.png").group(group).onClick { image.bitmap = bunnysPng }
-                    uiButton(text = "vampire.ase").group(group).onClick { image.bitmap = vampireAse }
+                    uiButton(label = "korim.png").group(group, pressed = true).onClick { image.bitmap = korimPng }
+                    uiButton(label = "bunnys.png").group(group).onClick { image.bitmap = bunnysPng }
+                    uiButton(label = "vampire.ase").group(group).onClick { image.bitmap = vampireAse }
                 }
             }
         }

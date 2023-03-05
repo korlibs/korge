@@ -118,7 +118,7 @@ class NinePatchTest : ViewsForTesting() {
         val ninePatch = container.ninePatch(NinePatchBmpSlice(Bitmap32(32, 32, premultiplied = true)), 16.0, 16.0)
         ninePatch.render(ctx)
         assertEquals(1, ninePatch.renderedVersion)
-        container.alpha = 0.5
+        container.alphaF = 0.5f
         ninePatch.render(ctx)
         assertEquals(2, ninePatch.renderedVersion)
         ninePatch.render(ctx)

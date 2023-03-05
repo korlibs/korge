@@ -18,7 +18,7 @@ inline fun Container.uiMaterialLayer(
 ): UIMaterialLayer = UIMaterialLayer(width, height).addTo(this).apply(block)
 
 class MaterialLayerHighlights(val view: View) {
-    class Highlight(var pos: IPoint, var radiusRatio: Double, var alpha: Double)
+    class Highlight(var pos: Point, var radiusRatio: Double, var alpha: Double)
 
     @PublishedApi internal val highlights = fastArrayListOf<Highlight>()
     private val highlightsActive = fastArrayListOf<Highlight>()
@@ -29,7 +29,7 @@ class MaterialLayerHighlights(val view: View) {
         highlights.fastForEach(block)
     }
 
-    fun addHighlight(pos: IPoint) {
+    fun addHighlight(pos: Point) {
         removeHighlights()
         val highlight = Highlight(pos, 0.0, 1.0)
         highlights += highlight
@@ -56,7 +56,7 @@ class UIMaterialLayer(
     @ViewProperty
     var bgColor: RGBA = Colors.WHITE; set(value) { field = value; invalidateRender() }
     @ViewProperty
-    var radius: IRectCorners = IRectCorners.EMPTY; set(value) { field = value; invalidateRender() }
+    var radius: RectCorners = RectCorners.EMPTY; set(value) { field = value; invalidateRender() }
 
     @ViewProperty
     var borderColor: RGBA = Colors.BLACK; set(value) { field = value; invalidateRender() }
@@ -72,7 +72,7 @@ class UIMaterialLayer(
     @ViewProperty
     var shadowRadius: Double = 10.0; set(value) { field = value; invalidateRender() }
     @ViewProperty
-    var shadowOffset: IPoint = IPoint.ZERO; set(value) { field = value; invalidateRender() }
+    var shadowOffset: Point = Point.ZERO; set(value) { field = value; invalidateRender() }
 
     private val highlights = MaterialLayerHighlights(this)
 
@@ -117,10 +117,10 @@ class UIMaterialLayer(
 
     @ViewProperty
     private fun addHighlightAction() {
-        addHighlight(MPoint(0.5, 0.5))
+        addHighlight(Point(0.5, 0.5))
     }
 
-    fun addHighlight(pos: IPoint) {
+    fun addHighlight(pos: Point) {
         highlights.addHighlight(pos)
     }
 

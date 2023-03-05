@@ -31,25 +31,15 @@ data class AtlasInfo(
         )
     )
 
-    data class Rect(val x: Int, val y: Int, val w: Int, val h: Int) {
-        val rect get() = MRectangle(x, y, w, h)
-
-        fun toRectangleInt() : MRectangleInt = MRectangleInt(x, y, w, h)
-        fun toMap() = mapOf("x" to x, "y" to y, "w" to w, "h" to h)
-    }
-
-    data class Size(val width: Int, val height: Int) {
-        val size get() = com.soywiz.korma.geom.MSize(width, height)
-
-        fun toMap() = mapOf("w" to width, "h" to height)
-    }
+    fun RectangleInt.toMap() = mapOf("x" to x, "y" to y, "w" to width, "h" to height)
+    fun SizeInt.toMap() = mapOf("w" to width, "h" to height)
 
     data class Meta(
         val app: String = "app",
         val format: String = "format",
         val image: String = "image",
         val scale: Double = 1.0,
-        val size: Size = Size(1, 1),
+        val size: SizeInt = SizeInt(1, 1),
         val version: String = VERSION,
         val frameTags: List<FrameTag> = listOf(),
         val layers: List<Layer> = listOf(),
@@ -81,12 +71,12 @@ data class AtlasInfo(
 
     data class Key(
         val frame: Int = 0,
-        val bounds: Rect
+        val bounds: RectangleInt
     )
 
     data class Page(
         val fileName: String,
-        var size: Size,
+        var size: SizeInt,
         var format: String,
         var filterMin: Boolean,
         var filterMag: Boolean,
@@ -97,28 +87,28 @@ data class AtlasInfo(
 
     data class Region(
         val name: String,
-        val frame: Rect,
-        val virtFrame: Rect? = null,
+        val frame: RectangleInt,
+        val virtFrame: RectangleInt? = null,
         val imageOrientation: ImageOrientation = ImageOrientation.NORMAL,
     ) {
         @Deprecated("Use primary constructor")
         constructor(
             name: String,
-            frame: Rect,
+            frame: RectangleInt,
             rotated: Boolean,
-            sourceSize: Size,
-            spriteSourceSize: Rect,
+            sourceSize: SizeInt,
+            spriteSourceSize: RectangleInt,
             trimmed: Boolean,
-            orig: Size = Size(0, 0),
+            orig: SizeInt = SizeInt(0, 0),
             offset: MPoint = MPoint(),
         ) : this(
             name = name,
             frame = frame,
             virtFrame = when {
                 offset.x != 0.0 || offset.y != 0.0 || orig.width != 0 || orig.height != 0 ->
-                    Rect(offset.x.toInt(), offset.y.toInt(), orig.width, orig.height)
-                spriteSourceSize.x != 0 || spriteSourceSize.y != 0 || sourceSize.width != frame.h || sourceSize.height != frame.w ->
-                    Rect(spriteSourceSize.x, spriteSourceSize.y, sourceSize.width, sourceSize.height)
+                    RectangleInt(offset.x.toInt(), offset.y.toInt(), orig.width, orig.height)
+                spriteSourceSize.x != 0 || spriteSourceSize.y != 0 || sourceSize.width != frame.height || sourceSize.height != frame.width ->
+                    RectangleInt(spriteSourceSize.x, spriteSourceSize.y, sourceSize.width, sourceSize.height)
                 else -> null
             },
             imageOrientation = if (rotated) ImageOrientation.ROTATE_90 else ImageOrientation.ROTATE_0
@@ -128,17 +118,17 @@ data class AtlasInfo(
         val rotated: Boolean get() = imageOrientation.isRotatedDeg90CwOrCcw
 
         @Deprecated("Use virtFrame", ReplaceWith("Size(virtFrame?.w ?: frame.w, virtFrame?.h ?: frame.h)"))
-        val sourceSize: Size get() = Size(virtFrame?.w ?: frame.w, virtFrame?.h ?: frame.h)
+        val sourceSize: SizeInt get() = SizeInt(virtFrame?.width ?: frame.width, virtFrame?.height ?: frame.height)
 
         @Deprecated("Use virtFrame", ReplaceWith("if (virtFrame == null) frame else Rect(virtFrame.x, virtFrame.y, frame.w, frame.h)"))
-        val spriteSourceSize: Rect get() = if (virtFrame == null) frame else Rect(virtFrame.x, virtFrame.y, frame.w, frame.h)
+        val spriteSourceSize: RectangleInt get() = if (virtFrame == null) frame else RectangleInt(virtFrame.x, virtFrame.y, frame.width, frame.height)
 
         @Deprecated("Use virtFrame", ReplaceWith("virtFrame != null"))
         val trimmed: Boolean get() = virtFrame != null
 
         @Deprecated("Use virtFrame", ReplaceWith("Size(virtFrame?.w ?: frame.w, virtFrame?.h ?: frame.h)"))
         @Suppress("DEPRECATION")
-        val orig: Size get() = sourceSize
+        val orig: SizeInt get() = sourceSize
 
         @Deprecated("Use virtFrame", ReplaceWith("Point(virtFrame?.x ?: 0, virtFrame?.y ?: 0)"))
         val offset: MPoint get() = MPoint(virtFrame?.x ?: 0, virtFrame?.y ?: 0)
@@ -149,18 +139,18 @@ data class AtlasInfo(
 
         // Used by Spine
         @Suppress("unused")
-        val srcWidth: Int = if (imageOrientation.isRotatedDeg90CwOrCcw) frame.h else frame.w
+        val srcWidth: Int = if (imageOrientation.isRotatedDeg90CwOrCcw) frame.height else frame.width
 
         // Used by Spine
         @Suppress("unused")
-        val srcHeight: Int = if (imageOrientation.isRotatedDeg90CwOrCcw) frame.w else frame.h
+        val srcHeight: Int = if (imageOrientation.isRotatedDeg90CwOrCcw) frame.width else frame.height
     }
 
     val app: String get() = meta.app
     val format: String get() = meta.format
     val image: String get() = meta.image
     val scale: Double get() = meta.scale
-    val size: Size get() = meta.size
+    val size: SizeInt get() = meta.size
     val version: String get() = meta.version
 
     fun toJsonString(): String = Json.stringify(toMap(), pretty = true)
@@ -186,8 +176,8 @@ data class AtlasInfo(
     )
 
     companion object {
-        private fun Dyn.toRect(): Rect = Rect(this["x"].int, this["y"].int, this["w"].int, this["h"].int)
-        private fun Dyn.toSize(): Size = Size(this["w"].int, this["h"].int)
+        private fun Dyn.toRect(): RectangleInt = RectangleInt(this["x"].int, this["y"].int, this["w"].int, this["h"].int)
+        private fun Dyn.toSize(): SizeInt = SizeInt(this["w"].int, this["h"].int)
         private fun createEntry(name: String, it: Dyn): Region {
             val rotated = it["rotated"].bool
             val sourceSize = it["sourceSize"].toSize()
@@ -198,8 +188,8 @@ data class AtlasInfo(
             val frame = it["frame"].toRect()
 
             return Region(name = name,
-                frame = if (!rotated) frame else Rect(frame.x, frame.y, frame.h, frame.w),
-                virtFrame = Rect(spriteSourceSize.x, spriteSourceSize.y, sW, sH),
+                frame = if (!rotated) frame else RectangleInt(frame.x, frame.y, frame.height, frame.width),
+                virtFrame = RectangleInt(spriteSourceSize.x, spriteSourceSize.y, sW, sH),
                 imageOrientation = if (rotated) ImageOrientation.ROTATE_270 else ImageOrientation.ROTATE_0)
         }
 
@@ -283,11 +273,11 @@ data class AtlasInfo(
         fun loadXml(content: String): AtlasInfo {
             val xml = Xml(content)
             val imagePath = xml.str("imagePath")
-            val size = Size(xml.int("width", -1), xml.int("height", -1))
+            val size = SizeInt(xml.int("width", -1), xml.int("height", -1))
 
             return AtlasInfo(
                 (xml.children("SubTexture") + xml.children("sprite")).map {
-                    val virtFrame = Rect(
+                    val virtFrame = RectangleInt(
                         it.int("frameX", 0) * -1,
                         it.int("frameY", 0) * -1,
                         it.int("frameWidth", 0),
@@ -295,13 +285,13 @@ data class AtlasInfo(
                     )
                     Region(
                         name = it.strNull("name") ?: it.str("n"),
-                        frame = Rect(
+                        frame = RectangleInt(
                             it.int("x"),
                             it.int("y"),
                             it.intNull("width") ?: it.int("w"),
                             it.intNull("height") ?: it.int("h")
                         ),
-                        virtFrame = if (virtFrame.w != 0 || virtFrame.h != 0) virtFrame else null,
+                        virtFrame = if (virtFrame.width != 0 || virtFrame.height != 0) virtFrame else null,
                         imageOrientation = if (it.boolean("rotated", false)) ImageOrientation.ROTATE_270 else ImageOrientation.ROTATE_0
                     )
                 }, Meta(
@@ -324,7 +314,7 @@ data class AtlasInfo(
                 return MPoint(list.first().trim().toInt(), list.last().trim().toInt())
             }
 
-            fun String.size(): Size = point().let { Size(it.x.toInt(), it.y.toInt()) }
+            fun String.size(): SizeInt = point().let { SizeInt(it.x.toInt(), it.y.toInt()) }
 
             fun String.keyValue(): Pair<String, String> {
                 val list = this.split(':', limit = 2)
@@ -353,7 +343,7 @@ data class AtlasInfo(
                     if (r.eof) break
 
                     val fileName = r.read().trim()
-                    var size = Size(0, 0)
+                    var size = SizeInt(0, 0)
                     var format = "rgba8888"
                     var filterMin = false
                     var filterMag = false
@@ -381,8 +371,8 @@ data class AtlasInfo(
                     val name = line
                     var rotate = false
                     var xy = MPoint()
-                    var size = Size(0, 0)
-                    var orig = Size(0, 0)
+                    var size = SizeInt(0, 0)
+                    var orig = SizeInt(0, 0)
                     var offset = MPoint()
                     while (r.hasMore && r.peek().contains(':')) {
                         val (key, value) = r.read().trim().keyValue()
@@ -406,8 +396,8 @@ data class AtlasInfo(
 
                     currentEntryList.add(Region(
                         name = name,
-                        frame = Rect(xy.x.toInt(), xy.y.toInt(), w, h),
-                        virtFrame = Rect(offset.x.toInt(), orig.height - size.height - offset.y.toInt(), oW, oH), // In Spine atlas format offset is defined from left and bottom
+                        frame = RectangleInt(xy.x.toInt(), xy.y.toInt(), w, h),
+                        virtFrame = RectangleInt(offset.x.toInt(), orig.height - size.height - offset.y.toInt(), oW, oH), // In Spine atlas format offset is defined from left and bottom
                         imageOrientation = orientation
                     ))
                 }

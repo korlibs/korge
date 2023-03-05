@@ -4,6 +4,7 @@ import com.soywiz.korge.ui.*
 import com.soywiz.korge.view.property.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.paint.*
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
 
 /**
@@ -12,13 +13,13 @@ import com.soywiz.korma.geom.vector.*
  * The [callback] allows to configure the [Circle] instance.
  */
 inline fun Container.ellipse(
-        radiusX: Double = 16.0,
-        radiusY: Double = 16.0,
-        fill: Paint = Colors.WHITE,
-        stroke: Paint = Colors.WHITE,
-        strokeThickness: Double = 0.0,
-        autoScaling: Boolean = true,
-        callback: @ViewDslMarker Ellipse.() -> Unit = {}
+    radiusX: Double = 16.0,
+    radiusY: Double = 16.0,
+    fill: Paint = Colors.WHITE,
+    stroke: Paint = Colors.WHITE,
+    strokeThickness: Double = 0.0,
+    autoScaling: Boolean = true,
+    callback: @ViewDslMarker Ellipse.() -> Unit = {}
 ): Ellipse = Ellipse(radiusX, radiusY, fill, stroke, strokeThickness, autoScaling).addTo(this, callback)
 
 /**
@@ -70,7 +71,7 @@ open class Ellipse(
     private fun updateGraphics() {
         updatePath {
             clear()
-            ellipse(0.0, 0.0, this@Ellipse.width, this@Ellipse.height)
+            ellipse(Point(0, 0), Size(this@Ellipse.width, this@Ellipse.height))
         }
     }
 }

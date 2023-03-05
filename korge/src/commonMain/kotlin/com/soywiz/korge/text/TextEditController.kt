@@ -9,7 +9,6 @@ import com.soywiz.korge.component.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.time.*
 import com.soywiz.korge.ui.*
-import com.soywiz.korge.util.*
 import com.soywiz.korge.view.*
 import com.soywiz.korge.view.debug.*
 import com.soywiz.korgw.*
@@ -216,7 +215,7 @@ class TextEditController(
     }
     */
 
-    fun getIndexAtPos(pos: MPoint): Int {
+    fun getIndexAtPos(pos: Point): Int {
         val glyphPositions = textView.getGlyphMetrics().glyphs
 
         var index = 0
@@ -251,8 +250,8 @@ class TextEditController(
             val caret = getCaretAtIndex(range.first)
             val sign = if (last) -1.0 else +1.0
             val normal = caret.normal(0.0) * (2.0 * sign)
-            val p0 = caret.points.firstPoint()
-            val p1 = caret.points.lastPoint()
+            val p0 = caret.points.first
+            val p1 = caret.points.last
             array.add(p0)
             array.add(p1)
             array.add(p0 + normal)
@@ -260,10 +259,8 @@ class TextEditController(
         } else {
             for (n in range.first..range.last + 1) {
                 val caret = getCaretAtIndex(n)
-                val p0 = caret.points.firstPoint()
-                val p1 = caret.points.lastPoint()
-                array.add(p0)
-                array.add(p1)
+                array.add(caret.points.first)
+                array.add(caret.points.last)
                 //println("caret[$n]=$caret")
             }
         }

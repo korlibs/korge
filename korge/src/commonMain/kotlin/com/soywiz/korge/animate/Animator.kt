@@ -334,14 +334,14 @@ open class Animator @PublishedApi internal constructor(
                 //println("dt=$dt, currentTime=$currentTime, totalTime=$totalTime, ratio=$ratio, it.startTime=${it.startTime}, it.endTime(totalTime)=${it.endTime(totalTime)}")
 
                 if (ratio >= 0.0) {
-                    it.set(easing.invoke(ratio.clamp01()))
+                    it.set(easing.invoke(ratio.clamp01()).toRatio())
                 }
             }
             return currentTime - totalTime
         }
 
         override fun complete() {
-            computedVs.fastForEach { it.set(1.0) }
+            computedVs.fastForEach { it.set(Ratio.ONE) }
         }
     }
 
@@ -413,15 +413,15 @@ fun Animator.moveToWithSpeed(view: View, x: Double, y: Double, speed: Double = t
 fun Animator.moveToWithSpeed(view: View, x: Float, y: Float, speed: Number = this.defaultSpeed, easing: Easing = this.defaultEasing) = moveToWithSpeed(view, x.toDouble(), y.toDouble(), speed.toDouble(), easing)
 fun Animator.moveToWithSpeed(view: View, x: Int, y: Int, speed: Number = this.defaultSpeed, easing: Easing = this.defaultEasing) = moveToWithSpeed(view, x.toDouble(), y.toDouble(), speed.toDouble(), easing)
 
-fun Animator.moveInPath(view: View, path: VectorPath, includeLastPoint: Boolean = true, time: TimeSpan = this.defaultTime, lazyTime: (() -> TimeSpan)? = null, easing: Easing = this.defaultEasing) = __tween({ view::ipos.get(path, includeLastPoint = includeLastPoint) }, time = time, lazyTime = lazyTime, easing = easing, name = "moveInPath")
-fun Animator.moveInPath(view: View, points: IPointArrayList, time: TimeSpan = this.defaultTime, lazyTime: (() -> TimeSpan)? = null, easing: Easing = this.defaultEasing) = __tween({ view::ipos[points] }, time = time, lazyTime = lazyTime, easing = easing, name = "moveInPath")
+fun Animator.moveInPath(view: View, path: VectorPath, includeLastPoint: Boolean = true, time: TimeSpan = this.defaultTime, lazyTime: (() -> TimeSpan)? = null, easing: Easing = this.defaultEasing) = __tween({ view::pos.get(path, includeLastPoint = includeLastPoint) }, time = time, lazyTime = lazyTime, easing = easing, name = "moveInPath")
+fun Animator.moveInPath(view: View, points: IPointArrayList, time: TimeSpan = this.defaultTime, lazyTime: (() -> TimeSpan)? = null, easing: Easing = this.defaultEasing) = __tween({ view::pos[points] }, time = time, lazyTime = lazyTime, easing = easing, name = "moveInPath")
 
-fun Animator.moveInPathWithSpeed(view: View, path: VectorPath, includeLastPoint: Boolean = true, speed: () -> Number = { this.defaultSpeed }, easing: Easing = this.defaultEasing) = __tween({ view::ipos.get(path, includeLastPoint = includeLastPoint) }, lazyTime = { (path.length / speed().toDouble()).seconds }, easing = easing, name = "moveInPathWithSpeed")
-fun Animator.moveInPathWithSpeed(view: View, points: IPointArrayList, speed: () -> Number = { this.defaultSpeed }, easing: Easing = this.defaultEasing) = __tween({ view::ipos[points] }, lazyTime = { (points.length / speed().toDouble()).seconds }, easing = easing, name = "moveInPathWithSpeed")
+fun Animator.moveInPathWithSpeed(view: View, path: VectorPath, includeLastPoint: Boolean = true, speed: () -> Number = { this.defaultSpeed }, easing: Easing = this.defaultEasing) = __tween({ view::pos.get(path, includeLastPoint = includeLastPoint) }, lazyTime = { (path.length / speed().toDouble()).seconds }, easing = easing, name = "moveInPathWithSpeed")
+fun Animator.moveInPathWithSpeed(view: View, points: IPointArrayList, speed: () -> Number = { this.defaultSpeed }, easing: Easing = this.defaultEasing) = __tween({ view::pos[points] }, lazyTime = { (points.length / speed().toDouble()).seconds }, easing = easing, name = "moveInPathWithSpeed")
 
-fun Animator.alpha(view: View, alpha: Double, time: TimeSpan = this.defaultTime, easing: Easing = this.defaultEasing) = __tween(view::alpha[alpha], time = time, easing = easing, name = "alpha")
-fun Animator.alpha(view: View, alpha: Float, time: TimeSpan = this.defaultTime, easing: Easing = this.defaultEasing) = alpha(view, alpha.toDouble(), time, easing)
-fun Animator.alpha(view: View, alpha: Int, time: TimeSpan = this.defaultTime, easing: Easing = this.defaultEasing) = alpha(view, alpha.toDouble(), time, easing)
+fun Animator.alpha(view: View, alpha: Float, time: TimeSpan = this.defaultTime, easing: Easing = this.defaultEasing) = __tween(view::alphaF[alpha], time = time, easing = easing, name = "alpha")
+fun Animator.alpha(view: View, alpha: Double, time: TimeSpan = this.defaultTime, easing: Easing = this.defaultEasing) = alpha(view, alpha.toFloat(), time, easing)
+fun Animator.alpha(view: View, alpha: Int, time: TimeSpan = this.defaultTime, easing: Easing = this.defaultEasing) = alpha(view, alpha.toFloat(), time, easing)
 
 fun Animator.rotateTo(view: View, angle: Angle, time: TimeSpan = this.defaultTime, easing: Easing = this.defaultEasing) = __tween(view::rotation[angle], time = time, easing = easing, name = "rotateTo")
 fun Animator.rotateTo(view: View, rotation: () -> Angle, time: TimeSpan = this.defaultTime, lazyTime: (() -> TimeSpan)? = null, easing: Easing = this.defaultEasing) = __tween({ view::rotation[rotation()] }, time = time, lazyTime = lazyTime, easing = easing, name = "rotateTo")

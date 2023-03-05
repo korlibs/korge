@@ -5,11 +5,12 @@ import com.soywiz.korge.view.*
 import com.soywiz.korim.font.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.std.*
+import com.soywiz.korma.geom.*
 import kotlin.test.*
 
 class BitmapFontTest {
 	@Test
-	fun simple() = korgeScreenshotTest(64, 20) {
+	fun simple() = korgeScreenshotTest(SizeInt(64, 20)) {
 		val font = resourcesVfs["font/font.fnt"].readBitmapFont()
 		assertEquals(81, font.glyphs.size)
 		val glyph = font[64]

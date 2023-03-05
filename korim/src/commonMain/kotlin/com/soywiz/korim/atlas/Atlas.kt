@@ -14,8 +14,7 @@ class Atlas(val textures: Map<String, BmpSlice>, val info: AtlasInfo = AtlasInfo
     inner class Entry(val info: AtlasInfo.Region, val page: AtlasInfo.Page) {
         val texture = textures[page.fileName]
             ?: error("Can't find '${page.fileName}' in ${textures.keys}")
-        val slice = texture.slice(info.frame.toRectangleInt(), info.name, info.imageOrientation)
-            .virtFrame(info.virtFrame?.toRectangleInt())
+        val slice = texture.slice(info.frame, info.name, orientation = info.imageOrientation).virtFrame(info.virtFrame)
         val name get() = info.name
         // @TODO: Use name instead
         val filename get() = info.name

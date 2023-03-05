@@ -290,32 +290,32 @@ object SegmentIntToTrapezoidIntList {
 
 fun VectorPath.toSegments(scale: Int = 1): FSegmentsInt {
     val segments = FSegmentsInt()
-    val p = MPoint()
-    fun emit(x0: Double, y0: Double, x1: Double, y1: Double) {
+    fun emit(p0: Point, p1: Point) {
         //println("EMIT")
-        segments.add((x0 * scale).toIntRound(), (y0 * scale).toIntRound(), (x1 * scale).toIntRound(), (y1 * scale).toIntRound())
+        segments.add(
+            (p0.xD * scale).toIntRound(), (p0.yD * scale).toIntRound(),
+            (p1.xD * scale).toIntRound(), (p1.yD * scale).toIntRound()
+        )
     }
     fun emit(bezier: Bezier) {
         val len = bezier.length.toIntRound().coerceIn(2, 20)
-        var oldX = 0.0
-        var oldY = 0.0
+        var oldPos = Point()
         for (n in 0 .. len) {
             val ratio = n.toDouble() / len
-            bezier.calc(ratio, p)
+            val p = bezier.calc(ratio)
             if (n > 0) {
-                emit(oldX, oldY, p.x, p.y)
+                emit(oldPos, p)
             }
-            oldX = p.x
-            oldY = p.y
+            oldPos = p
         }
     }
 
     //getAllLines().fastForEach { emit(it.x0, it.y0, it.x1, it.y1) }
 
     visitEdges(
-        line = { x0, y0, x1, y1 -> emit(x0, y0, x1, y1) },
-        quad = { x0, y0, x1, y1, x2, y2 -> emit(Bezier(x0, y0, x1, y1, x2, y2)) },
-        cubic = { x0, y0, x1, y1, x2, y2, x3, y3 -> emit(Bezier(x0, y0, x1, y1, x2, y2, x3, y3)) },
+        line = { p0, p1 -> emit(p0, p1) },
+        quad = { p0, p1, p2 -> emit(Bezier(p0, p1, p2)) },
+        cubic = { p0, p1, p2, p3 -> emit(Bezier(p0, p1, p2, p3)) },
         optimizeClose = false
     )
     return segments

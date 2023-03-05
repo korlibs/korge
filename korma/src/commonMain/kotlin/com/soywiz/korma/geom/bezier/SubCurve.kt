@@ -1,12 +1,8 @@
 package com.soywiz.korma.geom.bezier
 
-import com.soywiz.korma.geom.IPointArrayList
-import com.soywiz.korma.geom.IRectangle
-import com.soywiz.korma.geom.MPoint
-import com.soywiz.korma.geom.PointArrayList
-import com.soywiz.korma.geom.roundDecimalPlaces
+import com.soywiz.kmem.*
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.internal.niceStr
-import com.soywiz.korma.math.convertRange
 import com.soywiz.korma.math.roundDecimalPlaces
 
 data class CurveSplit(
@@ -44,7 +40,7 @@ class SubBezier(val curve: Bezier, val t1: Double, val t2: Double, val parent: B
         }
     }
 
-    fun calc(t: Double, target: MPoint = MPoint()): MPoint = curve.calc(t.convertRange(t1, t2, 0.0, 1.0), target)
+    fun calc(t: Double): Point = curve.calc(t.convertRange(t1, t2, 0.0, 1.0))
 
     private fun _split(t: Double, hull: IPointArrayList?, left: Boolean): SubBezier {
         val rt = t.convertRange(0.0, 1.0, t1, t2)

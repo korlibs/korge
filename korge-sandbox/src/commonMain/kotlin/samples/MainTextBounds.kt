@@ -27,6 +27,7 @@ import com.soywiz.korim.text.TextAlignment
 import com.soywiz.korim.text.VerticalAlign
 import com.soywiz.korim.text.aroundPath
 import com.soywiz.korio.file.std.resourcesVfs
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.shape.buildVectorPath
 import com.soywiz.korma.geom.vector.circle
 import com.soywiz.korma.geom.vector.rect
@@ -54,7 +55,7 @@ class MainTextBounds : Scene() {
             .let {
                 when (wrap) {
                     Wrap.NO -> it
-                    Wrap.CIRCLE -> it.aroundPath(buildVectorPath { this.circle(0.0, 0.0, 256.0) })
+                    Wrap.CIRCLE -> it.aroundPath(buildVectorPath { this.circle(Point(0, 0), 256f) })
                 }
             }
 

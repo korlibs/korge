@@ -11,6 +11,7 @@ import com.soywiz.korim.paint.*
 import com.soywiz.korim.text.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.std.*
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
 import kotlin.properties.*
 
@@ -41,7 +42,7 @@ class MainGraphicsText : Scene() {
                 text("Hello World!", font = this@MainGraphicsText.vfont, textSize = 128.0, align = this@MainGraphicsText.align)
             }
             fill(Colors.GREEN) {
-                circle(0, 0, 10)
+                circle(Point(0, 0), 10f)
             }
             //drawText("hello", font = DefaultTtfFont, x = 50.0)
         }

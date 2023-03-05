@@ -15,9 +15,6 @@ class SystemFont constructor(override val name: String, val coroutineContext: Co
     override fun toString(): String = "SystemFont(name=$name)"
 
     companion object {
-        @Deprecated("This doesn't work on Android")
-        operator fun invoke(name: String): SystemFont = SystemFont(name, EmptyCoroutineContext)
-
         suspend fun listFontNames() = nativeSystemFontProvider().listFontNames()
         suspend fun listFontNamesWithFiles() = nativeSystemFontProvider().listFontNamesWithFiles()
         suspend fun getDefaultFont() = SystemFont(nativeSystemFontProvider().getDefaultFontName())

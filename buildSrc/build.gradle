@@ -77,6 +77,7 @@ object BuildVersions {
     const val COROUTINES = "${libs.versions.kotlinx.coroutines.get()}"
     const val ANDROID_BUILD = "${isJava8or9 ? libs.versions.android.build.gradle.java8.get() : libs.versions.android.build.gradle.java11.get()}"
     const val KOTLIN_SERIALIZATION = "${libs.versions.kotlinx.serialization.get()}"
+    const val KORLIBS = "$projectVersion"
     const val KRYPTO = "$projectVersion"
     const val KLOCK = "$projectVersion"
     const val KDS = "$projectVersion"
@@ -86,6 +87,7 @@ object BuildVersions {
     const val KORIM = "$projectVersion"
     const val KORAU = "$projectVersion"
     const val KORGW = "$projectVersion"
+    const val KORTE = "$projectVersion"
     const val KORGE = "$projectVersion"
 
     val ALL_PROPERTIES by lazy { listOf(::GIT, ::KRYPTO, ::KLOCK, ::KDS, ::KMEM, ::KORMA, ::KORIO, ::KORIM, ::KORAU, ::KORGW, ::KORGE, ::KOTLIN, ::JNA, ::COROUTINES, ::ANDROID_BUILD, ::KOTLIN_SERIALIZATION) }

@@ -7,6 +7,7 @@ import com.soywiz.korev.*
 import com.soywiz.korge.animate.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.render.*
+import com.soywiz.korge.style.*
 import com.soywiz.korge.tween.*
 import com.soywiz.korge.view.*
 import com.soywiz.korge.view.property.*
@@ -29,7 +30,8 @@ open class UICheckBox(
     height: Double = UI_DEFAULT_HEIGHT,
     checked: Boolean = false,
     text: String = "CheckBox",
-) : UIBaseCheckBox<UICheckBox>(width, height, checked, text, UIBaseCheckBoxSkin.Kind.CHECKBOX) {
+) : UIBaseCheckBox<UICheckBox>(width, height, checked, text, UICheckBox) {
+    companion object : Kind()
 }
 
 open class UIBaseCheckBox<T : UIBaseCheckBox<T>>(
@@ -38,8 +40,10 @@ open class UIBaseCheckBox<T : UIBaseCheckBox<T>>(
     checked: Boolean = false,
     @ViewProperty
     var text: String = "CheckBox",
-    var skinKind: UIBaseCheckBoxSkin.Kind,
+    var kind: Kind,
 ) : UIFocusableView(width, height), ViewLeaf {
+    open class Kind
+
     val thisAsT: T get() = this.fastCastTo<T>()
     val onChange: Signal<T> = Signal<T>()
 
@@ -53,10 +57,10 @@ open class UIBaseCheckBox<T : UIBaseCheckBox<T>>(
             simpleAnimator.tween(this::checkedRatio[if (value) 1.0 else 0.0], time = 0.1.seconds)
         }
 
-    var skin: UIBaseCheckBoxSkin = UIBaseCheckBoxSkinMaterial
     private val background = solidRect(width, height, Colors.TRANSPARENT)
     val canvas = renderableView {
-        skin.render(ctx2d, this@UIBaseCheckBox.width, this@UIBaseCheckBox.height, this@UIBaseCheckBox, skinKind)
+        styles.uiCheckboxButtonRenderer.render(ctx)
+        //skin.render(ctx2d, this@UIBaseCheckBox.width, this@UIBaseCheckBox.height, this@UIBaseCheckBox, kind)
     }
     private val textView = textBlock(RichTextData(text))
     var checkedRatio: Double = 0.0; private set
@@ -86,22 +90,15 @@ open class UIBaseCheckBox<T : UIBaseCheckBox<T>>(
         val height = this.height
 
         textView.text = RichTextData(textView.text.text, RichTextData.Style(
-            font = textFont,
-            textSize = textSize,
-            color = textColor,
+            font = styles.textFont,
+            textSize = styles.textSize,
+            color = styles.textColor,
         ))
         textView.align = TextAlignment.MIDDLE_LEFT
         textView.position(height + 4.0, 0.0)
         textView.setSize(width - height - 8.0, height)
 
         background.size(width, height)
-    }
-
-    open fun getNinePatch(over: Boolean): NinePatchBmpSlice {
-        return when {
-            over -> buttonOver
-            else -> buttonNormal
-        }
     }
 
     val highlights = MaterialLayerHighlights(this)
@@ -112,7 +109,7 @@ open class UIBaseCheckBox<T : UIBaseCheckBox<T>>(
             onOut { this@UIBaseCheckBox.over = false }
             onDown {
                 this@UIBaseCheckBox.pressing = true
-                highlights.addHighlight(MPoint(0.5, 0.5))
+                highlights.addHighlight(Point(0.5, 0.5))
             }
             onUpAnywhere {
                 this@UIBaseCheckBox.pressing = false

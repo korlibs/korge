@@ -7,7 +7,6 @@ import com.soywiz.korge.input.Input
 import com.soywiz.korge.input.InputKeys
 import com.soywiz.korge.resources.ResourcesRoot
 import com.soywiz.korge.time.delay
-import com.soywiz.korge.util.CancellableGroup
 import com.soywiz.korge.view.Container
 import com.soywiz.korge.view.SContainer
 import com.soywiz.korge.view.ScaleView
@@ -26,6 +25,7 @@ import com.soywiz.korinject.AsyncInjector
 import com.soywiz.korinject.AsyncInjectorContext
 import com.soywiz.korinject.InjectorAsyncDependency
 import com.soywiz.korio.lang.cancel
+import com.soywiz.korio.lang.CancellableGroup
 import com.soywiz.korio.resources.Resources
 import com.soywiz.korio.resources.ResourcesContainer
 import com.soywiz.korma.geom.Anchor
@@ -118,9 +118,7 @@ abstract class Scene : InjectorAsyncDependency, ViewsContainer, CoroutineScope, 
      * Its underlying job will be automatically closed on the [sceneAfterDestroy].
      * No need to call super.
      */
-    open suspend fun SContainer.sceneMain() {
-
-    }
+    abstract suspend fun SContainer.sceneMain()
 
     /**
      * DO NOT BLOCK. Called after the old scene has been destroyed
@@ -258,8 +256,8 @@ abstract class ScaledScene(
 }
 
 class EmptyScene : Scene() {
-	override suspend fun SContainer.sceneInit() {
-	}
+    override suspend fun SContainer.sceneMain() {
+    }
 }
 
 abstract class LogScene : Scene() {

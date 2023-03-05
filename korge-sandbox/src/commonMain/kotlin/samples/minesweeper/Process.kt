@@ -7,12 +7,13 @@ import com.soywiz.korev.*
 import com.soywiz.korge.component.*
 import com.soywiz.korge.scene.ScaledScene
 import com.soywiz.korge.time.*
-import com.soywiz.korge.util.CancellableGroup
 import com.soywiz.korge.view.*
 import com.soywiz.korim.format.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korio.lang.Closeable
+import com.soywiz.korio.lang.CancellableGroup
+import com.soywiz.korma.geom.*
 import kotlinx.coroutines.*
 import kotlin.reflect.*
 
@@ -88,8 +89,9 @@ class KeyV(val views: ScaledScene) {
 class MouseV(val scene: ScaledScene) {
 	val left: Boolean get() = pressing[0]
 	val right: Boolean get() = pressing[1] || pressing[2]
-	val x: Int get() = (scene.sceneView.localMouseX(scene.views)).toInt()
-	val y: Int get() = (scene.sceneView.localMouseY(scene.views)).toInt()
+    val pos: PointInt get() = (scene.sceneView.localMousePos(scene.views)).toInt()
+	val x: Int get() = pos.x
+	val y: Int get() = pos.y
 	val pressing = BooleanArray(8)
 	val pressed = BooleanArray(8)
 	val released = BooleanArray(8)

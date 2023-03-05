@@ -6,6 +6,7 @@ import com.soywiz.korge.time.*
 import com.soywiz.korge.ui.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.color.*
+import com.soywiz.korma.interpolation.*
 import com.soywiz.korma.random.*
 import kotlin.random.*
 
@@ -29,7 +30,7 @@ class MainCache : Scene() {
 
         interval(1.seconds) {
             for (n in 0 until 2000) {
-                cached.getChildAt(50_000 + n).colorMul = random[Colors.RED, Colors.BLUE].mix(Colors.WHITE, 0.3)
+                cached.getChildAt(50_000 + n).colorMul = random[Colors.RED, Colors.BLUE].mix(Colors.WHITE, 0.3.toRatio())
             }
             println(cached.getChildAt(50000)._invalidateNotifier)
         }

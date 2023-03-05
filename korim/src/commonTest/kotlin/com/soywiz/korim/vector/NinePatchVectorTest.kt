@@ -36,7 +36,7 @@ class NinePatchVectorTest {
         assertEquals(
             """
                 M50,0 L150,0 Q200,0,200,50 L200,150 Q200,200,150,200 L50,200 Q0,200,0,150 L0,50 Q0,0,50,0 Z
-                M25,0 L75,0 Q100,0,100,24 L100,75 Q100,100,75,100 L24,100 Q0,100,0,75 L0,24 Q0,0,24,0 Z
+                M25,0 L75,0 Q100,0,100,25 L100,75 Q100,100,75,100 L25,100 Q0,100,0,75 L0,25 Q0,0,25,0 Z
             """.trimIndent(),
             """
                 ${vector.scaleNinePatch(MSize(200, 200)).roundDecimalPlaces(1).toSvgString()}
@@ -55,7 +55,7 @@ class NinePatchVectorTest {
             """
                 M12.5,0 L37.5,0 Q50,0,50,12.5 L50,37.5 Q50,50,37.5,50 L12.5,50 Q0,50,0,37.5 L0,12.5 Q0,0,12.5,0 Z
                 M12.5,0 L37.5,0 Q50,0,50,2.5 L50,7.5 Q50,10,37.5,10 L12.5,10 Q0,10,0,7.5 L0,2.5 Q0,0,12.5,0 Z
-                M25,0 L75,0 Q100,0,100,24 L100,75 Q100,100,75,100 L24,100 Q0,100,0,75 L0,24 Q0,0,24,0 Z
+                M25,0 L75,0 Q100,0,100,25 L100,75 Q100,100,75,100 L25,100 Q0,100,0,75 L0,25 Q0,0,25,0 Z
             """.trimIndent(),
             """
                 ${vector.scaleNinePatch(MSize(50, 50)).roundDecimalPlaces(1).toSvgString()}

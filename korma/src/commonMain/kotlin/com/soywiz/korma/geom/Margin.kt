@@ -1,6 +1,8 @@
 package com.soywiz.korma.geom
 
 import com.soywiz.kds.*
+import com.soywiz.kds.pack.*
+import com.soywiz.kmem.*
 import com.soywiz.korma.annotations.*
 
 // @TODO: value class
@@ -12,17 +14,34 @@ data class Margin(
     val left: Double,
 )
 
-// @TODO: value class
-@KormaValueApi
-data class MarginInt(
-    val top: Int,
-    val right: Int,
-    val bottom: Int,
-    val left: Int,
-)
+// @TODO: Value Class when MFVC is available
+/**
+ * A [top], [right], [bottom], [left] pack with Short (16-bit) precission
+ */
+data class MarginInt internal constructor(val raw: Short4Pack) {
+    companion object {
+        val ZERO = MarginInt(Short4Pack(0, 0, 0, 0))
+    }
+
+    val top: Int get() = raw.x.toInt()
+    val right: Int get() = raw.y.toInt()
+    val bottom: Int get() = raw.z.toInt()
+    val left: Int get() = raw.w.toInt()
+
+    val isNotZero: Boolean get() = top != 0 || left != 0 || right != 0 || bottom != 0
+    val leftPlusRight: Int get() = left + right
+    val topPlusBottom: Int get() = top + bottom
+    val horizontal: Int get() = (left + right) / 2
+    val vertical: Int get() = (top + bottom) / 2
+
+    constructor(top: Short, right: Short, bottom: Short, left: Short) : this(Short4Pack(top, right, bottom, left))
+    constructor(top: Int, right: Int, bottom: Int, left: Int) : this(Short4Pack(top.toShortClamped(), right.toShortClamped(), bottom.toShortClamped(), left.toShortClamped()))
+    constructor(vertical: Int, horizontal: Int) : this(vertical, horizontal, vertical, horizontal)
+    constructor(margin: Int) : this(margin, margin, margin, margin)
+}
 
 @KormaMutableApi
-interface IMargin {
+sealed interface IMargin {
     val top: Double
     val right: Double
     val bottom: Double
@@ -74,7 +93,8 @@ data class MMargin(
 }
 
 @KormaMutableApi
-interface IMarginInt {
+@Deprecated("Use MarginInt")
+sealed interface IMarginInt {
     val top: Int
     val right: Int
     val bottom: Int
@@ -95,6 +115,7 @@ interface IMarginInt {
 }
 
 @KormaMutableApi
+@Deprecated("Use MarginInt")
 data class MMarginInt(
     override var top: Int = 0,
     override var right: Int = 0,

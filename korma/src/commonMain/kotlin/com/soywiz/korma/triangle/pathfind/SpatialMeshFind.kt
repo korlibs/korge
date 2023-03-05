@@ -270,7 +270,7 @@ class SpatialMeshFind(val spatialMesh: SpatialMesh) {
                     }
                 }
 
-                if ((pts.size == 0) || (!vequal(pts.getX(pts.size - 1), pts.getY(pts.size - 1), portals[portals.size - 1].left.x, portals[portals.size - 1].left.y))) {
+                if ((pts.size == 0) || (!vequal(pts.getX(pts.size - 1).toDouble(), pts.getY(pts.size - 1).toDouble(), portals[portals.size - 1].left.x, portals[portals.size - 1].left.y))) {
                     // Append last point to path.
                     pts.add(portals[portals.size - 1].left)
                 }

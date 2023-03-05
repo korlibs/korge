@@ -42,7 +42,7 @@ class BitmapVector(
     }
 
     override fun lock() = nativeImage.lock()
-    override fun unlock(rect: IRectangleInt?): Int = nativeImage.unlock(rect)
+    override fun unlock(rect: RectangleInt): Int = nativeImage.unlock(rect)
     override fun readPixelsUnsafe(x: Int, y: Int, width: Int, height: Int, out: IntArray, offset: Int): Unit = nativeImage.readPixelsUnsafe(x, y, width, height, out, offset)
     override fun writePixelsUnsafe(x: Int, y: Int, width: Int, height: Int, out: IntArray, offset: Int) = nativeImage.writePixelsUnsafe(x, y, width, height, out, offset)
     override fun setRgbaRaw(x: Int, y: Int, v: RGBA) = nativeImage.setRgbaRaw(x, y, v)

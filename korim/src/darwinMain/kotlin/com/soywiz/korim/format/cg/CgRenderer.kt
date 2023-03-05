@@ -175,10 +175,10 @@ class CoreGraphicsRenderer(val bmp: Bitmap32, val antialiasing: Boolean) : com.s
 
                             fun visitCgContext(ctx: CPointer<CGContext>?, path: VectorPath) {
                                 path.visitCmds(
-                                    moveTo = { x, y -> CGContextMoveToPoint(ctx, x.cg, y.cg) },
-                                    lineTo = { x, y -> CGContextAddLineToPoint(ctx, x.cg, y.cg) },
-                                    quadTo = { cx, cy, ax, ay -> CGContextAddQuadCurveToPoint(ctx, cx.cg, cy.cg, ax.cg, ay.cg) },
-                                    cubicTo = { cx1, cy1, cx2, cy2, ax, ay -> CGContextAddCurveToPoint(ctx, cx1.cg, cy1.cg, cx2.cg, cy2.cg, ax.cg, ay.cg) },
+                                    moveTo = { (x, y) -> CGContextMoveToPoint(ctx, x.cg, y.cg) },
+                                    lineTo = { (x, y) -> CGContextAddLineToPoint(ctx, x.cg, y.cg) },
+                                    quadTo = { (cx, cy), (ax, ay) -> CGContextAddQuadCurveToPoint(ctx, cx.cg, cy.cg, ax.cg, ay.cg) },
+                                    cubicTo = { (cx1, cy1), (cx2, cy2), (ax, ay) -> CGContextAddCurveToPoint(ctx, cx1.cg, cy1.cg, cx2.cg, cy2.cg, ax.cg, ay.cg) },
                                     close = { CGContextClosePath(ctx) }
                                 )
                             }

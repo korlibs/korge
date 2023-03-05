@@ -9,6 +9,7 @@ import com.soywiz.korge.time.*
 import com.soywiz.korge.view.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.lang.*
+import com.soywiz.korma.interpolation.*
 import kotlin.native.concurrent.*
 
 class KeysEvents(override val view: View) : KeyComponent, Closeable {
@@ -67,7 +68,7 @@ class KeysEvents(override val view: View) : KeyComponent, Closeable {
             if (keys[key]) {
                 remainingTime -= dt
                 if (remainingTime < 0.milliseconds) {
-                    val ratio = (currentStep.toDouble() / delaySteps.toDouble()).clamp01()
+                    val ratio = Ratio(currentStep, delaySteps).clamped
                     currentStep++
                     remainingTime += ratio.interpolate(maxDelay, minDelay)
                     launchImmediately(views.coroutineContext) {

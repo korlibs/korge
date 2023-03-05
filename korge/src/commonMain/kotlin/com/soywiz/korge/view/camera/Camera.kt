@@ -14,9 +14,7 @@ import com.soywiz.korio.async.Signal
 import com.soywiz.korio.async.invoke
 import com.soywiz.korio.async.waitOne
 import com.soywiz.korma.geom.*
-import com.soywiz.korma.interpolation.Easing
-import com.soywiz.korma.interpolation.MutableInterpolable
-import com.soywiz.korma.interpolation.interpolate
+import com.soywiz.korma.interpolation.*
 import kotlin.math.min
 import kotlin.math.pow
 import kotlin.math.sqrt
@@ -183,11 +181,10 @@ class CameraContainer(
     }
 
     fun getFollowingXY(out: MPoint = MPoint()): MPoint {
-        val followGlobalX = following!!.globalX
-        val followGlobalY = following!!.globalY
-        val localToContentX = content!!.globalToLocalX(followGlobalX, followGlobalY)
-        val localToContentY = content!!.globalToLocalY(followGlobalX, followGlobalY)
-        return out.setTo(localToContentX, localToContentY)
+        val followGlobalX = following!!.globalPos.xD
+        val followGlobalY = following!!.globalPos.yD
+        val localToContentPos = content!!.globalToLocal(Point(followGlobalX, followGlobalY))
+        return out.setTo(localToContentPos)
     }
 
     private val tempPoint = MPoint()
@@ -199,8 +196,8 @@ class CameraContainer(
             when {
                 following != null -> {
                     val point = getFollowingXY(tempPoint)
-                    cameraX = 0.1.interpolate(currentCamera.x, point.x)
-                    cameraY = 0.1.interpolate(currentCamera.y, point.y)
+                    cameraX = 0.1.toRatio().interpolate(currentCamera.x, point.x)
+                    cameraY = 0.1.toRatio().interpolate(currentCamera.y, point.y)
                     sourceCamera.x = cameraX
                     sourceCamera.y = cameraY
                     //cameraX = 0.0
@@ -211,7 +208,7 @@ class CameraContainer(
                 elapsedTime < transitionTime -> {
                     elapsedTime += it
                     val ratio = (elapsedTime / transitionTime).coerceIn(0.0, 1.0)
-                    currentCamera.setToInterpolated(easing(ratio), sourceCamera, targetCamera)
+                    currentCamera.setToInterpolated(easing(ratio).toRatio(), sourceCamera, targetCamera)
                     /*
                     val ratioCamera = easing(ratio)
                     val ratioZoom = easing(ratio)
@@ -252,19 +249,14 @@ class CameraContainer(
         contentContainer.scaleY = realScaleY
     }
 
-    fun setZoomAt(anchor: MPoint, zoom: Double) {
-        setAnchorPosKeepingPos(anchor.x, anchor.y)
-        cameraZoom = zoom
-    }
+    fun setZoomAt(anchor: IPoint, zoom: Double) = setZoomAt(anchor.x, anchor.y, zoom)
 
     fun setZoomAt(anchorX: Double, anchorY: Double, zoom: Double) {
         setAnchorPosKeepingPos(anchorX, anchorY)
         cameraZoom = zoom
     }
 
-    fun setAnchorPosKeepingPos(anchor: MPoint) {
-        setAnchorPosKeepingPos(anchor.x, anchor.y)
-    }
+    fun setAnchorPosKeepingPos(anchor: IPoint) = setAnchorPosKeepingPos(anchor.x, anchor.y)
 
     fun setAnchorPosKeepingPos(anchorX: Double, anchorY: Double) {
         setAnchorRatioKeepingPos(anchorX / width, anchorY / height)
@@ -327,13 +319,13 @@ data class Camera(
         }
     }
 
-    override fun setToInterpolated(ratio: Double, l: Camera, r: Camera): Camera {
+    override fun setToInterpolated(ratio: Ratio, l: Camera, r: Camera): Camera {
         // Adjust based on the zoom changes
-        val posRatio = posEasing(l.zoom, r.zoom, l.x, r.x, ratio)
+        val posRatio = posEasing(l.zoom, r.zoom, l.x, r.x, ratio.valueD)
 
         return setTo(
-            posRatio.interpolate(l.x, r.x),
-            posRatio.interpolate(l.y, r.y),
+            posRatio.toRatio().interpolate(l.x, r.x),
+            posRatio.toRatio().interpolate(l.y, r.y),
             ratio.interpolate(l.zoom, r.zoom),
             ratio.interpolateAngleDenormalized(l.angle, r.angle), // @TODO: Fix KorMA angle interpolator
             ratio.interpolate(l.anchorX, r.anchorX),

@@ -117,7 +117,7 @@ abstract class DXT(val format: String, val premultiplied: Boolean, val blockSize
 		val potentialSide = sqrt(totalPixels.toDouble()).toInt()
 		val width = props.width ?: potentialSide
 		val height = props.height ?: potentialSide
-		return ImageData(listOf(ImageFrame(decodeBitmap(bytes, width, height))))
+		return ImageData(decodeBitmap(bytes, width, height))
 	}
 
 	companion object {

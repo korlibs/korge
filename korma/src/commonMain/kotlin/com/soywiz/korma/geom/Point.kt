@@ -3,12 +3,11 @@
 package com.soywiz.korma.geom
 
 import com.soywiz.kds.*
+import com.soywiz.kds.pack.*
+import com.soywiz.kmem.*
 import com.soywiz.korma.internal.niceStr
-import com.soywiz.korma.interpolation.Interpolable
-import com.soywiz.korma.interpolation.MutableInterpolable
-import com.soywiz.korma.interpolation.interpolate
-import com.soywiz.kmem.clamp
 import com.soywiz.korma.annotations.*
+import com.soywiz.korma.interpolation.*
 import com.soywiz.korma.math.isAlmostEquals
 import com.soywiz.korma.math.isAlmostZero
 import com.soywiz.korma.math.roundDecimalPlaces
@@ -22,54 +21,102 @@ typealias MVector2D = MPoint
 // VALUE CLASSES
 //////////////////////////////
 
-@KormaValueApi inline fun Point(x: Int, y: Int): Point = Point(x.toDouble(), y.toDouble())
-@KormaValueApi inline fun Point(x: Float, y: Float): Point = Point(x.toDouble(), y.toDouble())
+@Deprecated("", ReplaceWith("p", "com.soywiz.korma.geom.Point")) fun Point(p: Point): Point = p
 
 //data class Point(val x: Double, val y: Double) {
 // @JvmInline value
-@KormaValueApi
-data class Point(val x: Double, val y: Double) {
-    constructor() : this(0.0, 0.0)
+//@KormaValueApi
+//data class Point(val x: Double, val y: Double) {
+inline class Point internal constructor(internal val raw: Float2Pack) {
+    val x: Float get() = raw.x
+    val y: Float get() = raw.y
+
+    val xF: Float get() = x
+    val yF: Float get() = y
+
+    val xD: Double get() = x.toDouble()
+    val yD: Double get() = y.toDouble()
+
+    constructor(x: Float, y: Float) : this(Float2Pack(x, y))
+    constructor(x: Double, y: Double) : this(Float2Pack(x.toFloat(), y.toFloat()))
+    constructor(x: Int, y: Int) : this(Float2Pack(x.toFloat(), y.toFloat()))
+
+    constructor(x: Double, y: Int) : this(Float2Pack(x.toFloat(), y.toFloat()))
+    constructor(x: Int, y: Double) : this(Float2Pack(x.toFloat(), y.toFloat()))
+
+    constructor(x: Float, y: Int) : this(Float2Pack(x.toFloat(), y.toFloat()))
+    constructor(x: Int, y: Float) : this(Float2Pack(x.toFloat(), y.toFloat()))
+
+    constructor(p: IPoint) : this(p.x.toFloat(), p.y.toFloat())
+    //constructor(p: Point) : this(p.raw)
+    constructor() : this(0f, 0f)
     //constructor(x: Int, y: Int) : this(x.toDouble(), y.toDouble())
     //constructor(x: Float, y: Float) : this(x.toDouble(), y.toDouble())
 
-    //operator fun component1(): Double = x
-    //operator fun component2(): Double = y
+    operator fun component1(): Float = x
+    operator fun component2(): Float = y
 
+    fun copy(x: Float = this.x, y: Float = this.y): Point = Point(x, y)
+    fun copy(x: Double = this.xD, y: Double = this.yD): Point = Point(x, y)
+
+    inline operator fun unaryMinus(): Point = Point(-x, -y)
+    inline operator fun unaryPlus(): Point = this
 
     inline operator fun plus(that: Point): Point = Point(x + that.x, y + that.y)
     inline operator fun minus(that: Point): Point = Point(x - that.x, y - that.y)
     inline operator fun times(that: Point): Point = Point(x * that.x, y * that.y)
+    inline operator fun times(that: Size): Point = Point(x * that.width, y * that.height)
+    inline operator fun times(that: Scale): Point = Point(x * that.scaleX, y * that.scaleY)
     inline operator fun div(that: Point): Point = Point(x / that.x, y / that.y)
+    inline operator fun div(that: Size): Point = Point(x / that.width, y / that.height)
 
-    inline operator fun times(scale: Double): Point = Point(x * scale, y * scale)
-    inline operator fun times(scale: Float): Point = this * scale.toDouble()
+    inline operator fun times(scale: Float): Point = Point(x * scale, y * scale)
+    inline operator fun times(scale: Double): Point = this * scale.toFloat()
     inline operator fun times(scale: Int): Point = this * scale.toDouble()
 
-    inline operator fun div(scale: Double): Point = Point(x / scale, y / scale)
-    inline operator fun div(scale: Float): Point = this / scale.toDouble()
+    inline operator fun div(scale: Float): Point = Point(x / scale, y / scale)
+    inline operator fun div(scale: Double): Point = this / scale.toFloat()
     inline operator fun div(scale: Int): Point = this / scale.toDouble()
 
-    fun distanceTo(x: Double, y: Double): Double = hypot(x - this.x, y - this.y)
-    fun distanceTo(x: Float, y: Float): Double = this.distanceTo(x.toDouble(), y.toDouble())
-    fun distanceTo(x: Int, y: Int): Double = this.distanceTo(x.toDouble(), y.toDouble())
-    fun distanceTo(that: Point): Double = distanceTo(that.x, that.y)
+    fun avgComponent(): Float = x * 0.5f + y * 0.5f
+    fun minComponent(): Float = min(x, y)
+    fun maxComponent(): Float = max(x, y)
 
-    infix fun dot(that: Point): Double = this.x * that.x + this.y * that.y
+    fun distanceTo(x: Float, y: Float): Float = hypot(x - this.x, y - this.y)
+    fun distanceTo(x: Double, y: Double): Float = this.distanceTo(x.toFloat(), y.toFloat())
+    fun distanceTo(x: Int, y: Int): Float = this.distanceTo(x.toDouble(), y.toDouble())
+    fun distanceTo(that: Point): Float = distanceTo(that.x, that.y)
+
+    infix fun dot(that: Point): Float = ((this.x * that.x) + (this.y * that.y))
 
     fun angleTo(other: Point): Angle = Angle.between(this.x, this.y, other.x, other.y)
-    val angle: Angle get() = Angle.between(0.0, 0.0, this.x, this.y)
+    val angle: Angle get() = Angle.between(0f, 0f, this.x, this.y)
 
-    inline fun transformed(m: Matrix): Point = m.transform(this)
-    fun transformX(m: Matrix): Double = m.transform(this).x
-    fun transformY(m: Matrix): Double = m.transform(this).y
+    inline fun transformed(m: IMatrix?): Point = m?.transform(this) ?: this
+    fun transformX(m: IMatrix?): Float = m?.transform(this)?.x ?: x
+    fun transformY(m: IMatrix?): Float = m?.transform(this)?.y ?: y
+
+    inline fun transformed(m: Matrix?): Point = m?.transform(this) ?: this
+    fun transformX(m: Matrix?): Float = m?.transform(this)?.x ?: x
+    fun transformY(m: Matrix?): Float = m?.transform(this)?.y ?: y
+
     operator fun get(component: Int) = when (component) {
         0 -> x; 1 -> y
         else -> throw IndexOutOfBoundsException("Point doesn't have $component component")
     }
-    val length: Double get() = hypot(x, y)
-    val magnitude: Double get() = hypot(x, y)
-    val normalized: Point get() = this * (1.0 / magnitude)
+    val length: Float get() = hypot(x, y)
+    val squaredLength: Float get() {
+        val x = x
+        val y = y
+        return x*x + y*y
+    }
+    val magnitude: Float get() = hypot(x, y)
+    val normalized: Point get() = this * (1f / magnitude)
+    val unit: Point get() = this / length
+
+    /** Rotates the vector/point -90 degrees (not normalizing it) */
+    fun toNormal(): Point = Point(-this.y, this.x)
+
 
     val int: PointInt get() = PointInt(x.toInt(), y.toInt())
     val intRound: PointInt get() = PointInt(x.roundToInt(), y.roundToInt())
@@ -81,15 +128,29 @@ data class Point(val x: Double, val y: Double) {
 
     //fun copy(x: Double = this.x, y: Double = this.y): Point = Point(x, y)
 
-    fun isAlmostEquals(other: Point, epsilon: Double = 0.000001): Boolean =
+    fun isAlmostEquals(other: Point, epsilon: Float = 0.00001f): Boolean =
         this.x.isAlmostEquals(other.x, epsilon) && this.y.isAlmostEquals(other.y, epsilon)
 
+    val niceStr: String get() = "(${x.niceStr}, ${y.niceStr})"
+    fun niceStr(decimalPlaces: Int): String = "(${x.niceStr(decimalPlaces)}, ${y.niceStr(decimalPlaces)})"
+    override fun toString(): String = niceStr
+
+    fun isNaN(): Boolean = this.x.isNaN() && this.y.isNaN()
+
+    @Deprecated("", ReplaceWith("ratio.interpolate(this, other)", "com.soywiz.korma.interpolation.interpolate")) fun interpolateWith(ratio: Ratio, other: Point): Point = ratio.interpolate(this, other)
+
     companion object {
+        val ZERO = Point(0f, 0f)
+        val NaN = Point(Float.NaN, Float.NaN)
+
         //inline operator fun invoke(x: Int, y: Int): Point = Point(x.toDouble(), y.toDouble())
         //inline operator fun invoke(x: Float, y: Float): Point = Point(x.toDouble(), y.toDouble())
 
+        //fun fromRaw(raw: Float2Pack) = Point(raw)
+
         /** Constructs a point from polar coordinates determined by an [angle] and a [length]. Angle 0 is pointing to the right, and the direction is counter-clock-wise */
-        inline fun fromPolar(x: Double, y: Double, angle: Angle, length: Double = 1.0): Point = Point(x + angle.cosine * length, y + angle.sine * length)
+        inline fun fromPolar(x: Float, y: Float, angle: Angle, length: Double = 1.0): Point = Point(x + angle.cosineF * length, y + angle.sineF * length)
+        inline fun fromPolar(x: Double, y: Double, angle: Angle, length: Double = 1.0): Point = Point(x + angle.cosineD * length, y + angle.sineD * length)
         inline fun fromPolar(base: Point, angle: Angle, length: Double = 1.0): Point = fromPolar(base.x, base.y, angle, length)
         inline fun fromPolar(angle: Angle, length: Double = 1.0): Point = fromPolar(0.0, 0.0, angle, length)
 
@@ -97,31 +158,39 @@ data class Point(val x: Double, val y: Double) {
 
         fun angle(ax: Double, ay: Double, bx: Double, by: Double): Angle = Angle.between(ax, ay, bx, by)
         fun angle(x1: Double, y1: Double, x2: Double, y2: Double, x3: Double, y3: Double): Angle = Angle.between(x1 - x2, y1 - y2, x1 - x3, y1 - y3)
-        //acos(((ax * bx) + (ay * by)) / (hypot(ax, ay) * hypot(bx, by)))
-        fun angleArc(a: Point, b: Point): Angle = Angle.fromRadians(acos(a dot b) / (a.length * b.length))
+
+        fun angleArc(a: Point, b: Point): Angle = Angle.fromRadians(acos((a dot b) / (a.length * b.length)))
         fun angleFull(a: Point, b: Point): Angle = Angle.between(a, b)
 
         fun distance(a: Double, b: Double): Double = kotlin.math.abs(a - b)
         fun distance(x1: Double, y1: Double, x2: Double, y2: Double): Double = kotlin.math.hypot(x1 - x2, y1 - y2)
-        fun distance(x1: Float, y1: Float, x2: Float, y2: Float): Double = distance(x1.toDouble(), y1.toDouble(), x2.toDouble(), y2.toDouble())
-        fun distance(x1: Int, y1: Int, x2: Int, y2: Int): Double = distance(x1.toDouble(), y1.toDouble(), x2.toDouble(), y2.toDouble())
-        fun distance(a: Point, b: Point): Double = distance(a.x, a.y, b.x, b.y)
-        fun distance(a: PointInt, b: PointInt): Double = distance(a.x, a.y, b.x, b.y)
-        fun distanceSquared(a: Point, b: Point): Double = distanceSquared(a.x, a.y, b.x, b.y)
+        fun distance(x1: Float, y1: Float, x2: Float, y2: Float): Float = kotlin.math.hypot(x1 - x2, y1 - y2)
+        fun distance(x1: Int, y1: Int, x2: Int, y2: Int): Float = distance(x1.toFloat(), y1.toFloat(), x2.toFloat(), y2.toFloat())
+        fun distance(a: Point, b: Point): Float = distance(a.x, a.y, b.x, b.y)
+        fun distance(a: PointInt, b: PointInt): Float = distance(a.x, a.y, b.x, b.y)
+
+        fun distanceSquared(a: Point, b: Point): Float = distanceSquared(a.x, a.y, b.x, b.y)
         fun distanceSquared(a: PointInt, b: PointInt): Int = distanceSquared(a.x, a.y, b.x, b.y)
         fun distanceSquared(x1: Double, y1: Double, x2: Double, y2: Double): Double = square(x1 - x2) + square(y1 - y2)
+        fun distanceSquared(x1: Float, y1: Float, x2: Float, y2: Float): Float = square(x1 - x2) + square(y1 - y2)
         fun distanceSquared(x1: Int, y1: Int, x2: Int, y2: Int): Int = square(x1 - x2) + square(y1 - y2)
 
         inline fun direction(a: Point, b: Point): Point = b - a
 
         fun compare(l: Point, r: Point): Int = compare(l.x, l.y, r.x, r.y)
+        fun compare(lx: Float, ly: Float, rx: Float, ry: Float): Int = ly.compareTo(ry).let { ret -> if (ret == 0) lx.compareTo(rx) else ret }
         fun compare(lx: Double, ly: Double, rx: Double, ry: Double): Int = ly.compareTo(ry).let { ret -> if (ret == 0) lx.compareTo(rx) else ret }
 
         private fun square(x: Double): Double = x * x
+        private fun square(x: Float): Float = x * x
         private fun square(x: Int): Int = x * x
 
         fun dot(aX: Double, aY: Double, bX: Double, bY: Double): Double = (aX * bX) + (aY * bY)
-        fun dot(a: Point, b: Point): Double = dot(a.x, a.y, b.x, b.y)
+        fun dot(aX: Float, aY: Float, bX: Float, bY: Float): Float = (aX * bX) + (aY * bY)
+        fun dot(a: Point, b: Point): Float = dot(a.x, a.y, b.x, b.y)
+
+        fun isCollinear(xa: Float, ya: Float, x: Float, y: Float, xb: Float, yb: Float): Boolean =
+            (((x - xa) / (y - ya)) - ((xa - xb) / (ya - yb))).absoluteValue.isAlmostZero()
 
         fun isCollinear(xa: Double, ya: Double, x: Double, y: Double, xb: Double, yb: Double): Boolean =
             (((x - xa) / (y - ya)) - ((xa - xb) / (ya - yb))).absoluteValue.isAlmostZero()
@@ -134,19 +203,29 @@ data class Point(val x: Double, val y: Double) {
 
         // https://algorithmtutor.com/Computational-Geometry/Determining-if-two-consecutive-segments-turn-left-or-right/
         /** < 0 left, > 0 right, 0 collinear */
-        fun orientation(p1: Point, p2: Point, p3: Point): Double =
-            orientation(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y)
-        fun orientation(ax: Double, ay: Double, bx: Double, by: Double, cx: Double, cy: Double): Double =
-            crossProduct(cx - ax, cy - ay, bx - ax, by - ay)
+        fun orientation(p1: Point, p2: Point, p3: Point): Float = orientation(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y)
+        fun orientation(ax: Float, ay: Float, bx: Float, by: Float, cx: Float, cy: Float): Float = crossProduct(cx - ax, cy - ay, bx - ax, by - ay)
+        fun orientation(ax: Double, ay: Double, bx: Double, by: Double, cx: Double, cy: Double): Double = crossProduct(cx - ax, cy - ay, bx - ax, by - ay)
 
+        fun crossProduct(ax: Float, ay: Float, bx: Float, by: Float): Float = (ax * by) - (bx * ay)
         fun crossProduct(ax: Double, ay: Double, bx: Double, by: Double): Double = (ax * by) - (bx * ay)
-        fun crossProduct(p1: Point, p2: Point): Double = crossProduct(p1.x, p1.y, p2.x, p2.y)
+        fun crossProduct(p1: Point, p2: Point): Float = crossProduct(p1.x, p1.y, p2.x, p2.y)
     }
 }
 
-@KormaValueApi
-data class PointInt(val x: Int, val y: Int) {
+//@KormaValueApi
+inline class PointInt internal constructor(internal val raw: Int2Pack) {
+    val x: Int get() = raw.x
+    val y: Int get() = raw.y
+
+    constructor() : this(Int2Pack(0, 0))
+    constructor(x: Int, y: Int) : this(Int2Pack(x, y))
+
     val mutable: IPointInt get() = MPointInt(x, y)
+    operator fun component1(): Int = x
+    operator fun component2(): Int = y
+
+    fun copy(x: Int = this.x, y: Int = this.y): PointInt = PointInt(x, y)
 
     operator fun plus(that: PointInt): PointInt = PointInt(this.x + that.x, this.y + that.y)
     operator fun minus(that: PointInt): PointInt = PointInt(this.x - that.x, this.y - that.y)
@@ -155,14 +234,16 @@ data class PointInt(val x: Int, val y: Int) {
     operator fun rem(that: PointInt): PointInt = PointInt(this.x % that.x, this.y % that.y)
 }
 
+
 //////////////////////////////
 // IMMUTABLE INTERFACES
 //////////////////////////////
 
 @KormaMutableApi
-interface IPoint {
+@Deprecated("Use Point instead")
+sealed interface IPoint {
     companion object {
-        val ZERO: IPoint = MPoint(0, 0)
+        val ZERO: IPoint get() = MPoint.Zero
 
         operator fun invoke(): IPoint = MPoint(0.0, 0.0)
         operator fun invoke(v: IPoint): IPoint = MPoint(v.x, v.y)
@@ -200,6 +281,7 @@ interface IPoint {
 
     infix fun dot(that: IPoint): Double = this.x * that.x + this.y * that.y
     fun angleTo(other: IPoint): Angle = Angle.between(this.x, this.y, other.x, other.y)
+    fun angleTo(other: Point): Angle = Angle.between(this.x, this.y, other.xD, other.yD)
     val angle: Angle get() = Angle.between(0.0, 0.0, this.x, this.y)
     fun transformed(mat: MMatrix, out: MPoint = MPoint()): MPoint = out.setToTransform(mat, this)
     fun transformX(m: MMatrix?): Double = m?.transformX(this) ?: x
@@ -226,7 +308,8 @@ interface IPoint {
 fun IPoint.copy(x: Double = this.x, y: Double = this.y): IPoint = IPoint(x, y)
 
 @KormaMutableApi
-interface IMPoint : IPoint {
+@Deprecated("Use Point instead")
+sealed interface IMPoint : IPoint {
     override var x: Double
     override var y: Double
 }
@@ -236,6 +319,7 @@ interface IMPoint : IPoint {
 //////////////////////////////
 
 @KormaMutableApi
+@Deprecated("Use Point instead")
 data class MPoint(
     override var x: Double,
     override var y: Double
@@ -243,6 +327,7 @@ data class MPoint(
     //override var yf: Float
 ) : MutableInterpolable<MPoint>, Interpolable<MPoint>, Comparable<IPoint>, IPoint, IMPoint {
     //constructor(x: Double, y: Double) : this(x.toFloat(), y.toFloat())
+    constructor(p: Point) : this(p.xD, p.yD)
     constructor(x: Float, y: Float) : this(x.toDouble(), y.toDouble())
     constructor(x: Int, y: Int) : this(x.toDouble(), y.toDouble())
 
@@ -292,11 +377,14 @@ data class MPoint(
         return this
     }
 
-    /** Updates a point from polar coordinates determined by an [angle] and a [length]. Angle 0 is pointing to the right, and the direction is counter-clock-wise */
+    fun setTo(p: Point): MPoint = setTo(p.x, p.y)
+
+        /** Updates a point from polar coordinates determined by an [angle] and a [length]. Angle 0 is pointing to the right, and the direction is counter-clock-wise */
     fun setToPolar(angle: Angle, length: Double = 1.0): MPoint = setToPolar(0.0, 0.0, angle, length)
-    fun setToPolar(base: Point, angle: Angle, length: Double = 1.0): MPoint = setToPolar(base.x, base.y, angle, length)
+    fun setToPolar(base: Point, angle: Angle, length: Float = 1f): MPoint = setToPolar(base.x, base.y, angle, length)
     fun setToPolar(base: IPoint, angle: Angle, length: Double = 1.0): MPoint = setToPolar(base.x, base.y, angle, length)
-    fun setToPolar(x: Double, y: Double, angle: Angle, length: Double = 1.0): MPoint = setTo(x + angle.cosine * length, y + angle.sine * length)
+    fun setToPolar(x: Double, y: Double, angle: Angle, length: Double = 1.0): MPoint = setTo(x + angle.cosineD * length, y + angle.sineD * length)
+    fun setToPolar(x: Float, y: Float, angle: Angle, length: Float = 1f): MPoint = setTo(x + angle.cosineF * length, y + angle.sineF * length)
 
     /** Rotates the vector/point -90 degrees (not normalizing it) */
     fun setToNormal(): MPoint = setTo(-this.y, this.x)
@@ -311,6 +399,7 @@ data class MPoint(
     fun add(x: Double, y: Double) = this.setTo(this.x + x, this.y + y)
     fun sub(x: Double, y: Double) = this.setTo(this.x - x, this.y - y)
 
+    fun copyFrom(that: Point) = setTo(that.x, that.y)
     fun copyFrom(that: IPoint) = setTo(that.x, that.y)
 
     fun setToTransform(mat: MMatrix, p: IPoint): MPoint = setToTransform(mat, p.x, p.y)
@@ -373,13 +462,13 @@ data class MPoint(
         }
     }
 
-    override fun interpolateWith(ratio: Double, other: MPoint): MPoint =
+    override fun interpolateWith(ratio: Ratio, other: MPoint): MPoint =
         MPoint().setToInterpolated(ratio, this, other)
 
-    override fun setToInterpolated(ratio: Double, l: MPoint, r: MPoint): MPoint = setToInterpolated(ratio, l.x, l.y, r.x, r.y)
-    fun setToInterpolated(ratio: Double, l: IPoint, r: IPoint): MPoint = setToInterpolated(ratio, l.x, l.y, r.x, r.y)
+    override fun setToInterpolated(ratio: Ratio, l: MPoint, r: MPoint): MPoint = setToInterpolated(ratio, l.x, l.y, r.x, r.y)
+    fun setToInterpolated(ratio: Ratio, l: IPoint, r: IPoint): MPoint = setToInterpolated(ratio, l.x, l.y, r.x, r.y)
 
-    fun setToInterpolated(ratio: Double, lx: Double, ly: Double, rx: Double, ry: Double): MPoint =
+    fun setToInterpolated(ratio: Ratio, lx: Double, ly: Double, rx: Double, ry: Double): MPoint =
         this.setTo(ratio.interpolate(lx, rx), ratio.interpolate(ly, ry))
 
     override fun toString(): String = "(${this.x.niceStr}, ${this.y.niceStr})"
@@ -388,14 +477,22 @@ data class MPoint(
         out.setToPolar(Angle.between(0.0, 0.0, this.x, this.y) + rotation, this.length)
 
 
+    @Deprecated("")
     companion object {
+        @Deprecated("")
         val POOL: ConcurrentPool<MPoint> = ConcurrentPool<MPoint>({ it.setTo(0.0, 0.0) }) { MPoint() }
 
+        @Deprecated("")
         val Zero: IPoint = IPoint(0.0, 0.0)
+        @Deprecated("")
         val One: IPoint = IPoint(1.0, 1.0)
+        @Deprecated("")
         val Up: IPoint = IPoint(0.0, -1.0)
+        @Deprecated("")
         val Down: IPoint = IPoint(0.0, +1.0)
+        @Deprecated("")
         val Left: IPoint = IPoint(-1.0, 0.0)
+        @Deprecated("")
         val Right: IPoint = IPoint(+1.0, 0.0)
 
         //inline operator fun invoke(): Point = Point(0.0, 0.0) // @TODO: // e: java.lang.NullPointerException at org.jetbrains.kotlin.com.google.gwt.dev.js.JsAstMapper.mapFunction(JsAstMapper.java:562) (val pt = Array(1) { Point() })
@@ -409,6 +506,7 @@ data class MPoint(
         /** Constructs a point from polar coordinates determined by an [angle] and a [length]. Angle 0 is pointing to the right, and the direction is counter-clock-wise */
         inline operator fun invoke(angle: Angle, length: Double = 1.0): MPoint = fromPolar(angle, length)
 
+        fun angleArc(a: Point, b: Point): Angle = Angle.fromRadians(acos((a.dot(b)) / (a.length * b.length)))
         fun angleArc(a: IPoint, b: IPoint): Angle = Angle.fromRadians(acos((a.dot(b)) / (a.length * b.length)))
         fun angleFull(a: IPoint, b: IPoint): Angle = Angle.between(a, b)
 
@@ -416,7 +514,7 @@ data class MPoint(
         fun compare(l: IPoint, r: IPoint): Int = MPoint.compare(l.x, l.y, r.x, r.y)
 
         /** Constructs a point from polar coordinates determined by an [angle] and a [length]. Angle 0 is pointing to the right, and the direction is counter-clock-wise */
-        fun fromPolar(x: Double, y: Double, angle: Angle, length: Double = 1.0, out: MPoint = MPoint()): MPoint = out.setTo(x + angle.cosine * length, y + angle.sine * length)
+        fun fromPolar(x: Double, y: Double, angle: Angle, length: Double = 1.0, out: MPoint = MPoint()): MPoint = out.setTo(x + angle.cosineD * length, y + angle.sineD * length)
         fun fromPolar(angle: Angle, length: Double = 1.0, out: MPoint = MPoint()): MPoint = fromPolar(0.0, 0.0, angle, length, out)
         fun fromPolar(base: IPoint, angle: Angle, length: Double = 1.0, out: MPoint = MPoint()): MPoint = fromPolar(base.x, base.y, angle, length, out)
 
@@ -484,7 +582,7 @@ data class MPoint(
 }
 
 @KormaMutableApi
-interface IPointInt {
+sealed interface IPointInt {
     val x: Int
     val y: Int
 
@@ -518,7 +616,7 @@ inline class MPointInt(val p: MPoint) : IPointInt, Comparable<IPointInt>, Mutabl
     }
     fun setTo(that: IPointInt) = this.setTo(that.x, that.y)
 
-    override fun setToInterpolated(ratio: Double, l: MPointInt, r: MPointInt): MPointInt =
+    override fun setToInterpolated(ratio: Ratio, l: MPointInt, r: MPointInt): MPointInt =
         setTo(ratio.interpolate(l.x, r.x), ratio.interpolate(l.y, r.y))
 
     override fun toString(): String = "($x, $y)"
@@ -531,8 +629,11 @@ val MPoint.int get() = MPointInt(this.x.toInt(), this.y.toInt())
 val IPoint.int get() = MPointInt(this.x.toInt(), this.y.toInt())
 val IPointInt.double get() = IPoint(x.toDouble(), y.toDouble())
 
+@Deprecated("")
 fun Point.toMPoint(out: MPoint = MPoint()): MPoint = out.setTo(x, y)
+@Deprecated("")
 fun Point.mutable(out: MPoint = MPoint()): MPoint = out.setTo(x, y)
+@Deprecated("")
 val Point.mutable: MPoint get() = mutable()
 
 private inline fun getPolylineLength(size: Int, crossinline get: (n: Int, (x: Double, y: Double) -> Unit) -> Unit): Double {
@@ -551,7 +652,7 @@ private inline fun getPolylineLength(size: Int, crossinline get: (n: Int, (x: Do
     return out
 }
 
-fun IPointArrayList.getPolylineLength(): Double = getPolylineLength(size) { n, func -> func(getX(n), getY(n)) }
+fun IPointArrayList.getPolylineLength(): Double = getPolylineLength(size) { n, func -> func(getX(n).toDouble(), getY(n).toDouble()) }
 fun List<IPoint>.getPolylineLength(): Double = getPolylineLength(size) { n, func -> func(this[n].x, this[n].y) }
 
 fun List<MPoint>.bounds(out: MRectangle = MRectangle(), bb: BoundsBuilder = BoundsBuilder()): MRectangle = bb.add(this).getBounds(out)
@@ -560,3 +661,9 @@ fun Iterable<IPoint>.bounds(out: MRectangle = MRectangle(), bb: BoundsBuilder = 
 fun min(a: IPoint, b: IPoint, out: MPoint = MPoint()): MPoint = out.setTo(kotlin.math.min(a.x, b.x), kotlin.math.min(a.y, b.y))
 fun max(a: IPoint, b: IPoint, out: MPoint = MPoint()): MPoint = out.setTo(kotlin.math.max(a.x, b.x), kotlin.math.max(a.y, b.y))
 fun IPoint.clamp(min: Double, max: Double, out: MPoint = MPoint()): MPoint = out.setTo(x.clamp(min, max), y.clamp(min, max))
+
+fun Point.toInt(): PointInt = PointInt(x.toInt(), y.toInt())
+fun Point.toIntCeil(): PointInt = PointInt(x.toIntCeil(), y.toIntCeil())
+fun Point.toIntRound(): PointInt = PointInt(x.toIntRound(), y.toIntRound())
+fun Point.toIntFloor(): PointInt = PointInt(x.toIntFloor(), y.toIntFloor())
+fun PointInt.toFloat(): Point = Point(x, y)

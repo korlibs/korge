@@ -2,27 +2,20 @@ package com.soywiz.korge
 
 import com.soywiz.klock.*
 import com.soywiz.klogger.*
-import com.soywiz.korag.shader.ShaderType
-import com.soywiz.korev.Key
-import com.soywiz.korge.input.keys
-import com.soywiz.korge.input.mouse
-import com.soywiz.korge.input.touch
+import com.soywiz.korag.shader.*
+import com.soywiz.korev.*
+import com.soywiz.korge.input.*
 import com.soywiz.korge.tests.*
 import com.soywiz.korge.view.*
 import com.soywiz.korge.view.filter.*
-import com.soywiz.korge.view.mask.mask
-import com.soywiz.korge.view.vector.gpuShapeView
+import com.soywiz.korge.view.mask.*
+import com.soywiz.korge.view.vector.*
 import com.soywiz.korim.format.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.bezier.isConvex
-import com.soywiz.korma.geom.shape.buildVectorPath
-import com.soywiz.korma.geom.vector.circle
-import com.soywiz.korma.geom.vector.getCurves
-import com.soywiz.korma.geom.vector.getCurvesList
-import com.soywiz.korma.geom.vector.lineTo
-import com.soywiz.korma.geom.vector.moveTo
-import com.soywiz.korma.geom.vector.roundRect
+import com.soywiz.korma.geom.bezier.*
+import com.soywiz.korma.geom.shape.*
+import com.soywiz.korma.geom.vector.*
 import kotlinx.coroutines.*
 import kotlin.native.concurrent.*
 import kotlin.test.*
@@ -78,10 +71,10 @@ class KorgeMultithreadedTest {
                 }
                 ColorMatrixFilter.getProgram()
                 this.views.render()
-                val path = buildVectorPath { circle(0, 0, 100) }
+                val path = buildVectorPath { circle(Point(0, 0), 100f) }
                 path.getCurvesList()
-                path.moveTo(200, 200)
-                path.lineTo(300, 300)
+                path.moveTo(Point(200, 200))
+                path.lineTo(Point(300, 300))
                 path.getCurvesList()
                 val curves = path.getCurves()
 

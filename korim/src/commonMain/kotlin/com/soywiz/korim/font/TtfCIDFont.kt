@@ -11,6 +11,7 @@ import com.soywiz.korio.lang.reserved
 import com.soywiz.korio.lang.unreachable
 import com.soywiz.korio.stream.FastByteArrayInputStream
 import com.soywiz.korio.stream.openFastStream
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.VectorBuilder
 import com.soywiz.korma.geom.vector.VectorPath
 import com.soywiz.korma.geom.vector.rLineTo
@@ -378,21 +379,21 @@ object TtfCIDFont {
         }
         fun VectorBuilder.cfrMoveTo(x: Double, y: Double) {
             //println("M x=${lastX + x} y=${lastY + y}".color(AnsiEscape.Color.RED))
-            rMoveTo(x, y)
+            rMoveTo(Point(x, y))
         }
         fun VectorBuilder.cfrLineTo(x: Double, y: Double) {
             //println("L x=${lastX + x} y=${lastY + y}".color(AnsiEscape.Color.RED))
-            rLineTo(x, y)
+            rLineTo(Point(x, y))
         }
         fun VectorBuilder.cfCubicTo(fcx1: Double, fcy1: Double, fcx2: Double, fcy2: Double, fax: Double, fay: Double) {
             //println("C x=$fax y=$fay x1=$fcx1 y1=$fcy1 x2=$fcx2 y2=$fcy2".color(AnsiEscape.Color.RED))
-            cubicTo(fcx1, fcy1, fcx2, fcy2, fax, fay)
+            cubicTo(Point(fcx1, fcy1), Point(fcx2, fcy2), Point(fax, fay))
         }
         fun VectorBuilder.cfrCubicTo(cx1: Double, cy1: Double, cx2: Double, cy2: Double, ax: Double, ay: Double) {
             //rCubicTo(ax, ay, cx1, cy1, cx2, cy2)
 
-            val fcx1 = lastX + cx1
-            val fcy1 = lastY + cy1
+            val fcx1 = lastPos.xD + cx1
+            val fcy1 = lastPos.yD + cy1
 
             val fcx2 = fcx1 + cx2
             val fcy2 = fcy1 + cy2

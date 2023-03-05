@@ -8,14 +8,21 @@ allOpen {
     annotation("org.openjdk.jmh.annotations.State")
 }
 
+kotlin {
+    js {
+        //nodejs()
+    }
+}
+
 benchmark {
     targets {
         register("jvm")
+        //register("js")
     }
 }
 
 dependencies {
     add("commonMainApi", project(":korim"))
     add("commonMainApi", project(":korge"))
-    add("commonMainApi", "org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.4.4")
+    add("commonMainApi", "org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.4.7")
 }

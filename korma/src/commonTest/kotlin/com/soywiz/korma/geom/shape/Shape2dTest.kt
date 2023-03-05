@@ -1,23 +1,10 @@
 package com.soywiz.korma.geom.shape
 
-import com.soywiz.korma.geom.MPoint
-import com.soywiz.korma.geom.PointArrayList
-import com.soywiz.korma.geom.map
-import com.soywiz.korma.geom.shape.ops.extend
-import com.soywiz.korma.geom.shape.ops.intersection
-import com.soywiz.korma.geom.shape.ops.union
-import com.soywiz.korma.geom.shape.ops.xor
-import com.soywiz.korma.geom.toPoints
-import com.soywiz.korma.geom.vector.VectorPath
-import com.soywiz.korma.geom.vector.circle
-import com.soywiz.korma.geom.vector.lineTo
-import com.soywiz.korma.geom.vector.moveTo
-import com.soywiz.korma.geom.vector.rect
-import com.soywiz.korma.internal.niceStr
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
-import kotlin.test.assertNull
+import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.shape.ops.*
+import com.soywiz.korma.geom.vector.*
+import com.soywiz.korma.internal.*
+import kotlin.test.*
 
 class Shape2dTest {
     @Test
@@ -38,9 +25,9 @@ class Shape2dTest {
         assertEquals(
             "Polygon(points=[(0, 0), (100, 0), (100, 100)])",
             VectorPath {
-                moveTo(0, 0)
-                lineTo(100, 0)
-                lineTo(100, 100)
+                moveTo(Point(0, 0))
+                lineTo(Point(100, 0))
+                lineTo(Point(100, 100))
                 close()
             }.toShape2d(closed = true).toString()
         )
@@ -48,39 +35,39 @@ class Shape2dTest {
 
     @Test
     fun test_ToRectangleOrNull() {
-        val a = MPoint(1.0, 1.0)
-        val b = MPoint(1.0, 2.0)
-        val c = MPoint(2.0, 2.0)
-        val d = MPoint(2.0, 1.0)
+        val a = Point(1, 1)
+        val b = Point(1, 2)
+        val c = Point(2, 2)
+        val d = Point(2, 1)
 
-        assertNotNull(PointArrayList(a, b, c, d).toRectangleOrNull())
-        assertNotNull(PointArrayList(d, a, b, c).toRectangleOrNull())
-        assertNotNull(PointArrayList(c, d, a, b).toRectangleOrNull())
-        assertNotNull(PointArrayList(b, c, d, a).toRectangleOrNull())
-        assertNotNull(PointArrayList(b, a, c, d).toRectangleOrNull())
-        assertNotNull(PointArrayList(a, c, b, d).toRectangleOrNull())
-        assertNotNull(PointArrayList(a, b, d, c).toRectangleOrNull())
+        assertNotNull(pointArrayListOf(a, b, c, d).toRectangleOrNull())
+        assertNotNull(pointArrayListOf(d, a, b, c).toRectangleOrNull())
+        assertNotNull(pointArrayListOf(c, d, a, b).toRectangleOrNull())
+        assertNotNull(pointArrayListOf(b, c, d, a).toRectangleOrNull())
+        assertNotNull(pointArrayListOf(b, a, c, d).toRectangleOrNull())
+        assertNotNull(pointArrayListOf(a, c, b, d).toRectangleOrNull())
+        assertNotNull(pointArrayListOf(a, b, d, c).toRectangleOrNull())
 
-        assertNull(PointArrayList(a).toRectangleOrNull())
-        assertNull(PointArrayList(a, b).toRectangleOrNull())
-        assertNull(PointArrayList(a, b, c).toRectangleOrNull())
-        assertNull(PointArrayList(a, b, c, d, a).toRectangleOrNull())
+        assertNull(pointArrayListOf(a).toRectangleOrNull())
+        assertNull(pointArrayListOf(a, b).toRectangleOrNull())
+        assertNull(pointArrayListOf(a, b, c).toRectangleOrNull())
+        assertNull(pointArrayListOf(a, b, c, d, a).toRectangleOrNull())
 
-        assertNull(PointArrayList(a, a, b, c).toRectangleOrNull())
-        assertNull(PointArrayList(a, b, a, c).toRectangleOrNull())
-        assertNull(PointArrayList(a, b, c, a).toRectangleOrNull())
-        assertNull(PointArrayList(a, b, b, c).toRectangleOrNull())
-        assertNull(PointArrayList(a, a, a, a).toRectangleOrNull())
+        assertNull(pointArrayListOf(a, a, b, c).toRectangleOrNull())
+        assertNull(pointArrayListOf(a, b, a, c).toRectangleOrNull())
+        assertNull(pointArrayListOf(a, b, c, a).toRectangleOrNull())
+        assertNull(pointArrayListOf(a, b, b, c).toRectangleOrNull())
+        assertNull(pointArrayListOf(a, a, a, a).toRectangleOrNull())
 
 
-        assertNull(PointArrayList(MPoint(0.0, 1.0), MPoint(1.0, 2.0), MPoint(2.0, 2.0), MPoint(2.0, 1.0)).toRectangleOrNull())
-        assertNull(PointArrayList(MPoint(1.0, 1.0), MPoint(0.0, 2.0), MPoint(2.0, 2.0), MPoint(2.0, 1.0)).toRectangleOrNull())
-        assertNull(PointArrayList(MPoint(1.0, 1.0), MPoint(1.0, 2.0), MPoint(0.0, 2.0), MPoint(2.0, 1.0)).toRectangleOrNull())
-        assertNull(PointArrayList(MPoint(1.0, 1.0), MPoint(1.0, 2.0), MPoint(2.0, 2.0), MPoint(0.0, 1.0)).toRectangleOrNull())
-        assertNull(PointArrayList(MPoint(1.0, 0.0), MPoint(1.0, 2.0), MPoint(2.0, 2.0), MPoint(2.0, 1.0)).toRectangleOrNull())
-        assertNull(PointArrayList(MPoint(1.0, 1.0), MPoint(1.0, 0.0), MPoint(2.0, 2.0), MPoint(2.0, 1.0)).toRectangleOrNull())
-        assertNull(PointArrayList(MPoint(1.0, 1.0), MPoint(1.0, 2.0), MPoint(2.0, 0.0), MPoint(2.0, 1.0)).toRectangleOrNull())
-        assertNull(PointArrayList(MPoint(1.0, 1.0), MPoint(1.0, 2.0), MPoint(2.0, 2.0), MPoint(2.0, 0.0)).toRectangleOrNull())
+        assertNull(pointArrayListOf(Point(0, 1), Point(1, 2), Point(2, 2), Point(2, 1)).toRectangleOrNull())
+        assertNull(pointArrayListOf(Point(1, 1), Point(0, 2), Point(2, 2), Point(2, 1)).toRectangleOrNull())
+        assertNull(pointArrayListOf(Point(1, 1), Point(1, 2), Point(0, 2), Point(2, 1)).toRectangleOrNull())
+        assertNull(pointArrayListOf(Point(1, 1), Point(1, 2), Point(2, 2), Point(0, 1)).toRectangleOrNull())
+        assertNull(pointArrayListOf(Point(1, 0), Point(1, 2), Point(2, 2), Point(2, 1)).toRectangleOrNull())
+        assertNull(pointArrayListOf(Point(1, 1), Point(1, 0), Point(2, 2), Point(2, 1)).toRectangleOrNull())
+        assertNull(pointArrayListOf(Point(1, 1), Point(1, 2), Point(2, 0), Point(2, 1)).toRectangleOrNull())
+        assertNull(pointArrayListOf(Point(1, 1), Point(1, 2), Point(2, 2), Point(2, 0)).toRectangleOrNull())
     }
 
     @Test
@@ -118,23 +105,23 @@ class Shape2dTest {
     @Test
     fun testToPaths() {
         val points = buildVectorPath {
-                moveTo(100, 100)
-                lineTo(400, 400)
-                lineTo(200, 500)
-                lineTo(500, 500)
-                lineTo(200, 700)
+                moveTo(Point(100, 100))
+                lineTo(Point(400, 400))
+                lineTo(Point(200, 500))
+                lineTo(Point(500, 500))
+                lineTo(Point(200, 700))
                 close()
 
-                moveTo(800, 600)
-                lineTo(900, 600)
-                lineTo(900, 400)
+                moveTo(Point(800, 600))
+                lineTo(Point(900, 600))
+                lineTo(Point(900, 400))
                 close()
 
-                moveTo(800, 100)
-                lineTo(800, 110)
+                moveTo(Point(800, 100))
+                lineTo(Point(800, 110))
 
-                moveTo(750, 100)
-                lineTo(750, 110)
+                moveTo(Point(750, 100))
+                lineTo(Point(750, 110))
             }.toPathPointList()
 
         assertEquals("""
@@ -155,8 +142,8 @@ class Shape2dTest {
         fun approx(start: Boolean, end: Boolean) = arrayListOf<String>().also { out ->
             approximateCurve(
                 10,
-                { ratio, get -> get(ratio * 100, -ratio * 100) },
-                { x, y -> out.add("(${x.toInt()},${y.toInt()})") },
+                { ratio, get -> get(Point(ratio * 100, -ratio * 100)) },
+                { (x, y) -> out.add("(${x.toInt()},${y.toInt()})") },
                 start, end
             )
         }.joinToString(" ")
@@ -180,7 +167,7 @@ class Shape2dTest {
 
     @Test
     fun testApproximateCurve2() {
-        val path = buildVectorPath { circle(0, 0, 10) }
+        val path = buildVectorPath { circle(Point(0, 0), 10f) }
         val pointsStr = path.getPoints2().map { x, y -> "(${(x * 100).toInt()},${(y * 100).toInt()})" }.joinToString(" ")
         assertEquals(
             "(1000,0) (996,-82) (986,-162) (970,-240) (949,-316) (921,-389) (888,-459) (850,-526) (807,-590) (759,-650) (707,-707) (650,-759) (590,-807) (526,-850) (459,-888) (389,-921) (316,-949) (240,-970) (162,-986) (82,-996) (0,-1000) (-82,-996) (-162,-986) (-240,-970) (-316,-949) (-389,-921) (-459,-888) (-526,-850) (-590,-807) (-650,-759) (-707,-707) (-759,-650) (-807,-590) (-850,-526) (-888,-459) (-921,-389) (-949,-316) (-970,-240) (-986,-162) (-996,-82) (-1000,0) (-996,82) (-986,162) (-970,240) (-949,316) (-921,389) (-888,459) (-850,526) (-807,590) (-759,650) (-707,707) (-650,759) (-590,807) (-526,850) (-459,888) (-389,921) (-316,949) (-240,970) (-162,986) (-82,996) (0,1000) (82,996) (162,986) (240,970) (316,949) (389,921) (459,888) (526,850) (590,807) (650,759) (707,707) (759,650) (807,590) (850,526) (888,459) (921,389) (949,316) (970,240) (986,162) (996,82) (1000,0) (1000,0)",

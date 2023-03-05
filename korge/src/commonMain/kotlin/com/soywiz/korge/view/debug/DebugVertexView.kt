@@ -73,11 +73,11 @@ class DebugVertexView(pointsList: List<IVectorArrayList>, color: RGBA = Colors.W
             batches.add(Batch(n / 2, points.size))
             if (points.dimensions >= 5) {
                 points.fastForEachGeneric {
-                    val x = this.get(it, 0).toFloat()
-                    val y = this.get(it, 1).toFloat()
-                    val dx = this.get(it, 2).toFloat()
-                    val dy = this.get(it, 3).toFloat()
-                    val scale = this.get(it, 4).toFloat()
+                    val x = this[it, 0].toFloat()
+                    val y = this[it, 1].toFloat()
+                    val dx = this[it, 2].toFloat()
+                    val dy = this[it, 3].toFloat()
+                    val scale = this[it, 4].toFloat()
                     val px = x + dx * scale
                     val py = y + dy * scale
                     buffer[n++] = px
@@ -86,8 +86,8 @@ class DebugVertexView(pointsList: List<IVectorArrayList>, color: RGBA = Colors.W
                 }
             } else {
                 points.fastForEachGeneric {
-                    val x = this.get(it, 0).toFloat()
-                    val y = this.get(it, 1).toFloat()
+                    val x = this[it, 0].toFloat()
+                    val y = this[it, 1].toFloat()
                     buffer[n++] = x
                     buffer[n++] = y
                     bb.add(x, y)

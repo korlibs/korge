@@ -1,6 +1,6 @@
 package com.soywiz.korma.geom
 
-import com.soywiz.korma.interpolation.interpolate
+import com.soywiz.korma.interpolation.*
 import kotlin.test.*
 
 class AnchorTest {
@@ -20,13 +20,13 @@ class AnchorTest {
         assertEquals(MPoint(50, 100), rect.getAnchoredPosition(Anchor.BOTTOM_CENTER))
         assertEquals(MPoint(100, 100), rect.getAnchoredPosition(Anchor.BOTTOM_RIGHT))
 
-        assertEquals(Anchor.TOP_LEFT, 0.0.interpolate(Anchor.TOP_LEFT, Anchor.BOTTOM_RIGHT))
-        assertEquals(Anchor.MIDDLE_CENTER, 0.5.interpolate(Anchor.TOP_LEFT, Anchor.BOTTOM_RIGHT))
-        assertEquals(Anchor.BOTTOM_RIGHT, 1.0.interpolate(Anchor.TOP_LEFT, Anchor.BOTTOM_RIGHT))
+        assertEquals(Anchor.TOP_LEFT, Ratio.ZERO.interpolate(Anchor.TOP_LEFT, Anchor.BOTTOM_RIGHT))
+        assertEquals(Anchor.MIDDLE_CENTER, Ratio.HALF.interpolate(Anchor.TOP_LEFT, Anchor.BOTTOM_RIGHT))
+        assertEquals(Anchor.BOTTOM_RIGHT, Ratio.ONE.interpolate(Anchor.TOP_LEFT, Anchor.BOTTOM_RIGHT))
 
         assertEquals(Anchor.MIDDLE_CENTER, Anchor(0.5, 0.5))
         assertEquals(Anchor(0.6, 0.6), Anchor(0.6, 0.6))
-        assertEquals(0.6, Anchor(0.6, 0.7).sx)
-        assertEquals(0.7, Anchor(0.6, 0.7).sy)
+        assertEquals(0.6f, Anchor(0.6f, 0.7f).sx)
+        assertEquals(0.7f, Anchor(0.6f, 0.7f).sy)
     }
 }

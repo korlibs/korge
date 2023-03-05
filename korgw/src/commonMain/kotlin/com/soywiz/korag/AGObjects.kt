@@ -69,7 +69,6 @@ inline class AGTextureUnitInfo private constructor(val data: Int) {
 }
 
 class AGTexture(
-    val premultiplied: Boolean = true,
     val targetKind: AGTextureTargetKind = AGTextureTargetKind.TEXTURE_2D
 ) : AGObject(), Closeable {
     var isFbo: Boolean = false
@@ -113,12 +112,12 @@ class AGTexture(
         return requestMipmaps && width.isPowerOfTwo && height.isPowerOfTwo
     }
 
-    override fun toString(): String = "AGTexture(size=$width,$height,pre=$premultiplied)"
+    override fun toString(): String = "AGTexture(size=$width,$height)"
 }
 
 open class AGFrameBufferBase(val isMain: Boolean) : AGObject() {
     val isTexture: Boolean get() = !isMain
-    val tex: AGTexture = AGTexture(premultiplied = true).also { it.isFbo = true }
+    val tex: AGTexture = AGTexture().also { it.isFbo = true }
     var estimatedMemoryUsage: ByteUnits = ByteUnits.fromBytes(0)
 
     override fun close() {

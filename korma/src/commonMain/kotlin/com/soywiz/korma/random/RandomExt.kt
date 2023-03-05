@@ -1,9 +1,7 @@
 package com.soywiz.korma.random
 
 import com.soywiz.korma.geom.*
-import com.soywiz.korma.interpolation.Interpolable
-import com.soywiz.korma.interpolation.MutableInterpolable
-import com.soywiz.korma.interpolation.interpolate
+import com.soywiz.korma.interpolation.*
 import kotlin.math.pow
 import kotlin.random.Random
 
@@ -23,16 +21,17 @@ fun <T> List<T>.randomWithWeights(weights: List<Double>, random: Random = Random
 
 fun Random.nextDoubleInclusive() = (this.nextInt(0x1000001).toDouble() / 0x1000000.toDouble())
 
+operator fun Random.get(min: Ratio, max: Ratio): Ratio = Ratio(get(min.valueD, max.valueD))
 operator fun Random.get(min: Double, max: Double): Double = min + nextDouble() * (max - min)
 operator fun Random.get(min: Float, max: Float): Float = min + nextFloat() * (max - min)
 operator fun Random.get(min: Int, max: Int): Int = min + nextInt(max - min)
 operator fun Random.get(range: IntRange): Int = range.start + this.nextInt(range.endInclusive - range.start + 1)
 operator fun Random.get(range: LongRange): Long = range.start + this.nextLong() % (range.endInclusive - range.start + 1)
-operator fun <T : Interpolable<T>> Random.get(l: T, r: T): T = (this.nextDoubleInclusive()).interpolate(l, r)
+operator fun <T : Interpolable<T>> Random.get(l: T, r: T): T = (this.nextDoubleInclusive()).toRatio().interpolate(l, r)
 operator fun Random.get(l: Angle, r: Angle): Angle = this.nextDoubleInclusive().interpolateAngleDenormalized(l, r)
 operator fun <T> Random.get(list: List<T>): T = list[this[list.indices]]
 operator fun Random.get(rectangle: MRectangle): IPoint = IPoint(this[rectangle.left, rectangle.right], this[rectangle.top, rectangle.bottom])
-fun <T : MutableInterpolable<T>> T.setToRandom(min: T, max: T, random: Random = Random) { this.setToInterpolated(random.nextDouble(), min, max) }
+fun <T : MutableInterpolable<T>> T.setToRandom(min: T, max: T, random: Random = Random) { this.setToInterpolated(random.nextDouble().toRatio(), min, max) }
 
 fun <T> Random.weighted(weights: Map<T, Double>): T = shuffledWeighted(weights).first()
 fun <T> Random.weighted(weights: RandomWeights<T>): T = shuffledWeighted(weights).first()

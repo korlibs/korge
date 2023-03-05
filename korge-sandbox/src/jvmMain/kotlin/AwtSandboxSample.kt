@@ -5,8 +5,7 @@ import com.soywiz.korge.input.onClick
 import com.soywiz.korge.jvmEnsureAddOpens
 import com.soywiz.korge.ui.*
 import com.soywiz.korim.color.toRgba
-import com.soywiz.korma.geom.Anchor
-import com.soywiz.korma.geom.MSizeInt
+import com.soywiz.korma.geom.*
 import java.awt.Component
 import java.awt.GridLayout
 import javax.swing.JButton
@@ -38,7 +37,7 @@ object AwtSandboxSample {
                         GLCanvasWithKorge(
                             Korge.Config(
                                 bgcolor = frame.background.toRgba(),
-                                virtualSize = MSizeInt(UIButton.DEFAULT_WIDTH.toInt(), UIButton.DEFAULT_HEIGHT.toInt() * 3),
+                                virtualSize = Size(UIButton.DEFAULT_WIDTH, UIButton.DEFAULT_HEIGHT * 3).toInt(),
                                 scaleAnchor = Anchor.CENTER
                             )
                         ) {

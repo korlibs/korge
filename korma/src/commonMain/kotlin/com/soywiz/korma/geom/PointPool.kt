@@ -79,7 +79,7 @@ class PointPool(val capacity: Int = 16, preallocate: Boolean = false) {
     operator fun IPoint.rem(value: Int): IPoint = this % value.toDouble()
 
     operator fun IPointArrayList.get(index: Int): MPoint = MPoint().setTo(this.getX(index), this.getY(index))
-    fun IPointArrayList.getCyclic(index: Int): MPoint = this[index umod size]
+    fun IPointArrayList.getCyclic(index: Int): MPoint = this[index umod size].mutable
 
     inline operator fun <T> invoke(callback: PointPool.() -> T): T {
         val oldOffset = offset

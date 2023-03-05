@@ -10,7 +10,7 @@ public actual open class FastArrayList<E> internal constructor(
     @PublishedApi internal var array: Array<Any?>,
     @PublishedApi internal var _size: Int = array.size,
     @PublishedApi internal var arrayCapacity: Int = array.size
-) : AbstractMutableList<E>(), MutableList<E>, RandomAccess {
+) : AbstractMutableList<E>(), MutableListEx<E>, RandomAccess {
 //) : MutableList<E>, RandomAccess {
     private var isReadOnly: Boolean = false
 

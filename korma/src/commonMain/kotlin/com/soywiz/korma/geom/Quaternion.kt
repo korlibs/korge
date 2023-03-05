@@ -12,7 +12,7 @@ data class Quaternion(
 )
 
 @KormaMutableApi
-interface IQuaternion {
+sealed interface IQuaternion {
     val x: Double
     val y: Double
     val z: Double

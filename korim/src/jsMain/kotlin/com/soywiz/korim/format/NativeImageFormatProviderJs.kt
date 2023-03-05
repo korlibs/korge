@@ -393,10 +393,10 @@ class CanvasContext2dRenderer(private val canvas: HTMLCanvasElementLike) : Rende
 
     fun doVisit(path: VectorPath) {
         path.visitCmds(
-            moveTo = { x, y -> ctx.moveTo(x, y) },
-            lineTo = { x, y -> ctx.lineTo(x, y) },
-            quadTo = { cx, cy, ax, ay -> ctx.quadraticCurveTo(cx, cy, ax, ay) },
-            cubicTo = { cx1, cy1, cx2, cy2, ax, ay -> ctx.bezierCurveTo(cx1, cy1, cx2, cy2, ax, ay) },
+            moveTo = { (x, y) -> ctx.moveTo(x.toDouble(), y.toDouble()) },
+            lineTo = { (x, y) -> ctx.lineTo(x.toDouble(), y.toDouble()) },
+            quadTo = { (cx, cy), (ax, ay) -> ctx.quadraticCurveTo(cx.toDouble(), cy.toDouble(), ax.toDouble(), ay.toDouble()) },
+            cubicTo = { (cx1, cy1), (cx2, cy2), (ax, ay) -> ctx.bezierCurveTo(cx1.toDouble(), cy1.toDouble(), cx2.toDouble(), cy2.toDouble(), ax.toDouble(), ay.toDouble()) },
             close = { ctx.closePath() }
         )
     }

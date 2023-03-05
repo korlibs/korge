@@ -39,10 +39,6 @@ open class Container(
      * A collection with all the children [View]s.
      */
     val children: ContainerCollection = ContainerCollection(this, __children)
-    @Deprecated("", ReplaceWith("children"))
-    val childrenCollection: ContainerCollection get() = children
-    @Deprecated("", ReplaceWith("children"))
-    val collection: ContainerCollection get() = children
 
     @PublishedApi
     override val _children: List<View>? get() = __children
@@ -89,10 +85,6 @@ open class Container(
     /** Returns the number of children this container has */
     @Suppress("FoldInitializerAndIfToElvis")
     val numChildren: Int get() = __children.size
-
-    /** Returns the number of children this container has */
-    @Deprecated("", ReplaceWith("numChildren"))
-    val size: Int get() = numChildren
 
     /**
      * Recursively retrieves the top ancestor in the container hierarchy.

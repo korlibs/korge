@@ -1,20 +1,10 @@
 package com.soywiz.korma.geom.vector
 
-import com.soywiz.kds.DoubleArrayList
-import com.soywiz.kds.Extra
-import com.soywiz.kds.IntArrayList
-import com.soywiz.kds.extraProperty
+import com.soywiz.kds.*
 import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.kmem.*
 import com.soywiz.korma.annotations.KormaExperimental
-import com.soywiz.korma.geom.BoundsBuilder
-import com.soywiz.korma.geom.IPoint
-import com.soywiz.korma.geom.MLine
-import com.soywiz.korma.geom.LineIntersection
-import com.soywiz.korma.geom.MMatrix
-import com.soywiz.korma.geom.MPoint
-import com.soywiz.korma.geom.PointArrayList
-import com.soywiz.korma.geom.MRectangle
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.bezier.Bezier
 import com.soywiz.korma.geom.bezier.Curves
 import com.soywiz.korma.geom.bezier.toCurves
@@ -31,14 +21,14 @@ interface IVectorPath : VectorBuilder {
 @OptIn(KormaExperimental::class)
 class VectorPath(
     val commands: IntArrayList = IntArrayList(),
-    val data: DoubleArrayList = DoubleArrayList(),
+    val data: FloatArrayList = FloatArrayList(),
     var winding: Winding = Winding.DEFAULT,
     var optimize: Boolean = true,
 ) : IVectorPath, Extra by Extra.Mixin() {
     var assumeConvex: Boolean = false
     var version: Int = 0
 
-    fun clone(): VectorPath = VectorPath(IntArrayList(commands), DoubleArrayList(data), winding)
+    fun clone(): VectorPath = VectorPath(IntArrayList(commands), FloatArrayList(data), winding)
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         return other is VectorPath && this.commands == other.commands && this.data == other.data && this.winding == other.winding
@@ -58,69 +48,66 @@ class VectorPath(
 
     interface Visitor {
         fun close() = Unit
-        fun moveTo(x: Double, y: Double) = Unit
-        fun lineTo(x: Double, y: Double) = Unit
-        fun quadTo(cx: Double, cy: Double, ax: Double, ay: Double) = Unit
-        fun cubicTo(cx1: Double, cy1: Double, cx2: Double, cy2: Double, ax: Double, ay: Double) = Unit
+        fun moveTo(p: Point) = Unit
+        fun lineTo(p: Point) = Unit
+        fun quadTo(c: Point, a: Point) = Unit
+        fun cubicTo(c1: Point, c2: Point, a: Point) = Unit
     }
 
     inline fun visitCmds(
-        moveTo: (x: Double, y: Double) -> Unit,
-        lineTo: (x: Double, y: Double) -> Unit,
-        quadTo: (x1: Double, y1: Double, x2: Double, y2: Double) -> Unit,
-        cubicTo: (x1: Double, y1: Double, x2: Double, y2: Double, x3: Double, y3: Double) -> Unit,
+        moveTo: (p: Point) -> Unit,
+        lineTo: (p: Point) -> Unit,
+        quadTo: (c: Point, a: Point) -> Unit,
+        cubicTo: (c1: Point, c2: Point, A: Point) -> Unit,
         close: () -> Unit
     ) {
         var n = 0
         commands.fastForEach { cmd ->
             when (cmd) {
-                Command.MOVE_TO -> moveTo(data[n++], data[n++])
-                Command.LINE_TO -> lineTo(data[n++], data[n++])
-                Command.QUAD_TO -> quadTo(data[n++], data[n++], data[n++], data[n++])
-                Command.CUBIC_TO -> cubicTo(data[n++], data[n++], data[n++], data[n++], data[n++], data[n++])
+                Command.MOVE_TO -> moveTo(Point(data[n++], data[n++]))
+                Command.LINE_TO -> lineTo(Point(data[n++], data[n++]))
+                Command.QUAD_TO -> quadTo(Point(data[n++], data[n++]), Point(data[n++], data[n++]))
+                Command.CUBIC_TO -> cubicTo(Point(data[n++], data[n++]), Point(data[n++], data[n++]), Point(data[n++], data[n++]))
                 Command.CLOSE -> close()
             }
         }
     }
 
     inline fun visitEdges(
-        line: (x0: Double, y0: Double, x1: Double, y1: Double) -> Unit,
-        quad: (x0: Double, y0: Double, x1: Double, y1: Double, x2: Double, y2: Double) -> Unit,
-        cubic: (x0: Double, y0: Double, x1: Double, y1: Double, x2: Double, y2: Double, x3: Double, y3: Double) -> Unit,
+        line: (p0: Point, p1: Point) -> Unit,
+        quad: (p0: Point, p1: Point, p2: Point) -> Unit,
+        cubic: (p0: Point, p1: Point, p2: Point, p3: Point) -> Unit,
         close: () -> Unit = {},
-        move: (x: Double, y: Double) -> Unit = { x, y -> },
+        move: (p: Point) -> Unit = { },
         dummy: Unit = Unit, // Prevents tailing lambda
         optimizeClose: Boolean = true
     ) {
-        var mx = 0.0
-        var my = 0.0
-        var lx = 0.0
-        var ly = 0.0
+        var m = Point()
+        var l = Point()
         visitCmds(
-            moveTo = { x, y ->
-                mx = x; my = y
-                lx = x; ly = y
-                move(x, y)
+            moveTo = {
+                m = it; l = it
+                move(it)
             },
-            lineTo = { x, y ->
-                line(lx, ly, x, y)
-                lx = x; ly = y
+            lineTo = {
+                line(l, it)
+                l = it
             },
-            quadTo = { x1, y1, x2, y2 ->
-                quad(lx, ly, x1, y1, x2, y2)
-                lx = x2; ly = y2
+            quadTo = { p1, p2 ->
+                quad(l, p1, p2)
+                l = p2
             },
-            cubicTo = { x1, y1, x2, y2, x3, y3 ->
-                cubic(lx, ly, x1, y1, x2, y2, x3, y3)
-                lx = x3; ly = y3
+            cubicTo = { p1, p2, p3 ->
+                cubic(l, p1, p2, p3)
+                l = p3
             },
             close = {
                 val equal = when {
-                    optimizeClose -> lx.isAlmostEquals(mx) && ly.isAlmostEquals(my)
-                    else -> lx == mx && ly == my
+                    optimizeClose -> l.isAlmostEquals(m)
+                    else -> l == m
                 }
                 if (!equal) {
-                    line(lx, ly, mx, my)
+                    line(l, m)
                 }
                 close()
             }
@@ -128,19 +115,19 @@ class VectorPath(
     }
 
     inline fun visitEdgesSimple(
-        line: (x0: Double, y0: Double, x1: Double, y1: Double) -> Unit,
-        cubic: (x0: Double, y0: Double, x1: Double, y1: Double, x2: Double, y2: Double, x3: Double, y3: Double) -> Unit,
+        line: (p1: Point, p2: Point) -> Unit,
+        cubic: (p1: Point, p2: Point, p3: Point, p4: Point) -> Unit,
         close: () -> Unit
     ) = visitEdges(
         line,
-        { x0, y0, x1, y1, x2, y2 ->
+        { p1, p2, p3 ->
             //val cx1 = Bezier.quadToCubic1(x0, x1, x2)
             //val cy1 = Bezier.quadToCubic1(y0, y1, y2)
             //val cx2 = Bezier.quadToCubic2(x0, x1, x2)
             //val cy2 = Bezier.quadToCubic2(y0, y1, y2)
             //cubic(x0, y0, cx1, cy1, cx2, cy2, x2, y2)
-            Bezier.quadToCubic(x0, y0, x1, y1, x2, y2) { qx0, qy0, qx1, qy1, qx2, qy2, qx3, qy3 ->
-                cubic(qx0, qy0, qx1, qy1, qx2, qy2, qx3, qy3)
+            Bezier.quadToCubic(p1.xD, p1.yD, p2.xD, p2.yD, p3.xD, p3.yD) { qx0, qy0, qx1, qy1, qx2, qy2, qx3, qy3 ->
+                cubic(Point(qx0, qy0), Point(qx1, qy1), Point(qx2, qy2), Point(qx3, qy3))
             }
         },
         cubic,
@@ -160,7 +147,7 @@ class VectorPath(
     fun clear() {
         commands.clear()
         data.clear()
-        lastXY(0.0, 0.0)
+        lastPos = Point()
         version = 0
         scanline.version = version - 1  // ensure scanline will be updated after this "clear" operation
     }
@@ -173,34 +160,28 @@ class VectorPath(
     fun appendFrom(other: VectorPath) {
         this.commands.add(other.commands)
         this.data.add(other.data)
-        lastXY(other.lastX, other.lastY)
+        this.lastPos = other.lastPos
         version++
     }
 
-    override var lastX = 0.0
-    override var lastY = 0.0
+    override var lastPos = Point()
 
-    fun lastXY(x: Double, y: Double) {
-        this.lastX = x
-        this.lastY = y
-    }
-
-    override fun moveTo(x: Double, y: Double) {
+    override fun moveTo(p: Point) {
         if (commands.isNotEmpty() && commands.last() == Command.MOVE_TO) {
-            if (lastX == x && lastY == y) return
+            if (lastPos == p) return
         }
         commands.add(Command.MOVE_TO)
-        data.add(x, y)
-        lastXY(x, y)
+        data.add(p.xF, p.yF)
+        lastPos = p
         version++
     }
 
-    override fun lineTo(x: Double, y: Double) {
-        if (ensureMoveTo(x, y) && optimize) return
-        if (x == lastX && y == lastY && optimize) return
+    override fun lineTo(p: Point) {
+        if (ensureMoveTo(p) && optimize) return
+        if (p == lastPos && optimize) return
         commands.add(Command.LINE_TO)
-        data.add(x, y)
-        lastXY(x, y)
+        data.add(p.x, p.y)
+        lastPos = p
         version++
     }
 
@@ -225,7 +206,7 @@ class VectorPath(
             val y = data[data.size - 3]
             val x1 = data[data.size - 2]
             val y1 = data[data.size - 1]
-            if (MPoint.isCollinear(x0, y0, x, y, x1, y1)) {
+            if (Point.isCollinear(x0, y0, x, y, x1, y1)) {
                 removeLastCommand()
                 data[data.size - 2] = x1
                 data[data.size - 1] = y1
@@ -233,19 +214,19 @@ class VectorPath(
         }
     }
 
-    override fun quadTo(cx: Double, cy: Double, ax: Double, ay: Double) {
-        ensureMoveTo(cx, cy)
+    override fun quadTo(c: Point, a: Point) {
+        ensureMoveTo(c)
         commands.add(Command.QUAD_TO)
-        data.add(cx, cy, ax, ay)
-        lastXY(ax, ay)
+        data.add(c.x, c.y, a.x, a.y)
+        lastPos = a
         version++
     }
 
-    override fun cubicTo(cx1: Double, cy1: Double, cx2: Double, cy2: Double, ax: Double, ay: Double) {
-        ensureMoveTo(cx1, cy1)
+    override fun cubicTo(c1: Point, c2: Point, a: Point) {
+        ensureMoveTo(c1)
         commands.add(Command.CUBIC_TO)
-        data.add(cx1, cy1, cx2, cy2, ax, ay)
-        lastXY(ax, ay)
+        data.add(c1.x, c1.y, c2.x, c2.y, a.x, a.y)
+        lastPos = a
         version++
     }
 
@@ -256,9 +237,9 @@ class VectorPath(
 
     override val totalPoints: Int get() = data.size / 2
 
-    private fun ensureMoveTo(x: Double, y: Double): Boolean {
+    private fun ensureMoveTo(p: Point): Boolean {
         if (isNotEmpty()) return false
-        moveTo(x, y)
+        moveTo(p)
         return true
     }
 
@@ -274,7 +255,8 @@ class VectorPath(
     // I run a semi-infinite ray horizontally (increasing x, fixed y) out from the test point, and count how many edges it crosses.
     // At each crossing, the ray switches between inside and outside. This is called the Jordan curve theorem.
     fun containsPoint(x: Double, y: Double): Boolean = trapezoids.containsPoint(x, y, this.winding)
-    fun containsPoint(p: MPoint): Boolean = containsPoint(p.x, p.y, this.winding)
+    fun containsPoint(p: Point): Boolean = containsPoint(p.xD, p.yD, this.winding)
+    fun containsPoint(p: IPoint): Boolean = containsPoint(p.x, p.y, this.winding)
     fun containsPoint(x: Int, y: Int): Boolean = containsPoint(x.toDouble(), y.toDouble())
     fun containsPoint(x: Float, y: Float): Boolean = containsPoint(x.toDouble(), y.toDouble())
 
@@ -401,19 +383,14 @@ class VectorPath(
         this.commands += path.commands
         if (transform.isIdentity()) {
             this.data += path.data
-            lastXY(path.lastX, path.lastY)
+            lastPos = path.lastPos
         } else {
             @Suppress("ReplaceManualRangeWithIndicesCalls")
             for (n in 0 until path.data.size step 2) {
-                val x = path.data[n + 0]
-                val y = path.data[n + 1]
-                this.data += transform.transformX(x, y)
-                this.data += transform.transformY(x, y)
+                val p = transform.transform(Point(path.data[n + 0], path.data[n + 1]))
+                this.data.add(p.x, p.y)
             }
-            lastXY(
-                transform.transformX(path.lastX, path.lastY),
-                transform.transformY(path.lastX, path.lastY)
-            )
+            lastPos = transform.transform(path.lastPos)
         }
         version++
     }
@@ -424,23 +401,18 @@ class VectorPath(
 
     override fun toSvgString(): String = buildString {
         visitCmds(
-            moveTo = { x, y -> append("M${x.niceStr},${y.niceStr} ") },
-            lineTo = { x, y -> append("L${x.niceStr},${y.niceStr} ") },
-            quadTo = { x1, y1, x2, y2 -> append("Q${x1.niceStr},${y1.niceStr},${x2.niceStr},${y2.niceStr} ") },
-            cubicTo = { x1, y1, x2, y2, x3, y3 -> append("C${x1.niceStr},${y1.niceStr},${x2.niceStr},${y2.niceStr},${x3.niceStr},${y3.niceStr} ") },
+            moveTo = { (x, y) -> append("M${x.niceStr},${y.niceStr} ") },
+            lineTo = { (x, y) -> append("L${x.niceStr},${y.niceStr} ") },
+            quadTo = { (x1, y1), (x2, y2) -> append("Q${x1.niceStr},${y1.niceStr},${x2.niceStr},${y2.niceStr} ") },
+            cubicTo = { (x1, y1), (x2, y2), (x3, y3) -> append("C${x1.niceStr},${y1.niceStr},${x2.niceStr},${y2.niceStr},${x3.niceStr},${y3.niceStr} ") },
             close = { append("Z ") }
         )
     }.trimEnd()
     override fun toString(): String = "VectorPath(${toSvgString()})"
 
-    @PublishedApi
-    internal val tempPoint = MPoint()
-
-    inline fun transformPoints(transform: (p: MPoint) -> IPoint): VectorPath {
-        val point = tempPoint
+    inline fun transformPoints(transform: (p: Point) -> Point): VectorPath {
         for (n in 0 until data.size step 2) {
-            point.setTo(data[n + 0], data[n + 1])
-            val p = transform(point)
+            val p = transform(Point(data[n + 0], data[n + 1]))
             data[n + 0] = p.x
             data[n + 1] = p.y
         }
@@ -448,11 +420,7 @@ class VectorPath(
         return this
     }
 
-    fun scale(sx: Double, sy: Double = sx): VectorPath {
-        return transformPoints { p ->
-            p.setTo(p.x * sx, p.y * sy)
-        }
-    }
+    fun scale(sx: Double, sy: Double = sx): VectorPath = transformPoints { Point(it.x * sx, it.y * sy) }
 
     fun floor(): VectorPath {
         for (n in 0 until data.size) data[n] = kotlin.math.floor(data[n])
@@ -497,34 +465,27 @@ fun VectorBuilder.path(path: VectorPath?) {
 
 fun VectorBuilder.write(path: VectorPath) {
     path.visitCmds(
-        moveTo = { x, y -> moveTo(x, y) },
-        lineTo = { x, y -> lineTo(x, y) },
-        quadTo = { x0, y0, x1, y1 -> quadTo(x0, y0, x1, y1) },
-        cubicTo = { x0, y0, x1, y1, x2, y2 -> cubicTo(x0, y0, x1, y1, x2, y2) },
+        moveTo = { moveTo(it) },
+        lineTo = { lineTo(it) },
+        quadTo = { p1, p2 -> quadTo(p1, p2) },
+        cubicTo = { p1, p2, p3 -> cubicTo(p1, p2, p3) },
         close = { close() }
     )
 }
 
-fun VectorBuilder.moveTo(x: Double, y: Double, m: MMatrix?) = if (m != null) moveTo(m.transformX(x, y), m.transformY(x, y)) else moveTo(x, y)
-fun VectorBuilder.lineTo(x: Double, y: Double, m: MMatrix?) = if (m != null) lineTo(m.transformX(x, y), m.transformY(x, y)) else lineTo(x, y)
-fun VectorBuilder.quadTo(cx: Double, cy: Double, ax: Double, ay: Double, m: MMatrix?) =
+fun VectorBuilder.moveTo(p: Point, m: MMatrix?) = if (m != null) moveTo(m.transform(p)) else moveTo(p)
+fun VectorBuilder.lineTo(p: Point, m: MMatrix?) = if (m != null) lineTo(m.transform(p)) else lineTo(p)
+fun VectorBuilder.quadTo(c: Point, a: Point, m: MMatrix?) =
     if (m != null) {
-        quadTo(
-            m.transformX(cx, cy), m.transformY(cx, cy),
-            m.transformX(ax, ay), m.transformY(ax, ay)
-        )
+        quadTo(m.transform(c), m.transform(a))
     } else {
-        quadTo(cx, cy, ax, ay)
+        quadTo(c, a)
     }
-fun VectorBuilder.cubicTo(cx1: Double, cy1: Double, cx2: Double, cy2: Double, ax: Double, ay: Double, m: MMatrix?) =
+fun VectorBuilder.cubicTo(c1: Point, c2: Point, a: Point, m: MMatrix?) =
     if (m != null) {
-        cubicTo(
-            m.transformX(cx1, cy1), m.transformY(cx1, cy1),
-            m.transformX(cx2, cy2), m.transformY(cx2, cy2),
-            m.transformX(ax, ay), m.transformY(ax, ay)
-        )
+        cubicTo(m.transform(c1), m.transform(c2), m.transform(a))
     } else {
-        cubicTo(cx1, cy1, cx2, cy2, ax, ay)
+        cubicTo(c1, c2, a)
     }
 
 
@@ -534,10 +495,10 @@ fun VectorBuilder.path(path: VectorPath, m: MMatrix?) {
 
 fun VectorBuilder.write(path: VectorPath, m: MMatrix?) {
     path.visitCmds(
-        moveTo = { x, y -> moveTo(x, y, m) },
-        lineTo = { x, y -> lineTo(x, y, m) },
-        quadTo = { x0, y0, x1, y1 -> quadTo(x0, y0, x1, y1, m) },
-        cubicTo = { x0, y0, x1, y1, x2, y2 -> cubicTo(x0, y0, x1, y1, x2, y2, m) },
+        moveTo = { moveTo(it, m) },
+        lineTo = { lineTo(it, m) },
+        quadTo = { p1, p2 -> quadTo(p1, p2, m) },
+        cubicTo = { p1, p2, p3 -> cubicTo(p1, p2, p3, m) },
         close = { close() }
     )
 }
@@ -546,9 +507,7 @@ fun BoundsBuilder.add(path: VectorPath, transform: MMatrix? = null) {
     val curvesList = path.getCurvesList()
     if (curvesList.isEmpty() && path.isNotEmpty()) {
         path.visit(object : VectorPath.Visitor {
-            override fun moveTo(x: Double, y: Double) {
-                add(x, y)
-            }
+            override fun moveTo(p: Point) { add(p) }
         })
     }
     curvesList.fastForEach { curves ->
@@ -561,7 +520,7 @@ fun BoundsBuilder.add(path: VectorPath, transform: MMatrix? = null) {
 }
 
 fun VectorPath.applyTransform(m: MMatrix?): VectorPath = when {
-    m != null -> transformPoints { m.transform(it, it) }
+    m != null -> transformPoints { m.transform(it) }
     else -> this
 }
 
@@ -583,10 +542,10 @@ fun VectorPath.getCurvesList(): List<Curves> {
                 current = arrayListOf()
             }
             visitEdges(
-                line = { x0, y0, x1, y1 -> current += Bezier(x0, y0, x1, y1) },
-                quad = { x0, y0, x1, y1, x2, y2 -> current += Bezier(x0, y0, x1, y1, x2, y2) },
-                cubic = { x0, y0, x1, y1, x2, y2, x3, y3 -> current += Bezier(x0, y0, x1, y1, x2, y2, x3, y3) },
-                move = { x, y -> flush() },
+                line = { p1, p2 -> current += Bezier(p1, p2) },
+                quad = { p1, p2, p3 -> current += Bezier(p1, p2, p3) },
+                cubic = { p1, p2, p3, p4 -> current += Bezier(p1, p2, p3, p4) },
+                move = { p -> flush() },
                 close = {
                     currentClosed = true
                     flush()

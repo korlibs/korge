@@ -60,11 +60,7 @@ import com.soywiz.korio.dynamic.*
 import com.soywiz.korio.file.std.localCurrentDirVfs
 import com.soywiz.korio.file.std.resourcesVfs
 import com.soywiz.korio.resources.Resources
-import com.soywiz.korma.geom.Anchor
-import com.soywiz.korma.geom.ISizeInt
-import com.soywiz.korma.geom.MPoint
-import com.soywiz.korma.geom.ScaleMode
-import com.soywiz.korma.geom.MSizeInt
+import com.soywiz.korma.geom.*
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.coroutineScope
@@ -79,6 +75,7 @@ import kotlin.reflect.KClass
 object Korge {
 	val logger = Logger("Korge")
     val DEFAULT_GAME_ID = "com.soywiz.korge.unknown"
+    val DEFAULT_WINDOW_SIZE: SizeInt get() = DefaultViewport.SIZE
 
     suspend operator fun invoke(config: Config) {
         //println("Korge started from Config")
@@ -87,10 +84,8 @@ object Korge {
 
         Korge(
             title = config.title ?: module.title,
-            width = config.windowSize?.width ?: windowSize.width,
-            height = config.windowSize?.height ?: windowSize.height,
-            virtualWidth = config.virtualSize?.width ?: module.size.width,
-            virtualHeight = config.virtualSize?.height ?: module.size.height,
+            windowSize = config.windowSize ?: windowSize,
+            virtualSize = config.virtualSize ?: module.virtualSize,
             bgcolor = config.bgcolor ?: module.bgcolor,
             quality = config.quality ?: module.quality,
             icon = null,
@@ -142,8 +137,8 @@ object Korge {
 
     suspend operator fun invoke(
         title: String = "Korge",
-        width: Int = DefaultViewport.WIDTH, height: Int = DefaultViewport.HEIGHT,
-        virtualWidth: Int = width, virtualHeight: Int = height,
+        windowSize: SizeInt = DefaultViewport.SIZE,
+        virtualSize: SizeInt = windowSize,
         icon: Bitmap? = null,
         iconPath: String? = null,
         //iconDrawable: SizedDrawable? = null,
@@ -186,7 +181,7 @@ object Korge {
             val gameWindow = this
             if (Platform.isNative) println("Korui[0]")
             gameWindow.registerTime("configureGameWindow") {
-                realGameWindow.configure(width, height, title, icon, fullscreen, bgcolor ?: Colors.BLACK)
+                realGameWindow.configure(windowSize, title, icon, fullscreen, bgcolor ?: Colors.BLACK)
             }
             gameWindow.registerTime("setIcon") {
                 try {
@@ -233,14 +228,14 @@ object Korge {
                 .mapInstance<Module>(object : Module() {
                     override val title = title
                     override val fullscreen: Boolean? = fullscreen
-                    override val windowSize = MSizeInt(width, height)
-                    override val size = MSizeInt(virtualWidth, virtualHeight)
+                    override val windowSize = windowSize
+                    override val virtualSize = virtualSize
                 })
             views.debugViews = debug
             views.debugFontExtraScale = debugFontExtraScale
             views.debugFontColor = debugFontColor
-            views.virtualWidth = virtualWidth
-            views.virtualHeight = virtualHeight
+            views.virtualWidth = virtualSize.width
+            views.virtualHeight = virtualSize.height
             views.scaleAnchor = scaleAnchor
             views.scaleMode = scaleMode
             views.clipBorders = clipBorders
@@ -352,26 +347,26 @@ object Korge {
         }
         */
 
-        fun mouseDown(type: String, x: Double, y: Double, button: MouseButton) {
+        fun mouseDown(type: String, p: Point, button: MouseButton) {
             input.toggleButton(button, true)
-            input.setMouseGlobalXY(x, y, down = false)
-            input.setMouseGlobalXY(x, y, down = true)
+            input.setMouseGlobalPos(p, down = false)
+            input.setMouseGlobalPos(p, down = true)
             views.mouseUpdated()
-            downPos.copyFrom(input.mouse)
+            downPos.copyFrom(input.mousePos)
             downTime = DateTime.now()
             input.mouseInside = true
         }
 
-        fun mouseUp(type: String, x: Double, y: Double, button: MouseButton) {
+        fun mouseUp(type: String, p: Point, button: MouseButton) {
             //Console.log("mouseUp: $name")
             input.toggleButton(button, false)
-            input.setMouseGlobalXY(x, y, down = false)
+            input.setMouseGlobalPos(p, down = false)
             views.mouseUpdated()
-            upPos.copyFrom(views.input.mouse)
+            upPos.copyFrom(views.input.mousePos)
         }
 
-        fun mouseMove(type: String, x: Double, y: Double, inside: Boolean) {
-            views.input.setMouseGlobalXY(x, y, down = false)
+        fun mouseMove(type: String, p: Point, inside: Boolean) {
+            views.input.setMouseGlobalPos(p, down = false)
             views.input.mouseInside = inside
             if (!inside) {
                 moveMouseOutsideInNextFrame = true
@@ -380,8 +375,8 @@ object Korge {
             moveTime = DateTime.now()
         }
 
-        fun mouseDrag(type: String, x: Double, y: Double) {
-            views.input.setMouseGlobalXY(x, y, down = false)
+        fun mouseDrag(type: String, p: Point) {
+            views.input.setMouseGlobalPos(p, down = false)
             views.mouseUpdated()
             moveTime = DateTime.now()
         }
@@ -389,8 +384,7 @@ object Korge {
         val mouseTouchEvent = TouchEvent()
 
         fun dispatchSimulatedTouchEvent(
-            x: Double,
-            y: Double,
+            p: Point,
             button: MouseButton,
             type: TouchEvent.Type,
             status: Touch.Status
@@ -400,7 +394,7 @@ object Korge {
             mouseTouchEvent.currentTime = DateTime.now()
             mouseTouchEvent.scaleCoords = false
             mouseTouchEvent.startFrame(type)
-            mouseTouchEvent.touch(button.id, x, y, status, kind = Touch.Kind.MOUSE, button = button)
+            mouseTouchEvent.touch(button.id, p.xD, p.yD, status, kind = Touch.Kind.MOUSE, button = button)
             mouseTouchEvent.endFrame()
             views.dispatch(mouseTouchEvent)
         }
@@ -408,30 +402,30 @@ object Korge {
         eventDispatcher.addEventListener<MouseEvent> { e ->
             //println("MOUSE: $e")
             logger.trace { "eventDispatcher.addEventListener<MouseEvent>:$e" }
-            val (x, y) = getRealXY(e.x.toDouble(), e.y.toDouble(), e.scaleCoords)
+            val p = getRealXY(e.x.toDouble(), e.y.toDouble(), e.scaleCoords).point
             when (e.type) {
                 MouseEvent.Type.DOWN -> {
-                    mouseDown("mouseDown", x, y, e.button)
+                    mouseDown("mouseDown", p, e.button)
                     //updateTouch(mouseTouchId, x, y, start = true, end = false)
-                    dispatchSimulatedTouchEvent(x, y, e.button, TouchEvent.Type.START, Touch.Status.ADD)
+                    dispatchSimulatedTouchEvent(p, e.button, TouchEvent.Type.START, Touch.Status.ADD)
                 }
 
                 MouseEvent.Type.UP -> {
-                    mouseUp("mouseUp", x, y, e.button)
+                    mouseUp("mouseUp", p, e.button)
                     //updateTouch(mouseTouchId, x, y, start = false, end = true)
-                    dispatchSimulatedTouchEvent(x, y, e.button, TouchEvent.Type.END, Touch.Status.REMOVE)
+                    dispatchSimulatedTouchEvent(p, e.button, TouchEvent.Type.END, Touch.Status.REMOVE)
                 }
 
                 MouseEvent.Type.DRAG -> {
-                    mouseDrag("onMouseDrag", x, y)
+                    mouseDrag("onMouseDrag", p)
                     //updateTouch(mouseTouchId, x, y, start = false, end = false)
-                    dispatchSimulatedTouchEvent(x, y, e.button, TouchEvent.Type.MOVE, Touch.Status.KEEP)
+                    dispatchSimulatedTouchEvent(p, e.button, TouchEvent.Type.MOVE, Touch.Status.KEEP)
                 }
 
-                MouseEvent.Type.MOVE -> mouseMove("mouseMove", x, y, inside = true)
+                MouseEvent.Type.MOVE -> mouseMove("mouseMove", p, inside = true)
                 MouseEvent.Type.CLICK -> Unit
-                MouseEvent.Type.ENTER -> mouseMove("mouseEnter", x, y, inside = true)
-                MouseEvent.Type.EXIT -> mouseMove("mouseExit", x, y, inside = false)
+                MouseEvent.Type.ENTER -> mouseMove("mouseEnter", p, inside = true)
+                MouseEvent.Type.EXIT -> mouseMove("mouseExit", p, inside = false)
                 MouseEvent.Type.SCROLL -> Unit
             }
             views.dispatch(e)
@@ -478,15 +472,16 @@ object Korge {
                 val start = ee.isStart
                 val end = ee.isEnd
                 val t = ee.touches.first()
+                val p = t.p
                 val x = t.x
                 val y = t.y
                 val button = MouseButton.LEFT
 
                 //updateTouch(t.id, x, y, start, end)
                 when {
-                    start -> mouseDown("onTouchStart", x, y, button)
-                    end -> mouseUp("onTouchEnd", x, y, button)
-                    else -> mouseMove("onTouchMove", x, y, inside = true)
+                    start -> mouseDown("onTouchStart", p, button)
+                    end -> mouseUp("onTouchEnd", p, button)
+                    else -> mouseMove("onTouchMove", p, inside = true)
                 }
                 views.dispatch(touchMouseEvent.also {
                     it.id = 0
@@ -621,8 +616,8 @@ object Korge {
         val gameId: String = DEFAULT_GAME_ID,
         val settingsFolder: String? = null,
         val batchMaxQuads: Int = BatchBuilder2D.DEFAULT_BATCH_QUADS,
-        val virtualSize: ISizeInt? = module.size,
-        val windowSize: ISizeInt? = module.windowSize,
+        val virtualSize: SizeInt? = module.virtualSize,
+        val windowSize: SizeInt? = module.windowSize,
         val scaleMode: ScaleMode? = null,
         val scaleAnchor: Anchor? = null,
         val clipBorders: Boolean? = null,
@@ -636,8 +631,8 @@ object Korge {
         val constructedScene: Scene.(Views) -> Unit = module.constructedScene,
         val constructedViews: (Views) -> Unit = module.constructedViews,
 	) {
-        val finalWindowSize: ISizeInt get() = windowSize ?: module.windowSize
-        val finalVirtualSize: ISizeInt get() = virtualSize ?: module.size
+        val finalWindowSize: SizeInt get() = windowSize ?: module.windowSize
+        val finalVirtualSize: SizeInt get() = virtualSize ?: module.virtualSize
     }
 
 	data class ModuleArgs(val args: Array<String>)

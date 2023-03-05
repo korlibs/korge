@@ -47,6 +47,10 @@ class RenderContext2D(
 
     val ctx: RenderContext get() = batch.ctx
 
+    var size: Size = Size(0.0, 0.0)
+    val width: Double get() = size.widthD
+    val height: Double get() = size.heightD
+
     inline fun getTexture(slice: BmpSlice): TextureCoords = agBitmapTextureManager.getTexture(slice)
 
     @KorgeInternal
@@ -107,13 +111,24 @@ class RenderContext2D(
         }
     }
 
+    inline fun <T> keepSize(crossinline callback: () -> T): T {
+        val size = this.size
+        try {
+            return callback()
+        } finally {
+            this.size = size
+        }
+    }
+
     /** Executes [callback] restoring the transform matrix, the [blendMode] and the [multiplyColor] at the end */
 	inline fun <T> keep(crossinline callback: () -> T): T {
 		return keepMatrix {
 			keepBlendMode {
 				keepColor {
                     keepFiltering {
-                        callback()
+                        keepSize {
+                            callback()
+                        }
                     }
 				}
 			}
@@ -307,6 +322,7 @@ class RenderContext2D(
 inline fun View.renderCtx2d(ctx: RenderContext, crossinline block: (RenderContext2D) -> Unit) {
     ctx.useCtx2d { context ->
         context.keep {
+            context.size = Size(this@renderCtx2d.width, this@renderCtx2d.height)
             context.blendMode = renderBlendMode
             context.multiplyColor = renderColorMul
             context.setMatrix(globalMatrix)

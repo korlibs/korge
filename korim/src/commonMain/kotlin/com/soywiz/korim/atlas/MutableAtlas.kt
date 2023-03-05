@@ -22,7 +22,7 @@ class MutableAtlas<T>(
     val allowToGrow: Boolean = true,
     val growMethod: GrowMethod = GrowMethod.NEW_IMAGES
 ) {
-    private val borderMargin = IMarginInt(border)
+    private val borderMargin = MarginInt(border)
 
     constructor(
         width: Int = 2048,
@@ -106,7 +106,7 @@ class MutableAtlas<T>(
                 )
                 val dstX = slice.left
                 val dstY = slice.top
-                val boundsWithBorder: IRectangleInt = slice.bounds.expanded(borderMargin)
+                val boundsWithBorder: RectangleInt = slice.bounds.expanded(borderMargin)
                 this.bitmap.lock(boundsWithBorder) {
                     this.bitmap.draw(bmp, dstX, dstY)
                     this.bitmap.expandBorder(slice.rect, border)

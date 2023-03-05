@@ -50,7 +50,7 @@ interface BitmapFont : Font {
     val glyphs: IntMap<Glyph>
     val kernings: IntMap<Kerning>
 
-    val baseBmp: Bitmap get() = anyGlyph.texture.bmpBase
+    val baseBmp: Bitmap get() = anyGlyph.texture.bmp
     val anyGlyph: Glyph
     val invalidGlyph: Glyph
 

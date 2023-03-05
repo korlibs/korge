@@ -64,4 +64,6 @@ fun <T> UIProperty(set: (T) -> Unit, get: () -> T): UIProperty<T> = object : UIP
 }
 
 @KorgeExperimental
-fun <T> KMutableProperty0<T>.toUI() = UIProperty(set = { this@toUI.set(it) }, get = { this@toUI.get() })
+fun <T> KMutableProperty0<T>.toUI(): UIProperty<T> = UIProperty(set = { this@toUI.set(it) }, get = { this@toUI.get() })
+
+fun UIProperty<Float>.toDouble(): UIProperty<Double> = UIProperty(set = { this@toDouble.set(it.toFloat()) }, get = { this@toDouble.get().toDouble() })

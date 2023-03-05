@@ -1,38 +1,20 @@
 package com.soywiz.korim.vector.format
 
-import com.soywiz.kds.ListReader
-import com.soywiz.kds.mapWhile
-import com.soywiz.klock.TimeSpan
+import com.soywiz.kds.*
+import com.soywiz.klock.*
 import com.soywiz.klogger.*
-import com.soywiz.korim.annotation.KorimExperimental
-import com.soywiz.korim.color.Colors
-import com.soywiz.korim.color.RGBA
+import com.soywiz.korim.annotation.*
+import com.soywiz.korim.color.*
 import com.soywiz.korim.paint.*
-import com.soywiz.korim.style.CSS
-import com.soywiz.korim.style.DOM
-import com.soywiz.korim.style.DOMAnimator
-import com.soywiz.korim.text.HorizontalAlign
-import com.soywiz.korim.text.VerticalAlign
-import com.soywiz.korim.vector.Context2d
-import com.soywiz.korim.vector.CycleMethod
-import com.soywiz.korim.vector.SizedDrawable
-import com.soywiz.korio.lang.substr
-import com.soywiz.korio.serialization.xml.Xml
-import com.soywiz.korio.util.StrReader
-import com.soywiz.korio.util.isLetterOrDigit
-import com.soywiz.korio.util.isNumeric
-import com.soywiz.korio.util.reader
-import com.soywiz.korma.geom.MMatrix
-import com.soywiz.korma.geom.MRectangle
-import com.soywiz.korma.geom.shape.getPoints2
-import com.soywiz.korma.geom.vector.LineCap
-import com.soywiz.korma.geom.vector.LineJoin
-import com.soywiz.korma.geom.vector.VectorPath
-import com.soywiz.korma.geom.vector.circle
-import com.soywiz.korma.geom.vector.ellipse
-import com.soywiz.korma.geom.vector.isNotEmpty
-import com.soywiz.korma.geom.vector.roundRect
-import com.soywiz.korma.geom.vector.write
+import com.soywiz.korim.style.*
+import com.soywiz.korim.text.*
+import com.soywiz.korim.vector.*
+import com.soywiz.korio.lang.*
+import com.soywiz.korio.serialization.xml.*
+import com.soywiz.korio.util.*
+import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.shape.*
+import com.soywiz.korma.geom.vector.*
 import kotlin.collections.set
 
 class SVG(val root: Xml, val warningProcessor: ((message: String) -> Unit)? = null) : SizedDrawable {
@@ -348,7 +330,7 @@ class SVG(val root: Xml, val warningProcessor: ((message: String) -> Unit)? = nu
         var radius = xml.double("r")
 
         override fun drawInternal(c: Context2d) {
-            c.circle(cx, cy, radius)
+            c.circle(Point(cx, cy), radius.toFloat())
         }
     }
 
@@ -359,7 +341,7 @@ class SVG(val root: Xml, val warningProcessor: ((message: String) -> Unit)? = nu
         var ry = xml.double("ry")
 
         override fun drawInternal(c: Context2d) {
-            c.ellipse(cx - rx, cy - ry, rx * 2, ry * 2)
+            c.ellipse(Point(cx - rx, cy - ry), Size(rx * 2, ry * 2))
         }
     }
 
@@ -373,11 +355,11 @@ class SVG(val root: Xml, val warningProcessor: ((message: String) -> Unit)? = nu
         }).toList())
         val path = VectorPath().also { path ->
             var edges = 0
-            path.moveTo(pps.read(), pps.read())
+            path.moveTo(Point(pps.read(), pps.read()))
             while (pps.hasMore) {
                 val x = pps.read()
                 val y = pps.read()
-                path.lineTo(x, y)
+                path.lineTo(Point(x, y))
                 edges++
             }
             if (xml.nameLC == "polygon") path.close()
@@ -398,8 +380,8 @@ class SVG(val root: Xml, val warningProcessor: ((message: String) -> Unit)? = nu
 
         override fun drawInternal(c: Context2d) {
             c.beginPath()
-            c.moveTo(x1, y1)
-            c.lineTo(x2, y2)
+            c.moveTo(Point(x1, y1))
+            c.lineTo(Point(x2, y2))
         }
     }
 

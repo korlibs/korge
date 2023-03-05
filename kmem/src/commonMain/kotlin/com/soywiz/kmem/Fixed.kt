@@ -1,5 +1,7 @@
 package com.soywiz.kmem
 
+import kotlin.math.*
+
 /**
  * Fixed point class, to handle decimal values with a fixed precision.
  *
@@ -15,7 +17,7 @@ package com.soywiz.kmem
  * 23~24 bits of integer
  * 6~7 bits of decimal
  */
-inline class Fixed private constructor(val value: Int) : Comparable<Fixed> {
+inline class Fixed private constructor(val raw: Int) : Comparable<Fixed> {
     companion object {
         const val SCALE_DIGITS = 2
         const val SCALE = 100
@@ -26,6 +28,7 @@ inline class Fixed private constructor(val value: Int) : Comparable<Fixed> {
         val NaN: Fixed get() = Fixed(Int.MIN_VALUE + 1)
         val POSITIVE_INFINITY: Fixed get() = Fixed(Int.MAX_VALUE)
 
+        fun fromRaw(raw: Int): Fixed = Fixed(raw)
         operator fun invoke(value: Int, unit: Unit = Unit): Fixed = Fixed((value * SCALE))
         operator fun invoke(value: Double): Fixed {
             if (HANDLE_DENORMALS) {
@@ -45,17 +48,18 @@ inline class Fixed private constructor(val value: Int) : Comparable<Fixed> {
         }
     }
 
-    val valueInt: Int get() = value / SCALE
-    val valueRem: Int get() = value % SCALE
+    val valueInt: Int get() = raw / SCALE
+    val valueDec: Int get() = raw.absoluteValue % SCALE
 
     operator fun unaryPlus(): Fixed = this
-    operator fun unaryMinus(): Fixed = Fixed(-value)
-    operator fun plus(other: Fixed): Fixed = Fixed(value + other.value)
-    operator fun minus(other: Fixed): Fixed = Fixed(value - other.value)
-    // @TODO: We should do this without casting to double to avoid precision issues. Maybe we can multiply integer part and then decimal part separately and add them
-    operator fun times(other: Fixed): Fixed = Fixed((value * other.toDouble()).toInt())
-    operator fun div(other: Fixed): Fixed = Fixed((value / other.toDouble()).toInt())
-    override fun compareTo(other: Fixed): Int = this.value.compareTo(other.value)
+    operator fun unaryMinus(): Fixed = Fixed(-raw)
+    operator fun plus(other: Fixed): Fixed = Fixed(raw + other.raw)
+    operator fun minus(other: Fixed): Fixed = Fixed(raw - other.raw)
+    operator fun times(other: Fixed): Fixed = Fixed(((raw * other.raw.toDouble()) / SCALE).toIntRound())
+    operator fun div(other: Fixed): Fixed = Fixed(((raw.toDouble() * SCALE) / other.raw.toDouble()).toIntRound())
+    // @TODO: Do this properly
+    operator fun rem(other: Fixed): Fixed = Fixed(this.toDouble() % other.toDouble())
+    override fun compareTo(other: Fixed): Int = this.raw.compareTo(other.raw)
 
     fun toDouble(): Double {
         if (HANDLE_DENORMALS) {
@@ -65,11 +69,11 @@ inline class Fixed private constructor(val value: Int) : Comparable<Fixed> {
                 POSITIVE_INFINITY -> return Double.POSITIVE_INFINITY
             }
         }
-        return value.toDouble() / SCALE
+        return raw.toDouble() / SCALE
     }
     fun toFloat(): Float = toDouble().toFloat()
     fun toLong(): Long = toInt().toLong()
-    fun toInt(): Int = value / SCALE
+    fun toInt(): Int = raw / SCALE
 
     override fun toString(): String {
         if (HANDLE_DENORMALS) {
@@ -79,11 +83,11 @@ inline class Fixed private constructor(val value: Int) : Comparable<Fixed> {
                 POSITIVE_INFINITY -> return "Infinity"
             }
         }
-        val str = "$value"
+        val str = "$raw"
         return when {
             str.length <= SCALE_DIGITS -> "0.$str"
             else -> str.substring(0, str.length - SCALE_DIGITS) + "." + str.substring(str.length - SCALE_DIGITS)
-        }.trimEnd('0').trimEnd('.')
+        }
     }
 }
 
@@ -93,3 +97,10 @@ val Int.fixed: Fixed get() = Fixed(this)
 val Double.fixed: Fixed get() = Fixed(this)
 val Float.fixed: Fixed get() = Fixed(this.toDouble())
 inline val Number.fixed: Fixed get() = Fixed(this.toDouble())
+
+fun String.toFixed(): Fixed = Fixed(this)
+fun Long.toFixed(): Fixed = Fixed(this.toInt())
+fun Int.toFixed(): Fixed = Fixed(this)
+fun Double.toFixed(): Fixed = Fixed(this)
+fun Float.toFixed(): Fixed = Fixed(this.toDouble())
+inline fun Number.toFixed(): Fixed = Fixed(this.toDouble())

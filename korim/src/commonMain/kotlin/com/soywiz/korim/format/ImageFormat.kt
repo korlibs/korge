@@ -101,14 +101,14 @@ abstract class ImageFormat(vararg exts: String) : ImageFormatEncoderDecoder {
         this.read(s.readAll(), props)
 
 
-    fun encode(frames: List<ImageFrame>, props: ImageEncodingProps = ImageEncodingProps("unknown")): ByteArray =
-		MemorySyncStreamToByteArray(frames.area * 4) { writeImage(ImageData(frames), this, props) }
-
 	fun encode(image: ImageData, props: ImageEncodingProps = ImageEncodingProps("unknown")): ByteArray =
 		MemorySyncStreamToByteArray(image.area * 4) { writeImage(image, this, props) }
 
-	fun encode(bitmap: Bitmap, props: ImageEncodingProps = ImageEncodingProps("unknown")): ByteArray =
-		encode(listOf(ImageFrame(bitmap)), props)
+    fun encode(frames: List<ImageFrame>, props: ImageEncodingProps = ImageEncodingProps("unknown")): ByteArray =
+        encode(ImageData(frames), props)
+
+    fun encode(bitmap: Bitmap, props: ImageEncodingProps = ImageEncodingProps("unknown")): ByteArray =
+		encode(ImageData(bitmap), props)
 
 	suspend fun read(file: VfsFile, props: ImageDecodingProps = ImageDecodingProps.DEFAULT): ImageData =
 		this.readImage(file.readAll().openSync(), props.copy(filename = file.baseName))

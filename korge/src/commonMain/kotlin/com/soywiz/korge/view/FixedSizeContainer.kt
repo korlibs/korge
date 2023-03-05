@@ -114,18 +114,14 @@ open class FixedSizeContainer(
 
 fun View.getVisibleLocalArea(out: MRectangle = MRectangle()): MRectangle {
     getVisibleGlobalArea(out)
-    val x0 = globalToLocalX(out.left, out.top)
-    val x1 = globalToLocalX(out.right, out.top)
-    val x2 = globalToLocalX(out.right, out.bottom)
-    val x3 = globalToLocalX(out.left, out.bottom)
-    val y0 = globalToLocalY(out.left, out.top)
-    val y1 = globalToLocalY(out.right, out.top)
-    val y2 = globalToLocalY(out.right, out.bottom)
-    val y3 = globalToLocalY(out.left, out.bottom)
-    val xmin = min(x0, x1, x2, x3)
-    val xmax = max(x0, x1, x2, x3)
-    val ymin = min(y0, y1, y2, y3)
-    val ymax = max(y0, y1, y2, y3)
+    val p0 = globalToLocal(out.topLeft)
+    val p1 = globalToLocal(out.topRight)
+    val p2 = globalToLocal(out.bottomRight)
+    val p3 = globalToLocal(out.bottomLeft)
+    val xmin = min(p0.x, p1.x, p2.x, p3.x)
+    val xmax = max(p0.x, p1.x, p2.x, p3.x)
+    val ymin = min(p0.y, p1.y, p2.y, p3.y)
+    val ymax = max(p0.y, p1.y, p2.y, p3.y)
     return out.setBounds(xmin, ymin, xmax, ymax)
 }
 

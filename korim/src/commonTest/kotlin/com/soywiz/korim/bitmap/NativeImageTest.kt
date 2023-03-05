@@ -6,7 +6,7 @@ import com.soywiz.korim.color.RgbaArray
 import com.soywiz.korim.vector.buildShape
 import com.soywiz.korim.vector.render
 import com.soywiz.korio.async.suspendTest
-import com.soywiz.korma.geom.MSize
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.Winding
 import com.soywiz.korma.geom.vector.circle
 import kotlin.test.Test
@@ -70,11 +70,11 @@ class NativeImageTest {
     fun testNativeVectorRenderingEvenOdd() {
         val image = buildShape {
             fill(Colors.RED, winding = Winding.EVEN_ODD) {
-                circle(50, 50, 50)
-                circle(50, 50, 25)
+                circle(Point(50, 50), 50f)
+                circle(Point(50, 50), 25f)
             }
         }.render()
-        assertEquals(MSize(100, 100), image.size)
+        assertEquals(SizeInt(100, 100), image.size)
         assertEquals(1.0, image.getRgbaRaw(10, 50).ad)
         assertEquals(0.0, image.getRgbaRaw(50, 50).ad)
     }
@@ -83,11 +83,11 @@ class NativeImageTest {
     fun testNativeVectorRenderingNonZero() {
         val image = buildShape {
             fill(Colors.RED, winding = Winding.NON_ZERO) {
-                circle(50, 50, 50)
-                circle(50, 50, 25)
+                circle(Point(50, 50), 50f)
+                circle(Point(50, 50), 25f)
             }
         }.render()
-        assertEquals(MSize(100, 100), image.size)
+        assertEquals(SizeInt(100, 100), image.size)
         assertEquals(1.0, image.getRgbaRaw(10, 50).ad)
         assertEquals(1.0, image.getRgbaRaw(50, 50).ad)
     }

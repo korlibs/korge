@@ -1,62 +1,31 @@
 package samples
 
-import com.soywiz.kds.doubleArrayListOf
-import com.soywiz.kds.forEachRatio01
-import com.soywiz.kds.getCyclic
-import com.soywiz.kds.iterators.fastForEach
-import com.soywiz.klock.seconds
+import com.soywiz.kds.*
+import com.soywiz.kds.iterators.*
+import com.soywiz.klock.*
 import com.soywiz.korag.*
-import com.soywiz.korev.Key
-import com.soywiz.korge.input.keys
-import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.time.delayFrame
-import com.soywiz.korge.tween.get
-import com.soywiz.korge.tween.tween
-import com.soywiz.korge.view.Container
-import com.soywiz.korge.view.SContainer
-import com.soywiz.korge.view.addUpdater
-import com.soywiz.korge.view.centered
-import com.soywiz.korge.view.circle
-import com.soywiz.korge.view.container
-import com.soywiz.korge.view.debug.DebugVertexView
-import com.soywiz.korge.view.debug.debugVertexView
-import com.soywiz.korge.view.cpuGraphics
-import com.soywiz.korge.view.vector.gpuShapeView
-import com.soywiz.korim.color.Colors
-import com.soywiz.korim.font.DefaultTtfFont
-import com.soywiz.korim.text.DefaultStringTextRenderer
-import com.soywiz.korim.text.aroundPath
-import com.soywiz.korim.text.text
-import com.soywiz.korma.geom.vector.StrokeInfo
-import com.soywiz.korio.async.launchImmediately
-import com.soywiz.korma.geom.IPointArrayList
-import com.soywiz.korma.geom.PointArrayList
-import com.soywiz.korma.geom.bezier.Bezier
-import com.soywiz.korma.geom.bezier.Curves
-import com.soywiz.korma.geom.bezier.StrokePointsMode
-import com.soywiz.korma.geom.bezier.toDashes
-import com.soywiz.korma.geom.bezier.toNonCurveSimplePointList
-import com.soywiz.korma.geom.bezier.toStrokePointsList
-import com.soywiz.korma.geom.fastForEach
-import com.soywiz.korma.geom.fastForEachWithIndex
-import com.soywiz.korma.geom.firstPoint
-import com.soywiz.korma.geom.lastPoint
-import com.soywiz.korma.geom.shape.buildVectorPath
-import com.soywiz.korma.geom.shape.toPolygon
-import com.soywiz.korma.geom.vector.VectorPath
-import com.soywiz.korma.geom.vector.circle
-import com.soywiz.korma.geom.vector.getCurves
-import com.soywiz.korma.geom.vector.line
-import com.soywiz.korma.geom.vector.path
-import com.soywiz.korma.geom.vector.quadTo
-import com.soywiz.korma.geom.vector.star
-import com.soywiz.korma.geom.vector.toCurves
-import com.soywiz.korma.interpolation.Easing
+import com.soywiz.korev.*
+import com.soywiz.korge.input.*
+import com.soywiz.korge.scene.*
+import com.soywiz.korge.time.*
+import com.soywiz.korge.tween.*
+import com.soywiz.korge.view.*
+import com.soywiz.korge.view.debug.*
+import com.soywiz.korge.view.vector.*
+import com.soywiz.korim.color.*
+import com.soywiz.korim.font.*
+import com.soywiz.korim.text.*
+import com.soywiz.korio.async.*
+import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.bezier.*
+import com.soywiz.korma.geom.shape.*
+import com.soywiz.korma.geom.vector.*
+import com.soywiz.korma.interpolation.*
 
 class MainStrokesExperiment3 : Scene() {
     override suspend fun SContainer.sceneMain() {
         cpuGraphics {
-            val path = buildVectorPath { circle(200, 200, 100) }
+            val path = buildVectorPath { circle(Point(200, 200), 100f) }
             val points = path.toCurves().toNonCurveSimplePointList()
             val path2 = points?.toPolygon()
 
@@ -71,7 +40,7 @@ class MainStrokesExperiment3 : Scene() {
             fill(Colors.PURPLE) {
                 var n = 0
                 points?.fastForEach { x, y ->
-                    circle(x, y, 5.0)
+                    circle(Point(x, y), 5f)
                 }
             }
             fill(Colors.WHITE) {
@@ -138,19 +107,19 @@ class MainStrokesExperiment2 : Scene() {
         launchImmediately {
             while (true) {
                 if (alternate) {
-                    startX = this@MainStrokesExperiment2.stage.mouseX
-                    startY = this@MainStrokesExperiment2.stage.mouseY
+                    startX = this@MainStrokesExperiment2.stage.mousePos.xD
+                    startY = this@MainStrokesExperiment2.stage.mousePos.yD
                 } else {
-                    endX = this@MainStrokesExperiment2.stage.mouseX
-                    endY = this@MainStrokesExperiment2.stage.mouseY
+                    endX = this@MainStrokesExperiment2.stage.mousePos.xD
+                    endY = this@MainStrokesExperiment2.stage.mousePos.yD
                 }
 
                 val path = buildVectorPath {
-                    moveTo(startX, startY)
-                    quadTo(100, 600, 300, 400)
+                    moveTo(Point(startX, startY))
+                    quadTo(Point(100, 600), Point(300, 400))
                     when {
-                        quad -> quadTo(endX - 50, endY - 50, endX, endY)
-                        else -> lineTo(endX, endY)
+                        quad -> quadTo(Point(endX - 50, endY - 50), Point(endX, endY))
+                        else -> lineTo(Point(endX, endY))
                     }
                     if (closed) this.close()
                 }
@@ -190,20 +159,19 @@ class MainStrokesExperiment2 : Scene() {
                         pointsInfo.debugPoints.fastForEachWithIndex { index, x, y ->
                             val color = debugPointColors.getCyclic(index)
                             fill(color.withAd(0.5)) {
-                                this.circle(x, y, 3.0)
+                                this.circle(Point(x, y), 3f)
                             }
                         }
                     }
 
                     PointArrayList().also {
                         for (c in curves.beziers) {
-                            val bc = c as Bezier
-                            it.add(bc.points.firstPoint())
-                            it.add(bc.points.lastPoint())
+                            it.add(c.points.first)
+                            it.add(c.points.last)
                         }
                     }.fastForEach { x, y ->
                         fill(Colors.RED.withAd(0.5)) {
-                            this.circle(x, y, 2.0)
+                            this.circle(Point(x, y), 2f)
                         }
                     }
 
@@ -211,8 +179,8 @@ class MainStrokesExperiment2 : Scene() {
                 dbv2.pointsList = listOf(PointArrayList().also {
                     for (c in curves.beziers) {
                         val bc = c as Bezier
-                        it.add(bc.points.firstPoint())
-                        it.add(bc.points.lastPoint())
+                        it.add(bc.points.first)
+                        it.add(bc.points.last)
                     }
                 })
                 //delay(0.3.seconds)
@@ -279,23 +247,17 @@ class MainStrokesExperiment : Scene() {
         val circle = circle(16.0, Colors.PURPLE).centered
         launchImmediately {
             while (true) {
-                circle.tween(circle::ipos.get(path, includeLastPoint = true, reversed = false), time = 5.seconds, easing = Easing.LINEAR)
-                circle.tween(circle::ipos.get(path, includeLastPoint = true, reversed = true), time = 5.seconds, easing = Easing.LINEAR)
+                circle.tween(circle::pos.get(path, includeLastPoint = true, reversed = false), time = 5.seconds, easing = Easing.LINEAR)
+                circle.tween(circle::pos.get(path, includeLastPoint = true, reversed = true), time = 5.seconds, easing = Easing.LINEAR)
             }
         }
 
         if (true) {
             //if (false) {
             cpuGraphics {
-                //stroke(Colors.RED, StrokeInfo(thickness = 3.0)) {
-                //    forEachRatio01(200) { ratio ->
-                //        val p = curves.calc(ratio)
-                //        if (ratio == 0.0) moveTo(p) else lineTo(p)
-                //    }
-                //}
                 stroke(Colors.GREEN, StrokeInfo(thickness = 2.0)) {
-                    forEachRatio01(200) { ratio ->
-                        val t = curves.ratioFromLength(ratio * curves.length)
+                    Ratio.forEachRatio(200) { ratio ->
+                        val t = curves.ratioFromLength(ratio.convertToRange(0.0, curves.length))
                         //println("t=$t")
                         val p = curves.calc(t)
                         val n = curves.normal(t)

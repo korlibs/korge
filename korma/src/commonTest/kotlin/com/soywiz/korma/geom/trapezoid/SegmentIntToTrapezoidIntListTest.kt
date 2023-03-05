@@ -1,5 +1,6 @@
 package com.soywiz.korma.geom.trapezoid
 
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.shape.*
 import com.soywiz.korma.geom.vector.*
 import kotlin.test.*
@@ -31,8 +32,8 @@ class SegmentIntToTrapezoidIntListTest {
                 TrapezoidInt(x0a=50, x0b=50, y0=50, x1a=100, x1b=0, y1=100)
             """.trimIndent(),
             trapezoidsStr {
-                line(0, 0, 100, 100)
-                line(100, 0, 0, 100)
+                line(Point(0, 0), Point(100, 100))
+                line(Point(100, 0), Point(0, 100))
             }
         )
     }
@@ -126,7 +127,7 @@ class SegmentIntToTrapezoidIntListTest {
                 ....####....
             """.trimIndent(),
             trapezoidsDrawing(12, 12, drawScale = 10) {
-                circle(60, 60, 60)
+                circle(Point(60, 60), 60f)
             }
         )
     }
@@ -149,9 +150,9 @@ class SegmentIntToTrapezoidIntListTest {
                 ....####....
             """.trimIndent(),
             trapezoidsDrawing(12, 12, drawScale = 10, winding = Winding.EVEN_ODD) {
-                circle(60, 60, 60)
+                circle(Point(60, 60), 60f)
                 //circleHole(60, 60, 40)
-                circle(60, 60, 40)
+                circle(Point(60, 60), 40f)
             }
         )
     }
@@ -174,8 +175,8 @@ class SegmentIntToTrapezoidIntListTest {
                 ....####....
             """.trimIndent(),
             trapezoidsDrawing(12, 12, drawScale = 10, winding = Winding.NON_ZERO) {
-                circle(60, 60, 60)
-                circleHole(60, 60, 40)
+                circle(Point(60, 60), 60f)
+                circleHole(Point(60, 60), 40f)
             }
         )
     }

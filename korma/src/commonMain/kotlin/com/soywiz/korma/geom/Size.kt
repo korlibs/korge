@@ -1,10 +1,9 @@
 package com.soywiz.korma.geom
 
+import com.soywiz.kds.pack.*
 import com.soywiz.korma.annotations.*
 import com.soywiz.korma.internal.niceStr
-import com.soywiz.korma.interpolation.Interpolable
-import com.soywiz.korma.interpolation.MutableInterpolable
-import com.soywiz.korma.interpolation.interpolate
+import com.soywiz.korma.interpolation.*
 import kotlin.math.max
 import kotlin.math.min
 
@@ -14,13 +13,66 @@ interface Sizeable {
 }
 
 //@KormaExperimental
-@KormaValueApi
-data class Size(val width: Double, val height: Double) {
-    constructor() : this(0.0, 0.0)
-    constructor(width: Float, height: Float) : this(width.toDouble(), height.toDouble())
-    constructor(width: Int, height: Int) : this(width.toDouble(), height.toDouble())
+//@KormaValueApi
+inline class Size internal constructor(internal val raw: Float2Pack) {
+    val width: Float get() = raw.x
+    val height: Float get() = raw.y
+
+    val widthF: Float get() = width
+    val heightF: Float get() = height
+    val widthD: Double get() = width.toDouble()
+    val heightD: Double get() = height.toDouble()
+
+    //(val width: Double, val height: Double) {
+    constructor() : this(0f, 0f)
+    constructor(width: Float, height: Float) : this(Float2Pack(width, height))
+    constructor(width: Double, height: Double) : this(Float2Pack(width.toFloat(), height.toFloat()))
+    constructor(width: Int, height: Int) : this(width.toFloat(), height.toFloat())
+
+    operator fun component1(): Float = width
+    operator fun component2(): Float = height
+
+    fun avgComponent(): Float = width * 0.5f + height * 0.5f
+    fun minComponent(): Float = min(width, height)
+    fun maxComponent(): Float = max(width, height)
+
+    operator fun unaryMinus(): Size = Size(-width, -height)
+    operator fun unaryPlus(): Size = this
+
+    operator fun minus(other: Size): Size = Size(width - other.width, height - other.height)
+    operator fun plus(other: Size): Size = Size(width + other.width, height + other.height)
+    operator fun times(s: Float): Size = Size(width * s, height * s)
+    operator fun times(s: Double): Size = times(s.toFloat())
+    operator fun times(s: Int): Size = times(s.toFloat())
+    operator fun div(other: Size): Size = Size(width / other.width, height / other.height)
+    operator fun div(s: Float): Size = Size(width / s, height / s)
+    operator fun div(s: Double): Size = div(s.toFloat())
+    operator fun div(s: Int): Size = div(s.toFloat())
 
     override fun toString(): String = "Size(width=${width.niceStr}, height=${height.niceStr})"
+}
+
+val Size.mutable: MSize get() = MSize(width, height)
+
+inline class SizeInt internal constructor(internal val raw: Int2Pack) {
+    val width: Int get() = raw.x
+    val height: Int get() = raw.y
+
+    constructor() : this(0, 0)
+    constructor(width: Int, height: Int) : this(Int2Pack(width, height))
+
+    operator fun component1(): Int = width
+    operator fun component2(): Int = height
+}
+
+interface SizeableInt {
+    val size: SizeInt
+    companion object {
+        operator fun invoke(size: SizeInt): SizeableInt = object : SizeableInt {
+            override val size: SizeInt get() = size
+        }
+        operator fun invoke(width: Int, height: Int): SizeableInt = invoke(SizeInt(width, height))
+    }
 }
 
 @KormaMutableApi
@@ -29,7 +81,8 @@ interface ISizeable {
 }
 
 @KormaMutableApi
-interface ISize {
+@Deprecated("Use Size instead")
+sealed interface ISize {
     val width: Double
     val height: Double
 
@@ -45,7 +98,10 @@ interface ISize {
     }
 }
 
+val ISize.immutable: Size get() = Size(width, height)
+
 @KormaMutableApi
+@Deprecated("Use Size instead")
 inline class MSize(val p: MPoint) : MutableInterpolable<MSize>, Interpolable<MSize>, ISize, ISizeable {
     companion object {
         operator fun invoke(): MSize = MSize(MPoint(0, 0))
@@ -73,6 +129,7 @@ inline class MSize(val p: MPoint) : MutableInterpolable<MSize>, Interpolable<MSi
     fun setTo(width: Int, height: Int) = setTo(width.toDouble(), height.toDouble())
     fun setTo(width: Float, height: Float) = setTo(width.toDouble(), height.toDouble())
     fun setTo(that: ISize) = setTo(that.width, that.height)
+    fun setTo(that: Size) = setTo(that.width, that.height)
 
     fun setToScaled(sx: Double, sy: Double) = setTo((this.width * sx), (this.height * sy))
     fun setToScaled(sx: Float, sy: Float) = setToScaled(sx.toDouble(), sy.toDouble())
@@ -80,9 +137,9 @@ inline class MSize(val p: MPoint) : MutableInterpolable<MSize>, Interpolable<MSi
 
     fun clone() = MSize(width, height)
 
-    override fun interpolateWith(ratio: Double, other: MSize): MSize = MSize(0, 0).setToInterpolated(ratio, this, other)
+    override fun interpolateWith(ratio: Ratio, other: MSize): MSize = MSize(0, 0).setToInterpolated(ratio, this, other)
 
-    override fun setToInterpolated(ratio: Double, l: MSize, r: MSize): MSize = this.setTo(
+    override fun setToInterpolated(ratio: Ratio, l: MSize, r: MSize): MSize = this.setTo(
         ratio.interpolate(l.width, r.width),
         ratio.interpolate(l.height, r.height)
     )
@@ -91,24 +148,15 @@ inline class MSize(val p: MPoint) : MutableInterpolable<MSize>, Interpolable<MSi
 }
 
 @KormaMutableApi
-interface ISizeInt {
-    val width: Int
-    val height: Int
-
-    companion object {
-        operator fun invoke(width: Int, height: Int): ISizeInt = MSizeInt(width, height)
-    }
-}
-
-@KormaMutableApi
-inline class MSizeInt(val size: MSize) : ISizeInt {
+inline class MSizeInt(val float: MSize) {
     companion object {
         operator fun invoke(): MSizeInt = MSizeInt(MSize(0, 0))
-        operator fun invoke(x: Int, y: Int): MSizeInt = MSizeInt(MSize(x, y))
-        operator fun invoke(that: ISizeInt): MSizeInt = MSizeInt(MSize(that.width, that.height))
+        operator fun invoke(width: Int, height: Int): MSizeInt = MSizeInt(MSize(width, height))
+        operator fun invoke(that: SizeInt): MSizeInt = MSizeInt(MSize(that.width, that.height))
     }
 
-    fun clone() = MSizeInt(size.clone())
+    val immutable: SizeInt get() = SizeInt(width, height)
+    fun clone(): MSizeInt = MSizeInt(float.clone())
 
     fun setTo(width: Int, height: Int) : MSizeInt {
         this.width = width
@@ -117,7 +165,8 @@ inline class MSizeInt(val size: MSize) : ISizeInt {
         return this
     }
 
-    fun setTo(that: ISizeInt) = setTo(that.width, that.height)
+    fun setTo(that: SizeInt) = setTo(that.width, that.height)
+    fun setTo(that: MSizeInt) = setTo(that.width, that.height)
 
     fun setToScaled(sx: Double, sy: Double) = setTo((this.width * sx).toInt(), (this.height * sy).toInt())
     fun setToScaled(sx: Int, sy: Int) = setToScaled(sx.toDouble(), sy.toDouble())
@@ -125,8 +174,8 @@ inline class MSizeInt(val size: MSize) : ISizeInt {
 
     fun anchoredIn(container: MRectangleInt, anchor: Anchor, out: MRectangleInt = MRectangleInt()): MRectangleInt {
         return out.setTo(
-            ((container.width - this.width) * anchor.sx).toInt(),
-            ((container.height - this.height) * anchor.sy).toInt(),
+            ((container.width - this.width) * anchor.doubleX).toInt(),
+            ((container.height - this.height) * anchor.doubleY).toInt(),
             width,
             height
         )
@@ -138,23 +187,28 @@ inline class MSizeInt(val size: MSize) : ISizeInt {
     operator fun times(v: Float) = this * v.toDouble()
 
     fun getAnchorPosition(anchor: Anchor, out: MPointInt = MPointInt(0, 0)): MPointInt =
-        out.setTo((width * anchor.sx).toInt(), (height * anchor.sy).toInt())
+        out.setTo((width * anchor.doubleX).toInt(), (height * anchor.doubleY).toInt())
 
-    override var width: Int
-        set(value) { size.width = value.toDouble() }
-        get() = size.width.toInt()
-    override var height: Int
-        set(value) { size.height = value.toDouble() }
-        get() = size.height.toInt()
+    var width: Int
+        set(value) { float.width = value.toDouble() }
+        get() = float.width.toInt()
+    var height: Int
+        set(value) { float.height = value.toDouble() }
+        get() = float.height.toInt()
 
     //override fun toString(): String = "SizeInt($width, $height)"
     override fun toString(): String = "SizeInt(width=$width, height=$height)"
 }
 
 fun MSize.asInt(): MSizeInt = MSizeInt(this)
-fun MSizeInt.asDouble(): MSize = this.size
+fun MSizeInt.asDouble(): MSize = this.float
 
 fun MPoint.asSize(): MSize = MSize(this)
 fun IPoint.asSize(): ISize = MSize(MPoint(this))
 
-fun Point.toSize(): Size = Size(x, y)
+fun Point.toSize(): Size = Size(raw)
+fun PointInt.toSize(): SizeInt = SizeInt(raw)
+
+fun Size.toInt(): SizeInt = SizeInt(width.toInt(), height.toInt())
+fun SizeInt.toFloat(): Size = Size(width.toFloat(), height.toFloat())
+fun Size.toPoint(): Point = Point(width, height)

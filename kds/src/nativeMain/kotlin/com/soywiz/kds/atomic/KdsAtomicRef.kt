@@ -1,11 +1,11 @@
 package com.soywiz.kds.atomic
 
-import kotlin.native.concurrent.AtomicReference
+import kotlin.native.concurrent.*
 
 // @TODO: Use AtomicReference
 actual class KdsAtomicRef<T> actual constructor(initial: T) {
-    val ref = AtomicReference(kdsFreeze(initial))
+    val ref = AtomicReference((initial.freeze()))
     actual var value: T
         get() = ref.value
-        set(value) { ref.value = kdsFreeze(value) }
+        set(value) { ref.value = (value.freeze()) }
 }

@@ -31,14 +31,14 @@ public fun ByteArray.readS16LE(o: Int): Int = read16LE(o).signExtend(16)
 public fun ByteArray.readS24LE(o: Int): Int = read24LE(o).signExtend(24)
 public fun ByteArray.readS32LE(o: Int): Int = read32LE(o)
 public fun ByteArray.readS64LE(o: Int): Long = read64LE(o)
-public fun ByteArray.readF16LE(o: Int): Float16 = Float16.fromBits(read16LE(o))
+public fun ByteArray.readF16LE(o: Int): Half = Half.fromBits(read16LE(o))
 public fun ByteArray.readF32LE(o: Int): Float = Float.fromBits(read32LE(o))
 public fun ByteArray.readF64LE(o: Int): Double = Double.fromBits(read64LE(o))
 public fun ByteArray.readS16BE(o: Int): Int = read16BE(o).signExtend(16)
 public fun ByteArray.readS24BE(o: Int): Int = read24BE(o).signExtend(24)
 public fun ByteArray.readS32BE(o: Int): Int = read32BE(o)
 public fun ByteArray.readS64BE(o: Int): Long = read64BE(o)
-public fun ByteArray.readF16BE(o: Int): Float16 = Float16.fromBits(read16BE(o))
+public fun ByteArray.readF16BE(o: Int): Half = Half.fromBits(read16BE(o))
 public fun ByteArray.readF32BE(o: Int): Float = Float.fromBits(read32BE(o))
 public fun ByteArray.readF64BE(o: Int): Double = Double.fromBits(read64BE(o))
 
@@ -50,7 +50,7 @@ public fun ByteArray.readS16(o: Int, little: Boolean): Int = if (little) readS16
 public fun ByteArray.readS24(o: Int, little: Boolean): Int = if (little) readS24LE(o) else readS24BE(o)
 public fun ByteArray.readS32(o: Int, little: Boolean): Int = if (little) readS32LE(o) else readS32BE(o)
 public fun ByteArray.readS64(o: Int, little: Boolean): Long = if (little) readS64LE(o) else readS64BE(o)
-public fun ByteArray.readF16(o: Int, little: Boolean): Float16 = if (little) readF16LE(o) else readF16BE(o)
+public fun ByteArray.readF16(o: Int, little: Boolean): Half = if (little) readF16LE(o) else readF16BE(o)
 public fun ByteArray.readF32(o: Int, little: Boolean): Float = if (little) readF32LE(o) else readF32BE(o)
 public fun ByteArray.readF64(o: Int, little: Boolean): Double = if (little) readF64LE(o) else readF64BE(o)
 
@@ -89,7 +89,7 @@ public fun ByteArray.write16(o: Int, v: Int, little: Boolean) { if (little) writ
 public fun ByteArray.write24(o: Int, v: Int, little: Boolean) { if (little) write24LE(o, v) else write24BE(o, v) }
 public fun ByteArray.write32(o: Int, v: Int, little: Boolean) { if (little) write32LE(o, v) else write32BE(o, v) }
 public fun ByteArray.write64(o: Int, v: Long, little: Boolean) { if (little) write64LE(o, v) else write64BE(o, v) }
-public fun ByteArray.writeF16(o: Int, v: Float16, little: Boolean) { if (little) writeF16LE(o, v) else writeF16BE(o, v) }
+public fun ByteArray.writeF16(o: Int, v: Half, little: Boolean) { if (little) writeF16LE(o, v) else writeF16BE(o, v) }
 public fun ByteArray.writeF32(o: Int, v: Float, little: Boolean) { if (little) writeF32LE(o, v) else writeF32BE(o, v) }
 public fun ByteArray.writeF64(o: Int, v: Double, little: Boolean) { if (little) writeF64LE(o, v) else writeF64BE(o, v) }
 
@@ -98,7 +98,7 @@ public fun ByteArray.write24LE(o: Int, v: Int) { this[o + 0] = v.extractByte(0);
 public fun ByteArray.write32LE(o: Int, v: Int) { this[o + 0] = v.extractByte(0); this[o + 1] = v.extractByte(8); this[o + 2] = v.extractByte(16); this[o + 3] = v.extractByte(24) }
 public fun ByteArray.write32LE(o: Int, v: Long) { write32LE(o, v.toInt()) }
 public fun ByteArray.write64LE(o: Int, v: Long) { write32LE(o + 0, (v ushr 0).toInt()); write32LE(o + 4, (v ushr 32).toInt()) }
-public fun ByteArray.writeF16LE(o: Int, v: Float16) { write16LE(o + 0, v.toRawBits().toInt()) }
+public fun ByteArray.writeF16LE(o: Int, v: Half) { write16LE(o + 0, v.toRawBits().toInt()) }
 public fun ByteArray.writeF32LE(o: Int, v: Float) { write32LE(o + 0, v.toRawBits()) }
 public fun ByteArray.writeF64LE(o: Int, v: Double) { write64LE(o + 0, v.toRawBits()) }
 
@@ -107,7 +107,7 @@ public fun ByteArray.write24BE(o: Int, v: Int) { this[o + 2] = v.extractByte(0);
 public fun ByteArray.write32BE(o: Int, v: Int) { this[o + 3] = v.extractByte(0); this[o + 2] = v.extractByte(8); this[o + 1] = v.extractByte(16); this[o + 0] = v.extractByte(24) }
 public fun ByteArray.write32BE(o: Int, v: Long) { write32BE(o, v.toInt()) }
 public fun ByteArray.write64BE(o: Int, v: Long) { write32BE(o + 0, (v ushr 32).toInt()); write32BE(o + 4, (v ushr 0).toInt()) }
-public fun ByteArray.writeF16BE(o: Int, v: Float16) { write16BE(o + 0, v.toRawBits().toInt()) }
+public fun ByteArray.writeF16BE(o: Int, v: Half) { write16BE(o + 0, v.toRawBits().toInt()) }
 public fun ByteArray.writeF32BE(o: Int, v: Float) { write32BE(o + 0, v.toRawBits()) }
 public fun ByteArray.writeF64BE(o: Int, v: Double) { write64BE(o + 0, v.toRawBits()) }
 

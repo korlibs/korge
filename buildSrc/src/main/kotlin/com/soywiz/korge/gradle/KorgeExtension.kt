@@ -65,7 +65,7 @@ data class MavenLocation(val group: String, val name: String, val version: Strin
 	} }
 
 	companion object {
-		operator fun invoke(location: String): MavenLocation {
+        operator fun invoke(location: String): MavenLocation {
 			val parts = location.split(":")
 			return MavenLocation(parts[0], parts[1], parts[2], parts.getOrNull(3))
 		}
@@ -86,6 +86,8 @@ class KorgeExtension(val project: Project) {
 	}
 
     companion object {
+        const val ESBUILD_DEFAULT_VERSION = "0.17.10"
+
         val validIdentifierRegexp = Regex("^[a-zA-Z_]\\w*$")
 
         fun isIdValid(id: String) = id.isNotEmpty() && id.isNotBlank() && id.split(".").all { it.matches(validIdentifierRegexp) }
@@ -168,31 +170,8 @@ class KorgeExtension(val project: Project) {
         }
     }
 
-    /*
-    /**
-     * Configures android in this project tightly integrated, and creates src/main default stuff
-     *
-     * Android SDK IS required even if android tasks are not executed.
-     */
-    fun targetAndroidDirect() {
-        target("android") {
-            project.configureAndroidDirect()
-        }
-    }
-
-    /**
-     * Configures android as a separate project in: build/platforms/android
-     *
-     * Android SDK not required if tasks are not executed.
-     * The project can be opened on Android Studio.
-     */
-    @Deprecated("Use targetAndroidDirect instead")
-    fun targetAndroidIndirect() {
-        target("android") {
-            project.configureAndroidIndirect()
-        }
-    }
-    */
+    @Deprecated("", ReplaceWith("targetAndroid()")) fun targetAndroidIndirect() = targetAndroid()
+    @Deprecated("", ReplaceWith("targetAndroid()")) fun targetAndroidDirect() = targetAndroid()
 
     /**
      * Configures Kotlin/Native iOS target (only on macOS)
@@ -281,13 +260,29 @@ class KorgeExtension(val project: Project) {
 	var description: String = "description"
 	var orientation: Orientation = Orientation.DEFAULT
 
-	var copyright: String = "Copyright (c) ${Year.now().getValue()} Unknown"
+	var copyright: String = "Copyright (c) ${Year.now().value} Unknown"
 
     var sourceMaps: Boolean = false
 	var supressWarnings: Boolean = false
 
     val versionSubstitutions = LinkedHashMap<String, String>().also {
-        it["com.soywiz.korlibs.korge2:korge"] = BuildVersions.KORGE
+        it["com.soywiz.korlibs.kbignum:kbignum"] = BuildVersions.KORLIBS
+        it["com.soywiz.korlibs.kds:kds"] = BuildVersions.KORLIBS
+        it["com.soywiz.korlibs.klock:klock"] = BuildVersions.KORLIBS
+        it["com.soywiz.korlibs.klogger:klogger"] = BuildVersions.KORLIBS
+        it["com.soywiz.korlibs.kmem:kmem"] = BuildVersions.KORLIBS
+        it["com.soywiz.korlibs.korau:korau"] = BuildVersions.KORLIBS
+        it["com.soywiz.korlibs.korge2:korge"] = BuildVersions.KORLIBS
+        it["com.soywiz.korlibs.korge.plugins:korge-gradle-plugin"] = BuildVersions.KORLIBS
+        it["com.soywiz.korlibs.korge.reloadagent:korge-reload-agent"] = BuildVersions.KORLIBS
+        it["com.soywiz.korlibs.korgw:korgw"] = BuildVersions.KORLIBS
+        it["com.soywiz.korlibs.korim:korim"] = BuildVersions.KORLIBS
+        it["com.soywiz.korlibs.korinject:korinject"] = BuildVersions.KORLIBS
+        it["com.soywiz.korlibs.korio:korio"] = BuildVersions.KORLIBS
+        it["com.soywiz.korlibs.korma:korma"] = BuildVersions.KORLIBS
+        it["com.soywiz.korlibs.korte:korte"] = BuildVersions.KORLIBS
+        it["com.soywiz.korlibs.krypto:krypto"] = BuildVersions.KORLIBS
+        it["com.soywiz.korlibs.ktruth:ktruth"] = BuildVersions.KORLIBS
     }
 
     fun versionSubstitution(groupName: String, version: String) {
@@ -357,7 +352,7 @@ class KorgeExtension(val project: Project) {
 		extraEntryPoints.add(Entrypoint(name, jvmMainClassName))
 	}
 
-    var esbuildVersion: String = "0.12.22"
+    var esbuildVersion: String = ESBUILD_DEFAULT_VERSION
 
     var androidMinSdk: Int = 16
 	var androidCompileSdk: Int = 29

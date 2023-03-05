@@ -1,7 +1,6 @@
 package com.soywiz.korma.geom.vector
 
-import com.soywiz.korma.geom.MRectangle
-import com.soywiz.korma.geom.degrees
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.shape.buildVectorPath
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -16,11 +15,11 @@ class VectorBuilderTest {
 
     @Test
     fun testCircle() {
-        assertEquals("M100,0 C100,-55,55,-100,0,-100 C-55,-100,-100,-55,-100,0 C-100,55,-55,100,0,100 C55,100,100,55,100,0 Z", buildVectorPath { circle(0, 0, 100) }.roundDecimalPlaces(0).toSvgString())
+        assertEquals("M100,0 C100,-55,55,-100,0,-100 C-55,-100,-100,-55,-100,0 C-100,55,-55,100,0,100 C55,100,100,55,100,0 Z", buildVectorPath { circle(Point(0, 0), 100f) }.roundDecimalPlaces(0).toSvgString())
     }
 
     @Test
     fun testCircleHole() {
-        assertEquals("M100,0 C100,55,55,100,0,100 C-55,100,-100,55,-100,0 C-100,-55,-55,-100,0,-100 C55,-100,100,-55,100,0 Z", buildVectorPath { circleHole(0, 0, 100) }.roundDecimalPlaces(0).toSvgString())
+        assertEquals("M100,0 C100,55,55,100,0,100 C-55,100,-100,55,-100,0 C-100,-55,-55,-100,0,-100 C55,-100,100,-55,100,0 Z", buildVectorPath { circleHole(Point(0, 0), 100f) }.roundDecimalPlaces(0).toSvgString())
     }
 }

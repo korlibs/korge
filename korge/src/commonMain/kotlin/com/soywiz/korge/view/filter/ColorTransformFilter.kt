@@ -28,12 +28,18 @@ class ColorTransformFilter(colorTransform: ColorTransform) : ShaderFilter() {
     @ViewProperty
     var colorMul: RGBA
         get() = RGBA.float(colorMulStorage.array)
-        set(value) { value.readFloat(colorMulStorage.array) }
+        set(value) {
+            value.readFloat(colorMulStorage.array)
+            colorMulStorage.update()
+        }
 
     @ViewProperty
     var colorAdd: ColorAdd
         get() = ColorAdd.fromFloat(colorAddStorage.array)
-        set(value) { value.readFloat(colorAddStorage.array) }
+        set(value) {
+            value.readFloat(colorAddStorage.array)
+            colorAddStorage.update()
+        }
 
     var colorTransform: ColorTransform
         get() = ColorTransform(colorMul, colorAdd)

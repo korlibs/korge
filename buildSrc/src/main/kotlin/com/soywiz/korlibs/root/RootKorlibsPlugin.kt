@@ -439,9 +439,10 @@ object RootKorlibsPlugin {
     }
 
     fun Project.initPublishing() {
-
         rootProject.afterEvaluate {
             rootProject.nonSamples {
+                if (this.project.isKorgeBenchmarks) return@nonSamples
+
                 plugins.apply("maven-publish")
 
                 val doConfigure = mustAutoconfigureKMM()
@@ -979,23 +980,13 @@ object RootKorlibsPlugin {
                             false -> "runJvmAutoreload"
                             true -> "runJvmAutoreloadWithRedefinition"
                         }
-                        createThis<KorgeJavaExec>(taskName) {
+                        createThis<KorgeJavaExecWithAutoreload>(taskName) {
                             dependsOn(":korge-reload-agent:jar", "compileKotlinJvm")
                             group = "run"
                             mainClass.set("MainKt")
-                            afterEvaluate {
-                                val agentJarTask: Jar = project(":korge-reload-agent").tasks.findByName("jar") as Jar
-                                val outputJar = agentJarTask.outputs.files.files.first()
-                                //println("agentJarTask=$outputJar")
-                                val compileKotlinJvm = tasks.findByName("compileKotlinJvm") as org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-                                val args = compileKotlinJvm.outputs.files.toList().joinToString(":::") { it.absolutePath }
-                                //val gradlewCommand = if (isWindows) "gradlew.bat" else "gradlew"
-                                //val continuousCommand = "${rootProject.rootDir}/$gradlewCommand --no-daemon --warn --project-dir=${rootProject.rootDir} --configuration-cache -t ${project.path}:compileKotlinJvmAndNotify"
-                                val continuousCommand =
-                                    "-classpath ${rootProject.rootDir}/gradle/wrapper/gradle-wrapper.jar org.gradle.wrapper.GradleWrapperMain --no-daemon --warn --project-dir=${rootProject.rootDir} --configuration-cache -t ${project.path}:compileKotlinJvmAndNotify"
-                                jvmArgs("-javaagent:$outputJar=$httpPort:::$continuousCommand:::$enableRedefinition:::$args")
-                                environment("KORGE_AUTORELOAD", "true")
-                            }
+                            isReloadAgentAProject = true
+                            //doConfigurationCache = false
+                            doConfigurationCache = true
                         }
                     }
 
@@ -1004,7 +995,7 @@ object RootKorlibsPlugin {
 
                         val userGradleFolder = File(System.getProperty("user.home"), ".gradle")
 
-                        val esbuildVersion = "0.12.22"
+                        val esbuildVersion = KorgeExtension.ESBUILD_DEFAULT_VERSION
                         val wwwFolder = File(buildDir, "www")
 
                         val esbuildFolder = File(if (userGradleFolder.isDirectory) userGradleFolder else rootProject.buildDir, "esbuild")
@@ -1234,15 +1225,12 @@ object RootKorlibsPlugin {
                         }
                     }
 
-                    val nativeDesktopTargets = nativeTargets(project)
-                    val allNativeTargets = nativeDesktopTargets
-
                     //for (target in nativeDesktopTargets) {
                     //target.compilations["main"].defaultSourceSet.dependsOn(nativeDesktopEntryPointSourceSet)
                     //    target.compilations["main"].defaultSourceSet.kotlin.srcDir(nativeDesktopFolder)
                     //}
 
-                    for (target in allNativeTargets) {
+                    for (target in nativeTargets(project)) {
                         for (binary in target.binaries) {
                             val compilation = binary.compilation
                             val copyResourcesTask = tasks.createThis<Copy>("copyResources${target.name.capitalize()}${binary.name.capitalize()}") {
@@ -1277,43 +1265,33 @@ object RootKorlibsPlugin {
                 //}
 
                 for (target in project.gkotlin.targets) {
+                    val isJvm = target.isJvm
                     for (compilation in target.compilations) {
                         val processedResourcesFolder = File(project.buildDir, "korgeProcessedResources/${target.name}/${compilation.name}")
                         compilation.defaultSourceSet.resources.srcDir(processedResourcesFolder)
-                        val korgeProcessedResources = createThis<Task>(getKorgeProcessResourcesTaskName(target, compilation)) {
-                            //dependsOn(prepareResourceProcessingClasses)
-                            dependsOn("jvmMainClasses")
+                        //val compilation = project.kotlin.targets.getByName(config.targetName).compilations.getByName(config.compilationName)
+                        val folders: List<String> =
+                            compilation.allKotlinSourceSets.flatMap { it.resources.srcDirs }
+                                .filter { it != processedResourcesFolder }.map { it.toString() }
 
-                            if (project.enabledSandboxResourceProcessor) {
-                                doLast {
-                                    processedResourcesFolder.mkdirs()
-                                    //URLClassLoader(prepareResourceProcessingClasses.outputs.files.toList().map { it.toURL() }.toTypedArray(), ClassLoader.getSystemClassLoader()).use { classLoader ->
-
-                                    URLClassLoader(
-                                        runJvm.korgeClassPath.toList().map { it.toURL() }.toTypedArray(),
-                                        ClassLoader.getSystemClassLoader()
-                                    ).use { classLoader ->
-                                        val clazz = classLoader.loadClass("com.soywiz.korge.resources.ResourceProcessorRunner")
-                                        val folders = compilation.allKotlinSourceSets.flatMap { it.resources.srcDirs }
-                                            .filter { it != processedResourcesFolder }.map { it.toString() }
-                                        //println(folders)
-                                        try {
-                                            clazz.methods.first { it.name == "run" }.invoke(
-                                                null,
-                                                classLoader,
-                                                folders,
-                                                processedResourcesFolder.toString(),
-                                                compilation.name
-                                            )
-                                        } catch (e: java.lang.reflect.InvocationTargetException) {
-                                            val re = (e.targetException ?: e)
-                                            re.printStackTrace()
-                                            System.err.println(re.toString())
-                                        }
-                                    }
-                                    System.gc()
-                                }
+                        val korgeProcessedResources = createThis<KorgeProcessedResourcesTask>(
+                            getKorgeProcessResourcesTaskName(target, compilation),
+                            KorgeProcessedResourcesTaskConfig(
+                                isJvm, target.name, compilation.name, runJvm.korgeClassPath,
+                                project.korge.getIconBytes(),
+                            )
+                        ) {
+                            val task = this
+                            task.group = GROUP_KORGE_RESOURCES
+                            if (korge.searchResourceProcessorsInMainSourceSet) {
+                                task.dependsOn("jvmMainClasses")
                             }
+                            task.outputs.dirs(processedResourcesFolder)
+                            task.folders = folders.map { File(it) }
+                            task.processedResourcesFolder = processedResourcesFolder
+
+                            //dependsOn(prepareResourceProcessingClasses)
+                            //dependsOn("jvmMainClasses")
                         }
                         //println(compilation.compileKotlinTask.name)
                         //println(compilation.compileKotlinTask.name)
@@ -1516,7 +1494,7 @@ val Project.realKotlinVersion: String get() = (System.getenv("FORCED_KOTLIN_VERS
 val forcedVersion = System.getenv("FORCED_VERSION")
 
 val Project.hasAndroidSdk by LazyExt { AndroidSdk.hasAndroidSdk(project) }
-val Project.enabledSandboxResourceProcessor: Boolean by LazyExt { rootProject.findProperty("enabledSandboxResourceProcessor") == "true" }
+val Project.enabledSandboxResourceProcessor: Boolean get() = rootProject.findProperty("enabledSandboxResourceProcessor") == "true"
 
 val Project.currentJavaVersion by LazyExt { currentJavaVersion() }
 fun Project.hasBuildGradle() = listOf("build.gradle", "build.gradle.kts").any { File(projectDir, it).exists() }
@@ -1528,6 +1506,8 @@ fun Project.mustAutoconfigureKMM(): Boolean =
 
 fun getKorgeProcessResourcesTaskName(target: org.jetbrains.kotlin.gradle.plugin.KotlinTarget, compilation: org.jetbrains.kotlin.gradle.plugin.KotlinCompilation<*>): String =
     "korgeProcessedResources${target.name.capitalize()}${compilation.name.capitalize()}"
+
+val Project.isKorgeBenchmarks: Boolean get() = path == ":korge-benchmarks"
 
 fun Project.nonSamples(block: Project.() -> Unit) {
     subprojectsThis {

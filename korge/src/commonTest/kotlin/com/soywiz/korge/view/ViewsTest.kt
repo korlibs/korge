@@ -13,7 +13,7 @@ import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.color.Colors
 import com.soywiz.korio.lang.portableSimpleName
 import com.soywiz.korio.util.niceStr
-import com.soywiz.korma.geom.MRectangle
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.circle
 import com.soywiz.korma.geom.vector.rect
 import kotlin.test.Test
@@ -214,7 +214,7 @@ class ViewsTest : ViewsForTesting() {
         container.y = 100.0
         this.addChild(container)
         val contents = CpuGraphics().updateShape {
-            fill(Colors.RED) { circle(0.0,0.0,100.0) }
+            fill(Colors.RED) { circle(Point(0, 0), 100f) }
         }
         container.addChild(contents)
         assertEquals(MRectangle(-100, -100, 200, 200), contents.getBounds(container), "bounds1") // (x=-100, y=-100, w=200, h=200)
@@ -392,11 +392,11 @@ class ViewsTest : ViewsForTesting() {
                 }
             }
         }
-        container3.alpha = 0.5
-        container1.alpha = 0.5
+        container3.alphaF = 0.5f
+        container1.alphaF = 0.5f
         assertEquals(0.25, container3.renderColorMul.ad, 0.03)
-        container3.alpha = 0.10
-        container1.alpha = 1.0
+        container3.alphaF = 0.10f
+        container1.alphaF = 1.0f
         assertEquals(0.10, container3.renderColorMul.ad, 0.03)
     }
 

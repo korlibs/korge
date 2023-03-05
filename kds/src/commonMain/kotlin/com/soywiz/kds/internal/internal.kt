@@ -104,3 +104,7 @@ internal inline fun equaler(count: Int, gen: (index: Int) -> Boolean): Boolean {
     for (n in 0 until count) if (!gen(n)) return false
     return true
 }
+
+internal fun packShort2(x: Short, y: Short): Int = (x.toInt() and 0xFFFF) or (y.toInt() shl 16)
+internal fun unpackShort2X(v: Int): Short = v.toShort()
+internal fun unpackShort2Y(v: Int): Short = (v shr 16).toShort()

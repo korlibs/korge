@@ -152,15 +152,15 @@ open class UIScrollable(width: Double, height: Double, cache: Boolean = true) : 
     @ViewProperty
     var autohideScrollBar = false
     @ViewProperty
-    var scrollBarAlpha = 0.75
+    var scrollBarAlpha = 0.75f
     @ViewProperty
     var backgroundColor: RGBA = Colors["#161a1d"]
     @ViewProperty
     var mobileBehaviour = true
 
     private fun showScrollBar() {
-        horizontal.view.alpha = scrollBarAlpha
-        vertical.view.alpha = scrollBarAlpha
+        horizontal.view.alphaF = scrollBarAlpha
+        vertical.view.alphaF = scrollBarAlpha
         timeScrollBar = 0.seconds
     }
 
@@ -174,13 +174,13 @@ open class UIScrollable(width: Double, height: Double, cache: Boolean = true) : 
     }
 
     fun ensurePointIsVisible(x: Double, y: Double, anchor: Anchor = Anchor.CENTER) {
-        horizontal.ensurePositionIsVisible(x, anchor.sx)
-        vertical.ensurePositionIsVisible(y, anchor.sy)
+        horizontal.ensurePositionIsVisible(x, anchor.doubleX)
+        vertical.ensurePositionIsVisible(y, anchor.doubleY)
     }
 
     fun ensureRectIsVisible(rect: IRectangle, anchor: Anchor = Anchor.CENTER) {
-        horizontal.ensureRangeIsVisible(rect.left, rect.right, anchor.sx)
-        vertical.ensureRangeIsVisible(rect.top, rect.bottom, anchor.sy)
+        horizontal.ensureRangeIsVisible(rect.left, rect.right, anchor.doubleX)
+        vertical.ensureRangeIsVisible(rect.top, rect.bottom, anchor.doubleY)
     }
 
     fun ensureViewIsVisible(view: View, anchor: Anchor = Anchor.CENTER) {
@@ -227,7 +227,7 @@ open class UIScrollable(width: Double, height: Double, cache: Boolean = true) : 
         var dragging = false
 
         for (info in infos) {
-            info.view.decorateOutOverAlpha { if (it) 1.0 else scrollBarAlpha }
+            info.view.decorateOutOverAlpha { if (it) 1.0f else scrollBarAlpha }
         }
 
         for (info in infos) {
@@ -302,13 +302,14 @@ open class UIScrollable(width: Double, height: Double, cache: Boolean = true) : 
                         if ((destScrollPos - info.position).absoluteValue < 0.1) {
                             info.position = destScrollPos
                         } else {
-                            info.position = (0.5 * (it.seconds * 10.0)).interpolate(info.position, destScrollPos)
+                            info.position =
+                                (0.5 * (it.seconds * 10.0)).toRatio().interpolate(info.position, destScrollPos)
                         }
                     }
 
                     if (!dragging && autohideScrollBar) {
                         if (timeScrollBar >= 1.seconds) {
-                            info.view.alpha *= 0.9
+                            info.view.alphaF *= 0.9f
                         } else {
                             timeScrollBar += it
                         }

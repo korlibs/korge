@@ -3,6 +3,7 @@ package samples
 import com.soywiz.klock.*
 import com.soywiz.korag.*
 import com.soywiz.korag.shader.*
+import com.soywiz.korge.render.*
 import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.view.*
 import com.soywiz.korim.color.*
@@ -19,7 +20,7 @@ class MainCustomSolidRectShader : Scene() {
             invalidateRender()
         }
 
-        solidRect.program = views.getDefaultProgram()
+        solidRect.program = BatchBuilder2D.PROGRAM
             .replacingFragment("color") {
                 DefaultShaders {
                     SET(out, vec4(1f.lit, v_Tex.x, v_Tex.y, 1f.lit))

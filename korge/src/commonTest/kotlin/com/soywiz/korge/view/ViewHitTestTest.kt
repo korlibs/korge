@@ -12,12 +12,12 @@ class ViewHitTestTest : ViewsForTesting() {
     fun testShape() = viewsTest{
         val circleB = solidRect(128.0, 128.0, Colors.RED).anchor(Anchor.MIDDLE_CENTER)
             .position(256, 256)
-            .hitShape { circle(64.0, 64.0, 64.0) }
+            .hitShape { circle(Point(64, 64), 64f) }
 
-        assertEquals(true, circleB.hitTestAny(256.0, 256.0))
-        assertEquals(true, circleB.hitTestAny(200.0, 256.0))
-        assertEquals(true, circleB.hitTestAny(300.0, 213.0))
-        assertEquals(false, circleB.hitTestAny(306.0, 205.0))
+        assertEquals(true, circleB.hitTestAny(Point(256, 256)))
+        assertEquals(true, circleB.hitTestAny(Point(200, 256)))
+        assertEquals(true, circleB.hitTestAny(Point(300, 213)))
+        assertEquals(false, circleB.hitTestAny(Point(306, 205)))
     }
 
     @Test
@@ -25,11 +25,11 @@ class ViewHitTestTest : ViewsForTesting() {
         val circleB = solidRect(128.0, 128.0, Colors.RED).anchor(Anchor.MIDDLE_CENTER)
             .position(256, 256)
 
-        assertEquals(true, circleB.hitTestAny(256.0, 256.0))
-        assertEquals(true, circleB.hitTestAny(200.0, 256.0))
-        assertEquals(true, circleB.hitTestAny(300.0, 213.0))
-        assertEquals(true, circleB.hitTestAny(306.0, 205.0))
-        assertEquals(false, circleB.hitTestAny(322.0, 205.0))
+        assertEquals(true, circleB.hitTestAny(Point(256, 256)))
+        assertEquals(true, circleB.hitTestAny(Point(200, 256)))
+        assertEquals(true, circleB.hitTestAny(Point(300, 213)))
+        assertEquals(true, circleB.hitTestAny(Point(306, 205)))
+        assertEquals(false, circleB.hitTestAny(Point(322, 205)))
     }
 }
 
@@ -73,13 +73,13 @@ class Polygon(
             fill(Colors.WHITE) {
                 for (n in 0 until polygon.sides) {
                     val angle = ((360.degrees * n) / polygon.sides) - 90.degrees
-                    val x = polygon.radius * angle.cosine
-                    val y = polygon.radius * angle.sine
+                    val x = polygon.radius * angle.cosineD
+                    val y = polygon.radius * angle.sineD
                     //println("$x, $y")
                     if (n == 0) {
-                        moveTo(x, y)
+                        moveTo(Point(x, y))
                     } else {
-                        lineTo(x, y)
+                        lineTo(Point(x, y))
                     }
                 }
                 close()

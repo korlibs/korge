@@ -2,19 +2,10 @@ package com.soywiz.korma.geom.bezier
 
 import com.soywiz.kds.Extra
 import com.soywiz.kds.iterators.fastForEach
+import com.soywiz.kmem.*
 import com.soywiz.korma.annotations.*
-import com.soywiz.korma.geom.BoundsBuilder
-import com.soywiz.korma.geom.IPointArrayList
-import com.soywiz.korma.geom.MPoint
-import com.soywiz.korma.geom.PointArrayList
-import com.soywiz.korma.geom.MRectangle
-import com.soywiz.korma.geom.fastForEach
-import com.soywiz.korma.geom.firstX
-import com.soywiz.korma.geom.firstY
-import com.soywiz.korma.geom.lastX
-import com.soywiz.korma.geom.lastY
-import com.soywiz.korma.geom.vector.VectorPath
-import com.soywiz.korma.math.convertRange
+import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.vector.*
 import com.soywiz.korma.math.isAlmostEquals
 import kotlin.jvm.JvmName
 
@@ -36,8 +27,9 @@ data class Curves(val beziers: List<Bezier>, val closed: Boolean) : Curve, Extra
         for (n in 1 until beziers.size) {
             val curr = beziers[n - 1]
             val next = beziers[n]
-            if (!curr.points.lastX.isAlmostEquals(next.points.firstX)) return@lazy false
-            if (!curr.points.lastY.isAlmostEquals(next.points.firstY)) return@lazy false
+            if (!curr.points.last.isAlmostEquals(next.points.first)) return@lazy false
+            //if (!curr.points.lastX.isAlmostEquals(next.points.firstX)) return@lazy false
+            //if (!curr.points.lastY.isAlmostEquals(next.points.firstY)) return@lazy false
         }
         return@lazy true
     }
@@ -103,14 +95,14 @@ data class Curves(val beziers: List<Bezier>, val closed: Boolean) : Curve, Extra
         return block(info, ratioInCurve)
     }
 
-    override fun calc(t: Double, target: MPoint): MPoint =
-        findTInCurve(t) { info, ratioInCurve -> info.curve.calc(ratioInCurve, target) }
+    override fun calc(t: Double): Point =
+        findTInCurve(t) { info, ratioInCurve -> info.curve.calc(ratioInCurve) }
 
-    override fun normal(t: Double, target: MPoint): MPoint =
-        findTInCurve(t) { info, ratioInCurve -> info.curve.normal(ratioInCurve, target) }
+    override fun normal(t: Double): Point =
+        findTInCurve(t) { info, ratioInCurve -> info.curve.normal(ratioInCurve) }
 
-    override fun tangent(t: Double, target: MPoint): MPoint =
-        findTInCurve(t) { info, ratioInCurve -> info.curve.tangent(ratioInCurve, target) }
+    override fun tangent(t: Double): Point =
+        findTInCurve(t) { info, ratioInCurve -> info.curve.tangent(ratioInCurve) }
 
     override fun ratioFromLength(length: Double): Double {
         if (length <= 0.0) return 0.0
@@ -174,13 +166,13 @@ fun List<Curve>.toVectorPath(out: VectorPath = VectorPath()): VectorPath {
     fun bezier(bezier: Bezier) {
         val points = bezier.points
         if (first) {
-            out.moveTo(points.firstX, points.firstY)
+            out.moveTo(points.first)
             first = false
         }
         when (bezier.order) {
-            1 -> out.lineTo(points.getX(1), points.getY(1))
-            2 -> out.quadTo(points.getX(1), points.getY(1), points.getX(2), points.getY(2))
-            3 -> out.cubicTo(points.getX(1), points.getY(1), points.getX(2), points.getY(2), points.getX(3), points.getY(3))
+            1 -> out.lineTo(points[1])
+            2 -> out.quadTo(points[1], points[2])
+            3 -> out.cubicTo(points[1], points[2], points[3])
             else -> TODO()
         }
     }
@@ -204,19 +196,19 @@ fun List<Curve>.toVectorPath(out: VectorPath = VectorPath()): VectorPath {
 fun Curves.toNonCurveSimplePointList(out: PointArrayList = PointArrayList()): IPointArrayList? {
     val curves = this
     val beziers = curves.beziers//.flatMap { it.toSimpleList() }.map { it.curve }
-    val epsilon = 0.00001
+    val epsilon = 0.0001f
     beziers.fastForEach { bezier ->
         if (bezier.inflections().isNotEmpty()) return null
         val points = bezier.points
-        points.fastForEach { x, y ->
-            if (out.isEmpty() || (!out.lastX.isAlmostEquals(x, epsilon) || !out.lastY.isAlmostEquals(y, epsilon))) {
-                out.add(x, y)
+        points.fastForEachPoint { p ->
+            if (out.isEmpty() || !out.last.isAlmostEquals(p, epsilon)) {
+                out.add(p)
             }
         }
         //println("bezier=$bezier")
         //out.add(points, 0, points.size - 1)
     }
-    if (out.lastX.isAlmostEquals(out.firstX, epsilon) && out.lastX.isAlmostEquals(out.firstX, epsilon)) {
+    if (out.last.isAlmostEquals(out.first, epsilon)) {
         out.removeAt(out.size - 1)
     }
     return out

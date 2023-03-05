@@ -42,8 +42,8 @@ abstract class Shape2d {
     abstract val type: Int
     abstract val paths: List<IPointArrayList>
     abstract val closed: Boolean
-    abstract fun containsPoint(x: Double, y: Double): Boolean
-    fun containsPoint(x: Double, y: Double, mat: MMatrix) = containsPoint(mat.transformX(x, y), mat.transformY(x, y))
+    abstract fun containsPoint(p: Point): Boolean
+    fun containsPoint(p: Point, mat: MMatrix) = containsPoint(mat.transform(p))
     open fun getBounds(out: MRectangle = MRectangle()): MRectangle {
         var minx = Double.POSITIVE_INFINITY
         var miny = Double.POSITIVE_INFINITY
@@ -60,7 +60,7 @@ abstract class Shape2d {
         return out.setBounds(minx, miny, maxx, maxy)
     }
 
-    open val center: IPoint get() = getBounds().center
+    open val center: Point get() = getBounds().center
 
     companion object {
         fun intersects(l: Shape2d, ml: MMatrix?, r: Shape2d, mr: MMatrix?, tempMatrix: MMatrix? = MMatrix()): Boolean {
@@ -85,16 +85,14 @@ abstract class Shape2d {
                 if (ml != null) tempMatrix.premultiply(ml)
 
                 l.paths.fastForEach {
-                    it.fastForEach { x, y ->
-                        val tx = tempMatrix.transformX(x, y)
-                        val ty = tempMatrix.transformY(x, y)
-                        if (r.containsPoint(tx, ty)) return true
+                    it.fastForEachPoint { p ->
+                        if (r.containsPoint(tempMatrix.transform(p))) return true
                     }
                 }
             } else {
                 l.paths.fastForEach {
-                    it.fastForEach { x, y ->
-                        if (r.containsPoint(x, y)) return true
+                    it.fastForEachPoint { p ->
+                        if (r.containsPoint(p)) return true
                     }
                 }
             }
@@ -131,7 +129,7 @@ abstract class Shape2d {
         override val paths = listOf(PointArrayList(0))
         override val closed = false
         override val area = 0.0
-        override fun containsPoint(x: Double, y: Double) = false
+        override fun containsPoint(p: Point) = false
     }
 
     data class Line(val x0: Double, val y0: Double, val x1: Double, val y1: Double) : Shape2d(), WithArea {
@@ -145,7 +143,7 @@ abstract class Shape2d {
         override val paths = listOf(PointArrayList(2).apply { add(x0, y0).add(x1, y1) })
         override val closed = false
         override val area get() = 0.0
-        override fun containsPoint(x: Double, y: Double) = false
+        override fun containsPoint(p: Point) = false
     }
 
     // @TODO: Ellipse
@@ -160,7 +158,7 @@ abstract class Shape2d {
         val isCircle get() = ellipseRadiusX == ellipseRadiusY
         val vectorPath by lazy {
             buildVectorPath(VectorPath()) {
-                ellipse(0.0, 0.0, ellipseRadiusX, ellipseRadiusY)
+                ellipse(Point(0.0, 0.0), Size(ellipseRadiusX, ellipseRadiusY))
             }.applyTransform(MMatrix().pretranslate(ellipseX, ellipseY).prerotate(ellipseAngle))
         }
 
@@ -176,11 +174,11 @@ abstract class Shape2d {
             else -> listOf(vectorPath.getPoints2())
         }
         override val closed: Boolean get() = true
-        override fun containsPoint(x: Double, y: Double): Boolean {
+        override fun containsPoint(p: Point): Boolean {
             if (isCircle) {
-                return hypot(this.ellipseX - x, this.ellipseY - y) < ellipseRadiusX
+                return hypot(this.ellipseX - p.xD, this.ellipseY - p.yD) < ellipseRadiusX
             }
-            return vectorPath.containsPoint(x, y)
+            return vectorPath.containsPoint(p)
         }
         override val area: Double get() = PI.toDouble() * ellipseRadiusX * ellipseRadiusY
     }
@@ -192,7 +190,7 @@ abstract class Shape2d {
         }
     }
     data class Circle(val x: Double, val y: Double, override val radius: Double, val totalPoints: Int = 32) : BaseEllipse(x, y, radius, radius, Angle.ZERO, totalPoints), ICircle {
-        override val center: IPoint = IPoint(x, y)
+        override val center: Point = Point(x, y)
         companion object {
             operator fun invoke(x: Float, y: Float, radius: Float, totalPoints: Int = 32) = Circle(x.toDouble(), y.toDouble(), radius.toDouble(), totalPoints)
             operator fun invoke(x: Int, y: Int, radius: Int, totalPoints: Int = 32) = Circle(x.toDouble(), y.toDouble(), radius.toDouble(), totalPoints)
@@ -215,9 +213,9 @@ abstract class Shape2d {
         override val paths = listOf(PointArrayList(4) { add(x, y).add(x + width, y).add(x + width, y + height).add(x, y + height) })
         override val closed: Boolean = true
         override val area: Double get() = width * height
-        override val center: IPoint get() = super<IRectangle>.center
+        override val center: Point get() = super<IRectangle>.center
 
-        override fun containsPoint(x: Double, y: Double) = (x in this.left..this.right) && (y in this.top..this.bottom)
+        override fun containsPoint(p: Point) = (p.xD in this.left..this.right) && (p.yD in this.top..this.bottom)
         override fun toString(): String =
             "Rectangle(x=${x.niceStr}, y=${y.niceStr}, width=${width.niceStr}, height=${height.niceStr})"
     }
@@ -228,7 +226,7 @@ abstract class Shape2d {
         }
         override val type: Int = TYPE
         override val paths = listOf(vectorPath.getPoints2())
-        override fun containsPoint(x: Double, y: Double): Boolean = if (closed) vectorPath.containsPoint(x, y) else false
+        override fun containsPoint(p: Point): Boolean = if (closed) vectorPath.containsPoint(p) else false
     }
 
     data class Polygon(val points: IPointArrayList) : Shape2d() {
@@ -243,7 +241,7 @@ abstract class Shape2d {
                 polygon(points)
             }
         }
-        override fun containsPoint(x: Double, y: Double): Boolean = vectorPath.containsPoint(x, y)
+        override fun containsPoint(p: Point): Boolean = vectorPath.containsPoint(p)
     }
 
     data class Polyline(val points: IPointArrayList) : Shape2d(), WithArea {
@@ -254,7 +252,7 @@ abstract class Shape2d {
         override val paths = listOf(points)
         override val closed: Boolean = false
         override val area: Double get() = 0.0
-        override fun containsPoint(x: Double, y: Double) = false
+        override fun containsPoint(p: Point) = false
     }
 
     data class Complex(val items: List<Shape2d>) : Shape2d() {
@@ -264,8 +262,8 @@ abstract class Shape2d {
         override val type: Int = TYPE
         override val paths by lazy { items.flatMap { it.paths } }
         override val closed: Boolean = false
-        override fun containsPoint(x: Double, y: Double): Boolean {
-            items.fastForEach { if (it.containsPoint(x, y)) return true }
+        override fun containsPoint(p: Point): Boolean {
+            items.fastForEach { if (it.containsPoint(p)) return true }
             return false
         }
     }
@@ -284,29 +282,28 @@ val Shape2d.bounds: MRectangle get() = BoundsBuilder().apply { add(this@bounds) 
 fun IRectangle.toShape() = Shape2d.Rectangle(x, y, width, height)
 
 // @TODO: Instead of use curveSteps, let's determine the maximum distance between points for the curve, or the maximum angle (so we have a quality factor instead)
-inline fun VectorPath.emitPoints(flush: (close: Boolean) -> Unit, emit: (x: Double, y: Double) -> Unit, curveSteps: Int = 20) {
-    var lx = 0.0
-    var ly = 0.0
+inline fun VectorPath.emitPoints(flush: (close: Boolean) -> Unit, emit: (Point) -> Unit, curveSteps: Int = 20) {
+    var l = Point()
     flush(false)
     this.visitCmds(
-        moveTo = { x, y ->
+        moveTo = {
             flush(false)
-            emit(x, y)
-            lx = x; ly = y
+            emit(it)
+            l = it
         },
-        lineTo = { x, y ->
-            emit(x, y)
-            lx = x; ly = y
+        lineTo = {
+            emit(it)
+            l = it
         },
-        quadTo = { x0, y0, x1, y1 ->
+        quadTo = { c, a ->
             val dt = 1.0 / curveSteps
-            for (n in 1 .. curveSteps) Bezier.quadCalc(lx, ly, x0, y0, x1, y1, n * dt, emit)
-            lx = x1 ; ly = y1
+            for (n in 1 .. curveSteps) emit(Bezier.quadCalc(l, c, a, n * dt))
+            l = a
         },
-        cubicTo = { x0, y0, x1, y1, x2, y2 ->
+        cubicTo = { c1,c2, a ->
             val dt = 1.0 / curveSteps
-            for (n in 1 .. curveSteps) Bezier.cubicCalc(lx, ly, x0, y0, x1, y1, x2, y2, n * dt, emit)
-            lx = x2 ; ly = y2
+            for (n in 1 .. curveSteps) emit(Bezier.cubicCalc(l, c1, c2, a, n * dt))
+            l = a
         },
         close = { flush(true) }
     )
@@ -314,30 +311,25 @@ inline fun VectorPath.emitPoints(flush: (close: Boolean) -> Unit, emit: (x: Doub
 }
 
 inline fun VectorPath.emitEdges(
-    crossinline edge: (x0: Double, y0: Double, x1: Double, y1: Double) -> Unit
+    crossinline edge: (a: Point, b: Point) -> Unit
 ) {
-    var firstX = 0.0
-    var firstY = 0.0
-    var lastX = 0.0
-    var lastY = 0.0
+    var firstPos = Point()
+    var lastPos = Point()
 
     emitPoints2(
         flush = { close ->
             if (close) {
-                edge(lastX, lastY, firstX, firstY)
-                lastX = firstX
-                lastY = firstY
+                edge(lastPos, firstPos)
+                lastPos = firstPos
             }
         },
-        emit = { x, y, move ->
+        emit = { p, move ->
             if (move) {
-                firstX = x
-                firstY = y
+                firstPos = p
             } else {
-                edge(lastX, lastY, x, y)
+                edge(lastPos, p)
             }
-            lastX = x
-            lastY = y
+            lastPos = p
         }
     )
 }
@@ -345,44 +337,36 @@ inline fun VectorPath.emitEdges(
 inline fun VectorPath.emitPoints2(
     crossinline flush: (close: Boolean) -> Unit = {},
     crossinline joint: (close: Boolean) -> Unit = {},
-    crossinline emit: (x: Double, y: Double, move: Boolean) -> Unit
+    crossinline emit: (p: Point, move: Boolean) -> Unit
 ) {
-    var ix = 0.0
-    var iy = 0.0
-    var lx = 0.0
-    var ly = 0.0
+    var i = Point()
+    var l = Point()
     flush(false)
     this.visitCmds(
-        moveTo = { x, y ->
-            ix = x
-            iy = y
-            emit(x, y, true)
-            lx = x
-            ly = y
+        moveTo = {
+            i = it
+            emit(it, true)
+            l = it
         },
-        lineTo = { x, y ->
-            emit(x, y, false)
-            lx = x
-            ly = y
+        lineTo = {
+            emit(it, false)
+            l = it
             joint(false)
         },
-        quadTo = { x0, y0, x1, y1 ->
-            val sum = MPoint.distance(lx, ly, x0, y0) + MPoint.distance(x0, y0, x1, y1)
-            approximateCurve(sum.toInt(), { ratio, get -> Bezier.quadCalc(lx, ly, x0, y0, x1, y1, ratio) { x, y -> get(x, y) } }, { x, y -> emit(x, y, false) })
-            lx = x1
-            ly = y1
+        quadTo = { c, a ->
+            val sum = Point.distance(l, c) + Point.distance(c, a)
+            approximateCurve(sum.toInt(), { ratio, get -> get(Bezier.quadCalc(l, c, a, ratio)) }, { emit(it, false) })
+            l = a
             joint(false)
         },
-        cubicTo = { x0, y0, x1, y1, x2, y2 ->
-            val sum = MPoint.distance(lx, ly, x0, y0) + MPoint.distance(x0, y0, x1, y1) + MPoint.distance(x1, y1, x2, y2)
-            approximateCurve(sum.toInt(), { ratio, get ->
-                Bezier.cubicCalc(lx, ly, x0, y0, x1, y1, x2, y2, ratio) { x, y -> get(x, y) }}, { x, y -> emit(x, y, false) })
-            lx = x2
-            ly = y2
+        cubicTo = { c0, c1, a ->
+            val sum = Point.distance(l, c0) + Point.distance(c0, c1) + Point.distance(c1, a)
+            approximateCurve(sum.toInt(), { ratio, get -> get(Bezier.cubicCalc(l, c0, c1, a, ratio)) }, { emit(it, false) })
+            l = a
             joint(false)
         },
         close = {
-            emit(ix, iy, false)
+            emit(i, false)
             joint(true)
             flush(true)
         }
@@ -391,7 +375,7 @@ inline fun VectorPath.emitPoints2(
 }
 
 fun VectorPath.getPoints2(out: PointArrayList = PointArrayList()): PointArrayList {
-    emitPoints2 { x, y, move -> out.add(x, y) }
+    emitPoints2 { p, move -> out.add(p) }
     return out
 }
 
@@ -405,9 +389,9 @@ fun VectorPath.getPoints2List(): List<PointArrayList> {
         current = PointArrayList()
     }
 
-    emitPoints2 { x, y, move ->
+    emitPoints2 { p, move ->
         if (move) flush()
-        current.add(x, y)
+        current.add(p)
     }
     flush()
     return out
@@ -420,38 +404,28 @@ fun IPointArrayList.toPolygon(out: VectorPath = VectorPath()): VectorPath = buil
 
 inline fun approximateCurve(
     curveSteps: Int,
-    crossinline compute: (ratio: Double, get: (x: Double, y: Double) -> Unit) -> Unit,
-    crossinline emit: (x: Double, y: Double) -> Unit,
+    crossinline compute: (ratio: Double, get: (Point) -> Unit) -> Unit,
+    crossinline emit: (Point) -> Unit,
     includeStart: Boolean = false,
     includeEnd: Boolean = true,
 ) {
     val rcurveSteps = max(curveSteps, 20)
     val dt = 1.0 / rcurveSteps
-    var lastX = 0.0
-    var lastY = 0.0
-    var prevX = 0.0
-    var prevY = 0.0
+    var lastPos = Point()
+    var prevPos = Point()
     var emittedCount = 0
-    compute(0.0) { x, y ->
-        lastX = x
-        lastY = y
-    }
+    compute(0.0) { lastPos = it }
     val nStart = if (includeStart) 0 else 1
     val nEnd = if (includeEnd) rcurveSteps else rcurveSteps - 1
     for (n in nStart .. nEnd) {
         val ratio = n * dt
         //println("ratio: $ratio")
-        compute(ratio) { x, y ->
+        compute(ratio) {
             //if (emittedCount == 0) {
-            run {
-                emit(x, y)
-                emittedCount++
-                lastX = prevX
-                lastY = prevY
-            }
-
-            prevX = x
-            prevY = y
+            emit(it)
+            emittedCount++
+            lastPos = prevPos
+            prevPos = it
         }
     }
     //println("curveSteps: $rcurveSteps, emittedCount=$emittedCount")
@@ -504,13 +478,12 @@ fun VectorPath.toShape2dOld(closed: Boolean = true): Shape2d {
 fun VectorPath.toPathPointList(m: MMatrix? = null, emitClosePoint: Boolean = false): List<IPointArrayList> {
     val paths = arrayListOf<PointArrayList>()
     var path = PointArrayList()
-    var firstX = 0.0
-    var firstY = 0.0
+    var firstPos = Point()
     var first = true
     emitPoints({ close ->
         if (close) {
             if (emitClosePoint) {
-                path.add(firstX, firstY)
+                path.add(firstPos)
             }
             path.closed = true
         }
@@ -522,17 +495,12 @@ fun VectorPath.toPathPointList(m: MMatrix? = null, emitClosePoint: Boolean = fal
             path = PointArrayList()
         }
         first = true
-    }, { x, y ->
+    }, {
         if (first) {
             first = false
-            firstX = x
-            firstY = y
+            firstPos = it
         }
-        if (m != null) {
-            path.add(m.transformX(x, y), m.transformY(x, y))
-        } else {
-            path.add(x, y)
-        }
+        path.add(it.transformed(m))
     })
     return paths
 }

@@ -20,7 +20,6 @@ open class ImageFrame(
     val layerData: List<ImageFrameLayer> = emptyList(),
 ) : Extra by Extra.Mixin() {
     companion object {
-        @Deprecated("")
         operator fun invoke(
             bitmap: Bitmap,
             time: TimeSpan = 0.seconds,
@@ -46,35 +45,22 @@ open class ImageFrame(
             )
     }
 
-    val first = layerData.firstOrNull()
+    val first: ImageFrameLayer? = layerData.firstOrNull()
 
-    val slice: BmpSlice
-        get() = first?.slice
-            ?: Bitmaps.transparent
-    val targetX: Int
-        get() = first?.targetX
-            ?: 0
-    val targetY: Int
-        get() = first?.targetY
-            ?: 0
-    val main: Boolean
-        get() = first?.main
-            ?: false
-    val includeInAtlas: Boolean
-        get() = first?.includeInAtlas
-            ?: true
+    val slice: BmpSlice get() = first?.slice ?: Bitmaps.transparent
+    val targetX: Int get() = first?.targetX ?: 0
+    val targetY: Int get() = first?.targetY ?: 0
+    val main: Boolean get() = first?.main ?: false
+    val includeInAtlas: Boolean get() = first?.includeInAtlas ?: true
 
-    val duration get() = time
-    val width get() = slice.width
-    val height get() = slice.height
+    val duration: TimeSpan get() = time
+    val width: Int get() = slice.width
+    val height: Int get() = slice.height
     val area: Int get() = slice.area
-    val bitmap
-        get() = first?.bitmap
-            ?: Bitmaps.transparent.bmp
-    val name get() = slice.name
+    val bitmap: Bitmap get() = first?.bitmap ?: Bitmaps.transparent.bmp
+    val name: String? get() = slice.name
 
-    override fun toString(): String =
-        "ImageFrame($slice, time=$time, targetX=$targetX, targetY=$targetY, main=$main)"
+    override fun toString(): String = "ImageFrame($slice, time=$time, targetX=$targetX, targetY=$targetY, main=$main)"
 }
 
-val Iterable<ImageFrame>.area: Int get() = this.sumBy { it.area }
+val Iterable<ImageFrame>.area: Int get() = this.sumOf { it.area }

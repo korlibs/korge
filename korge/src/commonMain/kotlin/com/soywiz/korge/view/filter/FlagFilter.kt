@@ -64,7 +64,7 @@ class FlagFilter(
 
     override val programProvider: ProgramProvider get() = FlagFilter
 
-    override fun computeBorder(out: MMarginInt, texWidth: Int, texHeight: Int) {
-        out.setTo(amplitude.absoluteValue.toIntCeil())
+    override fun computeBorder(texWidth: Int, texHeight: Int): MarginInt {
+        return MarginInt(amplitude.absoluteValue.toIntCeil())
     }
 }

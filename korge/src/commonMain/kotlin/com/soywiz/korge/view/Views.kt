@@ -6,16 +6,15 @@ import com.soywiz.klock.*
 import com.soywiz.kmem.*
 import com.soywiz.korag.*
 import com.soywiz.korag.log.*
-import com.soywiz.korag.shader.*
 import com.soywiz.korev.*
 import com.soywiz.korge.*
 import com.soywiz.korge.annotations.*
 import com.soywiz.korge.baseview.*
+import com.soywiz.korge.bitmapfont.*
 import com.soywiz.korge.component.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.render.*
-import com.soywiz.korge.scene.*
 import com.soywiz.korge.stat.*
 import com.soywiz.korgw.*
 import com.soywiz.korim.color.*
@@ -29,7 +28,6 @@ import com.soywiz.korio.file.std.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.resources.*
 import com.soywiz.korio.stream.*
-import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 import kotlinx.coroutines.*
 import kotlin.collections.set
@@ -101,8 +99,8 @@ class Views constructor(
     var currentVfs: VfsFile = resourcesVfs
     var imageFormats = RegisteredImageFormats
 	val renderContext = RenderContext(ag, this, gameWindow, stats, coroutineContext, batchMaxQuads)
-	@KorgeDeprecated val agBitmapTextureManager get() = renderContext.agBitmapTextureManager
-    @KorgeDeprecated val agBufferManager get() = renderContext.agBufferManager
+	@Deprecated("") val agBitmapTextureManager get() = renderContext.agBitmapTextureManager
+    @Deprecated("") val agBufferManager get() = renderContext.agBufferManager
 	var clearEachFrame = true
 	var clearColor: RGBA = Colors.BLACK
 	val propsTriggers = hashMapOf<String, (View, String, String) -> Unit>()
@@ -162,33 +160,12 @@ class Views constructor(
         gameWindow.close()
     }
 
-    /** Mouse coordinates relative to the native window. Can't be used directly. Use [globalMouseX] instead */
+    /** Mouse coordinates relative to the native window. Can't be used directly. Use [globalMousePos] instead */
     @KorgeInternal
-    val windowMouseX: Double get() = bp.globalToWindowCoordsX(input.mouse)
-    /** Mouse coordinates relative to the native window. Can't be used directly. Use [globalMouseY] instead */
-    @KorgeInternal
-    val windowMouseY: Double get() = bp.globalToWindowCoordsY(input.mouse)
-    @KorgeInternal
-    val windowMouseXY: MPoint get() = bp.globalToWindowCoords(input.mouse)
-
-    /** Mouse coordinates relative to the native window. Can't be used directly. Use [globalMouseX] instead */
-    @KorgeInternal
-    @Deprecated("Use windowMouseX instead")
-	val nativeMouseX: Double get() = windowMouseX
-    /** Mouse coordinates relative to the native window. Can't be used directly. Use [globalMouseY] instead */
-    @KorgeInternal
-    @Deprecated("Use windowMouseY instead")
-	val nativeMouseY: Double get() = windowMouseY
-    @KorgeInternal
-    @Deprecated("Use windowMouseXY instead")
-    val nativeMouseXY: MPoint get() = windowMouseXY
+    val windowMousePos: Point get() = bp.globalToWindowCoords(input.mousePos.mutable).point
 
     /** Mouse coordinates relative to the [Stage] singleton */
-    val globalMouseXY get() = stage.mouseXY
-    /** Mouse X coordinate relative to the [Stage] singleton */
-    val globalMouseX get() = stage.mouseX
-    /** Mouse Y coordinate relative to the [Stage] singleton */
-    val globalMouseY get() = stage.mouseY
+    val globalMousePos get() = stage.mousePos
 
 	var scaleMode: ScaleMode = ScaleMode.SHOW_ALL
 	var scaleAnchor = Anchor.MIDDLE_CENTER
@@ -496,9 +473,6 @@ class Views constructor(
     //var viewExtraBuildDebugComponent = arrayListOf<(views: Views, view: View, container: UiContainer) -> Unit>()
 }
 
-fun Views.getDefaultProgram(): Program =
-    renderContext.batch.getDefaultProgram()
-
 fun viewsLog(callback: suspend Stage.(log: ViewsLog) -> Unit) = Korio {
     viewsLogSuspend(callback)
 }
@@ -641,10 +615,12 @@ interface BoundsProvider {
     fun globalToWindowBounds(bounds: MRectangle, out: MRectangle = MRectangle()): MRectangle =
         out.copyFrom(bounds).applyTransform(globalToWindowMatrix)
 
-    val windowToGlobalScaleX: Double get() = windowToGlobalTransform.scaleX
-    val windowToGlobalScaleY: Double get() = windowToGlobalTransform.scaleY
-    val windowToGlobalScaleAvg: Double get() = windowToGlobalTransform.scaleAvg
+    val windowToGlobalScale: Scale get() = windowToGlobalTransform.scale
+    val windowToGlobalScaleX: Double get() = windowToGlobalTransform.scale.scaleXD
+    val windowToGlobalScaleY: Double get() = windowToGlobalTransform.scale.scaleYD
+    val windowToGlobalScaleAvg: Double get() = windowToGlobalTransform.scale.scaleAvgD
 
+    val globalToWindowScale: Scale get() = globalToWindowTransform.scale
     val globalToWindowScaleX: Double get() = globalToWindowTransform.scaleX
     val globalToWindowScaleY: Double get() = globalToWindowTransform.scaleY
     val globalToWindowScaleAvg: Double get() = globalToWindowTransform.scaleAvg
@@ -692,8 +668,8 @@ fun BoundsProvider.setBoundsInfo(
     globalToWindowMatrix.identity()
     globalToWindowMatrix.prescale(ratioX, ratioY)
     globalToWindowMatrix.pretranslate(
-        ((actualVirtualWidth - virtualWidth) * anchor.sx).toIntRound().toDouble(),
-        ((actualVirtualHeight - virtualHeight) * anchor.sy).toIntRound().toDouble(),
+        ((actualVirtualWidth - virtualWidth) * anchor.doubleX).toIntRound().toDouble(),
+        ((actualVirtualHeight - virtualHeight) * anchor.doubleY).toIntRound().toDouble(),
     )
     windowToGlobalMatrix.invert(globalToWindowMatrix)
     globalToWindowMatrix.decompose(globalToWindowTransform)

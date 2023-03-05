@@ -10,18 +10,8 @@ import com.soywiz.korge.view.BlendMode
 import com.soywiz.korge.view.property.*
 import com.soywiz.korim.paint.*
 import com.soywiz.korim.vector.*
-import com.soywiz.korma.geom.Angle
-import com.soywiz.korma.geom.BoundsBuilder
-import com.soywiz.korma.geom.IPoint
-import com.soywiz.korma.geom.MLine
-import com.soywiz.korma.geom.MMatrix
-import com.soywiz.korma.geom.MPoint
-import com.soywiz.korma.geom.MRectangle
-import com.soywiz.korma.geom.PointArrayList
-import com.soywiz.korma.geom.PointPool
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.bezier.*
-import com.soywiz.korma.geom.degrees
-import com.soywiz.korma.geom.fastForEachGeneric
 import com.soywiz.korma.geom.shape.*
 import com.soywiz.korma.geom.vector.*
 import kotlin.math.absoluteValue
@@ -30,19 +20,19 @@ import kotlin.math.absoluteValue
 inline fun Container.gpuGraphics(
     build: ShapeBuilder.() -> Unit,
     antialiased: Boolean = true,
-    callback: @ViewDslMarker GpuGraphics.() -> Unit = {}
+    callback: @ViewDslMarker GpuShapeView.() -> Unit = {}
 ): GpuShapeView = gpuShapeView(build, antialiased, callback)
 
 inline fun Container.gpuGraphics(
     shape: Shape,
     antialiased: Boolean = true,
-    callback: @ViewDslMarker GpuGraphics.() -> Unit = {}
+    callback: @ViewDslMarker GpuShapeView.() -> Unit = {}
 ): GpuShapeView = gpuShapeView(shape, antialiased, callback)
 
 //@KorgeExperimental
 inline fun Container.gpuGraphics(
     antialiased: Boolean = true,
-    callback: @ViewDslMarker ShapeBuilder.(GpuGraphics) -> Unit = {}
+    callback: @ViewDslMarker ShapeBuilder.(GpuShapeView) -> Unit = {}
 ): GpuShapeView = gpuShapeView(antialiased, callback)
 
 //@KorgeExperimental
@@ -65,10 +55,6 @@ inline fun Container.gpuShapeView(
 ): GpuShapeView = GpuShapeView(EmptyShape, antialiased)
     .also { it.updateShape { callback(this, it) } }
     .addTo(this)
-
-@Deprecated("")
-//typealias GpuShapeView = GpuGraphics
-typealias GpuGraphics = GpuShapeView
 
 //@KorgeExperimental
 @OptIn(KorgeInternal::class)
@@ -429,9 +415,9 @@ open class GpuShapeView(
             gpuShapeViewCommands.addVertex(xMid.toFloat(), yMid.toFloat(), len = 0f, maxLen = BIG_MAX_LEN)
         }
         for (n in 0 until points.size + 1) {
-            val x = points.getX(n % points.size)
-            val y = points.getY(n % points.size)
-            val len = if (isStripAndAntialiased) MPoint.distance(x, y, xMid, yMid).toFloat() else 0f
+            val x = points.getX(n % points.size).toDouble()
+            val y = points.getY(n % points.size).toDouble()
+            val len = if (isStripAndAntialiased) Point.distance(x, y, xMid, yMid).toFloat() else 0f
             val maxLen = if (isStripAndAntialiased) len else BIG_MAX_LEN
             if (isStrip) {
                 gpuShapeViewCommands.addVertex(xMid.toFloat(), yMid.toFloat(), len = 0f, maxLen = maxLen)
@@ -556,8 +542,10 @@ open class GpuShapeView(
                     val stencilOpFunc = AGStencilOpFunc.DEFAULT.withEnabled(true).withCompareMode(AGCompareMode.ALWAYS)
                     val stencilRef = AGStencilReference.DEFAULT.withWriteMask(0xFF)
                     pathDataList.fastForEach { pathData ->
-                        writeStencil(pathData.vertexStart, pathData.vertexEnd, stencilOpFunc.withActionOnBothPass(actionOnBothPass = AGStencilOp.INCREMENT_WRAP), stencilRef, cullFace = AGCullFace.FRONT)
-                        writeStencil(pathData.vertexStart, pathData.vertexEnd, stencilOpFunc.withActionOnBothPass(actionOnBothPass = AGStencilOp.DECREMENT_WRAP), stencilRef, cullFace = AGCullFace.BACK)
+                        writeStencil(pathData.vertexStart, pathData.vertexEnd, stencilOpFunc.withActionOnBothPass(
+                            actionOnBothPass = AGStencilOp.INCREMENT_WRAP,
+                            actionOnBothPassBack = AGStencilOp.DECREMENT_WRAP,
+                        ), stencilRef, cullFace = AGCullFace.NONE)
                     }
                 }
             }

@@ -4,6 +4,7 @@ import com.soywiz.klock.*
 import com.soywiz.korge.animate.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.scene.Scene
+import com.soywiz.korge.style.*
 import com.soywiz.korge.tween.*
 import com.soywiz.korge.ui.*
 import com.soywiz.korge.view.*
@@ -28,7 +29,7 @@ class MainEditor : Scene() {
         //return@Korge
 
         //val font = DefaultTtfFont
-        uiSkin = UISkin {
+        styles {
             this.textFont = DefaultTtfFontAsBitmap
         }
         //solidRect(100, 100, Colors.RED).xy(0, 0)
@@ -102,8 +103,8 @@ class MainEditor : Scene() {
             it.container.mobileBehaviour = false
             it.container.overflowRate = 0.0
             uiVerticalStack(300.0, padding = 4.0) {
-                uiText("Properties") { textColor = Colors.RED }
-                uiPropertyNumberRow("Alpha", *UIEditableNumberPropsList(solidRect::alpha))
+                uiText("Properties").styles { textColor = Colors.RED }
+                uiPropertyNumberRow("Alpha", *UIEditableNumberPropsList(solidRect::alphaF))
                 uiPropertyNumberRow("Position", *UIEditableNumberPropsList(solidRect::x, solidRect::y, min = -1024.0, max = +1024.0, clamped = false))
                 uiPropertyNumberRow("Size", *UIEditableNumberPropsList(solidRect::width, solidRect::height, min = -1024.0, max = +1024.0, clamped = false))
                 uiPropertyNumberRow("Scale", *UIEditableNumberPropsList(solidRect::scaleX, solidRect::scaleY, min = -1.0, max = +1.0, clamped = false))
@@ -132,7 +133,7 @@ class MainEditor : Scene() {
         }
 
         renderableView(width, height) {
-            ctx2d.materialRoundRect(0.0, 0.0, 64.0, 64.0, radius = IRectCorners(32.0, 16.0, 8.0, 0.0))
+            ctx2d.materialRoundRect(0.0, 0.0, 64.0, 64.0, radius = RectCorners(32.0, 16.0, 8.0, 0.0))
         }.xy(500, 500)
 
         val richTextData = RichTextData.fromHTML("hello world,<br /><br />this is a long test to see how <font size=24 color='red'><b><i>rich text</i></b></font> <b color=yellow>works</b>! And <i>see</i> if this is going to show ellipsis if the text is too long")

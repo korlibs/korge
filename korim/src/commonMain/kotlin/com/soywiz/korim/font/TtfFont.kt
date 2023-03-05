@@ -1,60 +1,21 @@
 package com.soywiz.korim.font
 
-import com.soywiz.kds.DoubleArrayList
-import com.soywiz.kds.Extra
-import com.soywiz.kds.IntArrayList
-import com.soywiz.kds.IntIntMap
-import com.soywiz.kds.IntMap
-import com.soywiz.kds.getCyclic
-import com.soywiz.kds.iterators.fastForEach
-import com.soywiz.kds.mapInt
-import com.soywiz.kds.toIntArrayList
+import com.soywiz.kds.*
+import com.soywiz.kds.iterators.*
 import com.soywiz.klogger.*
-import com.soywiz.kmem.extract
-import com.soywiz.kmem.extract16Signed
-import com.soywiz.kmem.extractSigned
-import com.soywiz.kmem.insert16
-import com.soywiz.korim.annotation.KorimInternal
+import com.soywiz.kmem.*
+import com.soywiz.korim.annotation.*
 import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.Colors
-import com.soywiz.korim.color.RGBA
-import com.soywiz.korim.color.RgbaArray
-import com.soywiz.korim.format.PNG
-import com.soywiz.korim.paint.GradientPaint
-import com.soywiz.korim.paint.LinearGradientPaint
-import com.soywiz.korim.paint.RadialGradientPaint
-import com.soywiz.korim.vector.CompoundShape
-import com.soywiz.korim.vector.Context2d
-import com.soywiz.korim.vector.CycleMethod
-import com.soywiz.korim.vector.FillShape
-import com.soywiz.korim.vector.Shape
-import com.soywiz.korim.vector.buildShape
-import com.soywiz.korim.vector.toContext2dCommands
-import com.soywiz.korim.vector.toSvgPathString
-import com.soywiz.korio.file.VfsFile
-import com.soywiz.korio.file.baseName
-import com.soywiz.korio.lang.Charset
-import com.soywiz.korio.lang.UTF16_BE
-import com.soywiz.korio.lang.UTF8
-import com.soywiz.korio.lang.WChar
-import com.soywiz.korio.lang.WString
-import com.soywiz.korio.lang.WStringReader
-import com.soywiz.korio.lang.invalidOp
-import com.soywiz.korio.stream.AsyncInputOpenable
-import com.soywiz.korio.stream.AsyncStream
-import com.soywiz.korio.stream.FastByteArrayInputStream
-import com.soywiz.korio.stream.openFastStream
-import com.soywiz.korio.stream.openUse
-import com.soywiz.korio.stream.readBytesUpTo
-import com.soywiz.korio.stream.toSyncStream
-import com.soywiz.korma.geom.MMatrix
-import com.soywiz.korma.geom.MRectangle
-import com.soywiz.korma.geom.vector.IVectorPath
-import com.soywiz.korma.geom.vector.VectorPath
-import com.soywiz.korma.geom.vector.lineTo
-import com.soywiz.korma.geom.vector.moveTo
-import com.soywiz.korma.geom.vector.quadTo
-import com.soywiz.krypto.encoding.hex
+import com.soywiz.korim.color.*
+import com.soywiz.korim.format.*
+import com.soywiz.korim.paint.*
+import com.soywiz.korim.vector.*
+import com.soywiz.korio.file.*
+import com.soywiz.korio.lang.*
+import com.soywiz.korio.stream.*
+import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.vector.*
+import com.soywiz.krypto.encoding.*
 import kotlin.collections.set
 
 class TtfFont(
@@ -1954,7 +1915,7 @@ abstract class BaseTtfFont(
 
         override val paths = refs.map { ref ->
             val gpath = ref.glyph.path.path
-            GlyphGraphicsPath(ref.glyph.index, VectorPath(IntArrayList(gpath.commands.size), DoubleArrayList(gpath.data.size))).also { out ->
+            GlyphGraphicsPath(ref.glyph.index, VectorPath(IntArrayList(gpath.commands.size), FloatArrayList(gpath.data.size))).also { out ->
                 val m = MMatrix()
                 m.scale(ref.scaleX, ref.scaleY)
                 m.translate(ref.x, -ref.y)
@@ -1972,7 +1933,7 @@ abstract class BaseTtfFont(
                 dataSize += gpath.path.data.size
             }
 
-            GlyphGraphicsPath(index, VectorPath(IntArrayList(commandsSize), DoubleArrayList(dataSize))).also { out ->
+            GlyphGraphicsPath(index, VectorPath(IntArrayList(commandsSize), FloatArrayList(dataSize))).also { out ->
                 paths.fastForEach { out.path.write(it.path) }
             }
         }
@@ -2018,7 +1979,7 @@ abstract class BaseTtfFont(
                 dataSize += 2 + (csize * 8) // Bigger than required
             }
 
-            GlyphGraphicsPath(index, VectorPath(IntArrayList(commandSize), DoubleArrayList(dataSize))).also { p ->
+            GlyphGraphicsPath(index, VectorPath(IntArrayList(commandSize), FloatArrayList(dataSize))).also { p ->
                 //println("flags.size: ${flags.size}, contoursIndices.size=${contoursIndices.size}, xPos.size=${xPos.size}, yPos.size=${yPos.size}")
                 //assert(flags.size == contoursIndices.size)
                 //assert(xPos.size == contoursIndices.size)
@@ -2029,9 +1990,9 @@ abstract class BaseTtfFont(
                     var next: Contour = contour(cstart, tempContours[1])
 
                     when {
-                        curr.onCurve -> p.moveTo(curr.x, -curr.y)
-                        next.onCurve -> p.moveTo(next.x, -next.y)
-                        else -> p.moveTo((curr.x + next.x) * 0.5.toInt(), -((curr.y + next.y) * 0.5).toInt())
+                        curr.onCurve -> p.moveTo(Point(curr.x, -curr.y))
+                        next.onCurve -> p.moveTo(Point(next.x, -next.y))
+                        else -> p.moveTo(Point((curr.x + next.x) * 0.5.toInt(), -((curr.y + next.y) * 0.5).toInt()))
                     }
 
                     for (cpos in 0 until csize) {
@@ -2040,7 +2001,7 @@ abstract class BaseTtfFont(
                         next = contour(cstart + ((cpos + 1) % csize), tempContours[(cpos + 2) % 3])
 
                         if (curr.onCurve) {
-                            p.lineTo(curr.x, -curr.y)
+                            p.lineTo(Point(curr.x, -curr.y))
                         } else {
                             var prev2X = prev.x
                             var prev2Y = prev.y
@@ -2050,7 +2011,7 @@ abstract class BaseTtfFont(
                             if (!prev.onCurve) {
                                 prev2X = ((curr.x + prev.x) * 0.5).toInt()
                                 prev2Y = ((curr.y + prev.y) * 0.5).toInt()
-                                p.lineTo(prev2X, -prev2Y)
+                                p.lineTo(Point(prev2X, -prev2Y))
                             }
 
                             if (!next.onCurve) {
@@ -2058,8 +2019,8 @@ abstract class BaseTtfFont(
                                 next2Y = ((curr.y + next.y) * 0.5).toInt()
                             }
 
-                            p.lineTo(prev2X, -prev2Y)
-                            p.quadTo(curr.x, -curr.y, next2X, -next2Y)
+                            p.lineTo(Point(prev2X, -prev2Y))
+                            p.quadTo(Point(curr.x, -curr.y), Point(next2X, -next2Y))
                         }
                     }
 

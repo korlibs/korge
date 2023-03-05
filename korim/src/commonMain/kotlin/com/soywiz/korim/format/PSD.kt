@@ -25,7 +25,7 @@ object PSD : ImageFormat("psd") {
         //println(colorMode.length)
         //println(imageResources.length)
         //println(layerAndMask.length)
-        return ImageData(listOf(ImageFrame(imageData)))
+        return ImageData(imageData)
     }
 
     private fun packChannels(width: Int, height: Int, channels: Array<ByteArray>): Bitmap32 {
