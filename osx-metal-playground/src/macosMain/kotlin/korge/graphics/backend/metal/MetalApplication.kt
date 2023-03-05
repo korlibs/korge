@@ -1,4 +1,4 @@
-package com.soywiz.metal
+package korge.graphics.backend.metal
 
 import kotlinx.cinterop.CValue
 import kotlinx.cinterop.autoreleasepool

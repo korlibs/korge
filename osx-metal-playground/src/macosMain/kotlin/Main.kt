@@ -1,4 +1,4 @@
-import com.soywiz.metal.*
+import korge.graphics.backend.metal.*
 
 fun main() {
     MetalApplication("test") { device ->

@@ -1,9 +1,10 @@
-package com.soywiz.metal
+package korge.graphics.backend.metal
 
 import com.soywiz.kmem.*
 import com.soywiz.korag.*
 import com.soywiz.korag.shader.*
 import com.soywiz.korma.geom.*
+import com.soywiz.metal.*
 import kotlinx.cinterop.*
 import platform.Metal.*
 import platform.MetalKit.*

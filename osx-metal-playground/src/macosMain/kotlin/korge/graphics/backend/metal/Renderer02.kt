@@ -1,4 +1,4 @@
-package com.soywiz.metal
+package korge.graphics.backend.metal
 
 import com.soywiz.korag.*
 import com.soywiz.korag.shader.*

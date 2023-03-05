@@ -5,10 +5,8 @@ plugins {
 
 kotlin {
 
-    macosArm64()
-    val nativeTarget = macosX64()
-    iosArm64()
-    iosSimulatorArm64()
+    val arm64Target = macosArm64()
+    val x64Tagert = macosX64()
 
     sourceSets {
         val commonMain by getting {
@@ -18,13 +16,16 @@ kotlin {
         }
     }
 
-    nativeTarget.apply {
-        binaries {
-            executable {
-                entryPoint = "main"
+    listOf(arm64Target, x64Tagert)
+        .forEach { target ->
+            target.apply {
+                binaries {
+                    executable {
+                        entryPoint = "main"
+
+                    }
+                }
 
             }
-
         }
-    }
 }

@@ -1,4 +1,4 @@
-package com.soywiz.metal
+package korge.graphics.backend.metal
 
 import platform.Metal.MTLDeviceProtocol
 import platform.MetalKit.MTKView
