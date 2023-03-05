@@ -2,12 +2,14 @@ package com.soywiz.korma.geom
 
 import com.soywiz.kds.*
 import com.soywiz.kds.iterators.fastForEach
-import com.soywiz.kds.pack.*
 import com.soywiz.korma.annotations.*
 import com.soywiz.korma.math.roundDecimalPlaces
 import kotlin.math.round
 
-sealed interface IPointArrayList : IVectorArrayList, Extra {
+@Deprecated("Use PointList directly")
+typealias IPointArrayList = PointList
+
+sealed interface PointList : IVectorArrayList, Extra {
     override val dimensions: Int get() = 2
     override fun get(index: Int, dim: Int): Float = if (dim == 0) getX(index) else getY(index)
     fun getX(index: Int): Float
@@ -16,48 +18,48 @@ sealed interface IPointArrayList : IVectorArrayList, Extra {
     fun get(index: Int, out: MPoint): IPoint = out.setTo(getX(index), getY(index))
 }
 
-operator fun IPointArrayList.get(index: Int): Point = Point(getX(index), getY(index))
+operator fun PointList.get(index: Int): Point = Point(getX(index), getY(index))
 
 fun PointArrayList.setToRoundDecimalPlaces(places: Int): PointArrayList {
     fastForEachWithIndex { index, x, y -> this.setXY(index, x.roundDecimalPlaces(places), y.roundDecimalPlaces(places)) }
     return this
 }
 
-fun IPointArrayList.roundDecimalPlaces(places: Int, out: PointArrayList = PointArrayList()): IPointArrayList {
+fun PointList.roundDecimalPlaces(places: Int, out: PointArrayList = PointArrayList()): PointList {
     fastForEach { x, y -> out.add(x.roundDecimalPlaces(places), y.roundDecimalPlaces(places)) }
     return out
 }
 
 //fun IPointArrayList.getComponent(index: Int, component: Int): Double = if (component == 0) getX(index) else getY(index)
 
-fun IPointArrayList.getComponentList(component: Int, out: FloatArray = FloatArray(size)): FloatArray {
+fun PointList.getComponentList(component: Int, out: FloatArray = FloatArray(size)): FloatArray {
     for (n in 0 until size) out[n] = get(n, component)
     return out
 }
 
-val IPointArrayList.first: Point get() = get(0)
-val IPointArrayList.last: Point get() = get(size - 1)
+val PointList.first: Point get() = get(0)
+val PointList.last: Point get() = get(size - 1)
 
-fun IPointArrayList.orientation(): Orientation {
+fun PointList.orientation(): Orientation {
     if (size < 3) return Orientation.COLLINEAR
     return Orientation.orient2dFixed(getX(0).toDouble(), getY(0).toDouble(), getX(1).toDouble(), getY(1).toDouble(), getX(2).toDouble(), getY(2).toDouble())
 }
 
-inline fun IPointArrayList.fastForEachPoint(block: (Point) -> Unit) {
+inline fun PointList.fastForEachPoint(block: (Point) -> Unit) {
     for (n in 0 until size) {
         block(get(n))
     }
 }
 
 @Deprecated("")
-inline fun IPointArrayList.fastForEach(block: (x: Double, y: Double) -> Unit) {
+inline fun PointList.fastForEach(block: (x: Double, y: Double) -> Unit) {
     for (n in 0 until size) {
         block(getX(n).toDouble(), getY(n).toDouble())
     }
 }
 
 @Deprecated("")
-inline fun IPointArrayList.fastForEachReverse(block: (x: Double, y: Double) -> Unit) {
+inline fun PointList.fastForEachReverse(block: (x: Double, y: Double) -> Unit) {
     for (n in 0 until size) {
         val index = size - n - 1
         block(getX(index).toDouble(), getY(index).toDouble())
@@ -65,52 +67,52 @@ inline fun IPointArrayList.fastForEachReverse(block: (x: Double, y: Double) -> U
 }
 
 @Deprecated("")
-inline fun IPointArrayList.fastForEachWithIndex(block: (index: Int, x: Double, y: Double) -> Unit) {
+inline fun PointList.fastForEachWithIndex(block: (index: Int, x: Double, y: Double) -> Unit) {
     for (n in 0 until size) {
         block(n, getX(n).toDouble(), getY(n).toDouble())
     }
 }
 
 @Deprecated("")
-fun IPointArrayList.getPoint(index: Int, out: MPoint = MPoint()): MPoint = out.setTo(getX(index), getY(index))
+fun PointList.getPoint(index: Int, out: MPoint = MPoint()): MPoint = out.setTo(getX(index), getY(index))
 @Deprecated("")
-fun IPointArrayList.getIPoint(index: Int): IPoint = IPoint(getX(index), getY(index))
+fun PointList.getIPoint(index: Int): IPoint = IPoint(getX(index), getY(index))
 @Deprecated("")
-fun IPointArrayList.toList(): List<MPoint> = (0 until size).map { getPoint(it) }
+fun PointList.toList(): List<MPoint> = (0 until size).map { getPoint(it) }
 
 @Deprecated("")
-fun IPointArrayList.toPoints(): List<MPoint> = (0 until size).map { getPoint(it) }
+fun PointList.toPoints(): List<MPoint> = (0 until size).map { getPoint(it) }
 @Deprecated("")
-fun IPointArrayList.toIPoints(): List<IPoint> = (0 until size).map { getIPoint(it) }
+fun PointList.toIPoints(): List<IPoint> = (0 until size).map { getIPoint(it) }
 
-fun <T> IPointArrayList.map(gen: (x: Double, y: Double) -> T): List<T> = (0 until size).map { gen(getX(it).toDouble(), getY(it).toDouble()) }
+fun <T> PointList.map(gen: (x: Double, y: Double) -> T): List<T> = (0 until size).map { gen(getX(it).toDouble(), getY(it).toDouble()) }
 
-fun IPointArrayList.mapPoints(temp: MPoint = MPoint(), gen: (x: Double, y: Double, out: MPoint) -> IPoint): IPointArrayList {
+fun PointList.mapPoints(temp: MPoint = MPoint(), gen: (x: Double, y: Double, out: MPoint) -> IPoint): PointList {
     val out = PointArrayList(this.size)
     fastForEach { x, y -> out.add(gen(x, y, temp)) }
     return out
 }
 
-fun IPointArrayList.contains(x: Float, y: Float): Boolean = contains(x.toDouble(), y.toDouble())
-fun IPointArrayList.contains(x: Int, y: Int): Boolean = contains(x.toDouble(), y.toDouble())
-fun IPointArrayList.contains(x: Double, y: Double): Boolean {
+fun PointList.contains(x: Float, y: Float): Boolean = contains(x.toDouble(), y.toDouble())
+fun PointList.contains(x: Int, y: Int): Boolean = contains(x.toDouble(), y.toDouble())
+fun PointList.contains(x: Double, y: Double): Boolean {
     for (n in 0 until size) if (getX(n).toDouble() == x && getY(n).toDouble() == y) return true
     return false
 }
 
-fun IPointArrayList.clone(out: PointArrayList = PointArrayList(this.size)): PointArrayList {
+fun PointList.clone(out: PointArrayList = PointArrayList(this.size)): PointArrayList {
     fastForEach { x, y -> out.add(x, y) }
     return out
 }
 
-operator fun IPointArrayList.plus(other: IPointArrayList): PointArrayList = PointArrayList(size + other.size).also {
+operator fun PointList.plus(other: PointList): PointArrayList = PointArrayList(size + other.size).also {
     it.add(this)
     it.add(other)
 }
 
 fun List<Point>.toPointArrayList(): PointArrayList = PointArrayList(size).also { for (p in this) it.add(p) }
 
-open class PointArrayList(capacity: Int = 7) : IPointArrayList, Extra by Extra.Mixin() {
+open class PointArrayList(capacity: Int = 7) : PointList, Extra by Extra.Mixin() {
     override var closed: Boolean = false
     private val data = FloatArrayList(capacity * 2)
     override val size get() = data.size / 2
@@ -179,17 +181,17 @@ open class PointArrayList(capacity: Int = 7) : IPointArrayList, Extra by Extra.M
     fun add(p: Point) = add(p.x, p.y)
     fun add(p: MPoint) = add(p.x, p.y)
     fun add(p: IPoint) = add(p.x, p.y)
-    fun add(p: IPointArrayList) = this.apply { p.fastForEach { x, y -> add(x, y) } }
-    fun addReverse(p: IPointArrayList) = this.apply { p.fastForEachReverse { x, y -> add(x, y) } }
-    fun add(p: IPointArrayList, index: Int) {
+    fun add(p: PointList) = this.apply { p.fastForEach { x, y -> add(x, y) } }
+    fun addReverse(p: PointList) = this.apply { p.fastForEachReverse { x, y -> add(x, y) } }
+    fun add(p: PointList, index: Int) {
         add(p.getX(index), p.getY(index))
     }
-    fun add(p: IPointArrayList, index: Int, indexEnd: Int) {
+    fun add(p: PointList, index: Int, indexEnd: Int) {
         // @TODO: Optimize this
         for (n in index until indexEnd) add(p.getX(n), p.getY(n))
     }
 
-    fun copyFrom(other: IPointArrayList): PointArrayList {
+    fun copyFrom(other: PointList): PointArrayList {
         clear()
         add(other)
         return this
@@ -446,5 +448,5 @@ inline fun <T> Iterable<T>.mapPoint(temp: MPoint = MPoint(), out: PointArrayList
     return out
 }
 
-fun List<IPointArrayList>.flatten(): IPointArrayList =
+fun List<PointList>.flatten(): PointList =
     PointArrayList(this.sumOf { it.size }).also { out -> this.fastForEach { out.add(it) } }

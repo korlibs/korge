@@ -40,7 +40,7 @@ interface WithHitShape2d {
 
 abstract class Shape2d {
     abstract val type: Int
-    abstract val paths: List<IPointArrayList>
+    abstract val paths: List<PointList>
     abstract val closed: Boolean
     abstract fun containsPoint(p: Point): Boolean
     fun containsPoint(p: Point, mat: MMatrix) = containsPoint(mat.transform(p))
@@ -162,7 +162,7 @@ abstract class Shape2d {
             }.applyTransform(MMatrix().pretranslate(ellipseX, ellipseY).prerotate(ellipseAngle))
         }
 
-        override val paths: List<IPointArrayList> = when {
+        override val paths: List<PointList> = when {
             isCircle -> listOf(PointArrayList(ellipseTotalPoints) {
                 for (it in 0 until ellipseTotalPoints) {
                     add(
@@ -229,7 +229,7 @@ abstract class Shape2d {
         override fun containsPoint(p: Point): Boolean = if (closed) vectorPath.containsPoint(p) else false
     }
 
-    data class Polygon(val points: IPointArrayList) : Shape2d() {
+    data class Polygon(val points: PointList) : Shape2d() {
         companion object {
             const val TYPE = 5
         }
@@ -244,7 +244,7 @@ abstract class Shape2d {
         override fun containsPoint(p: Point): Boolean = vectorPath.containsPoint(p)
     }
 
-    data class Polyline(val points: IPointArrayList) : Shape2d(), WithArea {
+    data class Polyline(val points: PointList) : Shape2d(), WithArea {
         companion object {
             const val TYPE = 6
         }
@@ -271,7 +271,7 @@ abstract class Shape2d {
 
 fun Iterable<VectorPath>.toShape2d(closed: Boolean = true) = Shape2d.Complex(this.map { it.toShape2d(closed) })
 
-val List<IPointArrayList>.totalVertices get() = this.map { it.size }.sum()
+val List<PointList>.totalVertices get() = this.map { it.size }.sum()
 
 fun BoundsBuilder.add(shape: Shape2d) {
     for (path in shape.paths) add(path)
@@ -400,7 +400,7 @@ fun VectorPath.getPoints2List(): List<PointArrayList> {
 inline fun buildVectorPath(out: VectorPath = VectorPath(), block: VectorPath.() -> Unit): VectorPath = out.apply(block)
 inline fun buildVectorPath(out: VectorPath = VectorPath(), winding: Winding = Winding.DEFAULT, block: VectorPath.() -> Unit): VectorPath = out.also { it.winding = winding }.apply(block)
 
-fun IPointArrayList.toPolygon(out: VectorPath = VectorPath()): VectorPath = buildVectorPath(out) { polygon(this@toPolygon) }
+fun PointList.toPolygon(out: VectorPath = VectorPath()): VectorPath = buildVectorPath(out) { polygon(this@toPolygon) }
 
 inline fun approximateCurve(
     curveSteps: Int,
@@ -431,7 +431,7 @@ inline fun approximateCurve(
     //println("curveSteps: $rcurveSteps, emittedCount=$emittedCount")
 }
 
-fun IPointArrayList.toRectangleOrNull(): Shape2d.Rectangle? {
+fun PointList.toRectangleOrNull(): Shape2d.Rectangle? {
     if (this.size != 4) return null
     //check there are only unique points
     val points = setOf(getX(0) to getY(0), getX(1) to getY(1), getX(2) to getY(2), getX(3) to getY(3))
@@ -448,7 +448,7 @@ fun IPointArrayList.toRectangleOrNull(): Shape2d.Rectangle? {
     return Shape2d.Rectangle(MRectangle.fromBounds(top, left, right, bottom))
 }
 
-fun IPointArrayList.toShape2d(closed: Boolean = true): Shape2d {
+fun PointList.toShape2d(closed: Boolean = true): Shape2d {
     if (closed && this.size == 4) {
         val x0 = this.getX(0)
         val y0 = this.getY(0)
@@ -475,7 +475,7 @@ fun VectorPath.toShape2dOld(closed: Boolean = true): Shape2d {
     }
 }
 
-fun VectorPath.toPathPointList(m: MMatrix? = null, emitClosePoint: Boolean = false): List<IPointArrayList> {
+fun VectorPath.toPathPointList(m: MMatrix? = null, emitClosePoint: Boolean = false): List<PointList> {
     val paths = arrayListOf<PointArrayList>()
     var path = PointArrayList()
     var firstPos = Point()

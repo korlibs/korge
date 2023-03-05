@@ -2,7 +2,7 @@ package com.soywiz.korma.triangle.pathfind
 
 import com.soywiz.kds.*
 import com.soywiz.korma.geom.IPoint
-import com.soywiz.korma.geom.IPointArrayList
+import com.soywiz.korma.geom.PointList
 import com.soywiz.korma.geom.PointArrayList
 import com.soywiz.korma.geom.triangle.Edge
 import com.soywiz.korma.geom.triangle.Triangle
@@ -34,7 +34,7 @@ class SpatialMeshFind(val spatialMesh: SpatialMesh) {
         }
     }
 
-    fun find(start: IPoint, end: IPoint): IPointArrayList {
+    fun find(start: IPoint, end: IPoint): PointList {
         return Channel.channelToPortals(start, end, findNodes(spatialMesh.spatialNodeFromPoint(start), spatialMesh.spatialNodeFromPoint(end))).path
     }
 
@@ -200,7 +200,7 @@ class SpatialMeshFind(val spatialMesh: SpatialMesh) {
                 }*/
             }
 
-            fun stringPull(): IPointArrayList {
+            fun stringPull(): PointList {
                 val pts = PointArrayList()
                 // Init scan state
                 var portalApex: IPoint

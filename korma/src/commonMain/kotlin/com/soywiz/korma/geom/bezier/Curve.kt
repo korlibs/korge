@@ -22,7 +22,7 @@ interface Curve {
 }
 
 @PublishedApi
-internal fun Curve._getPoints(count: Int = this.recommendedDivisions(), equidistant: Boolean = false, out: PointArrayList = PointArrayList()): IPointArrayList {
+internal fun Curve._getPoints(count: Int = this.recommendedDivisions(), equidistant: Boolean = false, out: PointArrayList = PointArrayList()): PointList {
     val curveLength = length
     Ratio.forEachRatio(count) { ratio ->
         val t = if (equidistant) ratioFromLength(ratio.toDouble() * curveLength) else ratio.toDouble()
@@ -32,10 +32,10 @@ internal fun Curve._getPoints(count: Int = this.recommendedDivisions(), equidist
     return out
 }
 
-fun Curve.getPoints(count: Int = this.recommendedDivisions(), out: PointArrayList = PointArrayList()): IPointArrayList {
+fun Curve.getPoints(count: Int = this.recommendedDivisions(), out: PointArrayList = PointArrayList()): PointList {
     return _getPoints(count, equidistant = false, out = out)
 }
 
-fun Curve.getEquidistantPoints(count: Int = this.recommendedDivisions(), out: PointArrayList = PointArrayList()): IPointArrayList {
+fun Curve.getEquidistantPoints(count: Int = this.recommendedDivisions(), out: PointArrayList = PointArrayList()): PointList {
     return _getPoints(count, equidistant = true, out = out)
 }

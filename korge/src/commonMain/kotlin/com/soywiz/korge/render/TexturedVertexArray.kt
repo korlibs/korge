@@ -7,7 +7,7 @@ import com.soywiz.korim.bitmap.BmpSlice
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korma.geom.BoundsBuilder
-import com.soywiz.korma.geom.IPointArrayList
+import com.soywiz.korma.geom.PointList
 import com.soywiz.korma.geom.MMatrix
 import com.soywiz.korma.geom.MRectangle
 import com.soywiz.korma.geom.fastForEachWithIndex
@@ -79,7 +79,7 @@ class TexturedVertexArray(vcount: Int, val indices: ShortArray, icount: Int = in
         }
 
         /** This doesn't handle holes */
-        fun fromPointArrayList(points: IPointArrayList, colorMul: RGBA = Colors.WHITE, matrix: MMatrix? = null): TexturedVertexArray {
+        fun fromPointArrayList(points: PointList, colorMul: RGBA = Colors.WHITE, matrix: MMatrix? = null): TexturedVertexArray {
             val indices = ShortArray((points.size - 2) * 3)
             for (n in 0 until points.size - 2) {
                 indices[n * 3 + 0] = (0).toShort()
@@ -93,7 +93,7 @@ class TexturedVertexArray(vcount: Int, val indices: ShortArray, icount: Int = in
 
     }
 
-    fun setSimplePoints(points: IPointArrayList, matrix: MMatrix?, colorMul: RGBA = Colors.WHITE) {
+    fun setSimplePoints(points: PointList, matrix: MMatrix?, colorMul: RGBA = Colors.WHITE) {
         if (matrix != null) {
             points.fastForEachWithIndex { index, x, y ->
                 val xf = x.toFloat()

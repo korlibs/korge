@@ -4,7 +4,6 @@ import com.soywiz.klock.TimeSpan
 import com.soywiz.klock.coalesce
 import com.soywiz.klock.milliseconds
 import com.soywiz.klock.nanoseconds
-import com.soywiz.kmem.clamp01
 import com.soywiz.kmem.fract
 import com.soywiz.kmem.toIntFloor
 import com.soywiz.korim.color.ColorAdd
@@ -14,7 +13,6 @@ import com.soywiz.korma.geom.bezier.getEquidistantPoints
 import com.soywiz.korma.geom.vector.VectorPath
 import com.soywiz.korma.geom.vector.getCurves
 import com.soywiz.korma.interpolation.*
-import com.soywiz.korma.math.isAlmostEquals
 import kotlin.jvm.JvmName
 import kotlin.native.concurrent.*
 import kotlin.reflect.KMutableProperty0
@@ -174,7 +172,7 @@ inline operator fun KMutableProperty0<IPoint>.get(path: VectorPath, includeLastP
 
 @JvmName("getIPoint")
 @Deprecated("")
-inline operator fun KMutableProperty0<IPoint>.get(range: IPointArrayList): V2<IPoint> {
+inline operator fun KMutableProperty0<IPoint>.get(range: PointList): V2<IPoint> {
     val temp = MPoint()
     return V2(
         this, temp, temp, { ratio, _, _ ->
@@ -191,7 +189,7 @@ inline operator fun KMutableProperty0<IPoint>.get(range: IPointArrayList): V2<IP
 }
 
 @JvmName("getPoint")
-inline operator fun KMutableProperty0<Point>.get(range: IPointArrayList): V2<Point> {
+inline operator fun KMutableProperty0<Point>.get(range: PointList): V2<Point> {
     val p = Point()
     return V2(
         this, p, p, { ratio, _, _ ->

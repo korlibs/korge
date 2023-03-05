@@ -1,7 +1,7 @@
 package com.soywiz.korma.triangle
 
 import com.soywiz.kds.IntArrayList
-import com.soywiz.korma.geom.IPointArrayList
+import com.soywiz.korma.geom.PointList
 import com.soywiz.korma.geom.Orientation
 import com.soywiz.korma.geom.PointArrayList
 import com.soywiz.korma.geom.orientation
@@ -24,7 +24,7 @@ object EarCutTriangulator {
 
 fun VectorPath.triangulateEarCut() = this.toPathPointList().triangulateEarCut()
 
-fun List<IPointArrayList>.triangulateEarCut(): TriangleList {
+fun List<PointList>.triangulateEarCut(): TriangleList {
     val allPoints = PointArrayList(this.sumOf { it.size })
     val holeIndices = IntArrayList()
     //var lastClockWise = true

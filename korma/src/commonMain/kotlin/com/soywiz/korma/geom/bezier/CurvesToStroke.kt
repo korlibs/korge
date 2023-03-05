@@ -23,7 +23,7 @@ enum class StrokePointsMode {
  */
 interface StrokePoints {
     val vector: VectorArrayList
-    val debugPoints: IPointArrayList
+    val debugPoints: PointList
     val debugSegments: List<MLine>
     val mode: StrokePointsMode
 

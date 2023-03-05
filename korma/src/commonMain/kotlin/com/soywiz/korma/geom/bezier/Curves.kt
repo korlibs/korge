@@ -6,7 +6,6 @@ import com.soywiz.kmem.*
 import com.soywiz.korma.annotations.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
-import com.soywiz.korma.math.isAlmostEquals
 import kotlin.jvm.JvmName
 
 @JvmName("ListCurves_toCurves")
@@ -193,7 +192,7 @@ fun List<Curve>.toVectorPath(out: VectorPath = VectorPath()): VectorPath {
 
 @KormaExperimental
 @KormaMutableApi
-fun Curves.toNonCurveSimplePointList(out: PointArrayList = PointArrayList()): IPointArrayList? {
+fun Curves.toNonCurveSimplePointList(out: PointArrayList = PointArrayList()): PointList? {
     val curves = this
     val beziers = curves.beziers//.flatMap { it.toSimpleList() }.map { it.curve }
     val epsilon = 0.0001f

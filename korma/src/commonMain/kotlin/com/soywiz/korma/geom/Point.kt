@@ -2,11 +2,9 @@
 
 package com.soywiz.korma.geom
 
-import com.soywiz.kds.*
 import com.soywiz.kds.pack.*
 import com.soywiz.kmem.*
 import com.soywiz.korma.internal.niceStr
-import com.soywiz.korma.annotations.*
 import com.soywiz.korma.interpolation.*
 import com.soywiz.korma.math.isAlmostEquals
 import com.soywiz.korma.math.isAlmostZero
@@ -240,7 +238,7 @@ private inline fun getPolylineLength(size: Int, crossinline get: (n: Int, (x: Do
     return out
 }
 
-fun IPointArrayList.getPolylineLength(): Double = getPolylineLength(size) { n, func -> func(getX(n).toDouble(), getY(n).toDouble()) }
+fun PointList.getPolylineLength(): Double = getPolylineLength(size) { n, func -> func(getX(n).toDouble(), getY(n).toDouble()) }
 fun List<IPoint>.getPolylineLength(): Double = getPolylineLength(size) { n, func -> func(this[n].x, this[n].y) }
 
 fun List<MPoint>.bounds(out: MRectangle = MRectangle(), bb: BoundsBuilder = BoundsBuilder()): MRectangle = bb.add(this).getBounds(out)

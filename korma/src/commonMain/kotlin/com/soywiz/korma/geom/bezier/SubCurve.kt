@@ -10,7 +10,7 @@ data class CurveSplit(
     val left: SubBezier,
     val right: SubBezier,
     val t: Double,
-    val hull: IPointArrayList?
+    val hull: PointList?
 ) {
     val leftCurve: Bezier get() = left.curve
     val rightCurve: Bezier get() = right.curve
@@ -33,7 +33,7 @@ class SubBezier(val curve: Bezier, val t1: Double, val t2: Double, val parent: B
         private val LEFT = listOf(null, null, intArrayOf(0, 3, 5), intArrayOf(0, 4, 7, 9))
         private val RIGHT = listOf(null, null, intArrayOf(5, 4, 2), intArrayOf(9, 8, 6, 3))
 
-        private fun BezierCurveFromIndices(indices: IntArray, points: IPointArrayList): Bezier {
+        private fun BezierCurveFromIndices(indices: IntArray, points: PointList): Bezier {
             val p = PointArrayList(indices.size)
             for (index in indices) p.add(points, index)
             return Bezier(p)
@@ -42,7 +42,7 @@ class SubBezier(val curve: Bezier, val t1: Double, val t2: Double, val parent: B
 
     fun calc(t: Double): Point = curve.calc(t.convertRange(t1, t2, 0.0, 1.0))
 
-    private fun _split(t: Double, hull: IPointArrayList?, left: Boolean): SubBezier {
+    private fun _split(t: Double, hull: PointList?, left: Boolean): SubBezier {
         val rt = t.convertRange(0.0, 1.0, t1, t2)
         val rt1 = if (left) t1 else rt
         val rt2 = if (left) rt else t2
@@ -58,8 +58,8 @@ class SubBezier(val curve: Bezier, val t1: Double, val t2: Double, val parent: B
         return SubBezier(curve, rt1, rt2, parent)
     }
 
-    private fun _splitLeft(t: Double, hull: IPointArrayList? = curve.hullOrNull(t)): SubBezier = _split(t, hull, left = true)
-    private fun _splitRight(t: Double, hull: IPointArrayList? = curve.hullOrNull(t)): SubBezier = _split(t, hull, left = false)
+    private fun _splitLeft(t: Double, hull: PointList? = curve.hullOrNull(t)): SubBezier = _split(t, hull, left = true)
+    private fun _splitRight(t: Double, hull: PointList? = curve.hullOrNull(t)): SubBezier = _split(t, hull, left = false)
 
     fun splitLeft(t: Double): SubBezier = _splitLeft(t)
     fun splitRight(t: Double): SubBezier = _splitRight(t)

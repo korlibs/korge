@@ -23,7 +23,7 @@ object Convex {
         return isConvex(points)
     }
 
-    fun isConvex(vertices: IPointArrayList): Boolean { // Rory Daulton
+    fun isConvex(vertices: PointList): Boolean { // Rory Daulton
         var base = 0
         var n = vertices.size
         val TWO_PI: Double = PI2

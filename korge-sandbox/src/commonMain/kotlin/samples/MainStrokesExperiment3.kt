@@ -195,7 +195,7 @@ class MainStrokesExperiment : Scene() {
         class PathData(
             val path: VectorPath,
             val curves: Curves,
-            val points: IPointArrayList
+            val points: PointList
         )
 
         val path = buildVectorPath {

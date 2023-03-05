@@ -217,7 +217,7 @@ fun VectorBuilder.parallelogram(bounds: MRectangle, angle: Angle = 30.degrees, d
     lineTo(Point(bounds.left - dx1, bounds.bottom))
 }
 
-fun VectorBuilder.polygon(path: IPointArrayList, close: Boolean = true) {
+fun VectorBuilder.polygon(path: PointList, close: Boolean = true) {
     moveTo(path[0])
     for (i in 1 until path.size) lineTo(path[i])
     if (close) close()

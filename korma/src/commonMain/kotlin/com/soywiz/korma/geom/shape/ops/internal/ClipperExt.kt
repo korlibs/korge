@@ -37,8 +37,8 @@ fun Paths.toShape2d(): Shape2d {
     }
 }
 
-fun IPointArrayList.toClipperPath() = Path(toPoints())
-fun List<IPointArrayList>.toClipperPaths() = Paths(this.map { it.toClipperPath() })
+fun PointList.toClipperPath() = Path(toPoints())
+fun List<PointList>.toClipperPaths() = Paths(this.map { it.toClipperPath() })
 fun VectorPath.toClipperPaths() = this.toPathPointList().toClipperPaths()
 
 fun Shape2d.clipperOp(other: Shape2d, op: Clipper.ClipType): Shape2d {
@@ -71,8 +71,8 @@ fun LineJoin.toClipper(): Clipper.JoinType = when (this) {
     LineJoin.MITER -> Clipper.JoinType.MITER
 }
 
-fun Paths.toPathList(): List<IPointArrayList> {
-    val out = arrayListOf<IPointArrayList>()
+fun Paths.toPathList(): List<PointList> {
+    val out = arrayListOf<PointList>()
     for (path in this) {
         val points = PointArrayList()
         for (point in path) {

@@ -42,7 +42,7 @@ private fun <T : Any> T?.isAlmostEqualsGeneric(
             e.isAlmostEquals(a, absoluteTolerance)
         }
         is Bezier -> e.points.isAlmostEqualsGeneric((a as? Bezier)?.points, absoluteTolerance)
-        is IPointArrayList -> e.toList().isAlmostEqualsGeneric((a as? IPointArrayList)?.toList(), absoluteTolerance)
+        is PointList -> e.toList().isAlmostEqualsGeneric((a as? PointList)?.toList(), absoluteTolerance)
         is List<*> -> {
             if (a !is List<*>?) return false
             if (e.size != a.size) return false

@@ -85,7 +85,7 @@ class BoundsBuilder {
         for (p in ps) add(p)
         return this
     }
-    fun add(ps: IPointArrayList): BoundsBuilder {
+    fun add(ps: PointList): BoundsBuilder {
         for (n in 0 until ps.size) add(ps.getX(n), ps.getY(n))
         return this
     }
@@ -112,7 +112,7 @@ class BoundsBuilder {
         for (p in ps) add(p, transform)
         return this
     }
-    fun add(ps: IPointArrayList, transform: MMatrix): BoundsBuilder {
+    fun add(ps: PointList, transform: MMatrix): BoundsBuilder {
         for (n in 0 until ps.size) add(ps.getX(n), ps.getY(n), transform)
         return this
     }

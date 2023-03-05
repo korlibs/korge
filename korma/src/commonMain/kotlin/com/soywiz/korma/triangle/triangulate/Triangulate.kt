@@ -9,10 +9,10 @@ import kotlin.jvm.JvmName
 
 @Deprecated("")
 fun List<IPoint>.triangulate(): List<Triangle> = listOf(PointArrayList(this)).triangulate()
-fun IPointArrayList.triangulate(): List<Triangle> = listOf(this).triangulate()
+fun PointList.triangulate(): List<Triangle> = listOf(this).triangulate()
 
 @JvmName("triangulateListPointArrayList")
-fun List<IPointArrayList>.triangulate(): List<Triangle> {
+fun List<PointList>.triangulate(): List<Triangle> {
     val sc = Poly2Tri.SweepContext()
     sc.addHoles(this)
     sc.triangulate()

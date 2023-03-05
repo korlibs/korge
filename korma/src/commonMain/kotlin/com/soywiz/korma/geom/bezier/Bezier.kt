@@ -11,9 +11,9 @@ import kotlin.contracts.*
 import kotlin.math.*
 
 sealed interface IBezier : Curve {
-    val points: IPointArrayList
+    val points: PointList
     val dims: Int
-    val dpoints: List<IPointArrayList>
+    val dpoints: List<PointList>
     val direction: Angle
     val clockwise: Boolean
     val extrema: Bezier.Extrema
@@ -45,9 +45,9 @@ sealed interface IBezier : Curve {
     fun compute(t: Double): Point
     fun derivative(t: Double, normalize: Boolean = false): Point
     fun normal(t: Double, normalize: Boolean = true): Point
-    fun hull(t: Double, out: PointArrayList = PointArrayList()): IPointArrayList
+    fun hull(t: Double, out: PointArrayList = PointArrayList()): PointList
     fun curvature(t: Double, kOnly: Boolean = false): Bezier.Curvature
-    fun hullOrNull(t: Double, out: PointArrayList = PointArrayList()): IPointArrayList?
+    fun hullOrNull(t: Double, out: PointArrayList = PointArrayList()): PointList?
     fun split(t0: Double, t1: Double): SubBezier
     fun split(t: Double): CurveSplit
     fun splitLeft(t: Double): SubBezier
@@ -69,10 +69,10 @@ sealed interface IBezier : Curve {
  * Based on algorithms described here: https://pomax.github.io/bezierinfo/
  */
 class Bezier(
-    points: IPointArrayList,
+    points: PointList,
 ) : IBezier {
     private val _points = PointArrayList(points.size).copyFrom(points)
-    override val points: IPointArrayList get() = _points
+    override val points: PointList get() = _points
 
     init {
         if (points.size > 4) error("Only supports quad and cubic beziers")
@@ -105,7 +105,7 @@ class Bezier(
         return this
     }
 
-    fun setPoints(points: IPointArrayList): Bezier = _setPoints { copyFrom(points) }
+    fun setPoints(points: PointList): Bezier = _setPoints { copyFrom(points) }
 
     fun setPoints(p0: Point, p1: Point): Bezier = _setPoints { add(p0); add(p1) }
     fun setPoints(p0: Point, p1: Point, p2: Point): Bezier = _setPoints { add(p0); add(p1); add(p2) }
@@ -179,7 +179,7 @@ class Bezier(
     override val order: Int get() = points.size - 1
 
     private val _aligned: PointArrayList = PointArrayList(points.size)
-    private val aligned: IPointArrayList get() {
+    private val aligned: PointList get() {
         if (alignedValid) return _aligned
         alignedValid = true
         _aligned.clear()
@@ -187,8 +187,8 @@ class Bezier(
         return _aligned
     }
 
-    private var _dpoints: List<IPointArrayList> = emptyList()
-    override val dpoints: List<IPointArrayList> get() {
+    private var _dpoints: List<PointList> = emptyList()
+    override val dpoints: List<PointList> get() {
         if (dpointsValid) return _dpoints
         dpointsValid = true
         _dpoints = derive(points)
@@ -691,7 +691,7 @@ class Bezier(
     override fun normal(t: Double): Point = normal(t, normalize = true)
     override fun tangent(t: Double): Point = derivative(t, normalize = true)
 
-    override fun hull(t: Double, out: PointArrayList): IPointArrayList {
+    override fun hull(t: Double, out: PointArrayList): PointList {
         if (order < 2) error("Can't compute hull of order=$order < 2")
         return hullOrNull(t, out)!!
     }
@@ -700,7 +700,7 @@ class Bezier(
         return curvature(t, dpoints[0], dpoints[1], dims, kOnly)
     }
 
-    override fun hullOrNull(t: Double, out: PointArrayList): IPointArrayList? {
+    override fun hullOrNull(t: Double, out: PointArrayList): PointList? {
         if (order < 2) return null
         var p = this.points
         out.add(p, 0)
@@ -938,7 +938,7 @@ class Bezier(
             0.028531388628933663, 0.028531388628933663, 0.0123412297999872, 0.0123412297999872
         )
 
-        private fun curvature(t: Double, d1: IPointArrayList, d2: IPointArrayList, dims: Int, kOnly: Boolean = false): Curvature {
+        private fun curvature(t: Double, d1: PointList, d2: PointList, dims: Int, kOnly: Boolean = false): Curvature {
             val d = compute(t, d1)
             val dd = compute(t, d2)
             val qdsum = d.x * d.x + d.y * d.y
@@ -1028,7 +1028,7 @@ class Bezier(
             return atan2(cross, dot)
         }
 
-        private fun compute(t: Double, points: IPointArrayList): Point {
+        private fun compute(t: Double, points: PointList): Point {
             val p = points
             val order = p.size - 1
             if (t == 0.0) return p[0]
@@ -1070,8 +1070,8 @@ class Bezier(
             }
         }
 
-        private fun derive(points: IPointArrayList): List<IPointArrayList> {
-            val out = arrayListOf<IPointArrayList>()
+        private fun derive(points: PointList): List<PointList> {
+            val out = arrayListOf<PointList>()
 
             var current = points
             while (current.size >= 2) {
@@ -1093,10 +1093,10 @@ class Bezier(
         private fun crt(v: Double): Double = if (v < 0.0) -(-v).pow(1.0 / 3.0) else v.pow(1.0 / 3.0)
 
         private fun align(
-            points: IPointArrayList,
+            points: PointList,
             line: MLine,
             out: PointArrayList = PointArrayList()
-        ): IPointArrayList {
+        ): PointList {
             val p1 = line.a
             val p2 = line.b
             val tx = p1.x
@@ -1118,7 +1118,7 @@ class Bezier(
 
         private val X_AXIS = MLine(0, 0, 1, 0)
 
-        private fun roots(points: IPointArrayList, line: MLine = X_AXIS): DoubleArray {
+        private fun roots(points: PointList, line: MLine = X_AXIS): DoubleArray {
             val order = points.size - 1
             val aligned = align(points, line)
 
