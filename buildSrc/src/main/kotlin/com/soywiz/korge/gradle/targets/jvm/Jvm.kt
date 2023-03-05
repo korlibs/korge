@@ -152,7 +152,7 @@ open class KorgeJavaExecWithAutoreload : KorgeJavaExec() {
         jvmArgs(
             "-javaagent:$reloadAgentJar=${listOf(
                 "$httpPort",
-                buildList {
+                ArrayList<String>().apply {
                     add("-classpath")
                     add("${project.rootProject.rootDir}/gradle/wrapper/gradle-wrapper.jar")
                     add("org.gradle.wrapper.GradleWrapperMain")
