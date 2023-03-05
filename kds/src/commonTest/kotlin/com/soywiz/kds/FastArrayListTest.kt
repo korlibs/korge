@@ -70,4 +70,43 @@ class FastArrayListTest {
         assertEquals(false, list.remove(2))
         assertEquals(listOf(1, 3), list)
     }
+
+    @Test
+    fun testRemoveAt() {
+        val list = fastArrayListOf(1, 2, 3, 4, 5)
+        list.removeAt(4)
+        assertEquals(listOf(1, 2, 3, 4), list)
+        list.removeAt(0)
+        assertEquals(listOf(2, 3, 4), list)
+        list.removeAt(1)
+        assertEquals(listOf(2, 4), list)
+    }
+
+    @Test
+    fun testClear() {
+        val list = fastArrayListOf(1, 2, 3)
+        assertEquals(listOf(1, 2, 3), list)
+        list.clear()
+        assertEquals(listOf(), list)
+        list.add(1)
+        assertEquals(listOf(1), list)
+    }
+
+    @Test
+    fun testToArrayIsACopy() {
+        val list = fastArrayListOf(1, 2, 3)
+        val list2 = list.toTypedArray()
+        list[0] = -1
+        val list3 = list.toTypedArray()
+        assertEquals(listOf(1, 2, 3), list2.toList())
+        assertEquals(listOf(-1, 2, 3), list3.toList())
+    }
+
+    @Test
+    fun testAddAll() {
+        assertEquals(
+            listOf(1, 2, 3, 4, 5, 6),
+            fastArrayListOf(1, 2, 3).also { it.addAll(fastArrayListOf(4, 5, 6)) }
+        )
+    }
 }
