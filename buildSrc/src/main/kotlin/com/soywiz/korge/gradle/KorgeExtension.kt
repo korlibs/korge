@@ -258,7 +258,7 @@ class KorgeExtension(val project: Project) {
 	var description: String = "description"
 	var orientation: Orientation = Orientation.DEFAULT
 
-	var copyright: String = "Copyright (c) ${Year.now().getValue()} Unknown"
+	var copyright: String = "Copyright (c) ${Year.now().value} Unknown"
 
     var sourceMaps: Boolean = false
 	var supressWarnings: Boolean = false
@@ -350,7 +350,7 @@ class KorgeExtension(val project: Project) {
 		extraEntryPoints.add(Entrypoint(name, jvmMainClassName))
 	}
 
-    var esbuildVersion: String = "0.12.22"
+    var esbuildVersion: String = "0.17.10"
 
     var androidMinSdk: Int = 16
 	var androidCompileSdk: Int = 29
