@@ -118,7 +118,8 @@ abstract class Scene : InjectorAsyncDependency, ViewsContainer, CoroutineScope, 
      * Its underlying job will be automatically closed on the [sceneAfterDestroy].
      * No need to call super.
      */
-    abstract suspend fun SContainer.sceneMain()
+    open suspend fun SContainer.sceneMain() {
+    }
 
     /**
      * DO NOT BLOCK. Called after the old scene has been destroyed
