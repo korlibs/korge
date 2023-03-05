@@ -66,6 +66,7 @@ class MetalShaderGeneratorTest {
                 "constant float4x4& u_ViewMat [[buffer(4)]]"
             ).joinToString(",")
 
+
             "vertex v2f vertexMain($vertexArgs)" {
                 +"v2f out;"
                 +"v_Tex = a_Tex[vertexId];"
