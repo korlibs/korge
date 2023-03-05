@@ -118,9 +118,7 @@ abstract class Scene : InjectorAsyncDependency, ViewsContainer, CoroutineScope, 
      * Its underlying job will be automatically closed on the [sceneAfterDestroy].
      * No need to call super.
      */
-    open suspend fun SContainer.sceneMain() {
-
-    }
+    abstract suspend fun SContainer.sceneMain()
 
     /**
      * DO NOT BLOCK. Called after the old scene has been destroyed
@@ -258,8 +256,8 @@ abstract class ScaledScene(
 }
 
 class EmptyScene : Scene() {
-	override suspend fun SContainer.sceneInit() {
-	}
+    override suspend fun SContainer.sceneMain() {
+    }
 }
 
 abstract class LogScene : Scene() {
