@@ -179,9 +179,9 @@ open class KorgeJavaExecWithAutoreload : KorgeJavaExec() {
 
 open class KorgeJavaExec : JavaExec() {
     @get:InputFiles
-    val korgeClassPath: FileCollection = run {
+    val korgeClassPath: FileCollection get() {
         val mainJvmCompilation = project.mainJvmCompilation
-        ArrayList<FileCollection>().apply {
+        return ArrayList<FileCollection>().apply {
             add(mainJvmCompilation.runtimeDependencyFiles)
             add(mainJvmCompilation.compileDependencyFiles)
             //if (project.korge.searchResourceProcessorsInMainSourceSet) {
@@ -208,7 +208,7 @@ open class KorgeJavaExec : JavaExec() {
             //println("firstThread=$firstThread, isMacos=$isMacos")
         }
         classpath = korgeClassPath
-        for (classPath in korgeClassPath.toList()) {
+        for (classPath in classpath.toList()) {
             logger.info("- $classPath")
         }
         super.exec()
