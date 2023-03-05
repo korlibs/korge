@@ -140,6 +140,11 @@ open class KorgeJavaExecWithAutoreload : KorgeJavaExec() {
     //private var reloadAgentConfiguration: Configuration = project.configurations.getByName(KORGE_RELOAD_AGENT_CONFIGURATION_NAME)//.resolve().first()
     lateinit var reloadAgentJar: File
 
+    init {
+        //val reloadAgent = project.findProject(":korge-reload-agent")
+        //if (reloadAgent != null)
+    }
+
     override fun autoconfigure() {
         super.autoconfigure()
         //println("---------------")
@@ -153,7 +158,7 @@ open class KorgeJavaExecWithAutoreload : KorgeJavaExec() {
             rootJars = (project.tasks.findByName("compileKotlinJvm") as org.jetbrains.kotlin.gradle.tasks.KotlinCompile).outputs.files
             val reloadAgent = project.findProject(":korge-reload-agent")
             reloadAgentJar = when {
-                reloadAgent != null -> (reloadAgent.tasks.findByName("jar") as Jar).outputs.files.files.first()
+                reloadAgent != null -> (project.rootProject.tasks.getByPath(":korge-reload-agent:jar") as Jar).outputs.files.files.first()
                 else -> project.configurations.getByName(KORGE_RELOAD_AGENT_CONFIGURATION_NAME).resolve().first()
             }
         }
