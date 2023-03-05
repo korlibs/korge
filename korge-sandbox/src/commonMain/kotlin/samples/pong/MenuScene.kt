@@ -8,7 +8,7 @@ import com.soywiz.korim.color.*
 import com.soywiz.korma.geom.*
 
 class MenuScene() : Scene() {
-	override suspend fun SContainer.sceneInit() {
+	override suspend fun SContainer.sceneMain() {
 		// set a background color
 		//views.clearColor = Colors.BLACK
 
