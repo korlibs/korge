@@ -60,12 +60,12 @@ object RootKorlibsPlugin {
         initAndroidFixes()
         initPublishing()
         initKMM()
-        initSamples()
         initShortcuts()
         initTests()
         initCrossTests()
         initAllTargets()
         initPatchTests()
+        initSamples()
     }
 
     fun Project.initPatchTests() {
@@ -984,9 +984,9 @@ object RootKorlibsPlugin {
                             dependsOn(":korge-reload-agent:jar", "compileKotlinJvm")
                             group = "run"
                             mainClass.set("MainKt")
-                            isReloadAgentAProject = true
                             //doConfigurationCache = false
                             doConfigurationCache = true
+                            autoconfigure()
                         }
                     }
 

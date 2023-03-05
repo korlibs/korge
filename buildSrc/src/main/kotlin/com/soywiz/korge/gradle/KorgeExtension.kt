@@ -12,10 +12,13 @@ import org.gradle.api.*
 import java.io.*
 import groovy.text.*
 import org.gradle.api.artifacts.*
+import org.gradle.api.model.ObjectFactory
+import org.gradle.api.provider.Property
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import java.net.*
 import java.time.*
 import java.util.*
+import javax.inject.Inject
 import javax.naming.*
 import kotlin.collections.LinkedHashMap
 
@@ -79,7 +82,10 @@ data class MavenLocation(val group: String, val name: String, val version: Strin
 }
 
 @Suppress("unused")
-class KorgeExtension(val project: Project) {
+open class KorgeExtension(
+    @Inject val project: Project,
+    private val objectFactory: ObjectFactory
+) {
     private var includeIndirectAndroid: Boolean = false
 	internal fun init(includeIndirectAndroid: Boolean) {
 	    this.includeIndirectAndroid = includeIndirectAndroid
@@ -335,12 +341,15 @@ class KorgeExtension(val project: Project) {
 	var appleOrganizationName = "User Name Name"
 
 	var entryPoint: String? = null
-	var jvmMainClassName: String = "MainKt"
+    val jvmMainClassNameProp: Property<String> = objectFactory.property(String::class.java).also { it.set("MainKt") }
+	var jvmMainClassName: String
+        get() = jvmMainClassNameProp.get()
+        set(value) { jvmMainClassNameProp.set(value) }
 	//var proguardObfuscate: Boolean = false
 	var proguardObfuscate: Boolean = true
 
 	val realEntryPoint get() = entryPoint ?: (jvmMainClassName.substringBeforeLast('.', "") + ".main").trimStart('.')
-	val realJvmMainClassName get() = jvmMainClassName
+	val realJvmMainClassName: String get() = jvmMainClassName
 
 	val extraEntryPoints = arrayListOf<Entrypoint>()
 

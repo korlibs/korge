@@ -16,7 +16,7 @@ enum class GameStates {
 }
 
 class PlayScene() : Scene() {
-	override suspend fun SContainer.sceneInit() {
+	override suspend fun SContainer.sceneMain() {
 		// Initialize the variables which will capture the game state
 		var scorePlayerLeft = 0
 		var scorePlayerRight = 0
