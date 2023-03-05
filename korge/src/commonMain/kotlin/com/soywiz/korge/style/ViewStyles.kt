@@ -28,7 +28,7 @@ var ViewStyles.textColor: RGBA by ViewStyle(Colors.WHITE)
 var ViewStyles.buttonBackColor: RGBA by ViewStyle(Colors.DARKGRAY)
 var ViewStyles.textAlignment: TextAlignment by ViewStyle(TextAlignment.TOP_LEFT)
 
-inline class ViewStyle<T>(val default: T) {
+class ViewStyle<T>(val default: T) {
     inline operator fun getValue(styles: ViewStyles, property: KProperty<*>): T {
         return styles.getProp(property, default) as? T? ?: error("Can't cast $property to T")
     }
