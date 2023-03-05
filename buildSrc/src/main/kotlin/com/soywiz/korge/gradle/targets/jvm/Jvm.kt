@@ -160,7 +160,10 @@ open class KorgeJavaExecWithAutoreload : KorgeJavaExec() {
                     add("--watch-fs")
                     add("--warn")
                     add("--project-dir=${project.rootProject.rootDir}")
-                    if (doConfigurationCache) add("--configuration-cache")
+                    if (doConfigurationCache) {
+                        add("--configuration-cache")
+                        //add("--configuration-cache-problems=warn")
+                    }
                     add("-t")
                     add("${project.path.trimEnd(':')}:compileKotlinJvmAndNotify")
                 }.joinToString(CMD_SEPARATOR),

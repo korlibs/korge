@@ -985,7 +985,8 @@ object RootKorlibsPlugin {
                             group = "run"
                             mainClass.set("MainKt")
                             isReloadAgentAProject = true
-                            doConfigurationCache = false
+                            //doConfigurationCache = false
+                            doConfigurationCache = true
                         }
                     }
 
@@ -1224,15 +1225,12 @@ object RootKorlibsPlugin {
                         }
                     }
 
-                    val nativeDesktopTargets = nativeTargets(project)
-                    val allNativeTargets = nativeDesktopTargets
-
                     //for (target in nativeDesktopTargets) {
                     //target.compilations["main"].defaultSourceSet.dependsOn(nativeDesktopEntryPointSourceSet)
                     //    target.compilations["main"].defaultSourceSet.kotlin.srcDir(nativeDesktopFolder)
                     //}
 
-                    for (target in allNativeTargets) {
+                    for (target in nativeTargets(project)) {
                         for (binary in target.binaries) {
                             val compilation = binary.compilation
                             val copyResourcesTask = tasks.createThis<Copy>("copyResources${target.name.capitalize()}${binary.name.capitalize()}") {
@@ -1267,43 +1265,33 @@ object RootKorlibsPlugin {
                 //}
 
                 for (target in project.gkotlin.targets) {
+                    val isJvm = target.isJvm
                     for (compilation in target.compilations) {
                         val processedResourcesFolder = File(project.buildDir, "korgeProcessedResources/${target.name}/${compilation.name}")
                         compilation.defaultSourceSet.resources.srcDir(processedResourcesFolder)
-                        val korgeProcessedResources = createThis<Task>(getKorgeProcessResourcesTaskName(target, compilation)) {
-                            //dependsOn(prepareResourceProcessingClasses)
-                            dependsOn("jvmMainClasses")
+                        //val compilation = project.kotlin.targets.getByName(config.targetName).compilations.getByName(config.compilationName)
+                        val folders: List<String> =
+                            compilation.allKotlinSourceSets.flatMap { it.resources.srcDirs }
+                                .filter { it != processedResourcesFolder }.map { it.toString() }
 
-                            if (project.enabledSandboxResourceProcessor) {
-                                doLast {
-                                    processedResourcesFolder.mkdirs()
-                                    //URLClassLoader(prepareResourceProcessingClasses.outputs.files.toList().map { it.toURL() }.toTypedArray(), ClassLoader.getSystemClassLoader()).use { classLoader ->
-
-                                    URLClassLoader(
-                                        runJvm.korgeClassPath.toList().map { it.toURL() }.toTypedArray(),
-                                        ClassLoader.getSystemClassLoader()
-                                    ).use { classLoader ->
-                                        val clazz = classLoader.loadClass("com.soywiz.korge.resources.ResourceProcessorRunner")
-                                        val folders = compilation.allKotlinSourceSets.flatMap { it.resources.srcDirs }
-                                            .filter { it != processedResourcesFolder }.map { it.toString() }
-                                        //println(folders)
-                                        try {
-                                            clazz.methods.first { it.name == "run" }.invoke(
-                                                null,
-                                                classLoader,
-                                                folders,
-                                                processedResourcesFolder.toString(),
-                                                compilation.name
-                                            )
-                                        } catch (e: java.lang.reflect.InvocationTargetException) {
-                                            val re = (e.targetException ?: e)
-                                            re.printStackTrace()
-                                            System.err.println(re.toString())
-                                        }
-                                    }
-                                    System.gc()
-                                }
+                        val korgeProcessedResources = createThis<KorgeProcessedResourcesTask>(
+                            getKorgeProcessResourcesTaskName(target, compilation),
+                            KorgeProcessedResourcesTaskConfig(
+                                isJvm, target.name, compilation.name, runJvm.korgeClassPath,
+                                project.korge.getIconBytes(),
+                            )
+                        ) {
+                            val task = this
+                            task.group = GROUP_KORGE_RESOURCES
+                            if (korge.searchResourceProcessorsInMainSourceSet) {
+                                task.dependsOn("jvmMainClasses")
                             }
+                            task.outputs.dirs(processedResourcesFolder)
+                            task.folders = folders.map { File(it) }
+                            task.processedResourcesFolder = processedResourcesFolder
+
+                            //dependsOn(prepareResourceProcessingClasses)
+                            //dependsOn("jvmMainClasses")
                         }
                         //println(compilation.compileKotlinTask.name)
                         //println(compilation.compileKotlinTask.name)
@@ -1506,7 +1494,7 @@ val Project.realKotlinVersion: String get() = (System.getenv("FORCED_KOTLIN_VERS
 val forcedVersion = System.getenv("FORCED_VERSION")
 
 val Project.hasAndroidSdk by LazyExt { AndroidSdk.hasAndroidSdk(project) }
-val Project.enabledSandboxResourceProcessor: Boolean by LazyExt { rootProject.findProperty("enabledSandboxResourceProcessor") == "true" }
+val Project.enabledSandboxResourceProcessor: Boolean get() = rootProject.findProperty("enabledSandboxResourceProcessor") == "true"
 
 val Project.currentJavaVersion by LazyExt { currentJavaVersion() }
 fun Project.hasBuildGradle() = listOf("build.gradle", "build.gradle.kts").any { File(projectDir, it).exists() }
