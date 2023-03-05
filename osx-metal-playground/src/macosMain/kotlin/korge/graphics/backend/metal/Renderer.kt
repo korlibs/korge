@@ -1,7 +1,7 @@
 package korge.graphics.backend.metal
 
-import platform.Metal.MTLDeviceProtocol
-import platform.MetalKit.MTKView
+import platform.Metal.*
+import platform.MetalKit.*
 
 abstract class Renderer(val device: MTLDeviceProtocol) {
 

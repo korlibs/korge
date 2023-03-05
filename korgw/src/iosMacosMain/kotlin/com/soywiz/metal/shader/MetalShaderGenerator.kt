@@ -1,9 +1,9 @@
 package com.soywiz.metal.shader
 
-import com.soywiz.korag.DefaultShaders
+import com.soywiz.korag.*
 import com.soywiz.korag.shader.*
-import com.soywiz.korag.shader.gl.GlobalsProgramVisitor
-import com.soywiz.korio.util.Indenter
+import com.soywiz.korag.shader.gl.*
+import com.soywiz.korio.util.*
 
 internal const val vertexMainFunctionName = "vertexMain"
 internal const val fragmentMainFunctionName = "fragmentMain"

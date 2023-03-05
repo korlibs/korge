@@ -1,8 +1,8 @@
 package com.soywiz.metal.shader
 
-import com.soywiz.korag.DefaultShaders
+import com.soywiz.korag.*
 import com.soywiz.korag.shader.*
-import com.soywiz.korio.util.Indenter
+import com.soywiz.korio.util.*
 
 internal class MetalShaderBodyGenerator(
     val kind: ShaderType? = null

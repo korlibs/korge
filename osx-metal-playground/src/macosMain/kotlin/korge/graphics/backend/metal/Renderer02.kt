@@ -5,10 +5,7 @@ import com.soywiz.korag.shader.*
 import com.soywiz.korag.shader.gl.*
 import com.soywiz.metal.shader.*
 import kotlinx.cinterop.*
-import platform.CoreFoundation.*
-import platform.CoreGraphics.*
 import platform.Foundation.*
-import platform.ImageIO.*
 import platform.Metal.*
 import platform.MetalKit.*
 import platform.posix.*

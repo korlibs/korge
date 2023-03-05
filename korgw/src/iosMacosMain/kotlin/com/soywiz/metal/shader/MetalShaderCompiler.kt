@@ -1,10 +1,9 @@
 package com.soywiz.metal.shader
 
-import com.soywiz.korag.shader.Program
-import com.soywiz.korag.shader.VariableWithOffset
-import com.soywiz.metal.MetalProgram
+import com.soywiz.korag.shader.*
+import com.soywiz.metal.*
 import kotlinx.cinterop.*
-import platform.Foundation.NSError
+import platform.Foundation.*
 import platform.Metal.*
 
 /**

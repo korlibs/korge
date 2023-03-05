@@ -1,8 +1,7 @@
 package platform.foundation
 
-import kotlinx.cinterop.CValue
-import kotlinx.cinterop.useContents
-import platform.Foundation.NSRect
+import kotlinx.cinterop.*
+import platform.Foundation.*
 
 
 val CValue<NSRect>.width get() = this.useContents { size.width }

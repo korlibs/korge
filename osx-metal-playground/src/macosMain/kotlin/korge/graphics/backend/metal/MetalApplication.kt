@@ -1,21 +1,13 @@
 package korge.graphics.backend.metal
 
-import kotlinx.cinterop.CValue
-import kotlinx.cinterop.autoreleasepool
+import kotlinx.cinterop.*
 import platform.AppKit.*
-import platform.CoreGraphics.CGSize
-import platform.Foundation.NSMakeRect
-import platform.Foundation.NSNotification
-import platform.Foundation.NSRect
-import platform.Metal.MTLClearColorMake
-import platform.Metal.MTLCreateSystemDefaultDevice
-import platform.Metal.MTLDeviceProtocol
-import platform.Metal.MTLPixelFormatBGRA8Unorm_sRGB
-import platform.MetalKit.MTKView
-import platform.MetalKit.MTKViewDelegateProtocol
-import platform.darwin.NSObject
-import platform.foundation.height
-import platform.foundation.width
+import platform.CoreGraphics.*
+import platform.Foundation.*
+import platform.Metal.*
+import platform.MetalKit.*
+import platform.darwin.*
+import platform.foundation.*
 
 val windowStyle = NSWindowStyleMaskTitled or NSWindowStyleMaskMiniaturizable or
         NSWindowStyleMaskClosable or NSWindowStyleMaskResizable or NSBackingStoreBuffered

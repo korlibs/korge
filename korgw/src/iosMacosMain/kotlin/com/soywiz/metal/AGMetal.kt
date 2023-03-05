@@ -13,6 +13,7 @@ class AGMetal(private val view: MTKView) : AG() {
     private val device = MTLCreateSystemDefaultDevice() ?: error("fail to create metal device")
     private val commandQueue = device.newCommandQueue() ?: error("fail to create metal command queue")
     private val programs = HashMap<Program, MetalProgram>()
+    // TODO: this will be rework on next iteration
     private val buffersv1 = HashMap<Buffer, MTLBuffer>()
     private val buffers = HashMap<MetalProgram, List<MTLBuffer>>()
 
