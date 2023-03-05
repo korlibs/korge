@@ -29,7 +29,7 @@ open class AGObject : Closeable {
 }
 
 class AGBuffer : AGObject() {
-    public var mem: Buffer? = null
+    internal var mem: Buffer? = null
 
     fun upload(data: ByteArray, offset: Int = 0, length: Int = data.size - offset): AGBuffer = upload(Int8Buffer(data, offset, length).buffer)
     fun upload(data: FloatArray, offset: Int = 0, length: Int = data.size - offset): AGBuffer = upload(Float32Buffer(data, offset, length).buffer)
