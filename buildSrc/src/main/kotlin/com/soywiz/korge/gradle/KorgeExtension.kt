@@ -65,7 +65,7 @@ data class MavenLocation(val group: String, val name: String, val version: Strin
 	} }
 
 	companion object {
-		operator fun invoke(location: String): MavenLocation {
+        operator fun invoke(location: String): MavenLocation {
 			val parts = location.split(":")
 			return MavenLocation(parts[0], parts[1], parts[2], parts.getOrNull(3))
 		}
@@ -86,6 +86,8 @@ class KorgeExtension(val project: Project) {
 	}
 
     companion object {
+        const val ESBUILD_DEFAULT_VERSION = "0.17.10"
+
         val validIdentifierRegexp = Regex("^[a-zA-Z_]\\w*$")
 
         fun isIdValid(id: String) = id.isNotEmpty() && id.isNotBlank() && id.split(".").all { it.matches(validIdentifierRegexp) }
@@ -350,7 +352,7 @@ class KorgeExtension(val project: Project) {
 		extraEntryPoints.add(Entrypoint(name, jvmMainClassName))
 	}
 
-    var esbuildVersion: String = "0.17.10"
+    var esbuildVersion: String = ESBUILD_DEFAULT_VERSION
 
     var androidMinSdk: Int = 16
 	var androidCompileSdk: Int = 29

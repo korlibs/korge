@@ -980,23 +980,12 @@ object RootKorlibsPlugin {
                             false -> "runJvmAutoreload"
                             true -> "runJvmAutoreloadWithRedefinition"
                         }
-                        createThis<KorgeJavaExec>(taskName) {
+                        createThis<KorgeJavaExecWithAutoreload>(taskName) {
                             dependsOn(":korge-reload-agent:jar", "compileKotlinJvm")
                             group = "run"
                             mainClass.set("MainKt")
-                            afterEvaluate {
-                                val agentJarTask: Jar = project(":korge-reload-agent").tasks.findByName("jar") as Jar
-                                val outputJar = agentJarTask.outputs.files.files.first()
-                                //println("agentJarTask=$outputJar")
-                                val compileKotlinJvm = tasks.findByName("compileKotlinJvm") as org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-                                val args = compileKotlinJvm.outputs.files.toList().joinToString(":::") { it.absolutePath }
-                                //val gradlewCommand = if (isWindows) "gradlew.bat" else "gradlew"
-                                //val continuousCommand = "${rootProject.rootDir}/$gradlewCommand --no-daemon --warn --project-dir=${rootProject.rootDir} --configuration-cache -t ${project.path}:compileKotlinJvmAndNotify"
-                                val continuousCommand =
-                                    "-classpath ${rootProject.rootDir}/gradle/wrapper/gradle-wrapper.jar org.gradle.wrapper.GradleWrapperMain --no-daemon --warn --project-dir=${rootProject.rootDir} --configuration-cache -t ${project.path}:compileKotlinJvmAndNotify"
-                                jvmArgs("-javaagent:$outputJar=$httpPort:::$continuousCommand:::$enableRedefinition:::$args")
-                                environment("KORGE_AUTORELOAD", "true")
-                            }
+                            isReloadAgentAProject = true
+                            doConfigurationCache = false
                         }
                     }
 
@@ -1005,7 +994,7 @@ object RootKorlibsPlugin {
 
                         val userGradleFolder = File(System.getProperty("user.home"), ".gradle")
 
-                        val esbuildVersion = "0.12.22"
+                        val esbuildVersion = KorgeExtension.ESBUILD_DEFAULT_VERSION
                         val wwwFolder = File(buildDir, "www")
 
                         val esbuildFolder = File(if (userGradleFolder.isDirectory) userGradleFolder else rootProject.buildDir, "esbuild")

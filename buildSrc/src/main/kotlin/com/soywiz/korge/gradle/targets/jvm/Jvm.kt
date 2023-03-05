@@ -121,45 +121,53 @@ private val Project.jvmCompilation: NamedDomainObjectSet<*> get() = kotlin.targe
 private val Project.mainJvmCompilation: KotlinJvmCompilation get() = jvmCompilation.getByName("main") as org.jetbrains.kotlin.gradle.plugin.mpp.KotlinJvmCompilation
 
 open class KorgeJavaExecWithAutoreload : KorgeJavaExec() {
-    @Input
+    @get:Input
     var enableRedefinition: Boolean = false
 
-    override fun exec() {
-        val compileKotlinJvm = project.tasks.findByName("compileKotlinJvm") as org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-        val ARGS_SEPARATOR = "<:/:>"
-        val CMD_SEPARATOR = "<@/@>"
-        val rootFolders = compileKotlinJvm.outputs.files.map { it.absolutePath }
-        //val gradlewCommand = if (isWindows) "gradlew.bat" else "gradlew"
-        val rootProject = project.rootProject
-        val continuousCommand = listOf(
-            "-classpath",
-            "${rootProject.rootDir}/gradle/wrapper/gradle-wrapper.jar",
-            "org.gradle.wrapper.GradleWrapperMain",
-            "--no-daemon",
-            "--watch-fs",
-            "--warn",
-            "--project-dir=${rootProject.rootDir}",
-            "--configuration-cache",
-            "-t",
-            "${project.path.trimEnd(':')}:compileKotlinJvmAndNotify"
-        )
+    @get:Input
+    var isReloadAgentAProject: Boolean = false
 
-        val outputJars = project.configurations.getByName(KORGE_RELOAD_AGENT_CONFIGURATION_NAME).resolve()
-        println("runJvmAutoreload:outputJars=$outputJars")
-        val outputJar = outputJars.first()
+    @get:Input
+    var doConfigurationCache: Boolean = true
+
+    companion object {
+        const val ARGS_SEPARATOR = "<:/:>"
+        const val CMD_SEPARATOR = "<@/@>"
+    }
+
+    override fun exec() {
+        //val gradlewCommand = if (isWindows) "gradlew.bat" else "gradlew"
+
+        val reloadAgentJar = when {
+            isReloadAgentAProject -> (project.project(":korge-reload-agent").tasks.findByName("jar") as Jar).outputs.files.files.first()
+            else -> project.configurations.getByName(KORGE_RELOAD_AGENT_CONFIGURATION_NAME).resolve().first()
+        }
+        println("runJvmAutoreload:reloadAgentJar=$reloadAgentJar")
         //val outputJar = JvmTools.findPathJar(Class.forName("com.soywiz.korge.reloadagent.KorgeReloadAgent"))
 
         //val agentJarTask: org.gradle.api.tasks.bundling.Jar = project(":korge-reload-agent").tasks.findByName("jar") as org.gradle.api.tasks.bundling.Jar
         //val outputJar = agentJarTask.outputs.files.files.first()
         //println("agentJarTask=$outputJar")
 
-        val args: List<String> = listOf(
-            "$httpPort",
-            continuousCommand.joinToString(CMD_SEPARATOR),
-            "$enableRedefinition",
-            rootFolders.joinToString(CMD_SEPARATOR)
+        jvmArgs(
+            "-javaagent:$reloadAgentJar=${listOf(
+                "$httpPort",
+                buildList {
+                    add("-classpath")
+                    add("${project.rootProject.rootDir}/gradle/wrapper/gradle-wrapper.jar")
+                    add("org.gradle.wrapper.GradleWrapperMain")
+                    add("--no-daemon")
+                    add("--watch-fs")
+                    add("--warn")
+                    add("--project-dir=${project.rootProject.rootDir}")
+                    if (doConfigurationCache) add("--configuration-cache")
+                    add("-t")
+                    add("${project.path.trimEnd(':')}:compileKotlinJvmAndNotify")
+                }.joinToString(CMD_SEPARATOR),
+                "$enableRedefinition",
+                (project.tasks.findByName("compileKotlinJvm") as org.jetbrains.kotlin.gradle.tasks.KotlinCompile).outputs.files.map { it.absoluteFile }.joinToString(CMD_SEPARATOR) { it.absolutePath }
+            ).joinToString(ARGS_SEPARATOR)}"
         )
-        jvmArgs("-javaagent:$outputJar=${args.joinToString(ARGS_SEPARATOR)}")
         environment("KORGE_AUTORELOAD", "true")
 
         super.exec()
