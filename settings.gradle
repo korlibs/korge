@@ -29,6 +29,7 @@ include(":ktruth")
 include(":korge-gradle-plugin")
 include(":korge-reload-agent")
 include(":korge-sandbox")
+include(":osx-metal-playground")
 
 //if (!inCI || System.getenv("ENABLE_BENCHMARKS") == "true") {
 if (System.getenv("ENABLE_BENCHMARKS") == "true") {

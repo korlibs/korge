@@ -176,8 +176,8 @@ class Indenter(internal val actions: ArrayList<Action> = arrayListOf()) {
 		return IndenterEvaluator(markHandler, indentEmptyLines, doIndent).apply { eval(actions) }.out.toString()
 	}
 
-	inline operator fun String.invoke(suffix: String = "", callback: () -> Unit) =
-		line(this, after = suffix, callback = callback)
+	inline operator fun String.invoke(suffix: String = "", expressionSuffix: String = "", callback: () -> Unit) =
+		line(this, after = suffix, after2 = expressionSuffix, callback = callback)
 
 	inline operator fun String.unaryPlus() = line(this)
 
