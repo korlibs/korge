@@ -1,14 +1,11 @@
 package com.soywiz.korma.triangle
 
-import com.soywiz.kds.IntArrayList
-import com.soywiz.korma.geom.PointList
-import com.soywiz.korma.geom.Orientation
-import com.soywiz.korma.geom.PointArrayList
-import com.soywiz.korma.geom.orientation
+import com.soywiz.kds.*
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.shape.*
-import com.soywiz.korma.geom.triangle.TriangleList
-import com.soywiz.korma.geom.vector.VectorPath
-import mapbox.earcut.EarCut
+import com.soywiz.korma.geom.triangle.*
+import com.soywiz.korma.geom.vector.*
+import mapbox.earcut.*
 
 object EarCutTriangulator {
     fun triangulate(points: PointArrayList, holeIndices: IntArray?): TriangleList {

@@ -12,38 +12,77 @@ typealias IPointArrayList = PointList
 sealed interface PointList : IVectorArrayList, Extra {
     override val dimensions: Int get() = 2
     override fun get(index: Int, dim: Int): Float = if (dim == 0) getX(index) else getY(index)
+    @Deprecated("")
     fun getX(index: Int): Float
+    @Deprecated("")
     fun getY(index: Int): Float
-    operator fun get(index: Int): Point = Point(getX(index), getY(index))
-    fun get(index: Int, out: MPoint): IPoint = out.setTo(getX(index), getY(index))
-}
 
-operator fun PointList.get(index: Int): Point = Point(getX(index), getY(index))
+    operator fun get(index: Int): Point = Point(getX(index), getY(index))
+
+    @Deprecated("")
+    fun get(index: Int, out: MPoint): IPoint = out.setTo(getX(index), getY(index))
+
+    fun roundDecimalPlaces(places: Int, out: PointArrayList = PointArrayList()): PointList {
+        fastForEach { x, y -> out.add(x.roundDecimalPlaces(places), y.roundDecimalPlaces(places)) }
+        return out
+    }
+
+//fun IPointArrayList.getComponent(index: Int, component: Int): Double = if (component == 0) getX(index) else getY(index)
+
+    fun getComponentList(component: Int, out: FloatArray = FloatArray(size)): FloatArray {
+        for (n in 0 until size) out[n] = get(n, component)
+        return out
+    }
+
+    val first: Point get() = get(0)
+    val last: Point get() = get(size - 1)
+
+    fun orientation(): Orientation {
+        if (size < 3) return Orientation.COLLINEAR
+        return Orientation.orient2dFixed(getX(0).toDouble(), getY(0).toDouble(), getX(1).toDouble(), getY(1).toDouble(), getX(2).toDouble(), getY(2).toDouble())
+    }
+
+    @Deprecated("")
+    fun getPoint(index: Int, out: MPoint = MPoint()): MPoint = out.setTo(getX(index), getY(index))
+    @Deprecated("")
+    fun getIPoint(index: Int): IPoint = IPoint(getX(index), getY(index))
+    @Deprecated("")
+    fun toList(): List<MPoint> = (0 until size).map { getPoint(it) }
+
+    @Deprecated("")
+    fun toPoints(): List<MPoint> = (0 until size).map { getPoint(it) }
+    @Deprecated("")
+    fun toIPoints(): List<IPoint> = (0 until size).map { getIPoint(it) }
+
+    operator fun contains(p: Point): Boolean = contains(p.x, p.y)
+    @Deprecated("")
+    fun contains(x: Double, y: Double): Boolean = contains(x.toFloat(), y.toFloat())
+    @Deprecated("")
+    fun contains(x: Int, y: Int): Boolean = contains(x.toFloat(), y.toFloat())
+    @Deprecated("")
+    fun contains(x: Float, y: Float): Boolean {
+        for (n in 0 until size) if (getX(n) == x && getY(n) == y) return true
+        return false
+    }
+
+    fun clone(out: PointArrayList = PointArrayList(this.size)): PointArrayList {
+        fastForEach { x, y -> out.add(x, y) }
+        return out
+    }
+
+    operator fun plus(other: PointList): PointArrayList = PointArrayList(size + other.size).also {
+        it.add(this)
+        it.add(other)
+    }
+
+}
 
 fun PointArrayList.setToRoundDecimalPlaces(places: Int): PointArrayList {
     fastForEachWithIndex { index, x, y -> this.setXY(index, x.roundDecimalPlaces(places), y.roundDecimalPlaces(places)) }
     return this
 }
 
-fun PointList.roundDecimalPlaces(places: Int, out: PointArrayList = PointArrayList()): PointList {
-    fastForEach { x, y -> out.add(x.roundDecimalPlaces(places), y.roundDecimalPlaces(places)) }
-    return out
-}
 
-//fun IPointArrayList.getComponent(index: Int, component: Int): Double = if (component == 0) getX(index) else getY(index)
-
-fun PointList.getComponentList(component: Int, out: FloatArray = FloatArray(size)): FloatArray {
-    for (n in 0 until size) out[n] = get(n, component)
-    return out
-}
-
-val PointList.first: Point get() = get(0)
-val PointList.last: Point get() = get(size - 1)
-
-fun PointList.orientation(): Orientation {
-    if (size < 3) return Orientation.COLLINEAR
-    return Orientation.orient2dFixed(getX(0).toDouble(), getY(0).toDouble(), getX(1).toDouble(), getY(1).toDouble(), getX(2).toDouble(), getY(2).toDouble())
-}
 
 inline fun PointList.fastForEachPoint(block: (Point) -> Unit) {
     for (n in 0 until size) {
@@ -73,17 +112,6 @@ inline fun PointList.fastForEachWithIndex(block: (index: Int, x: Double, y: Doub
     }
 }
 
-@Deprecated("")
-fun PointList.getPoint(index: Int, out: MPoint = MPoint()): MPoint = out.setTo(getX(index), getY(index))
-@Deprecated("")
-fun PointList.getIPoint(index: Int): IPoint = IPoint(getX(index), getY(index))
-@Deprecated("")
-fun PointList.toList(): List<MPoint> = (0 until size).map { getPoint(it) }
-
-@Deprecated("")
-fun PointList.toPoints(): List<MPoint> = (0 until size).map { getPoint(it) }
-@Deprecated("")
-fun PointList.toIPoints(): List<IPoint> = (0 until size).map { getIPoint(it) }
 
 fun <T> PointList.map(gen: (x: Double, y: Double) -> T): List<T> = (0 until size).map { gen(getX(it).toDouble(), getY(it).toDouble()) }
 
@@ -93,22 +121,6 @@ fun PointList.mapPoints(temp: MPoint = MPoint(), gen: (x: Double, y: Double, out
     return out
 }
 
-fun PointList.contains(x: Float, y: Float): Boolean = contains(x.toDouble(), y.toDouble())
-fun PointList.contains(x: Int, y: Int): Boolean = contains(x.toDouble(), y.toDouble())
-fun PointList.contains(x: Double, y: Double): Boolean {
-    for (n in 0 until size) if (getX(n).toDouble() == x && getY(n).toDouble() == y) return true
-    return false
-}
-
-fun PointList.clone(out: PointArrayList = PointArrayList(this.size)): PointArrayList {
-    fastForEach { x, y -> out.add(x, y) }
-    return out
-}
-
-operator fun PointList.plus(other: PointList): PointArrayList = PointArrayList(size + other.size).also {
-    it.add(this)
-    it.add(other)
-}
 
 fun List<Point>.toPointArrayList(): PointArrayList = PointArrayList(size).also { for (p in this) it.add(p) }
 
@@ -196,9 +208,9 @@ open class PointArrayList(capacity: Int = 7) : PointList, Extra by Extra.Mixin()
         add(other)
         return this
     }
-    fun clone(out: PointArrayList = PointArrayList()): PointArrayList = out.clear().add(this)
+    override fun clone(out: PointArrayList): PointArrayList = out.clear().add(this)
 
-    fun toList(): List<MPoint> {
+    override fun toList(): List<MPoint> {
         val out = arrayListOf<MPoint>()
         fastForEach { x, y -> out.add(MPoint(x, y)) }
         return out
