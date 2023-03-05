@@ -3,9 +3,13 @@ package com.soywiz.kds
 import com.soywiz.kds.iterators.fastForEach
 import kotlin.math.min
 
+interface MutableListEx<E> : MutableList<E> {
+    fun addAll(elements: FastArrayList<E>): Boolean = addAll(elements as Collection<E>)
+}
+
 // @TODO: ArrayList that prevents isObject + jsInstanceOf on getter on Kotlin/JS
 // @TODO: This class should be temporal until Kotlin/JS fixes this issue
-expect class FastArrayList<E> : MutableList<E>, RandomAccess {
+expect class FastArrayList<E> : MutableListEx<E>, RandomAccess {
     constructor()
     constructor(initialCapacity: Int)
     constructor(elements: Collection<E>)
