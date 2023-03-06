@@ -1,6 +1,7 @@
 package com.soywiz.korge.gradle
 
 import com.soywiz.korge.gradle.targets.*
+import com.soywiz.korge.gradle.targets.jvm.*
 import com.soywiz.korge.gradle.targets.linux.LDLibraries
 import com.soywiz.korge.gradle.util.*
 import com.soywiz.korlibs.*
@@ -133,6 +134,8 @@ open class KorgeGradlePlugin : Plugin<Project> {
 fun Project.configureAutoVersions() {
     allprojectsThis {
         configurations.all {
+            if (it.name == KORGE_RELOAD_AGENT_CONFIGURATION_NAME) return@all
+
             it.resolutionStrategy.eachDependency { details ->
                 //println("DETAILS: ${details.requested} : '${details.requested.group}' : '${details.requested.name}' :  '${details.requested.version}'")
                 val groupWithName = "${details.requested.group}:${details.requested.name}"
