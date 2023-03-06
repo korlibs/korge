@@ -145,6 +145,8 @@ open class KorgeProcessedResourcesTask @Inject constructor(
             //processedResourcesFolder["@appicon-64.png"].writeBytes(korge.getIconBytes(64))
         }
 
+        //println("config.korgeClassPath:\n${config.korgeClassPath.toList().joinToString("\n")}")
+
         executeInPlugin(
             config.korgeClassPath,
             "com.soywiz.korge.resources.ResourceProcessorRunner",

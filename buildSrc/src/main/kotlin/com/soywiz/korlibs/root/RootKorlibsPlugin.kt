@@ -1336,9 +1336,9 @@ object RootKorlibsPlugin {
                         ) {
                             val task = this
                             task.group = GROUP_KORGE_RESOURCES
-                            if (korge.searchResourceProcessorsInMainSourceSet) {
+                            //if (korge.searchResourceProcessorsInMainSourceSet) {
                                 task.dependsOn("jvmMainClasses")
-                            }
+                            //}
                             task.outputs.dirs(processedResourcesFolder)
                             task.folders = folders.map { File(it) }
                             task.processedResourcesFolder = processedResourcesFolder
@@ -1356,7 +1356,6 @@ object RootKorlibsPlugin {
                         } else {
                             compilation.compileKotlinTask.finalizedBy(korgeProcessedResources)
                             getByName("runJvm").dependsOn(korgeProcessedResources)
-
                         }
                         //println(compilation.output.allOutputs.toList())
                         //println("$target - $compilation")
