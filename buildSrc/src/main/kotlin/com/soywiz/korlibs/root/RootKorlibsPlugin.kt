@@ -1337,6 +1337,7 @@ object RootKorlibsPlugin {
                             val task = this
                             task.group = GROUP_KORGE_RESOURCES
                             //if (korge.searchResourceProcessorsInMainSourceSet) {
+
                                 task.dependsOn("jvmMainClasses")
                             //}
                             task.outputs.dirs(processedResourcesFolder)
