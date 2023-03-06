@@ -1,17 +1,14 @@
 package com.soywiz.korge.gradle
 
 import com.soywiz.korge.gradle.targets.*
-import com.soywiz.korge.gradle.targets.jvm.KorgeJavaExec
+import com.soywiz.korge.gradle.targets.jvm.*
 import com.soywiz.korge.gradle.util.*
-import com.soywiz.korlibs.*
 import org.gradle.api.*
 import org.gradle.api.file.*
 import org.gradle.api.tasks.*
-import org.jetbrains.kotlin.gradle.dsl.*
 import org.jetbrains.kotlin.gradle.plugin.*
-import java.io.File
-import java.net.*
-import javax.inject.Inject
+import java.io.*
+import javax.inject.*
 
 fun Project.getCompilationKorgeProcessedResourcesFolder(compilation: KotlinCompilation<*>): File {
     return getCompilationKorgeProcessedResourcesFolder(compilation.target.name, compilation.name)
@@ -87,6 +84,7 @@ fun Project.addGenResourcesTasks(): Project {
                 )
             ) {
                 val task = this
+                task.dependsOn(getKorgeProcessResourcesTaskName("jvm", "main"))
                 task.group = GROUP_KORGE_RESOURCES
                 if (korge.searchResourceProcessorsInMainSourceSet) {
                     task.dependsOn("jvmMainClasses")

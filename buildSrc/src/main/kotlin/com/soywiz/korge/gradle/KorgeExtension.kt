@@ -84,7 +84,7 @@ data class MavenLocation(val group: String, val name: String, val version: Strin
 @Suppress("unused")
 open class KorgeExtension(
     @Inject val project: Project,
-    private val objectFactory: ObjectFactory
+    //private val objectFactory: ObjectFactory
 ) {
     private var includeIndirectAndroid: Boolean = false
 	internal fun init(includeIndirectAndroid: Boolean) {
@@ -341,10 +341,10 @@ open class KorgeExtension(
 	var appleOrganizationName = "User Name Name"
 
 	var entryPoint: String? = null
-    val jvmMainClassNameProp: Property<String> = objectFactory.property(String::class.java).also { it.set("MainKt") }
-	var jvmMainClassName: String
-        get() = jvmMainClassNameProp.get()
-        set(value) { jvmMainClassNameProp.set(value) }
+    //val jvmMainClassNameProp: Property<String> = objectFactory.property(String::class.java).also { it.set("MainKt") }
+	var jvmMainClassName: String = "MainKt"
+        //get() = jvmMainClassNameProp.get()
+        //set(value) { jvmMainClassNameProp.set(value) }
 	//var proguardObfuscate: Boolean = false
 	var proguardObfuscate: Boolean = true
 
