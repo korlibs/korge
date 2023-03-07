@@ -1,5 +1,8 @@
 package com.soywiz.metal.shader
 
+import com.soywiz.korag.metal.shader.*
+import com.soywiz.korag.metal.shader.fragmentMainFunctionName
+import com.soywiz.korag.metal.shader.vertexMainFunctionName
 import com.soywiz.korag.shader.*
 import com.soywiz.metal.*
 import kotlinx.cinterop.*
