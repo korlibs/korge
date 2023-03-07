@@ -449,14 +449,11 @@ class ViewsTest : ViewsForTesting() {
 
     //// sorted
 
-    class SortedChildrenByComponent(override val view: Container, var comparator: Comparator<View>) : UpdateComponent {
-        override fun update(dt: TimeSpan) = view.sortChildrenBy(comparator)
-    }
     private fun <T, T2 : Comparable<T2>> ((T) -> T2).toComparator() = Comparator { a: T, b: T -> this(a).compareTo(this(b)) }
     fun <T2 : Comparable<T2>> Container.sortChildrenBy(selector: (View) -> T2) = sortChildrenBy(selector.toComparator())
     fun Container.sortChildrenByY() = sortChildrenBy(View::y)
     fun <T : Container> T.keepChildrenSortedBy(comparator: Comparator<View>): T {
-        SortedChildrenByComponent(this, comparator).attach()
+        addUpdater { this.sortChildrenBy(comparator) }
         return this
     }
     fun <T : Container, T2 : Comparable<T2>> T.keepChildrenSortedBy(selector: (View) -> T2): T = this.keepChildrenSortedBy(selector.toComparator())

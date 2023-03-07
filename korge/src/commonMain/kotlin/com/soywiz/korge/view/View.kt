@@ -1547,17 +1547,17 @@ fun View?.commonAncestor(ancestor: View?): View? = View.commonAncestor(this, anc
 fun View.replaceWith(view: View): Boolean = this.parent?.replaceChild(this, view) ?: false
 
 /** Adds a block that will be executed per frame to this view. As parameter the block will receive a [TimeSpan] with the time elapsed since the previous frame. */
-fun <T : View> T.addUpdater(first: Boolean = true, updatable: T.(dt: TimeSpan) -> Unit): Cancellable {
+fun <T : View> T.addUpdater(first: Boolean = true, updatable: T.(dt: TimeSpan) -> Unit): CloseableCancellable {
     if (first) updatable(this, TimeSpan.ZERO)
     return onEvent(UpdateEvent) { updatable(this, it.delta * this.globalSpeed) }
 }
-fun <T : View> T.addUpdater(updatable: T.(dt: TimeSpan) -> Unit): Cancellable = addUpdater(true, updatable)
+fun <T : View> T.addUpdater(updatable: T.(dt: TimeSpan) -> Unit): CloseableCancellable = addUpdater(true, updatable)
 
-fun <T : View> T.addUpdaterWithViews(updatable: T.(views: Views, dt: TimeSpan) -> Unit): Cancellable = onEvent(ViewsUpdateEvent) {
+fun <T : View> T.addUpdaterWithViews(updatable: T.(views: Views, dt: TimeSpan) -> Unit): CloseableCancellable = onEvent(ViewsUpdateEvent) {
     updatable(this@addUpdaterWithViews, it.views, it.delta * this.globalSpeed)
 }
 
-fun <T : View> T.addOptFixedUpdater(time: TimeSpan = TimeSpan.NIL, updatable: T.(dt: TimeSpan) -> Unit): Cancellable = when (time) {
+fun <T : View> T.addOptFixedUpdater(time: TimeSpan = TimeSpan.NIL, updatable: T.(dt: TimeSpan) -> Unit): CloseableCancellable = when (time) {
     TimeSpan.NIL -> addUpdater(updatable)
     else -> addFixedUpdater(time) { updatable(time) }
 }
@@ -1579,7 +1579,7 @@ fun <T : View> T.addFixedUpdater(
     initial: Boolean = true,
     limitCallsPerFrame: Int = 16,
     updatable: T.() -> Unit
-): Cancellable = object : UpdateComponent {
+): CloseableCancellable = object : UpdateComponent {
     var accum = 0.0.milliseconds
     override val view: View get() = this@addFixedUpdater
     override fun update(dt: TimeSpan) {

@@ -348,7 +348,7 @@ class Views constructor(
 
 	fun update(elapsed: TimeSpan) {
 		//println(this)
-		//println("Update: $dtMs")
+		//println("Update: $elapsed")
 		input.startFrame(elapsed)
         tempCompsPool.alloc { compList ->
             eventResults.reset()
