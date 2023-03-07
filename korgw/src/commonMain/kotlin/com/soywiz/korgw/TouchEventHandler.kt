@@ -1,6 +1,5 @@
 package com.soywiz.korgw
 
-/*
 import com.soywiz.kds.*
 import com.soywiz.kds.lock.*
 import com.soywiz.korev.*
@@ -34,4 +33,3 @@ class TouchEventHandler {
         }
     }
 }
-*/
