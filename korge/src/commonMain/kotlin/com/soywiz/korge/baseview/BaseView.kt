@@ -3,9 +3,7 @@ package com.soywiz.korge.baseview
 import com.soywiz.kds.*
 import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.klock.TimeSpan
-import com.soywiz.korev.Event
-import com.soywiz.korev.EventListenerFastMap
-import com.soywiz.korev.EventResult
+import com.soywiz.korev.*
 import com.soywiz.korge.component.Component
 import com.soywiz.korge.component.ComponentType
 import com.soywiz.korge.component.EventComponent
@@ -32,11 +30,10 @@ interface InvalidateNotifier {
 }
 
 //open class BaseView : BaseEventListener() {
-open class BaseView : Extra {
+open class BaseView : BaseEventListener(), Extra {
     override var extra: ExtraType = null
 
-    protected open val baseParent: BaseView? get() = null
-    //protected override val baseParent: BaseView? get() = null
+    val baseParent: BaseView? get() = eventListenerParent as? BaseView?
 
     open fun invalidateRender() {
     }

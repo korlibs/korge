@@ -7,7 +7,6 @@ import kotlin.test.assertEquals
 class EventListenerTest {
     class MyContainer : BaseEventListener() {
         var name: String? = null
-        override var eventListenerParent: BaseEventListener? = null
 
         private val children = FastArrayList<MyContainer>()
 
@@ -15,13 +14,11 @@ class EventListenerTest {
 
         fun addChild(child: MyContainer) {
             children.add(child)
-            child.eventListenerParent = this
-            __updateChildListenerCount(child, add = true)
+            child.changeEventListenerParent(this)
         }
         fun removeChild(child: MyContainer) {
             children.remove(child)
-            child.eventListenerParent = null
-            __updateChildListenerCount(child, add = false)
+            child.changeEventListenerParent(null)
         }
 
         override fun <T : TEvent<T>> dispatchChildren(type: EventType<T>, event: T, result: EventResult?) {

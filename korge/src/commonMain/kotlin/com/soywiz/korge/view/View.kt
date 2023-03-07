@@ -236,9 +236,8 @@ abstract class View internal constructor(
             _stage = _parent?._stage
             setInvalidateNotifier()
             onParentChanged()
+            changeEventListenerParent(value)
         }
-
-    override val baseParent: Container? get() = parent
 
     /** Optional name of this view */
     @ViewProperty()
