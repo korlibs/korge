@@ -256,7 +256,7 @@ class SceneContainer(
         time: TimeSpan = 0.seconds,
         transition: Transition = defaultTransition
     ): T {
-        return changeTo(clazz, { it.get(clazz) }, *injects, time, transition)
+        return changeTo(clazz, { it.get(clazz) }, *injects, time = time, transition = transition)
     }
 
     /** Check [Scene] for details of the lifecycle. */

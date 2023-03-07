@@ -72,4 +72,20 @@ class SceneContainerTest : ViewsForTesting() {
         val endTime = time
         assertTrue { endTime - startTime in 0.5.seconds..0.75.seconds }
     }
+
+    @Test
+    //fun testVerifyTransitionIsUsed() = suspendTest {
+    fun testVerifyTransitionIsUsed2() = viewsTest {
+        //val log = ViewsLog(coroutineContext)
+        //log.injector.mapSingleton { ResourcesRoot() }
+        val sceneContainer = sceneContainer(views)
+        views.injector.mapPrototype { EmptyScene() }
+        val startTime = time
+        sceneContainer.changeTo<EmptyScene>(time = 0.5.seconds, transition = MaskTransition(TransitionFilter.Transition.HORIZONTAL))
+        val transitionView = sceneContainer.firstChild as TransitionView
+        assertEquals("MaskTransition", transitionView.transition.toString())
+        assertEquals(1.0, transitionView.ratio)
+        val endTime = time
+        assertTrue { endTime - startTime in 0.5.seconds..0.75.seconds }
+    }
 }
