@@ -57,14 +57,11 @@ abstract class View internal constructor(
     /** Indicates if this class is a container or not. This is only overridden by Container. This check is performed like this, to avoid type checks. That might be an expensive operation in some targets. */
     val isContainer: Boolean
 ) : BaseView(), Renderable
-    , Extra
     , BView
     , HitTestable
     , WithHitShape2d
 //, EventDispatcher by EventDispatcher.Mixin()
 {
-    override var extra: ExtraType = null
-
     override val bview: View get() = this
     override val bviewAll: List<View> by lazy { listOf(this) }
 
@@ -239,9 +236,8 @@ abstract class View internal constructor(
             _stage = _parent?._stage
             setInvalidateNotifier()
             onParentChanged()
+            changeEventListenerParent(value)
         }
-
-    override val baseParent: Container? get() = parent
 
     /** Optional name of this view */
     @ViewProperty()
@@ -1551,22 +1547,15 @@ fun View?.commonAncestor(ancestor: View?): View? = View.commonAncestor(this, anc
 fun View.replaceWith(view: View): Boolean = this.parent?.replaceChild(this, view) ?: false
 
 /** Adds a block that will be executed per frame to this view. As parameter the block will receive a [TimeSpan] with the time elapsed since the previous frame. */
-fun <T : View> T.addUpdater(first: Boolean = true, updatable: T.(dt: TimeSpan) -> Unit): Cancellable = object : UpdateComponent {
-    override val view: View get() = this@addUpdater
-    override fun update(dt: TimeSpan) {
-        updatable(this@addUpdater, dt)
-    }
-}.attach().also {
-    if (first) it.update(TimeSpan.ZERO)
+fun <T : View> T.addUpdater(first: Boolean = true, updatable: T.(dt: TimeSpan) -> Unit): Cancellable {
+    if (first) updatable(this, TimeSpan.ZERO)
+    return onEvent(UpdateEvent) { updatable(this, it.delta * this.globalSpeed) }
 }
 fun <T : View> T.addUpdater(updatable: T.(dt: TimeSpan) -> Unit): Cancellable = addUpdater(true, updatable)
 
-fun <T : View> T.addUpdaterWithViews(updatable: T.(views: Views, dt: TimeSpan) -> Unit): Cancellable = object : UpdateComponentWithViews {
-    override val view: View get() = this@addUpdaterWithViews
-    override fun update(views: Views, dt: TimeSpan) {
-        updatable(this@addUpdaterWithViews, views, dt)
-    }
-}.attach()
+fun <T : View> T.addUpdaterWithViews(updatable: T.(views: Views, dt: TimeSpan) -> Unit): Cancellable = onEvent(ViewsUpdateEvent) {
+    updatable(this@addUpdaterWithViews, it.views, it.delta * this.globalSpeed)
+}
 
 fun <T : View> T.addOptFixedUpdater(time: TimeSpan = TimeSpan.NIL, updatable: T.(dt: TimeSpan) -> Unit): Cancellable = when (time) {
     TimeSpan.NIL -> addUpdater(updatable)
@@ -1731,30 +1720,6 @@ inline fun View?.forEachAscendant(includeThis: Boolean = false, handler: (View) 
         view = view.parent
     }
 }
-
-/** Returns a list of descendants having the property [prop] optionally matching the value [value]. */
-fun View?.descendantsWithProp(prop: String, value: String? = null): List<View> {
-    if (this == null) return listOf()
-    return this.descendantsWith {
-        if (value != null) {
-            it.props[prop] == value
-        } else {
-            prop in it.props
-        }
-    }
-}
-
-/** Returns a list of descendants having the property [prop] optionally matching the value [value]. */
-fun View?.descendantsWithPropString(prop: String, value: String? = null): List<Pair<View, String>> =
-    this.descendantsWithProp(prop, value).map { it to it.getPropString(prop) }
-
-/** Returns a list of descendants having the property [prop] optionally matching the value [value]. */
-fun View?.descendantsWithPropInt(prop: String, value: Int? = null): List<Pair<View, Int>> =
-    this.descendantsWithProp(prop, if (value != null) "$value" else null).map { it to it.getPropInt(prop) }
-
-/** Returns a list of descendants having the property [prop] optionally matching the value [value]. */
-fun View?.descendantsWithPropDouble(prop: String, value: Double? = null): List<Pair<View, Int>> =
-    this.descendantsWithProp(prop, if (value != null) "$value" else null).map { it to it.getPropInt(prop) }
 
 /** Returns a list of descendants views that are of type [T]. */
 inline fun <reified T : View> View.getDescendantsOfType() = this.descendantsWith { it is T }

@@ -1,29 +1,34 @@
 package com.soywiz.korev
 
-import com.soywiz.kds.FastArrayList
-import com.soywiz.kds.IntArrayList
+import com.soywiz.kds.*
 import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.kds.iterators.fastForEachWithTemp
-import com.soywiz.korio.lang.Closeable
+import com.soywiz.korio.lang.*
 
 /**
  * Supports registering for [Event] of [EventType] and dispatching events.
  */
 interface EventListener {
     /**
-     * Registers a [handler] block to be executed when an even of [type] is [dispatch]ed
+     * Registers a [handler] block to be executed when an event of [type] is [dispatch]ed
      */
     fun <T : TEvent<T>> onEvent(type: EventType<T>, handler: (T) -> Unit): Closeable
+
+    //fun clearEventListeners()
+
     /**
      * Dispatched a [event] of [type] that will execute all the handlers registered with [onEvent]
      * in this object and its children.
      */
     fun <T : TEvent<T>> dispatch(type: EventType<T>, event: T, result: EventResult? = null)
+
+    fun <T : TEvent<T>> dispatch(event: T) = dispatch(event.type, event)
+    fun <T : TEvent<T>> dispatchWithResult(event: T, out: EventResult = EventResult()): EventResult {
+        dispatch(event.type, event, out)
+        return out
+    }
 }
 
-fun <T : TEvent<T>> EventListener.dispatchSimple(event: T) = dispatch(event.type, event)
-fun <T : TEvent<T>> EventListener.dispatchWithResult(event: T): EventResult =
-    EventResult().also { dispatch(event.type, event, it) }
 
 data class EventResult(
     var iterationCount: Int = 0,
@@ -36,7 +41,7 @@ data class EventResult(
 }
 
 interface EventListenerChildren : EventListener {
-    fun onEventsCount(): Map<EventType<*>, Int>?
+    fun onEventsCount(): FastIdentityMap<EventType<*>, Int>?
     fun onEventCount(type: EventType<*>): Int
 }
 
@@ -102,21 +107,45 @@ class EventListenerFastMap<K, V> {
     }
 }
 
-open class BaseEventListener : EventListenerChildren {
-    protected open val baseParent: BaseEventListener? get() = null
+open class BaseEventListener : EventListenerChildren, Extra {
+    override var extra: ExtraType = null
+
+    var eventListenerParent: BaseEventListener? = null
+        private set
+
+    protected fun changeEventListenerParent(other: BaseEventListener?) {
+        this.eventListenerParent?.__updateChildListenerCount(this, add = false)
+        this.eventListenerParent = other
+        this.eventListenerParent?.__updateChildListenerCount(this, add = true)
+    }
+
     /** @TODO: Critical. Consider two lists */
-    private var __eventListeners: MutableMap<EventType<*>, ListenerNode>? = null
+    //private var __eventListeners: MutableMap<EventType<*>, ListenerNode<*>>? = null
+    private var __eventListeners: FastIdentityMap<EventType<*>, ListenerNode<*>>? = null
     /** @TODO: Critical. Consider a list and a [com.soywiz.kds.IntArrayList] */
     @PublishedApi
-    internal var __eventListenerStats: MutableMap<EventType<*>, Int>? = null
+    internal var __eventListenerStats: FastIdentityMap<EventType<*>, Int>? = null
 
-    protected class ListenerNode {
-        val listeners = FastArrayList<(Any) -> Unit>()
-        val temp = FastArrayList<(Any) -> Unit>()
+    protected class Listener<T: TEvent<T>>(val func: (T) -> Unit, val node: ListenerNode<T>, val base: BaseEventListener) : CloseableCancellable {
+        override fun close() {
+            if (node.listeners.remove(this)) {
+                base.__updateChildListenerCount(node.type, -1)
+            }
+        }
+
+        fun attach() {
+            node.listeners.add(this)
+            base.__updateChildListenerCount(node.type, +1)
+        }
+    }
+
+    protected class ListenerNode<T: TEvent<T>>(val type: EventType<T>) {
+        val listeners = FastArrayList<Listener<T>>()
+        val temp = FastArrayList<Listener<T>>()
     }
 
     fun <T : TEvent<T>> clearEvents(type: EventType<T>) {
-        val lists = __eventListeners?.getOrElse(type) { null }
+        val lists = __eventListeners?.get(type)
         val listeners = lists?.listeners
         if (listeners != null) {
             __updateChildListenerCount(type, -listeners.size)
@@ -129,17 +158,10 @@ open class BaseEventListener : EventListenerChildren {
         types.fastForEach { clearEvents(it) }
     }
 
-    final override fun <T : TEvent<T>> onEvent(type: EventType<T>, handler: (T) -> Unit): Closeable {
-        handler as (Any) -> Unit
-        if (__eventListeners == null) __eventListeners = mutableMapOf()
-        val lists = __eventListeners!!.getOrPut(type) { ListenerNode() }
-        lists.listeners.add(handler)
-        __updateChildListenerCount(type, +1)
-        return Closeable {
-            if (lists.listeners.remove(handler)) {
-                __updateChildListenerCount(type, -1)
-            }
-        }
+    final override fun <T : TEvent<T>> onEvent(type: EventType<T>, handler: (T) -> Unit): CloseableCancellable {
+        if (__eventListeners == null) __eventListeners = FastIdentityMap()
+        val lists: ListenerNode<T> = __eventListeners!!.getOrPut(type) { ListenerNode(type) } as ListenerNode<T>
+        return Listener(handler, lists, this).also { it.attach() }
     }
 
     // , result: EventResult?
@@ -149,9 +171,10 @@ open class BaseEventListener : EventListenerChildren {
 
         dispatchChildren(type, event, result)
 
-        val listeners = __eventListeners?.get(type)
+        val listeners = __eventListeners?.get(type) as? ListenerNode<T>
         listeners?.listeners?.fastForEachWithTemp(listeners.temp) {
-            it(event)
+            it.func(event)
+            result?.let { it.resultCount++ }
         }
         result?.let { it.iterationCount++ }
     }
@@ -160,28 +183,28 @@ open class BaseEventListener : EventListenerChildren {
     }
 
     final override fun onEventCount(type: EventType<*>): Int {
-        return __eventListenerStats?.getOrElse(type) { 0 } ?: 0
+        return __eventListenerStats?.getNull(type) ?: 0
     }
 
-    final override fun onEventsCount(): Map<EventType<*>, Int>? {
+    final override fun onEventsCount(): FastIdentityMap<EventType<*>, Int>? {
         return __eventListenerStats
     }
 
     //inline fun EventListenerChildren.Internal.__iterateListenerCount(block: (EventType<*>, Int) -> Unit) {
     private fun __iterateListenerCount(block: (EventType<*>, Int) -> Unit) {
-        __eventListenerStats?.forEach {
-            block(it.key, it.value)
+        __eventListenerStats?.fastForEach { key, value ->
+            block(key, value)
         }
     }
 
     private fun __updateChildListenerCount(type: EventType<*>, delta: Int) {
         if (delta == 0) return
-        if (__eventListenerStats == null) __eventListenerStats = mutableMapOf()
-        __eventListenerStats?.put(type, __eventListenerStats!!.getOrElse(type) { 0 } + delta)
-        baseParent?.__updateChildListenerCount(type, delta)
+        if (__eventListenerStats == null) __eventListenerStats = FastIdentityMap()
+        __eventListenerStats?.set(type, (__eventListenerStats!![type] ?: 0) + delta)
+        eventListenerParent?.__updateChildListenerCount(type, delta)
     }
 
-    protected fun __updateChildListenerCount(child: BaseEventListener, add: Boolean) {
+    private fun __updateChildListenerCount(child: BaseEventListener, add: Boolean) {
         //println("__updateChildListenerCount[$this]:view=$view,add=$add")
         child.__iterateListenerCount { eventType, i ->
             //println("   - $eventType: $i")

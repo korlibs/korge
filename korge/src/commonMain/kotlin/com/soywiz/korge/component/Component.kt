@@ -15,12 +15,14 @@ import com.soywiz.korge.view.Views
 import com.soywiz.korio.lang.Closeable
 import com.soywiz.korio.lang.CloseableCancellable
 
+@Deprecated("Use events instead")
 interface ComponentType<T : Component>
 
 /**
  * An interface that allows to control the behaviour of a [View] after some events.
  * The most common case of Component is the [UpdateComponent]
  */
+@Deprecated("Use events instead")
 interface Component : CloseableCancellable {
     val view: BaseView
     val type: ComponentType<out Component>
@@ -34,24 +36,29 @@ interface Component : CloseableCancellable {
     }
 }
 
+@Deprecated("Use events instead")
 interface TypedComponent<T : Component> : Component {
     override val type: ComponentType<T>
 }
 
+@Deprecated("Use events instead")
 fun Component.cancellable(): CloseableCancellable = CloseableCancellable { detach() }
 
 //Deprecated("Unoptimized")
+@Deprecated("Use events instead")
 fun <T : Component> T.attach(): T {
     this.view.addComponent(this)
     return this
 }
 
 //Deprecated("Unoptimized")
+@Deprecated("Use events instead")
 fun <T : Component> T.detach(): T {
     this.view.removeComponent(this)
     return this
 }
 
+@Deprecated("Use events instead")
 fun Component.removeFromView() {
     close()
 }
@@ -60,6 +67,7 @@ fun Component.removeFromView() {
  * Component whose [onTouchEvent] is called,
  * whenever a touch event happens.
  */
+@Deprecated("Use events instead")
 interface TouchComponent : TypedComponent<TouchComponent> {
     companion object : ComponentType<TouchComponent>
     override val type get() = Companion
@@ -83,6 +91,7 @@ interface TouchComponent : TypedComponent<TouchComponent> {
  * }
  * ```
  */
+@Deprecated("Use events instead")
 interface MouseComponent : TypedComponent<MouseComponent> {
     companion object : ComponentType<MouseComponent>
     override val type get() = Companion
@@ -90,6 +99,7 @@ interface MouseComponent : TypedComponent<MouseComponent> {
     fun onMouseEvent(views: Views, event: MouseEvent)
 }
 
+@Deprecated("Use events instead")
 interface GestureComponent : TypedComponent<GestureComponent> {
     companion object : ComponentType<GestureComponent>
     override val type get() = Companion
@@ -110,6 +120,7 @@ interface GestureComponent : TypedComponent<GestureComponent> {
  *     up { ... }
  * }
  */
+@Deprecated("Use events instead")
 interface KeyComponent : TypedComponent<KeyComponent> {
     companion object : ComponentType<KeyComponent>
     override val type get() = Companion
@@ -134,6 +145,7 @@ interface KeyComponent : TypedComponent<KeyComponent> {
  * }
  * ```
  */
+@Deprecated("Use events instead")
 interface GamepadComponent : TypedComponent<GamepadComponent> {
     companion object : ComponentType<GamepadComponent>
     override val type get() = Companion
@@ -145,6 +157,7 @@ interface GamepadComponent : TypedComponent<GamepadComponent> {
 /**
  * Component whose [onEvent] method is called when an event has been triggered in that [View].
  */
+@Deprecated("Use events instead")
 interface EventComponent : TypedComponent<EventComponent> {
     companion object : ComponentType<EventComponent>
     override val type get() = Companion
@@ -158,6 +171,7 @@ interface EventComponent : TypedComponent<EventComponent> {
  *
  * It is like [UpdateComponent] but includes a reference to the [Views] itself.
  */
+@Deprecated("Use events instead")
 interface UpdateComponentWithViews : TypedComponent<UpdateComponentWithViews> {
     companion object : ComponentType<UpdateComponentWithViews>
     override val type get() = Companion
@@ -177,6 +191,7 @@ interface UpdateComponentWithViews : TypedComponent<UpdateComponentWithViews> {
  * view.addUpdater { dt -> ... }
  * ```
  */
+@Deprecated("Use events instead")
 interface UpdateComponent : TypedComponent<UpdateComponent> {
     companion object : ComponentType<UpdateComponent>
     override val type get() = Companion
@@ -184,6 +199,7 @@ interface UpdateComponent : TypedComponent<UpdateComponent> {
     fun update(dt: TimeSpan)
 }
 
+@Deprecated("Use events instead")
 abstract class FixedUpdateComponent(override val view: BaseView, val step: TimeSpan, val maxAccumulated: Int = 10) : UpdateComponent {
     var accumulated = 0.milliseconds
     final override fun update(dt: TimeSpan) {
@@ -203,6 +219,7 @@ abstract class FixedUpdateComponent(override val view: BaseView, val step: TimeS
  * Component whose [resized] method is called everytime the game window
  * has been resized.
  */
+@Deprecated("Use events instead")
 interface ResizeComponent : TypedComponent<ResizeComponent> {
     override val type get() = Companion
 
@@ -222,6 +239,7 @@ interface ResizeComponent : TypedComponent<ResizeComponent> {
     }
 }
 
+@Deprecated("Use events instead")
 fun <T : BaseView> T.onStageResized(firstTrigger: Boolean = true, block: Views.(width: Int, height: Int) -> Unit): T = this.apply {
     if (firstTrigger) {
         deferWithViews { views -> block(views, views.actualVirtualWidth, views.actualVirtualHeight) }

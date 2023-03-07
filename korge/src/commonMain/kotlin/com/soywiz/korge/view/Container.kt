@@ -462,15 +462,15 @@ open class Container(
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Event Listeners
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    //override fun <T : TEvent<T>> dispatchChildren(type: EventType<T>, event: T, result: EventResult?) {
-    //    // @TODO: What if we mutate the list now
-    //    fastForEachChild {
-    //        val childEventListenerCount = it.onEventCount(type)
-    //        if (childEventListenerCount > 0) {
-    //            it.dispatch(type, event, result)
-    //        }
-    //    }
-    //}
+    override fun <T : TEvent<T>> dispatchChildren(type: EventType<T>, event: T, result: EventResult?) {
+        // @TODO: What if we mutate the list now
+        fastForEachChild {
+            val childEventListenerCount = it.onEventCount(type)
+            if (childEventListenerCount > 0) {
+                it.dispatch(type, event, result)
+            }
+        }
+    }
 
     override fun <T : Component> getComponentOfTypeRecursiveChildren(type: ComponentType<T>, out: FastArrayList<T>, results: EventResult?) {
         fastForEachChild {
