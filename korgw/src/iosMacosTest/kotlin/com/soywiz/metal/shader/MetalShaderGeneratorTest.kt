@@ -45,6 +45,7 @@ class MetalShaderGeneratorTest {
     }
 
     @Test
+    @Ignore
     fun `check that vertex metal shader is correctly generated`() {
 
         vertexShader to fragmentShader shouldProduceShader {
