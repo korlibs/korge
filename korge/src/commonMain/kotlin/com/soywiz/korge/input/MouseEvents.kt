@@ -19,7 +19,7 @@ import kotlin.native.concurrent.*
 import kotlin.reflect.*
 
 @OptIn(KorgeInternal::class)
-class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixin(), Closeable {
+class MouseEvents(val view: View) : Extra by Extra.Mixin(), Closeable {
     init {
         view.mouseEnabled = true
     }
@@ -372,10 +372,9 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
 
     override fun toString(): String = lastEvent.toString()
 
-    @Suppress("DuplicatedCode")
-    override fun onMouseEvent(views: Views, event: MouseEvent) {
-        if (!view.mouseEnabled) return
-        this.views = views
+    private val closeable = view.onEvent(*MouseEvent.Type.ALL) { event ->
+        if (!view.mouseEnabled) return@onEvent
+        this.views = event.target as Views
         // Store event
         this.currentEvent = event
         this.lastEvent.copyFrom(event)
@@ -532,7 +531,7 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
     }
 
     override fun close() {
-        this.detach()
+        closeable.close()
     }
 }
 
@@ -543,17 +542,10 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
 
 //var View.mouseEnabled by Extra.Property { true }
 
-@ThreadLocal // @TODO: Is this required?
-val View.mouse by Extra.PropertyThis<View, MouseEvents> {
-    this.getOrCreateComponentMouse<MouseEvents> { MouseEvents(this) }
-}
+val View.mouse: MouseEvents by Extra.PropertyThis { MouseEvents(this) }
 
-inline fun View.newMouse(callback: MouseEvents.() -> Unit): MouseEvents {
-    return MouseEvents(this).also {
-        this.addComponent(it)
-        callback(it)
-    }
-}
+inline fun View.newMouse(callback: MouseEvents.() -> Unit): MouseEvents =
+    MouseEvents(this).also { callback(it) }
 
 inline fun <T : View> T.mouse(callback: MouseEvents.() -> Unit): T {
     mouse.run(callback)

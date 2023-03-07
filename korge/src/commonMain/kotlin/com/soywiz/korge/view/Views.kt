@@ -256,8 +256,7 @@ class Views constructor(
                 when (e) {
                     is GestureEvent ->
                         stage.forEachComponentOfTypeRecursive(GestureComponent, tempComps) { it.onGestureEvent(views, e) }
-                    is MouseEvent ->
-                        stage.forEachComponentOfTypeRecursive(MouseComponent, tempComps) { it.onMouseEvent(views, e) }
+                    is MouseEvent -> stage.dispatch((event as MouseEvent).also { it.target = views })
                     is TouchEvent ->
                         stage.forEachComponentOfTypeRecursive(TouchComponent, tempComps) { it.onTouchEvent(views, e) }
                     is ReshapeEvent -> stage.dispatch(viewsResizedEvent.also { it.size = SizeInt(e.width, e.height) })

@@ -74,30 +74,6 @@ interface TouchComponent : TypedComponent<TouchComponent> {
     fun onTouchEvent(views: Views, e: TouchEvent)
 }
 
-/**
- * Component whose [onMouseEvent] is called,
- * whenever a mouse event happens.
- *
- * **Notice** that this class produces raw mouse events.
- * You would normally add mouse handlers by executing:
- *
- * ```kotlin
- * view.mouse {
- *     down { ... }
- *     up { ... }
- *     click { ... }
- *     ...
- * }
- * ```
- */
-@Deprecated("Use events instead")
-interface MouseComponent : TypedComponent<MouseComponent> {
-    companion object : ComponentType<MouseComponent>
-    override val type get() = Companion
-
-    fun onMouseEvent(views: Views, event: MouseEvent)
-}
-
 @Deprecated("Use events instead")
 interface GestureComponent : TypedComponent<GestureComponent> {
     companion object : ComponentType<GestureComponent>

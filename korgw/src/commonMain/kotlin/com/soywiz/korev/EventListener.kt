@@ -14,6 +14,11 @@ interface EventListener {
      */
     fun <T : TEvent<T>> onEvent(type: EventType<T>, handler: (T) -> Unit): Closeable
 
+    fun <T : TEvent<T>> onEvent(vararg type: EventType<T>, handler: (T) -> Unit): Closeable {
+        val closeable = CancellableGroup()
+        type.fastForEach { closeable += onEvent(it, handler) }
+        return closeable
+    }
     //fun clearEventListeners()
 
     /**

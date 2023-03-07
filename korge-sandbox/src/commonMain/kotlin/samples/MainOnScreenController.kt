@@ -78,46 +78,40 @@ class MainOnScreenController : Scene() {
             }
 
             var dragging = false
-            val start = MPoint(0, 0)
+            var start = Point(0, 0)
 
-            view.addComponent(object : MouseComponent {
-                override val view: View = view
+            view.onEvent(MouseEvent.Type.DOWN, MouseEvent.Type.MOVE, MouseEvent.Type.DRAG, MouseEvent.Type.UP) { event ->
+                val p = view.globalMatrixInv.transform(event.pos.toFloat())
 
-                override fun onMouseEvent(views: Views, event: MouseEvent) {
-                    val px = view.globalMatrixInv.transformX(event.x.toDouble(), event.y.toDouble())
-                    val py = view.globalMatrixInv.transformY(event.x.toDouble(), event.y.toDouble())
-
-                    when (event.type) {
-                        MouseEvent.Type.DOWN -> {
-                            if (px >= width / 2) return
-                            start.x = px
-                            start.y = py
-                            ball.alphaF = 0.3f
-                            dragging = true
-                        }
-                        MouseEvent.Type.MOVE, MouseEvent.Type.DRAG -> {
-                            if (dragging) {
-                                val deltaX = px - start.x
-                                val deltaY = py - start.y
-                                val length = hypot(deltaX, deltaY)
-                                val maxLength = radius * 0.3
-                                val lengthClamped = length.clamp(0.0, maxLength)
-                                val angle = Angle.between(start.x, start.y, px, py)
-                                ball.position(cosd(angle) * lengthClamped, sind(angle) * lengthClamped)
-                                val lengthNormalized = lengthClamped / maxLength
-                                onStick(cosd(angle) * lengthNormalized, sind(angle) * lengthNormalized)
-                            }
-                        }
-                        MouseEvent.Type.UP -> {
-                            ball.position(0, 0)
-                            ball.alphaF = 0.2f
-                            dragging = false
-                            onStick(0.0, 0.0)
-                        }
-                        else -> Unit
+                when (event.type) {
+                    MouseEvent.Type.DOWN -> {
+                        if (p.x >= width / 2) return@onEvent
+                        start = p
+                        ball.alphaF = 0.3f
+                        dragging = true
                     }
+                    MouseEvent.Type.MOVE, MouseEvent.Type.DRAG -> {
+                        if (dragging) {
+                            val deltaX = p.x - start.x
+                            val deltaY = p.y - start.y
+                            val length = hypot(deltaX, deltaY)
+                            val maxLength = radius * 0.3f
+                            val lengthClamped = length.clamp(0f, maxLength.toFloat())
+                            val angle = Angle.between(start, p)
+                            ball.position(cosd(angle) * lengthClamped, sind(angle) * lengthClamped)
+                            val lengthNormalized = lengthClamped / maxLength
+                            onStick(cosd(angle) * lengthNormalized, sind(angle) * lengthNormalized)
+                        }
+                    }
+                    MouseEvent.Type.UP -> {
+                        ball.position(0, 0)
+                        ball.alphaF = 0.2f
+                        dragging = false
+                        onStick(0.0, 0.0)
+                    }
+                    else -> Unit
                 }
-            })
+            }
         }
     }
 }

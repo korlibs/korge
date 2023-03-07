@@ -62,10 +62,16 @@ data class MouseEvent(
     var scrollDeltaMode: ScrollDeltaMode = ScrollDeltaMode.LINE
 ) : Event(), TEvent<MouseEvent> {
     //companion object : EventType<MouseEvent>
+    val pos: PointInt get() = PointInt(x, y)
 
     var component: Any? = null
 
-	enum class Type : EventType<MouseEvent> { MOVE, DRAG, UP, DOWN, CLICK, ENTER, EXIT, SCROLL }
+	enum class Type : EventType<MouseEvent> {
+        MOVE, DRAG, UP, DOWN, CLICK, ENTER, EXIT, SCROLL;
+        companion object {
+            val ALL = arrayOf(MOVE, DRAG, UP, DOWN, CLICK, ENTER, EXIT, SCROLL)
+        }
+    }
 
     val typeMove get() = type == Type.MOVE
     val typeDrag get() = type == Type.DRAG
