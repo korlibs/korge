@@ -55,7 +55,7 @@ class BezierCurveCubicTest {
 
     @Test
     fun testComplexCubicHasTheCorrectInflectionPoint() {
-        val b = Bezier(0.0, 0.0, 1.0, 0.25, 0.0, 1.0, 1.0, 0.0)
+        val b = Bezier(Point(0.0, 0.0), Point(1.0, 0.25), Point(0.0, 1.0), Point(1.0, 0.0))
         assertEquals(listOf(0.8, 0.5), b.inflections().toList())
     }
 
@@ -66,10 +66,10 @@ class BezierCurveCubicTest {
         run {
             val b: Bezier = Bezier.cubicFromPoints(pts[0], pts[1], pts[2])
             assertEqualsFloat(
-                Bezier(0.0, 0.0, 55.56, 11.11, 88.89, 44.44, 100.0, 100.0),
+                Bezier(Point(0.0, 0.0), Point(55.56, 11.11), Point(88.89, 44.44), Point(100.0, 100.0)),
                 b.roundDecimalPlaces(2)
             )
-            val midpoint = b.get(0.5)
+            val midpoint = b[0.5]
             assertEquals(midpoint.xD, M.xD, 0.001)
             assertEquals(midpoint.yD, M.yD, 0.001)
         }

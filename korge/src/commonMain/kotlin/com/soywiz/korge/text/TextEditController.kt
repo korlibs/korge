@@ -195,7 +195,7 @@ class TextEditController(
 
     fun getCaretAtIndex(index: Int): Bezier {
         val glyphPositions = textView.getGlyphMetrics().glyphs
-        if (glyphPositions.isEmpty()) return Bezier(MPoint(), MPoint())
+        if (glyphPositions.isEmpty()) return Bezier(Point(), Point())
         val glyph = glyphPositions[min(index, glyphPositions.size - 1)]
         return when {
             index < glyphPositions.size -> glyph.caretStart

@@ -181,13 +181,13 @@ class BezierCurveTest {
 
     @Test
     fun testOffset() {
-        val curves = Bezier(0,0, 0,-50, 50,-50, 50,0).offset(10.0)
+        val curves = Bezier(Point(0, 0), Point(0, -50), Point(50, -50), Point(50, 0)).offset(10.0)
         assertEquals(
             listOf(
-                Bezier(10.0, 0.0, 10.0, -13.09, 22.67, -13.20, 5.03, 8.64),
-                Bezier(5.03, 8.64, 29.40, -5.55, 28.05, 0.0, 0.0, 10.0),
-                Bezier(0.0, 10.0, 17.71, 10.0, 6.56, 11.08, -8.60, 5.10),
-                Bezier(-8.60, 5.10, -9.08, 4.30, 0.0, 0.29, -10.0, 0.0)
+                Bezier(Point(10.0, 0.0), Point(10.0, -13.09), Point(22.67, -13.20), Point(5.03, 8.64)),
+                Bezier(Point(5.03, 8.64), Point(29.40, -5.55), Point(28.05, 0.0), Point(0.0, 10.0)),
+                Bezier(Point(0.0, 10.0), Point(17.71, 10.0), Point(6.56, 11.08), Point(-8.60, 5.10)),
+                Bezier(Point(-8.60, 5.10), Point(-9.08, 4.30), Point(0.0, 0.29), Point(-10.0, 0.0))
             ),
             curves.map { it.roundDecimalPlaces(2) }
         )
@@ -195,7 +195,7 @@ class BezierCurveTest {
 
     @Test
     fun testReduce() {
-        val curves = Bezier(0,0, 0,-50, 50,-50, 50,0).toSimpleList()
+        val curves = Bezier(Point(0,0), Point(0,-50), Point(50,-50), Point(50,0)).toSimpleList()
 
         assertEqualsFloat(
             listOf(
@@ -210,7 +210,7 @@ class BezierCurveTest {
 
     @Test
     fun testExtremaHasCorrectExtrema() {
-        val extrema = Bezier(330, 592, 330, 557, 315, 522, 315, 485).extrema
+        val extrema = Bezier(Point(330, 592), Point(330, 557), Point(315, 522), Point(315, 485)).extrema
 
         assertEquals(
             listOf(
@@ -224,14 +224,14 @@ class BezierCurveTest {
 
     @Test
     fun testLutYieldsNP1Points() {
-        val b = Bezier(0, 0, 0, 1, 1, 1, 1, 0)
+        val b = Bezier(Point(0, 0), Point(0, 1), Point(1, 1), Point(1, 0))
         val lut = b.getLUT(100)
         assertEquals(101, lut.size)
     }
 
     @Test
     fun testLineCurveIntersection() {
-        val b = Bezier(76, 250, 77, 150, 220, 50);
+        val b = Bezier(Point(76, 250), Point(77, 150), Point(220, 50))
         val line = MLine(13, 140, 213, 140)
         val intersections = b.intersections(line)
         assertEquals(listOf(0.55), intersections.toList())
@@ -239,7 +239,7 @@ class BezierCurveTest {
 
     @Test
     fun testProjectsOntoTheCorrectOnCurvePoint() {
-        val b = Bezier(0, 0, 100, 0, 100, 100)
+        val b = Bezier(Point(0, 0), Point(100, 0), Point(100, 100))
         assertEquals(
             Bezier.ProjectedPoint(p = Point(75, 25), t = 0.5, dSq = 50.0),
             b.project(Point(80, 20))
@@ -250,20 +250,20 @@ class BezierCurveTest {
     fun testToCubic() {
         // Line
         assertEquals(
-            Bezier(0.0, 0.0, 33.33, 33.33, 66.67, 66.67, 100.0, 100.0),
-            Bezier(0, 0, 100, 100).toCubic().roundDecimalPlaces(2)
+            Bezier(Point(0.0, 0.0), Point(33.33, 33.33), Point(66.67, 66.67), Point(100.0, 100.0)),
+            Bezier(Point(0, 0), Point(100, 100)).toCubic().roundDecimalPlaces(2)
         )
 
         // Quad
         assertEquals(
-            Bezier(0.0, 0.0, 66.67, 0.0, 100.0, 33.33, 100.0, 100.0),
-            Bezier(0, 0, 100, 0, 100, 100).toCubic().roundDecimalPlaces(2)
+            Bezier(Point(0.0, 0.0), Point(66.67, 0.0), Point(100.0, 33.33), Point(100.0, 100.0)),
+            Bezier(Point(0, 0), Point(100, 0), Point(100, 100)).toCubic().roundDecimalPlaces(2)
         )
 
         // Cubic
         assertEquals(
-            Bezier(0, 0, 50, 60, 90, 30, 100, 100),
-            Bezier(0, 0, 50, 60, 90, 30, 100, 100).toCubic().roundDecimalPlaces(2)
+            Bezier(Point(0, 0), Point(50, 60), Point(90, 30), Point(100, 100)),
+            Bezier(Point(0, 0), Point(50, 60), Point(90, 30), Point(100, 100)).toCubic().roundDecimalPlaces(2)
         )
     }
 
@@ -271,8 +271,8 @@ class BezierCurveTest {
     fun testToCubicToQuad() {
         // Quad
         assertEquals(
-            Bezier(0, 0, 100, 80, 100, 100),
-            Bezier(0, 0, 100, 80, 100, 100).toCubic().toQuad().roundDecimalPlaces(2)
+            Bezier(Point(0, 0), Point(100, 80), Point(100, 100)),
+            Bezier(Point(0, 0), Point(100, 80), Point(100, 100)).toCubic().toQuad().roundDecimalPlaces(2)
         )
     }
 }

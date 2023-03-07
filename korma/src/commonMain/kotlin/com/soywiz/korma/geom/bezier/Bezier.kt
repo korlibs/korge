@@ -78,16 +78,7 @@ class Bezier(
         if (points.size > 4) error("Only supports quad and cubic beziers")
     }
 
-    constructor() : this(PointArrayList(Point(0f, 0f), Point(0f, 0f)))
-    @Deprecated("")
-    constructor(vararg points: IPoint) : this(PointArrayList(*points))
-    @Deprecated("")
-    constructor(vararg points: Double) : this(PointArrayList(*points))
-    @Deprecated("")
-    constructor(vararg points: Float) : this(PointArrayList(*points))
-    @Deprecated("")
-    constructor(vararg points: Int) : this(pointArrayListOf(*points))
-
+    constructor() : this(Point(0f, 0f), Point(0f, 0f))
     constructor(p0: Point, p1: Point) : this(pointArrayListOf(p0, p1))
     constructor(p0: Point, p1: Point, p2: Point) : this(pointArrayListOf(p0, p1, p2))
     constructor(p0: Point, p1: Point, p2: Point, p3: Point) : this(pointArrayListOf(p0, p1, p2, p3))
@@ -566,10 +557,8 @@ class Bezier(
         if (isLinear) {
             val nv = this.normal(0.0)
             return Bezier(
-                this.points.getX(0) + (nv.x * r0),
-                this.points.getY(0) + (nv.y * r0),
-                this.points.getX(1) + (nv.x * r1),
-                this.points.getY(1) + (nv.y * r1),
+                Point(this.points.getX(0) + (nv.x * r0), this.points.getY(0) + (nv.y * r0)),
+                Point(this.points.getX(1) + (nv.x * r1), this.points.getY(1) + (nv.y * r1)),
             )
         }
 
@@ -1420,7 +1409,7 @@ class Bezier(
         }
 
         private fun makeline(p1: IPoint, p2: IPoint): Bezier =
-            Bezier(p1.x, p1.y, (p1.x + p2.x) / 2, (p1.y + p2.y) / 2, p2.x, p2.y)
+            Bezier(Point(p1.x, p1.y), Point((p1.x + p2.x) / 2, (p1.y + p2.y) / 2), Point(p2.x, p2.y))
 
         @OptIn(ExperimentalContracts::class)
         inline fun <T> quadCalc(
@@ -1541,4 +1530,4 @@ class Bezier(
     }
 }
 
-fun MLine.toBezier(): Bezier = Bezier(x0, y0, x1, y1)
+fun MLine.toBezier(): Bezier = Bezier(Point(x0, y0), Point(x1, y1))

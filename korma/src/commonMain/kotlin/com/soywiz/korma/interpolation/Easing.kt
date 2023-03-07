@@ -2,6 +2,7 @@ package com.soywiz.korma.interpolation
 
 import com.soywiz.korma.geom.bezier.Bezier
 import com.soywiz.kmem.clamp
+import com.soywiz.korma.geom.*
 import kotlin.math.PI
 import kotlin.math.absoluteValue
 import kotlin.math.pow
@@ -85,7 +86,7 @@ fun interface Easing {
 
 // @TODO: We need to heavily optimize this. If we can have a formula instead of doing a bisect, this would be much faster.
 class EasingCubic(val x1: Double, val y1: Double, val x2: Double, val y2: Double, val name: String? = null) : Easing {
-    val cubic = Bezier(0.0, 0.0, x1.clamp(0.0, 1.0), y1, x2.clamp(0.0, 1.0), y2, 1.0, 1.0)
+    val cubic = Bezier(Point(0f, 0f), Point(x1.clamp(0.0, 1.0), y1), Point(x2.clamp(0.0, 1.0), y2), Point(1.0, 1.0))
     override fun toString(): String = name ?: "cubic-bezier($x1, $y1, $x2, $y2)"
 
     // @TODO: this doesn't work properly for `it` outside range [0, 1], and not in constant time

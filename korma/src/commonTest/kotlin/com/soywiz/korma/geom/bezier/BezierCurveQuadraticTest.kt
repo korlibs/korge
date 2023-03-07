@@ -5,7 +5,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class BezierCurveQuadraticTest {
-    val b = Bezier(0.0, 0.0, 0.5, 1.0, 1.0, 0.0);
+    val b = Bezier(Point(0.0, 0.0), Point(0.5, 1.0), Point(1.0, 0.0))
     @Test
     fun testSerializesCorrectly() {
         assertEquals("Bezier([(0, 0), (0.5, 1), (1, 0)])", b.toString())
@@ -58,15 +58,15 @@ class BezierCurveQuadraticTest {
 
         run {
             val b = Bezier.quadraticFromPoints(pts[0], pts[1], pts[2])
-            assertEqualsFloat(Bezier(0, 0, 100, 0, 100, 100), b)
-            assertEqualsFloat(M, b.get(0.5))
+            assertEqualsFloat(Bezier(Point(0, 0), Point(100, 0), Point(100, 100)), b)
+            assertEqualsFloat(M, b[0.5])
         }
 
         run {
             val t = 0.25
             val b = Bezier.quadraticFromPoints(pts[0], pts[1], pts[2], t)
-            assertEqualsFloat(Bezier(0.0, 0.0, 183.33, 50.0, 100.0, 100.0), b.roundDecimalPlaces(2))
-            assertEqualsFloat(M, b.get(t))
+            assertEqualsFloat(Bezier(Point(0.0, 0.0), Point(183.33, 50.0), Point(100.0, 100.0)), b.roundDecimalPlaces(2))
+            assertEqualsFloat(M, b[t])
         }
     }
 
