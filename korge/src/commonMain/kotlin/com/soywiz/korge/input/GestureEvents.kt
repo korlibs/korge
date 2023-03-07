@@ -2,7 +2,6 @@ package com.soywiz.korge.input
 
 import com.soywiz.kds.*
 import com.soywiz.korev.*
-import com.soywiz.korge.baseview.*
 import com.soywiz.korge.view.*
 import com.soywiz.korio.async.*
 import kotlin.reflect.*

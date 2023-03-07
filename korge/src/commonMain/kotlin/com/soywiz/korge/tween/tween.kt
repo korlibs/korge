@@ -5,7 +5,6 @@ package com.soywiz.korge.tween
 import com.soywiz.kds.iterators.*
 import com.soywiz.klock.*
 import com.soywiz.kmem.*
-import com.soywiz.korge.baseview.*
 import com.soywiz.korge.view.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.lang.*

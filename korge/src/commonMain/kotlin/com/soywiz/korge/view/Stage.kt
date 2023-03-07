@@ -2,8 +2,6 @@ package com.soywiz.korge.view
 
 import com.soywiz.korag.*
 import com.soywiz.korag.annotation.*
-import com.soywiz.korev.*
-import com.soywiz.korge.baseview.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.view.property.*
 import com.soywiz.korgw.*
