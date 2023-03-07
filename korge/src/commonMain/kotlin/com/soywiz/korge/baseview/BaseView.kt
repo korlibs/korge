@@ -30,9 +30,7 @@ interface InvalidateNotifier {
 }
 
 //open class BaseView : BaseEventListener() {
-open class BaseView : BaseEventListener(), Extra {
-    override var extra: ExtraType = null
-
+open class BaseView : BaseEventListener() {
     val baseParent: BaseView? get() = eventListenerParent as? BaseView?
 
     open fun invalidateRender() {

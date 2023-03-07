@@ -1,6 +1,7 @@
 package com.soywiz.korge.view
 
 import com.soywiz.klock.milliseconds
+import com.soywiz.korev.*
 import com.soywiz.korge.component.UpdateComponent
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -157,5 +158,26 @@ internal class ContainerTest {
             it.update(0.milliseconds)
         }
         assertEquals("a", log)
+    }
+
+    @Test
+    fun testEventListener() {
+        val log = arrayListOf<String>()
+        val root = Container()
+        root.dispatchWithResult(MouseEvent(MouseEvent.Type.CLICK)).also {
+            assertEquals("0/0", "${it.resultCount}/${it.iterationCount}")
+            assertEquals("", log.joinToString(","))
+        }
+        root.container {
+            container {
+                onEvent(MouseEvent.Type.CLICK) {
+                    log += "click"
+                }
+            }
+        }
+        root.dispatchWithResult(MouseEvent(MouseEvent.Type.CLICK)).also {
+            assertEquals("1/3", "${it.resultCount}/${it.iterationCount}")
+            assertEquals("click", log.joinToString(","))
+        }
     }
 }

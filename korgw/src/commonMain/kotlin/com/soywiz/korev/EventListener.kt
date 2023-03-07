@@ -1,7 +1,6 @@
 package com.soywiz.korev
 
-import com.soywiz.kds.FastArrayList
-import com.soywiz.kds.IntArrayList
+import com.soywiz.kds.*
 import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.kds.iterators.fastForEachWithTemp
 import com.soywiz.korio.lang.Closeable
@@ -24,8 +23,10 @@ interface EventListener {
     fun <T : TEvent<T>> dispatch(type: EventType<T>, event: T, result: EventResult? = null)
 
     fun <T : TEvent<T>> dispatch(event: T) = dispatch(event.type, event)
-    fun <T : TEvent<T>> dispatchWithResult(event: T): EventResult =
-        EventResult().also { dispatch(event.type, event, it) }
+    fun <T : TEvent<T>> dispatchWithResult(event: T, out: EventResult = EventResult()): EventResult {
+        dispatch(event.type, event, out)
+        return out
+    }
 }
 
 
@@ -106,7 +107,9 @@ class EventListenerFastMap<K, V> {
     }
 }
 
-open class BaseEventListener : EventListenerChildren {
+open class BaseEventListener : EventListenerChildren, Extra {
+    override var extra: ExtraType = null
+
     var eventListenerParent: BaseEventListener? = null
         private set
 
@@ -170,6 +173,7 @@ open class BaseEventListener : EventListenerChildren {
         val listeners = __eventListeners?.get(type) as? ListenerNode<T>
         listeners?.listeners?.fastForEachWithTemp(listeners.temp) {
             it.func(event)
+            result?.let { it.resultCount++ }
         }
         result?.let { it.iterationCount++ }
     }
@@ -199,7 +203,7 @@ open class BaseEventListener : EventListenerChildren {
         eventListenerParent?.__updateChildListenerCount(type, delta)
     }
 
-    protected fun __updateChildListenerCount(child: BaseEventListener, add: Boolean) {
+    private fun __updateChildListenerCount(child: BaseEventListener, add: Boolean) {
         //println("__updateChildListenerCount[$this]:view=$view,add=$add")
         child.__iterateListenerCount { eventType, i ->
             //println("   - $eventType: $i")
