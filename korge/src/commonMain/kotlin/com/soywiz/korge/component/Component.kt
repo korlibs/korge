@@ -74,15 +74,6 @@ interface TouchComponent : TypedComponent<TouchComponent> {
     fun onTouchEvent(views: Views, e: TouchEvent)
 }
 
-@Deprecated("Use events instead")
-interface GestureComponent : TypedComponent<GestureComponent> {
-    companion object : ComponentType<GestureComponent>
-    override val type get() = Companion
-
-    fun onGestureEvent(views: Views, event: GestureEvent)
-}
-
-
 /**
  * Component whose [onGamepadEvent] is called, whenever
  * a gamepad event occurs in the application (updated a frame, or connected a gamepad).

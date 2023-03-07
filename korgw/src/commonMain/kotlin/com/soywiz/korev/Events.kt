@@ -32,7 +32,12 @@ data class GestureEvent(
             amountY = value
         }
 
-    enum class Type : EventType<GestureEvent> { MAGNIFY, ROTATE, SWIPE, SMART_MAGNIFY }
+    enum class Type : EventType<GestureEvent> {
+        MAGNIFY, ROTATE, SWIPE, SMART_MAGNIFY;
+        companion object {
+            val ALL = values()
+        }
+    }
 
     fun copyFrom(other: GestureEvent) {
         this.type = other.type

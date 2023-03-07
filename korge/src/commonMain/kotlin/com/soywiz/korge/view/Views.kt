@@ -254,9 +254,8 @@ class Views constructor(
                 //this.stage.dispatch(clazz, event)
                 //val stagedViews = getAllDescendantViews(stage, tempViews, true)
                 when (e) {
-                    is GestureEvent ->
-                        stage.forEachComponentOfTypeRecursive(GestureComponent, tempComps) { it.onGestureEvent(views, e) }
-                    is MouseEvent -> stage.dispatch((event as MouseEvent).also { it.target = views })
+                    is GestureEvent -> stage.dispatch(e.also { it.target = views })
+                    is MouseEvent -> stage.dispatch(e.also { it.target = views })
                     is TouchEvent ->
                         stage.forEachComponentOfTypeRecursive(TouchComponent, tempComps) { it.onTouchEvent(views, e) }
                     is ReshapeEvent -> stage.dispatch(viewsResizedEvent.also { it.size = SizeInt(e.width, e.height) })
@@ -269,7 +268,7 @@ class Views constructor(
                             gameWindow.debug = debugViews
                             invalidatedView(stage)
                         }
-                        stage.dispatch(event as KeyEvent)
+                        stage.dispatch(e)
                     }
                     is GamePadConnectionEvent ->
                         stage.forEachComponentOfTypeRecursive(GamepadComponent, tempComps) { it.onGamepadEvent(views, e) }
