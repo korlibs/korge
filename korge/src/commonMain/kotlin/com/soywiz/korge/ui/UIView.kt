@@ -88,11 +88,9 @@ open class UIView(
 		registered = true
 		if (stage.getExtra("uiSupport") == true) return
 		stage.setExtra("uiSupport", true)
-		stage.keys {
-		}
-		stage.getOrCreateComponentUpdateWithViews<DummyUpdateComponentWithViews> { stage ->
-            DummyUpdateComponentWithViews(stage)
-		}
+		stage.keys {}
+        //stage.addUpdaterWithViews { views, dt ->
+        //}
 	}
 
     companion object {
@@ -127,9 +125,4 @@ open class UIFocusableView(
     //        }
     //    }
     //}
-}
-
-internal class DummyUpdateComponentWithViews(override val view: BaseView) : UpdateComponentWithViews {
-    override fun update(views: Views, dt: TimeSpan) {
-    }
 }

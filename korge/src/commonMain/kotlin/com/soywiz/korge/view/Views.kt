@@ -580,11 +580,6 @@ fun View.updateSingleViewWithViewsAll(
 ) {
     dispatch(views.updateEvent.also { it.deltaTime = delta })
     dispatch(views.viewsUpdateEvent.also { it.delta = delta })
-    forEachComponentOfTypeRecursive(UpdateComponentWithViews, tempComps, results) { comp ->
-        comp.update(views, delta * (comp.view as View).globalSpeed)
-    }
-    //updateSingleView(dtMsD, tempComponents)
-    //updateSingleViewWithViews(views, dtMsD, tempComponents)
 }
 
 interface BoundsProvider {

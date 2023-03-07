@@ -437,14 +437,15 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
         }
     }
 
-    inner class MouseEventsUpdate(override val view: View) : UpdateComponentWithViews,
-        Extra by Extra.Mixin() {
-        override fun update(views: Views, dt: TimeSpan) {
-            this@MouseEvents.update(views, dt)
+    inner class MouseEventsUpdate(val view: View) : Extra by Extra.Mixin() {
+        init {
+            view.addUpdaterWithViews { views, dt ->
+                this@MouseEvents.update(views, dt)
+            }
         }
     }
 
-    val updater = MouseEventsUpdate(view).attach()
+    val updater = MouseEventsUpdate(view)
 
     private fun <T> temporalLastEvent(lastEventNew: MouseEvent?, block: () -> T): T {
         val old = lastEvent
@@ -580,9 +581,9 @@ inline fun <T : View> T.onOutOnOver(
     noinline out: @EventsDslMarker (MouseEvents) -> Unit,
     noinline over: @EventsDslMarker (MouseEvents) -> Unit
 ): T {
-    var component: UpdateComponentWithViews? = null
+    var component: Closeable? = null
     onOut { events ->
-        component?.detach()
+        component?.close()
         component = null
         out(events)
     }

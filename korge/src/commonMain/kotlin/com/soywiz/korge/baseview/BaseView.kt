@@ -14,7 +14,6 @@ import com.soywiz.korge.component.MouseComponent
 import com.soywiz.korge.component.ResizeComponent
 import com.soywiz.korge.component.TouchComponent
 import com.soywiz.korge.component.TypedComponent
-import com.soywiz.korge.component.UpdateComponentWithViews
 import com.soywiz.korge.component.cancellable
 import com.soywiz.korge.component.detach
 import com.soywiz.korge.component.removeFromView
@@ -141,7 +140,6 @@ open class BaseView : BaseEventListener() {
     inline fun <reified T : GamepadComponent> getOrCreateComponentGamepad(gen: (BaseView) -> T): T = getOrCreateComponentTyped(GamepadComponent, gen)
     inline fun <reified T : TouchComponent> getOrCreateComponentTouch(gen: (BaseView) -> T): T = getOrCreateComponentTyped(TouchComponent, gen)
     inline fun <reified T : EventComponent> getOrCreateComponentEvent(gen: (BaseView) -> T): T = getOrCreateComponentTyped(EventComponent, gen)
-    inline fun <reified T : UpdateComponentWithViews> getOrCreateComponentUpdateWithViews(gen: (BaseView) -> T): T = getOrCreateComponentTyped(UpdateComponentWithViews, gen)
     inline fun <reified T : ResizeComponent> getOrCreateComponentResize(gen: (BaseView) -> T): T = getOrCreateComponentTyped(ResizeComponent.Companion, gen)
 
 //fun removeComponents(c: KClass<out Component>) { components?.removeAll { it.javaClass.isSubtypeOf(c) } }
@@ -168,16 +166,4 @@ open class BaseView : BaseEventListener() {
         }).cancellable()
     }
 
-    /** Registers a [block] that will be executed once in the next frame that this [View] is displayed with the [Views] singleton */
-    fun deferWithViews(block: (views: Views) -> Unit) {
-        addComponent(DeferWithViewsUpdateComponentWithViews(this@BaseView, block))
-    }
-
-    internal class DeferWithViewsUpdateComponentWithViews(override val view: BaseView, val block: (views: Views) -> Unit) :
-        UpdateComponentWithViews {
-        override fun update(views: Views, dt: TimeSpan) {
-            block(views)
-            detach()
-        }
-    }
 }

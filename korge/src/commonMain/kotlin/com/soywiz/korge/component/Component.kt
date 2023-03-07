@@ -10,8 +10,7 @@ import com.soywiz.korev.KeyEvent
 import com.soywiz.korev.MouseEvent
 import com.soywiz.korev.TouchEvent
 import com.soywiz.korge.baseview.BaseView
-import com.soywiz.korge.view.View
-import com.soywiz.korge.view.Views
+import com.soywiz.korge.view.*
 import com.soywiz.korio.lang.Closeable
 import com.soywiz.korio.lang.CloseableCancellable
 
@@ -166,20 +165,6 @@ interface EventComponent : TypedComponent<EventComponent> {
 }
 
 /**
- * Component whose [update] method is called each frame
- * with the delta milliseconds that has passed since the last frame.
- *
- * It is like [UpdateComponent] but includes a reference to the [Views] itself.
- */
-@Deprecated("Use events instead")
-interface UpdateComponentWithViews : TypedComponent<UpdateComponentWithViews> {
-    companion object : ComponentType<UpdateComponentWithViews>
-    override val type get() = Companion
-
-    fun update(views: Views, dt: TimeSpan)
-}
-
-/**
  * Component whose [resized] method is called everytime the game window
  * has been resized.
  */
@@ -204,7 +189,7 @@ interface ResizeComponent : TypedComponent<ResizeComponent> {
 }
 
 @Deprecated("Use events instead")
-fun <T : BaseView> T.onStageResized(firstTrigger: Boolean = true, block: Views.(width: Int, height: Int) -> Unit): T = this.apply {
+fun <T : View> T.onStageResized(firstTrigger: Boolean = true, block: Views.(width: Int, height: Int) -> Unit): T = this.apply {
     if (firstTrigger) {
         deferWithViews { views -> block(views, views.actualVirtualWidth, views.actualVirtualHeight) }
     }

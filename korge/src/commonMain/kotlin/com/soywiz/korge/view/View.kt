@@ -1552,6 +1552,20 @@ fun <T : View> T.addUpdaterWithViews(updatable: T.(views: Views, dt: TimeSpan) -
     updatable(this@addUpdaterWithViews, it.views, it.delta * this.globalSpeed)
 }
 
+/** Registers a [block] that will be executed once in the next frame that this [View] is displayed with the [Views] singleton */
+fun <T : View> T.deferWithViews(views: Views? = null, tryImmediate: Boolean = true, block: (views: Views) -> Unit): T {
+    if (tryImmediate) {
+        (views ?: this.stage?.views)?.let {
+            block(it)
+            return this
+        }
+    }
+    onNextFrame {
+        block(it)
+    }
+    return this
+}
+
 fun <T : View> T.addOptFixedUpdater(time: TimeSpan = TimeSpan.NIL, updatable: T.(dt: TimeSpan) -> Unit): CloseableCancellable = when (time) {
     TimeSpan.NIL -> addUpdater(updatable)
     else -> addFixedUpdater(time) { updatable(time) }
@@ -1602,13 +1616,14 @@ fun <T : View> T.addFixedUpdater(
 @Deprecated("Use addUpdater instead", ReplaceWith("addUpdater(updatable)"))
 inline fun <T : View> T.onFrame(noinline updatable: T.(dt: TimeSpan) -> Unit): Cancellable = addUpdater(updatable)
 
-fun <T : View> T.onNextFrame(updatable: T.(views: Views) -> Unit): UpdateComponentWithViews = object : UpdateComponentWithViews {
-    override val view: View get() = this@onNextFrame
-    override fun update(views: Views, dt: TimeSpan) {
-        removeFromView()
-        updatable(this@onNextFrame, views)
+fun <T : View> T.onNextFrame(block: T.(views: Views) -> Unit): CloseableCancellable {
+    var closeable: Closeable? = null
+    closeable = addUpdaterWithViews { views, _ ->
+        block(views)
+        closeable?.close()
     }
-}.attach()
+    return closeable
+}
 
 
 /**
