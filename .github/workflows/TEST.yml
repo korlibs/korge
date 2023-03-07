@@ -200,7 +200,7 @@ jobs:
     - { name: Start gradle, run: ./gradlew }
     #- { name: Testing JVM on Linux, uses: GabrielBB/xvfb-action@v1, with: { run: ./gradlew jvmTest } }
     - { name: Testing Kotlin/Native Linux, run: ./gradlew linuxX64Test }
-    - { name: Publish gradle plugin, run: "./gradlew :korge-gradle-plugin:publishToMavenLocal" }
+    - { name: Publish gradle plugin and reload agent, run: "./gradlew :korge-gradle-plugin:publishToMavenLocal :korge-reload-agent:publishToMavenLocal" }
     - { name: Publish X64, run: ./gradlew publishLinuxX64PublicationToMavenLocal publishKotlinMultiplatformPublicationToMavenLocal }
     - { name: Stop gradle daemon, run: ./gradlew --stop }
     - { name: e2e test native, working-directory: e2e-test, run: ./gradlew checkReferencesNative --stacktrace }
@@ -222,7 +222,7 @@ jobs:
     - { name: Testing JVM on MacosX64, run: ./gradlew jvmTest }
     - { name: Archive Test Results, if: failure(), uses: actions/upload-artifact@v3, with: { name: screenshot-test-results-macos, retention-days: 21, path: "**/build/reports", if-no-files-found: ignore } }
     - { name: Testing Kotlin/Native MacosX64, run: ./gradlew macosX64Test }
-    - { name: Publish gradle plugin, run: "./gradlew :korge-gradle-plugin:publishToMavenLocal" }
+    - { name: Publish gradle plugin, run: "./gradlew :korge-gradle-plugin:publishToMavenLocal :korge-reload-agent:publishToMavenLocal" }
     - { name: Publish X64, run: ./gradlew publishMacosX64PublicationToMavenLocal publishKotlinMultiplatformPublicationToMavenLocal }
     - { name: e2e test, working-directory: e2e-test, run: ./gradlew checkReferencesNative --stacktrace }
     - { name: Archive E2E Test Results, if: failure(), uses: actions/upload-artifact@v3, with: { name: e2e-test-results-macos, retention-days: 21, path: "**/e2e-test/build/screenshots", if-no-files-found: ignore } }
@@ -246,7 +246,7 @@ jobs:
     - { name: Testing JVM on windows, shell: cmd, run: "CALL gradlew.bat jvmTest", env: { EGL_LOG_LEVEL: debug, LIBGL_DEBUG: verbose, LIBGL_ALWAYS_SOFTWARE: true, MESA_DEBUG: true } }
     - { name: Archive Test Results, if: failure(), uses: actions/upload-artifact@v3, with: { name: screenshot-test-results-windows, retention-days: 21, path: "**/build/reports", if-no-files-found: ignore } }
     - { name: Testing Kotlin/Native MingwX64Test, shell: cmd, run: CALL gradlew.bat mingwX64Test }
-    - { name: Publish gradle plugin, shell: cmd, run: "CALL gradlew.bat :korge-gradle-plugin:publishToMavenLocal" }
+    - { name: Publish gradle plugin, shell: cmd, run: "CALL gradlew.bat :korge-gradle-plugin:publishToMavenLocal :korge-reload-agent:publishToMavenLocal" }
     - { name: Publish X64, shell: cmd, run: CALL gradlew.bat publishMingwX64PublicationToMavenLocal publishKotlinMultiplatformPublicationToMavenLocal }
     - { name: e2e test, shell: cmd, working-directory: e2e-test, run: CALL gradlew.bat checkReferencesNative --stacktrace }
     - { name: Archive E2E Test Results, if: failure(), uses: actions/upload-artifact@v3, with: { name: e2e-test-results-windows, retention-days: 21, path: "**/e2e-test/build/screenshots", if-no-files-found: ignore } }
