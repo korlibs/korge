@@ -9,11 +9,15 @@ import com.soywiz.korio.lang.*
 import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 
-interface TEvent<T : TEvent<T>> {
-    val type: EventType<T>
+interface BEvent {
+    val type: EventType<out BEvent>
 }
 
-interface EventType<T: TEvent<T>>
+interface TEvent<T : BEvent> : BEvent {
+    override val type: EventType<T>
+}
+
+interface EventType<T : BEvent>
 
 data class GestureEvent(
     override var type: Type = Type.MAGNIFY,
@@ -69,7 +73,7 @@ data class MouseEvent(
 	enum class Type : EventType<MouseEvent> {
         MOVE, DRAG, UP, DOWN, CLICK, ENTER, EXIT, SCROLL;
         companion object {
-            val ALL = arrayOf(MOVE, DRAG, UP, DOWN, CLICK, ENTER, EXIT, SCROLL)
+            val ALL = values()
         }
     }
 
@@ -373,7 +377,12 @@ data class KeyEvent constructor(
     var str: String? = null,
 ) : Event(), TEvent<KeyEvent> {
     //companion object : EventType<KeyEvent>
-    enum class Type : EventType<KeyEvent> { UP, DOWN, TYPE }
+    enum class Type : EventType<KeyEvent> {
+        UP, DOWN, TYPE;
+        companion object {
+            val ALL = values()
+        }
+    }
 
     var deltaTime = TimeSpan.ZERO
 
@@ -488,7 +497,12 @@ class DisposeEvent() : TypedEvent<DisposeEvent>(DisposeEvent) {
 }
 
 data class DropFileEvent(override var type: Type = Type.START, var files: List<VfsFile>? = null) : Event(), TEvent<DropFileEvent> {
-	enum class Type : EventType<DropFileEvent> { START, END, DROP }
+	enum class Type : EventType<DropFileEvent> {
+       START, END, DROP;
+       companion object {
+           val ALL = values()
+       }
+    }
 
     fun copyFrom(other: DropFileEvent) {
         this.type = other.type

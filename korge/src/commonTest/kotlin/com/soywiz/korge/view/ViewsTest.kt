@@ -2,8 +2,7 @@ package com.soywiz.korge.view
 
 import com.soywiz.klock.*
 import com.soywiz.klogger.*
-import com.soywiz.korev.Event
-import com.soywiz.korev.dispatch
+import com.soywiz.korev.*
 import com.soywiz.korge.baseview.BaseView
 import com.soywiz.korge.component.*
 import com.soywiz.korge.tests.ViewsForTesting
@@ -400,48 +399,42 @@ class ViewsTest : ViewsForTesting() {
         assertEquals(0.10, container3.renderColorMul.ad, 0.03)
     }
 
+    class MyEvent(
+        override val type: EventType<MyEvent> = MyEvent.Type.MY
+    ) : Event(), TEvent<MyEvent> {
+        enum class Type : EventType<MyEvent> { MY, OTHER }
+    }
+
     @Test
     fun testDoubleDispatch() = viewsTest {
-        class MyEvent : Event()
-        class MyOtherEvent : Event()
-
-        fun BaseView.addEventComponent(block: (Event) -> Unit) {
-            addComponent(object : EventComponent {
-                override fun onEvent(event: Event) = block(event)
-                override val view: BaseView get() = this@addEventComponent
-            })
-        }
-
         val log = arrayListOf<String>()
 
         container {
-            this.addEventComponent {
-                log.add("Container:${it::class.portableSimpleName}")
-            }
+            this.onEvent(MyEvent.Type.MY, MyEvent.Type.OTHER) { log.add("Container:${it.type}") }
             solidRect(100, 100) {
-                this.addEventComponent {
-                    log.add("SolidRect1:${it::class.portableSimpleName}")
-                    if (it is MyEvent) {
+                this.onEvent(MyEvent.Type.MY, MyEvent.Type.OTHER) {
+                    log.add("SolidRect1:${it.type}")
+                    if (it.type == MyEvent.Type.MY) {
                         this@container.addChildAt(SolidRect(200, 200).apply {
-                            this.addEventComponent {
-                                log.add("SolidRect2:${it::class.portableSimpleName}")
+                            this.onEvent(MyEvent.Type.MY, MyEvent.Type.OTHER) {
+                                log.add("SolidRect2:${it.type}")
                             }
                         }, 0)
-                        views.dispatch(MyOtherEvent())
+                        views.dispatch(MyEvent(MyEvent.Type.OTHER))
                     }
                 }
             }
         }
 
-        views.dispatch(MyEvent())
+        views.dispatch(MyEvent(MyEvent.Type.MY))
 
         assertEquals(
             """
-                SolidRect1:MyEvent
-                SolidRect2:MyOtherEvent
-                SolidRect1:MyOtherEvent
-                Container:MyOtherEvent
-                Container:MyEvent
+                SolidRect1:MY
+                SolidRect2:OTHER
+                SolidRect1:OTHER
+                Container:OTHER
+                Container:MY
             """.trimIndent(),
             log.joinToString("\n")
         )

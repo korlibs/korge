@@ -20,7 +20,6 @@ import kotlinx.coroutines.*
 open class Stage internal constructor(override val views: Views) : FixedSizeContainer()
     , View.Reference
     , CoroutineScope by views
-    , EventDispatcher by EventDispatcher.Mixin()
     , ViewsContainer
     , ResourcesContainer
     , BoundsProvider by views.bp

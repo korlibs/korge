@@ -108,14 +108,3 @@ interface GamepadComponent : TypedComponent<GamepadComponent> {
     fun onGamepadEvent(views: Views, event: GamePadUpdateEvent)
     fun onGamepadEvent(views: Views, event: GamePadConnectionEvent)
 }
-
-/**
- * Component whose [onEvent] method is called when an event has been triggered in that [View].
- */
-@Deprecated("Use events instead")
-interface EventComponent : TypedComponent<EventComponent> {
-    companion object : ComponentType<EventComponent>
-    override val type get() = Companion
-
-    fun onEvent(event: Event)
-}

@@ -21,7 +21,7 @@ class EventListenerTest {
             child.changeEventListenerParent(null)
         }
 
-        override fun <T : TEvent<T>> dispatchChildren(type: EventType<T>, event: T, result: EventResult?) {
+        override fun <T : BEvent> dispatchChildren(type: EventType<T>, event: T, result: EventResult?) {
             for (child in children) {
                 child.dispatch(type, event, result)
             }

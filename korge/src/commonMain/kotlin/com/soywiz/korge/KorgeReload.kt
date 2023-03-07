@@ -1,8 +1,7 @@
 package com.soywiz.korge
 
 import com.soywiz.kmem.Platform
-import com.soywiz.korev.Event
-import com.soywiz.korev.EventDispatcher
+import com.soywiz.korev.*
 import com.soywiz.korinject.AsyncInjector
 import com.soywiz.korio.lang.Environment
 import kotlin.jvm.JvmStatic
@@ -47,7 +46,10 @@ data class ReloadEvent(
     val refreshedClasses: Set<String>,
     /** Was able to reload all classes successfully in the existing class loader */
     val reloadSuccess: Boolean
-) : Event() {
+) : Event(), TEvent<ReloadEvent> {
+    override val type: EventType<ReloadEvent> = ReloadEvent
+    companion object : EventType<ReloadEvent>
+
     val doFullReload: Boolean get() = !reloadSuccess
     fun <T : Any> getReloadedClass(clazz: KClass<T>, injector: AsyncInjector): KClass<T> = KorgeReloadInternal.getReloadedClass(clazz, ReloadClassContext(injector, refreshedClasses))
     fun transferKeepProperties(old: Any, new: Any) = KorgeReloadInternal.transferKeepProperties(old, new)

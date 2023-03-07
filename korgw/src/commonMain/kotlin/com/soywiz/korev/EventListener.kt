@@ -12,9 +12,9 @@ interface EventListener {
     /**
      * Registers a [handler] block to be executed when an event of [type] is [dispatch]ed
      */
-    fun <T : TEvent<T>> onEvent(type: EventType<T>, handler: (T) -> Unit): Closeable
+    fun <T : BEvent> onEvent(type: EventType<T>, handler: (T) -> Unit): Closeable
 
-    fun <T : TEvent<T>> onEvent(vararg type: EventType<T>, handler: (T) -> Unit): Closeable {
+    fun <T : BEvent> onEvent(vararg type: EventType<out T>, handler: (T) -> Unit): Closeable {
         val closeable = CancellableGroup()
         type.fastForEach { closeable += onEvent(it, handler) }
         return closeable
@@ -25,11 +25,11 @@ interface EventListener {
      * Dispatched a [event] of [type] that will execute all the handlers registered with [onEvent]
      * in this object and its children.
      */
-    fun <T : TEvent<T>> dispatch(type: EventType<T>, event: T, result: EventResult? = null)
+    fun <T : BEvent> dispatch(type: EventType<T>, event: T, result: EventResult? = null)
 
-    fun <T : TEvent<T>> dispatch(event: T) = dispatch(event.type, event)
-    fun <T : TEvent<T>> dispatchWithResult(event: T, out: EventResult = EventResult()): EventResult {
-        dispatch(event.type, event, out)
+    fun <T : BEvent> dispatch(event: T): Unit = dispatch((event as TEvent<T>).type, event)
+    fun <T : BEvent> dispatchWithResult(event: T, out: EventResult = EventResult()): EventResult {
+        dispatch((event as TEvent<T>).type, event, out)
         return out
     }
 }
@@ -131,7 +131,7 @@ open class BaseEventListener : EventListenerChildren, Extra {
     @PublishedApi
     internal var __eventListenerStats: FastIdentityMap<EventType<*>, Int>? = null
 
-    protected class Listener<T: TEvent<T>>(val func: (T) -> Unit, val node: ListenerNode<T>, val base: BaseEventListener) : CloseableCancellable {
+    protected class Listener<T: BEvent>(val func: (T) -> Unit, val node: ListenerNode<T>, val base: BaseEventListener) : CloseableCancellable {
         override fun close() {
             if (node.listeners.remove(this)) {
                 base.__updateChildListenerCount(node.type, -1)
@@ -144,12 +144,12 @@ open class BaseEventListener : EventListenerChildren, Extra {
         }
     }
 
-    protected class ListenerNode<T: TEvent<T>>(val type: EventType<T>) {
+    protected class ListenerNode<T: BEvent>(val type: EventType<T>) {
         val listeners = FastArrayList<Listener<T>>()
         val temp = FastArrayList<Listener<T>>()
     }
 
-    fun <T : TEvent<T>> clearEvents(type: EventType<T>) {
+    fun <T : BEvent> clearEvents(type: EventType<T>) {
         val lists = __eventListeners?.get(type)
         val listeners = lists?.listeners
         if (listeners != null) {
@@ -163,14 +163,14 @@ open class BaseEventListener : EventListenerChildren, Extra {
         types.fastForEach { clearEvents(it) }
     }
 
-    final override fun <T : TEvent<T>> onEvent(type: EventType<T>, handler: (T) -> Unit): CloseableCancellable {
+    final override fun <T : BEvent> onEvent(type: EventType<T>, handler: (T) -> Unit): CloseableCancellable {
         if (__eventListeners == null) __eventListeners = FastIdentityMap()
         val lists: ListenerNode<T> = __eventListeners!!.getOrPut(type) { ListenerNode(type) } as ListenerNode<T>
         return Listener(handler, lists, this).also { it.attach() }
     }
 
     // , result: EventResult?
-    final override fun <T : TEvent<T>> dispatch(type: EventType<T>, event: T, result: EventResult?) {
+    final override fun <T : BEvent> dispatch(type: EventType<T>, event: T, result: EventResult?) {
         val eventListenerCount = onEventCount(type)
         if (eventListenerCount <= 0) return
 
@@ -184,7 +184,7 @@ open class BaseEventListener : EventListenerChildren, Extra {
         result?.let { it.iterationCount++ }
     }
 
-    protected open fun <T : TEvent<T>> dispatchChildren(type: EventType<T>, event: T, result: EventResult?) {
+    protected open fun <T : BEvent> dispatchChildren(type: EventType<T>, event: T, result: EventResult?) {
     }
 
     final override fun onEventCount(type: EventType<*>): Int {

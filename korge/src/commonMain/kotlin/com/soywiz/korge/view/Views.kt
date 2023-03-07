@@ -251,7 +251,7 @@ class Views constructor(
         tempCompsPool.alloc { tempComps ->
         //run {
             try {
-                this.stage.dispatch(clazz, event)
+                //this.stage.dispatch(clazz, event)
                 //val stagedViews = getAllDescendantViews(stage, tempViews, true)
                 when (e) {
                     is GestureEvent ->
@@ -275,9 +275,7 @@ class Views constructor(
                         stage.forEachComponentOfTypeRecursive(GamepadComponent, tempComps) { it.onGamepadEvent(views, e) }
                     is GamePadUpdateEvent ->
                         stage.forEachComponentOfTypeRecursive(GamepadComponent, tempComps) { it.onGamepadEvent(views, e) }
-                    else -> {
-                        stage.forEachComponentOfTypeRecursive(EventComponent, tempComps) { it.onEvent(e) }
-                    }
+                    else -> stage.dispatch(e.fastCastTo())
                 }
             } catch (e: PreventDefaultException) {
                 //println("PreventDefaultException.Reason: ${e.reason}")

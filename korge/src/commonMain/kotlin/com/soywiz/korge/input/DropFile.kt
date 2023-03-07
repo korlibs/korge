@@ -14,5 +14,5 @@ import com.soywiz.korge.view.*
  * * [DropFileEvent.Type.END] - When the drag is cancelled or have been executed already.
  */
 fun View.onDropFile(handler: (DropFileEvent) -> Unit) {
-    addOnEvent<DropFileEvent>(handler)
+    onEvent(*DropFileEvent.Type.ALL) { handler }
 }

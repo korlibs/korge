@@ -122,30 +122,4 @@ open class BaseView : BaseEventListener() {
     inline fun <reified T : GestureComponent> getOrCreateComponentGesture(gen: (BaseView) -> T): T = getOrCreateComponentTyped(GestureComponent, gen) as T
     inline fun <reified T : GamepadComponent> getOrCreateComponentGamepad(gen: (BaseView) -> T): T = getOrCreateComponentTyped(GamepadComponent, gen)
     inline fun <reified T : TouchComponent> getOrCreateComponentTouch(gen: (BaseView) -> T): T = getOrCreateComponentTyped(TouchComponent, gen)
-    inline fun <reified T : EventComponent> getOrCreateComponentEvent(gen: (BaseView) -> T): T = getOrCreateComponentTyped(EventComponent, gen)
-
-//fun removeComponents(c: KClass<out Component>) { components?.removeAll { it.javaClass.isSubtypeOf(c) } }
-///** Removes a set of components of the type [c] from the view */
-//@eprecated("")
-//fun removeComponents(c: KClass<out Component>) { _components?.removeAll(c) }
-
-    fun addOnEventAny(handler: (Event) -> Unit): CloseableCancellable {
-        return addComponent(object : EventComponent {
-            override val view: BaseView = this@BaseView
-            override fun onEvent(event: Event) {
-                handler(event)
-            }
-        }).cancellable()
-    }
-
-    @JvmName("addOnEventTyped")
-    inline fun <reified R : Event> addOnEvent(noinline handler: (R) -> Unit): CloseableCancellable {
-        return addComponent(object : EventComponent {
-            override val view: BaseView = this@BaseView
-            override fun onEvent(event: Event) {
-                if (event is R) handler(event)
-            }
-        }).cancellable()
-    }
-
 }

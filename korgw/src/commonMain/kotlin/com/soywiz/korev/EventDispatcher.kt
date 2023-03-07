@@ -76,7 +76,7 @@ inline fun <reified T : Event> EventDispatcher.dispatch(event: T) = dispatch(T::
 
 inline operator fun <T : Event> T.invoke(callback: T.() -> Unit): T = this.apply(callback)
 
-open class TypedEvent<T : TEvent<T>>(open override var type: EventType<T>) : Event(), TEvent<T>
+open class TypedEvent<T : BEvent>(open override var type: EventType<T>) : Event(), TEvent<T>
 
 open class Event {
 	var target: Any? = null

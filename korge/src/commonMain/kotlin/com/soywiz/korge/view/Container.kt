@@ -43,6 +43,8 @@ open class Container(
     @PublishedApi
     override val _children: List<View>? get() = __children
 
+    private var __tempChildren: FastArrayList<View>? = null
+
     inline fun fastForEachChild(block: (child: View) -> Unit) {
         children.fastForEach { child -> block(child) }
     }
@@ -462,13 +464,20 @@ open class Container(
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Event Listeners
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    override fun <T : TEvent<T>> dispatchChildren(type: EventType<T>, event: T, result: EventResult?) {
+    override fun <T : BEvent> dispatchChildren(type: EventType<T>, event: T, result: EventResult?) {
         // @TODO: What if we mutate the list now
-        fastForEachChild {
-            val childEventListenerCount = it.onEventCount(type)
-            if (childEventListenerCount > 0) {
-                it.dispatch(type, event, result)
+        if (__tempChildren == null) __tempChildren = FastArrayList(children.size)
+        __tempChildren!!.clear()
+        __tempChildren!!.addAll(children)
+        try {
+            __tempChildren!!.fastForEach {
+                val childEventListenerCount = it.onEventCount(type)
+                if (childEventListenerCount > 0) {
+                    it.dispatch(type, event, result)
+                }
             }
+        } finally {
+            __tempChildren!!.clear()
         }
     }
 
