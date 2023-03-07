@@ -8,7 +8,6 @@ import com.soywiz.korio.file.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
-import kotlin.jvm.*
 
 interface TEvent<T : TEvent<T>> {
     val type: EventType<T>

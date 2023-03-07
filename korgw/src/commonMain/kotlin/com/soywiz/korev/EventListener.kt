@@ -3,14 +3,14 @@ package com.soywiz.korev
 import com.soywiz.kds.*
 import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.kds.iterators.fastForEachWithTemp
-import com.soywiz.korio.lang.Closeable
+import com.soywiz.korio.lang.*
 
 /**
  * Supports registering for [Event] of [EventType] and dispatching events.
  */
 interface EventListener {
     /**
-     * Registers a [handler] block to be executed when an even of [type] is [dispatch]ed
+     * Registers a [handler] block to be executed when an event of [type] is [dispatch]ed
      */
     fun <T : TEvent<T>> onEvent(type: EventType<T>, handler: (T) -> Unit): Closeable
 
@@ -125,7 +125,7 @@ open class BaseEventListener : EventListenerChildren, Extra {
     @PublishedApi
     internal var __eventListenerStats: MutableMap<EventType<*>, Int>? = null
 
-    protected class Listener<T: TEvent<T>>(val func: (T) -> Unit, val node: ListenerNode<T>, val base: BaseEventListener) : Closeable {
+    protected class Listener<T: TEvent<T>>(val func: (T) -> Unit, val node: ListenerNode<T>, val base: BaseEventListener) : CloseableCancellable {
         override fun close() {
             if (node.listeners.remove(this)) {
                 base.__updateChildListenerCount(node.type, -1)
@@ -157,7 +157,7 @@ open class BaseEventListener : EventListenerChildren, Extra {
         types.fastForEach { clearEvents(it) }
     }
 
-    final override fun <T : TEvent<T>> onEvent(type: EventType<T>, handler: (T) -> Unit): Closeable {
+    final override fun <T : TEvent<T>> onEvent(type: EventType<T>, handler: (T) -> Unit): CloseableCancellable {
         if (__eventListeners == null) __eventListeners = mutableMapOf()
         val lists: ListenerNode<T> = __eventListeners!!.getOrPut(type) { ListenerNode(type) } as ListenerNode<T>
         return Listener(handler, lists, this).also { it.attach() }

@@ -72,6 +72,8 @@ class Views constructor(
     val virtualPixelsPerInch: Double get() = pixelsPerInch / globalToWindowScaleAvg
     val virtualPixelsPerCm: Double get() = virtualPixelsPerInch / DeviceDimensionsProvider.INCH_TO_CM
 
+    val updateEvent = UpdateEvent()
+    val viewsUpdateEvent = ViewsUpdateEvent(this)
 
     val keys get() = input.keys
 
@@ -556,7 +558,8 @@ private fun getAllDescendantViewsBase(view: View, out: FastArrayList<View>, reve
 }
 
 @OptIn(KorgeInternal::class)
-fun View.updateSingleView(delta: TimeSpan, tempComps: FastArrayList<Component> = FastArrayList()) {
+fun View.updateSingleView(delta: TimeSpan, tempComps: FastArrayList<Component> = FastArrayList(), tempUpdate: UpdateEvent = UpdateEvent()) {
+    dispatch(tempUpdate.also { it.delta = delta })
     forEachComponentOfTypeRecursive(UpdateComponent, tempComps) { comp ->
         comp.update(delta * (comp.view as View).globalSpeed)
     }
@@ -578,6 +581,8 @@ fun View.updateSingleViewWithViewsAll(
     tempComps: FastArrayList<Component> = FastArrayList(),
     results: EventResult? = null
 ) {
+    dispatch(views.updateEvent.also { it.delta = delta })
+    dispatch(views.viewsUpdateEvent.also { it.delta = delta })
     forEachComponentOfTypeRecursive(UpdateComponentWithViews, tempComps, results) { comp ->
         comp.update(views, delta * (comp.view as View).globalSpeed)
     }
@@ -681,3 +686,25 @@ fun BoundsProvider.setBoundsInfo(
 }
 
 suspend fun views(): Views = injector().get()
+
+class UpdateEvent(var delta: TimeSpan = TimeSpan.ZERO) : Event(), TEvent<UpdateEvent> {
+    companion object : EventType<UpdateEvent>
+    override val type: EventType<UpdateEvent> get() = UpdateEvent
+
+    fun copyFrom(other: UpdateEvent) {
+        this.delta = other.delta
+    }
+
+    override fun toString(): String = "UpdateEvent(time=$delta)"
+}
+
+class ViewsUpdateEvent(val views: Views, var delta: TimeSpan = TimeSpan.ZERO) : Event(), TEvent<ViewsUpdateEvent> {
+    companion object : EventType<ViewsUpdateEvent>
+    override val type: EventType<ViewsUpdateEvent> get() = ViewsUpdateEvent
+
+    fun copyFrom(other: ViewsUpdateEvent) {
+        this.delta = other.delta
+    }
+
+    override fun toString(): String = "ViewsUpdateEvent(time=$delta)"
+}
