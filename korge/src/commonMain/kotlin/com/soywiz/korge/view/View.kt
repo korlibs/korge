@@ -1626,6 +1626,18 @@ fun <T : View> T.onNextFrame(block: T.(views: Views) -> Unit): CloseableCancella
 }
 
 
+// @TODO: Replace width, height with SizeInt
+fun <T : View> T.onStageResized(firstTrigger: Boolean = true, block: Views.(width: Int, height: Int) -> Unit): T = this.apply {
+    if (firstTrigger) {
+        deferWithViews { views -> block(views, views.actualVirtualWidth, views.actualVirtualHeight) }
+    }
+
+    onEvent(ViewsResizedEvent) {
+        block(it.views, it.views.actualVirtualWidth, it.views.actualVirtualHeight)
+    }
+}
+
+
 /**
  * Returns the number of ancestors of this view.
  * Views without parents return 0.

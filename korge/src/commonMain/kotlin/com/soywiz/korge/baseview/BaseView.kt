@@ -1,27 +1,12 @@
 package com.soywiz.korge.baseview
 
 import com.soywiz.kds.*
-import com.soywiz.kds.iterators.fastForEach
-import com.soywiz.klock.TimeSpan
+import com.soywiz.kds.iterators.*
 import com.soywiz.korev.*
-import com.soywiz.korge.component.Component
-import com.soywiz.korge.component.ComponentType
-import com.soywiz.korge.component.EventComponent
-import com.soywiz.korge.component.GamepadComponent
-import com.soywiz.korge.component.GestureComponent
-import com.soywiz.korge.component.KeyComponent
-import com.soywiz.korge.component.MouseComponent
-import com.soywiz.korge.component.ResizeComponent
-import com.soywiz.korge.component.TouchComponent
-import com.soywiz.korge.component.TypedComponent
-import com.soywiz.korge.component.cancellable
-import com.soywiz.korge.component.detach
-import com.soywiz.korge.component.removeFromView
-import com.soywiz.korge.view.View
-import com.soywiz.korge.view.Views
-import com.soywiz.korio.lang.CloseableCancellable
-import kotlin.collections.set
-import kotlin.jvm.JvmName
+import com.soywiz.korge.component.*
+import com.soywiz.korge.view.*
+import com.soywiz.korio.lang.*
+import kotlin.jvm.*
 
 interface InvalidateNotifier {
     fun invalidatedView(view: BaseView?)
@@ -140,7 +125,6 @@ open class BaseView : BaseEventListener() {
     inline fun <reified T : GamepadComponent> getOrCreateComponentGamepad(gen: (BaseView) -> T): T = getOrCreateComponentTyped(GamepadComponent, gen)
     inline fun <reified T : TouchComponent> getOrCreateComponentTouch(gen: (BaseView) -> T): T = getOrCreateComponentTyped(TouchComponent, gen)
     inline fun <reified T : EventComponent> getOrCreateComponentEvent(gen: (BaseView) -> T): T = getOrCreateComponentTyped(EventComponent, gen)
-    inline fun <reified T : ResizeComponent> getOrCreateComponentResize(gen: (BaseView) -> T): T = getOrCreateComponentTyped(ResizeComponent.Companion, gen)
 
 //fun removeComponents(c: KClass<out Component>) { components?.removeAll { it.javaClass.isSubtypeOf(c) } }
 ///** Removes a set of components of the type [c] from the view */

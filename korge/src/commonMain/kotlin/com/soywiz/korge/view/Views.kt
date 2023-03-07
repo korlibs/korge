@@ -72,8 +72,10 @@ class Views constructor(
     val virtualPixelsPerInch: Double get() = pixelsPerInch / globalToWindowScaleAvg
     val virtualPixelsPerCm: Double get() = virtualPixelsPerInch / DeviceDimensionsProvider.INCH_TO_CM
 
-    val updateEvent = UpdateEvent()
-    val viewsUpdateEvent = ViewsUpdateEvent(this)
+    internal val resizedEvent = ReshapeEvent(0, 0)
+    internal val updateEvent = UpdateEvent()
+    internal val viewsUpdateEvent = ViewsUpdateEvent(this)
+    internal val viewsResizedEvent = ViewsResizedEvent(this)
 
     val keys get() = input.keys
 
@@ -173,8 +175,6 @@ class Views constructor(
 	var scaleAnchor = Anchor.MIDDLE_CENTER
 	var clipBorders = true
 
-	private val resizedEvent = ReshapeEvent(0, 0)
-
     /** Reference to the root node [Stage] */
 	val stage: Stage = stageBuilder(this)
 
@@ -260,8 +260,7 @@ class Views constructor(
                         stage.forEachComponentOfTypeRecursive(MouseComponent, tempComps) { it.onMouseEvent(views, e) }
                     is TouchEvent ->
                         stage.forEachComponentOfTypeRecursive(TouchComponent, tempComps) { it.onTouchEvent(views, e) }
-                    is ReshapeEvent ->
-                        stage.forEachComponentOfTypeRecursive(ResizeComponent, tempComps) { it.resized(views, e.width, e.height) }
+                    is ReshapeEvent -> stage.dispatch(viewsResizedEvent.also { it.size = SizeInt(e.width, e.height) })
                     is KeyEvent -> {
                         input.triggerOldKeyEvent(e)
                         input.keys.triggerKeyEvent(e)
@@ -696,4 +695,15 @@ class ViewsUpdateEvent(val views: Views, var delta: TimeSpan = TimeSpan.ZERO) : 
     }
 
     override fun toString(): String = "ViewsUpdateEvent(time=$delta)"
+}
+
+class ViewsResizedEvent(val views: Views, var size: SizeInt = SizeInt(0, 0)) : Event(), TEvent<ViewsResizedEvent> {
+    companion object : EventType<ViewsResizedEvent>
+    override val type: EventType<ViewsResizedEvent> get() = ViewsResizedEvent
+
+    fun copyFrom(other: ViewsResizedEvent) {
+        this.size = other.size
+    }
+
+    override fun toString(): String = "ViewsResizedEvent(size=$size)"
 }

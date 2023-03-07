@@ -164,38 +164,6 @@ interface EventComponent : TypedComponent<EventComponent> {
     fun onEvent(event: Event)
 }
 
-/**
- * Component whose [resized] method is called everytime the game window
- * has been resized.
- */
-@Deprecated("Use events instead")
-interface ResizeComponent : TypedComponent<ResizeComponent> {
-    override val type get() = Companion
-
-    /**
-     * Includes the [Views] singleton. [width],[height] are [Views.nativeWidth],[Views.nativeHeight].
-     */
-    fun resized(views: Views, width: Int = views.nativeWidth, height: Int = views.nativeHeight)
-
-    companion object : ComponentType<ResizeComponent> {
-        operator fun invoke(view: BaseView, block: Views.(width: Int, height: Int) -> Unit): ResizeComponent =
-            object : ResizeComponent {
-                override val view: BaseView = view
-                override fun resized(views: Views, width: Int, height: Int) {
-                    block(views, width, height)
-                }
-            }
-    }
-}
-
-@Deprecated("Use events instead")
-fun <T : View> T.onStageResized(firstTrigger: Boolean = true, block: Views.(width: Int, height: Int) -> Unit): T = this.apply {
-    if (firstTrigger) {
-        deferWithViews { views -> block(views, views.actualVirtualWidth, views.actualVirtualHeight) }
-    }
-    addComponent(ResizeComponent(this, block))
-}
-
 /*
 open class Component(val view: BaseView) : EventDispatcher by view, Cancellable {
 	val detatchCloseables = arrayListOf<Closeable>()
