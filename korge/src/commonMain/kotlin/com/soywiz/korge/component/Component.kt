@@ -106,26 +106,6 @@ interface GestureComponent : TypedComponent<GestureComponent> {
     fun onGestureEvent(views: Views, event: GestureEvent)
 }
 
-/**
- * Component whose [onKeyEvent] is called,
- * whenever a key is pressed, released or typed.
- *
- * You would normally add key handlers by executing:
- *
- * ```kotlin
- * view.keys {
- *     press { ... }
- *     down { ... }
- *     up { ... }
- * }
- */
-@Deprecated("Use events instead")
-interface KeyComponent : TypedComponent<KeyComponent> {
-    companion object : ComponentType<KeyComponent>
-    override val type get() = Companion
-
-    fun Views.onKeyEvent(event: KeyEvent)
-}
 
 /**
  * Component whose [onGamepadEvent] is called, whenever
@@ -163,32 +143,3 @@ interface EventComponent : TypedComponent<EventComponent> {
 
     fun onEvent(event: Event)
 }
-
-/*
-open class Component(val view: BaseView) : EventDispatcher by view, Cancellable {
-	val detatchCloseables = arrayListOf<Closeable>()
-
-	fun attach() = view.addComponent(this)
-	fun dettach() = view.removeComponent(this)
-	fun afterDetatch() {
-		for (e in detatchCloseables) e.close()
-		detatchCloseables.clear()
-	}
-
-	open fun update(dtMs: Int): Unit = Unit
-
-	override fun <T : Event> addEventListener(clazz: KClass<T>, handler: (T) -> Unit): Closeable {
-		val c = this.view.addEventListener<T>(clazz, handler)
-		detatchCloseables += c
-		return Closeable { detatchCloseables -= c }
-	}
-
-	override fun <T : Event> dispatch(clazz: KClass<T>, event: T) {
-		this.view.dispatch(clazz, event)
-	}
-
-	override fun cancel(e: Throwable) {
-		dettach()
-	}
-}
-*/

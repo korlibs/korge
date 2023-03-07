@@ -262,6 +262,7 @@ class Views constructor(
                         stage.forEachComponentOfTypeRecursive(TouchComponent, tempComps) { it.onTouchEvent(views, e) }
                     is ReshapeEvent -> stage.dispatch(viewsResizedEvent.also { it.size = SizeInt(e.width, e.height) })
                     is KeyEvent -> {
+                        event.target = views
                         input.triggerOldKeyEvent(e)
                         input.keys.triggerKeyEvent(e)
                         if ((e.type == KeyEvent.Type.UP) && supportTogglingDebug && (e.key == Key.F12 || e.key == Key.F7)) {
@@ -269,7 +270,7 @@ class Views constructor(
                             gameWindow.debug = debugViews
                             invalidatedView(stage)
                         }
-                        stage.forEachComponentOfTypeRecursive(KeyComponent, tempComps) { it.apply { this@Views.apply { onKeyEvent(e) } } }
+                        stage.dispatch(event as KeyEvent)
                     }
                     is GamePadConnectionEvent ->
                         stage.forEachComponentOfTypeRecursive(GamepadComponent, tempComps) { it.onGamepadEvent(views, e) }

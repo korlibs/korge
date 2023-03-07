@@ -121,7 +121,6 @@ open class BaseView : BaseEventListener() {
 
     inline fun <reified T : GestureComponent> getOrCreateComponentGesture(gen: (BaseView) -> T): T = getOrCreateComponentTyped(GestureComponent, gen) as T
     inline fun <reified T : MouseComponent> getOrCreateComponentMouse(gen: (BaseView) -> T): T = getOrCreateComponentTyped(MouseComponent, gen) as T
-    inline fun <reified T : KeyComponent> getOrCreateComponentKey(gen: (BaseView) -> T): T = getOrCreateComponentTyped(KeyComponent, gen)
     inline fun <reified T : GamepadComponent> getOrCreateComponentGamepad(gen: (BaseView) -> T): T = getOrCreateComponentTyped(GamepadComponent, gen)
     inline fun <reified T : TouchComponent> getOrCreateComponentTouch(gen: (BaseView) -> T): T = getOrCreateComponentTyped(TouchComponent, gen)
     inline fun <reified T : EventComponent> getOrCreateComponentEvent(gen: (BaseView) -> T): T = getOrCreateComponentTyped(EventComponent, gen)
