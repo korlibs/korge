@@ -373,6 +373,11 @@ open class GameWindow :
     protected val touchEvent get() = touchBuilder.new
     protected val dropFileEvent = DropFileEvent()
 
+    operator fun <TEvent : Event> TEvent.invoke(block: TEvent.() -> Unit): TEvent {
+        block(this)
+        return this
+    }
+
     @KoragExperimental
     suspend fun <T> runBlockingNoJs(block: suspend () -> T): T {
         return runBlockingNoJs(coroutineContext, block)
