@@ -1,9 +1,6 @@
 package com.soywiz.korge.ui
 
 import com.soywiz.kds.*
-import com.soywiz.klock.*
-import com.soywiz.korge.baseview.*
-import com.soywiz.korge.component.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
