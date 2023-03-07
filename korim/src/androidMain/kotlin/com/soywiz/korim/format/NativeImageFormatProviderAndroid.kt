@@ -240,19 +240,10 @@ class AndroidContext2dRenderer(val bmp: android.graphics.Bitmap, val antialiasin
         }
         //kotlin.io.println("Path:")
         this.visitCmds(
-            moveTo = { (x, y) -> out.moveTo(x.toFloat(), y.toFloat()) },
-            lineTo = { (x, y) -> out.lineTo(x.toFloat(), y.toFloat()) },
-            quadTo = { (cx, cy), (ax, ay) -> out.quadTo(cx.toFloat(), cy.toFloat(), ax.toFloat(), ay.toFloat()) },
-            cubicTo = { (cx1, cy1), (cx2, cy2), (ax, ay) ->
-                out.cubicTo(
-                    cx1.toFloat(),
-                    cy1.toFloat(),
-                    cx2.toFloat(),
-                    cy2.toFloat(),
-                    ax.toFloat(),
-                    ay.toFloat()
-                )
-            },
+            moveTo = { (x, y) -> out.moveTo(x, y) },
+            lineTo = { (x, y) -> out.lineTo(x, y) },
+            quadTo = { (cx, cy), (ax, ay) -> out.quadTo(cx, cy, ax, ay) },
+            cubicTo = { (cx1, cy1), (cx2, cy2), (ax, ay) -> out.cubicTo(cx1, cy1, cx2, cy2, ax, ay) },
             close = { out.close() }
         )
         //kotlin.io.println("/Path")
@@ -353,12 +344,7 @@ class AndroidContext2dRenderer(val bmp: android.graphics.Bitmap, val antialiasin
         keep {
             if (state.clip != null) {
                 val clipPath = state.clip!!.toAndroid(androidClipPath, winding)
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                //if (false) {
-                    canvas.clipOutPath(clipPath)
-                } else {
-                    canvas.clipPath(clipPath, Region.Op.DIFFERENCE)
-                }
+                canvas.clipPath(clipPath)
             }
 
             paint.style = if (fill) Paint.Style.FILL else android.graphics.Paint.Style.STROKE
