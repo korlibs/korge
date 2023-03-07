@@ -19,11 +19,12 @@ interface EventListener {
      * in this object and its children.
      */
     fun <T : TEvent<T>> dispatch(type: EventType<T>, event: T, result: EventResult? = null)
+
+    fun <T : TEvent<T>> dispatch(event: T) = dispatch(event.type, event)
+    fun <T : TEvent<T>> dispatchWithResult(event: T): EventResult =
+        EventResult().also { dispatch(event.type, event, it) }
 }
 
-fun <T : TEvent<T>> EventListener.dispatchSimple(event: T) = dispatch(event.type, event)
-fun <T : TEvent<T>> EventListener.dispatchWithResult(event: T): EventResult =
-    EventResult().also { dispatch(event.type, event, it) }
 
 data class EventResult(
     var iterationCount: Int = 0,
@@ -103,7 +104,7 @@ class EventListenerFastMap<K, V> {
 }
 
 open class BaseEventListener : EventListenerChildren {
-    protected open val baseParent: BaseEventListener? get() = null
+    protected open val eventListenerParent: BaseEventListener? get() = null
     /** @TODO: Critical. Consider two lists */
     private var __eventListeners: MutableMap<EventType<*>, ListenerNode>? = null
     /** @TODO: Critical. Consider a list and a [com.soywiz.kds.IntArrayList] */
@@ -178,7 +179,7 @@ open class BaseEventListener : EventListenerChildren {
         if (delta == 0) return
         if (__eventListenerStats == null) __eventListenerStats = mutableMapOf()
         __eventListenerStats?.put(type, __eventListenerStats!!.getOrElse(type) { 0 } + delta)
-        baseParent?.__updateChildListenerCount(type, delta)
+        eventListenerParent?.__updateChildListenerCount(type, delta)
     }
 
     protected fun __updateChildListenerCount(child: BaseEventListener, add: Boolean) {
