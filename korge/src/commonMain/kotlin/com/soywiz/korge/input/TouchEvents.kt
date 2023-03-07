@@ -9,7 +9,7 @@ import com.soywiz.korge.view.*
 import com.soywiz.korio.async.*
 import com.soywiz.korma.geom.*
 
-class TouchEvents(override val view: View) : TouchComponent {
+class TouchEvents(val view: View) {
     data class Info(
         var index: Int = -1,
         var id: Int = 0,
@@ -72,10 +72,15 @@ class TouchEvents(override val view: View) : TouchComponent {
         onTouchEvent(views, ev)
 
         view.mouse.click(view.mouse)
-
     }
 
-    override fun onTouchEvent(views: Views, e: TouchEvent) {
+    init {
+        view.onEvent(*TouchEvent.Type.ALL) { e ->
+            onTouchEvent(e.target as Views, e)
+        }
+    }
+
+    private fun onTouchEvent(views: Views, e: TouchEvent) {
         infos.clear()
 
         //println("onTouchEvents: $e")
@@ -131,7 +136,7 @@ class TouchEvents(override val view: View) : TouchComponent {
     }
 }
 
-val View.touch: TouchEvents get() = getOrCreateComponentTouch { TouchEvents(this) }
+val View.touch: TouchEvents by Extra.PropertyThis { TouchEvents(this) }
 fun View.touch(block: TouchEvents.() -> Unit) = block(touch)
 
 // @TODO: Handle several views covering other views (like MouseEvents)

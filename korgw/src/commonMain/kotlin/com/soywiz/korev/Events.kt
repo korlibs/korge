@@ -282,7 +282,12 @@ data class TouchEvent(
     var scaleCoords: Boolean = true,
     var emulated: Boolean = false
 ) : Event(), TEvent<TouchEvent> {
-    enum class Type : EventType<TouchEvent> { START, END, MOVE, HOVER, UNKNOWN }
+    enum class Type : EventType<TouchEvent> {
+        START, END, MOVE, HOVER, UNKNOWN;
+        companion object {
+            val ALL = values()
+        }
+    }
 
     companion object {
         val MAX_TOUCHES = 10

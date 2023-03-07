@@ -1,18 +1,8 @@
 package com.soywiz.korge.component
 
-import com.soywiz.klock.TimeSpan
-import com.soywiz.klock.milliseconds
-import com.soywiz.korev.Event
-import com.soywiz.korev.GamePadConnectionEvent
-import com.soywiz.korev.GamePadUpdateEvent
-import com.soywiz.korev.GestureEvent
-import com.soywiz.korev.KeyEvent
-import com.soywiz.korev.MouseEvent
-import com.soywiz.korev.TouchEvent
-import com.soywiz.korge.baseview.BaseView
+import com.soywiz.korge.baseview.*
 import com.soywiz.korge.view.*
-import com.soywiz.korio.lang.Closeable
-import com.soywiz.korio.lang.CloseableCancellable
+import com.soywiz.korio.lang.*
 
 @Deprecated("Use events instead")
 interface ComponentType<T : Component>
@@ -60,16 +50,4 @@ fun <T : Component> T.detach(): T {
 @Deprecated("Use events instead")
 fun Component.removeFromView() {
     close()
-}
-
-/**
- * Component whose [onTouchEvent] is called,
- * whenever a touch event happens.
- */
-@Deprecated("Use events instead")
-interface TouchComponent : TypedComponent<TouchComponent> {
-    companion object : ComponentType<TouchComponent>
-    override val type get() = Companion
-
-    fun onTouchEvent(views: Views, e: TouchEvent)
 }

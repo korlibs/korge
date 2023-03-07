@@ -118,6 +118,4 @@ open class BaseView : BaseEventListener() {
         return (getComponentsOfType(type)?.firstOrNull { it is TR } as? TR?)
             ?: (addComponent(gen(this)) as TR)
     }
-
-    inline fun <reified T : TouchComponent> getOrCreateComponentTouch(gen: (BaseView) -> T): T = getOrCreateComponentTyped(TouchComponent, gen)
 }
