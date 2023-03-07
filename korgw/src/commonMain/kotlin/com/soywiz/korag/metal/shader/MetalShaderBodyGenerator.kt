@@ -1,4 +1,4 @@
-package com.soywiz.metal.shader
+package com.soywiz.korag.metal.shader
 
 import com.soywiz.korag.*
 import com.soywiz.korag.shader.*

@@ -1,4 +1,4 @@
-package com.soywiz.metal.shader
+package com.soywiz.korag.metal.shader
 
 import com.soywiz.korag.*
 import com.soywiz.korag.shader.*
@@ -84,7 +84,13 @@ class MetalShaderGenerator(
                 "${parameterModifier.first} ${generator.typeToString(variableWithOffset.type)}${parameterModifier.second} ${variableWithOffset.name} [[buffer($index)]]"
             }
 
-        "vertex v2f $vertexMainFunctionName(${parameters.joinToString(",")})" {
+        line("vertex v2f $vertexMainFunctionName(")
+        indent {
+            for ((index, parameter) in parameters.withIndex()) {
+                line(if (index == parameters.size - 1) parameter else "$parameter,")
+            }
+        }
+        ")" {
             line("v2f out;")
             generator.visit(vertexShader.stm)
             line(generator.programIndenter)
@@ -117,7 +123,13 @@ class MetalShaderGenerator(
             }
 
 
-        "fragment float4 $fragmentMainFunctionName(${parameters.joinToString(",")})" {
+        line("fragment float4 $fragmentMainFunctionName(")
+        indent {
+            for ((index, parameter) in parameters.withIndex()) {
+                line(if (index == parameters.size - 1) parameter else "$parameter,")
+            }
+        }
+        line(")") {
             line("float4 out;")
             generator.visit(fragmentShader.stm)
             line(generator.programIndenter)
