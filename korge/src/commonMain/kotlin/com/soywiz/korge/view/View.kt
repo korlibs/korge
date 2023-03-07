@@ -45,11 +45,6 @@ import kotlin.math.*
  * [View] implements the [Extra] interface, thus allows to add arbitrary typed properties.
  * [View] implements the [EventDispatcher] interface, and allows to handle and dispatch events.
  *
- * ## Components
- *
- * Views can have zero or more [Component]s attached. [Component] handle the behaviour of the [View] under several events.
- * For example, the [UpdateComponent] will trigger its [UpdateComponent.update] method each frame.
- *
  * For views with [Updatable] components, [View] include a [speed] property where 1 is 1x and 2 is 2x the speed.
  */
 @OptIn(KorgeInternal::class)
@@ -202,7 +197,7 @@ abstract class View internal constructor(
         get() = _index
         internal set(value) { _index = value }
 
-    /** Ratio speed of this node, affecting all the [UpdateComponent] */
+    /** Ratio speed of this node, affecting all the [View.addUpdater] */
     @ViewProperty(min = -1.0, max = 1.0, clampMin = false, clampMax = false)
     var speed: Double = 1.0
 
@@ -1547,11 +1542,11 @@ fun View?.commonAncestor(ancestor: View?): View? = View.commonAncestor(this, anc
 fun View.replaceWith(view: View): Boolean = this.parent?.replaceChild(this, view) ?: false
 
 /** Adds a block that will be executed per frame to this view. As parameter the block will receive a [TimeSpan] with the time elapsed since the previous frame. */
-fun <T : View> T.addUpdater(first: Boolean = true, updatable: T.(dt: TimeSpan) -> Unit): CloseableCancellable {
-    if (first) updatable(this, TimeSpan.ZERO)
-    return onEvent(UpdateEvent) { updatable(this, it.delta * this.globalSpeed) }
+fun <T : View> T.addUpdater(first: Boolean = true, firstTime: TimeSpan = TimeSpan.ZERO, updatable: T.(dt: TimeSpan) -> Unit): CloseableCancellable {
+    if (first) updatable(this, firstTime)
+    return onEvent(UpdateEvent) { updatable(this, it.deltaTime * this.globalSpeed) }
 }
-fun <T : View> T.addUpdater(updatable: T.(dt: TimeSpan) -> Unit): CloseableCancellable = addUpdater(true, updatable)
+fun <T : View> T.addUpdater(updatable: T.(dt: TimeSpan) -> Unit): CloseableCancellable = addUpdater(true, updatable = updatable)
 
 fun <T : View> T.addUpdaterWithViews(updatable: T.(views: Views, dt: TimeSpan) -> Unit): CloseableCancellable = onEvent(ViewsUpdateEvent) {
     updatable(this@addUpdaterWithViews, it.views, it.delta * this.globalSpeed)
@@ -1571,18 +1566,17 @@ fun <T : View> T.addFixedUpdater(
 
 /**
  * Adds an [updatable] block that will be executed every [time] time, the calls will be discretized on each frame and will handle accumulations.
- * The [initial] properly allows to adjust if the [updatable] will be called immediately after calling this function.
+ * The [first] properly allows to adjust if the [updatable] will be called immediately after calling this function.
  * To avoid executing too many blocks, when there is a long pause, [limitCallsPerFrame] limits the number of times the block can be executed in a single frame.
  */
 fun <T : View> T.addFixedUpdater(
     time: TimeSpan,
-    initial: Boolean = true,
+    first: Boolean = true,
     limitCallsPerFrame: Int = 16,
     updatable: T.() -> Unit
-): CloseableCancellable = object : UpdateComponent {
+): CloseableCancellable {
     var accum = 0.0.milliseconds
-    override val view: View get() = this@addFixedUpdater
-    override fun update(dt: TimeSpan) {
+    return addUpdater(first = first, firstTime = time) { dt ->
         accum += dt
         //println("UPDATE: accum=$accum, tickTime=$tickTime")
         var calls = 0
@@ -1602,10 +1596,6 @@ fun <T : View> T.addFixedUpdater(
                 accum = 0.0.milliseconds
             }
         }
-    }
-}.attach().also {
-    if (initial) {
-        updatable(this@addFixedUpdater)
     }
 }
 

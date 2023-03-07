@@ -14,7 +14,6 @@ import com.soywiz.korge.component.MouseComponent
 import com.soywiz.korge.component.ResizeComponent
 import com.soywiz.korge.component.TouchComponent
 import com.soywiz.korge.component.TypedComponent
-import com.soywiz.korge.component.UpdateComponent
 import com.soywiz.korge.component.UpdateComponentWithViews
 import com.soywiz.korge.component.cancellable
 import com.soywiz.korge.component.detach
@@ -143,7 +142,6 @@ open class BaseView : BaseEventListener() {
     inline fun <reified T : TouchComponent> getOrCreateComponentTouch(gen: (BaseView) -> T): T = getOrCreateComponentTyped(TouchComponent, gen)
     inline fun <reified T : EventComponent> getOrCreateComponentEvent(gen: (BaseView) -> T): T = getOrCreateComponentTyped(EventComponent, gen)
     inline fun <reified T : UpdateComponentWithViews> getOrCreateComponentUpdateWithViews(gen: (BaseView) -> T): T = getOrCreateComponentTyped(UpdateComponentWithViews, gen)
-    inline fun <reified T : UpdateComponent> getOrCreateComponentUpdate(gen: (BaseView) -> T): T = getOrCreateComponentTyped(UpdateComponent, gen)
     inline fun <reified T : ResizeComponent> getOrCreateComponentResize(gen: (BaseView) -> T): T = getOrCreateComponentTyped(ResizeComponent.Companion, gen)
 
 //fun removeComponents(c: KClass<out Component>) { components?.removeAll { it.javaClass.isSubtypeOf(c) } }

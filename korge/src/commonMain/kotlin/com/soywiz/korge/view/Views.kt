@@ -559,10 +559,7 @@ private fun getAllDescendantViewsBase(view: View, out: FastArrayList<View>, reve
 
 @OptIn(KorgeInternal::class)
 fun View.updateSingleView(delta: TimeSpan, tempComps: FastArrayList<Component> = FastArrayList(), tempUpdate: UpdateEvent = UpdateEvent()) {
-    dispatch(tempUpdate.also { it.delta = delta })
-    forEachComponentOfTypeRecursive(UpdateComponent, tempComps) { comp ->
-        comp.update(delta * (comp.view as View).globalSpeed)
-    }
+    dispatch(tempUpdate.also { it.deltaTime = delta })
 }
 
 //@OptIn(KorgeInternal::class)
@@ -581,13 +578,10 @@ fun View.updateSingleViewWithViewsAll(
     tempComps: FastArrayList<Component> = FastArrayList(),
     results: EventResult? = null
 ) {
-    dispatch(views.updateEvent.also { it.delta = delta })
+    dispatch(views.updateEvent.also { it.deltaTime = delta })
     dispatch(views.viewsUpdateEvent.also { it.delta = delta })
     forEachComponentOfTypeRecursive(UpdateComponentWithViews, tempComps, results) { comp ->
         comp.update(views, delta * (comp.view as View).globalSpeed)
-    }
-    forEachComponentOfTypeRecursive(UpdateComponent, tempComps, results) { comp ->
-        comp.update(delta * (comp.view as View).globalSpeed)
     }
     //updateSingleView(dtMsD, tempComponents)
     //updateSingleViewWithViews(views, dtMsD, tempComponents)
@@ -687,15 +681,15 @@ fun BoundsProvider.setBoundsInfo(
 
 suspend fun views(): Views = injector().get()
 
-class UpdateEvent(var delta: TimeSpan = TimeSpan.ZERO) : Event(), TEvent<UpdateEvent> {
+class UpdateEvent(var deltaTime: TimeSpan = TimeSpan.ZERO) : Event(), TEvent<UpdateEvent> {
     companion object : EventType<UpdateEvent>
     override val type: EventType<UpdateEvent> get() = UpdateEvent
 
     fun copyFrom(other: UpdateEvent) {
-        this.delta = other.delta
+        this.deltaTime = other.deltaTime
     }
 
-    override fun toString(): String = "UpdateEvent(time=$delta)"
+    override fun toString(): String = "UpdateEvent(time=$deltaTime)"
 }
 
 class ViewsUpdateEvent(val views: Views, var delta: TimeSpan = TimeSpan.ZERO) : Event(), TEvent<ViewsUpdateEvent> {

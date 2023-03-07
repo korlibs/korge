@@ -58,7 +58,7 @@ class ViewsTest : ViewsForTesting() {
     fun testFixedUpdaterLimit() {
         val view = DummyView()
         var ticks = 0
-        view.addFixedUpdater(1.seconds / 60, initial = true, limitCallsPerFrame = 6) {
+        view.addFixedUpdater(1.seconds / 60, first = true, limitCallsPerFrame = 6) {
             ticks++
         }
         assertEquals(1, ticks)

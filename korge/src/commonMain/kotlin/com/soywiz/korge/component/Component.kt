@@ -20,7 +20,7 @@ interface ComponentType<T : Component>
 
 /**
  * An interface that allows to control the behaviour of a [View] after some events.
- * The most common case of Component is the [UpdateComponent]
+ * The most common case of Component is the
  */
 @Deprecated("Use events instead")
 interface Component : CloseableCancellable {
@@ -177,42 +177,6 @@ interface UpdateComponentWithViews : TypedComponent<UpdateComponentWithViews> {
     override val type get() = Companion
 
     fun update(views: Views, dt: TimeSpan)
-}
-
-/**
- * Component whose [update] method is called each frame
- * with the delta milliseconds that has passed since the last frame.
- *
- * In the case you need the [Views] object, you can use [UpdateComponentWithViews] instead.
- *
- * The typical way of adding an update component to a view is by calling:
- *
- * ```kotlin
- * view.addUpdater { dt -> ... }
- * ```
- */
-@Deprecated("Use events instead")
-interface UpdateComponent : TypedComponent<UpdateComponent> {
-    companion object : ComponentType<UpdateComponent>
-    override val type get() = Companion
-
-    fun update(dt: TimeSpan)
-}
-
-@Deprecated("Use events instead")
-abstract class FixedUpdateComponent(override val view: BaseView, val step: TimeSpan, val maxAccumulated: Int = 10) : UpdateComponent {
-    var accumulated = 0.milliseconds
-    final override fun update(dt: TimeSpan) {
-        accumulated += dt
-        if (accumulated >= step * maxAccumulated) {
-            accumulated = step * maxAccumulated
-        }
-        while (accumulated >= step) {
-            accumulated -= step
-            update()
-        }
-    }
-    abstract fun update(): Unit
 }
 
 /**
