@@ -1,7 +1,6 @@
 package com.soywiz.korge.animate
 
 import com.soywiz.klock.*
-import com.soywiz.korge.component.*
 import com.soywiz.korge.view.*
 import com.soywiz.korio.util.*
 import com.soywiz.korma.interpolation.*

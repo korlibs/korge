@@ -2,30 +2,16 @@
 
 package com.soywiz.korge.tween
 
-import com.soywiz.kds.iterators.fastForEach
-import com.soywiz.klock.TimeSpan
-import com.soywiz.klock.clamp
-import com.soywiz.klock.coalesce
-import com.soywiz.klock.milliseconds
-import com.soywiz.klock.nanoseconds
-import com.soywiz.klock.seconds
+import com.soywiz.kds.iterators.*
+import com.soywiz.klock.*
 import com.soywiz.kmem.*
-import com.soywiz.korge.baseview.BaseView
-import com.soywiz.korge.component.attach
-import com.soywiz.korge.component.detach
+import com.soywiz.korge.baseview.*
 import com.soywiz.korge.view.*
-import com.soywiz.korio.async.asyncImmediately
-import com.soywiz.korio.async.delay
-import com.soywiz.korio.async.withTimeout
+import com.soywiz.korio.async.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korma.interpolation.*
-import kotlinx.coroutines.CancellableContinuation
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.TimeoutCancellationException
-import kotlinx.coroutines.suspendCancellableCoroutine
-import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.coroutineContext
-import kotlin.coroutines.resume
+import kotlinx.coroutines.*
+import kotlin.coroutines.*
 
 class TweenComponent(
     val view: BaseView,

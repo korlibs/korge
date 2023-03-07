@@ -3,14 +3,11 @@ package com.soywiz.korge.view
 import com.soywiz.klock.*
 import com.soywiz.klogger.*
 import com.soywiz.korev.*
-import com.soywiz.korge.baseview.BaseView
-import com.soywiz.korge.component.*
 import com.soywiz.korge.tests.ViewsForTesting
 import com.soywiz.korge.tween.get
 import com.soywiz.korge.tween.tween
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.color.Colors
-import com.soywiz.korio.lang.portableSimpleName
 import com.soywiz.korio.util.niceStr
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.circle

@@ -480,15 +480,6 @@ open class Container(
             __tempChildren!!.clear()
         }
     }
-
-    override fun <T : Component> getComponentOfTypeRecursiveChildren(type: ComponentType<T>, out: FastArrayList<T>, results: EventResult?) {
-        fastForEachChild {
-            val childEventListenerCount = it.getComponentCountInDescendants(type)
-            if (childEventListenerCount > 0) {
-                it.getComponentOfTypeRecursive(type, out, results)
-            }
-        }
-    }
 }
 
 /**

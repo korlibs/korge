@@ -11,7 +11,6 @@ import com.soywiz.korge.*
 import com.soywiz.korge.annotations.*
 import com.soywiz.korge.baseview.*
 import com.soywiz.korge.bitmapfont.*
-import com.soywiz.korge.component.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.render.*
@@ -194,7 +193,6 @@ class Views constructor(
 	var lastTime = timeProvider.now()
 
     private val tempViewsPool = Pool { FastArrayList<View>() }
-    private val tempCompsPool = Pool { FastArrayList<Component>() }
     //private val tempViews = FastArrayList<View>()
 	private val virtualSize = MSizeInt()
 	private val actualSize = MSizeInt()
@@ -248,35 +246,33 @@ class Views constructor(
 	@Suppress("EXPERIMENTAL_API_USAGE")
     override fun <T : Event> dispatch(clazz: KClass<T>, event: T) {
 		val e = event
-        tempCompsPool.alloc { tempComps ->
-        //run {
-            try {
-                //this.stage.dispatch(clazz, event)
-                //val stagedViews = getAllDescendantViews(stage, tempViews, true)
-                when (e) {
-                    is GestureEvent -> stage.dispatch(e.also { it.target = views })
-                    is MouseEvent -> stage.dispatch(e.also { it.target = views })
-                    is TouchEvent -> stage.dispatch(e.also { it.target = views })
-                    is ReshapeEvent -> stage.dispatch(viewsResizedEvent.also { it.size = SizeInt(e.width, e.height) })
-                    is KeyEvent -> {
-                        event.target = views
-                        input.triggerOldKeyEvent(e)
-                        input.keys.triggerKeyEvent(e)
-                        if ((e.type == KeyEvent.Type.UP) && supportTogglingDebug && (e.key == Key.F12 || e.key == Key.F7)) {
-                            debugViews = !debugViews
-                            gameWindow.debug = debugViews
-                            invalidatedView(stage)
-                        }
-                        stage.dispatch(e)
+        try {
+            //this.stage.dispatch(clazz, event)
+            //val stagedViews = getAllDescendantViews(stage, tempViews, true)
+            when (e) {
+                is GestureEvent -> stage.dispatch(e.also { it.target = views })
+                is MouseEvent -> stage.dispatch(e.also { it.target = views })
+                is TouchEvent -> stage.dispatch(e.also { it.target = views })
+                is ReshapeEvent -> stage.dispatch(viewsResizedEvent.also { it.size = SizeInt(e.width, e.height) })
+                is KeyEvent -> {
+                    event.target = views
+                    input.triggerOldKeyEvent(e)
+                    input.keys.triggerKeyEvent(e)
+                    if ((e.type == KeyEvent.Type.UP) && supportTogglingDebug && (e.key == Key.F12 || e.key == Key.F7)) {
+                        debugViews = !debugViews
+                        gameWindow.debug = debugViews
+                        invalidatedView(stage)
                     }
-                    is GamePadConnectionEvent -> stage.dispatch(e.also { it.target = views })
-                    is GamePadUpdateEvent -> stage.dispatch(e.also { it.target = views })
-                    else -> stage.dispatch(e.fastCastTo())
+                    stage.dispatch(e)
                 }
-            } catch (e: PreventDefaultException) {
-                //println("PreventDefaultException.Reason: ${e.reason}")
+                is GamePadConnectionEvent -> stage.dispatch(e.also { it.target = views })
+                is GamePadUpdateEvent -> stage.dispatch(e.also { it.target = views })
+                else -> stage.dispatch(e.fastCastTo())
             }
+        } catch (e: PreventDefaultException) {
+            //println("PreventDefaultException.Reason: ${e.reason}")
         }
+
 	}
 
 	fun render() {
@@ -343,11 +339,9 @@ class Views constructor(
 		//println(this)
 		//println("Update: $elapsed")
 		input.startFrame(elapsed)
-        tempCompsPool.alloc { compList ->
-            eventResults.reset()
-            stage.updateSingleViewWithViewsAll(this, elapsed, compList, eventResults)
-            //println("Views.update:eventResults=$eventResults")
-        }
+        eventResults.reset()
+        stage.updateSingleViewWithViewsAll(this, elapsed)
+        //println("Views.update:eventResults=$eventResults")
 		input.endFrame(elapsed)
 	}
 
@@ -551,7 +545,7 @@ private fun getAllDescendantViewsBase(view: View, out: FastArrayList<View>, reve
 }
 
 @OptIn(KorgeInternal::class)
-fun View.updateSingleView(delta: TimeSpan, tempComps: FastArrayList<Component> = FastArrayList(), tempUpdate: UpdateEvent = UpdateEvent()) {
+fun View.updateSingleView(delta: TimeSpan, tempUpdate: UpdateEvent = UpdateEvent()) {
     dispatch(tempUpdate.also { it.deltaTime = delta })
 }
 
@@ -568,8 +562,6 @@ fun View.updateSingleView(delta: TimeSpan, tempComps: FastArrayList<Component> =
 fun View.updateSingleViewWithViewsAll(
     views: Views,
     delta: TimeSpan,
-    tempComps: FastArrayList<Component> = FastArrayList(),
-    results: EventResult? = null
 ) {
     dispatch(views.updateEvent.also { it.deltaTime = delta })
     dispatch(views.viewsUpdateEvent.also { it.delta = delta })
