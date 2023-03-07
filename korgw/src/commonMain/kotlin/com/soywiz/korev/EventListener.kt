@@ -217,7 +217,7 @@ open class BaseEventListener : EventListenerChildren, Extra {
         eventListenerParent?.__updateChildListenerCount(type, delta)
     }
 
-    protected fun __updateChildListenerCount(child: BaseEventListener, add: Boolean) {
+    private fun __updateChildListenerCount(child: BaseEventListener, add: Boolean) {
         //println("__updateChildListenerCount[$this]:view=$view,add=$add")
         child.__iterateListenerCount { eventType, i ->
             //println("   - $eventType: $i")

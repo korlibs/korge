@@ -413,7 +413,6 @@ open class Container(
         onChildAdded(view)
         invalidateZIndexChildren()
         invalidateContainer()
-        __updateChildListenerCount(view, add = true)
     }
 
     /**
@@ -432,7 +431,6 @@ open class Container(
         view.parent = null
         view.index = -1
         invalidateZIndexChildren()
-        __updateChildListenerCount(view, add = false)
         invalidateContainer()
         return true
     }
@@ -445,9 +443,6 @@ open class Container(
     fun replaceChild(old: View, new: View): Boolean {
         if (old === new) return false
         if (old.parent != this) return false
-
-        __updateChildListenerCount(old, add = false)
-        if (new.parent !== this) __updateChildListenerCount(new, add = true)
 
         invalidateContainer()
         invalidateZIndexChildren()
