@@ -1,6 +1,6 @@
 package com.soywiz.korge.baseview
 
-import com.soywiz.kds.FastArrayList
+import com.soywiz.kds.*
 import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.klock.TimeSpan
 import com.soywiz.korev.Event
@@ -32,7 +32,9 @@ interface InvalidateNotifier {
 }
 
 //open class BaseView : BaseEventListener() {
-open class BaseView {
+open class BaseView : Extra {
+    override var extra: ExtraType = null
+
     protected open val baseParent: BaseView? get() = null
     //protected override val baseParent: BaseView? get() = null
 
@@ -185,57 +187,4 @@ open class BaseView {
             detach()
         }
     }
-
-
-
-    // region Properties
-    private val _props = linkedMapOf<String, Any?>()
-
-    /** Immutable map of custom String properties attached to this view. Should use [hasProp], [getProp] and [addProp] methods to control this */
-    val props: Map<String, Any?> get() = _props
-
-    /** Checks if this view has the [key] property */
-    fun hasProp(key: String) = key in _props
-
-    /** Gets the [key] property of this view as a [String] or [default] when not found */
-    fun getPropString(key: String, default: String = "") = _props[key]?.toString() ?: default
-
-    /** Gets the [key] property of this view as an [Double] or [default] when not found */
-    fun getPropDouble(key: String, default: Double = 0.0): Double {
-        val value = _props[key]
-        if (value is Number) return value.toDouble()
-        if (value is String) return value.toDoubleOrNull() ?: default
-        return default
-    }
-
-    /** Gets the [key] property of this view as an [Int] or [default] when not found */
-    fun getPropInt(key: String, default: Int = 0) = getPropDouble(key, default.toDouble()).toInt()
-
-    /** Adds or replaces the property [key] with the [value] */
-    fun addProp(key: String, value: Any?) {
-        _props[key] = value
-        //val componentGen = views.propsTriggers[key]
-        //if (componentGen != null) {
-        //	componentGen(this, key, value)
-        //}
-    }
-
-    /** Adds a list of [values] properties at once */
-    fun addProps(values: Map<String, Any?>) {
-        for (pair in values) addProp(pair.key, pair.value)
-    }
-    // endregion
-
-    // Returns the typed property associated with the provided key.
-    // Crashes if the key is not found or if failed to cast to type.
-    inline fun <reified T : Any> getProp(key: String): T {
-        return getPropOrNull(key)!!
-    }
-
-    // Returns the typed property associated with the provided key or null if it doesn't exist
-    // Crashes if failed to cast to type.
-    inline fun <reified T : Any> getPropOrNull(key: String): T? {
-        return props[key] as T?
-    }
-
 }
