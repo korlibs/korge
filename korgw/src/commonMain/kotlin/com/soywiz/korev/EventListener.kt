@@ -41,7 +41,7 @@ data class EventResult(
 }
 
 interface EventListenerChildren : EventListener {
-    fun onEventsCount(): Map<EventType<*>, Int>?
+    fun onEventsCount(): FastIdentityMap<EventType<*>, Int>?
     fun onEventCount(type: EventType<*>): Int
 }
 
@@ -120,10 +120,11 @@ open class BaseEventListener : EventListenerChildren, Extra {
     }
 
     /** @TODO: Critical. Consider two lists */
-    private var __eventListeners: MutableMap<EventType<*>, ListenerNode<*>>? = null
+    //private var __eventListeners: MutableMap<EventType<*>, ListenerNode<*>>? = null
+    private var __eventListeners: FastIdentityMap<EventType<*>, ListenerNode<*>>? = null
     /** @TODO: Critical. Consider a list and a [com.soywiz.kds.IntArrayList] */
     @PublishedApi
-    internal var __eventListenerStats: MutableMap<EventType<*>, Int>? = null
+    internal var __eventListenerStats: FastIdentityMap<EventType<*>, Int>? = null
 
     protected class Listener<T: TEvent<T>>(val func: (T) -> Unit, val node: ListenerNode<T>, val base: BaseEventListener) : CloseableCancellable {
         override fun close() {
@@ -144,7 +145,7 @@ open class BaseEventListener : EventListenerChildren, Extra {
     }
 
     fun <T : TEvent<T>> clearEvents(type: EventType<T>) {
-        val lists = __eventListeners?.getOrElse(type) { null }
+        val lists = __eventListeners?.get(type)
         val listeners = lists?.listeners
         if (listeners != null) {
             __updateChildListenerCount(type, -listeners.size)
@@ -158,7 +159,7 @@ open class BaseEventListener : EventListenerChildren, Extra {
     }
 
     final override fun <T : TEvent<T>> onEvent(type: EventType<T>, handler: (T) -> Unit): CloseableCancellable {
-        if (__eventListeners == null) __eventListeners = mutableMapOf()
+        if (__eventListeners == null) __eventListeners = FastIdentityMap()
         val lists: ListenerNode<T> = __eventListeners!!.getOrPut(type) { ListenerNode(type) } as ListenerNode<T>
         return Listener(handler, lists, this).also { it.attach() }
     }
@@ -182,24 +183,24 @@ open class BaseEventListener : EventListenerChildren, Extra {
     }
 
     final override fun onEventCount(type: EventType<*>): Int {
-        return __eventListenerStats?.getOrElse(type) { 0 } ?: 0
+        return __eventListenerStats?.getNull(type) ?: 0
     }
 
-    final override fun onEventsCount(): Map<EventType<*>, Int>? {
+    final override fun onEventsCount(): FastIdentityMap<EventType<*>, Int>? {
         return __eventListenerStats
     }
 
     //inline fun EventListenerChildren.Internal.__iterateListenerCount(block: (EventType<*>, Int) -> Unit) {
     private fun __iterateListenerCount(block: (EventType<*>, Int) -> Unit) {
-        __eventListenerStats?.forEach {
-            block(it.key, it.value)
+        __eventListenerStats?.fastForEach { key, value ->
+            block(key, value)
         }
     }
 
     private fun __updateChildListenerCount(type: EventType<*>, delta: Int) {
         if (delta == 0) return
-        if (__eventListenerStats == null) __eventListenerStats = mutableMapOf()
-        __eventListenerStats?.put(type, __eventListenerStats!!.getOrElse(type) { 0 } + delta)
+        if (__eventListenerStats == null) __eventListenerStats = FastIdentityMap()
+        __eventListenerStats?.set(type, (__eventListenerStats!![type] ?: 0) + delta)
         eventListenerParent?.__updateChildListenerCount(type, delta)
     }
 
