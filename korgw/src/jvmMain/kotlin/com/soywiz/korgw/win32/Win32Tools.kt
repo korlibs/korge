@@ -1,7 +1,7 @@
 package com.soywiz.korgw.win32
 
 import com.soywiz.kgl.*
-import com.soywiz.klogger.Console
+import com.soywiz.klogger.*
 import com.soywiz.korgw.*
 import com.soywiz.korgw.platform.*
 import com.soywiz.korim.bitmap.*
@@ -319,14 +319,14 @@ class Win32OpenglContext(val gwconfig: GameWindowConfig, val hWnd: WinDef.HWND, 
             WGL_CONTEXT_PROFILE_MASK_ARB, if (requestCoreProfile) WGL_CONTEXT_CORE_PROFILE_BIT_ARB else WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB,
             0
         )).also {
-            println("wglCreateContextAttribsARB.error: ${Native.getLastError()}")
+            logger.debug { "wglCreateContextAttribsARB.error: ${Native.getLastError()}" }
         }
 
-        Console.trace("hWnd: $hWnd, hDC: $hDC, hRC: $hRC, component: $component")
+        logger.debug { "hWnd: $hWnd, hDC: $hDC, hRC: $hRC, component: $component" }
         makeCurrent()
 
         Win32KmlGl.apply {
-            Console.trace("GL_VERSION: ${getString(VERSION)}, GL_VENDOR: ${getString(VENDOR)}")
+            logger.debug { "GL_VERSION: ${getString(VERSION)}, GL_VENDOR: ${getString(VENDOR)}" }
             // Only available on GL_ES?
             //Console.trace(
             //    "GL_RED_BITS: ${getIntegerv(RED_BITS)}, GL_GREEN_BITS: ${getIntegerv(GREEN_BITS)}, " +
@@ -336,7 +336,7 @@ class Win32OpenglContext(val gwconfig: GameWindowConfig, val hWnd: WinDef.HWND, 
             //println()
         }
 
-        Console.trace("requestCoreProfile=$requestCoreProfile, isCore=$isCore, extensions=${extensions.size}")
+        logger.debug { "requestCoreProfile=$requestCoreProfile, isCore=$isCore, extensions=${extensions.size}" }
     }
 
     val extensions by lazy {
@@ -373,7 +373,7 @@ class Win32OpenglContext(val gwconfig: GameWindowConfig, val hWnd: WinDef.HWND, 
     private fun makeCurrent(hDC: HDC?, hRC: WinDef.HGLRC?) {
         if (!WGL.wglMakeCurrent(hDC, hRC)) {
             val error = Win32.GetLastError()
-            Console.error("WGL.wglMakeCurrent($hDC, $hRC).error = $error")
+            logger.error { "WGL.wglMakeCurrent($hDC, $hRC).error = $error" }
         }
     }
 
@@ -421,6 +421,8 @@ class Win32OpenglContext(val gwconfig: GameWindowConfig, val hWnd: WinDef.HWND, 
     }
 
     companion object {
+        val logger = Logger("Win32OpenglContext")
+
         operator fun invoke(c: Component, gwconfig: GameWindowConfig, doubleBuffered: Boolean = false): Win32OpenglContext {
             val hWnd = WinDef.HWND(Native.getComponentPointer(c))
             return Win32OpenglContext(hWnd, gwconfig, doubleBuffered, c).init()

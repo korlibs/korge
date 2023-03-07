@@ -143,11 +143,11 @@ open class Win32KmlGlContext(window: Any? = null, parent: KmlGlContext? = null) 
         WGL_CONTEXT_PROFILE_MASK_ARB, if (requestCoreProfile) WGL_CONTEXT_CORE_PROFILE_BIT_ARB else WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB,
         0
     )).also {
-        println("wglCreateContextAttribsARB.error: ${Native.getLastError()}")
+        logger.debug { "wglCreateContextAttribsARB.error: ${Native.getLastError()}" }
     }
 
     init {
-        Console.trace("hWND: $hWND, hDC: $hDC, hRC: $hRC")
+        logger.debug { "hWND: $hWND, hDC: $hDC, hRC: $hRC" }
         set()
     }
 
@@ -163,7 +163,7 @@ open class Win32KmlGlContext(window: Any? = null, parent: KmlGlContext? = null) 
 
     init {
         Win32KmlGl.apply {
-            Console.trace("GL_VERSION: ${Win32KmlGl.getString(Win32KmlGl.VERSION)}, GL_VENDOR: ${Win32KmlGl.getString(Win32KmlGl.VENDOR)}")
+            logger.debug { "GL_VERSION: ${Win32KmlGl.getString(Win32KmlGl.VERSION)}, GL_VENDOR: ${Win32KmlGl.getString(Win32KmlGl.VENDOR)}" }
             // Only available on GL_ES?
             //Console.trace(
             //    "GL_RED_BITS: ${getIntegerv(RED_BITS)}, GL_GREEN_BITS: ${getIntegerv(GREEN_BITS)}, " +
@@ -173,7 +173,7 @@ open class Win32KmlGlContext(window: Any? = null, parent: KmlGlContext? = null) 
             //println()
         }
 
-        Console.trace("requestCoreProfile=$requestCoreProfile, isCore=$isCore, extensions=${extensions.size}")
+        logger.debug { "requestCoreProfile=$requestCoreProfile, isCore=$isCore, extensions=${extensions.size}" }
 
     }
 
@@ -195,7 +195,7 @@ open class Win32KmlGlContext(window: Any? = null, parent: KmlGlContext? = null) 
     private fun makeCurrent(hDC: WinDef.HDC?, hRC: WinDef.HGLRC?) {
         if (!WGL.wglMakeCurrent(hDC, hRC)) {
             val error = Win32.GetLastError()
-            Console.error("WGL.wglMakeCurrent($hDC, $hRC).error = $error")
+            logger.error { "WGL.wglMakeCurrent($hDC, $hRC).error = $error" }
         }
     }
 
@@ -211,6 +211,8 @@ open class Win32KmlGlContext(window: Any? = null, parent: KmlGlContext? = null) 
     }
 
     companion object {
+        val logger = Logger("Win32KmlGlContext")
+
         const val GL_MULTISAMPLE = 0x809D
 
         const val WGL_DRAW_TO_WINDOW_ARB            = 0x2001
