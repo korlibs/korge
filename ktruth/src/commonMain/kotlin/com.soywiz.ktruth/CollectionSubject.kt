@@ -3,18 +3,18 @@ package com.soywiz.ktruth
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-class CollectionSubject<T : Any>(val actual: Collection<T>) {
+class CollectionSubject<T : Any>(subject: Collection<T>) : AnySubject<Collection<T>>(subject) {
     fun isEmpty() {
-        assertTrue(actual.isEmpty())
+        assertTrue(subject.isEmpty())
     }
     fun isNotEmpty() {
-        assertTrue(actual.isNotEmpty())
+        assertTrue(subject.isNotEmpty())
     }
     fun hasSize(expectedSize: Int) {
-        assertEquals(expectedSize, actual.size)
+        assertEquals(expectedSize, subject.size)
     }
     fun containsExactlyUnordered(vararg elements: T) {
-        val actualSet = actual.toSet()
+        val actualSet = subject.toSet()
         val expectedSet = elements.toSet()
         assertEquals(expectedSet.size, actualSet.size)
         for (expected in expectedSet) {
