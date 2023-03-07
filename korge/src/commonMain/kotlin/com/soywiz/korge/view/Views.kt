@@ -270,10 +270,8 @@ class Views constructor(
                         }
                         stage.dispatch(e)
                     }
-                    is GamePadConnectionEvent ->
-                        stage.forEachComponentOfTypeRecursive(GamepadComponent, tempComps) { it.onGamepadEvent(views, e) }
-                    is GamePadUpdateEvent ->
-                        stage.forEachComponentOfTypeRecursive(GamepadComponent, tempComps) { it.onGamepadEvent(views, e) }
+                    is GamePadConnectionEvent -> stage.dispatch(e.also { it.target = views })
+                    is GamePadUpdateEvent -> stage.dispatch(e.also { it.target = views })
                     else -> stage.dispatch(e.fastCastTo())
                 }
             } catch (e: PreventDefaultException) {

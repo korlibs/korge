@@ -73,29 +73,3 @@ interface TouchComponent : TypedComponent<TouchComponent> {
 
     fun onTouchEvent(views: Views, e: TouchEvent)
 }
-
-/**
- * Component whose [onGamepadEvent] is called, whenever
- * a gamepad event occurs in the application (updated a frame, or connected a gamepad).
- *
- * You would normally add gamepad handlers by executing:
- *
- * ```kotlin
- * view.gamepad {
- *     down(...) { }
- *     up(...) { }
- *     button(...) {}
- *     stick(...) {}
- *     connected {  }
- *     disconnected {  }
- * }
- * ```
- */
-@Deprecated("Use events instead")
-interface GamepadComponent : TypedComponent<GamepadComponent> {
-    companion object : ComponentType<GamepadComponent>
-    override val type get() = Companion
-
-    fun onGamepadEvent(views: Views, event: GamePadUpdateEvent)
-    fun onGamepadEvent(views: Views, event: GamePadConnectionEvent)
-}

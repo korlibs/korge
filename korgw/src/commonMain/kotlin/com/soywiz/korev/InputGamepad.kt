@@ -250,6 +250,7 @@ data class GamePadConnectionEvent(
     enum class Type : EventType<GamePadConnectionEvent> {
         CONNECTED, DISCONNECTED;
         companion object {
+            val ALL = values()
             fun fromConnected(connected: Boolean): Type = if (connected) CONNECTED else DISCONNECTED
         }
     }
