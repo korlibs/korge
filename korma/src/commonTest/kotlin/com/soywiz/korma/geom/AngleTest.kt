@@ -1,5 +1,6 @@
 package com.soywiz.korma.geom
 
+import com.soywiz.korma.interpolation.*
 import com.soywiz.korma.math.isAlmostZero
 import kotlin.math.PI
 import kotlin.math.abs
@@ -156,12 +157,12 @@ class AngleTest {
         //        180
         //        -180
 
-        assertEquals(202.5.degrees, 0.25.interpolateAngleNormalized(180.degrees, (-90).degrees))
-        assertEquals(0.degrees, 0.5.interpolateAngleNormalized(350.degrees, (10).degrees))
-        assertEquals(0.degrees, 0.5.interpolateAngleNormalized(10.degrees, (350).degrees))
+        assertEquals(202.5.degrees, Ratio(0.25).interpolateAngleNormalized(180.degrees, (-90).degrees))
+        assertEquals(0.degrees, Ratio.HALF.interpolateAngleNormalized(350.degrees, (10).degrees))
+        assertEquals(0.degrees, Ratio.HALF.interpolateAngleNormalized(10.degrees, (350).degrees))
 
-        assertEquals(112.5.degrees, 0.25.interpolateAngleDenormalized(180.degrees, (-90).degrees))
-        assertEquals(180.degrees, 0.5.interpolateAngleDenormalized(350.degrees, (10).degrees))
-        assertEquals(180.degrees, 0.5.interpolateAngleDenormalized(10.degrees, (350).degrees))
+        assertEquals(112.5.degrees, Ratio(0.25).interpolateAngleDenormalized(180.degrees, (-90).degrees))
+        assertEquals(180.degrees, Ratio.HALF.interpolateAngleDenormalized(350.degrees, (10).degrees))
+        assertEquals(180.degrees, Ratio.HALF.interpolateAngleDenormalized(10.degrees, (350).degrees))
     }
 }

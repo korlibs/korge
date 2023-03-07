@@ -52,11 +52,6 @@ class DebugVertexView(pointsList: List<IVectorArrayList>, color: RGBA = Colors.W
             }
         }
 
-    @Deprecated("Use pointsList instead")
-    var points: IVectorArrayList
-        get() = pointsList.firstOrNull() ?: VectorArrayList(5)
-        set(value) { pointsList = listOf(value) }
-
     var type: AGDrawType = type
     class Batch(val offset: Int, val count: Int)
     var buffer: FloatArray = floatArrayOf(0f, 0f, 100f, 0f, 0f, 100f, 100f, 100f)

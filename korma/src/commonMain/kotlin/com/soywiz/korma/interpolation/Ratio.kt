@@ -34,6 +34,7 @@ inline class Ratio(val valueF: Float) : Comparable<Ratio> {
 
     companion object {
         val ZERO = Ratio(0f)
+        val QUARTER = Ratio(.25f)
         val HALF = Ratio(.5f)
         val ONE = Ratio(1f)
         val NaN = Ratio(Float.NaN)
