@@ -55,19 +55,16 @@ abstract class Process(parent: Container) : Container() {
 	}
 
 	init {
-		addComponent(object : StageComponent {
-			override val view: View = this@Process
-
-			override fun added(views: Views) {
-				//println("added: $views")
-			}
-
-			override fun removed(views: Views) {
-				//println("removed: $views")
-				job.cancel()
-				onDestroy()
-			}
-		})
+        this.onAttachDetach(
+            onAttach = {
+                //println("added: $views")
+            },
+            onDetach = {
+                //println("removed: $views")
+                job.cancel()
+                onDestroy()
+            }
+        )
 	}
 
 	fun destroy() {

@@ -1,11 +1,9 @@
 package com.soywiz.korge.component
 
-import com.soywiz.kds.FastArrayList
-import com.soywiz.kds.getExtra
-import com.soywiz.kds.setExtra
-import com.soywiz.klock.TimeSpan
-import com.soywiz.korge.baseview.BaseView
+import com.soywiz.kds.*
+import com.soywiz.korev.*
 import com.soywiz.korge.view.*
+import com.soywiz.korio.async.*
 import com.soywiz.korio.lang.Closeable
 import com.soywiz.korio.lang.CancellableGroup
 
@@ -15,50 +13,26 @@ import com.soywiz.korio.lang.CancellableGroup
  * Component with [added] and [removed] methods that are executed
  * once the view is going to be displayed, and when the view has been removed
  */
-interface StageComponent : TypedComponent<StageComponent> {
-    companion object : ComponentType<StageComponent>
-    override val type get() = Companion
-
-    fun added(views: Views)
-    fun removed(views: Views)
+private class ViewStageComponent(val view: View) {
+    val added: Signal<Views> = Signal()
+    val removed: Signal<Views> = Signal()
 }
 
-fun <T : View> T.onNewAttachDetach(views: Views? = null, onAttach: Views.(T) -> Unit = {}, onDetach: Views.(T) -> Unit = {}): Closeable {
+private const val __VIEW_STAGE_COMPONENT_NAME = "__viewStageComponent"
+private val View.viewStageComponent by Extra.PropertyThis(__VIEW_STAGE_COMPONENT_NAME) { ViewStageComponent(this) }
+
+fun <T : View> T.onNewAttachDetach(onAttach: Views.(T) -> Unit = {}, onDetach: Views.(T) -> Unit = {}): Closeable {
     val view = this
     val closeable = CancellableGroup()
-    view.deferWithViews(views) {
-        it.registerStageComponent()
-    }
-    closeable += view.addComponent(object : StageComponent {
-        override val view: BaseView get() = view
-        override fun added(views: Views) {
-            onAttach(views, view)
-        }
-        override fun removed(views: Views) {
-            onDetach(views, view)
-        }
-    })
+    val viewStageComponent = this.viewStageComponent
+    view.deferWithViews { it.registerStageComponent() }
+    closeable += viewStageComponent.added.add { onAttach(it, view) }
+    closeable += viewStageComponent.removed.add { onDetach(it, view) }
     return closeable
 }
 
-fun <T : View> T.onAttachDetach(views: Views? = null, onAttach: Views.(T) -> Unit = {}, onDetach: Views.(T) -> Unit = {}): T {
-    val view = this
-    if (views != null) {
-        views.registerStageComponent()
-    } else {
-        view.deferWithViews {
-            it.registerStageComponent()
-        }
-    }
-    view.addComponent(object : StageComponent {
-        override val view: BaseView get() = view
-        override fun added(views: Views) {
-            onAttach(views, view)
-        }
-        override fun removed(views: Views) {
-            onDetach(views, view)
-        }
-    })
+fun <T : View> T.onAttachDetach(onAttach: Views.(T) -> Unit = {}, onDetach: Views.(T) -> Unit = {}): T {
+    onNewAttachDetach(onAttach, onDetach)
     return this
 }
 
@@ -69,9 +43,9 @@ fun Views.registerStageComponent() {
     val EXTRA_ID = "Views.registerStageComponent"
     if (views.getExtra(EXTRA_ID) == true) return
     views.setExtra(EXTRA_ID, true)
-    val componentsInStagePrev = FastArrayList<StageComponent>()
-    val componentsInStageCur = linkedSetOf<StageComponent>()
-    val componentsInStage = linkedSetOf<StageComponent>()
+    val componentsInStagePrev = FastArrayList<ViewStageComponent>()
+    val componentsInStageCur = linkedSetOf<ViewStageComponent>()
+    val componentsInStage = linkedSetOf<ViewStageComponent>()
     val tempViews: FastArrayList<View> = FastArrayList()
     onBeforeRender {
         componentsInStagePrev.clear()
@@ -81,7 +55,8 @@ fun Views.registerStageComponent() {
         val stagedViews = getAllDescendantViews(stage, tempViews)
 
         stagedViews.fastForEach { view ->
-            view.getComponentsOfType(StageComponent)?.fastForEach {
+            if (view.hasExtra(__VIEW_STAGE_COMPONENT_NAME)) {
+                val it = view.viewStageComponent
                 componentsInStageCur += it
                 if (it !in componentsInStage) {
                     componentsInStage += it

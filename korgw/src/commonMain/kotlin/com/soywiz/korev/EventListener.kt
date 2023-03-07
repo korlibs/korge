@@ -169,6 +169,10 @@ open class BaseEventListener : EventListenerChildren, Extra {
         return Listener(handler, lists, this).also { it.attach() }
     }
 
+    protected fun <T : BEvent> getListenersForType(type: EventType<T>): ListenerNode<T>? {
+        return __eventListeners?.get(type) as? ListenerNode<T>
+    }
+
     // , result: EventResult?
     final override fun <T : BEvent> dispatch(type: EventType<T>, event: T, result: EventResult?) {
         val eventListenerCount = onEventCount(type)
@@ -176,7 +180,7 @@ open class BaseEventListener : EventListenerChildren, Extra {
 
         dispatchChildren(type, event, result)
 
-        val listeners = __eventListeners?.get(type) as? ListenerNode<T>
+        val listeners = getListenersForType(type)
         listeners?.listeners?.fastForEachWithTemp(listeners.temp) {
             it.func(event)
             result?.let { it.resultCount++ }
@@ -189,6 +193,10 @@ open class BaseEventListener : EventListenerChildren, Extra {
 
     final override fun onEventCount(type: EventType<*>): Int {
         return __eventListenerStats?.getNull(type) ?: 0
+    }
+
+    fun getSelfEventCount(type: EventType<*>): Int {
+        return getListenersForType(type)?.listeners?.size ?: 0
     }
 
     final override fun onEventsCount(): FastIdentityMap<EventType<*>, Int>? {
