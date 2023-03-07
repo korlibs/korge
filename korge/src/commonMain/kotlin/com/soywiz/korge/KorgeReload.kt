@@ -19,16 +19,16 @@ internal expect val KorgeReloadInternal: KorgeReloadInternalImpl
 
 object KorgeReload {
     @Suppress("VARIABLE_IN_SINGLETON_WITHOUT_THREAD_LOCAL")
-    private var KorgeReload_eventDispatcher: EventDispatcher? = null
+    private var KorgeReload_eventDispatcher: EventListener? = null
 
     @JvmStatic
     @Suppress("unused") // This is called from [com.soywiz.korge.reloadagent.KorgeReloadAgent]
     fun triggerReload(classes: List<String>, success: Boolean) {
         println("KorgeReloadAgent detected a class change. Reload: $classes")
-        KorgeReload_eventDispatcher?.dispatch(ReloadEvent::class, ReloadEvent(classes.toSet(), success))
+        KorgeReload_eventDispatcher?.dispatch(ReloadEvent(classes.toSet(), success))
     }
 
-    fun registerEventDispatcher(eventDispatcher: EventDispatcher) {
+    fun registerEventDispatcher(eventDispatcher: EventListener) {
         // Only in JVM and if KORGE_AUTORELOAD env is set
         if (!Platform.runtime.isJvm || Environment["KORGE_AUTORELOAD"] != "true") return
         KorgeReload_eventDispatcher = eventDispatcher

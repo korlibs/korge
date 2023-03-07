@@ -188,7 +188,7 @@ open class BaseEventListener : EventListenerChildren, Extra {
         result?.let { it.iterationCount++ }
     }
 
-    protected open fun <T : BEvent> dispatchChildren(type: EventType<T>, event: T, result: EventResult?) {
+    open fun <T : BEvent> dispatchChildren(type: EventType<T>, event: T, result: EventResult?) {
     }
 
     final override fun onEventCount(type: EventType<*>): Int {

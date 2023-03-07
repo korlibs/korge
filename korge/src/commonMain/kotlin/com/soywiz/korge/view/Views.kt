@@ -51,9 +51,8 @@ class Views constructor(
     val batchMaxQuads: Int = BatchBuilder2D.DEFAULT_BATCH_QUADS,
     val bp: BoundsProvider = BoundsProvider.Base(),
     val stageBuilder: (Views) -> Stage = { Stage(it) }
-) :
+) : BaseEventListener(),
     Extra by Extra.Mixin(),
-    EventDispatcher by EventDispatcher.Mixin(),
     CoroutineScope, ViewsContainer,
 	BoundsProvider by bp,
     DialogInterfaceProvider by gameWindow,
@@ -242,37 +241,26 @@ class Views constructor(
 		resized()
 	}
 
-	@Suppress("EXPERIMENTAL_API_USAGE")
-    override fun <T : Event> dispatch(clazz: KClass<T>, event: T) {
-		val e = event
-        try {
-            //this.stage.dispatch(clazz, event)
-            //val stagedViews = getAllDescendantViews(stage, tempViews, true)
-            when (e) {
-                is GestureEvent -> stage.dispatch(e.also { it.target = views })
-                is MouseEvent -> stage.dispatch(e.also { it.target = views })
-                is TouchEvent -> stage.dispatch(e.also { it.target = views })
-                is ReshapeEvent -> stage.dispatch(viewsResizedEvent.also { it.size = SizeInt(e.width, e.height) })
-                is KeyEvent -> {
-                    event.target = views
-                    input.triggerOldKeyEvent(e)
-                    input.keys.triggerKeyEvent(e)
-                    if ((e.type == KeyEvent.Type.UP) && supportTogglingDebug && (e.key == Key.F12 || e.key == Key.F7)) {
-                        debugViews = !debugViews
-                        gameWindow.debug = debugViews
-                        invalidatedView(stage)
-                    }
-                    stage.dispatch(e)
-                }
-                is GamePadConnectionEvent -> stage.dispatch(e.also { it.target = views })
-                is GamePadUpdateEvent -> stage.dispatch(e.also { it.target = views })
-                else -> stage.dispatch(e.fastCastTo())
+    override fun <T : BEvent> dispatch(event: T) {
+        super.dispatch(event)
+        val e = event
+        e.target = views
+        // @TODO: Remove this
+        if (e is KeyEvent) {
+            input.triggerOldKeyEvent(e)
+            input.keys.triggerKeyEvent(e)
+            if ((e.type == KeyEvent.Type.UP) && supportTogglingDebug && (e.key == Key.F12 || e.key == Key.F7)) {
+                debugViews = !debugViews
+                gameWindow.debug = debugViews
+                invalidatedView(stage)
             }
+        }
+        try {
+            stage.dispatch(e)
         } catch (e: PreventDefaultException) {
             //println("PreventDefaultException.Reason: ${e.reason}")
         }
-
-	}
+    }
 
 	fun render() {
         ag.startFrame()

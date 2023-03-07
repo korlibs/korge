@@ -224,7 +224,7 @@ interface GameWindowConfig {
 typealias GameWindowQuality = GameWindow.Quality
 
 open class GameWindow :
-    EventDispatcher.Mixin(),
+    BaseEventListener(),
     DialogInterfaceProvider,
     DeviceDimensionsProvider,
     CoroutineContext.Element,
@@ -385,7 +385,7 @@ open class GameWindow :
     }
 
     fun onRenderEvent(block: (RenderEvent) -> Unit) {
-        addEventListener<RenderEvent>(block)
+        onEvent(RenderEvent, block)
     }
 
     val counterTimePerFrame: TimeSpan get() = (1_000_000.0 / fps).microseconds
@@ -942,7 +942,7 @@ fun GameWindow.configure(
 }
 
 fun GameWindow.onDragAndDropFileEvent(block: suspend (DropFileEvent) -> Unit) {
-    addEventListener<DropFileEvent> { event ->
+    onEvent(*DropFileEvent.Type.ALL) { event ->
         launchImmediately(coroutineDispatcher) {
             block(event)
         }

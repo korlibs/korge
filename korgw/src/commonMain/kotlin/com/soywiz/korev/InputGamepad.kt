@@ -101,7 +101,7 @@ enum class GameButton {
     }
 }
 
-class GamepadInfoEmitter(val dispatcher: EventDispatcher) {
+class GamepadInfoEmitter(val dispatcher: EventListener) {
     private val gamepadPrevConnected = BooleanArray(GamepadInfo.MAX_CONTROLLERS)
     private val gamePadUpdateEvent = GamePadUpdateEvent()
     private val gamePadConnectionEvent = GamePadConnectionEvent()

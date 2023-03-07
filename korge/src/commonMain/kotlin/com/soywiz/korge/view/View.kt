@@ -43,7 +43,7 @@ import kotlin.math.*
  * Regarding to how the views are drawn there are: [alphaF], [colorMul] ([tint]).
  *
  * [View] implements the [Extra] interface, thus allows to add arbitrary typed properties.
- * [View] implements the [EventDispatcher] interface, and allows to handle and dispatch events.
+ * [View] implements the [EventListener] interface, and allows to handle and dispatch events.
  *
  * For views with [Updatable] components, [View] include a [speed] property where 1 is 1x and 2 is 2x the speed.
  */

@@ -10,6 +10,7 @@ import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 
 interface BEvent {
+    var target: Any?
     val type: EventType<out BEvent>
 }
 
@@ -450,9 +451,8 @@ data class FullScreenEvent(var fullscreen: Boolean = false) : TypedEvent<FullScr
     }
 }
 
-class RenderEvent() : Event(), TEvent<RenderEvent> {
+class RenderEvent() : TypedEvent<RenderEvent>(RenderEvent) {
     companion object : EventType<RenderEvent>
-    override val type: EventType<RenderEvent> get() = RenderEvent
 
     var update: Boolean = true
     var render: Boolean = true
@@ -518,40 +518,4 @@ data class DropFileEvent(override var type: Type = Type.START, var files: List<V
         this.type = other.type
         this.files = other.files?.toList()
     }
-}
-
-class MouseEvents(val ed: EventDispatcher) : Closeable {
-	fun click(callback: MouseEvent.() -> Unit) = ed.addEventListener<MouseEvent> { if (it.type == MouseEvent.Type.CLICK) callback(it) }
-	fun up(callback: MouseEvent.() -> Unit) = ed.addEventListener<MouseEvent> { if (it.type == MouseEvent.Type.UP) callback(it) }
-	fun down(callback: MouseEvent.() -> Unit) = ed.addEventListener<MouseEvent> { if (it.type == MouseEvent.Type.DOWN) callback(it) }
-	fun move(callback: MouseEvent.() -> Unit) = ed.addEventListener<MouseEvent> { if (it.type == MouseEvent.Type.MOVE) callback(it) }
-	fun drag(callback: MouseEvent.() -> Unit) = ed.addEventListener<MouseEvent> { if (it.type == MouseEvent.Type.DRAG) callback(it) }
-	fun enter(callback: MouseEvent.() -> Unit) = ed.addEventListener<MouseEvent> { if (it.type == MouseEvent.Type.ENTER) callback(it) }
-    fun scroll(callback: MouseEvent.() -> Unit) = ed.addEventListener<MouseEvent> { if (it.type == MouseEvent.Type.SCROLL) callback(it) }
-	fun exit(callback: MouseEvent.() -> Unit) = ed.addEventListener<MouseEvent> { if (it.type == MouseEvent.Type.EXIT) callback(it) }
-	override fun close() {
-	}
-}
-
-class KeysEvents(val ed: EventDispatcher) : Closeable {
-	fun down(callback: KeyEvent.() -> Unit) =
-		ed.addEventListener<KeyEvent> { if (it.type == KeyEvent.Type.DOWN) callback(it) }
-
-	fun up(callback: KeyEvent.() -> Unit) =
-		ed.addEventListener<KeyEvent> { if (it.type == KeyEvent.Type.UP) callback(it) }
-
-	fun press(callback: KeyEvent.() -> Unit) =
-		ed.addEventListener<KeyEvent> { if (it.type == KeyEvent.Type.TYPE) callback(it) }
-
-	fun down(key: Key, callback: KeyEvent.() -> Unit) =
-		ed.addEventListener<KeyEvent> { if (it.type == KeyEvent.Type.DOWN && it.key == key) callback(it) }
-
-	fun up(key: Key, callback: KeyEvent.() -> Unit) =
-		ed.addEventListener<KeyEvent> { if (it.type == KeyEvent.Type.UP && it.key == key) callback(it) }
-
-	fun press(key: Key, callback: KeyEvent.() -> Unit) =
-		ed.addEventListener<KeyEvent> { if (it.type == KeyEvent.Type.TYPE && it.key == key) callback(it) }
-
-	override fun close() {
-	}
 }
