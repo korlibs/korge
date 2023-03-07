@@ -57,7 +57,7 @@ class UITextInput(initialText: String = "", width: Double = 128.0, height: Doubl
     fun blur() = controller.blur()
     fun selectAll() = controller.selectAll()
 
-    var padding: IMargin = IMargin(3.0, 2.0, 2.0, 2.0)
+    var padding: Margin = Margin(3f, 2f, 2f, 2f)
         set(value) {
             field = value
             onSizeChanged()

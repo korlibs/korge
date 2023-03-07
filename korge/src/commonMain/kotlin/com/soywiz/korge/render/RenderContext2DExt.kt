@@ -113,7 +113,7 @@ fun RenderContext2D.materialRoundRect(
     _tempProgramUniforms[MaterialRender.u_ShadowOffset] = shadowOffset
     _tempProgramUniforms[MaterialRender.u_ShadowRadius] = shadowRadius
 
-    quadPaddedCustomProgram(x, y, width, height, MaterialRender.PROGRAM, _tempProgramUniforms, IMargin(shadowRadius + shadowOffset.length))
+    quadPaddedCustomProgram(x, y, width, height, MaterialRender.PROGRAM, _tempProgramUniforms, Margin((shadowRadius + shadowOffset.length).toFloat()))
 }
 
 @KorgeExperimental

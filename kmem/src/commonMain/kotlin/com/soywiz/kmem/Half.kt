@@ -121,4 +121,6 @@ fun Double.toHalf(): Half = Half(this)
 /** Converts value into [Half] */
 fun Float.toHalf(): Half = Half(this)
 /** Converts value into [Half] */
+@Deprecated("", ReplaceWith("this")) fun Half.toHalf(): Half = this
+/** Converts value into [Half] */
 inline fun Number.toHalf(): Half = Half(this.toFloat())

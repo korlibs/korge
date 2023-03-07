@@ -213,7 +213,6 @@ open class AGValue(
     fun set(value: MVector4) = set(value.data)
     fun set(value: IVector4) = set(value.x, value.y, value.z, value.w)
     fun set(value: IPoint) = set(value.x.toFloat(), value.y.toFloat())
-    fun set(value: IMargin) = set(value.top.toFloat(), value.right.toFloat(), value.bottom.toFloat(), value.left.toFloat())
     fun set(value: IRectCorners) = set(value.topLeft.toFloat(), value.topRight.toFloat(), value.bottomRight.toFloat(), value.bottomLeft.toFloat())
     fun set(value: IMatrix3D) = tempMatrixLock { set(tempIMatrix.also { it[0] = value }) }
 

@@ -230,14 +230,14 @@ interface IRectangle {
     }
 
 
-    fun without(padding: IMargin): MRectangle = MRectangle.fromBounds(
+    fun without(padding: Margin): MRectangle = MRectangle.fromBounds(
         left + padding.left,
         top + padding.top,
         right - padding.right,
         bottom - padding.bottom
     )
 
-    fun with(margin: IMargin): MRectangle = MRectangle.fromBounds(
+    fun with(margin: Margin): MRectangle = MRectangle.fromBounds(
         left - margin.left,
         top - margin.top,
         right + margin.right,
@@ -516,16 +516,13 @@ data class MRectangle(
         }
     }
 
-    fun expand(left: Double, top: Double, right: Double, bottom: Double): MRectangle =
+    fun expand(left: Float, top: Float, right: Float, bottom: Float): MRectangle =
         this.setToBounds(this.left - left, this.top - top, this.right + right, this.bottom + bottom)
 
     fun expand(left: Int, top: Int, right: Int, bottom: Int): MRectangle =
-        expand(left.toDouble(), top.toDouble(), right.toDouble(), bottom.toDouble())
+        expand(left.toFloat(), top.toFloat(), right.toFloat(), bottom.toFloat())
 
-    fun expand(margin: IMargin): MRectangle =
-        expand(margin.left, margin.top, margin.right, margin.bottom)
-
-    fun expand(margin: IMarginInt): MRectangle =
+    fun expand(margin: Margin): MRectangle =
         expand(margin.left, margin.top, margin.right, margin.bottom)
 
     fun expand(margin: MarginInt): MRectangle =
@@ -549,7 +546,6 @@ sealed interface IRectangleInt {
 
     fun clone(): MRectangleInt = MRectangleInt(x, y, width, height)
 
-    fun expanded(border: IMarginInt): IRectangleInt = clone().expand(border)
     fun expanded(border: MarginInt): IRectangleInt = clone().expand(border)
 
     val left: Int get() = x
@@ -646,8 +642,6 @@ inline class MRectangleInt(val rect: MRectangle) : IRectangleInt {
         setTo(left, top, right - left, bottom - top)
 
     /** Inline expand the rectangle */
-    fun expand(border: IMarginInt): MRectangleInt =
-        this.setBoundsTo(left - border.left, top - border.top, right + border.right, bottom + border.bottom)
     fun expand(border: MarginInt): MRectangleInt =
         this.setBoundsTo(left - border.left, top - border.top, right + border.right, bottom + border.bottom)
 

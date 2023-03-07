@@ -25,7 +25,7 @@ open class ShadedView(
         this.program = program
     }
 
-    var padding: IMargin = IMargin(0.0)
+    var padding: Margin = Margin.ZERO
         set(value) {
             field = value
             dirtyVertices = true

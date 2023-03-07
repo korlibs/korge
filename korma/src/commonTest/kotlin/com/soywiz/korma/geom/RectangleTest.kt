@@ -117,11 +117,11 @@ class RectangleTest {
     fun testMargin() {
         assertEquals(
             MRectangle.fromBounds(10, 10, 90, 90),
-            MRectangle(0, 0, 100, 100).without(IMargin(10.0))
+            MRectangle(0, 0, 100, 100).without(Margin(10f))
         )
         assertEquals(
             MRectangle.fromBounds(-10, -10, 110, 110),
-            MRectangle(0, 0, 100, 100).with(IMargin(10.0))
+            MRectangle(0, 0, 100, 100).with(Margin(10f))
         )
     }
 
@@ -139,7 +139,7 @@ class RectangleTest {
         assertEquals(
             MRectangle.fromBounds(-10, -15, 120, 125),
             MRectangle.fromBounds(0, 0, 100, 100)
-                .expand(IMargin(left = 10.0, top = 15.0, right = 20.0, bottom = 25.0))
+                .expand(Margin(left = 10f, top = 15f, right = 20f, bottom = 25f))
         )
         assertEquals(
             MRectangle.fromBounds(-10, -15, 120, 125),

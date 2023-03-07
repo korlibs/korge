@@ -60,7 +60,7 @@ class TextEditController(
         it.visible = false
     }
 
-    var padding: IMargin = IMargin(3.0, 2.0, 2.0, 2.0)
+    var padding: Margin = Margin(3f, 2f, 2f, 2f)
         set(value) {
             field = value
             onSizeChanged(this)

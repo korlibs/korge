@@ -232,7 +232,7 @@ class RenderContext2D(
         height: Double,
         program: Program,
         uniforms: AGUniformValues,
-        padding: IMargin = IMargin.EMPTY,
+        padding: Margin = Margin.ZERO,
     ) {
         val ctx = batch.ctx
         //programUniforms
@@ -250,8 +250,8 @@ class RenderContext2D(
                 val R = (width + padding.leftPlusRight).toFloat()
                 val B = (height + padding.topPlusBottom).toFloat()
 
-                val l = -padding.left.toFloat()
-                val t = -padding.top.toFloat()
+                val l = -padding.left
+                val t = -padding.top
                 val r = (width + padding.right).toFloat()
                 val b = (height + padding.bottom).toFloat()
 

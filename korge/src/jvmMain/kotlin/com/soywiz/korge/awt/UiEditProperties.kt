@@ -227,7 +227,7 @@ internal class UiEditProperties(app: UiApplication, view: View?, val views: View
                 UiTwoItemEditableValue(app, vv[0], vv[1])
             }
             type.isSubtypeOf(RectCorners::class.starProjectedType) -> createQuad({ RectCorners(it.x, it.y, it.z, it.w) }, { Four(it.topLeft.toDouble(), it.topRight.toDouble(), it.bottomRight.toDouble(), it.bottomLeft.toDouble()) }, instance, prop, viewProp)
-            type.isSubtypeOf(IMargin::class.starProjectedType) -> createQuad({ IMargin(it.x, it.y, it.z, it.w) }, { Four(it.top, it.right, it.bottom, it.left) }, instance, prop, viewProp)
+            type.isSubtypeOf(Margin::class.starProjectedType) -> createQuad({ Margin(it.x.toFloat(), it.y.toFloat(), it.z.toFloat(), it.w.toFloat()) }, { Four(it.top.toDouble(), it.right.toDouble(), it.bottom.toDouble(), it.left.toDouble()) }, instance, prop, viewProp)
             type.isSubtypeOf(Double::class.starProjectedType) -> UiNumberEditableValue(app, obs as ObservableProperty<Double>, viewProp.min, viewProp.max, viewProp.clampMin, viewProp.clampMax, viewProp.decimalPlaces)
             type.isSubtypeOf(Int::class.starProjectedType) -> {
                 val pobs = (obs as ObservableProperty<Int>)

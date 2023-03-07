@@ -77,7 +77,7 @@ open class UIComboBox<T>(
 
     private val selectedButton = uiButton("", width = width, height = height).also {
         it.textAlignment = TextAlignment.MIDDLE_LEFT
-        it.textView.padding = IMargin(0.0, 8.0)
+        it.textView.padding = Margin(0f, 8f)
         it.bgColorOut = Colors.WHITE
         it.bgColorOver = MaterialColors.GRAY_100
         it.bgColorDisabled = MaterialColors.GRAY_100
@@ -126,7 +126,7 @@ open class UIComboBox<T>(
             //val filter = "twe"
             val it = UIButton(richText = richText, width = width, height = itemHeight).apply {
                 this.textAlignment = TextAlignment.MIDDLE_LEFT
-                this.textView.padding = IMargin(0.0, 8.0)
+                this.textView.padding = Margin(0f, 8f)
                 this.radius = 0f
                 this.bgColorOut = MaterialColors.GRAY_50
                 this.bgColorOver = MaterialColors.GRAY_400
