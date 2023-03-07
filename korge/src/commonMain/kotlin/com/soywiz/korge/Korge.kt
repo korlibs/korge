@@ -382,7 +382,7 @@ object Korge {
             views.dispatch(mouseTouchEvent)
         }
 
-        eventDispatcher.onEvent(*MouseEvent.Type.ALL) { e ->
+        eventDispatcher.onEvents(*MouseEvent.Type.ALL) { e ->
             //println("MOUSE: $e")
             logger.trace { "eventDispatcher.addEventListener<MouseEvent>:$e" }
             val p = getRealXY(e.x.toDouble(), e.y.toDouble(), e.scaleCoords).point
@@ -414,16 +414,16 @@ object Korge {
             views.dispatch(e)
         }
 
-        eventDispatcher.onEvent<KeyEvent>(*KeyEvent.Type.ALL) { e ->
+        eventDispatcher.onEvents(*KeyEvent.Type.ALL) { e ->
             logger.trace { "eventDispatcher.addEventListener<KeyEvent>:$e" }
             views.dispatch(e)
         }
-        eventDispatcher.onEvent(*GestureEvent.Type.ALL) { e ->
+        eventDispatcher.onEvents(*GestureEvent.Type.ALL) { e ->
             logger.trace { "eventDispatcher.addEventListener<GestureEvent>:$e" }
             views.dispatch(e)
         }
 
-        eventDispatcher.onEvent(*DropFileEvent.Type.ALL) { e -> views.dispatch(e) }
+        eventDispatcher.onEvents(*DropFileEvent.Type.ALL) { e -> views.dispatch(e) }
         eventDispatcher.onEvent(ResumeEvent) { e -> views.dispatch(e) }
         eventDispatcher.onEvent(PauseEvent) { e -> views.dispatch(e) }
         eventDispatcher.onEvent(StopEvent) { e -> views.dispatch(e) }
@@ -438,7 +438,7 @@ object Korge {
         }
 
         val touchMouseEvent = MouseEvent()
-        eventDispatcher.onEvent(*TouchEvent.Type.ALL) { e ->
+        eventDispatcher.onEvents(*TouchEvent.Type.ALL) { e ->
             logger.trace { "eventDispatcher.addEventListener<TouchEvent>:$e" }
 
             input.updateTouches(e)
@@ -494,7 +494,7 @@ object Korge {
             input.updateConnectedGamepads()
         }
 
-        eventDispatcher.onEvent(*GamePadConnectionEvent.Type.ALL) { e ->
+        eventDispatcher.onEvents(*GamePadConnectionEvent.Type.ALL) { e ->
             logger.trace { "eventDispatcher.addEventListener<GamePadConnectionEvent>:$e" }
             views.dispatch(e)
         }
@@ -504,7 +504,7 @@ object Korge {
             views.dispatch(e)
         }
 
-        eventDispatcher.onEvent<ReshapeEvent> { e ->
+        eventDispatcher.onEvent(ReshapeEvent) { e ->
             //try { throw Exception() } catch (e: Throwable) { e.printStackTrace() }
             //println("eventDispatcher.addEventListener<ReshapeEvent>: ${ag.backWidth}x${ag.backHeight} : ${e.width}x${e.height}")
             //println("resized. ${ag.backWidth}, ${ag.backHeight}")

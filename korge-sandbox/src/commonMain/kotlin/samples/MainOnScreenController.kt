@@ -3,7 +3,6 @@ package samples
 import com.soywiz.korge.scene.Scene
 import com.soywiz.kmem.*
 import com.soywiz.korev.*
-import com.soywiz.korge.component.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.color.*
@@ -80,12 +79,12 @@ class MainOnScreenController : Scene() {
             var dragging = false
             var start = Point(0, 0)
 
-            view.onEvent(MouseEvent.Type.DOWN, MouseEvent.Type.MOVE, MouseEvent.Type.DRAG, MouseEvent.Type.UP) { event ->
+            view.onEvents(*MouseEvent.Type.ALL) { event ->
                 val p = view.globalMatrixInv.transform(event.pos.toFloat())
 
                 when (event.type) {
                     MouseEvent.Type.DOWN -> {
-                        if (p.x >= width / 2) return@onEvent
+                        if (p.x >= width / 2) return@onEvents
                         start = p
                         ball.alphaF = 0.3f
                         dragging = true

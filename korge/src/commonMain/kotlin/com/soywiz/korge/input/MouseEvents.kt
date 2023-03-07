@@ -4,7 +4,6 @@ import com.soywiz.kds.*
 import com.soywiz.klock.*
 import com.soywiz.korev.*
 import com.soywiz.korge.bitmapfont.*
-import com.soywiz.korge.component.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.view.*
 import com.soywiz.korgw.*
@@ -372,8 +371,8 @@ class MouseEvents(val view: View) : Extra by Extra.Mixin(), Closeable {
 
     override fun toString(): String = lastEvent.toString()
 
-    private val closeable = view.onEvent(*MouseEvent.Type.ALL) { event ->
-        if (!view.mouseEnabled) return@onEvent
+    private val closeable = view.onEvents(*MouseEvent.Type.ALL) { event ->
+        if (!view.mouseEnabled) return@onEvents
         this.views = event.target as Views
         // Store event
         this.currentEvent = event

@@ -3,11 +3,9 @@ package com.soywiz.korge.input
 import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
 import com.soywiz.korev.*
-import com.soywiz.korge.component.*
 import com.soywiz.korge.view.*
 import com.soywiz.korio.async.*
 import kotlin.jvm.*
-import kotlin.native.concurrent.*
 
 class GamePadEvents(val view: View) {
     @PublishedApi
@@ -113,7 +111,7 @@ class GamePadEvents(val view: View) {
             oldGamepads.copyFrom(event)
             if (gamepadsUpdated) updated(event)
         }
-        view.onEvent(*GamePadConnectionEvent.Type.ALL) { event ->
+        view.onEvents(*GamePadConnectionEvent.Type.ALL) { event ->
             this.views = event.target as Views
             connection(event)
         }

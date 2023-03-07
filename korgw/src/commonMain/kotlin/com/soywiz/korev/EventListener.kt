@@ -14,22 +14,23 @@ interface EventListener {
      */
     fun <T : BEvent> onEvent(type: EventType<T>, handler: (T) -> Unit): Closeable
 
-    fun <T : BEvent> onEvent(vararg type: EventType<out T>, handler: (T) -> Unit): Closeable {
+    fun <T : BEvent> onEvents(vararg etypes: EventType<out T>, handler: (T) -> Unit): Closeable {
+        if (etypes.isEmpty()) error("Must have at least one event type")
         val closeable = CancellableGroup()
-        type.fastForEach { closeable += onEvent(it, handler) }
+        etypes.fastForEach { closeable += onEvent(it, handler) }
         return closeable
     }
     //fun clearEventListeners()
 
     /**
-     * Dispatched a [event] of [type] that will execute all the handlers registered with [onEvent]
+     * Dispatched a [event] of [type] that will execute all the handlers registered with [onEvents]
      * in this object and its children.
      */
     fun <T : BEvent> dispatch(type: EventType<T>, event: T, result: EventResult? = null)
 
-    fun <T : BEvent> dispatch(event: T): Unit = dispatch((event as TEvent<T>).type, event)
+    fun <T : BEvent> dispatch(event: T): Unit = dispatch(event.fastCastTo<TEvent<T>>().type, event)
     fun <T : BEvent> dispatchWithResult(event: T, out: EventResult = EventResult()): EventResult {
-        dispatch((event as TEvent<T>).type, event, out)
+        dispatch(event.fastCastTo<TEvent<T>>().type, event, out)
         return out
     }
 }

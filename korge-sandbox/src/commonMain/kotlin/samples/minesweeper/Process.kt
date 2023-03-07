@@ -114,7 +114,7 @@ fun ScaledScene.registerProcessSystem(): Closeable {
 
     val closeable = CancellableGroup()
 
-    closeable += stage.onEvent(*MouseEvent.Type.ALL) { e ->
+    closeable += stage.onEvents(*MouseEvent.Type.ALL) { e ->
 		when (e.type) {
 			MouseEvent.Type.MOVE -> Unit
 			MouseEvent.Type.DRAG -> Unit
@@ -140,7 +140,7 @@ fun ScaledScene.registerProcessSystem(): Closeable {
 		mouseV._released.fill(false)
 		mouseV._pressed.fill(false)
 	}
-    closeable += stage.onEvent(*KeyEvent.Type.ALL) { e ->
+    closeable += stage.onEvents(*KeyEvent.Type.ALL) { e ->
 		keysPressed[e.key] = e.type == KeyEvent.Type.DOWN
 	}
 

@@ -4,7 +4,6 @@ import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
 import com.soywiz.klock.*
 import com.soywiz.korev.*
-import com.soywiz.korge.component.*
 import com.soywiz.korge.view.*
 import com.soywiz.korio.async.*
 import com.soywiz.korma.geom.*
@@ -75,7 +74,7 @@ class TouchEvents(val view: View) {
     }
 
     init {
-        view.onEvent(*TouchEvent.Type.ALL) { e ->
+        view.onEvents(*TouchEvent.Type.ALL) { e ->
             onTouchEvent(e.target as Views, e)
         }
     }

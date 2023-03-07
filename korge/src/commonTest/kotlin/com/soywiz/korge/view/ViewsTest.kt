@@ -407,13 +407,13 @@ class ViewsTest : ViewsForTesting() {
         val log = arrayListOf<String>()
 
         container {
-            this.onEvent(MyEvent.Type.MY, MyEvent.Type.OTHER) { log.add("Container:${it.type}") }
+            this.onEvents(MyEvent.Type.MY, MyEvent.Type.OTHER) { log.add("Container:${it.type}") }
             solidRect(100, 100) {
-                this.onEvent(MyEvent.Type.MY, MyEvent.Type.OTHER) {
+                this.onEvents(MyEvent.Type.MY, MyEvent.Type.OTHER) {
                     log.add("SolidRect1:${it.type}")
                     if (it.type == MyEvent.Type.MY) {
                         this@container.addChildAt(SolidRect(200, 200).apply {
-                            this.onEvent(MyEvent.Type.MY, MyEvent.Type.OTHER) {
+                            this.onEvents(MyEvent.Type.MY, MyEvent.Type.OTHER) {
                                 log.add("SolidRect2:${it.type}")
                             }
                         }, 0)

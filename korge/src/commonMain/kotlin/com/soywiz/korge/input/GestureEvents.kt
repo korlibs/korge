@@ -21,7 +21,7 @@ class GestureEvents(val view: BaseView) {
         private set
 
     init {
-        view.onEvent(*GestureEvent.Type.ALL) { event ->
+        view.onEvents(*GestureEvent.Type.ALL) { event ->
             this.views = event.target as Views
             lastEvent.copyFrom(event)
             when (event.type) {

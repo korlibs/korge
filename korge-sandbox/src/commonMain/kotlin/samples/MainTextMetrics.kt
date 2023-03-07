@@ -217,7 +217,7 @@ class MainTextMetrics : Scene() {
         }
     }
     fun Container.onDragAndDropFileEvent(block: suspend (DropFileEvent) -> Unit) {
-        onEvent(*DropFileEvent.Type.ALL) {
+        onEvents(*DropFileEvent.Type.ALL) {
             launchImmediately {
                 block(it)
             }

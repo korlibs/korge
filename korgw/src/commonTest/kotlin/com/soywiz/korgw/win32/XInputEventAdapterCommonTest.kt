@@ -27,7 +27,7 @@ class XInputEventAdapterCommonTest {
         val logs = arrayListOf<String>()
         val adapter = Win32XInputEventAdapterCommon(xinput, joy)
         val dispatcher = BaseEventListener()
-        dispatcher.onEvent(*GamePadConnectionEvent.Type.ALL) { logs += "$it" }
+        dispatcher.onEvents(*GamePadConnectionEvent.Type.ALL) { logs += "$it" }
         dispatcher.onEvent(GamePadUpdateEvent) { logs += "$it" }
         val emitter = GamepadInfoEmitter(dispatcher)
         adapter.updateGamepads(emitter)

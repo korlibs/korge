@@ -186,7 +186,7 @@ class MacosGameController {
             val gamepad = MacosGamepadEventAdapter()
             val events = GameWindow()
             events.onEvent(GamePadUpdateEvent) { print("$it\r") }
-            events.onEvent(*GamePadConnectionEvent.Type.ALL) { println(it) }
+            events.onEvents(*GamePadConnectionEvent.Type.ALL) { println(it) }
             while (true) {
                 gamepad.updateGamepads(events)
                 Thread.sleep(10L)

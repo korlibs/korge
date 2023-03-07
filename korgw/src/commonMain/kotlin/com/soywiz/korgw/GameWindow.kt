@@ -942,7 +942,7 @@ fun GameWindow.configure(
 }
 
 fun GameWindow.onDragAndDropFileEvent(block: suspend (DropFileEvent) -> Unit) {
-    onEvent(*DropFileEvent.Type.ALL) { event ->
+    onEvents(*DropFileEvent.Type.ALL) { event ->
         launchImmediately(coroutineDispatcher) {
             block(event)
         }

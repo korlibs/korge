@@ -18,8 +18,8 @@ class LinuxJoyEventAdapterTest {
         val logs = arrayListOf<String>()
         LinuxJoyEventAdapter(sync).use { adapter ->
             val dispatcher = BaseEventListener()
-            dispatcher.onEvent<GamePadConnectionEvent> { logs += "$it" }
-            dispatcher.onEvent<GamePadUpdateEvent> { logs += "$it" }
+            dispatcher.onEvents(*GamePadConnectionEvent.Type.ALL) { logs += "$it" }
+            dispatcher.onEvent(GamePadUpdateEvent) { logs += "$it" }
             val emitter = GamepadInfoEmitter(dispatcher)
             adapter.ensureJoysticks()
             adapter.updateGamepads(emitter)

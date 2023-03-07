@@ -27,11 +27,9 @@ class TestE2eJava {
             val gameWindow = CreateDefaultGameWindow()
             //val gameWindow = Win32GameWindow()
             //val gameWindow = AwtGameWindow()
-            gameWindow.addEventListener<MouseEvent> {
-                if (it.type == MouseEvent.Type.CLICK) {
-                    //println("MOUSE EVENT $it")
-                    gameWindow.toggleFullScreen()
-                }
+            gameWindow.onEvent(MouseEvent.Type.CLICK) {
+                //println("MOUSE EVENT $it")
+                gameWindow.toggleFullScreen()
             }
             //gameWindow.toggleFullScreen()
             gameWindow.setSize(WIDTH, HEIGHT)
