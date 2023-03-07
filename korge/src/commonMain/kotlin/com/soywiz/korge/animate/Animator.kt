@@ -71,6 +71,7 @@ open class Animator @PublishedApi internal constructor(
 
     internal val nodes = Deque<NewAnimatorNode>()
     var speed: Double = 1.0
+    val rootAnimator: Animator get() = parent?.rootAnimator ?: this
 
     internal fun removeProps(props: Set<KMutableProperty0<*>>) {
         for (node in nodes) {
@@ -86,35 +87,28 @@ open class Animator @PublishedApi internal constructor(
         ensure()
     }
 
-    private var updater: Closeable? = null
+    private var updater: Cancellable? = null
     var autoInvalidateView = false
 
     private fun ensure() {
         if (parent != null) return parent.ensure()
 
         //println("updateComponents=${updateComponents.size}, updateComponents.contains(updater)=${updateComponents.contains(updater)}, updater=$updater : $updateComponents")
-        if (updater != null && (root.getComponentsOfType(UpdateComponent) ?: emptyList()).contains(updater)) return
+        if (rootAnimator.updater != null) return
         //if (updater != null) return
 
         //println("!!!!!!!!!!!!! ADD NEW UPDATER : updater=$updater, this=$this, parent=$parent")
 
-        object : UpdateComponent {
-            override val view: View get() = this@Animator.root
-            override fun update(dt: TimeSpan) {
-                if (this@Animator.autoInvalidateView) this@Animator.root.invalidateRender()
-                //println("****")
-                if (this@Animator.rootAnimationNode.update(dt) >= TimeSpan.ZERO) {
-                    if (this@Animator.looped) {
-                        this@Animator.onComplete()
-                    } else {
-                        this@Animator.cancel()
-                    }
+        rootAnimator.updater = this@Animator.root.addUpdater(first = rootAnimator.startImmediately) { dt ->
+            if (this@Animator.autoInvalidateView) this@Animator.root.invalidateRender()
+            //println("****")
+            if (this@Animator.rootAnimationNode.update(dt) >= TimeSpan.ZERO) {
+                if (this@Animator.looped) {
+                    this@Animator.onComplete()
+                } else {
+                    this@Animator.cancel()
                 }
             }
-        }.also {
-            updater = it
-            it.attach()
-            if (startImmediately) it.update(TimeSpan.ZERO)
         }
     }
 
@@ -163,14 +157,14 @@ open class Animator @PublishedApi internal constructor(
         //println("---- CANCEL: looped=$looped, currentTime=$currentTime, totalTime=$totalTime")
         rootAnimationNode.reset()
         nodes.clear()
-        updater?.close()
-        updater = null
+        rootAnimator.updater?.cancel()
+        rootAnimator.updater = null
         parallelStarted = false
         onComplete()
         return this
     }
 
-    val isActive: Boolean get() = updater != null && !rootAnimationNode.isEmpty()
+    val isActive: Boolean get() = rootAnimator.updater != null && !rootAnimationNode.isEmpty()
 
     /**
      * Finishes all the pending animations and sets all the properties to their final state.

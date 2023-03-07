@@ -17,7 +17,7 @@ class NewAnimatorTest {
             var _animator: Animator? = null
 
             fun logLine() {
-                lines += "${view.pos.niceStr} : ${_animator?.nodes?.size} : ${view.getComponentsOfType(UpdateComponent)?.size} : ${log.joinToString(",")}"
+                lines += "${view.pos.niceStr} : ${_animator?.nodes?.size} : ${view.onEventCount(UpdateEvent)} : ${log.joinToString(",")}"
             }
 
             logLine()
@@ -42,7 +42,7 @@ class NewAnimatorTest {
 
         assertEquals(
             """
-                (0, 0) : null : null : 
+                (0, 0) : null : 0 : 
                 (0, 0) : 1 : 1 : 
                 (0, 0) : 0 : 1 : 
                 (1, 0) : 0 : 1 : 
@@ -52,7 +52,7 @@ class NewAnimatorTest {
                 (10, 2) : 0 : 1 : complete
                 (10, 10) : 0 : 0 : complete,complete
                 ---
-                (0, 0) : null : null : 
+                (0, 0) : null : 0 : 
                 (0, 0) : 0 : 1 : 
                 (0, 0) : 0 : 1 : 
                 (1, 0) : 0 : 1 : 
@@ -98,7 +98,7 @@ class NewAnimatorTest {
         assertEquals(
             """
                 (0, 0), 1 : 
-                (0, 0), 1 : 01
+                (0, 0), 1 : 0
                 (1, 0), 1 : 01
                 (2, 0), 1 : 01
                 (3, 0), 1 : 01
