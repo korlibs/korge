@@ -1,6 +1,6 @@
 package com.soywiz.korag.shader.gl
 
-import com.soywiz.klogger.Console
+import com.soywiz.klogger.Logger
 import com.soywiz.korag.shader.Attribute
 import com.soywiz.korag.shader.FuncDecl
 import com.soywiz.korag.shader.Output
@@ -74,6 +74,8 @@ class GlslGenerator constructor(
     override val config: GlslConfig = GlslConfig()
 ) : BaseGlslGenerator {
     companion object {
+        private val logger = Logger("GlslGenerator")
+
         val NAME: String get() = GlslConfig.NAME
         val DEFAULT_VERSION: Int get() = GlslConfig.DEFAULT_VERSION
         val FORCE_GLSL_VERSION: String? get() = GlslConfig.FORCE_GLSL_VERSION
@@ -188,8 +190,8 @@ class GlslGenerator constructor(
             }
         }.toString().also {
             if (GlslConfig.DEBUG_GLSL) {
-                Console.info("GlSlGenerator.version: $version")
-                Console.debug("GlSlGenerator:\n$it")
+                logger.info { "GlSlGenerator.version: $version" }
+                logger.debug { "GlSlGenerator:\n$it" }
             }
         }
         return Result(

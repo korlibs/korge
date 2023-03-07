@@ -71,6 +71,7 @@ inline class AGTextureUnitInfo private constructor(val data: Int) {
 class AGTexture(
     val targetKind: AGTextureTargetKind = AGTextureTargetKind.TEXTURE_2D
 ) : AGObject(), Closeable {
+    private val logger = Logger("AGTexture")
     var isFbo: Boolean = false
     var requestMipmaps: Boolean = false
 
@@ -87,7 +88,7 @@ class AGTexture(
 
     private fun checkBitmaps(bmp: Bitmap) {
         if (!bmp.premultiplied) {
-            Console.error("Trying to upload a non-premultiplied bitmap: $bmp. This will cause rendering artifacts")
+            logger.error { "Trying to upload a non-premultiplied bitmap: $bmp. This will cause rendering artifacts" }
         }
     }
 

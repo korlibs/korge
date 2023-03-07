@@ -1,7 +1,7 @@
 package com.soywiz.korio.file.std
 
 import com.soywiz.kds.iterators.fastForEach
-import com.soywiz.klogger.Console
+import com.soywiz.klogger.Logger
 import com.soywiz.korio.file.Vfs
 import com.soywiz.korio.file.VfsFile
 import com.soywiz.korio.file.VfsStat
@@ -9,9 +9,10 @@ import com.soywiz.korio.file.baseName
 import com.soywiz.korio.lang.runIgnoringExceptions
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.toList
 
 open class MergedVfs(vfsList: List<VfsFile> = listOf(), val name: String = "unknown") : Vfs.Proxy() {
+    private val logger = Logger("MergedVfs")
+
     constructor(vararg vfsList: VfsFile) : this(vfsList.toList())
 
 	private val vfsList = ArrayList(vfsList)
@@ -29,7 +30,7 @@ open class MergedVfs(vfsList: List<VfsFile> = listOf(), val name: String = "unkn
         return when (vfsList.size) {
             0 -> {
                 val msg = "MergedVfs.access: VfsList is empty $vfsList : path=$path, name=$name"
-                Console.error(msg)
+                logger.error { msg }
                 //return EmptyVfs[path]
                 error(msg)
             }

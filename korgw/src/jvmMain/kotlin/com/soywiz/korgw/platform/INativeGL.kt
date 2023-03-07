@@ -2,6 +2,7 @@
 
 package com.soywiz.korgw.platform
 
+import com.soywiz.klogger.Logger
 import com.soywiz.kmem.*
 import com.soywiz.kmem.Platform
 import com.soywiz.kmem.dyn.*
@@ -43,6 +44,8 @@ typealias IntPtr = IntBuffer
 typealias FloatPtr = FloatBuffer
 
 object DirectGL : INativeGL {
+    private val logger = Logger("DirectGL")
+
     external fun glGenVertexArrays(n: Int, out: IntArray)
     external fun glBindVertexArray(varray: Int)
 
@@ -241,7 +244,7 @@ object DirectGL : INativeGL {
                 )
             }
         } catch (e: Throwable) {
-            com.soywiz.klogger.Console.error("Failed to initialize OpenAL: arch=$arch, OS.rawName=${Platform.rawOsName}, nativeOpenGLLibraryPath=$nativeOpenGLLibraryPath, message=${e.message}")
+            logger.error { "Failed to initialize OpenAL: arch=$arch, OS.rawName=${Platform.rawOsName}, nativeOpenGLLibraryPath=$nativeOpenGLLibraryPath, message=${e.message}" }
             e.printStackTrace()
         } finally {
             //println("/Native.register")

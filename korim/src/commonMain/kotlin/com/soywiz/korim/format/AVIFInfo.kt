@@ -1,7 +1,7 @@
 package com.soywiz.korim.format
 
 import com.soywiz.kds.IntMap
-import com.soywiz.klogger.Console
+import com.soywiz.klogger.Logger
 import com.soywiz.korio.experimental.KorioExperimentalApi
 import com.soywiz.korio.lang.LATIN1
 import com.soywiz.korio.stream.AsyncStream
@@ -47,13 +47,14 @@ open class ISOBMFF(vararg exts: String) : ImageFormatSuspend(*exts) {
 
     @OptIn(KorioExperimentalApi::class)
     class StreamParser(val props: ImageDecodingProps) {
+        private val logger = Logger("StreamParser")
         val debug get() = props.debug
         var info = ImageInfo()
         val items = IntMap<ItemInfo>()
 
         suspend fun decode(s: AsyncStream) {
             decodeLevel(s.sliceHere(), 0)
-            if (debug) Console.error("ITEMS")
+            if (debug) logger.error { "ITEMS" }
             items.fastValueForEach {
                 if (it.type == "Exif") {
                     val extent = it.extents.first()
@@ -76,7 +77,7 @@ open class ISOBMFF(vararg exts: String) : ImageFormatSuspend(*exts) {
                 }
                 //if (blockSize)
                 if (debug) {
-                    Console.error("${"  ".repeat(level)}blockSize=$blockSize, blockType=$blockType")
+                    logger.error { "${"  ".repeat(level)}blockSize=$blockSize, blockType=$blockType" }
                 }
                 when (blockType) {
                     "ftyp" -> Unit
@@ -113,7 +114,7 @@ open class ISOBMFF(vararg exts: String) : ImageFormatSuspend(*exts) {
                         }
 
                         if (debug) {
-                            Console.error("iloc version=$version, flags=$flags, count=$count, offsetSize=$offsetSize, lengthSize=$lengthSize, baseOffsetSize=$baseOffsetSize, indexSize=$indexSize")
+                            logger.error { "iloc version=$version, flags=$flags, count=$count, offsetSize=$offsetSize, lengthSize=$lengthSize, baseOffsetSize=$baseOffsetSize, indexSize=$indexSize" }
                         }
                         for (n in 0 until count) {
                             val itemID = when (version) {
@@ -131,7 +132,7 @@ open class ISOBMFF(vararg exts: String) : ImageFormatSuspend(*exts) {
                             val baseOffset: Long = blockStream.readSize(baseOffsetSize)
                             val extentCount = blockStream.readU16BE()
                             if (debug) {
-                                Console.error(" - itemID=$itemID, method=$method, dataRefIndex=$dataRefIndex, baseOffset=$baseOffset, extentCount=$extentCount")
+                                logger.error { " - itemID=$itemID, method=$method, dataRefIndex=$dataRefIndex, baseOffset=$baseOffset, extentCount=$extentCount" }
                             }
                             val itemInfo = items.getOrPut(itemID) { ItemInfo(itemID) }
                             for (m in 0 until extentCount) {
@@ -140,7 +141,7 @@ open class ISOBMFF(vararg exts: String) : ImageFormatSuspend(*exts) {
                                 val extentLength = blockStream.readSize(lengthSize)
                                 val offset = baseOffset + extentOffset
                                 if (debug) {
-                                    Console.error("   - $extentIndex, $offset, $extentLength")
+                                    logger.error { "   - $extentIndex, $offset, $extentLength" }
                                 }
                                 itemInfo.extents.add(ItemExtent(offset, extentLength))
                             }
@@ -171,7 +172,7 @@ open class ISOBMFF(vararg exts: String) : ImageFormatSuspend(*exts) {
                         val itemType = blockStream.readStringz(4, LATIN1)
                         val itemInfo = items.getOrPut(itemID) { ItemInfo(itemID) }
                         itemInfo.type = itemType
-                        if (debug) Console.error("infe: itemID=$itemID, protectionIndex=$protectionIndex, itemType=${itemType}")
+                        if (debug) logger.error { "infe: itemID=$itemID, protectionIndex=$protectionIndex, itemType=$itemType" }
                     }
                     "iprp" -> decodeLevel(blockStream, level + 1)
                     "ipco" -> decodeLevel(blockStream, level + 1)

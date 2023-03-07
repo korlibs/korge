@@ -2,9 +2,7 @@ package com.soywiz.korau.sound
 
 import com.soywiz.kds.Pool
 import com.soywiz.klock.milliseconds
-import com.soywiz.klogger.Console
-import com.soywiz.korau.format.AudioFormats
-import com.soywiz.korau.format.WAV
+import com.soywiz.klogger.Logger
 import com.soywiz.korio.async.delay
 import com.soywiz.korio.async.launchImmediately
 import com.soywiz.korio.lang.Disposable
@@ -46,6 +44,7 @@ class Win32PlatformAudioOutput(
     val freq: Int
 ) : PlatformAudioOutput(coroutineContext, freq) {
     private var process: WaveOutProcess? = null
+    private val logger = Logger("Win32PlatformAudioInput")
 
     override val availableSamples: Int get() = if (process != null) (process!!.length - process!!.position).toInt() else 0
         //.also { println("Win32PlatformAudioOutput.availableSamples. length=${process.length}, position=${process.position}, value=$it") }
@@ -105,7 +104,7 @@ class Win32PlatformAudioOutput(
                 } catch (e: CancellationException) {
                     // Do nothing
                 } catch (e: Throwable) {
-                    Console.error("Error in Win32PlatformAudioOutput.stop:")
+                    logger.error { "Error in Win32PlatformAudioOutput.stop:" }
                     e.printStackTrace()
                 } finally {
                     provider.workerPool.free(process)

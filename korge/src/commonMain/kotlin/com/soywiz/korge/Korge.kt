@@ -5,7 +5,6 @@ import com.soywiz.klock.DateTime
 import com.soywiz.klock.TimeProvider
 import com.soywiz.klock.TimeSpan
 import com.soywiz.klock.milliseconds
-import com.soywiz.klogger.Console
 import com.soywiz.klogger.Logger
 import com.soywiz.kmem.*
 import com.soywiz.korag.log.AGPrint
@@ -539,7 +538,7 @@ object Korge {
                     views.mouseUpdated()
                 }
             } catch (e: Throwable) {
-                Console.error("views.gameWindow.onRenderEvent:")
+                logger.error { "views.gameWindow.onRenderEvent:" }
                 e.printStackTrace()
                 if (views.rethrowRenderError) throw e
             }

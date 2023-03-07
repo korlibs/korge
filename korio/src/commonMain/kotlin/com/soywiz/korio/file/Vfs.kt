@@ -213,6 +213,7 @@ abstract class Vfs : AsyncCloseable {
 		FinalVfsFile(this, path)
 
 	abstract class Proxy : Vfs() {
+		private val logger = Logger("Proxy")
 		protected abstract suspend fun access(path: String): VfsFile
 		protected open suspend fun VfsFile.transform(): VfsFile = file(this.path)
 		//suspend protected fun transform2_f(f: VfsFile): VfsFile = transform(f)
@@ -229,7 +230,7 @@ abstract class Vfs : AsyncCloseable {
                     try {
                         init()
                     } catch (e: Throwable) {
-                        Console.error("Error initializing $this")
+                        logger.error { "Error initializing $this" }
                         e.printStackTrace()
                     }
                 }

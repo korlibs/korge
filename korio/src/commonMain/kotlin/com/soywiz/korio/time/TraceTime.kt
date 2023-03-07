@@ -1,7 +1,7 @@
 package com.soywiz.korio.time
 
 import com.soywiz.klock.measureTime
-import com.soywiz.klogger.Console
+import com.soywiz.klogger.Logger
 import com.soywiz.korio.lang.Environment
 
 @PublishedApi
@@ -13,7 +13,7 @@ inline fun <T : Any> traceTime(name: String, block: () -> T): T {
         result = block()
     }
     if (traceTimes) {
-        Console.info("$name loaded in $time")
+        Logger("TraceTime").info { "$name loaded in $time" }
     }
     return result
 }

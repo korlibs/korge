@@ -3,7 +3,7 @@ package com.soywiz.korio.file.std
 import com.soywiz.kds.FastStringMap
 import com.soywiz.kds.getOrPut
 import com.soywiz.klock.DateTime
-import com.soywiz.klogger.Console
+import com.soywiz.klogger.Logger
 import com.soywiz.korio.dynamic.dyn
 import com.soywiz.korio.file.PathInfo
 import com.soywiz.korio.file.Vfs
@@ -28,6 +28,8 @@ fun VfsFile.withCatalog(): VfsFile = CatalogVfs(this).root
 fun VfsFile.withCatalogJail(): VfsFile = CatalogVfs(this.jail()).root
 
 open class CatalogVfs(val parent: VfsFile) : Vfs.Proxy() {
+    private val logger = Logger("CatalogVfs")
+
     override suspend fun open(path: String, mode: VfsOpenMode): AsyncStream {
         val fstat = statOrNull(path)
         val base = withContext(VfsCachedStatContext(fstat)) {
@@ -81,7 +83,7 @@ open class CatalogVfs(val parent: VfsFile) : Vfs.Proxy() {
         val catalogJsonString = try {
             parent[path]["\$catalog.json"].readString()
         } catch (e: Throwable) {
-            if (e !is FileNotFoundException) Console.error(e)
+            if (e !is FileNotFoundException) logger.error { e }
             return null
         }
         val data = Json.parse(catalogJsonString).dyn

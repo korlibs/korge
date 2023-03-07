@@ -5,7 +5,7 @@ import com.soywiz.kgl.*
 import com.soywiz.klock.measureTime
 import com.soywiz.korag.*
 
-import com.soywiz.klogger.Console
+import com.soywiz.klogger.Logger
 import com.soywiz.kmem.KmemGC
 import com.soywiz.kmem.hasFlags
 import com.soywiz.korag.gl.*
@@ -43,6 +43,7 @@ import platform.darwin.NSInteger
 // @TODO: Do not remove! Called from a generated .kt file : platforms/native-ios/bootstrap.kt
 @Suppress("unused", "UNUSED_PARAMETER")
 abstract class KorgwBaseNewAppDelegate {
+    private val logger = Logger("KorgwBaseNewAppDelegate")
     // Overriden to provide the entry
     abstract fun applicationDidFinishLaunching(app: UIApplication)
 
@@ -54,7 +55,7 @@ abstract class KorgwBaseNewAppDelegate {
     val gameWindow: IosGameWindow get() = MyIosGameWindow
 
     fun applicationDidFinishLaunching(app: UIApplication, entry: suspend () -> Unit) {
-        Console.info("applicationDidFinishLaunching: entry=$entry")
+        logger.info { "applicationDidFinishLaunching: entry=$entry" }
         this.entry = entry
         window = UIWindow(frame = UIScreen.mainScreen.bounds)
         CreateInitialIosGameWindow(this)
@@ -67,32 +68,32 @@ abstract class KorgwBaseNewAppDelegate {
 
 
     fun applicationDidEnterBackground(app: UIApplication) {
-        Console.info("applicationDidEnterBackground")
+        logger.info {"applicationDidEnterBackground" }
     }
     fun applicationWillEnterForeground(app: UIApplication) {
-        Console.info("applicationWillEnterForeground")
+        logger.info {"applicationWillEnterForeground" }
     }
     fun applicationWillResignActive(app: UIApplication) {
-        Console.info("applicationWillResignActive")
+        logger.info {"applicationWillResignActive" }
         forceGC()
         gameWindow.dispatchPauseEvent()
     }
     fun applicationDidBecomeActive(app: UIApplication) {
-        Console.info("applicationDidBecomeActive")
+        logger.info {"applicationDidBecomeActive" }
         gameWindow.dispatchResumeEvent()
     }
     fun applicationWillTerminate(app: UIApplication) {
-        Console.info("applicationWillTerminate")
+        logger.info {"applicationWillTerminate" }
         gameWindow.dispatchStopEvent()
         gameWindow.dispatchDestroyEvent()
     }
 
     private fun forceGC() {
-        Console.info("Collecting GC...")
+        logger.info {"Collecting GC..." }
         val time = measureTime {
             KmemGC.collect() // Forces collection when going to background to release resources to the app
         }
-        Console.info("Collected in $time")
+        logger.info {"Collected in $time" }
     }
 }
 
@@ -112,6 +113,7 @@ abstract class KorgwBaseNewAppDelegate {
 
 @ExportObjCClass
 class ViewController(val entry: suspend () -> Unit) : GCEventViewController(null, null) {
+    private val logger = Logger("ViewController")
     // Keep references to avoid collecting instances
     lateinit var glXViewController: MyGLKViewController
     val gameWindow: IosGameWindow get() = MyIosGameWindow
@@ -120,14 +122,14 @@ class ViewController(val entry: suspend () -> Unit) : GCEventViewController(null
         super.viewDidLoad()
         // Do any additional setup after loading the view.
 
-        Console.info("ViewController!")
+        logger.info { "ViewController!" }
 
         glXViewController = MyGLKViewController(entry)
         //glXViewController.preferredFramesPerSecond = 60
 
         val glView = glXViewController.view
-        Console.info("glView: ${glView}")
-        Console.info("glView: ${glView.bounds}")
+        logger.info { "glView: ${glView}" }
+        logger.info { "glView: ${glView.bounds}" }
         view.addSubview(glView)
 
         //NSNotificationCenter.defaultCenter.addObserver(this, NSSelectorFromString(this::controllerDidConnect.name), GCControllerDidConnectNotification, null)
@@ -195,6 +197,7 @@ class ViewController(val entry: suspend () -> Unit) : GCEventViewController(null
 @OptIn(UnsafeNumber::class)
 @ExportObjCClass
 class MyGLKViewController(val entry: suspend () -> Unit)  : GLKViewController(null, null) {
+    private val logger = Logger("MyGLKViewController")
     var value = 0
     var initialized = false
     private var myContext: EAGLContext? = null
@@ -228,10 +231,10 @@ class MyGLKViewController(val entry: suspend () -> Unit)  : GLKViewController(nu
             }
             //self.lastTouchId = 0;
 
-            Console.info("dispatchInitEvent")
+            logger.info { "dispatchInitEvent" }
             gameWindow.dispatchInitEvent()
             gameWindow.entry {
-                Console.info("Executing entry...")
+                logger.info { "Executing entry..." }
                 this.entry()
             }
         }
@@ -239,8 +242,8 @@ class MyGLKViewController(val entry: suspend () -> Unit)  : GLKViewController(nu
         // Context changed!
         val currentContext = EAGLContext.currentContext()
         if (myContext != currentContext) {
-            Console.info("myContext = $myContext")
-            Console.info("currentContext = $currentContext")
+            logger.info {"myContext = $myContext" }
+            logger.info {"currentContext = $currentContext" }
             myContext = currentContext
             gameWindow.ag.contextLost()
         }
@@ -312,7 +315,7 @@ class MyGLKViewController(val entry: suspend () -> Unit)  : GLKViewController(nu
         //println("addTouches[${touches.size}] type=$type");
         for (touch in touches) {
             if (touch !is UITouch) {
-                Console.info("ERROR.addTouches no UITouch")
+                logger.info { "ERROR.addTouches no UITouch" }
                 continue
             }
             val point = touch.locationInView(this.view)

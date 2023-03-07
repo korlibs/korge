@@ -4,7 +4,7 @@ import com.soywiz.kds.Pool
 import com.soywiz.klock.TimeSpan
 import com.soywiz.klock.milliseconds
 import com.soywiz.klock.seconds
-import com.soywiz.klogger.Console
+import com.soywiz.klogger.Logger
 import com.soywiz.kmem.clamp01
 import com.soywiz.korau.internal.coerceToShort
 import com.soywiz.korau.sound.AudioData
@@ -230,6 +230,8 @@ class OpenALSoundNoStream(
     val data: AudioData?,
     override val name: String = "Unknown"
 ) : Sound(coroutineContext), SoundProps {
+    private val logger = Logger("OpenALSoundNoStream")
+
     override suspend fun decode(maxSamples: Int): AudioData = data ?: AudioData.DUMMY
 
     override var volume: Double = 1.0
@@ -248,7 +250,7 @@ class OpenALSoundNoStream(
         provider.makeCurrent()
         var buffer = provider.bufferPool.alloc()
         var source = provider.sourcePool.alloc()
-        if (source == -1) Console.warn("UNEXPECTED[0] source=-1")
+        if (source == -1) logger.warn { "UNEXPECTED[0] source=-1" }
 
         AL.alBufferData(buffer, data, panning, volume)
 
@@ -301,7 +303,7 @@ class OpenALSoundNoStream(
             override fun stop() {
                 if (stopped) return
                 stopped = true
-                if (source == -1) Console.warn("UNEXPECTED[1] source=-1")
+                if (source == -1) logger.warn { "UNEXPECTED[1] source=-1" }
                 AL.alSourceStop(source)
                 AL.alSourcei(source, AL.AL_BUFFER, 0)
                 provider.sourcePool.free(source)

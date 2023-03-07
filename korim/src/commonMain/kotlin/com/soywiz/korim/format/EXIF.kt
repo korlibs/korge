@@ -1,6 +1,6 @@
 package com.soywiz.korim.format
 
-import com.soywiz.klogger.Console
+import com.soywiz.klogger.Logger
 import com.soywiz.kmem.Endian
 import com.soywiz.kmem.readS32
 import com.soywiz.kmem.readU16
@@ -29,6 +29,8 @@ import com.soywiz.krypto.encoding.hex
 // https://zpl.fi/exif-orientation-in-different-formats/
 // https://exiftool.org/TagNames/EXIF.html
 object EXIF {
+    private val logger = Logger("EXIF")
+
     suspend fun readExifFromJpeg(s: VfsFile, info: ImageInfo = ImageInfo(), debug: Boolean = false): ImageInfo = s.openUse(VfsOpenMode.READ) {
         readExifFromJpeg(this, info, debug)
     }
@@ -91,7 +93,7 @@ object EXIF {
 
         val nDirEntry = s.readU16(endian)
         if (debug) {
-            Console.error("nDirEntry=$nDirEntry, tagMark=$tagMark, offsetFirstFID=$offsetFirstIFD")
+            logger.error { "nDirEntry=$nDirEntry, tagMark=$tagMark, offsetFirstFID=$offsetFirstIFD" }
         }
         for (n in 0 until nDirEntry) {
             val tagPos = s.position.toInt()
@@ -99,7 +101,7 @@ object EXIF {
             val dataFormat = DataFormat[s.readU16(endian)]
             val nComponent = s.readS32(endian)
             if (debug) {
-                Console.error("tagPos=${tagPos.hex}, tagNumber=${tagNumber.hex}, dataFormat=$dataFormat, nComponent=$nComponent, size=${dataFormat.indexBytes(nComponent)}")
+                logger.error { "tagPos=${tagPos.hex}, tagNumber=${tagNumber.hex}, dataFormat=$dataFormat, nComponent=$nComponent, size=${dataFormat.indexBytes(nComponent)}" }
             }
             val data: ByteArray = s.readBytesExact(dataFormat.indexBytes(nComponent))
 
@@ -108,7 +110,7 @@ object EXIF {
 
             if (debug) {
                 if (dataFormat == DataFormat.STRING) {
-                    Console.error("  - '${s.sliceStart(readInt(0).toLong()).readStringz(nComponent)}'")
+                    logger.error { "  - '${s.sliceStart(readInt(0).toLong()).readStringz(nComponent)}'" }
                 }
             }
 
