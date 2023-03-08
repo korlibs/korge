@@ -166,27 +166,8 @@ class BatchBuilder2D constructor(
 
 	init { logger.trace { "BatchBuilder2D[7]" } }
 
-	private val ptt1 = MPoint()
-	private val ptt2 = MPoint()
-
-	private val pt1 = MPoint()
-	private val pt2 = MPoint()
-	private val pt3 = MPoint()
-	private val pt4 = MPoint()
-	private val pt5 = MPoint()
-
-	private val pt6 = MPoint()
-	private val pt7 = MPoint()
-	private val pt8 = MPoint()
-
-	init { logger.trace { "BatchBuilder2D[8]" } }
-
-	init { logger.trace { "BatchBuilder2D[9]" } }
-
     //@KorgeInternal val textureUnit0 = AG.TextureUnit(null, linear = false)
     //@KorgeInternal val textureUnit1 = AG.TextureUnit(null, linear = false)
-
-    init { logger.trace { "BatchBuilder2D[10]" } }
 
 	// @TODO: kotlin-native crash: [1]    80122 segmentation fault  ./sample1-native.kexe
 	//private val uniforms = mapOf<Uniform, Any>(
@@ -524,107 +505,6 @@ class BatchBuilder2D constructor(
     fun setStateFast(tex: BmpSlice, smoothing: Boolean, blendMode: BlendMode, program: Program?, icount: Int, vcount: Int) {
         setStateFast(texManager.getTexture(tex).base, smoothing, blendMode, program, icount, vcount)
     }
-
-    /**
-     * Draws/buffers a 9-patch image with the texture [tex] at [x], [y] with the total size of [width] and [height].
-     * [posCuts] and [texCuts] are [MPoint] an array of 4 points describing ratios (values between 0 and 1) inside the width/height of the area to be drawn,
-     * and the positions inside the texture.
-     *
-     * The 9-patch looks like this (dividing the image in 9 parts).
-     *
-     * 0--+-----+--+
-     * |  |     |  |
-     * |--1-----|--|
-     * |  |SSSSS|  |
-     * |  |SSSSS|  |
-     * |  |SSSSS|  |
-     * |--|-----2--|
-     * |  |     |  |
-     * +--+-----+--3
-     *
-     * 0: Top-left of the 9-patch
-     * 1: Top-left part where scales starts
-     * 2: Bottom-right part where scales ends
-     * 3: Bottom-right of the 9-patch
-     *
-     * S: Is the part that is scaled. The other regions are not scaled.
-     *
-     * It uses the transform [m] matrix, with an optional [filtering] and [colorMul], [blendMode] and [program]
-     */
-	fun drawNinePatch(
-        tex: TextureCoords,
-        x: Float,
-        y: Float,
-        width: Float,
-        height: Float,
-        posCuts: Array<MPoint>,
-        texCuts: Array<MPoint>,
-        m: MMatrix = identity,
-        filtering: Boolean = true,
-        colorMul: RGBA = Colors.WHITE,
-        blendMode: BlendMode = BlendMode.NORMAL,
-        program: Program? = null,
-	) {
-		setStateFast(tex.base, filtering, blendMode, program, icount = 6 * 9, vcount = 4 * 4)
-        val texIndex: Int = currentTexIndex
-
-		val p_o = pt1.setToTransform(m, ptt1.setTo(x, y))
-		val p_dU = pt2.setToSub(ptt1.setToTransform(m, ptt1.setTo(x + width, y)), p_o)
-		val p_dV = pt3.setToSub(ptt1.setToTransform(m, ptt1.setTo(x, y + height)), p_o)
-
-		val t_o = pt4.setTo(tex.tlX, tex.tlY)
-		val t_dU = pt5.setToSub(ptt1.setTo(tex.trX, tex.trY), t_o)
-		val t_dV = pt6.setToSub(ptt1.setTo(tex.blX, tex.blY), t_o)
-
-		val start = vertexCount
-
-		for (cy in 0 until 4) {
-			val posCutY = posCuts[cy].y
-			val texCutY = texCuts[cy].y
-			for (cx in 0 until 4) {
-				val posCutX = posCuts[cx].x
-				val texCutX = texCuts[cx].x
-
-				val p = pt7.setToAdd(
-					p_o,
-					ptt1.setToAdd(
-						ptt1.setToMul(p_dU, posCutX),
-						ptt2.setToMul(p_dV, posCutY)
-					)
-				)
-
-				val t = pt8.setToAdd(
-					t_o,
-					ptt1.setToAdd(
-						ptt1.setToMul(t_dU, texCutX),
-						ptt2.setToMul(t_dV, texCutY)
-					)
-				)
-
-				addVertex(p.x.toFloat(), p.y.toFloat(), t.x.toFloat(), t.y.toFloat(), colorMul, texIndex)
-			}
-		}
-
-		for (cy in 0 until 3) {
-			for (cx in 0 until 3) {
-				// v0...v1
-				// .    .
-				// v2...v3
-
-				val v0 = start + cy * 4 + cx
-				val v1 = v0 + 1
-				val v2 = v0 + 4
-				val v3 = v0 + 5
-
-				addIndex(v0)
-				addIndex(v1)
-				addIndex(v2)
-				addIndex(v2)
-				addIndex(v1)
-				addIndex(v3)
-			}
-		}
-	}
 
     fun drawQuad(
         tex: TextureCoords,
