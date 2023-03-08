@@ -181,8 +181,16 @@ open class Operand(open val type: VarType) {
 
 enum class Precision { DEFAULT, LOW, MEDIUM, HIGH }
 
-sealed class Variable(val name: String, type: VarType, val arrayCount: Int, val precision: Precision = Precision.DEFAULT) : Operand(type) {
+open class OperandWithArray(type: VarType, val arrayCount: Int) : Operand(type) {
+    val kind: VarKind = type.kind
+    val stride: Int = type.elementCount
+    val totalElements: Int = stride * arrayCount
+    val totalBytes: Int = type.bytesSize * arrayCount
+}
+
+sealed class Variable(val name: String, type: VarType, arrayCount: Int, val precision: Precision = Precision.DEFAULT) : OperandWithArray(type, arrayCount) {
     constructor(name: String, type: VarType, precision: Precision = Precision.DEFAULT) : this(name, type, 1, precision)
+
     val indexNames = Array(arrayCount) { "$name[$it]" }
     var id: Int = 0
 	var data: Any? = null

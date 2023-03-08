@@ -113,7 +113,9 @@ abstract class ShaderFilter : Filter {
             when (value.type.kind) {
                 VarKind.TFLOAT -> {
                     val out = uniforms[value.uniform].f32
-                    for (n in 0 until out.size) out[n] = (value.f32[n] * filterScale).toFloat()
+                    uniforms[value.uniform].setFloatArray(out.size) {
+                        (value.f32[it] * filterScale).toFloat()
+                    }
                 }
                 else -> TODO()
             }

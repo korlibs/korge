@@ -418,6 +418,9 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
         }
     }
 
+    val tempBuffer = Buffer(4 * 128)
+    val tempBufferBlockCount = Array(128) { tempBuffer.sliceWithSize(0, 4 * it) }
+
     // UBO
     fun uniformsSet(uniforms: AGUniformValues) {
         val glProgram = currentProgram ?: return
@@ -478,7 +481,9 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
 
             // Store into a direct buffer
             //arraycopy(value.data, 0, tempData, 0, value.data.size)
-            val data = value.data
+            //val data = value.data
+            value.extractToFloatAndInts(tempBuffer)
+            val data = tempBufferBlockCount[declArrayCount * uniformType.elementCount]
 
             //println("uniform=$uniform, data=${value.data} : ${value.data.getInt32(0)}")
 
