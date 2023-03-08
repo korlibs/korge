@@ -28,6 +28,7 @@ import org.gradle.jvm.tasks.*
 import org.gradle.plugins.ide.idea.IdeaPlugin
 import org.gradle.plugins.ide.idea.model.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
+import org.jetbrains.kotlin.gradle.targets.js.ir.*
 import org.jetbrains.kotlin.gradle.tasks.*
 import java.io.*
 import java.net.*
@@ -1064,9 +1065,19 @@ object RootKorlibsPlugin {
                                 dependsOn(compileDevelopmentExecutableKotlinJs)
                                 //task.dependsOn(browserPrepareEsbuild)
 
+                                val linkTask = project.tasks.getByName(compileDevelopmentExecutableKotlinJs) as KotlinJsIrLink
+                                val jsPath = linkTask.outputFileProperty.get()
+                                /*
+                                println("::::" + linkTask.destinationDirectory.get())
+                                println("::::" + linkTask.moduleName.get())
+                                println("::::" + linkTask.moduleName.get())
+                                println("::::::::" + linkTask.outputFileProperty.get())
                                 val jsPath = project.tasks.getByName(compileDevelopmentExecutableKotlinJs).outputs.files.firstOrNull() {
+                                    println("::::::::::::it=$it")
                                     it.extension.toLowerCase() == "js"
-                                } ?: "unknown-js.js"
+                                } ?: error("Can't find output file for compile JS")
+
+                                 */
 
                                 val output = File(wwwFolder, "${project.name}.js")
                                 inputs.file(jsPath)
