@@ -100,9 +100,13 @@ private class NodeJsAsyncClient(val coroutineContext: CoroutineContext) : AsyncC
     private val net = require_node("net")
     private var connection: dynamic = null
     private val input = AsyncByteArrayDeque()
-    private val logger = Logger("NodeJsAsyncClient")
 
     override var connected: Boolean = false; private set
+
+    companion object {
+        private val logger = Logger("NodeJsAsyncClient")
+    }
+
     private val task = AsyncQueue().withContext(coroutineContext)
 
     fun setConnection(connection: dynamic) {
@@ -165,11 +169,14 @@ private class NodeJsAsyncClient(val coroutineContext: CoroutineContext) : AsyncC
 private class NodeJsAsyncServer : AsyncServer {
     private val net = require_node("net")
     private var server: dynamic = null
-    private val logger = Logger("NodeJsAsyncServer")
     override var requestPort: Int = -1; private set
     override var host: String = ""; private set
     override var backlog: Int = -1; private set
     override var port: Int = -1; private set
+
+    companion object {
+        private val logger = Logger("NodeJsAsyncServer")
+    }
 
     private val clientFlow: Channel<dynamic> = Channel(Channel.UNLIMITED)
 
