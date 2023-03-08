@@ -38,7 +38,7 @@ inline class Fixed private constructor(val raw: Int) : Comparable<Fixed> {
                     Double.POSITIVE_INFINITY -> return POSITIVE_INFINITY
                 }
             }
-            return Fixed((value * SCALE).toInt())
+            return Fixed((value * SCALE).toIntRound())
         }
         operator fun invoke(value: String): Fixed {
             return Fixed(value.toDouble())
