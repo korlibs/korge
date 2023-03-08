@@ -13,8 +13,6 @@ class FixedShortTest {
         assertEquals("1123.1".toFixedShort(), 1122f.toFixedShort() + 1.1.toFixedShort())
         assertEquals(0.5.toFixedShort(), 1.toFixedShort() / 2.toFixedShort())
         assertEquals(2.toFixedShort(), 1.toFixedShort() * 2.toFixedShort())
-        println("1100.toFixedShort()=${1100.toFixedShort()}")
-        println("2.1f.toFixedShort()=${2.1f.toFixedShort()}")
         assertEquals("2310.0".toFixedShort(), 1100.toFixedShort() * 2.1f.toFixedShort())
     }
 
