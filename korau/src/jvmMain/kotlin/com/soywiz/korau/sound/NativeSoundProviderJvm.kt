@@ -6,6 +6,8 @@ import com.soywiz.korau.sound.backends.*
 import com.soywiz.korau.sound.impl.jna.*
 import com.soywiz.korio.time.*
 
+private val logger = Logger("NativeSoundProviderJvm")
+
 private val dummyNativeSoundProvider by lazy { DummyNativeSoundProvider() }
 
 private val nativeSoundProviderDeferred: NativeSoundProvider by lazy {
@@ -21,7 +23,7 @@ private val nativeSoundProviderDeferred: NativeSoundProvider by lazy {
     } catch (e: UnsatisfiedLinkError) {
         dummyNativeSoundProvider
     } catch (e: OpenALException) {
-        Console.error("OpenALException", e.message)
+        logger.error { "OpenALException: ${e.message}" }
         dummyNativeSoundProvider
     } catch (e: Throwable) {
         e.printStackTrace()

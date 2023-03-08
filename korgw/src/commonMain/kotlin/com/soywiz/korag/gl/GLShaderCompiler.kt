@@ -5,7 +5,7 @@ import com.soywiz.kgl.KmlGl
 import com.soywiz.kgl.getProgramiv
 import com.soywiz.kgl.getShaderInfoLog
 import com.soywiz.kgl.getShaderiv
-import com.soywiz.klogger.Console
+import com.soywiz.klogger.Logger
 import com.soywiz.korag.*
 import com.soywiz.korag.shader.Program
 import com.soywiz.korag.shader.Shader
@@ -41,6 +41,8 @@ internal data class GLProgramInfo(var programId: Int, var vertexId: Int, var fra
 }
 
 internal object GLShaderCompiler {
+    private val logger = Logger("GLShaderCompiler")
+
     private fun String.replaceVersion(version: Int) = this.replace("#version 100", "#version $version")
 
     // @TODO: Prevent leaks if we throw exceptions, we should free resources
@@ -58,7 +60,7 @@ internal object GLShaderCompiler {
             }
 
         if (GlslGenerator.DEBUG_GLSL) {
-            Console.trace("GLSL version: requested=$glSlVersion, guessed=$guessedGlSlVersion, forced=${GlslGenerator.FORCE_GLSL_VERSION}. used=$usedGlSlVersion")
+            logger.trace { "GLSL version: requested=$glSlVersion, guessed=$guessedGlSlVersion, forced=${GlslGenerator.FORCE_GLSL_VERSION}. used=$usedGlSlVersion" }
         }
 
         val fragmentShaderId = createShaderCompat(gl, gl.FRAGMENT_SHADER, debugName) { compatibility ->

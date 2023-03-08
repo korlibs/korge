@@ -107,7 +107,7 @@ open class BrowserCanvasJsGameWindow(
                 dispatchGamepadUpdateEnd()
             }
         } catch (e: dynamic) {
-            console.error(e)
+            logger.error { e }
         }
     }
 
@@ -203,7 +203,7 @@ open class BrowserCanvasJsGameWindow(
                 "Tab" -> Key.TAB
                 else -> {
                     if (window.asDynamic().korgwShowUnsupportedKeys) {
-                        console.info("Unsupported key key=${me.key}, code=${me.code}")
+                        logger.info { "Unsupported key key=${me.key}, code=${me.code}" }
                     }
                     Key.UNKNOWN
                 }

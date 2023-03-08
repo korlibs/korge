@@ -1,6 +1,6 @@
 package com.soywiz.kgl
 
-import com.soywiz.klogger.Console
+import com.soywiz.klogger.Logger
 import com.soywiz.kmem.*
 import com.soywiz.korma.geom.MRectangle
 import com.soywiz.krypto.encoding.hex
@@ -8,6 +8,7 @@ import kotlin.native.concurrent.ThreadLocal
 
 class KmlGlException(message: String) : RuntimeException(message)
 
+private val logger = Logger("KmlGlException")
 @ThreadLocal
 private val tempNBufferByte = Buffer(1, direct = true)
 @ThreadLocal
@@ -102,6 +103,6 @@ fun KmlGl.getErrorString(error: Int = getError()): String {
 fun KmlGl.checkError(message: String) {
     val error = getError()
     if (error != NO_ERROR) {
-        Console.error("glGetError after $message with error $error (${error.hex})")
+        logger.error { "glGetError after $message with error $error (${error.hex})" }
     }
 }

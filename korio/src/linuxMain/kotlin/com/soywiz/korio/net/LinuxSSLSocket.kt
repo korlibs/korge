@@ -1,6 +1,6 @@
 package com.soywiz.korio.net
 
-import com.soywiz.klogger.Console
+import com.soywiz.klogger.Logger
 import com.soywiz.korio.async.await
 import kotlinx.cinterop.*
 import platform.linux.inet_addr
@@ -9,6 +9,7 @@ import kotlin.native.concurrent.*
 import kotlin.reflect.KProperty
 
 private object OSSL {
+    private val logger = Logger("OSSL")
     //const val OPENSSL_INIT_ADD_ALL_CIPHERS = 4
     //const val OPENSSL_INIT_ADD_ALL_DIGESTS = 8
     const val OPENSSL_INIT_LOAD_CRYPTO_STRINGS = 2
@@ -19,7 +20,7 @@ private object OSSL {
     val handle: CPointer<out CPointed>? = dlopen(LIBSSL_SO_FILE, RTLD_LAZY)
     init {
         if (handle == null) {
-            Console.error("Couldn't load '$LIBSSL_SO_FILE'")
+            logger.error { "Couldn't load '$LIBSSL_SO_FILE'" }
         }
     }
 
@@ -60,16 +61,17 @@ private object OSSL {
 
 class LinuxSSLSocket {
     companion object {
-        init{
+        private val logger = Logger("LinuxSSLSocket")
+        init {
             OSSL.OPENSSL_init_ssl((OSSL.OPENSSL_INIT_LOAD_SSL_STRINGS or OSSL.OPENSSL_INIT_LOAD_CRYPTO_STRINGS).convert(), null)
             if (OSSL.OPENSSL_init_ssl(0.convert(), null) < 0) {
-                Console.error("Could not initialize the OpenSSL library")
+                logger.error { "Could not initialize the OpenSSL library" }
             }
         }
         val method = OSSL.TLSv1_2_method()
         val ctx = OSSL.SSL_CTX_new(method).also { ctx ->
             if (ctx == null) {
-                Console.error("Unable to create a new SSL context structure")
+                logger.error { "Unable to create a new SSL context structure" }
             } else {
                 OSSL.SSL_CTX_set_options(ctx, OSSL.SSL_OP_NO_SSLv2.convert())
             }

@@ -1,6 +1,7 @@
 package com.soywiz.korio.runtime.node
 
 import com.soywiz.klock.*
+import com.soywiz.klogger.Logger
 import com.soywiz.korio.*
 import com.soywiz.korio.async.AsyncByteArrayDeque
 import com.soywiz.korio.async.AsyncQueue
@@ -101,6 +102,11 @@ private class NodeJsAsyncClient(val coroutineContext: CoroutineContext) : AsyncC
     private val input = AsyncByteArrayDeque()
 
     override var connected: Boolean = false; private set
+
+    companion object {
+        private val logger = Logger("NodeJsAsyncClient")
+    }
+
     private val task = AsyncQueue().withContext(coroutineContext)
 
     fun setConnection(connection: dynamic) {
@@ -114,7 +120,7 @@ private class NodeJsAsyncClient(val coroutineContext: CoroutineContext) : AsyncC
             }
         }
         connection?.on("error") { it ->
-            console.error(it)
+            logger.error { it }
         }
     }
 
@@ -168,6 +174,10 @@ private class NodeJsAsyncServer : AsyncServer {
     override var backlog: Int = -1; private set
     override var port: Int = -1; private set
 
+    companion object {
+        private val logger = Logger("NodeJsAsyncServer")
+    }
+
     private val clientFlow: Channel<dynamic> = Channel(Channel.UNLIMITED)
 
     override suspend fun accept(): AsyncClient {
@@ -187,7 +197,7 @@ private class NodeJsAsyncServer : AsyncServer {
         }
         val deferred = CompletableDeferred<Unit>()
         server.on("error") { err ->
-            console.error(err)
+            logger.error { err }
         }
         server.listen(port, host, backlog) {
             deferred.complete(Unit)

@@ -23,6 +23,8 @@ import com.soywiz.korma.geom.vector.*
 import com.soywiz.korma.geom.vector.StrokeInfo
 
 class MainGpuVectorRendering : Scene() {
+    private val logger = Logger("MainGpuVectorRendering")
+
     override suspend fun SContainer.sceneMain() {
         gpuShapeView {  }
 
@@ -90,13 +92,13 @@ class MainGpuVectorRendering : Scene() {
 
         //return
 
-        Console.log("[1]")
+        logger.info { "[1]" }
         val korgeBitmap = resourcesVfs["korge.png"].readBitmap()//.mipmaps()
-        Console.log("[2]")
+        logger.info { "[2]" }
         val tigerSvg = measureTime({ resourcesVfs["Ghostscript_Tiger.svg"].readSVG() }) {
-            println("Elapsed $it")
+            logger.info { "Elapsed $it" }
         }
-        Console.log("[3]")
+        logger.info { "[3]" }
         //AudioData(44100, AudioSamples(1, 1024)).toSound().play()
 
         val PAINT_TIGER = true

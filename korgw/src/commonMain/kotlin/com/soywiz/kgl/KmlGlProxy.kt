@@ -4,7 +4,7 @@
 
 package com.soywiz.kgl
 
-import com.soywiz.klogger.Console
+import com.soywiz.klogger.Logger
 import com.soywiz.kmem.*
 import com.soywiz.korim.bitmap.NativeImage
 import com.soywiz.korio.lang.printStackTrace
@@ -1595,6 +1595,7 @@ class LogKmlGlProxy(parent: KmlGl = KmlGlDummy(), var logBefore: Boolean = false
 	}
 }
 open class CheckErrorsKmlGlProxy(parent: KmlGl, val throwException: Boolean = false, val printStackTrace: Boolean = false) : KmlGlProxy(parent) {
+    private val logger = Logger("CheckErrorsKmlGlProxy")
     init {
         //println("CheckErrorsKmlGlProxy")
     }
@@ -1620,13 +1621,13 @@ open class CheckErrorsKmlGlProxy(parent: KmlGl, val throwException: Boolean = fa
                 if (errorCount >= 50) {
                     if (!tooManyErrors) {
                         tooManyErrors = true
-                        Console.error("Too many OpenGL errors")
+                        logger.error { "Too many OpenGL errors" }
                     }
                     break
                 }
                 errorCount++
                 val msg = "glError: $error ${parent.getErrorString(error)} calling $name($params) = $result [$info]"
-                Console.warn(msg)
+                logger.warn { msg }
                 when {
                     throwException -> throw RuntimeException(msg)
                     printStackTrace -> printStackTrace(msg)
