@@ -1,7 +1,6 @@
 package com.soywiz.korim.vector
 
 import com.soywiz.korim.util.NinePatchSlices2D
-import com.soywiz.korma.geom.ISize
 import com.soywiz.korma.geom.MPoint
 import com.soywiz.korma.geom.PointArrayList
 import com.soywiz.korma.geom.MSize
@@ -10,22 +9,22 @@ import com.soywiz.korma.geom.vector.*
 class NinePatchVector(
     val path: VectorPath,
     val slices: NinePatchSlices2D,
-    oldSize: ISize? = null
+    oldSize: MSize? = null
 ) {
     val size = oldSize ?: path.getBounds().let { MSize(it.right, it.bottom) }
     private val tempPoints = PointArrayList()
 
-    fun getScaledPointAt(point: MPoint, newSize: ISize, out: MPoint = MPoint()): MPoint =
+    fun getScaledPointAt(point: MPoint, newSize: MSize, out: MPoint = MPoint()): MPoint =
         slices.getScaledPointAt(point, size, newSize, out)
 
-    private inline fun transformPoints(newSize: ISize, gen: PointArrayList.() -> Unit): PointArrayList {
+    private inline fun transformPoints(newSize: MSize, gen: PointArrayList.() -> Unit): PointArrayList {
         tempPoints.clear()
         gen(tempPoints)
         slices.transform2DInplace(tempPoints, size, newSize)
         return tempPoints
     }
 
-    fun transform(newSize: ISize, out: VectorPath = VectorPath()): VectorPath {
+    fun transform(newSize: MSize, out: VectorPath = VectorPath()): VectorPath {
         out.clear()
         path.visitCmds(
             moveTo = { (x, y) ->
@@ -52,7 +51,7 @@ class NinePatchVector(
     }
 }
 
-fun VectorPath.scaleNinePatch(newSize: ISize, slices: NinePatchSlices2D = NinePatchSlices2D(), oldSize: ISize? = null, out: VectorPath = VectorPath()): VectorPath {
+fun VectorPath.scaleNinePatch(newSize: MSize, slices: NinePatchSlices2D = NinePatchSlices2D(), oldSize: MSize? = null, out: VectorPath = VectorPath()): VectorPath {
     out.clear()
     return NinePatchVector(this, slices, oldSize).transform(newSize, out)
 }

@@ -6,7 +6,7 @@ class ScaleMode(
 ) {
     override fun toString(): String = "ScaleMode($name)"
 
-    operator fun invoke(item: ISize, container: ISize, target: MSize = MSize()): MSize = target.setTo(invoke(item.immutable, container.immutable))
+    operator fun invoke(item: MSize, container: MSize, target: MSize = MSize()): MSize = target.setTo(invoke(item.immutable, container.immutable))
     operator fun invoke(item: MSizeInt, container: MSizeInt, target: MSizeInt = MSizeInt()): MSizeInt = target.setTo(invoke(item.immutable, container.immutable))
     operator fun invoke(item: Size, container: Size): Size = transform(item, container)
     operator fun invoke(item: SizeInt, container: SizeInt): SizeInt = transform(item.toFloat(), container.toFloat()).toInt()
@@ -27,9 +27,9 @@ class ScaleMode(
 
 fun MRectangle.applyScaleMode(
     container: MRectangle, mode: ScaleMode, anchor: Anchor, out: MRectangle = MRectangle()
-): MRectangle = this.size.applyScaleMode(container, mode, anchor, out)
+): MRectangle = this.mSize.applyScaleMode(container, mode, anchor, out)
 fun MSize.applyScaleMode(container: MRectangle, mode: ScaleMode, anchor: Anchor, out: MRectangle = MRectangle(), tempSize: MSize = MSize()): MRectangle {
-    val outSize = this.applyScaleMode(container.size, mode, tempSize)
+    val outSize = this.applyScaleMode(container.mSize, mode, tempSize)
     out.setToAnchoredRectangle(MRectangle(0.0, 0.0, outSize.width, outSize.height), anchor, container)
     return out
 }

@@ -113,7 +113,7 @@ class CameraContainer(
 
     companion object {
         fun getCameraRect(rect: MRectangle, scaleMode: ScaleMode = ScaleMode.SHOW_ALL, cameraWidth: Double, cameraHeight: Double, cameraAnchorX: Double, cameraAnchorY: Double, out: Camera = Camera()): Camera {
-            val size = MRectangle(0.0, 0.0, cameraWidth, cameraHeight).place(rect.size, Anchor.TOP_LEFT, scale = scaleMode).size
+            val size = MRectangle(0.0, 0.0, cameraWidth, cameraHeight).place(rect.mSize, Anchor.TOP_LEFT, scale = scaleMode).mSize
             val scaleX = size.width / rect.width
             val scaleY = size.height / rect.height
             return out.setTo(

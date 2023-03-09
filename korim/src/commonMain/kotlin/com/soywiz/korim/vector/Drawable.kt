@@ -32,11 +32,11 @@ interface BoundsDrawable : SizedDrawable {
     override val height: Int get() = bounds.height.toInt()
 }
 
-fun BoundsDrawable.renderWithHotspot(scale: Double? = null, fit: ISize? = null, native: Boolean = true): BitmapWithHotspot<Bitmap> {
+fun BoundsDrawable.renderWithHotspot(scale: Double? = null, fit: MSize? = null, native: Boolean = true): BitmapWithHotspot<Bitmap> {
     val bounds = this.bounds
     val rscale = when {
         fit != null -> {
-            val size2 = ScaleMode.FIT(bounds.size, fit)
+            val size2 = ScaleMode.FIT(bounds.mSize, fit)
             kotlin.math.min(size2.width / bounds.width, size2.height / bounds.height)
         }
         scale != null ->  scale

@@ -193,7 +193,7 @@ interface IRectangle {
     val height: Double
 
     val position: MPoint get() = MPoint(x, y)
-    val size: ISize get() = MSize(width, height)
+    val size: MSize get() = MSize(width, height)
 
     operator fun contains(that: Point) = contains(that.x, that.y)
     operator fun contains(that: MPoint) = contains(that.x, that.y)
@@ -310,7 +310,7 @@ interface IRectangle {
 data class MRectangle(
     override var x: Double, override var y: Double,
     override var width: Double, override var height: Double
-) : MutableInterpolable<IRectangle>, Interpolable<IRectangle>, IRectangle, ISizeable {
+) : MutableInterpolable<IRectangle>, Interpolable<IRectangle>, IRectangle, MSizeable {
 
     companion object {
         val POOL: ConcurrentPool<MRectangle> = ConcurrentPool<MRectangle>({ it.clear() }) { MRectangle() }
@@ -318,7 +318,7 @@ data class MRectangle(
         operator fun invoke(): MRectangle = MRectangle(0.0, 0.0, 0.0, 0.0)
         operator fun invoke(x: Int, y: Int, width: Int, height: Int): MRectangle = MRectangle(x.toDouble(), y.toDouble(), width.toDouble(), height.toDouble())
         operator fun invoke(x: Float, y: Float, width: Float, height: Float): MRectangle = MRectangle(x.toDouble(), y.toDouble(), width.toDouble(), height.toDouble())
-        operator fun invoke(topLeft: MPoint, size: ISize): MRectangle = MRectangle(topLeft.x, topLeft.y, size.width, size.height)
+        operator fun invoke(topLeft: MPoint, size: MSize): MRectangle = MRectangle(topLeft.x, topLeft.y, size.width, size.height)
         operator fun invoke(topLeft: Point, size: Size): MRectangle = MRectangle(topLeft.x, topLeft.y, size.width, size.height)
         fun fromBounds(left: Double, top: Double, right: Double, bottom: Double): MRectangle = MRectangle().setBounds(left, top, right, bottom)
         fun fromBounds(left: Int, top: Int, right: Int, bottom: Int): MRectangle = MRectangle().setBounds(left, top, right, bottom)
@@ -339,7 +339,7 @@ data class MRectangle(
     override var bottom: Double ; get() = y + height ; set(value) { height = value - y }
 
     override val position: MPoint get() = MPoint(x, y)
-    override val size: MSize get() = MSize(width, height)
+    override val mSize: MSize get() = MSize(width, height)
 
     fun setToBounds(left: Double, top: Double, right: Double, bottom: Double): MRectangle = setTo(left, top, right - left, bottom - top)
 
@@ -389,7 +389,7 @@ data class MRectangle(
     fun displace(dx: Float, dy: Float) = displace(dx.toDouble(), dy.toDouble())
     fun displace(dx: Int, dy: Int) = displace(dx.toDouble(), dy.toDouble())
 
-    fun place(item: ISize, anchor: Anchor, scale: ScaleMode, out: MRectangle = MRectangle()): MRectangle =
+    fun place(item: MSize, anchor: Anchor, scale: ScaleMode, out: MRectangle = MRectangle()): MRectangle =
         place(item.width, item.height, anchor, scale, out)
 
     fun place(
@@ -419,9 +419,12 @@ data class MRectangle(
     fun setToAnchoredRectangle(item: IRectangle, anchor: Anchor, container: IRectangle): MRectangle =
         setToAnchoredRectangle(item.size, anchor, container)
 
-    fun setToAnchoredRectangle(item: ISize, anchor: Anchor, container: IRectangle): MRectangle = setTo(
-        container.x + anchor.doubleX * (container.width - item.width),
-        container.y + anchor.doubleY * (container.height - item.height),
+    fun setToAnchoredRectangle(item: MSize, anchor: Anchor, container: IRectangle): MRectangle =
+        setToAnchoredRectangle(item.immutable, anchor, container)
+
+    fun setToAnchoredRectangle(item: Size, anchor: Anchor, container: IRectangle): MRectangle = setTo(
+        (container.x + anchor.doubleX * (container.width - item.width)).toFloat(),
+        (container.y + anchor.doubleY * (container.height - item.height)).toFloat(),
         item.width,
         item.height
     )

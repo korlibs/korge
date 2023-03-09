@@ -44,7 +44,7 @@ object AtlasPacker {
     fun <T> pack(items: List<Pair<T, BmpSlice>>, maxSide: Int = 2048, maxTextures: Int = 16, borderSize: Int = 2, fileName: String = "atlas.png"): Result<T> {
         val borderSize2 = borderSize * 2
         val packs = BinPacker.packSeveral(maxSide.toDouble(), maxSide.toDouble(), items) {
-            MSize(it.second.width + borderSize2, it.second.height + borderSize2)
+            Size(it.second.width + borderSize2, it.second.height + borderSize2)
         }
         if (packs.size > maxTextures) error("textures:${packs.size} > maxTextures:${maxTextures}")
         return Result(packs.map { pack ->

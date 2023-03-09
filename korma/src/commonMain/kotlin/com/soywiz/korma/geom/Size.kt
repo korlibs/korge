@@ -22,6 +22,9 @@ inline class Size internal constructor(internal val raw: Float2Pack) {
     val widthD: Double get() = width.toDouble()
     val heightD: Double get() = height.toDouble()
 
+    val area: Float get() = width * height
+    val perimeter: Float get() = width * 2 + height * 2
+
     //(val width: Double, val height: Double) {
     constructor() : this(0f, 0f)
     constructor(width: Float, height: Float) : this(Float2Pack(width, height))
@@ -57,6 +60,9 @@ inline class SizeInt internal constructor(internal val raw: Int2Pack) {
     val width: Int get() = raw.x
     val height: Int get() = raw.y
 
+    val area: Int get() = width * height
+    val perimeter: Int get() = width * 2 + height * 2
+
     constructor() : this(0, 0)
     constructor(width: Int, height: Int) : this(Int2Pack(width, height))
 
@@ -74,34 +80,15 @@ interface SizeableInt {
     }
 }
 
-@KormaMutableApi
-interface ISizeable {
-    val size: ISize
+val MSize.immutable: Size get() = Size(width, height)
+
+interface MSizeable {
+    val mSize: MSize
 }
 
 @KormaMutableApi
 @Deprecated("Use Size instead")
-sealed interface ISize {
-    val width: Double
-    val height: Double
-
-    val area: Double get() = width * height
-    val perimeter: Double get() = width * 2 + height * 2
-    val min: Double get() = min(width, height)
-    val max: Double get() = max(width, height)
-
-    companion object {
-        operator fun invoke(width: Double, height: Double): ISize = MSize(MPoint(width, height))
-        operator fun invoke(width: Int, height: Int): ISize = MSize(MPoint(width, height))
-        operator fun invoke(width: Float, height: Float): ISize = MSize(MPoint(width, height))
-    }
-}
-
-val ISize.immutable: Size get() = Size(width, height)
-
-@KormaMutableApi
-@Deprecated("Use Size instead")
-inline class MSize(val p: MPoint) : MutableInterpolable<MSize>, Interpolable<MSize>, ISize, ISizeable {
+inline class MSize(val p: MPoint) : MutableInterpolable<MSize>, Interpolable<MSize>, Sizeable, MSizeable {
     companion object {
         operator fun invoke(): MSize = MSize(MPoint(0, 0))
         operator fun invoke(width: Double, height: Double): MSize = MSize(MPoint(width, height))
@@ -111,12 +98,19 @@ inline class MSize(val p: MPoint) : MutableInterpolable<MSize>, Interpolable<MSi
 
     fun copy() = MSize(p.copy())
 
-    override val size: MSize get() = this
+    override val size: Size get() = immutable
+    override val mSize: MSize get() = this
 
-    override var width: Double
+
+    val area: Double get() = width * height
+    val perimeter: Double get() = width * 2 + height * 2
+    val min: Double get() = min(width, height)
+    val max: Double get() = max(width, height)
+
+    var width: Double
         set(value) { p.x = value }
         get() = p.x
-    override var height: Double
+    var height: Double
         set(value) { p.y = value }
         get() = p.y
 
@@ -127,7 +121,7 @@ inline class MSize(val p: MPoint) : MutableInterpolable<MSize>, Interpolable<MSi
     }
     fun setTo(width: Int, height: Int) = setTo(width.toDouble(), height.toDouble())
     fun setTo(width: Float, height: Float) = setTo(width.toDouble(), height.toDouble())
-    fun setTo(that: ISize) = setTo(that.width, that.height)
+    fun setTo(that: MSize) = setTo(that.width, that.height)
     fun setTo(that: Size) = setTo(that.width, that.height)
 
     fun setToScaled(sx: Double, sy: Double) = setTo((this.width * sx), (this.height * sy))
@@ -147,6 +141,7 @@ inline class MSize(val p: MPoint) : MutableInterpolable<MSize>, Interpolable<MSi
 }
 
 @KormaMutableApi
+@Deprecated("Use SizeInt instead")
 inline class MSizeInt(val float: MSize) {
     companion object {
         operator fun invoke(): MSizeInt = MSizeInt(MSize(0, 0))

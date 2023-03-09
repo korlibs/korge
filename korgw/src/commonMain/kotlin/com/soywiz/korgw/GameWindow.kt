@@ -238,7 +238,7 @@ open class GameWindow :
 
     data class CustomCursor(val shape: Shape, val name: String = "custom") : ICursor, Extra by Extra.Mixin() {
         val bounds: IRectangle = this.shape.bounds
-        fun createBitmap(size: ISize? = null, native: Boolean = true) = shape.renderWithHotspot(fit = size, native = native)
+        fun createBitmap(size: MSize? = null, native: Boolean = true) = shape.renderWithHotspot(fit = size, native = native)
     }
 
     enum class Cursor : ICursor {

@@ -9,14 +9,14 @@ import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.VectorPath
 
 class NinePatchShape(val shape: Shape, val slices: NinePatchSlices2D) {
-    val size: ISize = shape.bounds.bottomRight.toSize().mutable
+    val size: MSize = shape.bounds.bottomRight.toSize().mutable
 
-    fun getScaledPointAt(point: MPoint, newSize: ISize, out: MPoint = MPoint()): MPoint =
+    fun getScaledPointAt(point: MPoint, newSize: MSize, out: MPoint = MPoint()): MPoint =
         slices.getScaledPointAt(point, size, newSize, out)
 
-    fun transform(newSize: ISize): Shape = shape.scaleNinePatch(newSize, slices)
+    fun transform(newSize: MSize): Shape = shape.scaleNinePatch(newSize, slices)
 
-    private fun Shape.scaleNinePatch(newSize: ISize, slices: NinePatchSlices2D, oldSize: ISize? = this.bounds.bottomRight.toSize().mutable): Shape {
+    private fun Shape.scaleNinePatch(newSize: MSize, slices: NinePatchSlices2D, oldSize: MSize? = this.bounds.bottomRight.toSize().mutable): Shape {
         return when (this) {
             EmptyShape -> EmptyShape
             is CompoundShape -> CompoundShape(this.components.map { it.scaleNinePatch(newSize, slices, oldSize) })

@@ -7,7 +7,7 @@ import kotlin.math.sign
 data class NinePatchSlices2D(val x: NinePatchSlices, val y: NinePatchSlices) {
     constructor() : this(NinePatchSlices(), NinePatchSlices())
     fun transform2DInplace(
-        positions: PointArrayList, oldSize: ISize, newSize: ISize,
+        positions: PointArrayList, oldSize: MSize, newSize: MSize,
     ) {
         val widthRatio = newSize.width / oldSize.width
         val heightRatio = newSize.height / oldSize.height
@@ -20,7 +20,7 @@ data class NinePatchSlices2D(val x: NinePatchSlices, val y: NinePatchSlices) {
     }
 
     fun transform2D(
-        positions: PointArrayList, oldSize: ISize, newSize: ISize, output: PointArrayList = PointArrayList()
+        positions: PointArrayList, oldSize: MSize, newSize: MSize, output: PointArrayList = PointArrayList()
     ): PointArrayList {
         output.clear()
         output.copyFrom(positions)
@@ -29,10 +29,10 @@ data class NinePatchSlices2D(val x: NinePatchSlices, val y: NinePatchSlices) {
     }
 
     fun transform2D(
-        positions: List<PointArrayList>, oldSize: ISize, newSize: ISize
+        positions: List<PointArrayList>, oldSize: MSize, newSize: MSize
     ): List<PointArrayList> = positions.map { transform2D(it, oldSize, newSize) }
 
-    fun getScaledPointAt(point: MPoint, oldSize: ISize, newSize: ISize, out: MPoint = MPoint()): MPoint {
+    fun getScaledPointAt(point: MPoint, oldSize: MSize, newSize: MSize, out: MPoint = MPoint()): MPoint {
         val p = pointArrayListOf(point)
         transform2DInplace(p, oldSize, newSize)
         out.setTo(p.first)
