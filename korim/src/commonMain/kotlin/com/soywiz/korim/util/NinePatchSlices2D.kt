@@ -15,8 +15,8 @@ data class NinePatchSlices2D(val x: NinePatchSlices, val y: NinePatchSlices) {
             newSize.width < oldSize.width || newSize.height < oldSize.height -> minOf(widthRatio.absoluteValue, heightRatio.absoluteValue)
             else -> 1.0
         }
-        x.transform1DInplace(oldSize.width, newSize.width, positions.size, get = { positions.getX(it).toDouble() }, set = { index, value -> positions.setX(index, value) }, iscale = iscale * newSize.width.sign)
-        y.transform1DInplace(oldSize.height, newSize.height, positions.size, get = { positions.getY(it).toDouble() }, set = { index, value -> positions.setY(index, value) }, iscale = iscale * newSize.height.sign)
+        x.transform1DInplace(oldSize.width, newSize.width, positions.size, get = { positions.get(it).x.toDouble() }, set = { index, value -> positions.setX(index, value) }, iscale = iscale * newSize.width.sign)
+        y.transform1DInplace(oldSize.height, newSize.height, positions.size, get = { positions.get(it).y.toDouble() }, set = { index, value -> positions.setY(index, value) }, iscale = iscale * newSize.height.sign)
     }
 
     fun transform2D(

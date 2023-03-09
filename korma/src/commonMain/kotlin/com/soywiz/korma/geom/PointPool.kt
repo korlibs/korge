@@ -76,7 +76,7 @@ class PointPool(val capacity: Int = 16, preallocate: Boolean = false) {
     operator fun MPoint.rem(value: Float): MPoint = this % value.toDouble()
     operator fun MPoint.rem(value: Int): MPoint = this % value.toDouble()
 
-    operator fun PointList.get(index: Int): MPoint = MPoint().setTo(this.getX(index), this.getY(index))
+    operator fun PointList.get(index: Int): MPoint = MPoint().setTo(this[index])
     fun PointList.getCyclic(index: Int): MPoint = this[index umod size].mutable
 
     inline operator fun <T> invoke(callback: PointPool.() -> T): T {

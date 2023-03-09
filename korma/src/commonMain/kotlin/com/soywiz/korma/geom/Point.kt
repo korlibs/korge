@@ -220,24 +220,19 @@ fun Point.mutable(out: MPoint = MPoint()): MPoint = out.setTo(x, y)
 @Deprecated("")
 val Point.mutable: MPoint get() = mutable()
 
-private inline fun getPolylineLength(size: Int, crossinline get: (n: Int, (x: Double, y: Double) -> Unit) -> Unit): Double {
+private inline fun getPolylineLength(size: Int, crossinline get: (n: Int) -> Point): Double {
     var out = 0.0
-    var prevX = 0.0
-    var prevY = 0.0
+    var prev = Point.ZERO
     for (n in 0 until size) {
-        get(n) { x, y ->
-            if (n > 0) {
-                out += MPoint.distance(prevX, prevY, x, y)
-            }
-            prevX = x
-            prevY = y
-        }
+        val p = get(n)
+        if (n > 0) out += Point.distance(prev, p)
+        prev = p
     }
     return out
 }
 
-fun PointList.getPolylineLength(): Double = getPolylineLength(size) { n, func -> func(getX(n).toDouble(), getY(n).toDouble()) }
-fun List<MPoint>.getPolylineLength(): Double = getPolylineLength(size) { n, func -> func(this[n].x, this[n].y) }
+fun PointList.getPolylineLength(): Double = getPolylineLength(size) { get(it) }
+fun List<MPoint>.getPolylineLength(): Double = getPolylineLength(size) { get(it).point }
 
 fun List<MPoint>.bounds(out: MRectangle = MRectangle(), bb: BoundsBuilder = BoundsBuilder()): MRectangle = bb.add(this).getBounds(out)
 fun Iterable<MPoint>.bounds(out: MRectangle = MRectangle(), bb: BoundsBuilder = BoundsBuilder()): MRectangle = bb.add(this).getBounds(out)

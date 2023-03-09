@@ -402,8 +402,9 @@ open class GpuShapeView(
         val bb = this.bb
         bb.reset()
         bb.add(points)
-        val xMid = (bb.xmax + bb.xmin) / 2
-        val yMid = (bb.ymax + bb.ymin) / 2
+        val xMid = ((bb.xmax + bb.xmin) / 2).toFloat()
+        val yMid = ((bb.ymax + bb.ymin) / 2).toFloat()
+        val pMid = Point(xMid, yMid)
 
         val isStrip = type == AGDrawType.TRIANGLE_STRIP
 
@@ -412,17 +413,17 @@ open class GpuShapeView(
         //val isStripAndAntialiased = isStrip
 
         if (!isStrip) {
-            gpuShapeViewCommands.addVertex(xMid.toFloat(), yMid.toFloat(), len = 0f, maxLen = BIG_MAX_LEN)
+            gpuShapeViewCommands.addVertex(xMid, yMid, len = 0f, maxLen = BIG_MAX_LEN)
         }
         for (n in 0 until points.size + 1) {
-            val x = points.getX(n % points.size).toDouble()
-            val y = points.getY(n % points.size).toDouble()
-            val len = if (isStripAndAntialiased) Point.distance(x, y, xMid, yMid).toFloat() else 0f
+            val p = points[n % points.size]
+            val (x, y) = p
+            val len = if (isStripAndAntialiased) Point.distance(p, pMid) else 0f
             val maxLen = if (isStripAndAntialiased) len else BIG_MAX_LEN
             if (isStrip) {
-                gpuShapeViewCommands.addVertex(xMid.toFloat(), yMid.toFloat(), len = 0f, maxLen = maxLen)
+                gpuShapeViewCommands.addVertex(xMid, yMid, len = 0f, maxLen = maxLen)
             }
-            gpuShapeViewCommands.addVertex(x.toFloat(), y.toFloat(), len = len, maxLen = maxLen)
+            gpuShapeViewCommands.addVertex(x, y, len = len, maxLen = maxLen)
         }
         val vertexEnd = gpuShapeViewCommands.verticesEnd()
         //println("bb.getBounds()=${bb.getBounds()} - ${bb.getBounds().toAGScissor()}")

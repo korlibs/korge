@@ -22,7 +22,7 @@ data class CurveLUT(val curve: Curve, val points: PointArrayList, val ts: Double
         while (_estimatedLengths.size < size) {
             val pos = _estimatedLengths.size
             val prev = _estimatedLengths.last()
-            _estimatedLengths.add(prev + MPoint.distance(points.getX(pos - 1), points.getY(pos - 1), points.getX(pos), points.getY(pos)))
+            _estimatedLengths.add(prev + Point.distance(points[pos - 1], points[pos]))
         }
         return _estimatedLengths
     }

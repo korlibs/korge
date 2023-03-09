@@ -238,12 +238,7 @@ open class PointArrayList(capacity: Int = 7) : PointList, Extra by Extra.Mixin()
     operator fun set(index: Int, p: Point) = setXY(index, p.x, p.y)
 
     fun transform(matrix: MMatrix) {
-        for (n in 0 until size) {
-            val x = getX(n)
-            val y = getY(n)
-            setX(n, matrix.transformX(x, y))
-            setY(n, matrix.transformY(x, y))
-        }
+        for (n in 0 until size) set(n, matrix.transform(this[n]))
     }
 
     override fun equals(other: Any?): Boolean = other is PointArrayList && data == other.data
@@ -253,11 +248,8 @@ open class PointArrayList(capacity: Int = 7) : PointList, Extra by Extra.Mixin()
         val sb = StringBuilder()
         sb.append('[')
         for (n in 0 until size) {
-            val x = getX(n)
-            val y = getY(n)
-            if (n != 0) {
-                sb.append(", ")
-            }
+            val (x, y) = this[n]
+            if (n != 0) sb.append(", ")
             sb.append('(')
             if (x == round(x)) sb.append(x.toInt()) else sb.append(x)
             sb.append(", ")

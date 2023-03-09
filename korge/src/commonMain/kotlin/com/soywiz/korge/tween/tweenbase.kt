@@ -180,10 +180,7 @@ inline operator fun KMutableProperty0<MPoint>.get(range: PointList): V2<MPoint> 
             val index = ratioIndex.toIntFloor()
             val index1 = (index + 1).coerceAtMost(range.size)
             val sratio = fract(ratioIndex)
-            temp.setTo(
-                sratio.toRatio().interpolate(range.getX(index), range.getX(index1)),
-                sratio.toRatio().interpolate(range.getY(index), range.getY(index1))
-            )
+            temp.setTo(sratio.toRatio().interpolate(range[index], range[index1]))
         }, includeStart = false
     )
 }
@@ -197,10 +194,7 @@ inline operator fun KMutableProperty0<Point>.get(range: PointList): V2<Point> {
             val index = ratioIndex.toIntFloor()
             val index1 = (index + 1).coerceAtMost(range.size)
             val sratio = fract(ratioIndex).toRatio()
-            Point(
-                sratio.interpolate(range.getX(index), range.getX(index1)),
-                sratio.interpolate(range.getY(index), range.getY(index1))
-            )
+            sratio.interpolate(range[index], range[index1])
         }, includeStart = false
     )
 }

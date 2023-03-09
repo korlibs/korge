@@ -426,7 +426,7 @@ fun Animator.hide(view: View, time: TimeSpan = this.defaultTime, easing: Easing 
 private val VectorPath.length: Double get() = getCurves().length
 private val PointList.length: Double get() {
     var sum = 0.0
-    for (n in 1 until size) sum += MPoint.distance(getX(n - 1), getY(n - 1), getX(n), getY(n))
+    for (n in 1 until size) sum += Point.distance(get(n - 1), get(n))
     return sum
 }
 

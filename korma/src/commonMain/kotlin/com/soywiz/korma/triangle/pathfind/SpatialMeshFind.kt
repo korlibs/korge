@@ -175,13 +175,14 @@ class SpatialMeshFind(val spatialMesh: SpatialMesh) {
                     return bx * ay - ax * by
                 }
 
+                private fun vdistsqr(a: Point, b: Point): Float = hypot(b.x - a.x, b.y - a.y)
                 private fun vdistsqr(a: MPoint, b: MPoint): Double = hypot(b.x - a.x, b.y - a.y)
                 private fun vdistsqr(ax: Double, ay: Double, bx: Double, by: Double): Double = hypot(bx - ax, by - ay)
 
                 private fun vequal(a: MPoint, b: MPoint): Boolean = vdistsqr(a, b) < (0.001 * 0.001)
+                private fun vequal(a: Point, b: Point): Boolean = vdistsqr(a, b) < (0.001 * 0.001)
                 private fun vequal(ax: Double, ay: Double, bx: Double, by: Double): Boolean = vdistsqr(ax, ay, bx, by) < (0.001 * 0.001)
             }
-
 
             fun push(p1: MPoint, p2: MPoint = p1) {
                 this.portals.add(Portal(p1, p2))
@@ -262,7 +263,7 @@ class SpatialMeshFind(val spatialMesh: SpatialMesh) {
                     }
                 }
 
-                if ((pts.size == 0) || (!vequal(pts.getX(pts.size - 1).toDouble(), pts.getY(pts.size - 1).toDouble(), portals[portals.size - 1].left.x, portals[portals.size - 1].left.y))) {
+                if ((pts.size == 0) || (!vequal(pts[pts.size - 1], portals[portals.size - 1].left.point))) {
                     // Append last point to path.
                     pts.add(portals[portals.size - 1].left)
                 }

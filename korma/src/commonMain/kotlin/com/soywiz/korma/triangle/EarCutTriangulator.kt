@@ -11,8 +11,9 @@ object EarCutTriangulator {
     fun triangulate(points: PointArrayList, holeIndices: IntArray?): TriangleList {
         val floats = FloatArray(points.size * 2)
         for (n in 0 until points.size) {
-            floats[n * 2 + 0] = points.getX(n).toFloat()
-            floats[n * 2 + 1] = points.getY(n).toFloat()
+            val p = points[n]
+            floats[n * 2 + 0] = p.x
+            floats[n * 2 + 1] = p.y
         }
         val result = EarCut.earcut(floats, holeIndices, 2)
         return TriangleList(points, result.toShortArray())
