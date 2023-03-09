@@ -191,7 +191,7 @@ open class Text(
         this.alignment = align
     }
 
-    fun setTextBounds(rect: IRectangle) {
+    fun setTextBounds(rect: MRectangle) {
         if (this._textBounds == rect && !autoSize) return
         this._textBounds.copyFrom(rect)
         autoSize = false

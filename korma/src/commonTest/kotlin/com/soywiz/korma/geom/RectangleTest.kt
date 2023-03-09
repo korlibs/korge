@@ -46,7 +46,7 @@ class RectangleTest {
         assertEquals(MPoint(1, 4020), rectangle.bottomLeft.mutable)
         assertEquals(MPoint(301, 4020), rectangle.bottomRight.mutable)
 
-        val iRectangle = IRectangle(1000, 200, 30, 4)
+        val iRectangle = MRectangle(1000, 200, 30, 4)
         assertEquals(MPoint(1000, 200), iRectangle.topLeft.mutable)
         assertEquals(MPoint(1030, 200), iRectangle.topRight.mutable)
         assertEquals(MPoint(1000, 204), iRectangle.bottomLeft.mutable)
@@ -55,7 +55,7 @@ class RectangleTest {
 
     @Test
     fun containsPointInside() {
-        val rect = IRectangle(10, 20, 100, 200)
+        val rect = MRectangle(10, 20, 100, 200)
         val point = MPointInt(11, 21)
 
         assertTrue(point.double in rect)
@@ -67,7 +67,7 @@ class RectangleTest {
 
     @Test
     fun doesNotContainPointToTheLeft() {
-        val rect = IRectangle(10, 20, 100, 200)
+        val rect = MRectangle(10, 20, 100, 200)
         val point = MPointInt(9, 21)
 
         assertFalse(point.double in rect)
@@ -79,7 +79,7 @@ class RectangleTest {
 
     @Test
     fun doesNotContainPointToTheTop() {
-        val rect = IRectangle(10, 20, 100, 200)
+        val rect = MRectangle(10, 20, 100, 200)
         val point = MPointInt(11, 19)
 
         assertFalse(point.double in rect)
@@ -91,7 +91,7 @@ class RectangleTest {
 
     @Test
     fun doesNotContainPointToTheRight() {
-        val rect = IRectangle(10, 20, 100, 200)
+        val rect = MRectangle(10, 20, 100, 200)
         val point = MPointInt(110, 21)
 
         assertFalse(point.double in rect)
@@ -103,7 +103,7 @@ class RectangleTest {
 
     @Test
     fun doesNotContainPointToTheBottom() {
-        val rect = IRectangle(10, 20, 100, 200)
+        val rect = MRectangle(10, 20, 100, 200)
         val point = MPointInt(11, 220)
 
         assertFalse(point.double in rect)
@@ -151,19 +151,19 @@ class RectangleTest {
     @Test
     fun constructWithPoints() {
         assertEquals(
-            IRectangle(MPoint(0, 0), MPoint(100, 100)),
+            MRectangle(MPoint(0, 0), MPoint(100, 100)),
             MRectangle(0, 0, 100, 100)
         )
         assertEquals(
-            IRectangle(MPoint(100, 100), MPoint(0, 0)),
+            MRectangle(MPoint(100, 100), MPoint(0, 0)),
             MRectangle(0, 0, 100, 100)
         )
         assertEquals(
-            IRectangle(MPoint(0, 100), MPoint(100, 0)),
+            MRectangle(MPoint(0, 100), MPoint(100, 0)),
             MRectangle(0, 0, 100, 100)
         )
         assertEquals(
-            IRectangle(MPoint(100, 0), MPoint(0, 100)),
+            MRectangle(MPoint(100, 0), MPoint(0, 100)),
             MRectangle(0, 0, 100, 100)
         )
     }

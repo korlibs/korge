@@ -90,18 +90,18 @@ class BoundsBuilder {
         return this
     }
 
-    inline fun add(rect: IRectangle?): BoundsBuilder {
+    inline fun add(rect: MRectangle?): BoundsBuilder {
         rect?.let { addNonEmpty(rect) }
         return this
     }
 
-    fun addNonEmpty(rect: IRectangle): BoundsBuilder {
+    fun addNonEmpty(rect: MRectangle): BoundsBuilder {
         if (rect.isNotEmpty) {
             addEvenEmpty(rect)
         }
         return this
     }
-    fun addEvenEmpty(rect: IRectangle?): BoundsBuilder {
+    fun addEvenEmpty(rect: MRectangle?): BoundsBuilder {
         if (rect == null) return this
         add(rect.left, rect.top)
         add(rect.right, rect.bottom)
@@ -116,7 +116,7 @@ class BoundsBuilder {
         for (n in 0 until ps.size) add(ps.getX(n), ps.getY(n), transform)
         return this
     }
-    fun add(rect: IRectangle, transform: MMatrix?): BoundsBuilder {
+    fun add(rect: MRectangle, transform: MMatrix?): BoundsBuilder {
         if (rect.isNotEmpty) {
             add(rect.left, rect.top, transform)
             add(rect.right, rect.top, transform)

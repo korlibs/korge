@@ -17,7 +17,7 @@ sealed interface IBezier : Curve {
     val direction: Angle
     val clockwise: Boolean
     val extrema: Bezier.Extrema
-    val boundingBox: IRectangle
+    val boundingBox: MRectangle
     val lut: CurveLUT
     val isLinear: Boolean
     val isSimple: Boolean
@@ -158,7 +158,7 @@ class Bezier(
     fun roundDecimalPlaces(places: Int): Bezier = Bezier(points.roundDecimalPlaces(places))
 
     override fun getBounds(target: MRectangle): MRectangle = target.copyFrom(boundingBox)
-    fun getBounds(target: MRectangle, m: MMatrix?): IRectangle = _getBoundingBox(target, m)
+    fun getBounds(target: MRectangle, m: MMatrix?): MRectangle = _getBoundingBox(target, m)
 
     override fun calc(t: Double): Point = this.compute(t)
 
@@ -222,14 +222,14 @@ class Bezier(
     }
 
     private val _boundingBox: MRectangle = MRectangle()
-    override val boundingBox: IRectangle get() {
+    override val boundingBox: MRectangle get() {
         if (boundingBoxValid) return _boundingBox
         boundingBoxValid = true
         _getBoundingBox(_boundingBox, null)
         return _boundingBox
     }
 
-    private fun _getBoundingBox(out: MRectangle, m: MMatrix? = null): IRectangle {
+    private fun _getBoundingBox(out: MRectangle, m: MMatrix? = null): MRectangle {
         var xmin = 0f
         var ymin = 0f
         var xmax = 0f
@@ -977,10 +977,10 @@ class Bezier(
             }
         }
 
-        val IRectangle.midX: Double get() = (left + right) * 0.5
-        val IRectangle.midY: Double get() = (top + bottom) * 0.5
+        val MRectangle.midX: Double get() = (left + right) * 0.5
+        val MRectangle.midY: Double get() = (top + bottom) * 0.5
 
-        private fun bboxoverlap(a: IRectangle, b: IRectangle): Boolean {
+        private fun bboxoverlap(a: MRectangle, b: MRectangle): Boolean {
             if (abs(a.midX - b.midX) >= ((a.width + b.width) / 2.0)) return false
             if (abs(a.midY - b.midY) >= ((a.height + b.height) / 2.0)) return false
             return true

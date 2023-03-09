@@ -635,7 +635,7 @@ inline class AGScissor(val data: Long) {
         fun fromBounds(left: Int, top: Int, right: Int, bottom: Int): AGScissor = AGScissor(left, top, right - left, bottom - top)
         fun fromBounds(left: Double, top: Double, right: Double, bottom: Double): AGScissor = AGScissor(left, top, right - left, bottom - top)
 
-        operator fun invoke(rect: IRectangle?): AGScissor {
+        operator fun invoke(rect: MRectangle?): AGScissor {
             if (rect == null) return NIL
             return AGScissor(rect.x, rect.y, rect.width, rect.height)
         }

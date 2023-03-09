@@ -169,4 +169,8 @@ inline class MRectangleInt(val rect: MRectangle) {
         kotlin.math.max(a.right, b.right),
         kotlin.math.max(a.bottom, b.bottom)
     )
+
+    @KormaMutableApi fun asDouble(): MRectangle = this.rect
+    @KormaMutableApi val float: MRectangle get() = MRectangle(x, y, width, height)
+    @KormaValueApi val value: Rectangle get() = Rectangle(x, y, width, height)
 }

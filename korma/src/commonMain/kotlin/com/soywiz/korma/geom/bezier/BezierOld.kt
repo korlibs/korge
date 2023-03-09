@@ -5,7 +5,7 @@ import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.korma.geom.BoundsBuilder
 import com.soywiz.korma.geom.MPoint
 import com.soywiz.korma.geom.MPointArrayList
-import com.soywiz.korma.geom.IRectangle
+import com.soywiz.korma.geom.MRectangle
 import com.soywiz.korma.geom.Point
 import com.soywiz.korma.geom.PointArrayList
 import com.soywiz.korma.geom.PointPool

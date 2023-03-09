@@ -7,10 +7,6 @@ import com.soywiz.korma.interpolation.*
 import com.soywiz.korma.math.*
 import kotlin.math.*
 
-//////////////////////////////
-// MUTABLE IMPLEMENTATIONS
-//////////////////////////////
-
 @KormaMutableApi
 @Deprecated("Use Point instead")
 data class MPoint(

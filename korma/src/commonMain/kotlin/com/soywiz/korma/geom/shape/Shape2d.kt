@@ -190,7 +190,16 @@ abstract class Shape2d {
         }
     }
 
-    data class Rectangle(val rect: MRectangle) : Shape2d(), WithArea, IRectangle by rect {
+    data class Rectangle(val rect: MRectangle) : Shape2d(), WithArea {
+        val x: Double by rect::x
+        val y: Double by rect::y
+        val width: Double by rect::width
+        val height: Double by rect::height
+        val left: Double by rect::left
+        val right: Double by rect::right
+        val top: Double by rect::top
+        val bottom: Double by rect::bottom
+
         companion object {
             const val TYPE = 3
             inline operator fun invoke(x: Double, y: Double, width: Double, height: Double) = Rectangle(MRectangle(x, y, width, height))
@@ -206,7 +215,6 @@ abstract class Shape2d {
         override val paths = listOf(PointArrayList(4) { add(x, y).add(x + width, y).add(x + width, y + height).add(x, y + height) })
         override val closed: Boolean = true
         override val area: Double get() = width * height
-        override val center: Point get() = super<IRectangle>.center
 
         override fun containsPoint(p: Point) = (p.xD in this.left..this.right) && (p.yD in this.top..this.bottom)
         override fun toString(): String =
@@ -272,7 +280,7 @@ fun BoundsBuilder.add(shape: Shape2d) {
 
 val Shape2d.bounds: MRectangle get() = BoundsBuilder().apply { add(this@bounds) }.getBounds()
 
-fun IRectangle.toShape() = Shape2d.Rectangle(x, y, width, height)
+fun MRectangle.toShape() = Shape2d.Rectangle(x, y, width, height)
 
 // @TODO: Instead of use curveSteps, let's determine the maximum distance between points for the curve, or the maximum angle (so we have a quality factor instead)
 inline fun VectorPath.emitPoints(flush: (close: Boolean) -> Unit, emit: (Point) -> Unit, curveSteps: Int = 20) {

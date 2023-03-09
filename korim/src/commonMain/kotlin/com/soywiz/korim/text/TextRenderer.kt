@@ -210,7 +210,7 @@ class Text2TextRendererActions : TextRendererActions() {
         return out
     }
 
-    fun getGlyphBounds(n: Int, out: MRectangle = MRectangle()): IRectangle {
+    fun getGlyphBounds(n: Int, out: MRectangle = MRectangle()): MRectangle {
         if (n >= size) {
             out.setTo(0, 0, 0, 0)
         } else {
@@ -224,7 +224,7 @@ class Text2TextRendererActions : TextRendererActions() {
         return out
     }
 
-    fun getBounds(out: MRectangle = MRectangle()): IRectangle {
+    fun getBounds(out: MRectangle = MRectangle()): MRectangle {
         if (size == 0) {
             out.setTo(0, 0, 0, 0)
             return out

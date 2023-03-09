@@ -1290,7 +1290,7 @@ abstract class View internal constructor(
 
     /** Tries to set the global bounds of the object. If there are rotations in the ancestors, this might not work as expected. */
     @KorgeUntested
-    fun setGlobalBounds(bounds: IRectangle) {
+    fun setGlobalBounds(bounds: MRectangle) {
         val transform = parent!!.globalMatrix.toTransform()
         globalPos = bounds.topLeft
         setSizeScaled(

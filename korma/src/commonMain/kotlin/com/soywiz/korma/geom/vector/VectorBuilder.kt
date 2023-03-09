@@ -62,7 +62,7 @@ interface VectorBuilder {
 
 
 fun VectorBuilder.rect(rect: MRectangleInt) = rect(rect.x, rect.y, rect.width, rect.height)
-fun VectorBuilder.rect(rect: IRectangle) = rect(rect.x, rect.y, rect.width, rect.height)
+fun VectorBuilder.rect(rect: MRectangle) = rect(rect.x, rect.y, rect.width, rect.height)
 fun VectorBuilder.rect(x: Double, y: Double, width: Double, height: Double) {
     moveTo(Point(x, y))
     lineTo(Point(x + width, y))
@@ -111,7 +111,7 @@ fun VectorBuilder.rectHole(x: Float, y: Float, width: Float, height: Float) =
 fun VectorBuilder.rectHole(x: Int, y: Int, width: Int, height: Int) =
     rectHole(x.toDouble(), y.toDouble(), width.toDouble(), height.toDouble())
 
-fun VectorBuilder.rectHole(rect: IRectangle) = rectHole(rect.x, rect.y, rect.width, rect.height)
+fun VectorBuilder.rectHole(rect: MRectangle) = rectHole(rect.x, rect.y, rect.width, rect.height)
 
 fun VectorBuilder.curves(curves: List<Curves>) = write(curves.toVectorPath())
 fun VectorBuilder.curves(curves: Curves) = write(curves.toVectorPath())
