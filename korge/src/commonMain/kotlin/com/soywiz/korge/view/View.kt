@@ -259,9 +259,7 @@ abstract class View internal constructor(
     private var _skewY: Angle = Angle.ZERO
     private var _rotation: Angle = Angle.ZERO
 
-    private val _pos = MPoint()
-
-    protected open fun setXY(x: Double, y: Double) {
+    private fun setXY(x: Double, y: Double) {
         ensureTransform()
         if (this._x != x || this._y != y) {
             this._x = x
