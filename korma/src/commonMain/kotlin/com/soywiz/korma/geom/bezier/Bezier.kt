@@ -97,36 +97,9 @@ class Bezier(
     }
 
     fun setPoints(points: PointList): Bezier = _setPoints { copyFrom(points) }
-
     fun setPoints(p0: Point, p1: Point): Bezier = _setPoints { add(p0); add(p1) }
     fun setPoints(p0: Point, p1: Point, p2: Point): Bezier = _setPoints { add(p0); add(p1); add(p2) }
     fun setPoints(p0: Point, p1: Point, p2: Point, p3: Point): Bezier = _setPoints { add(p0); add(p1); add(p2); add(p3) }
-
-    fun setPoints(vararg points: MPoint): Bezier = _setPoints {
-        points.fastForEach { add(it) }
-    }
-
-    fun setPoints(vararg points: Double): Bezier = _setPoints {
-        addRaw(*points)
-    }
-
-    fun setPoints(x0: Double, y0: Double, x1: Double, y1: Double): Bezier = _setPoints {
-        add(x0, y0)
-        add(x1, y1)
-    }
-
-    fun setPoints(x0: Double, y0: Double, x1: Double, y1: Double, x2: Double, y2: Double): Bezier = _setPoints {
-        add(x0, y0)
-        add(x1, y1)
-        add(x2, y2)
-    }
-
-    fun setPoints(x0: Double, y0: Double, x1: Double, y1: Double, x2: Double, y2: Double, x3: Double, y3: Double): Bezier = _setPoints {
-        add(x0, y0)
-        add(x1, y1)
-        add(x2, y2)
-        add(x3, y3)
-    }
 
     private var boundingBoxValid = false
     private var isSimpleValid = false
@@ -310,9 +283,9 @@ class Bezier(
         if (isSimpleValid) return _isSimple
         isSimpleValid = true
         if (this.order == 3) {
-            val a1 = angle(this.points.getPoint(0), this.points.getPoint(3), this.points.getPoint(1))
-            val a2 = angle(this.points.getPoint(0), this.points.getPoint(3), this.points.getPoint(2))
-            if ((a1 > 0.0 && a2 < 0.0) || (a1 < 0.0 && a2 > 0.0)) {
+            val a1 = angle(this.points[0], this.points[3], this.points[1])
+            val a2 = angle(this.points[0], this.points[3], this.points[2])
+            if ((a1 > 0f && a2 < 0f) || (a1 < 0f && a2 > 0f)) {
                 _isSimple = false
                 return _isSimple
             }
@@ -784,21 +757,21 @@ class Bezier(
             // TODO: find the actual extrema, because they might
             //       be before the start, or past the end.
 
-            val n = this.normal(0.0);
-            val start = this.points.getPoint(0)
-            val end = this.points.getPoint(this.points.size - 1)
+            val n = this.normal(0.0)
+            val start = this.points[0]
+            val end = this.points[this.points.size - 1]
 
             val fline = run {
-                val s = MPoint(start.x + n.x * d1, start.y + n.y * d1)
-                val e = MPoint(end.x + n.x * d3, end.y + n.y * d3)
-                val mid = MPoint((s.x + e.x) / 2.0, (s.y + e.y) / 2.0)
+                val s = Point(start.x + n.x * d1, start.y + n.y * d1)
+                val e = Point(end.x + n.x * d3, end.y + n.y * d3)
+                val mid = Point((s.x + e.x) / 2.0, (s.y + e.y) / 2.0)
                 pointArrayListOf(s, mid, e)
             }
 
             val bline = run {
-                val s = MPoint(start.x - n.x * d2, start.y - n.y * d2)
-                val e = MPoint(end.x - n.x * d4, end.y - n.y * d4)
-                val mid = MPoint((s.x + e.x) / 2.0, (s.y + e.y) / 2.0)
+                val s = Point(start.x - n.x * d2, start.y - n.y * d2)
+                val e = Point(end.x - n.x * d4, end.y - n.y * d4)
+                val mid = Point((s.x + e.x) / 2.0, (s.y + e.y) / 2.0)
                 pointArrayListOf(e, mid, s)
             };
 
@@ -965,7 +938,7 @@ class Bezier(
             //return ts + d2 * r
         }
 
-        private fun angle(o: MPoint, v1: MPoint, v2: MPoint): Double {
+        private fun angle(o: Point, v1: Point, v2: Point): Float {
             val dx1 = v1.x - o.x
             val dy1 = v1.y - o.y
             val dx2 = v2.x - o.x
@@ -1404,40 +1377,12 @@ class Bezier(
             )
         }
 
-        @Deprecated("")
-        fun cubicCalc(
-            p0: MPoint, p1: MPoint, p2: MPoint, p3: MPoint,
-            t: Double, target: MPoint = MPoint()
-        ): MPoint = cubicCalc(p0.x, p0.y, p1.x, p1.y, p2.x, p2.y, p3.x, p3.y, t, target)
-
-        @Deprecated("")
-        fun cubicCalc(
-            x0: Double, y0: Double, x1: Double, y1: Double,
-            x2: Double, y2: Double, x3: Double, y3: Double,
-            t: Double, target: MPoint = MPoint()
-        ): MPoint = cubicCalc(x0, y0, x1, y1, x2, y2, x3, y3, t) { x, y -> target.setTo(x, y) }
-
-        @Deprecated("")
-        fun quadCalc(
-            p0: MPoint, p1: MPoint, p2: MPoint,
-            t: Double, target: MPoint = MPoint()
-        ): MPoint = quadCalc(p0.x, p0.y, p1.x, p1.y, p2.x, p2.y, t, target)
-
-        @Deprecated("")
-        fun quadCalc(
-            x0: Double, y0: Double,
-            xc: Double, yc: Double,
-            x1: Double, y1: Double,
-            t: Double,
-            target: MPoint = MPoint()
-        ): MPoint = quadCalc(x0, y0, xc, yc, x1, y1, t) { x, y -> target.setTo(x, y) }
-
         fun cubicCalc(
             p0: Point, p1: Point, p2: Point, p3: Point,
-            t: Double
+            t: Float
         ): Point {
             var out: Point
-            cubicCalc(p0.xD, p0.yD, p1.xD, p1.yD, p2.xD, p2.yD, p3.xD, p3.yD, t) { x, y -> out = Point(x, y) }
+            cubicCalc(p0.xD, p0.yD, p1.xD, p1.yD, p2.xD, p2.yD, p3.xD, p3.yD, t.toDouble()) { x, y -> out = Point(x, y) }
             return out
         }
 

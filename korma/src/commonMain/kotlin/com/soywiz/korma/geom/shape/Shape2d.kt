@@ -303,7 +303,7 @@ inline fun VectorPath.emitPoints(flush: (close: Boolean) -> Unit, emit: (Point) 
         },
         cubicTo = { c1,c2, a ->
             val dt = 1.0 / curveSteps
-            for (n in 1 .. curveSteps) emit(Bezier.cubicCalc(l, c1, c2, a, n * dt))
+            for (n in 1 .. curveSteps) emit(Bezier.cubicCalc(l, c1, c2, a, (n * dt).toFloat()))
             l = a
         },
         close = { flush(true) }
@@ -362,7 +362,7 @@ inline fun VectorPath.emitPoints2(
         },
         cubicTo = { c0, c1, a ->
             val sum = Point.distance(l, c0) + Point.distance(c0, c1) + Point.distance(c1, a)
-            approximateCurve(sum.toInt(), { ratio, get -> get(Bezier.cubicCalc(l, c0, c1, a, ratio)) }, { emit(it, false) })
+            approximateCurve(sum.toInt(), { ratio, get -> get(Bezier.cubicCalc(l, c0, c1, a, ratio.toFloat())) }, { emit(it, false) })
             l = a
             joint(false)
         },

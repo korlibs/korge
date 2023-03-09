@@ -297,30 +297,30 @@ open class GpuShapeView(
         }
     }
 
-    private fun pointsAdd(p1: MPoint, p2: MPoint, lineWidth: Float) {
+    private fun pointsAdd(p1: Point, p2: Point, lineWidth: Float) {
         //val lineWidth = 0f
-        val p1x = p1.x.toFloat()
-        val p1y = p1.y.toFloat()
-        val p2x = p2.x.toFloat()
-        val p2y = p2.y.toFloat()
+        val p1x = p1.x
+        val p1y = p1.y
+        val p2x = p2.x
+        val p2y = p2.y
         gpuShapeViewCommands.addVertex(p1x, p1y, len = -lineWidth, maxLen = lineWidth)
         gpuShapeViewCommands.addVertex(p2x, p2y, len = +lineWidth, maxLen = lineWidth)
     }
 
     private fun pointsAddCubicOrLine(
-            scope: PointPool, fix: MPoint,
-            p0: MPoint, p0s: MPoint, p1s: MPoint, p1: MPoint,
-            lineWidth: Double,
-            reverse: Boolean = false,
-            start: Boolean = true,
+        scope: PointPool, fix: Point,
+        p0: Point, p0s: Point, p1s: Point, p1: Point,
+        lineWidth: Double,
+        reverse: Boolean = false,
+        start: Boolean = true,
     ) {
         val NPOINTS = 15
         scope.apply {
             for (i in 0..NPOINTS) {
-                val ratio = i.toDouble() / NPOINTS.toDouble()
+                val ratio = i.toFloat() / NPOINTS.toFloat()
                 val pos = when {
-                    start -> Bezier.cubicCalc(p0, p0s, p1s, p1, ratio, MPoint())
-                    else -> Bezier.cubicCalc(p1, p1s, p0s, p0, ratio, MPoint())
+                    start -> Bezier.cubicCalc(p0, p0s, p1s, p1, ratio)
+                    else -> Bezier.cubicCalc(p1, p1s, p0s, p0, ratio)
                 }
                 when {
                     reverse -> pointsAdd(fix, pos, lineWidth.toFloat())
