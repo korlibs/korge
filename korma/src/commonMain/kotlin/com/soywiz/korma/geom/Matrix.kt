@@ -189,6 +189,11 @@ data class Matrix(
             }
             return Matrix(a, b, c, d, tx, ty)
         }
+
+        fun transform(a: Float, b: Float, c: Float, d: Float, tx: Float, ty: Float, p: Point): Point = Point(
+            a * p.x + c * p.y + tx,
+            d * p.y + b * p.x + ty
+        )
     }
 }
 
@@ -296,71 +301,14 @@ enum class MatrixType(val id: Int, val hasRotation: Boolean, val hasScale: Boole
 }
 
 @KormaMutableApi
-sealed interface IMatrix {
-    val a: Double
-    val b: Double
-    val c: Double
-    val d: Double
-    val tx: Double
-    val ty: Double
-
-    // Transform points
-    fun transform(p: Point): Point = Point(transformX(p.x, p.y), transformY(p.x, p.y))
-    @Deprecated("")
-    fun transform(p: IPoint, out: MPoint = MPoint()): MPoint = transform(p.x, p.y, out)
-    @Deprecated("")
-    fun transform(px: Double, py: Double, out: MPoint = MPoint()): MPoint = out.setTo(transformX(px, py), transformY(px, py))
-    @Deprecated("")
-    fun transform(px: Float, py: Float, out: MPoint = MPoint()): MPoint = out.setTo(transformX(px, py), transformY(px, py))
-    @Deprecated("")
-    fun transform(px: Int, py: Int, out: MPoint = MPoint()): MPoint = out.setTo(transformX(px, py), transformY(px, py))
-
-    @Deprecated("")
-    fun transformX(p: IPoint): Double = transformX(p.x, p.y)
-    @Deprecated("")
-    fun transformX(px: Double, py: Double): Double = this.a * px + this.c * py + this.tx
-    @Deprecated("")
-    fun transformX(px: Float, py: Float): Double = this.a * px + this.c * py + this.tx
-    @Deprecated("")
-    fun transformX(px: Int, py: Int): Double = this.a * px + this.c * py + this.tx
-
-    @Deprecated("")
-    fun transformY(p: IPoint): Double = transformY(p.x, p.y)
-    @Deprecated("")
-    fun transformY(px: Double, py: Double): Double = this.d * py + this.b * px + this.ty
-    @Deprecated("")
-    fun transformY(px: Float, py: Float): Double = this.d * py + this.b * px + this.ty
-    @Deprecated("")
-    fun transformY(px: Int, py: Int): Double = this.d * py + this.b * px + this.ty
-
-    @Deprecated("")
-    fun transformXf(p: IPoint): Float = transformX(p.x, p.y).toFloat()
-    @Deprecated("")
-    fun transformXf(px: Double, py: Double): Float = transformX(px, py).toFloat()
-    @Deprecated("")
-    fun transformXf(px: Float, py: Float): Float = transformX(px.toDouble(), py.toDouble()).toFloat()
-    @Deprecated("")
-    fun transformXf(px: Int, py: Int): Float = transformX(px.toDouble(), py.toDouble()).toFloat()
-
-    @Deprecated("")
-    fun transformYf(p: IPoint): Float = transformY(p.x, p.y).toFloat()
-    @Deprecated("")
-    fun transformYf(px: Double, py: Double): Float = transformY(px, py).toFloat()
-    @Deprecated("")
-    fun transformYf(px: Float, py: Float): Float = transformY(px.toDouble(), py.toDouble()).toFloat()
-    @Deprecated("")
-    fun transformYf(px: Int, py: Int): Float = transformY(px.toDouble(), py.toDouble()).toFloat()
-}
-
-@KormaMutableApi
 data class MMatrix(
-    override var a: Double = 1.0,
-    override var b: Double = 0.0,
-    override var c: Double = 0.0,
-    override var d: Double = 1.0,
-    override var tx: Double = 0.0,
-    override var ty: Double = 0.0
-) : MutableInterpolable<MMatrix>, Interpolable<MMatrix>, IMatrix {
+    var a: Double = 1.0,
+    var b: Double = 0.0,
+    var c: Double = 0.0,
+    var d: Double = 1.0,
+    var tx: Double = 0.0,
+    var ty: Double = 0.0
+) : MutableInterpolable<MMatrix>, Interpolable<MMatrix> {
     companion object {
         val POOL: ConcurrentPool<MMatrix> = ConcurrentPool<MMatrix>({ it.identity() }) { MMatrix() }
 
@@ -372,11 +320,12 @@ data class MMatrix(
 
         operator fun invoke(m: MMatrix, out: MMatrix = MMatrix()): MMatrix = out.copyFrom(m)
 
+        @Deprecated("Use transform instead")
         fun transformXf(a: Float, b: Float, c: Float, d: Float, tx: Float, ty: Float, px: Float, py: Float): Float = a * px + c * py + tx
+        @Deprecated("Use transform instead")
         fun transformYf(a: Float, b: Float, c: Float, d: Float, tx: Float, ty: Float, px: Float, py: Float): Float = d * py + b * px + ty
 
-
-        fun isAlmostEquals(a: IMatrix, b: IMatrix, epsilon: Double = 0.000001): Boolean =
+        fun isAlmostEquals(a: MMatrix, b: MMatrix, epsilon: Double = 0.000001): Boolean =
             a.tx.isAlmostEquals(b.tx, epsilon)
                 && a.ty.isAlmostEquals(b.ty, epsilon)
                 && a.a.isAlmostEquals(b.a, epsilon)
@@ -385,7 +334,7 @@ data class MMatrix(
                 && a.d.isAlmostEquals(b.d, epsilon)
     }
 
-    fun isAlmostEquals(other: IMatrix, epsilon: Double = 0.000001): Boolean = isAlmostEquals(this, other, epsilon)
+    fun isAlmostEquals(other: MMatrix, epsilon: Double = 0.000001): Boolean = isAlmostEquals(this, other, epsilon)
 
     var af: Float
         get() = a.toFloat()
@@ -542,7 +491,7 @@ data class MMatrix(
     fun premultiply(la: Float, lb: Float, lc: Float, ld: Float, ltx: Float, lty: Float): MMatrix = premultiply(la.toDouble(), lb.toDouble(), lc.toDouble(), ld.toDouble(), ltx.toDouble(), lty.toDouble())
     fun premultiply(la: Int, lb: Int, lc: Int, ld: Int, ltx: Int, lty: Int): MMatrix = premultiply(la.toDouble(), lb.toDouble(), lc.toDouble(), ld.toDouble(), ltx.toDouble(), lty.toDouble())
 
-    fun multiply(l: IMatrix, r: IMatrix): MMatrix = setTo(
+    fun multiply(l: MMatrix, r: MMatrix): MMatrix = setTo(
         l.a * r.a + l.b * r.c,
         l.a * r.b + l.b * r.d,
         l.c * r.a + l.d * r.c,
@@ -568,7 +517,7 @@ data class MMatrix(
 
     fun isIdentity() = getType() == MatrixType.IDENTITY
 
-    fun invert(matrixToInvert: IMatrix = this): MMatrix {
+    fun invert(matrixToInvert: MMatrix = this): MMatrix {
         val src = matrixToInvert
         val dst = this
         val norm = src.a * src.d - src.b * src.c
@@ -587,9 +536,9 @@ data class MMatrix(
         return this
     }
 
-    fun concat(value: IMatrix): MMatrix = this.multiply(this, value)
-    fun preconcat(value: IMatrix): MMatrix = this.multiply(this, value)
-    fun postconcat(value: IMatrix): MMatrix = this.multiply(value, this)
+    fun concat(value: MMatrix): MMatrix = this.multiply(this, value)
+    fun preconcat(value: MMatrix): MMatrix = this.multiply(this, value)
+    fun postconcat(value: MMatrix): MMatrix = this.multiply(value, this)
 
     fun inverted(out: MMatrix = MMatrix()) = out.invert(this)
 
@@ -637,7 +586,7 @@ data class MMatrix(
 
     fun clone(): MMatrix = MMatrix(a, b, c, d, tx, ty)
 
-    operator fun times(that: IMatrix): MMatrix = MMatrix().multiply(this, that)
+    operator fun times(that: MMatrix): MMatrix = MMatrix().multiply(this, that)
     operator fun times(scale: Double): MMatrix = MMatrix().copyFrom(this).scale(scale)
 
     fun toTransform(out: Transform = Transform()): Transform {
@@ -713,6 +662,54 @@ data class MMatrix(
         return out.setMatrix(this)
     }
 
+
+    // Transform points
+    fun transform(p: Point): Point = Point(transformX(p.x, p.y), transformY(p.x, p.y))
+    @Deprecated("")
+    fun transform(p: IPoint, out: MPoint = MPoint()): MPoint = transform(p.x, p.y, out)
+    @Deprecated("")
+    fun transform(px: Double, py: Double, out: MPoint = MPoint()): MPoint = out.setTo(transformX(px, py), transformY(px, py))
+    @Deprecated("")
+    fun transform(px: Float, py: Float, out: MPoint = MPoint()): MPoint = out.setTo(transformX(px, py), transformY(px, py))
+    @Deprecated("")
+    fun transform(px: Int, py: Int, out: MPoint = MPoint()): MPoint = out.setTo(transformX(px, py), transformY(px, py))
+
+    @Deprecated("")
+    fun transformX(p: IPoint): Double = transformX(p.x, p.y)
+    @Deprecated("")
+    fun transformX(px: Double, py: Double): Double = this.a * px + this.c * py + this.tx
+    @Deprecated("")
+    fun transformX(px: Float, py: Float): Double = this.a * px + this.c * py + this.tx
+    @Deprecated("")
+    fun transformX(px: Int, py: Int): Double = this.a * px + this.c * py + this.tx
+
+    @Deprecated("")
+    fun transformY(p: IPoint): Double = transformY(p.x, p.y)
+    @Deprecated("")
+    fun transformY(px: Double, py: Double): Double = this.d * py + this.b * px + this.ty
+    @Deprecated("")
+    fun transformY(px: Float, py: Float): Double = this.d * py + this.b * px + this.ty
+    @Deprecated("")
+    fun transformY(px: Int, py: Int): Double = this.d * py + this.b * px + this.ty
+
+    @Deprecated("")
+    fun transformXf(p: IPoint): Float = transformX(p.x, p.y).toFloat()
+    @Deprecated("")
+    fun transformXf(px: Double, py: Double): Float = transformX(px, py).toFloat()
+    @Deprecated("")
+    fun transformXf(px: Float, py: Float): Float = transformX(px.toDouble(), py.toDouble()).toFloat()
+    @Deprecated("")
+    fun transformXf(px: Int, py: Int): Float = transformX(px.toDouble(), py.toDouble()).toFloat()
+
+    @Deprecated("")
+    fun transformYf(p: IPoint): Float = transformY(p.x, p.y).toFloat()
+    @Deprecated("")
+    fun transformYf(px: Double, py: Double): Float = transformY(px, py).toFloat()
+    @Deprecated("")
+    fun transformYf(px: Float, py: Float): Float = transformY(px.toDouble(), py.toDouble()).toFloat()
+    @Deprecated("")
+    fun transformYf(px: Int, py: Int): Float = transformY(px.toDouble(), py.toDouble()).toFloat()
+
     data class Transform(
         var x: Double = 0.0, var y: Double = 0.0,
         var scaleX: Double = 1.0, var scaleY: Double = 1.0,
@@ -750,7 +747,7 @@ data class MMatrix(
             rotation = 0.0.radians
         }
 
-        fun setMatrixNoReturn(matrix: IMatrix, pivotX: Double = 0.0, pivotY: Double = 0.0) {
+        fun setMatrixNoReturn(matrix: MMatrix, pivotX: Double = 0.0, pivotY: Double = 0.0) {
             val a = matrix.a
             val b = matrix.b
             val c = matrix.c
@@ -783,7 +780,7 @@ data class MMatrix(
             }
         }
 
-        fun setMatrix(matrix: IMatrix, pivotX: Double = 0.0, pivotY: Double = 0.0): Transform {
+        fun setMatrix(matrix: MMatrix, pivotX: Double = 0.0, pivotY: Double = 0.0): Transform {
             setMatrixNoReturn(matrix, pivotX, pivotY)
             return this
         }

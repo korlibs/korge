@@ -427,7 +427,7 @@ data class MRectangle(
         item.height
     )
 
-    fun applyTransform(m: IMatrix): MRectangle {
+    fun applyTransform(m: MMatrix): MRectangle {
         val tl = m.transform(left, top)
         val tr = m.transform(right, top)
         val bl = m.transform(left, bottom)

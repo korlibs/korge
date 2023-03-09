@@ -78,32 +78,21 @@ enum class MajorOrder { ROW, COLUMN }
 
 typealias MMatrix4 = MMatrix3D
 
+// Stored as four consecutive column vectors (effectively stored in column-major order) see https://en.wikipedia.org/wiki/Row-_and_column-major_order
 @KormaMutableApi
-sealed interface IMatrix3D {
-    val v00: Float
-    val v01: Float
-    val v02: Float
-    val v03: Float
+class MMatrix3D {
+    val data: FloatArray = floatArrayOf(
+        1f, 0f, 0f, 0f, // column-0
+        0f, 1f, 0f, 0f, // column-1
+        0f, 0f, 1f, 0f, // column-2
+        0f, 0f, 0f, 1f  // column-3
+    )
 
-    val v10: Float
-    val v11: Float
-    val v12: Float
-    val v13: Float
-
-    val v20: Float
-    val v21: Float
-    val v22: Float
-    val v23: Float
-
-    val v30: Float
-    val v31: Float
-    val v32: Float
-    val v33: Float
-
-    fun getIndex(index: Int): Float
+    operator fun set(row: Int, column: Int, value: Float) = setIndex(MMatrix3D.columnMajorIndex(row, column), value)
+    operator fun set(row: Int, column: Int, value: Double) = this.set(row, column, value.toFloat())
+    operator fun set(row: Int, column: Int, value: Int) = this.set(row, column, value.toFloat())
 
     operator fun get(row: Int, column: Int): Float = getIndex(MMatrix3D.columnMajorIndex(row, column))
-
 
     fun copyToFloatWxH(out: FloatArray, rows: Int, columns: Int, order: MajorOrder) {
         copyToFloatWxH(out, rows, columns, order, 0)
@@ -125,41 +114,6 @@ sealed interface IMatrix3D {
     fun copyToFloat2x2(out: FloatArray, order: MajorOrder, offset: Int) = copyToFloatWxH(out, 2, 2, order, offset)
     fun copyToFloat3x3(out: FloatArray, order: MajorOrder, offset: Int) = copyToFloatWxH(out, 3, 3, order, offset)
     fun copyToFloat4x4(out: FloatArray, order: MajorOrder, offset: Int) = copyToFloatWxH(out, 4, 4, order, offset)
-}
-
-sealed interface IMMatrix3D : IMatrix3D {
-    override var v00: Float
-    override var v01: Float
-    override var v02: Float
-    override var v03: Float
-    override var v10: Float
-    override var v11: Float
-    override var v12: Float
-    override var v13: Float
-    override var v20: Float
-    override var v21: Float
-    override var v22: Float
-    override var v23: Float
-    override var v30: Float
-    override var v31: Float
-    override var v32: Float
-    override var v33: Float
-
-    fun setIndex(index: Int, value: Float): Unit
-    operator fun set(row: Int, column: Int, value: Float) = setIndex(MMatrix3D.columnMajorIndex(row, column), value)
-    operator fun set(row: Int, column: Int, value: Double) = this.set(row, column, value.toFloat())
-    operator fun set(row: Int, column: Int, value: Int) = this.set(row, column, value.toFloat())
-}
-
-// Stored as four consecutive column vectors (effectively stored in column-major order) see https://en.wikipedia.org/wiki/Row-_and_column-major_order
-@KormaMutableApi
-class MMatrix3D : IMMatrix3D {
-    val data: FloatArray = floatArrayOf(
-        1f, 0f, 0f, 0f, // column-0
-        0f, 1f, 0f, 0f, // column-1
-        0f, 0f, 1f, 0f, // column-2
-        0f, 0f, 0f, 1f  // column-3
-    )
 
     companion object {
         const val M00 = 0
@@ -316,28 +270,28 @@ class MMatrix3D : IMMatrix3D {
         }
     }
 
-    override fun setIndex(index: Int, value: Float) { data[index] = value }
-    override fun getIndex(index: Int): Float = data[index]
+    fun setIndex(index: Int, value: Float) { data[index] = value }
+    fun getIndex(index: Int): Float = data[index]
 
-    override var v00: Float get() = data[M00]; set(v) { data[M00] = v }
-    override var v01: Float get() = data[M01]; set(v) { data[M01] = v }
-    override var v02: Float get() = data[M02]; set(v) { data[M02] = v }
-    override var v03: Float get() = data[M03]; set(v) { data[M03] = v }
+    var v00: Float get() = data[M00]; set(v) { data[M00] = v }
+    var v01: Float get() = data[M01]; set(v) { data[M01] = v }
+    var v02: Float get() = data[M02]; set(v) { data[M02] = v }
+    var v03: Float get() = data[M03]; set(v) { data[M03] = v }
 
-    override var v10: Float get() = data[M10]; set(v) { data[M10] = v }
-    override var v11: Float get() = data[M11]; set(v) { data[M11] = v }
-    override var v12: Float get() = data[M12]; set(v) { data[M12] = v }
-    override var v13: Float get() = data[M13]; set(v) { data[M13] = v }
+    var v10: Float get() = data[M10]; set(v) { data[M10] = v }
+    var v11: Float get() = data[M11]; set(v) { data[M11] = v }
+    var v12: Float get() = data[M12]; set(v) { data[M12] = v }
+    var v13: Float get() = data[M13]; set(v) { data[M13] = v }
 
-    override var v20: Float get() = data[M20]; set(v) { data[M20] = v }
-    override var v21: Float get() = data[M21]; set(v) { data[M21] = v }
-    override var v22: Float get() = data[M22]; set(v) { data[M22] = v }
-    override var v23: Float get() = data[M23]; set(v) { data[M23] = v }
+    var v20: Float get() = data[M20]; set(v) { data[M20] = v }
+    var v21: Float get() = data[M21]; set(v) { data[M21] = v }
+    var v22: Float get() = data[M22]; set(v) { data[M22] = v }
+    var v23: Float get() = data[M23]; set(v) { data[M23] = v }
 
-    override var v30: Float get() = data[M30]; set(v) { data[M30] = v }
-    override var v31: Float get() = data[M31]; set(v) { data[M31] = v }
-    override var v32: Float get() = data[M32]; set(v) { data[M32] = v }
-    override var v33: Float get() = data[M33]; set(v) { data[M33] = v }
+    var v30: Float get() = data[M30]; set(v) { data[M30] = v }
+    var v31: Float get() = data[M31]; set(v) { data[M31] = v }
+    var v32: Float get() = data[M32]; set(v) { data[M32] = v }
+    var v33: Float get() = data[M33]; set(v) { data[M33] = v }
 
     val transposed: MMatrix3D get() = this.clone().transpose()
 

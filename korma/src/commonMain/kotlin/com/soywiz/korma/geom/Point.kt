@@ -90,9 +90,9 @@ inline class Point internal constructor(internal val raw: Float2Pack) {
     fun angleTo(other: Point): Angle = Angle.between(this.x, this.y, other.x, other.y)
     val angle: Angle get() = Angle.between(0f, 0f, this.x, this.y)
 
-    inline fun transformed(m: IMatrix?): Point = m?.transform(this) ?: this
-    fun transformX(m: IMatrix?): Float = m?.transform(this)?.x ?: x
-    fun transformY(m: IMatrix?): Float = m?.transform(this)?.y ?: y
+    inline fun transformed(m: MMatrix?): Point = m?.transform(this) ?: this
+    fun transformX(m: MMatrix?): Float = m?.transform(this)?.x ?: x
+    fun transformY(m: MMatrix?): Float = m?.transform(this)?.y ?: y
 
     inline fun transformed(m: Matrix?): Point = m?.transform(this) ?: this
     fun transformX(m: Matrix?): Float = m?.transform(this)?.x ?: x

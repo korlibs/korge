@@ -94,7 +94,6 @@ class AGUniformValues(val capacity: Int = 8 * 1024) {
     operator fun set(uniform: Uniform, value: RGBA) { this[uniform].set(value) }
     operator fun set(uniform: Uniform, value: RGBAPremultiplied) { this[uniform].set(value) }
     operator fun set(uniform: Uniform, value: Array<MVector4>) { this[uniform].set(value) }
-    operator fun set(uniform: Uniform, value: Array<IMatrix3D>) { this[uniform].set(value) }
     operator fun set(uniform: Uniform, value: Array<MMatrix3D>) { this[uniform].set(value) }
     operator fun set(uniform: Uniform, value: Array<FloatArray>) { this[uniform].set(value) }
 
@@ -313,7 +312,7 @@ open class AGValue(
     fun set(value: IVector4) = set(value.x, value.y, value.z, value.w)
     fun set(value: IPoint) = set(value.x.toFloat(), value.y.toFloat())
     fun set(value: IRectCorners) = set(value.topLeft.toFloat(), value.topRight.toFloat(), value.bottomRight.toFloat(), value.bottomLeft.toFloat())
-    fun set(value: IMatrix3D) = tempMatrixLock { set(tempIMatrix.also { it[0] = value }) }
+    fun set(value: MMatrix3D) = tempMatrixLock { set(tempIMatrix.also { it[0] = value }) }
 
     fun set(value: Vector4) = set(value.x, value.y, value.z, value.w)
     fun set(value: Point) = set(value.x, value.y)
@@ -344,9 +343,7 @@ open class AGValue(
         }
     }
 
-    fun set(matArray: Array<MMatrix3D>) = set(matArray as Array<IMatrix3D>)
-
-    fun set(matArray: Array<IMatrix3D>) {
+    fun set(matArray: Array<MMatrix3D>) {
         val arrayCount = min(arrayCount, matArray.size)
         val matSize = when (type) {
             VarType.Mat2 -> 2; VarType.Mat3 -> 3; VarType.Mat4 -> 4; else -> -1
@@ -379,7 +376,7 @@ open class AGValue(
         private val tempFloatsLock = NonRecursiveLock()
         private val tempFloats = FloatArray(64 * (4 * 4))
         private val tempMatrixLock = NonRecursiveLock()
-        private val tempIMatrix = Array<IMatrix3D>(1) { MMatrix3D() }
+        private val tempIMatrix = Array<MMatrix3D>(1) { MMatrix3D() }
         private val tempMatrix = Array<Matrix4>(1) { Matrix4() }
     }
 

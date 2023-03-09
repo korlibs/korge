@@ -394,10 +394,10 @@ class BatchBuilder2D constructor(
         val mty = matrix.tyf
 
         for (n in 0 until vcount) {
-            val x = f32[idx + 0]
-            val y = f32[idx + 1]
-            f32[idx + 0] = MMatrix.transformXf(ma, mb, mc, md, mtx, mty, x, y)
-            f32[idx + 1] = MMatrix.transformYf(ma, mb, mc, md, mtx, mty, x, y)
+            val p = Point(f32[idx + 0], f32[idx + 1])
+            val pt = Matrix.transform(ma, mb, mc, md, mtx, mty, p)
+            f32[idx + 0] = pt.x
+            f32[idx + 1] = pt.y
             idx += VERTEX_INDEX_SIZE
         }
     }
