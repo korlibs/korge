@@ -94,6 +94,23 @@ open class KorgeExtension(
     companion object {
         const val ESBUILD_DEFAULT_VERSION = "0.17.10"
 
+        val DEFAULT_ANDROID_EXCLUDE_PATTERNS = listOf(
+            "META-INF/DEPENDENCIES",
+            "META-INF/LICENSE",
+            "META-INF/LICENSE.txt",
+            "META-INF/license.txt",
+            "META-INF/NOTICE",
+            "META-INF/NOTICE.txt",
+            "META-INF/notice.txt",
+            "META-INF/LGPL*",
+            "META-INF/AL2.0",
+            "META-INF/*.kotlin_module",
+            "**/*.kotlin_metadata",
+            "**/*.kotlin_builtins",
+            "**/androidsupportmultidexversion.txt",
+            "META-INF/versions/9/previous-compilation-data.bin",
+        )
+
         val validIdentifierRegexp = Regex("^[a-zA-Z_]\\w*$")
 
         fun isIdValid(id: String) = id.isNotEmpty() && id.isNotBlank() && id.split(".").all { it.matches(validIdentifierRegexp) }
@@ -369,21 +386,7 @@ open class KorgeExtension(
 
     var androidTimeoutMs: Int = 30 * 1000
 
-    var androidExcludePatterns: List<String> = listOf(
-        "META-INF/DEPENDENCIES",
-        "META-INF/LICENSE",
-        "META-INF/LICENSE.txt",
-        "META-INF/license.txt",
-        "META-INF/NOTICE",
-        "META-INF/NOTICE.txt",
-        "META-INF/notice.txt",
-        "META-INF/LGPL*",
-        "META-INF/AL2.0",
-        "META-INF/*.kotlin_module",
-        "**/*.kotlin_metadata",
-        "**/*.kotlin_builtins",
-        "**/androidsupportmultidexversion.txt",
-    )
+    var androidExcludePatterns: List<String> = DEFAULT_ANDROID_EXCLUDE_PATTERNS
 
 	fun androidSdk(compileSdk: Int, minSdk: Int, targetSdk: Int) {
 		androidMinSdk = minSdk

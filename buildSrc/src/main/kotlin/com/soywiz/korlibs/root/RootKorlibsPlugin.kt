@@ -273,18 +273,9 @@ object RootKorlibsPlugin {
             //    freeCompilerArgs += "-Xmulti-platform"
             //}
             packagingOptions {
-                it.exclude("META-INF/DEPENDENCIES")
-                it.exclude("META-INF/LICENSE")
-                it.exclude("META-INF/LICENSE.txt")
-                it.exclude("META-INF/license.txt")
-                it.exclude("META-INF/NOTICE")
-                it.exclude("META-INF/NOTICE.txt")
-                it.exclude("META-INF/notice.txt")
-                it.exclude("META-INF/LGPL*")
-                it.exclude("META-INF/AL2.0")
-                it.exclude("META-INF/*.kotlin_module")
-                it.exclude("**/*.kotlin_metadata")
-                it.exclude("**/*.kotlin_builtins")
+                for (pattern in KorgeExtension.DEFAULT_ANDROID_EXCLUDE_PATTERNS) {
+                    it.resources.excludes.add(pattern)
+                }
             }
             compileSdkVersion(28)
             defaultConfig {
