@@ -278,7 +278,7 @@ open class Varying(name: String, type: VarType, arrayCount: Int, precision: Prec
 }
 fun Varying(type: VarType, arrayCount: Int = 1, precision: Precision = Precision.DEFAULT): Varying.Provider = Varying.Provider(type, arrayCount, precision)
 
-open class Uniform(name: String, type: VarType, arrayCount: Int, precision: Precision = Precision.DEFAULT, offset: Int? = null) : VariableWithOffset(
+open class Uniform(name: String, type: VarType, arrayCount: Int, precision: Precision = Precision.DEFAULT, offset: Int? = null, val fixedLocation: Int = -1) : VariableWithOffset(
     name, type, arrayCount, precision, offset
 ) {
     val totalElementCount: Int get() = type.elementCount * arrayCount
@@ -289,11 +289,11 @@ open class Uniform(name: String, type: VarType, arrayCount: Int, precision: Prec
     override fun hashCode(): Int = mhashcode()
     operator fun getValue(thisRef: Any?, property: KProperty<*>): Uniform = this
 
-    class Provider(val type: VarType, val arrayCount: Int, val precision: Precision = Precision.DEFAULT) {
-        operator fun provideDelegate(thisRef: Any?, property: KProperty<*>): Uniform = Uniform(property.name, type, arrayCount, precision)
+    class Provider(val type: VarType, val arrayCount: Int, val precision: Precision = Precision.DEFAULT, val fixedLocation: Int = -1) {
+        operator fun provideDelegate(thisRef: Any?, property: KProperty<*>): Uniform = Uniform(property.name, type, arrayCount, precision, fixedLocation = fixedLocation)
     }
 }
-fun Uniform(type: VarType, arrayCount: Int = 1, precision: Precision = Precision.DEFAULT): Uniform.Provider = Uniform.Provider(type, arrayCount, precision)
+fun Uniform(type: VarType, arrayCount: Int = 1, precision: Precision = Precision.DEFAULT, fixedLocation: Int = -1): Uniform.Provider = Uniform.Provider(type, arrayCount, precision, fixedLocation)
 
 open class Temp(id: Int, type: VarType, arrayCount: Int, precision: Precision = Precision.DEFAULT) : Variable("temp$id", type, arrayCount, precision) {
     constructor(id: Int, type: VarType, precision: Precision = Precision.DEFAULT) : this(id, type, 1, precision)
@@ -343,8 +343,12 @@ inline fun Program.appendingVertex(extraName: String, block: Program.Builder.() 
 inline fun Program.appendingFragment(extraName: String, block: Program.Builder.() -> Unit): Program =
     this.copy(fragment = this.fragment.appending(block), name = "$name-$extraName")
 
+data class UniformInProgram(val uniform: Uniform, val index: Int)
+
 data class Program(val vertex: VertexShader, val fragment: FragmentShader, val name: String = "program-${vertex.name}-${fragment.name}") : Closeable {
-	val uniforms = vertex.uniforms + fragment.uniforms
+	val uniforms = (vertex.uniforms + fragment.uniforms).distinct()
+    // @TODO: Proper indices
+    val uniformsToIndex = uniforms.withIndex().associate { it.value to UniformInProgram(it.value, it.index) }
 	val attributes = vertex.attributes + fragment.attributes
     val cachedHashCode = (vertex.hashCode() * 11) + (fragment.hashCode() * 7) + name.hashCode()
     override fun hashCode(): Int = cachedHashCode

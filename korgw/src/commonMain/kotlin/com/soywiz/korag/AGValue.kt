@@ -11,9 +11,9 @@ import kotlin.math.*
 
 class AGUniformValue constructor(
     val uniform: Uniform,
-    data: Buffer,
-    texture: AGTexture?,
-    textureUnitInfo: AGTextureUnitInfo
+    data: Buffer = Buffer(uniform.totalBytes),
+    texture: AGTexture? = null,
+    textureUnitInfo: AGTextureUnitInfo = AGTextureUnitInfo.DEFAULT,
 ) : AGValue(uniform, data, texture, textureUnitInfo) {
     override fun equals(other: Any?): Boolean = other is AGUniformValue && this.uniform == uniform && this.data == other.data && this.texture == other.texture && this.textureUnitInfo == other.textureUnitInfo
     override fun hashCode(): Int = uniform.hashCode() + super.hashCode()
@@ -88,6 +88,7 @@ class AGUniformValues(val capacity: Int = 8 * 1024) {
     operator fun set(uniform: Uniform, value: Double) { this[uniform].set(value) }
     operator fun set(uniform: Uniform, value: MMatrix3D) { this[uniform].set(value) }
     operator fun set(uniform: Uniform, value: Point) { this[uniform].set(value) }
+    operator fun set(uniform: Uniform, value: Size) { this[uniform].set(value) }
     operator fun set(uniform: Uniform, value: MPoint) { this[uniform].set(value) }
     operator fun set(uniform: Uniform, value: MVector4) { this[uniform].set(value) }
     operator fun set(uniform: Uniform, value: RGBAf) { this[uniform].set(value) }
@@ -316,6 +317,7 @@ open class AGValue(
 
     fun set(value: Vector4) = set(value.x, value.y, value.z, value.w)
     fun set(value: Point) = set(value.x, value.y)
+    fun set(value: Size) = set(value.width, value.height)
     fun set(value: Margin) = set(value.top.toFloat(), value.right.toFloat(), value.bottom.toFloat(), value.left.toFloat())
     fun set(value: RectCorners) = set(value.bottomRight, value.topRight, value.bottomLeft, value.topLeft)
 

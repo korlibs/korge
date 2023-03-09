@@ -570,6 +570,21 @@ class RenderContext constructor(
             if (tex != null) drawTexture(frameBuffer, tex)
         }
     }
+
+    private val _buffers = FastIdentityMap<Uniform, AGUniformBuffer>()
+    private val _programs = FastIdentityMap<Program, RenderProgram>()
+
+    fun getBuffer(uniform: Uniform): AGUniformBuffer = _buffers.getOrPut(uniform) { AGUniformBuffer(uniform, 1024) }
+    fun getRenderProgram(program: Program): RenderProgram = _programs.getOrPut(program) { RenderProgram(this, program) }
+}
+
+class RenderUniform(val uniform: Uniform, var buffer: AGUniformBuffer, var value: AGUniformValue, var index: Int)
+
+class RenderProgram(val ctx: RenderContext, val program: Program) {
+    val uniformBuffers = program.uniforms.map { RenderUniform(it, ctx.getBuffer(it), AGUniformValue(it), 0) }
+    val uniformsToBuffers = uniformBuffers.associateBy { it.uniform }
+
+    operator fun get(uniform: Uniform): AGUniformValue = uniformsToBuffers[uniform]?.value ?: error("Can't find uniform '$uniform'")
 }
 
 inline fun <T : AG> testRenderContext(ag: T, bp: BoundsProvider = BoundsProvider.Base(), block: (RenderContext) -> Unit): T {

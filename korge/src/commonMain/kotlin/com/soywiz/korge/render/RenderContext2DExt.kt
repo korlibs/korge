@@ -14,20 +14,20 @@ import com.soywiz.korma.geom.*
 // https://iquilezles.org/articles/distfunctions
 // https://iquilezles.org/articles/distfunctions2d/#:~:text=length(p)%20%2D%20r%3B%0A%7D-,Rounded%20Box%20%2D%20exact,-(https%3A//www
 object MaterialRender {
-    val u_ShadowColor by Uniform(VarType.Float4)
-    val u_ShadowRadius by Uniform(VarType.Float1)
-    val u_ShadowOffset by Uniform(VarType.Float2)
+    val u_ShadowColor by Uniform(VarType.Float4, fixedLocation = 10)
+    val u_ShadowRadius by Uniform(VarType.Float1, fixedLocation = 11)
+    val u_ShadowOffset by Uniform(VarType.Float2, fixedLocation = 12)
 
-    val u_HighlightPos by Uniform(VarType.Float2)
-    val u_HighlightRadius by Uniform(VarType.Float1)
-    val u_HighlightColor by Uniform(VarType.Float4)
+    val u_HighlightPos by Uniform(VarType.Float2, fixedLocation = 13)
+    val u_HighlightRadius by Uniform(VarType.Float1, fixedLocation = 14)
+    val u_HighlightColor by Uniform(VarType.Float4, fixedLocation = 15)
 
-    val u_Size by Uniform(VarType.Float2)
-    val u_Radius by Uniform(VarType.Float4)
+    val u_Size by Uniform(VarType.Float2, fixedLocation = 16)
+    val u_Radius by Uniform(VarType.Float4, fixedLocation = 17)
 
-    val u_BorderSizeHalf by Uniform(VarType.Float1)
-    val u_BorderColor by Uniform(VarType.Float4)
-    val u_BackgroundColor by Uniform(VarType.Float4)
+    val u_BorderSizeHalf by Uniform(VarType.Float1, fixedLocation = 18)
+    val u_BorderColor by Uniform(VarType.Float4, fixedLocation = 19)
+    val u_BackgroundColor by Uniform(VarType.Float4, fixedLocation = 20)
 
     val PROGRAM = ShadedView.buildShader {
         val roundedDist = TEMP(Float1)
@@ -97,12 +97,12 @@ fun RenderContext2D.materialRoundRect(
     //colorMul: RGBA = Colors.WHITE,
 ) {
     _tempProgramUniforms.clear()
-    _tempProgramUniforms.set(MaterialRender.u_Radius, radius.bottomRight, radius.topRight, radius.bottomLeft, radius.topLeft)
-    _tempProgramUniforms.set(MaterialRender.u_Size, width, height)
+    _tempProgramUniforms[MaterialRender.u_Radius] = radius
+    _tempProgramUniforms[MaterialRender.u_Size] = Size(width, height)
 
     _tempProgramUniforms[MaterialRender.u_BackgroundColor] = color.premultipliedFast
 
-    _tempProgramUniforms.set(MaterialRender.u_HighlightPos, highlightPos.x * width, highlightPos.y * height)
+    _tempProgramUniforms[MaterialRender.u_HighlightPos] = highlightPos * Size(width, height)
     _tempProgramUniforms[MaterialRender.u_HighlightRadius] = highlightRadius * kotlin.math.max(width, height) * 1.25
     _tempProgramUniforms[MaterialRender.u_HighlightColor] = highlightColor.premultipliedFast
 
@@ -112,6 +112,11 @@ fun RenderContext2D.materialRoundRect(
     _tempProgramUniforms[MaterialRender.u_ShadowColor] = shadowColor.premultipliedFast
     _tempProgramUniforms[MaterialRender.u_ShadowOffset] = shadowOffset
     _tempProgramUniforms[MaterialRender.u_ShadowRadius] = shadowRadius
+
+    // @TODO: WIP
+    val program = ctx.getRenderProgram(MaterialRender.PROGRAM)
+    program[MaterialRender.u_ShadowColor].set(shadowColor.premultipliedFast)
+    //program.uniformsToBuffers[MaterialRender.u_ShadowColor]!!.value.set(10)
 
     quadPaddedCustomProgram(x, y, width, height, MaterialRender.PROGRAM, _tempProgramUniforms, Margin((shadowRadius + shadowOffset.length).toFloat()))
 }
