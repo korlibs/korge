@@ -1,5 +1,6 @@
 package com.soywiz.korio.file.std
 
+import com.soywiz.korio.async.*
 import kotlinx.cinterop.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
@@ -7,7 +8,7 @@ import platform.posix.*
 
 actual open class LocalVfsNative actual constructor(async: Boolean) : LocalVfsNativeBase(async) {
     override suspend fun listFlow(path: String) = flow {
-        withContext(Dispatchers.IO) {
+        withContext(Dispatchers.CIO) {
             val dir = memScoped { _wopendir(resolve(path).wcstr) }
             if (dir != null) {
                 try {

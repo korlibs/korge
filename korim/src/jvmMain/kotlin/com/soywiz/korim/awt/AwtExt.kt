@@ -4,6 +4,7 @@ import com.soywiz.kmem.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.format.*
+import com.soywiz.korio.async.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.MRectangle
 import kotlinx.coroutines.*
@@ -151,11 +152,11 @@ fun ImageIOReadFormat(s: InputStream, type: Int = AWT_INTERNAL_IMAGE_TYPE_PRE): 
 
 fun awtReadImage(data: ByteArray): BufferedImage = ImageIOReadFormat(ByteArrayInputStream(data))
 
-suspend fun awtReadImageInWorker(data: ByteArray, props: ImageDecodingProps): BufferedImage = withContext(Dispatchers.IO) {
+suspend fun awtReadImageInWorker(data: ByteArray, props: ImageDecodingProps): BufferedImage = withContext(Dispatchers.ResourceDecoder) {
     ImageIOReadFormat(ByteArrayInputStream(data), props)
 }
 
-suspend fun awtReadImageInWorker(file: File, props: ImageDecodingProps): BufferedImage = withContext(Dispatchers.IO) {
+suspend fun awtReadImageInWorker(file: File, props: ImageDecodingProps): BufferedImage = withContext(Dispatchers.ResourceDecoder) {
     FileInputStream(file).use { ImageIOReadFormat(it, props) }
 }
 

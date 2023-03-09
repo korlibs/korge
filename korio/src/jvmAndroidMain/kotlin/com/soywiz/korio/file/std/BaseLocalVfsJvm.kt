@@ -2,6 +2,7 @@ package com.soywiz.korio.file.std
 
 import com.soywiz.kds.iterators.*
 import com.soywiz.klock.DateTime
+import com.soywiz.korio.async.*
 import com.soywiz.korio.file.VfsFile
 import com.soywiz.korio.file.VfsOpenMode
 import com.soywiz.korio.file.VfsProcessHandler
@@ -38,8 +39,7 @@ internal open class BaseLocalVfsJvm : LocalVfs() {
     val that = this
     override val absolutePath: String = ""
 
-    protected suspend fun <T> executeIo(callback: suspend CoroutineScope.() -> T): T = withContext(Dispatchers.IO, callback)
-    protected suspend fun <T> doIo(callback: suspend () -> T): T = withContext(Dispatchers.IO) { callback() }
+    protected suspend fun <T> executeIo(callback: suspend CoroutineScope.() -> T): T = withContext(Dispatchers.CIO, callback)
     //private suspend inline fun <T> executeIo(callback: suspend () -> T): T = callback()
 
     fun UnixPermissions.toSet(): Set<PosixFilePermission> = buildList<PosixFilePermission> {
@@ -226,7 +226,7 @@ internal open class BaseLocalVfsJvm : LocalVfs() {
         for (it in (File(path).listFiles() ?: emptyArray<File>())) {
             emit(that.file("$path/${it.name}"))
         }
-    }.flowOn(Dispatchers.IO)
+    }.flowOn(Dispatchers.CIO)
 
     override suspend fun mkdir(path: String, attributes: List<Attribute>): Boolean =
         executeIo { resolveFile(path).mkdir() }
@@ -258,7 +258,7 @@ internal open class BaseLocalVfsJvm : LocalVfs() {
             *watchModifiers(path)
         )
 
-        GlobalScope.launch(Dispatchers.IO) {
+        GlobalScope.launch(Dispatchers.CIO) {
             while (running) {
                 val key = watcher.take()
 

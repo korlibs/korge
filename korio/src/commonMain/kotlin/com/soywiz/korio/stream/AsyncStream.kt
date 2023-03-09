@@ -162,8 +162,8 @@ fun List<AsyncInputStreamWithLength>.combine(): AsyncInputStreamWithLength {
 
 operator fun AsyncInputStreamWithLength.plus(other: AsyncInputStreamWithLength): AsyncInputStreamWithLength = listOf(this, other).combine()
 
-suspend fun AsyncInputStreamWithLength.getAvailable() = this.getLength() - this.getPosition()
-suspend fun AsyncInputStreamWithLength.hasAvailable() = getAvailable() > 0
+suspend fun AsyncInputStreamWithLength.getAvailable(): Long = this.getLength() - this.getPosition()
+suspend fun AsyncInputStreamWithLength.hasAvailable(): Boolean = getAvailable() > 0
 suspend fun AsyncInputStreamWithLength.supportsAvailable() = kotlin.runCatching { hasAvailable() }.isSuccess
 
 interface AsyncRAInputStream {

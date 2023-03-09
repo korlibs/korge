@@ -3,12 +3,13 @@ package com.soywiz.korio.net.http
 import com.soywiz.kmem.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.concurrent.atomic.*
-import com.soywiz.korio.internal.*
 import com.soywiz.korio.lang.*
+import com.soywiz.korio.net.*
 import com.soywiz.korio.stream.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.*
 import java.net.*
+import java.net.URL
 import java.security.*
 import java.security.cert.*
 import javax.net.ssl.*
@@ -36,7 +37,7 @@ class HttpClientJvm : HttpClient() {
 		headers: Http.Headers,
 		content: AsyncInputStreamWithLength?
 	): Response {
-		val result = withContext(Dispatchers.IO) {
+		val result = doIo {
 			val requestId = lastRequestId++
 			val id = "request[$clientId,$requestId]"
 
