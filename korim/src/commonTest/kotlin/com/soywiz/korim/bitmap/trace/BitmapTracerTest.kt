@@ -1,16 +1,10 @@
 package com.soywiz.korim.bitmap.trace
 
-import com.soywiz.korim.bitmap.Bitmap32
-import com.soywiz.korim.bitmap.context2d
-import com.soywiz.korim.color.Colors
+import com.soywiz.korim.bitmap.*
+import com.soywiz.korim.color.*
 import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.vector.Winding
-import com.soywiz.korma.geom.vector.circle
-import com.soywiz.korma.geom.vector.rect
-import com.soywiz.korma.geom.vector.rectHole
-import com.soywiz.korma.geom.vector.roundRect
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import com.soywiz.korma.geom.vector.*
+import kotlin.test.*
 
 class BitmapTracerTest {
     @Test

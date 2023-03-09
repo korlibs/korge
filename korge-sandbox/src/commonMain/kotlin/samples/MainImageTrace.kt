@@ -1,22 +1,12 @@
 package samples
 
-import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.view.SContainer
-import com.soywiz.korge.view.alpha
-import com.soywiz.korge.view.cpuGraphics
-import com.soywiz.korge.view.image
-import com.soywiz.korge.view.scale
-import com.soywiz.korge.view.xy
+import com.soywiz.korge.scene.*
+import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.bitmap.trace.trace
-import com.soywiz.korim.color.Colors
+import com.soywiz.korim.bitmap.trace.*
+import com.soywiz.korim.color.*
 import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.vector.Winding
-import com.soywiz.korma.geom.vector.circle
-import com.soywiz.korma.geom.vector.rect
-import com.soywiz.korma.geom.vector.rectHole
-import com.soywiz.korma.geom.vector.roundRect
-import com.soywiz.korma.geom.vector.write
+import com.soywiz.korma.geom.vector.*
 
 class MainImageTrace : Scene() {
     override suspend fun SContainer.sceneMain() {

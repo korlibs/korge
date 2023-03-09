@@ -1,26 +1,10 @@
 package com.soywiz.korim.vector.format
 
-import com.soywiz.kds.ListReader
-import com.soywiz.korio.util.StrReader
-import com.soywiz.korio.util.isDigit
-import com.soywiz.korio.util.isWhitespaceFast
-import com.soywiz.korio.util.toStringDecimal
+import com.soywiz.kds.*
+import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.vector.VectorBuilder
-import com.soywiz.korma.geom.vector.VectorPath
-import com.soywiz.korma.geom.vector.rLineTo
-import com.soywiz.korma.geom.vector.rLineToH
-import com.soywiz.korma.geom.vector.rLineToV
-import com.soywiz.korma.geom.vector.rMoveTo
-import com.soywiz.korma.geom.vector.write
-import kotlin.math.PI
-import kotlin.math.abs
-import kotlin.math.absoluteValue
-import kotlin.math.acos
-import kotlin.math.cos
-import kotlin.math.hypot
-import kotlin.math.sin
-import kotlin.math.sqrt
+import com.soywiz.korma.geom.vector.*
+import kotlin.math.*
 
 object SvgPath {
     fun parse(d: String, warningProcessor: ((message: String) -> Unit)? = null): VectorPath {

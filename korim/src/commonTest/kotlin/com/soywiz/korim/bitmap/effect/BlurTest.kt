@@ -1,12 +1,10 @@
 package com.soywiz.korim.bitmap.effect
 
-import com.soywiz.korim.bitmap.Bitmap32
-import com.soywiz.korim.bitmap.context2d
-import com.soywiz.korim.color.Colors
-import com.soywiz.korio.async.suspendTest
+import com.soywiz.korim.bitmap.*
+import com.soywiz.korim.color.*
+import com.soywiz.korio.async.*
 import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.vector.circle
-import kotlin.test.Test
+import kotlin.test.*
 
 class BlurTest {
     @Test

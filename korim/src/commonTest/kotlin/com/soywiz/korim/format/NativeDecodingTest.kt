@@ -1,19 +1,12 @@
 package com.soywiz.korim.format
 
 import com.soywiz.kmem.*
-import com.soywiz.korim.atlas.readAtlas
+import com.soywiz.korim.atlas.*
 import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.Colors
-import com.soywiz.korim.color.RGBA
-import com.soywiz.korim.color.RGBAPremultiplied
-import com.soywiz.korim.color.asPremultiplied
-import com.soywiz.korio.async.suspendTest
-import com.soywiz.korio.file.std.resourcesVfs
-import com.soywiz.korma.geom.vector.rect
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNotEquals
-import kotlin.test.assertTrue
+import com.soywiz.korim.color.*
+import com.soywiz.korio.async.*
+import com.soywiz.korio.file.std.*
+import kotlin.test.*
 
 class NativeDecodingTest {
     val file = resourcesVfs["bubble-chat.9.png"]

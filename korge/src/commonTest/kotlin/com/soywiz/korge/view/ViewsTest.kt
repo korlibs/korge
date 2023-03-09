@@ -3,20 +3,13 @@ package com.soywiz.korge.view
 import com.soywiz.klock.*
 import com.soywiz.klogger.*
 import com.soywiz.korev.*
-import com.soywiz.korge.tests.ViewsForTesting
-import com.soywiz.korge.tween.get
-import com.soywiz.korge.tween.tween
-import com.soywiz.korim.bitmap.Bitmap32
-import com.soywiz.korim.color.Colors
-import com.soywiz.korio.util.niceStr
+import com.soywiz.korge.tests.*
+import com.soywiz.korge.tween.*
+import com.soywiz.korim.bitmap.*
+import com.soywiz.korim.color.*
+import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.vector.circle
-import com.soywiz.korma.geom.vector.rect
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
-import kotlin.test.assertNull
-import kotlin.test.assertTrue
+import kotlin.test.*
 
 class ViewsTest : ViewsForTesting() {
     val logger = Logger("ViewsTest")
@@ -446,6 +439,7 @@ class ViewsTest : ViewsForTesting() {
         addUpdater { this.sortChildrenBy(comparator) }
         return this
     }
+
     fun <T : Container, T2 : Comparable<T2>> T.keepChildrenSortedBy(selector: (View) -> T2): T = this.keepChildrenSortedBy(selector.toComparator())
     fun <T : Container> T.keepChildrenSortedByY(): T = this.keepChildrenSortedBy(View::y)
 

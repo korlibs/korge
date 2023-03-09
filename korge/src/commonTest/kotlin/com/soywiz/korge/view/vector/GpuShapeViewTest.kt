@@ -1,11 +1,9 @@
 package com.soywiz.korge.view.vector
 
-import com.soywiz.korge.annotations.KorgeExperimental
-import com.soywiz.korge.render.testRenderContext
-import com.soywiz.korim.color.Colors
-import com.soywiz.korim.vector.EmptyShape
-import com.soywiz.korim.vector.PolylineShape
-import com.soywiz.korma.geom.vector.rect
+import com.soywiz.korge.annotations.*
+import com.soywiz.korge.render.*
+import com.soywiz.korim.color.*
+import com.soywiz.korim.vector.*
 import kotlin.test.*
 
 @OptIn(KorgeExperimental::class)

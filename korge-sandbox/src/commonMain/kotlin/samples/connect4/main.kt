@@ -1,26 +1,15 @@
 package samples.connect4
 
-import com.soywiz.kds.Array2
+import com.soywiz.kds.*
 import com.soywiz.korge.animate.*
-import com.soywiz.korge.input.mouse
-import com.soywiz.korge.scene.ScaledScene
-import com.soywiz.korge.tween.get
-import com.soywiz.korge.view.DummyView
-import com.soywiz.korge.view.Image
-import com.soywiz.korge.view.SContainer
-import com.soywiz.korge.view.View
-import com.soywiz.korge.view.alpha
-import com.soywiz.korge.view.container
-import com.soywiz.korge.view.image
-import com.soywiz.korge.view.position
-import com.soywiz.korge.view.solidRect
+import com.soywiz.korge.input.*
+import com.soywiz.korge.scene.*
+import com.soywiz.korge.tween.*
+import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.Colors
-import com.soywiz.korio.async.AsyncThread
-import com.soywiz.korio.async.launchImmediately
+import com.soywiz.korim.color.*
+import com.soywiz.korio.async.*
 import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.vector.circle
-import com.soywiz.korma.geom.vector.rect
 
 class MainConnect4 : ScaledScene(448, 384) {
     override suspend fun SContainer.sceneMain() {

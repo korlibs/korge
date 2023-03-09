@@ -1,11 +1,8 @@
 package com.soywiz.korim.vector
 
-import com.soywiz.korma.geom.MSize
-import com.soywiz.korma.geom.shape.buildVectorPath
-import com.soywiz.korma.geom.vector.rect
-import com.soywiz.korma.geom.vector.roundRect
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.shape.*
+import kotlin.test.*
 
 class NinePatchVectorTest {
     @Test

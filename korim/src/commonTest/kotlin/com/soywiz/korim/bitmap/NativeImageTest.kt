@@ -1,16 +1,11 @@
 package com.soywiz.korim.bitmap
 
-import com.soywiz.korim.color.Colors
-import com.soywiz.korim.color.RGBA
-import com.soywiz.korim.color.RgbaArray
-import com.soywiz.korim.vector.buildShape
-import com.soywiz.korim.vector.render
-import com.soywiz.korio.async.suspendTest
+import com.soywiz.korim.color.*
+import com.soywiz.korim.vector.*
+import com.soywiz.korio.async.*
 import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.vector.Winding
-import com.soywiz.korma.geom.vector.circle
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import com.soywiz.korma.geom.vector.*
+import kotlin.test.*
 
 class NativeImageTest {
     @Test

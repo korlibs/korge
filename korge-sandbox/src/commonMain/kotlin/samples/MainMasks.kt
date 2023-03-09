@@ -1,26 +1,19 @@
 package samples
 
-import com.soywiz.klock.seconds
+import com.soywiz.klock.*
 import com.soywiz.korge.animate.*
-import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.tween.get
+import com.soywiz.korge.scene.*
+import com.soywiz.korge.tween.*
 import com.soywiz.korge.view.*
-import com.soywiz.korge.view.filter.BlurFilter
-import com.soywiz.korge.view.filter.ColorMatrixFilter
-import com.soywiz.korge.view.filter.DropshadowFilter
-import com.soywiz.korge.view.filter.IdentityFilter
-import com.soywiz.korge.view.filter.backdropFilters
-import com.soywiz.korge.view.filter.filter
-import com.soywiz.korge.view.filter.filters
-import com.soywiz.korge.view.mask.mask
-import com.soywiz.korim.color.Colors
+import com.soywiz.korge.view.filter.*
+import com.soywiz.korge.view.mask.*
+import com.soywiz.korim.color.*
 import com.soywiz.korim.paint.*
-import com.soywiz.korio.async.launchImmediately
+import com.soywiz.korio.async.*
 import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.shape.buildVectorPath
-import com.soywiz.korma.geom.vector.VectorPath
-import com.soywiz.korma.geom.vector.circle
-import com.soywiz.korma.interpolation.Easing
+import com.soywiz.korma.geom.shape.*
+import com.soywiz.korma.geom.vector.*
+import com.soywiz.korma.interpolation.*
 
 class MainMasks : Scene() {
     override suspend fun SContainer.sceneMain() {

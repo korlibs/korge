@@ -1,24 +1,15 @@
 package com.soywiz.korim.font
 
-import com.soywiz.kds.DoubleArrayList
-import com.soywiz.kds.mapInt
-import com.soywiz.kds.reverse
-import com.soywiz.kds.toIntMap
+import com.soywiz.kds.*
 import com.soywiz.klogger.*
-import com.soywiz.kmem.toInt
-import com.soywiz.korio.lang.assert
-import com.soywiz.korio.lang.reserved
-import com.soywiz.korio.lang.unreachable
-import com.soywiz.korio.stream.FastByteArrayInputStream
-import com.soywiz.korio.stream.openFastStream
+import com.soywiz.kmem.*
+import com.soywiz.korio.lang.*
+import com.soywiz.korio.stream.*
 import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.vector.VectorBuilder
-import com.soywiz.korma.geom.vector.VectorPath
-import com.soywiz.korma.geom.vector.rLineTo
-import com.soywiz.korma.geom.vector.rMoveTo
-import kotlin.math.abs
-import kotlin.math.sqrt
-import kotlin.random.Random
+import com.soywiz.korma.geom.vector.*
+import kotlin.collections.*
+import kotlin.math.*
+import kotlin.random.*
 
 /**
  * Compact Font Format font representation (also known as a PostScript Type 1, or CIDFont)

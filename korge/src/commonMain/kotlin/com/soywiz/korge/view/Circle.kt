@@ -1,13 +1,11 @@
 package com.soywiz.korge.view
 
-import com.soywiz.korge.ui.uiObservable
-import com.soywiz.korim.color.Colors
-import com.soywiz.korim.color.RGBA
-import com.soywiz.korim.paint.Paint
+import com.soywiz.korge.ui.*
+import com.soywiz.korim.color.*
+import com.soywiz.korim.paint.*
 import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.shape.Shape2d
-import com.soywiz.korma.geom.vector.VectorPath
-import com.soywiz.korma.geom.vector.circle
+import com.soywiz.korma.geom.shape.*
+import com.soywiz.korma.geom.vector.*
 
 /**
  * Creates a [Circle] of [radius] and [fill].

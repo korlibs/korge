@@ -1,17 +1,10 @@
 package com.soywiz.korge.view
 
-import com.soywiz.kds.iterators.fastForEach
-import com.soywiz.korio.lang.Cancellable
-import com.soywiz.korio.lang.threadLocal
-import com.soywiz.korma.geom.MMatrix
-import com.soywiz.korma.geom.MRectangle
-import com.soywiz.korma.geom.shape.Shape2d
-import com.soywiz.korma.geom.vector.VectorPath
-import com.soywiz.korma.geom.vector.rect
-import kotlin.collections.List
-import kotlin.collections.listOf
-import kotlin.collections.map
-import kotlin.collections.mutableMapOf
+import com.soywiz.kds.iterators.*
+import com.soywiz.korio.lang.*
+import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.shape.*
+import com.soywiz.korma.geom.vector.*
 import kotlin.collections.set
 
 @PublishedApi

@@ -1,11 +1,10 @@
 package samples.asteroids
 
-import com.soywiz.kds.Extra
+import com.soywiz.kds.*
 import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.Colors
+import com.soywiz.korim.color.*
 import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.vector.LineCap
-import com.soywiz.korma.geom.vector.lineToV
+import com.soywiz.korma.geom.vector.*
 
 val MainAsteroids.assets by Extra.PropertyThis<MainAsteroids, Assets> { Assets(SHIP_SIZE) }
 

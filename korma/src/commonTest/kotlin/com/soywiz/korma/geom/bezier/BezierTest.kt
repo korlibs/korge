@@ -1,14 +1,11 @@
 package com.soywiz.korma.geom.bezier
 
 import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.shape.buildVectorPath
-import com.soywiz.korma.geom.vector.getCurves
-import com.soywiz.korma.geom.vector.getCurvesList
-import com.soywiz.korma.geom.vector.rect
-import com.soywiz.korma.math.roundDecimalPlaces
-import kotlin.math.roundToInt
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import com.soywiz.korma.geom.shape.*
+import com.soywiz.korma.geom.vector.*
+import com.soywiz.korma.math.*
+import kotlin.math.*
+import kotlin.test.*
 
 class BezierTest {
     @Test

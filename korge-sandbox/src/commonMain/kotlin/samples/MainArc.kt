@@ -1,15 +1,13 @@
 package samples
 
-import com.soywiz.korev.Key
-import com.soywiz.korge.input.keys
-import com.soywiz.korge.scene.Scene
+import com.soywiz.korev.*
+import com.soywiz.korge.input.*
+import com.soywiz.korge.scene.*
 import com.soywiz.korge.view.*
-import com.soywiz.korim.color.Colors
+import com.soywiz.korim.color.*
 import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.bezier.Arc
-import com.soywiz.korma.geom.vector.StrokeInfo
-import com.soywiz.korma.geom.vector.circle
-import com.soywiz.korma.geom.vector.curves
+import com.soywiz.korma.geom.bezier.*
+import com.soywiz.korma.geom.vector.*
 
 class MainArc : Scene() {
     override suspend fun SContainer.sceneMain() {

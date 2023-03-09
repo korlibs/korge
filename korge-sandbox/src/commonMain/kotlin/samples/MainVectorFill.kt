@@ -1,20 +1,14 @@
 package samples
 
-import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.view.SContainer
-import com.soywiz.korge.view.cpuGraphics
-import com.soywiz.korge.view.scale
-import com.soywiz.korge.view.vector.gpuShapeView
-import com.soywiz.korge.view.xy
-import com.soywiz.korim.color.Colors
-import com.soywiz.korim.format.readBitmap
-import com.soywiz.korim.paint.LinearGradientPaint
-import com.soywiz.korim.paint.toPaint
-import com.soywiz.korim.vector.EmptyShape
-import com.soywiz.korim.vector.ShapeBuilder
-import com.soywiz.korio.file.std.resourcesVfs
-import com.soywiz.korma.geom.MMatrix
-import com.soywiz.korma.geom.vector.rect
+import com.soywiz.korge.scene.*
+import com.soywiz.korge.view.*
+import com.soywiz.korge.view.vector.*
+import com.soywiz.korim.color.*
+import com.soywiz.korim.format.*
+import com.soywiz.korim.paint.*
+import com.soywiz.korim.vector.*
+import com.soywiz.korio.file.std.*
+import com.soywiz.korma.geom.*
 
 class MainVectorFill : Scene() {
     override suspend fun SContainer.sceneMain() {

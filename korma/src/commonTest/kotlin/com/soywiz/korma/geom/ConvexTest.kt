@@ -1,13 +1,8 @@
 package com.soywiz.korma.geom
 
-import com.soywiz.korma.geom.convex.Convex
-import com.soywiz.korma.geom.shape.buildVectorPath
-import com.soywiz.korma.geom.vector.VectorPath
-import com.soywiz.korma.geom.vector.circle
-import com.soywiz.korma.geom.vector.rect
-import com.soywiz.korma.geom.vector.regularPolygon
-import com.soywiz.korma.geom.vector.roundRect
-import com.soywiz.korma.geom.vector.star
+import com.soywiz.korma.geom.convex.*
+import com.soywiz.korma.geom.shape.*
+import com.soywiz.korma.geom.vector.*
 import kotlin.test.*
 
 class ConvexTest {
