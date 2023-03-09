@@ -208,6 +208,9 @@ sealed class VariableWithOffset(
     precision: Precision = Precision.DEFAULT,
     val offset: Int? = null,
 ) : Variable(name, type, arrayCount, precision) {
+    var linkedIndex: Int = -1
+    var linkedOffset: Int = -1
+    var linkedLayout: ProgramLayout<*>? = null
 }
 
 open class Attribute(
@@ -278,7 +281,7 @@ open class Varying(name: String, type: VarType, arrayCount: Int, precision: Prec
 }
 fun Varying(type: VarType, arrayCount: Int = 1, precision: Precision = Precision.DEFAULT): Varying.Provider = Varying.Provider(type, arrayCount, precision)
 
-open class Uniform(name: String, type: VarType, arrayCount: Int, precision: Precision = Precision.DEFAULT, offset: Int? = null, val fixedLocation: Int = -1) : VariableWithOffset(
+open class Uniform(name: String, type: VarType, arrayCount: Int, precision: Precision = Precision.DEFAULT, offset: Int? = null) : VariableWithOffset(
     name, type, arrayCount, precision, offset
 ) {
     val totalElementCount: Int get() = type.elementCount * arrayCount
@@ -289,11 +292,14 @@ open class Uniform(name: String, type: VarType, arrayCount: Int, precision: Prec
     override fun hashCode(): Int = mhashcode()
     operator fun getValue(thisRef: Any?, property: KProperty<*>): Uniform = this
 
-    class Provider(val type: VarType, val arrayCount: Int, val precision: Precision = Precision.DEFAULT, val fixedLocation: Int = -1) {
-        operator fun provideDelegate(thisRef: Any?, property: KProperty<*>): Uniform = Uniform(property.name, type, arrayCount, precision, fixedLocation = fixedLocation)
+    class Provider(val type: VarType, val arrayCount: Int, val precision: Precision = Precision.DEFAULT) {
+        operator fun provideDelegate(thisRef: Any?, property: KProperty<*>): Uniform = Uniform(property.name, type, arrayCount, precision)
     }
 }
-fun Uniform(type: VarType, arrayCount: Int = 1, precision: Precision = Precision.DEFAULT, fixedLocation: Int = -1): Uniform.Provider = Uniform.Provider(type, arrayCount, precision, fixedLocation)
+
+class UniformBlockBase(val fixedLocation: Int = -1)
+
+fun Uniform(type: VarType, arrayCount: Int = 1, precision: Precision = Precision.DEFAULT): Uniform.Provider = Uniform.Provider(type, arrayCount, precision)
 
 open class Temp(id: Int, type: VarType, arrayCount: Int, precision: Precision = Precision.DEFAULT) : Variable("temp$id", type, arrayCount, precision) {
     constructor(id: Int, type: VarType, precision: Precision = Precision.DEFAULT) : this(id, type, 1, precision)
@@ -1056,12 +1062,25 @@ inline val ProgramLayout<Attribute>.attributePositions: IntArrayList get() = _po
 
 open class ProgramLayout<TVariable : VariableWithOffset>(
     @PublishedApi internal val items: List<TVariable>,
-    private val layoutSize: Int?
+    private val layoutSize: Int?,
+    private val link: Boolean = false,
+    val fixedLocation: Int = -1
 ) {
-	constructor(attributes: List<TVariable>) : this(attributes, null)
-	constructor(vararg attributes: TVariable, layoutSize: Int? = null) : this(attributes.toFastList(), layoutSize)
+	constructor(variables: List<TVariable>) : this(variables, null)
+	constructor(vararg variables: TVariable, layoutSize: Int? = null) : this(variables.toFastList(), layoutSize)
 
 	private var _lastPos: Int = 0
+
+    init {
+        if (link) {
+            for (n in items.indices) {
+                val item = items[n]
+                if (item.linkedLayout != null) error("$item already in a layout '${item.linkedLayout}'")
+                item.linkedLayout = this
+                item.linkedIndex = n
+            }
+        }
+    }
 
 	val alignments: IntArrayList = items.mapInt {
 		val a = it.type.kind.bytesSize
@@ -1073,6 +1092,9 @@ open class ProgramLayout<TVariable : VariableWithOffset>(
             it.offset != null -> it.offset
             else -> _lastPos.nextAlignedTo(it.type.kind.bytesSize)
         }
+        if (link) {
+            it.linkedOffset = _lastPos
+        }
 		val out = _lastPos
 		_lastPos += it.type.bytesSize
 		out
@@ -1083,11 +1105,15 @@ open class ProgramLayout<TVariable : VariableWithOffset>(
 	val totalSize: Int = layoutSize ?: _lastPos.nextAlignedTo(maxAlignment)
 
     protected fun names(): String = items.joinToString(", ") { it.name }
-	override fun toString(): String = "VertexLayout[${names()}]"
+	override fun toString(): String = "VertexLayout[${names()}, fixedLocation=$fixedLocation]"
 }
 
-typealias UniformLayout = ProgramLayout<Uniform>
-typealias UniformBlock = ProgramLayout<Uniform>
+class UniformBlock(uniforms: List<Uniform>, fixedLocation: Int) : ProgramLayout<Uniform>(uniforms, null, link = true, fixedLocation = fixedLocation) {
+    constructor(vararg uniforms: Uniform, fixedLocation: Int) : this(uniforms.toList(), fixedLocation)
+}
+
+//typealias UniformLayout = ProgramLayout<Uniform>
+//typealias UniformBlock = ProgramLayout<Uniform>
 inline val ProgramLayout<Uniform>.uniforms: List<Uniform> get() = items
 inline val ProgramLayout<Uniform>.uniformPositions: IntArrayList get() = _positions
 
@@ -1131,14 +1157,13 @@ class AGUniformBlockValues(val buffers: Array<UniformBlockBuffer>, val indices: 
 
 class UniformBlockData(val block: UniformBlock) {
     val data = Buffer(block.totalSize)
-    val values = (0 until block.uniformPositions.size).map { index ->
-        val uniform = block.uniforms[index]
-        val position = block.uniformPositions[index]
-        val size = uniform.type.bytesSize
-        AGUniformValue(uniform, data.sliceWithSize(position, size), null, AGTextureUnitInfo.DEFAULT)
+    val values = block.uniforms.map { uniform ->
+        AGUniformValue(uniform, data.sliceWithSize(uniform.linkedOffset, uniform.type.bytesSize), null, AGTextureUnitInfo.DEFAULT)
     }
-    val valuesByUniform = values.associateBy { it.uniform }
-    operator fun get(uniform: Uniform): AGUniformValue = valuesByUniform[uniform] ?: error("Can't get uniform $uniform in $this")
+    operator fun get(uniform: Uniform): AGUniformValue {
+        if (uniform.linkedLayout !== block) error("Uniform $uniform not part of $block")
+        return values[uniform.linkedIndex]
+    }
 }
 
 class UniformBlockBuffer(val block: UniformBlock, val maxElements: Int) {

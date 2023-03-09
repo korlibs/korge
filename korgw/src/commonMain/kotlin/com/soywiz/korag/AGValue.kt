@@ -255,34 +255,21 @@ open class AGValue(
     fun set(v0: Float, v1: Float, v2: Float) = _set(v0, v1, v2, 0f, 3)
     fun set(v0: Float, v1: Float, v2: Float, v3: Float) = _set(v0, v1, v2, v3, 4)
 
-    private fun _set(v0: Float, v1: Float, v2: Float, v3: Float, size: Int = 4) {
-        val msize = min(size, this.data.size / 4)
+    private fun _setIndex(index: Int, v: Float) {
         when (kind) {
-            VarKind.TFLOAT -> {
-                if (msize >= 1) f32[0] = v0
-                if (msize >= 2) f32[1] = v1
-                if (msize >= 3) f32[2] = v2
-                if (msize >= 4) f32[3] = v3
-            }
-            VarKind.TBOOL, VarKind.TBYTE, VarKind.TUNSIGNED_BYTE -> {
-                if (msize >= 1) u8[0] = v0.toInt()
-                if (msize >= 2) u8[1] = v1.toInt()
-                if (msize >= 3) u8[2] = v2.toInt()
-                if (msize >= 4) u8[3] = v3.toInt()
-            }
-            VarKind.TSHORT, VarKind.TUNSIGNED_SHORT -> {
-                if (msize >= 1) u16[0] = v0.toInt()
-                if (msize >= 2) u16[1] = v1.toInt()
-                if (msize >= 3) u16[2] = v2.toInt()
-                if (msize >= 4) u16[3] = v3.toInt()
-            }
-            VarKind.TINT -> {
-                if (msize >= 1) i32[0] = v0.toInt()
-                if (msize >= 2) i32[1] = v1.toInt()
-                if (msize >= 3) i32[2] = v2.toInt()
-                if (msize >= 4) i32[3] = v3.toInt()
-            }
+            VarKind.TFLOAT -> f32[index] = v
+            VarKind.TBOOL, VarKind.TBYTE, VarKind.TUNSIGNED_BYTE -> u8[index] = v.toInt()
+            VarKind.TSHORT, VarKind.TUNSIGNED_SHORT -> u16[index] = v.toInt()
+            VarKind.TINT -> i32[index] = v.toInt()
         }
+    }
+
+    private fun _set(v0: Float, v1: Float, v2: Float, v3: Float, size: Int = 4) {
+        val msize = min(size, totalElements)
+        if (msize >= 1) _setIndex(0, v0)
+        if (msize >= 2) _setIndex(1, v1)
+        if (msize >= 3) _setIndex(2, v2)
+        if (msize >= 4) _setIndex(3, v3)
     }
 
     inline fun setFloatArray(size: Int, arrayIndex: Int = 0, gen: (index: Int) -> Float) {

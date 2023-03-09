@@ -14,20 +14,26 @@ import com.soywiz.korma.geom.*
 // https://iquilezles.org/articles/distfunctions
 // https://iquilezles.org/articles/distfunctions2d/#:~:text=length(p)%20%2D%20r%3B%0A%7D-,Rounded%20Box%20%2D%20exact,-(https%3A//www
 object MaterialRender {
-    val u_ShadowColor by Uniform(VarType.Float4, fixedLocation = 10)
-    val u_ShadowRadius by Uniform(VarType.Float1, fixedLocation = 11)
-    val u_ShadowOffset by Uniform(VarType.Float2, fixedLocation = 12)
+    val u_ShadowColor by Uniform(VarType.Float4)
+    val u_ShadowRadius by Uniform(VarType.Float1)
+    val u_ShadowOffset by Uniform(VarType.Float2)
 
-    val u_HighlightPos by Uniform(VarType.Float2, fixedLocation = 13)
-    val u_HighlightRadius by Uniform(VarType.Float1, fixedLocation = 14)
-    val u_HighlightColor by Uniform(VarType.Float4, fixedLocation = 15)
+    val u_HighlightPos by Uniform(VarType.Float2)
+    val u_HighlightRadius by Uniform(VarType.Float1)
+    val u_HighlightColor by Uniform(VarType.Float4)
 
-    val u_Size by Uniform(VarType.Float2, fixedLocation = 16)
-    val u_Radius by Uniform(VarType.Float4, fixedLocation = 17)
+    val u_Size by Uniform(VarType.Float2)
+    val u_Radius by Uniform(VarType.Float4)
 
-    val u_BorderSizeHalf by Uniform(VarType.Float1, fixedLocation = 18)
-    val u_BorderColor by Uniform(VarType.Float4, fixedLocation = 19)
-    val u_BackgroundColor by Uniform(VarType.Float4, fixedLocation = 20)
+    val u_BorderSizeHalf by Uniform(VarType.Float1)
+    val u_BorderColor by Uniform(VarType.Float4)
+    val u_BackgroundColor by Uniform(VarType.Float4)
+
+    val ub_MaterialBlock = UniformBlock(
+        u_ShadowColor, u_ShadowRadius, u_ShadowOffset, u_HighlightPos, u_HighlightRadius, u_HighlightColor,
+        u_Size, u_Radius, u_BorderSizeHalf, u_BorderColor, u_BackgroundColor,
+        fixedLocation = 3
+    )
 
     val PROGRAM = ShadedView.buildShader {
         val roundedDist = TEMP(Float1)

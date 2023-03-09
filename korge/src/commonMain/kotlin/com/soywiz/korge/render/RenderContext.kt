@@ -69,7 +69,7 @@ class RenderContext constructor(
     }
 
     class StdUniformBuffers {
-        val projMatrixBuffer = UniformBlockBuffer(UniformBlock(DefaultShaders.u_ProjMat, DefaultShaders.u_ViewMat), 16 * 1024)
+        val projMatrixBuffer = UniformBlockBuffer(DefaultShaders.ub_ProjViewMatBlock, 16 * 1024)
         val viewMatrixValue = projMatrixBuffer.data[DefaultShaders.u_ViewMat]
         val projMatrixValue = projMatrixBuffer.data[DefaultShaders.u_ProjMat]
 
