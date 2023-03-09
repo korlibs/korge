@@ -415,10 +415,13 @@ class Bezier(
         // FIXME: TODO: add in inflection abstraction for quartic+ curves?
         //val p = align(points, Line(points.firstX, points.firstY, points.lastX, points.lastY))
         val p = aligned
-        val a = p.getX(2) * p.getY(1)
-        val b = p.getX(3) * p.getY(1)
-        val c = p.getX(1) * p.getY(2)
-        val d = p.getX(3) * p.getY(2)
+        val p1 = p.get(index = 1)
+        val p2 = p[2]
+        val p3 = p[3]
+        val a = p2.x * p1.y
+        val b = p3.x * p1.y
+        val c = p1.x * p2.y
+        val d = p3.x * p2.y
         val v1 = 18.0 * (-3.0 * a + 2.0 * b + 3.0 * c - d)
         val v2 = 18.0 * (3.0 * a - b - 3.0 * c)
         val v3 = 18.0 * (c - a)
@@ -550,8 +553,8 @@ class Bezier(
         if (isLinear) {
             val nv = this.normal(0.0)
             return Bezier(
-                Point(this.points.getX(0) + (nv.x * r0), this.points.getY(0) + (nv.y * r0)),
-                Point(this.points.getX(1) + (nv.x * r1), this.points.getY(1) + (nv.y * r1)),
+                this.points[0] + (nv * r0),
+                this.points[1] + (nv * r1),
             )
         }
 
@@ -583,16 +586,11 @@ class Bezier(
                         }
                         else -> {
                             val t = n - 1
-                            val pX = points.getX(t + 1)
-                            val pY = points.getY(t + 1)
-                            var ovX = pX - o.x
-                            var ovY = pY - o.y
+                            val p = points[t + 1]
+                            val ov = p - o
                             var rc = d((t + 1) / order.toDouble())
                             if (!clockwise) rc = -rc
-                            val m = kotlin.math.hypot(ovX, ovY)
-                            ovX /= m
-                            ovY /= m
-                            np.add(pX + rc * ovX, pY + rc * ovY)
+                            np.add(p + (ov.normalized * rc))
                         }
                     }
                 }
@@ -605,17 +603,12 @@ class Bezier(
     private fun raise(): Bezier {
         val p = this.points
         val np = PointArrayList()
-        np.add(p.getX(0), p.getY(0))
+        np.add(p[0])
         val k = p.size
         for (i in 1 until k) {
-            val piX = p.getX(i)
-            val piY = p.getY(i)
-            val pimX = p.getX(i - 1)
-            val pimY = p.getY(i - 1)
-            np.add(
-                ((k - i) / k) * piX + (i.toDouble() / k.toDouble()) * pimX,
-                ((k - i) / k) * piY + (i.toDouble() / k.toDouble()) * pimY,
-            )
+            val pi = p[i]
+            val pim = p[i - 1]
+            np.add(((pi * (k - i) / k)) + (pim * (i.toDouble() / k.toDouble())))
         }
         np.add(p, k - 1)
         return Bezier(np)
@@ -695,10 +688,9 @@ class Bezier(
         while (p.size > 1) {
             val next = PointArrayList()
             for (i in 0 until p.size - 1) {
-                val px = t.toRatio().interpolate(p.getX(i), p.getX(i + 1))
-                val py = t.toRatio().interpolate(p.getY(i), p.getY(i + 1))
-                out.add(px, py)
-                next.add(px, py)
+                val p = t.toRatio().interpolate(p[i], p[i + 1])
+                out.add(p)
+                next.add(p)
             }
             p = next
         }
@@ -1023,10 +1015,7 @@ class Bezier(
                 val new = PointArrayList(current.size - 1)
                 val c = (current.size - 1).toDouble()
                 for (n in 0 until current.size - 1) {
-                    new.add(
-                        c * (current.getX(n + 1) - current.getX(n)),
-                        c * (current.getY(n + 1) - current.getY(n)),
-                    )
+                    new.add((current[n + 1] - current[n]) * c)
                 }
                 out.add(new)
                 current = new
