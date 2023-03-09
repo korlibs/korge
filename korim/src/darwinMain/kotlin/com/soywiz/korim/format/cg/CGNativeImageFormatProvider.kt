@@ -4,7 +4,9 @@ import cnames.structs.CGImage
 import com.soywiz.kmem.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.format.*
+import com.soywiz.korio.async.*
 import kotlinx.cinterop.*
+import kotlinx.coroutines.*
 import platform.CoreFoundation.*
 import platform.CoreGraphics.*
 import platform.CoreServices.*
@@ -52,107 +54,98 @@ open class CGNativeImageFormatProvider : CGBaseNativeImageFormatProvider() {
             return super.decodeInternal(data, props)
         }
 
-        val premultiplied = props.premultipliedSure
+        return withContext(Dispatchers.ResourceDecoder) {
+            val premultiplied = props.premultipliedSure
+            val maxSize = props.requestedMaxSize
+            memScoped {
+                val maxSizePtr = alloc<IntVar>()
+                autoreleasepool {
+                    val cfdata = data.usePinned { dataPin ->
+                        CFDataCreate(null, dataPin.addressOf(0).reinterpret(), data.size.convert())
+                    }
+                    val imgSource = CGImageSourceCreateWithData(data = cfdata, options = null)
 
-        data class Info(val data: ByteArray, val premultiplied: Boolean, val maxSize: Int?)
-        return executeInImageIOWorker { worker ->
-            worker.execute(
-                TransferMode.SAFE,
-                { Info(if (data.isFrozen) data else data.copyOf().freeze(), premultiplied, props.requestedMaxSize) },
-                { info ->
-                    val data = info.data
-                    val premultiplied = info.premultiplied
-                    val maxSize = info.maxSize
-                    memScoped {
-                        val maxSizePtr = alloc<IntVar>()
-                        autoreleasepool {
-                            val cfdata = data.usePinned { dataPin ->
-                                CFDataCreate(null, dataPin.addressOf(0).reinterpret(), data.size.convert())
-                            }
-                            val imgSource = CGImageSourceCreateWithData(data = cfdata, options = null)
+                    //println("imgSource=$imgSource")
 
-                            //println("imgSource=$imgSource")
+                    val dict = CFDictionaryCreateMutable(null, 0, null, null)
 
-                            val dict = CFDictionaryCreateMutable(null, 0, null, null)
+                    CFDictionaryAddValue(dict, kCGImageSourceShouldCache, kCFBooleanFalse)
+                    CFDictionaryAddValue(dict, kCGImageSourceCreateThumbnailWithTransform, kCFBooleanFalse)
+                    CFDictionaryAddValue(dict, kCGImageSourceCreateThumbnailFromImageAlways, kCFBooleanTrue)
 
-                            CFDictionaryAddValue(dict, kCGImageSourceShouldCache, kCFBooleanFalse)
-                            CFDictionaryAddValue(dict, kCGImageSourceCreateThumbnailWithTransform, kCFBooleanFalse)
-                            CFDictionaryAddValue(dict, kCGImageSourceCreateThumbnailFromImageAlways, kCFBooleanTrue)
+                    val cgImage: CPointer<CGImage>? = if (maxSize != null) {
+                        maxSizePtr.value = maxSize
 
-                            val cgImage: CPointer<CGImage>? = if (maxSize != null) {
-                                maxSizePtr.value = maxSize
+                        // kCGImageSourceSubsampleFactor
+                        CFDictionaryAddValue(
+                            dict,
+                            kCGImageSourceThumbnailMaxPixelSize,
+                            CFNumberCreate(null, kCFNumberSInt32Type, maxSizePtr.ptr)
+                        )
+                        CGImageSourceCreateThumbnailAtIndex(imgSource, 0, dict)
+                    } else {
+                        CGImageSourceCreateImageAtIndex(imgSource, 0, dict)
+                    }
+                    val iwidth = CGImageGetWidth(cgImage).toInt()
+                    val iheight = CGImageGetHeight(cgImage).toInt()
 
-                                // kCGImageSourceSubsampleFactor
-                                CFDictionaryAddValue(
-                                    dict,
-                                    kCGImageSourceThumbnailMaxPixelSize,
-                                    CFNumberCreate(null, kCFNumberSInt32Type, maxSizePtr.ptr)
-                                )
-                                CGImageSourceCreateThumbnailAtIndex(imgSource, 0, dict)
-                            } else {
-                                CGImageSourceCreateImageAtIndex(imgSource, 0, dict)
-                            }
-                            val iwidth = CGImageGetWidth(cgImage).toInt()
-                            val iheight = CGImageGetHeight(cgImage).toInt()
+                    if (iwidth == 0 && iheight == 0) error("Couldn't decode image with CG")
 
-                            if (iwidth == 0 && iheight == 0) error("Couldn't decode image with CG")
-
-                            // This might have channels changed? RGBA -> ARGB?, might be in float, etc.
-                            // https://developer.apple.com/documentation/coregraphics/1455401-cgimagegetalphainfo
-                            // https://developer.apple.com/documentation/coregraphics/cgbitmapinfo
-                            if (false) {
-                                val data = CGDataProviderCopyData(CGImageGetDataProvider(cgImage))
-                                try {
-                                    val pixels = CFDataGetBytePtr(data);
-                                    Bitmap32(iwidth, iheight, premultiplied = false).also { bmp ->
-                                        bmp.ints.usePinned { pin ->
-                                            memcpy(pin.startAddressOf, pixels, (iwidth * iheight * 4).convert())
-                                        }
-                                    }
-                                } finally {
-                                    CFRelease(data)
-                                }
-                            } else {
-
-                                //val colorSpace = CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB)
-                                //val colorSpace = CGColorSpaceCreateWithName(kCGColorSpaceSRGB)
-                                val colorSpace = CGColorSpaceCreateDeviceRGB()
-                                try {
-                                    val realPremultiplied = true
-                                    //val realPremultiplied = premultiplied
-
-                                    val alphaInfo = when (realPremultiplied) {
-                                        true -> CGImageAlphaInfo.kCGImageAlphaPremultipliedLast.value
-                                        false -> CGImageAlphaInfo.kCGImageAlphaLast.value
-                                    }
-
-                                    Bitmap32(iwidth, iheight, realPremultiplied).also { bmp ->
-                                        bmp.ints.usePinned { pin ->
-                                            val context = CGBitmapContextCreate(
-                                                pin.startAddressOf, iwidth.convert(), iheight.convert(), 8,
-                                                (iwidth * 4).convert(), colorSpace, alphaInfo
-                                            )
-                                                ?: error("Couldn't create context for $iwidth, $iheight, premultiplied=$premultiplied")
-
-                                            try {
-                                                val rect = CGRectMakeExt(0, 0, iwidth, iheight)
-                                                CGContextDrawImage(context, rect, cgImage)
-                                                CGContextFlush(context)
-                                            } finally {
-                                                CGImageRelease(cgImage)
-                                                CGContextRelease(context)
-                                                CFRelease(imgSource)
-                                                CFRelease(cfdata)
-                                            }
-                                        }
-                                    }
-                                } finally {
-                                    CGColorSpaceRelease(colorSpace)
+                    // This might have channels changed? RGBA -> ARGB?, might be in float, etc.
+                    // https://developer.apple.com/documentation/coregraphics/1455401-cgimagegetalphainfo
+                    // https://developer.apple.com/documentation/coregraphics/cgbitmapinfo
+                    if (false) {
+                        val data = CGDataProviderCopyData(CGImageGetDataProvider(cgImage))
+                        try {
+                            val pixels = CFDataGetBytePtr(data);
+                            Bitmap32(iwidth, iheight, premultiplied = false).also { bmp ->
+                                bmp.ints.usePinned { pin ->
+                                    memcpy(pin.startAddressOf, pixels, (iwidth * iheight * 4).convert())
                                 }
                             }
+                        } finally {
+                            CFRelease(data)
+                        }
+                    } else {
+
+                        //val colorSpace = CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB)
+                        //val colorSpace = CGColorSpaceCreateWithName(kCGColorSpaceSRGB)
+                        val colorSpace = CGColorSpaceCreateDeviceRGB()
+                        try {
+                            val realPremultiplied = true
+                            //val realPremultiplied = premultiplied
+
+                            val alphaInfo = when (realPremultiplied) {
+                                true -> CGImageAlphaInfo.kCGImageAlphaPremultipliedLast.value
+                                false -> CGImageAlphaInfo.kCGImageAlphaLast.value
+                            }
+
+                            Bitmap32(iwidth, iheight, realPremultiplied).also { bmp ->
+                                bmp.ints.usePinned { pin ->
+                                    val context = CGBitmapContextCreate(
+                                        pin.startAddressOf, iwidth.convert(), iheight.convert(), 8,
+                                        (iwidth * 4).convert(), colorSpace, alphaInfo
+                                    )
+                                        ?: error("Couldn't create context for $iwidth, $iheight, premultiplied=$premultiplied")
+
+                                    try {
+                                        val rect = CGRectMakeExt(0, 0, iwidth, iheight)
+                                        CGContextDrawImage(context, rect, cgImage)
+                                        CGContextFlush(context)
+                                    } finally {
+                                        CGImageRelease(cgImage)
+                                        CGContextRelease(context)
+                                        CFRelease(imgSource)
+                                        CFRelease(cfdata)
+                                    }
+                                }
+                            }
+                        } finally {
+                            CGColorSpaceRelease(colorSpace)
                         }
                     }
-                })
+                }
+            }
         }.wrapNativeExt(props)
     }
 

@@ -33,6 +33,7 @@ fun Project.configureAndroidDirect() {
             timeOutInMs = project.korge.androidTimeoutMs
         }
         packagingOptionsThis {
+            resources.pickFirsts.add("**/previous-compilation-data.bin")
             for (pattern in project.korge.androidExcludePatterns) {
                 resources.excludes.add(pattern)
             }

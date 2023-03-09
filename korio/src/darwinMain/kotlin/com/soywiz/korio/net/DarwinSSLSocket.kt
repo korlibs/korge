@@ -5,6 +5,7 @@ import com.soywiz.korio.async.*
 import com.soywiz.korio.posix.*
 import kotlinx.cinterop.*
 import kotlinx.cinterop.ByteVar
+import kotlinx.coroutines.*
 import platform.CoreFoundation.*
 import platform.Security.*
 import platform.darwin.*
@@ -26,18 +27,12 @@ class DarwinSSLSocket {
     var ctx: CPointer<SSLContext>? = null
     var endpoint: NativeSocket.Endpoint = NativeSocket.Endpoint(NativeSocket.IP(0, 0, 0, 0), 0); private set
 
-    private data class ConnectParams(val host: String, val port: Int, val socketVar: LongVar, val ctx: CPointer<SSLContext>?)
-    private data class ConnectResult(val sockfd: Int, val endpoint: NativeSocket.Endpoint)
-
     suspend fun connect(host: String, port: Int) {
         close()
         val socketVar = arena.alloc<LongVar>()
         ctx = SSLCreateContext(null, SSLProtocolSide.kSSLClientSide, SSLConnectionType.kSSLStreamType)
 
-        val worker = Worker.start()
-        val result = worker.execute(TransferMode.SAFE, {
-            ConnectParams(host, port, socketVar, ctx)
-        }, { (host, port, socketVar, ctx) ->
+        withContext(Dispatchers.CIO) {
             memScoped {
                 val sockfd = socket(AF_INET, SOCK_STREAM, 0)
                 val timeout = alloc<timeval>()
@@ -98,14 +93,10 @@ class DarwinSSLSocket {
                 //println("connected: $result, sockfd=$sockfd, errno=$errno")
 
                 if (result != 0) error("Error connecting to socket result=$result, sockfd=$sockfd, errno=$errno")
-                ConnectResult(sockfd, endpoint)
+                this@DarwinSSLSocket.sockfd = sockfd
+                this@DarwinSSLSocket.endpoint = endpoint
             }
-        })
-
-        val info = result.await()
-        sockfd = info.sockfd
-        endpoint = info.endpoint
-        worker.requestTermination()
+        }
     }
 
     val connected: Boolean get() {

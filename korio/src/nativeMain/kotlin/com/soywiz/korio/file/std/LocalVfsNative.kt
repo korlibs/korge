@@ -1,30 +1,25 @@
 package com.soywiz.korio.file.std
 
-import com.soywiz.klock.DateTime
-import com.soywiz.klock.measureTime
-import com.soywiz.korio.async.executeInWorker
-import com.soywiz.korio.file.VfsFile
-import com.soywiz.korio.file.VfsOpenMode
-import com.soywiz.korio.file.VfsProcessHandler
-import com.soywiz.korio.file.VfsStat
+import com.soywiz.klock.*
+import com.soywiz.korio.async.*
+import com.soywiz.korio.file.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.posix.*
-import com.soywiz.korio.process.posixExec
-import com.soywiz.korio.stream.AsyncStream
-import com.soywiz.korio.stream.AsyncStreamBase
-import com.soywiz.korio.stream.toAsyncStream
+import com.soywiz.korio.process.*
+import com.soywiz.korio.stream.*
 import kotlinx.cinterop.*
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.*
 import platform.posix.*
-import kotlin.math.max
-import kotlin.math.min
-import kotlin.native.concurrent.ThreadLocal
-import kotlin.native.concurrent.Worker
+import kotlin.math.*
+import kotlin.native.concurrent.*
 
 @ThreadLocal
 val tmpdir: String by lazy { Environment["TMPDIR"] ?: Environment["TEMP"] ?: Environment["TMP"] ?: "/tmp" }
+
 @ThreadLocal
 var customCwd: String? = null
+
 @ThreadLocal
 val nativeCwd by lazy { StandardPaths.cwd }
 val cwd: String get() = customCwd ?: nativeCwd
@@ -41,6 +36,7 @@ actual val standardVfs: StandardVfs = object : StandardVfs() {
 
 @ThreadLocal
 actual val cacheVfs: VfsFile by lazy { MemoryVfs() }
+
 @ThreadLocal
 actual val tempVfs: VfsFile by lazy { jailedLocalVfs(tmpdir) }
 
@@ -51,28 +47,27 @@ actual val userHomeVfs: VfsFile get() = jailedLocalVfs(StandardPaths.userHome)
 
 @ThreadLocal
 val rootLocalVfsNative by lazy { LocalVfsNative(async = true) }
+
 @ThreadLocal
 val rootLocalVfsNativeSync by lazy { LocalVfsNative(async = false) }
 
-actual fun localVfs(path: String, async: Boolean): VfsFile = (if (async) rootLocalVfsNative else rootLocalVfsNativeSync)[path]
-
-@ThreadLocal
-@PublishedApi
-internal val IOWorker by lazy { Worker.start().also { kotlin.native.Platform.isMemoryLeakCheckerActive = false } }
+actual fun localVfs(path: String, async: Boolean): VfsFile =
+    (if (async) rootLocalVfsNative else rootLocalVfsNativeSync)[path]
 
 expect open class LocalVfsNative(async: Boolean = true) : LocalVfsNativeBase
 
 open class LocalVfsNativeBase(val async: Boolean = true) : LocalVfs() {
-	val that get() = this
-	override val absolutePath: String get() = ""
+    val that get() = this
+    override val absolutePath: String get() = ""
 
-	fun resolve(path: String) = path
+    fun resolve(path: String) = path
 
-    suspend inline fun <T, R> executeInIOWorker(value: T, noinline func: (T) -> R): R = if (async) executeInWorker(IOWorker, value, func) else func(value)
+    suspend inline fun <R> doIo(crossinline func: () -> R): R =
+        if (async) withContext(Dispatchers.CIO) { func() } else func()
 
     override suspend fun exec(
-		path: String, cmdAndArgs: List<String>, env: Map<String, String>, handler: VfsProcessHandler
-	): Int {
+        path: String, cmdAndArgs: List<String>, env: Map<String, String>, handler: VfsProcessHandler
+    ): Int {
         checkExecFolder(path, cmdAndArgs)
         return posixExec(path, cmdAndArgs, env, handler)
     }
@@ -87,51 +82,49 @@ open class LocalVfsNativeBase(val async: Boolean = true) : LocalVfs() {
 
     override suspend fun readRange(path: String, range: LongRange): ByteArray {
         val rpath = resolve(path)
-		data class Info(val path: String, val range: LongRange)
 
-		return executeInIOWorker(Info(rpath, range)) { (rpath, range) ->
-			val fd = posixFopen(rpath, "rb")
-			if (fd != null) {
-				posixFseek(fd, 0L.convert(), SEEK_END)
-				//val length = ftell(fd).toLong() // @TODO: Kotlin native bug?
-				val length: Long = posixFtell(fd).convert()
+        return doIo {
+            val fd = posixFopen(rpath, "rb")
+            if (fd != null) {
+                posixFseek(fd, 0L.convert(), SEEK_END)
+                //val length = ftell(fd).toLong() // @TODO: Kotlin native bug?
+                val length: Long = posixFtell(fd).convert()
 
-				val start = min(range.start, length)
-				val end = min(range.endInclusive, length - 1) + 1
-				val totalRead = (end - start).toInt()
+                val start = min(range.start, length)
+                val end = min(range.endInclusive, length - 1) + 1
+                val totalRead = (end - start).toInt()
 
-				//println("range=$range")
-				//println("length=$length")
-				//println("start=$start")
-				//println("end=$end")
-				//println("totalRead=$totalRead")
+                //println("range=$range")
+                //println("length=$length")
+                //println("start=$start")
+                //println("end=$end")
+                //println("totalRead=$totalRead")
 
-				val byteArray = ByteArray(totalRead)
-				val finalRead = if (byteArray.isNotEmpty()) {
-					byteArray.usePinned { pin ->
+                val byteArray = ByteArray(totalRead)
+                val finalRead = if (byteArray.isNotEmpty()) {
+                    byteArray.usePinned { pin ->
                         posixFseek(fd, start.convert(), SEEK_SET)
-						posixFread(pin.addressOf(0), 1.convert(), totalRead.convert(), fd).toInt()
-					}
-				} else {
-					0
-				}
+                        posixFread(pin.addressOf(0), 1.convert(), totalRead.convert(), fd).toInt()
+                    }
+                } else {
+                    0
+                }
 
-				//println("finalRead=$finalRead")
+                //println("finalRead=$finalRead")
 
-				posixFclose(fd)
-				if (finalRead != totalRead) byteArray.copyOf(finalRead) else byteArray
-			} else {
-				null
-			}
-		} ?: throw FileNotFoundException("Can't open '${rpath}' for reading")
-	}
+                posixFclose(fd)
+                if (finalRead != totalRead) byteArray.copyOf(finalRead) else byteArray
+            } else {
+                null
+            }
+        } ?: throw FileNotFoundException("Can't open '${rpath}' for reading")
+    }
 
-	override suspend fun open(path: String, mode: VfsOpenMode): AsyncStream {
+    override suspend fun open(path: String, mode: VfsOpenMode): AsyncStream {
         val rpath = resolve(path)
 
-        data class FileOpenInfo(val name: String, val mode: String)
-        val (initialFd, initialFileLength) = executeInIOWorker(FileOpenInfo(rpath, mode.cmode)) { it ->
-            val fd = posixFopen(it.name, it.mode)
+        val (initialFd, initialFileLength) = doIo {
+            val fd = posixFopen(rpath, mode.cmode)
             val len = if (fd != null) {
                 posixFseek(fd, 0L.convert(), SEEK_END)
                 val end = posixFtell(fd)
@@ -149,7 +142,7 @@ open class LocalVfsNativeBase(val async: Boolean = true) : LocalVfs() {
             throw FileNotFoundException("Can't open '$rpath' with mode '${mode.cmode}' errno=$errno, errstr=$errstr")
         }
 
-		return object : AsyncStreamBase() {
+        return object : AsyncStreamBase() {
             var fd: CPointer<FILE>? = initialFd
             var currentFileLength: Long = initialFileLength
 
@@ -157,22 +150,38 @@ open class LocalVfsNativeBase(val async: Boolean = true) : LocalVfs() {
                 if (fd == null) error("Error with file '$rpath'")
             }
 
-            internal suspend fun fileTransfer(fd: CPointer<FILE>, position: Long, buffer: ByteArray, offset: Int, len: Int, write: Boolean): Long {
-                data class Info(val fd: CPointer<FILE>, val position: Long, val buffer: CPointer<ByteVar>, val size: Int, val write: Boolean)
+            internal suspend fun fileTransfer(
+                fd: CPointer<FILE>,
+                position: Long,
+                buffer: ByteArray,
+                offset: Int,
+                len: Int,
+                write: Boolean
+            ): Long {
                 if (len <= 0) return 0L
                 if (offset + len > buffer.size) throw OutOfBoundsException(offset + len)
                 var transferredCount: Long = 0L
                 //fileWrite(fd, position, buffer.copyOfRange(offset, offset + len))
                 val time = measureTime {
-                    transferredCount = buffer.usePinned { pin ->
-                        executeInIOWorker(Info(fd, position, pin.addressOf(offset), len, write)) { (fd, position, buffer, len) ->
+                    transferredCount = buffer.usePinned { bufferPin ->
+                        doIo {
                             posixFseek(fd, position.convert(), SEEK_SET)
                             if (write) {
                                 //platform.posix.fwrite(buffer, 1.convert(), len.convert(), fd).toLong()
-                                posixFwrite(buffer, len.convert(), 1.convert(), fd).toLong() // Write it at once (len, 1)
+                                posixFwrite(
+                                    bufferPin.addressOf(offset),
+                                    len.convert(),
+                                    1.convert(),
+                                    fd
+                                ).toLong() // Write it at once (len, 1)
                                 len.toLong()
                             } else {
-                                posixFread(buffer, 1.convert(), len.convert(), fd).toLong() // Allow to read less values (1, len)
+                                posixFread(
+                                    bufferPin.addressOf(offset),
+                                    1.convert(),
+                                    len.convert(),
+                                    fd
+                                ).toLong() // Allow to read less values (1, len)
                             }
                         }
                     }
@@ -182,93 +191,94 @@ open class LocalVfsNativeBase(val async: Boolean = true) : LocalVfs() {
             }
 
             override suspend fun read(position: Long, buffer: ByteArray, offset: Int, len: Int): Int {
-				checkFd()
-				return fileTransfer(fd!!, position, buffer, offset, len, write = false).toInt()
-			}
+                checkFd()
+                return fileTransfer(fd!!, position, buffer, offset, len, write = false).toInt()
+            }
 
-			override suspend fun write(position: Long, buffer: ByteArray, offset: Int, len: Int) {
-				checkFd()
+            override suspend fun write(position: Long, buffer: ByteArray, offset: Int, len: Int) {
+                checkFd()
                 currentFileLength = max(currentFileLength, position + len)
-				fileTransfer(fd!!, position, buffer, offset, len, write = true)
-			}
+                fileTransfer(fd!!, position, buffer, offset, len, write = true)
+            }
 
-			override suspend fun setLength(value: Long) {
-				checkFd()
-                data class Info(val file: String, val length: Long)
-
-                executeInIOWorker(Info(rpath, value)) { (fd, len) ->
-                    posixTruncate(fd, len.convert())
+            override suspend fun setLength(value: Long) {
+                checkFd()
+                doIo {
+                    posixTruncate(rpath, value.convert())
                     Unit
                 }
                 currentFileLength = value
-			}
+            }
 
-			override suspend fun getLength(): Long = currentFileLength
-			override suspend fun close() {
-				if (fd != null) {
-                    executeInIOWorker(fd!!) { fd ->
+            override suspend fun getLength(): Long = currentFileLength
+            override suspend fun close() {
+                if (fd != null) {
+                    doIo {
                         posixFclose(fd)
                         Unit
                     }
-				}
-				fd = null
+                }
+                fd = null
                 currentFileLength = 0L
-			}
+            }
 
-			override fun toString(): String = "$that($path)"
-		}.toAsyncStream()
-	}
+            override fun toString(): String = "$that($path)"
+        }.toAsyncStream()
+    }
 
-	override suspend fun setSize(path: String, size: Long) {
-		posixTruncate(resolve(path), size.convert())
-	}
+    override suspend fun setSize(path: String, size: Long) {
+        posixTruncate(resolve(path), size.convert())
+    }
 
-	override suspend fun stat(path: String): VfsStat {
-		val rpath = resolve(path)
+    override suspend fun stat(path: String): VfsStat {
+        val rpath = resolve(path)
         val statInfo = posixStat(rpath)
         return when {
             statInfo != null -> createExistsStat(rpath, statInfo.isDirectory, statInfo.size, mode = statInfo.mode)
             else -> createNonExistsStat(rpath)
         }
-	}
+    }
 
-	override suspend fun listFlow(path: String) = flow {
-		val dir = opendir(resolve(path))
-		val out = ArrayList<VfsFile>()
-		if (dir != null) {
-			try {
-				while (true) {
-					val dent = readdir(dir) ?: break
-					val name = dent.pointed.d_name.toKString()
-                    if (name != "." && name != "..") {
-                        emit(file("$path/$name"))
+    override suspend fun listFlow(path: String) = flow {
+        withContext(Dispatchers.CIO) {
+            val dir = opendir(resolve(path))
+            val out = ArrayList<VfsFile>()
+            if (dir != null) {
+                try {
+                    while (true) {
+                        val dent = readdir(dir) ?: break
+                        val name = dent.pointed.d_name.toKString()
+                        if (name != "." && name != "..") {
+                            emit(file("$path/$name"))
+                        }
                     }
-				}
-			} finally {
-				closedir(dir)
-			}
-		}
-	}
+                } finally {
+                    closedir(dir)
+                }
+            }
+        }
+    }
 
-	override suspend fun mkdir(path: String, attributes: List<Attribute>): Boolean = posixMkdir(resolve(path), "0777".toInt(8).convert()) == 0
+    override suspend fun mkdir(path: String, attributes: List<Attribute>): Boolean =
+        posixMkdir(resolve(path), "0777".toInt(8).convert()) == 0
 
-	override suspend fun touch(path: String, time: DateTime, atime: DateTime) {
-		// @TODO:
-		println("TODO:LocalVfsNative.touch")
-	}
+    override suspend fun touch(path: String, time: DateTime, atime: DateTime) {
+        // @TODO:
+        println("TODO:LocalVfsNative.touch")
+    }
 
-	override suspend fun delete(path: String): Boolean = platform.posix.unlink(resolve(path)) == 0
-	override suspend fun rmdir(path: String): Boolean = platform.posix.rmdir(resolve(path)) == 0
+    override suspend fun delete(path: String): Boolean = platform.posix.unlink(resolve(path)) == 0
+    override suspend fun rmdir(path: String): Boolean = platform.posix.rmdir(resolve(path)) == 0
 
-	override suspend fun rename(src: String, dst: String): Boolean = run {
-		platform.posix.rename(resolve(src), resolve(dst)) == 0
-	}
+    override suspend fun rename(src: String, dst: String): Boolean = run {
+        platform.posix.rename(resolve(src), resolve(dst)) == 0
+    }
 
-	override suspend fun watch(path: String, handler: (FileEvent) -> Unit): Closeable {
-		// @TODO:
-		println("TODO:LocalVfsNative.watch")
-		return DummyCloseable
-	}
+    override suspend fun watch(path: String, handler: (FileEvent) -> Unit): Closeable {
+        // @TODO:
+        println("TODO:LocalVfsNative.watch")
+        return DummyCloseable
+    }
 
-	override fun toString(): String = "LocalVfs"
+    override fun toString(): String = "LocalVfs"
 }

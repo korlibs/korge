@@ -73,6 +73,7 @@ class GLCanvasKorge internal constructor(
         //println("[c]")
     }
 
+    @Suppress("unused")
     suspend fun <T> executeInContext(block: suspend Stage.() -> T): T {
         return withContext(stage.coroutineContext) {
             block(stage)

@@ -57,12 +57,12 @@ internal open class AsynchronousFileChannelVfs : BaseLocalVfsJvm() {
                 if (mode.truncate) add(StandardOpenOption.TRUNCATE_EXISTING)
             }
             //println("path=$path, mode=$mode, options=$options")
-            doIo { AsynchronousFileChannel.open(Path(path), *options.toTypedArray()) }
+            executeIo { AsynchronousFileChannel.open(Path(path), *options.toTypedArray()) }
         } catch (e: java.nio.file.NoSuchFileException) {
             throw FileNotFoundException(e.message)
         }
     }
 
-    suspend fun AsynchronousFileChannel.sizeSuspend(): Long = doIo { size() }
-    suspend fun AsynchronousFileChannel.truncateSuspend(size: Long): Unit = doIo { truncate(size) }
+    suspend fun AsynchronousFileChannel.sizeSuspend(): Long = executeIo { size() }
+    suspend fun AsynchronousFileChannel.truncateSuspend(size: Long): Unit = executeIo { truncate(size) }
 }
