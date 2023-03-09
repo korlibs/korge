@@ -10,11 +10,11 @@ import kotlin.test.*
 class BezierTest {
     @Test
     fun testLength() {
-        assertEquals(100.0, Bezier(Point(0, 0), Point(50, 0), Point(100, 0)).length)
+        assertEquals(100.0, Bezier(Point(0, 0), Point(50, 0), Point(100, 0)).length, 0.001)
         val bezier = Bezier(Point(0, 0), Point(50, 0), Point(100, 0))
-        assertEquals(100.0, bezier.length)
+        assertEquals(100.0, bezier.length, 0.001)
         bezier.setPoints(Point(0, 0), Point(100, 0), Point(100, 100))
-        assertEquals(162.32, bezier.length.roundDecimalPlaces(2))
+        assertEquals(162.32, bezier.length.roundDecimalPlaces(2), 0.001)
     }
 
     @Test

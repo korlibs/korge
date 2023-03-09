@@ -190,11 +190,7 @@ class Bezier(
     override val direction: Angle get() {
         if (directionValid) return _direction
         directionValid = true
-        _direction = Angle.between(
-            points.getX(0), points.getY(0),
-            points.getX(order), points.getY(order),
-            points.getX(1), points.getY(1),
-        )
+        _direction = Angle.between(points[0], points[order], points[1])
         return _direction
     }
     override val clockwise: Boolean get() = direction > Angle.ZERO
@@ -296,10 +292,7 @@ class Bezier(
     override val isLinear: Boolean get() {
         if (isLinearValid) return _isLinear
         isLinearValid = true
-        val baseLength = kotlin.math.hypot(
-            points.getX(order) - points.getX(0),
-            points.getY(order) - points.getY(0)
-        )
+        val baseLength = (points[order] - points[0]).length
         _isLinear = (0 until aligned.size).sumOf { aligned.getY(it).absoluteValue.toDouble() } < baseLength / 50.0
         return _isLinear
     }
@@ -751,34 +744,18 @@ class Bezier(
     override fun toCubic(out: Bezier): Bezier {
         return when (order) {
             1 -> {
-                val x0 = points.getX(0).toDouble()
-                val y0 = points.getY(0).toDouble()
-                val x1 = points.getX(1).toDouble()
-                val y1 = points.getY(1).toDouble()
-                val xd = x1 - x0
-                val yd = y1 - y0
+                val p0 = points[0]
+                val p1 = points[1]
+                val pd = p1 - p0
                 val r1 = 1.0 / 3.0
                 val r2 = 2.0 / 3.0
-                out.setPoints(
-                    x0, y0,
-                    x0 + (xd * r1), y0 + (yd * r1),
-                    x0 + (xd * r2), y0 + (yd * r2),
-                    x1, y1,
-                )
+                out.setPoints(p0, p0 + (pd * r1), p0 + (pd * r2), p1)
             }
             2 -> {
-                val x0 = points.getX(0).toDouble()
-                val y0 = points.getY(0).toDouble()
-                val xc = points.getX(1).toDouble()
-                val yc = points.getY(1).toDouble()
-                val x1 = points.getX(2).toDouble()
-                val y1 = points.getY(2).toDouble()
-                out.setPoints(
-                    x0, y0,
-                    quadToCubic1(x0, xc), quadToCubic1(y0, yc),
-                    quadToCubic2(xc, x1), quadToCubic2(yc, y1),
-                    x1, y1
-                )
+                val p0 = points[0]
+                val pc = points[1]
+                val p1 = points[2]
+                out.setPoints(p0, quadToCubic1(p0, pc), quadToCubic2(pc, p1), p1)
             }
             3 -> out.copyFrom(this) // No conversion
             else -> TODO("Unsupported higher order curves")
@@ -788,29 +765,18 @@ class Bezier(
     override fun toQuad(out: Bezier): Bezier {
         return when (order) {
             1 -> {
-                val x0 = points.getX(0).toDouble()
-                val y0 = points.getY(0).toDouble()
-                val x1 = points.getX(1).toDouble()
-                val y1 = points.getY(1).toDouble()
-                out.setPoints(
-                    x0, y0,
-                    (x0 + x1) * 0.5, (y0 + y1) * 0.5,
-                    y0, y1,
-                )
+                val p0 = points[0]
+                val p1 = points[1]
+                out.setPoints(p0, (p0 + p1) * 0.5, p1)
             }
             2 -> out.copyFrom(this) // No conversion
             3 -> {
-                val x0 = points.getX(0).toDouble()
-                val y0 = points.getY(0).toDouble()
-                val xc1 = points.getX(1).toDouble()
-                val yc1 = points.getY(1).toDouble()
-                val xc2 = points.getX(2).toDouble()
-                val yc2 = points.getY(2).toDouble()
-                val x1 = points.getX(3).toDouble()
-                val y1 = points.getY(3).toDouble()
-                val xc = -0.25*x0 + .75*xc1 + .75*xc2 -0.25*x1
-                val yc = -0.25*y0 + .75*yc1 + .75*yc2 -0.25*y1
-                return out.setPoints(x0, y0, xc, yc, x1, y1)
+                val p0 = points[0]
+                val pc1 = points[1]
+                val pc2 = points[2]
+                val p1 = points[3]
+                val pc = -(p0 * .25f) + (pc1 * .75f) + (pc2 * .75f) - (p1 * .25f)
+                return out.setPoints(p0, pc, p1)
             }
             else -> TODO("Unsupported higher order curves")
         }
@@ -844,8 +810,8 @@ class Bezier(
                 pointArrayListOf(e, mid, s)
             };
 
-            val ls = makeline(bline.getPoint(2), fline.getPoint(0))
-            val le = makeline(fline.getPoint(2), bline.getPoint(0))
+            val ls = makeline(bline[2], fline[0])
+            val le = makeline(fline[2], bline[0])
             val segments = listOf(ls, Bezier(fline), le, Bezier(bline))
             return Curves(segments, closed = true)
         }
@@ -890,10 +856,10 @@ class Bezier(
             .reversed()
 
         // form the endcaps as lines
-        val fs = fcurves[0].points.getPoint(0)
-        val fe = fcurves[len - 1].points.getPoint(fcurves[len - 1].points.size - 1)
-        val bs = bcurves[len - 1].points.getPoint(bcurves[len - 1].points.size - 1)
-        val be = bcurves[0].points.getPoint(0)
+        val fs = fcurves[0].points[0]
+        val fe = fcurves[len - 1].points[fcurves[len - 1].points.size - 1]
+        val bs = bcurves[len - 1].points[bcurves[len - 1].points.size - 1]
+        val be = bcurves[0].points[0]
         val ls = makeline(bs, fs)
         val le = makeline(fe, be)
 
@@ -1029,31 +995,21 @@ class Bezier(
             return when (order) {
                 1 -> {
                     //println("compute: t=$t, mt=$mt")
-                    Point(
-                        (mt * p.getX(0)) + (t * p.getX(1)),
-                        (mt * p.getY(0)) + (t * p.getY(1)),
-                    )
+                    (p[0] * mt) + (p[1] * t)
                 }
                 2 -> {
                     val a = mt2
                     val b = mt * t * 2
                     val c = t2
 
-                    Point(
-                        a * p.getX(0) + b * p.getX(1) + c * p.getX(2),
-                        a * p.getY(0) + b * p.getY(1) + c * p.getY(2),
-                    )
+                    (p[0] * a) + (p[1] * b) + (p[2] * c)
                 }
                 3 -> {
                     val a = mt2 * mt
                     val b = mt2 * t * 3
                     val c = mt * t2 * 3
                     val d = t * t2
-
-                    Point(
-                        a * p.getX(0) + b * p.getX(1) + c * p.getX(2) + d * p.getX(3),
-                        a * p.getY(0) + b * p.getY(1) + c * p.getY(2) + d * p.getY(3),
-                    )
+                    (p[0] * a) + (p[1] * b) + (p[2] * c) + (p[3] * d)
                 }
                 else -> TODO("higher order curves")
             }
@@ -1408,8 +1364,7 @@ class Bezier(
             return out.toDoubleArray()
         }
 
-        private fun makeline(p1: MPoint, p2: MPoint): Bezier =
-            Bezier(Point(p1.x, p1.y), Point((p1.x + p2.x) / 2, (p1.y + p2.y) / 2), Point(p2.x, p2.y))
+        private fun makeline(p1: Point, p2: Point): Bezier = Bezier(p1, (p1 + p2) / 2, p2)
 
         @OptIn(ExperimentalContracts::class)
         inline fun <T> quadCalc(
@@ -1507,6 +1462,9 @@ class Bezier(
             quadCalc(p.xD, p.yD, c.xD, c.yD, a.xD, a.yD, t) { x, y -> out = Point(x, y) }
             return out
         }
+
+        @PublishedApi internal fun quadToCubic1(v0: Point, v1: Point): Point = v0 + (v1 - v0) * (2.0 / 3.0)
+        @PublishedApi internal fun quadToCubic2(v1: Point, v2: Point): Point = v2 + (v1 - v2) * (2.0 / 3.0)
 
         @PublishedApi internal fun quadToCubic1(v0: Double, v1: Double) = v0 + (v1 - v0) * (2.0 / 3.0)
         @PublishedApi internal fun quadToCubic2(v1: Double, v2: Double) = v2 + (v1 - v2) * (2.0 / 3.0)
