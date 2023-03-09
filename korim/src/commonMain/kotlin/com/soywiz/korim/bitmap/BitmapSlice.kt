@@ -72,7 +72,7 @@ fun <T : Bitmap> RectSlice<T>.extract(): T {
     return out
 }
 
-fun <T : SizeableInt> SliceCoordsWithBase<T>.slice(bounds: IRectangleInt = IRectangleInt(0, 0, width, height), name: String? = null, orientation: ImageOrientation = ImageOrientation.ROTATE_0, padding: MarginInt = MarginInt.ZERO): RectSlice<T> =
+fun <T : SizeableInt> SliceCoordsWithBase<T>.slice(bounds: MRectangleInt = MRectangleInt(0, 0, width, height), name: String? = null, orientation: ImageOrientation = ImageOrientation.ROTATE_0, padding: MarginInt = MarginInt.ZERO): RectSlice<T> =
     RectSlice(
         this.base,
         // @TODO: This shouldn't be necessary. But ASE test fails without this
@@ -91,7 +91,7 @@ fun <T : SizeableInt> SliceCoordsWithBase<T>.slice(bounds: IRectangleInt = IRect
 //fun <T : ISizeInt> CoordsWithContainer<T>.sliceWithSize(x: Int, y: Int, width: Int, height: Int, name: String? = null, orientation: ImageOrientation = ImageOrientation.ORIGINAL, padding: MarginInt = MarginInt.ZERO): RectSlice<T> =
 //    slice(RectangleInt(x, y, width, height), name, orientation, padding)
 
-fun <T : Bitmap> T.slice(bounds: IRectangleInt = IRectangleInt(0, 0, width, height), name: String? = null, orientation: ImageOrientation = ImageOrientation.ROTATE_0, padding: MarginInt = MarginInt.ZERO): RectSlice<T> {
+fun <T : Bitmap> T.slice(bounds: MRectangleInt = MRectangleInt(0, 0, width, height), name: String? = null, orientation: ImageOrientation = ImageOrientation.ROTATE_0, padding: MarginInt = MarginInt.ZERO): RectSlice<T> {
     val left = bounds.left.clamp(0, width)
     val top = bounds.top.clamp(0, height)
 

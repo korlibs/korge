@@ -84,12 +84,12 @@ data class RectSlice<T : SizeableInt>(
         RectSlice(base, rect.sliceWithBounds(left, top, right, bottom, clamped = clamped), orientation, padding, name ?: this.name)
     fun sliceWithSize(x: Int, y: Int, width: Int, height: Int, name: String? = null, clamped: Boolean = true, orientation: SliceOrientation = this.orientation): RectSlice<T> =
         sliceWithBounds(x, y, x + width, y + height, name = name, clamped = clamped, orientation = orientation)
-    fun slice(rect: IRectangleInt, name: String? = null, clamped: Boolean = true, orientation: SliceOrientation = this.orientation): RectSlice<T> =
+    fun slice(rect: MRectangleInt, name: String? = null, clamped: Boolean = true, orientation: SliceOrientation = this.orientation): RectSlice<T> =
         sliceWithBounds(rect.left, rect.top, rect.right, rect.bottom, name = name, clamped = clamped, orientation = orientation)
     fun slice(rect: RectangleInt, name: String? = null, clamped: Boolean = true, orientation: SliceOrientation = this.orientation): RectSlice<T> =
         sliceWithBounds(rect.left, rect.top, rect.right, rect.bottom, name = name, clamped = clamped, orientation = orientation)
 
-    val virtFrame: IRectangleInt?
+    val virtFrame: MRectangleInt?
         get() {
             if (padding.left == 0 && padding.right == 0 && padding.top == 0 && padding.bottom == 0) return null
             return MRectangleInt.fromBounds(padding.left, padding.top, width + padding.leftPlusRight, height + padding.topPlusBottom)
@@ -104,7 +104,7 @@ data class RectSlice<T : SizeableInt>(
         //})
     }
 
-    fun virtFrame(frame: IRectangleInt?): RectSlice<T> = when (frame) {
+    fun virtFrame(frame: MRectangleInt?): RectSlice<T> = when (frame) {
         null -> copy(padding = MarginInt.ZERO)
         else -> virtFrame(frame.x, frame.y, frame.width, frame.height)
     }

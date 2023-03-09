@@ -61,7 +61,7 @@ interface VectorBuilder {
 }
 
 
-fun VectorBuilder.rect(rect: IRectangleInt) = rect(rect.x, rect.y, rect.width, rect.height)
+fun VectorBuilder.rect(rect: MRectangleInt) = rect(rect.x, rect.y, rect.width, rect.height)
 fun VectorBuilder.rect(rect: IRectangle) = rect(rect.x, rect.y, rect.width, rect.height)
 fun VectorBuilder.rect(x: Double, y: Double, width: Double, height: Double) {
     moveTo(Point(x, y))

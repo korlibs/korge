@@ -30,7 +30,7 @@ class Bitmap32(
 	}
 
 	private val temp = IntArray(max(width, height))
-    val bounds: IRectangleInt = MRectangleInt(0, 0, width, height)
+    val bounds: MRectangleInt = MRectangleInt(0, 0, width, height)
 
 	constructor(width: Int, height: Int, value: RGBA) : this(width, height, premultiplied = false) { ints.fill(value.value) }
     constructor(width: Int, height: Int, value: RgbaArray) : this(width, height, value.ints, premultiplied = false)
@@ -622,7 +622,7 @@ fun Bitmap32.posterizeInplace(nbits: Int = 4): Bitmap32 {
     return this
 }
 
-fun Bitmap32.expandBorder(area: IRectangleInt, border: Int) = expandBorder(area.top, area.left, area.bottom, area.right, border)
+fun Bitmap32.expandBorder(area: MRectangleInt, border: Int) = expandBorder(area.top, area.left, area.bottom, area.right, border)
 fun Bitmap32.expandBorder(area: RectangleInt, border: Int) = expandBorder(area.top, area.left, area.bottom, area.right, border)
 
 fun Bitmap32.expandBorder(areaTop: Int, areaLeft: Int, areaBottom: Int, areaRight: Int, border: Int) {

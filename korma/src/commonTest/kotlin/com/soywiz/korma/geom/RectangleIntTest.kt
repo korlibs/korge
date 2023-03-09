@@ -20,7 +20,7 @@ class RectangleIntTest {
         assertEquals(MPointInt(1, 4020), rectangle.bottomLeft)
         assertEquals(MPointInt(301, 4020), rectangle.bottomRight)
 
-        val iRectangle = IRectangleInt(1000, 200, 30, 4)
+        val iRectangle = MRectangleInt(1000, 200, 30, 4)
         assertEquals(MPointInt(1000, 200), iRectangle.topLeft)
         assertEquals(MPointInt(1030, 200), iRectangle.topRight)
         assertEquals(MPointInt(1000, 204), iRectangle.bottomLeft)
@@ -29,7 +29,7 @@ class RectangleIntTest {
     
     @Test
     fun containsPointInside() {
-        val rect = IRectangleInt(10, 20, 100, 200)
+        val rect = MRectangleInt(10, 20, 100, 200)
         val point = MPointInt(11, 21)
 
         assertTrue(point.double in rect)
@@ -41,7 +41,7 @@ class RectangleIntTest {
 
     @Test
     fun doesNotContainPointToTheLeft() {
-        val rect = IRectangleInt(10, 20, 100, 200)
+        val rect = MRectangleInt(10, 20, 100, 200)
         val point = MPointInt(9, 21)
 
         assertFalse(point.double in rect)
@@ -53,7 +53,7 @@ class RectangleIntTest {
 
     @Test
     fun doesNotContainPointToTheTop() {
-        val rect = IRectangleInt(10, 20, 100, 200)
+        val rect = MRectangleInt(10, 20, 100, 200)
         val point = MPointInt(11, 19)
 
         assertFalse(point.double in rect)
@@ -65,7 +65,7 @@ class RectangleIntTest {
 
     @Test
     fun doesNotContainPointToTheRight() {
-        val rect = IRectangleInt(10, 20, 100, 200)
+        val rect = MRectangleInt(10, 20, 100, 200)
         val point = MPointInt(110, 21)
 
         assertFalse(point.double in rect)
@@ -77,7 +77,7 @@ class RectangleIntTest {
 
     @Test
     fun doesNotContainPointToTheBottom() {
-        val rect = IRectangleInt(10, 20, 100, 200)
+        val rect = MRectangleInt(10, 20, 100, 200)
         val point = MPointInt(11, 220)
 
         assertFalse(point.double in rect)

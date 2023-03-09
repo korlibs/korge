@@ -533,166 +533,16 @@ data class MRectangle(
 
 //////////// INT
 
-@KormaMutableApi
-sealed interface IRectangleInt {
-    companion object {
-        operator fun invoke(x: Int, y: Int, width: Int, height: Int): IRectangleInt = MRectangleInt(x, y, width, height)
-        operator fun invoke(x: Float, y: Float, width: Float, height: Float): IRectangleInt = MRectangleInt(x.toInt(), y.toInt(), width.toInt(), height.toInt())
-        operator fun invoke(x: Double, y: Double, width: Double, height: Double): IRectangleInt = MRectangleInt(x.toInt(), y.toInt(), width.toInt(), height.toInt())
-    }
-
-    val x: Int
-    val y: Int
-    val width: Int
-    val height: Int
-
-    fun clone(): MRectangleInt = MRectangleInt(x, y, width, height)
-
-    fun expanded(border: MarginInt): IRectangleInt = clone().expand(border)
-
-    val left: Int get() = x
-    val top: Int get() = y
-    val right: Int get() = x + width
-    val bottom: Int get() = y + height
-    val area: Int get() = width * height
-
-    val topLeft: MPointInt get() = MPointInt(left, top)
-    val topRight: MPointInt get() = MPointInt(right, top)
-    val bottomLeft: MPointInt get() = MPointInt(left, bottom)
-    val bottomRight: MPointInt get() = MPointInt(right, bottom)
-
-    fun sliceWithBounds(left: Int, top: Int, right: Int, bottom: Int, clamped: Boolean = true): IRectangleInt {
-        val left = if (!clamped) left else left.coerceIn(0, this.width)
-        val right = if (!clamped) right else right.coerceIn(0, this.width)
-        val top = if (!clamped) top else top.coerceIn(0, this.height)
-        val bottom = if (!clamped) bottom else bottom.coerceIn(0, this.height)
-        return MRectangleInt.fromBounds(this.x + left, this.y + top, this.x + right, this.y + bottom)
-    }
-
-    fun sliceWithSize(x: Int, y: Int, width: Int, height: Int, clamped: Boolean = true): IRectangleInt =
-        sliceWithBounds(x, y, x + width, y + height, clamped)
-
-    operator fun contains(v: SizeInt): Boolean = (v.width <= width) && (v.height <= height)
-    operator fun contains(v: MSizeInt): Boolean = contains(v.immutable)
-    operator fun contains(that: Point) = contains(that.x, that.y)
-    operator fun contains(that: MPoint) = contains(that.x, that.y)
-    operator fun contains(that: PointInt) = contains(that.x, that.y)
-    operator fun contains(that: MPointInt) = contains(that.x, that.y)
-    fun contains(x: Double, y: Double) = (x >= left && x < right) && (y >= top && y < bottom)
-    fun contains(x: Float, y: Float) = contains(x.toDouble(), y.toDouble())
-    fun contains(x: Int, y: Int) = contains(x.toDouble(), y.toDouble())
-}
-
-@KormaMutableApi
-inline class MRectangleInt(val rect: MRectangle) : IRectangleInt {
-    override var x: Int ; get() = rect.x.toInt() ; set(value) { rect.x = value.toDouble() }
-    override var y: Int ; get() = rect.y.toInt() ; set(value) { rect.y = value.toDouble() }
-    override var width: Int ; get() = rect.width.toInt() ; set(value) { rect.width = value.toDouble() }
-    override var height: Int ; get() = rect.height.toInt() ; set(value) { rect.height = value.toDouble() }
-    override var left: Int ; get() = rect.left.toInt() ; set(value) { rect.left = value.toDouble() }
-    override var top: Int ; get() = rect.top.toInt() ; set(value) { rect.top = value.toDouble() }
-    override var right: Int ; get() = rect.right.toInt() ; set(value) { rect.right = value.toDouble() }
-    override var bottom: Int ; get() = rect.bottom.toInt() ; set(value) { rect.bottom = value.toDouble() }
-
-    fun anchoredIn(
-        container: MRectangleInt,
-        anchor: Anchor,
-        out: MRectangleInt = MRectangleInt()
-    ): MRectangleInt = out.setTo(
-        ((container.width - this.width) * anchor.doubleX).toInt(),
-        ((container.height - this.height) * anchor.doubleY).toInt(),
-        width,
-        height
-    )
-
-    fun getAnchorPosition(anchor: Anchor, out: MPointInt = MPointInt()): MPointInt =
-        out.setTo((x + width * anchor.doubleX).toInt(), (y + height * anchor.doubleY).toInt())
-
-    val center: MPoint get() = anchor(0.5, 0.5).double
-    inline fun anchor(ax: Number, ay: Number): MPointInt = anchor(ax.toDouble(), ay.toDouble())
-    fun anchor(ax: Double, ay: Double): MPointInt = MPointInt((x + width * ax).toInt(), (y + height * ay).toInt())
-
-    fun setTo(that: IRectangleInt) = setTo(that.x, that.y, that.width, that.height)
-    fun setTo(x: Int, y: Int, width: Int, height: Int): MRectangleInt {
-        this.x = x
-        this.y = y
-        this.width = width
-        this.height = height
-        return this
-    }
-    fun setToBounds(left: Int, top: Int, right: Int, bottom: Int): MRectangleInt = setTo(left, top, right - left, bottom - top)
-
-    fun setPosition(x: Int, y: Int): MRectangleInt {
-        this.x = x
-        this.y = y
-        return this
-    }
-
-    fun setSize(width: Int, height: Int): MRectangleInt {
-        this.width = width
-        this.height = height
-        return this
-    }
-
-    fun getPosition(out: MPointInt = MPointInt()): MPointInt = out.setTo(x, y)
-    fun getSize(out: MSizeInt = MSizeInt()): MSizeInt = out.setTo(width, height)
-
-    val position get() = getPosition()
-    val size get() = getSize()
-
-    fun setBoundsTo(left: Int, top: Int, right: Int, bottom: Int) =
-        setTo(left, top, right - left, bottom - top)
-
-    /** Inline expand the rectangle */
-    fun expand(border: MarginInt): MRectangleInt =
-        this.setBoundsTo(left - border.left, top - border.top, right + border.right, bottom + border.bottom)
-
-    companion object {
-        operator fun invoke(): MRectangleInt = MRectangleInt(MRectangle())
-        operator fun invoke(x: Int, y: Int, width: Int, height: Int): MRectangleInt = MRectangleInt(MRectangle(x, y, width, height))
-        operator fun invoke(x: Float, y: Float, width: Float, height: Float): MRectangleInt = MRectangleInt(MRectangle(x, y, width, height))
-        operator fun invoke(x: Double, y: Double, width: Double, height: Double): MRectangleInt = MRectangleInt(MRectangle(x, y, width, height))
-        operator fun invoke(other: IRectangleInt): MRectangleInt = MRectangleInt(MRectangle(other.x, other.y, other.width, other.height))
-        fun fromBounds(left: Int, top: Int, right: Int, bottom: Int): MRectangleInt = MRectangleInt(left, top, right - left, bottom - top)
-    }
-
-    override fun toString(): String = "Rectangle(x=$x, y=$y, width=$width, height=$height)"
-    fun toStringBounds(): String = "Rectangle([$left,$top]-[$right,$bottom])"
-    fun copyFrom(rect: IRectangleInt): MRectangleInt = setTo(rect.x, rect.y, rect.width, rect.height)
-    fun copyFrom(rect: RectangleInt): MRectangleInt = setTo(rect.x, rect.y, rect.width, rect.height)
-
-    fun setToUnion(a: IRectangleInt, b: IRectangleInt): MRectangleInt = setToBounds(
-        min(a.left, b.left),
-        min(a.top, b.top),
-        max(a.right, b.right),
-        max(a.bottom, b.bottom)
-    )
-
-    fun setToUnion(a: IRectangleInt, b: RectangleInt): MRectangleInt = setToBounds(
-        min(a.left, b.left),
-        min(a.top, b.top),
-        max(a.right, b.right),
-        max(a.bottom, b.bottom)
-    )
-
-    fun setToUnion(a: RectangleInt, b: RectangleInt): MRectangleInt = setToBounds(
-        min(a.left, b.left),
-        min(a.top, b.top),
-        max(a.right, b.right),
-        max(a.bottom, b.bottom)
-    )
-}
-
 ////////////////////
 
 @KormaMutableApi fun MRectangle.asInt() = MRectangleInt(this)
 @KormaMutableApi fun MRectangleInt.asDouble() = this.rect
 
 @KormaMutableApi val IRectangle.int: MRectangleInt get() = MRectangleInt(x, y, width, height)
-@KormaMutableApi val IRectangleInt.float: MRectangle get() = MRectangle(x, y, width, height)
+@KormaMutableApi val MRectangleInt.float: MRectangle get() = MRectangle(x, y, width, height)
 
 @KormaValueApi val IRectangle.value: Rectangle get() = Rectangle(x, y, width, height)
-@KormaValueApi val IRectangleInt.value: Rectangle get() = Rectangle(x, y, width, height)
+@KormaValueApi val MRectangleInt.value: Rectangle get() = Rectangle(x, y, width, height)
 
 @KormaValueApi fun IRectangle.toRectangle(): Rectangle = Rectangle(x, y, width, height)
 @KormaMutableApi fun Rectangle.toIRectangle(): IRectangle = MRectangle(x, y, width, height)
