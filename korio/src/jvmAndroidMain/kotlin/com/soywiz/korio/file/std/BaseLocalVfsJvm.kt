@@ -1,45 +1,25 @@
 package com.soywiz.korio.file.std
 
-import com.soywiz.kds.iterators.*
-import com.soywiz.klock.DateTime
+import com.soywiz.klock.*
 import com.soywiz.korio.async.*
-import com.soywiz.korio.file.VfsFile
-import com.soywiz.korio.file.VfsOpenMode
-import com.soywiz.korio.file.VfsProcessHandler
-import com.soywiz.korio.file.VfsStat
+import com.soywiz.korio.file.*
 import com.soywiz.korio.lang.Closeable
-import com.soywiz.korio.stream.AsyncStream
-import com.soywiz.korio.stream.AsyncStreamBase
-import com.soywiz.korio.stream.toAsyncStream
+import com.soywiz.korio.stream.*
 import com.soywiz.korio.util.isAliveJre7
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import java.io.ByteArrayOutputStream
-import java.io.File
-import java.io.FileNotFoundException
-import java.io.FileOutputStream
-import java.io.IOException
-import java.io.InputStream
-import java.io.InputStreamReader
-import java.io.RandomAccessFile
-import java.nio.file.FileSystems
-import java.nio.file.Files
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.*
+import java.io.*
+import java.nio.file.*
 import java.nio.file.Path
-import java.nio.file.Paths
-import java.nio.file.StandardWatchEventKinds
-import java.nio.file.WatchEvent
-import java.nio.file.attribute.PosixFilePermission
+import java.nio.file.attribute.*
+import kotlin.collections.*
 
 internal open class BaseLocalVfsJvm : LocalVfs() {
     val that = this
     override val absolutePath: String = ""
 
-    protected suspend fun <T> executeIo(callback: suspend CoroutineScope.() -> T): T = withContext(Dispatchers.CIO, callback)
+    protected suspend fun <T> executeIo(callback: suspend CoroutineScope.() -> T): T =
+        withContext(Dispatchers.CIO, callback)
     //private suspend inline fun <T> executeIo(callback: suspend () -> T): T = callback()
 
     fun UnixPermissions.toSet(): Set<PosixFilePermission> = buildList<PosixFilePermission> {
@@ -57,9 +37,21 @@ internal open class BaseLocalVfsJvm : LocalVfs() {
 
     fun Set<PosixFilePermission>.toUnixPermissionsAttribute(): UnixPermissions {
         return UnixPermissions(
-            owner = UnixPermission(contains(PosixFilePermission.OWNER_READ), contains(PosixFilePermission.OWNER_WRITE), contains(PosixFilePermission.OWNER_EXECUTE)),
-            group = UnixPermission(contains(PosixFilePermission.GROUP_READ), contains(PosixFilePermission.GROUP_WRITE), contains(PosixFilePermission.GROUP_EXECUTE)),
-            other = UnixPermission(contains(PosixFilePermission.OTHERS_READ), contains(PosixFilePermission.OTHERS_WRITE), contains(PosixFilePermission.OTHERS_EXECUTE)),
+            owner = UnixPermission(
+                contains(PosixFilePermission.OWNER_READ),
+                contains(PosixFilePermission.OWNER_WRITE),
+                contains(PosixFilePermission.OWNER_EXECUTE)
+            ),
+            group = UnixPermission(
+                contains(PosixFilePermission.GROUP_READ),
+                contains(PosixFilePermission.GROUP_WRITE),
+                contains(PosixFilePermission.GROUP_EXECUTE)
+            ),
+            other = UnixPermission(
+                contains(PosixFilePermission.OTHERS_READ),
+                contains(PosixFilePermission.OTHERS_WRITE),
+                contains(PosixFilePermission.OTHERS_EXECUTE)
+            ),
         )
     }
 
@@ -96,7 +88,7 @@ internal open class BaseLocalVfsJvm : LocalVfs() {
                 closing = true
                 continue
             }
-            Thread.sleep(1L)
+            delay(1L)
         }
         p.waitFor()
         //handler.onCompleted(p.exitValue())
@@ -144,14 +136,16 @@ internal open class BaseLocalVfsJvm : LocalVfs() {
                 if (file.exists() && (mode == VfsOpenMode.CREATE_NEW)) {
                     throw IOException("File $file already exists")
                 }
-                RandomAccessFile(file, when (mode) {
-                    VfsOpenMode.READ -> "r"
-                    VfsOpenMode.WRITE -> "rw"
-                    VfsOpenMode.APPEND -> "rw"
-                    VfsOpenMode.CREATE -> "rw"
-                    VfsOpenMode.CREATE_NEW -> "rw"
-                    VfsOpenMode.CREATE_OR_TRUNCATE -> "rw"
-                }).apply {
+                RandomAccessFile(
+                    file, when (mode) {
+                        VfsOpenMode.READ -> "r"
+                        VfsOpenMode.WRITE -> "rw"
+                        VfsOpenMode.APPEND -> "rw"
+                        VfsOpenMode.CREATE -> "rw"
+                        VfsOpenMode.CREATE_NEW -> "rw"
+                        VfsOpenMode.CREATE_OR_TRUNCATE -> "rw"
+                    }
+                ).apply {
                     if (mode.truncate) {
                         setLength(0L)
                     }
@@ -206,7 +200,9 @@ internal open class BaseLocalVfsJvm : LocalVfs() {
                 createTime = lastModified,
                 modifiedTime = lastModified,
                 lastAccessTime = lastModified,
-                mode = kotlin.runCatching { Files.getPosixFilePermissions(file.toPath()).toUnixPermissionsAttribute().bits }.getOrNull() ?: 511
+                mode = kotlin.runCatching {
+                    Files.getPosixFilePermissions(file.toPath()).toUnixPermissionsAttribute().bits
+                }.getOrNull() ?: 511
             )
         } else {
             createNonExistsStat(fullpath)
@@ -230,6 +226,7 @@ internal open class BaseLocalVfsJvm : LocalVfs() {
 
     override suspend fun mkdir(path: String, attributes: List<Attribute>): Boolean =
         executeIo { resolveFile(path).mkdir() }
+
     override suspend fun mkdirs(path: String, attributes: List<Attribute>): Boolean =
         executeIo { resolveFile(path).mkdirs() }
 
@@ -274,6 +271,7 @@ internal open class BaseLocalVfsJvm : LocalVfs() {
                             StandardWatchEventKinds.OVERFLOW -> {
                                 println("Overflow WatchService")
                             }
+
                             StandardWatchEventKinds.ENTRY_CREATE -> {
                                 handler(
                                     FileEvent(
@@ -282,6 +280,7 @@ internal open class BaseLocalVfsJvm : LocalVfs() {
                                     )
                                 )
                             }
+
                             StandardWatchEventKinds.ENTRY_MODIFY -> {
                                 handler(
                                     FileEvent(
@@ -290,6 +289,7 @@ internal open class BaseLocalVfsJvm : LocalVfs() {
                                     )
                                 )
                             }
+
                             StandardWatchEventKinds.ENTRY_DELETE -> {
                                 handler(
                                     FileEvent(

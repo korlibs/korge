@@ -3,23 +3,16 @@ package com.soywiz.korio.process
 import com.soywiz.kds.concurrent.*
 import com.soywiz.klock.*
 import com.soywiz.korio.async.*
-import com.soywiz.korio.file.VfsProcessHandler
+import com.soywiz.korio.file.*
 import com.soywiz.korio.file.std.*
 import kotlinx.cinterop.*
+import kotlinx.coroutines.*
 import platform.posix.*
-import platform.windows.*
 import kotlin.native.concurrent.*
 
 actual suspend fun posixExec(
     path: String, cmdAndArgs: List<String>, env: Map<String, String>, handler: VfsProcessHandler
 ): Int {
-    class Info(
-        val commandLine: String,
-        val stdout: ConcurrentDeque<ByteArray>,
-        val stderr: ConcurrentDeque<ByteArray>,
-        val result: ConcurrentDeque<Int>,
-    )
-
     println("@WARNING: this exec implementation is not escaping, not setting env variables, or the current path, and not reading stderr")
 
     // @TODO: place environment variables like ENV=value ENV2=value2 cd path; command
@@ -31,10 +24,10 @@ actual suspend fun posixExec(
     val stdoutQueue = ConcurrentDeque<ByteArray>()
     val stderrQueue = ConcurrentDeque<ByteArray>()
     val resultQueue = ConcurrentDeque<Int>()
-    val worker = Worker.start()
-    worker.execute(TransferMode.SAFE, { Info(commandLine, stdoutQueue, stderrQueue, resultQueue) }, { info ->
+
+    withContext(Dispatchers.CIO) {
         memScoped {
-            val f = _popen(info.commandLine, "r")
+            val f = _popen(commandLine, "r")
             //println("[WORKER] OPENED ${info.commandLine}")
             val temp = ByteArray(1024)
             temp.usePinned { pin ->
@@ -43,14 +36,15 @@ actual suspend fun posixExec(
                     val result = fread(tempAddress, 1, temp.size.convert(), f).toLong()
                     //println("[WORKER] fread result $result")
                     if (result <= 0L) break
-                    info.stdout.add(temp.copyOf(result.toInt()))
+                    stdoutQueue.add(temp.copyOf(result.toInt()))
                 }
             }
             val exitCode = _pclose(f)
             //println("[WORKER] pclose $exitCode")
-            info.result.add(exitCode)
+            resultQueue.add(exitCode)
+            Unit
         }
-    })
+    }
 
     var exitCode: Int? = null
 
@@ -73,8 +67,6 @@ actual suspend fun posixExec(
     }
 
     //println("[MAIN] END WAIT")
-
-    worker.requestTermination()
 
     //println("[MAIN] END WAIT 2")
     return exitCode

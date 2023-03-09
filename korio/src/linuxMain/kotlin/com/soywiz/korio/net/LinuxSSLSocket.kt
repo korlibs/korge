@@ -1,12 +1,13 @@
 package com.soywiz.korio.net
 
-import com.soywiz.klogger.Logger
-import com.soywiz.korio.async.await
+import com.soywiz.klogger.*
+import com.soywiz.korio.async.*
 import kotlinx.cinterop.*
-import platform.linux.inet_addr
+import kotlinx.coroutines.*
+import platform.linux.*
 import platform.posix.*
 import kotlin.native.concurrent.*
-import kotlin.reflect.KProperty
+import kotlin.reflect.*
 
 private object OSSL {
     private val logger = Logger("OSSL")
@@ -88,17 +89,10 @@ class LinuxSSLSocket {
     val connected: Boolean get() = true
     var endpoint: NativeSocket.Endpoint = NativeSocket.Endpoint(NativeSocket.IP(0, 0, 0, 0), 0); private set
 
-    private var worker: Worker? = null
-
-    private data class ConnectRequest(val host: String, val port: Int)
-    private data class ConnectResponse(val ssl: COpaquePointer?, val endpoint: NativeSocket.Endpoint)
-
     suspend fun connect(host: String, port: Int) {
         close()
 
-        worker = Worker.start()
-
-        val response = worker?.execute(TransferMode.SAFE, { ConnectRequest(host, port).freeze() }, { (host, port) ->
+        withContext(Dispatchers.CIO) {
             memScoped {
                 val ssl = OSSL.SSL_new(ctx) ?: error("Can't create a SSL context")
                 var sockfd: Int = -1
@@ -118,24 +112,18 @@ class LinuxSSLSocket {
                     OSSL.SSL_set1_host(ssl, host.cstr.ptr)
                     val connectResult = OSSL.SSL_connect(ssl)
                     if (connectResult < 0) error("Cannot connect securely to $endpoint")
-                    ConnectResponse(ssl, endpoint).freeze()
+                    this@LinuxSSLSocket.ssl = ssl
+                    this@LinuxSSLSocket.endpoint = endpoint
                 } catch (e: Throwable) {
                     OSSL.SSL_free(ssl)
                     if (sockfd >= 0) close(sockfd)
                     throw e
                 }
             }
-        })?.await()
-
-        if (response != null) {
-            ssl = response.ssl
-            endpoint = response.endpoint
         }
     }
 
     suspend fun close() {
-        worker?.requestTermination(processScheduledJobs = true)?.await()
-        worker = null
         if (ssl != null) {
             OSSL.SSL_free(ssl)
             close(OSSL.SSL_get_fd(ssl))
