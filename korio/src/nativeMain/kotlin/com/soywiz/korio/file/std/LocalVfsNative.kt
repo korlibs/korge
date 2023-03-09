@@ -14,6 +14,7 @@ import com.soywiz.korio.stream.AsyncStream
 import com.soywiz.korio.stream.AsyncStreamBase
 import com.soywiz.korio.stream.toAsyncStream
 import kotlinx.cinterop.*
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.flow
 import platform.posix.*
 import kotlin.math.max
@@ -56,10 +57,6 @@ val rootLocalVfsNativeSync by lazy { LocalVfsNative(async = false) }
 
 actual fun localVfs(path: String, async: Boolean): VfsFile = (if (async) rootLocalVfsNative else rootLocalVfsNativeSync)[path]
 
-@ThreadLocal
-@PublishedApi
-internal val IOWorker by lazy { Worker.start().also { kotlin.native.Platform.isMemoryLeakCheckerActive = false } }
-
 expect open class LocalVfsNative(async: Boolean = true) : LocalVfsNativeBase
 
 open class LocalVfsNativeBase(val async: Boolean = true) : LocalVfs() {
@@ -68,7 +65,7 @@ open class LocalVfsNativeBase(val async: Boolean = true) : LocalVfs() {
 
 	fun resolve(path: String) = path
 
-    suspend inline fun <T, R> executeInIOWorker(value: T, noinline func: (T) -> R): R = if (async) executeInWorker(IOWorker, value, func) else func(value)
+    suspend inline fun <T, R> executeInIOWorker(value: T, noinline func: (T) -> R): R = if (async) executeInWorker(Dispatchers.IO, value, func) else func(value)
 
     override suspend fun exec(
 		path: String, cmdAndArgs: List<String>, env: Map<String, String>, handler: VfsProcessHandler
@@ -233,19 +230,21 @@ open class LocalVfsNativeBase(val async: Boolean = true) : LocalVfs() {
 	}
 
 	override suspend fun listFlow(path: String) = flow {
-		val dir = opendir(resolve(path))
-		val out = ArrayList<VfsFile>()
-		if (dir != null) {
-			try {
-				while (true) {
-					val dent = readdir(dir) ?: break
-					val name = dent.pointed.d_name.toKString()
-                    if (name != "." && name != "..") {
-                        emit(file("$path/$name"))
-                    }
+		withContext(Dispatchers.IO) {
+			val dir = opendir(resolve(path))
+			val out = ArrayList<VfsFile>()
+			if (dir != null) {
+				try {
+					while (true) {
+						val dent = readdir(dir) ?: break
+						val name = dent.pointed.d_name.toKString()
+						if (name != "." && name != "..") {
+							emit(file("$path/$name"))
+						}
+					}
+				} finally {
+					closedir(dir)
 				}
-			} finally {
-				closedir(dir)
 			}
 		}
 	}
