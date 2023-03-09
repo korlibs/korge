@@ -50,9 +50,9 @@ class SpatialMesh {
         throw Error("Point2d not inside triangles")
     }
 
-    fun spatialNodeFromPoint(point: MPoint): Node = spatialNodeFromPoint(point.x, point.y)
+    fun spatialNodeFromPoint(point: Point): Node = spatialNodeFromPoint(point.xD, point.yD)
 
-    fun getNodeAt(point: MPoint): Node? {
+    fun getNodeAt(point: Point): Node? {
         for (node in nodes) if (node.triangle!!.containsPoint(point)) return node
         return null
     }
@@ -77,7 +77,7 @@ class SpatialMesh {
         return mapTriangleToSpatialNode[triangle]
     }
 
-    fun getNodeEdge(p0: MPoint, p1: MPoint): NodeEdge {
+    fun getNodeEdge(p0: Point, p1: Point): NodeEdge {
         val edge = Edge(p0, p1)
         return nodeEdges.getOrPut(edge) { NodeEdge(edge) }
     }
@@ -100,9 +100,9 @@ class SpatialMesh {
         val neighbors: ArrayList<Node> = ArrayList()
 
         // Edges
-        val e0 = getNodeEdge(triangle.p0, triangle.p1).also { it.nodes += this }
-        val e1 = getNodeEdge(triangle.p1, triangle.p2).also { it.nodes += this }
-        val e2 = getNodeEdge(triangle.p2, triangle.p0).also { it.nodes += this }
+        val e0 = getNodeEdge(triangle.p0.point, triangle.p1.point).also { it.nodes += this }
+        val e1 = getNodeEdge(triangle.p1.point, triangle.p2.point).also { it.nodes += this }
+        val e2 = getNodeEdge(triangle.p2.point, triangle.p0.point).also { it.nodes += this }
 
         val edges = listOf(e0, e1, e2)
 

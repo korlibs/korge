@@ -108,7 +108,7 @@ interface Triangle {
     }
 }
 
-fun Triangle.point(index: Int) = when (index) {
+fun Triangle.point(index: Int): MPoint = when (index) {
     0 -> p0
     1 -> p1
     2 -> p2
@@ -120,6 +120,7 @@ fun Triangle.point(index: Int) = when (index) {
  * @return <code>True</code> if the Point2d objects are of the Triangle's vertices,
  *         <code>false</code> otherwise.
  */
+fun Triangle.containsPoint(point: Point): Boolean = (point == p0.point) || (point == p1.point) || (point == p2.point)
 fun Triangle.containsPoint(point: MPoint): Boolean = (point == p0) || (point == p1) || (point == p2)
 /**
  * Test if this Triangle contains the Edge object given as parameters as its bounding edges.
@@ -130,6 +131,7 @@ fun Triangle.containsPoint(point: MPoint): Boolean = (point == p0) || (point == 
 fun Triangle.containsEdge(edge: Edge): Boolean = containsEdgePoints(edge.p, edge.q)
 
 // In a triangle to check if contains and edge is enough to check if it contains the two vertices.
+fun Triangle.containsEdgePoints(p1: Point, p2: Point): Boolean = containsPoint(p1) && containsPoint(p2)
 fun Triangle.containsEdgePoints(p1: MPoint, p2: MPoint): Boolean = containsPoint(p1) && containsPoint(p2)
 
 private fun _product(p1x: Double, p1y: Double, p2x: Double, p2y: Double, p3x: Double, p3y: Double): Double = (p1x - p3x) * (p2y - p3y) - (p1y - p3y) * (p2x - p3x)
@@ -143,6 +145,7 @@ fun Triangle.pointInsideTriangle(x: Double, y: Double): Boolean {
     return if (sign0 >= 0) (sign1 >= 0) && (sign2 >= 0) && (sign3 >= 0) else (sign1 <= 0) && (sign2 <= 0) && (sign3 <= 0)
 }
 
+fun Triangle.pointInsideTriangle(pp: Point): Boolean = pointInsideTriangle(pp.xD, pp.yD)
 fun Triangle.pointInsideTriangle(pp: MPoint): Boolean = pointInsideTriangle(pp.x, pp.y)
 
 // Optimized?
@@ -156,7 +159,22 @@ fun Triangle.getPointIndexOffsetNoThrow(p: MPoint, offset: Int = 0, notFound: In
     }
     return notFound
 }
+fun Triangle.getPointIndexOffsetNoThrow(p: Point, offset: Int = 0, notFound: Int = Int.MIN_VALUE): Int {
+    var no: Int = offset
+    for (n in 0 until 3) {
+        while (no < 0) no += 3
+        while (no > 2) no -= 3
+        if (p == (this.point(n).point)) return no
+        no++
+    }
+    return notFound
+}
 
+fun Triangle.getPointIndexOffset(p: Point, offset: Int = 0): Int {
+    val v = getPointIndexOffsetNoThrow(p, offset, Int.MIN_VALUE)
+    if (v == Int.MIN_VALUE) throw Error("Point2d not in triangle")
+    return v
+}
 fun Triangle.getPointIndexOffset(p: MPoint, offset: Int = 0): Int {
     val v = getPointIndexOffsetNoThrow(p, offset, Int.MIN_VALUE)
     if (v == Int.MIN_VALUE) throw Error("Point2d not in triangle")
@@ -166,6 +184,10 @@ fun Triangle.getPointIndexOffset(p: MPoint, offset: Int = 0): Int {
 fun Triangle.pointCW(p: MPoint): MPoint = this.point(getPointIndexOffset(p, -1))
 fun Triangle.pointCCW(p: MPoint): MPoint = this.point(getPointIndexOffset(p, +1))
 fun Triangle.oppositePoint(t: Triangle, p: MPoint): MPoint = this.pointCW(t.pointCW(p))
+
+fun Triangle.pointCW(p: Point): Point = this.point(getPointIndexOffset(p, -1)).point
+fun Triangle.pointCCW(p: Point): Point = this.point(getPointIndexOffset(p, +1)).point
+fun Triangle.oppositePoint(t: Triangle, p: Point): Point = this.pointCW(t.pointCW(p))
 
 fun Triangle(p0: MPoint, p1: MPoint, p2: MPoint, fixOrientation: Boolean = false, checkOrientation: Boolean = true): Triangle {
     @Suppress("NAME_SHADOWING")
@@ -187,21 +209,24 @@ fun Triangle(p0: MPoint, p1: MPoint, p2: MPoint, fixOrientation: Boolean = false
 val Triangle.area: Double get() = Triangle.area(p0, p1, p2)
 
 /** Alias for getPointIndexOffset */
+fun Triangle.index(p: Point): Int = this.getPointIndexOffsetNoThrow(p, 0, -1)
 fun Triangle.index(p: MPoint): Int = this.getPointIndexOffsetNoThrow(p, 0, -1)
 
-fun Triangle.edgeIndex(p1: MPoint, p2: MPoint): Int {
+fun Triangle.edgeIndex(p1: MPoint, p2: MPoint): Int = edgeIndex(p1.point, p2.point)
+
+fun Triangle.edgeIndex(p1: Point, p2: Point): Int {
     when (p1) {
-        this.point(0) -> {
-            if (p2 == this.point(1)) return 2
-            if (p2 == this.point(2)) return 1
+        this.point(0).point -> {
+            if (p2 == this.point(1).point) return 2
+            if (p2 == this.point(2).point) return 1
         }
-        this.point(1) -> {
-            if (p2 == this.point(2)) return 0
-            if (p2 == this.point(0)) return 2
+        this.point(1).point -> {
+            if (p2 == this.point(2).point) return 0
+            if (p2 == this.point(0).point) return 2
         }
-        this.point(2) -> {
-            if (p2 == this.point(0)) return 1
-            if (p2 == this.point(1)) return 0
+        this.point(2).point -> {
+            if (p2 == this.point(0).point) return 1
+            if (p2 == this.point(1).point) return 0
         }
         else -> Unit
     }
