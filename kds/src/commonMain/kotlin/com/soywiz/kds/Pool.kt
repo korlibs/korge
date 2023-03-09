@@ -144,3 +144,21 @@ open class Pool<T : Any>(private val reset: (T) -> Unit = {}, preallocate: Int =
     override fun hashCode(): Int = items.hashCode()
     override fun equals(other: Any?): Boolean = (other is Pool<*>) && this.items == other.items && this.itemsInPool == other.itemsInPool
 }
+
+class ReturnablePool<T : Any>(private val _reset: (T) -> Unit = { }, private val gen: (index: Int) -> T) {
+    private val listToReturn = fastArrayListOf<T>()
+    private val list = Pool<T>(reset = { _reset(it) }) { gen(it) }
+    var current: T = list.alloc()
+        private set
+
+    fun next(): T {
+        listToReturn += current
+        current = list.alloc()
+        return current
+    }
+
+    fun reset() {
+        listToReturn.fastForEach { list.free(it) }
+        listToReturn.clear()
+    }
+}

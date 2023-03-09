@@ -117,9 +117,7 @@ class BatchBuilder2D constructor(
         )
     }
 
-    private val buffersListToReturn = fastArrayListOf<BatchBuffers>()
-    private val buffersList = Pool { BatchBuffers() }
-    private var currentBuffers: BatchBuffers = buffersList.alloc()
+    val buffers = ReturnablePool { BatchBuffers() }
 
     internal fun beforeRender() {
         for (n in 0 until maxTextures) currentTexN[n] = null
@@ -127,8 +125,7 @@ class BatchBuilder2D constructor(
     }
 
     internal fun afterRender() {
-        buffersListToReturn.fastForEach { buffersList.free(it) }
-        buffersListToReturn.clear()
+        buffers.reset()
     }
 
 	init { logger.trace { "BatchBuilder2D[4]" } }
@@ -634,7 +631,7 @@ class BatchBuilder2D constructor(
     val onInstanceCount = Signal<Int>()
 
     fun uploadIndices() {
-        currentBuffers.indexBuffer.upload(indices, 0, indexPos * 2)
+        buffers.current.indexBuffer.upload(indices, 0, indexPos * 2)
     }
 
     fun updateStandardUniforms() {
@@ -662,13 +659,14 @@ class BatchBuilder2D constructor(
         batches += AGBatch(
             ctx.currentFrameBuffer.base,
             ctx.currentFrameBuffer.info,
-            vertexData = currentBuffers.vertexData,
-            indices = currentBuffers.indexBuffer,
+            vertexData = buffers.current.vertexData,
+            indices = buffers.current.indexBuffer,
             program = currentProgram,
             //program = PROGRAM_PRE,
             drawType = AGDrawType.TRIANGLES,
             blending = currentBlendMode.factors,
             uniforms = uniforms.cloneReadOnly(),
+            uniformBlocks = ctx.createStdUniformBlock(),
             stencilOpFunc = stencilOpFunc,
             stencilRef = stencilRef,
             colorMask = colorMask,
@@ -693,8 +691,8 @@ class BatchBuilder2D constructor(
 		if (batches.isNotEmpty()) {
 			//println("ORTHO: ${ag.backHeight.toFloat()}, ${ag.backWidth.toFloat()}")
 			if (uploadVertices) {
-                currentBuffers.vertexBuffer.upload(vertices, 0, vertexPos * 4)
-                currentBuffers.texIndexVertexBuffer.upload(verticesTexIndex, 0, vertexPos / 6)
+                buffers.current.vertexBuffer.upload(vertices, 0, vertexPos * 4)
+                buffers.current.texIndexVertexBuffer.upload(verticesTexIndex, 0, vertexPos / 6)
             }
             if (uploadIndices) uploadIndices()
 
@@ -708,9 +706,9 @@ class BatchBuilder2D constructor(
             batches.clear()
             beforeFlush(this)
             fullBatchCount++
+            ctx.afterFullBatch()
 
-            buffersListToReturn += currentBuffers
-            currentBuffers = buffersList.alloc()
+            buffers.next()
 
             //println("indexPos=$indexPos, vertexCount=$vertexCount")
 		}

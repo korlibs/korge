@@ -117,6 +117,7 @@ class DebugVertexView(pointsList: List<IVectorArrayList>, color: RGBA = Colors.W
                     drawType = type,
                     program = PROGRAM,
                     uniforms = this.uniforms,
+                    uniformBlocks = ctx.createStdUniformBlock(),
                     vertexCount = batch.count,
                     drawOffset = batch.offset,
                     blending = renderBlendMode.factors

@@ -22,11 +22,8 @@ class AGUniformsTest {
 
         assertEquals(listOf(0, 1), listOf(index1, index2))
 
-        buffer.copyIndexTo(index1, data)
-        assertEquals(MMatrix3D().multiply(2f), MMatrix3D().setColumns4x4(data[projMatrix].data.f32.toFloatArray(), 0))
-
-        buffer.copyIndexTo(index2, data)
-        assertEquals(MMatrix3D().multiply(3f), MMatrix3D().setColumns4x4(data[projMatrix].data.f32.toFloatArray(), 0))
+        assertEquals(MMatrix3D().multiply(2f), MMatrix3D().setColumns4x4(buffer[index1][projMatrix].data.f32.toFloatArray(), 0))
+        assertEquals(MMatrix3D().multiply(3f), MMatrix3D().setColumns4x4(buffer[index2][projMatrix].data.f32.toFloatArray(), 0))
 
         //block.attributePositions
         //println(block.totalSize)

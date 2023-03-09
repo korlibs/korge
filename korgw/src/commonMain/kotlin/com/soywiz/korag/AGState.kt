@@ -803,6 +803,7 @@ data class AGBatch(
     // Program & Uniforms
     var program: Program = DefaultShaders.PROGRAM_DEBUG,
     var uniforms: AGUniformValues = AGUniformValues.EMPTY,
+    val uniformBlocks: AGUniformBlockValues = AGUniformBlockValues.EMPTY,
     // State
     var blending: AGBlending = AGBlending.NORMAL,
     var stencilOpFunc: AGStencilOpFunc = AGStencilOpFunc.DEFAULT,
@@ -818,7 +819,7 @@ data class AGBatch(
     var instances: Int = 1
 ) : AGCommand {
     override fun execute(ag: AG) {
-        ag.draw(frameBuffer, frameBufferInfo, vertexData, program, drawType, vertexCount, indices, indexType, drawOffset, blending, uniforms, stencilRef, stencilOpFunc, colorMask, depthAndFrontFace, scissor, cullFace, instances)
+        ag.draw(frameBuffer, frameBufferInfo, vertexData, program, drawType, vertexCount, indices, indexType, drawOffset, blending, uniforms, uniformBlocks, stencilRef, stencilOpFunc, colorMask, depthAndFrontFace, scissor, cullFace, instances)
     }
 }
 

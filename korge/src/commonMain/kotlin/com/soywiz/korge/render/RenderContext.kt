@@ -6,7 +6,7 @@ import com.soywiz.kmem.unit.*
 import com.soywiz.korag.*
 import com.soywiz.korag.annotation.*
 import com.soywiz.korag.log.*
-import com.soywiz.korag.shader.Uniform
+import com.soywiz.korag.shader.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.stat.*
 import com.soywiz.korge.view.*
@@ -63,9 +63,29 @@ class RenderContext constructor(
     @KorgeInternal
     val uniforms: AGUniformValues by lazy {
         AGUniformValues {
-            it[DefaultShaders.u_ProjMat] = projMat
-            it[DefaultShaders.u_ViewMat] = viewMat
+            //it[DefaultShaders.u_ProjMat] = projMat
+            //it[DefaultShaders.u_ViewMat] = viewMat
         }
+    }
+
+    class StdUniformBuffers {
+        val projMatrixBuffer = UniformBlockBuffer(UniformBlock(DefaultShaders.u_ProjMat, DefaultShaders.u_ViewMat), 16 * 1024)
+        val viewMatrixValue = projMatrixBuffer.data[DefaultShaders.u_ViewMat]
+        val projMatrixValue = projMatrixBuffer.data[DefaultShaders.u_ProjMat]
+
+        fun reset() {
+            projMatrixBuffer.reset()
+        }
+
+        fun createBlockValues(): AGUniformBlockValues {
+            return AGUniformBlockValues.fromLastIndex(arrayOf(projMatrixBuffer))
+        }
+    }
+
+    val stdUniformBuffers = ReturnablePool({ it.reset() }) { StdUniformBuffers() }
+
+    fun createStdUniformBlock(): AGUniformBlockValues {
+        return stdUniformBuffers.current.createBlockValues()
     }
 
     inline fun <T> setTemporalProjectionMatrixTransform(m: MMatrix, block: () -> T): T =
@@ -86,6 +106,14 @@ class RenderContext constructor(
 
     val tempTexturePool: Pool<AGTexture> = Pool { AGTexture() }
 
+    fun afterFullBatch() {
+        //projMatrixBuffer.reset()
+    }
+
+    fun resetStandardUniforms() {
+        stdUniformBuffers.reset()
+    }
+
     fun updateStandardUniforms() {
         //println("updateStandardUniforms: ag.currentSize(${ag.currentWidth}, ${ag.currentHeight}) : ${ag.currentFrameBuffer}")
         if (flipRenderTexture && currentFrameBuffer.isTexture) {
@@ -94,8 +122,16 @@ class RenderContext constructor(
             projMat.setToOrtho(tempRect.setBounds(0, 0, currentFrameBuffer.width, currentFrameBuffer.height), -1f, 1f)
             projMat.multiply(projMat, projectionMatrixTransform.toMatrix3D(tempMat3d))
         }
-        uniforms[DefaultShaders.u_ProjMat] = projMat
-        uniforms[DefaultShaders.u_ViewMat] = viewMat
+
+        // @TODO: Detect if there was a change
+        val curr = stdUniformBuffers.current
+        curr.projMatrixValue.set(projMat)
+        curr.viewMatrixValue.set(viewMat)
+        //projMatrixBuffer.putCurrent()
+        curr.projMatrixBuffer.putCurrentIfChanged() // Use this once reset is working
+
+        //uniforms[DefaultShaders.u_ProjMat] = projMat
+        //uniforms[DefaultShaders.u_ViewMat] = viewMat
     }
 
     /**
@@ -390,6 +426,7 @@ class RenderContext constructor(
     val frameBufferStack = FastArrayList<AGFrameBuffer>()
 
     inline fun doRender(block: () -> Unit) {
+        resetStandardUniforms()
         ag.startFrame()
         try {
             //mainRenderBuffer.init()

@@ -7,6 +7,7 @@
 package com.soywiz.korag.shader
 
 import com.soywiz.kds.*
+import com.soywiz.kds.iterators.*
 import com.soywiz.kmem.*
 import com.soywiz.korag.*
 import com.soywiz.korag.annotation.KoragExperimental
@@ -1086,6 +1087,33 @@ typealias UniformBlock = ProgramLayout<Uniform>
 inline val ProgramLayout<Uniform>.uniforms: List<Uniform> get() = items
 inline val ProgramLayout<Uniform>.uniformPositions: IntArrayList get() = _positions
 
+class AGUniformBlockValues(val buffers: Array<UniformBlockBuffer>, val indices: IntArray) {
+    companion object {
+        val EMPTY = AGUniformBlockValues(emptyArray(), intArrayOf())
+
+        fun fromLastIndex(buffers: Array<UniformBlockBuffer>): AGUniformBlockValues = AGUniformBlockValues(buffers, IntArray(buffers.size) { buffers[it].lastIndex -1 })
+    }
+    inline fun forEachBlock(block: (UniformBlockData) -> Unit) {
+        for (n in 0 until kotlin.math.min(buffers.size, indices.size)) {
+            val buffer = buffers[n]
+            val index = indices[n]
+            if (index in 0 until buffer.maxElements) block(buffer[index])
+        }
+    }
+
+    inline fun forEachValue(block: (AGUniformValue) -> Unit) {
+        forEachBlock {
+            it.values.fastForEach { block(it) }
+        }
+    }
+
+    inline fun fastForEach(block: (AGUniformValue) -> Unit) {
+        forEachValue { block(it) }
+    }
+
+    override fun toString(): String = "AGUniformBlockValues(buffers=${buffers.toList()}, indices=${indices.size})"
+}
+
 class UniformBlockData(val block: UniformBlock) {
     val data = Buffer(block.totalSize)
     val values = (0 until block.uniformPositions.size).map { index ->
@@ -1099,14 +1127,40 @@ class UniformBlockData(val block: UniformBlock) {
 }
 
 class UniformBlockBuffer(val block: UniformBlock, val maxElements: Int) {
+    val data = UniformBlockData(block)
+
     val buffer = Buffer(block.totalSize * maxElements)
+    val numUniforms = block.uniforms.size
+    val textures = Array<AGTexture?>(numUniforms * maxElements) { null }
+    val textureUnitInfos = IntArray(numUniforms * maxElements)
+
+    fun equal(index: Int, data: UniformBlockData): Boolean {
+        for (n in 0 until block.totalSize) {
+            if (data.data.getUInt8(n) != this.buffer.getUInt8(index * block.totalSize + n)) return false
+        }
+        for (n in 0 until numUniforms) {
+            if (textures[index * numUniforms + n] != data.values[n].texture) return false
+            if (textureUnitInfos[index * numUniforms + n] != data.values[n].textureUnitInfo.data) return false
+        }
+        return true
+    }
+
     operator fun set(index: Int, data: UniformBlockData) {
         if (data.block != block) error("${data.block} != $block")
         arraycopy(data.data, 0, this.buffer, index * block.totalSize, block.totalSize)
+        for (n in 0 until numUniforms) {
+            textures[index * numUniforms + n] = data.values[n].texture
+            textureUnitInfos[index * numUniforms + n] = data.values[n].textureUnitInfo.data
+        }
     }
-    fun copyIndexTo(index: Int, data: UniformBlockData) {
-        if (data.block != block) error("${data.block} != $block")
-        arraycopy(this.buffer, index * block.totalSize, data.data, 0, block.totalSize)
+    operator fun get(index: Int, out: UniformBlockData = this.data): UniformBlockData {
+        if (out.block != block) error("${out.block} != $block")
+        arraycopy(this.buffer, index * block.totalSize, out.data, 0, block.totalSize)
+        for (n in 0 until numUniforms) {
+            out.values[n].texture = textures[index * numUniforms + n]
+            out.values[n].textureUnitInfo = AGTextureUnitInfo.fromRaw(textureUnitInfos[index * numUniforms + n])
+        }
+        return out
     }
 
     var lastIndex = 0
@@ -1116,9 +1170,20 @@ class UniformBlockBuffer(val block: UniformBlock, val maxElements: Int) {
         lastIndex = 0
     }
 
-    fun put(data: UniformBlockData): Int {
+    inline fun put(block: UniformBlockData.() -> Unit): Int {
+        block(data)
+        return put(data)
+    }
+
+    fun put(data: UniformBlockData, deduplicate: Boolean = false): Int {
+        if (deduplicate && lastIndex > 0 && equal(lastIndex - 1, this.data)) return lastIndex - 1
         val index = lastIndex++
         this[index] = data
         return index
     }
+
+    fun putCurrent(): Int = put(this.data, deduplicate = false)
+    fun putCurrentIfChanged(): Int = put(this.data, deduplicate = true)
+
+    override fun toString(): String = "UniformBlockBuffer($block, maxElements=$maxElements, lastIndex=$lastIndex)"
 }

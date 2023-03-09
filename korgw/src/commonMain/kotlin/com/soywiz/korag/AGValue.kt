@@ -138,6 +138,7 @@ fun AGBufferExtractToFloatAndInts(type: VarType, arrayCount: Int, buffer: Buffer
     }
 }
 
+@Deprecated("UniformBlockBuffer/UniformBlockData")
 class AGUniformsData(val buffers: Array<AGUniformBuffer>, val indices: IntArray) {
     val size = min(buffers.size, indices.size)
     inline fun forEachUniform(block: (buffer: AGUniformBuffer, index: Int) -> Unit) {
@@ -147,6 +148,7 @@ class AGUniformsData(val buffers: Array<AGUniformBuffer>, val indices: IntArray)
     }
 }
 
+@Deprecated("UniformBlockBuffer/UniformBlockData")
 class AGUniformBuffer(
     val uniform: Uniform,
     val maxElements: Int,
