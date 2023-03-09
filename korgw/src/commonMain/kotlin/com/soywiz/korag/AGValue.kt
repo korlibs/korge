@@ -88,7 +88,7 @@ class AGUniformValues(val capacity: Int = 8 * 1024) {
     operator fun set(uniform: Uniform, value: Double) { this[uniform].set(value) }
     operator fun set(uniform: Uniform, value: MMatrix3D) { this[uniform].set(value) }
     operator fun set(uniform: Uniform, value: Point) { this[uniform].set(value) }
-    operator fun set(uniform: Uniform, value: IPoint) { this[uniform].set(value) }
+    operator fun set(uniform: Uniform, value: MPoint) { this[uniform].set(value) }
     operator fun set(uniform: Uniform, value: MVector4) { this[uniform].set(value) }
     operator fun set(uniform: Uniform, value: RGBAf) { this[uniform].set(value) }
     operator fun set(uniform: Uniform, value: RGBA) { this[uniform].set(value) }
@@ -310,7 +310,7 @@ open class AGValue(
 
     fun set(value: MVector4) = set(value.data)
     fun set(value: IVector4) = set(value.x, value.y, value.z, value.w)
-    fun set(value: IPoint) = set(value.x.toFloat(), value.y.toFloat())
+    fun set(value: MPoint) = set(value.x.toFloat(), value.y.toFloat())
     fun set(value: IRectCorners) = set(value.topLeft.toFloat(), value.topRight.toFloat(), value.bottomRight.toFloat(), value.bottomLeft.toFloat())
     fun set(value: MMatrix3D) = tempMatrixLock { set(tempIMatrix.also { it[0] = value }) }
 

@@ -249,14 +249,14 @@ class CameraContainer(
         contentContainer.scaleY = realScaleY
     }
 
-    fun setZoomAt(anchor: IPoint, zoom: Double) = setZoomAt(anchor.x, anchor.y, zoom)
+    fun setZoomAt(anchor: MPoint, zoom: Double) = setZoomAt(anchor.x, anchor.y, zoom)
 
     fun setZoomAt(anchorX: Double, anchorY: Double, zoom: Double) {
         setAnchorPosKeepingPos(anchorX, anchorY)
         cameraZoom = zoom
     }
 
-    fun setAnchorPosKeepingPos(anchor: IPoint) = setAnchorPosKeepingPos(anchor.x, anchor.y)
+    fun setAnchorPosKeepingPos(anchor: MPoint) = setAnchorPosKeepingPos(anchor.x, anchor.y)
 
     fun setAnchorPosKeepingPos(anchorX: Double, anchorY: Double) {
         setAnchorRatioKeepingPos(anchorX / width, anchorY / height)

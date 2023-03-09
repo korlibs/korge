@@ -1,12 +1,12 @@
 package com.soywiz.korma.geom.bezier
 
-import com.soywiz.kds.Extra
-import com.soywiz.kds.iterators.fastForEach
+import com.soywiz.kds.*
+import com.soywiz.kds.iterators.*
 import com.soywiz.kmem.*
 import com.soywiz.korma.annotations.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
-import kotlin.jvm.JvmName
+import kotlin.jvm.*
 
 @JvmName("ListCurves_toCurves")
 fun List<Curves>.toCurves(closed: Boolean = this.last().closed) = Curves(this.flatMap { it.beziers }, closed)

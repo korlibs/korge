@@ -19,8 +19,8 @@ fun <T : View> T.addUpdater(referenceFps: Frequency, first: Boolean = true, upda
 fun View.Companion.convertViewSpace(src: View, srcPoint: Point, dst: View): Point =
     dst.globalToLocal(src.localToGlobal(srcPoint))
 
-@Deprecated("") fun View.Companion.convertViewSpace(src: View, srcPoint: IPoint, dst: View, dstPoint: MPoint = MPoint()): IPoint =
+@Deprecated("") fun View.Companion.convertViewSpace(src: View, srcPoint: MPoint, dst: View, dstPoint: MPoint = MPoint()): MPoint =
     dstPoint.copyFrom(convertViewSpace(src, srcPoint.point, dst))
 
-@Deprecated("") fun View.convertToSpace(srcPoint: IPoint, dst: View, dstPoint: MPoint = MPoint()): IPoint =
+@Deprecated("") fun View.convertToSpace(srcPoint: MPoint, dst: View, dstPoint: MPoint = MPoint()): MPoint =
     View.Companion.convertViewSpace(this, srcPoint, dst, dstPoint)

@@ -1,8 +1,7 @@
 package com.soywiz.korma.geom
 
 import com.soywiz.korma.annotations.*
-import kotlin.math.max
-import kotlin.math.min
+import kotlin.math.*
 
 @KormaMutableApi
 fun IRay3D.intersectRayAABox1(box: AABB3D) : Boolean {

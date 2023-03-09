@@ -30,7 +30,6 @@ import com.soywiz.korma.geom.*
 import kotlinx.coroutines.*
 import kotlin.collections.set
 import kotlin.coroutines.*
-import kotlin.reflect.*
 
 //@Singleton
 /**
@@ -591,19 +590,19 @@ interface BoundsProvider {
     val globalToWindowScaleY: Double get() = globalToWindowTransform.scaleY
     val globalToWindowScaleAvg: Double get() = globalToWindowTransform.scaleAvg
 
-    fun windowToGlobalCoords(pos: IPoint, out: MPoint = MPoint()): MPoint = windowToGlobalMatrix.transform(pos, out)
+    fun windowToGlobalCoords(pos: MPoint, out: MPoint = MPoint()): MPoint = windowToGlobalMatrix.transform(pos, out)
     fun windowToGlobalCoords(x: Double, y: Double, out: MPoint = MPoint()): MPoint = windowToGlobalMatrix.transform(x, y, out)
     fun windowToGlobalCoordsX(x: Double, y: Double): Double = windowToGlobalMatrix.transformX(x, y)
     fun windowToGlobalCoordsY(x: Double, y: Double): Double = windowToGlobalMatrix.transformY(x, y)
-    fun windowToGlobalCoordsX(pos: IPoint): Double = windowToGlobalCoordsX(pos.x, pos.y)
-    fun windowToGlobalCoordsY(pos: IPoint): Double = windowToGlobalCoordsY(pos.x, pos.y)
+    fun windowToGlobalCoordsX(pos: MPoint): Double = windowToGlobalCoordsX(pos.x, pos.y)
+    fun windowToGlobalCoordsY(pos: MPoint): Double = windowToGlobalCoordsY(pos.x, pos.y)
 
-    fun globalToWindowCoords(pos: IPoint, out: MPoint = MPoint()): MPoint = globalToWindowMatrix.transform(pos, out)
+    fun globalToWindowCoords(pos: MPoint, out: MPoint = MPoint()): MPoint = globalToWindowMatrix.transform(pos, out)
     fun globalToWindowCoords(x: Double, y: Double, out: MPoint = MPoint()): MPoint = globalToWindowMatrix.transform(x, y, out)
     fun globalToWindowCoordsX(x: Double, y: Double): Double = globalToWindowMatrix.transformX(x, y)
     fun globalToWindowCoordsY(x: Double, y: Double): Double = globalToWindowMatrix.transformY(x, y)
-    fun globalToWindowCoordsX(pos: IPoint): Double = globalToWindowCoordsX(pos.x, pos.y)
-    fun globalToWindowCoordsY(pos: IPoint): Double = globalToWindowCoordsY(pos.x, pos.y)
+    fun globalToWindowCoordsX(pos: MPoint): Double = globalToWindowCoordsX(pos.x, pos.y)
+    fun globalToWindowCoordsY(pos: MPoint): Double = globalToWindowCoordsY(pos.x, pos.y)
 
     open class Base : BoundsProvider {
         override val windowToGlobalMatrix: MMatrix = MMatrix()

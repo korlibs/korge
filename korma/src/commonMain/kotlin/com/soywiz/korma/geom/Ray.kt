@@ -7,7 +7,7 @@ data class Ray(val point: Point, val direction: Point)
 
 @KormaMutableApi
 sealed interface IRay {
-    val point: IPoint
+    val point: MPoint
     val direction: IVector2D
 }
 

@@ -15,7 +15,6 @@ import com.soywiz.korge.view.image
 import com.soywiz.korge.view.position
 import com.soywiz.korge.view.solidRect
 import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.ColorAdd
 import com.soywiz.korim.color.Colors
 import com.soywiz.korio.async.AsyncThread
 import com.soywiz.korio.async.launchImmediately

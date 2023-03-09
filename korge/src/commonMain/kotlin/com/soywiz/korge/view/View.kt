@@ -1811,14 +1811,14 @@ fun <T : View> T.xy(p: Point): T {
 fun <T : View> T.xy(x: Double, y: Double): T = xy(Point(x, y))
 fun <T : View> T.xy(x: Float, y: Float): T = xy(Point(x, y))
 fun <T : View> T.xy(x: Int, y: Int): T = xy(Point(x, y))
-fun <T : View> T.xy(p: IPoint): T = xy(p.point)
+fun <T : View> T.xy(p: MPoint): T = xy(p.point)
 
 /** Chainable method returning this that sets [View.x] and [View.y] */
 fun <T : View> T.position(x: Double, y: Double): T = xy(Point(x, y))
 fun <T : View> T.position(x: Float, y: Float): T = xy(Point(x, y))
 fun <T : View> T.position(x: Int, y: Int): T = xy(Point(x, y))
 fun <T : View> T.position(p: Point): T = xy(p)
-fun <T : View> T.position(p: IPoint): T = xy(p.point)
+fun <T : View> T.position(p: MPoint): T = xy(p.point)
 
 fun <T : View> T.bounds(left: Double, top: Double, right: Double, bottom: Double): T = xy(left, top).size(Size(right - left, bottom - top))
 fun <T : View> T.bounds(rect: MRectangle): T = bounds(rect.left, rect.top, rect.right, rect.bottom)

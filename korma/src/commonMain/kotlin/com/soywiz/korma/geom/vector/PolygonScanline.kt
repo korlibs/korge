@@ -1,20 +1,10 @@
 package com.soywiz.korma.geom.vector
 
-import com.soywiz.kds.FastArrayList
-import com.soywiz.kds.FastIntMap
-import com.soywiz.kds.IntArrayList
-import com.soywiz.kds.Pool
-import com.soywiz.kds.SortOps
-import com.soywiz.kds.clear
-import com.soywiz.kds.fastForEach
-import com.soywiz.kds.genericSort
-import com.soywiz.kds.get
-import com.soywiz.kds.getOrPut
-import com.soywiz.kds.size
-import com.soywiz.korma.annotations.KormaExperimental
+import com.soywiz.kds.*
+import com.soywiz.korma.annotations.*
 import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.shape.emitPoints2
-import com.soywiz.korma.segment.IntSegmentSet
+import com.soywiz.korma.geom.shape.*
+import com.soywiz.korma.segment.*
 
 @KormaExperimental
 open class RastScale {
@@ -332,8 +322,8 @@ class PolygonScanline : RastScale() {
     }
 
     fun getLineIntersection(x0: Double, y0: Double, x1: Double, y1: Double, out: LineIntersection = LineIntersection()) = getLineIntersection(x0.s, y0.s, x1.s, y1.s, out)
-    fun getLineIntersection(a: IPointInt, b: IPointInt, out: LineIntersection = LineIntersection()) = getLineIntersection(a.x, a.y, b.x, b.y, out)
-    fun getLineIntersection(a: IPoint, b: IPoint, out: LineIntersection = LineIntersection()) = getLineIntersection(a.x.s, a.y.s, b.x.s, b.y.s, out)
+    fun getLineIntersection(a: MPointInt, b: MPointInt, out: LineIntersection = LineIntersection()) = getLineIntersection(a.x, a.y, b.x, b.y, out)
+    fun getLineIntersection(a: MPoint, b: MPoint, out: LineIntersection = LineIntersection()) = getLineIntersection(a.x.s, a.y.s, b.x.s, b.y.s, out)
     fun getLineIntersection(a: Point, b: Point, out: LineIntersection = LineIntersection()) = getLineIntersection(a.xD.s, a.yD.s, b.xD.s, b.yD.s, out)
     fun getLineIntersection(line: MLine, out: LineIntersection = LineIntersection()) = getLineIntersection(line.a, line.b, out)
 

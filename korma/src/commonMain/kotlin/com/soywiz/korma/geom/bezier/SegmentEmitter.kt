@@ -1,6 +1,6 @@
 package com.soywiz.korma.geom.bezier
 
-import com.soywiz.korma.geom.MPoint
+import com.soywiz.korma.geom.*
 
 object SegmentEmitter {
     inline fun emit(

@@ -7,7 +7,6 @@ import com.soywiz.korge.view.property.*
 import com.soywiz.korim.bitmap.BmpSlice
 import com.soywiz.korim.color.RGBAf
 import com.soywiz.korma.geom.Angle
-import com.soywiz.korma.geom.IPoint
 import com.soywiz.korma.geom.MPoint
 import com.soywiz.korma.geom.degrees
 
@@ -94,7 +93,7 @@ class ParticleEmitter() {
 	var rotationEndVariance = 0.0.degrees
 
 	fun create(x: Double = 0.0, y: Double = 0.0, time: TimeSpan = TimeSpan.NIL): ParticleEmitterView =
-		ParticleEmitterView(this, IPoint(x, y)).apply {
+		ParticleEmitterView(this, MPoint(x, y)).apply {
 			this.timeUntilStop = time
 		}
 

@@ -29,12 +29,12 @@ class PointTest {
 
     @Test
     fun testIPointCreation() {
-        assertEquals("(0, 0)", IPoint().toString())
-        assertEquals("(0, 0)", IPoint.ZERO.toString())
-        assertEquals("(1, 2)", IPoint(1, 2).toString())
-        assertEquals("(1, 2)", IPoint(1.0, 2.0).toString())
-        assertEquals("(1, 2)", IPoint(1f, 2f).toString())
-        assertEquals("(1, 2)", IPoint(IPoint(1, 2)).toString())
+        assertEquals("(0, 0)", MPoint().toString())
+        assertEquals("(0, 0)", MPoint(0, 0).toString())
+        assertEquals("(1, 2)", MPoint(1, 2).toString())
+        assertEquals("(1, 2)", MPoint(1.0, 2.0).toString())
+        assertEquals("(1, 2)", MPoint(1f, 2f).toString())
+        assertEquals("(1, 2)", MPoint(MPoint(1, 2)).toString())
     }
 
     @Test

@@ -210,7 +210,7 @@ internal class UiEditProperties(app: UiApplication, view: View?, val views: View
                 }
                 UiTwoItemEditableValue(app, vv[0], vv[1])
             }
-            type.isSubtypeOf(IPoint::class.starProjectedType) -> createPair({ IPoint(it.x, it.y) }, { Two(it.x, it.y) }, instance, prop, viewProp)
+            type.isSubtypeOf(MPoint::class.starProjectedType) -> createPair({ MPoint(it.x, it.y) }, { Two(it.x, it.y) }, instance, prop, viewProp)
             type.isSubtypeOf(Point::class.starProjectedType) -> createPair({ Point(it.x, it.y) }, { Two(it.xD, it.yD) }, instance, prop, viewProp)
             type.isSubtypeOf(Size::class.starProjectedType) -> createPair({ Size(it.x, it.y) }, { Two(it.widthD, it.heightD) }, instance, prop, viewProp)
             type.isSubtypeOf(Scale::class.starProjectedType) -> createPair({ Scale(it.x, it.y) }, { Two(it.scaleXD, it.scaleYD) }, instance, prop, viewProp)

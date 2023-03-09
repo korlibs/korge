@@ -1,6 +1,6 @@
 package com.soywiz.korma.geom.vector
 
-import com.soywiz.kds.IDoubleArrayList
+import com.soywiz.kds.*
 
 data class StrokeInfo(
     val thickness: Double = 1.0,

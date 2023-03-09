@@ -93,7 +93,7 @@ object Convex {
 
     /*
     // https://stackoverflow.com/questions/471962/how-do-i-efficiently-determine-if-a-polygon-is-convex-non-convex-or-complex/45372025#45372025
-    fun isConvex2(vertices: IPointArrayList): Boolean {
+    fun isConvex2(vertices: MPointArrayList): Boolean {
         if (vertices.size < 4) return true
         var sign = false
         val n: Int = vertices.size
@@ -110,7 +110,7 @@ object Convex {
 
     // https://math.stackexchange.com/questions/1743995/determine-whether-a-polygon-is-convex-based-on-its-vertices
     /*
-    fun isConvex(vertices: IPointArrayList): Boolean {
+    fun isConvex(vertices: MPointArrayList): Boolean {
         if (vertices.size < 3) return false
 
         val N = vertices.size

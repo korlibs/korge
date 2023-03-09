@@ -59,7 +59,7 @@ class TouchEvents(val view: View) {
     private val infoById = FastIntMap<Info>()
     val infos = FastArrayList<Info>()
 
-    fun simulateTapAt(views: Views, globalXY: IPoint) {
+    fun simulateTapAt(views: Views, globalXY: MPoint) {
         val ev = TouchEvent(TouchEvent.Type.START)
         ev.startFrame(TouchEvent.Type.START)
         ev.touch(0, globalXY.x, globalXY.y, Touch.Status.ADD)

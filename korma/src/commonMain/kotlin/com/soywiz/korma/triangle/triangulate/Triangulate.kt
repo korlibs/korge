@@ -8,7 +8,7 @@ import com.soywiz.korma.triangle.poly2tri.Poly2Tri
 import kotlin.jvm.JvmName
 
 @Deprecated("")
-fun List<IPoint>.triangulate(): List<Triangle> = listOf(PointArrayList(this)).triangulate()
+fun List<MPoint>.triangulate(): List<Triangle> = listOf(PointArrayList(this)).triangulate()
 fun PointList.triangulate(): List<Triangle> = listOf(this).triangulate()
 
 @JvmName("triangulateListPointArrayList")

@@ -2,10 +2,9 @@ package com.soywiz.korma.geom
 
 import com.soywiz.kds.pack.*
 import com.soywiz.korma.annotations.*
-import com.soywiz.korma.internal.niceStr
+import com.soywiz.korma.internal.*
 import com.soywiz.korma.interpolation.*
-import kotlin.math.max
-import kotlin.math.min
+import kotlin.math.*
 
 @KormaValueApi
 interface Sizeable {
@@ -204,7 +203,6 @@ fun MSize.asInt(): MSizeInt = MSizeInt(this)
 fun MSizeInt.asDouble(): MSize = this.float
 
 fun MPoint.asSize(): MSize = MSize(this)
-fun IPoint.asSize(): ISize = MSize(MPoint(this))
 
 fun Point.toSize(): Size = Size(raw)
 fun PointInt.toSize(): SizeInt = SizeInt(raw)

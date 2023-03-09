@@ -1,18 +1,15 @@
 package com.soywiz.korma.geom.vector
 
 import com.soywiz.kds.*
-import com.soywiz.kds.iterators.fastForEach
+import com.soywiz.kds.iterators.*
 import com.soywiz.kmem.*
-import com.soywiz.korma.annotations.KormaExperimental
+import com.soywiz.korma.annotations.*
 import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.bezier.Bezier
-import com.soywiz.korma.geom.bezier.Curves
-import com.soywiz.korma.geom.bezier.toCurves
+import com.soywiz.korma.geom.bezier.*
 import com.soywiz.korma.geom.trapezoid.*
-import com.soywiz.korma.internal.niceStr
-import com.soywiz.korma.math.isAlmostEquals
-import com.soywiz.korma.math.roundDecimalPlaces
-import kotlin.native.concurrent.ThreadLocal
+import com.soywiz.korma.internal.*
+import com.soywiz.korma.math.*
+import kotlin.native.concurrent.*
 
 interface IVectorPath : VectorBuilder {
     fun toSvgString(): String
@@ -256,7 +253,7 @@ class VectorPath(
     // At each crossing, the ray switches between inside and outside. This is called the Jordan curve theorem.
     fun containsPoint(x: Double, y: Double): Boolean = trapezoids.containsPoint(x, y, this.winding)
     fun containsPoint(p: Point): Boolean = containsPoint(p.xD, p.yD, this.winding)
-    fun containsPoint(p: IPoint): Boolean = containsPoint(p.x, p.y, this.winding)
+    fun containsPoint(p: MPoint): Boolean = containsPoint(p.x, p.y, this.winding)
     fun containsPoint(x: Int, y: Int): Boolean = containsPoint(x.toDouble(), y.toDouble())
     fun containsPoint(x: Float, y: Float): Boolean = containsPoint(x.toDouble(), y.toDouble())
 

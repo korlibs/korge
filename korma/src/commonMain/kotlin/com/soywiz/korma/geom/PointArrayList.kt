@@ -1,10 +1,10 @@
 package com.soywiz.korma.geom
 
 import com.soywiz.kds.*
-import com.soywiz.kds.iterators.fastForEach
+import com.soywiz.kds.iterators.*
 import com.soywiz.korma.annotations.*
-import com.soywiz.korma.math.roundDecimalPlaces
-import kotlin.math.round
+import com.soywiz.korma.math.*
+import kotlin.math.*
 
 @Deprecated("Use PointList directly")
 typealias IPointArrayList = PointList
@@ -20,7 +20,7 @@ sealed interface PointList : IVectorArrayList, Extra {
     operator fun get(index: Int): Point = Point(getX(index), getY(index))
 
     @Deprecated("")
-    fun get(index: Int, out: MPoint): IPoint = out.setTo(getX(index), getY(index))
+    fun get(index: Int, out: MPoint): MPoint = out.setTo(getX(index), getY(index))
 
     fun roundDecimalPlaces(places: Int, out: PointArrayList = PointArrayList()): PointList {
         fastForEach { (x, y) -> out.add(x.roundDecimalPlaces(places), y.roundDecimalPlaces(places)) }
@@ -45,14 +45,14 @@ sealed interface PointList : IVectorArrayList, Extra {
     @Deprecated("")
     fun getPoint(index: Int, out: MPoint = MPoint()): MPoint = out.setTo(getX(index), getY(index))
     @Deprecated("")
-    fun getIPoint(index: Int): IPoint = IPoint(getX(index), getY(index))
+    fun getMPoint(index: Int): MPoint = MPoint(getX(index), getY(index))
     @Deprecated("")
     fun toList(): List<MPoint> = (0 until size).map { getPoint(it) }
 
     @Deprecated("")
     fun toPoints(): List<MPoint> = (0 until size).map { getPoint(it) }
     @Deprecated("")
-    fun toIPoints(): List<IPoint> = (0 until size).map { getIPoint(it) }
+    fun toIPoints(): List<MPoint> = (0 until size).map { getMPoint(it) }
 
     operator fun contains(p: Point): Boolean = contains(p.x, p.y)
     @Deprecated("")
@@ -89,7 +89,7 @@ inline fun PointList.fastForEachReverse(block: (Point) -> Unit) { for (n in 0 un
 
 fun <T> PointList.map(gen: (x: Double, y: Double) -> T): List<T> = (0 until size).map { gen(getX(it).toDouble(), getY(it).toDouble()) }
 
-fun PointList.mapPoints(temp: MPoint = MPoint(), gen: (x: Double, y: Double, out: MPoint) -> IPoint): PointList {
+fun PointList.mapPoints(temp: MPoint = MPoint(), gen: (x: Double, y: Double, out: MPoint) -> MPoint): PointList {
     val out = PointArrayList(this.size)
     fastForEach { (x, y) -> out.add(gen(x.toDouble(), y.toDouble(), temp)) }
     return out
@@ -126,11 +126,11 @@ open class PointArrayList(capacity: Int = 7) : PointList, Extra by Extra.Mixin()
 
         operator fun invoke(capacity: Int = 7, callback: PointArrayList.() -> Unit): PointArrayList = PointArrayList(capacity).apply(callback)
         @Deprecated("")
-        operator fun invoke(points: List<IPoint>): PointArrayList = PointArrayList(points.size) {
+        operator fun invoke(points: List<MPoint>): PointArrayList = PointArrayList(points.size) {
             for (n in points.indices) add(points[n].x, points[n].y)
         }
         @Deprecated("")
-        operator fun invoke(vararg points: IPoint): PointArrayList = PointArrayList(points.size) {
+        operator fun invoke(vararg points: MPoint): PointArrayList = PointArrayList(points.size) {
             for (n in points.indices) add(points[n].x, points[n].y)
         }
         operator fun invoke(capacity: Int = 7): PointArrayList = PointArrayList(capacity)
@@ -165,7 +165,6 @@ open class PointArrayList(capacity: Int = 7) : PointList, Extra by Extra.Mixin()
 
     fun add(p: Point) = add(p.x, p.y)
     fun add(p: MPoint) = add(p.x, p.y)
-    fun add(p: IPoint) = add(p.x, p.y)
     fun add(p: PointList) = this.apply { p.fastForEach { (x, y) -> add(x, y) } }
     fun addReverse(p: PointList) = this.apply { p.fastForEachReverse { (x, y) -> add(x, y) } }
     fun add(p: PointList, index: Int) {
@@ -208,7 +207,7 @@ open class PointArrayList(capacity: Int = 7) : PointList, Extra by Extra.Mixin()
         return this
     }
 
-    fun insertAt(index: Int, point: IPoint) = insertAt(index, point.x, point.y)
+    fun insertAt(index: Int, point: MPoint) = insertAt(index, point.x, point.y)
 
     fun removeAt(index: Int, count: Int = 1): PointArrayList {
         data.removeAt(index(index, 0), count * 2)
@@ -235,7 +234,7 @@ open class PointArrayList(capacity: Int = 7) : PointList, Extra by Extra.Mixin()
     }
     fun setXY(index: Int, x: Int, y: Int) = setXY(index, x.toFloat(), y.toFloat())
     fun setXY(index: Int, x: Double, y: Double) = setXY(index, x.toFloat(), y.toFloat())
-    fun setXY(index: Int, p: IPoint) = setXY(index, p.x, p.y)
+    fun setXY(index: Int, p: MPoint) = setXY(index, p.x, p.y)
     operator fun set(index: Int, p: Point) = setXY(index, p.x, p.y)
 
     fun transform(matrix: MMatrix) {
@@ -292,7 +291,7 @@ fun pointArrayListOf(vararg values: Int): PointArrayList =
     PointArrayList(values.size / 2).also { it.addRaw(*values.mapDouble { it.toDouble() }) }
 fun pointArrayListOf(vararg values: Double): PointArrayList =
     PointArrayList(values.size / 2).also { it.addRaw(*values) }
-fun pointArrayListOf(vararg values: IPoint): PointArrayList = PointArrayList(*values)
+fun pointArrayListOf(vararg values: MPoint): PointArrayList = PointArrayList(*values)
 
 fun pointArrayListOf(p0: Point): PointArrayList = PointArrayList(1).add(p0)
 fun pointArrayListOf(p0: Point, p1: Point): PointArrayList = PointArrayList(2).add(p0).add(p1)
@@ -305,35 +304,35 @@ inline fun <T : Point> pointArrayListOf(vararg points: T): PointArrayList =
 
 //////////////////////////////////////
 
-sealed interface IPointIntArrayList {
+sealed interface MPointIntArrayList {
     val closed: Boolean
     val size: Int
     fun getX(index: Int): Int
     fun getY(index: Int): Int
 }
 
-fun IPointIntArrayList.getPoint(index: Int, out: MPointInt = MPointInt()): MPointInt = out.setTo(getX(index), getY(index))
-fun IPointIntArrayList.getIPoint(index: Int): IPointInt = IPointInt(getX(index), getY(index))
-fun IPointIntArrayList.toPoints(): List<MPointInt> = (0 until size).map { getPoint(it) }
-fun IPointIntArrayList.toIPoints(): List<IPointInt> = (0 until size).map { getIPoint(it) }
-fun IPointIntArrayList.contains(x: Int, y: Int): Boolean {
+fun MPointIntArrayList.getPoint(index: Int, out: MPointInt = MPointInt()): MPointInt = out.setTo(getX(index), getY(index))
+fun MPointIntArrayList.getMPoint(index: Int): MPointInt = MPointInt(getX(index), getY(index))
+fun MPointIntArrayList.toPoints(): List<MPointInt> = (0 until size).map { getPoint(it) }
+fun MPointIntArrayList.toIPoints(): List<MPointInt> = (0 until size).map { getMPoint(it) }
+fun MPointIntArrayList.contains(x: Int, y: Int): Boolean {
     for (n in 0 until size) if (getX(n) == x && getY(n) == y) return true
     return false
 }
-inline fun IPointIntArrayList.fastForEach(block: (x: Int, y: Int) -> Unit) {
+inline fun MPointIntArrayList.fastForEach(block: (x: Int, y: Int) -> Unit) {
     for (n in 0 until size) {
         block(getX(n), getY(n))
     }
 }
 
-inline fun IPointIntArrayList.fastForEachReverse(block: (x: Int, y: Int) -> Unit) {
+inline fun MPointIntArrayList.fastForEachReverse(block: (x: Int, y: Int) -> Unit) {
     for (n in 0 until size) {
         val m = size - 1 - n
         block(getX(m), getY(m))
     }
 }
 
-open class PointIntArrayList(capacity: Int = 7) : IPointIntArrayList, Extra by Extra.Mixin() {
+open class PointIntArrayList(capacity: Int = 7) : MPointIntArrayList, Extra by Extra.Mixin() {
     override var closed: Boolean = false
     private val xList = IntArrayList(capacity)
     private val yList = IntArrayList(capacity)
@@ -349,10 +348,10 @@ open class PointIntArrayList(capacity: Int = 7) : IPointIntArrayList, Extra by E
 
     companion object {
         operator fun invoke(capacity: Int = 7, callback: PointIntArrayList.() -> Unit): PointIntArrayList = PointIntArrayList(capacity).apply(callback)
-        operator fun invoke(points: List<IPointInt>): PointIntArrayList = PointIntArrayList(points.size) {
+        operator fun invoke(points: List<MPointInt>): PointIntArrayList = PointIntArrayList(points.size) {
             for (n in points.indices) add(points[n].x, points[n].y)
         }
-        operator fun invoke(vararg points: IPointInt): PointIntArrayList = PointIntArrayList(points.size) {
+        operator inline fun <reified T : MPointInt> invoke(vararg points: T): PointIntArrayList = PointIntArrayList(points.size) {
             for (n in points.indices) add(points[n].x, points[n].y)
         }
     }
@@ -362,9 +361,9 @@ open class PointIntArrayList(capacity: Int = 7) : IPointIntArrayList, Extra by E
         yList += y
     }
     fun add(p: PointInt) = add(p.x, p.y)
-    fun add(p: IPointInt) = add(p.x, p.y)
-    fun add(p: IPointIntArrayList) = this.apply { p.fastForEach { x, y -> add(x, y) } }
-    fun addReverse(p: IPointIntArrayList) = this.apply { p.fastForEachReverse { x, y -> add(x, y) } }
+    fun add(p: MPointInt) = add(p.x, p.y)
+    fun add(p: MPointIntArrayList) = this.apply { p.fastForEach { x, y -> add(x, y) } }
+    fun addReverse(p: MPointIntArrayList) = this.apply { p.fastForEachReverse { x, y -> add(x, y) } }
 
     inline fun fastForEach(block: (x: Int, y: Int) -> Unit) {
         for (n in 0 until size) {

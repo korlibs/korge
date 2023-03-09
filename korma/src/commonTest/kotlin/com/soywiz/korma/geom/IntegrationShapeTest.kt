@@ -42,13 +42,13 @@ class IntegrationShapeTest {
     fun pathFind() {
         assertEquals(
             "[(10, 10), (90, 90)]",
-            MRectangle(0, 0, 100, 100).toShape().pathFind(IPoint(10, 10), IPoint(90, 90)).toString()
+            MRectangle(0, 0, 100, 100).toShape().pathFind(MPoint(10, 10), MPoint(90, 90)).toString()
         )
         assertEquals(
             "[(10, 10), (100, 50), (120, 52)]",
             (MRectangle(0, 0, 100, 100).toShape() union MRectangle(100, 50, 50, 50).toShape()).pathFind(
-                IPoint(10, 10),
-                IPoint(120, 52)
+                MPoint(10, 10),
+                MPoint(120, 52)
             ).toString()
         )
     }

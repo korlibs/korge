@@ -4,15 +4,14 @@ package com.soywiz.korma.geom
 
 import com.soywiz.kds.pack.*
 import com.soywiz.kmem.*
-import com.soywiz.korma.internal.niceStr
+import com.soywiz.korma.internal.*
 import com.soywiz.korma.interpolation.*
-import com.soywiz.korma.math.isAlmostEquals
+import com.soywiz.korma.math.*
 import com.soywiz.korma.math.isAlmostZero
-import com.soywiz.korma.math.roundDecimalPlaces
 import kotlin.math.*
 
 typealias Vector2D = Point
-typealias IVector2D = IPoint
+typealias IVector2D = MPoint
 typealias MVector2D = MPoint
 
 //////////////////////////////
@@ -45,7 +44,7 @@ inline class Point internal constructor(internal val raw: Float2Pack) {
     constructor(x: Float, y: Int) : this(Float2Pack(x.toFloat(), y.toFloat()))
     constructor(x: Int, y: Float) : this(Float2Pack(x.toFloat(), y.toFloat()))
 
-    constructor(p: IPoint) : this(p.x.toFloat(), p.y.toFloat())
+    constructor(p: MPoint) : this(p.x.toFloat(), p.y.toFloat())
     //constructor(p: Point) : this(p.raw)
     constructor() : this(0f, 0f)
     //constructor(x: Int, y: Int) : this(x.toDouble(), y.toDouble())
@@ -211,9 +210,8 @@ inline class Point internal constructor(internal val raw: Float2Pack) {
     }
 }
 
-val MPoint.int get() = MPointInt(this.x.toInt(), this.y.toInt())
-val IPoint.int get() = MPointInt(this.x.toInt(), this.y.toInt())
-val IPointInt.double get() = IPoint(x.toDouble(), y.toDouble())
+@Deprecated("Allocates") val MPoint.int: MPointInt get() = MPointInt(this.x.toInt(), this.y.toInt())
+@Deprecated("Allocates") val MPointInt.double: MPoint get() = MPoint(x.toDouble(), y.toDouble())
 
 @Deprecated("")
 fun Point.toMPoint(out: MPoint = MPoint()): MPoint = out.setTo(x, y)
@@ -239,14 +237,14 @@ private inline fun getPolylineLength(size: Int, crossinline get: (n: Int, (x: Do
 }
 
 fun PointList.getPolylineLength(): Double = getPolylineLength(size) { n, func -> func(getX(n).toDouble(), getY(n).toDouble()) }
-fun List<IPoint>.getPolylineLength(): Double = getPolylineLength(size) { n, func -> func(this[n].x, this[n].y) }
+fun List<MPoint>.getPolylineLength(): Double = getPolylineLength(size) { n, func -> func(this[n].x, this[n].y) }
 
 fun List<MPoint>.bounds(out: MRectangle = MRectangle(), bb: BoundsBuilder = BoundsBuilder()): MRectangle = bb.add(this).getBounds(out)
-fun Iterable<IPoint>.bounds(out: MRectangle = MRectangle(), bb: BoundsBuilder = BoundsBuilder()): MRectangle = bb.add(this).getBounds(out)
+fun Iterable<MPoint>.bounds(out: MRectangle = MRectangle(), bb: BoundsBuilder = BoundsBuilder()): MRectangle = bb.add(this).getBounds(out)
 
-fun min(a: IPoint, b: IPoint, out: MPoint = MPoint()): MPoint = out.setTo(kotlin.math.min(a.x, b.x), kotlin.math.min(a.y, b.y))
-fun max(a: IPoint, b: IPoint, out: MPoint = MPoint()): MPoint = out.setTo(kotlin.math.max(a.x, b.x), kotlin.math.max(a.y, b.y))
-fun IPoint.clamp(min: Double, max: Double, out: MPoint = MPoint()): MPoint = out.setTo(x.clamp(min, max), y.clamp(min, max))
+fun min(a: MPoint, b: MPoint, out: MPoint = MPoint()): MPoint = out.setTo(kotlin.math.min(a.x, b.x), kotlin.math.min(a.y, b.y))
+fun max(a: MPoint, b: MPoint, out: MPoint = MPoint()): MPoint = out.setTo(kotlin.math.max(a.x, b.x), kotlin.math.max(a.y, b.y))
+fun MPoint.clamp(min: Double, max: Double, out: MPoint = MPoint()): MPoint = out.setTo(x.clamp(min, max), y.clamp(min, max))
 
 fun Point.toInt(): PointInt = PointInt(x.toInt(), y.toInt())
 fun Point.toIntCeil(): PointInt = PointInt(x.toIntCeil(), y.toIntCeil())

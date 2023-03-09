@@ -283,7 +283,7 @@ object TriangulateSlow {
 
 fun VectorPath.triangulateSlow() = this.toPathList().triangulateSlow()
 
-fun List<IPointArrayList>.triangulateSlow(): TriangleList {
+fun List<MPointArrayList>.triangulateSlow(): TriangleList {
     val builder = TriangulateSlow.EdgeBuilder()
     for (path in this) {
         path.fastForEachWithIndex { index, x, y ->

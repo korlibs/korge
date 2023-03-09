@@ -1,18 +1,17 @@
 package com.soywiz.korma.geom.triangle
 
-import com.soywiz.korma.geom.IPoint
-import com.soywiz.korma.geom.MPoint
+import com.soywiz.korma.geom.*
 
 data class Edge internal constructor(
     val dummy: Boolean,
-    val p: IPoint,
-    val q: IPoint
+    val p: MPoint,
+    val q: MPoint
 ) {
     @Suppress("unused")
-    fun hasPoint(point: IPoint): Boolean = (p == point) || (q == point)
+    fun hasPoint(point: MPoint): Boolean = (p == point) || (q == point)
 
     companion object {
-        operator fun invoke(p1: IPoint, p2: IPoint): Edge {
+        operator fun invoke(p1: MPoint, p2: MPoint): Edge {
             val comp = MPoint.compare(p1, p2)
             if (comp == 0) throw Error("Repeat points")
             val p = if (comp < 0) p1 else p2
@@ -20,7 +19,7 @@ data class Edge internal constructor(
             return Edge(true, p, q)
         }
 
-        fun getUniquePointsFromEdges(edges: Iterable<Edge>): List<IPoint> =
+        fun getUniquePointsFromEdges(edges: Iterable<Edge>): List<MPoint> =
             edges.flatMap { listOf(it.p, it.q) }.distinct()
     }
 

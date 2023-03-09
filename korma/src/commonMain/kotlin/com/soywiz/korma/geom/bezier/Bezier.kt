@@ -102,7 +102,7 @@ class Bezier(
     fun setPoints(p0: Point, p1: Point, p2: Point): Bezier = _setPoints { add(p0); add(p1); add(p2) }
     fun setPoints(p0: Point, p1: Point, p2: Point, p3: Point): Bezier = _setPoints { add(p0); add(p1); add(p2); add(p3) }
 
-    fun setPoints(vararg points: IPoint): Bezier = _setPoints {
+    fun setPoints(vararg points: MPoint): Bezier = _setPoints {
         points.fastForEach { add(it) }
     }
 
@@ -1007,7 +1007,7 @@ class Bezier(
             //return ts + d2 * r
         }
 
-        private fun angle(o: IPoint, v1: IPoint, v2: IPoint): Double {
+        private fun angle(o: MPoint, v1: MPoint, v2: MPoint): Double {
             val dx1 = v1.x - o.x
             val dy1 = v1.y - o.y
             val dx2 = v2.x - o.x
@@ -1408,7 +1408,7 @@ class Bezier(
             return out.toDoubleArray()
         }
 
-        private fun makeline(p1: IPoint, p2: IPoint): Bezier =
+        private fun makeline(p1: MPoint, p2: MPoint): Bezier =
             Bezier(Point(p1.x, p1.y), Point((p1.x + p2.x) / 2, (p1.y + p2.y) / 2), Point(p2.x, p2.y))
 
         @OptIn(ExperimentalContracts::class)
@@ -1462,9 +1462,9 @@ class Bezier(
 
         @Deprecated("")
         fun cubicCalc(
-            p0: IPoint, p1: IPoint, p2: IPoint, p3: IPoint,
+            p0: MPoint, p1: MPoint, p2: MPoint, p3: MPoint,
             t: Double, target: MPoint = MPoint()
-        ): IPoint = cubicCalc(p0.x, p0.y, p1.x, p1.y, p2.x, p2.y, p3.x, p3.y, t, target)
+        ): MPoint = cubicCalc(p0.x, p0.y, p1.x, p1.y, p2.x, p2.y, p3.x, p3.y, t, target)
 
         @Deprecated("")
         fun cubicCalc(
@@ -1475,9 +1475,9 @@ class Bezier(
 
         @Deprecated("")
         fun quadCalc(
-            p0: IPoint, p1: IPoint, p2: IPoint,
+            p0: MPoint, p1: MPoint, p2: MPoint,
             t: Double, target: MPoint = MPoint()
-        ): IPoint = quadCalc(p0.x, p0.y, p1.x, p1.y, p2.x, p2.y, t, target)
+        ): MPoint = quadCalc(p0.x, p0.y, p1.x, p1.y, p2.x, p2.y, t, target)
 
         @Deprecated("")
         fun quadCalc(

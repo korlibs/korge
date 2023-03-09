@@ -40,23 +40,11 @@
 
 package com.soywiz.korma.geom.shape.ops.internal
 
-import com.soywiz.kds.FastArrayList
-import com.soywiz.korma.geom.BoundsBuilder
-import com.soywiz.korma.geom.IPoint
-import com.soywiz.korma.geom.MPoint
-import com.soywiz.korma.geom.MRectangle
-import kotlin.math.PI
-import kotlin.math.abs
-import kotlin.math.acos
-import kotlin.math.atan2
-import kotlin.math.max
-import kotlin.math.min
-import kotlin.math.round
-import kotlin.math.sign
-import kotlin.math.sqrt
-import kotlin.math.tan
+import com.soywiz.kds.*
+import com.soywiz.korma.geom.*
+import kotlin.math.*
 
-private fun vector2(v: IPoint) = IPoint(v.x, v.y)
+private fun vector2(v: MPoint) = MPoint(v.x, v.y)
 
 interface Clipper {
     enum class ClipType { INTERSECTION, UNION, DIFFERENCE, XOR }
@@ -474,7 +462,7 @@ abstract class ClipperBase protected constructor(val isPreserveCollinear: Boolea
 
     companion object {
 
-        private fun initEdge(e: Edge, eNext: Edge, ePrev: Edge, pt: IPoint) {
+        private fun initEdge(e: Edge, eNext: Edge, ePrev: Edge, pt: MPoint) {
             e.next = eNext
             e.prev = ePrev
             e.current = MPoint(pt)
@@ -493,7 +481,7 @@ abstract class ClipperBase protected constructor(val isPreserveCollinear: Boolea
             e.polyTyp = polyType
         }
 
-        private fun rangeTest(Pt: IPoint) {
+        private fun rangeTest(Pt: MPoint) {
             if (Pt.x > LOW_RANGE || Pt.y > LOW_RANGE || -Pt.x > LOW_RANGE || -Pt.y > LOW_RANGE) {
                 if (Pt.x > HI_RANGE || Pt.y > HI_RANGE || -Pt.x > HI_RANGE || -Pt.y > HI_RANGE) {
                     throw IllegalStateException("Coordinate outside allowed range")
@@ -523,7 +511,7 @@ class ClipperOffset(private val miterLimit: Double = 2.0, private val arcToleran
     private var srcPoly: Path? = null
     private var destPoly: Path? = null
 
-    private val normals: MutableList<IPoint> = FastArrayList()
+    private val normals: MutableList<MPoint> = FastArrayList()
     private var delta: Double = 0.0
     private var inA: Double = 0.0
     private var sin: Double = 0.0
@@ -711,9 +699,9 @@ class ClipperOffset(private val miterLimit: Double = 2.0, private val arcToleran
                     //re-build m_normals ...
                     val n = normals[len - 1]
                     for (j in len - 1 downTo 1) {
-                        normals[j] = IPoint(-normals[j - 1].x, -normals[j - 1].y)
+                        normals[j] = MPoint(-normals[j - 1].x, -normals[j - 1].y)
                     }
-                    normals[0] = IPoint(-n.x, -n.y)
+                    normals[0] = MPoint(-n.x, -n.y)
                     k[0] = 0
                     for (j in len - 1 downTo 0) {
                         offsetPoint(j, k, node.joinType!!)
@@ -740,7 +728,7 @@ class ClipperOffset(private val miterLimit: Double = 2.0, private val arcToleran
                         val j = len - 1
                         k[0] = len - 2
                         inA = 0.0
-                        normals[j] = IPoint(-normals[j].x, -normals[j].y)
+                        normals[j] = MPoint(-normals[j].x, -normals[j].y)
                         if (node.endType == Clipper.EndType.OPEN_SQUARE) {
                             doSquare(j, k[0])
                         } else {
@@ -750,10 +738,10 @@ class ClipperOffset(private val miterLimit: Double = 2.0, private val arcToleran
 
                     //re-build m_normals ...
                     for (j in len - 1 downTo 1) {
-                        normals[j] = IPoint(-normals[j - 1].x, -normals[j - 1].y)
+                        normals[j] = MPoint(-normals[j - 1].x, -normals[j - 1].y)
                     }
 
-                    normals[0] = IPoint(-normals[1].x, -normals[1].y)
+                    normals[0] = MPoint(-normals[1].x, -normals[1].y)
 
                     k[0] = len - 1
                     for (j in k[0] - 1 downTo 1) offsetPoint(j, k, node.joinType!!)
@@ -996,7 +984,7 @@ class DefaultClipper(initOptions: Int = 0) : ClipperBase(Clipper.PRESERVE_COLINE
     private inner class IntersectNode {
         var edge1: Edge? = null
         var edge2: Edge? = null
-        var pt: IPoint? = null
+        var pt: MPoint? = null
 
     }
 
@@ -1055,7 +1043,7 @@ class DefaultClipper(initOptions: Int = 0) : ClipperBase(Clipper.PRESERVE_COLINE
         }
     }
 
-    private fun addGhostJoin(Op: Path.OutPt, OffPt: IPoint) {
+    private fun addGhostJoin(Op: Path.OutPt, OffPt: MPoint) {
         val j = Path.Join()
         j.outPt1 = Op
         j.offPt = vector2(OffPt)
@@ -1064,7 +1052,7 @@ class DefaultClipper(initOptions: Int = 0) : ClipperBase(Clipper.PRESERVE_COLINE
 
     //------------------------------------------------------------------------------
 
-    private fun addJoin(Op1: Path.OutPt, Op2: Path.OutPt, OffPt: IPoint) {
+    private fun addJoin(Op1: Path.OutPt, Op2: Path.OutPt, OffPt: MPoint) {
         val j = Path.Join()
         j.outPt1 = Op1
         j.outPt2 = Op2
@@ -1074,7 +1062,7 @@ class DefaultClipper(initOptions: Int = 0) : ClipperBase(Clipper.PRESERVE_COLINE
 
     //------------------------------------------------------------------------------
 
-    private fun addLocalMaxPoly(e1: Edge, e2: Edge, pt: IPoint) {
+    private fun addLocalMaxPoly(e1: Edge, e2: Edge, pt: MPoint) {
         addOutPt(e1, pt)
         if (e2.windDelta == 0) {
             addOutPt(e2, pt)
@@ -1091,7 +1079,7 @@ class DefaultClipper(initOptions: Int = 0) : ClipperBase(Clipper.PRESERVE_COLINE
 
     //------------------------------------------------------------------------------
 
-    private fun addLocalMinPoly(e1: Edge, e2: Edge, pt: IPoint): Path.OutPt {
+    private fun addLocalMinPoly(e1: Edge, e2: Edge, pt: MPoint): Path.OutPt {
         val result: Path.OutPt
         val e: Edge
         val prevE: Edge?
@@ -1125,7 +1113,7 @@ class DefaultClipper(initOptions: Int = 0) : ClipperBase(Clipper.PRESERVE_COLINE
         return result
     }
 
-    private fun addOutPt(e: Edge, pt: IPoint): Path.OutPt {
+    private fun addOutPt(e: Edge, pt: MPoint): Path.OutPt {
         val toFront = e.side == Edge.Side.LEFT
         if (e.outIdx < 0) {
             val outRec = createOutRec()
@@ -1898,7 +1886,7 @@ class DefaultClipper(initOptions: Int = 0) : ClipperBase(Clipper.PRESERVE_COLINE
 
     //------------------------------------------------------------------------------
 
-    private fun intersectEdges(e1: Edge, e2: Edge, pt: IPoint) {
+    private fun intersectEdges(e1: Edge, e2: Edge, pt: MPoint) {
         //e1 will be to the left of e2 BELOW the intersection. Therefore e1 is before
         //e2 in AEL except when e1 is being inserted at the intersection point ...
 
@@ -2388,11 +2376,11 @@ class DefaultClipper(initOptions: Int = 0) : ClipperBase(Clipper.PRESERVE_COLINE
                             return
                         }
                         dir[0] == Clipper.Direction.LEFT_TO_RIGHT -> {
-                            val pt = IPoint(e.current.x, horzEdge.current.y)
+                            val pt = MPoint(e.current.x, horzEdge.current.y)
                             intersectEdges(horzEdge, e, pt)
                         }
                         else -> {
-                            val pt = IPoint(e.current.x, horzEdge.current.y)
+                            val pt = MPoint(e.current.x, horzEdge.current.y)
                             intersectEdges(e, horzEdge, pt)
                         }
                     }
@@ -2534,7 +2522,7 @@ class DefaultClipper(initOptions: Int = 0) : ClipperBase(Clipper.PRESERVE_COLINE
     }
 
     @Suppress("UNUSED_PARAMETER")
-    private fun setZ(pt: IPoint, e1: Edge, e2: Edge) {
+    private fun setZ(pt: MPoint, e1: Edge, e2: Edge) {
         //if (pt.z != 0L || zFillFunction == null) {
         //	return
         //} else if (pt == e1.bot) {
@@ -2846,7 +2834,7 @@ class DefaultClipper(initOptions: Int = 0) : ClipperBase(Clipper.PRESERVE_COLINE
             return false
         }
 
-        private fun isPointInPolygon(pt: IPoint, opp: Path.OutPt): Int {
+        private fun isPointInPolygon(pt: MPoint, opp: Path.OutPt): Int {
             var op = opp
             //returns 0 if false, +1 if true, -1 if pt ON polygon boundary
             //See "The Point in Polygon Problem for Arbitrary Polygons" by Hormann & Agathos
@@ -2895,7 +2883,7 @@ class DefaultClipper(initOptions: Int = 0) : ClipperBase(Clipper.PRESERVE_COLINE
             op_1b: Path.OutPt,
             op_2: Path.OutPt,
             op_2b: Path.OutPt,
-            Pt: IPoint,
+            Pt: MPoint,
             DiscardLeft: Boolean
         ): Boolean {
             var op1 = op_1
@@ -3043,7 +3031,7 @@ class DefaultClipper(initOptions: Int = 0) : ClipperBase(Clipper.PRESERVE_COLINE
                 //DiscardLeftSide: when overlapping edges are joined, a spike will created
                 //which needs to be cleaned up. However, we don't want Op1 or Op2 caught up
                 //on the discard Side as either may still be needed for other joins ...
-                val pt: IPoint
+                val pt: MPoint
                 val discardLeftSide: Boolean
                 when {
                     op1.pt.x in left..right -> {
@@ -3432,23 +3420,23 @@ class Edge {
  * @author Tobias Mahlmann
 </IntPoint> */
 @Suppress("unused")
-class Path private constructor(private val al: FastArrayList<IPoint>) : MutableList<IPoint> by al, RandomAccess {
-    constructor(initialCapacity: Int = 0) : this(FastArrayList<IPoint>(initialCapacity))
+class Path private constructor(private val al: FastArrayList<MPoint>) : MutableList<MPoint> by al, RandomAccess {
+    constructor(initialCapacity: Int = 0) : this(FastArrayList<MPoint>(initialCapacity))
 
     //val orientation get() = if (al.size >= 3) Orientation.orient2d(al[0], al[1], al[2]) else Orientation.COLLINEAR
 
-    fun add(x: Int, y: Int) = add(IPoint(x, y))
-    fun add(x: Double, y: Double) = add(IPoint(x, y))
+    fun add(x: Int, y: Int) = add(MPoint(x, y))
+    fun add(x: Double, y: Double) = add(MPoint(x, y))
 
-    constructor(vararg points: IPoint) : this(points.size) {
+    constructor(vararg points: MPoint) : this(points.size) {
         addAll(points)
     }
 
-    constructor(points: List<IPoint>) : this(points.size) {
+    constructor(points: List<MPoint>) : this(points.size) {
         addAll(points)
     }
 
-    constructor(points: Iterable<IPoint>) : this() {
+    constructor(points: Iterable<MPoint>) : this() {
         addAll(points)
     }
 
@@ -3457,12 +3445,12 @@ class Path private constructor(private val al: FastArrayList<IPoint>) : MutableL
     class Join(
         var outPt1: OutPt? = null,
         var outPt2: OutPt? = null,
-        var offPt: IPoint? = null
+        var offPt: MPoint? = null
     )
 
     class OutPt {
         var idx: Int = 0
-        var pt: IPoint = IPoint(0, 0)
+        var pt: MPoint = MPoint(0, 0)
         var next: OutPt? = null
         var prev: OutPt? = null
 
@@ -3688,7 +3676,7 @@ class Path private constructor(private val al: FastArrayList<IPoint>) : MutableL
         return result
     }
 
-    fun isPointInPolygon(pt: IPoint): Int {
+    fun isPointInPolygon(pt: MPoint): Int {
         //returns 0 if false, +1 if true, -1 if pt ON polygon boundary
         //See "The Point in Polygon Problem for Arbitrary Polygons" by Hormann & Agathos
         //http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.88.5498&rep=rep1&type=pdf
@@ -3731,7 +3719,7 @@ class Path private constructor(private val al: FastArrayList<IPoint>) : MutableL
 
     fun orientation(): Boolean = area() >= 0
 
-    fun translatePath(delta: IPoint): Path {
+    fun translatePath(delta: MPoint): Path {
         val outPath = Path(size)
         for (i in this) outPath.add(i.x + delta.x, i.y + delta.y)
         return outPath
@@ -3841,14 +3829,14 @@ class Paths private constructor(private val al: FastArrayList<Path>) : MutableLi
 }
 
 internal object Points {
-    fun arePointsClose(pt1: IPoint, pt2: IPoint, distSqrd: Double): Boolean {
+    fun arePointsClose(pt1: MPoint, pt2: MPoint, distSqrd: Double): Boolean {
         val dx = pt1.x - pt2.x
         val dy = pt1.y - pt2.y
         return dx * dx + dy * dy <= distSqrd
     }
 
     @Suppress("MemberVisibilityCanBePrivate")
-    fun distanceFromLineSqrd(pt: IPoint, ln1: IPoint, ln2: IPoint): Double {
+    fun distanceFromLineSqrd(pt: MPoint, ln1: MPoint, ln2: MPoint): Double {
         //The equation of a line in general form (Ax + By + C = 0)
         //given 2 points (x�,y�) & (x�,y�) is ...
         //(y� - y�)x + (x� - x�)y + (y� - y�)x� - (x� - x�)y� = 0
@@ -3862,31 +3850,31 @@ internal object Points {
         return c * c / (a * a + b * b)
     }
 
-    fun getDeltaX(pt1: IPoint, pt2: IPoint): Double =
+    fun getDeltaX(pt1: MPoint, pt2: MPoint): Double =
         if (pt1.y == pt2.y) Edge.HORIZONTAL else (pt2.x - pt1.x) / (pt2.y - pt1.y)
 
-    fun getUnitNormal(pt1: IPoint, pt2: IPoint): IPoint {
+    fun getUnitNormal(pt1: MPoint, pt2: MPoint): MPoint {
         val dx = (pt2.x - pt1.x)
         val dy = (pt2.y - pt1.y)
-        if (dx == 0.0 && dy == 0.0) return IPoint(0, 0)
+        if (dx == 0.0 && dy == 0.0) return MPoint(0, 0)
         val f = 1 * 1.0 / sqrt(dx * dx + dy * dy)
-        return IPoint(dy * f, -dx * f)
+        return MPoint(dy * f, -dx * f)
     }
 
-    fun isPt2BetweenPt1AndPt3(pt1: IPoint, pt2: IPoint, pt3: IPoint): Boolean = when {
+    fun isPt2BetweenPt1AndPt3(pt1: MPoint, pt2: MPoint, pt3: MPoint): Boolean = when {
         (pt1 == pt3 || pt1 == pt2 || pt3 == pt2) -> false
         (pt1.x != pt3.x) -> (pt2.x > pt1.x == pt2.x < pt3.x)
         else -> (pt2.y > pt1.y == pt2.y < pt3.y)
     }
 
-    fun slopesEqual(pt1: IPoint, pt2: IPoint, pt3: IPoint): Boolean =
+    fun slopesEqual(pt1: MPoint, pt2: MPoint, pt3: MPoint): Boolean =
         (pt1.y - pt2.y) * (pt2.x - pt3.x) - (pt1.x - pt2.x) * (pt2.y - pt3.y) == 0.0
 
     @Suppress("unused")
-    fun slopesEqual(pt1: IPoint, pt2: IPoint, pt3: IPoint, pt4: IPoint): Boolean =
+    fun slopesEqual(pt1: MPoint, pt2: MPoint, pt3: MPoint, pt4: MPoint): Boolean =
         (pt1.y - pt2.y) * (pt3.x - pt4.x) - (pt1.x - pt2.x) * (pt3.y - pt4.y) == 0.0
 
-    fun slopesNearCollinear(pt1: IPoint, pt2: IPoint, pt3: IPoint, distSqrd: Double): Boolean {
+    fun slopesNearCollinear(pt1: MPoint, pt2: MPoint, pt3: MPoint, distSqrd: Double): Boolean {
         //this function is more accurate when the point that's GEOMETRICALLY
         //between the other 2 points is the one that's tested for distance.
         //nb: with 'spikes', either pt1 or pt3 is geometrically between the other pts
@@ -3927,7 +3915,7 @@ open class PolyNode {
 
     val childCount: Int get() = childs.size
     fun getChildren(): List<PolyNode> = childs.toList()
-    val contour: List<IPoint> get() = polygon
+    val contour: List<MPoint> get() = polygon
 
     val next: PolyNode get() = if (!childs.isEmpty()) childs[0] else nextSiblingUp!!
     private val nextSiblingUp: PolyNode? get() = if (parent == null) null else if (index == parent!!.childs.size - 1) parent!!.nextSiblingUp else parent!!.childs[index + 1]

@@ -5,7 +5,7 @@ import com.soywiz.korma.geom.shape.*
 import com.soywiz.korma.geom.vector.*
 import kotlin.math.*
 
-fun Path.toPoints(): List<IPoint> = (0 until this.size).map { this@toPoints[it] }
+fun Path.toPoints(): List<MPoint> = (0 until this.size).map { this@toPoints[it] }
 
 fun Path.toShape2d(): Shape2d {
     if (this.size == 4) {

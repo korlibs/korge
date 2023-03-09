@@ -1,10 +1,10 @@
 package com.soywiz.korma.geom
 
 import com.soywiz.korma.annotations.*
-import com.soywiz.korma.internal.niceStr
+import com.soywiz.korma.internal.*
 import com.soywiz.korma.interpolation.*
-import com.soywiz.korma.math.almostEquals
-import kotlin.math.sqrt
+import com.soywiz.korma.math.*
+import kotlin.math.*
 
 @KormaValueApi
 data class Vector4(val x: Float, val y: Float, val z: Float, val w: Float)

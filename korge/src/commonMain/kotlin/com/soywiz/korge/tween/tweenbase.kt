@@ -80,7 +80,7 @@ fun V2Lazy(callback: () -> V2<*>): V2<Unit> {
     }
 }
 
-fun KMutableProperty0<IPoint>.incr(dx: Double, dy: Double): V2<IPoint> {
+fun KMutableProperty0<MPoint>.incr(dx: Double, dy: Double): V2<MPoint> {
     val start: MPoint = MPoint(0, 0)
     val value: MPoint = MPoint(0, 0)
     return V2(this, start, value, { it, _, _ ->
@@ -90,8 +90,8 @@ fun KMutableProperty0<IPoint>.incr(dx: Double, dy: Double): V2<IPoint> {
         start.copyFrom(this.get())
     })
 }
-fun KMutableProperty0<IPoint>.incr(dx: Number, dy: Number): V2<IPoint> = incr(dx.toDouble(), dy.toDouble())
-fun KMutableProperty0<IPoint>.incr(incr: IPoint): V2<IPoint> = incr(incr.x, incr.y)
+fun KMutableProperty0<MPoint>.incr(dx: Number, dy: Number): V2<MPoint> = incr(dx.toDouble(), dy.toDouble())
+fun KMutableProperty0<MPoint>.incr(incr: MPoint): V2<MPoint> = incr(incr.x, incr.y)
 
 inline fun KMutableProperty0<Double>.incr(incr: Number): V2<Double> = incr(incr.toDouble())
 fun KMutableProperty0<Double>.incr(incr: Double): V2<Double> = V2(this, 0.0, 0.0, interpolator = { it, start, _ ->
@@ -158,7 +158,7 @@ inline operator fun KMutableProperty0<Point>.get(path: VectorPath, includeLastPo
 
 @JvmName("getIPoint")
 @Deprecated("")
-inline operator fun KMutableProperty0<IPoint>.get(path: VectorPath, includeLastPoint: Boolean = path.isLastCommandClose, reversed: Boolean = false): V2<IPoint> = this[path.getCurves().getEquidistantPoints().also {
+inline operator fun KMutableProperty0<MPoint>.get(path: VectorPath, includeLastPoint: Boolean = path.isLastCommandClose, reversed: Boolean = false): V2<MPoint> = this[path.getCurves().getEquidistantPoints().also {
     //println("points.lastX=${points.lastX}, points.firstX=${points.firstX}")
     //println("points.lastY=${points.lastY}, points.firstY=${points.firstY}")
     if (!includeLastPoint && it.last.isAlmostEquals(it.first)) {
@@ -172,7 +172,7 @@ inline operator fun KMutableProperty0<IPoint>.get(path: VectorPath, includeLastP
 
 @JvmName("getIPoint")
 @Deprecated("")
-inline operator fun KMutableProperty0<IPoint>.get(range: PointList): V2<IPoint> {
+inline operator fun KMutableProperty0<MPoint>.get(range: PointList): V2<MPoint> {
     val temp = MPoint()
     return V2(
         this, temp, temp, { ratio, _, _ ->

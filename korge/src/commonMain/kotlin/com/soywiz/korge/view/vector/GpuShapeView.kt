@@ -256,20 +256,20 @@ open class GpuShapeView(
     }
 
     class SegmentInfo {
-        lateinit var s: IPoint // start
-        lateinit var e: IPoint // end
+        lateinit var s: MPoint // start
+        lateinit var e: MPoint // end
         lateinit var line: MLine
         var angleSE: Angle = 0.degrees
         var angleSE0: Angle = 0.degrees
         var angleSE1: Angle = 0.degrees
-        lateinit var s0: IPoint
-        lateinit var s1: IPoint
-        lateinit var e0: IPoint
-        lateinit var e1: IPoint
-        lateinit var e0s: IPoint
-        lateinit var e1s: IPoint
-        lateinit var s0s: IPoint
-        lateinit var s1s: IPoint
+        lateinit var s0: MPoint
+        lateinit var s1: MPoint
+        lateinit var e0: MPoint
+        lateinit var e1: MPoint
+        lateinit var e0s: MPoint
+        lateinit var e1s: MPoint
+        lateinit var s0s: MPoint
+        lateinit var s1s: MPoint
 
         fun p(index: Int) = if (index == 0) s else e
         fun p0(index: Int) = if (index == 0) s0 else e0
@@ -297,7 +297,7 @@ open class GpuShapeView(
         }
     }
 
-    private fun pointsAdd(p1: IPoint, p2: IPoint, lineWidth: Float) {
+    private fun pointsAdd(p1: MPoint, p2: MPoint, lineWidth: Float) {
         //val lineWidth = 0f
         val p1x = p1.x.toFloat()
         val p1y = p1.y.toFloat()
@@ -308,11 +308,11 @@ open class GpuShapeView(
     }
 
     private fun pointsAddCubicOrLine(
-        scope: PointPool, fix: IPoint,
-        p0: IPoint, p0s: IPoint, p1s: IPoint, p1: IPoint,
-        lineWidth: Double,
-        reverse: Boolean = false,
-        start: Boolean = true,
+            scope: PointPool, fix: MPoint,
+            p0: MPoint, p0s: MPoint, p1s: MPoint, p1: MPoint,
+            lineWidth: Double,
+            reverse: Boolean = false,
+            start: Boolean = true,
     ) {
         val NPOINTS = 15
         scope.apply {

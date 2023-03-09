@@ -2,8 +2,8 @@ package com.soywiz.korma.geom.bezier
 
 import com.soywiz.kmem.*
 import com.soywiz.korma.geom.*
-import com.soywiz.korma.internal.niceStr
-import com.soywiz.korma.math.roundDecimalPlaces
+import com.soywiz.korma.internal.*
+import com.soywiz.korma.math.*
 
 data class CurveSplit(
     val base: Bezier,

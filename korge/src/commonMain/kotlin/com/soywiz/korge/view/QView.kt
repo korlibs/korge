@@ -7,7 +7,7 @@ import com.soywiz.korge.input.onClick
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korma.geom.Angle
-import com.soywiz.korma.geom.IPoint
+import com.soywiz.korma.geom.MPoint
 import com.soywiz.korma.geom.degrees
 import kotlin.reflect.KMutableProperty1
 

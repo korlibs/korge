@@ -1,6 +1,6 @@
 package com.soywiz.korma.triangle.pathfind
 
-import com.soywiz.korma.geom.IPoint
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.triangle.Edge
 import com.soywiz.korma.geom.triangle.Triangle
 import com.soywiz.korma.geom.triangle.containsPoint
@@ -50,9 +50,9 @@ class SpatialMesh {
         throw Error("Point2d not inside triangles")
     }
 
-    fun spatialNodeFromPoint(point: IPoint): Node = spatialNodeFromPoint(point.x, point.y)
+    fun spatialNodeFromPoint(point: MPoint): Node = spatialNodeFromPoint(point.x, point.y)
 
-    fun getNodeAt(point: IPoint): Node? {
+    fun getNodeAt(point: MPoint): Node? {
         for (node in nodes) if (node.triangle!!.containsPoint(point)) return node
         return null
     }
@@ -77,7 +77,7 @@ class SpatialMesh {
         return mapTriangleToSpatialNode[triangle]
     }
 
-    fun getNodeEdge(p0: IPoint, p1: IPoint): NodeEdge {
+    fun getNodeEdge(p0: MPoint, p1: MPoint): NodeEdge {
         val edge = Edge(p0, p1)
         return nodeEdges.getOrPut(edge) { NodeEdge(edge) }
     }

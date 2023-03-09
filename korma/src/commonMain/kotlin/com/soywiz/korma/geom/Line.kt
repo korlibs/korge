@@ -1,8 +1,8 @@
 package com.soywiz.korma.geom
 
-import com.soywiz.korma.math.almostEquals
 import com.soywiz.kmem.clamp
 import com.soywiz.korma.annotations.*
+import com.soywiz.korma.math.*
 import com.soywiz.korma.math.isAlmostZero
 
 @KormaValueApi
@@ -126,7 +126,7 @@ data class MLine(override var a: Point, override var b: Point) : ILine {
     }
 
     fun setTo(a: Point, b: Point): MLine = setTo(a.xD, a.yD, b.xD, b.yD)
-    fun setTo(a: IPoint, b: IPoint): MLine = setTo(a.x, a.y, b.x, b.y)
+    fun setTo(a: MPoint, b: MPoint): MLine = setTo(a.x, a.y, b.x, b.y)
 
     fun setTo(x0: Double, y0: Double, x1: Double, y1: Double): MLine {
         a = Point(x0, y0)
@@ -174,7 +174,7 @@ data class MLine(override var a: Point, override var b: Point) : ILine {
     }
 
     constructor() : this(Point(), Point())
-    constructor(p0: IPoint, p1: IPoint) : this(p0.point, p1.point)
+    constructor(p0: MPoint, p1: MPoint) : this(p0.point, p1.point)
     constructor(x0: Double, y0: Double, x1: Double, y1: Double) : this(MPoint(x0, y0), MPoint(x1, y1))
     constructor(x0: Float, y0: Float, x1: Float, y1: Float) : this(MPoint(x0, y0), MPoint(x1, y1))
     constructor(x0: Int, y0: Int, x1: Int, y1: Int) : this(MPoint(x0, y0), MPoint(x1, y1))
@@ -241,8 +241,8 @@ data class MLine(override var a: Point, override var b: Point) : ILine {
         fun fromPointAndDirection(point: Point, direction: Point, scale: Double = 1.0, out: MLine = MLine()): MLine =
             out.setTo(point.xD, point.yD, point.x + direction.x * scale, point.y + direction.y * scale)
         fun fromPointAngle(point: Point, angle: Angle, length: Double = 1.0, out: MLine = MLine()): MLine = out.setToPolar(point.xD, point.yD, angle, length)
-        fun fromPointAndDirection(point: IPoint, direction: IPoint, scale: Double = 1.0, out: MLine = MLine()): MLine = out.setTo(point.x, point.y, point.x + direction.x * scale, point.y + direction.y * scale)
-        fun fromPointAngle(point: IPoint, angle: Angle, length: Double = 1.0, out: MLine = MLine()): MLine = out.setToPolar(point.x, point.y, angle, length)
+        fun fromPointAndDirection(point: MPoint, direction: MPoint, scale: Double = 1.0, out: MLine = MLine()): MLine = out.setTo(point.x, point.y, point.x + direction.x * scale, point.y + direction.y * scale)
+        fun fromPointAngle(point: MPoint, angle: Angle, length: Double = 1.0, out: MLine = MLine()): MLine = out.setToPolar(point.x, point.y, angle, length)
 
         fun length(Ax: Double, Ay: Double, Bx: Double, By: Double): Double = kotlin.math.hypot(Bx - Ax, By - Ay)
 

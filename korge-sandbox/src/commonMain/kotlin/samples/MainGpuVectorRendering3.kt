@@ -17,7 +17,7 @@ import com.soywiz.korma.geom.vector.*
 
 class MainGpuVectorRendering3 : Scene() {
     override suspend fun SContainer.sceneMain() {
-        fun Container.debugPath(desc: String, pos: IPoint, strokeInfo: StrokeInfo, path: VectorPath) {
+        fun Container.debugPath(desc: String, pos: MPoint, strokeInfo: StrokeInfo, path: VectorPath) {
             val pointsList = path.toCurves().toStrokePointsList(strokeInfo, generateDebug = true, mode = StrokePointsMode.NON_SCALABLE_POS)
 
             gpuShapeView({
@@ -55,7 +55,7 @@ class MainGpuVectorRendering3 : Scene() {
         ).withIndex()) {
             val sx = index * 430 + 15
 
-            fun getPos(x: Int, y: Int): IPoint {
+            fun getPos(x: Int, y: Int): MPoint {
                 return MPoint(sx + x * 120, 50 + y * 130)
             }
 

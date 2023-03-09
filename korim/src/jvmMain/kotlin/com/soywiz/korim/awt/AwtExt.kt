@@ -29,7 +29,7 @@ fun Bitmap32.toAwt(
 }
 
 @Suppress("unused")
-fun IPoint.toAwt(): Point = Point(x.toIntRound(), y.toIntRound())
+fun MPoint.toAwt(): Point = Point(x.toIntRound(), y.toIntRound())
 
 fun Bitmap.toAwt(
 	out: BufferedImage = BufferedImage(

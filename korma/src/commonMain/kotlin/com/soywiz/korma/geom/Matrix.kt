@@ -501,7 +501,7 @@ data class MMatrix(
     )
 
     /** Transform point without translation */
-    fun deltaTransformPoint(point: IPoint, out: MPoint = MPoint()) = deltaTransformPoint(point.x, point.y, out)
+    fun deltaTransformPoint(point: MPoint, out: MPoint = MPoint()) = deltaTransformPoint(point.x, point.y, out)
     fun deltaTransformPoint(x: Float, y: Float, out: MPoint = MPoint()): MPoint = deltaTransformPoint(x.toDouble(), y.toDouble(), out)
     fun deltaTransformPoint(x: Double, y: Double, out: MPoint = MPoint()): MPoint {
         out.x = deltaTransformX(x, y)
@@ -666,7 +666,7 @@ data class MMatrix(
     // Transform points
     fun transform(p: Point): Point = Point(transformX(p.x, p.y), transformY(p.x, p.y))
     @Deprecated("")
-    fun transform(p: IPoint, out: MPoint = MPoint()): MPoint = transform(p.x, p.y, out)
+    fun transform(p: MPoint, out: MPoint = MPoint()): MPoint = transform(p.x, p.y, out)
     @Deprecated("")
     fun transform(px: Double, py: Double, out: MPoint = MPoint()): MPoint = out.setTo(transformX(px, py), transformY(px, py))
     @Deprecated("")
@@ -675,7 +675,7 @@ data class MMatrix(
     fun transform(px: Int, py: Int, out: MPoint = MPoint()): MPoint = out.setTo(transformX(px, py), transformY(px, py))
 
     @Deprecated("")
-    fun transformX(p: IPoint): Double = transformX(p.x, p.y)
+    fun transformX(p: MPoint): Double = transformX(p.x, p.y)
     @Deprecated("")
     fun transformX(px: Double, py: Double): Double = this.a * px + this.c * py + this.tx
     @Deprecated("")
@@ -684,7 +684,7 @@ data class MMatrix(
     fun transformX(px: Int, py: Int): Double = this.a * px + this.c * py + this.tx
 
     @Deprecated("")
-    fun transformY(p: IPoint): Double = transformY(p.x, p.y)
+    fun transformY(p: MPoint): Double = transformY(p.x, p.y)
     @Deprecated("")
     fun transformY(px: Double, py: Double): Double = this.d * py + this.b * px + this.ty
     @Deprecated("")
@@ -693,7 +693,7 @@ data class MMatrix(
     fun transformY(px: Int, py: Int): Double = this.d * py + this.b * px + this.ty
 
     @Deprecated("")
-    fun transformXf(p: IPoint): Float = transformX(p.x, p.y).toFloat()
+    fun transformXf(p: MPoint): Float = transformX(p.x, p.y).toFloat()
     @Deprecated("")
     fun transformXf(px: Double, py: Double): Float = transformX(px, py).toFloat()
     @Deprecated("")
@@ -702,7 +702,7 @@ data class MMatrix(
     fun transformXf(px: Int, py: Int): Float = transformX(px.toDouble(), py.toDouble()).toFloat()
 
     @Deprecated("")
-    fun transformYf(p: IPoint): Float = transformY(p.x, p.y).toFloat()
+    fun transformYf(p: MPoint): Float = transformY(p.x, p.y).toFloat()
     @Deprecated("")
     fun transformYf(px: Double, py: Double): Float = transformY(px, py).toFloat()
     @Deprecated("")

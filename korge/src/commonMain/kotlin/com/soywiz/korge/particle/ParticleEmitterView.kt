@@ -18,7 +18,7 @@ import kotlin.random.*
 
 inline fun Container.particleEmitter(
     emitter: ParticleEmitter,
-    emitterPos: IPoint = IPoint(),
+    emitterPos: MPoint = MPoint(),
     time: TimeSpan = TimeSpan.NIL,
     localCoords: Boolean = false,
     random: Random = Random,
@@ -44,7 +44,7 @@ class ParticleEmitterView(
     @ViewProperty
     @ViewPropertySubTree
     private var emitter: ParticleEmitter,
-    emitterPos: IPoint = IPoint(),
+    emitterPos: MPoint = MPoint(),
     localCoords: Boolean = false,
     random: Random = Random,
 ) : View(), ViewFileRef by ViewFileRef.Mixin() {

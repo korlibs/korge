@@ -1,18 +1,9 @@
 package com.soywiz.korma.geom.binpack
 
-import com.soywiz.kds.FastArrayList
-import com.soywiz.kds.iterators.fastForEach
+import com.soywiz.kds.*
+import com.soywiz.kds.iterators.*
 import com.soywiz.korma.geom.*
-import kotlin.collections.Iterable
-import kotlin.collections.List
-import kotlin.collections.filterNotNull
-import kotlin.collections.hashMapOf
-import kotlin.collections.map
-import kotlin.collections.maxOrNull
-import kotlin.collections.plusAssign
 import kotlin.collections.set
-import kotlin.collections.sortedByDescending
-import kotlin.collections.toList
 
 class BinPacker(val width: Double, val height: Double, val algo: Algo = MaxRects(width, height)) {
     interface Algo {

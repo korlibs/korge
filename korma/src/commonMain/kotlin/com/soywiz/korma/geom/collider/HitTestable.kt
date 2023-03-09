@@ -1,8 +1,8 @@
 package com.soywiz.korma.geom.collider
 
-import com.soywiz.kds.iterators.fastForEach
+import com.soywiz.kds.iterators.*
 import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.vector.VectorPath
+import com.soywiz.korma.geom.vector.*
 
 fun interface HitTestable {
     fun hitTestAny(p: Point, direction: HitTestDirection): Boolean

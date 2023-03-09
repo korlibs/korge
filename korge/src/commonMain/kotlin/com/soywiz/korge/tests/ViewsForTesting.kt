@@ -80,7 +80,7 @@ open class ViewsForTesting(
 	val views get() = viewsLog.views
     val stage get() = views.stage
 	val stats get() = views.stats
-	val mouse: IPoint get() = input.mousePos.mutable
+	val mouse: MPoint get() = input.mousePos.mutable
 
     fun resizeGameWindow(width: Int, height: Int, scaleMode: ScaleMode = views.scaleMode, scaleAnchor: Anchor = views.scaleAnchor) {
         ag.mainFrameBuffer.setSize(0, 0, width, height)
@@ -105,7 +105,7 @@ open class ViewsForTesting(
         mouseClick(button)
     }
 
-    suspend fun mouseMoveTo(point: IPoint) = mouseMoveTo(point.x, point.y)
+    suspend fun mouseMoveTo(point: MPoint) = mouseMoveTo(point.x, point.y)
 
     /**
      * x, y in global/virtual coordinates

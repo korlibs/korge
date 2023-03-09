@@ -75,13 +75,13 @@ class BoundsBuilder {
     fun add(x: Float, y: Float, transform: MMatrix?): BoundsBuilder = add(x.toDouble(), y.toDouble(), transform)
 
     fun add(point: Point): BoundsBuilder = add(point.x, point.y)
-    fun add(point: IPoint): BoundsBuilder = add(point.x, point.y)
-    fun add(point: IPoint, transform: MMatrix): BoundsBuilder = add(point.x, point.y, transform)
+    fun add(point: MPoint): BoundsBuilder = add(point.x, point.y)
+    fun add(point: MPoint, transform: MMatrix): BoundsBuilder = add(point.x, point.y, transform)
 
     fun addRect(x: Int, y: Int, width: Int, height: Int): BoundsBuilder = addRect(x.toDouble(), y.toDouble(), width.toDouble(), height.toDouble())
     fun addRect(x: Double, y: Double, width: Double, height: Double): BoundsBuilder = add(x, y).add(x + width, y + height)
 
-    fun add(ps: Iterable<IPoint>): BoundsBuilder {
+    fun add(ps: Iterable<MPoint>): BoundsBuilder {
         for (p in ps) add(p)
         return this
     }
@@ -108,7 +108,7 @@ class BoundsBuilder {
         return this
     }
 
-    fun add(ps: Iterable<IPoint>, transform: MMatrix): BoundsBuilder {
+    fun add(ps: Iterable<MPoint>, transform: MMatrix): BoundsBuilder {
         for (p in ps) add(p, transform)
         return this
     }

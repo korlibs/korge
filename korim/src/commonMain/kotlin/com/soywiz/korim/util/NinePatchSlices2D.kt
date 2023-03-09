@@ -32,7 +32,7 @@ data class NinePatchSlices2D(val x: NinePatchSlices, val y: NinePatchSlices) {
         positions: List<PointArrayList>, oldSize: ISize, newSize: ISize
     ): List<PointArrayList> = positions.map { transform2D(it, oldSize, newSize) }
 
-    fun getScaledPointAt(point: IPoint, oldSize: ISize, newSize: ISize, out: MPoint = MPoint()): IPoint {
+    fun getScaledPointAt(point: MPoint, oldSize: ISize, newSize: ISize, out: MPoint = MPoint()): MPoint {
         val p = pointArrayListOf(point)
         transform2DInplace(p, oldSize, newSize)
         out.setTo(p.first)

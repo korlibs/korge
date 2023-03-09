@@ -68,7 +68,7 @@ open class Stage internal constructor(override val views: Views) : FixedSizeCont
 
     @Suppress("unused")
     @ViewProperty(min = 0.0, max = 2000.0, groupName = "Stage")
-    private var virtualSize: IPoint
+    private var virtualSize: MPoint
         get() = MPoint(views.virtualWidthDouble, views.virtualHeightDouble)
         set(value) {
             views.virtualWidthDouble = value.x

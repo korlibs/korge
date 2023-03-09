@@ -3,11 +3,10 @@ package com.soywiz.korma.geom
 import com.soywiz.kds.*
 import com.soywiz.kmem.*
 import com.soywiz.korma.annotations.*
-import com.soywiz.korma.internal.niceStr
+import com.soywiz.korma.internal.*
 import com.soywiz.korma.interpolation.*
 import com.soywiz.korma.math.*
-import kotlin.math.max
-import kotlin.math.min
+import kotlin.math.*
 
 @KormaValueApi
 data class Rectangle(
@@ -193,12 +192,12 @@ interface IRectangle {
     val width: Double
     val height: Double
 
-    val position: IPoint get() = MPoint(x, y)
+    val position: MPoint get() = MPoint(x, y)
     val size: ISize get() = MSize(width, height)
 
     operator fun contains(that: Point) = contains(that.x, that.y)
-    operator fun contains(that: IPoint) = contains(that.x, that.y)
-    operator fun contains(that: IPointInt) = contains(that.x, that.y)
+    operator fun contains(that: MPoint) = contains(that.x, that.y)
+    operator fun contains(that: MPointInt) = contains(that.x, that.y)
     fun contains(x: Double, y: Double) = (x >= left && x < right) && (y >= top && y < bottom)
     fun contains(x: Float, y: Float) = contains(x.toDouble(), y.toDouble())
     fun contains(x: Int, y: Int) = contains(x.toDouble(), y.toDouble())
@@ -297,7 +296,7 @@ interface IRectangle {
         //          ▲
         //          │
         //        point2
-        operator fun invoke(point1: IPoint, point2: IPoint): MRectangle {
+        operator fun invoke(point1: MPoint, point2: MPoint): MRectangle {
             val left = minOf(point1.x, point2.x)
             val top = minOf(point1.y, point2.y)
             val right = maxOf(point1.x, point2.x)
@@ -319,12 +318,12 @@ data class MRectangle(
         operator fun invoke(): MRectangle = MRectangle(0.0, 0.0, 0.0, 0.0)
         operator fun invoke(x: Int, y: Int, width: Int, height: Int): MRectangle = MRectangle(x.toDouble(), y.toDouble(), width.toDouble(), height.toDouble())
         operator fun invoke(x: Float, y: Float, width: Float, height: Float): MRectangle = MRectangle(x.toDouble(), y.toDouble(), width.toDouble(), height.toDouble())
-        operator fun invoke(topLeft: IPoint, size: ISize): MRectangle = MRectangle(topLeft.x, topLeft.y, size.width, size.height)
+        operator fun invoke(topLeft: MPoint, size: ISize): MRectangle = MRectangle(topLeft.x, topLeft.y, size.width, size.height)
         operator fun invoke(topLeft: Point, size: Size): MRectangle = MRectangle(topLeft.x, topLeft.y, size.width, size.height)
         fun fromBounds(left: Double, top: Double, right: Double, bottom: Double): MRectangle = MRectangle().setBounds(left, top, right, bottom)
         fun fromBounds(left: Int, top: Int, right: Int, bottom: Int): MRectangle = MRectangle().setBounds(left, top, right, bottom)
         fun fromBounds(left: Float, top: Float, right: Float, bottom: Float): MRectangle = MRectangle().setBounds(left, top, right, bottom)
-        fun fromBounds(point1: IPoint, point2: IPoint): MRectangle = IRectangle(point1, point2)
+        fun fromBounds(point1: MPoint, point2: MPoint): MRectangle = IRectangle(point1, point2)
         fun isContainedIn(a: IRectangle, b: IRectangle): Boolean = a.x >= b.x && a.y >= b.y && a.x + a.width <= b.x + b.width && a.y + a.height <= b.y + b.height
     }
 
@@ -573,9 +572,9 @@ sealed interface IRectangleInt {
     operator fun contains(v: SizeInt): Boolean = (v.width <= width) && (v.height <= height)
     operator fun contains(v: MSizeInt): Boolean = contains(v.immutable)
     operator fun contains(that: Point) = contains(that.x, that.y)
-    operator fun contains(that: IPoint) = contains(that.x, that.y)
+    operator fun contains(that: MPoint) = contains(that.x, that.y)
     operator fun contains(that: PointInt) = contains(that.x, that.y)
-    operator fun contains(that: IPointInt) = contains(that.x, that.y)
+    operator fun contains(that: MPointInt) = contains(that.x, that.y)
     fun contains(x: Double, y: Double) = (x >= left && x < right) && (y >= top && y < bottom)
     fun contains(x: Float, y: Float) = contains(x.toDouble(), y.toDouble())
     fun contains(x: Int, y: Int) = contains(x.toDouble(), y.toDouble())
@@ -606,7 +605,7 @@ inline class MRectangleInt(val rect: MRectangle) : IRectangleInt {
     fun getAnchorPosition(anchor: Anchor, out: MPointInt = MPointInt()): MPointInt =
         out.setTo((x + width * anchor.doubleX).toInt(), (y + height * anchor.doubleY).toInt())
 
-    val center: IPoint get() = anchor(0.5, 0.5).double
+    val center: MPoint get() = anchor(0.5, 0.5).double
     inline fun anchor(ax: Number, ay: Number): MPointInt = anchor(ax.toDouble(), ay.toDouble())
     fun anchor(ax: Double, ay: Double): MPointInt = MPointInt((x + width * ax).toInt(), (y + height * ay).toInt())
 
