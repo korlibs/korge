@@ -131,18 +131,14 @@ class LinuxSSLSocket {
         }
     }
 
-    private data class TransferRequest(val ssl: COpaquePointer?, val ptr: COpaquePointer?, val size: Int)
-
     suspend fun write(data: ByteArray, offset: Int = 0, size: Int = data.size - offset): Int {
         if (size <= 0) return 0
-        val worker = this.worker ?: return -1
-        return data.usePinned {
-            it.addressOf(offset)
-            worker.execute(TransferMode.SAFE, { TransferRequest(ssl, it.addressOf(offset), size) }) { (ssl, ptr, size) ->
-                OSSL.SSL_write(ssl, ptr, size.convert()).also {
+        return withContext(Dispatchers.CIO) {
+            data.usePinned { dataPin ->
+                OSSL.SSL_write(ssl, dataPin.addressOf(offset), size.convert()).also {
                     if (it < 0) error("Error writing SSL : $it")
                 }
-            }.await()
+            }
         }
     }
 
@@ -150,14 +146,12 @@ class LinuxSSLSocket {
 
     suspend fun read(data: ByteArray, offset: Int = 0, size: Int = data.size - offset): Int {
         if (size <= 0) return 0
-        val worker = this.worker ?: return -1
-        return data.usePinned {
-            it.addressOf(offset)
-            worker.execute(TransferMode.SAFE, { TransferRequest(ssl, it.addressOf(offset), size) }) { (ssl, ptr, size) ->
-                OSSL.SSL_read(ssl, ptr, size.convert()).also {
+        return withContext(Dispatchers.CIO) {
+            data.usePinned { dataPin ->
+                OSSL.SSL_read(ssl, dataPin.addressOf(offset), size.convert()).also {
                     if (it < 0) error("Error reading SSL : $it")
                 }
-            }.await()
+            }
         }
     }
 
