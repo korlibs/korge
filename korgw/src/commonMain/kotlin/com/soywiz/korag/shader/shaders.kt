@@ -1087,6 +1087,17 @@ typealias UniformBlock = ProgramLayout<Uniform>
 inline val ProgramLayout<Uniform>.uniforms: List<Uniform> get() = items
 inline val ProgramLayout<Uniform>.uniformPositions: IntArrayList get() = _positions
 
+class AGUniformBlockBuffer(val uniform: Uniform, val buffer: AGBuffer)
+
+// @TODO: WIP Implement this
+//class AGUniformBlocksBuffersRef(val buffers: Array<AGUniformBlockBuffer>, val indices: IntArray) {
+//    companion object {
+//        val EMPTY = AGUniformBlocksBuffersRef(emptyArray(), IntArray(0))
+//    }
+//}
+
+typealias AGUniformBlocksBuffersRef = AGUniformBlockValues
+
 class AGUniformBlockValues(val buffers: Array<UniformBlockBuffer>, val indices: IntArray) {
     companion object {
         val EMPTY = AGUniformBlockValues(emptyArray(), intArrayOf())

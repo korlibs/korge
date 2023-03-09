@@ -120,7 +120,7 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
         drawOffset: Int,
         blending: AGBlending,
         uniforms: AGUniformValues,
-        uniformBlocks: AGUniformBlockValues,
+        uniformBlocks: AGUniformBlocksBuffersRef,
         stencilRef: AGStencilReference,
         stencilOpFunc: AGStencilOpFunc,
         colorMask: AGColorMask,
@@ -423,7 +423,7 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
     val tempBufferBlockCount = Array(128) { tempBuffer.sliceWithSize(0, 4 * it) }
 
     // UBO
-    fun uniformsSet(uniforms: AGUniformValues, uniformBlocks: AGUniformBlockValues) {
+    fun uniformsSet(uniforms: AGUniformValues, uniformBlocks: AGUniformBlocksBuffersRef) {
         val glProgram: GLBaseProgram = currentProgram ?: return
 
         //println("uniformBlocks=${uniformBlocks}")
@@ -432,12 +432,12 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
 
         //for ((uniform, value) in uniforms) {
         textureUnit = -1
-        uniformBlocks.fastForEach { uniformsSet(glProgram, it) }
-        uniforms.fastForEach { uniformsSet(glProgram, it) }
+        uniformBlocks.fastForEach { uniformSet(glProgram, it) }
+        uniforms.fastForEach { uniformSet(glProgram, it) }
     }
 
     private var textureUnit: Int = -1
-    private fun uniformsSet(glProgram: GLBaseProgram, value: AGUniformValue) {
+    private fun uniformSet(glProgram: GLBaseProgram, value: AGUniformValue) {
         val uniform = value.uniform
         val uniformName = uniform.name
         val uniformType = uniform.type
