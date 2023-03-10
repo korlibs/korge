@@ -20,6 +20,7 @@ gson = "2.8.6"
 gradle-publish-plugin = "0.14.0"
 closure-compiler = "v20210808"
 # https://repo.maven.apache.org/maven2/org/jetbrains/intellij/deps/intellij-coverage-agent/
+ksp-processor-api = "1.8.10-1.0.9"
 
 [libraries]
 kotlin-serialization = { module = "org.jetbrains.kotlin:kotlin-serialization", version.ref = "kotlin" }
@@ -39,6 +40,7 @@ android-build-gradle-java11 = { module = "com.android.tools.build:gradle", versi
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 gradle-publish-plugin = { module = "com.gradle.publish:plugin-publish-plugin", version.ref = "gradle-publish-plugin" }
 closure-compiler = { module = "com.google.javascript:closure-compiler", version.ref = "closure-compiler" }
+ksp-processor-api = { module = "com.google.devtools.ksp:symbol-processing-api", version.ref = "ksp-processor-api" }
 
 [bundles]
 jna = ["jna-core", "jna-platform"]

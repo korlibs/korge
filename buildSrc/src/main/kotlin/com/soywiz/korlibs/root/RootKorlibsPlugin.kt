@@ -539,6 +539,7 @@ object RootKorlibsPlugin {
 
     fun Project.initKMM() {
         rootProject.subprojectsThis {
+
             val doConfigure = mustAutoconfigureKMM()
 
             if (doConfigure) {
@@ -1546,6 +1547,7 @@ val Project.isSample: Boolean get() = project.path.startsWith(":samples:") || pr
 fun Project.mustAutoconfigureKMM(): Boolean =
     project.name != "korge-gradle-plugin" &&
         project.name != "korge-reload-agent" &&
+        project.name != "alias-generator" &&
         project.hasBuildGradle()
 
 fun getKorgeProcessResourcesTaskName(target: org.jetbrains.kotlin.gradle.plugin.KotlinTarget, compilation: org.jetbrains.kotlin.gradle.plugin.KotlinCompilation<*>): String =
