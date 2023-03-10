@@ -1,15 +1,6 @@
 package com.soywiz.korag
 
-import com.soywiz.korag.shader.Attribute
-import com.soywiz.korag.shader.FragmentShader
-import com.soywiz.korag.shader.Precision
-import com.soywiz.korag.shader.Program
-import com.soywiz.korag.shader.Temp
-import com.soywiz.korag.shader.Uniform
-import com.soywiz.korag.shader.VarType
-import com.soywiz.korag.shader.Varying
-import com.soywiz.korag.shader.VertexLayout
-import com.soywiz.korag.shader.VertexShader
+import com.soywiz.korag.shader.*
 
 fun ProgramWithDefault(
 	vertex: VertexShader = DefaultShaders.VERTEX_DEFAULT,
@@ -39,6 +30,10 @@ object DefaultShaders {
 
 	val u_ProjMat: Uniform = Uniform("u_ProjMat", VarType.Mat4)
 	val u_ViewMat: Uniform = Uniform("u_ViewMat", VarType.Mat4)
+
+    val ub_ProjViewMatBlock = UniformBlock(u_ProjMat, u_ViewMat, fixedLocation = 0)
+    val ub_TexBlock = UniformBlock(u_Tex, fixedLocation = 1)
+
 	val a_Pos: Attribute = Attribute("a_Pos", VarType.Float2, normalized = false, precision = Precision.HIGH, fixedLocation = 0)
 	val a_Tex: Attribute = Attribute("a_Tex", VarType.Float2, normalized = false, precision = Precision.MEDIUM, fixedLocation = 1)
 	val a_Col: Attribute = Attribute("a_Col", VarType.Byte4, normalized = true, precision = Precision.LOW, fixedLocation = 2)

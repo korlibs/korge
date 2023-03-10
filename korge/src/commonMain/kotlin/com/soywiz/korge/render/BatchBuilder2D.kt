@@ -666,7 +666,7 @@ class BatchBuilder2D constructor(
             drawType = AGDrawType.TRIANGLES,
             blending = currentBlendMode.factors,
             uniforms = uniforms.cloneReadOnly(),
-            uniformBlocks = ctx.createStdUniformBlock(),
+            uniformBlocks = ctx.createCurrentUniformsRef(currentProgram, autoUpload = false),
             stencilOpFunc = stencilOpFunc,
             stencilRef = stencilRef,
             colorMask = colorMask,
@@ -702,6 +702,7 @@ class BatchBuilder2D constructor(
             //println("DRAW: $uniforms")
 
             //println("program=$program, currentTexN[0]=${currentTexN[0]}")
+            ctx.uploadUpdatedUniforms()
             ag.draw(AGMultiBatch(batches.toList()))
             batches.clear()
             beforeFlush(this)

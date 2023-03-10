@@ -65,7 +65,7 @@ class AGMetal(private val view: MTKView) : AG() {
                     currentBuffer += 1uL
                 }
 
-                uniformBlocks.fastForEach {
+                uniformBlocks.fastForEachUniform {
                     setVertexBuffer(it.data.toMetal.buffer, 0, currentBuffer)
                     currentBuffer += 1uL
                 }

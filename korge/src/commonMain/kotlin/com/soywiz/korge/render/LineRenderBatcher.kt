@@ -177,7 +177,7 @@ class LineRenderBatcher(
                 drawType = AGDrawType.LINES,
                 vertexCount = vertexCount,
                 uniforms = uniforms,
-                uniformBlocks = ctx.createStdUniformBlock(),
+                uniformBlocks = ctx.createCurrentUniformsRef(program),
                 blending = blendMode.factors
             )
         }
