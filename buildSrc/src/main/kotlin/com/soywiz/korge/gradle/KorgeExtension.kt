@@ -157,7 +157,7 @@ open class KorgeExtension(
      *
      * - mingwX64
      * - linuxX64
-     * - linuxArm32Hfp
+     * - linuxArm64
      * - macosX64
      * - macosArm64
      */

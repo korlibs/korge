@@ -17,7 +17,7 @@ val isLinux get() = Os.isFamily(Os.FAMILY_UNIX) && !isMacos
 val isArm get() = listOf("arm", "arm64", "aarch64").any { Os.isArch(it) }
 val inCI: Boolean get() = !System.getenv("CI").isNullOrBlank() || !System.getProperty("CI").isNullOrBlank()
 
-//val ALL_NATIVE_TARGETS = listOf("iosX64", "iosArm64", "mingwX64", "linuxX64", "linuxArm32Hfp", "macosX64", "macosArm64")
+//val ALL_NATIVE_TARGETS = listOf("iosX64", "iosArm64", "mingwX64", "linuxX64", "linuxArm64", "macosX64", "macosArm64")
 
 val KotlinTarget.isJvm get() = name in setOf("jvm")
 val KotlinTarget.isJs get() = name in setOf("js")
@@ -42,7 +42,6 @@ val KotlinTarget.isX64: Boolean get() = this.name.endsWith("X64")
 val KotlinTarget.isX86: Boolean get() = this.name.endsWith("X86")
 val KotlinTarget.isArm32: Boolean get() = this.name.endsWith("Arm32")
 val KotlinTarget.isArm64: Boolean get() = this.name.endsWith("Arm64") || !this.name.endsWith("SimulatorArm64")
-val KotlinTarget.isArm32Hfp: Boolean get() = this.name.endsWith("Arm32Hfp")
 val KotlinTarget.isSimulatorArm64: Boolean get() = this.name.endsWith("SimulatorArm64")
 
 val KotlinTarget.isLinuxX64: Boolean get() = this.name == "linuxX64"
