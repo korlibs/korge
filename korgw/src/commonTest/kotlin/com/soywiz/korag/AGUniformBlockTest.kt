@@ -78,6 +78,10 @@ class AGUniformBlockTest {
         data2[DefaultShaders.ub_TexBlock].push { it[DefaultShaders.u_Tex].set(4) }
 
         assertEquals("01000000020000000300000004000000", data2[DefaultShaders.ub_TexBlock].upload().agBuffer.mem?.hex())
+
+        data2[DefaultShaders.ub_TexBlock].reset()
+
+        assertEquals("", data2[DefaultShaders.ub_TexBlock].upload().agBuffer.mem?.hex())
     }
 }
 
