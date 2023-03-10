@@ -1,3 +1,7 @@
+plugins {
+    id("com.google.devtools.ksp")
+}
+
 description = "Big Integers and decimals in Kotlin Common"
 
 project.ext.props = [
@@ -9,5 +13,18 @@ project.ext.props = [
     "project.author.email" : "soywiz@gmail.com",
 ]
 
+// Makes generated code visible to IDE
+/*kotlin.sourceSets.main {
+    kotlin.srcDirs(
+        file("$buildDir/generated/ksp/main/kotlin"),
+    )
+}*/
+
+ksp {
+    arg("sourcePackage", "korlibs.bignumber")
+    arg("targetPackage", "com.soywiz.kbignum")
+}
+
 dependencies {
+    add("kspCommonMainMetadata", project(":processor:alias-generator"))
 }
