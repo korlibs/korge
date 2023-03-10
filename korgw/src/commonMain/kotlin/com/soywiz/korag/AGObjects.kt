@@ -29,8 +29,12 @@ open class AGObject : Closeable {
 }
 
 class AGBuffer : AGObject() {
-    internal var mem: Buffer? = null
+    var mem: Buffer? = null
+        private set
 
+    // @TODO: Allow upload range in addition to the full buffer.
+    // @TODO: This will allow to upload chunks of uniform buffers for example.
+    // glBufferData & glBufferSubData
     fun upload(data: ByteArray, offset: Int = 0, length: Int = data.size - offset): AGBuffer = upload(Int8Buffer(data, offset, length).buffer)
     fun upload(data: FloatArray, offset: Int = 0, length: Int = data.size - offset): AGBuffer = upload(Float32Buffer(data, offset, length).buffer)
     fun upload(data: IntArray, offset: Int = 0, length: Int = data.size - offset): AGBuffer = upload(Int32Buffer(data, offset, length).buffer)

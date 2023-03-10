@@ -68,26 +68,6 @@ class RenderContext constructor(
         }
     }
 
-    class StdUniformBuffers {
-        val projMatrixBuffer = UniformBlockBuffer(DefaultShaders.ub_ProjViewMatBlock, 16 * 1024)
-        val viewMatrixValue = projMatrixBuffer.data[DefaultShaders.u_ViewMat]
-        val projMatrixValue = projMatrixBuffer.data[DefaultShaders.u_ProjMat]
-
-        fun reset() {
-            projMatrixBuffer.reset()
-        }
-
-        fun createBlockValues(): AGUniformBlockValues {
-            return AGUniformBlockValues.fromLastIndex(arrayOf(projMatrixBuffer))
-        }
-    }
-
-    val stdUniformBuffers = ReturnablePool({ it.reset() }) { StdUniformBuffers() }
-
-    fun createStdUniformBlock(): AGUniformBlockValues {
-        return stdUniformBuffers.current.createBlockValues()
-    }
-
     inline fun <T> setTemporalProjectionMatrixTransform(m: MMatrix, block: () -> T): T =
         this.projectionMatrixTransform.keepMatrix {
             flush()
@@ -110,9 +90,7 @@ class RenderContext constructor(
         //projMatrixBuffer.reset()
     }
 
-    fun resetStandardUniforms() {
-        stdUniformBuffers.reset()
-    }
+    val projViewMat by lazy { this[DefaultShaders.ub_ProjViewMatBlock] }
 
     fun updateStandardUniforms() {
         //println("updateStandardUniforms: ag.currentSize(${ag.currentWidth}, ${ag.currentHeight}) : ${ag.currentFrameBuffer}")
@@ -123,12 +101,13 @@ class RenderContext constructor(
             projMat.multiply(projMat, projectionMatrixTransform.toMatrix3D(tempMat3d))
         }
 
+        //println("updateStandardUniforms!!!")
+
         // @TODO: Detect if there was a change
-        val curr = stdUniformBuffers.current
-        curr.projMatrixValue.set(projMat)
-        curr.viewMatrixValue.set(viewMat)
-        //projMatrixBuffer.putCurrent()
-        curr.projMatrixBuffer.putCurrentIfChanged() // Use this once reset is working
+        projViewMat.push(deduplicate = true) {
+            it[DefaultShaders.u_ProjMat].set(projMat)
+            it[DefaultShaders.u_ViewMat].set(viewMat)
+        }
 
         //uniforms[DefaultShaders.u_ProjMat] = projMat
         //uniforms[DefaultShaders.u_ViewMat] = viewMat
@@ -145,7 +124,9 @@ class RenderContext constructor(
                 temp2d.copyFrom(this.viewMat2D)
                 this.viewMat2D.copyFrom(matrix)
                 this.viewMat.copyFrom(matrix)
-                uniforms[DefaultShaders.u_ViewMat] = this.viewMat
+                this[DefaultShaders.ub_ProjViewMatBlock].push {
+                    it[DefaultShaders.u_ViewMat].set(this.viewMat)
+                }
                 //println("viewMat: $viewMat, matrix: $matrix")
                 try {
                     callback()
@@ -153,7 +134,8 @@ class RenderContext constructor(
                     flush()
                     this.viewMat.copyFrom(temp)
                     this.viewMat2D.copyFrom(temp2d)
-                    uniforms[DefaultShaders.u_ViewMat] = this.viewMat
+                    this[DefaultShaders.ub_ProjViewMatBlock].pop()
+                    //uniforms[DefaultShaders.u_ViewMat] = this.viewMat
                 }
             }
         }
@@ -426,7 +408,7 @@ class RenderContext constructor(
     val frameBufferStack = FastArrayList<AGFrameBuffer>()
 
     inline fun doRender(block: () -> Unit) {
-        resetStandardUniforms()
+        _buffers.reset()
         ag.startFrame()
         try {
             //mainRenderBuffer.init()
@@ -571,20 +553,19 @@ class RenderContext constructor(
         }
     }
 
-    private val _buffers = FastIdentityMap<Uniform, AGUniformBuffer>()
-    private val _programs = FastIdentityMap<Program, RenderProgram>()
+    @PublishedApi internal val _buffers = AGProgramWithUniforms.BufferCache()
+    private val _programs = FastIdentityMap<Program, AGProgramWithUniforms>()
 
-    fun getBuffer(uniform: Uniform): AGUniformBuffer = _buffers.getOrPut(uniform) { AGUniformBuffer(uniform, 1024) }
-    fun getRenderProgram(program: Program): RenderProgram = _programs.getOrPut(program) { RenderProgram(this, program) }
-}
+    operator fun get(uniform: UniformBlock): AGRichUniformBlockData = _buffers[uniform]
+    operator fun get(program: Program): AGProgramWithUniforms = _programs.getOrPut(program) { AGProgramWithUniforms(it, _buffers) }
 
-class RenderUniform(val uniform: Uniform, var buffer: AGUniformBuffer, var value: AGUniformValue, var index: Int)
-
-class RenderProgram(val ctx: RenderContext, val program: Program) {
-    val uniformBuffers = program.uniforms.map { RenderUniform(it, ctx.getBuffer(it), AGUniformValue(it), 0) }
-    val uniformsToBuffers = uniformBuffers.associateBy { it.uniform }
-
-    operator fun get(uniform: Uniform): AGUniformValue = uniformsToBuffers[uniform]?.value ?: error("Can't find uniform '$uniform'")
+    fun createCurrentUniformsRef(program: Program, autoUpload: Boolean = true): AGUniformBlocksBuffersRef {
+        if (autoUpload) uploadUpdatedUniforms()
+        return this[program].createRef()
+    }
+    fun uploadUpdatedUniforms() {
+        _buffers.uploadUpdatedBuffers()
+    }
 }
 
 inline fun <T : AG> testRenderContext(ag: T, bp: BoundsProvider = BoundsProvider.Base(), block: (RenderContext) -> Unit): T {

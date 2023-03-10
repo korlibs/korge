@@ -1110,6 +1110,9 @@ open class ProgramLayout<TVariable : VariableWithOffset>(
 
 class UniformBlock(uniforms: List<Uniform>, fixedLocation: Int) : ProgramLayout<Uniform>(uniforms, null, link = true, fixedLocation = fixedLocation) {
     constructor(vararg uniforms: Uniform, fixedLocation: Int) : this(uniforms.toList(), fixedLocation)
+    companion object {
+        val EMPTY = UniformBlock(fixedLocation = -1)
+    }
 }
 
 //typealias UniformLayout = ProgramLayout<Uniform>
@@ -1117,28 +1120,50 @@ class UniformBlock(uniforms: List<Uniform>, fixedLocation: Int) : ProgramLayout<
 inline val ProgramLayout<Uniform>.uniforms: List<Uniform> get() = items
 inline val ProgramLayout<Uniform>.uniformPositions: IntArrayList get() = _positions
 
-class AGUniformBlockBuffer(val uniform: Uniform, val buffer: AGBuffer)
+class AGUniformWithBuffer(val uniform: Uniform, val buffer: AGBuffer) {
+}
 
-// @TODO: WIP Implement this
-//class AGUniformBlocksBuffersRef(val buffers: Array<AGUniformBlockBuffer>, val indices: IntArray) {
-//    companion object {
-//        val EMPTY = AGUniformBlocksBuffersRef(emptyArray(), IntArray(0))
-//    }
-//}
+class AGUniformBlocksBuffersRef(val blocks: Array<UniformBlockData?>, val buffers: Array<AGBuffer?>, val valueIndices: IntArray) {
+    val size: Int get() = blocks.size
 
-typealias AGUniformBlocksBuffersRef = AGUniformBlockValues
+    companion object {
+        val EMPTY = AGUniformBlocksBuffersRef(emptyArray(), emptyArray(), IntArray(0))
+    }
+
+    inline fun fastForEachBlock(callback: (index: Int, block: UniformBlockData, buffer: AGBuffer?, valueIndex: Int) -> Unit) {
+        for (n in 0 until size) {
+            val block = blocks[n] ?: continue
+            callback(n, block, buffers[n], valueIndices[n])
+        }
+    }
+
+    // @TODO: This won't be required in backends supporting uniform buffers, since the buffer can just be uploaded
+    inline fun fastForEachUniform(callback: (AGUniformValue) -> Unit) {
+        //println("AGUniformBlocksBuffersRef: ${blocks.toList()} : ${valueIndices.toList()}")
+        fastForEachBlock { index, block, buffer, valueIndex ->
+            if (valueIndex >= 0) {
+                val byteOffset = valueIndex * block.block.totalSize
+                //println(" :: index=$index, block=$block, buffer=$buffer, mem=${buffer?.mem}, valueIndex=$valueIndex, byteOffset=$byteOffset")
+                block.readFrom(buffer?.mem ?: error("Memory is empty for block $block"), byteOffset)
+                block.values.fastForEach {
+                    callback(it)
+                }
+            }
+        }
+    }
+}
 
 class AGUniformBlockValues(val buffers: Array<UniformBlockBuffer>, val indices: IntArray) {
     companion object {
         val EMPTY = AGUniformBlockValues(emptyArray(), intArrayOf())
 
-        fun fromLastIndex(buffers: Array<UniformBlockBuffer>): AGUniformBlockValues = AGUniformBlockValues(buffers, IntArray(buffers.size) { buffers[it].lastIndex -1 })
+        fun fromLastIndex(buffers: Array<UniformBlockBuffer>): AGUniformBlockValues = AGUniformBlockValues(buffers, IntArray(buffers.size) { buffers[it].currentIndex -1 })
     }
     inline fun forEachBlock(block: (UniformBlockData) -> Unit) {
         for (n in 0 until kotlin.math.min(buffers.size, indices.size)) {
             val buffer = buffers[n]
             val index = indices[n]
-            if (index in 0 until buffer.lastIndex) block(buffer[index])
+            if (index in 0 until buffer.currentIndex) block(buffer[index])
         }
     }
 
@@ -1164,6 +1189,11 @@ open class UniformBlockData(val block: UniformBlock) {
         if (uniform.linkedLayout !== block) error("Uniform $uniform not part of $block")
         return values[uniform.linkedIndex]
     }
+    fun readFrom(buffer: Buffer, offset: Int) {
+        arraycopy(buffer, offset, data, 0, block.totalSize)
+    }
+
+    override fun toString(): String = "UniformBlockData($block)"
 }
 
 class UniformBlockBuffer(val block: UniformBlock, val initialCapacity: Int = 1) {
@@ -1217,11 +1247,11 @@ class UniformBlockBuffer(val block: UniformBlock, val initialCapacity: Int = 1) 
         return out
     }
 
-    var lastIndex = 0
+    var currentIndex = -1
         private set
 
     fun reset() {
-        lastIndex = 0
+        currentIndex = -1
     }
 
     inline fun put(block: UniformBlockData.() -> Unit): Int {
@@ -1230,8 +1260,8 @@ class UniformBlockBuffer(val block: UniformBlock, val initialCapacity: Int = 1) 
     }
 
     fun put(data: UniformBlockData, deduplicate: Boolean = false): Int {
-        if (deduplicate && lastIndex > 0 && equal(lastIndex - 1, this.data)) return lastIndex - 1
-        val index = lastIndex++
+        if (deduplicate && currentIndex >= 0 && equal(currentIndex, this.data)) return currentIndex
+        val index = ++currentIndex
         this[index] = data
         return index
     }
@@ -1239,5 +1269,5 @@ class UniformBlockBuffer(val block: UniformBlock, val initialCapacity: Int = 1) 
     fun putCurrent(deduplicate: Boolean = false): Int = put(this.data, deduplicate = deduplicate)
     fun putCurrentIfChanged(): Int = put(this.data, deduplicate = true)
 
-    override fun toString(): String = "UniformBlockBuffer($block, capacity=$capacity, lastIndex=$lastIndex)"
+    override fun toString(): String = "UniformBlockBuffer($block, capacity=$capacity, lastIndex=$currentIndex)"
 }

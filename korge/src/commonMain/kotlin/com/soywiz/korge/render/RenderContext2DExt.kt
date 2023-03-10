@@ -120,7 +120,7 @@ fun RenderContext2D.materialRoundRect(
     _tempProgramUniforms[MaterialRender.u_ShadowRadius] = shadowRadius
 
     // @TODO: WIP
-    val program = ctx.getRenderProgram(MaterialRender.PROGRAM)
+    val program = ctx.get(MaterialRender.PROGRAM)
     program[MaterialRender.u_ShadowColor].set(shadowColor.premultipliedFast)
     //program.uniformsToBuffers[MaterialRender.u_ShadowColor]!!.value.set(10)
 

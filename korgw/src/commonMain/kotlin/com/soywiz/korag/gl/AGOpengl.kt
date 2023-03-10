@@ -432,8 +432,14 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
 
         //for ((uniform, value) in uniforms) {
         textureUnit = -1
-        uniformBlocks.fastForEach { uniformSet(glProgram, it) }
-        uniforms.fastForEach { uniformSet(glProgram, it) }
+        uniformBlocks.fastForEachUniform {
+            //println("UNIFORM IN BLOCK: $it")
+            uniformSet(glProgram, it)
+        }
+        uniforms.fastForEach {
+            //println("UNIFORM LEGACY: $it")
+            uniformSet(glProgram, it)
+        }
     }
 
     private var textureUnit: Int = -1
