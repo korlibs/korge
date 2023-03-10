@@ -1138,7 +1138,7 @@ class AGUniformBlockValues(val buffers: Array<UniformBlockBuffer>, val indices: 
         for (n in 0 until kotlin.math.min(buffers.size, indices.size)) {
             val buffer = buffers[n]
             val index = indices[n]
-            if (index in 0 until buffer.maxElements) block(buffer[index])
+            if (index in 0 until buffer.lastIndex) block(buffer[index])
         }
     }
 
@@ -1155,7 +1155,7 @@ class AGUniformBlockValues(val buffers: Array<UniformBlockBuffer>, val indices: 
     override fun toString(): String = "AGUniformBlockValues(buffers=${buffers.toList()}, indices=${indices.size})"
 }
 
-class UniformBlockData(val block: UniformBlock) {
+open class UniformBlockData(val block: UniformBlock) {
     val data = Buffer(block.totalSize)
     val values = block.uniforms.map { uniform ->
         AGUniformValue(uniform, data.sliceWithSize(uniform.linkedOffset, uniform.type.bytesSize), null, AGTextureUnitInfo.DEFAULT)
@@ -1166,13 +1166,26 @@ class UniformBlockData(val block: UniformBlock) {
     }
 }
 
-class UniformBlockBuffer(val block: UniformBlock, val maxElements: Int) {
+class UniformBlockBuffer(val block: UniformBlock, val initialCapacity: Int = 1) {
     val data = UniformBlockData(block)
 
-    val buffer = Buffer(block.totalSize * maxElements)
+    val elementSize = block.totalSize
     val numUniforms = block.uniforms.size
-    val textures = Array<AGTexture?>(numUniforms * maxElements) { null }
-    val textureUnitInfos = IntArray(numUniforms * maxElements)
+
+    var capacity = initialCapacity
+    var buffer = Buffer(block.totalSize * capacity)
+    var textures = Array<AGTexture?>(numUniforms * capacity) { null }
+    var textureUnitInfos = IntArray(numUniforms * capacity)
+
+    fun ensure(index: Int) {
+        if (index >= capacity) {
+            val newCapacity = kotlin.math.max(index + 3, (capacity + 1) * 3)
+            capacity = newCapacity
+            buffer = buffer.copyOf(block.totalSize * newCapacity)
+            textures = textures.copyOf(numUniforms * newCapacity)
+            textureUnitInfos = textureUnitInfos.copyOf(numUniforms * newCapacity)
+        }
+    }
 
     fun equal(index: Int, data: UniformBlockData): Boolean {
         for (n in 0 until block.totalSize) {
@@ -1186,6 +1199,7 @@ class UniformBlockBuffer(val block: UniformBlock, val maxElements: Int) {
     }
 
     operator fun set(index: Int, data: UniformBlockData) {
+        ensure(index)
         if (data.block != block) error("${data.block} != $block")
         arraycopy(data.data, 0, this.buffer, index * block.totalSize, block.totalSize)
         for (n in 0 until numUniforms) {
@@ -1222,8 +1236,8 @@ class UniformBlockBuffer(val block: UniformBlock, val maxElements: Int) {
         return index
     }
 
-    fun putCurrent(): Int = put(this.data, deduplicate = false)
+    fun putCurrent(deduplicate: Boolean = false): Int = put(this.data, deduplicate = deduplicate)
     fun putCurrentIfChanged(): Int = put(this.data, deduplicate = true)
 
-    override fun toString(): String = "UniformBlockBuffer($block, maxElements=$maxElements, lastIndex=$lastIndex)"
+    override fun toString(): String = "UniformBlockBuffer($block, capacity=$capacity, lastIndex=$lastIndex)"
 }

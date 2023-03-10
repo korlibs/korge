@@ -32,35 +32,52 @@ class AGUniformBlockTest {
                 SET(out, texture2D(v_Tex, u_Tex))
             }
         )
-        val data = ProgramWithUniforms(program)
-        data[DefaultShaders.u_ProjMat].set(MMatrix4().setToOrtho(0f, 0f, 100f, 100f))
-        data[DefaultShaders.u_ViewMat].set(MMatrix4().identity())
-        data[DefaultShaders.u_Tex].set(1)
-        println(data.uniformsBlocksData.map { it?.data?.hex() })
-        println(data)
-    }
-}
-
-class ProgramWithUniforms(val program: Program) {
-    val uniformLayouts = program.uniforms.map { it.linkedLayout as? UniformBlock? }.distinct().filterNotNull()
-    val maxLocation = uniformLayouts.maxOf { it?.fixedLocation?.plus(1) ?: -1 }
-    val uniformsBlocks = Array<UniformBlock?>(maxLocation) { null }.also {
-        for (layout in uniformLayouts) {
-            it[layout.fixedLocation] = layout
+        val program2 = Program(
+            vertex = VertexShaderDefault {
+                SET(v_Tex, a_Tex)
+                SET(out, a_Pos)
+            },
+            fragment = FragmentShaderDefault {
+                SET(out, texture2D(v_Tex, u_Tex))
+            }
+        )
+        val bufferCache = AGProgramWithUniforms.BufferCache()
+        val data1 = AGProgramWithUniforms(program, bufferCache)
+        val data2 = AGProgramWithUniforms(program2, bufferCache)
+        val matricesBlock = data1[DefaultShaders.ub_ProjViewMatBlock]
+        matricesBlock.push {
+            it[DefaultShaders.u_ProjMat].set(MMatrix4().setToOrtho(0f, 0f, 100f, 100f))
+            it[DefaultShaders.u_ViewMat].set(MMatrix4().identity())
         }
-    }
-    val uniformsBlocksData = Array<UniformBlockData?>(uniformsBlocks.size) {
-        uniformsBlocks[it]?.let { UniformBlockData(it) }
-    }
-    operator fun get(block: UniformBlock): UniformBlockData {
-        val rblock = uniformsBlocks.getOrNull(block.fixedLocation) ?: error("Can't find block")
-        if (rblock !== block) error("Block $block not used in program")
-        return uniformsBlocksData[block.fixedLocation]!!
-    }
+        val texBlock = data1[DefaultShaders.ub_TexBlock]
 
-    operator fun invoke(ublock: UniformBlock, block: (UniformBlockData) -> Unit) {
-        block(this[ublock])
-    }
+        texBlock.push { it[DefaultShaders.u_Tex].set(1) }
+        assertEquals(0, texBlock.currentIndex)
 
-    operator fun get(uniform: Uniform): AGUniformValue = this[(uniform.linkedLayout as UniformBlock)][uniform]
+        texBlock.push { it[DefaultShaders.u_Tex].set(2) }
+        assertEquals(1, texBlock.currentIndex)
+
+        texBlock.pop()
+        assertEquals(0, texBlock.currentIndex)
+
+        texBlock.push(deduplicate = true) { it[DefaultShaders.u_Tex].set(3) }.also {
+            assertEquals(true, it)
+        }
+        assertEquals(2, texBlock.currentIndex)
+
+        texBlock.push(deduplicate = true) { it[DefaultShaders.u_Tex].set(3) }.also {
+            assertEquals(false, it)
+        }
+        assertEquals(2, texBlock.currentIndex)
+
+        texBlock.pop()
+        assertEquals(0, texBlock.currentIndex)
+
+        assertEquals("010000000200000003000000", texBlock.upload().agBuffer.mem?.hex())
+
+        data2[DefaultShaders.ub_TexBlock].push { it[DefaultShaders.u_Tex].set(4) }
+
+        assertEquals("01000000020000000300000004000000", data2[DefaultShaders.ub_TexBlock].upload().agBuffer.mem?.hex())
+    }
 }
+
