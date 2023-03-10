@@ -134,10 +134,10 @@ inline fun <K, V : Any> FastIdentityMap<K, V>.fastForEach(callback: (key: K, val
 
 inline fun <K, V> FastIdentityMap<K, V>.getNull(key: K?): V? = if (key == null) null else get(key)
 
-inline fun <K, V> FastIdentityMap<K, V>.getOrPut(key: K, callback: () -> V): V {
+inline fun <K, V> FastIdentityMap<K, V>.getOrPut(key: K, callback: (K) -> V): V {
     val res = get(key)
     if (res != null) return res
-    val out = callback()
+    val out = callback(key)
     set(key, out)
     return out
 }

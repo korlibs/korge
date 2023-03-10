@@ -228,44 +228,42 @@ class RenderContext2D(
         width: Double,
         height: Double,
         program: Program,
-        uniforms: AGUniformValues,
         padding: Margin = Margin.ZERO,
     ) {
         val ctx = batch.ctx
         //programUniforms
         ctx.useBatcher { batch ->
             //batch.texture1212
-            batch.setTemporalUniforms(uniforms) {
-                //batch.drawQuad(
-                //    vertices, ctx.getTex(baseBitmap).base, smoothing, renderBlendMode,
-                //    program = FastMaterialBackground.PROGRAM,
-                //    premultiplied = baseBitmap.base.premultiplied, wrap = wrapTexture
-                //)
+            //batch.drawQuad(
+            //    vertices, ctx.getTex(baseBitmap).base, smoothing, renderBlendMode,
+            //    program = FastMaterialBackground.PROGRAM,
+            //    premultiplied = baseBitmap.base.premultiplied, wrap = wrapTexture
+            //)
 
-                val L = (x - padding.left).toFloat()
-                val T = (y - padding.top).toFloat()
-                val R = (width + padding.leftPlusRight).toFloat()
-                val B = (height + padding.topPlusBottom).toFloat()
+            val L = (x - padding.left).toFloat()
+            val T = (y - padding.top).toFloat()
+            val R = (width + padding.leftPlusRight).toFloat()
+            val B = (height + padding.topPlusBottom).toFloat()
 
-                val l = -padding.left
-                val t = -padding.top
-                val r = (width + padding.right).toFloat()
-                val b = (height + padding.bottom).toFloat()
+            val l = -padding.left
+            val t = -padding.top
+            val r = (width + padding.right).toFloat()
+            val b = (height + padding.bottom).toFloat()
 
-                val vertices = TexturedVertexArray(6, TexturedVertexArray.QUAD_INDICES)
-                vertices.quad(
-                    0,
-                    L, T, R, B,
-                    m,
-                    l, t,
-                    r, t,
-                    l, b,
-                    r, b,
-                    multiplyColor,
-                )
-                batch.setStateFast(Bitmaps.white, filtering, blendMode, program, icount = 6, vcount = 4)
-                batch.drawVertices(vertices, null)
-            }
+            val vertices = TexturedVertexArray(6, TexturedVertexArray.QUAD_INDICES)
+            vertices.quad(
+                0,
+                L, T, R, B,
+                m,
+                l, t,
+                r, t,
+                l, b,
+                r, b,
+                multiplyColor,
+            )
+            batch.setStateFast(Bitmaps.white, filtering, blendMode, program, icount = 6, vcount = 4)
+            batch.drawVertices(vertices, null)
+            ctx.flush(RenderContext.FlushKind.STATE)
         }
     }
 

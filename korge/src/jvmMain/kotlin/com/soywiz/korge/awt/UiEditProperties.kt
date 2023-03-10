@@ -162,8 +162,8 @@ internal class UiEditProperties(app: UiApplication, view: View?, val views: View
     }
 
     private inline fun <reified T> createOne(
-        noinline get: (p: Double) -> T, noinline extract: (T) -> Double, instance: Any,
-        prop: KProperty1<*, *>?,
+        noinline get: (p: Double) -> T, noinline extract: (T) -> Double,
+        obs: ObservableProperty<*>,
         viewProp: ViewProperty,
         name: String = viewProp.name,
         rangeMin: Double = viewProp.min,
@@ -171,8 +171,8 @@ internal class UiEditProperties(app: UiApplication, view: View?, val views: View
         clampMin: Boolean = viewProp.clampMin,
         clampMax: Boolean = viewProp.clampMax,
     ): UiComponent? {
-        prop as KMutableProperty1<Any, T>
-        val robs = ObservableProperty(name, { prop.set(instance, get(it)) }, { extract(prop.get(instance)) })
+        val rr = obs as ObservableProperty<T>
+        val robs = ObservableProperty(name, { rr.value = get(it) }, { extract(rr.value) })
         return UiNumberEditableValue(app, robs, rangeMin, rangeMax, clampMin, clampMax, 0)
     }
 
@@ -235,7 +235,7 @@ internal class UiEditProperties(app: UiApplication, view: View?, val views: View
                 UiNumberEditableValue(app, robs, viewProp.min, viewProp.max, viewProp.clampMin, viewProp.clampMax, 0)
             }
             type.isSubtypeOf(Boolean::class.starProjectedType) -> UiBooleanEditableValue(app, obs as ObservableProperty<Boolean>)
-            type.isSubtypeOf(Angle::class.starProjectedType) -> createOne({ it.degrees }, { it.degrees }, instance, prop, viewProp, rangeMin = -360.0, rangeMax = +360.0, clampMin = true, clampMax = true)
+            type.isSubtypeOf(Angle::class.starProjectedType) -> createOne({ it.degrees }, { it.degrees }, obs, viewProp, rangeMin = -360.0, rangeMax = +360.0, clampMin = true, clampMax = true)
             type.isSubtypeOf(String::class.starProjectedType.withNullability(true)) -> {
                 if (!viewProp.editable) {
                     prop as KProperty1<Any, String?>

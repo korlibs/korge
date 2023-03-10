@@ -23,6 +23,11 @@ expect fun Buffer(array: ByteArray, offset: Int = 0, size: Int = array.size - of
 fun Buffer.Companion.allocDirect(size: Int): Buffer = Buffer(size, direct = true)
 fun Buffer.Companion.allocNoDirect(size: Int): Buffer = Buffer(size, direct = false)
 
+fun Buffer.copyOf(newSize: Int): Buffer {
+    val out = Buffer(newSize)
+    arraycopy(this, 0, out, 0, kotlin.math.min(this.sizeInBytes, newSize))
+    return out
+}
 fun Buffer.clone(direct: Boolean = false): Buffer {
     val out = Buffer(this.size, direct)
     arraycopy(this, 0, out, 0, size)

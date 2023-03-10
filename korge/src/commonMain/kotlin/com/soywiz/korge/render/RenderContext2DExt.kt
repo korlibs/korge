@@ -29,6 +29,12 @@ object MaterialRender {
     val u_BorderColor by Uniform(VarType.Float4)
     val u_BackgroundColor by Uniform(VarType.Float4)
 
+    val ub_MaterialBlock = UniformBlock(
+        u_ShadowColor, u_ShadowRadius, u_ShadowOffset, u_HighlightPos, u_HighlightRadius, u_HighlightColor,
+        u_Size, u_Radius, u_BorderSizeHalf, u_BorderColor, u_BackgroundColor,
+        fixedLocation = 3
+    )
+
     val PROGRAM = ShadedView.buildShader {
         val roundedDist = TEMP(Float1)
         val borderDist = TEMP(Float1)
@@ -96,24 +102,20 @@ fun RenderContext2D.materialRoundRect(
     borderColor: RGBA = Colors.WHITE,
     //colorMul: RGBA = Colors.WHITE,
 ) {
-    _tempProgramUniforms.clear()
-    _tempProgramUniforms.set(MaterialRender.u_Radius, radius.bottomRight, radius.topRight, radius.bottomLeft, radius.topLeft)
-    _tempProgramUniforms.set(MaterialRender.u_Size, width, height)
-
-    _tempProgramUniforms[MaterialRender.u_BackgroundColor] = color.premultipliedFast
-
-    _tempProgramUniforms.set(MaterialRender.u_HighlightPos, highlightPos.x * width, highlightPos.y * height)
-    _tempProgramUniforms[MaterialRender.u_HighlightRadius] = highlightRadius * kotlin.math.max(width, height) * 1.25
-    _tempProgramUniforms[MaterialRender.u_HighlightColor] = highlightColor.premultipliedFast
-
-    _tempProgramUniforms[MaterialRender.u_BorderSizeHalf] = borderSize * 0.5
-    _tempProgramUniforms[MaterialRender.u_BorderColor] = borderColor.premultipliedFast
-
-    _tempProgramUniforms[MaterialRender.u_ShadowColor] = shadowColor.premultipliedFast
-    _tempProgramUniforms[MaterialRender.u_ShadowOffset] = shadowOffset
-    _tempProgramUniforms[MaterialRender.u_ShadowRadius] = shadowRadius
-
-    quadPaddedCustomProgram(x, y, width, height, MaterialRender.PROGRAM, _tempProgramUniforms, Margin((shadowRadius + shadowOffset.length).toFloat()))
+    ctx[MaterialRender.ub_MaterialBlock].push(deduplicate = true) {
+        it[MaterialRender.u_Radius].set(radius)
+        it[MaterialRender.u_Size].set(Size(width, height))
+        it[MaterialRender.u_BackgroundColor].set(color.premultipliedFast)
+        it[MaterialRender.u_HighlightPos].set(highlightPos * Size(width, height))
+        it[MaterialRender.u_HighlightRadius].set(highlightRadius * kotlin.math.max(width, height) * 1.25)
+        it[MaterialRender.u_HighlightColor].set(highlightColor.premultipliedFast)
+        it[MaterialRender.u_BorderSizeHalf].set(borderSize * 0.5)
+        it[MaterialRender.u_BorderColor].set(borderColor.premultipliedFast)
+        it[MaterialRender.u_ShadowColor].set(shadowColor.premultipliedFast)
+        it[MaterialRender.u_ShadowOffset].set(shadowOffset)
+        it[MaterialRender.u_ShadowRadius].set(shadowRadius)
+    }
+    quadPaddedCustomProgram(x, y, width, height, MaterialRender.PROGRAM, Margin((shadowRadius + shadowOffset.length).toFloat()))
 }
 
 @KorgeExperimental

@@ -11,7 +11,7 @@ class AGUniformsTest {
         val projMatrix by Uniform(VarType.Mat4)
         val viewMatrix by Uniform(VarType.Mat4)
         val color1 by Uniform(VarType.UByte4)
-        val block = UniformBlock(projMatrix, viewMatrix, color1, layoutSize = null)
+        val block = UniformBlock(projMatrix, viewMatrix, color1, fixedLocation = 0)
         val data = UniformBlockData(block)
         val buffer = UniformBlockBuffer(block, 2)
         data[projMatrix].set(MMatrix3D().multiply(2f))

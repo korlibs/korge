@@ -15,7 +15,6 @@ import com.soywiz.korim.color.RGBA
 import com.soywiz.korma.geom.BoundsBuilder
 import com.soywiz.korma.geom.IVectorArrayList
 import com.soywiz.korma.geom.MRectangle
-import com.soywiz.korma.geom.VectorArrayList
 import com.soywiz.korma.geom.fastForEachGeneric
 import com.soywiz.korma.geom.toMatrix3D
 
@@ -68,11 +67,11 @@ class DebugVertexView(pointsList: List<IVectorArrayList>, color: RGBA = Colors.W
             batches.add(Batch(n / 2, points.size))
             if (points.dimensions >= 5) {
                 points.fastForEachGeneric {
-                    val x = this[it, 0].toFloat()
-                    val y = this[it, 1].toFloat()
-                    val dx = this[it, 2].toFloat()
-                    val dy = this[it, 3].toFloat()
-                    val scale = this[it, 4].toFloat()
+                    val x = this[it, 0]
+                    val y = this[it, 1]
+                    val dx = this[it, 2]
+                    val dy = this[it, 3]
+                    val scale = this[it, 4]
                     val px = x + dx * scale
                     val py = y + dy * scale
                     buffer[n++] = px
@@ -81,8 +80,8 @@ class DebugVertexView(pointsList: List<IVectorArrayList>, color: RGBA = Colors.W
                 }
             } else {
                 points.fastForEachGeneric {
-                    val x = this[it, 0].toFloat()
-                    val y = this[it, 1].toFloat()
+                    val x = this[it, 0]
+                    val y = this[it, 1]
                     buffer[n++] = x
                     buffer[n++] = y
                     bb.add(x, y)
@@ -117,7 +116,7 @@ class DebugVertexView(pointsList: List<IVectorArrayList>, color: RGBA = Colors.W
                     drawType = type,
                     program = PROGRAM,
                     uniforms = this.uniforms,
-                    uniformBlocks = ctx.createStdUniformBlock(),
+                    uniformBlocks = ctx.createCurrentUniformsRef(PROGRAM),
                     vertexCount = batch.count,
                     drawOffset = batch.offset,
                     blending = renderBlendMode.factors
