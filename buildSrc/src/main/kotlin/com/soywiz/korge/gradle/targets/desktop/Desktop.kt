@@ -70,10 +70,10 @@ fun Project.configureNativeDesktop() {
 
 	project.afterEvaluate {
 		for (target in DESKTOP_NATIVE_TARGETS) {
-			//if (isLinux && target.endsWith("Arm64")) {
-			//	// don't create an Arm64 test task
-			//	continue
-			//}
+			if (isLinux && target.endsWith("Arm64")) {
+				// don't create an Arm64 test task
+				continue
+			}
 			val taskName = "copyResourcesToExecutableTest_${target.capitalize()}"
 			val targetTestTask = project.tasks.getByName("${target}Test") as KotlinNativeTest
 			val task = project.tasks.createThis<Copy>(taskName) {
