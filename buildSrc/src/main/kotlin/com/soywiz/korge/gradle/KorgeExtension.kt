@@ -133,8 +133,7 @@ open class KorgeExtension(
 
     // https://github.com/JetBrains/kotlin/pull/4339
     var mingwX64PatchedLegacyMemoryManager: Boolean = true
-    var enableLinuxArm: Boolean = false
-    
+
     /**
      * Configures JVM target
      */

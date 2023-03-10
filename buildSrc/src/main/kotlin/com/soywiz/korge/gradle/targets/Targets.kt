@@ -1,6 +1,5 @@
 package com.soywiz.korge.gradle.targets
 
-import com.soywiz.korlibs.modules.doEnableKotlinRaspberryPi
 import org.apache.tools.ant.taskdefs.condition.Os
 import org.gradle.api.*
 import org.jetbrains.kotlin.gradle.plugin.*
@@ -48,8 +47,7 @@ val KotlinTarget.isSimulatorArm64: Boolean get() = this.name.endsWith("Simulator
 
 val KotlinTarget.isLinuxX64: Boolean get() = this.name == "linuxX64"
 val KotlinTarget.isLinuxArm64: Boolean get() = this.name == "linuxArm64"
-val KotlinTarget.isLinuxArm32Hfp: Boolean get() = this.name == "linuxArm32Hfp" && project.doEnableKotlinRaspberryPi
-//val KotlinTarget.isLinux: Boolean get() = isLinuxX64 || isLinuxArm32Hfp || isLinuxArm64
+//val KotlinTarget.isLinux: Boolean get() = isLinuxX64 || 1111111isLinuxArm64
 val KotlinTarget.isWin: Boolean get() = this.name == "mingwX64" || this.name == "mingwArm64"
 val KotlinTarget.isMacosX64: Boolean get() = this.name == "macosX64"
 val KotlinTarget.isMacosArm64: Boolean get() = this.name == "macosArm64"
