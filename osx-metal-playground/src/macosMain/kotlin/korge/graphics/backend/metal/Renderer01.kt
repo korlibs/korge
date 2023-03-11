@@ -32,29 +32,22 @@ class Renderer01(device: MTLDeviceProtocol) : Renderer(device) {
     private val vertex2 = 0f
     private val vertexData = AGVertexArrayObject(
         AGVertexData(
-            layout = VertexLayout(DefaultShaders.a_Col, DefaultShaders.a_Pos),
-            buffer = AGBuffer()
-                .also { println(it.mem?.size) }
-                .upload(
-                    ubyteArrayOf(
-                        255u, 255u, 255u, 0u, // White
-                        255u, 0u, 0u, 0u, // Red
-                        0u, 255u, 0u, 0u, // Blue
-                        0u, 0u, 255u, 0u, // Green
-                    ).toByteArray()
-                )
-                .also {
-                    println(it.mem?.size)
-                }
-                .upload(
-                    floatArrayOf(
-                        vertex1, vertex1,
-                        vertex2, vertex1,
-                        vertex2, vertex2,
-                        vertex1, vertex2
-                    )
-                )
-                .also { println(it.mem?.size) }
+            layout = VertexLayout(DefaultShaders.a_Col),
+            buffer = AGBuffer().upload(ubyteArrayOf(
+                255u, 255u, 255u, 0u, // White
+                255u, 0u, 0u, 0u, // Red
+                0u, 255u, 0u, 0u, // Blue
+                0u, 0u, 255u, 0u, // Green
+            ).toByteArray())
+        ),
+        AGVertexData(
+            layout = VertexLayout(DefaultShaders.a_Pos),
+            buffer = AGBuffer().upload(floatArrayOf(
+                vertex1, vertex1,
+                vertex2, vertex1,
+                vertex2, vertex2,
+                vertex1, vertex2
+            ))
         )
     )
 
