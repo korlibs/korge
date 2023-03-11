@@ -14,7 +14,8 @@ class Renderer01(device: MTLDeviceProtocol) : Renderer(device) {
     private var ag: AGMetal? = null
 
     private val vertexShader = VertexShader {
-        SET(DefaultShaders.v_Col, DefaultShaders.a_Col)
+        SET(DefaultShaders.v_Col, vec4(DefaultShaders.a_Col) / 255f)
+        //SET(DefaultShaders.v_Col, vec4(1f.lit, 1f.lit, 1f.lit, 1f.lit))
         SET(out, DefaultShaders.u_ProjMat /* DefaultShaders.u_ViewMat*/ * vec4(DefaultShaders.a_Pos, 0f.lit, 1f.lit))
         //SET(out, vec4(DefaultShaders.a_Pos, 0f.lit, 1f.lit))
 
@@ -32,12 +33,12 @@ class Renderer01(device: MTLDeviceProtocol) : Renderer(device) {
     private val vertexData = AGVertexArrayObject(
         AGVertexData(
             layout = VertexLayout(DefaultShaders.a_Col),
-            buffer = AGBuffer().upload(floatArrayOf(
-                1f, 1f, 1f, 0.0f, // White
-                1f, 0f, 0f, 0.0f, // Red
-                0f, 1f, 0.0f, 0.0f, // Blue
-                0f, 0.0f, 1f, 0.0f, // Green
-            ))
+            buffer = AGBuffer().upload(ubyteArrayOf(
+                255u, 255u, 255u, 0u, // White
+                255u, 0u, 0u, 0u, // Red
+                0u, 255u, 0u, 0u, // Blue
+                0u, 0u, 255u, 0u, // Green
+            ).toByteArray())
         ),
         AGVertexData(
             layout = VertexLayout(DefaultShaders.a_Pos),
@@ -102,7 +103,8 @@ class Renderer01(device: MTLDeviceProtocol) : Renderer(device) {
                         AGTextureUnitInfo.INVALID
                     )
                 )
-            }, // Not yet supported on shader generation
+            },
+            uniformBlocks = AGUniformBlocksBuffersRef.EMPTY,  // Not yet supported on shader generation
             //AGUniformValues(
             //  u_ProjMat=AGUniformValue[Uniform(u_ProjMat)][AGValue[Mat4]([[0.0015625, 0, 0, 0, 0, -0.0027777778, 0, 0, 0, 0, -1, 0, -1, 1, 0, 1]])],
             //  u_ViewMat=AGUniformValue[Uniform(u_ViewMat)][AGValue[Mat4]([[1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]])],
