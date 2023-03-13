@@ -11,9 +11,8 @@ import org.jetbrains.kotlin.gradle.plugin.*
 import java.io.*
 import javax.inject.*
 
-fun Project.getCompilationKorgeProcessedResourcesFolder(compilation: KotlinCompilation<*>): File {
-    return getCompilationKorgeProcessedResourcesFolder(compilation.target.name, compilation.name)
-}
+fun Project.getCompilationKorgeProcessedResourcesFolder(compilation: KotlinCompilation<*>): File =
+    getCompilationKorgeProcessedResourcesFolder(compilation.target.name, compilation.name)
 
 fun Project.getCompilationKorgeProcessedResourcesFolder(
     targetName: String,
@@ -53,6 +52,13 @@ fun Project.addGenResourcesTasks(): Project {
                 "com.soywiz.korge.resources.ResourceProcessorRunner",
                 "printPlugins"
             ) { listOf(it) }
+        }
+    }
+
+    for (target in kotlin.targets) {
+        for (compilation in target.compilations) {
+            val taskName = getKorgeProcessResourcesTaskName(target.name, compilation.name)
+            tasks.createThis<Task>(taskName) // dummy for now
         }
     }
 

@@ -921,12 +921,14 @@ object RootKorlibsPlugin {
         rootProject.samples {
             // @TODO: Patch, because runDebugReleaseExecutableMacosArm64 is not created!
             if (isMacos && isArm && doEnableKotlinNative) {
-                project.tasks {
-                    afterEvaluate {
+                project.afterEvaluate {
+                    project.tasks {
                         for (kind in listOf("Debug", "Release")) {
                             val linkTaskName = "link${kind}ExecutableMacosArm64"
                             val runTaskName = "run${kind}ExecutableMacosArm64"
-                            val linkExecutableMacosArm64 = project.tasks.findByName(linkTaskName) as org.jetbrains.kotlin.gradle.tasks.KotlinNativeLink
+                            val tryLinkTask = project.tasks.findByName(linkTaskName)
+                            val linkExecutableMacosArm64 = tryLinkTask as? org.jetbrains.kotlin.gradle.tasks.KotlinNativeLink?
+                                ?: error("$linkTaskName ($tryLinkTask) is not a KotlinNativeLink task in project $project")
                             if (project.tasks.findByName(runTaskName) == null) {
                                 val runExecutableMacosArm64 = project.tasks.createThis<Exec>(runTaskName) {
                                     dependsOn(linkExecutableMacosArm64)
@@ -940,46 +942,10 @@ object RootKorlibsPlugin {
             }
 
             // @TODO: Move to KorGE plugin
+            project.configureJvmRunJvm(isRootKorlibs = true)
             project.apply {
+
                 project.tasks {
-                    // https://www.baeldung.com/java-instrumentation
-                    val runJvm = createThis<KorgeJavaExec>("runJvm") {
-                        group = "run"
-                        mainClass.set("MainKt")
-                    }
-
-                    val timeBeforeCompilationFile = File(project.buildDir, "timeBeforeCompilation")
-                    val httpPort = 22011
-
-                    val compileKotlinJvmAndNotifyBefore = createThis<Task>("compileKotlinJvmAndNotifyBefore") {
-                        doFirst {
-                            KorgeReloadNotifier.beforeBuild(timeBeforeCompilationFile)
-                        }
-                    }
-                    afterEvaluate {
-                        tasks.findByName("compileKotlinJvm")?.mustRunAfter("compileKotlinJvmAndNotifyBefore")
-                    }
-                    val compileKotlinJvmAndNotify = createThis<Task>("compileKotlinJvmAndNotify") {
-                        dependsOn("compileKotlinJvmAndNotifyBefore", "compileKotlinJvm")
-                        doFirst {
-                            KorgeReloadNotifier.afterBuild(timeBeforeCompilationFile, httpPort)
-                        }
-                    }
-                    for (enableRedefinition in listOf(false, true)) {
-                        val taskName = when (enableRedefinition) {
-                            false -> "runJvmAutoreload"
-                            true -> "runJvmAutoreloadWithRedefinition"
-                        }
-                        createThis<KorgeJavaExecWithAutoreload>(taskName) {
-                            dependsOn(":korge-reload-agent:jar", "compileKotlinJvm")
-                            group = "run"
-                            mainClass.set("MainKt")
-                            //doConfigurationCache = false
-                            doConfigurationCache = true
-                            autoconfigure()
-                        }
-                    }
-
                     // esbuild
                     run {
 
