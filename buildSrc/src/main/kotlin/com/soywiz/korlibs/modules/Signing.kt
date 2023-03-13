@@ -5,8 +5,6 @@ import org.gradle.plugins.signing.*
 import com.soywiz.korlibs.*
 
 fun Project.configureSigning() {
-	plugins.apply("signing")
-
 	val signingSecretKeyRingFile = System.getenv("ORG_GRADLE_PROJECT_signingSecretKeyRingFile") ?: project.findProperty("signing.secretKeyRingFile")?.toString()
 
 	// gpg --armor --export-secret-keys foobar@example.com | awk 'NR == 1 { print "signing.signingKey=" } 1' ORS='\\n'
@@ -20,7 +18,9 @@ fun Project.configureSigning() {
         return
 	}
 
-	afterEvaluate {
+    plugins.apply("signing")
+
+    afterEvaluate {
 		signing.apply {
 			sign(publishing.publications)
 			if (signingKey != null) {

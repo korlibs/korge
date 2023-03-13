@@ -29,6 +29,7 @@ open class KorgeLibraryGradlePlugin : KorgeGradleAbstractPlugin(projectType = Pr
 
 class KorgeGradleApply(val project: Project, val projectType: ProjectType) {
 	fun apply(includeIndirectAndroid: Boolean = true) = project {
+        checkMinimumJavaVersion()
         // @TODO: Doing this disables the ability to use configuration cache
 		//System.setProperty("java.awt.headless", "true")
 

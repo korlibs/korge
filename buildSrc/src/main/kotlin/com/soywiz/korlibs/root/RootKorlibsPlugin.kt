@@ -40,6 +40,7 @@ object RootKorlibsPlugin {
     }
 
     fun Project.init() {
+        checkMinimumJavaVersion()
         configureBuildScriptClasspathTasks()
         initPlugins()
         initRootKotlinJvmTarget()
@@ -179,16 +180,6 @@ object RootKorlibsPlugin {
         )
 
         project.symlinktree(
-            fromFolder = File(rootProject.projectDir, "buildSrc/src/main/kotlin8"),
-            intoFolder = File(rootProject.projectDir, "korge-gradle-plugin/build/srcgen2_8")
-        )
-
-        project.symlinktree(
-            fromFolder = File(rootProject.projectDir, "buildSrc/src/main/kotlin11"),
-            intoFolder = File(rootProject.projectDir, "korge-gradle-plugin/build/srcgen2_11")
-        )
-
-        project.symlinktree(
             fromFolder = File(rootProject.projectDir, "buildSrc/src/main/resources"),
             intoFolder = File(rootProject.projectDir, "korge-gradle-plugin/build/srcgen2res")
         )
@@ -309,7 +300,7 @@ object RootKorlibsPlugin {
             }
             sourceSets {
                 it.maybeCreate("main").apply {
-                    manifest.srcFile(File(project.buildDir, "AndroidManifest.xml"))
+                    //manifest.srcFile(File(project.buildDir, "AndroidManifest.xml"))
                     java.srcDirs("${project.buildDir}/androidsrc")
                     res.srcDirs("${project.buildDir}/androidres")
                     assets.srcDirs(
@@ -565,8 +556,9 @@ object RootKorlibsPlugin {
                     // apply plugin: 'kotlin-android-extensions'
                     val android = extensions.getByName<TestedExtension>("android")
                     android.apply {
+                        namespace = "com.soywiz.${project.name.replace("-", ".")}"
                         compileSdkVersion(project.findProperty("android.compile.sdk.version")?.toString()?.toIntOrNull() ?: 30)
-                        buildToolsVersion(project.findProperty("android.buildtools.version")?.toString() ?: "30.0.2")
+                        //buildToolsVersion(project.findProperty("android.buildtools.version")?.toString() ?: "30.0.2")
 
                         defaultConfig {
                             it.multiDexEnabled = true
@@ -1388,7 +1380,7 @@ val headlessTests: Boolean get() = System.getenv("CI") == "true" || System.geten
 val Project._libs: Dyn get() = rootProject.extensions.getByName("libs").dyn
 val Project.kotlinVersion: String get() = _libs["versions"]["kotlin"].dynamicInvoke("get").casted()
 val Project.nodeVersion: String get() = _libs["versions"]["node"].dynamicInvoke("get").casted()
-val Project.androidBuildGradleVersion: String get() = _libs["versions"]["android"]["build"]["gradle"]["java11"].dynamicInvoke("get").casted()
+val Project.androidBuildGradleVersion: String get() = _libs["versions"]["android"]["build"]["gradle"].dynamicInvoke("get").casted()
 val Project.realKotlinVersion: String get() = (System.getenv("FORCED_KOTLIN_VERSION") ?: kotlinVersion)
 val forcedVersion = System.getenv("FORCED_VERSION")
 
