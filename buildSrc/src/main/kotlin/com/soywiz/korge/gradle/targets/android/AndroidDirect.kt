@@ -1,13 +1,13 @@
 package com.soywiz.korge.gradle.targets.android
 
-import com.android.build.api.dsl.*
 import com.android.build.gradle.internal.dsl.*
 import com.soywiz.korge.gradle.*
+import com.soywiz.korge.gradle.targets.*
 import com.soywiz.korge.gradle.targets.jvm.*
 import org.gradle.api.*
 import kotlin.collections.*
 
-fun Project.configureAndroidDirect(isLibrary: Boolean) {
+fun Project.configureAndroidDirect(projectType: ProjectType) {
     project.ensureAndroidLocalPropertiesWithSdkDir()
 
     project.plugins.apply("com.android.application")
@@ -136,7 +136,7 @@ fun Project.configureAndroidDirect(isLibrary: Boolean) {
         //line("androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'")
     }
 
-    if (!isLibrary) {
+    if (projectType.isExecutable) {
         installAndroidRun(listOf(), direct = true)
     }
 

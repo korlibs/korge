@@ -87,9 +87,9 @@ open class KorgeExtension(
     //private val objectFactory: ObjectFactory
 ) {
     private var includeIndirectAndroid: Boolean = false
-	internal fun init(includeIndirectAndroid: Boolean, isLibrary: Boolean) {
+	internal fun init(includeIndirectAndroid: Boolean, projectType: ProjectType) {
 	    this.includeIndirectAndroid = includeIndirectAndroid
-        this.isLibrary = isLibrary
+        this.projectType = projectType
 	}
 
     companion object {
@@ -135,7 +135,7 @@ open class KorgeExtension(
     // https://github.com/JetBrains/kotlin/pull/4339
     var mingwX64PatchedLegacyMemoryManager: Boolean = true
     var enableLinuxArm: Boolean = false
-    var isLibrary: Boolean = false
+    lateinit var projectType: ProjectType
         private set
     
     /**
@@ -143,7 +143,7 @@ open class KorgeExtension(
      */
     fun targetJvm() {
         target("jvm") {
-            project.configureJvm(isLibrary)
+            project.configureJvm(projectType)
         }
     }
 
@@ -152,7 +152,7 @@ open class KorgeExtension(
      */
     fun targetJs() {
         target("js") {
-            project.configureJavaScript(isLibrary)
+            project.configureJavaScript(projectType)
         }
     }
 
@@ -168,7 +168,7 @@ open class KorgeExtension(
     fun targetDesktop() {
         target("desktop") {
             if (supportKotlinNative) {
-                project.configureNativeDesktop(isLibrary)
+                project.configureNativeDesktop(projectType)
             }
         }
     }
@@ -192,7 +192,7 @@ open class KorgeExtension(
      */
     fun targetAndroid() {
         target("android") {
-            project.configureAndroidDirect(isLibrary)
+            project.configureAndroidDirect(projectType)
         }
     }
 
@@ -205,7 +205,7 @@ open class KorgeExtension(
     fun targetIos() {
         target("ios") {
             if (isMacos && supportKotlinNative) {
-                project.configureNativeIos(isLibrary)
+                project.configureNativeIos(projectType)
             }
         }
     }

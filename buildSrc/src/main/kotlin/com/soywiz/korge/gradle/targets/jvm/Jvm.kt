@@ -19,7 +19,7 @@ import java.io.File
 val KORGE_RELOAD_AGENT_CONFIGURATION_NAME = "KorgeReloadAgent"
 val httpPort = 22011
 
-fun Project.configureJvm(isLibrary: Boolean) {
+fun Project.configureJvm(projectType: ProjectType) {
     if (gkotlin.targets.findByName("jvm") != null) return
 
     val jvmTarget = gkotlin.jvm()
@@ -41,7 +41,7 @@ fun Project.configureJvm(isLibrary: Boolean) {
         }
     }
 
-    if (!isLibrary) {
+    if (projectType.isExecutable) {
         configureJvmRunJvm(isRootKorlibs = false)
     }
 	addProguard()

@@ -16,18 +16,18 @@ import org.jetbrains.kotlin.gradle.dsl.*
 import java.io.*
 import java.net.*
 
-abstract class KorgeGradleAbstractPlugin(val isLibrary: Boolean) : Plugin<Project> {
+abstract class KorgeGradleAbstractPlugin(val projectType: ProjectType) : Plugin<Project> {
     override fun apply(project: Project) {
         project.configureAutoVersions()
         project.configureBuildScriptClasspathTasks()
-        KorgeGradleApply(project, isLibrary).apply(includeIndirectAndroid = true)
+        KorgeGradleApply(project, projectType).apply(includeIndirectAndroid = true)
     }
 }
 
-open class KorgeGradlePlugin : KorgeGradleAbstractPlugin(isLibrary = false)
-open class KorgeLibraryGradlePlugin : KorgeGradleAbstractPlugin(isLibrary = true)
+open class KorgeGradlePlugin : KorgeGradleAbstractPlugin(projectType = ProjectType.EXECUTABLE)
+open class KorgeLibraryGradlePlugin : KorgeGradleAbstractPlugin(projectType = ProjectType.LIBRARY)
 
-class KorgeGradleApply(val project: Project, val isLibrary: Boolean) {
+class KorgeGradleApply(val project: Project, val projectType: ProjectType) {
 	fun apply(includeIndirectAndroid: Boolean = true) = project {
         // @TODO: Doing this disables the ability to use configuration cache
 		//System.setProperty("java.awt.headless", "true")
@@ -54,7 +54,7 @@ class KorgeGradleApply(val project: Project, val isLibrary: Boolean) {
 
         KorgeVersionsTask.registerShowKorgeVersions(project)
 
-        project.korge.init(includeIndirectAndroid, isLibrary)
+        project.korge.init(includeIndirectAndroid, projectType)
 
         project.configureIdea()
 		project.addVersionExtension()

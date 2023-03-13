@@ -12,7 +12,7 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import org.jetbrains.kotlin.gradle.tasks.*
 import java.io.*
 
-fun Project.configureNativeIos(isLibrary: Boolean) {
+fun Project.configureNativeIos(projectType: ProjectType) {
 	val prepareKotlinNativeBootstrapIos = tasks.createThis<Task>("prepareKotlinNativeBootstrapIos") {
         doLast {
             File(buildDir, "platforms/native-ios/bootstrap.kt").apply {
@@ -59,7 +59,7 @@ fun Project.configureNativeIos(isLibrary: Boolean) {
 		}
 	}
 
-    if (!isLibrary) {
+    if (projectType.isExecutable) {
         configureNativeIosRun()
     }
 }

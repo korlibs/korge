@@ -15,7 +15,7 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import org.jetbrains.kotlin.gradle.targets.native.tasks.*
 import java.io.*
 
-fun Project.configureNativeDesktop(isLibrary: Boolean) {
+fun Project.configureNativeDesktop(projectType: ProjectType) {
 	val project = this
 
     /*
@@ -93,7 +93,7 @@ fun Project.configureNativeDesktop(isLibrary: Boolean) {
 		//}
 	}
 
-    if (!isLibrary) {
+    if (projectType.isExecutable) {
         configureNativeDesktopRun()
     }
 }
