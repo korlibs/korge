@@ -56,7 +56,6 @@ object RootKorlibsPlugin {
         initInstallAndCheckLinuxLibs()
         initCatalog()
         configureKover()
-        initAndroidFixes()
         initPublishing()
         initKMM()
         initShortcuts()
@@ -255,6 +254,66 @@ object RootKorlibsPlugin {
 
     }
 
+    fun Project.initAndroid() {
+        if (isSample) {
+            plugins.apply("com.android.application")
+        } else {
+            plugins.apply("com.android.library")
+        }
+
+        //apply(from = "${rootProject.rootDir}/build.android.gradle")
+
+        //apply(plugin = "kotlin-android")
+        //apply(plugin = "kotlin-android-extensions")
+        // apply plugin: 'kotlin-android'
+        // apply plugin: 'kotlin-android-extensions'
+        val android = extensions.getByName<TestedExtension>("android")
+        android.apply {
+            compileSdkVersion(project.findProperty("android.compile.sdk.version")?.toString()?.toIntOrNull() ?: 30)
+            buildToolsVersion(project.findProperty("android.buildtools.version")?.toString() ?: "30.0.2")
+
+            defaultConfig {
+                it.multiDexEnabled = true
+                it.minSdk = project.findProperty("android.min.sdk.version")?.toString()?.toIntOrNull() ?: 16 // Previously 18
+                it.targetSdk = project.findProperty("android.target.sdk.version")?.toString()?.toIntOrNull() ?: 30
+                it.testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+                //testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+            }
+        }
+
+        dependencies {
+            add("androidTestImplementation", "androidx.test:core:1.4.0")
+            add("androidTestImplementation", "androidx.test.ext:junit:1.1.2")
+            add("androidTestImplementation", "androidx.test.espresso:espresso-core:3.3.0")
+            //androidTestImplementation 'com.android.support.test:runner:1.0.2'
+        }
+
+        android.apply {
+            sourceSets {
+                it.maybeCreate("main").apply {
+                    assets.srcDirs("src/commonMain/resources",)
+                }
+                for (name in listOf("test", "testDebug", "testRelease", "androidTest", "androidTestDebug", "androidTestRelease")) {
+                    it.maybeCreate(name).apply {
+                        assets.srcDirs("src/commonTest/resources",)
+                    }
+                }
+            }
+        }
+
+        android.apply {
+            packagingOptions {
+                for (pattern in KorgeExtension.DEFAULT_ANDROID_EXCLUDE_PATTERNS) {
+                    it.resources.excludes.add(pattern)
+                }
+            }
+        }
+
+        if (isSample) {
+            initAndroidApplication()
+            //apply(from = "${rootProject.rootDir}/build.android.application.gradle")
+        }
+    }
 
     fun Project.initAndroidApplication() {
         //apply(plugin = "com.android.application")
@@ -271,11 +330,6 @@ object RootKorlibsPlugin {
             //    jvmTarget = "1.8"
             //    freeCompilerArgs += "-Xmulti-platform"
             //}
-            packagingOptions {
-                for (pattern in KorgeExtension.DEFAULT_ANDROID_EXCLUDE_PATTERNS) {
-                    it.resources.excludes.add(pattern)
-                }
-            }
             compileSdkVersion(28)
             defaultConfig {
                 it.multiDexEnabled = true
@@ -407,27 +461,6 @@ object RootKorlibsPlugin {
         plugins.apply("maven-publish")
     }
 
-    fun Project.initAndroidFixes() {
-        /*
-        allprojectsThis {
-            //println("GROUP: $group")
-            tasks.whenTaskAdded {
-                if ("DebugUnitTest" in name || "ReleaseUnitTest" in name) {
-                    enabled = false
-                    // MPP + Android unit testing is so broken we just disable it altogether,
-                    // (discussion here https://kotlinlang.slack.com/archives/C3PQML5NU/p1572168720226200)
-                }
-            }
-            afterEvaluate {
-                // Remove log pollution until Android support in KMP improves.
-                project.extensions.findByType<org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension>()?.let { kmpExt ->
-                    kmpExt.sourceSets.removeAll { it.name == "androidAndroidTestRelease" }
-                }
-            }
-        }
-        */
-    }
-
     fun Project.initPublishing() {
         rootProject.afterEvaluate {
             rootProject.nonSamples {
@@ -551,57 +584,7 @@ object RootKorlibsPlugin {
 
                 //initAndroidProject()
                 if (hasAndroid) {
-                    if (isSample) {
-                        plugins.apply("com.android.application")
-                    } else {
-                        plugins.apply("com.android.library")
-                    }
-
-                    //apply(from = "${rootProject.rootDir}/build.android.gradle")
-
-                    //apply(plugin = "kotlin-android")
-                    //apply(plugin = "kotlin-android-extensions")
-                    // apply plugin: 'kotlin-android'
-                    // apply plugin: 'kotlin-android-extensions'
-                    val android = extensions.getByName<TestedExtension>("android")
-                    android.apply {
-                        compileSdkVersion(project.findProperty("android.compile.sdk.version")?.toString()?.toIntOrNull() ?: 30)
-                        buildToolsVersion(project.findProperty("android.buildtools.version")?.toString() ?: "30.0.2")
-
-                        defaultConfig {
-                            it.multiDexEnabled = true
-                            it.minSdk = project.findProperty("android.min.sdk.version")?.toString()?.toIntOrNull() ?: 16 // Previously 18
-                            it.targetSdk = project.findProperty("android.target.sdk.version")?.toString()?.toIntOrNull() ?: 30
-                            it.testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-                            //testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
-                        }
-                    }
-
-                    dependencies {
-                        add("androidTestImplementation", "androidx.test:core:1.4.0")
-                        add("androidTestImplementation", "androidx.test.ext:junit:1.1.2")
-                        add("androidTestImplementation", "androidx.test.espresso:espresso-core:3.3.0")
-                        //androidTestImplementation 'com.android.support.test:runner:1.0.2'
-                    }
-
-                    android.apply {
-                        sourceSets {
-                            it.maybeCreate("main").apply {
-                                assets.srcDirs("src/commonMain/resources",)
-                            }
-                            for (name in listOf("test", "testDebug", "testRelease", "androidTest", "androidTestDebug", "androidTestRelease")) {
-                                it.maybeCreate(name).apply {
-                                    assets.srcDirs("src/commonTest/resources",)
-                                }
-                            }
-                        }
-                    }
-
-
-                    if (isSample) {
-                        initAndroidApplication()
-                        //apply(from = "${rootProject.rootDir}/build.android.application.gradle")
-                    }
+                    project.initAndroid()
                 }
 
                 if (isSample && doEnableKotlinNative && isMacos) {
