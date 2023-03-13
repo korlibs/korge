@@ -15,7 +15,6 @@ val Project.doEnableKotlinAndroid: Boolean get() = rootProject.findProperty("ena
 val Project.doEnableKotlinMobile: Boolean get() = doEnableKotlinNative && rootProject.findProperty("enableKotlinMobile") == "true"
 val Project.doEnableKotlinMobileTvos: Boolean get() = doEnableKotlinMobile && rootProject.findProperty("enableKotlinMobileTvos") == "true"
 val Project.doEnableKotlinMobileWatchos: Boolean get() = doEnableKotlinMobile && rootProject.findProperty("enableKotlinMobileWatchos") == "true"
-val Project.doEnableKotlinRaspberryPi: Boolean get() = doEnableKotlinNative && rootProject.findProperty("enableKotlinRaspberryPi") == "true"
 
 val Project.hasAndroid get() = extensions.findByName("android") != null
 
@@ -41,15 +40,15 @@ fun org.jetbrains.kotlin.gradle.dsl.KotlinTargetContainerWithPresetFunctions.nat
             inCI -> emptyList()
             else -> listOfNotNull(
                 linuxX64(),
+                linuxArm64(),
                 mingwX64(),
-                if (project.doEnableKotlinRaspberryPi) linuxArm32Hfp() else null,
             )
         })
         else -> listOfNotNull(
             linuxX64(),
+            linuxArm64(),
             mingwX64(),
             macosX64(), macosArm64(),
-            if (project.doEnableKotlinRaspberryPi) linuxArm32Hfp() else null
         )
     }
 }

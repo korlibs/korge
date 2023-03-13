@@ -205,6 +205,7 @@ jobs:
     - { name: Stop gradle daemon, run: ./gradlew --stop }
     - { name: e2e test native, working-directory: e2e-test, run: ./gradlew checkReferencesNative --stacktrace }
     - { name: Archive E2E Test Results, if: failure(), uses: actions/upload-artifact@v3, with: { name: e2e-test-results-linux, retention-days: 21, path: "**/e2e-test/build/screenshots", if-no-files-found: ignore } }
+    - { name: Testing Linux Arm64 Publishing, run: ./gradlew publishLinuxArm64PublicationToMavenLocal }
 
   test-native-macos:
     needs: changes

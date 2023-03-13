@@ -1,6 +1,5 @@
 package com.soywiz.korge.gradle.targets
 
-import com.soywiz.korlibs.modules.doEnableKotlinRaspberryPi
 import org.apache.tools.ant.taskdefs.condition.Os
 import org.gradle.api.*
 import org.jetbrains.kotlin.gradle.plugin.*
@@ -18,7 +17,7 @@ val isLinux get() = Os.isFamily(Os.FAMILY_UNIX) && !isMacos
 val isArm get() = listOf("arm", "arm64", "aarch64").any { Os.isArch(it) }
 val inCI: Boolean get() = !System.getenv("CI").isNullOrBlank() || !System.getProperty("CI").isNullOrBlank()
 
-//val ALL_NATIVE_TARGETS = listOf("iosX64", "iosArm64", "mingwX64", "linuxX64", "linuxArm32Hfp", "macosX64", "macosArm64")
+//val ALL_NATIVE_TARGETS = listOf("iosX64", "iosArm64", "mingwX64", "linuxX64", "linuxArm64", "macosX64", "macosArm64")
 
 val KotlinTarget.isJvm get() = name in setOf("jvm")
 val KotlinTarget.isJs get() = name in setOf("js")
@@ -43,13 +42,11 @@ val KotlinTarget.isX64: Boolean get() = this.name.endsWith("X64")
 val KotlinTarget.isX86: Boolean get() = this.name.endsWith("X86")
 val KotlinTarget.isArm32: Boolean get() = this.name.endsWith("Arm32")
 val KotlinTarget.isArm64: Boolean get() = this.name.endsWith("Arm64") || !this.name.endsWith("SimulatorArm64")
-val KotlinTarget.isArm32Hfp: Boolean get() = this.name.endsWith("Arm32Hfp")
 val KotlinTarget.isSimulatorArm64: Boolean get() = this.name.endsWith("SimulatorArm64")
 
 val KotlinTarget.isLinuxX64: Boolean get() = this.name == "linuxX64"
 val KotlinTarget.isLinuxArm64: Boolean get() = this.name == "linuxArm64"
-val KotlinTarget.isLinuxArm32Hfp: Boolean get() = this.name == "linuxArm32Hfp" && project.doEnableKotlinRaspberryPi
-//val KotlinTarget.isLinux: Boolean get() = isLinuxX64 || isLinuxArm32Hfp || isLinuxArm64
+//val KotlinTarget.isLinux: Boolean get() = isLinuxX64 || 1111111isLinuxArm64
 val KotlinTarget.isWin: Boolean get() = this.name == "mingwX64" || this.name == "mingwArm64"
 val KotlinTarget.isMacosX64: Boolean get() = this.name == "macosX64"
 val KotlinTarget.isMacosArm64: Boolean get() = this.name == "macosArm64"

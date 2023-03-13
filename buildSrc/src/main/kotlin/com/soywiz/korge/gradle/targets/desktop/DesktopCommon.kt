@@ -49,7 +49,7 @@ val Project.DESKTOP_NATIVE_TARGET get() = when {
 
 val Project.DESKTOP_NATIVE_CROSS_TARGETS: List<String> get() = when {
     isWindows -> listOfNotNull()
-    isMacos -> listOfNotNull("mingwX64", "linuxX64")
+    isMacos -> listOfNotNull("mingwX64", "linuxX64", "linuxArm64")
     isLinux -> listOfNotNull()
     else -> listOfNotNull()
 }
@@ -57,11 +57,11 @@ val Project.DESKTOP_NATIVE_CROSS_TARGETS: List<String> get() = when {
 val Project.DESKTOP_NATIVE_TARGETS get() = when {
     isWindows -> listOfNotNull("mingwX64")
     isMacos -> listOfNotNull("macosX64", "macosArm64")
-    isLinux -> listOfNotNull("linuxX64", "linuxArm32Hfp".takeIf { korge.enableLinuxArm })
+    isLinux -> listOfNotNull("linuxX64", "linuxArm64")
     else -> listOfNotNull(
         "mingwX64",
         "linuxX64",
-        "linuxArm32Hfp".takeIf { korge.enableLinuxArm },
+        "linuxArm64",
         "macosX64", "macosArm64"
     )
 }

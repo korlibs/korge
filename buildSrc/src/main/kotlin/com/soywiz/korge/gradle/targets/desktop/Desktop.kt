@@ -70,8 +70,8 @@ fun Project.configureNativeDesktop(projectType: ProjectType) {
 
 	project.afterEvaluate {
 		for (target in DESKTOP_NATIVE_TARGETS) {
-			if (isLinux && target.endsWith("Arm32Hfp")) {
-				// don't create an Arm32Hfp test task
+			if (isLinux && target.endsWith("Arm64")) {
+				// don't create an Arm64 test task
 				continue
 			}
 			val taskName = "copyResourcesToExecutableTest_${target.capitalize()}"

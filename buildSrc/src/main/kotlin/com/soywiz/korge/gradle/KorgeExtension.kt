@@ -134,10 +134,10 @@ open class KorgeExtension(
 
     // https://github.com/JetBrains/kotlin/pull/4339
     var mingwX64PatchedLegacyMemoryManager: Boolean = true
-    var enableLinuxArm: Boolean = false
+  
     lateinit var projectType: ProjectType
         private set
-    
+
     /**
      * Configures JVM target
      */
@@ -161,7 +161,7 @@ open class KorgeExtension(
      *
      * - mingwX64
      * - linuxX64
-     * - linuxArm32Hfp
+     * - linuxArm64
      * - macosX64
      * - macosArm64
      */
