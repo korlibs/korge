@@ -23,6 +23,13 @@ data class Matrix4 internal constructor(
         0f, 0f, 0f, 1f,
     )
 
+    operator fun times(scale: Float): Matrix4 = Matrix4(
+        v00 * scale, v10 * scale, v20 * scale, v30 * scale,
+        v01 * scale, v11 * scale, v21 * scale, v31 * scale,
+        v02 * scale, v12 * scale, v22 * scale, v32 * scale,
+        v03 * scale, v13 * scale, v23 * scale, v33 * scale,
+    )
+
     val c0: Vector4 get() = Vector4(v00, v10, v20, v30)
     val c1: Vector4 get() = Vector4(v01, v11, v21, v31)
     val c2: Vector4 get() = Vector4(v02, v12, v22, v32)
@@ -47,7 +54,84 @@ data class Matrix4 internal constructor(
         else -> error("Invalid row $row")
     }
 
+    operator fun get(row: Int, column: Int): Float {
+        return when (row) {
+            0 -> when (column) {
+                0 -> v00; 1 -> v01; 2 -> v02; 3 -> v03
+                else -> error("Invalid index $row,$column")
+            }
+            1 -> when (column) {
+                0 -> v10; 1 -> v11; 2 -> v12; 3 -> v13
+                else -> error("Invalid index $row,$column")
+            }
+            2 -> when (column) {
+                0 -> v20; 1 -> v21; 2 -> v22; 3 -> v23
+                else -> error("Invalid index $row,$column")
+            }
+            3 -> when (column) {
+                0 -> v30; 1 -> v31; 2 -> v32; 3 -> v33
+                else -> error("Invalid index $row,$column")
+            }
+            else -> error("Invalid index $row,$column")
+        }
+    }
+
+    fun getAtIndex(index: Int): Float {
+        return when (index) {
+            M00 -> v00
+            M10 -> v10
+            M20 -> v20
+            M30 -> v30
+            M01 -> v01
+            M11 -> v11
+            M21 -> v21
+            M31 -> v31
+            M02 -> v02
+            M12 -> v12
+            M22 -> v22
+            M32 -> v32
+            M03 -> v03
+            M13 -> v13
+            M23 -> v23
+            M33 -> v33
+            else -> error("Invalid cell $index")
+        }
+    }
+
     companion object {
+        const val M00 = 0
+        const val M10 = 1
+        const val M20 = 2
+        const val M30 = 3
+
+        const val M01 = 4
+        const val M11 = 5
+        const val M21 = 6
+        const val M31 = 7
+
+        const val M02 = 8
+        const val M12 = 9
+        const val M22 = 10
+        const val M32 = 11
+
+        const val M03 = 12
+        const val M13 = 13
+        const val M23 = 14
+        const val M33 = 15
+
+        val INDICES_BY_COLUMNS = intArrayOf(
+            M00, M10, M20, M30,
+            M01, M11, M21, M31,
+            M02, M12, M22, M32,
+            M03, M13, M23, M33
+        )
+        val INDICES_BY_ROWS = intArrayOf(
+            M00, M01, M02, M03,
+            M10, M11, M12, M13,
+            M20, M21, M22, M23,
+            M30, M31, M32, M33
+        )
+
         fun fromColumns(
             v00: Float, v10: Float, v20: Float, v30: Float,
             v01: Float, v11: Float, v21: Float, v31: Float,
