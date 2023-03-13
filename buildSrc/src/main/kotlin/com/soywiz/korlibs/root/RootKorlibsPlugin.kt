@@ -246,6 +246,66 @@ object RootKorlibsPlugin {
 
     }
 
+    fun Project.initAndroid() {
+        if (isSample) {
+            plugins.apply("com.android.application")
+        } else {
+            plugins.apply("com.android.library")
+        }
+
+        //apply(from = "${rootProject.rootDir}/build.android.gradle")
+
+        //apply(plugin = "kotlin-android")
+        //apply(plugin = "kotlin-android-extensions")
+        // apply plugin: 'kotlin-android'
+        // apply plugin: 'kotlin-android-extensions'
+        val android = extensions.getByName<TestedExtension>("android")
+        android.apply {
+            namespace = "com.soywiz.${project.name.replace("-", ".")}"
+            compileSdkVersion(project.findProperty("android.compile.sdk.version")?.toString()?.toIntOrNull() ?: 30)
+            //buildToolsVersion(project.findProperty("android.buildtools.version")?.toString() ?: "30.0.2")
+
+            packagingOptions {
+                for (pattern in KorgeExtension.DEFAULT_ANDROID_EXCLUDE_PATTERNS) {
+                    it.resources.excludes.add(pattern)
+                }
+            }
+
+            defaultConfig {
+                it.multiDexEnabled = true
+                it.minSdk = project.findProperty("android.min.sdk.version")?.toString()?.toIntOrNull() ?: 16 // Previously 18
+                it.targetSdk = project.findProperty("android.target.sdk.version")?.toString()?.toIntOrNull() ?: 30
+                it.testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+                //testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+            }
+        }
+
+        dependencies {
+            add("androidTestImplementation", "androidx.test:core:1.4.0")
+            add("androidTestImplementation", "androidx.test.ext:junit:1.1.2")
+            add("androidTestImplementation", "androidx.test.espresso:espresso-core:3.3.0")
+            //androidTestImplementation 'com.android.support.test:runner:1.0.2'
+        }
+
+        android.apply {
+            sourceSets {
+                it.maybeCreate("main").apply {
+                    assets.srcDirs("src/commonMain/resources",)
+                }
+                for (name in listOf("test", "testDebug", "testRelease", "androidTest", "androidTestDebug", "androidTestRelease")) {
+                    it.maybeCreate(name).apply {
+                        assets.srcDirs("src/commonTest/resources",)
+                    }
+                }
+            }
+        }
+
+
+        if (isSample) {
+            initAndroidApplication()
+            //apply(from = "${rootProject.rootDir}/build.android.application.gradle")
+        }
+    }
 
     fun Project.initAndroidApplication() {
         //apply(plugin = "com.android.application")
@@ -262,11 +322,6 @@ object RootKorlibsPlugin {
             //    jvmTarget = "1.8"
             //    freeCompilerArgs += "-Xmulti-platform"
             //}
-            packagingOptions {
-                for (pattern in KorgeExtension.DEFAULT_ANDROID_EXCLUDE_PATTERNS) {
-                    it.resources.excludes.add(pattern)
-                }
-            }
             compileSdkVersion(28)
             defaultConfig {
                 it.multiDexEnabled = true
@@ -542,58 +597,7 @@ object RootKorlibsPlugin {
 
                 //initAndroidProject()
                 if (hasAndroid) {
-                    if (isSample) {
-                        plugins.apply("com.android.application")
-                    } else {
-                        plugins.apply("com.android.library")
-                    }
-
-                    //apply(from = "${rootProject.rootDir}/build.android.gradle")
-
-                    //apply(plugin = "kotlin-android")
-                    //apply(plugin = "kotlin-android-extensions")
-                    // apply plugin: 'kotlin-android'
-                    // apply plugin: 'kotlin-android-extensions'
-                    val android = extensions.getByName<TestedExtension>("android")
-                    android.apply {
-                        namespace = "com.soywiz.${project.name.replace("-", ".")}"
-                        compileSdkVersion(project.findProperty("android.compile.sdk.version")?.toString()?.toIntOrNull() ?: 30)
-                        //buildToolsVersion(project.findProperty("android.buildtools.version")?.toString() ?: "30.0.2")
-
-                        defaultConfig {
-                            it.multiDexEnabled = true
-                            it.minSdk = project.findProperty("android.min.sdk.version")?.toString()?.toIntOrNull() ?: 16 // Previously 18
-                            it.targetSdk = project.findProperty("android.target.sdk.version")?.toString()?.toIntOrNull() ?: 30
-                            it.testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-                            //testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
-                        }
-                    }
-
-                    dependencies {
-                        add("androidTestImplementation", "androidx.test:core:1.4.0")
-                        add("androidTestImplementation", "androidx.test.ext:junit:1.1.2")
-                        add("androidTestImplementation", "androidx.test.espresso:espresso-core:3.3.0")
-                        //androidTestImplementation 'com.android.support.test:runner:1.0.2'
-                    }
-
-                    android.apply {
-                        sourceSets {
-                            it.maybeCreate("main").apply {
-                                assets.srcDirs("src/commonMain/resources",)
-                            }
-                            for (name in listOf("test", "testDebug", "testRelease", "androidTest", "androidTestDebug", "androidTestRelease")) {
-                                it.maybeCreate(name).apply {
-                                    assets.srcDirs("src/commonTest/resources",)
-                                }
-                            }
-                        }
-                    }
-
-
-                    if (isSample) {
-                        initAndroidApplication()
-                        //apply(from = "${rootProject.rootDir}/build.android.application.gradle")
-                    }
+                    initAndroid()
                 }
 
                 if (isSample && doEnableKotlinNative && isMacos) {
