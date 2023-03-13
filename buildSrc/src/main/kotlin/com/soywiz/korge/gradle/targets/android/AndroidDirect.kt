@@ -7,7 +7,7 @@ import com.soywiz.korge.gradle.targets.jvm.*
 import org.gradle.api.*
 import kotlin.collections.*
 
-fun Project.configureAndroidDirect() {
+fun Project.configureAndroidDirect(isLibrary: Boolean) {
     project.ensureAndroidLocalPropertiesWithSdkDir()
 
     project.plugins.apply("com.android.application")
@@ -136,7 +136,9 @@ fun Project.configureAndroidDirect() {
         //line("androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'")
     }
 
-    installAndroidRun(listOf(), direct = true)
+    if (!isLibrary) {
+        installAndroidRun(listOf(), direct = true)
+    }
 
     //println("android: ${android::class.java}")
     /*

@@ -87,8 +87,9 @@ open class KorgeExtension(
     //private val objectFactory: ObjectFactory
 ) {
     private var includeIndirectAndroid: Boolean = false
-	internal fun init(includeIndirectAndroid: Boolean) {
+	internal fun init(includeIndirectAndroid: Boolean, isLibrary: Boolean) {
 	    this.includeIndirectAndroid = includeIndirectAndroid
+        this.isLibrary = isLibrary
 	}
 
     companion object {
@@ -134,13 +135,15 @@ open class KorgeExtension(
     // https://github.com/JetBrains/kotlin/pull/4339
     var mingwX64PatchedLegacyMemoryManager: Boolean = true
     var enableLinuxArm: Boolean = false
+    var isLibrary: Boolean = false
+        private set
     
     /**
      * Configures JVM target
      */
     fun targetJvm() {
         target("jvm") {
-            project.configureJvm()
+            project.configureJvm(isLibrary)
         }
     }
 
@@ -149,7 +152,7 @@ open class KorgeExtension(
      */
     fun targetJs() {
         target("js") {
-            project.configureJavaScript()
+            project.configureJavaScript(isLibrary)
         }
     }
 
@@ -165,7 +168,7 @@ open class KorgeExtension(
     fun targetDesktop() {
         target("desktop") {
             if (supportKotlinNative) {
-                project.configureNativeDesktop()
+                project.configureNativeDesktop(isLibrary)
             }
         }
     }
@@ -189,7 +192,7 @@ open class KorgeExtension(
      */
     fun targetAndroid() {
         target("android") {
-            project.configureAndroidDirect()
+            project.configureAndroidDirect(isLibrary)
         }
     }
 
@@ -202,7 +205,7 @@ open class KorgeExtension(
     fun targetIos() {
         target("ios") {
             if (isMacos && supportKotlinNative) {
-                project.configureNativeIos()
+                project.configureNativeIos(isLibrary)
             }
         }
     }
