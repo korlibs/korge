@@ -14,6 +14,7 @@ env:
   CI: true
   SKIP_KORGE_SAMPLES: true
   DISPLAY: ":99"
+  JAVA_VERSION: 11
 
 jobs:
   changes:
@@ -86,7 +87,7 @@ jobs:
     - { name: Configure local.properties, run: "echo org.gradle.parallel=true >> local.properties" }
     - { name: Install freeglut3 & openal, run: sudo apt-get update && sudo apt-get -y install freeglut3-dev libopenal-dev xvfb }
     - { name: Run Xvfb in Background, run: "Xvfb :99 &" }
-    - { name: Set up JDK 11, uses: actions/setup-java@v1, with: { java-version: 11 } }
+    - { name: Set up JDK 11, uses: actions/setup-java@v1, with: { java-version: ${{ env.JAVA_VERSION }} } }
     - { name: Gradle cache, uses: ./.github/actions/gradle-cache }
     - { name: Grant execute permission for gradlew, run: chmod +x gradlew }
     - { name: Start gradle, run: ./gradlew --stacktrace }
@@ -111,7 +112,7 @@ jobs:
       - { uses: actions/checkout@v3 }
       - { name: Install freeglut3 & openal, run: sudo apt-get update && sudo apt-get -y install freeglut3-dev libopenal-dev xvfb }
       - { name: Run Xvfb in Background, run: "Xvfb :99 &" }
-      - { name: Set up JDK 11, uses: actions/setup-java@v1, with: { java-version: 11 } }
+      - { name: Set up JDK 11, uses: actions/setup-java@v1, with: { java-version: ${{ env.JAVA_VERSION }} } }
       - { name: Gradle cache, uses: ./.github/actions/gradle-cache }
       - { name: Grant execute permission for gradlew, run: chmod +x gradlew }
       - { name: Start gradle, run: ./gradlew }
@@ -138,7 +139,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - { uses: actions/checkout@v3 }
-      - { name: Set up JDK 11, uses: actions/setup-java@v1, with: { java-version: 11 } }
+      - { name: Set up JDK 11, uses: actions/setup-java@v1, with: { java-version: ${{ env.JAVA_VERSION }} } }
       - { name: Install freeglut3 & openal, run: sudo apt-get update && sudo apt-get -y install freeglut3-dev libopenal-dev }
       - { name: Gradle cache, uses: ./.github/actions/gradle-cache }
       - { name: Grant execute permission for gradlew, run: chmod +x gradlew }
@@ -155,7 +156,7 @@ jobs:
     #runs-on: ubuntu-latest
     steps:
       - { uses: actions/checkout@v3 }
-      - { name: Set up JDK 11, uses: actions/setup-java@v1, with: { java-version: 11 } }
+      - { name: Set up JDK 11, uses: actions/setup-java@v1, with: { java-version: ${{ env.JAVA_VERSION }} } }
       #- { name: Install freeglut3 & openal, run: sudo apt-get update && sudo apt-get -y install freeglut3-dev libopenal-dev }
       #- { name: Gradle cache, uses: ./.github/actions/gradle-cache }
       - { name: Grant execute permission for gradlew, run: chmod +x gradlew }
@@ -175,7 +176,7 @@ jobs:
     runs-on: macos-11
     steps:
     - { uses: actions/checkout@v3 }
-    - { name: Set up JDK 11, uses: actions/setup-java@v1, with: { java-version: 11 } }
+    - { name: Set up JDK 11, uses: actions/setup-java@v1, with: { java-version: ${{ env.JAVA_VERSION }} } }
     - { name: Gradle cache, uses: ./.github/actions/gradle-cache }
     - { name: Grant execute permission for gradlew, run: chmod +x gradlew }
     - { name: Start gradle, run: ./gradlew }
@@ -196,7 +197,7 @@ jobs:
     - { uses: actions/checkout@v3 }
     - { name: Install freeglut3 & openal, run: sudo apt-get update && sudo apt-get -y install freeglut3-dev libopenal-dev xvfb }
     - { name: Run Xvfb in Background, run: "Xvfb :99 &" }
-    - { name: Set up JDK 11, uses: actions/setup-java@v1, with: { java-version: 11 } }
+    - { name: Set up JDK 11, uses: actions/setup-java@v1, with: { java-version: ${{ env.JAVA_VERSION }} } }
     - { name: Gradle cache, uses: ./.github/actions/gradle-cache }
     - { name: Grant execute permission for gradlew, run: chmod +x gradlew }
     - { name: Start gradle, run: ./gradlew }
@@ -218,7 +219,7 @@ jobs:
     #  DISABLE_HEADLESS_TEST: true
     steps:
     - { uses: actions/checkout@v3 }
-    - { name: Set up JDK 11, uses: actions/setup-java@v1, with: { java-version: 11 } }
+    - { name: Set up JDK 11, uses: actions/setup-java@v1, with: { java-version: ${{ env.JAVA_VERSION }} } }
     - { name: Gradle cache, uses: ./.github/actions/gradle-cache }
     - { name: Grant execute permission for gradlew, run: chmod +x gradlew }
     - { name: Start gradle, run: ./gradlew }
@@ -245,7 +246,7 @@ jobs:
     - { name: Download, shell: cmd, run: "curl -L -o opengl32-x64.zip https://github.com/korlibs/mesa-dist-win/releases/download/21.2.3/opengl32-x64.zip" }
     - { name: unzip, shell: cmd, run: "unzip opengl32-x64.zip" }
     - { name: unzip to korge, shell: cmd, run: "unzip opengl32-x64.zip -d korge" }
-    - { name: Set up JDK 11, uses: actions/setup-java@v1, with: { java-version: 11 } }
+    - { name: Set up JDK 11, uses: actions/setup-java@v1, with: { java-version: ${{ env.JAVA_VERSION }} } }
     - { name: Gradle cache, uses: ./.github/actions/gradle-cache }
     - { name: Testing JVM on windows, shell: cmd, run: "CALL gradlew.bat jvmTest", env: { EGL_LOG_LEVEL: debug, LIBGL_DEBUG: verbose, LIBGL_ALWAYS_SOFTWARE: true, MESA_DEBUG: true } }
     - { name: Archive Test Results, if: failure(), uses: actions/upload-artifact@v3, with: { name: screenshot-test-results-windows, retention-days: 21, path: "**/build/reports", if-no-files-found: ignore } }
