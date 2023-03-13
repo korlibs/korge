@@ -10,8 +10,6 @@ import com.soywiz.korma.math.*
 import com.soywiz.korma.math.isAlmostZero
 import kotlin.math.*
 
-typealias Vector2D = Point
-typealias IVector2D = MPoint
 typealias MVector2D = MPoint
 
 //////////////////////////////
