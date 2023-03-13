@@ -605,7 +605,7 @@ object RootKorlibsPlugin {
                 }
 
                 if (isSample && doEnableKotlinNative && isMacos) {
-                    project.configureNativeIos(isLibrary = !isSample)
+                    project.configureNativeIos(projectType = ProjectType.EXECUTABLE)
                 }
 
                 if (!isSample && rootProject.plugins.hasPlugin("org.jetbrains.dokka")) {
