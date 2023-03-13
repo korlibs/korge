@@ -1,24 +1,16 @@
 package samples
 
-import com.soywiz.korev.SoftKeyboardReturnKeyType
-import com.soywiz.korev.SoftKeyboardType
-import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.text.editText
-import com.soywiz.korge.ui.uiTextInput
-import com.soywiz.korge.view.SContainer
-import com.soywiz.korge.view.aroundPath
-import com.soywiz.korge.view.filter.DropshadowFilter
-import com.soywiz.korge.view.filter.filters
-import com.soywiz.korge.view.text
-import com.soywiz.korge.view.textSpacing
-import com.soywiz.korge.view.xy
-import com.soywiz.korim.color.Colors
-import com.soywiz.korim.font.DefaultTtfFont
-import com.soywiz.korim.font.readTtfFont
-import com.soywiz.korim.font.withFallback
-import com.soywiz.korio.file.std.resourcesVfs
-import com.soywiz.korma.geom.shape.buildVectorPath
-import com.soywiz.korma.geom.vector.circle
+import com.soywiz.korev.*
+import com.soywiz.korge.scene.*
+import com.soywiz.korge.text.*
+import com.soywiz.korge.ui.*
+import com.soywiz.korge.view.*
+import com.soywiz.korge.view.filter.*
+import com.soywiz.korim.color.*
+import com.soywiz.korim.font.*
+import com.soywiz.korio.file.std.*
+import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.shape.*
 
 class MainTextInput : Scene() {
     override suspend fun SContainer.sceneMain() {
@@ -54,7 +46,7 @@ class MainTextInput : Scene() {
             this.softKeyboardType = SoftKeyboardType.EMAIL_ADDRESS
         }.xy(200, 300)
 
-        val textPath = buildVectorPath { circle(0, 0, 100) }
+        val textPath = buildVectorPath { circle(Point(0, 0), 100f) }
 
         text(
             "HELLO WORLD",
@@ -70,7 +62,7 @@ class MainTextInput : Scene() {
             color = Colors.RED,
         ).xy(600, 500)
             .textSpacing(9.0)
-            .aroundPath(buildVectorPath { moveTo(0.0, 0.0); quadTo(250.0, -100.0, 500.0, 0.0) })
+            .aroundPath(buildVectorPath { moveTo(Point(0.0, 0.0)); quadTo(Point(250.0, -100.0), Point(500.0, 0.0)) })
             .filters(DropshadowFilter())
             .also { it.editText() }
 

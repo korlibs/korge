@@ -29,7 +29,6 @@ import com.soywiz.korio.lang.CancellableGroup
 import com.soywiz.korio.resources.Resources
 import com.soywiz.korio.resources.ResourcesContainer
 import com.soywiz.korma.geom.Anchor
-import com.soywiz.korma.geom.ISize
 import com.soywiz.korma.geom.MRectangle
 import com.soywiz.korma.geom.ScaleMode
 import com.soywiz.korma.geom.MSize
@@ -119,7 +118,6 @@ abstract class Scene : InjectorAsyncDependency, ViewsContainer, CoroutineScope, 
      * No need to call super.
      */
     open suspend fun SContainer.sceneMain() {
-
     }
 
     /**
@@ -175,7 +173,7 @@ abstract class Scene : InjectorAsyncDependency, ViewsContainer, CoroutineScope, 
 
 @Deprecated("")
 abstract class OldScaledScene : Scene() {
-	open val sceneSize: ISize = ISize(320, 240)
+	open val sceneSize: MSize = MSize(320, 240)
 	open val sceneScale: Double = 2.0
 	open val sceneFiltering: Boolean = false
 
@@ -258,8 +256,8 @@ abstract class ScaledScene(
 }
 
 class EmptyScene : Scene() {
-	override suspend fun SContainer.sceneInit() {
-	}
+    override suspend fun SContainer.sceneMain() {
+    }
 }
 
 abstract class LogScene : Scene() {

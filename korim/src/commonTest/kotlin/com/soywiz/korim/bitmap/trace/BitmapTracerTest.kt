@@ -1,16 +1,10 @@
 package com.soywiz.korim.bitmap.trace
 
-import com.soywiz.korim.bitmap.Bitmap32
-import com.soywiz.korim.bitmap.context2d
-import com.soywiz.korim.color.Colors
-import com.soywiz.korma.geom.MRectangle
-import com.soywiz.korma.geom.vector.Winding
-import com.soywiz.korma.geom.vector.circle
-import com.soywiz.korma.geom.vector.rect
-import com.soywiz.korma.geom.vector.rectHole
-import com.soywiz.korma.geom.vector.roundRect
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import com.soywiz.korim.bitmap.*
+import com.soywiz.korim.color.*
+import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.vector.*
+import kotlin.test.*
 
 class BitmapTracerTest {
     @Test
@@ -21,10 +15,10 @@ class BitmapTracerTest {
                 rectHole(MRectangle.fromBounds(6, 6, 9, 12))
                 rectHole(MRectangle.fromBounds(10, 5, 15, 12))
                 rect(MRectangle.fromBounds(50, 2, 68, 18))
-                circle(100, 100, 40)
-                circle(100, 100, 20)
+                circle(Point(100, 100), 40f)
+                circle(Point(100, 100), 20f)
                 roundRect(200, 50, 50, 50, 5, 5)
-                circle(130, 100, 20)
+                circle(Point(130, 100), 20f)
             }
         }
         assertEquals(

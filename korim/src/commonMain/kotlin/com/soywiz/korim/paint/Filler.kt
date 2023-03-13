@@ -19,7 +19,7 @@ abstract class BaseFiller {
             data[offset + n] = getColor(n.toFloat(), yFloat)
         }
     }
-    fun fill(bmp: Bitmap32, rect: IRectangleInt = bmp.bounds) {
+    fun fill(bmp: Bitmap32, rect: MRectangleInt = bmp.bounds) {
         val cols = RgbaPremultipliedArray(bmp.ints)
         for (y in rect.top until rect.bottom) {
             val offset = y * bmp.width

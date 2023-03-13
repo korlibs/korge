@@ -6,8 +6,8 @@ import com.soywiz.korma.annotations.*
 data class Ray(val point: Point, val direction: Point)
 
 @KormaMutableApi
-interface IRay {
-    val point: IPoint
+sealed interface IRay {
+    val point: MPoint
     val direction: IVector2D
 }
 

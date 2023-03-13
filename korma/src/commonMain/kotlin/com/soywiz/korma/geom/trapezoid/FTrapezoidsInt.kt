@@ -2,10 +2,7 @@ package com.soywiz.korma.geom.trapezoid
 
 import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
-import com.soywiz.kmem.*
-import com.soywiz.korma.geom.vector.*
 import kotlin.jvm.*
-import kotlin.math.*
 
 /**
  *   (x0a, y0)  (x0b, y0)

@@ -6,11 +6,7 @@ import com.soywiz.korim.bitmap.BmpCoords
 import com.soywiz.korim.bitmap.BmpSlice
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
-import com.soywiz.korma.geom.BoundsBuilder
-import com.soywiz.korma.geom.IPointArrayList
-import com.soywiz.korma.geom.MMatrix
-import com.soywiz.korma.geom.MRectangle
-import com.soywiz.korma.geom.fastForEachWithIndex
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.triangle.TriangleList
 import com.soywiz.korma.geom.vector.VectorPath
 import com.soywiz.korma.triangle.poly2tri.triangulateSafe
@@ -79,7 +75,7 @@ class TexturedVertexArray(vcount: Int, val indices: ShortArray, icount: Int = in
         }
 
         /** This doesn't handle holes */
-        fun fromPointArrayList(points: IPointArrayList, colorMul: RGBA = Colors.WHITE, matrix: MMatrix? = null): TexturedVertexArray {
+        fun fromPointArrayList(points: PointList, colorMul: RGBA = Colors.WHITE, matrix: MMatrix? = null): TexturedVertexArray {
             val indices = ShortArray((points.size - 2) * 3)
             for (n in 0 until points.size - 2) {
                 indices[n * 3 + 0] = (0).toShort()
@@ -93,19 +89,15 @@ class TexturedVertexArray(vcount: Int, val indices: ShortArray, icount: Int = in
 
     }
 
-    fun setSimplePoints(points: IPointArrayList, matrix: MMatrix?, colorMul: RGBA = Colors.WHITE) {
-        if (matrix != null) {
-            points.fastForEachWithIndex { index, x, y ->
-                val xf = x.toFloat()
-                val yf = y.toFloat()
-                this.set(index, matrix.transformXf(xf, yf), matrix.transformYf(xf, yf), 0f, 0f, colorMul)
-            }
-        } else {
-            points.fastForEachWithIndex { index, x, y -> this.set(index, x.toFloat(), y.toFloat(), 0f, 0f, colorMul) }
+    fun setSimplePoints(points: PointList, matrix: MMatrix?, colorMul: RGBA = Colors.WHITE) {
+        points.fastForEachIndexed { index, p ->
+            this.set(index, p.transformed(matrix), Point(), colorMul)
         }
     }
 
     @PublishedApi internal var offset = 0
+
+    fun set(index: Int, p: Point, tex: Point, colMul: RGBA) = set(index, p.x, p.y, tex.x, tex.y, colMul)
 
     fun set(index: Int, x: Float, y: Float, u: Float, v: Float, colMul: RGBA) {
         select(index).setX(x).setY(y).setU(u).setV(v).setCMul(colMul)

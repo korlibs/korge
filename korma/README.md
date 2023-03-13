@@ -61,8 +61,8 @@ println(points)
 assertEquals(
     "[(10, 10), (100, 50), (120, 52)]",
     (Rectangle(0, 0, 100, 100).toShape() + Rectangle(100, 50, 50, 50).toShape()).pathFind(
-        IPoint(10, 10),
-        IPoint(120, 52)
+        MPoint(10, 10),
+        MPoint(120, 52)
     ).toString()
 )
 ```

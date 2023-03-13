@@ -1,33 +1,28 @@
 package com.soywiz.korma.geom.bezier
 
-import com.soywiz.korma.geom.MPoint
-import com.soywiz.korma.geom.MRectangle
-import com.soywiz.korma.geom.map
-import com.soywiz.korma.geom.shape.buildVectorPath
-import com.soywiz.korma.geom.vector.getCurves
-import com.soywiz.korma.geom.vector.getCurvesList
-import com.soywiz.korma.geom.vector.rect
-import com.soywiz.korma.math.roundDecimalPlaces
-import kotlin.math.roundToInt
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.shape.*
+import com.soywiz.korma.geom.vector.*
+import com.soywiz.korma.math.*
+import kotlin.math.*
+import kotlin.test.*
 
 class BezierTest {
     @Test
     fun testLength() {
-        assertEquals(100.0, Bezier(MPoint(0, 0), MPoint(50, 0), MPoint(100, 0)).length)
-        val bezier = Bezier(MPoint(0, 0), MPoint(50, 0), MPoint(100, 0))
-        assertEquals(100.0, bezier.length)
-        bezier.setPoints(MPoint(0, 0), MPoint(100, 0), MPoint(100, 100))
-        assertEquals(162.32, bezier.length.roundDecimalPlaces(2))
+        assertEquals(100.0, Bezier(Point(0, 0), Point(50, 0), Point(100, 0)).length, 0.001)
+        val bezier = Bezier(Point(0, 0), Point(50, 0), Point(100, 0))
+        assertEquals(100.0, bezier.length, 0.001)
+        bezier.setPoints(Point(0, 0), Point(100, 0), Point(100, 100))
+        assertEquals(162.32, bezier.length.roundDecimalPlaces(2), 0.001)
     }
 
     @Test
     fun testCurves() {
         val path = buildVectorPath {
-            moveTo(200.0, 200.0)
-            lineTo(400.0, 100.0)
-            quadTo(400.0, 400.0, 200.0, 200.0)
+            moveTo(Point(200.0, 200.0))
+            lineTo(Point(400.0, 100.0))
+            quadTo(Point(400.0, 400.0), Point(200.0, 200.0))
         }
         val curves = path.getCurves()
         assertEquals(590.0, curves.length, 0.4)
@@ -74,7 +69,7 @@ class BezierTest {
 
     @Test
     fun testTangent() {
-        val bezier = Bezier(MPoint(74.58, 36.96), MPoint(74.58, 36.96), MPoint(77.04, 27.36), MPoint(71.76, 32.64))
-        assertEquals(MPoint(0.2482, -0.9687), bezier.tangent(0.0).setToRoundDecimalPlaces(4))
+        val bezier = Bezier(Point(74.58, 36.96), Point(74.58, 36.96), Point(77.04, 27.36), Point(71.76, 32.64))
+        assertEquals(Point(0.2482, -0.9687), bezier.tangent(0.0).roundDecimalPlaces(4))
     }
 }

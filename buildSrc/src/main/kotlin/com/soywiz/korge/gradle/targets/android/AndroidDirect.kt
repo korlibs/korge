@@ -2,10 +2,12 @@ package com.soywiz.korge.gradle.targets.android
 
 import com.android.build.gradle.internal.dsl.*
 import com.soywiz.korge.gradle.*
+import com.soywiz.korge.gradle.targets.*
+import com.soywiz.korge.gradle.targets.jvm.*
 import org.gradle.api.*
 import kotlin.collections.*
 
-fun Project.configureAndroidDirect() {
+fun Project.configureAndroidDirect(projectType: ProjectType) {
     project.ensureAndroidLocalPropertiesWithSdkDir()
 
     project.plugins.apply("com.android.application")
@@ -82,6 +84,22 @@ fun Project.configureAndroidDirect() {
             }
         }
     }
+
+    val resolvedArtifacts = LinkedHashMap<String, String>()
+    project.configurations.all {
+        if (it.name == KORGE_RELOAD_AGENT_CONFIGURATION_NAME) return@all
+
+        it.resolutionStrategy.eachDependency {
+            val cleanFullName = "${it.requested.group}:${it.requested.name}".removeSuffix("-js").removeSuffix("-jvm")
+            //println("RESOLVE ARTIFACT: ${it.requested}")
+            //if (cleanFullName.startsWith("org.jetbrains.intellij.deps:trove4j")) return@eachDependency
+            //if (cleanFullName.startsWith("org.jetbrains:annotations")) return@eachDependency
+            if (isKorlibsDependency(cleanFullName)) {
+                resolvedArtifacts[cleanFullName] = it.requested.version.toString()
+            }
+        }
+    }
+
     project.dependencies.apply {
         add("implementation", project.fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
         add("implementation", "org.jetbrains.kotlin:kotlin-stdlib-jdk7:${BuildVersions.KOTLIN}")
@@ -90,20 +108,6 @@ fun Project.configureAndroidDirect() {
         //line("api 'org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutinesVersion'")
         project.afterEvaluate {
             //run {
-
-            val resolvedArtifacts = LinkedHashMap<String, String>()
-
-            project.configurations.all {
-                it.resolutionStrategy.eachDependency {
-                    val cleanFullName = "${it.requested.group}:${it.requested.name}".removeSuffix("-js").removeSuffix("-jvm")
-                    //println("RESOLVE ARTIFACT: ${it.requested}")
-                    //if (cleanFullName.startsWith("org.jetbrains.intellij.deps:trove4j")) return@eachDependency
-                    //if (cleanFullName.startsWith("org.jetbrains:annotations")) return@eachDependency
-                    if (isKorlibsDependency(cleanFullName)) {
-                        resolvedArtifacts[cleanFullName] = it.requested.version.toString()
-                    }
-                }
-            }
 
             for ((name, version) in resolvedArtifacts) {
                 if (name.startsWith("org.jetbrains.kotlin")) continue
@@ -131,7 +135,9 @@ fun Project.configureAndroidDirect() {
         //line("androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'")
     }
 
-    installAndroidRun(listOf(), direct = true)
+    if (projectType.isExecutable) {
+        installAndroidRun(listOf(), direct = true)
+    }
 
     //println("android: ${android::class.java}")
     /*

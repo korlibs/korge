@@ -34,7 +34,7 @@ open class PathsCollider(val paths: List<VectorPath>) : MovementCollider() {
 
     //fun containsPoint(x: Double, y: Double) = scaledPaths.any { it.containsPoint(x, y) }
     fun containsPoint(x: Double, y: Double) = paths.any { it.containsPoint(x / scale, y / scale) }
-    fun containsPoint(p: IPoint) = containsPoint(p.x, p.y)
+    fun containsPoint(p: MPoint) = containsPoint(p.x, p.y)
 
     var id = 0
 
@@ -162,5 +162,5 @@ fun XY.moveWithCollider(dx: Double, dy: Double, collider: MovementCollider) {
     if (this.y != tempOut.y && !tempOut.y.isNanOrInfinite()) this.y = tempOut.y
 }
 
-fun XY.moveWithCollider(delta: IPoint, collider: MovementCollider) = moveWithCollider(delta.x, delta.y, collider)
+fun XY.moveWithCollider(delta: MPoint, collider: MovementCollider) = moveWithCollider(delta.x, delta.y, collider)
 */

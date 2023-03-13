@@ -15,7 +15,7 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import org.jetbrains.kotlin.gradle.targets.native.tasks.*
 import java.io.*
 
-fun Project.configureNativeDesktop() {
+fun Project.configureNativeDesktop(projectType: ProjectType) {
 	val project = this
 
     /*
@@ -70,8 +70,8 @@ fun Project.configureNativeDesktop() {
 
 	project.afterEvaluate {
 		for (target in DESKTOP_NATIVE_TARGETS) {
-			if (isLinux && target.endsWith("Arm32Hfp")) {
-				// don't create an Arm32Hfp test task
+			if (isLinux && target.endsWith("Arm64")) {
+				// don't create an Arm64 test task
 				continue
 			}
 			val taskName = "copyResourcesToExecutableTest_${target.capitalize()}"
@@ -93,10 +93,12 @@ fun Project.configureNativeDesktop() {
 		//}
 	}
 
-	addNativeRun()
+    if (projectType.isExecutable) {
+        configureNativeDesktopRun()
+    }
 }
 
-fun Project.addNativeRun() {
+fun Project.configureNativeDesktopRun() {
     val project = this
 
     fun KotlinNativeCompilation.getBinary(kind: NativeOutputKind, type: NativeBuildType): File {

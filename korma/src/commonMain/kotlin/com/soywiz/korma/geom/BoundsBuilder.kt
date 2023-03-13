@@ -73,49 +73,51 @@ class BoundsBuilder {
     fun add(x: Double, y: Double, transform: MMatrix?): BoundsBuilder = if (transform != null) add(transform.transformX(x, y), transform.transformY(x, y)) else add(x, y)
     fun add(x: Int, y: Int, transform: MMatrix?): BoundsBuilder = add(x.toDouble(), y.toDouble(), transform)
     fun add(x: Float, y: Float, transform: MMatrix?): BoundsBuilder = add(x.toDouble(), y.toDouble(), transform)
+    fun add(p: Point, transform: MMatrix?): BoundsBuilder = add(p.x, p.y, transform)
 
-    fun add(point: IPoint): BoundsBuilder = add(point.x, point.y)
-    fun add(point: IPoint, transform: MMatrix): BoundsBuilder = add(point.x, point.y, transform)
+    fun add(point: Point): BoundsBuilder = add(point.x, point.y)
+    fun add(point: MPoint): BoundsBuilder = add(point.x, point.y)
+    fun add(point: MPoint, transform: MMatrix): BoundsBuilder = add(point.x, point.y, transform)
 
     fun addRect(x: Int, y: Int, width: Int, height: Int): BoundsBuilder = addRect(x.toDouble(), y.toDouble(), width.toDouble(), height.toDouble())
     fun addRect(x: Double, y: Double, width: Double, height: Double): BoundsBuilder = add(x, y).add(x + width, y + height)
 
-    fun add(ps: Iterable<IPoint>): BoundsBuilder {
+    fun add(ps: Iterable<MPoint>): BoundsBuilder {
         for (p in ps) add(p)
         return this
     }
-    fun add(ps: IPointArrayList): BoundsBuilder {
-        for (n in 0 until ps.size) add(ps.getX(n), ps.getY(n))
+    fun add(ps: PointList): BoundsBuilder {
+        for (n in 0 until ps.size) add(ps[n])
         return this
     }
 
-    inline fun add(rect: IRectangle?): BoundsBuilder {
+    inline fun add(rect: MRectangle?): BoundsBuilder {
         rect?.let { addNonEmpty(rect) }
         return this
     }
 
-    fun addNonEmpty(rect: IRectangle): BoundsBuilder {
+    fun addNonEmpty(rect: MRectangle): BoundsBuilder {
         if (rect.isNotEmpty) {
             addEvenEmpty(rect)
         }
         return this
     }
-    fun addEvenEmpty(rect: IRectangle?): BoundsBuilder {
+    fun addEvenEmpty(rect: MRectangle?): BoundsBuilder {
         if (rect == null) return this
         add(rect.left, rect.top)
         add(rect.right, rect.bottom)
         return this
     }
 
-    fun add(ps: Iterable<IPoint>, transform: MMatrix): BoundsBuilder {
+    fun add(ps: Iterable<MPoint>, transform: MMatrix): BoundsBuilder {
         for (p in ps) add(p, transform)
         return this
     }
-    fun add(ps: IPointArrayList, transform: MMatrix): BoundsBuilder {
-        for (n in 0 until ps.size) add(ps.getX(n), ps.getY(n), transform)
+    fun add(ps: PointList, transform: MMatrix): BoundsBuilder {
+        for (n in 0 until ps.size) add(ps.getX (n), ps.getY(n), transform)
         return this
     }
-    fun add(rect: IRectangle, transform: MMatrix?): BoundsBuilder {
+    fun add(rect: MRectangle, transform: MMatrix?): BoundsBuilder {
         if (rect.isNotEmpty) {
             add(rect.left, rect.top, transform)
             add(rect.right, rect.top, transform)

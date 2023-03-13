@@ -21,7 +21,7 @@ data class RichTextDataPlacements(
 }
 
 fun RichTextData.place(
-    bounds: IRectangle,
+    bounds: MRectangle,
     wordWrap: Boolean = true,
     includePartialLines: Boolean = false,
     ellipsis: String? = null,
@@ -82,7 +82,7 @@ fun RichTextData.place(
 
 fun Context2d.drawRichText(
     text: RichTextData,
-    bounds: IRectangle = MRectangle(0, 0, width, height),
+    bounds: MRectangle = MRectangle(0, 0, width, height),
     wordWrap: Boolean = true,
     includePartialLines: Boolean = false,
     ellipsis: String? = null,

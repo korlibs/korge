@@ -4,6 +4,7 @@ import com.soywiz.kmem.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.format.*
+import com.soywiz.korio.async.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.MRectangle
 import kotlinx.coroutines.*
@@ -28,7 +29,7 @@ fun Bitmap32.toAwt(
 }
 
 @Suppress("unused")
-fun IPoint.toAwt(): Point = Point(x.toIntRound(), y.toIntRound())
+fun MPoint.toAwt(): Point = Point(x.toIntRound(), y.toIntRound())
 
 fun Bitmap.toAwt(
 	out: BufferedImage = BufferedImage(
@@ -93,9 +94,9 @@ private fun java.awt.Rectangle.toKorma(): MRectangle = MRectangle(this.x, this.y
 
 // @TODO: Move to KorMA
 private fun MRectangle.place(item: MSize, anchor: Anchor, scale: ScaleMode, out: MRectangle = MRectangle()): MRectangle {
-    val outSize = scale(item, this.size)
-    val x = (this.width - outSize.width) * anchor.sx
-    val y = (this.height - outSize.height) * anchor.sy
+    val outSize = scale(item, this.mSize)
+    val x = (this.width - outSize.width) * anchor.doubleX
+    val y = (this.height - outSize.height) * anchor.doubleY
     return out.setTo(x, y, outSize.width, outSize.height)
 }
 
@@ -151,11 +152,11 @@ fun ImageIOReadFormat(s: InputStream, type: Int = AWT_INTERNAL_IMAGE_TYPE_PRE): 
 
 fun awtReadImage(data: ByteArray): BufferedImage = ImageIOReadFormat(ByteArrayInputStream(data))
 
-suspend fun awtReadImageInWorker(data: ByteArray, props: ImageDecodingProps): BufferedImage = withContext(Dispatchers.IO) {
+suspend fun awtReadImageInWorker(data: ByteArray, props: ImageDecodingProps): BufferedImage = withContext(Dispatchers.ResourceDecoder) {
     ImageIOReadFormat(ByteArrayInputStream(data), props)
 }
 
-suspend fun awtReadImageInWorker(file: File, props: ImageDecodingProps): BufferedImage = withContext(Dispatchers.IO) {
+suspend fun awtReadImageInWorker(file: File, props: ImageDecodingProps): BufferedImage = withContext(Dispatchers.ResourceDecoder) {
     FileInputStream(file).use { ImageIOReadFormat(it, props) }
 }
 

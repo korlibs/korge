@@ -11,7 +11,7 @@ data class SegmentInt(
 )
 
 @KormaMutableApi
-interface ISegmentInt {
+sealed interface ISegmentInt {
     var x0: Int
     var y0: Int
     var x1: Int

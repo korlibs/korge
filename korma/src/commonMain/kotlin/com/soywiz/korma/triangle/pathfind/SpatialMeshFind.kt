@@ -1,17 +1,9 @@
 package com.soywiz.korma.triangle.pathfind
 
 import com.soywiz.kds.*
-import com.soywiz.korma.geom.IPoint
-import com.soywiz.korma.geom.IPointArrayList
-import com.soywiz.korma.geom.PointArrayList
-import com.soywiz.korma.geom.triangle.Edge
-import com.soywiz.korma.geom.triangle.Triangle
-import com.soywiz.korma.geom.triangle.containsPoint
-import com.soywiz.korma.geom.triangle.point
-import com.soywiz.korma.geom.triangle.pointCCW
-import com.soywiz.korma.geom.triangle.pointCW
-import com.soywiz.korma.geom.triangle.pointInsideTriangle
-import kotlin.math.hypot
+import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.triangle.*
+import kotlin.math.*
 
 private typealias SpatialNode = SpatialMesh.Node
 
@@ -34,11 +26,11 @@ class SpatialMeshFind(val spatialMesh: SpatialMesh) {
         }
     }
 
-    fun find(start: IPoint, end: IPoint): IPointArrayList {
+    fun find(start: Point, end: Point): PointList {
         return Channel.channelToPortals(start, end, findNodes(spatialMesh.spatialNodeFromPoint(start), spatialMesh.spatialNodeFromPoint(end))).path
     }
 
-    fun findNodes(start: IPoint, end: IPoint): List<SpatialNode> {
+    fun findNodes(start: Point, end: Point): List<SpatialNode> {
         return findNodes(spatialMesh.spatialNodeFromPoint(start), spatialMesh.spatialNodeFromPoint(end))
     }
 
@@ -111,7 +103,7 @@ class SpatialMeshFind(val spatialMesh: SpatialMesh) {
     object Channel {
         class EdgeContext {
             fun getCommonEdge(t1: Triangle, t2: Triangle): Edge {
-                val commonIndexes = ArrayList<IPoint>()
+                val commonIndexes = PointArrayList()
                 for (n in 0 until 3) {
                     val point = t1.point(n)
                     if (t2.containsPoint(point)) commonIndexes.add(point)
@@ -122,7 +114,7 @@ class SpatialMeshFind(val spatialMesh: SpatialMesh) {
 
         }
 
-        fun channelToPortals(startPoint: IPoint, endPoint: IPoint, channel: List<SpatialNode>): Funnel {
+        fun channelToPortals(startPoint: Point, endPoint: Point, channel: List<SpatialNode>): Funnel {
             val portals = Funnel()
 
             portals.push(startPoint)
@@ -135,10 +127,10 @@ class SpatialMeshFind(val spatialMesh: SpatialMesh) {
                 assert(firstTriangle.pointInsideTriangle(startPoint))
                 assert(lastTriangle.pointInsideTriangle(endPoint))
 
-                val startVertex = Triangle.getNotCommonVertex(firstTriangle, secondTriangle)
+                val startVertex = Triangle.getNotCommonVertex(firstTriangle, secondTriangle).point
 
-                var vertexCW0: IPoint = startVertex
-                var vertexCCW0: IPoint = startVertex
+                var vertexCW0: Point = startVertex
+                var vertexCCW0: Point = startVertex
 
                 //trace(startVertex);
 
@@ -175,7 +167,7 @@ class SpatialMeshFind(val spatialMesh: SpatialMesh) {
             override fun toString(): String = "Funnel($path)"
 
             companion object {
-                private fun triarea2(a: IPoint, b: IPoint, c: IPoint): Double {
+                private fun triarea2(a: Point, b: Point, c: Point): Float {
                     val ax = b.x - a.x
                     val ay = b.y - a.y
                     val bx = c.x - a.x
@@ -183,15 +175,14 @@ class SpatialMeshFind(val spatialMesh: SpatialMesh) {
                     return bx * ay - ax * by
                 }
 
-                private fun vdistsqr(a: IPoint, b: IPoint): Double = hypot(b.x - a.x, b.y - a.y)
+                private fun vdistsqr(a: Point, b: Point): Float = hypot(b.x - a.x, b.y - a.y)
                 private fun vdistsqr(ax: Double, ay: Double, bx: Double, by: Double): Double = hypot(bx - ax, by - ay)
 
-                private fun vequal(a: IPoint, b: IPoint): Boolean = vdistsqr(a, b) < (0.001 * 0.001)
+                private fun vequal(a: Point, b: Point): Boolean = vdistsqr(a, b) < (0.001 * 0.001)
                 private fun vequal(ax: Double, ay: Double, bx: Double, by: Double): Boolean = vdistsqr(ax, ay, bx, by) < (0.001 * 0.001)
             }
 
-
-            fun push(p1: IPoint, p2: IPoint = p1) {
+            fun push(p1: Point, p2: Point = p1) {
                 this.portals.add(Portal(p1, p2))
                 /*if (p2 == p1) {
                     trace('channel.push(' + p1 + ');');
@@ -200,19 +191,16 @@ class SpatialMeshFind(val spatialMesh: SpatialMesh) {
                 }*/
             }
 
-            fun stringPull(): IPointArrayList {
+            fun stringPull(): PointList {
                 val pts = PointArrayList()
                 // Init scan state
-                var portalApex: IPoint
-                var portalLeft: IPoint
-                var portalRight: IPoint
                 var apexIndex: Int = 0
                 var leftIndex: Int = 0
                 var rightIndex: Int = 0
 
-                portalApex = portals[0].left
-                portalLeft = portals[0].left
-                portalRight = portals[0].right
+                var portalApex = portals[0].left
+                var portalLeft = portals[0].left
+                var portalRight = portals[0].right
 
                 // Add start point.
                 pts.add(portalApex)
@@ -270,7 +258,7 @@ class SpatialMeshFind(val spatialMesh: SpatialMesh) {
                     }
                 }
 
-                if ((pts.size == 0) || (!vequal(pts.getX(pts.size - 1), pts.getY(pts.size - 1), portals[portals.size - 1].left.x, portals[portals.size - 1].left.y))) {
+                if ((pts.size == 0) || (!vequal(pts[pts.size - 1], portals[portals.size - 1].left))) {
                     // Append last point to path.
                     pts.add(portals[portals.size - 1].left)
                 }
@@ -279,7 +267,7 @@ class SpatialMeshFind(val spatialMesh: SpatialMesh) {
                 return pts
             }
 
-            data class Portal(val left: IPoint, val right: IPoint)
+            data class Portal(val left: Point, val right: Point)
         }
     }
 

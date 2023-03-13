@@ -2,25 +2,14 @@ package com.soywiz.korge.view
 
 import com.soywiz.klock.*
 import com.soywiz.klogger.*
-import com.soywiz.korev.Event
-import com.soywiz.korev.dispatch
-import com.soywiz.korge.baseview.BaseView
-import com.soywiz.korge.component.*
-import com.soywiz.korge.tests.ViewsForTesting
-import com.soywiz.korge.tween.get
-import com.soywiz.korge.tween.tween
-import com.soywiz.korim.bitmap.Bitmap32
-import com.soywiz.korim.color.Colors
-import com.soywiz.korio.lang.portableSimpleName
-import com.soywiz.korio.util.niceStr
-import com.soywiz.korma.geom.MRectangle
-import com.soywiz.korma.geom.vector.circle
-import com.soywiz.korma.geom.vector.rect
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
-import kotlin.test.assertNull
-import kotlin.test.assertTrue
+import com.soywiz.korev.*
+import com.soywiz.korge.tests.*
+import com.soywiz.korge.tween.*
+import com.soywiz.korim.bitmap.*
+import com.soywiz.korim.color.*
+import com.soywiz.korio.util.*
+import com.soywiz.korma.geom.*
+import kotlin.test.*
 
 class ViewsTest : ViewsForTesting() {
     val logger = Logger("ViewsTest")
@@ -58,7 +47,7 @@ class ViewsTest : ViewsForTesting() {
     fun testFixedUpdaterLimit() {
         val view = DummyView()
         var ticks = 0
-        view.addFixedUpdater(1.seconds / 60, initial = true, limitCallsPerFrame = 6) {
+        view.addFixedUpdater(1.seconds / 60, first = true, limitCallsPerFrame = 6) {
             ticks++
         }
         assertEquals(1, ticks)
@@ -214,7 +203,7 @@ class ViewsTest : ViewsForTesting() {
         container.y = 100.0
         this.addChild(container)
         val contents = CpuGraphics().updateShape {
-            fill(Colors.RED) { circle(0.0,0.0,100.0) }
+            fill(Colors.RED) { circle(Point(0, 0), 100f) }
         }
         container.addChild(contents)
         assertEquals(MRectangle(-100, -100, 200, 200), contents.getBounds(container), "bounds1") // (x=-100, y=-100, w=200, h=200)
@@ -392,56 +381,50 @@ class ViewsTest : ViewsForTesting() {
                 }
             }
         }
-        container3.alpha = 0.5
-        container1.alpha = 0.5
+        container3.alphaF = 0.5f
+        container1.alphaF = 0.5f
         assertEquals(0.25, container3.renderColorMul.ad, 0.03)
-        container3.alpha = 0.10
-        container1.alpha = 1.0
+        container3.alphaF = 0.10f
+        container1.alphaF = 1.0f
         assertEquals(0.10, container3.renderColorMul.ad, 0.03)
+    }
+
+    class MyEvent(
+        override val type: EventType<MyEvent> = MyEvent.Type.MY
+    ) : Event(), TEvent<MyEvent> {
+        enum class Type : EventType<MyEvent> { MY, OTHER }
     }
 
     @Test
     fun testDoubleDispatch() = viewsTest {
-        class MyEvent : Event()
-        class MyOtherEvent : Event()
-
-        fun BaseView.addEventComponent(block: (Event) -> Unit) {
-            addComponent(object : EventComponent {
-                override fun onEvent(event: Event) = block(event)
-                override val view: BaseView get() = this@addEventComponent
-            })
-        }
-
         val log = arrayListOf<String>()
 
         container {
-            this.addEventComponent {
-                log.add("Container:${it::class.portableSimpleName}")
-            }
+            this.onEvents(MyEvent.Type.MY, MyEvent.Type.OTHER) { log.add("Container:${it.type}") }
             solidRect(100, 100) {
-                this.addEventComponent {
-                    log.add("SolidRect1:${it::class.portableSimpleName}")
-                    if (it is MyEvent) {
+                this.onEvents(MyEvent.Type.MY, MyEvent.Type.OTHER) {
+                    log.add("SolidRect1:${it.type}")
+                    if (it.type == MyEvent.Type.MY) {
                         this@container.addChildAt(SolidRect(200, 200).apply {
-                            this.addEventComponent {
-                                log.add("SolidRect2:${it::class.portableSimpleName}")
+                            this.onEvents(MyEvent.Type.MY, MyEvent.Type.OTHER) {
+                                log.add("SolidRect2:${it.type}")
                             }
                         }, 0)
-                        views.dispatch(MyOtherEvent())
+                        views.dispatch(MyEvent(MyEvent.Type.OTHER))
                     }
                 }
             }
         }
 
-        views.dispatch(MyEvent())
+        views.dispatch(MyEvent(MyEvent.Type.MY))
 
         assertEquals(
             """
-                SolidRect1:MyEvent
-                SolidRect2:MyOtherEvent
-                SolidRect1:MyOtherEvent
-                Container:MyOtherEvent
-                Container:MyEvent
+                SolidRect1:MY
+                SolidRect2:OTHER
+                SolidRect1:OTHER
+                Container:OTHER
+                Container:MY
             """.trimIndent(),
             log.joinToString("\n")
         )
@@ -449,16 +432,14 @@ class ViewsTest : ViewsForTesting() {
 
     //// sorted
 
-    class SortedChildrenByComponent(override val view: Container, var comparator: Comparator<View>) : UpdateComponent {
-        override fun update(dt: TimeSpan) = view.sortChildrenBy(comparator)
-    }
     private fun <T, T2 : Comparable<T2>> ((T) -> T2).toComparator() = Comparator { a: T, b: T -> this(a).compareTo(this(b)) }
     fun <T2 : Comparable<T2>> Container.sortChildrenBy(selector: (View) -> T2) = sortChildrenBy(selector.toComparator())
     fun Container.sortChildrenByY() = sortChildrenBy(View::y)
     fun <T : Container> T.keepChildrenSortedBy(comparator: Comparator<View>): T {
-        SortedChildrenByComponent(this, comparator).attach()
+        addUpdater { this.sortChildrenBy(comparator) }
         return this
     }
+
     fun <T : Container, T2 : Comparable<T2>> T.keepChildrenSortedBy(selector: (View) -> T2): T = this.keepChildrenSortedBy(selector.toComparator())
     fun <T : Container> T.keepChildrenSortedByY(): T = this.keepChildrenSortedBy(View::y)
 

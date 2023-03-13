@@ -29,8 +29,12 @@ open class AGObject : Closeable {
 }
 
 class AGBuffer : AGObject() {
-    internal var mem: Buffer? = null
+    var mem: Buffer? = null
+        private set
 
+    // @TODO: Allow upload range in addition to the full buffer.
+    // @TODO: This will allow to upload chunks of uniform buffers for example.
+    // glBufferData & glBufferSubData
     fun upload(data: ByteArray, offset: Int = 0, length: Int = data.size - offset): AGBuffer = upload(Int8Buffer(data, offset, length).buffer)
     fun upload(data: FloatArray, offset: Int = 0, length: Int = data.size - offset): AGBuffer = upload(Float32Buffer(data, offset, length).buffer)
     fun upload(data: IntArray, offset: Int = 0, length: Int = data.size - offset): AGBuffer = upload(Int32Buffer(data, offset, length).buffer)
@@ -49,6 +53,8 @@ inline class AGTextureUnitInfo private constructor(val data: Int) {
     companion object {
         val INVALID = AGTextureUnitInfo(-1)
         val DEFAULT = AGTextureUnitInfo(0).withLinearTrilinear(true, true).withWrap(AGWrapMode.CLAMP_TO_EDGE)
+
+        fun fromRaw(data: Int): AGTextureUnitInfo = AGTextureUnitInfo(data)
 
         operator fun invoke(
             wrap: AGWrapMode = AGWrapMode.CLAMP_TO_EDGE,
@@ -69,9 +75,9 @@ inline class AGTextureUnitInfo private constructor(val data: Int) {
 }
 
 class AGTexture(
-    val premultiplied: Boolean = true,
     val targetKind: AGTextureTargetKind = AGTextureTargetKind.TEXTURE_2D
 ) : AGObject(), Closeable {
+    private val logger = Logger("AGTexture")
     var isFbo: Boolean = false
     var requestMipmaps: Boolean = false
 
@@ -88,7 +94,7 @@ class AGTexture(
 
     private fun checkBitmaps(bmp: Bitmap) {
         if (!bmp.premultiplied) {
-            Console.error("Trying to upload a non-premultiplied bitmap: $bmp. This will cause rendering artifacts")
+            logger.error { "Trying to upload a non-premultiplied bitmap: $bmp. This will cause rendering artifacts" }
         }
     }
 
@@ -113,12 +119,12 @@ class AGTexture(
         return requestMipmaps && width.isPowerOfTwo && height.isPowerOfTwo
     }
 
-    override fun toString(): String = "AGTexture(size=$width,$height,pre=$premultiplied)"
+    override fun toString(): String = "AGTexture(size=$width,$height)"
 }
 
 open class AGFrameBufferBase(val isMain: Boolean) : AGObject() {
     val isTexture: Boolean get() = !isMain
-    val tex: AGTexture = AGTexture(premultiplied = true).also { it.isFbo = true }
+    val tex: AGTexture = AGTexture().also { it.isFbo = true }
     var estimatedMemoryUsage: ByteUnits = ByteUnits.fromBytes(0)
 
     override fun close() {

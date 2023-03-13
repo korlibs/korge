@@ -1,26 +1,12 @@
 package samples
 
-import com.soywiz.korge.component.onStageResized
-import com.soywiz.korge.scene.MaskTransition
-import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.scene.TransitionView
-import com.soywiz.korge.view.Container
-import com.soywiz.korge.view.DummyView
-import com.soywiz.korge.view.SContainer
-import com.soywiz.korge.view.clipContainer
-import com.soywiz.korge.view.container
-import com.soywiz.korge.view.filter.filter
-import com.soywiz.korge.view.filter.IdentityFilter
-import com.soywiz.korge.view.filter.TransitionFilter
-import com.soywiz.korge.view.image
-import com.soywiz.korge.view.solidRect
-import com.soywiz.korge.view.unsafeRenderToBitmapSync
-import com.soywiz.korge.view.vector.gpuShapeView
-import com.soywiz.korge.view.xy
-import com.soywiz.korim.color.Colors
-import com.soywiz.korim.format.readBitmap
-import com.soywiz.korio.file.std.resourcesVfs
-import com.soywiz.korma.geom.vector.rect
+import com.soywiz.korge.scene.*
+import com.soywiz.korge.view.*
+import com.soywiz.korge.view.filter.*
+import com.soywiz.korge.view.vector.*
+import com.soywiz.korim.color.*
+import com.soywiz.korim.format.*
+import com.soywiz.korio.file.std.*
 
 class MainClipping : Scene() {
     override suspend fun SContainer.sceneMain() {

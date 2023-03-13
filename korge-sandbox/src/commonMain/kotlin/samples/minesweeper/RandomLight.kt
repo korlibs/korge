@@ -34,22 +34,22 @@ class RandomLight(
 		incs = random[0.5, 2.0]
 		excx = random[0.7, 1.3]
 		excy = random[0.7, 1.3]
-		alpha = 0.1
+		alphaF = 0.1f
 
 		while (true) {
 			rotation += inca.degrees
-			x = w2 - cos(rotation) * w2 * excx + sx
-			y = h2 - sin(rotation) * h2 * excy + sy
-			scale = 1 + (cos(rotation) / 6) * incs
+			x = w2 - cosd(rotation) * w2 * excx + sx
+			y = h2 - sind(rotation) * h2 * excy + sy
+			scale = 1 + (cosd(rotation) / 6) * incs
 
             //println("FRAME! $x -> $x2")
 
             // Check if a light sphere collided with another one
 			// The default collision system is inner circle
 			if (this.collision<RandomLight>() != null) {
-				alpha = (alpha + 0.01).coerceIn(0.1, 0.8)
+				alphaF = (alphaF + 0.01).coerceIn(0.1, 0.8).toFloat()
 			} else {
-				alpha = (alpha - 0.05).coerceIn(0.1, 0.8)
+				alphaF = (alphaF - 0.05).coerceIn(0.1, 0.8).toFloat()
 			}
 
 			frame()

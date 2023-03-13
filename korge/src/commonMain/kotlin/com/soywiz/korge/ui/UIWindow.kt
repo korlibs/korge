@@ -12,7 +12,7 @@ import com.soywiz.korgw.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.text.*
 import com.soywiz.korma.geom.*
-import com.soywiz.korma.length.LengthExtensions.Companion.percent
+import com.soywiz.korma.interpolation.*
 
 @KorgeExperimental
 inline fun Container.uiWindow(
@@ -38,7 +38,7 @@ class UIWindow(title: String, width: Double = 256.0, height: Double = 256.0) : U
     var maxHeight = 4096.0
 
     private val bgMaterial = uiMaterialLayer(width, height) {
-        radius = IRectCorners(12.0)
+        radius = RectCorners(12.0)
         colorMul = if (isFocused) Colors["#394674"] else Colors["#999"]
         shadowColor = Colors.BLACK.withAd(0.9)
         shadowRadius = 20.0
@@ -54,7 +54,7 @@ class UIWindow(title: String, width: Double = 256.0, height: Double = 256.0) : U
     private val titleContainer = fixedSizeContainer(width, titleHeight)
     private val titleView = titleContainer.textBlock(RichTextData(title), align = TextAlignment.MIDDLE_LEFT).xy(12, 0).size(width, titleHeight)
     private val closeButton = titleContainer.uiButton("X", width = titleHeight - buttonSeparation * 2, height = titleHeight - buttonSeparation * 2) {
-        radius = 100.percent
+        radiusRatio = Ratio.ONE
         elevation = false
         bgColorOut = MaterialColors.RED_600
         bgColorOver = MaterialColors.RED_800
@@ -71,7 +71,7 @@ class UIWindow(title: String, width: Double = 256.0, height: Double = 256.0) : U
         }
 
     class ScaleHandler(val window: UIWindow, val anchor: Anchor) {
-        val isCorner = (anchor.sx == anchor.sy)
+        val isCorner = (anchor.doubleX == anchor.doubleY)
 
         val view = window.solidRect(0.0, 0.0, Colors.TRANSPARENT) {
             val sh = this
@@ -82,14 +82,14 @@ class UIWindow(title: String, width: Double = 256.0, height: Double = 256.0) : U
                 val obounds = window.getGlobalBounds().clone()
                 val bounds = obounds.clone()
                 when {
-                    anchor.sx < 0.5 -> {
+                    anchor.doubleX < 0.5 -> {
                         bounds.left = it.cx
                         if (bounds.width !in window.minWidth..window.maxWidth) {
                             bounds.left = obounds.left
                         }
                     }
 
-                    anchor.sx > 0.5 -> {
+                    anchor.doubleX > 0.5 -> {
                         bounds.right = it.cx
                         bounds.width = bounds.width.clamp(window.minWidth, window.maxWidth)
                     }
@@ -115,12 +115,12 @@ class UIWindow(title: String, width: Double = 256.0, height: Double = 256.0) : U
             }
         }
 
-        private fun getExpectedX(): Double = window.width * anchor.sx + when (anchor.sx) {
+        private fun getExpectedX(): Double = window.width * anchor.doubleX + when (anchor.doubleX) {
             0.0 -> -2.0
             1.0 -> +2.0
             else -> 0.0
         }
-        private fun getExpectedY(): Double = window.height * anchor.sy + when (anchor.sy) {
+        private fun getExpectedY(): Double = window.height * anchor.doubleY + when (anchor.doubleY) {
             0.0 -> -2.0
             1.0 -> +2.0
             else -> 0.0
@@ -131,11 +131,11 @@ class UIWindow(title: String, width: Double = 256.0, height: Double = 256.0) : U
                 .position(getExpectedX(), getExpectedY())
                 .size(
                     when {
-                        anchor.sx == 0.5 -> width
+                        anchor.doubleX == 0.5 -> width
                         //corner -> 14.0
                         else -> 10.0
                     }, when {
-                        anchor.sy == 0.5 -> height
+                        anchor.doubleY == 0.5 -> height
                         //corner -> 14.0
                         else -> 10.0
                     }
@@ -233,7 +233,7 @@ class UIWindow(title: String, width: Double = 256.0, height: Double = 256.0) : U
     }
 
     suspend fun closeAnimated() {
-        tween(this::height[0.0], this::alpha[0.0], time = 300.milliseconds)
+        tween(this::height[0.0], this::alphaF[0.0f], time = 300.milliseconds)
         removeFromParent()
     }
 }

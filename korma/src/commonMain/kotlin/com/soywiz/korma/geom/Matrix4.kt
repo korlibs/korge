@@ -78,32 +78,21 @@ enum class MajorOrder { ROW, COLUMN }
 
 typealias MMatrix4 = MMatrix3D
 
+// Stored as four consecutive column vectors (effectively stored in column-major order) see https://en.wikipedia.org/wiki/Row-_and_column-major_order
 @KormaMutableApi
-interface IMatrix3D {
-    val v00: Float
-    val v01: Float
-    val v02: Float
-    val v03: Float
+class MMatrix3D {
+    val data: FloatArray = floatArrayOf(
+        1f, 0f, 0f, 0f, // column-0
+        0f, 1f, 0f, 0f, // column-1
+        0f, 0f, 1f, 0f, // column-2
+        0f, 0f, 0f, 1f  // column-3
+    )
 
-    val v10: Float
-    val v11: Float
-    val v12: Float
-    val v13: Float
-
-    val v20: Float
-    val v21: Float
-    val v22: Float
-    val v23: Float
-
-    val v30: Float
-    val v31: Float
-    val v32: Float
-    val v33: Float
-
-    fun getIndex(index: Int): Float
+    operator fun set(row: Int, column: Int, value: Float) = setIndex(MMatrix3D.columnMajorIndex(row, column), value)
+    operator fun set(row: Int, column: Int, value: Double) = this.set(row, column, value.toFloat())
+    operator fun set(row: Int, column: Int, value: Int) = this.set(row, column, value.toFloat())
 
     operator fun get(row: Int, column: Int): Float = getIndex(MMatrix3D.columnMajorIndex(row, column))
-
 
     fun copyToFloatWxH(out: FloatArray, rows: Int, columns: Int, order: MajorOrder) {
         copyToFloatWxH(out, rows, columns, order, 0)
@@ -126,42 +115,6 @@ interface IMatrix3D {
     fun copyToFloat3x3(out: FloatArray, order: MajorOrder, offset: Int) = copyToFloatWxH(out, 3, 3, order, offset)
     fun copyToFloat4x4(out: FloatArray, order: MajorOrder, offset: Int) = copyToFloatWxH(out, 4, 4, order, offset)
 
-}
-
-interface IMMatrix3D : IMatrix3D {
-    override var v00: Float
-    override var v01: Float
-    override var v02: Float
-    override var v03: Float
-    override var v10: Float
-    override var v11: Float
-    override var v12: Float
-    override var v13: Float
-    override var v20: Float
-    override var v21: Float
-    override var v22: Float
-    override var v23: Float
-    override var v30: Float
-    override var v31: Float
-    override var v32: Float
-    override var v33: Float
-
-    fun setIndex(index: Int, value: Float): Unit
-    operator fun set(row: Int, column: Int, value: Float) = setIndex(MMatrix3D.columnMajorIndex(row, column), value)
-    operator fun set(row: Int, column: Int, value: Double) = this.set(row, column, value.toFloat())
-    operator fun set(row: Int, column: Int, value: Int) = this.set(row, column, value.toFloat())
-}
-
-// Stored as four consecutive column vectors (effectively stored in column-major order) see https://en.wikipedia.org/wiki/Row-_and_column-major_order
-@KormaMutableApi
-class MMatrix3D : IMMatrix3D {
-    val data: FloatArray = floatArrayOf(
-        1f, 0f, 0f, 0f, // column-0
-        0f, 1f, 0f, 0f, // column-1
-        0f, 0f, 1f, 0f, // column-2
-        0f, 0f, 0f, 1f  // column-3
-    )
-
     companion object {
         const val M00 = 0
         const val M10 = 1
@@ -183,14 +136,14 @@ class MMatrix3D : IMMatrix3D {
         const val M23 = 14
         const val M33 = 15
 
-        operator fun invoke(m: MMatrix3D) = MMatrix3D().copyFrom(m)
+        operator fun invoke(m: MMatrix4) = MMatrix3D().copyFrom(m)
 
         fun fromRows(
             a00: Double, a01: Double, a02: Double, a03: Double,
             a10: Double, a11: Double, a12: Double, a13: Double,
             a20: Double, a21: Double, a22: Double, a23: Double,
             a30: Double, a31: Double, a32: Double, a33: Double
-        ): MMatrix3D = MMatrix3D().setRows(
+        ): MMatrix4 = MMatrix3D().setRows(
             a00.toFloat(), a01.toFloat(), a02.toFloat(), a03.toFloat(),
             a10.toFloat(), a11.toFloat(), a12.toFloat(), a13.toFloat(),
             a20.toFloat(), a21.toFloat(), a22.toFloat(), a23.toFloat(),
@@ -201,7 +154,7 @@ class MMatrix3D : IMMatrix3D {
             a10: Float, a11: Float, a12: Float, a13: Float,
             a20: Float, a21: Float, a22: Float, a23: Float,
             a30: Float, a31: Float, a32: Float, a33: Float
-        ): MMatrix3D = MMatrix3D().setRows(
+        ): MMatrix4 = MMatrix3D().setRows(
             a00, a01, a02, a03,
             a10, a11, a12, a13,
             a20, a21, a22, a23,
@@ -213,7 +166,7 @@ class MMatrix3D : IMMatrix3D {
             a01: Double, a11: Double, a21: Double, a31: Double,
             a02: Double, a12: Double, a22: Double, a32: Double,
             a03: Double, a13: Double, a23: Double, a33: Double
-        ): MMatrix3D = MMatrix3D().setColumns(
+        ): MMatrix4 = MMatrix3D().setColumns(
             a00.toFloat(), a10.toFloat(), a20.toFloat(), a30.toFloat(),
             a01.toFloat(), a11.toFloat(), a21.toFloat(), a31.toFloat(),
             a02.toFloat(), a12.toFloat(), a22.toFloat(), a32.toFloat(),
@@ -224,7 +177,7 @@ class MMatrix3D : IMMatrix3D {
             a01: Float, a11: Float, a21: Float, a31: Float,
             a02: Float, a12: Float, a22: Float, a32: Float,
             a03: Float, a13: Float, a23: Float, a33: Float
-        ): MMatrix3D = MMatrix3D().setColumns(
+        ): MMatrix4 = MMatrix3D().setColumns(
             a00, a10, a20, a30,
             a01, a11, a21, a31,
             a02, a12, a22, a32,
@@ -235,7 +188,7 @@ class MMatrix3D : IMMatrix3D {
             a00: Double, a01: Double, a02: Double,
             a10: Double, a11: Double, a12: Double,
             a20: Double, a21: Double, a22: Double
-        ): MMatrix3D = MMatrix3D().setRows3x3(
+        ): MMatrix4 = MMatrix3D().setRows3x3(
             a00.toFloat(), a01.toFloat(), a02.toFloat(),
             a10.toFloat(), a11.toFloat(), a12.toFloat(),
             a20.toFloat(), a21.toFloat(), a22.toFloat()
@@ -244,7 +197,7 @@ class MMatrix3D : IMMatrix3D {
             a00: Float, a01: Float, a02: Float,
             a10: Float, a11: Float, a12: Float,
             a20: Float, a21: Float, a22: Float
-        ): MMatrix3D = MMatrix3D().setRows3x3(
+        ): MMatrix4 = MMatrix3D().setRows3x3(
             a00, a01, a02,
             a10, a11, a12,
             a20, a21, a22
@@ -254,7 +207,7 @@ class MMatrix3D : IMMatrix3D {
             a00: Double, a10: Double, a20: Double,
             a01: Double, a11: Double, a21: Double,
             a02: Double, a12: Double, a22: Double
-        ): MMatrix3D = MMatrix3D().setColumns3x3(
+        ): MMatrix4 = MMatrix3D().setColumns3x3(
             a00.toFloat(), a10.toFloat(), a20.toFloat(),
             a01.toFloat(), a11.toFloat(), a21.toFloat(),
             a02.toFloat(), a12.toFloat(), a22.toFloat()
@@ -263,7 +216,7 @@ class MMatrix3D : IMMatrix3D {
             a00: Float, a10: Float, a20: Float,
             a01: Float, a11: Float, a21: Float,
             a02: Float, a12: Float, a22: Float
-        ): MMatrix3D = MMatrix3D().setColumns3x3(
+        ): MMatrix4 = MMatrix3D().setColumns3x3(
             a00, a10, a20,
             a01, a11, a21,
             a02, a12, a22
@@ -272,14 +225,14 @@ class MMatrix3D : IMMatrix3D {
         fun fromRows2x2(
             a00: Double, a01: Double,
             a10: Double, a11: Double
-        ): MMatrix3D = MMatrix3D().setRows2x2(
+        ): MMatrix4 = MMatrix3D().setRows2x2(
             a00.toFloat(), a01.toFloat(),
             a10.toFloat(), a11.toFloat()
         )
         fun fromRows2x2(
             a00: Float, a01: Float,
             a10: Float, a11: Float
-        ): MMatrix3D = MMatrix3D().setRows2x2(
+        ): MMatrix4 = MMatrix3D().setRows2x2(
             a00, a01,
             a10, a11
         )
@@ -287,14 +240,14 @@ class MMatrix3D : IMMatrix3D {
         fun fromColumns2x2(
             a00: Double, a10: Double,
             a01: Double, a11: Double
-        ): MMatrix3D = MMatrix3D().setColumns2x2(
+        ): MMatrix4 = MMatrix3D().setColumns2x2(
             a00.toFloat(), a10.toFloat(),
             a01.toFloat(), a11.toFloat()
         )
         fun fromColumns2x2(
             a00: Float, a10: Float,
             a01: Float, a11: Float
-        ): MMatrix3D = MMatrix3D().setColumns2x2(
+        ): MMatrix4 = MMatrix3D().setColumns2x2(
             a00, a10,
             a01, a11
         )
@@ -317,32 +270,32 @@ class MMatrix3D : IMMatrix3D {
         }
     }
 
-    override fun setIndex(index: Int, value: Float) { data[index] = value }
-    override fun getIndex(index: Int): Float = data[index]
+    fun setIndex(index: Int, value: Float) { data[index] = value }
+    fun getIndex(index: Int): Float = data[index]
 
-    override var v00: Float get() = data[M00]; set(v) { data[M00] = v }
-    override var v01: Float get() = data[M01]; set(v) { data[M01] = v }
-    override var v02: Float get() = data[M02]; set(v) { data[M02] = v }
-    override var v03: Float get() = data[M03]; set(v) { data[M03] = v }
+    var v00: Float get() = data[M00]; set(v) { data[M00] = v }
+    var v01: Float get() = data[M01]; set(v) { data[M01] = v }
+    var v02: Float get() = data[M02]; set(v) { data[M02] = v }
+    var v03: Float get() = data[M03]; set(v) { data[M03] = v }
 
-    override var v10: Float get() = data[M10]; set(v) { data[M10] = v }
-    override var v11: Float get() = data[M11]; set(v) { data[M11] = v }
-    override var v12: Float get() = data[M12]; set(v) { data[M12] = v }
-    override var v13: Float get() = data[M13]; set(v) { data[M13] = v }
+    var v10: Float get() = data[M10]; set(v) { data[M10] = v }
+    var v11: Float get() = data[M11]; set(v) { data[M11] = v }
+    var v12: Float get() = data[M12]; set(v) { data[M12] = v }
+    var v13: Float get() = data[M13]; set(v) { data[M13] = v }
 
-    override var v20: Float get() = data[M20]; set(v) { data[M20] = v }
-    override var v21: Float get() = data[M21]; set(v) { data[M21] = v }
-    override var v22: Float get() = data[M22]; set(v) { data[M22] = v }
-    override var v23: Float get() = data[M23]; set(v) { data[M23] = v }
+    var v20: Float get() = data[M20]; set(v) { data[M20] = v }
+    var v21: Float get() = data[M21]; set(v) { data[M21] = v }
+    var v22: Float get() = data[M22]; set(v) { data[M22] = v }
+    var v23: Float get() = data[M23]; set(v) { data[M23] = v }
 
-    override var v30: Float get() = data[M30]; set(v) { data[M30] = v }
-    override var v31: Float get() = data[M31]; set(v) { data[M31] = v }
-    override var v32: Float get() = data[M32]; set(v) { data[M32] = v }
-    override var v33: Float get() = data[M33]; set(v) { data[M33] = v }
+    var v30: Float get() = data[M30]; set(v) { data[M30] = v }
+    var v31: Float get() = data[M31]; set(v) { data[M31] = v }
+    var v32: Float get() = data[M32]; set(v) { data[M32] = v }
+    var v33: Float get() = data[M33]; set(v) { data[M33] = v }
 
-    val transposed: MMatrix3D get() = this.clone().transpose()
+    val transposed: MMatrix4 get() = this.clone().transpose()
 
-    fun transpose(): MMatrix3D = setColumns(
+    fun transpose(): MMatrix4 = setColumns(
         v00, v01, v02, v03,
         v10, v11, v12, v13,
         v20, v21, v22, v23,
@@ -354,7 +307,7 @@ class MMatrix3D : IMMatrix3D {
         a10: Float, a11: Float, a12: Float, a13: Float,
         a20: Float, a21: Float, a22: Float, a23: Float,
         a30: Float, a31: Float, a32: Float, a33: Float
-    ): MMatrix3D = this.apply {
+    ): MMatrix4 = this.apply {
         v00 = a00; v01 = a01; v02 = a02; v03 = a03
         v10 = a10; v11 = a11; v12 = a12; v13 = a13
         v20 = a20; v21 = a21; v22 = a22; v23 = a23
@@ -366,7 +319,7 @@ class MMatrix3D : IMMatrix3D {
         a01: Float, a11: Float, a21: Float, a31: Float,
         a02: Float, a12: Float, a22: Float, a32: Float,
         a03: Float, a13: Float, a23: Float, a33: Float
-    ): MMatrix3D {
+    ): MMatrix4 {
         v00 = a00; v01 = a01; v02 = a02; v03 = a03
         v10 = a10; v11 = a11; v12 = a12; v13 = a13
         v20 = a20; v21 = a21; v22 = a22; v23 = a23
@@ -377,7 +330,7 @@ class MMatrix3D : IMMatrix3D {
     fun setColumns2x2(
         a00: Double, a10: Double,
         a01: Double, a11: Double
-    ): MMatrix3D = setColumns(
+    ): MMatrix4 = setColumns(
         a00.toFloat(), a10.toFloat(), 0f, 0f,
         a01.toFloat(), a11.toFloat(), 0f, 0f,
         0f, 0f, 1f, 0f,
@@ -386,28 +339,28 @@ class MMatrix3D : IMMatrix3D {
     fun setColumns2x2(
         a00: Float, a10: Float,
         a01: Float, a11: Float
-    ): MMatrix3D = setColumns(
+    ): MMatrix4 = setColumns(
         a00, a10, 0f, 0f,
         a01, a11, 0f, 0f,
         0f, 0f, 1f, 0f,
         0f, 0f, 0f, 1f
     )
 
-    fun setColumns4x4(f: FloatArray, offset: Int): MMatrix3D = setColumns(
+    fun setColumns4x4(f: FloatArray, offset: Int): MMatrix4 = setColumns(
         f[offset + 0], f[offset + 1], f[offset + 2], f[offset + 3],
         f[offset + 4], f[offset + 5], f[offset + 6], f[offset + 7],
         f[offset + 8], f[offset + 9], f[offset + 10], f[offset + 11],
         f[offset + 12], f[offset + 13], f[offset + 14], f[offset + 15]
     )
 
-    fun setRows4x4(f: FloatArray, offset: Int): MMatrix3D = setRows(
+    fun setRows4x4(f: FloatArray, offset: Int): MMatrix4 = setRows(
         f[offset + 0], f[offset + 1], f[offset + 2], f[offset + 3],
         f[offset + 4], f[offset + 5], f[offset + 6], f[offset + 7],
         f[offset + 8], f[offset + 9], f[offset + 10], f[offset + 11],
         f[offset + 12], f[offset + 13], f[offset + 14], f[offset + 15]
     )
 
-    fun setColumns3x3(f: FloatArray, offset: Int): MMatrix3D = setColumns(
+    fun setColumns3x3(f: FloatArray, offset: Int): MMatrix4 = setColumns(
         f[offset + 0], f[offset + 1], f[offset + 2], 0f,
         f[offset + 3], f[offset + 4], f[offset + 5], 0f,
         f[offset + 6], f[offset + 7], f[offset + 8], 0f,
@@ -435,29 +388,29 @@ class MMatrix3D : IMMatrix3D {
         0f, 0f, 0f, 1f
     )
 
-    fun setRow(row: Int, a: Float, b: Float, c: Float, d: Float): MMatrix3D {
+    fun setRow(row: Int, a: Float, b: Float, c: Float, d: Float): MMatrix4 {
         data[columnMajorIndex(row, 0)] = a
         data[columnMajorIndex(row, 1)] = b
         data[columnMajorIndex(row, 2)] = c
         data[columnMajorIndex(row, 3)] = d
         return this
     }
-    fun setRow(row: Int, a: Double, b: Double, c: Double, d: Double): MMatrix3D = setRow(row, a.toFloat(), b.toFloat(), c.toFloat(), d.toFloat())
-    fun setRow(row: Int, a: Int, b: Int, c: Int, d: Int): MMatrix3D = setRow(row, a.toFloat(), b.toFloat(), c.toFloat(), d.toFloat())
-    fun setRow(row: Int, data: FloatArray): MMatrix3D = setRow(row, data[0], data[1], data[2], data[3])
-    fun setRow(row: Int, data: MVector4): MMatrix3D = setRow(row, data.x, data.y, data.w, data.z)
+    fun setRow(row: Int, a: Double, b: Double, c: Double, d: Double): MMatrix4 = setRow(row, a.toFloat(), b.toFloat(), c.toFloat(), d.toFloat())
+    fun setRow(row: Int, a: Int, b: Int, c: Int, d: Int): MMatrix4 = setRow(row, a.toFloat(), b.toFloat(), c.toFloat(), d.toFloat())
+    fun setRow(row: Int, data: FloatArray): MMatrix4 = setRow(row, data[0], data[1], data[2], data[3])
+    fun setRow(row: Int, data: MVector4): MMatrix4 = setRow(row, data.x, data.y, data.w, data.z)
 
-    fun setColumn(column: Int, a: Float, b: Float, c: Float, d: Float): MMatrix3D {
+    fun setColumn(column: Int, a: Float, b: Float, c: Float, d: Float): MMatrix4 {
         data[columnMajorIndex(0, column)] = a
         data[columnMajorIndex(1, column)] = b
         data[columnMajorIndex(2, column)] = c
         data[columnMajorIndex(3, column)] = d
         return this
     }
-    fun setColumn(column: Int, a: Double, b: Double, c: Double, d: Double): MMatrix3D = setColumn(column, a.toFloat(), b.toFloat(), c.toFloat(), d.toFloat())
-    fun setColumn(column: Int, a: Int, b: Int, c: Int, d: Int): MMatrix3D = setColumn(column, a.toFloat(), b.toFloat(), c.toFloat(), d.toFloat())
-    fun setColumn(column: Int, data: FloatArray): MMatrix3D = setColumn(column, data[0], data[1], data[2], data[3])
-    fun setColumn(column: Int, data: MVector4): MMatrix3D = setColumn(column, data.x, data.y, data.w, data.z)
+    fun setColumn(column: Int, a: Double, b: Double, c: Double, d: Double): MMatrix4 = setColumn(column, a.toFloat(), b.toFloat(), c.toFloat(), d.toFloat())
+    fun setColumn(column: Int, a: Int, b: Int, c: Int, d: Int): MMatrix4 = setColumn(column, a.toFloat(), b.toFloat(), c.toFloat(), d.toFloat())
+    fun setColumn(column: Int, data: FloatArray): MMatrix4 = setColumn(column, data[0], data[1], data[2], data[3])
+    fun setColumn(column: Int, data: MVector4): MMatrix4 = setColumn(column, data.x, data.y, data.w, data.z)
 
     fun getRow(n: Int, target: FloatArray = FloatArray(4)): FloatArray {
         val m = n * 4
@@ -527,14 +480,14 @@ class MMatrix3D : IMMatrix3D {
         (v01 * v10 * v22) -
         (v02 * v11 * v20)
 
-    fun identity() = this.setColumns(
+    fun identity(): MMatrix4 = this.setColumns(
         1f, 0f, 0f, 0f,
         0f, 1f, 0f, 0f,
         0f, 0f, 1f, 0f,
         0f, 0f, 0f, 1f
     )
 
-    fun setToTranslation(x: Float, y: Float, z: Float, w: Float = 1f): MMatrix3D = this.setRows(
+    fun setToTranslation(x: Float, y: Float, z: Float, w: Float = 1f): MMatrix4 = this.setRows(
         1f, 0f, 0f, x,
         0f, 1f, 0f, y,
         0f, 0f, 1f, z,
@@ -543,7 +496,7 @@ class MMatrix3D : IMMatrix3D {
     fun setToTranslation(x: Double, y: Double, z: Double, w: Double = 1.0) = setToTranslation(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat())
     fun setToTranslation(x: Int, y: Int, z: Int, w: Int = 1) = setToTranslation(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat())
 
-    fun setToScale(x: Float, y: Float, z: Float, w: Float = 1f): MMatrix3D = this.setRows(
+    fun setToScale(x: Float, y: Float, z: Float, w: Float = 1f): MMatrix4 = this.setRows(
         x, 0f, 0f, 0f,
         0f, y, 0f, 0f,
         0f, 0f, z, 0f,
@@ -552,7 +505,7 @@ class MMatrix3D : IMMatrix3D {
     fun setToScale(x: Double, y: Double, z: Double, w: Double = 1.0) = setToScale(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat())
     fun setToScale(x: Int, y: Int, z: Int, w: Int = 1) = setToScale(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat())
 
-    fun setToShear(x: Float, y: Float, z: Float): MMatrix3D = this.setRows(
+    fun setToShear(x: Float, y: Float, z: Float): MMatrix4 = this.setRows(
         1f, y, z, 0f,
         x, 1f, z, 0f,
         x, y, 1f, 0f,
@@ -561,9 +514,9 @@ class MMatrix3D : IMMatrix3D {
     fun setToShear(x: Double, y: Double, z: Double) = setToShear(x.toFloat(), y.toFloat(), z.toFloat())
     fun setToShear(x: Int, y: Int, z: Int) = setToShear(x.toFloat(), y.toFloat(), z.toFloat())
 
-    fun setToRotationX(angle: Angle): MMatrix3D {
-        val c = cos(angle).toFloat()
-        val s = sin(angle).toFloat()
+    fun setToRotationX(angle: Angle): MMatrix4 {
+        val c = cosd(angle).toFloat()
+        val s = sind(angle).toFloat()
         return this.setRows(
             1f, 0f, 0f, 0f,
             0f, c, - s, 0f,
@@ -572,9 +525,9 @@ class MMatrix3D : IMMatrix3D {
         )
     }
 
-    fun setToRotationY(angle: Angle): MMatrix3D {
-        val c = cos(angle).toFloat()
-        val s = sin(angle).toFloat()
+    fun setToRotationY(angle: Angle): MMatrix4 {
+        val c = cosd(angle).toFloat()
+        val s = sind(angle).toFloat()
         return this.setRows(
             c, 0f, s, 0f,
             0f, 1f, 0f, 0f,
@@ -583,9 +536,9 @@ class MMatrix3D : IMMatrix3D {
         )
     }
 
-    fun setToRotationZ(angle: Angle): MMatrix3D {
-        val c = cos(angle).toFloat()
-        val s = sin(angle).toFloat()
+    fun setToRotationZ(angle: Angle): MMatrix4 {
+        val c = cosd(angle).toFloat()
+        val s = sind(angle).toFloat()
         return this.setRows(
             c, - s, 0f, 0f,
             s, c, 0f, 0f,
@@ -594,15 +547,15 @@ class MMatrix3D : IMMatrix3D {
         )
     }
 
-    fun setToRotation(angle: Angle, x: Float, y: Float, z: Float): MMatrix3D {
+    fun setToRotation(angle: Angle, x: Float, y: Float, z: Float): MMatrix4 {
         val mag = sqrt(x * x + y * y + z * z)
         val norm = 1.0 / mag
 
         val nx = x * norm
         val ny = y * norm
         val nz = z * norm
-        val c = cos(angle)
-        val s = sin(angle)
+        val c = cosd(angle)
+        val s = sind(angle)
         val t = 1 - c
         val tx = t * nx
         val ty = t * ny
@@ -614,11 +567,11 @@ class MMatrix3D : IMMatrix3D {
             0.0, 0.0, 0.0, 1.0
         )
     }
-    fun setToRotation(angle: Angle, direction: MVector4): MMatrix3D = setToRotation(angle, direction.x, direction.y, direction.z)
-    fun setToRotation(angle: Angle, x: Double, y: Double, z: Double): MMatrix3D = setToRotation(angle, x.toFloat(), y.toFloat(), z.toFloat())
-    fun setToRotation(angle: Angle, x: Int, y: Int, z: Int): MMatrix3D = setToRotation(angle, x.toFloat(), y.toFloat(), z.toFloat())
+    fun setToRotation(angle: Angle, direction: MVector4): MMatrix4 = setToRotation(angle, direction.x, direction.y, direction.z)
+    fun setToRotation(angle: Angle, x: Double, y: Double, z: Double): MMatrix4 = setToRotation(angle, x.toFloat(), y.toFloat(), z.toFloat())
+    fun setToRotation(angle: Angle, x: Int, y: Int, z: Int): MMatrix4 = setToRotation(angle, x.toFloat(), y.toFloat(), z.toFloat())
 
-    fun multiply(l: MMatrix3D, r: MMatrix3D) = this.setRows(
+    fun multiply(l: MMatrix4, r: MMatrix4) = this.setRows(
         (l.v00 * r.v00) + (l.v01 * r.v10) + (l.v02 * r.v20) + (l.v03 * r.v30),
         (l.v00 * r.v01) + (l.v01 * r.v11) + (l.v02 * r.v21) + (l.v03 * r.v31),
         (l.v00 * r.v02) + (l.v01 * r.v12) + (l.v02 * r.v22) + (l.v03 * r.v32),
@@ -693,12 +646,12 @@ class MMatrix3D : IMMatrix3D {
         rv30.toFloat(), rv31.toFloat(), rv32.toFloat(), rv33.toFloat(),
     )
 
-    fun multiply(scale: Float, l: MMatrix3D = this): MMatrix3D {
+    fun multiply(scale: Float, l: MMatrix4 = this): MMatrix4 {
         for (n in 0 until 16) this.data[n] = l.data[n] * scale
         return this
     }
 
-    fun copyFrom(that: MMatrix3D): MMatrix3D {
+    fun copyFrom(that: MMatrix4): MMatrix4 {
         for (n in 0 until 16) this.data[n] = that.data[n]
         return this
     }
@@ -725,7 +678,7 @@ class MMatrix3D : IMMatrix3D {
     fun transform(v: MVector4, out: MVector4 = MVector4()): MVector4 = transform(v.x, v.y, v.z, v.w, out)
     fun transform(v: MVector3, out: MVector3 = MVector3()): MVector3 = transform(v.x, v.y, v.z, out)
 
-    fun setToOrtho(left: Float, right: Float, bottom: Float, top: Float, near: Float = 0f, far: Float = 1f): MMatrix3D {
+    fun setToOrtho(left: Float, right: Float, bottom: Float, top: Float, near: Float = 0f, far: Float = 1f): MMatrix4 {
         val sx = 2f / (right - left)
         val sy = 2f / (top - bottom)
         val sz = -2f / (far - near)
@@ -742,15 +695,15 @@ class MMatrix3D : IMMatrix3D {
         )
     }
 
-    fun setToOrtho(rect: MRectangle, near: Double = 0.0, far: Double = 1.0): MMatrix3D = setToOrtho(rect.left, rect.right, rect.bottom, rect.top, near, far)
-    fun setToOrtho(rect: MRectangle, near: Float = 0f, far: Float = 1f): MMatrix3D = setToOrtho(rect.left, rect.right, rect.bottom, rect.top, near.toDouble(), far.toDouble())
-    fun setToOrtho(rect: MRectangle, near: Int = 0, far: Int = 1): MMatrix3D = setToOrtho(rect.left, rect.right, rect.bottom, rect.top, near.toDouble(), far.toDouble())
-    fun setToOrtho(left: Double, right: Double, bottom: Double, top: Double, near: Double, far: Double): MMatrix3D =
+    fun setToOrtho(rect: MRectangle, near: Double = 0.0, far: Double = 1.0): MMatrix4 = setToOrtho(rect.left, rect.right, rect.bottom, rect.top, near, far)
+    fun setToOrtho(rect: MRectangle, near: Float = 0f, far: Float = 1f): MMatrix4 = setToOrtho(rect.left, rect.right, rect.bottom, rect.top, near.toDouble(), far.toDouble())
+    fun setToOrtho(rect: MRectangle, near: Int = 0, far: Int = 1): MMatrix4 = setToOrtho(rect.left, rect.right, rect.bottom, rect.top, near.toDouble(), far.toDouble())
+    fun setToOrtho(left: Double, right: Double, bottom: Double, top: Double, near: Double, far: Double): MMatrix4 =
         setToOrtho(left.toFloat(), right.toFloat(), bottom.toFloat(), top.toFloat(), near.toFloat(), far.toFloat())
-    fun setToOrtho(left: Int, right: Int, bottom: Int, top: Int, near: Int, far: Int): MMatrix3D =
+    fun setToOrtho(left: Int, right: Int, bottom: Int, top: Int, near: Int, far: Int): MMatrix4 =
         setToOrtho(left.toFloat(), right.toFloat(), bottom.toFloat(), top.toFloat(), near.toFloat(), far.toFloat())
 
-    fun setToFrustum(left: Float, right: Float, bottom: Float, top: Float, zNear: Float = 0f, zFar: Float = 1f): MMatrix3D {
+    fun setToFrustum(left: Float, right: Float, bottom: Float, top: Float, zNear: Float = 0f, zFar: Float = 1f): MMatrix4 {
         if (zNear <= 0.0f || zFar <= zNear) {
             throw Exception("Error: Required zNear > 0 and zFar > zNear, but zNear $zNear, zFar $zFar")
         }
@@ -774,24 +727,24 @@ class MMatrix3D : IMMatrix3D {
             0f, 0f, -1f, 0f
         )
     }
-    fun setToFrustum(rect: MRectangle, zNear: Double = 0.0, zFar: Double = 1.0): MMatrix3D = setToFrustum(rect.left, rect.right, rect.bottom, rect.top, zNear.toDouble(), zFar.toDouble())
-    fun setToFrustum(rect: MRectangle, zNear: Float = 0f, zFar: Float = 1f): MMatrix3D = setToFrustum(rect.left, rect.right, rect.bottom, rect.top, zNear.toDouble(), zFar.toDouble())
-    fun setToFrustum(rect: MRectangle, zNear: Int = 0, zFar: Int = 1): MMatrix3D = setToFrustum(rect.left, rect.right, rect.bottom, rect.top, zNear.toDouble(), zFar.toDouble())
+    fun setToFrustum(rect: MRectangle, zNear: Double = 0.0, zFar: Double = 1.0): MMatrix4 = setToFrustum(rect.left, rect.right, rect.bottom, rect.top, zNear.toDouble(), zFar.toDouble())
+    fun setToFrustum(rect: MRectangle, zNear: Float = 0f, zFar: Float = 1f): MMatrix4 = setToFrustum(rect.left, rect.right, rect.bottom, rect.top, zNear.toDouble(), zFar.toDouble())
+    fun setToFrustum(rect: MRectangle, zNear: Int = 0, zFar: Int = 1): MMatrix4 = setToFrustum(rect.left, rect.right, rect.bottom, rect.top, zNear.toDouble(), zFar.toDouble())
 
-    fun setToFrustum(left: Double, right: Double, bottom: Double, top: Double, zNear: Double = 0.0, zFar: Double = 1.0): MMatrix3D
+    fun setToFrustum(left: Double, right: Double, bottom: Double, top: Double, zNear: Double = 0.0, zFar: Double = 1.0): MMatrix4
         = setToFrustum(left.toFloat(), right.toFloat(), bottom.toFloat(), top.toFloat(), zNear.toFloat(), zFar.toFloat())
-    fun setToFrustum(left: Int, right: Int, bottom: Int, top: Int, zNear: Int = 0, zFar: Int = 1): MMatrix3D
+    fun setToFrustum(left: Int, right: Int, bottom: Int, top: Int, zNear: Int = 0, zFar: Int = 1): MMatrix4
         = setToFrustum(left.toFloat(), right.toFloat(), bottom.toFloat(), top.toFloat(), zNear.toFloat(), zFar.toFloat())
 
 
-    fun setToPerspective(fovy: Angle, aspect: Float, zNear: Float, zFar: Float): MMatrix3D {
+    fun setToPerspective(fovy: Angle, aspect: Float, zNear: Float, zFar: Float): MMatrix4 {
         val top = tan(fovy.radians / 2f) * zNear
         val bottom = -1.0f * top
         val left = aspect * bottom
         val right = aspect * top
         return setToFrustum(left.toFloat(), right.toFloat(), bottom.toFloat(), top.toFloat(), zNear, zFar)
     }
-    fun setToPerspective(fovy: Angle, aspect: Double, zNear: Double, zFar: Double): MMatrix3D
+    fun setToPerspective(fovy: Angle, aspect: Double, zNear: Double, zFar: Double): MMatrix4
         = setToPerspective(fovy, aspect.toFloat(), zNear.toFloat(), zFar.toFloat())
 
     fun extractTranslation(out: MVector4 = MVector4()): MVector4 = getRowVector(3, out).also { it.w = 1f }
@@ -860,7 +813,7 @@ class MMatrix3D : IMMatrix3D {
         a10: Double, a11: Double, a12: Double, a13: Double,
         a20: Double, a21: Double, a22: Double, a23: Double,
         a30: Double, a31: Double, a32: Double, a33: Double
-    ): MMatrix3D = setRows(
+    ): MMatrix4 = setRows(
         a00.toFloat(), a01.toFloat(), a02.toFloat(), a03.toFloat(),
         a10.toFloat(), a11.toFloat(), a12.toFloat(), a13.toFloat(),
         a20.toFloat(), a21.toFloat(), a22.toFloat(), a23.toFloat(),
@@ -872,7 +825,7 @@ class MMatrix3D : IMMatrix3D {
         a01: Double, a11: Double, a21: Double, a31: Double,
         a02: Double, a12: Double, a22: Double, a32: Double,
         a03: Double, a13: Double, a23: Double, a33: Double
-    ): MMatrix3D = setColumns(
+    ): MMatrix4 = setColumns(
         a00.toFloat(), a10.toFloat(), a20.toFloat(), a30.toFloat(),
         a01.toFloat(), a11.toFloat(), a21.toFloat(), a31.toFloat(),
         a02.toFloat(), a12.toFloat(), a22.toFloat(), a32.toFloat(),
@@ -883,7 +836,7 @@ class MMatrix3D : IMMatrix3D {
         a00: Double, a01: Double, a02: Double,
         a10: Double, a11: Double, a12: Double,
         a20: Double, a21: Double, a22: Double
-    ): MMatrix3D = setRows(
+    ): MMatrix4 = setRows(
         a00.toFloat(), a01.toFloat(), a02.toFloat(), 0f,
         a10.toFloat(), a11.toFloat(), a12.toFloat(), 0f,
         a20.toFloat(), a21.toFloat(), a22.toFloat(), 0f,
@@ -893,7 +846,7 @@ class MMatrix3D : IMMatrix3D {
         a00: Float, a01: Float, a02: Float,
         a10: Float, a11: Float, a12: Float,
         a20: Float, a21: Float, a22: Float
-    ): MMatrix3D = setRows(
+    ): MMatrix4 = setRows(
         a00, a01, a02, 0f,
         a10, a11, a12, 0f,
         a20, a21, a22, 0f,
@@ -904,7 +857,7 @@ class MMatrix3D : IMMatrix3D {
         a00: Double, a10: Double, a20: Double,
         a01: Double, a11: Double, a21: Double,
         a02: Double, a12: Double, a22: Double
-    ): MMatrix3D = setColumns(
+    ): MMatrix4 = setColumns(
         a00.toFloat(), a10.toFloat(), a20.toFloat(), 0f,
         a01.toFloat(), a11.toFloat(), a21.toFloat(), 0f,
         a02.toFloat(), a12.toFloat(), a22.toFloat(), 0f,
@@ -914,7 +867,7 @@ class MMatrix3D : IMMatrix3D {
         a00: Float, a10: Float, a20: Float,
         a01: Float, a11: Float, a21: Float,
         a02: Float, a12: Float, a22: Float
-    ): MMatrix3D = setColumns(
+    ): MMatrix4 = setColumns(
         a00, a10, a20, 0f,
         a01, a11, a21, 0f,
         a02, a12, a22, 0f,
@@ -924,7 +877,7 @@ class MMatrix3D : IMMatrix3D {
     fun setRows2x2(
         a00: Double, a01: Double,
         a10: Double, a11: Double
-    ): MMatrix3D = setRows(
+    ): MMatrix4 = setRows(
         a00.toFloat(), a01.toFloat(), 0f, 0f,
         a10.toFloat(), a11.toFloat(), 0f, 0f,
         0f, 0f, 1f, 0f,
@@ -933,24 +886,24 @@ class MMatrix3D : IMMatrix3D {
     fun setRows2x2(
         a00: Float, a01: Float,
         a10: Float, a11: Float
-    ): MMatrix3D = setRows(
+    ): MMatrix4 = setRows(
         a00, a01, 0f, 0f,
         a10, a11, 0f, 0f,
         0f, 0f, 1f, 0f,
         0f, 0f, 0f, 1f
     )
 
-    operator fun times(that: MMatrix3D): MMatrix3D = MMatrix3D().multiply(this, that)
-    operator fun times(value: Float): MMatrix3D = MMatrix3D(this).multiply(value)
-    operator fun times(value: Double): MMatrix3D = this * value.toFloat()
-    operator fun times(value: Int): MMatrix3D = this * value.toFloat()
+    operator fun times(that: MMatrix4): MMatrix4 = MMatrix3D().multiply(this, that)
+    operator fun times(value: Float): MMatrix4 = MMatrix3D(this).multiply(value)
+    operator fun times(value: Double): MMatrix4 = this * value.toFloat()
+    operator fun times(value: Int): MMatrix4 = this * value.toFloat()
 
-    operator fun div(value: Float): MMatrix3D = this * (1f / value)
-    operator fun div(value: Double): MMatrix3D = this / value.toFloat()
-    operator fun div(value: Int): MMatrix3D = this / value.toFloat()
+    operator fun div(value: Float): MMatrix4 = this * (1f / value)
+    operator fun div(value: Double): MMatrix4 = this / value.toFloat()
+    operator fun div(value: Int): MMatrix4 = this / value.toFloat()
 
-    fun multiply(scale: Double, l: MMatrix3D = this) = multiply(scale.toFloat(), l)
-    fun multiply(scale: Int, l: MMatrix3D = this) = multiply(scale.toFloat(), l)
+    fun multiply(scale: Double, l: MMatrix4 = this) = multiply(scale.toFloat(), l)
+    fun multiply(scale: Int, l: MMatrix4 = this) = multiply(scale.toFloat(), l)
 
     override fun equals(other: Any?): Boolean = (other is MMatrix3D) && this.data.contentEquals(other.data)
     override fun hashCode(): Int = data.contentHashCode()
@@ -969,49 +922,49 @@ class MMatrix3D : IMMatrix3D {
         append(")")
     }
 
-    fun clone(): MMatrix3D = MMatrix3D().copyFrom(this)
+    fun clone(): MMatrix4 = MMatrix3D().copyFrom(this)
 
 
-    fun translate(x: Float, y: Float, z: Float, w: Float = 1f, temp: MMatrix3D = MMatrix3D()) = this.apply {
+    fun translate(x: Float, y: Float, z: Float, w: Float = 1f, temp: MMatrix4 = MMatrix3D()) = this.apply {
         temp.setToTranslation(x, y, z, w)
         this.multiply(this, temp)
     }
-    fun translate(x: Double, y: Double, z: Double, w: Double = 1.0, temp: MMatrix3D = MMatrix3D()) = this.translate(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat(), temp)
-    fun translate(x: Int, y: Int, z: Int, w: Int = 1, temp: MMatrix3D = MMatrix3D()) = this.translate(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat(), temp)
+    fun translate(x: Double, y: Double, z: Double, w: Double = 1.0, temp: MMatrix4 = MMatrix3D()) = this.translate(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat(), temp)
+    fun translate(x: Int, y: Int, z: Int, w: Int = 1, temp: MMatrix4 = MMatrix3D()) = this.translate(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat(), temp)
 
-    fun rotate(angle: Angle, x: Float, y: Float, z: Float, temp: MMatrix3D = MMatrix3D()) = this.apply {
+    fun rotate(angle: Angle, x: Float, y: Float, z: Float, temp: MMatrix4 = MMatrix3D()) = this.apply {
         temp.setToRotation(angle, x, y, z)
         this.multiply(this, temp)
     }
-    fun rotate(angle: Angle, x: Double, y: Double, z: Double, temp: MMatrix3D = MMatrix3D()) = this.rotate(angle, x.toFloat(), y.toFloat(), z.toFloat(), temp)
-    fun rotate(angle: Angle, x: Int, y: Int, z: Int, temp: MMatrix3D = MMatrix3D()) = this.rotate(angle, x.toFloat(), y.toFloat(), z.toFloat(), temp)
+    fun rotate(angle: Angle, x: Double, y: Double, z: Double, temp: MMatrix4 = MMatrix3D()) = this.rotate(angle, x.toFloat(), y.toFloat(), z.toFloat(), temp)
+    fun rotate(angle: Angle, x: Int, y: Int, z: Int, temp: MMatrix4 = MMatrix3D()) = this.rotate(angle, x.toFloat(), y.toFloat(), z.toFloat(), temp)
 
-    fun scale(x: Float, y: Float, z: Float, w: Float = 1f, temp: MMatrix3D = MMatrix3D()) = this.apply {
+    fun scale(x: Float, y: Float, z: Float, w: Float = 1f, temp: MMatrix4 = MMatrix3D()) = this.apply {
         temp.setToScale(x, y, z, w)
         this.multiply(this, temp)
     }
 
-    fun scale(x: Double, y: Double, z: Double, w: Double = 1.0, temp: MMatrix3D = MMatrix3D()) = this.scale(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat(), temp)
-    fun scale(x: Int, y: Int, z: Int, w: Int = 1, temp: MMatrix3D = MMatrix3D()) = this.scale(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat(), temp)
+    fun scale(x: Double, y: Double, z: Double, w: Double = 1.0, temp: MMatrix4 = MMatrix3D()) = this.scale(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat(), temp)
+    fun scale(x: Int, y: Int, z: Int, w: Int = 1, temp: MMatrix4 = MMatrix3D()) = this.scale(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat(), temp)
 
-    fun setToRotation(quat: MQuaternion, temp: MMatrix3D = MMatrix3D()) = this.apply {
+    fun setToRotation(quat: MQuaternion, temp: MMatrix4 = MMatrix3D()) = this.apply {
         quat.toMatrix(temp)
         this.multiply(this, temp)
     }
-    fun setToRotation(euler: MEulerRotation, temp: MMatrix3D = MMatrix3D()) = this.apply {
+    fun setToRotation(euler: MEulerRotation, temp: MMatrix4 = MMatrix3D()) = this.apply {
         euler.toMatrix(temp)
         this.multiply(this, temp)
     }
-    fun rotate(x: Angle, y: Angle, z: Angle, temp: MMatrix3D = MMatrix3D()) = this.apply {
+    fun rotate(x: Angle, y: Angle, z: Angle, temp: MMatrix4 = MMatrix3D()) = this.apply {
         rotate(x, 1f, 0f, 0f, temp)
         rotate(y, 0f, 1f, 0f, temp)
         rotate(z, 0f, 0f, 1f, temp)
     }
-    fun rotate(euler: MEulerRotation, temp: MMatrix3D = MMatrix3D()) = this.apply {
+    fun rotate(euler: MEulerRotation, temp: MMatrix4 = MMatrix3D()) = this.apply {
         temp.setToRotation(euler)
         this.multiply(this, temp)
     }
-    fun rotate(quat: MQuaternion, temp: MMatrix3D = MMatrix3D()) = this.apply {
+    fun rotate(quat: MQuaternion, temp: MMatrix4 = MMatrix3D()) = this.apply {
         temp.setToRotation(quat)
         this.multiply(this, temp)
     }
@@ -1020,7 +973,7 @@ class MMatrix3D : IMMatrix3D {
         eye: MVector4,
         target: MVector4,
         up: MVector4
-    ): MMatrix3D {
+    ): MMatrix4 {
         val tempVec1 = MVector3D()
         val tempVec2 = MVector3D()
         val tempVec3 = MVector3D()
@@ -1047,11 +1000,11 @@ class MMatrix3D : IMMatrix3D {
         )
     }
 
-    inline fun translate(v: MVector4, temp: MMatrix3D = MMatrix3D()) = translate(v.x, v.y, v.z, v.w, temp)
-    inline fun rotate(angle: Angle, v: MVector4, temp: MMatrix3D = MMatrix3D()) = rotate(angle, v.x, v.y, v.z, temp)
-    inline fun scale(v: MVector4, temp: MMatrix3D = MMatrix3D()) = scale(v.x, v.y, v.z, v.w, temp)
+    inline fun translate(v: MVector4, temp: MMatrix4 = MMatrix3D()) = translate(v.x, v.y, v.z, v.w, temp)
+    inline fun rotate(angle: Angle, v: MVector4, temp: MMatrix4 = MMatrix3D()) = rotate(angle, v.x, v.y, v.z, temp)
+    inline fun scale(v: MVector4, temp: MMatrix4 = MMatrix3D()) = scale(v.x, v.y, v.z, v.w, temp)
 
-    fun setTRS(translation: Position3D, rotation: MQuaternion, scale: Scale3D): MMatrix3D {
+    fun setTRS(translation: Position3D, rotation: MQuaternion, scale: Scale3D): MMatrix4 {
         val rx = rotation.x.toFloat()
         val ry = rotation.y.toFloat()
         val rz = rotation.z.toFloat()
@@ -1081,7 +1034,7 @@ class MMatrix3D : IMMatrix3D {
         )
     }
 
-    fun getTRS(position: Position3D, rotation: MQuaternion, scale: Scale3D): MMatrix3D = this.apply {
+    fun getTRS(position: Position3D, rotation: MQuaternion, scale: Scale3D): MMatrix4 = this.apply {
         val tempMat1 = MMatrix3D()
         val det = determinant
         position.setTo(v03, v13, v23, 1f)
@@ -1097,7 +1050,7 @@ class MMatrix3D : IMMatrix3D {
         ))
     }
 
-    fun invert(m: MMatrix3D = this): MMatrix3D {
+    fun invert(m: MMatrix4 = this): MMatrix4 {
         val target = this
         m.apply {
             val t11 = v12 * v23 * v31 - v13 * v22 * v31 + v13 * v21 * v32 - v11 * v23 * v32 - v12 * v21 * v33 + v11 * v22 * v33
@@ -1145,18 +1098,18 @@ class MMatrix3D : IMMatrix3D {
         filter(v30), filter(v31), filter(v32), filter(v33)
     )
 
-    fun setToInterpolated(a: MMatrix3D, b: MMatrix3D, ratio: Double) = setColumns(
-        ratio.interpolate(a.v00, b.v00), ratio.interpolate(a.v10, b.v10), ratio.interpolate(a.v20, b.v20), ratio.interpolate(a.v30, b.v30),
-        ratio.interpolate(a.v01, b.v01), ratio.interpolate(a.v11, b.v11), ratio.interpolate(a.v21, b.v21), ratio.interpolate(a.v31, b.v31),
-        ratio.interpolate(a.v02, b.v02), ratio.interpolate(a.v12, b.v12), ratio.interpolate(a.v22, b.v22), ratio.interpolate(a.v32, b.v32),
-        ratio.interpolate(a.v03, b.v03), ratio.interpolate(a.v13, b.v13), ratio.interpolate(a.v23, b.v23), ratio.interpolate(a.v33, b.v33)
+    fun setToInterpolated(a: MMatrix4, b: MMatrix4, ratio: Double) = setColumns(
+        ratio.toRatio().interpolate(a.v00, b.v00), ratio.toRatio().interpolate(a.v10, b.v10), ratio.toRatio().interpolate(a.v20, b.v20), ratio.toRatio().interpolate(a.v30, b.v30),
+        ratio.toRatio().interpolate(a.v01, b.v01), ratio.toRatio().interpolate(a.v11, b.v11), ratio.toRatio().interpolate(a.v21, b.v21), ratio.toRatio().interpolate(a.v31, b.v31),
+        ratio.toRatio().interpolate(a.v02, b.v02), ratio.toRatio().interpolate(a.v12, b.v12), ratio.toRatio().interpolate(a.v22, b.v22), ratio.toRatio().interpolate(a.v32, b.v32),
+        ratio.toRatio().interpolate(a.v03, b.v03), ratio.toRatio().interpolate(a.v13, b.v13), ratio.toRatio().interpolate(a.v23, b.v23), ratio.toRatio().interpolate(a.v33, b.v33)
     )
 
-    fun copyFrom(that: MMatrix): MMatrix3D = that.toMatrix3D(this)
+    fun copyFrom(that: MMatrix): MMatrix4 = that.toMatrix3D(this)
 
 }
 
-fun MMatrix.toMatrix3D(out: MMatrix3D = MMatrix3D()): MMatrix3D = out.setRows(
+fun MMatrix.toMatrix3D(out: MMatrix4 = MMatrix3D()): MMatrix4 = out.setRows(
     a, c, 0.0, tx,
     b, d, 0.0, ty,
     0.0, 0.0, 1.0, 0.0,

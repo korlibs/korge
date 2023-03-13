@@ -23,10 +23,10 @@ class MainShapes : Scene() {
                 rect(-1.0, -1.0, 3.0, 2.0)
             }
             fill(Colors.AQUAMARINE) {
-                circle(0.0, 0.0, 1.0)
+                circle(Point(0, 0), 1f)
             }
             fill(Colors.AQUAMARINE) {
-                circle(1.0, 0.0, 1.0)
+                circle(Point(1, 0), 1f)
             }
         }
             .position(100, 100)
@@ -36,22 +36,22 @@ class MainShapes : Scene() {
 
 
     fun Container.setupCircle() {
-        val circle = Circle(radius = 32.0)
+        val circle = fastEllipse(Size(64, 64))
         addChild(circle)
         circle.position(512, 256)
         var growing = true
         launch {
             while (true) {
                 when {
-                    circle.radius > 128.0 -> {
+                    circle.radiusAvg > 128.0 -> {
                         growing = false
-                        circle.radius--
+                        circle.radiusAvg--
                     }
-                    circle.radius < 32.0 -> {
+                    circle.radiusAvg < 32.0 -> {
                         growing = true
-                        circle.radius++
+                        circle.radiusAvg++
                     }
-                    else -> if (growing) circle.radius++ else circle.radius--
+                    else -> if (growing) circle.radiusAvg++ else circle.radiusAvg--
                 }
                 delay(16.milliseconds)
             }
@@ -70,9 +70,9 @@ class MainShapes : Scene() {
     }
 
     fun <T : View> T.interactive(): T = apply {
-        alpha = 0.5
-        onOver { alpha = 1.0 }
-        onOut { alpha = 0.5 }
+        alphaF = 0.5f
+        onOver { alphaF = 1.0f }
+        onOut { alphaF = 0.5f }
     }
 
 }

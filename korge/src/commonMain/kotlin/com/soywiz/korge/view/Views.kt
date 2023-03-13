@@ -6,16 +6,13 @@ import com.soywiz.klock.*
 import com.soywiz.kmem.*
 import com.soywiz.korag.*
 import com.soywiz.korag.log.*
-import com.soywiz.korag.shader.*
 import com.soywiz.korev.*
 import com.soywiz.korge.*
 import com.soywiz.korge.annotations.*
-import com.soywiz.korge.baseview.*
-import com.soywiz.korge.component.*
+import com.soywiz.korge.bitmapfont.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.render.*
-import com.soywiz.korge.scene.*
 import com.soywiz.korge.stat.*
 import com.soywiz.korgw.*
 import com.soywiz.korim.color.*
@@ -29,12 +26,10 @@ import com.soywiz.korio.file.std.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.resources.*
 import com.soywiz.korio.stream.*
-import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 import kotlinx.coroutines.*
 import kotlin.collections.set
 import kotlin.coroutines.*
-import kotlin.reflect.*
 
 //@Singleton
 /**
@@ -55,9 +50,8 @@ class Views constructor(
     val batchMaxQuads: Int = BatchBuilder2D.DEFAULT_BATCH_QUADS,
     val bp: BoundsProvider = BoundsProvider.Base(),
     val stageBuilder: (Views) -> Stage = { Stage(it) }
-) :
+) : BaseEventListener(),
     Extra by Extra.Mixin(),
-    EventDispatcher by EventDispatcher.Mixin(),
     CoroutineScope, ViewsContainer,
 	BoundsProvider by bp,
     DialogInterfaceProvider by gameWindow,
@@ -74,6 +68,10 @@ class Views constructor(
     val virtualPixelsPerInch: Double get() = pixelsPerInch / globalToWindowScaleAvg
     val virtualPixelsPerCm: Double get() = virtualPixelsPerInch / DeviceDimensionsProvider.INCH_TO_CM
 
+    internal val resizedEvent = ReshapeEvent(0, 0)
+    internal val updateEvent = UpdateEvent()
+    internal val viewsUpdateEvent = ViewsUpdateEvent(this)
+    internal val viewsResizedEvent = ViewsResizedEvent(this)
 
     val keys get() = input.keys
 
@@ -101,8 +99,8 @@ class Views constructor(
     var currentVfs: VfsFile = resourcesVfs
     var imageFormats = RegisteredImageFormats
 	val renderContext = RenderContext(ag, this, gameWindow, stats, coroutineContext, batchMaxQuads)
-	@KorgeDeprecated val agBitmapTextureManager get() = renderContext.agBitmapTextureManager
-    @KorgeDeprecated val agBufferManager get() = renderContext.agBufferManager
+	@Deprecated("") val agBitmapTextureManager get() = renderContext.agBitmapTextureManager
+    @Deprecated("") val agBufferManager get() = renderContext.agBufferManager
 	var clearEachFrame = true
 	var clearColor: RGBA = Colors.BLACK
 	val propsTriggers = hashMapOf<String, (View, String, String) -> Unit>()
@@ -162,39 +160,16 @@ class Views constructor(
         gameWindow.close()
     }
 
-    /** Mouse coordinates relative to the native window. Can't be used directly. Use [globalMouseX] instead */
+    /** Mouse coordinates relative to the native window. Can't be used directly. Use [globalMousePos] instead */
     @KorgeInternal
-    val windowMouseX: Double get() = bp.globalToWindowCoordsX(input.mouse)
-    /** Mouse coordinates relative to the native window. Can't be used directly. Use [globalMouseY] instead */
-    @KorgeInternal
-    val windowMouseY: Double get() = bp.globalToWindowCoordsY(input.mouse)
-    @KorgeInternal
-    val windowMouseXY: MPoint get() = bp.globalToWindowCoords(input.mouse)
-
-    /** Mouse coordinates relative to the native window. Can't be used directly. Use [globalMouseX] instead */
-    @KorgeInternal
-    @Deprecated("Use windowMouseX instead")
-	val nativeMouseX: Double get() = windowMouseX
-    /** Mouse coordinates relative to the native window. Can't be used directly. Use [globalMouseY] instead */
-    @KorgeInternal
-    @Deprecated("Use windowMouseY instead")
-	val nativeMouseY: Double get() = windowMouseY
-    @KorgeInternal
-    @Deprecated("Use windowMouseXY instead")
-    val nativeMouseXY: MPoint get() = windowMouseXY
+    val windowMousePos: Point get() = bp.globalToWindowCoords(input.mousePos.mutable).point
 
     /** Mouse coordinates relative to the [Stage] singleton */
-    val globalMouseXY get() = stage.mouseXY
-    /** Mouse X coordinate relative to the [Stage] singleton */
-    val globalMouseX get() = stage.mouseX
-    /** Mouse Y coordinate relative to the [Stage] singleton */
-    val globalMouseY get() = stage.mouseY
+    val globalMousePos get() = stage.mousePos
 
 	var scaleMode: ScaleMode = ScaleMode.SHOW_ALL
 	var scaleAnchor = Anchor.MIDDLE_CENTER
 	var clipBorders = true
-
-	private val resizedEvent = ReshapeEvent(0, 0)
 
     /** Reference to the root node [Stage] */
 	val stage: Stage = stageBuilder(this)
@@ -215,7 +190,6 @@ class Views constructor(
 	var lastTime = timeProvider.now()
 
     private val tempViewsPool = Pool { FastArrayList<View>() }
-    private val tempCompsPool = Pool { FastArrayList<Component>() }
     //private val tempViews = FastArrayList<View>()
 	private val virtualSize = MSizeInt()
 	private val actualSize = MSizeInt()
@@ -266,46 +240,26 @@ class Views constructor(
 		resized()
 	}
 
-	@Suppress("EXPERIMENTAL_API_USAGE")
-    override fun <T : Event> dispatch(clazz: KClass<T>, event: T) {
-		val e = event
-        tempCompsPool.alloc { tempComps ->
-        //run {
-            try {
-                this.stage.dispatch(clazz, event)
-                //val stagedViews = getAllDescendantViews(stage, tempViews, true)
-                when (e) {
-                    is GestureEvent ->
-                        stage.forEachComponentOfTypeRecursive(GestureComponent, tempComps) { it.onGestureEvent(views, e) }
-                    is MouseEvent ->
-                        stage.forEachComponentOfTypeRecursive(MouseComponent, tempComps) { it.onMouseEvent(views, e) }
-                    is TouchEvent ->
-                        stage.forEachComponentOfTypeRecursive(TouchComponent, tempComps) { it.onTouchEvent(views, e) }
-                    is ReshapeEvent ->
-                        stage.forEachComponentOfTypeRecursive(ResizeComponent, tempComps) { it.resized(views, e.width, e.height) }
-                    is KeyEvent -> {
-                        input.triggerOldKeyEvent(e)
-                        input.keys.triggerKeyEvent(e)
-                        if ((e.type == KeyEvent.Type.UP) && supportTogglingDebug && (e.key == Key.F12 || e.key == Key.F7)) {
-                            debugViews = !debugViews
-                            gameWindow.debug = debugViews
-                            invalidatedView(stage)
-                        }
-                        stage.forEachComponentOfTypeRecursive(KeyComponent, tempComps) { it.apply { this@Views.apply { onKeyEvent(e) } } }
-                    }
-                    is GamePadConnectionEvent ->
-                        stage.forEachComponentOfTypeRecursive(GamepadComponent, tempComps) { it.onGamepadEvent(views, e) }
-                    is GamePadUpdateEvent ->
-                        stage.forEachComponentOfTypeRecursive(GamepadComponent, tempComps) { it.onGamepadEvent(views, e) }
-                    else -> {
-                        stage.forEachComponentOfTypeRecursive(EventComponent, tempComps) { it.onEvent(e) }
-                    }
-                }
-            } catch (e: PreventDefaultException) {
-                //println("PreventDefaultException.Reason: ${e.reason}")
+    override fun <T : BEvent> dispatch(event: T) {
+        super.dispatch(event)
+        val e = event
+        e.target = views
+        // @TODO: Remove this
+        if (e is KeyEvent) {
+            input.triggerOldKeyEvent(e)
+            input.keys.triggerKeyEvent(e)
+            if ((e.type == KeyEvent.Type.UP) && supportTogglingDebug && (e.key == Key.F12 || e.key == Key.F7)) {
+                debugViews = !debugViews
+                gameWindow.debug = debugViews
+                invalidatedView(stage)
             }
         }
-	}
+        try {
+            stage.dispatch(e)
+        } catch (e: PreventDefaultException) {
+            //println("PreventDefaultException.Reason: ${e.reason}")
+        }
+    }
 
 	fun render() {
         ag.startFrame()
@@ -369,13 +323,11 @@ class Views constructor(
 
 	fun update(elapsed: TimeSpan) {
 		//println(this)
-		//println("Update: $dtMs")
+		//println("Update: $elapsed")
 		input.startFrame(elapsed)
-        tempCompsPool.alloc { compList ->
-            eventResults.reset()
-            stage.updateSingleViewWithViewsAll(this, elapsed, compList, eventResults)
-            //println("Views.update:eventResults=$eventResults")
-        }
+        eventResults.reset()
+        stage.updateSingleViewWithViewsAll(this, elapsed)
+        //println("Views.update:eventResults=$eventResults")
 		input.endFrame(elapsed)
 	}
 
@@ -496,9 +448,6 @@ class Views constructor(
     //var viewExtraBuildDebugComponent = arrayListOf<(views: Views, view: View, container: UiContainer) -> Unit>()
 }
 
-fun Views.getDefaultProgram(): Program =
-    renderContext.batch.getDefaultProgram()
-
 fun viewsLog(callback: suspend Stage.(log: ViewsLog) -> Unit) = Korio {
     viewsLogSuspend(callback)
 }
@@ -582,10 +531,8 @@ private fun getAllDescendantViewsBase(view: View, out: FastArrayList<View>, reve
 }
 
 @OptIn(KorgeInternal::class)
-fun View.updateSingleView(delta: TimeSpan, tempComps: FastArrayList<Component> = FastArrayList()) {
-    forEachComponentOfTypeRecursive(UpdateComponent, tempComps) { comp ->
-        comp.update(delta * (comp.view as View).globalSpeed)
-    }
+fun View.updateSingleView(delta: TimeSpan, tempUpdate: UpdateEvent = UpdateEvent()) {
+    dispatch(tempUpdate.also { it.deltaTime = delta })
 }
 
 //@OptIn(KorgeInternal::class)
@@ -601,17 +548,9 @@ fun View.updateSingleView(delta: TimeSpan, tempComps: FastArrayList<Component> =
 fun View.updateSingleViewWithViewsAll(
     views: Views,
     delta: TimeSpan,
-    tempComps: FastArrayList<Component> = FastArrayList(),
-    results: EventResult? = null
 ) {
-    forEachComponentOfTypeRecursive(UpdateComponentWithViews, tempComps, results) { comp ->
-        comp.update(views, delta * (comp.view as View).globalSpeed)
-    }
-    forEachComponentOfTypeRecursive(UpdateComponent, tempComps, results) { comp ->
-        comp.update(delta * (comp.view as View).globalSpeed)
-    }
-    //updateSingleView(dtMsD, tempComponents)
-    //updateSingleViewWithViews(views, dtMsD, tempComponents)
+    dispatch(views.updateEvent.also { it.deltaTime = delta })
+    dispatch(views.viewsUpdateEvent.also { it.delta = delta })
 }
 
 interface BoundsProvider {
@@ -641,27 +580,29 @@ interface BoundsProvider {
     fun globalToWindowBounds(bounds: MRectangle, out: MRectangle = MRectangle()): MRectangle =
         out.copyFrom(bounds).applyTransform(globalToWindowMatrix)
 
-    val windowToGlobalScaleX: Double get() = windowToGlobalTransform.scaleX
-    val windowToGlobalScaleY: Double get() = windowToGlobalTransform.scaleY
-    val windowToGlobalScaleAvg: Double get() = windowToGlobalTransform.scaleAvg
+    val windowToGlobalScale: Scale get() = windowToGlobalTransform.scale
+    val windowToGlobalScaleX: Double get() = windowToGlobalTransform.scale.scaleXD
+    val windowToGlobalScaleY: Double get() = windowToGlobalTransform.scale.scaleYD
+    val windowToGlobalScaleAvg: Double get() = windowToGlobalTransform.scale.scaleAvgD
 
+    val globalToWindowScale: Scale get() = globalToWindowTransform.scale
     val globalToWindowScaleX: Double get() = globalToWindowTransform.scaleX
     val globalToWindowScaleY: Double get() = globalToWindowTransform.scaleY
     val globalToWindowScaleAvg: Double get() = globalToWindowTransform.scaleAvg
 
-    fun windowToGlobalCoords(pos: IPoint, out: MPoint = MPoint()): MPoint = windowToGlobalMatrix.transform(pos, out)
+    fun windowToGlobalCoords(pos: MPoint, out: MPoint = MPoint()): MPoint = windowToGlobalMatrix.transform(pos, out)
     fun windowToGlobalCoords(x: Double, y: Double, out: MPoint = MPoint()): MPoint = windowToGlobalMatrix.transform(x, y, out)
     fun windowToGlobalCoordsX(x: Double, y: Double): Double = windowToGlobalMatrix.transformX(x, y)
     fun windowToGlobalCoordsY(x: Double, y: Double): Double = windowToGlobalMatrix.transformY(x, y)
-    fun windowToGlobalCoordsX(pos: IPoint): Double = windowToGlobalCoordsX(pos.x, pos.y)
-    fun windowToGlobalCoordsY(pos: IPoint): Double = windowToGlobalCoordsY(pos.x, pos.y)
+    fun windowToGlobalCoordsX(pos: MPoint): Double = windowToGlobalCoordsX(pos.x, pos.y)
+    fun windowToGlobalCoordsY(pos: MPoint): Double = windowToGlobalCoordsY(pos.x, pos.y)
 
-    fun globalToWindowCoords(pos: IPoint, out: MPoint = MPoint()): MPoint = globalToWindowMatrix.transform(pos, out)
+    fun globalToWindowCoords(pos: MPoint, out: MPoint = MPoint()): MPoint = globalToWindowMatrix.transform(pos, out)
     fun globalToWindowCoords(x: Double, y: Double, out: MPoint = MPoint()): MPoint = globalToWindowMatrix.transform(x, y, out)
     fun globalToWindowCoordsX(x: Double, y: Double): Double = globalToWindowMatrix.transformX(x, y)
     fun globalToWindowCoordsY(x: Double, y: Double): Double = globalToWindowMatrix.transformY(x, y)
-    fun globalToWindowCoordsX(pos: IPoint): Double = globalToWindowCoordsX(pos.x, pos.y)
-    fun globalToWindowCoordsY(pos: IPoint): Double = globalToWindowCoordsY(pos.x, pos.y)
+    fun globalToWindowCoordsX(pos: MPoint): Double = globalToWindowCoordsX(pos.x, pos.y)
+    fun globalToWindowCoordsY(pos: MPoint): Double = globalToWindowCoordsY(pos.x, pos.y)
 
     open class Base : BoundsProvider {
         override val windowToGlobalMatrix: MMatrix = MMatrix()
@@ -692,8 +633,8 @@ fun BoundsProvider.setBoundsInfo(
     globalToWindowMatrix.identity()
     globalToWindowMatrix.prescale(ratioX, ratioY)
     globalToWindowMatrix.pretranslate(
-        ((actualVirtualWidth - virtualWidth) * anchor.sx).toIntRound().toDouble(),
-        ((actualVirtualHeight - virtualHeight) * anchor.sy).toIntRound().toDouble(),
+        ((actualVirtualWidth - virtualWidth) * anchor.doubleX).toIntRound().toDouble(),
+        ((actualVirtualHeight - virtualHeight) * anchor.doubleY).toIntRound().toDouble(),
     )
     windowToGlobalMatrix.invert(globalToWindowMatrix)
     globalToWindowMatrix.decompose(globalToWindowTransform)
@@ -705,3 +646,36 @@ fun BoundsProvider.setBoundsInfo(
 }
 
 suspend fun views(): Views = injector().get()
+
+class UpdateEvent(var deltaTime: TimeSpan = TimeSpan.ZERO) : Event(), TEvent<UpdateEvent> {
+    companion object : EventType<UpdateEvent>
+    override val type: EventType<UpdateEvent> get() = UpdateEvent
+
+    fun copyFrom(other: UpdateEvent) {
+        this.deltaTime = other.deltaTime
+    }
+
+    override fun toString(): String = "UpdateEvent(time=$deltaTime)"
+}
+
+class ViewsUpdateEvent(val views: Views, var delta: TimeSpan = TimeSpan.ZERO) : Event(), TEvent<ViewsUpdateEvent> {
+    companion object : EventType<ViewsUpdateEvent>
+    override val type: EventType<ViewsUpdateEvent> get() = ViewsUpdateEvent
+
+    fun copyFrom(other: ViewsUpdateEvent) {
+        this.delta = other.delta
+    }
+
+    override fun toString(): String = "ViewsUpdateEvent(time=$delta)"
+}
+
+class ViewsResizedEvent(val views: Views, var size: SizeInt = SizeInt(0, 0)) : Event(), TEvent<ViewsResizedEvent> {
+    companion object : EventType<ViewsResizedEvent>
+    override val type: EventType<ViewsResizedEvent> get() = ViewsResizedEvent
+
+    fun copyFrom(other: ViewsResizedEvent) {
+        this.size = other.size
+    }
+
+    override fun toString(): String = "ViewsResizedEvent(size=$size)"
+}

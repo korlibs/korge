@@ -81,7 +81,7 @@ open class UIVerticalList(provider: Provider, width: Double = 200.0) : UIView(wi
         //if (stage == null) return
         val area = getVisibleGlobalArea(tempRect)
         //val area = getVisibleWindowArea(tempRect)
-        val point = globalXY(tempPoint)
+        val point = globalPos.mutable
         val numItems = provider.numItems
         if (dirty || area != lastArea || point != lastPoint) {
             dirty = false
@@ -122,7 +122,7 @@ open class UIVerticalList(provider: Provider, width: Double = 200.0) : UIView(wi
                     //println(":: ${view.localToGlobalY(0.0, view.height)}, ${area.bottom}")
 
                     //if (view.localToRenderY(0.0, view.height) >= area.bottom) {
-                    if (view.localToGlobalY(0.0, view.height) >= area.bottom) {
+                    if (view.localToGlobal(Point(0.0, view.height)).yD >= area.bottom) {
                         //if (view.localToWindowY(stage!!.views, 0.0, view.height) >= area.bottom) {
                         //if (false) {
                         //println("localViewY=localViewY, globalY=${view.localToGlobalY(0.0, view.height)}")

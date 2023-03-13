@@ -135,6 +135,63 @@ internal class UiEditProperties(app: UiApplication, view: View?, val views: View
         //view?.buildDebugComponent(views, this@UiEditProperties.propsContainer)
     }
 
+    data class Two<T>(val x: T, val y: T) {
+        operator fun get(index: Int): T = when (index) {
+            0 -> x; 1 -> y
+            else -> TODO()
+        }
+        fun with(index: Int, v: T): Two<T> = when (index) {
+            0 -> Two(v, y)
+            1 -> Two(x, v)
+            else -> TODO()
+        }
+    }
+
+    data class Four<T>(val x: T, val y: T, val z: T, val w: T) {
+        operator fun get(index: Int): T = when (index) {
+            0 -> x; 1 -> y; 2 -> z; 3 -> w
+            else -> TODO()
+        }
+        fun with(index: Int, v: T): Four<T> = when (index) {
+            0 -> Four(v, y, z, w)
+            1 -> Four(x, v, z, w)
+            2 -> Four(x, y, v, w)
+            3 -> Four(x, y, z, v)
+            else -> TODO()
+        }
+    }
+
+    private inline fun <reified T> createOne(
+        noinline get: (p: Double) -> T, noinline extract: (T) -> Double,
+        obs: ObservableProperty<*>,
+        viewProp: ViewProperty,
+        name: String = viewProp.name,
+        rangeMin: Double = viewProp.min,
+        rangeMax: Double = viewProp.max,
+        clampMin: Boolean = viewProp.clampMin,
+        clampMax: Boolean = viewProp.clampMax,
+    ): UiComponent? {
+        val rr = obs as ObservableProperty<T>
+        val robs = ObservableProperty(name, { rr.value = get(it) }, { extract(rr.value) })
+        return UiNumberEditableValue(app, robs, rangeMin, rangeMax, clampMin, clampMax, 0)
+    }
+
+    private inline fun <reified T> createPair(noinline get: (p: Two<Double>) -> T, noinline extract: (T) -> Two<Double>, instance: Any, prop: KProperty1<*, *>?, viewProp: ViewProperty, names: List<String> = listOf("x", "y")): UiComponent? {
+        prop as KMutableProperty1<Any, T>
+        val vv = (0 until 2).map { index ->
+            ObservableProperty(names[index], { prop.set(instance, get(extract(prop.get(instance)).with(index, it))) }, { extract(prop.get(instance))[index] })
+        }.map { UiNumberEditableValue(app, it, viewProp.min, viewProp.max, viewProp.clampMin, viewProp.clampMax, viewProp.decimalPlaces) }
+        return UiTwoItemEditableValue(app, vv[0], vv[1])
+    }
+
+    private inline fun <reified T> createQuad(noinline get: (p: Four<Double>) -> T, noinline extract: (T) -> Four<Double>, instance: Any, prop: KProperty1<*, *>?, viewProp: ViewProperty, names: List<String> = listOf("x", "y", "z", "w")): UiComponent? {
+        prop as KMutableProperty1<Any, T>
+        val vv = (0 until 4).map { index ->
+            ObservableProperty(names[index], { prop.set(instance, get(extract(prop.get(instance)).with(index, it))) }, { extract(prop.get(instance))[index] })
+        }.map { UiNumberEditableValue(app, it, viewProp.min, viewProp.max, viewProp.clampMin, viewProp.clampMax, viewProp.decimalPlaces) }
+        return UiFourItemEditableValue(app, vv[0], vv[1], vv[2], vv[3])
+    }
+
     fun createUiEditableValueFor(instance: Any, type: KType, viewProp: ViewProperty, prop: KProperty1<View, Any?>?, obs: ObservableProperty<*>? = null): UiComponent? {
         val name = prop?.name ?: "Unknown"
         val obs = obs ?: ObservableProperty<Any?>(
@@ -153,19 +210,15 @@ internal class UiEditProperties(app: UiApplication, view: View?, val views: View
                 }
                 UiTwoItemEditableValue(app, vv[0], vv[1])
             }
-            type.isSubtypeOf(IPoint::class.starProjectedType) -> {
-                @Suppress("UNCHECKED_CAST")
-                prop as KMutableProperty1<Any, IPoint>
-                val vv = listOf(
-                    ObservableProperty("x", { prop.set(instance, prop.get(instance).copy(x = it)) }, { prop.get(instance).x }),
-                    ObservableProperty("y", { prop.set(instance, prop.get(instance).copy(y = it)) }, { prop.get(instance).y }),
-                ).map { UiNumberEditableValue(app, it, viewProp.min, viewProp.max, viewProp.clampMin, viewProp.clampMax, viewProp.decimalPlaces) }
-
-                UiTwoItemEditableValue(app, vv[0], vv[1])
-            }
+            type.isSubtypeOf(MPoint::class.starProjectedType) -> createPair({ MPoint(it.x, it.y) }, { Two(it.x, it.y) }, instance, prop, viewProp)
+            type.isSubtypeOf(Point::class.starProjectedType) -> createPair({ Point(it.x, it.y) }, { Two(it.xD, it.yD) }, instance, prop, viewProp)
+            type.isSubtypeOf(Size::class.starProjectedType) -> createPair({ Size(it.x, it.y) }, { Two(it.widthD, it.heightD) }, instance, prop, viewProp)
+            type.isSubtypeOf(Scale::class.starProjectedType) -> createPair({ Scale(it.x, it.y) }, { Two(it.scaleXD, it.scaleYD) }, instance, prop, viewProp)
+            type.isSubtypeOf(Anchor::class.starProjectedType) -> createPair({ Anchor(it.x, it.y) }, { Two(it.sx.toDouble(), it.sy.toDouble()) }, instance, prop, viewProp)
             type.isSubtypeOf(IntRange::class.starProjectedType) -> {
                 @Suppress("UNCHECKED_CAST")
                 prop as KMutableProperty1<Any, IntRange>
+
                 val vv = listOf(
                     ObservableProperty("x", { prop.set(instance, it.toInt()..prop.get(instance).last) }, { prop.get(instance).first.toDouble() }),
                     ObservableProperty("y", { prop.set(instance, prop.get(instance).first..it.toInt()) }, { prop.get(instance).last.toDouble() }),
@@ -173,46 +226,16 @@ internal class UiEditProperties(app: UiApplication, view: View?, val views: View
 
                 UiTwoItemEditableValue(app, vv[0], vv[1])
             }
-            type.isSubtypeOf(IRectCorners::class.starProjectedType) -> {
-                @Suppress("UNCHECKED_CAST")
-                prop as KMutableProperty1<Any, IRectCorners>
-                val vv = listOf(
-                    ObservableProperty("a", { prop.set(instance, prop.get(instance).duplicate(topLeft = it)) }, { prop.get(instance).topLeft }),
-                    ObservableProperty("b", { prop.set(instance, prop.get(instance).duplicate(topRight = it)) }, { prop.get(instance).topRight }),
-                    ObservableProperty("c", { prop.set(instance, prop.get(instance).duplicate(bottomRight = it)) }, { prop.get(instance).bottomRight }),
-                    ObservableProperty("d", { prop.set(instance, prop.get(instance).duplicate(bottomLeft = it)) }, { prop.get(instance).bottomLeft }),
-                ).map { UiNumberEditableValue(app, it, viewProp.min, viewProp.max, viewProp.clampMin, viewProp.clampMax, viewProp.decimalPlaces) }
-
-                UiFourItemEditableValue(app, vv[0], vv[1], vv[2], vv[3])
-            }
-            type.isSubtypeOf(IMargin::class.starProjectedType) -> {
-                @Suppress("UNCHECKED_CAST")
-                prop as KMutableProperty1<Any, IMargin>
-                val vv = listOf(
-                    ObservableProperty("a", { prop.set(instance, prop.get(instance).duplicate(top = it)) }, { prop.get(instance).top }),
-                    ObservableProperty("b", { prop.set(instance, prop.get(instance).duplicate(right = it)) }, { prop.get(instance).right }),
-                    ObservableProperty("c", { prop.set(instance, prop.get(instance).duplicate(bottom = it)) }, { prop.get(instance).bottom }),
-                    ObservableProperty("d", { prop.set(instance, prop.get(instance).duplicate(left = it)) }, { prop.get(instance).left }),
-                ).map { UiNumberEditableValue(app, it, viewProp.min, viewProp.max, viewProp.clampMin, viewProp.clampMax, viewProp.decimalPlaces) }
-
-                UiFourItemEditableValue(app, vv[0], vv[1], vv[2], vv[3])
-            }
-            type.isSubtypeOf(Double::class.starProjectedType) -> {
-                UiNumberEditableValue(app, obs as ObservableProperty<Double>, viewProp.min, viewProp.max, viewProp.clampMin, viewProp.clampMax, viewProp.decimalPlaces)
-            }
+            type.isSubtypeOf(RectCorners::class.starProjectedType) -> createQuad({ RectCorners(it.x, it.y, it.z, it.w) }, { Four(it.topLeft.toDouble(), it.topRight.toDouble(), it.bottomRight.toDouble(), it.bottomLeft.toDouble()) }, instance, prop, viewProp)
+            type.isSubtypeOf(Margin::class.starProjectedType) -> createQuad({ Margin(it.x.toFloat(), it.y.toFloat(), it.z.toFloat(), it.w.toFloat()) }, { Four(it.top.toDouble(), it.right.toDouble(), it.bottom.toDouble(), it.left.toDouble()) }, instance, prop, viewProp)
+            type.isSubtypeOf(Double::class.starProjectedType) -> UiNumberEditableValue(app, obs as ObservableProperty<Double>, viewProp.min, viewProp.max, viewProp.clampMin, viewProp.clampMax, viewProp.decimalPlaces)
             type.isSubtypeOf(Int::class.starProjectedType) -> {
                 val pobs = (obs as ObservableProperty<Int>)
                 val robs = ObservableProperty(obs.name, { pobs.value = it.toInt() }, { pobs.value.toDouble() })
                 UiNumberEditableValue(app, robs, viewProp.min, viewProp.max, viewProp.clampMin, viewProp.clampMax, 0)
             }
-            type.isSubtypeOf(Boolean::class.starProjectedType) -> {
-                UiBooleanEditableValue(app, obs as ObservableProperty<Boolean>)
-            }
-            type.isSubtypeOf(Angle::class.starProjectedType) -> {
-                val pobs = (obs as ObservableProperty<Angle>)
-                val robs = ObservableProperty(obs.name, { pobs.value = it.degrees }, { pobs.value.degrees })
-                UiNumberEditableValue(app, robs, -360.0, +360.0, true, true, 0)
-            }
+            type.isSubtypeOf(Boolean::class.starProjectedType) -> UiBooleanEditableValue(app, obs as ObservableProperty<Boolean>)
+            type.isSubtypeOf(Angle::class.starProjectedType) -> createOne({ it.degrees }, { it.degrees }, obs, viewProp, rangeMin = -360.0, rangeMax = +360.0, clampMin = true, clampMax = true)
             type.isSubtypeOf(String::class.starProjectedType.withNullability(true)) -> {
                 if (!viewProp.editable) {
                     prop as KProperty1<Any, String?>
@@ -396,9 +419,9 @@ internal class UiCollapsibleSection(app: UiApplication, val name: String?, val c
                     }
                     scale(ICON_SIZE.toDouble())
                     rotate(angle)
-                    moveTo(-0.5, 0.0)
-                    lineTo(+0.5, 0.0)
-                    lineTo(0.0, 0.5)
+                    moveTo(Point(-0.5, 0.0))
+                    lineTo(Point(+0.5, 0.0))
+                    lineTo(Point(0.0, 0.5))
                     close()
                 }
             }

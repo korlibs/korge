@@ -33,12 +33,12 @@ interface SliceCoords {
     }
 }
 
-interface SliceCoordsWithBase<T : ISizeInt> : SliceCoords {
+interface SliceCoordsWithBase<T : SizeableInt> : SliceCoords {
     val name: String? get() = null
     val base: T
     val width: Int
     val height: Int
-    val padding: com.soywiz.korma.geom.IMarginInt
+    val padding: MarginInt
 
     val sizeString: String get() = "${width}x${height}"
     val frameOffsetX: Int get() = padding.left
@@ -53,7 +53,7 @@ interface SliceCoordsWithBase<T : ISizeInt> : SliceCoords {
     fun rotatedRight(offset: Int = 1): SliceCoordsWithBase<T> = transformed(SliceOrientation.ROTATE_0.rotatedRight(offset))
 
     companion object {
-        operator fun <T : ISizeInt> invoke(
+        operator fun <T : SizeableInt> invoke(
             base: T,
             coords: SliceCoords,
             name: String? = null,
@@ -64,8 +64,8 @@ interface SliceCoordsWithBase<T : ISizeInt> : SliceCoords {
     }
 }
 
-interface SliceCoordsWithBaseAndRect<T : ISizeInt> : SliceCoordsWithBase<T> {
-    val rect: IRectangleInt
+interface SliceCoordsWithBaseAndRect<T : SizeableInt> : SliceCoordsWithBase<T> {
+    val rect: RectangleInt
 
     val left: Int get() = rect.left
     val top: Int get() = rect.top
@@ -74,7 +74,7 @@ interface SliceCoordsWithBaseAndRect<T : ISizeInt> : SliceCoordsWithBase<T> {
     val area: Int get() = rect.area
 }
 
-data class SliceCoordsImpl<T : ISizeInt>(
+data class SliceCoordsImpl<T : SizeableInt>(
     /** Data containing [width] & [height] */
     override val base: T,
     /** Coordinates [0-1] based inside the container/base */
@@ -83,12 +83,12 @@ data class SliceCoordsImpl<T : ISizeInt>(
     override val name: String? = null,
     val flippedWidthHeight: Boolean = false,
 ) : SliceCoordsWithBase<T> {
-    override val padding get() = IMarginInt.ZERO
+    override val padding = MarginInt.ZERO
 
-    val transformedWidth: Int = if (!flippedWidthHeight) base.width else base.height
-    val transformedHeight: Int = if (!flippedWidthHeight) base.height else base.width
-    override val width: Int = (MPoint.distance(coords.tlX, coords.tlY, coords.trX, coords.trY) * transformedWidth).toInt()
-    override val height: Int = (MPoint.distance(coords.tlX, coords.tlY, coords.blX, coords.blY) * transformedHeight).toInt()
+    val transformedWidth: Int = if (!flippedWidthHeight) base.size.width else base.size.height
+    val transformedHeight: Int = if (!flippedWidthHeight) base.size.height else base.size.width
+    override val width: Int = (Point.distance(coords.tlX, coords.tlY, coords.trX, coords.trY) * transformedWidth).toInt()
+    override val height: Int = (Point.distance(coords.tlX, coords.tlY, coords.blX, coords.blY) * transformedHeight).toInt()
 
     override fun transformed(orientation: SliceOrientation): SliceCoordsWithBase<T> = SliceCoordsWithBase(base, (this as SliceCoords).transformed(orientation), name, flippedWidthHeight)
 
@@ -130,16 +130,16 @@ fun SliceCoords.transformed(m: MMatrix3D): RectCoords {
 
 // Special versions
 
-fun <T : ISizeInt> SliceCoordsWithBase<T>.transformed(m: MMatrix): SliceCoordsWithBase<T> {
+fun <T : SizeableInt> SliceCoordsWithBase<T>.transformed(m: MMatrix): SliceCoordsWithBase<T> {
     val coords = (this as SliceCoords).transformed(m)
     return SliceCoordsImpl(base, coords, name)
 }
 
-fun <T : ISizeInt> SliceCoordsWithBase<T>.transformed(m: MMatrix3D): SliceCoordsWithBase<T> {
+fun <T : SizeableInt> SliceCoordsWithBase<T>.transformed(m: MMatrix3D): SliceCoordsWithBase<T> {
     val coords = (this as SliceCoords).transformed(m)
     return SliceCoordsImpl(base, coords, name)
 }
 
-fun <T : ISizeInt> SliceCoordsWithBaseAndRect<T>.transformed(orientation: SliceOrientation, name: String? = this.name): RectSlice<T> {
+fun <T : SizeableInt> SliceCoordsWithBaseAndRect<T>.transformed(orientation: SliceOrientation, name: String? = this.name): RectSlice<T> {
     return RectSlice(base, rect, orientation, padding, name)
 }

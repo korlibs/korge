@@ -4,7 +4,7 @@ import com.soywiz.korim.color.RGBAf
 import com.soywiz.korio.file.VfsFile
 import com.soywiz.korio.serialization.xml.buildXml
 import com.soywiz.korma.geom.Angle
-import com.soywiz.korma.geom.IPoint
+import com.soywiz.korma.geom.MPoint
 import com.soywiz.korma.geom.degrees
 
 suspend fun VfsFile.writeParticleEmitter(particle: ParticleEmitter) {
@@ -16,7 +16,7 @@ suspend fun VfsFile.writeParticleEmitter(particle: ParticleEmitter) {
         fun nodeAngle(name: String, value: Angle) {
             node(name, "value" to value.degrees)
         }
-        fun nodePoint(name: String, point: IPoint) {
+        fun nodePoint(name: String, point: MPoint) {
             node(name, "x" to point.x, "y" to point.y)
         }
         fun nodeColor(name: String, color: RGBAf) {

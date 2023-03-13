@@ -7,7 +7,7 @@ import com.soywiz.korge.input.onClick
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korma.geom.Angle
-import com.soywiz.korma.geom.IPoint
+import com.soywiz.korma.geom.MPoint
 import com.soywiz.korma.geom.degrees
 import kotlin.reflect.KMutableProperty1
 
@@ -21,8 +21,6 @@ class QView(val views: List<View>) : List<View> by views, BView {
 
     operator fun get(name: String): QView = QView(views.mapNotNull { it.firstDescendantWith { it.name == name } })
 
-    fun position(): IPoint = first.ipos
-
     fun <T> setProperty(prop: KMutableProperty1<View, T>, value: T) {
         views.fastForEach { prop.set(it, value) }
     }
@@ -35,9 +33,9 @@ class QView(val views: List<View>) : List<View> by views, BView {
         get() = firstOrNull?.visible ?: false
         set(value) = fastForEach { it.visible = value }
 
-    var alpha: Double
-        get() = firstOrNull?.alpha ?: 1.0
-        set(value) = fastForEach { it.alpha = value }
+    var alpha: Float
+        get() = firstOrNull?.alphaF ?: 1.0f
+        set(value) = fastForEach { it.alphaF = value }
 
     var scale: Double
         get() = firstOrNull?.scale ?: 1.0
@@ -77,7 +75,7 @@ class QView(val views: List<View>) : List<View> by views, BView {
 }
 
 fun QView.visible(value: Boolean) { visible = value }
-fun QView.alpha(value: Double) { alpha = value }
+fun QView.alpha(value: Float) { alpha = value }
 fun QView.onClick(handler: @EventsDslMarker suspend (MouseEvents) -> Unit) = fastForEach { it.onClick(handler) }
 inline fun <reified T : View> QView.castTo(): T? = firstOrNull as? T?
 

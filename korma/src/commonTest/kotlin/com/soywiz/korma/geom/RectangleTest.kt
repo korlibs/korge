@@ -41,22 +41,22 @@ class RectangleTest {
     @Test
     fun corners() {
         val rectangle = MRectangle(1, 20, 300, 4000)
-        assertEquals(IPoint(1, 20), rectangle.topLeft)
-        assertEquals(IPoint(301, 20), rectangle.topRight)
-        assertEquals(IPoint(1, 4020), rectangle.bottomLeft)
-        assertEquals(IPoint(301, 4020), rectangle.bottomRight)
+        assertEquals(MPoint(1, 20), rectangle.topLeft.mutable)
+        assertEquals(MPoint(301, 20), rectangle.topRight.mutable)
+        assertEquals(MPoint(1, 4020), rectangle.bottomLeft.mutable)
+        assertEquals(MPoint(301, 4020), rectangle.bottomRight.mutable)
 
-        val iRectangle = IRectangle(1000, 200, 30, 4)
-        assertEquals(IPoint(1000, 200), iRectangle.topLeft)
-        assertEquals(IPoint(1030, 200), iRectangle.topRight)
-        assertEquals(IPoint(1000, 204), iRectangle.bottomLeft)
-        assertEquals(IPoint(1030, 204), iRectangle.bottomRight)
+        val iRectangle = MRectangle(1000, 200, 30, 4)
+        assertEquals(MPoint(1000, 200), iRectangle.topLeft.mutable)
+        assertEquals(MPoint(1030, 200), iRectangle.topRight.mutable)
+        assertEquals(MPoint(1000, 204), iRectangle.bottomLeft.mutable)
+        assertEquals(MPoint(1030, 204), iRectangle.bottomRight.mutable)
     }
 
     @Test
     fun containsPointInside() {
-        val rect = IRectangle(10, 20, 100, 200)
-        val point = IPointInt(11, 21)
+        val rect = MRectangle(10, 20, 100, 200)
+        val point = MPointInt(11, 21)
 
         assertTrue(point.double in rect)
         assertTrue(point in rect)
@@ -67,8 +67,8 @@ class RectangleTest {
 
     @Test
     fun doesNotContainPointToTheLeft() {
-        val rect = IRectangle(10, 20, 100, 200)
-        val point = IPointInt(9, 21)
+        val rect = MRectangle(10, 20, 100, 200)
+        val point = MPointInt(9, 21)
 
         assertFalse(point.double in rect)
         assertFalse(point in rect)
@@ -79,8 +79,8 @@ class RectangleTest {
 
     @Test
     fun doesNotContainPointToTheTop() {
-        val rect = IRectangle(10, 20, 100, 200)
-        val point = IPointInt(11, 19)
+        val rect = MRectangle(10, 20, 100, 200)
+        val point = MPointInt(11, 19)
 
         assertFalse(point.double in rect)
         assertFalse(point in rect)
@@ -91,8 +91,8 @@ class RectangleTest {
 
     @Test
     fun doesNotContainPointToTheRight() {
-        val rect = IRectangle(10, 20, 100, 200)
-        val point = IPointInt(110, 21)
+        val rect = MRectangle(10, 20, 100, 200)
+        val point = MPointInt(110, 21)
 
         assertFalse(point.double in rect)
         assertFalse(point in rect)
@@ -103,8 +103,8 @@ class RectangleTest {
 
     @Test
     fun doesNotContainPointToTheBottom() {
-        val rect = IRectangle(10, 20, 100, 200)
-        val point = IPointInt(11, 220)
+        val rect = MRectangle(10, 20, 100, 200)
+        val point = MPointInt(11, 220)
 
         assertFalse(point.double in rect)
         assertFalse(point in rect)
@@ -117,11 +117,11 @@ class RectangleTest {
     fun testMargin() {
         assertEquals(
             MRectangle.fromBounds(10, 10, 90, 90),
-            MRectangle(0, 0, 100, 100).without(IMargin(10.0))
+            MRectangle(0, 0, 100, 100).without(Margin(10f))
         )
         assertEquals(
             MRectangle.fromBounds(-10, -10, 110, 110),
-            MRectangle(0, 0, 100, 100).with(IMargin(10.0))
+            MRectangle(0, 0, 100, 100).with(Margin(10f))
         )
     }
 
@@ -139,31 +139,31 @@ class RectangleTest {
         assertEquals(
             MRectangle.fromBounds(-10, -15, 120, 125),
             MRectangle.fromBounds(0, 0, 100, 100)
-                .expand(IMargin(left = 10.0, top = 15.0, right = 20.0, bottom = 25.0))
+                .expand(Margin(left = 10f, top = 15f, right = 20f, bottom = 25f))
         )
         assertEquals(
             MRectangle.fromBounds(-10, -15, 120, 125),
             MRectangle.fromBounds(0, 0, 100, 100)
-                .expand(IMarginInt(left = 10, top = 15, right = 20, bottom = 25))
+                .expand(MarginInt(left = 10, top = 15, right = 20, bottom = 25))
         )
     }
 
     @Test
     fun constructWithPoints() {
         assertEquals(
-            IRectangle(MPoint(0, 0), MPoint(100, 100)),
+            MRectangle(MPoint(0, 0), MPoint(100, 100)),
             MRectangle(0, 0, 100, 100)
         )
         assertEquals(
-            IRectangle(MPoint(100, 100), MPoint(0, 0)),
+            MRectangle(MPoint(100, 100), MPoint(0, 0)),
             MRectangle(0, 0, 100, 100)
         )
         assertEquals(
-            IRectangle(MPoint(0, 100), MPoint(100, 0)),
+            MRectangle(MPoint(0, 100), MPoint(100, 0)),
             MRectangle(0, 0, 100, 100)
         )
         assertEquals(
-            IRectangle(MPoint(100, 0), MPoint(0, 100)),
+            MRectangle(MPoint(100, 0), MPoint(0, 100)),
             MRectangle(0, 0, 100, 100)
         )
     }

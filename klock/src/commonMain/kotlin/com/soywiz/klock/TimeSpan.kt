@@ -133,9 +133,11 @@ value class TimeSpan(
     operator fun minus(other: DateTimeSpan): DateTimeSpan = this + (-other)
 
     operator fun times(scale: Int): TimeSpan = TimeSpan(this.milliseconds * scale)
+    operator fun times(scale: Float): TimeSpan = TimeSpan((this.milliseconds * scale))
     operator fun times(scale: Double): TimeSpan = TimeSpan((this.milliseconds * scale))
 
     operator fun div(scale: Int): TimeSpan = TimeSpan(this.milliseconds / scale)
+    operator fun div(scale: Float): TimeSpan = TimeSpan(this.milliseconds / scale)
     operator fun div(scale: Double): TimeSpan = TimeSpan((this.milliseconds / scale))
 
     operator fun div(other: TimeSpan): Double = this.milliseconds / other.milliseconds

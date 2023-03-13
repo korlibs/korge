@@ -2,8 +2,6 @@ package com.soywiz.korge.view
 
 import com.soywiz.korag.*
 import com.soywiz.korag.annotation.*
-import com.soywiz.korev.*
-import com.soywiz.korge.baseview.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.view.property.*
 import com.soywiz.korgw.*
@@ -20,7 +18,6 @@ import kotlinx.coroutines.*
 open class Stage internal constructor(override val views: Views) : FixedSizeContainer()
     , View.Reference
     , CoroutineScope by views
-    , EventDispatcher by EventDispatcher.Mixin()
     , ViewsContainer
     , ResourcesContainer
     , BoundsProvider by views.bp
@@ -49,15 +46,7 @@ open class Stage internal constructor(override val views: Views) : FixedSizeCont
         gameWindow.runBlockingNoJs(this.coroutineContext, block)
 
     /** Mouse coordinates relative to the [Stage] singleton */
-    val mouseXY: MPoint = MPoint(0.0, 0.0)
-        get() {
-            field.setTo(mouseX, mouseY)
-            return field
-        }
-    /** Mouse X coordinate relative to the [Stage] singleton */
-    val mouseX get() = localMouseX(views)
-    /** Mouse Y coordinate relative to the [Stage] singleton */
-    val mouseY get() = localMouseY(views)
+    val mousePos: Point get() = localMousePos(views)
 
     //override fun getLocalBoundsInternal(out: Rectangle) {
     //    out.setTo(0.0, 0.0, views.virtualWidth, views.virtualHeight)
@@ -79,7 +68,7 @@ open class Stage internal constructor(override val views: Views) : FixedSizeCont
 
     @Suppress("unused")
     @ViewProperty(min = 0.0, max = 2000.0, groupName = "Stage")
-    private var virtualSize: IPoint
+    private var virtualSize: MPoint
         get() = MPoint(views.virtualWidthDouble, views.virtualHeightDouble)
         set(value) {
             views.virtualWidthDouble = value.x

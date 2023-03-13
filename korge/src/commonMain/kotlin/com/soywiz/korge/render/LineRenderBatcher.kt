@@ -92,6 +92,9 @@ class LineRenderBatcher(
     @PublishedApi
     internal var vertexPos = 0
 
+    fun line(p0: Point, p1: Point, color0: RGBA = color, color1: RGBA = color0, m: MMatrix = currentMatrix) =
+        line(p0.x, p0.y, p1.x, p1.y, color, color1, m)
+
     /** Draw a line from [x0],[y0] to [x1],[y1] */
     fun line(x0: Float, y0: Float, x1: Float, y1: Float, color0: RGBA = color, color1: RGBA = color0, m: MMatrix = currentMatrix) {
         if (vertexCount >= maxVertexCount - 2) {
@@ -104,14 +107,12 @@ class LineRenderBatcher(
     fun line(x0: Int, y0: Int, x1: Int, y1: Int, color0: RGBA = color, color1: RGBA = color0, m: MMatrix = currentMatrix) = line(x0.toFloat(), y0.toFloat(), x1.toFloat(), y1.toFloat(), color0, color1, m)
 
     fun drawVector(path: VectorPath, m: MMatrix = currentMatrix) {
-        var lastX = 0.0
-        var lastY = 0.0
-        path.emitPoints2 { x, y, move ->
+        var lastPos = Point()
+        path.emitPoints2 { p, move ->
             if (!move) {
-                line(lastX, lastY, x, y, m = m)
+                line(lastPos, p, m = m)
             }
-            lastX = x
-            lastY = y
+            lastPos = p
         }
     }
 
@@ -176,6 +177,7 @@ class LineRenderBatcher(
                 drawType = AGDrawType.LINES,
                 vertexCount = vertexCount,
                 uniforms = uniforms,
+                uniformBlocks = ctx.createCurrentUniformsRef(program),
                 blending = blendMode.factors
             )
         }

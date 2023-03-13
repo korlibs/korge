@@ -15,7 +15,8 @@ import kotlin.test.assertTrue
 class NinePatchShapeTest {
     @Test
     fun test() = suspendTest {
-        val ninePatch = resourcesVfs["chat-bubble.svg"].readSVG().toShape().toNinePatchFromGuides(guideColor = Colors.FUCHSIA)
+        val shape = resourcesVfs["chat-bubble.svg"].readSVG().toShape()
+        val ninePatch = shape.toNinePatchFromGuides(guideColor = Colors.FUCHSIA)
         assertEquals(MSize(128, 128), ninePatch.size)
         assertEquals(NinePatchSlices2D(
             NinePatchSlices(30.0 until 33.0, 80.0 until 100.0),

@@ -11,11 +11,9 @@ import com.soywiz.korim.format.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.serialization.json.Json
-import com.soywiz.korma.geom.Anchor
-import com.soywiz.korma.geom.ScaleMode
-import com.soywiz.korma.geom.degrees
+import com.soywiz.korma.geom.*
 
-suspend fun main() = Korge(width = 768, height = 512, bgcolor = Colors["#2b2b2b"]) {
+suspend fun main() = Korge(windowSize = SizeInt(768, 512), bgcolor = Colors["#2b2b2b"]) {
     val exceptions = arrayListOf<Throwable>()
     try {
         // Test cases

@@ -35,8 +35,8 @@ class AgBitmapTextureManager(
     var maxCachedMemory = 0L
 
     /** Bitmaps to keep for some time even if not referenced in [framesBetweenGC] as long as the [maxCachedMemory] allows it */
-    private val cachedBitmaps = AgFastSet<Bitmap>()
-	private val referencedBitmapsSinceGC = AgFastSet<Bitmap>()
+    private val cachedBitmaps = FastSmallSet<Bitmap>()
+	private val referencedBitmapsSinceGC = FastSmallSet<Bitmap>()
 	private var referencedBitmaps = FastArrayList<Bitmap>()
 
     /** Number of frames between each Texture Garbage Collection step */
@@ -98,7 +98,7 @@ class AgBitmapTextureManager(
             textureInfoPool.alloc().also {
                 val base = it.textureBase
                 base.version = -1
-                base.base = AGTexture(bitmap.premultiplied, targetKind = when (bitmap) {
+                base.base = AGTexture(targetKind = when (bitmap) {
                     is MultiBitmap -> AGTextureTargetKind.TEXTURE_CUBE_MAP
                     else -> AGTextureTargetKind.TEXTURE_2D
                 })

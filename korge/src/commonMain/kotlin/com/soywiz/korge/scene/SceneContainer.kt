@@ -84,11 +84,11 @@ class SceneContainer(
     }
 
     init {
-        addOnEvent<ReloadEvent> { event ->
+        onEvent(ReloadEvent) { event ->
             val hasChildScenes = descendantsWith { it is SceneContainer && it != this }.isNotEmpty()
             if (hasChildScenes) {
                 println("[ReloadEvent] Scene $currentScene not reloaded because has child scenes...")
-                return@addOnEvent
+                return@onEvent
             }
             launchImmediately {
                 val scene = currentScene
@@ -256,7 +256,7 @@ class SceneContainer(
         time: TimeSpan = 0.seconds,
         transition: Transition = defaultTransition
     ): T {
-        return changeTo(clazz, { it.get(clazz) }, *injects, time, transition)
+        return changeTo(clazz, { it.get(clazz) }, *injects, time = time, transition = transition)
     }
 
     /** Check [Scene] for details of the lifecycle. */

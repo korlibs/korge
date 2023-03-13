@@ -2,7 +2,7 @@ package com.soywiz.korio.async
 
 import com.soywiz.klock.TimeSpan
 import com.soywiz.klock.seconds
-import com.soywiz.klogger.Console
+import com.soywiz.klogger.Logger
 import com.soywiz.kmem.*
 import com.soywiz.korio.lang.Environment
 import kotlinx.coroutines.CancellationException
@@ -19,6 +19,8 @@ import kotlin.coroutines.Continuation
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.startCoroutine
 import kotlin.native.concurrent.ThreadLocal
+
+private val logger = Logger("AsyncExt")
 
 suspend fun <T> CoroutineContext.launchUnscopedAndWait(block: suspend () -> T): T {
     val deferred = CompletableDeferred<T>()
@@ -54,7 +56,6 @@ fun <T> CoroutineScope.async(callback: suspend () -> T): Deferred<T> = _async(Co
 fun <T> CoroutineScope.asyncImmediately(callback: suspend () -> T): Deferred<T> = _async(CoroutineStart.UNDISPATCHED, callback)
 fun <T> CoroutineScope.asyncAsap(callback: suspend () -> T): Deferred<T> = _async(CoroutineStart.DEFAULT, callback)
 
-
 fun launch(context: CoroutineContext, callback: suspend () -> Unit) = CoroutineScope(context).launchImmediately(callback)
 fun launchImmediately(context: CoroutineContext, callback: suspend () -> Unit) = CoroutineScope(context).launchImmediately(callback)
 fun launchAsap(context: CoroutineContext, callback: suspend () -> Unit) = CoroutineScope(context).launchAsap(callback)
@@ -85,7 +86,7 @@ private fun CoroutineScope._launch(start: CoroutineStart, callback: suspend () -
 		throw e
 	} catch (e: Throwable) {
         if (DEBUG_ASYNC_LAUNCH_ERRORS) {
-            Console.error("CoroutineScope._launch.catch:")
+            logger.error { "CoroutineScope._launch.catch:" }
             e.printStackTrace()
         }
 		throw e
@@ -98,7 +99,7 @@ private fun <T> CoroutineScope._async(start: CoroutineStart, callback: suspend (
 	} catch (e: Throwable) {
         if (e is CancellationException) throw e
         if (DEBUG_ASYNC_LAUNCH_ERRORS) {
-            Console.error("CoroutineScope._async.catch:")
+            logger.error { "CoroutineScope._async.catch:" }
             e.printStackTrace()
         }
 		throw e

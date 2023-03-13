@@ -60,7 +60,7 @@ class TextEditController(
         it.visible = false
     }
 
-    var padding: IMargin = IMargin(3.0, 2.0, 2.0, 2.0)
+    var padding: Margin = Margin(3f, 2f, 2f, 2f)
         set(value) {
             field = value
             onSizeChanged(this)
@@ -195,7 +195,7 @@ class TextEditController(
 
     fun getCaretAtIndex(index: Int): Bezier {
         val glyphPositions = textView.getGlyphMetrics().glyphs
-        if (glyphPositions.isEmpty()) return Bezier(MPoint(), MPoint())
+        if (glyphPositions.isEmpty()) return Bezier(Point(), Point())
         val glyph = glyphPositions[min(index, glyphPositions.size - 1)]
         return when {
             index < glyphPositions.size -> glyph.caretStart
@@ -215,7 +215,7 @@ class TextEditController(
     }
     */
 
-    fun getIndexAtPos(pos: MPoint): Int {
+    fun getIndexAtPos(pos: Point): Int {
         val glyphPositions = textView.getGlyphMetrics().glyphs
 
         var index = 0
@@ -250,8 +250,8 @@ class TextEditController(
             val caret = getCaretAtIndex(range.first)
             val sign = if (last) -1.0 else +1.0
             val normal = caret.normal(0.0) * (2.0 * sign)
-            val p0 = caret.points.firstPoint()
-            val p1 = caret.points.lastPoint()
+            val p0 = caret.points.first
+            val p1 = caret.points.last
             array.add(p0)
             array.add(p1)
             array.add(p0 + normal)
@@ -259,10 +259,8 @@ class TextEditController(
         } else {
             for (n in range.first..range.last + 1) {
                 val caret = getCaretAtIndex(n)
-                val p0 = caret.points.firstPoint()
-                val p1 = caret.points.lastPoint()
-                array.add(p0)
-                array.add(p1)
+                array.add(caret.points.first)
+                array.add(caret.points.last)
                 //println("caret[$n]=$caret")
             }
         }

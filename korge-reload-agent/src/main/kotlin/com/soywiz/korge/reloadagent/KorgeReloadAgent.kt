@@ -1,13 +1,11 @@
 package com.soywiz.korge.reloadagent
 
-import com.sun.net.httpserver.HttpServer
-import java.io.File
-import java.lang.instrument.ClassDefinition
-import java.lang.instrument.ClassFileTransformer
-import java.lang.instrument.Instrumentation
-import java.net.InetSocketAddress
+import com.sun.net.httpserver.*
+import java.io.*
+import java.lang.instrument.*
+import java.net.*
 import java.security.*
-import java.util.concurrent.Executors
+import java.util.concurrent.*
 import kotlin.system.*
 
 // https://www.baeldung.com/java-instrumentation
@@ -26,11 +24,15 @@ object KorgeReloadAgent {
 
     fun reloadCommon(type: String, agentArgs: String?, inst: Instrumentation) {
         val agentArgs = agentArgs ?: ""
-        val args = agentArgs.split(":::")
-        val httpPort = args[0].toIntOrNull() ?: 22011
-        val continuousCommand = args[1]
-        val enableRedefinition = args[2].toBoolean()
-        val rootFolders = args.drop(3)
+        val ARGS_SEPARATOR = "<:/:>"
+        val CMD_SEPARATOR = "<@/@>"
+        println("[KorgeReloadAgent] agentArgs=$agentArgs")
+
+        val (portStr, continuousCommandStr, enableRedefinitionStr, argsStr) = agentArgs.split(ARGS_SEPARATOR)
+        val httpPort = portStr.toIntOrNull() ?: 22011
+        val continuousCommand = continuousCommandStr.split(CMD_SEPARATOR)
+        val enableRedefinition = enableRedefinitionStr.toBoolean()
+        val rootFolders = argsStr.split(CMD_SEPARATOR)
 
         println("[KorgeReloadAgent] In $type method")
         println("[KorgeReloadAgent] - httpPort=$httpPort")
@@ -68,40 +70,52 @@ object KorgeReloadAgent {
         }.also { it.isDaemon = true }.also { it.name = "KorgeReloadAgent.httpServer" }.start()
         Thread {
             println("[KorgeReloadAgent] - Running $continuousCommand")
-            try {
-                val isWindows = System.getProperty("os.name").toLowerCase().contains("win")
-                //val args = arrayOf<String>()
-                //val args = if (isWindows) arrayOf("cmd.exe", "/k") else arrayOf("/bin/sh", "-c")
-                //val args = if (isWindows) arrayOf() else arrayOf("/bin/sh", "-c")
-                val javaHomeBinFolder = System.getProperties().getProperty("java.home") + File.separator + "bin" + File.separator
-                val jvmLocation = when {
-                    System.getProperty("os.name").startsWith("Win") -> "${javaHomeBinFolder}java.exe"
-                    else -> "${javaHomeBinFolder}java"
+            while (true) {
+                try {
+                    val isWindows = System.getProperty("os.name").lowercase().contains("win")
+                    //val args = arrayOf<String>()
+                    //val args = if (isWindows) arrayOf("cmd.exe", "/k") else arrayOf("/bin/sh", "-c")
+                    //val args = if (isWindows) arrayOf() else arrayOf("/bin/sh", "-c")
+                    val javaHomeBinFolder =
+                        System.getProperties().getProperty("java.home") + File.separator + "bin" + File.separator
+                    val jvmLocation = when {
+                        System.getProperty("os.name").startsWith("Win") -> "${javaHomeBinFolder}java.exe"
+                        else -> "${javaHomeBinFolder}java"
+                    }
+                    val p = ProcessBuilder()
+                        .redirectError(ProcessBuilder.Redirect.INHERIT)
+                        //.inheritIO()
+                        .command(listOf(jvmLocation, *continuousCommand.toTypedArray()))
+                        .start()
+
+                    //val p = Runtime.getRuntime().exec("$jvmLocation $continuousCommand")
+                    //val p = ProcessBuilder(*args, continuousCommand).inheritIO().start()
+                    //val pID = p.pid()
+                    //println("[KorgeReloadAgent] - Started continuousCommand PID=$pID")
+
+                    Runtime.getRuntime().addShutdownHook(Thread {
+                        //if (isWindows) {
+                        //    println("[KorgeReloadAgent] - [isAlive=${p.isAlive}] Killing task")
+                        //    Runtime.getRuntime().exec(arrayOf("taskkill", "/PID", "$pID")).waitFor()
+                        //}
+
+                        //p.outputStream.write()
+                        println("[KorgeReloadAgent] - [isAlive=${p.isAlive}] Stopping continuousCommand")
+                        p.destroy()
+                        Thread.sleep(500L)
+                        println("[KorgeReloadAgent] - [isAlive=${p.isAlive}] Stopping forcibly")
+                        p.destroyForcibly()
+                        println("[KorgeReloadAgent] - [isAlive=${p.isAlive}] Done stopping forcibly")
+                    })
+                    val exit = p.waitFor()
+                    println("[KorgeReloadAgent] - Exited continuous command with $exit code")
+                } catch (e: Throwable) {
+                    println("[KorgeReloadAgent] - Continuous command failed with exception '${e.message}'")
+                    e.printStackTrace()
+                    if (e is InterruptedException) throw e
                 }
-                val p = Runtime.getRuntime().exec("$jvmLocation $continuousCommand")
-                //val p = ProcessBuilder(*args, continuousCommand).inheritIO().start()
-                //val pID = p.pid()
-                //println("[KorgeReloadAgent] - Started continuousCommand PID=$pID")
-
-                Runtime.getRuntime().addShutdownHook(Thread {
-                    //if (isWindows) {
-                    //    println("[KorgeReloadAgent] - [isAlive=${p.isAlive}] Killing task")
-                    //    Runtime.getRuntime().exec(arrayOf("taskkill", "/PID", "$pID")).waitFor()
-                    //}
-
-                    //p.outputStream.write()
-                    println("[KorgeReloadAgent] - [isAlive=${p.isAlive}] Stopping continuousCommand")
-                    p.destroy()
-                    Thread.sleep(500L)
-                    println("[KorgeReloadAgent] - [isAlive=${p.isAlive}] Stopping forcibly")
-                    p.destroyForcibly()
-                    println("[KorgeReloadAgent] - [isAlive=${p.isAlive}] Done stopping forcibly")
-                })
-                val exit = p.waitFor()
-                println("[KorgeReloadAgent] - Exited continuous command with $exit code")
-            } catch (e: Throwable) {
-                println("[KorgeReloadAgent] - Continuous command failed with exception '${e.message}'")
-                e.printStackTrace()
+                println("[KorgeReloadAgent] Restarting in 5 seconds...")
+                Thread.sleep(5000L)
             }
         }.also { it.isDaemon = true }.also { it.name = "KorgeReloadAgent.continuousCommand" }.start()
 
@@ -205,7 +219,7 @@ class KorgeReloaderProcessor(val rootFolders: List<String>, val inst: Instrument
         if (modifiedClassNames.isEmpty()) {
             println("[KorgeReloadAgent] modifiedClassNames=$modifiedClassNames [EMPTY] STOPPING")
         } else {
-            println("[KorgeReloadAgent] modifiedClassNames=$modifiedClassNames")
+            println("[KorgeReloadAgent] modifiedClassNames=\n${modifiedClassNames.joinToString("\n")}")
             var successRedefinition = true
             val changedDefinitions = arrayListOf<ClassDefinition>()
             val times = arrayListOf<Long>()
@@ -242,8 +256,8 @@ class KorgeReloaderProcessor(val rootFolders: List<String>, val inst: Instrument
                 successRedefinition = false
             }
             println("[KorgeReloadAgent] reload enableRedefinition=$enableRedefinition, successRedefinition=$successRedefinition, changedDefinitions=${changedDefinitions.size}, classNameToBytes=${classNameToBytes.size}, times[${times.size}]=${times.sum()}ms")
-            val triggerReload = Class.forName("com.soywiz.korge.KorgeReload").getMethod("triggerReload", java.util.List::class.java, java.lang.Boolean.TYPE)
-            triggerReload.invoke(null, changedDefinitions.map { it.definitionClass.name }, successRedefinition)
+            val triggerReload = Class.forName("com.soywiz.korge.KorgeReload").getMethod("triggerReload", java.util.List::class.java, java.lang.Boolean.TYPE, java.util.List::class.java)
+            triggerReload.invoke(null, changedDefinitions.map { it.definitionClass.name }, successRedefinition, rootFolders)
         }
     }
 

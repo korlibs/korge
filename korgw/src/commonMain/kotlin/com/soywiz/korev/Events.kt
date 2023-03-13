@@ -7,13 +7,33 @@ import com.soywiz.kmem.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.util.*
-import kotlin.jvm.*
+import com.soywiz.korma.geom.*
 
-interface TEvent<T : TEvent<T>> {
-    val type: EventType<T>
+open class TypedEvent<T : BEvent>(open override var type: EventType<T>) : Event(), TEvent<T>
+
+open class Event {
+    var target: Any? = null
+    var _stopPropagation = false
+    fun stopPropagation() {
+        _stopPropagation = true
+    }
 }
 
-interface EventType<T: TEvent<T>>
+fun Event.preventDefault(reason: Any? = null): Nothing = throw PreventDefaultException(reason)
+fun preventDefault(reason: Any? = null): Nothing = throw PreventDefaultException(reason)
+
+class PreventDefaultException(val reason: Any? = null) : Exception()
+
+interface BEvent {
+    var target: Any?
+    val type: EventType<out BEvent>
+}
+
+interface TEvent<T : BEvent> : BEvent {
+    override val type: EventType<T>
+}
+
+interface EventType<T : BEvent>
 
 data class GestureEvent(
     override var type: Type = Type.MAGNIFY,
@@ -28,7 +48,12 @@ data class GestureEvent(
             amountY = value
         }
 
-    enum class Type : EventType<GestureEvent> { MAGNIFY, ROTATE, SWIPE, SMART_MAGNIFY }
+    enum class Type : EventType<GestureEvent> {
+        MAGNIFY, ROTATE, SWIPE, SMART_MAGNIFY;
+        companion object {
+            val ALL = values()
+        }
+    }
 
     fun copyFrom(other: GestureEvent) {
         this.type = other.type
@@ -62,10 +87,16 @@ data class MouseEvent(
     var scrollDeltaMode: ScrollDeltaMode = ScrollDeltaMode.LINE
 ) : Event(), TEvent<MouseEvent> {
     //companion object : EventType<MouseEvent>
+    val pos: PointInt get() = PointInt(x, y)
 
     var component: Any? = null
 
-	enum class Type : EventType<MouseEvent> { MOVE, DRAG, UP, DOWN, CLICK, ENTER, EXIT, SCROLL }
+	enum class Type : EventType<MouseEvent> {
+        MOVE, DRAG, UP, DOWN, CLICK, ENTER, EXIT, SCROLL;
+        companion object {
+            val ALL = values()
+        }
+    }
 
     val typeMove get() = type == Type.MOVE
     val typeDrag get() = type == Type.DRAG
@@ -147,6 +178,7 @@ data class Touch(
     var kind: Kind = Kind.FINGER,
     var button: MouseButton = MouseButton.LEFT,
 ) : Extra by Extra.Mixin() {
+    val p: Point get() = Point(x, y)
     enum class Status { ADD, KEEP, REMOVE }
     enum class Kind { FINGER, MOUSE, STYLUS, ERASER, UNKNOWN }
 
@@ -266,7 +298,12 @@ data class TouchEvent(
     var scaleCoords: Boolean = true,
     var emulated: Boolean = false
 ) : Event(), TEvent<TouchEvent> {
-    enum class Type : EventType<TouchEvent> { START, END, MOVE, HOVER, UNKNOWN }
+    enum class Type : EventType<TouchEvent> {
+        START, END, MOVE, HOVER, UNKNOWN;
+        companion object {
+            val ALL = values()
+        }
+    }
 
     companion object {
         val MAX_TOUCHES = 10
@@ -366,7 +403,12 @@ data class KeyEvent constructor(
     var str: String? = null,
 ) : Event(), TEvent<KeyEvent> {
     //companion object : EventType<KeyEvent>
-    enum class Type : EventType<KeyEvent> { UP, DOWN, TYPE }
+    enum class Type : EventType<KeyEvent> {
+        UP, DOWN, TYPE;
+        companion object {
+            val ALL = values()
+        }
+    }
 
     var deltaTime = TimeSpan.ZERO
 
@@ -424,9 +466,8 @@ data class FullScreenEvent(var fullscreen: Boolean = false) : TypedEvent<FullScr
     }
 }
 
-class RenderEvent() : Event(), TEvent<RenderEvent> {
+class RenderEvent() : TypedEvent<RenderEvent>(RenderEvent) {
     companion object : EventType<RenderEvent>
-    override val type: EventType<RenderEvent> get() = RenderEvent
 
     var update: Boolean = true
     var render: Boolean = true
@@ -481,46 +522,15 @@ class DisposeEvent() : TypedEvent<DisposeEvent>(DisposeEvent) {
 }
 
 data class DropFileEvent(override var type: Type = Type.START, var files: List<VfsFile>? = null) : Event(), TEvent<DropFileEvent> {
-	enum class Type : EventType<DropFileEvent> { START, END, DROP }
+	enum class Type : EventType<DropFileEvent> {
+       START, END, DROP;
+       companion object {
+           val ALL = values()
+       }
+    }
 
     fun copyFrom(other: DropFileEvent) {
         this.type = other.type
         this.files = other.files?.toList()
     }
-}
-
-class MouseEvents(val ed: EventDispatcher) : Closeable {
-	fun click(callback: MouseEvent.() -> Unit) = ed.addEventListener<MouseEvent> { if (it.type == MouseEvent.Type.CLICK) callback(it) }
-	fun up(callback: MouseEvent.() -> Unit) = ed.addEventListener<MouseEvent> { if (it.type == MouseEvent.Type.UP) callback(it) }
-	fun down(callback: MouseEvent.() -> Unit) = ed.addEventListener<MouseEvent> { if (it.type == MouseEvent.Type.DOWN) callback(it) }
-	fun move(callback: MouseEvent.() -> Unit) = ed.addEventListener<MouseEvent> { if (it.type == MouseEvent.Type.MOVE) callback(it) }
-	fun drag(callback: MouseEvent.() -> Unit) = ed.addEventListener<MouseEvent> { if (it.type == MouseEvent.Type.DRAG) callback(it) }
-	fun enter(callback: MouseEvent.() -> Unit) = ed.addEventListener<MouseEvent> { if (it.type == MouseEvent.Type.ENTER) callback(it) }
-    fun scroll(callback: MouseEvent.() -> Unit) = ed.addEventListener<MouseEvent> { if (it.type == MouseEvent.Type.SCROLL) callback(it) }
-	fun exit(callback: MouseEvent.() -> Unit) = ed.addEventListener<MouseEvent> { if (it.type == MouseEvent.Type.EXIT) callback(it) }
-	override fun close() {
-	}
-}
-
-class KeysEvents(val ed: EventDispatcher) : Closeable {
-	fun down(callback: KeyEvent.() -> Unit) =
-		ed.addEventListener<KeyEvent> { if (it.type == KeyEvent.Type.DOWN) callback(it) }
-
-	fun up(callback: KeyEvent.() -> Unit) =
-		ed.addEventListener<KeyEvent> { if (it.type == KeyEvent.Type.UP) callback(it) }
-
-	fun press(callback: KeyEvent.() -> Unit) =
-		ed.addEventListener<KeyEvent> { if (it.type == KeyEvent.Type.TYPE) callback(it) }
-
-	fun down(key: Key, callback: KeyEvent.() -> Unit) =
-		ed.addEventListener<KeyEvent> { if (it.type == KeyEvent.Type.DOWN && it.key == key) callback(it) }
-
-	fun up(key: Key, callback: KeyEvent.() -> Unit) =
-		ed.addEventListener<KeyEvent> { if (it.type == KeyEvent.Type.UP && it.key == key) callback(it) }
-
-	fun press(key: Key, callback: KeyEvent.() -> Unit) =
-		ed.addEventListener<KeyEvent> { if (it.type == KeyEvent.Type.TYPE && it.key == key) callback(it) }
-
-	override fun close() {
-	}
 }

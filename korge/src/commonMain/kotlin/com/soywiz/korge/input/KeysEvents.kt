@@ -9,9 +9,10 @@ import com.soywiz.korge.time.*
 import com.soywiz.korge.view.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.lang.*
+import com.soywiz.korma.interpolation.*
 import kotlin.native.concurrent.*
 
-class KeysEvents(override val view: View) : KeyComponent, Closeable {
+class KeysEvents(val view: View) : Closeable {
     @PublishedApi
     internal lateinit var views: Views
     @PublishedApi
@@ -67,7 +68,7 @@ class KeysEvents(override val view: View) : KeyComponent, Closeable {
             if (keys[key]) {
                 remainingTime -= dt
                 if (remainingTime < 0.milliseconds) {
-                    val ratio = (currentStep.toDouble() / delaySteps.toDouble()).clamp01()
+                    val ratio = Ratio(currentStep, delaySteps).clamped
                     currentStep++
                     remainingTime += ratio.interpolate(maxDelay, minDelay)
                     launchImmediately(views.coroutineContext) {
@@ -104,25 +105,23 @@ class KeysEvents(override val view: View) : KeyComponent, Closeable {
     fun typed(callback: suspend (key: KeyEvent) -> Unit): Closeable = onKeyTyped { e -> callback(e) }
     fun typed(key: Key, callback: suspend (key: KeyEvent) -> Unit): Closeable = onKeyTyped { e -> if (e.key == key) callback(e) }
 
-    override fun Views.onKeyEvent(event: KeyEvent) {
-        this@KeysEvents.views = this@onKeyEvent
-		when (event.type) {
-			KeyEvent.Type.TYPE -> launchImmediately(views.coroutineContext) { onKeyTyped.invoke(event) }
-			KeyEvent.Type.DOWN -> launchImmediately(views.coroutineContext) { onKeyDown.invoke(event) }
-			KeyEvent.Type.UP -> launchImmediately(views.coroutineContext) { onKeyUp.invoke(event) }
-		}
-	}
+    val closeable = CancellableGroup()
+
+    init {
+        view.onEvent(KeyEvent.Type.TYPE) { event -> views = event.target as Views; launchImmediately(views.coroutineContext) { onKeyTyped.invoke(event) } }
+        view.onEvent(KeyEvent.Type.DOWN) { event -> views = event.target as Views; launchImmediately(views.coroutineContext) { onKeyDown.invoke(event) } }
+        view.onEvent(KeyEvent.Type.UP) { event -> views = event.target as Views; launchImmediately(views.coroutineContext) { onKeyUp.invoke(event) } }
+    }
 
     override fun close() {
-        this.detach()
+        closeable.close()
     }
 }
 
 @ThreadLocal
-val View.keys: KeysEvents by Extra.PropertyThis<View, KeysEvents> { this.getOrCreateComponentKey<KeysEvents> { KeysEvents(this) } }
+val View.keys: KeysEvents by Extra.PropertyThis<View, KeysEvents> { KeysEvents(this) }
 
 inline fun View.newKeys(callback: KeysEvents.() -> Unit): KeysEvents = KeysEvents(this).also {
-    addComponent(it)
     callback(it)
 }
 

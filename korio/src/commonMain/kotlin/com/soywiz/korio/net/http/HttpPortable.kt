@@ -1,7 +1,7 @@
 package com.soywiz.korio.net.http
 
 import com.soywiz.klock.seconds
-import com.soywiz.klogger.Console
+import com.soywiz.klogger.Logger
 import com.soywiz.korio.async.AsyncQueue
 import com.soywiz.korio.async.AsyncSignal
 import com.soywiz.korio.async.Signal
@@ -129,6 +129,7 @@ internal class HttpPortableClient(val factory: AsyncSocketFactory) : HttpClient(
 
 internal class HttpPortableServer(val factory: AsyncSocketFactory) : HttpServer() {
     companion object {
+        private val logger = Logger("HttpPortableServer")
         val HeaderRegex = Regex("^(\\w+)\\s+(.*)\\s+(HTTP/1.[01])$")
     }
 
@@ -322,7 +323,7 @@ internal class HttpPortableServer(val factory: AsyncSocketFactory) : HttpServer(
                             }
                         }
                     } catch (e: IOException) {
-                        Console.error("Error on queue")
+                        logger.error { "Error on queue" }
                         // Do nothing
                     }
                 }

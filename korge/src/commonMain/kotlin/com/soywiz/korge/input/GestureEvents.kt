@@ -1,17 +1,12 @@
 package com.soywiz.korge.input
 
-import com.soywiz.kds.Extra
-import com.soywiz.korev.GestureEvent
-import com.soywiz.korge.baseview.BaseView
-import com.soywiz.korge.component.GestureComponent
-import com.soywiz.korge.view.View
-import com.soywiz.korge.view.Views
-import com.soywiz.korio.async.Signal
-import com.soywiz.korio.async.launchImmediately
-import kotlin.native.concurrent.ThreadLocal
-import kotlin.reflect.KProperty1
+import com.soywiz.kds.*
+import com.soywiz.korev.*
+import com.soywiz.korge.view.*
+import com.soywiz.korio.async.*
+import kotlin.reflect.*
 
-class GestureEvents(override val view: BaseView) : GestureComponent {
+class GestureEvents(val view: BaseView) {
     val lastEvent = GestureEvent()
     /** Trackpad pinch zooming. Only implemented on MacOS for now */
     val magnify = Signal<GestureEvents>()
@@ -25,23 +20,23 @@ class GestureEvents(override val view: BaseView) : GestureComponent {
     lateinit var views: Views
         private set
 
-    override fun onGestureEvent(views: Views, event: GestureEvent) {
-        this.views = views
-        lastEvent.copyFrom(event)
-        when (event.type) {
-            GestureEvent.Type.MAGNIFY -> this.magnify(this)
-            GestureEvent.Type.ROTATE -> this.magnify(this)
-            GestureEvent.Type.SWIPE -> this.swipe(this)
-            GestureEvent.Type.SMART_MAGNIFY -> this.smartZoom(this)
+    init {
+        view.onEvents(*GestureEvent.Type.ALL) { event ->
+            this.views = event.target as Views
+            lastEvent.copyFrom(event)
+            when (event.type) {
+                GestureEvent.Type.MAGNIFY -> this.magnify(this)
+                GestureEvent.Type.ROTATE -> this.magnify(this)
+                GestureEvent.Type.SWIPE -> this.swipe(this)
+                GestureEvent.Type.SMART_MAGNIFY -> this.smartZoom(this)
+            }
+            //println("onGestureEvent: $event")
         }
-        //println("onGestureEvent: $event")
     }
 }
 
-@ThreadLocal // @TODO: Is this required?
-val View.gestures by Extra.PropertyThis<View, GestureEvents> {
-    this.getOrCreateComponentGesture { GestureEvents(this) }
-}
+val View.gestures by Extra.PropertyThis { GestureEvents(this) }
+
 inline fun <T> View.gestures(callback: GestureEvents.() -> T): T = gestures.run(callback)
 
 /** Trackpad pinch zooming. Only implemented on MacOS for now */

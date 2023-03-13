@@ -2,9 +2,11 @@ package com.soywiz.korge.ui
 
 import com.soywiz.korge.input.*
 import com.soywiz.korge.render.*
+import com.soywiz.korge.style.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.font.*
+import com.soywiz.korim.text.*
 import com.soywiz.korma.geom.*
 
 // @TODO: Replace with TextBlock
@@ -72,7 +74,7 @@ class UIText(
         background.visible = bgcolor.a != 0
         background.colorMul = bgcolor
         textBounds.setTo(0.0, 0.0, width, height)
-        textView.setFormat(face = textFont, size = textSize.toInt(), color = textColor, align = textAlignment)
+        textView.setFormat(face = styles.textFont, size = styles.textSize.toInt(), color = styles.textColor, align = styles.textAlignment)
         textView.setTextBounds(textBounds)
         //background.size(width, height)
         textView.text = text

@@ -2,6 +2,7 @@ package com.soywiz.korge.ui
 
 import com.soywiz.korev.*
 import com.soywiz.korge.annotations.*
+import com.soywiz.korge.style.*
 import com.soywiz.korge.text.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.color.*
@@ -14,22 +15,25 @@ inline fun Container.uiTextInput(
     initialText: String = "",
     width: Double = 128.0,
     height: Double = 24.0,
-    skin: ViewRenderer = BoxUISkin(),
     block: @ViewDslMarker UITextInput.() -> Unit = {}
-): UITextInput = UITextInput(initialText, width, height, skin)
+): UITextInput = UITextInput(initialText, width, height)
     .addTo(this).also { block(it) }
 
 /**
  * Simple Single Line Text Input
  */
 @KorgeExperimental
-class UITextInput(initialText: String = "", width: Double = 128.0, height: Double = 24.0, skin: ViewRenderer = BoxUISkin()) :
+class UITextInput(initialText: String = "", width: Double = 128.0, height: Double = 24.0) :
     UIView(width, height),
     //UIFocusable,
     ISoftKeyboardConfig by SoftKeyboardConfig() {
 
     //private val bg = ninePatch(NinePatchBmpSlice.createSimple(Bitmap32(3, 3) { x, y -> if (x == 1 && y == 1) Colors.WHITE else Colors.BLACK }.slice(), 1, 1, 2, 2), width, height).also { it.smoothing = false }
-    private val bg = renderableView(width, height, skin)
+    private val bg = renderableView(width, height) {
+        styles.uiTextInputBackgroundRender.apply {
+            render()
+        }
+    }
     var skin by bg::viewRenderer
     private val container = clipContainer(0.0, 0.0)
     //private val container = fixedSizeContainer(width - 4.0, height - 4.0).position(2.0, 3.0)
@@ -53,7 +57,7 @@ class UITextInput(initialText: String = "", width: Double = 128.0, height: Doubl
     fun blur() = controller.blur()
     fun selectAll() = controller.selectAll()
 
-    var padding: IMargin = IMargin(3.0, 2.0, 2.0, 2.0)
+    var padding: Margin = Margin(3f, 2f, 2f, 2f)
         set(value) {
             field = value
             onSizeChanged()
@@ -76,3 +80,7 @@ class UITextInput(initialText: String = "", width: Double = 128.0, height: Doubl
     //    get() = TODO("Not yet implemented")
     //    set(value) {}
 }
+
+var ViewStyles.uiTextInputBackgroundRender: ViewRenderer by ViewStyle(ViewRenderer {
+    ctx2d.rect(0.0, 0.0, width, height, Colors.WHITE)
+})

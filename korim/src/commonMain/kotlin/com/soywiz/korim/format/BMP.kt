@@ -73,7 +73,7 @@ object BMP : ImageFormat("bmp") {
 				val out = Bitmap8(h.width, h.height)
 				for (n in 0 until 256) out.palette[n] = RGBA(s.readS32LE(), 0xFF)
 				for (n in 0 until h.height) out.setRow(h.height - n - 1, s.readBytes(h.width))
-				ImageData(listOf(ImageFrame(out)))
+				ImageData(out)
 			}
 			24, 32 -> {
 				val bytesPerRow = h.width * h.bitsPerPixel / 8
@@ -90,7 +90,7 @@ object BMP : ImageFormat("bmp") {
 						s.skip(padding)
 					}
 				}
-				ImageData(listOf(ImageFrame(out)))
+				ImageData(out)
 			}
 			else -> TODO("Unsupported bitsPerPixel=${h.bitsPerPixel}")
 		}

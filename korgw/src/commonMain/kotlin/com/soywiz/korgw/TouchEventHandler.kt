@@ -1,9 +1,8 @@
 package com.soywiz.korgw
 
-import com.soywiz.kds.Pool
-import com.soywiz.kds.lock.NonRecursiveLock
-import com.soywiz.korev.TouchEvent
-import com.soywiz.korev.dispatch
+import com.soywiz.kds.*
+import com.soywiz.kds.lock.*
+import com.soywiz.korev.*
 
 class TouchEventHandler {
     @PublishedApi

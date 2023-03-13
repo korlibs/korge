@@ -6,6 +6,7 @@ import com.soywiz.korge.view.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.format.*
 import com.soywiz.korio.file.std.*
+import com.soywiz.korma.geom.*
 import kotlinx.coroutines.*
 
 object Issue83Sample {
@@ -16,7 +17,7 @@ object Issue83Sample {
         }
     }
 
-    suspend fun main() = Korge(width = 512, height = 512, bgcolor = Colors["#2b2b2b"]) {
+    suspend fun main() = Korge(windowSize = SizeInt(512, 512), bgcolor = Colors["#2b2b2b"]) {
         val image = image(resourcesVfs["korge.png"].readBitmap()) {
             anchor(.5, .5)
             scale(.8)

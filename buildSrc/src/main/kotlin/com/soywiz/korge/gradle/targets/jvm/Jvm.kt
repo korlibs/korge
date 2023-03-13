@@ -19,7 +19,7 @@ import java.io.File
 val KORGE_RELOAD_AGENT_CONFIGURATION_NAME = "KorgeReloadAgent"
 val httpPort = 22011
 
-fun Project.configureJvm() {
+fun Project.configureJvm(projectType: ProjectType) {
     if (gkotlin.targets.findByName("jvm") != null) return
 
     val jvmTarget = gkotlin.jvm()
@@ -41,15 +41,29 @@ fun Project.configureJvm() {
         }
     }
 
-	project.tasks.createThis<KorgeJavaExec>("runJvm") {
-		group = GROUP_KORGE_RUN
-		dependsOn("jvmMainClasses")
-		project.afterEvaluate {
-			val beforeJava9 = JvmAddOpens.beforeJava9
-		    if (!beforeJava9) jvmArgs(project.korge.javaAddOpens)
-			mainClass.set(korge.realJvmMainClassName)
-		}
-	}
+    if (projectType.isExecutable) {
+        configureJvmRunJvm(isRootKorlibs = false)
+    }
+	addProguard()
+	configureJvmTest()
+
+    val jvmProcessResources = tasks.findByName("jvmProcessResources") as? Copy?
+    jvmProcessResources?.duplicatesStrategy = org.gradle.api.file.DuplicatesStrategy.INCLUDE
+}
+
+fun Project.configureJvmRunJvm(isRootKorlibs: Boolean) {
+    val project = this
+
+    // https://www.baeldung.com/java-instrumentation
+    project.tasks.createThis<KorgeJavaExec>("runJvm") {
+        group = GROUP_KORGE_RUN
+        dependsOn("jvmMainClasses")
+        project.afterEvaluate {
+            val beforeJava9 = JvmAddOpens.beforeJava9
+            if (!beforeJava9) jvmArgs(project.korge.javaAddOpens)
+            mainClass.set(korge.realJvmMainClassName)
+        }
+    }
     val timeBeforeCompilationFile = File(project.buildDir, "timeBeforeCompilation")
 
     project.tasks.createThis<Task>("compileKotlinJvmAndNotifyBefore") {
@@ -67,16 +81,35 @@ fun Project.configureJvm() {
         }
     }
 
-    project.configurations
-        .create(KORGE_RELOAD_AGENT_CONFIGURATION_NAME)
+    if (!isRootKorlibs) {
+        project.configurations
+            .create(KORGE_RELOAD_AGENT_CONFIGURATION_NAME)
         //.setVisible(false)
         //.setTransitive(true)
         //.setDescription("korge-reload-agent to be downloaded and used for this project.")
-    project.dependencies {
-        add(KORGE_RELOAD_AGENT_CONFIGURATION_NAME, "com.soywiz.korlibs.korge.reloadagent:korge-reload-agent:${BuildVersions.KORGE}")
+        project.dependencies {
+            add(KORGE_RELOAD_AGENT_CONFIGURATION_NAME, "com.soywiz.korlibs.korge.reloadagent:korge-reload-agent:${BuildVersions.KORGE}")
+        }
+
+        project.afterEvaluate {
+            for (entry in korge.extraEntryPoints) {
+                project.tasks.createThis<KorgeJavaExec>("runJvm${entry.name.capitalize()}") {
+                    group = GROUP_KORGE_RUN
+                    dependsOn("jvmMainClasses")
+                    mainClass.set(entry.jvmMainClassName)
+                }
+            }
+        }
     }
 
-    for (enableRedefinition in listOf(false, true)) {
+    project.tasks.findByName("jvmJar")?.let {
+        (it as Jar).apply {
+            entryCompression = ZipEntryCompression.STORED
+        }
+    }
+
+    //for (enableRedefinition in listOf(false, true)) {
+    for (enableRedefinition in listOf(false)) {
         val taskName = when (enableRedefinition) {
             false -> "runJvmAutoreload"
             true -> "runJvmAutoreloadWithRedefinition"
@@ -88,111 +121,14 @@ fun Project.configureJvm() {
             project.afterEvaluate {
                 val beforeJava9 = JvmAddOpens.beforeJava9
                 if (!beforeJava9) jvmArgs(project.korge.javaAddOpens)
-                mainClass.set(korge.realJvmMainClassName)
+                mainClass.set(korge.jvmMainClassName)
             }
         }
     }
-
-	project.afterEvaluate {
-		for (entry in korge.extraEntryPoints) {
-			project.tasks.createThis<KorgeJavaExec>("runJvm${entry.name.capitalize()}") {
-				group = GROUP_KORGE_RUN
-				dependsOn("jvmMainClasses")
-				mainClass.set(entry.jvmMainClassName)
-			}
-		}
-	}
-
-	for (jvmJar in project.getTasksByName("jvmJar", true)) {
-		val jvmJar = (jvmJar as Jar)
-		jvmJar.apply {
-			entryCompression = ZipEntryCompression.STORED
-		}
-	}
-
-	addProguard()
-	configureJvmTest()
-
-    val jvmProcessResources = tasks.findByName("jvmProcessResources") as? Copy?
-    jvmProcessResources?.duplicatesStrategy = org.gradle.api.file.DuplicatesStrategy.INCLUDE
 }
 
-private val Project.jvmCompilation: NamedDomainObjectSet<*> get() = kotlin.targets.getByName("jvm").compilations as NamedDomainObjectSet<*>
-private val Project.mainJvmCompilation: KotlinJvmCompilation get() = jvmCompilation.getByName("main") as org.jetbrains.kotlin.gradle.plugin.mpp.KotlinJvmCompilation
-
-open class KorgeJavaExecWithAutoreload : KorgeJavaExec() {
-    @Input
-    var enableRedefinition: Boolean = false
-
-    override fun exec() {
-        val compileKotlinJvm = project.tasks.findByName("compileKotlinJvm") as org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-        val args = compileKotlinJvm.outputs.files.toList().joinToString(":::") { it.absolutePath }
-        val gradlewCommand = if (isWindows) "gradlew.bat" else "gradlew"
-        val rootProject = project.rootProject
-        val continuousCommand = "-classpath ${rootProject.rootDir}/gradle/wrapper/gradle-wrapper.jar org.gradle.wrapper.GradleWrapperMain --no-daemon --warn --project-dir=${rootProject.rootDir} --configuration-cache -t ${project.path}:compileKotlinJvmAndNotify"
-
-        val outputJars = project.configurations.getByName(KORGE_RELOAD_AGENT_CONFIGURATION_NAME).resolve()
-        println("runJvmAutoreload:outputJars=$outputJars")
-        val outputJar = outputJars.first()
-        //val outputJar = JvmTools.findPathJar(Class.forName("com.soywiz.korge.reloadagent.KorgeReloadAgent"))
-
-        //val agentJarTask: org.gradle.api.tasks.bundling.Jar = project(":korge-reload-agent").tasks.findByName("jar") as org.gradle.api.tasks.bundling.Jar
-        //val outputJar = agentJarTask.outputs.files.files.first()
-        //println("agentJarTask=$outputJar")
-        jvmArgs("-javaagent:$outputJar=$httpPort:::$continuousCommand:::$enableRedefinition:::$args")
-        environment("KORGE_AUTORELOAD", "true")
-
-        super.exec()
-    }
-}
-
-open class KorgeJavaExec : JavaExec() {
-    @get:InputFiles
-    val korgeClassPath: FileCollection = run {
-        val mainJvmCompilation = project.mainJvmCompilation
-        ArrayList<FileCollection>().apply {
-            add(mainJvmCompilation.runtimeDependencyFiles)
-            add(mainJvmCompilation.compileDependencyFiles)
-            //if (project.korge.searchResourceProcessorsInMainSourceSet) {
-                add(mainJvmCompilation.output.allOutputs)
-                add(mainJvmCompilation.output.classesDirs)
-            //}
-            add(project.files().from(project.getCompilationKorgeProcessedResourcesFolder(mainJvmCompilation)))
-        }
-        .reduceRight { l, r -> l + r }
-    }
-
-    override fun exec() {
-        val firstThread = firstThread
-            ?: (
-                System.getenv("KORGE_START_ON_FIRST_THREAD") == "true"
-                    || System.getenv("KORGW_JVM_ENGINE") == "sdl"
-                    //|| project.findProperty("korgw.jvm.engine") == "sdl"
-                )
-
-        if (firstThread && isMacos) {
-            jvmArgs("-XstartOnFirstThread")
-            //println("Executed jvmArgs(\"-XstartOnFirstThread\")")
-        } else {
-            //println("firstThread=$firstThread, isMacos=$isMacos")
-        }
-        classpath = korgeClassPath
-        for (classPath in korgeClassPath.toList()) {
-            logger.info("- $classPath")
-        }
-        super.exec()
-    }
-
-    @get:Input
-    @Optional
-    var firstThread: Boolean? = null
-
-    init {
-        systemProperties = (System.getProperties().toMutableMap() as MutableMap<String, Any>) - "java.awt.headless"
-        defaultCharacterEncoding = Charsets.UTF_8.toString()
-        // https://github.com/korlibs/korge-plugins/issues/25
-    }
-}
+internal val Project.jvmCompilation: NamedDomainObjectSet<*> get() = kotlin.targets.getByName("jvm").compilations as NamedDomainObjectSet<*>
+internal val Project.mainJvmCompilation: KotlinJvmCompilation get() = jvmCompilation.getByName("main") as org.jetbrains.kotlin.gradle.plugin.mpp.KotlinJvmCompilation
 
 private fun Project.configureJvmTest() {
 	val jvmTest = (tasks.findByName("jvmTest") as Test)
@@ -302,8 +238,6 @@ private fun Project.addProguard() {
 		}
 	}
 
-	val runJvm = tasks.getByName("runJvm") as JavaExec
-
 	project.tasks.createThis<PatchedProGuardTask>("packageJvmFatJarProguard") {
         dependsOn(packageJvmFatJar)
 		group = GROUP_KORGE_PACKAGE
@@ -336,8 +270,8 @@ private fun Project.addProguard() {
 			keep("class ${project.korge.realJvmMainClassName} { *; }")
 			keep("class org.jcodec.** { *; }")
 
-			if (runJvm.mainClass.get().isNotBlank()) {
-				keep("""public class ${runJvm.mainClass.get()} { public static void main(java.lang.String[]); }""")
+			if (korge.realJvmMainClassName.isNotBlank()) {
+				keep("""public class ${korge.realJvmMainClassName} { public static void main(java.lang.String[]); }""")
 			}
 		}
 

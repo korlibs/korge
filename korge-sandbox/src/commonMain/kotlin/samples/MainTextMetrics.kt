@@ -14,6 +14,7 @@ import com.soywiz.korio.async.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
+import com.soywiz.korma.interpolation.*
 import kotlin.reflect.*
 
 class MainTextMetrics : Scene() {
@@ -21,7 +22,7 @@ class MainTextMetrics : Scene() {
         val DEFAULT_BG = Colors["#2b2b2b"]
 
         val font0 = resourcesVfs["clear_sans.fnt"].readFont()
-        val font1 = debugBmpFont()
+        val font1 = views.debugBmpFont
         val font2 = DefaultTtfFont
         val font2b = DefaultTtfFontAsBitmap
         val font3 = BitmapFont(DefaultTtfFont, 64.0)
@@ -80,8 +81,8 @@ class MainTextMetrics : Scene() {
                             rect(text1.getLocalBounds())
                         }
                         stroke(Colors.YELLOWGREEN, StrokeInfo(2.0)) {
-                            line(-5, 0, +5, 0)
-                            line(0, -5, 0, +5)
+                            line(Point(-5, 0), Point(+5, 0))
+                            line(Point(0, -5), Point(0, +5))
                         }
                     }
                     val metrics = text1.font.getOrNull()!!.getFontMetrics(text1.fontSize)
@@ -134,7 +135,7 @@ class MainTextMetrics : Scene() {
                 onDragAndDropFileEvent {
                     when (it.type) {
                         DropFileEvent.Type.START -> {
-                            views.clearColor = DEFAULT_BG.interpolateWith(0.2, Colors.RED)
+                            views.clearColor = DEFAULT_BG.interpolateWith(0.2.toRatio(), Colors.RED)
                         }
                         DropFileEvent.Type.END -> {
                             views.clearColor = DEFAULT_BG
@@ -216,7 +217,7 @@ class MainTextMetrics : Scene() {
         }
     }
     fun Container.onDragAndDropFileEvent(block: suspend (DropFileEvent) -> Unit) {
-        addOnEvent<DropFileEvent> {
+        onEvents(*DropFileEvent.Type.ALL) {
             launchImmediately {
                 block(it)
             }

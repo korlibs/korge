@@ -56,8 +56,8 @@ object KorgeHeadless {
 
     suspend operator fun invoke(
         title: String = "Korge",
-        width: Int = DefaultViewport.WIDTH, height: Int = DefaultViewport.HEIGHT,
-        virtualWidth: Int = width, virtualHeight: Int = height,
+        windowSize: SizeInt = DefaultViewport.SIZE,
+        virtualSize: SizeInt = windowSize,
         icon: Bitmap? = null,
         iconPath: String? = null,
         //iconDrawable: SizedDrawable? = null,
@@ -78,15 +78,15 @@ object KorgeHeadless {
         blocking:Boolean = true,
         debugAg: Boolean = false,
         draw: Boolean = false,
-        ag: AG = AGDummy(width, height),
+        ag: AG = AGDummy(windowSize.width, windowSize.height),
         devicePixelRatio: Double = 1.0,
         stageBuilder: (Views) -> Stage = { Stage(it) },
         entry: suspend Stage.() -> Unit,
     ): HeadlessGameWindow {
-        val gameWindow = HeadlessGameWindow(width, height, draw = draw, ag = ag, devicePixelRatio = devicePixelRatio)
+        val gameWindow = HeadlessGameWindow(windowSize.width, windowSize.height, draw = draw, ag = ag, devicePixelRatio = devicePixelRatio)
         gameWindow.exitProcessOnClose = false
         Korge(
-            title, width, height, virtualWidth, virtualHeight, icon, iconPath, /*iconDrawable,*/ imageFormats, quality,
+            title, windowSize, virtualSize, icon, iconPath, /*iconDrawable,*/ imageFormats, quality,
             targetFps, scaleAnchor, scaleMode, clipBorders, bgcolor, debug, debugFontExtraScale, debugFontColor,
             fullscreen, args, gameWindow, timeProvider, injector,
             blocking = blocking, debugAg = debugAg, stageBuilder = stageBuilder, entry = {

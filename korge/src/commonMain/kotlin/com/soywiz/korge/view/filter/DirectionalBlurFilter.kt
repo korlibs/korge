@@ -63,12 +63,12 @@ class DirectionalBlurFilter(
     // @TODO: Here we cannot do this, but we should be able to do this trick: https://www.rastergrid.com/blog/2010/09/efficient-gaussian-blur-with-linear-sampling/
     //override val recommendedFilterScale: Double get() = if (rradius <= 2.0) 1.0 else 1.0 / log2(rradius.coerceAtLeast(1.0))
 
-    override fun computeBorder(out: MMarginInt, texWidth: Int, texHeight: Int) {
-        if (!expandBorder) return out.setTo(0)
+    override fun computeBorder(texWidth: Int, texHeight: Int): MarginInt {
+        if (!expandBorder) return MarginInt.ZERO
         val radius = this.rradius
-        out.setTo(
-            (angle.sine.absoluteValue * radius).toIntCeil(),//.coerceAtMost(texWidth),
-            (angle.cosine.absoluteValue * radius).toIntCeil(),//.coerceAtMost(texHeight),
+        return MarginInt(
+            (angle.sineD.absoluteValue * radius).toIntCeil(),//.coerceAtMost(texWidth),
+            (angle.cosineD.absoluteValue * radius).toIntCeil(),//.coerceAtMost(texHeight),
         )
     }
 
@@ -96,7 +96,7 @@ class DirectionalBlurFilter(
         uniforms[u_radius] = radius
         uniforms[u_constant1] = constant1 * (1.0 / scaleSum)
         uniforms[u_constant2] = constant2
-        uniforms[u_direction].set(angle.cosine, angle.sine)
+        uniforms[u_direction].set(angle.cosineD, angle.sineD)
     }
 
     override val programProvider: ProgramProvider get() = DirectionalBlurFilter

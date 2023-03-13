@@ -35,9 +35,9 @@ class StrokeToFill {
     private val currEdgeLeft = MEdge()
     private val currEdgeRight = MEdge()
 
-    internal fun MEdge.setEdgeDisplaced(edge: MEdge, width: Int, angle: Angle) = this.apply {
-        val ldx = (width * angle.cosine)
-        val ldy = (width * angle.sine)
+    internal fun MEdge.setEdgeDisplaced(edge: MEdge, width: Int, angle: Angle): MEdge = this.apply {
+        val ldx = (width * angle.cosineD)
+        val ldy = (width * angle.sineD)
         this.setTo((edge.ax + ldx).toInt(), (edge.ay + ldy).toInt(), (edge.bx + ldx).toInt(), (edge.by + ldy).toInt(), edge.wind)
     }
 
@@ -46,23 +46,18 @@ class StrokeToFill {
     internal fun PointIntArrayList.addEdgePointA(e: MEdge) = add(e.ax, e.ay)
     internal fun PointIntArrayList.addEdgePointB(e: MEdge) = add(e.bx, e.by)
     internal fun PointIntArrayList.addEdgePointAB(e: MEdge, point: EdgePoint) = if (point == EdgePoint.A) addEdgePointA(e) else addEdgePointB(e)
-    internal fun PointIntArrayList.add(e: MPoint?) { if (e != null) add(e.x.toInt(), e.y.toInt()) }
-    internal fun PointIntArrayList.add(x: Double, y: Double) { add(x.toInt(), y.toInt()) }
-
-    private val tempP1 = MPoint()
-    private val tempP2 = MPoint()
-    private val tempP3 = MPoint()
+    internal fun PointIntArrayList.add(e: Point) { add(e.x.toInt(), e.y.toInt()) }
 
     internal fun doJoin(out: PointIntArrayList, mainPrev: MEdge, mainCurr: MEdge, prev: MEdge, curr: MEdge, join: LineJoin, miterLimit: Double, scale: Double, forcedMiter: Boolean) {
         val rjoin = if (forcedMiter) LineJoin.MITER else join
         when (rjoin) {
             LineJoin.MITER -> {
-                val intersection2 = tempP1.setTo(mainPrev.bx, mainPrev.by)
-                val intersection = MEdge.getIntersectXY(prev, curr, tempP3)
+                val intersection2 = Point(mainPrev.bx, mainPrev.by)
+                val intersection = MEdge.getIntersectXY(prev, curr)
                 if (intersection != null) {
-                    val dist = MPoint.distance(intersection, intersection2)
+                    val dist = Point.distance(intersection, intersection2)
                     if (forcedMiter || dist <= miterLimit) {
-                        out.add(intersection)
+                        out.add(intersection.toInt())
                     } else {
                         out.addEdgePointB(prev)
                         out.addEdgePointA(curr)
@@ -74,11 +69,16 @@ class StrokeToFill {
                 out.addEdgePointA(curr)
             }
             LineJoin.ROUND -> {
-                val i = MEdge.getIntersectXY(prev, curr, tempP3)
+                val i = MEdge.getIntersectXY(prev, curr)
                 if (i != null) {
-                    val count = (MPoint.distance(prev.bx, prev.by, curr.ax, curr.ay) * scale).toInt().clamp(4, 64)
+                    val count = (Point.distance(prev.bx, prev.by, curr.ax, curr.ay) * scale).toInt().clamp(4, 64)
                     for (n in 0..count) {
-                        out.add(Bezier.quadCalc(prev.bx.toDouble(), prev.by.toDouble(), i.x, i.y, curr.ax.toDouble(), curr.ay.toDouble(), n.toDouble() / count, tempP2))
+                        out.add(Bezier.quadCalc(
+                            Point(prev.bx.toDouble(), prev.by.toDouble()),
+                            Point(i.xD, i.yD),
+                            Point(curr.ax.toDouble(), curr.ay.toDouble()),
+                            n.toDouble() / count
+                        ))
                     }
                 } else {
                     out.addEdgePointB(prev)
@@ -100,8 +100,8 @@ class StrokeToFill {
                 r.add(rx, ry)
             }
             LineCap.ROUND, LineCap.SQUARE -> {
-                val ax = (angle.cosine * weight / 2).toInt()
-                val ay = (angle.sine * weight / 2).toInt()
+                val ax = (angle.cosineD * weight / 2).toInt()
+                val ay = (angle.sineD * weight / 2).toInt()
                 val lx2 = lx + ax
                 val ly2 = ly + ay
                 val rx2 = rx + ax
@@ -117,13 +117,13 @@ class StrokeToFill {
                         val ratio = m.toDouble() / count
                         r.add(
                             Bezier.cubicCalc(
-                            lx.toDouble(), ly.toDouble(),
-                            lx2.toDouble(), ly2.toDouble(),
-                            rx2.toDouble(), ry2.toDouble(),
-                            rx.toDouble(), ry.toDouble(),
-                            ratio,
-                            tempP2
-                        ))
+                                Point(lx.toDouble(), ly.toDouble()),
+                                Point(lx2.toDouble(), ly2.toDouble()),
+                                Point(rx2.toDouble(), ry2.toDouble()),
+                                Point(rx.toDouble(), ry.toDouble()),
+                                ratio.toFloat()
+                            )
+                        )
                     }
                 }
             }
@@ -188,15 +188,15 @@ class StrokeToFill {
             val x = fillPointsLeft.getX(n)
             val y = fillPointsLeft.getY(n)
             if (n == 0) {
-                outFill.moveTo(x * scale, y * scale)
+                outFill.moveTo(Point(x * scale, y * scale))
             } else {
-                outFill.lineTo(x * scale, y * scale)
+                outFill.lineTo(Point(x * scale, y * scale))
             }
         }
         // Draw the rest of the points
         for (n in 0 until fillPointsRight.size) {
             val m = fillPointsRight.size - n - 1
-            outFill.lineTo(fillPointsRight.getX(m) * scale, fillPointsRight.getY(m) * scale)
+            outFill.lineTo(Point(fillPointsRight.getX(m) * scale, fillPointsRight.getY(m) * scale))
         }
         outFill.close()
         outFill.winding = Winding.NON_ZERO
@@ -229,9 +229,9 @@ class StrokeToFill {
             joint = {
                 doJointList[doJointList.size - 1] = 1
             }
-        ) { x, y, move ->
+        ) { p, move ->
             if (move) computeStroke(iscale, false)
-            strokePoints.add((x * scale).toInt(), (y * scale).toInt())
+            strokePoints.add((p.xD * scale).toInt(), (p.yD * scale).toInt())
             doJointList.add(0)
         }
         computeStroke(iscale, false)

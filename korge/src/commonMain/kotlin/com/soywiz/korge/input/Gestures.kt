@@ -4,11 +4,11 @@ package com.soywiz.korge.input
 import com.soywiz.korge.component.Component
 import com.soywiz.korge.view.View
 import com.soywiz.korio.async.Signal
-import com.soywiz.korma.geom.IPointInt
+import com.soywiz.korma.geom.MPointInt
 
 class Gestures(override val view: View) : Component {
-	class Direction(val point: IPointInt) {
-		constructor(x: Int, y: Int) : this(IPointInt(x, y))
+	class Direction(val point: MPointInt) {
+		constructor(x: Int, y: Int) : this(MPointInt(x, y))
 
 		val x get() = point.x
 		val y get() = point.y

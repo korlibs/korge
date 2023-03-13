@@ -1,18 +1,16 @@
 package com.soywiz.korgw
 
 import com.soywiz.korag.*
-import com.soywiz.korev.MouseEvent
-import com.soywiz.korev.addEventListener
-import com.soywiz.korim.color.Colors
-import com.soywiz.korio.Korio
+import com.soywiz.korev.*
+import com.soywiz.korim.color.*
+import com.soywiz.korio.*
+import com.soywiz.korma.geom.*
 
 fun main(args: Array<String>) = Korio {
     CreateDefaultGameWindow().loop {
-        configure(640, 480, "hello", fullscreen = false)
-        addEventListener<MouseEvent> { e ->
-            if (e.type == MouseEvent.Type.CLICK) {
-                toggleFullScreen()
-            }
+        configure(SizeInt(640, 480), "hello", fullscreen = false)
+        onEvent(MouseEvent.Type.CLICK) { e ->
+            toggleFullScreen()
             //    //fullscreen = !fullscreen
             //    configure(1280, 720, "KORGW!", fullscreen = false)
             //}

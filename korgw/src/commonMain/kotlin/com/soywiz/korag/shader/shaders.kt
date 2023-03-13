@@ -7,6 +7,7 @@
 package com.soywiz.korag.shader
 
 import com.soywiz.kds.*
+import com.soywiz.kds.iterators.*
 import com.soywiz.kmem.*
 import com.soywiz.korag.*
 import com.soywiz.korag.annotation.KoragExperimental
@@ -181,8 +182,16 @@ open class Operand(open val type: VarType) {
 
 enum class Precision { DEFAULT, LOW, MEDIUM, HIGH }
 
-sealed class Variable(val name: String, type: VarType, val arrayCount: Int, val precision: Precision = Precision.DEFAULT) : Operand(type) {
+open class OperandWithArray(type: VarType, val arrayCount: Int) : Operand(type) {
+    val kind: VarKind = type.kind
+    val stride: Int = type.elementCount
+    val totalElements: Int = stride * arrayCount
+    val totalBytes: Int = type.bytesSize * arrayCount
+}
+
+sealed class Variable(val name: String, type: VarType, arrayCount: Int, val precision: Precision = Precision.DEFAULT) : OperandWithArray(type, arrayCount) {
     constructor(name: String, type: VarType, precision: Precision = Precision.DEFAULT) : this(name, type, 1, precision)
+
     val indexNames = Array(arrayCount) { "$name[$it]" }
     var id: Int = 0
 	var data: Any? = null
@@ -199,6 +208,9 @@ sealed class VariableWithOffset(
     precision: Precision = Precision.DEFAULT,
     val offset: Int? = null,
 ) : Variable(name, type, arrayCount, precision) {
+    var linkedIndex: Int = -1
+    var linkedOffset: Int = -1
+    var linkedLayout: ProgramLayout<*>? = null
 }
 
 open class Attribute(
@@ -284,6 +296,9 @@ open class Uniform(name: String, type: VarType, arrayCount: Int, precision: Prec
         operator fun provideDelegate(thisRef: Any?, property: KProperty<*>): Uniform = Uniform(property.name, type, arrayCount, precision)
     }
 }
+
+class UniformBlockBase(val fixedLocation: Int = -1)
+
 fun Uniform(type: VarType, arrayCount: Int = 1, precision: Precision = Precision.DEFAULT): Uniform.Provider = Uniform.Provider(type, arrayCount, precision)
 
 open class Temp(id: Int, type: VarType, arrayCount: Int, precision: Precision = Precision.DEFAULT) : Variable("temp$id", type, arrayCount, precision) {
@@ -334,8 +349,12 @@ inline fun Program.appendingVertex(extraName: String, block: Program.Builder.() 
 inline fun Program.appendingFragment(extraName: String, block: Program.Builder.() -> Unit): Program =
     this.copy(fragment = this.fragment.appending(block), name = "$name-$extraName")
 
+data class UniformInProgram(val uniform: Uniform, val index: Int)
+
 data class Program(val vertex: VertexShader, val fragment: FragmentShader, val name: String = "program-${vertex.name}-${fragment.name}") : Closeable {
-	val uniforms = vertex.uniforms + fragment.uniforms
+	val uniforms = (vertex.uniforms + fragment.uniforms).distinct()
+    // @TODO: Proper indices
+    val uniformsToIndex = uniforms.withIndex().associate { it.value to UniformInProgram(it.value, it.index) }
 	val attributes = vertex.attributes + fragment.attributes
     val cachedHashCode = (vertex.hashCode() * 11) + (fragment.hashCode() * 7) + name.hashCode()
     override fun hashCode(): Int = cachedHashCode
@@ -813,7 +832,7 @@ data class Program(val vertex: VertexShader, val fragment: FragmentShader, val n
             } else {
                 outputStms.add(shader.stm)
             }
-            context.outputFuncs.addAll(shader.funcs)
+            context.outputFuncs.addAll(shader.functions)
         }
 		fun SET(target: Operand, expr: Operand) { outputStms += Stm.Set(target, expr) }
 		fun DISCARD() { outputStms += Stm.Discard }
@@ -978,10 +997,10 @@ data class Program(val vertex: VertexShader, val fragment: FragmentShader, val n
 	}
 }
 
-data class Shader(val type: ShaderType, val stm: Program.Stm, val funcs: List<FuncDecl>, val name: String? = null) {
+data class Shader(val type: ShaderType, val stm: Program.Stm, val functions: List<FuncDecl>, val name: String? = null) {
     private val stmHashCode = stm.hashCode()
-    private val funcsHashCode = funcs.hashCode()
-    private val cachedHashCode = (type.hashCode() * 17) + stmHashCode + (funcsHashCode * 53)
+    private val functionsHashCode = functions.hashCode()
+    private val cachedHashCode = (type.hashCode() * 17) + stmHashCode + (functionsHashCode * 53)
 
     val isRaw get() = stm is Program.Stm.Raw
 
@@ -997,7 +1016,7 @@ data class Shader(val type: ShaderType, val stm: Program.Stm, val funcs: List<Fu
         }.visit(stm)
     }.toSet()
 
-    override fun equals(other: Any?): Boolean = (this === other) || (other is Shader && (this.type == other.type) && (this.cachedHashCode == other.cachedHashCode) && (this.stm == other.stm) && (this.funcs == other.funcs))
+    override fun equals(other: Any?): Boolean = (this === other) || (other is Shader && (this.type == other.type) && (this.cachedHashCode == other.cachedHashCode) && (this.stm == other.stm) && (this.functions == other.functions))
     override fun hashCode(): Int = cachedHashCode
 }
 
@@ -1043,12 +1062,25 @@ inline val ProgramLayout<Attribute>.attributePositions: IntArrayList get() = _po
 
 open class ProgramLayout<TVariable : VariableWithOffset>(
     @PublishedApi internal val items: List<TVariable>,
-    private val layoutSize: Int?
+    private val layoutSize: Int?,
+    private val link: Boolean = false,
+    val fixedLocation: Int = -1
 ) {
-	constructor(attributes: List<TVariable>) : this(attributes, null)
-	constructor(vararg attributes: TVariable, layoutSize: Int? = null) : this(attributes.toFastList(), layoutSize)
+	constructor(variables: List<TVariable>) : this(variables, null)
+	constructor(vararg variables: TVariable, layoutSize: Int? = null) : this(variables.toFastList(), layoutSize)
 
 	private var _lastPos: Int = 0
+
+    init {
+        if (link) {
+            for (n in items.indices) {
+                val item = items[n]
+                if (item.linkedLayout != null) error("$item already in a layout '${item.linkedLayout}'")
+                item.linkedLayout = this
+                item.linkedIndex = n
+            }
+        }
+    }
 
 	val alignments: IntArrayList = items.mapInt {
 		val a = it.type.kind.bytesSize
@@ -1060,6 +1092,9 @@ open class ProgramLayout<TVariable : VariableWithOffset>(
             it.offset != null -> it.offset
             else -> _lastPos.nextAlignedTo(it.type.kind.bytesSize)
         }
+        if (link) {
+            it.linkedOffset = _lastPos
+        }
 		val out = _lastPos
 		_lastPos += it.type.bytesSize
 		out
@@ -1070,47 +1105,169 @@ open class ProgramLayout<TVariable : VariableWithOffset>(
 	val totalSize: Int = layoutSize ?: _lastPos.nextAlignedTo(maxAlignment)
 
     protected fun names(): String = items.joinToString(", ") { it.name }
-	override fun toString(): String = "VertexLayout[${names()}]"
+	override fun toString(): String = "VertexLayout[${names()}, fixedLocation=$fixedLocation]"
 }
 
-typealias UniformLayout = ProgramLayout<Uniform>
-typealias UniformBlock = ProgramLayout<Uniform>
+class UniformBlock(uniforms: List<Uniform>, fixedLocation: Int) : ProgramLayout<Uniform>(uniforms, null, link = true, fixedLocation = fixedLocation) {
+    constructor(vararg uniforms: Uniform, fixedLocation: Int) : this(uniforms.toList(), fixedLocation)
+    companion object {
+        val EMPTY = UniformBlock(fixedLocation = -1)
+    }
+}
+
+//typealias UniformLayout = ProgramLayout<Uniform>
+//typealias UniformBlock = ProgramLayout<Uniform>
 inline val ProgramLayout<Uniform>.uniforms: List<Uniform> get() = items
 inline val ProgramLayout<Uniform>.uniformPositions: IntArrayList get() = _positions
 
-class UniformBlockData(val block: UniformBlock) {
-    val data = Buffer(block.totalSize)
-    val values = (0 until block.uniformPositions.size).map { index ->
-        val uniform = block.uniforms[index]
-        val position = block.uniformPositions[index]
-        val size = uniform.type.bytesSize
-        AGUniformValue(uniform, data.sliceWithSize(position, size), null, AGTextureUnitInfo.DEFAULT)
-    }
-    val valuesByUniform = values.associateBy { it.uniform }
-    operator fun get(uniform: Uniform): AGUniformValue = valuesByUniform[uniform] ?: error("Can't get uniform $uniform in $this")
+class AGUniformWithBuffer(val uniform: Uniform, val buffer: AGBuffer) {
 }
 
-class UniformBlockBuffer(val block: UniformBlock, val maxElements: Int) {
-    val buffer = Buffer(block.totalSize * maxElements)
-    operator fun set(index: Int, data: UniformBlockData) {
-        if (data.block != block) error("${data.block} != $block")
-        arraycopy(data.data, 0, this.buffer, index * block.totalSize, block.totalSize)
-    }
-    fun copyIndexTo(index: Int, data: UniformBlockData) {
-        if (data.block != block) error("${data.block} != $block")
-        arraycopy(this.buffer, index * block.totalSize, data.data, 0, block.totalSize)
+class AGUniformBlocksBuffersRef(val blocks: Array<UniformBlockData?>, val buffers: Array<AGBuffer?>, val valueIndices: IntArray) {
+    val size: Int get() = blocks.size
+
+    companion object {
+        val EMPTY = AGUniformBlocksBuffersRef(emptyArray(), emptyArray(), IntArray(0))
     }
 
-    var lastIndex = 0
+    inline fun fastForEachBlock(callback: (index: Int, block: UniformBlockData, buffer: AGBuffer?, valueIndex: Int) -> Unit) {
+        for (n in 0 until size) {
+            val block = blocks[n] ?: continue
+            callback(n, block, buffers[n], valueIndices[n])
+        }
+    }
+
+    // @TODO: This won't be required in backends supporting uniform buffers, since the buffer can just be uploaded
+    inline fun fastForEachUniform(callback: (AGUniformValue) -> Unit) {
+        //println("AGUniformBlocksBuffersRef: ${blocks.toList()} : ${valueIndices.toList()}")
+        fastForEachBlock { index, block, buffer, valueIndex ->
+            if (valueIndex >= 0) {
+                val byteOffset = valueIndex * block.block.totalSize
+                //println(" :: index=$index, block=$block, buffer=$buffer, mem=${buffer?.mem}, valueIndex=$valueIndex, byteOffset=$byteOffset")
+                block.readFrom(buffer?.mem ?: error("Memory is empty for block $block"), byteOffset)
+                block.values.fastForEach {
+                    callback(it)
+                }
+            }
+        }
+    }
+}
+
+class AGUniformBlockValues(val buffers: Array<UniformBlockBuffer>, val indices: IntArray) {
+    companion object {
+        val EMPTY = AGUniformBlockValues(emptyArray(), intArrayOf())
+
+        fun fromLastIndex(buffers: Array<UniformBlockBuffer>): AGUniformBlockValues = AGUniformBlockValues(buffers, IntArray(buffers.size) { buffers[it].currentIndex -1 })
+    }
+    inline fun forEachBlock(block: (UniformBlockData) -> Unit) {
+        for (n in 0 until kotlin.math.min(buffers.size, indices.size)) {
+            val buffer = buffers[n]
+            val index = indices[n]
+            if (index in 0 until buffer.currentIndex) block(buffer[index])
+        }
+    }
+
+    inline fun forEachValue(block: (AGUniformValue) -> Unit) {
+        forEachBlock {
+            it.values.fastForEach { block(it) }
+        }
+    }
+
+    inline fun fastForEach(block: (AGUniformValue) -> Unit) {
+        forEachValue { block(it) }
+    }
+
+    override fun toString(): String = "AGUniformBlockValues(buffers=${buffers.toList()}, indices=${indices.size})"
+}
+
+open class UniformBlockData(val block: UniformBlock) {
+    val data = Buffer(block.totalSize)
+    val values = block.uniforms.map { uniform ->
+        AGUniformValue(uniform, data.sliceWithSize(uniform.linkedOffset, uniform.type.bytesSize), null, AGTextureUnitInfo.DEFAULT)
+    }
+    operator fun get(uniform: Uniform): AGUniformValue {
+        if (uniform.linkedLayout !== block) error("Uniform $uniform not part of $block")
+        return values[uniform.linkedIndex]
+    }
+    fun readFrom(buffer: Buffer, offset: Int) {
+        arraycopy(buffer, offset, data, 0, block.totalSize)
+    }
+
+    override fun toString(): String = "UniformBlockData($block)"
+}
+
+class UniformBlockBuffer(val block: UniformBlock, val initialCapacity: Int = 1) {
+    val data = UniformBlockData(block)
+
+    val elementSize = block.totalSize
+    val numUniforms = block.uniforms.size
+
+    var capacity = initialCapacity
+    var buffer = Buffer(block.totalSize * capacity)
+    var textures = Array<AGTexture?>(numUniforms * capacity) { null }
+    var textureUnitInfos = IntArray(numUniforms * capacity)
+
+    fun ensure(index: Int) {
+        if (index >= capacity) {
+            val newCapacity = kotlin.math.max(index + 3, (capacity + 1) * 3)
+            capacity = newCapacity
+            buffer = buffer.copyOf(block.totalSize * newCapacity)
+            textures = textures.copyOf(numUniforms * newCapacity)
+            textureUnitInfos = textureUnitInfos.copyOf(numUniforms * newCapacity)
+        }
+    }
+
+    fun equal(index: Int, data: UniformBlockData): Boolean {
+        for (n in 0 until block.totalSize) {
+            if (data.data.getUInt8(n) != this.buffer.getUInt8(index * block.totalSize + n)) return false
+        }
+        for (n in 0 until numUniforms) {
+            if (textures[index * numUniforms + n] != data.values[n].texture) return false
+            if (textureUnitInfos[index * numUniforms + n] != data.values[n].textureUnitInfo.data) return false
+        }
+        return true
+    }
+
+    operator fun set(index: Int, data: UniformBlockData) {
+        ensure(index)
+        if (data.block != block) error("${data.block} != $block")
+        arraycopy(data.data, 0, this.buffer, index * block.totalSize, block.totalSize)
+        for (n in 0 until numUniforms) {
+            textures[index * numUniforms + n] = data.values[n].texture
+            textureUnitInfos[index * numUniforms + n] = data.values[n].textureUnitInfo.data
+        }
+    }
+    operator fun get(index: Int, out: UniformBlockData = this.data): UniformBlockData {
+        if (out.block != block) error("${out.block} != $block")
+        arraycopy(this.buffer, index * block.totalSize, out.data, 0, block.totalSize)
+        for (n in 0 until numUniforms) {
+            out.values[n].texture = textures[index * numUniforms + n]
+            out.values[n].textureUnitInfo = AGTextureUnitInfo.fromRaw(textureUnitInfos[index * numUniforms + n])
+        }
+        return out
+    }
+
+    var currentIndex = -1
         private set
 
     fun reset() {
-        lastIndex = 0
+        currentIndex = -1
     }
 
-    fun put(data: UniformBlockData): Int {
-        val index = lastIndex++
+    inline fun put(block: UniformBlockData.() -> Unit): Int {
+        block(data)
+        return put(data)
+    }
+
+    fun put(data: UniformBlockData, deduplicate: Boolean = false): Int {
+        if (deduplicate && currentIndex >= 0 && equal(currentIndex, this.data)) return currentIndex
+        val index = ++currentIndex
         this[index] = data
         return index
     }
+
+    fun putCurrent(deduplicate: Boolean = false): Int = put(this.data, deduplicate = deduplicate)
+    fun putCurrentIfChanged(): Int = put(this.data, deduplicate = true)
+
+    override fun toString(): String = "UniformBlockBuffer($block, capacity=$capacity, lastIndex=$currentIndex)"
 }

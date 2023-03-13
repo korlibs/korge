@@ -1,16 +1,16 @@
 package com.soywiz.korma.geom
 
 import com.soywiz.korma.annotations.*
-import com.soywiz.korma.internal.niceStr
-import com.soywiz.korma.interpolation.interpolate
-import com.soywiz.korma.math.almostEquals
-import kotlin.math.sqrt
+import com.soywiz.korma.internal.*
+import com.soywiz.korma.interpolation.*
+import com.soywiz.korma.math.*
+import kotlin.math.*
 
 @KormaValueApi
 data class Vector3(val x: Float, val y: Float, val z: Float)
 
 @KormaMutableApi
-interface IVector3 {
+sealed interface IVector3 {
     val x: Float
     val y: Float
     val z: Float
@@ -70,7 +70,7 @@ class MVector3 : IVector3 {
         func(l.y, r.y),
         func(l.z, r.z),
     )
-    fun setToInterpolated(left: MVector4, right: MVector4, t: Double): MVector3 = setToFunc { t.interpolate(left[it], right[it]) }
+    fun setToInterpolated(left: MVector4, right: MVector4, t: Double): MVector3 = setToFunc { t.toRatio().interpolate(left[it], right[it]) }
 
     fun copyFrom(other: MVector3) = setTo(other.x, other.y, other.z)
 

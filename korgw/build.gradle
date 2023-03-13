@@ -4,4 +4,5 @@ com.soywiz.korlibs.NativeTools.configureCInteropLinux(project, "X11Embed")
 
 dependencies {
     add("commonMainApi", project(":korim"))
+    add("commonTestApi", project(":ktruth"))
 }

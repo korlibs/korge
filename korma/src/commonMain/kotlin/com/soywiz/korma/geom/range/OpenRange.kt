@@ -1,6 +1,6 @@
 package com.soywiz.korma.geom.range
 
-import com.soywiz.korma.internal.niceStr
+import com.soywiz.korma.internal.*
 
 data class DoubleRangeExclusive(val start: Double, val endExclusive: Double) {
     val length: Double get() = endExclusive - start

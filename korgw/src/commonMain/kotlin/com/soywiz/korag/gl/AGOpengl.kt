@@ -120,6 +120,7 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
         drawOffset: Int,
         blending: AGBlending,
         uniforms: AGUniformValues,
+        uniformBlocks: AGUniformBlocksBuffersRef,
         stencilRef: AGStencilReference,
         stencilOpFunc: AGStencilOpFunc,
         colorMask: AGColorMask,
@@ -153,7 +154,7 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
             //uniforms.useExternalSampler() -> ProgramConfig.EXTERNAL_TEXTURE_SAMPLER
             else -> ProgramConfig.DEFAULT
         })
-        uniformsSet(uniforms)
+        uniformsSet(uniforms, uniformBlocks)
 
         if (currentBlending != blending) {
             currentBlending = blending
@@ -179,19 +180,27 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
                 gl.enable(KmlGl.STENCIL_TEST)
                 //stencilOpFunc.triangleFace.ordinal
 
-                gl.stencilFuncSeparate(KmlGl.FRONT_AND_BACK, stencilOpFunc.compareModeFront.toGl(), stencilRef.referenceValueFront, stencilRef.readMaskFront)
-                gl.stencilOpSeparate(KmlGl.FRONT_AND_BACK, stencilOpFunc.actionOnDepthFailFront.toGl(), stencilOpFunc.actionOnDepthPassStencilFailFront.toGl(), stencilOpFunc.actionOnBothPassFront.toGl())
-                gl.stencilMaskSeparate(KmlGl.FRONT_AND_BACK, stencilRef.writeMaskFront)
+                if (stencilOpFunc.compareModeFront == stencilOpFunc.compareModeBack && stencilRef.referenceValueFront == stencilRef.referenceValueBack && stencilRef.readMaskFront == stencilRef.readMaskBack) {
+                    gl.stencilFunc(stencilOpFunc.compareModeFront.toGl(), stencilRef.referenceValueFront, stencilRef.readMaskFront)
+                } else {
+                    gl.stencilFuncSeparate(KmlGl.FRONT, stencilOpFunc.compareModeFront.toGl(), stencilRef.referenceValueFront, stencilRef.readMaskFront)
+                    gl.stencilFuncSeparate(KmlGl.BACK, stencilOpFunc.compareModeBack.toGl(), stencilRef.referenceValueBack, stencilRef.readMaskBack)
+                }
 
-                /*
-                gl.stencilFuncSeparate(KmlGl.FRONT, stencilOpFunc.compareModeFront.toGl(), stencilRef.referenceValueFront, stencilRef.readMaskFront)
-                gl.stencilFuncSeparate(KmlGl.BACK, stencilOpFunc.compareModeBack.toGl(), stencilRef.referenceValueBack, stencilRef.readMaskBack)
-                gl.stencilOpSeparate(KmlGl.FRONT, stencilOpFunc.actionOnDepthFailFront.toGl(), stencilOpFunc.actionOnDepthPassStencilFailFront.toGl(), stencilOpFunc.actionOnBothPassFront.toGl())
-                gl.stencilOpSeparate(KmlGl.BACK, stencilOpFunc.actionOnDepthFailBack.toGl(), stencilOpFunc.actionOnDepthPassStencilFailBack.toGl(), stencilOpFunc.actionOnBothPassBack.toGl())
-                gl.stencilMaskSeparate(KmlGl.FRONT, stencilRef.writeMaskFront)
-                gl.stencilMaskSeparate(KmlGl.FRONT, stencilRef.writeMaskBack)
+                if (stencilOpFunc.actionOnDepthFailFront == stencilOpFunc.actionOnDepthFailBack && stencilOpFunc.actionOnDepthPassStencilFailFront == stencilOpFunc.actionOnDepthPassStencilFailBack && stencilOpFunc.actionOnBothPassFront == stencilOpFunc.actionOnBothPassBack) {
+                    gl.stencilOp(stencilOpFunc.actionOnDepthFailFront.toGl(), stencilOpFunc.actionOnDepthPassStencilFailFront.toGl(), stencilOpFunc.actionOnBothPassFront.toGl())
+                } else {
+                    gl.stencilOpSeparate(KmlGl.FRONT, stencilOpFunc.actionOnDepthFailFront.toGl(), stencilOpFunc.actionOnDepthPassStencilFailFront.toGl(), stencilOpFunc.actionOnBothPassFront.toGl())
+                    gl.stencilOpSeparate(KmlGl.BACK, stencilOpFunc.actionOnDepthFailBack.toGl(), stencilOpFunc.actionOnDepthPassStencilFailBack.toGl(), stencilOpFunc.actionOnBothPassBack.toGl())
+                }
 
-                 */
+                if (stencilRef.writeMaskFront == stencilRef.writeMaskBack) {
+                    gl.stencilMask(stencilRef.writeMaskFront)
+                } else {
+                    gl.stencilMaskSeparate(KmlGl.FRONT, stencilRef.writeMaskFront)
+                    gl.stencilMaskSeparate(KmlGl.BACK, stencilRef.writeMaskBack)
+                }
+
                 //println("ENABLE STENCIL: writeMask=${stencilRef.writeMask}, func=[${stencilOpFunc.compareMode}, ${stencilRef.referenceValue}, ${stencilRef.readMask}], op=[${stencilOpFunc.actionOnDepthFail}, ${stencilOpFunc.actionOnDepthPassStencilFail}, ${stencilOpFunc.actionOnBothPass}]")
             } else {
                 gl.disable(KmlGl.STENCIL_TEST)
@@ -410,88 +419,105 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
         }
     }
 
+    val tempBuffer = Buffer(4 * 128)
+    val tempBufferBlockCount = Array(128) { tempBuffer.sliceWithSize(0, 4 * it) }
+
     // UBO
-    fun uniformsSet(uniforms: AGUniformValues) {
-        val glProgram = currentProgram ?: return
+    fun uniformsSet(uniforms: AGUniformValues, uniformBlocks: AGUniformBlocksBuffersRef) {
+        val glProgram: GLBaseProgram = currentProgram ?: return
+
+        //println("uniformBlocks=${uniformBlocks}")
 
         //if (doPrint) println("-----------")
 
-        var textureUnit = -1
         //for ((uniform, value) in uniforms) {
-        uniforms.fastForEach { value ->
-            val uniform = value.uniform
-            val uniformName = uniform.name
-            val uniformType = uniform.type
-            val location = glProgram.programInfo.getUniformLocation(gl, uniformName)
-            val declArrayCount = uniform.arrayCount
+        textureUnit = -1
+        uniformBlocks.fastForEachUniform {
+            //println("UNIFORM IN BLOCK: $it")
+            uniformSet(glProgram, it)
+        }
+        uniforms.fastForEach {
+            //println("UNIFORM LEGACY: $it")
+            uniformSet(glProgram, it)
+        }
+    }
 
-            when (uniformType) {
-                VarType.Sampler2D, VarType.SamplerCube -> {
-                    textureUnit++
+    private var textureUnit: Int = -1
+    private fun uniformSet(glProgram: GLBaseProgram, value: AGUniformValue) {
+        val uniform = value.uniform
+        val uniformName = uniform.name
+        val uniformType = uniform.type
+        val location = glProgram.programInfo.getUniformLocation(gl, uniformName)
+        val declArrayCount = uniform.arrayCount
 
-                    val tex = value.texture
-                    val unitInfo = value.textureUnitInfo
-                    val linear = unitInfo.linear
-                    val trilinear = unitInfo.trilinear
-                    //val textureUnit = unit.index
-                    //println("unit=${unit.texture}")
-                    //textureUnit = glProgram.getTextureUnit(uniform, unit)
+        when (uniformType) {
+            VarType.Sampler2D, VarType.SamplerCube -> {
+                textureUnit++
 
-                    //if (cacheTextureUnit[textureUnit] != unit) {
-                    //    cacheTextureUnit[textureUnit] = unit.clone()
-                    selectTextureUnit(textureUnit)
-                    value.i32[0] = textureUnit
+                val tex = value.texture
+                val unitInfo = value.textureUnitInfo
+                val linear = unitInfo.linear
+                val trilinear = unitInfo.trilinear
+                //val textureUnit = unit.index
+                //println("unit=${unit.texture}")
+                //textureUnit = glProgram.getTextureUnit(uniform, unit)
 
-                    //println("textureUnit=$textureUnit, tex=$tex")
+                //if (cacheTextureUnit[textureUnit] != unit) {
+                //    cacheTextureUnit[textureUnit] = unit.clone()
+                selectTextureUnit(textureUnit)
+                value.i32[0] = textureUnit
 
-                    if (tex != null) {
-                        // @TODO: This might be enqueuing commands, we shouldn't do that here.
-                        textureBind(tex, when (uniformType) {
-                            VarType.Sampler2D -> AGTextureTargetKind.TEXTURE_2D
-                            else -> AGTextureTargetKind.TEXTURE_CUBE_MAP
-                        })
-                        textureUnitParameters(tex.implForcedTexTarget, unitInfo.wrap, tex.minFilter(linear, trilinear), tex.magFilter(linear, trilinear), tex.implForcedTexTarget.dims)
-                    } else {
-                        gl.bindTexture(KmlGl.TEXTURE_2D, 0)
-                        //textureUnitParameters(AGTextureTargetKind.TEXTURE_2D, unitInfo.wrap, tex.minFilter(linear, trilinear), tex.magFilter(linear, trilinear), 2)
-                    }
-                    //}
+                //println("textureUnit=$textureUnit, tex=$tex")
+
+                if (tex != null) {
+                    // @TODO: This might be enqueuing commands, we shouldn't do that here.
+                    textureBind(tex, when (uniformType) {
+                        VarType.Sampler2D -> AGTextureTargetKind.TEXTURE_2D
+                        else -> AGTextureTargetKind.TEXTURE_CUBE_MAP
+                    })
+                    textureUnitParameters(tex.implForcedTexTarget, unitInfo.wrap, tex.minFilter(linear, trilinear), tex.magFilter(linear, trilinear), tex.implForcedTexTarget.dims)
+                } else {
+                    gl.bindTexture(KmlGl.TEXTURE_2D, 0)
+                    //textureUnitParameters(AGTextureTargetKind.TEXTURE_2D, unitInfo.wrap, tex.minFilter(linear, trilinear), tex.magFilter(linear, trilinear), 2)
                 }
-                else -> Unit
+                //}
             }
+            else -> Unit
+        }
 
-            val oldValue = glProgram.programInfo.cache[uniform]
-            if (value == oldValue) {
-                return@fastForEach
-            }
-            glProgram.programInfo.cache[uniform] = value
+        val oldValue = glProgram.programInfo.cache[uniform]
+        if (value == oldValue) {
+            return
+        }
+        glProgram.programInfo.cache[uniform] = value
 
-            //println("uniform: $uniform, arrayCount=${uniform.arrayCount}, stride=${uniform.elementCount}, value=$value old=$oldValue")
+        //println("uniform: $uniform, arrayCount=${uniform.arrayCount}, stride=${uniform.elementCount}, value=$value old=$oldValue")
 
-            // Store into a direct buffer
-            //arraycopy(value.data, 0, tempData, 0, value.data.size)
-            val data = value.data
+        // Store into a direct buffer
+        //arraycopy(value.data, 0, tempData, 0, value.data.size)
+        //val data = value.data
+        value.extractToFloatAndInts(tempBuffer)
+        val data = tempBufferBlockCount[declArrayCount * uniformType.elementCount]
 
-            //println("uniform=$uniform, data=${value.data} : ${value.data.getInt32(0)}")
+        //println("uniform=$uniform, data=${value.data} : ${value.data.getInt32(0)}")
 
-            when (uniformType.kind) {
-                VarKind.TFLOAT -> when (uniform.type) {
-                    VarType.Mat2 -> gl.uniformMatrix2fv(location, declArrayCount, false, data)
-                    VarType.Mat3 -> gl.uniformMatrix3fv(location, declArrayCount, false, data)
-                    VarType.Mat4 -> gl.uniformMatrix4fv(location, declArrayCount, false, data)
-                    else -> when (uniformType.elementCount) {
-                        1 -> gl.uniform1fv(location, declArrayCount, data)
-                        2 -> gl.uniform2fv(location, declArrayCount, data)
-                        3 -> gl.uniform3fv(location, declArrayCount, data)
-                        4 -> gl.uniform4fv(location, declArrayCount, data)
-                    }
-                }
+        when (uniformType.kind) {
+            VarKind.TFLOAT -> when (uniform.type) {
+                VarType.Mat2 -> gl.uniformMatrix2fv(location, declArrayCount, false, data)
+                VarType.Mat3 -> gl.uniformMatrix3fv(location, declArrayCount, false, data)
+                VarType.Mat4 -> gl.uniformMatrix4fv(location, declArrayCount, false, data)
                 else -> when (uniformType.elementCount) {
-                    1 -> gl.uniform1iv(location, declArrayCount, data)
-                    2 -> gl.uniform2iv(location, declArrayCount, data)
-                    3 -> gl.uniform3iv(location, declArrayCount, data)
-                    4 -> gl.uniform4iv(location, declArrayCount, data)
+                    1 -> gl.uniform1fv(location, declArrayCount, data)
+                    2 -> gl.uniform2fv(location, declArrayCount, data)
+                    3 -> gl.uniform3fv(location, declArrayCount, data)
+                    4 -> gl.uniform4fv(location, declArrayCount, data)
                 }
+            }
+            else -> when (uniformType.elementCount) {
+                1 -> gl.uniform1iv(location, declArrayCount, data)
+                2 -> gl.uniform2iv(location, declArrayCount, data)
+                3 -> gl.uniform3iv(location, declArrayCount, data)
+                4 -> gl.uniform4iv(location, declArrayCount, data)
             }
         }
     }

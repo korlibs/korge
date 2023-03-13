@@ -6,7 +6,7 @@ import com.soywiz.kmem.unit.*
 import com.soywiz.korag.*
 import com.soywiz.korag.annotation.*
 import com.soywiz.korag.log.*
-import com.soywiz.korag.shader.Uniform
+import com.soywiz.korag.shader.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.stat.*
 import com.soywiz.korge.view.*
@@ -63,8 +63,8 @@ class RenderContext constructor(
     @KorgeInternal
     val uniforms: AGUniformValues by lazy {
         AGUniformValues {
-            it[DefaultShaders.u_ProjMat] = projMat
-            it[DefaultShaders.u_ViewMat] = viewMat
+            //it[DefaultShaders.u_ProjMat] = projMat
+            //it[DefaultShaders.u_ViewMat] = viewMat
         }
     }
 
@@ -86,6 +86,12 @@ class RenderContext constructor(
 
     val tempTexturePool: Pool<AGTexture> = Pool { AGTexture() }
 
+    fun afterFullBatch() {
+        //projMatrixBuffer.reset()
+    }
+
+    val projViewMat by lazy { this[DefaultShaders.ub_ProjViewMatBlock] }
+
     fun updateStandardUniforms() {
         //println("updateStandardUniforms: ag.currentSize(${ag.currentWidth}, ${ag.currentHeight}) : ${ag.currentFrameBuffer}")
         if (flipRenderTexture && currentFrameBuffer.isTexture) {
@@ -94,8 +100,17 @@ class RenderContext constructor(
             projMat.setToOrtho(tempRect.setBounds(0, 0, currentFrameBuffer.width, currentFrameBuffer.height), -1f, 1f)
             projMat.multiply(projMat, projectionMatrixTransform.toMatrix3D(tempMat3d))
         }
-        uniforms[DefaultShaders.u_ProjMat] = projMat
-        uniforms[DefaultShaders.u_ViewMat] = viewMat
+
+        //println("updateStandardUniforms!!!")
+
+        // @TODO: Detect if there was a change
+        projViewMat.push(deduplicate = true) {
+            it[DefaultShaders.u_ProjMat].set(projMat)
+            it[DefaultShaders.u_ViewMat].set(viewMat)
+        }
+
+        //uniforms[DefaultShaders.u_ProjMat] = projMat
+        //uniforms[DefaultShaders.u_ViewMat] = viewMat
     }
 
     /**
@@ -109,7 +124,9 @@ class RenderContext constructor(
                 temp2d.copyFrom(this.viewMat2D)
                 this.viewMat2D.copyFrom(matrix)
                 this.viewMat.copyFrom(matrix)
-                uniforms[DefaultShaders.u_ViewMat] = this.viewMat
+                this[DefaultShaders.ub_ProjViewMatBlock].push {
+                    it[DefaultShaders.u_ViewMat].set(this.viewMat)
+                }
                 //println("viewMat: $viewMat, matrix: $matrix")
                 try {
                     callback()
@@ -117,7 +134,8 @@ class RenderContext constructor(
                     flush()
                     this.viewMat.copyFrom(temp)
                     this.viewMat2D.copyFrom(temp2d)
-                    uniforms[DefaultShaders.u_ViewMat] = this.viewMat
+                    this[DefaultShaders.ub_ProjViewMatBlock].pop()
+                    //uniforms[DefaultShaders.u_ViewMat] = this.viewMat
                 }
             }
         }
@@ -203,8 +221,6 @@ class RenderContext constructor(
 
     val debugOverlayScale: Double get() = kotlin.math.round(computedPixelRatio * debugExtraFontScale).coerceAtLeast(1.0)
 
-    var stencilIndex: Int = 0
-
     /** Allows to draw quads, sprites and nine patches using a precomputed global matrix or raw vertices */
     @Deprecated("Use useBatcher instead")
     @KorgeInternal
@@ -233,8 +249,6 @@ class RenderContext constructor(
     /** Pool of [MRectangle] objects that could be used temporarily by renders */
     val rectPool = Pool(reset = { it.setTo(0, 0, 0, 0) }, preallocate = 8) { MRectangle() }
 
-    val tempMargin: MMarginInt = MMarginInt()
-
     val identityMatrix = MMatrix()
 
     /**
@@ -257,11 +271,11 @@ class RenderContext constructor(
     val isRenderingToWindow: Boolean get() = currentFrameBufferOrMain === mainFrameBuffer
     val isRenderingToTexture: Boolean get() = !isRenderingToWindow
 
-    // On MacOS components, this will be the size of the component
+    // On macOS components, this will be the size of the component
     open val backWidth: Int get() = mainFrameBuffer.width
     open val backHeight: Int get() = mainFrameBuffer.height
 
-    // On MacOS components, this will be the full size of the window
+    // On macOS components, this will be the full size of the window
     val realBackWidth get() = mainFrameBuffer.fullWidth
     val realBackHeight get() = mainFrameBuffer.fullHeight
 
@@ -394,6 +408,7 @@ class RenderContext constructor(
     val frameBufferStack = FastArrayList<AGFrameBuffer>()
 
     inline fun doRender(block: () -> Unit) {
+        _buffers.reset()
         ag.startFrame()
         try {
             //mainRenderBuffer.init()
@@ -536,6 +551,20 @@ class RenderContext constructor(
         } finally {
             if (tex != null) drawTexture(frameBuffer, tex)
         }
+    }
+
+    @PublishedApi internal val _buffers = AGProgramWithUniforms.BufferCache()
+    private val _programs = FastIdentityMap<Program, AGProgramWithUniforms>()
+
+    operator fun get(uniform: UniformBlock): AGRichUniformBlockData = _buffers[uniform]
+    operator fun get(program: Program): AGProgramWithUniforms = _programs.getOrPut(program) { AGProgramWithUniforms(it, _buffers) }
+
+    fun createCurrentUniformsRef(program: Program, autoUpload: Boolean = true): AGUniformBlocksBuffersRef {
+        if (autoUpload) uploadUpdatedUniforms()
+        return this[program].createRef()
+    }
+    fun uploadUpdatedUniforms() {
+        _buffers.uploadUpdatedBuffers()
     }
 }
 

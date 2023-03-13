@@ -1,6 +1,6 @@
 package com.soywiz.korag.shader.gl
 
-import com.soywiz.klogger.Console
+import com.soywiz.klogger.Logger
 import com.soywiz.korag.shader.Attribute
 import com.soywiz.korag.shader.FuncDecl
 import com.soywiz.korag.shader.Output
@@ -74,6 +74,8 @@ class GlslGenerator constructor(
     override val config: GlslConfig = GlslConfig()
 ) : BaseGlslGenerator {
     companion object {
+        private val logger = Logger("GlslGenerator")
+
         val NAME: String get() = GlslConfig.NAME
         val DEFAULT_VERSION: Int get() = GlslConfig.DEFAULT_VERSION
         val FORCE_GLSL_VERSION: String? get() = GlslConfig.FORCE_GLSL_VERSION
@@ -101,7 +103,7 @@ class GlslGenerator constructor(
         val varyings: List<Varying>
     )
 
-    fun generateResult(shader: Shader): Result = generateResult(shader.stm, shader.funcs)
+    fun generateResult(shader: Shader): Result = generateResult(shader.stm, shader.functions)
 
     fun generateResult(root: Program.Stm, funcs: List<FuncDecl>): Result {
         val types = GlobalsProgramVisitor()
@@ -115,6 +117,7 @@ class GlslGenerator constructor(
 
         //println("types.funcRefs=${types.funcRefs}")
         val customFuncs = funcs.filter { it.ref.name in types.funcRefs }.reversed().distinctBy { it.ref.name }
+        //TODO: is it relevant to visit mainFunc for each existing function ?
         for (func in funcs) types.visit(mainFunc)
 
         val allFuncs = customFuncs + listOf(mainFunc)
@@ -187,8 +190,8 @@ class GlslGenerator constructor(
             }
         }.toString().also {
             if (GlslConfig.DEBUG_GLSL) {
-                Console.info("GlSlGenerator.version: $version")
-                Console.debug("GlSlGenerator:\n$it")
+                logger.info { "GlSlGenerator.version: $version" }
+                logger.debug { "GlSlGenerator:\n$it" }
             }
         }
         return Result(
@@ -200,7 +203,7 @@ class GlslGenerator constructor(
     }
 
 	fun generate(root: Program.Stm, funcs: List<FuncDecl>): String = generateResult(root, funcs).result
-    fun generate(root: Shader): String = generate(root.stm, root.funcs)
+    fun generate(root: Shader): String = generate(root.stm, root.functions)
 
 }
 

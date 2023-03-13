@@ -11,7 +11,7 @@ import com.soywiz.korio.async.suspendTest
 import com.soywiz.korio.async.suspendTestNoBrowser
 import com.soywiz.korio.file.std.MemoryVfs
 import com.soywiz.korio.stream.openAsync
-import com.soywiz.korma.geom.MSize
+import com.soywiz.korma.geom.*
 import com.soywiz.krypto.encoding.fromBase64
 import kotlin.native.concurrent.ThreadLocal
 import kotlin.test.Test
@@ -33,7 +33,7 @@ class DemoTest {
 
     @Test
     fun test2() = suspendTest {
-        assertEquals(MSize(8, 8), debugBmpFont.glyphs.values.first()!!.bmp.size)
+        assertEquals(SizeInt(8, 8), debugBmpFont.glyphs.values.first()!!.bmp.size)
     }
 }
 

@@ -10,27 +10,27 @@ import com.soywiz.korma.geom.vector.*
  *  Once created, it is added to this receiver [Container].
  **/
 inline fun Container.roundRect(
-        width: Int,
-        height: Int,
-        rx: Int,
-        ry: Int = rx,
-        fill: Paint = Colors.WHITE,
-        stroke: Paint = Colors.WHITE,
-        strokeThickness: Double = 0.0,
-        autoScaling: Boolean = true,
-        callback: @ViewDslMarker RoundRect.() -> Unit = {}
+    width: Int,
+    height: Int,
+    rx: Int,
+    ry: Int = rx,
+    fill: Paint = Colors.WHITE,
+    stroke: Paint = Colors.WHITE,
+    strokeThickness: Double = 0.0,
+    autoScaling: Boolean = true,
+    callback: @ViewDslMarker RoundRect.() -> Unit = {}
 ) = roundRect(width.toDouble(), height.toDouble(), rx.toDouble(), ry.toDouble(), fill, stroke, strokeThickness, autoScaling, callback)
 
 inline fun Container.roundRect(
-        width: Double,
-        height: Double,
-        rx: Double,
-        ry: Double = rx,
-        fill: Paint = Colors.WHITE,
-        stroke: Paint = Colors.WHITE,
-        strokeThickness: Double = 0.0,
-        autoScaling: Boolean = true,
-        callback: @ViewDslMarker RoundRect.() -> Unit = {}
+    width: Double,
+    height: Double,
+    rx: Double,
+    ry: Double = rx,
+    fill: Paint = Colors.WHITE,
+    stroke: Paint = Colors.WHITE,
+    strokeThickness: Double = 0.0,
+    autoScaling: Boolean = true,
+    callback: @ViewDslMarker RoundRect.() -> Unit = {}
 ) = RoundRect(width, height, rx, ry, fill, stroke, strokeThickness, autoScaling).addTo(this, callback)
 
 /**

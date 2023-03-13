@@ -45,7 +45,7 @@ fun Bitmap.putSliceWithBorder(x: Int, y: Int, bmp: BmpSlice, border: Int = 1) {
     val height = bmp.height
 
     // Block copy
-    bmp.bmpBase.copy(bmp.left, bmp.top, this, x, y, width, height)
+    bmp.bmp.copy(bmp.left, bmp.top, this, x, y, width, height)
 
     // Horizontal replicate
     for (n in 1..border) {

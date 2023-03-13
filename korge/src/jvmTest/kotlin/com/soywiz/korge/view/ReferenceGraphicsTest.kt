@@ -17,7 +17,7 @@ import kotlin.test.*
 
 class ReferenceGraphicsTest {
     @Test
-    fun testGraphics() = korgeScreenshotTest(300, 300) {
+    fun testGraphics() = korgeScreenshotTest(SizeInt(300, 300)) {
         cpuGraphics {
             fill(Colors.RED) {
                 rect(-60, -60, 70, 70)
@@ -29,9 +29,9 @@ class ReferenceGraphicsTest {
 
         val bmp = BitmapSlice(
             Bitmap32(64, 64) { x, y -> Colors.PURPLE }.premultipliedIfRequired(),
-            MRectangleInt(0, 0, 64, 64),
+            RectangleInt(0, 0, 64, 64),
             name = null,
-        ).virtFrame(MRectangleInt(64, 64, 196, 196))
+        ).virtFrame(RectangleInt(64, 64, 196, 196))
         val image = image(bmp).anchor(0.5, 1.0).xy(200, 200).rotation(30.degrees)
 
         assertScreenshot(posterize = 6)
@@ -49,7 +49,7 @@ class ReferenceGraphicsTest {
     @Test
     fun testFSprites4() = testFSpritesN(4)
 
-    fun testFSpritesN(N: Int) = korgeScreenshotTest(512, 512) {
+    fun testFSpritesN(N: Int) = korgeScreenshotTest(SizeInt(512, 512)) {
         val bmp = Bitmap32(32, 32, Colors.RED.premultiplied).slice()
         val sprites = FSprites(16)
         val anchorsX = listOf(.5f, .5f, .5f, .0f)
@@ -68,7 +68,7 @@ class ReferenceGraphicsTest {
                 }
             }
         }
-        val fview = FSprites.FView(sprites, Array(N) { bmp.bmpBase })
+        val fview = FSprites.FView(sprites, Array(N) { bmp.bmp })
         addChild(fview)
 
         assertScreenshot(this, "N$N", includeBackground = true)
@@ -77,7 +77,7 @@ class ReferenceGraphicsTest {
     @Test
     @OptIn(KorgeExperimental::class)
     @Ignore
-    fun testGpuShapeView() = korgeScreenshotTest(512, 512) {
+    fun testGpuShapeView() = korgeScreenshotTest(SizeInt(512, 512)) {
         val korgeBitmap = resourcesVfs["korge.png"].readBitmap()
         val view = gpuShapeView({
             keep {
@@ -87,7 +87,7 @@ class ReferenceGraphicsTest {
                     rectHole(40, 40, 80, 80)
                 }
                 fill(Colors.YELLOW) {
-                    this.circle(100, 100, 40)
+                    this.circle(Point(100, 100), 40f)
                     //rect(-100, -100, 500, 500)
                     //rectHole(40, 40, 320, 320)
                 }
@@ -119,7 +119,7 @@ class ReferenceGraphicsTest {
                             //.addColorStop(0.0, Colors.BLACK).addColorStop(1.0, Colors.WHITE)
                             .addColorStop(0.0, Colors.RED).addColorStop(0.5, Colors.GREEN).addColorStop(1.0, Colors.BLUE)
                     clip({
-                        circle(150, 50, 50)
+                        circle(Point(150, 50), 50f)
                     }, {
                         fillRect(100.0, 0.0, 100.0, 100.0)
                     })
@@ -149,7 +149,7 @@ class ReferenceGraphicsTest {
     }
 
     @Test
-    fun testGpuShapeViewFilter() = korgeScreenshotTest(400, 400) {
+    fun testGpuShapeViewFilter() = korgeScreenshotTest(SizeInt(400, 400)) {
         container {
             scale = 1.2
             circle(100.0).xy(100, 100).filters(DropshadowFilter())
@@ -159,7 +159,7 @@ class ReferenceGraphicsTest {
 
     @Test
     //@Ignore
-    fun testBlurFilterInEmptyContainer() = korgeScreenshotTest(512, 512) {
+    fun testBlurFilterInEmptyContainer() = korgeScreenshotTest(SizeInt(512, 512)) {
         val view = solidRect(100, 100) {
             filter = BlurFilter(4.0)
         }

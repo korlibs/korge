@@ -1,7 +1,6 @@
 package samples.asteroids
 
-import com.soywiz.korev.Event
-import com.soywiz.korev.addEventListener
+import com.soywiz.korev.*
 import com.soywiz.korge.scene.ScaledScene
 import com.soywiz.korge.view.SContainer
 
@@ -16,7 +15,7 @@ class MainAsteroids : ScaledScene(WIDTH, HEIGHT) {
         gameHolder = GameHolder(this@MainAsteroids)
         views.gameWindow.icon = assets.shipBitmap
 
-        addOnEvent<GameRestartEvent> {
+        onEvent(GameRestartEvent) {
             restart()
         }
     }
@@ -26,4 +25,7 @@ class MainAsteroids : ScaledScene(WIDTH, HEIGHT) {
     }
 }
 
-class GameRestartEvent : Event()
+class GameRestartEvent : Event(), TEvent<GameRestartEvent> {
+    override val type: EventType<GameRestartEvent> = GameRestartEvent
+    companion object : EventType<GameRestartEvent>
+}

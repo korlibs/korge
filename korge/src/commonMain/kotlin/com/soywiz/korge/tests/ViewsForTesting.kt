@@ -17,7 +17,6 @@ import com.soywiz.korgw.*
 import com.soywiz.korinject.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.lang.*
-import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
@@ -25,8 +24,8 @@ import kotlin.jvm.*
 
 open class ViewsForTesting(
     val frameTime: TimeSpan = 10.milliseconds,
-    val windowSize: MSizeInt = MSizeInt(DefaultViewport.WIDTH, DefaultViewport.HEIGHT),
-    val virtualSize: MSizeInt = MSizeInt(windowSize.size.clone()),
+    val windowSize: SizeInt = DefaultViewport.SIZE,
+    val virtualSize: SizeInt = windowSize,
     val defaultDevicePixelRatio: Double = 1.0,
     val log: Boolean = false,
 ) {
@@ -39,7 +38,7 @@ open class ViewsForTesting(
         override fun now(): DateTime = time
     }
 	val dispatcher = FastGameWindowCoroutineDispatcher()
-    inner class TestGameWindow(initialSize: MSizeInt, val dispatcher: FastGameWindowCoroutineDispatcher) : GameWindowLog() {
+    inner class TestGameWindow(initialSize: SizeInt, val dispatcher: FastGameWindowCoroutineDispatcher) : GameWindowLog() {
         override val devicePixelRatio: Double get() = this@ViewsForTesting.devicePixelRatio
         override var width: Int = initialSize.width
         override var height: Int = initialSize.height
@@ -81,7 +80,7 @@ open class ViewsForTesting(
 	val views get() = viewsLog.views
     val stage get() = views.stage
 	val stats get() = views.stats
-	val mouse: IPoint get() = input.mouse
+	val mouse: MPoint get() = input.mousePos.mutable
 
     fun resizeGameWindow(width: Int, height: Int, scaleMode: ScaleMode = views.scaleMode, scaleAnchor: Anchor = views.scaleAnchor) {
         ag.mainFrameBuffer.setSize(0, 0, width, height)
@@ -106,7 +105,7 @@ open class ViewsForTesting(
         mouseClick(button)
     }
 
-    suspend fun mouseMoveTo(point: IPoint) = mouseMoveTo(point.x, point.y)
+    suspend fun mouseMoveTo(point: MPoint) = mouseMoveTo(point.x, point.y)
 
     /**
      * x, y in global/virtual coordinates
@@ -150,8 +149,8 @@ open class ViewsForTesting(
             MouseEvent(
                 type = type,
                 id = 0,
-                x = views.windowMouseX.toInt(),
-                y = views.windowMouseY.toInt(),
+                x = views.windowMousePos.x.toInt(),
+                y = views.windowMousePos.y.toInt(),
                 button = button,
                 buttons = mouseButtons
             )
@@ -268,7 +267,7 @@ open class ViewsForTesting(
 
 	suspend fun View.isVisibleToUser(): Boolean {
 		if (!this.visible) return false
-		if (this.alpha <= 0.0) return false
+		if (this.alphaF <= 0.0) return false
 		val bounds = this.getGlobalBounds()
 		if (bounds.area <= 0.0) return false
 		val module = injector.get<Module>()
@@ -292,7 +291,7 @@ open class ViewsForTesting(
 
 		injector.mapInstance<Module>(object : Module() {
 			override val title = "KorgeViewsForTesting"
-			override val size = this@ViewsForTesting.windowSize
+			override val virtualSize = this@ViewsForTesting.virtualSize
 			override val windowSize = this@ViewsForTesting.windowSize
 		})
 

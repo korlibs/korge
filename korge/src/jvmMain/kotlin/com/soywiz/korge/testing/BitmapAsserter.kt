@@ -105,7 +105,7 @@ suspend fun OffscreenStage.assertScreenshot(
     val updateTestRef = Environment["UPDATE_TEST_REF"] == "true"
     val interactive = Environment["INTERACTIVE_SCREENSHOT"] == "true"
     val context = injector.getSyncOrNull<OffscreenContext>() ?: OffscreenContext()
-    val outFile = File("testGoldens/${context.testClassName}/${context.testMethodName}_$name.png")
+    val outFile = File("src/jvmTest/screenshots/${context.testClassName.replace(".", "/")}/${context.testMethodName}_$name.png")
     val actualBitmap = views.ag.startEndFrame {
         //val currentFrameBuffer = views.renderContext.currentFrameBuffer
         //Bitmap32(currentFrameBuffer.width, currentFrameBuffer.height).also { ag.readColor(currentFrameBuffer, it) }
@@ -150,10 +150,10 @@ suspend fun OffscreenStage.assertScreenshot(
                         "Run ./gradlew jvmTestFix to update goldens\n" +
                         "Or set INTERACTIVE_SCREENSHOT=true\n" +
                         "\n" +
-                        "Generated: ${actualFile.absoluteFile}\n" +
-                        "Diff: ${diffFile.absoluteFile}\n" +
-                        "Expected Directory: ${outFile.parentFile.absoluteFile}\n" +
-                        "Expected File: ${outFile.absoluteFile}"
+                        "Generated: file://${actualFile.absoluteFile}\n" +
+                        "Diff: file://${diffFile.absoluteFile}\n" +
+                        "Expected Directory: file://${outFile.parentFile.absoluteFile}\n" +
+                        "Expected File: file://${outFile.absoluteFile}"
                 }
             }
         }

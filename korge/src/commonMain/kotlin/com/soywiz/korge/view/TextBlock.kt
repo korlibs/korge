@@ -47,7 +47,7 @@ class TextBlock(
     @ViewProperty
     var ellipsis: String? = "..."; set(value) { field = value; invalidProps() }
     @ViewProperty
-    var padding: IMargin = IMargin.EMPTY; set(value) { field = value; invalidProps() }
+    var padding: Margin = Margin.ZERO; set(value) { field = value; invalidProps() }
     @ViewProperty
     var autoSize: Boolean = false; set(value) { field = value; invalidateText() }
     //@ViewProperty(min = 0.0, max = 10.0, clampMin = true)
@@ -116,7 +116,7 @@ class TextBlock(
         if (allBitmap == true) {
             if (dirty || placements == null) {
                 dirty = false
-                placements = text.place(MRectangle(padding.left, padding.top, width - padding.right, height - padding.bottom), wordWrap, includePartialLines, ellipsis, fill, stroke, align, includeFirstLineAlways = includeFirstLineAlways)
+                placements = text.place(MRectangle(padding.left, padding.top, (width - padding.right).toFloat(), (height - padding.bottom).toFloat()), wordWrap, includePartialLines, ellipsis, fill, stroke, align, includeFirstLineAlways = includeFirstLineAlways)
             }
             image?.removeFromParent()
             image = null

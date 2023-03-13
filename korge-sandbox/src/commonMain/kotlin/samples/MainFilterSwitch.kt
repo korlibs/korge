@@ -4,7 +4,6 @@ import com.soywiz.klock.seconds
 import com.soywiz.klock.timesPerSecond
 import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.time.delay
-import com.soywiz.korge.time.frameBlock
 import com.soywiz.korge.view.SContainer
 import com.soywiz.korge.view.anchor
 import com.soywiz.korge.view.filter.filter
@@ -16,6 +15,7 @@ import com.soywiz.korim.format.readBitmap
 import com.soywiz.korio.async.launch
 import com.soywiz.korio.async.launchImmediately
 import com.soywiz.korio.file.std.resourcesVfs
+import util.*
 import kotlin.random.Random
 
 class MainFilterSwitch : Scene() {

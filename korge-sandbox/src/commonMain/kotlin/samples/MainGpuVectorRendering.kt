@@ -23,6 +23,8 @@ import com.soywiz.korma.geom.vector.*
 import com.soywiz.korma.geom.vector.StrokeInfo
 
 class MainGpuVectorRendering : Scene() {
+    private val logger = Logger("MainGpuVectorRendering")
+
     override suspend fun SContainer.sceneMain() {
         gpuShapeView {  }
 
@@ -90,13 +92,13 @@ class MainGpuVectorRendering : Scene() {
 
         //return
 
-        Console.log("[1]")
+        logger.info { "[1]" }
         val korgeBitmap = resourcesVfs["korge.png"].readBitmap()//.mipmaps()
-        Console.log("[2]")
+        logger.info { "[2]" }
         val tigerSvg = measureTime({ resourcesVfs["Ghostscript_Tiger.svg"].readSVG() }) {
-            println("Elapsed $it")
+            logger.info { "Elapsed $it" }
         }
-        Console.log("[3]")
+        logger.info { "[3]" }
         //AudioData(44100, AudioSamples(1, 1024)).toSound().play()
 
         val PAINT_TIGER = true
@@ -126,7 +128,7 @@ class MainGpuVectorRendering : Scene() {
                         rectHole(40, 40, 80, 80)
                     }
                     fill(Colors.YELLOW) {
-                        this.circle(100, 100, 40)
+                        this.circle(Point(100, 100), 40f)
                         //rect(-100, -100, 500, 500)
                         //rectHole(40, 40, 320, 320)
                     }
@@ -162,7 +164,7 @@ class MainGpuVectorRendering : Scene() {
                             //.addColorStop(0.0, Colors.BLACK).addColorStop(1.0, Colors.WHITE)
                             .addColorStop(0.0, Colors.RED).addColorStop(0.5, Colors.GREEN).addColorStop(1.0, Colors.BLUE)
                     clip({
-                        circle(150, 50, 50)
+                        circle(Point(150, 50), 50f)
                     }, {
                         fillRect(100.0, 0.0, 100.0, 100.0)
                     })

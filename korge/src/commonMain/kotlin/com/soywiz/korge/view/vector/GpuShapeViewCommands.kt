@@ -169,14 +169,16 @@ class GpuShapeViewCommands {
 
                                 //println("outPremultiplied=$outPremultiplied, blendMode=${cmd.blendMode?.name}")
 
+                                val _program = cmd.program ?: program
                                 ag.draw(AGBatch(
                                     ctx.currentFrameBuffer.base,
                                     ctx.currentFrameBuffer.info,
-                                    program = cmd.program ?: program,
+                                    program = _program,
                                     vertexData = vertices,
                                     //indices = indices,
                                     scissor = scissor.applyMatrixBounds(tempMat),
                                     uniforms = tempUniforms,
+                                    uniformBlocks = ctx.createCurrentUniformsRef(_program),
                                     stencilOpFunc = cmd.stencilOpFunc,
                                     stencilRef = cmd.stencilRef,
                                     colorMask = cmd.colorMask,

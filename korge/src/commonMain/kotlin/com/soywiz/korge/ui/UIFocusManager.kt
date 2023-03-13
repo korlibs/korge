@@ -35,7 +35,7 @@ fun UIFocusable.focus() { focused = true }
 fun UIFocusable.blur() { focused = false }
 
 @KorgeExperimental
-class UIFocusManager(override val view: Stage) : KeyComponent {
+class UIFocusManager(val view: Stage) {
     object Scope
 
     private val UIFocusable.rfocusView get() = this.run { Scope.focusView }
@@ -106,15 +106,13 @@ class UIFocusManager(override val view: Stage) : KeyComponent {
         //}
     }
 
-    override fun Views.onKeyEvent(event: KeyEvent) {
-        if (event.type == KeyEvent.Type.DOWN && event.key == Key.TAB) {
-            changeFocusIndex(if (event.shift) -1 else +1)
-        }
+    init {
+        view.onEvent(KeyEvent.Type.DOWN) { if (it.key == Key.TAB) changeFocusIndex(if (it.shift) -1 else +1) }
     }
 }
 
 @KorgeExperimental
-val Stage.uiFocusManager: UIFocusManager get() = this.getOrCreateComponentKey { UIFocusManager(this) }
+val Stage.uiFocusManager: UIFocusManager by Extra.PropertyThis { UIFocusManager(this) }
 @KorgeExperimental
 var Stage.uiFocusedView: UIFocusable?
     get() = uiFocusManager.uiFocusedView

@@ -1,6 +1,5 @@
 package com.soywiz.korge.view
 
-import com.soywiz.korge.baseview.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.property.*
 import com.soywiz.korgw.*

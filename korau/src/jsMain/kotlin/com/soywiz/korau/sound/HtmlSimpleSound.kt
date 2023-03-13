@@ -3,7 +3,7 @@ package com.soywiz.korau.sound
 import com.soywiz.klock.DateTime
 import com.soywiz.klock.TimeSpan
 import com.soywiz.klock.seconds
-import com.soywiz.klogger.Console
+import com.soywiz.klogger.Logger
 import com.soywiz.korio.async.launchImmediately
 import com.soywiz.korio.file.std.uniVfs
 import com.soywiz.korio.lang.Cancellable
@@ -62,6 +62,8 @@ fun HTMLAudioElement.clone(): Audio =
     createAudioElement(this.src, this.currentTime, this.autoplay, this.crossOrigin)
 
 object HtmlSimpleSound {
+    private val logger = Logger("HtmlSimpleSound")
+
 	val ctx: BaseAudioContext? = try {
 		when {
 			jsTypeOf(window.asDynamic().AudioContext) != "undefined" -> AudioContext()
@@ -71,7 +73,7 @@ object HtmlSimpleSound {
             (window.asDynamic()).globalAudioContext = it
         }
 	} catch (e: Throwable) {
-		console.error(e)
+        logger.error { e }
 		null
 	}
 
@@ -128,7 +130,7 @@ object HtmlSimpleSound {
 
         fun createJobAt(startTime: TimeSpan): Job {
             if (coroutineContext.job.isCompleted) {
-                Console.warn("Sound won't play because coroutineContext.job is completed")
+                logger.warn { "Sound won't play because coroutineContext.job is completed" }
             }
             startedAt = DateTime.now()
             var startTime = startTime
@@ -321,7 +323,7 @@ object HtmlSimpleSound {
 
 	suspend fun waitUnlocked(): BaseAudioContext? {
         if (!unlock.isCompleted) {
-            console.warn("Waiting for key or mouse down to start sound...")
+            logger.warn { "Waiting for key or mouse down to start sound..." }
         }
 		unlock.await()
 		return ctx
@@ -394,7 +396,7 @@ object HtmlSimpleSound {
 					source.disconnect(0)
 
 					unlocked = true
-                    Console.info("Web Audio was successfully unlocked")
+                    logger.info { "Web Audio was successfully unlocked" }
 					unlockDeferred.complete(Unit)
 				}
 			}

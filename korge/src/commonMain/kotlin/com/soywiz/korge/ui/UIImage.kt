@@ -52,7 +52,7 @@ class UIImage(
     @ViewProperty
     var contentAnchor: Anchor = contentAnchor
         set(value) {
-            if (field !== value) {
+            if (field != value) {
                 field = value; validCoords = false
             }
         }
@@ -69,18 +69,18 @@ class UIImage(
             cachedGlobalMatrix.copyFrom(globalMatrix)
 
             // @TODO: Can we generalize this to be placed in KorMA?
-            val bitmapSize = MRectangleInt(bitmap.bounds).size.size
-            val finalRect = bitmapSize.applyScaleMode(MRectangle(0.0, 0.0, width, height), scaleMode, contentAnchor)
+            val bitmapSize = bitmap.bounds.size.toFloat()
+            val finalRect = bitmapSize.applyScaleMode(Rectangle(0.0, 0.0, width, height), scaleMode, contentAnchor)
 
-            val realL = finalRect.left.clamp(0.0, width)
-            val realT = finalRect.top.clamp(0.0, height)
-            val realR = finalRect.right.clamp(0.0, width)
-            val realB = finalRect.bottom.clamp(0.0, height)
+            val realL = finalRect.left.clamp(0f, width.toFloat())
+            val realT = finalRect.top.clamp(0f, height.toFloat())
+            val realR = finalRect.right.clamp(0f, width.toFloat())
+            val realB = finalRect.bottom.clamp(0f, height.toFloat())
 
-            val ratioL = realL.convertRange(finalRect.left, finalRect.right, 0.0, 1.0).toFloat()
-            val ratioR = realR.convertRange(finalRect.left, finalRect.right, 0.0, 1.0).toFloat()
-            val ratioT = realT.convertRange(finalRect.top, finalRect.bottom, 0.0, 1.0).toFloat()
-            val ratioB = realB.convertRange(finalRect.top, finalRect.bottom, 0.0, 1.0).toFloat()
+            val ratioL = realL.convertRange(finalRect.left, finalRect.right, 0f, 1f)
+            val ratioR = realR.convertRange(finalRect.left, finalRect.right, 0f, 1f)
+            val ratioT = realT.convertRange(finalRect.top, finalRect.bottom, 0f, 1f)
+            val ratioB = realB.convertRange(finalRect.top, finalRect.bottom, 0f, 1f)
 
             //println("finalRect=$finalRect, ratioL=$ratioL, ratioR=$ratioR, ratioT=$ratioT, ratioB=$ratioB")
 

@@ -1,20 +1,16 @@
 package com.soywiz.korma.geom.bezier
 
-import com.soywiz.korma.geom.IPointArrayList
-import com.soywiz.korma.geom.IRectangle
-import com.soywiz.korma.geom.MPoint
-import com.soywiz.korma.geom.PointArrayList
-import com.soywiz.korma.geom.roundDecimalPlaces
-import com.soywiz.korma.internal.niceStr
-import com.soywiz.korma.math.convertRange
-import com.soywiz.korma.math.roundDecimalPlaces
+import com.soywiz.kmem.*
+import com.soywiz.korma.geom.*
+import com.soywiz.korma.internal.*
+import com.soywiz.korma.math.*
 
 data class CurveSplit(
     val base: Bezier,
     val left: SubBezier,
     val right: SubBezier,
     val t: Double,
-    val hull: IPointArrayList?
+    val hull: PointList?
 ) {
     val leftCurve: Bezier get() = left.curve
     val rightCurve: Bezier get() = right.curve
@@ -31,22 +27,22 @@ data class CurveSplit(
 class SubBezier(val curve: Bezier, val t1: Double, val t2: Double, val parent: Bezier?) {
     constructor(curve: Bezier) : this(curve, 0.0, 1.0, null)
 
-    val boundingBox: IRectangle get() = curve.boundingBox
+    val boundingBox: MRectangle get() = curve.boundingBox
 
     companion object {
         private val LEFT = listOf(null, null, intArrayOf(0, 3, 5), intArrayOf(0, 4, 7, 9))
         private val RIGHT = listOf(null, null, intArrayOf(5, 4, 2), intArrayOf(9, 8, 6, 3))
 
-        private fun BezierCurveFromIndices(indices: IntArray, points: IPointArrayList): Bezier {
+        private fun BezierCurveFromIndices(indices: IntArray, points: PointList): Bezier {
             val p = PointArrayList(indices.size)
             for (index in indices) p.add(points, index)
             return Bezier(p)
         }
     }
 
-    fun calc(t: Double, target: MPoint = MPoint()): MPoint = curve.calc(t.convertRange(t1, t2, 0.0, 1.0), target)
+    fun calc(t: Double): Point = curve.calc(t.convertRange(t1, t2, 0.0, 1.0))
 
-    private fun _split(t: Double, hull: IPointArrayList?, left: Boolean): SubBezier {
+    private fun _split(t: Double, hull: PointList?, left: Boolean): SubBezier {
         val rt = t.convertRange(0.0, 1.0, t1, t2)
         val rt1 = if (left) t1 else rt
         val rt2 = if (left) rt else t2
@@ -62,8 +58,8 @@ class SubBezier(val curve: Bezier, val t1: Double, val t2: Double, val parent: B
         return SubBezier(curve, rt1, rt2, parent)
     }
 
-    private fun _splitLeft(t: Double, hull: IPointArrayList? = curve.hullOrNull(t)): SubBezier = _split(t, hull, left = true)
-    private fun _splitRight(t: Double, hull: IPointArrayList? = curve.hullOrNull(t)): SubBezier = _split(t, hull, left = false)
+    private fun _splitLeft(t: Double, hull: PointList? = curve.hullOrNull(t)): SubBezier = _split(t, hull, left = true)
+    private fun _splitRight(t: Double, hull: PointList? = curve.hullOrNull(t)): SubBezier = _split(t, hull, left = false)
 
     fun splitLeft(t: Double): SubBezier = _splitLeft(t)
     fun splitRight(t: Double): SubBezier = _splitRight(t)

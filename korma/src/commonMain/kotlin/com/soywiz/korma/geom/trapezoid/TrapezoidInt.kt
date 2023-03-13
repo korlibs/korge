@@ -1,9 +1,7 @@
 package com.soywiz.korma.geom.trapezoid
 
-import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
 import com.soywiz.korma.annotations.*
-import com.soywiz.korma.geom.*
 import kotlin.math.*
 
 /**

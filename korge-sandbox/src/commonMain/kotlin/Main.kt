@@ -1,27 +1,21 @@
 import com.soywiz.korge.*
-import com.soywiz.korge.particle.*
 import com.soywiz.korge.scene.*
-import com.soywiz.korge.time.*
 import com.soywiz.korge.ui.*
 import com.soywiz.korge.view.*
-import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
-import com.soywiz.korim.paint.*
 import com.soywiz.korio.async.*
-import com.soywiz.korio.file.std.*
 import com.soywiz.korio.lang.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.vector.*
+import com.soywiz.korma.interpolation.*
 import samples.*
 import samples.asteroids.*
 import samples.connect4.*
 import samples.minesweeper.*
 import samples.pong.*
-import kotlin.random.*
 
-val DEFAULT_KORGE_BG_COLOR = Colors.DARKCYAN.mix(Colors.BLACK, 0.8)
+val DEFAULT_KORGE_BG_COLOR = Colors.DARKCYAN.mix(Colors.BLACK, 0.8.toRatio())
 
 suspend fun main() = Korge(
+    windowSize = Korge.DEFAULT_WINDOW_SIZE,
     bgcolor = DEFAULT_KORGE_BG_COLOR,
     //bgcolor = Colors.WHITE,
     clipBorders = false,
@@ -50,7 +44,9 @@ suspend fun main() = Korge(
 
     demoSelector(
         //Demo(::MainGpuVectorRendering),
-        Demo(::MainInput),
+        //Demo(::MainColorTransformFilter),
+        //Demo(::MainMasks),
+        Demo(::MainSDF),
         listOf(
             Demo(::MainStressButtons),
             Demo(::MainVectorNinePatch),
@@ -65,14 +61,12 @@ suspend fun main() = Korge(
             Demo(::MainAtlas),
             Demo(::MainOnScreenController),
             Demo(::MainScenes),
-            Demo(::MainKTree),
             Demo(::MainInput),
             Demo(::MainGestures),
             Demo(::MainFilters),
             Demo(::MainCoroutine),
             Demo(::MainPong),
             Demo(::MainUI),
-            Demo(::MainOldMask),
             Demo(::MainNinePatch),
             Demo(::MainTweens),
             Demo(::MainTriangulation),
@@ -104,13 +98,11 @@ suspend fun main() = Korge(
             Demo(::MainPolyphonic),
             Demo(::MainSprites10k),
             Demo(::MainCustomSolidRectShader),
-            Demo(::MainStage3d),
             Demo(::MainBlur),
             Demo(::MainFiltersRenderToBitmap),
             Demo(::MainColorPicker),
             Demo(::MainMasks),
             Demo(::MainHaptic),
-            Demo(::MainSkybox),
             Demo(::MainDraggable),
             Demo(::MainGifAnimation),
             Demo(::MainTransition),

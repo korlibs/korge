@@ -1,15 +1,14 @@
 package com.soywiz.korge
 
 import com.soywiz.kmem.Platform
-import com.soywiz.korev.Event
-import com.soywiz.korev.EventDispatcher
+import com.soywiz.korev.*
 import com.soywiz.korinject.AsyncInjector
 import com.soywiz.korio.lang.Environment
 import kotlin.jvm.JvmStatic
 import kotlin.native.concurrent.ThreadLocal
 import kotlin.reflect.KClass
 
-class ReloadClassContext(val injector: AsyncInjector, val refreshedClasses: Set<String>)
+class ReloadClassContext(val injector: AsyncInjector, val refreshedClasses: Set<String>, val rootFolders: List<String>)
 
 internal open class KorgeReloadInternalImpl {
     open fun <T : Any> getReloadedClass(clazz: KClass<T>, context: ReloadClassContext): KClass<T> = clazz
@@ -20,16 +19,16 @@ internal expect val KorgeReloadInternal: KorgeReloadInternalImpl
 
 object KorgeReload {
     @Suppress("VARIABLE_IN_SINGLETON_WITHOUT_THREAD_LOCAL")
-    private var KorgeReload_eventDispatcher: EventDispatcher? = null
+    private var KorgeReload_eventDispatcher: EventListener? = null
 
     @JvmStatic
     @Suppress("unused") // This is called from [com.soywiz.korge.reloadagent.KorgeReloadAgent]
-    fun triggerReload(classes: List<String>, success: Boolean) {
+    fun triggerReload(classes: List<String>, success: Boolean, rootFolders: List<String>) {
         println("KorgeReloadAgent detected a class change. Reload: $classes")
-        KorgeReload_eventDispatcher?.dispatch(ReloadEvent::class, ReloadEvent(classes.toSet(), success))
+        KorgeReload_eventDispatcher?.dispatch(ReloadEvent(classes.toSet(), success, rootFolders))
     }
 
-    fun registerEventDispatcher(eventDispatcher: EventDispatcher) {
+    fun registerEventDispatcher(eventDispatcher: EventListener) {
         // Only in JVM and if KORGE_AUTORELOAD env is set
         if (!Platform.runtime.isJvm || Environment["KORGE_AUTORELOAD"] != "true") return
         KorgeReload_eventDispatcher = eventDispatcher
@@ -46,10 +45,14 @@ object KorgeReload {
 data class ReloadEvent(
     val refreshedClasses: Set<String>,
     /** Was able to reload all classes successfully in the existing class loader */
-    val reloadSuccess: Boolean
-) : Event() {
+    val reloadSuccess: Boolean,
+    val rootFolders: List<String>
+) : Event(), TEvent<ReloadEvent> {
+    override val type: EventType<ReloadEvent> = ReloadEvent
+    companion object : EventType<ReloadEvent>
+
     val doFullReload: Boolean get() = !reloadSuccess
-    fun <T : Any> getReloadedClass(clazz: KClass<T>, injector: AsyncInjector): KClass<T> = KorgeReloadInternal.getReloadedClass(clazz, ReloadClassContext(injector, refreshedClasses))
+    fun <T : Any> getReloadedClass(clazz: KClass<T>, injector: AsyncInjector): KClass<T> = KorgeReloadInternal.getReloadedClass(clazz, ReloadClassContext(injector, refreshedClasses, rootFolders))
     fun transferKeepProperties(old: Any, new: Any) = KorgeReloadInternal.transferKeepProperties(old, new)
 }
 

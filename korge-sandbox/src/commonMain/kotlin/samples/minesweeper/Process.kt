@@ -13,6 +13,7 @@ import com.soywiz.korio.async.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korio.lang.Closeable
 import com.soywiz.korio.lang.CancellableGroup
+import com.soywiz.korma.geom.*
 import kotlinx.coroutines.*
 import kotlin.reflect.*
 
@@ -54,19 +55,16 @@ abstract class Process(parent: Container) : Container() {
 	}
 
 	init {
-		addComponent(object : StageComponent {
-			override val view: View = this@Process
-
-			override fun added(views: Views) {
-				//println("added: $views")
-			}
-
-			override fun removed(views: Views) {
-				//println("removed: $views")
-				job.cancel()
-				onDestroy()
-			}
-		})
+        this.onAttachDetach(
+            onAttach = {
+                //println("added: $views")
+            },
+            onDetach = {
+                //println("removed: $views")
+                job.cancel()
+                onDestroy()
+            }
+        )
 	}
 
 	fun destroy() {
@@ -88,8 +86,9 @@ class KeyV(val views: ScaledScene) {
 class MouseV(val scene: ScaledScene) {
 	val left: Boolean get() = pressing[0]
 	val right: Boolean get() = pressing[1] || pressing[2]
-	val x: Int get() = (scene.sceneView.localMouseX(scene.views)).toInt()
-	val y: Int get() = (scene.sceneView.localMouseY(scene.views)).toInt()
+    val pos: PointInt get() = (scene.sceneView.localMousePos(scene.views)).toInt()
+	val x: Int get() = pos.x
+	val y: Int get() = pos.y
 	val pressing = BooleanArray(8)
 	val pressed = BooleanArray(8)
 	val released = BooleanArray(8)
@@ -115,7 +114,7 @@ fun ScaledScene.registerProcessSystem(): Closeable {
 
     val closeable = CancellableGroup()
 
-    closeable += stage.addEventListener<MouseEvent> { e ->
+    closeable += stage.onEvents(*MouseEvent.Type.ALL) { e ->
 		when (e.type) {
 			MouseEvent.Type.MOVE -> Unit
 			MouseEvent.Type.DRAG -> Unit
@@ -141,7 +140,7 @@ fun ScaledScene.registerProcessSystem(): Closeable {
 		mouseV._released.fill(false)
 		mouseV._pressed.fill(false)
 	}
-    closeable += stage.addEventListener<KeyEvent> { e ->
+    closeable += stage.onEvents(*KeyEvent.Type.ALL) { e ->
 		keysPressed[e.key] = e.type == KeyEvent.Type.DOWN
 	}
 

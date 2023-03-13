@@ -1,10 +1,10 @@
 package com.soywiz.korma.geom
 
 import com.soywiz.korma.annotations.*
-import com.soywiz.korma.internal.niceStr
-import com.soywiz.korma.interpolation.interpolate
-import com.soywiz.korma.math.almostEquals
-import kotlin.math.sqrt
+import com.soywiz.korma.internal.*
+import com.soywiz.korma.interpolation.*
+import com.soywiz.korma.math.*
+import kotlin.math.*
 
 @KormaValueApi
 data class Vector4(val x: Float, val y: Float, val z: Float, val w: Float)
@@ -12,13 +12,13 @@ data class Vector4(val x: Float, val y: Float, val z: Float, val w: Float)
 typealias MVector3D = MVector4
 
 /*
-interface IVector3 {
+sealed interface IVector3 {
     val x: Float
     val y: Float
     val z: Float
 }
 
-interface Vector3 : IVector3 {
+sealed interface Vector3 : IVector3 {
     override var x: Float
     override var y: Float
     override var z: Float
@@ -34,7 +34,7 @@ interface Vector4 : Vector3, IVector4 {
 */
 
 @KormaMutableApi
-interface IVector4 {
+sealed interface IVector4 {
     val x: Float
     val y: Float
     val z: Float
@@ -101,7 +101,7 @@ class MVector4 : IVector4 {
         func(l.z, r.z),
         func(l.w, r.w)
     )
-    fun setToInterpolated(left: MVector4, right: MVector4, t: Double): MVector4 = setToFunc { t.interpolate(left[it], right[it]) }
+    fun setToInterpolated(left: MVector4, right: MVector4, t: Double): MVector4 = setToFunc { t.toRatio().interpolate(left[it], right[it]) }
 
     fun scale(scale: Float) = this.setTo(this.x * scale, this.y * scale, this.z * scale, this.w * scale)
     fun scale(scale: Int) = scale(scale.toFloat())
@@ -137,7 +137,7 @@ class MVector4 : IVector4 {
 }
 
 @KormaMutableApi
-interface IVector4Int {
+sealed interface IVector4Int {
     val x: Int
     val y: Int
     val z: Int

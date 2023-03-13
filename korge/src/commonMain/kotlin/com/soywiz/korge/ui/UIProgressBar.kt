@@ -2,6 +2,7 @@ package com.soywiz.korge.ui
 
 import com.soywiz.kmem.*
 import com.soywiz.korge.render.*
+import com.soywiz.korge.style.*
 import com.soywiz.korge.view.*
 import com.soywiz.korge.view.property.*
 
@@ -28,15 +29,8 @@ open class UIProgressBar(
 		set(value) { current = value * maximum }
 		get() = (current / maximum).clamp01()
 
-	private val background = solidRect(width, height, buttonBackColor)
-	protected open val progressView: NinePatchEx =
-		ninePatch(buttonNormal, width * (current / maximum).clamp01(), height)
-
     override fun renderInternal(ctx: RenderContext) {
-        background.size(width, height)
-        progressView.size(width * ratio, height)
-        progressView.ninePatch = buttonNormal
-        background.color = buttonBackColor
+        styles.uiProgressBarRenderer.render(ctx)
         super.renderInternal(ctx)
     }
 }

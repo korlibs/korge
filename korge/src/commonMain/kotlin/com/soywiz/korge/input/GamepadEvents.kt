@@ -3,13 +3,11 @@ package com.soywiz.korge.input
 import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
 import com.soywiz.korev.*
-import com.soywiz.korge.component.*
 import com.soywiz.korge.view.*
 import com.soywiz.korio.async.*
 import kotlin.jvm.*
-import kotlin.native.concurrent.*
 
-class GamePadEvents(override val view: View) : GamepadComponent {
+class GamePadEvents(val view: View) {
     @PublishedApi
     internal lateinit var views: Views
     @PublishedApi
@@ -71,52 +69,53 @@ class GamePadEvents(override val view: View) : GamepadComponent {
 	private val stickEvent = GamePadStickEvent()
 	private val buttonEvent = GamePadButtonEvent()
 
-	override fun onGamepadEvent(views: Views, event: GamePadUpdateEvent) {
-        this.views = views
-		gamepads.copyFrom(event)
-        var gamepadsUpdated = false
-		// Compute diff
-		for (gamepadIndex in 0 until event.gamepadsLength) {
-			val gamepad = event.gamepads[gamepadIndex]
-			val oldGamepad = this.oldGamepads.gamepads[gamepadIndex]
-            var updateCount = 0
-			GameButton.BUTTONS.fastForEach { button ->
-				if (gamepad[button] != oldGamepad[button]) {
-                    updateCount++
-                    //println("CHANGED: button=$button: ${gamepad[button]}")
-					button(buttonEvent.apply {
-						this.gamepad = gamepad.index
-						this.type = if (gamepad[button] != 0.0) GamePadButtonEvent.Type.DOWN else GamePadButtonEvent.Type.UP
-						this.button = button
-						this.value = gamepad[button]
-					})
-				}
-			}
-			GameStick.STICKS.fastForEach { stick ->
-				val vector = gamepad[stick]
-				if (vector != oldGamepad[stick]) {
-                    updateCount++
-					stick(stickEvent.apply {
-						this.gamepad = gamepad.index
-						this.stick = stick
-						this.x = vector.x
-						this.y = vector.y
-					})
-				}
-			}
-            if (updateCount > 0) {
-                updatedGamepad(gamepad)
-                gamepadsUpdated = true
+    init {
+        view.onEvent(GamePadUpdateEvent) { event ->
+            this.views = event.target as Views
+            gamepads.copyFrom(event)
+            var gamepadsUpdated = false
+            // Compute diff
+            for (gamepadIndex in 0 until event.gamepadsLength) {
+                val gamepad = event.gamepads[gamepadIndex]
+                val oldGamepad = this.oldGamepads.gamepads[gamepadIndex]
+                var updateCount = 0
+                GameButton.BUTTONS.fastForEach { button ->
+                    if (gamepad[button] != oldGamepad[button]) {
+                        updateCount++
+                        //println("CHANGED: button=$button: ${gamepad[button]}")
+                        button(buttonEvent.apply {
+                            this.gamepad = gamepad.index
+                            this.type = if (gamepad[button] != 0.0) GamePadButtonEvent.Type.DOWN else GamePadButtonEvent.Type.UP
+                            this.button = button
+                            this.value = gamepad[button]
+                        })
+                    }
+                }
+                GameStick.STICKS.fastForEach { stick ->
+                    val vector = gamepad[stick]
+                    if (vector != oldGamepad[stick]) {
+                        updateCount++
+                        stick(stickEvent.apply {
+                            this.gamepad = gamepad.index
+                            this.stick = stick
+                            this.x = vector.x
+                            this.y = vector.y
+                        })
+                    }
+                }
+                if (updateCount > 0) {
+                    updatedGamepad(gamepad)
+                    gamepadsUpdated = true
+                }
             }
-		}
-		oldGamepads.copyFrom(event)
-		if (gamepadsUpdated) updated(event)
-	}
-
-	override fun onGamepadEvent(views: Views, event: GamePadConnectionEvent) {
-        this.views = views
-		connection(event)
-	}
+            oldGamepads.copyFrom(event)
+            if (gamepadsUpdated) updated(event)
+        }
+        view.onEvents(*GamePadConnectionEvent.Type.ALL) { event ->
+            this.views = event.target as Views
+            connection(event)
+        }
+    }
 }
 
 data class GamePadStickEvent(
@@ -153,6 +152,5 @@ data class GamePadButtonEvent @JvmOverloads constructor(
     }
 }
 
-@ThreadLocal
-val View.gamepad by Extra.PropertyThis<View, GamePadEvents> { this.getOrCreateComponentGamepad<GamePadEvents> { GamePadEvents(this) } }
+val View.gamepad: GamePadEvents by Extra.PropertyThis { GamePadEvents(this) }
 inline fun <T> View.gamepad(callback: GamePadEvents.() -> T): T = gamepad.run(callback)

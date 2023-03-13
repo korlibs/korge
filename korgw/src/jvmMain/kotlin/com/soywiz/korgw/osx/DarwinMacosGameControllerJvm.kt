@@ -70,7 +70,7 @@ class GCControllerDirectionPad(id: Long) : ObjcRef(id) {
     val y: Double get() = yAxis.value
 
     private val _point: MPoint = MPoint()
-    val point: IPoint get() = _point.setTo(x, y)
+    val point: MPoint get() = _point.setTo(x, y)
 
     companion object {
         inline operator fun getValue(obj: ObjcRef, property: KProperty<*>): GCControllerDirectionPad =
@@ -185,8 +185,8 @@ class MacosGameController {
         fun main(args: Array<String>) {
             val gamepad = MacosGamepadEventAdapter()
             val events = GameWindow()
-            events.addEventListener<GamePadUpdateEvent> { print("$it\r") }
-            events.addEventListener<GamePadConnectionEvent> { println(it) }
+            events.onEvent(GamePadUpdateEvent) { print("$it\r") }
+            events.onEvents(*GamePadConnectionEvent.Type.ALL) { println(it) }
             while (true) {
                 gamepad.updateGamepads(events)
                 Thread.sleep(10L)

@@ -6,12 +6,13 @@ import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.tiles.*
+import com.soywiz.korma.geom.*
 import kotlin.test.*
 
 class TileMapViewScreenshotTest {
     @Test
     fun testTilemapScreenshotTest() = korgeScreenshotTest(
-        width = 512, height = 512,
+        windowSize = SizeInt(512, 512),
         bgcolor = Colors.RED
     ) {
 

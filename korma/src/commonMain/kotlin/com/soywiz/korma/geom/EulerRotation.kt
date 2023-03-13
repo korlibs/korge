@@ -10,7 +10,7 @@ data class EulerRotation(
 )
 
 @KormaMutableApi
-interface IEulerRotation {
+sealed interface IEulerRotation {
     val x: Angle
     val y: Angle
     val z: Angle
@@ -24,12 +24,12 @@ data class MEulerRotation(
 ) : IEulerRotation {
     companion object {
         fun toQuaternion(roll: Angle, pitch: Angle, yaw: Angle, out: MQuaternion = MQuaternion()): MQuaternion {
-            val cr = cos(roll * 0.5)
-            val sr = sin(roll * 0.5)
-            val cp = cos(pitch * 0.5)
-            val sp = sin(pitch * 0.5)
-            val cy = cos(yaw * 0.5)
-            val sy = sin(yaw * 0.5)
+            val cr = cosd(roll * 0.5)
+            val sr = sind(roll * 0.5)
+            val cp = cosd(pitch * 0.5)
+            val sp = sind(pitch * 0.5)
+            val cy = cosd(yaw * 0.5)
+            val sy = sind(yaw * 0.5)
             return out.setTo(
                 (cy * cp * sr - sy * sp * cr),
                 (sy * cp * sr + cy * sp * cr),

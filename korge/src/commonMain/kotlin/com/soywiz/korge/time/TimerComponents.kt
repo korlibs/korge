@@ -1,31 +1,37 @@
 package com.soywiz.korge.time
 
-import com.soywiz.kds.IntArrayList
-import com.soywiz.kds.iterators.fastForEachWithIndex
-import com.soywiz.klock.TimeSpan
-import com.soywiz.klock.milliseconds
-import com.soywiz.kmem.toInt
-import com.soywiz.korge.component.UpdateComponent
-import com.soywiz.korge.view.View
-import com.soywiz.korio.lang.Closeable
-import kotlinx.coroutines.suspendCancellableCoroutine
-import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
+import com.soywiz.kds.*
+import com.soywiz.kds.iterators.*
+import com.soywiz.klock.*
+import com.soywiz.kmem.*
+import com.soywiz.korge.view.*
+import com.soywiz.korio.lang.*
+import kotlinx.coroutines.*
+import kotlin.coroutines.*
 
 private typealias TimerCallback = (TimeSpan) -> Unit
 
 inline class TimerRef(val index: Int)
 
-class TimerComponents(override val view: View) : UpdateComponent {
+class TimerComponents(val view: View) {
     private val _timers = arrayListOf<((TimeSpan) -> Unit)?>()
     private val _autoRemove = IntArrayList()
     private val _freeIndices = IntArrayList()
 
-    override fun update(dt: TimeSpan) {
-        _timers.fastForEachWithIndex { index, it ->
-            it?.invoke(dt)
-            if (_autoRemove[index] != 0) {
-                removeTimer(TimerRef(index))
+    private var updater: Closeable? = null
+
+    private fun ensureUpdater() {
+        if (updater != null) return
+        updater = view.addUpdater { dt ->
+            _timers.fastForEachWithIndex { index, it ->
+                it?.invoke(dt)
+                if (_autoRemove[index] != 0) {
+                    removeTimer(TimerRef(index))
+                }
+            }
+            if (_timers.isEmpty()) {
+                updater?.close()
+                updater = null
             }
         }
     }
@@ -35,10 +41,12 @@ class TimerComponents(override val view: View) : UpdateComponent {
             val index = _freeIndices.removeAt(_freeIndices.size - 1)
             _timers[index] = callback
             _autoRemove[index] = autoRemove.toInt()
+            ensureUpdater()
             return TimerRef(index)
         }
         _timers += callback
         _autoRemove.add(autoRemove.toInt())
+        ensureUpdater()
         return TimerRef(_timers.size - 1)
     }
 
@@ -49,16 +57,13 @@ class TimerComponents(override val view: View) : UpdateComponent {
     }
 
     suspend fun wait(time: TimeSpan): Unit = suspendCancellableCoroutine { c -> timeout(time) { c.resume(Unit) } }
-
-    suspend fun waitFrame() = suspendCoroutine<Unit> { c ->
-        addTimer(true) { c.resume(Unit) }
-    }
+    suspend fun waitFrame() = suspendCoroutine<Unit> { c -> addTimer(true) { c.resume(Unit) } }
 
     private fun _interval(time: TimeSpan, repeat: Boolean, callback: () -> Unit = {}): Closeable {
         var elapsed = 0.milliseconds
         var ref = TimerRef(-1)
-        ref = addTimer(false) { deltaMs ->
-            elapsed += deltaMs
+        ref = addTimer(false) { dt ->
+            elapsed += dt
             while (elapsed >= time) {
                 if (!repeat) removeTimer(ref)
                 elapsed -= time
@@ -77,7 +82,7 @@ class TimerComponents(override val view: View) : UpdateComponent {
     }
 }
 
-val View.timers get() = this.getOrCreateComponentUpdate<TimerComponents> { TimerComponents(this) }
+val View.timers: TimerComponents by Extra.PropertyThis("__ViewTimerComponents") { TimerComponents(this) }
 
 fun View.timeout(time: TimeSpan, callback: () -> Unit): Closeable = this.timers.timeout(time, callback)
 fun View.interval(time: TimeSpan, callback: () -> Unit): Closeable = this.timers.interval(time, callback)

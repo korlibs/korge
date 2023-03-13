@@ -11,10 +11,9 @@ class StageComponentTest : ViewsForTesting() {
         val log = arrayListOf<String>()
 
         val rect = SolidRect(100, 100)
-            .onAttachDetach(views,
+            .onAttachDetach(
                 onAttach = { log += "attach" },
-                onDetach = { log += "detach" },
-            )
+            ) { log += "detach" }
 
         delayFrame()
         assertEquals("", log.joinToString(","))

@@ -113,12 +113,12 @@ inline class VerticalAlign(val ratio: Double) : EnumLike<VerticalAlign> {
 
     fun getOffsetYRespectBaseline(glyph: GlyphMetrics, font: FontMetrics): Double = when (this) {
         BASELINE -> 0.0
-        else -> ratio.interpolate(font.top, font.bottom)
+        else -> ratio.toRatio().interpolate(font.top, font.bottom)
     }
 
     fun getOffsetYRespectBaseline(font: FontMetrics, totalHeight: Double): Double = when (this) {
         BASELINE -> 0.0
-        else -> ratio.interpolate(font.top, font.top - totalHeight)
+        else -> ratio.toRatio().interpolate(font.top, font.top - totalHeight)
     }
 
     override fun EnumLike.Scope.getValues(): List<VerticalAlign> = ALL

@@ -16,9 +16,7 @@ import com.soywiz.korio.async.*
 import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.shape.*
-import com.soywiz.korma.geom.vector.*
 import com.soywiz.korma.interpolation.*
-import com.soywiz.korma.length.LengthExtensions.Companion.pt
 import kotlin.native.concurrent.*
 
 typealias UIDropDown<T> = UIComboBox<T>
@@ -79,7 +77,7 @@ open class UIComboBox<T>(
 
     private val selectedButton = uiButton("", width = width, height = height).also {
         it.textAlignment = TextAlignment.MIDDLE_LEFT
-        it.textView.padding = IMargin(0.0, 8.0)
+        it.textView.padding = Margin(0f, 8f)
         it.bgColorOut = Colors.WHITE
         it.bgColorOver = MaterialColors.GRAY_100
         it.bgColorDisabled = MaterialColors.GRAY_100
@@ -90,16 +88,16 @@ open class UIComboBox<T>(
         it.isFocusable = false
     }
     private val expandButtonIcon = shapeView(buildVectorPath {
-        moveTo(0, 0)
-        lineTo(20, 0)
-        lineTo(10, 10)
+        moveTo(Point(0, 0))
+        lineTo(Point(20, 0))
+        lineTo(Point(10, 10))
         close()
     }, fill = MaterialColors.GRAY_700, renderer = GraphicsRenderer.SYSTEM).centered.position(width - 16.0, height * 0.5).scale(1.0, +1.0)
     //private val expandButton = uiButton(height, height, icon = comboBoxExpandIcon).position(width - height, 0.0)
     private val invisibleRect = solidRect(width, height, Colors.TRANSPARENT)
 
     private val itemsViewBackground = uiMaterialLayer(width, height = 128.0) {
-        radius = IRectCorners(0.0, 0.0, 9.0, 9.0)
+        radius = RectCorners(0.0, 0.0, 9.0, 9.0)
         zIndex = -1000.0
     }
     private val itemsView = uiScrollable(width, height = 128.0).also {
@@ -128,8 +126,8 @@ open class UIComboBox<T>(
             //val filter = "twe"
             val it = UIButton(richText = richText, width = width, height = itemHeight).apply {
                 this.textAlignment = TextAlignment.MIDDLE_LEFT
-                this.textView.padding = IMargin(0.0, 8.0)
-                this.radius = 0.pt
+                this.textView.padding = Margin(0f, 8f)
+                this.radius = 0f
                 this.bgColorOut = MaterialColors.GRAY_50
                 this.bgColorOver = MaterialColors.GRAY_400
                 this.bgColorSelected = MaterialColors.LIGHT_BLUE_A100
@@ -230,23 +228,23 @@ open class UIComboBox<T>(
             itemsView.visible = true
             itemsViewBackground.visible = true
             if (immediate) {
-                itemsView.alpha = 1.0
+                itemsView.alphaF = 1.0f
                 itemsView.scaleY = 1.0
-                itemsViewBackground.alpha = 1.0
+                itemsViewBackground.alphaF = 1.0f
                 itemsViewBackground.scaleY = 1.0
                 expandButtonIcon.scaleY = -1.0
                 selectedButton.background.borderColor = MaterialColors.BLUE_300
                 selectedButton.background.borderSize = 2.0
             } else {
-                itemsView.alpha = 0.0
+                itemsView.alphaF = 0.0f
                 itemsView.scaleY = 0.0
-                itemsViewBackground.alpha = 0.0
+                itemsViewBackground.alphaF = 0.0f
                 itemsViewBackground.scaleY = 0.0
                 simpleAnimator.cancel().sequence {
                     tween(
-                        itemsView::alpha[0.0, 1.0],
+                        itemsView::alpha[0.0f, 1.0f],
                         itemsView::scaleY[0.0, 1.0],
-                        itemsViewBackground::alpha[0.0, 1.0],
+                        itemsViewBackground::alpha[0.0f, 1.0f],
                         itemsViewBackground::scaleY[0.0, 1.0],
                         expandButtonIcon::scaleY[-1.0],
                         selectedButton.background::borderColor[MaterialColors.BLUE_300],
@@ -262,10 +260,10 @@ open class UIComboBox<T>(
         //itemsView.size(width, viewportHeight.toDouble()).position(0.0, height)
         itemsView
             .size(width, viewportHeight.toDouble())
-            .setGlobalXY(localToGlobal(MPoint(0.0, height + 8.0)))
+            .globalPos(localToGlobal(Point(0.0, height + 8.0)))
         itemsViewBackground
             .size(width, itemsView.height + 16)
-            .setGlobalXY(localToGlobal(MPoint(0.0, height)))
+            .globalPos(localToGlobal(Point(0.0, height)))
         verticalList
             .size(width, verticalList.height)
 
@@ -294,9 +292,9 @@ open class UIComboBox<T>(
         //itemsView.removeFromParent()
         if (isOpened) {
             if (immediate) {
-                itemsView.alpha = 0.0
+                itemsView.alphaF = 0.0f
                 itemsView.scaleY = 0.0
-                itemsViewBackground.alpha = 0.0
+                itemsViewBackground.alphaF = 0.0f
                 itemsViewBackground.scaleY = 0.0
                 expandButtonIcon.scaleY = +1.0
                 selectedButton.background.borderColor = MaterialColors.GRAY_400
@@ -306,9 +304,9 @@ open class UIComboBox<T>(
             } else {
                 simpleAnimator.cancel().sequence {
                     tween(
-                        itemsView::alpha[0.0],
+                        itemsView::alpha[0.0f],
                         itemsView::scaleY[0.0],
-                        itemsViewBackground::alpha[0.0],
+                        itemsViewBackground::alpha[0.0f],
                         itemsViewBackground::scaleY[0.0],
                         expandButtonIcon::scaleY[+1.0],
                         selectedButton.background::borderColor[MaterialColors.GRAY_400],

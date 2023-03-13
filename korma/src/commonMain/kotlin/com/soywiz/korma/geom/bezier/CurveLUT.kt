@@ -1,11 +1,10 @@
 package com.soywiz.korma.geom.bezier
 
-import com.soywiz.kds.DoubleArrayList
-import com.soywiz.kds.binarySearch
-import com.soywiz.kds.forEachRatio01
+import com.soywiz.kds.*
+import com.soywiz.kmem.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.internal.*
-import com.soywiz.korma.interpolation.interpolate
+import com.soywiz.korma.interpolation.*
 import com.soywiz.korma.math.*
 
 data class CurveLUT(val curve: Curve, val points: PointArrayList, val ts: DoubleArrayList, private val _estimatedLengths: DoubleArrayList) {
@@ -23,14 +22,13 @@ data class CurveLUT(val curve: Curve, val points: PointArrayList, val ts: Double
         while (_estimatedLengths.size < size) {
             val pos = _estimatedLengths.size
             val prev = _estimatedLengths.last()
-            _estimatedLengths.add(prev + MPoint.distance(points.getX(pos - 1), points.getY(pos - 1), points.getX(pos), points.getY(pos)))
+            _estimatedLengths.add(prev + Point.distance(points[pos - 1], points[pos]))
         }
         return _estimatedLengths
     }
     val estimatedLength: Double get() = estimatedLengths.last()
     val steps: Int get() = points.size - 1
     val size: Int get() = points.size
-    val temp = MPoint()
 
     fun clear() {
         points.clear()
@@ -38,7 +36,7 @@ data class CurveLUT(val curve: Curve, val points: PointArrayList, val ts: Double
         _estimatedLengths.clear()
     }
 
-    fun add(t: Double, p: IPoint) {
+    fun add(t: Double, p: Point) {
         points.add(p)
         ts.add(t)
     }
@@ -47,11 +45,11 @@ data class CurveLUT(val curve: Curve, val points: PointArrayList, val ts: Double
         val mdist: Double get() = kotlin.math.sqrt(mdistSq)
     }
 
-    fun closest(point: IPoint): ClosestResult {
+    fun closest(point: Point): ClosestResult {
         var mdistSq: Double = Double.POSITIVE_INFINITY
         var mpos: Int = 0
         for (n in 0 until size) {
-            val d = MPoint.distanceSquared(this.points.getX(n), this.points.getY(n), point.x, point.y)
+            val d = Point.distanceSquared(this.points[n], point).toDouble()
             if (d < mdistSq) {
                 mdistSq = d
                 mpos = n
@@ -60,8 +58,8 @@ data class CurveLUT(val curve: Curve, val points: PointArrayList, val ts: Double
         return ClosestResult(mdistSq = mdistSq, mpos = mpos)
     }
 
-    data class Estimation(var point: MPoint = MPoint(), var ratio: Double = 0.0, var length: Double = 0.0) {
-        fun roundDecimalDigits(places: Int): Estimation = Estimation(point.copy().setToRoundDecimalPlaces(places), ratio.roundDecimalPlaces(places), length.roundDecimalPlaces(places))
+    data class Estimation(var point: Point = Point(), var ratio: Double = 0.0, var length: Double = 0.0) {
+        fun roundDecimalDigits(places: Int): Estimation = Estimation(point.roundDecimalPlaces(places), ratio.roundDecimalPlaces(places), length.roundDecimalPlaces(places))
         override fun toString(): String = "Estimation(point=${point.niceStr}, ratio=${ratio.niceStr}, length=${length.niceStr})"
     }
 
@@ -69,20 +67,18 @@ data class CurveLUT(val curve: Curve, val points: PointArrayList, val ts: Double
         val ratio0 = ts[index]
         //println("estimatedLengths=$estimatedLengths")
         val length0 = estimatedLengths[index]
-        val pointX0 = points.getX(index)
-        val pointY0 = points.getY(index)
+        val point0 = points[index]
         if (ratio == 0.0) {
             this.ratio = ratio0
             this.length = length0
-            this.point.setTo(pointX0, pointY0)
+            this.point = point0
         } else {
             val ratio1 = ts[index + 1]
             val length1 = estimatedLengths[index + 1]
-            val pointX1 = points.getX(index + 1)
-            val pointY1 = points.getY(index + 1)
-            this.ratio = ratio.interpolate(ratio0, ratio1)
-            this.length = ratio.interpolate(length0, length1)
-            this.point.setToInterpolated(ratio, pointX0, pointY0, pointX1, pointY1)
+            val point1 = points[index + 1]
+            this.ratio = ratio.toRatio().interpolate(ratio0, ratio1)
+            this.length = ratio.toRatio().interpolate(length0, length1)
+            this.point = ratio.toRatio().interpolate(point0, point1)
         }
 
         return this
@@ -121,8 +117,8 @@ data class CurveLUT(val curve: Curve, val points: PointArrayList, val ts: Double
         val steps = this.steps
         val length = estimatedLength
         val result = Estimation()
-        forEachRatio01(steps) { ratio ->
-            val len = length * ratio
+        Ratio.forEachRatio(steps) { ratio ->
+            val len = ratio.convertToRange(0.0, length)
             val est = estimateAtLength(len, result)
             add(est.ratio, est.point)
         }

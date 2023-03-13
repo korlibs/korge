@@ -18,7 +18,7 @@ import com.soywiz.korim.format.readBitmap
 import com.soywiz.korim.vector.toStrokeShape
 import com.soywiz.korio.async.launch
 import com.soywiz.korio.file.std.resourcesVfs
-import com.soywiz.korma.geom.Anchor
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.shape.buildVectorPath
 import com.soywiz.korma.geom.vector.getCurves
 import com.soywiz.korma.interpolation.Easing
@@ -33,16 +33,16 @@ class MainTweenPoint : Scene() {
             val circle = circle(64.0).xy(200.0, 200.0).anchor(Anchor.CENTER)
             val path = buildVectorPath {
                 //circle(200, 200, 100)
-                moveTo(200.0, 200.0)
-                lineTo(400.0, 100.0)
-                quadTo(400.0, 400.0, 200.0, 200.0)
+                moveTo(Point(200.0, 200.0))
+                lineTo(Point(400.0, 100.0))
+                quadTo(Point(400.0, 400.0), Point(200.0, 200.0))
             }
             val curves = path.getCurves()
             cpuGraphics(path.toStrokeShape(Colors.RED, thickness = 2.0))
             image(tex).scale(0.2)
             launch {
                 while (true) {
-                    tween(circle::ipos[path, false], time = 1.0.seconds, easing = Easing.LINEAR)
+                    tween(circle::pos[path, false], time = 1.0.seconds, easing = Easing.LINEAR)
                     //circle.xy(0.0, 0.0)
                 }
             }

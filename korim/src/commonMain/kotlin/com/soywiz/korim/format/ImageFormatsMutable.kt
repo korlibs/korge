@@ -1,17 +1,16 @@
 package com.soywiz.korim.format
 
-import com.soywiz.kds.atomic.kdsFreeze
-import com.soywiz.kds.lock.NonRecursiveLock
+import com.soywiz.kds.lock.*
 
 class ImageFormatsMutable : ImageFormats() {
     val lock = NonRecursiveLock()
 
     fun register(vararg formats: ImageFormat) {
-        lock { this._formats = kdsFreeze(this._formats + formats) }
+        lock { this._formats = this._formats + formats }
     }
 
     fun unregister(vararg formats: ImageFormat) {
-        lock { this._formats = kdsFreeze(this._formats - formats.toSet()) }
+        lock { this._formats = this._formats - formats.toSet() }
     }
 
     // @TODO: This is not thread-safe, if we call this from two different threads at once strange things might happen
@@ -21,7 +20,7 @@ class ImageFormatsMutable : ImageFormats() {
             register(*formats)
             return callback()
         } finally {
-            lock { this._formats = kdsFreeze(oldFormats) }
+            lock { this._formats = oldFormats }
         }
     }
 }

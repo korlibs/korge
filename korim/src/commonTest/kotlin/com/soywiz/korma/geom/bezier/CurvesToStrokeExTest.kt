@@ -2,7 +2,7 @@ package com.soywiz.korma.geom.bezier
 
 import com.soywiz.klogger.*
 import com.soywiz.korim.vector.format.pathSvg
-import com.soywiz.korma.geom.VectorArrayList
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.shape.buildVectorPath
 import com.soywiz.korma.geom.vector.LineJoin
 import com.soywiz.korma.geom.vector.StrokeInfo
@@ -30,16 +30,16 @@ class CurvesToStrokeExTest {
         assertEquals(1, curvesList.size)
         assertEquals(true, curves.contiguous)
         assertEquals(true, curves.closed)
-        assertEquals(
-            """
-                Bezier([(262.15, -119.2), (262.15, -119.2), (264.2, -127.2), (259.8, -122.8)])
-                Bezier([(259.8, -122.8), (259.8, -122.8), (253.4, -117.6), (246.6, -117.6)])
-                Bezier([(246.6, -117.6), (246.6, -117.6), (233.4, -115.6), (229.4, -103.6)])
-                Bezier([(229.4, -103.6), (229.4, -103.6), (225.8, -79.2), (233, -74)])
-                Bezier([(233, -74), (233, -74), (237.4, -67.2), (243.8, -73.2)])
-                Bezier([(243.8, -73.2), (250.2, -79.2), (264.15, -106.8), (262.15, -119.2)])
-            """.trimIndent(),
-            curves.beziers.joinToString("\n")
+        assertEqualsFloat(
+            listOf(
+                Bezier(Point(262.15, -119.2), Point(262.15, -119.2), Point(264.2, -127.2), Point(259.8, -122.8)),
+                Bezier(Point(259.8, -122.8), Point(259.8, -122.8), Point(253.4, -117.6), Point(246.6, -117.6)),
+                Bezier(Point(246.6, -117.6), Point(246.6, -117.6), Point(233.4, -115.6), Point(229.4, -103.6)),
+                Bezier(Point(229.4, -103.6), Point(229.4, -103.6), Point(225.8, -79.2), Point(233, -74)),
+                Bezier(Point(233, -74), Point(233, -74), Point(237.4, -67.2), Point(243.8, -73.2)),
+                Bezier(Point(243.8, -73.2), Point(250.2, -79.2), Point(264.15, -106.8), Point(262.15, -119.2)),
+            ),
+            curves.beziers
         )
     }
 

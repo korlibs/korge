@@ -18,8 +18,8 @@ class Asteroid(
 		speed = 0.6
 		addUpdater { time ->
 			val scale = time / 16.0.milliseconds
-			val dx = angle.cosine * scale
-			val dy = angle.sine * scale
+			val dx = angle.cosineD * scale
+			val dy = angle.sineD * scale
 			x += dx
 			y += dy
 			rotation += scale.degrees

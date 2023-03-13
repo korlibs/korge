@@ -4,15 +4,13 @@ import com.soywiz.korev.MouseButton
 import com.soywiz.korge.tests.ViewsForTesting
 import com.soywiz.korge.view.solidRect
 import com.soywiz.korim.color.Colors
-import com.soywiz.korma.geom.MMatrix
-import com.soywiz.korma.geom.MPoint
-import com.soywiz.korma.geom.MSizeInt
+import com.soywiz.korma.geom.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class MouseDragComponentTest : ViewsForTesting(
-    virtualSize = MSizeInt(100, 100),
-    windowSize = MSizeInt(200, 200),
+    virtualSize = SizeInt(100, 100),
+    windowSize = SizeInt(200, 200),
 ) {
     @Test
     fun testStageScale() = viewsTest {
@@ -30,13 +28,13 @@ class MouseDragComponentTest : ViewsForTesting(
         val deltaX = 20
         val deltaY = 10
         mouseMoveTo(10, 10)
-        assertEquals(MPoint(10, 10), views.globalMouseXY)
-        assertEquals(MPoint(20, 20), views.windowMouseXY)
+        assertEquals(Point(10, 10), views.globalMousePos)
+        assertEquals(Point(20, 20), views.windowMousePos)
         mouseDown(MouseButton.LEFT)
         mouseMoveTo(10 + deltaX, 10 + deltaY)
-        assertEquals(MPoint(30, 20), views.globalMouseXY)
-        assertEquals(MPoint(60, 40), views.windowMouseXY)
+        assertEquals(Point(30, 20), views.globalMousePos)
+        assertEquals(Point(60, 40), views.windowMousePos)
         mouseUp(MouseButton.LEFT)
-        assertEquals(MPoint(deltaX, deltaY), rect.ipos)
+        assertEquals(Point(deltaX, deltaY), rect.pos)
     }
 }

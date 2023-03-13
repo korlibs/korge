@@ -1,5 +1,6 @@
 package com.soywiz.korma.geom
 
+import com.soywiz.korma.interpolation.*
 import com.soywiz.korma.math.isAlmostZero
 import kotlin.math.PI
 import kotlin.math.abs
@@ -29,7 +30,7 @@ class AngleTest {
         assertEquals((-350).degrees, 0.degrees - 350.degrees)
         assertEquals(180.degrees, 90.degrees * 2)
         assertEquals(45.degrees, 90.degrees / 2)
-        assertEquals(2.0, 90.degrees / 45.degrees)
+        assertEquals(2f, 90.degrees / 45.degrees)
 
         assertEquals(0.degrees, (360 * 2.0).degrees.normalized)
         assertEquals(0.0, (360 * 2.0).degrees.normalized.degrees)
@@ -48,9 +49,13 @@ class AngleTest {
 
     @Test
     fun sinCos() {
-        assertEquals(0.0, cos(90.degrees))
-        assertEquals(1.0, sin(90.degrees))
-        assertEquals(1.0, tan(45.degrees))
+        //assertEquals(0.0f, cos(90.degrees))
+        //assertEquals(1.0f, sin(90.degrees))
+        //assertEquals(1.0f, tan(45.degrees))
+
+        assertEquals(0.0, cosd(90.degrees))
+        assertEquals(1.0, sind(90.degrees))
+        assertEquals(1.0, tand(45.degrees))
     }
 
     @Test
@@ -105,9 +110,11 @@ class AngleTest {
 
     @Test
     fun testProperties() {
-        assertEquals(0.0, 0.degrees.sine)
-        assertEquals(1.0, 0.degrees.cosine)
-        assertTrue(0.degrees.tangent.isAlmostZero())
+        //assertEquals(0.0f, 0.degrees.sineF)
+        //assertEquals(1.0f, 0.degrees.cosineF)
+        assertEquals(0.0, 0.degrees.sineD)
+        assertEquals(1.0, 0.degrees.cosineD)
+        assertTrue(0.degrees.tangentD.isAlmostZero())
     }
 
     @Test
@@ -137,7 +144,7 @@ class AngleTest {
         assertEquals(a.degrees, b.degrees)
     }
 
-    private fun assertEquals(l: Double, r: Double, epsilon: Double = 0.00001) {
+    private fun assertEquals(l: Double, r: Double, epsilon: Double = 0.0001) {
         assertTrue(abs(l - r) < epsilon, message = "$l != $r :: delta=$epsilon")
     }
 
@@ -150,12 +157,12 @@ class AngleTest {
         //        180
         //        -180
 
-        assertEquals(202.5.degrees, 0.25.interpolateAngleNormalized(180.degrees, (-90).degrees))
-        assertEquals(0.degrees, 0.5.interpolateAngleNormalized(350.degrees, (10).degrees))
-        assertEquals(0.degrees, 0.5.interpolateAngleNormalized(10.degrees, (350).degrees))
+        assertEquals(202.5.degrees, Ratio(0.25).interpolateAngleNormalized(180.degrees, (-90).degrees))
+        assertEquals(0.degrees, Ratio.HALF.interpolateAngleNormalized(350.degrees, (10).degrees))
+        assertEquals(0.degrees, Ratio.HALF.interpolateAngleNormalized(10.degrees, (350).degrees))
 
-        assertEquals(112.5.degrees, 0.25.interpolateAngleDenormalized(180.degrees, (-90).degrees))
-        assertEquals(180.degrees, 0.5.interpolateAngleDenormalized(350.degrees, (10).degrees))
-        assertEquals(180.degrees, 0.5.interpolateAngleDenormalized(10.degrees, (350).degrees))
+        assertEquals(112.5.degrees, Ratio(0.25).interpolateAngleDenormalized(180.degrees, (-90).degrees))
+        assertEquals(180.degrees, Ratio.HALF.interpolateAngleDenormalized(350.degrees, (10).degrees))
+        assertEquals(180.degrees, Ratio.HALF.interpolateAngleDenormalized(10.degrees, (350).degrees))
     }
 }

@@ -3,7 +3,6 @@ package samples
 import com.soywiz.korge.scene.Scene
 import com.soywiz.kmem.*
 import com.soywiz.korev.*
-import com.soywiz.korge.component.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.color.*
@@ -43,11 +42,11 @@ class MainOnScreenController : Scene() {
             container {
                 position(radius * 1.1, height - radius * 1.1)
                 graphics { g ->
-                    fill(Colors.BLACK) { circle(0.0, 0.0, radius) }
+                    fill(Colors.BLACK) { circle(Point(0, 0), radius.toFloat()) }
                     g.alpha(0.2)
                 }
                 ball = graphics { g ->
-                    fill(Colors.WHITE) { circle(0.0, 0.0, radius * 0.7) }
+                    fill(Colors.WHITE) { circle(Point(0, 0), (radius * 0.7).toFloat()) }
                     g.alpha(0.2)
                 }
             }
@@ -56,13 +55,13 @@ class MainOnScreenController : Scene() {
                 var pressing = false
                 onDown {
                     pressing = true
-                    alpha = 0.3
+                    alphaF = 0.3f
                     onButton(button, true)
                 }
                 onUpAnywhere {
                     if (pressing) {
                         pressing = false
-                        alpha = 0.2
+                        alphaF = 0.2f
                         onButton(button, false)
                     }
                 }
@@ -71,53 +70,47 @@ class MainOnScreenController : Scene() {
             for (n in 0 until 2) {
                 graphics { g ->
                     g.position(width - radius * 1.1 - (diameter * n), height - radius * 1.1)
-                    fill(Colors.WHITE) { circle(0.0, 0.0, radius * 0.7) }
+                    fill(Colors.WHITE) { circle(Point(0, 0), (radius * 0.7).toFloat()) }
                     g.alpha(0.2)
                     g.decorateButton(n)
                 }
             }
 
             var dragging = false
-            val start = MPoint(0, 0)
+            var start = Point(0, 0)
 
-            view.addComponent(object : MouseComponent {
-                override val view: View = view
+            view.onEvents(*MouseEvent.Type.ALL) { event ->
+                val p = view.globalMatrixInv.transform(event.pos.toFloat())
 
-                override fun onMouseEvent(views: Views, event: MouseEvent) {
-                    val px = view.globalMatrixInv.transformX(event.x.toDouble(), event.y.toDouble())
-                    val py = view.globalMatrixInv.transformY(event.x.toDouble(), event.y.toDouble())
-
-                    when (event.type) {
-                        MouseEvent.Type.DOWN -> {
-                            if (px >= width / 2) return
-                            start.x = px
-                            start.y = py
-                            ball.alpha = 0.3
-                            dragging = true
-                        }
-                        MouseEvent.Type.MOVE, MouseEvent.Type.DRAG -> {
-                            if (dragging) {
-                                val deltaX = px - start.x
-                                val deltaY = py - start.y
-                                val length = hypot(deltaX, deltaY)
-                                val maxLength = radius * 0.3
-                                val lengthClamped = length.clamp(0.0, maxLength)
-                                val angle = Angle.between(start.x, start.y, px, py)
-                                ball.position(cos(angle) * lengthClamped, sin(angle) * lengthClamped)
-                                val lengthNormalized = lengthClamped / maxLength
-                                onStick(cos(angle) * lengthNormalized, sin(angle) * lengthNormalized)
-                            }
-                        }
-                        MouseEvent.Type.UP -> {
-                            ball.position(0, 0)
-                            ball.alpha = 0.2
-                            dragging = false
-                            onStick(0.0, 0.0)
-                        }
-                        else -> Unit
+                when (event.type) {
+                    MouseEvent.Type.DOWN -> {
+                        if (p.x >= width / 2) return@onEvents
+                        start = p
+                        ball.alphaF = 0.3f
+                        dragging = true
                     }
+                    MouseEvent.Type.MOVE, MouseEvent.Type.DRAG -> {
+                        if (dragging) {
+                            val deltaX = p.x - start.x
+                            val deltaY = p.y - start.y
+                            val length = hypot(deltaX, deltaY)
+                            val maxLength = radius * 0.3f
+                            val lengthClamped = length.clamp(0f, maxLength.toFloat())
+                            val angle = Angle.between(start, p)
+                            ball.position(cosd(angle) * lengthClamped, sind(angle) * lengthClamped)
+                            val lengthNormalized = lengthClamped / maxLength
+                            onStick(cosd(angle) * lengthNormalized, sind(angle) * lengthNormalized)
+                        }
+                    }
+                    MouseEvent.Type.UP -> {
+                        ball.position(0, 0)
+                        ball.alphaF = 0.2f
+                        dragging = false
+                        onStick(0.0, 0.0)
+                    }
+                    else -> Unit
                 }
-            })
+            }
         }
     }
 }

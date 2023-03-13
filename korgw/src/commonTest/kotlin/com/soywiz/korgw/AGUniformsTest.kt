@@ -11,7 +11,7 @@ class AGUniformsTest {
         val projMatrix by Uniform(VarType.Mat4)
         val viewMatrix by Uniform(VarType.Mat4)
         val color1 by Uniform(VarType.UByte4)
-        val block = UniformBlock(projMatrix, viewMatrix, color1, layoutSize = null)
+        val block = UniformBlock(projMatrix, viewMatrix, color1, fixedLocation = 0)
         val data = UniformBlockData(block)
         val buffer = UniformBlockBuffer(block, 2)
         data[projMatrix].set(MMatrix3D().multiply(2f))
@@ -22,11 +22,8 @@ class AGUniformsTest {
 
         assertEquals(listOf(0, 1), listOf(index1, index2))
 
-        buffer.copyIndexTo(index1, data)
-        assertEquals(MMatrix3D().multiply(2f), MMatrix3D().setColumns4x4(data[projMatrix].data.f32.toFloatArray(), 0))
-
-        buffer.copyIndexTo(index2, data)
-        assertEquals(MMatrix3D().multiply(3f), MMatrix3D().setColumns4x4(data[projMatrix].data.f32.toFloatArray(), 0))
+        assertEquals(MMatrix3D().multiply(2f), MMatrix3D().setColumns4x4(buffer[index1][projMatrix].data.f32.toFloatArray(), 0))
+        assertEquals(MMatrix3D().multiply(3f), MMatrix3D().setColumns4x4(buffer[index2][projMatrix].data.f32.toFloatArray(), 0))
 
         //block.attributePositions
         //println(block.totalSize)

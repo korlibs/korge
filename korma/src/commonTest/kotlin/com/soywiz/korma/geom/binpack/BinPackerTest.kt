@@ -1,6 +1,6 @@
 package com.soywiz.korma.geom.binpack
 
-import com.soywiz.korma.geom.MSize
+import com.soywiz.korma.geom.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

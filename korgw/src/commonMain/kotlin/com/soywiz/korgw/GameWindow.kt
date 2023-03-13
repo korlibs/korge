@@ -224,7 +224,7 @@ interface GameWindowConfig {
 typealias GameWindowQuality = GameWindow.Quality
 
 open class GameWindow :
-    EventDispatcher.Mixin(),
+    BaseEventListener(),
     DialogInterfaceProvider,
     DeviceDimensionsProvider,
     CoroutineContext.Element,
@@ -237,8 +237,8 @@ open class GameWindow :
     override val dialogInterface: DialogInterface get() = DialogInterface.Unsupported
 
     data class CustomCursor(val shape: Shape, val name: String = "custom") : ICursor, Extra by Extra.Mixin() {
-        val bounds: IRectangle = this.shape.bounds
-        fun createBitmap(size: ISize? = null, native: Boolean = true) = shape.renderWithHotspot(fit = size, native = native)
+        val bounds: MRectangle = this.shape.bounds
+        fun createBitmap(size: MSize? = null, native: Boolean = true) = shape.renderWithHotspot(fit = size, native = native)
     }
 
     enum class Cursor : ICursor {
@@ -373,6 +373,11 @@ open class GameWindow :
     protected val touchEvent get() = touchBuilder.new
     protected val dropFileEvent = DropFileEvent()
 
+    operator fun <TEvent : Event> TEvent.invoke(block: TEvent.() -> Unit): TEvent {
+        block(this)
+        return this
+    }
+
     @KoragExperimental
     suspend fun <T> runBlockingNoJs(block: suspend () -> T): T {
         return runBlockingNoJs(coroutineContext, block)
@@ -385,7 +390,7 @@ open class GameWindow :
     }
 
     fun onRenderEvent(block: (RenderEvent) -> Unit) {
-        addEventListener<RenderEvent>(block)
+        onEvent(RenderEvent, block)
     }
 
     val counterTimePerFrame: TimeSpan get() = (1_000_000.0 / fps).microseconds
@@ -927,14 +932,13 @@ fun GameWindow.mainLoop(entry: suspend GameWindow.() -> Unit) = Korio { loop(ent
 fun GameWindow.toggleFullScreen()  { fullscreen = !fullscreen }
 
 fun GameWindow.configure(
-    width: Int,
-    height: Int,
+    size: SizeInt,
     title: String? = "GameWindow",
     icon: Bitmap? = null,
     fullscreen: Boolean? = null,
     bgcolor: RGBA = Colors.BLACK,
 ) {
-    this.setSize(width, height)
+    this.setSize(size.width, size.height)
     if (title != null) this.title = title
     this.icon = icon
     if (fullscreen != null) this.fullscreen = fullscreen
@@ -943,7 +947,7 @@ fun GameWindow.configure(
 }
 
 fun GameWindow.onDragAndDropFileEvent(block: suspend (DropFileEvent) -> Unit) {
-    addEventListener<DropFileEvent> { event ->
+    onEvents(*DropFileEvent.Type.ALL) { event ->
         launchImmediately(coroutineDispatcher) {
             block(event)
         }

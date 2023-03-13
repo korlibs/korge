@@ -3,9 +3,9 @@ package com.soywiz.korma.geom.bezier
 
 import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.korma.geom.BoundsBuilder
-import com.soywiz.korma.geom.IPoint
-import com.soywiz.korma.geom.IPointArrayList
-import com.soywiz.korma.geom.IRectangle
+import com.soywiz.korma.geom.MPoint
+import com.soywiz.korma.geom.MPointArrayList
+import com.soywiz.korma.geom.MRectangle
 import com.soywiz.korma.geom.Point
 import com.soywiz.korma.geom.PointArrayList
 import com.soywiz.korma.geom.PointPool
@@ -39,7 +39,7 @@ interface Bezier {
         val p1 = Point(p1x, p1y)
         val p2 = Point(p2x, p2y)
 
-        constructor(p0: IPoint, p1: IPoint, p2: IPoint) : this(
+        constructor(p0: MPoint, p1: MPoint, p2: MPoint) : this(
             p0.x, p0.y,
             p1.x, p1.y,
             p2.x, p2.y,
@@ -56,7 +56,7 @@ interface Bezier {
             return this
         }
 
-        fun setTo(p0: IPoint, p1: IPoint, p2: IPoint) = setTo(p0.x, p0.y, p1.x, p1.y, p2.x, p2.y)
+        fun setTo(p0: MPoint, p1: MPoint, p2: MPoint) = setTo(p0.x, p0.y, p1.x, p1.y, p2.x, p2.y)
         fun copyFrom(other: Quad): Quad = setTo(other.p0, other.p1, other.p2)
         override fun getBounds(target: Rectangle): Rectangle = quadBounds(p0.x, p0.y, p1.x, p1.y, p2.x, p2.y, target)
         override fun calc(t: Double, target: Point): Point = quadCalc(p0.x, p0.y, p1.x, p1.y, p2.x, p2.y, t, target)
@@ -90,7 +90,7 @@ interface Bezier {
         val p2 = Point(p2x, p2y)
         val p3 = Point(p3x, p3y)
 
-        constructor(p0: IPoint, p1: IPoint, p2: IPoint, p3: IPoint) : this(
+        constructor(p0: MPoint, p1: MPoint, p2: MPoint, p3: MPoint) : this(
             p0.x, p0.y,
             p1.x, p1.y,
             p2.x, p2.y,
@@ -140,7 +140,7 @@ interface Bezier {
             return this
         }
 
-        fun setTo(p0: IPoint, p1: IPoint, p2: IPoint, p3: IPoint) =
+        fun setTo(p0: MPoint, p1: MPoint, p2: MPoint, p3: MPoint) =
             setTo(p0.x, p0.y, p1.x, p1.y, p2.x, p2.y, p3.x, p3.y)
 
         fun copyFrom(other: Cubic): Cubic = setTo(other.p0, other.p1, other.p2, other.p3)
@@ -173,8 +173,8 @@ interface Bezier {
     }
 
     companion object {
-        operator fun invoke(p0: IPoint, p1: IPoint, p2: IPoint): Quad = Quad(p0, p1, p2)
-        operator fun invoke(p0: IPoint, p1: IPoint, p2: IPoint, p3: IPoint): Cubic =
+        operator fun invoke(p0: MPoint, p1: MPoint, p2: MPoint): Quad = Quad(p0, p1, p2)
+        operator fun invoke(p0: MPoint, p1: MPoint, p2: MPoint, p3: MPoint): Cubic =
             Cubic(p0, p1, p2, p3)
 
 
@@ -281,14 +281,14 @@ interface Bezier {
         ): Point = cubicCalc(x0, y0, x1, y1, x2, y2, x3, y3, t) { x, y -> target.setTo(x, y) }
 
         fun cubicCalc(
-            p0: IPoint, p1: IPoint, p2: IPoint, p3: IPoint,
+            p0: MPoint, p1: MPoint, p2: MPoint, p3: MPoint,
             t: Double, target: Point = Point()
-        ): IPoint = cubicCalc(p0.x, p0.y, p1.x, p1.y, p2.x, p2.y, p3.x, p3.y, t, target)
+        ): MPoint = cubicCalc(p0.x, p0.y, p1.x, p1.y, p2.x, p2.y, p3.x, p3.y, t, target)
 
         fun quadCalc(
-            p0: IPoint, p1: IPoint, p2: IPoint,
+            p0: MPoint, p1: MPoint, p2: MPoint,
             t: Double, target: Point = Point()
-        ): IPoint = quadCalc(p0.x, p0.y, p1.x, p1.y, p2.x, p2.y, t, target)
+        ): MPoint = quadCalc(p0.x, p0.y, p1.x, p1.y, p2.x, p2.y, t, target)
 
         fun quadRecommendedSteps(x0: Double, y0: Double, x1: Double, y1: Double, x2: Double, y2: Double): Int =
             Curve.DEFAULT_STEPS

@@ -82,14 +82,16 @@ jobs:
       ENABLE_BENCHMARKS: true
     steps:
     - { uses: actions/checkout@v3 }
+    #- { name: Configure local.properties, run: "echo org.gradle.parallel=true >> local.properties && echo org.gradle.workers.max=2 >> local.properties" }
+    - { name: Configure local.properties, run: "echo org.gradle.parallel=true >> local.properties" }
     - { name: Install freeglut3 & openal, run: sudo apt-get update && sudo apt-get -y install freeglut3-dev libopenal-dev xvfb }
     - { name: Run Xvfb in Background, run: "Xvfb :99 &" }
     - { name: Set up JDK 11, uses: actions/setup-java@v1, with: { java-version: 11 } }
     - { name: Gradle cache, uses: ./.github/actions/gradle-cache }
     - { name: Grant execute permission for gradlew, run: chmod +x gradlew }
     - { name: Start gradle, run: ./gradlew --stacktrace }
-    - { name: Building classes, run: ./gradlew --stacktrace compileTestKotlinJvm }
-    - { name: Testing JVM, run: "./gradlew --stacktrace jvmTest", env: { EGL_LOG_LEVEL: debug, LIBGL_DEBUG: verbose, LIBGL_ALWAYS_SOFTWARE: true, MESA_DEBUG: true } }
+    - { name: Building classes, run: ./gradlew  --stacktrace --parallel compileTestKotlinJvm }
+    - { name: Testing JVM, run: "./gradlew --stacktrace --parallel jvmTest", env: { EGL_LOG_LEVEL: debug, LIBGL_DEBUG: verbose, LIBGL_ALWAYS_SOFTWARE: true, MESA_DEBUG: true } }
     - { name: Archive Test Results, if: failure(), uses: actions/upload-artifact@v3, with: { name: screenshot-test-results-linux, retention-days: 21, path: "**/build/reports", if-no-files-found: ignore } }
     - { name: Check sandbox compiles, run: "./gradlew :korge-sandbox:jvmJar" }
     - { name: Publish to maven local, run: ./gradlew publishJvmLocal }
@@ -119,7 +121,7 @@ jobs:
       #    name: coverage-results
       #    path: build/reports/kover/merged/html/
       #- { name: Kover Merged XML Reports, uses: GabrielBB/xvfb-action@v1, with: { run: ./gradlew koverMergedXmlReport } }
-      - { name: Kover Merged XML Reports, run: ./gradlew koverMergedXmlReport }
+      - { name: Kover Merged XML Reports, run: ./gradlew --parallel koverMergedXmlReport }
       - uses: codecov/codecov-action@v3
         with:
           files: ./build/reports/kover/merged/xml/report.xml
@@ -200,11 +202,12 @@ jobs:
     - { name: Start gradle, run: ./gradlew }
     #- { name: Testing JVM on Linux, uses: GabrielBB/xvfb-action@v1, with: { run: ./gradlew jvmTest } }
     - { name: Testing Kotlin/Native Linux, run: ./gradlew linuxX64Test }
-    - { name: Publish gradle plugin, run: "./gradlew :korge-gradle-plugin:publishToMavenLocal" }
+    - { name: Publish gradle plugin and reload agent, run: "./gradlew :korge-gradle-plugin:publishToMavenLocal :korge-reload-agent:publishToMavenLocal" }
     - { name: Publish X64, run: ./gradlew publishLinuxX64PublicationToMavenLocal publishKotlinMultiplatformPublicationToMavenLocal }
     - { name: Stop gradle daemon, run: ./gradlew --stop }
     - { name: e2e test native, working-directory: e2e-test, run: ./gradlew checkReferencesNative --stacktrace }
     - { name: Archive E2E Test Results, if: failure(), uses: actions/upload-artifact@v3, with: { name: e2e-test-results-linux, retention-days: 21, path: "**/e2e-test/build/screenshots", if-no-files-found: ignore } }
+    - { name: Testing Linux Arm64 Publishing, run: ./gradlew publishLinuxArm64PublicationToMavenLocal }
 
   test-native-macos:
     needs: changes
@@ -222,7 +225,7 @@ jobs:
     - { name: Testing JVM on MacosX64, run: ./gradlew jvmTest }
     - { name: Archive Test Results, if: failure(), uses: actions/upload-artifact@v3, with: { name: screenshot-test-results-macos, retention-days: 21, path: "**/build/reports", if-no-files-found: ignore } }
     - { name: Testing Kotlin/Native MacosX64, run: ./gradlew macosX64Test }
-    - { name: Publish gradle plugin, run: "./gradlew :korge-gradle-plugin:publishToMavenLocal" }
+    - { name: Publish gradle plugin, run: "./gradlew :korge-gradle-plugin:publishToMavenLocal :korge-reload-agent:publishToMavenLocal" }
     - { name: Publish X64, run: ./gradlew publishMacosX64PublicationToMavenLocal publishKotlinMultiplatformPublicationToMavenLocal }
     - { name: e2e test, working-directory: e2e-test, run: ./gradlew checkReferencesNative --stacktrace }
     - { name: Archive E2E Test Results, if: failure(), uses: actions/upload-artifact@v3, with: { name: e2e-test-results-macos, retention-days: 21, path: "**/e2e-test/build/screenshots", if-no-files-found: ignore } }
@@ -238,6 +241,7 @@ jobs:
       GRADLE_OPTS: -Dorg.gradle.daemon=false -Dkotlin.compiler.execution.strategy=in-process -Dorg.gradle.workers.max=3
     steps:
     - { uses: actions/checkout@v3 }
+    - { name: Configure local.properties, run: "echo org.gradle.parallel=false >> local.properties" }
     - { name: Download, shell: cmd, run: "curl -L -o opengl32-x64.zip https://github.com/korlibs/mesa-dist-win/releases/download/21.2.3/opengl32-x64.zip" }
     - { name: unzip, shell: cmd, run: "unzip opengl32-x64.zip" }
     - { name: unzip to korge, shell: cmd, run: "unzip opengl32-x64.zip -d korge" }
@@ -246,7 +250,7 @@ jobs:
     - { name: Testing JVM on windows, shell: cmd, run: "CALL gradlew.bat jvmTest", env: { EGL_LOG_LEVEL: debug, LIBGL_DEBUG: verbose, LIBGL_ALWAYS_SOFTWARE: true, MESA_DEBUG: true } }
     - { name: Archive Test Results, if: failure(), uses: actions/upload-artifact@v3, with: { name: screenshot-test-results-windows, retention-days: 21, path: "**/build/reports", if-no-files-found: ignore } }
     - { name: Testing Kotlin/Native MingwX64Test, shell: cmd, run: CALL gradlew.bat mingwX64Test }
-    - { name: Publish gradle plugin, shell: cmd, run: "CALL gradlew.bat :korge-gradle-plugin:publishToMavenLocal" }
+    - { name: Publish gradle plugin, shell: cmd, run: "CALL gradlew.bat :korge-gradle-plugin:publishToMavenLocal :korge-reload-agent:publishToMavenLocal" }
     - { name: Publish X64, shell: cmd, run: CALL gradlew.bat publishMingwX64PublicationToMavenLocal publishKotlinMultiplatformPublicationToMavenLocal }
     - { name: e2e test, shell: cmd, working-directory: e2e-test, run: CALL gradlew.bat checkReferencesNative --stacktrace }
     - { name: Archive E2E Test Results, if: failure(), uses: actions/upload-artifact@v3, with: { name: e2e-test-results-windows, retention-days: 21, path: "**/e2e-test/build/screenshots", if-no-files-found: ignore } }

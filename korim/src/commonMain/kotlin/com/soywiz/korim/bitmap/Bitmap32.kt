@@ -7,10 +7,7 @@ import com.soywiz.korim.annotation.KorimInternal
 import com.soywiz.korim.color.*
 import com.soywiz.korim.vector.Bitmap32Context2d
 import com.soywiz.korim.vector.Context2d
-import com.soywiz.korma.geom.IRectangleInt
-import com.soywiz.korma.geom.MMatrix3D
-import com.soywiz.korma.geom.MRectangleInt
-import com.soywiz.korma.geom.MVector4
+import com.soywiz.korma.geom.*
 import kotlin.js.JsName
 import kotlin.jvm.JvmName
 import kotlin.jvm.JvmOverloads
@@ -33,7 +30,7 @@ class Bitmap32(
 	}
 
 	private val temp = IntArray(max(width, height))
-    val bounds: IRectangleInt = MRectangleInt(0, 0, width, height)
+    val bounds: MRectangleInt = MRectangleInt(0, 0, width, height)
 
 	constructor(width: Int, height: Int, value: RGBA) : this(width, height, premultiplied = false) { ints.fill(value.value) }
     constructor(width: Int, height: Int, value: RgbaArray) : this(width, height, value.ints, premultiplied = false)
@@ -164,10 +161,10 @@ class Bitmap32(
 	fun draw(src: BmpSlice32, dx: Int = 0, dy: Int = 0) = _draw(src, dx, dy, mix = true)
 
 	fun drawUnoptimized(src: BmpSlice, dx: Int = 0, dy: Int = 0, mix: Boolean = true) {
-		if (src.bmpBase is Bitmap32) {
+		if (src.bmp is Bitmap32) {
 			_draw(src as BmpSlice32, dx, dy, mix = mix)
 		} else {
-			drawUnoptimized(src.bmpBase, dx, dy, src.left, src.top, src.right, src.bottom, mix = mix)
+			drawUnoptimized(src.bmp, dx, dy, src.left, src.top, src.right, src.bottom, mix = mix)
 		}
 	}
 
@@ -625,11 +622,16 @@ fun Bitmap32.posterizeInplace(nbits: Int = 4): Bitmap32 {
     return this
 }
 
-fun Bitmap32.expandBorder(area: IRectangleInt, border: Int) {
+fun Bitmap32.expandBorder(area: MRectangleInt, border: Int) = expandBorder(area.top, area.left, area.bottom, area.right, border)
+fun Bitmap32.expandBorder(area: RectangleInt, border: Int) = expandBorder(area.top, area.left, area.bottom, area.right, border)
+
+fun Bitmap32.expandBorder(areaTop: Int, areaLeft: Int, areaBottom: Int, areaRight: Int, border: Int) {
     val data = this.ints
-    var x0Index = index(area.left, area.top)
-    var x1Index = index(area.right - 1, area.top)
-    for (n in 0 until area.height) {
+    var x0Index = index(areaLeft, areaTop)
+    var x1Index = index(areaRight - 1, areaTop)
+    val areaWidth = areaRight - areaLeft
+    val areaHeight = areaBottom - areaTop
+    for (n in 0 until areaHeight) {
         val x0Color = data[x0Index]
         val x1Color = data[x1Index]
         for (m in 0 until border) {
@@ -640,9 +642,9 @@ fun Bitmap32.expandBorder(area: IRectangleInt, border: Int) {
         x1Index += width
     }
     for (m in 0 until border) {
-        val x = area.left - border
-        val npixels = area.width + border * 2
-        arraycopy(data, index(x, area.top), data, index(x, area.top - m - 1), npixels)
-        arraycopy(data, index(x, area.bottom - 1), data, index(x, area.bottom + m), npixels)
+        val x = areaLeft - border
+        val npixels = areaWidth + border * 2
+        arraycopy(data, index(x, areaTop), data, index(x, areaTop - m - 1), npixels)
+        arraycopy(data, index(x, areaBottom - 1), data, index(x, areaBottom + m), npixels)
     }
 }

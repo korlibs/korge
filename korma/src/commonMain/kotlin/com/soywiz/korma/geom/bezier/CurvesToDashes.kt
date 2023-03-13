@@ -1,6 +1,6 @@
 package com.soywiz.korma.geom.bezier
 
-import com.soywiz.kds.getCyclic
+import com.soywiz.kds.*
 
 fun Curves.toDashes(pattern: DoubleArray?, offset: Double = 0.0): List<Curves> {
     if (pattern == null) return listOf(this)

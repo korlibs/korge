@@ -1,27 +1,25 @@
 package com.soywiz.korgw
 
-import com.soywiz.korim.color.Colors
-import com.soywiz.korim.vector.buildShape
-import com.soywiz.korio.async.suspendTest
+import com.soywiz.korim.color.*
+import com.soywiz.korim.vector.*
+import com.soywiz.korio.async.*
 import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.vector.lineTo
-import com.soywiz.korma.geom.vector.moveTo
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import com.soywiz.korma.geom.vector.*
+import kotlin.test.*
 
 class GameWindowTest {
     @Test
     fun testCustomCursor() = suspendTest {
         val cursor = GameWindow.CustomCursor(buildShape {
             fill(Colors.RED) {
-                moveTo(0, 0)
-                lineTo(-32, -32)
-                lineTo(+32, -32)
+                moveTo(Point(0, 0))
+                lineTo(Point(-32, -32))
+                lineTo(Point(+32, -32))
                 close()
             }
         })
         val bitmap = cursor.createBitmap()
-        assertEquals(MSize(64, 32), bitmap.bitmap.size)
+        assertEquals(SizeInt(64, 32), bitmap.bitmap.size)
         assertEquals(PointInt(32, 31), bitmap.hotspot)
         assertEquals(MPointInt(32, 31), bitmap.mhotspot)
         //bitmap.bitmap.showImageAndWait()

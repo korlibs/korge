@@ -16,7 +16,6 @@ import com.soywiz.korlibs.*
 import com.soywiz.korlibs.gkotlin
 import com.soywiz.korlibs.kotlin
 import com.soywiz.korlibs.modules.*
-import com.soywiz.korlibs.modules.KorgeJavaExec
 import com.soywiz.korlibs.tasks
 import org.gradle.api.*
 import org.gradle.api.Project
@@ -61,12 +60,12 @@ object RootKorlibsPlugin {
         initAndroidFixes()
         initPublishing()
         initKMM()
-        initSamples()
         initShortcuts()
         initTests()
         initCrossTests()
         initAllTargets()
         initPatchTests()
+        initSamples()
     }
 
     fun Project.initPatchTests() {
@@ -264,18 +263,9 @@ object RootKorlibsPlugin {
             //    freeCompilerArgs += "-Xmulti-platform"
             //}
             packagingOptions {
-                it.exclude("META-INF/DEPENDENCIES")
-                it.exclude("META-INF/LICENSE")
-                it.exclude("META-INF/LICENSE.txt")
-                it.exclude("META-INF/license.txt")
-                it.exclude("META-INF/NOTICE")
-                it.exclude("META-INF/NOTICE.txt")
-                it.exclude("META-INF/notice.txt")
-                it.exclude("META-INF/LGPL*")
-                it.exclude("META-INF/AL2.0")
-                it.exclude("META-INF/*.kotlin_module")
-                it.exclude("**/*.kotlin_metadata")
-                it.exclude("**/*.kotlin_builtins")
+                for (pattern in KorgeExtension.DEFAULT_ANDROID_EXCLUDE_PATTERNS) {
+                    it.resources.excludes.add(pattern)
+                }
             }
             compileSdkVersion(28)
             defaultConfig {
@@ -430,9 +420,10 @@ object RootKorlibsPlugin {
     }
 
     fun Project.initPublishing() {
-
         rootProject.afterEvaluate {
             rootProject.nonSamples {
+                if (this.project.isKorgeBenchmarks) return@nonSamples
+
                 plugins.apply("maven-publish")
 
                 val doConfigure = mustAutoconfigureKMM()
@@ -606,7 +597,7 @@ object RootKorlibsPlugin {
                 }
 
                 if (isSample && doEnableKotlinNative && isMacos) {
-                    project.configureNativeIos()
+                    project.configureNativeIos(projectType = ProjectType.EXECUTABLE)
                 }
 
                 if (!isSample && rootProject.plugins.hasPlugin("org.jetbrains.dokka")) {
@@ -922,12 +913,14 @@ object RootKorlibsPlugin {
         rootProject.samples {
             // @TODO: Patch, because runDebugReleaseExecutableMacosArm64 is not created!
             if (isMacos && isArm && doEnableKotlinNative) {
-                project.tasks {
-                    afterEvaluate {
+                project.afterEvaluate {
+                    project.tasks {
                         for (kind in listOf("Debug", "Release")) {
                             val linkTaskName = "link${kind}ExecutableMacosArm64"
                             val runTaskName = "run${kind}ExecutableMacosArm64"
-                            val linkExecutableMacosArm64 = project.tasks.findByName(linkTaskName) as org.jetbrains.kotlin.gradle.tasks.KotlinNativeLink
+                            val tryLinkTask = project.tasks.findByName(linkTaskName)
+                            val linkExecutableMacosArm64 = tryLinkTask as? org.jetbrains.kotlin.gradle.tasks.KotlinNativeLink?
+                                ?: error("$linkTaskName ($tryLinkTask) is not a KotlinNativeLink task in project $project")
                             if (project.tasks.findByName(runTaskName) == null) {
                                 val runExecutableMacosArm64 = project.tasks.createThis<Exec>(runTaskName) {
                                     dependsOn(linkExecutableMacosArm64)
@@ -941,62 +934,16 @@ object RootKorlibsPlugin {
             }
 
             // @TODO: Move to KorGE plugin
+            project.configureJvmRunJvm(isRootKorlibs = true)
             project.apply {
+
                 project.tasks {
-                    // https://www.baeldung.com/java-instrumentation
-                    val runJvm = createThis<KorgeJavaExec>("runJvm") {
-                        group = "run"
-                        mainClass.set("MainKt")
-                    }
-
-                    val timeBeforeCompilationFile = File(project.buildDir, "timeBeforeCompilation")
-                    val httpPort = 22011
-
-                    val compileKotlinJvmAndNotifyBefore = createThis<Task>("compileKotlinJvmAndNotifyBefore") {
-                        doFirst {
-                            KorgeReloadNotifier.beforeBuild(timeBeforeCompilationFile)
-                        }
-                    }
-                    afterEvaluate {
-                        tasks.findByName("compileKotlinJvm")?.mustRunAfter("compileKotlinJvmAndNotifyBefore")
-                    }
-                    val compileKotlinJvmAndNotify = createThis<Task>("compileKotlinJvmAndNotify") {
-                        dependsOn("compileKotlinJvmAndNotifyBefore", "compileKotlinJvm")
-                        doFirst {
-                            KorgeReloadNotifier.afterBuild(timeBeforeCompilationFile, httpPort)
-                        }
-                    }
-                    for (enableRedefinition in listOf(false, true)) {
-                        val taskName = when (enableRedefinition) {
-                            false -> "runJvmAutoreload"
-                            true -> "runJvmAutoreloadWithRedefinition"
-                        }
-                        createThis<KorgeJavaExec>(taskName) {
-                            dependsOn(":korge-reload-agent:jar", "compileKotlinJvm")
-                            group = "run"
-                            mainClass.set("MainKt")
-                            afterEvaluate {
-                                val agentJarTask: Jar = project(":korge-reload-agent").tasks.findByName("jar") as Jar
-                                val outputJar = agentJarTask.outputs.files.files.first()
-                                //println("agentJarTask=$outputJar")
-                                val compileKotlinJvm = tasks.findByName("compileKotlinJvm") as org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-                                val args = compileKotlinJvm.outputs.files.toList().joinToString(":::") { it.absolutePath }
-                                //val gradlewCommand = if (isWindows) "gradlew.bat" else "gradlew"
-                                //val continuousCommand = "${rootProject.rootDir}/$gradlewCommand --no-daemon --warn --project-dir=${rootProject.rootDir} --configuration-cache -t ${project.path}:compileKotlinJvmAndNotify"
-                                val continuousCommand =
-                                    "-classpath ${rootProject.rootDir}/gradle/wrapper/gradle-wrapper.jar org.gradle.wrapper.GradleWrapperMain --no-daemon --warn --project-dir=${rootProject.rootDir} --configuration-cache -t ${project.path}:compileKotlinJvmAndNotify"
-                                jvmArgs("-javaagent:$outputJar=$httpPort:::$continuousCommand:::$enableRedefinition:::$args")
-                                environment("KORGE_AUTORELOAD", "true")
-                            }
-                        }
-                    }
-
                     // esbuild
                     run {
 
                         val userGradleFolder = File(System.getProperty("user.home"), ".gradle")
 
-                        val esbuildVersion = "0.12.22"
+                        val esbuildVersion = KorgeExtension.ESBUILD_DEFAULT_VERSION
                         val wwwFolder = File(buildDir, "www")
 
                         val esbuildFolder = File(if (userGradleFolder.isDirectory) userGradleFolder else rootProject.buildDir, "esbuild")
@@ -1049,9 +996,7 @@ object RootKorlibsPlugin {
                                 duplicatesStrategy = DuplicatesStrategy.EXCLUDE
                                 from(project.tasks.getByName("jsProcessResources").outputs.files)
                                 afterEvaluate {
-                                    project.tasks.findByName("korgeProcessedResourcesJsMain")?.outputs?.files?.let {
-                                        from(it)
-                                    }
+                                    //project.tasks.findByName(getKorgeProcessResourcesTaskName("js", "main"))?.outputs?.files?.let { from(it) }
                                 }
                                 //for (sourceSet in gkotlin.js().compilations.flatMap { it.kotlinSourceSets }) from(sourceSet.resources)
                                 into(wwwFolder)
@@ -1226,19 +1171,16 @@ object RootKorlibsPlugin {
                         }
                     }
 
-                    val nativeDesktopTargets = nativeTargets(project)
-                    val allNativeTargets = nativeDesktopTargets
-
                     //for (target in nativeDesktopTargets) {
                     //target.compilations["main"].defaultSourceSet.dependsOn(nativeDesktopEntryPointSourceSet)
                     //    target.compilations["main"].defaultSourceSet.kotlin.srcDir(nativeDesktopFolder)
                     //}
 
-                    for (target in allNativeTargets) {
+                    for (target in nativeTargets(project)) {
                         for (binary in target.binaries) {
                             val compilation = binary.compilation
                             val copyResourcesTask = tasks.createThis<Copy>("copyResources${target.name.capitalize()}${binary.name.capitalize()}") {
-                                dependsOn(getKorgeProcessResourcesTaskName(target, compilation))
+                                //dependsOn(getKorgeProcessResourcesTaskName(target, compilation))
                                 group = "resources"
                                 val isDebug = binary.buildType == org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType.DEBUG
                                 val isTest = binary.outputKind == org.jetbrains.kotlin.gradle.plugin.mpp.NativeOutputKind.TEST
@@ -1258,72 +1200,7 @@ object RootKorlibsPlugin {
                 }
             }
 
-            project.tasks {
-                val runJvm = getByName("runJvm") as KorgeJavaExec
-                //val prepareResourceProcessingClasses = create("prepareResourceProcessingClasses", Copy::class) {
-                //    dependsOn(jvmMainClasses)
-                //    afterEvaluate {
-                //        from(runJvm.korgeClassPath.toList().map { if (it.extension == "jar") zipTree(it) else it })
-                //    }
-                //    into(File(project.buildDir, "korgeProcessedResources/classes"))
-                //}
-
-                for (target in project.gkotlin.targets) {
-                    for (compilation in target.compilations) {
-                        val processedResourcesFolder = File(project.buildDir, "korgeProcessedResources/${target.name}/${compilation.name}")
-                        compilation.defaultSourceSet.resources.srcDir(processedResourcesFolder)
-                        val korgeProcessedResources = createThis<Task>(getKorgeProcessResourcesTaskName(target, compilation)) {
-                            //dependsOn(prepareResourceProcessingClasses)
-                            dependsOn("jvmMainClasses")
-
-                            if (project.enabledSandboxResourceProcessor) {
-                                doLast {
-                                    processedResourcesFolder.mkdirs()
-                                    //URLClassLoader(prepareResourceProcessingClasses.outputs.files.toList().map { it.toURL() }.toTypedArray(), ClassLoader.getSystemClassLoader()).use { classLoader ->
-
-                                    URLClassLoader(
-                                        runJvm.korgeClassPath.toList().map { it.toURL() }.toTypedArray(),
-                                        ClassLoader.getSystemClassLoader()
-                                    ).use { classLoader ->
-                                        val clazz = classLoader.loadClass("com.soywiz.korge.resources.ResourceProcessorRunner")
-                                        val folders = compilation.allKotlinSourceSets.flatMap { it.resources.srcDirs }
-                                            .filter { it != processedResourcesFolder }.map { it.toString() }
-                                        //println(folders)
-                                        try {
-                                            clazz.methods.first { it.name == "run" }.invoke(
-                                                null,
-                                                classLoader,
-                                                folders,
-                                                processedResourcesFolder.toString(),
-                                                compilation.name
-                                            )
-                                        } catch (e: java.lang.reflect.InvocationTargetException) {
-                                            val re = (e.targetException ?: e)
-                                            re.printStackTrace()
-                                            System.err.println(re.toString())
-                                        }
-                                    }
-                                    System.gc()
-                                }
-                            }
-                        }
-                        //println(compilation.compileKotlinTask.name)
-                        //println(compilation.compileKotlinTask.name)
-                        //compilation.compileKotlinTask.finalizedBy(processResourcesKorge)
-                        //println(compilation.compileKotlinTask)
-                        //compilation.compileKotlinTask.dependsOn(processResourcesKorge)
-                        if (compilation.compileKotlinTask.name != "compileKotlinJvm") {
-                            compilation.compileKotlinTask.dependsOn(korgeProcessedResources)
-                        } else {
-                            compilation.compileKotlinTask.finalizedBy(korgeProcessedResources)
-                            getByName("runJvm").dependsOn(korgeProcessedResources)
-
-                        }
-                        //println(compilation.output.allOutputs.toList())
-                        //println("$target - $compilation")
-                    }
-                }
-            }
+            project.addGenResourcesTasks()
         }
     }
 
@@ -1508,7 +1385,7 @@ val Project.realKotlinVersion: String get() = (System.getenv("FORCED_KOTLIN_VERS
 val forcedVersion = System.getenv("FORCED_VERSION")
 
 val Project.hasAndroidSdk by LazyExt { AndroidSdk.hasAndroidSdk(project) }
-val Project.enabledSandboxResourceProcessor: Boolean by LazyExt { rootProject.findProperty("enabledSandboxResourceProcessor") == "true" }
+val Project.enabledSandboxResourceProcessor: Boolean get() = rootProject.findProperty("enabledSandboxResourceProcessor") == "true"
 
 val Project.currentJavaVersion by LazyExt { currentJavaVersion() }
 fun Project.hasBuildGradle() = listOf("build.gradle", "build.gradle.kts").any { File(projectDir, it).exists() }
@@ -1518,8 +1395,7 @@ fun Project.mustAutoconfigureKMM(): Boolean =
         project.name != "korge-reload-agent" &&
         project.hasBuildGradle()
 
-fun getKorgeProcessResourcesTaskName(target: org.jetbrains.kotlin.gradle.plugin.KotlinTarget, compilation: org.jetbrains.kotlin.gradle.plugin.KotlinCompilation<*>): String =
-    "korgeProcessedResources${target.name.capitalize()}${compilation.name.capitalize()}"
+val Project.isKorgeBenchmarks: Boolean get() = path == ":korge-benchmarks"
 
 fun Project.nonSamples(block: Project.() -> Unit) {
     subprojectsThis {

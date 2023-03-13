@@ -12,10 +12,13 @@ import org.gradle.api.*
 import java.io.*
 import groovy.text.*
 import org.gradle.api.artifacts.*
+import org.gradle.api.model.ObjectFactory
+import org.gradle.api.provider.Property
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import java.net.*
 import java.time.*
 import java.util.*
+import javax.inject.Inject
 import javax.naming.*
 import kotlin.collections.LinkedHashMap
 
@@ -65,7 +68,7 @@ data class MavenLocation(val group: String, val name: String, val version: Strin
 	} }
 
 	companion object {
-		operator fun invoke(location: String): MavenLocation {
+        operator fun invoke(location: String): MavenLocation {
 			val parts = location.split(":")
 			return MavenLocation(parts[0], parts[1], parts[2], parts.getOrNull(3))
 		}
@@ -79,13 +82,36 @@ data class MavenLocation(val group: String, val name: String, val version: Strin
 }
 
 @Suppress("unused")
-class KorgeExtension(val project: Project) {
+open class KorgeExtension(
+    @Inject val project: Project,
+    //private val objectFactory: ObjectFactory
+) {
     private var includeIndirectAndroid: Boolean = false
-	internal fun init(includeIndirectAndroid: Boolean) {
+	internal fun init(includeIndirectAndroid: Boolean, projectType: ProjectType) {
 	    this.includeIndirectAndroid = includeIndirectAndroid
+        this.projectType = projectType
 	}
 
     companion object {
+        const val ESBUILD_DEFAULT_VERSION = "0.17.10"
+
+        val DEFAULT_ANDROID_EXCLUDE_PATTERNS = listOf(
+            "META-INF/DEPENDENCIES",
+            "META-INF/LICENSE",
+            "META-INF/LICENSE.txt",
+            "META-INF/license.txt",
+            "META-INF/NOTICE",
+            "META-INF/NOTICE.txt",
+            "META-INF/notice.txt",
+            "META-INF/LGPL*",
+            "META-INF/AL2.0",
+            "META-INF/*.kotlin_module",
+            "**/*.kotlin_metadata",
+            "**/*.kotlin_builtins",
+            "**/androidsupportmultidexversion.txt",
+            "META-INF/versions/9/previous-compilation-data.bin",
+        )
+
         val validIdentifierRegexp = Regex("^[a-zA-Z_]\\w*$")
 
         fun isIdValid(id: String) = id.isNotEmpty() && id.isNotBlank() && id.split(".").all { it.matches(validIdentifierRegexp) }
@@ -108,14 +134,16 @@ class KorgeExtension(val project: Project) {
 
     // https://github.com/JetBrains/kotlin/pull/4339
     var mingwX64PatchedLegacyMemoryManager: Boolean = true
-    var enableLinuxArm: Boolean = false
-    
+  
+    lateinit var projectType: ProjectType
+        private set
+
     /**
      * Configures JVM target
      */
     fun targetJvm() {
         target("jvm") {
-            project.configureJvm()
+            project.configureJvm(projectType)
         }
     }
 
@@ -124,7 +152,7 @@ class KorgeExtension(val project: Project) {
      */
     fun targetJs() {
         target("js") {
-            project.configureJavaScript()
+            project.configureJavaScript(projectType)
         }
     }
 
@@ -133,14 +161,14 @@ class KorgeExtension(val project: Project) {
      *
      * - mingwX64
      * - linuxX64
-     * - linuxArm32Hfp
+     * - linuxArm64
      * - macosX64
      * - macosArm64
      */
     fun targetDesktop() {
         target("desktop") {
             if (supportKotlinNative) {
-                project.configureNativeDesktop()
+                project.configureNativeDesktop(projectType)
             }
         }
     }
@@ -164,35 +192,12 @@ class KorgeExtension(val project: Project) {
      */
     fun targetAndroid() {
         target("android") {
-            project.configureAndroidDirect()
+            project.configureAndroidDirect(projectType)
         }
     }
 
-    /*
-    /**
-     * Configures android in this project tightly integrated, and creates src/main default stuff
-     *
-     * Android SDK IS required even if android tasks are not executed.
-     */
-    fun targetAndroidDirect() {
-        target("android") {
-            project.configureAndroidDirect()
-        }
-    }
-
-    /**
-     * Configures android as a separate project in: build/platforms/android
-     *
-     * Android SDK not required if tasks are not executed.
-     * The project can be opened on Android Studio.
-     */
-    @Deprecated("Use targetAndroidDirect instead")
-    fun targetAndroidIndirect() {
-        target("android") {
-            project.configureAndroidIndirect()
-        }
-    }
-    */
+    @Deprecated("", ReplaceWith("targetAndroid()")) fun targetAndroidIndirect() = targetAndroid()
+    @Deprecated("", ReplaceWith("targetAndroid()")) fun targetAndroidDirect() = targetAndroid()
 
     /**
      * Configures Kotlin/Native iOS target (only on macOS)
@@ -200,7 +205,7 @@ class KorgeExtension(val project: Project) {
     fun targetIos() {
         target("ios") {
             if (isMacos && supportKotlinNative) {
-                project.configureNativeIos()
+                project.configureNativeIos(projectType)
             }
         }
     }
@@ -281,7 +286,7 @@ class KorgeExtension(val project: Project) {
 	var description: String = "description"
 	var orientation: Orientation = Orientation.DEFAULT
 
-	var copyright: String = "Copyright (c) ${Year.now().getValue()} Unknown"
+	var copyright: String = "Copyright (c) ${Year.now().value} Unknown"
 
     var sourceMaps: Boolean = false
 	var supressWarnings: Boolean = false
@@ -356,12 +361,15 @@ class KorgeExtension(val project: Project) {
 	var appleOrganizationName = "User Name Name"
 
 	var entryPoint: String? = null
+    //val jvmMainClassNameProp: Property<String> = objectFactory.property(String::class.java).also { it.set("MainKt") }
 	var jvmMainClassName: String = "MainKt"
+        //get() = jvmMainClassNameProp.get()
+        //set(value) { jvmMainClassNameProp.set(value) }
 	//var proguardObfuscate: Boolean = false
 	var proguardObfuscate: Boolean = true
 
 	val realEntryPoint get() = entryPoint ?: (jvmMainClassName.substringBeforeLast('.', "") + ".main").trimStart('.')
-	val realJvmMainClassName get() = jvmMainClassName
+	val realJvmMainClassName: String get() = jvmMainClassName
 
 	val extraEntryPoints = arrayListOf<Entrypoint>()
 
@@ -373,7 +381,7 @@ class KorgeExtension(val project: Project) {
 		extraEntryPoints.add(Entrypoint(name, jvmMainClassName))
 	}
 
-    var esbuildVersion: String = "0.12.22"
+    var esbuildVersion: String = ESBUILD_DEFAULT_VERSION
 
     var androidMinSdk: Int = 16
 	var androidCompileSdk: Int = 29
@@ -381,21 +389,7 @@ class KorgeExtension(val project: Project) {
 
     var androidTimeoutMs: Int = 30 * 1000
 
-    var androidExcludePatterns: List<String> = listOf(
-        "META-INF/DEPENDENCIES",
-        "META-INF/LICENSE",
-        "META-INF/LICENSE.txt",
-        "META-INF/license.txt",
-        "META-INF/NOTICE",
-        "META-INF/NOTICE.txt",
-        "META-INF/notice.txt",
-        "META-INF/LGPL*",
-        "META-INF/AL2.0",
-        "META-INF/*.kotlin_module",
-        "**/*.kotlin_metadata",
-        "**/*.kotlin_builtins",
-        "**/androidsupportmultidexversion.txt",
-    )
+    var androidExcludePatterns: List<String> = DEFAULT_ANDROID_EXCLUDE_PATTERNS
 
 	fun androidSdk(compileSdk: Int, minSdk: Int, targetSdk: Int) {
 		androidMinSdk = minSdk

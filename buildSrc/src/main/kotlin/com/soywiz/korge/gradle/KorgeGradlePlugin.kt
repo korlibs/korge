@@ -1,6 +1,7 @@
 package com.soywiz.korge.gradle
 
 import com.soywiz.korge.gradle.targets.*
+import com.soywiz.korge.gradle.targets.jvm.*
 import com.soywiz.korge.gradle.targets.linux.LDLibraries
 import com.soywiz.korge.gradle.util.*
 import com.soywiz.korlibs.*
@@ -15,7 +16,18 @@ import org.jetbrains.kotlin.gradle.dsl.*
 import java.io.*
 import java.net.*
 
-class KorgeGradleApply(val project: Project) {
+abstract class KorgeGradleAbstractPlugin(val projectType: ProjectType) : Plugin<Project> {
+    override fun apply(project: Project) {
+        project.configureAutoVersions()
+        project.configureBuildScriptClasspathTasks()
+        KorgeGradleApply(project, projectType).apply(includeIndirectAndroid = true)
+    }
+}
+
+open class KorgeGradlePlugin : KorgeGradleAbstractPlugin(projectType = ProjectType.EXECUTABLE)
+open class KorgeLibraryGradlePlugin : KorgeGradleAbstractPlugin(projectType = ProjectType.LIBRARY)
+
+class KorgeGradleApply(val project: Project, val projectType: ProjectType) {
 	fun apply(includeIndirectAndroid: Boolean = true) = project {
         checkMinimumJavaVersion()
         // @TODO: Doing this disables the ability to use configuration cache
@@ -39,11 +51,11 @@ class KorgeGradleApply(val project: Project) {
             }
         }
 
-        logger.info("Korge Gradle plugin: ${BuildVersions.ALL}")
+        logger.info("Korge Gradle plugin: ${BuildVersions.ALL}, projectType=$projectType")
 
         KorgeVersionsTask.registerShowKorgeVersions(project)
 
-        project.korge.init(includeIndirectAndroid)
+        project.korge.init(includeIndirectAndroid, projectType)
 
         project.configureIdea()
 		project.addVersionExtension()
@@ -86,6 +98,7 @@ class KorgeGradleApply(val project: Project) {
                     it.addAll(listOf(
                         ".gradle", ".idea", "gradle/wrapper", "node_modules", "classes", "docs", "dependency-cache",
                         "libs", "reports", "resources", "test-results", "tmp", "bundles", "modules",
+                        "korge-gradle-plugin/build/srcgen2"
                     ).map { file(it) })
                 }
 			}
@@ -117,22 +130,14 @@ class KorgeGradleApply(val project: Project) {
 	}
 }
 
-open class KorgeGradlePlugin : Plugin<Project> {
-	override fun apply(project: Project) {
-        project.configureAutoVersions()
-
-        project.configureBuildScriptClasspathTasks()
-
-		//TODO PABLO changed to have the android tasks enabled again
-		KorgeGradleApply(project).apply(includeIndirectAndroid = true)
-
-        //for (res in project.getResourcesFolders()) println("- $res")
-	}
-}
-
 fun Project.configureAutoVersions() {
+    val korlibsConfigureAutoVersions = "korlibsConfigureAutoVersions"
+    if (rootProject.extra.has(korlibsConfigureAutoVersions)) return
+    rootProject.extra.set(korlibsConfigureAutoVersions, true)
     allprojectsThis {
         configurations.all {
+            if (it.name == KORGE_RELOAD_AGENT_CONFIGURATION_NAME) return@all
+
             it.resolutionStrategy.eachDependency { details ->
                 //println("DETAILS: ${details.requested} : '${details.requested.group}' : '${details.requested.name}' :  '${details.requested.version}'")
                 val groupWithName = "${details.requested.group}:${details.requested.name}"
@@ -220,8 +225,9 @@ val Project.korge: KorgeExtension
     get() {
         val extension = project.extensions.findByName("korge") as? KorgeExtension?
         return if (extension == null) {
-            val newExtension = KorgeExtension(this)
-            project.extensions.add("korge", newExtension)
+            //val newExtension = KorgeExtension(this, objectFactory = )
+            val newExtension = project.extensions.create("korge", KorgeExtension::class.java)
+            //project.extensions.add("korge", newExtension)
             newExtension
         } else {
             extension

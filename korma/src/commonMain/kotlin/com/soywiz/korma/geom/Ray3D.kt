@@ -6,7 +6,7 @@ import com.soywiz.korma.annotations.*
 data class Ray3D(val pos: Vector4, val dir: Vector4)
 
 @KormaMutableApi
-interface IRay3D {
+sealed interface IRay3D {
     val pos: IVector4
     val dir: IVector4
 }

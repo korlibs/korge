@@ -23,7 +23,7 @@ object Convex {
         return isConvex(points)
     }
 
-    fun isConvex(vertices: IPointArrayList): Boolean { // Rory Daulton
+    fun isConvex(vertices: PointList): Boolean { // Rory Daulton
         var base = 0
         var n = vertices.size
         val TWO_PI: Double = PI2
@@ -43,10 +43,10 @@ object Convex {
             n--
         }
         // Get starting information
-        var old_x = vertices.getX(n - 2)
-        var old_y = vertices.getY(n - 2)
-        var new_x = vertices.getX(n - 1)
-        var new_y = vertices.getY(n - 1)
+        var old_x = vertices.getX(n - 2).toDouble()
+        var old_y = vertices.getY(n - 2).toDouble()
+        var new_x = vertices.getX(n - 1).toDouble()
+        var new_y = vertices.getY(n - 1).toDouble()
         var new_direction: Double = kotlin.math.atan2(new_y - old_y, new_x - old_x)
         var old_direction: Double
         var angle_sum = Angle.ZERO
@@ -58,8 +58,8 @@ object Convex {
             old_y = new_y
             old_direction = new_direction
             val p = base++
-            new_x = vertices.getX(p)
-            new_y = vertices.getY(p)
+            new_x = vertices.getX(p).toDouble()
+            new_y = vertices.getY(p).toDouble()
             new_direction = kotlin.math.atan2(new_y - old_y, new_x - old_x)
             if (old_x == new_x && old_y == new_y) { // repeated consecutive points
                 return false
@@ -88,12 +88,12 @@ object Convex {
             angle_sum += Angle.fromRadians(angle)
             // Check that the total number of full turns is plus-or-minus 1
         }
-        return 1.0.isAlmostEquals(angle_sum.ratio.absoluteValue)
+        return 1f.isAlmostEquals(angle_sum.ratio.toFloat().absoluteValue)
     }
 
     /*
     // https://stackoverflow.com/questions/471962/how-do-i-efficiently-determine-if-a-polygon-is-convex-non-convex-or-complex/45372025#45372025
-    fun isConvex2(vertices: IPointArrayList): Boolean {
+    fun isConvex2(vertices: MPointArrayList): Boolean {
         if (vertices.size < 4) return true
         var sign = false
         val n: Int = vertices.size
@@ -110,7 +110,7 @@ object Convex {
 
     // https://math.stackexchange.com/questions/1743995/determine-whether-a-polygon-is-convex-based-on-its-vertices
     /*
-    fun isConvex(vertices: IPointArrayList): Boolean {
+    fun isConvex(vertices: MPointArrayList): Boolean {
         if (vertices.size < 3) return false
 
         val N = vertices.size

@@ -71,6 +71,7 @@ open class Animator @PublishedApi internal constructor(
 
     internal val nodes = Deque<NewAnimatorNode>()
     var speed: Double = 1.0
+    val rootAnimator: Animator get() = parent?.rootAnimator ?: this
 
     internal fun removeProps(props: Set<KMutableProperty0<*>>) {
         for (node in nodes) {
@@ -86,35 +87,28 @@ open class Animator @PublishedApi internal constructor(
         ensure()
     }
 
-    private var updater: Closeable? = null
+    private var updater: Cancellable? = null
     var autoInvalidateView = false
 
     private fun ensure() {
         if (parent != null) return parent.ensure()
 
         //println("updateComponents=${updateComponents.size}, updateComponents.contains(updater)=${updateComponents.contains(updater)}, updater=$updater : $updateComponents")
-        if (updater != null && (root.getComponentsOfType(UpdateComponent) ?: emptyList()).contains(updater)) return
+        if (rootAnimator.updater != null) return
         //if (updater != null) return
 
         //println("!!!!!!!!!!!!! ADD NEW UPDATER : updater=$updater, this=$this, parent=$parent")
 
-        object : UpdateComponent {
-            override val view: View get() = this@Animator.root
-            override fun update(dt: TimeSpan) {
-                if (this@Animator.autoInvalidateView) this@Animator.root.invalidateRender()
-                //println("****")
-                if (this@Animator.rootAnimationNode.update(dt) >= TimeSpan.ZERO) {
-                    if (this@Animator.looped) {
-                        this@Animator.onComplete()
-                    } else {
-                        this@Animator.cancel()
-                    }
+        rootAnimator.updater = this@Animator.root.addUpdater(first = rootAnimator.startImmediately) { dt ->
+            if (this@Animator.autoInvalidateView) this@Animator.root.invalidateRender()
+            //println("****")
+            if (this@Animator.rootAnimationNode.update(dt) >= TimeSpan.ZERO) {
+                if (this@Animator.looped) {
+                    this@Animator.onComplete()
+                } else {
+                    this@Animator.cancel()
                 }
             }
-        }.also {
-            updater = it
-            it.attach()
-            if (startImmediately) it.update(TimeSpan.ZERO)
         }
     }
 
@@ -163,14 +157,14 @@ open class Animator @PublishedApi internal constructor(
         //println("---- CANCEL: looped=$looped, currentTime=$currentTime, totalTime=$totalTime")
         rootAnimationNode.reset()
         nodes.clear()
-        updater?.close()
-        updater = null
+        rootAnimator.updater?.cancel()
+        rootAnimator.updater = null
         parallelStarted = false
         onComplete()
         return this
     }
 
-    val isActive: Boolean get() = updater != null && !rootAnimationNode.isEmpty()
+    val isActive: Boolean get() = rootAnimator.updater != null && !rootAnimationNode.isEmpty()
 
     /**
      * Finishes all the pending animations and sets all the properties to their final state.
@@ -334,14 +328,14 @@ open class Animator @PublishedApi internal constructor(
                 //println("dt=$dt, currentTime=$currentTime, totalTime=$totalTime, ratio=$ratio, it.startTime=${it.startTime}, it.endTime(totalTime)=${it.endTime(totalTime)}")
 
                 if (ratio >= 0.0) {
-                    it.set(easing.invoke(ratio.clamp01()))
+                    it.set(easing.invoke(ratio.clamp01()).toRatio())
                 }
             }
             return currentTime - totalTime
         }
 
         override fun complete() {
-            computedVs.fastForEach { it.set(1.0) }
+            computedVs.fastForEach { it.set(Ratio.ONE) }
         }
     }
 
@@ -413,15 +407,15 @@ fun Animator.moveToWithSpeed(view: View, x: Double, y: Double, speed: Double = t
 fun Animator.moveToWithSpeed(view: View, x: Float, y: Float, speed: Number = this.defaultSpeed, easing: Easing = this.defaultEasing) = moveToWithSpeed(view, x.toDouble(), y.toDouble(), speed.toDouble(), easing)
 fun Animator.moveToWithSpeed(view: View, x: Int, y: Int, speed: Number = this.defaultSpeed, easing: Easing = this.defaultEasing) = moveToWithSpeed(view, x.toDouble(), y.toDouble(), speed.toDouble(), easing)
 
-fun Animator.moveInPath(view: View, path: VectorPath, includeLastPoint: Boolean = true, time: TimeSpan = this.defaultTime, lazyTime: (() -> TimeSpan)? = null, easing: Easing = this.defaultEasing) = __tween({ view::ipos.get(path, includeLastPoint = includeLastPoint) }, time = time, lazyTime = lazyTime, easing = easing, name = "moveInPath")
-fun Animator.moveInPath(view: View, points: IPointArrayList, time: TimeSpan = this.defaultTime, lazyTime: (() -> TimeSpan)? = null, easing: Easing = this.defaultEasing) = __tween({ view::ipos[points] }, time = time, lazyTime = lazyTime, easing = easing, name = "moveInPath")
+fun Animator.moveInPath(view: View, path: VectorPath, includeLastPoint: Boolean = true, time: TimeSpan = this.defaultTime, lazyTime: (() -> TimeSpan)? = null, easing: Easing = this.defaultEasing) = __tween({ view::pos.get(path, includeLastPoint = includeLastPoint) }, time = time, lazyTime = lazyTime, easing = easing, name = "moveInPath")
+fun Animator.moveInPath(view: View, points: PointList, time: TimeSpan = this.defaultTime, lazyTime: (() -> TimeSpan)? = null, easing: Easing = this.defaultEasing) = __tween({ view::pos[points] }, time = time, lazyTime = lazyTime, easing = easing, name = "moveInPath")
 
-fun Animator.moveInPathWithSpeed(view: View, path: VectorPath, includeLastPoint: Boolean = true, speed: () -> Number = { this.defaultSpeed }, easing: Easing = this.defaultEasing) = __tween({ view::ipos.get(path, includeLastPoint = includeLastPoint) }, lazyTime = { (path.length / speed().toDouble()).seconds }, easing = easing, name = "moveInPathWithSpeed")
-fun Animator.moveInPathWithSpeed(view: View, points: IPointArrayList, speed: () -> Number = { this.defaultSpeed }, easing: Easing = this.defaultEasing) = __tween({ view::ipos[points] }, lazyTime = { (points.length / speed().toDouble()).seconds }, easing = easing, name = "moveInPathWithSpeed")
+fun Animator.moveInPathWithSpeed(view: View, path: VectorPath, includeLastPoint: Boolean = true, speed: () -> Number = { this.defaultSpeed }, easing: Easing = this.defaultEasing) = __tween({ view::pos.get(path, includeLastPoint = includeLastPoint) }, lazyTime = { (path.length / speed().toDouble()).seconds }, easing = easing, name = "moveInPathWithSpeed")
+fun Animator.moveInPathWithSpeed(view: View, points: PointList, speed: () -> Number = { this.defaultSpeed }, easing: Easing = this.defaultEasing) = __tween({ view::pos[points] }, lazyTime = { (points.length / speed().toDouble()).seconds }, easing = easing, name = "moveInPathWithSpeed")
 
-fun Animator.alpha(view: View, alpha: Double, time: TimeSpan = this.defaultTime, easing: Easing = this.defaultEasing) = __tween(view::alpha[alpha], time = time, easing = easing, name = "alpha")
-fun Animator.alpha(view: View, alpha: Float, time: TimeSpan = this.defaultTime, easing: Easing = this.defaultEasing) = alpha(view, alpha.toDouble(), time, easing)
-fun Animator.alpha(view: View, alpha: Int, time: TimeSpan = this.defaultTime, easing: Easing = this.defaultEasing) = alpha(view, alpha.toDouble(), time, easing)
+fun Animator.alpha(view: View, alpha: Float, time: TimeSpan = this.defaultTime, easing: Easing = this.defaultEasing) = __tween(view::alphaF[alpha], time = time, easing = easing, name = "alpha")
+fun Animator.alpha(view: View, alpha: Double, time: TimeSpan = this.defaultTime, easing: Easing = this.defaultEasing) = alpha(view, alpha.toFloat(), time, easing)
+fun Animator.alpha(view: View, alpha: Int, time: TimeSpan = this.defaultTime, easing: Easing = this.defaultEasing) = alpha(view, alpha.toFloat(), time, easing)
 
 fun Animator.rotateTo(view: View, angle: Angle, time: TimeSpan = this.defaultTime, easing: Easing = this.defaultEasing) = __tween(view::rotation[angle], time = time, easing = easing, name = "rotateTo")
 fun Animator.rotateTo(view: View, rotation: () -> Angle, time: TimeSpan = this.defaultTime, lazyTime: (() -> TimeSpan)? = null, easing: Easing = this.defaultEasing) = __tween({ view::rotation[rotation()] }, time = time, lazyTime = lazyTime, easing = easing, name = "rotateTo")
@@ -430,9 +424,9 @@ fun Animator.show(view: View, time: TimeSpan = this.defaultTime, easing: Easing 
 fun Animator.hide(view: View, time: TimeSpan = this.defaultTime, easing: Easing = this.defaultEasing) = alpha(view, 0.0, time, easing)
 
 private val VectorPath.length: Double get() = getCurves().length
-private val IPointArrayList.length: Double get() {
+private val PointList.length: Double get() {
     var sum = 0.0
-    for (n in 1 until size) sum += MPoint.distance(getX(n - 1), getY(n - 1), getX(n), getY(n))
+    for (n in 1 until size) sum += Point.distance(get(n - 1), get(n))
     return sum
 }
 

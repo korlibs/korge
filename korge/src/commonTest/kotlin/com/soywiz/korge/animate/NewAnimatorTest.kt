@@ -1,7 +1,6 @@
 package com.soywiz.korge.animate
 
 import com.soywiz.klock.*
-import com.soywiz.korge.component.*
 import com.soywiz.korge.view.*
 import com.soywiz.korio.util.*
 import com.soywiz.korma.interpolation.*
@@ -17,7 +16,7 @@ class NewAnimatorTest {
             var _animator: Animator? = null
 
             fun logLine() {
-                lines += "${view.ipos.niceStr} : ${_animator?.nodes?.size} : ${view.getComponentsOfType(UpdateComponent)?.size} : ${log.joinToString(",")}"
+                lines += "${view.pos.niceStr} : ${_animator?.nodes?.size} : ${view.onEventCount(UpdateEvent)} : ${log.joinToString(",")}"
             }
 
             logLine()
@@ -42,7 +41,7 @@ class NewAnimatorTest {
 
         assertEquals(
             """
-                (0, 0) : null : null : 
+                (0, 0) : null : 0 : 
                 (0, 0) : 1 : 1 : 
                 (0, 0) : 0 : 1 : 
                 (1, 0) : 0 : 1 : 
@@ -52,7 +51,7 @@ class NewAnimatorTest {
                 (10, 2) : 0 : 1 : complete
                 (10, 10) : 0 : 0 : complete,complete
                 ---
-                (0, 0) : null : null : 
+                (0, 0) : null : 0 : 
                 (0, 0) : 0 : 1 : 
                 (0, 0) : 0 : 1 : 
                 (1, 0) : 0 : 1 : 
@@ -73,7 +72,7 @@ class NewAnimatorTest {
         var log = ""
         val lines = arrayListOf<String>()
         fun logLine() {
-            lines += "${view.ipos.niceStr}, ${view.alpha.niceStr(1)} : $log"
+            lines += "${view.pos.niceStr(1)}, ${view.alphaF.niceStr(1)} : $log"
         }
         logLine()
         val animator = view.animator(defaultTime = 1.seconds, defaultEasing = Easing.LINEAR) {
@@ -98,7 +97,7 @@ class NewAnimatorTest {
         assertEquals(
             """
                 (0, 0), 1 : 
-                (0, 0), 1 : 01
+                (0, 0), 1 : 0
                 (1, 0), 1 : 01
                 (2, 0), 1 : 01
                 (3, 0), 1 : 01
@@ -147,7 +146,7 @@ class NewAnimatorTest {
         }
         val lines = arrayListOf<String>()
         fun logLine() {
-            lines += "${view.ipos.niceStr}, ${view.alpha.niceStr(1)}"
+            lines += "${view.pos.niceStr(1)}, ${view.alphaF.niceStr(1)}"
         }
         for (n in 0 until 12) {
             view.updateSingleView(0.1.seconds)
@@ -234,7 +233,7 @@ class NewAnimatorTest {
         animator.onComplete.add { log += "complete" }
         val lines = arrayListOf<String>()
         fun logLine() {
-            lines += "view1[${view1.ipos.niceStr}, ${view1.alpha.niceStr(1)}], view2[${view2.ipos.niceStr}, ${view2.alpha.niceStr(1)}], log=${log.joinToString("")}"
+            lines += "view1[${view1.pos.niceStr}, ${view1.alphaF.niceStr(1)}], view2[${view2.pos.niceStr}, ${view2.alphaF.niceStr(1)}], log=${log.joinToString("")}"
         }
         for (n in 0 until 24) {
             executorView.updateSingleView(0.25.seconds)

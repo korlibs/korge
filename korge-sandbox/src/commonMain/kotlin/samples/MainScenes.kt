@@ -24,7 +24,7 @@ class MainScenes : Scene() {
     }
 
     class MyScene1(private val myDependency: MyDependency) : Scene() {
-        override suspend fun SContainer.sceneInit() {
+        override suspend fun SContainer.sceneMain() {
             val mainText = text("MyScene1: ${myDependency.value}", 32.0) {
                 smoothing = false
                 position(MARGIN, MARGIN)
@@ -36,18 +36,18 @@ class MainScenes : Scene() {
 
             solidRect(100, 100, Colors.RED) {
                 position(200, 200)
-                alpha = 0.7
-                onOver { alpha = 1.0 }
-                onOut { alpha = 0.7 }
+                alphaF = 0.7f
+                onOver { alphaF = 1.0f }
+                onOut { alphaF = 0.7f }
                 onClick {
                     sceneContainer.changeTo<MyScene2>()
                 }
             }
             solidRect(100, 100, Colors.BLUE) {
                 position(250, 250)
-                alpha = 0.7
-                onOver { alpha = 1.0 }
-                onOut { alpha = 0.7 }
+                alphaF = 0.7f
+                onOver { alphaF = 1.0f }
+                onOut { alphaF = 0.7f }
                 onClick {
                     sceneContainer.changeTo<MyScene2>()
                 }
@@ -56,7 +56,7 @@ class MainScenes : Scene() {
     }
 
     class MyScene2(private val myDependency: MyDependency) : Scene() {
-        override suspend fun SContainer.sceneInit() {
+        override suspend fun SContainer.sceneMain() {
             text("MyScene2: ${myDependency.value}", 32.0) {
                 smoothing = false
                 position(MARGIN, 10)

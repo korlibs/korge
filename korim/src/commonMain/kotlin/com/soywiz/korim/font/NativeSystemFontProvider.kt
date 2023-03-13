@@ -1,6 +1,5 @@
 package com.soywiz.korim.font
 
-import com.soywiz.kds.atomic.kdsFreeze
 import com.soywiz.kds.cacheLazyNullable
 import com.soywiz.klock.measureTime
 import com.soywiz.klock.measureTimeWithResult
@@ -200,7 +199,7 @@ open class FolderBasedNativeSystemFontProvider(
     private val _namesMapLC = KorAtomicRef<Map<String, VfsFile>?>(null)
     private val namesMapLC: Map<String, VfsFile> get() {
         if (_namesMapLC.value == null) {
-            _namesMapLC.value = kdsFreeze(listFontNamesMapLC())
+            _namesMapLC.value = (listFontNamesMapLC())
         }
         return _namesMapLC.value!!
     }

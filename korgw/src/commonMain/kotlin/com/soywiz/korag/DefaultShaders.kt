@@ -1,15 +1,6 @@
 package com.soywiz.korag
 
-import com.soywiz.korag.shader.Attribute
-import com.soywiz.korag.shader.FragmentShader
-import com.soywiz.korag.shader.Precision
-import com.soywiz.korag.shader.Program
-import com.soywiz.korag.shader.Temp
-import com.soywiz.korag.shader.Uniform
-import com.soywiz.korag.shader.VarType
-import com.soywiz.korag.shader.Varying
-import com.soywiz.korag.shader.VertexLayout
-import com.soywiz.korag.shader.VertexShader
+import com.soywiz.korag.shader.*
 
 fun ProgramWithDefault(
 	vertex: VertexShader = DefaultShaders.VERTEX_DEFAULT,
@@ -19,7 +10,7 @@ fun ProgramWithDefault(
 
 interface IDefaultShaders {
     val u_Tex: Uniform get() = DefaultShaders.u_Tex
-    val u_Tex2: Uniform get() = DefaultShaders.u_Tex2
+    val u_TexEx: Uniform get() = DefaultShaders.u_TexEx
     val u_ProjMat: Uniform get() = DefaultShaders.u_ProjMat
     val u_ViewMat: Uniform get() = DefaultShaders.u_ViewMat
     val a_Pos: Attribute get() = DefaultShaders.a_Pos
@@ -35,15 +26,19 @@ interface IDefaultShaders {
 object DefaultShaders {
     // from korge
 	val u_Tex: Uniform = Uniform("u_Tex", VarType.Sampler2D)
-    val u_Tex2: Uniform = Uniform("u_Tex2", VarType.Sampler2D)
+    val u_TexEx: Uniform = Uniform("u_TexEx", VarType.Sampler2D)
 
 	val u_ProjMat: Uniform = Uniform("u_ProjMat", VarType.Mat4)
 	val u_ViewMat: Uniform = Uniform("u_ViewMat", VarType.Mat4)
+
+    val ub_ProjViewMatBlock = UniformBlock(u_ProjMat, u_ViewMat, fixedLocation = 0)
+    val ub_TexBlock = UniformBlock(u_Tex, fixedLocation = 1)
+
 	val a_Pos: Attribute = Attribute("a_Pos", VarType.Float2, normalized = false, precision = Precision.HIGH, fixedLocation = 0)
 	val a_Tex: Attribute = Attribute("a_Tex", VarType.Float2, normalized = false, precision = Precision.MEDIUM, fixedLocation = 1)
 	val a_Col: Attribute = Attribute("a_Col", VarType.Byte4, normalized = true, precision = Precision.LOW, fixedLocation = 2)
 	val v_Tex: Varying = Varying("v_Tex", VarType.Float2, precision = Precision.MEDIUM)
-	val v_Col: Varying = Varying("v_Col", VarType.Byte4)
+	val v_Col: Varying = Varying("v_Col", VarType.Float4)
 
 	val t_Temp0: Temp = Temp(0, VarType.Float4)
 	val t_Temp1: Temp = Temp(1, VarType.Float4)
@@ -56,6 +51,11 @@ object DefaultShaders {
 		SET(v_Col, a_Col)
 		SET(out, u_ProjMat * u_ViewMat * vec4(a_Pos, 0f.lit, 1f.lit))
 	}
+
+    val MERGE_ALPHA_PROGRAM = Program(VERTEX_DEFAULT, FragmentShaderDefault {
+        val coords = v_Tex["xy"]
+        SET(out, texture2D(u_Tex, coords) * texture2D(u_TexEx, coords).a)
+    })
 
 	val FRAGMENT_DEBUG: FragmentShader = FragmentShader {
         SET(out, vec4(1f.lit, 1f.lit, 0f.lit, 1f.lit))

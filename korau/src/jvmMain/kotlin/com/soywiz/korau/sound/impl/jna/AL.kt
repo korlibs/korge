@@ -1,5 +1,6 @@
 package com.soywiz.korau.sound.impl.jna
 
+import com.soywiz.klogger.Logger
 import com.soywiz.kmem.*
 import com.soywiz.korio.lang.Environment
 import com.soywiz.korio.time.traceTime
@@ -11,6 +12,8 @@ import java.nio.Buffer
 
 @Suppress("unused")
 object AL {
+    private val logger = Logger("AL")
+
     @JvmStatic external fun alDopplerFactor(value: Float)
     @JvmStatic external fun alDopplerVelocity(value: Float)
     @JvmStatic external fun alSpeedOfSound(value: Float)
@@ -223,7 +226,7 @@ object AL {
             }
             loaded = true
         } catch (e: Throwable) {
-            com.soywiz.klogger.Console.error("Failed to initialize OpenAL: arch=$arch, OS.rawName=${Platform.rawOsName}, nativeOpenALLibraryPath=$nativeOpenALLibraryPath, message=${e.message}")
+            logger.error { "Failed to initialize OpenAL: arch=$arch, OS.rawName=${Platform.rawOsName}, nativeOpenALLibraryPath=$nativeOpenALLibraryPath, message=${e.message}" }
             //e.printStackTrace()
         }
     }

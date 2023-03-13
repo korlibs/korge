@@ -39,13 +39,11 @@ open class Container(
      * A collection with all the children [View]s.
      */
     val children: ContainerCollection = ContainerCollection(this, __children)
-    @Deprecated("", ReplaceWith("children"))
-    val childrenCollection: ContainerCollection get() = children
-    @Deprecated("", ReplaceWith("children"))
-    val collection: ContainerCollection get() = children
 
     @PublishedApi
     override val _children: List<View>? get() = __children
+
+    private var __tempChildren: FastArrayList<View>? = null
 
     inline fun fastForEachChild(block: (child: View) -> Unit) {
         children.fastForEach { child -> block(child) }
@@ -89,10 +87,6 @@ open class Container(
     /** Returns the number of children this container has */
     @Suppress("FoldInitializerAndIfToElvis")
     val numChildren: Int get() = __children.size
-
-    /** Returns the number of children this container has */
-    @Deprecated("", ReplaceWith("numChildren"))
-    val size: Int get() = numChildren
 
     /**
      * Recursively retrieves the top ancestor in the container hierarchy.
@@ -419,7 +413,6 @@ open class Container(
         onChildAdded(view)
         invalidateZIndexChildren()
         invalidateContainer()
-        __updateChildListenerCount(view, add = true)
     }
 
     /**
@@ -438,7 +431,6 @@ open class Container(
         view.parent = null
         view.index = -1
         invalidateZIndexChildren()
-        __updateChildListenerCount(view, add = false)
         invalidateContainer()
         return true
     }
@@ -451,9 +443,6 @@ open class Container(
     fun replaceChild(old: View, new: View): Boolean {
         if (old === new) return false
         if (old.parent != this) return false
-
-        __updateChildListenerCount(old, add = false)
-        if (new.parent !== this) __updateChildListenerCount(new, add = true)
 
         invalidateContainer()
         invalidateZIndexChildren()
@@ -470,22 +459,20 @@ open class Container(
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Event Listeners
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    //override fun <T : TEvent<T>> dispatchChildren(type: EventType<T>, event: T, result: EventResult?) {
-    //    // @TODO: What if we mutate the list now
-    //    fastForEachChild {
-    //        val childEventListenerCount = it.onEventCount(type)
-    //        if (childEventListenerCount > 0) {
-    //            it.dispatch(type, event, result)
-    //        }
-    //    }
-    //}
-
-    override fun <T : Component> getComponentOfTypeRecursiveChildren(type: ComponentType<T>, out: FastArrayList<T>, results: EventResult?) {
-        fastForEachChild {
-            val childEventListenerCount = it.getComponentCountInDescendants(type)
-            if (childEventListenerCount > 0) {
-                it.getComponentOfTypeRecursive(type, out, results)
+    override fun <T : BEvent> dispatchChildren(type: EventType<T>, event: T, result: EventResult?) {
+        // @TODO: What if we mutate the list now
+        if (__tempChildren == null) __tempChildren = FastArrayList(children.size)
+        __tempChildren!!.clear()
+        __tempChildren!!.addAll(children)
+        try {
+            __tempChildren!!.fastForEach {
+                val childEventListenerCount = it.onEventCount(type)
+                if (childEventListenerCount > 0) {
+                    it.dispatch(type, event, result)
+                }
             }
+        } finally {
+            __tempChildren!!.clear()
         }
     }
 }

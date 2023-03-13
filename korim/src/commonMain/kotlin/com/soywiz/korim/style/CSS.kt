@@ -1,31 +1,38 @@
 package com.soywiz.korim.style
 
-import com.soywiz.kds.Extra
-import com.soywiz.kds.FastArrayList
-import com.soywiz.kds.ListReader
-import com.soywiz.kds.expect
-import com.soywiz.kds.extraPropertyThis
-import com.soywiz.kds.reader
-import com.soywiz.klock.NumberOfTimes
-import com.soywiz.klock.TimeSpan
-import com.soywiz.klock.milliseconds
-import com.soywiz.klock.seconds
-import com.soywiz.kmem.convertRange
-import com.soywiz.korim.annotation.KorimExperimental
-import com.soywiz.korim.color.Colors
-import com.soywiz.korim.color.RGBA
-import com.soywiz.korim.color.interpolate
-import com.soywiz.korio.lang.invalidOp
-import com.soywiz.korio.lang.substr
-import com.soywiz.korio.util.StrReader
-import com.soywiz.korio.util.reader
-import com.soywiz.korma.geom.Angle
-import com.soywiz.korma.geom.MMatrix
-import com.soywiz.korma.geom.degrees
-import com.soywiz.korma.geom.radians
-import com.soywiz.korma.interpolation.Easing
-import com.soywiz.korma.interpolation.interpolate
-import kotlin.native.concurrent.ThreadLocal
+import com.soywiz.kds.*
+import com.soywiz.klock.*
+import com.soywiz.kmem.*
+import com.soywiz.korim.annotation.*
+import com.soywiz.korim.color.*
+import com.soywiz.korio.lang.*
+import com.soywiz.korio.util.*
+import com.soywiz.korma.geom.*
+import com.soywiz.korma.interpolation.*
+import kotlin.collections.List
+import kotlin.collections.arrayListOf
+import kotlin.collections.associate
+import kotlin.collections.associateBy
+import kotlin.collections.associateWith
+import kotlin.collections.component1
+import kotlin.collections.component2
+import kotlin.collections.distinct
+import kotlin.collections.emptyList
+import kotlin.collections.filter
+import kotlin.collections.filterIsInstance
+import kotlin.collections.flatMap
+import kotlin.collections.getOrElse
+import kotlin.collections.getOrNull
+import kotlin.collections.indexOfFirst
+import kotlin.collections.iterator
+import kotlin.collections.joinToString
+import kotlin.collections.listOf
+import kotlin.collections.map
+import kotlin.collections.plusAssign
+import kotlin.collections.set
+import kotlin.collections.sortedBy
+import kotlin.collections.toMutableMap
+import kotlin.native.concurrent.*
 
 @KorimExperimental
 class CSS(val allRules: List<IRuleSet>, unit: Unit = Unit) {
@@ -432,10 +439,10 @@ class CSSReader(val tokens: ListReader<CSS.Companion.Token>) {
 fun CSS.InterpolationResult.getColor(key: String, default: RGBA = Colors.TRANSPARENT): RGBA =
     this.ratio.interpolate(k0[key]?.color ?: default, k1[key]?.color ?: default)
 fun CSS.InterpolationResult.getRatio(key: String, default: Double = 0.0): Double =
-    this.ratio.interpolate(k0[key]?.ratio ?: default, k1[key]?.ratio ?: default)
+    this.ratio.toRatio().interpolate(k0[key]?.ratio ?: default, k1[key]?.ratio ?: default)
 fun CSS.InterpolationResult.getMatrix(key: String, default: MMatrix = MMatrix()): MMatrix =
-    this.ratio.interpolate(k0[key]?.matrix ?: default, k1[key]?.matrix ?: default)
+    this.ratio.toRatio().interpolate(k0[key]?.matrix ?: default, k1[key]?.matrix ?: default)
 fun CSS.InterpolationResult.getTransform(key: String, default: MMatrix.Transform = MMatrix.Transform()): MMatrix.Transform =
-    this.ratio.interpolate(k0[key]?.transform ?: default, k1[key]?.transform ?: default)
+    this.ratio.toRatio().interpolate(k0[key]?.transform ?: default, k1[key]?.transform ?: default)
 fun CSS.InterpolationResult.getEasing(key: String, default: Easing = Easing.LINEAR): Easing =
     k0[key]?.easing ?: default

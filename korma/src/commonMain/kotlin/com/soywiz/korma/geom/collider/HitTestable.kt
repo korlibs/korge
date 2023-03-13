@@ -1,15 +1,12 @@
 package com.soywiz.korma.geom.collider
 
-import com.soywiz.kds.iterators.fastForEach
+import com.soywiz.kds.iterators.*
 import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.vector.VectorPath
+import com.soywiz.korma.geom.vector.*
 
 fun interface HitTestable {
-    fun hitTestAny(x: Double, y: Double, direction: HitTestDirection): Boolean
+    fun hitTestAny(p: Point, direction: HitTestDirection): Boolean
 }
-
-fun HitTestable.hitTestAny(x: Int, y: Int, direction: HitTestDirection): Boolean =
-    this.hitTestAny(x.toDouble(), y.toDouble(), direction)
 
 inline class HitTestDirectionFlags(val value: Int) {
     operator fun plus(that: HitTestDirectionFlags): HitTestDirectionFlags = HitTestDirectionFlags(this.value or that.value)
@@ -74,19 +71,15 @@ enum class HitTestDirection {
     }
 }
 
-fun HitTestable.hitTestAny(x: Double, y: Double) = hitTestAny(x, y, HitTestDirection.ANY)
-
-fun VectorPath.toHitTestable(testDirections: HitTestDirectionFlags): HitTestable {
-    return HitTestable { x, y, direction ->
-        testDirections.matches(direction) && containsPoint(x, y)
-    }
+fun VectorPath.toHitTestable(testDirections: HitTestDirectionFlags): HitTestable = HitTestable { p, direction ->
+    testDirections.matches(direction) && containsPoint(p)
 }
 
 fun List<HitTestable>.toHitTestable(): HitTestable {
     val list = this
     return object : HitTestable {
-        override fun hitTestAny(x: Double, y: Double, direction: HitTestDirection): Boolean {
-            list.fastForEach { if (it.hitTestAny(x, y, direction)) return true }
+        override fun hitTestAny(p: Point, direction: HitTestDirection): Boolean {
+            list.fastForEach { if (it.hitTestAny(p, direction)) return true }
             return false
         }
     }

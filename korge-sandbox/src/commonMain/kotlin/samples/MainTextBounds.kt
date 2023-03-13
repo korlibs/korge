@@ -1,35 +1,17 @@
 package samples
 
-import com.soywiz.kds.doubleArrayListOf
-import com.soywiz.korge.input.onClick
-import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.ui.uiButton
-import com.soywiz.korge.ui.uiHorizontalStack
-import com.soywiz.korge.ui.uiVerticalStack
-import com.soywiz.korge.view.Container
-import com.soywiz.korge.view.SContainer
-import com.soywiz.korge.view.centered
-import com.soywiz.korge.view.circle
-import com.soywiz.korge.view.container
-import com.soywiz.korge.view.graphics
-import com.soywiz.korge.view.text
-import com.soywiz.korge.view.xy
-import com.soywiz.korim.color.Colors
-import com.soywiz.korim.font.DefaultTtfFont
-import com.soywiz.korim.font.VectorFont
-import com.soywiz.korim.font.getTextBoundsWithGlyphs
-import com.soywiz.korim.font.readTtfFont
-import com.soywiz.korim.font.toBitmapFont
-import com.soywiz.korim.paint.Stroke
-import com.soywiz.korim.text.DefaultStringTextRenderer
-import com.soywiz.korim.text.HorizontalAlign
-import com.soywiz.korim.text.TextAlignment
-import com.soywiz.korim.text.VerticalAlign
-import com.soywiz.korim.text.aroundPath
-import com.soywiz.korio.file.std.resourcesVfs
-import com.soywiz.korma.geom.shape.buildVectorPath
-import com.soywiz.korma.geom.vector.circle
-import com.soywiz.korma.geom.vector.rect
+import com.soywiz.kds.*
+import com.soywiz.korge.input.*
+import com.soywiz.korge.scene.*
+import com.soywiz.korge.ui.*
+import com.soywiz.korge.view.*
+import com.soywiz.korim.color.*
+import com.soywiz.korim.font.*
+import com.soywiz.korim.paint.*
+import com.soywiz.korim.text.*
+import com.soywiz.korio.file.std.*
+import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.shape.*
 
 class MainTextBounds : Scene() {
     enum class Wrap { NO, CIRCLE }
@@ -54,7 +36,7 @@ class MainTextBounds : Scene() {
             .let {
                 when (wrap) {
                     Wrap.NO -> it
-                    Wrap.CIRCLE -> it.aroundPath(buildVectorPath { this.circle(0.0, 0.0, 256.0) })
+                    Wrap.CIRCLE -> it.aroundPath(buildVectorPath { this.circle(Point(0, 0), 256f) })
                 }
             }
 

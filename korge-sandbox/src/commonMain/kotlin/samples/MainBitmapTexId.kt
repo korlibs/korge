@@ -36,4 +36,7 @@ class MainBitmapTexId : Scene() {
         override var forcedTexTarget: Int = -1
     }
      */
+    override suspend fun SContainer.sceneMain() {
+        TODO("Not yet implemented")
+    }
 }

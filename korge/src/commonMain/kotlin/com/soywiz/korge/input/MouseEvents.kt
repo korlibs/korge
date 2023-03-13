@@ -4,7 +4,6 @@ import com.soywiz.kds.*
 import com.soywiz.klock.*
 import com.soywiz.korev.*
 import com.soywiz.korge.bitmapfont.*
-import com.soywiz.korge.component.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.view.*
 import com.soywiz.korgw.*
@@ -19,7 +18,7 @@ import kotlin.native.concurrent.*
 import kotlin.reflect.*
 
 @OptIn(KorgeInternal::class)
-class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixin(), Closeable {
+class MouseEvents(val view: View) : Extra by Extra.Mixin(), Closeable {
     init {
         view.mouseEnabled = true
     }
@@ -35,7 +34,7 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
             if (!views.input.mouseHitSearch) {
                 views.input.mouseHitSearch = true
                 views.input.mouseHitResult =
-                    views.stage.mouseHitTest(views.globalMouseX, views.globalMouseY)
+                    views.stage.mouseHitTest(views.globalMousePos)
 
                 var view: View? = views.input.mouseHitResult
                 while (view != null) {
@@ -90,7 +89,7 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
                             renderContext.drawText(
                                 debugBmpFont,
                                 lineHeight,
-                                "$mouseHit : ${views.globalMouseX},${views.globalMouseY}",
+                                "$mouseHit : ${views.globalMousePos.x},${views.globalMousePos.y}",
                                 x = 0,
                                 y = yy.toInt(),
                                 filtering = false,
@@ -292,45 +291,33 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
 
     // Global variants (Not related to the STAGE! but to the window coordinates, so can't be translated directly use *Stage variants instead or directly Stage.mouseXY!)
     @KorgeInternal
-    var downPosGlobal = MPoint()
+    var downPosGlobal = Point()
 
     @KorgeInternal
-    var upPosGlobal = MPoint()
+    var upPosGlobal = Point()
 
     @KorgeInternal
-    val startedPosGlobal = MPoint()
+    var startedPosGlobal = Point()
 
     @KorgeInternal
-    val lastPosGlobal = MPoint()
+    var lastPosGlobal = Point()
 
     @KorgeInternal
-    val currentPosGlobal = MPoint()
+    var currentPosGlobal = Point()
 
     // Local variants
-    private val _downPosLocal: MPoint = MPoint()
-    private val _upPosLocal: MPoint = MPoint()
-    private val _startedPosLocal = MPoint()
-    private val _lastPosLocal = MPoint()
-    private val _currentPosLocal = MPoint()
-
-    val startedPosLocal get() = view.globalToLocal(startedPosGlobal, _startedPosLocal)
-    val lastPosLocal get() = view.globalToLocal(lastPosGlobal, _lastPosLocal)
-    val currentPosLocal get() = view.globalToLocal(currentPosGlobal, _currentPosLocal)
-    val downPosLocal get() = view.globalToLocal(downPosGlobal, _downPosLocal)
-    val upPosLocal get() = view.globalToLocal(upPosGlobal, _upPosLocal)
+    val startedPosLocal get() = view.globalToLocal(startedPosGlobal)
+    val lastPosLocal get() = view.globalToLocal(lastPosGlobal)
+    val currentPosLocal get() = view.globalToLocal(currentPosGlobal)
+    val downPosLocal get() = view.globalToLocal(downPosGlobal)
+    val upPosLocal get() = view.globalToLocal(upPosGlobal)
 
     // Stage-based variants
-    private val _downPosStage: MPoint = MPoint()
-    private val _upPosStage: MPoint = MPoint()
-    private val _startedPosStage = MPoint()
-    private val _lastPosStage = MPoint()
-    private val _currentPosStage = MPoint()
-
-    val startedPosStage get() = views.stage.globalToLocal(startedPosGlobal, _startedPosStage)
-    val lastPosStage get() = views.stage.globalToLocal(lastPosGlobal, _lastPosStage)
-    val currentPosStage get() = views.stage.globalToLocal(currentPosGlobal, _currentPosStage)
-    val downPosStage get() = views.stage.globalToLocal(downPosGlobal, _downPosStage)
-    val upPosStage get() = views.stage.globalToLocal(upPosGlobal, _upPosStage)
+    val startedPosStage get() = views.stage.globalToLocal(startedPosGlobal)
+    val lastPosStage get() = views.stage.globalToLocal(lastPosGlobal)
+    val currentPosStage get() = views.stage.globalToLocal(currentPosGlobal)
+    val downPosStage get() = views.stage.globalToLocal(downPosGlobal)
+    val upPosStage get() = views.stage.globalToLocal(upPosGlobal)
 
     var clickedCount = 0
 
@@ -384,10 +371,9 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
 
     override fun toString(): String = lastEvent.toString()
 
-    @Suppress("DuplicatedCode")
-    override fun onMouseEvent(views: Views, event: MouseEvent) {
-        if (!view.mouseEnabled) return
-        this.views = views
+    private val closeable = view.onEvents(*MouseEvent.Type.ALL) { event ->
+        if (!view.mouseEnabled) return@onEvents
+        this.views = event.target as Views
         // Store event
         this.currentEvent = event
         this.lastEvent.copyFrom(event)
@@ -398,7 +384,7 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
         when (event.type) {
             MouseEvent.Type.UP -> {
                 lastEventUp.copyFrom(event)
-                upPosGlobal.copyFrom(views.input.mouse)
+                upPosGlobal = views.input.mousePos
                 upPosTime = PerformanceCounter.reference
                 val elapsedTime = upPosTime - downPosTime
                 if (
@@ -424,7 +410,7 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
 
                 //this.lastEventDown = event
                 downPosTime = PerformanceCounter.reference
-                downPosGlobal.copyFrom(views.input.mouse)
+                downPosGlobal = views.input.mousePos
                 if (downImmediate.hasListeners) {
                     if (isOver) {
                         downImmediate(this@MouseEvents)
@@ -449,14 +435,15 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
         }
     }
 
-    inner class MouseEventsUpdate(override val view: View) : UpdateComponentWithViews,
-        Extra by Extra.Mixin() {
-        override fun update(views: Views, dt: TimeSpan) {
-            this@MouseEvents.update(views, dt)
+    inner class MouseEventsUpdate(val view: View) : Extra by Extra.Mixin() {
+        init {
+            view.addUpdaterWithViews { views, dt ->
+                this@MouseEvents.update(views, dt)
+            }
         }
     }
 
-    val updater = MouseEventsUpdate(view).attach()
+    val updater = MouseEventsUpdate(view)
 
     private fun <T> temporalLastEvent(lastEventNew: MouseEvent?, block: () -> T): T {
         val old = lastEvent
@@ -483,7 +470,7 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
         val overChanged = (lastOver != over)
         val insideChanged = (lastInside != inside)
         val pressingChanged = pressing != lastPressing
-        currentPosGlobal.copyFrom(views.input.mouse)
+        currentPosGlobal = views.input.mousePos
 
         //println("$hitTest, ${input.mouse}, $over, $pressing, $overChanged, $pressingChanged")
 
@@ -501,7 +488,7 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
             out(this)
         }
         if (pressingChanged && pressing) {
-            startedPosGlobal.copyFrom(currentPosGlobal)
+            startedPosGlobal = currentPosGlobal
             if (over) {
                 down(this)
             }
@@ -538,12 +525,12 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
         lastOver = over
         lastInside = inside
         lastPressing = pressing
-        lastPosGlobal.copyFrom(currentPosGlobal)
+        lastPosGlobal = currentPosGlobal
         clickedCount = 0
     }
 
     override fun close() {
-        this.detach()
+        closeable.close()
     }
 }
 
@@ -554,19 +541,15 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
 
 //var View.mouseEnabled by Extra.Property { true }
 
-@ThreadLocal // @TODO: Is this required?
-val View.mouse by Extra.PropertyThis<View, MouseEvents> {
-    this.getOrCreateComponentMouse<MouseEvents> { MouseEvents(this) }
-}
+val View.mouse: MouseEvents by Extra.PropertyThis { MouseEvents(this) }
 
-inline fun View.newMouse(callback: MouseEvents.() -> Unit): MouseEvents {
-    return MouseEvents(this).also {
-        this.addComponent(it)
-        callback(it)
-    }
-}
+inline fun View.newMouse(callback: MouseEvents.() -> Unit): MouseEvents =
+    MouseEvents(this).also { callback(it) }
 
-inline fun <T> View.mouse(callback: MouseEvents.() -> T): T = mouse.run(callback)
+inline fun <T : View> T.mouse(callback: MouseEvents.() -> Unit): T {
+    mouse.run(callback)
+    return this
+}
 
 @PublishedApi
 internal inline fun <T : View?> T?.doMouseEvent(
@@ -589,9 +572,9 @@ inline fun <T : View> T.onOutOnOver(
     noinline out: @EventsDslMarker (MouseEvents) -> Unit,
     noinline over: @EventsDslMarker (MouseEvents) -> Unit
 ): T {
-    var component: UpdateComponentWithViews? = null
+    var component: Closeable? = null
     onOut { events ->
-        component?.detach()
+        component?.close()
         component = null
         out(events)
     }

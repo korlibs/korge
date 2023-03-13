@@ -51,8 +51,8 @@ open class UIScrollableArea(
     val clipContainer = clipContainer(viewportWidth, viewportHeight)
     val container = clipContainer.fixedSizeContainer(contentWidth, contentHeight)
 
-    val horScrollBar = uiScrollBar(width, buttonSize) { onChange { this@UIScrollableArea.onMoved() } }
-    val verScrollBar = uiScrollBar(buttonSize, height) { onChange { this@UIScrollableArea.onMoved() } }
+    val horScrollBar = uiOldScrollBar(width, buttonSize) { onChange { this@UIScrollableArea.onMoved() } }
+    val verScrollBar = uiOldScrollBar(buttonSize, height) { onChange { this@UIScrollableArea.onMoved() } }
 
     init {
         calculateSizes()

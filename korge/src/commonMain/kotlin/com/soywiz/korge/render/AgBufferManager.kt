@@ -1,9 +1,6 @@
 package com.soywiz.korge.render
 
-import com.soywiz.kds.FastIdentityMap
-import com.soywiz.kds.Pool
-import com.soywiz.kds.getAndRemove
-import com.soywiz.kds.getOrPut
+import com.soywiz.kds.*
 import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.kmem.*
 import com.soywiz.korag.*
@@ -15,7 +12,7 @@ class AgBufferManager(
     val ag: AG
 ) {
     private val buffers = FastIdentityMap<AgCachedBuffer, AGBuffer>()
-    private val referencedBuffersSinceGC = AgFastSet<AgCachedBuffer>()
+    private val referencedBuffersSinceGC = FastSmallSet<AgCachedBuffer>()
     private val bufferPool = Pool { AGBuffer() }
 
     fun getBuffer(cached: AgCachedBuffer): AGBuffer {

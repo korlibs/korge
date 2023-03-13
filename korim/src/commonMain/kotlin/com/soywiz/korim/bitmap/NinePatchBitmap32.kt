@@ -1,20 +1,14 @@
 package com.soywiz.korim.bitmap
 
-import com.soywiz.kds.Extra
-import com.soywiz.kds.FastArrayList
-import com.soywiz.kds.iterators.fastForEachWithIndex
-import com.soywiz.kds.toFastList
-import com.soywiz.kmem.clamp
+import com.soywiz.kds.*
+import com.soywiz.kds.iterators.*
+import com.soywiz.kmem.*
 import com.soywiz.korim.color.*
-import com.soywiz.korim.format.ImageDecodingProps
-import com.soywiz.korim.format.ImageFormat
-import com.soywiz.korim.format.readBitmap
-import com.soywiz.korio.file.VfsFile
-import com.soywiz.korio.util.length
-import com.soywiz.korma.geom.MRectangleInt
-import com.soywiz.korma.geom.vector.rect
-import kotlin.math.max
-import kotlin.math.min
+import com.soywiz.korim.format.*
+import com.soywiz.korio.file.*
+import com.soywiz.korio.util.*
+import com.soywiz.korma.geom.*
+import kotlin.math.*
 
 class NinePatchInfo constructor(
 	val xranges: List<Pair<Boolean, IntRange>>,

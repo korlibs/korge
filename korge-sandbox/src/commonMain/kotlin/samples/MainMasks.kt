@@ -1,31 +1,19 @@
 package samples
 
-import com.soywiz.klock.seconds
+import com.soywiz.klock.*
 import com.soywiz.korge.animate.*
-import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.tween.get
-import com.soywiz.korge.view.SContainer
-import com.soywiz.korge.view.centered
-import com.soywiz.korge.view.circle
-import com.soywiz.korge.view.filter.BlurFilter
-import com.soywiz.korge.view.filter.ColorMatrixFilter
-import com.soywiz.korge.view.filter.DropshadowFilter
-import com.soywiz.korge.view.filter.IdentityFilter
-import com.soywiz.korge.view.filter.backdropFilters
-import com.soywiz.korge.view.filter.filter
-import com.soywiz.korge.view.filter.filters
-import com.soywiz.korge.view.mask.mask
-import com.soywiz.korge.view.roundRect
-import com.soywiz.korge.view.solidRect
-import com.soywiz.korge.view.visible
-import com.soywiz.korge.view.xy
-import com.soywiz.korim.color.Colors
-import com.soywiz.korim.paint.LinearGradientPaint
-import com.soywiz.korio.async.launchImmediately
-import com.soywiz.korma.geom.shape.buildVectorPath
-import com.soywiz.korma.geom.vector.VectorPath
-import com.soywiz.korma.geom.vector.circle
-import com.soywiz.korma.interpolation.Easing
+import com.soywiz.korge.scene.*
+import com.soywiz.korge.tween.*
+import com.soywiz.korge.view.*
+import com.soywiz.korge.view.filter.*
+import com.soywiz.korge.view.mask.*
+import com.soywiz.korim.color.*
+import com.soywiz.korim.paint.*
+import com.soywiz.korio.async.*
+import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.shape.*
+import com.soywiz.korma.geom.vector.*
+import com.soywiz.korma.interpolation.*
 
 class MainMasks : Scene() {
     override suspend fun SContainer.sceneMain() {
@@ -35,8 +23,8 @@ class MainMasks : Scene() {
 
         solidRect(width, height, Colors.GREEN)
 
-        val fill1 = LinearGradientPaint(0, 0, 200, 200).add(0.0, Colors.RED).add(1.0, Colors.BLUE)
-        var maskView = circle(50.0).xy(50, 50).visible(false)
+        val fill1 = LinearGradientPaint(0, 0, 200, 200).add(Colors.RED, Colors.BLUE)
+        var maskView = fastEllipse(Size(100.0, 100.0)).xy(50, 50).visible(false)
         val circle1 = circle(100.0, fill = fill1)
             //val circle1 = solidRect(200, 200, Colors.PURPLE)
             .filters(DropshadowFilter())
@@ -66,10 +54,10 @@ class MainMasks : Scene() {
             val width = this.width
             val height = this.height
             val path = buildVectorPath(VectorPath()) {
-                circle(width * 0.5, height * 0.5, 300.0)
+                circle(Point(width * 0.5, height * 0.5), 300f)
             }
             animate(looped = true) {
-                tween(circle3::ipos[path], time = 2.seconds, easing = Easing.LINEAR)
+                tween(circle3::pos[path], time = 2.seconds, easing = Easing.LINEAR)
             }
         }
 
@@ -77,8 +65,10 @@ class MainMasks : Scene() {
         launchImmediately {
             animate(looped = true) {
                 //parallel {
-                tween(maskView::radius[150.0], time = 1.seconds)
-                tween(maskView::radius[10.0], time = 1.seconds)
+                tween(maskView::radius[Size(150, 150)], time = 1.seconds)
+                //tween(maskView::radius[Size(20, 20)], time = 1.seconds)
+                tween(maskView::radius[Size(20, 20)], time = 1.seconds)
+                //tween(maskView::radiusAvg[20], time = 1.seconds)
                 //}
             }
         }

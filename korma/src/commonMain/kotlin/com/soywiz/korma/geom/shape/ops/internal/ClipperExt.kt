@@ -1,19 +1,11 @@
 package com.soywiz.korma.geom.shape.ops.internal
 
-import com.soywiz.korma.geom.IPoint
-import com.soywiz.korma.geom.IPointArrayList
-import com.soywiz.korma.geom.PointArrayList
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.shape.*
-import com.soywiz.korma.geom.toPoints
-import com.soywiz.korma.geom.vector.LineCap
-import com.soywiz.korma.geom.vector.LineJoin
-import com.soywiz.korma.geom.vector.VectorPath
-import com.soywiz.korma.geom.vector.lineTo
-import com.soywiz.korma.geom.vector.moveTo
-import kotlin.math.max
-import kotlin.math.min
+import com.soywiz.korma.geom.vector.*
+import kotlin.math.*
 
-fun Path.toPoints(): List<IPoint> = (0 until this.size).map { this@toPoints[it] }
+fun Path.toPoints(): List<MPoint> = (0 until this.size).map { this@toPoints[it] }
 
 fun Path.toShape2d(): Shape2d {
     if (this.size == 4) {
@@ -45,8 +37,8 @@ fun Paths.toShape2d(): Shape2d {
     }
 }
 
-fun IPointArrayList.toClipperPath() = Path(toPoints())
-fun List<IPointArrayList>.toClipperPaths() = Paths(this.map { it.toClipperPath() })
+fun PointList.toClipperPath() = Path(toPoints())
+fun List<PointList>.toClipperPaths() = Paths(this.map { it.toClipperPath() })
 fun VectorPath.toClipperPaths() = this.toPathPointList().toClipperPaths()
 
 fun Shape2d.clipperOp(other: Shape2d, op: Clipper.ClipType): Shape2d {
@@ -79,8 +71,8 @@ fun LineJoin.toClipper(): Clipper.JoinType = when (this) {
     LineJoin.MITER -> Clipper.JoinType.MITER
 }
 
-fun Paths.toPathList(): List<IPointArrayList> {
-    val out = arrayListOf<IPointArrayList>()
+fun Paths.toPathList(): List<PointList> {
+    val out = arrayListOf<PointList>()
     for (path in this) {
         val points = PointArrayList()
         for (point in path) {
@@ -98,9 +90,9 @@ fun Paths.toVectorPath(): VectorPath {
             for (point in path) {
                 if (first) {
                     first = false
-                    moveTo(point)
+                    moveTo(point.point)
                 } else {
-                    lineTo(point)
+                    lineTo(point.point)
                 }
             }
             close()

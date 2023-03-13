@@ -11,7 +11,7 @@ import com.soywiz.korge.tween.tween
 import com.soywiz.korge.view.*
 import com.soywiz.korim.color.Colors
 import com.soywiz.korma.geom.degrees
-import com.soywiz.korma.interpolation.Easing
+import com.soywiz.korma.interpolation.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -23,11 +23,11 @@ class AnimatorTest : ViewsForTesting() {
         animate(completeOnCancel = false) {
             moveTo(view, 100, 0)
             moveBy(view, y = +100.0)
-            block { log += "${view.ipos}" }
+            block { log += "${view.pos}" }
             moveBy(view, x = +10.0)
             moveTo(view, x = { view.x + 10 })
         }
-        assertEquals("(120, 100)", view.ipos.toString())
+        assertEquals("(120, 100)", view.pos.toString())
         assertEquals("[(100, 100)]", log.toString())
     }
 
@@ -40,9 +40,9 @@ class AnimatorTest : ViewsForTesting() {
         //        180
         //        -180
 
-        assertEquals(202.5.degrees, _interpolateAngle(0.25, 180.degrees, (-90).degrees))
-        assertEquals(0.degrees, _interpolateAngle(0.5, 350.degrees, (10).degrees))
-        assertEquals(0.degrees, _interpolateAngle(0.5, 10.degrees, (350).degrees))
+        assertEquals(202.5.degrees, _interpolateAngle(0.25.toRatio(), 180.degrees, (-90).degrees))
+        assertEquals(0.degrees, _interpolateAngle(0.5.toRatio(), 350.degrees, (10).degrees))
+        assertEquals(0.degrees, _interpolateAngle(0.5.toRatio(), 10.degrees, (350).degrees))
     }
 
     @Test

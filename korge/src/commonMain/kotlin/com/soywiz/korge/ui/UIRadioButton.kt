@@ -1,7 +1,10 @@
 package com.soywiz.korge.ui
 
+import com.soywiz.korge.render.*
+import com.soywiz.korge.style.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
+import com.soywiz.korma.geom.*
 
 class UIRadioButtonGroup {
     private var mutableButtons = hashSetOf<UIRadioButton>()
@@ -41,7 +44,9 @@ open class UIRadioButton(
     checked: Boolean = false,
     group: UIRadioButtonGroup = UIRadioButtonGroup(),
     text: String = "Radio Button",
-) : UIBaseCheckBox<UIRadioButton>(width, height, checked, text, UIBaseCheckBoxSkin.Kind.RADIO) {
+) : UIBaseCheckBox<UIRadioButton>(width, height, checked, text, UIRadioButton) {
+    companion object : Kind()
+
     var group: UIRadioButtonGroup = group
         set(value) {
             if (field !== value) {
@@ -72,12 +77,5 @@ open class UIRadioButton(
     override fun onComponentClick() {
         checked = true
         focused = true
-    }
-
-    override fun getNinePatch(over: Boolean): NinePatchBmpSlice {
-        return when {
-            over -> radioOver
-            else -> radioNormal
-        }
     }
 }

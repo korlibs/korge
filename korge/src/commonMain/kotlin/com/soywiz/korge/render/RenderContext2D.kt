@@ -1,21 +1,18 @@
 package com.soywiz.korge.render
 
-import com.soywiz.kds.Extra
-import com.soywiz.kds.Pool
-import com.soywiz.klogger.Logger
+import com.soywiz.kds.*
+import com.soywiz.klogger.*
 import com.soywiz.korag.*
 import com.soywiz.korag.shader.*
-import com.soywiz.korge.internal.KorgeInternal
+import com.soywiz.korge.internal.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.shape.*
-import com.soywiz.korma.geom.triangle.TriangleList
-import com.soywiz.korma.geom.vector.VectorPath
-import com.soywiz.korma.geom.vector.ellipse
-import com.soywiz.korma.geom.vector.strokeToFill
-import kotlin.native.concurrent.SharedImmutable
+import com.soywiz.korma.geom.triangle.*
+import com.soywiz.korma.geom.vector.*
+import kotlin.native.concurrent.*
 
 @SharedImmutable
 private val logger = Logger("RenderContext2D")
@@ -46,6 +43,10 @@ class RenderContext2D(
 	init { logger.trace { "RenderContext2D[0]" } }
 
     val ctx: RenderContext get() = batch.ctx
+
+    var size: Size = Size(0.0, 0.0)
+    val width: Double get() = size.widthD
+    val height: Double get() = size.heightD
 
     inline fun getTexture(slice: BmpSlice): TextureCoords = agBitmapTextureManager.getTexture(slice)
 
@@ -107,13 +108,24 @@ class RenderContext2D(
         }
     }
 
+    inline fun <T> keepSize(crossinline callback: () -> T): T {
+        val size = this.size
+        try {
+            return callback()
+        } finally {
+            this.size = size
+        }
+    }
+
     /** Executes [callback] restoring the transform matrix, the [blendMode] and the [multiplyColor] at the end */
 	inline fun <T> keep(crossinline callback: () -> T): T {
 		return keepMatrix {
 			keepBlendMode {
 				keepColor {
                     keepFiltering {
-                        callback()
+                        keepSize {
+                            callback()
+                        }
                     }
 				}
 			}
@@ -216,44 +228,42 @@ class RenderContext2D(
         width: Double,
         height: Double,
         program: Program,
-        uniforms: AGUniformValues,
-        padding: IMargin = IMargin.EMPTY,
+        padding: Margin = Margin.ZERO,
     ) {
         val ctx = batch.ctx
         //programUniforms
         ctx.useBatcher { batch ->
             //batch.texture1212
-            batch.setTemporalUniforms(uniforms) {
-                //batch.drawQuad(
-                //    vertices, ctx.getTex(baseBitmap).base, smoothing, renderBlendMode,
-                //    program = FastMaterialBackground.PROGRAM,
-                //    premultiplied = baseBitmap.base.premultiplied, wrap = wrapTexture
-                //)
+            //batch.drawQuad(
+            //    vertices, ctx.getTex(baseBitmap).base, smoothing, renderBlendMode,
+            //    program = FastMaterialBackground.PROGRAM,
+            //    premultiplied = baseBitmap.base.premultiplied, wrap = wrapTexture
+            //)
 
-                val L = (x - padding.left).toFloat()
-                val T = (y - padding.top).toFloat()
-                val R = (width + padding.leftPlusRight).toFloat()
-                val B = (height + padding.topPlusBottom).toFloat()
+            val L = (x - padding.left).toFloat()
+            val T = (y - padding.top).toFloat()
+            val R = (width + padding.leftPlusRight).toFloat()
+            val B = (height + padding.topPlusBottom).toFloat()
 
-                val l = -padding.left.toFloat()
-                val t = -padding.top.toFloat()
-                val r = (width + padding.right).toFloat()
-                val b = (height + padding.bottom).toFloat()
+            val l = -padding.left
+            val t = -padding.top
+            val r = (width + padding.right).toFloat()
+            val b = (height + padding.bottom).toFloat()
 
-                val vertices = TexturedVertexArray(6, TexturedVertexArray.QUAD_INDICES)
-                vertices.quad(
-                    0,
-                    L, T, R, B,
-                    m,
-                    l, t,
-                    r, t,
-                    l, b,
-                    r, b,
-                    multiplyColor,
-                )
-                batch.setStateFast(Bitmaps.white, filtering, blendMode, program, icount = 6, vcount = 4)
-                batch.drawVertices(vertices, null)
-            }
+            val vertices = TexturedVertexArray(6, TexturedVertexArray.QUAD_INDICES)
+            vertices.quad(
+                0,
+                L, T, R, B,
+                m,
+                l, t,
+                r, t,
+                l, b,
+                r, b,
+                multiplyColor,
+            )
+            batch.setStateFast(Bitmaps.white, filtering, blendMode, program, icount = 6, vcount = 4)
+            batch.drawVertices(vertices, null)
+            ctx.flush(RenderContext.FlushKind.STATE)
         }
     }
 
@@ -307,6 +317,7 @@ class RenderContext2D(
 inline fun View.renderCtx2d(ctx: RenderContext, crossinline block: (RenderContext2D) -> Unit) {
     ctx.useCtx2d { context ->
         context.keep {
+            context.size = Size(this@renderCtx2d.width, this@renderCtx2d.height)
             context.blendMode = renderBlendMode
             context.multiplyColor = renderColorMul
             context.setMatrix(globalMatrix)
