@@ -8,7 +8,7 @@ import kotlin.jvm.JvmStatic
 import kotlin.native.concurrent.ThreadLocal
 import kotlin.reflect.KClass
 
-class ReloadClassContext(val injector: AsyncInjector, val refreshedClasses: Set<String>)
+class ReloadClassContext(val injector: AsyncInjector, val refreshedClasses: Set<String>, val rootFolders: List<String>)
 
 internal open class KorgeReloadInternalImpl {
     open fun <T : Any> getReloadedClass(clazz: KClass<T>, context: ReloadClassContext): KClass<T> = clazz
@@ -23,9 +23,9 @@ object KorgeReload {
 
     @JvmStatic
     @Suppress("unused") // This is called from [com.soywiz.korge.reloadagent.KorgeReloadAgent]
-    fun triggerReload(classes: List<String>, success: Boolean) {
+    fun triggerReload(classes: List<String>, success: Boolean, rootFolders: List<String>) {
         println("KorgeReloadAgent detected a class change. Reload: $classes")
-        KorgeReload_eventDispatcher?.dispatch(ReloadEvent(classes.toSet(), success))
+        KorgeReload_eventDispatcher?.dispatch(ReloadEvent(classes.toSet(), success, rootFolders))
     }
 
     fun registerEventDispatcher(eventDispatcher: EventListener) {
@@ -45,13 +45,14 @@ object KorgeReload {
 data class ReloadEvent(
     val refreshedClasses: Set<String>,
     /** Was able to reload all classes successfully in the existing class loader */
-    val reloadSuccess: Boolean
+    val reloadSuccess: Boolean,
+    val rootFolders: List<String>
 ) : Event(), TEvent<ReloadEvent> {
     override val type: EventType<ReloadEvent> = ReloadEvent
     companion object : EventType<ReloadEvent>
 
     val doFullReload: Boolean get() = !reloadSuccess
-    fun <T : Any> getReloadedClass(clazz: KClass<T>, injector: AsyncInjector): KClass<T> = KorgeReloadInternal.getReloadedClass(clazz, ReloadClassContext(injector, refreshedClasses))
+    fun <T : Any> getReloadedClass(clazz: KClass<T>, injector: AsyncInjector): KClass<T> = KorgeReloadInternal.getReloadedClass(clazz, ReloadClassContext(injector, refreshedClasses, rootFolders))
     fun transferKeepProperties(old: Any, new: Any) = KorgeReloadInternal.transferKeepProperties(old, new)
 }
 
