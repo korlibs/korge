@@ -51,11 +51,11 @@ fun Project.configureEsbuild() {
     val browserEsbuildResources = tasks.createThis<Copy>("browserEsbuildResources") {
         duplicatesStrategy = DuplicatesStrategy.EXCLUDE
         from(project.tasks.getByName("jsProcessResources").outputs.files)
-        afterEvaluate {
-            project.tasks.findByName("korgeProcessedResourcesJsMain")?.outputs?.files?.let {
-                from(it)
-            }
-        }
+        //afterEvaluate {
+        //    project.tasks.findByName(getKorgeProcessResourcesTaskName("js", "main"))?.outputs?.files?.let {
+        //        from(it)
+        //    }
+        //}
         //for (sourceSet in gkotlin.js().compilations.flatMap { it.kotlinSourceSets }) from(sourceSet.resources)
         into(wwwFolder)
     }

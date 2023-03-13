@@ -15,7 +15,7 @@ internal actual val KorgeReloadInternal: KorgeReloadInternalImpl = object : Korg
     override fun <T : Any> getReloadedClass(clazz: KClass<T>, context: ReloadClassContext): KClass<T> {
         println("### KorgeReload_getReloadedClass: $clazz")
         val oldClass = clazz
-        val newClass = KorgeReloadClassLoader().loadClass(oldClass.qualifiedName).kotlin as KClass<T>
+        val newClass = KorgeReloadClassLoader(extraFolders = context.rootFolders).loadClass(oldClass.qualifiedName).kotlin as KClass<T>
         context.injector.jvmRemoveMappingsByClassName(context.refreshedClasses)
         context.injector.removeMapping(oldClass)
         context.injector.root.jvmAutomapping()
@@ -52,18 +52,19 @@ internal actual val KorgeReloadInternal: KorgeReloadInternalImpl = object : Korg
 }
 
 class KorgeReloadClassLoader(
-    val folders: List<File> = System.getProperty("java.class.path")
-        .split(File.pathSeparator)
-        .map { File(it) }
-        .filter { !it.name.endsWith(".jar") }
-    , parent: ClassLoader? = null
+    val extraFolders: List<String> = emptyList(),
+    val allEntries: List<File> = (extraFolders + System.getProperty("java.class.path").split(File.pathSeparator)).map { File(it).absoluteFile }.distinct(),
+    val jars: List<File> = allEntries.filter { it.name.endsWith(".jar") },
+    val folders: List<File> = allEntries.filter { !it.name.endsWith(".jar") },
+    parent: ClassLoader? = null
 ) : ClassLoader(parent ?: ClassLoader.getSystemClassLoader()) {
     companion object {
         val logger = Logger("KorgeReloadClassLoader")
     }
 
     init {
-        logger.info { "KorgeReloadClassLoader:\n${folders.joinToString("\n")}" }
+        logger.info { "KorgeReloadClassLoader.jars:\n${jars.joinToString("\n")}" }
+        logger.info { "KorgeReloadClassLoader.folders:\n${folders.joinToString("\n")}" }
     }
 
     override fun loadClass(name: String, resolve: Boolean): Class<*> {

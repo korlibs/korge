@@ -2,10 +2,19 @@ package com.soywiz.korge.gradle.targets.jvm
 
 import com.soywiz.korge.gradle.*
 import com.soywiz.korge.gradle.targets.*
+import org.gradle.api.*
+import org.gradle.api.artifacts.*
 import org.gradle.api.file.*
 import org.gradle.api.tasks.*
 import org.gradle.jvm.tasks.*
 import java.io.*
+
+fun Project.findAllProjectDependencies(visited: MutableSet<Project> = mutableSetOf()): Set<Project> {
+    if (this in visited) return visited
+    visited.add(this)
+    val dependencies = project.configurations.flatMap { it.dependencies.withType(ProjectDependency::class.java) }.filterIsInstance<ProjectDependency>()
+    return (dependencies.flatMap { it.dependencyProject.findAllProjectDependencies(visited) } + this).toSet()
+}
 
 open class KorgeJavaExecWithAutoreload : KorgeJavaExec() {
     @get:Input
@@ -19,10 +28,10 @@ open class KorgeJavaExecWithAutoreload : KorgeJavaExec() {
         const val CMD_SEPARATOR = "<@/@>"
     }
 
-    private var projectPath: String = project.path
+    private lateinit var projectPaths: List<String>
     private var rootDir: File = project.rootProject.rootDir
     @get:InputFiles
-    lateinit var rootJars: FileCollection
+    lateinit var rootJars: List<File>
     @get:InputFile
     //private var reloadAgentConfiguration: Configuration = project.configurations.getByName(KORGE_RELOAD_AGENT_CONFIGURATION_NAME)//.resolve().first()
     lateinit var reloadAgentJar: File
@@ -30,28 +39,41 @@ open class KorgeJavaExecWithAutoreload : KorgeJavaExec() {
     init {
         //val reloadAgent = project.findProject(":korge-reload-agent")
         //if (reloadAgent != null)
-        rootJars = (project.tasks.findByName("compileKotlinJvm") as org.jetbrains.kotlin.gradle.tasks.KotlinCompile).outputs.files
+        //project.dependencies.add()
+        project.afterEvaluate {
+            val allProjects = project.findAllProjectDependencies()
+            //projectPaths = allProjects.map { it.path }
+            projectPaths = listOf(project.path)
+            rootJars = allProjects.map { File(it.buildDir, "classes/kotlin/jvm/main") }
+            //println("allProjects=${allProjects.map { it.name }}")
+            //println("projectPaths=$projectPaths")
+            //println("rootJars=\n${rootJars.toList().joinToString("\n")}")
+        }
+        /*
+        project.afterEvaluate {
+            project.afterEvaluate {
+                project.afterEvaluate {
+                    //project.configurations.getByName("compile")
+                    //println("*****" + project.findAllProjectDependencies())
+                    val allProjects = project.findAllProjectDependencies()
+                    val allProjectsWithCompileKotinJvm = allProjects.filter { it.tasks.findByName("compileKotlinJvm") != null }
+                    projectPaths = allProjectsWithCompileKotinJvm.map { it.path }
+                    rootJars = allProjectsWithCompileKotinJvm
+                        .mapNotNull { (it.tasks.findByName("compileKotlinJvm") as? org.jetbrains.kotlin.gradle.tasks.KotlinCompile?)?.outputs?.files }
+                        .reduce { a, b -> a + b }
+                    println("allProjects=${allProjects.map { it.name }}")
+                    println("allProjectsWithCompileKotinJvm=${allProjectsWithCompileKotinJvm.map { it.name }}")
+                    println("rootJars=\n${rootJars.toList().joinToString("\n")}")
+                    //println("::::" + project.configurations.toList())
+                }
+            }
+        }
+        */
         val reloadAgent = project.findProject(":korge-reload-agent")
         reloadAgentJar = when {
             reloadAgent != null -> (project.rootProject.tasks.getByPath(":korge-reload-agent:jar") as Jar).outputs.files.files.first()
             else -> project.configurations.getByName(KORGE_RELOAD_AGENT_CONFIGURATION_NAME).resolve().first()
         }
-    }
-
-    override fun autoconfigure() {
-        //super.autoconfigure()
-        ////println("---------------")
-        ////println((project.tasks.findByName("compileKotlinJvm") as org.jetbrains.kotlin.gradle.tasks.KotlinCompile).outputs.files.toList())
-//
-        //project.afterEvaluate {
-        //    //println("++++++++++++++")
-        //    rootJars = (project.tasks.findByName("compileKotlinJvm") as org.jetbrains.kotlin.gradle.tasks.KotlinCompile).outputs.files
-        //    val reloadAgent = project.findProject(":korge-reload-agent")
-        //    reloadAgentJar = when {
-        //        reloadAgent != null -> (project.rootProject.tasks.getByPath(":korge-reload-agent:jar") as Jar).outputs.files.files.first()
-        //        else -> project.configurations.getByName(KORGE_RELOAD_AGENT_CONFIGURATION_NAME).resolve().first()
-        //    }
-        //}
     }
 
     override fun exec() {
@@ -80,7 +102,11 @@ open class KorgeJavaExecWithAutoreload : KorgeJavaExec() {
                         add("--configuration-cache-problems=warn")
                     }
                     add("-t")
-                    add("${projectPath.trimEnd(':')}:compileKotlinJvmAndNotify")
+                    add("compileKotlinJvm")
+                    //add("compileKotlinJvmAndNotify")
+                    for (projectPath in projectPaths) {
+                        add("${projectPath.trimEnd(':')}:compileKotlinJvmAndNotify")
+                    }
                 }.joinToString(CMD_SEPARATOR),
                 "$enableRedefinition",
                 rootJars.joinToString(CMD_SEPARATOR) { it.absolutePath }
@@ -92,11 +118,8 @@ open class KorgeJavaExecWithAutoreload : KorgeJavaExec() {
     }
 }
 
-open class KorgeJavaExec : JavaExec() {
-    //dependsOn(getKorgeProcessResourcesTaskName("jvm", "main"))
-
-    @get:InputFiles
-    val korgeClassPath: FileCollection = ArrayList<FileCollection>().apply {
+fun Project.getKorgeClassPath(): FileCollection {
+    return ArrayList<FileCollection>().apply {
         val mainJvmCompilation = project.mainJvmCompilation
         add(mainJvmCompilation.runtimeDependencyFiles)
         add(mainJvmCompilation.compileDependencyFiles)
@@ -109,10 +132,13 @@ open class KorgeJavaExec : JavaExec() {
         //add(project.files().from((project.tasks.findByName(jvmProcessedResourcesTaskName) as KorgeProcessedResourcesTask).processedResourcesFolder))
     }
         .reduceRight { l, r -> l + r }
+}
 
-    open fun autoconfigure() {
+open class KorgeJavaExec : JavaExec() {
+    //dependsOn(getKorgeProcessResourcesTaskName("jvm", "main"))
 
-    }
+    @get:InputFiles
+    val korgeClassPath: FileCollection = project.getKorgeClassPath()
 
     override fun exec() {
         val firstThread = firstThread
@@ -145,6 +171,26 @@ open class KorgeJavaExec : JavaExec() {
         // https://github.com/korlibs/korge-plugins/issues/25
     }
 }
+
+/*
+open class KorgeJavaExec : JavaExec() {
+    private val jvmCompilation get() = project.kotlin.targets.getByName("jvm").compilations as NamedDomainObjectSet<*>
+    private val mainJvmCompilation get() = jvmCompilation.getByName("main") as org.jetbrains.kotlin.gradle.plugin.mpp.KotlinJvmCompilation
+
+    @get:InputFiles
+    val korgeClassPath: FileCollection = mainJvmCompilation.runtimeDependencyFiles + mainJvmCompilation.compileDependencyFiles + mainJvmCompilation.output.allOutputs + mainJvmCompilation.output.classesDirs
+
+    override fun exec() {
+        systemProperties = (System.getProperties().toMutableMap() as MutableMap<String, Any>) - "java.awt.headless"
+        if (!JvmAddOpens.beforeJava9) jvmArgs(*JvmAddOpens.createAddOpensTypedArray())
+        classpath = korgeClassPath
+        super.exec()
+        //project.afterEvaluate {
+        //if (firstThread == true && OS.isMac) task.jvmArgs("-XstartOnFirstThread")
+        //}
+    }
+}
+*/
 
 /*
 open class KorgeJavaExec : JavaExec() {

@@ -16,7 +16,18 @@ import org.jetbrains.kotlin.gradle.dsl.*
 import java.io.*
 import java.net.*
 
-class KorgeGradleApply(val project: Project) {
+abstract class KorgeGradleAbstractPlugin(val projectType: ProjectType) : Plugin<Project> {
+    override fun apply(project: Project) {
+        project.configureAutoVersions()
+        project.configureBuildScriptClasspathTasks()
+        KorgeGradleApply(project, projectType).apply(includeIndirectAndroid = true)
+    }
+}
+
+open class KorgeGradlePlugin : KorgeGradleAbstractPlugin(projectType = ProjectType.EXECUTABLE)
+open class KorgeLibraryGradlePlugin : KorgeGradleAbstractPlugin(projectType = ProjectType.LIBRARY)
+
+class KorgeGradleApply(val project: Project, val projectType: ProjectType) {
 	fun apply(includeIndirectAndroid: Boolean = true) = project {
         // @TODO: Doing this disables the ability to use configuration cache
 		//System.setProperty("java.awt.headless", "true")
@@ -39,11 +50,11 @@ class KorgeGradleApply(val project: Project) {
             }
         }
 
-        logger.info("Korge Gradle plugin: ${BuildVersions.ALL}")
+        logger.info("Korge Gradle plugin: ${BuildVersions.ALL}, projectType=$projectType")
 
         KorgeVersionsTask.registerShowKorgeVersions(project)
 
-        project.korge.init(includeIndirectAndroid)
+        project.korge.init(includeIndirectAndroid, projectType)
 
         project.configureIdea()
 		project.addVersionExtension()
@@ -118,20 +129,10 @@ class KorgeGradleApply(val project: Project) {
 	}
 }
 
-open class KorgeGradlePlugin : Plugin<Project> {
-	override fun apply(project: Project) {
-        project.configureAutoVersions()
-
-        project.configureBuildScriptClasspathTasks()
-
-		//TODO PABLO changed to have the android tasks enabled again
-		KorgeGradleApply(project).apply(includeIndirectAndroid = true)
-
-        //for (res in project.getResourcesFolders()) println("- $res")
-	}
-}
-
 fun Project.configureAutoVersions() {
+    val korlibsConfigureAutoVersions = "korlibsConfigureAutoVersions"
+    if (rootProject.extra.has(korlibsConfigureAutoVersions)) return
+    rootProject.extra.set(korlibsConfigureAutoVersions, true)
     allprojectsThis {
         configurations.all {
             if (it.name == KORGE_RELOAD_AGENT_CONFIGURATION_NAME) return@all

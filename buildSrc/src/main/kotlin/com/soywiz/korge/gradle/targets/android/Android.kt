@@ -129,9 +129,9 @@ fun Project.installAndroidRun(dependsOnList: List<String>, direct: Boolean) {
                 installAndroidTask.dependsOn(dependsOnTaskName)
             }
             installAndroidTask.group = GROUP_KORGE_INSTALL
-            installAndroidTask.dependsOn("korgeProcessedResourcesJvmMain")
-            installAndroidTask.dependsOn("korgeProcessedResourcesMetadataMain")
 
+            //installAndroidTask.dependsOn(getKorgeProcessResourcesTaskName("jvm", "main"))
+            //installAndroidTask.dependsOn(getKorgeProcessResourcesTaskName("metadata", "main"))
 
             tasks.createTyped<DefaultTask>("runAndroid$suffixDevice$suffixDebug") {
                 group = GROUP_KORGE_RUN
