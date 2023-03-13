@@ -41,15 +41,27 @@ fun Project.configureJvm() {
         }
     }
 
-	project.tasks.createThis<KorgeJavaExec>("runJvm") {
-		group = GROUP_KORGE_RUN
-		dependsOn("jvmMainClasses")
-		project.afterEvaluate {
-			val beforeJava9 = JvmAddOpens.beforeJava9
-		    if (!beforeJava9) jvmArgs(project.korge.javaAddOpens)
-			mainClass.set(korge.realJvmMainClassName)
-		}
-	}
+	configureJvmRunJvm(isRootKorlibs = false)
+	addProguard()
+	configureJvmTest()
+
+    val jvmProcessResources = tasks.findByName("jvmProcessResources") as? Copy?
+    jvmProcessResources?.duplicatesStrategy = org.gradle.api.file.DuplicatesStrategy.INCLUDE
+}
+
+fun Project.configureJvmRunJvm(isRootKorlibs: Boolean) {
+    val project = this
+
+    // https://www.baeldung.com/java-instrumentation
+    project.tasks.createThis<KorgeJavaExec>("runJvm") {
+        group = GROUP_KORGE_RUN
+        dependsOn("jvmMainClasses")
+        project.afterEvaluate {
+            val beforeJava9 = JvmAddOpens.beforeJava9
+            if (!beforeJava9) jvmArgs(project.korge.javaAddOpens)
+            mainClass.set(korge.realJvmMainClassName)
+        }
+    }
     val timeBeforeCompilationFile = File(project.buildDir, "timeBeforeCompilation")
 
     project.tasks.createThis<Task>("compileKotlinJvmAndNotifyBefore") {
@@ -67,40 +79,35 @@ fun Project.configureJvm() {
         }
     }
 
-    project.configurations
-        .create(KORGE_RELOAD_AGENT_CONFIGURATION_NAME)
+    if (!isRootKorlibs) {
+        project.configurations
+            .create(KORGE_RELOAD_AGENT_CONFIGURATION_NAME)
         //.setVisible(false)
         //.setTransitive(true)
         //.setDescription("korge-reload-agent to be downloaded and used for this project.")
-    project.dependencies {
-        add(KORGE_RELOAD_AGENT_CONFIGURATION_NAME, "com.soywiz.korlibs.korge.reloadagent:korge-reload-agent:${BuildVersions.KORGE}")
+        project.dependencies {
+            add(KORGE_RELOAD_AGENT_CONFIGURATION_NAME, "com.soywiz.korlibs.korge.reloadagent:korge-reload-agent:${BuildVersions.KORGE}")
+        }
+
+        project.afterEvaluate {
+            for (entry in korge.extraEntryPoints) {
+                project.tasks.createThis<KorgeJavaExec>("runJvm${entry.name.capitalize()}") {
+                    group = GROUP_KORGE_RUN
+                    dependsOn("jvmMainClasses")
+                    mainClass.set(entry.jvmMainClassName)
+                }
+            }
+        }
     }
 
-	project.afterEvaluate {
-		for (entry in korge.extraEntryPoints) {
-			project.tasks.createThis<KorgeJavaExec>("runJvm${entry.name.capitalize()}") {
-				group = GROUP_KORGE_RUN
-				dependsOn("jvmMainClasses")
-				mainClass.set(entry.jvmMainClassName)
-			}
-		}
-	}
+    project.tasks.findByName("jvmJar")?.let {
+        (it as Jar).apply {
+            entryCompression = ZipEntryCompression.STORED
+        }
+    }
 
-	for (jvmJar in project.getTasksByName("jvmJar", true)) {
-		val jvmJar = (jvmJar as Jar)
-		jvmJar.apply {
-			entryCompression = ZipEntryCompression.STORED
-		}
-	}
-
-	addProguard()
-	configureJvmTest()
-
-    val jvmProcessResources = tasks.findByName("jvmProcessResources") as? Copy?
-    jvmProcessResources?.duplicatesStrategy = org.gradle.api.file.DuplicatesStrategy.INCLUDE
-
-
-    for (enableRedefinition in listOf(false, true)) {
+    //for (enableRedefinition in listOf(false, true)) {
+    for (enableRedefinition in listOf(false)) {
         val taskName = when (enableRedefinition) {
             false -> "runJvmAutoreload"
             true -> "runJvmAutoreloadWithRedefinition"
@@ -109,11 +116,10 @@ fun Project.configureJvm() {
             this.enableRedefinition = enableRedefinition
             group = GROUP_KORGE_RUN
             dependsOn("jvmMainClasses", "compileKotlinJvm")
-            afterEvaluate {
+            project.afterEvaluate {
                 val beforeJava9 = JvmAddOpens.beforeJava9
                 if (!beforeJava9) jvmArgs(project.korge.javaAddOpens)
                 mainClass.set(korge.jvmMainClassName)
-                autoconfigure()
             }
         }
     }

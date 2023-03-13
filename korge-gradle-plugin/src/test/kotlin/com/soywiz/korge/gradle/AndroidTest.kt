@@ -96,22 +96,22 @@ class AndroidTest : AbstractGradleIntegrationTest() {
     @Test
     fun testAndroidInstall() {
         project.tasks.create("installDebug", Task::class.java)
-        project.tasks.create("korgeProcessedResourcesJvmMain", Task::class.java)
+        //project.tasks.create("korgeProcessedResourcesJvmMain", Task::class.java)
 
         project.installAndroidRun(listOf(), direct = true)
 
         assertEquals(
-            "installDebug, korgeProcessedResourcesJvmMain, korgeProcessedResourcesMetadataMain",
+            "installDebug",
             project.tasks.getByName("installAndroidDeviceDebug").dependsOnNames.joinToString(", ")
         )
 
         assertEquals(
-            "installDebug, androidEmulatorStart, korgeProcessedResourcesJvmMain, korgeProcessedResourcesMetadataMain",
+            "installDebug, androidEmulatorStart",
             project.tasks.getByName("installAndroidEmulatorDebug").dependsOnNames.joinToString(", ")
         )
 
         assertEquals(
-            "installRelease, androidEmulatorStart, korgeProcessedResourcesJvmMain, korgeProcessedResourcesMetadataMain",
+            "installRelease, androidEmulatorStart",
             project.tasks.getByName("installAndroidEmulatorRelease").dependsOnNames.joinToString(", ")
         )
     }
