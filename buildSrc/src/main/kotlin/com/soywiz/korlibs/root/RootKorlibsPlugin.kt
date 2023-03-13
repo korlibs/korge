@@ -1004,9 +1004,7 @@ object RootKorlibsPlugin {
                                 duplicatesStrategy = DuplicatesStrategy.EXCLUDE
                                 from(project.tasks.getByName("jsProcessResources").outputs.files)
                                 afterEvaluate {
-                                    project.tasks.findByName("korgeProcessedResourcesJsMain")?.outputs?.files?.let {
-                                        from(it)
-                                    }
+                                    //project.tasks.findByName(getKorgeProcessResourcesTaskName("js", "main"))?.outputs?.files?.let { from(it) }
                                 }
                                 //for (sourceSet in gkotlin.js().compilations.flatMap { it.kotlinSourceSets }) from(sourceSet.resources)
                                 into(wwwFolder)
@@ -1190,7 +1188,7 @@ object RootKorlibsPlugin {
                         for (binary in target.binaries) {
                             val compilation = binary.compilation
                             val copyResourcesTask = tasks.createThis<Copy>("copyResources${target.name.capitalize()}${binary.name.capitalize()}") {
-                                dependsOn(getKorgeProcessResourcesTaskName(target, compilation))
+                                //dependsOn(getKorgeProcessResourcesTaskName(target, compilation))
                                 group = "resources"
                                 val isDebug = binary.buildType == org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType.DEBUG
                                 val isTest = binary.outputKind == org.jetbrains.kotlin.gradle.plugin.mpp.NativeOutputKind.TEST
@@ -1404,9 +1402,6 @@ fun Project.mustAutoconfigureKMM(): Boolean =
     project.name != "korge-gradle-plugin" &&
         project.name != "korge-reload-agent" &&
         project.hasBuildGradle()
-
-fun getKorgeProcessResourcesTaskName(target: org.jetbrains.kotlin.gradle.plugin.KotlinTarget, compilation: org.jetbrains.kotlin.gradle.plugin.KotlinCompilation<*>): String =
-    "korgeProcessedResources${target.name.capitalize()}${compilation.name.capitalize()}"
 
 val Project.isKorgeBenchmarks: Boolean get() = path == ":korge-benchmarks"
 

@@ -55,12 +55,12 @@ fun Project.addGenResourcesTasks(): Project {
         }
     }
 
-    for (target in kotlin.targets) {
-        for (compilation in target.compilations) {
-            val taskName = getKorgeProcessResourcesTaskName(target.name, compilation.name)
-            tasks.createThis<Task>(taskName) // dummy for now
-        }
-    }
+    //for (target in kotlin.targets) {
+    //    for (compilation in target.compilations) {
+    //        val taskName = getKorgeProcessResourcesTaskName(target.name, compilation.name)
+    //        tasks.createThis<Task>(taskName) // dummy for now
+    //    }
+    //}
 
     //project.afterEvaluate {
     //    (tasks.getByName("processResources") as ProcessResources).apply {
