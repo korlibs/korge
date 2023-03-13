@@ -72,7 +72,7 @@ object KorgeReloadAgent {
             println("[KorgeReloadAgent] - Running $continuousCommand")
             while (true) {
                 try {
-                    val isWindows = System.getProperty("os.name").toLowerCase().contains("win")
+                    val isWindows = System.getProperty("os.name").lowercase().contains("win")
                     //val args = arrayOf<String>()
                     //val args = if (isWindows) arrayOf("cmd.exe", "/k") else arrayOf("/bin/sh", "-c")
                     //val args = if (isWindows) arrayOf() else arrayOf("/bin/sh", "-c")
@@ -219,7 +219,7 @@ class KorgeReloaderProcessor(val rootFolders: List<String>, val inst: Instrument
         if (modifiedClassNames.isEmpty()) {
             println("[KorgeReloadAgent] modifiedClassNames=$modifiedClassNames [EMPTY] STOPPING")
         } else {
-            println("[KorgeReloadAgent] modifiedClassNames=$modifiedClassNames")
+            println("[KorgeReloadAgent] modifiedClassNames=\n${modifiedClassNames.joinToString("\n")}")
             var successRedefinition = true
             val changedDefinitions = arrayListOf<ClassDefinition>()
             val times = arrayListOf<Long>()
@@ -256,8 +256,8 @@ class KorgeReloaderProcessor(val rootFolders: List<String>, val inst: Instrument
                 successRedefinition = false
             }
             println("[KorgeReloadAgent] reload enableRedefinition=$enableRedefinition, successRedefinition=$successRedefinition, changedDefinitions=${changedDefinitions.size}, classNameToBytes=${classNameToBytes.size}, times[${times.size}]=${times.sum()}ms")
-            val triggerReload = Class.forName("com.soywiz.korge.KorgeReload").getMethod("triggerReload", java.util.List::class.java, java.lang.Boolean.TYPE)
-            triggerReload.invoke(null, changedDefinitions.map { it.definitionClass.name }, successRedefinition)
+            val triggerReload = Class.forName("com.soywiz.korge.KorgeReload").getMethod("triggerReload", java.util.List::class.java, java.lang.Boolean.TYPE, java.util.List::class.java)
+            triggerReload.invoke(null, changedDefinitions.map { it.definitionClass.name }, successRedefinition, rootFolders)
         }
     }
 
