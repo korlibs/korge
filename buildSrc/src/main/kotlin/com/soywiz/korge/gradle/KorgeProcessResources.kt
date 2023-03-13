@@ -18,15 +18,7 @@ fun Project.getCompilationKorgeProcessedResourcesFolder(compilation: KotlinCompi
 fun Project.getCompilationKorgeProcessedResourcesFolder(
     targetName: String,
     compilationName: String
-): File {
-    return File(project.buildDir, "korgeProcessedResources/${targetName}/${compilationName}")
-}
-
-fun getKorgeProcessResourcesTaskName(
-    target: KotlinTarget,
-    compilation: KotlinCompilation<*>
-): String =
-    getKorgeProcessResourcesTaskName(target.name, compilation.name)
+): File = File(project.buildDir, "korgeProcessedResources/${targetName}/${compilationName}")
 
 fun getKorgeProcessResourcesTaskName(targetName: String, compilationName: String): String =
     "korgeProcessedResources${targetName.capitalize()}${compilationName.capitalize()}"
@@ -78,6 +70,7 @@ fun Project.addGenResourcesTasks(): Project {
     //    val processedResources = (tasks.getByName("processResources") as ProcessResources)
     //}
     //println("[a]")
+    /*
     val tasks = this.tasks
     for (task in tasks.withType(ProcessResources::class.java).toList()) {
         val taskName = task.name
@@ -89,6 +82,8 @@ fun Project.addGenResourcesTasks(): Project {
         val compilationName = if (isTest) "test" else "main"
         val compilation = target.compilations[compilationName]
         //println("TASK.ProcessResources: $targetName, test=$isTest : target=$target, $this : ${this::class}")
+
+        println("runJvm.korgeClassPath=${runJvm.korgeClassPath.toList()}")
 
         val korgeProcessedResources = tasks.createThis<KorgeProcessedResourcesTask>(
             getKorgeProcessResourcesTaskName(targetName, compilationName),
@@ -109,6 +104,8 @@ fun Project.addGenResourcesTasks(): Project {
         task.from(korgeProcessedResources.processedResourcesFolder)
         task.dependsOn(korgeProcessedResources)
     }
+
+     */
     //println("[b]")
 
     /*
