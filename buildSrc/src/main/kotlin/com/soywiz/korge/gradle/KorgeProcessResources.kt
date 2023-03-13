@@ -6,6 +6,7 @@ import com.soywiz.korge.gradle.util.*
 import org.gradle.api.*
 import org.gradle.api.file.*
 import org.gradle.api.tasks.*
+import org.gradle.language.jvm.tasks.*
 import org.jetbrains.kotlin.gradle.plugin.*
 import java.io.*
 import javax.inject.*
@@ -63,6 +64,54 @@ fun Project.addGenResourcesTasks(): Project {
         }
     }
 
+    //project.afterEvaluate {
+    //    (tasks.getByName("processResources") as ProcessResources).apply {
+    //        filesMatching("application.properties") {
+    //            this.rootSpec.expand()
+    //            expand(project.properties)
+    //        }
+    //    }
+    //    println("project.processResources=" + project.extensions.getByName("processResources"))
+    //}
+
+    //project.afterEvaluate {
+    //    val processedResources = (tasks.getByName("processResources") as ProcessResources)
+    //}
+    //println("[a]")
+    val tasks = this.tasks
+    for (task in tasks.withType(ProcessResources::class.java).toList()) {
+        val taskName = task.name
+        val targetNameRaw = taskName.removeSuffix("ProcessResources")
+        val isTest = targetNameRaw.endsWith("Test")
+        val targetName = targetNameRaw.removeSuffix("Test")
+        val target = kotlin.targets.findByName(targetName) ?: continue
+        val isJvm = targetName == "jvm"
+        val compilationName = if (isTest) "test" else "main"
+        val compilation = target.compilations[compilationName]
+        //println("TASK.ProcessResources: $targetName, test=$isTest : target=$target, $this : ${this::class}")
+
+        val korgeProcessedResources = tasks.createThis<KorgeProcessedResourcesTask>(
+            getKorgeProcessResourcesTaskName(targetName, compilationName),
+            KorgeProcessedResourcesTaskConfig(
+                isJvm, targetName, compilationName, runJvm.korgeClassPath,
+                project.korge.getIconBytes(),
+            )
+        ) {
+            val task = this
+            //if (!isJvm) task.dependsOn(getKorgeProcessResourcesTaskName("jvm", "main"))
+            task.group = com.soywiz.korge.gradle.targets.GROUP_KORGE_RESOURCES
+            task.processedResourcesFolder = getCompilationKorgeProcessedResourcesFolder(targetName, compilationName)
+            task.folders = compilation.allKotlinSourceSets
+                .flatMap { it.resources.srcDirs }
+                .filter { it != processedResourcesFolder }
+        }
+
+        task.from(korgeProcessedResources.processedResourcesFolder)
+        task.dependsOn(korgeProcessedResources)
+    }
+    //println("[b]")
+
+    /*
     for (target in kotlin.targets) {
         val isJvm = target.isJvm
         var previousCompilationKorgeProcessedResources: KorgeProcessedResourcesTask? = null
@@ -99,16 +148,18 @@ fun Project.addGenResourcesTasks(): Project {
             }
             //previousCompilationKorgeProcessedResources?.dependsOn(korgeProcessedResources)
 
-            if (!isJvm) {
-                compilation.compileKotlinTask.dependsOn(korgeProcessedResources)
-            } else {
+            if (isJvm) {
                 compilation.compileKotlinTask.finalizedBy(korgeProcessedResources)
                 tasks.getByName("runJvm").dependsOn(korgeProcessedResources)
+            } else {
+                compilation.compileKotlinTask.dependsOn(korgeProcessedResources)
             }
 
             previousCompilationKorgeProcessedResources = korgeProcessedResources
         }
     }
+
+     */
     return this
 }
 
