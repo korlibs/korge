@@ -892,6 +892,9 @@ object RootKorlibsPlugin {
                     }
                 }
             }
+            project.afterEvaluate {
+                project.addGenResourcesTasks()
+            }
         }
     }
 
@@ -1185,8 +1188,6 @@ object RootKorlibsPlugin {
                     }
                 }
             }
-
-            project.addGenResourcesTasks()
         }
     }
 

@@ -88,16 +88,42 @@ open class CatalogVfs(val parent: VfsFile) : Vfs.Proxy() {
         }
         val data = Json.parse(catalogJsonString).dyn
 
-        return data.list.map {
-            val localName = PathInfo(it["name"].str).baseName
-            createExistsStat(
-                path = "$path/$localName",
-                isDirectory = it["isDirectory"].bool,
-                size = it["size"].long,
-                createTime = DateTime.fromUnixMillis(it["createTime"].long),
-                modifiedTime = DateTime.fromUnixMillis(it["modifiedTime"].long),
-                cache = true
-            )
-        }.associateBy { it.baseName }
+        when (data.value) {
+            is List<*> -> {
+                return data.list.map {
+                    val localName = PathInfo(it["name"].str).baseName
+                    createExistsStat(
+                        path = "$path/$localName",
+                        isDirectory = it["isDirectory"].bool,
+                        size = it["size"].long,
+                        createTime = DateTime.fromUnixMillis(it["createTime"].long),
+                        modifiedTime = DateTime.fromUnixMillis(it["modifiedTime"].long),
+                        cache = true
+                    )
+                }.associateBy { it.baseName }
+            }
+
+            else -> {
+                val out = LinkedHashMap<String, VfsStat>()
+                for (key in data.keys) {
+                    val fileName = key.str
+                    val info = data[key]
+                    val size = info[0].toLongOrNull() ?: 0L
+                    val creationTime = info[1].toLongOrNull() ?: 0L
+                    val modifiedTime = info[2].toLongOrNull() ?: creationTime
+                    val isDirectory = fileName.endsWith("/")
+                    val baseName = fileName.trimEnd('/')
+                    out[baseName] = createExistsStat(
+                        path = "$path/$baseName",
+                        isDirectory = isDirectory,
+                        size = size,
+                        createTime = DateTime.fromUnixMillis(creationTime),
+                        modifiedTime = DateTime.fromUnixMillis(modifiedTime),
+                        cache = true
+                    )
+                }
+                return out
+            }
+        }
     }
 }

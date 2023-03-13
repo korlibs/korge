@@ -1,7 +1,7 @@
 package com.soywiz.korio.vfs
 
 import com.soywiz.korio.async.suspendTest
-import com.soywiz.korio.file.fullPathNormalized
+import com.soywiz.korio.file.*
 import com.soywiz.korio.file.std.MemoryVfsMix
 import com.soywiz.korio.file.std.withCatalog
 import kotlinx.coroutines.flow.toList
@@ -10,8 +10,8 @@ import kotlin.test.assertEquals
 
 class CatalogVfsTest {
     @Test
-    fun test() = suspendTest {
-        val vfs = MemoryVfsMix(
+    fun testOldCatalog() = suspendTest {
+        testCatalog(MemoryVfsMix(
             "/\$catalog.json" to """[
                 {"name": "demo", "size": 96, "modifiedTime": 0, "createTime": 0, "isDirectory": true},
                 {"name": "korge.png", "size": 14015, "modifiedTime": 1, "createTime": 1, "isDirectory": false},
@@ -20,8 +20,25 @@ class CatalogVfsTest {
             "/demo/\$catalog.json" to """[
                 {"name": "test.txt", "size": 12, "modifiedTime": 2, "createTime": 2, "isDirectory": false},
             ]""",
-        ).withCatalog()
+        ).withCatalog())
+    }
 
+    @Test
+    fun testNewCompactCatalog() = suspendTest {
+        testCatalog(MemoryVfsMix(
+            "/\$catalog.json" to """{
+                "demo/": [96, 0],
+                "korge.png": [14015, 1],
+                "test.txt": [11, 2],
+            }""",
+            "/demo/\$catalog.json" to """{
+                "test.txt": [12, 2],
+            }""",
+        ).withCatalog())
+    }
+
+
+    private fun testCatalog(vfs: VfsFile) = suspendTest {
         assertEquals(
             "/demo,/demo/test.txt,/korge.png,/test.txt",
             vfs.listRecursive().toList().joinToString(",") { it.fullPathNormalized }

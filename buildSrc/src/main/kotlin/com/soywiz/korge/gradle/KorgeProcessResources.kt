@@ -7,6 +7,7 @@ import org.gradle.api.*
 import org.gradle.api.file.*
 import org.gradle.api.tasks.*
 import org.gradle.language.jvm.tasks.*
+import org.jetbrains.kotlin.gradle.dsl.*
 import org.jetbrains.kotlin.gradle.plugin.*
 import java.io.*
 import javax.inject.*
@@ -22,7 +23,9 @@ fun Project.getCompilationKorgeProcessedResourcesFolder(
 fun getKorgeProcessResourcesTaskName(targetName: String, compilationName: String): String =
     "korgeProcessedResources${targetName.capitalize()}${compilationName.capitalize()}"
 
-fun Project.addGenResourcesTasks(): Project {
+fun Project.addGenResourcesTasks() {
+    if (project.extensions.findByType(KotlinMultiplatformExtension::class.java) == null) return
+
     val copyTasks = tasks.withType(Copy::class.java)
     copyTasks.configureEach {
         //it.duplicatesStrategy = org.gradle.api.file.DuplicatesStrategy.WARN
@@ -55,12 +58,44 @@ fun Project.addGenResourcesTasks(): Project {
         }
     }
 
-    //for (target in kotlin.targets) {
-    //    for (compilation in target.compilations) {
-    //        val taskName = getKorgeProcessResourcesTaskName(target.name, compilation.name)
-    //        tasks.createThis<Task>(taskName) // dummy for now
-    //    }
-    //}
+    afterEvaluate {
+        //for (target in kotlin.targets) {
+        //    for (compilation in target.compilations) {
+        //        val taskName = getKorgeProcessResourcesTaskName(target.name, compilation.name)
+        //        tasks.createThis<Task>(taskName) // dummy for now
+        //    }
+        //}
+
+        for (task in tasks.withType(ProcessResources::class.java).toList()) {
+            val taskName = task.name
+            val targetNameRaw = taskName.removeSuffix("ProcessResources")
+            val isTest = targetNameRaw.endsWith("Test")
+            val targetName = targetNameRaw.removeSuffix("Test")
+            val target = kotlin.targets.findByName(targetName) ?: continue
+            val isJvm = targetName == "jvm"
+            val compilationName = if (isTest) "test" else "main"
+            val compilation = target.compilations[compilationName]
+            val korgeGeneratedTaskName = getKorgeProcessResourcesTaskName(target.name, compilation.name)
+            val korgeGeneratedTask = tasks.createThis<Task>(korgeGeneratedTaskName)
+            val korgeGeneratedFolder = getCompilationKorgeProcessedResourcesFolder(targetName, compilationName)
+
+            korgeGeneratedTask.doFirst {
+                korgeGeneratedFolder.mkdirs()
+                val folders = compilation.allKotlinSourceSets.flatMap { it.resources.sourceDirectories.toList() }
+                val files = folders.flatMap { it.listFiles()?.toList() ?: emptyList() }.distinct()
+                val map = LinkedHashMap<String, Any?>()
+                for (file in files) {
+                    val fileName = if (file.isDirectory) "${file.name}/" else file.name
+                    map[fileName] = listOf(file.length(), file.lastModified())
+                }
+                //println("-------- $folders")
+                //println("++++++++ $files")
+                korgeGeneratedFolder["\$catalog.json"].writeText(Json.stringify(map))
+            }
+            task.from(korgeGeneratedFolder)
+            task.dependsOn(korgeGeneratedTask)
+        }
+    }
 
     //project.afterEvaluate {
     //    (tasks.getByName("processResources") as ProcessResources).apply {
@@ -163,7 +198,6 @@ fun Project.addGenResourcesTasks(): Project {
     }
 
      */
-    return this
 }
 
 data class KorgeProcessedResourcesTaskConfig(

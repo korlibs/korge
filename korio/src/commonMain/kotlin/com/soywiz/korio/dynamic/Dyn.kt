@@ -240,7 +240,7 @@ inline class Dyn(val value: Any?) : Comparable<Dyn> {
     private fun _getOrThrow(key: Any?, doThrow: Boolean): Dyn = when (value) {
         null -> if (doThrow) throw NullPointerException("Trying to access '$key'") else null.dyn
         is Map<*, *> -> (value as Map<Any?, Any?>)[key].dyn
-        is List<*> -> value[key.dyn.toInt()].dyn
+        is List<*> -> value.getOrNull(key.dyn.toInt()).dyn
         else -> dynApi.get(value, key.toString()).dyn
     }
 
