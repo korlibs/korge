@@ -16,7 +16,7 @@ import java.io.*
 
 private object JavaScriptClass
 
-fun Project.configureJavaScript() {
+fun Project.configureJavaScript(isLibrary: Boolean) {
     if (gkotlin.targets.findByName("js") != null) return
 
     rootProject.plugins.withType(org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin::class.java).allThis {
@@ -77,7 +77,9 @@ fun Project.configureJavaScript() {
 
     configureEsbuild()
     configureWebpackFixes()
-    configureJavascriptRun()
+    if (!isLibrary) {
+        configureJavascriptRun()
+    }
     configureClosureCompiler()
 }
 

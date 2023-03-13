@@ -19,7 +19,7 @@ import java.io.File
 val KORGE_RELOAD_AGENT_CONFIGURATION_NAME = "KorgeReloadAgent"
 val httpPort = 22011
 
-fun Project.configureJvm() {
+fun Project.configureJvm(isLibrary: Boolean) {
     if (gkotlin.targets.findByName("jvm") != null) return
 
     val jvmTarget = gkotlin.jvm()
@@ -41,7 +41,9 @@ fun Project.configureJvm() {
         }
     }
 
-	configureJvmRunJvm(isRootKorlibs = false)
+    if (!isLibrary) {
+        configureJvmRunJvm(isRootKorlibs = false)
+    }
 	addProguard()
 	configureJvmTest()
 
@@ -236,8 +238,6 @@ private fun Project.addProguard() {
 		}
 	}
 
-	val runJvm = tasks.getByName("runJvm") as JavaExec
-
 	project.tasks.createThis<PatchedProGuardTask>("packageJvmFatJarProguard") {
         dependsOn(packageJvmFatJar)
 		group = GROUP_KORGE_PACKAGE
@@ -270,8 +270,8 @@ private fun Project.addProguard() {
 			keep("class ${project.korge.realJvmMainClassName} { *; }")
 			keep("class org.jcodec.** { *; }")
 
-			if (runJvm.mainClass.get().isNotBlank()) {
-				keep("""public class ${runJvm.mainClass.get()} { public static void main(java.lang.String[]); }""")
+			if (korge.realJvmMainClassName.isNotBlank()) {
+				keep("""public class ${korge.realJvmMainClassName} { public static void main(java.lang.String[]); }""")
 			}
 		}
 
