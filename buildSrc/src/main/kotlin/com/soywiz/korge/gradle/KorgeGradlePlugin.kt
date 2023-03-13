@@ -50,7 +50,7 @@ class KorgeGradleApply(val project: Project, val projectType: ProjectType) {
             }
         }
 
-        logger.info("Korge Gradle plugin: ${BuildVersions.ALL}, isLibrary=$isLibrary")
+        logger.info("Korge Gradle plugin: ${BuildVersions.ALL}, projectType=$projectType")
 
         KorgeVersionsTask.registerShowKorgeVersions(project)
 
