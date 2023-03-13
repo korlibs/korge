@@ -3,6 +3,7 @@ package com.soywiz.korlibs.root
 import com.android.build.gradle.*
 import com.android.build.gradle.internal.tasks.*
 import com.soywiz.korge.gradle.*
+import com.soywiz.korge.gradle.module.*
 import com.soywiz.korge.gradle.targets.*
 import com.soywiz.korge.gradle.targets.all.*
 import com.soywiz.korge.gradle.targets.android.*
@@ -46,7 +47,7 @@ object RootKorlibsPlugin {
         initRootKotlinJvmTarget()
         initVersions()
         initAllRepositories()
-        initIdeaExcludes()
+        configureIdea()
         initGroupOverrides()
         initNodeJSFixes()
         configureMavenCentralRelease()
@@ -112,25 +113,6 @@ object RootKorlibsPlugin {
                 maven { it.url = uri("https://maven.pkg.jetbrains.space/kotlin/p/kotlin/dev") }.config()
                 maven { it.url = uri("https://maven.pkg.jetbrains.space/public/p/kotlinx-coroutines/maven") }.config()
                 maven { it.url = uri("https://oss.sonatype.org/content/repositories/snapshots/") }.config()
-            }
-        }
-    }
-
-    fun Project.initIdeaExcludes() {
-        allprojectsThis {
-            if (project.hasBuildGradle()) {
-                val plugin = this.plugins.apply(IdeaPlugin::class.java)
-                val idea = this.extensions.getByType<IdeaModel>()
-
-                idea.apply {
-                    module {
-                        it.excludeDirs = it.excludeDirs + listOf(
-                            file(".gradle"), file("src2"), file("original"), file("original-tests"), file("old-rendering"),
-                            file("gradle/wrapper"), file(".idea"), file("build"), file("@old"), file("_template"),
-                            file("e2e-sample"), file("e2e-test"), file("experiments"),
-                        )
-                    }
-                }
             }
         }
     }

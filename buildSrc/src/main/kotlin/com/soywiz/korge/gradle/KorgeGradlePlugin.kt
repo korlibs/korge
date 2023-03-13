@@ -1,5 +1,6 @@
 package com.soywiz.korge.gradle
 
+import com.soywiz.korge.gradle.module.*
 import com.soywiz.korge.gradle.targets.*
 import com.soywiz.korge.gradle.targets.jvm.*
 import com.soywiz.korge.gradle.targets.linux.LDLibraries
@@ -85,23 +86,6 @@ class KorgeGradleApply(val project: Project, val projectType: ProjectType) {
 			add("commonMainApi", "com.soywiz.korlibs.korim:korim:${korimVersion}")
 			add("commonMainApi", "com.soywiz.korlibs.korau:korau:${korauVersion}")
 			add("commonMainApi", "com.soywiz.korlibs.korgw:korgw:${korgwVersion}")
-		}
-	}
-
-	private fun Project.configureIdea() {
-		project.plugins.applyOnce("idea")
-
-        project.extensions.getByName<IdeaModel>("idea").apply {
-			module {
-                val module = it
-                module.excludeDirs = module.excludeDirs.also {
-                    it.addAll(listOf(
-                        ".gradle", ".idea", "gradle/wrapper", "node_modules", "classes", "docs", "dependency-cache",
-                        "libs", "reports", "resources", "test-results", "tmp", "bundles", "modules",
-                        "korge-gradle-plugin/build/srcgen2"
-                    ).map { file(it) })
-                }
-			}
 		}
 	}
 
