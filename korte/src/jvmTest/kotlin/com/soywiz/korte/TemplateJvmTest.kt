@@ -39,4 +39,21 @@ class TemplateJvmTest {
             Template("{% for row in rows %}{% if row.date >= startDate && row.date < startDate.plusDays(days) %}{{ row.title }},{% endif %}{% endfor %}")("startDate" to startDate, "days" to days, "rows" to rows)
         )
     }
+
+    @Suppress("unused")
+    class Getter {
+        @JvmField var a: Int? = 10
+        @JvmField var b: Int? = 10
+        var c: Int? = 10
+        fun getA(): Int? = null
+        fun getB(): Int? = 20
+    }
+
+    @Test
+    fun testGetter() = suspendTest {
+        assertEquals(
+            ",20,10",
+            Template("{{ data.a }},{{ data.b }},{{ data.c }}")("data" to Getter())
+        )
+    }
 }
