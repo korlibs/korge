@@ -1,7 +1,10 @@
 package com.soywiz.korge.gradle.targets.jvm
 
 import com.soywiz.korge.gradle.*
+import com.soywiz.korge.gradle.kotlin
 import com.soywiz.korge.gradle.targets.*
+import com.soywiz.korlibs.*
+import org.gradle.api.*
 import org.gradle.api.file.*
 import org.gradle.api.tasks.*
 import org.gradle.jvm.tasks.*
@@ -145,6 +148,26 @@ open class KorgeJavaExec : JavaExec() {
         // https://github.com/korlibs/korge-plugins/issues/25
     }
 }
+
+/*
+open class KorgeJavaExec : JavaExec() {
+    private val jvmCompilation get() = project.kotlin.targets.getByName("jvm").compilations as NamedDomainObjectSet<*>
+    private val mainJvmCompilation get() = jvmCompilation.getByName("main") as org.jetbrains.kotlin.gradle.plugin.mpp.KotlinJvmCompilation
+
+    @get:InputFiles
+    val korgeClassPath: FileCollection = mainJvmCompilation.runtimeDependencyFiles + mainJvmCompilation.compileDependencyFiles + mainJvmCompilation.output.allOutputs + mainJvmCompilation.output.classesDirs
+
+    override fun exec() {
+        systemProperties = (System.getProperties().toMutableMap() as MutableMap<String, Any>) - "java.awt.headless"
+        if (!JvmAddOpens.beforeJava9) jvmArgs(*JvmAddOpens.createAddOpensTypedArray())
+        classpath = korgeClassPath
+        super.exec()
+        //project.afterEvaluate {
+        //if (firstThread == true && OS.isMac) task.jvmArgs("-XstartOnFirstThread")
+        //}
+    }
+}
+*/
 
 /*
 open class KorgeJavaExec : JavaExec() {

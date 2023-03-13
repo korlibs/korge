@@ -64,10 +64,10 @@ fun Project.addGenResourcesTasks(): Project {
     }
 
     for (target in kotlin.targets) {
-        //val isJvm = target.isJvm
+        val isJvm = target.isJvm
         var previousCompilationKorgeProcessedResources: KorgeProcessedResourcesTask? = null
         for (compilation in target.compilations) {
-            val isJvm = compilation.compileKotlinTask.name == "compileKotlinJvm"
+            //val isJvm = compilation.compileKotlinTask.name == "compileKotlinJvm"
             val processedResourcesFolder = getCompilationKorgeProcessedResourcesFolder(compilation)
             compilation.defaultSourceSet.resources.srcDir(processedResourcesFolder)
 
@@ -84,7 +84,7 @@ fun Project.addGenResourcesTasks(): Project {
                 )
             ) {
                 val task = this
-                task.dependsOn(getKorgeProcessResourcesTaskName("jvm", "main"))
+                //if (!isJvm) task.dependsOn(getKorgeProcessResourcesTaskName("jvm", "main"))
                 task.group = GROUP_KORGE_RESOURCES
                 if (korge.searchResourceProcessorsInMainSourceSet) {
                     task.dependsOn("jvmMainClasses")
@@ -97,7 +97,7 @@ fun Project.addGenResourcesTasks(): Project {
             copyTasks.forEach {
                 it?.dependsOn(korgeProcessedResources)
             }
-            previousCompilationKorgeProcessedResources?.dependsOn(korgeProcessedResources)
+            //previousCompilationKorgeProcessedResources?.dependsOn(korgeProcessedResources)
 
             if (!isJvm) {
                 compilation.compileKotlinTask.dependsOn(korgeProcessedResources)

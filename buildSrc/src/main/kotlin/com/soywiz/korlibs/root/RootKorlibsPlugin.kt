@@ -16,7 +16,6 @@ import com.soywiz.korlibs.*
 import com.soywiz.korlibs.gkotlin
 import com.soywiz.korlibs.kotlin
 import com.soywiz.korlibs.modules.*
-import com.soywiz.korlibs.modules.KorgeJavaExec
 import com.soywiz.korlibs.tasks
 import org.gradle.api.*
 import org.gradle.api.Project
@@ -1245,115 +1244,7 @@ object RootKorlibsPlugin {
                 }
             }
 
-            project.tasks {
-                val runJvm = getByName("runJvm") as KorgeJavaExec
-                //val prepareResourceProcessingClasses = create("prepareResourceProcessingClasses", Copy::class) {
-                //    dependsOn(jvmMainClasses)
-                //    afterEvaluate {
-                //        from(runJvm.korgeClassPath.toList().map { if (it.extension == "jar") zipTree(it) else it })
-                //    }
-                //    into(File(project.buildDir, "korgeProcessedResources/classes"))
-                //}
-
-                for (target in project.gkotlin.targets) {
-                    //val isJvm = target.isJvm
-                    for (compilation in target.compilations) {
-                        /*
-                        val processedResourcesFolder = File(project.buildDir, "korgeProcessedResources/${target.name}/${compilation.name}")
-                        compilation.defaultSourceSet.resources.srcDir(processedResourcesFolder)
-                        val korgeProcessedResources = createThis<Task>(getKorgeProcessResourcesTaskName(target, compilation)) {
-                            //dependsOn(prepareResourceProcessingClasses)
-                            dependsOn("jvmMainClasses")
-
-                            if (project.enabledSandboxResourceProcessor) {
-                                doLast {
-                                    processedResourcesFolder.mkdirs()
-                                    //URLClassLoader(prepareResourceProcessingClasses.outputs.files.toList().map { it.toURL() }.toTypedArray(), ClassLoader.getSystemClassLoader()).use { classLoader ->
-
-                                    URLClassLoader(
-                                        runJvm.korgeClassPath.toList().map { it.toURL() }.toTypedArray(),
-                                        ClassLoader.getSystemClassLoader()
-                                    ).use { classLoader ->
-                                        val clazz = classLoader.loadClass("com.soywiz.korge.resources.ResourceProcessorRunner")
-                                        val folders = compilation.allKotlinSourceSets.flatMap { it.resources.srcDirs }
-                                            .filter { it != processedResourcesFolder }.map { it.toString() }
-                                        //println(folders)
-                                        try {
-                                            clazz.methods.first { it.name == "run" }.invoke(
-                                                null,
-                                                classLoader,
-                                                folders,
-                                                processedResourcesFolder.toString(),
-                                                compilation.name
-                                            )
-                                        } catch (e: java.lang.reflect.InvocationTargetException) {
-                                            val re = (e.targetException ?: e)
-                                            re.printStackTrace()
-                                            System.err.println(re.toString())
-                                        }
-                                    }
-                                    System.gc()
-                                }
-                            }
-                        }
-                        //println(compilation.compileKotlinTask.name)
-                        //println(compilation.compileKotlinTask.name)
-                        //compilation.compileKotlinTask.finalizedBy(processResourcesKorge)
-                        //println(compilation.compileKotlinTask)
-                        //compilation.compileKotlinTask.dependsOn(processResourcesKorge)
-                        if (compilation.compileKotlinTask.name != "compileKotlinJvm") {
-                            compilation.compileKotlinTask.dependsOn(korgeProcessedResources)
-                        } else {
-                            compilation.compileKotlinTask.finalizedBy(korgeProcessedResources)
-                            getByName("runJvm").dependsOn(korgeProcessedResources)
-
-                        }
-                        */
-                        val isJvm = compilation.compileKotlinTask.name == "compileKotlinJvm"
-                        val processedResourcesFolder = File(project.buildDir, "korgeProcessedResources/${target.name}/${compilation.name}")
-                        compilation.defaultSourceSet.resources.srcDir(processedResourcesFolder)
-                        //val compilation = project.kotlin.targets.getByName(config.targetName).compilations.getByName(config.compilationName)
-                        val folders: List<String> =
-                            compilation.allKotlinSourceSets.flatMap { it.resources.srcDirs }
-                                .filter { it != processedResourcesFolder }.map { it.toString() }
-
-                        //println("runJvm.korgeClassPath=${runJvm.korgeClassPath.toList()}")
-                        val korgeProcessedResources = createThis<KorgeProcessedResourcesTask>(
-                            getKorgeProcessResourcesTaskName(target, compilation),
-                            KorgeProcessedResourcesTaskConfig(
-                                isJvm, target.name, compilation.name, runJvm.korgeClassPath,
-                                project.korge.getIconBytes(),
-                            )
-                        ) {
-                            val task = this
-                            task.group = GROUP_KORGE_RESOURCES
-                            //if (korge.searchResourceProcessorsInMainSourceSet) {
-
-                                task.dependsOn("jvmMainClasses")
-                            //}
-                            task.outputs.dirs(processedResourcesFolder)
-                            task.folders = folders.map { File(it) }
-                            task.processedResourcesFolder = processedResourcesFolder
-
-                            //dependsOn(prepareResourceProcessingClasses)
-                            //dependsOn("jvmMainClasses")
-                        }
-                        //println(compilation.compileKotlinTask.name)
-                        //println(compilation.compileKotlinTask.name)
-                        //compilation.compileKotlinTask.finalizedBy(processResourcesKorge)
-                        //println(compilation.compileKotlinTask)
-                        //compilation.compileKotlinTask.dependsOn(processResourcesKorge)
-                        if (compilation.compileKotlinTask.name != "compileKotlinJvm") {
-                            compilation.compileKotlinTask.dependsOn(korgeProcessedResources)
-                        } else {
-                            compilation.compileKotlinTask.finalizedBy(korgeProcessedResources)
-                            getByName("runJvm").dependsOn(korgeProcessedResources)
-                        }
-                        //println(compilation.output.allOutputs.toList())
-                        //println("$target - $compilation")
-                    }
-                }
-            }
+            project.addGenResourcesTasks()
         }
     }
 
