@@ -93,7 +93,7 @@ fun Project.configureNativeDesktop(isLibrary: Boolean) {
 		//}
 	}
 
-    if (isLibrary) {
+    if (!isLibrary) {
         configureNativeDesktopRun()
     }
 }
