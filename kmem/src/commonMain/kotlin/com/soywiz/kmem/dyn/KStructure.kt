@@ -119,23 +119,23 @@ open class KMemLayoutBuilder {
         offset
     }
 
-    private fun alloc(size: Int, align: Int = size) = align(align).offset.also { this.offset += size }
+    fun rawAlloc(size: Int, align: Int = size): Int = align(align).offset.also { this.offset += size }
 
     //fun int() = alloc(Int.SIZE_BYTES)
     //fun nativeLong() = alloc(NativeLong.SIZE)
 
-    fun bool(): KMemDelegateBoolProperty = KMemDelegateBoolProperty(alloc(Int.SIZE_BYTES))
-    fun byte(): KMemDelegateByteProperty = KMemDelegateByteProperty(alloc(Byte.SIZE_BYTES))
-    fun short(): KMemDelegateShortProperty = KMemDelegateShortProperty(alloc(Short.SIZE_BYTES))
-    fun int() = KMemDelegateIntProperty(alloc(Int.SIZE_BYTES))
-    fun long() = KMemDelegateLongProperty(alloc(Long.SIZE_BYTES))
-    fun float() = KMemDelegateFloatProperty(alloc(4))
-    fun double() = KMemDelegateDoubleProperty(alloc(8))
-    fun nativeFloat() = KMemDelegateNativeDoubleProperty(alloc(POINTER_SIZE))
-    fun nativeLong() = KMemDelegateNativeLongProperty(alloc(LONG_SIZE))
-    fun kpointer() = KMemDelegateKPointerProperty(alloc(POINTER_SIZE))
-    fun <T> pointer() = KMemDelegatePointerProperty<T>(alloc(POINTER_SIZE))
-    fun fixedBytes(size: Int, align: Int = 1): KMemDelegateFixedBytesProperty = KMemDelegateFixedBytesProperty(alloc(size * Byte.SIZE_BYTES, align), size)
+    fun bool(): KMemDelegateBoolProperty = KMemDelegateBoolProperty(rawAlloc(Int.SIZE_BYTES))
+    fun byte(): KMemDelegateByteProperty = KMemDelegateByteProperty(rawAlloc(Byte.SIZE_BYTES))
+    fun short(): KMemDelegateShortProperty = KMemDelegateShortProperty(rawAlloc(Short.SIZE_BYTES))
+    fun int() = KMemDelegateIntProperty(rawAlloc(Int.SIZE_BYTES))
+    fun long() = KMemDelegateLongProperty(rawAlloc(Long.SIZE_BYTES))
+    fun float() = KMemDelegateFloatProperty(rawAlloc(4))
+    fun double() = KMemDelegateDoubleProperty(rawAlloc(8))
+    fun nativeFloat() = KMemDelegateNativeDoubleProperty(rawAlloc(POINTER_SIZE))
+    fun nativeLong() = KMemDelegateNativeLongProperty(rawAlloc(LONG_SIZE))
+    fun kpointer() = KMemDelegateKPointerProperty(rawAlloc(POINTER_SIZE))
+    fun <T> pointer() = KMemDelegatePointerProperty<T>(rawAlloc(POINTER_SIZE))
+    fun fixedBytes(size: Int, align: Int = 1): KMemDelegateFixedBytesProperty = KMemDelegateFixedBytesProperty(rawAlloc(size * Byte.SIZE_BYTES, align), size)
 }
 
 

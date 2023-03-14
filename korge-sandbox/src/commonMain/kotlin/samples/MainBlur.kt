@@ -1,6 +1,7 @@
 package samples
 
 import com.soywiz.kds.fastArrayListOf
+import com.soywiz.klock.*
 import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.style.*
 import com.soywiz.korge.ui.*
@@ -133,8 +134,8 @@ class MainBlur : Scene() {
                     pageFilter.hamplitude0 = it
                     transitionFilter.ratio = it
                     pageFilter.hratio = it
-                    waveFilter.timeSeconds = it
-                    flagFilter.timeSeconds = it
+                    waveFilter.time = it.seconds
+                    flagFilter.time = it.seconds
                 }
             }
             uiHorizontalFill {

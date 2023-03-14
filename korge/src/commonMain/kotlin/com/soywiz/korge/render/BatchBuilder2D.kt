@@ -666,7 +666,7 @@ class BatchBuilder2D constructor(
             drawType = AGDrawType.TRIANGLES,
             blending = currentBlendMode.factors,
             uniforms = uniforms.cloneReadOnly(),
-            uniformBlocks = ctx.createCurrentUniformsRef(currentProgram, autoUpload = false),
+            newUniformBlocks = ctx.createCurrentNewUniformsRef(currentProgram, autoUpload = false),
             stencilOpFunc = stencilOpFunc,
             stencilRef = stencilRef,
             colorMask = colorMask,
@@ -741,8 +741,18 @@ class BatchBuilder2D constructor(
     /**
      * Executes [callback] while restoring [uniform] to its current value after [callback] is exexcuted.
      */
+    @Deprecated("")
     inline fun keepUniform(uniform: Uniform, flush: Boolean = true, callback: (AGUniformValues) -> Unit) {
         ctx.keepUniform(uniform, flush, callback)
+    }
+
+    inline fun flush(block: () -> Unit) {
+        ctx.flush()
+        try {
+            block()
+        } finally {
+            ctx.flush()
+        }
     }
 
     /**

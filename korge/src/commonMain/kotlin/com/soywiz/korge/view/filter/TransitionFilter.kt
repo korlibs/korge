@@ -42,23 +42,25 @@ class TransitionFilter(
         }
     }
 
-    companion object : BaseProgramProvider() {
-        private val u_Reversed = Uniform("u_Reversed", VarType.Float1)
-        private val u_Spread = Uniform("u_Smooth", VarType.Float1)
-        private val u_Ratio = Uniform("u_Ratio", VarType.Float1)
-        private val u_Mask = Uniform("u_Mask", VarType.Sampler2D)
+    object TransitionUB : NewUniformBlock(fixedLocation = 5) {
+        val u_Reversed by float()
+        val u_Spread by float()
+        val u_Ratio by float()
+        val u_Mask by sampler2D()
+    }
 
-        override val fragment = Filter.DEFAULT_FRAGMENT.appending {
+    companion object : BaseProgramProvider() {
+        override val fragment = DEFAULT_FRAGMENT.appending {
             val alpha = t_Temp1.x
             val spread = t_Temp1.y
 
-            SET(alpha, texture2D(u_Mask, v_Tex01).r)
-            IF(u_Reversed eq 1f.lit) {
+            SET(alpha, texture2D(TransitionUB.u_Mask, v_Tex01).r)
+            IF(TransitionUB.u_Reversed eq 1f.lit) {
                 SET(alpha, 1f.lit - alpha)
             }
-            SET(alpha, clamp(alpha + ((u_Ratio * 2f.lit) - 1f.lit), 0f.lit, 1f.lit))
-            SET(spread, clamp(u_Spread, 0.01f.lit, 1f.lit) * 0.5f.lit)
-            SET(alpha, smoothstep(clamp01(u_Ratio - spread), clamp01(u_Ratio + spread), alpha))
+            SET(alpha, clamp(alpha + ((TransitionUB.u_Ratio * 2f.lit) - 1f.lit), 0f.lit, 1f.lit))
+            SET(spread, clamp(TransitionUB.u_Spread, 0.01f.lit, 1f.lit) * 0.5f.lit)
+            SET(alpha, smoothstep(clamp01(TransitionUB.u_Ratio - spread), clamp01(TransitionUB.u_Ratio + spread), alpha))
 
             SET(out, (out * alpha))
             //BatchBuilder2D.DO_INPUT_OUTPUT(this, out)
@@ -72,16 +74,21 @@ class TransitionFilter(
     }
 
     override val programProvider: ProgramProvider get() = TransitionFilter
-    private val s_ratio = uniforms.storageFor(u_Ratio)
     @ViewProperty
-    var reversed: Boolean by uniforms.storageFor(u_Reversed).boolDelegateX(reversed)
+    var reversed: Boolean = reversed
     @ViewProperty
-    var spread: Double by uniforms.storageFor(u_Spread).doubleDelegateX(spread)
+    var spread: Double = spread
     @ViewProperty
-    var ratio: Double by s_ratio.doubleDelegateX(ratio)
+    var ratio: Double = ratio
 
     override fun updateUniforms(ctx: RenderContext, filterScale: Double) {
-        uniforms.set(u_Mask, ctx.getTex(transition.bmp).base, AGTextureUnitInfo.DEFAULT)
+        ctx[TransitionUB].push {
+            it[u_Reversed] = reversed
+            it[u_Spread] = spread
+            it[u_Ratio] = ratio
+            // @TODO: Textures should go differently
+            it.set(u_Mask, ctx.getTex(transition.bmp).base, AGTextureUnitInfo.DEFAULT)
+        }
         //println("ratio=$ratio, s_ratio=$s_ratio, uniformValue=${uniforms[u_Ratio].f32[0]}")
     }
 }

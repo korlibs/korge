@@ -14,26 +14,46 @@ import com.soywiz.korma.geom.*
 // https://iquilezles.org/articles/distfunctions
 // https://iquilezles.org/articles/distfunctions2d/#:~:text=length(p)%20%2D%20r%3B%0A%7D-,Rounded%20Box%20%2D%20exact,-(https%3A//www
 object MaterialRender {
-    val u_ShadowColor by Uniform(VarType.Float4)
-    val u_ShadowRadius by Uniform(VarType.Float1)
-    val u_ShadowOffset by Uniform(VarType.Float2)
+    object MaterialBlockUB : NewUniformBlock(fixedLocation = 3) {
+        val u_ShadowColor by vec4()
+        val u_ShadowRadius by float()
+        val u_ShadowOffset by vec2()
 
-    val u_HighlightPos by Uniform(VarType.Float2)
-    val u_HighlightRadius by Uniform(VarType.Float1)
-    val u_HighlightColor by Uniform(VarType.Float4)
+        val u_HighlightPos by vec2()
+        val u_HighlightRadius by float()
+        val u_HighlightColor by vec4()
 
-    val u_Size by Uniform(VarType.Float2)
-    val u_Radius by Uniform(VarType.Float4)
+        val u_Size by vec2()
+        val u_Radius by vec4()
 
-    val u_BorderSizeHalf by Uniform(VarType.Float1)
-    val u_BorderColor by Uniform(VarType.Float4)
-    val u_BackgroundColor by Uniform(VarType.Float4)
+        val u_BorderSizeHalf by float()
+        val u_BorderColor by vec4()
+        val u_BackgroundColor by vec4()
+    }
+    val u_ShadowColor = MaterialBlockUB.u_ShadowColor
+    val u_ShadowRadius = MaterialBlockUB.u_ShadowRadius
+    val u_ShadowOffset = MaterialBlockUB.u_ShadowOffset
 
-    val ub_MaterialBlock = UniformBlock(
-        u_ShadowColor, u_ShadowRadius, u_ShadowOffset, u_HighlightPos, u_HighlightRadius, u_HighlightColor,
-        u_Size, u_Radius, u_BorderSizeHalf, u_BorderColor, u_BackgroundColor,
-        fixedLocation = 3
-    )
+    val u_HighlightPos = MaterialBlockUB.u_HighlightPos
+    val u_HighlightRadius = MaterialBlockUB.u_HighlightRadius
+    val u_HighlightColor = MaterialBlockUB.u_HighlightColor
+
+    val u_Size = MaterialBlockUB.u_Size
+    val u_Radius = MaterialBlockUB.u_Radius
+
+    val u_BorderSizeHalf = MaterialBlockUB.u_BorderSizeHalf
+    val u_BorderColor = MaterialBlockUB.u_BorderColor
+    val u_BackgroundColor = MaterialBlockUB.u_BackgroundColor
+
+    //val ub_MaterialBlock = MaterialBlockUB.uniformBlock
+
+    init {
+        //println("ub_MaterialBlock.uniforms.voffset=${MaterialBlockUB.uniforms.map { it.name }}")
+        //println("ub_MaterialBlock.uniforms.voffset=${MaterialBlockUB.uniforms.map { it.voffset }}")
+        //println("ub_MaterialBlock.uniforms.voffset=${ub_MaterialBlock.uniforms.map { it.name }}")
+        //println("ub_MaterialBlock.totalSize=${MaterialBlockUB.totalSize}")
+        //println("ub_MaterialBlock.totalSize=${ub_MaterialBlock.totalSize}")
+    }
 
     val PROGRAM = ShadedView.buildShader {
         val roundedDist = TEMP(Float1)
@@ -102,19 +122,32 @@ fun RenderContext2D.materialRoundRect(
     borderColor: RGBA = Colors.WHITE,
     //colorMul: RGBA = Colors.WHITE,
 ) {
-    ctx[MaterialRender.ub_MaterialBlock].push(deduplicate = true) {
-        it[MaterialRender.u_Radius].set(radius)
-        it[MaterialRender.u_Size].set(Size(width, height))
-        it[MaterialRender.u_BackgroundColor].set(color.premultipliedFast)
-        it[MaterialRender.u_HighlightPos].set(highlightPos * Size(width, height))
-        it[MaterialRender.u_HighlightRadius].set(highlightRadius * kotlin.math.max(width, height) * 1.25)
-        it[MaterialRender.u_HighlightColor].set(highlightColor.premultipliedFast)
-        it[MaterialRender.u_BorderSizeHalf].set(borderSize * 0.5)
-        it[MaterialRender.u_BorderColor].set(borderColor.premultipliedFast)
-        it[MaterialRender.u_ShadowColor].set(shadowColor.premultipliedFast)
-        it[MaterialRender.u_ShadowOffset].set(shadowOffset)
-        it[MaterialRender.u_ShadowRadius].set(shadowRadius)
+    ctx[MaterialRender.MaterialBlockUB].push(deduplicate = true) {
+        it[u_Radius] = radius
+        it[u_Size] = Size(width, height)
+        it[u_BackgroundColor] = (color.premultipliedFast)
+        it[u_HighlightPos] = (highlightPos * Size(width, height))
+        it[u_HighlightRadius] = (highlightRadius * kotlin.math.max(width, height) * 1.25).toFloat()
+        it[u_HighlightColor] = (highlightColor.premultipliedFast)
+        it[u_BorderSizeHalf] = (borderSize * 0.5f).toFloat()
+        it[u_BorderColor] = (borderColor.premultipliedFast)
+        it[u_ShadowColor] = (shadowColor.premultipliedFast)
+        it[u_ShadowOffset] = (shadowOffset)
+        it[u_ShadowRadius] = (shadowRadius).toFloat()
     }
+    //ctx[MaterialRender.ub_MaterialBlock].push(deduplicate = true) {
+    //    it[MaterialRender.u_Radius].set(radius)
+    //    it[MaterialRender.u_Size].set(Size(width, height))
+    //    it[MaterialRender.u_BackgroundColor].set(color.premultipliedFast)
+    //    it[MaterialRender.u_HighlightPos].set(highlightPos * Size(width, height))
+    //    it[MaterialRender.u_HighlightRadius].set(highlightRadius * kotlin.math.max(width, height) * 1.25)
+    //    it[MaterialRender.u_HighlightColor].set(highlightColor.premultipliedFast)
+    //    it[MaterialRender.u_BorderSizeHalf].set(borderSize * 0.5)
+    //    it[MaterialRender.u_BorderColor].set(borderColor.premultipliedFast)
+    //    it[MaterialRender.u_ShadowColor].set(shadowColor.premultipliedFast)
+    //    it[MaterialRender.u_ShadowOffset].set(shadowOffset)
+    //    it[MaterialRender.u_ShadowRadius].set(shadowRadius)
+    //}
     quadPaddedCustomProgram(x, y, width, height, MaterialRender.PROGRAM, Margin((shadowRadius + shadowOffset.length).toFloat()))
 }
 

@@ -18,11 +18,13 @@ class Convolute3Filter(
     dist: Double = 1.0,
     applyAlpha: Boolean = false
 ) : ShaderFilter() {
-    companion object : BaseProgramProvider() {
-        private val u_ApplyAlpha = Uniform("apply_alpha", VarType.Float1)
-        private val u_Dist = Uniform("dist", VarType.Float1)
-        private val u_Weights = Uniform("weights", VarType.Mat3)
+    object ConvoluteUB : NewUniformBlock(fixedLocation = 5) {
+        val u_ApplyAlpha by float()
+        val u_Dist by float()
+        val u_Weights by mat3()
+    }
 
+    companion object : BaseProgramProvider() {
         /** A Gaussian Blur Kernel. This [MMatrix3D] can be used as [kernel] for [Convolute3Filter] */
         val KERNEL_GAUSSIAN_BLUR: MMatrix3D = MMatrix3D.fromRows3x3(
             1f, 2f, 1f,
@@ -73,14 +75,14 @@ class Convolute3Filter(
                 for (x in 0 until 3) {
                     val color = tex(
                         fragmentCoords + vec2(
-                            (x - 1).toFloat().lit * u_Dist,
-                            (y - 1).toFloat().lit * u_Dist
+                            (x - 1).toFloat().lit * ConvoluteUB.u_Dist,
+                            (y - 1).toFloat().lit * ConvoluteUB.u_Dist
                         )
                     )
-                    SET(out, out + (color * u_Weights[x][y]))
+                    SET(out, out + (color * ConvoluteUB.u_Weights[x][y]))
                 }
             }
-            IF(u_ApplyAlpha ne 1f.lit) {
+            IF(ConvoluteUB.u_ApplyAlpha ne 1f.lit) {
                 SET(out["a"], tex(fragmentCoords)["a"])
             }
             //BatchBuilder2D.DO_INPUT_OUTPUT(this, out)
@@ -93,13 +95,13 @@ class Convolute3Filter(
 
     /** 3x3 matrix representing a convolution kernel */
     @ViewProperty
-    var weights: MMatrix3D by uniforms.storageForMatrix3D(u_Weights, kernel)
+    var weights: MMatrix3D = MMatrix3D().copyFrom(kernel)
     /** Distance between the origin pixel for sampling for edges */
     @ViewProperty
-    var dist: Double by uniforms.storageFor(u_Dist).doubleDelegateX(dist)
+    var dist: Double = dist
     /** Whether or not kernel must be applied to the alpha component */
     @ViewProperty
-    var applyAlpha: Boolean by uniforms.storageFor(u_ApplyAlpha).boolDelegateX(applyAlpha)
+    var applyAlpha: Boolean = applyAlpha
 
     override val programProvider: ProgramProvider get() = Convolute3Filter
 
@@ -109,6 +111,12 @@ class Convolute3Filter(
 
     override fun updateUniforms(ctx: RenderContext, filterScale: Double) {
         super.updateUniforms(ctx, filterScale)
+        ctx[ConvoluteUB].push {
+            it[u_ApplyAlpha] = applyAlpha
+            it[u_Dist] = dist
+            it[u_Weights] = weights
+        }
+
         //println("weights=$weights, dist=$dist,${uniforms[u_Dist].f32.toFloatArray().toList()}, ${uniforms[u_Weights].f32.toFloatArray().toList()}")
     }
 

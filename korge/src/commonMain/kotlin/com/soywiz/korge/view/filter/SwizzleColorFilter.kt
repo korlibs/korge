@@ -14,7 +14,7 @@ import com.soywiz.korge.view.property.*
 class SwizzleColorsFilter(initialSwizzle: String = "rgba") : ShaderFilter() {
     companion object {
         class SwizzleProgram(val swizzle: String) : BaseProgramProvider() {
-            override val fragment = Filter.DEFAULT_FRAGMENT.appending {
+            override val fragment = DEFAULT_FRAGMENT.appending {
                 SET(out, out[swizzle])
                 //BatchBuilder2D.DO_INPUT_OUTPUT(this, out)
             }

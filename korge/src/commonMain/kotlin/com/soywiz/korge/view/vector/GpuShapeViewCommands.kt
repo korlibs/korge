@@ -178,7 +178,7 @@ class GpuShapeViewCommands {
                                     //indices = indices,
                                     scissor = scissor.applyMatrixBounds(tempMat),
                                     uniforms = tempUniforms,
-                                    uniformBlocks = ctx.createCurrentUniformsRef(_program),
+                                    newUniformBlocks = ctx.createCurrentNewUniformsRef(_program),
                                     stencilOpFunc = cmd.stencilOpFunc,
                                     stencilRef = cmd.stencilRef,
                                     colorMask = cmd.colorMask,
