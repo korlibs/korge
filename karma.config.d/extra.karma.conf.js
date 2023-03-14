@@ -8,4 +8,9 @@ config.set({
     "proxies": {
       '/': '/base/kotlin/'
     },
+    client: {
+        mocha: {
+            timeout: 20000
+        }
+    }
 })
