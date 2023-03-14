@@ -170,7 +170,7 @@ open class Sonatype(
     fun getRepositoryActivity(repositoryId: String): String {
         val info = client.request("${BASE}/repository/$repositoryId/activity")
         //println("info: ${info.toStringPretty()}")
-        return info.toString()
+        return info.toStringPretty()
     }
 
 	data class RepoState(
