@@ -1,13 +1,47 @@
 package com.soywiz.korma.geom
 
+import com.soywiz.kmem.pack.*
 import com.soywiz.korma.annotations.*
 import com.soywiz.korma.internal.*
 import com.soywiz.korma.interpolation.*
 import com.soywiz.korma.math.*
 import kotlin.math.*
 
-@KormaValueApi
-data class Vector3(val x: Float, val y: Float, val z: Float)
+inline class Vector3(val data: Float4Pack) {
+    constructor(x: Float, y: Float, z: Float) : this(float4PackOf(x, y, z, 0f))
+    constructor(x: Int, y: Int, z: Int) : this(x.toFloat(), y.toFloat(), z.toFloat())
+    constructor(x: Double, y: Double, z: Double) : this(x.toFloat(), y.toFloat(), z.toFloat())
+
+    inline val x: Float get() = data.f0
+    inline val y: Float get() = data.f1
+    inline val z: Float get() = data.f2
+
+    val lengthSquared: Float get() = (x * x) + (y * y) + (z * z)
+    val length: Float get() = sqrt(lengthSquared)
+    fun normalized(): Vector3 = this / length
+
+    operator fun unaryPlus(): Vector3 = this
+    operator fun unaryMinus(): Vector3 = Vector3(-this.x, -this.y, -this.z)
+
+    operator fun plus(other: Vector3): Vector3 = Vector3(this.x + other.x, this.y + other.y, this.z + other.z)
+    operator fun minus(other: Vector3): Vector3 = Vector3(this.x - other.x, this.y - other.y, this.z - other.z)
+
+    operator fun times(other: Vector3): Vector3 = Vector3(this.x * other.x, this.y * other.y, this.z * other.z)
+    operator fun div(other: Vector3): Vector3 = Vector3(this.x / other.x, this.y / other.y, this.z / other.z)
+    operator fun rem(other: Vector3): Vector3 = Vector3(this.x % other.x, this.y % other.y, this.z % other.z)
+
+    operator fun times(other: Float): Vector3 = Vector3(this.x * other, this.y * other, this.z * other)
+    operator fun div(other: Float): Vector3 = Vector3(this.x / other, this.y / other, this.z / other)
+    operator fun rem(other: Float): Vector3 = Vector3(this.x % other, this.y % other, this.z % other)
+
+    infix fun dot(v: Vector3): Float = (x * v.x) + (y * v.y) + (z * v.z)
+
+    companion object {
+        fun cross(v1: Vector3, v2: Vector3): Vector3 = TODO()
+    }
+
+    override fun toString(): String = "Vector3(${x.niceStr}, ${y.niceStr}, ${z.niceStr})"
+}
 
 @KormaMutableApi
 sealed interface IVector3 {

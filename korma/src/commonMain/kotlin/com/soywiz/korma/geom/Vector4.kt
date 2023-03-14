@@ -1,13 +1,49 @@
 package com.soywiz.korma.geom
 
+import com.soywiz.kmem.pack.*
 import com.soywiz.korma.annotations.*
 import com.soywiz.korma.internal.*
 import com.soywiz.korma.interpolation.*
 import com.soywiz.korma.math.*
 import kotlin.math.*
 
-@KormaValueApi
-data class Vector4(val x: Float, val y: Float, val z: Float, val w: Float)
+//@KormaValueApi
+inline class Vector4(val data: Float4Pack) {
+    constructor(x: Float, y: Float, z: Float, w: Float) : this(float4PackOf(x, y, z, w))
+    constructor(x: Int, y: Int, z: Int, w: Int) : this(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat())
+    constructor(x: Double, y: Double, z: Double, w: Double) : this(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat())
+
+    inline val x: Float get() = data.f0
+    inline val y: Float get() = data.f1
+    inline val z: Float get() = data.f2
+    inline val w: Float get() = data.f3
+
+    val lengthSquared: Float get() = (x * x) + (y * y) + (z * z) + (w * w)
+    val length: Float get() = sqrt(lengthSquared)
+    fun normalized(): Vector4 = this / length
+
+    operator fun unaryPlus(): Vector4 = this
+    operator fun unaryMinus(): Vector4 = Vector4(-x, -y, -z, -w)
+
+    operator fun plus(v: Vector4): Vector4 = Vector4(x + v.x, y + v.y, z + v.z, w + v.w)
+    operator fun minus(v: Vector4): Vector4 = Vector4(x - v.x, y - v.y, z - v.z, w - v.w)
+
+    operator fun times(v: Vector4): Vector4 = Vector4(x * v.x, y * v.y, z * v.z, w * v.w)
+    operator fun div(v: Vector4): Vector4 = Vector4(x / v.x, y / v.y, z / v.z, w / v.w)
+    operator fun rem(v: Vector4): Vector4 = Vector4(x % v.x, y % v.y, z % v.z, w % v.w)
+
+    operator fun times(v: Float): Vector4 = Vector4(x * v, y * v, z * v, w * v)
+    operator fun div(v: Float): Vector4 = Vector4(x / v, y / v, z / v, w / v)
+    operator fun rem(v: Float): Vector4 = Vector4(x % v, y % v, z % v, w % v)
+    
+    infix fun dot(v: Vector4): Float = (x * v.x) + (y * v.y) + (z * v.z) + (w * v.w)
+
+    companion object {
+        fun cross(v1: Vector4, v2: Vector4, v3: Vector4): Vector4 = TODO()
+    }
+
+    override fun toString(): String = "Vector4(${x.niceStr}, ${y.niceStr}, ${z.niceStr}, ${w.niceStr})"
+}
 
 typealias MVector3D = MVector4
 
@@ -116,7 +152,7 @@ class MVector4 : IVector4 {
 
     fun normalized(out: MVector4 = MVector4()): MVector4 = out.copyFrom(this).normalize()
 
-    fun dot(v2: MVector4): Float = this.x*v2.x + this.y*v2.y + this.z*v2.y
+    fun dot(v2: MVector4): Float = this.x*v2.x + this.y*v2.y + this.z*v2.z
 
     operator fun plus(that: MVector4): MVector4 = MVector4(this.x + that.x, this.y + that.y, this.z + that.z, this.w + that.w)
     operator fun minus(that: MVector4): MVector4 = MVector4(this.x - that.x, this.y - that.y, this.z - that.z, this.w - that.w)
