@@ -9,6 +9,13 @@ import kotlin.math.*
 
 //@KormaValueApi
 inline class Vector4(val data: Float4Pack) {
+    companion object {
+        val ZERO = Vector4(0f, 0f, 0f, 0f)
+        val ONE = Vector4(1f, 1f, 1f, 1f)
+
+        fun cross(v1: Vector4, v2: Vector4, v3: Vector4): Vector4 = TODO()
+    }
+
     constructor(x: Float, y: Float, z: Float, w: Float) : this(float4PackOf(x, y, z, w))
     constructor(x: Int, y: Int, z: Int, w: Int) : this(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat())
     constructor(x: Double, y: Double, z: Double, w: Double) : this(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat())
@@ -21,6 +28,14 @@ inline class Vector4(val data: Float4Pack) {
     val lengthSquared: Float get() = (x * x) + (y * y) + (z * z) + (w * w)
     val length: Float get() = sqrt(lengthSquared)
     fun normalized(): Vector4 = this / length
+
+    operator fun get(index: Int): Float = when (index) {
+        0 -> x
+        1 -> y
+        2 -> z
+        3 -> w
+        else -> throw IndexOutOfBoundsException()
+    }
 
     operator fun unaryPlus(): Vector4 = this
     operator fun unaryMinus(): Vector4 = Vector4(-x, -y, -z, -w)
@@ -37,10 +52,6 @@ inline class Vector4(val data: Float4Pack) {
     operator fun rem(v: Float): Vector4 = Vector4(x % v, y % v, z % v, w % v)
     
     infix fun dot(v: Vector4): Float = (x * v.x) + (y * v.y) + (z * v.z) + (w * v.w)
-
-    companion object {
-        fun cross(v1: Vector4, v2: Vector4, v3: Vector4): Vector4 = TODO()
-    }
 
     override fun toString(): String = "Vector4(${x.niceStr}, ${y.niceStr}, ${z.niceStr}, ${w.niceStr})"
 }

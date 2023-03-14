@@ -8,6 +8,20 @@ import com.soywiz.korma.math.*
 import kotlin.math.*
 
 inline class Vector3(val data: Float4Pack) {
+    companion object {
+        val ZERO = Vector3(0f, 0f, 0f)
+        val ONE = Vector3(1f, 1f, 1f)
+
+        val FORWARD	= Vector3(0f, 0f, 1f)
+        val BACK = Vector3(0f, 0f, -1f)
+        val LEFT = Vector3(-1f, 0f, 0f)
+        val RIGHT = Vector3(1f, 0f, 0f)
+        val UP = Vector3(0f, 1f, 0f)
+        val DOWN = Vector3(0f, -1f, 0f)
+
+        fun cross(v1: Vector3, v2: Vector3): Vector3 = TODO()
+    }
+
     constructor(x: Float, y: Float, z: Float) : this(float4PackOf(x, y, z, 0f))
     constructor(x: Int, y: Int, z: Int) : this(x.toFloat(), y.toFloat(), z.toFloat())
     constructor(x: Double, y: Double, z: Double) : this(x.toFloat(), y.toFloat(), z.toFloat())
@@ -19,6 +33,13 @@ inline class Vector3(val data: Float4Pack) {
     val lengthSquared: Float get() = (x * x) + (y * y) + (z * z)
     val length: Float get() = sqrt(lengthSquared)
     fun normalized(): Vector3 = this / length
+
+    operator fun get(index: Int): Float = when (index) {
+        0 -> x
+        1 -> y
+        2 -> z
+        else -> throw IndexOutOfBoundsException()
+    }
 
     operator fun unaryPlus(): Vector3 = this
     operator fun unaryMinus(): Vector3 = Vector3(-this.x, -this.y, -this.z)
@@ -35,10 +56,6 @@ inline class Vector3(val data: Float4Pack) {
     operator fun rem(v: Float): Vector3 = Vector3(this.x % v, this.y % v, this.z % v)
 
     infix fun dot(v: Vector3): Float = (x * v.x) + (y * v.y) + (z * v.z)
-
-    companion object {
-        fun cross(v1: Vector3, v2: Vector3): Vector3 = TODO()
-    }
 
     override fun toString(): String = "Vector3(${x.niceStr}, ${y.niceStr}, ${z.niceStr})"
 }
