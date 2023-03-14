@@ -110,8 +110,8 @@ class RenderContext constructor(
         //    it[DefaultShaders.u_ViewMat].set(viewMat)
         //}
         projViewMatUB.push(deduplicate = true) {
-            it[DefaultShaders.ProjViewUB.u_ProjMat] = projMat
-            it[DefaultShaders.ProjViewUB.u_ViewMat] = viewMat
+            it[u_ProjMat] = projMat
+            it[u_ViewMat] = viewMat
         }
 
         //uniforms[DefaultShaders.u_ProjMat] = projMat
@@ -133,7 +133,7 @@ class RenderContext constructor(
                 //    it[DefaultShaders.u_ViewMat].set(this.viewMat)
                 //}
                 this[DefaultShaders.ProjViewUB].push {
-                    it[DefaultShaders.ProjViewUB.u_ViewMat] = this.viewMat
+                    it[u_ViewMat] = this@RenderContext.viewMat
                 }
                 //println("viewMat: $viewMat, matrix: $matrix")
                 try {
@@ -565,7 +565,7 @@ class RenderContext constructor(
     @PublishedApi internal val _buffers = AGProgramWithUniforms.BufferCache()
     private val _programs = FastIdentityMap<Program, AGProgramWithUniforms>()
 
-    operator fun get(uniform: NewUniformBlock): NewUniformBlockBuffer = _buffers[uniform]
+    operator fun <T : NewUniformBlock> get(uniform: T): NewUniformBlockBuffer<T> = _buffers[uniform]
     //operator fun get(uniform: UniformBlock): AGRichUniformBlockData = _buffers[uniform]
     operator fun get(program: Program): AGProgramWithUniforms = _programs.getOrPut(program) { AGProgramWithUniforms(it, _buffers) }
 

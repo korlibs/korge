@@ -43,23 +43,23 @@ class AGNewUniformTest {
         val buffer = NewUniformBlockBuffer(ProjViewUB)
         assertEquals(0, buffer.size)
         buffer.push(deduplicate = true) {
-            it[ProjViewUB.u_ProjMat] = Matrix4.IDENTITY
+            it[u_ProjMat] = Matrix4.IDENTITY
         }
         assertEquals(1, buffer.size)
         buffer.push(deduplicate = true) {
-            it[ProjViewUB.u_ProjMat] = Matrix4.IDENTITY
+            it[u_ProjMat] = Matrix4.IDENTITY
         }
         assertEquals(1, buffer.size)
         buffer.push(deduplicate = false) {
-            it[ProjViewUB.u_ProjMat] = Matrix4.IDENTITY
+            it[u_ProjMat] = Matrix4.IDENTITY
         }
         assertEquals(2, buffer.size)
         buffer.push(deduplicate = true) {
-            it[ProjViewUB.u_ProjMat] = Matrix4.IDENTITY * 2f
+            it[u_ProjMat] = Matrix4.IDENTITY * 2f
         }
         assertEquals(3, buffer.size)
         buffer.push(deduplicate = true) {
-            it[ProjViewUB.u_ProjMat] = Matrix4.IDENTITY * 3f
+            it[u_ProjMat] = Matrix4.IDENTITY * 3f
         }
         assertEquals(4, buffer.size)
     }

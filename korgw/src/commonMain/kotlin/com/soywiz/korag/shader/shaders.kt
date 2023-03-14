@@ -1123,14 +1123,14 @@ inline val ProgramLayout<Uniform>.uniformPositions: IntArrayList get() = _positi
 class AGUniformWithBuffer(val uniform: Uniform, val buffer: AGBuffer) {
 }
 
-class AGNewUniformBlocksBuffersRef(val blocks: Array<NewUniformBlockBuffer?>, val buffers: Array<AGBuffer?>, val valueIndices: IntArray) {
+class AGNewUniformBlocksBuffersRef(val blocks: Array<NewUniformBlockBuffer<*>?>, val buffers: Array<AGBuffer?>, val valueIndices: IntArray) {
     val size: Int get() = blocks.size
 
     companion object {
         val EMPTY = AGNewUniformBlocksBuffersRef(emptyArray(), emptyArray(), IntArray(0))
     }
 
-    inline fun fastForEachBlock(callback: (index: Int, block: NewUniformBlockBuffer, buffer: AGBuffer?, valueIndex: Int) -> Unit) {
+    inline fun fastForEachBlock(callback: (index: Int, block: NewUniformBlockBuffer<*>, buffer: AGBuffer?, valueIndex: Int) -> Unit) {
         for (n in 0 until size) {
             val block = blocks[n] ?: continue
             callback(n, block, buffers[n], valueIndices[n])

@@ -7,7 +7,7 @@ import com.soywiz.korag.shader.*
 class AGProgramWithUniforms(val program: Program, val bufferCache: BufferCache = BufferCache()) {
     // Holder to reuse AGRichUniformBlockData and buffers between several programs
     class BufferCache {
-        private val newUniformBlocks = FastIdentityMap<NewUniformBlock, NewUniformBlockBuffer>()
+        private val newUniformBlocks = FastIdentityMap<NewUniformBlock, NewUniformBlockBuffer<*>>()
 
         fun reset() {
             newUniformBlocks.fastForEach { key, value -> value.reset() }
@@ -17,8 +17,8 @@ class AGProgramWithUniforms(val program: Program, val bufferCache: BufferCache =
             newUniformBlocks.fastForEach { key, value -> value.upload() }
         }
 
-        operator fun get(block: NewUniformBlock): NewUniformBlockBuffer =
-            newUniformBlocks.getOrPut(block) { NewUniformBlockBuffer(block) }
+        operator fun <T : NewUniformBlock> get(block: T): NewUniformBlockBuffer<T> =
+            newUniformBlocks.getOrPut(block) { NewUniformBlockBuffer(block) } as NewUniformBlockBuffer<T>
     }
 
     init {
@@ -40,10 +40,10 @@ class AGProgramWithUniforms(val program: Program, val bufferCache: BufferCache =
     val newUniformsBlocks = Array<NewUniformBlock?>(maxNewLocation) { null }.also {
         for (layout in newUniformLayouts) it[layout.fixedLocation] = layout
     }
-    val newUniformsBlocksData = Array<NewUniformBlockBuffer?>(newUniformsBlocks.size) {
+    val newUniformsBlocksData = Array<NewUniformBlockBuffer<*>?>(newUniformsBlocks.size) {
         newUniformsBlocks[it]?.let { bufferCache[it] }
     }
-    private val agNewUniformBlockDatas = Array(newUniformsBlocks.size) { newUniformsBlocksData[it]?.block?.let { NewUniformBlockBuffer(it) } }
+    private val agNewUniformBlockDatas: Array<NewUniformBlockBuffer<*>?> = Array(newUniformsBlocks.size) { newUniformsBlocksData[it]?.block?.let { NewUniformBlockBuffer(it) } }
     private val agNewBuffers = Array(newUniformsBlocks.size) { newUniformsBlocksData[it]?.agBuffer }
     private val agNewBufferIndices = IntArray(newUniformsBlocks.size) { 0 }
 
@@ -56,11 +56,11 @@ class AGProgramWithUniforms(val program: Program, val bufferCache: BufferCache =
         return AGNewUniformBlocksBuffersRef(agNewUniformBlockDatas, agNewBuffers, agNewBufferIndices.copyOf())
     }
 
-    operator fun get(block: NewUniformBlock): NewUniformBlockBuffer {
+    operator fun <T : NewUniformBlock> get(block: T): NewUniformBlockBuffer<T> {
         val rblock = newUniformsBlocks.getOrNull(block.fixedLocation)
             ?: error("Can't find block '$block'")
         if (rblock !== block) error("Block $block not used in program")
-        return newUniformsBlocksData[block.fixedLocation]!!
+        return newUniformsBlocksData[block.fixedLocation]!! as NewUniformBlockBuffer<T>
     }
 
     //operator fun get(uniform: Uniform): AGUniformValue = this[(uniform.linkedLayout as UniformBlock)][uniform]

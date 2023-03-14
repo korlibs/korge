@@ -123,17 +123,17 @@ fun RenderContext2D.materialRoundRect(
     //colorMul: RGBA = Colors.WHITE,
 ) {
     ctx[MaterialRender.MaterialBlockUB].push(deduplicate = true) {
-        it[MaterialRender.MaterialBlockUB.u_Radius] = radius
-        it[MaterialRender.MaterialBlockUB.u_Size] = Size(width, height)
-        it[MaterialRender.MaterialBlockUB.u_BackgroundColor] = (color.premultipliedFast)
-        it[MaterialRender.MaterialBlockUB.u_HighlightPos] = (highlightPos * Size(width, height))
-        it[MaterialRender.MaterialBlockUB.u_HighlightRadius] = (highlightRadius * kotlin.math.max(width, height) * 1.25).toFloat()
-        it[MaterialRender.MaterialBlockUB.u_HighlightColor] = (highlightColor.premultipliedFast)
-        it[MaterialRender.MaterialBlockUB.u_BorderSizeHalf] = (borderSize * 0.5f).toFloat()
-        it[MaterialRender.MaterialBlockUB.u_BorderColor] = (borderColor.premultipliedFast)
-        it[MaterialRender.MaterialBlockUB.u_ShadowColor] = (shadowColor.premultipliedFast)
-        it[MaterialRender.MaterialBlockUB.u_ShadowOffset] = (shadowOffset)
-        it[MaterialRender.MaterialBlockUB.u_ShadowRadius] = (shadowRadius).toFloat()
+        it[u_Radius] = radius
+        it[u_Size] = Size(width, height)
+        it[u_BackgroundColor] = (color.premultipliedFast)
+        it[u_HighlightPos] = (highlightPos * Size(width, height))
+        it[u_HighlightRadius] = (highlightRadius * kotlin.math.max(width, height) * 1.25).toFloat()
+        it[u_HighlightColor] = (highlightColor.premultipliedFast)
+        it[u_BorderSizeHalf] = (borderSize * 0.5f).toFloat()
+        it[u_BorderColor] = (borderColor.premultipliedFast)
+        it[u_ShadowColor] = (shadowColor.premultipliedFast)
+        it[u_ShadowOffset] = (shadowOffset)
+        it[u_ShadowRadius] = (shadowRadius).toFloat()
     }
     //ctx[MaterialRender.ub_MaterialBlock].push(deduplicate = true) {
     //    it[MaterialRender.u_Radius].set(radius)

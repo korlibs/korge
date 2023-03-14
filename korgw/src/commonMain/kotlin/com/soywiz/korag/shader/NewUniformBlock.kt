@@ -130,7 +130,7 @@ class NewUniformRef(val block: NewUniformBlock, var buffer: Buffer, var index: I
     }
 }
 
-class NewUniformBlockBuffer(val block: NewUniformBlock) {
+class NewUniformBlockBuffer<T : NewUniformBlock>(val block: T) {
     val agBuffer = AGBuffer()
 
     @PublishedApi internal var buffer = Buffer(block.totalSize * 1)
@@ -151,7 +151,7 @@ class NewUniformBlockBuffer(val block: NewUniformBlock) {
         currentIndex = -1
     }
 
-    fun upload(): NewUniformBlockBuffer {
+    fun upload(): NewUniformBlockBuffer<T> {
         agBuffer.upload(buffer, 0, kotlin.math.max(0, (currentIndex + 1) * block.totalSize))
         return this
     }
@@ -160,7 +160,7 @@ class NewUniformBlockBuffer(val block: NewUniformBlock) {
         currentIndex--
     }
 
-    inline fun push(deduplicate: Boolean = true, block: (NewUniformRef) -> Unit): Boolean {
+    inline fun push(deduplicate: Boolean = true, block: T.(NewUniformRef) -> Unit): Boolean {
         currentIndex++
         ensure(currentIndex + 1)
         val blockSize = this.block.totalSize
@@ -171,7 +171,7 @@ class NewUniformBlockBuffer(val block: NewUniformBlock) {
         } else {
             arrayfill(buffer, 0, index1, blockSize)
         }
-        block(current)
+        block(this.block, current)
         if (deduplicate && currentIndex >= 1) {
             //println(buffer.hex())
             //println(buffer.slice(0, 128).hex())
