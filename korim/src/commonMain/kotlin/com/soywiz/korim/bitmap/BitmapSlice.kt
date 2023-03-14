@@ -72,6 +72,8 @@ fun <T : Bitmap> RectSlice<T>.extract(): T {
     return out
 }
 
+fun <T : Bitmap> RectSlice<T>.toBitmap(): T = extract()
+
 fun <T : SizeableInt> SliceCoordsWithBase<T>.slice(bounds: MRectangleInt = MRectangleInt(0, 0, width, height), name: String? = null, orientation: ImageOrientation = ImageOrientation.ROTATE_0, padding: MarginInt = MarginInt.ZERO): RectSlice<T> =
     RectSlice(
         this.base,

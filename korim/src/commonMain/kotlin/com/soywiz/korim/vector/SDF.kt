@@ -3,6 +3,7 @@ package com.soywiz.korim.vector
 import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
 import com.soywiz.korim.bitmap.*
+import com.soywiz.korim.bitmap.sdf.*
 import com.soywiz.korim.color.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.bezier.*
@@ -39,12 +40,16 @@ fun VectorPath.sdf(data: FloatArray2): FloatArray2 {
     return data
 }
 fun VectorPath.sdfBmp(width: Int, height: Int): Bitmap32 {
+    /*
     val msdf = sdf(width, height)
     msdf.scale(-1f)
     msdf.clamp(-1f, +1f)
     msdf.normalizeUniform()
     val msdfBitmap = msdf.toBMP32 { RGBA.float(1f, 1f, 1f, it) }
-    return msdfBitmap
+    */
+    val newImage = NewSDF.process(NativeImageContext2d(width, height) { fill(Colors.WHITE) { write(this@sdfBmp) } }.toBMP32(), buffer = 0)
+    //return newImage.bmp.sliceWithBounds(newImage.buffer, newImage.buffer, newImage.bmp.width - newImage.buffer, newImage.bmp.height - newImage.buffer).toBitmap().toBMP32IfRequired()
+    return newImage.bmp.toBMP32IfRequired()
 }
 
 private fun msdfColor(index: Int, size: Int, closed: Boolean): RGBA {
