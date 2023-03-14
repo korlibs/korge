@@ -10,12 +10,6 @@ class AGUniformBlockTest {
         val uniform2 by short2()
         //val uniform3 by int()
     }
-    companion object {
-        val uniform1 = NewUniformUB.uniform1.uniform
-        val uniform2 = NewUniformUB.uniform2.uniform
-        val uniform3 by Uniform(VarType.Int1)
-        //val uniformBlock = NewUniformUB.uniformBlock
-    }
 
     //@Test
     //fun test() {

@@ -85,13 +85,13 @@ open class ShadedView(
         )
     }
 
-    open protected fun updateUniforms(uniforms: AGUniformValues, ctx: RenderContext) {
+    open protected fun updateUniforms(ctx: RenderContext) {
     }
 
 
     override fun renderInternal(ctx: RenderContext) {
         if (!visible) return
-        updateUniforms(programUniforms, ctx)
+        updateUniforms(ctx)
         super.renderInternal(ctx)
     }
 

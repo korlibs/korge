@@ -148,7 +148,6 @@ open class FSprites(val maxSize: Int) {
 
             val texs = info.texs
             val u_i_texSizeDataN = info.u_i_texSizeDataN
-            val olds = info.olds
             val program = info.program
             ctx.flush()
             ctx.useBatcher { batch ->

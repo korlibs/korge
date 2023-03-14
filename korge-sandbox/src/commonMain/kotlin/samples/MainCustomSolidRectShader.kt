@@ -9,13 +9,20 @@ import com.soywiz.korge.view.*
 import com.soywiz.korim.color.*
 
 class MainCustomSolidRectShader : Scene() {
+    object TimeUB : UniformBlock(fixedLocation = 6) {
+        val timeUniform by float()
+    }
+
     override suspend fun SContainer.sceneMain() {
         val solidRect = solidRect(200, 200, Colors.RED).xy(100, 100)
-        val timeUniform = Uniform("u_time", VarType.Float1)
 
         var time = 0.seconds
+        solidRect.updateProgramUniforms = {
+            it[TimeUB].push {
+                it[timeUniform] = time.seconds.toFloat()
+            }
+        }
         addUpdater {
-            solidRect.programUniforms[timeUniform] = time.seconds.toFloat()
             time += it
             invalidateRender()
         }
@@ -27,7 +34,7 @@ class MainCustomSolidRectShader : Scene() {
                 }
             }
             .appendingVertex("moving") {
-                SET(out.x, out.x + (sin(timeUniform * 2f.lit) * .1f.lit))
+                SET(out.x, out.x + (sin(TimeUB.timeUniform * 2f.lit) * .1f.lit))
             }
     }
 }

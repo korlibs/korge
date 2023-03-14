@@ -186,7 +186,8 @@ object GpuShapeViewPrograms {
                     it[u_GlobalAlpha] = globalAlpha.toFloat()
                     //u_LineWidth to lineWidth.toFloat(),
                     //}, GpuShapeView.PROGRAM_BITMAP)
-                }, mapOf(
+                },
+                mapOf(
                     DefaultShaders.u_Tex to paint.bitmap
                 ))
         }

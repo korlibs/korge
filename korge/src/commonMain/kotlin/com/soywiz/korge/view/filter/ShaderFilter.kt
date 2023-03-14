@@ -84,14 +84,6 @@ abstract class ShaderFilter : Filter {
     private var textureMaxTexCoords = Point()
     private var textureStdTexDerivates = Point()
 
-    //val scaledUniforms = AGUniformValues()
-    //val uniforms = AGUniformValues {
-    //    //Filter.u_Time to timeHolder,
-    //    it[TexInfoUB.u_TextureSize] = textureSizeHolder
-    //    it[u_MaxTexCoords] = textureMaxTexCoords
-    //    it[u_StdTexDerivates] = textureStdTexDerivates
-    //}
-
     override fun computeBorder(texWidth: Int, texHeight: Int): MarginInt {
         return MarginInt.ZERO
     }

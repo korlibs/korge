@@ -53,9 +53,7 @@ class RenderContext2D(
     @KorgeInternal
 	val mpool = Pool<MMatrix> { MMatrix() }
 
-    val _tempProgramUniforms = AGUniformValues()
-
-	init { logger.trace { "RenderContext2D[1]" } }
+    init { logger.trace { "RenderContext2D[1]" } }
 
     @KorgeInternal
 	val m = MMatrix()

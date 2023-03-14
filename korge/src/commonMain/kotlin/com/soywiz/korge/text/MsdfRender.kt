@@ -26,7 +26,7 @@ object MsdfRender {
         } else {
             SET(d, out[sdf])
         }
-        SET(alpha, clamp(d / fwidth(d) + 0.5f.lit, 0f.lit, 1f.lit))
+        SET(alpha, SDFShaders.opAARev(d))
         if (inverted) {
             SET(alpha, 1f.lit - alpha)
         }

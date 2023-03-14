@@ -22,35 +22,39 @@ class SDFViewTest {
         assertScreenshot(posterize = 5)
     }
 
-
     open class CircleSDFView(width: Double = 100.0, height: Double = 100.0, var time: Double = 0.0) : ShadedView(PROGRAM, width, height) {
         var radius = 0.49
         var feather = 0.005
-        var center = MPoint(0.5, 0.5)
+        var center = Point(0.5, 0.5)
 
         override fun renderInternal(ctx: RenderContext) {
-            this.programUniforms[u_Center] = center
-            this.programUniforms[u_Radius] = radius
-            this.programUniforms[u_Feather] = feather
-            this.programUniforms[u_Time] = sind(time.radians).absoluteValue
+            ctx[SDFUB].push {
+                it[u_Center] = center
+                it[u_Radius] = radius
+                it[u_Feather] = feather
+                it[u_Time] = sind(time.radians).absoluteValue
+            }
 
             super.renderInternal(ctx)
         }
 
+        object SDFUB : UniformBlock(fixedLocation = 6) {
+            val u_Center by vec2()
+            val u_Radius by float()
+            val u_Feather by float()
+            val u_Time by float()
+        }
+
         companion object {
-            val u_Center by Uniform(VarType.Float2)
-            val u_Radius by Uniform(VarType.Float1)
-            val u_Feather by Uniform(VarType.Float1)
-            val u_Time by Uniform(VarType.Float1)
             val PROGRAM = buildShader {
                 val d = t_Temp0.x
                 val SDF = SDFShaders
 
                 SET(d,
                     SDF.opInterpolate(
-                        SDF.circle(v_Tex - u_Center, u_Radius),
-                        SDF.opBorder(SDF.box(v_Tex - u_Center + vec2(.1f.lit, 0f.lit), vec2(u_Radius * .4.lit, u_Radius * .4.lit)), .02f.lit),
-                        clamp(u_Time, 0f.lit, 1f.lit)
+                        SDF.circle(v_Tex - SDFUB.u_Center, SDFUB.u_Radius),
+                        SDF.opBorder(SDF.box(v_Tex - SDFUB.u_Center + vec2(.1f.lit, 0f.lit), vec2(SDFUB.u_Radius * .4.lit, SDFUB.u_Radius * .4.lit)), .02f.lit),
+                        clamp(SDFUB.u_Time, 0f.lit, 1f.lit)
                     )
                 )
 

@@ -41,6 +41,9 @@ object SDFShaders : Program.Builder() {
     val opAA by FUNC(Float1, returns = Float1) { d ->
         RETURN(1f - clamp(d / fwidth(d) + 0.5f, 0f.lit, 1f.lit))
     }
+    val opAARev by FUNC(Float1, returns = Float1) { d ->
+        RETURN(clamp(d / fwidth(d) + 0.5f, 0f.lit, 1f.lit))
+    }
     val opSmoothUnion by FUNC(Float1, Float1, Float1, returns = Float1) { d1, d2, k ->
         val h = TEMP(Float1)
         SET(h, clamp(.5f + .5f * (d2 - d1) / k, 0f.lit, 1f.lit))

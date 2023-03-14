@@ -65,23 +65,25 @@ open class RectBase(
 	}
 
     var program: Program? = null
-    private var _programUniforms: AGUniformValues? = null
-    var programUniforms: AGUniformValues
-        set(value) { _programUniforms = value }
-        get()  {
-            if (_programUniforms == null) _programUniforms = AGUniformValues()
-            return _programUniforms!!
-        }
+    //private var _programUniforms: AGUniformValues? = null
+    var updateProgramUniforms: ((RenderContext) -> Unit)? = null
+    //var programUniforms: AGUniformValues
+    //    set(value) { _programUniforms = value }
+    //    get()  {
+    //        if (_programUniforms == null) _programUniforms = AGUniformValues()
+    //        return _programUniforms!!
+    //    }
 
     protected open fun drawVertices(ctx: RenderContext) {
         ctx.useBatcher { batch ->
             //batch.texture1212
-            batch.setTemporalUniforms(_programUniforms) {
-                batch.drawVertices(
-                    vertices, ctx.getTex(baseBitmap).base, smoothing, renderBlendMode,
-                    program = program,
-                )
-            }
+            //batch.setTemporalUniforms(_programUniforms) {
+            updateProgramUniforms?.invoke(ctx)
+            batch.drawVertices(
+                vertices, ctx.getTex(baseBitmap).base, smoothing, renderBlendMode,
+                program = program,
+            )
+            //}
         }
     }
 
