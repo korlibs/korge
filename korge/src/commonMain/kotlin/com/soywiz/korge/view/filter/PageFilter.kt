@@ -3,6 +3,7 @@ package com.soywiz.korge.view.filter
 import com.soywiz.kmem.*
 import com.soywiz.korag.*
 import com.soywiz.korag.shader.*
+import com.soywiz.korge.render.*
 import com.soywiz.korge.view.property.*
 import com.soywiz.korma.geom.*
 import kotlin.math.*
@@ -21,10 +22,13 @@ class PageFilter(
     vamplitude1: Double = 0.0,
     vamplitude2: Double = 0.0
 ) : ShaderFilter() {
+    object PageUB : NewUniformBlock(fixedLocation = 5) {
+        val u_Offset by vec2()
+        val u_HAmplitude by vec4()
+        val u_VAmplitude by vec4()
+    }
+
     companion object : BaseProgramProvider() {
-        val u_Offset = Uniform("u_Offset", VarType.Float2)
-        val u_HAmplitude = Uniform("u_HAmplitude", VarType.Float3)
-        val u_VAmplitude = Uniform("u_VAmplitude", VarType.Float3)
 
         private fun Program.Builder.sin01(arg: Operand) = sin(arg * (PI.lit * 0.5.lit))
         override val fragment = FragmentShaderDefault {
@@ -32,8 +36,8 @@ class PageFilter(
             SET(x01, v_Tex01)
             for (n in 0..1) {
                 val vr = x01[n]
-                val offset = u_Offset[n]
-                val amplitudes = if (n == 0) u_HAmplitude else u_VAmplitude
+                val offset = PageUB.u_Offset[n]
+                val amplitudes = if (n == 0) PageUB.u_HAmplitude["xyz"] else PageUB.u_VAmplitude["xyz"]
                 val tmp = DefaultShaders.t_Temp0[n]
                 IF(vr lt offset) {
                     val ratio = ((vr - 0.0.lit) / offset)
@@ -48,31 +52,37 @@ class PageFilter(
         }
     }
 
-    private val offset = uniforms.storageFor(u_Offset)
-    private val hamplitude = scaledUniforms.storageFor(u_HAmplitude)
-    private val vamplitude = scaledUniforms.storageFor(u_VAmplitude)
+    @ViewProperty
+    var hratio: Double = hratio
+    @ViewProperty
+    var hamplitude0: Double = hamplitude0
+    @ViewProperty
+    var hamplitude1: Double = hamplitude1
+    @ViewProperty
+    var hamplitude2: Double = hamplitude2
 
     @ViewProperty
-    var hratio: Double by offset.doubleDelegateX(default = hratio)
+    var vratio: Double = vratio
     @ViewProperty
-    var hamplitude0: Double by hamplitude.doubleDelegate(0, default = hamplitude0)
+    var vamplitude0: Double = vamplitude0
     @ViewProperty
-    var hamplitude1: Double by hamplitude.doubleDelegate(1, default = hamplitude1)
+    var vamplitude1: Double = vamplitude1
     @ViewProperty
-    var hamplitude2: Double by hamplitude.doubleDelegate(2, default = hamplitude2)
-
-    @ViewProperty
-    var vratio: Double by offset.doubleDelegateY(default = vratio)
-    @ViewProperty
-    var vamplitude0: Double by vamplitude.doubleDelegate(0, default = vamplitude0)
-    @ViewProperty
-    var vamplitude1: Double by vamplitude.doubleDelegate(1, default = vamplitude1)
-    @ViewProperty
-    var vamplitude2: Double by vamplitude.doubleDelegate(2, default = vamplitude2)
+    var vamplitude2: Double = vamplitude2
 
     override val programProvider: ProgramProvider get() = PageFilter
 
     override fun computeBorder(texWidth: Int, texHeight: Int): MarginInt {
         return MarginInt(max(max(abs(hamplitude0), abs(hamplitude1)), abs(hamplitude2)).toIntCeil())
+    }
+
+    override fun updateUniforms(ctx: RenderContext, filterScale: Double) {
+        super.updateUniforms(ctx, filterScale)
+
+        ctx[PageUB].push {
+            it[u_Offset] = Point(hratio, vratio)
+            it.set(u_HAmplitude, hamplitude0.toFloat(), hamplitude1.toFloat(), hamplitude2.toFloat(), 0f)
+            it.set(u_VAmplitude, vamplitude0.toFloat(), vamplitude1.toFloat(), vamplitude2.toFloat(), 0f)
+        }
     }
 }

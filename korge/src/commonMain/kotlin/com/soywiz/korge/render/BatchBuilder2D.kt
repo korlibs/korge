@@ -741,6 +741,7 @@ class BatchBuilder2D constructor(
     /**
      * Executes [callback] while restoring [uniform] to its current value after [callback] is exexcuted.
      */
+    @Deprecated("")
     inline fun keepUniform(uniform: Uniform, flush: Boolean = true, callback: (AGUniformValues) -> Unit) {
         ctx.keepUniform(uniform, flush, callback)
     }

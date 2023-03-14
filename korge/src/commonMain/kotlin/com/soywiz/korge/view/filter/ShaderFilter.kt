@@ -20,17 +20,24 @@ import com.soywiz.korma.geom.*
  * [fragmentCoords], [fragmentCoords01] properties and [tex] method to be used inside the shader.
  */
 abstract class ShaderFilter : Filter {
-    companion object {
-        //val u_Time = Uniform("time", VarType.Float1)
-        val u_TextureSize = Uniform("effectTextureSize", VarType.Float2)
-        val u_MaxTexCoords = Uniform("u_MaxTexCoords", VarType.Float2)
-        val u_StdTexDerivates = Uniform("u_StdTexDerivates", VarType.Float2)
-        val u_filterScale = Uniform("u_filterScale", VarType.Float1)
+    object TexInfoUB : NewUniformBlock(fixedLocation = 4) {
+        val u_TextureSize by vec2()
+        val u_MaxTexCoords by vec2()
+        val u_StdTexDerivates by vec2()
+        val u_filterScale by float()
+    }
 
-        val Program.ExpressionBuilder.v_Tex01: Operand get() = (DefaultShaders.v_Tex["xy"] / u_MaxTexCoords)
+    companion object {
+        val DEFAULT_FRAGMENT = BatchBuilder2D.PROGRAM.fragment
+
+        val Program.Builder.fragmentCoords01 get() = DefaultShaders.v_Tex["xy"]
+        val Program.Builder.fragmentCoords get() = fragmentCoords01 * TexInfoUB.u_TextureSize
+        fun Program.Builder.tex(coords: Operand) = texture2D(DefaultShaders.u_Tex, coords / TexInfoUB.u_TextureSize)
+
+        val Program.ExpressionBuilder.v_Tex01: Operand get() = (DefaultShaders.v_Tex["xy"] / TexInfoUB.u_MaxTexCoords)
 
         val Program.ExpressionBuilder.fragmentCoords01: Operand get() = DefaultShaders.v_Tex["xy"]
-        val Program.ExpressionBuilder.fragmentCoords: Operand get() = fragmentCoords01 * u_TextureSize
+        val Program.ExpressionBuilder.fragmentCoords: Operand get() = fragmentCoords01 * TexInfoUB.u_TextureSize
         fun Program.ExpressionBuilder.texture2DZeroOutside(sampler: Operand, coords: Operand, check: Boolean = true): Operand = if (check) {
             TERNARY(
                 //(step(vec2(0f.lit, 0f.lit), coords) - step(vec2(1f.lit, 1f.lit), coords)) eq vec2(0f.lit, 0f.lit),
@@ -43,7 +50,7 @@ abstract class ShaderFilter : Filter {
         }
         //return texture2D(sampler, coords)
         // @TODO: Here it should premultiply if required
-        fun Program.ExpressionBuilder.tex(coords: Operand): Operand = texture2D(DefaultShaders.u_Tex, coords / u_TextureSize)
+        fun Program.ExpressionBuilder.tex(coords: Operand): Operand = texture2D(DefaultShaders.u_Tex, coords / TexInfoUB.u_TextureSize)
     }
 
     interface ProgramProvider {
@@ -64,7 +71,7 @@ abstract class ShaderFilter : Filter {
         protected open val vertex: VertexShader = BatchBuilder2D.PROGRAM.vertex
 
         /** The [FragmentShader] used this [Filter]. This is usually overriden. */
-        protected open val fragment: FragmentShader = Filter.DEFAULT_FRAGMENT
+        protected open val fragment: FragmentShader = ShaderFilter.DEFAULT_FRAGMENT
 
         private val _program: Program by lazy { createProgram(vertex, fragment) }
 
@@ -73,18 +80,17 @@ abstract class ShaderFilter : Filter {
 
     var filtering = true
 
-    private val textureSizeHolder = FloatArray(2)
-    private val textureMaxTexCoords = FloatArray(2)
-    private val textureStdTexDerivates = FloatArray(2)
+    private var textureSizeHolder = Point()
+    private var textureMaxTexCoords = Point()
+    private var textureStdTexDerivates = Point()
 
-    val scaledUniforms = AGUniformValues()
-
-    val uniforms = AGUniformValues {
-        //Filter.u_Time to timeHolder,
-        it[u_TextureSize] = textureSizeHolder
-        it[u_MaxTexCoords] = textureMaxTexCoords
-        it[u_StdTexDerivates] = textureStdTexDerivates
-    }
+    //val scaledUniforms = AGUniformValues()
+    //val uniforms = AGUniformValues {
+    //    //Filter.u_Time to timeHolder,
+    //    it[TexInfoUB.u_TextureSize] = textureSizeHolder
+    //    it[u_MaxTexCoords] = textureMaxTexCoords
+    //    it[u_StdTexDerivates] = textureStdTexDerivates
+    //}
 
     override fun computeBorder(texWidth: Int, texHeight: Int): MarginInt {
         return MarginInt.ZERO
@@ -103,23 +109,33 @@ abstract class ShaderFilter : Filter {
     protected open fun updateUniforms(ctx: RenderContext, filterScale: Double) {
     }
 
-    private fun _updateUniforms(ctx: RenderContext, filterScale: Double) {
-        uniforms[u_filterScale] = filterScale
-        uniforms[u_TextureSize] = textureSizeHolder
-        uniforms[u_MaxTexCoords] = textureMaxTexCoords
-        uniforms[u_StdTexDerivates] = textureStdTexDerivates
+    private fun _updateUniforms(
+        ctx: RenderContext, filterScale: Double, texture: Texture,
+        texWidth: Int,
+        texHeight: Int,
+    ) {
+        textureSizeHolder = Point(texture.base.width.toFloat(), texture.base.height.toFloat())
+        textureStdTexDerivates = Point(1f / texture.base.width.toFloat(), 1f / texture.base.height.toFloat())
+        textureMaxTexCoords = Point(texWidth.toFloat() / texture.base.width.toFloat(), texHeight.toFloat() / texture.base.height.toFloat())
 
-        scaledUniforms.fastForEach { value ->
-            when (value.type.kind) {
-                VarKind.TFLOAT -> {
-                    val out = uniforms[value.uniform].f32
-                    uniforms[value.uniform].setFloatArray(out.size) {
-                        (value.f32[it] * filterScale).toFloat()
-                    }
-                }
-                else -> TODO()
-            }
+        ctx[TexInfoUB].push {
+            it[u_filterScale] = filterScale
+            it[u_TextureSize] = textureSizeHolder
+            it[u_MaxTexCoords] = textureMaxTexCoords
+            it[u_StdTexDerivates] = textureStdTexDerivates
         }
+
+        //scaledUniforms.fastForEach { value ->
+        //    when (value.type.kind) {
+        //        VarKind.TFLOAT -> {
+        //            val out = uniforms[value.uniform].f32
+        //            uniforms[value.uniform].setFloatArray(out.size) {
+        //                (value.f32[it] * filterScale).toFloat()
+        //            }
+        //        }
+        //        else -> TODO()
+        //    }
+        //}
         updateUniforms(ctx, filterScale)
     }
 
@@ -165,35 +181,27 @@ abstract class ShaderFilter : Filter {
 
         //println("$this.render()")
         // @TODO: Precompute vertices
-        textureSizeHolder[0] = texture.base.width.toFloat()
-        textureSizeHolder[1] = texture.base.height.toFloat()
-        textureStdTexDerivates[0] = 1f / texture.base.width.toFloat()
-        textureStdTexDerivates[1] = 1f / texture.base.height.toFloat()
-        textureMaxTexCoords[0] = texWidth.toFloat() / texture.base.width.toFloat()
-        textureMaxTexCoords[1] = texHeight.toFloat() / texture.base.height.toFloat()
-        _updateUniforms(ctx, filterScale)
+        _updateUniforms(ctx, filterScale, texture, texWidth, texHeight)
 
         ctx.useBatcher { batch ->
-            batch.setTemporalUniforms(this.uniforms) {
-                //println("renderColorMulInt=" + RGBA(renderColorMulInt))
-                //println("blendMode:$blendMode")
+            //println("renderColorMulInt=" + RGBA(renderColorMulInt))
+            //println("blendMode:$blendMode")
 
-                val slice = texture.sliceWithBounds(-marginLeft, -marginTop, texture.width + marginRight, texture.height + marginBottom, clamped = false)
+            val slice = texture.sliceWithBounds(-marginLeft, -marginTop, texture.width + marginRight, texture.height + marginBottom, clamped = false)
 
-                //println("matrix=$matrix, slice=$slice, marginLeft=$marginLeft")
-                batch.drawQuad(
-                    slice,
-                    x = -marginLeft.toFloat(),
-                    y = -marginTop.toFloat(),
-                    m = matrix,
-                    filtering = filtering,
-                    colorMul = renderColorMul,
-                    blendMode = blendMode,
-                    //program = if (texture.premultiplied) programPremult else programNormal
-                    program = programProvider.getProgram(),
-                )
-                //ctx.batch.flush()
-            }
+            //println("matrix=$matrix, slice=$slice, marginLeft=$marginLeft")
+            batch.drawQuad(
+                slice,
+                x = -marginLeft.toFloat(),
+                y = -marginTop.toFloat(),
+                m = matrix,
+                filtering = filtering,
+                colorMul = renderColorMul,
+                blendMode = blendMode,
+                //program = if (texture.premultiplied) programPremult else programNormal
+                program = programProvider.getProgram(),
+            )
+            //ctx.batch.flush()
         }
     }
 }

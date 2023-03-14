@@ -60,12 +60,12 @@ class ViewRenderPhaseMask(var mask: View) : ViewRenderPhase {
                 }
                 //batcher.drawQuad(Texture(maskFB), 100f, 200f, m = view.parent!!.globalMatrix)
                 //batcher.drawQuad(Texture(viewFB), 300f, 200f, m = view.parent!!.globalMatrix)
-                batcher.keepUniform(DefaultShaders.u_TexEx, flush = true) {
-                    it.set(DefaultShaders.u_TexEx, maskFB.tex)
-                    batcher.drawQuad(
-                        Texture(viewFB), m = mask.globalMatrix, program = DefaultShaders.MERGE_ALPHA_PROGRAM,
-                    )
+                ctx[DefaultShaders.TexExUB].push {
+                    it.set(u_TexEx, maskFB.tex)
                 }
+                batcher.drawQuad(
+                    Texture(viewFB), m = mask.globalMatrix, program = DefaultShaders.MERGE_ALPHA_PROGRAM,
+                )
             }
         }
         view.renderNextPhase(ctx)

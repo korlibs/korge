@@ -65,8 +65,10 @@ open class NewUniformBlock(val fixedLocation: Int) {
     protected fun ivec2(name: String? = null): Gen<PointInt> = Gen(name, layout.rawAlloc(8, 4), VarType.SInt2)
     protected fun float(name: String? = null): Gen<Float> = Gen(name, layout.rawAlloc(4, 4), VarType.Float1)
     protected fun vec2(name: String? = null): Gen<Vector2> = Gen(name, layout.rawAlloc(8, 4), VarType.Float2)
-    //protected fun vec3(name: String? = null): Gen<MVector3> = Gen(name, layout.rawAlloc(12), VarType.Float4) } // @TODO: Some drivers get this wrong
+    // @TODO: Some drivers get this wrong
+    //protected fun vec3(name: String? = null): Gen<MVector3> = Gen(name, layout.rawAlloc(12, 4), VarType.Float3)
     protected fun vec4(name: String? = null): Gen<MVector4> = Gen(name, layout.rawAlloc(16, 4), VarType.Float4)
+    protected fun mat3(name: String? = null): Gen<MMatrix4> = Gen(name, layout.rawAlloc(36, 4), VarType.Mat3)
     protected fun mat4(name: String? = null): Gen<MMatrix4> = Gen(name, layout.rawAlloc(64, 4), VarType.Mat4)
     //protected fun <T> array(size: Int, gen: Gen<T>): Gen<Array<T>> = TODO()
 
@@ -91,18 +93,29 @@ class NewUniformRef(val block: NewUniformBlock, var buffer: Buffer, var index: I
     operator fun set(uniform: NewTypedUniform<Int>, value: Int) {
         getOffset(uniform).also { buffer.setInt32(it, value) }
     }
+    operator fun set(uniform: NewTypedUniform<Float>, value: Boolean) = set(uniform, if (value) 1f else 0f)
+    operator fun set(uniform: NewTypedUniform<Float>, value: Double) = set(uniform, value.toFloat())
     operator fun set(uniform: NewTypedUniform<Point>, value: Point) = set(uniform, value.x, value.y)
     operator fun set(uniform: NewTypedUniform<Point>, value: Size) = set(uniform, value.width, value.height)
     operator fun set(uniform: NewTypedUniform<MVector4>, value: RGBA) = set(uniform, value.rf, value.gf, value.bf, value.af)
     operator fun set(uniform: NewTypedUniform<MVector4>, value: RGBAPremultiplied) = set(uniform, value.rf, value.gf, value.bf, value.af)
+    operator fun set(uniform: NewTypedUniform<MVector4>, value: ColorAdd) = set(uniform, value.rf, value.gf, value.bf, value.af)
     operator fun set(uniform: NewTypedUniform<MVector4>, value: Vector4) = set(uniform, value.x, value.y, value.z, value.w)
     operator fun set(uniform: NewTypedUniform<MVector4>, value: RectCorners) = set(uniform, value.bottomRight, value.topRight, value.bottomLeft, value.topLeft)
     operator fun set(uniform: NewTypedUniform<MVector4>, value: MVector4) = set(uniform, value.x, value.y, value.z, value.w)
-    operator fun set(uniform: NewTypedUniform<MMatrix4>, value: MMatrix4) = set(uniform, value.data)
+    operator fun set(uniform: NewTypedUniform<MMatrix4>, value: MMatrix4) {
+        if (uniform.type != VarType.Mat4) TODO()
+        set(uniform, value.data)
+    }
     operator fun set(uniform: NewTypedUniform<MMatrix4>, value: Matrix4) {
         getOffset(uniform).also {
             //println("SET OFFSET: $it")
-            for (n in 0 until 16) buffer.setUnalignedFloat32(it + (n * 4), value.getAtIndex(n))
+            when (uniform.type) {
+                VarType.Mat4 -> {
+                    for (n in 0 until 16) buffer.setUnalignedFloat32(it + (n * 4), value.getAtIndex(n))
+                }
+                else -> TODO()
+            }
         }
     }
 
@@ -120,13 +133,18 @@ class NewUniformRef(val block: NewUniformBlock, var buffer: Buffer, var index: I
             buffer.setUnalignedFloat32(it + 4, y)
         }
     }
-    operator fun set(uniform: NewTypedUniform<MVector4>, x: Float, y: Float, z: Float, w: Float) {
+    fun set(uniform: NewTypedUniform<MVector4>, x: Float, y: Float, z: Float, w: Float) {
         getOffset(uniform).also {
             buffer.setUnalignedFloat32(it + 0, x)
             buffer.setUnalignedFloat32(it + 4, y)
             buffer.setUnalignedFloat32(it + 8, z)
             buffer.setUnalignedFloat32(it + 12, w)
         }
+    }
+
+    fun set(uniform: NewTypedUniform<Int>, tex: AGTexture?, samplerInfo: AGTextureUnitInfo = AGTextureUnitInfo.DEFAULT) {
+        buffer.setUnalignedInt32(getOffset(uniform), 0)
+        //TODO()
     }
 }
 
@@ -149,6 +167,8 @@ class NewUniformBlockBuffer<T : NewUniformBlock>(val block: T) {
 
     fun reset() {
         currentIndex = -1
+        //arrayfill(buffer, 0) // @TODO: This shouldn't be necessary
+        //buffer = Buffer(block.totalSize * 1)
     }
 
     fun upload(): NewUniformBlockBuffer<T> {
@@ -168,8 +188,9 @@ class NewUniformBlockBuffer<T : NewUniformBlock>(val block: T) {
         val index1 = currentIndex * blockSize
         if (currentIndex > 0) {
             arrayequal(buffer, index0, buffer, index1, blockSize)
+            //arrayfill(buffer, 0, index0, index1)
         } else {
-            arrayfill(buffer, 0, index1, blockSize)
+            arrayfill(buffer, 0, 0, blockSize)
         }
         block(this.block, current)
         if (deduplicate && currentIndex >= 1) {

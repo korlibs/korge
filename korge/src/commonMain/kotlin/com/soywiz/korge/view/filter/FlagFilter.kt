@@ -4,6 +4,7 @@ import com.soywiz.klock.*
 import com.soywiz.kmem.*
 import com.soywiz.korag.*
 import com.soywiz.korag.shader.*
+import com.soywiz.korge.render.*
 import com.soywiz.korge.view.property.*
 import com.soywiz.korma.geom.*
 import kotlin.math.*
@@ -23,17 +24,19 @@ class FlagFilter(
     cyclesPerSecond: Double = 2.0,
     time: TimeSpan = 0.seconds
 ) : ShaderFilter() {
-    companion object : BaseProgramProvider() {
-        val u_amplitude = Uniform("amplitude", VarType.Float1)
-        val u_crestCount = Uniform("crestCount", VarType.Float1)
-        val u_cyclesPerSecond = Uniform("cyclesPerSecond", VarType.Float1)
-        val u_Time = Uniform("time", VarType.Float1)
+    object FlagUB : NewUniformBlock(fixedLocation = 5) {
+        val u_amplitude by float()
+        val u_crestCount by float()
+        val u_cyclesPerSecond by float()
+        val u_Time by float()
+    }
 
+    companion object : BaseProgramProvider() {
         override val fragment: FragmentShader = FragmentShaderDefault {
             //val x01 = fragmentCoords01.x - (ceil(abs(u_amplitude)) / u_TextureSize.x)
             val x01 = createTemp(Float1)
             SET(x01, v_Tex01.x)
-            val offsetY = sin((x01 * u_crestCount - u_Time * u_cyclesPerSecond) * PI.lit) * u_amplitude * x01
+            val offsetY = sin((x01 * FlagUB.u_crestCount - FlagUB.u_Time * FlagUB.u_cyclesPerSecond) * PI.lit) * FlagUB.u_amplitude * x01
             SET(out, tex(vec2(fragmentCoords.x, fragmentCoords.y - offsetY)))
             //BatchBuilder2D.DO_INPUT_OUTPUT(this, out)
         }
@@ -41,28 +44,30 @@ class FlagFilter(
 
     /** Maximum amplitude of the wave on the Y axis */
     @ViewProperty
-    var amplitude: Double by scaledUniforms.storageFor(u_amplitude).doubleDelegateX(amplitude)
+    var amplitude: Double = amplitude
 
     /** Number of wave crests in the X axis */
     @ViewProperty
-    var crestCount: Double by uniforms.storageFor(u_crestCount).doubleDelegateX(crestCount)
+    var crestCount: Double = crestCount
 
     /** Number of repetitions of the animation per second */
     @ViewProperty
-    var cyclesPerSecond: Double by uniforms.storageFor(u_cyclesPerSecond).doubleDelegateX(cyclesPerSecond)
-
-    /** The elapsed time for the animation in seconds */
-    var timeSeconds: Double by uniforms.storageFor(u_Time).doubleDelegateX(default = time.seconds)
+    var cyclesPerSecond: Double = cyclesPerSecond
 
     /** The elapsed time for the animation */
-    @ViewProperty
-    var time: TimeSpan
-        get() = timeSeconds.seconds
-        set(value) {
-            timeSeconds = value.seconds
-        }
+    var time: TimeSpan = time
 
     override val programProvider: ProgramProvider get() = FlagFilter
+
+    override fun updateUniforms(ctx: RenderContext, filterScale: Double) {
+        super.updateUniforms(ctx, filterScale)
+        ctx[FlagUB].push {
+            it[u_amplitude] = amplitude
+            it[u_crestCount] = crestCount
+            it[u_cyclesPerSecond] = cyclesPerSecond
+            it[u_Time] = time.seconds
+        }
+    }
 
     override fun computeBorder(texWidth: Int, texHeight: Int): MarginInt {
         return MarginInt(amplitude.absoluteValue.toIntCeil())

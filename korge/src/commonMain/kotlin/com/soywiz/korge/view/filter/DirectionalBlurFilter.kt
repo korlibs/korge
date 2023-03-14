@@ -17,28 +17,30 @@ class DirectionalBlurFilter(
     @ViewProperty
     var expandBorder: Boolean = true
 ) : ShaderFilter() {
-    companion object : BaseProgramProvider() {
-        private val u_radius = Uniform("u_radius", VarType.Float1)
-        private val u_constant1 = Uniform("u_constant1", VarType.Float1)
-        private val u_constant2 = Uniform("u_constant2", VarType.Float1)
-        private val u_direction = Uniform("u_direction", VarType.Float2)
+    object BlurUB : NewUniformBlock(fixedLocation = 5) {
+        val u_radius by float()
+        val u_constant1 by float()
+        val u_constant2 by float()
+        val u_direction by vec2()
+    }
 
+    companion object : BaseProgramProvider() {
         override val fragment = FragmentShaderDefault {
             val loopLen = createTemp(Int1)
             val gaussianResult = createTemp(Float1)
-            IF (u_radius lt 1f.lit) {
+            IF (BlurUB.u_radius lt 1f.lit) {
                 SET(out, texture2D(u_Tex, fragmentCoords01))
             } ELSE {
             //run {
                 SET(out, vec4(0f.lit, 0f.lit, 0f.lit, 0f.lit))
-                SET(loopLen, int(ceil(u_radius)))
+                SET(loopLen, int(ceil(BlurUB.u_radius)))
                 //FOR_0_UNTIL_FIXED_BREAK(loopLen / 2.lit, maxLen = 256) { x ->
                 FOR_0_UNTIL_FIXED_BREAK(loopLen, maxLen = 256) { x ->
                     val xfloat = createTemp(Float1)
                     SET(xfloat, float(x))
-                    SET(gaussianResult, u_constant1 * exp((-xfloat * xfloat) * u_constant2))
+                    SET(gaussianResult, BlurUB.u_constant1 * exp((-xfloat * xfloat) * BlurUB.u_constant2))
                     val addTemp = createTemp(Float2)
-                    SET(addTemp, (u_direction * xfloat) * u_StdTexDerivates)
+                    SET(addTemp, (BlurUB.u_direction * xfloat) * TexInfoUB.u_StdTexDerivates)
                     //SET(addTemp, (u_direction * xfloat) * u_StdTexDerivates * 2f.lit + (u_StdTexDerivates * .5f.lit))
                     SET(out, out + (texture2DZeroOutside(u_Tex, fragmentCoords01 + addTemp, check = !VIEW_FILTER_TRANSPARENT_EDGE) * gaussianResult))
                     IF(x ne 0.lit) {
@@ -93,10 +95,12 @@ class DirectionalBlurFilter(
         }
 
         //println("RADIUS: $radius")
-        uniforms[u_radius] = radius
-        uniforms[u_constant1] = constant1 * (1.0 / scaleSum)
-        uniforms[u_constant2] = constant2
-        uniforms[u_direction].set(angle.cosineD, angle.sineD)
+        ctx[BlurUB].push {
+            it[u_radius] = radius
+            it[u_constant1] = constant1 * (1.0 / scaleSum)
+            it[u_constant2] = constant2
+            it[u_direction] = Point(angle.cosineF, angle.sineF)
+        }
     }
 
     override val programProvider: ProgramProvider get() = DirectionalBlurFilter

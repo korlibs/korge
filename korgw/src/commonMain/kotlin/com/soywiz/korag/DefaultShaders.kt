@@ -10,7 +10,6 @@ fun ProgramWithDefault(
 
 interface IDefaultShaders {
     val u_Tex get() = DefaultShaders.u_Tex
-    val u_TexEx: Uniform get() = DefaultShaders.u_TexEx
     val u_ProjMat get() = DefaultShaders.u_ProjMat
     val u_ViewMat get() = DefaultShaders.u_ViewMat
     val a_Pos: Attribute get() = DefaultShaders.a_Pos
@@ -25,7 +24,10 @@ interface IDefaultShaders {
 
 object DefaultShaders {
     // from korge
-    val u_TexEx: Uniform = Uniform("u_TexEx", VarType.Sampler2D)
+    //val u_TexEx: Uniform = Uniform("u_TexEx", VarType.Sampler2D)
+    object TexExUB : NewUniformBlock(fixedLocation = 6) {
+        val u_TexEx by sampler2D()
+    }
 
     object ProjViewUB : NewUniformBlock(fixedLocation = 0) {
         val u_ProjMat by mat4()
@@ -67,7 +69,7 @@ object DefaultShaders {
 
     val MERGE_ALPHA_PROGRAM = Program(VERTEX_DEFAULT, FragmentShaderDefault {
         val coords = v_Tex["xy"]
-        SET(out, texture2D(u_Tex, coords) * texture2D(u_TexEx, coords).a)
+        SET(out, texture2D(u_Tex, coords) * texture2D(TexExUB.u_TexEx, coords).a)
     })
 
 	val FRAGMENT_DEBUG: FragmentShader = FragmentShader {

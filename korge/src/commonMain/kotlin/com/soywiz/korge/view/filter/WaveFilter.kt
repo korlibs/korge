@@ -3,6 +3,7 @@ package com.soywiz.korge.view.filter
 import com.soywiz.klock.*
 import com.soywiz.korag.*
 import com.soywiz.korag.shader.*
+import com.soywiz.korge.render.*
 import com.soywiz.korge.view.property.*
 import com.soywiz.korma.geom.*
 import kotlin.math.*
@@ -24,59 +25,63 @@ class WaveFilter(
 	cyclesPerSecondY: Double = 1.0,
 	time: TimeSpan = 0.seconds
 ) : ShaderFilter() {
+    object WaveUB : NewUniformBlock(fixedLocation = 5) {
+        val u_Time by float()
+        val u_Amplitude by vec2()
+        val u_crestCount by vec2()
+        val u_cyclesPerSecond by vec2()
+    }
+
 	companion object : BaseProgramProvider() {
-		val u_Time = Uniform("time", VarType.Float1)
-		val u_Amplitude = Uniform("amplitude", VarType.Float2)
-		val u_crestCount = Uniform("crestCount", VarType.Float2)
-		val u_cyclesPerSecond = Uniform("cyclesPerSecond", VarType.Float2)
         override val fragment = FragmentShaderDefault {
             val tmpx = t_Temp0.x
             val tmpy = t_Temp0.y
             val tmpxy = t_Temp0["zw"]
             SET(tmpxy, v_Tex01)
-            SET(tmpx, sin(PI.lit * ((tmpxy.x * u_crestCount.x) + u_Time * u_cyclesPerSecond.x)))
-            SET(tmpy, sin(PI.lit * ((tmpxy.y * u_crestCount.y) + u_Time * u_cyclesPerSecond.y)))
-            SET(out, tex(fragmentCoords - vec2(tmpy * u_Amplitude.x, tmpx * u_Amplitude.y)))
+            SET(tmpx, sin(PI.lit * ((tmpxy.x * WaveUB.u_crestCount.x) + WaveUB.u_Time * WaveUB.u_cyclesPerSecond.x)))
+            SET(tmpy, sin(PI.lit * ((tmpxy.y * WaveUB.u_crestCount.y) + WaveUB.u_Time * WaveUB.u_cyclesPerSecond.y)))
+            SET(out, tex(fragmentCoords - vec2(tmpy * WaveUB.u_Amplitude.x, tmpx * WaveUB.u_Amplitude.y)))
             //out["b"] setTo ((sin(u_Time * PI) + 1.0) / 2.0)
             //BatchBuilder2D.DO_INPUT_OUTPUT(this, out)
         }
 	}
 
-	private val amplitude = scaledUniforms.storageFor(u_Amplitude)
-	private val crestCount = uniforms.storageFor(u_crestCount)
-	private val cyclesPerSecond = uniforms.storageFor(u_cyclesPerSecond)
-
     /** Maximum amplitude of the wave on the X axis */
     @ViewProperty
-	var amplitudeX: Int by amplitude.intDelegateX(default = amplitudeX)
+	var amplitudeX: Int = amplitudeX
     /** Maximum amplitude of the wave on the Y axis */
     @ViewProperty
-	var amplitudeY: Int by amplitude.intDelegateY(default = amplitudeY)
+	var amplitudeY: Int = amplitudeY
 
     /** Number of wave crests in the X axis */
     @ViewProperty
-	var crestCountX: Double by crestCount.doubleDelegateX(default = crestCountX)
+	var crestCountX: Double = crestCountX
     /** Number of wave crests in the Y axis */
     @ViewProperty
-    var crestCountY: Double by crestCount.doubleDelegateY(default = crestCountY)
+    var crestCountY: Double = crestCountY
 
     /** Number of repetitions of the animation on the X axis per second */
     @ViewProperty
-	var cyclesPerSecondX: Double by cyclesPerSecond.doubleDelegateX(default = cyclesPerSecondX)
+	var cyclesPerSecondX: Double = cyclesPerSecondX
     /** Number of repetitions of the animation on the Y axis per second */
     @ViewProperty
-	var cyclesPerSecondY: Double by cyclesPerSecond.doubleDelegateY(default = cyclesPerSecondY)
-
-    /** The elapsed time for the animation in seconds */
-	var timeSeconds by uniforms.storageFor(u_Time).doubleDelegateX(default = time.seconds)
+	var cyclesPerSecondY: Double = cyclesPerSecondY
 
     /** The elapsed time for the animation */
     @ViewProperty
-    var time: TimeSpan
-        get() = timeSeconds.seconds
-        set(value) { timeSeconds = value.seconds }
+	var time = time
 
     override val programProvider: ProgramProvider get() = WaveFilter
+
+    override fun updateUniforms(ctx: RenderContext, filterScale: Double) {
+        super.updateUniforms(ctx, filterScale)
+        ctx[WaveUB].push {
+            it[u_Time] = time.seconds
+            it[u_Amplitude] = Point(amplitudeX, amplitudeY)
+            it[u_crestCount] = Point(crestCountX, crestCountY)
+            it[u_cyclesPerSecond] = Point(cyclesPerSecondX, cyclesPerSecondY)
+        }
+    }
 
     override fun computeBorder(texWidth: Int, texHeight: Int): MarginInt {
         return MarginInt(amplitudeY.absoluteValue, amplitudeX.absoluteValue)
