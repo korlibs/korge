@@ -3,23 +3,42 @@
 package com.soywiz.korma.geom
 
 import com.soywiz.kds.*
+import com.soywiz.kmem.*
+import com.soywiz.kmem.pack.*
 import com.soywiz.korma.annotations.*
 import com.soywiz.korma.interpolation.*
 import com.soywiz.korma.math.*
 import kotlin.math.*
 
-@KormaValueApi
-data class Matrix(
-    val a: Float,
-    val b: Float,
-    val c: Float,
-    val d: Float,
-    val tx: Float,
-    val ty: Float,
+//@KormaValueApi
+//data class Matrix(
+//    val a: Float,
+//    val b: Float,
+//    val c: Float,
+//    val d: Float,
+//    val tx: Float,
+//    val ty: Float,
+//) {
+
+// a, b, c, d are Half (16-bit float), tx and ty are Float(32-bit)
+inline class Matrix(
+    val data: Half8Pack
 ) {
+    val a: Float get() = data.h0
+    val b: Float get() = data.h1
+    val c: Float get() = data.h2
+    val d: Float get() = data.h3
+    val tx: Float get() = data.h4
+    val ty: Float get() = data.h5
+
     constructor() : this(1f, 0f, 0f, 1f, 0f, 0f)
+    constructor(a: Float, b: Float, c: Float, d: Float, tx: Float, ty: Float) :
+        this(half8PackOf(a, b, c, d, tx, ty, 0f, 0f))
     constructor(a: Double, b: Double, c: Double, d: Double, tx: Double, ty: Double) :
         this(a.toFloat(), b.toFloat(), c.toFloat(), d.toFloat(), tx.toFloat(), ty.toFloat())
+
+    fun copy(a: Float = this.a, b: Float = this.b, c: Float = this.c, d: Float = this.d, tx: Float = this.tx, ty: Float = this.ty): Matrix =
+        Matrix(a, b, c, d, tx, ty)
 
     operator fun times(other: Matrix): Matrix = Matrix.multiply(this, other)
     operator fun times(scale: Float): Matrix = Matrix(a * scale, b * scale, c * scale, d * scale, tx * scale, ty * scale)
