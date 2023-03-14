@@ -20,20 +20,16 @@ fun Project.configurePublishing(multiplatform: Boolean = true) {
 
     plugins.apply("maven-publish")
 
-    //val sourcesJar = tasks.createThis<Jar>("sourceJar") {
-    //    archiveClassifier.set("sources")
-    //    if (multiplatform) {
-    //        val mySourceSet = gkotlin.sourceSets["jvmMain"]
-    //        for (dep in mySourceSet.dependsOn + mySourceSet) {
-    //            from(dep.kotlin.srcDirs) {
-    //                into(dep.name)
-    //            }
-    //        }
-    //    } else {
-    //        val kotlinJvm = project.extensions.getByType(org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension::class.java)
-    //        from(kotlinJvm.sourceSets["main"].kotlin.srcDirs)
-    //    }
-    //}
+    val isGradlePlugin = project.name.contains("gradle-plugin")
+    val sourcesJar = if (!multiplatform && !isGradlePlugin) {
+        tasks.createThis<Jar>("sourceJar") {
+            archiveClassifier.set("sources")
+            val kotlinJvm = project.extensions.getByType(org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension::class.java)
+            from(kotlinJvm.sourceSets["main"].kotlin.srcDirs)
+        }
+    } else {
+        null
+    }
 
     //tasks.getByName("publishKorgePluginMarkerMavenPublicationToMavenLocal")
 
@@ -85,8 +81,11 @@ fun Project.configurePublishing(multiplatform: Boolean = true) {
                 }
                 val isGradlePluginMarker = publication.name.endsWith("PluginMarkerMaven")
 
-                if (multiplatform) {
+                if (!isGradlePluginMarker && !isGradlePlugin) {
                     publication.artifact(javadocJar)
+                }
+                if (sourcesJar != null) {
+                    publication.artifact(sourcesJar)
                 }
 
                 //println("PUBLICATION: ${publication.name}")
