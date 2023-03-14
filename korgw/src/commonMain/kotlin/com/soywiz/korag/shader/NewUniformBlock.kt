@@ -1,8 +1,10 @@
 package com.soywiz.korag.shader
 
+import com.soywiz.kds.iterators.*
 import com.soywiz.kmem.*
 import com.soywiz.kmem.dyn.*
 import com.soywiz.korag.*
+import com.soywiz.korim.color.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korma.geom.*
 import kotlin.reflect.*
@@ -27,6 +29,7 @@ open class NewUniformBlock(val fixedLocation: Int) {
         UniformBlock(*uniforms.map { it.uniform }.toTypedArray(), fixedLocation = fixedLocation).also {
             for (n in uniforms.indices) {
                 val item = uniforms[n]
+                //println("item=$item, voffset=${item.voffset}")
                 item.uniform.linkedOffset = item.voffset
                 item.uniform.linkedLayout = it
                 item.uniform.linkedIndex = n
@@ -34,30 +37,34 @@ open class NewUniformBlock(val fixedLocation: Int) {
                 item.linkedLayout = it
                 item.linkedIndex = n
             }
+        }.also {
+            //println("it.totalSize=${it.totalSize}")
+            //println("totalSize=${totalSize}")
         }
     }
 
-    protected fun bool(name: String? = null): Gen<List<Boolean>> = Gen(name, layout.rawAlloc(1), VarType.Bool1)
-    protected fun bool2(name: String? = null): Gen<List<Boolean>> = Gen(name, layout.rawAlloc(2), VarType.Bool2)
-    protected fun bool3(name: String? = null): Gen<List<Boolean>> = Gen(name, layout.rawAlloc(3), VarType.Bool3)
-    protected fun bool4(name: String? = null): Gen<List<Boolean>> = Gen(name, layout.rawAlloc(4), VarType.Bool4)
+    // @TODO: Fix alignment
+    protected fun bool(name: String? = null): Gen<List<Boolean>> = Gen(name, layout.rawAlloc(1, 1), VarType.Bool1)
+    protected fun bool2(name: String? = null): Gen<List<Boolean>> = Gen(name, layout.rawAlloc(2, 1), VarType.Bool2)
+    protected fun bool3(name: String? = null): Gen<List<Boolean>> = Gen(name, layout.rawAlloc(3, 1), VarType.Bool3)
+    protected fun bool4(name: String? = null): Gen<List<Boolean>> = Gen(name, layout.rawAlloc(4, 1), VarType.Bool4)
 
-    protected fun ubyte4(name: String? = null): Gen<Int> = Gen(name, layout.rawAlloc(4), VarType.UByte4)
+    protected fun ubyte4(name: String? = null): Gen<Int> = Gen(name, layout.rawAlloc(4, 1), VarType.UByte4)
 
-    protected fun short(name: String? = null): Gen<List<Boolean>> = Gen(name, layout.rawAlloc(2), VarType.Short1)
-    protected fun short2(name: String? = null): Gen<List<Boolean>> = Gen(name, layout.rawAlloc(4), VarType.Short2)
-    protected fun short3(name: String? = null): Gen<List<Boolean>> = Gen(name, layout.rawAlloc(6), VarType.Short3)
-    protected fun short4(name: String? = null): Gen<List<Boolean>> = Gen(name, layout.rawAlloc(8), VarType.Short4)
+    protected fun short(name: String? = null): Gen<List<Boolean>> = Gen(name, layout.rawAlloc(2, 2), VarType.Short1)
+    protected fun short2(name: String? = null): Gen<List<Boolean>> = Gen(name, layout.rawAlloc(4, 2), VarType.Short2)
+    protected fun short3(name: String? = null): Gen<List<Boolean>> = Gen(name, layout.rawAlloc(6, 2), VarType.Short3)
+    protected fun short4(name: String? = null): Gen<List<Boolean>> = Gen(name, layout.rawAlloc(8, 2), VarType.Short4)
 
     //= Uniform("u_Tex", VarType.Sampler2D)
-    protected fun sampler2D(name: String? = null): Gen<Int> = Gen(name, layout.rawAlloc(4), VarType.Sampler2D)
-    protected fun int(name: String? = null): Gen<Int> = Gen(name, layout.rawAlloc(4), VarType.SInt1)
-    protected fun ivec2(name: String? = null): Gen<PointInt> = Gen(name, layout.rawAlloc(8), VarType.SInt2)
-    protected fun float(name: String? = null): Gen<Float> = Gen(name, layout.rawAlloc(4), VarType.Float1)
-    protected fun vec2(name: String? = null): Gen<Vector2> = Gen(name, layout.rawAlloc(8), VarType.Float2)
+    protected fun sampler2D(name: String? = null): Gen<Int> = Gen(name, layout.rawAlloc(4, 4), VarType.Sampler2D)
+    protected fun int(name: String? = null): Gen<Int> = Gen(name, layout.rawAlloc(4, 4), VarType.SInt1)
+    protected fun ivec2(name: String? = null): Gen<PointInt> = Gen(name, layout.rawAlloc(8, 4), VarType.SInt2)
+    protected fun float(name: String? = null): Gen<Float> = Gen(name, layout.rawAlloc(4, 4), VarType.Float1)
+    protected fun vec2(name: String? = null): Gen<Vector2> = Gen(name, layout.rawAlloc(8, 4), VarType.Float2)
     //protected fun vec3(name: String? = null): Gen<MVector3> = Gen(name, layout.rawAlloc(12), VarType.Float4) } // @TODO: Some drivers get this wrong
-    protected fun vec4(name: String? = null): Gen<MVector4> = Gen(name, layout.rawAlloc(16), VarType.Float4)
-    protected fun mat4(name: String? = null): Gen<MMatrix4> = Gen(name, layout.rawAlloc(64), VarType.Mat4)
+    protected fun vec4(name: String? = null): Gen<MVector4> = Gen(name, layout.rawAlloc(16, 4), VarType.Float4)
+    protected fun mat4(name: String? = null): Gen<MMatrix4> = Gen(name, layout.rawAlloc(64, 4), VarType.Mat4)
     //protected fun <T> array(size: Int, gen: Gen<T>): Gen<Array<T>> = TODO()
 
     override fun toString(): String = "VertexLayout[${uniforms.joinToString(", ")}, fixedLocation=$fixedLocation]"
@@ -82,7 +89,11 @@ class NewUniformRef(val block: NewUniformBlock, var buffer: Buffer, var index: I
         getOffset(uniform).also { buffer.setInt32(it, value) }
     }
     operator fun set(uniform: NewTypedUniform<Point>, value: Point) = set(uniform, value.x, value.y)
+    operator fun set(uniform: NewTypedUniform<Point>, value: Size) = set(uniform, value.width, value.height)
+    operator fun set(uniform: NewTypedUniform<MVector4>, value: RGBA) = set(uniform, value.rf, value.gf, value.bf, value.af)
+    operator fun set(uniform: NewTypedUniform<MVector4>, value: RGBAPremultiplied) = set(uniform, value.rf, value.gf, value.bf, value.af)
     operator fun set(uniform: NewTypedUniform<MVector4>, value: Vector4) = set(uniform, value.x, value.y, value.z, value.w)
+    operator fun set(uniform: NewTypedUniform<MVector4>, value: RectCorners) = set(uniform, value.bottomRight, value.topRight, value.bottomLeft, value.topLeft)
     operator fun set(uniform: NewTypedUniform<MVector4>, value: MVector4) = set(uniform, value.x, value.y, value.z, value.w)
     operator fun set(uniform: NewTypedUniform<MMatrix4>, value: MMatrix4) = set(uniform, value.data)
     operator fun set(uniform: NewTypedUniform<MMatrix4>, value: Matrix4) {
@@ -95,7 +106,7 @@ class NewUniformRef(val block: NewUniformBlock, var buffer: Buffer, var index: I
     operator fun set(uniform: NewTypedUniform<MMatrix4>, value: FloatArray) {
         getOffset(uniform).also { buffer.setUnalignedArrayFloat32(it, value, 0, 16) }
     }
-    operator fun set(uniform: NewTypedUniform<Point>, value: Float) {
+    operator fun set(uniform: NewTypedUniform<Float>, value: Float) {
         getOffset(uniform).also {
             buffer.setUnalignedFloat32(it + 0, value)
         }

@@ -1089,14 +1089,14 @@ open class ProgramLayout<TVariable : VariableWithOffset>(
 	private var _lastPos: Int = 0
 
     init {
-        //if (link) {
-        //    for (n in items.indices) {
-        //        val item = items[n]
-        //        if (item.linkedLayout != null) error("$item already in a layout '${item.linkedLayout}'")
-        //        item.linkedLayout = this
-        //        item.linkedIndex = n
-        //    }
-        //}
+        if (link) {
+            for (n in items.indices) {
+                val item = items[n]
+                if (item.linkedLayout != null) error("$item already in a layout '${item.linkedLayout}'")
+                item.linkedLayout = this
+                item.linkedIndex = n
+            }
+        }
     }
 
 	val alignments: IntArrayList = items.mapInt {
@@ -1231,7 +1231,15 @@ class AGUniformBlockValues(val buffers: Array<UniformBlockBuffer>, val indices: 
 open class UniformBlockData(val block: UniformBlock) {
     val data = Buffer(block.totalSize)
     val values = block.uniforms.map { uniform ->
-        AGUniformValue(uniform, data.sliceWithSize(uniform.linkedOffset, uniform.type.bytesSize), null, AGTextureUnitInfo.DEFAULT)
+        //val dataSizeInBytes = data.sizeInBytes
+        val totalDataBytes = data.sizeInBytes
+        val dataSizeInBytes = uniform.type.bytesSize
+        val linkedOffset = uniform.linkedOffset
+        val lastIndex = linkedOffset + uniform.type.bytesSize
+        if (lastIndex > totalDataBytes) {
+            error("Invalid size linkedOffset=$linkedOffset, lastIndex=$lastIndex, dataSizeInBytes=$dataSizeInBytes, totalDataBytes=$totalDataBytes")
+        }
+        AGUniformValue(uniform, data.sliceWithSize(linkedOffset, dataSizeInBytes), null, AGTextureUnitInfo.DEFAULT)
     }
     operator fun get(uniform: Uniform): AGUniformValue {
         if (uniform.linkedLayout !== block) error("Uniform $uniform not part of $block")
