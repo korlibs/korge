@@ -3,13 +3,7 @@ import com.soywiz.kds.Extra
 import com.soywiz.kds.IntArrayList
 import com.soywiz.kmem.*
 import com.soywiz.korag.*
-import com.soywiz.korag.shader.Attribute
-import com.soywiz.korag.shader.Operand
-import com.soywiz.korag.shader.Precision
-import com.soywiz.korag.shader.Program
-import com.soywiz.korag.shader.Uniform
-import com.soywiz.korag.shader.VarType
-import com.soywiz.korag.shader.Varying
+import com.soywiz.korag.shader.*
 import com.soywiz.korge.render.BatchBuilder2D
 import com.soywiz.korge.render.RenderContext
 import com.soywiz.korge.view.BlendMode
@@ -161,8 +155,8 @@ open class FSprites(val maxSize: Int) {
                     //println(ttex.base)
                 }
                 //batch.setTemporalUniform(u_i_texSizeN[0], u_i_texSizeDataN[0]) {
-                batch.keepUniforms(u_i_texSizeN) { uniforms ->
-                    for (n in 0 until texs.size) uniforms[u_i_texSizeN[n]] = u_i_texSizeDataN[n]
+                batch.keepUniforms(FspritesUB.u_i_texSizeN) { uniforms ->
+                    for (n in 0 until texs.size) uniforms[FspritesUB.u_i_texSizeN[n]] = u_i_texSizeDataN[n]
                     batch.setViewMatrixTemp(globalMatrix) {
                         //ctx.batch.setStateFast()
                         sprites.uploadVertices(ctx)
@@ -190,7 +184,10 @@ open class FSprites(val maxSize: Int) {
 
         private val xyData = floatArrayOf(0f, 0f, /**/ 1f, 0f, /**/ 1f, 1f, /**/ 0f, 1f)
 
-        val u_i_texSizeN = Array(MAX_SUPPORTED_TEXTURES + 1) { Uniform("u_texSize$it", VarType.Float2) }
+        object FspritesUB : UniformBlock(fixedLocation = 6) {
+            val u_i_texSizeN = Array(MAX_SUPPORTED_TEXTURES + 1) { vec2("u_texSize$it").uniform.uniform }
+        }
+
         val a_xy = Attribute("a_xy", VarType.Float2, false, fixedLocation = 0)
 
         val a_pos = Attribute("a_rxy", VarType.Float2, false, fixedLocation = 1).withDivisor(1)
@@ -236,7 +233,7 @@ open class FSprites(val maxSize: Int) {
                 SET(v_TexId, a_texId)
 
                 //SET(texSize, u_i_texSizeN[0])
-                blockN(a_texId) { SET(texSize, u_i_texSizeN[it]) }
+                blockN(a_texId) { SET(texSize, FspritesUB.u_i_texSizeN[it]) }
 
                 SET(v_Tex, vec2(
                     mix(a_uv0.x, a_uv1.x, a_xy.x),

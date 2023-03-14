@@ -63,40 +63,39 @@ open class UniformBlock(val fixedLocation: Int) {
     val uniformCount: Int get() = uniforms.size
 
     // @TODO: Fix alignment
-    protected fun bool(name: String? = null): Gen<List<Boolean>> = Gen(name, layout.rawAlloc(1, 1), lastIndex++, VarType.Bool1)
-    protected fun bool2(name: String? = null): Gen<List<Boolean>> = Gen(name, layout.rawAlloc(2, 1), lastIndex++, VarType.Bool2)
-    protected fun bool3(name: String? = null): Gen<List<Boolean>> = Gen(name, layout.rawAlloc(3, 1), lastIndex++, VarType.Bool3)
-    protected fun bool4(name: String? = null): Gen<List<Boolean>> = Gen(name, layout.rawAlloc(4, 1), lastIndex++, VarType.Bool4)
-
-    protected fun ubyte4(name: String? = null): Gen<Int> = Gen(name, layout.rawAlloc(4, 1), lastIndex++, VarType.UByte4)
-
-    protected fun short(name: String? = null): Gen<List<Boolean>> = Gen(name, layout.rawAlloc(2, 2), lastIndex++, VarType.Short1)
-    protected fun short2(name: String? = null): Gen<List<Boolean>> = Gen(name, layout.rawAlloc(4, 2), lastIndex++, VarType.Short2)
-    protected fun short3(name: String? = null): Gen<List<Boolean>> = Gen(name, layout.rawAlloc(6, 2), lastIndex++, VarType.Short3)
-    protected fun short4(name: String? = null): Gen<List<Boolean>> = Gen(name, layout.rawAlloc(8, 2), lastIndex++, VarType.Short4)
-
-    //= Uniform("u_Tex", VarType.Sampler2D)
-    protected fun sampler2D(name: String? = null): Gen<Int> = Gen(name, layout.rawAlloc(4, 4), lastIndex++, VarType.Sampler2D)
-    protected fun int(name: String? = null): Gen<Int> = Gen(name, layout.rawAlloc(4, 4), lastIndex++, VarType.SInt1)
-    protected fun ivec2(name: String? = null): Gen<PointInt> = Gen(name, layout.rawAlloc(8, 4), lastIndex++, VarType.SInt2)
-    protected fun float(name: String? = null): Gen<Float> = Gen(name, layout.rawAlloc(4, 4), lastIndex++, VarType.Float1)
-    protected fun vec2(name: String? = null): Gen<Vector2> = Gen(name, layout.rawAlloc(8, 4), lastIndex++, VarType.Float2)
+    protected fun bool(name: String? = null): Gen<List<Boolean>> = gen(name, VarType.Bool1, 1, 1)
+    protected fun bool2(name: String? = null): Gen<List<Boolean>> = gen(name, VarType.Bool2, 2, 1)
+    protected fun bool3(name: String? = null): Gen<List<Boolean>> = gen(name, VarType.Bool3, 3, 1)
+    protected fun bool4(name: String? = null): Gen<List<Boolean>> = gen(name, VarType.Bool4, 4, 1)
+    protected fun ubyte4(name: String? = null): Gen<Int> = gen(name, VarType.UByte4, 4, 1)
+    protected fun short(name: String? = null): Gen<List<Boolean>> = gen(name, VarType.Short1, 2, 2)
+    protected fun short2(name: String? = null): Gen<List<Boolean>> = gen(name, VarType.Short2, 4, 2)
+    protected fun short3(name: String? = null): Gen<List<Boolean>> = gen(name, VarType.Short3, 6, 2)
+    protected fun short4(name: String? = null): Gen<List<Boolean>> = gen(name, VarType.Short4, 8, 2)
+    protected fun sampler2D(name: String? = null): Gen<Int> = gen(name, VarType.Sampler2D, 4, 4)
+    protected fun int(name: String? = null): Gen<Int> = gen(name, VarType.SInt1, 4, 4)
+    protected fun ivec2(name: String? = null): Gen<PointInt> = gen(name, VarType.SInt2, 8, 4)
+    protected fun float(name: String? = null): Gen<Float> = gen(name, VarType.Float1, 4, 4)
+    protected fun vec2(name: String? = null): Gen<Vector2> = gen(name, VarType.Float2, 8, 4)
     // @TODO: Some drivers get this wrong
-    //protected fun vec3(name: String? = null): Gen<MVector3> = Gen(name, layout.rawAlloc(12, 4), lastIndex++, VarType.Float3)
-    protected fun vec4(name: String? = null): Gen<MVector4> = Gen(name, layout.rawAlloc(16, 4), lastIndex++, VarType.Float4)
-    protected fun mat3(name: String? = null): Gen<MMatrix4> = Gen(name, layout.rawAlloc(36, 4), lastIndex++, VarType.Mat3)
-    protected fun mat4(name: String? = null): Gen<MMatrix4> = Gen(name, layout.rawAlloc(64, 4), lastIndex++, VarType.Mat4)
+    //protected fun vec3(name: String? = null): Gen<MVector3> = gen(name, VarType.Float3, 12, 4)
+    protected fun vec4(name: String? = null): Gen<MVector4> = gen(name, VarType.Float4, 16, 4)
+    protected fun mat3(name: String? = null): Gen<MMatrix4> = gen(name, VarType.Mat3, 36, 4)
+    protected fun mat4(name: String? = null): Gen<MMatrix4> = gen(name, VarType.Mat4, 64, 4)
     //protected fun <T> array(size: Int, gen: Gen<T>): Gen<Array<T>> = TODO()
+
+    fun <T> gen(name: String? = null, type: VarType, size: Int, align: Int = size): Gen<T> =
+        Gen(this, name, layout.rawAlloc(size, align), lastIndex++, type)
 
     override fun toString(): String = "VertexLayout[${uniforms.joinToString(", ")}, fixedLocation=$fixedLocation]"
 
-    class Gen<T>(val name: String?, val voffset: Int, val vindex: Int, val type: VarType) {
-        lateinit var uniform: TypedUniform<T>
+    class Gen<T>(val block: UniformBlock, var name: String?, val voffset: Int, val vindex: Int, val type: VarType) {
+        val uniform: TypedUniform<T> by lazy {
+            TypedUniform<T>(name ?: "unknown${block.uniformCount}", voffset, vindex, block, type).also { block._items.add(it) }
+        }
 
         operator fun provideDelegate(block: UniformBlock, property: KProperty<*>): TypedUniform<T> {
-            val finalName = name ?: property.name
-            uniform = TypedUniform<T>(finalName, voffset, vindex, block, type)
-            block._items.add(uniform)
+            this.name = this.name ?: property.name
             return uniform
         }
     }
