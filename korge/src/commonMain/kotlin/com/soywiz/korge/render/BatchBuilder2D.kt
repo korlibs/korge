@@ -559,6 +559,10 @@ class BatchBuilder2D constructor(
         )
     }
 
+    object TexNUB : UniformBlock(fixedLocation = 2) {
+        val u_TexN = Array(BB_MAX_TEXTURES) { sampler2D("u_Tex$it").uniform }
+    }
+
     companion object {
         val MAX_BATCH_QUADS = 16383
         //val DEFAULT_BATCH_QUADS = 0x1000
@@ -585,7 +589,7 @@ class BatchBuilder2D constructor(
         val v_TexIndex: Varying = Varying("v_TexIndex", VarType.Float1, precision = Precision.LOW)
         //val u_Tex0 = Uniform("u_Tex0", VarType.TextureUnit)
 
-        val u_TexN: Array<Uniform> = Array(BB_MAX_TEXTURES) { Uniform("u_Tex$it", VarType.Sampler2D) }
+        val u_TexN: Array<Uniform> = Array(BB_MAX_TEXTURES) { TexNUB.u_TexN[it].uniform }
 
         //val u_Tex0 = DefaultShaders.u_Tex
         //val u_Tex1 = Uniform("u_Tex1", VarType.TextureUnit)

@@ -217,6 +217,17 @@ class UniformBlockBuffer<T : UniformBlock>(val block: T) {
         currentIndex--
     }
 
+    inline fun pushTemp(block: T.(UniformRef) -> Unit, use: () -> Unit) {
+        val pushed = push(deduplicate = true, block)
+        try {
+            use()
+        } finally {
+            if (pushed) {
+                pop()
+            }
+        }
+    }
+
     inline fun push(deduplicate: Boolean = true, block: T.(UniformRef) -> Unit): Boolean {
         currentIndex++
         ensure(currentIndex + 1)

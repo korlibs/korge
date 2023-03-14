@@ -123,6 +123,10 @@ open class FSprites(val maxSize: Int) {
         }
     }
 
+    object FspritesUB : UniformBlock(fixedLocation = 6) {
+        val u_i_texSizeN = Array(MAX_SUPPORTED_TEXTURES + 1) { vec2("u_texSize$it").uniform }
+    }
+
     companion object {
         const val MAX_SUPPORTED_TEXTURES = 4
 
@@ -155,8 +159,8 @@ open class FSprites(val maxSize: Int) {
                     //println(ttex.base)
                 }
                 //batch.setTemporalUniform(u_i_texSizeN[0], u_i_texSizeDataN[0]) {
-                batch.keepUniforms(FspritesUB.u_i_texSizeN) { uniforms ->
-                    for (n in 0 until texs.size) uniforms[FspritesUB.u_i_texSizeN[n]] = u_i_texSizeDataN[n]
+                batch.keepUniforms(u_i_texSizeN) { uniforms ->
+                    for (n in 0 until texs.size) uniforms[u_i_texSizeN[n]] = u_i_texSizeDataN[n]
                     batch.setViewMatrixTemp(globalMatrix) {
                         //ctx.batch.setStateFast()
                         sprites.uploadVertices(ctx)
@@ -184,9 +188,7 @@ open class FSprites(val maxSize: Int) {
 
         private val xyData = floatArrayOf(0f, 0f, /**/ 1f, 0f, /**/ 1f, 1f, /**/ 0f, 1f)
 
-        object FspritesUB : UniformBlock(fixedLocation = 6) {
-            val u_i_texSizeN = Array(MAX_SUPPORTED_TEXTURES + 1) { vec2("u_texSize$it").uniform.uniform }
-        }
+        val u_i_texSizeN = Array(MAX_SUPPORTED_TEXTURES + 1) { FspritesUB.u_i_texSizeN[it].uniform }
 
         val a_xy = Attribute("a_xy", VarType.Float2, false, fixedLocation = 0)
 
