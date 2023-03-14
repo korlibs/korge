@@ -122,7 +122,7 @@ class FloatBitmap32(
         }
     }
 
-    fun updateComponent(block: (component: Int, value: Float) -> Float): Unit {
+    inline fun updateComponent(block: (component: Int, value: Float) -> Float): Unit {
         forEach { n, x, y ->
             setRgbaf(
                 x, y,
