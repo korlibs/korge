@@ -1,11 +1,9 @@
 package com.soywiz.korag.shader
 
-import com.soywiz.kds.iterators.*
 import com.soywiz.kmem.*
 import com.soywiz.kmem.dyn.*
 import com.soywiz.korag.*
 import com.soywiz.korim.color.*
-import com.soywiz.korio.lang.*
 import com.soywiz.korma.geom.*
 import kotlin.reflect.*
 
@@ -25,6 +23,7 @@ open class NewUniformBlock(val fixedLocation: Int) {
     private var lastIndex = 0
     val uniforms: List<NewTypedUniform<*>> get() = _items
     val totalSize: Int get() = layout.size
+    val uniformCount: Int get() = uniforms.size
     /*
     @Deprecated("")
     val uniformBlock: UniformBlock by lazy {
@@ -88,6 +87,10 @@ open class NewUniformBlock(val fixedLocation: Int) {
 }
 
 class NewUniformRef(val block: NewUniformBlock, var buffer: Buffer, var textures: Array<AGTexture?>, var index: Int) {
+    constructor(block: NewUniformBlock, size: Int = 1, index: Int = 0) : this(
+        block, Buffer(block.totalSize * size), arrayOfNulls(block.uniformCount * size), index
+    )
+
     val blockSize: Int = block.totalSize
     protected fun getOffset(uniform: NewTypedUniform<*>): Int = (index * blockSize) + uniform.voffset
 
@@ -105,23 +108,29 @@ class NewUniformRef(val block: NewUniformBlock, var buffer: Buffer, var textures
     operator fun set(uniform: NewTypedUniform<MVector4>, value: RectCorners) = set(uniform, value.bottomRight, value.topRight, value.bottomLeft, value.topLeft)
     operator fun set(uniform: NewTypedUniform<MVector4>, value: MVector4) = set(uniform, value.x, value.y, value.z, value.w)
     operator fun set(uniform: NewTypedUniform<MMatrix4>, value: MMatrix4) {
-        if (uniform.type != VarType.Mat4) TODO()
-        set(uniform, value.data)
-    }
-    operator fun set(uniform: NewTypedUniform<MMatrix4>, value: Matrix4) {
-        getOffset(uniform).also {
-            //println("SET OFFSET: $it")
-            when (uniform.type) {
-                VarType.Mat4 -> {
-                    for (n in 0 until 16) buffer.setUnalignedFloat32(it + (n * 4), value.getAtIndex(n))
-                }
-                else -> TODO()
-            }
+        when (uniform.type) {
+            VarType.Mat4 -> set(uniform, value.data, Matrix4.INDICES_BY_COLUMNS_4x4)
+            VarType.Mat3 -> set(uniform, value.data, Matrix4.INDICES_BY_COLUMNS_3x3)
+            else -> TODO()
         }
     }
-
-    operator fun set(uniform: NewTypedUniform<MMatrix4>, value: FloatArray) {
-        getOffset(uniform).also { buffer.setUnalignedArrayFloat32(it, value, 0, 16) }
+    operator fun set(uniform: NewTypedUniform<MMatrix4>, value: Matrix4) {
+        when (uniform.type) {
+            VarType.Mat4 -> set(uniform, value, Matrix4.INDICES_BY_COLUMNS_4x4)
+            VarType.Mat3 -> set(uniform, value, Matrix4.INDICES_BY_COLUMNS_3x3)
+            else -> TODO()
+        }
+    }
+    fun set(uniform: NewTypedUniform<MMatrix4>, value: Matrix4, indices: IntArray) {
+        getOffset(uniform).also {
+            //println("SET OFFSET: $it")
+            for (n in 0 until indices.size) buffer.setUnalignedFloat32(it + n * 4, value.getAtIndex(indices[n]))
+        }
+    }
+    fun set(uniform: NewTypedUniform<MMatrix4>, value: FloatArray, indices: IntArray) {
+        getOffset(uniform).also {
+            for (n in 0 until indices.size) buffer.setUnalignedFloat32(it + n * 4, value[indices[n]])
+        }
     }
     operator fun set(uniform: NewTypedUniform<Float>, value: Float) {
         getOffset(uniform).also {

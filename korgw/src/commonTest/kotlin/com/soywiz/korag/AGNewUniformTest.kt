@@ -25,8 +25,8 @@ class AGNewUniformTest {
 
     @Test
     fun testWrite() {
-        val ref = NewUniformRef(ProjViewUB, Buffer(ProjViewUB.totalSize), 0)
-        val ref2 = NewUniformRef(ProjViewUB, Buffer(ProjViewUB.totalSize), 0)
+        val ref = NewUniformRef(ProjViewUB)
+        val ref2 = NewUniformRef(ProjViewUB)
         ref[ProjViewUB.u_ProjMat] = MMatrix4().setColumns4x4(FloatArray(16) { it.toFloat() }, 0)
         ref[ProjViewUB.u_ViewMat] = MMatrix4().setColumns4x4(FloatArray(16) { -it.toFloat() }, 0)
         assertEquals(

@@ -119,18 +119,11 @@ data class Matrix4 internal constructor(
         const val M23 = 14
         const val M33 = 15
 
-        val INDICES_BY_COLUMNS = intArrayOf(
-            M00, M10, M20, M30,
-            M01, M11, M21, M31,
-            M02, M12, M22, M32,
-            M03, M13, M23, M33
-        )
-        val INDICES_BY_ROWS = intArrayOf(
-            M00, M01, M02, M03,
-            M10, M11, M12, M13,
-            M20, M21, M22, M23,
-            M30, M31, M32, M33
-        )
+        val INDICES_BY_COLUMNS_4x4 get() = MMatrix4.INDICES_BY_COLUMNS_4x4
+        val INDICES_BY_ROWS_4x4 get() = MMatrix4.INDICES_BY_ROWS_4x4
+        val INDICES_BY_COLUMNS_3x3 get() = MMatrix4.INDICES_BY_COLUMNS_3x3
+        val INDICES_BY_ROWS_3x3 get() = MMatrix4.INDICES_BY_ROWS_3x3
+
         val IDENTITY = Matrix4()
 
         fun fromColumns(
@@ -221,6 +214,28 @@ class MMatrix3D {
         const val M23 = 14
         const val M33 = 15
 
+        val INDICES_BY_COLUMNS_4x4 = intArrayOf(
+            M00, M10, M20, M30,
+            M01, M11, M21, M31,
+            M02, M12, M22, M32,
+            M03, M13, M23, M33,
+        )
+        val INDICES_BY_ROWS_4x4 = intArrayOf(
+            M00, M01, M02, M03,
+            M10, M11, M12, M13,
+            M20, M21, M22, M23,
+            M30, M31, M32, M33,
+        )
+        val INDICES_BY_COLUMNS_3x3 = intArrayOf(
+            M00, M10, M20,
+            M01, M11, M21,
+            M02, M12, M22,
+        )
+        val INDICES_BY_ROWS_3x3 = intArrayOf(
+            M00, M01, M02,
+            M10, M11, M12,
+            M20, M21, M22,
+        )
         operator fun invoke(m: MMatrix4) = MMatrix3D().copyFrom(m)
 
         fun fromRows(
