@@ -1,14 +1,17 @@
 package com.soywiz.korma.geom
 
 import com.soywiz.kmem.*
+import com.soywiz.kmem.pack.*
 import com.soywiz.korma.annotations.*
 import kotlin.math.*
 
-@KormaValueApi
-data class Rectangle(
-    val position: Point,
-    val size: Size,
+//@KormaValueApi
+inline class Rectangle(
+    val data: Float4Pack
 ) {
+    val position: Point get() = Point(data.x, data.y)
+    val size: Size get() = Size(data.w, data.z)
+
     val x: Float get() = position.x
     val y: Float get() = position.y
     val width: Float get() = size.width
@@ -16,6 +19,7 @@ data class Rectangle(
 
     companion object {
         operator fun invoke(): Rectangle = Rectangle(Point(), Size())
+        operator fun invoke(p: Point, s: Size): Rectangle = Rectangle(float4PackOf(p.x, p.y, s.width, s.height))
         operator fun invoke(x: Int, y: Int, width: Int, height: Int): Rectangle = Rectangle(Point(x, y), Size(width, height))
         operator fun invoke(x: Float, y: Float, width: Float, height: Float): Rectangle = Rectangle(Point(x, y), Size(width, height))
         operator fun invoke(x: Double, y: Double, width: Double, height: Double): Rectangle = Rectangle(Point(x, y), Size(width, height))
