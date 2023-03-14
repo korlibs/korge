@@ -86,6 +86,9 @@ open class DequeBasedPlatformAudioOutput(
 
     final override val availableSamples: Int get() = lock { deque.availableRead }
     final override suspend fun add(samples: AudioSamples, offset: Int, size: Int) {
+        while (deque.availableRead >= 441 * 4) {
+            delay(10.milliseconds)
+        }
         lock { deque.write(samples, offset, size) }
     }
 }
