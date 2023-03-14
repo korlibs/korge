@@ -23,16 +23,16 @@ inline class Vector3(val data: Float4Pack) {
     operator fun unaryPlus(): Vector3 = this
     operator fun unaryMinus(): Vector3 = Vector3(-this.x, -this.y, -this.z)
 
-    operator fun plus(other: Vector3): Vector3 = Vector3(this.x + other.x, this.y + other.y, this.z + other.z)
-    operator fun minus(other: Vector3): Vector3 = Vector3(this.x - other.x, this.y - other.y, this.z - other.z)
+    operator fun plus(v: Vector3): Vector3 = Vector3(this.x + v.x, this.y + v.y, this.z + v.z)
+    operator fun minus(v: Vector3): Vector3 = Vector3(this.x - v.x, this.y - v.y, this.z - v.z)
 
-    operator fun times(other: Vector3): Vector3 = Vector3(this.x * other.x, this.y * other.y, this.z * other.z)
-    operator fun div(other: Vector3): Vector3 = Vector3(this.x / other.x, this.y / other.y, this.z / other.z)
-    operator fun rem(other: Vector3): Vector3 = Vector3(this.x % other.x, this.y % other.y, this.z % other.z)
+    operator fun times(v: Vector3): Vector3 = Vector3(this.x * v.x, this.y * v.y, this.z * v.z)
+    operator fun div(v: Vector3): Vector3 = Vector3(this.x / v.x, this.y / v.y, this.z / v.z)
+    operator fun rem(v: Vector3): Vector3 = Vector3(this.x % v.x, this.y % v.y, this.z % v.z)
 
-    operator fun times(other: Float): Vector3 = Vector3(this.x * other, this.y * other, this.z * other)
-    operator fun div(other: Float): Vector3 = Vector3(this.x / other, this.y / other, this.z / other)
-    operator fun rem(other: Float): Vector3 = Vector3(this.x % other, this.y % other, this.z % other)
+    operator fun times(v: Float): Vector3 = Vector3(this.x * v, this.y * v, this.z * v)
+    operator fun div(v: Float): Vector3 = Vector3(this.x / v, this.y / v, this.z / v)
+    operator fun rem(v: Float): Vector3 = Vector3(this.x % v, this.y % v, this.z % v)
 
     infix fun dot(v: Vector3): Float = (x * v.x) + (y * v.y) + (z * v.z)
 
