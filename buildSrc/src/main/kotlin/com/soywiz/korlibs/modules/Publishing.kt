@@ -22,9 +22,9 @@ fun Project.configurePublishing(multiplatform: Boolean = true) {
 
     plugins.apply("maven-publish")
 
-    //val javadocJar = tasks.createThis<Jar>("javadocJar") {
-    //    archiveClassifier.set("javadoc")
-    //}
+    val javadocJar = tasks.createThis<Jar>("javadocJar") {
+        archiveClassifier.set("javadoc")
+    }
     //val sourcesJar = tasks.createThis<Jar>("sourceJar") {
     //    archiveClassifier.set("sources")
     //    if (multiplatform) {
@@ -82,25 +82,12 @@ fun Project.configurePublishing(multiplatform: Boolean = true) {
         afterEvaluate {
             //println(gkotlin.sourceSets.names)
             publications.withType(MavenPublication::class.java, Action { publication ->
-                //println("Publication: $publication : ${publication.name} : ${publication.artifactId}")
-                if (publication.name == "kotlinMultiplatform") {
-                    //publication.artifact(sourcesJar) {}
-                    //publication.artifact(emptyJar) {}
+                val isGradlePluginMarker = publication.name.endsWith("PluginMarkerMaven")
+
+                if (multiplatform) {
+                    publication.artifact(javadocJar)
                 }
 
-                //val mustIncludeDocs = publication.name != "kotlinMultiplatform"
-                val mustIncludeDocs = true
-
-                //if (publication.name == "")
-                //if (mustIncludeDocs) {
-                //    publication.artifact(javadocJar)
-                //}
-
-                //if (!multiplatform) {
-                //    publication.artifact(sourcesJar)
-                //}
-
-                val isGradlePluginMarker = publication.name.endsWith("PluginMarkerMaven")
                 //println("PUBLICATION: ${publication.name}")
 
                 //if (multiplatform) {
