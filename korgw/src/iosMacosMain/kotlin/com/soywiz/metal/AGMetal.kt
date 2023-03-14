@@ -29,7 +29,7 @@ class AGMetal(private val view: MTKView) : AG() {
         drawOffset: Int,
         blending: AGBlending,
         uniforms: AGUniformValues,
-        uniformBlocks: AGUniformBlocksBuffersRef,
+        newUniformBlocks: AGNewUniformBlocksBuffersRef,
         stencilRef: AGStencilReference,
         stencilOpFunc: AGStencilOpFunc,
         colorMask: AGColorMask,
@@ -65,7 +65,7 @@ class AGMetal(private val view: MTKView) : AG() {
                     currentBuffer += 1uL
                 }
 
-                uniformBlocks.fastForEachUniform {
+                newUniformBlocks.fastForEachUniform {
                     setVertexBuffer(it.data.toMetal.buffer, 0, currentBuffer)
                     currentBuffer += 1uL
                 }
