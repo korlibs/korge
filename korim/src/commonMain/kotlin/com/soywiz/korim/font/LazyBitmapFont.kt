@@ -76,7 +76,8 @@ class LazyBitmapFont(
             // @TODO: precompute all glyph images to try to add first the bigger ones to better optimize space
             codePoints.fastForEach { codePoint ->
                 glyphs.getOrPut(codePoint) { codePoint ->
-                    val border = kotlin.math.max(4, (fontSize / 8.0).toIntCeil())
+                    // @TODO: This border is affecting text bounds. We should check.
+                    val border = if (distanceField != null) kotlin.math.max(4, (fontSize / 8.0).toIntCeil()) else 1
                     val result = font.renderGlyphToBitmap(fontSize, codePoint, paint = Colors.WHITE, fill = true, border = border, effect = null)
                     val bmp = result.bmp.toBMP32()
 

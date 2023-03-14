@@ -54,7 +54,7 @@ class ViewsJvmTest : ViewsForTesting(log = true) {
     fun testTextBounds() = viewsTest {
         val font = resourcesVfs["Pacifico.ttf"].readFont()
         run {
-            val text = text("WTF is going on", 64.0)
+            val text = text("WTF is going on", 64.0, font = DefaultTtfFont.lazyBitmap)
             assertEquals(MRectangleInt(2, 0, 416, 73), text.globalBounds.toInt())
             //assertEquals(RectangleInt(0, 0, 420, 71), text.globalBounds.toInt())
             //assertEquals(RectangleInt(0, 15, 417, 56), text.globalBounds.toInt())
