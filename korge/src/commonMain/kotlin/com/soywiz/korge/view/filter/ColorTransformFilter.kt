@@ -10,7 +10,7 @@ import com.soywiz.korim.color.*
  * A [Filter] applying a multiplicative and additive color transformation to the view.
  */
 class ColorTransformFilter(colorTransform: ColorTransform) : ShaderFilter() {
-    object ColorTransformUB : NewUniformBlock(fixedLocation = 5) {
+    object ColorTransformUB : UniformBlock(fixedLocation = 5) {
         val u_ColorMul by vec4()
         val u_ColorAdd by vec4()
     }

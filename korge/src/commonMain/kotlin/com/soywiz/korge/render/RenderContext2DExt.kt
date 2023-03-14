@@ -14,7 +14,7 @@ import com.soywiz.korma.geom.*
 // https://iquilezles.org/articles/distfunctions
 // https://iquilezles.org/articles/distfunctions2d/#:~:text=length(p)%20%2D%20r%3B%0A%7D-,Rounded%20Box%20%2D%20exact,-(https%3A//www
 object MaterialRender {
-    object MaterialBlockUB : NewUniformBlock(fixedLocation = 3) {
+    object MaterialBlockUB : UniformBlock(fixedLocation = 3) {
         val u_ShadowColor by vec4()
         val u_ShadowRadius by float()
         val u_ShadowOffset by vec2()

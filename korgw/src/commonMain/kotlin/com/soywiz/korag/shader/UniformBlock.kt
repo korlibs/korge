@@ -1,5 +1,6 @@
 package com.soywiz.korag.shader
 
+import com.soywiz.kds.iterators.*
 import com.soywiz.kmem.*
 import com.soywiz.kmem.dyn.*
 import com.soywiz.korag.*
@@ -7,44 +8,59 @@ import com.soywiz.korim.color.*
 import com.soywiz.korma.geom.*
 import kotlin.reflect.*
 
+class UniformBlocksBuffersRef(
+    val blocks: Array<UniformBlockBuffer<*>?>,
+    val buffers: Array<AGBuffer?>,
+    val textures: Array<Array<AGTexture?>?>,
+    val texturesInfo: Array<IntArray?>,
+    val valueIndices: IntArray
+) {
+    val size: Int get() = blocks.size
+
+    companion object {
+        val EMPTY = UniformBlocksBuffersRef(emptyArray(), emptyArray(), emptyArray(), emptyArray(),  IntArray(0))
+    }
+
+    inline fun fastForEachBlock(callback: (index: Int, block: UniformBlockBuffer<*>, buffer: AGBuffer?, textures: Array<AGTexture?>?, texturesInfo: IntArray?, valueIndex: Int) -> Unit) {
+        for (n in 0 until size) {
+            val block = blocks[n] ?: continue
+            callback(n, block, buffers[n], textures[n], texturesInfo[n], valueIndices[n])
+        }
+    }
+
+    // @TODO: This won't be required in backends supporting uniform buffers, since the buffer can just be uploaded
+    inline fun fastForEachUniform(callback: (AGUniformValue) -> Unit) {
+        //println("AGUniformBlocksBuffersRef: ${blocks.toList()} : ${valueIndices.toList()}")
+        fastForEachBlock { index, block, buffer, textures, texturesInfo, valueIndex ->
+            if (valueIndex >= 0) {
+                val byteOffset = valueIndex * block.block.totalSize
+                //println(" :: index=$index, block=$block, buffer=$buffer, mem=${buffer?.mem}, valueIndex=$valueIndex, byteOffset=$byteOffset")
+                val buffer1 = buffer?.mem ?: error("Memory is empty for block $block")
+                block.readFrom(buffer1, textures, texturesInfo, byteOffset).fastForEach {
+                    callback(it)
+                }
+            }
+        }
+    }
+}
+
 @Suppress("unused")
-class NewTypedUniform<T>(name: String, val voffset: Int, var vindex: Int, val block: NewUniformBlock, type: VarType)
+class TypedUniform<T>(name: String, val voffset: Int, var vindex: Int, val block: UniformBlock, type: VarType)
     : VariableWithOffset(name, type, 1, Precision.DEFAULT)
 {
     val uniform: Uniform = Uniform(name, type, 1, typedUniform = this)
     val varType: VarType get() = uniform.type
-    operator fun getValue(thisRef: Any?, property: KProperty<*>): NewTypedUniform<T> = this
+    operator fun getValue(thisRef: Any?, property: KProperty<*>): TypedUniform<T> = this
     override fun toString(): String = "TypedUniform(name='$name', offset=$voffset, type=$type)"
 }
 
-open class NewUniformBlock(val fixedLocation: Int) {
+open class UniformBlock(val fixedLocation: Int) {
     private val layout = KMemLayoutBuilder()
-    private val _items = arrayListOf<NewTypedUniform<*>>()
+    private val _items = arrayListOf<TypedUniform<*>>()
     private var lastIndex = 0
-    val uniforms: List<NewTypedUniform<*>> get() = _items
+    val uniforms: List<TypedUniform<*>> get() = _items
     val totalSize: Int get() = layout.size
     val uniformCount: Int get() = uniforms.size
-    /*
-    @Deprecated("")
-    val uniformBlock: UniformBlock by lazy {
-        UniformBlock(*uniforms.map { it.uniform }.toTypedArray(), fixedLocation = fixedLocation).also {
-            for (n in uniforms.indices) {
-                val item = uniforms[n]
-                //println("item=$item, voffset=${item.voffset}")
-                item.uniform.linkedOffset = item.voffset
-                item.uniform.linkedLayout = it
-                item.uniform.linkedIndex = n
-                item.linkedOffset = item.voffset
-                item.linkedLayout = it
-                item.linkedIndex = n
-            }
-        }.also {
-            //println("it.totalSize=${it.totalSize}")
-            //println("totalSize=${totalSize}")
-        }
-    }
-
-     */
 
     // @TODO: Fix alignment
     protected fun bool(name: String? = null): Gen<List<Boolean>> = Gen(name, layout.rawAlloc(1, 1), lastIndex++, VarType.Bool1)
@@ -75,19 +91,19 @@ open class NewUniformBlock(val fixedLocation: Int) {
     override fun toString(): String = "VertexLayout[${uniforms.joinToString(", ")}, fixedLocation=$fixedLocation]"
 
     class Gen<T>(val name: String?, val voffset: Int, val vindex: Int, val type: VarType) {
-        lateinit var uniform: NewTypedUniform<T>
+        lateinit var uniform: TypedUniform<T>
 
-        operator fun provideDelegate(block: NewUniformBlock, property: KProperty<*>): NewTypedUniform<T> {
+        operator fun provideDelegate(block: UniformBlock, property: KProperty<*>): TypedUniform<T> {
             val finalName = name ?: property.name
-            uniform = NewTypedUniform<T>(finalName, voffset, vindex, block, type)
+            uniform = TypedUniform<T>(finalName, voffset, vindex, block, type)
             block._items.add(uniform)
             return uniform
         }
     }
 }
 
-class NewUniformRef(val block: NewUniformBlock, var buffer: Buffer, var textures: Array<AGTexture?>, var texturesInfo: IntArray, var index: Int) {
-    constructor(block: NewUniformBlock, size: Int = 1, index: Int = 0) : this(
+class UniformRef(val block: UniformBlock, var buffer: Buffer, var textures: Array<AGTexture?>, var texturesInfo: IntArray, var index: Int) {
+    constructor(block: UniformBlock, size: Int = 1, index: Int = 0) : this(
         block, Buffer(block.totalSize * size),
         arrayOfNulls(block.uniformCount * size),
         IntArray(block.uniformCount * size),
@@ -95,58 +111,58 @@ class NewUniformRef(val block: NewUniformBlock, var buffer: Buffer, var textures
     )
 
     val blockSize: Int = block.totalSize
-    protected fun getOffset(uniform: NewTypedUniform<*>): Int = (index * blockSize) + uniform.voffset
+    protected fun getOffset(uniform: TypedUniform<*>): Int = (index * blockSize) + uniform.voffset
 
-    operator fun set(uniform: NewTypedUniform<Int>, value: Int) {
+    operator fun set(uniform: TypedUniform<Int>, value: Int) {
         getOffset(uniform).also { buffer.setInt32(it, value) }
     }
-    operator fun set(uniform: NewTypedUniform<Float>, value: Boolean) = set(uniform, if (value) 1f else 0f)
-    operator fun set(uniform: NewTypedUniform<Float>, value: Double) = set(uniform, value.toFloat())
-    operator fun set(uniform: NewTypedUniform<Point>, value: Point) = set(uniform, value.x, value.y)
-    operator fun set(uniform: NewTypedUniform<Point>, value: Size) = set(uniform, value.width, value.height)
-    operator fun set(uniform: NewTypedUniform<MVector4>, value: RGBA) = set(uniform, value.rf, value.gf, value.bf, value.af)
-    operator fun set(uniform: NewTypedUniform<MVector4>, value: RGBAPremultiplied) = set(uniform, value.rf, value.gf, value.bf, value.af)
-    operator fun set(uniform: NewTypedUniform<MVector4>, value: ColorAdd) = set(uniform, value.rf, value.gf, value.bf, value.af)
-    operator fun set(uniform: NewTypedUniform<MVector4>, value: Vector4) = set(uniform, value.x, value.y, value.z, value.w)
-    operator fun set(uniform: NewTypedUniform<MVector4>, value: RectCorners) = set(uniform, value.bottomRight, value.topRight, value.bottomLeft, value.topLeft)
-    operator fun set(uniform: NewTypedUniform<MVector4>, value: MVector4) = set(uniform, value.x, value.y, value.z, value.w)
-    operator fun set(uniform: NewTypedUniform<MMatrix4>, value: MMatrix4) {
+    operator fun set(uniform: TypedUniform<Float>, value: Boolean) = set(uniform, if (value) 1f else 0f)
+    operator fun set(uniform: TypedUniform<Float>, value: Double) = set(uniform, value.toFloat())
+    operator fun set(uniform: TypedUniform<Point>, value: Point) = set(uniform, value.x, value.y)
+    operator fun set(uniform: TypedUniform<Point>, value: Size) = set(uniform, value.width, value.height)
+    operator fun set(uniform: TypedUniform<MVector4>, value: RGBA) = set(uniform, value.rf, value.gf, value.bf, value.af)
+    operator fun set(uniform: TypedUniform<MVector4>, value: RGBAPremultiplied) = set(uniform, value.rf, value.gf, value.bf, value.af)
+    operator fun set(uniform: TypedUniform<MVector4>, value: ColorAdd) = set(uniform, value.rf, value.gf, value.bf, value.af)
+    operator fun set(uniform: TypedUniform<MVector4>, value: Vector4) = set(uniform, value.x, value.y, value.z, value.w)
+    operator fun set(uniform: TypedUniform<MVector4>, value: RectCorners) = set(uniform, value.bottomRight, value.topRight, value.bottomLeft, value.topLeft)
+    operator fun set(uniform: TypedUniform<MVector4>, value: MVector4) = set(uniform, value.x, value.y, value.z, value.w)
+    operator fun set(uniform: TypedUniform<MMatrix4>, value: MMatrix4) {
         when (uniform.type) {
             VarType.Mat4 -> set(uniform, value.data, Matrix4.INDICES_BY_COLUMNS_4x4)
             VarType.Mat3 -> set(uniform, value.data, Matrix4.INDICES_BY_COLUMNS_3x3)
             else -> TODO()
         }
     }
-    operator fun set(uniform: NewTypedUniform<MMatrix4>, value: Matrix4) {
+    operator fun set(uniform: TypedUniform<MMatrix4>, value: Matrix4) {
         when (uniform.type) {
             VarType.Mat4 -> set(uniform, value, Matrix4.INDICES_BY_COLUMNS_4x4)
             VarType.Mat3 -> set(uniform, value, Matrix4.INDICES_BY_COLUMNS_3x3)
             else -> TODO()
         }
     }
-    fun set(uniform: NewTypedUniform<MMatrix4>, value: Matrix4, indices: IntArray) {
+    fun set(uniform: TypedUniform<MMatrix4>, value: Matrix4, indices: IntArray) {
         getOffset(uniform).also {
             //println("SET OFFSET: $it")
             for (n in 0 until indices.size) buffer.setUnalignedFloat32(it + n * 4, value.getAtIndex(indices[n]))
         }
     }
-    fun set(uniform: NewTypedUniform<MMatrix4>, value: FloatArray, indices: IntArray) {
+    fun set(uniform: TypedUniform<MMatrix4>, value: FloatArray, indices: IntArray) {
         getOffset(uniform).also {
             for (n in 0 until indices.size) buffer.setUnalignedFloat32(it + n * 4, value[indices[n]])
         }
     }
-    operator fun set(uniform: NewTypedUniform<Float>, value: Float) {
+    operator fun set(uniform: TypedUniform<Float>, value: Float) {
         getOffset(uniform).also {
             buffer.setUnalignedFloat32(it + 0, value)
         }
     }
-    operator fun set(uniform: NewTypedUniform<Point>, x: Float, y: Float) {
+    operator fun set(uniform: TypedUniform<Point>, x: Float, y: Float) {
         getOffset(uniform).also {
             buffer.setUnalignedFloat32(it + 0, x)
             buffer.setUnalignedFloat32(it + 4, y)
         }
     }
-    fun set(uniform: NewTypedUniform<MVector4>, x: Float, y: Float, z: Float, w: Float) {
+    fun set(uniform: TypedUniform<MVector4>, x: Float, y: Float, z: Float, w: Float) {
         getOffset(uniform).also {
             buffer.setUnalignedFloat32(it + 0, x)
             buffer.setUnalignedFloat32(it + 4, y)
@@ -155,14 +171,14 @@ class NewUniformRef(val block: NewUniformBlock, var buffer: Buffer, var textures
         }
     }
 
-    fun set(uniform: NewTypedUniform<Int>, tex: AGTexture?, samplerInfo: AGTextureUnitInfo = AGTextureUnitInfo.DEFAULT) {
+    fun set(uniform: TypedUniform<Int>, tex: AGTexture?, samplerInfo: AGTextureUnitInfo = AGTextureUnitInfo.DEFAULT) {
         buffer.setUnalignedInt32(getOffset(uniform), -1)
         textures[index * blockSize + uniform.vindex] = tex
         texturesInfo[index * blockSize + uniform.vindex] = samplerInfo.data
     }
 }
 
-class NewUniformBlockBuffer<T : NewUniformBlock>(val block: T) {
+class UniformBlockBuffer<T : UniformBlock>(val block: T) {
     val agBuffer = AGBuffer()
 
     val blockSize = block.totalSize
@@ -171,7 +187,7 @@ class NewUniformBlockBuffer<T : NewUniformBlock>(val block: T) {
     @PublishedApi internal var textures = arrayOfNulls<AGTexture?>(texBlockSize * 1)
     @PublishedApi internal var texturesInfo = IntArray(texBlockSize * 1)
     private val bufferSize: Int get() = buffer.sizeInBytes / blockSize
-    val current = NewUniformRef(block, buffer, textures, texturesInfo, -1)
+    val current = UniformRef(block, buffer, textures, texturesInfo, -1)
     var currentIndex by current::index
     val size: Int get() = currentIndex + 1
 
@@ -193,7 +209,7 @@ class NewUniformBlockBuffer<T : NewUniformBlock>(val block: T) {
         //buffer = Buffer(block.totalSize * 1)
     }
 
-    fun upload(): NewUniformBlockBuffer<T> {
+    fun upload(): UniformBlockBuffer<T> {
         agBuffer.upload(buffer, 0, kotlin.math.max(0, (currentIndex + 1) * block.totalSize))
         return this
     }
@@ -202,7 +218,7 @@ class NewUniformBlockBuffer<T : NewUniformBlock>(val block: T) {
         currentIndex--
     }
 
-    inline fun push(deduplicate: Boolean = true, block: T.(NewUniformRef) -> Unit): Boolean {
+    inline fun push(deduplicate: Boolean = true, block: T.(UniformRef) -> Unit): Boolean {
         currentIndex++
         ensure(currentIndex + 1)
         val blockSize = this.blockSize

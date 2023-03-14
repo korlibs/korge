@@ -25,7 +25,7 @@ class WaveFilter(
 	cyclesPerSecondY: Double = 1.0,
 	time: TimeSpan = 0.seconds
 ) : ShaderFilter() {
-    object WaveUB : NewUniformBlock(fixedLocation = 5) {
+    object WaveUB : UniformBlock(fixedLocation = 5) {
         val u_Time by float()
         val u_Amplitude by vec2()
         val u_crestCount by vec2()

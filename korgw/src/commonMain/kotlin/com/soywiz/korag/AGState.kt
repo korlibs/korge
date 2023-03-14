@@ -803,7 +803,7 @@ data class AGBatch(
     // Program & Uniforms
     var program: Program = DefaultShaders.PROGRAM_DEBUG,
     var uniforms: AGUniformValues = AGUniformValues.EMPTY,
-    val newUniformBlocks: AGNewUniformBlocksBuffersRef = AGNewUniformBlocksBuffersRef.EMPTY,
+    val newUniformBlocks: UniformBlocksBuffersRef = UniformBlocksBuffersRef.EMPTY,
 
     // State
     var blending: AGBlending = AGBlending.NORMAL,

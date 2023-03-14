@@ -22,7 +22,7 @@ class PageFilter(
     vamplitude1: Double = 0.0,
     vamplitude2: Double = 0.0
 ) : ShaderFilter() {
-    object PageUB : NewUniformBlock(fixedLocation = 5) {
+    object PageUB : UniformBlock(fixedLocation = 5) {
         val u_Offset by vec2()
         val u_HAmplitude by vec4()
         val u_VAmplitude by vec4()

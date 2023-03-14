@@ -1,12 +1,9 @@
 package com.soywiz.korgw
 
-import com.soywiz.kmem.*
 import com.soywiz.korag.shader.*
-import com.soywiz.korma.geom.*
-import kotlin.test.*
 
 class AGUniformsTest {
-    object UB : NewUniformBlock(fixedLocation = 0) {
+    object UB : UniformBlock(fixedLocation = 0) {
         val projMatrix by mat4()
         val viewMatrix by mat4()
         val color1 by ubyte4()

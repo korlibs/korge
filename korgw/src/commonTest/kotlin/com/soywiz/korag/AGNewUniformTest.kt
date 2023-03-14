@@ -7,7 +7,7 @@ import kotlin.test.*
 
 class AGNewUniformTest {
     // from korge
-    object ProjViewUB : NewUniformBlock(fixedLocation = 0) {
+    object ProjViewUB : UniformBlock(fixedLocation = 0) {
         val u_ProjMat by mat4()
         val u_ViewMat by mat4()
     }
@@ -25,8 +25,8 @@ class AGNewUniformTest {
 
     @Test
     fun testWrite() {
-        val ref = NewUniformRef(ProjViewUB)
-        val ref2 = NewUniformRef(ProjViewUB)
+        val ref = UniformRef(ProjViewUB)
+        val ref2 = UniformRef(ProjViewUB)
         ref[ProjViewUB.u_ProjMat] = MMatrix4().setColumns4x4(FloatArray(16) { it.toFloat() }, 0)
         ref[ProjViewUB.u_ViewMat] = MMatrix4().setColumns4x4(FloatArray(16) { -it.toFloat() }, 0)
         assertEquals(
@@ -40,7 +40,7 @@ class AGNewUniformTest {
 
     @Test
     fun testWriteBlock() {
-        val buffer = NewUniformBlockBuffer(ProjViewUB)
+        val buffer = UniformBlockBuffer(ProjViewUB)
         assertEquals(0, buffer.size)
         buffer.push(deduplicate = true) {
             it[u_ProjMat] = Matrix4.IDENTITY

@@ -24,17 +24,17 @@ interface IDefaultShaders {
 
 object DefaultShaders {
     // from korge
-    object TexExUB : NewUniformBlock(fixedLocation = 6) {
+    object TexExUB : UniformBlock(fixedLocation = 6) {
         val u_TexEx by sampler2D()
     }
     val u_TexEx: Uniform get() = TexExUB.u_TexEx.uniform
 
-    object ProjViewUB : NewUniformBlock(fixedLocation = 0) {
+    object ProjViewUB : UniformBlock(fixedLocation = 0) {
         val u_ProjMat by mat4()
         val u_ViewMat by mat4()
     }
 
-    object TexUB : NewUniformBlock(fixedLocation = 1) {
+    object TexUB : UniformBlock(fixedLocation = 1) {
         val u_Tex by sampler2D()
     }
 

@@ -120,7 +120,7 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
         drawOffset: Int,
         blending: AGBlending,
         uniforms: AGUniformValues,
-        newUniformBlocks: AGNewUniformBlocksBuffersRef,
+        newUniformBlocks: UniformBlocksBuffersRef,
         stencilRef: AGStencilReference,
         stencilOpFunc: AGStencilOpFunc,
         colorMask: AGColorMask,
@@ -425,7 +425,7 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
     // UBO
     fun uniformsSet(
         uniforms: AGUniformValues,
-        newUniformBlocks: AGNewUniformBlocksBuffersRef,
+        newUniformBlocks: UniformBlocksBuffersRef,
     ) {
         val glProgram: GLBaseProgram = currentProgram ?: return
 

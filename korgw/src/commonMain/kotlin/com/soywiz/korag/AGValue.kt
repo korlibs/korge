@@ -9,17 +9,7 @@ import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 import kotlin.math.*
 
-class AGUniformValue constructor(
-    val uniform: Uniform,
-    data: Buffer = Buffer(uniform.totalBytes),
-    texture: AGTexture? = null,
-    textureUnitInfo: AGTextureUnitInfo = AGTextureUnitInfo.DEFAULT,
-) : AGValue(uniform, data, texture, textureUnitInfo) {
-    override fun equals(other: Any?): Boolean = other is AGUniformValue && this.uniform == uniform && this.data == other.data && this.texture == other.texture && this.textureUnitInfo == other.textureUnitInfo
-    override fun hashCode(): Int = uniform.hashCode() + super.hashCode()
-    override fun toString(): String = "AGUniformValue[$uniform][${super.toString()}]"
-}
-
+@Deprecated("")
 class AGUniformValues(val capacity: Int = 8 * 1024) {
     private val data = Buffer(capacity)
     private var allocOffset = 0
@@ -120,6 +110,7 @@ class AGUniformValues(val capacity: Int = 8 * 1024) {
     override fun toString(): String = "AGUniformValues(${values.joinToString(", ") { "${it.uniform.name}=" + valueToString(it) }})"
 }
 
+@Deprecated("")
 fun AGBufferExtractToFloatAndInts(type: VarType, arrayCount: Int, buffer: Buffer, offset: Int, out: Buffer) {
     val totalElements: Int = type.elementCount * arrayCount
     val totalBytes: Int = type.bytesSize * arrayCount
@@ -138,53 +129,19 @@ fun AGBufferExtractToFloatAndInts(type: VarType, arrayCount: Int, buffer: Buffer
     }
 }
 
-@Deprecated("UniformBlockBuffer/UniformBlockData")
-class AGUniformsData(val buffers: Array<AGUniformBuffer>, val indices: IntArray) {
-    val size = min(buffers.size, indices.size)
-    inline fun forEachUniform(block: (buffer: AGUniformBuffer, index: Int) -> Unit) {
-        for (n in 0 until size) {
-            block(buffers[n], indices[n])
-        }
-    }
-}
-
-@Deprecated("UniformBlockBuffer/UniformBlockData")
-class AGUniformBuffer(
+@Deprecated("")
+class AGUniformValue(
     val uniform: Uniform,
-    val maxElements: Int,
-    val data: Buffer = Buffer(maxElements * uniform.totalBytes),
-) {
-    var currentIndex = 0
-    val value = AGUniformValue(uniform, Buffer(uniform.totalBytes), null, AGTextureUnitInfo.DEFAULT)
-    val textures = Array<AGTexture?>(maxElements) { null }
-    val textureUnitInfos: IntArray = IntArray(maxElements) // Array<AGTextureUnitInfo>
-
-    fun reset() {
-        currentIndex = 0
-    }
-
-    inline fun put(block: AGValue.() -> Unit): Int {
-        val v = value
-        block(v)
-        return put(v)
-    }
-
-    fun put(value: AGValue): Int {
-        if (currentIndex >= maxElements) error("Out of bounds $currentIndex >= $maxElements")
-        arraycopy(value.data, 0, this.data, currentIndex * uniform.totalBytes, uniform.totalBytes)
-        textures[currentIndex] = value.texture
-        textureUnitInfos[currentIndex] = value.textureUnitInfo.data
-        return currentIndex++
-    }
-
-    fun get(index: Int, value: AGValue = this.value): AGValue {
-        arraycopy(this.data, index * uniform.totalBytes, value.data, 0, uniform.totalBytes)
-        value.texture = textures[index]
-        value.textureUnitInfo = AGTextureUnitInfo.fromRaw(textureUnitInfos[index])
-        return value
-    }
+    data: Buffer = Buffer(uniform.totalBytes),
+    texture: AGTexture? = null,
+    textureUnitInfo: AGTextureUnitInfo = AGTextureUnitInfo.DEFAULT,
+) : AGValue(uniform, data, texture, textureUnitInfo) {
+    override fun equals(other: Any?): Boolean = other is AGUniformValue && this.uniform == uniform && this.data == other.data && this.texture == other.texture && this.textureUnitInfo == other.textureUnitInfo
+    override fun hashCode(): Int = uniform.hashCode() + super.hashCode()
+    override fun toString(): String = "AGUniformValue[$uniform][${super.toString()}]"
 }
 
+@Deprecated("")
 open class AGValue(
     val type: VarType,
     val arrayCount: Int,

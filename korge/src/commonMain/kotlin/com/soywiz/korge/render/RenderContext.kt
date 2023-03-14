@@ -565,13 +565,13 @@ class RenderContext constructor(
     @PublishedApi internal val _buffers = AGProgramWithUniforms.BufferCache()
     private val _programs = FastIdentityMap<Program, AGProgramWithUniforms>()
 
-    operator fun <T : NewUniformBlock> get(uniform: T): NewUniformBlockBuffer<T> = _buffers[uniform]
+    operator fun <T : UniformBlock> get(uniform: T): UniformBlockBuffer<T> = _buffers[uniform]
     //operator fun get(uniform: UniformBlock): AGRichUniformBlockData = _buffers[uniform]
     operator fun get(program: Program): AGProgramWithUniforms = _programs.getOrPut(program) { AGProgramWithUniforms(it, _buffers) }
 
-    fun createCurrentNewUniformsRef(program: Program, autoUpload: Boolean = true): AGNewUniformBlocksBuffersRef {
+    fun createCurrentUniformsRef(program: Program, autoUpload: Boolean = true): UniformBlocksBuffersRef {
         if (autoUpload) uploadUpdatedUniforms()
-        return this[program].createNewRef()
+        return this[program].createRef()
     }
     fun uploadUpdatedUniforms() {
         _buffers.uploadUpdatedBuffers()

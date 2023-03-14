@@ -24,7 +24,7 @@ class FlagFilter(
     cyclesPerSecond: Double = 2.0,
     time: TimeSpan = 0.seconds
 ) : ShaderFilter() {
-    object FlagUB : NewUniformBlock(fixedLocation = 5) {
+    object FlagUB : UniformBlock(fixedLocation = 5) {
         val u_amplitude by float()
         val u_crestCount by float()
         val u_cyclesPerSecond by float()

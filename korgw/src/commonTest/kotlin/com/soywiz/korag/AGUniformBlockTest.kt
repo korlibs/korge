@@ -1,12 +1,11 @@
 package com.soywiz.korag
 
-import com.soywiz.kmem.*
 import com.soywiz.korag.shader.*
 import com.soywiz.korma.geom.*
 import kotlin.test.*
 
 class AGUniformBlockTest {
-    object NewUniformUB : NewUniformBlock(fixedLocation = 2) {
+    object NewUniformUB : UniformBlock(fixedLocation = 2) {
         val uniform1 by bool4()
         val uniform2 by short2()
         //val uniform3 by int()

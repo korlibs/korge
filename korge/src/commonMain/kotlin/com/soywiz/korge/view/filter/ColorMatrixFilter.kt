@@ -17,7 +17,7 @@ import com.soywiz.korma.geom.*
  * - [ColorMatrixFilter.IDENTITY_MATRIX]  - Doesn't modify the colors at all
  */
 class ColorMatrixFilter(colorMatrix: MMatrix3D, blendRatio: Double = 1.0) : ShaderFilter() {
-    object ColorMatrixUB : NewUniformBlock(fixedLocation = 5) {
+    object ColorMatrixUB : UniformBlock(fixedLocation = 5) {
         val u_ColorMatrix by mat4()
         val u_BlendRatio by float()
     }

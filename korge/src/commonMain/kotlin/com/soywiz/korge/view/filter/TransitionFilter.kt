@@ -8,7 +8,6 @@ import com.soywiz.korge.view.property.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.paint.*
-import com.soywiz.korma.geom.vector.*
 
 class TransitionFilter(
     var transition: Transition = Transition.CIRCULAR,
@@ -42,7 +41,7 @@ class TransitionFilter(
         }
     }
 
-    object TransitionUB : NewUniformBlock(fixedLocation = 5) {
+    object TransitionUB : UniformBlock(fixedLocation = 5) {
         val u_Reversed by float()
         val u_Spread by float()
         val u_Ratio by float()

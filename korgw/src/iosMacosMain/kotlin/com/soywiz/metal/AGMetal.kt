@@ -29,7 +29,7 @@ class AGMetal(private val view: MTKView) : AG() {
         drawOffset: Int,
         blending: AGBlending,
         uniforms: AGUniformValues,
-        newUniformBlocks: AGNewUniformBlocksBuffersRef,
+        newUniformBlocks: UniformBlocksBuffersRef,
         stencilRef: AGStencilReference,
         stencilOpFunc: AGStencilOpFunc,
         colorMask: AGColorMask,

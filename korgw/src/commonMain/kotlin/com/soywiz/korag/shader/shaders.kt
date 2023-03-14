@@ -7,7 +7,6 @@
 package com.soywiz.korag.shader
 
 import com.soywiz.kds.*
-import com.soywiz.kds.iterators.*
 import com.soywiz.kmem.*
 import com.soywiz.korag.*
 import com.soywiz.korag.annotation.KoragExperimental
@@ -279,7 +278,7 @@ fun Varying(type: VarType, arrayCount: Int = 1, precision: Precision = Precision
 
 open class Uniform(
     name: String, type: VarType, arrayCount: Int, precision: Precision = Precision.DEFAULT, offset: Int? = null,
-    val typedUniform: NewTypedUniform<*>? = null
+    val typedUniform: TypedUniform<*>? = null
 ) : VariableWithOffset(
     name, type, arrayCount, precision, offset
 ) {
@@ -948,7 +947,7 @@ data class Program(val vertex: VertexShader, val fragment: FragmentShader, val n
 			is Attribute -> visit(operand)
 			is Varying -> visit(operand)
 			is Uniform -> visit(operand)
-            is NewTypedUniform<*> -> visit(operand)
+            is TypedUniform<*> -> visit(operand)
 			is Output -> visit(operand)
 			is Temp -> visit(operand)
             is Arg -> visit(operand)
@@ -960,7 +959,7 @@ data class Program(val vertex: VertexShader, val fragment: FragmentShader, val n
 		open fun visit(varying: Varying): E = default
 		open fun visit(uniform: Uniform): E = default
         //open fun visit(uniform: NewTypedUniform<*>): E = default
-        open fun visit(typedUniform: NewTypedUniform<*>): E = visit(typedUniform.uniform)
+        open fun visit(typedUniform: TypedUniform<*>): E = visit(typedUniform.uniform)
 		open fun visit(output: Output): E = default
         open fun visit(operand: Unop): E {
             visit(operand.right)
@@ -1010,14 +1009,14 @@ data class Shader(val type: ShaderType, val stm: Program.Stm, val functions: Lis
 	val uniforms = LinkedHashSet<Uniform>().also { out ->
         object : Program.Visitor<Unit>(Unit) {
             override fun visit(uniform: Uniform) { out += uniform }
-            override fun visit(typedUniform: NewTypedUniform<*>) { out += typedUniform.uniform }
+            override fun visit(typedUniform: TypedUniform<*>) { out += typedUniform.uniform }
         }.visit(stm)
     }.toSet()
 
-    val typedUniforms = LinkedHashSet<NewTypedUniform<*>>().also { out ->
+    val typedUniforms = LinkedHashSet<TypedUniform<*>>().also { out ->
         object : Program.Visitor<Unit>(Unit) {
             override fun visit(uniform: Uniform) { uniform.typedUniform?.let { out += it } }
-            override fun visit(typedUniform: NewTypedUniform<*>) { out += typedUniform }
+            override fun visit(typedUniform: TypedUniform<*>) { out += typedUniform }
         }.visit(stm)
     }.toSet()
 
@@ -1119,204 +1118,3 @@ class UniformBlock(uniforms: List<Uniform>, fixedLocation: Int) : ProgramLayout<
 //typealias UniformBlock = ProgramLayout<Uniform>
 inline val ProgramLayout<Uniform>.uniforms: List<Uniform> get() = items
 inline val ProgramLayout<Uniform>.uniformPositions: IntArrayList get() = _positions
-
-class AGUniformWithBuffer(val uniform: Uniform, val buffer: AGBuffer) {
-}
-
-class AGNewUniformBlocksBuffersRef(
-    val blocks: Array<NewUniformBlockBuffer<*>?>,
-    val buffers: Array<AGBuffer?>,
-    val textures: Array<Array<AGTexture?>?>,
-    val texturesInfo: Array<IntArray?>,
-    val valueIndices: IntArray
-) {
-    val size: Int get() = blocks.size
-
-    companion object {
-        val EMPTY = AGNewUniformBlocksBuffersRef(emptyArray(), emptyArray(), emptyArray(), emptyArray(),  IntArray(0))
-    }
-
-    inline fun fastForEachBlock(callback: (index: Int, block: NewUniformBlockBuffer<*>, buffer: AGBuffer?, textures: Array<AGTexture?>?, texturesInfo: IntArray?, valueIndex: Int) -> Unit) {
-        for (n in 0 until size) {
-            val block = blocks[n] ?: continue
-            callback(n, block, buffers[n], textures[n], texturesInfo[n], valueIndices[n])
-        }
-    }
-
-    // @TODO: This won't be required in backends supporting uniform buffers, since the buffer can just be uploaded
-    inline fun fastForEachUniform(callback: (AGUniformValue) -> Unit) {
-        //println("AGUniformBlocksBuffersRef: ${blocks.toList()} : ${valueIndices.toList()}")
-        fastForEachBlock { index, block, buffer, textures, texturesInfo, valueIndex ->
-            if (valueIndex >= 0) {
-                val byteOffset = valueIndex * block.block.totalSize
-                //println(" :: index=$index, block=$block, buffer=$buffer, mem=${buffer?.mem}, valueIndex=$valueIndex, byteOffset=$byteOffset")
-                val buffer1 = buffer?.mem ?: error("Memory is empty for block $block")
-                block.readFrom(buffer1, textures, texturesInfo, byteOffset).fastForEach {
-                    callback(it)
-                }
-            }
-        }
-    }
-}
-
-/*
-
-@Deprecated("")
-class AGUniformBlocksBuffersRef(val blocks: Array<UniformBlockData?>, val buffers: Array<AGBuffer?>, val valueIndices: IntArray) {
-    val size: Int get() = blocks.size
-
-    companion object {
-        val EMPTY = AGUniformBlocksBuffersRef(emptyArray(), emptyArray(), IntArray(0))
-    }
-
-    inline fun fastForEachBlock(callback: (index: Int, block: UniformBlockData, buffer: AGBuffer?, valueIndex: Int) -> Unit) {
-        for (n in 0 until size) {
-            val block = blocks[n] ?: continue
-            callback(n, block, buffers[n], valueIndices[n])
-        }
-    }
-
-    // @TODO: This won't be required in backends supporting uniform buffers, since the buffer can just be uploaded
-    inline fun fastForEachUniform(callback: (AGUniformValue) -> Unit) {
-        //println("AGUniformBlocksBuffersRef: ${blocks.toList()} : ${valueIndices.toList()}")
-        fastForEachBlock { index, block, buffer, valueIndex ->
-            if (valueIndex >= 0) {
-                val byteOffset = valueIndex * block.block.totalSize
-                //println(" :: index=$index, block=$block, buffer=$buffer, mem=${buffer?.mem}, valueIndex=$valueIndex, byteOffset=$byteOffset")
-                block.readFrom(buffer?.mem ?: error("Memory is empty for block $block"), byteOffset)
-                block.values.fastForEach {
-                    callback(it)
-                }
-            }
-        }
-    }
-}
-
-class AGUniformBlockValues(val buffers: Array<UniformBlockBuffer>, val indices: IntArray) {
-    companion object {
-        val EMPTY = AGUniformBlockValues(emptyArray(), intArrayOf())
-
-        fun fromLastIndex(buffers: Array<UniformBlockBuffer>): AGUniformBlockValues = AGUniformBlockValues(buffers, IntArray(buffers.size) { buffers[it].currentIndex -1 })
-    }
-    inline fun forEachBlock(block: (UniformBlockData) -> Unit) {
-        for (n in 0 until kotlin.math.min(buffers.size, indices.size)) {
-            val buffer = buffers[n]
-            val index = indices[n]
-            if (index in 0 until buffer.currentIndex) block(buffer[index])
-        }
-    }
-
-    inline fun forEachValue(block: (AGUniformValue) -> Unit) {
-        forEachBlock {
-            it.values.fastForEach { block(it) }
-        }
-    }
-
-    inline fun fastForEach(block: (AGUniformValue) -> Unit) {
-        forEachValue { block(it) }
-    }
-
-    override fun toString(): String = "AGUniformBlockValues(buffers=${buffers.toList()}, indices=${indices.size})"
-}
-
-@Deprecated("")
-open class UniformBlockData(val block: UniformBlock) {
-    val data = Buffer(block.totalSize)
-    val values = block.uniforms.map { uniform ->
-        //val dataSizeInBytes = data.sizeInBytes
-        val totalDataBytes = data.sizeInBytes
-        val dataSizeInBytes = uniform.type.bytesSize
-        val lastIndex = linkedOffset + uniform.type.bytesSize
-        if (lastIndex > totalDataBytes) {
-            error("Invalid size linkedOffset=$linkedOffset, lastIndex=$lastIndex, dataSizeInBytes=$dataSizeInBytes, totalDataBytes=$totalDataBytes")
-        }
-        AGUniformValue(uniform, data.sliceWithSize(linkedOffset, dataSizeInBytes), null, AGTextureUnitInfo.DEFAULT)
-    }
-    operator fun get(uniform: Uniform): AGUniformValue {
-        if (uniform.linkedLayout !== block) error("Uniform $uniform not part of $block")
-        return values[uniform.linkedIndex]
-    }
-    fun readFrom(buffer: Buffer, offset: Int) {
-        arraycopy(buffer, offset, data, 0, block.totalSize)
-    }
-
-    override fun toString(): String = "UniformBlockData($block)"
-}
-
-class UniformBlockBuffer(val block: UniformBlock, val initialCapacity: Int = 1) {
-    val data = UniformBlockData(block)
-
-    val elementSize = block.totalSize
-    val numUniforms = block.uniforms.size
-
-    var capacity = initialCapacity
-    var buffer = Buffer(block.totalSize * capacity)
-    var textures = Array<AGTexture?>(numUniforms * capacity) { null }
-    var textureUnitInfos = IntArray(numUniforms * capacity)
-
-    fun ensure(index: Int) {
-        if (index >= capacity) {
-            val newCapacity = kotlin.math.max(index + 3, (capacity + 1) * 3)
-            capacity = newCapacity
-            buffer = buffer.copyOf(block.totalSize * newCapacity)
-            textures = textures.copyOf(numUniforms * newCapacity)
-            textureUnitInfos = textureUnitInfos.copyOf(numUniforms * newCapacity)
-        }
-    }
-
-    fun equal(index: Int, data: UniformBlockData): Boolean {
-        for (n in 0 until block.totalSize) {
-            if (data.data.getUInt8(n) != this.buffer.getUInt8(index * block.totalSize + n)) return false
-        }
-        for (n in 0 until numUniforms) {
-            if (textures[index * numUniforms + n] != data.values[n].texture) return false
-            if (textureUnitInfos[index * numUniforms + n] != data.values[n].textureUnitInfo.data) return false
-        }
-        return true
-    }
-
-    operator fun set(index: Int, data: UniformBlockData) {
-        ensure(index)
-        if (data.block != block) error("${data.block} != $block")
-        arraycopy(data.data, 0, this.buffer, index * block.totalSize, block.totalSize)
-        for (n in 0 until numUniforms) {
-            textures[index * numUniforms + n] = data.values[n].texture
-            textureUnitInfos[index * numUniforms + n] = data.values[n].textureUnitInfo.data
-        }
-    }
-    operator fun get(index: Int, out: UniformBlockData = this.data): UniformBlockData {
-        if (out.block != block) error("${out.block} != $block")
-        arraycopy(this.buffer, index * block.totalSize, out.data, 0, block.totalSize)
-        for (n in 0 until numUniforms) {
-            out.values[n].texture = textures[index * numUniforms + n]
-            out.values[n].textureUnitInfo = AGTextureUnitInfo.fromRaw(textureUnitInfos[index * numUniforms + n])
-        }
-        return out
-    }
-
-    var currentIndex = -1
-        private set
-
-    fun reset() {
-        currentIndex = -1
-    }
-
-    inline fun put(block: UniformBlockData.() -> Unit): Int {
-        block(data)
-        return put(data)
-    }
-
-    fun put(data: UniformBlockData, deduplicate: Boolean = false): Int {
-        if (deduplicate && currentIndex >= 0 && equal(currentIndex, this.data)) return currentIndex
-        val index = ++currentIndex
-        this[index] = data
-        return index
-    }
-
-    fun putCurrent(deduplicate: Boolean = false): Int = put(this.data, deduplicate = deduplicate)
-    fun putCurrentIfChanged(): Int = put(this.data, deduplicate = true)
-
-    override fun toString(): String = "UniformBlockBuffer($block, capacity=$capacity, lastIndex=$currentIndex)"
-}
- */
-

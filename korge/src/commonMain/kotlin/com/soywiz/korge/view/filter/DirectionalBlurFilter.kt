@@ -17,7 +17,7 @@ class DirectionalBlurFilter(
     @ViewProperty
     var expandBorder: Boolean = true
 ) : ShaderFilter() {
-    object BlurUB : NewUniformBlock(fixedLocation = 5) {
+    object BlurUB : UniformBlock(fixedLocation = 5) {
         val u_radius by float()
         val u_constant1 by float()
         val u_constant2 by float()

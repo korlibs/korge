@@ -666,7 +666,7 @@ class BatchBuilder2D constructor(
             drawType = AGDrawType.TRIANGLES,
             blending = currentBlendMode.factors,
             uniforms = uniforms.cloneReadOnly(),
-            newUniformBlocks = ctx.createCurrentNewUniformsRef(currentProgram, autoUpload = false),
+            newUniformBlocks = ctx.createCurrentUniformsRef(currentProgram, autoUpload = false),
             stencilOpFunc = stencilOpFunc,
             stencilRef = stencilRef,
             colorMask = colorMask,

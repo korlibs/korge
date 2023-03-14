@@ -20,7 +20,7 @@ import com.soywiz.korma.geom.*
  * [fragmentCoords], [fragmentCoords01] properties and [tex] method to be used inside the shader.
  */
 abstract class ShaderFilter : Filter {
-    object TexInfoUB : NewUniformBlock(fixedLocation = 4) {
+    object TexInfoUB : UniformBlock(fixedLocation = 4) {
         val u_TextureSize by vec2()
         val u_MaxTexCoords by vec2()
         val u_StdTexDerivates by vec2()

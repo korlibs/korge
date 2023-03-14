@@ -18,7 +18,7 @@ class Convolute3Filter(
     dist: Double = 1.0,
     applyAlpha: Boolean = false
 ) : ShaderFilter() {
-    object ConvoluteUB : NewUniformBlock(fixedLocation = 5) {
+    object ConvoluteUB : UniformBlock(fixedLocation = 5) {
         val u_ApplyAlpha by float()
         val u_Dist by float()
         val u_Weights by mat3()
