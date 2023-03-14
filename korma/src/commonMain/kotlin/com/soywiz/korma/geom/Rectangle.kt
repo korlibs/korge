@@ -10,12 +10,12 @@ inline class Rectangle(
     val data: Float4Pack
 ) {
     val position: Point get() = Point(data.x, data.y)
-    val size: Size get() = Size(data.w, data.z)
+    val size: Size get() = Size(data.z, data.w)
 
-    val x: Float get() = position.x
-    val y: Float get() = position.y
-    val width: Float get() = size.width
-    val height: Float get() = size.height
+    val x: Float get() = data.x
+    val y: Float get() = data.y
+    val width: Float get() = data.z
+    val height: Float get() = data.w
 
     companion object {
         operator fun invoke(): Rectangle = Rectangle(Point(), Size())
