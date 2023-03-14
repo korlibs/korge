@@ -2,14 +2,12 @@ package com.soywiz.korlibs.modules
 
 import com.soywiz.korge.gradle.util.*
 import com.soywiz.korlibs.*
-import com.soywiz.korlibs.create
 import groovy.util.*
 import groovy.xml.*
 import org.gradle.api.*
 import org.gradle.api.publish.*
 import org.gradle.api.publish.maven.*
-import org.gradle.internal.impldep.com.amazonaws.util.XpathUtils.*
-import org.gradle.jvm.tasks.Jar
+import org.gradle.jvm.tasks.*
 
 fun Project.getCustomProp(name: String, default: String): String? {
     val props = if (extra.has("props")) extra["props"] as? Map<String, String>? else null
@@ -22,9 +20,6 @@ fun Project.configurePublishing(multiplatform: Boolean = true) {
 
     plugins.apply("maven-publish")
 
-    val javadocJar = tasks.createThis<Jar>("javadocJar") {
-        archiveClassifier.set("javadoc")
-    }
     //val sourcesJar = tasks.createThis<Jar>("sourceJar") {
     //    archiveClassifier.set("sources")
     //    if (multiplatform) {
@@ -82,6 +77,12 @@ fun Project.configurePublishing(multiplatform: Boolean = true) {
         afterEvaluate {
             //println(gkotlin.sourceSets.names)
             publications.withType(MavenPublication::class.java, Action { publication ->
+                val jarTaskName = "${publication.name}JavadocJar"
+                //println(jarTaskName)
+                val javadocJar = tasks.createThis<Jar>(jarTaskName) {
+                    archiveClassifier.set("javadoc")
+                    archiveBaseName.set(jarTaskName)
+                }
                 val isGradlePluginMarker = publication.name.endsWith("PluginMarkerMaven")
 
                 if (multiplatform) {
