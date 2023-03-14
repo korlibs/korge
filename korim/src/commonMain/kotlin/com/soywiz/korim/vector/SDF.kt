@@ -38,6 +38,14 @@ fun VectorPath.sdf(data: FloatArray2): FloatArray2 {
     }
     return data
 }
+fun VectorPath.sdfBmp(width: Int, height: Int): Bitmap32 {
+    val msdf = sdf(width, height)
+    msdf.scale(-1f)
+    msdf.clamp(-1f, +1f)
+    msdf.normalizeUniform()
+    val msdfBitmap = msdf.toBMP32 { RGBA.float(1f, 1f, 1f, it) }
+    return msdfBitmap
+}
 
 private fun msdfColor(index: Int, size: Int, closed: Boolean): RGBA {
     if (size == 1) return Colors.WHITE

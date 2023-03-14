@@ -33,4 +33,5 @@ val DefaultTtfFont: TtfFont get() {
     return DefaultTtfFontOrNull!!
 }
 
-val DefaultTtfFontAsBitmap: LazyBitmapFont get() = DefaultTtfFont.lazyBitmap
+//val DefaultTtfFontAsBitmap: LazyBitmapFont get() = DefaultTtfFont.lazyBitmap
+val DefaultTtfFontAsBitmap: LazyBitmapFont get() = DefaultTtfFont.lazyBitmapSDF

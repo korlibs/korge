@@ -81,19 +81,8 @@ class LazyBitmapFont(
                     val bmp = result.bmp.toBMP32()
 
                     val rbmp: Bitmap32 = when (distanceField) {
-                        "msdf" -> {
-                            //for (n in 0 until 10000) {
-                            //    val path = result.shape!!.getPath()
-                            //    val msdf = path.msdf(bmp.width, bmp.height)
-                            //    msdf.scale(-1f)
-                            //    msdf.clamp(-2f, +2f)
-                            //    //msdf.updateComponent { component, value -> if (component == 3) 2f else value }
-                            //    msdf.normalizeUniform()
-                            //    msdf.toBMP32()
-                            //}
-
-                            result.shape!!.getPath().msdfBmp(bmp.width, bmp.height)
-                        }
+                        "msdf" -> result.shape!!.getPath().msdfBmp(bmp.width, bmp.height)
+                        "sdf" -> result.shape!!.getPath().sdfBmp(bmp.width, bmp.height)
                         else -> bmp
                     }
 
@@ -138,6 +127,10 @@ fun VectorFont.toLazyBitmapFont(fontSize: Double, distanceField: String? = null)
  */
 val VectorFont.lazyBitmap: LazyBitmapFont by Extra.PropertyThis {
     this.toLazyBitmapFont(32.0, distanceField = null)
+}
+
+val VectorFont.lazyBitmapSDF: LazyBitmapFont by Extra.PropertyThis {
+    this.toLazyBitmapFont(24.0, distanceField = "sdf")
 }
 
 /**
