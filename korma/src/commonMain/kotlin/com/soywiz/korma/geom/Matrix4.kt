@@ -131,6 +131,7 @@ data class Matrix4 internal constructor(
             M20, M21, M22, M23,
             M30, M31, M32, M33
         )
+        val IDENTITY = Matrix4()
 
         fun fromColumns(
             v00: Float, v10: Float, v20: Float, v30: Float,

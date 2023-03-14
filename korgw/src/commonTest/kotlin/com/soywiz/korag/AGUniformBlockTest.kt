@@ -6,10 +6,17 @@ import com.soywiz.korma.geom.*
 import kotlin.test.*
 
 class AGUniformBlockTest {
-    val uniform1 by Uniform(VarType.Bool4)
-    val uniform2 by Uniform(VarType.Short2)
-    val uniform3 by Uniform(VarType.Int1)
-    val uniformBlock = UniformBlock(uniform1, uniform2, fixedLocation = 2)
+    object NewUniformUB : NewUniformBlock(fixedLocation = 2) {
+        val uniform1 by bool4()
+        val uniform2 by short2()
+        //val uniform3 by int()
+    }
+    companion object {
+        val uniform1 = NewUniformUB.uniform1.uniform
+        val uniform2 = NewUniformUB.uniform2.uniform
+        val uniform3 by Uniform(VarType.Int1)
+        val uniformBlock = NewUniformUB.uniformBlock
+    }
 
     @Test
     fun test() {
@@ -44,10 +51,14 @@ class AGUniformBlockTest {
         val bufferCache = AGProgramWithUniforms.BufferCache()
         val data1 = AGProgramWithUniforms(program, bufferCache)
         val data2 = AGProgramWithUniforms(program2, bufferCache)
-        val matricesBlock = data1[DefaultShaders.ub_ProjViewMatBlock]
-        matricesBlock.push {
+
+        data1[DefaultShaders.ub_ProjViewMatBlock].push {
             it[DefaultShaders.u_ProjMat].set(MMatrix4().setToOrtho(0f, 0f, 100f, 100f))
             it[DefaultShaders.u_ViewMat].set(MMatrix4().identity())
+        }
+        data1[DefaultShaders.ProjViewUB].push {
+            it[DefaultShaders.ProjViewUB.u_ProjMat] = MMatrix4().setToOrtho(0f, 0f, 100f, 100f)
+            it[DefaultShaders.ProjViewUB.u_ViewMat] = MMatrix4().identity()
         }
         val texBlock = data1[DefaultShaders.ub_TexBlock]
 

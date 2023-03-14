@@ -11,8 +11,7 @@ import com.soywiz.kds.iterators.*
 import com.soywiz.kmem.*
 import com.soywiz.korag.*
 import com.soywiz.korag.annotation.KoragExperimental
-import com.soywiz.korio.lang.Closeable
-import com.soywiz.korio.lang.invalidOp
+import com.soywiz.korio.lang.*
 import kotlin.reflect.*
 
 enum class VarKind(val bytesSize: Int) {
@@ -208,8 +207,11 @@ sealed class VariableWithOffset(
     precision: Precision = Precision.DEFAULT,
     val offset: Int? = null,
 ) : Variable(name, type, arrayCount, precision) {
+    @Deprecated("")
     var linkedIndex: Int = -1
+    @Deprecated("")
     var linkedOffset: Int = -1
+    @Deprecated("")
     var linkedLayout: ProgramLayout<*>? = null
 }
 
@@ -281,7 +283,10 @@ open class Varying(name: String, type: VarType, arrayCount: Int, precision: Prec
 }
 fun Varying(type: VarType, arrayCount: Int = 1, precision: Precision = Precision.DEFAULT): Varying.Provider = Varying.Provider(type, arrayCount, precision)
 
-open class Uniform(name: String, type: VarType, arrayCount: Int, precision: Precision = Precision.DEFAULT, offset: Int? = null) : VariableWithOffset(
+open class Uniform(
+    name: String, type: VarType, arrayCount: Int, precision: Precision = Precision.DEFAULT, offset: Int? = null,
+    val typedUniform: NewTypedUniform<*>? = null
+) : VariableWithOffset(
     name, type, arrayCount, precision, offset
 ) {
     val totalElementCount: Int get() = type.elementCount * arrayCount
@@ -353,6 +358,7 @@ data class UniformInProgram(val uniform: Uniform, val index: Int)
 
 data class Program(val vertex: VertexShader, val fragment: FragmentShader, val name: String = "program-${vertex.name}-${fragment.name}") : Closeable {
 	val uniforms = (vertex.uniforms + fragment.uniforms).distinct()
+    val typedUniforms = (vertex.typedUniforms + fragment.typedUniforms).distinct()
     // @TODO: Proper indices
     val uniformsToIndex = uniforms.withIndex().associate { it.value to UniformInProgram(it.value, it.index) }
 	val attributes = vertex.attributes + fragment.attributes
@@ -948,6 +954,7 @@ data class Program(val vertex: VertexShader, val fragment: FragmentShader, val n
 			is Attribute -> visit(operand)
 			is Varying -> visit(operand)
 			is Uniform -> visit(operand)
+            is NewTypedUniform<*> -> visit(operand)
 			is Output -> visit(operand)
 			is Temp -> visit(operand)
             is Arg -> visit(operand)
@@ -958,6 +965,8 @@ data class Program(val vertex: VertexShader, val fragment: FragmentShader, val n
 		open fun visit(attribute: Attribute): E = default
 		open fun visit(varying: Varying): E = default
 		open fun visit(uniform: Uniform): E = default
+        //open fun visit(uniform: NewTypedUniform<*>): E = default
+        open fun visit(typedUniform: NewTypedUniform<*>): E = visit(typedUniform.uniform)
 		open fun visit(output: Output): E = default
         open fun visit(operand: Unop): E {
             visit(operand.right)
@@ -1007,10 +1016,18 @@ data class Shader(val type: ShaderType, val stm: Program.Stm, val functions: Lis
 	val uniforms = LinkedHashSet<Uniform>().also { out ->
         object : Program.Visitor<Unit>(Unit) {
             override fun visit(uniform: Uniform) { out += uniform }
+            override fun visit(typedUniform: NewTypedUniform<*>) { out += typedUniform.uniform }
         }.visit(stm)
     }.toSet()
 
-	val attributes = LinkedHashSet<Attribute>().also { out ->
+    val typedUniforms = LinkedHashSet<NewTypedUniform<*>>().also { out ->
+        object : Program.Visitor<Unit>(Unit) {
+            override fun visit(uniform: Uniform) { uniform.typedUniform?.let { out += it } }
+            override fun visit(typedUniform: NewTypedUniform<*>) { out += typedUniform }
+        }.visit(stm)
+    }.toSet()
+
+    val attributes = LinkedHashSet<Attribute>().also { out ->
         object : Program.Visitor<Unit>(Unit) {
             override fun visit(attribute: Attribute) { out += attribute }
         }.visit(stm)
@@ -1072,14 +1089,14 @@ open class ProgramLayout<TVariable : VariableWithOffset>(
 	private var _lastPos: Int = 0
 
     init {
-        if (link) {
-            for (n in items.indices) {
-                val item = items[n]
-                if (item.linkedLayout != null) error("$item already in a layout '${item.linkedLayout}'")
-                item.linkedLayout = this
-                item.linkedIndex = n
-            }
-        }
+        //if (link) {
+        //    for (n in items.indices) {
+        //        val item = items[n]
+        //        if (item.linkedLayout != null) error("$item already in a layout '${item.linkedLayout}'")
+        //        item.linkedLayout = this
+        //        item.linkedIndex = n
+        //    }
+        //}
     }
 
 	val alignments: IntArrayList = items.mapInt {
@@ -1105,9 +1122,10 @@ open class ProgramLayout<TVariable : VariableWithOffset>(
 	val totalSize: Int = layoutSize ?: _lastPos.nextAlignedTo(maxAlignment)
 
     protected fun names(): String = items.joinToString(", ") { it.name }
-	override fun toString(): String = "VertexLayout[${names()}, fixedLocation=$fixedLocation]"
+	override fun toString(): String = "${this::class.portableSimpleName}[${names()}, fixedLocation=$fixedLocation]"
 }
 
+@Deprecated("")
 class UniformBlock(uniforms: List<Uniform>, fixedLocation: Int) : ProgramLayout<Uniform>(uniforms, null, link = true, fixedLocation = fixedLocation) {
     constructor(vararg uniforms: Uniform, fixedLocation: Int) : this(uniforms.toList(), fixedLocation)
     companion object {
@@ -1121,6 +1139,36 @@ inline val ProgramLayout<Uniform>.uniforms: List<Uniform> get() = items
 inline val ProgramLayout<Uniform>.uniformPositions: IntArrayList get() = _positions
 
 class AGUniformWithBuffer(val uniform: Uniform, val buffer: AGBuffer) {
+}
+
+class AGNewUniformBlocksBuffersRef(val blocks: Array<NewUniformBlockBuffer?>, val buffers: Array<AGBuffer?>, val valueIndices: IntArray) {
+    val size: Int get() = blocks.size
+
+    companion object {
+        val EMPTY = AGNewUniformBlocksBuffersRef(emptyArray(), emptyArray(), IntArray(0))
+    }
+
+    inline fun fastForEachBlock(callback: (index: Int, block: NewUniformBlockBuffer, buffer: AGBuffer?, valueIndex: Int) -> Unit) {
+        for (n in 0 until size) {
+            val block = blocks[n] ?: continue
+            callback(n, block, buffers[n], valueIndices[n])
+        }
+    }
+
+    // @TODO: This won't be required in backends supporting uniform buffers, since the buffer can just be uploaded
+    inline fun fastForEachUniform(callback: (AGUniformValue) -> Unit) {
+        //println("AGUniformBlocksBuffersRef: ${blocks.toList()} : ${valueIndices.toList()}")
+        fastForEachBlock { index, block, buffer, valueIndex ->
+            if (valueIndex >= 0) {
+                val byteOffset = valueIndex * block.block.totalSize
+                //println(" :: index=$index, block=$block, buffer=$buffer, mem=${buffer?.mem}, valueIndex=$valueIndex, byteOffset=$byteOffset")
+                block.readFrom(buffer?.mem ?: error("Memory is empty for block $block"), byteOffset)
+                block.values.fastForEach {
+                    callback(it)
+                }
+            }
+        }
+    }
 }
 
 class AGUniformBlocksBuffersRef(val blocks: Array<UniformBlockData?>, val buffers: Array<AGBuffer?>, val valueIndices: IntArray) {

@@ -14,26 +14,38 @@ import com.soywiz.korma.geom.*
 // https://iquilezles.org/articles/distfunctions
 // https://iquilezles.org/articles/distfunctions2d/#:~:text=length(p)%20%2D%20r%3B%0A%7D-,Rounded%20Box%20%2D%20exact,-(https%3A//www
 object MaterialRender {
-    val u_ShadowColor by Uniform(VarType.Float4)
-    val u_ShadowRadius by Uniform(VarType.Float1)
-    val u_ShadowOffset by Uniform(VarType.Float2)
+    object MaterialBlockUB : NewUniformBlock(fixedLocation = 3) {
+        val u_ShadowColor by vec4()
+        val u_ShadowRadius by float()
+        val u_ShadowOffset by vec2()
 
-    val u_HighlightPos by Uniform(VarType.Float2)
-    val u_HighlightRadius by Uniform(VarType.Float1)
-    val u_HighlightColor by Uniform(VarType.Float4)
+        val u_HighlightPos by vec2()
+        val u_HighlightRadius by float()
+        val u_HighlightColor by vec4()
 
-    val u_Size by Uniform(VarType.Float2)
-    val u_Radius by Uniform(VarType.Float4)
+        val u_Size by vec2()
+        val u_Radius by vec4()
 
-    val u_BorderSizeHalf by Uniform(VarType.Float1)
-    val u_BorderColor by Uniform(VarType.Float4)
-    val u_BackgroundColor by Uniform(VarType.Float4)
+        val u_BorderSizeHalf by float()
+        val u_BorderColor by vec4()
+        val u_BackgroundColor by vec4()
+    }
+    val u_ShadowColor = MaterialBlockUB.u_ShadowColor.uniform
+    val u_ShadowRadius = MaterialBlockUB.u_ShadowRadius.uniform
+    val u_ShadowOffset = MaterialBlockUB.u_ShadowOffset.uniform
 
-    val ub_MaterialBlock = UniformBlock(
-        u_ShadowColor, u_ShadowRadius, u_ShadowOffset, u_HighlightPos, u_HighlightRadius, u_HighlightColor,
-        u_Size, u_Radius, u_BorderSizeHalf, u_BorderColor, u_BackgroundColor,
-        fixedLocation = 3
-    )
+    val u_HighlightPos = MaterialBlockUB.u_HighlightPos.uniform
+    val u_HighlightRadius = MaterialBlockUB.u_HighlightRadius.uniform
+    val u_HighlightColor = MaterialBlockUB.u_HighlightColor.uniform
+
+    val u_Size = MaterialBlockUB.u_Size.uniform
+    val u_Radius = MaterialBlockUB.u_Radius.uniform
+
+    val u_BorderSizeHalf = MaterialBlockUB.u_BorderSizeHalf.uniform
+    val u_BorderColor = MaterialBlockUB.u_BorderColor.uniform
+    val u_BackgroundColor = MaterialBlockUB.u_BackgroundColor.uniform
+
+    val ub_MaterialBlock = MaterialBlockUB.uniformBlock
 
     val PROGRAM = ShadedView.buildShader {
         val roundedDist = TEMP(Float1)

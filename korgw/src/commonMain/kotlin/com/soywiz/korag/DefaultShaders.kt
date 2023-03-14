@@ -25,14 +25,28 @@ interface IDefaultShaders {
 
 object DefaultShaders {
     // from korge
-	val u_Tex: Uniform = Uniform("u_Tex", VarType.Sampler2D)
     val u_TexEx: Uniform = Uniform("u_TexEx", VarType.Sampler2D)
 
-	val u_ProjMat: Uniform = Uniform("u_ProjMat", VarType.Mat4)
-	val u_ViewMat: Uniform = Uniform("u_ViewMat", VarType.Mat4)
+    object ProjViewUB : NewUniformBlock(fixedLocation = 0) {
+        val u_ProjMat by mat4()
+        val u_ViewMat by mat4()
+    }
 
-    val ub_ProjViewMatBlock = UniformBlock(u_ProjMat, u_ViewMat, fixedLocation = 0)
-    val ub_TexBlock = UniformBlock(u_Tex, fixedLocation = 1)
+    object TexUB : NewUniformBlock(fixedLocation = 1) {
+        val u_Tex by sampler2D()
+    }
+
+    val u_ProjMat: Uniform get() = ProjViewUB.u_ProjMat.uniform
+    val u_ViewMat: Uniform get() = ProjViewUB.u_ViewMat.uniform
+    val u_Tex: Uniform get() = TexUB.u_Tex.uniform
+
+    //val u_ProjMat: Uniform = Uniform("u_ProjMat", VarType.Mat4)
+	//val u_ViewMat: Uniform = Uniform("u_ViewMat", VarType.Mat4)
+
+    @Deprecated("")
+    val ub_ProjViewMatBlock = ProjViewUB.uniformBlock
+
+    val ub_TexBlock = TexUB.uniformBlock
 
 	val a_Pos: Attribute = Attribute("a_Pos", VarType.Float2, normalized = false, precision = Precision.HIGH, fixedLocation = 0)
 	val a_Tex: Attribute = Attribute("a_Tex", VarType.Float2, normalized = false, precision = Precision.MEDIUM, fixedLocation = 1)

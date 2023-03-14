@@ -6,12 +6,19 @@ import com.soywiz.korma.geom.*
 import kotlin.test.*
 
 class AGUniformsTest {
+    object UB : NewUniformBlock(fixedLocation = 0) {
+        val projMatrix by mat4()
+        val viewMatrix by mat4()
+        val color1 by ubyte4()
+    }
+
     @Test
     fun testUniformBlockDataAndBuffer() {
-        val projMatrix by Uniform(VarType.Mat4)
-        val viewMatrix by Uniform(VarType.Mat4)
-        val color1 by Uniform(VarType.UByte4)
-        val block = UniformBlock(projMatrix, viewMatrix, color1, fixedLocation = 0)
+        val projMatrix = UB.projMatrix.uniform
+        val viewMatrix = UB.viewMatrix.uniform
+        val color1 = UB.color1.uniform
+        val block = UB.uniformBlock
+
         val data = UniformBlockData(block)
         val buffer = UniformBlockBuffer(block, 2)
         data[projMatrix].set(MMatrix3D().multiply(2f))
