@@ -1,8 +1,8 @@
 package com.soywiz.kmem.pack
 
-actual data class Float4Pack(var x: Float, var y: Float, var z: Float, var w: Float)
-actual val Float4Pack.x: Float get() = this.x
-actual val Float4Pack.y: Float get() = this.y
-actual val Float4Pack.z: Float get() = this.z
-actual val Float4Pack.w: Float get() = this.w
-actual fun float4PackOf(x: Float, y: Float, z: Float, w: Float): Float4Pack = Float4Pack(x, y, z, w)
+actual data class Float4Pack(val x: Float, val y: Float, val z: Float, val w: Float)
+actual val Float4Pack.f0: Float get() = this.x
+actual val Float4Pack.f1: Float get() = this.y
+actual val Float4Pack.f2: Float get() = this.z
+actual val Float4Pack.f3: Float get() = this.w
+actual fun float4PackOf(f0: Float, f1: Float, f2: Float, f3: Float): Float4Pack = Float4Pack(f0, f1, f2, f3)

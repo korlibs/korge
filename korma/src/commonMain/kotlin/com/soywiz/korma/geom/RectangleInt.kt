@@ -1,16 +1,17 @@
 package com.soywiz.korma.geom
 
+import com.soywiz.kmem.pack.*
 import com.soywiz.korma.annotations.*
 
 @KormaValueApi
-data class RectangleInt(
-    val position: PointInt,
-    val size: SizeInt
-) {
-    val x: Int get() = position.x
-    val y: Int get() = position.y
-    val width: Int get() = size.width
-    val height: Int get() = size.height
+data class RectangleInt(val data: Int4Pack) {
+    val position: PointInt get() = PointInt(data.i0, data.i1)
+    val size: SizeInt get() = SizeInt(data.i2, data.i3)
+
+    val x: Int get() = data.i0
+    val y: Int get() = data.i1
+    val width: Int get() = data.i2
+    val height: Int get() = data.i3
 
     val area: Int get() = width * height
     val isEmpty: Boolean get() = width == 0 && height == 0
@@ -56,6 +57,7 @@ data class RectangleInt(
     fun contains(x: Int, y: Int): Boolean = contains(x.toFloat(), y.toFloat())
 
     constructor() : this(PointInt(), SizeInt())
+    constructor(position: PointInt, size: SizeInt) : this(int4PackOf(position.x, position.y, size.width, size.height))
     constructor(x: Int, y: Int, width: Int, height: Int) : this(PointInt(x, y), SizeInt(width, height))
 
     fun sliceWithBounds(left: Int, top: Int, right: Int, bottom: Int, clamped: Boolean = true): RectangleInt {

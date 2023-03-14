@@ -9,13 +9,13 @@ import kotlin.math.*
 inline class Rectangle(
     val data: Float4Pack
 ) {
-    val position: Point get() = Point(data.x, data.y)
-    val size: Size get() = Size(data.z, data.w)
+    val position: Point get() = Point(data.f0, data.f1)
+    val size: Size get() = Size(data.f2, data.f3)
 
-    val x: Float get() = data.x
-    val y: Float get() = data.y
-    val width: Float get() = data.z
-    val height: Float get() = data.w
+    val x: Float get() = data.f0
+    val y: Float get() = data.f1
+    val width: Float get() = data.f2
+    val height: Float get() = data.f3
 
     companion object {
         operator fun invoke(): Rectangle = Rectangle(Point(), Size())
