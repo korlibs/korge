@@ -127,15 +127,18 @@ open class Sonatype(
 					// Even if open, if there are notifications we should drop it
 					state.notifications > 0 -> {
 						println("Dropping release because of error state.notifications=$state")
+                        println(" - activity: " + getRepositoryActivity(repositoryId))
 						repositoryDrop(repositoryId)
 						repositoryIds.remove(repositoryId)
 					}
 					state.isOpen -> {
 						println("Closing open repository $state")
+                        println(" - activity: " + getRepositoryActivity(repositoryId))
 						repositoryClose(repositoryId)
 					}
 					else -> {
 						println("Promoting repository $state")
+                        println(" - activity: " + getRepositoryActivity(repositoryId))
 						repositoryPromote(repositoryId)
 						promoted++
 					}
@@ -163,6 +166,12 @@ open class Sonatype(
 			transitioning = info["transitioning"].asBoolean,
 		)
 	}
+
+    fun getRepositoryActivity(repositoryId: String): String {
+        val info = client.request("${BASE}/repository/$repositoryId/activity")
+        //println("info: ${info.toStringPretty()}")
+        return info.toString()
+    }
 
 	data class RepoState(
 		val repositoryId: String,
