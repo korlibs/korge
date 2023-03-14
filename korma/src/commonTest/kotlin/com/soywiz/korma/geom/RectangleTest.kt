@@ -167,4 +167,15 @@ class RectangleTest {
             MRectangle(0, 0, 100, 100)
         )
     }
+
+    @Test
+    fun testRectangle() {
+        val rect = Rectangle(1, 2, 3, 4)
+        assertEquals(Point(1, 2), rect.position)
+        assertEquals(Size(3, 4), rect.size)
+        assertEquals(1f, rect.x)
+        assertEquals(2f, rect.y)
+        assertEquals(3f, rect.width)
+        assertEquals(4f, rect.height)
+    }
 }
