@@ -9,10 +9,10 @@ fun ProgramWithDefault(
 ): Program = Program(vertex, fragment, name)
 
 interface IDefaultShaders {
-    val u_Tex: Uniform get() = DefaultShaders.u_Tex
+    val u_Tex get() = DefaultShaders.u_Tex
     val u_TexEx: Uniform get() = DefaultShaders.u_TexEx
-    val u_ProjMat: Uniform get() = DefaultShaders.u_ProjMat
-    val u_ViewMat: Uniform get() = DefaultShaders.u_ViewMat
+    val u_ProjMat get() = DefaultShaders.u_ProjMat
+    val u_ViewMat get() = DefaultShaders.u_ViewMat
     val a_Pos: Attribute get() = DefaultShaders.a_Pos
     val a_Tex: Attribute get() = DefaultShaders.a_Tex
     val a_Col: Attribute get() = DefaultShaders.a_Col
@@ -36,17 +36,16 @@ object DefaultShaders {
         val u_Tex by sampler2D()
     }
 
-    val u_ProjMat: Uniform get() = ProjViewUB.u_ProjMat.uniform
-    val u_ViewMat: Uniform get() = ProjViewUB.u_ViewMat.uniform
-    val u_Tex: Uniform get() = TexUB.u_Tex.uniform
+    val u_ProjMat get() = ProjViewUB.u_ProjMat.uniform
+    val u_ViewMat get() = ProjViewUB.u_ViewMat.uniform
+    val u_Tex get() = TexUB.u_Tex.uniform
 
     //val u_ProjMat: Uniform = Uniform("u_ProjMat", VarType.Mat4)
 	//val u_ViewMat: Uniform = Uniform("u_ViewMat", VarType.Mat4)
 
-    @Deprecated("")
-    val ub_ProjViewMatBlock = ProjViewUB.uniformBlock
-
-    val ub_TexBlock = TexUB.uniformBlock
+    //@Deprecated("")
+    //val ub_ProjViewMatBlock = ProjViewUB.uniformBlock
+    //val ub_TexBlock = TexUB.uniformBlock
 
 	val a_Pos: Attribute = Attribute("a_Pos", VarType.Float2, normalized = false, precision = Precision.HIGH, fixedLocation = 0)
 	val a_Tex: Attribute = Attribute("a_Tex", VarType.Float2, normalized = false, precision = Precision.MEDIUM, fixedLocation = 1)

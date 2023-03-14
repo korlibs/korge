@@ -30,22 +30,22 @@ object MaterialRender {
         val u_BorderColor by vec4()
         val u_BackgroundColor by vec4()
     }
-    val u_ShadowColor = MaterialBlockUB.u_ShadowColor.uniform
-    val u_ShadowRadius = MaterialBlockUB.u_ShadowRadius.uniform
-    val u_ShadowOffset = MaterialBlockUB.u_ShadowOffset.uniform
+    val u_ShadowColor = MaterialBlockUB.u_ShadowColor
+    val u_ShadowRadius = MaterialBlockUB.u_ShadowRadius
+    val u_ShadowOffset = MaterialBlockUB.u_ShadowOffset
 
-    val u_HighlightPos = MaterialBlockUB.u_HighlightPos.uniform
-    val u_HighlightRadius = MaterialBlockUB.u_HighlightRadius.uniform
-    val u_HighlightColor = MaterialBlockUB.u_HighlightColor.uniform
+    val u_HighlightPos = MaterialBlockUB.u_HighlightPos
+    val u_HighlightRadius = MaterialBlockUB.u_HighlightRadius
+    val u_HighlightColor = MaterialBlockUB.u_HighlightColor
 
-    val u_Size = MaterialBlockUB.u_Size.uniform
-    val u_Radius = MaterialBlockUB.u_Radius.uniform
+    val u_Size = MaterialBlockUB.u_Size
+    val u_Radius = MaterialBlockUB.u_Radius
 
-    val u_BorderSizeHalf = MaterialBlockUB.u_BorderSizeHalf.uniform
-    val u_BorderColor = MaterialBlockUB.u_BorderColor.uniform
-    val u_BackgroundColor = MaterialBlockUB.u_BackgroundColor.uniform
+    val u_BorderSizeHalf = MaterialBlockUB.u_BorderSizeHalf
+    val u_BorderColor = MaterialBlockUB.u_BorderColor
+    val u_BackgroundColor = MaterialBlockUB.u_BackgroundColor
 
-    val ub_MaterialBlock = MaterialBlockUB.uniformBlock
+    //val ub_MaterialBlock = MaterialBlockUB.uniformBlock
 
     init {
         //println("ub_MaterialBlock.uniforms.voffset=${MaterialBlockUB.uniforms.map { it.name }}")

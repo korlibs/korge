@@ -90,7 +90,7 @@ class RenderContext constructor(
         //projMatrixBuffer.reset()
     }
 
-    val projViewMat by lazy { this[DefaultShaders.ub_ProjViewMatBlock] }
+    //val projViewMat by lazy { this[DefaultShaders.ub_ProjViewMatBlock] }
     val projViewMatUB by lazy { this[DefaultShaders.ProjViewUB] }
 
     fun updateStandardUniforms() {
@@ -105,10 +105,10 @@ class RenderContext constructor(
         //println("updateStandardUniforms!!!")
 
         // @TODO: Detect if there was a change
-        projViewMat.push(deduplicate = true) {
-            it[DefaultShaders.u_ProjMat].set(projMat)
-            it[DefaultShaders.u_ViewMat].set(viewMat)
-        }
+        //projViewMat.push(deduplicate = true) {
+        //    it[DefaultShaders.u_ProjMat].set(projMat)
+        //    it[DefaultShaders.u_ViewMat].set(viewMat)
+        //}
         projViewMatUB.push(deduplicate = true) {
             it[DefaultShaders.ProjViewUB.u_ProjMat] = projMat
             it[DefaultShaders.ProjViewUB.u_ViewMat] = viewMat
@@ -129,9 +129,9 @@ class RenderContext constructor(
                 temp2d.copyFrom(this.viewMat2D)
                 this.viewMat2D.copyFrom(matrix)
                 this.viewMat.copyFrom(matrix)
-                this[DefaultShaders.ub_ProjViewMatBlock].push {
-                    it[DefaultShaders.u_ViewMat].set(this.viewMat)
-                }
+                //this[DefaultShaders.ub_ProjViewMatBlock].push {
+                //    it[DefaultShaders.u_ViewMat].set(this.viewMat)
+                //}
                 this[DefaultShaders.ProjViewUB].push {
                     it[DefaultShaders.ProjViewUB.u_ViewMat] = this.viewMat
                 }
@@ -142,7 +142,7 @@ class RenderContext constructor(
                     flush()
                     this.viewMat.copyFrom(temp)
                     this.viewMat2D.copyFrom(temp2d)
-                    this[DefaultShaders.ub_ProjViewMatBlock].pop()
+                    //this[DefaultShaders.ub_ProjViewMatBlock].pop()
                     this[DefaultShaders.ProjViewUB].pop()
                     //uniforms[DefaultShaders.u_ViewMat] = this.viewMat
                 }
@@ -566,13 +566,9 @@ class RenderContext constructor(
     private val _programs = FastIdentityMap<Program, AGProgramWithUniforms>()
 
     operator fun get(uniform: NewUniformBlock): NewUniformBlockBuffer = _buffers[uniform]
-    operator fun get(uniform: UniformBlock): AGRichUniformBlockData = _buffers[uniform]
+    //operator fun get(uniform: UniformBlock): AGRichUniformBlockData = _buffers[uniform]
     operator fun get(program: Program): AGProgramWithUniforms = _programs.getOrPut(program) { AGProgramWithUniforms(it, _buffers) }
 
-    fun createCurrentUniformsRef(program: Program, autoUpload: Boolean = true): AGUniformBlocksBuffersRef {
-        if (autoUpload) uploadUpdatedUniforms()
-        return this[program].createRef()
-    }
     fun createCurrentNewUniformsRef(program: Program, autoUpload: Boolean = true): AGNewUniformBlocksBuffersRef {
         if (autoUpload) uploadUpdatedUniforms()
         return this[program].createNewRef()

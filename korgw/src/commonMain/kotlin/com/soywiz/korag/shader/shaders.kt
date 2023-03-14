@@ -207,12 +207,6 @@ sealed class VariableWithOffset(
     precision: Precision = Precision.DEFAULT,
     val offset: Int? = null,
 ) : Variable(name, type, arrayCount, precision) {
-    @Deprecated("")
-    var linkedIndex: Int = -1
-    @Deprecated("")
-    var linkedOffset: Int = -1
-    @Deprecated("")
-    var linkedLayout: ProgramLayout<*>? = null
 }
 
 open class Attribute(
@@ -1080,24 +1074,12 @@ inline val ProgramLayout<Attribute>.attributePositions: IntArrayList get() = _po
 open class ProgramLayout<TVariable : VariableWithOffset>(
     @PublishedApi internal val items: List<TVariable>,
     private val layoutSize: Int?,
-    private val link: Boolean = false,
     val fixedLocation: Int = -1
 ) {
 	constructor(variables: List<TVariable>) : this(variables, null)
 	constructor(vararg variables: TVariable, layoutSize: Int? = null) : this(variables.toFastList(), layoutSize)
 
 	private var _lastPos: Int = 0
-
-    init {
-        if (link) {
-            for (n in items.indices) {
-                val item = items[n]
-                if (item.linkedLayout != null) error("$item already in a layout '${item.linkedLayout}'")
-                item.linkedLayout = this
-                item.linkedIndex = n
-            }
-        }
-    }
 
 	val alignments: IntArrayList = items.mapInt {
 		val a = it.type.kind.bytesSize
@@ -1108,9 +1090,6 @@ open class ProgramLayout<TVariable : VariableWithOffset>(
 		_lastPos = when {
             it.offset != null -> it.offset
             else -> _lastPos.nextAlignedTo(it.type.kind.bytesSize)
-        }
-        if (link) {
-            it.linkedOffset = _lastPos
         }
 		val out = _lastPos
 		_lastPos += it.type.bytesSize
@@ -1125,13 +1104,16 @@ open class ProgramLayout<TVariable : VariableWithOffset>(
 	override fun toString(): String = "${this::class.portableSimpleName}[${names()}, fixedLocation=$fixedLocation]"
 }
 
+/*
 @Deprecated("")
-class UniformBlock(uniforms: List<Uniform>, fixedLocation: Int) : ProgramLayout<Uniform>(uniforms, null, link = true, fixedLocation = fixedLocation) {
+class UniformBlock(uniforms: List<Uniform>, fixedLocation: Int) : ProgramLayout<Uniform>(uniforms, null, fixedLocation = fixedLocation) {
     constructor(vararg uniforms: Uniform, fixedLocation: Int) : this(uniforms.toList(), fixedLocation)
     companion object {
         val EMPTY = UniformBlock(fixedLocation = -1)
     }
 }
+
+ */
 
 //typealias UniformLayout = ProgramLayout<Uniform>
 //typealias UniformBlock = ProgramLayout<Uniform>
@@ -1171,6 +1153,9 @@ class AGNewUniformBlocksBuffersRef(val blocks: Array<NewUniformBlockBuffer?>, va
     }
 }
 
+/*
+
+@Deprecated("")
 class AGUniformBlocksBuffersRef(val blocks: Array<UniformBlockData?>, val buffers: Array<AGBuffer?>, val valueIndices: IntArray) {
     val size: Int get() = blocks.size
 
@@ -1228,13 +1213,13 @@ class AGUniformBlockValues(val buffers: Array<UniformBlockBuffer>, val indices: 
     override fun toString(): String = "AGUniformBlockValues(buffers=${buffers.toList()}, indices=${indices.size})"
 }
 
+@Deprecated("")
 open class UniformBlockData(val block: UniformBlock) {
     val data = Buffer(block.totalSize)
     val values = block.uniforms.map { uniform ->
         //val dataSizeInBytes = data.sizeInBytes
         val totalDataBytes = data.sizeInBytes
         val dataSizeInBytes = uniform.type.bytesSize
-        val linkedOffset = uniform.linkedOffset
         val lastIndex = linkedOffset + uniform.type.bytesSize
         if (lastIndex > totalDataBytes) {
             error("Invalid size linkedOffset=$linkedOffset, lastIndex=$lastIndex, dataSizeInBytes=$dataSizeInBytes, totalDataBytes=$totalDataBytes")
@@ -1327,3 +1312,5 @@ class UniformBlockBuffer(val block: UniformBlock, val initialCapacity: Int = 1) 
 
     override fun toString(): String = "UniformBlockBuffer($block, capacity=$capacity, lastIndex=$currentIndex)"
 }
+ */
+

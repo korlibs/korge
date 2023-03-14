@@ -24,6 +24,7 @@ open class NewUniformBlock(val fixedLocation: Int) {
     private val _items = arrayListOf<NewTypedUniform<*>>()
     val uniforms: List<NewTypedUniform<*>> get() = _items
     val totalSize: Int get() = layout.size
+    /*
     @Deprecated("")
     val uniformBlock: UniformBlock by lazy {
         UniformBlock(*uniforms.map { it.uniform }.toTypedArray(), fixedLocation = fixedLocation).also {
@@ -42,6 +43,8 @@ open class NewUniformBlock(val fixedLocation: Int) {
             //println("totalSize=${totalSize}")
         }
     }
+
+     */
 
     // @TODO: Fix alignment
     protected fun bool(name: String? = null): Gen<List<Boolean>> = Gen(name, layout.rawAlloc(1, 1), VarType.Bool1)
