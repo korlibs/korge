@@ -746,6 +746,15 @@ class BatchBuilder2D constructor(
         ctx.keepUniform(uniform, flush, callback)
     }
 
+    inline fun flush(block: () -> Unit) {
+        ctx.flush()
+        try {
+            block()
+        } finally {
+            ctx.flush()
+        }
+    }
+
     /**
      * Executes [callback] while restoring [uniforms] to its current value after [callback] is exexcuted.
      */

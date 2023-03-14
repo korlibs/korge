@@ -70,6 +70,7 @@ object DefaultShaders {
     val MERGE_ALPHA_PROGRAM = Program(VERTEX_DEFAULT, FragmentShaderDefault {
         val coords = v_Tex["xy"]
         SET(out, texture2D(u_Tex, coords) * texture2D(TexExUB.u_TexEx, coords).a)
+        //SET(out, vec4(1f.lit, 1f.lit, 0f.lit, 1f.lit))
     })
 
 	val FRAGMENT_DEBUG: FragmentShader = FragmentShader {

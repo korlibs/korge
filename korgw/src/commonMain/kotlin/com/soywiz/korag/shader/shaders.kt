@@ -1123,29 +1123,35 @@ inline val ProgramLayout<Uniform>.uniformPositions: IntArrayList get() = _positi
 class AGUniformWithBuffer(val uniform: Uniform, val buffer: AGBuffer) {
 }
 
-class AGNewUniformBlocksBuffersRef(val blocks: Array<NewUniformBlockBuffer<*>?>, val buffers: Array<AGBuffer?>, val textures: Array<Array<AGTexture?>?>, val valueIndices: IntArray) {
+class AGNewUniformBlocksBuffersRef(
+    val blocks: Array<NewUniformBlockBuffer<*>?>,
+    val buffers: Array<AGBuffer?>,
+    val textures: Array<Array<AGTexture?>?>,
+    val texturesInfo: Array<IntArray?>,
+    val valueIndices: IntArray
+) {
     val size: Int get() = blocks.size
 
     companion object {
-        val EMPTY = AGNewUniformBlocksBuffersRef(emptyArray(), emptyArray(), emptyArray(), IntArray(0))
+        val EMPTY = AGNewUniformBlocksBuffersRef(emptyArray(), emptyArray(), emptyArray(), emptyArray(),  IntArray(0))
     }
 
-    inline fun fastForEachBlock(callback: (index: Int, block: NewUniformBlockBuffer<*>, buffer: AGBuffer?, textures: Array<AGTexture?>?, valueIndex: Int) -> Unit) {
+    inline fun fastForEachBlock(callback: (index: Int, block: NewUniformBlockBuffer<*>, buffer: AGBuffer?, textures: Array<AGTexture?>?, texturesInfo: IntArray?, valueIndex: Int) -> Unit) {
         for (n in 0 until size) {
             val block = blocks[n] ?: continue
-            callback(n, block, buffers[n], textures[n], valueIndices[n])
+            callback(n, block, buffers[n], textures[n], texturesInfo[n], valueIndices[n])
         }
     }
 
     // @TODO: This won't be required in backends supporting uniform buffers, since the buffer can just be uploaded
     inline fun fastForEachUniform(callback: (AGUniformValue) -> Unit) {
         //println("AGUniformBlocksBuffersRef: ${blocks.toList()} : ${valueIndices.toList()}")
-        fastForEachBlock { index, block, buffer, textures, valueIndex ->
+        fastForEachBlock { index, block, buffer, textures, texturesInfo, valueIndex ->
             if (valueIndex >= 0) {
                 val byteOffset = valueIndex * block.block.totalSize
                 //println(" :: index=$index, block=$block, buffer=$buffer, mem=${buffer?.mem}, valueIndex=$valueIndex, byteOffset=$byteOffset")
-                block.readFrom(buffer?.mem ?: error("Memory is empty for block $block"), textures, byteOffset)
-                block.values.fastForEach {
+                val buffer1 = buffer?.mem ?: error("Memory is empty for block $block")
+                block.readFrom(buffer1, textures, texturesInfo, byteOffset).fastForEach {
                     callback(it)
                 }
             }

@@ -86,9 +86,12 @@ open class NewUniformBlock(val fixedLocation: Int) {
     }
 }
 
-class NewUniformRef(val block: NewUniformBlock, var buffer: Buffer, var textures: Array<AGTexture?>, var index: Int) {
+class NewUniformRef(val block: NewUniformBlock, var buffer: Buffer, var textures: Array<AGTexture?>, var texturesInfo: IntArray, var index: Int) {
     constructor(block: NewUniformBlock, size: Int = 1, index: Int = 0) : this(
-        block, Buffer(block.totalSize * size), arrayOfNulls(block.uniformCount * size), index
+        block, Buffer(block.totalSize * size),
+        arrayOfNulls(block.uniformCount * size),
+        IntArray(block.uniformCount * size),
+        index
     )
 
     val blockSize: Int = block.totalSize
@@ -153,9 +156,9 @@ class NewUniformRef(val block: NewUniformBlock, var buffer: Buffer, var textures
     }
 
     fun set(uniform: NewTypedUniform<Int>, tex: AGTexture?, samplerInfo: AGTextureUnitInfo = AGTextureUnitInfo.DEFAULT) {
-        buffer.setUnalignedInt32(getOffset(uniform), samplerInfo.data)
+        buffer.setUnalignedInt32(getOffset(uniform), -1)
         textures[index * blockSize + uniform.vindex] = tex
-        //TODO()
+        texturesInfo[index * blockSize + uniform.vindex] = samplerInfo.data
     }
 }
 
@@ -166,8 +169,9 @@ class NewUniformBlockBuffer<T : NewUniformBlock>(val block: T) {
     val texBlockSize = block.uniforms.size
     @PublishedApi internal var buffer = Buffer(blockSize * 1)
     @PublishedApi internal var textures = arrayOfNulls<AGTexture?>(texBlockSize * 1)
+    @PublishedApi internal var texturesInfo = IntArray(texBlockSize * 1)
     private val bufferSize: Int get() = buffer.sizeInBytes / blockSize
-    val current = NewUniformRef(block, buffer, textures, -1)
+    val current = NewUniformRef(block, buffer, textures, texturesInfo, -1)
     var currentIndex by current::index
     val size: Int get() = currentIndex + 1
 
@@ -176,8 +180,10 @@ class NewUniformBlockBuffer<T : NewUniformBlock>(val block: T) {
             val newCapacity = kotlin.math.max(index + 1, (index + 2) * 3)
             buffer = buffer.copyOf(blockSize * newCapacity)
             textures = textures.copyOf(texBlockSize * newCapacity)
+            texturesInfo = texturesInfo.copyOf(texBlockSize * newCapacity)
             current.buffer = buffer
             current.textures = textures
+            current.texturesInfo = texturesInfo
         }
     }
 
@@ -209,9 +215,11 @@ class NewUniformBlockBuffer<T : NewUniformBlock>(val block: T) {
         if (currentIndex > 0) {
             arraycopy(buffer, index0, buffer, index1, blockSize)
             arraycopy(textures, texIndex0, textures, texIndex1, texBlockSize)
+            arraycopy(texturesInfo, texIndex0, texturesInfo, texIndex1, texBlockSize)
         } else {
             arrayfill(buffer, 0, 0, blockSize)
             arrayfill(textures, null, 0, texBlockSize)
+            arrayfill(texturesInfo, 0, 0, texBlockSize)
         }
         block(this.block, current)
         if (deduplicate && currentIndex >= 1) {
@@ -220,6 +228,7 @@ class NewUniformBlockBuffer<T : NewUniformBlock>(val block: T) {
             //println(buffer.slice(128, 256).hex())
             val equals = arrayequal(buffer, index0, buffer, index1, blockSize)
                 && arrayequal(textures, texIndex0, textures, texIndex1, texBlockSize)
+                && arrayequal(texturesInfo, texIndex0, texturesInfo, texIndex1, texBlockSize)
             if (equals) {
                 currentIndex--
                 return false
@@ -230,18 +239,19 @@ class NewUniformBlockBuffer<T : NewUniformBlock>(val block: T) {
 
     val data = Buffer(block.totalSize)
     //val values by lazy { block.uniforms.map { AGUniformValue(it.uniform) } }
-    val values = block.uniforms.map { uniform ->
+    val values: List<AGUniformValue> = block.uniforms.map { uniform ->
         AGUniformValue(uniform.uniform, data.sliceWithSize(uniform.voffset, uniform.type.bytesSize), null, AGTextureUnitInfo.DEFAULT)
     }
 
-    fun readFrom(buffer: Buffer, textures: Array<AGTexture?>?, offset: Int) {
-        if (textures != null) {
+    fun readFrom(buffer: Buffer, textures: Array<AGTexture?>?, texturesInfo: IntArray?, offset: Int): List<AGUniformValue> {
+        if (textures != null && texturesInfo != null) {
             for (n in values.indices) {
-                values[n].set(textures[n], AGTextureUnitInfo.DEFAULT)
+                values[n].set(textures[n], AGTextureUnitInfo.fromRaw(texturesInfo[n]))
                 //values[n].texture = textures[n]
                 //values[n].textureUnitInfo = AGTextureUnitInfo.DEFAULT // @TODO
             }
         }
         arraycopy(buffer, offset, data, 0, block.totalSize)
+        return values
     }
 }

@@ -45,8 +45,8 @@ suspend fun main() = Korge(
     demoSelector(
         //Demo(::MainGpuVectorRendering),
         //Demo(::MainColorTransformFilter),
-        //Demo(::MainMasks),
-        Demo(::MainSDF),
+        Demo(::MainMasks),
+        //Demo(::MainSDF),
         listOf(
             Demo(::MainStressButtons),
             Demo(::MainVectorNinePatch),
