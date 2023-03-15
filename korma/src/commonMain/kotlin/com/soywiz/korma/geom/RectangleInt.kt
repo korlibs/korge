@@ -3,8 +3,8 @@ package com.soywiz.korma.geom
 import com.soywiz.kmem.pack.*
 import com.soywiz.korma.annotations.*
 
-@KormaValueApi
-data class RectangleInt(val data: Int4Pack) {
+//@KormaValueApi
+inline class RectangleInt(val data: Int4Pack) {
     val position: PointInt get() = PointInt(data.i0, data.i1)
     val size: SizeInt get() = SizeInt(data.i2, data.i3)
 
