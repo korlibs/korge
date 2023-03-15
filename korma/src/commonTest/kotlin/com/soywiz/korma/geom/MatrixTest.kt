@@ -92,7 +92,7 @@ class MatrixTest {
     @Test
     fun transform3() {
         val t = MatrixTransform(rotation = -(91.degrees), scaleX = 1.3f, scaleY = 1.3f)
-        assertTrue { t.isAlmostEquals(MatrixTransform.fromMatrix(t.toMatrix())) }
+        assertEqualsFloat(t, MatrixTransform.fromMatrix(t.toMatrix()), 0.1)
     }
 
     //@Test

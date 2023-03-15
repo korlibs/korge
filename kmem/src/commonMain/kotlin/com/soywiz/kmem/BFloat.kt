@@ -1,13 +1,7 @@
 package com.soywiz.kmem
 
-// Based on https://en.wikipedia.org/wiki/Bfloat16_floating-point_format
-// But occupies 21 bits. This is done to encode 6 floats in 128bits. Converting to float is just a shift.
-// Can pack 3 floats in a 64-bit Long
-// 21-bit: sign:1 - exp:8 - smantissa:1, mantissa:11
-inline class BFloat @PublishedApi internal constructor(val rawBits: Int) {
+internal inline class BFloat @PublishedApi internal constructor(val rawBits: Int) {
     companion object {
-        private inline fun mask(bits: Int): Int = (1 shl bits) - 1
-
         const val BITS = 21
         const val MASK = (1 shl BITS) - 1
 

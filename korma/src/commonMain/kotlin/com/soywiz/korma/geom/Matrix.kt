@@ -223,13 +223,30 @@ inline class Matrix(val data: BFloat6Pack) {
     }
 }
 
-@KormaValueApi
-data class MatrixTransform(
-    val x: Float = 0f, val y: Float = 0f,
-    val scaleX: Float = 1f, val scaleY: Float = 1f,
-    val skewX: Angle = Angle.ZERO, val skewY: Angle = Angle.ZERO,
-    val rotation: Angle = Angle.ZERO
+//@KormaValueApi
+inline class MatrixTransform(
+    val raw: BFloat3Half4Pack
+    //val x: Float = 0f, val y: Float = 0f,
+    //val scaleX: Float = 1f, val scaleY: Float = 1f,
+    //val skewX: Angle = Angle.ZERO, val skewY: Angle = Angle.ZERO,
+    //val rotation: Angle = Angle.ZERO
 ) {
+    val x: Float get() = raw.b0
+    val y: Float get() = raw.b1
+    val rotation: Angle get() = Angle.fromRatio(raw.b2)
+    val scaleX: Float get() = raw.hf0
+    val scaleY: Float get() = raw.hf1
+    val skewX: Angle get() = Angle.fromRatio(raw.hf2)
+    val skewY: Angle get() = Angle.fromRatio(raw.hf3)
+
+    override fun toString(): String = "MatrixTransform(x=${x.niceStr}, y=${y.niceStr}, scaleX=${scaleX}, scaleY=${scaleY}, skewX=${skewX}, skewY=${skewY}, rotation=${rotation})"
+
+    constructor(
+        x: Float = 0f, y: Float = 0f,
+        scaleX: Float = 1f, scaleY: Float = 1f,
+        skewX: Angle = Angle.ZERO, skewY: Angle = Angle.ZERO,
+        rotation: Angle = Angle.ZERO
+    ) : this(bfloat3Half4PackOf(x, y, rotation.ratioF, scaleX, scaleY, skewX.ratioF, skewY.ratioF))
     constructor() : this(0f, 0f, 1f, 1f, Angle.ZERO, Angle.ZERO, Angle.ZERO)
     constructor(
         x: Double, y: Double,
@@ -746,6 +763,7 @@ data class MMatrix(
     @Deprecated("")
     fun transformYf(px: Int, py: Int): Float = transformY(px.toDouble(), py.toDouble()).toFloat()
 
+    @Deprecated("Use MatrixTransform")
     data class Transform(
         var x: Double = 0.0, var y: Double = 0.0,
         var scaleX: Double = 1.0, var scaleY: Double = 1.0,

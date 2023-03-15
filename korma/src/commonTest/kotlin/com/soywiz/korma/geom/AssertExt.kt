@@ -2,6 +2,7 @@ package com.soywiz.korma.geom
 
 import com.soywiz.korma.geom.bezier.*
 import com.soywiz.korma.math.*
+import kotlin.test.*
 
 fun <
     //@OnlyInputTypes
@@ -18,6 +19,7 @@ T> assertEqualsFloat(
         //org.junit.ComparisonFailure: expected:<[a]> but was:<[b]>
 
         //throw AssertionError("Actual: $actual\nExpected: $expected\nabsoluteTolerance=$absoluteTolerance\n$message")
+        assertEquals("$expected", "$actual", message)
         throw AssertionError("expected:<[$expected]> but was:<[$actual]>\nabsoluteTolerance=$absoluteTolerance\n$message")
     }
 }
@@ -42,6 +44,7 @@ private fun <T : Any> T?.isAlmostEqualsGeneric(
             e.isAlmostEquals(a, absoluteTolerance)
         }
         is Matrix -> e.isAlmostEquals((a as Matrix), absoluteTolerance.toFloat())
+        is MatrixTransform -> e.isAlmostEquals((a as MatrixTransform), absoluteTolerance.toFloat())
         is Bezier -> e.points.isAlmostEqualsGeneric((a as? Bezier)?.points, absoluteTolerance)
         is PointList -> e.toList().isAlmostEqualsGeneric((a as? PointList)?.toList(), absoluteTolerance)
         is List<*> -> {
