@@ -11,6 +11,7 @@ import com.soywiz.korma.math.isAlmostEquals
 import com.soywiz.korma.math.roundDecimalPlaces
 
 @KormaMutableApi
+@Deprecated("Use Rectangle")
 data class MRectangle(
     var x: Double, var y: Double,
     var width: Double, var height: Double
@@ -266,13 +267,7 @@ data class MRectangle(
             ratio.interpolate(l.height, r.height)
         )
 
-    fun getMiddlePoint(out: MPoint = MPoint()): MPoint = getAnchoredPosition(Anchor.CENTER, out)
-
-    fun getAnchoredPosition(anchor: Anchor, out: MPoint = MPoint()): MPoint =
-        getAnchoredPosition(anchor.doubleX, anchor.doubleY, out)
-
-    fun getAnchoredPosition(anchorX: Double, anchorY: Double, out: MPoint = MPoint()): MPoint =
-        out.setTo(left + width * anchorX, top + height * anchorY)
+    val immutable: Rectangle get() = Rectangle(x, y, width, height)
 
     fun toInt(): MRectangleInt = MRectangleInt(x.toInt(), y.toInt(), width.toInt(), height.toInt())
     fun floor(): MRectangle = setTo(

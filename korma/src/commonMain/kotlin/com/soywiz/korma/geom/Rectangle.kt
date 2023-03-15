@@ -6,9 +6,7 @@ import com.soywiz.korma.annotations.*
 import kotlin.math.*
 
 //@KormaValueApi
-inline class Rectangle(
-    val data: Float4Pack
-) {
+inline class Rectangle(val data: Float4Pack) {
     val position: Point get() = Point(data.f0, data.f1)
     val size: Size get() = Size(data.f2, data.f3)
 
@@ -100,6 +98,8 @@ inline class Rectangle(
     fun toIntRound(): RectangleInt = RectangleInt(x.toIntRound(), y.toIntRound(), width.toIntRound(), height.toIntRound())
     fun toIntCeil(): RectangleInt = RectangleInt(x.toIntCeil(), y.toIntCeil(), width.toIntCeil(), height.toIntCeil())
     fun toIntFloor(): RectangleInt = RectangleInt(x.toIntFloor(), y.toIntFloor(), width.toIntFloor(), height.toIntFloor())
+
+    fun getAnchoredPoint(anchor: Anchor): Point = Point(left + width * anchor.sx, top + height * anchor.sy)
 
     @KormaMutableApi fun toMRectangle(out: MRectangle = MRectangle()): MRectangle = out.setTo(x, y, width, height)
 }

@@ -23,17 +23,17 @@ inline class Anchor internal constructor(internal val raw: Float2Pack) : Interpo
     constructor(sx: Int, sy: Int) : this(sx.toFloat(), sy.toFloat())
 
     companion object {
-        val TOP_LEFT: Anchor = Anchor(0.0, 0.0)
-        val TOP_CENTER: Anchor = Anchor(0.5, 0.0)
-        val TOP_RIGHT: Anchor = Anchor(1.0, 0.0)
+        val TOP_LEFT: Anchor = Anchor(0f, 0f)
+        val TOP_CENTER: Anchor = Anchor(.5f, 0f)
+        val TOP_RIGHT: Anchor = Anchor(1f, 0f)
 
-        val MIDDLE_LEFT: Anchor = Anchor(0.0, 0.5)
-        val MIDDLE_CENTER: Anchor = Anchor(0.5, 0.5)
-        val MIDDLE_RIGHT: Anchor = Anchor(1.0, 0.5)
+        val MIDDLE_LEFT: Anchor = Anchor(0f, .5f)
+        val MIDDLE_CENTER: Anchor = Anchor(.5f, .5f)
+        val MIDDLE_RIGHT: Anchor = Anchor(1f, .5f)
 
-        val BOTTOM_LEFT: Anchor = Anchor(0.0, 1.0)
-        val BOTTOM_CENTER: Anchor = Anchor(0.5, 1.0)
-        val BOTTOM_RIGHT: Anchor = Anchor(1.0, 1.0)
+        val BOTTOM_LEFT: Anchor = Anchor(0f, 1f)
+        val BOTTOM_CENTER: Anchor = Anchor(.5f, 1f)
+        val BOTTOM_RIGHT: Anchor = Anchor(1f, 1f)
 
         val TOP: Anchor get() = TOP_CENTER
         val LEFT: Anchor get() = MIDDLE_LEFT
