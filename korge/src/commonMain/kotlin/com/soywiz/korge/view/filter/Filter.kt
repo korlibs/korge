@@ -202,5 +202,8 @@ fun Filter.expandBorderRectangle(out: MRectangle) {
     out.expand(getBorder(out.width.toIntCeil(), out.height.toIntCeil()))
 }
 
+fun Filter.expandedBorderRectangle(out: Rectangle): Rectangle =
+    out.expanded(getBorder(out.width.toIntCeil(), out.height.toIntCeil()))
+
 @ThreadLocal
 val RenderContext.renderToTextureResultPool by Extra.Property { Pool({ it.dispose() }) { RenderToTextureResult() } }

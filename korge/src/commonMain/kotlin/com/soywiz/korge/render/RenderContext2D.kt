@@ -281,6 +281,8 @@ class RenderContext2D(
     /** Temporarily sets the [scissor] (visible rendering area) to [rect] is executed. */
     inline fun scissor(rect: MRectangle?, block: () -> Unit) =
         scissor(AGScissor(rect), block)
+    inline fun scissor(rect: Rectangle, block: () -> Unit) =
+        scissor(AGScissor(rect), block)
 
     /** Temporarily sets the [scissor] (visible rendering area) to [scissor] is executed. */
     inline fun scissor(scissor: AGScissor, block: () -> Unit) {

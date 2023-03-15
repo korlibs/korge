@@ -16,7 +16,7 @@ import com.soywiz.korev.SoftKeyboardConfig
 import com.soywiz.korev.SoftKeyboardReturnKeyType
 import com.soywiz.korev.SoftKeyboardType
 import com.soywiz.korim.format.cg.*
-import com.soywiz.korma.geom.MRectangle
+import com.soywiz.korma.geom.*
 import kotlinx.cinterop.CValue
 import kotlinx.cinterop.ExportObjCClass
 import kotlinx.cinterop.ObjCAction
@@ -537,7 +537,7 @@ open class IosGameWindow(
         ?: UIApplication.sharedApplication.keyWindow
         ?: (UIApplication.sharedApplication.windows.first() as UIWindow)
 
-    override fun setInputRectangle(windowRect: MRectangle) {
+    override fun setInputRectangle(windowRect: Rectangle) {
         println("IosGameWindow.setInputRectangle: windowRect=$windowRect")
         prepareSoftKeyboardOnce()
         textField.setBounds(windowRect.toCG())

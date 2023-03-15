@@ -152,7 +152,7 @@ open class UIComboBox<T>(
     private fun ensureSelectedIsInVisibleArea(index: Int) {
         verticalList.updateList()
         itemsView.ensureRectIsVisible(
-            MRectangle(
+            Rectangle(
                 0.0, verticalList.provider.getItemY(index),
                 width,
                 verticalList.provider.getItemHeight(index)

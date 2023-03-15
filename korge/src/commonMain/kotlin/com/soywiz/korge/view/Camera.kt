@@ -4,8 +4,7 @@ import com.soywiz.klock.TimeSpan
 import com.soywiz.korge.tween.V2
 import com.soywiz.korge.tween.get
 import com.soywiz.korge.tween.tween
-import com.soywiz.korma.geom.MMatrix
-import com.soywiz.korma.geom.MRectangle
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.interpolation.Easing
 
 /**
@@ -34,11 +33,9 @@ class Camera : Container(), View.Reference {
         set(_) = Unit
         get() = referenceParent?.height ?: 100.0
 
-    override fun getLocalBoundsInternal(out: MRectangle) {
-		out.setTo(0.0, 0.0, width, height)
-	}
+    override fun getLocalBoundsInternal() = Rectangle(0.0, 0.0, width, height)
 
-	fun getLocalMatrixFittingGlobalRect(rect: MRectangle): MMatrix {
+	fun getLocalMatrixFittingGlobalRect(rect: Rectangle): MMatrix {
 		val destinationBounds = rect
 		val mat = this.parent?.globalMatrix?.clone() ?: MMatrix()
 		mat.translate(-destinationBounds.x, -destinationBounds.y)
@@ -52,10 +49,10 @@ class Camera : Container(), View.Reference {
 	}
 
 	fun getLocalMatrixFittingView(view: View?): MMatrix =
-		getLocalMatrixFittingGlobalRect((view ?: stage)?.globalBounds ?: MRectangle(0, 0, 100, 100))
+		getLocalMatrixFittingGlobalRect((view ?: stage)?.globalBounds ?: Rectangle(0, 0, 100, 100))
 
 	fun setTo(view: View?) { this.localMatrix = getLocalMatrixFittingView(view) }
-	fun setTo(rect: MRectangle) { this.localMatrix = getLocalMatrixFittingGlobalRect(rect) }
+	fun setTo(rect: Rectangle) { this.localMatrix = getLocalMatrixFittingGlobalRect(rect) }
 
 	suspend fun tweenTo(view: View?, vararg vs: V2<*>, time: TimeSpan, easing: Easing = Easing.LINEAR) = this.tween(
 		this::localMatrix[this.localMatrix.clone(), getLocalMatrixFittingView(view)],
@@ -64,7 +61,7 @@ class Camera : Container(), View.Reference {
 		easing = easing
 	)
 
-	suspend fun tweenTo(rect: MRectangle, vararg vs: V2<*>, time: TimeSpan, easing: Easing = Easing.LINEAR) = this.tween(
+	suspend fun tweenTo(rect: Rectangle, vararg vs: V2<*>, time: TimeSpan, easing: Easing = Easing.LINEAR) = this.tween(
 		this::localMatrix[this.localMatrix.clone(), getLocalMatrixFittingGlobalRect(rect)],
 		*vs,
 		time = time,

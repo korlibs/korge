@@ -42,9 +42,7 @@ open class UIView(
         onSizeChanged()
     }
 
-    override fun getLocalBoundsInternal(out: MRectangle) {
-        out.setTo(0.0, 0.0, width, height)
-    }
+    override fun getLocalBoundsInternal() = Rectangle(0.0, 0.0, width, height)
 
     open var enabled: Boolean
 		get() = mouseEnabled

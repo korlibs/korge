@@ -4,7 +4,6 @@ import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
 import com.soywiz.kmem.*
 import com.soywiz.korev.*
-import com.soywiz.korge.component.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.property.*
@@ -282,16 +281,14 @@ open class Container(
         //val bounds = this.getLocalBounds(Rectangle())
         var renderedCount = 0
         var culledCount = 0
-        MRectangle.POOL.alloc2 { tempRect2, tempRect ->
-            val bounds = clippingContainer?.getGlobalBounds(tempRect2)
-            fastForEachChildRender { child: View ->
-                //if (bounds.intersects(child.getLocalBoundsOptimized(includeFilters = true))) {
-                if (bounds == null || bounds.intersects(child.getGlobalBounds(tempRect, includeFilters = true))) {
-                    child.render(ctx)
-                    renderedCount++
-                } else {
-                    culledCount++
-                }
+        val bounds = clippingContainer?.getGlobalBounds()
+        fastForEachChildRender { child: View ->
+            //if (bounds.intersects(child.getLocalBoundsOptimized(includeFilters = true))) {
+            if (bounds == null || bounds.intersects(child.getGlobalBounds(includeFilters = true))) {
+                child.render(ctx)
+                renderedCount++
+            } else {
+                culledCount++
             }
         }
     }
@@ -303,16 +300,12 @@ open class Container(
         super.renderDebug(ctx)
     }
 
-    private val bb = BoundsBuilder()
-    private val tempRect = MRectangle()
-
-    override fun getLocalBoundsInternal(out: MRectangle) {
-        bb.reset()
+    override fun getLocalBoundsInternal(): Rectangle {
+        var bb = NewBoundsBuilder.EMPTY
         fastForEachChild { child: View ->
-            child.getBounds(this, tempRect)
-            bb.add(tempRect)
+            bb += child.getBounds(this)
         }
-        bb.getBounds(out)
+        return bb.bounds
     }
 
     /**

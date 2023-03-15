@@ -23,6 +23,7 @@ import com.soywiz.korma.geom.shape.*
 import com.soywiz.korma.geom.vector.*
 import com.soywiz.korma.interpolation.*
 import com.soywiz.krypto.encoding.*
+import kotlin.jvm.*
 import kotlin.math.*
 
 /**
@@ -77,9 +78,12 @@ abstract class View internal constructor(
     //}
 
     @KorgeInternal
-    open val anchorDispX get() = 0.0
+    open val anchorDispX: Double get() = 0.0
     @KorgeInternal
-    open val anchorDispY get() = 0.0
+    open val anchorDispY: Double get() = 0.0
+
+    val anchorDispXF: Float get() = anchorDispX.toFloat()
+    val anchorDispYF: Float get() = anchorDispY.toFloat()
 
     /** Read-only internal children list, or null when not a [Container] */
     @KorgeInternal
@@ -403,7 +407,7 @@ abstract class View internal constructor(
      * @TODO: In KorGE 2.0, View.width/View.height will be immutable and available from an extension method for Views that doesn't have a width/height properties
      */
     open var width: Double
-        get() = getLocalBoundsOptimizedAnchored().width
+        get() = getLocalBoundsOptimizedAnchored().width.toDouble()
         @Deprecated("Shouldn't set width but scaleWidth instead")
         set(value) {
             scaleX = (if (scaleX == 0.0) 1.0 else scaleX) * (value / width)
@@ -416,7 +420,7 @@ abstract class View internal constructor(
      * @TODO: In KorGE 2.0, View.width/View.height will be immutable and available from an extension method for Views that doesn't have a width/height properties
      */
     open var height: Double
-        get() = getLocalBoundsOptimizedAnchored().height
+        get() = getLocalBoundsOptimizedAnchored().height.toDouble()
         @Deprecated("Shouldn't set height but scaleHeight instead")
         set(value) {
             scaleY = (if (scaleY == 0.0) 1.0 else scaleY) * (value / getLocalBoundsOptimizedAnchored().height)
@@ -1022,8 +1026,8 @@ abstract class View internal constructor(
 
             // @TODO: This should not be required if we compute bounds
             MRectangle.POOL { tempRect ->
-                val area = getClippingAreaInternal(tempRect)
-                if (area != null && !area.contains(p)) return null
+                val area = getClippingAreaInternal()
+                if (area.isNIL && !area.contains(p)) return null
                 return view
             }
         }
@@ -1031,24 +1035,22 @@ abstract class View internal constructor(
     }
 
     @KorgeInternal
-    fun getClippingAreaInternal(out: MRectangle): MRectangle? {
-        out.setTo(Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY)
+    fun getClippingAreaInternal(): Rectangle {
+        var out = Rectangle.INFINITE
         var count = 0
-        MRectangle.POOL { _localBounds ->
-            forEachAscendant(true) {
-                if (it !is Stage && it is FixedSizeContainer && it.clip) {
-                    it.getGlobalBounds(_localBounds)
-                    if (count == 0) {
-                        out.copyFrom(_localBounds)
-                    } else {
-                        out.setToIntersection(out, _localBounds)
-                    }
-                    count++
+        forEachAscendant(true) {
+            if (it !is Stage && it is FixedSizeContainer && it.clip) {
+                val temp = it.getGlobalBounds()
+                if (count == 0) {
+                    out = temp
+                } else {
+                    out = temp intersection temp
                 }
+                count++
             }
         }
 
-        return if (count == 0) null else out
+        return if (count == 0) Rectangle.NIL else out
     }
 
     fun hitTestAny(p: Point): Boolean = hitTest(p) != null
@@ -1257,40 +1259,45 @@ abstract class View internal constructor(
     }
 
     /** Returns the global bounds of this object. Note this incurs in allocations. Use [getGlobalBounds] (out) to avoid it */
-    val windowBounds: MRectangle get() = getWindowBounds()
+    @get:JvmName("getWindowBoundsProp")
+    val windowBounds: Rectangle get() = getWindowBounds()
 
     /** Returns the global bounds of this object. Allows to specify an [out] [MRectangle] to prevent allocations. */
     @Deprecated("")
-    fun getWindowBounds(out: MRectangle = MRectangle()): MRectangle = getWindowBoundsOrNull(out) ?: getGlobalBounds(out)
+    fun getWindowBounds(): Rectangle {
+        val stage = root
+        if (stage !is Stage) return getGlobalBounds()
+        return getWindowBounds(stage)
+    }
 
-    fun getWindowBoundsOrNull(out: MRectangle = MRectangle()): MRectangle? {
+    fun getWindowBoundsOrNull(): Rectangle? {
         val stage = root
         if (stage !is Stage) return null
         //return getBounds(stage, out, inclusive = true).applyTransform(stage.views.globalToWindowMatrix)
-        return getWindowBounds(stage, out)
+        return getWindowBounds(stage)
     }
 
-    fun getWindowBounds(bp: BoundsProvider, out: MRectangle = MRectangle()): MRectangle =
-        getGlobalBounds(out).applyTransform(bp.globalToWindowMatrix)
+    fun getWindowBounds(bp: BoundsProvider): Rectangle =
+        getGlobalBounds().transformed(bp.globalToWindowMatrix)
 
-    fun getRenderTargetBounds(ctx: RenderContext, out: MRectangle = MRectangle()): MRectangle {
+    fun getRenderTargetBounds(ctx: RenderContext): Rectangle {
         //println("ctx.ag.isRenderingToWindow=${ctx.ag.isRenderingToWindow}")
-        return if (ctx.isRenderingToWindow) getWindowBounds(ctx, out) else getGlobalBounds(out)
+        return if (ctx.isRenderingToWindow) getWindowBounds(ctx) else getGlobalBounds()
     }
 
-    fun getClippingBounds(ctx: RenderContext, out: MRectangle = MRectangle()): MRectangle =
-        getRenderTargetBounds(ctx, out)
+    fun getClippingBounds(ctx: RenderContext): Rectangle =
+        getRenderTargetBounds(ctx)
 
     /** Returns the global bounds of this object. Note this incurs in allocations. Use [getGlobalBounds] (out) to avoid it */
-    val globalBounds: MRectangle get() = getGlobalBounds()
+    val globalBounds: Rectangle get() = getGlobalBounds()
 
     /** Returns the global bounds of this object. Allows to specify an [out] [MRectangle] to prevent allocations. */
-    //fun getGlobalBounds(out: Rectangle = Rectangle()): Rectangle = getBounds(root, out, inclusive = false)
-    fun getGlobalBounds(out: MRectangle = MRectangle(), includeFilters: Boolean = false): MRectangle = getBounds(root, out, inclusive = true, includeFilters = includeFilters)
+    //fun getGlobalBounds(out: Rectangle = Rectangle()): Rectangle = getBounds(root, inclusive = false)
+    fun getGlobalBounds(includeFilters: Boolean = false): Rectangle = getBounds(root, inclusive = true, includeFilters = includeFilters)
 
     /** Tries to set the global bounds of the object. If there are rotations in the ancestors, this might not work as expected. */
     @KorgeUntested
-    fun setGlobalBounds(bounds: MRectangle) {
+    fun setGlobalBounds(bounds: Rectangle) {
         val transform = parent!!.globalMatrix.toTransform()
         globalPos = bounds.topLeft
         setSizeScaled(
@@ -1303,12 +1310,12 @@ abstract class View internal constructor(
     //fun getRect(target: View? = this, out: Rectangle = Rectangle()): Rectangle = TODO()
 
     /** Get the bounds of this view, using the [target] view as coordinate system. Not providing a [target] will return the local bounds. Allows to specify [out] [MRectangle] to prevent allocations. */
-    fun getBoundsNoAnchoring(target: View? = this, out: MRectangle = MRectangle(), inclusive: Boolean = false, includeFilters: Boolean = false): MRectangle {
-        return getBounds(target, out, false, inclusive, includeFilters)
+    fun getBoundsNoAnchoring(target: View? = this, inclusive: Boolean = false, includeFilters: Boolean = false): Rectangle {
+        return getBounds(target, false, inclusive, includeFilters)
     }
 
-    protected fun _getBounds(concat: MMatrix?, out: MRectangle = MRectangle(), doAnchoring: Boolean = true, includeFilters: Boolean = false): MRectangle {
-        getLocalBounds(out, doAnchoring, includeFilters)
+    protected fun _getBounds(concat: MMatrix?, doAnchoring: Boolean = true, includeFilters: Boolean = false): Rectangle {
+        val out = getLocalBounds(doAnchoring, includeFilters)
 
         if (concat != null && !concat.isIdentity()) {
             val p1 = concat.transform(out.topLeft)
@@ -1318,13 +1325,13 @@ abstract class View internal constructor(
 
             //println("_getBounds: $this")
             //BoundsBuilder.POOL.alloc { it.add(p1).add(p2).add(p3).add(p4).getBounds(out) }
-            out.copyFrom(NewBoundsBuilder(p1, p2, p3, p4).rect)
+            return NewBoundsBuilder(p1, p2, p3, p4).bounds
         }
         return out
     }
 
-    fun getBounds(target: View? = this, out: MRectangle = MRectangle(), doAnchoring: Boolean = true, inclusive: Boolean = false, includeFilters: Boolean = false): MRectangle {
-        return MMatrix.POOL { boundsTemp -> _getBounds(this.getConcatMatrix(target ?: this, boundsTemp, inclusive), out, doAnchoring, includeFilters) }
+    fun getBounds(target: View? = this, doAnchoring: Boolean = true, inclusive: Boolean = false, includeFilters: Boolean = false): Rectangle {
+        return MMatrix.POOL { boundsTemp -> _getBounds(this.getConcatMatrix(target ?: this, boundsTemp, inclusive), doAnchoring, includeFilters) }
     }
 
     ///** Kind of bounds we are checking */
@@ -1338,31 +1345,27 @@ abstract class View internal constructor(
     /**
      * **NOTE:** that if [out] is not provided, the [MRectangle] returned shouldn't stored and modified since it is owned by this class.
      */
-    fun getLocalBoundsOptimized(includeFilters: Boolean = false): MRectangle = getLocalBounds(_localBounds, includeFilters = includeFilters)
+    fun getLocalBoundsOptimized(includeFilters: Boolean = false): Rectangle = getLocalBounds(includeFilters = includeFilters)
 
-    fun getLocalBoundsOptimizedAnchored(includeFilters: Boolean = false): MRectangle = getLocalBounds(_localBounds, doAnchoring = true, includeFilters = includeFilters)
-
-    fun getLocalBounds(doAnchoring: Boolean = true, includeFilters: Boolean = false, out: MRectangle = MRectangle()): MRectangle = getLocalBounds(out, doAnchoring, includeFilters)
+    fun getLocalBoundsOptimizedAnchored(includeFilters: Boolean = false): Rectangle = getLocalBounds(doAnchoring = true, includeFilters = includeFilters)
 
     /**
      * Get local bounds of the view. Allows to specify [out] [MRectangle] if you want to reuse an object.
      */
-    fun getLocalBounds(out: MRectangle, doAnchoring: Boolean = true, includeFilters: Boolean = false): MRectangle {
-        getLocalBoundsInternal(out)
+    fun getLocalBounds(doAnchoring: Boolean = true, includeFilters: Boolean = false): Rectangle {
+        var out = getLocalBoundsInternal()
         val it = out
         if (!doAnchoring) {
-            it.x += anchorDispX
-            it.y += anchorDispY
+            out = out.copy(x = out.x + anchorDispX.toFloat(), y = out.y + anchorDispY.toFloat())
         }
         if (includeFilters) {
-            filter?.expandBorderRectangle(out)
+            filter?.let { out = it.expandedBorderRectangle(out) }
         }
         return it
     }
 
-    private val _localBounds: MRectangle = MRectangle()
-    open fun getLocalBoundsInternal(out: MRectangle) {
-        out.clear()
+    open fun getLocalBoundsInternal(): Rectangle {
+        return Rectangle.ZERO
     }
 
     protected open fun createInstance(): View =
@@ -1809,7 +1812,9 @@ fun <T : View> T.position(x: Int, y: Int): T = xy(Point(x, y))
 fun <T : View> T.position(p: Point): T = xy(p)
 fun <T : View> T.position(p: MPoint): T = xy(p.point)
 
+fun <T : View> T.bounds(left: Float, top: Float, right: Float, bottom: Float): T = xy(left, top).size(Size(right - left, bottom - top))
 fun <T : View> T.bounds(left: Double, top: Double, right: Double, bottom: Double): T = xy(left, top).size(Size(right - left, bottom - top))
+fun <T : View> T.bounds(rect: Rectangle): T = bounds(rect.left, rect.top, rect.right, rect.bottom)
 fun <T : View> T.bounds(rect: MRectangle): T = bounds(rect.left, rect.top, rect.right, rect.bottom)
 
 fun <T : View> T.positionX(x: Double): T {

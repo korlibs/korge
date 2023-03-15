@@ -56,9 +56,9 @@ open class UIScrollable(width: Double, height: Double, cache: Boolean = true) : 
         val overflowPixelsBegin get() = if (isHorizontal) scrollable.overflowPixelsLeft else scrollable.overflowPixelsTop
         val overflowPixelsEnd get() = if (isHorizontal) scrollable.overflowPixelsRight else scrollable.overflowPixelsBottom
         val onScrollPosChange = Signal<UIScrollable>()
-        val size get() = if (isHorizontal) scrollable.width else scrollable.height
-        val shouldBeVisible get() = (size < totalSize)
-        val totalSize get() = (container.getLocalBoundsOptimized().let { if (isHorizontal) max(scrollable.width, it.right) else max(scrollable.height, it.bottom) })
+        val size: Double get() = if (isHorizontal) scrollable.width else scrollable.height
+        val shouldBeVisible: Boolean get() = (size < totalSize)
+        val totalSize: Double get() = (container.getLocalBoundsOptimized().let { if (isHorizontal) max(scrollable.width.toFloat(), it.right) else max(scrollable.height.toFloat(), it.bottom) }).toDouble()
             //.also { println("totalSize=$it") }
         val scrollArea get() = totalSize - size
         val positionEnd: Double get() = position + size
@@ -178,9 +178,9 @@ open class UIScrollable(width: Double, height: Double, cache: Boolean = true) : 
         vertical.ensurePositionIsVisible(y, anchor.doubleY)
     }
 
-    fun ensureRectIsVisible(rect: MRectangle, anchor: Anchor = Anchor.CENTER) {
-        horizontal.ensureRangeIsVisible(rect.left, rect.right, anchor.doubleX)
-        vertical.ensureRangeIsVisible(rect.top, rect.bottom, anchor.doubleY)
+    fun ensureRectIsVisible(rect: Rectangle, anchor: Anchor = Anchor.CENTER) {
+        horizontal.ensureRangeIsVisible(rect.left.toDouble(), rect.right.toDouble(), anchor.doubleX)
+        vertical.ensureRangeIsVisible(rect.top.toDouble(), rect.bottom.toDouble(), anchor.doubleY)
     }
 
     fun ensureViewIsVisible(view: View, anchor: Anchor = Anchor.CENTER) {

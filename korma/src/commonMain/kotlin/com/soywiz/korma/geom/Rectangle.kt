@@ -3,10 +3,14 @@ package com.soywiz.korma.geom
 import com.soywiz.kmem.*
 import com.soywiz.kmem.pack.*
 import com.soywiz.korma.annotations.*
+import com.soywiz.korma.internal.*
+import com.soywiz.korma.math.*
 import kotlin.math.*
 
 //@KormaValueApi
 inline class Rectangle(val data: Float4Pack) {
+    @Deprecated("", ReplaceWith("this")) fun clone(): Rectangle = this
+
     val position: Point get() = Point(data.f0, data.f1)
     val size: Size get() = Size(data.f2, data.f3)
 
@@ -15,9 +19,30 @@ inline class Rectangle(val data: Float4Pack) {
     val width: Float get() = data.f2
     val height: Float get() = data.f3
 
+    val xD: Double get() = x.toDouble()
+    val yD: Double get() = y.toDouble()
+    val widthD: Double get() = width.toDouble()
+    val heightD: Double get() = height.toDouble()
+
+    val isZero: Boolean get() = this == ZERO
+    val isInfinite: Boolean get() = this == INFINITE
+    val isNaN: Boolean get() = this == NaN
+    val isNIL: Boolean get() = this == NIL
+
+    fun toStringBounds(): String = "Rectangle([${left.niceStr},${top.niceStr}]-[${right.niceStr},${bottom.niceStr}])"
+    fun toStringSize(): String = "Rectangle([${left.niceStr},${top.niceStr}],[${width.niceStr},${height.niceStr}])"
+    fun toStringCompat(): String = "Rectangle(x=${left.niceStr}, y=${top.niceStr}, w=${width.niceStr}, h=${height.niceStr})"
+
+    override fun toString(): String = when {
+        isNIL -> "null"
+        else -> "Rectangle(x=${x.niceStr}, y=${y.niceStr}, width=${width.niceStr}, height=${height.niceStr})"
+    }
+
     companion object {
+        val ZERO = Rectangle(0, 0, 0, 0)
         val INFINITE = Rectangle(Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY)
         val NaN = Rectangle(Float.NaN, Float.NaN, Float.NaN, Float.NaN)
+        val NIL = NaN
 
         operator fun invoke(): Rectangle = Rectangle(Point(), Size())
         operator fun invoke(p: Point, s: Size): Rectangle = Rectangle(float4PackOf(p.x, p.y, s.width, s.height))
@@ -74,14 +99,14 @@ inline class Rectangle(val data: Float4Pack) {
         return Circle(center, Point.distance(centerX, centerY, right, top).toDouble())
     }
 
-    fun without(padding: Margin): Rectangle = Rectangle.fromBounds(
+    fun without(padding: Margin): Rectangle = fromBounds(
         left + padding.left,
         top + padding.top,
         right - padding.right,
         bottom - padding.bottom
     )
 
-    fun with(margin: Margin): Rectangle = Rectangle.fromBounds(
+    fun with(margin: Margin): Rectangle = fromBounds(
         left - margin.left,
         top - margin.top,
         right + margin.right,
@@ -92,10 +117,15 @@ inline class Rectangle(val data: Float4Pack) {
     infix fun intersectsX(that: Rectangle): Boolean = that.left <= this.right && that.right >= this.left
     infix fun intersectsY(that: Rectangle): Boolean = that.top <= this.bottom && that.bottom >= this.top
 
-    fun intersection(that: Rectangle): Rectangle? = if (this intersects that) Rectangle(
+    infix fun intersectionOrNull(that: Rectangle): Rectangle? = if (this intersects that) Rectangle(
         max(this.left, that.left), max(this.top, that.top),
         min(this.right, that.right), min(this.bottom, that.bottom)
     ) else null
+
+    infix fun intersection(that: Rectangle): Rectangle = if (this intersects that) Rectangle(
+        max(this.left, that.left), max(this.top, that.top),
+        min(this.right, that.right), min(this.bottom, that.bottom)
+    ) else Rectangle.NIL
 
     fun toInt(): RectangleInt = RectangleInt(x.toInt(), y.toInt(), width.toInt(), height.toInt())
     fun toIntRound(): RectangleInt = RectangleInt(x.toIntRound(), y.toIntRound(), width.toIntRound(), height.toIntRound())
@@ -105,6 +135,35 @@ inline class Rectangle(val data: Float4Pack) {
     fun getAnchoredPoint(anchor: Anchor): Point = Point(left + width * anchor.sx, top + height * anchor.sy)
 
     @KormaMutableApi fun toMRectangle(out: MRectangle = MRectangle()): MRectangle = out.setTo(x, y, width, height)
+
+    fun expanded(border: MarginInt): Rectangle =
+        fromBounds(left - border.left, top - border.top, right + border.right, bottom + border.bottom)
+
+    fun copy(x: Float = this.x, y: Float = this.y, width: Float = this.width, height: Float = this.height): Rectangle =
+        Rectangle(x, y, width, height)
+
+    fun copyBounds(left: Float = this.left, top: Float = this.top, right: Float = this.right, bottom: Float = this.bottom): Rectangle =
+        Rectangle.fromBounds(left, top, right, bottom)
+
+    fun transformed(m: MMatrix): Rectangle {
+        val tl = m.transform(topLeft)
+        val tr = m.transform(topRight)
+        val bl = m.transform(bottomLeft)
+        val br = m.transform(bottomRight)
+        val min = Point.minComponents(tl, tr, bl, br)
+        val max = Point.maxComponents(tl, tr, bl, br)
+        return Rectangle.fromBounds(min, max)
+    }
+
+    fun normalized(): Rectangle =
+        Rectangle.fromBounds(Point.minComponents(topLeft, bottomRight), Point.maxComponents(topLeft, bottomRight))
+
+    fun roundDecimalPlaces(places: Int): Rectangle = Rectangle(
+        x.roundDecimalPlaces(places),
+        y.roundDecimalPlaces(places),
+        width.roundDecimalPlaces(places),
+        height.roundDecimalPlaces(places)
+    )
 }
 
 @KormaMutableApi

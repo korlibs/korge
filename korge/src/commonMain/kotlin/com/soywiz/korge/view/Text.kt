@@ -175,14 +175,10 @@ open class Text(
         }
     }
 
-    private val _textBounds = MRectangle(0, 0, 2048, 2048)
+    private var _textBounds = Rectangle(0, 0, 2048, 2048)
     var autoSize = true
     private var boundsVersion = -1
-    val textBounds: MRectangle
-        get() {
-            getLocalBounds(_textBounds)
-            return _textBounds
-        }
+    val textBounds: Rectangle get() = getLocalBounds()
 
     fun setFormat(face: Resourceable<out Font>? = this.font, size: Int = this.textSize.toInt(), color: RGBA = this.color, align: TextAlignment = this.alignment) {
         this.font = face ?: DefaultTtfFontAsBitmap
@@ -191,9 +187,9 @@ open class Text(
         this.alignment = align
     }
 
-    fun setTextBounds(rect: MRectangle) {
+    fun setTextBounds(rect: Rectangle) {
         if (this._textBounds == rect && !autoSize) return
-        this._textBounds.copyFrom(rect)
+        this._textBounds = rect
         autoSize = false
         boundsVersion++
         version++
@@ -208,12 +204,12 @@ open class Text(
         invalidate()
     }
 
-    override fun getLocalBoundsInternal(out: MRectangle) {
+    override fun getLocalBoundsInternal(): Rectangle {
         _renderInternal(null)
         if (filter != null || backdropFilter != null) {
-            super.getLocalBoundsInternal(out) // This is required for getting proper bounds when glyphs are transformed
+            return super.getLocalBoundsInternal() // This is required for getting proper bounds when glyphs are transformed
         } else {
-            out.copyFrom(_textBounds)
+            return _textBounds
         }
     }
 
@@ -282,7 +278,7 @@ open class Text(
         if (autoSize && font is Font && boundsVersion != version) {
             boundsVersion = version
             val metrics = font.getTextBounds(textSize, text, out = textMetrics, renderer = renderer, align = alignment)
-            _textBounds.setTo(
+            _textBounds = Rectangle(
                 metrics.left,
                 alignment.vertical.getOffsetY(metrics.height, -metrics.ascent),
                 metrics.width,
@@ -434,7 +430,7 @@ open class Text(
             //staticImage?.position(x + alignment.horizontal.getOffsetX(textBounds.width), y + alignment.vertical.getOffsetY(textBounds.height, font.getFontMetrics(fontSize).baseline))
 
             // @TODO: Fix this!
-            setRealContainerPosition(x + alignment.horizontal.getOffsetX(_textBounds.width), y - alignment.vertical.getOffsetY(_textBounds.height, baseline))
+            setRealContainerPosition(x + alignment.horizontal.getOffsetX(_textBounds.widthD), y - alignment.vertical.getOffsetY(_textBounds.heightD, baseline))
         }
     }
 

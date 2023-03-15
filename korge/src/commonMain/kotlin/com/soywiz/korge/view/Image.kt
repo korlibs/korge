@@ -111,9 +111,7 @@ open class BaseImage(
     override val anchorDispX get() = (anchorDispXNoOffset - frameOffsetX)
     override val anchorDispY get() = (anchorDispYNoOffset - frameOffsetY)
 
-    override fun getLocalBoundsInternal(out: MRectangle) {
-        out.setTo(-anchorDispXNoOffset, -anchorDispYNoOffset, frameWidth, frameHeight)
-    }
+    override fun getLocalBoundsInternal() = Rectangle(-anchorDispXNoOffset, -anchorDispYNoOffset, frameWidth, frameHeight)
 
     override fun createInstance(): View = BaseImage(bitmap, anchorX, anchorY, hitShape, smoothing)
 

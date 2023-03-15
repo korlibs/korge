@@ -151,8 +151,8 @@ open class GpuShapeView(
         invalidateShape()
     }
 
-    override fun getLocalBoundsInternal(out: MRectangle) {
-        out.setTo(
+    override fun getLocalBoundsInternal(): Rectangle {
+        return Rectangle(
             shapeBounds.x - anchorDispX,
             shapeBounds.y - anchorDispY,
             shapeBounds.width,

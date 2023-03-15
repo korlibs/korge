@@ -33,10 +33,8 @@ open class UIVerticalList(provider: Provider, width: Double = 200.0) : UIView(wi
 
     private var dirty = false
     private val viewsByIndex = LinkedHashMap<Int, View>()
-    private val lastArea = MRectangle()
-    private val lastPoint = MPoint()
-    private val tempRect = MRectangle()
-    private val tempPoint = MPoint()
+    private var lastArea = Rectangle()
+    private var lastPoint = Point()
     var provider: Provider = provider
         set(value) {
             field = value
@@ -79,14 +77,14 @@ open class UIVerticalList(provider: Provider, width: Double = 200.0) : UIView(wi
     fun updateList() {
         if (parent == null) return
         //if (stage == null) return
-        val area = getVisibleGlobalArea(tempRect)
+        val area = getVisibleGlobalArea()
         //val area = getVisibleWindowArea(tempRect)
-        val point = globalPos.mutable
+        val point = globalPos
         val numItems = provider.numItems
         if (dirty || area != lastArea || point != lastPoint) {
             dirty = false
-            lastArea.copyFrom(area)
-            lastPoint.copyFrom(point)
+            lastArea = area
+            lastPoint = point
 
             //val nheight = provider.fixedHeight?.toDouble() ?: 20.0
             //val nItems = (area.height / nheight).toIntCeil()
@@ -102,7 +100,7 @@ open class UIVerticalList(provider: Provider, width: Double = 200.0) : UIView(wi
 
             val transform = parent!!.globalMatrix.toTransform(tempTransform)
             //println("transform=${transform.scaleAvg}")
-            val fromIndex = getIndexAtY((-point.y + tempRect.top) / transform.scaleY).clamp(0, numItems - 1)
+            val fromIndex = getIndexAtY((-point.y + area.top) / transform.scaleY).clamp(0, numItems - 1)
             var toIndex = fromIndex
             //println("numItems=$numItems")
             if (numItems > 0) {

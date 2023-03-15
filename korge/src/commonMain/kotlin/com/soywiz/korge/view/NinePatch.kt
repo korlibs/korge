@@ -118,9 +118,7 @@ class NinePatch(
         renderedVersion++
     }
 
-	override fun getLocalBoundsInternal(out: MRectangle) {
-		out.setTo(0.0, 0.0, width, height)
-	}
+	override fun getLocalBoundsInternal() = Rectangle(0.0, 0.0, width, height)
 
     override suspend fun forceLoadSourceFile(views: Views, currentVfs: VfsFile, sourceFile: String?) {
         baseForceLoadSourceFile(views, currentVfs, sourceFile)

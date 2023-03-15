@@ -36,9 +36,7 @@ open class FixedSizeContainer(
     open var clip: Boolean = false,
 ) : Container(), View.Reference {
 
-    override fun getLocalBoundsInternal(out: MRectangle) {
-        out.setTo(0.0, 0.0, width, height)
-    }
+    override fun getLocalBoundsInternal() = Rectangle(0.0, 0.0, width, height)
 
     override fun toString(): String {
         var out = super.toString()
@@ -76,7 +74,7 @@ open class FixedSizeContainer(
             ctx.useCtx2d { c2d ->
                 // @TODO: Maybe scissor should be global and do the global to window / texture conversions in the very last moment,
                 // @TODO: so we don't propagate that complexity here
-                val bounds = getClippingBounds(ctx, tempBounds)
+                var bounds = getClippingBounds(ctx)
                 //val bounds = getWindowBounds(ctx, tempBounds)
                 //val bounds = getGlobalBounds(tempBounds)
 
@@ -86,8 +84,8 @@ open class FixedSizeContainer(
                 //println("bounds=$bounds, bp.globalToWindowMatrix=${ctx.globalToWindowMatrix}")
 
                 @Suppress("DEPRECATION")
-                bounds.applyTransform(ctx.viewMat2D)
-                bounds.normalize() // If width or height are negative, because scale was negative
+                bounds = bounds.transformed(ctx.viewMat2D)
+                bounds = bounds.normalized() // If width or height are negative, because scale was negative
 
                 //println("ctx.ag.isRenderingToWindow=${ctx.ag.isRenderingToWindow}, FIXED_CLIP: bounds=$bounds, ctx.viewMat2D=${ctx.viewMat2D}")
 
@@ -95,7 +93,8 @@ open class FixedSizeContainer(
                 val rect = c2d.batch.scissor.toRectOrNull(tempRect)
                 var intersects = true
                 if (rect != null) {
-                    intersects = bounds.setToIntersection(bounds, rect) != null
+                    bounds = bounds intersection rect.immutable
+                    intersects = !bounds.isNIL
                 }
                 //println("BOUNDS2: $windowBounds, ${ctx.viewMat2D}")
                 if (intersects) {
@@ -112,8 +111,8 @@ open class FixedSizeContainer(
     }
 }
 
-fun View.getVisibleLocalArea(out: MRectangle = MRectangle()): MRectangle {
-    getVisibleGlobalArea(out)
+fun View.getVisibleLocalArea(): Rectangle {
+    val out = getVisibleGlobalArea()
     val p0 = globalToLocal(out.topLeft)
     val p1 = globalToLocal(out.topRight)
     val p2 = globalToLocal(out.bottomRight)
@@ -122,7 +121,7 @@ fun View.getVisibleLocalArea(out: MRectangle = MRectangle()): MRectangle {
     val xmax = max(p0.x, p1.x, p2.x, p3.x)
     val ymin = min(p0.y, p1.y, p2.y, p3.y)
     val ymax = max(p0.y, p1.y, p2.y, p3.y)
-    return out.setBounds(xmin, ymin, xmax, ymax)
+    return Rectangle.fromBounds(xmin, ymin, xmax, ymax)
 }
 
 fun View.getNextClippingView(): View {
@@ -132,16 +131,16 @@ fun View.getNextClippingView(): View {
     return this
 }
 
-fun View.getVisibleGlobalArea(out: MRectangle = MRectangle()): MRectangle {
+fun View.getVisibleGlobalArea(): Rectangle {
     forEachAscendant(includeThis = true) {
-        if ((it is FixedSizeContainer && it.clip) || it is Stage) return@getVisibleGlobalArea it.getGlobalBounds(out)
+        if ((it is FixedSizeContainer && it.clip) || it is Stage) return@getVisibleGlobalArea it.getGlobalBounds()
     }
-    return out.setTo(0.0, 0.0, 4096.0, 4096.0)
+    return Rectangle(0.0, 0.0, 4096.0, 4096.0)
 }
 
-fun View.getVisibleWindowArea(out: MRectangle = MRectangle()): MRectangle {
+fun View.getVisibleWindowArea(): Rectangle {
     forEachAscendant(includeThis = true) {
-        if ((it is FixedSizeContainer && it.clip) || it is Stage) return@getVisibleWindowArea it.getWindowBounds(out)
+        if ((it is FixedSizeContainer && it.clip) || it is Stage) return@getVisibleWindowArea it.windowBounds
     }
-    return out.setTo(0.0, 0.0, 4096.0, 4096.0)
+    return Rectangle(0.0, 0.0, 4096.0, 4096.0)
 }

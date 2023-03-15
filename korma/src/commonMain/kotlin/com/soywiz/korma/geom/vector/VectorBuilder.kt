@@ -78,6 +78,8 @@ interface VectorBuilder {
 
     fun rect(rect: MRectangleInt) = rect(rect.x, rect.y, rect.width, rect.height)
     fun rect(rect: MRectangle) = rect(rect.x, rect.y, rect.width, rect.height)
+    fun rect(rect: Rectangle) = rect(rect.x, rect.y, rect.width, rect.height)
+    fun rect(rect: RectangleInt) = rect(rect.x, rect.y, rect.width, rect.height)
     fun rect(x: Double, y: Double, width: Double, height: Double) {
         moveTo(Point(x, y))
         lineTo(Point(x + width, y))

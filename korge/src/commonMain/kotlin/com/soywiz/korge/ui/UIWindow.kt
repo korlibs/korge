@@ -80,33 +80,34 @@ class UIWindow(title: String, width: Double = 256.0, height: Double = 256.0) : U
             // @TODO: clamping shouldn't affect (we should use it.start and get initial values to compute based on start and not on deltas)
             sh.draggable {
                 val obounds = window.getGlobalBounds().clone()
-                val bounds = obounds.clone()
+                var bounds = obounds.clone()
                 when {
                     anchor.doubleX < 0.5 -> {
-                        bounds.left = it.cx
+
+                        bounds = bounds.copyBounds(left = it.cx.toFloat())
                         if (bounds.width !in window.minWidth..window.maxWidth) {
-                            bounds.left = obounds.left
+                            bounds = bounds.copyBounds(left = obounds.left)
                         }
                     }
 
                     anchor.doubleX > 0.5 -> {
-                        bounds.right = it.cx
-                        bounds.width = bounds.width.clamp(window.minWidth, window.maxWidth)
+                        bounds = bounds.copyBounds(right = it.cx.toFloat())
+                        bounds = bounds.copy(width = bounds.width.toDouble().clamp(window.minWidth, window.maxWidth).toFloat())
                     }
 
                     else -> Unit
                 }
                 when {
                     anchor.sy < 0.5 -> {
-                        bounds.top = it.cy
+                        bounds = bounds.copyBounds(top = it.cy.toFloat())
                         if (bounds.height !in window.minHeight..window.maxHeight) {
-                            bounds.top = obounds.top
+                            bounds = bounds.copyBounds(top = obounds.top)
                         }
                     }
 
                     anchor.sy > 0.5 -> {
-                        bounds.bottom = it.cy
-                        bounds.height = bounds.height.clamp(window.minHeight, window.maxHeight)
+                        bounds = bounds.copyBounds(bottom = it.cy.toFloat())
+                        bounds = bounds.copy(height = bounds.height.toDouble().clamp(window.minHeight, window.maxHeight).toFloat())
                     }
 
                     else -> Unit

@@ -24,17 +24,17 @@ internal class ViewCollisionContext {
         val hitShapes = view.hitShapes
         if (hitShapes != null) return hitShapes
         if (hitShape != null) return listOf(hitShape)
-        view.getLocalBounds(tempRect1)
+        val tempRect1 = view.getLocalBounds()
         out[0].clear()
-        val dispX = view.anchorDispX
-        val dispY = view.anchorDispY
+        val dispX = view.anchorDispXF
+        val dispY = view.anchorDispYF
         out[0].rect(tempRect1.x + dispX, tempRect1.y + dispY, tempRect1.width, tempRect1.height)
         return out
     }
 
     fun collidesWith(left: View, right: View, kind: CollisionKind): Boolean {
-        left.getGlobalBounds(tempRect1)
-        right.getGlobalBounds(tempRect2)
+        val tempRect1 = left.getGlobalBounds()
+        val tempRect2 = right.getGlobalBounds()
         if (!tempRect1.intersects(tempRect2)) return false
         if (kind == CollisionKind.SHAPE) {
             val leftShape = left.hitShape2d
