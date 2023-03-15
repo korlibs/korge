@@ -82,7 +82,7 @@ dependencies {
     //compileOnly(gradleKotlinDsl())
 
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
-    testImplementation("io.mockk:mockk:1.11.0")
+    testImplementation("io.mockk:mockk:1.13.4")
 
     //implementation(project(":korge-reload-agent"))
 }
