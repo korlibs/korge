@@ -16,8 +16,10 @@ inline class Scale internal constructor(internal val raw: Float2Pack) {
     constructor() : this(1f, 1f)
     constructor(scale: Float) : this(Float2Pack(scale, scale))
     constructor(scale: Double) : this(scale.toFloat())
+    constructor(scale: Int) : this(scale.toFloat())
     constructor(scaleX: Float, scaleY: Float) : this(Float2Pack(scaleX, scaleY))
     constructor(scaleX: Double, scaleY: Double) : this(scaleX.toFloat(), scaleY.toFloat())
+    constructor(scaleX: Int, scaleY: Int) : this(scaleX.toFloat(), scaleY.toFloat())
 }
 
 fun Scale.toPoint(): Point = Point(raw)

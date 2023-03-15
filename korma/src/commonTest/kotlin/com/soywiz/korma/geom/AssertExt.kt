@@ -41,6 +41,7 @@ private fun <T : Any> T?.isAlmostEqualsGeneric(
             if (e.isNaN() && a.isNaN()) return true
             e.isAlmostEquals(a, absoluteTolerance)
         }
+        is Matrix -> e.isAlmostEquals((a as Matrix), absoluteTolerance.toFloat())
         is Bezier -> e.points.isAlmostEqualsGeneric((a as? Bezier)?.points, absoluteTolerance)
         is PointList -> e.toList().isAlmostEqualsGeneric((a as? PointList)?.toList(), absoluteTolerance)
         is List<*> -> {

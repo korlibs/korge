@@ -3,23 +3,42 @@
 package com.soywiz.korma.geom
 
 import com.soywiz.kds.*
+import com.soywiz.kmem.pack.*
 import com.soywiz.korma.annotations.*
+import com.soywiz.korma.internal.*
 import com.soywiz.korma.interpolation.*
 import com.soywiz.korma.math.*
 import kotlin.math.*
 
-@KormaValueApi
-data class Matrix(
-    val a: Float,
-    val b: Float,
-    val c: Float,
-    val d: Float,
-    val tx: Float,
-    val ty: Float,
-) {
+//@KormaValueApi
+//data class Matrix(
+//    val a: Float,
+//    val b: Float,
+//    val c: Float,
+//    val d: Float,
+//    val tx: Float,
+//    val ty: Float,
+//) {
+
+// a, b, c, d are Half (16-bit float), tx and ty are Float(32-bit)
+inline class Matrix(val data: BFloat6Pack) {
+    val a: Float get() = data.bf0
+    val b: Float get() = data.bf1
+    val c: Float get() = data.bf2
+    val d: Float get() = data.bf3
+    val tx: Float get() = data.bf4
+    val ty: Float get() = data.bf5
+
     constructor() : this(1f, 0f, 0f, 1f, 0f, 0f)
+    constructor(a: Float, b: Float, c: Float, d: Float, tx: Float, ty: Float) :
+        this(bfloat6PackOf(a, b, c, d, tx, ty))
     constructor(a: Double, b: Double, c: Double, d: Double, tx: Double, ty: Double) :
         this(a.toFloat(), b.toFloat(), c.toFloat(), d.toFloat(), tx.toFloat(), ty.toFloat())
+    constructor(a: Int, b: Int, c: Int, d: Int, tx: Int, ty: Int) :
+        this(a.toFloat(), b.toFloat(), c.toFloat(), d.toFloat(), tx.toFloat(), ty.toFloat())
+
+    fun copy(a: Float = this.a, b: Float = this.b, c: Float = this.c, d: Float = this.d, tx: Float = this.tx, ty: Float = this.ty): Matrix =
+        Matrix(a, b, c, d, tx, ty)
 
     operator fun times(other: Matrix): Matrix = Matrix.multiply(this, other)
     operator fun times(scale: Float): Matrix = Matrix(a * scale, b * scale, c * scale, d * scale, tx * scale, ty * scale)
@@ -95,7 +114,10 @@ data class Matrix(
     /** Transform point without translation */
     fun deltaTransformPoint(p: Point): Point = Point((p.x * a) + (p.y * c), (p.x * b) + (p.y * d))
 
-    fun inverted(m: Matrix): Matrix {
+    @Deprecated("", ReplaceWith("this")) fun clone(): Matrix = this
+
+    fun inverted(): Matrix {
+        val m = this
         val norm = m.a * m.d - m.b * m.c
 
         return when (norm) {
@@ -132,11 +154,15 @@ data class Matrix(
         value[offset + 5] = ty.toDouble()
     }
 
+    override fun toString(): String = "Matrix(${a.niceStr}, ${b.niceStr}, ${c.niceStr}, ${d.niceStr}, ${tx.niceStr}, ${ty.niceStr})"
+
+    fun isAlmostEquals(other: Matrix, epsilon: Float = 0.001f): Boolean = isAlmostEquals(this, other, epsilon)
+
     companion object {
         val IDENTITY = Matrix()
         val NaN = Matrix(Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN)
 
-        fun isAlmostEquals(a: Matrix, b: Matrix, epsilon: Float = 0.000001f): Boolean =
+        fun isAlmostEquals(a: Matrix, b: Matrix, epsilon: Float = 0.001f): Boolean =
             a.tx.isAlmostEquals(b.tx, epsilon)
                 && a.ty.isAlmostEquals(b.ty, epsilon)
                 && a.a.isAlmostEquals(b.a, epsilon)
@@ -199,12 +225,12 @@ data class Matrix(
 
 @KormaValueApi
 data class MatrixTransform(
-    val x: Float, val y: Float,
-    val scaleX: Float, val scaleY: Float,
-    val skewX: Angle, val skewY: Angle,
-    val rotation: Angle
+    val x: Float = 0f, val y: Float = 0f,
+    val scaleX: Float = 1f, val scaleY: Float = 1f,
+    val skewX: Angle = Angle.ZERO, val skewY: Angle = Angle.ZERO,
+    val rotation: Angle = Angle.ZERO
 ) {
-    constructor() : this(0.0, 0.0, 1.0, 1.0, Angle.ZERO, Angle.ZERO, Angle.ZERO)
+    constructor() : this(0f, 0f, 1f, 1f, Angle.ZERO, Angle.ZERO, Angle.ZERO)
     constructor(
         x: Double, y: Double,
         scaleX: Double, scaleY: Double,
@@ -232,7 +258,7 @@ data class MatrixTransform(
             val tx: Float
             val ty: Float
 
-            if (delta < 0.00001 || abs((PI * 2) - delta) < 0.00001) {
+            if (delta < 0.001f || abs((PI * 2) - delta) < 0.001f) {
                 trotation = skewY.radians
                 tskewX = 0.0.radians
                 tskewY = 0.0.radians
@@ -260,12 +286,22 @@ data class MatrixTransform(
             ratio.toRatio().interpolate(l.y, r.y),
             ratio.toRatio().interpolate(l.scaleX, r.scaleX),
             ratio.toRatio().interpolate(l.scaleY, r.scaleY),
-            ratio.toRatio().interpolateAngleDenormalized(l.rotation, r.rotation),
             ratio.toRatio().interpolateAngleDenormalized(l.skewX, r.skewX),
-            ratio.toRatio().interpolateAngleDenormalized(l.skewY, r.skewY)
+            ratio.toRatio().interpolateAngleDenormalized(l.skewY, r.skewY),
+            ratio.toRatio().interpolateAngleDenormalized(l.rotation, r.rotation),
         )
+
+        fun isAlmostEquals(a: MatrixTransform, b: MatrixTransform, epsilon: Float = 0.0001f): Boolean =
+            a.x.isAlmostEquals(b.x, epsilon)
+                && a.y.isAlmostEquals(b.y, epsilon)
+                && a.scaleX.isAlmostEquals(b.scaleX, epsilon)
+                && a.scaleY.isAlmostEquals(b.scaleY, epsilon)
+                && a.skewX.isAlmostEquals(b.skewX, epsilon)
+                && a.skewY.isAlmostEquals(b.skewY, epsilon)
+                && a.rotation.isAlmostEquals(b.rotation, epsilon)
     }
 
+    fun isAlmostEquals(other: MatrixTransform, epsilon: Float = 0.01f): Boolean = isAlmostEquals(this, other, epsilon)
 
     val scaleAvg: Float get() = (scaleX + scaleY) * 0.5f
 
