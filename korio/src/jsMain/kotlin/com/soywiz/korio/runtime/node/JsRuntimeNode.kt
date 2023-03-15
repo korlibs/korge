@@ -75,7 +75,10 @@ object JsRuntimeNode : JsRuntime() {
             val path = jsRuntime.currentDir()
 
             when {
-                jsRuntime.existsSync("$path/node_modules") && jsRuntime.existsSync("$path/kotlin") && jsRuntime.existsSync("$path/adapter-nodejs.js") ->
+                jsRuntime.existsSync("$path/node_modules")
+                    && jsRuntime.existsSync("$path/kotlin")
+                    && jsRuntime.existsSync("$path/package.json")
+                ->
                     // We are probably on tests `build/js/packages/korlibs-next-korge-test` and resources are in the `kotlin` directory
                     "$path/kotlin"
                 else -> path
