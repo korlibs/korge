@@ -115,9 +115,10 @@ public infix fun Double.umod(other: Double): Double {
     }
 }
 
+private val MINUS_ZERO_F = -0f
 public infix fun Float.umod(other: Float): Float {
     val rm = this % other
-    val remainder = if (rm == -0f) 0f else rm
+    val remainder = if (rm == MINUS_ZERO_F) 0f else rm
     return when {
         remainder < 0f -> remainder + other
         else -> remainder

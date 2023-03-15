@@ -40,7 +40,8 @@ fun StringBuilder.appendNice(value: Float) {
 }
 
 //private fun Double.normalizeZero(): Double = if (this.isAlmostZero()) 0.0 else this
-private fun Double.normalizeZero(): Double = if (this == -0.0) 0.0 else this
+private val MINUS_ZERO_D = -0.0
+private fun Double.normalizeZero(): Double = if (this == MINUS_ZERO_D) 0.0 else this
 
 private fun Float.roundDecimalPlaces(places: Int): Float {
     if (places < 0) return this

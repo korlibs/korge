@@ -5,6 +5,7 @@ import com.soywiz.korge.gradle.util.*
 import org.gradle.api.*
 import org.gradle.api.file.*
 import org.gradle.api.tasks.*
+import org.jetbrains.kotlin.gradle.targets.js.ir.*
 import java.io.*
 
 fun Project.configureEsbuild() {
@@ -93,9 +94,9 @@ fun Project.configureEsbuild() {
                 group = "kotlin browser"
                 dependsOn(browserPrepareEsbuild)
 
-                val jsPath = tasks.getByName("compile${productionInfix}ExecutableKotlinJs").outputs.files.firstOrNull {
-                    it.extension.equals("js", ignoreCase = true)
-                } ?: "unknown-js.js"
+                val compileExecutableKotlinJs = tasks.getByName("compile${productionInfix}ExecutableKotlinJs") as KotlinJsIrLink
+                //println("compileExecutableKotlinJs:" + compileExecutableKotlinJs::class)
+                val jsPath = compileExecutableKotlinJs.outputFileProperty.get()
 
                 val output = File(wwwFolder, "${project.name}.js")
                 inputs.file(jsPath)

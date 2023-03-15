@@ -22,7 +22,8 @@ fun Double.roundDecimalPlaces(places: Int): Double {
     return kotlin.math.round(this * placesFactor) / placesFactor
 }
 //fun Double.normalizeZero(): Double = if (this.isAlmostZero()) 0.0 else this
-fun Double.normalizeZero(): Double = if (this == -0.0) 0.0 else this
+private val MINUS_ZERO_D = -0.0
+fun Double.normalizeZero(): Double = if (this == MINUS_ZERO_D) 0.0 else this
 
 fun isEquivalent(a: Double, b: Double, epsilon: Double = 0.0001): Boolean = (a - epsilon < b) && (a + epsilon > b)
 

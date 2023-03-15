@@ -14,7 +14,6 @@ import com.soywiz.korge.gradle.targets.native.*
 import com.soywiz.korge.gradle.util.*
 import com.soywiz.korge.gradle.util.create
 import com.soywiz.korlibs.*
-import com.soywiz.korlibs.gkotlin
 import com.soywiz.korlibs.kotlin
 import com.soywiz.korlibs.modules.*
 import com.soywiz.korlibs.tasks
@@ -24,13 +23,10 @@ import org.gradle.api.artifacts.repositories.*
 import org.gradle.api.file.*
 import org.gradle.api.tasks.*
 import org.gradle.api.tasks.testing.*
-import org.gradle.jvm.tasks.*
-import org.gradle.plugins.ide.idea.IdeaPlugin
-import org.gradle.plugins.ide.idea.model.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
+import org.jetbrains.kotlin.gradle.targets.js.ir.*
 import org.jetbrains.kotlin.gradle.tasks.*
 import java.io.*
-import java.net.*
 import java.nio.file.*
 import kotlin.apply
 
@@ -999,9 +995,10 @@ object RootKorlibsPlugin {
                                 dependsOn(compileDevelopmentExecutableKotlinJs)
                                 //task.dependsOn(browserPrepareEsbuild)
 
-                                val jsPath = project.tasks.getByName(compileDevelopmentExecutableKotlinJs).outputs.files.firstOrNull() {
-                                    it.extension.toLowerCase() == "js"
-                                } ?: "unknown-js.js"
+                                val compileDevelopmentExecutableKotlinJsTask = project.tasks.getByName(compileDevelopmentExecutableKotlinJs) as KotlinJsIrLink
+                                //println("compileDevelopmentExecutableKotlinJs=$compileDevelopmentExecutableKotlinJsTask :: ${compileDevelopmentExecutableKotlinJsTask::class}")
+                                //println(compileDevelopmentExecutableKotlinJsTask.outputFileProperty.get())
+                                val jsPath = compileDevelopmentExecutableKotlinJsTask.outputFileProperty.get()
 
                                 val output = File(wwwFolder, "${project.name}.js")
                                 inputs.file(jsPath)
