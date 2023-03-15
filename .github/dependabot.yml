@@ -9,6 +9,9 @@ updates:
     directory: "/" # Location of package manifests
     schedule:
       interval: "weekly"
+    ignore:
+      - file-path: "**/build.gradle"
+      - file-path: "**/settings.gradle"
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
