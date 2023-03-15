@@ -118,7 +118,7 @@ class AgBitmapTextureManager(
             // @TODO: Use dirtyRegion to upload only a fragment of the image
             managedTextureMemory -= textureInfo.usedMemory
             try {
-                base.update(bitmap, bitmap.mipmaps)
+                base.update(bitmap, bitmap.mipmaps, bitmap.baseMipmapLevel, bitmap.maxMipmapLevel)
             } finally {
                 textureInfo.usedMemory = bitmap.estimateSizeInBytes
                 managedTextureMemory += textureInfo.usedMemory
