@@ -15,7 +15,7 @@ dependencies {
 	add("commonMainApi", project(":korinject"))
     commonMainApi(project(":korte"))
     jvmMainApi("org.jetbrains.kotlin:kotlin-reflect")
-    jvmMainApi("com.fasterxml.jackson.core:jackson-databind:2.13.3")
+    jvmMainApi("com.fasterxml.jackson.core:jackson-databind:2.14.2")
     jvmMainApi("com.fasterxml.jackson.module:jackson-module-kotlin:2.14.2")
 
     //add("jvmMainApi", project(":korte"))
