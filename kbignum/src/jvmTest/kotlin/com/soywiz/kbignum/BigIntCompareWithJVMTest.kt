@@ -192,7 +192,20 @@ abstract class AbstractBigIntCompareWithJVMTest {
         //10.bi.powWithStats(1024 * 32 * 2, stats)
         //println(stats)
 
-        BigInteger.valueOf(10).pow(1024 * 32 * 2)
+        val exp = 1024 * 32 * 2
+        val stats = CommonBigInt.OpStats()
+        assertEquals(10.bi.pow(exp).toString(16), CommonBigInt(10).powWithStats(exp, stats).toString(16))
+        assertEquals(CommonBigInt.OpStats(iterations = 17, bigMultiplications = 1, square = 16), stats)
+
+        //for (n in 0 until 200) {
+        //    val stats = CommonBigInt.OpStats()
+        //    val result = CommonBigInt(10).powWithStats(1024 * 32 * 2, stats)
+        //    println("stats=$stats")
+        //    val result2 = 10.bi.pow(1024 * 32 * 2)
+        //    println("n=$n")
+        //    //assertEquals(result2.toString(), result.toString())
+        //    //BigInteger.valueOf(10).pow(1024 * 32 * 2)
+        //}
 
         //println("result: " + BigInt.pow10(1024 * 32 * 2))
         //jnum.toString()

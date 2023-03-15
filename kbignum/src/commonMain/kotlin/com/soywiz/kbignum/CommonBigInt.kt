@@ -8,6 +8,7 @@ import kotlin.time.*
  * @TODO: Use JVM BigInteger and JS BigInt
  */
 class CommonBigInt private constructor(val data: UInt16ArrayZeroPad, override val signum: Int, var dummy: Boolean) : BigInt, BigIntConstructor by CommonBigInt {
+    val isOne get() = isSmall && this == ONE
 	val isSmall get() = data.size <= 1
 	val maxBits get() = data.size * CHUNK_BITS
 	val significantBits get() = maxBits - leadingZeros()
@@ -141,6 +142,7 @@ class CommonBigInt private constructor(val data: UInt16ArrayZeroPad, override va
 
     override infix fun pow(exponent: Int): CommonBigInt = powWithStats(exponent, null)
 
+    // @TODO: Optimize. Useful for .pow
     override fun square(): CommonBigInt {
         return this * this
     }
@@ -150,30 +152,48 @@ class CommonBigInt private constructor(val data: UInt16ArrayZeroPad, override va
         if (exponent < 0) throw BigIntNegativeExponentException()
         if (exponent == 0) return ONE
         if (exponent == 1) return this
-        var result = ONE
-        var base = this
-        var exp = exponent
+        if (isZero) return if (exponent == 0) ONE else this
         var iterCount = 0
         var multCount = 0
+        var squareCount = 0
+        stats?.set()
+
+        var exp = exponent
+        var part = this.abs()
+        val pot: Int = part.trailingZeros()
+        var shift = pot * exp
+        if (pot > 0) part = part shr pot else shift = 0
+        val remainingBits = part.countBits()
+        if (remainingBits == 1) return if (isNegative && exp and 1 == 1) MINUS_ONE shl shift else ONE shl shift
+        var result = ONE
         while (exp != 0) {
-            if ((exp and 1) != 0) {
-                result *= base
+            if ((exp and 1) == 1) {
+                result *= part
                 multCount++
             }
-            base = base.square()
-            multCount++
+            exp = exp ushr 1
+            if (exp != 0) {
+                part = part.square()
+                squareCount++
+            }
             iterCount++
-            exp /= 2
         }
-        stats?.set(iterations = iterCount, bigMultiplications = multCount)
-        return result
+        if (pot > 0) result = result shl shift
+
+        stats?.set(iterations = iterCount, bigMultiplications = multCount, square = squareCount)
+
+        return when {
+            signum < 0 && (exp and 1) == 1 -> -result
+            else -> result
+        }
     }
 
 
-    data class OpStats(var iterations: Int = 0, var bigMultiplications: Int = 0) {
-        fun set(iterations: Int = 0, bigMultiplications: Int = 0) {
+    data class OpStats(var iterations: Int = 0, var bigMultiplications: Int = 0, var square: Int = 0) {
+        fun set(iterations: Int = 0, bigMultiplications: Int = 0, square: Int = 0) {
             this.iterations = iterations
             this.bigMultiplications = bigMultiplications
+            this.square = square
         }
     }
 
@@ -196,7 +216,16 @@ class CommonBigInt private constructor(val data: UInt16ArrayZeroPad, override va
         }
     }
 
-    override operator fun times(other: BigInt): CommonBigInt = mulWithStats(other as CommonBigInt, null)
+    override operator fun times(other: BigInt): CommonBigInt {
+        other as CommonBigInt
+        return when {
+            this.isOne -> other
+            other.isOne -> this
+            this.isZero -> ZERO
+            other.isZero -> ZERO
+            else -> mulWithStats(other, null)
+        }
+    }
     override operator fun div(other: BigInt): CommonBigInt = divRem(other as CommonBigInt).div
 	override operator fun rem(other: BigInt): CommonBigInt = divRem(other as CommonBigInt).rem
 
@@ -279,6 +308,7 @@ class CommonBigInt private constructor(val data: UInt16ArrayZeroPad, override va
 	fun getBit(n: Int): Boolean = getBitInt(n) != 0
 
 	override infix fun shl(count: Int): CommonBigInt {
+        if (count == 0) return this
 		if (count < 0) return this shr (-count)
 		val blockShift = count / 16
 		val smallShift = count % 16
@@ -514,6 +544,17 @@ internal object UnsignedBigInt {
         carriedOp(out, signedCarry = true) { l[it] - r[it] }
         return out
 	}
+
+    //fun mulAdd(o: UInt16ArrayZeroPad, i: UInt16ArrayZeroPad, offset: Int, len: Int, k: Int): Int {
+    //    var carry: Int = 0
+    //    var offset = o.size - offset - 1
+    //    for (j in len - 1 downTo 0) {
+    //        val product = (i[j]) * k + (o[offset]) + carry
+    //        o[offset--] = product
+    //        carry = product ushr 16
+    //    }
+    //    return carry
+    //}
 
 	// l >= 0 && r >= 0
 	// TODO optimize using the Karatsuba algorithm:
