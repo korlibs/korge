@@ -7,7 +7,7 @@ import kotlin.test.assertEquals
 class AwtNativeImageTest {
     @Test
     fun testMatrixAwtTransform() {
-        val matrix = MMatrix(1, 2, 3, 4, 5, 6)
+        val matrix = MMatrix(1, 2, 3, 4, 5, 6).immutable
         assertEquals(matrix, matrix.clone().toAwt().toMatrix())
     }
 }

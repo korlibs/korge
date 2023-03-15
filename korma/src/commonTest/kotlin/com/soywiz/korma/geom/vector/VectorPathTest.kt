@@ -178,7 +178,7 @@ class VectorPathTest {
         rect(110, 0, 100, 100)
     }
 
-    val path2b = path2.clone().applyTransform(MMatrix().scale(2.0))
+    val path2b = path2.clone().applyTransform(MMatrix().scale(2.0).immutable)
 
     @Test
     fun testToString() {

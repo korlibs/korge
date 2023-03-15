@@ -117,8 +117,8 @@ inline class Matrix(val data: BFloat6Pack) {
     }
 
     fun scaled(scale: Scale): Matrix = Matrix(a * scale.scaleX, b * scale.scaleX, c * scale.scaleY, d * scale.scaleY, tx * scale.scaleX, ty * scale.scaleY)
-    fun scaled(scaleX: Float, scaleY: Float): Matrix = scaled(Scale(scaleX, scaleY))
-    fun scaled(scaleX: Double, scaleY: Double): Matrix = scaled(Scale(scaleX, scaleY))
+    fun scaled(scaleX: Float, scaleY: Float = scaleX): Matrix = scaled(Scale(scaleX, scaleY))
+    fun scaled(scaleX: Double, scaleY: Double = scaleX): Matrix = scaled(Scale(scaleX, scaleY))
     fun prescaled(scale: Scale): Matrix = Matrix(a * scale.scaleX, b * scale.scaleX, c * scale.scaleY, d * scale.scaleY, tx, ty)
 
     fun translated(delta: Point): Matrix = Matrix(a, b, c, d, tx + delta.x, ty + delta.y)
