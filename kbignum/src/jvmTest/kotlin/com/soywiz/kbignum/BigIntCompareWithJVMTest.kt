@@ -185,14 +185,15 @@ abstract class AbstractBigIntCompareWithJVMTest {
     @OptIn(ExperimentalTime::class)
     @Test
     fun testMultComplexity() {
-        //val count = 200
-        val count = 1
+        //val debug = true
+        val debug = false
+        val count = if (debug) 200 else 1
         repeat(count) { n ->
             val exp = 1024 * 32 * 2
             val stats = CommonBigInt.OpStats()
-            val jvmResult = 10.bi.pow(exp)
-            val (nativeResult, time) = measureTimedValue { CommonBigInt(10).powWithStats(exp, stats) }
-            if (count > 1) println("$n ($time): $stats")
+            val (jvmResult, jvmTime) = measureTimedValue { 10.bi.pow(exp) }
+            val (nativeResult, nativeTime) = measureTimedValue { CommonBigInt(10).powWithStats(exp, stats) }
+            if (count > 1) println("$n ($jvmTime/$nativeTime): $stats")
             assertEquals(jvmResult.toString(16), nativeResult.toString(16))
             assertEquals(CommonBigInt.OpStats(iterations = 17, bigMultiplications = 1, square = 16), stats)
         }
