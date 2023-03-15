@@ -20,10 +20,10 @@ inline class Vector4(val data: Float4Pack) {
     constructor(x: Int, y: Int, z: Int, w: Int) : this(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat())
     constructor(x: Double, y: Double, z: Double, w: Double) : this(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat())
 
-   val x: Float get() = data.f0
-   val y: Float get() = data.f1
-   val z: Float get() = data.f2
-   val w: Float get() = data.f3
+    val x: Float get() = data.f0
+    val y: Float get() = data.f1
+    val z: Float get() = data.f2
+    val w: Float get() = data.f3
 
     val lengthSquared: Float get() = (x * x) + (y * y) + (z * z) + (w * w)
     val length: Float get() = sqrt(lengthSquared)
