@@ -84,7 +84,7 @@ public inline class Half(public val rawBits: UShort) {
 
             // https://gist.github.com/neshume/0edc6ae1c5ad332bb4c62026be68a2fb
             val word = word.toInt()
-            var t2: Int = word and 0x8000   // Sign bit
+            val t2: Int = word and 0x8000   // Sign bit
             var t1: Int = word and 0x7fff   // Non-sign bits
             val t3: Int = word and 0x7c00   // Exponent
             if (t3 == 0) return if (t2 == 0) 0f else -0f
@@ -96,10 +96,9 @@ public inline class Half(public val rawBits: UShort) {
                 }
             }
             t1 = t1 shl 13                  // Align mantissa on MSB
-            t2 = t2 shl 16                  // Shift sign bit into position
             t1 += 0x38000000                // Adjust bias
             t1 = if (t3 == 0) 0 else t1     // Denormals-as-zero
-            t1 = t1 or t2                   // Re-insert sign bit
+            t1 = t1 or (t2 shl 16)          // Re-insert sign bit
             return t1.reinterpretAsFloat()
         }
 
