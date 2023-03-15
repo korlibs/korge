@@ -128,17 +128,6 @@ class Bitmap32Context2dTest {
 
 fun VectorBuilder.triangleLeftUp(size: Double, x: Double, y: Double) = this.triangle(x, y, x, y + size, x + size, y)
 fun VectorBuilder.triangleLeftDown(size: Double, x: Double, y: Double) = this.triangle(x, y, x, y - size, x + size, y)
-fun VectorBuilder.triangleRightUp(size: Double, x: Double, y: Double) =
-    this.triangle(x, y, x + size, y + size, x + size, y)
-
-fun VectorBuilder.triangleRightDown(size: Double, x: Double, y: Double) =
-    this.triangle(x, y, x + size, y - size, x + size, y)
-
-fun VectorBuilder.triangleDownLeft(size: Double, x: Double, y: Double) =
-    this.triangle(x, y, x, y + size, x - size, y + size)
-
-fun VectorBuilder.triangleDownRight(size: Double, x: Double, y: Double) =
-    this.triangle(x, y, x, y + size, x + size, y + size)
 
 fun VectorBuilder.triangleUpLeft(size: Double, x: Double, y: Double) = this.triangle(x, y, x, y + size, x - size, y)
 fun VectorBuilder.triangleUpRight(size: Double, x: Double, y: Double) = this.triangle(x, y, x, y + size, x + size, y)
@@ -153,4 +142,3 @@ fun VectorBuilder.triangle(x1: Double, y1: Double, x2: Double, y2: Double, x3: D
     //println("TRIANGLE: ($x1,$y1)-($x2,$y2)-($x3,$y3)")
 }
 
-fun VectorBuilder.triangle(p1: MPoint, p2: MPoint, p3: MPoint) = triangle(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y)

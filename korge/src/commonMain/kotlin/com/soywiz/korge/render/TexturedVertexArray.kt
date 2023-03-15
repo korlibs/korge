@@ -9,7 +9,6 @@ import com.soywiz.korim.color.RGBA
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.triangle.TriangleList
 import com.soywiz.korma.geom.vector.VectorPath
-import com.soywiz.korma.triangle.poly2tri.triangulateSafe
 import kotlin.native.concurrent.SharedImmutable
 
 // @TODO: Call this mesh?
@@ -61,12 +60,6 @@ class TexturedVertexArray(vcount: Int, val indices: ShortArray, icount: Int = in
 
         /** Builds indices for drawing triangles when the vertices information is stored as quads (4 vertices per quad primitive) */
         inline fun quadIndices(quadCount: Int): ShortArray = TEXTURED_ARRAY_quadIndices(quadCount)
-
-        fun fromPath(path: VectorPath, colorMul: RGBA = Colors.WHITE, matrix: MMatrix? = null, doClipper: Boolean = true): TexturedVertexArray {
-            //return fromTriangles(path.triangulateEarCut(), colorMul, matrix)
-            //return fromTriangles(path.triangulatePoly2tri(), colorMul, matrix)
-            return fromTriangles(path.triangulateSafe(doClipper), colorMul, matrix)
-        }
 
         fun fromTriangles(triangles: TriangleList, colorMul: RGBA = Colors.WHITE, matrix: MMatrix? = null): TexturedVertexArray {
             val tva = TexturedVertexArray(triangles.pointCount, triangles.indices, triangles.numIndices)
