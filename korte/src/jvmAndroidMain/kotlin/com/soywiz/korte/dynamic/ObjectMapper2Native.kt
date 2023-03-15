@@ -10,7 +10,7 @@ import kotlin.coroutines.intrinsics.COROUTINE_SUSPENDED
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 
-open class JvmObjectMapper2 : ObjectMapper2() {
+open class JvmObjectMapper2 : ObjectMapper2 {
     class ClassReflectCache<T : Any>(val clazz: KClass<T>) {
         data class MyProperty(
             val name: String,

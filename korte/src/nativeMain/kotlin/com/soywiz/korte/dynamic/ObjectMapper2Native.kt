@@ -3,7 +3,7 @@ package com.soywiz.korte.dynamic
 import kotlin.native.concurrent.SharedImmutable
 
 // @TODO: Hopefully someday: https://github.com/Kotlin/kotlinx.serialization/tree/dev
-open class NativeObjectMapper2 : ObjectMapper2() {
+open class NativeObjectMapper2 : ObjectMapper2 {
     //override fun hasProperty(instance: Any, key: String): Boolean = TODO("Not supported in native yet")
     //override fun hasMethod(instance: Any, key: String): Boolean = TODO("Not supported in native yet")
     //override suspend fun invokeAsync(type: KClass<Any>, instance: Any?, key: String, args: List<Any?>) = TODO("Not supported in native yet")
