@@ -22,8 +22,8 @@ class TextureBase(
         base?.close()
         base = null
     }
-    fun update(bmp: Bitmap, mipmaps: Boolean = bmp.mipmaps) {
-        base?.upload(bmp, mipmaps)
+    fun update(bmp: Bitmap, mipmaps: Boolean, baseMipmapLevel: Int?, maxMipmapLevel: Int?) {
+        base?.upload(bmp, mipmaps, baseMipmapLevel, maxMipmapLevel)
     }
 
     override fun toString(): String = "TextureBase($base)"
@@ -35,8 +35,8 @@ typealias Texture = RectSlice<TextureBase>
 /**
  * Updates this texture from a [bmp] and optionally generates [mipmaps].
  */
-fun Texture.update(bmp: Bitmap32, mipmaps: Boolean = false) {
-    container.update(bmp, mipmaps)
+fun Texture.update(bmp: Bitmap32, mipmaps: Boolean, baseMipmapLevel: Int, maxMipmapLevel: Int) {
+    container.update(bmp, mipmaps, baseMipmapLevel, maxMipmapLevel)
 }
 
 //fun TextureNew.xcoord(x: Int): Float = (this.rect.x + x).toFloat() / width.toFloat()

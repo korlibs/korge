@@ -80,6 +80,8 @@ class AGTexture(
     private val logger = Logger("AGTexture")
     var isFbo: Boolean = false
     var requestMipmaps: Boolean = false
+    var baseMipmapLevel: Int? = null
+    var maxMipmapLevel: Int? = null
 
     /** [MultiBitmap] for multiple bitmaps (ie. cube map) */
     var bitmap: Bitmap? = null
@@ -98,19 +100,21 @@ class AGTexture(
         }
     }
 
-    fun upload(bmp: Bitmap?, mipmaps: Boolean = false): AGTexture {
+    fun upload(bmp: Bitmap?, mipmaps: Boolean = false, baseMipmapLevel: Int? = null, maxMipmapLevel: Int? = null): AGTexture {
         bmp?.let { checkBitmaps(it) }
         this.forcedTexId = (bmp as? ForcedTexId?)
         this.bitmap = bmp
         estimatedMemoryUsage = ByteUnits.fromBytes(width * height * depth * 4)
         markAsDirty()
         this.requestMipmaps = mipmaps
+        this.baseMipmapLevel = baseMipmapLevel
+        this.maxMipmapLevel = maxMipmapLevel
         return this
     }
 
-    fun upload(bmp: BmpSlice?, mipmaps: Boolean = false): AGTexture {
+    fun upload(bmp: BmpSlice?, mipmaps: Boolean = false, baseMipmapLevel: Int? = null, maxMipmapLevel: Int? = null): AGTexture {
         // @TODO: Optimize to avoid copying?
-        return upload(bmp?.extract(), mipmaps)
+        return upload(bmp?.extract(), mipmaps, baseMipmapLevel, maxMipmapLevel)
     }
 
     fun doMipmaps(bitmap: Bitmap?, requestMipmaps: Boolean): Boolean {

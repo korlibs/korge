@@ -741,6 +741,8 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
                     totalSize += tex.width * tex.height * 4
 
                     if (tex.mipmaps) {
+                        tex.baseMipmapLevel?.let { gl.texParameteri(KmlGl.TEXTURE_2D, KmlGl.TEXTURE_BASE_LEVEL, it) }
+                        tex.maxMipmapLevel?.let { gl.texParameteri(KmlGl.TEXTURE_2D, KmlGl.TEXTURE_MAX_LEVEL, it) }
                         gl.generateMipmap(texTarget)
                     }
                 }
