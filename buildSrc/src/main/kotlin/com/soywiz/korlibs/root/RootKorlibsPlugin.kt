@@ -1385,6 +1385,7 @@ val Project.isSample: Boolean get() = project.path.startsWith(":samples:") || pr
 fun Project.mustAutoconfigureKMM(): Boolean =
     project.name != "korge-gradle-plugin" &&
         project.name != "korge-reload-agent" &&
+        project.name != "korge-benchmarks" &&
         project.hasBuildGradle()
 
 val Project.isKorgeBenchmarks: Boolean get() = path == ":korge-benchmarks"

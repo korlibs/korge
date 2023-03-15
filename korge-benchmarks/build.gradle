@@ -8,18 +8,8 @@ allOpen {
     annotation("org.openjdk.jmh.annotations.State")
 }
 
-kotlin {
-    js {
-        //nodejs()
-    }
-}
-
-benchmark {
-    targets {
-        register("jvm")
-        //register("js")
-    }
-}
+kotlin.jvm(); benchmark.targets.register("jvm")
+//kotlin { js(IR) { nodejs() } }; benchmark.targets.register("js")
 
 dependencies {
     add("commonMainApi", project(":korim"))
