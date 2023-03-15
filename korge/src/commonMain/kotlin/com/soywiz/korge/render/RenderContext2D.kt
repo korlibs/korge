@@ -10,7 +10,6 @@ import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.shape.*
-import com.soywiz.korma.geom.triangle.*
 import com.soywiz.korma.geom.vector.*
 import kotlin.native.concurrent.*
 
@@ -196,10 +195,6 @@ class RenderContext2D(
         for (points in path.toPathPointList()) {
             texturedVertexArrayNoTransform(TexturedVertexArray.fromPointArrayList(points, color, matrix = m), filtering)
         }
-    }
-
-    fun triangles(triangles: TriangleList, color: RGBA = this.multiplyColor, filtering: Boolean = this.filtering) {
-        texturedVertexArrayNoTransform(TexturedVertexArray.fromTriangles(triangles, color, matrix = m), filtering)
     }
 
     fun texturedVertexArrayNoTransform(texturedVertexArray: TexturedVertexArray, filtering: Boolean = this.filtering, matrix: MMatrix? = null) {

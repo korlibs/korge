@@ -7,8 +7,6 @@ import com.soywiz.korim.bitmap.BmpSlice
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.triangle.TriangleList
-import com.soywiz.korma.geom.vector.VectorPath
 import kotlin.native.concurrent.SharedImmutable
 
 // @TODO: Call this mesh?
@@ -60,12 +58,6 @@ class TexturedVertexArray(vcount: Int, val indices: ShortArray, icount: Int = in
 
         /** Builds indices for drawing triangles when the vertices information is stored as quads (4 vertices per quad primitive) */
         inline fun quadIndices(quadCount: Int): ShortArray = TEXTURED_ARRAY_quadIndices(quadCount)
-
-        fun fromTriangles(triangles: TriangleList, colorMul: RGBA = Colors.WHITE, matrix: MMatrix? = null): TexturedVertexArray {
-            val tva = TexturedVertexArray(triangles.pointCount, triangles.indices, triangles.numIndices)
-            tva.setSimplePoints(triangles.points, matrix, colorMul)
-            return tva
-        }
 
         /** This doesn't handle holes */
         fun fromPointArrayList(points: PointList, colorMul: RGBA = Colors.WHITE, matrix: MMatrix? = null): TexturedVertexArray {
