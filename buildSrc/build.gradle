@@ -2,7 +2,7 @@ plugins {
     id "publishing"
     id "maven-publish"
     id "signing"
-    id "org.jetbrains.kotlin.jvm" version libs.versions.kotlin
+    id "org.jetbrains.kotlin.jvm" version 1.8.10
 }
 
 def isJava8or9 = System.getProperty("java.version").startsWith("1.8") || System.getProperty("java.version").startsWith("9")
