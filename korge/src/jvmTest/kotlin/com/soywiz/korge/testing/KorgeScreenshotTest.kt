@@ -1,11 +1,42 @@
 package com.soywiz.korge.testing
 
 import com.soywiz.korge.view.*
+import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korma.geom.*
 import org.junit.*
 
 class KorgeScreenshotTest {
+    // https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/arc
+    @Test
+    fun testArcShapes() = korgeScreenshotTest(SizeInt(200, 200), bgcolor = Colors.WHITE) {
+        image(NativeImageContext2d(200, 200) {
+            val ctx = this
+            // Draw shapes
+            for (i in 0..3) {
+                for (j in 0..2) {
+                    ctx.beginPath()
+                    val x = 25+j * 50 // x coordinate
+                    val y = 25+i * 50 // y coordinate
+                    val radius = 20 // Arc radius
+                    val startAngle = 0 // Starting point on circle
+                    val endAngle = kotlin.math.PI +(kotlin.math.PI * j) / 2 // End point on circle
+                    val counterclockwise = i % 2 == 1 // Draw counterclockwise
+
+                    ctx.arc(Point(x, y), radius.toFloat(), startAngle.radians, endAngle.radians, counterclockwise)
+
+                    if (i > 1) {
+                        ctx.fill()
+                    } else {
+                        ctx.stroke()
+                    }
+                }
+            }
+        })
+
+        assertScreenshot(this, "shapes", posterize = 7)
+    }
+
     @Test
     fun test1() = korgeScreenshotTest(
         SizeInt(512, 512),
