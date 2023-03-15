@@ -205,6 +205,12 @@ inline class Point internal constructor(internal val raw: Float2Pack) {
         fun crossProduct(ax: Float, ay: Float, bx: Float, by: Float): Float = (ax * by) - (bx * ay)
         fun crossProduct(ax: Double, ay: Double, bx: Double, by: Double): Double = (ax * by) - (bx * ay)
         fun crossProduct(p1: Point, p2: Point): Float = crossProduct(p1.x, p1.y, p2.x, p2.y)
+        fun minComponents(p1: Point, p2: Point): Point = Point(min(p1.x, p2.x), min(p1.y, p2.y))
+        fun minComponents(p1: Point, p2: Point, p3: Point): Point = Point(min(p1.x, p2.x, p3.x), min(p1.y, p2.y, p3.y))
+        fun minComponents(p1: Point, p2: Point, p3: Point, p4: Point): Point = Point(min(p1.x, p2.x, p3.x, p4.x), min(p1.y, p2.y, p3.y, p4.y))
+        fun maxComponents(p1: Point, p2: Point): Point = Point(max(p1.x, p2.x), max(p1.y, p2.y))
+        fun maxComponents(p1: Point, p2: Point, p3: Point): Point = Point(max(p1.x, p2.x, p3.x), max(p1.y, p2.y, p3.y))
+        fun maxComponents(p1: Point, p2: Point, p3: Point, p4: Point): Point = Point(max(p1.x, p2.x, p3.x, p4.x), max(p1.y, p2.y, p3.y, p4.y))
     }
 }
 
@@ -235,7 +241,7 @@ fun List<MPoint>.getPolylineLength(): Double = getPolylineLength(size) { get(it)
 fun List<MPoint>.bounds(out: MRectangle = MRectangle(), bb: BoundsBuilder = BoundsBuilder()): MRectangle = bb.add(this).getBounds(out)
 fun Iterable<MPoint>.bounds(out: MRectangle = MRectangle(), bb: BoundsBuilder = BoundsBuilder()): MRectangle = bb.add(this).getBounds(out)
 
-fun min(a: MPoint, b: MPoint, out: MPoint = MPoint()): MPoint = out.setTo(kotlin.math.min(a.x, b.x), kotlin.math.min(a.y, b.y))
+fun min(a: MPoint, b: MPoint, out: MPoint = MPoint()): MPoint = out.setTo(min(a.x, b.x), min(a.y, b.y))
 fun max(a: MPoint, b: MPoint, out: MPoint = MPoint()): MPoint = out.setTo(kotlin.math.max(a.x, b.x), kotlin.math.max(a.y, b.y))
 fun MPoint.clamp(min: Double, max: Double, out: MPoint = MPoint()): MPoint = out.setTo(x.clamp(min, max), y.clamp(min, max))
 

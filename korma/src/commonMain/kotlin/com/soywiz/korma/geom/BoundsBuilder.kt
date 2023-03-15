@@ -2,6 +2,25 @@ package com.soywiz.korma.geom
 
 import com.soywiz.kds.*
 
+inline class NewBoundsBuilder(val rect: Rectangle) {
+    val isEmpty: Boolean get() = rect == Rectangle.NaN
+    companion object {
+        val EMPTY = NewBoundsBuilder(Rectangle.NaN)
+
+        operator fun invoke(): NewBoundsBuilder = NewBoundsBuilder(Rectangle.NaN)
+        operator fun invoke(p1: Point): NewBoundsBuilder = NewBoundsBuilder(Rectangle(p1, Size(0, 0)))
+        operator fun invoke(p1: Point, p2: Point): NewBoundsBuilder = NewBoundsBuilder(Rectangle.fromBounds(Point.minComponents(p1, p2), Point.maxComponents(p1, p2)))
+        operator fun invoke(p1: Point, p2: Point, p3: Point): NewBoundsBuilder = NewBoundsBuilder(Rectangle.fromBounds(Point.minComponents(p1, p2, p3), Point.maxComponents(p1, p2, p3)))
+        operator fun invoke(p1: Point, p2: Point, p3: Point, p4: Point): NewBoundsBuilder = NewBoundsBuilder(Rectangle.fromBounds(Point.minComponents(p1, p2, p3, p4), Point.maxComponents(p1, p2, p3, p4)))
+
+    }
+    operator fun plus(p: Point): NewBoundsBuilder {
+        if (rect == Rectangle.NaN) return NewBoundsBuilder(Rectangle(p, Size(0, 0)))
+        return NewBoundsBuilder(Rectangle.fromBounds(Point.minComponents(rect.topLeft, p), Point.maxComponents(rect.bottomRight, p)))
+    }
+    fun rectOrNull(): Rectangle? = if (rect == Rectangle.NaN) null else rect
+}
+
 class BoundsBuilder {
     val tempRect = MRectangle()
 
@@ -10,6 +29,11 @@ class BoundsBuilder {
 
         private val MIN = Double.NEGATIVE_INFINITY
         private val MAX = Double.POSITIVE_INFINITY
+
+        fun getBounds(p1: Point): Rectangle = NewBoundsBuilder(p1).rect
+        fun getBounds(p1: Point, p2: Point): Rectangle = NewBoundsBuilder(p1, p2).rect
+        fun getBounds(p1: Point, p2: Point, p3: Point): Rectangle = NewBoundsBuilder(p1, p2, p3).rect
+        fun getBounds(p1: Point, p2: Point, p3: Point, p4: Point): Rectangle = NewBoundsBuilder(p1, p2, p3, p4).rect
     }
 
     var npoints = 0; private set

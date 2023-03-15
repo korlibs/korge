@@ -16,6 +16,9 @@ inline class Rectangle(val data: Float4Pack) {
     val height: Float get() = data.f3
 
     companion object {
+        val INFINITE = Rectangle(Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY)
+        val NaN = Rectangle(Float.NaN, Float.NaN, Float.NaN, Float.NaN)
+
         operator fun invoke(): Rectangle = Rectangle(Point(), Size())
         operator fun invoke(p: Point, s: Size): Rectangle = Rectangle(float4PackOf(p.x, p.y, s.width, s.height))
         operator fun invoke(x: Int, y: Int, width: Int, height: Int): Rectangle = Rectangle(Point(x, y), Size(width, height))

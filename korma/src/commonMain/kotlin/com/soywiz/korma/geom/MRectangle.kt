@@ -151,6 +151,7 @@ data class MRectangle(
     fun setTo(x: Int, y: Int, width: Int, height: Int): MRectangle = setTo(x.toDouble(), y.toDouble(), width.toDouble(), height.toDouble())
     fun setTo(x: Float, y: Float, width: Float, height: Float): MRectangle = setTo(x.toDouble(), y.toDouble(), width.toDouble(), height.toDouble())
 
+    fun copyFrom(that: Rectangle): MRectangle = setTo(that.x, that.y, that.width, that.height)
     fun copyFrom(that: MRectangle): MRectangle = setTo(that.x, that.y, that.width, that.height)
     fun setBounds(left: Double, top: Double, right: Double, bottom: Double): MRectangle = setTo(left, top, right - left, bottom - top)
     fun setBounds(left: Int, top: Int, right: Int, bottom: Int): MRectangle = setBounds(left.toDouble(), top.toDouble(), right.toDouble(), bottom.toDouble())
