@@ -16,7 +16,7 @@ env:
   SKIP_KORGE_SAMPLES: true
   JAVA_VERSION: 11
   JAVA_DISTRIBUTION: zulu
-gi
+
 jobs:
   build:
 
