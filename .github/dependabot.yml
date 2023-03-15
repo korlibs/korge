@@ -12,7 +12,7 @@ updates:
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
-      interval: "montly"
+      interval: "monthly"
     ignore:
       - dependency-name: "*"
         versions:
