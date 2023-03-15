@@ -63,6 +63,14 @@ object RootKorlibsPlugin {
         initAllTargets()
         initPatchTests()
         initSamples()
+        //subprojectsThis {
+        //    tasks.withType(Copy::class.java) {
+        //        println("$it : ${it.outputs.files.files}")
+        //        if (it.name == "jsProcessResources") {
+        //            println(it.outputs.files.files)
+        //        }
+        //    }
+        //}
     }
 
     fun Project.initPatchTests() {

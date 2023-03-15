@@ -102,6 +102,15 @@ fun KotlinJsTargetDsl.configureJSTestsOnce() {
             it.useMocha()
         }
     }
+
+    // Kotlin 1.8.10:
+    //   compileSync: task ':korio:jsTestTestDevelopmentExecutableCompileSync' : [/Users/soywiz/projects/korge/build/js/packages/korge-root-korio-test/kotlin]
+    // Kotlin 1.8.20-RC:
+    //   compileSync: task ':korio:jsTestTestDevelopmentExecutableCompileSync' : [/Users/soywiz/projects/korge/build/js/packages/korge-root-korio-test/kotlin]
+    //for (kind in listOf("Development", "Production")) {
+    //    val compileSync = project.tasks.findByName("jsTestTest${kind}ExecutableCompileSync") as Copy
+    //    println("compileSync: $compileSync : ${compileSync.outputs.files.files}")
+    //}
 }
 
 abstract class JsCreateIndexTask : DefaultTask() {
