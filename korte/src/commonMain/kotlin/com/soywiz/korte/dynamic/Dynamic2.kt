@@ -153,29 +153,7 @@ object Dynamic2 {
         else -> listOf<Any?>()
     }
 
-    suspend fun accessAny(instance: Any?, key: Any?, mapper: ObjectMapper2): Any? = when (instance) {
-        null -> null
-        is Dynamic2Gettable -> instance.dynamic2Get(key)
-        is Map<*, *> -> instance[key]
-        is Iterable<*> -> instance.toList()[toInt(key)]
-        else -> {
-            val keyStr = DynamicContext { key.toDynamicString() }
-            when {
-                mapper.hasProperty(instance, keyStr) -> {
-                    //println("Access dynamic property : $keyStr")
-                    mapper.get(instance, key)
-                }
-                mapper.hasMethod(instance, keyStr) -> {
-                    //println("Access dynamic method : $keyStr")
-                    mapper.invokeAsync(instance::class as KClass<Any>, instance as Any?, keyStr, listOf())
-                }
-                else -> {
-                    //println("Access dynamic null : '$keyStr'")
-                    null
-                }
-            }
-        }
-    }
+    suspend fun accessAny(instance: Any?, key: Any?, mapper: ObjectMapper2): Any? = mapper.accessAny(instance, key)
 
     suspend fun setAny(instance: Any?, key: Any?, value: Any?, mapper: ObjectMapper2): Unit = when (instance) {
         null -> Unit

@@ -5,7 +5,7 @@ import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 import kotlin.reflect.KClass
 
-open class JsObjectMapper2 : ObjectMapper2() {
+open class JsObjectMapper2 : ObjectMapper2 {
     override fun hasProperty(instance: Any, key: String): Boolean {
         if (instance is DynamicType<*>) return instance.dynamicShape.hasProp(key)
         val tof = jsTypeOf(instance.asDynamic()[key])

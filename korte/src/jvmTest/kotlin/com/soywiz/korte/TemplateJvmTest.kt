@@ -1,5 +1,6 @@
 package com.soywiz.korte
 
+import com.soywiz.korte.dynamic.*
 import java.time.LocalDate
 import java.time.Month
 import kotlin.test.Test
@@ -49,11 +50,37 @@ class TemplateJvmTest {
         fun getB(): Int? = 20
     }
 
+    @Suppress("unused")
+    class GetterWithMap : LinkedHashMap<String, Any?>() {
+        @JvmField var a: Int? = 10
+        @JvmField var b: Int? = 10
+        var c: Int? = 10
+        fun getA(): Int? = null
+        fun getB(): Int? = 20
+    }
+
     @Test
     fun testGetter() = suspendTest {
         assertEquals(
             ",20,10",
             Template("{{ data.a }},{{ data.b }},{{ data.c }}")("data" to Getter())
+        )
+    }
+
+    @Test
+    fun testGetterCustomMapper() = suspendTest {
+        val getter = GetterWithMap().also { it["a"] = "A"; it["b"] = "B" }
+        assertEquals(
+            "A,B,",
+            Template("{{ data.a }},{{ data.b }},{{ data.c }}")("data" to getter)
+        )
+        assertEquals(
+            "A,20,10",
+            Template("{{ data.a }},{{ data.b }},{{ data.c }}")("data" to getter, mapper = object : ObjectMapper2 by Mapper2 {
+                override suspend fun accessAny(instance: Any?, key: Any?): Any? {
+                    return super.accessAnyObject(instance, key) ?: super.accessAny(instance, key)
+                }
+            })
         )
     }
 }
