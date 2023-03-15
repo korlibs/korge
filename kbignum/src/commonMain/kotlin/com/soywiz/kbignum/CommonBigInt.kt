@@ -142,9 +142,28 @@ class CommonBigInt private constructor(val data: UInt16ArrayZeroPad, override va
 
     override infix fun pow(exponent: Int): CommonBigInt = powWithStats(exponent, null)
 
-    // @TODO: Optimize. Useful for .pow
+    private fun getLower(len: Int): CommonBigInt =
+        if (len >= data.size) this.absoluteValue else CommonBigInt(data.copyOfRange(0, len), 1)
+    private fun getUpper(len: Int): CommonBigInt =
+        if (len >= data.size) ZERO else CommonBigInt(data.copyOfRange(len, data.size), 1)
+
     override fun square(): CommonBigInt {
-        return this * this
+        if (this.isZero) return ZERO
+        //return CommonBigInt(UnsignedBigInt.squareToLen(this.data), +1)
+        return when {
+            // Karatsuba
+            this.data.size > 128 -> {
+                val half: Int = (data.size + 1) / 2
+                val l = getLower(half) ; val ul = l.square()
+                val u = getUpper(half) ; val us = u.square()
+                (((us shl (half * CHUNK_BITS)) + ((l + u).square() - (us + ul))) shl (half * CHUNK_BITS)) + ul
+            }
+            // Standard
+            else -> {
+                // @TODO: Optimize. Useful for .pow
+                this * this
+            }
+        }
     }
 
 	fun powWithStats(exponent: Int, stats: OpStats?): CommonBigInt {
@@ -487,6 +506,7 @@ class UInt16ArrayZeroPad internal constructor(val data: IntArray) {
     fun contentHashCode(): Int = data.contentHashCode()
 	fun contentEquals(other: UInt16ArrayZeroPad) = this.data.contentEquals(other.data)
 	fun copyOf(size: Int = this.size): UInt16ArrayZeroPad = UInt16ArrayZeroPad(data.copyOf(size))
+    fun copyOfRange(fromIndex: Int = 0, toIndex: Int = this.size): UInt16ArrayZeroPad = UInt16ArrayZeroPad(data.copyOfRange(fromIndex, toIndex))
 
     override fun toString(): String = "${data.toList()}"
 }
@@ -532,6 +552,10 @@ internal object UnsignedBigInt {
         if (add != 0) carriedOp(v, signedCarry = false) { if (it == 0) v[it] + add else v[it] + 0 }
     }
 
+    fun inplaceSmallMulAdd(v: UInt16ArrayZeroPad, vv: UInt16ArrayZeroPad, mul: Int) {
+        carriedOp(v, signedCarry = false) { v[it] + (vv[it] * mul) }
+    }
+
 	fun add(l: UInt16ArrayZeroPad, r: UInt16ArrayZeroPad): UInt16ArrayZeroPad {
 		val out = UInt16ArrayZeroPad(max(l.size, r.size) + 1)
         carriedOp(out, signedCarry = false) { l[it] + r[it] }
@@ -545,16 +569,82 @@ internal object UnsignedBigInt {
         return out
 	}
 
-    //fun mulAdd(o: UInt16ArrayZeroPad, i: UInt16ArrayZeroPad, offset: Int, len: Int, k: Int): Int {
-    //    var carry: Int = 0
-    //    var offset = o.size - offset - 1
-    //    for (j in len - 1 downTo 0) {
-    //        val product = (i[j]) * k + (o[offset]) + carry
-    //        o[offset--] = product
-    //        carry = product ushr 16
-    //    }
-    //    return carry
-    //}
+    fun squareToLen(x: UInt16ArrayZeroPad, len: Int = x.size, zlen: Int = len * 2, z: UInt16ArrayZeroPad = UInt16ArrayZeroPad(zlen)): UInt16ArrayZeroPad {
+        // Store the squares, right shifted one bit (i.e., divided by 2)
+        var lastProductLowWord = 0
+        run {
+            var j = 0
+            var i = 0
+            while (j < len) {
+                val piece = x[j]
+                val product = piece * piece
+                z[i++] = lastProductLowWord shl 15 or (product ushr 17)
+                z[i++] = (product ushr 1)
+                lastProductLowWord = product
+                j++
+            }
+        }
+        // Add in off-diagonal sums
+        var offset = 1
+        for (i in 0 until len) {
+            val t = x[i - 1]
+            mulAdd(z, x, offset, i - 1, t)
+            addOne(z, offset - 1, i, t)
+            offset += 2
+        }
+        // Shift back up and set low bit
+        primitiveLeftShift(z, zlen, 1)
+        z[zlen - 1] = z[zlen - 1] or (x[len - 1] and 1)
+        return z
+    }
+
+    fun addOne(a: UInt16ArrayZeroPad, offset: Int, mlen: Int, carry: Int): Int {
+        for (n in offset until offset + mlen) {
+            if (n == offset + mlen) {
+                a[n]
+            }
+        }
+        var offset = offset
+        var mlen = mlen
+        offset = a.size - 1 - mlen - offset
+        val t = (a[offset]) + (carry)
+        a[offset] = t
+        if (t ushr 16 == 0) return 0
+        while (--mlen >= 0) {
+            if (--offset < 0) { // Carry out of number
+                return 1
+            } else {
+                a[offset]++
+                if (a[offset] != 0) return 0
+            }
+        }
+        return 1
+    }
+
+    fun primitiveLeftShift(a: UInt16ArrayZeroPad, len: Int, n: Int) {
+        if (len == 0 || n == 0) return
+        val n2 = 16 - n
+        var i = 0
+        var c = a[i]
+        val m = i + len - 1
+        while (i < m) {
+            val b = c
+            c = a[i + 1]
+            a[i] = b shl n or (c ushr n2)
+            i++
+        }
+        a[len - 1] = a[len - 1] shl n
+    }
+
+    fun mulAdd(o: UInt16ArrayZeroPad, i: UInt16ArrayZeroPad, offset: Int, len: Int, k: Int): Int {
+        var carry: Int = 0
+        for (j in 0 until len) {
+            val product = (i[j]) * k + (o[offset + j]) + carry
+            o[offset + j] = product
+            carry = product ushr 16
+        }
+        return carry
+    }
 
 	// l >= 0 && r >= 0
 	// TODO optimize using the Karatsuba algorithm:
@@ -567,7 +657,7 @@ internal object UnsignedBigInt {
 			for (ln in 0 until l.size + 1) {
 				val n = ln + rn
 				val res = out[n] + (l[ln] * r[rn]) + carry
-				out[n] = res and UINT16_MASK
+				out[n] = res
 				carry = res ushr 16
                 its++
 			}

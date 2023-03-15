@@ -2,6 +2,7 @@ package com.soywiz.kbignum
 
 import java.math.*
 import kotlin.test.*
+import kotlin.time.*
 
 abstract class AbstractBigIntCompareWithJVMTest {
 	val intItems = listOf(
@@ -181,35 +182,20 @@ abstract class AbstractBigIntCompareWithJVMTest {
         )
 	}
 
+    @OptIn(ExperimentalTime::class)
     @Test
     fun testMultComplexity() {
-        //val num1Str = "1".repeat(1024 * 32 * 4)
-        //val num1Str = "1".repeat(15)
-
-        //val jnum = BigInteger(num1Str)
-        //val num = num1Str.bi
-        //val stats = BigInt.OpStats()
-        //10.bi.powWithStats(1024 * 32 * 2, stats)
-        //println(stats)
-
-        val exp = 1024 * 32 * 2
-        val stats = CommonBigInt.OpStats()
-        assertEquals(10.bi.pow(exp).toString(16), CommonBigInt(10).powWithStats(exp, stats).toString(16))
-        assertEquals(CommonBigInt.OpStats(iterations = 17, bigMultiplications = 1, square = 16), stats)
-
-        //for (n in 0 until 200) {
-        //    val stats = CommonBigInt.OpStats()
-        //    val result = CommonBigInt(10).powWithStats(1024 * 32 * 2, stats)
-        //    println("stats=$stats")
-        //    val result2 = 10.bi.pow(1024 * 32 * 2)
-        //    println("n=$n")
-        //    //assertEquals(result2.toString(), result.toString())
-        //    //BigInteger.valueOf(10).pow(1024 * 32 * 2)
-        //}
-
-        //println("result: " + BigInt.pow10(1024 * 32 * 2))
-        //jnum.toString()
-        //assertEquals(jnum.toString(), num.toString())
+        //val count = 200
+        val count = 1
+        repeat(count) { n ->
+            val exp = 1024 * 32 * 2
+            val stats = CommonBigInt.OpStats()
+            val jvmResult = 10.bi.pow(exp)
+            val (nativeResult, time) = measureTimedValue { CommonBigInt(10).powWithStats(exp, stats) }
+            if (count > 1) println("$n ($time): $stats")
+            assertEquals(jvmResult.toString(16), nativeResult.toString(16))
+            assertEquals(CommonBigInt.OpStats(iterations = 17, bigMultiplications = 1, square = 16), stats)
+        }
     }
 
     @Test
