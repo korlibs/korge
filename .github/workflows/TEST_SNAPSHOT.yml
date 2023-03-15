@@ -15,7 +15,8 @@ env:
   FORCED_KOTLIN_VERSION: "1.7.255-SNAPSHOT"
   SKIP_KORGE_SAMPLES: true
   JAVA_VERSION: 11
-
+  JAVA_DISTRIBUTION: zulu
+gi
 jobs:
   build:
 
@@ -24,7 +25,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - { name: Set up JDK, uses: actions/setup-java@v1, with: { java-version: "${{ env.JAVA_VERSION }}" } }
+    - { name: Set up JDK, uses: actions/setup-java@v3, with: { distribution: "${{ env.JAVA_DISTRIBUTION }}", java-version: "${{ env.JAVA_VERSION }}" } }
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
     - name: Start gradle

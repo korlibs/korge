@@ -12,13 +12,14 @@ env:
   SONATYPE_USERNAME: ${{ secrets.SONATYPEUSERNAME }}
   SONATYPE_PASSWORD: ${{ secrets.SONATYPEPASSWORD }}
   JAVA_VERSION: 11
+  JAVA_DISTRIBUTION: zulu
 
 jobs:
   publish-windows:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v1
-      - { name: Set up JDK, uses: actions/setup-java@v1, with: { java-version: "${{ env.JAVA_VERSION }}" } }
+      - { name: Set up JDK, uses: actions/setup-java@v3, with: { distribution: "${{ env.JAVA_DISTRIBUTION }}", java-version: "${{ env.JAVA_VERSION }}" } }
       - run: CALL gradlew.bat --no-daemon -DCI=true
         shell: cmd
       - run: CALL gradlew.bat --no-daemon jvmTest publishMingwX64PublicationToMavenLocal -DCI=true
@@ -29,7 +30,7 @@ jobs:
     runs-on: macos-11
     steps:
       - uses: actions/checkout@v1
-      - { name: Set up JDK, uses: actions/setup-java@v1, with: { java-version: "${{ env.JAVA_VERSION }}" } }
+      - { name: Set up JDK, uses: actions/setup-java@v3, with: { distribution: "${{ env.JAVA_DISTRIBUTION }}", java-version: "${{ env.JAVA_VERSION }}" } }
       - run: ./gradlew -DCI=true
       - run: ./gradlew jvmTest publishMacosX64PublicationToMavenLocal publishMacosArm64PublicationToMavenLocal -DCI=true
         env:
@@ -38,7 +39,7 @@ jobs:
     runs-on: macos-11
     steps:
       - uses: actions/checkout@v1
-      - { name: Set up JDK, uses: actions/setup-java@v1, with: { java-version: "${{ env.JAVA_VERSION }}" } }
+      - { name: Set up JDK, uses: actions/setup-java@v3, with: { distribution: "${{ env.JAVA_DISTRIBUTION }}", java-version: "${{ env.JAVA_VERSION }}" } }
       - run: ./gradlew -DCI=true
       - run: ./gradlew publishIosArm64PublicationToMavenLocal publishIosX64PublicationToMavenLocal publishIosSimulatorArm64PublicationToMavenLocal -DCI=true
         env:
@@ -47,7 +48,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - { name: Set up JDK, uses: actions/setup-java@v1, with: { java-version: "${{ env.JAVA_VERSION }}" } }
+      - { name: Set up JDK, uses: actions/setup-java@v3, with: { distribution: "${{ env.JAVA_DISTRIBUTION }}", java-version: "${{ env.JAVA_VERSION }}" } }
       - run: sudo apt-get install xvfb
       - run: xvfb-run --auto-servernum ./gradlew --no-daemon -DCI=true
       - run: xvfb-run --auto-servernum ./gradlew --no-daemon publishKotlinMultiplatformPublicationToMavenLocal publishJvmPublicationToMavenLocal -DCI=true
@@ -55,7 +56,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - { name: Set up JDK, uses: actions/setup-java@v1, with: { java-version: "${{ env.JAVA_VERSION }}" } }
+      - { name: Set up JDK, uses: actions/setup-java@v3, with: { distribution: "${{ env.JAVA_DISTRIBUTION }}", java-version: "${{ env.JAVA_VERSION }}" } }
       - run: sudo apt-get install xvfb
       - run: xvfb-run --auto-servernum ./gradlew --no-daemon -DCI=true
       - run: xvfb-run --auto-servernum ./gradlew --no-daemon publishJsPublicationToMavenLocal publishAndroidPublicationToMavenLocal -DCI=true
@@ -63,7 +64,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - { name: Set up JDK, uses: actions/setup-java@v1, with: { java-version: "${{ env.JAVA_VERSION }}" } }
+      - { name: Set up JDK, uses: actions/setup-java@v3, with: { distribution: "${{ env.JAVA_DISTRIBUTION }}", java-version: "${{ env.JAVA_VERSION }}" } }
       - run: sudo apt-get install xvfb
       - run: xvfb-run --auto-servernum ./gradlew --no-daemon -DCI=true
       - run: xvfb-run --auto-servernum ./gradlew --no-daemon jvmTest publishLinuxX64PublicationToMavenLocal -DCI=true
