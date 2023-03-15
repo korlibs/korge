@@ -1,5 +1,5 @@
 plugins {
-    id "org.gradle.kotlin.kotlin-dsl" version "4.0.6"
+    id "org.jetbrains.kotlin.jvm" version libs.versions.kotlin
 }
 
 repositories {
