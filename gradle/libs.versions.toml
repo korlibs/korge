@@ -21,7 +21,7 @@ android-build-gradle = "7.3.1"
 gson = "2.10.1"
 gradle-publish-plugin = "1.1.0"
 #gradle-publish-plugin = "0.14.0"
-closure-compiler = "v20210808"
+closure-compiler = "v20230228"
 # https://repo.maven.apache.org/maven2/org/jetbrains/intellij/deps/intellij-coverage-agent/
 
 [libraries]
