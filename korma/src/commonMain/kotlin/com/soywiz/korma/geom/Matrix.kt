@@ -20,7 +20,7 @@ import kotlin.math.*
 //    val ty: Float,
 //) {
 
-// a, b, c, d are Half (16-bit float), tx and ty are Float(32-bit)
+// a, b, c, d, tx and ty are BFloat21
 inline class Matrix(val data: BFloat6Pack) {
     val a: Float get() = data.bf0
     val b: Float get() = data.bf1
@@ -29,7 +29,9 @@ inline class Matrix(val data: BFloat6Pack) {
     val tx: Float get() = data.bf4
     val ty: Float get() = data.bf5
 
-    constructor() : this(1f, 0f, 0f, 1f, 0f, 0f)
+    val mutable: MMatrix get() = MMatrix(a, b, c, d, tx, ty)
+
+    //constructor() : this(1f, 0f, 0f, 1f, 0f, 0f)
     constructor(a: Float, b: Float, c: Float, d: Float, tx: Float, ty: Float) :
         this(bfloat6PackOf(a, b, c, d, tx, ty))
     constructor(a: Double, b: Double, c: Double, d: Double, tx: Double, ty: Double) :
@@ -44,7 +46,11 @@ inline class Matrix(val data: BFloat6Pack) {
     operator fun times(scale: Float): Matrix = Matrix(a * scale, b * scale, c * scale, d * scale, tx * scale, ty * scale)
     operator fun times(scale: Double): Matrix = times(scale.toFloat())
 
+    val isNotNIL: Boolean get() = this != NIL
+    val isNIL: Boolean get() = this == NIL
+    val isNaN: Boolean get() = this == NaN
     val isIdentity: Boolean get() = type == MatrixType.IDENTITY
+
     val type: MatrixType get() {
         val hasRotation = b != 0f || c != 0f
         val hasScale = a != 1f || d != 1f
@@ -63,6 +69,17 @@ inline class Matrix(val data: BFloat6Pack) {
         this.a * p.x + this.c * p.y + this.tx,
         this.d * p.y + this.b * p.x + this.ty
     )
+
+    @Deprecated("", ReplaceWith("transform(p).x")) fun transformX(p: Point): Float = transform(p).x
+    @Deprecated("", ReplaceWith("transform(p).y")) fun transformY(p: Point): Float = transform(p).y
+
+    @Deprecated("", ReplaceWith("transform(p).x")) fun transformX(x: Float, y: Float): Float = transform(Point(x, y)).x
+    @Deprecated("", ReplaceWith("transform(p).y")) fun transformY(x: Float, y: Float): Float = transform(Point(x, y)).y
+
+    @Deprecated("", ReplaceWith("transform(p).x")) fun transformX(x: Double, y: Double): Double = transform(Point(x, y)).xD
+    @Deprecated("", ReplaceWith("transform(p).y")) fun transformY(x: Double, y: Double): Double = transform(Point(x, y)).yD
+
+    fun deltaTransform(p: Point): Point = Point((p.x * a) + (p.y * c), (p.x * b) + (p.y * d))
 
     fun rotated(angle: Angle): Matrix {
         val theta = angle.radians
@@ -100,15 +117,29 @@ inline class Matrix(val data: BFloat6Pack) {
     }
 
     fun scaled(scale: Scale): Matrix = Matrix(a * scale.scaleX, b * scale.scaleX, c * scale.scaleY, d * scale.scaleY, tx * scale.scaleX, ty * scale.scaleY)
+    fun scaled(scaleX: Int, scaleY: Int = scaleX): Matrix = scaled(Scale(scaleX, scaleY))
+    fun scaled(scaleX: Float, scaleY: Float = scaleX): Matrix = scaled(Scale(scaleX, scaleY))
+    fun scaled(scaleX: Double, scaleY: Double = scaleX): Matrix = scaled(Scale(scaleX, scaleY))
+
     fun prescaled(scale: Scale): Matrix = Matrix(a * scale.scaleX, b * scale.scaleX, c * scale.scaleY, d * scale.scaleY, tx, ty)
+    fun prescaled(scaleX: Int, scaleY: Int = scaleX): Matrix = prescaled(Scale(scaleX, scaleY))
+    fun prescaled(scaleX: Float, scaleY: Float = scaleX): Matrix = prescaled(Scale(scaleX, scaleY))
+    fun prescaled(scaleX: Double, scaleY: Double = scaleX): Matrix = prescaled(Scale(scaleX, scaleY))
 
     fun translated(delta: Point): Matrix = Matrix(a, b, c, d, tx + delta.x, ty + delta.y)
+    fun translated(x: Int, y: Int): Matrix = translated(Point(x, y))
+    fun translated(x: Float, y: Float): Matrix = translated(Point(x, y))
+    fun translated(x: Double, y: Double): Matrix = translated(Point(x, y))
+
     fun pretranslated(delta: Point): Matrix = Matrix(a, b, c, d, tx + (a * delta.x + c * delta.y), ty + (b * delta.x + d * delta.y))
+    fun pretranslated(deltaX: Int, deltaY: Int): Matrix = pretranslated(Point(deltaX, deltaY))
+    fun pretranslated(deltaX: Float, deltaY: Float): Matrix = pretranslated(Point(deltaX, deltaY))
+    fun pretranslated(deltaX: Double, deltaY: Double): Matrix = pretranslated(Point(deltaX, deltaY))
 
     fun prerotated(angle: Angle): Matrix = rotating(angle) * this
     fun preskewed(skewX: Angle, skewY: Angle): Matrix = skewing(skewX, skewY) * this
 
-    fun premultipled(m: Matrix): Matrix = m * this
+    fun premultiplied(m: Matrix): Matrix = m * this
     fun multipled(m: Matrix): Matrix = this * m
 
     /** Transform point without translation */
@@ -158,9 +189,16 @@ inline class Matrix(val data: BFloat6Pack) {
 
     fun isAlmostEquals(other: Matrix, epsilon: Float = 0.001f): Boolean = isAlmostEquals(this, other, epsilon)
 
+    // @TODO: Is this order correct?
+    fun preconcated(other: Matrix): Matrix = this * other
+
     companion object {
-        val IDENTITY = Matrix()
-        val NaN = Matrix(Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN)
+        val IDENTITY = Matrix(1f, 0f, 0f, 1f, 0f, 0f)
+        val NIL = Matrix(Float.NaN, Float.NaN, Float.NaN, Float.NaN, Float.NaN, Float.NaN)
+        val NaN = NIL
+
+        //@Deprecated("", ReplaceWith("IDENTITY", "com.soywiz.korma.geom.Matrix.IDENTITY"))
+        operator fun invoke(): Matrix = IDENTITY
 
         fun isAlmostEquals(a: Matrix, b: Matrix, epsilon: Float = 0.001f): Boolean =
             a.tx.isAlmostEquals(b.tx, epsilon)
@@ -364,6 +402,7 @@ enum class MatrixType(val id: Int, val hasRotation: Boolean, val hasScale: Boole
 }
 
 @KormaMutableApi
+@Deprecated("Use Matrix")
 data class MMatrix(
     var a: Double = 1.0,
     var b: Double = 0.0,
@@ -460,6 +499,8 @@ data class MMatrix(
     fun copyFromInverted(that: MMatrix): MMatrix {
         return invert(that)
     }
+
+    fun copyFrom(that: Matrix): MMatrix = setTo(that.a, that.b, that.c, that.d, that.tx, that.ty)
 
     fun copyFrom(that: MMatrix?): MMatrix {
         if (that != null) {

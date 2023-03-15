@@ -848,7 +848,7 @@ class MMatrix3D {
         = setToPerspective(fovy, aspect.toFloat(), zNear.toFloat(), zFar.toFloat())
 
     fun extractTranslation(out: MVector4 = MVector4()): MVector4 = getRowVector(3, out).also { it.w = 1f }
-    
+
     fun extractScale(out: MVector4 = MVector4()): MVector4 {
         val x = getRowVector(0).length3
         val y = getRowVector(1).length3
@@ -1206,6 +1206,7 @@ class MMatrix3D {
     )
 
     fun copyFrom(that: MMatrix): MMatrix4 = that.toMatrix3D(this)
+    fun copyFrom(that: Matrix): MMatrix4 = that.toMatrix3D(this)
 
 }
 
@@ -1216,3 +1217,9 @@ fun MMatrix.toMatrix3D(out: MMatrix4 = MMatrix3D()): MMatrix4 = out.setRows(
     0.0, 0.0, 0.0, 1.0
 )
 
+fun Matrix.toMatrix3D(out: MMatrix4 = MMatrix3D()): MMatrix4 = out.setRows(
+    a, c, 0f, tx,
+    b, d, 0f, ty,
+    0f, 0f, 1f, 0f,
+    0f, 0f, 0f, 1f
+)
