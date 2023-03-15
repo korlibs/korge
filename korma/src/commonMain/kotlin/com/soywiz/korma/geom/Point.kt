@@ -91,9 +91,9 @@ inline class Point internal constructor(internal val raw: Float2Pack) {
     fun transformX(m: MMatrix?): Float = m?.transform(this)?.x ?: x
     fun transformY(m: MMatrix?): Float = m?.transform(this)?.y ?: y
 
-    inline fun transformed(m: Matrix?): Point = m?.transform(this) ?: this
-    fun transformX(m: Matrix?): Float = m?.transform(this)?.x ?: x
-    fun transformY(m: Matrix?): Float = m?.transform(this)?.y ?: y
+    inline fun transformed(m: Matrix): Point = if (m.isNotNIL) m.transform(this) else this
+    fun transformX(m: Matrix): Float = if (m.isNotNIL) m.transform(this).x else x
+    fun transformY(m: Matrix): Float = if (m.isNotNIL) m.transform(this).y else y
 
     operator fun get(component: Int) = when (component) {
         0 -> x; 1 -> y

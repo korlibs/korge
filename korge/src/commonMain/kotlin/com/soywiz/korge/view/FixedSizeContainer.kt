@@ -58,7 +58,7 @@ open class FixedSizeContainer(
         }
         if (clip) {
             val m = globalMatrix
-            val hasRotation = m.b != 0.0 || m.c != 0.0
+            val hasRotation = m.b != 0f || m.c != 0f
             //val hasNegativeScale = m.a < 0.0 || m.d < 0.0
             //if (hasRotation || hasNegativeScale) {
             if (hasRotation) {

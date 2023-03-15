@@ -200,9 +200,9 @@ abstract class BaseGraphics(
         var renderedAtScaleXY = 1.0; private set
         private var matrixTransform = MatrixTransform()
 
-        fun onRender(autoScaling: Boolean, autoScalingPrecise: Boolean, globalMatrix: MMatrix): Boolean {
+        fun onRender(autoScaling: Boolean, autoScalingPrecise: Boolean, globalMatrix: Matrix): Boolean {
             if (autoScaling) {
-                matrixTransform = globalMatrix.immutable.toTransform()
+                matrixTransform = globalMatrix.toTransform()
                 //val sx = kotlin.math.abs(matrixTransform.scaleX / this.scaleX)
                 //val sy = kotlin.math.abs(matrixTransform.scaleY / this.scaleY)
 

@@ -4,8 +4,7 @@ import com.soywiz.klock.TimeSpan
 import com.soywiz.korge.tween.V2
 import com.soywiz.korge.tween.get
 import com.soywiz.korge.tween.tween
-import com.soywiz.korma.geom.MMatrix
-import com.soywiz.korma.geom.MRectangle
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.interpolation.Easing
 
 /**
@@ -38,26 +37,27 @@ class Camera : Container(), View.Reference {
 		out.setTo(0.0, 0.0, width, height)
 	}
 
-	fun getLocalMatrixFittingGlobalRect(rect: MRectangle): MMatrix {
+	fun getLocalMatrixFittingGlobalRect(rect: MRectangle): Matrix {
 		val destinationBounds = rect
-		val mat = this.parent?.globalMatrix?.clone() ?: MMatrix()
-		mat.translate(-destinationBounds.x, -destinationBounds.y)
-		mat.scale(
-			width / destinationBounds.width,
-			height / destinationBounds.height
-		)
+		val mat = (this.parent?.globalMatrix ?: Matrix())
+		    .translated(-destinationBounds.x, -destinationBounds.y)
+		    .scaled(Scale(
+                width / destinationBounds.width,
+                height / destinationBounds.height
+            ))
 		//println(identityBounds)
 		//println(destinationBounds)
 		return mat
 	}
 
-	fun getLocalMatrixFittingView(view: View?): MMatrix =
+	fun getLocalMatrixFittingView(view: View?): Matrix =
 		getLocalMatrixFittingGlobalRect((view ?: stage)?.globalBounds ?: MRectangle(0, 0, 100, 100))
 
 	fun setTo(view: View?) { this.localMatrix = getLocalMatrixFittingView(view) }
 	fun setTo(rect: MRectangle) { this.localMatrix = getLocalMatrixFittingGlobalRect(rect) }
 
 	suspend fun tweenTo(view: View?, vararg vs: V2<*>, time: TimeSpan, easing: Easing = Easing.LINEAR) = this.tween(
+        this::scale[0.0, 1.0],
 		this::localMatrix[this.localMatrix.clone(), getLocalMatrixFittingView(view)],
 		*vs,
 		time = time,

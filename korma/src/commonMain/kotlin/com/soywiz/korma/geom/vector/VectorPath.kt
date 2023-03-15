@@ -242,7 +242,7 @@ class VectorPath(
 
     fun getBounds(out: MRectangle = MRectangle(), bb: BoundsBuilder = BoundsBuilder()): MRectangle {
         bb.reset()
-        bb.add(this)
+        bb.add(this, Matrix.NIL)
         return bb.getBounds(out)
     }
 
@@ -376,9 +376,9 @@ class VectorPath(
         }
     }
 
-    fun write(path: VectorPath, transform: MMatrix = identityMatrix) {
+    fun write(path: VectorPath, transform: Matrix = Matrix.IDENTITY) {
         this.commands += path.commands
-        if (transform.isIdentity()) {
+        if (transform.isIdentity) {
             this.data += path.data
             lastPos = path.lastPos
         } else {
@@ -470,27 +470,27 @@ fun VectorBuilder.write(path: VectorPath) {
     )
 }
 
-fun VectorBuilder.moveTo(p: Point, m: MMatrix?) = if (m != null) moveTo(m.transform(p)) else moveTo(p)
-fun VectorBuilder.lineTo(p: Point, m: MMatrix?) = if (m != null) lineTo(m.transform(p)) else lineTo(p)
-fun VectorBuilder.quadTo(c: Point, a: Point, m: MMatrix?) =
-    if (m != null) {
+fun VectorBuilder.moveTo(p: Point, m: Matrix) = if (m.isNotNIL) moveTo(m.transform(p)) else moveTo(p)
+fun VectorBuilder.lineTo(p: Point, m: Matrix) = if (m.isNotNIL) lineTo(m.transform(p)) else lineTo(p)
+fun VectorBuilder.quadTo(c: Point, a: Point, m: Matrix) =
+    if (m.isNotNIL) {
         quadTo(m.transform(c), m.transform(a))
     } else {
         quadTo(c, a)
     }
-fun VectorBuilder.cubicTo(c1: Point, c2: Point, a: Point, m: MMatrix?) =
-    if (m != null) {
+fun VectorBuilder.cubicTo(c1: Point, c2: Point, a: Point, m: Matrix) =
+    if (m.isNotNIL) {
         cubicTo(m.transform(c1), m.transform(c2), m.transform(a))
     } else {
         cubicTo(c1, c2, a)
     }
 
 
-fun VectorBuilder.path(path: VectorPath, m: MMatrix?) {
+fun VectorBuilder.path(path: VectorPath, m: Matrix) {
     write(path, m)
 }
 
-fun VectorBuilder.write(path: VectorPath, m: MMatrix?) {
+fun VectorBuilder.write(path: VectorPath, m: Matrix) {
     path.visitCmds(
         moveTo = { moveTo(it, m) },
         lineTo = { lineTo(it, m) },
@@ -500,7 +500,7 @@ fun VectorBuilder.write(path: VectorPath, m: MMatrix?) {
     )
 }
 
-fun BoundsBuilder.add(path: VectorPath, transform: MMatrix? = null) {
+fun BoundsBuilder.add(path: VectorPath, transform: Matrix = Matrix.NIL) {
     val curvesList = path.getCurvesList()
     if (curvesList.isEmpty() && path.isNotEmpty()) {
         path.visit(object : VectorPath.Visitor {
@@ -516,8 +516,8 @@ fun BoundsBuilder.add(path: VectorPath, transform: MMatrix? = null) {
     //println("BoundsBuilder.add.path: " + bb.getBounds())
 }
 
-fun VectorPath.applyTransform(m: MMatrix?): VectorPath = when {
-    m != null -> transformPoints { m.transform(it) }
+fun VectorPath.applyTransform(m: Matrix): VectorPath = when {
+    m.isNotNIL -> transformPoints { m.transform(it) }
     else -> this
 }
 

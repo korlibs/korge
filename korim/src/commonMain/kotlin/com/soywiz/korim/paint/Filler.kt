@@ -73,9 +73,9 @@ class BitmapFiller : BaseFiller() {
             iTexWidth = 1f / texWidth
             iTexHeight = 1f / texHeight
         }
-    private var transform: MMatrix = MMatrix()
+    private var transform: Matrix = Matrix()
     private var linear: Boolean = true
-    private val compTrans = MMatrix()
+    private var compTrans = Matrix()
 
     fun set(fill: BitmapPaint, state: Context2d.State) = this.apply {
         this.cycleX = fill.cycleX
@@ -83,12 +83,11 @@ class BitmapFiller : BaseFiller() {
         this.texture = fill.bmp32
         this.transform = fill.transform
         this.linear = fill.smooth
-        compTrans.apply {
-            identity()
-            premultiply(state.transform)
-            premultiply(fill.transform)
-            invert()
-        }
+        compTrans = Matrix()
+            .premultiplied(state.transform)
+            .premultiplied(fill.transform)
+            .inverted()
+
     }
 
     fun lookupLinear(x: Float, y: Float): RGBA = texture.getRgbaSampled(x, y)
@@ -96,8 +95,8 @@ class BitmapFiller : BaseFiller() {
 
     override fun getColor(x: Float, y: Float): RGBAPremultiplied {
         val mat = compTrans
-        val tx = cycleX.apply(mat.transformXf(x.toFloat(), y) * iTexWidth) * texWidth
-        val ty = cycleY.apply(mat.transformYf(x.toFloat(), y) * iTexHeight) * texHeight
+        val tx = cycleX.apply(mat.transformX(x.toFloat(), y) * iTexWidth) * texWidth
+        val ty = cycleY.apply(mat.transformY(x.toFloat(), y) * iTexHeight) * texHeight
         return if (linear) lookupLinear(tx, ty).premultiplied else lookupNearest(tx, ty).premultiplied
     }
 }
@@ -112,11 +111,9 @@ class GradientFiller : BaseFiller() {
 
     fun set(fill: GradientPaint, state: Context2d.State): GradientFiller {
         fill.fillColors(colors)
-        this.fill = fill.copy(transform = MMatrix().apply {
-            identity()
-            preconcat(fill.transform)
-            preconcat(state.transform)
-        })
+        this.fill = fill.copy(transform = Matrix()
+            .preconcated(fill.transform)
+            .preconcated(state.transform))
         //println("state.transform=${state.transform}")
         //this.stateTransformInv.copyFromInverted(state.transform)
         return this

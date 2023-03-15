@@ -51,22 +51,23 @@ class NinePatch(
 		if (!visible) return
         lazyLoadRenderInternal(ctx, this)
 
-		val m = globalMatrix
+		var m = globalMatrix
 
 		val xscale = m.a
 		val yscale = m.d
 
 		bounds.setTo(0, 0, (width * xscale).toInt(), (height * yscale).toInt())
 
-		m.keepMatrix {
-			m.prescale(1.0 / xscale, 1.0 / yscale)
+        val oldM = m
+		try {
+			m = m.prescaled(Scale(1.0 / xscale, 1.0 / yscale))
             val ninePatch = ninePatch
             if (ninePatch != null) {
                 recomputeVerticesIfRequired()
                 val tvaCached = this@NinePatch.tvaCached
                 if (tvaCached != null) {
                     if (cachedMatrix != m) {
-                        cachedMatrix.copyFrom(m)
+                        cachedMatrix = m
                         tvaCached.copyFrom(tva!!)
                         tvaCached.applyMatrix(m)
                     }
@@ -75,13 +76,15 @@ class NinePatch(
                     }
                 }
             }
-		}
+		} finally {
+            m = oldM
+        }
 	}
 
     internal var renderedVersion = 0
     private var tva: TexturedVertexArray? = null
     private var tvaCached: TexturedVertexArray? = null
-    private var cachedMatrix: MMatrix = MMatrix()
+    private var cachedMatrix: Matrix = Matrix()
     private var cachedRenderColorMul = Colors.WHITE
 
     private var cachedNinePatch: NinePatchBmpSlice? = null
@@ -103,7 +106,7 @@ class NinePatch(
         val indices = TexturedVertexArray.quadIndices(numQuads)
         val tva = TexturedVertexArray(numQuads * 4, indices)
         var index = 0
-        val matrix = MMatrix()
+        val matrix = Matrix()
         ninePatch.info.computeScale(viewBounds) { segment, x, y, width, height ->
             val bmpSlice = ninePatch.getSegmentBmpSlice(segment)
             tva.quad(index++ * 4,
@@ -114,7 +117,7 @@ class NinePatch(
         }
         this.tva = tva
         this.tvaCached = TexturedVertexArray(numQuads * 4, indices)
-        this.cachedMatrix.setToNan()
+        this.cachedMatrix = Matrix.NIL
         renderedVersion++
     }
 

@@ -26,7 +26,7 @@ open class IdentityFilter(val smoothing: Boolean) : Filter {
         ctx.useBatcher { batch ->
             batch.drawQuad(
                 texture,
-                m = matrix,
+                m = matrix.immutable,
                 filtering = smoothing,
                 colorMul = renderColorMul,
                 blendMode = blendMode,

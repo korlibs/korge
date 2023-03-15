@@ -29,12 +29,12 @@ class MainText : ScaledScene(512, 160) {
         var version = 0
         //text("Hello World!", font = font, textSize = 64.0, alignment = TextAlignment.BASELINE_LEFT, renderer = CreateStringTextRenderer({ version++ }) { reader: WStringReader, c: Int, g: GlyphMetrics, advance: Double ->
         val text = text("Hello World!", font = font, textSize = 64.0, alignment = TextAlignment.BASELINE_LEFT, renderer = CreateStringTextRenderer({ version++ }) { reader: WStringReader, c: Int, g: GlyphMetrics, advance: Double ->
-            transform.identity()
+            transform = Matrix.IDENTITY
 
             val sin = sind(offset + (reader.position * 360 / reader.length).degrees)
-            transform.rotate(15.degrees)
-            transform.translate(0.0, sin * 16)
-            transform.scale(1.0, 1.0 + sin * 0.1)
+            transform = transform.rotated(15.degrees)
+            transform = transform.translated(0.0, sin * 16)
+            transform = transform.scaled(1.0, 1.0 + sin * 0.1)
             put(reader, c)
             advance(advance)
         }).position(100, 100)

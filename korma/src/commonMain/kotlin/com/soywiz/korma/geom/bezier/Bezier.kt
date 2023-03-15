@@ -131,7 +131,7 @@ class Bezier(
     fun roundDecimalPlaces(places: Int): Bezier = Bezier(points.roundDecimalPlaces(places))
 
     override fun getBounds(target: MRectangle): MRectangle = target.copyFrom(boundingBox)
-    fun getBounds(target: MRectangle, m: MMatrix?): MRectangle = _getBoundingBox(target, m)
+    fun getBounds(target: MRectangle, m: Matrix): MRectangle = _getBoundingBox(target, m)
 
     override fun calc(t: Double): Point = this.compute(t)
 
@@ -194,11 +194,11 @@ class Bezier(
     override val boundingBox: MRectangle get() {
         if (boundingBoxValid) return _boundingBox
         boundingBoxValid = true
-        _getBoundingBox(_boundingBox, null)
+        _getBoundingBox(_boundingBox, Matrix.NIL)
         return _boundingBox
     }
 
-    private fun _getBoundingBox(out: MRectangle, m: MMatrix? = null): MRectangle {
+    private fun _getBoundingBox(out: MRectangle, m: Matrix): MRectangle {
         var xmin = 0f
         var ymin = 0f
         var xmax = 0f

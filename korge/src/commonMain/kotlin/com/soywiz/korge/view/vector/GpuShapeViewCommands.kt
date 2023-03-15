@@ -95,8 +95,7 @@ class GpuShapeViewCommands {
     private val tempColorMul = FloatArray(4)
     private val texturesToDelete = FastArrayList<AGTexture>()
     private val tempUniforms = AGUniformValues()
-    private val tempMat = MMatrix()
-    fun render(ctx: RenderContext, globalMatrix: MMatrix, localMatrix: MMatrix, applyScissor: Boolean, colorMul: RGBA, doRequireTexture: Boolean) {
+    fun render(ctx: RenderContext, globalMatrix: Matrix, localMatrix: Matrix, applyScissor: Boolean, colorMul: RGBA, doRequireTexture: Boolean) {
         val vertices = this.vertices ?: return
         ctx.agBufferManager.delete(verticesToDelete)
         verticesToDelete.clear()
@@ -109,13 +108,13 @@ class GpuShapeViewCommands {
             batcher.keepUniform(GpuShapeViewPrograms.u_ColorMul) {
                 it[GpuShapeViewPrograms.u_ColorMul] = tempColorMul
                 //tempMat.identity()
-                when {
-                    doRequireTexture -> tempMat.identity()
-                    else -> tempMat.copyFrom(batcher.viewMat2D)
+                var tempMat = when {
+                    doRequireTexture -> Matrix.IDENTITY
+                    else -> batcher.viewMat2D
                 }
-                tempMat.premultiply(globalMatrix)
+                tempMat = globalMatrix * tempMat
                 batcher.setViewMatrixTemp(tempMat) {
-                    decomposed = globalMatrix.immutable.toTransform()
+                    decomposed = globalMatrix.toTransform()
 
                     // applyScissor is for using the ctx.batch.scissor infrastructure
                     //list.setScissorState(ag, AGScissor().setTo(rect))

@@ -8,20 +8,20 @@ import com.soywiz.korma.geom.vector.*
 import com.soywiz.korma.internal.*
 import kotlin.math.*
 
-private fun MMatrix?.tx(x: Double, y: Double) = this?.transformX(x, y) ?: x
-private fun MMatrix?.ty(x: Double, y: Double) = this?.transformY(x, y) ?: y
-private fun MMatrix?.dtx(x: Double, y: Double) = this?.deltaTransformX(x, y) ?: x
-private fun MMatrix?.dty(x: Double, y: Double) = this?.deltaTransformY(x, y) ?: y
+private fun Matrix.tx(x: Double, y: Double): Double = if (this.isNIL) x else this.transform(Point(x, y)).xD
+private fun Matrix.ty(x: Double, y: Double): Double = if (this.isNIL) y else this.transform(Point(x, y)).yD
+private fun Matrix.dtx(x: Double, y: Double): Double = if (this.isNIL) x else this.deltaTransform(Point(x, y)).xD
+private fun Matrix.dty(x: Double, y: Double): Double = if (this.isNIL) y else this.deltaTransform(Point(x, y)).yD
 
 private fun optimizedIntersect(l: Shape2d.Circle, r: Shape2d.Circle): Boolean =
     MPoint.distance(l.x, l.y, r.x, r.y) < (l.radius + r.radius)
 
-private fun optimizedIntersect(l: Shape2d.Circle, ml: MMatrix?, r: Shape2d.Circle, mr: MMatrix?): Boolean {
-    if (ml == null && mr == null) return optimizedIntersect(l, r)
+private fun optimizedIntersect(l: Shape2d.Circle, ml: Matrix, r: Shape2d.Circle, mr: Matrix): Boolean {
+    if (ml.isNIL && mr.isNIL) return optimizedIntersect(l, r)
     val radiusL = ml.dtx(l.radius, l.radius)
     val radiusR = mr.dtx(r.radius, r.radius)
     //println("radiusL=$radiusL, radiusR=$radiusR")
-    return MPoint.distance(
+    return Point.distance(
         ml.tx(l.x, l.y), ml.ty(l.x, l.y),
         mr.tx(r.x, r.y), mr.ty(r.x, r.y),
     ) < radiusL + radiusR
@@ -36,7 +36,7 @@ abstract class Shape2d {
     abstract val paths: List<PointList>
     abstract val closed: Boolean
     abstract fun containsPoint(p: Point): Boolean
-    fun containsPoint(p: Point, mat: MMatrix) = containsPoint(mat.transform(p))
+    fun containsPoint(p: Point, mat: Matrix) = containsPoint(mat.transform(p))
     open fun getBounds(out: MRectangle = MRectangle()): MRectangle {
         var minx = Double.POSITIVE_INFINITY
         var miny = Double.POSITIVE_INFINITY
@@ -56,7 +56,7 @@ abstract class Shape2d {
     open val center: Point get() = getBounds().center
 
     companion object {
-        fun intersects(l: Shape2d, ml: MMatrix?, r: Shape2d, mr: MMatrix?, tempMatrix: MMatrix? = MMatrix()): Boolean {
+        fun intersects(l: Shape2d, ml: Matrix, r: Shape2d, mr: Matrix): Boolean {
             //println("Shape2d.intersects:"); println(" - l=$l[$ml]"); println(" - r=$r[$mr]")
 
             if (l.type == r.type) {
@@ -69,13 +69,13 @@ abstract class Shape2d {
                 }
             }
 
-            return _intersectsStep0(l, ml, r, mr, tempMatrix) || _intersectsStep0(r, mr, l, ml, tempMatrix)
+            return _intersectsStep0(l, ml, r, mr) || _intersectsStep0(r, mr, l, ml)
         }
 
-        private fun _intersectsStep0(l: Shape2d, ml: MMatrix?, r: Shape2d, mr: MMatrix?, tempMatrix: MMatrix? = MMatrix()): Boolean {
-            if (tempMatrix != null && (ml != null || mr != null)) {
-                if (mr != null) tempMatrix.invert(mr) else tempMatrix.identity()
-                if (ml != null) tempMatrix.premultiply(ml)
+        private fun _intersectsStep0(l: Shape2d, ml: Matrix, r: Shape2d, mr: Matrix): Boolean {
+            if (!ml.isNIL || !mr.isNIL) {
+                var tempMatrix = if (!mr.isNIL) mr.inverted() else Matrix.IDENTITY
+                if (!ml.isNIL) tempMatrix = ml * tempMatrix
 
                 l.paths.fastForEach {
                     it.fastForEach { p ->
@@ -92,14 +92,14 @@ abstract class Shape2d {
             return false
         }
 
-        fun intersects(l: Shape2d, r: Shape2d): Boolean = intersects(l, null, r, null, null)
+        fun intersects(l: Shape2d, r: Shape2d): Boolean = intersects(l, Matrix.NIL, r, Matrix.NIL)
 
         fun EllipseOrCircle(x: Double, y: Double, radiusX: Double, radiusY: Double, angle: Angle = Angle.ZERO, totalPoints: Int = 32): BaseEllipse =
             if (radiusX == radiusY) Circle(x, y, radiusX, totalPoints) else Ellipse(x, y, radiusX, radiusY, angle, totalPoints)
     }
 
-    fun intersectsWith(that: Shape2d) = intersects(this, null, that, null, null)
-    fun intersectsWith(ml: MMatrix?, that: Shape2d, mr: MMatrix?) = intersects(this, ml, that, mr)
+    fun intersectsWith(that: Shape2d) = intersects(this, Matrix.NIL, that, Matrix.NIL)
+    fun intersectsWith(ml: Matrix, that: Shape2d, mr: Matrix) = intersects(this, ml, that, mr)
 
     infix fun with(that: Shape2d): Shape2d {
         val left = this
@@ -152,7 +152,7 @@ abstract class Shape2d {
         val vectorPath by lazy {
             buildVectorPath(VectorPath()) {
                 ellipse(Point(0.0, 0.0), Size(ellipseRadiusX, ellipseRadiusY))
-            }.applyTransform(MMatrix().pretranslate(ellipseX, ellipseY).prerotate(ellipseAngle))
+            }.applyTransform(Matrix().pretranslated(Point(ellipseX, ellipseY)).prerotated(ellipseAngle))
         }
 
         override val paths: List<PointList> = when {

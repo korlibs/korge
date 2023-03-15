@@ -91,7 +91,7 @@ fun Filter.renderToTextureWithBorder(
         ctx.matrixPool.alloc { matrix ->
             matrix.identity()
             matrix.translate(borderLeft, borderTop)
-            ctx.batch.setViewMatrixTemp(ctx.identityMatrix) {
+            ctx.batch.setViewMatrixTemp(Matrix.IDENTITY) {
                 filter.render(
                     ctx,
                     matrix,

@@ -186,7 +186,7 @@ abstract class ShaderFilter : Filter {
                 slice,
                 x = -marginLeft.toFloat(),
                 y = -marginTop.toFloat(),
-                m = matrix,
+                m = matrix.immutable,
                 filtering = filtering,
                 colorMul = renderColorMul,
                 blendMode = blendMode,

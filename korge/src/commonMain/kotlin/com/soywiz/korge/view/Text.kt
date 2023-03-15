@@ -217,15 +217,14 @@ open class Text(
         }
     }
 
-    private val tempMatrix = MMatrix()
 
     override fun renderInternal(ctx: RenderContext) {
         _renderInternal(ctx)
         //val tva: TexturedVertexArray? = null
         val tva = tva
         if (tva != null) {
-            tempMatrix.copyFrom(globalMatrix)
-            tempMatrix.pretranslate(container.x, container.y)
+            val tempMatrix = globalMatrix
+                .pretranslated(Point(container.x, container.y))
             ctx.useBatcher { batch ->
                 val bmpfont = font as BitmapFont
                 val tex = bmpfont.baseBmp

@@ -504,7 +504,7 @@ abstract class View internal constructor(
     protected fun ensureTransform() {
         if (validLocalProps) return
         validLocalProps = true
-        val t = this._localMatrix.immutable.toTransform()
+        val t = this._localMatrix.toTransform()
         this._x = t.x.toDouble()
         this._y = t.y.toDouble()
         this._scaleX = t.scaleX.toDouble()
@@ -536,15 +536,15 @@ abstract class View internal constructor(
         }
 
     /** Sets the local transform matrix that includes [x], [y], [scaleX], [scaleY], [rotation], [skewX] and [skewY] encoded into a [MMatrix] */
-    fun setMatrix(matrix: MMatrix) {
-        this._localMatrix.copyFrom(matrix)
+    fun setMatrix(matrix: Matrix) {
+        this._localMatrix = matrix
         this.validLocalProps = false
         invalidate()
     }
 
     /** Like [setMatrix] but directly sets an interpolated version of the [l] and [r] matrices with the [ratio] */
-    fun setMatrixInterpolated(ratio: Double, l: MMatrix, r: MMatrix) {
-        this._localMatrix.setToInterpolated(ratio.toRatio(), l, r)
+    fun setMatrixInterpolated(ratio: Double, l: Matrix, r: Matrix) {
+        this._localMatrix = ratio.toRatio().interpolate(l, r)
         this.validLocalProps = false
         invalidate()
     }
@@ -593,18 +593,18 @@ abstract class View internal constructor(
     internal var validLocalProps = true
     internal var validLocalMatrix = true
 
-    private val _localMatrix = MMatrix()
+    private var _localMatrix = Matrix.IDENTITY
 
     /**
      * Local transform [MMatrix]. If you plan to change its components manually
      * instead of setting it directly, you should call the [View.invalidate] method.
      */
-    var localMatrix: MMatrix
+    var localMatrix: Matrix
         get() {
             if (!validLocalMatrix) {
                 validLocalMatrix = true
                 _requireInvalidate = true
-                _localMatrix.setTransform(x, y, scaleX, scaleY, rotation, skewX, skewY)
+                _localMatrix = MatrixTransform(x, y, scaleX, scaleY, rotation, skewX, skewY).toMatrix()
             }
             return _localMatrix
         }
@@ -613,47 +613,39 @@ abstract class View internal constructor(
             invalidate()
         }
 
-    private var _globalMatrix = MMatrix()
+    private var _globalMatrix = Matrix()
     private var _globalMatrixVersion = -1
 
     /**
      * Global transform [MMatrix].
      * Matrix that concatenates all the affine transforms of this view and its ancestors.
      */
-    var globalMatrix: MMatrix
+    var globalMatrix: Matrix
         get() {
             if (_globalMatrixVersion != this._version) {
                 _globalMatrixVersion = this._version
                 _requireInvalidate = true
-                if (parent != null) {
-                    _globalMatrix.multiply(localMatrix, parent!!.globalMatrix)
-                } else {
-                    _globalMatrix.copyFrom(localMatrix)
-                }
+                _globalMatrix = (if (parent != null) localMatrix * parent!!.globalMatrix else localMatrix)
             }
             return _globalMatrix
         }
         set(value) {
             _requireInvalidate = true
-            if (parent != null) {
-                this.localMatrix.multiply(value, parent!!.globalMatrixInv)
-            } else {
-                this.localMatrix.copyFrom(value)
-            }
+            this.localMatrix = (if (parent != null) value * parent!!.globalMatrixInv else value)
         }
 
-    private val _globalMatrixInv = MMatrix()
+    private var _globalMatrixInv = Matrix()
     private var _globalMatrixInvVersion = -1
 
     /**
      * The inverted version of the [globalMatrix]
      */
-    val globalMatrixInv: MMatrix
+    val globalMatrixInv: Matrix
         get() {
             if (_globalMatrixInvVersion != this._version) {
                 _globalMatrixInvVersion = this._version
                 _requireInvalidate = true
-                _globalMatrixInv.invert(this.globalMatrix)
+                _globalMatrixInv = this.globalMatrix.inverted()
             }
             return _globalMatrixInv
         }
@@ -969,14 +961,12 @@ abstract class View internal constructor(
                 }
             }
         }
-        val res = MMatrix.POOL.alloc { tempMatrix1 ->
-            hitTestShapeInternal(view.hitShape2d, view.getGlobalMatrixWithAnchor(tempMatrix1), direction)
-        }
+        val res = hitTestShapeInternal(view.hitShape2d, view.getGlobalMatrixWithAnchor(), direction)
         if (res != null) return res
         return if (this is Stage) this else null
     }
 
-    fun hitTestShape(shape: Shape2d, matrix: MMatrix, direction: HitTestDirection = HitTestDirection.ANY): View? {
+    fun hitTestShape(shape: Shape2d, matrix: Matrix, direction: HitTestDirection = HitTestDirection.ANY): View? {
         if (!hitTestEnabled) return null
         if (!visible) return null
         if (_hitShape2d == null) {
@@ -992,9 +982,9 @@ abstract class View internal constructor(
     }
 
     open val customHitShape get() = false
-    protected open fun hitTestShapeInternal(shape: Shape2d, matrix: MMatrix, direction: HitTestDirection): View? {
+    protected open fun hitTestShapeInternal(shape: Shape2d, matrix: Matrix, direction: HitTestDirection): View? {
         //println("View.hitTestShapeInternal: $this, $shape")
-        if (MMatrix.POOL.alloc2 { tempMatrix2, tempMatrix -> Shape2d.intersects(this.hitShape2d, getGlobalMatrixWithAnchor(tempMatrix2), shape, matrix, tempMatrix) }) {
+        if (Shape2d.intersects(this.hitShape2d, getGlobalMatrixWithAnchor(), shape, matrix)) {
             //println(" -> true")
             return this
         }
@@ -1177,7 +1167,7 @@ abstract class View internal constructor(
      * Resets the View properties to an identity state.
      */
     open fun reset() {
-        _localMatrix.identity()
+        _localMatrix = Matrix.IDENTITY
         _x = 0.0; _y = 0.0
         _scaleX = 1.0; _scaleY = 1.0
         _skewX = 0.0.radians; _skewY = 0.0.radians
@@ -1215,38 +1205,39 @@ abstract class View internal constructor(
      * If [inclusive] is true, the concatenated matrix will include the [target] view too.
      * Allows to define an [out] matrix that will hold the result to prevent allocations.
      */
-    fun getConcatMatrix(target: View, out: MMatrix = MMatrix(), inclusive: Boolean = false): MMatrix {
+    fun getConcatMatrix(target: View, inclusive: Boolean = false): Matrix {
+        var out = Matrix.IDENTITY
         when {
-            target === parent -> out.copyFrom(this.localMatrix)
-            target === this -> out.identity()
+            target === parent -> out = this.localMatrix
+            target === this -> out = Matrix.IDENTITY
             else -> {
                 val commonAncestor = View.commonAncestor(this, target)
                 when {
                     commonAncestor !== null -> {
                         if (target.parent == null && inclusive) {
-                            return out.copyFrom(globalMatrix)
+                            return globalMatrix
                         }
-                        out.multiply(globalMatrix, target.globalMatrixInv)
+                        out = globalMatrix * target.globalMatrixInv
                     }
                     else -> {
-                        out.identity()
+                        out = Matrix.IDENTITY
                     }
                 }
             }
         }
         if (inclusive) {
-            out.multiply(out, target.localMatrix)
+            out *= target.localMatrix
         }
         return out
     }
 
-    fun getConcatMatrixAccurateSlow(target: View, out: MMatrix = MMatrix(), inclusive: Boolean = false): MMatrix {
-        out.identity()
+    fun getConcatMatrixAccurateSlow(target: View, inclusive: Boolean = false): Matrix {
+        var out = Matrix.IDENTITY
         if (target !== this) {
             var current: View? = this
             val stopAt = if (inclusive) target.parent else target
             while (current !== null && current !== stopAt) {
-                out.multiply(out, current.localMatrix) // Verified
+                out *= current.localMatrix // Verified
                 current = current.parent
             }
         }
@@ -1304,27 +1295,20 @@ abstract class View internal constructor(
         return getBounds(target, out, false, inclusive, includeFilters)
     }
 
-    protected fun _getBounds(concat: MMatrix?, out: MRectangle = MRectangle(), doAnchoring: Boolean = true, includeFilters: Boolean = false): MRectangle {
+    protected fun _getBounds(concat: Matrix, out: MRectangle = MRectangle(), doAnchoring: Boolean = true, includeFilters: Boolean = false): MRectangle {
         getLocalBounds(out, doAnchoring, includeFilters)
 
-        if (concat != null && !concat.isIdentity()) {
-            val p1x = out.left
-            val p1y = out.top
-
-            val p2x = out.right
-            val p2y = out.top
-
-            val p3x = out.right
-            val p3y = out.bottom
-
-            val p4x = out.left
-            val p4y = out.bottom
+        if (concat.isNotNIL && !concat.isIdentity) {
+            val p1 = out.topLeft
+            val p2 = out.topRight
+            val p3 = out.bottomRight
+            val p4 = out.bottomLeft
 
             BoundsBuilder.POOL { bb ->
-                bb.add(concat.transformX(p1x, p1y), concat.transformY(p1x, p1y))
-                bb.add(concat.transformX(p2x, p2y), concat.transformY(p2x, p2y))
-                bb.add(concat.transformX(p3x, p3y), concat.transformY(p3x, p3y))
-                bb.add(concat.transformX(p4x, p4y), concat.transformY(p4x, p4y))
+                bb.add(concat.transform(p1))
+                bb.add(concat.transform(p2))
+                bb.add(concat.transform(p3))
+                bb.add(concat.transform(p4))
                 bb.getBounds(out)
             }
         }
@@ -1332,7 +1316,7 @@ abstract class View internal constructor(
     }
 
     fun getBounds(target: View? = this, out: MRectangle = MRectangle(), doAnchoring: Boolean = true, inclusive: Boolean = false, includeFilters: Boolean = false): MRectangle {
-        return MMatrix.POOL { boundsTemp -> _getBounds(this.getConcatMatrix(target ?: this, boundsTemp, inclusive), out, doAnchoring, includeFilters) }
+        return _getBounds(this.getConcatMatrix(target ?: this, inclusive), out, doAnchoring, includeFilters)
     }
 
     ///** Kind of bounds we are checking */
@@ -1417,11 +1401,10 @@ abstract class View internal constructor(
         return out.setTo(localToGlobal(Point(x, y)))
     }
 
-    fun getGlobalMatrixWithAnchor(out: MMatrix = MMatrix()): MMatrix {
+    fun getGlobalMatrixWithAnchor(): Matrix {
         val view = this
-        out.copyFrom(view.localMatrix)
-        out.pretranslate(-view.anchorDispX, -view.anchorDispY)
-        view.parent?.globalMatrix?.let { out.multiply(out, it) }
+        var out = view.localMatrix.pretranslated(Point(-view.anchorDispX, -view.anchorDispY))
+        view.parent?.globalMatrix?.let { out = out * it }
         return out
     }
 }
@@ -1834,29 +1817,28 @@ fun <T : View> T.positionY(y: Double): T {
 fun <T : View> T.positionY(y: Float): T = positionY(y.toDouble())
 fun <T : View> T.positionY(y: Int): T = positionY(y.toDouble())
 
-fun View.getPositionRelativeTo(view: View, out: MPoint = MPoint()): MPoint {
+fun View.getPositionRelativeTo(view: View): Point {
     val mat = this.parent!!.getConcatMatrix(view, inclusive = false)
-    return mat.transform(x, y, out)
+    return mat.transform(Point())
 }
 
-fun View.setPositionRelativeTo(view: View, pos: MPoint) {
+fun View.setPositionRelativeTo(view: View, pos: Point) {
     val mat = this.parent!!.getConcatMatrix(view, inclusive = false)
     val matInv = mat.inverted()
     val out = matInv.transform(pos)
-    this.x = out.x
-    this.y = out.y
+    this.x = out.x.toDouble()
+    this.y = out.y.toDouble()
 }
 
-fun View.getPointRelativeTo(pos: MPoint, view: View, out: MPoint = MPoint()): MPoint {
+fun View.getPointRelativeTo(pos: Point, view: View): Point {
     val mat = this.getConcatMatrix(view, inclusive = false)
-    return mat.transform(pos, out)
+    return mat.transform(pos)
 }
 
-fun View.getPointRelativeToInv(pos: MPoint, view: View, out: MPoint = MPoint()): MPoint {
+fun View.getPointRelativeToInv(pos: Point, view: View): Point {
     val mat = this.getConcatMatrix(view, inclusive = false)
     val matInv = mat.inverted()
-    matInv.transform(pos, out)
-    return out
+    return matInv.transform(pos)
 }
 
 /** Chainable method returning this that sets [this] View in the middle between [x1] and [x2] */

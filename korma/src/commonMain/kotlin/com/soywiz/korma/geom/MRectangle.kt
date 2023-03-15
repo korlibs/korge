@@ -226,11 +226,11 @@ data class MRectangle(
         item.height
     )
 
-    fun applyTransform(m: MMatrix): MRectangle {
-        val tl = m.transform(left, top)
-        val tr = m.transform(right, top)
-        val bl = m.transform(left, bottom)
-        val br = m.transform(right, bottom)
+    fun applyTransform(m: Matrix): MRectangle {
+        val tl = m.transform(Point(left, top))
+        val tr = m.transform(Point(right, top))
+        val bl = m.transform(Point(left, bottom))
+        val br = m.transform(Point(right, bottom))
 
         val minX = com.soywiz.korma.math.min(tl.x, tr.x, bl.x, br.x)
         val minY = com.soywiz.korma.math.min(tl.y, tr.y, bl.y, br.y)

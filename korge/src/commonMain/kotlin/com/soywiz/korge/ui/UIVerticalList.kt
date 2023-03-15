@@ -98,7 +98,7 @@ open class UIVerticalList(provider: Provider, width: Double = 200.0) : UIView(wi
 
             //println("point=$point")
 
-            val transform = parent!!.globalMatrix.immutable.toTransform()
+            val transform = parent!!.globalMatrix.toTransform()
             //println("transform=${transform.scaleAvg}")
             val fromIndex = getIndexAtY((-point.y + tempRect.top) / transform.scaleY).clamp(0, numItems - 1)
             var toIndex = fromIndex

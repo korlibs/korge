@@ -51,7 +51,7 @@ open class DropshadowFilter(
             ctx.useBatcher { batch ->
                 batch.drawQuad(
                     newtex,
-                    m = matrix,
+                    m = matrix.immutable,
                     x = (dropX * filterScale).toFloat(),
                     y = (dropY * filterScale).toFloat(),
                     filtering = smoothing,
@@ -65,7 +65,7 @@ open class DropshadowFilter(
         ctx.useBatcher { batch ->
             batch.drawQuad(
                 texture,
-                m = matrix,
+                m = matrix.immutable,
                 filtering = smoothing,
                 colorMul = renderColorMul,
                 blendMode = blendMode,

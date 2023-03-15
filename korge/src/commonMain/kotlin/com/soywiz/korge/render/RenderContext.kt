@@ -58,7 +58,7 @@ class RenderContext constructor(
     @KorgeInternal
     val viewMat: MMatrix3D = MMatrix3D()
     @KorgeInternal
-    val viewMat2D: MMatrix = MMatrix()
+    var viewMat2D: Matrix = Matrix.IDENTITY
 
     @KorgeInternal
     val uniforms: AGUniformValues by lazy {
@@ -121,31 +121,29 @@ class RenderContext constructor(
     /**
      * Executes [callback] while setting temporarily the view matrix to [matrix]
      */
-    inline fun setViewMatrixTemp(matrix: MMatrix, crossinline callback: () -> Unit) {
+    inline fun setViewMatrixTemp(matrix: Matrix, crossinline callback: () -> Unit) {
         matrix3DPool.alloc { temp ->
-            matrixPool.alloc { temp2d ->
+            flush()
+            temp.copyFrom(this.viewMat)
+            val temp2d = this.viewMat2D
+            this.viewMat2D = matrix
+            this.viewMat.copyFrom(matrix)
+            //this[DefaultShaders.ub_ProjViewMatBlock].push {
+            //    it[DefaultShaders.u_ViewMat].set(this.viewMat)
+            //}
+            this[DefaultShaders.ProjViewUB].push {
+                it[u_ViewMat] = this@RenderContext.viewMat
+            }
+            //println("viewMat: $viewMat, matrix: $matrix")
+            try {
+                callback()
+            } finally {
                 flush()
-                temp.copyFrom(this.viewMat)
-                temp2d.copyFrom(this.viewMat2D)
-                this.viewMat2D.copyFrom(matrix)
-                this.viewMat.copyFrom(matrix)
-                //this[DefaultShaders.ub_ProjViewMatBlock].push {
-                //    it[DefaultShaders.u_ViewMat].set(this.viewMat)
-                //}
-                this[DefaultShaders.ProjViewUB].push {
-                    it[u_ViewMat] = this@RenderContext.viewMat
-                }
-                //println("viewMat: $viewMat, matrix: $matrix")
-                try {
-                    callback()
-                } finally {
-                    flush()
-                    this.viewMat.copyFrom(temp)
-                    this.viewMat2D.copyFrom(temp2d)
-                    //this[DefaultShaders.ub_ProjViewMatBlock].pop()
-                    this[DefaultShaders.ProjViewUB].pop()
-                    //uniforms[DefaultShaders.u_ViewMat] = this.viewMat
-                }
+                this.viewMat.copyFrom(temp)
+                this.viewMat2D = temp2d
+                //this[DefaultShaders.ub_ProjViewMatBlock].pop()
+                this[DefaultShaders.ProjViewUB].pop()
+                //uniforms[DefaultShaders.u_ViewMat] = this.viewMat
             }
         }
     }
@@ -258,7 +256,7 @@ class RenderContext constructor(
     /** Pool of [MRectangle] objects that could be used temporarily by renders */
     val rectPool = Pool(reset = { it.setTo(0, 0, 0, 0) }, preallocate = 8) { MRectangle() }
 
-    val identityMatrix = MMatrix()
+    val identityMatrix = Matrix()
 
     /**
      * Allows to toggle whether stencil-based masks are enabled or not.

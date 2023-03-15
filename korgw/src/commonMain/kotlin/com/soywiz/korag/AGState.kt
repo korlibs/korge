@@ -597,6 +597,7 @@ inline class AGSize(val data: Int) {
 inline class AGScissor(val data: Long) {
     constructor(xy: Int, wh: Int) : this(Long.fromLowHigh(xy, wh))
     constructor(x: Int, y: Int, width: Int, height: Int) : this(0.insert16(x, 0).insert16(y, 16), 0.insert16(width, 0).insert16(height, 16))
+    constructor(x: Float, y: Float, width: Float, height: Float) : this(x.toIntRound(), y.toIntRound(), width.toIntRound(), height.toIntRound())
     constructor(x: Double, y: Double, width: Double, height: Double) : this(x.toIntRound(), y.toIntRound(), width.toIntRound(), height.toIntRound())
     //constructor(x: Double, y: Double, width: Double, height: Double) : this(x.toInt(), y.toInt(), width.toInt(), height.toInt())
 
@@ -633,6 +634,7 @@ inline class AGScissor(val data: Long) {
         val INVALID = AGScissor(-2, 0x7FFF7FFF)
         val NIL = AGScissor(-1, 0x7FFF7FFF)
         fun fromBounds(left: Int, top: Int, right: Int, bottom: Int): AGScissor = AGScissor(left, top, right - left, bottom - top)
+        fun fromBounds(left: Float, top: Float, right: Float, bottom: Float): AGScissor = AGScissor(left, top, right - left, bottom - top)
         fun fromBounds(left: Double, top: Double, right: Double, bottom: Double): AGScissor = AGScissor(left, top, right - left, bottom - top)
 
         operator fun invoke(rect: MRectangle?): AGScissor {
@@ -659,15 +661,15 @@ inline class AGScissor(val data: Long) {
     }
 }
 
-fun AGScissor.applyMatrixBounds(m: MMatrix): AGScissor {
-    val x0 = m.transformX(left, top)
-    val x1 = m.transformX(right, top)
-    val x2 = m.transformX(left, bottom)
-    val x3 = m.transformX(right, bottom)
-    val y0 = m.transformY(left, top)
-    val y1 = m.transformY(right, top)
-    val y2 = m.transformY(left, bottom)
-    val y3 = m.transformY(right, bottom)
+fun AGScissor.applyMatrixBounds(m: Matrix): AGScissor {
+    val x0 = m.transformX(Point(left, top))
+    val x1 = m.transformX(Point(right, top))
+    val x2 = m.transformX(Point(left, bottom))
+    val x3 = m.transformX(Point(right, bottom))
+    val y0 = m.transformY(Point(left, top))
+    val y1 = m.transformY(Point(right, top))
+    val y2 = m.transformY(Point(left, bottom))
+    val y3 = m.transformY(Point(right, bottom))
     return AGScissor.fromBounds(
         com.soywiz.korma.math.min(x0, x1, x2, x3).toInt(),
         com.soywiz.korma.math.min(y0, y1, y2, y3).toInt(),

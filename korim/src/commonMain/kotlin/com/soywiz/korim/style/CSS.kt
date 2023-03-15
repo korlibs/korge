@@ -243,10 +243,10 @@ class CSS(val allRules: List<IRuleSet>, unit: Unit = Unit) {
             return args
         }
 
-        fun parseTransform(str: String): MMatrix {
+        fun parseTransform(str: String): Matrix {
             val tokens = tokenize(str).map { it.str.lowercase() }
             val tr = ListReader(tokens)
-            val out = MMatrix()
+            var out = Matrix()
             //println("Not implemented: parseTransform: $str: $tokens")
             while (tr.hasMore) {
                 val id = tr.read().lowercase()
@@ -260,23 +260,23 @@ class CSS(val allRules: List<IRuleSet>, unit: Unit = Unit) {
                     "translate3d" -> {
                         println("Warning. CSS. translate3d not implemented")
                         //out.pretranslate(double(0), double(1), double(2))
-                        out.pretranslate(double(0), double(1))
+                        out = out.pretranslated(Point(double(0), double(1)))
                     }
-                    "translatey" -> out.pretranslate(0.0, double(0))
-                    "translatex" -> out.pretranslate(double(0), 0.0)
+                    "translatey" -> out = out.pretranslated(Point(0.0, double(0)))
+                    "translatex" -> out = out.pretranslated(Point(double(0), 0.0))
                     "translatez" -> {
                         println("Warning. CSS. translatez not implemented")
-                        out.pretranslate(0.0, 0.0)
+                        out = out.pretranslated(Point(0, 0))
                     }
-                    "translate" -> out.pretranslate(double(0), double(1))
-                    "scale" -> out.prescale(double(0), if (doubleArgs.size >= 2) double(1) else double(0))
-                    "matrix" -> out.premultiply(double(0), double(1), double(2), double(3), double(4), double(5))
+                    "translate" -> out = out.pretranslated(Point(double(0), double(1)))
+                    "scale" -> out = out.prescaled(Scale(double(0), if (doubleArgs.size >= 2) double(1) else double(0)))
+                    "matrix" -> out = out.premultiplied(Matrix(double(0), double(1), double(2), double(3), double(4), double(5)))
                     "rotate" -> {
-                        if (doubleArgs.size >= 3) out.pretranslate(double(1), double(2))
+                        if (doubleArgs.size >= 3) out = out.pretranslated(Point(double(1), double(2)))
                         val angle = parseAngle(args[0]) ?: 0.degrees
                         //println("angle=$angle, double=${double(0)}")
-                        out.prerotate(angle)
-                        if (doubleArgs.size >= 3) out.pretranslate(-double(1), -double(2))
+                        out = out.prerotated(angle)
+                        if (doubleArgs.size >= 3) out = out.pretranslated(Point(-double(1), -double(2)))
                     }
                     else -> invalidOp("Unsupported transform $id : $args : $doubleArgs ($str)")
                 }
@@ -430,7 +430,7 @@ class CSSReader(val tokens: ListReader<CSS.Companion.Token>) {
 @ThreadLocal val CSS.Expression.color by extraPropertyThis { CSS.parseColor(exprStr) }
 @ThreadLocal val CSS.Expression.ratio by extraPropertyThis { CSS.parseRatio(exprStr) }
 @ThreadLocal val CSS.Expression.matrix by extraPropertyThis { CSS.parseTransform(exprStr) }
-@ThreadLocal val CSS.Expression.transform by extraPropertyThis { matrix.immutable.decompose() }
+@ThreadLocal val CSS.Expression.transform by extraPropertyThis { matrix.decompose() }
 @ThreadLocal val CSS.Expression.easing by extraPropertyThis { CSS.parseEasing(exprStr) }
 @ThreadLocal val CSS.Declarations.animation by extraPropertyThis {
     this["animation"]?.let { CSS.parseAnimation(it.exprStr) }
@@ -440,7 +440,7 @@ fun CSS.InterpolationResult.getColor(key: String, default: RGBA = Colors.TRANSPA
     this.ratio.interpolate(k0[key]?.color ?: default, k1[key]?.color ?: default)
 fun CSS.InterpolationResult.getRatio(key: String, default: Double = 0.0): Double =
     this.ratio.toRatio().interpolate(k0[key]?.ratio ?: default, k1[key]?.ratio ?: default)
-fun CSS.InterpolationResult.getMatrix(key: String, default: MMatrix = MMatrix()): MMatrix =
+fun CSS.InterpolationResult.getMatrix(key: String, default: Matrix = Matrix()): Matrix =
     this.ratio.toRatio().interpolate(k0[key]?.matrix ?: default, k1[key]?.matrix ?: default)
 fun CSS.InterpolationResult.getTransform(key: String, default: MatrixTransform = MatrixTransform.IDENTITY): MatrixTransform =
     this.ratio.toRatio().interpolate(k0[key]?.transform ?: default, k1[key]?.transform ?: default)

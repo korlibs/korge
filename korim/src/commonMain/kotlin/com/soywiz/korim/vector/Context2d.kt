@@ -36,7 +36,7 @@ open class Context2d(
         y: Double,
         width: Double = image.width.toDouble(),
         height: Double = image.height.toDouble(),
-        transform: MMatrix = MMatrix()
+        transform: Matrix = Matrix.IDENTITY
     ) = renderer.drawImage(image, x, y, width, height, transform)
 
     protected open fun rendererDispose() = renderer.dispose()
@@ -74,21 +74,25 @@ open class Context2d(
         override val width: Int get() = (parent.width / scaleX).toInt()
         override val height: Int get() = (parent.height / scaleY).toInt()
 
-        private inline fun <T> adjustMatrix(transform: MMatrix, callback: () -> T): T = transform.keepMatrix {
-            transform.scale(scaleX, scaleY)
-            callback()
-        }
+        fun Matrix.adjusted(): Matrix = this.scaled(Scale(scaleX, scaleY))
 
-        private inline fun <T> adjustState(state: State, callback: () -> T): T =
-            adjustMatrix(state.transform) { callback() }
+        private inline fun <T> adjustState(state: State, callback: () -> T): T {
+            val old = state.transform
+            state.transform = state.transform.adjusted()
+            try {
+                return callback()
+            } finally {
+                state.transform = old
+            }
+        }
 
         override fun renderFinal(state: State, fill: Boolean, winding: Winding?): Unit =
             adjustState(state) { parent.render(state, fill, winding) }
         //override fun renderText(state: State, font: Font, fontSize: Double, text: String, x: Double, y: Double, fill: Boolean): Unit =
         //	adjustState(state) { parent.renderText(state, font, fontSize, text, x, y, fill) }
 
-        override fun drawImage(image: Bitmap, x: Double, y: Double, width: Double, height: Double, transform: MMatrix) {
-            adjustMatrix(transform) { parent.drawImage(image, x, y, width, height, transform) }
+        override fun drawImage(image: Bitmap, x: Double, y: Double, width: Double, height: Double, transform: Matrix) {
+            parent.drawImage(image, x, y, width, height, transform.adjusted())
         }
     }
 
@@ -107,7 +111,7 @@ open class Context2d(
     }
 
     data class State constructor(
-        var transform: MMatrix = MMatrix(),
+        var transform: Matrix = Matrix.IDENTITY,
         var clip: VectorPath? = null,
         var path: VectorPath = VectorPath(),
         var lineScaleMode: LineScaleMode = LineScaleMode.NORMAL,
@@ -257,16 +261,10 @@ open class Context2d(
 
     inline fun keepTransform(callback: () -> Unit) {
         val t = state.transform
-        val a = t.a
-        val b = t.b
-        val c = t.c
-        val d = t.d
-        val tx = t.tx
-        val ty = t.ty
         try {
             callback()
         } finally {
-            t.setTo(a, b, c, d, tx, ty)
+            state.transform = t
         }
     }
 
@@ -297,43 +295,43 @@ open class Context2d(
     inline fun translate(tx: Double, ty: Double, block: () -> Unit) = keep { translate(tx, ty).also { block() } }
 
     fun skew(skewX: Angle = 0.degrees, skewY: Angle = 0.degrees) {
-        state.transform.preskew(skewX, skewY)
+        state.transform = state.transform.preskewed(skewX, skewY)
     }
 
     fun scale(sx: Double, sy: Double = sx) {
-        state.transform.prescale(sx, sy)
+        state.transform = state.transform.prescaled(Scale(sx, sy))
     }
 
     fun rotate(angle: Angle) {
-        state.transform.prerotate(angle)
+        state.transform = state.transform.prerotated(angle)
     }
 
     fun rotate(angle: Double) {
-        state.transform.prerotate(angle.radians)
+        state.transform = state.transform.prerotated(angle.radians)
     }
 
     fun rotateDeg(degs: Double) {
-        state.transform.prerotate(degs.degrees)
+        state.transform = state.transform.prerotated(degs.degrees)
     }
 
     fun translate(tx: Double, ty: Double) {
-        state.transform.pretranslate(tx, ty)
+        state.transform = state.transform.pretranslated(Point(tx, ty))
     }
 
-    fun transform(m: MMatrix) {
-        state.transform.premultiply(m)
+    fun transform(m: Matrix) {
+        state.transform = state.transform.premultiplied(m)
     }
 
     fun transform(a: Double, b: Double, c: Double, d: Double, tx: Double, ty: Double) {
-        state.transform.premultiply(a, b, c, d, tx, ty)
+        state.transform = state.transform.premultiplied(Matrix(a, b, c, d, tx, ty))
     }
 
-    fun setTransform(m: MMatrix) {
-        state.transform.copyFrom(m)
+    fun setTransform(m: Matrix) {
+        state.transform = m
     }
 
     fun setTransform(a: Double, b: Double, c: Double, d: Double, tx: Double, ty: Double) {
-        state.transform.setTo(a, b, c, d, tx, ty)
+        state.transform = Matrix(a, b, c, d, tx, ty)
     }
 
     fun shear(sx: Double, sy: Double) = transform(1.0, sy, sx, 1.0, 0.0, 0.0)
@@ -348,8 +346,8 @@ open class Context2d(
     }
 
     private fun trans(p: Point): Point = state.transform.transform(p)
-    private fun transX(x: Double, y: Double) = state.transform.transformX(x, y)
-    private fun transY(x: Double, y: Double) = state.transform.transformY(x, y)
+    private fun transX(x: Double, y: Double): Double = state.transform.transformX(x.toFloat(), y.toFloat()).toDouble()
+    private fun transY(x: Double, y: Double): Double = state.transform.transformY(x.toFloat(), y.toFloat()).toDouble()
 
     //private fun transX(x: Double, y: Double) = x
     //private fun transY(x: Double, y: Double) = y
@@ -584,7 +582,7 @@ open class Context2d(
                     else -> newBi
                 }
                 keepTransform {
-                    setTransform(MMatrix())
+                    setTransform(Matrix.IDENTITY)
                     this.rendererDrawImage(renderBi, 0.0, 0.0)
                 }
                 //} finally {
@@ -600,7 +598,7 @@ open class Context2d(
         x1: Number,
         y1: Number,
         cycle: CycleMethod = CycleMethod.NO_CYCLE,
-        transform: MMatrix = MMatrix(),
+        transform: Matrix = Matrix(),
         block: GradientPaint.() -> Unit = {}
     ) = LinearGradientPaint(x0, y0, x1, y1, cycle, transform, block)
 
@@ -612,7 +610,7 @@ open class Context2d(
         y1: Number,
         r1: Number,
         cycle: CycleMethod = CycleMethod.NO_CYCLE,
-        transform: MMatrix = MMatrix(),
+        transform: Matrix = Matrix(),
         block: GradientPaint.() -> Unit = {}
     ) = RadialGradientPaint(x0, y0, r0, x1, y1, r1, cycle, transform, block)
 
@@ -620,7 +618,7 @@ open class Context2d(
         x0: Number,
         y0: Number,
         startAngle: Angle = Angle.ZERO,
-        transform: MMatrix = MMatrix(),
+        transform: Matrix = Matrix(),
         block: GradientPaint.() -> Unit = {}
     ) = SweepGradientPaint(x0, y0, startAngle, transform, block)
 
@@ -629,7 +627,7 @@ open class Context2d(
         bitmap: Bitmap,
         repeat: Boolean = false,
         smooth: Boolean = true,
-        transform: MMatrix = MMatrix()
+        transform: Matrix = Matrix()
     ) = createPattern(
         bitmap, CycleMethod.fromRepeat(repeat), CycleMethod.fromRepeat(repeat), smooth, transform
     )
@@ -639,7 +637,7 @@ open class Context2d(
         cycleX: CycleMethod = CycleMethod.NO_CYCLE,
         cycleY: CycleMethod = cycleX,
         smooth: Boolean = true,
-        transform: MMatrix = MMatrix()
+        transform: Matrix = Matrix()
     ) = BitmapPaint(bitmap, transform, cycleX, cycleY, smooth)
 
     fun getTextBounds(
@@ -818,5 +816,5 @@ fun Paint.toBitmapPaint(state: Context2d.State): BitmapPaint {
     // @TODO: Make it work for negative x, y, and for other transforms
     println("bounds=$bounds")
     val bmp = Bitmap32(bounds.width.toIntCeil(), bounds.height.toIntCeil(), premultiplied = true).also { filler.fill(it) }
-    return BitmapPaint(bmp, MMatrix().translate(-bounds.left, -bounds.top))
+    return BitmapPaint(bmp, Matrix().translated(-bounds.left, -bounds.top))
 }

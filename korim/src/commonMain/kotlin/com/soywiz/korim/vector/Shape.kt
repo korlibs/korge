@@ -67,7 +67,7 @@ class SvgBuilder(
 				Xml.Tag("defs", mapOf(), defs),
 				Xml.Tag(
 					"g",
-					mapOf("transform" to MMatrix().translate(-bounds.x, -bounds.y).scale(scale, scale).toSvg(roundDecimalPlaces)),
+					mapOf("transform" to Matrix.IDENTITY.translated(Point(-bounds.x, -bounds.y)).scaled(Scale(scale, scale)).toSvg(roundDecimalPlaces)),
 					nodes
 				)
 			) //+ nodes
@@ -77,9 +77,9 @@ class SvgBuilder(
 
 fun buildSvgXml(width: Int? = null, height: Int? = null, block: ShapeBuilder.() -> Unit): Xml = buildShape(width, height) { block() }.toSvg()
 
-private fun MMatrix.toSvg(roundDecimalPlaces: Int = -1): String {
+private fun Matrix.toSvg(roundDecimalPlaces: Int = -1): String {
     val places = roundDecimalPlaces
-	return when (getType()) {
+	return when (type) {
 		MatrixType.IDENTITY -> "translate()"
 		MatrixType.TRANSLATE -> "translate(${tx.niceStr(places)}, ${ty.niceStr(places)})"
 		MatrixType.SCALE -> "scale(${a.niceStr(places)}, ${d.niceStr(places)})"
@@ -165,7 +165,7 @@ interface StyledShape : Shape {
 	val path: VectorPath? get() = null
 	val clip: VectorPath?
 	val paint: Paint
-	val transform: MMatrix
+	val transform: Matrix
     val globalAlpha: Double
 
     fun getUntransformedPath(): VectorPath? {
@@ -314,7 +314,7 @@ data class FillShape(
     override val path: VectorPath,
     override val clip: VectorPath?,
     override val paint: Paint,
-    override val transform: MMatrix = MMatrix(),
+    override val transform: Matrix = Matrix.IDENTITY,
     override val globalAlpha: Double = 1.0,
 ) : StyledShape {
     val pathCurvesList: List<Curves> by lazy {
@@ -344,7 +344,7 @@ data class PolylineShape constructor(
     override val path: VectorPath,
     override val clip: VectorPath?,
     override val paint: Paint,
-    override val transform: MMatrix,
+    override val transform: Matrix,
     val strokeInfo: StrokeInfo,
     override val globalAlpha: Double = 1.0,
 ) : StyledShape {
@@ -433,7 +433,7 @@ class TextShape(
     val stroke: Paint?,
     val halign: HorizontalAlign = HorizontalAlign.LEFT,
     val valign: VerticalAlign = VerticalAlign.TOP,
-    override val transform: MMatrix = MMatrix(),
+    override val transform: Matrix = Matrix(),
     override val globalAlpha: Double = 1.0,
 ) : StyledShape {
     override val paint: Paint get() = fill ?: stroke ?: NonePaint
@@ -489,17 +489,17 @@ class TextShape(
     }
 }
 
-fun Shape.transformedShape(m: MMatrix): Shape = when (this) {
+fun Shape.transformedShape(m: Matrix): Shape = when (this) {
     is EmptyShape -> EmptyShape
     is CompoundShape -> CompoundShape(components.map { it.transformedShape(m) })
-    is FillShape -> FillShape(path.applyTransform(m), clip?.applyTransform(m), paint, MMatrix().multiply(transform, m), globalAlpha)
-    is PolylineShape -> PolylineShape(path.applyTransform(m), clip?.applyTransform(m), paint, MMatrix().multiply(transform, m), strokeInfo, globalAlpha)
-    is TextShape -> TextShape(text, x, y, font, fontSize, clip?.applyTransform(m), fill, stroke, halign, valign, MMatrix().multiply(transform, m), globalAlpha)
+    is FillShape -> FillShape(path.applyTransform(m), clip?.applyTransform(m), paint, transform * m, globalAlpha)
+    is PolylineShape -> PolylineShape(path.applyTransform(m), clip?.applyTransform(m), paint, transform * m, strokeInfo, globalAlpha)
+    is TextShape -> TextShape(text, x, y, font, fontSize, clip?.applyTransform(m), fill, stroke, halign, valign, transform * m, globalAlpha)
     else -> TODO()
 }
 
-fun Shape.scaledShape(sx: Double, sy: Double = sx): Shape = transformedShape(MMatrix().scale(sx, sy))
-fun Shape.translatedShape(x: Double = 0.0, y: Double = 0.0): Shape = transformedShape(MMatrix().translate(x, y))
+fun Shape.scaledShape(sx: Double, sy: Double = sx): Shape = transformedShape(Matrix.IDENTITY.scaled(Scale(sx, sy)))
+fun Shape.translatedShape(x: Double = 0.0, y: Double = 0.0): Shape = transformedShape(Matrix.IDENTITY.translated(Point(x, y)))
 
 fun Shape.mapShape(map: (Shape) -> Shape): Shape {
     val result = map(this)

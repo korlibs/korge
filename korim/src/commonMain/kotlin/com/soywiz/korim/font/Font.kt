@@ -76,7 +76,7 @@ data class PlacedGlyphMetrics constructor(
     val y: Double,
     val metrics: GlyphMetrics,
     val fontMetrics: FontMetrics,
-    val transform: MMatrix,
+    val transform: Matrix,
     val index: Int,
     val nline: Int,
 ) {
@@ -89,7 +89,7 @@ data class PlacedGlyphMetrics constructor(
                 metrics.xadvance,
                 fontMetrics.lineHeight
             )
-        }.applyTransform(MMatrix().translate(x, y).premultiply(transform))
+        }.applyTransform(Matrix().translated(x, y).premultiplied(transform))
     }
     val boundsPathCurves: Curves by lazy {
         val curves = boundsPath.getCurves()
@@ -149,7 +149,7 @@ fun Font.renderGlyphToBitmap(
         renderGlyph()
     }
     val imageOut = image.toBMP32IfRequired().applyEffect(effect)
-    val glyph = PlacedGlyphMetrics(codePoint, gx + border, gy + border, gmetrics, fmetrics, MMatrix(), 0, 0)
+    val glyph = PlacedGlyphMetrics(codePoint, gx + border, gy + border, gmetrics, fmetrics, Matrix(), 0, 0)
     return TextToBitmapResult(imageOut, fmetrics, TextMetrics(), listOf(glyph), listOf(listOf(glyph)), buildShape(iwidth, iheight) {
         renderGlyph()
     })
@@ -212,7 +212,7 @@ fun <T> Font.drawText(
     textRangeStart: Int = 0,
     textRangeEnd: Int = Int.MAX_VALUE,
 
-    placed: (TextRendererActions.(codePoint: Int, x: Double, y: Double, size: Double, metrics: GlyphMetrics, fmetrics: FontMetrics, transform: MMatrix) -> Unit)? = null
+    placed: (TextRendererActions.(codePoint: Int, x: Double, y: Double, size: Double, metrics: GlyphMetrics, fmetrics: FontMetrics, transform: Matrix) -> Unit)? = null
 ): TextMetricsResult? {
     //println("drawText!!: text=$text, align=$align")
     val glyphs = if (outMetrics != null) MultiplePlacedGlyphMetrics() else null

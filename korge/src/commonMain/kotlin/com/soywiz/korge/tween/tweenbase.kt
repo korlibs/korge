@@ -121,6 +121,7 @@ operator fun <V : Interpolable<V>> KMutableProperty0<V>.get(initial: V, end: V) 
 @JvmName("getMutablePropertyScale") operator fun KMutableProperty0<Scale>.get(end: Scale) = V2(this, this.get(), end, ::_interpolateScale, includeStart = false)
 @JvmName("getMutablePropertyScale") operator fun KMutableProperty0<Scale>.get(initial: Scale, end: Scale) = V2(this, initial, end, ::_interpolateScale, includeStart = true)
 
+@PublishedApi internal fun _interpolateMatrix(ratio: Ratio, l: Matrix, r: Matrix): Matrix = ratio.interpolate(l, r)
 @PublishedApi internal fun _interpolate(ratio: Ratio, l: Double, r: Double): Double = ratio.interpolate(l, r)
 @PublishedApi internal fun _interpolateInt(ratio: Ratio, l: Int, r: Int): Int = ratio.interpolate(l, r)
 @PublishedApi internal fun <V : Interpolable<V>> _interpolateInterpolable(ratio: Ratio, l: V, r: V): V = ratio.interpolate(l, r)
@@ -232,6 +233,9 @@ inline operator fun KMutableProperty0<ColorAdd>.get(initial: ColorAdd, end: Colo
 
 inline operator fun KMutableProperty0<Angle>.get(end: Angle) = V2(this, this.get(), end, ::_interpolateAngle, includeStart = false)
 inline operator fun KMutableProperty0<Angle>.get(initial: Angle, end: Angle) = V2(this, initial, end, ::_interpolateAngle, includeStart = true)
+
+inline operator fun KMutableProperty0<Matrix>.get(end: Matrix) = V2(this, this.get(), end, ::_interpolateMatrix, includeStart = false)
+inline operator fun KMutableProperty0<Matrix>.get(initial: Matrix, end: Matrix) = V2(this, initial, end, ::_interpolateMatrix, true)
 
 fun V2<Angle>.denormalized(): V2<Angle> = this.copy(interpolator = ::_interpolateAngleDenormalized)
 

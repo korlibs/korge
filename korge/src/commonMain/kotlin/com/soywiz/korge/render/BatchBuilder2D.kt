@@ -45,7 +45,7 @@ class BatchBuilder2D constructor(
     @KorgeInternal
     val viewMat: MMatrix3D get() = ctx.viewMat
     @KorgeInternal
-    val viewMat2D: MMatrix get() = ctx.viewMat2D
+    val viewMat2D: Matrix get() = ctx.viewMat2D
     @KorgeInternal
     val uniforms: AGUniformValues get() = ctx.uniforms
 
@@ -158,8 +158,6 @@ class BatchBuilder2D constructor(
         }
     }
 
-
-    private val identity = MMatrix()
 
 	init { logger.trace { "BatchBuilder2D[7]" } }
 
@@ -343,7 +341,7 @@ class BatchBuilder2D constructor(
      */
     fun drawVertices(
         array: TexturedVertexArray,
-        matrix: MMatrix?,
+        matrix: Matrix,
         vcount: Int = array.vcount,
         icount: Int = array.icount,
         texIndex: Int = currentTexIndex,
@@ -373,7 +371,7 @@ class BatchBuilder2D constructor(
         //println("texIndex=$texIndex")
         arrayfill(verticesTexIndex, texIndex.toByte(), vp6, vp6 + vcount)
 
-        if (matrix != null) {
+        if (matrix.isNotNIL) {
             applyMatrix(matrix, vertexPos, vcount)
         }
 
@@ -382,16 +380,16 @@ class BatchBuilder2D constructor(
         indexPos += icount
     }
 
-    private fun applyMatrix(matrix: MMatrix, idx: Int, vcount: Int) {
+    private fun applyMatrix(matrix: Matrix, idx: Int, vcount: Int) {
         val f32 = vertices.f32
         var idx = idx
 
-        val ma = matrix.af
-        val mb = matrix.bf
-        val mc = matrix.cf
-        val md = matrix.df
-        val mtx = matrix.txf
-        val mty = matrix.tyf
+        val ma = matrix.a
+        val mb = matrix.b
+        val mc = matrix.c
+        val md = matrix.d
+        val mtx = matrix.tx
+        val mty = matrix.ty
 
         for (n in 0 until vcount) {
             val p = Point(f32[idx + 0], f32[idx + 1])
@@ -407,7 +405,7 @@ class BatchBuilder2D constructor(
      */
     inline fun drawVertices(
         array: TexturedVertexArray, tex: TextureBase, smoothing: Boolean, blendMode: BlendMode,
-        vcount: Int = array.vcount, icount: Int = array.icount, program: Program? = null, matrix: MMatrix? = null,
+        vcount: Int = array.vcount, icount: Int = array.icount, program: Program? = null, matrix: Matrix = Matrix.NIL,
     ) {
         setStateFast(tex.base, smoothing, blendMode, program, icount, vcount)
         drawVertices(array, matrix, vcount, icount)
@@ -509,7 +507,7 @@ class BatchBuilder2D constructor(
         y: Float = 0f,
         width: Float = tex.width.toFloat(),
         height: Float = tex.height.toFloat(),
-        m: MMatrix = identity,
+        m: Matrix = Matrix.IDENTITY,
         filtering: Boolean = true,
         colorMul: RGBA = Colors.WHITE,
         blendMode: BlendMode = BlendMode.NORMAL,
@@ -529,7 +527,7 @@ class BatchBuilder2D constructor(
         y: Float,
         width: Float,
         height: Float,
-        m: MMatrix = identity,
+        m: Matrix = Matrix.IDENTITY,
         filtering: Boolean = true,
         colorMul: RGBA = Colors.WHITE,
         blendMode: BlendMode = BlendMode.NORMAL,
@@ -542,7 +540,7 @@ class BatchBuilder2D constructor(
 
     fun drawQuadFast(
         x: Float, y: Float, width: Float, height: Float,
-        m: MMatrix,
+        m: Matrix,
         tex: BmpCoords,
         colorMul: RGBA,
     ) {
@@ -551,10 +549,10 @@ class BatchBuilder2D constructor(
         val y0 = y
         val y1 = (y + height)
         drawQuadFast(
-            m.transformXf(x0, y0), m.transformYf(x0, y0),
-            m.transformXf(x1, y0), m.transformYf(x1, y0),
-            m.transformXf(x1, y1), m.transformYf(x1, y1),
-            m.transformXf(x0, y1), m.transformYf(x0, y1),
+            m.transformX(x0, y0), m.transformY(x0, y0),
+            m.transformX(x1, y0), m.transformY(x1, y0),
+            m.transformX(x1, y1), m.transformY(x1, y1),
+            m.transformX(x0, y1), m.transformY(x0, y1),
             tex, colorMul,
         )
     }
@@ -740,7 +738,7 @@ class BatchBuilder2D constructor(
     /**
      * Executes [callback] while setting temporarily the view matrix to [matrix]
      */
-	inline fun setViewMatrixTemp(matrix: MMatrix, crossinline callback: () -> Unit) = ctx.setViewMatrixTemp(matrix, callback)
+	inline fun setViewMatrixTemp(matrix: Matrix, crossinline callback: () -> Unit) = ctx.setViewMatrixTemp(matrix, callback)
 
     /**
      * Executes [callback] while restoring [uniform] to its current value after [callback] is exexcuted.

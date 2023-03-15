@@ -18,7 +18,7 @@ interface ITextRendererActions {
     var y: Double
     val lineHeight: Double
     var currentLineNum: Int
-    val transform: MMatrix
+    var transform: Matrix
 
     fun getKerning(leftCodePoint: Int, rightCodePoint: Int): Double
     fun getGlyphMetrics(reader: WStringReader?, codePoint: Int): GlyphMetrics
@@ -60,7 +60,7 @@ abstract class TextRendererActions : ITextRendererActions {
         font.getGlyphMetrics(fontSize, codePoint, glyphMetrics, reader)
 
     //var transformAnchor: Anchor = Anchor.BOTTOM_CENTER
-    override val transform: MMatrix = MMatrix()
+    override var transform: Matrix = Matrix()
     var paint: Paint? = null
     var tint: RGBA = Colors.WHITE // Ignored for now
 
@@ -299,7 +299,7 @@ class Text2TextRendererActions : TextRendererActions() {
 
         val fontScale = fontSize / bf.fontSize
 
-        tr = transform.immutable.toTransform()
+        tr = transform.toTransform()
         //println("x: ${this.x}, y: ${this.y}")
         arrayTex.add(g.texture)
         arrayX.add(this.x + transform.transformX(x, y) * fontScale)
@@ -332,22 +332,22 @@ fun ITextRendererActions.aroundPath(curve: Curve): ITextRendererActions {
         override fun put(reader: WStringReader, codePoint: Int): GlyphMetrics {
             val oldX = this.x
             val oldY = this.y
-            this.transform.keepMatrix {
-                try {
-                    val ratio = curve.ratioFromLength(this.x)
-                    val pos = curve.calc(ratio)
-                    val normal = curve.normal(ratio)
-                    val rpos = pos + normal * oldY
-                    this.x = rpos.xD
-                    this.y = rpos.yD
-                    this.transform.rotate(normal.angle - 90.degrees)
+            val oldTransform = this.transform
+            try {
+                val ratio = curve.ratioFromLength(this.x)
+                val pos = curve.calc(ratio)
+                val normal = curve.normal(ratio)
+                val rpos = pos + normal * oldY
+                this.x = rpos.xD
+                this.y = rpos.yD
+                this.transform = this.transform.rotated(normal.angle - 90.degrees)
 
-                    //println("PUT: oldX=$oldX, oldY=$oldY, x=$x, y=$y, codePoint=$codePoint")
-                    return original.put(reader, codePoint)
-                } finally {
-                    this.x = oldX
-                    this.y = oldY
-                }
+                //println("PUT: oldX=$oldX, oldY=$oldY, x=$x, y=$y, codePoint=$codePoint")
+                return original.put(reader, codePoint)
+            } finally {
+                this.x = oldX
+                this.y = oldY
+                this.transform = oldTransform
             }
         }
     }
@@ -406,7 +406,7 @@ fun CreateWStringTextRenderer(
                 newLine(lineHeight, end = false)
             } else {
                 val g = reader.keep { getGlyphMetrics(reader, c) }
-                transform.identity()
+                transform = Matrix.IDENTITY
                 //println("READER: c='${c.toChar()}', pos=${reader.position}")
                 handler(this, reader, c, g, (g.xadvance + getKerning(c, c1)))
             }
@@ -454,21 +454,25 @@ fun <T> VectorBuilder.text(
     renderer: TextRenderer<T> = DefaultStringTextRenderer as TextRenderer<T>,
 ) {
     val vectorBuilder = this
-    val transform = MMatrix()
+    var transform = Matrix()
 
     val actions = object : TextRendererActions() {
         val metrics = renderer.measure(text, textSize, font)
         override fun put(reader: WStringReader, codePoint: Int): GlyphMetrics {
             val glyph = font.getGlyphPath(this.fontSize, codePoint, this.glyphPath, reader) ?: return glyphMetrics
-            transform.keepMatrix {
+            val old = this.transform
+            try {
                 val dx = metrics.getAlignX(align.horizontal, currentLineNum)
                 val dy = metrics.getAlignY(align.vertical, fontMetrics)
-                transform.premultiply(glyph.transform)
-                transform.translate(this.x + x - dx, this.y + y + dy)
-                transform.premultiply(this.transform)
+                transform = transform
+                    .premultiplied(glyph.transform)
+                    .translated(this.x + x - dx, this.y + y + dy)
+                    .premultiplied(this.transform)
                 //println("PUT $codePoint -> $transform : $x, $y, ${this.x}, ${this.y}")
                 val shape = glyph.colorShape
                 vectorBuilder.path(shape?.getPath() ?: glyph.path, transform)
+            } finally {
+                this.transform = old
             }
             return glyphMetrics
         }

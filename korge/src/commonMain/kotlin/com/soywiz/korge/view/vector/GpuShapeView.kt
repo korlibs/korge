@@ -181,7 +181,7 @@ open class GpuShapeView(
     private var cachedScale: Double = Double.NaN
 
     override fun renderInternal(ctx: RenderContext) {
-        globalScale = globalMatrix.immutable.toTransform().scaleAvg * ctx.bp.globalToWindowScaleAvg
+        globalScale = globalMatrix.toTransform().scaleAvg * ctx.bp.globalToWindowScaleAvg
         //globalScale = ctx.bp.globalToWindowScaleAvg
         if (cachedScale != globalScale) {
             invalidateShape()
@@ -219,11 +219,10 @@ open class GpuShapeView(
         //println("GPU RENDER IN: $time, doRequireTexture=$doRequireTexture")
     }
 
-    private val renderMat = MMatrix()
+    private var renderMat = Matrix()
     private fun renderCommands(ctx: RenderContext, doRequireTexture: Boolean) {
         val mat = if (doRequireTexture) globalMatrix * ctx.bp.globalToWindowMatrix else globalMatrix
-        renderMat.copyFrom(mat)
-        renderMat.pretranslate(-anchorDispX, -anchorDispY)
+        renderMat = mat.pretranslated(Point(-anchorDispX, -anchorDispY))
         requireShape()
         gpuShapeViewCommands.render(ctx, renderMat, localMatrix, applyScissor, renderColorMul, doRequireTexture)
     }
@@ -339,7 +338,7 @@ open class GpuShapeView(
     //private val strokeCache = HashMap<StrokeRenderCacheKey, StrokeRenderData>()
 
     private fun renderStroke(
-        stateTransform: MMatrix,
+        stateTransform: Matrix,
         strokePath: VectorPath,
         paint: Paint,
         globalAlpha: Double,

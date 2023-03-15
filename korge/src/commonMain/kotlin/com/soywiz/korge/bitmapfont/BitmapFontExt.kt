@@ -12,15 +12,15 @@ fun BitmapFont.drawText(
     str: String,
     x: Int,
     y: Int,
-    m: MMatrix = MMatrix(),
+    m: Matrix = Matrix(),
     colMul: RGBA = Colors.WHITE,
     blendMode: BlendMode = BlendMode.INHERIT,
     filtering: Boolean = true
 ) {
-	val m2 = m.clone()
 	val scale = textSize / fontSize.toDouble()
-	m2.pretranslate(x.toDouble(), y.toDouble())
-	m2.prescale(scale, scale)
+    val m2 = m
+        .pretranslated(Point(x.toDouble(), y.toDouble()))
+        .prescaled(Scale(scale, scale))
 	var dx = 0.0
 	var dy = 0.0
     ctx.useBatcher { batch ->
@@ -57,7 +57,7 @@ fun RenderContext.drawText(
     str: String,
     x: Int,
     y: Int,
-    m: MMatrix = MMatrix(),
+    m: Matrix = Matrix(),
     colMul: RGBA = Colors.WHITE,
     blendMode: BlendMode = BlendMode.INHERIT,
     filtering: Boolean = true

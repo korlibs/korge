@@ -60,14 +60,14 @@ fun View.unsafeRenderToBitmapSync(
                 ctx.clear(bgcolor)
             }
             ctx.useBatcher { batch ->
-                val matrix = view.globalMatrixInv.clone()
+                val matrix = view.globalMatrixInv.clone().mutable
                 if (region != null) {
                     matrix.prescale(scale)
                     matrix.pretranslate(-region.x, -region.y)
                 }
                 matrix.translate(-bounds.x, -bounds.y)
                 outPoint.setTo(bounds.x, bounds.y)
-                batch.setViewMatrixTemp(matrix) {
+                batch.setViewMatrixTemp(matrix.immutable) {
                     view.render(ctx)
                 }
             }

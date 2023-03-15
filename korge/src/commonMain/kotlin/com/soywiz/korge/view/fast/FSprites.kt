@@ -119,7 +119,7 @@ open class FSprites(val maxSize: Int) {
         // @TODO: fallback version when instanced rendering is not supported
         override fun renderInternal(ctx: RenderContext) {
             texs.copyInto(info.texs)
-            render(ctx, sprites, info, smoothing, globalMatrix, renderBlendMode)
+            render(ctx, sprites, info, smoothing, globalMatrix.mutable, renderBlendMode)
         }
     }
 
@@ -161,7 +161,7 @@ open class FSprites(val maxSize: Int) {
                 //batch.setTemporalUniform(u_i_texSizeN[0], u_i_texSizeDataN[0]) {
                 batch.keepUniforms(u_i_texSizeN) { uniforms ->
                     for (n in 0 until texs.size) uniforms[u_i_texSizeN[n]] = u_i_texSizeDataN[n]
-                    batch.setViewMatrixTemp(globalMatrix) {
+                    batch.setViewMatrixTemp(globalMatrix.immutable) {
                         //ctx.batch.setStateFast()
                         sprites.uploadVertices(ctx)
                         ctx.xyBuffer.buffer.upload(xyData)

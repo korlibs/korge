@@ -203,10 +203,10 @@ class TileMap(
         val dVX = m.transformX(0f, tileHeight) - posX
         val dVY = m.transformY(0f, tileHeight) - posY
         val nextTileX = (tileSize.width).let { width ->
-            min(m.transformX(width, 0) - posX, m.transformY(0, width) - posY)
+            min(m.transformX(Point(width, 0f)) - posX, m.transformY(Point(0f, width)) - posY)
         }
         val nextTileY = (tileSize.height).let { height ->
-            min(m.transformX(height, 0) - posX, m.transformY(0, height) - posY)
+            min(m.transformX(Point(height, 0)) - posX, m.transformY(Point(0f, height)) - posY)
         }
 
         val colMul = renderColorMul
@@ -357,10 +357,10 @@ class TileMap(
                         val indices = INDICES[transformIndex(flipX, flipY, rotate)]
                         //computeIndices(flipX = flipX, flipY = flipY, rotate = rotate, indices = indices)
 
-                        info.vertices.quadV(p0X, p0Y, tempX[indices[0]], tempY[indices[0]], colMul)
-                        info.vertices.quadV(p1X, p1Y, tempX[indices[1]], tempY[indices[1]], colMul)
-                        info.vertices.quadV(p2X, p2Y, tempX[indices[2]], tempY[indices[2]], colMul)
-                        info.vertices.quadV(p3X, p3Y, tempX[indices[3]], tempY[indices[3]], colMul)
+                        info.vertices.quadV(p0X.toDouble(), p0Y.toDouble(), tempX[indices[0]], tempY[indices[0]], colMul)
+                        info.vertices.quadV(p1X.toDouble(), p1Y.toDouble(), tempX[indices[1]], tempY[indices[1]], colMul)
+                        info.vertices.quadV(p2X.toDouble(), p2Y.toDouble(), tempX[indices[2]], tempY[indices[2]], colMul)
+                        info.vertices.quadV(p3X.toDouble(), p3Y.toDouble(), tempX[indices[3]], tempY[indices[3]], colMul)
                     }
 
                     info.vertices.icount += 6

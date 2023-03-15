@@ -348,6 +348,6 @@ object SvgPath {
 fun VectorPath.toSvgPathString(separator: String = " ", decimalPlaces: Int = 1): String =
     SvgPath.toSvgPathString(this, separator, decimalPlaces)
 
-fun VectorBuilder.pathSvg(path: String, m: MMatrix? = null) {
+fun VectorBuilder.pathSvg(path: String, m: Matrix = Matrix.NIL) {
     write(SvgPath.parse(path), m)
 }

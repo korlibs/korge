@@ -86,7 +86,7 @@ fun View.renderFiltered(
             //println("globalMatrixInv:$globalMatrixInv, tempMat2d=$tempMat2d")
             //println("texWidth=$texWidth, texHeight=$texHeight, $bounds, addx=$addx, addy=$addy, globalMatrix=$globalMatrix, globalMatrixInv:$globalMatrixInv, tempMat2d=$tempMat2d")
             @Suppress("DEPRECATION")
-            ctx.batch.setViewMatrixTemp(tempMat2d) {
+            ctx.batch.setViewMatrixTemp(tempMat2d.immutable) {
                 // @TODO: Set blendMode to normal, colorMul to WHITE
                 //renderInternal(ctx)
                 if (first) {

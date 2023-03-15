@@ -131,9 +131,8 @@ abstract class BaseTtfFont(
         } else {
             //path.advanceWidth = g.advanceWidth.toDouble() * scale
         }
-        path.transform.identity()
+        path.transform = Matrix.IDENTITY.scaled(Scale(scale, scale))
         //path.transform.scale(scale, -scale)
-        path.transform.scale(scale, scale)
         path.scale = scale
         return path
     }
@@ -880,7 +879,7 @@ abstract class BaseTtfFont(
     fun FastByteArrayInputStream.readOffset16(): Int = readU16BE()
     fun FastByteArrayInputStream.readOffset24(): Int = readU24BE()
     fun FastByteArrayInputStream.readOffset32(): Int = readS32BE()
-    fun FastByteArrayInputStream.readAffine2x3(isVar: Boolean, out: MMatrix = MMatrix()): MMatrix {
+    fun FastByteArrayInputStream.readAffine2x3(isVar: Boolean): Matrix {
         val xx = readFIXED3()
         val yx = readFIXED3()
         val xy = readFIXED3()
@@ -888,7 +887,7 @@ abstract class BaseTtfFont(
         val dx = readFIXED3()
         val dy = readFIXED3()
         //println("readAffine2x3: $xx, $yx, $xy, $yy, $dx, $dy")
-        out.setTo(
+        return Matrix(
             xx.toDouble(),
             yx.toDouble(),
             xy.toDouble(),
@@ -897,7 +896,6 @@ abstract class BaseTtfFont(
             -dy.toDouble(),
         )
         //out.scale(1.0, -1.0)
-        return out
     }
     fun FastByteArrayInputStream.readColorStop(out: ColorStop = ColorStop(0.0, 0, 0.0)): ColorStop {
         out.stopOffset = readF2DOT14().toDouble()
@@ -1916,9 +1914,9 @@ abstract class BaseTtfFont(
         override val paths = refs.map { ref ->
             val gpath = ref.glyph.path.path
             GlyphGraphicsPath(ref.glyph.index, VectorPath(IntArrayList(gpath.commands.size), FloatArrayList(gpath.data.size))).also { out ->
-                val m = MMatrix()
-                m.scale(ref.scaleX, ref.scaleY)
-                m.translate(ref.x, -ref.y)
+                val m = Matrix()
+                    .scaled(Scale(ref.scaleX, ref.scaleY))
+                    .translated(Point(ref.x, -ref.y))
                 out.path.write(ref.glyph.path.path, m)
             }
         }

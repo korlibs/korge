@@ -303,7 +303,7 @@ object Korge {
 
         // devicePixelRatio might change at runtime by changing the resolution or changing the screen of the window
         fun getRealXY(x: Double, y: Double, scaleCoords: Boolean, out: MPoint = tempXY): MPoint {
-            return views.windowToGlobalCoords(x, y, out)
+            return out.copyFrom(views.windowToGlobalCoords(Point(x, y)))
         }
 
         fun getRealX(x: Double, scaleCoords: Boolean): Double = if (scaleCoords) x * views.devicePixelRatio else x

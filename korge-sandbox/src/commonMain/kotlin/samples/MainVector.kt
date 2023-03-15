@@ -72,7 +72,7 @@ class MainVector : ScaledScene(1280, 720) {
                     }
                     keep {
                         translate(356, 320)
-                        fill(BitmapPaint(image, MMatrix().scale(0.25, 0.25))) {
+                        fill(BitmapPaint(image, MMatrix().scale(0.25, 0.25).immutable)) {
                             rect(0, 0, 128, 128)
                         }
                     }

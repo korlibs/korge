@@ -1206,6 +1206,7 @@ class MMatrix3D {
     )
 
     fun copyFrom(that: MMatrix): MMatrix4 = that.toMatrix3D(this)
+    fun copyFrom(that: Matrix): MMatrix4 = that.toMatrix3D(this)
 
 }
 
@@ -1214,5 +1215,12 @@ fun MMatrix.toMatrix3D(out: MMatrix4 = MMatrix3D()): MMatrix4 = out.setRows(
     b, d, 0.0, ty,
     0.0, 0.0, 1.0, 0.0,
     0.0, 0.0, 0.0, 1.0
+)
+
+fun Matrix.toMatrix3D(out: MMatrix4 = MMatrix3D()): MMatrix4 = out.setRows(
+    a, c, 0f, tx,
+    b, d, 0f, ty,
+    0f, 0f, 1f, 0f,
+    0f, 0f, 0f, 1f
 )
 

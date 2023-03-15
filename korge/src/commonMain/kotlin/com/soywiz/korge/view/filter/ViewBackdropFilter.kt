@@ -74,7 +74,7 @@ class ViewRenderPhaseBackdropFilter(var filter: Filter) : ViewRenderPhase {
             }
         }) {
             filter.render(
-                ctx, view.parent!!.globalMatrix, it, it.width, it.height, Colors.WHITE, BlendMode.NORMAL,
+                ctx, view.parent!!.globalMatrix.mutable, it, it.width, it.height, Colors.WHITE, BlendMode.NORMAL,
                 filter.recommendedFilterScale
             )
         }

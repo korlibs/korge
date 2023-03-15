@@ -86,7 +86,7 @@ open class CachedContainer(
                     it.copyFrom(globalMatrixInv)
                     it.translate(-lbounds.x, -lbounds.y)
                     it.scale(renderScale)
-                }) {
+                }.immutable) {
                     super.renderInternal(ctx)
                 }
             }
@@ -95,11 +95,10 @@ open class CachedContainer(
         ctx.useBatcher { batch ->
             batch.drawQuad(
                 cache.tex,
-                m = tempMat2d.also {
-                    it.copyFrom(globalMatrix)
-                    it.pretranslate(lbounds.x, lbounds.y)
-                    it.prescale(1.0 / renderScale)
-                },
+                m = globalMatrix
+                    .pretranslated(Point(lbounds.x, lbounds.y))
+                    .prescaled(Scale(1.0 / renderScale))
+                ,
                 colorMul = renderColorMul,
                 blendMode = blendMode,
             )

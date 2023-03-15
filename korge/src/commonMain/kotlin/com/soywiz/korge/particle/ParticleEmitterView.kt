@@ -180,7 +180,7 @@ class ParticleEmitterView(
             info = fviewInfo,
             smoothing = true,
 //            globalMatrix = if (localCoords) globalMatrix else ctx.views!!.stage.localMatrix,
-            globalMatrix = globalMatrix,
+            globalMatrix = globalMatrix.mutable,
             blending = cachedBlending
         )
     }
