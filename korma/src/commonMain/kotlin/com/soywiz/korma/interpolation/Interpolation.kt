@@ -20,3 +20,6 @@ fun Ratio.interpolate(l: Int, r: Int): Int = (l + (r - l) * valueD).toInt()
 fun Ratio.interpolate(l: Long, r: Long): Long = (l + (r - l) * valueD).toLong()
 fun <T> Ratio.interpolate(l: Interpolable<T>, r: Interpolable<T>): T = l.interpolateWith(this, r.fastCastTo<T>())
 fun <T : Interpolable<T>> Ratio.interpolate(l: T, r: T): T = l.interpolateWith(this, r)
+
+fun Ratio.interpolate(l: Matrix, r: Matrix): Matrix = Matrix.interpolated(l, r, this)
+fun Ratio.interpolate(l: MatrixTransform, r: MatrixTransform): MatrixTransform = MatrixTransform.interpolated(l, r, this)

@@ -91,7 +91,7 @@ class GpuShapeViewCommands {
         vertices = AgCachedBuffer(Float32Buffer(bufferVertexData.toFloatArray()).buffer)
     }
 
-    private val decomposed = MMatrix.Transform()
+    private var decomposed = MatrixTransform()
     private val tempColorMul = FloatArray(4)
     private val texturesToDelete = FastArrayList<AGTexture>()
     private val tempUniforms = AGUniformValues()
@@ -115,7 +115,7 @@ class GpuShapeViewCommands {
                 }
                 tempMat.premultiply(globalMatrix)
                 batcher.setViewMatrixTemp(tempMat) {
-                    globalMatrix.decompose(decomposed)
+                    decomposed = globalMatrix.immutable.toTransform()
 
                     // applyScissor is for using the ctx.batch.scissor infrastructure
                     //list.setScissorState(ag, AGScissor().setTo(rect))

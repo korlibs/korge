@@ -198,11 +198,11 @@ abstract class BaseGraphics(
         var renderedAtScaleX = 1.0; private set
         var renderedAtScaleY = 1.0; private set
         var renderedAtScaleXY = 1.0; private set
-        private val matrixTransform = MMatrix.Transform()
+        private var matrixTransform = MatrixTransform()
 
         fun onRender(autoScaling: Boolean, autoScalingPrecise: Boolean, globalMatrix: MMatrix): Boolean {
             if (autoScaling) {
-                matrixTransform.setMatrixNoReturn(globalMatrix)
+                matrixTransform = globalMatrix.immutable.toTransform()
                 //val sx = kotlin.math.abs(matrixTransform.scaleX / this.scaleX)
                 //val sy = kotlin.math.abs(matrixTransform.scaleY / this.scaleY)
 
@@ -221,9 +221,9 @@ abstract class BaseGraphics(
                 if (shouldUpdate) {
                     //println("diffX=$diffX, diffY=$diffY")
 
-                    renderedAtScaleX = sx
-                    renderedAtScaleY = sy
-                    renderedAtScaleXY = sxy
+                    renderedAtScaleX = sx.toDouble()
+                    renderedAtScaleY = sy.toDouble()
+                    renderedAtScaleXY = sxy.toDouble()
                     renderedAtScaleXInv = 1.0 / sx
                     renderedAtScaleYInv = 1.0 / sy
                     //println("renderedAtScale: $renderedAtScaleX, $renderedAtScaleY")

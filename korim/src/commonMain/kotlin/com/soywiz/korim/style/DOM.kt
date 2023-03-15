@@ -3,7 +3,7 @@ package com.soywiz.korim.style
 import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.kds.iterators.fastForEachReverse
 import com.soywiz.korim.annotation.KorimExperimental
-import com.soywiz.korma.geom.MMatrix
+import com.soywiz.korma.geom.*
 import kotlin.jvm.JvmName
 import kotlin.reflect.KMutableProperty1
 
@@ -127,11 +127,11 @@ open class DOM(val css: CSS) {
     }
 
     companion object {
-        fun getTransform(prop: String, value: Any?): MMatrix.Transform = when (value) {
-            is MMatrix.Transform -> value
+        fun getTransform(prop: String, value: Any?): MatrixTransform = when (value) {
+            is MatrixTransform -> value
             is CSS.InterpolationResult -> value.getTransform(prop)
             is CSS.Expression -> value.transform
-            else -> MMatrix.Transform()
+            else -> MatrixTransform.IDENTITY
         }
         fun getMatrix(prop: String, value: Any?): MMatrix = when (value) {
             is MMatrix -> value

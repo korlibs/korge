@@ -555,9 +555,9 @@ fun View.updateSingleViewWithViewsAll(
 
 interface BoundsProvider {
     val windowToGlobalMatrix: MMatrix
-    val windowToGlobalTransform: MMatrix.Transform
+    var windowToGlobalTransform: MatrixTransform
     val globalToWindowMatrix: MMatrix
-    val globalToWindowTransform: MMatrix.Transform
+    var globalToWindowTransform: MatrixTransform
     val actualVirtualBounds: MRectangle
 
     @KorgeExperimental val actualVirtualLeft: Int get() = actualVirtualBounds.left.toIntRound()
@@ -586,9 +586,9 @@ interface BoundsProvider {
     val windowToGlobalScaleAvg: Double get() = windowToGlobalTransform.scale.scaleAvgD
 
     val globalToWindowScale: Scale get() = globalToWindowTransform.scale
-    val globalToWindowScaleX: Double get() = globalToWindowTransform.scaleX
-    val globalToWindowScaleY: Double get() = globalToWindowTransform.scaleY
-    val globalToWindowScaleAvg: Double get() = globalToWindowTransform.scaleAvg
+    val globalToWindowScaleX: Double get() = globalToWindowTransform.scaleX.toDouble()
+    val globalToWindowScaleY: Double get() = globalToWindowTransform.scaleY.toDouble()
+    val globalToWindowScaleAvg: Double get() = globalToWindowTransform.scaleAvg.toDouble()
 
     fun windowToGlobalCoords(pos: MPoint, out: MPoint = MPoint()): MPoint = windowToGlobalMatrix.transform(pos, out)
     fun windowToGlobalCoords(x: Double, y: Double, out: MPoint = MPoint()): MPoint = windowToGlobalMatrix.transform(x, y, out)
@@ -606,9 +606,9 @@ interface BoundsProvider {
 
     open class Base : BoundsProvider {
         override val windowToGlobalMatrix: MMatrix = MMatrix()
-        override val windowToGlobalTransform: MMatrix.Transform = MMatrix.Transform()
+        override var windowToGlobalTransform: MatrixTransform = MatrixTransform()
         override val globalToWindowMatrix: MMatrix = MMatrix()
-        override val globalToWindowTransform: MMatrix.Transform = MMatrix.Transform()
+        override var globalToWindowTransform: MatrixTransform = MatrixTransform()
         override val actualVirtualBounds: MRectangle = MRectangle(0, 0, DefaultViewport.WIDTH, DefaultViewport.HEIGHT)
     }
 }
@@ -637,8 +637,8 @@ fun BoundsProvider.setBoundsInfo(
         ((actualVirtualHeight - virtualHeight) * anchor.doubleY).toIntRound().toDouble(),
     )
     windowToGlobalMatrix.invert(globalToWindowMatrix)
-    globalToWindowMatrix.decompose(globalToWindowTransform)
-    windowToGlobalMatrix.decompose(windowToGlobalTransform)
+    globalToWindowTransform = globalToWindowMatrix.immutable.toTransform()
+    windowToGlobalTransform = windowToGlobalMatrix.immutable.toTransform()
 
     val tl = windowToGlobalCoords(0.0, 0.0)
     val br = windowToGlobalCoords(actualSize.width.toDouble(), actualSize.height.toDouble())

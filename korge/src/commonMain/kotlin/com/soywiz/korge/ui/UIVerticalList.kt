@@ -71,8 +71,6 @@ open class UIVerticalList(provider: Provider, width: Double = 200.0) : UIView(wi
         updateList()
     }
 
-    private val tempTransform = MMatrix.Transform()
-
     /**
      * Updates the list after size changes, but keeps its contents.
      */
@@ -100,7 +98,7 @@ open class UIVerticalList(provider: Provider, width: Double = 200.0) : UIView(wi
 
             //println("point=$point")
 
-            val transform = parent!!.globalMatrix.toTransform(tempTransform)
+            val transform = parent!!.globalMatrix.immutable.toTransform()
             //println("transform=${transform.scaleAvg}")
             val fromIndex = getIndexAtY((-point.y + tempRect.top) / transform.scaleY).clamp(0, numItems - 1)
             var toIndex = fromIndex
@@ -112,7 +110,7 @@ open class UIVerticalList(provider: Provider, width: Double = 200.0) : UIView(wi
                         provider.getItemView(index, this)
                             .also { addChild(it) }
                             .position(0.0, provider.getItemY(index))
-                            .size(width, itemHeight.toDouble())
+                            .size(width, itemHeight)
                     }
                     view.zIndex = index.toDouble()
                     toIndex = index

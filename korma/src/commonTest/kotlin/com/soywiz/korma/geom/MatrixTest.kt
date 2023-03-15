@@ -85,7 +85,7 @@ class MatrixTest {
         val t2 = MatrixTransform(20.0, 40.0, scaleX = 4.0, scaleY = 5.0, skewX = 0.0.degrees, skewY = 0.0.degrees, rotation = 180.degrees)
         assertEquals(
             MatrixTransform(x = 15.0, y = 30.0, scaleX = 3.0, scaleY = 4.0, skewX = 0.0.degrees, skewY = 0.0.degrees, rotation = 135.degrees),
-            MatrixTransform.interpolated(t1, t2, Ratio.HALF.toDouble())
+            Ratio.HALF.interpolate(t1, t2)
         )
     }
 

@@ -501,18 +501,14 @@ abstract class View internal constructor(
             this.colorMul = value
         }
 
-    private val tempTransform = MMatrix.Transform()
-    //private val tempMatrix = Matrix2d()
-
     protected fun ensureTransform() {
         if (validLocalProps) return
         validLocalProps = true
-        val t = tempTransform
-        t.setMatrixNoReturn(this._localMatrix)
-        this._x = t.x
-        this._y = t.y
-        this._scaleX = t.scaleX
-        this._scaleY = t.scaleY
+        val t = this._localMatrix.immutable.toTransform()
+        this._x = t.x.toDouble()
+        this._y = t.y.toDouble()
+        this._scaleX = t.scaleX.toDouble()
+        this._scaleY = t.scaleY.toDouble()
         this._skewX = t.skewX
         this._skewY = t.skewY
         this._rotation = t.rotation
@@ -553,24 +549,24 @@ abstract class View internal constructor(
         invalidate()
     }
 
-    /**
-     * Sets the computed transform [MMatrix] and all the decomposed transform properties at once.
-     * Normally this is used by animation libraries to set Views in a way that are fast to update
-     * and to access.
-     */
-    fun setComputedTransform(transform: MMatrix.Computed) {
-        _localMatrix.copyFrom(transform.matrix)
-        _setTransform(transform.transform)
-        invalidate()
-        validLocalProps = true
-        validLocalMatrix = true
-    }
+    ///**
+    // * Sets the computed transform [MMatrix] and all the decomposed transform properties at once.
+    // * Normally this is used by animation libraries to set Views in a way that are fast to update
+    // * and to access.
+    // */
+    //fun setComputedTransform(transform: MMatrix.Computed) {
+    //    _localMatrix.copyFrom(transform.matrix)
+    //    _setTransform(transform.transform)
+    //    invalidate()
+    //    validLocalProps = true
+    //    validLocalMatrix = true
+    //}
 
     /**
-     * Sets the [MMatrix.Transform] decomposed version of the transformation,
+     * Sets the [MatrixTransform] decomposed version of the transformation,
      * that directly includes [x], [y], [scaleX], [scaleY], [rotation], [skewX] and [skewY].
      */
-    fun setTransform(transform: MMatrix.Transform) {
+    fun setTransform(transform: MatrixTransform) {
         _setTransform(transform)
         invalidate()
         validLocalProps = true
@@ -581,10 +577,11 @@ abstract class View internal constructor(
      * Like [setTransform] but without invalidation. If used at all, should be used with care and invalidate when required.
      */
     @KorgeInternal
-    fun _setTransform(t: MMatrix.Transform) {
+    @Deprecated("")
+    fun _setTransform(t: MatrixTransform) {
         //transform.toMatrix(_localMatrix)
-        _x = t.x; _y = t.y
-        _scaleX = t.scaleX; _scaleY = t.scaleY
+        _x = t.x.toDouble(); _y = t.y.toDouble()
+        _scaleX = t.scaleX.toDouble(); _scaleY = t.scaleY.toDouble()
         _skewX = t.skewY; _skewY = t.skewY
         _rotation = t.rotation
     }

@@ -220,6 +220,15 @@ inline class Matrix(val data: BFloat6Pack) {
             a * p.x + c * p.y + tx,
             d * p.y + b * p.x + ty
         )
+
+        fun interpolated(l: Matrix, r: Matrix, ratio: Ratio): Matrix = Matrix(
+            ratio.interpolate(l.a, r.a),
+            ratio.interpolate(l.b, r.b),
+            ratio.interpolate(l.c, r.c),
+            ratio.interpolate(l.d, r.d),
+            ratio.interpolate(l.tx, r.tx),
+            ratio.interpolate(l.ty, r.ty),
+        )
     }
 }
 
@@ -238,6 +247,7 @@ inline class MatrixTransform(
     val scaleY: Float get() = raw.hf1
     val skewX: Angle get() = Angle.fromRatio(raw.hf2)
     val skewY: Angle get() = Angle.fromRatio(raw.hf3)
+    val scale: Scale get() = Scale(scaleX, scaleY)
 
     override fun toString(): String = "MatrixTransform(x=${x.niceStr}, y=${y.niceStr}, scaleX=${scaleX}, scaleY=${scaleY}, skewX=${skewX}, skewY=${skewY}, rotation=${rotation})"
 
@@ -298,7 +308,7 @@ inline class MatrixTransform(
             return MatrixTransform(tx, ty, tscaleX, tscaleY, tskewX, tskewY, trotation)
         }
 
-        fun interpolated(l: MatrixTransform, r: MatrixTransform, ratio: Double): MatrixTransform = MatrixTransform(
+        fun interpolated(l: MatrixTransform, r: MatrixTransform, ratio: Ratio): MatrixTransform = MatrixTransform(
             ratio.toRatio().interpolate(l.x, r.x),
             ratio.toRatio().interpolate(l.y, r.y),
             ratio.toRatio().interpolate(l.scaleX, r.scaleX),
@@ -362,6 +372,8 @@ data class MMatrix(
     var tx: Double = 0.0,
     var ty: Double = 0.0
 ) : MutableInterpolable<MMatrix>, Interpolable<MMatrix> {
+    val immutable: Matrix get() = Matrix(a, b, c, d, tx, ty)
+
     companion object {
         val POOL: ConcurrentPool<MMatrix> = ConcurrentPool<MMatrix>({ it.identity() }) { MMatrix() }
 
@@ -770,6 +782,8 @@ data class MMatrix(
         var skewX: Angle = 0.radians, var skewY: Angle = 0.radians,
         var rotation: Angle = 0.radians
     ) : MutableInterpolable<Transform>, Interpolable<Transform> {
+        val immutable: MatrixTransform get() = MatrixTransform(x, y, scaleX, scaleY, skewX, skewY, rotation)
+
         val scale: Scale get() = Scale(scaleX, scaleY)
 
         var scaleAvg: Double

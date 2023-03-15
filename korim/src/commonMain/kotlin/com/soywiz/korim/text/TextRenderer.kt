@@ -189,7 +189,7 @@ class Text2TextRendererActions : TextRendererActions() {
     private val arraySY = doubleArrayListOf()
     private val arrayRot = doubleArrayListOf()
     val arrayMetrics = VectorArrayList(dimensions = 4)
-    private val tr = MMatrix.Transform()
+    private var tr = MatrixTransform()
     val size get() = arrayX.size
 
     data class LineInfo(var maxTop: Double = 0.0, var minBottom: Double = 0.0, var maxLineHeight: Double = 0.0)
@@ -299,7 +299,7 @@ class Text2TextRendererActions : TextRendererActions() {
 
         val fontScale = fontSize / bf.fontSize
 
-        tr.setMatrixNoReturn(transform)
+        tr = transform.immutable.toTransform()
         //println("x: ${this.x}, y: ${this.y}")
         arrayTex.add(g.texture)
         arrayX.add(this.x + transform.transformX(x, y) * fontScale)

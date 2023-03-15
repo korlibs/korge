@@ -430,7 +430,7 @@ class CSSReader(val tokens: ListReader<CSS.Companion.Token>) {
 @ThreadLocal val CSS.Expression.color by extraPropertyThis { CSS.parseColor(exprStr) }
 @ThreadLocal val CSS.Expression.ratio by extraPropertyThis { CSS.parseRatio(exprStr) }
 @ThreadLocal val CSS.Expression.matrix by extraPropertyThis { CSS.parseTransform(exprStr) }
-@ThreadLocal val CSS.Expression.transform by extraPropertyThis { matrix.decompose() }
+@ThreadLocal val CSS.Expression.transform by extraPropertyThis { matrix.immutable.decompose() }
 @ThreadLocal val CSS.Expression.easing by extraPropertyThis { CSS.parseEasing(exprStr) }
 @ThreadLocal val CSS.Declarations.animation by extraPropertyThis {
     this["animation"]?.let { CSS.parseAnimation(it.exprStr) }
@@ -442,7 +442,7 @@ fun CSS.InterpolationResult.getRatio(key: String, default: Double = 0.0): Double
     this.ratio.toRatio().interpolate(k0[key]?.ratio ?: default, k1[key]?.ratio ?: default)
 fun CSS.InterpolationResult.getMatrix(key: String, default: MMatrix = MMatrix()): MMatrix =
     this.ratio.toRatio().interpolate(k0[key]?.matrix ?: default, k1[key]?.matrix ?: default)
-fun CSS.InterpolationResult.getTransform(key: String, default: MMatrix.Transform = MMatrix.Transform()): MMatrix.Transform =
+fun CSS.InterpolationResult.getTransform(key: String, default: MatrixTransform = MatrixTransform.IDENTITY): MatrixTransform =
     this.ratio.toRatio().interpolate(k0[key]?.transform ?: default, k1[key]?.transform ?: default)
 fun CSS.InterpolationResult.getEasing(key: String, default: Easing = Easing.LINEAR): Easing =
     k0[key]?.easing ?: default

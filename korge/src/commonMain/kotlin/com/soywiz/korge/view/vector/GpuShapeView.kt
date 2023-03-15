@@ -177,12 +177,11 @@ open class GpuShapeView(
             }
         }
 
-    private val globalTransform = MMatrix.Transform()
     private var globalScale: Double = 1.0
     private var cachedScale: Double = Double.NaN
 
     override fun renderInternal(ctx: RenderContext) {
-        globalScale = globalTransform.setMatrix(globalMatrix).setMatrix(globalMatrix).scaleAvg * ctx.bp.globalToWindowScaleAvg
+        globalScale = globalMatrix.immutable.toTransform().scaleAvg * ctx.bp.globalToWindowScaleAvg
         //globalScale = ctx.bp.globalToWindowScaleAvg
         if (cachedScale != globalScale) {
             invalidateShape()
