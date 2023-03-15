@@ -93,7 +93,7 @@ open class KorgeJavaExecWithAutoreload : KorgeJavaExec() {
                     add("-classpath")
                     add("${rootDir}/gradle/wrapper/gradle-wrapper.jar")
                     add("org.gradle.wrapper.GradleWrapperMain")
-                    add("--no-daemon")
+                    //add("--no-daemon") // This causes: Continuous build does not work when file system watching is disabled
                     add("--watch-fs")
                     add("--warn")
                     add("--project-dir=${rootDir}")

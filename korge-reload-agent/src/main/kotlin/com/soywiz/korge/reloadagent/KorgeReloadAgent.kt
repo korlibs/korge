@@ -69,7 +69,7 @@ object KorgeReloadAgent {
             httpServer.start()
         }.also { it.isDaemon = true }.also { it.name = "KorgeReloadAgent.httpServer" }.start()
         Thread {
-            println("[KorgeReloadAgent] - Running $continuousCommand")
+            println("[KorgeReloadAgent] - Running ${continuousCommand.joinToString(" ")}")
             while (true) {
                 try {
                     val isWindows = System.getProperty("os.name").lowercase().contains("win")
