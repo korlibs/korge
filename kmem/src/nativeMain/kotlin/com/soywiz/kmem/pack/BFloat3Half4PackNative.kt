@@ -8,10 +8,10 @@ actual val BFloat3Half4Pack.b0: Float get() = BFloat21.unpack3(getLongAt(0), 0)
 actual val BFloat3Half4Pack.b1: Float get() = BFloat21.unpack3(getLongAt(0), 1)
 actual val BFloat3Half4Pack.b2: Float get() = BFloat21.unpack3(getLongAt(0), 2)
 // 16-bit Half Float precision
-actual val BFloat3Half4Pack.hf0: Float get() = BFloat16.unpack4(getLongAt(0), 0)
-actual val BFloat3Half4Pack.hf1: Float get() = BFloat16.unpack4(getLongAt(0), 1)
-actual val BFloat3Half4Pack.hf2: Float get() = BFloat16.unpack4(getLongAt(0), 2)
-actual val BFloat3Half4Pack.hf3: Float get() = BFloat16.unpack4(getLongAt(0), 3)
+actual val BFloat3Half4Pack.hf0: Float get() = BFloat16.unpack4(getLongAt(1), 0)
+actual val BFloat3Half4Pack.hf1: Float get() = BFloat16.unpack4(getLongAt(1), 1)
+actual val BFloat3Half4Pack.hf2: Float get() = BFloat16.unpack4(getLongAt(1), 2)
+actual val BFloat3Half4Pack.hf3: Float get() = BFloat16.unpack4(getLongAt(1), 3)
 
 actual fun bfloat3Half4PackOf(
     b0: Float, b1: Float, b2: Float,
