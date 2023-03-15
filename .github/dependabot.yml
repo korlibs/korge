@@ -6,12 +6,9 @@
 version: 2
 updates:
   - package-ecosystem: "gradle" # See documentation for possible values
-    directory: "/" # Location of package manifests
+    directory: "/gradle" # Location of package manifests
     schedule:
       interval: "weekly"
-    ignore:
-      - dependency-name: "**/build.gradle"
-      - dependency-name: "**/settings.gradle"
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
