@@ -59,27 +59,42 @@ class AGMetal(private val view: MTKView) : AG() {
                 //setFragmentTexture(texture, 0)
                 //setFragmentSamplerState(samplerState, 0)
 
-                var currentBuffer = 0uL
-                vertexData.list.fastForEach{ buffer ->
-                    setVertexBuffer(buffer.buffer.toMetal.buffer, 0, currentBuffer)
-                    currentBuffer += 1uL
-                }
-
-                uniformBlocks.fastForEachBlock { index, block, buffer, valueIndex ->
-                    TODO()
+                vertexData.list.fastForEach { vertexDataUnit ->
+                    val buffer = vertexDataUnit.buffer.toMetal.buffer
+                    var offset = 0uL
+                    vertexDataUnit.layout.forEach { attribute ->
+                        val bufferLocation = currentProgram.indexOfAttributeOnBuffer(attribute)
+                        setVertexBuffer(buffer, offset, bufferLocation)
+                        offset += (vertexCount * attribute.totalBytes).toULong()
+                    }
                 }
                 //uniformBlocks.fastForEachUniform {
                 //    setVertexBuffer(it.data.toMetal.buffer, 0, currentBuffer)
                 //    currentBuffer += 1uL
                 //}
 
+                //TODO: support uniform blocks
+                /*uniformBlocks.fastForEachUniform {
+
+                }*/
+
+                uniforms.values.fastForEach { uniformUnit ->
+                    val bufferLocation = currentProgram.indexOfUniformOnBuffer(uniformUnit.uniform)
+                    setVertexBuffer(uniformUnit.data.toMetal.buffer, 0, bufferLocation)
+                }
                 //uniforms.values.fastForEach { buffer ->
                 //    setVertexBuffer(buffer.data.toMetal.buffer, 0, currentBuffer)
                 //    currentBuffer += 1uL
                 //}
 
                 if (indices != null) {
-                    drawIndexedPrimitives(drawType.toMetal(), vertexCount.toULong(), indexType.toMetal(), indices.toMetal.buffer, 0)
+                    drawIndexedPrimitives(
+                        drawType.toMetal(),
+                        vertexCount.toULong(),
+                        indexType.toMetal(),
+                        indices.toMetal.buffer,
+                        0
+                    )
                 } else {
                     TODO("Not yet supported, rendering without vertex indexes")
                 }

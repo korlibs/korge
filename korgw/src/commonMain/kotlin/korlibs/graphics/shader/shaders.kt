@@ -13,6 +13,7 @@ import korlibs.graphics.annotation.KoragExperimental
 import korlibs.graphics.shader.gl.*
 import korlibs.io.lang.*
 import kotlin.reflect.*
+import kotlin.collections.Iterable
 
 enum class VarKind(val bytesSize: Int) {
     //BYTE(1), UNSIGNED_BYTE(1), SHORT(2), UNSIGNED_SHORT(2), INT(4), FLOAT(4) // @TODO: This cause problems on Kotlin/Native Objective-C header.h
@@ -1085,7 +1086,7 @@ open class ProgramLayout<TVariable : VariableWithOffset>(
     @PublishedApi internal val items: List<TVariable>,
     private val layoutSize: Int?,
     val fixedLocation: Int = -1
-) {
+): Iterable<TVariable> by items {
 	constructor(variables: List<TVariable>) : this(variables, null)
 	constructor(vararg variables: TVariable, layoutSize: Int? = null) : this(variables.toFastList(), layoutSize)
 
