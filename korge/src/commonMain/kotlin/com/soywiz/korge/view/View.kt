@@ -1308,25 +1308,12 @@ abstract class View internal constructor(
         getLocalBounds(out, doAnchoring, includeFilters)
 
         if (concat != null && !concat.isIdentity()) {
-            val p1x = out.left
-            val p1y = out.top
-
-            val p2x = out.right
-            val p2y = out.top
-
-            val p3x = out.right
-            val p3y = out.bottom
-
-            val p4x = out.left
-            val p4y = out.bottom
-
-            BoundsBuilder.POOL { bb ->
-                bb.add(concat.transformX(p1x, p1y), concat.transformY(p1x, p1y))
-                bb.add(concat.transformX(p2x, p2y), concat.transformY(p2x, p2y))
-                bb.add(concat.transformX(p3x, p3y), concat.transformY(p3x, p3y))
-                bb.add(concat.transformX(p4x, p4y), concat.transformY(p4x, p4y))
-                bb.getBounds(out)
-            }
+            out.copyFrom(NewBoundsBuilder(
+                concat.transform(out.topLeft),
+                concat.transform(out.topRight),
+                concat.transform(out.bottomRight),
+                concat.transform(out.bottomLeft)
+            ).bounds)
         }
         return out
     }
