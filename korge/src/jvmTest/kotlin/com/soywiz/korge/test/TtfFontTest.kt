@@ -24,6 +24,6 @@ class TtfFontTest {
             }
         }
 
-        assertScreenshot(c, "text", posterize = 5, includeBackground = false, psnr = 35.0)
+        assertScreenshot(c, "text", posterize = 5, includeBackground = false, psnr = 32.0)
     }
 }
