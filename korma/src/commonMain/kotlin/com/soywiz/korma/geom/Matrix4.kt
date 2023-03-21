@@ -123,7 +123,7 @@ inline class Matrix4 private constructor(
                 )
             }
         }
-        return Quaternion(out)
+        return Quaternion(out.normalized())
     }
 
     fun decomposeProjection(): Vector4 = c3
