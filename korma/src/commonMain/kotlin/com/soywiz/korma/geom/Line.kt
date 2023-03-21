@@ -1,18 +1,26 @@
 package com.soywiz.korma.geom
 
 import com.soywiz.kmem.clamp
+import com.soywiz.kmem.pack.*
 import com.soywiz.korma.annotations.*
+import com.soywiz.korma.geom.bezier.*
 import com.soywiz.korma.math.*
 import com.soywiz.korma.math.isAlmostZero
 
-@KormaValueApi
-data class Line(val a: Point, val b: Point) {
+//@KormaValueApi
+//data class Line(val a: Point, val b: Point) {
+inline class Line internal constructor(val data: Float4Pack) {
+    val a: Point get() = Point(data.f0, data.f1)
+    val b: Point get() = Point(data.f2, data.f3)
+
     constructor() : this(Point(), Point())
+    constructor(a: Point, b: Point) : this(float4PackOf(a.x, a.y, b.x, b.y))
     constructor(x0: Double, y0: Double, x1: Double, y1: Double) : this(Point(x0, y0), Point(x1, y1))
     constructor(x0: Float, y0: Float, x1: Float, y1: Float) : this(Point(x0, y0), Point(x1, y1))
     constructor(x0: Int, y0: Int, x1: Int, y1: Int) : this(Point(x0, y0), Point(x1, y1))
 
     inline fun flipped(): Line = Line(b, a)
+    fun toBezier(): Bezier = Bezier(a, b)
 
     val x0: Float get() = a.x
     val y0: Float get() = a.y
@@ -74,7 +82,13 @@ data class Line(val a: Point, val b: Point) {
 
     override fun toString(): String = "Line($a, $b)"
 
+    val isNIL get() = data.f0.isNaN()
+    fun isNaN(): Boolean = data.f0.isNaN()
+
     companion object {
+        val NaN = Line(Point.NaN, Point.NaN)
+        val NIL: Line get() = NaN
+
         fun fromPointAndDirection(point: Point, direction: Point, scale: Double = 1.0): Line =
             Line(point, point + direction * scale)
         fun fromPointAngle(point: Point, angle: Angle, length: Double = 1.0): Line =
@@ -104,12 +118,14 @@ data class Line(val a: Point, val b: Point) {
 }
 
 @KormaMutableApi
+@Deprecated("")
 sealed interface ILine {
     val a: Point
     val b: Point
 }
 
 @KormaMutableApi
+@Deprecated("")
 data class MLine(override var a: Point, override var b: Point) : ILine {
     fun clone(): MLine = MLine(a, b)
     fun flipped(): MLine = MLine(b, a)

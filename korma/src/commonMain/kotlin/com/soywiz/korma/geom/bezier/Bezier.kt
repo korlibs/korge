@@ -10,6 +10,7 @@ import com.soywiz.korma.math.isAlmostZero
 import kotlin.contracts.*
 import kotlin.math.*
 
+// @TODO: Make Bezier immutable
 sealed interface IBezier : Curve {
     val points: PointList
     val dims: Int
@@ -53,14 +54,14 @@ sealed interface IBezier : Curve {
     fun splitLeft(t: Double): SubBezier
     fun splitRight(t: Double): SubBezier
 
-    fun toLine(out: MLine = MLine()): MLine
+    fun toLine(): Line
     fun toLineBezier(out: Bezier = Bezier()): Bezier
     fun toCubic(out: Bezier = Bezier()): Bezier
     fun toQuad(out: Bezier = Bezier()): Bezier
     fun toQuadList(): List<Bezier>
     fun outline(d1: Double, d2: Double = d1, d3: Double = d1, d4: Double = d2): Curves
     fun translate(dx: Double, dy: Double, out: Bezier = Bezier()): Bezier
-    fun transform(m: MMatrix, out: Bezier = Bezier()): Bezier
+    fun transform(m: Matrix, out: Bezier = Bezier()): Bezier
 }
 
 /**
@@ -71,7 +72,7 @@ sealed interface IBezier : Curve {
 class Bezier(
     points: PointList,
 ) : IBezier {
-    private val _points = PointArrayList(points.size).copyFrom(points)
+    private val _points = points.clone()
     override val points: PointList get() = _points
 
     init {
@@ -702,7 +703,7 @@ class Bezier(
         val adk: Double = 0.0,
     )
 
-    override fun toLine(out: MLine): MLine = out.setTo(points[0], points[order])
+    override fun toLine(): Line = Line(points[0], points[order])
 
     override fun toLineBezier(out: Bezier): Bezier = out.setPoints(points[0], points[order])
 
@@ -832,10 +833,10 @@ class Bezier(
     }
 
     override fun translate(dx: Double, dy: Double, out: Bezier): Bezier =
-        out.setPoints(points.mapPoints { x, y, o -> o.setTo(x + dx, y + dy) })
+        out.setPoints(points.mapPoints { p -> p + Point(dx, dy) })
 
-    override fun transform(m: MMatrix, out: Bezier): Bezier =
-        out.setPoints(points.mapPoints { x, y, o -> m.transform(x, y, o) })
+    override fun transform(m: Matrix, out: Bezier): Bezier =
+        out.setPoints(points.mapPoints { p -> m.transform(p) })
 
     companion object {
         // Legendre-Gauss abscissae with n=24 (x_i values, defined at i=n as the roots of the nth order Legendre polynomial Pn(x))

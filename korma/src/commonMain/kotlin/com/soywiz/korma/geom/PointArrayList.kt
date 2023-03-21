@@ -66,7 +66,7 @@ sealed interface PointList : IVectorArrayList, Extra {
     }
 
     fun clone(out: PointArrayList = PointArrayList(this.size)): PointArrayList {
-        fastForEach { (x, y) -> out.add(x, y) }
+        out.copyFrom(this)
         return out
     }
 
@@ -88,6 +88,12 @@ inline fun PointList.fastForEach(block: (Point) -> Unit) { for (n in 0 until siz
 inline fun PointList.fastForEachReverse(block: (Point) -> Unit) { for (n in 0 until size) block(get(size - n - 1)) }
 
 fun <T> PointList.map(gen: (x: Double, y: Double) -> T): List<T> = (0 until size).map { gen(getX(it).toDouble(), getY(it).toDouble()) }
+
+fun PointList.mapPoints(gen: (p: Point) -> Point): PointList {
+    val out = PointArrayList(this.size)
+    fastForEach { out.add(gen(it)) }
+    return out
+}
 
 fun PointList.mapPoints(temp: MPoint = MPoint(), gen: (x: Double, y: Double, out: MPoint) -> MPoint): PointList {
     val out = PointArrayList(this.size)
