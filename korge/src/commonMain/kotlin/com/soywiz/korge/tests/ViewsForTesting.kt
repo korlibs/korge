@@ -271,10 +271,9 @@ open class ViewsForTesting(
 		val bounds = this.getGlobalBounds()
 		if (bounds.area <= 0.0) return false
 		val module = injector.get<Module>()
-		val visibleBounds = MRectangle(0, 0, module.windowSize.width, module.windowSize.height)
-		if (!bounds.intersects(visibleBounds)) return false
-		return true
-	}
+		val visibleBounds = Rectangle(0, 0, module.windowSize.width, module.windowSize.height)
+        return bounds.intersects(visibleBounds)
+    }
 
     fun viewsTest(
         timeout: TimeSpan? = DEFAULT_SUSPEND_TEST_TIMEOUT,

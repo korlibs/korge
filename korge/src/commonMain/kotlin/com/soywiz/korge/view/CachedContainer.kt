@@ -14,9 +14,7 @@ open class FixedSizeCachedContainer(
     override var height: Double = 100.0,
     cache: Boolean = true
 ) : CachedContainer(cache), View.Reference {
-    override fun getLocalBoundsInternal(out: MRectangle) {
-        out.setTo(0.0, 0.0, width, height)
-    }
+    override fun getLocalBoundsInternal(): Rectangle = Rectangle(0.0, 0.0, width, height)
 }
 
 open class CachedContainer(

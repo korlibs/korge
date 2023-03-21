@@ -79,7 +79,7 @@ class UIWindow(title: String, width: Double = 256.0, height: Double = 256.0) : U
             cursor = GameWindow.Cursor.fromAnchorResize(anchor)
             // @TODO: clamping shouldn't affect (we should use it.start and get initial values to compute based on start and not on deltas)
             sh.draggable {
-                val obounds = window.getGlobalBounds().clone()
+                val obounds = window.getGlobalBounds().mutable
                 val bounds = obounds.clone()
                 when {
                     anchor.doubleX < 0.5 -> {

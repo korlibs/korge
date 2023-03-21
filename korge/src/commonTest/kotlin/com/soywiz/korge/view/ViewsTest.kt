@@ -1,5 +1,6 @@
 package com.soywiz.korge.view
 
+import assertEqualsFloat
 import com.soywiz.klock.*
 import com.soywiz.klogger.*
 import com.soywiz.korev.*
@@ -61,14 +62,14 @@ class ViewsTest : ViewsForTesting() {
     fun testBounds() = viewsTest {
         val image = Image(tex).position(100, 100)
         views.stage += image
-        assertEquals(MRectangle(100, 100, 10, 10), image.getGlobalBounds())
+        assertEquals(Rectangle(100, 100, 10, 10), image.getGlobalBounds())
     }
 
     @Test
     fun testBounds2() = viewsTest {
         val image = Image(tex).position(-100, 100)
         views.stage += image
-        assertEquals(MRectangle(-100, 100, 10, 10), image.getGlobalBounds())
+        assertEquals(Rectangle(-100, 100, 10, 10), image.getGlobalBounds())
     }
 
     @Test
@@ -206,8 +207,8 @@ class ViewsTest : ViewsForTesting() {
             fill(Colors.RED) { circle(Point(0, 0), 100f) }
         }
         container.addChild(contents)
-        assertEquals(MRectangle(-100, -100, 200, 200), contents.getBounds(container), "bounds1") // (x=-100, y=-100, w=200, h=200)
-        assertEquals(MRectangle(0, 0, 200, 200), contents.getBounds(this), "bounds2") // (x=0, y=0, w=200, h=200)
+        assertEquals(Rectangle(-100, -100, 200, 200), contents.getBounds(container), "bounds1") // (x=-100, y=-100, w=200, h=200)
+        assertEquals(Rectangle(0, 0, 200, 200), contents.getBounds(this), "bounds2") // (x=0, y=0, w=200, h=200)
     }
 
     @Test
@@ -221,39 +222,39 @@ class ViewsTest : ViewsForTesting() {
 
     @Test
     fun testRect() = viewsTest {
-        assertEquals(MRectangle(0, 0, 1280, 720), this.stage.globalBounds, "rect0")
+        assertEqualsFloat(Rectangle(0, 0, 1280, 720), this.stage.globalBounds, message = "rect0")
 
         RectBase().also { addChild(it) }.also { rect1 ->
-            assertEquals(MRectangle(0, 0, 0, 0), rect1.globalBounds, "rect1")
+            assertEqualsFloat(Rectangle(0, 0, 0, 0), rect1.globalBounds, message = "rect1")
         }
         Image(Bitmap32(16, 16, Colors.RED)).also { addChild(it) }.also { rect2 ->
-            assertEquals(MRectangle(0, 0, 16, 16), rect2.globalBounds, "rect2")
+            assertEqualsFloat(Rectangle(0, 0, 16, 16), rect2.globalBounds, message = "rect2")
         }
 
         SolidRect(32, 32, Colors.RED).also { addChild(it) }.also { rect3 ->
-            assertEquals(MRectangle(0, 0, 32, 32), rect3.globalBounds, "rect3")
+            assertEqualsFloat(Rectangle(0, 0, 32, 32), rect3.globalBounds, message = "rect3")
         }
 
         RoundRect(32.0, 24.0, 5.0, 5.0, Colors.RED).also { addChild(it) }.also { rect3 ->
-            assertEquals(MRectangle(0, 0, 32, 24), rect3.globalBounds, "rect4")
+            assertEqualsFloat(Rectangle(0, 0, 32, 24), rect3.globalBounds, message = "rect4")
         }
 
         Circle(32.0, Colors.RED).also { addChild(it) }.also { rect3 ->
-            assertEquals(MRectangle(0, 0, 64, 64).toString(), rect3.globalBounds.toString(), "rect5")
+            assertEqualsFloat(Rectangle(0, 0, 64, 64).toString(), rect3.globalBounds.toString(), message = "rect5")
         }
 
         CpuGraphics().also { addChild(it) }.updateShape { fill(Colors.RED) { rect(0, 0, 100, 100) } }.also { rect4 ->
-            assertEquals(MRectangle(0, 0, 100, 100), rect4.globalBounds, "rect6")
+            assertEqualsFloat(Rectangle(0, 0, 100, 100), rect4.globalBounds, message = "rect6")
             rect4.render(views.renderContext)
-            assertEquals(MRectangle(0, 0, 100, 100), rect4.globalBounds, "rect7")
+            assertEqualsFloat(Rectangle(0, 0, 100, 100), rect4.globalBounds, message = "rect7")
         }
     }
 
     @Test
     fun testRoundRect() = viewsTest {
         RoundRect(32.0, 24.0, 5.0, 5.0, Colors.RED).also { addChild(it) }.also { rect3 ->
-            assertEquals(MRectangle(0, 0, 32, 24), rect3.getLocalBounds(), message = "local")
-            assertEquals(MRectangle(0, 0, 32, 24), rect3.globalBounds, message = "global")
+            assertEquals(Rectangle(0, 0, 32, 24), rect3.getLocalBounds(), message = "local")
+            assertEquals(Rectangle(0, 0, 32, 24), rect3.globalBounds, message = "global")
         }
     }
 

@@ -403,7 +403,7 @@ abstract class View internal constructor(
      * @TODO: In KorGE 2.0, View.width/View.height will be immutable and available from an extension method for Views that doesn't have a width/height properties
      */
     open var width: Double
-        get() = getLocalBoundsOptimizedAnchored().width
+        get() = getLocalBoundsOptimizedAnchored().widthD
         @Deprecated("Shouldn't set width but scaleWidth instead")
         set(value) {
             scaleX = (if (scaleX == 0.0) 1.0 else scaleX) * (value / width)
@@ -416,7 +416,7 @@ abstract class View internal constructor(
      * @TODO: In KorGE 2.0, View.width/View.height will be immutable and available from an extension method for Views that doesn't have a width/height properties
      */
     open var height: Double
-        get() = getLocalBoundsOptimizedAnchored().height
+        get() = getLocalBoundsOptimizedAnchored().heightD
         @Deprecated("Shouldn't set height but scaleHeight instead")
         set(value) {
             scaleY = (if (scaleY == 0.0) 1.0 else scaleY) * (value / getLocalBoundsOptimizedAnchored().height)
@@ -1016,36 +1016,31 @@ abstract class View internal constructor(
         }
         if (!mouseEnabled) return null
         hitTestInternal(p)?.let { view ->
-
             // @TODO: This should not be required if we compute bounds
-            MRectangle.POOL { tempRect ->
-                val area = getClippingAreaInternal(tempRect)
-                if (area != null && !area.contains(p)) return null
-                return view
-            }
+            val area = getClippingAreaInternal()
+            if (!area.isNIL && !area.contains(p)) return null
+            return view
         }
         return if (this is Stage) this else null
     }
 
     @KorgeInternal
-    fun getClippingAreaInternal(out: MRectangle): MRectangle? {
-        out.setTo(Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY)
+    fun getClippingAreaInternal(): Rectangle {
+        var out = Rectangle.INFINITE
         var count = 0
-        MRectangle.POOL { _localBounds ->
-            forEachAscendant(true) {
-                if (it !is Stage && it is FixedSizeContainer && it.clip) {
-                    it.getGlobalBounds(_localBounds)
-                    if (count == 0) {
-                        out.copyFrom(_localBounds)
-                    } else {
-                        out.setToIntersection(out, _localBounds)
-                    }
-                    count++
+        forEachAscendant(true) {
+            if (it !is Stage && it is FixedSizeContainer && it.clip) {
+                val _localBounds = it.getGlobalBounds()
+                if (count == 0) {
+                    out = _localBounds
+                } else {
+                    out = out.intersection(_localBounds)
                 }
+                count++
             }
         }
 
-        return if (count == 0) null else out
+        return if (count == 0) Rectangle.NIL else out
     }
 
     fun hitTestAny(p: Point): Boolean = hitTest(p) != null
@@ -1258,7 +1253,7 @@ abstract class View internal constructor(
 
     /** Returns the global bounds of this object. Allows to specify an [out] [MRectangle] to prevent allocations. */
     @Deprecated("")
-    fun getWindowBounds(out: MRectangle = MRectangle()): MRectangle = getWindowBoundsOrNull(out) ?: getGlobalBounds(out)
+    fun getWindowBounds(out: MRectangle = MRectangle()): MRectangle = getWindowBoundsOrNull(out) ?: out.copyFrom(getGlobalBounds())
 
     fun getWindowBoundsOrNull(out: MRectangle = MRectangle()): MRectangle? {
         val stage = root
@@ -1268,22 +1263,22 @@ abstract class View internal constructor(
     }
 
     fun getWindowBounds(bp: BoundsProvider, out: MRectangle = MRectangle()): MRectangle =
-        getGlobalBounds(out).applyTransform(bp.globalToWindowMatrix)
+        getGlobalBounds().copyTo(out).applyTransform(bp.globalToWindowMatrix)
 
     fun getRenderTargetBounds(ctx: RenderContext, out: MRectangle = MRectangle()): MRectangle {
         //println("ctx.ag.isRenderingToWindow=${ctx.ag.isRenderingToWindow}")
-        return if (ctx.isRenderingToWindow) getWindowBounds(ctx, out) else getGlobalBounds(out)
+        return if (ctx.isRenderingToWindow) getWindowBounds(ctx, out) else getGlobalBounds().copyTo(out)
     }
 
     fun getClippingBounds(ctx: RenderContext, out: MRectangle = MRectangle()): MRectangle =
         getRenderTargetBounds(ctx, out)
 
     /** Returns the global bounds of this object. Note this incurs in allocations. Use [getGlobalBounds] (out) to avoid it */
-    val globalBounds: MRectangle get() = getGlobalBounds()
+    val globalBounds: Rectangle get() = getGlobalBounds()
 
     /** Returns the global bounds of this object. Allows to specify an [out] [MRectangle] to prevent allocations. */
     //fun getGlobalBounds(out: Rectangle = Rectangle()): Rectangle = getBounds(root, out, inclusive = false)
-    fun getGlobalBounds(out: MRectangle = MRectangle(), includeFilters: Boolean = false): MRectangle = getBounds(root, out, inclusive = true, includeFilters = includeFilters)
+    fun getGlobalBounds(includeFilters: Boolean = false): Rectangle = getBounds(root, inclusive = true, includeFilters = includeFilters)
 
     /** Tries to set the global bounds of the object. If there are rotations in the ancestors, this might not work as expected. */
     @KorgeUntested
@@ -1299,27 +1294,27 @@ abstract class View internal constructor(
     // @TODO: Would not include strokes
     //fun getRect(target: View? = this, out: Rectangle = Rectangle()): Rectangle = TODO()
 
-    /** Get the bounds of this view, using the [target] view as coordinate system. Not providing a [target] will return the local bounds. Allows to specify [out] [MRectangle] to prevent allocations. */
-    fun getBoundsNoAnchoring(target: View? = this, out: MRectangle = MRectangle(), inclusive: Boolean = false, includeFilters: Boolean = false): MRectangle {
-        return getBounds(target, out, false, inclusive, includeFilters)
+    /** Get the bounds of this view, using the [target] view as coordinate system. Not providing a [target] will return the local bounds. Allows to specify [out] [Rectangle] to prevent allocations. */
+    fun getBoundsNoAnchoring(target: View? = this, inclusive: Boolean = false, includeFilters: Boolean = false): Rectangle {
+        return getBounds(target, false, inclusive, includeFilters)
     }
 
-    protected fun _getBounds(concat: MMatrix?, out: MRectangle = MRectangle(), doAnchoring: Boolean = true, includeFilters: Boolean = false): MRectangle {
-        getLocalBounds(out, doAnchoring, includeFilters)
+    protected fun _getBounds(concat: MMatrix?, doAnchoring: Boolean = true, includeFilters: Boolean = false): Rectangle {
+        var out = getLocalBounds(doAnchoring, includeFilters)
 
         if (concat != null && !concat.isIdentity()) {
-            out.copyFrom(NewBoundsBuilder(
+            out = NewBoundsBuilder(
                 concat.transform(out.topLeft),
                 concat.transform(out.topRight),
                 concat.transform(out.bottomRight),
                 concat.transform(out.bottomLeft)
-            ).bounds)
+            ).bounds
         }
         return out
     }
 
-    fun getBounds(target: View? = this, out: MRectangle = MRectangle(), doAnchoring: Boolean = true, inclusive: Boolean = false, includeFilters: Boolean = false): MRectangle {
-        return MMatrix.POOL { boundsTemp -> _getBounds(this.getConcatMatrix(target ?: this, boundsTemp, inclusive), out, doAnchoring, includeFilters) }
+    fun getBounds(target: View? = this, doAnchoring: Boolean = true, inclusive: Boolean = false, includeFilters: Boolean = false): Rectangle {
+        return MMatrix.POOL { boundsTemp -> _getBounds(this.getConcatMatrix(target ?: this, boundsTemp, inclusive), doAnchoring, includeFilters) }
     }
 
     ///** Kind of bounds we are checking */
@@ -1333,34 +1328,29 @@ abstract class View internal constructor(
     /**
      * **NOTE:** that if [out] is not provided, the [MRectangle] returned shouldn't stored and modified since it is owned by this class.
      */
-    fun getLocalBoundsOptimized(includeFilters: Boolean = false): MRectangle = getLocalBounds(_localBounds, includeFilters = includeFilters)
+    fun getLocalBoundsOptimized(includeFilters: Boolean = false): Rectangle = getLocalBounds(includeFilters = includeFilters)
 
-    fun getLocalBoundsOptimizedAnchored(includeFilters: Boolean = false): MRectangle = getLocalBounds(_localBounds, doAnchoring = true, includeFilters = includeFilters)
-
-    fun getLocalBounds(doAnchoring: Boolean = true, includeFilters: Boolean = false, out: MRectangle = MRectangle()): MRectangle = getLocalBounds(out, doAnchoring, includeFilters)
+    fun getLocalBoundsOptimizedAnchored(includeFilters: Boolean = false): Rectangle = getLocalBounds(doAnchoring = true, includeFilters = includeFilters)
 
     /**
      * Get local bounds of the view. Allows to specify [out] [MRectangle] if you want to reuse an object.
      */
-    fun getLocalBounds(out: MRectangle, doAnchoring: Boolean = true, includeFilters: Boolean = false): MRectangle {
-        getLocalBoundsInternal(out)
-        val it = out
+    fun getLocalBounds(doAnchoring: Boolean = true, includeFilters: Boolean = false): Rectangle {
+        var out = getLocalBoundsInternal()
         if (!doAnchoring) {
-            it.x += anchorDispX
-            it.y += anchorDispY
+            out = out.translated(Point(anchorDispX, anchorDispY))
         }
         if (includeFilters) {
             filter?.let {
-                out.copyFrom(it.expandedBorderRectangle(out.immutable))
+                out = it.expandedBorderRectangle(out)
             }
         }
-        return it
+        return out
     }
 
-    private val _localBounds: MRectangle = MRectangle()
-    open fun getLocalBoundsInternal(out: MRectangle) {
-        out.clear()
-    }
+    //open fun getLocalBoundsInternal(out: MRectangle) { out.clear() }
+
+    open fun getLocalBoundsInternal(): Rectangle = Rectangle.ZERO
 
     protected open fun createInstance(): View =
         throw MustOverrideException("Must Override ${this::class}.createInstance()")

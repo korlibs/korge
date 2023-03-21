@@ -4,7 +4,7 @@ import com.soywiz.korag.log.AGLog
 import com.soywiz.korge.render.RenderContext
 import com.soywiz.korge.view.View
 import com.soywiz.korio.async.suspendTest
-import com.soywiz.korma.geom.MRectangle
+import com.soywiz.korma.geom.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -19,9 +19,7 @@ class ComposedFilterTest {
                 log += "image.frameBuffers=${ctx.frameBuffers.totalItemsInUse}"
             }
 
-            override fun getLocalBoundsInternal(out: MRectangle) {
-                out.setTo(0, 0, 10, 10)
-            }
+            override fun getLocalBoundsInternal() = Rectangle(0, 0, 10, 10)
         }
         rect.addFilters(SwizzleColorsFilter("rrra"), ColorMatrixFilter(ColorMatrixFilter.SEPIA_MATRIX), BlurFilter(), WaveFilter())
         rect.filter = object : ComposedFilter(rect.filter?.allFilters ?: emptyList()) {

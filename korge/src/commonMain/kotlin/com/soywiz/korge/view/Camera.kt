@@ -4,8 +4,7 @@ import com.soywiz.klock.TimeSpan
 import com.soywiz.korge.tween.V2
 import com.soywiz.korge.tween.get
 import com.soywiz.korge.tween.tween
-import com.soywiz.korma.geom.MMatrix
-import com.soywiz.korma.geom.MRectangle
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.interpolation.Easing
 
 /**
@@ -34,9 +33,7 @@ class Camera : Container(), View.Reference {
         set(_) = Unit
         get() = referenceParent?.height ?: 100.0
 
-    override fun getLocalBoundsInternal(out: MRectangle) {
-		out.setTo(0.0, 0.0, width, height)
-	}
+    override fun getLocalBoundsInternal() = Rectangle(0.0, 0.0, width, height)
 
 	fun getLocalMatrixFittingGlobalRect(rect: MRectangle): MMatrix {
 		val destinationBounds = rect
@@ -52,7 +49,7 @@ class Camera : Container(), View.Reference {
 	}
 
 	fun getLocalMatrixFittingView(view: View?): MMatrix =
-		getLocalMatrixFittingGlobalRect((view ?: stage)?.globalBounds ?: MRectangle(0, 0, 100, 100))
+		getLocalMatrixFittingGlobalRect((view ?: stage)?.globalBounds?.mutable ?: MRectangle(0, 0, 100, 100))
 
 	fun setTo(view: View?) { this.localMatrix = getLocalMatrixFittingView(view) }
 	fun setTo(rect: MRectangle) { this.localMatrix = getLocalMatrixFittingGlobalRect(rect) }

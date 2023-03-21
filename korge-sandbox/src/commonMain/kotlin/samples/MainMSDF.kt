@@ -120,7 +120,7 @@ class MainMSDF : Scene() {
                 solidRect(300, 100, Colors.DARKGREY)
                 if (n == 0) {
                     text("HELLO WORLD áéúóúñ cooool", textSize = 32.0, font = font1).also {
-                        it.setTextBounds(MRectangle(0, 0, 300, 100))
+                        it.setTextBounds(Rectangle(0, 0, 300, 100))
                         it.alignment = TextAlignment.MIDDLE_CENTER
                     }
                 } else {

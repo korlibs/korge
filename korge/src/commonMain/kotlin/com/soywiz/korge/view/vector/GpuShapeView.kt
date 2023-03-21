@@ -151,14 +151,12 @@ open class GpuShapeView(
         invalidateShape()
     }
 
-    override fun getLocalBoundsInternal(out: MRectangle) {
-        out.setTo(
-            shapeBounds.x - anchorDispX,
-            shapeBounds.y - anchorDispY,
-            shapeBounds.width,
-            shapeBounds.height,
-        )
-    }
+    override fun getLocalBoundsInternal() = Rectangle(
+        shapeBounds.x - anchorDispX,
+        shapeBounds.y - anchorDispY,
+        shapeBounds.width,
+        shapeBounds.height,
+    )
 
     inline fun updateShape(block: ShapeBuilder.() -> Unit) {
         this.shape = buildShape { block() }

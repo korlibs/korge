@@ -145,23 +145,20 @@ abstract class BaseGraphics(
 
     final override val anchorDispX: Double get() = (anchorX * bwidth)
     final override val anchorDispY: Double get() = (anchorY * bheight)
-    override val sLeft: Double get() = _getLocalBoundsInternal(strokes = renderBoundsStrokes).x
-    override val sTop: Double get() = _getLocalBoundsInternal(strokes = renderBoundsStrokes).y
+    override val sLeft: Double get() = _getLocalBoundsInternal(strokes = renderBoundsStrokes).xD
+    override val sTop: Double get() = _getLocalBoundsInternal(strokes = renderBoundsStrokes).yD
 
     internal val _sLeft get() = sLeft
     internal val _sTop get() = sTop
 
-    override fun getLocalBoundsInternal(out: MRectangle) {
-        _getLocalBoundsInternal(out)
-    }
+    override fun getLocalBoundsInternal(): Rectangle = _getLocalBoundsInternal()
 
     private val __localBounds: MRectangle = MRectangle()
     //var boundsIncludeStrokes = false
     var boundsIncludeStrokes = true
-    private fun _getLocalBoundsInternal(out: MRectangle = __localBounds, strokes: Boolean = this.boundsIncludeStrokes): MRectangle {
+    private fun _getLocalBoundsInternal(strokes: Boolean = this.boundsIncludeStrokes): Rectangle {
         val bounds = boundsUnsafe(strokes = strokes)
-        out.setTo(bounds.x - anchorDispX, bounds.y - anchorDispY, bounds.width, bounds.height)
-        return out
+        return Rectangle(bounds.x - anchorDispX, bounds.y - anchorDispY, bounds.width, bounds.height)
     }
 
     private val _localBoundsWithStrokes = MRectangle()

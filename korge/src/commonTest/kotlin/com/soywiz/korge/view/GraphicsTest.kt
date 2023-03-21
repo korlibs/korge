@@ -151,7 +151,7 @@ class GraphicsTest {
         val p2 = Point(210, 250)
         val p3 = Point(234, 49)
         val g = CpuGraphics()
-        assertEquals(MRectangle(), g.getLocalBounds())
+        assertEquals(Rectangle(), g.getLocalBounds())
         g.updateShape {
             clear()
             stroke(Colors.DIMGREY, info = StrokeInfo(thickness = 1.0)) {
@@ -176,7 +176,7 @@ class GraphicsTest {
             }
         }
         // assertEquals(Rectangle(25, 49, 209, 201), g.getLocalBounds()) // strokes = false
-        assertEqualsFloat(MRectangle(24.5, 47.0, 211.5, 203.5), g.getLocalBounds(), 0.1)
+        assertEqualsFloat(Rectangle(24.5, 47.0, 211.5, 203.5), g.getLocalBounds(), 0.1)
     }
 
     @Test

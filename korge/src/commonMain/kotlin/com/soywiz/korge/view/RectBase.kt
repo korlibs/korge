@@ -91,9 +91,7 @@ open class RectBase(
         vertices.quad(0, sLeft, sTop, bwidth, bheight, globalMatrix, baseBitmap, renderColorMul)
     }
 
-	override fun getLocalBoundsInternal(out: MRectangle) {
-        out.setTo(sLeft, sTop, bwidth, bheight)
-	}
+	override fun getLocalBoundsInternal() = Rectangle(sLeft, sTop, bwidth, bheight)
 
     /*
 	override fun hitTest(x: Double, y: Double): View? {
