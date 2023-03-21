@@ -37,7 +37,7 @@ open class RastScale {
 class PolygonScanline : RastScale() {
     var version = -1
     var winding = Winding.NON_ZERO
-    private val boundsBuilder = BoundsBuilder()
+    private var boundsBuilder = NewBoundsBuilder()
 
     class Bucket {
         val edges = FastArrayList<MEdge>()
@@ -108,12 +108,12 @@ class PolygonScanline : RastScale() {
     internal val allEdges = FastArrayList<MEdge>()
     private val buckets = AllBuckets()
 
-    fun getBounds(out: MRectangle = MRectangle()) = boundsBuilder.getBounds(out)
+    fun getBounds(): Rectangle = boundsBuilder.bounds
 
     private var closed = true
     fun reset() {
         closed = true
-        boundsBuilder.reset()
+        boundsBuilder = NewBoundsBuilder.EMPTY
         edges.fastForEach { edgesPool.free(it) }
         hedges.fastForEach { edgesPool.free(it) }
         edges.clear()
@@ -157,8 +157,8 @@ class PolygonScanline : RastScale() {
             buckets.add(edge)
         }
 
-        boundsBuilder.add(ax, ay)
-        boundsBuilder.add(bx, by)
+        boundsBuilder += Point(ax, ay)
+        boundsBuilder += Point(bx, by)
     }
 
     var moveToX = 0.0
