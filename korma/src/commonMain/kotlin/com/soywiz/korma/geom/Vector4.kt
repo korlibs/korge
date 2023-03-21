@@ -22,6 +22,9 @@ inline class Vector4(val data: Float4Pack) {
 
         //fun cross(v1: Vector4, v2: Vector4, v3: Vector4): Vector4 = TODO()
         fun fromArray(array: FloatArray, offset: Int = 0): Vector4 = Vector4(array[offset + 0], array[offset + 1], array[offset + 2], array[offset + 3])
+
+        fun length(x: Float, y: Float, z: Float, w: Float): Float = sqrt(lengthSq(x, y, z, w))
+        fun lengthSq(x: Float, y: Float, z: Float, w: Float): Float = x * x + y * y + z * z + w * w
     }
 
     constructor(xyz: Vector3, w: Float) : this(float4PackOf(xyz.x, xyz.y, xyz.z, w))

@@ -24,6 +24,9 @@ inline class Vector3(val data: Float4Pack) {
             (a.z * b.x - a.x * b.z),
             (a.x * b.y - a.y * b.x),
         )
+
+        fun length(x: Float, y: Float, z: Float): Float = sqrt(lengthSq(x, y, z))
+        fun lengthSq(x: Float, y: Float, z: Float): Float = x * x + y * y + z * z
     }
 
     constructor(x: Float, y: Float, z: Float) : this(float4PackOf(x, y, z, 0f))
