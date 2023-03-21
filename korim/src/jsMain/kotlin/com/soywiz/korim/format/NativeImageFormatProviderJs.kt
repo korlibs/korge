@@ -366,8 +366,8 @@ class CanvasContext2dRenderer(private val canvas: HTMLCanvasElementLike) : Rende
 		}
 	}
 
-    fun CanvasTransform.transform(m: MMatrix) {
-        transform(m.a, m.b, m.c, m.d, m.tx, m.ty)
+    fun CanvasTransform.transform(m: Matrix) {
+        transform(m.a.toDouble(), m.b.toDouble(), m.c.toDouble(), m.d.toDouble(), m.tx.toDouble(), m.ty.toDouble())
     }
 
 	private fun transformPaint(paint: Paint) {
@@ -421,7 +421,7 @@ class CanvasContext2dRenderer(private val canvas: HTMLCanvasElementLike) : Rende
 
             doVisit(state.path)
 
-            ctx.transform(state.transform)
+            ctx.transform(state.transform.immutable)
 			if (fill) {
 				transformPaint(state.fillStyle)
                 //println("       - Gadient: ${}")

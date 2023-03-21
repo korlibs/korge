@@ -519,6 +519,7 @@ fun AffineTransform.setToMatrix(t: MMatrix) {
     setTransform(t.a, t.b, t.c, t.d, t.tx, t.ty)
 }
 
+fun Matrix.toAwt() = AffineTransform(a, b, c, d, tx, ty)
 fun MMatrix.toAwt() = AffineTransform(a, b, c, d, tx, ty)
 fun AffineTransform.toMatrix() = MMatrix(scaleX, shearY, shearX, scaleY, translateX, translateY)
 

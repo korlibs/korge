@@ -183,7 +183,7 @@ class GdiRenderer(val bitmap: Bitmap32, val antialiasing: Boolean) : BufferedRen
                                 //val transform = Matrix().copyFrom(style.transform)
                                 val transform = MMatrix().apply {
                                     identity()
-                                    multiply(this, style.transform)
+                                    multiply(this, style.transform.mutable)
                                     multiply(this, state.transform)
                                 }
                                 GdipSetMatrixElements(matrix, transform.af, transform.bf, transform.cf, transform.df, transform.txf, transform.tyf)

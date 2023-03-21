@@ -169,7 +169,7 @@ object GpuShapeViewPrograms {
         is BitmapPaint -> {
             val mat = MMatrix().apply {
                 identity()
-                preconcat(paint.transform)
+                preconcat(paint.transform.mutable)
                 preconcat(stateTransform)
                 //if (matrix != null) preconcat(matrix)
                 invert()
@@ -199,10 +199,10 @@ object GpuShapeViewPrograms {
 
             val npaint = paint.copy(transform = MMatrix().apply {
                 identity()
-                preconcat(paint.transform)
+                preconcat(paint.transform.mutable)
                 preconcat(stateTransform)
                 //if (matrix != null) preconcat(matrix)
-            })
+            }.immutable)
             //val mat = stateTransform * paint.gradientMatrix
             val mat = when (paint.kind) {
                 GradientKind.LINEAR -> npaint.gradientMatrix

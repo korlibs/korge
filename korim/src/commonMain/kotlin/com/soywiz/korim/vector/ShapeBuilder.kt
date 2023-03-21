@@ -93,6 +93,7 @@ open class ShapeBuilder(width: Int?, height: Int?) : Context2d(DummyRenderer), D
                 transform = MMatrix()
                     .scale(width / image.width.toDouble(), height / image.height.toDouble())
                     .translate(x, y)
+                    .immutable
             )
         ), fill = true)
     }

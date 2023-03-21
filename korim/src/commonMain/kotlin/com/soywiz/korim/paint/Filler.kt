@@ -108,10 +108,9 @@ class GradientFiller : BaseFiller() {
 
     fun set(fill: GradientPaint, state: Context2d.State): GradientFiller {
         fill.fillColors(colors)
-        this.fill = fill.copy(transform = Matrix()
-            .preconcated(fill.transform.immutable)
+        this.fill = fill.copy(transform = Matrix.IDENTITY
+            .preconcated(fill.transform)
             .preconcated(state.transform.immutable)
-            .mutable
         )
         //println("state.transform=${state.transform}")
         //this.stateTransformInv.copyFromInverted(state.transform)

@@ -26,7 +26,7 @@ class MainVectorFill : Scene() {
                 rect(0, 0, 512, 512)
             }
 
-            fill(bitmap.toPaint(MMatrix().pretranslate(0, 100).prescale(100.0 / 512.0))) {
+            fill(bitmap.toPaint(MMatrix().pretranslate(0, 100).prescale(100.0 / 512.0).immutable)) {
                 rect(0, 100, 100, 100)
             }
 

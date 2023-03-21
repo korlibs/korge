@@ -16,7 +16,7 @@ class GradientPaintTest {
 
         run {
             val filler = GradientFiller().set(
-                LinearGradientPaint(0.0, 0.0, 100.0, 100.0, transform = MMatrix().scale(0.5).pretranslate(300, 0)),
+                LinearGradientPaint(0.0, 0.0, 100.0, 100.0, transform = MMatrix().scale(0.5).pretranslate(300, 0).immutable),
                 Context2d.State(transform = MMatrix(a = 2.0, b = 0.0, c = 0.0, d = 2.0, tx = 100.0, ty = 20.0))
             )
             assertEquals(-0.5, filler.getRatio(300.0, 20.0), absoluteTolerance = 0.1)

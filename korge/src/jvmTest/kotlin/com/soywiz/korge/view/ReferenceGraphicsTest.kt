@@ -104,7 +104,7 @@ class ReferenceGraphicsTest {
                     globalAlpha = 0.75
                     fillStyle = BitmapPaint(
                         korgeBitmap,
-                        MMatrix().translate(50, 50).scale(0.125),
+                        MMatrix().translate(50, 50).scale(0.125).immutable,
                         cycleX = CycleMethod.REPEAT,
                         cycleY = CycleMethod.REPEAT
                     )

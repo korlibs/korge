@@ -158,6 +158,9 @@ inline class Point internal constructor(internal val raw: Float2Pack) {
         fun angle(ax: Double, ay: Double, bx: Double, by: Double): Angle = Angle.between(ax, ay, bx, by)
         fun angle(x1: Double, y1: Double, x2: Double, y2: Double, x3: Double, y3: Double): Angle = Angle.between(x1 - x2, y1 - y2, x1 - x3, y1 - y3)
 
+        fun angle(a: Point, b: Point): Angle = Angle.between(a, b)
+        fun angle(p1: Point, p2: Point, p3: Point): Angle = Angle.between(p1 - p2, p1 - p3)
+
         fun angleArc(a: Point, b: Point): Angle = Angle.fromRadians(acos((a dot b) / (a.length * b.length)))
         fun angleFull(a: Point, b: Point): Angle = Angle.between(a, b)
 

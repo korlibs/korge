@@ -29,6 +29,7 @@ inline class Matrix(val data: BFloat6Pack) {
     val tx: Float get() = data.bf4
     val ty: Float get() = data.bf5
 
+    @Deprecated("", ReplaceWith("this")) val immutable: Matrix get() = this
     val mutable: MMatrix get() = MMatrix(a, b, c, d, tx, ty)
 
     //constructor() : this(1f, 0f, 0f, 1f, 0f, 0f)

@@ -77,6 +77,8 @@ class SvgBuilder(
 
 fun buildSvgXml(width: Int? = null, height: Int? = null, block: ShapeBuilder.() -> Unit): Xml = buildShape(width, height) { block() }.toSvg()
 
+private fun Matrix.toSvg(roundDecimalPlaces: Int = -1): String = this.mutable.toSvg(roundDecimalPlaces)
+
 private fun MMatrix.toSvg(roundDecimalPlaces: Int = -1): String {
     val places = roundDecimalPlaces
 	return when (getType()) {

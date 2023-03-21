@@ -257,7 +257,7 @@ class AndroidContext2dRenderer(val bmp: android.graphics.Bitmap, val antialiasin
     }
 
     @Suppress("RemoveRedundantQualifierName")
-    fun convertPaint(c: com.soywiz.korim.paint.Paint, m: com.soywiz.korma.geom.MMatrix, out: Paint, alpha: Double) {
+    fun convertPaint(c: com.soywiz.korim.paint.Paint, m: com.soywiz.korma.geom.Matrix, out: Paint, alpha: Double) {
         when (c) {
             is com.soywiz.korim.paint.NonePaint -> {
                 out.shader = null
@@ -316,6 +316,20 @@ class AndroidContext2dRenderer(val bmp: android.graphics.Bitmap, val antialiasin
     }
 
     fun com.soywiz.korma.geom.MMatrix.toAndroid() = android.graphics.Matrix().setTo(this)
+    fun com.soywiz.korma.geom.Matrix.toAndroid() = android.graphics.Matrix().setTo(this)
+
+    fun android.graphics.Matrix.setTo(m: com.soywiz.korma.geom.Matrix) = this.apply {
+        matrixValues[Matrix.MSCALE_X] = m.a
+        matrixValues[Matrix.MSKEW_X] = m.b
+        matrixValues[Matrix.MSKEW_Y] = m.c
+        matrixValues[Matrix.MSCALE_Y] = m.d
+        matrixValues[Matrix.MTRANS_X] = m.tx
+        matrixValues[Matrix.MTRANS_Y] = m.ty
+        matrixValues[Matrix.MPERSP_0] = 0f
+        matrixValues[Matrix.MPERSP_1] = 0f
+        matrixValues[Matrix.MPERSP_2] = 1f
+        this.setValues(matrixValues)
+    }
 
     fun android.graphics.Matrix.setTo(m: com.soywiz.korma.geom.MMatrix) = this.apply {
         matrixValues[Matrix.MSCALE_X] = m.a.toFloat()
@@ -350,7 +364,7 @@ class AndroidContext2dRenderer(val bmp: android.graphics.Bitmap, val antialiasin
             paint.style = if (fill) Paint.Style.FILL else android.graphics.Paint.Style.STROKE
             paint.strokeCap = state.lineCap.toAndroid()
             paint.strokeJoin = state.lineJoin.toAndroid()
-            convertPaint(state.fillOrStrokeStyle(fill), state.transform, paint, state.globalAlpha.clamp01())
+            convertPaint(state.fillOrStrokeStyle(fill), state.transform.immutable, paint, state.globalAlpha.clamp01())
             paint.pathEffect = when {
                 state.lineDash != null -> DashPathEffect(state.lineDash!!.mapFloat { it.toFloat() }.toFloatArray(), state.lineDashOffset.toFloat())
                 else -> null

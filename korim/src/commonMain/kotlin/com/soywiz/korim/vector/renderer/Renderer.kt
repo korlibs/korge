@@ -71,6 +71,7 @@ abstract class Renderer {
                     transform = MMatrix()
                         .scale(width / image.width.toDouble(), height / image.height.toDouble())
                         .translate(x, y)
+                        .immutable
                 )
             ),
             fill = true
