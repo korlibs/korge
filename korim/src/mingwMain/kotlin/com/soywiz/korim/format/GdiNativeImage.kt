@@ -181,12 +181,8 @@ class GdiRenderer(val bitmap: Bitmap32, val antialiasing: Boolean) : BufferedRen
                                 GdipCreateMatrix(pmatrix)
                                 val matrix = pmatrix[0]
                                 //val transform = Matrix().copyFrom(style.transform)
-                                val transform = MMatrix().apply {
-                                    identity()
-                                    multiply(this, style.transform.mutable)
-                                    multiply(this, state.transform)
-                                }
-                                GdipSetMatrixElements(matrix, transform.af, transform.bf, transform.cf, transform.df, transform.txf, transform.tyf)
+                                val transform = Matrix.IDENTITY * style.transform * state.transform
+                                GdipSetMatrixElements(matrix, transform.a, transform.b, transform.c, transform.d, transform.tx, transform.ty)
                                 when (style) {
                                     is BitmapPaint -> {
                                         val bmp = style.bmp32
