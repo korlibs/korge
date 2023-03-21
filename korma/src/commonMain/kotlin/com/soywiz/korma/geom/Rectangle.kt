@@ -75,7 +75,7 @@ inline class Rectangle(val data: Float4Pack) {
     operator fun div(scale: Int): Rectangle = this / scale.toFloat()
 
     operator fun contains(that: Point): Boolean = contains(that.x, that.y)
-    operator fun contains(that: PointInt): Boolean = contains(that.x, that.y)
+    operator fun contains(that: Vector2Int): Boolean = contains(that.x, that.y)
     fun contains(x: Float, y: Float): Boolean = (x >= left && x < right) && (y >= top && y < bottom)
     fun contains(x: Double, y: Double): Boolean = contains(x.toFloat(), y.toFloat())
     fun contains(x: Int, y: Int): Boolean = contains(x.toFloat(), y.toFloat())

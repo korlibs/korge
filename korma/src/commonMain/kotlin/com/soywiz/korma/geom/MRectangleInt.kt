@@ -43,7 +43,7 @@ inline class MRectangleInt(val rect: MRectangle) {
     operator fun contains(v: MSizeInt): Boolean = contains(v.immutable)
     operator fun contains(that: Point) = contains(that.x, that.y)
     operator fun contains(that: MPoint) = contains(that.x, that.y)
-    operator fun contains(that: PointInt) = contains(that.x, that.y)
+    operator fun contains(that: Vector2Int) = contains(that.x, that.y)
     operator fun contains(that: MPointInt) = contains(that.x, that.y)
     fun contains(x: Double, y: Double) = (x >= left && x < right) && (y >= top && y < bottom)
     fun contains(x: Float, y: Float) = contains(x.toDouble(), y.toDouble())

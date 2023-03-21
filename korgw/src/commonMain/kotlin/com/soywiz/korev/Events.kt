@@ -5,7 +5,6 @@ import com.soywiz.kds.iterators.*
 import com.soywiz.klock.*
 import com.soywiz.kmem.*
 import com.soywiz.korio.file.*
-import com.soywiz.korio.lang.*
 import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 
@@ -87,7 +86,7 @@ data class MouseEvent(
     var scrollDeltaMode: ScrollDeltaMode = ScrollDeltaMode.LINE
 ) : Event(), TEvent<MouseEvent> {
     //companion object : EventType<MouseEvent>
-    val pos: PointInt get() = PointInt(x, y)
+    val pos: Vector2Int get() = Vector2Int(x, y)
 
     var component: Any? = null
 

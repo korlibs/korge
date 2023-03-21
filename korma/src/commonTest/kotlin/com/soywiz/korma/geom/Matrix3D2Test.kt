@@ -117,7 +117,7 @@ class Matrix3D2Test {
     fun testConvert() {
         val mat = MMatrix().translate(100, 20).scale(2, 2)
         assertEquals(MPoint(240, 60), mat.transform(MPoint(20, 10)))
-        val m3d = mat.toMatrix3D()
+        val m3d = mat.toMatrix4()
         assertEquals(MVector4(240, 60, 0, 1), m3d.transform(MVector4(20, 10, 0, 1)))
     }
 }

@@ -1,11 +1,10 @@
 package com.soywiz.korma.geom
 
 import com.soywiz.kmem.pack.*
-import com.soywiz.korma.annotations.*
 
 //@KormaValueApi
 inline class RectangleInt(val data: Int4Pack) {
-    val position: PointInt get() = PointInt(data.i0, data.i1)
+    val position: Vector2Int get() = Vector2Int(data.i0, data.i1)
     val size: SizeInt get() = SizeInt(data.i2, data.i3)
 
     val x: Int get() = data.i0
@@ -23,14 +22,14 @@ inline class RectangleInt(val data: Int4Pack) {
     val right: Int get() = x + width
     val bottom: Int get() = y + height
 
-    val topLeft: PointInt get() = PointInt(left, top)
-    val topRight: PointInt get() = PointInt(right, top)
-    val bottomLeft: PointInt get() = PointInt(left, bottom)
-    val bottomRight: PointInt get() = PointInt(right, bottom)
+    val topLeft: Vector2Int get() = Vector2Int(left, top)
+    val topRight: Vector2Int get() = Vector2Int(right, top)
+    val bottomLeft: Vector2Int get() = Vector2Int(left, bottom)
+    val bottomRight: Vector2Int get() = Vector2Int(right, bottom)
 
     val centerX: Int get() = ((right + left) * 0.5f).toInt()
     val centerY: Int get() = ((bottom + top) * 0.5f).toInt()
-    val center: PointInt get() = PointInt(centerX, centerY)
+    val center: Vector2Int get() = Vector2Int(centerX, centerY)
 
     fun toFloat(): Rectangle = Rectangle(position.toFloat(), size.toFloat())
 
@@ -51,14 +50,14 @@ inline class RectangleInt(val data: Int4Pack) {
     operator fun div(scale: Int): RectangleInt = this / scale.toFloat()
 
     operator fun contains(that: Point): Boolean = contains(that.x, that.y)
-    operator fun contains(that: PointInt): Boolean = contains(that.x, that.y)
+    operator fun contains(that: Vector2Int): Boolean = contains(that.x, that.y)
     fun contains(x: Float, y: Float): Boolean = (x >= left && x < right) && (y >= top && y < bottom)
     fun contains(x: Double, y: Double): Boolean = contains(x.toFloat(), y.toFloat())
     fun contains(x: Int, y: Int): Boolean = contains(x.toFloat(), y.toFloat())
 
-    constructor() : this(PointInt(), SizeInt())
-    constructor(position: PointInt, size: SizeInt) : this(int4PackOf(position.x, position.y, size.width, size.height))
-    constructor(x: Int, y: Int, width: Int, height: Int) : this(PointInt(x, y), SizeInt(width, height))
+    constructor() : this(Vector2Int(), SizeInt())
+    constructor(position: Vector2Int, size: SizeInt) : this(int4PackOf(position.x, position.y, size.width, size.height))
+    constructor(x: Int, y: Int, width: Int, height: Int) : this(Vector2Int(x, y), SizeInt(width, height))
 
     fun sliceWithBounds(left: Int, top: Int, right: Int, bottom: Int, clamped: Boolean = true): RectangleInt {
         val left = if (!clamped) left else left.coerceIn(0, this.width)
@@ -84,7 +83,7 @@ inline class RectangleInt(val data: Int4Pack) {
             kotlin.math.max(a.bottom, b.bottom)
         )
 
-        fun fromBounds(topLeft: PointInt, bottomRight: PointInt): RectangleInt = RectangleInt(topLeft, (bottomRight - topLeft).toSize())
-        fun fromBounds(left: Int, top: Int, right: Int, bottom: Int): RectangleInt = fromBounds(PointInt(left, top), PointInt(right, bottom))
+        fun fromBounds(topLeft: Vector2Int, bottomRight: Vector2Int): RectangleInt = RectangleInt(topLeft, (bottomRight - topLeft).toSize())
+        fun fromBounds(left: Int, top: Int, right: Int, bottom: Int): RectangleInt = fromBounds(Vector2Int(left, top), Vector2Int(right, bottom))
     }
 }

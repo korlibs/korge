@@ -99,7 +99,7 @@ class RenderContext constructor(
             projMat.setToOrtho(tempRect.setBounds(0, currentFrameBuffer.height, currentFrameBuffer.width, 0), -1f, 1f)
         } else {
             projMat.setToOrtho(tempRect.setBounds(0, 0, currentFrameBuffer.width, currentFrameBuffer.height), -1f, 1f)
-            projMat.multiply(projMat, projectionMatrixTransform.toMatrix3D(tempMat3d))
+            projMat.multiply(projMat, projectionMatrixTransform.toMatrix4(tempMat3d))
         }
 
         //println("updateStandardUniforms!!!")

@@ -47,7 +47,7 @@ fun BoundsDrawable.renderWithHotspot(scale: Double? = null, fit: MSize? = null, 
         translate(-bounds.x, -bounds.y)
         draw(this@renderWithHotspot)
     }
-    return BitmapWithHotspot(image, PointInt(
+    return BitmapWithHotspot(image, Vector2Int(
         (-bounds.left * rscale).toInt().clamp(0, image.width - 1),
         (-bounds.top * rscale).toInt().clamp(0, image.height - 1),
     ))

@@ -131,7 +131,7 @@ class LineRenderBatcher(
         ctx.flush()
         return tempViewMat.alloc { temp ->
             temp.copyFrom(viewMat)
-            matrix.toMatrix3D(viewMat)
+            matrix.toMatrix4(viewMat)
             try {
                 body()
             } finally {

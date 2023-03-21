@@ -8,7 +8,7 @@ import com.soywiz.korma.interpolation.*
 inline class MPointInt(val p: MPoint) : Comparable<MPointInt>, MutableInterpolable<MPointInt> {
     override fun compareTo(other: MPointInt): Int = compare(this.x, this.y, other.x, other.y)
 
-    val point: PointInt get() = PointInt(x, y)
+    val point: Vector2Int get() = Vector2Int(x, y)
 
     companion object {
         operator fun invoke(): MPointInt = MPointInt(0, 0)

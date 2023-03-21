@@ -7,6 +7,8 @@ import com.soywiz.korma.interpolation.*
 import com.soywiz.korma.math.*
 import kotlin.math.*
 
+typealias MVector2D = MPoint
+
 @KormaMutableApi
 @Deprecated("Use Point instead")
 data class MPoint(

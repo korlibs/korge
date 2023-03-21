@@ -4,7 +4,6 @@ import com.soywiz.korim.color.*
 import com.soywiz.korim.vector.*
 import com.soywiz.korio.async.*
 import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.vector.*
 import kotlin.test.*
 
 class GameWindowTest {
@@ -20,7 +19,7 @@ class GameWindowTest {
         })
         val bitmap = cursor.createBitmap()
         assertEquals(SizeInt(64, 32), bitmap.bitmap.size)
-        assertEquals(PointInt(32, 31), bitmap.hotspot)
+        assertEquals(Vector2Int(32, 31), bitmap.hotspot)
         assertEquals(MPointInt(32, 31), bitmap.mhotspot)
         //bitmap.bitmap.showImageAndWait()
     }

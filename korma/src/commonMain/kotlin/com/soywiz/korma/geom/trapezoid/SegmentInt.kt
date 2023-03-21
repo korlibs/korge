@@ -7,7 +7,7 @@ import com.soywiz.korma.geom.*
 // @TODO: What about [Line]?
 @KormaValueApi
 data class SegmentInt(
-    val p0: PointInt,val p1: PointInt
+    val p0: Vector2Int, val p1: Vector2Int
 )
 
 @KormaMutableApi

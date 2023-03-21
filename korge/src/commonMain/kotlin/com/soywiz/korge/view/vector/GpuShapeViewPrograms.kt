@@ -180,7 +180,7 @@ object GpuShapeViewPrograms {
             PaintShader(
                 AGUniformValues {
                     it[u_ProgramType] = PROGRAM_TYPE_BITMAP.toFloat()
-                    it[u_Transform] = mat.toMatrix3D() // @TODO: Why is this transposed???
+                    it[u_Transform] = mat.toMatrix4() // @TODO: Why is this transposed???
                     it[u_GlobalAlpha] = globalAlpha.toFloat()
                     //u_LineWidth to lineWidth.toFloat(),
                     //}, GpuShapeView.PROGRAM_BITMAP)
@@ -212,7 +212,7 @@ object GpuShapeViewPrograms {
                         GradientKind.SWEEP -> PROGRAM_TYPE_GRADIENT_SWEEP
                         else -> PROGRAM_TYPE_GRADIENT_LINEAR
                     }
-                    it[u_Transform] = mat.toMatrix3D()
+                    it[u_Transform] = mat.toMatrix4()
                     it[u_Gradientp0] = MVector4(paint.x0.toFloat(), paint.y0.toFloat(), paint.r0.toFloat())
                     it[u_Gradientp1] = MVector4(paint.x1.toFloat(), paint.y1.toFloat(), paint.r1.toFloat())
                     it[u_GlobalAlpha] = globalAlpha.toFloat()

@@ -74,7 +74,7 @@ open class UniformBlock(val fixedLocation: Int) {
     protected fun short4(name: String? = null): Gen<List<Boolean>> = gen(name, VarType.Short4, 8, 2)
     protected fun sampler2D(name: String? = null): Gen<Int> = gen(name, VarType.Sampler2D, 4, 4)
     protected fun int(name: String? = null): Gen<Int> = gen(name, VarType.SInt1, 4, 4)
-    protected fun ivec2(name: String? = null): Gen<PointInt> = gen(name, VarType.SInt2, 8, 4)
+    protected fun ivec2(name: String? = null): Gen<Vector2Int> = gen(name, VarType.SInt2, 8, 4)
     protected fun float(name: String? = null): Gen<Float> = gen(name, VarType.Float1, 4, 4)
     protected fun vec2(name: String? = null): Gen<Vector2> = gen(name, VarType.Float2, 8, 4)
     // @TODO: Some drivers get this wrong

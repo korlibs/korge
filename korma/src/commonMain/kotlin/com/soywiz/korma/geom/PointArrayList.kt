@@ -358,7 +358,7 @@ open class PointIntArrayList(capacity: Int = 7) : MPointIntArrayList, Extra by E
         xList += x
         yList += y
     }
-    fun add(p: PointInt) = add(p.x, p.y)
+    fun add(p: Vector2Int) = add(p.x, p.y)
     fun add(p: MPointInt) = add(p.x, p.y)
     fun add(p: MPointIntArrayList) = this.apply { p.fastForEach { x, y -> add(x, y) } }
     fun addReverse(p: MPointIntArrayList) = this.apply { p.fastForEachReverse { x, y -> add(x, y) } }

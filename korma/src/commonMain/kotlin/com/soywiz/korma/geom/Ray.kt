@@ -1,15 +1,10 @@
 package com.soywiz.korma.geom
 
-import com.soywiz.korma.annotations.*
+import com.soywiz.kmem.pack.*
 
-@KormaValueApi
-data class Ray(val point: Point, val direction: Point)
+inline class Ray(val data: Float4Pack) {
+    val point: Point get() = Point(data.f0, data.f1)
+    val direction: Point get() = Point(data.f2, data.f3)
 
-@KormaMutableApi
-sealed interface IRay {
-    val point: MPoint
-    val direction: MVector2D
+    constructor(point: Point, direction: Point) : this(float4PackOf(point.x, point.y, direction.x, direction.y))
 }
-
-@KormaMutableApi
-data class MRay(override val point: MPoint, override val direction: MVector2D) : IRay

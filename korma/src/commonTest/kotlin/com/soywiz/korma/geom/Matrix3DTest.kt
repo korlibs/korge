@@ -98,13 +98,13 @@ class Matrix3DTest {
     fun test3() {
         run {
             val mat = MMatrix(2, 0, 0, 2, 20, 20)
-            val mat4 = mat.toMatrix3D()
+            val mat4 = mat.toMatrix4()
             assertEquals(MPoint(40, 40), mat.transform(MPoint(10, 10)))
             assertEquals(MVector4(40, 40, 0), mat4.transform(MVector4(10f, 10f, 0f)))
         }
         run {
             val mat = MMatrix(1, 2, 3, 4, 5, 6)
-            val mat4 = mat.toMatrix3D()
+            val mat4 = mat.toMatrix4()
             assertEquals(MPoint(45, 66), mat.transform(MPoint(10, 10)))
             assertEquals(MVector4(45, 66, 0), mat4.transform(MVector4(10f, 10f, 0f)))
         }

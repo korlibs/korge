@@ -21,14 +21,14 @@ class MEdge {
 
         fun areParallel(a: MEdge, b: MEdge) = ((a.by - a.ay) * (b.ax - b.bx)) - ((b.by - b.ay) * (a.ax - a.bx)) == 0
         fun getIntersectXY(a: MEdge, b: MEdge): Point? = _getIntersectXY(a, b)?.let { Point(it.x, it.y) }
-        fun getIntersectXYInt(a: MEdge, b: MEdge): PointInt? = _getIntersectXY(a, b)
+        fun getIntersectXYInt(a: MEdge, b: MEdge): Vector2Int? = _getIntersectXY(a, b)
 
         fun angleBetween(a: MEdge, b: MEdge): Angle {
             return b.angle - a.angle
         }
 
         // https://www.geeksforgeeks.org/program-for-point-of-intersection-of-two-lines/
-        inline fun _getIntersectXY(a: MEdge, b: MEdge): PointInt? {
+        inline fun _getIntersectXY(a: MEdge, b: MEdge): Vector2Int? {
             val Ax: Double = a.ax.toDouble()
             val Ay: Double = a.ay.toDouble()
             val Bx: Double = a.bx.toDouble()
@@ -37,7 +37,7 @@ class MEdge {
             val Cy: Double = b.ay.toDouble()
             val Dx: Double = b.bx.toDouble()
             val Dy: Double = b.by.toDouble()
-            return getIntersectXY(Ax, Ay, Bx, By, Cx, Cy, Dx, Dy)?.let { PointInt(floorCeil(it.xD).toInt(), floorCeil(it.yD).toInt()) }
+            return getIntersectXY(Ax, Ay, Bx, By, Cx, Cy, Dx, Dy)?.let { Vector2Int(floorCeil(it.xD).toInt(), floorCeil(it.yD).toInt()) }
         }
 
         fun getIntersectXY(Ax: Double, Ay: Double, Bx: Double, By: Double, Cx: Double, Cy: Double, Dx: Double, Dy: Double): Point? {

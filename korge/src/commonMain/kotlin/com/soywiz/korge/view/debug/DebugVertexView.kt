@@ -14,9 +14,8 @@ import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korma.geom.BoundsBuilder
 import com.soywiz.korma.geom.IVectorArrayList
-import com.soywiz.korma.geom.MRectangle
 import com.soywiz.korma.geom.fastForEachGeneric
-import com.soywiz.korma.geom.toMatrix3D
+import com.soywiz.korma.geom.toMatrix4
 
 inline fun Container.debugVertexView(
     pointsList: List<IVectorArrayList> = listOf(),
@@ -100,7 +99,7 @@ class DebugVertexView(pointsList: List<IVectorArrayList>, color: RGBA = Colors.W
         ctx.updateStandardUniforms()
         this.uniforms.put(ctx.uniforms)
         this.uniforms[u_Col] = renderColorMul
-        this.uniforms[u_Matrix] = globalMatrix.toMatrix3D()
+        this.uniforms[u_Matrix] = globalMatrix.toMatrix4()
 
         ctx.dynamicVertexBufferPool.alloc { vb ->
             vb.upload(this@DebugVertexView.buffer)
