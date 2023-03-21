@@ -13,20 +13,41 @@ inline class Vector4(val data: Float4Pack) {
         val ZERO = Vector4(0f, 0f, 0f, 0f)
         val ONE = Vector4(1f, 1f, 1f, 1f)
 
-        fun cross(v1: Vector4, v2: Vector4, v3: Vector4): Vector4 = TODO()
+        //fun cross(a: Vector4, b: Vector4): Vector4 = Vector4(
+        //    (a.y * b.z - a.z * b.y),
+        //    (a.z * b.x - a.x * b.z),
+        //    (a.x * b.y - a.y * b.x),
+        //    1f
+        //)
+
+        //fun cross(v1: Vector4, v2: Vector4, v3: Vector4): Vector4 = TODO()
+        fun fromArray(array: FloatArray, offset: Int = 0): Vector4 = Vector4(array[offset + 0], array[offset + 1], array[offset + 2], array[offset + 3])
     }
 
+    constructor(xyz: Vector3, w: Float) : this(float4PackOf(xyz.x, xyz.y, xyz.z, w))
     constructor(x: Float, y: Float, z: Float, w: Float) : this(float4PackOf(x, y, z, w))
     constructor(x: Int, y: Int, z: Int, w: Int) : this(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat())
     constructor(x: Double, y: Double, z: Double, w: Double) : this(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat())
+
+    operator fun component1(): Float = x
+    operator fun component2(): Float = y
+    operator fun component3(): Float = z
+    operator fun component4(): Float = w
 
     val x: Float get() = data.f0
     val y: Float get() = data.f1
     val z: Float get() = data.f2
     val w: Float get() = data.f3
 
+    val xyz: Vector3 get() = Vector3(x, y, z)
+
+    val length3Squared: Float get() = (x * x) + (y * y) + (z * z)
+    /** Only taking into accoount x, y, z */
+    val length3: Float get() = sqrt(length3Squared)
+
     val lengthSquared: Float get() = (x * x) + (y * y) + (z * z) + (w * w)
     val length: Float get() = sqrt(lengthSquared)
+
     fun normalized(): Vector4 = this / length
 
     operator fun get(index: Int): Float = when (index) {
@@ -52,9 +73,23 @@ inline class Vector4(val data: Float4Pack) {
     operator fun rem(v: Float): Vector4 = Vector4(x % v, y % v, z % v, w % v)
     
     infix fun dot(v: Vector4): Float = (x * v.x) + (y * v.y) + (z * v.z) + (w * v.w)
+    //infix fun cross(v: Vector4): Vector4 = cross(this, v)
+
+    fun copy(x: Float = this.x, y: Float = this.y, z: Float = this.z, w: Float = this.w): Vector4 = Vector4(x, y, z, w)
+
+    fun copyTo(out: FloatArray, offset: Int = 0): FloatArray {
+        out[offset + 0] = x
+        out[offset + 1] = y
+        out[offset + 2] = z
+        out[offset + 3] = w
+        return out
+    }
 
     override fun toString(): String = "Vector4(${x.niceStr}, ${y.niceStr}, ${z.niceStr}, ${w.niceStr})"
 }
+
+fun vec(x: Float, y: Float, z: Float, w: Float): Vector4 = Vector4(x, y, z, w)
+fun vec4(x: Float, y: Float, z: Float, w: Float = 1f): Vector4 = Vector4(x, y, z, w)
 
 typealias MVector3D = MVector4
 
@@ -81,6 +116,7 @@ interface Vector4 : Vector3, IVector4 {
 */
 
 @KormaMutableApi
+@Deprecated("")
 sealed interface IVector4 {
     val x: Float
     val y: Float
@@ -98,6 +134,7 @@ sealed interface IVector4 {
 
 // @TODO: To inline class wrapping FloatArray?
 @KormaMutableApi
+@Deprecated("")
 class MVector4 : IVector4 {
     val data = floatArrayOf(0f, 0f, 0f, 1f)
 
