@@ -40,7 +40,7 @@ fun BitmapFont.drawText(
                 (dy + glyph.yoffset).toFloat(),
                 tex.width.toFloat(),
                 tex.height.toFloat(),
-                m = m2,
+                m = m2.immutable,
                 colorMul = colMul,
                 blendMode = blendMode,
                 filtering = filtering,

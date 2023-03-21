@@ -23,7 +23,7 @@ class UIImage(
     scaleMode: ScaleMode = ScaleMode.NO_SCALE,
     contentAnchor: Anchor = Anchor.TOP_LEFT,
 ) : UIView(width, height) {
-    private val cachedGlobalMatrix = MMatrix()
+    private var cachedGlobalMatrix = Matrix.IDENTITY
     private var validCoords: Boolean = false
 
     @ViewProperty
@@ -66,7 +66,7 @@ class UIImage(
     override fun renderInternal(ctx: RenderContext) {
         if (!validCoords || cachedGlobalMatrix != globalMatrix) {
             validCoords = true
-            cachedGlobalMatrix.copyFrom(globalMatrix)
+            cachedGlobalMatrix = globalMatrix
 
             // @TODO: Can we generalize this to be placed in KorMA?
             val bitmapSize = bitmap.bounds.size.toFloat()
@@ -86,10 +86,10 @@ class UIImage(
 
             vertices.quad(
                 0,
-                realL.toFloat(),
-                realT.toFloat(),
-                (realR - realL).toFloat(),
-                (realB - realT).toFloat(),
+                realL,
+                realT,
+                (realR - realL),
+                (realB - realT),
                 globalMatrix,
                 ratioL.convertRange(0f, 1f, bitmap.tlX, bitmap.trX),
                 ratioT.convertRange(0f, 1f, bitmap.tlY, bitmap.blY),

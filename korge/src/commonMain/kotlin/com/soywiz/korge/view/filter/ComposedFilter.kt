@@ -70,7 +70,7 @@ open class ComposedFilter private constructor(
 
     final override fun render(
         ctx: RenderContext,
-        matrix: MMatrix,
+        matrix: Matrix,
         texture: Texture,
         texWidth: Int,
         texHeight: Int,

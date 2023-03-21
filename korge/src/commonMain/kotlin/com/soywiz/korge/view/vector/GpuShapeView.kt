@@ -206,7 +206,7 @@ open class GpuShapeView(
                     renderCommands(ctx, doRequireTexture)
                 }, hasDepth = false, hasStencil = true, msamples = 1) { texture ->
                     ctx.useBatcher {
-                        it.drawQuad(texture, m = ctx.bp.windowToGlobalMatrix)
+                        it.drawQuad(texture, m = ctx.bp.windowToGlobalMatrix.immutable)
                     }
                 }
             } else {
@@ -217,11 +217,10 @@ open class GpuShapeView(
         //println("GPU RENDER IN: $time, doRequireTexture=$doRequireTexture")
     }
 
-    private val renderMat = MMatrix()
+    private var renderMat = Matrix()
     private fun renderCommands(ctx: RenderContext, doRequireTexture: Boolean) {
-        val mat = if (doRequireTexture) globalMatrix * ctx.bp.globalToWindowMatrix else globalMatrix
-        renderMat.copyFrom(mat)
-        renderMat.pretranslate(-anchorDispX, -anchorDispY)
+        val mat = if (doRequireTexture) globalMatrix * ctx.bp.globalToWindowMatrix.immutable else globalMatrix
+        renderMat = mat.pretranslated(-anchorDispX, -anchorDispY)
         requireShape()
         gpuShapeViewCommands.render(ctx, renderMat, localMatrix, applyScissor, renderColorMul, doRequireTexture)
     }

@@ -137,7 +137,7 @@ abstract class ShaderFilter : Filter {
 
     override fun render(
         ctx: RenderContext,
-        matrix: MMatrix,
+        matrix: Matrix,
         texture: Texture,
         texWidth: Int,
         texHeight: Int,

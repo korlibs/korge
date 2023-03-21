@@ -230,7 +230,7 @@ open class Text(
                 val bmpfont = font as BitmapFont
                 val tex = bmpfont.baseBmp
                 batch.setStateFast(tex, smoothing, renderBlendMode, bmpfont.agProgram, icount = tva.icount, vcount = tva.vcount)
-                batch.drawVertices(tva, tempMatrix)
+                batch.drawVertices(tva, tempMatrix.immutable)
             }
         } else {
             super.renderInternal(ctx)

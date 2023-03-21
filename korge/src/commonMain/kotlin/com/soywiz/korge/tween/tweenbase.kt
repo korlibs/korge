@@ -112,6 +112,9 @@ operator fun <V : Interpolable<V>> KMutableProperty0<V>.get(end: V) = V2(this, t
 @JvmName("getMutableProperty")
 operator fun <V : Interpolable<V>> KMutableProperty0<V>.get(initial: V, end: V) = V2(this, initial, end, ::_interpolateInterpolable, includeStart = true)
 
+@JvmName("getMutablePropertyPoint") operator fun KMutableProperty0<Matrix>.get(end: Matrix) = V2(this, this.get(), end, ::_interpolateMatrix, includeStart = false)
+@JvmName("getMutablePropertyPoint") operator fun KMutableProperty0<Matrix>.get(initial: Matrix, end: Matrix) = V2(this, initial, end, ::_interpolateMatrix, includeStart = true)
+
 @JvmName("getMutablePropertyPoint") operator fun KMutableProperty0<Point>.get(end: Point) = V2(this, this.get(), end, ::_interpolatePoint, includeStart = false)
 @JvmName("getMutablePropertyPoint") operator fun KMutableProperty0<Point>.get(initial: Point, end: Point) = V2(this, initial, end, ::_interpolatePoint, includeStart = true)
 
@@ -124,6 +127,7 @@ operator fun <V : Interpolable<V>> KMutableProperty0<V>.get(initial: V, end: V) 
 @PublishedApi internal fun _interpolate(ratio: Ratio, l: Double, r: Double): Double = ratio.interpolate(l, r)
 @PublishedApi internal fun _interpolateInt(ratio: Ratio, l: Int, r: Int): Int = ratio.interpolate(l, r)
 @PublishedApi internal fun <V : Interpolable<V>> _interpolateInterpolable(ratio: Ratio, l: V, r: V): V = ratio.interpolate(l, r)
+@PublishedApi internal fun _interpolateMatrix(ratio: Ratio, l: Matrix, r: Matrix): Matrix = ratio.interpolate(l, r)
 @PublishedApi internal fun _interpolatePoint(ratio: Ratio, l: Point, r: Point): Point = ratio.interpolate(l, r)
 @PublishedApi internal fun _interpolateSize(ratio: Ratio, l: Size, r: Size): Size = ratio.interpolate(l, r)
 @PublishedApi internal fun _interpolateScale(ratio: Ratio, l: Scale, r: Scale): Scale = ratio.interpolate(l, r)

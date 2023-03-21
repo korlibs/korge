@@ -51,37 +51,36 @@ class NinePatch(
 		if (!visible) return
         lazyLoadRenderInternal(ctx, this)
 
-		val m = globalMatrix
+		val gm = globalMatrix
 
-		val xscale = m.a
-		val yscale = m.d
+		val xscale = gm.a
+		val yscale = gm.d
 
 		bounds.setTo(0, 0, (width * xscale).toInt(), (height * yscale).toInt())
 
-		m.keepMatrix {
-			m.prescale(1.0 / xscale, 1.0 / yscale)
-            val ninePatch = ninePatch
-            if (ninePatch != null) {
-                recomputeVerticesIfRequired()
-                val tvaCached = this@NinePatch.tvaCached
-                if (tvaCached != null) {
-                    if (cachedMatrix != m) {
-                        cachedMatrix.copyFrom(m)
-                        tvaCached.copyFrom(tva!!)
-                        tvaCached.applyMatrix(m)
-                    }
-                    ctx.useBatcher { batch ->
-                        batch.drawVertices(tvaCached, ctx.getTex(ninePatch.content.bmp), smoothing, blendMode)
-                    }
+        val m = gm.prescaled(1.0 / xscale, 1.0 / yscale)
+
+        val ninePatch = ninePatch
+        if (ninePatch != null) {
+            recomputeVerticesIfRequired()
+            val tvaCached = this@NinePatch.tvaCached
+            if (tvaCached != null) {
+                if (cachedMatrix != m) {
+                    cachedMatrix = m
+                    tvaCached.copyFrom(tva!!)
+                    tvaCached.applyMatrix(m)
+                }
+                ctx.useBatcher { batch ->
+                    batch.drawVertices(tvaCached, ctx.getTex(ninePatch.content.bmp), smoothing, blendMode)
                 }
             }
-		}
+        }
 	}
 
     internal var renderedVersion = 0
     private var tva: TexturedVertexArray? = null
     private var tvaCached: TexturedVertexArray? = null
-    private var cachedMatrix: MMatrix = MMatrix()
+    private var cachedMatrix: Matrix = Matrix.IDENTITY
     private var cachedRenderColorMul = Colors.WHITE
 
     private var cachedNinePatch: NinePatchBmpSlice? = null
@@ -103,18 +102,17 @@ class NinePatch(
         val indices = TexturedVertexArray.quadIndices(numQuads)
         val tva = TexturedVertexArray(numQuads * 4, indices)
         var index = 0
-        val matrix = MMatrix()
         ninePatch.info.computeScale(viewBounds) { segment, x, y, width, height ->
             val bmpSlice = ninePatch.getSegmentBmpSlice(segment)
             tva.quad(index++ * 4,
                 x.toFloat(), y.toFloat(),
                 width.toFloat(), height.toFloat(),
-                matrix, bmpSlice, renderColorMul
+                Matrix.IDENTITY, bmpSlice, renderColorMul
             )
         }
         this.tva = tva
         this.tvaCached = TexturedVertexArray(numQuads * 4, indices)
-        this.cachedMatrix.setToNan()
+        this.cachedMatrix = Matrix.NaN
         renderedVersion++
     }
 

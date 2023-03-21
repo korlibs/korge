@@ -9,16 +9,6 @@ import kotlin.collections.set
 
 @PublishedApi
 internal class ViewCollisionContext {
-    val tempMat = MMatrix()
-    val tempRect1 = MRectangle()
-    val tempRect2 = MRectangle()
-    val tempVectorPath1 = listOf(VectorPath())
-    val tempVectorPath2 = listOf(VectorPath())
-
-    val ident = MMatrix()
-    val lmat = MMatrix()
-    val rmat = MMatrix()
-
     fun getVectorPath(view: View, out: List<VectorPath>): List<VectorPath> {
         val hitShape = view.hitShape
         val hitShapes = view.hitShapes
@@ -39,10 +29,10 @@ internal class ViewCollisionContext {
         if (kind == CollisionKind.SHAPE) {
             val leftShape = left.hitShape2d
             val rightShape = right.hitShape2d
-            val ml = left.getGlobalMatrixWithAnchor(lmat)
-            val mr = right.getGlobalMatrixWithAnchor(rmat)
+            val ml = left.getGlobalMatrixWithAnchor()
+            val mr = right.getGlobalMatrixWithAnchor()
             //println("intersects[$result]: left=$leftShape, right=$rightShape, ml=$ml, mr=$mr")
-            return Shape2d.intersects(leftShape, ml, rightShape, mr, tempMat)
+            return Shape2d.intersects(leftShape, ml, rightShape, mr)
         }
         return true
     }

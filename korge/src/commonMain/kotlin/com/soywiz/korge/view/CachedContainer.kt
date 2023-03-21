@@ -42,7 +42,6 @@ open class CachedContainer(
     }
 
     private var _cacheTex: CacheTexture? = null
-    private val tempMat2d = MMatrix()
     private var dirty = true
     private var scaledCache = -1.0
     private var lbounds = MRectangle()
@@ -80,11 +79,11 @@ open class CachedContainer(
             cache.resize(texWidth, texHeight)
             ctx.renderToFrameBuffer(cache.rb) {
                 //ctx.ag.clear(Colors.TRANSPARENT, clearColor = true)
-                ctx.setViewMatrixTemp(tempMat2d.also {
-                    it.copyFrom(globalMatrixInv)
-                    it.translate(-lbounds.x, -lbounds.y)
-                    it.scale(renderScale)
-                }) {
+                ctx.setViewMatrixTemp(globalMatrixInv
+                    .translated(-lbounds.x, -lbounds.y)
+                    .scaled(renderScale)
+                    .mutable
+                ) {
                     super.renderInternal(ctx)
                 }
             }
@@ -93,11 +92,10 @@ open class CachedContainer(
         ctx.useBatcher { batch ->
             batch.drawQuad(
                 cache.tex,
-                m = tempMat2d.also {
-                    it.copyFrom(globalMatrix)
-                    it.pretranslate(lbounds.x, lbounds.y)
-                    it.prescale(1.0 / renderScale)
-                },
+                m = globalMatrix
+                    .pretranslated(lbounds.x, lbounds.y)
+                    .prescaled(1.0 / renderScale)
+                ,
                 colorMul = renderColorMul,
                 blendMode = blendMode,
             )

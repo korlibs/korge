@@ -60,7 +60,7 @@ class TexturedVertexArray(vcount: Int, val indices: ShortArray, icount: Int = in
         inline fun quadIndices(quadCount: Int): ShortArray = TEXTURED_ARRAY_quadIndices(quadCount)
 
         /** This doesn't handle holes */
-        fun fromPointArrayList(points: PointList, colorMul: RGBA = Colors.WHITE, matrix: MMatrix? = null): TexturedVertexArray {
+        fun fromPointArrayList(points: PointList, colorMul: RGBA = Colors.WHITE, matrix: Matrix = Matrix.NIL): TexturedVertexArray {
             val indices = ShortArray((points.size - 2) * 3)
             for (n in 0 until points.size - 2) {
                 indices[n * 3 + 0] = (0).toShort()
@@ -74,7 +74,7 @@ class TexturedVertexArray(vcount: Int, val indices: ShortArray, icount: Int = in
 
     }
 
-    fun setSimplePoints(points: PointList, matrix: MMatrix?, colorMul: RGBA = Colors.WHITE) {
+    fun setSimplePoints(points: PointList, matrix: Matrix, colorMul: RGBA = Colors.WHITE) {
         points.fastForEachIndexed { index, p ->
             this.set(index, p.transformed(matrix), Point(), colorMul)
         }
@@ -123,7 +123,7 @@ class TexturedVertexArray(vcount: Int, val indices: ShortArray, icount: Int = in
         return this
     }
     /** Sets the [x] and [y] with the [matrix] transform applied of the vertex previously selected calling [select] */
-    fun xy(x: Double, y: Double, matrix: MMatrix) = setX(matrix.transformXf(x, y)).setY(matrix.transformYf(x, y))
+    fun xy(x: Double, y: Double, matrix: Matrix) = setX(matrix.transformX(x, y).toFloat()).setY(matrix.transformY(x, y).toFloat())
     /** Sets the [x] and [y] of the vertex previously selected calling [select] */
     fun xy(x: Double, y: Double) = setX(x.toFloat()).setY(y.toFloat())
     /** Sets the [u] and [v] of the vertex previously selected calling [select] */
@@ -150,17 +150,17 @@ class TexturedVertexArray(vcount: Int, val indices: ShortArray, icount: Int = in
      * using the texture coords defined by [BmpSlice] and color transforms [colMul]
      */
     @OptIn(KorgeInternal::class)
-    fun quad(index: Int, x: Double, y: Double, width: Double, height: Double, matrix: MMatrix, bmp: BmpCoords, colMul: RGBA) {
+    fun quad(index: Int, x: Double, y: Double, width: Double, height: Double, matrix: Matrix, bmp: BmpCoords, colMul: RGBA) {
         quad(index, x.toFloat(), y.toFloat(), width.toFloat(), height.toFloat(), matrix, bmp, colMul)
     }
 
     @OptIn(KorgeInternal::class)
-    fun quad(index: Int, x: Float, y: Float, width: Float, height: Float, matrix: MMatrix, bmp: BmpCoords, colMul: RGBA) {
+    fun quad(index: Int, x: Float, y: Float, width: Float, height: Float, matrix: Matrix, bmp: BmpCoords, colMul: RGBA) {
         quad(index, x, y, width, height, matrix, bmp.tlX, bmp.tlY, bmp.trX, bmp.trY, bmp.blX, bmp.blY, bmp.brX, bmp.brY, colMul)
     }
     @OptIn(KorgeInternal::class)
     fun quad(
-        index: Int, x: Float, y: Float, width: Float, height: Float, matrix: MMatrix,
+        index: Int, x: Float, y: Float, width: Float, height: Float, matrix: Matrix,
         tl_x: Float, tl_y: Float,
         tr_x: Float, tr_y: Float,
         bl_x: Float, bl_y: Float,
@@ -182,17 +182,17 @@ class TexturedVertexArray(vcount: Int, val indices: ShortArray, icount: Int = in
         val y3 = matrix.transformYf(x, yh)
         */
 
-        val af = matrix.af
-        val cf = matrix.cf
-        val txf = matrix.txf
+        val af = matrix.a
+        val cf = matrix.c
+        val txf = matrix.tx
         val x0 = af * x + cf * y + txf
         val x1 = af * xw + cf * y + txf
         val x2 = af * xw + cf * yh + txf
         val x3 = af * x + cf * yh + txf
 
-        val df = matrix.df
-        val bf = matrix.bf
-        val tyf = matrix.tyf
+        val df = matrix.d
+        val bf = matrix.b
+        val tyf = matrix.ty
         val y0 = df * y + bf * x + tyf
         val y1 = df * y + bf * xw + tyf
         val y2 = df * yh + bf * xw + tyf
@@ -253,14 +253,16 @@ class TexturedVertexArray(vcount: Int, val indices: ShortArray, icount: Int = in
         arraycopy(other.indices, 0, this.indices, 0, this.indices.size)
     }
 
-    fun applyMatrix(matrix: MMatrix) {
+    fun applyMatrix(matrix: Matrix) {
         for (n in 0 until vcount){
             select(n)
             val x = this.x
             val y = this.y
-            setXY(matrix.transformXf(x, y), matrix.transformYf(x, y))
+            setXY(matrix.transformX(x, y), matrix.transformY(x, y))
         }
     }
+
+    fun applyMatrix(matrix: MMatrix) = applyMatrix(matrix.immutable)
 
     fun copy(): TexturedVertexArray {
         val out = TexturedVertexArray(vcount, indices, icount)

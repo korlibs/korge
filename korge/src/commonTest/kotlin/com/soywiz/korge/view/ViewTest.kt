@@ -1,5 +1,6 @@
 package com.soywiz.korge.view
 
+import assertEqualsFloat
 import com.soywiz.korge.tests.ViewsForTesting
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korma.geom.*
@@ -34,8 +35,8 @@ class ViewTest {
             }
         }
         assertEquals("(30, 30), (90, 90)", "${rect.pos}, ${rect.getPositionRelativeTo(container)}")
-        rect.setPositionRelativeTo(container, MPoint(240, 240))
-        assertEquals("(80, 80), (240, 240)", "${rect.pos}, ${rect.getPositionRelativeTo(container)}")
+        rect.setPositionRelativeTo(container, Point(240, 240))
+        assertEqualsFloat(listOf(Point(80, 80), Point(240, 240)), listOf(rect.pos, rect.getPositionRelativeTo(container)), 0.1)
     }
 
     @Test

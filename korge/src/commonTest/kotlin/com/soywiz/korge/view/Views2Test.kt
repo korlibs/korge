@@ -1,5 +1,6 @@
 package com.soywiz.korge.view
 
+import assertEqualsFloat
 import com.soywiz.klogger.*
 import com.soywiz.korge.tests.ViewsForTesting
 import com.soywiz.korim.bitmap.Bitmap32
@@ -96,12 +97,13 @@ class Views2Test : ViewsForTesting(
         assertEquals(20.0, rect1.scaleX)
         assertEquals(6.66666, rect1.scaleY, 0.001)
 
-        assertEquals(
+        assertEqualsFloat(
             Point(
                 CONTAINER_X + (CONTAINER_WIDTH - RECT_WIDTH) / 2,
                 CONTAINER_Y + (CONTAINER_HEIGHT - RECT_HEIGHT) / 2
             ),
-            rect2.pos
+            rect2.pos,
+            0.1
         )
     }
 

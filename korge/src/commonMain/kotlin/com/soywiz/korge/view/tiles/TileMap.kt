@@ -203,10 +203,10 @@ class TileMap(
         val dVX = m.transformX(0f, tileHeight) - posX
         val dVY = m.transformY(0f, tileHeight) - posY
         val nextTileX = (tileSize.width).let { width ->
-            min(m.transformX(width, 0) - posX, m.transformY(0, width) - posY)
+            min(m.transformX(width.toDouble(), 0.0) - posX, m.transformY(0.0, width.toDouble()) - posY)
         }
         val nextTileY = (tileSize.height).let { height ->
-            min(m.transformX(height, 0) - posX, m.transformY(0, height) - posY)
+            min(m.transformX(height.toDouble(), 0.0) - posX, m.transformY(0.0, height.toDouble()) - posY)
         }
 
         val colMul = renderColorMul

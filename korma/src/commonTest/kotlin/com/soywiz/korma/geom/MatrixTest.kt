@@ -33,18 +33,19 @@ class MatrixTest {
         assertEquals(MatrixType.SCALE_TRANSLATE, Matrix(2, 0, 0, 2, 10, 0).type)
         assertEquals(MatrixType.COMPLEX, Matrix(1, 1, 0, 1, 0, 0).type)
 
-        assertEquals(MatrixType.IDENTITY, Matrix().type)
-        assertEquals(MatrixType.SCALE, Matrix().scaled(Scale(2, 1)).type)
-        assertEquals(MatrixType.SCALE, Matrix().scaled(Scale(1, 2)).type)
-        assertEquals(MatrixType.TRANSLATE, Matrix().translated(Point(1, 0)).type)
-        assertEquals(MatrixType.TRANSLATE, Matrix().translated(Point(0, 1)).type)
-        assertEquals(MatrixType.SCALE_TRANSLATE, Matrix().scaled(Scale(2, 1)).translated(Point(0, 1)).type)
-        assertEquals(MatrixType.COMPLEX, Matrix().rotated(90.degrees).type)
+        assertEquals(MatrixType.IDENTITY, Matrix.IDENTITY.type)
+        assertEquals(MatrixType.SCALE, Matrix.IDENTITY.scaled(Scale(2, 1)).type)
+        assertEquals(MatrixType.SCALE, Matrix.IDENTITY.scaled(Scale(1, 2)).type)
+        assertEquals(MatrixType.TRANSLATE, Matrix.IDENTITY.translated(Point(1, 0)).type)
+        assertEquals(MatrixType.TRANSLATE, Matrix.IDENTITY.translated(Point(0, 1)).type)
+        assertEquals(MatrixType.SCALE_TRANSLATE, Matrix.IDENTITY.scaled(Scale(2, 1)).translated(Point(0, 1)).type)
+        assertEquals(MatrixType.COMPLEX, Matrix.IDENTITY.rotated(90.degrees).type)
+        assertEquals(Matrix(), Matrix.IDENTITY)
     }
 
     @Test
     fun identity() {
-        var m = Matrix()
+        var m = Matrix.IDENTITY
         assertEquals(1f, m.a)
         assertEquals(0f, m.b)
         assertEquals(0f, m.c)

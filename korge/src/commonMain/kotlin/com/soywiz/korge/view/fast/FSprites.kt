@@ -11,9 +11,7 @@ import com.soywiz.korge.view.View
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
-import com.soywiz.korma.geom.Angle
-import com.soywiz.korma.geom.MMatrix
-import com.soywiz.korma.geom.radians
+import com.soywiz.korma.geom.*
 
 @PublishedApi
 internal const val FSPRITES_STRIDE = 8
@@ -135,7 +133,7 @@ open class FSprites(val maxSize: Int) {
             sprites: FSprites,
             info: FViewInfo,
             smoothing: Boolean,
-            globalMatrix: MMatrix,
+            globalMatrix: Matrix,
             blending: BlendMode
         ) {
             if (!ctx.isInstancedSupported) {

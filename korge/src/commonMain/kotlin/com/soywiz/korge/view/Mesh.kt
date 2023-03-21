@@ -60,7 +60,7 @@ open class Mesh(
                 val x = vertices[n * 2 + 0] + pivotXf
                 val y = vertices[n * 2 + 1] + pivotYf
 
-                tva.quadV(n, m.transformXf(x, y), m.transformYf(x, y), uvs[n * 2 + 0], uvs[n * 2 + 1], cmul)
+                tva.quadV(n, m.transformX(x, y), m.transformY(x, y), uvs[n * 2 + 0], uvs[n * 2 + 1], cmul)
                 bb += Point(x, y)
             }
         }

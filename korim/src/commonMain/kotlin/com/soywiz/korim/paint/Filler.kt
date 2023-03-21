@@ -71,9 +71,9 @@ class BitmapFiller : BaseFiller() {
             iTexWidth = 1f / texWidth
             iTexHeight = 1f / texHeight
         }
-    private var transform: Matrix = Matrix()
+    private var transform: Matrix = Matrix.IDENTITY
     private var linear: Boolean = true
-    private var compTrans = Matrix()
+    private var compTrans = Matrix.IDENTITY
 
     fun set(fill: BitmapPaint, state: Context2d.State) = this.apply {
         this.cycle = CycleMethodPair(fill.cycleX, fill.cycleY)

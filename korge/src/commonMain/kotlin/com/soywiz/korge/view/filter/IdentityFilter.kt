@@ -3,7 +3,7 @@ package com.soywiz.korge.view.filter
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.BlendMode
 import com.soywiz.korim.color.RGBA
-import com.soywiz.korma.geom.MMatrix
+import com.soywiz.korma.geom.*
 
 /**
  * Simple [Filter] that draws the texture pixels without any kind of transformation
@@ -15,7 +15,7 @@ open class IdentityFilter(val smoothing: Boolean) : Filter {
 
     override fun render(
         ctx: RenderContext,
-        matrix: MMatrix,
+        matrix: Matrix,
         texture: Texture,
         texWidth: Int,
         texHeight: Int,

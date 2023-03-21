@@ -51,7 +51,7 @@ interface Filter {
      */
     fun render(
         ctx: RenderContext,
-        matrix: MMatrix,
+        matrix: Matrix,
         texture: Texture,
         texWidth: Int,
         texHeight: Int,
@@ -68,12 +68,12 @@ fun Filter.getBorder(texWidth: Int, texHeight: Int): MarginInt {
 @Deprecated("")
 fun Filter.renderToTextureWithBorder(
     ctx: RenderContext,
-    matrix: MMatrix,
+    matrix: Matrix,
     texture: Texture,
     texWidth: Int,
     texHeight: Int,
     filterScale: Double,
-    block: (texture: Texture, matrix: MMatrix) -> Unit,
+    block: (texture: Texture, matrix: Matrix) -> Unit,
 ) {
     val filter = this
     val margin = filter.getBorder(texWidth, texHeight)
@@ -87,28 +87,20 @@ fun Filter.renderToTextureWithBorder(
     //println("texWidth=$newTexWidth,$newTexHeight")
 
     ctx.renderToTexture(newTexWidth, newTexHeight, {
-        ctx.matrixPool.alloc { matrix ->
-            matrix.identity()
-            matrix.translate(borderLeft, borderTop)
-            ctx.batch.setViewMatrixTemp(ctx.identityMatrix) {
-                filter.render(
-                    ctx,
-                    matrix,
-                    texture,
-                    newTexWidth,
-                    newTexHeight,
-                    Colors.WHITE,
-                    BlendMode.NORMAL,
-                    filterScale
-                )
-            }
+        ctx.batch.setViewMatrixTemp(Matrix.IDENTITY) {
+            filter.render(
+                ctx,
+                Matrix.IDENTITY.translated(borderLeft, borderTop),
+                texture,
+                newTexWidth,
+                newTexHeight,
+                Colors.WHITE,
+                BlendMode.NORMAL,
+                filterScale
+            )
         }
     }) { newtex ->
-        ctx.matrixPool.alloc { matrix2 ->
-            matrix2.copyFrom(matrix)
-            matrix2.pretranslate(-borderLeft, -borderTop)
-            block(newtex, matrix2)
-        }
+        block(newtex, matrix.pretranslated(-borderLeft, -borderTop))
     }
 }
 
@@ -119,24 +111,21 @@ class RenderToTextureResult() : Disposable {
     var borderLeft: Int = 0
     var borderTop: Int = 0
     var filterScale: Double = 1.0
-    val matrix = MMatrix()
+    var matrix = Matrix.IDENTITY
     var texture: Texture? = null
     var fb: AGFrameBuffer? = null
     var newtex: Texture? = null
     var ctx: RenderContext? = null
-    private val tempMat = MMatrix()
 
     fun render() {
         val fb = fb ?: return
         val ctx = ctx ?: return
         ctx.renderToFrameBuffer(fb) {
-            tempMat.identity()
-            tempMat.translate(borderLeft, borderTop)
-            ctx.batch.setViewMatrixTemp(ctx.identityMatrix) {
+            ctx.batch.setViewMatrixTemp(Matrix.IDENTITY) {
                 texture?.let {
                     filter?.render(
                         ctx,
-                        tempMat,
+                        Matrix.IDENTITY.translated(borderLeft, borderTop),
                         it,
                         newTexWidth,
                         newTexHeight,
@@ -164,7 +153,7 @@ class RenderToTextureResult() : Disposable {
 @KoragExperimental
 fun Filter.renderToTextureWithBorderUnsafe(
     ctx: RenderContext,
-    matrix: MMatrix,
+    matrix: Matrix,
     texture: Texture,
     texWidth: Int,
     texHeight: Int,
@@ -190,8 +179,7 @@ fun Filter.renderToTextureWithBorderUnsafe(
     result.texture = texture
     result.filter = filter
     result.filterScale = filterScale
-    result.matrix.copyFrom(matrix)
-    result.matrix.pretranslate(-borderLeft, -borderTop)
+    result.matrix = matrix.pretranslated(-borderLeft, -borderTop)
     result.ctx = ctx
     result.fb = fb
     return result

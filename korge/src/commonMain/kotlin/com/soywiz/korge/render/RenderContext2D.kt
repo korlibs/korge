@@ -55,7 +55,7 @@ class RenderContext2D(
     init { logger.trace { "RenderContext2D[1]" } }
 
     @KorgeInternal
-	val m = MMatrix()
+	var m = Matrix.IDENTITY
 
     /** Blending mode to be used in the renders */
 	var blendMode = BlendMode.NORMAL
@@ -66,12 +66,12 @@ class RenderContext2D(
 	init { logger.trace { "RenderContext2D[2]" } }
 
     /** Executes [callback] restoring the initial transformation [MMatrix] at the end */
-	inline fun <T> keepMatrix(crossinline callback: () -> T) = mpool.alloc { matrix ->
-		matrix.copyFrom(m)
+	inline fun <T> keepMatrix(crossinline callback: () -> T): T {
+		val old = m
 		try {
-			callback()
+			return callback()
 		} finally {
-			m.copyFrom(matrix)
+			m = old
 		}
 	}
 
@@ -131,27 +131,32 @@ class RenderContext2D(
 
     /** Sets the current transform [matrix] */
 	fun setMatrix(matrix: MMatrix) {
-		this.m.copyFrom(matrix)
+		this.m = matrix.immutable
 	}
+
+    /** Sets the current transform [matrix] */
+    fun setMatrix(matrix: Matrix) {
+        this.m = matrix
+    }
 
     /** Translates the current transform matrix by [dx] and [dy] */
 	fun translate(dx: Double, dy: Double) {
-		m.pretranslate(dx, dy)
+		m = m.pretranslated(dx, dy)
 	}
 
     /** Scales the current transform matrix by [sx] and [sy] */
 	fun scale(sx: Double, sy: Double = sx) {
-		m.prescale(sx, sy)
+		m = m.prescaled(sx, sy)
 	}
 
     /** Scales the current transform matrix by [scale] */
 	fun scale(scale: Double) {
-		m.prescale(scale, scale)
+		m = m.prescaled(scale, scale)
 	}
 
     /** Rotates the current transform matrix by [angle] */
 	fun rotate(angle: Angle) {
-		m.prerotate(angle)
+		m = m.prerotated(angle)
 	}
 
     /** Renders a colored rectangle with the [multiplyColor] with the [blendMode] at [x], [y] of size [width]x[height] */
@@ -197,7 +202,7 @@ class RenderContext2D(
         }
     }
 
-    fun texturedVertexArrayNoTransform(texturedVertexArray: TexturedVertexArray, filtering: Boolean = this.filtering, matrix: MMatrix? = null) {
+    fun texturedVertexArrayNoTransform(texturedVertexArray: TexturedVertexArray, filtering: Boolean = this.filtering, matrix: Matrix = Matrix.NIL) {
         batch.setStateFast(Bitmaps.white, filtering, blendMode, null, icount = texturedVertexArray.icount, vcount = texturedVertexArray.vcount)
         batch.drawVertices(texturedVertexArray, matrix)
     }
@@ -247,7 +252,7 @@ class RenderContext2D(
                 multiplyColor,
             )
             batch.setStateFast(Bitmaps.white, filtering, blendMode, program, icount = 6, vcount = 4)
-            batch.drawVertices(vertices, null)
+            batch.drawVertices(vertices, Matrix.NIL)
             ctx.flush(RenderContext.FlushKind.STATE)
         }
     }

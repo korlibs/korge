@@ -31,6 +31,7 @@ inline class Matrix(val data: BFloat6Pack) {
 
     @Deprecated("", ReplaceWith("this")) val immutable: Matrix get() = this
     val mutable: MMatrix get() = MMatrix(a, b, c, d, tx, ty)
+    val mutableOrNull: MMatrix? get() = if (isNIL) null else MMatrix(a, b, c, d, tx, ty)
 
     //constructor() : this(1f, 0f, 0f, 1f, 0f, 0f)
     constructor(a: Float, b: Float, c: Float, d: Float, tx: Float, ty: Float) :
@@ -80,6 +81,9 @@ inline class Matrix(val data: BFloat6Pack) {
 
     @Deprecated("", ReplaceWith("transform(p).x")) fun transformX(x: Double, y: Double): Double = transform(Point(x, y)).xD
     @Deprecated("", ReplaceWith("transform(p).y")) fun transformY(x: Double, y: Double): Double = transform(Point(x, y)).yD
+
+    @Deprecated("", ReplaceWith("transform(p).x")) fun transformX(x: Int, y: Int): Double = transform(Point(x, y)).xD
+    @Deprecated("", ReplaceWith("transform(p).y")) fun transformY(x: Int, y: Int): Double = transform(Point(x, y)).yD
 
     fun deltaTransform(p: Point): Point = Point((p.x * a) + (p.y * c), (p.x * b) + (p.y * d))
 
@@ -199,7 +203,7 @@ inline class Matrix(val data: BFloat6Pack) {
         val NIL = Matrix(Float.NaN, Float.NaN, Float.NaN, Float.NaN, Float.NaN, Float.NaN)
         val NaN = NIL
 
-        //@Deprecated("", ReplaceWith("IDENTITY", "com.soywiz.korma.geom.Matrix.IDENTITY"))
+        @Deprecated("", ReplaceWith("com.soywiz.korma.geom.Matrix.IDENTITY", "com.soywiz.korma.geom.Matrix"))
         operator fun invoke(): Matrix = IDENTITY
 
         fun isAlmostEquals(a: Matrix, b: Matrix, epsilon: Float = 0.001f): Boolean =
@@ -219,9 +223,9 @@ inline class Matrix(val data: BFloat6Pack) {
             l.tx * r.b + l.ty * r.d + r.ty
         )
 
-        fun translating(delta: Point): Matrix = Matrix().copy(tx = delta.x, ty = delta.y)
-        fun rotating(angle: Angle): Matrix = Matrix().rotated(angle)
-        fun skewing(skewX: Angle, skewY: Angle): Matrix = Matrix().skewed(skewX, skewY)
+        fun translating(delta: Point): Matrix = Matrix.IDENTITY.copy(tx = delta.x, ty = delta.y)
+        fun rotating(angle: Angle): Matrix = Matrix.IDENTITY.rotated(angle)
+        fun skewing(skewX: Angle, skewY: Angle): Matrix = Matrix.IDENTITY.skewed(skewX, skewY)
 
         fun fromArray(value: FloatArray, offset: Int = 0): Matrix = Matrix(
             value[offset + 0], value[offset + 1], value[offset + 2],
@@ -237,21 +241,43 @@ inline class Matrix(val data: BFloat6Pack) {
             transform: MatrixTransform,
             pivotX: Float = 0f,
             pivotY: Float = 0f,
+        ): Matrix = fromTransform(
+            transform.x,
+            transform.y,
+            transform.rotation,
+            transform.scaleX,
+            transform.scaleY,
+            transform.skewX,
+            transform.skewY,
+            pivotX,
+            pivotY,
+        )
+
+        fun fromTransform(
+            x: Float,
+            y: Float,
+            rotation: Angle,
+            scaleX: Float,
+            scaleY: Float,
+            skewX: Angle,
+            skewY: Angle,
+            pivotX: Float = 0f,
+            pivotY: Float = 0f,
         ): Matrix {
             // +0.0 drops the negative -0.0
-            val a = cosf(transform.rotation + transform.skewY) * transform.scaleX + 0f
-            val b = sinf(transform.rotation + transform.skewY) * transform.scaleX + 0f
-            val c = -sinf(transform.rotation - transform.skewX) * transform.scaleY + 0f
-            val d = cosf(transform.rotation - transform.skewX) * transform.scaleY + 0f
+            val a = cosf(rotation + skewY) * scaleX + 0f
+            val b = sinf(rotation + skewY) * scaleX + 0f
+            val c = -sinf(rotation - skewX) * scaleY + 0f
+            val d = cosf(rotation - skewX) * scaleY + 0f
             val tx: Float
             val ty: Float
 
             if (pivotX == 0f && pivotY == 0f) {
-                tx = transform.x
-                ty = transform.y
+                tx = x
+                ty = y
             } else {
-                tx = transform.x - ((pivotX * a) + (pivotY * c))
-                ty = transform.y - ((pivotX * b) + (pivotY * d))
+                tx = x - ((pivotX * a) + (pivotY * c))
+                ty = y - ((pivotX * b) + (pivotY * d))
             }
             return Matrix(a, b, c, d, tx, ty)
         }
@@ -585,6 +611,7 @@ data class MMatrix(
         this.premultiply(m)
     }
 
+    fun premultiply(m: Matrix) = this.premultiply(m.a, m.b, m.c, m.d, m.tx, m.ty)
     fun premultiply(m: MMatrix) = this.premultiply(m.a, m.b, m.c, m.d, m.tx, m.ty)
     fun postmultiply(m: MMatrix) = multiply(this, m)
 
