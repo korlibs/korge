@@ -3,18 +3,13 @@ package com.soywiz.korge.gradle.targets.android
 import com.soywiz.korge.gradle.util.*
 import com.soywiz.korge.gradle.*
 import com.soywiz.korge.gradle.targets.*
-import com.soywiz.korge.gradle.targets.jvm.KorgeJavaExec
 import org.gradle.api.DefaultTask
+import org.gradle.api.JavaVersion
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.tasks.GradleBuild
-import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 import java.io.File
 import java.util.*
-import kotlin.collections.LinkedHashMap
-import kotlin.collections.component1
-import kotlin.collections.component2
-import kotlin.collections.set
 
 val ANDROID_SDK_PATH_KEY = "android.sdk.path"
 
@@ -212,11 +207,11 @@ fun Project.androidGetResourcesFolders(): Pair<List<File>, List<File>> {
     val targets = listOf(kotlin.metadata())
     val mainSourceSets = targets.flatMap { it.compilations["main"].allKotlinSourceSets }
 
-    val resourcesSrcDirsBase = mainSourceSets.flatMap { it.resources.srcDirs } + listOf(file("src/androidMain/resources"), file("src/main/resources"))
+    val resourcesSrcDirsBase = mainSourceSets.flatMap { it.resources.srcDirs } + listOf(file("src/androidMain/resources"))//, file("src/main/resources"))
     val resourcesSrcDirsBundle = project.korge.bundles.getPaths("android", resources = true, test = false)
     val resourcesSrcDirs = resourcesSrcDirsBase + resourcesSrcDirsBundle
 
-    val kotlinSrcDirsBase = mainSourceSets.flatMap { it.kotlin.srcDirs } + listOf(file("src/androidMain/kotlin"), file("src/main/java"))
+    val kotlinSrcDirsBase = mainSourceSets.flatMap { it.kotlin.srcDirs } + listOf(file("src/androidMain/kotlin"))//, file("src/main/java"))
     val kotlinSrcDirsBundle = project.korge.bundles.getPaths("android", resources = false, test = false)
     val kotlinSrcDirs = kotlinSrcDirsBase + kotlinSrcDirsBundle
 
@@ -232,12 +227,20 @@ fun isKorlibsDependency(cleanFullName: String): Boolean {
 }
 
 
-fun writeAndroidManifest(outputFolder: File, korge: KorgeExtension, info: AndroidInfo) {
-    val ifNotExists = korge.overwriteAndroidFiles
+fun writeAndroidManifest(outputFolder: File, korge: KorgeExtension, info: AndroidInfo = AndroidInfo(null)) {
+    val generated = AndroidGenerated(korge, info)
 
-    val generated = AndroidGenerated(
+    generated.writeKeystore(outputFolder)
+    val srcMain = "src/androidMain"
+    generated.writeAndroidManifest(File(outputFolder, srcMain))
+    generated.writeResources(File(outputFolder, "$srcMain/res"))
+    generated.writeMainActivity(File(outputFolder, "$srcMain/kotlin"))
+}
+
+fun AndroidGenerated(korge: KorgeExtension, info: AndroidInfo = AndroidInfo(null)): AndroidGenerated {
+    return AndroidGenerated(
         icons = korge.iconProvider,
-        ifNotExists = ifNotExists,
+        ifNotExists = korge.overwriteAndroidFiles,
         androidPackageName = korge.id,
         androidInit = korge.plugins.pluginExts.getAndroidInit() + info.androidInit,
         androidMsaa = korge.androidMsaa,
@@ -249,14 +252,9 @@ fun writeAndroidManifest(outputFolder: File, korge: KorgeExtension, info: Androi
         androidManifest = korge.plugins.pluginExts.getAndroidManifestApplication() + info.androidManifest,
         androidLibrary = korge.androidLibrary,
     )
-
-    generated.writeKeystore(outputFolder)
-    generated.writeAndroidManifest(File(outputFolder, "src/main"))
-    generated.writeResources(File(outputFolder, "src/main/res"))
-    generated.writeMainActivity(File(outputFolder, "src/main/java"))
 }
 
-class AndroidGenerated(
+class AndroidGenerated constructor(
     val icons: KorgeIconProvider,
     val ifNotExists: Boolean,
     val androidPackageName: String,
@@ -313,7 +311,7 @@ class AndroidGenerated(
                 indent {
                     //line("xmlns:tools=\"http://schemas.android.com/tools\"")
                     line("xmlns:android=\"http://schemas.android.com/apk/res/android\"")
-                    line("package=\"$androidPackageName\"")
+                    //line("package=\"$androidPackageName\"")
                 }
                 line(">")
                 indent {
@@ -420,3 +418,14 @@ fun Project.tryToDetectAndroidSdkPath(): File? {
 	}
 	return null
 }
+
+fun Project.getAndroidMinSdkVersion(): Int = project.findProperty("android.min.sdk.version")?.toString()?.toIntOrNull() ?: ANDROID_DEFAULT_MIN_SDK
+fun Project.getAndroidCompileSdkVersion(): Int = project.findProperty("android.compile.sdk.version")?.toString()?.toIntOrNull() ?: ANDROID_DEFAULT_COMPILE_SDK
+fun Project.getAndroidTargetSdkVersion(): Int = project.findProperty("android.target.sdk.version")?.toString()?.toIntOrNull() ?: ANDROID_DEFAULT_TARGET_SDK
+
+const val ANDROID_DEFAULT_MIN_SDK = 16 // Previously 18
+const val ANDROID_DEFAULT_COMPILE_SDK = 30
+const val ANDROID_DEFAULT_TARGET_SDK = 30
+
+//val ANDROID_JAVA_VERSION = JavaVersion.VERSION_1_8
+val ANDROID_JAVA_VERSION = JavaVersion.VERSION_11

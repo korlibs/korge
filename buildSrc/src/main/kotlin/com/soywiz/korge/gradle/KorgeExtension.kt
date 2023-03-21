@@ -12,8 +12,6 @@ import org.gradle.api.*
 import java.io.*
 import groovy.text.*
 import org.gradle.api.artifacts.*
-import org.gradle.api.model.ObjectFactory
-import org.gradle.api.provider.Property
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import java.net.*
 import java.time.*
@@ -383,9 +381,9 @@ open class KorgeExtension(
 
     var esbuildVersion: String = ESBUILD_DEFAULT_VERSION
 
-    var androidMinSdk: Int = 16
-	var androidCompileSdk: Int = 29
-	var androidTargetSdk: Int = 29
+    var androidMinSdk: Int = ANDROID_DEFAULT_MIN_SDK
+	var androidCompileSdk: Int = ANDROID_DEFAULT_COMPILE_SDK
+	var androidTargetSdk: Int = ANDROID_DEFAULT_TARGET_SDK
 
     var androidTimeoutMs: Int = 30 * 1000
 

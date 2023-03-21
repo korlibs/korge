@@ -39,8 +39,9 @@ afterEvaluate {
 */
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
+    def version = JavaVersion.VERSION_1_8
+    sourceCompatibility = version
+    targetCompatibility = version
 }
 
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {

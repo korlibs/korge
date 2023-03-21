@@ -259,8 +259,13 @@ object RootKorlibsPlugin {
         val android = extensions.getByName<TestedExtension>("android")
         android.apply {
             namespace = "com.soywiz.${project.name.replace("-", ".")}"
-            compileSdkVersion(project.findProperty("android.compile.sdk.version")?.toString()?.toIntOrNull() ?: 30)
+            setCompileSdkVersion(project.getAndroidCompileSdkVersion())
             //buildToolsVersion(project.findProperty("android.buildtools.version")?.toString() ?: "30.0.2")
+
+            compileOptions.apply {
+                sourceCompatibility = ANDROID_JAVA_VERSION
+                targetCompatibility = ANDROID_JAVA_VERSION
+            }
 
             packagingOptions {
                 for (pattern in KorgeExtension.DEFAULT_ANDROID_EXCLUDE_PATTERNS) {
@@ -270,8 +275,8 @@ object RootKorlibsPlugin {
 
             defaultConfig {
                 it.multiDexEnabled = true
-                it.minSdk = project.findProperty("android.min.sdk.version")?.toString()?.toIntOrNull() ?: 16 // Previously 18
-                it.targetSdk = project.findProperty("android.target.sdk.version")?.toString()?.toIntOrNull() ?: 30
+                it.minSdk = project.getAndroidMinSdkVersion()
+                it.targetSdk = project.getAndroidTargetSdkVersion()
                 it.testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
                 //testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
             }
@@ -310,6 +315,7 @@ object RootKorlibsPlugin {
         val korgeGradlePluginResources = File(rootProject.projectDir, "buildSrc/src/main/resources")
         val android = extensions.getByName<TestedExtension>("android")
         android.apply {
+            namespace = androidApplicationId
             lintOptions {
                 // @TODO: ../../build.gradle: All com.android.support libraries must use the exact same version specification (mixing versions can lead to runtime crashes). Found versions 28.0.0, 26.1.0. Examples include com.android.support:animated-vector-drawable:28.0.0 and com.android.support:customtabs:26.1.0
                 it.disable("GradleCompatible")
@@ -319,7 +325,7 @@ object RootKorlibsPlugin {
             //    jvmTarget = "1.8"
             //    freeCompilerArgs += "-Xmulti-platform"
             //}
-            compileSdkVersion(28)
+            compileSdkVersion(30)
             defaultConfig {
                 it.multiDexEnabled = true
                 it.applicationId = androidApplicationId
@@ -346,13 +352,14 @@ object RootKorlibsPlugin {
                 }
                 it.maybeCreate("release").apply {
                     minifyEnabled(true)
-                    proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), File(rootProject.rootDir, "proguard-rules.pro"))
+                    proguardFiles(getDefaultProguardFile(ProguardFiles.ProguardFile.OPTIMIZE.fileName), File(rootProject.rootDir, "proguard-rules.pro"))
                     setSigningConfig(signingConfigs.maybeCreate("release"))
                 }
             }
             sourceSets {
                 it.maybeCreate("main").apply {
-                    //manifest.srcFile(File(project.buildDir, "AndroidManifest.xml"))
+                //it.maybeCreate("androidMain").apply {
+                    manifest.srcFile(File(project.buildDir, "AndroidManifest.xml"))
                     java.srcDirs("${project.buildDir}/androidsrc")
                     res.srcDirs("${project.buildDir}/androidres")
                     assets.srcDirs(
