@@ -1363,7 +1363,9 @@ abstract class View internal constructor(
             it.y += anchorDispY
         }
         if (includeFilters) {
-            filter?.expandBorderRectangle(out)
+            filter?.let {
+                out.copyFrom(it.expandedBorderRectangle(out.immutable))
+            }
         }
         return it
     }

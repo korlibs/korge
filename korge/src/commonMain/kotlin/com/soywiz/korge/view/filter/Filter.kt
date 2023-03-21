@@ -4,7 +4,6 @@ import com.soywiz.kds.*
 import com.soywiz.kmem.*
 import com.soywiz.korag.*
 import com.soywiz.korag.annotation.*
-import com.soywiz.korag.shader.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.color.*
@@ -198,9 +197,8 @@ fun Filter.renderToTextureWithBorderUnsafe(
     return result
 }
 
-fun Filter.expandBorderRectangle(out: MRectangle) {
-    out.expand(getBorder(out.width.toIntCeil(), out.height.toIntCeil()))
-}
+fun Filter.expandedBorderRectangle(inp: Rectangle): Rectangle =
+    inp.expanded(getBorder(inp.width.toIntCeil(), inp.height.toIntCeil()))
 
 @ThreadLocal
 val RenderContext.renderToTextureResultPool by Extra.Property { Pool({ it.dispose() }) { RenderToTextureResult() } }
