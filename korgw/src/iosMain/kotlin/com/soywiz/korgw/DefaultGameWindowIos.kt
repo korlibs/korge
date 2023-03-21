@@ -17,12 +17,7 @@ import com.soywiz.korev.SoftKeyboardReturnKeyType
 import com.soywiz.korev.SoftKeyboardType
 import com.soywiz.korim.format.cg.*
 import com.soywiz.korma.geom.*
-import kotlinx.cinterop.CValue
-import kotlinx.cinterop.ExportObjCClass
-import kotlinx.cinterop.ObjCAction
-import kotlinx.cinterop.UnsafeNumber
-import kotlinx.cinterop.memScoped
-import kotlinx.cinterop.useContents
+import kotlinx.cinterop.*
 import platform.CoreGraphics.CGPoint
 import platform.CoreGraphics.CGRect
 import platform.EAGL.EAGLContext
@@ -125,7 +120,7 @@ class ViewController(val entry: suspend () -> Unit) : GCEventViewController(null
         logger.info { "ViewController!" }
 
         glXViewController = MyGLKViewController(entry)
-        //glXViewController.preferredFramesPerSecond = 60
+        glXViewController.preferredFramesPerSecond = GameWindow.DEFAULT_PREFERRED_FPS.convert()
 
         val glView = glXViewController.view
         logger.info { "glView: ${glView}" }
@@ -350,6 +345,7 @@ class MyGLKViewController(val entry: suspend () -> Unit)  : GLKViewController(nu
 
 open class IosGameWindow(
     val windowProvider: (() -> UIWindow?)? = null,
+    val glXViewControllerProvider: (() -> MyGLKViewController?)? = null,
 ) : GameWindow() {
     override val dialogInterface = DialogInterfaceIos()
 
@@ -357,7 +353,19 @@ open class IosGameWindow(
 
     override val pixelsPerInch: Double get() = UIScreen.mainScreen.scale.toDouble() * 160.0
 
-    //override var fps: Int get() = 60; set(value) = Unit
+    val window: UIWindow get() = windowProvider?.invoke()
+        ?: UIApplication.sharedApplication.keyWindow
+        ?: (UIApplication.sharedApplication.windows.first() as UIWindow)
+
+    val glXViewController: MyGLKViewController? get() = glXViewControllerProvider?.invoke()
+
+    override var preferredFps: Int = GameWindow.DEFAULT_PREFERRED_FPS
+        get() = glXViewController?.preferredFramesPerSecond?.toInt() ?: field
+        set(value) {
+            field = value
+            glXViewController?.preferredFramesPerSecond = value.convert()
+        }
+    override var fps: Int get() = 60; set(value) = Unit
     //override var title: String get() = ""; set(value) = Unit
     //override val width: Int get() = 512
     //override val height: Int get() = 512
@@ -533,10 +541,6 @@ open class IosGameWindow(
         textField = MyUITextComponent(this@IosGameWindow, rect)
     }
 
-    val window: UIWindow get() = windowProvider?.invoke()
-        ?: UIApplication.sharedApplication.keyWindow
-        ?: (UIApplication.sharedApplication.windows.first() as UIWindow)
-
     override fun setInputRectangle(windowRect: Rectangle) {
         println("IosGameWindow.setInputRectangle: windowRect=$windowRect")
         prepareSoftKeyboardOnce()
@@ -624,7 +628,7 @@ open class IosGameWindow(
 
 private lateinit var MyIosGameWindow: IosGameWindow // Creates instance everytime
 private fun CreateInitialIosGameWindow(app: KorgwBaseNewAppDelegate): IosGameWindow {
-    MyIosGameWindow = IosGameWindow { app.window }
+    MyIosGameWindow = IosGameWindow({ app.window }, { app.viewController.glXViewController })
     return MyIosGameWindow
 }
 

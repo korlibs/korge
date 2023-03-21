@@ -341,6 +341,7 @@ open class GameWindow :
 
     override val key: CoroutineContext.Key<*> get() = CoroutineKey
     companion object CoroutineKey : CoroutineContext.Key<GameWindow> {
+        const val DEFAULT_PREFERRED_FPS = 60
         val logger = Logger("GameWindow")
 
         val MenuItemSeparatror = MenuItem(null)
@@ -415,6 +416,8 @@ open class GameWindow :
     }
 
     private val fpsCached by IntTimedCache(1000.milliseconds) { computeDisplayRefreshRate() }
+
+    open var preferredFps: Int = DEFAULT_PREFERRED_FPS
 
     open var fps: Int
         get() = fpsCached
