@@ -89,7 +89,7 @@ class BezierCurveTest {
     @Test
     fun testBezierBoundingBox() {
         assertEquals(
-            MRectangle(x=-4.044654662829129, y=-62.06241698807055, width=2.6127315550921892, height=0.6955056507112474).clone().roundDecimalPlaces(2),
+            Rectangle(x=-4.044654662829129, y=-62.06241698807055, width=2.6127315550921892, height=0.6955056507112474).clone().roundDecimalPlaces(2),
             Bezier(
                 Point(-4.044654662829129, -61.366911337359305),
                 Point(-3.2722813703417932, -61.83588230138613),
@@ -99,7 +99,7 @@ class BezierCurveTest {
         )
 
         assertEquals(
-            MRectangle(65.0, 25.0, 37.2, 116.6),
+            Rectangle(65.0, 25.0, 37.2, 116.6),
             Bezier(Point(100, 25), Point(10, 180), Point(170, 165), Point(65, 70)).boundingBox.clone().roundDecimalPlaces(1)
         )
     }
@@ -162,11 +162,11 @@ class BezierCurveTest {
     @Test
     fun testBoundingBox() {
         assertEquals(
-            MRectangle(0.0, -37.5, 50.0, 37.5),
+            Rectangle(0.0, -37.5, 50.0, 37.5),
             Bezier(Point(0,0), Point(0,-50), Point(50,-50), Point(50,0)).boundingBox
         )
         assertEquals(
-            MRectangle(0.0, -37.5, 50.0, 37.5),
+            Rectangle(0.0, -37.5, 50.0, 37.5),
             Bezier(Point(0,0), Point(0,-50), Point(50,-50), Point(50,0)).boundingBox
         )
     }

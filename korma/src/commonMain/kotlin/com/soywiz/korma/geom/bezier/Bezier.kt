@@ -17,7 +17,7 @@ sealed interface IBezier : Curve {
     val direction: Angle
     val clockwise: Boolean
     val extrema: Bezier.Extrema
-    val boundingBox: MRectangle
+    val boundingBox: Rectangle
     val lut: CurveLUT
     val isLinear: Boolean
     val isSimple: Boolean
@@ -182,19 +182,21 @@ class Bezier(
         return _extrema
     }
 
-    private var _outerCircle: MCircle? = null
-    val outerCircle: ICircle get() {
+    private var _outerCircle: Circle? = null
+    val outerCircle: Circle get() {
         if (_outerCircle == null) {
             _outerCircle = boundingBox.outerCircle()
         }
         return _outerCircle!!
     }
 
-    private val _boundingBox: MRectangle = MRectangle()
-    override val boundingBox: MRectangle get() {
-        if (boundingBoxValid) return _boundingBox
-        boundingBoxValid = true
-        return _boundingBox.copyFrom(_getBoundingBox(Matrix.NIL))
+    private var _boundingBox: Rectangle = Rectangle.ZERO
+    override val boundingBox: Rectangle get() {
+        if (!boundingBoxValid) {
+            boundingBoxValid = true
+            _boundingBox = _getBoundingBox(Matrix.NIL)
+        }
+        return _boundingBox
     }
 
     private fun _getBoundingBox(m: Matrix = Matrix.NIL): Rectangle {
@@ -906,14 +908,11 @@ class Bezier(
             }
         }
 
-        val MRectangle.midX: Double get() = (left + right) * 0.5
-        val MRectangle.midY: Double get() = (top + bottom) * 0.5
+        val Rectangle.midX: Float get() = (left + right) * 0.5f
+        val Rectangle.midY: Float get() = (top + bottom) * 0.5f
 
-        private fun bboxoverlap(a: MRectangle, b: MRectangle): Boolean {
-            if (abs(a.midX - b.midX) >= ((a.width + b.width) / 2.0)) return false
-            if (abs(a.midY - b.midY) >= ((a.height + b.height) / 2.0)) return false
-            return true
-
+        private fun bboxoverlap(a: Rectangle, b: Rectangle): Boolean {
+            return !((abs(a.midX - b.midX) >= ((a.width + b.width) / 2f)) || (abs(a.midY - b.midY) >= ((a.height + b.height) / 2f)))
             //return a.intersects(b)
             //val dims = ["x", "y"],
             //val len = dims.length;

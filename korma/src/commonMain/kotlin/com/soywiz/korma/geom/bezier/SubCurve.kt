@@ -27,7 +27,7 @@ data class CurveSplit(
 class SubBezier(val curve: Bezier, val t1: Double, val t2: Double, val parent: Bezier?) {
     constructor(curve: Bezier) : this(curve, 0.0, 1.0, null)
 
-    val boundingBox: MRectangle get() = curve.boundingBox
+    val boundingBox: Rectangle get() = curve.boundingBox
 
     companion object {
         private val LEFT = listOf(null, null, intArrayOf(0, 3, 5), intArrayOf(0, 4, 7, 9))

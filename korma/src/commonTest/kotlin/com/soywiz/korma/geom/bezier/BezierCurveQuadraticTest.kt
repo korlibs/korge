@@ -46,7 +46,7 @@ class BezierCurveQuadraticTest {
     @Test
     fun testHasTheCorrectAxisAlignedBoundingBox() {
         assertEquals(
-            MRectangle.fromBounds(0.0, 0.0, 1.0, 0.5),
+            Rectangle.fromBounds(0.0, 0.0, 1.0, 0.5),
             b.boundingBox
         )
     }
