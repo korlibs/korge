@@ -199,7 +199,7 @@ abstract class View internal constructor(
 
     /** Ratio speed of this node, affecting all the [View.addUpdater] */
     @ViewProperty(min = -1.0, max = 1.0, clampMin = false, clampMax = false)
-    var speed: Double = 1.0
+    var speed: Float = 1f
 
     internal var _stage: Stage? = null
         set(value) {
@@ -250,7 +250,7 @@ abstract class View internal constructor(
         }
 
     /** Computed [speed] combining all the speeds from ancestors */
-    val globalSpeed: Double get() = if (parent != null) parent!!.globalSpeed * speed else speed
+    val globalSpeed: Float get() = if (parent != null) parent!!.globalSpeed * speed else speed
 
     protected var _x: Double = 0.0
     protected var _y: Double = 0.0
@@ -626,21 +626,13 @@ abstract class View internal constructor(
             if (_globalMatrixVersion != this._version) {
                 _globalMatrixVersion = this._version
                 _requireInvalidate = true
-                if (parent != null) {
-                    _globalMatrix = localMatrix * parent!!.globalMatrix
-                } else {
-                    _globalMatrix = localMatrix
-                }
+                _globalMatrix = (if (parent != null) localMatrix * parent!!.globalMatrix else localMatrix)
             }
             return _globalMatrix
         }
         set(value) {
             _requireInvalidate = true
-            if (parent != null) {
-                this.localMatrix = value * parent!!.globalMatrixInv
-            } else {
-                this.localMatrix = value
-            }
+            this.localMatrix = (if (parent != null) value * parent!!.globalMatrixInv else value)
         }
 
     private var _globalMatrixInv = Matrix.IDENTITY

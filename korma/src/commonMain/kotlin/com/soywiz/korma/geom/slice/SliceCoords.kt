@@ -89,6 +89,8 @@ data class SliceCoordsImpl<T : SizeableInt>(
     val transformedHeight: Int = if (!flippedWidthHeight) base.size.height else base.size.width
     override val width: Int = (Point.distance(coords.tlX, coords.tlY, coords.trX, coords.trY) * transformedWidth).toInt()
     override val height: Int = (Point.distance(coords.tlX, coords.tlY, coords.blX, coords.blY) * transformedHeight).toInt()
+    override val frameWidth: Int = width + padding.leftPlusRight
+    override val frameHeight: Int = height + padding.topPlusBottom
 
     override fun transformed(orientation: SliceOrientation): SliceCoordsWithBase<T> = SliceCoordsWithBase(base, (this as SliceCoords).transformed(orientation), name, flippedWidthHeight)
 

@@ -31,7 +31,7 @@ suspend fun Container.attachParticleAndWait(
     x: Double,
     y: Double,
     time: TimeSpan = TimeSpan.NIL,
-    speed: Double = 1.0
+    speed: Float = 1f
 ) {
     val p = particle.create(x, y, time)
     p.speed = speed

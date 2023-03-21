@@ -32,9 +32,9 @@ internal open class ViewsDebuggerActions(val views: Views) {
     }
 
     var playing: Boolean
-        get() = root.speed != 0.0
+        get() = root.speed != 0f
         set(value) {
-            root.speed = if (value) 1.0 else 0.0
+            root.speed = if (value) 1f else 0f
         }
 
     fun togglePlay() {

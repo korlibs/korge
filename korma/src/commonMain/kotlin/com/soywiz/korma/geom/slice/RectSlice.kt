@@ -38,14 +38,17 @@ data class RectSlice<T : SizeableInt>(
     val baseHeight: Int = base.size.height
 
     /** [width] of the slice without applying the [orientation] */
-    val unorientedWidth: Int get() = rect.width
+    val unorientedWidth: Int = rect.width
     /** [height] of the slice without applying the [orientation] */
-    val unorientedHeight: Int get() = rect.height
+    val unorientedHeight: Int = rect.height
 
     /** [width] of the slice after applying the [orientation] transformation. ie. if this is rotated by 90 or 270, this can be the [height] */
-    override val width: Int get() = if (!orientation.isRotatedDeg90CwOrCcw) rect.width else rect.height
+    override val width: Int = if (!orientation.isRotatedDeg90CwOrCcw) rect.width else rect.height
     /** [height] of the slice after applying the [orientation] transformation. ie. if this is rotated by 90 or 270, this can be the [width] */
-    override val height: Int get() = if (!orientation.isRotatedDeg90CwOrCcw) rect.height else rect.width
+    override val height: Int = if (!orientation.isRotatedDeg90CwOrCcw) rect.height else rect.width
+
+    override val frameWidth: Int = width + padding.leftPlusRight
+    override val frameHeight: Int = height + padding.topPlusBottom
 
     init {
         //check(

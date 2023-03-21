@@ -38,17 +38,17 @@ open class RectBase(
 	override var anchorX: Double = anchorX; set(v) { if (field != v) { field = v; dirtyVertices = true; invalidateRender() } }
     override var anchorY: Double = anchorY; set(v) { if (field != v) { field = v; dirtyVertices = true; invalidateRender() } }
 
-    protected open val bwidth get() = 0.0
-	protected open val bheight get() = 0.0
+    protected open val bwidth: Double get() = 0.0
+	protected open val bheight: Double get() = 0.0
 
-    override val anchorDispX get() = (anchorX * bwidth)
-    override val anchorDispY get() = (anchorY * bheight)
+    override val anchorDispX: Double get() = (anchorX * bwidth)
+    override val anchorDispY: Double get() = (anchorY * bheight)
 
-    protected open val sLeft get() = -anchorDispX
-	protected open val sTop get() = -anchorDispY
+    protected open val sLeft: Double get() = -anchorDispX
+	protected open val sTop: Double get() = -anchorDispY
 
-	val sRight get() = sLeft + bwidth
-	val sBottom get() = sTop + bheight
+	val sRight: Double get() = sLeft + bwidth
+	val sBottom: Double get() = sTop + bheight
 
     protected val vertices = TexturedVertexArray(4, TexturedVertexArray.QUAD_INDICES)
 
