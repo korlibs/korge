@@ -10,6 +10,7 @@ import kotlin.math.*
 //@KormaValueApi
 inline class Rectangle(val data: Float4Pack) {
     @Deprecated("", ReplaceWith("this")) fun clone(): Rectangle = this
+    @Deprecated("", ReplaceWith("this")) val immutable: Rectangle get() = this
 
     val position: Point get() = Point(data.f0, data.f1)
     val size: Size get() = Size(data.f2, data.f3)

@@ -321,7 +321,7 @@ open class GameWindow :
 
     open val isSoftKeyboardVisible: Boolean get() = false
 
-    open fun setInputRectangle(windowRect: MRectangle) {
+    open fun setInputRectangle(windowRect: Rectangle) {
     }
 
     open fun showSoftKeyboard(force: Boolean = true, config: ISoftKeyboardConfig? = null) {

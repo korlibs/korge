@@ -9,14 +9,13 @@ import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.format.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.*
-import com.soywiz.korio.util.*
-import com.soywiz.korma.geom.MRectangle
-import kotlinx.coroutines.*
-import org.w3c.dom.events.*
-import org.w3c.dom.events.MouseEvent
+import com.soywiz.korma.geom.*
 import kotlinx.browser.*
+import kotlinx.coroutines.*
 import org.w3c.dom.*
 import org.w3c.dom.TouchEvent
+import org.w3c.dom.events.*
+import org.w3c.dom.events.MouseEvent
 import kotlin.coroutines.*
 
 private external val navigator: dynamic
@@ -496,7 +495,7 @@ open class BrowserCanvasJsGameWindow(
         }
     }
 
-    override fun setInputRectangle(windowRect: MRectangle) {
+    override fun setInputRectangle(windowRect: Rectangle) {
         ensureSoftKeyboardInput()
         softKeyboardInput?.style?.let { style ->
             style.left = "${(windowRect.left / canvasRatio)}px"

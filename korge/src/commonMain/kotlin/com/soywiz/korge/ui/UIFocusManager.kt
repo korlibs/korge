@@ -58,10 +58,8 @@ class UIFocusManager(val view: Stage) {
         //toggleKeyboardTimeout?.close()
         //toggleKeyboardTimeout = stage.timeout(1.seconds) {
             if (show) {
-                if (view != null) {
-                    view.apply {
-                        gameWindow.setInputRectangle(Scope.focusView.getWindowBounds(stage))
-                    }
+                view?.apply {
+                    gameWindow.setInputRectangle(Scope.focusView.getWindowBounds(stage).immutable)
                 }
                 gameWindow.showSoftKeyboard(config = view as? ISoftKeyboardConfig?)
             } else {

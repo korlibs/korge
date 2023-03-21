@@ -270,9 +270,9 @@ class MyNSOpenGLView(
         }
     }
 
-    var inputRect: MRectangle = MRectangle(0.0, 0.0, 0.0, 0.0)
+    var inputRect: Rectangle = Rectangle.ZERO
 
-    fun setInputRectangle(windowRect: MRectangle) {
+    fun setInputRectangle(windowRect: Rectangle) {
         this.inputRect = windowRect
     }
 
@@ -354,7 +354,7 @@ class MyDefaultGameWindow : GameWindow() {
     private val openglView: MyNSOpenGLView = MyNSOpenGLView(this@MyDefaultGameWindow, NSMakeRect(0.0, 0.0, 16.0, 16.0), pixelFormat)
     var timer: NSTimer? = null
 
-    override fun setInputRectangle(windowRect: MRectangle) {
+    override fun setInputRectangle(windowRect: Rectangle) {
         openglView.setInputRectangle(windowRect)
     }
 
