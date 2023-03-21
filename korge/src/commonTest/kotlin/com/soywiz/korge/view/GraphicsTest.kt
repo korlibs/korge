@@ -1,5 +1,6 @@
 package com.soywiz.korge.view
 
+import assertEqualsFloat
 import com.soywiz.kmem.*
 import com.soywiz.korag.log.AGLog
 import com.soywiz.korge.render.RenderContext
@@ -175,7 +176,7 @@ class GraphicsTest {
             }
         }
         // assertEquals(Rectangle(25, 49, 209, 201), g.getLocalBounds()) // strokes = false
-        assertEquals(MRectangle(24.5, 47.0, 211.5, 203.5), g.getLocalBounds())
+        assertEqualsFloat(MRectangle(24.5, 47.0, 211.5, 203.5), g.getLocalBounds(), 0.1)
     }
 
     @Test

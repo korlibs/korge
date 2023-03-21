@@ -26,7 +26,7 @@ class BezierTest {
         }
         val curves = path.getCurves()
         assertEquals(590.0, curves.length, 0.4)
-        assertEquals(MRectangle(200, 100, 200, 180), curves.getBounds())
+        assertEquals(Rectangle(200, 100, 200, 180), curves.getBounds())
         assertEquals(
             """
                 (200, 200)
@@ -62,9 +62,9 @@ class BezierTest {
         }
         val curves = path.getCurvesList()
         assertEquals(2, curves.size)
-        assertEquals(MRectangle(0, 0, 100, 100), curves[0].getBounds())
-        assertEquals(MRectangle(300, 0, 100, 100), curves[1].getBounds())
-        assertEquals(MRectangle(0, 0, 400, 100), curves.toCurves().getBounds())
+        assertEquals(Rectangle(0, 0, 100, 100), curves[0].getBounds())
+        assertEquals(Rectangle(300, 0, 100, 100), curves[1].getBounds())
+        assertEquals(Rectangle(0, 0, 400, 100), curves.toCurves().getBounds())
     }
 
     @Test

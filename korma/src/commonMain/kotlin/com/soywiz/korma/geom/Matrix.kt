@@ -46,9 +46,10 @@ inline class Matrix(val data: BFloat6Pack) {
     operator fun times(scale: Float): Matrix = Matrix(a * scale, b * scale, c * scale, d * scale, tx * scale, ty * scale)
     operator fun times(scale: Double): Matrix = times(scale.toFloat())
 
-    val isNotNIL: Boolean get() = this != NIL
-    val isNIL: Boolean get() = this == NIL
-    val isNaN: Boolean get() = this == NaN
+    //val isNIL: Boolean get() = this == NIL
+    val isNIL: Boolean get() = this.a.isNaN()
+    val isNotNIL: Boolean get() = !isNIL
+    val isNaN: Boolean get() = isNIL
     val isIdentity: Boolean get() = type == MatrixType.IDENTITY
 
     val type: MatrixType get() {

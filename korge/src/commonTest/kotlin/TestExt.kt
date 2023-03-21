@@ -1,12 +1,11 @@
-package com.soywiz.korma.geom
-
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.bezier.*
 import com.soywiz.korma.math.*
 import kotlin.test.*
 
 fun <
     //@OnlyInputTypes
-T> assertEqualsFloat(
+    T> assertEqualsFloat(
     expected: T?,
     actual: T?,
     absoluteTolerance: Double = 0.001,
@@ -60,4 +59,3 @@ private fun <T : Any> T?.isAlmostEqualsGeneric(
         else -> e == a
     }
 }
-

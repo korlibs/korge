@@ -5,7 +5,7 @@ import com.soywiz.korma.interpolation.*
 
 interface Curve {
     val order: Int
-    fun getBounds(target: MRectangle = MRectangle()): MRectangle
+    fun getBounds(): Rectangle
     fun normal(t: Double): Point
     fun tangent(t: Double): Point
     fun calc(t: Double): Point

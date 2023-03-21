@@ -30,6 +30,12 @@ inline class Rectangle(val data: Float4Pack) {
     val isNaN: Boolean get() = this == NaN
     val isNIL: Boolean get() = this == NIL
 
+    fun isAlmostEquals(other: Rectangle, epsilon: Float = 0.01f): Boolean =
+        this.x.isAlmostEquals(other.x, epsilon) &&
+            this.y.isAlmostEquals(other.y, epsilon) &&
+            this.width.isAlmostEquals(other.width, epsilon) &&
+            this.height.isAlmostEquals(other.height, epsilon)
+
     fun toStringBounds(): String = "Rectangle([${left.niceStr},${top.niceStr}]-[${right.niceStr},${bottom.niceStr}])"
     fun toStringSize(): String = "Rectangle([${left.niceStr},${top.niceStr}],[${width.niceStr},${height.niceStr}])"
     fun toStringCompat(): String = "Rectangle(x=${left.niceStr}, y=${top.niceStr}, w=${width.niceStr}, h=${height.niceStr})"

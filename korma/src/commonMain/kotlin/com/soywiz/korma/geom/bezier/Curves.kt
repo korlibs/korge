@@ -54,7 +54,7 @@ data class Curves(val beziers: List<Bezier>, val closed: Boolean) : Curve, Extra
         beziers.mapIndexed { index, curve ->
             val start = pos
             pos += curve.length
-            CurveInfo(index, curve, start, pos, curve.getBounds())
+            CurveInfo(index, curve, start, pos, curve.getBounds().mutable)
         }
 
     }
@@ -64,10 +64,10 @@ data class Curves(val beziers: List<Bezier>, val closed: Boolean) : Curve, Extra
     val CurveInfo.startRatio: Double get() = this.startLength / this@Curves.length
     val CurveInfo.endRatio: Double get() = this.endLength / this@Curves.length
 
-    override fun getBounds(target: MRectangle): MRectangle {
+    override fun getBounds(): Rectangle {
         bb.reset()
         infos.fastForEach { bb.addEvenEmpty(it.bounds) }
-        return bb.getBounds(target)
+        return bb.getBounds().immutable
     }
 
     @PublishedApi

@@ -509,7 +509,7 @@ fun BoundsBuilder.add(path: VectorPath, transform: MMatrix? = null) {
     }
     curvesList.fastForEach { curves ->
         curves.beziers.fastForEach { bezier ->
-            addEvenEmpty(bezier.getBounds(this.tempRect, transform))
+            addEvenEmpty(this.tempRect.copyFrom(bezier.getBounds(transform?.immutable ?: Matrix.NaN)))
         }
     }
 

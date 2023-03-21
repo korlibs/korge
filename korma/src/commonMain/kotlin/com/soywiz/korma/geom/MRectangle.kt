@@ -36,6 +36,12 @@ data class MRectangle(
 
     val center: Point get() = Point((right + left) * 0.5, (bottom + top) * 0.5)
 
+    fun isAlmostEquals(other: MRectangle, epsilon: Double = 0.001): Boolean =
+        this.x.isAlmostEquals(other.x, epsilon) &&
+            this.y.isAlmostEquals(other.y, epsilon) &&
+            this.width.isAlmostEquals(other.width, epsilon) &&
+            this.height.isAlmostEquals(other.height, epsilon)
+
     /**
      * Circle that touches or contains all the corners ([topLeft], [topRight], [bottomLeft], [bottomRight]) of the rectangle.
      */
