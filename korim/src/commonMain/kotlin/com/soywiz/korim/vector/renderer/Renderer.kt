@@ -56,7 +56,7 @@ abstract class Renderer {
     ) {
         render(
             Context2d.State(
-                transform = transform,
+                transform = transform.immutable,
                 path = VectorPath().apply {
                     if (transform.getType() == MatrixType.IDENTITY) {
                         rect(x, y, width, height)

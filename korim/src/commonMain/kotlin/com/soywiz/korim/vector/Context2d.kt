@@ -80,7 +80,7 @@ open class Context2d(
         }
 
         private inline fun <T> adjustState(state: State, callback: () -> T): T =
-            adjustMatrix(state.transform) { callback() }
+            adjustMatrix(state.transform.mutable) { callback() }
 
         override fun renderFinal(state: State, fill: Boolean, winding: Winding?): Unit =
             adjustState(state) { parent.render(state, fill, winding) }
@@ -107,7 +107,7 @@ open class Context2d(
     }
 
     data class State constructor(
-        var transform: MMatrix = MMatrix(),
+        var transform: Matrix = Matrix.IDENTITY,
         var clip: VectorPath? = null,
         var path: VectorPath = VectorPath(),
         var lineScaleMode: LineScaleMode = LineScaleMode.NORMAL,
@@ -257,16 +257,10 @@ open class Context2d(
 
     inline fun keepTransform(callback: () -> Unit) {
         val t = state.transform
-        val a = t.a
-        val b = t.b
-        val c = t.c
-        val d = t.d
-        val tx = t.tx
-        val ty = t.ty
         try {
             callback()
         } finally {
-            t.setTo(a, b, c, d, tx, ty)
+            state.transform = t
         }
     }
 
@@ -281,13 +275,9 @@ open class Context2d(
 
     inline fun scale(sx: Number, sy: Number = sx) = scale(sx.toDouble(), sy.toDouble())
     inline fun translate(tx: Number, ty: Number) = translate(tx.toDouble(), ty.toDouble())
-    inline fun rotate(angle: Number) = rotate(angle.toDouble())
-    inline fun rotateDeg(degs: Number) = rotateDeg(degs.toDouble())
 
     inline fun scale(sx: Int, sy: Int = sx) = scale(sx.toDouble(), sy.toDouble())
     inline fun translate(tx: Int, ty: Int) = translate(tx.toDouble(), ty.toDouble())
-    inline fun rotate(angle: Int) = rotate(angle.toDouble())
-    inline fun rotateDeg(degs: Int) = rotateDeg(degs.toDouble())
 
     inline fun skew(skewX: Angle = Angle.ZERO, skewY: Angle = Angle.ZERO, block: () -> Unit) =
         keep { skew(skewX, skewY).also { block() } }
@@ -297,43 +287,36 @@ open class Context2d(
     inline fun translate(tx: Double, ty: Double, block: () -> Unit) = keep { translate(tx, ty).also { block() } }
 
     fun skew(skewX: Angle = 0.degrees, skewY: Angle = 0.degrees) {
-        state.transform.preskew(skewX, skewY)
+        state.transform = state.transform.preskewed(skewX, skewY)
     }
 
     fun scale(sx: Double, sy: Double = sx) {
-        state.transform.prescale(sx, sy)
+        state.transform = state.transform.prescaled(sx, sy)
     }
 
     fun rotate(angle: Angle) {
-        state.transform.prerotate(angle)
-    }
-
-    fun rotate(angle: Double) {
-        state.transform.prerotate(angle.radians)
-    }
-
-    fun rotateDeg(degs: Double) {
-        state.transform.prerotate(degs.degrees)
+        state.transform = state.transform.prerotated(angle)
     }
 
     fun translate(tx: Double, ty: Double) {
-        state.transform.pretranslate(tx, ty)
+        state.transform = state.transform.pretranslated(tx, ty)
     }
 
-    fun transform(m: MMatrix) {
-        state.transform.premultiply(m)
+    fun transform(m: Matrix) {
+        state.transform = state.transform.premultiplied(m)
     }
+    fun transform(m: MMatrix) = transform(m.immutable)
 
     fun transform(a: Double, b: Double, c: Double, d: Double, tx: Double, ty: Double) {
-        state.transform.premultiply(a, b, c, d, tx, ty)
+        state.transform = state.transform.premultiplied(Matrix(a, b, c, d, tx, ty))
     }
 
-    fun setTransform(m: MMatrix) {
-        state.transform.copyFrom(m)
+    fun setTransform(m: Matrix) {
+        state.transform = m
     }
 
     fun setTransform(a: Double, b: Double, c: Double, d: Double, tx: Double, ty: Double) {
-        state.transform.setTo(a, b, c, d, tx, ty)
+        state.transform = Matrix(a, b, c, d, tx, ty)
     }
 
     fun shear(sx: Double, sy: Double) = transform(1.0, sy, sx, 1.0, 0.0, 0.0)
@@ -584,7 +567,7 @@ open class Context2d(
                     else -> newBi
                 }
                 keepTransform {
-                    setTransform(MMatrix())
+                    setTransform(Matrix.IDENTITY)
                     this.rendererDrawImage(renderBi, 0.0, 0.0)
                 }
                 //} finally {
@@ -724,7 +707,7 @@ open class Context2d(
         width: Double = image.width.toDouble(),
         height: Double = image.height.toDouble()
     ) =
-        rendererDrawImage(image, x, y, width, height, state.transform)
+        rendererDrawImage(image, x, y, width, height, state.transform.mutable)
 
     // @TODO: Fix this!
     inline fun drawImage(
@@ -814,7 +797,7 @@ fun Paint.toBitmapPaint(state: Context2d.State): BitmapPaint {
     val bb = BoundsBuilder()
     state.path.getBounds(bb = bb)
     state.clip?.getBounds(bb = bb)
-    val bounds = bb.getBounds().applyTransform(state.transform)
+    val bounds = bb.getBounds().applyTransform(state.transform.mutable)
     // @TODO: Make it work for negative x, y, and for other transforms
     println("bounds=$bounds")
     val bmp = Bitmap32(bounds.width.toIntCeil(), bounds.height.toIntCeil(), premultiplied = true).also { filler.fill(it) }

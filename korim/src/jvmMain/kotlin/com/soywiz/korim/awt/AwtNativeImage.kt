@@ -515,13 +515,13 @@ class AwtContext2dRender(val awtImage: BufferedImage, val antialiasing: Boolean 
     }
 }
 
-fun AffineTransform.setToMatrix(t: MMatrix) {
-    setTransform(t.a, t.b, t.c, t.d, t.tx, t.ty)
+fun AffineTransform.setToMatrix(t: Matrix) {
+    setTransform(t.a.toDouble(), t.b.toDouble(), t.c.toDouble(), t.d.toDouble(), t.tx.toDouble(), t.ty.toDouble())
 }
 
 fun Matrix.toAwt() = AffineTransform(a, b, c, d, tx, ty)
 fun MMatrix.toAwt() = AffineTransform(a, b, c, d, tx, ty)
-fun AffineTransform.toMatrix() = MMatrix(scaleX, shearY, shearX, scaleY, translateX, translateY)
+fun AffineTransform.toMatrix(): Matrix = Matrix(scaleX, shearY, shearX, scaleY, translateX, translateY)
 
 fun convertColor(c: RGBA): java.awt.Color = java.awt.Color(c.r, c.g, c.b, c.a)
 

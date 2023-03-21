@@ -44,7 +44,7 @@ open class ShapeBuilder(width: Int?, height: Int?) : Context2d(DummyRenderer), D
                 path = path,
                 clip = clip,
                 paint = state.fillStyle.clone(),
-                transform = transform,
+                transform = transform.mutable,
                 globalAlpha = state.globalAlpha,
             )
         } else {
@@ -52,7 +52,7 @@ open class ShapeBuilder(width: Int?, height: Int?) : Context2d(DummyRenderer), D
                 path = path,
                 clip = clip,
                 paint = state.strokeStyle.clone(),
-                transform = transform,
+                transform = transform.mutable,
                 StrokeInfo(
                     thickness = state.lineWidth,
                     pixelHinting = true,
@@ -81,13 +81,13 @@ open class ShapeBuilder(width: Int?, height: Int?) : Context2d(DummyRenderer), D
             halign = state.horizontalAlign,
             valign = state.verticalAlign,
             //transform = Matrix()
-            transform = state.transform.clone()
+            transform = state.transform.clone().mutable
         )
     }
 
     override fun rendererDrawImage(image: Bitmap, x: Double, y: Double, width: Double, height: Double, transform: MMatrix) {
         rendererRender(State(
-            transform = transform,
+            transform = transform.immutable,
             path = VectorPath().apply { rect(x, y, width, height) },
             fillStyle = BitmapPaint(image,
                 transform = MMatrix()

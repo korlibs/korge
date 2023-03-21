@@ -102,7 +102,7 @@ open class ChartBars(val list: List<DataPoint>) : Chart() {
             }
             keep {
                 translate(rx + barWidth * 0.5, rect.bottom + 4)
-                rotateDeg(fit.angle)
+                rotate(fit.angle.degrees)
                 //fillText(item.name, rx + barWidth * 0.5, rect.bottom, halign = HorizontalAlign.CENTER, valign = VerticalAlign.TOP)
                 fillText(
                     item.name,

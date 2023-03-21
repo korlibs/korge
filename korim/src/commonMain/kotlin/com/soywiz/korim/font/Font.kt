@@ -244,7 +244,7 @@ fun <T> Font.drawText(
                 //println(dy)
                 ctx.translate(px, py)
                 //ctx.translate(-m.width * transformAnchor.sx, +m.height * transformAnchor.sy)
-                ctx.transform(this.transform)
+                ctx.transform(this.transform.immutable)
                 //ctx.translate(+m.width * transformAnchor.sx, -m.height * transformAnchor.sy)
                 ctx.fillStyle = this.paint ?: paint ?: NonePaint
                 //println("n=$n, textRangeStart=$textRangeStart, textRangeEnd=$textRangeEnd, doDraw=$doDraw")

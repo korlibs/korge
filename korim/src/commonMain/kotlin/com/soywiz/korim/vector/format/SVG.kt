@@ -197,7 +197,7 @@ class SVG(val root: Xml, val warningProcessor: ((message: String) -> Unit)? = nu
             c.keepApply {
                 //svg.drawElement(xml, c, render)
                 transform?.let {
-                    c.state.transform.premultiply(it)
+                    c.state.transform = c.state.transform.premultiplied(it.immutable)
                     //c.state.transform.postmultiply(it)
                 }
                 setCommonStyles(c)

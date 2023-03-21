@@ -28,7 +28,7 @@ class Bitmap32Context2dTest {
                 //fill(ColorPaint(Colors.BLUE))
                 keep {
                     scale(2.0, 1.0)
-                    rotateDeg(15.0)
+                    rotate(15.degrees)
                     fill(
                         GradientPaint(
                             GradientKind.LINEAR,

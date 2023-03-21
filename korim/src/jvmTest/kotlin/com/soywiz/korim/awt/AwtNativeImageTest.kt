@@ -1,13 +1,13 @@
 package com.soywiz.korim.awt
 
-import com.soywiz.korma.geom.MMatrix
+import com.soywiz.korma.geom.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class AwtNativeImageTest {
     @Test
     fun testMatrixAwtTransform() {
-        val matrix = MMatrix(1, 2, 3, 4, 5, 6)
+        val matrix = Matrix(1, 2, 3, 4, 5, 6)
         assertEquals(matrix, matrix.clone().toAwt().toMatrix())
     }
 }

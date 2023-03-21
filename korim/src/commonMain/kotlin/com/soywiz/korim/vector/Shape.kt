@@ -206,7 +206,7 @@ interface StyledShape : Shape {
 				clip!!.draw(c)
 				c.clip()
 			}
-            c.transform(transform)
+            c.transform(transform.immutable)
 			drawInternal(c)
 		}
 	}
@@ -453,7 +453,7 @@ class TextShape(
 
     val primitiveShapes: Shape by lazy {
         buildShape {
-            this.transform(this@TextShape.transform)
+            this.transform(this@TextShape.transform.immutable)
             this.clip(this@TextShape.clip)
             if (this@TextShape.fill != null) this@TextShape.font?.drawText(this, this@TextShape.fontSize, this@TextShape.text, this@TextShape.fill, this@TextShape.x, this@TextShape.y, fill = true)
             if (this@TextShape.stroke != null) this@TextShape.font?.drawText(this, this@TextShape.fontSize, this@TextShape.text, this@TextShape.stroke, this@TextShape.x, this@TextShape.y, fill = false)

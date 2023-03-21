@@ -23,7 +23,7 @@ data class GlyphPath(
     override fun draw(c: Context2d) {
         c.keepTransform {
             //c.beginPath()
-            c.transform(this.transform)
+            c.transform(this.transform.immutable)
             when {
                 bitmap != null -> {
                     //println("scale = $scale")
