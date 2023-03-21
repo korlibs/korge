@@ -92,10 +92,8 @@ class DebugVertexView(pointsList: List<IVectorArrayList>, color: RGBA = Colors.W
 
     private val uniforms: AGUniformValues = AGUniformValues()
 
-    override fun getLocalBoundsInternal(out: MRectangle) {
-        bb.getBounds(out)
-        //println("DebugVertexView.getLocalBoundsInternal:$out")
-    }
+    override fun getLocalBoundsInternal() = bb.getBounds().immutable
+    //println("DebugVertexView.getLocalBoundsInternal:$out")
 
     override fun renderInternal(ctx: RenderContext) {
         ctx.flush()

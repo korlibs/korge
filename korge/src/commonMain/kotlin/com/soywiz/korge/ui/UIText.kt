@@ -75,7 +75,7 @@ class UIText(
         background.colorMul = bgcolor
         textBounds.setTo(0.0, 0.0, width, height)
         textView.setFormat(face = styles.textFont, size = styles.textSize.toInt(), color = styles.textColor, align = styles.textAlignment)
-        textView.setTextBounds(textBounds)
+        textView.setTextBounds(textBounds.immutable)
         //background.size(width, height)
         textView.text = text
         super.renderInternal(ctx)

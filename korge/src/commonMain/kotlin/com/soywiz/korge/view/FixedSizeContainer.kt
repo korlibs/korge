@@ -36,9 +36,7 @@ open class FixedSizeContainer(
     open var clip: Boolean = false,
 ) : Container(), View.Reference {
 
-    override fun getLocalBoundsInternal(out: MRectangle) {
-        out.setTo(0.0, 0.0, width, height)
-    }
+    override fun getLocalBoundsInternal() = Rectangle(0.0, 0.0, width, height)
 
     override fun toString(): String {
         var out = super.toString()
@@ -134,7 +132,7 @@ fun View.getNextClippingView(): View {
 
 fun View.getVisibleGlobalArea(out: MRectangle = MRectangle()): MRectangle {
     forEachAscendant(includeThis = true) {
-        if ((it is FixedSizeContainer && it.clip) || it is Stage) return@getVisibleGlobalArea it.getGlobalBounds(out)
+        if ((it is FixedSizeContainer && it.clip) || it is Stage) return@getVisibleGlobalArea it.getGlobalBounds().mutable(out)
     }
     return out.setTo(0.0, 0.0, 4096.0, 4096.0)
 }

@@ -16,9 +16,9 @@ class ShapeViewTest {
                 line(Point(256, 256), Point(400, 256))
             }
             view.boundsIncludeStrokes = false
-            assertEquals(MRectangle(Point(256, 256), Size(144, 0)), view.getLocalBounds(), message = "bounds without strokes $renderer")
+            assertEquals(Rectangle(Point(256, 256), Size(144, 0)), view.getLocalBounds(), message = "bounds without strokes $renderer")
             view.boundsIncludeStrokes = true
-            assertEquals(MRectangle(Point(255.5, 255.5), Size(145, 1)), view.getLocalBounds(), message = "bounds with strokes $renderer")
+            assertEquals(Rectangle(Point(255.5, 255.5), Size(145, 1)), view.getLocalBounds(), message = "bounds with strokes $renderer")
         }
     }
 }

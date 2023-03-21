@@ -282,16 +282,14 @@ open class Container(
         //val bounds = this.getLocalBounds(Rectangle())
         var renderedCount = 0
         var culledCount = 0
-        MRectangle.POOL.alloc2 { tempRect2, tempRect ->
-            val bounds = clippingContainer?.getGlobalBounds(tempRect2)
-            fastForEachChildRender { child: View ->
-                //if (bounds.intersects(child.getLocalBoundsOptimized(includeFilters = true))) {
-                if (bounds == null || bounds.intersects(child.getGlobalBounds(tempRect, includeFilters = true))) {
-                    child.render(ctx)
-                    renderedCount++
-                } else {
-                    culledCount++
-                }
+        val bounds = clippingContainer?.getGlobalBounds() ?: Rectangle.NIL
+        fastForEachChildRender { child: View ->
+            //if (bounds.intersects(child.getLocalBoundsOptimized(includeFilters = true))) {
+            if (bounds.isNIL || bounds.intersects(child.getGlobalBounds(includeFilters = true))) {
+                child.render(ctx)
+                renderedCount++
+            } else {
+                culledCount++
             }
         }
     }
@@ -303,16 +301,12 @@ open class Container(
         super.renderDebug(ctx)
     }
 
-    private val bb = BoundsBuilder()
-    private val tempRect = MRectangle()
-
-    override fun getLocalBoundsInternal(out: MRectangle) {
-        bb.reset()
+    override fun getLocalBoundsInternal(): Rectangle {
+        var bb = NewBoundsBuilder()
         fastForEachChild { child: View ->
-            child.getBounds(this, tempRect)
-            bb.add(tempRect)
+            bb += child.getBounds(this).immutable
         }
-        bb.getBounds(out)
+        return bb.bounds
     }
 
     /**

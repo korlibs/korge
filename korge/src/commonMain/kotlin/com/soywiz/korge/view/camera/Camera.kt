@@ -41,10 +41,8 @@ class CameraContainer(
     private val contentContainer = Container()
 
     class ContentContainer(val cameraContainer: CameraContainer) : FixedSizeContainer(cameraContainer.width, cameraContainer.height), Reference {
-        override fun getLocalBoundsInternal(out: MRectangle) {
-            //out.setTo(0, 0, cameraContainer.width, cameraContainer.height)
-            out.setTo(0.0, 0.0, width, height)
-        }
+        //out.setTo(0, 0, cameraContainer.width, cameraContainer.height)
+        override fun getLocalBoundsInternal() = Rectangle(0.0, 0.0, width, height)
     }
 
     val content: Container by lazy { contentBuilder(this) }

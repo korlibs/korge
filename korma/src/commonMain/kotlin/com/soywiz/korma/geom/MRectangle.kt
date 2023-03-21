@@ -334,3 +334,5 @@ data class MRectangle(
     @KormaValueApi val value: Rectangle get() = Rectangle(x, y, width, height)
 
 }
+
+fun Rectangle.copyTo(out: MRectangle = MRectangle()): MRectangle = out.copyFrom(this)

@@ -5,8 +5,7 @@ import com.soywiz.korge.render.RenderContext
 import com.soywiz.korge.render.TexturedVertexArray
 import com.soywiz.korim.bitmap.Bitmaps
 import com.soywiz.korim.bitmap.BmpSlice
-import com.soywiz.korma.geom.BoundsBuilder
-import com.soywiz.korma.geom.MRectangle
+import com.soywiz.korma.geom.*
 
 open class Mesh(
 	var texture: BmpSlice? = null,
@@ -29,8 +28,7 @@ open class Mesh(
 	}
 
 	private var tva: TexturedVertexArray? = null
-	private val bb = BoundsBuilder()
-	private val localBounds = MRectangle()
+	private var localBounds = Rectangle()
 
 	private fun recomputeVerticesIfRequired() {
 		if (!dirtyVertices) return
@@ -42,7 +40,7 @@ open class Mesh(
 		val vcount = vertices.size / 2
 		val isize = indices.size
 
-		bb.reset()
+		var bb = NewBoundsBuilder()
 
         if (vcount > 0 || isize > 0) {
             val tva = when {
@@ -63,10 +61,10 @@ open class Mesh(
                 val y = vertices[n * 2 + 1] + pivotYf
 
                 tva.quadV(n, m.transformXf(x, y), m.transformYf(x, y), uvs[n * 2 + 0], uvs[n * 2 + 1], cmul)
-                bb.add(x, y)
+                bb += Point(x, y)
             }
         }
-		bb.getBounds(localBounds)
+        localBounds = bb.bounds
 	}
 
 	override fun renderInternal(ctx: RenderContext) {
@@ -79,9 +77,9 @@ open class Mesh(
         }
 	}
 
-	override fun getLocalBoundsInternal(out: MRectangle) {
+	override fun getLocalBoundsInternal(): Rectangle {
 		recomputeVerticesIfRequired()
-		out.copyFrom(localBounds)
+		return localBounds
 	}
 }
 

@@ -188,9 +188,7 @@ class ParticleEmitterView(
     private var fsprites: FSprites? = null
     private val fviewInfo = FSprites.FViewInfo(1)
 
-    override fun getLocalBoundsInternal(out: MRectangle) {
-        out.setBounds(-30, -30, +30, +30)
-    }
+    override fun getLocalBoundsInternal() = Rectangle(-30, -30, +30, +30)
 
     private var textureLoaded: Boolean = false
     @ViewProperty

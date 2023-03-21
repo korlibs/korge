@@ -56,9 +56,9 @@ open class UIScrollable(width: Double, height: Double, cache: Boolean = true) : 
         val overflowPixelsBegin get() = if (isHorizontal) scrollable.overflowPixelsLeft else scrollable.overflowPixelsTop
         val overflowPixelsEnd get() = if (isHorizontal) scrollable.overflowPixelsRight else scrollable.overflowPixelsBottom
         val onScrollPosChange = Signal<UIScrollable>()
-        val size get() = if (isHorizontal) scrollable.width else scrollable.height
+        val size: Double get() = if (isHorizontal) scrollable.width else scrollable.height
         val shouldBeVisible get() = (size < totalSize)
-        val totalSize get() = (container.getLocalBoundsOptimized().let { if (isHorizontal) max(scrollable.width, it.right) else max(scrollable.height, it.bottom) })
+        val totalSize: Double get() = (container.getLocalBoundsOptimized().let { if (isHorizontal) max(scrollable.width, it.right.toDouble()) else max(scrollable.height, it.bottom.toDouble()) })
             //.also { println("totalSize=$it") }
         val scrollArea get() = totalSize - size
         val positionEnd: Double get() = position + size
@@ -184,7 +184,7 @@ open class UIScrollable(width: Double, height: Double, cache: Boolean = true) : 
     }
 
     fun ensureViewIsVisible(view: View, anchor: Anchor = Anchor.CENTER) {
-        ensureRectIsVisible(view.getBounds(this), anchor)
+        ensureRectIsVisible(view.getBounds(this).mutable, anchor)
         scrollParentsToMakeVisible()
     }
 

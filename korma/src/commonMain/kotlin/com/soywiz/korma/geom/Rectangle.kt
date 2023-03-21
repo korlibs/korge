@@ -27,8 +27,10 @@ inline class Rectangle(val data: Float4Pack) {
 
     val isZero: Boolean get() = this == ZERO
     val isInfinite: Boolean get() = this == INFINITE
-    val isNaN: Boolean get() = this == NaN
-    val isNIL: Boolean get() = this == NIL
+    //val isNaN: Boolean get() = this == NaN
+    val isNaN: Boolean get() = this.x.isNaN()
+    val isNIL: Boolean get() = isNaN
+    val isNotNIL: Boolean get() = !isNIL
 
     fun isAlmostEquals(other: Rectangle, epsilon: Float = 0.01f): Boolean =
         this.x.isAlmostEquals(other.x, epsilon) &&
@@ -49,7 +51,7 @@ inline class Rectangle(val data: Float4Pack) {
         val ZERO = Rectangle(0, 0, 0, 0)
         val INFINITE = Rectangle(Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY)
         val NaN = Rectangle(Float.NaN, Float.NaN, Float.NaN, Float.NaN)
-        val NIL = NaN
+        val NIL get() = NaN
 
         operator fun invoke(): Rectangle = Rectangle(Point(), Size())
         operator fun invoke(p: Point, s: Size): Rectangle = Rectangle(float4PackOf(p.x, p.y, s.width, s.height))
@@ -82,6 +84,7 @@ inline class Rectangle(val data: Float4Pack) {
     val isEmpty: Boolean get() = width == 0f && height == 0f
     val isNotEmpty: Boolean get() = !isEmpty
     val mutable: MRectangle get() = MRectangle(x, y, width, height)
+    fun mutable(out: MRectangle = MRectangle()): MRectangle = out.copyFrom(this)
 
     val left: Float get() = x
     val top: Float get() = y
@@ -151,6 +154,8 @@ inline class Rectangle(val data: Float4Pack) {
 
     fun copyBounds(left: Float = this.left, top: Float = this.top, right: Float = this.right, bottom: Float = this.bottom): Rectangle =
         Rectangle.fromBounds(left, top, right, bottom)
+
+    fun translated(delta: Point): Rectangle = copy(x = this.x + delta.x, y = this.y + delta.y)
 
     fun transformed(m: MMatrix): Rectangle {
         val tl = m.transform(topLeft)

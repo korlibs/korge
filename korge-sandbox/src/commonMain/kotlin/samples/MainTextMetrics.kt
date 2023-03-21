@@ -71,7 +71,7 @@ class MainTextMetrics : Scene() {
             val baseAscent = solidRect(960 + 1200, 1, Colors.BLUE)
             val baseDescent = solidRect(960 + 1200, 1, Colors.PURPLE)
 
-            var cachedBounds: MRectangle? = null
+            var cachedBounds: Rectangle = Rectangle.NIL
             fun updateBounds() {
                 val currentBounds = text1.getLocalBounds()
                 if (cachedBounds != currentBounds) {
