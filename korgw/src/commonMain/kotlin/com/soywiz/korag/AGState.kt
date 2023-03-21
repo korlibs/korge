@@ -597,7 +597,9 @@ inline class AGSize(val data: Int) {
 inline class AGScissor(val data: Long) {
     constructor(xy: Int, wh: Int) : this(Long.fromLowHigh(xy, wh))
     constructor(x: Int, y: Int, width: Int, height: Int) : this(0.insert16(x, 0).insert16(y, 16), 0.insert16(width, 0).insert16(height, 16))
+    constructor(x: Float, y: Float, width: Float, height: Float) : this(x.toIntRound(), y.toIntRound(), width.toIntRound(), height.toIntRound())
     constructor(x: Double, y: Double, width: Double, height: Double) : this(x.toIntRound(), y.toIntRound(), width.toIntRound(), height.toIntRound())
+    constructor(rect: Rectangle) : this(rect.x.toIntRound(), rect.y.toIntRound(), rect.width.toIntRound(), rect.height.toIntRound())
     //constructor(x: Double, y: Double, width: Double, height: Double) : this(x.toInt(), y.toInt(), width.toInt(), height.toInt())
 
     val xy: Int get() = data.low
@@ -635,6 +637,10 @@ inline class AGScissor(val data: Long) {
         fun fromBounds(left: Int, top: Int, right: Int, bottom: Int): AGScissor = AGScissor(left, top, right - left, bottom - top)
         fun fromBounds(left: Double, top: Double, right: Double, bottom: Double): AGScissor = AGScissor(left, top, right - left, bottom - top)
 
+        operator fun invoke(rect: Rectangle): AGScissor {
+            if (rect.isNIL) return NIL
+            return AGScissor(rect.x, rect.y, rect.width, rect.height)
+        }
         operator fun invoke(rect: MRectangle?): AGScissor {
             if (rect == null) return NIL
             return AGScissor(rect.x, rect.y, rect.width, rect.height)

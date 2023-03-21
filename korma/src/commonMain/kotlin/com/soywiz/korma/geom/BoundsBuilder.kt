@@ -2,6 +2,28 @@ package com.soywiz.korma.geom
 
 import com.soywiz.kds.*
 
+inline class NewBoundsBuilder(val bounds: Rectangle) {
+    val isEmpty: Boolean get() = bounds.isNIL
+
+    companion object {
+        val EMPTY = NewBoundsBuilder(Rectangle.NIL)
+
+        operator fun invoke(): NewBoundsBuilder = EMPTY
+        operator fun invoke(p1: Point): NewBoundsBuilder = NewBoundsBuilder(Rectangle(p1, Size(0, 0)))
+        operator fun invoke(p1: Point, p2: Point): NewBoundsBuilder = NewBoundsBuilder(Rectangle.fromBounds(Point.minComponents(p1, p2), Point.maxComponents(p1, p2)))
+        operator fun invoke(p1: Point, p2: Point, p3: Point): NewBoundsBuilder = NewBoundsBuilder(Rectangle.fromBounds(Point.minComponents(p1, p2, p3), Point.maxComponents(p1, p2, p3)))
+        operator fun invoke(p1: Point, p2: Point, p3: Point, p4: Point): NewBoundsBuilder = NewBoundsBuilder(Rectangle.fromBounds(Point.minComponents(p1, p2, p3, p4), Point.maxComponents(p1, p2, p3, p4)))
+
+    }
+    operator fun plus(p: Point): NewBoundsBuilder {
+        if (bounds.isNIL) return NewBoundsBuilder(Rectangle(p, Size(0, 0)))
+        return NewBoundsBuilder(Rectangle.fromBounds(Point.minComponents(bounds.topLeft, p), Point.maxComponents(bounds.bottomRight, p)))
+    }
+    operator fun plus(p: NewBoundsBuilder): NewBoundsBuilder = this + p.bounds
+    operator fun plus(p: Rectangle): NewBoundsBuilder = this + p.topLeft + p.bottomRight
+    fun boundsOrNull(): Rectangle? = if (isEmpty) null else bounds
+}
+
 class BoundsBuilder {
     val tempRect = MRectangle()
 
@@ -10,6 +32,11 @@ class BoundsBuilder {
 
         private val MIN = Double.NEGATIVE_INFINITY
         private val MAX = Double.POSITIVE_INFINITY
+
+        fun getBounds(p1: Point): Rectangle = NewBoundsBuilder(p1).bounds
+        fun getBounds(p1: Point, p2: Point): Rectangle = NewBoundsBuilder(p1, p2).bounds
+        fun getBounds(p1: Point, p2: Point, p3: Point): Rectangle = NewBoundsBuilder(p1, p2, p3).bounds
+        fun getBounds(p1: Point, p2: Point, p3: Point, p4: Point): Rectangle = NewBoundsBuilder(p1, p2, p3, p4).bounds
     }
 
     var npoints = 0; private set

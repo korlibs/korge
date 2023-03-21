@@ -108,8 +108,11 @@ open class BaseImage(
     open val anchorDispXNoOffset get() = (anchorX * frameWidth)
     open val anchorDispYNoOffset get() = (anchorY * frameHeight)
 
-    override val anchorDispX get() = (anchorDispXNoOffset - frameOffsetX)
-    override val anchorDispY get() = (anchorDispYNoOffset - frameOffsetY)
+    override val anchorDispX: Double get() = (anchorDispXNoOffset - frameOffsetX)
+    override val anchorDispY: Double get() = (anchorDispYNoOffset - frameOffsetY)
+
+    val anchorDispXF: Float get() = anchorDispX.toFloat()
+    val anchorDispYF: Float get() = anchorDispY.toFloat()
 
     override fun getLocalBoundsInternal(out: MRectangle) {
         out.setTo(-anchorDispXNoOffset, -anchorDispYNoOffset, frameWidth, frameHeight)
