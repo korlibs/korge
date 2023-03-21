@@ -141,8 +141,8 @@ inline fun Container.uiVerticalStack(
 open class UIVerticalStack(
     width: Double = UI_DEFAULT_WIDTH,
     padding: Double = UI_DEFAULT_PADDING,
-    var adjustSize: Boolean = true,
-) : UIVerticalHorizontalStack(width, 0.0, padding) {
+    adjustSize: Boolean = true,
+) : UIVerticalHorizontalStack(width, 0.0, padding, adjustSize) {
     override fun relayout() {
         var y = 0.0
         forEachChild {
@@ -157,22 +157,23 @@ open class UIVerticalStack(
 inline fun Container.uiHorizontalStack(
     height: Double = UI_DEFAULT_HEIGHT,
     padding: Double = UI_DEFAULT_PADDING,
+    adjustHeight: Boolean = true,
     block: @ViewDslMarker UIHorizontalStack.() -> Unit = {}
-) = UIHorizontalStack(height, padding).addTo(this).apply(block)
+) = UIHorizontalStack(height, padding, adjustHeight).addTo(this).apply(block)
 
-open class UIHorizontalStack(height: Double = UI_DEFAULT_HEIGHT, padding: Double = UI_DEFAULT_PADDING) : UIVerticalHorizontalStack(0.0, height, padding) {
+open class UIHorizontalStack(height: Double = UI_DEFAULT_HEIGHT, padding: Double = UI_DEFAULT_PADDING, adjustHeight: Boolean = true) : UIVerticalHorizontalStack(0.0, height, padding, adjustHeight) {
     override fun relayout() {
         var x = 0.0
         forEachChild {
             it.x = x
-            it.scaledHeight = height
+            if (adjustSize) it.scaledHeight = height
             x += it.width + padding
         }
         width = x
     }
 }
 
-abstract class UIVerticalHorizontalStack(width: Double = UI_DEFAULT_WIDTH, height: Double = UI_DEFAULT_HEIGHT, padding: Double = UI_DEFAULT_PADDING) : UIContainer(width, height) {
+abstract class UIVerticalHorizontalStack(width: Double = UI_DEFAULT_WIDTH, height: Double = UI_DEFAULT_HEIGHT, padding: Double = UI_DEFAULT_PADDING, val adjustSize: Boolean) : UIContainer(width, height) {
     var padding: Double = padding
         set(value) {
             field = value

@@ -160,20 +160,20 @@ suspend fun Stage.demoSelector(default: Demo, all: List<Demo>) {
         }
     }
 
-    comboBox = uiComboBox<Demo>(width = 200.0, items = (listOf(default) + all).distinctBy { it.name }.sortedBy { it.name }) {
-        this.viewportHeight = 600
-        this.onSelectionUpdate.add {
-            //println(it)
-            launchImmediately { setDemo(it.selectedItem!!) }
+    uiHorizontalStack(padding = 8.0) {
+        alignLeftToLeftOf(this@demoSelector.stage, padding = 8.0).alignTopToTopOf(this@demoSelector.stage, padding = 8.0)
+        comboBox = uiComboBox<Demo>(width = 200.0, items = (listOf(default) + all).distinctBy { it.name }.sortedBy { it.name }) {
+            this.viewportHeight = 600
+            this.onSelectionUpdate.add {
+                //println(it)
+                launchImmediately { setDemo(it.selectedItem!!) }
+            }
         }
-    }.alignLeftToLeftOf(stage, padding = 8.0).alignTopToTopOf(stage, padding = 8.0)
-    uiCheckBox(width = 300.0, text = "forceRenderEveryFrame", checked = views.forceRenderEveryFrame) {
-        //x = 300.0
-        alignLeftToRightOf(comboBox, padding = 16.0)
-        alignTopToTopOf(comboBox, padding = 0.0)
-        //alignRightToLeftOf(comboBox)
-        onChange {
-            views.forceRenderEveryFrame = it.checked
+        uiCheckBox(width = 200.0, text = "forceRenderEveryFrame", checked = views.forceRenderEveryFrame) {
+            onChange { views.forceRenderEveryFrame = it.checked }
+        }
+        uiCheckBox(width = 150.0, text = "toggleDebug", checked = views.debugViews) {
+            onChange { views.debugViews = it.checked }
         }
     }
     comboBox.selectedItem = default
