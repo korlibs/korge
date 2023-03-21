@@ -50,8 +50,8 @@ open class DOM(val css: CSS) {
         }
         class MatrixMapping(
             override val name: String,
-            override val property: KMutableProperty1<DomElement, MMatrix?>
-        ) : Mapping<MMatrix?> {
+            override val property: KMutableProperty1<DomElement, Matrix>
+        ) : Mapping<Matrix> {
             override fun set(element: DomElement, prop: String, value: Any?) {
                 property.set(element, getMatrix(prop, value))
             }
@@ -63,8 +63,8 @@ open class DOM(val css: CSS) {
             property as KMutableProperty1<DomElement, Double?>
         ) }
         @JvmName("addMatrix")
-        fun add(name: String, property: KMutableProperty1<out DomElement, out MMatrix?>): DomPropertyMapping = this.apply { mappings[name] = MatrixMapping(name,
-            property as KMutableProperty1<DomElement, MMatrix?>
+        fun add(name: String, property: KMutableProperty1<out DomElement, out Matrix>): DomPropertyMapping = this.apply { mappings[name] = MatrixMapping(name,
+            property as KMutableProperty1<DomElement, Matrix>
         ) }
     }
 
@@ -133,11 +133,11 @@ open class DOM(val css: CSS) {
             is CSS.Expression -> value.transform
             else -> MatrixTransform.IDENTITY
         }
-        fun getMatrix(prop: String, value: Any?): MMatrix = when (value) {
-            is MMatrix -> value
+        fun getMatrix(prop: String, value: Any?): Matrix = when (value) {
+            is Matrix -> value
             is CSS.InterpolationResult -> value.getMatrix(prop)
             is CSS.Expression -> value.matrix
-            else -> MMatrix()
+            else -> Matrix.IDENTITY
         }
         fun getRatio(prop: String, value: Any?): Double = when (value) {
             is Double -> value

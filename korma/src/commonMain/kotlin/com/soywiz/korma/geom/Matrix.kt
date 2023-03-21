@@ -203,7 +203,7 @@ inline class Matrix(val data: BFloat6Pack) {
         val NIL = Matrix(Float.NaN, Float.NaN, Float.NaN, Float.NaN, Float.NaN, Float.NaN)
         val NaN = NIL
 
-        @Deprecated("", ReplaceWith("com.soywiz.korma.geom.Matrix.IDENTITY", "com.soywiz.korma.geom.Matrix"))
+        //@Deprecated("", ReplaceWith("com.soywiz.korma.geom.Matrix.IDENTITY", "com.soywiz.korma.geom.Matrix"))
         operator fun invoke(): Matrix = IDENTITY
 
         fun isAlmostEquals(a: Matrix, b: Matrix, epsilon: Float = 0.001f): Boolean =
@@ -428,6 +428,8 @@ enum class MatrixType(val id: Int, val hasRotation: Boolean, val hasScale: Boole
     SCALE_TRANSLATE(4, hasRotation = false, hasScale = true, hasTranslation = true),
     COMPLEX(5, hasRotation = true, hasScale = true, hasTranslation = true);
 }
+
+val MMatrix?.immutable: Matrix get() = if (this == null) Matrix.NIL else Matrix(a, b, c, d, tx, ty)
 
 @KormaMutableApi
 @Deprecated("Use Matrix")

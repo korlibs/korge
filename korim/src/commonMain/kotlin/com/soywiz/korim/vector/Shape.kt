@@ -67,7 +67,7 @@ class SvgBuilder(
 				Xml.Tag("defs", mapOf(), defs),
 				Xml.Tag(
 					"g",
-					mapOf("transform" to MMatrix().translate(-bounds.x, -bounds.y).scale(scale, scale).toSvg(roundDecimalPlaces)),
+					mapOf("transform" to Matrix().translated(-bounds.x, -bounds.y).scaled(scale, scale).toSvg(roundDecimalPlaces)),
 					nodes
 				)
 			) //+ nodes

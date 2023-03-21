@@ -68,10 +68,9 @@ abstract class Renderer {
                 },
                 fillStyle = BitmapPaint(
                     image,
-                    transform = MMatrix()
-                        .scale(width / image.width.toDouble(), height / image.height.toDouble())
-                        .translate(x, y)
-                        .immutable
+                    transform = Matrix.IDENTITY
+                        .scaled(width / image.width.toDouble(), height / image.height.toDouble())
+                        .translated(x, y)
                 )
             ),
             fill = true

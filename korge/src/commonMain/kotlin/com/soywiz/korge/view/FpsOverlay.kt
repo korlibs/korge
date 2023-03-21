@@ -74,7 +74,7 @@ internal fun ViewsContainer.installFpsDebugOverlay() {
 
         fun drawTextWithShadow(text: String, x: Int, y: Int) {
             //ctx.drawText(debugBmpFont, fontSize, text, x = x + 1, y = y + 1, colMul = Colors.BLACK, filtering = false, m = matrix)
-            ctx.drawText(debugBmpFont, fontSize, text, x = x, y = y, colMul = ctx.debugExtraFontColor, filtering = false, m = matrix, blendMode = BlendMode.INVERT)
+            ctx.drawText(debugBmpFont, fontSize, text, x = x, y = y, colMul = ctx.debugExtraFontColor, filtering = false, m = matrix.immutable, blendMode = BlendMode.INVERT)
         }
 
         //val stats = ctx.ag.getStats()

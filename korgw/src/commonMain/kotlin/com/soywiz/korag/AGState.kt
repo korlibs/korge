@@ -665,7 +665,7 @@ inline class AGScissor(val data: Long) {
     }
 }
 
-fun AGScissor.applyMatrixBounds(m: MMatrix): AGScissor {
+fun AGScissor.applyMatrixBounds(m: Matrix): AGScissor {
     val x0 = m.transformX(left, top)
     val x1 = m.transformX(right, top)
     val x2 = m.transformX(left, bottom)

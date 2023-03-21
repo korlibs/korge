@@ -37,7 +37,7 @@ class Bitmap32Context2dTest {
                             //32.0, 8.0, 1.0,
                             stops = DoubleArrayList(0.0, 1.0),
                             colors = IntArrayList(Colors.BLUE.value, Colors.RED.value),
-                            transform = MMatrix().scale(2.0, 0.75).immutable
+                            transform = Matrix.IDENTITY.scaled(2.0, 0.75).immutable
                         )
                     )
                     if (true) {
@@ -79,7 +79,7 @@ class Bitmap32Context2dTest {
 
             val rendered = NativeImage(128, 128).context2d {
                 rect(0, 0, 100, 100)
-                fill(BitmapPaint(img, MMatrix().immutable))
+                fill(BitmapPaint(img, Matrix.IDENTITY))
             }
             val bmp = rendered.toBMP32()
 

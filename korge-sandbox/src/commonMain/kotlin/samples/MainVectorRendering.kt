@@ -19,7 +19,7 @@ class MainVectorRendering : Scene() {
             translate(100, 100)
             scale(2.0)
             globalAlpha = 0.75
-            fillStyle = BitmapPaint(korgeBitmap, MMatrix().translate(50, 50).immutable, cycleX = CycleMethod.REPEAT, cycleY = CycleMethod.REPEAT)
+            fillStyle = BitmapPaint(korgeBitmap, Matrix.IDENTITY.translated(50, 50), cycleX = CycleMethod.REPEAT, cycleY = CycleMethod.REPEAT)
             /*
             fillStyle = createLinearGradient(0.0, 0.0, 200.0, 200.0, transform = Matrix().scale(0.5).pretranslate(30, 30))
                 .addColorStop(0.0, Colors.RED)

@@ -158,10 +158,7 @@ class BatchBuilder2D constructor(
         }
     }
 
-
-    private val identity = MMatrix()
-
-	init { logger.trace { "BatchBuilder2D[7]" } }
+    init { logger.trace { "BatchBuilder2D[7]" } }
 
     //@KorgeInternal val textureUnit0 = AG.TextureUnit(null, linear = false)
     //@KorgeInternal val textureUnit1 = AG.TextureUnit(null, linear = false)

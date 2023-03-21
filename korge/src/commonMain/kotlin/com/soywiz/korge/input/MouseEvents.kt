@@ -95,7 +95,7 @@ class MouseEvents(val view: View) : Extra by Extra.Mixin(), Closeable {
                                 filtering = false,
                                 colMul = ctx.debugExtraFontColor,
                                 blendMode = BlendMode.INVERT,
-                                m = matrix
+                                m = matrix.immutable
                             )
                         }
                         yy += lineHeight
@@ -126,7 +126,7 @@ class MouseEvents(val view: View) : Extra by Extra.Mixin(), Closeable {
                                     filtering = false,
                                     colMul = ctx.debugExtraFontColor,
                                     blendMode = BlendMode.INVERT,
-                                    m = matrix
+                                    m = matrix.immutable
                                 )
                                 vview = vview.parent
                                 yy += lineHeight

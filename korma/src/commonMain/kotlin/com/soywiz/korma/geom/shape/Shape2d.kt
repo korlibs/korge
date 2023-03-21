@@ -152,7 +152,7 @@ abstract class Shape2d {
         val vectorPath by lazy {
             buildVectorPath(VectorPath()) {
                 ellipse(Point(0.0, 0.0), Size(ellipseRadiusX, ellipseRadiusY))
-            }.applyTransform(MMatrix().pretranslate(ellipseX, ellipseY).prerotate(ellipseAngle))
+            }.applyTransform(Matrix().pretranslated(ellipseX, ellipseY).prerotated(ellipseAngle))
         }
 
         override val paths: List<PointList> = when {

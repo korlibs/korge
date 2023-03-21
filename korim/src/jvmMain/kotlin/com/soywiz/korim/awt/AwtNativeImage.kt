@@ -520,7 +520,6 @@ fun AffineTransform.setToMatrix(t: Matrix) {
 }
 
 fun Matrix.toAwt() = AffineTransform(a, b, c, d, tx, ty)
-fun MMatrix.toAwt() = AffineTransform(a, b, c, d, tx, ty)
 fun AffineTransform.toMatrix(): Matrix = Matrix(scaleX, shearY, shearX, scaleY, translateX, translateY)
 
 fun convertColor(c: RGBA): java.awt.Color = java.awt.Color(c.r, c.g, c.b, c.a)

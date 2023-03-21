@@ -92,7 +92,7 @@ class SVG(val root: Xml, val warningProcessor: ((message: String) -> Unit)? = nu
             "userSpaceOnUse" -> GradientUnits.USER_SPACE_ON_USE
             else -> GradientUnits.OBJECT_BOUNDING_BOX
         }
-        val gradientTransform: MMatrix = def.getString("gradientTransform")?.let { CSS.parseTransform(it) } ?: MMatrix()
+        val gradientTransform: Matrix = def.getString("gradientTransform")?.let { CSS.parseTransform(it) } ?: Matrix.IDENTITY
         val spreadMethod = when ((def.getString("spreadMethod") ?: "pad").lowercase()) {
             "pad" -> CycleMethod.NO_CYCLE
             "repeat" -> CycleMethod.REPEAT
@@ -184,7 +184,7 @@ class SVG(val root: Xml, val warningProcessor: ((message: String) -> Unit)? = nu
         }
 
         val attributes: Map<String, String> = parseAttributesAndStyles(xml)
-        var transform: MMatrix? = attributes["transform"]?.let { CSS.parseTransform(it) }
+        var transform: Matrix = attributes["transform"]?.let { CSS.parseTransform(it) } ?: Matrix.IDENTITY
         var opacity: Double = attributes["opacity"]?.toDoubleOrNull() ?: 1.0
 
         val children = xml.allNodeChildren.mapNotNull {

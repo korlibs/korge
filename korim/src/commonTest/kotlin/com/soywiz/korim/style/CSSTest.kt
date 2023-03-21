@@ -31,7 +31,7 @@ class CSSTest {
     @Test
     fun test2() {
         assertEquals(
-            MMatrix(a=-1.0, b=0.0, c=0.0, d=-1.0, tx=132.47, ty=97.81),
+            Matrix(a=-1.0, b=0.0, c=0.0, d=-1.0, tx=132.47, ty=97.81),
             CSS.parseTransform("matrix(-1 0 0-1 132.47 97.81)")
         )
     }

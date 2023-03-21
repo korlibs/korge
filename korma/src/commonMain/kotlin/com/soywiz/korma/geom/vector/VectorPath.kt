@@ -516,10 +516,12 @@ fun BoundsBuilder.add(path: VectorPath, transform: MMatrix? = null) {
     //println("BoundsBuilder.add.path: " + bb.getBounds())
 }
 
-fun VectorPath.applyTransform(m: MMatrix?): VectorPath = when {
-    m != null -> transformPoints { m.transform(it) }
+fun VectorPath.applyTransform(m: Matrix): VectorPath = when {
+    m.isNotNIL -> transformPoints { m.transform(it) }
     else -> this
 }
+
+fun VectorPath.applyTransform(m: MMatrix?): VectorPath = applyTransform(m.immutable)
 
 @ThreadLocal
 private var VectorPath._curvesCacheVersion by extraProperty { -1 }
