@@ -251,7 +251,7 @@ jobs:
     - { name: Gradle cache, uses: ./.github/actions/gradle-cache }
     - { name: Testing JVM on windows, shell: cmd, run: "CALL gradlew.bat jvmTest", env: { EGL_LOG_LEVEL: debug, LIBGL_DEBUG: verbose, LIBGL_ALWAYS_SOFTWARE: true, MESA_DEBUG: true } }
     - { name: Archive Test Results, if: failure(), uses: actions/upload-artifact@v3, with: { name: screenshot-test-results-windows, retention-days: 21, path: "**/build/reports", if-no-files-found: ignore } }
-    - { name: Testing Kotlin/Native MingwX64Test, shell: cmd, run: CALL gradlew.bat mingwX64Test }
+    - { name: Testing Kotlin/Native MingwX64Test, shell: cmd, run: CALL gradlew.bat --no-parallel mingwX64Test }
     - { name: Publish gradle plugin, shell: cmd, run: "CALL gradlew.bat :korge-gradle-plugin:publishToMavenLocal :korge-reload-agent:publishToMavenLocal" }
     - { name: Publish X64, shell: cmd, run: CALL gradlew.bat publishMingwX64PublicationToMavenLocal publishKotlinMultiplatformPublicationToMavenLocal }
     - { name: e2e test, shell: cmd, working-directory: e2e-test, run: CALL gradlew.bat checkReferencesNative --stacktrace }

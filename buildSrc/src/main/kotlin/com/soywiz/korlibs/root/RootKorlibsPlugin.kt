@@ -172,18 +172,29 @@ object RootKorlibsPlugin {
     }
 
     fun Project.initShowSystemInfoWhenLinkingInWindows() {
+        fun Task.configureGCAndSystemInfo() {
+            val task = this
+            task.doFirst {
+                execThis { commandLine("systeminfo") }
+                println("jcmd -l; jcmd 0 GC.heap_info; jcmd 0 GC.run")
+                execThis { commandLine("jcmd", "-l") }
+                execThis { commandLine("jcmd", "0", "GC.heap_info") }
+                repeat(5) { execThis { commandLine("jcmd", "0", "GC.run") } }
+                execThis { commandLine("systeminfo") }
+            }
+            task.doLast { execThis { commandLine("systeminfo") } }
+        }
+
         rootProject.afterEvaluate {
             subprojectsThis {
                 val linkDebugTestMingwX64 = project.tasks.findByName("linkDebugTestMingwX64")
                 if (linkDebugTestMingwX64 != null && isWindows && inCI) {
-                    linkDebugTestMingwX64.doFirst { execThis { commandLine("systeminfo") } }
-                    linkDebugTestMingwX64.doLast { execThis { commandLine("systeminfo") } }
+                    linkDebugTestMingwX64.configureGCAndSystemInfo()
                 }
 
                 val mingwX64Test = project.tasks.findByName("mingwX64Test")
                 if (mingwX64Test != null && isWindows && inCI) {
-                    mingwX64Test.doFirst { execThis { commandLine("systeminfo") } }
-                    mingwX64Test.doLast { execThis { commandLine("systeminfo") } }
+                    mingwX64Test.configureGCAndSystemInfo()
                 }
             }
         }
