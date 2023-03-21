@@ -186,8 +186,11 @@ object RootKorlibsPlugin {
 
                 val mingwX64Test = project.tasks.findByName("mingwX64Test")
                 if (mingwX64Test != null && isWindows && inCI) {
-                    mingwX64Test.doFirst { execThis { commandLine("systeminfo") } }
-                    execThis { commandLine("jcmd", "0", "GC.run") }
+                    mingwX64Test.doFirst {
+                        execThis { commandLine("systeminfo") }
+                        execThis { commandLine("jcmd", "0", "GC.run") }
+                        execThis { commandLine("systeminfo") }
+                    }
                     mingwX64Test.doLast { execThis { commandLine("systeminfo") } }
                 }
             }
