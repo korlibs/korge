@@ -44,7 +44,7 @@ open class ShapeBuilder(width: Int?, height: Int?) : Context2d(DummyRenderer), D
                 path = path,
                 clip = clip,
                 paint = state.fillStyle.clone(),
-                transform = transform.mutable,
+                transform = transform,
                 globalAlpha = state.globalAlpha,
             )
         } else {
@@ -52,7 +52,7 @@ open class ShapeBuilder(width: Int?, height: Int?) : Context2d(DummyRenderer), D
                 path = path,
                 clip = clip,
                 paint = state.strokeStyle.clone(),
-                transform = transform.mutable,
+                transform = transform,
                 StrokeInfo(
                     thickness = state.lineWidth,
                     pixelHinting = true,
@@ -81,7 +81,7 @@ open class ShapeBuilder(width: Int?, height: Int?) : Context2d(DummyRenderer), D
             halign = state.horizontalAlign,
             valign = state.verticalAlign,
             //transform = Matrix()
-            transform = state.transform.mutable
+            transform = state.transform
         )
     }
 

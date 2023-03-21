@@ -19,7 +19,7 @@ class ShapeTest {
             clip = null,
             paint = Colors.GREEN,
             //paint = BitmapPaint(Bitmap32(100, 100, Colors.RED, premultiplied = false), Matrix()),
-            transform = MMatrix()
+            transform = Matrix.IDENTITY
         )
         assertEquals(
             //"""<svg width="100px" height="100px" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><pattern id="def0" patternUnits="userSpaceOnUse" width="100" height="100" patternTransform="translate()"><image xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAA/UlEQVR4nO3RoQ0AMBDEsNt/6e8YDTAwj5TddnTsdwCGpBkSY0iMITGGxBgSY0iMITGGxBgSY0iMITGGxBgSY0iMITGGxBgSY0iMITGGxBgSY0iMITGGxBgSY0iMITGGxBgSY0iMITGGxBgSY0iMITGGxBgSY0iMITGGxBgSY0iMITGGxBgSY0iMITGGxBgSY0iMITGGxBgSY0iMITGGxBgSY0iMITGGxBgSY0iMITGGxBgSY0iMITGGxBgSY0iMITGGxBgSY0iMITGGxBgSY0iMITGGxBgSY0iMITGGxBgSY0iMITGGxBgSY0iMITGGxBgSY0iMITGGxBgS8wBKb9Zkl+sjewAAAABJRU5ErkJggg==" width="100" height="100"/></pattern></defs><g transform="translate()"><path d="M0 0L100 100L0 100Z" transform="translate()" fill="url(#def0)"/></g></svg>""",
@@ -54,7 +54,7 @@ class ShapeTest {
 
     @Test
     fun testEmptyBounds() {
-        fun createStrokeShape(block: VectorBuilder.() -> Unit): PolylineShape = PolylineShape(buildVectorPath { block() }, null, Colors.RED, MMatrix(), StrokeInfo())
+        fun createStrokeShape(block: VectorBuilder.() -> Unit): PolylineShape = PolylineShape(buildVectorPath { block() }, null, Colors.RED, Matrix.IDENTITY, StrokeInfo())
         val shape1 = createStrokeShape { moveTo(Point(100, 100)) }
         val shape2 = createStrokeShape { moveTo(Point(100, 100)); lineTo(Point(200, 100)) }
         val shape3 = createStrokeShape { moveTo(Point(100, 100)); lineTo(Point(200, 200)) }

@@ -336,7 +336,7 @@ open class GpuShapeView(
     //private val strokeCache = HashMap<StrokeRenderCacheKey, StrokeRenderData>()
 
     private fun renderStroke(
-        stateTransform: MMatrix,
+        stateTransform: Matrix,
         strokePath: VectorPath,
         paint: Paint,
         globalAlpha: Double,
@@ -358,12 +358,12 @@ open class GpuShapeView(
             val startIndex = gpuShapeViewCommands.verticesStart()
             val vector = points.vector
             vector.fastForEachGeneric { index ->
-                val x = vector.get(index, 0).toFloat()
-                val y = vector.get(index, 1).toFloat()
-                val dx = vector.get(index, 2).toFloat()
-                val dy = vector.get(index, 3).toFloat()
-                val len = vector.get(index, 4).toFloat()
-                val maxLen = vector.get(index, 5).toFloat().absoluteValue
+                val x = vector[index, 0]
+                val y = vector[index, 1]
+                val dx = vector[index, 2]
+                val dy = vector[index, 3]
+                val len = vector[index, 4]
+                val maxLen = vector[index, 5].absoluteValue
 
                 val px = x + dx * len
                 val py = y + dy * len

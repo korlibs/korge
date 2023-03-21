@@ -82,7 +82,6 @@ open class CachedContainer(
                 ctx.setViewMatrixTemp(globalMatrixInv
                     .translated(-lbounds.x, -lbounds.y)
                     .scaled(renderScale)
-                    .mutable
                 ) {
                     super.renderInternal(ctx)
                 }

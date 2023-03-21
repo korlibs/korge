@@ -84,7 +84,7 @@ open class FixedSizeContainer(
                 //println("bounds=$bounds, bp.globalToWindowMatrix=${ctx.globalToWindowMatrix}")
 
                 @Suppress("DEPRECATION")
-                bounds.applyTransform(ctx.viewMat2D)
+                bounds.applyTransform(ctx.viewMat2D.mutable)
                 bounds.normalize() // If width or height are negative, because scale was negative
 
                 //println("ctx.ag.isRenderingToWindow=${ctx.ag.isRenderingToWindow}, FIXED_CLIP: bounds=$bounds, ctx.viewMat2D=${ctx.viewMat2D}")

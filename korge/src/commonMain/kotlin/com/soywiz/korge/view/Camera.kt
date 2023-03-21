@@ -35,24 +35,21 @@ class Camera : Container(), View.Reference {
 
     override fun getLocalBoundsInternal() = Rectangle(0.0, 0.0, width, height)
 
-	fun getLocalMatrixFittingGlobalRect(rect: MRectangle): MMatrix {
+	fun getLocalMatrixFittingGlobalRect(rect: Rectangle): Matrix {
 		val destinationBounds = rect
-		val mat = this.parent?.globalMatrix?.clone()?.mutable ?: MMatrix()
-		mat.translate(-destinationBounds.x, -destinationBounds.y)
-		mat.scale(
-			width / destinationBounds.width,
-			height / destinationBounds.height
-		)
-		//println(identityBounds)
-		//println(destinationBounds)
-		return mat
+		return (this.parent?.globalMatrix ?: Matrix())
+		    .translated(-destinationBounds.x, -destinationBounds.y)
+            .scaled(
+                width / destinationBounds.width,
+                height / destinationBounds.height
+            )
 	}
 
-	fun getLocalMatrixFittingView(view: View?): MMatrix =
-		getLocalMatrixFittingGlobalRect((view ?: stage)?.globalBounds?.mutable ?: MRectangle(0, 0, 100, 100))
+	fun getLocalMatrixFittingView(view: View?): Matrix =
+		getLocalMatrixFittingGlobalRect((view ?: stage)?.globalBounds ?: Rectangle(0, 0, 100, 100))
 
 	fun setTo(view: View?) { this.localMatrix = getLocalMatrixFittingView(view).immutable }
-	fun setTo(rect: MRectangle) { this.localMatrix = getLocalMatrixFittingGlobalRect(rect).immutable }
+	fun setTo(rect: Rectangle) { this.localMatrix = getLocalMatrixFittingGlobalRect(rect).immutable }
 
 	suspend fun tweenTo(view: View?, vararg vs: V2<*>, time: TimeSpan, easing: Easing = Easing.LINEAR) = this.tween(
 		this::localMatrix[this.localMatrix.clone(), getLocalMatrixFittingView(view).immutable],
@@ -61,8 +58,8 @@ class Camera : Container(), View.Reference {
 		easing = easing
 	)
 
-	suspend fun tweenTo(rect: MRectangle, vararg vs: V2<*>, time: TimeSpan, easing: Easing = Easing.LINEAR) = this.tween(
-		this::localMatrix[this.localMatrix.clone(), getLocalMatrixFittingGlobalRect(rect).immutable],
+	suspend fun tweenTo(rect: Rectangle, vararg vs: V2<*>, time: TimeSpan, easing: Easing = Easing.LINEAR) = this.tween(
+		this::localMatrix[this.localMatrix, getLocalMatrixFittingGlobalRect(rect)],
 		*vs,
 		time = time,
 		easing = easing

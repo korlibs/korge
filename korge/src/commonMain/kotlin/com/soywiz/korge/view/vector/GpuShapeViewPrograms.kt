@@ -149,7 +149,7 @@ object GpuShapeViewPrograms {
     )
 
     fun paintToShaderInfo(
-        stateTransform: MMatrix,
+        stateTransform: Matrix,
         paint: Paint,
         globalAlpha: Double,
         lineWidth: Double,
@@ -167,14 +167,12 @@ object GpuShapeViewPrograms {
 
         }
         is BitmapPaint -> {
-            val mat = MMatrix().apply {
-                identity()
-                preconcat(paint.transform.mutable)
-                preconcat(stateTransform)
+            val mat = Matrix.IDENTITY
+                .preconcated(paint.transform)
+                .preconcated(stateTransform)
                 //if (matrix != null) preconcat(matrix)
-                invert()
-                scale(1.0 / paint.bitmap.width, 1.0 / paint.bitmap.height)
-            }
+                .inverted()
+                .scaled(1.0 / paint.bitmap.width, 1.0 / paint.bitmap.height)
 
             //val mat = (paint.transform * stateTransform)
             //mat.scale(1.0 / paint.bitmap.width, 1.0 / paint.bitmap.height)
@@ -197,12 +195,11 @@ object GpuShapeViewPrograms {
                 paint.fillColors(RgbaPremultipliedArray(gradientBitmap.ints))
             }
 
-            val npaint = paint.copy(transform = MMatrix().apply {
-                identity()
-                preconcat(paint.transform.mutable)
-                preconcat(stateTransform)
+            val npaint = paint.copy(transform = Matrix.IDENTITY
+                .preconcated(paint.transform)
+                .preconcated(stateTransform)
                 //if (matrix != null) preconcat(matrix)
-            }.immutable)
+            )
             //val mat = stateTransform * paint.gradientMatrix
             val mat = when (paint.kind) {
                 GradientKind.LINEAR -> npaint.gradientMatrix

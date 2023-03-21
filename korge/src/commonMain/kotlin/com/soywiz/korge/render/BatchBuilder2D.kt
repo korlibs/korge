@@ -737,7 +737,7 @@ class BatchBuilder2D constructor(
     /**
      * Executes [callback] while setting temporarily the view matrix to [matrix]
      */
-	inline fun setViewMatrixTemp(matrix: Matrix, crossinline callback: () -> Unit) = ctx.setViewMatrixTemp(matrix.mutable, callback)
+	inline fun setViewMatrixTemp(matrix: Matrix, crossinline callback: () -> Unit) = ctx.setViewMatrixTemp(matrix, callback)
 
     /**
      * Executes [callback] while restoring [uniform] to its current value after [callback] is exexcuted.
