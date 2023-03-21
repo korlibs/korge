@@ -8,6 +8,6 @@ class AwtNativeImageTest {
     @Test
     fun testMatrixAwtTransform() {
         val matrix = Matrix(1, 2, 3, 4, 5, 6)
-        assertEquals(matrix, matrix.clone().toAwt().toMatrix())
+        assertEquals(matrix, matrix.toAwt().toMatrix())
     }
 }

@@ -52,13 +52,13 @@ abstract class Renderer {
         y: Double,
         width: Double = image.width.toDouble(),
         height: Double = image.height.toDouble(),
-        transform: MMatrix = MMatrix()
+        transform: Matrix = Matrix.IDENTITY
     ) {
         render(
             Context2d.State(
-                transform = transform.immutable,
+                transform = transform,
                 path = VectorPath().apply {
-                    if (transform.getType() == MatrixType.IDENTITY) {
+                    if (transform.type == MatrixType.IDENTITY) {
                         rect(x, y, width, height)
                     } else {
                         transformed(transform) {
@@ -81,7 +81,7 @@ abstract class Renderer {
     inline fun drawImage(
         image: Bitmap,
         x: Number, y: Number, width: Number = image.width, height: Number = image.height,
-        transform: MMatrix = MMatrix()
+        transform: Matrix = Matrix.IDENTITY
     ) = drawImage(image, x.toDouble(), y.toDouble(), width.toDouble(), height.toDouble(), transform)
 
     open fun dispose() {

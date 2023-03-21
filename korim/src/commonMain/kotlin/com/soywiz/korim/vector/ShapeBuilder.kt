@@ -38,7 +38,7 @@ open class ShapeBuilder(width: Int?, height: Int?) : Context2d(DummyRenderer), D
 
         val path = state.path.clone().also { it.winding = winding ?: it.winding }
         val clip = state.clip?.clone()?.also { it.winding = winding ?: it.winding }
-        val transform = state.transform.clone()
+        val transform = state.transform
         if (fill) {
             shapes += FillShape(
                 path = path,
@@ -81,21 +81,22 @@ open class ShapeBuilder(width: Int?, height: Int?) : Context2d(DummyRenderer), D
             halign = state.horizontalAlign,
             valign = state.verticalAlign,
             //transform = Matrix()
-            transform = state.transform.clone().mutable
+            transform = state.transform.mutable
         )
     }
 
-    override fun rendererDrawImage(image: Bitmap, x: Double, y: Double, width: Double, height: Double, transform: MMatrix) {
-        rendererRender(State(
-            transform = transform.immutable,
-            path = VectorPath().apply { rect(x, y, width, height) },
-            fillStyle = BitmapPaint(image,
-                transform = MMatrix()
-                    .scale(width / image.width.toDouble(), height / image.height.toDouble())
-                    .translate(x, y)
-                    .immutable
-            )
-        ), fill = true)
+    override fun rendererDrawImage(image: Bitmap, x: Double, y: Double, width: Double, height: Double, transform: Matrix) {
+        rendererRender(
+            State(
+                transform = transform,
+                path = VectorPath().apply { rect(x, y, width, height) },
+                fillStyle = BitmapPaint(
+                    image,
+                    transform = Matrix.IDENTITY
+                        .scaled(width / image.width.toDouble(), height / image.height.toDouble())
+                        .translated(x, y)
+                )
+            ), fill = true)
     }
 
     override fun rendererDispose() {

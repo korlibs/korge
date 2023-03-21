@@ -364,7 +364,7 @@ class AndroidContext2dRenderer(val bmp: android.graphics.Bitmap, val antialiasin
             paint.style = if (fill) Paint.Style.FILL else android.graphics.Paint.Style.STROKE
             paint.strokeCap = state.lineCap.toAndroid()
             paint.strokeJoin = state.lineJoin.toAndroid()
-            convertPaint(state.fillOrStrokeStyle(fill), state.transform.immutable, paint, state.globalAlpha.clamp01())
+            convertPaint(state.fillOrStrokeStyle(fill), state.transform, paint, state.globalAlpha.clamp01())
             paint.pathEffect = when {
                 state.lineDash != null -> DashPathEffect(state.lineDash!!.mapFloat { it.toFloat() }.toFloatArray(), state.lineDashOffset.toFloat())
                 else -> null

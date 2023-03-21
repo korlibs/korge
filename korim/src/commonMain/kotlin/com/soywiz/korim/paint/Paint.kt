@@ -210,7 +210,7 @@ data class GradientPaint(
     //override fun applyMatrix(m: Matrix): GradientPaint = copy(transform = transform * m)
     override fun replaceMatrix(m: Matrix): GradientPaint = copy(transform = m)
 
-    override fun clone(): Paint = copy(transform = transform.clone())
+    override fun clone(): Paint = copy(transform = transform)
 
     private fun colorsToString(colors: RgbaArray): String = "[" + colors.joinToString(", ") { it.hexString } + "]"
     private fun colorsToString(colors: IntArrayList): String = colorsToString(RgbaArray(colors.toIntArray()))
@@ -276,7 +276,7 @@ data class BitmapPaint(
     val repeat: Boolean get() = repeatX || repeatY
 
     val bmp32 = bitmap.toBMP32()
-    override fun clone(): Paint = copy(transform = transform.clone())
+    override fun clone(): Paint = copy(transform = transform)
 
     //override fun applyMatrix(m: Matrix): BitmapPaint = copy(transform = transform * m)
     override fun replaceMatrix(m: Matrix): BitmapPaint = copy(transform = m)

@@ -239,7 +239,7 @@ interface VectorBuilder {
     fun rLineToH(x: Float, relative: Boolean) = if (relative) rLineToH(x) else lineToH(x)
     fun rLineToV(y: Float, relative: Boolean) = if (relative) rLineToV(y) else lineToV(y)
 
-    fun transformed(m: MMatrix): VectorBuilder {
+    fun transformed(m: Matrix): VectorBuilder {
         val im = m.inverted()
         val parent = this
         return object : VectorBuilder {
@@ -255,7 +255,8 @@ interface VectorBuilder {
         }
     }
 
-    fun <T> transformed(m: MMatrix, block: VectorBuilder.() -> T): T = block(this.transformed(m))
+    fun <T> transformed(m: Matrix, block: VectorBuilder.() -> T): T = block(this.transformed(m))
+    fun <T> transformed(m: MMatrix, block: VectorBuilder.() -> T): T = block(this.transformed(m.immutable))
 
 }
 

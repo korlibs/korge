@@ -36,7 +36,7 @@ open class Context2d(
         y: Double,
         width: Double = image.width.toDouble(),
         height: Double = image.height.toDouble(),
-        transform: MMatrix = MMatrix()
+        transform: Matrix = Matrix.IDENTITY
     ) = renderer.drawImage(image, x, y, width, height, transform)
 
     protected open fun rendererDispose() = renderer.dispose()
@@ -74,21 +74,25 @@ open class Context2d(
         override val width: Int get() = (parent.width / scaleX).toInt()
         override val height: Int get() = (parent.height / scaleY).toInt()
 
-        private inline fun <T> adjustMatrix(transform: MMatrix, callback: () -> T): T = transform.keepMatrix {
-            transform.scale(scaleX, scaleY)
-            callback()
-        }
+        fun Matrix.adjusted(): Matrix = this.scaled(this@ScaledRenderer.scaleX, this@ScaledRenderer.scaleY)
 
-        private inline fun <T> adjustState(state: State, callback: () -> T): T =
-            adjustMatrix(state.transform.mutable) { callback() }
+        private inline fun <T> adjustState(state: State, callback: () -> T): T {
+            val old = state.transform
+            try {
+                state.transform = state.transform.adjusted()
+                return callback()
+            } finally {
+                state.transform = old
+            }
+        }
 
         override fun renderFinal(state: State, fill: Boolean, winding: Winding?): Unit =
             adjustState(state) { parent.render(state, fill, winding) }
         //override fun renderText(state: State, font: Font, fontSize: Double, text: String, x: Double, y: Double, fill: Boolean): Unit =
         //	adjustState(state) { parent.renderText(state, font, fontSize, text, x, y, fill) }
 
-        override fun drawImage(image: Bitmap, x: Double, y: Double, width: Double, height: Double, transform: MMatrix) {
-            adjustMatrix(transform) { parent.drawImage(image, x, y, width, height, transform) }
+        override fun drawImage(image: Bitmap, x: Double, y: Double, width: Double, height: Double, transform: Matrix) {
+            parent.drawImage(image, x, y, width, height, transform.adjusted())
         }
     }
 
@@ -150,7 +154,7 @@ open class Context2d(
         fun fillOrStrokeStyle(fill: Boolean) = if (fill) fillStyle else strokeStyle
 
         fun clone(): State = this.copy(
-            transform = transform.clone(),
+            transform = transform,
             clip = clip?.clone(),
             path = path.clone(),
             lineDash = lineDash?.clone()
@@ -707,7 +711,7 @@ open class Context2d(
         width: Double = image.width.toDouble(),
         height: Double = image.height.toDouble()
     ) =
-        rendererDrawImage(image, x, y, width, height, state.transform.mutable)
+        rendererDrawImage(image, x, y, width, height, state.transform)
 
     // @TODO: Fix this!
     inline fun drawImage(

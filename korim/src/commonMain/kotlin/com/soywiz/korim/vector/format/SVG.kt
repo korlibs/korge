@@ -220,8 +220,8 @@ class SVG(val root: Xml, val warningProcessor: ((message: String) -> Unit)? = nu
             if (c.state.path.isNotEmpty()) {
                 c.keep {
                     //c.fillStyle = c.fillStyle.getPaintWithUnits(c.state.transform, c.state.path.clone().applyTransform(c.state.transform).getBounds())
-                    c.fillStyle = c.fillStyle.getPaintWithUnits(c.state.transform.immutable, c.state.path)
-                    c.strokeStyle = c.strokeStyle.getPaintWithUnits(c.state.transform.immutable, c.state.path)
+                    c.fillStyle = c.fillStyle.getPaintWithUnits(c.state.transform, c.state.path)
+                    c.strokeStyle = c.strokeStyle.getPaintWithUnits(c.state.transform, c.state.path)
                     //println("fillStyle=${c.fillStyle}, strokeStyle=${c.strokeStyle}")
                     c.fillStroke()
                 }

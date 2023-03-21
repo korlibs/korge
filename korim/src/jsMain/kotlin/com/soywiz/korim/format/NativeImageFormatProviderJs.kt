@@ -378,10 +378,10 @@ class CanvasContext2dRenderer(private val canvas: HTMLCanvasElementLike) : Rende
 		}
 	}
 
-	override fun drawImage(image: Bitmap, x: Double, y: Double, width: Double, height: Double, transform: MMatrix) {
+	override fun drawImage(image: Bitmap, x: Double, y: Double, width: Double, height: Double, transform: Matrix) {
 		ctx.save()
 		try {
-			transform.run { ctx.setTransform(a, b, c, d, tx, ty) }
+			transform.run { ctx.setTransform(a.toDouble(), b.toDouble(), c.toDouble(), d.toDouble(), tx.toDouble(), ty.toDouble()) }
 			ctx.drawImage(
 				(image.ensureNative() as HtmlNativeImage).texSource.unsafeCast<CanvasImageSource>(),
                 x, y, width, height
@@ -421,7 +421,7 @@ class CanvasContext2dRenderer(private val canvas: HTMLCanvasElementLike) : Rende
 
             doVisit(state.path)
 
-            ctx.transform(state.transform.immutable)
+            ctx.transform(state.transform)
 			if (fill) {
 				transformPaint(state.fillStyle)
                 //println("       - Gadient: ${}")

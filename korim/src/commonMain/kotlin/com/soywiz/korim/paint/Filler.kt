@@ -78,11 +78,11 @@ class BitmapFiller : BaseFiller() {
     fun set(fill: BitmapPaint, state: Context2d.State) = this.apply {
         this.cycle = CycleMethodPair(fill.cycleX, fill.cycleY)
         this.texture = fill.bmp32
-        this.transform = fill.transform.immutable
+        this.transform = fill.transform
         this.linear = fill.smooth
         compTrans = Matrix.IDENTITY
-            .premultiplied(state.transform.immutable)
-            .premultiplied(fill.transform.immutable)
+            .premultiplied(state.transform)
+            .premultiplied(fill.transform)
             .inverted()
 
     }
@@ -110,7 +110,7 @@ class GradientFiller : BaseFiller() {
         fill.fillColors(colors)
         this.fill = fill.copy(transform = Matrix.IDENTITY
             .preconcated(fill.transform)
-            .preconcated(state.transform.immutable)
+            .preconcated(state.transform)
         )
         //println("state.transform=${state.transform}")
         //this.stateTransformInv.copyFromInverted(state.transform)
