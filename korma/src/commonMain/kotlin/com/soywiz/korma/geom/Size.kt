@@ -14,8 +14,8 @@ inline class Size internal constructor(internal val raw: Float2Pack) {
     fun minComponent(): Float = min(width, height)
     fun maxComponent(): Float = max(width, height)
 
-    val width: Float get() = raw.x
-    val height: Float get() = raw.y
+    val width: Float get() = raw.f0
+    val height: Float get() = raw.f1
 
     val widthF: Float get() = width
     val heightF: Float get() = height
@@ -27,8 +27,8 @@ inline class Size internal constructor(internal val raw: Float2Pack) {
 
     //(val width: Double, val height: Double) {
     constructor() : this(0f, 0f)
-    constructor(width: Float, height: Float) : this(Float2Pack(width, height))
-    constructor(width: Double, height: Double) : this(Float2Pack(width.toFloat(), height.toFloat()))
+    constructor(width: Float, height: Float) : this(float2PackOf(width, height))
+    constructor(width: Double, height: Double) : this(float2PackOf(width.toFloat(), height.toFloat()))
     constructor(width: Int, height: Int) : this(width.toFloat(), height.toFloat())
 
     operator fun unaryMinus(): Size = Size(-width, -height)

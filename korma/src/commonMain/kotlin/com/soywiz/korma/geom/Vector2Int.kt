@@ -6,11 +6,11 @@ typealias PointInt = Vector2Int
 
 //@KormaValueApi
 inline class Vector2Int internal constructor(internal val raw: Int2Pack) {
-    val x: Int get() = raw.x
-    val y: Int get() = raw.y
+    val x: Int get() = raw.i0
+    val y: Int get() = raw.i1
 
-    constructor() : this(Int2Pack(0, 0))
-    constructor(x: Int, y: Int) : this(Int2Pack(x, y))
+    constructor() : this(int2PackOf(0, 0))
+    constructor(x: Int, y: Int) : this(int2PackOf(x, y))
 
     val mutable: MPointInt get() = MPointInt(x, y)
     operator fun component1(): Int = x

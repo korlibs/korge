@@ -40,17 +40,6 @@ actual fun half8PackOf(h0: Float, h1: Float, h2: Float, h3: Float, h4: Float, h5
 
 
 
-internal data class JsHalf4Pack(val x: Half, val y: Half, val z: Half, val w: Half)
-internal actual inline fun packHalf4(x: Half, y: Half, z: Half, w: Half): Long = JsHalf4Pack(x, y, z, w).asDynamic()
-internal actual inline fun unpackHalf4X(v: Long): Half = v.unsafeCast<JsHalf4Pack>().x
-internal actual inline fun unpackHalf4Y(v: Long): Half = v.unsafeCast<JsHalf4Pack>().y
-internal actual inline fun unpackHalf4Z(v: Long): Half = v.unsafeCast<JsHalf4Pack>().z
-internal actual inline fun unpackHalf4W(v: Long): Half = v.unsafeCast<JsHalf4Pack>().w
-
-
-
-
-
 actual data class Float4Pack(val x: Float, val y: Float, val z: Float, val w: Float)
 actual val Float4Pack.f0: Float get() = this.x
 actual val Float4Pack.f1: Float get() = this.y
@@ -109,23 +98,20 @@ actual fun bfloat3Half4PackOf(
 
 
 
-internal data class JsFloat2Pack(val x: Float, val y: Float)
-internal actual inline fun packFloat2(x: Float, y: Float): Long = JsFloat2Pack(x, y).asDynamic()
-internal actual inline fun unpackFloat2X(v: Long): Float = v.unsafeCast<JsFloat2Pack>().x
-internal actual inline fun unpackFloat2Y(v: Long): Float = v.unsafeCast<JsFloat2Pack>().y
+actual data class Float2Pack(val x: Float, val y: Float)
+actual val Float2Pack.f0: Float get() = x
+actual val Float2Pack.f1: Float get() = y
+actual fun float2PackOf(f0: Float, f1: Float): Float2Pack = Float2Pack(f0, f1)
 
+actual data class Int2Pack(val x: Int, val y: Int)
+actual val Int2Pack.i0: Int get() = x
+actual val Int2Pack.i1: Int get() = y
+actual fun int2PackOf(i0: Int, i1: Int): Int2Pack = Int2Pack(i0, i1)
 
-internal data class JsInt2Pack(val x: Int, val y: Int)
-internal actual inline fun packInt2(x: Int, y: Int): Long = JsInt2Pack(x, y).asDynamic()
-internal actual inline fun unpackInt2X(v: Long): Int = v.unsafeCast<JsInt2Pack>().x
-internal actual inline fun unpackInt2Y(v: Long): Int = v.unsafeCast<JsInt2Pack>().y
-
-
-
-internal data class JsShort4Pack(val x: Short, val y: Short, val z: Short, val w: Short)
-internal actual inline fun packShort4(x: Short, y: Short, z: Short, w: Short): Long = JsShort4Pack(x, y, z, w).asDynamic()
-internal actual inline fun unpackShort4X(v: Long): Short = v.unsafeCast<JsShort4Pack>().x
-internal actual inline fun unpackShort4Y(v: Long): Short = v.unsafeCast<JsShort4Pack>().y
-internal actual inline fun unpackShort4Z(v: Long): Short = v.unsafeCast<JsShort4Pack>().z
-internal actual inline fun unpackShort4W(v: Long): Short = v.unsafeCast<JsShort4Pack>().w
+actual data class Short4Pack(val x: Short, val y: Short, val z: Short, val w: Short)
+actual val Short4Pack.s0: Short get() = x
+actual val Short4Pack.s1: Short get() = y
+actual val Short4Pack.s2: Short get() = z
+actual val Short4Pack.s3: Short get() = w
+actual fun short4PackOf(s0: Short, s1: Short, s2: Short, s3: Short): Short4Pack = Short4Pack(s0, s1, s2, s3)
 

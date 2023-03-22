@@ -27,8 +27,8 @@ fun vec2(x: Float, y: Float): Vector2 = Vector2(x, y)
 //@KormaValueApi
 //data class Point(val x: Double, val y: Double) {
 inline class Vector2 internal constructor(internal val raw: Float2Pack) {
-    val x: Float get() = raw.x
-    val y: Float get() = raw.y
+    val x: Float get() = raw.f0
+    val y: Float get() = raw.f1
 
     val xF: Float get() = x
     val yF: Float get() = y
@@ -36,15 +36,15 @@ inline class Vector2 internal constructor(internal val raw: Float2Pack) {
     val xD: Double get() = x.toDouble()
     val yD: Double get() = y.toDouble()
 
-    constructor(x: Float, y: Float) : this(Float2Pack(x, y))
-    constructor(x: Double, y: Double) : this(Float2Pack(x.toFloat(), y.toFloat()))
-    constructor(x: Int, y: Int) : this(Float2Pack(x.toFloat(), y.toFloat()))
+    constructor(x: Float, y: Float) : this(float2PackOf(x, y))
+    constructor(x: Double, y: Double) : this(float2PackOf(x.toFloat(), y.toFloat()))
+    constructor(x: Int, y: Int) : this(float2PackOf(x.toFloat(), y.toFloat()))
 
-    constructor(x: Double, y: Int) : this(Float2Pack(x.toFloat(), y.toFloat()))
-    constructor(x: Int, y: Double) : this(Float2Pack(x.toFloat(), y.toFloat()))
+    constructor(x: Double, y: Int) : this(float2PackOf(x.toFloat(), y.toFloat()))
+    constructor(x: Int, y: Double) : this(float2PackOf(x.toFloat(), y.toFloat()))
 
-    constructor(x: Float, y: Int) : this(Float2Pack(x.toFloat(), y.toFloat()))
-    constructor(x: Int, y: Float) : this(Float2Pack(x.toFloat(), y.toFloat()))
+    constructor(x: Float, y: Int) : this(float2PackOf(x.toFloat(), y.toFloat()))
+    constructor(x: Int, y: Float) : this(float2PackOf(x.toFloat(), y.toFloat()))
 
     constructor(p: MPoint) : this(p.x.toFloat(), p.y.toFloat())
     //constructor(p: Vector2) : this(p.raw)

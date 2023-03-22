@@ -10,7 +10,7 @@ import com.soywiz.korma.internal.*
  */
 inline class Margin internal constructor(val raw: Short4Pack) {
     constructor(top: Float, right: Float, bottom: Float, left: Float) : this(
-        Short4Pack(
+        short4PackOf(
             top.toFixedShort().raw, right.toFixedShort().raw,
             bottom.toFixedShort().raw, left.toFixedShort().raw
         )
@@ -23,10 +23,10 @@ inline class Margin internal constructor(val raw: Short4Pack) {
 
     val isNotZero: Boolean get() = top != 0f || left != 0f || right != 0f || bottom != 0f
 
-    val topFixed: FixedShort get() = FixedShort.fromRaw(raw.x)
-    val rightFixed: FixedShort get() = FixedShort.fromRaw(raw.y)
-    val bottomFixed: FixedShort get() = FixedShort.fromRaw(raw.z)
-    val leftFixed: FixedShort get() = FixedShort.fromRaw(raw.w)
+    val topFixed: FixedShort get() = FixedShort.fromRaw(raw.s0)
+    val rightFixed: FixedShort get() = FixedShort.fromRaw(raw.s1)
+    val bottomFixed: FixedShort get() = FixedShort.fromRaw(raw.s2)
+    val leftFixed: FixedShort get() = FixedShort.fromRaw(raw.s3)
 
     val leftPlusRightFixed: FixedShort get() = leftFixed + rightFixed
     val topPlusBottomFixed: FixedShort get() = topFixed + bottomFixed
@@ -56,8 +56,8 @@ inline class Margin internal constructor(val raw: Short4Pack) {
  * A [top], [right], [bottom], [left] pack with Short (16-bit) precision (+-32767)
  */
 inline class MarginInt internal constructor(val raw: Short4Pack) {
-    constructor(top: Short, right: Short, bottom: Short, left: Short) : this(Short4Pack(top, right, bottom, left))
-    constructor(top: Int, right: Int, bottom: Int, left: Int) : this(Short4Pack(top.toShortClamped(), right.toShortClamped(), bottom.toShortClamped(), left.toShortClamped()))
+    constructor(top: Short, right: Short, bottom: Short, left: Short) : this(short4PackOf(top, right, bottom, left))
+    constructor(top: Int, right: Int, bottom: Int, left: Int) : this(short4PackOf(top.toShortClamped(), right.toShortClamped(), bottom.toShortClamped(), left.toShortClamped()))
     constructor(vertical: Int, horizontal: Int) : this(vertical, horizontal, vertical, horizontal)
     constructor(margin: Int) : this(margin, margin, margin, margin)
 
@@ -66,10 +66,10 @@ inline class MarginInt internal constructor(val raw: Short4Pack) {
 
     val isNotZero: Boolean get() = top != 0 || left != 0 || right != 0 || bottom != 0
 
-    val top: Int get() = raw.x.toInt()
-    val right: Int get() = raw.y.toInt()
-    val bottom: Int get() = raw.z.toInt()
-    val left: Int get() = raw.w.toInt()
+    val top: Int get() = raw.s0.toInt()
+    val right: Int get() = raw.s1.toInt()
+    val bottom: Int get() = raw.s2.toInt()
+    val left: Int get() = raw.s3.toInt()
 
     val leftPlusRight: Int get() = left + right
     val topPlusBottom: Int get() = top + bottom
@@ -77,7 +77,7 @@ inline class MarginInt internal constructor(val raw: Short4Pack) {
     val vertical: Int get() = (top + bottom) / 2
 
     companion object {
-        val ZERO = MarginInt(Short4Pack(0, 0, 0, 0))
+        val ZERO = MarginInt(short4PackOf(0, 0, 0, 0))
     }
 
     override fun toString(): String = "MarginInt(top=${top}, right=${right}, bottom=${bottom}, left=${left})"

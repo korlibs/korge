@@ -5,8 +5,8 @@ import com.soywiz.korma.annotations.*
 
 //@KormaValueApi
 inline class Scale internal constructor(internal val raw: Float2Pack) {
-    val scaleX: Float get() = raw.x
-    val scaleY: Float get() = raw.y
+    val scaleX: Float get() = raw.f0
+    val scaleY: Float get() = raw.f1
     val scaleAvg: Float get() = scaleX * .5f + scaleY * .5f
 
     val scaleXD: Double get() = scaleX.toDouble()
@@ -14,10 +14,10 @@ inline class Scale internal constructor(internal val raw: Float2Pack) {
     val scaleAvgD: Double get() = scaleAvg.toDouble()
 
     constructor() : this(1f, 1f)
-    constructor(scale: Float) : this(Float2Pack(scale, scale))
+    constructor(scale: Float) : this(float2PackOf(scale, scale))
     constructor(scale: Double) : this(scale.toFloat())
     constructor(scale: Int) : this(scale.toFloat())
-    constructor(scaleX: Float, scaleY: Float) : this(Float2Pack(scaleX, scaleY))
+    constructor(scaleX: Float, scaleY: Float) : this(float2PackOf(scaleX, scaleY))
     constructor(scaleX: Double, scaleY: Double) : this(scaleX.toFloat(), scaleY.toFloat())
     constructor(scaleX: Int, scaleY: Int) : this(scaleX.toFloat(), scaleY.toFloat())
 }

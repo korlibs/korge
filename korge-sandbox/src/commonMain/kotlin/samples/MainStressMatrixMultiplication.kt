@@ -29,12 +29,14 @@ class MainStressMatrixMultiplication : Scene() {
                 val b10K = uiRadioButton(text = "10K", group = group)
                 val b100K = uiRadioButton(text = "100K", group = group)
                 val b1M = uiRadioButton(text = "1M", group = group)
+                val b10M = uiRadioButton(text = "10M", group = group)
                 group.onChanged {
                     when (it) {
                         b1K -> N = 1_000
                         b10K -> N = 10_000
                         b100K -> N = 100_000
                         b1M -> N = 1_000_000
+                        b10M -> N = 10_000_000
                     }
                 }
                 b1K.checked = true

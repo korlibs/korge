@@ -4,9 +4,9 @@ import com.soywiz.kmem.*
 import com.soywiz.kmem.pack.*
 
 inline class PointFixed internal constructor(internal val raw: Int2Pack) {
-    val x: Fixed get() = Fixed.fromRaw(raw.x)
-    val y: Fixed get() = Fixed.fromRaw(raw.y)
-    constructor(x: Fixed, y: Fixed) : this(Int2Pack(x.raw, y.raw))
+    val x: Fixed get() = Fixed.fromRaw(raw.i0)
+    val y: Fixed get() = Fixed.fromRaw(raw.i1)
+    constructor(x: Fixed, y: Fixed) : this(int2PackOf(x.raw, y.raw))
 
     operator fun unaryMinus(): PointFixed = PointFixed(-this.x, -this.y)
     operator fun unaryPlus(): PointFixed = this

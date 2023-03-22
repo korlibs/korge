@@ -3,36 +3,6 @@ package com.soywiz.kmem.pack
 import com.soywiz.kmem.*
 
 
-// Based on https://en.wikipedia.org/wiki/Bfloat16_floating-point_format
-// But occupies 21 bits. This is done to encode 6 floats in 128bits. Converting to float is just a shift.
-// Can pack 3 floats in a 64-bit Long
-// 21-bit: sign:1 - exp:8 - smantissa:1, mantissa:11
-internal object BFloat21 {
-    internal fun unpack3(v: Long, index: Int): Float = unpack((v ushr (21 * index)).toInt())
-    internal fun pack3(a: Float, b: Float, c: Float): Long =
-        (pack(a).toLong() shl 0) or (pack(b).toLong() shl 21) or (pack(c).toLong() shl 42)
-    internal fun pack(v: Float): Int = v.toRawBits() ushr 12
-    internal fun unpack(v: Int): Float = Float.fromBits(v shl 12)
-}
-
-
-
-
-internal object BFloat16 {
-    internal fun unpack4(v: Long, index: Int): Float = unpack((v ushr (16 * index)).toInt())
-
-    internal fun pack4(a: Float, b: Float, c: Float, d: Float): Long {
-        val pack1 = (pack(a) shl 0) or (pack(b) shl 16)
-        val pack2 = (pack(c) shl 0) or (pack(d) shl 16)
-        return pack1.toLong() or (pack2.toLong() shl 32)
-    }
-
-    internal fun pack(v: Float): Int = v.toRawBits() ushr 17
-    internal fun unpack(v: Int): Float = Float.fromBits(v shl 17)
-}
-
-
-
 expect class Int4Pack
 expect val Int4Pack.i0: Int
 expect val Int4Pack.i1: Int
@@ -59,23 +29,18 @@ expect fun half8PackOf(h0: Float, h1: Float, h2: Float, h3: Float, h4: Float, h5
 
 
 
-inline class Half4Pack private constructor(val data: Long) {
-    constructor(x: Half, y: Half, z: Half, w: Half) : this(packHalf4(x, y, z, w))
-    val x: Half get() = unpackHalf4X(data)
-    val y: Half get() = unpackHalf4Y(data)
-    val z: Half get() = unpackHalf4Z(data)
-    val w: Half get() = unpackHalf4W(data)
+inline class Half4Pack private constructor(val data: Short4Pack) {
+    constructor(x: Half, y: Half, z: Half, w: Half) : this(short4PackOf(
+        x.rawBits.toShort(),
+        y.rawBits.toShort(),
+        z.rawBits.toShort(),
+        w.rawBits.toShort(),
+    ))
+    val x: Half get() = Half.fromBits(data.s0)
+    val y: Half get() = Half.fromBits(data.s1)
+    val z: Half get() = Half.fromBits(data.s2)
+    val w: Half get() = Half.fromBits(data.s3)
 }
-internal expect inline fun packHalf4(x: Half, y: Half, z: Half, w: Half): Long
-internal expect inline fun unpackHalf4X(v: Long): Half
-internal expect inline fun unpackHalf4Y(v: Long): Half
-internal expect inline fun unpackHalf4Z(v: Long): Half
-internal expect inline fun unpackHalf4W(v: Long): Half
-
-
-
-
-
 
 expect class Float4Pack
 expect val Float4Pack.f0: Float
@@ -120,52 +85,20 @@ expect fun bfloat6PackOf(bf0: Float, bf1: Float, bf2: Float, bf3: Float, bf4: Fl
 
 
 
+expect class Float2Pack
+expect val Float2Pack.f0: Float
+expect val Float2Pack.f1: Float
+expect fun float2PackOf(f0: Float, f1: Float): Float2Pack
 
-inline class Float2Pack private constructor(val data: Long) {
-    constructor(x: Float, y: Float) : this(packFloat2(x, y))
+expect class Int2Pack
+expect val Int2Pack.i0: Int
+expect val Int2Pack.i1: Int
+expect fun int2PackOf(i0: Int, i1: Int): Int2Pack
 
-    val x: Float get() = unpackFloat2X(data)
-    val y: Float get() = unpackFloat2Y(data)
-}
-
-//private inline fun packFloat2(x: Float, y: Float): Long = (x.toRawBits().toLong() and 0xFFFFFFFFL) or (y.toRawBits().toLong() shl 32)
-//private inline fun unpackFloat2X(v: Long): Float = Float.fromBits(v.toInt())
-//private inline fun unpackFloat2Y(v: Long): Float = Float.fromBits((v shr 32).toInt())
-
-internal expect inline fun packFloat2(x: Float, y: Float): Long
-internal expect inline fun unpackFloat2X(v: Long): Float
-internal expect inline fun unpackFloat2Y(v: Long): Float
-
-
-
-
-
-inline class Int2Pack private constructor(val data: Long) {
-    constructor(x: Int, y: Int) : this(packInt2(x, y))
-
-    val x: Int get() = unpackInt2X(data)
-    val y: Int get() = unpackInt2Y(data)
-}
-
-internal expect inline fun packInt2(x: Int, y: Int): Long
-internal expect inline fun unpackInt2X(v: Long): Int
-internal expect inline fun unpackInt2Y(v: Long): Int
-
-
-
-inline class Short4Pack private constructor(val data: Long) {
-    constructor(x: Short, y: Short, z: Short, w: Short) : this(packShort4(x, y, z, w))
-
-    val x: Short get() = unpackShort4X(data)
-    val y: Short get() = unpackShort4Y(data)
-    val z: Short get() = unpackShort4Z(data)
-    val w: Short get() = unpackShort4W(data)
-}
-
-internal expect inline fun packShort4(x: Short, y: Short, z: Short, w: Short): Long
-internal expect inline fun unpackShort4X(v: Long): Short
-internal expect inline fun unpackShort4Y(v: Long): Short
-internal expect inline fun unpackShort4Z(v: Long): Short
-internal expect inline fun unpackShort4W(v: Long): Short
-
+expect class Short4Pack
+expect val Short4Pack.s0: Short
+expect val Short4Pack.s1: Short
+expect val Short4Pack.s2: Short
+expect val Short4Pack.s3: Short
+expect fun short4PackOf(s0: Short, s1: Short, s2: Short, s3: Short): Short4Pack
 
