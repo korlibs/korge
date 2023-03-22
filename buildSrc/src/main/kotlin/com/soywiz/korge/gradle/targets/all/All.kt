@@ -3,6 +3,7 @@ package com.soywiz.korge.gradle.targets.all
 import com.soywiz.korlibs.*
 import org.gradle.api.*
 import org.jetbrains.kotlin.gradle.dsl.*
+import org.jetbrains.kotlin.gradle.plugin.*
 
 fun Project.rootEnableFeaturesOnAllTargets() {
     rootProject.subprojectsThis {
@@ -11,13 +12,26 @@ fun Project.rootEnableFeaturesOnAllTargets() {
 }
 
 fun Project.enableFeaturesOnAllTargets() {
-    if (extensions.findByType(KotlinMultiplatformExtension::class.java) != null) {
-        kotlin.targets.configureEach { target ->
-            target.compilations.configureEach { compilation ->
-                //println("initAllTargets: $target - $compilation")
-                compilation.compilerOptions.options.suppressWarnings.set(true)
-                compilation.compilerOptions.options.freeCompilerArgs.add("-Xvalue-classes")
+    fun KotlinTarget.configureTarget() {
+        val target = this
+        target.compilations.configureEach { compilation ->
+            //println("initAllTargets: $target - $compilation")
+            val options = compilation.compilerOptions.options
+            options.suppressWarnings.set(true)
+            options.freeCompilerArgs.apply {
+                add("-Xvalue-classes")
+                add("-Xskip-prerelease-check")
             }
+        }
+    }
+
+    extensions.findByType(KotlinSingleTargetExtension::class.java)?.also {
+        it.target.configureTarget()
+    }
+
+    extensions.findByType(KotlinMultiplatformExtension::class.java)?.also {
+        it.targets.configureEach { target ->
+            target.configureTarget()
         }
     }
 }

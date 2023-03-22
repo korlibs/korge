@@ -8,7 +8,17 @@ allOpen {
     annotation("org.openjdk.jmh.annotations.State")
 }
 
-kotlin.jvm(); benchmark.targets.register("jvm")
+kotlin.jvm {
+    //-Xskip-prerelease-check
+    compilations.configureEach { compilation ->
+        //println("initAllTargets: $target - $compilation")
+        def options = compilation.compilerOptions.options
+        options.suppressWarnings.set(true)
+        options.freeCompilerArgs.add("-Xvalue-classes")
+        options.freeCompilerArgs.add("-Xskip-prerelease-check")
+    }
+}
+benchmark.targets.register("jvm")
 //kotlin { js(IR) { nodejs() } }; benchmark.targets.register("js")
 
 dependencies {
