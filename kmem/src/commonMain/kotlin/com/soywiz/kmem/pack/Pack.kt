@@ -30,8 +30,7 @@ fun half8PackOf(h0: Float, h1: Float, h2: Float, h3: Float, h4: Float, h5: Float
 
 
 
-@JvmInline
-value class Float4Pack(val x: Float, val y: Float, val z: Float, val w: Float)
+data class Float4Pack(val x: Float, val y: Float, val z: Float, val w: Float)
 val Float4Pack.f0: Float get() = this.x
 val Float4Pack.f1: Float get() = this.y
 val Float4Pack.f2: Float get() = this.z
