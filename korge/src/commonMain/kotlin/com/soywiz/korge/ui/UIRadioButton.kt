@@ -4,16 +4,20 @@ import com.soywiz.korge.render.*
 import com.soywiz.korge.style.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
+import com.soywiz.korio.async.*
 import com.soywiz.korma.geom.*
 
 class UIRadioButtonGroup {
     private var mutableButtons = hashSetOf<UIRadioButton>()
     val buttons: Set<UIRadioButton> get() = mutableButtons
+    val onChanged = Signal<UIRadioButton?>()
     var selectedButton: UIRadioButton? = null
         internal set(value) {
             if (field != value) {
                 field?.checked = false
                 field = value
+                field?.checked = true
+                onChanged(value)
             }
         }
 
