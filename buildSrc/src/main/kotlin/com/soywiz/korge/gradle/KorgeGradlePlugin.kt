@@ -2,6 +2,7 @@ package com.soywiz.korge.gradle
 
 import com.soywiz.korge.gradle.module.*
 import com.soywiz.korge.gradle.targets.*
+import com.soywiz.korge.gradle.targets.all.*
 import com.soywiz.korge.gradle.targets.jvm.*
 import com.soywiz.korge.gradle.targets.linux.LDLibraries
 import com.soywiz.korge.gradle.util.*
@@ -70,6 +71,7 @@ class KorgeGradleApply(val project: Project, val projectType: ProjectType) {
             if (korge.enableKorgeResourceProcessing) {
                 project.addGenResourcesTasks()
             }
+            project.enableFeaturesOnAllTargets()
         }
 	}
 

@@ -16,7 +16,7 @@ fun Project.enableFeaturesOnAllTargets() {
             target.compilations.configureEach { compilation ->
                 //println("initAllTargets: $target - $compilation")
                 compilation.compilerOptions.options.suppressWarnings.set(true)
-                //compilation.compilerOptions.options.freeCompilerArgs.add("-Xvalue-classes")
+                compilation.compilerOptions.options.freeCompilerArgs.add("-Xvalue-classes")
             }
         }
     }
