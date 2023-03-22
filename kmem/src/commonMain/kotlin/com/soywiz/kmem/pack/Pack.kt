@@ -2,7 +2,7 @@ package com.soywiz.kmem.pack
 
 import kotlin.jvm.*
 
-data class Half8Pack(
+@JvmInline value class Half8Pack(
     val h0: Float,
     val h1: Float,
     val h2: Float,
@@ -30,7 +30,7 @@ fun half8PackOf(h0: Float, h1: Float, h2: Float, h3: Float, h4: Float, h5: Float
 
 
 
-data class Float4Pack(val x: Float, val y: Float, val z: Float, val w: Float)
+@JvmInline value class Float4Pack(val x: Float, val y: Float, val z: Float, val w: Float)
 val Float4Pack.f0: Float get() = this.x
 val Float4Pack.f1: Float get() = this.y
 val Float4Pack.f2: Float get() = this.z
@@ -44,7 +44,7 @@ fun float4PackOf(f0: Float, f1: Float, f2: Float, f3: Float): Float4Pack = Float
 
 
 
-data class BFloat6Pack(
+@JvmInline value class BFloat6Pack(
     val f0: Float,
     val f1: Float,
     val f2: Float,
@@ -65,7 +65,7 @@ fun bfloat6PackOf(bf0: Float, bf1: Float, bf2: Float, bf3: Float, bf4: Float, bf
 
 
 
-data class BFloat3Half4Pack(
+@JvmInline value class BFloat3Half4Pack(
     val f0: Float,
     val f1: Float,
     val f2: Float,
@@ -96,7 +96,7 @@ fun bfloat3Half4PackOf(
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-data class Int4Pack(val x: Int, val y: Int, val z: Int, val w: Int)
+@JvmInline value class Int4Pack(val x: Int, val y: Int, val z: Int, val w: Int)
 val Int4Pack.i0: Int get() = this.x
 val Int4Pack.i1: Int get() = this.y
 val Int4Pack.i2: Int get() = this.z
@@ -107,17 +107,17 @@ fun int4PackOf(i0: Int, i1: Int, i2: Int, i3: Int): Int4Pack = Int4Pack(i0, i1, 
 
 
 
-data class Float2Pack(val x: Float, val y: Float)
+@JvmInline value class Float2Pack(val x: Float, val y: Float)
 val Float2Pack.f0: Float get() = x
 val Float2Pack.f1: Float get() = y
 fun float2PackOf(f0: Float, f1: Float): Float2Pack = Float2Pack(f0, f1)
 
-data class Int2Pack(val x: Int, val y: Int)
+@JvmInline value class Int2Pack(val x: Int, val y: Int)
 val Int2Pack.i0: Int get() = x
 val Int2Pack.i1: Int get() = y
 fun int2PackOf(i0: Int, i1: Int): Int2Pack = Int2Pack(i0, i1)
 
-data class Short4Pack(val x: Short, val y: Short, val z: Short, val w: Short)
+@JvmInline value class Short4Pack(val x: Short, val y: Short, val z: Short, val w: Short)
 val Short4Pack.s0: Short get() = x
 val Short4Pack.s1: Short get() = y
 val Short4Pack.s2: Short get() = z
