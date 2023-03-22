@@ -38,16 +38,17 @@ afterEvaluate {
 }
 */
 
+def jversion = com.soywiz.korge.gradle.targets.android.AndroidKt.ANDROID_JAVA_VERSION_STR
+
 java {
-    def version = JavaVersion.VERSION_1_8
-    sourceCompatibility = version
-    targetCompatibility = version
+    sourceCompatibility = jversion
+    targetCompatibility = jversion
 }
 
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
     kotlinOptions {
-        jvmTarget = "1.8"
-        sourceCompatibility = "1.8"
+        jvmTarget = jversion
+        sourceCompatibility = jversion
         apiVersion = "1.4"
         languageVersion = "1.4"
 		//jvmTarget = "1.6"

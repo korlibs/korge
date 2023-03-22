@@ -36,8 +36,9 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile.class).configureE
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_11
-    targetCompatibility = JavaVersion.VERSION_11
+    def jversion = JavaVersion.VERSION_11
+    sourceCompatibility = jversion
+    targetCompatibility = jversion
     sourceSets.main.java {
         srcDir("src/main/kotlinGen")
     }
