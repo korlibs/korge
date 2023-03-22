@@ -205,11 +205,6 @@ open class BaseEventListener : EventListenerChildren, Extra {
     }
 
     //inline fun EventListenerChildren.Internal.__iterateListenerCount(block: (EventType<*>, Int) -> Unit) {
-    private fun __iterateListenerCount(block: (EventType<*>, Int) -> Unit) {
-        __eventListenerStats?.fastForEach { key, value ->
-            block(key, value)
-        }
-    }
 
     private fun __updateChildListenerCount(type: EventType<*>, delta: Int) {
         if (delta == 0) return
@@ -220,7 +215,7 @@ open class BaseEventListener : EventListenerChildren, Extra {
 
     private fun __updateChildListenerCount(child: BaseEventListener, add: Boolean) {
         //println("__updateChildListenerCount[$this]:view=$view,add=$add")
-        child.__iterateListenerCount { eventType, i ->
+        child.__eventListenerStats?.fastForEach { eventType, i ->
             //println("   - $eventType: $i")
             __updateChildListenerCount(eventType, if (add) +i else -i)
         }

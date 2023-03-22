@@ -4,7 +4,24 @@ import com.soywiz.kds.iterators.fastForEach
 import kotlin.math.min
 
 interface MutableListEx<E> : MutableList<E> {
+    fun removeRange(fromIndex: Int, toIndex: Int)
+
     fun addAll(elements: FastArrayList<E>): Boolean = addAll(elements as Collection<E>)
+    fun setAddAll(index: Int, elements: FastArrayList<E>, offset: Int = 0, size: Int = elements.size - offset) {
+        val setCount = min(size, this.size - index)
+        setAll(index, elements, offset, setCount)
+        addAll(elements, offset + setCount, size - setCount)
+    }
+    fun setAll(index: Int, elements: FastArrayList<E>, offset: Int = 0, size: Int = elements.size - offset) {
+        for (n in 0 until size) this[index + n] = elements[offset + n]
+    }
+    fun addAll(elements: FastArrayList<E>, offset: Int = 0, size: Int = elements.size - offset) {
+        for (n in 0 until size) this.add(elements[offset + n])
+    }
+    fun removeToSize(size: Int) {
+        removeRange(size, this.size)
+        //while (this.size > size) removeLast()
+    }
 }
 
 // @TODO: ArrayList that prevents isObject + jsInstanceOf on getter on Kotlin/JS
@@ -62,7 +79,7 @@ fun <T> Array<T>.toFastList(): List<T> = FastArrayList<T>(this.size).also { out 
 
 inline fun <T> buildFastList(block: FastArrayList<T>.() -> Unit): FastArrayList<T> = FastArrayList<T>().apply(block)
 
-fun <T> List<T>.toFastList(out: FastArrayList<T> = FastArrayList()): List<T> {
+fun <T> List<T>.toFastList(out: FastArrayList<T> = FastArrayList()): FastArrayList<T> {
     // Copy the elements we can
     val minSize = min(this.size, out.size)
     for (n in 0 until minSize) out[n] = this[n]
@@ -70,5 +87,12 @@ fun <T> List<T>.toFastList(out: FastArrayList<T> = FastArrayList()): List<T> {
     for (n in minSize  until this.size) out.add(this[n])
     // Remove extra elements
     while (out.size > this.size) out.removeLast()
-    return this
+    return out
+}
+
+fun <T> FastArrayList<T>.toFastList(out: FastArrayList<T> = FastArrayList()): FastArrayList<T> {
+    // Copy the elements we can
+    out.setAddAll(0, this)
+    out.removeToSize(this.size)
+    return out
 }

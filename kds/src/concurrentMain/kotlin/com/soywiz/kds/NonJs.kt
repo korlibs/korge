@@ -93,11 +93,11 @@ public actual open class FastArrayList<E> internal constructor(
 
     actual override fun removeAt(index: Int): E {
         val out = array[rangeCheck(index)] as E
-        _removeRange(index, index + 1)
+        removeRange(index, index + 1)
         return out
     }
 
-    fun _removeRange(fromIndex: Int, toIndex: Int) {
+    override fun removeRange(fromIndex: Int, toIndex: Int) {
         val count = toIndex - fromIndex
         if (count <= 0) return
         val array = this.array
@@ -108,8 +108,20 @@ public actual open class FastArrayList<E> internal constructor(
         array.fill(null, _size, _size + count)
     }
 
+    override fun setAll(index: Int, elements: FastArrayList<E>, offset: Int, size: Int) {
+        if (size == 0) return
+        rangeCheck(index + size - 1)
+        arraycopy(elements.array, offset, this.array, index, size)
+    }
+
+    override fun addAll(elements: FastArrayList<E>, offset: Int, size: Int) {
+        ensureCapacity(this._size + size)
+        arraycopy(elements.array, offset, this.array, this.size, size)
+        this._size += size
+    }
+
     actual override fun clear() {
-        _removeRange(0, size)
+        removeRange(0, size)
     }
 
     actual override fun contains(element: E): Boolean = indexOf(element) >= 0

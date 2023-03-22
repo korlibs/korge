@@ -6,6 +6,15 @@ import com.soywiz.kds.FloatArrayList
 import com.soywiz.kds.IntArrayList
 import com.soywiz.kds.toFastList
 
+inline fun <T> FastArrayList<T>.fastForEachWithTemp(temp: FastArrayList<T>, callback: (T) -> Unit) {
+    this.toFastList(temp)
+    try {
+        temp.fastForEach(callback)
+    } finally {
+        temp.clear()
+    }
+}
+
 inline fun <T> List<T>.fastForEachWithTemp(temp: FastArrayList<T>, callback: (T) -> Unit) {
     this.toFastList(temp)
     try {
