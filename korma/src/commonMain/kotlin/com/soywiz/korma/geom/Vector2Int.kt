@@ -1,6 +1,6 @@
 package com.soywiz.korma.geom
 
-import com.soywiz.kds.pack.*
+import com.soywiz.kmem.pack.*
 
 typealias PointInt = Vector2Int
 

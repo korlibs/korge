@@ -1,7 +1,7 @@
 package com.soywiz.korma.geom
 
-import com.soywiz.kds.pack.*
 import com.soywiz.kmem.*
+import com.soywiz.kmem.pack.*
 import com.soywiz.korma.internal.*
 
 // @TODO: value class

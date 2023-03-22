@@ -105,3 +105,27 @@ actual fun bfloat3Half4PackOf(
 ): BFloat3Half4Pack {
     return BFloat3Half4Pack(b0, b1, b2, hf0, hf1, hf2, hf3)
 }
+
+
+
+
+internal data class JsFloat2Pack(val x: Float, val y: Float)
+internal actual inline fun packFloat2(x: Float, y: Float): Long = JsFloat2Pack(x, y).asDynamic()
+internal actual inline fun unpackFloat2X(v: Long): Float = v.unsafeCast<JsFloat2Pack>().x
+internal actual inline fun unpackFloat2Y(v: Long): Float = v.unsafeCast<JsFloat2Pack>().y
+
+
+internal data class JsInt2Pack(val x: Int, val y: Int)
+internal actual inline fun packInt2(x: Int, y: Int): Long = JsInt2Pack(x, y).asDynamic()
+internal actual inline fun unpackInt2X(v: Long): Int = v.unsafeCast<JsInt2Pack>().x
+internal actual inline fun unpackInt2Y(v: Long): Int = v.unsafeCast<JsInt2Pack>().y
+
+
+
+internal data class JsShort4Pack(val x: Short, val y: Short, val z: Short, val w: Short)
+internal actual inline fun packShort4(x: Short, y: Short, z: Short, w: Short): Long = JsShort4Pack(x, y, z, w).asDynamic()
+internal actual inline fun unpackShort4X(v: Long): Short = v.unsafeCast<JsShort4Pack>().x
+internal actual inline fun unpackShort4Y(v: Long): Short = v.unsafeCast<JsShort4Pack>().y
+internal actual inline fun unpackShort4Z(v: Long): Short = v.unsafeCast<JsShort4Pack>().z
+internal actual inline fun unpackShort4W(v: Long): Short = v.unsafeCast<JsShort4Pack>().w
+

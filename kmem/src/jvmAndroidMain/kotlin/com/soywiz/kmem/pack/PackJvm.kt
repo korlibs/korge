@@ -106,3 +106,37 @@ actual fun int4PackOf(i0: Int, i1: Int, i2: Int, i3: Int): Int4Pack = Int4Pack(i
 
 
 
+
+
+
+
+
+internal actual inline fun packFloat2(x: Float, y: Float): Long = (x.toRawBits().toLong() and 0xFFFFFFFFL) or (y.toRawBits().toLong() shl 32)
+internal actual inline fun unpackFloat2X(v: Long): Float = Float.fromBits(v.toInt())
+internal actual inline fun unpackFloat2Y(v: Long): Float = Float.fromBits((v shr 32).toInt())
+
+
+internal actual inline fun packInt2(x: Int, y: Int): Long = (x.toLong() and 0xFFFFFFFFL) or (y.toLong() shl 32)
+internal actual inline fun unpackInt2X(v: Long): Int = v.toInt()
+internal actual inline fun unpackInt2Y(v: Long): Int = (v shr 32).toInt()
+
+
+internal actual inline fun packShort4(x: Short, y: Short, z: Short, w: Short): Long =
+    packInt2(packShort2(x, y), packShort2(z, w))
+internal actual inline fun unpackShort4X(v: Long): Short = unpackInt2X(v).toShort()
+internal actual inline fun unpackShort4Y(v: Long): Short = (unpackInt2X(v) shr 16).toShort()
+internal actual inline fun unpackShort4Z(v: Long): Short = unpackInt2Y(v).toShort()
+internal actual inline fun unpackShort4W(v: Long): Short = (unpackInt2Y(v) shr 16).toShort()
+
+internal fun packShort2(x: Short, y: Short): Int = (x.toInt() and 0xFFFF) or (y.toInt() shl 16)
+internal fun unpackShort2X(v: Int): Short = v.toShort()
+internal fun unpackShort2Y(v: Int): Short = (v shr 16).toShort()
+
+
+internal fun packHalf2(x: Half, y: Half): Int = (x.rawBits.toInt() and 0xFFFF) or (y.rawBits.toInt() shl 16)
+
+internal actual inline fun packHalf4(x: Half, y: Half, z: Half, w: Half): Long = packInt2(packHalf2(x, y), packHalf2(z, w))
+internal actual inline fun unpackHalf4X(v: Long): Half = Half.fromBits(unpackInt2X(v).toShort())
+internal actual inline fun unpackHalf4Y(v: Long): Half = Half.fromBits((unpackInt2X(v) shr 16).toShort())
+internal actual inline fun unpackHalf4Z(v: Long): Half = Half.fromBits(unpackInt2Y(v).toShort())
+internal actual inline fun unpackHalf4W(v: Long): Half = Half.fromBits((unpackInt2Y(v) shr 16).toShort())

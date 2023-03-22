@@ -1,4 +1,4 @@
-package com.soywiz.kds.pack
+package com.soywiz.kmem.pack
 
 import kotlin.test.*
 

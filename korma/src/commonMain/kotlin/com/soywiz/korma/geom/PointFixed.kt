@@ -1,7 +1,7 @@
 package com.soywiz.korma.geom
 
-import com.soywiz.kds.pack.*
 import com.soywiz.kmem.*
+import com.soywiz.kmem.pack.*
 
 inline class PointFixed internal constructor(internal val raw: Int2Pack) {
     val x: Fixed get() = Fixed.fromRaw(raw.x)

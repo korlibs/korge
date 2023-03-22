@@ -1,6 +1,6 @@
 package com.soywiz.korma.geom
 
-import com.soywiz.kds.pack.Int2Pack
+import com.soywiz.kmem.pack.*
 
 inline class SizeInt internal constructor(internal val raw: Int2Pack) {
     operator fun component1(): Int = width
