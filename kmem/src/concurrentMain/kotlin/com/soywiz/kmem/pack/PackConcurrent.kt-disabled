@@ -1,7 +1,5 @@
 package com.soywiz.kmem.pack
 
-import com.soywiz.kmem.*
-
 actual data class Half8Pack(
     val h0: Float,
     val h1: Float,
@@ -107,36 +105,19 @@ actual fun int4PackOf(i0: Int, i1: Int, i2: Int, i3: Int): Int4Pack = Int4Pack(i
 
 
 
-actual typealias Float2Pack = Long
-actual val Float2Pack.f0: Float get() = Float.fromBits(unpackInt2X(this))
-actual val Float2Pack.f1: Float get() = Float.fromBits(unpackInt2Y(this))
-actual fun float2PackOf(f0: Float, f1: Float): Float2Pack = packInt2(f0.toRawBits(), f1.toRawBits())
+actual data class Float2Pack(val x: Float, val y: Float)
+actual val Float2Pack.f0: Float get() = x
+actual val Float2Pack.f1: Float get() = y
+actual fun float2PackOf(f0: Float, f1: Float): Float2Pack = Float2Pack(f0, f1)
 
-actual typealias Int2Pack = Long
-actual val Int2Pack.i0: Int get() = unpackInt2X(this)
-actual val Int2Pack.i1: Int get() = unpackInt2Y(this)
-actual fun int2PackOf(i0: Int, i1: Int): Int2Pack = packInt2(i0, i1)
+actual data class Int2Pack(val x: Int, val y: Int)
+actual val Int2Pack.i0: Int get() = x
+actual val Int2Pack.i1: Int get() = y
+actual fun int2PackOf(i0: Int, i1: Int): Int2Pack = Int2Pack(i0, i1)
 
-actual typealias Short4Pack = Long
-actual val Short4Pack.s0: Short get() = unpackShort4X(this)
-actual val Short4Pack.s1: Short get() = unpackShort4Y(this)
-actual val Short4Pack.s2: Short get() = unpackShort4Z(this)
-actual val Short4Pack.s3: Short get() = unpackShort4W(this)
-actual fun short4PackOf(s0: Short, s1: Short, s2: Short, s3: Short): Short4Pack = packShort4(s0, s1, s2, s3)
-
-
-private inline fun unpackInt2X(v: Long): Int = v.toInt()
-private inline fun unpackInt2Y(v: Long): Int = (v shr 32).toInt()
-private inline fun packInt2(x: Int, y: Int): Long = (x.toLong() and 0xFFFFFFFFL) or (y.toLong() shl 32)
-
-private inline fun packShort4(x: Short, y: Short, z: Short, w: Short): Long = packInt2(packShort2(x, y), packShort2(z, w))
-private inline fun unpackShort4X(v: Long): Short = unpackInt2X(v).toShort()
-private inline fun unpackShort4Y(v: Long): Short = (unpackInt2X(v) shr 16).toShort()
-private inline fun unpackShort4Z(v: Long): Short = unpackInt2Y(v).toShort()
-private inline fun unpackShort4W(v: Long): Short = (unpackInt2Y(v) shr 16).toShort()
-
-private inline fun packShort2(x: Short, y: Short): Int = (x.toInt() and 0xFFFF) or (y.toInt() shl 16)
-private inline fun unpackShort2X(v: Int): Short = v.toShort()
-private inline fun unpackShort2Y(v: Int): Short = (v shr 16).toShort()
-
-internal fun packHalf2(x: Half, y: Half): Int = (x.rawBits.toInt() and 0xFFFF) or (y.rawBits.toInt() shl 16)
+actual data class Short4Pack(val x: Short, val y: Short, val z: Short, val w: Short)
+actual val Short4Pack.s0: Short get() = x
+actual val Short4Pack.s1: Short get() = y
+actual val Short4Pack.s2: Short get() = z
+actual val Short4Pack.s3: Short get() = w
+actual fun short4PackOf(s0: Short, s1: Short, s2: Short, s3: Short): Short4Pack = Short4Pack(s0, s1, s2, s3)
