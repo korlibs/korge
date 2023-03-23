@@ -47,17 +47,21 @@ class CommandLineCrossResult(val hasBox64: Boolean) {
     }
 }
 
-enum class CrossExecType(val cname: String, val interp: String) {
+enum class CrossExecType(val cname: String, val interp: String, val arch: String = "X64") {
     WINDOWS("mingw", "wine"),
-    LINUX("linux", "lima");
+    LINUX("linux", "lima"),
+    LINUX_ARM("linux", "lima", arch = "Arm64"),
+    ;
 
     val valid: Boolean get() = when (this) {
         WINDOWS -> !isWindows
-        LINUX -> !com.soywiz.korge.gradle.targets.isLinux
+        LINUX -> !isLinux
+        LINUX_ARM -> !isLinux && isArm
     }
 
-    val interpCapital = interp.capitalized()
-    val nameWithArch = "${cname}X64"
+    val archNoX64: String = if (arch == "X64") "" else arch
+    val interpCapital = interp.capitalized() + archNoX64
+    val nameWithArch = "${cname}$arch"
     val nameWithArchCapital = nameWithArch.capitalized()
 
     fun commands(vararg args: String): Pair<CommandLineCrossResult, Array<String>> {
@@ -68,13 +72,13 @@ enum class CrossExecType(val cname: String, val interp: String) {
                     if (isArm && !isMacos) {
                         add("box64")
                         hasBox64 = true
-                    } // wine on macos can run x64 apps via rosetta, but linux needs box64 emulator
+                    } // wine on macOS can run x64 apps via rosetta, but linux needs box64 emulator
                     add(WineHQ.EXEC)
                 }
-                LINUX -> {
+                LINUX, LINUX_ARM -> {
                     // @TODO: WSL
                     if (isWindows) add("wsl") else add("lima")
-                    if (isArm) {
+                    if (isArm && this@CrossExecType != LINUX_ARM) {
                         add("box64")
                         hasBox64 = true
                     }
