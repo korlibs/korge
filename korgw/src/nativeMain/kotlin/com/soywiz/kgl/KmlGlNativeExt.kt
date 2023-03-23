@@ -375,7 +375,12 @@ open class GLFuncBase<T : Function<*>>(val name: String? = null) {
     protected fun _getValue(property: KProperty<*>): CPointer<CFunction<T>>? {
         if (!_set.value) {
             _set.value = true
-            _value.value = glGetProcAddressT(getFuncName(property))
+            _value.value = try {
+                glGetProcAddressT(getFuncName(property))
+            } catch (e: Throwable) {
+                e.printStackTrace()
+                null
+            }
         }
         return _value.value
     }

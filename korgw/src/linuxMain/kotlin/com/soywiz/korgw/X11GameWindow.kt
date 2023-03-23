@@ -15,8 +15,10 @@ import platform.posix.*
 internal object X11 : DynamicLibrary("libX11") {
     val XDefaultScreen by func<(d: CDisplayPointer) -> Int>()
     val XRootWindow by func<(d: CDisplayPointer, scr: Int) -> Window>()
-    val XBlackPixel by func<(d: CDisplayPointer, scr: Int) -> Int>()
-    val XWhitePixel by func<(d: CDisplayPointer, scr: Int) -> Int>()
+    fun XBlackPixel(d: CDisplayPointer, scr: Int): Int = 0
+    fun XWhitePixel(d: CDisplayPointer, scr: Int): Int = -1
+    //val XBlackPixel by func<(d: CDisplayPointer, scr: Int) -> Int>()
+    //val XWhitePixel by func<(d: CDisplayPointer, scr: Int) -> Int>()
     val XStoreName by func<(d: CDisplayPointer, w: Window, title: CString) -> Unit>()
     val XSetIconName by func<(d: CDisplayPointer, w: Window, title: CString) -> Unit>()
     val XDestroyWindow by func<(d: CDisplayPointer, w: Window) -> Unit>()

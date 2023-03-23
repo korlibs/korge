@@ -620,8 +620,11 @@ internal interface X11Impl : X11 {
     //int width, int height, int border_width,
     //int border, int background);
     fun XDefaultGC(display: X11.Display?, scn: Int): X11.GC?
-    fun XBlackPixel(display: X11.Display?, scn: Int): Int
-    fun XWhitePixel(display: X11.Display?, scn: Int): Int
+    //fun XBlackPixel(display: X11.Display?, scn: Int): Int
+    //fun XWhitePixel(display: X11.Display?, scn: Int): Int
+    fun XBlackPixel(display: X11.Display?, scn: Int): Int = 0
+    fun XWhitePixel(display: X11.Display?, scn: Int): Int = -1
+
     fun XStoreName(display: X11.Display?, w: X11.Window?, window_name: String)
     fun XSetIconName(display: X11.Display?, w: X11.Window?, window_name: String)
     fun XLookupKeysym(e: X11.XEvent?, i: Int): Int
