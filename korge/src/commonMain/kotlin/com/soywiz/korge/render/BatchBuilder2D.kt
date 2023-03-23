@@ -626,16 +626,14 @@ class BatchBuilder2D constructor(
     fun updateStandardUniforms() {
         //println("updateStandardUniforms: ag.currentSize(${ag.currentWidth}, ${ag.currentHeight}) : ${ag.currentRenderBuffer}")
         ctx.updateStandardUniforms()
-        ctx[TexNUB].push {
+        ctx[TexNUB].push(deduplicate = true) {
             for (n in 0 until maxTextures) {
+                //println("this.u_TexN[$n]=${this.u_TexN[n]}")
                 it[this.u_TexN[n]] = n
-                ctx.textureUnits.set(n, null, AGTextureUnitInfo.DEFAULT)
+                val info = AGTextureUnitInfo(linear = currentSmoothing)
+                //println("updateStandardUniforms: $n, ${currentTexN[n]}, info=$info")
+                ctx.textureUnits.set(n, currentTexN[n], info)
             }
-        }
-        for (n in 0 until maxTextures) {
-            val info = AGTextureUnitInfo(linear = currentSmoothing)
-            //println("updateStandardUniforms: $n, ${currentTexN[n]}, info=$info")
-            ctx.textureUnits.set(n, currentTexN[n], info)
         }
         //uniforms[u_InputPre] = currentTexN[0]?.premultiplied == true
         //uniforms[u_OutputPre] = ctx.isRenderingToTexture

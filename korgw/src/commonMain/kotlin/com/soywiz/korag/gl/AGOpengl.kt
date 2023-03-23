@@ -445,7 +445,7 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
 
         //println("textureUnits=$textureUnits")
 
-        println("PROGRAM=$program")
+        //println("PROGRAM=$program")
 
         textureUnits.fastForEach { index, tex, info ->
             if (currentTextureUnits.textures[index] == tex && currentTextureUnits.infos[index] == info) {
@@ -453,7 +453,7 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
             }
             currentTextureUnits.set(index, tex, info)
 
-            println("TEXTURE: index=$index, tex=$tex, info=$info")
+            //println("TEXTURE: index=$index, tex=$tex, info=$info")
             selectTextureUnit(index)
             //gl.activeTexture(KmlGl.TEXTURE0 + index)
             if (tex != null) {
@@ -470,7 +470,7 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
         //selectTextureUnit(7)
 
         newUniformBlocks.fastForEachUniform {
-            println("UNIFORM IN BLOCK: $it")
+            //println("UNIFORM IN BLOCK: $it")
             uniformSet(glProgram, it)
         }
         uniforms.fastForEach {
@@ -487,7 +487,10 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
         val declArrayCount = uniform.arrayCount
 
         val oldValue = glProgram.programInfo.cache[uniform]
-        if (value == oldValue) return
+        if (value == oldValue) {
+            //println("uniform: $uniform already cached!")
+            return
+        }
         glProgram.programInfo.cache[uniform] = value
 
         //println("uniform: $uniform, arrayCount=${uniform.arrayCount}, stride=${uniform.elementCount}, value=$value old=$oldValue")

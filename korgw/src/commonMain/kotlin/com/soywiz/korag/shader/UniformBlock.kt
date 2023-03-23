@@ -120,7 +120,7 @@ class UniformRef(
     }
 
     operator fun set(uniform: TypedUniform<Int>, value: Int) {
-        getOffset(uniform).also { buffer.setInt32(it, value) }
+        getOffset(uniform).also { buffer.setUnalignedInt32(it, value) }
     }
     operator fun set(uniform: TypedUniform<Float>, value: Boolean) = set(uniform, if (value) 1f else 0f)
     operator fun set(uniform: TypedUniform<Float>, value: Double) = set(uniform, value.toFloat())
