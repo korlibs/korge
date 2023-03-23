@@ -453,6 +453,8 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
         val location = glProgram.programInfo.getUniformLocation(gl, uniformName)
         val declArrayCount = uniform.arrayCount
 
+        //println("value=${value}")
+
         when (uniformType) {
             VarType.Sampler2D, VarType.SamplerCube -> {
                 textureUnit++

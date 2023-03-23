@@ -92,7 +92,6 @@ class GpuShapeViewCommands {
     }
 
     private var decomposed = MatrixTransform()
-    private val tempColorMul = FloatArray(4)
     private val texturesToDelete = FastArrayList<AGTexture>()
     private val tempUniforms = AGUniformValues()
     fun render(ctx: RenderContext, globalMatrix: Matrix, localMatrix: Matrix, applyScissor: Boolean, colorMul: RGBA, doRequireTexture: Boolean) {
@@ -104,93 +103,98 @@ class GpuShapeViewCommands {
         val ag = ctx.ag
         ctx.useBatcher { batcher ->
             batcher.updateStandardUniforms()
-            colorMul.writeFloat(tempColorMul)
-            batcher.keepUniform(GpuShapeViewPrograms.u_ColorMul) {
-                it[GpuShapeViewPrograms.u_ColorMul] = tempColorMul
-                //tempMat.identity()
-                val tempMat = when {
-                    doRequireTexture -> Matrix.IDENTITY
-                    else -> batcher.viewMat2D
-                }.premultiplied(globalMatrix)
-                batcher.setViewMatrixTemp(tempMat) {
-                    decomposed = globalMatrix.toTransform()
+            //tempMat.identity()
+            val tempMat = when {
+                doRequireTexture -> Matrix.IDENTITY
+                else -> batcher.viewMat2D
+            }.premultiplied(globalMatrix)
+            batcher.setViewMatrixTemp(tempMat) {
+                decomposed = globalMatrix.toTransform()
 
-                    // applyScissor is for using the ctx.batch.scissor infrastructure
-                    //list.setScissorState(ag, AGScissor().setTo(rect))
-                    //list.disableScissor()
+                // applyScissor is for using the ctx.batch.scissor infrastructure
+                //list.setScissorState(ag, AGScissor().setTo(rect))
+                //list.disableScissor()
 
-                    //ag.commandsSync { list ->
-                    // Set to default state
-                    //list.useProgram(ag.getProgram(GpuShapeViewPrograms.PROGRAM_COMBINED))
-                    //println(bufferVertexData)
-                    val program = GpuShapeViewPrograms.PROGRAM_COMBINED
-                    val vertices = AGVertexArrayObject(
-                        fastArrayListOf(
-                            AGVertexData(
-                                GpuShapeViewPrograms.LAYOUT_POS_TEX_FILL_DIST,
-                                ctx.getBuffer(
-                                    vertices
-                                ),
-                            )
+                //ag.commandsSync { list ->
+                // Set to default state
+                //list.useProgram(ag.getProgram(GpuShapeViewPrograms.PROGRAM_COMBINED))
+                //println(bufferVertexData)
+                val program = GpuShapeViewPrograms.PROGRAM_COMBINED
+                val vertices = AGVertexArrayObject(
+                    fastArrayListOf(
+                        AGVertexData(
+                            GpuShapeViewPrograms.LAYOUT_POS_TEX_FILL_DIST,
+                            ctx.getBuffer(
+                                vertices
+                            ),
                         )
                     )
-                    var scissor = AGScissor.NIL
-                    //list.vertexArrayObjectSet(ag, GpuShapeViewPrograms.LAYOUT_POS_TEX_FILL_DIST, bufferVertexData) {
-                    val uniforms = batcher.uniforms
-                    //println("----")
-                    //println("----")
-                    //println("----")
-                    commands.fastForEach { cmd ->
-                        //println("cmd:$cmd :: ${ctx.currentFrameBuffer}")
-                        when (cmd) {
-                            //is FinishCommand -> list.flush()
-                            is ScissorCommand -> {
-                                scissor = cmd.scissor
+                )
+                var scissor = AGScissor.NIL
+                //list.vertexArrayObjectSet(ag, GpuShapeViewPrograms.LAYOUT_POS_TEX_FILL_DIST, bufferVertexData) {
+                val uniforms = batcher.uniforms
+                //println("----")
+                //println("----")
+                //println("----")
+                commands.fastForEach { cmd ->
+                    //println("cmd:$cmd :: ${ctx.currentFrameBuffer}")
+                    when (cmd) {
+                        //is FinishCommand -> list.flush()
+                        is ScissorCommand -> {
+                            scissor = cmd.scissor
+                        }
+                        is ClearCommand -> {
+                            ctx.clear(stencil = cmd.i, clearColor = false, clearStencil = true, clearDepth = false)
+                        }
+                        is ShapeCommand -> {
+                            val paintShader = cmd.paintShader
+                            //println("cmd.vertexCount=${cmd.vertexCount}, cmd.vertexIndex=${cmd.vertexIndex}, paintShader=$paintShader")
+                            batcher.simulateBatchStats(cmd.vertexCount)
+                            //println(paintShader.uniforms)
+                            val pixelScale = decomposed.scaleAvg / ctx.bp.globalToWindowScaleAvg
+                            tempUniforms.clear()
+                            if (paintShader != null) {
+                                batcher.ctx[GpuShapeViewPrograms.ShapeViewUB].push {
+                                    it.copyFrom(paintShader.uniforms)
+                                    it[u_GlobalPixelScale] = pixelScale
+                                    it[u_ColorMul] = colorMul
+                                }
+                                if (paintShader.texture != null) {
+                                    val tex = ctx.tempTexturePool.alloc()
+                                    tex.upload(paintShader.texture)
+                                    tempUniforms.set(DefaultShaders.u_Tex, tex)
+                                    texturesToDelete.add(tex)
+                                }
                             }
-                            is ClearCommand -> {
-                                ctx.clear(stencil = cmd.i, clearColor = false, clearStencil = true, clearDepth = false)
-                            }
-                            is ShapeCommand -> {
-                                val paintShader = cmd.paintShader
-                                //println("cmd.vertexCount=${cmd.vertexCount}, cmd.vertexIndex=${cmd.vertexIndex}, paintShader=$paintShader")
-                                batcher.simulateBatchStats(cmd.vertexCount)
-                                //println(paintShader.uniforms)
-                                tempUniforms.clear()
-                                paintShader?.uniforms?.let { resolve(ctx, it, paintShader.texUniforms) }
-                                tempUniforms.put(uniforms)
-                                tempUniforms.put(paintShader?.uniforms)
-                                val pixelScale = decomposed.scaleAvg / ctx.bp.globalToWindowScaleAvg
-                                //val pixelScale = 1f
-                                tempUniforms[GpuShapeViewPrograms.u_GlobalPixelScale] = pixelScale
+                            //val pixelScale = 1f
 
-                                //val texUnit = tempUniforms[DefaultShaders.u_Tex] as? AGTextureUnit?
+                            //val texUnit = tempUniforms[DefaultShaders.u_Tex] as? AGTextureUnit?
 
-                                //println("outPremultiplied=$outPremultiplied, blendMode=${cmd.blendMode?.name}")
+                            //println("outPremultiplied=$outPremultiplied, blendMode=${cmd.blendMode?.name}")
 
-                                val _program = cmd.program ?: program
-                                ag.draw(AGBatch(
-                                    ctx.currentFrameBuffer.base,
-                                    ctx.currentFrameBuffer.info,
-                                    program = _program,
-                                    vertexData = vertices,
-                                    //indices = indices,
-                                    scissor = scissor.applyMatrixBounds(tempMat),
-                                    uniforms = tempUniforms,
-                                    newUniformBlocks = ctx.createCurrentUniformsRef(_program),
-                                    stencilOpFunc = cmd.stencilOpFunc,
-                                    stencilRef = cmd.stencilRef,
-                                    colorMask = cmd.colorMask,
-                                    blending = (cmd.blendMode ?: BlendMode.NORMAL).factors,
-                                    cullFace = cmd.cullFace,
-                                    drawType = cmd.drawType,
-                                    drawOffset = cmd.vertexIndex,
-                                    vertexCount = cmd.vertexCount,
-                                ))
-                            }
+                            val _program = cmd.program ?: program
+                            ag.draw(AGBatch(
+                                ctx.currentFrameBuffer.base,
+                                ctx.currentFrameBuffer.info,
+                                program = _program,
+                                vertexData = vertices,
+                                //indices = indices,
+                                scissor = scissor.applyMatrixBounds(tempMat),
+                                uniforms = tempUniforms,
+                                newUniformBlocks = ctx.createCurrentUniformsRef(_program),
+                                stencilOpFunc = cmd.stencilOpFunc,
+                                stencilRef = cmd.stencilRef,
+                                colorMask = cmd.colorMask,
+                                blending = (cmd.blendMode ?: BlendMode.NORMAL).factors,
+                                cullFace = cmd.cullFace,
+                                drawType = cmd.drawType,
+                                drawOffset = cmd.vertexIndex,
+                                vertexCount = cmd.vertexCount,
+                            ))
                         }
                     }
-                    //list.finish()
                 }
+                //list.finish()
             }
         }
         for (tex in texturesToDelete) {

@@ -11,15 +11,28 @@ import kotlin.math.*
 
 @KorgeInternal
 object GpuShapeViewPrograms {
-    val u_ProgramType = Uniform("u_ProgramType", VarType.Float1)
-    //val u_LineWidth = Uniform("u_LineWidth", VarType.Float1)
-    val u_Color = Uniform("u_Color", VarType.Float4)
-    val u_ColorMul = Uniform("u_ColorMul", VarType.Float4)
-    val u_GlobalAlpha = Uniform("u_GlobalAlpha", VarType.Float1)
-    val u_GlobalPixelScale = Uniform("u_GlobalPixelScale", VarType.Float1)
-    val u_Transform = Uniform("u_Transform", VarType.Mat4)
-    val u_Gradientp0 = Uniform("u_Gradientp0", VarType.Float3)
-    val u_Gradientp1 = Uniform("u_Gradientp1", VarType.Float3)
+    object ShapeViewUB : UniformBlock(fixedLocation = 5) {
+        val u_ProgramType by float()
+        //val u_LineWidth by float()
+        val u_Color by vec4()
+        val u_ColorMul by vec4()
+        val u_GlobalAlpha by float()
+        val u_GlobalPixelScale by float()
+        val u_Transform by mat4()
+        val u_Gradientp0 by vec4()
+        val u_Gradientp1 by vec4()
+        //val u_TexNew by sampler2D()
+    }
+    val u_ProgramType get() = ShapeViewUB.u_ProgramType.uniform
+    val u_Color get() = ShapeViewUB.u_Color.uniform
+    val u_ColorMul get() = ShapeViewUB.u_ColorMul.uniform
+    val u_GlobalAlpha get() = ShapeViewUB.u_GlobalAlpha.uniform
+    val u_GlobalPixelScale get() = ShapeViewUB.u_GlobalPixelScale.uniform
+    val u_Transform get() = ShapeViewUB.u_Transform.uniform
+    val u_Gradientp0 get() = ShapeViewUB.u_Gradientp0.uniform
+    val u_Gradientp1 get() = ShapeViewUB.u_Gradientp1.uniform
+    //val u_TexNew get() = ShapeViewUB.u_TexNew.uniform
+
     val a_MaxDist: Attribute = Attribute("a_MaxDist", VarType.Float1, normalized = false, precision = Precision.MEDIUM, fixedLocation = 4)
     val a_Dist: Attribute = Attribute("a_Dist", VarType.Float1, normalized = false, precision = Precision.MEDIUM, fixedLocation = 5)
     val v_MaxDist: Varying = Varying("v_MaxDist", VarType.Float1, precision = Precision.MEDIUM)
@@ -138,14 +151,17 @@ object GpuShapeViewPrograms {
 
     ///////////////
     data class PaintShader(
-        val uniforms: AGUniformValues = AGUniformValues(),
-        val texUniforms: Map<Uniform, Bitmap> = emptyMap(),
+        val uniforms: UniformBlockBuffer<ShapeViewUB> = UniformBlockBuffer(ShapeViewUB),
+        val texture: Bitmap?,
         val program: Program = PROGRAM_COMBINED
     )
 
     val stencilPaintShader = PaintShader(
-        AGUniformValues { it[u_ProgramType] = PROGRAM_TYPE_STENCIL.toFloat() },
-        emptyMap(),
+        UniformBlockBuffer.single(ShapeViewUB) {
+            it[ShapeViewUB.u_ProgramType] = PROGRAM_TYPE_STENCIL.toFloat()
+        },
+        //AGUniformValues { it[u_ProgramType] = PROGRAM_TYPE_STENCIL.toFloat() },
+        null
     )
 
     fun paintToShaderInfo(
@@ -158,12 +174,12 @@ object GpuShapeViewPrograms {
             null
         }
         is ColorPaint -> {
-            PaintShader(AGUniformValues {
+            PaintShader(UniformBlockBuffer.single(ShapeViewUB) {
                 it[u_ProgramType] = PROGRAM_TYPE_COLOR.toFloat()
                 it[u_Color] = paint.premultiplied.toVector3D()
                 it[u_GlobalAlpha] = globalAlpha.toFloat()
                 //u_LineWidth to lineWidth.toFloat(),
-            }, emptyMap())
+            }, null)
 
         }
         is BitmapPaint -> {
@@ -178,16 +194,15 @@ object GpuShapeViewPrograms {
             //mat.scale(1.0 / paint.bitmap.width, 1.0 / paint.bitmap.height)
             //println("mat=$mat")
             PaintShader(
-                AGUniformValues {
+                UniformBlockBuffer.single(ShapeViewUB) {
                     it[u_ProgramType] = PROGRAM_TYPE_BITMAP.toFloat()
                     it[u_Transform] = mat.toMatrix4() // @TODO: Why is this transposed???
                     it[u_GlobalAlpha] = globalAlpha.toFloat()
                     //u_LineWidth to lineWidth.toFloat(),
                     //}, GpuShapeView.PROGRAM_BITMAP)
                 },
-                mapOf(
-                    DefaultShaders.u_Tex to paint.bitmap
-                ))
+                paint.bitmap
+            )
         }
         is GradientPaint -> {
             val gradientBitmap = Bitmap32(256, 1, premultiplied = true)
@@ -206,20 +221,19 @@ object GpuShapeViewPrograms {
                 else -> npaint.transform.inverted()
             }
             PaintShader(
-                AGUniformValues {
+                UniformBlockBuffer.single(ShapeViewUB) {
                     it[u_ProgramType] = when (paint.kind) {
                         GradientKind.RADIAL -> PROGRAM_TYPE_GRADIENT_RADIAL
                         GradientKind.SWEEP -> PROGRAM_TYPE_GRADIENT_SWEEP
                         else -> PROGRAM_TYPE_GRADIENT_LINEAR
-                    }
+                    }.toFloat()
                     it[u_Transform] = mat.toMatrix4()
-                    it[u_Gradientp0] = MVector4(paint.x0.toFloat(), paint.y0.toFloat(), paint.r0.toFloat())
-                    it[u_Gradientp1] = MVector4(paint.x1.toFloat(), paint.y1.toFloat(), paint.r1.toFloat())
+                    it[u_Gradientp0] = Vector4(paint.x0.toFloat(), paint.y0.toFloat(), paint.r0.toFloat(), 1f)
+                    it[u_Gradientp1] = Vector4(paint.x1.toFloat(), paint.y1.toFloat(), paint.r1.toFloat(), 1f)
                     it[u_GlobalAlpha] = globalAlpha.toFloat()
                     //it[u_LineWidth] = lineWidth.toFloat()
-                }, mapOf(
-                    DefaultShaders.u_Tex to gradientBitmap
-                )
+                },
+                gradientBitmap
                 //when (paint.kind) {
                 //    GradientKind.RADIAL -> GpuShapeView.PROGRAM_RADIAL_GRADIENT
                 //    GradientKind.SWEEP -> GpuShapeView.PROGRAM_SWEEP_GRADIENT

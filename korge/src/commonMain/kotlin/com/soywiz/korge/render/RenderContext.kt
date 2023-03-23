@@ -561,7 +561,7 @@ class RenderContext constructor(
     @PublishedApi internal val _buffers = AGProgramWithUniforms.BufferCache()
     private val _programs = FastIdentityMap<Program, AGProgramWithUniforms>()
 
-    operator fun <T : UniformBlock> get(uniform: T): UniformBlockBuffer<T> = _buffers[uniform]
+    operator fun <T : UniformBlock> get(uniformBlock: T): UniformBlockBuffer<T> = _buffers[uniformBlock]
     //operator fun get(uniform: UniformBlock): AGRichUniformBlockData = _buffers[uniform]
     operator fun get(program: Program): AGProgramWithUniforms = _programs.getOrPut(program) { AGProgramWithUniforms(it, _buffers) }
 
