@@ -1,7 +1,10 @@
 package com.soywiz.korge.gradle.targets
 
-import org.gradle.configurationcache.extensions.capitalized
-import java.util.Locale
+import org.gradle.configurationcache.extensions.*
+
+object WineHQ {
+    val EXEC = "wine64"
+}
 
 enum class CrossExecType(val cname: String, val interp: String) {
     WINDOWS("mingw", "wine"),
@@ -21,7 +24,7 @@ enum class CrossExecType(val cname: String, val interp: String) {
             when (this@CrossExecType) {
                 WINDOWS -> {
                     if (isArm && !isMacos) add("box64") // wine on macos can run x64 apps via rosetta, but linux needs box64 emulator
-                    add("wine64")
+                    add(WineHQ.EXEC)
                 }
                 LINUX -> {
                     // @TODO: WSL

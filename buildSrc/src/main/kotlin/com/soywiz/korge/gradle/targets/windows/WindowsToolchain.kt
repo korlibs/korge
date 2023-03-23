@@ -1,9 +1,11 @@
 package com.soywiz.korge.gradle.targets.windows
 
+import com.soywiz.korge.gradle.targets.*
 import com.soywiz.korge.gradle.util.*
 import com.soywiz.korge.gradle.util.get
 import com.soywiz.korlibs.*
 import org.gradle.api.*
+import org.gradle.process.*
 import java.io.*
 import java.net.*
 
@@ -63,7 +65,7 @@ fun Project.compileWindowsRES(rcFile: File, resFile: File, log: Boolean = true):
     execThis {
     //rh.exe -open .\in\resources.rc -save .\out\resources.res -action compile -log NUL
         workingDir = rcFile.parentFile
-        commandLine(
+        commandLineWindowsExe(
             WindowsToolchain.resourceHackerExe.absolutePath,
             "-open", rcFile.path,
             "-save", resFile.path,
@@ -74,9 +76,16 @@ fun Project.compileWindowsRES(rcFile: File, resFile: File, log: Boolean = true):
     return resFile
 }
 
+fun ExecSpec.commandLineWindowsExe(vararg values: Any?): ExecSpec {
+    return this.commandLine(
+        *(if (!isWindows) arrayOf(WineHQ.EXEC) else emptyArray()),
+        *values
+    )
+}
+
 fun Project.replaceExeWithRes(exe: File, res: File) {
     execThis {
-        commandLine(
+        commandLineWindowsExe(
             WindowsToolchain.resourceHackerExe.absolutePath,
             "-open", exe.path,
             "-save", exe.path,
