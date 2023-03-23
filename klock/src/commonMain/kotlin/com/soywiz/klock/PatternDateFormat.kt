@@ -201,7 +201,7 @@ data class PatternDateFormat @JvmOverloads constructor(
         return out
     }
 
-    override fun tryParse(str: String, doThrow: Boolean): DateTimeTz? {
+    override fun tryParse(str: String, doThrow: Boolean, doAdjust: Boolean): DateTimeTz? {
         var millisecond = 0
         var second = 0
         var minute = 0
@@ -228,9 +228,9 @@ data class PatternDateFormat @JvmOverloads constructor(
                 "y", "yyyy", "YYYY" -> fullYear = value.toInt()
                 "yy" -> if (doThrow) throw RuntimeException("Not guessing years from two digits.") else return null
                 "yyy" -> fullYear = value.toInt() + if (value.toInt() < 800) 2000 else 1000 // guessing year...
-                "H", "HH", "k", "kk" -> hour = value.toInt() umod 24
+                "H", "HH", "k", "kk" -> hour = value.toInt()
                 "h", "hh", "K", "KK" -> {
-                    hour = value.toInt() umod 24
+                    hour = value.toInt()
                     is12HourFormat = true
                 }
                 "m", "mm" -> minute = value.toInt()
@@ -285,7 +285,15 @@ data class PatternDateFormat @JvmOverloads constructor(
                 }
             }
         }
-        val dateTime = DateTime.createAdjusted(fullYear, month, day, hour, minute, second, millisecond)
+        if (!doAdjust) {
+            if (month !in 1..12) if (doThrow) error("Invalid month $month") else return null
+            if (day !in 1..32) if (doThrow) error("Invalid day $day") else return null
+            if (hour !in 0..24) if (doThrow) error("Invalid hour $hour") else return null
+            if (minute !in 0..59) if (doThrow) error("Invalid minute $minute") else return null
+            if (second !in 0..59) if (doThrow) error("Invalid second $second") else return null
+            if (millisecond !in 0..999) if (doThrow) error("Invalid millisecond $millisecond") else return null
+        }
+        val dateTime = DateTime.createAdjusted(fullYear, month, day, hour umod 24, minute, second, millisecond)
         return dateTime.toOffsetUnadjusted(offset ?: 0.hours)
     }
 

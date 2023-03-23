@@ -16,8 +16,8 @@ object ISO8601 {
 
         override fun format(dd: TimeSpan): String = dateTimeFormat.format(ref + dd)
 
-        override fun tryParse(str: String, doThrow: Boolean): TimeSpan? =
-            dateTimeFormat.tryParse(str, doThrow)?.let { it.utc - ref }
+        override fun tryParse(str: String, doThrow: Boolean, doAdjust: Boolean): TimeSpan? =
+            dateTimeFormat.tryParse(str, doThrow, doAdjust)?.let { it.utc - ref }
     }
 
     data class BaseIsoDateTimeFormat(val format: String, val twoDigitBaseYear: Int = 1900) : DateFormat {
@@ -87,8 +87,8 @@ object ISO8601 {
             }
         }
 
-        override fun tryParse(str: String, doThrow: Boolean): DateTimeTz? {
-            return tryParse(str).also {
+        override fun tryParse(str: String, doThrow: Boolean, doAdjust: Boolean): DateTimeTz? {
+            return _tryParse(str, doAdjust).also {
                 if (doThrow && it == null) throw DateException("Can't parse $str with $format")
             }
         }
@@ -98,7 +98,7 @@ object ISO8601 {
             return null
         }
 
-        private fun tryParse(str: String): DateTimeTz? {
+        private fun _tryParse(str: String, doAdjust: Boolean): DateTimeTz? {
             var sign = +1
             var tzOffset: TimeSpan? = null
             var year = twoDigitBaseYear
@@ -263,8 +263,8 @@ object ISO8601 {
         val extended = BaseIsoTimeFormat(extendedFormat ?: basicFormat ?: TODO())
 
         override fun format(dd: TimeSpan): String = extended.format(dd)
-        override fun tryParse(str: String, doThrow: Boolean): TimeSpan? =
-            basic.tryParse(str, false) ?: extended.tryParse(str, false)
+        override fun tryParse(str: String, doThrow: Boolean, doAdjust: Boolean): TimeSpan? =
+            basic.tryParse(str, false, doAdjust) ?: extended.tryParse(str, false, doAdjust)
             ?: (if (doThrow) throw DateException("Invalid format $str") else null)
     }
 
@@ -273,9 +273,9 @@ object ISO8601 {
         val extended = BaseIsoDateTimeFormat(extendedFormat ?: basicFormat ?: TODO())
 
         override fun format(dd: DateTimeTz): String = extended.format(dd)
-        override fun tryParse(str: String, doThrow: Boolean): DateTimeTz? = null
-            ?: basic.tryParse(str, false)
-            ?: extended.tryParse(str, false)
+        override fun tryParse(str: String, doThrow: Boolean, doAdjust: Boolean): DateTimeTz? = null
+            ?: basic.tryParse(str, false, doAdjust)
+            ?: extended.tryParse(str, false, doAdjust)
             ?: (if (doThrow) throw DateException("Invalid format $str") else null)
     }
 
@@ -383,13 +383,13 @@ object ISO8601 {
     val DATE = object : DateFormat {
         override fun format(dd: DateTimeTz): String = DATE_CALENDAR_COMPLETE.format(dd)
 
-        override fun tryParse(str: String, doThrow: Boolean): DateTimeTz? {
+        override fun tryParse(str: String, doThrow: Boolean, doAdjust: Boolean): DateTimeTz? {
             DATE_ALL.fastForEach { format ->
-                val result = format.extended.tryParse(str, false)
+                val result = format.extended.tryParse(str, false, doAdjust)
                 if (result != null) return result
             }
             DATE_ALL.fastForEach { format ->
-                val result = format.basic.tryParse(str, false)
+                val result = format.basic.tryParse(str, false, doAdjust)
                 if (result != null) return result
             }
             return if (doThrow) throw DateException("Invalid format") else null
@@ -398,13 +398,13 @@ object ISO8601 {
     val TIME = object : TimeFormat {
         override fun format(dd: TimeSpan): String = TIME_LOCAL_FRACTION0.format(dd)
 
-        override fun tryParse(str: String, doThrow: Boolean): TimeSpan? {
+        override fun tryParse(str: String, doThrow: Boolean, doAdjust: Boolean): TimeSpan? {
             TIME_ALL.fastForEach { format ->
-                val result = format.extended.tryParse(str, false)
+                val result = format.extended.tryParse(str, false, doAdjust)
                 if (result != null) return result
             }
             TIME_ALL.fastForEach { format ->
-                val result = format.basic.tryParse(str, false)
+                val result = format.basic.tryParse(str, false, doAdjust)
                 if (result != null) return result
             }
             return if (doThrow) throw DateException("Invalid format") else null

@@ -141,7 +141,7 @@ data class PatternTimeFormat(
         return out
     }
 
-    override fun tryParse(str: String, doThrow: Boolean): TimeSpan? {
+    override fun tryParse(str: String, doThrow: Boolean, doAdjust: Boolean): TimeSpan? {
         var millisecond = 0
         var second = 0
         var minute = 0
