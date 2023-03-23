@@ -93,7 +93,6 @@ class GpuShapeViewCommands {
 
     private var decomposed = MatrixTransform()
     private val texturesToDelete = FastArrayList<AGTexture>()
-    private val tempUniforms = AGUniformValues()
     fun render(ctx: RenderContext, globalMatrix: Matrix, localMatrix: Matrix, applyScissor: Boolean, colorMul: RGBA, doRequireTexture: Boolean) {
         val vertices = this.vertices ?: return
         ctx.agBufferManager.delete(verticesToDelete)
@@ -132,7 +131,6 @@ class GpuShapeViewCommands {
                 )
                 var scissor = AGScissor.NIL
                 //list.vertexArrayObjectSet(ag, GpuShapeViewPrograms.LAYOUT_POS_TEX_FILL_DIST, bufferVertexData) {
-                val uniforms = batcher.uniforms
                 //println("----")
                 //println("----")
                 //println("----")
@@ -152,7 +150,6 @@ class GpuShapeViewCommands {
                             batcher.simulateBatchStats(cmd.vertexCount)
                             //println(paintShader.uniforms)
                             val pixelScale = decomposed.scaleAvg / ctx.bp.globalToWindowScaleAvg
-                            tempUniforms.clear()
                             if (paintShader != null) {
                                 batcher.ctx[GpuShapeViewPrograms.ShapeViewUB].push {
                                     it.copyFrom(paintShader.uniforms)
@@ -162,7 +159,10 @@ class GpuShapeViewCommands {
                                 if (paintShader.texture != null) {
                                     val tex = ctx.tempTexturePool.alloc()
                                     tex.upload(paintShader.texture)
-                                    tempUniforms.set(DefaultShaders.u_Tex, tex)
+                                    ctx[DefaultShaders.TexUB].push {
+                                        it[u_Tex] = 5
+                                    }
+                                    ctx.textureUnits.set(5, tex)
                                     texturesToDelete.add(tex)
                                 }
                             }
@@ -180,7 +180,6 @@ class GpuShapeViewCommands {
                                 vertexData = vertices,
                                 //indices = indices,
                                 scissor = scissor.applyMatrixBounds(tempMat),
-                                uniforms = tempUniforms,
                                 newUniformBlocks = ctx.createCurrentUniformsRef(_program),
                                 stencilOpFunc = cmd.stencilOpFunc,
                                 stencilRef = cmd.stencilRef,

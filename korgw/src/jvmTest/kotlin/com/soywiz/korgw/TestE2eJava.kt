@@ -51,9 +51,6 @@ class TestE2eJava {
                             program = DefaultShaders.PROGRAM_DEBUG,
                             drawType = AGDrawType.TRIANGLES,
                             vertexCount = 3,
-                            uniforms = AGUniformValues(
-                                //DefaultShaders.u_ProjMat to Matrix3D().setToOrtho(0f, 0f, WIDTH.toFloat(), HEIGHT.toFloat(), -1f, +1f)
-                            )
                         )
                         // @TODO:     java.lang.UnsatisfiedLinkError: Error looking up function 'glDeleteBuffers': The specified procedure could not be found. on windows Github/actions
                         // vertices.close()

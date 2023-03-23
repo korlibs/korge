@@ -16,7 +16,7 @@ object MsdfRender {
         }
 
         IF_ELSE_BINARY_LOOKUP(BatchBuilder2D.v_TexIndex, 0, BB_MAX_TEXTURES - 1) { n ->
-            SET(out, texture2D(BatchBuilder2D.u_TexN[n], v_Tex["xy"]))
+            SET(out, texture2D(BatchBuilder2D.TexNUB.u_TexN[n], v_Tex["xy"]))
         }
         val d = t_Temp0.x
         val alpha = t_Temp0.y

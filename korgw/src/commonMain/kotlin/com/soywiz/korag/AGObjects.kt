@@ -49,7 +49,36 @@ class AGBuffer : AGObject() {
     override fun toString(): String = "AGBuffer(${mem?.sizeInBytes ?: 0})"
 }
 
+data class AGTextureUnits(val textures: Array<AGTexture?>, val infos: AGTextureUnitInfoArray) {
+    companion object {
+        val EMPTY get() = AGTextureUnits()
+    }
+    constructor(size: Int = 16) : this(arrayOfNulls(size), AGTextureUnitInfoArray(size))
+    val size: Int get() = textures.size
+    fun set(index: Int, texture: AGTexture?, info: AGTextureUnitInfo = AGTextureUnitInfo.DEFAULT) {
+        textures[index] = texture
+        infos[index] = info
+    }
+    fun clear() {
+        for (n in 0 until size) set(n, null, AGTextureUnitInfo.DEFAULT)
+    }
+    fun clone(): AGTextureUnits = AGTextureUnits(textures.copyOf(), infos.copyOf())
+
+    inline fun fastForEach(block: (index: Int, tex: AGTexture?, info: AGTextureUnitInfo) -> Unit) {
+        for (n in 0 until size) {
+            block(n, textures[n], infos[n])
+        }
+    }
+}
+
+inline class AGTextureUnitInfoArray(val data: IntArray) {
+    constructor(size: Int) : this(IntArray(size) { AGTextureUnitInfo.DEFAULT.data })
+    operator fun set(index: Int, value: AGTextureUnitInfo) { data[index] = value.data }
+    operator fun get(index: Int): AGTextureUnitInfo = AGTextureUnitInfo.fromRaw(data[index])
+    fun copyOf() = AGTextureUnitInfoArray(data.copyOf())
+}
 inline class AGTextureUnitInfo private constructor(val data: Int) {
+
     companion object {
         val INVALID = AGTextureUnitInfo(-1)
         val DEFAULT = AGTextureUnitInfo(0).withLinearTrilinear(true, true).withWrap(AGWrapMode.CLAMP_TO_EDGE)

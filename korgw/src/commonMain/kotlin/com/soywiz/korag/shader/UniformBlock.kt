@@ -101,7 +101,13 @@ open class UniformBlock(val fixedLocation: Int) {
     }
 }
 
-class UniformRef(val block: UniformBlock, var buffer: Buffer, var textures: Array<AGTexture?>, var texturesInfo: IntArray, var index: Int) {
+class UniformRef(
+    val block: UniformBlock,
+    var buffer: Buffer,
+    @Deprecated("") var textures: Array<AGTexture?>,
+    @Deprecated("") var texturesInfo: IntArray,
+    var index: Int
+) {
     constructor(block: UniformBlock, size: Int = 1, index: Int = 0) : this(
         block, Buffer(block.totalSize * size),
         arrayOfNulls(block.uniformCount * size),
@@ -174,11 +180,12 @@ class UniformRef(val block: UniformBlock, var buffer: Buffer, var textures: Arra
         }
     }
 
-    fun set(uniform: TypedUniform<Int>, tex: AGTexture?, samplerInfo: AGTextureUnitInfo = AGTextureUnitInfo.DEFAULT) {
-        buffer.setUnalignedInt32(getOffset(uniform), -1)
-        textures[index * blockSize + uniform.vindex] = tex
-        texturesInfo[index * blockSize + uniform.vindex] = samplerInfo.data
-    }
+    //@Deprecated("")
+    //fun set(uniform: TypedUniform<Int>, tex: AGTexture?, samplerInfo: AGTextureUnitInfo = AGTextureUnitInfo.DEFAULT) {
+    //    buffer.setUnalignedInt32(getOffset(uniform), -1)
+    //    textures[index * blockSize + uniform.vindex] = tex
+    //    texturesInfo[index * blockSize + uniform.vindex] = samplerInfo.data
+    //}
 }
 
 class UniformBlockBuffer<T : UniformBlock>(val block: T) {

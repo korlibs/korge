@@ -52,6 +52,12 @@ class RenderContext constructor(
     DeviceDimensionsProvider by deviceDimensionsProvider,
     Closeable
 {
+    @PublishedApi internal val _buffers = AGProgramWithUniforms.BufferCache()
+    private val _programs = FastIdentityMap<Program, AGProgramWithUniforms>()
+
+    @PublishedApi internal val textureUnitsPool = Pool { AGTextureUnits() }
+    val textureUnits = AGTextureUnits()
+
     val projectionMatrixTransform = MMatrix()
     val projectionMatrixTransformInv = MMatrix()
     private val projMat: MMatrix3D = MMatrix3D()
@@ -148,36 +154,25 @@ class RenderContext constructor(
         }
     }
 
-    @PublishedApi internal val uniformsPool = Pool { AGUniformValues() }
-
-    /**
-     * Executes [callback] while restoring [uniform] to its current value after [callback] is exexcuted.
-     */
-    inline fun keepUniform(uniform: Uniform, flush: Boolean = true, callback: (AGUniformValues) -> Unit) {
-        uniformsPool.alloc { tempUniforms ->
-            tempUniforms[uniform].set(this.uniforms[uniform])
+    inline fun <T> keepTextureUnit(unit: Int, flush: Boolean = true, callback: () -> T): T {
+        val oldTex = textureUnits.textures[unit]
+        val oldInfo = textureUnits.infos[unit]
+        try {
+            return callback()
+        } finally {
             if (flush) flush()
-            try {
-                callback(this.uniforms)
-            } finally {
-                if (flush) flush()
-                this.uniforms[uniform].set(tempUniforms[uniform])
-            }
+            textureUnits.set(unit, oldTex, oldInfo)
         }
     }
 
-    /**
-     * Executes [callback] while restoring [uniforms] to its current value after [callback] is exexcuted.
-     */
-    inline fun keepUniforms(uniforms: Array<Uniform>, flush: Boolean = true, callback: (AGUniformValues) -> Unit) {
-        uniformsPool.alloc { tempUniforms ->
-            uniforms.fastForEach { tempUniforms[it].set(this.uniforms[it]) }
-            if (flush) flush()
+    inline fun <T> keepTextureUnits(unitStart: Int, unitEnd: Int, flush: Boolean = true, callback: () -> T): T {
+        textureUnitsPool.alloc { old ->
+            for (n in unitStart until unitEnd) old.set(n, textureUnits.textures[n], textureUnits.infos[n])
             try {
-                callback(this.uniforms)
+                return callback()
             } finally {
                 if (flush) flush()
-                uniforms.fastForEach { this.uniforms[it].set(tempUniforms[it]) }
+                for (n in unitStart until unitEnd) textureUnits.set(n, old.textures[n], old.infos[n])
             }
         }
     }
@@ -557,9 +552,6 @@ class RenderContext constructor(
             if (tex != null) drawTexture(frameBuffer, tex)
         }
     }
-
-    @PublishedApi internal val _buffers = AGProgramWithUniforms.BufferCache()
-    private val _programs = FastIdentityMap<Program, AGProgramWithUniforms>()
 
     operator fun <T : UniformBlock> get(uniformBlock: T): UniformBlockBuffer<T> = _buffers[uniformBlock]
     //operator fun get(uniform: UniformBlock): AGRichUniformBlockData = _buffers[uniform]

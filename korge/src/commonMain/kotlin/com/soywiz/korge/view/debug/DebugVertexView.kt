@@ -2,9 +2,7 @@ package com.soywiz.korge.view.debug
 
 import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.korag.*
-import com.soywiz.korag.shader.FragmentShader
-import com.soywiz.korag.shader.Uniform
-import com.soywiz.korag.shader.VarType
+import com.soywiz.korag.shader.*
 import com.soywiz.korge.render.RenderContext
 import com.soywiz.korge.view.Container
 import com.soywiz.korge.view.View
@@ -29,15 +27,21 @@ class DebugVertexView(pointsList: List<IVectorArrayList>, color: RGBA = Colors.W
         colorMul = color
     }
     var color: RGBA by this::colorMul
+
+    object UB : UniformBlock(fixedLocation = 6) {
+        val u_Col by vec4()
+        val u_Matrix by mat4()
+    }
+
     companion object {
-        val u_Col: Uniform = Uniform("u_Col", VarType.Float4)
-        val u_Matrix: Uniform = Uniform("u_Matrix", VarType.Mat4)
+        //val u_Col: Uniform get() = UB.u_Col.uniform
+        //val u_Matrix: Uniform get() = UB.u_Matrix.uniform
         val PROGRAM = DefaultShaders.PROGRAM_DEBUG_WITH_PROJ.copy(
             vertex = VertexShaderDefault {
-                SET(out, u_ProjMat * u_ViewMat * u_Matrix * vec4(a_Pos, 0f.lit, 1f.lit))
+                SET(out, u_ProjMat * u_ViewMat * UB.u_Matrix * vec4(a_Pos, 0f.lit, 1f.lit))
             },
             fragment = FragmentShader {
-                SET(out, u_Col)
+                SET(out, UB.u_Col)
             }
         )
     }
@@ -89,18 +93,16 @@ class DebugVertexView(pointsList: List<IVectorArrayList>, color: RGBA = Colors.W
         }
     }
 
-    private val uniforms: AGUniformValues = AGUniformValues()
-
     override fun getLocalBoundsInternal() = bb.getBounds().immutable
     //println("DebugVertexView.getLocalBoundsInternal:$out")
 
     override fun renderInternal(ctx: RenderContext) {
         ctx.flush()
         ctx.updateStandardUniforms()
-        this.uniforms.put(ctx.uniforms)
-        this.uniforms[u_Col] = renderColorMul
-        this.uniforms[u_Matrix] = globalMatrix.toMatrix4()
-
+        ctx[UB].push {
+            it[u_Col] = renderColorMul
+            it[u_Matrix] = globalMatrix.toMatrix4()
+        }
         ctx.dynamicVertexBufferPool.alloc { vb ->
             vb.upload(this@DebugVertexView.buffer)
             val vData = AGVertexArrayObject(
@@ -112,7 +114,6 @@ class DebugVertexView(pointsList: List<IVectorArrayList>, color: RGBA = Colors.W
                     vData,
                     drawType = type,
                     program = PROGRAM,
-                    uniforms = this.uniforms,
                     newUniformBlocks = ctx.createCurrentUniformsRef(PROGRAM),
                     vertexCount = batch.count,
                     drawOffset = batch.offset,

@@ -46,8 +46,6 @@ class BatchBuilder2D constructor(
     val viewMat: MMatrix3D get() = ctx.viewMat
     @KorgeInternal
     val viewMat2D: Matrix get() = ctx.viewMat2D.immutable
-    @KorgeInternal
-    val uniforms: AGUniformValues get() = ctx.uniforms
 
     inline fun use(block: (BatchBuilder2D) -> Unit) = ctx.useBatcher(this, block)
 
@@ -163,14 +161,13 @@ class BatchBuilder2D constructor(
     //@KorgeInternal val textureUnit0 = AG.TextureUnit(null, linear = false)
     //@KorgeInternal val textureUnit1 = AG.TextureUnit(null, linear = false)
 
-	// @TODO: kotlin-native crash: [1]    80122 segmentation fault  ./sample1-native.kexe
-	//private val uniforms = mapOf<Uniform, Any>(
-	//	DefaultShaders.u_ProjMat to projMat,
-	//	DefaultShaders.u_Tex to textureUnit
-	//)
-
     init {
-        for (n in 0 until maxTextures) ctx.uniforms.set(u_TexN[n], null, AGTextureUnitInfo())
+        ctx[TexNUB].push {
+            for (n in 0 until maxTextures) {
+                it[this.u_TexN[n]] = n
+                ctx.textureUnits.set(n, null, AGTextureUnitInfo.DEFAULT)
+            }
+        }
     }
 
 	init { logger.trace { "BatchBuilder2D[11]" } }
@@ -586,7 +583,7 @@ class BatchBuilder2D constructor(
         val v_TexIndex: Varying = Varying("v_TexIndex", VarType.Float1, precision = Precision.LOW)
         //val u_Tex0 = Uniform("u_Tex0", VarType.TextureUnit)
 
-        val u_TexN: Array<Uniform> = Array(BB_MAX_TEXTURES) { TexNUB.u_TexN[it].uniform }
+        //val u_TexN: Array<Uniform> = Array(BB_MAX_TEXTURES) { TexNUB.u_TexN[it].uniform }
 
         //val u_Tex0 = DefaultShaders.u_Tex
         //val u_Tex1 = Uniform("u_Tex1", VarType.TextureUnit)
@@ -620,7 +617,7 @@ class BatchBuilder2D constructor(
         fun createTextureLookup(builder: ProgramBuilderDefault) {
             builder.apply {
                 IF_ELSE_BINARY_LOOKUP(v_TexIndex, 0, BB_MAX_TEXTURES - 1) { n ->
-                    SET(out, texture2D(u_TexN[n], v_Tex["xy"]))
+                    SET(out, texture2D(TexNUB.u_TexN[n], v_Tex["xy"]))
                 }
             }
         }
@@ -639,7 +636,9 @@ class BatchBuilder2D constructor(
         //println("updateStandardUniforms: ag.currentSize(${ag.currentWidth}, ${ag.currentHeight}) : ${ag.currentRenderBuffer}")
         ctx.updateStandardUniforms()
         for (n in 0 until maxTextures) {
-            uniforms[u_TexN[n]].set(currentTexN[n], AGTextureUnitInfo(linear = currentSmoothing))
+            val info = AGTextureUnitInfo(linear = currentSmoothing)
+            //println("updateStandardUniforms: $n, ${currentTexN[n]}, info=$info")
+            ctx.textureUnits.set(n, currentTexN[n], info)
         }
         //uniforms[u_InputPre] = currentTexN[0]?.premultiplied == true
         //uniforms[u_OutputPre] = ctx.isRenderingToTexture
@@ -666,8 +665,8 @@ class BatchBuilder2D constructor(
             //program = PROGRAM_PRE,
             drawType = AGDrawType.TRIANGLES,
             blending = currentBlendMode.factors,
-            uniforms = uniforms.cloneReadOnly(),
             newUniformBlocks = ctx.createCurrentUniformsRef(currentProgram, autoUpload = false),
+            textureUnits = ctx.textureUnits.clone(),
             stencilOpFunc = stencilOpFunc,
             stencilRef = stencilRef,
             colorMask = colorMask,
@@ -739,13 +738,8 @@ class BatchBuilder2D constructor(
      */
 	inline fun setViewMatrixTemp(matrix: Matrix, crossinline callback: () -> Unit) = ctx.setViewMatrixTemp(matrix, callback)
 
-    /**
-     * Executes [callback] while restoring [uniform] to its current value after [callback] is exexcuted.
-     */
-    @Deprecated("")
-    inline fun keepUniform(uniform: Uniform, flush: Boolean = true, callback: (AGUniformValues) -> Unit) {
-        ctx.keepUniform(uniform, flush, callback)
-    }
+    inline fun <T> keepTextureUnit(unit: Int, flush: Boolean = true, callback: () -> T): T = ctx.keepTextureUnit(unit, flush, callback)
+    inline fun <T> keepTextureUnits(unitStart: Int, unitEnd: Int, flush: Boolean = true, callback: () -> T): T = ctx.keepTextureUnits(unitStart, unitEnd, flush, callback)
 
     inline fun flush(block: () -> Unit) {
         ctx.flush()
@@ -755,18 +749,6 @@ class BatchBuilder2D constructor(
             ctx.flush()
         }
     }
-
-    /**
-     * Executes [callback] while restoring [uniforms] to its current value after [callback] is exexcuted.
-     */
-    inline fun keepUniforms(uniforms: Array<Uniform>, flush: Boolean = true, callback: (AGUniformValues) -> Unit) {
-        ctx.keepUniforms(uniforms, flush, callback)
-    }
-
-    /**
-     * Executes [callback] while setting temporarily a set of [uniforms]
-     */
-	inline fun setTemporalUniforms(uniforms: AGUniformValues?, callback: (AGUniformValues) -> Unit) = ctx.setTemporalUniforms(uniforms, callback)
 }
 
 internal val BB_MAX_TEXTURES = when {

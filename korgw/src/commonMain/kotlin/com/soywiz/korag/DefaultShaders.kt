@@ -25,6 +25,7 @@ interface IDefaultShaders {
 object DefaultShaders {
     // from korge
     object TexExUB : UniformBlock(fixedLocation = 6) {
+        const val SAMPLER_INDEX = 6
         val u_TexEx by sampler2D()
     }
     val u_TexEx: Uniform get() = TexExUB.u_TexEx.uniform

@@ -79,6 +79,7 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
         blending: AGBlending = AGBlending.NORMAL,
         uniforms: AGUniformValues = AGUniformValues.EMPTY,
         newUniformBlocks: UniformBlocksBuffersRef = UniformBlocksBuffersRef.EMPTY,
+        textureUnits: AGTextureUnits = AGTextureUnits.EMPTY,
         stencilRef: AGStencilReference = AGStencilReference.DEFAULT,
         stencilOpFunc: AGStencilOpFunc = AGStencilOpFunc.DEFAULT,
         colorMask: AGColorMask = AGColorMask.ALL_ENABLED,
@@ -86,7 +87,7 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
         scissor: AGScissor = AGScissor.NIL,
         cullFace: AGCullFace = AGCullFace.NONE,
         instances: Int = 1
-    ) = execute(AGBatch(frameBuffer, frameBufferInfo, vertexData, indices, indexType, program, uniforms, newUniformBlocks, blending, stencilOpFunc, stencilRef, colorMask, depthAndFrontFace, scissor, cullFace, drawType, drawOffset, vertexCount, instances))
+    ) = execute(AGBatch(frameBuffer, frameBufferInfo, vertexData, indices, indexType, program, uniforms, newUniformBlocks, textureUnits, blending, stencilOpFunc, stencilRef, colorMask, depthAndFrontFace, scissor, cullFace, drawType, drawOffset, vertexCount, instances))
 
     open fun readToTexture(frameBuffer: AGFrameBufferBase, frameBufferInfo: AGFrameBufferInfo, texture: AGTexture, x: Int, y: Int, width: Int, height: Int): Unit = Unit
     open fun readToMemory(frameBuffer: AGFrameBufferBase, frameBufferInfo: AGFrameBufferInfo, x: Int, y: Int, width: Int, height: Int, data: Any, kind: AGReadKind): Unit = Unit
@@ -127,6 +128,7 @@ fun AG.draw(
     blending: AGBlending = AGBlending.NORMAL,
     uniforms: AGUniformValues = AGUniformValues.EMPTY,
     newUniformBlocks: UniformBlocksBuffersRef = UniformBlocksBuffersRef.EMPTY,
+    textureUnits: AGTextureUnits = AGTextureUnits.EMPTY,
     stencilRef: AGStencilReference = AGStencilReference.DEFAULT,
     stencilOpFunc: AGStencilOpFunc = AGStencilOpFunc.DEFAULT,
     colorMask: AGColorMask = AGColorMask.ALL_ENABLED,
@@ -135,7 +137,7 @@ fun AG.draw(
     cullFace: AGCullFace = AGCullFace.NONE,
     instances: Int = 1
 ): Unit = this.draw(
-    frameBuffer.base, frameBuffer.info, vertexData, program, drawType, vertexCount, indices, indexType, drawOffset, blending, uniforms, newUniformBlocks, stencilRef, stencilOpFunc, colorMask, depthAndFrontFace, scissor, cullFace, instances
+    frameBuffer.base, frameBuffer.info, vertexData, program, drawType, vertexCount, indices, indexType, drawOffset, blending, uniforms, newUniformBlocks, textureUnits, stencilRef, stencilOpFunc, colorMask, depthAndFrontFace, scissor, cullFace, instances
 )
 
 fun AG.clear(

@@ -121,6 +121,7 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
         blending: AGBlending,
         uniforms: AGUniformValues,
         newUniformBlocks: UniformBlocksBuffersRef,
+        textureUnits: AGTextureUnits,
         stencilRef: AGStencilReference,
         stencilOpFunc: AGStencilOpFunc,
         colorMask: AGColorMask,
@@ -154,7 +155,7 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
             //uniforms.useExternalSampler() -> ProgramConfig.EXTERNAL_TEXTURE_SAMPLER
             else -> ProgramConfig.DEFAULT
         })
-        uniformsSet(uniforms, newUniformBlocks)
+        uniformsSet(uniforms, newUniformBlocks, textureUnits)
 
         if (currentBlending != blending) {
             currentBlending = blending
@@ -244,6 +245,7 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
     private var currentColorMask: AGColorMask = AGColorMask.INVALID
     private var currentRenderState: AGDepthAndFrontFace = AGDepthAndFrontFace.INVALID
     private var currentProgram: GLBaseProgram? = null
+    private val currentTextureUnits = AGTextureUnits()
     var backBufferFrameBufferBinding: Int = 0
     private var currentScissor: AGScissor = AGScissor.INVALID
 
@@ -259,6 +261,7 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
         currentStencilRef = AGStencilReference.INVALID
         currentColorMask = AGColorMask.INVALID
         currentRenderState = AGDepthAndFrontFace.INVALID
+        currentTextureUnits.clear()
         currentProgram = null
         backBufferFrameBufferBinding = gl.getIntegerv(KmlGl.FRAMEBUFFER_BINDING)
         _currentFrameBuffer = -1
@@ -426,6 +429,7 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
     fun uniformsSet(
         uniforms: AGUniformValues,
         newUniformBlocks: UniformBlocksBuffersRef,
+        textureUnits: AGTextureUnits,
     ) {
         val glProgram: GLBaseProgram = currentProgram ?: return
 
@@ -434,7 +438,29 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
         //if (doPrint) println("-----------")
 
         //for ((uniform, value) in uniforms) {
-        textureUnit = -1
+
+        //println("textureUnits=$textureUnits")
+
+        textureUnits.fastForEach { index, tex, info ->
+            if (currentTextureUnits.textures[index] == tex && currentTextureUnits.infos[index] == info) {
+                return@fastForEach
+            }
+            currentTextureUnits.set(index, tex, info)
+
+            //println("TEXTURE: index=$index, tex=$tex, info=$info")
+            selectTextureUnit(index)
+            if (tex != null) {
+                val wrap = info.wrap
+                val linear = info.linear
+                val trilinear = info.trilinear
+                textureBind(tex, AGTextureTargetKind.TEXTURE_2D)
+                textureUnitParameters(tex.implForcedTexTarget, wrap, tex.minFilter(linear, trilinear), tex.magFilter(linear, trilinear), tex.implForcedTexTarget.dims)
+            } else {
+                gl.bindTexture(KmlGl.TEXTURE_2D, 0)
+                //textureUnitParameters(AGTextureTargetKind.TEXTURE_2D, unitInfo.wrap, tex.minFilter(linear, trilinear), tex.magFilter(linear, trilinear), 2)
+            }
+        }
+
         newUniformBlocks.fastForEachUniform {
             //println("UNIFORM IN BLOCK: $it")
             uniformSet(glProgram, it)
@@ -445,7 +471,6 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
         }
     }
 
-    private var textureUnit: Int = -1
     private fun uniformSet(glProgram: GLBaseProgram, value: AGUniformValue) {
         val uniform = value.uniform
         val uniformName = uniform.name
@@ -453,47 +478,8 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
         val location = glProgram.programInfo.getUniformLocation(gl, uniformName)
         val declArrayCount = uniform.arrayCount
 
-        //println("uniformSet:${value}")
-
-        when (uniformType) {
-            VarType.Sampler2D, VarType.SamplerCube -> {
-                textureUnit++
-
-                val tex = value.texture
-                val unitInfo = value.textureUnitInfo
-                val linear = unitInfo.linear
-                val trilinear = unitInfo.trilinear
-                //val textureUnit = unit.index
-                //println("unit=${unit.texture}")
-                //textureUnit = glProgram.getTextureUnit(uniform, unit)
-
-                //if (cacheTextureUnit[textureUnit] != unit) {
-                //    cacheTextureUnit[textureUnit] = unit.clone()
-                selectTextureUnit(textureUnit)
-                value.i32[0] = textureUnit
-
-                //println("textureUnit=$textureUnit, tex=$tex")
-
-                if (tex != null) {
-                    // @TODO: This might be enqueuing commands, we shouldn't do that here.
-                    textureBind(tex, when (uniformType) {
-                        VarType.Sampler2D -> AGTextureTargetKind.TEXTURE_2D
-                        else -> AGTextureTargetKind.TEXTURE_CUBE_MAP
-                    })
-                    textureUnitParameters(tex.implForcedTexTarget, unitInfo.wrap, tex.minFilter(linear, trilinear), tex.magFilter(linear, trilinear), tex.implForcedTexTarget.dims)
-                } else {
-                    gl.bindTexture(KmlGl.TEXTURE_2D, 0)
-                    //textureUnitParameters(AGTextureTargetKind.TEXTURE_2D, unitInfo.wrap, tex.minFilter(linear, trilinear), tex.magFilter(linear, trilinear), 2)
-                }
-                //}
-            }
-            else -> Unit
-        }
-
         val oldValue = glProgram.programInfo.cache[uniform]
-        if (value == oldValue) {
-            return
-        }
+        if (value == oldValue) return
         glProgram.programInfo.cache[uniform] = value
 
         //println("uniform: $uniform, arrayCount=${uniform.arrayCount}, stride=${uniform.elementCount}, value=$value old=$oldValue")

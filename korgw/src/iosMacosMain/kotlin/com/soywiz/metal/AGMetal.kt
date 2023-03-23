@@ -30,6 +30,7 @@ class AGMetal(private val view: MTKView) : AG() {
         blending: AGBlending,
         uniforms: AGUniformValues,
         newUniformBlocks: UniformBlocksBuffersRef,
+        textureUnits: AGTextureUnits,
         stencilRef: AGStencilReference,
         stencilOpFunc: AGStencilOpFunc,
         colorMask: AGColorMask,

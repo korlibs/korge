@@ -9,18 +9,21 @@ class AGTextureDrawer(val ag: AG) {
     val vertexLayout = VertexLayout(DefaultShaders.a_Pos, DefaultShaders.a_Tex)
     val vertexData = AGVertexArrayObject(AGVertexData(vertexLayout, vertices))
     val verticesData = Buffer(VERTEX_COUNT * vertexLayout.totalSize)
-    val program = Program(VertexShader {
-        DefaultShaders {
-            SET(v_Tex, a_Tex)
-            SET(out, vec4(a_Pos, 0f.lit, 1f.lit))
-        }
-    }, FragmentShader {
-        DefaultShaders {
-            //out setTo vec4(1f, 1f, 0f, 1f)
-            SET(out, texture2D(u_Tex, v_Tex["xy"]))
-        }
-    })
-    val uniforms = AGUniformValues()
+    val textureUnits = AGTextureUnits(1)
+    companion object {
+        val PROGRAM = Program(VertexShader {
+            DefaultShaders {
+                SET(v_Tex, a_Tex)
+                SET(out, vec4(a_Pos, 0f.lit, 1f.lit))
+            }
+        }, FragmentShader {
+            DefaultShaders {
+                //out setTo vec4(1f, 1f, 0f, 1f)
+                SET(out, texture2D(DefaultShaders.TexUB.u_Tex, v_Tex["xy"]))
+            }
+        })
+    }
+    val ref = AGProgramWithUniforms(PROGRAM)
 
     fun setVertex(n: Int, px: Float, py: Float, tx: Float, ty: Float) {
         val offset = n * 4
@@ -32,7 +35,11 @@ class AGTextureDrawer(val ag: AG) {
 
     fun draw(frameBuffer: AGFrameBuffer, tex: AGTexture, left: Float, top: Float, right: Float, bottom: Float) {
         //tex.upload(Bitmap32(32, 32) { x, y -> Colors.RED })
-        uniforms.set(DefaultShaders.u_Tex, tex)
+        //uniforms.set(DefaultShaders.u_Tex, tex)
+        textureUnits.set(0, tex)
+        ref[DefaultShaders.TexUB].push {
+            it[u_Tex] = 0
+        }
 
         val texLeft = -1f
         val texRight = +1f
@@ -48,10 +55,11 @@ class AGTextureDrawer(val ag: AG) {
         ag.draw(
             frameBuffer,
             vertexData = vertexData,
-            program = program,
+            program = PROGRAM,
             drawType = AGDrawType.TRIANGLE_STRIP,
             vertexCount = 4,
-            uniforms = uniforms,
+            newUniformBlocks = ref.createRef(),
+            textureUnits = textureUnits,
             blending = AGBlending.NONE
         )
     }
