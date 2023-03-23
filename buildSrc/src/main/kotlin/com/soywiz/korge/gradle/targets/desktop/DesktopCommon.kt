@@ -54,7 +54,8 @@ val Project.DESKTOP_NATIVE_CROSS_TARGETS: List<String> get() = when {
     else -> listOfNotNull()
 }
 
-val Project.DESKTOP_NATIVE_TARGETS get() = when {
+val Project.DESKTOP_NATIVE_TARGETS: List<String>
+    get() = when {
     isWindows -> listOfNotNull("mingwX64")
     isMacos -> listOfNotNull("macosX64", "macosArm64")
     isLinux -> listOfNotNull("linuxX64", "linuxArm64")

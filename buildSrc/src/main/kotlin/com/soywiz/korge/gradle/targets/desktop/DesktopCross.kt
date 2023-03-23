@@ -29,6 +29,7 @@ fun Project.configureNativeDesktopCross() {
             mainCompilation.getCompileTask(NativeOutputKind.EXECUTABLE, type, project).dependsOn(prepareKotlinNativeBootstrap)
         }
         mainCompilation.defaultSourceSet.kotlin.srcDir(project.file("build/platforms/native-desktop/"))
+        createCopyToExecutableTarget(target.name)
     }
 
     //println("!!!!!!!!!configured-cross-native-targets = CrossExecType.VALID_LIST=${CrossExecType.VALID_LIST}")

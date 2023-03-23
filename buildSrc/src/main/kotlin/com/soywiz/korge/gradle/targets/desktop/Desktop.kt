@@ -70,19 +70,7 @@ fun Project.configureNativeDesktop(projectType: ProjectType) {
 
 	project.afterEvaluate {
 		for (target in DESKTOP_NATIVE_TARGETS) {
-			if (isLinux && target.endsWith("Arm64")) {
-				// don't create an Arm64 test task
-				continue
-			}
-			val taskName = "copyResourcesToExecutableTest_${target.capitalize()}"
-			val targetTestTask = project.tasks.getByName("${target}Test") as KotlinNativeTest
-			val task = project.tasks.createThis<Copy>(taskName) {
-				for (sourceSet in project.gkotlin.sourceSets) {
-					from(sourceSet.resources)
-				}
-				into(targetTestTask.executableFolder)
-			}
-			targetTestTask.dependsOn(task)
+            createCopyToTestExecutableTarget(target)
 		}
 
 		// @TODO: This doesn't work after migrating code to Kotlin.
@@ -98,112 +86,142 @@ fun Project.configureNativeDesktop(projectType: ProjectType) {
     }
 }
 
+fun Project.createCopyToTestExecutableTarget(target: String) {
+    if (isLinux && target.endsWith("Arm64")) {
+        // don't create an Arm64 test task
+        return
+    }
+    val taskName = "copyResourcesToExecutableTest_${target.capitalize()}"
+    val targetTestTask = project.tasks.getByName("${target}Test") as KotlinNativeTest
+    val task = project.tasks.createThis<Copy>(taskName) {
+        for (sourceSet in project.gkotlin.sourceSets) {
+            from(sourceSet.resources)
+        }
+        into(targetTestTask.executableFolder)
+    }
+    targetTestTask.dependsOn(task)
+}
+
+class KNTargetWithBuildType(val project: Project, val target: String, val kind: NativeBuildType) {
+    companion object {
+        fun buildList(project: Project, target: String): List<KNTargetWithBuildType> = NativeBuildTypes.TYPES.map { KNTargetWithBuildType(project, target, it) }
+    }
+    val ctarget = target.capitalize()
+    val isMingwX64 = target == "mingwX64"
+
+    val ckind = kind.name.toLowerCase().capitalize()
+    val ctargetKind = "$ctarget$ckind"
+    val buildType = if (kind == NativeBuildType.DEBUG) NativeBuildType.DEBUG else NativeBuildType.RELEASE
+
+    val ktarget = project.gkotlin.targets.getByName(target)
+    //(ktarget as KotlinNativeTarget).attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.native)
+
+    val compilation = ktarget.compilations.main as KotlinNativeCompilation
+
+    //if (isMingwX64) {
+    //    //compilation.getLinkTask(NativeOutputKind.EXECUTABLE, buildType, project).dependsOn(mingwX64SelectPatchedMemoryManager)
+    //}
+
+    val executableFile = compilation.getBinary(NativeOutputKind.EXECUTABLE, buildType)
+
+    val appResFile = File(project.buildDir, "app.res")
+    val appRcFile = File(project.buildDir, "app.rc")
+    val appRcObjFile = File(project.buildDir, "app.obj")
+    val appIcoFile = File(project.buildDir, "icon.ico")
+
+    val copyTaskName = "copyResourcesToExecutable${ctargetKind}"
+}
+
+fun Project.createCopyToExecutableTarget(target: String) {
+    for (build in KNTargetWithBuildType.buildList(project, target)) {
+        val copyTask = project.tasks.createThis<Copy>(build.copyTaskName) {
+            dependsOn(build.compilation.compileKotlinTask)
+            duplicatesStrategy = DuplicatesStrategy.INCLUDE
+            for (sourceSet in project.gkotlin.sourceSets) {
+                from(sourceSet.resources)
+            }
+            //println("executableFile.parentFile: ${executableFile.parentFile}")
+            into(build.executableFile.parentFile)
+            if (build.isMingwX64) {
+                //if (false) {
+                doLast {
+                    val bmp32 = project.korge.getIconBytes(32).decodeImage()
+                    val bmp256 = project.korge.getIconBytes(256).decodeImage()
+
+                    build.appIcoFile.writeBytes(ICO2.encode(listOf(bmp32, bmp256)))
+
+                    val linkTask = build.compilation.getLinkTask(NativeOutputKind.EXECUTABLE, build.buildType, project)
+
+                    val isConsole = korge.enableConsole ?: (build.kind == NativeBuildType.DEBUG)
+                    val subsystem = if (isConsole) "console" else "windows"
+
+                    run {
+                        // @TODO: https://releases.llvm.org/9.0.0/tools/lld/docs/ReleaseNotes.html#id6
+                        // @TODO: lld-link now rejects more than one resource object input files, matching link.exe. Previously, lld-link would silently ignore all but one. If you hit this: Don’t pass resource object files to the linker, instead pass res files to the linker directly. Don’t put resource files in static libraries, pass them on the command line. (r359749)
+                        //appRcFile.writeText(WindowsRC.generate(korge))
+                        //project.compileWindowsRC(appRcFile, appRcObjFile)
+                        //linkTask.binary.linkerOpts(appRcObjFile.absolutePath, "-Wl,--subsystem,$subsystem")
+                    }
+
+                    run {
+                        // @TODO: Not working either!
+                        //appRcFile.writeText(WindowsRC.generate(korge))
+                        //val appResFile = project.compileWindowsRES(appRcFile)
+                        //linkTask.binary.linkerOpts(appResFile.absolutePath, "-Wl,--subsystem,$subsystem")
+                    }
+
+                    run {
+                        build.appRcFile.writeText(WindowsRC.generate(korge))
+                        project.compileWindowsRES(build.appRcFile, build.appResFile)
+                        linkTask.binary.linkerOpts("-Wl,--subsystem,$subsystem")
+                    }
+                }
+                //println("compilation:$compilation")
+                //compilation.linkerOpts(appRcObjFile.absolutePath, "-Wl,--subsystem,console")
+                afterEvaluate {
+                }
+            }
+        }
+
+        afterEvaluate {
+            try {
+                val linkTask = build.compilation.getLinkTask(NativeOutputKind.EXECUTABLE, build.buildType, project)
+                linkTask.dependsOn(copyTask)
+                if (build.isMingwX64) {
+                    linkTask.doLast {
+                        replaceExeWithRes(linkTask.outputFile.get(), build.appResFile)
+                    }
+                }
+            } catch (e: Throwable) {
+                e.printStackTrace()
+            }
+        }
+    }
+}
+
+
+fun KotlinNativeCompilation.getBinary(kind: NativeOutputKind, type: NativeBuildType): File {
+    return this.getLinkTask(kind, type, project).binary.outputFile.absoluteFile
+}
+
 fun Project.configureNativeDesktopRun() {
     val project = this
-
-    fun KotlinNativeCompilation.getBinary(kind: NativeOutputKind, type: NativeBuildType): File {
-        return this.getLinkTask(kind, type, project).binary.outputFile.absoluteFile
-    }
 
     afterEvaluate {
         //run {
         for (target in DESKTOP_NATIVE_TARGETS) {
-            val ctarget = target.capitalize()
-            val isMingwX64 = target == "mingwX64"
-            for (kind in NativeBuildTypes.TYPES) {
-                val ckind = kind.name.toLowerCase().capitalize()
-                val ctargetKind = "$ctarget$ckind"
-                val buildType = if (kind == NativeBuildType.DEBUG) NativeBuildType.DEBUG else NativeBuildType.RELEASE
-
-                val ktarget = gkotlin.targets.getByName(target)
-                //(ktarget as KotlinNativeTarget).attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.native)
-
-                val compilation = ktarget.compilations.main as KotlinNativeCompilation
-
-                if (isMingwX64) {
-                    //compilation.getLinkTask(NativeOutputKind.EXECUTABLE, buildType, project).dependsOn(mingwX64SelectPatchedMemoryManager)
-                }
-
-                val executableFile = compilation.getBinary(NativeOutputKind.EXECUTABLE, buildType)
-
-                val appResFile = File(buildDir, "app.res")
-                val appRcFile = File(buildDir, "app.rc")
-                val appRcObjFile = File(buildDir, "app.obj")
-                val appIcoFile = File(buildDir, "icon.ico")
-
-                val copyTask = project.tasks.createThis<Copy>("copyResourcesToExecutable$ctargetKind") {
-                    dependsOn(compilation.compileKotlinTask)
-                    duplicatesStrategy = DuplicatesStrategy.INCLUDE
-                    for (sourceSet in project.gkotlin.sourceSets) {
-                        from(sourceSet.resources)
-                    }
-                    //println("executableFile.parentFile: ${executableFile.parentFile}")
-                    into(executableFile.parentFile)
-                    if (isMingwX64) {
-                        //if (false) {
-                        doLast {
-                            val bmp32 = project.korge.getIconBytes(32).decodeImage()
-                            val bmp256 = project.korge.getIconBytes(256).decodeImage()
-
-                            appIcoFile.writeBytes(ICO2.encode(listOf(bmp32, bmp256)))
-
-                            val linkTask = compilation.getLinkTask(NativeOutputKind.EXECUTABLE, buildType, project)
-
-                            val isConsole = korge.enableConsole ?: (kind == NativeBuildType.DEBUG)
-                            val subsystem = if (isConsole) "console" else "windows"
-
-                            run {
-                                // @TODO: https://releases.llvm.org/9.0.0/tools/lld/docs/ReleaseNotes.html#id6
-                                // @TODO: lld-link now rejects more than one resource object input files, matching link.exe. Previously, lld-link would silently ignore all but one. If you hit this: Don’t pass resource object files to the linker, instead pass res files to the linker directly. Don’t put resource files in static libraries, pass them on the command line. (r359749)
-                                //appRcFile.writeText(WindowsRC.generate(korge))
-                                //project.compileWindowsRC(appRcFile, appRcObjFile)
-                                //linkTask.binary.linkerOpts(appRcObjFile.absolutePath, "-Wl,--subsystem,$subsystem")
-                            }
-
-                            run {
-                                // @TODO: Not working either!
-                                //appRcFile.writeText(WindowsRC.generate(korge))
-                                //val appResFile = project.compileWindowsRES(appRcFile)
-                                //linkTask.binary.linkerOpts(appResFile.absolutePath, "-Wl,--subsystem,$subsystem")
-                            }
-
-                            run {
-                                appRcFile.writeText(WindowsRC.generate(korge))
-                                project.compileWindowsRES(appRcFile, appResFile)
-                                linkTask.binary.linkerOpts("-Wl,--subsystem,$subsystem")
-                            }
-                        }
-                        //println("compilation:$compilation")
-                        //compilation.linkerOpts(appRcObjFile.absolutePath, "-Wl,--subsystem,console")
-                        afterEvaluate {
-                        }
-                    }
-                }
-
-                afterEvaluate {
-                    try {
-                        val linkTask = compilation.getLinkTask(NativeOutputKind.EXECUTABLE, buildType, project)
-                        linkTask.dependsOn(copyTask)
-                        if (isMingwX64) {
-                            linkTask.doLast {
-                                replaceExeWithRes(linkTask.outputFile.get(), appResFile)
-                            }
-                        }
-                    } catch (e: Throwable) {
-                        e.printStackTrace()
-                    }
-                }
-
-                //addTask<Exec>("runNative$ctargetKind", dependsOn = listOf("linkMain${ckind}Executable$ctarget", copyTask), group = GROUP_KORGE) { task ->
-                tasks.createThis<Exec>("runNative$ctargetKind") {
-                    dependsOn("link${ckind}Executable$ctarget", copyTask)
+            createCopyToExecutableTarget(target)
+            val builds = KNTargetWithBuildType.buildList(project, target)
+            for (build in builds) {
+                tasks.createThis<Exec>("runNative${build.ctargetKind}") {
+                    dependsOn("link${build.ckind}Executable${build.ctarget}", build.copyTaskName)
                     group = GROUP_KORGE_RUN
-                    executable = executableFile.absolutePath
+                    executable = build.executableFile.absolutePath
                     args()
                 }
             }
-            tasks.createThis<Task>("runNative$ctarget") {
-                dependsOn("runNative${ctarget}Release")
+            tasks.createThis<Task>("runNative${builds.first().ctarget}") {
+                dependsOn("runNative${builds.first().ctarget}Release")
                 group = GROUP_KORGE_RUN
             }
         }
