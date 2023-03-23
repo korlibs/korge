@@ -10,14 +10,18 @@ internal val DEBUG_DYNAMIC_LIB = platform.posix.getenv("DEBUG_DYNAMIC_LIB")?.toK
 
 public actual open class DynamicLibraryBase actual constructor(val names: List<String>) : DynamicSymbolResolver {
     var name: String = names.firstOrNull() ?: "unknown"
-    val handle = names
+    val explored = names
         .flatMap {
             when {
                 it.endsWith(".dylib", ignoreCase = true) -> listOf(it)
                 it.endsWith(".dll", ignoreCase = true) -> listOf(it)
-                else -> listOf(it, "$it.so", "$it.so.1", "$it.so.2", "$it.so.3", "$it.so.4", "$it.so.5", "$it.so.6", "$it.so.7", "$it.so.8", "$it.so.9")
+                else -> {
+                    val itnoso = it.replace(Regex("\\.so(\\.\\d+)?$"), "")
+                    listOf(it, "$itnoso.so", "$itnoso.so.1", "$itnoso.so.2", "$itnoso.so.3", "$itnoso.so.4", "$itnoso.so.5", "$itnoso.so.6", "$itnoso.so.7", "$itnoso.so.8", "$itnoso.so.9")
+                }
             }
         }
+    val handle = explored
         .firstNotNullOfOrNull { name ->
             this@DynamicLibraryBase.name = name
             val handle = dlopen(name, RTLD_LAZY)
@@ -27,7 +31,7 @@ public actual open class DynamicLibraryBase actual constructor(val names: List<S
         //?: error("Can't load $names")
     init {
         if (DEBUG_DYNAMIC_LIB) println("Loaded '$names'...$handle")
-        if (handle == null) println("Couldn't load '$names' library")
+        if (handle == null) println("Couldn't load '$names' library : explored=$explored")
     }
     public actual val isAvailable get() = handle != null
     override fun getSymbol(name: String): KPointer? {

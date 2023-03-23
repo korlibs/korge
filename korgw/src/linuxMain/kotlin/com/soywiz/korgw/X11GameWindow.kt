@@ -12,7 +12,7 @@ import com.soywiz.korio.lang.*
 import kotlinx.cinterop.*
 import platform.posix.*
 
-internal object X11 : DynamicLibrary("libX11.so") {
+internal object X11 : DynamicLibrary("libX11") {
     val XDefaultScreen by func<(d: CDisplayPointer) -> Int>()
     val XRootWindow by func<(d: CDisplayPointer, scr: Int) -> Window>()
     val XBlackPixel by func<(d: CDisplayPointer, scr: Int) -> Int>()
