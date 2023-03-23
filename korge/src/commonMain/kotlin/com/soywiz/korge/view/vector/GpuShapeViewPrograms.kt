@@ -160,7 +160,7 @@ object GpuShapeViewPrograms {
         is ColorPaint -> {
             PaintShader(AGUniformValues {
                 it[u_ProgramType] = PROGRAM_TYPE_COLOR.toFloat()
-                it[u_Color] = paint.toVector3D()
+                it[u_Color] = paint.premultiplied.toVector3D()
                 it[u_GlobalAlpha] = globalAlpha.toFloat()
                 //u_LineWidth to lineWidth.toFloat(),
             }, emptyMap())
