@@ -8,7 +8,6 @@ import com.soywiz.korag.shader.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
-import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korma.geom.*
 
@@ -180,7 +179,7 @@ class GpuShapeViewCommands {
                                 vertexData = vertices,
                                 //indices = indices,
                                 scissor = scissor.applyMatrixBounds(tempMat),
-                                newUniformBlocks = ctx.createCurrentUniformsRef(_program),
+                                uniformBlocks = ctx.createCurrentUniformsRef(_program),
                                 stencilOpFunc = cmd.stencilOpFunc,
                                 stencilRef = cmd.stencilRef,
                                 colorMask = cmd.colorMask,

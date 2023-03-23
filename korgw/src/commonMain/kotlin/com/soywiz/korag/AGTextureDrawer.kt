@@ -58,7 +58,7 @@ class AGTextureDrawer(val ag: AG) {
             program = PROGRAM,
             drawType = AGDrawType.TRIANGLE_STRIP,
             vertexCount = 4,
-            newUniformBlocks = ref.createRef(),
+            uniformBlocks = ref.createRef(),
             textureUnits = textureUnits,
             blending = AGBlending.NONE
         )

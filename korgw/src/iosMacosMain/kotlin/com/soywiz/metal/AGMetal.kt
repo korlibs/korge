@@ -28,8 +28,7 @@ class AGMetal(private val view: MTKView) : AG() {
         indexType: AGIndexType,
         drawOffset: Int,
         blending: AGBlending,
-        uniforms: AGUniformValues,
-        newUniformBlocks: UniformBlocksBuffersRef,
+        uniformBlocks: UniformBlocksBuffersRef,
         textureUnits: AGTextureUnits,
         stencilRef: AGStencilReference,
         stencilOpFunc: AGStencilOpFunc,
@@ -66,15 +65,15 @@ class AGMetal(private val view: MTKView) : AG() {
                     currentBuffer += 1uL
                 }
 
-                newUniformBlocks.fastForEachUniform {
+                uniformBlocks.fastForEachUniform {
                     setVertexBuffer(it.data.toMetal.buffer, 0, currentBuffer)
                     currentBuffer += 1uL
                 }
 
-                uniforms.values.fastForEach { buffer ->
-                    setVertexBuffer(buffer.data.toMetal.buffer, 0, currentBuffer)
-                    currentBuffer += 1uL
-                }
+                //uniforms.values.fastForEach { buffer ->
+                //    setVertexBuffer(buffer.data.toMetal.buffer, 0, currentBuffer)
+                //    currentBuffer += 1uL
+                //}
 
                 if (indices != null) {
                     drawIndexedPrimitives(drawType.toMetal(), vertexCount.toULong(), indexType.toMetal(), indices.toMetal.buffer, 0)

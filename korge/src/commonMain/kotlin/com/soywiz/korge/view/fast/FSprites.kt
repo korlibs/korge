@@ -171,7 +171,7 @@ open class FSprites(val maxSize: Int) {
                             drawType = AGDrawType.TRIANGLE_FAN,
                             vertexCount = 4,
                             instances = sprites.size,
-                            newUniformBlocks = ctx.createCurrentUniformsRef(program),
+                            uniformBlocks = ctx.createCurrentUniformsRef(program),
                             textureUnits = ctx.textureUnits,
                             //renderState = AGRenderState(depthFunc = AGCompareMode.LESS),
                             blending = blending.factors

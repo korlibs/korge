@@ -119,8 +119,7 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
         indexType: AGIndexType,
         drawOffset: Int,
         blending: AGBlending,
-        uniforms: AGUniformValues,
-        newUniformBlocks: UniformBlocksBuffersRef,
+        uniformBlocks: UniformBlocksBuffersRef,
         textureUnits: AGTextureUnits,
         stencilRef: AGStencilReference,
         stencilOpFunc: AGStencilOpFunc,
@@ -158,7 +157,10 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
             //uniforms.useExternalSampler() -> ProgramConfig.EXTERNAL_TEXTURE_SAMPLER
             else -> ProgramConfig.DEFAULT
         })
-        uniformsSet(uniforms, newUniformBlocks, textureUnits, program)
+        uniformsSet(
+            //uniforms,
+            uniformBlocks, textureUnits, program
+        )
 
         if (currentBlending != blending) {
             currentBlending = blending
@@ -430,8 +432,8 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
 
     // UBO
     fun uniformsSet(
-        uniforms: AGUniformValues,
-        newUniformBlocks: UniformBlocksBuffersRef,
+        //uniforms: AGUniformValues,
+        uniformBlocks: UniformBlocksBuffersRef,
         textureUnits: AGTextureUnits,
         program: Program,
     ) {
@@ -469,14 +471,14 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
         }
         //selectTextureUnit(7)
 
-        newUniformBlocks.fastForEachUniform {
+        uniformBlocks.fastForEachUniform {
             //println("UNIFORM IN BLOCK: $it")
             uniformSet(glProgram, it)
         }
-        uniforms.fastForEach {
-            //println("UNIFORM LEGACY: $it")
-            uniformSet(glProgram, it)
-        }
+        //uniforms.fastForEach {
+        //    //println("UNIFORM LEGACY: $it")
+        //    uniformSet(glProgram, it)
+        //}
     }
 
     private fun uniformSet(glProgram: GLBaseProgram, value: AGUniformValue) {

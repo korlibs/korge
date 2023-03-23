@@ -815,8 +815,7 @@ data class AGBatch(
     var indexType: AGIndexType = AGIndexType.USHORT,
     // Program & Uniforms
     var program: Program = DefaultShaders.PROGRAM_DEBUG,
-    var uniforms: AGUniformValues = AGUniformValues.EMPTY,
-    var newUniformBlocks: UniformBlocksBuffersRef = UniformBlocksBuffersRef.EMPTY,
+    var uniformBlocks: UniformBlocksBuffersRef = UniformBlocksBuffersRef.EMPTY,
     var textureUnits: AGTextureUnits = AGTextureUnits.EMPTY,
 
     // State
@@ -834,7 +833,7 @@ data class AGBatch(
     var instances: Int = 1
 ) : AGCommand {
     override fun execute(ag: AG) {
-        ag.draw(frameBuffer, frameBufferInfo, vertexData, program, drawType, vertexCount, indices, indexType, drawOffset, blending, uniforms, newUniformBlocks, textureUnits, stencilRef, stencilOpFunc, colorMask, depthAndFrontFace, scissor, cullFace, instances)
+        ag.draw(frameBuffer, frameBufferInfo, vertexData, program, drawType, vertexCount, indices, indexType, drawOffset, blending, uniformBlocks, textureUnits, stencilRef, stencilOpFunc, colorMask, depthAndFrontFace, scissor, cullFace, instances)
     }
 }
 
