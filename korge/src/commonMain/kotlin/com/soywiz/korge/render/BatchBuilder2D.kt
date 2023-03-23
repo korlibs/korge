@@ -161,15 +161,6 @@ class BatchBuilder2D constructor(
     //@KorgeInternal val textureUnit0 = AG.TextureUnit(null, linear = false)
     //@KorgeInternal val textureUnit1 = AG.TextureUnit(null, linear = false)
 
-    init {
-        ctx[TexNUB].push {
-            for (n in 0 until maxTextures) {
-                it[this.u_TexN[n]] = n
-                ctx.textureUnits.set(n, null, AGTextureUnitInfo.DEFAULT)
-            }
-        }
-    }
-
 	init { logger.trace { "BatchBuilder2D[11]" } }
 
     fun readVertices(): List<VertexInfo> = (0 until vertexCount).map { readVertex(it) }
@@ -635,6 +626,12 @@ class BatchBuilder2D constructor(
     fun updateStandardUniforms() {
         //println("updateStandardUniforms: ag.currentSize(${ag.currentWidth}, ${ag.currentHeight}) : ${ag.currentRenderBuffer}")
         ctx.updateStandardUniforms()
+        ctx[TexNUB].push {
+            for (n in 0 until maxTextures) {
+                it[this.u_TexN[n]] = n
+                ctx.textureUnits.set(n, null, AGTextureUnitInfo.DEFAULT)
+            }
+        }
         for (n in 0 until maxTextures) {
             val info = AGTextureUnitInfo(linear = currentSmoothing)
             //println("updateStandardUniforms: $n, ${currentTexN[n]}, info=$info")

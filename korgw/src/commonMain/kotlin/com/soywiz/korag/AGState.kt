@@ -33,6 +33,13 @@ inline class AGReadKind(val ordinal: Int) {
 
 //TODO: there are other possible values
 inline class AGTextureTargetKind(val ordinal: Int) {
+    override fun toString(): String = when (this) {
+        TEXTURE_2D -> "TEXTURE_2D"
+        TEXTURE_3D -> "TEXTURE_3D"
+        TEXTURE_CUBE_MAP -> "TEXTURE_CUBE_MAP"
+        EXTERNAL_TEXTURE -> "EXTERNAL_TEXTURE"
+        else -> "AGTextureTargetKind($ordinal)"
+    }
     val dims: Int get() = when (this) {
         TEXTURE_2D -> 2
         TEXTURE_3D -> 3

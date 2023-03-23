@@ -202,15 +202,6 @@ class GpuShapeViewCommands {
         texturesToDelete.clear()
     }
 
-    private fun resolve(ctx: RenderContext, uniforms: AGUniformValues, texUniforms: Map<Uniform, Bitmap>) {
-        for ((uniform, value) in texUniforms) {
-            val tex = ctx.tempTexturePool.alloc()
-            tex.upload(value)
-            uniforms.set(uniform, tex)
-            texturesToDelete.add(tex)
-        }
-    }
-
     sealed interface ICommand
 
     data class ScissorCommand(val scissor: AGScissor) : ICommand

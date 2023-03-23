@@ -81,7 +81,10 @@ inline class AGTextureUnitInfo private constructor(val data: Int) {
 
     companion object {
         val INVALID = AGTextureUnitInfo(-1)
-        val DEFAULT = AGTextureUnitInfo(0).withLinearTrilinear(true, true).withWrap(AGWrapMode.CLAMP_TO_EDGE)
+        val DEFAULT = AGTextureUnitInfo(0)
+            .withLinearTrilinear(true, true)
+            .withWrap(AGWrapMode.CLAMP_TO_EDGE)
+            .withKind(AGTextureTargetKind.TEXTURE_2D)
 
         fun fromRaw(data: Int): AGTextureUnitInfo = AGTextureUnitInfo(data)
 
@@ -94,13 +97,15 @@ inline class AGTextureUnitInfo private constructor(val data: Int) {
     val wrap: AGWrapMode get() = AGWrapMode(data.extract2(0))
     val linear: Boolean get() = data.extract(2)
     val trilinear: Boolean get() = data.extract(3)
+    val kind: AGTextureTargetKind get() = AGTextureTargetKind(data.extract(8, 5))
 
+    fun withKind(kind: AGTextureTargetKind): AGTextureUnitInfo = AGTextureUnitInfo(data.insert5(kind.ordinal, 8))
     fun withWrap(wrap: AGWrapMode): AGTextureUnitInfo = AGTextureUnitInfo(data.insert2(wrap.ordinal, 0))
     fun withLinear(linear: Boolean): AGTextureUnitInfo = AGTextureUnitInfo(data.insert(linear, 2))
     fun withTrilinear(trilinear: Boolean): AGTextureUnitInfo = AGTextureUnitInfo(data.insert(trilinear, 3))
     fun withLinearTrilinear(linear: Boolean, trilinear: Boolean): AGTextureUnitInfo = withLinear(linear).withTrilinear(trilinear)
 
-    override fun toString(): String = "AGTextureUnitInfo(wrap=$wrap, linear=$linear, trilinear=$trilinear)"
+    override fun toString(): String = "AGTextureUnitInfo(wrap=$wrap, linear=$linear, trilinear=$trilinear, kind=$kind)"
 }
 
 class AGTexture(

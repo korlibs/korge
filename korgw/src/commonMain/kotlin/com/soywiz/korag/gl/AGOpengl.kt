@@ -130,6 +130,9 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
         cullFace: AGCullFace,
         instances: Int
     ) {
+        //println("newUniformBlocks=$newUniformBlocks")
+        //println("textureUnits=$textureUnits")
+
         //println("SCISSOR: $scissor")
 
         //finalScissor.setTo(0, 0, backWidth, backHeight)
@@ -155,7 +158,7 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
             //uniforms.useExternalSampler() -> ProgramConfig.EXTERNAL_TEXTURE_SAMPLER
             else -> ProgramConfig.DEFAULT
         })
-        uniformsSet(uniforms, newUniformBlocks, textureUnits)
+        uniformsSet(uniforms, newUniformBlocks, textureUnits, program)
 
         if (currentBlending != blending) {
             currentBlending = blending
@@ -430,6 +433,7 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
         uniforms: AGUniformValues,
         newUniformBlocks: UniformBlocksBuffersRef,
         textureUnits: AGTextureUnits,
+        program: Program,
     ) {
         val glProgram: GLBaseProgram = currentProgram ?: return
 
@@ -441,28 +445,32 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
 
         //println("textureUnits=$textureUnits")
 
+        println("PROGRAM=$program")
+
         textureUnits.fastForEach { index, tex, info ->
             if (currentTextureUnits.textures[index] == tex && currentTextureUnits.infos[index] == info) {
                 return@fastForEach
             }
             currentTextureUnits.set(index, tex, info)
 
-            //println("TEXTURE: index=$index, tex=$tex, info=$info")
+            println("TEXTURE: index=$index, tex=$tex, info=$info")
             selectTextureUnit(index)
+            //gl.activeTexture(KmlGl.TEXTURE0 + index)
             if (tex != null) {
                 val wrap = info.wrap
                 val linear = info.linear
                 val trilinear = info.trilinear
-                textureBind(tex, AGTextureTargetKind.TEXTURE_2D)
+                textureBind(tex, info.kind)
                 textureUnitParameters(tex.implForcedTexTarget, wrap, tex.minFilter(linear, trilinear), tex.magFilter(linear, trilinear), tex.implForcedTexTarget.dims)
             } else {
-                gl.bindTexture(KmlGl.TEXTURE_2D, 0)
+                gl.bindTexture(info.kind.toGl(), 0)
                 //textureUnitParameters(AGTextureTargetKind.TEXTURE_2D, unitInfo.wrap, tex.minFilter(linear, trilinear), tex.magFilter(linear, trilinear), 2)
             }
         }
+        //selectTextureUnit(7)
 
         newUniformBlocks.fastForEachUniform {
-            //println("UNIFORM IN BLOCK: $it")
+            println("UNIFORM IN BLOCK: $it")
             uniformSet(glProgram, it)
         }
         uniforms.fastForEach {

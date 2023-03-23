@@ -32,8 +32,6 @@ class AGProgramWithUniforms(val program: Program, val bufferCache: BufferCache =
     }
     private val agUniformBlockDatas: Array<UniformBlockBuffer<*>?> = Array(uniformsBlocks.size) { uniformsBlocksData[it]?.block?.let { UniformBlockBuffer(it) } }
     private val agBuffers = Array(uniformsBlocks.size) { uniformsBlocksData[it]?.agBuffer }
-    private val agTextures = Array(uniformsBlocks.size) { uniformsBlocksData[it]?.textures }
-    private val agTexturesInfo = Array(uniformsBlocks.size) { uniformsBlocksData[it]?.texturesInfo }
     private val agBufferIndices = IntArray(uniformsBlocks.size) { 0 }
 
     fun reset() {
@@ -42,7 +40,7 @@ class AGProgramWithUniforms(val program: Program, val bufferCache: BufferCache =
 
     fun createRef(): UniformBlocksBuffersRef {
         for (n in agBufferIndices.indices) agBufferIndices[n] = uniformsBlocksData[n]?.currentIndex ?: -1
-        return UniformBlocksBuffersRef(agUniformBlockDatas, agBuffers, agTextures, agTexturesInfo, agBufferIndices.copyOf())
+        return UniformBlocksBuffersRef(agUniformBlockDatas, agBuffers, agBufferIndices.copyOf())
     }
 
     operator fun <T : UniformBlock> get(block: T): UniformBlockBuffer<T> {

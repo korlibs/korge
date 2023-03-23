@@ -30,7 +30,8 @@ suspend fun main() = Korge(
     //forceRenderEveryFrame = true
     //debugAg = true,
 ) {
-    //image(resourcesVfs["korge.png"].readBitmap()); return@Korge
+    image(resourcesVfs["korge.png"].readBitmap()); text("hello world!", textSize = 64.0, color = Colors.RED); return@Korge
+    //text("hello world!", textSize = 64.0); return@Korge
 
     //graphics(renderer = GraphicsRenderer.CPU) {
 
