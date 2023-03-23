@@ -3,6 +3,7 @@ package com.soywiz.korge.view
 import com.soywiz.korge.testing.*
 import com.soywiz.korge.view.vector.*
 import com.soywiz.korim.color.*
+import com.soywiz.korim.paint.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
 import kotlin.test.*
@@ -26,6 +27,23 @@ class GpuShapeViewTest {
                     rect(-50, -50, 70, 70)
                     rectHole(75, -50, 70, 70)
                 }
+            }
+        }
+        assertScreenshot(posterize = 6)
+    }
+
+    @Test
+    fun test2() = korgeScreenshotTest(SizeInt(20, 20)) {
+        gpuShapeView {
+            fillStroke(fill = Colors.TRANSPARENT_WHITE, stroke = Stroke(Colors.GREEN, thickness = 2.0)) {
+                rect(.0, .0, 10.0, 10.0)
+            }
+        }
+
+        gpuShapeView {
+            it.xy(10.0, 0.0)
+            stroke(Colors.GREEN, lineWidth = 2.0) {
+                rect(0.0, 0.0, 10.0, 10.0)
             }
         }
         assertScreenshot(posterize = 6)
