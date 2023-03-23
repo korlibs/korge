@@ -112,6 +112,10 @@ class UniformRef(val block: UniformBlock, var buffer: Buffer, var textures: Arra
     val blockSize: Int = block.totalSize
     protected fun getOffset(uniform: TypedUniform<*>): Int = (index * blockSize) + uniform.voffset
 
+    fun <T : UniformBlock> copyFrom(ref: UniformBlockBuffer<T>) {
+        arraycopy(ref.buffer, 0, this.buffer, (index * blockSize), blockSize)
+    }
+
     operator fun set(uniform: TypedUniform<Int>, value: Int) {
         getOffset(uniform).also { buffer.setInt32(it, value) }
     }
@@ -179,6 +183,11 @@ class UniformRef(val block: UniformBlock, var buffer: Buffer, var textures: Arra
 
 class UniformBlockBuffer<T : UniformBlock>(val block: T) {
     val agBuffer = AGBuffer()
+
+    companion object {
+        inline fun <T : UniformBlock> single(block: T, gen: T.(UniformRef) -> Unit): UniformBlockBuffer<T> =
+            UniformBlockBuffer(block).also { it.reset() }.also { it.push { gen(it) } }
+    }
 
     val blockSize = block.totalSize
     val texBlockSize = block.uniforms.size
