@@ -48,4 +48,29 @@ class GpuShapeViewTest {
         }
         assertScreenshot(posterize = 6)
     }
+
+    @Test
+    fun testClipping() = korgeScreenshotTest(SizeInt(30, 20)) {
+        val from = Point(0, 0)
+        val to = Point(-10, -10)
+        val shift = Point(5, 15)
+
+        container {
+            this.xy(shift + Point(10, 0))
+            gpuShapeView(antialiased = false) {
+                stroke(Colors.RED, StrokeInfo(thickness = 3.0)) {
+                    line(from, to)
+                }
+            }
+        }
+
+        gpuShapeView(antialiased = false) {
+            stroke(Colors.GREEN, StrokeInfo(thickness = 3.0)) {
+                val gap = Point(20, 0)
+                line(from + shift + gap, to + shift + gap)
+            }
+        }
+
+        assertScreenshot(posterize = 6)
+    }
 }
