@@ -1,9 +1,50 @@
 package com.soywiz.korge.gradle.targets
 
+import com.soywiz.korge.gradle.util.*
 import org.gradle.configurationcache.extensions.*
 
 object WineHQ {
     val EXEC = "wine64"
+}
+
+object Box64 {
+    val VERSION = "v0.2.2"
+
+    fun exec(vararg params: String): SystemExecResult {
+        return executeSystemCommand(ArrayList<String>().apply {
+            when {
+                isWindows -> add("wsl")
+                isMacos -> add("lima")
+            }
+            addAll(params)
+        }.toTypedArray())
+    }
+
+    fun whichBox64(): String? = exec("which", "box64").let { it.takeIf { it.success }?.stdout }
+
+    fun ensureBox64(): String {
+        val box64 = whichBox64()
+        if (box64 == null) {
+            exec("mkdir", "-p", "/tmp/box64").stdout.trim()
+            val box64Path = exec("realpath", "/tmp/box64").stdout.trim()
+
+            exec("sudo", "apt", "update")
+            exec("sudo", "apt", "-y", "install", "git", "build-essential", "cmake")
+            exec("git", "clone", "-b", VERSION, "https://github.com/ptitSeb/box64.git", box64Path)
+            exec("cmake", "-S", box64Path, "-B", box64Path)
+            exec("make", "-C", box64Path)
+            exec("sudo", "make", "-C", box64Path, "install")
+        }
+        return box64 ?: whichBox64() ?: error("Couldn't install box64")
+    }
+}
+
+class CommandLineCrossResult(val hasBox64: Boolean) {
+    fun ensure() {
+        if (hasBox64) {
+            Box64.ensureBox64()
+        }
+    }
 }
 
 enum class CrossExecType(val cname: String, val interp: String) {
@@ -19,21 +60,29 @@ enum class CrossExecType(val cname: String, val interp: String) {
     val nameWithArch = "${cname}X64"
     val nameWithArchCapital = nameWithArch.capitalized()
 
-    fun commands(vararg args: String): Array<String> {
-        return ArrayList<String>().apply {
+    fun commands(vararg args: String): Pair<CommandLineCrossResult, Array<String>> {
+        var hasBox64 = false
+        val array = ArrayList<String>().apply {
             when (this@CrossExecType) {
                 WINDOWS -> {
-                    if (isArm && !isMacos) add("box64") // wine on macos can run x64 apps via rosetta, but linux needs box64 emulator
+                    if (isArm && !isMacos) {
+                        add("box64")
+                        hasBox64 = true
+                    } // wine on macos can run x64 apps via rosetta, but linux needs box64 emulator
                     add(WineHQ.EXEC)
                 }
                 LINUX -> {
                     // @TODO: WSL
                     if (isWindows) add("wsl") else add("lima")
-                    if (isArm) add("box64")
+                    if (isArm) {
+                        add("box64")
+                        hasBox64 = true
+                    }
                 }
             }
             addAll(args)
         }.toTypedArray()
+        return CommandLineCrossResult(hasBox64) to array
     }
 
     companion object {
