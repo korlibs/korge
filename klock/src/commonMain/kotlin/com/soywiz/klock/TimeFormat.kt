@@ -2,7 +2,7 @@ package com.soywiz.klock
 
 interface TimeFormat {
     fun format(dd: TimeSpan): String
-    fun tryParse(str: String, doThrow: Boolean): TimeSpan?
+    fun tryParse(str: String, doThrow: Boolean, doAdjust: Boolean = true): TimeSpan?
 
     companion object {
         val DEFAULT_FORMAT = TimeFormat("HH:mm:ss.SSS")
@@ -26,8 +26,8 @@ interface TimeFormat {
     }
 }
 
-fun TimeFormat.parse(str: String): TimeSpan =
-    tryParse(str, doThrow = true) ?: throw DateException("Not a valid format: '$str' for '$this'")
+fun TimeFormat.parse(str: String, doAdjust: Boolean = true): TimeSpan =
+    tryParse(str, doThrow = true, doAdjust = doAdjust) ?: throw DateException("Not a valid format: '$str' for '$this'")
 fun TimeFormat.parseTime(str: String): Time = Time(parse(str))
 
 fun TimeFormat.format(time: Double): String = format(time.milliseconds)

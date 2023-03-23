@@ -1,10 +1,6 @@
 package com.soywiz.klock
 
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertNotNull
-import kotlin.test.assertTrue
+import kotlin.test.*
 
 class DateTimeTest {
     val HttpDate by lazy { DateFormat("EEE, dd MMM yyyy HH:mm:ss z") }
@@ -522,5 +518,14 @@ class DateTimeTest {
 
         assertEquals(dtmilli, fmt.parseLong(match.groups[1]!!.value), message = "datestamp parsed from log line has correct value")
         assertEquals("Example log message", msg.drop(match.value.length), message = "total match length for composed regex")
+    }
+
+    @Test
+    fun testThrowOnInvalid() {
+        assertEquals("Invalid hour 25", assertFailsWith<RuntimeException> {
+            DateFormat("yyyy-MM-dd HH:mm:ss").parse("2023-02-01 25:00:00", doAdjust = false)
+        }.message)
+
+        DateFormat("yyyy-MM-dd HH:mm:ss").parse("2023-02-01 25:00:00", doAdjust = true)
     }
 }
