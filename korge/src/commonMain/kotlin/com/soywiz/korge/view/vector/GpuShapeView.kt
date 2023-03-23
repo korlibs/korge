@@ -477,6 +477,7 @@ open class GpuShapeView(
             bb.add(it.bounds)
         } }.getBounds()
         val pathBounds: AGScissor = pathBoundsNoExpanded.clone().expand(2, 2, 2, 2).toAGScissor()
+        //println("pathBounds=$pathBounds")
 
         val clipDataStart = gpuShapeViewCommands.verticesStart()
         val clipData = shape.clip?.let { getPointsForPath(it, AGDrawType.TRIANGLE_FAN) }

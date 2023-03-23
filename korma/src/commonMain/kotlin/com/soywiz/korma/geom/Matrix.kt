@@ -145,7 +145,7 @@ inline class Matrix(val data: BFloat6Pack) {
     fun preskewed(skewX: Angle, skewY: Angle): Matrix = skewing(skewX, skewY) * this
 
     fun premultiplied(m: Matrix): Matrix = m * this
-    fun multipled(m: Matrix): Matrix = this * m
+    fun multiplied(m: Matrix): Matrix = this * m
 
     /** Transform point without translation */
     fun deltaTransformPoint(p: Point): Point = Point((p.x * a) + (p.y * c), (p.x * b) + (p.y * d))

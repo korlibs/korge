@@ -453,7 +453,7 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
         val location = glProgram.programInfo.getUniformLocation(gl, uniformName)
         val declArrayCount = uniform.arrayCount
 
-        //println("value=${value}")
+        //println("uniformSet:${value}")
 
         when (uniformType) {
             VarType.Sampler2D, VarType.SamplerCube -> {
@@ -911,6 +911,7 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
                 // Depending on the frame-buffer, y might be bottom based or top based
                 // for the main framebuffer (0, 0) is in the left, bottom part of the window
                 // while on texture framebuffers it is top-left
+                //println("scissor=$scissor")
                 gl.scissor(scissor.x, scissor.y, scissor.width, scissor.height)
             }
         }

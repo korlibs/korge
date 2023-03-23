@@ -3,6 +3,7 @@ package com.soywiz.korag
 import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
 import com.soywiz.kmem.*
+import com.soywiz.kmem.pack.*
 import com.soywiz.korag.shader.*
 import com.soywiz.korim.color.*
 import com.soywiz.korio.lang.*
@@ -537,18 +538,21 @@ inline class AGStencilOpFunc(val data: Int) {
         actionOnDepthPassStencilFailBack: AGStencilOp = actionOnDepthPassStencilFail,
     ): AGStencilOpFunc = withActionOnBothPass(actionOnBothPass, actionOnBothPassBack).withActionOnDepthFail(actionOnDepthFail, actionOnDepthFailBack).withActionOnDepthPassStencilFail(actionOnDepthPassStencilFail, actionOnDepthPassStencilFailBack)
 
-    override fun toString(): String = "AGStencilOpFunc(enabled=$enabled, front=[compareMode=$compareModeFront, actions=[$actionOnBothPassFront, $actionOnDepthFailFront, $actionOnDepthPassStencilFailFront]], back=[compareMode=$compareModeBack, actions=[$actionOnBothPassBack, $actionOnDepthFailBack, $actionOnDepthPassStencilFailBack]])"
+    override fun toString(): String {
+        if (!enabled) return "AGStencilOpFunc(enabled=false)"
+        return "AGStencilOpFunc(enabled=$enabled, front=[compareMode=$compareModeFront, actions=[$actionOnBothPassFront, $actionOnDepthFailFront, $actionOnDepthPassStencilFailFront]], back=[compareMode=$compareModeBack, actions=[$actionOnBothPassBack, $actionOnDepthFailBack, $actionOnDepthPassStencilFailBack]])"
+    }
 }
 
 //open val supportInstancedDrawing: Boolean get() = false
 
-inline class AGFullState(val data: Int32Buffer = Int32Buffer(8)) {
-    var blending: AGBlending ; get() = AGBlending(data[0]) ; set(value) { data[0] = value.data }
-    var stencilOpFunc: AGStencilOpFunc ; get() = AGStencilOpFunc(data[1]) ; set(value) { data[1] = value.data }
-    var stencilRef: AGStencilReference ; get() = AGStencilReference(data[2], data[3]) ; set(value) { data[2] = value.front; data[3] = value.back }
-    var colorMask: AGColorMask ; get() = AGColorMask(data[4]) ; set(value) { data[4] = value.data }
-    var scissor: AGScissor ; get() = AGScissor(data[5], data[6]) ; set(value) { data[5] = value.xy; data[6] = value.wh }
-}
+//inline class AGFullState(val data: Int32Buffer = Int32Buffer(8)) {
+//    var blending: AGBlending ; get() = AGBlending(data[0]) ; set(value) { data[0] = value.data }
+//    var stencilOpFunc: AGStencilOpFunc ; get() = AGStencilOpFunc(data[1]) ; set(value) { data[1] = value.data }
+//    var stencilRef: AGStencilReference ; get() = AGStencilReference(data[2], data[3]) ; set(value) { data[2] = value.front; data[3] = value.back }
+//    var colorMask: AGColorMask ; get() = AGColorMask(data[4]) ; set(value) { data[4] = value.data }
+//    var scissor: AGScissor ; get() = AGScissor(data[5], data[6]) ; set(value) { data[5] = value.xy; data[6] = value.wh }
+//}
 
 fun MRectangle?.toAGScissor(): AGScissor {
     if (this == null) return AGScissor.NIL
@@ -594,29 +598,24 @@ inline class AGSize(val data: Int) {
     }
 }
 
-inline class AGScissor(val data: Long) {
-    constructor(xy: Int, wh: Int) : this(Long.fromLowHigh(xy, wh))
-    constructor(x: Int, y: Int, width: Int, height: Int) : this(0.insert16(x, 0).insert16(y, 16), 0.insert16(width, 0).insert16(height, 16))
+inline class AGScissor(val data: Short4Pack) {
+    //constructor(xy: Int, wh: Int) : this(short4PackOf(xy.toShort(), (xy ushr 16).toShort(), wh.toShort(), (wh ushr 16).toShort()))
+    constructor(x: Int, y: Int, width: Int, height: Int) : this(short4PackOf(x.toShortClamped(), y.toShortClamped(), (x + width).toShortClamped(), (y + height).toShortClamped()))
     constructor(x: Float, y: Float, width: Float, height: Float) : this(x.toIntRound(), y.toIntRound(), width.toIntRound(), height.toIntRound())
     constructor(x: Double, y: Double, width: Double, height: Double) : this(x.toIntRound(), y.toIntRound(), width.toIntRound(), height.toIntRound())
     constructor(rect: Rectangle) : this(rect.x.toIntRound(), rect.y.toIntRound(), rect.width.toIntRound(), rect.height.toIntRound())
     //constructor(x: Double, y: Double, width: Double, height: Double) : this(x.toInt(), y.toInt(), width.toInt(), height.toInt())
 
-    val xy: Int get() = data.low
-    val wh: Int get() = data.high
+    val left: Int get() = data.x.toInt()
+    val top: Int get() = data.y.toInt()
+    val right: Int get() = data.z.toInt()
+    val bottom: Int get() = data.w.toInt()
 
-    val x: Int get() = xy.extract16Signed(0)
-    val y: Int get() = xy.extract16Signed(16)
-    val width: Int get() = wh.extract16Signed(0)
-    val height: Int get() = wh.extract16Signed(16)
+    val x: Int get() = left
+    val y: Int get() = top
+    val width: Int get() = right - left
+    val height: Int get() = bottom - top
 
-    val top: Int get() = y
-    val left: Int get() = x
-    val right: Int get() = x + width
-    val bottom: Int get() = y + height
-
-    fun withXY(x: Int, y: Int): AGScissor = AGScissor(0.insert16(x, 0).insert16(y, 16), wh)
-    fun withWH(width: Int, height: Int): AGScissor = AGScissor(xy, 0.insert16(width, 0).insert16(height, 16))
     fun copy(x: Int = this.x, y: Int = this.y, width: Int = this.width, height: Int = this.height): AGScissor = AGScissor(x, y, width, height)
     override fun toString(): String {
         if (this == NIL) return "null"
@@ -630,12 +629,13 @@ inline class AGScissor(val data: Long) {
     }
 
     companion object {
-        val EMPTY = AGScissor(0, 0)
-        val FULL = AGScissor(0, 0x7FFF7FFF)
-        val INVALID = AGScissor(-2, 0x7FFF7FFF)
-        val NIL = AGScissor(-1, 0x7FFF7FFF)
         fun fromBounds(left: Int, top: Int, right: Int, bottom: Int): AGScissor = AGScissor(left, top, right - left, bottom - top)
         fun fromBounds(left: Double, top: Double, right: Double, bottom: Double): AGScissor = AGScissor(left, top, right - left, bottom - top)
+
+        val EMPTY = AGScissor(0, 0, 0, 0)
+        val FULL = AGScissor.fromBounds(Int.MIN_VALUE, Int.MIN_VALUE, Int.MAX_VALUE, Int.MAX_VALUE)
+        val INVALID = AGScissor.fromBounds(Short.MIN_VALUE + 2, Short.MIN_VALUE + 2, Int.MAX_VALUE, Int.MAX_VALUE)
+        val NIL = AGScissor.fromBounds(Short.MIN_VALUE + 1, Short.MIN_VALUE + 1, Int.MAX_VALUE, Int.MAX_VALUE)
 
         operator fun invoke(rect: Rectangle): AGScissor {
             if (rect.isNIL) return NIL
