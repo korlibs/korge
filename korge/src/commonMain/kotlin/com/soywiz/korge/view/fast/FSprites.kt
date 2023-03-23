@@ -229,7 +229,7 @@ open class FSprites(val maxSize: Int) {
                 val baseSize = TEMP(VarType.Float2)
                 val texSize = TEMP(VarType.Float2)
                 SET(baseSize, a_uv1 - a_uv0)
-                SET(v_Col, a_colMul)
+                SET(v_Col, vec4(a_colMul["rgb"] * a_colMul["a"], a_colMul["a"])) // Pre-multiply color here
                 SET(v_TexId, a_texId)
 
                 //SET(texSize, u_i_texSizeN[0])
