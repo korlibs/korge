@@ -92,6 +92,7 @@ class GpuShapeViewCommands {
 
     private var decomposed = MatrixTransform()
     private val texturesToDelete = FastArrayList<AGTexture>()
+    val tempTextureUnits = AGTextureUnits()
     fun render(ctx: RenderContext, globalMatrix: Matrix, localMatrix: Matrix, applyScissor: Boolean, colorMul: RGBA, doRequireTexture: Boolean) {
         val vertices = this.vertices ?: return
         ctx.agBufferManager.delete(verticesToDelete)
@@ -158,7 +159,7 @@ class GpuShapeViewCommands {
                                 if (paintShader.texture != null) {
                                     val tex = ctx.tempTexturePool.alloc()
                                     tex.upload(paintShader.texture)
-                                    ctx.textureUnits.set(DefaultShaders.u_Tex, tex)
+                                    tempTextureUnits.set(DefaultShaders.u_Tex, tex)
                                     //println("texture.tex=$tex")
                                     texturesToDelete.add(tex)
                                 }
@@ -178,7 +179,7 @@ class GpuShapeViewCommands {
                                 //indices = indices,
                                 scissor = scissor.applyMatrixBounds(tempMat),
                                 uniformBlocks = ctx.createCurrentUniformsRef(_program),
-                                textureUnits = ctx.textureUnits.clone(),
+                                textureUnits = tempTextureUnits.clone(),
                                 stencilOpFunc = cmd.stencilOpFunc,
                                 stencilRef = cmd.stencilRef,
                                 colorMask = cmd.colorMask,
