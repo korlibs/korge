@@ -50,112 +50,91 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
 import kotlin.reflect.KClass
 
+typealias KorgeConfig = Korge
+
+data class Korge(
+    val module: Module = Module(),
+    val args: Array<String> = arrayOf(),
+    val imageFormats: ImageFormat = RegisteredImageFormats,
+    val gameWindow: GameWindow? = null,
+    //val eventDispatcher: EventDispatcher = gameWindow ?: DummyEventDispatcher, // Removed
+    val sceneClass: KClass<out Scene>? = module.mainScene,
+    val sceneInjects: List<Any> = listOf(),
+    val timeProvider: TimeProvider = TimeProvider,
+    val injector: AsyncInjector = AsyncInjector(),
+    val debug: Boolean = false,
+    val trace: Boolean = false,
+    val context: Any? = null,
+    val fullscreen: Boolean? = null,
+    val blocking: Boolean = true,
+    val gameId: String = DEFAULT_GAME_ID,
+    val settingsFolder: String? = null,
+    val batchMaxQuads: Int = BatchBuilder2D.DEFAULT_BATCH_QUADS,
+    val virtualSize: SizeInt? = module.virtualSize,
+    val windowSize: SizeInt? = module.windowSize,
+    val scaleMode: ScaleMode? = null,
+    val scaleAnchor: Anchor? = null,
+    val clipBorders: Boolean? = null,
+    val title: String? = null,
+    val bgcolor: RGBA? = null,
+    val quality: GameWindow.Quality? = null,
+    val icon: String? = null,
+    val multithreaded: Boolean? = null,
+    val forceRenderEveryFrame: Boolean = true,
+    val main: (suspend Stage.() -> Unit)? = module.main,
+    val debugAg: Boolean = false,
+    val debugFontExtraScale: Double = 1.0,
+    val debugFontColor: RGBA = Colors.WHITE,
+    val headlessDraw: Boolean = false,
+    val stageBuilder: (Views) -> Stage = { Stage(it) },
+    val constructedScene: Scene.(Views) -> Unit = module.constructedScene,
+    val constructedViews: (Views) -> Unit = module.constructedViews,
+    val unit: Unit = Unit,
+) {
+    companion object {
+        val logger = Logger("Korge")
+        val DEFAULT_GAME_ID = "com.soywiz.korge.unknown"
+        val DEFAULT_WINDOW_SIZE: SizeInt get() = DefaultViewport.SIZE
+    }
+
+    val finalMain: (suspend Stage.() -> Unit) get() = main ?: module.main ?: {}
+    val finalImageFormats get() = imageFormats + module.imageFormats
+    val finalTitle: String get() = title ?: module.title
+    val finalWindowSize: SizeInt get() = windowSize ?: module.windowSize
+    val finalVirtualSize: SizeInt get() = virtualSize ?: module.virtualSize
+    val finalScaleAnchor: Anchor get() = scaleAnchor ?: module.scaleAnchor
+    val finalScaleMode: ScaleMode get() = scaleMode ?: module.scaleMode
+    val finalClipBorders: Boolean get() = clipBorders ?: module.clipBorders
+    val finalTargetFps: Double get() = module.targetFps
+
+    suspend fun start(entry: suspend Stage.() -> Unit = this.finalMain) {
+        KorgeRunner.invoke(this.copy(main = entry))
+    }
+}
+
+suspend fun Korge(entry: suspend Stage.() -> Unit) { Korge().start(entry) }
+
+suspend fun Korge(config: KorgeConfig, entry: suspend Stage.() -> Unit) { config.start(entry) }
+
 /**
  * Entry point for games written in Korge.
  * You have to call the [Korge] method by either providing some parameters, or a [Korge.Config] object.
  */
-object Korge {
-	val logger = Logger("Korge")
-    val DEFAULT_GAME_ID = "com.soywiz.korge.unknown"
-    val DEFAULT_WINDOW_SIZE: SizeInt get() = DefaultViewport.SIZE
+object KorgeRunner {
+    suspend operator fun invoke(config: Korge) {
+        RegisteredImageFormats.register(config.imageFormats)
 
-    suspend operator fun invoke(config: Config) {
-        //println("Korge started from Config")
-        val module = config.module
-        val windowSize = module.windowSize
-
-        Korge(
-            title = config.title ?: module.title,
-            windowSize = config.windowSize ?: windowSize,
-            virtualSize = config.virtualSize ?: module.virtualSize,
-            bgcolor = config.bgcolor ?: module.bgcolor,
-            quality = config.quality ?: module.quality,
-            icon = null,
-            iconPath = config.icon ?: module.icon,
-            //iconDrawable = module.iconImage,
-            imageFormats = ImageFormats(config.imageFormats + module.imageFormats),
-            targetFps = module.targetFps,
-            scaleAnchor = config.scaleAnchor ?: module.scaleAnchor,
-            scaleMode = config.scaleMode ?: module.scaleMode,
-            clipBorders = config.clipBorders ?: module.clipBorders,
-            debug = config.debug,
-            fullscreen = config.fullscreen ?: module.fullscreen,
-            args = config.args,
-            gameWindow = config.gameWindow,
-            injector = config.injector,
-            timeProvider = config.timeProvider,
-            blocking = config.blocking,
-            gameId = config.gameId,
-            settingsFolder = config.settingsFolder,
-            batchMaxQuads = config.batchMaxQuads,
-            multithreaded = config.multithreaded,
-            forceRenderEveryFrame = config.forceRenderEveryFrame,
-            entry = {
-                //println("Korge views prepared for Config")
-                val injector = config.injector
-                injector.mapInstance(Module::class, module)
-                injector.mapInstance(Config::class, config)
-
-                module.apply { injector.configure() }
-
-                config.constructedViews(views)
-
-                when {
-                    config.main != null -> {
-                        config.main?.invoke(stage)
-                    }
-                    config.sceneClass != null -> {
-                        val sc = SceneContainer(views, name = "rootSceneContainer")
-                        views.stage += sc
-                        val scene = sc.changeTo(config.sceneClass, *config.sceneInjects.toTypedArray(), time = 0.milliseconds)
-                        config.constructedScene(scene, views)
-                        // Se we have the opportunity to execute deinitialization code at the scene level
-                        views.onClose { sc.changeTo<EmptyScene>() }
-                    }
-                }
-            }
-        )
-    }
-
-    suspend operator fun invoke(
-        title: String = "Korge",
-        windowSize: SizeInt = DefaultViewport.SIZE,
-        virtualSize: SizeInt = windowSize,
-        icon: Bitmap? = null,
-        iconPath: String? = null,
-        //iconDrawable: SizedDrawable? = null,
-        imageFormats: ImageFormat = ImageFormats(),
-        quality: GameWindow.Quality = GameWindow.Quality.AUTOMATIC,
-        targetFps: Double = 0.0,
-        scaleAnchor: Anchor = Anchor.MIDDLE_CENTER,
-        scaleMode: ScaleMode = ScaleMode.SHOW_ALL,
-        clipBorders: Boolean = true,
-        bgcolor: RGBA? = Colors.BLACK,
-        debug: Boolean = false,
-        debugFontExtraScale: Double = 1.0,
-        debugFontColor: RGBA = Colors.WHITE,
-        fullscreen: Boolean? = null,
-        args: Array<String> = arrayOf(),
-        gameWindow: GameWindow? = null,
-        timeProvider: TimeProvider = TimeProvider,
-        injector: AsyncInjector = AsyncInjector(),
-        debugAg: Boolean = false,
-        blocking: Boolean = true,
-        gameId: String = DEFAULT_GAME_ID,
-        settingsFolder: String? = null,
-        batchMaxQuads: Int = BatchBuilder2D.DEFAULT_BATCH_QUADS,
-        multithreaded: Boolean? = null,
-        forceRenderEveryFrame: Boolean = true,
-        stageBuilder: (Views) -> Stage = { Stage(it) },
-        entry: suspend Stage.() -> Unit
-	) {
-        RegisteredImageFormats.register(imageFormats)
+        val iconPath = config.icon
+        val imageFormats = config.finalImageFormats
+        val entry = config.finalMain
+        val multithreaded = config.multithreaded
+        val windowSize = config.windowSize ?: config.module.windowSize
 
         if (!Platform.isJsBrowser) {
             configureLoggerFromProperties(localCurrentDirVfs["klogger.properties"])
         }
-        val realGameWindow = (gameWindow ?: coroutineContext[GameWindow] ?: CreateDefaultGameWindow(GameWindowCreationConfig(multithreaded = multithreaded)))
-        realGameWindow.bgcolor = bgcolor ?: Colors.BLACK
+        val realGameWindow = (config.gameWindow ?: coroutineContext[GameWindow] ?: CreateDefaultGameWindow(GameWindowCreationConfig(multithreaded = multithreaded)))
+        realGameWindow.bgcolor = config.bgcolor ?: Colors.BLACK
         //println("Configure: ${width}x${height}")
         // @TODO: Configure should happen before loop. But we should ensure that all the korgw targets are ready for this
         //realGameWindow.configure(width, height, title, icon, fullscreen)
@@ -174,7 +153,7 @@ object Korge {
                         else -> Unit
                     }
                 } catch (e: Throwable) {
-                    logger.error { "Couldn't get the application icon" }
+                    Korge.logger.error { "Couldn't get the application icon" }
                     e.printStackTrace()
                 }
             }
@@ -186,17 +165,17 @@ object Korge {
             // Use this once Korgw is on 1.12.5
             //val views = Views(gameWindow.getCoroutineDispatcherWithCurrentContext() + SupervisorJob(), ag, injector, input, timeProvider, stats, gameWindow)
             val views: Views = Views(
-                coroutineContext = coroutineContext + gameWindow.coroutineDispatcher + AsyncInjectorContext(injector) + SupervisorJob(),
-                ag = if (debugAg) AGPrint() else ag,
-                injector = injector,
+                coroutineContext = coroutineContext + gameWindow.coroutineDispatcher + AsyncInjectorContext(config.injector) + SupervisorJob(),
+                ag = if (config.debugAg) AGPrint() else ag,
+                injector = config.injector,
                 input = input,
-                timeProvider = timeProvider,
+                timeProvider = config.timeProvider,
                 stats = stats,
                 gameWindow = gameWindow,
-                gameId = gameId,
-                settingsFolder = settingsFolder,
-                batchMaxQuads = batchMaxQuads,
-                stageBuilder = stageBuilder
+                gameId = config.gameId,
+                settingsFolder = config.settingsFolder,
+                batchMaxQuads = config.batchMaxQuads,
+                stageBuilder = config.stageBuilder
             ).also {
                 it.init()
             }
@@ -204,24 +183,24 @@ object Korge {
             if (Platform.isJsBrowser) {
                 Dyn.global["views"] = views
             }
-            injector
-                .mapInstance(ModuleArgs(args))
+            config.injector
+                .mapInstance(ModuleArgs(config.args))
                 .mapInstance(GameWindow::class, gameWindow)
                 .mapInstance<Module>(object : Module() {
-                    override val title = title
-                    override val fullscreen: Boolean? = fullscreen
-                    override val windowSize = windowSize
-                    override val virtualSize = virtualSize
+                    override val title = config.finalTitle
+                    override val fullscreen: Boolean? = config.fullscreen
+                    override val windowSize = config.finalWindowSize
+                    override val virtualSize = config.finalVirtualSize
                 })
             views.debugViews = debug
-            views.debugFontExtraScale = debugFontExtraScale
-            views.debugFontColor = debugFontColor
-            views.virtualWidth = virtualSize.width
-            views.virtualHeight = virtualSize.height
-            views.scaleAnchor = scaleAnchor
-            views.scaleMode = scaleMode
-            views.clipBorders = clipBorders
-            views.targetFps = targetFps
+            views.debugFontExtraScale = config.debugFontExtraScale
+            views.debugFontColor = config.debugFontColor
+            views.virtualWidth = config.finalVirtualSize.width
+            views.virtualHeight = config.finalVirtualSize.height
+            views.scaleAnchor = config.finalScaleAnchor
+            views.scaleMode = config.finalScaleMode
+            views.clipBorders = config.finalClipBorders
+            views.targetFps = config.finalTargetFps
             //Korge.prepareViews(views, gameWindow, bgcolor != null, bgcolor ?: Colors.TRANSPARENT_BLACK)
 
             gameWindow.registerTime("prepareViews") {
@@ -231,7 +210,7 @@ object Korge {
                     bgcolor != null,
                     bgcolor ?: Colors.TRANSPARENT,
                     waitForFirstRender = true,
-                    forceRenderEveryFrame = forceRenderEveryFrame
+                    forceRenderEveryFrame = config.forceRenderEveryFrame
                 )
             }
 
@@ -243,7 +222,7 @@ object Korge {
                     //println("coroutineContext: $coroutineContext")
                     //println("GameWindow: ${coroutineContext[GameWindow]}")
                     entry(views.stage)
-                    if (blocking) {
+                    if (config.blocking) {
                         // @TODO: Do not complete to prevent job cancelation?
                         gameWindow.waitClose()
                     }
@@ -252,7 +231,7 @@ object Korge {
             if (Platform.isNative) println("CanvasApplicationEx.IN[1]")
             if (Platform.isNative) println("Korui[1]")
 
-            if (blocking) {
+            if (config.blocking) {
                 // @TODO: Do not complete to prevent job cancelation?
                 gameWindow.waitClose()
                 gameWindow.exit()
@@ -383,7 +362,7 @@ object Korge {
 
         eventDispatcher.onEvents(*MouseEvent.Type.ALL) { e ->
             //println("MOUSE: $e")
-            logger.trace { "eventDispatcher.addEventListener<MouseEvent>:$e" }
+            Korge.logger.trace { "eventDispatcher.addEventListener<MouseEvent>:$e" }
             val p = getRealXY(e.x.toDouble(), e.y.toDouble(), e.scaleCoords).point
             when (e.type) {
                 MouseEvent.Type.DOWN -> {
@@ -414,11 +393,11 @@ object Korge {
         }
 
         eventDispatcher.onEvents(*KeyEvent.Type.ALL) { e ->
-            logger.trace { "eventDispatcher.addEventListener<KeyEvent>:$e" }
+            Korge.logger.trace { "eventDispatcher.addEventListener<KeyEvent>:$e" }
             views.dispatch(e)
         }
         eventDispatcher.onEvents(*GestureEvent.Type.ALL) { e ->
-            logger.trace { "eventDispatcher.addEventListener<GestureEvent>:$e" }
+            Korge.logger.trace { "eventDispatcher.addEventListener<GestureEvent>:$e" }
             views.dispatch(e)
         }
 
@@ -438,7 +417,7 @@ object Korge {
 
         val touchMouseEvent = MouseEvent()
         eventDispatcher.onEvents(*TouchEvent.Type.ALL) { e ->
-            logger.trace { "eventDispatcher.addEventListener<TouchEvent>:$e" }
+            Korge.logger.trace { "eventDispatcher.addEventListener<TouchEvent>:$e" }
 
             input.updateTouches(e)
             val ee = input.touch
@@ -494,7 +473,7 @@ object Korge {
         }
 
         eventDispatcher.onEvents(*GamePadConnectionEvent.Type.ALL) { e ->
-            logger.trace { "eventDispatcher.addEventListener<GamePadConnectionEvent>:$e" }
+            Korge.logger.trace { "eventDispatcher.addEventListener<GamePadConnectionEvent>:$e" }
             views.dispatch(e)
         }
 
@@ -538,7 +517,7 @@ object Korge {
                     views.mouseUpdated()
                 }
             } catch (e: Throwable) {
-                logger.error { "views.gameWindow.onRenderEvent:" }
+                Korge.logger.error { "views.gameWindow.onRenderEvent:" }
                 e.printStackTrace()
                 if (views.rethrowRenderError) throw e
             }
@@ -578,43 +557,6 @@ object Korge {
         if (waitForFirstRender) {
             firstRenderDeferred.await()
         }
-    }
-
-	data class Config(
-        val module: Module = Module(),
-        val args: Array<String> = arrayOf(),
-        val imageFormats: ImageFormat = RegisteredImageFormats,
-        val gameWindow: GameWindow? = null,
-		//val eventDispatcher: EventDispatcher = gameWindow ?: DummyEventDispatcher, // Removed
-        val sceneClass: KClass<out Scene>? = module.mainScene,
-        val sceneInjects: List<Any> = listOf(),
-        val timeProvider: TimeProvider = TimeProvider,
-        val injector: AsyncInjector = AsyncInjector(),
-        val debug: Boolean = false,
-        val trace: Boolean = false,
-        val context: Any? = null,
-        val fullscreen: Boolean? = null,
-        val blocking: Boolean = true,
-        val gameId: String = DEFAULT_GAME_ID,
-        val settingsFolder: String? = null,
-        val batchMaxQuads: Int = BatchBuilder2D.DEFAULT_BATCH_QUADS,
-        val virtualSize: SizeInt? = module.virtualSize,
-        val windowSize: SizeInt? = module.windowSize,
-        val scaleMode: ScaleMode? = null,
-        val scaleAnchor: Anchor? = null,
-        val clipBorders: Boolean? = null,
-        val title: String? = null,
-        val bgcolor: RGBA? = null,
-        val quality: GameWindow.Quality? = null,
-        val icon: String? = null,
-        val multithreaded: Boolean? = null,
-        val forceRenderEveryFrame: Boolean = true,
-        val main: (suspend Stage.() -> Unit)? = module.main,
-        val constructedScene: Scene.(Views) -> Unit = module.constructedScene,
-        val constructedViews: (Views) -> Unit = module.constructedViews,
-	) {
-        val finalWindowSize: SizeInt get() = windowSize ?: module.windowSize
-        val finalVirtualSize: SizeInt get() = virtualSize ?: module.virtualSize
     }
 
 	data class ModuleArgs(val args: Array<String>)

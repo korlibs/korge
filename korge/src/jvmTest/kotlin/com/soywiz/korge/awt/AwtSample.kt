@@ -1,7 +1,6 @@
 package com.soywiz.korge.awt
 
-import com.soywiz.korge.GLCanvasWithKorge
-import com.soywiz.korge.Korge
+import com.soywiz.korge.*
 import com.soywiz.korge.view.solidRect
 import com.soywiz.korim.color.Colors
 import com.soywiz.korma.geom.*
@@ -20,7 +19,7 @@ object AwtSample {
             frame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
             frame.layout = GridLayout(5, 1)
             frame.add(JButton("[1]"))
-            frame.add(GLCanvasWithKorge(Korge.Config(virtualSize = SizeInt(512, 512), scaleMode = ScaleMode.NO_SCALE, scaleAnchor = Anchor.TOP_LEFT)) {
+            frame.add(Korge(virtualSize = SizeInt(512, 512), scaleMode = ScaleMode.NO_SCALE, scaleAnchor = Anchor.TOP_LEFT).glCanvas {
                 views.clearColor = Colors.RED
                 solidRect(100, 100, Colors.YELLOW)
             })

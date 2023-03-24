@@ -29,7 +29,7 @@ suspend fun main() = Korge(
     forceRenderEveryFrame = false // Newly added optimization!
     //forceRenderEveryFrame = true
     //debugAg = true,
-) {
+).start {
     //image(resourcesVfs["korge.png"].readBitmap()); text("hello world!", textSize = 64.0, color = Colors.RED); return@Korge
     //text("hello world!", textSize = 64.0); return@Korge
 

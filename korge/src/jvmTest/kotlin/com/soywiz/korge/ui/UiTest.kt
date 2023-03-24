@@ -8,7 +8,7 @@ import kotlinx.coroutines.*
 
 fun main(): Unit = runBlocking { korge() }
 
-suspend fun korge() = Korge(quality = GameWindow.Quality.PERFORMANCE, title = "UI") {
+suspend fun korge() = Korge(quality = GameWindow.Quality.PERFORMANCE, title = "UI").start {
 
     uiText("Some text", 130.0, 20.0) {
         position(128, 265)

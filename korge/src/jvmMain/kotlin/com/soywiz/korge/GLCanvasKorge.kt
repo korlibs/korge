@@ -11,7 +11,7 @@ import kotlinx.coroutines.withContext
 import java.io.Closeable
 
 fun GLCanvasWithKorge(
-    config: Korge.Config,
+    config: KorgeConfig,
     block: suspend Stage.() -> Unit
 ): GLCanvasWithKorge {
     val canvas = GLCanvasWithKorge()
@@ -19,6 +19,8 @@ fun GLCanvasWithKorge(
     korge.initNoWait(block)
     return canvas
 }
+
+fun Korge.glCanvas(block: suspend Stage.() -> Unit): GLCanvasWithKorge = GLCanvasWithKorge(this, block)
 
 open class GLCanvasWithKorge : GLCanvas() {
     lateinit var korge: GLCanvasKorge
@@ -29,7 +31,7 @@ open class GLCanvasWithKorge : GLCanvas() {
 class GLCanvasKorge internal constructor(
     val dummy: Boolean,
     val canvas: GLCanvasWithKorge,
-    val config: Korge.Config,
+    val config: KorgeConfig,
 ) : Closeable {
     val gameWindow = GLCanvasGameWindow(canvas)
     lateinit var stage: Stage
@@ -46,7 +48,7 @@ class GLCanvasKorge internal constructor(
             println("GLCanvasKorge.init[b]: ${Thread.currentThread()}")
             runBlocking {
                 println("GLCanvasKorge.init[c]: ${Thread.currentThread()}")
-                Korge(config.copy(
+                config.copy(
                     gameWindow = gameWindow,
                     main = {
                         println("GLCanvasKorge.init[d]: ${Thread.currentThread()}")
@@ -55,7 +57,7 @@ class GLCanvasKorge internal constructor(
                         config.main?.invoke(this)
                         block()
                     }
-                ))
+                ).start()
             }
         }
             .also { it.isDaemon = true }
@@ -96,7 +98,7 @@ class GLCanvasKorge internal constructor(
             virtualWidth: Int? = null,
             virtualHeight: Int? = null
         ): GLCanvasKorge {
-            return GLCanvasKorge(true, canvas, Korge.Config(virtualSize = virtualWidth?.let { SizeInt(virtualWidth, virtualHeight ?: virtualWidth) })).apply { init() }
+            return GLCanvasKorge(true, canvas, KorgeConfig(virtualSize = virtualWidth?.let { SizeInt(virtualWidth, virtualHeight ?: virtualWidth) })).apply { init() }
         }
     }
 }
