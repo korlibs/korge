@@ -98,7 +98,14 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
                 gl,
                 this.glslConfig.copy(programConfig = config),
                 program, debugName = program.name
-            ))
+            )).also { baseProgram ->
+                baseProgram.use()
+
+                program.samplers.forEach {
+                    val location = baseProgram.programInfo.getUniformLocation(gl, it.name)
+                    gl.uniform1i(location, it.index)
+                }
+            }
         }
         //nprogram.agProgram._native = nprogram.
         //nprogram.
@@ -448,12 +455,6 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
         //println("textureUnits=$textureUnits")
 
         //println("PROGRAM=$program")
-
-        // @TODO: We can do this just once per shader since indexes are fixed
-        program.samplers.forEach {
-            val location = glProgram.programInfo.getUniformLocation(gl, it.name)
-            gl.uniform1i(location, it.index)
-        }
 
         textureUnits.fastForEach { index, tex, info ->
             if (currentTextureUnits.textures[index] == tex && currentTextureUnits.infos[index] == info) {
