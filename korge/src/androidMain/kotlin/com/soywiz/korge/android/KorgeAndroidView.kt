@@ -1,22 +1,17 @@
 package com.soywiz.korge.android
 
-import android.content.Context
-import android.util.AttributeSet
-import android.widget.RelativeLayout
+import android.content.*
+import android.util.*
+import android.widget.*
 import com.soywiz.kgl.*
-import com.soywiz.korag.gl.AGOpengl
-import com.soywiz.korev.InitEvent
-import com.soywiz.korev.RenderEvent
-import com.soywiz.korge.Korge
-import com.soywiz.korge.scene.Module
-import com.soywiz.korgw.AndroidGameWindowNoActivity
-import com.soywiz.korgw.GameWindowCreationConfig
-import com.soywiz.korio.Korio
-import com.soywiz.korio.android.withAndroidContext
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import com.soywiz.korag.gl.*
+import com.soywiz.korev.*
+import com.soywiz.korge.*
+import com.soywiz.korge.scene.*
+import com.soywiz.korgw.*
+import com.soywiz.korio.*
+import com.soywiz.korio.android.*
+import kotlinx.coroutines.*
 
 @Suppress("unused")
 open class KorgeAndroidView @JvmOverloads constructor(
@@ -54,10 +49,10 @@ open class KorgeAndroidView @JvmOverloads constructor(
     }
 
     fun loadModule(module: Module) {
-        loadModule(Korge.Config(module))
+        loadModule(KorgeConfig(module))
     }
 
-    fun loadModule(config: Korge.Config) {
+    fun loadModule(config: KorgeConfig) {
         unloadModule() // Unload module if already loaded
 
         agOpenGl = AGOpengl(KmlGlAndroid { mGLView?.clientVersion ?: -1 }.checkedIf(checked = false).logIf(log = false))
@@ -72,7 +67,7 @@ open class KorgeAndroidView @JvmOverloads constructor(
                 try {
                     withAndroidContext(context) {
                         withContext(coroutineContext + gameWindow) {
-                            Korge(config)
+                            config.start()
                         }
                     }
                 } finally {
