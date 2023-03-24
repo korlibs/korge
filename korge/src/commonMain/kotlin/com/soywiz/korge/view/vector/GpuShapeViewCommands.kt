@@ -159,6 +159,7 @@ class GpuShapeViewCommands {
                                     val tex = ctx.tempTexturePool.alloc()
                                     tex.upload(paintShader.texture)
                                     ctx.textureUnits.set(DefaultShaders.u_Tex, tex)
+                                    //println("texture.tex=$tex")
                                     texturesToDelete.add(tex)
                                 }
                             }
@@ -177,6 +178,7 @@ class GpuShapeViewCommands {
                                 //indices = indices,
                                 scissor = scissor.applyMatrixBounds(tempMat),
                                 uniformBlocks = ctx.createCurrentUniformsRef(_program),
+                                textureUnits = ctx.textureUnits.clone(),
                                 stencilOpFunc = cmd.stencilOpFunc,
                                 stencilRef = cmd.stencilRef,
                                 colorMask = cmd.colorMask,

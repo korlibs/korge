@@ -172,7 +172,7 @@ open class FSprites(val maxSize: Int) {
                             vertexCount = 4,
                             instances = sprites.size,
                             uniformBlocks = ctx.createCurrentUniformsRef(program),
-                            textureUnits = ctx.textureUnits,
+                            textureUnits = ctx.textureUnits.clone(),
                             //renderState = AGRenderState(depthFunc = AGCompareMode.LESS),
                             blending = blending.factors
                         )
