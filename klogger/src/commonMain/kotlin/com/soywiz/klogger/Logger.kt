@@ -19,6 +19,8 @@ import com.soywiz.klogger.internal.*
  * ```
  */
 class Logger private constructor(val name: String, val normalizedName: String, val dummy: Boolean) {
+    var nativeLogger: Any? = null
+
     var optLevel: Level? = null
     var optOutput: Output? = null
 
