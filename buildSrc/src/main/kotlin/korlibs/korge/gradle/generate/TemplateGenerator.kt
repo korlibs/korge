@@ -29,7 +29,7 @@ object TemplateGenerator {
             "// $it\n\n" + template.replaceTemplate(it)
         }
 
-        val generated = "$header$STRING_START$template$STRING_END\n$NOTICE\n$rest"
+        val generated = "$header$STRING_START$template$STRING_END\n$NOTICE\n$rest".trimEnd() + "\n"
         if (file.text != generated) {
             file.text = generated
         }
