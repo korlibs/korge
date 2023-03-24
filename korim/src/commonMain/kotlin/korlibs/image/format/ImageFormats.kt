@@ -74,8 +74,15 @@ fun ImageFormat.listFormats(): Set<ImageFormat> = when (this) {
     else -> setOf(this)
 }
 
-operator fun ImageFormat.plus(format: ImageFormat): ImageFormats = ImageFormats(this.listFormats() + format.listFormats())
-operator fun ImageFormat.plus(formats: Iterable<ImageFormat>) = ImageFormats(this.listFormats() + formats.flatMap { it.listFormats() })
+operator fun ImageFormat.plus(format: ImageFormat): ImageFormat {
+    if (this == format) return this
+    return ImageFormats((this.listFormats() + format.listFormats().distinct()))
+}
+operator fun ImageFormat.plus(formats: List<ImageFormat>): ImageFormat {
+    if (formats.isEmpty()) return this
+    if (formats.size == 1) return this + formats.first()
+    return this + ImageFormats(formats.listFormats())
+}
 
 @Suppress("unused")
 suspend fun Bitmap.writeTo(
