@@ -20,7 +20,7 @@ import kotlin.test.Test
 class KorgeHeadlessTest {
     @Test
     fun test() = suspendTest {
-        Korge(windowSize = SizeInt(512, 512), bgcolor = Colors["#2b2b2b"]).headless {
+        Korge(windowSize = SizeInt(512, 512), bgcolor = Colors["#2b2b2b"]).headless(draw = false) {
             val minDegrees = (-16).degrees
             val maxDegrees = (+16).degrees
 
@@ -42,7 +42,7 @@ class KorgeHeadlessTest {
 
     @Test
     fun testDraw() = suspendTest {
-        val gameWindow = Korge(windowSize = SizeInt(512, 512), bgcolor = Colors["#2b2b2b"], headlessDraw = true).headless {
+        val gameWindow = Korge(windowSize = SizeInt(512, 512), bgcolor = Colors["#2b2b2b"]).headless(draw = true) {
             val bmp = resourcesVfs["korge.png"].readBitmap()
             repeat(1) { n ->
             //repeat(10) { n ->

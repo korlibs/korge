@@ -56,9 +56,11 @@ object KorgeHeadless {
         config: KorgeConfig,
         ag: AG = AGDummy(config.finalWindowSize.width, config.finalWindowSize.height),
         devicePixelRatio: Double = 1.0,
+        draw: Boolean = false,
         entry: suspend Stage.() -> Unit,
     ): HeadlessGameWindow {
-        val gameWindow = HeadlessGameWindow(config.finalWindowSize.width, config.finalWindowSize.height, draw = config.headlessDraw, ag = ag, devicePixelRatio = devicePixelRatio)
+        val config = config.copy(imageFormats = config.imageFormats + PNG)
+        val gameWindow = HeadlessGameWindow(config.finalWindowSize.width, config.finalWindowSize.height, draw = draw, ag = ag, devicePixelRatio = devicePixelRatio)
         gameWindow.exitProcessOnClose = false
         config.copy(gameWindow = gameWindow).start {
             //config.main?.invoke(this)
@@ -71,5 +73,6 @@ object KorgeHeadless {
 suspend fun KorgeConfig.headless(
     ag: AG = AGDummy(this.finalWindowSize.width, this.finalWindowSize.height),
     devicePixelRatio: Double = 1.0,
+    draw: Boolean = false,
     entry: suspend Stage.() -> Unit,
-) = KorgeHeadless.invoke(this, ag, devicePixelRatio, entry)
+) = KorgeHeadless.invoke(this, ag, devicePixelRatio, draw, entry)
