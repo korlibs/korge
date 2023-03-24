@@ -76,11 +76,12 @@ inline fun korgeScreenshotTest(
 
     var exception: Throwable? = null
     suspendTestWithOffscreenAG(windowSize.width, windowSize.height) { ag ->
-        val korge = KorgeHeadless(
+        val korge = KorgeHeadless(KorgeConfig(
             windowSize = windowSize, virtualSize = virtualSize,
             bgcolor = bgcolor,
-            ag = ag, devicePixelRatio = devicePixelRatio,
             stageBuilder = { OffscreenStage(it, offscreenContext) }
+            ),
+            ag = ag, devicePixelRatio = devicePixelRatio,
         ) {
             injector.mapInstance(offscreenContext)
             try {

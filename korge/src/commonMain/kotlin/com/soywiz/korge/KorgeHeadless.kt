@@ -52,47 +52,27 @@ object KorgeHeadless {
         //override val ag: AG = AGDummy(width, height)
     }
 
-    suspend operator fun invoke(config: Korge.Config) = Korge(config.copy(gameWindow = HeadlessGameWindow()))
-
     suspend operator fun invoke(
-        title: String = "Korge",
-        windowSize: SizeInt = DefaultViewport.SIZE,
-        virtualSize: SizeInt = windowSize,
-        icon: Bitmap? = null,
-        iconPath: String? = null,
-        //iconDrawable: SizedDrawable? = null,
-        imageFormats: ImageFormat = ImageFormats(PNG),
-        quality: GameWindow.Quality = GameWindow.Quality.AUTOMATIC,
-        targetFps: Double = 0.0,
-        scaleAnchor: Anchor = Anchor.MIDDLE_CENTER,
-        scaleMode: ScaleMode = ScaleMode.SHOW_ALL,
-        clipBorders: Boolean = true,
-        bgcolor: RGBA? = Colors.BLACK,
-        debug: Boolean = false,
-        debugFontExtraScale: Double = 1.0,
-        debugFontColor: RGBA = Colors.WHITE,
-        fullscreen: Boolean? = null,
-        args: Array<String> = arrayOf(),
-        timeProvider: TimeProvider = TimeProvider,
-        injector: AsyncInjector = AsyncInjector(),
-        blocking:Boolean = true,
-        debugAg: Boolean = false,
-        draw: Boolean = false,
-        ag: AG = AGDummy(windowSize.width, windowSize.height),
+        config: KorgeConfig,
+        ag: AG = AGDummy(config.finalWindowSize.width, config.finalWindowSize.height),
         devicePixelRatio: Double = 1.0,
-        stageBuilder: (Views) -> Stage = { Stage(it) },
+        draw: Boolean = false,
         entry: suspend Stage.() -> Unit,
     ): HeadlessGameWindow {
-        val gameWindow = HeadlessGameWindow(windowSize.width, windowSize.height, draw = draw, ag = ag, devicePixelRatio = devicePixelRatio)
+        val config = config.copy(imageFormats = config.imageFormats + PNG)
+        val gameWindow = HeadlessGameWindow(config.finalWindowSize.width, config.finalWindowSize.height, draw = draw, ag = ag, devicePixelRatio = devicePixelRatio)
         gameWindow.exitProcessOnClose = false
-        Korge(
-            title, windowSize, virtualSize, icon, iconPath, /*iconDrawable,*/ imageFormats, quality,
-            targetFps, scaleAnchor, scaleMode, clipBorders, bgcolor, debug, debugFontExtraScale, debugFontColor,
-            fullscreen, args, gameWindow, timeProvider, injector,
-            blocking = blocking, debugAg = debugAg, stageBuilder = stageBuilder, entry = {
-                entry()
-            }, forceRenderEveryFrame = true
-        )
+        config.copy(gameWindow = gameWindow).start {
+            //config.main?.invoke(this)
+            entry()
+        }
         return gameWindow
     }
 }
+
+suspend fun KorgeConfig.headless(
+    ag: AG = AGDummy(this.finalWindowSize.width, this.finalWindowSize.height),
+    devicePixelRatio: Double = 1.0,
+    draw: Boolean = false,
+    entry: suspend Stage.() -> Unit,
+) = KorgeHeadless.invoke(this, ag, devicePixelRatio, draw, entry)

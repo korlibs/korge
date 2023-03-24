@@ -286,7 +286,7 @@ open class ViewsForTesting(
         viewsLog.init()
         this@ViewsForTesting.devicePixelRatio = devicePixelRatio
         //suspendTest(timeout = timeout, cond = { !OS.isAndroid && !OS.isJs && !OS.isNative }) {
-        Korge.prepareViewsBase(views, gameWindow, fixedSizeStep = frameTime, forceRenderEveryFrame = forceRenderEveryFrame)
+        KorgeRunner.prepareViewsBase(views, gameWindow, fixedSizeStep = frameTime, forceRenderEveryFrame = forceRenderEveryFrame)
 
 		injector.mapInstance<Module>(object : Module() {
 			override val title = "KorgeViewsForTesting"

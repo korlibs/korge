@@ -1,8 +1,6 @@
 import com.soywiz.kds.iterators.fastForEachWithIndex
-import com.soywiz.korge.GLCanvasWithKorge
-import com.soywiz.korge.Korge
+import com.soywiz.korge.*
 import com.soywiz.korge.input.onClick
-import com.soywiz.korge.jvmEnsureAddOpens
 import com.soywiz.korge.ui.*
 import com.soywiz.korim.color.toRgba
 import com.soywiz.korma.geom.*
@@ -35,7 +33,7 @@ object AwtSandboxSample {
                 components.add(
                     frame.add(
                         GLCanvasWithKorge(
-                            Korge.Config(
+                            KorgeConfig(
                                 bgcolor = frame.background.toRgba(),
                                 virtualSize = Size(UIButton.DEFAULT_WIDTH, UIButton.DEFAULT_HEIGHT * 3).toInt(),
                                 scaleAnchor = Anchor.CENTER
