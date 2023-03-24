@@ -57,11 +57,3 @@ internal fun StringBuilder.appendNice(value: Float) {
 
 @PublishedApi
 internal fun floorCeil(v: Double): Double = if (v < 0.0) ceil(v) else floor(v)
-
-
-
-
-
-
-
-

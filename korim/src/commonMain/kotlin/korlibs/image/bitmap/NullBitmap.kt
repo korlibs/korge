@@ -5,4 +5,3 @@ open class NullBitmap(
     height: Int,
     premultiplied: Boolean = true
 ) : Bitmap(width, height, 32, premultiplied, null)
-

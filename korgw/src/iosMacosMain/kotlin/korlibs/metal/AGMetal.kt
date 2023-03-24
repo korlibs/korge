@@ -108,4 +108,3 @@ class AGMetal(private val view: MTKView) : AG() {
             MetalShaderCompiler.compile(device, program)
         }
 }
-

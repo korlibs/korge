@@ -65,4 +65,3 @@ class MyInflaterTest {
 		assertEquals("\\0".repeat(0x2800), result.toString(UTF8))
 	}
 }
-

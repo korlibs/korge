@@ -15,14 +15,3 @@ internal fun d2i(v: Double): Int = (v.clamp01() * 255).toInt()
 internal fun f2i(v: Float): Int = (v.clamp01() * 255).toInt()
 
 internal fun floorCeil(v: Double): Double = if (v < 0.0) ceil(v) else floor(v)
-
-
-
-
-
-
-
-
-
-
-

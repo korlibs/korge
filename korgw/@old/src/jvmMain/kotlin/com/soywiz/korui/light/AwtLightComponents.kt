@@ -774,4 +774,3 @@ class RequestFocusListener(private val removeListener: Boolean = true) : Ancesto
 
 	override fun ancestorRemoved(e: AncestorEvent) {}
 }
-

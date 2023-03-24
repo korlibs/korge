@@ -145,4 +145,3 @@ open class LZO(val headerType: HeaderType = HeaderType.SHORT) : CompressionMetho
         o.writeBytes(compressedData, 0, compressedSize)
     }
 }
-
